@@ -1,40 +1,40 @@
-# === func-gen- : cuda/cudawrap/cudawrap fgp cuda/cudawrap/cudawrap.bash fgn cudawrap fgh cuda/cudawrap
-cudawrap-rel(){      echo cuda/cudawrap ; }
-cudawrap-src(){      echo cuda/cudawrap/cudawrap.bash ; }
-cudawrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudawrap-src)} ; }
-cudawrap-vi(){       vi $(cudawrap-source) ; }
-cudawrap-usage(){ cat << EOU
+# === func-gen- : cuda/cudarap/cudarap fgp cuda/cudarap/cudarap.bash fgn cudarap fgh cuda/cudarap
+cudarap-rel(){      echo cuda/cudarap ; }
+cudarap-src(){      echo cuda/cudarap/cudarap.bash ; }
+cudarap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudarap-src)} ; }
+cudarap-vi(){       vi $(cudarap-source) ; }
+cudarap-usage(){ cat << EOU
 
 CUDAWrap
 ==========
 
-CUDAWRAP usage
+CUDARAP usage
 ----------------
 
 ::
 
-    bogon:env blyth$ find . -name '*.*' -exec grep -H CUDAWRAP {} \; 
-    ./cuda/cudawrap/cudawrap.bash:   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
-    ./cuda/cudawrap/cudawrap.bash:   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
-    ./cuda/cudawrap/cuRANDWrapperTest.cc:    unsigned int work              = getenvvar("CUDAWRAP_RNG_MAX", WORK) ;
-    ./cuda/cudawrap/cuRANDWrapperTest.cc:    char* cachedir = getenv("CUDAWRAP_RNG_DIR") ;
-    ./graphics/ggeoview/ggeoview.bash:   CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) CUDAWRAP_RNG_MAX=$(ggeoview-rng-max) $(cudawrap-ibin)
+    bogon:env blyth$ find . -name '*.*' -exec grep -H CUDARAP {} \; 
+    ./cuda/cudarap/cudarap.bash:   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
+    ./cuda/cudarap/cudarap.bash:   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
+    ./cuda/cudarap/cuRANDWrapperTest.cc:    unsigned int work              = getenvvar("CUDARAP_RNG_MAX", WORK) ;
+    ./cuda/cudarap/cuRANDWrapperTest.cc:    char* cachedir = getenv("CUDARAP_RNG_DIR") ;
+    ./graphics/ggeoview/ggeoview.bash:   CUDARAP_RNG_DIR=$(ggeoview-rng-dir) CUDARAP_RNG_MAX=$(ggeoview-rng-max) $(cudarap-ibin)
 
-    ./graphics/ggeoview/ggeoview.bash:   export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
+    ./graphics/ggeoview/ggeoview.bash:   export CUDARAP_RNG_MAX=$(ggeoview-rng-max)
 
-    ./graphics/ggeoview/ggeoview.bash:   env | grep CUDAWRAP
+    ./graphics/ggeoview/ggeoview.bash:   env | grep CUDARAP
     grep: ./offline/tg/OfflineDB/OfflineDB.egg-info: Is a directory
-    ./opticks/Opticks.cc:   int rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
-    ./opticks/Opticks.cc:                  << " CUDAWRAP_RNG_MAX " << rng_max 
-    ./opticks/Opticks.cc:   assert(rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
-    ./opticks/OpticksCfg.hh:"Value must match envvar CUDAWRAP_RNG_MAX and corresponding pre-cooked seeds, see cudawrap- for details. "
+    ./opticks/Opticks.cc:   int rng_max = getenvint("CUDARAP_RNG_MAX",-1); 
+    ./opticks/Opticks.cc:                  << " CUDARAP_RNG_MAX " << rng_max 
+    ./opticks/Opticks.cc:   assert(rng_max == x_rng_max && "Configured RngMax must match envvar CUDARAP_RNG_MAX and corresponding files, see cudarap- ");    
+    ./opticks/OpticksCfg.hh:"Value must match envvar CUDARAP_RNG_MAX and corresponding pre-cooked seeds, see cudarap- for details. "
 
 
 ::
 
     1964 ggeoview-rng-max()
     1965 {
-    1966    # maximal number of photons that can be handled : move to cudawrap- ?
+    1966    # maximal number of photons that can be handled : move to cudarap- ?
     1967     #echo $(( 1000*1000*3 ))
     1968     echo $(( 1000*1000*1 ))
     1969 }
@@ -47,7 +47,7 @@ census
 
 ::
 
-    bogon:ggeo blyth$ cudawrap-ccd
+    bogon:ggeo blyth$ cudarap-ccd
     bogon:rngcache blyth$ l
     total 179840
     -rw-r--r--  1 blyth  staff  57024000 Mar 23  2015 cuRANDWrapper_1296000_0_0.bin
@@ -68,7 +68,7 @@ Presumbaly because it does not use the STL, just a few simples classes and C str
 
 ::
 
-    /usr/local/env/cuda/cudawrap/lib/libCUDAWrap.dylib:
+    /usr/local/env/cuda/cudarap/lib/libCUDAWrap.dylib:
         @rpath/libCUDAWrap.dylib (compatibility version 0.0.0, current version 0.0.0)
         @rpath/libcudart.5.5.dylib (compatibility version 0.0.0, current version 5.5.28)
         /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
@@ -94,7 +94,7 @@ When place include without "using namespace optix" get::
 
 Correct way to include::
 
-    // cudawrap-
+    // cudarap-
     using namespace optix ; 
     #include "cuRANDWrapper.hh"
     #include "curand.h"
@@ -109,7 +109,7 @@ Build Warnings
 
 Warning::
 
-    delta:2015 blyth$ cudawrap-make
+    delta:2015 blyth$ cudarap-make
     [ 16%] Building NVCC (Device) object CMakeFiles/CUDAEnv.dir//./CUDAEnv_generated_cuRANDWrapper_kernel.cu.o
     ptxas /tmp/tmpxft_00004fb0_00000000-5_cuRANDWrapper_kernel.ptx, line 894; warning : Double is not supported. Demoting to float
     Scanning dependencies of target CUDAEnv
@@ -181,9 +181,9 @@ see that copying boxmuller_extra_double is causing the warning::
 
 
     [ 16%] Building NVCC (Device) object CMakeFiles/CUDAEnv.dir//./CUDAEnv_generated_cuRANDWrapper_kernel.cu.o
-    /Users/blyth/env/cuda/cudawrap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
+    /Users/blyth/env/cuda/cudarap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
 
-    /Users/blyth/env/cuda/cudawrap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
+    /Users/blyth/env/cuda/cudarap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
 
 
 * http://stackoverflow.com/questions/19034321/cuda-double-demoted-to-float-and-understanding-ptx-output
@@ -197,7 +197,7 @@ Usage examples
 
 ::
 
-    delta:cudawrap blyth$ DYLD_LIBRARY_PATH=. WORK=$(( 1024*128 )) ./cuRANDWrapperTest 
+    delta:cudarap blyth$ DYLD_LIBRARY_PATH=. WORK=$(( 1024*128 )) ./cuRANDWrapperTest 
     seq workitems  131072  threads_per_block   256  max_blocks    128 nlaunch   4 
      seq sequence_index   0  thread_offset      0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
      seq sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
@@ -207,14 +207,14 @@ Usage examples
      init_rng_wrapper sequence_index   1  thread_offset  32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
      init_rng_wrapper sequence_index   2  thread_offset  65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
      init_rng_wrapper sequence_index   3  thread_offset  98304  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  
-    delta:cudawrap blyth$ 
+    delta:cudarap blyth$ 
 
 
 
 Comparing LaunchSequenceTest with cuda_launch.py 
 Need to define all the envvars to get a match, as defaults not aligned::
 
-    delta:cudawrap blyth$ ITEMS=$(( 1024*768 )) THREADS_PER_BLOCK=256 MAX_BLOCKS=256 cudawrap-lst
+    delta:cudarap blyth$ ITEMS=$(( 1024*768 )) THREADS_PER_BLOCK=256 MAX_BLOCKS=256 cudarap-lst
     seq workitems  786432  threads_per_block   256  max_blocks    256 nlaunch  12 
      seq sequence_index   0  thread_offset      0  threads_per_launch  65536 blocks_per_launch    256   threads_per_block    256  
      seq sequence_index   1  thread_offset  65536  threads_per_launch  65536 blocks_per_launch    256   threads_per_block    256  
@@ -241,7 +241,7 @@ Need to define all the envvars to get a match, as defaults not aligned::
     offset     589824 count 65536 grid (256, 1) block (256, 1, 1) 
     offset     655360 count 65536 grid (256, 1) block (256, 1, 1) 
     offset     720896 count 65536 grid (256, 1) block (256, 1, 1) 
-    delta:cudawrap blyth$ 
+    delta:cudarap blyth$ 
 
 
 
@@ -249,7 +249,7 @@ Below demonstrates that curandState caching works in CUDA only running,
 but mysteriously the test is a factor of three slower when curandState 
 was loaded from cache as opposed to being curand_init::
 
-    delta:cudawrap blyth$ cudawrap-test
+    delta:cudarap blyth$ cudarap-test
      init_rng_wrapper sequence_index   0  thread_offset       0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   135.4791 ms 
      init_rng_wrapper sequence_index   1  thread_offset   32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   139.1703 ms 
      init_rng_wrapper sequence_index   2  thread_offset   65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time   138.1142 ms 
@@ -288,8 +288,8 @@ was loaded from cache as opposed to being curand_init::
     cuRANDWrapperTest::main tag test_2 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3420 ms 
     cuRANDWrapperTest::main tag test_3 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3855 ms 
     cuRANDWrapperTest::main tag test_4 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime     5.3906 ms 
-    delta:cudawrap blyth$ 
-    delta:cudawrap blyth$ cudawrap-test
+    delta:cudarap blyth$ 
+    delta:cudarap blyth$ cudarap-test
     cuRANDWrapper::Load 786432 items from /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin load_digest 98b4055e7205ed0841d70564dd30895b 
     cuRANDWrapper::Load roundtrip_digest 98b4055e7205ed0841d70564dd30895b 
     test_0 c98f62f34773d0213c1c641c0c57936e     0.7402     0.9012     0.3494     0.3829     0.4598     0.5884     0.3593     0.4285 
@@ -302,8 +302,8 @@ was loaded from cache as opposed to being curand_init::
     cuRANDWrapperTest::main tag test_2 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.8187 ms 
     cuRANDWrapperTest::main tag test_3 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    15.0857 ms 
     cuRANDWrapperTest::main tag test_4 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.4365 ms 
-    delta:cudawrap blyth$ 
-    delta:cudawrap blyth$ cudawrap-test
+    delta:cudarap blyth$ 
+    delta:cudarap blyth$ cudarap-test
     cuRANDWrapper::Load 786432 items from /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin load_digest 98b4055e7205ed0841d70564dd30895b 
     cuRANDWrapper::Load roundtrip_digest 98b4055e7205ed0841d70564dd30895b 
     test_0 c98f62f34773d0213c1c641c0c57936e     0.7402     0.9012     0.3494     0.3829     0.4598     0.5884     0.3593     0.4285 
@@ -316,7 +316,7 @@ was loaded from cache as opposed to being curand_init::
     cuRANDWrapperTest::main tag test_2 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.8397 ms 
     cuRANDWrapperTest::main tag test_3 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    15.0116 ms 
     cuRANDWrapperTest::main tag test_4 workitems  786432  threads_per_block   256  max_blocks   4096 reverse 0 nlaunch   1 TotalTime    16.8369 ms 
-    delta:cudawrap blyth$ 
+    delta:cudarap blyth$ 
 
 
 
@@ -325,59 +325,59 @@ EOU
 }
 
 
-cudawrap-env(){      
+cudarap-env(){      
   elocal-  
   cuda-
   opticks-
 }
 
-cudawrap-name(){ echo CUDAWrap ; }
+cudarap-name(){ echo CUDARap ; }
 
-cudawrap-idir(){ echo $(opticks-idir); }
-cudawrap-bdir(){ echo $(opticks-bdir)/$(cudawrap-rel) ; }
-
-
-cudawrap-sdir(){ echo $(env-home)/cuda/cudawrap ; }
-cudawrap-ibin(){ echo $(cudawrap-idir)/bin/cuRANDWrapperTest ; }
-
-cudawrap-rng-dir(){ echo $(local-base)/env/cuda/CUDAWrap/rngcache ; }
-cudawrap-rng(){  ls -l $(cudawrap-rng-dir) ; }
-
-cudawrap-cd(){   cd $(cudawrap-sdir); }
-cudawrap-scd(){  cd $(cudawrap-sdir); }
-cudawrap-bcd(){  cd $(cudawrap-bdir); }
-cudawrap-ccd(){  cd $(cudawrap-rng-dir); }
+cudarap-idir(){ echo $(opticks-idir); }
+cudarap-bdir(){ echo $(opticks-bdir)/$(cudarap-rel) ; }
 
 
-cudawrap-wipe(){
+cudarap-sdir(){ echo $(env-home)/cuda/cudarap ; }
+cudarap-ibin(){ echo $(cudarap-idir)/bin/cuRANDWrapperTest ; }
+
+cudarap-rng-dir(){ echo $(local-base)/env/cuda/CUDARap/rngcache ; }
+cudarap-rng(){  ls -l $(cudarap-rng-dir) ; }
+
+cudarap-cd(){   cd $(cudarap-sdir); }
+cudarap-scd(){  cd $(cudarap-sdir); }
+cudarap-bcd(){  cd $(cudarap-bdir); }
+cudarap-ccd(){  cd $(cudarap-rng-dir); }
+
+
+cudarap-wipe(){
    local msg=" === $FUNCNAME :"
    echo $msg 
-   local bdir=$(cudawrap-bdir)
+   local bdir=$(cudarap-bdir)
    rm -rf $bdir
 }
 
 
-cudawrap-cmake-deprecated(){
+cudarap-cmake-deprecated(){
    local iwd=$PWD
 
-   [ -n "$WIPE" ] && cudawrap-wipe
+   [ -n "$WIPE" ] && cudarap-wipe
 
-   local bdir=$(cudawrap-bdir)
+   local bdir=$(cudarap-bdir)
    mkdir -p $bdir
 
-   cudawrap-bcd
+   cudarap-bcd
  
    cmake -DCMAKE_BUILD_TYPE=Debug \
-         -DCMAKE_INSTALL_PREFIX=$(cudawrap-idir) \
+         -DCMAKE_INSTALL_PREFIX=$(cudarap-idir) \
          -DCUDA_NVCC_FLAGS="$(cuda-nvcc-flags)" \
-          $(cudawrap-sdir) 
+          $(cudarap-sdir) 
 
    cd $iwd
 }
 
-cudawrap-make(){
+cudarap-make(){
    local iwd=$PWD
-   cudawrap-bcd
+   cudarap-bcd
    local rc
 
    make $*
@@ -389,54 +389,54 @@ cudawrap-make(){
 }
 
 
-cudawrap-bin(){ echo $(cudawrap-bdir)/$(cudawrap-name)Test ; }
-cudawrap-lst-bin(){ echo $(cudawrap-bdir)/LaunchSequenceTest ; }
+cudarap-bin(){ echo $(cudarap-bdir)/$(cudarap-name)Test ; }
+cudarap-lst-bin(){ echo $(cudarap-bdir)/LaunchSequenceTest ; }
 
-cudawrap-lst(){ 
-   local bin=$(cudawrap-lst-bin)
+cudarap-lst(){ 
+   local bin=$(cudarap-lst-bin)
    $bin $*
 
    cuda_launch.py ${ITEMS:-$(( 1024*768 ))}
 }
 
 
-cudawrap-export(){
+cudarap-export(){
   echo -n
 }
 
-cudawrap-run(){
+cudarap-run(){
   if [ -n "$DEBUG" ]; then
-      $DEBUG $(cudawrap-bin) -- $*
+      $DEBUG $(cudarap-bin) -- $*
   else
-      $(cudawrap-bin) $*
+      $(cudarap-bin) $*
   fi
 }
 
 
-cudawrap--(){
-  cudawrap-make clean
-  cudawrap-make
+cudarap--(){
+  cudarap-make clean
+  cudarap-make
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
-  cudawrap-install $*
+  cudarap-install $*
 }
 
-cudawrap-install(){
-  cudawrap-make install 
+cudarap-install(){
+  cudarap-make install 
 }
 
-cudawrap-test()
+cudarap-test()
 {
    local iwd=$PWD
-   cudawrap-bcd
-   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
+   cudarap-bcd
+   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
    cd $iwd
 }
 
-cudawrap-test-full()
+cudarap-test-full()
 {
    local iwd=$PWD
-   cudawrap-bcd
-   CUDAWRAP_RNG_DIR=$(cudawrap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
+   cudarap-bcd
+   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
    cd $iwd
 }
 

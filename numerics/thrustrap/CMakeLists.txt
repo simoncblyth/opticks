@@ -17,7 +17,7 @@ find_package(CUDA 2.3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
-find_package(CUDAWrap  REQUIRED)
+find_package(CUDARap  REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -25,18 +25,18 @@ include_directories(
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS}
-    ${CUDAWrap_INCLUDE_DIRS}
+    ${CUDARap_INCLUDE_DIRS}
 )
 
 add_definitions(
     ${Boost_DEFINITIONS}
-    ${CUDAWrap_DEFINITIONS}
+    ${CUDARap_DEFINITIONS}
 )
 
 set(LIBRARIES
       ${Boost_LIBRARIES}
       ${NPY_LIBRARIES}
-      ${CUDAWrap_LIBRARIES}
+      ${CUDARap_LIBRARIES}
 )
 
 CUDA_ADD_LIBRARY( ${name}  
@@ -60,4 +60,4 @@ SET(hdrs
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})
 
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)

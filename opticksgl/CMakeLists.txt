@@ -38,9 +38,9 @@ find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
 
 find_package(Assimp REQUIRED)
-find_package(AssimpWrap REQUIRED)
+find_package(AssimpRap REQUIRED)
 find_package(GGeo REQUIRED)
-find_package(CUDAWrap REQUIRED)
+find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 find_package(OptiXRap REQUIRED)
 find_package(OpticksOp REQUIRED)
@@ -64,9 +64,9 @@ include_directories(
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
     ${Assimp_INCLUDE_DIRS}  
-    ${AssimpWrap_INCLUDE_DIRS}  
+    ${AssimpRap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
-    ${CUDAWrap_INCLUDE_DIRS}  
+    ${CUDARap_INCLUDE_DIRS}  
     ${ThrustRap_INCLUDE_DIRS}  
 
     ${OptiXRap_INCLUDE_DIRS}
@@ -87,10 +87,10 @@ set(LIBRARIES
 
       ${CUDA_LIBRARIES}
       ${Assimp_LIBRARIES}
-      ${AssimpWrap_LIBRARIES}
+      ${AssimpRap_LIBRARIES}
       ${GGeo_LIBRARIES}
 
-      ${CUDAWrap_LIBRARIES}
+      ${CUDARap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
       ${OptiXRap_LIBRARIES}
       ${OpticksOp_LIBRARIES}
@@ -112,11 +112,11 @@ add_definitions(
 
     ${CUDA_DEFINITIONS} 
     ${Assimp_DEFINITIONS} 
-    ${AssimpWrap_DEFINITIONS} 
+    ${AssimpRap_DEFINITIONS} 
     ${GGeo_DEFINITIONS} 
 
     ${OptiX_DEFINITIONS} 
-    ${CUDAWrap_DEFINITIONS} 
+    ${CUDARap_DEFINITIONS} 
     ${OptiXRap_DEFINITIONS} 
     ${OpticksOp_DEFINITIONS}
 )
@@ -143,4 +143,4 @@ target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${hdrs}   DESTINATION include/${name})
 
-#add_subdirectory(tests)
+#add_subdirectory(tests EXCLUDE_FROM_ALL)

@@ -1,20 +1,20 @@
-# === func-gen- : graphics/assimpwrap/assimpwrap fgp graphics/assimpwrap/assimpwrap.bash fgn assimpwrap fgh graphics/assimpwrap
-assimpwrap-rel(){      echo graphics/assimpwrap ; }
-assimpwrap-src(){      echo graphics/assimpwrap/assimpwrap.bash ; }
-assimpwrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimpwrap-src)} ; }
-assimpwrap-vi(){       vi $(assimpwrap-source) ; }
-assimpwrap-usage(){ cat << EOU
+# === func-gen- : graphics/assimprap/assimprap fgp graphics/assimprap/assimprap.bash fgn assimprap fgh graphics/assimprap
+assimprap-rel(){      echo graphics/assimprap ; }
+assimprap-src(){      echo graphics/assimprap/assimprap.bash ; }
+assimprap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimprap-src)} ; }
+assimprap-vi(){       vi $(assimprap-source) ; }
+assimprap-usage(){ cat << EOU
 
-AssimpWrap
+AssimpRap
 ============
 
-AssimpWrap converts geometry and material property information 
-into unencumbered (no ai/AssimpWrap) GGeo instances.
+AssimpRap converts geometry and material property information 
+into unencumbered (no ai/AssimpRap) GGeo instances.
 
 Depends on my github fork of the Assimp 3D Asset Importer Library,
 which adds handling of G4DAE extra material/surface properties.
 
-* see AssimpWrapTest.cc for a demo of geometry conversion 
+* see AssimpRapTest.cc for a demo of geometry conversion 
 * see ggeo-vi
 * used by raytrace-
 
@@ -40,7 +40,7 @@ AssimpSelection
 
 AssimpGGeo
     converts an AssimpTree and AssimpSelection into 
-    an unencumbered (no ai or AssimpWrap) GGeo instance, see ggeo-vi
+    an unencumbered (no ai or AssimpRap) GGeo instance, see ggeo-vi
 
 AssimpCommon
     common aiNode/aiMesh handling functions
@@ -97,7 +97,7 @@ Workflow
 
 ::
 
-   assimpwrap-extra
+   assimprap-extra
 
 
 
@@ -176,27 +176,27 @@ Border Surfaces Looking Reasonable with expected AD symmetry
 
 EOU
 }
-assimpwrap-env(){      elocal- ; opticks- ;  }
+assimprap-env(){      elocal- ; opticks- ;  }
 
-assimpwrap-sdir(){ echo $(env-home)/graphics/assimpwrap ; }
-assimpwrap-idir(){ echo $(opticks-idir); }
-assimpwrap-bdir(){ echo $(opticks-bdir)/$(assimpwrap-rel) ; }
+assimprap-sdir(){ echo $(env-home)/graphics/assimprap ; }
+assimprap-idir(){ echo $(opticks-idir); }
+assimprap-bdir(){ echo $(opticks-bdir)/$(assimprap-rel) ; }
 
-assimpwrap-icd(){  cd $(assimpwrap-idir); }
-assimpwrap-bcd(){  cd $(assimpwrap-bdir); }
-assimpwrap-scd(){  cd $(assimpwrap-sdir); }
+assimprap-icd(){  cd $(assimprap-idir); }
+assimprap-bcd(){  cd $(assimprap-bdir); }
+assimprap-scd(){  cd $(assimprap-sdir); }
 
-assimpwrap-cd(){  cd $(assimpwrap-sdir); }
+assimprap-cd(){  cd $(assimprap-sdir); }
 
-assimpwrap-wipe(){
-    local bdir=$(assimpwrap-bdir)
+assimprap-wipe(){
+    local bdir=$(assimprap-bdir)
     rm -rf $bdir
 }
 
 
-assimpwrap-make(){
+assimprap-make(){
     local iwd=$PWD
-    assimpwrap-bcd
+    assimprap-bcd
     local rc
     make $*
     rc=$?
@@ -204,80 +204,80 @@ assimpwrap-make(){
     return $rc 
 }
 
-assimpwrap-install(){
-   assimpwrap-make install
+assimprap-install(){
+   assimprap-make install
 }
 
 
-assimpwrap-bbin(){ echo $(assimpwrap-bdir)/AssimpWrapTest ; }
-assimpwrap-bin(){ echo $(assimpwrap-idir)/bin/AssimpWrapTest ; }
+assimprap-bbin(){ echo $(assimprap-bdir)/AssimpRapTest ; }
+assimprap-bin(){ echo $(assimprap-idir)/bin/AssimpRapTest ; }
 
-assimpwrap-geokey(){
+assimprap-geokey(){
     case $1 in
       extra) echo DAE_NAME_DYB ;; 
           *) echo DAE_NAME_DYB_NOEXTRA  ;;
     esac  
 }
 
-assimpwrap-material(){
+assimprap-material(){
     echo __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceBot 
     #echo __dd__Materials__GdDopedLS0xc2a8ed0 
 }
 
-assimpwrap-ggctrl(){
+assimprap-ggctrl(){
     echo ""
     #echo __dd__
 }
 
-assimpwrap-export(){
-    export ASSIMPWRAP_GEOKEY="$(assimpwrap-geokey $1)"
+assimprap-export(){
+    export ASSIMPRAP_GEOKEY="$(assimprap-geokey $1)"
     #export ASSIMPWRAP_QUERY="index:1,depth:2" 
-    export ASSIMPWRAP_QUERY="range:5000:8000"
-    export ASSIMPWRAP_MATERIAL="$(assimpwrap-material)"   # used for debugging single material/surface/..
-    export ASSIMPWRAP_GGCTRL="$(assimpwrap-ggctrl)" 
+    export ASSIMPRAP_QUERY="range:5000:8000"
+    export ASSIMPRAP_MATERIAL="$(assimprap-material)"   # used for debugging single material/surface/..
+    export ASSIMPRAP_GGCTRL="$(assimprap-ggctrl)" 
     export-
     export-export
-    env | grep ASSIMPWRAP
+    env | grep ASSIMPRAP
 }
 
-assimpwrap-run(){
-    assimpwrap-make
+assimprap-run(){
+    assimprap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-    assimpwrap-export 
-    $DEBUG $(assimpwrap-bin) $*  
+    assimprap-export 
+    $DEBUG $(assimprap-bin) $*  
 }
 
-assimpwrap--(){
-    assimpwrap-make clean
-    assimpwrap-make
+assimprap--(){
+    assimprap-make clean
+    assimprap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-    assimpwrap-install $*
+    assimprap-install $*
 }
 
-assimpwrap-lldb(){
-    DEBUG=lldb assimpwrap-run
+assimprap-lldb(){
+    DEBUG=lldb assimprap-run
 }
 
-assimpwrap-test(){
+assimprap-test(){
    local msg="$FUNCNAME : "
    echo $msg extra arg is added by default : following principal of requiring zero arguments for the most often needed actions 
    $FUNCNAME- extra 
 }
-assimpwrap-noextra(){
-   assimpwrap-test- extra
+assimprap-noextra(){
+   assimprap-test- extra
 }
 
-assimpwrap-test-(){
+assimprap-test-(){
     local arg=$1
-    assimpwrap-make
+    assimprap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
 
-    assimpwrap-export $arg
-    assimpwrap-run
+    assimprap-export $arg
+    assimprap-run
 }
 
-assimpwrap-otool(){
-   otool -L $(assimpwrap-bin)
+assimprap-otool(){
+   otool -L $(assimprap-bin)
 }
 
 

@@ -30,10 +30,13 @@ find_package(Boost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
+
+# TODO: look into isolating Assimp dependency usage
+
 find_package(Assimp REQUIRED)
-find_package(AssimpWrap REQUIRED)
+find_package(AssimpRap REQUIRED)
 find_package(GGeo REQUIRED)
-find_package(CUDAWrap REQUIRED)
+find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
 
@@ -50,9 +53,9 @@ include_directories(
     ${OptiX_INCLUDE}  
     ${CUDA_INCLUDE_DIRS}
     ${Assimp_INCLUDE_DIRS}  
-    ${AssimpWrap_INCLUDE_DIRS}  
+    ${AssimpRap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
-    ${CUDAWrap_INCLUDE_DIRS}  
+    ${CUDARap_INCLUDE_DIRS}  
     ${ThrustRap_INCLUDE_DIRS}  
 )
 
@@ -61,14 +64,14 @@ set(LIBRARIES
       ${Boost_LIBRARIES}
 
       ${Assimp_LIBRARIES}
-      ${AssimpWrap_LIBRARIES}
+      ${AssimpRap_LIBRARIES}
       ${GGeo_LIBRARIES}
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
       ${OpticksCore_LIBRARIES} 
       optix
       optixu
-      ${CUDAWrap_LIBRARIES}
+      ${CUDARap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
 )
 
@@ -76,8 +79,9 @@ add_definitions(
     ${Boost_DEFINITIONS}
     ${OpticksCore_DEFINITIONS} 
     ${Assimp_DEFINITIONS} 
+    ${AssimpRap_DEFINITIONS} 
     ${OptiX_DEFINITIONS} 
-    ${CUDAWrap_DEFINITIONS} 
+    ${CUDARap_DEFINITIONS} 
 )
 
 
@@ -172,4 +176,4 @@ install(FILES ${cuptxs} DESTINATION ptx)
 install(FILES ${hdrs}   DESTINATION include/${name})
 install(FILES ${cuhdrs} DESTINATION include/${name}/cu)
 
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)

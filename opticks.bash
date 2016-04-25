@@ -35,12 +35,12 @@ Only needed whilst making sweeping changes::
 TODO
 -----
 
-* rename Opticks subpackage to OpticksCore/OpticksBase/OpticksMd for model, to avoid shouting opticks for top level pkg 
 * tidy up ssl and crypto : maybe in NPY_LIBRARIES 
 * CUDAWrap: adopt standard tests approach 
 * standardize names: Cfg Bcfg bcfg- cfg-
 * standardize package names, Wrap to Rap for AssimpWrap and CUDAWrap
 * externalize or somehow exclude from standard building the Rap pkgs, as fairly stable
+* look into isolating Assimp dependency usage
 * machinery for getting externals
 * spawn opticks repository 
 * adopt single level directories 
@@ -63,16 +63,16 @@ Dependencies of internals
    numerics/npy           npy-             NPY             Boost GLM Bregex 
    optickscore            optickscore-     OpticksCore     Boost GLM Bregex Cfg NPY 
    optix/ggeo             ggeo-            GGeo            Boost GLM Bregex Cfg NPY OpticksCore
-   graphics/assimpwrap    assimpwrap-      AssimpWrap      Boost Assimp GGeo GLM NPY OpticksCore
+   graphics/assimprap     assimprap-       AssimpRap       Boost Assimp GGeo GLM NPY OpticksCore
    graphics/openmeshrap   openmeshrap-     OpenMeshRap     Boost GLM NPY GGeo OpticksCore OpenMesh 
    graphics/oglrap        oglrap-          OGLRap          GLEW GLFW GLM Boost Cfg Opticks GGeo PPM NPY Bregex ImGui        
-   cuda/cudawrap          cudawrap-        CUDAWrap        CUDA (ssl)
-   numerics/thrustrap     thrustrap-       ThrustRap       CUDA Boost GLM NPY CUDAWrap 
-   graphics/optixrap      optixrap-        OptiXRap        OptiX CUDA Boost GLM NPY OpticksCore Assimp AssimpWrap GGeo CUDAWrap ThrustRap 
-   opticksop              opticksop-       OpticksOp       OptiX CUDA Boost GLM Cfg Opticks GGeo NPY OptiXRap CUDAWrap ThrustRap      
-   opticksgl              opticksgl-       OpticksGL       OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY OpticksCore Assimp AssimpWrap GGeo CUDAWrap ThrustRap OptiXRap OpticksOp
+   cuda/cudarap           cudarap-         CUDARap         CUDA (ssl)
+   numerics/thrustrap     thrustrap-       ThrustRap       CUDA Boost GLM NPY CUDARap 
+   graphics/optixrap      optixrap-        OptiXRap        OptiX CUDA Boost GLM NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap 
+   opticksop              opticksop-       OpticksOp       OptiX CUDA Boost GLM Cfg Opticks GGeo NPY OptiXRap CUDARap ThrustRap      
+   opticksgl              opticksgl-       OpticksGL       OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap OptiXRap OpticksOp
    graphics/ggeoview      ggv-             GGeoView        OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY Cfg OpticksCore 
-                                                           Assimp AssimpWrap OpenMesh OpenMeshRap GGeo ImGui Bregex OptiXRap CUDAWrap ThrustRap OpticksOp OpticksGL 
+                                                           Assimp AssimpRap OpenMesh OpenMeshRap GGeo ImGui Bregex OptiXRap CUDARap ThrustRap OpticksOp OpticksGL 
    optix/cfg4             cfg4-            CfG4            Boost Bregex GLM NPY Cfg GGeo OpticksCore Geant4 EnvXercesC G4DAE 
    =====================  ===============  =============   ==============================================================================
 
@@ -146,10 +146,10 @@ boost/bregex
 numerics/npy
 optickscore
 optix/ggeo
-graphics/assimpwrap
+graphics/assimprap
 graphics/openmeshrap
 graphics/oglrap
-cuda/cudawrap
+cuda/cudarap
 numerics/thrustrap
 graphics/optixrap
 opticksop
@@ -165,10 +165,10 @@ PPM
 NPY
 OpticksCore
 GGeo
-AssimpWrap
+AssimpRap
 OpenMeshRap
 OGLRap
-CUDAWrap
+CUDARap
 ThrustRap
 OptiXRap
 OpticksOp
@@ -240,9 +240,9 @@ opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 
 
-opticks-txt(){   cd $ENV_HOME ; vi $(opticks-txt-list) ; }
-opticks-bash(){  cd $ENV_HOME ; vi $(opticks-bash-list) ; }
-opticks-edit(){  cd $ENV_HOME ; vi $(opticks-bash-list) $(opticks-txt-list) ; } 
+opticks-txt(){   cd $ENV_HOME ; vi CMakeLists.txt $(opticks-txt-list) ; }
+opticks-bash(){  cd $ENV_HOME ; vi opticks.bash $(opticks-bash-list) ; }
+opticks-edit(){  cd $ENV_HOME ; vi opticks.bash $(opticks-bash-list) CMakeLists.txt $(opticks-txt-list) ; } 
 
 opticks-txt-list(){
   local dir

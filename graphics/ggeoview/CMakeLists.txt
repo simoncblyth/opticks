@@ -31,7 +31,7 @@ if(EXISTS $ENV{OPTIX_SDK_DIR}/CMake AND WITH_OPTIX)
     add_definitions(-DWITH_OPTIX)
 
     find_package(CUDA 2.3 REQUIRED)
-    find_package(CUDAWrap REQUIRED)
+    find_package(CUDARap REQUIRED)
     find_package(OptiX REQUIRED)
     find_package(OptiXRap REQUIRED)
     find_package(ThrustRap REQUIRED)
@@ -40,7 +40,7 @@ if(EXISTS $ENV{OPTIX_SDK_DIR}/CMake AND WITH_OPTIX)
 
     set(WITH_OPTIX_INCLUDES
        ${CUDA_INCLUDE_DIRS}
-       ${CUDAWrap_INCLUDE_DIRS}  
+       ${CUDARap_INCLUDE_DIRS}  
        ${OptiX_INCLUDE}  
        ${OptiXRap_INCLUDE_DIRS}  
        ${ThrustRap_INCLUDE_DIRS}
@@ -49,7 +49,7 @@ if(EXISTS $ENV{OPTIX_SDK_DIR}/CMake AND WITH_OPTIX)
     )
     set(WITH_OPTIX_DEFINITIONS
        ${CUDA_DEFINITIONS} 
-       ${CUDAWrap_DEFINITIONS}
+       ${CUDARap_DEFINITIONS}
        ${OptiX_DEFINITIONS} 
        ${OptiXRap_DEFINITIONS} 
        ${ThrustRap_DEFINITIONS}
@@ -58,7 +58,7 @@ if(EXISTS $ENV{OPTIX_SDK_DIR}/CMake AND WITH_OPTIX)
     )
     set(WITH_OPTIX_LIBRARIES
       ${CUDA_LIBRARIES}
-      ${CUDAWrap_LIBRARIES}
+      ${CUDARap_LIBRARIES}
       optix
       optixu
       ${OptiXRap_LIBRARIES}
@@ -115,28 +115,28 @@ set(BASE_DEFINITIONS
 ########### GEOMETRY #####
 
 find_package(Assimp REQUIRED)
-find_package(AssimpWrap REQUIRED)
+find_package(AssimpRap REQUIRED)
 find_package(OpenMesh REQUIRED)
 find_package(OpenMeshRap REQUIRED)
 find_package(GGeo REQUIRED)
 
 set(GEOMETRY_INCLUDES
    ${Assimp_INCLUDE_DIRS}  
-   ${AssimpWrap_INCLUDE_DIRS}  
+   ${AssimpRap_INCLUDE_DIRS}  
    ${OpenMesh_INCLUDE_DIRS}  
    ${OpenMeshRap_INCLUDE_DIRS}  
    ${GGeo_INCLUDE_DIRS}  
 )
 set(GEOMETRY_LIBRARIES
    ${Assimp_LIBRARIES} 
-   ${AssimpWrap_LIBRARIES} 
+   ${AssimpRap_LIBRARIES} 
    ${OpenMesh_LIBRARIES} 
    ${OpenMeshRap_LIBRARIES} 
    ${GGeo_LIBRARIES} 
 )
 set(GEOMETRY_DEFINITIONS
    ${Assimp_DEFINITIONS}  
-   ${AssimpWrap_DEFINITIONS}  
+   ${AssimpRap_DEFINITIONS}  
    ${OpenMesh_DEFINITIONS}  
    ${OpenMeshRap_DEFINITIONS}  
    ${GGeo_DEFINITIONS}  
@@ -247,4 +247,4 @@ install(TARGETS ${name}    DESTINATION bin)
 install(FILES ${hdrs}   DESTINATION include/${name})
 
 
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)

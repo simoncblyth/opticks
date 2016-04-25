@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
-set(name AssimpWrap)
+set(name AssimpRap)
 project(${name})
 
 set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} 
@@ -74,6 +74,6 @@ target_link_libraries(${name} ${LIBRARIES})
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})
 
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)
 
 

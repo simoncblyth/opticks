@@ -20,7 +20,7 @@ find_package(OpticksCore REQUIRED)
 find_package(GGeo  REQUIRED)
 find_package(NPY REQUIRED)
 find_package(OptiXRap REQUIRED)
-find_package(CUDAWrap REQUIRED)
+find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
 # NB no OpenGL/GLEW/GLFW 
@@ -38,7 +38,7 @@ include_directories(
    ${CUDA_INCLUDE_DIRS}
    ${OptiX_INCLUDE} 
    ${OptiXRap_INCLUDE_DIRS}  
-   ${CUDAWrap_INCLUDE_DIRS} 
+   ${CUDARap_INCLUDE_DIRS} 
    ${ThrustRap_INCLUDE_DIRS}
 )
 
@@ -52,7 +52,7 @@ add_definitions(
    ${CUDA_DEFINITIONS} 
    ${OptiX_DEFINITIONS} 
    ${OptiXRap_DEFINITIONS} 
-   ${CUDAWrap_DEFINITIONS}
+   ${CUDARap_DEFINITIONS}
    ${ThrustRap_DEFINITIONS}
 
     -DVERBOSE 
@@ -72,7 +72,7 @@ set(LIBRARIES
    ${GGeo_LIBRARIES}
    ${CUDA_LIBRARIES}
    ${OptiXRap_LIBRARIES}
-   ${CUDAWrap_LIBRARIES}
+   ${CUDARap_LIBRARIES}
    ${ThrustRap_LIBRARIES}
 
    ssl
@@ -103,5 +103,5 @@ SET(hdrs
 
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs}   DESTINATION include/${name})
-add_subdirectory(tests)
+add_subdirectory(tests EXCLUDE_FROM_ALL)
 

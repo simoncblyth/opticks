@@ -27,9 +27,12 @@ OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)
 
 set(OPTICKS_HOME   "$ENV{ENV_HOME}")
-set(AssimpWrap_SOURCE_DIR  "${OPTICKS_HOME}/graphics/assimpwrap")
+
+# TODO: suspect the _SOURCE_DIR might be auto set ? investigate
+#
+set(AssimpRap_SOURCE_DIR   "${OPTICKS_HOME}/graphics/assimprap")
 set(Bregex_SOURCE_DIR      "${OPTICKS_HOME}/boost/bregex")
-set(CUDAWrap_SOURCE_DIR    "${OPTICKS_HOME}/cuda/cudawrap")
+set(CUDARap_SOURCE_DIR     "${OPTICKS_HOME}/cuda/cudarap")
 set(Cfg_SOURCE_DIR         "${OPTICKS_HOME}/boost/bpo/bcfg")
 set(GGeo_SOURCE_DIR        "${OPTICKS_HOME}/optix/ggeo")
 set(NPY_SOURCE_DIR         "${OPTICKS_HOME}/numerics/npy")
