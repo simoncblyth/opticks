@@ -11,6 +11,18 @@ BOOST
 * http://www.boost.org/
 * http://www.boost.org/users/history/
 
+
+FindBoost.cmake
+----------------
+
+::
+
+    simon:defaults blyth$ mdfind FindBoost.cmake
+    /Users/blyth/env/cmake/Modules/FindBoost.cmake
+    /opt/local/share/cmake-3.4/Modules/FindBoost.cmake
+    /usr/local/env/graphics/oglplus/oglplus-0.59.0/config/FindBoost.cmake
+
+
 installed versions
 -------------------
    

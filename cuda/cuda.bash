@@ -33,6 +33,33 @@ cuda-gdb
 Debugging GPGPU code using cuda-gdb is no longer supported on the Mac platform.
 
 
+
+FindCUDA.cmake
+---------------
+
+* http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
+
+::
+
+    simon:cudarap blyth$ mdfind -name FindCUDA.cmake
+
+    /Developer/OptiX_301/SDK/CMake/FindCUDA.cmake
+    /usr/local/env/cuda/OptiX_370b2_sdk/CMake/FindCUDA.cmake
+    /Developer/OptiX_370b2/SDK/CMake/FindCUDA.cmake
+    /Developer/OptiX_380/SDK/CMake/FindCUDA.cmake
+    /usr/local/env/cuda/OptiX_380_sdk/CMake/FindCUDA.cmake
+
+    /opt/local/share/cmake-3.4/Modules/FindCUDA.cmake
+
+    /usr/local/env/graphics/hrt/cmake/Modules/FindCUDA.cmake
+    /usr/local/env/graphics/photonmap/CMake/FindCUDA.cmake
+    /usr/local/env/optix/macrosim/macrosim_tracer/CMake/FindCUDA.cmake
+
+
+
+
+
+
 Using CUDA GPU from Console Mode on Macbook Pro
 -------------------------------------------------
 

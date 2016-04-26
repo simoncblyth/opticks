@@ -2,15 +2,10 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 set(name GGeo)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
-          ) 
-
-
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
 find_package(BRegex REQUIRED)
 find_package(BCfg REQUIRED)
@@ -20,7 +15,7 @@ find_package(OpticksCore REQUIRED)
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
-   ${Boost_INCLUDE_DIRS}
+   ${OpticksBoost_INCLUDE_DIRS}
    ${GLM_INCLUDE_DIRS} 
 
    ${BRegex_INCLUDE_DIRS} 
@@ -30,7 +25,7 @@ set(INCLUDE_DIRS
 )
 
 set(LIBRARIES
-   ${Boost_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
    ${BRegex_LIBRARIES}
    ${BCfg_LIBRARIES}
    ${NPY_LIBRARIES}
@@ -38,7 +33,7 @@ set(LIBRARIES
 )
 
 set(DEFINITIONS
-   ${Boost_DEFINITIONS} 
+   ${OpticksBoost_DEFINITIONS} 
    ${BRegex_DEFINITIONS} 
    ${BCfg_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS} 

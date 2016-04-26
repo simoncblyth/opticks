@@ -2,26 +2,19 @@ cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 set(name ThrustRap)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
-          ) 
-
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-# http://www.cmake.org/cmake/help/v3.0/module/FindCUDA.html
+# see cuda-/FindCuda.cmake
 find_package(CUDA 2.3 REQUIRED)
-
-#message("CMAKE_CXX_COMPILER_ID:" ${CMAKE_CXX_COMPILER_ID})
-
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(CUDARap  REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${Boost_INCLUDE_DIRS} 
+    ${OpticksBoost_INCLUDE_DIRS} 
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS}
@@ -29,12 +22,12 @@ include_directories(
 )
 
 add_definitions(
-    ${Boost_DEFINITIONS}
+    ${OpticksBoost_DEFINITIONS}
     ${CUDARap_DEFINITIONS}
 )
 
 set(LIBRARIES
-      ${Boost_LIBRARIES}
+      ${OpticksBoost_LIBRARIES}
       ${NPY_LIBRARIES}
       ${CUDARap_LIBRARIES}
 )

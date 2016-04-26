@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(Opticks)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
-                      "$ENV{OPTIX_SDK_DIR}/CMake"
-          ) 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules") 
 
 set(SUPERBUILD ON)
 

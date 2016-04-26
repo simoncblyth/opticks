@@ -2,14 +2,10 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OpenMeshRap)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
-          ) 
-
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(GLM    REQUIRED)
 find_package(NPY REQUIRED)
 find_package(GGeo REQUIRED)
@@ -19,7 +15,7 @@ find_package(OpenMesh REQUIRED)
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
-   ${Boost_INCLUDE_DIRS} 
+   ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS} 
    ${OpticksCore_INCLUDE_DIRS} 
@@ -33,7 +29,7 @@ add_definitions(
    ${NPY_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
    ${GGeo_DEFINITIONS}
-   ${Boost_DEFINITIONS}
+   ${OpticksBoost_DEFINITIONS}
 )
 
 set(LIBRARIES
@@ -42,7 +38,7 @@ set(LIBRARIES
    ${NPY_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
-   ${Boost_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
 )
 
 add_library( ${name}  SHARED

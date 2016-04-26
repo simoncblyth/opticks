@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 set(name CUDARap)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
-          ) 
-
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 

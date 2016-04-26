@@ -3,7 +3,6 @@ set(name GGeoView)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
                       "$ENV{OPTIX_SDK_DIR}/CMake"
           ) 
 
@@ -79,7 +78,7 @@ endif()
 
 ########### BASE #####
 
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(GLM  REQUIRED)
 
 find_package(BCfg REQUIRED)
@@ -88,7 +87,7 @@ find_package(NPY   REQUIRED)
 find_package(OpticksCore REQUIRED)
 
 set(BASE_INCLUDES
-   ${Boost_INCLUDE_DIRS} 
+   ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${BCfg_INCLUDE_DIRS} 
    ${BRegex_INCLUDE_DIRS}
@@ -96,7 +95,7 @@ set(BASE_INCLUDES
    ${OpticksCore_INCLUDE_DIRS} 
 )
 set(BASE_LIBRARIES
-   ${Boost_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
    ${BCfg_LIBRARIES}
    ${BRegex_LIBRARIES}
@@ -104,7 +103,7 @@ set(BASE_LIBRARIES
    ${OpticksCore_LIBRARIES}
 )
 set(BASE_DEFINITIONS
-   ${Boost_DEFINITIONS} 
+   ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${BCfg_DEFINITIONS}
    ${BRegex_DEFINITIONS}

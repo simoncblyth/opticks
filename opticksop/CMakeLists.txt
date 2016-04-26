@@ -3,7 +3,6 @@ set(name OpticksOp)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
                       "$ENV{OPTIX_SDK_DIR}/CMake"
           ) 
 
@@ -12,7 +11,7 @@ include(EnvCompilationFlags)
 
 find_package(OptiX REQUIRED)
 find_package(CUDA 2.3 REQUIRED)
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
 
 find_package(BCfg REQUIRED)
@@ -29,7 +28,7 @@ find_package(ThrustRap REQUIRED)
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
-   ${Boost_INCLUDE_DIRS} 
+   ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
    ${BCfg_INCLUDE_DIRS}  
@@ -43,7 +42,7 @@ include_directories(
 )
 
 add_definitions( 
-   ${Boost_DEFINITIONS} 
+   ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
    ${BCfg_DEFINITIONS} 
@@ -64,7 +63,7 @@ set(LIBRARIES
     optix
     optixu 
 
-   ${Boost_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
    ${BCfg_LIBRARIES}

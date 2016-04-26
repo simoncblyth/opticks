@@ -4,7 +4,6 @@ project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
                       "$ENV{OPTIX_SDK_DIR}/CMake"
-                      "$ENV{ENV_HOME}/cmake/Modules"
           ) 
 
 
@@ -26,7 +25,7 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 
 include(EnvCompilationFlags)   
 
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
@@ -44,7 +43,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
-    ${Boost_INCLUDE_DIRS} 
+    ${OpticksBoost_INCLUDE_DIRS} 
 
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
@@ -61,7 +60,7 @@ include_directories(
 
 
 set(LIBRARIES
-      ${Boost_LIBRARIES}
+      ${OpticksBoost_LIBRARIES}
 
       ${Assimp_LIBRARIES}
       ${AssimpRap_LIBRARIES}
@@ -76,7 +75,7 @@ set(LIBRARIES
 )
 
 add_definitions(
-    ${Boost_DEFINITIONS}
+    ${OpticksBoost_DEFINITIONS}
     ${OpticksCore_DEFINITIONS} 
     ${Assimp_DEFINITIONS} 
     ${AssimpRap_DEFINITIONS} 

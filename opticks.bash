@@ -35,6 +35,19 @@ Only needed whilst making sweeping changes::
 
     simon:~ blyth$ opticks- ; opticks--
 
+
+
+Locating Boost, CUDA, OptiX
+------------------------------
+
+CMake itself provides::
+
+   /opt/local/share/cmake-3.4/Modules/FindCUDA.cmake 
+   /opt/local/share/cmake-3.4/Modules/FindBoost.cmake
+
+
+
+
 TODO
 -----
 
@@ -133,6 +146,8 @@ takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
     === opticks-externals-install : DONE Tue Apr 26 15:41:22 CST 2016
     ...
     === opticks-- : DONE Tue Apr 26 15:45:59 CST 2016
+
+
 
 
 Externals 

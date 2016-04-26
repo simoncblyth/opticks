@@ -2,17 +2,13 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OGLRap)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
-          ) 
-
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
-find_package(Boost REQUIRED) 
+find_package(OpticksBoost REQUIRED) 
 find_package(BCfg REQUIRED) 
 find_package(OpticksCore REQUIRED)
 
@@ -32,7 +28,7 @@ set(INCLUDE_DIRS
    ${GLFW_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
-   ${Boost_INCLUDE_DIRS} 
+   ${OpticksBoost_INCLUDE_DIRS} 
    ${BCfg_INCLUDE_DIRS}
    ${OpticksCore_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
@@ -54,7 +50,7 @@ set(DEFINITIONS
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
-   ${Boost_DEFINITIONS}
+   ${OpticksBoost_DEFINITIONS}
    ${BRegex_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
    -DGUI_
@@ -65,7 +61,7 @@ set(LIBRARIES
    ${GLFW_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
-   ${Boost_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
    ${BRegex_LIBRARIES}
    ${BCfg_LIBRARIES}
    ${NPY_LIBRARIES}

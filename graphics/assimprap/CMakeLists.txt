@@ -2,14 +2,10 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 set(name AssimpRap)
 project(${name})
 
-set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} 
-    "$ENV{ENV_HOME}/cmake/Modules"
-) 
-
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(GLM REQUIRED)
@@ -19,7 +15,7 @@ find_package(OpticksCore REQUIRED)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 
-    ${Boost_INCLUDE_DIRS}  
+    ${OpticksBoost_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
     ${GLM_INCLUDE_DIRS}  
@@ -28,7 +24,7 @@ include_directories(
 )
 
 add_definitions(
-    ${Boost_DEFINITIONS}  
+    ${OpticksBoost_DEFINITIONS}  
     ${Assimp_DEFINITIONS} 
     ${GGeo_DEFINITIONS} 
     ${GLM_DEFINITIONS} 
@@ -37,7 +33,7 @@ add_definitions(
 )
 
 set(LIBRARIES
-    ${Boost_LIBRARIES} 
+    ${OpticksBoost_LIBRARIES} 
     ${Assimp_LIBRARIES} 
     ${GGeo_LIBRARIES} 
     ${NPY_LIBRARIES} 
