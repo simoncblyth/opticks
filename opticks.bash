@@ -53,14 +53,16 @@ Tis self contained so copy into cmake/Modules
 to avoid having to set CMAKE_MODULE_PATH to find it.  
 This provides cache variable OptiX_INSTALL_DIR.
 
+
+
 TODO
 -----
-
 
 * find out what depends on ssl and crypt : maybe in NPY_LIBRARIES 
 * tidy up optix optixu FindOptiX from the SDK doesnt set OPTIX_LIBRARIES
 
 * get the CTest tests to pass 
+
 
 * incorporate cfg4- in superbuild with G4 checking
 
@@ -74,6 +76,15 @@ TODO
 
 * investigate CPack as way of distributing binaries
 
+
+
+TODO: are the CUDA flags being used
+------------------------------------
+
+::
+
+    simon:env blyth$ optix-cuda-nvcc-flags
+    -ccbin /usr/bin/clang --use_fast_math
 
 
 TODO: make envvar usage optional
@@ -91,20 +102,19 @@ sets up envvars::
    OPTICKS_MESHFIX
    OPTICKS_MESHFIX_CFG
 
+TODO:cleaner curand state
+---------------------------
 
-KLUDGED: assimp RPATH problem again
---------------------------------------
+File level interaction between optixrap- and cudarap- 
+in order to persist the state currently communicates via envvar ?
 
-::
+:: 
 
-    simon:~ blyth$ /usr/local/opticks/bin/GGeoView /tmp/g4_00.dae
-    dyld: Library not loaded: /usr/local/opticks/externals/assimp/assimp//libassimp.3.dylib
-      Referenced from: /usr/local/opticks/bin/GGeoView
-      Reason: image not found
-    Trace/BPT trap: 5
-    simon:~ blyth$ 
-
-Handled with assimp-rpath-kludge that plants a symbolic link.
+    simon:~ blyth$ l /usr/local/env/graphics/ggeoview/cache/rng
+    total 344640
+    -rw-r--r--  1 blyth  staff   44000000 Dec 29 20:33 cuRANDWrapper_1000000_0_0.bin
+    -rw-r--r--  1 blyth  staff     450560 May 17  2015 cuRANDWrapper_10240_0_0.bin
+    -rw-r--r--  1 blyth  staff  132000000 May 17  2015 cuRANDWrapper_3000000_0_0.bin
 
 
 EOU
@@ -136,7 +146,7 @@ Full Building Example
 ------------------------
 
 Assuming Boost, CUDA (includes Thrust) and OptiX are already installed 
-the getting, building and installation of all other externals 
+the getting, building and installation of the other externals 
 takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 
     simon:env blyth$ opticks-fullclean | sh 
@@ -149,8 +159,6 @@ takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
     === opticks-- : DONE Tue Apr 26 15:45:59 CST 2016
 
 
-
-
 Externals 
 -----------
 
@@ -160,12 +168,15 @@ Infrastructure
 The pre-requisite Boost components listed in the table need to be installed.
 These are widely available via package managers. Use the standard one for 
 your system: yum on Redhat, macports on Mac, nsys2 on Windows. 
+The FindBoost.cmake provided with cmake is used to locate the installation.
 
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        notes
 =====================  ===============  =============   ==============================================================================
 boost                  boost-           Boost           components: system thread program_options log log_setup filesystem regex 
 =====================  ===============  =============   ==============================================================================
+
+
 
 Geometry/OpenGL related 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,6 +210,7 @@ To download OptiX you need to join the NVIDIA Developer Program.
 Use the links in the table to register, it is free but may take a few days to be approved.
 Follow the NVIDIA instructions to download and install CUDA and OptiX. 
 Thrust is installed together with CUDA. 
+The cmake provided FindCUDA.cmake is used to locate the installation.
 
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        notes

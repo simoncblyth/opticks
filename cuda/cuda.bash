@@ -33,7 +33,6 @@ cuda-gdb
 Debugging GPGPU code using cuda-gdb is no longer supported on the Mac platform.
 
 
-
 FindCUDA.cmake
 ---------------
 
