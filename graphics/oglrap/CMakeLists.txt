@@ -69,70 +69,66 @@ set(LIBRARIES
    ${ImGui_LIBRARIES}
 )
 
-#message( "CMAKE_CURRENT_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} ")
-#message( "OpticksCore_LIBRARIES ${OpticksCore_LIBRARIES} ")
-#message( "GGeo_LIBRARIES ${GGeo_LIBRARIES} ")
-#message( "BRegex_LIBRARIES ${BRegex_LIBRARIES} ")
-#message( "BCfg_LIBRARIES ${BCfg_LIBRARIES} ")
-#message( "NPY_LIBRARIES ${NPY_LIBRARIES} ")
-
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
+
 ## NB only classes needing OpenGL should be here 
-add_library( ${name}  SHARED
-                Texture.cc
-                Frame.cc
-                Interactor.cc
-                InteractorCfg.cc
-                Scene.cc
-                SceneCfg.cc
-                RendererBase.cc
-                Renderer.cc
-                RendererCfg.cc
-                Device.cc
-                Rdr.cc
+set(SOURCES
+    Texture.cc
+    Frame.cc
+    Interactor.cc
+    InteractorCfg.cc
+    Scene.cc
+    SceneCfg.cc
+    RendererBase.cc
+    Renderer.cc
+    RendererCfg.cc
+    Device.cc
+    Rdr.cc
 
-                StateGUI.cc
-                Demo.cc
-                Prog.cc
-                Shdr.cc
-                Touchable.cc
-                GUI.cc
-                Photons.cc
-                Colors.cc
-                DynamicDefine.cc
+    StateGUI.cc
+    Demo.cc
+    Prog.cc
+    Shdr.cc
+    Touchable.cc
+    GUI.cc
+    Photons.cc
+    Colors.cc
+    DynamicDefine.cc
 )
 
-SET(hdrs 
-        Texture.hh
-        Frame.hh
-        Interactor.hh
-        InteractorCfg.hh
-        Scene.hh
-        SceneCfg.hh
-        RendererBase.hh
-        Device.hh
-        Rdr.hh
-        Renderer.hh
-        RendererCfg.hh
+SET(HEADERS
+    Texture.hh
+    Frame.hh
+    Interactor.hh
+    InteractorCfg.hh
+    Scene.hh
+    SceneCfg.hh
+    RendererBase.hh
+    Renderer.hh
+    RendererCfg.hh
+    Device.hh
+    Rdr.hh
 
-        StateGUI.hh
-        Demo.hh
-        gleq.h
-        Prog.hh
-        Shdr.hh
-        Touchable.hh
-        GUI.hh
-        Photons.hh
-        Colors.hh
-        DynamicDefine.hh
+    StateGUI.hh
+    Demo.hh
+    Prog.hh
+    Shdr.hh
+    Touchable.hh
+    GUI.hh
+    Photons.hh
+    Colors.hh
+    DynamicDefine.hh
+
+    gleq.h
 )
 
+add_library( ${name}  SHARED ${SOURCES})
 target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
+install(FILES ${HEADERS} DESTINATION include/${name})
 install(DIRECTORY gl/ DESTINATION gl)
 
 add_subdirectory(tests EXCLUDE_FROM_ALL)

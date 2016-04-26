@@ -3,11 +3,6 @@
 #     location beneath which ALL opticks packages are installed
 #     and referenced from the FindX.cmake for cross usage
 #
-# OPTICKS_EXTERNAL_PREFIX 
-#     location beneath which some opticks external packages
-#     are installed, system type packages may be elsewhere
-#     as specified by the FindX.cmake
-#
 # The distinction between what to consider external/internal
 # (assuming you have the source) boils down to how often you want 
 # to recompile. Once a package has solidified promoting it to be 
@@ -17,16 +12,13 @@
 message("${name}")
 
 set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
-
-set(OPTICKS_EXTERNAL_PREFIX "$ENV{LOCAL_BASE}/env")
+set(OPTICKS_HOME   "$ENV{ENV_HOME}")
 
 set(BUILD_SHARED_LIBS ON)
 
 OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)
-OPTION(GLFW_VERSION    "GLFW Version" 3.1.1)
 
-set(OPTICKS_HOME   "$ENV{ENV_HOME}")
 
 # The _SOURCE_DIR are auto set for the superbuild
 # but presumably not for individual buils. 
@@ -62,7 +54,7 @@ if (APPLE)
    # add the automatically determined parts of the RPATH
    # which point to directories outside the build tree to the install RPATH
    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")  
    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
    # http://www.kitware.com/blog/home/post/510
    # enable @rpath in the install name for any shared library being built

@@ -2,12 +2,11 @@ cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 set(name OptiXRap)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{OPTIX_SDK_DIR}/CMake"
-          ) 
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake") 
 
 include(EnvBuildOptions)
+
+find_package(OptiX REQUIRED)
 
 ########################## from OPTIX_SDK_DIR/CMake
 include(Macros)
@@ -19,7 +18,8 @@ if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
 
-find_package(OptiX REQUIRED)
+########################
+
 find_package(CUDA 2.3 REQUIRED)
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 

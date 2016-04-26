@@ -43,9 +43,7 @@ set(LIBRARIES
     crypto
 )
 
-# TODO: tidy up ssl and crypto : maybe in NPY_LIBRARIES 
-
-add_library(${name} SHARED 
+set(SOURCES
     AssimpGeometry.cc
     AssimpCommon.cc
     AssimpNode.cc
@@ -55,7 +53,7 @@ add_library(${name} SHARED
     AssimpSelection.cc
 )
 
-set(hdrs
+set(HEADERS
     AssimpCommon.hh
     AssimpGGeo.hh
     AssimpGeometry.hh
@@ -65,11 +63,9 @@ set(hdrs
     AssimpTree.hh
 )
 
+add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
-
 install(TARGETS ${name} LIBRARY DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
-
+install(FILES ${HEADERS} DESTINATION include/${name})
 add_subdirectory(tests EXCLUDE_FROM_ALL)
-
 

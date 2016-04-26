@@ -2,13 +2,11 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name GGeoView)
 project(${name})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{OPTIX_SDK_DIR}/CMake"
-          ) 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake") 
 
 include(EnvBuildOptions)
 
-#####################  for OptiX
+#####################  from OptiX
 
 include(Macros)
 include(CompilerInfo)

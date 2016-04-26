@@ -40,21 +40,22 @@ Only needed whilst making sweeping changes::
 Locating Boost, CUDA, OptiX
 ------------------------------
 
-CMake itself provides::
+CMake itself provides cross platform machinery to find Boost and CUDA::
 
-   /opt/local/share/cmake-3.4/Modules/FindCUDA.cmake 
    /opt/local/share/cmake-3.4/Modules/FindBoost.cmake
+   /opt/local/share/cmake-3.4/Modules/FindCUDA.cmake 
 
+OptiX provides eg::
 
+   /Developer/OptiX_380/SDK/CMake/FindOptiX.cmake
 
+Tis self contained so copy into cmake/Modules
+to avoid having to set CMAKE_MODULE_PATH to find it.  
+This provides cache variable OptiX_INSTALL_DIR.
 
 TODO
 -----
 
-* fix OGLRap new ImGui::Text warnings warning: format string is not a string literal (potentially insecure) 
-* configuration of locations for : Boost, CUDA, OptiX, Thrust 
-
-  * assimp has Boost finder that doesnt work 
 
 * find out what depends on ssl and crypt : maybe in NPY_LIBRARIES 
 * tidy up optix optixu FindOptiX from the SDK doesnt set OPTIX_LIBRARIES
@@ -262,7 +263,7 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
 
-opticks-optix-dir(){ echo /Developer/OptiX ; }
+opticks-optix-install-dir(){ echo /Developer/OptiX ; }
 
 opticks-cd(){   cd $(opticks-dir); }
 opticks-scd(){  cd $(opticks-sdir); }
@@ -285,7 +286,7 @@ opticks-cmake(){
        -DWITH_OPTIX:BOOL=ON \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-idir) \
-       -DOptiX_INSTALL_DIR=$(opticks-optix-dir) \
+       -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        $(opticks-sdir)
 
    cd $iwd

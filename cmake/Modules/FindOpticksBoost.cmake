@@ -5,7 +5,7 @@ if(Boost_FOUND)
 set(OpticksBoost_FOUND ON)
 set(OpticksBoost_LIBRARIES    ${Boost_LIBRARIES})
 set(OpticksBoost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-set(OpticksBoost_DEFINITIONS  ${Boost_DEFINITIONS} BOOST_LOG_DYN_LINK)
+set(OpticksBoost_DEFINITIONS  ${Boost_DEFINITIONS} -DBOOST_LOG_DYN_LINK)
 endif(Boost_FOUND)
 
 

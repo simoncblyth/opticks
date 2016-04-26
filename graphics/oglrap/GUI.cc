@@ -421,19 +421,19 @@ void GUI::show(bool* opened)
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Help"))
     {
-        ImGui::Text(m_help.c_str());
+        ImGui::Text("%s",m_help.c_str());
     }
 
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Params"))
     {
-        for(unsigned int i=0 ; i < m_params.size() ; i++) ImGui::Text(m_params[i].c_str());
+        for(unsigned int i=0 ; i < m_params.size() ; i++) ImGui::Text("%s",m_params[i].c_str());
     }
 
     ImGui::Spacing();
     if (ImGui::CollapsingHeader("Stats"))
     {
-        for(unsigned int i=0 ; i < m_stats.size() ; i++) ImGui::Text(m_stats[i].c_str());
+        for(unsigned int i=0 ; i < m_stats.size() ; i++) ImGui::Text("%s",m_stats[i].c_str());
     }
 
     ImGui::Spacing();
@@ -605,7 +605,7 @@ void GUI::gui_item_index(const char* type, std::vector<std::string>& labels, std
            unsigned int green = (code & 0x00FF00) >>  8 ; 
            unsigned int blue  = (code & 0x0000FF)  ;
 
-           ImGui::TextColored(ImVec4(red/256.,green/256.,blue/256.,1.0f), labels[i].c_str() );
+           ImGui::TextColored(ImVec4(red/256.,green/256.,blue/256.,1.0f), "%s", labels[i].c_str() );
        }   
     }   
 #endif

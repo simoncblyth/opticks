@@ -43,119 +43,122 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 
-add_library(${name} SHARED 
-                GProperty.cc
-                GDomain.cc
-                GAry.cc
-                GPropertyMap.cc
-                GMaterial.cc
-                GSource.cc
-                GSkinSurface.cc
-                GBorderSurface.cc
-                GOpticalSurface.cc
-                GGeoLib.cc
-                GMaterialLib.cc
-                GSurfaceLib.cc
-                GBndLib.cc
-                GScintillatorLib.cc
-                GSourceLib.cc
-                GPropertyLib.cc
-                GFlags.cc
-                GSolid.cc
-                GMesh.cc
-                GMergedMesh.cc
-                GGeo.cc
-                GGeoCfg.cc
-                GVector.cc
-                GMatrix.cc
-                GIds.cc
-                GTransforms.cc
-                GNode.cc
-                GBuffer.cc
-                GDrawable.cc
-                GArray.cc
-                GCache.cc
-                GItemIndex.cc
+set(SOURCES
 
-                GColors.cc
-                GColorMap.cc
-                GTraverse.cc
-                GColorizer.cc
-                GTreeCheck.cc
-                GTreePresent.cc
-                GBBoxMesh.cc
-                GItemList.cc
-                GAttrSeq.cc
-                GMeshFixer.cc
-                GParts.cc
-                GCSG.cc
-                GPmt.cc
-                GMaker.cc
-                GCIE.cc
-                GGeoTest.cc
-                GGeoTestConfig.cc
+    GProperty.cc
+    GDomain.cc
+    GAry.cc
+    GPropertyMap.cc
+    GMaterial.cc
+    GSource.cc
+    GSkinSurface.cc
+    GBorderSurface.cc
+    GOpticalSurface.cc
+    GGeoLib.cc
+    GMaterialLib.cc
+    GSurfaceLib.cc
+    GBndLib.cc
+    GScintillatorLib.cc
+    GSourceLib.cc
+    GPropertyLib.cc
+    GFlags.cc
+    GSolid.cc
+    GMesh.cc
+    GMergedMesh.cc
+    GGeo.cc
+    GGeoCfg.cc
+    GVector.cc
+    GMatrix.cc
+    GIds.cc
+    GTransforms.cc
+    GNode.cc
+    GBuffer.cc
+    GDrawable.cc
+    GArray.cc
+    GCache.cc
+    GItemIndex.cc
+
+    GColors.cc
+    GColorMap.cc
+    GTraverse.cc
+    GColorizer.cc
+    GTreeCheck.cc
+    GTreePresent.cc
+    GBBoxMesh.cc
+    GItemList.cc
+    GAttrSeq.cc
+    GMeshFixer.cc
+    GParts.cc
+    GCSG.cc
+    GPmt.cc
+    GMaker.cc
+    GCIE.cc
+    GGeoTest.cc
+    GGeoTestConfig.cc
+
 )
 
 
+SET(HEADERS
 
-SET(hdrs 
-GGeo.hh
-GGeoCfg.hh
-GMaterial.hh
-GSource.hh
-GMesh.hh
-GMergedMesh.hh
-GProperty.hh
-GDomain.hh
-GAry.hh
-GPropertyMap.hh
-GSolid.hh
-GSkinSurface.hh
-GBorderSurface.hh
-GOpticalSurface.hh
-GGeoLib.hh
-GScintillatorLib.hh
-GSourceLib.hh
-GPropertyLib.hh
-GBndLib.hh
-GMaterialLib.hh
-GSurfaceLib.hh
-GFlags.hh
-GVector.hh
-GMatrix.hh
-GIds.hh
-GTransforms.hh
-GNode.hh
-GBuffer.hh
-GDrawable.hh
-GArray.hh
-GCache.hh
-GItemIndex.hh
-GColors.hh
-GColorMap.hh
-GTraverse.hh
-GColorizer.hh
-GTreeCheck.hh
-GTreePresent.hh
-GBBoxMesh.hh
-GItemList.hh
-GAttrSeq.hh
-GMeshFixer.hh
-GParts.hh
-GCSG.hh
-GPmt.hh
-GMaker.hh
-GCIE.hh
-GGeoTest.hh
-GGeoTestConfig.hh
+    GGeo.hh
+    GGeoCfg.hh
+    GMaterial.hh
+    GSource.hh
+    GMesh.hh
+    GMergedMesh.hh
+    GProperty.hh
+    GDomain.hh
+    GAry.hh
+    GPropertyMap.hh
+    GSolid.hh
+    GSkinSurface.hh
+    GBorderSurface.hh
+    GOpticalSurface.hh
+    GGeoLib.hh
+    GScintillatorLib.hh
+    GSourceLib.hh
+    GPropertyLib.hh
+    GBndLib.hh
+    GMaterialLib.hh
+    GSurfaceLib.hh
+    GFlags.hh
+    GVector.hh
+    GMatrix.hh
+    GIds.hh
+    GTransforms.hh
+    GNode.hh
+    GBuffer.hh
+    GDrawable.hh
+    GArray.hh
+    GCache.hh
+    GItemIndex.hh
+    GColors.hh
+    GColorMap.hh
+    GTraverse.hh
+    GColorizer.hh
+    GTreeCheck.hh
+    GTreePresent.hh
+    GBBoxMesh.hh
+    GItemList.hh
+    GAttrSeq.hh
+    GMeshFixer.hh
+    GParts.hh
+    GCSG.hh
+    GPmt.hh
+    GMaker.hh
+    GCIE.hh
+    GGeoTest.hh
+    GGeoTestConfig.hh
+
 )
 
 
-#message("GGEO:LIBRARIES:${LIBRARIES}")
+add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
+install(FILES ${HEADERS} DESTINATION include/${name})
 
 add_subdirectory(tests EXCLUDE_FROM_ALL)
 

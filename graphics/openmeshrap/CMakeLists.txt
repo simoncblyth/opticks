@@ -41,22 +41,20 @@ set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
 )
 
-add_library( ${name}  SHARED
+set(SOURCES
      MWrap.cc
      MTool.cc
      MFixer.cc
-) 
-
-set(hdrs
+)
+set(HEADERS
      MWrap.hh
      MTool.hh
      MFixer.hh
 )
 
+add_library( ${name}  SHARED ${SOURCES})
 target_link_libraries( ${name}  ${LIBRARIES})
-
 install(TARGETS ${name} LIBRARY DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
-
+install(FILES ${HEADERS} DESTINATION include/${name})
 add_subdirectory(tests EXCLUDE_FROM_ALL)
 

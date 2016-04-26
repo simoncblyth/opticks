@@ -38,6 +38,23 @@ Approximate Global Illumination using Voxel Cone Tracing, VXGI
 See vxgi-
 
 
+FindOptiX.cmake
+----------------
+
+::
+
+    simon:~ blyth$ mdfind -name FindOptiX.cmake
+    /Developer/OptiX_301/SDK/CMake/FindOptiX.cmake
+    /Developer/OptiX_370b2/SDK/CMake/FindOptiX.cmake
+    /usr/local/env/cuda/OptiX_370b2_sdk/CMake/FindOptiX.cmake
+    /usr/local/env/cuda/OptiX_380_sdk/CMake/FindOptiX.cmake
+    /Developer/OptiX_380/SDK/CMake/FindOptiX.cmake
+    /usr/local/env/graphics/hrt/cmake/Modules/FindOptix.cmake
+    /usr/local/env/graphics/photonmap/CMake/FindOptiX.cmake
+    /usr/local/env/optix/macrosim/macrosim_tracer/CMake/FindOptiX.cmake
+
+
+
 OptiX Release Notes regards multi-GPU and SLI
 -----------------------------------------------
 

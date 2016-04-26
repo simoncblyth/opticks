@@ -20,7 +20,7 @@ void StateGUI::gui()
 
     if (ImGui::CollapsingHeader("StateString"))
     {
-        ImGui::Text(m_state->getStateString().c_str());
+        ImGui::Text("%s",m_state->getStateString().c_str());
         if(ImGui::Button("update")) m_state->update();
     }
 

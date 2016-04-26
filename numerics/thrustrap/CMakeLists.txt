@@ -42,7 +42,7 @@ CUDA_ADD_LIBRARY( ${name}
  
 target_link_libraries( ${name} ${LIBRARIES})
 
-SET(hdrs 
+SET(HEADERS
   TBuf.hh
   TBufPair.hh
   TSparse.hh
@@ -51,6 +51,6 @@ SET(hdrs
   iexpand.h 
 )
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
+install(FILES ${HEADERS} DESTINATION include/${name})
 
 add_subdirectory(tests EXCLUDE_FROM_ALL)
