@@ -1,6 +1,4 @@
-# http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
-
-set(ImGui_PREFIX "$ENV{LOCAL_BASE}/env/graphics/gui/imgui.install")
+set(ImGui_PREFIX "${OPTICKS_PREFIX}/externals/imgui/imgui.install")
 
 find_library( ImGui_LIBRARY 
               NAMES ImGui 
@@ -23,8 +21,10 @@ if(APPLE)
                ${IOKit_LIBRARY}
                ${CoreFoundation_LIBRARY} 
                ${CoreVideo_LIBRARY} )
-   message("FindImGUI APPLE")
-else()
+   message("FindImGUI:APPLE")
+endif(APPLE)
+
+if(UNIX AND NOT APPLE)
     find_library( OpenGL_LIBRARY NAMES GL )
 
     set( ImGui_LIBRARIES 
@@ -32,8 +32,9 @@ else()
                ${GLFW_LIBRARIES} 
                ${OpenGL_LIBRARY}
                )
-   message("FindImGUI not-APPLE")
-endif(APPLE)
+
+   message("FindImGUI:UNIX AND NOT APPLE")
+endif(UNIX AND NOT APPLE)
 
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")
 set(ImGui_DEFINITIONS "")

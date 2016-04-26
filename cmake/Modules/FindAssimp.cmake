@@ -1,5 +1,5 @@
 
-set(Assimp_PREFIX "$ENV{LOCAL_BASE}/env/graphics")
+set(Assimp_PREFIX "${OPTICKS_PREFIX}/externals/assimp/assimp")
 
 find_library( Assimp_LIBRARIES 
               NAMES assimp

@@ -2,12 +2,10 @@
 openmesh-src(){      echo graphics/openmesh/openmesh.bash ; }
 openmesh-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmesh-src)} ; }
 openmesh-vi(){       vi $(openmesh-source) ; }
-openmesh-env(){      elocal- ; }
 openmesh-usage(){ cat << EOU
 
 OpenMesh
 ==========
-
 
 cmake::
 
@@ -29,7 +27,6 @@ these vertices must be a boundary halfedge (see OpenMesh::PolyMeshT::is_boundary
 Whenever you modify the topology using low-level topology changing functions, 
 be sure to guarantee this behaviour (see OpenMesh::PolyMeshT::adjust_outgoing_halfedge())
 
-
 Related
 --------
 
@@ -44,12 +41,10 @@ Geometric Tools for Computer Graphics
 
   * p340: connected meshes, an algo to split mesh into connected components 
 
-
 M. Botsch et al. / Geometric Modeling Based on Triangle Meshes
 
 * http://lgg.epfl.ch/publications/2006/botsch_2006_GMT_eg.pdf
 * fig10 is most useful 
-
 
 
 Splitting Mesh into Connected Components
@@ -62,7 +57,6 @@ Usage
 -------
 
 * http://www.hao-li.com/cs599-ss2015/exercises/exercise1.pdf
-
 
 Good Starting points
 ----------------------
@@ -77,22 +71,23 @@ Alternates
 
 * cgal
 * vcg/meshlab
-
 * http://gfx.cs.princeton.edu/proj/trimesh2/
-
-
 
 EOU
 }
 
+openmesh-env(){  elocal- ; opticks- ; }
 openmesh-vers(){ echo 4.1 ; }
 openmesh-name(){ echo OpenMesh-$(openmesh-vers) ; }
 openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(openmesh-name).tar.gz ; }
 
-openmesh-edir(){ echo $(env-home)/graphics/openmesh ; }
-openmesh-dir(){  echo $(local-base)/env/graphics/openmesh/$(openmesh-name); }
-openmesh-bdir(){ echo $(openmesh-dir).build ; }
-openmesh-idir(){ echo $(local-base)/env/graphics/openmesh/$(openmesh-vers); }
+openmesh-edir(){ echo $(opticks-home)/graphics/openmesh ; }
+openmesh-old-base(){ echo $(local-base)/env/graphics/openmesh ; }
+openmesh-base(){ echo $(opticks-prefix)/externals/openmesh ; }
+
+openmesh-dir(){  echo $(openmesh-base)/$(openmesh-name) ; }
+openmesh-idir(){ echo $(openmesh-base)/$(openmesh-vers) ; }
+openmesh-bdir(){ echo $(openmesh-base)/$(openmesh-name).build ; }
 
 openmesh-ecd(){  cd $(openmesh-edir); }
 openmesh-cd(){   cd $(openmesh-dir); }
@@ -105,9 +100,8 @@ openmesh-get(){
    local tgz=$(basename $url)
    local nam=${tgz/.tar.gz}
    [ ! -f "$tgz" ] && curl -L -O $url
-   [ ! -d "$nam" ] && tar zxvf $tgz 
+   [ ! -d "$nam" ] && tar zxf $tgz 
 }
-
 
 openmesh-html(){ open $(openmesh-dir)/Documentation/index.html ; }
 
@@ -116,11 +110,13 @@ openmesh-wipe(){
   rm -rf $bdir 
 
 }
-
 openmesh-cmake(){
   local iwd=$PWD
   local bdir=$(openmesh-bdir)
   mkdir -p $bdir
+
+  [ -f "$bdir/CMakeCache.txt" ] && echo $msg already configured : openmesh-wipe then openmesh-cmake to reconfigure && return 
+
   openmesh-bcd
 
   cmake $(openmesh-dir) \
@@ -138,14 +134,10 @@ openmesh-make(){
   cd $iwd
 }
 
-openmesh-install(){
-  openmesh-make install
-}
-
 openmesh--(){
+  openmesh-get 
   openmesh-cmake
   openmesh-make
-  openmesh-install
+  openmesh-make install
 }
-
 

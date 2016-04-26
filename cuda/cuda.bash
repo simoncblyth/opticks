@@ -13,7 +13,6 @@ See Also
 
 * cudatoolkit-
 
-
 CUDA 7.5 Release Notes
 ------------------------
 
@@ -34,10 +33,6 @@ cuda-gdb
 Debugging GPGPU code using cuda-gdb is no longer supported on the Mac platform.
 
 
-
-
-
-
 Using CUDA GPU from Console Mode on Macbook Pro
 -------------------------------------------------
 
@@ -55,9 +50,6 @@ To login with ">console" mode:
 * logout 
 * enter ">console" in the usename panel, press return : will drop to console login prompt 
 * after running commands, ctrl-D to return to GUI login  
-
-
-
 
 
 CUDA Debugging

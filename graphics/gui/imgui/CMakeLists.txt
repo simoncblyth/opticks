@@ -9,21 +9,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
-set(BUILD_SHARED_LIBS ON)
-
-
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
-
 
 set(LIBRARIES
    ${GLEW_LIBRARIES} 
    ${GLFW_LIBRARIES}
 )
-
-message("GLEW_LIBRARIES:${GLEW_LIBRARIES}")
-message("GLFW_LIBRARIES:${GLFW_LIBRARIES}")
-
 
 if(APPLE)
     message("APPLE")
@@ -53,13 +45,9 @@ if(UNIX AND NOT APPLE)
                )
 endif(UNIX AND NOT APPLE)
 
-
-
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
-
    ${ImGui_SOURCE_DIR}/examples/opengl3_example
-   #${ImGui_SOURCE_DIR}/examples/libs/gl3w
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
 )
@@ -69,39 +57,35 @@ set(DEFINITIONS
    ${GLFW_DEFINITIONS}
 )
 
+set(SOURCES
+   imgui.cpp
+   imgui_draw.cpp
+   imgui_demo.cpp
+   examples/opengl3_example/imgui_impl_glfw_gl3.cpp
+)
 
-
-
-message("INCLUDE_DIRS:${INCLUDE_DIRS}")
+SET(HEADERS
+   imgui.h
+   imconfig.h
+   examples/opengl3_example/imgui_impl_glfw_gl3.h
+)
 
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINTIONS})
-add_library(${name} SHARED 
-imgui.cpp
-examples/opengl3_example/imgui_impl_glfw_gl3.cpp
-#examples/libs/gl3w/GL/gl3w.c
-)
-
-SET(hdrs 
-imgui.h
-imconfig.h
-examples/opengl3_example/imgui_impl_glfw_gl3.h
-)
-
+add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
-install(TARGETS ${name}        DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include)
 
-#install(FILES 
-#examples/libs/gl3w/GL/gl3w.h
-#examples/libs/gl3w/GL/glcorearb.h
-#DESTINATION include/GL) 
+install(TARGETS ${name}  DESTINATION lib)
+install(FILES ${HEADERS} DESTINATION include)
 
 
-add_executable(${name}Example  examples/opengl3_example/main.cpp)
-target_link_libraries(${name}Example ${LIBRARIES} ${name})
-install(TARGETS ${name}Example DESTINATION bin)
+## getting the example to build entails converting from gl3w to glew 
+## thats too much hassle whilst operating in external code
+## TODO: make my own example in OGLRap/tests 
 
-
-
+if(WITH_IMGUI_EXAMPLE)
+   add_executable(${name}Example  examples/opengl3_example/main.cpp)
+   target_link_libraries(${name}Example ${LIBRARIES} ${name})
+   install(TARGETS ${name}Example DESTINATION bin)
+endif(WITH_IMGUI_EXAMPLE)
 

@@ -7,7 +7,7 @@ assimp-usage(){ cat << EOU
 Open Asset Import Library
 ===========================
 
-Latest version: 3.1.1
+Version: 3.1.1
 Released 2014-06-14 
 
 * http://assimp.sourceforge.net
@@ -65,6 +65,56 @@ Yep aiMetadata is meant for simple info, faking materials
 looks easiest.
 
 
+Warning 
+--------
+
+::
+
+   CMake Warning (dev):
+   Policy CMP0042 is not set: MACOSX_RPATH is enabled by default.  Run "cmake
+   --help-policy CMP0042" for policy details.  Use the cmake_policy command to
+   set the policy and suppress this warning.
+
+   MACOSX_RPATH is not specified for the following targets:
+
+   assimp
+
+
+
+Warnings
+---------
+
+Boost not found by assimp cmake::
+
+    -- Detecting CXX compile features - done
+    -- Found PkgConfig: /opt/local/bin/pkg-config (found version "0.28") 
+    -- Building a non-boost version of Assimp.
+
+Linker expecting lib dir in build directory?::
+
+    [ 99%] Building CXX object tools/assimp_cmd/CMakeFiles/assimp_cmd.dir/Export.cpp.o
+    [100%] Linking CXX executable assimp
+    ld: warning: directory not found for option '-L/usr/local/opticks/externals/assimp/assimp-fork.build/lib'
+    [100%] Built target assimp_cmd
+
+
+Redoing make install gives other RPATH related errors::
+
+    -- Up-to-date: /usr/local/opticks/externals/assimp/assimp/bin/assimp
+    error: /opt/local/bin/install_name_tool: 
+         no LC_RPATH load command with path: /usr/local/opticks/externals/assimp/assimp-fork.build 
+         found in: /usr/local/opticks/externals/assimp/assimp/bin/assimp (for architecture x86_64), 
+         required for specified option "-delete_rpath /usr/local/opticks/externals/assimp/assimp-fork.build"
+    error: /opt/local/bin/install_name_tool: 
+         no LC_RPATH load command with path: /usr/local/opticks/externals/assimp/assimp-fork.build/lib 
+         found in: /usr/local/opticks/externals/assimp/assimp/bin/assimp (for architecture x86_64), 
+         required for specified option "-delete_rpath /usr/local/opticks/externals/assimp/assimp-fork.build/lib"
+    error: /opt/local/bin/install_name_tool: 
+         no LC_RPATH load command with path: /usr/local/opticks/externals/assimp/assimp-fork.build/code 
+         found in: /usr/local/opticks/externals/assimp/assimp/bin/assimp (for architecture x86_64), 
+         required for specified option "-delete_rpath /usr/local/opticks/externals/assimp/assimp-fork.build/code"
+
+
 
 RPATH kludge
 --------------
@@ -103,74 +153,12 @@ properties is simply to fork the github assimp.
 * http://sourceforge.net/p/assimp/discussion/817653/thread/c3b115cd/
 
 
-Assimp COLLADA
---------------
-
-Hmm maybe add G4DAELoader that inherits from ColladaLoader
-with extra element handling ?
-
-code/ImporterRegistry.cpp::
-
-    127 #ifndef ASSIMP_BUILD_NO_COLLADA_IMPORTER
-    128 #   include "ColladaLoader.h"
-    129 #endif
-    130 #ifndef ASSIMP_BUILD_NO_TERRAGEN_IMPORTER
-    131 #   include "TerragenLoader.h"
-    132 #endif
-    ...
-    252 #if (!defined ASSIMP_BUILD_NO_COLLADA_IMPORTER)
-    253     out.push_back( new ColladaLoader());
-    254 #endif
-
-
-
-
 fork on github
 ----------------
 
 ::
 
     git clone git://github.com/assimp/assimp.git assimp
-
-
-config
-------
-
-::
-
-    delta:env blyth$ assimp-cmake
-    -- The C compiler identification is Clang 6.0.0
-    -- The CXX compiler identification is Clang 6.0.0
-    -- Check for working C compiler: /usr/bin/cc
-    -- Check for working C compiler: /usr/bin/cc -- works
-    -- Detecting C compiler ABI info
-    -- Detecting C compiler ABI info - done
-    -- Check for working CXX compiler: /usr/bin/c++
-    -- Check for working CXX compiler: /usr/bin/c++ -- works
-    -- Detecting CXX compiler ABI info
-    -- Detecting CXX compiler ABI info - done
-    fatal: Not a git repository (or any of the parent directories): .git
-    fatal: Not a git repository (or any of the parent directories): .git
-    -- Found PkgConfig: /opt/local/bin/pkg-config (found version "0.28") 
-    -- Building a non-boost version of Assimp.
-    -- Looking for ZLIB...
-    -- checking for module 'zzip-zlib-config'
-    --   found zzip-zlib-config, version 1.2.8
-    -- Found ZLIB: optimized;/usr/lib/libz.dylib;debug;/usr/lib/libz.dylib
-    -- checking for module 'minizip'
-    --   package 'minizip' not found
-    -- Configuring done
-    -- Generating done
-    -- Build files have been written to: /usr/local/env/graphics/assimp/assimp-3.1.1_build
-
-
-make
-------
-
-::
-
-    Linking CXX executable assimp
-    ld: warning: directory not found for option '-L/usr/local/env/graphics/assimp/assimp-3.1.1_build/lib'
 
 
 install
@@ -197,7 +185,6 @@ install
     -- Installing: /usr/local/env/graphics/include/assimp/Compiler/pstdint.h
     -- Installing: /usr/local/env/graphics/bin/assimp
     delta:assimp-3.1.1_build blyth$ 
-
 
 
 install paths are broken::
@@ -280,60 +267,54 @@ install test
     delta:~ blyth$ 
 
 
-
-
-
-
-
 EOU
 }
 
 assimp-env(){      elocal- ; opticks- ;  }
 assimp-fork-name(){ echo assimp-fork ; }
 assimp-name(){ echo $(assimp-fork-name) ; }
+
 assimp-release-name(){ echo assimp-3.1.1 ; }
-assimp-url(){ echo http://downloads.sourceforge.net/project/assimp/assimp-3.1/assimp-3.1.1_no_test_models.zip ; }
+assimp-release-url(){  echo http://downloads.sourceforge.net/project/assimp/assimp-3.1/assimp-3.1.1_no_test_models.zip ; }
+assimp-dev-url(){      echo git@github.com:simoncblyth/assimp.git ; } 
+assimp-url(){          echo git://github.com/simoncblyth/assimp.git ; } 
 
 assimp-fold(){ echo $(dirname $(assimp-dir)); }
 
-assimp-base(){ echo $(opticks-prefix)/externals/assimp ; }
-assimp-dir(){ echo $(assimp-base)/$(assimp-name) ; }
+assimp-base(){   echo $(opticks-prefix)/externals/assimp ; }
+assimp-dir(){    echo $(assimp-base)/$(assimp-name) ; }
 assimp-prefix(){ echo $(assimp-base)/assimp ; }
 
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
-assimp-bdir(){ echo $(assimp-dir)_build ; }
+assimp-bdir(){ echo $(assimp-dir).build ; }
+
 assimp-cd(){  cd $(assimp-dir); }
 assimp-bcd(){ cd $(assimp-bdir); }
 assimp-icd(){ cd $(assimp-idir); }
 
 assimp-fold-cd(){ cd $(assimp-fold); }
 
-assimp-mate(){ mate $(assimp-dir) ; }
-assimp-normal-get(){
+assimp-release-get(){
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
-
-   local url=$(assimp-url)
+   local url=$(assimp-release-url)
    local zip=$(basename $url)
-   local nam=$(assimp-name)
+   local nam=$(assimp-release-name)
    [ ! -f "$zip" ] && curl -L -O $url 
    [ ! -d "$nam" ] && unzip $zip 
 }
 
-assimp-fork-url(){
-   case $USER in
-     blyth) echo git@github.com:simoncblyth/assimp.git ;;
-         *) echo git://github.com/simoncblyth/assimp.git ;;
-   esac
-} 
-assimp-fork-get(){
+assimp-get(){
+   local msg="=== $FUNCNAME :"
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
-   local cmd="git clone $(assimp-fork-url) $(assimp-fork-name)"
-   echo $cmd
-   eval $cmd
-}
-
-assimp-get() {
-    assimp-fork-get
+   local dst=$(assimp-fork-name)
+   local cmd="git clone $(assimp-url) $dst"
+  
+   if [ -d "$dst" ]; then
+       echo $msg already did \"$cmd\" from $PWD
+   else
+       echo $cmd
+       eval $cmd
+   fi
 }
 
 assimp-rdiff(){
@@ -370,20 +351,28 @@ code/ColladaParser.h
 EON
 }
 
-
-
 assimp-wipe(){
    local bdir=$(assimp-bdir)
    rm -rf $bdir
 }
 
-
 assimp-cmake(){
+   local msg="=== $FUNCNAME :"
    local iwd=$PWD
    local bdir=$(assimp-bdir)
    mkdir -p $bdir
+   [ -f $bdir/CMakeCache.txt ] && echo $msg configured already : use assimp-wipe then assimp-cmake to reconfigure  && return 
    assimp-bcd
-   cmake $(assimp-dir) -DCMAKE_INSTALL_PREFIX=$(assimp-prefix) -DASSIMP_BUILD_TESTS=OFF
+
+   local opts=""
+   [ "$(uname)" == "Darwin" ] && opts="-DCMAKE_MACOSX_RPATH:BOOL=ON" 
+
+   cmake \
+        -DCMAKE_INSTALL_PREFIX=$(assimp-prefix)  \
+        -DASSIMP_BUILD_TESTS=OFF  \
+         $opts \
+         $(assimp-dir) 
+
    cd $iwd
 }
 
@@ -393,24 +382,40 @@ assimp-make(){
    make $*  && cd $iwd
 }
 
-assimp-install(){
-   local iwd=$PWD
-   assimp-bcd
-   #make DESTDIR=$(assimp-prefix) install
-   make install  && cd $iwd
-
-   # huh : install says -- Removed runtime path from "/dyb/dybd07/user/blyth/hgpu01.ihep.ac.cn/env/graphics/bin/assimp"
-}
-
 assimp--() {
-    assimp-cmake
-    assimp-make
-    assimp-install
+   assimp-get
+   assimp-cmake
+   assimp-make
+   assimp-make install
+
+   assimp-rpath-kludge
 }
 
 assimp-build(){
    assimp-make
-   assimp-install
+   assimp-make install
+}
+
+
+assimp-rpath-kludge()
+{
+   local msg="=== $FUNCNAME :"
+   local iwd=$PWD
+
+   cd $(assimp-prefix)
+
+   if [ -x "libassimp.3.dylib" ]; then
+       echo $msg already
+   else
+      if [ -f "lib/libassimp.3.dylib" ]; then 
+          echo $msg proceeding
+          ln -s lib/libassimp.3.dylib
+      else
+          echo $msg cannot proceed as target lib is missing 
+      fi
+   fi
+
+   cd $iwd
 }
 
 
@@ -418,45 +423,8 @@ assimp-test(){
    export-
    export-export
 
-   assimp-path-kludge
-
    local pfx=$(assimp-prefix)
    $pfx/bin/assimp info $DAE_NAME_DYB.noextra.dae 
 
-   # RPATH setup is broken (maybe only for non-default prefix), forcing DLP
 }
-
-
-assimp-path-kludge(){
-   local pfx=$(assimp-prefix)
-   case $(uname) in 
-     Darwin) export DYLD_LIBRARY_PATH=$pfx/lib:$DYLD_LIBRARY_PATH ;;
-      Linux) export LD_LIBRARY_PATH=$pfx/lib:$LD_LIBRARY_PATH ;;
-   esac
-}
-
-
-
-assimp-findcmake-(){ cat << EOF
-
-set(Assimp_PREFIX "\$ENV{LOCAL_BASE}/env/graphics")
-
-find_library( Assimp_LIBRARIES 
-              NAMES assimp
-              PATHS \${Assimp_PREFIX}/lib )
-
-set(Assimp_INCLUDE_DIRS "\${Assimp_PREFIX}/include")
-set(Assimp_DEFINITIONS "")
-
-EOF
-}
-
-
-assimp-findcmake(){
-  $FUNCNAME- > $ENV_HOME/cmake/Modules/FindAssimp.cmake 
-}
-
-
-
-
 

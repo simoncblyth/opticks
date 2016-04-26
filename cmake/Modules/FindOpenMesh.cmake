@@ -1,6 +1,5 @@
-# http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
-set(OpenMesh_PREFIX "$ENV{LOCAL_BASE}/env/graphics/OpenMesh/4.1")
+set(OpenMesh_PREFIX "${OPTICKS_PREFIX}/externals/openmesh/4.1")
 
 find_library( OpenMeshCore_LIBRARY 
               NAMES OpenMeshCored

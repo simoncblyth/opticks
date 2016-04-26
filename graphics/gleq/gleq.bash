@@ -13,9 +13,10 @@ gleq-sdir(){ echo $(env-home)/graphics/gleq ; }
 gleq-cd(){  cd $(gleq-dir); }
 gleq-scd(){  cd $(gleq-sdir); }
 gleq-mate(){ mate $(gleq-dir) ; }
+
 gleq-get(){
    local dir=$(dirname $(gleq-dir)) &&  mkdir -p $dir && cd $dir
-   [ ! -d gleq ] && git clone https://github.com/elmindreda/gleq.git
+   [ ! -d gleq ] && git clone https://github.com/simoncblyth/gleq
 }
 gleq-hdr(){
    echo $(gleq-dir)/gleq.h

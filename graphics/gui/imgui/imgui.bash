@@ -64,63 +64,8 @@ Thoughts
   would like everything to be doable from console and over UDP messaging 
 
 
-SEGV
------
-
-::
-
-    (lldb) f 4
-    frame #4: 0x0000000101a72253 libGGeoViewLib.dylib`App::renderGUI(this=0x00007fff5fbfed18) + 35 at App.cc:958
-       955  void App::renderGUI()
-       956  {
-       957  #ifdef GUI_
-    -> 958      m_gui->newframe();
-       959      bool* show_gui_window = m_interactor->getGUIModeAddress();
-       960      if(*show_gui_window)
-       961      {
-    (lldb) p m_gui
-    (GUI *) $0 = 0x000000013e0f2bb0
-    (lldb) f 3
-    frame #3: 0x0000000101c6b4d1 libOGLRap.dylib`GUI::newframe(this=0x000000013e0f2bb0) + 17 at GUI.cc:76
-       73   
-       74   void GUI::newframe()
-       75   {
-    -> 76       ImGui_ImplGlfwGL3_NewFrame();
-       77   }
-       78   
-       79   void GUI::choose( std::vector<std::pair<int, std::string> >* choices, bool* selection )
-    (lldb) f 2
-    frame #2: 0x00000001017c4c20 libImGui.dylib`ImGui_ImplGlfwGL3_NewFrame() + 32 at imgui_impl_glfw_gl3.cpp:325
-       322  void ImGui_ImplGlfwGL3_NewFrame()
-       323  {
-       324      if (!g_FontTexture)
-    -> 325          ImGui_ImplGlfwGL3_CreateDeviceObjects();
-       326  
-       327      ImGuiIO& io = ImGui::GetIO();
-       328  
-    (lldb) f 1
-    frame #1: 0x00000001017c3f7d libImGui.dylib`ImGui_ImplGlfwGL3_CreateDeviceObjects() + 525 at imgui_impl_glfw_gl3.cpp:215
-       212          "   Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
-       213          "}\n";
-       214  
-    -> 215      g_ShaderHandle = glCreateProgram();
-       216      g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
-       217      g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-       218      glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-    (lldb) f 0
-    frame #0: 0x0000000000000000
-    error: memory read failed for 0x0
-    (lldb) 
-
-
-
-
-
 FUNCTIONS
 -----------
-
-*imgui-copy*
-     Creates imgui sub-folder and copies in the sources
 
 
 
@@ -141,18 +86,6 @@ Build opengl3 example
     ---
     >   CXXFLAGS = -I../../ -I../libs/gl3w -I/usr/local/Cellar/glew/1.10.0/include -I/usr/local/include -I$(GLFW_PREFIX)/include
     simon:opengl3_example blyth$ 
-
-
-
-April 2016 : imgui fix
--------------------------
-
-::
-
-    simon:imgui.build blyth$ grep gl3w.h /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
-    #include <GL/gl3w.h>
-    simon:imgui.build blyth$ perl -pi -e 's,gl3w.h,glew.h,' /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
-    simon:imgui.build blyth$ grep gl3w.h /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp
 
 
 
@@ -218,20 +151,7 @@ EOU
 imgui-env(){      elocal- ; opticks- ;  }
 
 imgui-edir(){ echo $(opticks-home)/graphics/gui/imgui ; }
-
-imgui-oldbase(){ echo $(local-base)/env/graphics/gui ; }
-
 imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }
-#imgui-base(){ echo $(imgui-oldbase) ; }
-
-imgui-diff(){
-  # diff --brief  $(imgui-oldbase) $(imgui-base)/imgui 
-
-   diff /usr/local/env/graphics/gui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp \
-       /usr/local/opticks/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp 
-
-}
-
 
 imgui-idir(){ echo $(imgui-base)/imgui.install ; }
 imgui-bdir(){ echo $(imgui-base)/imgui.build   ; }
@@ -243,14 +163,47 @@ imgui-icd(){  cd $(imgui-idir); }
 imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
 
+
+imgui-old-base(){ echo $(local-base)/env/graphics/gui ; }
+imgui-old-sdir(){ echo $(imgui-old-base)/imgui  ; }
+imgui-old-bdir(){ echo $(imgui-old-base)/imgui.build   ; }
+imgui-old-scd(){  cd $(imgui-old-sdir); }
+imgui-old-bcd(){  cd $(imgui-old-bdir); }
+
 imgui-cd(){  cd $(imgui-dir)/$1; }
+
+
+imgui-url(){
+   #case $USER in
+   #  blyth) echo git@github.com:simoncblyth/imgui.git ;;
+   #      *) echo git://github.com/simoncblyth/imgui.git ;;
+   #esac
+   echo git://github.com/simoncblyth/imgui.git
+} 
+
 
 imgui-get(){
    local dir=$(dirname $(imgui-dir)) &&  mkdir -p $dir && cd $dir
-   [ ! -d "imgui" ] && git clone https://github.com/ocornut/imgui.git 
+   if [ ! -d "imgui" ]; then 
 
-   imgui-fix 
+       # from my fork : in order to fix the version
+       git clone $(imgui-url)
+
+       imgui-fix
+       cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
+   fi 
 }
+
+imgui-status(){
+  local iwd=$PWD
+  imgui-scd
+   
+  git remote show origin
+  git status
+
+  cd $iwd
+}
+
 
 imgui-fix(){
    local msg="=== $FUNCNAME :"
@@ -263,23 +216,19 @@ imgui-fix(){
    diff $name.orig $name
 }
 
-
-
-imgui-demo(){ vi $(imgui-dir)/imgui.cpp +9757 ; }
+imgui-demo(){ vi $(imgui-dir)/imgui_demo.cpp  ; }
 
 imgui-wipe(){
    local bdir=$(imgui-bdir)
    rm -rf $bdir
 }
 
-imgui-cmake-ize(){
-   cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
-}
-
 imgui-cmake(){
    local bdir=$(imgui-bdir)
    mkdir -p $bdir
    imgui-bcd
+
+   [ -f CMakeCache.txt ] && echo $msg already configured : imgui-wipe 1st to force reconfigure  && return 
    cmake $(imgui-sdir) -DCMAKE_INSTALL_PREFIX=$(imgui-idir) -DCMAKE_BUILD_TYPE=Debug 
 }
 
@@ -290,66 +239,14 @@ imgui-make(){
     cd $iwd
 }
 
-imgui-install(){
-   imgui-make install
-}
-
 imgui--(){
    imgui-get
-
-   imgui-wipe
-   imgui-cmake-ize
    imgui-cmake
    imgui-make
    [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
-   imgui-install $*
+   imgui-make install 
 }
 
 
 
-
-
-########### below funcs used prior to adopting cmake approach above #############
-
-imgui-example(){
-   imgui-cd examples/opengl3_example
-   imgui-example-make
-}
-
-imgui-example-make(){
-   [ "$(basename $PWD)" != "opengl3_example" ]  && echo $msg run this from opengl3_example directory && return 
-   glfw-
-   glfw-export
-   make PKG_CONFIG_PATH=$(glfw-prefix)/lib/pkgconfig
-}
-
-imgui-srcs(){ cat << EOS
-imgui.cpp
-imgui.h
-imconfig.h
-stb_rect_pack.h
-stb_textedit.h
-stb_truetype.h
-examples/opengl3_example/Makefile
-examples/opengl3_example/main.cpp
-examples/opengl3_example/imgui_impl_glfw_gl3.cpp
-examples/opengl3_example/imgui_impl_glfw_gl3.h
-examples/libs/gl3w/GL/gl3w.c
-examples/libs/gl3w/GL/gl3w.h
-examples/libs/gl3w/GL/glcorearb.h
-EOS
-}
-
-imgui-copy(){
-   [ ! -d imgui ] && mkdir imgui
-   local srcd=$(imgui-dir)
-   local src
-   local dst
-   for src in $(imgui-srcs) 
-   do 
-       dst=imgui/$src
-       mkdir -p $(dirname $dst)
-       cp $(imgui-dir)/$src $dst
-   done
-}
 
