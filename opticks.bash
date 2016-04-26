@@ -36,6 +36,16 @@ Only needed whilst making sweeping changes::
     simon:~ blyth$ opticks- ; opticks--
 
 
+G4PB build
+-----------
+
+* /usr/local/opticks : permission denied
+
+G5 build
+----------
+
+* glfw:CMake 2.8.9 or higher is required.  You are running version 2.6.4
+
 
 Locating Boost, CUDA, OptiX
 ------------------------------
