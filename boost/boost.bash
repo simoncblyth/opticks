@@ -1,4 +1,3 @@
-# === func-gen- : boost/boost fgp boost/boost.bash fgn boost fgh boost
 boost-src(){      echo boost/boost.bash ; }
 boost-source(){   echo ${BASH_SOURCE:-$(env-home)/$(boost-src)} ; }
 boost-vi(){       vim $(boost-source) ; }
@@ -11,7 +10,6 @@ BOOST
 * http://www.boost.org/
 * http://www.boost.org/users/history/
 
-
 FindBoost.cmake
 ----------------
 
@@ -22,12 +20,88 @@ FindBoost.cmake
     /usr/local/env/graphics/oglplus/oglplus-0.59.0/config/FindBoost.cmake
 
 
+Linux
+~~~~~~
+
+Unfit for purpose::
+
+    /usr/lib64/boost/BoostConfig.cmake
+        
+Use the cmake one::
+
+    /home/blyth/local/env/tools/cmake/cmake-3.5.2-Linux-x86_64/share/cmake-3.5/Modules/FindBoost.cmake
+
+
+Version History
+-----------------
+
+* http://www.boost.org/users/history/
+
+::
+
+    Version 1.60.0  December 17th, 2015 15:52 GMT
+    Version 1.59.0  August 13th, 2015 15:23 GMT
+
+    Version 1.44.0  August 13th, 2010 17:00 GMT
+    Version 1.43.0  May 6th, 2010 12:00 GMT
+    Version 1.42.0  February 2nd, 2010 14:00 GMT
+    Version 1.41.0  November 17th, 2009 17:00 GMT
+
+
+First releases
+---------------
+
+* http://www.boost.org/doc/libs/
+
+::
+
+    Asio              1.35.0
+    System            1.35.0
+    FileSystem        1.30.0 
+    Log               1.54.0
+    Program Options   1.32.0
+    Property Tree     1.41.0
+    
+
+
 installed versions
 -------------------
-   
+
+D  macports 1.59    
 G  1.49.0
 C  1.32.0-7.rhel4 
 N  1.33.1
+
+
+boost bootstrap build
+-----------------------
+
+::
+
+    [blyth@ntugrid5 boost_1_60_0]$ boost-bootstrap-build
+    Building Boost.Build engine with toolset gcc... tools/build/src/engine/bin.linuxx86_64/b2
+    Detecting Python version... 2.6
+    Detecting Python root... /usr
+    Unicode/ICU support for Boost.Regex?... not found.
+    Generating Boost.Build configuration in project-config.jam...
+
+    Bootstrapping is done. To build, run:
+
+        ./b2
+        
+    To adjust configuration, edit 'project-config.jam'.
+    Further information:
+
+       - Command line help:
+         ./b2 --help
+         
+       - Getting started guide: 
+         http://www.boost.org/more/getting_started/unix-variants.html
+         
+       - Boost.Build documentation:
+         http://www.boost.org/build/doc/html/index.html
+
+
 
 
 locally installed documentation
@@ -132,11 +206,13 @@ EOU
 }
 boost-dir(){ echo $(local-base)/env/boost/$(boost-name) ; }
 boost-bdir(){  echo $(boost-dir).build ; }
-boost-prefix(){  echo $(boost-dir).local ; }
+boost-prefix(){ 
+    echo $(boost-dir).local ; 
+}
 
 boost-ver(){ 
-    #echo nuwa
-    echo 1.54.0 
+    #echo 1.54.0 
+    echo 1.60.0 
 }
 
 boost-nuwa-plat(){
@@ -172,29 +248,33 @@ boost-python-lib-nuwa(){
   esac   
 }
 
-
 boost-cd(){  cd $(boost-dir); }
-boost-mate(){ mate $(boost-dir) ; }
 
 
 boost-name(){ 
   case $(boost-ver) in 
     1.54.0) echo boost_1_54_0 ;; 
+    1.60.0) echo boost_1_60_0 ;; 
   esac       
 }
 boost-url(){ 
   case $(boost-ver) in 
     1.54.0) echo http://downloads.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.gz ;; 
+    1.60.0) echo http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.gz ;; 
   esac
 }
 
 boost-get(){
+   local iwd=$PWD
    local dir=$(dirname $(boost-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(boost-url)
    local nam=$(boost-name)
    local tgz=$(basename $url)
+
    [ ! -f "$tgz" ] && curl -L -O $url 
-   [ ! -d "$nam" ] && tar zxvf $tgz
+   [ ! -d "$nam" ] && tar zxf $tgz
+
+   cd $iwd
 }
 
 
@@ -227,7 +307,8 @@ boost-bootstrap-help(){
 
 boost-bootstrap-build(){
   boost-cd
-  ./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
+  #./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
+  ./bootstrap.sh --prefix=$(boost-prefix)
 }
 
 boost-build(){

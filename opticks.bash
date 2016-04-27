@@ -165,6 +165,9 @@ its externals requires unix tools including:
 * zip
 * cmake 2.8.9+
 
+CMake
+-------
+
 A rather recent cmake version is required. Check your version with::
 
     simon:~ blyth$ cmake --version
@@ -181,6 +184,11 @@ package manager then a local install of the tool must be done and your
 login shell PATH modified to use the updated tool. The Opticks repository 
 includes bash functions for local installs of cmake with 
 precursor function *cmake-*.
+
+
+
+
+
 
 
 Full Building Example
@@ -203,22 +211,6 @@ takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 Externals 
 -----------
 
-Infrastructure 
-~~~~~~~~~~~~~~~~
-
-The pre-requisite Boost components listed in the table need to be installed.
-These are widely available via package managers. Use the standard one for 
-your system: yum on Redhat, macports on Mac, nsys2 on Windows. 
-The FindBoost.cmake provided with cmake is used to locate the installation.
-
-=====================  ===============  =============   ==============================================================================
-directory              precursor        pkg name        notes
-=====================  ===============  =============   ==============================================================================
-boost                  boost-           Boost           components: system thread program_options log log_setup filesystem regex 
-=====================  ===============  =============   ==============================================================================
-
-
-
 Geometry/OpenGL related 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -240,6 +232,59 @@ graphics/glfw          glfw-            GLFW            sourceforge tarball 3.1.
 graphics/gleq          gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example
 graphics/gui/imgui     imgui-                           github.com/simoncblyth/imgui
 =====================  ===============  =============   ==============================================================================
+
+
+Boost Infrastructure Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The pre-requisite Boost components listed in the table need to be installed.
+These are widely available via package managers. Use the standard one for 
+your system: 
+
+* yum on Redhat
+* macports on Mac
+* nsys2 on Windows. 
+
+The FindBoost.cmake provided with cmake is used to locate the installation.
+
+=====================  ===============  =============   ==============================================================================
+directory              precursor        pkg name        notes
+=====================  ===============  =============   ==============================================================================
+boost                  boost-           Boost           components: system thread program_options log log_setup filesystem regex 
+=====================  ===============  =============   ==============================================================================
+
+Updating Boost 
+~~~~~~~~~~~~~~~~
+
+If your version of Boost is not recent enough the cmake configuring 
+step will yield errors like the below.::
+
+      CMake Error at /home/blyth/local/env/tools/cmake/cmake-3.5.2-Linux-x86_64/share/cmake-3.5/Modules/FindBoost.cmake:1657 (message):
+      Unable to find the requested Boost libraries.
+
+      Boost version: 1.41.0
+
+      Boost include path: /usr/include
+
+      Could not find the following Boost libraries:
+
+              boost_log
+              boost_log_setup
+
+      Some (but not all) of the required Boost libraries were found.  You may
+      need to install these additional Boost libraries.  Alternatively, set
+      BOOST_LIBRARYDIR to the directory containing Boost libraries or BOOST_ROOT
+      to the location of Boost.
+      Call Stack (most recent call first):
+      cmake/Modules/FindOpticksBoost.cmake:16 (find_package)
+      boost/bpo/bcfg/CMakeLists.txt:8 (find_package)
+
+
+If possible use your system package manager to update Boost. If that is 
+not possible then do a local Boost install.  Opticks includes bash functions
+starting *boost-* that can get and install Boost locally.
+
+
 
 CUDA related
 ~~~~~~~~~~~~~

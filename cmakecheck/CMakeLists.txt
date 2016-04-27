@@ -10,8 +10,10 @@ set(SUPERBUILD ON)
 
 include(EnvBuildOptions)
 
-find_package(OptiX REQUIRED)
-message("OptiX_LIBRARIES:${OptiX_LIBRARIES}")
+find_package(OpticksBoost REQUIRED)
+
+#find_package(OptiX REQUIRED)
+#message("OptiX_LIBRARIES:${OptiX_LIBRARIES}")
 
 set(DUMP ON)
 if(DUMP)

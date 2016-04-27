@@ -1,5 +1,6 @@
 
-
+# use the cmake supplied FindBoost.cmake not BoostConfig.cmake
+set(Boost_NO_BOOST_CMAKE ON)
 
 if (CMAKE_VERSION VERSION_EQUAL "3.0" OR CMAKE_VERSION VERSION_GREATER "3.0")
 
