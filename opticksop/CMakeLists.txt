@@ -7,8 +7,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake")
 include(EnvBuildOptions)
 include(EnvCompilationFlags)   
 
-find_package(OptiX REQUIRED)
-find_package(CUDA 2.3 REQUIRED)
+find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+
 find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
 

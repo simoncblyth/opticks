@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake")
 
 include(EnvBuildOptions)
 
-find_package(OptiX REQUIRED)
+find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 
 ########################## from OPTIX_SDK_DIR/CMake
 include(Macros)

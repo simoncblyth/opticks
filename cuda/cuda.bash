@@ -13,6 +13,30 @@ See Also
 
 * cudatoolkit-
 
+
+Release History
+-----------------
+
+* https://developer.nvidia.com/cuda-toolkit-archive
+
+::
+
+    CUDA Toolkit 7.0 (March2015)
+    CUDA Toolkit 6.5 (August 2014)
+    CUDA Toolkit 6.0 (April 2014)
+    CUDA Toolkit 5.5 (July 2013)
+    CUDA Toolkit 5.0 (Oct 2012)
+    CUDA Toolkit 4.2 (April 2012)
+    CUDA Toolkit 4.1 (Jan 2012)
+    CUDA Toolkit 4.0 (May 2011)
+    CUDA Toolkit 3.2 (Nov 2010)
+    CUDA Toolkit 3.1 (June 2010)
+    CUDA Toolkit 3.0 (March 2010)
+
+CUDA 5.5 corresponds to OptiX 3.5 setting these as Opticks minimum requirements. 
+Should roughly correspond to era of compute capability 3.0 GPUs.
+
+
 CUDA 7.5 Release Notes
 ------------------------
 

@@ -295,15 +295,18 @@ assimp-icd(){ cd $(assimp-idir); }
 assimp-fold-cd(){ cd $(assimp-fold); }
 
 assimp-release-get(){
+   local iwd=$PWD
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(assimp-release-url)
    local zip=$(basename $url)
    local nam=$(assimp-release-name)
    [ ! -f "$zip" ] && curl -L -O $url 
    [ ! -d "$nam" ] && unzip $zip 
+   cd $iwd
 }
 
 assimp-get(){
+   local iwd=$PWD
    local msg="=== $FUNCNAME :"
    local dir=$(dirname $(assimp-dir)) &&  mkdir -p $dir && cd $dir
    local dst=$(assimp-fork-name)
@@ -315,6 +318,7 @@ assimp-get(){
        echo $cmd
        eval $cmd
    fi
+   cd $iwd
 }
 
 assimp-rdiff(){
@@ -380,6 +384,7 @@ assimp-make(){
    local iwd=$PWD
    assimp-bcd
    make $*  && cd $iwd
+   cd $iwd
 }
 
 assimp--() {
@@ -396,6 +401,15 @@ assimp-build(){
    assimp-make install
 }
 
+assimp-libname(){
+   local typ=$(opticks-libtyp)   
+   case $(uname -s) in 
+     Darwin) echo libassimp.3.$typ ;;
+      Linux)  echo libassimp.$typ.3 ;;
+          *)  echo libassimp.$typ.3 ;;
+   esac
+}
+
 
 assimp-rpath-kludge()
 {
@@ -404,14 +418,16 @@ assimp-rpath-kludge()
 
    cd $(assimp-prefix)
 
-   if [ -x "libassimp.3.dylib" ]; then
-       echo $msg already
+   local lib=$(assimp-libname)
+
+   if [ -x "$lib" ]; then
+       echo $msg already present : $lib
    else
-      if [ -f "lib/libassimp.3.dylib" ]; then 
-          echo $msg proceeding
-          ln -s lib/libassimp.3.dylib
+      if [ -f "lib/$lib" ]; then 
+          echo $msg proceed with symbolicating lib/$lib
+          ln -s lib/$lib
       else
-          echo $msg cannot proceed as target lib is missing 
+          echo $msg cannot proceed as target lib/$lib is missing 
       fi
    fi
 

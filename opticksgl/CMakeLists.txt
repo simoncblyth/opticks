@@ -17,8 +17,10 @@ if(USING_CLANG_C)
   set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
 endif()
 
-find_package(OptiX REQUIRED)
-find_package(CUDA 2.3 REQUIRED)
+
+find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
 include(EnvCompilationFlags)   

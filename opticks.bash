@@ -151,12 +151,43 @@ This defines the bash function *opticks-* that is termed a precursor function
 as running it will define other functions all starting with *opticks-* such as *opticks-vi*
 and *opticks-usage*.
 
+Build Tools
+------------
+
+Getting, configuring, unpacking, building and installing Opticks and
+its externals requires unix tools including:
+
+* bash shell
+* mercurial hg 
+* git 
+* curl
+* tar
+* zip
+* cmake 2.8.9+
+
+A rather recent cmake version is required. Check your version with::
+
+    simon:~ blyth$ cmake --version
+    cmake version 3.4.1
+
+Updating build tools is best done via your system package manager.  
+For example on OSX with macports update cmake with::
+
+   port info cmake           # check the version the package manager proposes
+   sudo port install cmake   # do the install
+
+If you or your system administrator are unable to update a tool via the system
+package manager then a local install of the tool must be done and your 
+login shell PATH modified to use the updated tool. The Opticks repository 
+includes bash functions for local installs of cmake with 
+precursor function *cmake-*.
+
 
 Full Building Example
 ------------------------
 
-Assuming Boost, CUDA (includes Thrust) and OptiX are already installed 
-the getting, building and installation of the other externals 
+Assuming appropriate build tools and Boost, CUDA (includes Thrust) and OptiX 
+are already installed the getting, building and installation of the other externals 
 takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 
     simon:env blyth$ opticks-fullclean | sh 
@@ -294,6 +325,11 @@ opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 
 
+opticks-wipe(){
+   local bdir=$(opticks-bdir)
+   rm -rf $bdir
+}
+
 opticks-cmake(){
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
@@ -305,7 +341,6 @@ opticks-cmake(){
    opticks-bcd
 
    cmake \
-       -DWITH_OPTIX:BOOL=ON \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-idir) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
@@ -314,12 +349,9 @@ opticks-cmake(){
    cd $iwd
 }
 
-
-
-
-opticks-wipe(){
-   local bdir=$(opticks-bdir)
-   rm -rf $bdir
+opticks-configure(){
+   opticks-wipe
+   opticks-cmake
 }
 
 opticks-make(){
@@ -391,10 +423,21 @@ opticks-run()
 
 
 
+opticks-libtyp()
+{
+   case $(uname -s) in
+     Darwin) echo dylib ;;
+     Linux)  echo so ;;
+         *)  echo dll ;;
+   esac
+}
+
 
 
 
 ########## below are for development  ########################
+
+
 
 
 

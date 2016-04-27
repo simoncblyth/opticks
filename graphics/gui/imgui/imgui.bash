@@ -183,6 +183,7 @@ imgui-url(){
 
 
 imgui-get(){
+   local iwd=$PWD
    local dir=$(dirname $(imgui-dir)) &&  mkdir -p $dir && cd $dir
    if [ ! -d "imgui" ]; then 
 
@@ -192,6 +193,7 @@ imgui-get(){
        imgui-fix
        cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
    fi 
+   cd $iwd
 }
 
 imgui-status(){
@@ -224,27 +226,29 @@ imgui-wipe(){
 }
 
 imgui-cmake(){
-   local bdir=$(imgui-bdir)
-   mkdir -p $bdir
-   imgui-bcd
+  local iwd=$PWD
+  local bdir=$(imgui-bdir)
+  mkdir -p $bdir
+  imgui-bcd
 
-   [ -f CMakeCache.txt ] && echo $msg already configured : imgui-wipe 1st to force reconfigure  && return 
-   cmake $(imgui-sdir) -DCMAKE_INSTALL_PREFIX=$(imgui-idir) -DCMAKE_BUILD_TYPE=Debug 
+  [ -f CMakeCache.txt ] && echo $msg already configured : imgui-wipe 1st to force reconfigure  && return 
+  cmake $(imgui-sdir) -DCMAKE_INSTALL_PREFIX=$(imgui-idir) -DCMAKE_BUILD_TYPE=Debug 
+  cd $iwd
 }
 
 imgui-make(){
-    local iwd=$PWD
-    imgui-bcd
-    make $*
-    cd $iwd
+  local iwd=$PWD
+  imgui-bcd
+  make $*
+  cd $iwd
 }
 
 imgui--(){
-   imgui-get
-   imgui-cmake
-   imgui-make
-   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
-   imgui-make install 
+  imgui-get
+  imgui-cmake
+  imgui-make
+  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
+  imgui-make install 
 }
 
 

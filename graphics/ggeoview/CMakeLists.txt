@@ -6,30 +6,28 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake")
 
 include(EnvBuildOptions)
 
-#####################  from OptiX
-
-include(Macros)
-include(CompilerInfo)
-include(ConfigCompilerFlags)
-
-OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
-
-if(USING_CLANG_C)
-  set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
-endif()
-
-include(EnvCompilationFlags)   
-
 
 ########### OPTICKS #####
 
-if(EXISTS $ENV{OPTIX_SDK_DIR}/CMake AND WITH_OPTIX)
+if(WITH_OPTIX)
+
+    include(Macros)
+    include(CompilerInfo)
+    include(ConfigCompilerFlags)
+
+    OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
+
+    if(USING_CLANG_C)
+      set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
+    endif()
+
 
     add_definitions(-DWITH_OPTIX)
 
-    find_package(CUDA 2.3 REQUIRED)
+    find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
+    find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+
     find_package(CUDARap REQUIRED)
-    find_package(OptiX REQUIRED)
     find_package(OptiXRap REQUIRED)
     find_package(ThrustRap REQUIRED)
     find_package(OpticksOp REQUIRED)
@@ -73,6 +71,7 @@ else()
    set(WITH_OPTIX_LIBRARIES) 
 endif()
 
+include(EnvCompilationFlags)   
 
 ########### BASE #####
 

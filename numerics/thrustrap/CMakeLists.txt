@@ -6,7 +6,7 @@ include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
 # see cuda-/FindCuda.cmake
-find_package(CUDA 2.3 REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
 find_package(OpticksBoost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)

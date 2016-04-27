@@ -15,8 +15,10 @@ gleq-scd(){  cd $(gleq-sdir); }
 gleq-mate(){ mate $(gleq-dir) ; }
 
 gleq-get(){
+   local iwd=$PWD
    local dir=$(dirname $(gleq-dir)) &&  mkdir -p $dir && cd $dir
    [ ! -d gleq ] && git clone https://github.com/simoncblyth/gleq
+   cd $iwd
 }
 gleq-hdr(){
    echo $(gleq-dir)/gleq.h
