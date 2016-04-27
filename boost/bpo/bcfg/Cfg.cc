@@ -102,7 +102,7 @@ void Cfg::commandline(int argc, char** argv)
     std::cout << "Cfg::commandline " << m_name << std::endl ; 
 
     std::stringstream ss ; 
-    for(unsigned int i=1 ; i < argc ; ++i ) ss << argv[i] << " " ;
+    for(int i=1 ; i < argc ; ++i ) ss << argv[i] << " " ;
     m_commandline = ss.str();
 
     if(m_others.size() == 0)

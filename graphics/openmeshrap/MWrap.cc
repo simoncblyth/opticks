@@ -138,7 +138,7 @@ void MWrap<MeshT>::copyOut(float* vdata, unsigned int num_vertices, unsigned int
     {
         FH fh = mesh->face_handle(i) ;   
         unsigned int j(0) ;   
-        for(FVI fv=mesh->cfv_iter(fh) ; fv ; fv++ )
+        for(FVI fv=mesh->cfv_iter(fh) ; fv.is_valid() ; fv++ )
         {
             fdata[i*3+j] = fv->idx(); 
             j++ ;
@@ -195,7 +195,7 @@ int MWrap<MeshT>::labelConnectedComponentVertices(const char* vpropname)
         {
             VH current = vstack.back();
             vstack.pop_back();
-            for (VVI vvi=mesh->vv_iter( current ); vvi ; ++vvi)
+            for (VVI vvi=mesh->vv_iter( current ); vvi.is_valid() ; ++vvi)
             {
                 if(mesh->property(component, *vvi) == -1) 
                 {
@@ -387,14 +387,14 @@ void MWrap<MeshT>::partialCopyTo(MeshT* dst, const char* ivpropname, int ivpropv
                      src2dst[*v] = dst->add_vertex(mesh->point(*v)) ;
                      break ; 
                 case FACE:
-                     for(VFI f=mesh->vf_iter(*v) ; f ; f++) 
+                     for(VFI f=mesh->vf_iter(*v) ; f.is_valid() ; f++) 
                      {
                          if(mesh->property(copied, *f) == true) continue ;                 
                          mesh->property(copied, *f) = true ; 
 
                          // collect handles of the vertices of this fresh face 
                          std::vector<VH>  fvh ;
-                         for(FVI fv=mesh->cfv_iter(*f) ; fv ; fv++) fvh.push_back( src2dst[*fv] );
+                         for(FVI fv=mesh->cfv_iter(*f) ; fv.is_valid() ; fv++) fvh.push_back( src2dst[*fv] );  // avoid DEPRECATED
                          dst->add_face(fvh);
                      }  
                      break ; 
@@ -516,10 +516,10 @@ void MWrap<MeshT>::dumpFaces(const char* msg, unsigned int detail)
         } 
 
         // over points of the face 
-        for(FVI fv=mesh->cfv_iter(*f) ; fv ; fv++) 
+        for(FVI fv=mesh->cfv_iter(*f) ; fv.is_valid() ; fv++) 
              std::cout << std::setw(3) << *fv << " " ;
 
-        for(FVI fv=mesh->cfv_iter(*f) ; fv ; fv++) 
+        for(FVI fv=mesh->cfv_iter(*f) ; fv.is_valid() ; fv++) 
              std::cout 
                        << std::setprecision(3) << std::fixed << std::setw(20) 
                        << mesh->point(*fv) << " "
@@ -547,20 +547,20 @@ void MWrap<MeshT>::dumpVertices(const char* msg, unsigned int detail)
     {
          std::cout << " v " << std::setw(3) << *v << " # " << std::setw(3) << mesh->valence(*v) << " : "  ;  
          // all faces around a vertex, fans are apparent
-         for(VFI vf=mesh->vf_iter(*v)  ; vf ; vf++) 
+         for(VFI vf=mesh->vf_iter(*v)  ; vf.is_valid() ; vf++) 
              std::cout << " " << std::setw(3) << *vf ;   
          std::cout << std::endl ;  
 
          if(detail > 1)
          {
-             for(VFI vf=mesh->vf_iter(*v)  ; vf ; vf++) 
+             for(VFI vf=mesh->vf_iter(*v)  ; vf.is_valid() ; vf++) 
              {
                  // over points of the face 
                 std::cout << "     "  ;  
-                for(FVI fv=mesh->cfv_iter(*vf) ; fv ; fv++) 
+                for(FVI fv=mesh->cfv_iter(*vf) ; fv.is_valid() ; fv++) 
                      std::cout << std::setw(3) << *fv << " " ;
 
-               for(FVI fv=mesh->cfv_iter(*vf) ; fv ; fv++) 
+               for(FVI fv=mesh->cfv_iter(*vf) ; fv.is_valid() ; fv++) 
                       std::cout 
                        << std::setprecision(3) << std::fixed << std::setw(20) 
                        << mesh->point(*fv) << " "

@@ -84,6 +84,7 @@ openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(
 openmesh-edir(){ echo $(opticks-home)/graphics/openmesh ; }
 openmesh-old-base(){ echo $(local-base)/env/graphics/openmesh ; }
 openmesh-base(){ echo $(opticks-prefix)/externals/openmesh ; }
+openmesh-prefix(){ echo $(openmesh-base)/$(openmesh-vers) ; }
 
 openmesh-dir(){  echo $(openmesh-base)/$(openmesh-name) ; }
 openmesh-idir(){ echo $(openmesh-base)/$(openmesh-vers) ; }

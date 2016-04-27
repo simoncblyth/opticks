@@ -119,14 +119,9 @@ inline GOpticalSurface* GPropertyMap<T>::getOpticalSurface()
 template <class T>
 inline bool GPropertyMap<T>::hasNameEnding(const char* end)
 {
-    if(m_name.length() < strlen(end))
-    {
-        return false ; 
-    }
-    else
-    {
-        return 0 == m_name.compare( m_name.length() - strlen(end), strlen(end), end ) ;
-    }
+    std::string suffix(end) ;
+    return m_name.size() >= suffix.size() &&
+           m_name.compare(m_name.size() - suffix.size(), suffix.size(), suffix) == 0;  
 }
 
 

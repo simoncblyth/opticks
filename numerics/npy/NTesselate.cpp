@@ -32,13 +32,13 @@ void NTesselate::subdivide(unsigned int nsubdiv)
     unsigned int nb = m_basis->getShape(0); // base triangles
     float* basis = m_basis->getValues();
 
-    int ntri = nb*(1 << (nsubdiv * 2));
+    unsigned int ntri = nb*(1 << (nsubdiv * 2));
 
     LOG(debug) << "NTesselate::subdivide base triangles " << nb << " ntri " << ntri  ; 
 
     m_tris = new NTrianglesNPY();
 
-    for(int s = 0; s < nb ; s++) 
+    for(unsigned int s = 0; s < nb ; s++) 
     {
         ntriangle t(basis + s*3*3);
         subdivide( nsubdiv, t );

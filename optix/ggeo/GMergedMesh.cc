@@ -486,7 +486,12 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
     // using repeat index labelling in the tree
-    bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
+    //  bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
+
+    int idx = getIndex() ;
+    unsigned int uidx = idx > -1 ? idx : UINT_MAX ; 
+    unsigned int ridx = solid->getRepeatIndex() ;
+    bool repsel =  idx == -1 || ridx == uidx ;
     bool selected = solid->isSelected() && repsel ;
 
     switch(pass)

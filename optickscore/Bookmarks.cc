@@ -92,7 +92,7 @@ void Bookmarks::readdir()
 
 void Bookmarks::readmark(unsigned int num)
 {
-    if(num == UNSET) return; 
+    //if(num == UNSET) return;   will never happn UNSET is -1
     m_bookmarks[num] = NState::load(m_dir, num ) ; 
 }
 
@@ -113,7 +113,7 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
     bool exists_ = exists(num);
     if(exists_)
     {
-        if(num == m_current && shift)
+        if(m_current != UNSET && int(num) == m_current && shift)
         { 
             // repeating pressing a num key when on that bookmark with shift down
             LOG(info) << "Bookmarks::number_key_pressed repeat current book mark with shift" ;

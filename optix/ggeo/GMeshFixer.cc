@@ -52,7 +52,7 @@ void GMeshFixer::copyDedupedVertices()
     float* dd_texcoords = texcoords ? new float[m_num_deduped_vertices*2] : NULL ;
     float* dd_colors    = colors    ? new float[m_num_deduped_vertices*3] : NULL ;
 
-    for(int n=0 ; n < m_num_deduped_vertices ; ++n )
+    for(unsigned int n=0 ; n < m_num_deduped_vertices ; ++n )
     {
         int o = m_new2old[n] ;
 

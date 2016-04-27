@@ -547,7 +547,7 @@ NPY<T>* NPY<T>::make_slice(NSlice* slice)
     std::vector<int> shape(orig.size()) ; 
     std::copy(orig.begin(), orig.end(), shape.begin() );
 
-    assert(shape[0] == ni); 
+    assert(shape[0] == int(ni)); 
     shape[0] = count ; 
 
     NPY<T>* npy = NPY<T>::make(shape);
@@ -585,7 +585,7 @@ NPY<T>* NPY<T>::make_vec3(float* m2w_, unsigned int npo)
 
     float scale = 1.f/float(npo);
 
-    for(int i=0 ; i < npo ; i++ )
+    for(unsigned int i=0 ; i < npo ; i++ )
     {
         glm::vec4 m(float(i)*scale, float(i)*scale, float(i)*scale, 1.f);
         glm::vec4 w = m2w * m ;

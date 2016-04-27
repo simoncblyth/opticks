@@ -75,7 +75,7 @@ std::string patternPickField(std::string str, std::string ptn, int num )
 {
     std::vector<std::string> result;
     boost::algorithm::split_regex( result, str, boost::regex(ptn) ) ;
-    unsigned int size = result.size();
+    int size = result.size();
 
     //printf("patternPickField %u \n", size );
     if(num < 0) num+= size ; 
@@ -145,13 +145,13 @@ void removeField(char* dest, const char* line, char delim, int index )
 
     std::vector<std::string> elem ;
     split(elem, line, delim);
+    int size = elem.size();
 
-
-    if(index >= 0 && index < elem.size())
+    if(index >= 0 && index < size)
     {
         elem.erase( elem.begin() + index);
     }
-    else if( index < 0 && -index < elem.size())
+    else if( index < 0 && -index < size )
     {
         elem.erase( elem.end() + index );
     }
@@ -169,14 +169,14 @@ std::string insertField(const char* line, char delim, int index, const char* fie
 {
     std::vector<std::string> elem ;
     split(elem, line, delim);    
-
+    int size = elem.size();
     std::string s(field);
 
-    if(index >= 0 && index < elem.size())
+    if(index >= 0 && index < size)
     {   
         elem.insert( elem.begin() + index, s); 
     }   
-    else if( index < 0 && -index < elem.size())
+    else if( index < 0 && -index < size)
     {   
         elem.insert( elem.end() + index, s );
     }   

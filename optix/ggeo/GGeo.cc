@@ -1250,7 +1250,7 @@ void GGeo::dumpVolume(unsigned int index, const char* msg)
     gfloat3* verts = mm0->getVertices();
     guint3* faces = mm0->getFaces(); 
 
-    for(unsigned int i=0 ; i < offnum.z ; i++)
+    for(int i=0 ; i < offnum.z ; i++)
     {
         guint3* f = faces + offnum.x + i ;    // offnum.x is cumulative sum of prior solid face counts
 
@@ -1296,8 +1296,8 @@ glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int 
     gfloat3* verts = mm->getVertices();
     guint3* faces = mm->getFaces(); 
 
-    assert(face_index0 <  offnum.z );  
-    assert(face_index1 <= offnum.z );   // face_index1 needs to go 1 beyond
+    assert(int(face_index0) <  offnum.z );  
+    assert(int(face_index1) <= offnum.z );   // face_index1 needs to go 1 beyond
 
     glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
     glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);

@@ -161,7 +161,7 @@ void Opticks::preargs(int argc, char** argv)
 
     bool compute = false ;
     const char* logname = NULL ;
-    for(unsigned int i=1 ; i < argc ; i++ )
+    for(int i=1 ; i < argc ; i++ )
     {
         if(strcmp(argv[i], COMPUTE) == 0) compute = true ; 
         if(strcmp(argv[i], "--logname") == 0 && i+1 < argc ) logname = argv[i+1] ;

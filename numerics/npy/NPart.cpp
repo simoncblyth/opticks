@@ -29,7 +29,7 @@ void npart::setParam(const nvec4& param)
 
 void npart::setTypeCode(unsigned int typecode)
 {
-    assert( TYPECODE_J == 2 && TYPECODE_K == W );
+    //assert( TYPECODE_J == 2 && TYPECODE_K == W );
     q2.u.w = typecode ; 
 }
 

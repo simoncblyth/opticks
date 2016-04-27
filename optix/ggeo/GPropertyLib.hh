@@ -12,6 +12,7 @@
 
 #include <map>
 #include <string>
+#include <cstring>
 
 #include <vector>
 #include <glm/glm.hpp>

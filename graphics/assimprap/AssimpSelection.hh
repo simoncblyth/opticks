@@ -47,10 +47,10 @@ public:
 private:
     char* m_query ; 
     char* m_query_name ;
-    int m_query_index ; 
-    int m_query_merge ; 
-    int m_query_depth ; 
-    std::vector<int> m_query_range ; 
+    unsigned int m_query_index ; 
+    unsigned int m_query_merge ; 
+    unsigned int m_query_depth ; 
+    std::vector<unsigned int> m_query_range ; 
     bool m_flat_selection ; 
     bool m_no_selection ; 
     std::vector<AssimpNode*> m_selection ; 

@@ -1,4 +1,5 @@
 npy-src(){      echo numerics/npy/npy.bash ; }
+npy-rel(){      echo numerics/npy ; }
 npy-src(){      echo numerics/npy ; }
 npy-source(){   echo ${BASH_SOURCE:-$(env-home)/$(npy-src)} ; }
 npy-vi(){       vi $(npy-source) ; }

@@ -44,7 +44,8 @@ Index* GFlags::parseFlags(const char* path)
         upair_t p = ups[i];
         unsigned int mask = p.first ;
         unsigned int bitpos = ffs(mask);  // first set bit, 1-based bit position
-        assert( mask == (1 << (bitpos-1)));
+        unsigned int xmask = 1 << (bitpos-1) ; 
+        assert( mask == xmask);
         index->add( p.second.c_str(), bitpos );
     }
     return index ; 

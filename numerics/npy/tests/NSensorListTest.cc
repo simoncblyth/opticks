@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
     if(getenv("VERBOSE")) sens.dump();
 
-    for(unsigned int i=1 ; i < argc ; i++)
+    for(int i=1 ; i < argc ; i++)
     {
        unsigned int nodeIndex = atoi(argv[i]) ;
        NSensor* sensor = sens.findSensorForNode(nodeIndex);

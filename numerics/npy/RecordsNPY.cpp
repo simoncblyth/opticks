@@ -500,8 +500,9 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         if(bitpos < 32)
         { 
             unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); 
-            assert(ffs(bitmask) == bitpos);
-            if(ffs(bitmask) != bitpos)
+            unsigned int first = ffs(bitmask) ;
+            assert(first == bitpos);
+            if(first != bitpos)
             {
                  LOG(warning) << "RecordsNPY::getSequenceString"
                               << " UNEXPECTED ffs(bitmask) != bitpos "

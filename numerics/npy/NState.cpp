@@ -46,7 +46,7 @@ std::string NState::description(const char* msg)
 std::string NState::FormName(unsigned int num)
 {
     char name[4];
-    snprintf(name, 4, "%0.3u", num);
+    snprintf(name, 4, "%3u", num); // %0.3u
     return name ;     
 }
 

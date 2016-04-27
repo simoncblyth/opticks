@@ -153,6 +153,8 @@ imgui-env(){      elocal- ; opticks- ;  }
 imgui-edir(){ echo $(opticks-home)/graphics/gui/imgui ; }
 imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }
 
+imgui-prefix(){ echo $(imgui-base)/imgui.install ; }
+
 imgui-idir(){ echo $(imgui-base)/imgui.install ; }
 imgui-bdir(){ echo $(imgui-base)/imgui.build   ; }
 imgui-sdir(){ echo $(imgui-base)/imgui ; }
@@ -162,6 +164,7 @@ imgui-ecd(){  cd $(imgui-edir); }
 imgui-icd(){  cd $(imgui-idir); }
 imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
+
 
 
 imgui-old-base(){ echo $(local-base)/env/graphics/gui ; }

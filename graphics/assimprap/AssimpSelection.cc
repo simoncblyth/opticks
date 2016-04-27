@@ -113,15 +113,21 @@ void AssimpSelection::parseQueryElement(const char* query)
    }  
    else if(strncmp(query,index_token, strlen(index_token)) == 0)
    {
-       m_query_index = atoi(query+strlen(index_token));
+       int query_index = atoi(query+strlen(index_token));
+       assert(query_index > -1);
+       m_query_index = query_index ;
    }
    else if(strncmp(query,merge_token, strlen(merge_token)) == 0)
    {
-       m_query_merge = atoi(query+strlen(merge_token));
+       int query_merge = atoi(query+strlen(merge_token));
+       assert(query_merge > -1);
+       m_query_merge = query_merge ;
    }
    else if(strncmp(query,depth_token, strlen(depth_token)) == 0)
    {
-       m_query_depth = atoi(query+strlen(depth_token));
+       int query_depth = atoi(query+strlen(depth_token));
+       assert(query_depth > -1);
+       m_query_depth = query_depth ;
    }
    else if(strncmp(query,range_token, strlen(range_token)) == 0)
    {
@@ -129,9 +135,11 @@ void AssimpSelection::parseQueryElement(const char* query)
        split(elem, query+strlen(range_token), ':'); 
        assert(elem.size() == 2);
        //m_query_range.clear();
-       for(int i=0 ; i<elem.size() ; ++i)
+       for(unsigned int i=0 ; i<elem.size() ; ++i)
        {
-           m_query_range.push_back( atoi(elem[i].c_str()) ) ;
+           int query_range_elem = atoi(query+strlen(depth_token));
+           assert(query_range_elem > -1 );
+           m_query_range.push_back(query_range_elem) ;
        }
        m_flat_selection = true ; 
   } 
@@ -188,7 +196,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
    else if(m_query_range.size() > 0)
    {
        assert(m_query_range.size() % 2 == 0); 
-       for(unsigned i=0 ; i < m_query_range.size()/2 ; i++ )
+       for(unsigned int i=0 ; i < m_query_range.size()/2 ; i++ )
        {
            if( index >= m_query_range[i*2+0] && index < m_query_range[i*2+1] ) m_selection.push_back(node); 
        }

@@ -19,6 +19,7 @@ History
 */
 
 #include <map>
+#include <cstring>
 #include <string>
 #include <vector>
 

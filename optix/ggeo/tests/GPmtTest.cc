@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 
     GCache* cache = new GCache(opticks);
 
-    for(unsigned int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
+    for(int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
     NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;
 
     GBndLib* blib = GBndLib::load(cache, true);

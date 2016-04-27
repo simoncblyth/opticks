@@ -13,6 +13,7 @@ class GParts ;
 #include "GVector.hh"
 
 #include <vector>
+#include <cstring>
 #include <string>
 
 class GBuffer ; 

@@ -59,7 +59,7 @@ aiMatrix4x4 AssimpNode::getTransform()
 aiMatrix4x4 AssimpNode::getLevelTransform(int level)
 {
    if(level < 0) level += m_nodepath.size();
-   assert(level < m_nodepath.size());
+   assert(level < int(m_nodepath.size()));
    aiNode* node = m_nodepath[level] ;
    return node->mTransformation ;
 }

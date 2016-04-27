@@ -168,7 +168,7 @@ inline unsigned int NPYBase::getNumItems(int ifr, int ito)
     //           -> 0/ndim     -> shape of all dimensions  
     //
     //
-    unsigned int ndim = m_shape.size();
+    int ndim = m_shape.size();
     if(ifr <  0) ifr += ndim ; 
     if(ito <= 0) ito += ndim ; 
 
@@ -176,7 +176,7 @@ inline unsigned int NPYBase::getNumItems(int ifr, int ito)
     assert(ito >= 0 && ito <= ndim);
 
     unsigned int nit(1) ; 
-    for(unsigned int i=ifr ; i < ito ; i++) nit *= getShape(i);
+    for(int i=ifr ; i < ito ; i++) nit *= getShape(i);
     return nit ;
 }
 inline unsigned int NPYBase::getNumElements()

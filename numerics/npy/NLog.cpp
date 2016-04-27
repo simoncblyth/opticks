@@ -72,7 +72,7 @@ void NLog::configure(int argc, char** argv, const char* idpath)
     const char* logname = NULL ; 
     const char* loglevel = NULL ; 
 
-    for(unsigned int i=1 ; i < argc ; ++i )
+    for(int i=1 ; i < argc ; ++i )
     {
        // TODO: find a more general way to switch logname based on a particular arg 
 

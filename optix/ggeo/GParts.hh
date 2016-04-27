@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <cassert>
 #include <vector>
 #include <glm/glm.hpp>

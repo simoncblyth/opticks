@@ -39,8 +39,10 @@ T GAry<T>::np_interp(const T z, GAry<T>* xp, GAry<T>* fp )
     T left = fp->getLeft();
     T right = fp->getRight();
 
-    unsigned int len = xp->getLength();
-  
+    int len = xp->getLength();
+ 
+    assert( len > 0 );
+ 
     if(dy[len-1] != right )
     {
         LOG(warning) << "GAry<T>::np_interp "
@@ -68,18 +70,12 @@ v     799.898    463.793    450.234    441.314    434.113    428.762    424.561 
 Assertion failed: (dy[len-1] == right), function np_interp, file /Users/blyth/env/optix/ggeo/GAry.cc, line 39.
 Abort trap: 6
 
-
-
 [2015-Jul-24 10:30:36.403821]: GProperty::save 2d array of length 4096 to : /tmp/invertedReemissionCDF.npy
 [2015-Jul-24 10:30:36.443812]: GAry<T>::np_interp  len 4096 dy[len-1] nan right nan left 799.898
 Assertion failed: (dy[len-1] == right), function np_interp, file /Users/blyth/env/optix/ggeo/GAry.cc, line 50.
 /Users/blyth/env/graphics/ggeoview/ggeoview.bash: line 550:  2369 Abort trap: 6           $bin $*
 
-
-
 */
-
-
 
     T ival ;
     int j = xp->binary_search(z);  // find low side domain index corresponding to domain value z
@@ -234,19 +230,20 @@ In [17]: a[0:11]
 Out[17]: array([ 0. ,  0.1,  0.2,  0.3,  0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1. ])
 
    */
-    unsigned int alen = a->getLength();
+    int alen = a->getLength();
     if(ifr < 0 ) ifr += alen ;   
     if(ito < 0 ) ito += alen ;   
     assert(ifr >=0 && ifr <  alen);
     assert(ito >=0 && ito <= alen);
 
-    unsigned int blen = ito - ifr ;   // py style 0-based one-beyond "ito"
+    int blen = ito - ifr ;   // py style 0-based one-beyond "ito"
+    assert( ito >= ifr );
 
     //printf("Gary.cc:np_sliced ifr %d ito %d  alen %u blen %u \n", ifr, ito, alen, blen );  
 
     GAry<T>* b = new GAry<T>(blen); 
 
-    for (unsigned int ia = 0; ia < alen ; ia++)
+    for (int ia = 0; ia < alen ; ia++)
     {
         if( ia >= ifr && ia < ito )
         {
@@ -630,10 +627,10 @@ unsigned int GAry<T>::getRightZero()
     // otherwise return m_length
 
     T zero(0);
-    int ito(m_length);
+    unsigned int ito(m_length);
     for(unsigned int i=0 ; i < m_length ; i++)
     {
-        unsigned int j = m_length - 1 - i ;
+        unsigned int j = m_length - 1 - i ;   // looks at bins from the right 
         if( m_values[j] == zero ) ito = j  ;
         else
             break ; 

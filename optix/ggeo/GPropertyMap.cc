@@ -380,7 +380,7 @@ bool GPropertyMap<T>::hasProperty(const char* pname)
 template <typename T>
 GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index) 
 {
-   unsigned int nprop  = m_keys.size(); 
+   int nprop  = m_keys.size(); 
    if(index < 0) index += nprop ;
 
    GProperty<T>* prop = NULL ; 
@@ -395,7 +395,7 @@ GProperty<T>* GPropertyMap<T>::getPropertyByIndex(int index)
 template <typename T>
 const char* GPropertyMap<T>::getPropertyNameByIndex(int index)
 {
-   unsigned int nprop  = m_keys.size(); 
+   int nprop  = m_keys.size(); 
    if(index < 0) index += nprop ;
 
    const char* name = NULL ; 

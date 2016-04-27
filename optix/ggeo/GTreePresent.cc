@@ -29,7 +29,7 @@ void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSi
 {
 
     std::string indent(depth, ' ');
-    int numChildren = node->getNumChildren() ;
+    unsigned int numChildren = node->getNumChildren() ;
     int nodeIndex   = node->getIndex() ; 
     unsigned int ridx = node->getRepeatIndex();   
     //const char* name = node->getName() ; 

@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
     if(argc > 1)
     {
-       for(unsigned int i=0 ; i < argc-1 ; i++) p.dump(atoi(argv[i+1]));
+       for(int i=0 ; i < argc-1 ; i++) p.dump(atoi(argv[i+1]));
     }
     else
     {

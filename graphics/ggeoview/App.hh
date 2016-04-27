@@ -1,5 +1,6 @@
 #pragma once
 
+
 // bcfg-
 class Cfg ;
  
@@ -58,6 +59,7 @@ class OpViz ;
 
 #include <map>
 #include <string>
+#include <cstring>
 
 // glm-
 #include <glm/glm.hpp>
