@@ -36,7 +36,6 @@ Only needed whilst making sweeping changes::
     simon:~ blyth$ opticks- ; opticks--
 
 
-
 G4PB build
 -----------
 
@@ -122,11 +121,11 @@ This provides cache variable OptiX_INSTALL_DIR.
 TODO
 -----
 
+* get Linux RPATH working, see https://cmake.org/Wiki/CMake_RPATH_handling
 * find out what depends on ssl and crypt : maybe in NPY_LIBRARIES 
 * tidy up optix optixu FindOptiX from the SDK doesnt set OPTIX_LIBRARIES
 
 * get the CTest tests to pass 
-
 
 * incorporate cfg4- in superbuild with G4 checking
 
@@ -137,6 +136,8 @@ TODO
 * spawn Opticks repository 
 * adopt single level directories 
 * split ggv- usage from ggeoview- building
+* rename GGeoView to OpticksView/OpticksViz
+* rename GGeo to OpticksGeo ?
 
 * investigate CPack as way of distributing binaries
 

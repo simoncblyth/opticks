@@ -45,14 +45,12 @@ OPTION(WITH_OPTIX      "using OPTIX." OFF)
 #set(ThrustRap_SOURCE_DIR   "${OPTICKS_HOME}/numerics/thrustrap")
 
 
-# /usr/local/env/chroma_env/src/root-v5.34.14/cmake/modules/RootBuildOptions.cmake
+
+# https://cmake.org/Wiki/CMake_RPATH_handling
+
 if (APPLE)
-   # use, i.e. don't skip the full RPATH for the build tree
    set(CMAKE_SKIP_BUILD_RPATH  FALSE)
-   # when building, don't use the install RPATH already (but later on when installing)
    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-   # add the automatically determined parts of the RPATH
-   # which point to directories outside the build tree to the install RPATH
    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")  
    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
@@ -61,4 +59,22 @@ if (APPLE)
    # note: it is planned that a future version of CMake will enable this by default
    set(CMAKE_MACOSX_RPATH 1)
 endif(APPLE)
+
+
+if(UNIX AND NOT APPLE)
+   set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+   set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+   # the RPATH to be used when installing, but only if it's not a system directory
+   list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+   if("${isSystemDir}" STREQUAL "-1")
+      set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+   endif("${isSystemDir}" STREQUAL "-1")
+
+endif(UNIX AND NOT APPLE)
+
+
+
 
