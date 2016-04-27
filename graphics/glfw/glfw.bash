@@ -15,6 +15,20 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
+OSX 10.11 sensitivity to clang version
+----------------------------------------
+
+* https://github.com/glfw/glfw/issues/559
+
+
+GLFW 3.1.1 OSX 10.5.8 compilation failure
+------------------------------------------
+
+GLFW 3.1.1 in cocoa_platform.h uses CGDisplayModeRef which is an OSX 10.6 ism 
+
+* https://developer.apple.com/library/mac/documentation/GraphicsImaging/Conceptual/QuartzDisplayServicesConceptual/Articles/DisplayModes.html
+
+
 pkg-config
 ------------
 

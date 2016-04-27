@@ -32,6 +32,15 @@ Use the cmake one::
     /home/blyth/local/env/tools/cmake/cmake-3.5.2-Linux-x86_64/share/cmake-3.5/Modules/FindBoost.cmake
 
 
+Update Boost
+-------------
+
+::
+
+    boost-bootstrap-build
+    boost-build
+
+
 Version History
 -----------------
 
@@ -205,10 +214,12 @@ boost python build
 EOU
 }
 boost-dir(){ echo $(local-base)/env/boost/$(boost-name) ; }
-boost-bdir(){  echo $(boost-dir).build ; }
-boost-prefix(){ 
-    echo $(boost-dir).local ; 
-}
+boost-bdir(){   echo $(boost-dir).build ; }
+boost-prefix(){ echo $(boost-dir).local ; }
+
+boost-icd(){ cd $(boost-prefix) ; }
+
+
 
 boost-ver(){ 
     #echo 1.54.0 

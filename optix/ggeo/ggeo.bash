@@ -1014,7 +1014,7 @@ EOU
 ggeo-env(){      elocal- ; opticks- ; }
 
 ggeo-idir(){ echo $(opticks-idir); } 
-ggeo-bdir(){ echo $(opticks-bdir)/$(opticks-rel) ; }  
+ggeo-bdir(){ echo $(opticks-bdir)/$(ggeo-rel) ; }  
 
 ggeo-sdir(){ echo $(env-home)/optix/ggeo ; }
 ggeo-tdir(){ echo $(env-home)/optix/ggeo/tests ; }

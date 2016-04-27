@@ -186,11 +186,6 @@ includes bash functions for local installs of cmake with
 precursor function *cmake-*.
 
 
-
-
-
-
-
 Full Building Example
 ------------------------
 
@@ -283,6 +278,13 @@ step will yield errors like the below.::
 If possible use your system package manager to update Boost. If that is 
 not possible then do a local Boost install.  Opticks includes bash functions
 starting *boost-* that can get and install Boost locally.
+
+
+::
+
+    opticks-
+    boost-
+    opticks-configure -DBOOST_ROOT=$(boost-prefix)
 
 
 
@@ -389,6 +391,7 @@ opticks-cmake(){
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-idir) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
+       $* \
        $(opticks-sdir)
 
    cd $iwd
@@ -396,7 +399,7 @@ opticks-cmake(){
 
 opticks-configure(){
    opticks-wipe
-   opticks-cmake
+   opticks-cmake $*
 }
 
 opticks-make(){
@@ -418,7 +421,7 @@ opticks--()
          opticks-externals-install
     fi 
 
-    opticks-cmake
+    opticks-cmake $*
     opticks-make install
 
     echo $msg DONE $(date)
