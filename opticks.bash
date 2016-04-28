@@ -21,6 +21,9 @@ cmake-
 cmakex-
     documenting the development of the opticks- cmake machinery 
 
+cmakecheck-
+    testing CMake config
+
 
 Fullbuild Testing
 ------------------
@@ -67,6 +70,12 @@ runtime path problem
     -- Up-to-date: /home/blyth/local/opticks/include/GGeoView/App.hh
 
 * currently kludged via LD_LIBRARY_PATH
+
+
+NPY/jsonutil.cpp boost::ptree compilation warning
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Maybe split off ptree dependency togther with BRegex or BCfg
 
 
 remote running : X11 failed to connect
@@ -121,7 +130,6 @@ This provides cache variable OptiX_INSTALL_DIR.
 TODO
 -----
 
-* get Linux RPATH working, see https://cmake.org/Wiki/CMake_RPATH_handling
 * find out what depends on ssl and crypt : maybe in NPY_LIBRARIES 
 * tidy up optix optixu FindOptiX from the SDK doesnt set OPTIX_LIBRARIES
 
@@ -353,7 +361,6 @@ To download OptiX you need to join the NVIDIA Developer Program.
 Use the links in the table to register, it is free but may take a few days to be approved.
 Follow the NVIDIA instructions to download and install CUDA and OptiX. 
 Thrust is installed together with CUDA. 
-The cmake provided FindCUDA.cmake is used to locate the installation.
 
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        notes
@@ -362,6 +369,63 @@ cuda                   cuda-            CUDA            https://developer.nvidia
 optix                  optix-           OptiX           https://developer.nvidia.com/optix
 numerics/thrust        thrust-          Thrust          included with CUDA
 =====================  ===============  =============   ==============================================================================
+
+
+Configuring and Building Opticks
+---------------------------------
+
+CMake is used to configure Opticks and generate Makefiles. 
+For a visualization only build with system Boost 
+the defaults should work OK and there is no need to explicitly configure. 
+If a local Boost was required then::
+
+    opticks-configure -DBOOST_ROOT=$(boost-prefix) 
+    
+For a full build with CUDA and OptiX configure with::
+
+    opticks-configure -DCUDA_TOOLKIT_ROOT_DIR=/Developer/NVIDIA/CUDA-7.0 \
+                      -DOptiX_INSTALL_DIR=/Developer/OptiX \
+                      -DBOOST_ROOT=$(boost-prefix) 
+    
+
+These configuration values are cached in the CMakeCache.txt file
+in the build directory. These values are not overridden by rebuilding 
+with the *opticks--* bash function. 
+A subsequent *opticks-configure* however will wipe the build directory 
+allowing new values to be set.
+
+
+To build::
+    opticks--
+
+
+Configuration Machinery
+------------------------
+
+If the above configuration suceeded for you then 
+you do not need to understand this machinery.
+
+The below commands from the *opticks-cmake* bash function 
+change directory to the build folder and invokes cmake 
+to generate a configuration cache file and multiple Makefiles.::
+
+   opticks-bcd
+   cmake \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+       -DOptiX_INSTALL_DIR=$(optix-prefix) \
+       $* \
+       $(opticks-sdir)
+
+CMake is controlled via CMakeLists.txt files. 
+The top level one includes the below lines that 
+locate the CUDA and OptiX:: 
+
+    set(OPTICKS_CUDA_VERSION 5.5)
+    set(OPTICKS_OPTIX_VERSION 3.5)
+    ...
+    find_package(CUDA ${OPTICKS_CUDA_VERSION})
+    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
 
 
 Building Opticks 
@@ -444,7 +508,7 @@ opticks-cmake(){
 
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(opticks-idir) \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        $* \
        $(opticks-sdir)
@@ -696,21 +760,23 @@ opticks-bash-list(){
 }
 
 
-opticks-ldpath(){ 
-   boost-
-   assimp-
-   openmesh-
-   glew-
-   glfw-
-   imgui-
+# not needed as RPATH is working 
+#opticks-ldpath(){ 
+#   boost-
+#   assimp-
+#   openmesh-
+#   glew-
+#   glfw-
+#   imgui-
+#   echo "$(boost-prefix)/lib;$(opticks-prefix)/lib;$(assimp-prefix)/lib;$(openmesh-prefix)/lib;$(glew-prefix)/lib64;$(glfw-prefix)/lib;$(imgui-prefix)/lib"
+#}
 
-   echo "$(boost-prefix)/lib;$(opticks-prefix)/lib;$(assimp-prefix)/lib;$(openmesh-prefix)/lib;$(glew-prefix)/lib64;$(glfw-prefix)/lib;$(imgui-prefix)/lib"
+
+opticks-check(){ 
+   local msg="=== $FUNCNAME :"
+   local dae=$HOME/g4_00.dae
+   [ ! -f "$dae" ] && echo $msg missing geometry file $dae && return 
+   $(opticks-prefix)/bin/GGeoView --size 1024,768,1 $dae
 }
 
-
-opticks-check(){
-
-   opticks-;LD_LIBRARY_PATH=$(opticks-ldpath) $(opticks-prefix)/bin/GGeoView --size 1024,768,1 ~/g4_00.dae
-
-}
 

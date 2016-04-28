@@ -9,9 +9,11 @@
 
 #include <boost/algorithm/string.hpp> 
 #include <boost/lexical_cast.hpp>
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
@@ -42,7 +44,6 @@ bool existsPath(const char* dir_, const char* name )
   
     return false ; 
 }
-
 
 
 std::string preparePath(const char* dir_, const char* name, bool create )
@@ -200,6 +201,11 @@ int loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, uns
 template<typename A, typename B> 
 void loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const char* name)
 {
+    std::cout << "loadList"
+              << " dir [" << dir << "]" 
+              << " name [" << name << "]" 
+              << std::endl ;
+
     std::string path = preparePath(dir, name, false);
     if(!path.empty())
     {

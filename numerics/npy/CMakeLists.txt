@@ -31,6 +31,13 @@ set(LIBRARIES
    crypto
 )
 
+# appends to flags for specific files : trying to quell warnings from underlying boost code
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+   set_source_files_properties(jsonutil.cpp PROPERTIES COMPILE_FLAGS -Wno-all) 
+   set_source_files_properties(NLog.cpp     PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
+endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+
+
 add_library( ${name}  SHARED
     NumpyEvt.cpp
     NPYBase.cpp

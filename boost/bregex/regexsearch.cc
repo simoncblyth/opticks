@@ -202,7 +202,7 @@ std::string os_path_expandvars(const char* s)
 
     while(boost::regex_search(str,e,boost::match_default))
     {
-        boost::sregex_iterator mt(str.begin(), str.end(), e);
+        boost::sregex_iterator mt(str.begin(), str.end(), e);  // hmm : hangs for non-defined envvar
         boost::sregex_iterator me;
 
         if(mt != me)
