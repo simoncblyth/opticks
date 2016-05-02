@@ -49,7 +49,8 @@ include_directories(
     ${NPY_INCLUDE_DIRS} 
     ${OpticksCore_INCLUDE_DIRS} 
 
-    ${OptiX_INCLUDE}  
+    ${OptiX_INCLUDE_DIRS}  
+
     ${CUDA_INCLUDE_DIRS}
     ${Assimp_INCLUDE_DIRS}  
     ${AssimpRap_INCLUDE_DIRS}  
@@ -68,8 +69,9 @@ set(LIBRARIES
       ${CUDA_LIBRARIES}
       ${NPY_LIBRARIES}
       ${OpticksCore_LIBRARIES} 
-      optix
-      optixu
+
+      ${OptiX_LIBRARIES}
+
       ${CUDARap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
 )

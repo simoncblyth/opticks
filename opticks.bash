@@ -521,6 +521,15 @@ opticks-configure(){
    opticks-cmake $*
 }
 
+
+opticks-export()
+{
+  local bindir=$(opticks-prefix)/bin
+  if [ "${PATH/$bindir}" == "${PATH}" ]; then
+      export PATH=$bindir:$PATH
+  fi   
+}
+
 opticks-configure-local-boost(){
     local msg="=== $FUNCNAME :"
     boost-

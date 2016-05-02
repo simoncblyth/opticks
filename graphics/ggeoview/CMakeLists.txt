@@ -36,7 +36,7 @@ if(WITH_OPTIX)
     set(WITH_OPTIX_INCLUDES
        ${CUDA_INCLUDE_DIRS}
        ${CUDARap_INCLUDE_DIRS}  
-       ${OptiX_INCLUDE}  
+       ${OptiX_INCLUDE_DIRS}  
        ${OptiXRap_INCLUDE_DIRS}  
        ${ThrustRap_INCLUDE_DIRS}
        ${OpticksOp_INCLUDE_DIRS} 
@@ -54,8 +54,7 @@ if(WITH_OPTIX)
     set(WITH_OPTIX_LIBRARIES
       ${CUDA_LIBRARIES}
       ${CUDARap_LIBRARIES}
-      optix
-      optixu
+      ${OptiX_LIBRARIES}
       ${OptiXRap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
       ${OpticksOp_LIBRARIES}

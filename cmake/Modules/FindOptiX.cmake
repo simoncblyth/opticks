@@ -31,18 +31,36 @@ set(OptiX_INSTALL_DIR "${CMAKE_SOURCE_DIR}/../" CACHE PATH "Path to OptiX instal
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT APPLE)
   set(bit_dest "64")
 else()
-  set(bit_dest "")
+  set(bit_dest "64")  # SCB: contrary to above comment on OSX for OptiX_301 OptiX_370b2 OptiX_380 the library dir name is lib64
 endif()
 
 macro(OPTIX_find_api_library name version)
-  find_library(${name}_LIBRARY
-    NAMES ${name}.${version} ${name}
-    PATHS "${OptiX_INSTALL_DIR}/lib${bit_dest}"
-    NO_DEFAULT_PATH
-    )
-  find_library(${name}_LIBRARY
-    NAMES ${name}.${version} ${name}
-    )
+
+  #message("find ${name} ")
+
+  if(UNIX AND NOT APPLE)
+      #message("UNIX AND NOT APPLE")
+      find_library(${name}_LIBRARY
+        NAMES ${name}.${version} ${name}
+        PATHS "${OptiX_INSTALL_DIR}/lib${bit_dest}"
+        NO_DEFAULT_PATH
+        )
+
+      find_library(${name}_LIBRARY
+        NAMES ${name}.${version} ${name}
+        )
+  endif()
+
+  # SCB: why do i need to add this only now ? is there a cmake version change about looking for .dylib ?
+  if(APPLE)
+      #message("FindOptiX.cmake OptiX_INSTALL_DIR:${OptiX_INSTALL_DIR} find_library name:${name} version:${version} PATHS:${OptiX_INSTALL_DIR}/lib${bit_dest}")
+      find_library(${name}_LIBRARY
+        NAMES ${name}.${version}.dylib ${name}
+        PATHS "${OptiX_INSTALL_DIR}/lib${bit_dest}"
+        NO_DEFAULT_PATH
+        )
+  endif()
+
   if(WIN32)
     find_file(${name}_DLL
       NAMES ${name}.${version}.dll
@@ -59,6 +77,10 @@ OPTIX_find_api_library(optix 1)
 OPTIX_find_api_library(optixu 1)
 OPTIX_find_api_library(optix_prime 1)
 
+#message("optix_LIBRARY:${optix_LIBRARY}")
+#message("optixu_LIBRARY:${optixu_LIBRARY}")
+#message("optix_prime_LIBRARY:${optix_prime_LIBRARY}")
+
 # Include
 find_path(OptiX_INCLUDE
   NAMES optix.h
@@ -68,6 +90,10 @@ find_path(OptiX_INCLUDE
 find_path(OptiX_INCLUDE
   NAMES optix.h
   )
+
+
+#message("OptiX_INCLUDE:${OptiX_INCLUDE}")
+
 
 # Check to make sure we found what we were looking for
 function(OptiX_report_error error_message required)
@@ -89,6 +115,19 @@ endif()
 if(NOT optix_prime_LIBRARY)
   OptiX_report_error("optix Prime library not found.  Please locate before proceeding." FALSE)
 endif()
+
+
+if(optix_LIBRARY AND optixu_LIBRARY AND OptiX_INCLUDE)
+   set(OptiX_FOUND YES)
+   set(OptiX_INCLUDE_DIRS "${OptiX_INCLUDE}")
+   set(OptiX_LIBRARIES 
+              ${optix_LIBRARY} 
+              ${optixu_LIBRARY} 
+      )
+   set(OptiX_DEFINITIONS "")
+   message("Found OptiX")
+endif()
+
 
 # Macro for setting up dummy targets
 function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
@@ -127,9 +166,9 @@ function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
 endfunction()
 
 # Sets up a dummy target
-OptiX_add_imported_library(optix "${optix_LIBRARY}" "${optix_DLL}" "${OPENGL_LIBRARIES}")
-OptiX_add_imported_library(optixu   "${optixu_LIBRARY}"   "${optixu_DLL}"   "")
-OptiX_add_imported_library(optix_prime "${optix_prime_LIBRARY}"  "${optix_prime_DLL}"  "")
+#OptiX_add_imported_library(optix "${optix_LIBRARY}" "${optix_DLL}" "${OPENGL_LIBRARIES}")
+#OptiX_add_imported_library(optixu   "${optixu_LIBRARY}"   "${optixu_DLL}"   "")
+#OptiX_add_imported_library(optix_prime "${optix_prime_LIBRARY}"  "${optix_prime_DLL}"  "")
 
 macro(OptiX_check_same_path libA libB)
   if(_optix_path_to_${libA})

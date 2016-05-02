@@ -34,7 +34,7 @@ include_directories(
    ${OpticksCore_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
    ${CUDA_INCLUDE_DIRS}
-   ${OptiX_INCLUDE} 
+   ${OptiX_INCLUDE_DIRS} 
    ${OptiXRap_INCLUDE_DIRS}  
    ${CUDARap_INCLUDE_DIRS} 
    ${ThrustRap_INCLUDE_DIRS}
@@ -59,9 +59,6 @@ add_definitions(
 
 set(LIBRARIES
 
-    optix
-    optixu 
-
    ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
@@ -69,6 +66,7 @@ set(LIBRARIES
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${CUDA_LIBRARIES}
+   ${OptiX_LIBRARIES}
    ${OptiXRap_LIBRARIES}
    ${CUDARap_LIBRARIES}
    ${ThrustRap_LIBRARIES}

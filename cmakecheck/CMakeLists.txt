@@ -12,17 +12,20 @@ option(DUMP ON)
 include(EnvBuildOptions)
 
 find_package(CUDA REQUIRED)
-#find_package(OptiX REQUIRED)
+find_package(OptiX REQUIRED)
 #find_package(OpticksBoost REQUIRED)
 
-if(Optix_FOUND)
-   message("OptiX_LIBRARIES:${OptiX_LIBRARIES}")
-endif(Optix_FOUND)
+if(OptiX_FOUND)
+   message("OptiX_FOUND")
+else(OptiX_FOUND)
+   message("FAILED TO FIND OptiX")
+endif(OptiX_FOUND)
+
+message("OptiX_INCLUDE:${OptiX_INCLUDE}")
 
 if(CUDA_FOUND)
    message("CUDA_LIBRARIES:${CUDA_LIBRARIES}")
 endif(CUDA_FOUND)
-
 
 
 
