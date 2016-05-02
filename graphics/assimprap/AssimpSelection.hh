@@ -8,6 +8,20 @@ class AssimpNode ;
 class AssimpSelection {
 
 public:
+    typedef enum { UNDEFINED, NAME, INDEX, MERGE, DEPTH, RANGE } AssimpQuery_t ;
+
+    static const char* UNDEFINED_ ; 
+    static const char* NAME_ ; 
+    static const char* INDEX_ ; 
+    static const char* MERGE_ ; 
+    static const char* DEPTH_ ; 
+    static const char* RANGE_ ; 
+
+    const char* getQueryTypeString();
+    AssimpQuery_t getQueryType();
+    void dumpQuery(const char* msg="AssimpSelection::dumpQuery");
+
+public:
     AssimpSelection(AssimpNode* root, const char* query);
     virtual ~AssimpSelection();
 
@@ -50,6 +64,8 @@ private:
     unsigned int m_query_index ; 
     unsigned int m_query_merge ; 
     unsigned int m_query_depth ; 
+    AssimpQuery_t m_query_type ; 
+
     std::vector<unsigned int> m_query_range ; 
     bool m_flat_selection ; 
     bool m_no_selection ; 
@@ -73,6 +89,7 @@ inline AssimpSelection::AssimpSelection(AssimpNode* root, const char* query)
     m_query_index(0), 
     m_query_merge(0), 
     m_query_depth(0), 
+    m_query_type(UNDEFINED), 
     m_flat_selection(false),
     m_no_selection(false),
 

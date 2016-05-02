@@ -12,13 +12,24 @@
 #include "NLog.hpp"
 
 
+
+const char* AssimpSelection::UNDEFINED_ = "undefined" ; 
+const char* AssimpSelection::NAME_ = "name" ; 
+const char* AssimpSelection::INDEX_ = "index" ; 
+const char* AssimpSelection::MERGE_ = "merge" ; 
+const char* AssimpSelection::DEPTH_ = "depth" ; 
+const char* AssimpSelection::RANGE_ = "range" ; 
+
+
+
 void AssimpSelection::init()
 {
     parseQuery(m_query);    
+    dumpQuery("AssimpSelection::init dumpQuery");    
 
     m_selection.clear();
 
-    LOG(debug) << "AssimpSelection::AssimpSelection"
+    LOG(info) << "AssimpSelection::AssimpSelection"
               << " before SelectNodes " 
               << " m_query " << m_query 
               << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
@@ -27,7 +38,7 @@ void AssimpSelection::init()
 
     selectNodes(m_root, 0, false);
 
-    LOG(debug) << "AssimpSelection::AssimpSelection"
+    LOG(info) << "AssimpSelection::AssimpSelection"
               << " after SelectNodes " 
               << " m_selection size " << m_selection.size()
               << " out of m_count " << m_count 
@@ -89,7 +100,6 @@ void AssimpSelection::parseQuery(const char* query)
    std::vector<std::string> elem ; 
    split(elem, query, ',');
 
-   LOG(info) << "AssimpSelection::parseQuery [" << query << "] elements: " << elem.size() ; 
    for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
 
    if(elem.size() == 0)
@@ -97,7 +107,55 @@ void AssimpSelection::parseQuery(const char* query)
       m_no_selection = true ; 
    }
 
+   LOG(info) << "AssimpSelection::parseQuery" 
+             << " query:[" << query << "]"
+             << " elements:" << elem.size()  
+             << " queryType:" << getQueryTypeString()
+             ;
+
+
 }
+
+void AssimpSelection::dumpQuery(const char* msg)
+{
+    LOG(info) << msg 
+              << " queryType " << getQueryTypeString() ;
+
+   if(m_query_type == RANGE)
+   {
+       size_t nrange = m_query_range.size() ;
+       std::cout << " nrange " << nrange ;
+       for(unsigned int i=0 ; i < nrange ; i++)
+       {
+          std::cout << " : " << m_query_range[i] ;
+       }
+       std::cout << std::endl ; 
+   } 
+           
+}
+
+AssimpSelection::AssimpQuery_t AssimpSelection::getQueryType()
+{
+    return m_query_type ; 
+}
+
+const char* AssimpSelection::getQueryTypeString()
+{
+   const char* type = UNDEFINED_ ;
+   switch(m_query_type)
+   {
+      case UNDEFINED: type=UNDEFINED_ ;break; 
+      case NAME     : type=NAME_      ;break; 
+      case INDEX    : type=INDEX_     ;break; 
+      case RANGE    : type=RANGE_     ;break; 
+      case MERGE    : type=MERGE_     ;break; 
+      case DEPTH    : type=DEPTH_     ;break; 
+      default       : type=UNDEFINED_ ;break; 
+   }
+   return type ; 
+}
+
+
 
 void AssimpSelection::parseQueryElement(const char* query)
 {
@@ -107,37 +165,44 @@ void AssimpSelection::parseQueryElement(const char* query)
    const char* merge_token = "merge:" ;
    const char* depth_token = "depth:" ;
 
+   m_query_type = UNDEFINED ; 
+
    if(strncmp(query,name_token, strlen(name_token)) == 0)
    {
+       m_query_type = NAME ; 
        m_query_name = strdup(query+strlen(name_token));
    }  
    else if(strncmp(query,index_token, strlen(index_token)) == 0)
    {
+       m_query_type = INDEX ; 
        int query_index = atoi(query+strlen(index_token));
        assert(query_index > -1);
        m_query_index = query_index ;
    }
    else if(strncmp(query,merge_token, strlen(merge_token)) == 0)
    {
+       m_query_type = MERGE ; 
        int query_merge = atoi(query+strlen(merge_token));
        assert(query_merge > -1);
        m_query_merge = query_merge ;
    }
    else if(strncmp(query,depth_token, strlen(depth_token)) == 0)
    {
+       m_query_type = DEPTH ; 
        int query_depth = atoi(query+strlen(depth_token));
        assert(query_depth > -1);
        m_query_depth = query_depth ;
    }
    else if(strncmp(query,range_token, strlen(range_token)) == 0)
    {
+       m_query_type = RANGE ; 
        std::vector<std::string> elem ; 
        split(elem, query+strlen(range_token), ':'); 
        assert(elem.size() == 2);
        //m_query_range.clear();
        for(unsigned int i=0 ; i<elem.size() ; ++i)
        {
-           int query_range_elem = atoi(query+strlen(depth_token));
+           int query_range_elem = atoi(elem[i].c_str());
            assert(query_range_elem > -1 );
            m_query_range.push_back(query_range_elem) ;
        }
