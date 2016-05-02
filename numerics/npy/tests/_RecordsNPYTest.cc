@@ -18,10 +18,11 @@ int main(int argc, char** argv)
     unsigned int maxrec = idom->getValue(0,0,3) ; // TODO: enumerate the k indices 
     assert(maxrec == 10);
 
-
     Types types ; 
-    types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
+    //types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
+    types.readFlags("$ENV_HOME/optickscore/OpticksPhoton.h");
     types.dumpFlags();
+
     types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 
@@ -41,9 +42,10 @@ int main(int argc, char** argv)
         std::string dseqhis = types.decodeSequenceString(seqhis, Types::HISTORY);
         unsigned long long cseq = types.convertSequenceString(seqhis, Types::HISTORY);
         unsigned long long hseq = r.getSequence(photon_id, Types::HISTORY );
-        assert(cseq == hseq);
 
         printf(" photon_id %8d hseq [%16llx] cseq[%16llx] seqhis [%20s] dseqhis [%s]  \n", photon_id, hseq, cseq, seqhis.c_str(), dseqhis.c_str() );
+
+        assert(cseq == hseq);
 
         //std::string seqmat = r.getSequenceString(photon_id, Types::MATERIAL );
         //std::string dseqmat = r.decodeSequenceString(seqmat, Types::MATERIAL);

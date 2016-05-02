@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     if(!fs.is_open())
     {
          std::cout << argv[0] << " " << "missing input file " << flags << std::endl ;
-         return 1 ; 
+         return 0 ; 
     } 
 
     std::string line = ""; 

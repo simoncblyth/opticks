@@ -21,6 +21,8 @@ class Opticks {
        friend class OpticksCfg<Opticks> ; 
    public:
        static const char* COMPUTE ; 
+   //public:
+   //    static const char* PHOTON_FLAGS_PATH ; 
    public:
        enum {
                GEOCODE_ANALYTIC = 'A',   

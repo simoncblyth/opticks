@@ -6,11 +6,14 @@
 
 int main(int argc, char** argv)
 {
+
     const char* idpath = getenv("IDPATH");
 
     Types types ; 
-    types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
     types.dumpFlags();
+
+   // material names have moved to GItemList control see $IDPATH/GItemList/GMaterialLib.txt
+   // lower level version in NPropNames
     types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 

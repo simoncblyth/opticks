@@ -9,10 +9,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
+#include "NLog.hpp"
 
 const char* Types::TAIL = " " ;
 
@@ -21,10 +19,11 @@ const char* Types::MATERIAL_ = "material" ;
 const char* Types::HISTORYSEQ_ = "historyseq" ;
 const char* Types::MATERIALSEQ_ = "materialseq" ;
 
+ const char* Types::PHOTON_FLAGS_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ; 
 
 void Types::init()
 {
-    readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");  
+    readFlags(PHOTON_FLAGS_PATH);  
 }
 
 void Types::saveFlags(const char* idpath, const char* ext)
@@ -64,6 +63,15 @@ void Types::readMaterialsOld(const char* idpath, const char* name)
 void Types::readMaterials(const char* idpath, const char* name)
 {
     Index* index = Index::load( idpath, name );
+    if(!index)
+    {
+        LOG(warning) << "Types::readMaterials"
+                     << " Index::load FAILED "
+                     << " idpath " << idpath
+                     << " name " << name
+                     ;
+        return ;
+    }
     setMaterialsIndex(index);
 }
 
@@ -71,6 +79,15 @@ void Types::readMaterials(const char* idpath, const char* name)
 void Types::setMaterialsIndex(Index* index)
 {
     m_materials_index = index ; 
+
+    if(!index)
+    {
+        LOG(warning) << "Types::setMaterialsIndex"
+                     << " NULL index " 
+                     ;
+        return ;
+    }
+
 
     typedef std::vector<std::string> VS ; 
     VS& names = index->getNames();
@@ -216,6 +233,14 @@ std::string Types::getMaterialString(unsigned int mask)
 unsigned int Types::getMaterialCode(std::string label)
 {
     std::string labeltt = label.substr(0,label.size()-1);  // trim tail spacer
+
+    if(!m_materials_index)
+    {
+        LOG(fatal) << "Types::getMaterialCode"
+                   << " MATERIALS INDEX NOT LOADED "
+                   << " label " << label 
+                   ; 
+    }
     assert(m_materials_index);
     return m_materials_index->getIndexSource(labeltt.c_str(), 0xFF);    
 }
@@ -375,11 +400,18 @@ std::string Types::getMaskString(unsigned int mask, Item_t etype)
 void Types::readFlags(const char* path)
 {
     // read photon header to get flag names and enum values
+    LOG(info) << "Types::readFlags"
+              << " path[" << path << "]"
+              ;
 
     typedef std::pair<unsigned int, std::string>  upair_t ;
     typedef std::vector<upair_t>                  upairs_t ;
     upairs_t ups ; 
-    enum_regexsearch( ups, path ); // "$ENV_HOME/graphics/ggeoview/cu/photon.h");    
+    enum_regexsearch( ups, path ); 
+
+    LOG(info) << "Types::readFlags"
+              << " pair count " << ups.size() ; 
+
 
     m_flags = new Index("GFlagIndex");
     for(unsigned int i=0 ; i < ups.size() ; i++)

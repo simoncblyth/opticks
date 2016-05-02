@@ -18,7 +18,7 @@
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
-
+//const char* Opticks::PHOTON_FLAGS_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ; 
 const char* Opticks::COMPUTE = "--compute" ; 
 
 const char* Opticks::ZERO_              = "." ;

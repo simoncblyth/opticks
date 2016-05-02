@@ -16,7 +16,42 @@ class Index ;
 // out labelling into handlers from GFlags, GMaterialLib, GSurfaceLib, ...
 //
 
+/*
+Places to migrate to Typ::
+
+    delta:env blyth$ find . -name '*.cc' -exec grep -H Types.hpp {} \;
+    ./numerics/npy/tests/_BoundariesNPYTest.cc:#include "Types.hpp"
+    ./numerics/npy/tests/_RecordsNPYTest.cc:#include "Types.hpp"
+    ./numerics/npy/tests/PhotonsNPYTest.cc:#include "Types.hpp"
+    ./numerics/npy/tests/SequenceNPYTest.cc:#include "Types.hpp"
+    ./numerics/npy/tests/TypesTest.cc:#include "Types.hpp"
+    ./optix/ggeo/tests/GItemIndexTest.cc:#include "Types.hpp"
+    ./optix/ggeo/tests/RecordsNPYTest.cc:#include "Types.hpp"
+
+
+    ./graphics/ggeoview/attic/GLoaderTest.cc:#include "Types.hpp"
+    ./optix/ggeo/attic/GLoader.cc:#include "Types.hpp"
+    ./optix/ggeo/attic/GLoaderTest.cc:#include "Types.hpp"
+
+
+    ./graphics/ggeoview/App.cc:#include "Types.hpp"
+    ./optix/ggeo/GCache.cc:#include "Types.hpp"
+    ./optix/ggeo/GItemIndex.cc:#include "Types.hpp"
+
+    delta:env blyth$ 
+    delta:env blyth$ find . -name '*.hh' -exec grep -H Types.hpp {} \;
+    delta:env blyth$ find . -name '*.cpp' -exec grep -H Types.hpp {} \;
+    ./numerics/npy/Types.cpp:#include "Types.hpp"
+    delta:env blyth$ 
+
+
+
+*/
+
+
 class Types {
+   public:
+       static const char* PHOTON_FLAGS_PATH ; 
    public:
        static const char* TAIL ; 
 
