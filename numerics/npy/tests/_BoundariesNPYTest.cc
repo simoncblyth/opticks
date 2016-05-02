@@ -12,11 +12,20 @@
 int main(int argc, char** argv)
 {
     const char* idpath = getenv("IDPATH");
+    if(idpath == NULL)
+    {
+       std::cout << argv[0] << " missing envvat IDPATH " << std::endl ; 
+    }
+
     const char* tag = "1" ;
     const char* det = "dayabay" ; 
 
     NPY<float>* dpho = NPY<float>::load("oxcerenkov", tag, det);
 
+    if(dpho == NULL)
+    {
+       std::cout << argv[0] << " failed to load evt  " << std::endl ; 
+    } 
 
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");

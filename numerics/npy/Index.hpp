@@ -23,6 +23,7 @@ class Index : public NSequence {
    public:
        // debugging only
         std::string getPath(const char* idpath, const char* prefix);
+        void dumpPaths(const char* idpath, const char* msg="Index::dumpPaths");
    public:
         const char* getItemType();
         const char* getTitle();

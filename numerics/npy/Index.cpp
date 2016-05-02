@@ -289,4 +289,18 @@ Index* Index::load(const char* idpath, const char* itemtype)
     return idx ; 
 }
 
+void Index::dumpPaths(const char* idpath, const char* msg)
+{
+
+    bool sx = existsPath(idpath, getPrefixedString("Source").c_str());
+    bool lx = existsPath(idpath, getPrefixedString("Local").c_str());
+
+    LOG(info) << msg 
+              << std::endl
+              << " Source:" << ( sx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Source")
+              << "  Local:" << ( lx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Local")
+              ;
+}
+
+
 
