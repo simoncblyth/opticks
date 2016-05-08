@@ -1,5 +1,5 @@
 // cfg4-
-#include "CfG4.hh"
+#include "CCfG4.hh"
 #include "PhysicsList.hh"
 #include "CDetector.hh"
 #include "CPropLib.hh"
@@ -48,7 +48,7 @@
     }
 
 
-void CfG4::init(int argc, char** argv)
+void CCfG4::init(int argc, char** argv)
 {
     m_opticks = new Opticks(argc, argv, "cfg4.log");
     
@@ -62,7 +62,7 @@ void CfG4::init(int argc, char** argv)
 
 }
 
-void CfG4::configure(int argc, char** argv)
+void CCfG4::configure(int argc, char** argv)
 {
     m_cfg->commandline(argc, argv);  
 
@@ -79,7 +79,7 @@ void CfG4::configure(int argc, char** argv)
 
     m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
-    m_torch->Summary("CfG4::configure TorchStepNPY::Summary");
+    m_torch->Summary("CCfG4::configure TorchStepNPY::Summary");
 
     m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
     m_num_g4event = m_torch->getNumG4Event();
@@ -131,14 +131,14 @@ void CfG4::configure(int argc, char** argv)
     m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain()) ; 
     m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
 
-    m_evt->dumpDomains("CfG4::configure dumpDomains");
-    m_detector->dumpPV("CfG4::configure dumpPV");
+    m_evt->dumpDomains("CCfG4::configure dumpDomains");
+    m_detector->dumpPV("CCfG4::configure dumpPV");
 
     TIMER("configure");
 }
 
 
-void CfG4::interactive(int argc, char** argv)
+void CCfG4::interactive(int argc, char** argv)
 {
     if(!m_g4ui) return ; 
 
@@ -153,9 +153,9 @@ void CfG4::interactive(int argc, char** argv)
 }
 
 
-void CfG4::propagate()
+void CCfG4::propagate()
 {
-    LOG(info) << "CfG4::propagate"
+    LOG(info) << "CCfG4::propagate"
               << " num_g4event " << m_num_g4event 
               << " num_photons " << m_num_photons 
               << " steps_per_photon " << m_evt->getMaxRec()
@@ -168,12 +168,12 @@ void CfG4::propagate()
     TIMER("propagate");
 }
 
-void CfG4::save()
+void CCfG4::save()
 {
     m_evt->save(true);
 }
 
-CfG4::~CfG4()
+CCfG4::~CCfG4()
 {
     delete m_runManager;
 }

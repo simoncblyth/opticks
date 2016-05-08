@@ -26,6 +26,10 @@ class G4VPhysicalVolume ;
 class G4LogicalBorderSurface ;
 class G4OpticalSurface ;
 
+
+// CPropLib is a constituent of CDetector that converts
+// GGeo materials and surfaces into G4 materials and surfaces
+
 class CPropLib {
    public:
        static const char* SENSOR_MATERIAL ;

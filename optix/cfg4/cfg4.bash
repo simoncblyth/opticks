@@ -6,52 +6,38 @@ cfg4-usage(){ cat << EOU
 Comparisons against Geant4
 ===========================
 
-Objectives
+Features
 ------------
 
 * Construct Geant4 test geometries and light sources from the same commandline
   arguments as ggv invokations like ggv-rainbow, ggv-prism.
 
-  * TODO: light source config, blackbody
+* G4 stepping action Recorder that records photon steps in Opticks format 
 
-* Add stepping action to record photon steps in the same format as
-  optixrap- using NPY persistency 
 
-  * TODO: material tracing   
+TODO
+----
 
- 
+* light source config, blackbody
 
-Classes
---------
 
-CfG4
-     app umbrella, bringing together Opticks and G4 
+Plumbing Classes
+-------------------
 
-ActionInitialization
-     G4VUserActionInitialization subclass, providing UserAction plumbing 
-
-Detector
-     G4VUserDetectorConstruction subclass, creating G4Materials and logical/physical
-     volumes, configured based on a GGeoTestConfig instance
+CCfG4
+     high level control, app umbrella, bringing together Opticks and G4 
+     constituents include: CDetector, Recorder and Rec
 
 PrimaryGeneratorAction
      G4VUserPrimaryGeneratorAction subclass, providing GeneratePrimaries(G4Event*)
+     which passes through to CSource generator.
 
-     G4VPrimaryGenerator* PrimaryGeneratorAction::MakeGenerator creates/configures 
-     the photon source OpSource
+ActionInitialization
+     G4VUserActionInitialization subclass, providing UserAction plumbing 
+     for PrimaryGeneratorAction and SteppingAction
 
-
-OpSource
-     G4VPrimaryGenerator subclass, providing GeneratePrimaryVertex(G4Event *evt)
-     using distribution generators from SingleParticleSource to generate 
-     squadrons of optical photons
-
-     G4SPSPosDistribution
-     G4SPSAngDistribution
-     G4SPSEneDistribution
-
-     TODO: configure based on TorchStepNPY 
-     HMM: maybe split Torch config parsing into separate class analogously to GGeoTestConfig  
+SteppingAction
+     G4UserSteppingAction subclass, which feeds G4Step to the recorders
 
 PhysicsList
      G4VModularPhysicsList subclass, follow chroma : registered just 
@@ -59,23 +45,68 @@ PhysicsList
      G4OpticalPhysics() 
      G4EmPenelopePhysics(0) 
 
-OpStatus
-     status code formatters and translation of G4 codes to Opticks flags 
 
-SteppingAction
-     G4UserSteppingAction subclass, obtains G4OpBoundaryProcessStatus
-     and feeds contained Recorder instance with G4Step
+Domain Classes
+---------------
+
+CSource
+     G4VPrimaryGenerator subclass, with GeneratePrimaryVertex(G4Event *evt)
+     Provides TorchStepNPY configurable optical photon squadrons just like the GPU eqivalent.
+     Implemented using distribution generators from SingleParticleSource: 
+
+     G4SPSPosDistribution
+     G4SPSAngDistribution
+     G4SPSEneDistribution
+
+CDetector
+     G4VUserDetectorConstruction subclass, converts simple test geometries
+     commandline configured using GGeoTestConfig into G4 geometries
+     with help from constituents: CMaker and CPropLib
+
+CMaker
+     Constitent of CDetector used to convert GCSG geometry 
+     into G4 geometry in G4VPhysicalVolume* CDetector::Construct() 
+
+CPropLib  
+     CPropLib is a constituent of CDetector that converts
+     GGeo materials and surfaces into G4 materials and surfaces
+
+OpStatus
+     G4 status/enum code formatters and translation of G4 codes to Opticks flags 
 
 Recorder
-     collects photons and compressed photon step records 
+     Collects G4Step/G4StepPoint optical photon data  
      into NPY arrays in Opticks array format
-     which are persisted to .npy  
+     which are persisted to .npy  within a NumpyEvt
+
+     *RecordStep* is called for all G4Step
+     each of which is comprised of *pre* and *post* G4StepPoint, 
+     as a result the same G4StepPoint are "seen" twice, 
+     thus *RecordStep* only records the 1st of the pair 
+     (the 2nd will come around as the first at the next call)
+     except for the last G4Step pair where both points are recorded
+
+Rec 
+     Alternative implementation of Recorder using a vector of State instances
+
+State 
+     holds copy of G4Step together with G4OpBoundaryProcessStatus, 
+     a vector of State instances is held by Rec
+
+
+
+Other Classes
+---------------
+
+CTraverser
+     G4 geometry tree traverser, used for debugging material properties
 
 Format
-     G4 object debug descriptions
+     G4 object string formatters for debugging 
 
 SteppingVerbose
      Not currently used
+
 
 
 

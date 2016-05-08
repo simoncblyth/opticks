@@ -69,7 +69,7 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 add_library(${name} SHARED 
-CfG4.cc
+CCfG4.cc
 Format.cc
 Recorder.cc
 Rec.cc
@@ -88,7 +88,7 @@ SteppingVerbose.cc
 )
 
 SET(hdrs 
-CfG4.hh
+CCfG4.hh
 Format.hh
 Recorder.hh
 Rec.hh

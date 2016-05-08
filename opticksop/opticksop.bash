@@ -19,6 +19,39 @@ Opticks Operations
    opticksop-;opticksop-index -2 reflect
 
 
+
+Classes
+---------
+
+OpEngine
+    Very high level control:: 
+
+       void prepareOptiX();
+       void setEvent(NumpyEvt* evt);
+       void preparePropagator();
+       void seedPhotonsFromGensteps();
+       void initRecords();
+       void propagate();
+       void saveEvt();
+       void indexSequence();
+       void cleanup();
+
+OpIndexer
+    Very high level control of Thrust indexer
+
+OpSeeder
+    Seeding distributes genstep indices into the photon buffer
+    according to the known number of photons generated for each genstep.
+    This is accomplished entirely on the GPU using Thrust. 
+
+OpZeroer
+    Scrubbing GPU buffers.
+
+OpIndexerApp
+    Used by standalone evt loading and indexing app 
+
+
+
 EOU
 }
 

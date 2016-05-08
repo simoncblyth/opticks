@@ -60,8 +60,8 @@ void SteppingAction::init()
 
 
 
-const unsigned long long SteppingAction::SEQHIS_TO_SA = 0x8dull ; 
-const unsigned long long SteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; 
+const unsigned long long SteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,SurfaceAbsorb
+const unsigned long long SteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
 
 
 void SteppingAction::UserSteppingAction(const G4Step* step)

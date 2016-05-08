@@ -4,10 +4,26 @@ opticksgl-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticksgl-src)} ; }
 opticksgl-vi(){       vi $(opticksgl-source) ; }
 opticksgl-usage(){ cat << EOU
 
-OptiXGL
-========
+OpticksGL
+==========
 
-Classes depending OptiX optixrap- and OpenGL
+Classes depending on OptiX optixrap- and OpenGL
+
+Classes
+--------
+
+OpViz
+    High level connector between opticksop-/OpEngine and oglrap-/Scene
+    with *render* method that performs OptiX ray trace and 
+    pushes results to OpenGL texture
+
+ORenderer
+    connection between OpenGL renderer and OptiX ray trace
+
+OFrame
+    mechanics of OpenGL texture and OptiX buffer handling 
+    and pushing from buffer to texture
+    TODO: maybe dont provide public header for this
 
 
 EOU

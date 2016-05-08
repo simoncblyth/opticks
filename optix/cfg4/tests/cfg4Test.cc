@@ -1,8 +1,8 @@
-#include "CfG4.hh"
+#include "CCfG4.hh"
 
 int main(int argc, char** argv)
 {
-    CfG4* app = new CfG4(argc, argv) ;
+    CCfG4* app = new CCfG4(argc, argv) ;
 
     app->interactive(argc, argv);
 

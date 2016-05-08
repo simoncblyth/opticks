@@ -18,11 +18,11 @@ class G4VisManager ;
 class G4UImanager ; 
 class G4UIExecutive ; 
 
-class CfG4 
+class CCfG4 
 {
    public:
-        CfG4(int argc, char** argv);
-        virtual ~CfG4();
+        CCfG4(int argc, char** argv);
+        virtual ~CCfG4();
    private:
         void init(int argc, char** argv);
         void configure(int argc, char** argv);
@@ -53,7 +53,7 @@ class CfG4
 
 };
 
-inline CfG4::CfG4(int argc, char** argv) 
+inline CCfG4::CCfG4(int argc, char** argv) 
    :
      m_opticks(NULL),
      m_cfg(NULL),
