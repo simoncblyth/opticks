@@ -14,8 +14,12 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
 
+# https://cmake.org/Wiki/CMake_Useful_Variables
 message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 message("CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+message("CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
+message("CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
+message("CMAKE_CXX_FLAGS_RELWITHDEBINFO= ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 
 find_package(OpticksBoost REQUIRED)

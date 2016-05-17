@@ -36,8 +36,15 @@ int main(int argc, char** argv)
     NPY<short>* records = NPY<short>::load("rxcerenkov", tag, "dayabay");
     NPY<float>* dom = NPY<float>::load("domain","1", "dayabay");
     NPY<int>*   idom = NPY<int>::load("idomain","1", "dayabay");
+
+
+    assert(records);
     unsigned int maxrec = idom->getValue(0,0,3) ; 
     assert(maxrec == 10);
+
+    records->dump("records NPY::dump");
+    photons->dump("photons NPY::dump");
+
 
     Types types ; 
     types.dumpFlags();
@@ -46,12 +53,22 @@ int main(int argc, char** argv)
     types.readMaterials(idpath, "GMaterialIndex");
     types.dumpMaterials();
 
-    bool flat = false ; 
+    bool flat = true ;   
+    // getting this wrong, leads to photons being treated like records... 
+    //     r.shape (6128410, 2, 4)   should be handled with flat = true  
+
     RecordsNPY r(records, maxrec, flat);
     r.setTypes(&types);
     r.setDomains(dom);
 
     SequenceNPY s(photons);
+    {
+        unsigned int nrec = records->getShape(0) ;
+        NPY<unsigned char>* seqidx = NPY<unsigned char>::make(nrec, 2) ; 
+        seqidx->zero();
+        s.setSeqIdx(seqidx);
+    }
+
     s.setTypes(&types);
     s.setRecs(&r);
 

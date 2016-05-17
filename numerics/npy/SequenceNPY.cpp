@@ -51,11 +51,7 @@ void SequenceNPY::dumpUniqueHistories()
 
      * see thrustexamples-
 
-
-
-
 */
-
 
 void SequenceNPY::countMaterials()
 {
@@ -143,8 +139,25 @@ void SequenceNPY::indexSequences(unsigned int maxidx)
          // should match perfectly so long as bounce_max < maxrec 
          // (that truncates big-bouncers in the same way on GPU/CPU)
          unsigned int phistory = m_photons->getUInt(photon_id, 3, 3);
-         if(history != phistory) mismatch.push_back(photon_id);
-         assert(history == phistory);
+         if(history != phistory) 
+         {
+              //LOG(warning) << "history mismatch photon_id " << photon_id ;
+              mismatch.push_back(photon_id);
+         }
+
+        
+         if(history != phistory)
+         {
+            std::cout << " i " << std::setw(3) << i 
+                      << " photon_id " << std::setw(8) << photon_id
+                      << " bounce " << std::setw(4) << bounce 
+                      << " history " << std::setw(10) << history 
+                      << " phistory " << std::setw(10) << phistory 
+                      << " material " << std::setw(4) << material
+                      << std::endl ; 
+         }
+
+         assert(history == phistory && "history mismatch : check the flat = true/false setting");
 
          // map counting different history/material masks 
          uuh[history] += 1 ; 
@@ -162,9 +175,12 @@ void SequenceNPY::indexSequences(unsigned int maxidx)
          svh[seqhis].push_back(photon_id); 
          svm[seqmat].push_back(photon_id); 
     }
-    assert( mismatch.size() == 0);
-    LOG(info) << "SequenceNPY::indexSequences photon loop DONE photons " <<  ni ;
+    LOG(info) << "SequenceNPY::indexSequences photon loop DONE photons " 
+              <<  ni
+              << " with mismatch count " << mismatch.size()
+            ;
 
+    assert( mismatch.size() == 0);
 
     // order by counts of that sequence
 
@@ -184,7 +200,8 @@ void SequenceNPY::indexSequences(unsigned int maxidx)
     m_seqmat->dump("SequenceNPY::indexSequences (seqmat)");
 
 
-    assert(m_seqidx);
+    assert(m_seqidx && " must SequenceNPY::setSeqIdx" );  
+
     fillSequenceIndex( e_seqhis, m_seqhis, svh );
     fillSequenceIndex( e_seqmat, m_seqmat, svm );
 
@@ -363,6 +380,15 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     }
 
     idx->sortNames();
+
+
+    for(unsigned int i=0 ; i < idx->getNumItems() ; i++)
+    {
+         std::string label = idx->getNameLocal(i+1) ;
+         std::cout << " i " << std::setw(5) << i 
+                   << " label " << label 
+                   << std::endl ; 
+    } 
 
 
     for(unsigned int i=0 ; i < idx->getNumItems() ; i++)

@@ -15,12 +15,7 @@
 
 #include "Typ.hpp"
 
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
+#include "NLog.hpp"
 
 
 void RecordsNPY::setDomains(NPY<float>* domains)
@@ -355,6 +350,8 @@ void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
     unpack_material_flags(          flag, i, 1, 0, 2, 3);  // i,j,k,l0,l1
     unpack_material_flags_i(       iflag, i, 1, 0, 2, 3);  // i,j,k,l0,l1
 
+    // for debug see npy-/evt.py 
+
 
     std::string m1 = m_typ ? m_typ->findMaterialName(flag.x) : "notyp" ;
     std::string m2 = m_typ ? m_typ->findMaterialName(flag.y) : "notyp" ;
@@ -376,7 +373,46 @@ void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
 
 }
 
+/*
 
+
+In [4]: r = np.load("/usr/local/env/opticks/dayabay/rxcerenkov/1.npy")
+
+In [19]: r.reshape(-1,10,2,4)[4]
+Out[19]: 
+array([[[  -77,   119,   251,   140],
+        [ 3178, 31054,  1542,   494]],
+
+       [[ -575,   292,    54,   238],
+        [-2147, 31131,  9478,  3309]],
+
+       [[-1993,   784,  -507,   517],
+        [-4929, 31089,  1542,  2322]],
+
+       [[ -794,   187,   293,   789],
+        [17319, 30998,  1542,  3310]],
+
+       [[  366,  -391,  1068,  1052],
+        [17319, 30998,  9478,  3247]],
+
+       [[ 1463,  -937,  1801,  1300],
+        [17319, 30998,  9478,  1199]],
+
+       [[    0,     0,     0,     0],
+        [    0,     0,     0,     0]],
+
+       [[    0,     0,     0,     0],
+        [    0,     0,     0,     0]],
+
+       [[    0,     0,     0,     0],
+        [    0,     0,     0,     0]],
+
+       [[    0,     0,     0,     0],
+        [    0,     0,     0,     0]]], dtype=int16)
+
+
+
+*/
 
 
 

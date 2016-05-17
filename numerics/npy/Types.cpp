@@ -166,10 +166,21 @@ unsigned int Types::getMaterialAbbrevInvertAsCode(std::string label, bool hex)
      if(hex) return hex_lexical_cast<unsigned int>(label.c_str()) ;
 
      unsigned int n = m_abbrev2material.count(label) ;
-     assert(n == 1);
 
-     std::string matn = m_abbrev2material[label];
-     return getMaterialCode(matn);
+     if(n != 1)
+     {
+
+        LOG(warning) << "Types::getMaterialAbbrevInvertAsCode"
+                     << " label " << label 
+                     << " hex " << hex
+                     << " n!=1 " << n 
+                     ;
+     }
+     //assert(n == 1);
+
+
+     std::string matn = n == 1 ? m_abbrev2material[label] : "BAD-MATERIAL-LABEL" ;
+     return n == 1 ? getMaterialCode(matn) : 0 ;
 }
 
 
