@@ -644,6 +644,7 @@ graphics/optixrap
 opticksop
 opticksgl
 graphics/ggeoview
+optix/cfg4
 EOL
 }
 opticks-internals(){  cat << EOI

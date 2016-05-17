@@ -1,4 +1,5 @@
-cfg4-src(){      echo optix/cfg4/cfg4.bash ; }
+cfg4-rel(){      echo optix/cfg4 ; }
+cfg4-src(){      echo $(cfg4-rel)/cfg4.bash ; }
 cfg4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cfg4-src)} ; }
 cfg4-vi(){       vi $(cfg4-source) ; }
 cfg4-usage(){ cat << EOU
@@ -210,7 +211,10 @@ cfg4-tbin(){ echo $(cfg4-idir)/bin/$1 ; }
 
 
 cfg4-idir(){ echo $(local-base)/env/optix/cfg4; } 
-cfg4-bdir(){ echo $(local-base)/env/optix/cfg4.build ; }
+
+#cfg4-bdir(){ echo $(local-base)/env/optix/cfg4.build ; }
+cfg4-bdir(){ echo $(opticks-bdir)/$(cfg4-rel) ; }
+
 cfg4-sdir(){ echo $(env-home)/optix/cfg4 ; }
 
 cfg4-icd(){  cd $(cfg4-idir); }
@@ -227,7 +231,11 @@ cfg4-wipe(){
     rm -rf $bdir
 }
 
-cfg4-cmake(){
+
+
+
+
+cfg4-cmake-standalone(){
    local iwd=$PWD
    local bdir=$(cfg4-bdir)
    mkdir -p $bdir

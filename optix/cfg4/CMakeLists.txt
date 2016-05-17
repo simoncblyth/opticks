@@ -10,7 +10,7 @@ set(BUILD_SHARED_LIBS ON)
 
 include(EnvBuildOptions)
 
-find_package(Boost REQUIRED)
+find_package(OpticksBoost REQUIRED)
 find_package(BRegex REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
@@ -24,7 +24,7 @@ find_package(G4DAE  REQUIRED)
 
 set(INCLUDE_DIRS  
    ${CMAKE_CURRENT_SOURCE_DIR}
-   ${Boost_INCLUDE_DIRS}
+   ${OpticksBoost_INCLUDE_DIRS}
    ${BRegex_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
@@ -37,7 +37,7 @@ set(INCLUDE_DIRS
 )
 
 set(LIBRARIES
-   ${Boost_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
    ${BRegex_LIBRARIES}
    ${NPY_LIBRARIES}
    ${BCfg_LIBRARIES}
@@ -49,7 +49,7 @@ set(LIBRARIES
 )
 
 set(DEFINITIONS
-   ${Boost_DEFINITIONS} 
+   ${OpticksBoost_DEFINITIONS} 
    ${BRegex_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
    ${GGeo_DEFINITIONS} 
