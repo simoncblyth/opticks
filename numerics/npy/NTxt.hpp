@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <climits>
 #include <string>
 #include <vector>
 
@@ -9,6 +10,7 @@ class NTxt {
        NTxt(const char* path); 
        void read();
        const char* getLine(unsigned int num);
+       unsigned int getIndex(const char* line); // index of line or UINT_MAX if not found
        unsigned int getNumLines();
    private:
        const char* m_path ; 
@@ -31,5 +33,10 @@ inline unsigned int  NTxt::getNumLines()
    return m_lines.size() ; 
 }
 
-
+inline unsigned int NTxt::getIndex(const char* line)
+{
+   std::string s(line);
+   for(unsigned int i=0 ; i < m_lines.size() ; i++) if(m_lines[i].compare(s)==0) return i ;
+   return UINT_MAX ; 
+}
 

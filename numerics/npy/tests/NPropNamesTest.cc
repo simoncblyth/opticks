@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cassert>
+#include <climits>
 
 int main(int argc, char** argv)
 {
@@ -9,11 +11,19 @@ int main(int argc, char** argv)
 
     for(unsigned int i=0 ; i < pn.getNumLines() ; i++)
     {
-        std::cout << std::setw(3) << i 
-                  << " " << pn.getLine(i)
+        std::string line = pn.getLine(i) ;
+        unsigned int index = pn.getIndex(line.c_str());
+
+        std::cout << " i  " << std::setw(3) << i 
+                  << " ix " << std::setw(3) << index
+                  << " line " << line
                   << std::endl 
                   ; 
+
+         assert(i == index);
     }
+
+    assert( pn.getIndex("THIS_LINE_IS_NOT_PRESENT") == UINT_MAX );
 
     return 0 ; 
 }

@@ -14,7 +14,9 @@ int main(int argc, char** argv)
 
    // material names have moved to GItemList control see $IDPATH/GItemList/GMaterialLib.txt
    // lower level version in NPropNames
-    types.readMaterials(idpath, "GMaterialIndex");
+
+
+    types.readMaterials(idpath, "GMaterialLib"); // sets the Index
     types.dumpMaterials();
 
     types.getHistoryStringTest();

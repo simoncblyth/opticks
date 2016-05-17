@@ -9,7 +9,7 @@
 #include <iostream>
 #include <iomanip>
 
-
+#include "NPropNames.hpp"
 #include "NLog.hpp"
 
 const char* Types::TAIL = " " ;
@@ -62,16 +62,27 @@ void Types::readMaterialsOld(const char* idpath, const char* name)
 
 void Types::readMaterials(const char* idpath, const char* name)
 {
-    Index* index = Index::load( idpath, name );
-    if(!index)
+    assert(strcmp(name, "GMaterialLib")==0);
+
+    NPropNames pn("GMaterialLib");
+
+    //Index* index = Index::load( idpath, name );
+
+    Index* index = new Index(name);
+
+    // hmm kludging up an index adds complication ? 
+    // when not really needed for material names
+    
+    for(unsigned int i=0 ; i < pn.getNumLines() ; i++)
     {
-        LOG(warning) << "Types::readMaterials"
-                     << " Index::load FAILED "
-                     << " idpath " << idpath
-                     << " name " << name
-                     ;
-        return ;
+        std::string line = pn.getLine(i) ;
+        unsigned int j = pn.getIndex(line.c_str());
+        assert(j == i);
+        index->add(line.c_str(), i, false);
     }
+
+
+    assert(index);
     setMaterialsIndex(index);
 }
 
@@ -106,6 +117,10 @@ void Types::makeMaterialAbbrev()
 {
     typedef std::map<std::string, unsigned int> MSU ; 
     typedef std::map<std::string, std::string>  MSS ; 
+
+    // HMM this is handled differently elsewhere via ~/.opticks/GMaterialLib/abbrev.json 
+    // but that needs to be detector specific...
+
 
     // special cases where 1st 2-chars not unique or misleading
     MSS s ; 
@@ -194,7 +209,6 @@ void Types::dumpMaterials(const char* msg)
         unsigned int code = it->second ; 
         std::string mat = it->first ;
         std::string abb = getMaterialAbbrev(mat);
-
         std::cout 
               << std::setw(3) << code 
               << std::setw(5) << abb 
@@ -202,8 +216,6 @@ void Types::dumpMaterials(const char* msg)
               << "[" << mat << "] "  
               << std::endl ; 
     }
- 
-
 }
 
 std::string Types::findMaterialName(unsigned int index)
@@ -249,7 +261,7 @@ unsigned int Types::getMaterialCode(std::string label)
     {
         LOG(fatal) << "Types::getMaterialCode"
                    << " MATERIALS INDEX NOT LOADED "
-                   << " label " << label 
+                   << " label [" << label << "]" 
                    ; 
     }
     assert(m_materials_index);

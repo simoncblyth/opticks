@@ -12,6 +12,7 @@ class NPropNames {
        NPropNames(const char* libname="GMaterialLib"); 
        const char* getLine(unsigned int num);
        unsigned int getNumLines();
+       unsigned int getIndex(const char* line); // index of the line or UINT_MAX if not found
    private:
        void read();
    private:

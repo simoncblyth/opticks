@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     Types types ; 
     types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     types.dumpFlags();
-    types.readMaterials(idpath, "GMaterialIndex");
+    types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
 
     BoundariesNPY b(dpho);

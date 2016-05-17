@@ -3,6 +3,7 @@
 #include "NLog.hpp"
 
 #include <cstdlib>
+#include <cassert>
 
 std::string NPropNames::libpath(const char* libname)
 {
@@ -33,6 +34,11 @@ unsigned int  NPropNames::getNumLines()
    return m_txt ? m_txt->getNumLines() : 0 ;
 }
 
+unsigned int  NPropNames::getIndex(const char* line)
+{
+   assert(m_txt); 
+   return m_txt->getIndex(line) ;
+}
 
 
 

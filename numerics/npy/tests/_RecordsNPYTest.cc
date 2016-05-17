@@ -19,11 +19,9 @@ int main(int argc, char** argv)
     assert(maxrec == 10);
 
     Types types ; 
-    //types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
     types.readFlags("$ENV_HOME/optickscore/OpticksPhoton.h");
     types.dumpFlags();
-
-    types.readMaterials(idpath, "GMaterialIndex");
+    types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
 
     bool flat = true ; 

@@ -49,8 +49,7 @@ int main(int argc, char** argv)
     Types types ; 
     types.dumpFlags();
 
-    //types.readMaterialsOld(idpath, "GMaterialIndexLocal.json");
-    types.readMaterials(idpath, "GMaterialIndex");
+    types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
 
     bool flat = true ;   
