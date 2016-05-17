@@ -24,7 +24,6 @@ cmakex-
 cmakecheck-
     testing CMake config
 
-
 Fullbuild Testing
 ------------------
 
@@ -664,7 +663,7 @@ NumpyServer
 EOI
 }
 opticks-xternals(){  cat << EOX
-Boost
+OpticksBoost
 Assimp
 OpenMesh
 GLM
@@ -698,7 +697,7 @@ EOO
 }
 
 
-opticks-tfind-(){ 
+opticks-find-cmake-(){ 
   local f
   local base=$(opticks-home)/CMake/Modules
   local name
@@ -709,9 +708,9 @@ opticks-tfind-(){
   done 
 }
 
-opticks-ifind(){ vi $(opticks-tfind- internals) ; }
-opticks-xfind(){ vi $(opticks-tfind- xternals) ; }
-opticks-ofind(){ vi $(opticks-tfind- other) ; }
+opticks-i(){ vi $(opticks-find-cmake- internals) ; }
+opticks-x(){ vi $(opticks-find-cmake- xternals) ; }
+opticks-o(){ vi $(opticks-find-cmake- other) ; }
 
 
 

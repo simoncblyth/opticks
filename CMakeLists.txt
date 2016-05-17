@@ -6,14 +6,19 @@ set(OptiX_INSTALL_DIR "/Developer/OptiX" CACHE PATH "Path to OptiX installed loc
 
 set(OPTICKS_CUDA_VERSION 5.5)
 set(OPTICKS_OPTIX_VERSION 3.5)
-
 set(SUPERBUILD ON)
 
 include(CTest)
 include(CPack)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
+
+message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+message("CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+
+
+find_package(OpticksBoost REQUIRED)
 
 add_subdirectory(boost/bpo/bcfg)  
 add_subdirectory(boost/bregex)    
