@@ -120,6 +120,8 @@ GBuffer* GBuffer::load(const char* path)
     int numItems ; 
     int numElements ; 
 
+    // hmm this is asserting with 3d itransforms (672, 4, 4) in GBufferTest
+
     aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  // 2d load
     assert(numElements < 17);
 

@@ -471,7 +471,8 @@ EOU
 
 
 opticks-env(){      
-   elocal- 
+   elocal-
+   g4- 
 }
 
 opticks-home(){   echo $(env-home) ; }
@@ -509,6 +510,7 @@ opticks-cmake(){
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
+       -DGeant4_DIR=$(g4-cmake-dir) \
        $* \
        $(opticks-sdir)
 

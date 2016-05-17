@@ -51,7 +51,7 @@ endif()
 
 add_subdirectory(graphics/ggeoview)
 
-#add_subdirectory(optix/cfg4)
+add_subdirectory(optix/cfg4)
 
 
 

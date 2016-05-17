@@ -125,7 +125,7 @@ if(optix_LIBRARY AND optixu_LIBRARY AND OptiX_INCLUDE)
               ${optixu_LIBRARY} 
       )
    set(OptiX_DEFINITIONS "")
-   message("Found OptiX")
+   #message("Found OptiX")
 endif()
 
 

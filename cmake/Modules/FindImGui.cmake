@@ -21,7 +21,7 @@ if(APPLE)
                ${IOKit_LIBRARY}
                ${CoreFoundation_LIBRARY} 
                ${CoreVideo_LIBRARY} )
-   message("FindImGUI:APPLE")
+   #message("FindImGUI:APPLE")
 endif(APPLE)
 
 if(UNIX AND NOT APPLE)
@@ -33,7 +33,7 @@ if(UNIX AND NOT APPLE)
                ${OpenGL_LIBRARY}
                )
 
-   message("FindImGUI:UNIX AND NOT APPLE")
+   #message("FindImGUI:UNIX AND NOT APPLE")
 endif(UNIX AND NOT APPLE)
 
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")

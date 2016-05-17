@@ -153,15 +153,24 @@ void OpticksResource::readEnvironment()
         std::string kfn = insertField( m_path, '.', -1 , m_digest );
 
         m_idpath = strdup(kfn.c_str());
+    
+        int overwrite = 1; 
+        assert(setenv("IDPATH", m_idpath, overwrite)==0);  // TODO: avoid this, windoze lacks setenv 
+    }
+    else
+    {
+         // IDPATH envvar is last resort, but handy for testing
+         m_idpath = getenv("IDPATH");
+    }
 
+    if(m_idpath)
+    {
         m_idfold = strdup(m_idpath);
-
         char* p = (char*)strrchr(m_idfold, '/');  // point to last slash 
         *p = '\0' ;                               // chop to give parent fold
-     
-        int overwrite = 1; 
-        assert(setenv("IDPATH", m_idpath, overwrite)==0);
-    }
+        // TODO: avoid this dirty way, do with boost fs
+    } 
+
     // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS
 }
 
@@ -228,6 +237,7 @@ std::string OpticksResource::getObjectPath(const char* name, unsigned int index,
     fs::path dir ; 
     if(!relative)
     {
+        assert(m_idpath && "OpticksResource::getObjectPath idpath not set");
         fs::path cachedir(m_idpath);
         dir = cachedir/name/boost::lexical_cast<std::string>(index) ;
     }
@@ -241,6 +251,7 @@ std::string OpticksResource::getObjectPath(const char* name, unsigned int index,
 
 std::string OpticksResource::getPropertyLibDir(const char* name)
 {
+    assert(m_idpath && "OpticksResource::getPropertyLibDir idpath not set");
     fs::path cachedir(m_idpath);
     fs::path pld(cachedir/name );
     return pld.string() ;
