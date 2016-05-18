@@ -36,19 +36,23 @@ current standard::
 
   /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/
 
-Steps
-------
+DONE
+-----
 
 * OpticksResource .gdml path handling 
 * Break off a CG4 singleton class from cfg4- to hold common G4 components, runmanager etc.. 
-* add GDML loading to CG4 
-* split CG4 into separate package than cfg4-
 
 TODO
 ----
 
-* updated JUNO export, with the GDML included
-
+* add GDML loading to CG4 
+* split CG4 into separate cg4- package rather than co-locating with cfg4-, cfg4- can depend on cg4-
+* bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 
+  with the customized step collecting Cerenkov and Scintillation processes
+* collect other(non-photon producing processes) particle step tree somehow ? 
+* step visualization 
+* gun control interface, ImGui?  particle palette, shooter mode
+* updated JUNO export, both DAE and GDML 
 
 
 EOU

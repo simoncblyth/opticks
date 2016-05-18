@@ -327,7 +327,7 @@ std::string OpticksResource::makeSidecarPath(const char* path, const char* styp,
    fs::path dst(path);
    dst.replace_extension(dtyp) ;
 
-   LOG(info) << "OpticksResource::makeSidecarPath"
+   LOG(debug) << "OpticksResource::makeSidecarPath"
              << " styp " << styp
              << " dtyp " << dtyp
              << " ext "  << ext 

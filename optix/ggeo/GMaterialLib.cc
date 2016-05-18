@@ -295,6 +295,14 @@ void GMaterialLib::import()
         return ;  
     }
 
+    if( m_buffer->getNumItems() != m_names->getNumKeys() )
+    {
+        LOG(fatal) << "GMaterialLib::import numItems != numKeys "
+                   << " buffer numItems " << m_buffer->getNumItems() 
+                   << " names numKeys " << m_names->getNumKeys() 
+                   ;
+    }
+
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
     LOG(info) << "GMaterialLib::import"    
