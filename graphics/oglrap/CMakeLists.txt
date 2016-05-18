@@ -131,5 +131,6 @@ install(TARGETS ${name} DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 install(DIRECTORY gl/ DESTINATION gl)
 
-add_subdirectory(tests EXCLUDE_FROM_ALL)
+#add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests)
 

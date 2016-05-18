@@ -20,7 +20,7 @@ endif()
 
 ########################
 
-find_package(CUDA 2.3 REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
 include(EnvCompilationFlags)   
@@ -177,4 +177,5 @@ install(FILES ${cuptxs} DESTINATION ptx)
 install(FILES ${hdrs}   DESTINATION include/${name})
 install(FILES ${cuhdrs} DESTINATION include/${name}/cu)
 
-add_subdirectory(tests EXCLUDE_FROM_ALL)
+#add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests)

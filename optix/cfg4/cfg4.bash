@@ -7,6 +7,12 @@ cfg4-usage(){ cat << EOU
 Comparisons against Geant4
 ===========================
 
+
+See Also
+--------
+
+* cg4-
+
 Features
 ------------
 

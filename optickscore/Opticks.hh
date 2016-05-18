@@ -117,6 +117,8 @@ class Opticks {
        bool isOther();
        bool isValid();
    public:
+       const char* getDAEPath();
+       const char* getGDMLPath();
        const char* getIdPath();
        const char* getLastArg();
        int         getLastArgInt();

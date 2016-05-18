@@ -1,7 +1,8 @@
 #include "ActionInitialization.hh"
 
-#include "PrimaryGeneratorAction.hh"
-#include "SteppingAction.hh"
+//#include "PrimaryGeneratorAction.hh"
+//#include "G4UserSteppingAction.hh"
+
 #include "SteppingVerbose.hh"
 
 ActionInitialization::~ActionInitialization()

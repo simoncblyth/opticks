@@ -53,11 +53,12 @@ class OpticksResource {
        bool idPathContains(const char* s); 
        void Summary(const char* msg="OpticksResource::Summary");
     public:
-       const char* getPath();
+       const char* getDAEPath();
+       const char* getGDMLPath();
        const char* getQuery();
        const char* getCtrl();
     private:
-       std::string makeMetaPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
+       std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
        const char* getMetaPath();
     public:
@@ -76,7 +77,8 @@ class OpticksResource {
    private:
        // results of readEnvironment
        const char* m_geokey ;
-       const char* m_path ;
+       const char* m_daepath ;
+       const char* m_gdmlpath ;
        const char* m_query ;
        const char* m_ctrl ;
        const char* m_metapath ;
@@ -103,7 +105,8 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
        m_envprefix(strdup(envprefix)),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
        m_geokey(NULL),
-       m_path(NULL),
+       m_daepath(NULL),
+       m_gdmlpath(NULL),
        m_query(NULL),
        m_ctrl(NULL),
        m_metapath(NULL),
@@ -143,9 +146,13 @@ inline const char* OpticksResource::getEnvPrefix()
 {
     return m_envprefix ;
 }
-inline const char* OpticksResource::getPath()
+inline const char* OpticksResource::getDAEPath()
 {
-    return m_path ;
+    return m_daepath ;
+}
+inline const char* OpticksResource::getGDMLPath()
+{
+    return m_gdmlpath ;
 }
 inline const char* OpticksResource::getMetaPath()
 {

@@ -25,7 +25,7 @@ if(WITH_OPTIX)
     add_definitions(-DWITH_OPTIX)
 
     find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
-    find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+    find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
     find_package(CUDARap REQUIRED)
     find_package(OptiXRap REQUIRED)
@@ -188,7 +188,7 @@ if (WITH_NPYSERVER)
       ${NumpyServer_LIBRARIES}
    )
 else()
-    message("NOT WITH_NPYSERVER") 
+    #message("NOT WITH_NPYSERVER") 
     set(WITH_NPYSERVER_INCLUDES)
     set(WITH_NPYSERVER_DEFINITIONS)
     set(WITH_NPYSERVER_LIBRARIES)

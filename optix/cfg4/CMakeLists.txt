@@ -60,15 +60,16 @@ set(DEFINITIONS
    ${G4DAE_DEFINITIONS}
 )
 
-message(STATUS "XERCESC_INCLUDE_DIR  : ${XERCESC_INCLUDE_DIR}")
-message(STATUS "XERCESC_LIBRARIES    : ${XERCESC_LIBRARIES}")
-message(STATUS "XERCESC_DEFINITIONS  : ${XERCESC_DEFINITIONS}")
+#message(STATUS "XERCESC_INCLUDE_DIR  : ${XERCESC_INCLUDE_DIR}")
+#message(STATUS "XERCESC_LIBRARIES    : ${XERCESC_LIBRARIES}")
+#message(STATUS "XERCESC_DEFINITIONS  : ${XERCESC_DEFINITIONS}")
 
 
 include_directories(${INCLUDE_DIRS})   
 add_definitions(${DEFINITIONS})
 
 add_library(${name} SHARED 
+CG4.cc
 CCfG4.cc
 Format.cc
 Recorder.cc
@@ -88,6 +89,7 @@ SteppingVerbose.cc
 )
 
 SET(hdrs 
+CG4.hh
 CCfG4.hh
 Format.hh
 Recorder.hh

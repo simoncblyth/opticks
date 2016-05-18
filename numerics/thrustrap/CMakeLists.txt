@@ -6,7 +6,7 @@ include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
 # see cuda-/FindCuda.cmake
-find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 find_package(OpticksBoost REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
@@ -53,4 +53,5 @@ SET(HEADERS
 install(TARGETS ${name} DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 
-add_subdirectory(tests EXCLUDE_FROM_ALL)
+#add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests)

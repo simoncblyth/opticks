@@ -9,10 +9,12 @@
 # an external allows to skip from everyday project rebuilding.
 #
 
-message("${name}")
+message(STATUS "Configuring ${name}")
 
 set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
 set(OPTICKS_HOME   "$ENV{ENV_HOME}")
+set(OPTICKS_CUDA_VERSION 5.5)
+set(OPTICKS_OPTIX_VERSION 3.5)
 
 set(BUILD_SHARED_LIBS ON)
 

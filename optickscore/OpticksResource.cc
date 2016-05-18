@@ -98,27 +98,29 @@ void OpticksResource::readEnvironment()
         printf("OpticksResource::readEnvironment USING DEFAULT geokey %s \n", m_geokey );
     }
 
-    m_path = getenv(m_geokey);
+    m_daepath = getenv(m_geokey);
 
-    if(m_path == NULL)
+    if(m_daepath == NULL)
     {
         if(m_lastarg && existsFile(m_lastarg))
         {
-            m_path = m_lastarg ; 
-            printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s but lastarg is a path %s \n", m_geokey, m_path );
+            m_daepath = m_lastarg ; 
+            printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s but lastarg is a path %s \n", m_geokey, m_daepath );
         }
     }
 
-    if(m_path == NULL)
+    if(m_daepath == NULL)
     {
-        printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s path %s \n", m_geokey, m_path );
+        printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s path %s \n", m_geokey, m_daepath );
         //assert(0);
         setValid(false);
     } 
     else
     {
-         std::string metapath = makeMetaPath(m_path, ".dae", ".ini");
+         std::string metapath = makeSidecarPath(m_daepath, ".dae", ".ini");
          m_metapath = strdup(metapath.c_str());
+         std::string gdmlpath = makeSidecarPath(m_daepath, ".dae", ".gdml");
+         m_gdmlpath = strdup(gdmlpath.c_str());
     }
 
 
@@ -148,9 +150,9 @@ void OpticksResource::readEnvironment()
     // allowing to benefit from caching as vary geometry selection 
     // while still only having a single source geometry file.
 
-    if(m_path)
+    if(m_daepath)
     {
-        std::string kfn = insertField( m_path, '.', -1 , m_digest );
+        std::string kfn = insertField( m_daepath, '.', -1 , m_digest );
 
         m_idpath = strdup(kfn.c_str());
     
@@ -192,7 +194,8 @@ void OpticksResource::Summary(const char* msg)
     printf("valid    : %s \n", m_valid ? "valid" : "NOT VALID" ); 
     printf("envprefix: %s \n", m_envprefix ); 
     printf("geokey   : %s \n", m_geokey ); 
-    printf("path     : %s \n", m_path ); 
+    printf("daepath  : %s \n", m_daepath ); 
+    printf("gdmlpath : %s \n", m_gdmlpath ); 
     printf("metapath : %s \n", m_metapath ); 
     printf("query    : %s \n", m_query ); 
     printf("ctrl     : %s \n", m_ctrl ); 
@@ -313,7 +316,7 @@ bool OpticksResource::existsDir(const char* path)
 
 
 
-std::string OpticksResource::makeMetaPath(const char* path, const char* styp, const char* dtyp)
+std::string OpticksResource::makeSidecarPath(const char* path, const char* styp, const char* dtyp)
 {
    std::string empty ; 
 
@@ -324,7 +327,7 @@ std::string OpticksResource::makeMetaPath(const char* path, const char* styp, co
    fs::path dst(path);
    dst.replace_extension(dtyp) ;
 
-   LOG(info) << "OpticksResource::makeMetaPath"
+   LOG(info) << "OpticksResource::makeSidecarPath"
              << " styp " << styp
              << " dtyp " << dtyp
              << " ext "  << ext 

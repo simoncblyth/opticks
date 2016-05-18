@@ -1,10 +1,9 @@
 // cfg4-
 #include "CCfG4.hh"
-#include "PhysicsList.hh"
+
 #include "CDetector.hh"
 #include "CPropLib.hh"
 
-#include "ActionInitialization.hh"
 #include "Recorder.hh"
 #include "Rec.hh"
 #include "PrimaryGeneratorAction.hh"
@@ -28,14 +27,9 @@
 #include "GBndLib.hh"
 #include "GGeoTestConfig.hh"
 
-//g4-
-#include "G4RunManager.hh"
-#include "G4String.hh"
 
-#include "G4VisExecutive.hh"
-#include "G4UImanager.hh"
-#include "G4UIExecutive.hh"
-
+// cg4-
+#include "CG4.hh"
 
 
 #define TIMER(s) \
@@ -71,6 +65,7 @@ void CCfG4::configure(int argc, char** argv)
     std::string testconfig = m_cfg->getTestConfig();
     m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
     m_detector  = new CDetector(m_cache, m_testconfig) ; 
+    CPropLib* clib = m_detector->getPropLib() ;
 
     m_evt = m_opticks->makeEvt();
 
@@ -88,37 +83,25 @@ void CCfG4::configure(int argc, char** argv)
     unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
     
     int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
+    int generator_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
+
     m_recorder = new Recorder(m_evt , photons_per_g4event, stepping_verbosity > 0 ); 
-
     if(m_cfg->hasOpt("primary"))
-    {
         m_recorder->setupPrimaryRecording();
-    }
-
-    m_runManager = new G4RunManager;
-    m_runManager->SetUserInitialization(new PhysicsList());
-    m_runManager->SetUserInitialization(m_detector);
-
-    m_g4ui = m_cfg->hasOpt("g4ui");
-
+   
     CSource* generator = new CSource(m_torch, m_recorder);
-
-    int verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
-    generator->SetVerbosity(verbosity);
-
-    PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(generator) ;
-
-    CPropLib* clib = m_detector->getPropLib() ;
-
-    
-
+    generator->SetVerbosity(generator_verbosity);
 
     m_rec = new Rec(clib, m_evt) ; 
 
-    SteppingAction* sa = new SteppingAction(clib, m_recorder, m_rec, stepping_verbosity);
+    m_geant4 = new CG4 ; 
+    m_geant4->configure(argc, argv);
+    m_geant4->setDetectorConstruction(m_detector);
+    m_geant4->setPrimaryGeneratorAction(new PrimaryGeneratorAction(generator)) ;
+    m_geant4->setSteppingAction(new SteppingAction(clib, m_recorder, m_rec, stepping_verbosity));
 
-    m_runManager->SetUserInitialization(new ActionInitialization(pga, sa)) ;
-    m_runManager->Initialize();
+    m_geant4->initialize();
+
 
     m_recorder->setPropLib(clib);
 
@@ -140,16 +123,7 @@ void CCfG4::configure(int argc, char** argv)
 
 void CCfG4::interactive(int argc, char** argv)
 {
-    if(!m_g4ui) return ; 
-
-    m_visManager = new G4VisExecutive;
-    m_visManager->Initialize();
-
-    m_uiManager = G4UImanager::GetUIpointer();
-
-    m_ui = new G4UIExecutive(argc, argv);
-
-    m_ui->SessionStart();
+    m_geant4->interactive(argc, argv);
 }
 
 
@@ -163,7 +137,8 @@ void CCfG4::propagate()
               ; 
     TIMER("_propagate");
 
-    m_runManager->BeamOn(m_num_g4event);
+    m_geant4->BeamOn(m_num_g4event);
+
 
     TIMER("propagate");
 }
@@ -175,6 +150,13 @@ void CCfG4::save()
 
 CCfG4::~CCfG4()
 {
-    delete m_runManager;
 }
+
+
+
+
+
+
+
+
 

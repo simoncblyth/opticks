@@ -19,7 +19,7 @@ endif()
 
 
 find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
-find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 

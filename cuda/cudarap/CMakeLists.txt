@@ -5,7 +5,7 @@ project(${name})
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

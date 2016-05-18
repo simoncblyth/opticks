@@ -8,7 +8,7 @@
 
 # taken from http://cartwheel.idyll.org/browser/trunk/FindXercesC.cmake
 
-set(XERCESC_FIND_QUIETLY FALSE)
+set(XERCESC_FIND_QUIETLY TRUE)
 
 # Look for a root installation
 FIND_PATH(XERCESC_ROOT_DIR include/xercesc/parsers/SAXParser.hpp

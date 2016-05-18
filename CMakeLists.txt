@@ -4,8 +4,6 @@ project(Opticks)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules") 
 set(OptiX_INSTALL_DIR "/Developer/OptiX" CACHE PATH "Path to OptiX installed location.")
 
-set(OPTICKS_CUDA_VERSION 5.5)
-set(OPTICKS_OPTIX_VERSION 3.5)
 set(SUPERBUILD ON)
 
 include(CTest)
@@ -14,15 +12,16 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
 
-# https://cmake.org/Wiki/CMake_Useful_Variables
-message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-message("CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
-message("CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
-message("CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
-message("CMAKE_CXX_FLAGS_RELWITHDEBINFO= ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+if(DUMP)
+   # https://cmake.org/Wiki/CMake_Useful_Variables
+   message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+   message("CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+   message("CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
+   message("CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
+   message("CMAKE_CXX_FLAGS_RELWITHDEBINFO= ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+endif()
 
-
-find_package(OpticksBoost REQUIRED)
+find_package(OpticksBoost REQUIRED QUIET)
 
 add_subdirectory(boost/bpo/bcfg)  
 add_subdirectory(boost/bregex)    

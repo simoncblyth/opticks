@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstring>
+#include <cstdlib>
 
+class CG4 ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ;
 class GCache ; 
@@ -13,10 +14,6 @@ class CDetector ;
 class Recorder ; 
 class Rec ; 
 
-class G4RunManager ; 
-class G4VisManager ; 
-class G4UImanager ; 
-class G4UIExecutive ; 
 
 class CCfG4 
 {
@@ -31,6 +28,7 @@ class CCfG4
         void propagate();
         void save();
    private:
+        CG4*                  m_geant4 ; 
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
         GGeoTestConfig*       m_testconfig ; 
@@ -38,23 +36,20 @@ class CCfG4
         TorchStepNPY*         m_torch ; 
         NumpyEvt*             m_evt ; 
    private:
-        CDetector*             m_detector ; 
+        CDetector*            m_detector ; 
         Recorder*             m_recorder ; 
         Rec*                  m_rec ; 
-        G4RunManager*         m_runManager ;
-   private:
-        bool                  m_g4ui ; 
-        G4VisManager*         m_visManager ; 
-        G4UImanager*          m_uiManager ; 
-        G4UIExecutive*        m_ui ; 
    private:
         unsigned int          m_num_g4event ; 
         unsigned int          m_num_photons ; 
 
 };
 
+
+
 inline CCfG4::CCfG4(int argc, char** argv) 
    :
+     m_geant4(NULL),
      m_opticks(NULL),
      m_cfg(NULL),
      m_testconfig(NULL),
@@ -64,11 +59,6 @@ inline CCfG4::CCfG4(int argc, char** argv)
      m_detector(NULL),
      m_recorder(NULL),
      m_rec(NULL),
-     m_runManager(NULL),
-     m_g4ui(false),
-     m_visManager(NULL),
-     m_uiManager(NULL),
-     m_ui(NULL),
      m_num_g4event(0),
      m_num_photons(0)
 {

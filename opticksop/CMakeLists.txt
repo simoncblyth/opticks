@@ -8,7 +8,7 @@ include(EnvBuildOptions)
 include(EnvCompilationFlags)   
 
 find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
-find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED)
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
 find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
@@ -99,5 +99,7 @@ SET(hdrs
 
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs}   DESTINATION include/${name})
-add_subdirectory(tests EXCLUDE_FROM_ALL)
+
+#add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests)
 

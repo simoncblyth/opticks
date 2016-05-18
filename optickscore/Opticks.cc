@@ -252,6 +252,16 @@ const char* Opticks::getIdPath()
 {
     return m_resource ? m_resource->getIdPath() : NULL ; 
 }
+const char* Opticks::getGDMLPath()
+{
+    return m_resource ? m_resource->getGDMLPath() : NULL ; 
+}
+const char* Opticks::getDAEPath()
+{
+    return m_resource ? m_resource->getDAEPath() : NULL ; 
+}
+
+
 
 
 void Opticks::Summary(const char* msg)
