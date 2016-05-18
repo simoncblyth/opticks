@@ -481,6 +481,7 @@ opticks-prefix(){ echo $(local-base)/opticks ; }
 opticks-sdir(){   echo $(opticks-home) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
+opticks-bindir(){ echo $(opticks-prefix)/bin ; }
 
 opticks-optix-install-dir(){ echo /Developer/OptiX ; }
 

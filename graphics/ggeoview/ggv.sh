@@ -52,6 +52,8 @@ if [ "${cmdline/--oac}" != "${cmdline}" ]; then
    export OPTIX_API_CAPTURE=1
 fi
 
+
+
 export OPTICKS_ARGS="$*"
 
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
