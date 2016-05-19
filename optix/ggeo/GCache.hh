@@ -39,6 +39,8 @@ class GCache {
          OpticksResource* getResource();
 
     public:
+         const char* getDAEPath();
+         const char* getGDMLPath();
          const char* getIdPath();
          const char* getIdFold();
          std::string getRelativePath(const char* path);

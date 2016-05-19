@@ -53,7 +53,6 @@ void CCfG4::init(int argc, char** argv)
     m_cfg = m_opticks->getCfg();
 
     TIMER("init");
-
 }
 
 void CCfG4::configure(int argc, char** argv)
@@ -62,10 +61,16 @@ void CCfG4::configure(int argc, char** argv)
 
     assert( m_cfg->hasOpt("test") && m_opticks->getSourceCode() == TORCH && "cfg4 only supports source type TORCH with test geometries" );
 
+
+
     std::string testconfig = m_cfg->getTestConfig();
     m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
     m_detector  = new CDetector(m_cache, m_testconfig) ; 
     CPropLib* clib = m_detector->getPropLib() ;
+
+
+
+
 
     m_evt = m_opticks->makeEvt();
 

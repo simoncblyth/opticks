@@ -36,17 +36,63 @@ current standard::
 
   /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/
 
+Issue : old GDML export omits material properties
+----------------------------------------------------
+
+Get NULL MPT in loaded model::
+
+    147 void G4GDMLWriteMaterials::MaterialWrite(const G4Material* const materialPtr)
+    148 {
+    ... 
+    163    if (materialPtr->GetMaterialPropertiesTable())
+    164    {
+    165      PropertyWrite(materialElement, materialPtr);
+    166    }
+
+    228 void G4GDMLWriteMaterials::PropertyWrite(xercesc::DOMElement* matElement,
+    229                                          const G4Material* const mat)
+    230 {
+    231    xercesc::DOMElement* propElement;
+    232    G4MaterialPropertiesTable* ptable = mat->GetMaterialPropertiesTable();
+    233    const std::map< G4String, G4PhysicsOrderedFreeVector*,
+    234                  std::less<G4String> >* pmap = ptable->GetPropertiesMap();
+    235    const std::map< G4String, G4double,
+    236                  std::less<G4String> >* cmap = ptable->GetPropertiesCMap();
+    237    std::map< G4String, G4PhysicsOrderedFreeVector*,
+    238                  std::less<G4String> >::const_iterator mpos;
+    239    std::map< G4String, G4double,
+    240                  std::less<G4String> >::const_iterator cpos;
+    241    for (mpos=pmap->begin(); mpos!=pmap->end(); mpos++)
+    242    {
+    243       propElement = NewElement("property");
+    244       propElement->setAttributeNode(NewAttribute("name", mpos->first));
+    245       propElement->setAttributeNode(NewAttribute("ref",
+    246                                     GenerateName(mpos->first, mpos->second)));
+
+
+No property in the GDML::
+
+    simon:cfg4 blyth$ grep property /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
+
+Only that one GDML file amongst the exports, exports were copied over to D:: 
+
+    simon:export blyth$ find . -name '*.gdml'
+    ./DayaBay_VGDX_20140414-1300/g4_00.gdml
+    simon:export blyth$ pwd
+    /usr/local/env/geant4/geometry/export
+
 DONE
 -----
 
 * OpticksResource .gdml path handling 
 * Break off a CG4 singleton class from cfg4- to hold common G4 components, runmanager etc.. 
 * move ggv- tests out of ggeoview- into separate .bash, check the cfg4 tests following refactor 
+* add GDML loading to CG4/CDetector
 
 TODO
 ----
 
-* add GDML loading to CG4 
+* re-export DYB geometry, checking material properties, old export lacks em  
 * split CG4 into separate cg4- package rather than co-locating with cfg4-, cfg4- can depend on cg4-
 * bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 
   with the customized step collecting Cerenkov and Scintillation processes

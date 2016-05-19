@@ -2,7 +2,6 @@
 g4-src(){      echo g4/g4.bash ; }
 g4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(g4-src)} ; }
 g4-vi(){       vi $(g4-source) ; }
-g4-env(){      elocal- ; }
 g4-usage(){ cat << EOU
 
 Geant4
@@ -35,6 +34,42 @@ Xcode 6 or higher
 See xcode-vi for install notes
 
 
+Compiling GDML module
+-----------------------
+
+examples/extended/persistency/gdml/G01/README::
+
+  You need to have built the persistency/gdml module by having
+  set the -DGEANT4_USE_GDML=ON flag during the CMAKE configuration step, 
+  as well as the -DXERCESC_ROOT_DIR=<path_to_xercesc> flag pointing to 
+  the path where the XercesC XML parser package is installed in your system.
+
+After adding the above::
+
+    simon:G01 blyth$ g4-cmake
+    -- Found XercesC: /opt/local/lib/libxerces-c.dylib  
+    -- Reusing dataset G4NDL (4.5)
+    -- Reusing dataset G4EMLOW (6.48)
+    -- Reusing dataset PhotonEvaporation (3.2)
+    -- Reusing dataset RadioactiveDecay (4.3)
+    -- Reusing dataset G4NEUTRONXS (1.4)
+    -- Reusing dataset G4PII (1.3)
+    -- Reusing dataset RealSurface (1.0)
+    -- Reusing dataset G4SAIDDATA (1.1)
+    -- Reusing dataset G4ABLA (3.0)
+    -- Reusing dataset G4ENSDFSTATE (1.2)
+    -- The following Geant4 features are enabled:
+    GEANT4_BUILD_CXXSTD: Compiling against C++ Standard '11'
+    GEANT4_USE_SYSTEM_EXPAT: Using system EXPAT library
+    GEANT4_USE_GDML: Building Geant4 with GDML support
+
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /usr/local/env/g4/geant4.10.02.build
+    simon:G01 blyth$ 
+
+
+
 Example B1
 ------------
 
@@ -58,6 +93,10 @@ Example B1
 
 
 EOU
+}
+g4-env(){      
+   elocal-  
+   xercesc-  
 }
 
 g4-name(){ echo geant4.10.02 ; } 
@@ -115,6 +154,8 @@ g4-cmake(){
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
        -DGEANT4_INSTALL_DATA=ON \
+       -DGEANT4_USE_GDML=ON \
+       -DXERCESC_ROOT_DIR=$(xercesc-prefix) \
        -DCMAKE_INSTALL_PREFIX=$idir \
        $(g4-dir)
 

@@ -49,10 +49,19 @@ Typ* GCache::getTyp()
 }
 
 
+const char* GCache::getGDMLPath()
+{
+    return m_resource->getGDMLPath();
+}
+const char* GCache::getDAEPath()
+{
+    return m_resource->getDAEPath();
+}
 const char* GCache::getIdPath()
 {
     return m_resource->getIdPath();
 }
+
 const char* GCache::getIdFold()
 {
     return m_resource->getIdFold();

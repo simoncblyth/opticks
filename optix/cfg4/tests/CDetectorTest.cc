@@ -24,6 +24,7 @@ int main(int argc, char** argv)
 
     Opticks* m_opticks = new Opticks(argc, argv, "CPropLibTest.log");
     m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+
     GCache* m_cache = new GCache(m_opticks);
     OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
     m_cfg->commandline(argc, argv);  
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
 
     G4VPhysicalVolume* world_pv = m_detector->Construct();
 
-    clib->dumpMaterials();
+    //clib->dumpMaterials();
 
     CTraverser* m_traverser = new CTraverser(world_pv) ;
 
@@ -53,7 +54,7 @@ int main(int argc, char** argv)
 
     m_traverser->setVerbosity(10); 
 
-    m_traverser->dumpMaterials(); 
+    //m_traverser->dumpMaterials(); 
 
 
 
@@ -73,7 +74,6 @@ int main(int argc, char** argv)
         G4int nodeIndex = -1 ;   // so World is volume 0 
 
         g4dae->Write(path, world_pv, refs, recreatePoly, nodeIndex );
-
     }
 
 

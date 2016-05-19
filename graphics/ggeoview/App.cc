@@ -207,41 +207,11 @@ void App::configure(int argc, char** argv)
         assert(0);
     }
 
-    m_state = m_opticks->getState();
-    m_state->setVerbose(false);
-
-    LOG(info) << "App::configure " << m_state->description();
-
-    assert(m_composition);
-
-    m_state->addConfigurable(m_scene);
-    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
-
-    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
-    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
-
-    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
-    m_bookmarks->setState(m_state);
-    m_bookmarks->setVerbose();
-    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
-
-
-    if(m_interactor)
-    {
-        m_interactor->setBookmarks(m_bookmarks);
-    }
-
     if(!hasOpt("noevent"))
     {
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
-
-        m_composition->setEvt(m_evt);
-
-        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
-        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track");
-        m_composition->setTrack(track);
 
         Parameters* params = m_evt->getParameters() ;
         params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
@@ -264,9 +234,50 @@ void App::configure(int argc, char** argv)
     }
 #endif
 
+    configureViz();
+
     TIMER("configure");
 }
 
+
+
+void App::configureViz()
+{
+    if(m_opticks->isCompute()) return ; 
+
+    m_state = m_opticks->getState();
+    m_state->setVerbose(false);
+
+    LOG(info) << "App::configure " << m_state->description();
+
+    assert(m_composition);
+
+    m_state->addConfigurable(m_scene);
+    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
+
+    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
+    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
+
+    if(m_evt)
+    { 
+        m_composition->setEvt(m_evt);
+        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
+
+        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track");
+        m_composition->setTrack(track);
+    }
+
+    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
+    m_bookmarks->setState(m_state);
+    m_bookmarks->setVerbose();
+    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
+
+
+    if(m_interactor)
+    {
+        m_interactor->setBookmarks(m_bookmarks);
+    }
+}
 
 
 

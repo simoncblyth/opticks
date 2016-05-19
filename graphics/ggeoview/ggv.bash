@@ -17,7 +17,6 @@ See Also
 FUNCTIONS
 -----------
 
-
 ggv-jpmt-cd
       cd into jpmt cache directory 
 
@@ -25,7 +24,7 @@ ggv-pmt
       single uncorrected tesselated DYB PMT in tracer mode (no propagation) 
 
 ggv-ppmt
-      single PMT targetted view, center AD light source 
+      DYB geometry with view targetting particular PMT, center AD light source 
       note the OpenGL PMT is uncorrected, but the OptiX geometry is analytic
 
 ggv-allpmt
@@ -39,10 +38,25 @@ ggv-bib
       tracer mode box in box geometry, now with one very fat lens in a box
 
 ggv-pmt-test
-      single PMT validation test, compare Opticks and Geant4
+      single PMT validation test, compare Opticks and Geant4::
 
-         ggv-pmt-test --cfg4 
-         ggv-pmt-test 
+         ggv-pmt-test --cfg4       # G4
+         ggv-pmt-test              # Opticks interop
+         ggv-pmt-test --compute    # Opticks compute
+
+         ggv-pmt-test --cdetector    # 
+
+ggv-dpib-test
+      DYB Pmt In Box, note the OptiX geometry is tesselated::
+
+         ggv-dpib-test --tracer
+
+ggv-box-test
+      Box in Box, disc beam 
+
+
+many more undocumented
+
 
 
 
@@ -183,6 +197,9 @@ ggv-pmt-test(){
         g4-export
         env | grep G4
     fi 
+
+    ## hmm such pre-launch environment setup should happen inside op.sh 
+    ## to avoid duplication
 
    op.sh \
        --test --testconfig "$(join _ ${test_config[@]})" \

@@ -69,6 +69,7 @@ xercesc-get(){
 
 }
 
+xercesc-prefix(){  echo /opt/local ; }
 xercesc-include-dir(){ echo /opt/local/include ; }
 xercesc-library(){  echo /opt/local/lib/libxerces-c.dylib ; }
 

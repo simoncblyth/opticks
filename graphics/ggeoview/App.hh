@@ -84,6 +84,7 @@ class App {
        void modifyGeometry();
        void fixGeometry();
        void registerGeometry();
+       void configureViz(); 
        void configureGeometry(); 
 
   public:

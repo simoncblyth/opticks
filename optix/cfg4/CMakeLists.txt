@@ -79,6 +79,7 @@ CSource.cc
 OpStatus.cc
 PhysicsList.cc
 CDetector.cc
+CGDMLDetector.cc
 CMaker.cc
 CPropLib.cc
 CTraverser.cc
@@ -99,6 +100,7 @@ CSource.hh
 OpStatus.hh
 PhysicsList.hh
 CDetector.hh
+CGDMLDetector.hh
 CMaker.hh
 CPropLib.hh
 CTraverser.hh

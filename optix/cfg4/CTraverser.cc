@@ -18,6 +18,12 @@ const char* CTraverser::GROUPVEL = "GROUPVEL" ;
 
 void CTraverser::Traverse()
 {
+     if(!m_top) 
+     {
+        LOG(fatal) << "CTraverser::Traverse m_top NULL" ;
+        return ;
+     }
+
      G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
      TraverseVolumeTree(lv, 0 );
 }
@@ -31,7 +37,8 @@ void CTraverser::Visit(const G4LogicalVolume* const lv)
     const G4String geoname = solid->GetName() ;
     const G4String matname = material->GetName();
 
-     LOG(info) << "CTraverser::Visit"
+    if(m_verbosity > 1 )
+        LOG(info) << "CTraverser::Visit"
                << std::setw(20) << lvname
                << std::setw(50) << geoname
                << std::setw(20) << matname
@@ -86,14 +93,21 @@ void CTraverser::createGroupVel()
     {
         const G4Material* material = m_materials[i];
         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
-        assert(mpt);
-        G4MaterialPropertyVector* gv = mpt->GetProperty(GROUPVEL);  
-        unsigned int len = gv->GetVectorLength() ;
-        if(m_verbosity > 1 )
-        LOG(info) << "CTraverser::createGroupVel" 
-                  << " material " << material->GetName()
-                  << " groupvel len " << len
-                  ;
+        if(mpt)
+        {
+            G4MaterialPropertyVector* gv = mpt->GetProperty(GROUPVEL);  
+            unsigned int len = gv->GetVectorLength() ;
+            if(m_verbosity > 1 )
+                 LOG(info) << "CTraverser::createGroupVel" 
+                           << " material " << material->GetName()
+                           << " groupvel len " << len
+                       ;
+        }
+        else
+        {
+            LOG(warning) << "CTraverser::createGroupVel"
+                         << " material lacks MPT " << i << " " << material->GetName() ;
+        } 
     } 
 }
 

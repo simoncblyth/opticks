@@ -117,8 +117,6 @@ inline void CDetector::setVerbosity(unsigned int verbosity)
     m_verbosity = verbosity ; 
 }
 
-
-
 inline CPropLib* CDetector::getPropLib()
 {
     return m_lib ; 

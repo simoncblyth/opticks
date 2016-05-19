@@ -1310,7 +1310,7 @@ ggeoview--()
    # ggeoview-make
    # ggeoview-install
 
-   ( ggeoview-bcd ; make install )
+   ( ggeoview-bcd ; make ${1:-install} )
 }
 
 

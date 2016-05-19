@@ -32,11 +32,12 @@ op-binary-name()
             --mat) echo GMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;
             --bnd) echo GBndLibTest ;;
+      --cdetector) echo CDetectorTest ;;
+  --cgdmldetector) echo CGDMLDetectorTest ;;
 
 
      --boundaries) echo BoundariesNPYTest ;;
        --cproplib) echo CPropLibTest ;;
-      --cdetector) echo CDetectorTest ;;
            --recs) echo RecordsNPYTest ;;
          --lookup) echo LookupTest ;;
        --itemlist) echo GItemListTest ;;
@@ -74,6 +75,8 @@ op-binary-desc()
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;
             --bnd) echo "Dump boundaries of a geometry, eg op --bnd --jpmt " ;; 
+      --cdetector) echo "Geant4 detector construction test using class cfg4-/CDetector " ;; 
+  --cgdmldetector) echo "Test GDML loading using cfg4-/CGDMLDetector " ;; 
    esac 
 }
 
@@ -323,7 +326,8 @@ runline=$(op-runline)
 op-export
 
 if [ "$sauce" == "1" ]; then
-   echo sauce detected : assume are debugging this script
+   #echo sauce detected : assume are debugging this script
+   echo -n
 elif [ "${cmdline/--ophelp}" != "${cmdline}" ]; then
    op-help
 else
