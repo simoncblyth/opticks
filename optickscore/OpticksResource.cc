@@ -191,16 +191,16 @@ void OpticksResource::readMetadata()
 void OpticksResource::Summary(const char* msg)
 {
     std::cerr << msg << std::endl ; 
-    std::cerr << "valid    :" << ( m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
-    std::cerr << "envprefix: " <<  m_envprefix << std::endl; 
-    std::cerr << "geokey   : " <<  m_geokey << std::endl; 
-    std::cerr << "daepath  : " <<  m_daepath << std::endl; 
-    std::cerr << "gdmlpath : " <<  m_gdmlpath << std::endl; 
-    std::cerr << "metapath : " <<  m_metapath << std::endl; 
-    std::cerr << "query    : " <<  m_query << std::endl; 
-    std::cerr << "ctrl     : " <<  m_ctrl << std::endl; 
-    std::cerr << "digest   : " <<  m_digest << std::endl; 
-    std::cerr << "idpath   : " <<  m_idpath << std::endl; 
+    std::cerr << "valid    :" <<   (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
+    std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
+    std::cerr << "geokey   : " <<  (m_geokey?m_geokey:"NULL") << std::endl; 
+    std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
+    std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
+    std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
+    std::cerr << "query    : " <<  (m_query?m_query:"NULL") << std::endl; 
+    std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
+    std::cerr << "digest   : " <<  (m_digest?m_digest:"NULL") << std::endl; 
+    std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
 
     typedef std::map<std::string, std::string> SS ;

@@ -519,6 +519,6 @@ optickscore--()
    # optickscore-make clean
    # optickscore-make
    # optickscore-install
-   ( optickscore-bcd ; make install )
+   ( optickscore-bcd ; make ${1:-install} )
 }
 

@@ -23,7 +23,7 @@ class OpticksResource {
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(const char* envprefix, const char* lastarg);
+       OpticksResource(const char* envprefix="OPTICKS_", const char* lastarg=NULL);
        bool isValid();
     private:
        void init();
