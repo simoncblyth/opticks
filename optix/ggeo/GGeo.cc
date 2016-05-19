@@ -375,7 +375,7 @@ void GGeo::modifyGeometry(const char* config)
     // NB only invoked with test option : "ggv --test" 
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
 
-    LOG(debug) << "GGeo::modifyGeometry" 
+    LOG(info) << "GGeo::modifyGeometry" 
               << " config [" << ( config ? config : "" ) << "]" ; 
 
     assert(m_geotest == NULL);

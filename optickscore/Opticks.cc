@@ -159,21 +159,27 @@ void Opticks::preargs(int argc, char** argv)
     // need to know whether compute mode is active prior to standard configuration is done, 
     // in order to skip the Viz methods, so do in the pre-configure here 
 
+    bool dump = true ; 
     bool compute = false ;
     const char* logname = NULL ;
+    if(dump) std::cerr << "Opticks::preargs argc " << argc << std::endl ; 
     for(int i=1 ; i < argc ; i++ )
     {
         if(strcmp(argv[i], COMPUTE) == 0) compute = true ; 
         if(strcmp(argv[i], "--logname") == 0 && i+1 < argc ) logname = argv[i+1] ;
+        if(dump) std::cerr << "[" << argv[i] << "]" << std::endl ;  
     }
 
     setMode( compute ? COMPUTE_MODE : INTEROP_MODE );
 
+    /*
+    // logging not yet configured so be quiet
     LOG(info) << "Opticks::preargs" 
               << " argc " << argc 
               << " argv[0] " << ( argv ? argv[0] : "NULL" )
               << " mode " << getModeString() 
               ;
+    */
 
     m_logname = logname ? logname : "opticks.log" ; 
     m_loglevel = "info" ;  // default level
@@ -184,10 +190,11 @@ void Opticks::preargs(int argc, char** argv)
 
 void Opticks::preconfigure(int argc, char** argv)
 {
+    // logging not yet configured, so be more quiet
+    //LOG(debug) << "Opticks::preconfigure" 
+    //           << " detector " << m_resource->getDetector()
+    //           ;
 
-    LOG(info) << "Opticks::preconfigure" 
-              << " detector " << m_resource->getDetector()
-              ;
     m_log = new NLog(m_logname, m_loglevel);
     m_log->configure(argc, argv);
     m_log->init(getIdPath());

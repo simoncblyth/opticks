@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv)
 {
-    App app("GGEOVIEW_", argc, argv); 
+    App app("OPTICKS_", argc, argv); 
 
     app.initViz();
 

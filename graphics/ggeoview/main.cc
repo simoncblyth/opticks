@@ -1,5 +1,6 @@
 #include "App.hh"
 #include <cstdio>
+#include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -10,7 +11,7 @@ int main(int argc, char** argv)
     app.configure(argc, argv);    // NumpyEvt created in App::config, 
     if(app.isExit()) 
     {
-        printf("app exit after configure\n");        
+        std::cerr << "app exit after configure" << std::endl ;        
         exit(EXIT_SUCCESS);
     }
 

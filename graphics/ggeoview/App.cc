@@ -341,7 +341,9 @@ void App::prepareViz()
 
 void App::loadGeometry()
 {
-    LOG(info) << "App::loadGeometry START" ; 
+    bool modify = hasOpt("test") ;
+
+    LOG(info) << "App::loadGeometry START, modifyGeometry? " << modify  ; 
 
     loadGeometryBase();
 
@@ -352,7 +354,8 @@ void App::loadGeometry()
         return ; 
     }
 
-    if(hasOpt("test")) modifyGeometry() ;
+    if(modify) modifyGeometry() ;
+
 
     fixGeometry();
 

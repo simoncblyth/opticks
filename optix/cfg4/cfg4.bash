@@ -31,6 +31,9 @@ TODO
 Plumbing Classes
 -------------------
 
+CG4 
+     geant4 singleton (guest from cg4-)
+
 CCfG4
      high level control, app umbrella, bringing together Opticks and G4 
      constituents include: CDetector, Recorder and Rec
@@ -208,6 +211,7 @@ EOU
 cfg4-env(){  
    elocal- 
    g4-
+   opticks-
 }
 
 
@@ -277,11 +281,12 @@ cfg4---(){
 
 cfg4--(){
 
-   opticks-
-   opticks-- 
+   #opticks-
+   #opticks-- 
+   #cfg4-make
+   #cfg4-install
 
-   cfg4-make
-   cfg4-install
+   ( cfg4-bcd ; make install )
 }
 
 

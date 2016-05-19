@@ -41,6 +41,7 @@ DONE
 
 * OpticksResource .gdml path handling 
 * Break off a CG4 singleton class from cfg4- to hold common G4 components, runmanager etc.. 
+* move ggv- tests out of ggeoview- into separate .bash, check the cfg4 tests following refactor 
 
 TODO
 ----

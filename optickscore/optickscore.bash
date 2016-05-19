@@ -508,14 +508,17 @@ optickscore-make(){
    cd $iwd
 }
 
+
+
 optickscore-install(){
    optickscore-make install
 }
 
 optickscore--()
 {
-    optickscore-make clean
-    optickscore-make
-    optickscore-install
+   # optickscore-make clean
+   # optickscore-make
+   # optickscore-install
+   ( optickscore-bcd ; make install )
 }
 

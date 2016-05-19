@@ -190,22 +190,22 @@ void OpticksResource::readMetadata()
 
 void OpticksResource::Summary(const char* msg)
 {
-    printf("%s \n", msg );
-    printf("valid    : %s \n", m_valid ? "valid" : "NOT VALID" ); 
-    printf("envprefix: %s \n", m_envprefix ); 
-    printf("geokey   : %s \n", m_geokey ); 
-    printf("daepath  : %s \n", m_daepath ); 
-    printf("gdmlpath : %s \n", m_gdmlpath ); 
-    printf("metapath : %s \n", m_metapath ); 
-    printf("query    : %s \n", m_query ); 
-    printf("ctrl     : %s \n", m_ctrl ); 
-    printf("digest   : %s \n", m_digest ); 
-    printf("idpath   : %s \n", m_idpath ); 
-    printf("meshfix  : %s \n", m_meshfix ); 
+    std::cerr << msg << std::endl ; 
+    std::cerr << "valid    :" << ( m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
+    std::cerr << "envprefix: " <<  m_envprefix << std::endl; 
+    std::cerr << "geokey   : " <<  m_geokey << std::endl; 
+    std::cerr << "daepath  : " <<  m_daepath << std::endl; 
+    std::cerr << "gdmlpath : " <<  m_gdmlpath << std::endl; 
+    std::cerr << "metapath : " <<  m_metapath << std::endl; 
+    std::cerr << "query    : " <<  m_query << std::endl; 
+    std::cerr << "ctrl     : " <<  m_ctrl << std::endl; 
+    std::cerr << "digest   : " <<  m_digest << std::endl; 
+    std::cerr << "idpath   : " <<  m_idpath << std::endl; 
+    std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
 
     typedef std::map<std::string, std::string> SS ;
     for(SS::const_iterator it=m_metadata.begin() ; it != m_metadata.end() ; it++)
-        printf("%-9s: %s \n", it->first.c_str(), it->second.c_str()) ;
+        std::cerr <<  std::setw(10) << it->first.c_str() << ":" <<  it->second.c_str() << std::endl  ;
 
 }
 
@@ -324,9 +324,12 @@ std::string OpticksResource::makeSidecarPath(const char* path, const char* styp,
    fs::path ext = src.extension();
    bool is_styp = ext.string().compare(styp) == 0  ;
 
+   assert(is_styp && "OpticksResource::makeSidecarPath source file type doesnt match the path file type");
+
    fs::path dst(path);
    dst.replace_extension(dtyp) ;
 
+   /*
    LOG(debug) << "OpticksResource::makeSidecarPath"
              << " styp " << styp
              << " dtyp " << dtyp
@@ -335,6 +338,7 @@ std::string OpticksResource::makeSidecarPath(const char* path, const char* styp,
              << " dst " << dst.string()
              << " is_styp "  << is_styp 
              ;
+   */
 
    return dst.string() ;
 }

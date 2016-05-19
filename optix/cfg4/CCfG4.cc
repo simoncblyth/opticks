@@ -88,15 +88,20 @@ void CCfG4::configure(int argc, char** argv)
     m_recorder = new Recorder(m_evt , photons_per_g4event, stepping_verbosity > 0 ); 
     if(m_cfg->hasOpt("primary"))
         m_recorder->setupPrimaryRecording();
-   
-    CSource* generator = new CSource(m_torch, m_recorder);
-    generator->SetVerbosity(generator_verbosity);
+  
 
+
+ 
     m_rec = new Rec(clib, m_evt) ; 
 
     m_geant4 = new CG4 ; 
     m_geant4->configure(argc, argv);
     m_geant4->setDetectorConstruction(m_detector);
+
+    // CSource needs G4 optical photons, so must be after CG4::configure 
+    CSource* generator = new CSource(m_torch, m_recorder);  
+    generator->SetVerbosity(generator_verbosity);
+
     m_geant4->setPrimaryGeneratorAction(new PrimaryGeneratorAction(generator)) ;
     m_geant4->setSteppingAction(new SteppingAction(clib, m_recorder, m_rec, stepping_verbosity));
 

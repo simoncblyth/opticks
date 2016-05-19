@@ -133,7 +133,7 @@ G4VPhysicalVolume* CDetector::Construct()
         makePMT(mother);
     }
 
-    m_lib->dumpMaterials("CDetector::Construct CPropLib::dumpMaterials");
+    //m_lib->dumpMaterials("CDetector::Construct CPropLib::dumpMaterials");
     return top ;  
 }
 
