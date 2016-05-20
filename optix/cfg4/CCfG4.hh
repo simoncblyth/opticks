@@ -28,6 +28,8 @@ class CCfG4
         void propagate();
         void save();
    private:
+        void setupDomains();
+   private:
         CG4*                  m_geant4 ; 
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
@@ -63,7 +65,6 @@ inline CCfG4::CCfG4(int argc, char** argv)
      m_num_photons(0)
 {
     init(argc, argv);
-    configure(argc, argv);
 }
 
 

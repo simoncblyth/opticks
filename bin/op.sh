@@ -20,6 +20,13 @@ op.sh is intended to replace ggv.sh using
 simplifications possible following the
 move to the superbuild approach.
 
+TODO
+-----
+
+* consider moving geometry envvar config into C++ OpticksResource(?)
+  as users tend to trip over envvars
+
+
 EOU
 }
 
@@ -34,10 +41,10 @@ op-binary-name()
             --bnd) echo GBndLibTest ;;
   --ctestdetector) echo CTestDetectorTest ;;
   --cgdmldetector) echo CGDMLDetectorTest ;;
+       --cproplib) echo CPropLibTest ;;
 
 
      --boundaries) echo BoundariesNPYTest ;;
-       --cproplib) echo CPropLibTest ;;
            --recs) echo RecordsNPYTest ;;
          --lookup) echo LookupTest ;;
        --itemlist) echo GItemListTest ;;
@@ -75,8 +82,9 @@ op-binary-desc()
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;
             --bnd) echo "Dump boundaries of a geometry, eg op --bnd --jpmt " ;; 
-  --ctestdetector) echo "Geant4 detector construction test using class cfg4-/CTestDetector " ;; 
-  --cgdmldetector) echo "Geant4 GDML geometry loading using cfg4-/CGDMLDetector " ;; 
+  --ctestdetector) echo "Test Geant4 simple detector construction using class cfg4-/CTestDetector " ;; 
+  --cgdmldetector) echo "Test Geant4 GDML full detector construction using cfg4-/CGDMLDetector " ;; 
+       --cproblib) echo "Test Opticks/Geant4 material property library/converter cfg4-/CPropLib " ;; 
    esac 
 }
 

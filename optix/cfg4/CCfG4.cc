@@ -1,4 +1,6 @@
-// cfg4-
+// cfg4-;cfg4--; op --cfg4     # nope as cfg4 currently restricted to test geometries and TORCH source
+// cfg4-;cfg4--;ggv-;ggv-pmt-test --cfg4 
+
 #include "CCfG4.hh"
 
 #include "CTestDetector.hh"
@@ -45,15 +47,26 @@
 void CCfG4::init(int argc, char** argv)
 {
     m_opticks = new Opticks(argc, argv, "cfg4.log");
-    
-    m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+
+    // COMPUTE/INTEROP mode only applicable to Opticks GPU running 
+    // but here we are operating on CPU with Geant4 
+    //
+    //  maybe add GDMLG4_MODE  in addition to CFG4_MODE ?
+    //  this is intermediate step before contain G4 inside Opticks 
+    //  OR do this in different binary 
+    //  1st : drastically tidy/modularize this ...
+ 
+    m_opticks->setMode( Opticks::CFG4_MODE );  
 
     m_cache = new GCache(m_opticks);
 
     m_cfg = m_opticks->getCfg();
 
     TIMER("init");
+
+    configure(argc, argv);
 }
+
 
 void CCfG4::configure(int argc, char** argv)
 {
@@ -61,15 +74,17 @@ void CCfG4::configure(int argc, char** argv)
 
     assert( m_cfg->hasOpt("test") && m_opticks->getSourceCode() == TORCH && "cfg4 only supports source type TORCH with test geometries" );
 
-
-
     std::string testconfig = m_cfg->getTestConfig();
     m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
     m_detector  = new CTestDetector(m_cache, m_testconfig) ; 
     CPropLib* clib = m_detector->getPropLib() ;
 
 
+    m_geant4 = new CG4 ; 
 
+    m_geant4->configure(argc, argv);
+
+    m_geant4->setDetectorConstruction(m_detector);
 
 
     m_evt = m_opticks->makeEvt();
@@ -77,12 +92,15 @@ void CCfG4::configure(int argc, char** argv)
     Parameters* params = m_evt->getParameters() ;
     params->add<std::string>("cmdline", m_cfg->getCommandLine() );
 
+
     m_torch = m_opticks->makeSimpleTorchStep();
     m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
     m_torch->Summary("CCfG4::configure TorchStepNPY::Summary");
 
     m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
+
     m_num_g4event = m_torch->getNumG4Event();
+
     m_num_photons = m_evt->getNumPhotons();
 
     unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
@@ -91,33 +109,34 @@ void CCfG4::configure(int argc, char** argv)
     int generator_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
 
     m_recorder = new Recorder(m_evt , photons_per_g4event, stepping_verbosity > 0 ); 
+    m_recorder->setPropLib(clib);
     if(m_cfg->hasOpt("primary"))
         m_recorder->setupPrimaryRecording();
-  
-
-
- 
+   
     m_rec = new Rec(clib, m_evt) ; 
 
-    m_geant4 = new CG4 ; 
-    m_geant4->configure(argc, argv);
-    m_geant4->setDetectorConstruction(m_detector);
 
-    // CSource needs G4 optical photons, so must be after CG4::configure 
-    CSource* generator = new CSource(m_torch, m_recorder);  
-    generator->SetVerbosity(generator_verbosity);
+    CSource* generator = new CSource(m_torch, m_recorder, generator_verbosity);  // after CG4::configure as needs G4 optical photons
+
 
     m_geant4->setPrimaryGeneratorAction(new PrimaryGeneratorAction(generator)) ;
+  
     m_geant4->setSteppingAction(new SteppingAction(clib, m_recorder, m_rec, stepping_verbosity));
 
     m_geant4->initialize();
 
+    setupDomains();
 
-    m_recorder->setPropLib(clib);
+    TIMER("configure");
+}
 
+
+void CCfG4::setupDomains()
+{
     // compression domains set after runManager::Initialize, 
     // as extent only known after detector construction
 
+    m_detector->dumpPV("CCfG4::configure dumpPV");
     m_opticks->setSpaceDomain(m_detector->getCenterExtent());
 
     m_evt->setTimeDomain(m_opticks->getTimeDomain());  
@@ -125,9 +144,6 @@ void CCfG4::configure(int argc, char** argv)
     m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
 
     m_evt->dumpDomains("CCfG4::configure dumpDomains");
-    m_detector->dumpPV("CCfG4::configure dumpPV");
-
-    TIMER("configure");
 }
 
 

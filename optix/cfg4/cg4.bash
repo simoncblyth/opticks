@@ -36,8 +36,8 @@ current standard::
 
   /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/
 
-Issue : old GDML export omits material properties
-----------------------------------------------------
+[WORKED AROUND] Issue : old GDML export omits material properties
+---------------------------------------------------------------------
 
 Get NULL MPT in loaded model::
 
@@ -52,16 +52,7 @@ Get NULL MPT in loaded model::
     228 void G4GDMLWriteMaterials::PropertyWrite(xercesc::DOMElement* matElement,
     229                                          const G4Material* const mat)
     230 {
-    231    xercesc::DOMElement* propElement;
-    232    G4MaterialPropertiesTable* ptable = mat->GetMaterialPropertiesTable();
-    233    const std::map< G4String, G4PhysicsOrderedFreeVector*,
-    234                  std::less<G4String> >* pmap = ptable->GetPropertiesMap();
-    235    const std::map< G4String, G4double,
-    236                  std::less<G4String> >* cmap = ptable->GetPropertiesCMap();
-    237    std::map< G4String, G4PhysicsOrderedFreeVector*,
-    238                  std::less<G4String> >::const_iterator mpos;
-    239    std::map< G4String, G4double,
-    240                  std::less<G4String> >::const_iterator cpos;
+    ...
     241    for (mpos=pmap->begin(); mpos!=pmap->end(); mpos++)
     242    {
     243       propElement = NewElement("property");
@@ -70,7 +61,7 @@ Get NULL MPT in loaded model::
     246                                     GenerateName(mpos->first, mpos->second)));
 
 
-No property in the GDML::
+No property elements in the ancient geant4 exported GDML::
 
     simon:cfg4 blyth$ grep property /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
 
@@ -85,12 +76,21 @@ Anyhow checking geant4.0.2p01/G4GDMLWriteMaterials::MaterialWrite does not write
 
     [blyth@ntugrid5 env]$ nuwa-;cd $(nuwa-g4-sdir)
 
-* What are the GDML writer dependencies ? Most of G4.
-* How difficult to backport recent GDML writer to work with nuwa ?
-* Actually this work is closely releated to G4DAE exporter and intended revisit to 
-  bring that up to latest G4.
-* GDML writer requiring special G4 build configuration is inconvenient.
 
+* re-export DYB geometry, checking material properties, old export lacks em  
+
+  * this not so easy, would need to backport recent GDML writer to work with nuwa 
+    but the info is in the DAE, and are able to reconstruct G4 materials with 
+    the properties for the geocache as done by cfg4- CPropLib, so used this 
+    workaround  
+
+  * Actually this work is closely releated to G4DAE exporter and intended 
+    eventual revisit to bring up to latest G4 and maybe find way to 
+    reduce pain of subsequent such syncing.
+    Also note that GDML writer requires special G4 build configuration 
+    so if that could be avoided in g4d- ?
+
+  * see also export- 
 
 
 DONE
@@ -100,16 +100,17 @@ DONE
 * Break off a CG4 singleton class from cfg4- to hold common G4 components, runmanager etc.. 
 * move ggv- tests out of ggeoview- into separate .bash, check the cfg4 tests following refactor 
 * add GDML loading 
+* workaround lack of MPT in ancient g4 GDML export by converting from the G4DAE export  
 
 TODO
 ----
 
-* re-export DYB geometry, checking material properties, old export lacks em  
+* where to slot in CGDMLDetector into the machinery, cli, options, config ?
 
-  * this not so easy, would need to backport recent GDML writer to work with nuwa 
-  * but the info is in the DAE, and are able to reconstruct G4 materials with 
-    the properties for the geocache as done by cfg4- CPropLib  
+  * will need step recorder... NumpyEvt etc..
+  * maybe bifurcate CCfG4 ? into TEST and FULL  CBaseDetector needed ?  
 
+* try to get contained CG4 to generate smth 
 * maybe: split CG4 into separate cg4- package rather than co-locating with cfg4-, cfg4- can depend on cg4-
 * bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 
   with the customized step collecting Cerenkov and Scintillation processes
@@ -117,6 +118,8 @@ TODO
 * step visualization 
 * gun control interface, ImGui?  particle palette, shooter mode
 * updated JUNO export, both DAE and GDML 
+
+
 
 
 EOU

@@ -20,7 +20,7 @@ class Recorder ;
 class CSource: public G4VPrimaryGenerator 
 {
   public:
-    CSource(TorchStepNPY* torch, Recorder* recorder);
+    CSource(TorchStepNPY* torch, Recorder* recorder, G4int verbosity=0);
   private:
     void init();
     void configure();
@@ -73,7 +73,7 @@ private:
 };
 
 
-inline CSource::CSource(TorchStepNPY* torch, Recorder* recorder)  
+inline CSource::CSource(TorchStepNPY* torch, Recorder* recorder, G4int verbosity)  
     :
     m_torch(torch),
     m_recorder(recorder),
@@ -85,7 +85,7 @@ inline CSource::CSource(TorchStepNPY* torch, Recorder* recorder)
 	m_charge(0.0),
 	m_time(0.0),
 	m_polarization(1.0,0.0,0.0),
-	m_verbosityLevel(0)
+	m_verbosityLevel(verbosity)
 {
     init();
 }
