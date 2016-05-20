@@ -41,6 +41,20 @@ void CPropLib::init()
 
 }
 
+unsigned int CPropLib::getNumMaterials()
+{
+   return m_mlib->getNumMaterials();
+}
+const GMaterial* CPropLib::getMaterial(unsigned int index)
+{
+   return m_mlib->getMaterial(index); 
+}
+const GMaterial* CPropLib::getMaterial(const char* shortname)
+{
+   return m_mlib->getMaterial(shortname); 
+}
+
+
 const G4Material* CPropLib::makeInnerMaterial(const char* spec)
 {
     unsigned int boundary = m_bndlib->addBoundary(spec);
@@ -138,8 +152,6 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         }
 
     }
-
-
 
     // this was not enough, need optical surface to inject EFFICIENCY for optical photons
     if(strcmp(name, SENSOR_MATERIAL)==0)
@@ -338,8 +350,23 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
 
 void CPropLib::dumpMaterials(const char* msg)
 {
+    unsigned int ngg = getNumMaterials() ;
+    LOG(info) << msg 
+              << " numMaterials " << ngg
+              ;
+
+    for(unsigned int i=0 ; i < ngg ; i++)
+    {
+        const GMaterial* ggm = getMaterial(i);
+        LOG(info) << "CPropLib::dumpMaterials" 
+                  << " ggm (shortName) " << ggm->getShortName() 
+                  ;
+    }
+
+
+
     typedef std::map<const G4Material*, unsigned int> MMU ; 
-    LOG(info) << msg << " g4toix" ; 
+    LOG(info) << " g4toix " << m_g4toix.size() << " " ; 
 
     for(MMU::const_iterator it=m_g4toix.begin() ; it != m_g4toix.end() ; it++)
     {
@@ -373,11 +400,7 @@ void CPropLib::dumpMaterials(const char* msg)
         mpt->DumpTable();
 
     }
-
-
-
-
-
-
-
 }
+
+
+

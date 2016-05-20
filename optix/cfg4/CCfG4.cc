@@ -1,7 +1,7 @@
 // cfg4-
 #include "CCfG4.hh"
 
-#include "CDetector.hh"
+#include "CTestDetector.hh"
 #include "CPropLib.hh"
 
 #include "Recorder.hh"
@@ -65,7 +65,7 @@ void CCfG4::configure(int argc, char** argv)
 
     std::string testconfig = m_cfg->getTestConfig();
     m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-    m_detector  = new CDetector(m_cache, m_testconfig) ; 
+    m_detector  = new CTestDetector(m_cache, m_testconfig) ; 
     CPropLib* clib = m_detector->getPropLib() ;
 
 

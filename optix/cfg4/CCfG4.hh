@@ -10,7 +10,7 @@ class GBndLib ;
 class GGeoTestConfig ; 
 class TorchStepNPY ;
 class NumpyEvt ; 
-class CDetector ; 
+class CTestDetector ; 
 class Recorder ; 
 class Rec ; 
 
@@ -36,7 +36,7 @@ class CCfG4
         TorchStepNPY*         m_torch ; 
         NumpyEvt*             m_evt ; 
    private:
-        CDetector*            m_detector ; 
+        CTestDetector*        m_detector ; 
         Recorder*             m_recorder ; 
         Rec*                  m_rec ; 
    private:

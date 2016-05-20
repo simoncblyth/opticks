@@ -4,15 +4,8 @@ cfg4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cfg4-src)} ; }
 cfg4-vi(){       vi $(cfg4-source) ; }
 cfg4-usage(){ cat << EOU
 
-Comparisons against Geant4
-===========================
-
-
-See Also
---------
-
-* cg4-
-
+Comparisons of Opticks against Geant4 for simple test geometries
+==================================================================
 Features
 ------------
 
@@ -20,6 +13,12 @@ Features
   arguments as ggv invokations like ggv-rainbow, ggv-prism.
 
 * G4 stepping action Recorder that records photon steps in Opticks format 
+
+
+See Also
+--------
+
+* cg4- for notes on development of full geometry Opticks/Geant4 integration/comparison
 
 
 TODO
@@ -36,7 +35,7 @@ CG4
 
 CCfG4
      high level control, app umbrella, bringing together Opticks and G4 
-     constituents include: CDetector, Recorder and Rec
+     constituents include: CTestDetector, Recorder and Rec
 
 PrimaryGeneratorAction
      G4VUserPrimaryGeneratorAction subclass, providing GeneratePrimaries(G4Event*)
@@ -68,17 +67,21 @@ CSource
      G4SPSAngDistribution
      G4SPSEneDistribution
 
-CDetector
+CTestDetector
      G4VUserDetectorConstruction subclass, converts simple test geometries
      commandline configured using GGeoTestConfig into G4 geometries
      with help from constituents: CMaker and CPropLib
 
+CGDMLDetector
+     G4VUserDetectorConstruction subclass, loads GDML persisted G4 geometries
+
+
 CMaker
-     Constitent of CDetector used to convert GCSG geometry 
-     into G4 geometry in G4VPhysicalVolume* CDetector::Construct() 
+     Constitent of CTestDetector used to convert GCSG geometry 
+     into G4 geometry in G4VPhysicalVolume* CTestDetector::Construct() 
 
 CPropLib  
-     CPropLib is a constituent of CDetector that converts
+     CPropLib is a constituent of CTestDetector that converts
      GGeo materials and surfaces into G4 materials and surfaces
 
 OpStatus
@@ -286,7 +289,7 @@ cfg4--(){
    #cfg4-make
    #cfg4-install
 
-   ( cfg4-bcd ; make install )
+   ( cfg4-bcd ; make ${1:-install} )
 }
 
 

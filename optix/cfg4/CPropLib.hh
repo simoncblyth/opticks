@@ -27,7 +27,7 @@ class G4LogicalBorderSurface ;
 class G4OpticalSurface ;
 
 
-// CPropLib is a constituent of CDetector that converts
+// CPropLib is a constituent of CTestDetector that converts
 // GGeo materials and surfaces into G4 materials and surfaces
 
 class CPropLib {
@@ -37,6 +37,11 @@ class CPropLib {
        CPropLib(GCache* cache, int verbosity=0);
    private:
        void init();
+   public:
+       // GGeo material access
+       unsigned int getNumMaterials();
+       const GMaterial* getMaterial(unsigned int index);
+       const GMaterial* getMaterial(const char* shortname);
    public:
        const G4Material* makeInnerMaterial(const char* spec);
        const G4Material* makeMaterial(const char* matname);
@@ -57,9 +62,9 @@ class CPropLib {
        const G4Material* convertMaterial(const GMaterial* kmat);
        G4Material* makeVacuum(const char* name);
        G4Material* makeWater(const char* name);
-       G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
        void addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop );
-
+   public:
+       G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
    private:
        GCache*            m_cache ; 
        int                m_verbosity ; 

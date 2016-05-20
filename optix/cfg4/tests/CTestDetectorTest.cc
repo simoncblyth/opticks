@@ -8,7 +8,7 @@
 #include "GGeoTestConfig.hh"
 
 #include "CPropLib.hh"
-#include "CDetector.hh"
+#include "CTestDetector.hh"
 #include "CTraverser.hh"
 
 #include "G4VPhysicalVolume.hh"
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     GGeoTestConfig* m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
 
-    CDetector* m_detector  = new CDetector(m_cache, m_testconfig) ; 
+    CTestDetector* m_detector  = new CTestDetector(m_cache, m_testconfig) ; 
 
     m_detector->setVerbosity(2) ;
 

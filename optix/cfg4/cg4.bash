@@ -81,19 +81,36 @@ Only that one GDML file amongst the exports, exports were copied over to D::
     simon:export blyth$ pwd
     /usr/local/env/geant4/geometry/export
 
+Anyhow checking geant4.0.2p01/G4GDMLWriteMaterials::MaterialWrite does not write material properties::
+
+    [blyth@ntugrid5 env]$ nuwa-;cd $(nuwa-g4-sdir)
+
+* What are the GDML writer dependencies ? Most of G4.
+* How difficult to backport recent GDML writer to work with nuwa ?
+* Actually this work is closely releated to G4DAE exporter and intended revisit to 
+  bring that up to latest G4.
+* GDML writer requiring special G4 build configuration is inconvenient.
+
+
+
 DONE
 -----
 
 * OpticksResource .gdml path handling 
 * Break off a CG4 singleton class from cfg4- to hold common G4 components, runmanager etc.. 
 * move ggv- tests out of ggeoview- into separate .bash, check the cfg4 tests following refactor 
-* add GDML loading to CG4/CDetector
+* add GDML loading 
 
 TODO
 ----
 
 * re-export DYB geometry, checking material properties, old export lacks em  
-* split CG4 into separate cg4- package rather than co-locating with cfg4-, cfg4- can depend on cg4-
+
+  * this not so easy, would need to backport recent GDML writer to work with nuwa 
+  * but the info is in the DAE, and are able to reconstruct G4 materials with 
+    the properties for the geocache as done by cfg4- CPropLib  
+
+* maybe: split CG4 into separate cg4- package rather than co-locating with cfg4-, cfg4- can depend on cg4-
 * bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 
   with the customized step collecting Cerenkov and Scintillation processes
 * collect other(non-photon producing processes) particle step tree somehow ? 

@@ -1,6 +1,5 @@
 // cfg4--;op --cgdmldetector --dbg
 
-
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
@@ -9,8 +8,7 @@
 #include "GCache.hh"
 
 // cfg4-
-#include "CDetector.hh"
-#include "CTraverser.hh"
+#include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 
 // g4-
@@ -21,8 +19,6 @@
 
 int main(int argc, char** argv)
 {
-    LOG(info) << "klop " ;
-
     Opticks* m_opticks = new Opticks(argc, argv, "CGDMLDetectorTest.log");
 
     GCache* m_cache = new GCache(m_opticks);
@@ -36,20 +32,7 @@ int main(int argc, char** argv)
 
     m_detector->setVerbosity(2) ;
 
-
     G4VPhysicalVolume* world_pv = m_detector->Construct();
-
-
-    CTraverser* m_traverser = new CTraverser(world_pv) ;
-
-    m_traverser->Traverse(); 
-
-    m_traverser->createGroupVel(); 
-
-    m_traverser->setVerbosity(1); 
-
-    m_traverser->dumpMaterials(); 
-
 
 
     return 0 ; 

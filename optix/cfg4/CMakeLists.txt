@@ -78,7 +78,7 @@ State.cc
 CSource.cc
 OpStatus.cc
 PhysicsList.cc
-CDetector.cc
+CTestDetector.cc
 CGDMLDetector.cc
 CMaker.cc
 CPropLib.cc
@@ -99,7 +99,7 @@ State.hh
 CSource.hh
 OpStatus.hh
 PhysicsList.hh
-CDetector.hh
+CTestDetector.hh
 CGDMLDetector.hh
 CMaker.hh
 CPropLib.hh

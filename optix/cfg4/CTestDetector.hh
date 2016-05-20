@@ -47,15 +47,15 @@ class G4VSolid;
 //       
 
 
-class CDetector : public G4VUserDetectorConstruction
+class CTestDetector : public G4VUserDetectorConstruction
 {
  public:
-    CDetector(GCache* cache, GGeoTestConfig* config);
+    CTestDetector(GCache* cache, GGeoTestConfig* config);
   private:
     void init();
   public:
     virtual G4VPhysicalVolume* Construct();
-    virtual ~CDetector();
+    virtual ~CTestDetector();
 
   public:
     void setVerbosity(unsigned int verbosity);
@@ -66,7 +66,7 @@ class CDetector : public G4VUserDetectorConstruction
     CPropLib* getPropLib();
 
 
-    void dumpPV(const char* msg="CDetector::dumpPV");
+    void dumpPV(const char* msg="CTestDetector::dumpPV");
   private:
     void makePMT(G4LogicalVolume* mother);
     void kludgePhotoCathode();
@@ -87,7 +87,7 @@ class CDetector : public G4VUserDetectorConstruction
 };
 
 
-inline CDetector::CDetector(GCache* cache, GGeoTestConfig* config)
+inline CTestDetector::CTestDetector(GCache* cache, GGeoTestConfig* config)
   : 
   m_cache(cache),
   m_config(config),
@@ -99,7 +99,7 @@ inline CDetector::CDetector(GCache* cache, GGeoTestConfig* config)
 }
 
 
-inline void CDetector::setCenterExtent(float x, float y, float z, float w)
+inline void CTestDetector::setCenterExtent(float x, float y, float z, float w)
 {
     m_center_extent.x = x ; 
     m_center_extent.y = y ; 
@@ -107,22 +107,22 @@ inline void CDetector::setCenterExtent(float x, float y, float z, float w)
     m_center_extent.w = w ; 
 }
 
-inline const glm::vec4& CDetector::getCenterExtent()
+inline const glm::vec4& CTestDetector::getCenterExtent()
 {
     return m_center_extent ; 
 }
 
-inline void CDetector::setVerbosity(unsigned int verbosity)
+inline void CTestDetector::setVerbosity(unsigned int verbosity)
 {
     m_verbosity = verbosity ; 
 }
 
-inline CPropLib* CDetector::getPropLib()
+inline CPropLib* CTestDetector::getPropLib()
 {
     return m_lib ; 
 }
 
-inline CDetector::~CDetector()
+inline CTestDetector::~CTestDetector()
 {
 }
 

@@ -8,9 +8,9 @@ class GCSG ;
 class G4VSolid;
 
 //
-// CMaker is a constitent of CDetector used
+// CMaker is a constitent of CTestDetector used
 // to convert GCSG geometry into G4 geometry in 
-// G4VPhysicalVolume* CDetector::Construct() 
+// G4VPhysicalVolume* CTestDetector::Construct() 
 //
 
 class CMaker {
