@@ -321,8 +321,15 @@ void NumpyEvt::readDomainsBuffer()
 
 void NumpyEvt::zero()
 {
-    m_photon_data->zero();
-    m_aux_data->zero();
+    if(m_photon_data)
+        m_photon_data->zero();
+    else
+        LOG(warning) << "NumpyEvt::zero NULL photon_data " ;
+
+    if(m_aux_data)
+        m_aux_data->zero();
+    else
+        LOG(warning) << "NumpyEvt::zero NULL aux_data " ;
 
     if(m_step)
     {
@@ -1029,19 +1036,19 @@ NPY<float>* NumpyEvt::loadGenstepFromFile(int modulo)
 
 void NumpyEvt::setNumG4Event(unsigned int n)
 {
-   m_parameters->add<unsigned int>("NumG4Event", n);
+   m_parameters->add<int>("NumG4Event", n);
 }
 void NumpyEvt::setNumPhotonsPerG4Event(unsigned int n)
 {
-   m_parameters->add<unsigned int>("NumPhotonsPerG4Event", n);
+   m_parameters->add<int>("NumPhotonsPerG4Event", n);
 }
 unsigned int NumpyEvt::getNumG4Event()
 {
-   return m_parameters->get<unsigned int>("NumG4Event");
+   return m_parameters->get<int>("NumG4Event");
 }
 unsigned int NumpyEvt::getNumPhotonsPerG4Event()
 {
-   return m_parameters->get<unsigned int>("NumPhotonsPerG4Event");
+   return m_parameters->get<int>("NumPhotonsPerG4Event");
 }
  
 

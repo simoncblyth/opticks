@@ -214,6 +214,26 @@ ggv-pmt-test(){
 }
 
 
+ggv-g4gun()
+{
+    type $FUNCNAME
+
+    local msg="=== $FUNCNAME :"
+    local tag=-1
+
+    g4-
+    g4-export
+    env | grep G4
+
+   op.sh \
+       --cfg4 \
+       --cat G4Gun --tag $tag --save \
+       --g4gun \
+       $* 
+
+}
+
+
 
 ggv-dpib-test()
 {

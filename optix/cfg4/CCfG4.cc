@@ -1,5 +1,5 @@
-// cfg4-;cfg4--; op --cfg4     # nope as cfg4 currently restricted to test geometries and TORCH source
 // cfg4-;cfg4--;ggv-;ggv-pmt-test --cfg4 
+// cfg4-;cfg4--;op --cfg4 --g4gun --dbg 
 
 #include "CCfG4.hh"
 
@@ -13,8 +13,8 @@
 
 #include "CPrimaryGeneratorAction.hh"
 #include "CSteppingAction.hh"
-
 #include "CTorchSource.hh"
+#include "CGunSource.hh"
 
 // npy-
 #include "Timer.hpp"
@@ -83,17 +83,14 @@ CDetector* CCfG4::configureDetector()
     return detector ; 
 }
 
-
 CPrimaryGeneratorAction* CCfG4::configureGenerator()
 {
     // after CG4::configure as needs G4 optical photons
     CSource* source = NULL ; 
 
-    int generator_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
-    int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
-
     if(m_opticks->getSourceCode() == TORCH)
     {
+        LOG(info) << "CCfG4::configureGenerator TORCH " ; 
         m_torch = m_opticks->makeSimpleTorchStep();
         m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
         m_torch->Summary("CCfG4::configure TorchStepNPY::Summary");
@@ -102,22 +99,40 @@ CPrimaryGeneratorAction* CCfG4::configureGenerator()
         m_evt->setNumG4Event(m_torch->getNumG4Event()); 
         m_evt->setNumPhotonsPerG4Event(m_torch->getNumPhotonsPerG4Event()); 
 
-        // recorder is back here in order to pass to source for primary recording (so far unused)
-        m_recorder = new Recorder(m_lib, m_evt, stepping_verbosity ); 
 
-        if(m_cfg->hasOpt("primary"))
-             m_recorder->setupPrimaryRecording();
-
-        m_rec = new Rec(m_lib, m_evt) ; 
-
-        source  = static_cast<CSource*>(new CTorchSource(m_torch, m_recorder, generator_verbosity)); 
-
+        int torch_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
+        source  = static_cast<CSource*>(new CTorchSource(m_torch, torch_verbosity)); 
     }
     else if(m_opticks->getSourceCode() == G4GUN)
     {
-         // hmm this is G4 only, so should it be arranged at this level  ?
+        // hmm this is G4 only, so should it be arranged at this level  ?
+        // without the setGenstepData the evt is not allocated 
 
+        LOG(info) << "CCfG4::configureGenerator G4GUN " ; 
+        m_evt->setNumG4Event(1); 
+        m_evt->setNumPhotonsPerG4Event(0); 
+
+        int g4gun_verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
+        source  = static_cast<CSource*>(new CGunSource(g4gun_verbosity)); 
     }
+    else
+    {
+         LOG(fatal) << "CCfG4::configureGenerator" 
+                    << " expecting TORCH or G4GUN " 
+                    ; 
+         assert(0);
+    }
+
+
+    int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
+    // recorder is back here in order to pass to source for primary recording (unused?)
+    m_recorder = new Recorder(m_lib, m_evt, stepping_verbosity ); 
+    m_rec = new Rec(m_lib, m_evt) ; 
+    if(m_cfg->hasOpt("primary"))
+         m_recorder->setupPrimaryRecording();
+
+    source->setRecorder(m_recorder);
+
     return new CPrimaryGeneratorAction(source) ;
 }
 

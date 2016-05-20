@@ -19,7 +19,7 @@ class Recorder ;
 class CTorchSource: public CSource
 {
   public:
-    CTorchSource(TorchStepNPY* torch, Recorder* recorder, unsigned int verbosity);
+    CTorchSource(TorchStepNPY* torch, unsigned int verbosity);
   private:
     void init();
     void configure();
@@ -61,8 +61,6 @@ private:
     G4Cache<part_prop_t>  m_pp;
 
     G4int                 m_num;
-    G4ParticleDefinition* m_definition;
-    G4double              m_charge;
     G4double              m_time;
     G4ThreeVector         m_polarization;
     G4int                 m_verbosityLevel;
@@ -70,16 +68,16 @@ private:
 };
 
 
-inline CTorchSource::CTorchSource(TorchStepNPY* torch, Recorder* recorder, unsigned int verbosity)  
+inline CTorchSource::CTorchSource(TorchStepNPY* torch, unsigned int verbosity)  
     :
-    CSource(recorder),
+    CSource(),
     m_torch(torch),
     m_posGen(NULL),
     m_angGen(NULL),
     m_eneGen(NULL),
     m_ranGen(NULL),
 	m_num(1),
-	m_charge(0.0),
+
 	m_time(0.0),
 	m_polarization(1.0,0.0,0.0),
     m_verbosityLevel(verbosity)

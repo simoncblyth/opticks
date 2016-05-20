@@ -11,20 +11,16 @@
 #include "Recorder.hh"
 
 // g4-
+#include "G4AutoLock.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-
 #include "G4PrimaryParticle.hh"
 #include "G4Event.hh"
+
 #include "Randomize.hh"
-#include "G4ParticleTable.hh"
-#include "G4Geantino.hh"
-#include "G4ParticleDefinition.hh"
 
 #include "G4TrackingManager.hh"
 #include "G4Track.hh"
-#include "G4AutoLock.hh"
-
 
 #include "G4SPSPosDistribution.hh"
 #include "G4SPSAngDistribution.hh"
@@ -41,8 +37,6 @@ CTorchSource::part_prop_t::part_prop_t()
 
 void CTorchSource::init()
 {
-	m_definition = G4Geantino::GeantinoDefinition();
-
 	m_ranGen = new G4SPSRandomGenerator();
 
 	m_posGen = new G4SPSPosDistribution();
@@ -80,11 +74,6 @@ void CTorchSource::SetVerbosity(int vL)
 	m_eneGen->SetVerbosity(vL);
 }
 
-void CTorchSource::SetParticleDefinition(G4ParticleDefinition* definition) 
-{
-	m_definition = definition;
-	m_charge = definition->GetPDGCharge();
-}
 
 void CTorchSource::GeneratePrimaryVertex(G4Event *evt) 
 {
@@ -147,11 +136,10 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 		if (m_verbosityLevel >= 2)
 			G4cout << "Creating primaries and assigning to vertex" << G4endl;
 		// create new primaries and set them to the vertex
-		G4double mass = m_definition->GetPDGMass();
 
 		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
 		particle->SetKineticEnergy(pp.energy );
-		particle->SetMass( mass );
+		particle->SetMass( m_mass );
 		particle->SetMomentumDirection( pp.momentum_direction );
 		particle->SetCharge( m_charge );
 
@@ -226,9 +214,7 @@ void CTorchSource::configure()
     unsigned int n = m_torch->getNumPhotonsPerG4Event();
     SetNumberOfParticles(n);
 
-    G4ParticleDefinition* definition = G4ParticleTable::GetParticleTable()->FindParticle("opticalphoton");
-    SetParticleDefinition(definition);
-
+    setParticleDefinition("opticalphoton");
 
 
     float w = m_torch->getWavelength() ; 

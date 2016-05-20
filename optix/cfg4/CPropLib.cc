@@ -147,7 +147,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 
         if(m_groupvel_kludge && strcmp(lkey,"RINDEX")==0)
         {
-            LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
+            //LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
             addProperty(mpt, "GROUPVEL", prop );
         }
 

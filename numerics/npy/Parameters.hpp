@@ -24,6 +24,10 @@ class Parameters {
        template <typename T> 
        T get(const char* name);
 
+       template <typename T> 
+       T get(const char* name, const char* fallback);
+
+
        void dump(const char* msg="Parameters::dump");
        void prepLines();
 

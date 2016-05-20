@@ -96,7 +96,7 @@ void CGDMLDetector::addMPT()
         const GMaterial* ggmat = m_lib->getMaterial(shortname);          
         assert(ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material") ;
 
-        LOG(info) << "CGDMLDetector::addMPT" 
+        LOG(debug) << "CGDMLDetector::addMPT" 
                   << " g4mat " << std::setw(45) << name
                   << " shortname " << std::setw(25) << shortname
                    ;
@@ -105,6 +105,9 @@ void CGDMLDetector::addMPT()
         g4mat->SetMaterialPropertiesTable(mpt);
          
     }
+
+    LOG(info) << "CGDMLDetector::addMPT added MPT to " <<  ng4mat << " g4 materials " ; 
+
 }
 
 

@@ -76,6 +76,7 @@ Recorder.cc
 Rec.cc
 State.cc
 CTorchSource.cc
+CGunSource.cc
 CSource.cc
 OpStatus.cc
 PhysicsList.cc
@@ -99,6 +100,7 @@ Recorder.hh
 Rec.hh
 State.hh
 CTorchSource.hh
+CGunSource.hh
 CSource.hh
 OpStatus.hh
 PhysicsList.hh

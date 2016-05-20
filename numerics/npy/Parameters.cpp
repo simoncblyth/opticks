@@ -5,6 +5,7 @@
 #include <iomanip>
 
 #include "jsonutil.hpp"
+#include "NLog.hpp"
 
 
 template <typename T>
@@ -30,8 +31,28 @@ template <typename T>
 T Parameters::get(const char* name)
 {
     std::string value = getStringValue(name);
+    if(value.empty())
+    {
+        LOG(fatal) << "Parameters::get " << name << " EMPTY VALUE "  ;
+    }
     return boost::lexical_cast<T>(value);
 }
+
+
+template <typename T>
+T Parameters::get(const char* name, const char* fallback)
+{
+    std::string value = getStringValue(name);
+    if(value.empty())
+    {
+        value = fallback ;  
+        LOG(warning) << "Parameters::get " << name << " value empty, using fallback value: " << fallback  ;
+    }
+    return boost::lexical_cast<T>(value);
+}
+
+
+
 
 
 
