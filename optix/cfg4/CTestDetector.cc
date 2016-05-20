@@ -45,9 +45,7 @@
 
 void CTestDetector::init()
 {
-    m_lib = new CPropLib(m_cache);
     m_lib->setGroupvelKludge(m_config->getGroupvel());
-
     m_maker = new CMaker(m_cache);
 }
 
@@ -220,11 +218,6 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 }
 
 
-G4VPhysicalVolume* CTestDetector::getPV(const char* name)
-{
-    return m_pvm.count(name) == 1 ? m_pvm[name] : NULL ; 
-}
-
 void CTestDetector::kludgePhotoCathode()
 {
     LOG(info) << "CTestDetector::kludgePhotoCathode" ;
@@ -275,26 +268,6 @@ G4LogicalVolume* CTestDetector::makeLV(GCSG* csg, unsigned int i)
            ;
 
     return logvol ; 
-}
-
-
-void CTestDetector::dumpPV(const char* msg)
-{
-    LOG(info) << msg ; 
-
-    typedef std::map<std::string, G4VPhysicalVolume*> MSV ; 
-
-    for(MSV::const_iterator it=m_pvm.begin() ; it != m_pvm.end() ; it++)
-    {
-         std::string pvn = it->first ; 
-         G4VPhysicalVolume* pv = it->second ;  
-
-         std::cout << std::setw(40) << pvn 
-                   << std::setw(40) << pv->GetName() 
-                   << std::endl 
-                   ;
-
-    }
 }
 
 

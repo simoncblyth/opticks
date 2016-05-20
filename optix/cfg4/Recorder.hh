@@ -35,7 +35,7 @@ class Recorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool debug=false);
+        Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, unsigned int verbosity);
    public:
         void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
@@ -53,6 +53,7 @@ class Recorder {
         void DumpStep(const G4Step* step);
    public:
         NumpyEvt* getEvt();
+        unsigned int getVerbosity();
    public:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
@@ -100,6 +101,7 @@ class Recorder {
         unsigned int m_steps_per_photon ; 
 
         unsigned int m_photons_per_g4event ; 
+        unsigned int m_verbosity ; 
         bool m_debug ; 
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
@@ -144,7 +146,7 @@ class Recorder {
 
 };
 
-inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool debug) 
+inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, unsigned int verbosity) 
    :
    m_evt(evt),
    m_clib(NULL),
@@ -155,7 +157,8 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool 
    m_steps_per_photon(0), 
 
    m_photons_per_g4event(photons_per_g4event),
-   m_debug(debug),
+   m_verbosity(verbosity),
+   m_debug(verbosity > 0),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
@@ -191,6 +194,10 @@ inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, bool 
 }
 
 
+inline unsigned int Recorder::getVerbosity()
+{
+    return m_verbosity ; 
+}
 inline bool Recorder::isHistorySelected()
 {
    return m_seqhis_select == m_seqhis ; 

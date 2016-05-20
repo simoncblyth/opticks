@@ -7,11 +7,11 @@ class G4VPrimaryGenerator ;
 class G4Event;
 class CSource ; 
 
-class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
+class CPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
-    PrimaryGeneratorAction(CSource* generator);
-    virtual ~PrimaryGeneratorAction();
+    CPrimaryGeneratorAction(CSource* generator);
+    virtual ~CPrimaryGeneratorAction();
 
   public:
     virtual void GeneratePrimaries(G4Event*);
@@ -22,7 +22,7 @@ class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
 };
 
-inline PrimaryGeneratorAction::PrimaryGeneratorAction(CSource* generator)
+inline CPrimaryGeneratorAction::CPrimaryGeneratorAction(CSource* generator)
     : 
     G4VUserPrimaryGeneratorAction(), 
     m_generator(generator)

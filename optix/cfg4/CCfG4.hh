@@ -2,15 +2,27 @@
 
 #include <cstdlib>
 
-class CG4 ; 
+// optickscore-
 class Opticks ; 
 template <typename T> class OpticksCfg ;
+
+// ggeo-
 class GCache ; 
 class GBndLib ;
 class GGeoTestConfig ; 
+
+// npy--
 class TorchStepNPY ;
 class NumpyEvt ; 
-class CTestDetector ; 
+
+// cfg4-
+class CG4 ; 
+class CPropLib ; 
+
+class CDetector ; 
+class CSteppingAction ;
+class CPrimaryGeneratorAction ;
+
 class Recorder ; 
 class Rec ; 
 
@@ -22,7 +34,11 @@ class CCfG4
         virtual ~CCfG4();
    private:
         void init(int argc, char** argv);
+   private:
         void configure(int argc, char** argv);
+        CDetector* configureDetector();
+        CSteppingAction* configureStepping();
+        CPrimaryGeneratorAction* configureGenerator();
    public:
         void interactive(int argc, char** argv);
         void propagate();
@@ -33,12 +49,12 @@ class CCfG4
         CG4*                  m_geant4 ; 
         Opticks*              m_opticks ;  
         OpticksCfg<Opticks>*  m_cfg ;
-        GGeoTestConfig*       m_testconfig ; 
         GCache*               m_cache ; 
         TorchStepNPY*         m_torch ; 
         NumpyEvt*             m_evt ; 
    private:
-        CTestDetector*        m_detector ; 
+        CDetector*            m_detector ; 
+        CPropLib*             m_lib ; 
         Recorder*             m_recorder ; 
         Rec*                  m_rec ; 
    private:
@@ -54,11 +70,11 @@ inline CCfG4::CCfG4(int argc, char** argv)
      m_geant4(NULL),
      m_opticks(NULL),
      m_cfg(NULL),
-     m_testconfig(NULL),
      m_cache(NULL),
      m_torch(NULL),
      m_evt(NULL),
      m_detector(NULL),
+     m_lib(NULL),
      m_recorder(NULL),
      m_rec(NULL),
      m_num_g4event(0),

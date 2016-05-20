@@ -2,7 +2,6 @@
 
 #include <map>
 #include <string>
-#include <glm/glm.hpp>
 
 // ggeo-
 class GCache ;
@@ -18,7 +17,6 @@ class CPropLib ;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4VSolid;
-#include "G4VUserDetectorConstruction.hh"
 
 //
 // Hmm for fully controlled cfg4- testing need 
@@ -47,7 +45,9 @@ class G4VSolid;
 //       
 
 
-class CTestDetector : public G4VUserDetectorConstruction
+#include "CDetector.hh"
+
+class CTestDetector : public CDetector
 {
  public:
     CTestDetector(GCache* cache, GGeoTestConfig* config);
@@ -56,71 +56,31 @@ class CTestDetector : public G4VUserDetectorConstruction
   public:
     virtual G4VPhysicalVolume* Construct();
     virtual ~CTestDetector();
-
   public:
-    void setVerbosity(unsigned int verbosity);
     bool isPmtInBox();
     bool isBoxInBox();
-    const glm::vec4& getCenterExtent();
-    G4VPhysicalVolume* getPV(const char* name);
-    CPropLib* getPropLib();
-
-
-    void dumpPV(const char* msg="CTestDetector::dumpPV");
   private:
     void makePMT(G4LogicalVolume* mother);
     void kludgePhotoCathode();
     G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
-    void setCenterExtent(float x, float y, float z, float w);
 
   private:
-    GCache*            m_cache ; 
     GGeoTestConfig*    m_config ; 
-    CPropLib*          m_lib ; 
     CMaker*            m_maker ; 
-    int                m_verbosity ; 
-
-  private:
-    glm::vec4          m_center_extent ; 
-    std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
 
 };
 
 
+
 inline CTestDetector::CTestDetector(GCache* cache, GGeoTestConfig* config)
   : 
-  m_cache(cache),
+  CDetector(cache),
   m_config(config),
-  m_lib(NULL),
-  m_maker(NULL),
-  m_verbosity(0)
+  m_maker(NULL)
 {
     init();
 }
 
-
-inline void CTestDetector::setCenterExtent(float x, float y, float z, float w)
-{
-    m_center_extent.x = x ; 
-    m_center_extent.y = y ; 
-    m_center_extent.z = z ; 
-    m_center_extent.w = w ; 
-}
-
-inline const glm::vec4& CTestDetector::getCenterExtent()
-{
-    return m_center_extent ; 
-}
-
-inline void CTestDetector::setVerbosity(unsigned int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
-
-inline CPropLib* CTestDetector::getPropLib()
-{
-    return m_lib ; 
-}
 
 inline CTestDetector::~CTestDetector()
 {

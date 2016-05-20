@@ -78,14 +78,15 @@ State.cc
 CSource.cc
 OpStatus.cc
 PhysicsList.cc
+CDetector.cc
 CTestDetector.cc
 CGDMLDetector.cc
 CMaker.cc
 CPropLib.cc
 CTraverser.cc
-PrimaryGeneratorAction.cc
+CPrimaryGeneratorAction.cc
 ActionInitialization.cc
-SteppingAction.cc
+CSteppingAction.cc
 SteppingVerbose.cc
 )
 
@@ -99,14 +100,15 @@ State.hh
 CSource.hh
 OpStatus.hh
 PhysicsList.hh
+CDetector.hh
 CTestDetector.hh
 CGDMLDetector.hh
 CMaker.hh
 CPropLib.hh
 CTraverser.hh
-PrimaryGeneratorAction.hh
+CPrimaryGeneratorAction.hh
 ActionInitialization.hh
-SteppingAction.hh
+CSteppingAction.hh
 SteppingVerbose.hh
 )
    

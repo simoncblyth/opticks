@@ -1,4 +1,4 @@
-#include "SteppingAction.hh"
+#include "CSteppingAction.hh"
 
 #include "G4ProcessManager.hh"
 #include "G4RunManager.hh"
@@ -26,7 +26,7 @@
 #include "NLog.hpp"
 
 
-G4OpBoundaryProcessStatus SteppingAction::GetOpBoundaryProcessStatus()
+G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
 {
     G4OpBoundaryProcessStatus status = Undefined;
     G4ProcessManager* mgr = G4OpticalPhoton::OpticalPhoton()->GetProcessManager() ;
@@ -50,21 +50,21 @@ G4OpBoundaryProcessStatus SteppingAction::GetOpBoundaryProcessStatus()
 }
 
 
-void SteppingAction::init()
+void CSteppingAction::init()
 {
     NumpyEvt* evt = m_recorder->getEvt();
-    LOG(info) << "SteppingAction::init " 
+    LOG(info) << "CSteppingAction::init " 
               << " evt " << evt->description() 
               ;
 }
 
 
 
-const unsigned long long SteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,SurfaceAbsorb
-const unsigned long long SteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
+const unsigned long long CSteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,SurfaceAbsorb
+const unsigned long long CSteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
 
 
-void SteppingAction::UserSteppingAction(const G4Step* step)
+void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
@@ -91,7 +91,7 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
 
     /*
     if(startPhoton)
-         LOG(info) << "SteppingAction::UserSteppingAction"
+         LOG(info) << "CSteppingAction::UserSteppingAction"
                    << " photon_id " << photon_id 
                    << " step_id " << step_id 
                    << " record_id " << record_id 
@@ -144,9 +144,9 @@ void SteppingAction::UserSteppingAction(const G4Step* step)
             {
                 if(!same_seqmat || !same_seqhis || debug )
                 {
-                    std::cout << std::endl << std::endl << "----SteppingAction----" << std::endl  ; 
-                    m_recorder->Dump("SteppingAction::UserSteppingAction DONE");
-                    m_rec->Dump("SteppingAction::UserSteppingAction (Rec)DONE");
+                    std::cout << std::endl << std::endl << "----CSteppingAction----" << std::endl  ; 
+                    m_recorder->Dump("CSteppingAction::UserSteppingAction DONE");
+                    m_rec->Dump("CSteppingAction::UserSteppingAction (Rec)DONE");
                 }
 
                 if(!same_seqhis)

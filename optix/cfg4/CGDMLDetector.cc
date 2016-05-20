@@ -18,13 +18,6 @@
 
 // g4-
 #include "G4LogicalVolume.hh"
-#include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
-#include "G4UImanager.hh"
-
-#include "globals.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4Material.hh"
 
 // painfully this is not standard in G4
@@ -32,11 +25,6 @@
 
 
 void CGDMLDetector::init()
-{
-    m_lib = new CPropLib(m_cache);
-}
-
-G4VPhysicalVolume* CGDMLDetector::Construct()
 {
     const char* gdmlpath = m_cache->getGDMLPath();
     LOG(info) << "CGDMLDetector::Construct " << gdmlpath ; 
@@ -46,12 +34,13 @@ G4VPhysicalVolume* CGDMLDetector::Construct()
     G4GDMLParser parser;
     parser.Read(gdmlpath, validate);
 
-    m_top = parser.GetWorldVolume();
+    G4VPhysicalVolume* world = parser.GetWorldVolume();
 
-    fixMaterials(m_top);
+    fixMaterials(world);
 
-    return m_top ; 
+    setTop(world);
 }
+
 
 void CGDMLDetector::fixMaterials(G4VPhysicalVolume* top)
 {
@@ -117,13 +106,6 @@ void CGDMLDetector::addMPT()
          
     }
 }
-
-
-
-
-
-
-
 
 
 

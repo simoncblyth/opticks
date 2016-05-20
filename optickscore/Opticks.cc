@@ -405,6 +405,7 @@ NumpyEvt* Opticks::makeEvt()
     parameters->add<unsigned int>("RecordMax", record_max );
 
     parameters->add<std::string>("mode", getModeString() ); 
+    parameters->add<std::string>("cmdline", m_cfg->getCommandLine() );
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );
     assert( parameters->get<unsigned int>("BounceMax") == bounce_max );

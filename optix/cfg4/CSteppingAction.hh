@@ -8,14 +8,14 @@ class CPropLib ;
 class Recorder ; 
 class Rec ; 
 
-class SteppingAction : public G4UserSteppingAction
+class CSteppingAction : public G4UserSteppingAction
 {
   static const unsigned long long SEQHIS_TO_SA ; 
   static const unsigned long long SEQMAT_MO_PY_BK ; 
 
   public:
-    SteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity=0);
-    virtual ~SteppingAction();
+    CSteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity=0);
+    virtual ~CSteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
     virtual void UserSteppingAction(const G4Step*);
@@ -30,7 +30,7 @@ class SteppingAction : public G4UserSteppingAction
     int          m_verbosity ; 
 };
 
-inline SteppingAction::SteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity)
+inline CSteppingAction::CSteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity)
    : 
    G4UserSteppingAction(),
    m_clib(clib),
@@ -41,7 +41,7 @@ inline SteppingAction::SteppingAction(CPropLib* clib, Recorder* recorder, Rec* r
    init();
 }
 
-inline SteppingAction::~SteppingAction()
+inline CSteppingAction::~CSteppingAction()
 { 
 }
 

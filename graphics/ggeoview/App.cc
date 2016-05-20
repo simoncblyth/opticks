@@ -212,9 +212,6 @@ void App::configure(int argc, char** argv)
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
-
-        Parameters* params = m_evt->getParameters() ;
-        params->add<std::string>("cmdline", m_cfg->getCommandLine() ); 
     } 
 
 #ifdef WITH_NPYSERVER
