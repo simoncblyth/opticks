@@ -57,10 +57,6 @@ class CCfG4
         CPropLib*             m_lib ; 
         Recorder*             m_recorder ; 
         Rec*                  m_rec ; 
-   private:
-        unsigned int          m_num_g4event ; 
-        unsigned int          m_num_photons ; 
-
 };
 
 
@@ -76,9 +72,7 @@ inline CCfG4::CCfG4(int argc, char** argv)
      m_detector(NULL),
      m_lib(NULL),
      m_recorder(NULL),
-     m_rec(NULL),
-     m_num_g4event(0),
-     m_num_photons(0)
+     m_rec(NULL)
 {
     init(argc, argv);
 }

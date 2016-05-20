@@ -1023,3 +1023,26 @@ NPY<float>* NumpyEvt::loadGenstepFromFile(int modulo)
     return npy ;
 }
 
+
+
+
+
+void NumpyEvt::setNumG4Event(unsigned int n)
+{
+   m_parameters->add<unsigned int>("NumG4Event", n);
+}
+void NumpyEvt::setNumPhotonsPerG4Event(unsigned int n)
+{
+   m_parameters->add<unsigned int>("NumPhotonsPerG4Event", n);
+}
+unsigned int NumpyEvt::getNumG4Event()
+{
+   return m_parameters->get<unsigned int>("NumG4Event");
+}
+unsigned int NumpyEvt::getNumPhotonsPerG4Event()
+{
+   return m_parameters->get<unsigned int>("NumPhotonsPerG4Event");
+}
+ 
+
+

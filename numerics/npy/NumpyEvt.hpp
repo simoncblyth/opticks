@@ -70,6 +70,12 @@ class NumpyEvt {
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
    public:
+       // G4 related qtys used by cfg4- when NumpyEvt used to store G4 propagations
+       void setNumG4Event(unsigned int n);
+       void setNumPhotonsPerG4Event(unsigned int n);
+       unsigned int getNumG4Event();
+       unsigned int getNumPhotonsPerG4Event();
+   public:
        void setBoundaryIdx(Index* bndidx);
        void setHistorySeq(Index* seqhis);
        void setMaterialSeq(Index* seqmat);

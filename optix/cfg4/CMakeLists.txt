@@ -75,6 +75,7 @@ Format.cc
 Recorder.cc
 Rec.cc
 State.cc
+CTorchSource.cc
 CSource.cc
 OpStatus.cc
 PhysicsList.cc
@@ -97,6 +98,7 @@ Format.hh
 Recorder.hh
 Rec.hh
 State.hh
+CTorchSource.hh
 CSource.hh
 OpStatus.hh
 PhysicsList.hh

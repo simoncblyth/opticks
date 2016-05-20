@@ -52,6 +52,7 @@ void Recorder::init()
 {
     m_c4.u = 0u ; 
 
+    m_photons_per_g4event = m_evt->getNumPhotonsPerG4Event() ; 
     m_record_max = m_evt->getNumPhotons(); 
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
@@ -62,6 +63,8 @@ void Recorder::init()
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
+              << " photons_per_g4event " << m_photons_per_g4event
+              << " num_g4event " << m_evt->getNumG4Event() 
               << " isStep " << m_step  
               ;
 

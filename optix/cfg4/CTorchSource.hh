@@ -1,6 +1,5 @@
 #pragma once
 
-#include "G4VPrimaryGenerator.hh"
 #include "G4ParticleMomentum.hh"
 
 #include "G4Threading.hh"
@@ -15,21 +14,20 @@ class G4SPSRandomGenerator ;
 class TorchStepNPY ; 
 class Recorder ; 
 
+#include "CSource.hh"
 
-
-class CSource: public G4VPrimaryGenerator 
+class CTorchSource: public CSource
 {
   public:
-    CSource(TorchStepNPY* torch, Recorder* recorder, G4int verbosity=0);
+    CTorchSource(TorchStepNPY* torch, Recorder* recorder, unsigned int verbosity);
   private:
     void init();
     void configure();
   public:
-    ~CSource();
+    virtual ~CTorchSource();
     void GeneratePrimaryVertex(G4Event *evt);
   public:
-    void SetVerbosity(G4int);
-  public:
+    void SetVerbosity(int vL);
     void SetParticleDefinition(G4ParticleDefinition* definition);
     void SetNumberOfParticles(G4int i);
     void SetParticleTime(G4double time);
@@ -46,7 +44,6 @@ class CSource: public G4VPrimaryGenerator
 private:
     // residents 
     TorchStepNPY*         m_torch ;
-    Recorder*             m_recorder ; 
 
     G4SPSPosDistribution* m_posGen;
     G4SPSAngDistribution* m_angGen;
@@ -73,10 +70,10 @@ private:
 };
 
 
-inline CSource::CSource(TorchStepNPY* torch, Recorder* recorder, G4int verbosity)  
+inline CTorchSource::CTorchSource(TorchStepNPY* torch, Recorder* recorder, unsigned int verbosity)  
     :
+    CSource(recorder),
     m_torch(torch),
-    m_recorder(recorder),
     m_posGen(NULL),
     m_angGen(NULL),
     m_eneGen(NULL),
@@ -85,26 +82,26 @@ inline CSource::CSource(TorchStepNPY* torch, Recorder* recorder, G4int verbosity
 	m_charge(0.0),
 	m_time(0.0),
 	m_polarization(1.0,0.0,0.0),
-	m_verbosityLevel(verbosity)
+    m_verbosityLevel(verbosity)
 {
     init();
 }
 
 
 
-inline void CSource::SetNumberOfParticles(G4int num) 
+inline void CTorchSource::SetNumberOfParticles(G4int num) 
 {
     m_num = num;
 }
-inline void CSource::SetParticleTime(G4double time) 
+inline void CTorchSource::SetParticleTime(G4double time) 
 {
     m_time = time;
 }
-inline void CSource::SetParticleCharge(G4double charge) 
+inline void CTorchSource::SetParticleCharge(G4double charge) 
 {
     m_charge = charge;
 }
-inline void CSource::SetParticlePolarization(G4ThreeVector polarization) 
+inline void CTorchSource::SetParticlePolarization(G4ThreeVector polarization) 
 {
     m_polarization = polarization ;
 }
@@ -112,34 +109,34 @@ inline void CSource::SetParticlePolarization(G4ThreeVector polarization)
 
 
 
-inline G4ParticleDefinition* CSource::GetParticleDefinition() const 
+inline G4ParticleDefinition* CTorchSource::GetParticleDefinition() const 
 {
     return m_definition;
 }
-inline G4int CSource::GetNumberOfParticles() const 
+inline G4int CTorchSource::GetNumberOfParticles() const 
 {
     return m_num ;
 }
-inline G4double CSource::GetParticleTime() const 
+inline G4double CTorchSource::GetParticleTime() const 
 {
     return m_time;
 }
-inline G4ThreeVector CSource::GetParticlePolarization() const 
+inline G4ThreeVector CTorchSource::GetParticlePolarization() const 
 {
     return m_polarization;
 }
 
 
 
-inline G4ThreeVector CSource::GetParticlePosition() const 
+inline G4ThreeVector CTorchSource::GetParticlePosition() const 
 {
     return m_pp.Get().position;
 }
-inline G4ThreeVector CSource::GetParticleMomentumDirection() const 
+inline G4ThreeVector CTorchSource::GetParticleMomentumDirection() const 
 {
     return m_pp.Get().momentum_direction;
 }
-inline G4double CSource::GetParticleEnergy() const 
+inline G4double CTorchSource::GetParticleEnergy() const 
 {
     return m_pp.Get().energy;
 }

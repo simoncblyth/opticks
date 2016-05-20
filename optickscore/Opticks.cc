@@ -18,7 +18,6 @@
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
-//const char* Opticks::PHOTON_FLAGS_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ; 
 const char* Opticks::COMPUTE = "--compute" ; 
 
 const char* Opticks::ZERO_              = "." ;
@@ -36,12 +35,14 @@ const char* Opticks::SURFACE_SREFLECT_  = "SURFACE_SREFLECT" ;
 const char* Opticks::BOUNDARY_REFLECT_  = "BOUNDARY_REFLECT" ; 
 const char* Opticks::BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ; 
 const char* Opticks::TORCH_             = "TORCH" ; 
+const char* Opticks::G4GUN_             = "G4GUN" ; 
 const char* Opticks::NAN_ABORT_         = "NAN_ABORT" ; 
 const char* Opticks::BAD_FLAG_          = "BAD_FLAG" ; 
 
 const char* Opticks::cerenkov_          = "cerenkov" ;
 const char* Opticks::scintillation_     = "scintillation" ;
 const char* Opticks::torch_             = "torch" ; 
+const char* Opticks::g4gun_             = "g4gun" ; 
 const char* Opticks::other_             = "other" ;
 
 const char* Opticks::BNDIDX_NAME_  = "Boundary_Index" ;
@@ -429,6 +430,7 @@ unsigned int Opticks::getSourceCode()
     if(     m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
     else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
     else if(m_cfg->hasOpt("torch"))         code = TORCH ;
+    else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;
     else                                    code = TORCH ;
     return code ;
 }
@@ -462,6 +464,7 @@ const char* Opticks::Flag(const unsigned int flag)
         case BOUNDARY_TRANSMIT:s=BOUNDARY_TRANSMIT_ ;break; 
         case TORCH:            s=TORCH_ ;break; 
         case NAN_ABORT:        s=NAN_ABORT_ ;break; 
+        case G4GUN:            s=G4GUN_ ;break; 
         default:               s=BAD_FLAG_  ;
                                LOG(warning) << "Opticks::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }

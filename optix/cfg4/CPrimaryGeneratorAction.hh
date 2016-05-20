@@ -12,12 +12,9 @@ class CPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   public:
     CPrimaryGeneratorAction(CSource* generator);
     virtual ~CPrimaryGeneratorAction();
-
   public:
     virtual void GeneratePrimaries(G4Event*);
-
   private:
-    //G4VPrimaryGenerator*  m_generator ;
     CSource*  m_generator ;
 
 };

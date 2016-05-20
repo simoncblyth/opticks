@@ -7,7 +7,7 @@
 #include "GLMFormat.hpp"
 
 // cfg4-
-#include "CSource.hh"
+#include "CTorchSource.hh"
 #include "Recorder.hh"
 
 // g4-
@@ -32,14 +32,14 @@
 #include "G4SPSRandomGenerator.hh"
 
 
-CSource::part_prop_t::part_prop_t() 
+CTorchSource::part_prop_t::part_prop_t() 
 {
   momentum_direction = G4ParticleMomentum(0,0,-1);
   energy = 1.*MeV;
   position = G4ThreeVector();
 }
 
-void CSource::init()
+void CTorchSource::init()
 {
 	m_definition = G4Geantino::GeantinoDefinition();
 
@@ -61,7 +61,7 @@ void CSource::init()
 }
 
 
-CSource::~CSource() 
+CTorchSource::~CTorchSource() 
 {
 	delete m_ranGen;
 	delete m_posGen;
@@ -71,7 +71,7 @@ CSource::~CSource()
     G4MUTEXDESTROY(m_mutex);
 }
 
-void CSource::SetVerbosity(int vL) 
+void CTorchSource::SetVerbosity(int vL) 
 {
     G4AutoLock l(&m_mutex);
 	m_verbosityLevel = vL;
@@ -80,13 +80,13 @@ void CSource::SetVerbosity(int vL)
 	m_eneGen->SetVerbosity(vL);
 }
 
-void CSource::SetParticleDefinition(G4ParticleDefinition* definition) 
+void CTorchSource::SetParticleDefinition(G4ParticleDefinition* definition) 
 {
 	m_definition = definition;
 	m_charge = definition->GetPDGCharge();
 }
 
-void CSource::GeneratePrimaryVertex(G4Event *evt) 
+void CTorchSource::GeneratePrimaryVertex(G4Event *evt) 
 {
     assert(m_definition);
 
@@ -109,7 +109,7 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
     glm::vec3 polarization = m_torch->getPolarization() ;
 
 	if (m_verbosityLevel > 1)
-    LOG(info) << "CSource::GeneratePrimaryVertex"
+    LOG(info) << "CTorchSource::GeneratePrimaryVertex"
               << " incidentSphere " << incidentSphere
               << " disc " << disc 
               << " discLin " << discLin 
@@ -132,7 +132,7 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
 		pp.energy = m_eneGen->GenerateOne(m_definition);
 
      /*
-        LOG(info) << "CSource::GeneratePrimaryVertex"
+        LOG(info) << "CTorchSource::GeneratePrimaryVertex"
                   << " i " << std::setw(6) << i 
                   << " posx " << pp.position.x()
                   << " posy " << pp.position.y()
@@ -189,7 +189,7 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
 
         if(m_torch->isFixPolarized())
         {
-             //LOG(info) << "CSource::GeneratePrimaryVertex" 
+             //LOG(info) << "CTorchSource::GeneratePrimaryVertex" 
              //          << " fixpol override "
              //          << gformat(polarization)
              //          ; 
@@ -219,9 +219,9 @@ void CSource::GeneratePrimaryVertex(G4Event *evt)
 
 
 
-void CSource::configure()
+void CTorchSource::configure()
 {
-    m_torch->Summary("CSource::configure");
+    m_torch->Summary("CTorchSource::configure");
 
     unsigned int n = m_torch->getNumPhotonsPerG4Event();
     SetNumberOfParticles(n);
@@ -293,7 +293,7 @@ void CSource::configure()
         {
             m_posGen->SetPosDisShape("Circle");
             m_posGen->SetRadius(_radius*mm);
-            LOG(info) << "CSource::configure posGen Circle"
+            LOG(info) << "CTorchSource::configure posGen Circle"
                       << " radius " << m_posGen->GetRadius()
                       << " ze_x " << ze_x
                       << " ze_y " << ze_y
@@ -307,7 +307,7 @@ void CSource::configure()
             m_posGen->SetRadius0(radius0);
             m_posGen->SetRadius( _radius*mm*ze_y);
 
-            LOG(info) << "CSource::configure posGen Annulus"
+            LOG(info) << "CTorchSource::configure posGen Annulus"
                       << " radius " << m_posGen->GetRadius()
                       << " radius0 " << radius0
                       << " ze_x " << ze_x
@@ -335,7 +335,7 @@ void CSource::configure()
     }
     else
     {
-        LOG(warning) << "CSource::configure mode not handled, default position/direction generators will be used " ; 
+        LOG(warning) << "CTorchSource::configure mode not handled, default position/direction generators will be used " ; 
     }
 
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(posGen->GenerateOne(), "posGen", 10) << G4endl ; 

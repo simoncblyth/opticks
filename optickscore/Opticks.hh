@@ -21,8 +21,6 @@ class Opticks {
        friend class OpticksCfg<Opticks> ; 
    public:
        static const char* COMPUTE ; 
-   //public:
-   //    static const char* PHOTON_FLAGS_PATH ; 
    public:
        enum {
                GEOCODE_ANALYTIC = 'A',   
@@ -59,6 +57,10 @@ class Opticks {
        static const char* BOUNDARY_REFLECT_ ;
        static const char* BOUNDARY_TRANSMIT_ ;
        static const char* TORCH_ ;
+
+        // unclear how to handle as cannot do parallel wise like TORCH_, G4 only 
+       static const char* G4GUN_ ;   
+
        static const char* NAN_ABORT_ ;
        static const char* BAD_FLAG_ ;
        static const char* OTHER_ ;
@@ -66,6 +68,7 @@ class Opticks {
        static const char* cerenkov_ ;
        static const char* scintillation_ ;
        static const char* torch_ ;
+       static const char* g4gun_ ;
        static const char* other_ ;
 
        static const char* BNDIDX_NAME_ ;

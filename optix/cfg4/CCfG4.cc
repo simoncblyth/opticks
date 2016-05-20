@@ -14,7 +14,7 @@
 #include "CPrimaryGeneratorAction.hh"
 #include "CSteppingAction.hh"
 
-#include "CSource.hh"
+#include "CTorchSource.hh"
 
 // npy-
 #include "Timer.hpp"
@@ -83,8 +83,10 @@ CDetector* CCfG4::configureDetector()
     return detector ; 
 }
 
+
 CPrimaryGeneratorAction* CCfG4::configureGenerator()
 {
+    // after CG4::configure as needs G4 optical photons
     CSource* source = NULL ; 
 
     int generator_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
@@ -97,29 +99,23 @@ CPrimaryGeneratorAction* CCfG4::configureGenerator()
         m_torch->Summary("CCfG4::configure TorchStepNPY::Summary");
 
         m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
-        
-        m_num_g4event = m_torch->getNumG4Event();
+        m_evt->setNumG4Event(m_torch->getNumG4Event()); 
+        m_evt->setNumPhotonsPerG4Event(m_torch->getNumPhotonsPerG4Event()); 
 
-        unsigned int photons_per_g4event = m_torch->getNumPhotonsPerG4Event();
+        // recorder is back here in order to pass to source for primary recording (so far unused)
+        m_recorder = new Recorder(m_lib, m_evt, stepping_verbosity ); 
 
-        m_num_photons = m_evt->getNumPhotons();
-
-        m_recorder = new Recorder(m_evt , photons_per_g4event, stepping_verbosity ); 
+        if(m_cfg->hasOpt("primary"))
+             m_recorder->setupPrimaryRecording();
 
         m_rec = new Rec(m_lib, m_evt) ; 
 
-        m_recorder->setPropLib(m_lib);
-        if(m_cfg->hasOpt("primary"))
-             m_recorder->setupPrimaryRecording();
-    
-        source  = new CSource(m_torch, m_recorder, generator_verbosity);  // after CG4::configure as needs G4 optical photons
-
-       // recorders are tangled with the generator, better to split
+        source  = static_cast<CSource*>(new CTorchSource(m_torch, m_recorder, generator_verbosity)); 
 
     }
-    else
+    else if(m_opticks->getSourceCode() == G4GUN)
     {
-        m_num_g4event = 1 ; 
+         // hmm this is G4 only, so should it be arranged at this level  ?
 
     }
     return new CPrimaryGeneratorAction(source) ;
@@ -183,15 +179,18 @@ void CCfG4::interactive(int argc, char** argv)
 
 void CCfG4::propagate()
 {
+    unsigned int num_g4event = m_evt->getNumG4Event();
+ 
     LOG(info) << "CCfG4::propagate"
-              << " num_g4event " << m_num_g4event 
-              << " num_photons " << m_num_photons 
+              << " num_g4event " << m_evt->getNumG4Event()
+              << " num_photons " << m_evt->getNumPhotons()
               << " steps_per_photon " << m_evt->getMaxRec()
               << " bounce_max " << m_evt->getBounceMax()
               ; 
     TIMER("_propagate");
 
-    m_geant4->BeamOn(m_num_g4event);
+
+    m_geant4->BeamOn(num_g4event);
 
 
     TIMER("propagate");

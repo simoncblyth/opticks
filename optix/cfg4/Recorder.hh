@@ -29,13 +29,17 @@ template <typename T> class NPY ;
 //  (the 2nd will come around as the first at the next call)
 //  except for the last G4Step pair where both points are recorded
 //
+//  *photons_per_g4event* is used by defineRecordId so the different
+//  technical g4 events all get slotted into the same NumpyEvt record 
+//  buffers
+//
 
 class Recorder {
    public:
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, unsigned int verbosity);
+        Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity);
    public:
         void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
@@ -91,8 +95,8 @@ class Recorder {
    private:
         void init();
    private:
-        NumpyEvt*    m_evt ; 
         CPropLib*    m_clib ; 
+        NumpyEvt*    m_evt ; 
 
         unsigned int m_gen ; 
 
@@ -146,17 +150,17 @@ class Recorder {
 
 };
 
-inline Recorder::Recorder(NumpyEvt* evt, unsigned int photons_per_g4event, unsigned int verbosity) 
+inline Recorder::Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity) 
    :
+   m_clib(clib),
    m_evt(evt),
-   m_clib(NULL),
    m_gen(0),
 
    m_record_max(0),
    m_bounce_max(0),
    m_steps_per_photon(0), 
+   m_photons_per_g4event(0),
 
-   m_photons_per_g4event(photons_per_g4event),
    m_verbosity(verbosity),
    m_debug(verbosity > 0),
    m_event_id(UINT_MAX),

@@ -37,16 +37,17 @@ CCfG4
      high level control, app umbrella, bringing together Opticks and G4 
      constituents include: CTestDetector, Recorder and Rec
 
-PrimaryGeneratorAction
-     G4VUserPrimaryGeneratorAction subclass, providing GeneratePrimaries(G4Event*)
-     which passes through to CSource generator.
+CPrimaryGeneratorAction
+     G4VUserPrimaryGeneratorAction subclass, "shell" class just 
+     providing GeneratePrimaries(G4Event*)
+     which passes through to CSource::GeneratePrimaryVertex
+
+CSteppingAction
+     G4UserSteppingAction subclass, which feeds G4Step to the recorders
 
 ActionInitialization
      G4VUserActionInitialization subclass, providing UserAction plumbing 
-     for PrimaryGeneratorAction and SteppingAction
-
-SteppingAction
-     G4UserSteppingAction subclass, which feeds G4Step to the recorders
+     for CPrimaryGeneratorAction and CSteppingAction
 
 PhysicsList
      G4VModularPhysicsList subclass, follow chroma : registered just 
@@ -74,7 +75,7 @@ CTestDetector
 
 CGDMLDetector
      G4VUserDetectorConstruction subclass, loads GDML persisted G4 geometries
-
+     with help from constituent: CPropLib
 
 CMaker
      Constitent of CTestDetector used to convert GCSG geometry 
