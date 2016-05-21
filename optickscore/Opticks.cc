@@ -111,6 +111,7 @@ const char* Opticks::SourceType( int code )
        case CERENKOV     :name = CERENKOV_      ;break;
        case SCINTILLATION:name = SCINTILLATION_ ;break;
        case TORCH        :name = TORCH_         ;break;
+       case G4GUN        :name = G4GUN_         ;break;
        default           :name = OTHER_         ;break; 
     }
     return name ; 
@@ -124,6 +125,7 @@ const char* Opticks::SourceTypeLowercase( int code )
        case CERENKOV     :name = cerenkov_      ;break;
        case SCINTILLATION:name = scintillation_ ;break;
        case TORCH        :name = torch_         ;break;
+       case G4GUN        :name = g4gun_         ;break;
        default           :name = other_         ;break; 
     }
     return name ; 
@@ -135,6 +137,7 @@ unsigned int Opticks::SourceCode(const char* type)
     if(     strcmp(type,torch_)==0)         code = TORCH ;
     else if(strcmp(type,cerenkov_)==0)      code = CERENKOV ;
     else if(strcmp(type,scintillation_)==0) code = SCINTILLATION ;
+    else if(strcmp(type,g4gun_)==0)         code = G4GUN ;
     return code ; 
 }
 
@@ -377,6 +380,15 @@ NumpyEvt* Opticks::makeEvt()
 
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
+
+   LOG(info) << "Opticks::makeEvt"
+              << " code " << code
+              << " typ " << typ
+              << " tag " << tag
+              << " det " << det
+              << " cat " << cat
+              ;
+
 
     NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
     assert(strcmp(evt->getUDet(), getUDet()) == 0);

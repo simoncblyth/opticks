@@ -1,15 +1,25 @@
-#include "CCfG4.hh"
+#include "Opticks.hh"
+#include "CG4.hh"
 
 int main(int argc, char** argv)
 {
-    CCfG4* app = new CCfG4(argc, argv) ;
+    Opticks* m_opticks = new Opticks(argc, argv, "cfg4.log");
 
-    app->interactive(argc, argv);
+    m_opticks->setMode( Opticks::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
-    app->propagate();
-    app->save();
+    CG4* m_geant4 = new CG4(m_opticks) ; 
 
-    delete app ; 
+    m_geant4->configure(argc, argv);
+
+    m_geant4->initialize();
+
+    m_geant4->interactive(argc, argv);
+
+    m_geant4->propagate();
+
+    m_geant4->save();
+
+
     return 0 ; 
 }
 

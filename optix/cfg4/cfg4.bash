@@ -44,6 +44,7 @@ CPrimaryGeneratorAction
 
 CSteppingAction
      G4UserSteppingAction subclass, which feeds G4Step to the recorders
+     in method CSteppingAction::UserSteppingAction(G4Step*)
 
 ActionInitialization
      G4VUserActionInitialization subclass, providing UserAction plumbing 

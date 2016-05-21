@@ -64,7 +64,24 @@ const unsigned long long CSteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,
 const unsigned long long CSteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
 
 
+
 void CSteppingAction::UserSteppingAction(const G4Step* step)
+{
+    G4Track* track = step->GetTrack();
+    G4ParticleDefinition* type = track->GetDefinition();
+
+    if( type == G4OpticalPhoton::OpticalPhotonDefinition())
+    {
+        UserSteppingActionOptical(step);
+    }
+    else
+    {
+        UserSteppingActionNonOptical(step);
+    }
+}
+
+
+void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 {
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
@@ -78,7 +95,6 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     const G4Material* postMat = post->GetMaterial() ;
     unsigned int preMaterial = preMat ? m_clib->getMaterialIndex(preMat) + 1 : 0 ;
     unsigned int postMaterial = postMat ? m_clib->getMaterialIndex(postMat) + 1 : 0 ;
-
 
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
@@ -168,4 +184,25 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     }
 
 }
+
+
+
+void CSteppingAction::UserSteppingActionNonOptical(const G4Step* step)
+{
+    G4Track* track = step->GetTrack();
+    G4ParticleDefinition* type = track->GetDefinition();
+    G4int track_id = track->GetTrackID() - 1;
+
+    unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+
+    LOG(info) << "CSteppingAction::UserSteppingActionNonOptical" 
+              << " eid " << eid 
+              << " track_id " << track_id 
+              << " type " << type->GetParticleName()
+              ;
+
+}
+
+
+
 

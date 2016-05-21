@@ -75,11 +75,10 @@ void Recorder::init()
     m_records = m_evt->getRecordData();
 
     const char* typ = m_evt->getTyp();
-    assert(strcmp(typ,Opticks::torch_) == 0);
+
     m_gen = Opticks::SourceCode(typ);
 
-
-    assert( m_gen == TORCH );
+    assert( m_gen == TORCH || m_gen == G4GUN  );
 }
 
 
@@ -237,8 +236,6 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
 
-
-
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 
     const glm::vec4& td = m_evt->getTimeDomain() ; 
     const glm::vec4& wd = m_evt->getWavelengthDomain() ; 
@@ -249,7 +246,6 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     short time_ = shortnorm(time/ns,   td.x, td.y );
 
     m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
-
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );
@@ -271,15 +267,6 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     m_records->setQuad(m_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
 }
 
-
-
-
-
-
-
-
-
-
 void Recorder::RecordQuadrant(const G4Step* step)
 {
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
@@ -298,8 +285,6 @@ void Recorder::RecordQuadrant(const G4Step* step)
     m_c4.uchar_.z = 3u ; 
     m_c4.uchar_.w = 4u ; 
 }
-
-
 
 void Recorder::RecordPhoton(const G4Step* step)
 {
@@ -338,12 +323,6 @@ void Recorder::RecordPhoton(const G4Step* step)
         *(history+1) = m_seqmat ; 
     }
 }
-
-
-
-
-
-
 
 bool Recorder::hasIssue()
 {
@@ -395,9 +374,6 @@ void Recorder::Dump(const char* msg)
     }
 }
 
-
-
-
 void Recorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
 {
     assert(m_debug);
@@ -422,9 +398,6 @@ void Recorder::Clear()
 }
 
 
-
-
-
 void Recorder::setupPrimaryRecording()
 {
     m_evt->prepareForPrimaryRecording();
@@ -438,7 +411,6 @@ void Recorder::setupPrimaryRecording()
     LOG(info) << "Recorder::setupPrimaryRecording"
               << " primary_max " << m_primary_max 
               ; 
- 
 }
 
 void Recorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
@@ -467,10 +439,7 @@ void Recorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
     m_primary->setUInt(m_primary_id, 3, 0, 3, 0u );
 
     m_primary_id += 1 ; 
-
 }
-
-
 
 void Recorder::Summary(const char* msg)
 {
@@ -482,6 +451,4 @@ void Recorder::Summary(const char* msg)
               << " m_slot " << m_slot 
               ;
 }
-
-
 

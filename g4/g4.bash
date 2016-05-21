@@ -34,6 +34,22 @@ Xcode 6 or higher
 See xcode-vi for install notes
 
 
+storePhysicsTable
+-------------------
+
+* http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/TrackingAndPhysics/physicsTable.html
+* http://geant4.web.cern.ch/geant4/G4UsersDocuments/UsersGuides/ForApplicationDeveloper/html/Control/UIcommands/_run_particle_.html
+
+...Note that physics tables are calculated before the event loop, not in the initialization phase. 
+So, at least one event must be executed before using the "storePhysicsTable" command...
+
+* /run/particle/storePhysicsTable [dirName]
+* /run/particle/retrievePhysicsTable [dirName]
+
+
+* how use this cache ? 
+
+
 Compiling GDML module
 -----------------------
 

@@ -268,13 +268,25 @@ void NumpyEvt::dumpDomains(const char* msg)
 void NumpyEvt::updateDomainsBuffer()
 {
     NPY<float>* fdom = getFDomain();
+    if(fdom)
+    {
+        fdom->setQuad(m_space_domain     , 0);
+        fdom->setQuad(m_time_domain      , 1);
+        fdom->setQuad(m_wavelength_domain, 2);
+    }
+    else
+    {
+        LOG(warning) << "NumpyEvt::updateDomainsBuffer fdom NULL " ;
+    }
 
-    fdom->setQuad(m_space_domain     , 0);
-    fdom->setQuad(m_time_domain      , 1);
-    fdom->setQuad(m_wavelength_domain, 2);
 
     NPY<int>* idom = getIDomain();
-    idom->setQuad(m_settings, 0 );
+
+    if(idom)
+        idom->setQuad(m_settings, 0 );
+    else
+        LOG(warning) << "NumpyEvt::updateDomainsBuffer idom NULL " ;
+    
 }
 
 void NumpyEvt::readDomainsBuffer()
@@ -326,17 +338,14 @@ void NumpyEvt::zero()
     else
         LOG(warning) << "NumpyEvt::zero NULL photon_data " ;
 
-    if(m_aux_data)
-        m_aux_data->zero();
-    else
-        LOG(warning) << "NumpyEvt::zero NULL aux_data " ;
+    if(m_aux_data) m_aux_data->zero();
 
     if(m_step)
     {
-        m_phosel_data->zero();
-        m_record_data->zero();
-        m_recsel_data->zero();
-        m_sequence_data->zero();
+        if(m_phosel_data)   m_phosel_data->zero();
+        if(m_record_data)   m_record_data->zero();
+        if(m_recsel_data)   m_recsel_data->zero();
+        if(m_sequence_data) m_sequence_data->zero();
     }
 }
 
@@ -700,10 +709,10 @@ void NumpyEvt::save(bool verbose)
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
-    fdom->save("fdom%s", m_typ,  m_tag, udet);
+    if(fdom) fdom->save("fdom%s", m_typ,  m_tag, udet);
 
     NPY<int>* idom = getIDomain();
-    idom->save("idom%s", m_typ,  m_tag, udet);
+    if(idom) idom->save("idom%s", m_typ,  m_tag, udet);
 
 
     saveIndex(verbose);

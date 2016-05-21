@@ -19,9 +19,10 @@ class CSteppingAction : public G4UserSteppingAction
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
     virtual void UserSteppingAction(const G4Step*);
-
   private:
     void init();
+    void UserSteppingActionOptical(const G4Step*);
+    void UserSteppingActionNonOptical(const G4Step*);
 
   private:
     CPropLib*    m_clib ; 

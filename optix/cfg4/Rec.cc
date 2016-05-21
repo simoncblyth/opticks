@@ -23,10 +23,9 @@ void Rec::init()
     m_steps_per_photon = m_evt->getMaxRec() ;    
 
     const char* typ = m_evt->getTyp();
-    assert(strcmp(typ,Opticks::torch_) == 0);
     m_genflag = Opticks::SourceCode(typ);
 
-    assert( m_genflag == TORCH );
+    assert( m_genflag == TORCH || m_genflag == G4GUN );
 }
 
 

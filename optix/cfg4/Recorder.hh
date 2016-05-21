@@ -33,7 +33,11 @@ template <typename T> class NPY ;
 //  technical g4 events all get slotted into the same NumpyEvt record 
 //  buffers
 //
-
+//
+//
+// Hmm Recorder is really PhotonRecorder
+// how to generalize ?
+//
 class Recorder {
    public:
         static const char* PRE ; 

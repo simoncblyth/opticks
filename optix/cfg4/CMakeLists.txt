@@ -80,6 +80,8 @@ CGunSource.cc
 CSource.cc
 OpStatus.cc
 PhysicsList.cc
+OpNovicePhysicsList.cc
+OpNovicePhysicsListMessenger.cc
 CDetector.cc
 CTestDetector.cc
 CGDMLDetector.cc
@@ -104,6 +106,8 @@ CGunSource.hh
 CSource.hh
 OpStatus.hh
 PhysicsList.hh
+OpNovicePhysicsList.hh
+OpNovicePhysicsListMessenger.hh
 CDetector.hh
 CTestDetector.hh
 CGDMLDetector.hh

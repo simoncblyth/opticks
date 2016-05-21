@@ -1,6 +1,11 @@
 #pragma once
 #include <cstdlib>
 
+// optickscore-
+class Opticks ; 
+template <typename T> class OpticksCfg ;
+
+// g4-
 class G4RunManager ; 
 class G4VisManager ; 
 class G4UImanager ; 
@@ -9,23 +14,52 @@ class G4VUserDetectorConstruction ;
 class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
 
+// npy--
+class TorchStepNPY ;
+class NumpyEvt ; 
+
+// cfg4-
+class CPropLib ; 
+class CDetector ; 
+class Recorder ; 
+class Rec ; 
+
+// ggeo-
+class GCache ; 
+
 class CG4 
 {
    public:
-        CG4();
+        CG4(Opticks* opticks);
         void configure(int argc, char** argv);
         void interactive(int argc, char** argv);
         virtual ~CG4();
    public:
-        void setDetectorConstruction(G4VUserDetectorConstruction* dc);
-        void setPrimaryGeneratorAction(G4VUserPrimaryGeneratorAction* pga);
-        void setSteppingAction(G4UserSteppingAction* sa);
         void initialize();
+        void propagate();
+        void save();
+   private:
+        void init();
+        void configureDetector();
+        void configurePhysics();
+        void configureGenerator();
+        void configureStepping();
+        void setupCompressionDomains();
    public:
         void BeamOn(unsigned int num);
    private:
-        G4RunManager*         m_runManager ;
+        Opticks*              m_opticks ; 
+        OpticksCfg<Opticks>*  m_cfg ;
+        GCache*               m_cache ; 
+        NumpyEvt*             m_evt ; 
+        TorchStepNPY*         m_torch ; 
    private:
+        CDetector*            m_detector ; 
+        CPropLib*             m_lib ; 
+        Recorder*             m_recorder ; 
+        Rec*                  m_rec ; 
+   private:
+        G4RunManager*         m_runManager ;
         bool                  m_g4ui ; 
         G4VisManager*         m_visManager ; 
         G4UImanager*          m_uiManager ; 
@@ -36,8 +70,17 @@ class CG4
         
 };
 
-inline CG4::CG4() 
+inline CG4::CG4(Opticks* opticks) 
    :
+     m_opticks(opticks),
+     m_cfg(NULL),
+     m_cache(NULL),
+     m_evt(NULL),
+     m_torch(NULL),
+     m_detector(NULL),
+     m_lib(NULL),
+     m_recorder(NULL),
+     m_rec(NULL),
      m_runManager(NULL),
      m_g4ui(false),
      m_visManager(NULL),
@@ -46,15 +89,7 @@ inline CG4::CG4()
      m_pga(NULL),
      m_sa(NULL)
 {
-}
-
-inline void CG4::setPrimaryGeneratorAction(G4VUserPrimaryGeneratorAction* pga)
-{
-    m_pga = pga ; 
-}
-inline void CG4::setSteppingAction(G4UserSteppingAction* sa)
-{
-    m_sa = sa ; 
+     init();
 }
 
 
