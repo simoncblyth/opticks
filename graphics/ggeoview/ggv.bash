@@ -225,10 +225,16 @@ ggv-g4gun()
     g4-export
     env | grep G4
 
+    local g4gun_config=(
+                 particle=e+
+                 frame=3160
+                 position=0,0,0
+                   ) 
+
    op.sh \
        --cfg4 \
        --cat G4Gun --tag $tag --save \
-       --g4gun \
+       --g4gun --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 
 }

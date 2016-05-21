@@ -40,6 +40,7 @@
 #include "Timer.hpp"
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
+#include "NGunConfig.hpp"
 #include "NLog.hpp"
 
 //opticks-
@@ -203,11 +204,15 @@ void CG4::configureGenerator()
         // without the setGenstepData the evt is not allocated 
 
         LOG(info) << "CG4::configureGenerator G4GUN " ; 
+
+        std::string gunconfig = m_cfg->getG4GunConfig();
+        NGunConfig* gc = new NGunConfig( gunconfig.empty() ? NULL : gunconfig.c_str() );
+
         m_evt->setNumG4Event(100); 
         m_evt->setNumPhotonsPerG4Event(0); 
 
         int g4gun_verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
-        source  = static_cast<CSource*>(new CGunSource(g4gun_verbosity)); 
+        source  = static_cast<CSource*>(new CGunSource(gc, g4gun_verbosity)); 
     }
     else
     {

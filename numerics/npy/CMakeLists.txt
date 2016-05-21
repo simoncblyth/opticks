@@ -53,6 +53,7 @@ add_library( ${name}  SHARED
     Lookup.cpp
     G4StepNPY.cpp
     TorchStepNPY.cpp
+    NGunConfig.cpp
     PhotonsNPY.cpp
     HitsNPY.cpp
     RecordsNPY.cpp
@@ -110,6 +111,7 @@ ViewNPY.hpp
 MultiViewNPY.hpp
 G4StepNPY.hpp
 TorchStepNPY.hpp
+NGunConfig.hpp
 PhotonsNPY.hpp
 HitsNPY.hpp
 RecordsNPY.hpp

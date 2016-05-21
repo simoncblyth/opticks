@@ -2,12 +2,14 @@
 
 #include "G4Threading.hh"
 
+class NGunConfig ; 
+
 #include "CSource.hh"
 
 class CGunSource: public CSource
 {
   public:
-    CGunSource(unsigned int verbosity);
+    CGunSource(NGunConfig* config, unsigned int verbosity);
   private:
     void init();
     void configure();
@@ -16,14 +18,16 @@ class CGunSource: public CSource
     virtual ~CGunSource();
     void GeneratePrimaryVertex(G4Event *evt);
   private:
+    NGunConfig*           m_config ; 
     G4int                 m_verbosityLevel;
     G4Mutex               m_mutex;
 };
 
 
-inline CGunSource::CGunSource(unsigned int verbosity)  
+inline CGunSource::CGunSource(NGunConfig* config, unsigned int verbosity)  
     :
     CSource(),
+    m_config(config),
     m_verbosityLevel(verbosity)
 {
     init();
