@@ -83,7 +83,7 @@ int AssimpGGeo::load(GGeo* ggeo)
     OpticksResource* resource = cache->getResource();
 
     const char* idpath_ = resource->getIdPath() ;
-    const char* path = resource->getPath() ;
+    const char* path = resource->getDAEPath() ;
     const char* query = resource->getQuery() ;
     const char* ctrl = resource->getCtrl() ;
     unsigned int verbosity = ggeo->getLoaderVerbosity();

@@ -6,19 +6,47 @@
 
 // cfg4-
 #include "CPropLib.hh"
+#include "CTraverser.hh"
 
 // ggeo-
 #include "GCache.hh"
 
 
 // g4-
-//#include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 
 
 void CDetector::init()
 {
     m_lib = new CPropLib(m_cache);
+}
+
+void CDetector::traverse(G4VPhysicalVolume* top)
+{
+    m_traverser = new CTraverser(top); 
+    m_traverser->Traverse();
+    m_traverser->Summary("CDetector::traverse");
+}
+
+void CDetector::saveTransforms(const char* path)
+{
+    assert(m_traverser);
+    m_traverser->saveTransforms(path);
+}
+glm::mat4 CDetector::getGlobalTransform(unsigned int index)
+{
+    assert(m_traverser);
+    return m_traverser->getGlobalTransform(index);
+}
+glm::mat4 CDetector::getLocalTransform(unsigned int index)
+{
+    assert(m_traverser);
+    return m_traverser->getLocalTransform(index);
+}
+const char* CDetector::getPVName(unsigned int index)
+{
+    assert(m_traverser);
+    return m_traverser->getPVName(index);
 }
 
 
@@ -45,4 +73,6 @@ G4VPhysicalVolume* CDetector::getPV(const char* name)
 {
     return m_pvm.count(name) == 1 ? m_pvm[name] : NULL ; 
 }
+
+
 

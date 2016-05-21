@@ -14,8 +14,10 @@
 // g4-
 #include "G4VPhysicalVolume.hh"
 
-
+// npy-
 #include "NLog.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
 int main(int argc, char** argv)
 {
@@ -31,6 +33,24 @@ int main(int argc, char** argv)
     CGDMLDetector* m_detector  = new CGDMLDetector(m_cache) ; 
 
     m_detector->setVerbosity(2) ;
+
+    m_detector->saveTransforms("/tmp/gdml.npy");
+
+
+    unsigned int index = 3160 ; 
+
+    glm::mat4 mg = m_detector->getGlobalTransform(index);
+    glm::mat4 ml = m_detector->getLocalTransform(index);
+
+    LOG(info) << " index " << index 
+              << " pvname " << m_detector->getPVName(index) 
+              << " global " << gformat(mg)
+              << " local "  << gformat(ml)
+              ;
+
+    print(mg, "global");
+    print(ml, "local");
+
 
     G4VPhysicalVolume* world_pv = m_detector->Construct();
 

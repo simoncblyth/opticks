@@ -34,7 +34,7 @@ op-binary-name-default(){ echo GGeoView ; }
 op-binary-name()
 {
    case $1 in 
-           --cfg4) echo cfg4Test ;;
+           --cfg4) echo CG4Test ;;
          --tracer) echo OTracerTest ;;
             --mat) echo GMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;

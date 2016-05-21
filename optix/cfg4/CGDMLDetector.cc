@@ -33,54 +33,36 @@ void CGDMLDetector::init()
 
     G4GDMLParser parser;
     parser.Read(gdmlpath, validate);
+    setTop(parser.GetWorldVolume());
 
-    G4VPhysicalVolume* world = parser.GetWorldVolume();
-
-    fixMaterials(world);
-
-    setTop(world);
+    addMPT();
 }
-
-
-void CGDMLDetector::fixMaterials(G4VPhysicalVolume* top)
-{
-    m_traverser = new CTraverser(top); 
-    m_traverser->Traverse();
-    m_traverser->Summary();
-
-    unsigned int nmat = m_traverser->getNumMaterials();
-    unsigned int nmat_without_mpt = m_traverser->getNumMaterialsWithoutMPT();
-
-    if(nmat > 0 && nmat_without_mpt == nmat )
-    {
-        LOG(warning) << "CGDMLDetector::fixMaterials" 
-                     << " ALL G4 MATERIALS LACK MPT "
-                     << " FIXING USING G4DAE MATERIALS " 
-                     ;
-
-         addMPT();
-    } 
-    else if(nmat > 0 && nmat_without_mpt == 0) 
-    {
-        assert(0); 
-    } 
-    else if(nmat > 0 && nmat_without_mpt > 0 ) 
-    {
-        assert(0); 
-    } 
-    else 
-    {
-        assert(0); 
-    }
-
-}
-
 
 
 void CGDMLDetector::addMPT()
 {
     // GDML exported by geant4 that comes with nuwa lack material properties 
     // so use the properties from the G4DAE export 
+
+    unsigned int nmat = m_traverser->getNumMaterials();
+    unsigned int nmat_without_mpt = m_traverser->getNumMaterialsWithoutMPT();
+
+    if(nmat > 0 && nmat_without_mpt == nmat )
+    {
+        LOG(warning) << "CGDMLDetector::addMPT" 
+                     << " ALL G4 MATERIALS LACK MPT "
+                     << " FIXING USING G4DAE MATERIALS " 
+                     ;
+    } 
+    else
+    {
+        LOG(fatal) << "CGDMLDetector::addMPT UNEXPECTED"
+                   << " nmat " << nmat 
+                   << " nmat_without_mpt " << nmat_without_mpt
+                   ;
+        assert(0);
+    }
+ 
 
     unsigned int ng4mat = m_traverser->getNumMaterialsWithoutMPT() ;
     for(unsigned int i=0 ; i < ng4mat ; i++)

@@ -181,6 +181,8 @@ class NPY : public NPYBase {
        glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 );
        glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 );
 
+       glm::mat4    getMat4(unsigned int i);
+
    //private:
    public:
        std::vector<T>     m_data ; 
@@ -405,10 +407,12 @@ inline void NPY<T>::setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int
 }
 
 
-
-
-
-
+template <typename T> 
+inline glm::mat4 NPY<T>::getMat4(unsigned int i)
+{
+    T* vals = getValues(i);
+    return glm::make_mat4(vals);
+}
 
 
 template <typename T> 

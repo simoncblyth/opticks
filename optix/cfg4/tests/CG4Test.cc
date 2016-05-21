@@ -3,7 +3,7 @@
 
 int main(int argc, char** argv)
 {
-    Opticks* m_opticks = new Opticks(argc, argv, "cfg4.log");
+    Opticks* m_opticks = new Opticks(argc, argv, "CG4Test.log");
 
     m_opticks->setMode( Opticks::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 

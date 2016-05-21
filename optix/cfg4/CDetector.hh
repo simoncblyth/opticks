@@ -8,6 +8,7 @@ class GCache ;
 
 // cfg4-
 class CPropLib ; 
+class CTraverser ; 
 
 // g4-
 class G4VPhysicalVolume;
@@ -30,6 +31,13 @@ class CDetector : public G4VUserDetectorConstruction
     void setTop(G4VPhysicalVolume* top);
     virtual G4VPhysicalVolume* Construct();
     virtual ~CDetector();
+    void saveTransforms(const char* path);
+ public: 
+    glm::mat4 getGlobalTransform(unsigned int index);
+    glm::mat4 getLocalTransform(unsigned int index);
+    const char* getPVName(unsigned int index);
+ private:
+    void traverse(G4VPhysicalVolume* top); 
  public:
     CPropLib* getPropLib();
     const glm::vec4& getCenterExtent();
@@ -41,10 +49,13 @@ class CDetector : public G4VUserDetectorConstruction
     GCache*            m_cache ; 
     CPropLib*          m_lib ; 
     G4VPhysicalVolume* m_top ;
+    CTraverser*        m_traverser ; 
     glm::vec4          m_center_extent ; 
     int                m_verbosity ; 
   private:
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
+
+
 
 
 }; 
@@ -55,6 +66,7 @@ inline CDetector::CDetector(GCache* cache)
   m_cache(cache),
   m_lib(NULL),
   m_top(NULL),
+  m_traverser(NULL),
   m_verbosity(0)
 {
     init();
@@ -68,6 +80,7 @@ inline G4VPhysicalVolume* CDetector::Construct()
 inline void CDetector::setTop(G4VPhysicalVolume* top)
 {
     m_top = top ; 
+    traverse(m_top);
 }
 
 inline void CDetector::setCenterExtent(float x, float y, float z, float w)

@@ -63,19 +63,23 @@
        }\
     }
 
-
-
 void CG4::init()
 {
     m_cfg = m_opticks->getCfg();
     m_cache = new GCache(m_opticks);
     m_evt = m_opticks->makeEvt();
-}
 
+    TIMER("init");
+}
 
 void CG4::configure(int argc, char** argv)
 {
     m_cfg->commandline(argc, argv);
+    m_g4ui = m_cfg->hasOpt("g4ui") ; 
+
+    LOG(info) << "CG4::configure"
+              << " g4ui " << m_g4ui
+              ; 
 
     m_runManager = new G4RunManager;
 
@@ -84,15 +88,69 @@ void CG4::configure(int argc, char** argv)
     configureGenerator();
     configureStepping();
 
-    m_g4ui = false ; 
+    TIMER("configure");
 }
+
+void CG4::initialize()
+{
+    LOG(info) << "CG4::initialize" ;
+
+    m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
+    m_runManager->Initialize();
+
+    setupCompressionDomains();
+
+    m_uiManager = G4UImanager::GetUIpointer();
+    m_uiManager->ApplyCommand("/OpNovice/phys/verbose 0");
+
+    LOG(info) << "CG4::initialize DONE" ;
+
+    TIMER("initialize");
+}
+
+void CG4::interactive(int argc, char** argv)
+{
+    if(!m_g4ui) return ; 
+
+    LOG(info) << "CG4::interactive proceeding " ; 
+
+    m_visManager = new G4VisExecutive;
+    m_visManager->Initialize();
+
+    m_ui = new G4UIExecutive(argc, argv);
+    m_ui->SessionStart();
+}
+
+void CG4::propagate()
+{
+    unsigned int num_g4event = m_evt->getNumG4Event();
+ 
+    LOG(info) << "CG4::propagate"
+              << " num_g4event " << m_evt->getNumG4Event()
+              << " num_photons " << m_evt->getNumPhotons()
+              << " steps_per_photon " << m_evt->getMaxRec()
+              << " bounce_max " << m_evt->getBounceMax()
+              ; 
+    TIMER("_propagate");
+
+    m_runManager->BeamOn(num_g4event);
+
+    TIMER("propagate");
+}
+
+void CG4::save()
+{
+    m_evt->save(true);
+}
+
 
 void CG4::configurePhysics()
 {
     OpNovicePhysicsList* npl = new OpNovicePhysicsList();
-    npl->SetVerbose(0);
+    //npl->SetVerbose(0);  nope processes not instanciated at this stage
 
     m_runManager->SetUserInitialization(npl);
+    TIMER("configurePhysics");
 }
 
 void CG4::configureDetector()
@@ -115,12 +173,13 @@ void CG4::configureDetector()
     m_detector = detector ; 
     m_lib = detector->getPropLib();
     m_runManager->SetUserInitialization(detector);
+
+    TIMER("configureDetector");
 }
 
 
 void CG4::configureGenerator()
 {
-    // after CG4::configure as needs G4 optical photons
     CSource* source = NULL ; 
 
     if(m_opticks->getSourceCode() == TORCH)
@@ -144,7 +203,7 @@ void CG4::configureGenerator()
         // without the setGenstepData the evt is not allocated 
 
         LOG(info) << "CG4::configureGenerator G4GUN " ; 
-        m_evt->setNumG4Event(1); 
+        m_evt->setNumG4Event(100); 
         m_evt->setNumPhotonsPerG4Event(0); 
 
         int g4gun_verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
@@ -169,6 +228,7 @@ void CG4::configureGenerator()
     source->setRecorder(m_recorder);
 
     m_pga = new CPrimaryGeneratorAction(source) ;
+    TIMER("configureGenerator");
 }
 
 
@@ -176,17 +236,8 @@ void CG4::configureGenerator()
 void CG4::configureStepping()
 {
     m_sa = new CSteppingAction(m_lib, m_recorder, m_rec, m_recorder->getVerbosity()) ;
+    TIMER("configureStepping");
 }
-
-
-void CG4::initialize()
-{
-    m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
-    m_runManager->Initialize();
-
-    setupCompressionDomains();
-}
-
 
 void CG4::setupCompressionDomains()
 {
@@ -199,48 +250,6 @@ void CG4::setupCompressionDomains()
 
     m_evt->dumpDomains("CG4::setupCompressionDomains");
 }
-
-
-void CG4::interactive(int argc, char** argv)
-{
-    if(!m_g4ui) return ; 
-
-    m_visManager = new G4VisExecutive;
-    m_visManager->Initialize();
-
-    m_uiManager = G4UImanager::GetUIpointer();
-
-    m_ui = new G4UIExecutive(argc, argv);
-
-    m_ui->SessionStart();
-}
-
-
-
-void CG4::propagate()
-{
-    unsigned int num_g4event = m_evt->getNumG4Event();
- 
-    LOG(info) << "CG4::propagate"
-              << " num_g4event " << m_evt->getNumG4Event()
-              << " num_photons " << m_evt->getNumPhotons()
-              << " steps_per_photon " << m_evt->getMaxRec()
-              << " bounce_max " << m_evt->getBounceMax()
-              ; 
-    TIMER("_propagate");
-
-    m_runManager->BeamOn(num_g4event);
-
-    TIMER("propagate");
-}
-
-
-
-void CG4::save()
-{
-    m_evt->save(true);
-}
-
 
 
 
