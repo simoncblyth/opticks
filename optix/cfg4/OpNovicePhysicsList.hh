@@ -51,6 +51,7 @@ class OpNovicePhysicsList : public G4VUserPhysicsList
 
     OpNovicePhysicsList();
     virtual ~OpNovicePhysicsList();
+    void Summary(const char* msg="OpNovicePhysicsList::Summary");
 
   public:
 

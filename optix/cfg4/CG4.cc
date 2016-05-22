@@ -92,6 +92,16 @@ void CG4::configure(int argc, char** argv)
     TIMER("configure");
 }
 
+
+void CG4::execute(const char* path)
+{
+    std::string cmd("/control/execute ");
+    cmd += path ; 
+    LOG(info) << "CG4::execute [" << cmd << "]" ; 
+    m_uiManager->ApplyCommand(cmd);
+}
+
+
 void CG4::initialize()
 {
     LOG(info) << "CG4::initialize" ;
@@ -99,11 +109,17 @@ void CG4::initialize()
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
     m_runManager->Initialize();
 
+
+    m_npl->Summary("CG4::initialize  OpNovicePhysicsList");
+
+
+
     setupCompressionDomains();
 
     m_uiManager = G4UImanager::GetUIpointer();
-    // TODO: m_cfg arguments locating G4 .mac files to apply at various junctures
-    //m_uiManager->ApplyCommand("/OpNovice/phys/verbose 0");
+
+    std::string inimac = m_cfg->getG4IniMac();
+    if(!inimac.empty()) execute(inimac.c_str()) ;
 
     LOG(info) << "CG4::initialize DONE" ;
 
@@ -148,11 +164,14 @@ void CG4::save()
 
 void CG4::configurePhysics()
 {
-    OpNovicePhysicsList* npl = new OpNovicePhysicsList();
-    //npl->SetVerbose(0);  nope processes not instanciated at this stage
+    m_npl = new OpNovicePhysicsList();
+    //m_npl->SetVerbose(0);  nope processes not instanciated at this stage
 
-    m_runManager->SetUserInitialization(npl);
+    m_runManager->SetUserInitialization(m_npl);
     TIMER("configurePhysics");
+
+    // nope: processManager still not instanciated, so must defer this
+    //m_npl->Summary("CG4::configurePhysics OpNovicePhysicsList");
 }
 
 void CG4::configureDetector()

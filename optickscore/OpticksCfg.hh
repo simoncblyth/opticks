@@ -20,6 +20,8 @@ class OpticksCfg : public Cfg {
      const std::string& getExportConfig();
      const std::string& getTorchConfig();
      const std::string& getG4GunConfig();
+     const std::string& getG4IniMac();
+
      const std::string& getTestConfig();
      const std::string& getStateTag();
 
@@ -67,6 +69,7 @@ private:
      std::string m_exportconfig ;
      std::string m_torchconfig ;
      std::string m_g4gunconfig ;
+     std::string m_g4inimac ;
      std::string m_testconfig ;
      std::string m_state_tag ;
 
@@ -112,6 +115,7 @@ inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bo
        m_exportconfig(""),
        m_torchconfig(""),
        m_g4gunconfig(""),
+       m_g4inimac(""),
        m_testconfig(""),
        m_state_tag(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
@@ -259,7 +263,8 @@ inline void OpticksCfg<Listener>::init()
        ("g4gundbg",  "dump details of g4gun config") ;
 
 
-
+   m_desc.add_options()
+       ("g4inimac",   boost::program_options::value<std::string>(&m_g4inimac), "path to g4 initialization .mac file, see cfg4-/CG4" );
 
 
    m_desc.add_options()
@@ -570,10 +575,17 @@ inline const std::string& OpticksCfg<Listener>::getTorchConfig()
 {
     return m_torchconfig ;
 }
+
 template <class Listener>
 inline const std::string& OpticksCfg<Listener>::getG4GunConfig()
 {
     return m_g4gunconfig ;
+}
+
+template <class Listener>
+inline const std::string& OpticksCfg<Listener>::getG4IniMac()
+{
+    return m_g4inimac ;
 }
 
 

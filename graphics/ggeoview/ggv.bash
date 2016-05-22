@@ -238,12 +238,36 @@ ggv-g4gun()
                    ) 
           # mm, ns, MeV
 
+
+   local inimac=/tmp/g4ini.mac
+   cat << EOI > $inimac
+/OpNovice/phys/verbose 0
+/run/particle/verbose 0
+EOI
+
+#/particle/process/verbose 0
+#/run/particle/storePhysicsTable /tmp
+#/run/particle/retrievePhysicsTable /tmp
+
+
    op.sh \
        --cfg4 \
        --cat G4Gun --tag $tag --save \
+       --g4inimac $inimac \
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 
+}
+
+ggv-g4gun-notes(){ cat <<EON
+
+Lots of G4 init noise from:
+
+   G4VUserPhysicsList::BuildPhysicsTable
+
+   find source -name 'G4VEmProcess.hh'
+
+EON
 }
 
 

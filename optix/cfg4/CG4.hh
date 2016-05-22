@@ -14,6 +14,9 @@ class G4VUserDetectorConstruction ;
 class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
 
+
+
+
 // npy--
 class TorchStepNPY ;
 class NumpyEvt ; 
@@ -23,6 +26,7 @@ class CPropLib ;
 class CDetector ; 
 class Recorder ; 
 class Rec ; 
+class OpNovicePhysicsList ; 
 
 // ggeo-
 class GCache ; 
@@ -45,6 +49,8 @@ class CG4
         void configureGenerator();
         void configureStepping();
         void setupCompressionDomains();
+   private:
+        void execute(const char* path);
    public:
         void BeamOn(unsigned int num);
    private:
@@ -59,6 +65,7 @@ class CG4
         Recorder*             m_recorder ; 
         Rec*                  m_rec ; 
    private:
+        OpNovicePhysicsList*  m_npl ; 
         G4RunManager*         m_runManager ;
         bool                  m_g4ui ; 
         G4VisManager*         m_visManager ; 
@@ -81,6 +88,7 @@ inline CG4::CG4(Opticks* opticks)
      m_lib(NULL),
      m_recorder(NULL),
      m_rec(NULL),
+     m_npl(NULL),
      m_runManager(NULL),
      m_g4ui(false),
      m_visManager(NULL),

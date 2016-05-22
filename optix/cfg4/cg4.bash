@@ -37,6 +37,54 @@ current standard::
   /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/
 
 
+Issue : g4 noise control
+--------------------------
+
+::
+
+    delta:geant4.10.02 blyth$ find . -name 'G4VEmProcess.hh'
+    ./source/processes/electromagnetic/utils/include/G4VEmProcess.hh
+
+    delta:geant4.10.02 blyth$ find . -name '*.hh' -exec grep -H public\ G4VEmProcess {} \;
+    ...
+    ./source/processes/electromagnetic/standard/include/G4ComptonScattering.hh:class G4ComptonScattering : public G4VEmProcess
+    ./source/processes/electromagnetic/standard/include/G4CoulombScattering.hh:class G4CoulombScattering : public G4VEmProcess
+    ./source/processes/electromagnetic/standard/include/G4eplusAnnihilation.hh:class G4eplusAnnihilation : public G4VEmProcess
+    ./source/processes/electromagnetic/standard/include/G4GammaConversion.hh:class G4GammaConversion : public G4VEmProcess
+    ./source/processes/electromagnetic/standard/include/G4NuclearStopping.hh:class G4NuclearStopping : public G4VEmProcess
+    ./source/processes/electromagnetic/standard/include/G4PhotoElectricEffect.hh:class G4PhotoElectricEffect : public G4VEmProcess
+
+    delta:geant4.10.02 blyth$ find . -name '*.cc' -exec grep -H PrintInfoProcess {} \;
+    ./source/processes/electromagnetic/utils/src/G4VEmProcess.cc:      PrintInfoProcess(part); 
+    ./source/processes/electromagnetic/utils/src/G4VEmProcess.cc:void G4VEmProcess::PrintInfoProcess(const G4ParticleDefinition& part)
+
+     523 void G4VEmProcess::PrintInfoProcess(const G4ParticleDefinition& part)
+     524 {
+     525   if(verboseLevel > 0) {
+     526     G4cout << std::setprecision(6);
+     527     G4cout << G4endl << GetProcessName() << ":   for  "
+     528            << part.GetParticleName();
+     529     if(integral)  { G4cout << ", integral: 1 "; }
+     530     if(applyCuts) { G4cout << ", applyCuts: 1 "; }
+     531     G4cout << "    SubType= " << GetProcessSubType();;
+     532     if(biasFactor != 1.0) { G4cout << "   BiasingFactor= " << biasFactor; }
+     533     G4cout << "  BuildTable= " << buildLambdaTable;
+     534     G4cout << G4endl;
+     535     if(buildLambdaTable) {
+     536       if(particle == &part) {
+
+
+
+::
+
+    conv:   for  gamma    SubType= 14  BuildTable= 1
+          Lambda table from 1.022 MeV to 10 TeV, 20 bins per decade, spline: 1
+          ===== EM models for the G4Region  DefaultRegionForTheWorld ======
+            BetheHeitler :  Emin=        0 eV    Emax=       80 GeV
+         BetheHeitlerLPM :  Emin=       80 GeV   Emax=       10 TeV
+
+
+
 Issue : with GDML geometry opticalphoton time going backwards
 ---------------------------------------------------------------
 

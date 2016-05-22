@@ -156,6 +156,37 @@ void OpNovicePhysicsList::ConstructDecay()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+#include "NLog.hpp"
+
+void OpNovicePhysicsList::Summary(const char* msg)
+{
+    LOG(info) << msg ; 
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+         G4ParticleDefinition* particle = theParticleIterator->value();
+         G4String particleName = particle->GetParticleName();
+
+         G4ProcessManager* pmanager = particle->GetProcessManager();
+
+         int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+         LOG(info) << particleName << " " << npro ;
+
+         if(!pmanager) continue ;  
+
+         G4ProcessVector* procs = pmanager->GetProcessList();
+
+         for(unsigned int i=0 ; i < npro ; i++)
+         {
+             G4VProcess* proc = (*procs)[i] ; 
+             LOG(info) << std::setw(3) << i << proc->GetProcessName()  ;
+
+             proc->SetVerboseLevel(0);
+
+         }
+    }
+}
+
 void OpNovicePhysicsList::ConstructEM()
 {
   theParticleIterator->reset();
