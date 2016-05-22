@@ -33,6 +33,18 @@ void CDetector::saveTransforms(const char* path)
     assert(m_traverser);
     m_traverser->saveTransforms(path);
 }
+
+unsigned int CDetector::getNumGlobalTransforms()
+{
+    assert(m_traverser);
+    return m_traverser->getNumGlobalTransforms();
+}
+unsigned int CDetector::getNumLocalTransforms()
+{
+    assert(m_traverser);
+    return m_traverser->getNumLocalTransforms();
+}
+
 glm::mat4 CDetector::getGlobalTransform(unsigned int index)
 {
     assert(m_traverser);

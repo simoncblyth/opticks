@@ -226,15 +226,22 @@ ggv-g4gun()
     env | grep G4
 
     local g4gun_config=(
+                 comment=$FUNCNAME
                  particle=e+
-                 frame=3160
+                 number=1
+                 frame=3153
                  position=0,0,0
+                 direction=0,0,1
+              polarization=1,0,0
+                      time=0.
+                    energy=10.0
                    ) 
+          # mm, ns, MeV
 
    op.sh \
        --cfg4 \
        --cat G4Gun --tag $tag --save \
-       --g4gun --g4gunconfig "$(join _ ${g4gun_config[@]})" \
+       --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 
 }

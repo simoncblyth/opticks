@@ -1,6 +1,5 @@
 #pragma once
 
-#include "G4Threading.hh"
 
 class NGunConfig ; 
 
@@ -9,26 +8,25 @@ class NGunConfig ;
 class CGunSource: public CSource
 {
   public:
-    CGunSource(NGunConfig* config, unsigned int verbosity);
+    CGunSource(int verbosity);
+    virtual ~CGunSource();
+    void configure(NGunConfig* gc);
   private:
     void init();
-    void configure();
     void SetVerbosity(int vL);
   public:
-    virtual ~CGunSource();
     void GeneratePrimaryVertex(G4Event *evt);
   private:
     NGunConfig*           m_config ; 
-    G4int                 m_verbosityLevel;
-    G4Mutex               m_mutex;
+
+
 };
 
 
-inline CGunSource::CGunSource(NGunConfig* config, unsigned int verbosity)  
+inline CGunSource::CGunSource(int verbosity)  
     :
-    CSource(),
-    m_config(config),
-    m_verbosityLevel(verbosity)
+    CSource(verbosity),
+    m_config(NULL)
 {
     init();
 }

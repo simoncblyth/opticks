@@ -102,7 +102,8 @@ void CG4::initialize()
     setupCompressionDomains();
 
     m_uiManager = G4UImanager::GetUIpointer();
-    m_uiManager->ApplyCommand("/OpNovice/phys/verbose 0");
+    // TODO: m_cfg arguments locating G4 .mac files to apply at various junctures
+    //m_uiManager->ApplyCommand("/OpNovice/phys/verbose 0");
 
     LOG(info) << "CG4::initialize DONE" ;
 
@@ -204,15 +205,40 @@ void CG4::configureGenerator()
         // without the setGenstepData the evt is not allocated 
 
         LOG(info) << "CG4::configureGenerator G4GUN " ; 
+        NGunConfig* gc = new NGunConfig();
+        gc->parse(m_cfg->getG4GunConfig());
 
-        std::string gunconfig = m_cfg->getG4GunConfig();
-        NGunConfig* gc = new NGunConfig( gunconfig.empty() ? NULL : gunconfig.c_str() );
+        unsigned int frameIndex = gc->getFrame() ;
+        unsigned int numTransforms = m_detector->getNumGlobalTransforms() ;
 
-        m_evt->setNumG4Event(100); 
+        if(frameIndex < numTransforms )
+        {
+             const char* pvname = m_detector->getPVName(frameIndex);
+             LOG(info) << "CG4::configureGenerator G4GUN"
+                       << " frameIndex " << frameIndex 
+                       << " numTransforms " << numTransforms 
+                       << " pvname " << pvname 
+                       ;
+
+             glm::mat4 frame = m_detector->getGlobalTransform( frameIndex );
+             gc->setFrameTransform(frame) ;
+        }
+        else
+        {
+             LOG(warning) << "CG4::configureGenerator gun config frameIndex not in detector"
+                          << " frameIndex " << frameIndex
+                          << " numTransforms " << numTransforms
+                          ;
+        }  
+
+        m_evt->setNumG4Event(gc->getNumber()); 
         m_evt->setNumPhotonsPerG4Event(0); 
 
         int g4gun_verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
-        source  = static_cast<CSource*>(new CGunSource(gc, g4gun_verbosity)); 
+        CGunSource* gun = new CGunSource(g4gun_verbosity) ;
+        gun->configure(gc);      
+
+        source  = static_cast<CSource*>(gun); 
     }
     else
     {

@@ -5,6 +5,8 @@ project(${name})
 file(GLOB TEST_CC_SRCS "*Test.cc")
 
 foreach(TEST_CC_SRC ${TEST_CC_SRCS})
+
+    #message("${TEST_CC_SRC}")
     get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
     add_executable(${TGT} ${TEST_CC_SRC})
 

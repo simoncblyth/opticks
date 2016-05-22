@@ -91,6 +91,18 @@ glm::mat4 CTraverser::getLocalTransform(unsigned int index)
 {
     return m_ltransforms->getMat4(index);
 }
+
+unsigned int CTraverser::getNumGlobalTransforms()
+{
+    return m_gtransforms->getShape(0);
+}
+unsigned int CTraverser::getNumLocalTransforms()
+{
+    return m_ltransforms->getShape(0);
+}
+
+
+
 const char* CTraverser::getPVName(unsigned int index)
 {
     return m_pvnames[index].c_str();

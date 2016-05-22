@@ -72,7 +72,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
     if( type == G4OpticalPhoton::OpticalPhotonDefinition())
     {
-        UserSteppingActionOptical(step);
+        LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
+        //UserSteppingActionOptical(step);
     }
     else
     {
@@ -189,17 +190,14 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
 void CSteppingAction::UserSteppingActionNonOptical(const G4Step* step)
 {
-    G4Track* track = step->GetTrack();
-    G4ParticleDefinition* type = track->GetDefinition();
-    G4int track_id = track->GetTrackID() - 1;
-
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
     LOG(info) << "CSteppingAction::UserSteppingActionNonOptical" 
               << " eid " << eid 
-              << " track_id " << track_id 
-              << " type " << type->GetParticleName()
+              << Format(step, "USANO")
               ;
+
+
 
 }
 

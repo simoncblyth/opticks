@@ -2,6 +2,11 @@
 
 #include <cassert>
 
+
+// npy-
+#include "NGunConfig.hpp"
+#include "NLog.hpp"
+
 // cfg4-
 #include "Recorder.hh"
 
@@ -16,48 +21,80 @@
 
 void CGunSource::init()
 {
-    configure();
-    G4MUTEXINIT(m_mutex);
+
+  //  G4MUTEXINIT(m_mutex);
 }
 
 CGunSource::~CGunSource() 
 {
-    G4MUTEXDESTROY(m_mutex);
+  //  G4MUTEXDESTROY(m_mutex);
 }
 
 void CGunSource::SetVerbosity(int vL) 
 {
-    G4AutoLock l(&m_mutex);
+  //  G4AutoLock l(&m_mutex);
     m_verbosityLevel = vL;
 }
 
-void CGunSource::configure()
+void CGunSource::configure(NGunConfig* gc)
 {
-    setParticleDefinition("e+");
+    m_config = gc ; 
+
+    LOG(info) << "CGunSource::configure" ; 
+    gc->Summary("CGunSource::configure");
+
+    setParticle(gc->getParticle());
+    assert(m_definition);
+
+    SetParticleTime( gc->getTime()*ns );
+    SetParticleEnergy( gc->getEnergy()*MeV );
+
+    glm::vec3 pos = gc->getPosition();
+    glm::vec3 dir = gc->getDirection();
+    glm::vec3 pol = gc->getPolarization();
+
+    SetParticlePosition(G4ThreeVector(pos.x*mm,pos.y*mm,pos.z*mm));
+    SetParticleMomentumDirection(G4ThreeVector(dir.x,dir.y,dir.z));
+    SetParticlePolarization(G4ThreeVector(pol.x,pol.y,pol.z));
+
 }
 
 void CGunSource::GeneratePrimaryVertex(G4Event *evt) 
 {
-    assert(m_definition);
-
-    G4double time = 0.1*ns ; 
-    G4ThreeVector position(0,0,0);
-    G4double energy = 2.*MeV;
-
-    G4ParticleMomentum direction(0,0,1);
-
-    G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
-    particle->SetMass( m_mass );
-    particle->SetCharge( m_charge );
-
-    particle->SetKineticEnergy(energy);
-    particle->SetMomentumDirection(direction);
+    G4ThreeVector position = GetParticlePosition();
+    G4double time = GetParticleTime() ; 
 
     G4PrimaryVertex* vertex = new G4PrimaryVertex(position, time);
-    vertex->SetPrimary(particle);
+
+    G4double energy = GetParticleEnergy();
+
+    G4ParticleMomentum direction = GetParticleMomentumDirection();
+    G4ThreeVector polarization = GetParticlePolarization();
+
+
+    G4double mass = m_definition->GetPDGMass() ;
+    G4double charge = m_definition->GetPDGCharge() ;
+
+    G4PrimaryParticle* primary = new G4PrimaryParticle(m_definition);
+
+    primary->SetKineticEnergy( energy);
+    primary->SetMass( mass );
+    primary->SetMomentumDirection( direction);
+    primary->SetCharge( charge );
+	primary->SetPolarization(polarization.x(), polarization.y(), polarization.z()); 
+
+    vertex->SetPrimary(primary);
+    evt->AddPrimaryVertex(vertex);
+
+ 
+    LOG(info) << "CGunSource::GeneratePrimaryVertex" 
+              << " time " << time 
+              << " position.x " << position.x() 
+              << " position.y " << position.y() 
+              << " position.z " << position.z() 
+              ; 
 
     m_recorder->RecordPrimaryVertex(vertex);
 
-    evt->AddPrimaryVertex(vertex);
 }
 

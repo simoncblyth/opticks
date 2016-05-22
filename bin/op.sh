@@ -42,6 +42,7 @@ op-binary-name()
   --ctestdetector) echo CTestDetectorTest ;;
   --cgdmldetector) echo CGDMLDetectorTest ;;
        --cproplib) echo CPropLibTest ;;
+     --ngunconfig) echo NGunConfigTest ;;
 
 
      --boundaries) echo BoundariesNPYTest ;;
@@ -85,6 +86,7 @@ op-binary-desc()
   --ctestdetector) echo "Test Geant4 simple detector construction using class cfg4-/CTestDetector " ;; 
   --cgdmldetector) echo "Test Geant4 GDML full detector construction using cfg4-/CGDMLDetector " ;; 
        --cproblib) echo "Test Opticks/Geant4 material property library/converter cfg4-/CPropLib " ;; 
+     --ngunconfig) echo "Test Geant4 Gun configuration with npy-/NGunConfigTest ";;
    esac 
 }
 

@@ -33,6 +33,8 @@ class CDetector : public G4VUserDetectorConstruction
     virtual ~CDetector();
     void saveTransforms(const char* path);
  public: 
+    unsigned int getNumGlobalTransforms();
+    unsigned int getNumLocalTransforms();
     glm::mat4 getGlobalTransform(unsigned int index);
     glm::mat4 getLocalTransform(unsigned int index);
     const char* getPVName(unsigned int index);

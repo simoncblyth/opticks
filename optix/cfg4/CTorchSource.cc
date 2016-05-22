@@ -12,10 +12,11 @@
 
 // g4-
 #include "G4AutoLock.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
 #include "G4PrimaryParticle.hh"
 #include "G4Event.hh"
+
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 #include "Randomize.hh"
 
@@ -27,13 +28,6 @@
 #include "G4SPSEneDistribution.hh"
 #include "G4SPSRandomGenerator.hh"
 
-
-CTorchSource::part_prop_t::part_prop_t() 
-{
-  momentum_direction = G4ParticleMomentum(0,0,-1);
-  energy = 1.*MeV;
-  position = G4ThreeVector();
-}
 
 void CTorchSource::init()
 {
@@ -137,11 +131,15 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 			G4cout << "Creating primaries and assigning to vertex" << G4endl;
 		// create new primaries and set them to the vertex
 
+
+        G4double mass = m_definition->GetPDGMass();
+        G4double charge = m_definition->GetPDGCharge();
+
 		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
 		particle->SetKineticEnergy(pp.energy );
-		particle->SetMass( m_mass );
+		particle->SetMass( mass );
 		particle->SetMomentumDirection( pp.momentum_direction );
-		particle->SetCharge( m_charge );
+		particle->SetCharge( charge );
 
         if(incidentSphere)
         {
@@ -214,7 +212,7 @@ void CTorchSource::configure()
     unsigned int n = m_torch->getNumPhotonsPerG4Event();
     SetNumberOfParticles(n);
 
-    setParticleDefinition("opticalphoton");
+    setParticle("opticalphoton");
 
 
     float w = m_torch->getWavelength() ; 
@@ -328,6 +326,5 @@ void CTorchSource::configure()
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(angGen->GenerateOne(), "angGen") << G4endl ; 
 
 }
-
 
 

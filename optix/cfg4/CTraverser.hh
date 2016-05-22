@@ -35,6 +35,8 @@ class CTraverser {
         const char* getPVName(unsigned int index);
         glm::mat4 getGlobalTransform(unsigned int index);
         glm::mat4 getLocalTransform(unsigned int index);
+        unsigned int getNumGlobalTransforms();
+        unsigned int getNumLocalTransforms();
     private:
         void collectTransformT(NPY<float>* buffer, const G4Transform3D& T);
         void collectTransform(NPY<float>* buffer, const G4Transform3D& T);
