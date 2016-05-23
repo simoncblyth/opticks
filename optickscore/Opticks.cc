@@ -277,7 +277,12 @@ const char* Opticks::getDAEPath()
 
 void Opticks::Summary(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg 
+              << " sourceCode " << getSourceCode() 
+              << " sourceType " << getSourceType() 
+              << " mode " << getModeString()
+              ; 
+
     m_resource->Summary(msg);
 }
 

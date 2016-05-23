@@ -72,7 +72,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
     if( type == G4OpticalPhoton::OpticalPhotonDefinition())
     {
-        LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
+        //LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
         //UserSteppingActionOptical(step);
     }
     else
@@ -191,6 +191,7 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 void CSteppingAction::UserSteppingActionNonOptical(const G4Step* step)
 {
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+
 
     LOG(info) << "CSteppingAction::UserSteppingActionNonOptical" 
               << " eid " << eid 

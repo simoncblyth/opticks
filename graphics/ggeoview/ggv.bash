@@ -214,6 +214,9 @@ ggv-pmt-test(){
 }
 
 
+
+ggv-phycache(){ echo /tmp/$FUNCNAME ; }
+
 ggv-g4gun()
 {
     type $FUNCNAME
@@ -239,21 +242,35 @@ ggv-g4gun()
           # mm, ns, MeV
 
 
+   local phycache=$(ggv-phycache)
+   if [ ! -d "$phycache" ]; then 
+      mkdir -p $phycache
+   fi
+
    local inimac=/tmp/g4ini.mac
    cat << EOI > $inimac
 /OpNovice/phys/verbose 0
-/run/particle/verbose 0
+/run/particle/verbose 2
+/run/particle/retrievePhysicsTable $phycache
 EOI
 
-#/particle/process/verbose 0
-#/run/particle/storePhysicsTable /tmp
-#/run/particle/retrievePhysicsTable /tmp
+
+   local finmac
+   if [ -f "$phycache/material.dat" ]; then 
+       finmac="-"
+   else
+       finmac=/tmp/g4fin.mac
+       cat << EOI > $finmac
+/run/particle/storePhysicsTable $phycache
+EOI
+   fi
 
 
    op.sh \
        --cfg4 \
        --cat G4Gun --tag $tag --save \
-       --g4inimac $inimac \
+       --g4inimac "$inimac" \
+       --g4finmac "$finmac" \
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 

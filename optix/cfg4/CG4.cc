@@ -66,16 +66,24 @@
 
 void CG4::init()
 {
-    m_cfg = m_opticks->getCfg();
-    m_cache = new GCache(m_opticks);
-    m_evt = m_opticks->makeEvt();
+    m_opticks->Summary("CG4::init opticks summary");
+
+    m_cfg = m_opticks->getCfg();  
+
+    // but not yet configured : so contains wrong settings
+    //m_cfg->dump();  not yet filled 
 
     TIMER("init");
 }
 
 void CG4::configure(int argc, char** argv)
 {
-    m_cfg->commandline(argc, argv);
+    m_cfg->commandline(argc, argv);   // why is this config deferred ... 
+    m_cfg->dump(); 
+
+    m_cache = new GCache(m_opticks);
+    m_evt = m_opticks->makeEvt();  
+
     m_g4ui = m_cfg->hasOpt("g4ui") ; 
 
     LOG(info) << "CG4::configure"
@@ -95,6 +103,12 @@ void CG4::configure(int argc, char** argv)
 
 void CG4::execute(const char* path)
 {
+    if(path && strlen(path) < 3) 
+    {
+        LOG(info) << "CG4::execute skip short path [" << path << "]" ;
+        return ; 
+    } 
+
     std::string cmd("/control/execute ");
     cmd += path ; 
     LOG(info) << "CG4::execute [" << cmd << "]" ; 
@@ -162,6 +176,10 @@ void CG4::propagate()
 
     m_runManager->BeamOn(num_g4event);
 
+    std::string runmac = m_cfg->getG4RunMac();
+    LOG(info) << "CG4::propagate [" << runmac << "]"  ;
+    if(!runmac.empty()) execute(runmac.c_str());
+
     TIMER("propagate");
 
     postpropagate();
@@ -169,9 +187,12 @@ void CG4::propagate()
 
 void CG4::postpropagate()
 {
-    LOG(info) << "CG4::postpropagate" ;
-    m_npl->collectProcesses();
-    m_npl->dumpProcesses();
+    std::string finmac = m_cfg->getG4FinMac();
+    LOG(info) << "CG4::postpropagate [" << finmac << "]"  ;
+    //m_npl->collectProcesses();
+    //m_npl->dumpProcesses();
+
+    if(!finmac.empty()) execute(finmac.c_str());
 }
 
 

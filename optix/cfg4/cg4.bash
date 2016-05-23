@@ -88,6 +88,29 @@ Issue : g4 couples table noise, comment call to DumpCutValuesTable()
 
 
 
+Issue : g4 init is slow, how to cache the physics tables ?
+-------------------------------------------------------------
+
+See ggv-;ggv-cache
+
+* succeed to get faster start (about 9 seconds from beamOn to 1st step), 
+  but many tables fail to be stored/retrieved
+
+::
+
+    # needs to be 3 to see the fails...
+    /run/particle/verbose 3   
+
+    G4VUserPhysicsList::BuildPhysicsTable   Retrieve Physics Table for e-
+    G4VUserPhysicsList::RetrievePhysicsTable    Fail to retrieve Physics Table for Transportation
+    Calculate Physics Table for e-
+    G4VUserPhysicsList::RetrievePhysicsTable    Fail to retrieve Physics Table for eBrem
+    Calculate Physics Table for e-
+    G4VUserPhysicsList::RetrievePhysicsTable    Fail to retrieve Physics Table for Scintillation
+    Calculate Physics Table for e-
+
+
+
 Issue : g4 Em noise control
 -----------------------------
 

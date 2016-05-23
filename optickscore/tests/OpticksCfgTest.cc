@@ -18,6 +18,8 @@ int main(int argc, char** argv)
     LOG(info) << cfg->getDesc() ;
 
 
+    ocfg->dump("dump");
+
 
     return 0 ; 
 }
