@@ -127,6 +127,34 @@ g4-bdir(){ echo $(g4-dir).build ; }
 g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
 g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
 
+g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
+g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
+
+
+
+g4-look(){ 
+   local iwd=$PWD
+   g4-cd
+   local spec=${1:-G4RunManagerKernel.cc:707}
+   local name=${spec%:*}
+   local line=${spec##*:}
+   [ "$line" == "$spec" ] && line=1
+
+   local fcmd="find source -name $name"
+   local path=$($fcmd)
+   echo $spec $name $line $path 
+
+   if [ "$path" == "" ]; then 
+      echo $msg FAILED to find $name with : $fcmd
+      return 
+   fi 
+   local vcmd="vi -R $path +$line"
+   echo $vcmd
+   eval $vcmd
+     
+   cd $iwd
+}
+
 
 g4-cmake-dir(){ echo $(g4-idir)/lib/$(g4-name2) ; }
 g4-examples-dir(){  echo $(g4-idir)/share/$(g4-name2)/examples ; }

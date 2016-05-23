@@ -34,6 +34,10 @@
 #include "globals.hh"
 #include "G4VUserPhysicsList.hh"
 
+#include <vector>
+#include <set>
+
+
 class OpNovicePhysicsListMessenger;
 
 class G4Cerenkov;
@@ -51,8 +55,12 @@ class OpNovicePhysicsList : public G4VUserPhysicsList
 
     OpNovicePhysicsList();
     virtual ~OpNovicePhysicsList();
+  public:
     void Summary(const char* msg="OpNovicePhysicsList::Summary");
-
+    void collectProcesses();
+    void dumpProcesses(const char* msg="OpNovicePhysicsList::dumpProcesses");
+    void setProcessVerbosity(unsigned int verbosity);
+    void setupEmVerbosity(unsigned int verbosity);
   public:
 
     virtual void ConstructParticle();
@@ -70,6 +78,8 @@ class OpNovicePhysicsList : public G4VUserPhysicsList
     void SetNbOfPhotonsCerenkov(G4int);
  
   private:
+    std::set<G4VProcess*> m_procs ; 
+    std::vector<G4VProcess*> m_procl ; 
 
     OpNovicePhysicsListMessenger* fMessenger;
 

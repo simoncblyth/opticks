@@ -103,8 +103,15 @@ void OpNovicePhysicsList::ConstructParticle()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+
+
+
+
 void OpNovicePhysicsList::ConstructProcess()
 {
+  setupEmVerbosity(0); 
+
   AddTransportation();
   ConstructDecay();
   ConstructEM();
@@ -175,17 +182,88 @@ void OpNovicePhysicsList::Summary(const char* msg)
          if(!pmanager) continue ;  
 
          G4ProcessVector* procs = pmanager->GetProcessList();
-
          for(unsigned int i=0 ; i < npro ; i++)
          {
              G4VProcess* proc = (*procs)[i] ; 
              LOG(info) << std::setw(3) << i << proc->GetProcessName()  ;
-
-             proc->SetVerboseLevel(0);
-
          }
     }
 }
+
+void OpNovicePhysicsList::dumpProcesses(const char* msg)
+{
+    LOG(info) << msg << " size " << m_procs.size() ; 
+    typedef std::set<G4VProcess*>::const_iterator SPI ;
+    for(SPI it=m_procs.begin() ; it != m_procs.end() ; it++)
+    { 
+        G4VProcess* proc = *it ; 
+        LOG(info)
+             << std::setw(25) << proc->GetProcessName()
+             << std::setw(4) << proc->GetVerboseLevel()
+             ; 
+    }
+}
+
+
+void  OpNovicePhysicsList::setupEmVerbosity(unsigned int verbosity)
+{
+   // these are used in Em process constructors, so do this prior to process creation
+    G4EmParameters* empar = G4EmParameters::Instance() ;
+    empar->SetVerbose(verbosity); 
+    empar->SetWorkerVerbose(verbosity); 
+}
+
+
+void  OpNovicePhysicsList::setProcessVerbosity(unsigned int verbosity)
+{
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+         G4ParticleDefinition* particle = theParticleIterator->value();
+         G4String particleName = particle->GetParticleName();
+         G4ProcessManager* pmanager = particle->GetProcessManager();
+         if(!pmanager) continue ; 
+
+         int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+         G4ProcessVector* procs = pmanager->GetProcessList();
+         for(unsigned int i=0 ; i < npro ; i++)
+         {
+             G4VProcess* proc = (*procs)[i] ; 
+             G4String processName = proc->GetProcessName() ;
+             G4int prior = proc->GetVerboseLevel();
+             proc->SetVerboseLevel(verbosity);
+             LOG(info) << "OpNovicePhysicsList::setProcessVerbosity " << particleName << ":" << processName << " from " << prior << " to " << proc->GetVerboseLevel() ;
+         }
+   } 
+}
+
+
+void OpNovicePhysicsList::collectProcesses()
+{
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ){
+         G4ParticleDefinition* particle = theParticleIterator->value();
+         G4String particleName = particle->GetParticleName();
+         G4ProcessManager* pmanager = particle->GetProcessManager();
+         if(!pmanager) 
+         {
+            LOG(info) << "OpNovicePhysicsList::collectProcesses no ProcessManager for " << particleName ;
+            continue ;  
+         }
+
+         int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+         G4ProcessVector* procs = pmanager->GetProcessList();
+         for(unsigned int i=0 ; i < npro ; i++)
+         {
+             G4VProcess* proc = (*procs)[i] ; 
+             m_procs.insert(proc);
+             m_procl.push_back(proc);
+         }
+    }
+}
+
+
+
+
 
 void OpNovicePhysicsList::ConstructEM()
 {
@@ -335,7 +413,10 @@ void OpNovicePhysicsList::SetCuts()
   //
   SetCutsWithDefault();
 
-  if (verboseLevel>0) DumpCutValuesTable();
+  //if (verboseLevel>0) DumpCutValuesTable();
+  //   
+
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -109,9 +109,17 @@ void CG4::initialize()
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
     m_runManager->Initialize();
 
+    TIMER("initialize");
 
-    m_npl->Summary("CG4::initialize  OpNovicePhysicsList");
+    postinitialize();
+}
 
+void CG4::postinitialize()
+{
+    //m_npl->Summary("CG4::postinitialize  OpNovicePhysicsList");
+    //m_npl->collectProcesses();
+    //m_npl->dumpProcesses();
+    //m_npl->setProcessVerbosity(0);
 
 
     setupCompressionDomains();
@@ -121,10 +129,11 @@ void CG4::initialize()
     std::string inimac = m_cfg->getG4IniMac();
     if(!inimac.empty()) execute(inimac.c_str()) ;
 
-    LOG(info) << "CG4::initialize DONE" ;
-
-    TIMER("initialize");
+    LOG(info) << "CG4::postinitialize DONE" ;
+    TIMER("postinitialize");
 }
+
+
 
 void CG4::interactive(int argc, char** argv)
 {
@@ -154,7 +163,19 @@ void CG4::propagate()
     m_runManager->BeamOn(num_g4event);
 
     TIMER("propagate");
+
+    postpropagate();
 }
+
+void CG4::postpropagate()
+{
+    LOG(info) << "CG4::postpropagate" ;
+    m_npl->collectProcesses();
+    m_npl->dumpProcesses();
+}
+
+
+
 
 void CG4::save()
 {

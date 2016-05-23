@@ -48,6 +48,9 @@ class CG4
         void configurePhysics();
         void configureGenerator();
         void configureStepping();
+   private:
+        void postinitialize();
+        void postpropagate();
         void setupCompressionDomains();
    private:
         void execute(const char* path);
