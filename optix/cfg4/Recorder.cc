@@ -342,7 +342,8 @@ bool Recorder::hasIssue()
 void Recorder::Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
 {
     std::string bs = OpBoundaryAbbrevString(boundary_status) ;
-    std::cout << std::setw(7) << index << " " << std::setw(15) << matname << " " << Format(point, bs.c_str()) << std::endl ;
+    G4ThreeVector origin ; 
+    std::cout << std::setw(7) << index << " " << std::setw(15) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
 }
 
 void Recorder::Dump(const char* msg)

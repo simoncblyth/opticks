@@ -21,6 +21,7 @@
 #include "CPropLib.hh"
 #include "Recorder.hh"
 #include "Rec.hh"
+#include "CStepRec.hh"
 
 #include "CPrimaryGeneratorAction.hh"
 #include "CSteppingAction.hh"
@@ -83,6 +84,10 @@ void CG4::configure(int argc, char** argv)
 
     m_cache = new GCache(m_opticks);
     m_evt = m_opticks->makeEvt();  
+
+    NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
+    m_evt->setNopstepData(nopstep);
+
 
     m_g4ui = m_cfg->hasOpt("g4ui") ; 
 
@@ -200,9 +205,12 @@ void CG4::postpropagate()
 
 void CG4::save()
 {
-    m_evt->save(true);
-}
+    //m_evt->save(true);
 
+    NPY<float>* nopstep = m_evt->getNopstepData();
+    nopstep->dump("CG4::save");
+    nopstep->save("/tmp/nopstep.npy");
+}
 
 void CG4::configurePhysics()
 {
@@ -327,7 +335,8 @@ void CG4::configureGenerator()
 
 void CG4::configureStepping()
 {
-    m_sa = new CSteppingAction(m_lib, m_recorder, m_rec, m_recorder->getVerbosity()) ;
+    m_steprec = new CStepRec(m_evt) ;  
+    m_sa = new CSteppingAction(this) ;
     TIMER("configureStepping");
 }
 

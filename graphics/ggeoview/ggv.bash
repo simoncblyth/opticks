@@ -230,7 +230,7 @@ ggv-g4gun()
 
     local g4gun_config=(
                  comment=$FUNCNAME
-                 particle=e+
+                 particle=mu-
                  number=1
                  frame=3153
                  position=0,0,0
@@ -250,7 +250,7 @@ ggv-g4gun()
    local inimac=/tmp/g4ini.mac
    cat << EOI > $inimac
 /OpNovice/phys/verbose 0
-/run/particle/verbose 2
+/run/particle/verbose 1
 /run/particle/retrievePhysicsTable $phycache
 EOI
 

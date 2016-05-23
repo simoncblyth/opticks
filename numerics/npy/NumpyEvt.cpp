@@ -25,6 +25,7 @@
 
 const char* NumpyEvt::primary = "primary" ; 
 const char* NumpyEvt::genstep = "genstep" ; 
+const char* NumpyEvt::nopstep = "nopstep" ; 
 const char* NumpyEvt::photon  = "photon" ; 
 const char* NumpyEvt::record  = "record" ; 
 const char* NumpyEvt::phosel = "phosel" ; 
@@ -96,6 +97,20 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
     return (*mvn)[elem[1].c_str()] ;
 }
 
+
+void NumpyEvt::setNopstepData(NPY<float>* nopstep)
+{
+    m_nopstep_data = nopstep  ;
+
+    if(nopstep)
+    {
+        m_num_nopsteps = m_nopstep_data->getShape(0) ;
+        LOG(info) << "NumpyEvt::setNopstepData"
+                  << " shape " << nopstep->getShapeString()
+                  ;
+    }
+
+}
 
 
 void NumpyEvt::setGenstepData(NPY<float>* genstep)
@@ -745,6 +760,13 @@ void NumpyEvt::saveIndex(bool verbose)
     }
 
     std::string ixdir = getSpeciesDir("ix");
+    LOG(info) << "NumpyEvt::saveIndex"
+              << " ixdir " << ixdir
+              << " seqhis " << m_seqhis
+              << " seqmat " << m_seqmat
+              << " bndidx " << m_bndidx
+              ; 
+   
 
     if(m_seqhis)
         m_seqhis->save(ixdir.c_str(), m_tag);        

@@ -1,12 +1,17 @@
 #pragma once
 
+
 #include "G4UserSteppingAction.hh"
 #include "G4OpBoundaryProcess.hh"
 #include "globals.hh"
 
+
+// cg4-
+class CG4 ; 
 class CPropLib ; 
 class Recorder ; 
 class Rec ; 
+class CStepRec ; 
 
 class CSteppingAction : public G4UserSteppingAction
 {
@@ -14,7 +19,7 @@ class CSteppingAction : public G4UserSteppingAction
   static const unsigned long long SEQMAT_MO_PY_BK ; 
 
   public:
-    CSteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity=0);
+    CSteppingAction(CG4* g4);
     virtual ~CSteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
@@ -22,22 +27,30 @@ class CSteppingAction : public G4UserSteppingAction
   private:
     void init();
     void UserSteppingActionOptical(const G4Step*);
-    void UserSteppingActionNonOptical(const G4Step*);
+    void setTrackId(unsigned int track_id);
+    void setEventId(unsigned int event_id);
 
   private:
+    CG4*         m_g4 ; 
     CPropLib*    m_clib ; 
     Recorder*    m_recorder   ; 
     Rec*         m_rec   ; 
+    CStepRec*    m_steprec   ; 
     int          m_verbosity ; 
+    int          m_event_id ; 
+    int          m_track_id ; 
 };
 
-inline CSteppingAction::CSteppingAction(CPropLib* clib, Recorder* recorder, Rec* rec, int verbosity)
+inline CSteppingAction::CSteppingAction(CG4* g4)
    : 
    G4UserSteppingAction(),
-   m_clib(clib),
-   m_recorder(recorder),
-   m_rec(rec),
-   m_verbosity(verbosity)
+   m_g4(g4),
+   m_clib(NULL),
+   m_recorder(NULL),
+   m_rec(NULL),
+   m_verbosity(0),
+   m_event_id(-1),
+   m_track_id(-1)
 { 
    init();
 }
@@ -47,4 +60,12 @@ inline CSteppingAction::~CSteppingAction()
 }
 
 
+inline void CSteppingAction::setTrackId(unsigned int track_id)
+{
+    m_track_id = track_id ; 
+}
+inline void CSteppingAction::setEventId(unsigned int event_id)
+{
+    m_event_id = event_id ; 
+}
 

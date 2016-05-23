@@ -178,6 +178,8 @@ void Rec::Dump(const char* msg)
     unsigned int postFlag ;
     unsigned int postMat ;
 
+    G4ThreeVector origin ; 
+
     for(unsigned int i=0 ; i < nstates ; i++)
     {
         const State* state = getState(i) ;
@@ -185,6 +187,12 @@ void Rec::Dump(const char* msg)
 
         const G4StepPoint* pre  = state->getPreStepPoint() ; 
         const G4StepPoint* post = state->getPostStepPoint() ; 
+
+        if( i == 0)
+        {
+            const G4ThreeVector& pos = pre->GetPosition();
+            origin = pos ; 
+        } 
 
         getFlagMaterial(preFlag,  preMat, i, PRE );
         getFlagMaterial(postFlag, postMat, i, POST );
@@ -211,7 +219,7 @@ void Rec::Dump(const char* msg)
                   << std::endl
                   << ::Format("material",  preMaterialRaw, postMaterialRaw )
                   << std::endl 
-                  << ::Format(state->getStep(), "rec state" )
+                  << ::Format(state->getStep(),origin,  "rec state" )
                   << std::endl ; 
 
     }

@@ -1,28 +1,30 @@
-#include "CSteppingAction.hh"
 
+// g4-
 #include "G4ProcessManager.hh"
 #include "G4RunManager.hh"
 #include "G4Event.hh"
-
-
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
-
 #include "G4Event.hh"
 #include "G4UnitsTable.hh"
-
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+// cg4-
+#include "CG4.hh"
 #include "Recorder.hh"
 #include "Rec.hh"
 #include "State.hh"
 #include "Format.hh"
 #include "CPropLib.hh"
+#include "CStepRec.hh"
+#include "CSteppingAction.hh"
 
+// optickscore-
 #include "Opticks.hh"
 
+// npy-
 #include "NLog.hpp"
 
 
@@ -52,6 +54,13 @@ G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
 
 void CSteppingAction::init()
 {
+    m_clib = m_g4->getPropLib();
+    m_recorder = m_g4->getRecorder();
+    m_rec = m_g4->getRec();
+    m_steprec = m_g4->getStepRec();
+
+    m_verbosity = m_recorder->getVerbosity(); 
+
     NumpyEvt* evt = m_recorder->getEvt();
     LOG(info) << "CSteppingAction::init " 
               << " evt " << evt->description() 
@@ -64,20 +73,43 @@ const unsigned long long CSteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,
 const unsigned long long CSteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
 
 
-
 void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     G4Track* track = step->GetTrack();
-    G4ParticleDefinition* type = track->GetDefinition();
+
+    int event_id = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() ;
+    int track_id = track->GetTrackID() ;
+    //int parent_id = track->GetParentID() ;
+    int step_id  = track->GetCurrentStepNumber() - 1 ;
+
+    bool startEvent = m_event_id != event_id ; 
+    bool startTrack = m_track_id != track_id || startEvent ; 
+
+    const G4ParticleDefinition* type = track->GetDefinition();
+    const G4ParticleDefinition* type2 = track->GetDynamicParticle()->GetParticleDefinition(); 
+    assert( type == type2 );
+
+    G4String particleName = type->GetParticleName();
+    G4int pdgCode = type->GetPDGEncoding();
+
+    setEventId(event_id);     
+    setTrackId(track_id);     
+    //setParentId(parent_id);
+    //setPDGCode(pdgCode);
 
     if( type == G4OpticalPhoton::OpticalPhotonDefinition())
     {
-        //LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
+        LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
         //UserSteppingActionOptical(step);
     }
     else
     {
-        UserSteppingActionNonOptical(step);
+        if(startTrack) 
+        {
+            m_steprec->store(event_id, track_id, pdgCode);
+        }
+        m_steprec->record(step, step_id);
+        // hmm this will miss the last track
     }
 }
 
@@ -186,21 +218,6 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
 }
 
-
-
-void CSteppingAction::UserSteppingActionNonOptical(const G4Step* step)
-{
-    unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-
-
-    LOG(info) << "CSteppingAction::UserSteppingActionNonOptical" 
-              << " eid " << eid 
-              << Format(step, "USANO")
-              ;
-
-
-
-}
 
 
 

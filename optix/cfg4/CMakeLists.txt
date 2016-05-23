@@ -77,6 +77,8 @@ State.cc
 CTorchSource.cc
 CGunSource.cc
 CSource.cc
+CStep.cc
+CStepRec.cc
 OpStatus.cc
 PhysicsList.cc
 OpNovicePhysicsList.cc
@@ -102,6 +104,8 @@ State.hh
 CTorchSource.hh
 CGunSource.hh
 CSource.hh
+CStep.hh
+CStepRec.hh
 OpStatus.hh
 PhysicsList.hh
 OpNovicePhysicsList.hh

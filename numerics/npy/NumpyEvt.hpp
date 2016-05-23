@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <cstring>
+#include <cassert>
 
 #include "NPY.hpp"
 
@@ -41,6 +42,7 @@ class NumpyEvt {
    public:
        static const char* primary ;
        static const char* genstep ;
+       static const char* nopstep ;
        static const char* photon ;
        static const char* record  ;
        static const char* phosel ;
@@ -51,6 +53,7 @@ class NumpyEvt {
        NPY<float>* loadGenstepFromFile(int modulo=0);
        NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track");
        void setGenstepData(NPY<float>* genstep_data);
+       void setNopstepData(NPY<float>* nopstep_data);
        void zero();
        void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
        void prepareForIndexing();
@@ -124,6 +127,7 @@ class NumpyEvt {
        NPY<float>*          getPrimaryData();
        NPY<float>*          getIncomingData();
        NPY<float>*          getGenstepData();
+       NPY<float>*          getNopstepData();
        NPY<float>*          getPhotonData();
        NPY<short>*          getRecordData();
        NPY<short>*          getAuxData();
@@ -141,6 +145,7 @@ class NumpyEvt {
        NPY<int>*            getIDomain();
    public:
        MultiViewNPY* getGenstepAttr();
+       MultiViewNPY* getNopstepAttr();
        MultiViewNPY* getPhotonAttr();
        MultiViewNPY* getRecordAttr();
        MultiViewNPY* getAuxAttr();
@@ -152,6 +157,7 @@ class NumpyEvt {
 
    public:
        unsigned int getNumGensteps();
+       unsigned int getNumNopsteps();
        unsigned int getNumPhotons();
        unsigned int getNumRecords();
        unsigned int getMaxRec();  // per-photon
@@ -185,6 +191,7 @@ class NumpyEvt {
        NPY<float>*           m_primary_data ; 
        NPY<float>*           m_incoming_data ; 
        NPY<float>*           m_genstep_data ;
+       NPY<float>*           m_nopstep_data ;
        NPY<float>*           m_photon_data ;
        NPY<short>*           m_record_data ;
        NPY<short>*           m_aux_data ;
@@ -196,6 +203,7 @@ class NumpyEvt {
        NPY<int>*             m_idom ; 
 
        MultiViewNPY*   m_genstep_attr ;
+       MultiViewNPY*   m_nopstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
        MultiViewNPY*   m_record_attr  ;
        MultiViewNPY*   m_aux_attr  ;
@@ -207,6 +215,7 @@ class NumpyEvt {
        PhotonsNPY*     m_photons ; 
 
        unsigned int    m_num_gensteps ; 
+       unsigned int    m_num_nopsteps ; 
        unsigned int    m_num_photons ; 
        unsigned int    m_maxrec ; 
 
@@ -244,6 +253,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_primary_data(NULL),
           m_incoming_data(NULL),
           m_genstep_data(NULL),
+          m_nopstep_data(NULL),
           m_photon_data(NULL),
           m_record_data(NULL),
           m_aux_data(NULL),
@@ -255,6 +265,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_idom(NULL),
 
           m_genstep_attr(NULL),
+          m_nopstep_attr(NULL),
           m_photon_attr(NULL),
           m_record_attr(NULL),
           m_aux_attr(NULL),
@@ -265,6 +276,7 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_records(NULL),
           m_photons(NULL),
           m_num_gensteps(0),
+          m_num_nopsteps(0),
           m_num_photons(0),
           m_maxrec(1),
           m_seqhis(NULL),
@@ -312,6 +324,12 @@ inline unsigned int NumpyEvt::getNumGensteps()
 {
     return m_num_gensteps ; 
 }
+inline unsigned int NumpyEvt::getNumNopsteps()
+{
+    return m_num_nopsteps ; 
+}
+
+
 inline unsigned int NumpyEvt::getNumPhotons()
 {
     return m_num_photons ; 
@@ -342,6 +360,18 @@ inline MultiViewNPY* NumpyEvt::getGenstepAttr()
 {
     return m_genstep_attr ;
 }
+
+inline NPY<float>* NumpyEvt::getNopstepData()
+{
+    return m_nopstep_data ;
+}
+inline MultiViewNPY* NumpyEvt::getNopstepAttr()
+{
+    return m_nopstep_attr ;
+}
+
+
+
 
 
 inline NPY<float>* NumpyEvt::getPhotonData()
@@ -535,6 +565,7 @@ inline void NumpyEvt::setHistorySeq(Index* seqhis)
 
 inline void NumpyEvt::setMaterialSeq(Index* seqmat)
 {
+    assert(0);
     m_seqmat = seqmat ; 
 }
 

@@ -14,9 +14,6 @@ class G4VUserDetectorConstruction ;
 class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
 
-
-
-
 // npy--
 class TorchStepNPY ;
 class NumpyEvt ; 
@@ -26,6 +23,7 @@ class CPropLib ;
 class CDetector ; 
 class Recorder ; 
 class Rec ; 
+class CStepRec ; 
 class OpNovicePhysicsList ; 
 
 // ggeo-
@@ -56,6 +54,11 @@ class CG4
         void execute(const char* path);
    public:
         void BeamOn(unsigned int num);
+   public:
+        Recorder* getRecorder();
+        CStepRec* getStepRec();
+        Rec*      getRec();
+        CPropLib* getPropLib();
    private:
         Opticks*              m_opticks ; 
         OpticksCfg<Opticks>*  m_cfg ;
@@ -67,6 +70,7 @@ class CG4
         CPropLib*             m_lib ; 
         Recorder*             m_recorder ; 
         Rec*                  m_rec ; 
+        CStepRec*             m_steprec ; 
    private:
         OpNovicePhysicsList*  m_npl ; 
         G4RunManager*         m_runManager ;
@@ -91,6 +95,7 @@ inline CG4::CG4(Opticks* opticks)
      m_lib(NULL),
      m_recorder(NULL),
      m_rec(NULL),
+     m_steprec(NULL),
      m_npl(NULL),
      m_runManager(NULL),
      m_g4ui(false),
@@ -104,5 +109,20 @@ inline CG4::CG4(Opticks* opticks)
 }
 
 
-
+inline Recorder* CG4::getRecorder()
+{
+    return m_recorder ; 
+}
+inline Rec* CG4::getRec()
+{
+    return m_rec ; 
+}
+inline CStepRec* CG4::getStepRec()
+{
+    return m_steprec ; 
+}
+inline CPropLib* CG4::getPropLib()
+{
+    return m_lib ; 
+}
 

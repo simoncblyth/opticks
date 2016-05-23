@@ -146,7 +146,6 @@ class Rec {
        unsigned long long getSeqMat();
 
        void setDebug(bool debug=true);
-   public:
    private:
        CPropLib*                   m_clib ; 
        NumpyEvt*                   m_evt ;  

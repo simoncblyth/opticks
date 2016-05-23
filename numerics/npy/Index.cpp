@@ -229,8 +229,18 @@ void Index::save(const char* pfold, const char* rfold)
 
 void Index::save(const char* idpath)
 {
-    saveMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source").c_str() );  
-    saveMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local").c_str() );  
+    std::string sname = getPrefixedString("Source") ;
+    std::string lname = getPrefixedString("Local") ;
+
+    LOG(info) << "Index::save"
+              << " sname " << sname 
+              << " lname " << lname 
+              << " itemtype " << m_itemtype
+              << " ext " << m_ext 
+              ;
+
+    saveMap<std::string, unsigned int>( m_source, idpath, sname.c_str() );  
+    saveMap<std::string, unsigned int>( m_local , idpath, lname.c_str() );  
 }
 std::string Index::getPrefixedString(const char* tail)
 {
