@@ -145,10 +145,13 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         GProperty<float>* prop = ggm->getPropertyByIndex(i);
         addProperty(mpt, lkey, prop );
 
-        if(m_groupvel_kludge && strcmp(lkey,"RINDEX")==0)
+        if(strcmp(lkey,"RINDEX")==0)
         {
-            //LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
-            addProperty(mpt, "GROUPVEL", prop );
+            if(m_groupvel_kludge)
+            {
+                LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
+                addProperty(mpt, "GROUPVEL", prop );
+            }
         }
 
     }

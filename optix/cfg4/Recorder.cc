@@ -245,6 +245,18 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     short posz = shortnorm(pos.z()/mm, sd.z, sd.w ); 
     short time_ = shortnorm(time/ns,   td.x, td.y );
 
+    /*
+    LOG(info) << "Recorder::RecordStepPoint"
+              << " globalTime " << time 
+              << " td.x " << td.x
+              << " td.y " << td.y
+              << " ns " << ns
+              << " time/ns " << time/ns
+              <<  " time_ " << time_
+              ;
+     */
+  
+
     m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
 
     unsigned char polx = uchar_( pol.x() );

@@ -158,6 +158,47 @@ Very slow moving photons...
     TO BT [SD]                             1.00  0.83  0.97 9341.26   0.98  1.09  0.56  0.93 
     ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
 
+::
+
+    (lldb) b "G4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&)" 
+
+    (lldb) b 537
+    Breakpoint 2: where = libG4processes.dylib`G4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&) + 8675 at G4OpBoundaryProcess.cc:537, address = 0x00000001042b7123
+    (lldb) c
+       ...
+       534             G4MaterialPropertyVector* groupvel =
+       535             Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
+       536             G4double finalVelocity = groupvel->Value(thePhotonMomentum);
+    -> 537             aParticleChange.ProposeVelocity(finalVelocity);
+       538          }
+       539  
+    (lldb) p finalVelocity
+    (G4double) $0 = 0.99930819333333331
+
+    ## huh : speed of light should be ~300 mm/ns
+
+    (lldb) p groupvel
+    (G4MaterialPropertyVector *) $1 = 0x00000001091d3bc0
+    (lldb) p *groupvel
+    (G4MaterialPropertyVector) $2 = {
+      G4PhysicsVector = {
+        type = T_G4PhysicsOrderedFreeVector
+        edgeMin = 0.0000015120022870975581
+        edgeMax = 0.000020664031256999959
+        numberOfNodes = 39
+        dataVector = size=39 {
+          [0] = 0.99930819333333331
+          [1] = 0.99930819333333331
+          [2] = 0.99930819333333331
+          [3] = 0.99930819333333331
+          [4] = 0.99930819333333331
+          [5] = 0.99930819333333331
+          [6] = 0.99930819333333331
+          [7] = 0.99930819333333331
+          [8] = 0.99930819333333331
+
+
+
 
  
 EOU
@@ -230,12 +271,14 @@ ggv-pmt-test(){
                )
 
 
+
+    local groupvelkludge=0
     local test_config=(
                  mode=PmtInBox
                  pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
                  control=$testverbosity,0,0,0
                  analytic=1
-                 groupvel=1
+                 groupvel=$groupvelkludge
                  shape=box
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=0,0,0,300
