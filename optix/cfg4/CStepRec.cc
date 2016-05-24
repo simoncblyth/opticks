@@ -15,9 +15,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-
-
-
 void CStepRec::init()
 {
     m_nopstep = m_evt->getNopstepData();
@@ -105,10 +102,6 @@ void CStepRec::store(unsigned int event_id, unsigned int track_id, int particle_
     delete vals ; 
 
 }
-
-
-
-
 
 
 

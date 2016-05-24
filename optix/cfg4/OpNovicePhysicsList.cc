@@ -231,7 +231,12 @@ void  OpNovicePhysicsList::setProcessVerbosity(unsigned int verbosity)
              G4String processName = proc->GetProcessName() ;
              G4int prior = proc->GetVerboseLevel();
              proc->SetVerboseLevel(verbosity);
-             LOG(info) << "OpNovicePhysicsList::setProcessVerbosity " << particleName << ":" << processName << " from " << prior << " to " << proc->GetVerboseLevel() ;
+             G4int curr = proc->GetVerboseLevel() ;
+             assert(curr == verbosity);
+
+             if(curr != prior)
+                 LOG(debug) << "OpNovicePhysicsList::setProcessVerbosity " << particleName << ":" << processName << " from " << prior << " to " << proc->GetVerboseLevel() ;
+
          }
    } 
 }

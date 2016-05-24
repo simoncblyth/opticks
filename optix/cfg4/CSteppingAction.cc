@@ -99,8 +99,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
     if( type == G4OpticalPhoton::OpticalPhotonDefinition())
     {
-        LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
-        //UserSteppingActionOptical(step);
+        //LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
+        UserSteppingActionOptical(step);
     }
     else
     {

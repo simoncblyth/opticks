@@ -24,13 +24,13 @@ class CDetector : public G4VUserDetectorConstruction
     friend class CGDMLDetector ; 
  public:
     CDetector(GCache* cache);
+    virtual ~CDetector();
  private:
     void init();
  public:
     void setVerbosity(unsigned int verbosity);
     void setTop(G4VPhysicalVolume* top);
     virtual G4VPhysicalVolume* Construct();
-    virtual ~CDetector();
     void saveTransforms(const char* path);
  public: 
     unsigned int getNumGlobalTransforms();
@@ -107,11 +107,6 @@ inline CPropLib* CDetector::getPropLib()
 {
     return m_lib ; 
 }
-
-inline CDetector::~CDetector()
-{
-}
-
 
 
 

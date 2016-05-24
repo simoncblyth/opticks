@@ -1,5 +1,7 @@
 #include "CDetector.hh"
 
+#include <cstdio>
+
 // npy-
 #include "NLog.hpp"
 #include "GLMFormat.hpp"
@@ -86,5 +88,9 @@ G4VPhysicalVolume* CDetector::getPV(const char* name)
     return m_pvm.count(name) == 1 ? m_pvm[name] : NULL ; 
 }
 
-
-
+CDetector::~CDetector()
+{
+    //printf("CDetector::~CDetector\n");
+    //G4GeometryManager::GetInstance()->OpenGeometry();
+    //printf("CDetector::~CDetector DONE\n");
+}

@@ -128,6 +128,9 @@ ggv-pmt-test(){
         photons=10000
     fi 
 
+    #photons=10000  # whilst debugging
+
+
     local zenith 
     local note
 

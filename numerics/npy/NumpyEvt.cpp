@@ -85,31 +85,17 @@ ViewNPY* NumpyEvt::operator [](const char* spec)
     if(elem.size() != 2 ) assert(0);
 
     MultiViewNPY* mvn(NULL); 
-    if(     elem[0] == genstep) mvn = m_genstep_attr ;  
-    else if(elem[0] == photon)  mvn = m_photon_attr ;
-    else if(elem[0] == record)  mvn = m_record_attr ;
-    else if(elem[0] == phosel)  mvn = m_phosel_attr ;
-    else if(elem[0] == recsel)  mvn = m_recsel_attr ;
-    else if(elem[0] == sequence)  mvn = m_sequence_attr ;
+    if(     elem[0] == genstep)  mvn = m_genstep_attr ;  
+    else if(elem[0] == nopstep)  mvn = m_nopstep_attr ;
+    else if(elem[0] == photon)   mvn = m_photon_attr ;
+    else if(elem[0] == record)   mvn = m_record_attr ;
+    else if(elem[0] == phosel)   mvn = m_phosel_attr ;
+    else if(elem[0] == recsel)   mvn = m_recsel_attr ;
+    else if(elem[0] == sequence) mvn = m_sequence_attr ;
     else if(elem[0] == aux)      mvn = m_aux_attr ;
 
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
-}
-
-
-void NumpyEvt::setNopstepData(NPY<float>* nopstep)
-{
-    m_nopstep_data = nopstep  ;
-
-    if(nopstep)
-    {
-        m_num_nopsteps = m_nopstep_data->getShape(0) ;
-        LOG(info) << "NumpyEvt::setNopstepData"
-                  << " shape " << nopstep->getShapeString()
-                  ;
-    }
-
 }
 
 
@@ -479,6 +465,33 @@ void NumpyEvt::setAuxData(NPY<short>* aux_data)
     m_aux_attr->add(ibnd);
 }
 
+
+
+
+
+void NumpyEvt::setNopstepData(NPY<float>* nopstep)
+{
+    m_nopstep_data = nopstep  ;
+
+    if(!nopstep) return ; 
+
+    m_num_nopsteps = m_nopstep_data->getShape(0) ;
+    LOG(info) << "NumpyEvt::setNopstepData"
+              << " shape " << nopstep->getShapeString()
+              ;
+
+    //                                                j k l sz   type         norm   iatt
+    ViewNPY* rpos = new ViewNPY("rpos",m_nopstep_data,0,0,0,4,ViewNPY::FLOAT ,false,  false);
+    ViewNPY* rdir = new ViewNPY("rdir",m_nopstep_data,1,0,0,4,ViewNPY::FLOAT ,false,  false);   
+    ViewNPY* rpol = new ViewNPY("rpol",m_nopstep_data,2,0,0,4,ViewNPY::FLOAT ,false,  false);   
+
+    m_nopstep_attr = new MultiViewNPY("nopstep_attr");
+    m_nopstep_attr->add(rpos);
+    m_nopstep_attr->add(rdir);
+    m_nopstep_attr->add(rpol);
+}
+
+
 void NumpyEvt::setRecordData(NPY<short>* record_data)
 {
     assert(m_step);
@@ -691,6 +704,15 @@ void NumpyEvt::save(bool verbose)
     {
         pr->setVerbose(verbose);
         pr->save("pr%s", m_typ,  m_tag, udet);
+    }
+
+
+    NPY<float>* no = getNopstepData();
+    if(no)
+    {
+        no->setVerbose(verbose);
+        no->save("no%s", m_typ,  m_tag, udet);
+        no->dump("NumpyEvt::save (nopstep)");
     }
 
     NPY<float>* ox = getPhotonData();

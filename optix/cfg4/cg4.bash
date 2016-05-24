@@ -37,6 +37,74 @@ current standard::
   /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/
 
 
+
+FIXED Issue : g4 geometry cleanup WARNINGs
+--------------------------------------------
+
+::
+
+    WARNING - Attempt to delete the physical volume store while geometry closed !
+    WARNING - Attempt to delete the logical volume store while geometry closed !
+    WARNING - Attempt to delete the solid store while geometry closed !
+    WARNING - Attempt to delete the region store while geometry closed !
+    Process 93045 exited with status = 0 (0x00000000) 
+
+::
+
+    simon:cfg4 blyth$ g4-cc "Attempt" | grep delete
+    /usr/local/env/g4/geant4.10.02/source/geometry/management/src/G4PhysicalVolumeStore.cc:    G4cout << "WARNING - Attempt to delete the physical volume store"
+    /usr/local/env/g4/geant4.10.02/source/geometry/management/src/G4LogicalVolumeStore.cc:    G4cout << "WARNING - Attempt to delete the logical volume store"
+    /usr/local/env/g4/geant4.10.02/source/geometry/management/src/G4SolidStore.cc:    G4cout << "WARNING - Attempt to delete the solid store"
+    /usr/local/env/g4/geant4.10.02/source/geometry/management/src/G4RegionStore.cc:    G4cout << "WARNING - Attempt to delete the region store"
+
+    (lldb) b "G4PhysicalVolumeStore::Clean()"
+
+Huh looks like system is calling dtors, i didnt think it was so polite::
+
+    (lldb) bt
+    * thread #1: tid = 0x66fc61, 0x00000001061055c4 libG4geometry.dylib`G4PhysicalVolumeStore::Clean() + 4 at G4PhysicalVolumeStore.cc:78, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001061055c4 libG4geometry.dylib`G4PhysicalVolumeStore::Clean() + 4 at G4PhysicalVolumeStore.cc:78
+        frame #1: 0x0000000106105572 libG4geometry.dylib`G4PhysicalVolumeStore::~G4PhysicalVolumeStore(this=0x00000001063e31a8) + 34 at G4PhysicalVolumeStore.cc:67
+        frame #2: 0x00000001061059f5 libG4geometry.dylib`G4PhysicalVolumeStore::~G4PhysicalVolumeStore(this=0x00000001063e31a8) + 21 at G4PhysicalVolumeStore.cc:66
+        frame #3: 0x00007fff8cdf07a1 libsystem_c.dylib`__cxa_finalize + 177
+        frame #4: 0x00007fff8cdf0a4c libsystem_c.dylib`exit + 22
+        frame #5: 0x00007fff89e75604 libdyld.dylib`start + 8
+
+::
+
+     74 void G4PhysicalVolumeStore::Clean()
+     75 {
+     76   // Do nothing if geometry is closed
+     77   //
+     78   if (G4GeometryManager::GetInstance()->IsGeometryClosed())
+     79   {
+     80     G4cout << "WARNING - Attempt to delete the physical volume store"
+     81            << " while geometry closed !" << G4endl;
+     82     return;
+     83   }
+
+Open geometry just before exitting::
+
+    341 void CG4::cleanup()
+    342 {
+    343     LOG(info) << "CG4::cleanup opening geometry" ; 
+    344     G4GeometryManager::GetInstance()->OpenGeometry();
+    345 }
+
+
+
+FIXED Issue : g4 process verbosity control
+----------------------------------------------
+
+::
+
+   (lldb) b "G4VProcess::SetVerboseLevel(int)" 
+
+
+See OpNovicePhysicsList::setProcessVerbosity called after run init.   
+
+
+
 Issue : g4 couples table noise, comment call to DumpCutValuesTable()
 ------------------------------------------------------------------------
 

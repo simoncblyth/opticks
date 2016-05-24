@@ -9,6 +9,7 @@
 #include "G4VisExecutive.hh"
 #include "G4UImanager.hh"
 #include "G4UIExecutive.hh"
+#include "G4GeometryManager.hh"
 
 //cg4-
 #include "CG4.hh"
@@ -68,23 +69,19 @@
 void CG4::init()
 {
     m_opticks->Summary("CG4::init opticks summary");
-
-    m_cfg = m_opticks->getCfg();  
-
-    // but not yet configured : so contains wrong settings
-    //m_cfg->dump();  not yet filled 
-
     TIMER("init");
 }
 
 void CG4::configure(int argc, char** argv)
 {
+    m_cfg = m_opticks->getCfg();  
     m_cfg->commandline(argc, argv);   // why is this config deferred ... 
     m_cfg->dump(); 
 
     m_cache = new GCache(m_opticks);
-    m_evt = m_opticks->makeEvt();  
 
+    // maybe evt setup should happen outside CG4 ?
+    m_evt = m_opticks->makeEvt();  
     NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
     m_evt->setNopstepData(nopstep);
 
@@ -127,6 +124,7 @@ void CG4::initialize()
 
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
     m_runManager->Initialize();
+    m_physics->setProcessVerbosity(0); 
 
     TIMER("initialize");
 
@@ -135,13 +133,8 @@ void CG4::initialize()
 
 void CG4::postinitialize()
 {
-    //m_npl->Summary("CG4::postinitialize  OpNovicePhysicsList");
-    //m_npl->collectProcesses();
-    //m_npl->dumpProcesses();
-    //m_npl->setProcessVerbosity(0);
-
-
     setupCompressionDomains();
+
 
     m_uiManager = G4UImanager::GetUIpointer();
 
@@ -151,8 +144,6 @@ void CG4::postinitialize()
     LOG(info) << "CG4::postinitialize DONE" ;
     TIMER("postinitialize");
 }
-
-
 
 void CG4::interactive(int argc, char** argv)
 {
@@ -173,9 +164,6 @@ void CG4::propagate()
  
     LOG(info) << "CG4::propagate"
               << " num_g4event " << m_evt->getNumG4Event()
-              << " num_photons " << m_evt->getNumPhotons()
-              << " steps_per_photon " << m_evt->getMaxRec()
-              << " bounce_max " << m_evt->getBounceMax()
               ; 
     TIMER("_propagate");
 
@@ -194,34 +182,24 @@ void CG4::postpropagate()
 {
     std::string finmac = m_cfg->getG4FinMac();
     LOG(info) << "CG4::postpropagate [" << finmac << "]"  ;
-    //m_npl->collectProcesses();
-    //m_npl->dumpProcesses();
-
     if(!finmac.empty()) execute(finmac.c_str());
 }
 
 
 
-
 void CG4::save()
 {
-    //m_evt->save(true);
-
-    NPY<float>* nopstep = m_evt->getNopstepData();
-    nopstep->dump("CG4::save");
-    nopstep->save("/tmp/nopstep.npy");
+    m_evt->save(true);
 }
+
 
 void CG4::configurePhysics()
 {
-    m_npl = new OpNovicePhysicsList();
-    //m_npl->SetVerbose(0);  nope processes not instanciated at this stage
+    m_physics = new OpNovicePhysicsList();
+    // processes instanciated only after PhysicsList Construct that happens at runInitialization 
 
-    m_runManager->SetUserInitialization(m_npl);
+    m_runManager->SetUserInitialization(m_physics);
     TIMER("configurePhysics");
-
-    // nope: processManager still not instanciated, so must defer this
-    //m_npl->Summary("CG4::configurePhysics OpNovicePhysicsList");
 }
 
 void CG4::configureDetector()
@@ -353,10 +331,18 @@ void CG4::setupCompressionDomains()
 }
 
 
+void CG4::cleanup()
+{
+    LOG(info) << "CG4::cleanup opening geometry" ; 
+    G4GeometryManager::GetInstance()->OpenGeometry();
+}
+
+
 
 CG4::~CG4()
 {
-    delete m_runManager;
+    //delete m_detector ; 
+    //delete m_runManager;
 }
 
 

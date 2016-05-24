@@ -35,6 +35,7 @@ class CG4
         CG4(Opticks* opticks);
         void configure(int argc, char** argv);
         void interactive(int argc, char** argv);
+        void cleanup();
         virtual ~CG4();
    public:
         void initialize();
@@ -72,7 +73,7 @@ class CG4
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
    private:
-        OpNovicePhysicsList*  m_npl ; 
+        OpNovicePhysicsList*  m_physics ; 
         G4RunManager*         m_runManager ;
         bool                  m_g4ui ; 
         G4VisManager*         m_visManager ; 
@@ -96,7 +97,7 @@ inline CG4::CG4(Opticks* opticks)
      m_recorder(NULL),
      m_rec(NULL),
      m_steprec(NULL),
-     m_npl(NULL),
+     m_physics(NULL),
      m_runManager(NULL),
      m_g4ui(false),
      m_visManager(NULL),

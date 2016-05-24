@@ -1,6 +1,8 @@
 #include "Opticks.hh"
 #include "CG4.hh"
 
+#include <cstdio>
+
 int main(int argc, char** argv)
 {
     Opticks* m_opticks = new Opticks(argc, argv, "CG4Test.log");
@@ -19,6 +21,9 @@ int main(int argc, char** argv)
 
     m_geant4->save();
 
+    m_geant4->cleanup();
+
+    printf("main: exitting %s\n", argv[0]);
 
     return 0 ; 
 }
