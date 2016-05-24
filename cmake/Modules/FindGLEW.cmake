@@ -2,10 +2,14 @@
 
 set(GLEW_PREFIX "${OPTICKS_PREFIX}/externals/glew/glew")
 
+
+#message("GLEW_PREFIX:${GLEW_PREFIX}")
+
+
 LINK_DIRECTORIES(${GLEW_PREFIX}/lib)
 
 find_library( GLEW_LIBRARY 
-              NAMES glew GLEW
+              NAMES glew GLEW libglew32
               PATHS ${GLEW_PREFIX}/lib )
 
 set( GLEW_LIBRARIES ${GLEW_LIBRARY} )

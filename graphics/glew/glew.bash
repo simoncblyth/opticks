@@ -42,7 +42,10 @@ glew-env(){      elocal- ; opticks- ;  }
 
 glew-fold(){ echo $(opticks-prefix)/externals/glew ; }
 glew-dir(){  echo $(glew-fold)/$(glew-name) ; }
-glew-idir(){ echo $(glew-fold)/$(glew-version) ; }
+#glew-idir(){ echo $(glew-fold)/$(glew-version) ; }
+glew-idir(){ echo $(glew-fold)/glew ; }
+
+
 glew-sdir(){ echo $(glew-dir) ; }
 glew-bdir(){ echo $(glew-dir).build ; }
 glew-edir(){ echo $(opticks-home)/graphics/glew ; }
@@ -68,7 +71,7 @@ glew-get(){
    [ ! -f "$zip" ] && curl -L -O $url
    [ ! -d "$nam" ] && unzip $zip 
 
-   ln -sfnv $nam glew
+   # ln -sfnv $nam glew
 }
 
 glew-export (){ 

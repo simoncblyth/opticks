@@ -45,6 +45,32 @@ if(UNIX AND NOT APPLE)
                )
 endif(UNIX AND NOT APPLE)
 
+
+if(WIN32)
+   message("WIN32....")
+endif(WIN32)
+
+
+if(WIN64)
+   message("WIN64....")
+endif(WIN64)
+
+
+if(MSYS)
+   message("MSYS....")
+endif(MSYS)
+
+
+if(MINGW)
+   message("MINGW....")
+endif(MINGW)
+
+
+
+
+
+
+
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${ImGui_SOURCE_DIR}/examples/opengl3_example

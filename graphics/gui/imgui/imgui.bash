@@ -194,8 +194,8 @@ imgui-get(){
        git clone $(imgui-url)
 
        imgui-fix
-       cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
    fi 
+   cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
    cd $iwd
 }
 
@@ -235,7 +235,7 @@ imgui-cmake(){
   imgui-bcd
 
   [ -f CMakeCache.txt ] && echo $msg already configured : imgui-wipe 1st to force reconfigure  && return 
-  cmake $(imgui-sdir) -DCMAKE_INSTALL_PREFIX=$(imgui-idir) -DCMAKE_BUILD_TYPE=Debug 
+  cmake -G "$(opticks-cmake-generator)" -DCMAKE_INSTALL_PREFIX=$(imgui-idir) -DCMAKE_BUILD_TYPE=Debug $(imgui-sdir) 
   cd $iwd
 }
 

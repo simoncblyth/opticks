@@ -491,11 +491,21 @@ opticks-cd(){   cd $(opticks-sdir); }
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 
-
 opticks-wipe(){
    local bdir=$(opticks-bdir)
    rm -rf $bdir
 }
+
+
+
+opticks-cmake-generator()
+{
+    case $(uname -s) in
+       MINGW64_NT*)  echo MSYS Makefiles ;;
+                 *)  echo Unix Makefiles ;;
+    esac                          
+}
+
 
 opticks-cmake(){
    local msg="=== $FUNCNAME : "

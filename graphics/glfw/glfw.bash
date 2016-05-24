@@ -246,7 +246,7 @@ glfw-cmake(){
   else
       mkdir -p $bdir
       glfw-bcd
-      cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
+      cmake -G "$(opticks-cmake-generator)" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
   fi 
 
   cd $iwd

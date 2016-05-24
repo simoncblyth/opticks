@@ -277,7 +277,7 @@ assimp-name(){ echo $(assimp-fork-name) ; }
 assimp-release-name(){ echo assimp-3.1.1 ; }
 assimp-release-url(){  echo http://downloads.sourceforge.net/project/assimp/assimp-3.1/assimp-3.1.1_no_test_models.zip ; }
 assimp-dev-url(){      echo git@github.com:simoncblyth/assimp.git ; } 
-assimp-url(){          echo git://github.com/simoncblyth/assimp.git ; } 
+assimp-url(){          echo http://github.com/simoncblyth/assimp.git ; } 
 
 assimp-fold(){ echo $(dirname $(assimp-dir)); }
 
