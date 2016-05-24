@@ -21,11 +21,11 @@ class SeqType(object):
         bad = 0 
         for n in s.split(" "):
             if f.get(n,0) == 0:
-               log.warn("code bad abbr %s " % n ) 
+               log.warn("code bad abbr [%s] " % n ) 
                bad += 1
 
         if bad>0:
-           log.warn("code sees %s bad abbr in %s " % (bad, s )) 
+           log.warn("code sees %s bad abbr in [%s] " % (bad, s )) 
 
         return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(" ")))))
 

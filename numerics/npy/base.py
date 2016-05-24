@@ -77,8 +77,13 @@ class ListFlags(object):
         self.code2name = dict(zip(codes, names))
 
 class IniFlags(object):
-    def __init__(self, path="$IDPATH/GFlagsLocal.ini"):
+    """
+    $IDPATH/GFlagsLocal.ini
+    """
+    def __init__(self, path="$IDPATH/GFlagIndexLocal.ini"):
         ini = ini_(path)
+        assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
+
         ini = dict(zip(ini.keys(),map(int,ini.values())))  # convert values to int 
         names = map(str,ini.keys())
         codes = map(int,ini.values())

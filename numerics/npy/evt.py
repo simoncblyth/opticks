@@ -548,8 +548,8 @@ if __name__ == '__main__':
     rec = True  
 
     #cat, src, tag = "rainbow", "torch", "-5"
-    cat, src, tag = "juno", "cerenkov", "1"
-    #cat, src, tag = "PmtInBox", "torch", "4"
+    #cat, src, tag = "juno", "cerenkov", "1"
+    cat, src, tag = "PmtInBox", "torch", "-4"
 
     evt = Evt(tag, src, cat, label="tag %s" % tag, rec=rec)
 

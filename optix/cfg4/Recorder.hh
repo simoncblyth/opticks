@@ -21,6 +21,16 @@ class CPropLib ;
 #include "NumpyEvt.hpp"
 template <typename T> class NPY ;
 
+
+//  Recorder
+//  =============
+//
+//  Recorder should really be called "OpticalPhotonRecorder".
+//  It is instanciated by CG4::configureGenerator 
+//  and is mainly used from CSteppingAction.
+//  It is also used for Recorder::RecordPrimaryVertex.
+//  from CGunSource and CTorchSource.
+//
 //
 //  *RecordStep* is called for all G4Step
 //  each of which is comprised of *pre* and *post* G4StepPoint, 
@@ -33,10 +43,6 @@ template <typename T> class NPY ;
 //  technical g4 events all get slotted into the same NumpyEvt record 
 //  buffers
 //
-//
-//
-// Hmm Recorder is really PhotonRecorder
-// how to generalize ?
 //
 class Recorder {
    public:
@@ -110,7 +116,7 @@ class Recorder {
 
         unsigned int m_photons_per_g4event ; 
         unsigned int m_verbosity ; 
-        bool m_debug ; 
+        bool         m_debug ; 
         unsigned int m_event_id ; 
         unsigned int m_photon_id ; 
         unsigned int m_step_id ; 

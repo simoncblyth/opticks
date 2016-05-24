@@ -24,7 +24,14 @@ class CDetector ;
 class Recorder ; 
 class Rec ; 
 class CStepRec ; 
+
+#define OLDPHYS 1
+
+#ifdef OLDPHYS
+class PhysicsList ; 
+#else
 class OpNovicePhysicsList ; 
+#endif
 
 // ggeo-
 class GCache ; 
@@ -73,7 +80,11 @@ class CG4
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
    private:
+#ifdef OLDPHYS
+        PhysicsList*          m_physics ; 
+#else
         OpNovicePhysicsList*  m_physics ; 
+#endif
         G4RunManager*         m_runManager ;
         bool                  m_g4ui ; 
         G4VisManager*         m_visManager ; 

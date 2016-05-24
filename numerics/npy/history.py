@@ -28,8 +28,8 @@ def test_roundtrip(af):
 
 class HisType(SeqType):
     def __init__(self):
-        flags = IniFlags("$IDPATH/GFlagsLocal.ini")
-        abbrev = Abbrev("~/.opticks/GFlags/abbrev.json")
+        flags = IniFlags()
+        abbrev = Abbrev()
         SeqType.__init__(self, flags, abbrev)
 
 
@@ -40,7 +40,8 @@ if __name__ == '__main__':
      af = HisType()
 
      #src, tag, det = "torch", "5", "rainbow"
-     src, tag, det = "cerenkov", "1", "juno"
+     #src, tag, det = "cerenkov", "1", "juno"
+     src, tag, det = "torch", "4", "PmtInBox"
 
 
      ph = A.load_("ph"+src,tag,det)
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
      ht = SeqTable(cu, af)
      
-     test_HistoryTable(ht, seqhis)
+     #test_HistoryTable(ht, seqhis)
 
 
 

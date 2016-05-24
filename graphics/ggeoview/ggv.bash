@@ -116,6 +116,53 @@ ggv-bib(){
            $*  
 }
 
+
+
+ggv-pmt-test-usage(){ cat << EOU
+
+ggv-;ggv-pmt-test --load
+    # load and visualize photons persisted from Opticks
+
+ggv-;ggv-pmt-test --cfg4 
+    # run G4 simulation, persisting propagation to file
+
+ggv-;ggv-pmt-test --cfg4 --steppingdbg
+    # run G4 simulation verbosely, persisting propagation to file
+
+npy-;npy-cd;i
+    run pmt_test.py           # compare material/flag sequence histories
+    run pmt_test_distrib.py   # compare distributions
+
+ggv-;ggv-pmt-test --cfg4 --load
+    # load propagation and visualize 
+
+
+Following the g4gun generalizations viz shows very different behaviour.
+Very slow moving photons... 
+
+* switching back to old PhysicsList shows same mis-behaviour 
+
+* pmt_test.py indicate material/flag sequence histories are matching... points 
+  to problem with time  
+
+* running with --steppingdbg shows the photons are moving very slowly 
+  taking 200ns to get to the PMT.  What was that groupvel kludge ? 
+
+* pmt_test_distrib.py shows problem is with G4 times, looks like always getting smth close to -10 for other than 1st::
+
+    ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
+    4/PmtInBox/torch : 107598/107251  :   X     Y     Z     T        A     B     C     R     
+    ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
+    [TO] BT SD                             0.91  0.73  0.56  0.56     0.98  1.09  0.56  0.94 
+    TO [BT] SD                             0.91  0.73  0.81 11936.06  0.98  1.09  0.56  0.94 
+    TO BT [SD]                             1.00  0.83  0.97 9341.26   0.98  1.09  0.56  0.93 
+    ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
+
+
+ 
+EOU
+}
+
 ggv-pmt-test(){
    type $FUNCNAME
 
@@ -215,6 +262,9 @@ ggv-pmt-test(){
        $* 
 
 }
+
+
+
 
 
 
@@ -543,25 +593,6 @@ ggv-wavelength()
 }
 
 
-ggv-rainbow-usage(){ cat << EOU
-
-ggv-;ggv-rainbow 
-ggv-;ggv-rainbow --ppol
-ggv-;ggv-rainbow --spol
-ggv-;ggv-rainbow --cfg4 --spol
-ggv-;ggv-rainbow --cfg4 --ppol
-ggv-;ggv-rainbow --cfg4 --ppol --dbg
-
-
-ggv-;ggv-rainbow --load
-    # load and visualized photons persisted from Opticks
-
-ggv-;ggv-rainbow --cfg4 --load
-    # load and visualize photons persisted from Geant4 (cfg4) simulation
-
-EOU
-}
-
 
 ggv-catdir(){ echo $LOCAL_BASE/env/opticks/${1:-rainbow} ; }
 
@@ -574,6 +605,37 @@ ggv-param(){
    local parm=${1:-photonData}
    local udet=${2:-rainbow}
    find $(ggv-catdir $udet)  -name parameters.json -exec grep -H $parm {} \;
+}
+
+
+
+ggv-rainbow-usage(){ cat << EOU
+
+ggv-;ggv-rainbow 
+ggv-;ggv-rainbow --ppol
+ggv-;ggv-rainbow --spol
+ggv-;ggv-rainbow --cfg4 --spol
+ggv-;ggv-rainbow --cfg4 --ppol
+ggv-;ggv-rainbow --cfg4 --ppol --dbg
+
+
+ggv-;ggv-rainbow --load
+    # load and visualized photons persisted from Opticks
+    # checked 
+
+ggv-;ggv-rainbow --cfg4 --load
+    # load and visualize photons persisted from Geant4 (cfg4) simulation
+    #
+    # Option --cfg4 normally causes the CG4Test binary with Geant4 simulation capability 
+    # to be used but when --load is present the default GGeoView binary is picked
+    # via an override in op.sh
+    #
+    # IN FUTURE: Increased G4 integration means that will eventually be able to 
+    # merge the roles of the CG4Test and GGeoView binaries.
+    #
+
+
+EOU
 }
 
 ggv-rainbow()

@@ -1,6 +1,16 @@
 #!/bin/bash -l
 cmdline="$*"
 
+banner(){ cat << EOB
+########### THIS IS NO LONGER IN USE 
+########### HAVE MOVED TO op.sh 
+EOB
+}
+
+banner
+exit 
+
+
 dump(){
   local IFS="$1" ; shift  
   local elements
@@ -56,6 +66,12 @@ fi
 
 export OPTICKS_ARGS="$*"
 
+##
+## NB sometimes the cmdline option acts just to pick the binary
+##    in which case can strip it from the commandline  
+##    in other cases it needs to be passed along to the binary as well
+##
+
 if [ "${cmdline/--cmp}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeoview-bindir)/computeTest
 elif [ "${cmdline/--boundaries}" != "${cmdline}" ]; then
@@ -109,11 +125,14 @@ elif [ "${cmdline/--geotest}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GGeoTestTest)
 elif [ "${cmdline/--gmaker}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GMakerTest)
+
 elif [ "${cmdline/--pmt}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GPmtTest)
    export OPTICKS_ARGS=${cmdline/--pmt}
+
 elif [ "${cmdline/--attr}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GAttrSeqTest)
+
 elif [ "${cmdline/--surf}" != "${cmdline}" ]; then
    export OPTICKS_BINARY=$(ggeo-bin GSurfaceLibTest)
    export OPTICKS_ARGS=${cmdline/--surf}

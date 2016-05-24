@@ -15,7 +15,12 @@
 #include "CG4.hh"
 
 #include "ActionInitialization.hh"
+
+#ifdef OLDPHYS
+#include "PhysicsList.hh"
+#else
 #include "OpNovicePhysicsList.hh"
+#endif
 
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
@@ -124,7 +129,11 @@ void CG4::initialize()
 
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
     m_runManager->Initialize();
+
+#ifdef OLDPHYS
+#else
     m_physics->setProcessVerbosity(0); 
+#endif
 
     TIMER("initialize");
 
@@ -195,7 +204,13 @@ void CG4::save()
 
 void CG4::configurePhysics()
 {
+#ifdef OLDPHYS    
+    LOG(info) << "CG4::configurePhysics old PhysicsList" ; 
+    m_physics = new PhysicsList();
+#else
+    LOG(info) << "CG4::configurePhysics OpNovicePhysicsList" ; 
     m_physics = new OpNovicePhysicsList();
+#endif
     // processes instanciated only after PhysicsList Construct that happens at runInitialization 
 
     m_runManager->SetUserInitialization(m_physics);

@@ -73,6 +73,9 @@ op-binary-name()
       --torchstep) echo TorchStepNPYTest ;;  
            --hits) echo HitsNPYTest ;;  
    esac 
+   # no default as its important this return blank for unidentified commands
+   #      *) echo $(op-binary-name-default) ;;
+      
 }
 
 op-binary-desc()
@@ -241,6 +244,7 @@ op-cmdline-binary-match()
     local arg
     local bin
     unset OPTICKS_CMD
+
     for arg in $cmdline 
     do
        bin=$(op-binary-name $arg)
@@ -263,14 +267,24 @@ op-binary-setup()
     if [ "$bin" == "" ]; then
        bin=$def
     fi 
-    #echo $msg cfm $cfm bin $bin def $def
 
+    if [ "$OPTICKS_LOAD" == "1" ]; then 
+        echo $msg OPTICKS_LOAD overrides binary from $bin to default $def as cfg4 doesnt handle visualization of loaded NumpyEvt 
+        bin=$def
+    fi 
+
+    #echo $msg cfm $cfm bin $bin def $def
     unset OPTICKS_BINARY 
     unset OPTICKS_ARGS
 
     if [ "$bin" != "" ]; then
        export OPTICKS_BINARY=$(opticks-bindir)/$bin
-       export OPTICKS_ARGS=${cmdline/$cfm}
+       # some commands should not be removed from the commandline
+       # as they are needed by the binary 
+       case $cfm in 
+         --surf|--scint|--oscint|--pmt) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
+                                     *) export OPTICKS_ARGS=$cmdline ;;
+       esac
     fi 
 }
 

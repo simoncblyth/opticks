@@ -29,7 +29,6 @@ small and then repeatedly run::
 To close each window in turn.
 
 
-
 TODO
 -----
 
@@ -328,9 +327,9 @@ if __name__ == '__main__':
     cf = CF(tag="4", src="torch", det="PmtInBox", select=select )
     cf.dump()
     
-    #multiplot(cf, pages=["XYZT","ABCR"])
+    multiplot(cf, pages=["XYZT","ABCR"])
   
-    qwn_plot( cf.ss[0], "T", -1, c2_ymax=2000)
+    #qwn_plot( cf.ss[0], "T", -1, c2_ymax=2000)
 
     #qwn_plot( scf, "R", irec)
     #qwns_plot( scf, "XYZT", irec)

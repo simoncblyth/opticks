@@ -158,7 +158,6 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
             m_recorder->RecordQuadrant(step);
         }
 
-
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 
         m_recorder->setRecordId(record_id);
@@ -208,17 +207,10 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
                      std::cout << "(rec)" << m_clib->MaterialSequence(rec_seqmat) << std::endl ;  
                      std::cout << "(rdr)" << m_clib->MaterialSequence(rdr_seqmat) << std::endl ;  
                 }
-
-
             }
-
             track->SetTrackStatus(fStopAndKill);
         } 
     }
-
 }
-
-
-
 
 
