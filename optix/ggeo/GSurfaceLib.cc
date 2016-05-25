@@ -651,13 +651,16 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
     assert(_reflect_specular);
     assert(_reflect_diffuse);
 
-    std::string table = GProperty<float>::make_table( 
+    float dscale = 1.f ; 
+    bool dreciprocal = false ; 
+
+    std::string table = GProperty<float>::make_table( 20, dscale, dreciprocal,
                             _detect, "detect", 
                             _absorb, "absorb",  
                             _reflect_specular, "reflect_specular",
                             _reflect_diffuse , "reflect_diffuse", 
-                            _extra_x ,  "extra_x", 
-                            20 );
+                            _extra_x ,  "extra_x"
+                            );
     
     LOG(info) << msg << " " 
               << surf->getName()  

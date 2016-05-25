@@ -199,6 +199,35 @@ Very slow moving photons...
 
 
 
+Disabling the groupvel kludge via testconfig leads to G4ParticleChange not OK for velocity
+and loadsa output. This suggests RINDEX is messed up ?::
+
+    (lldb) f 13
+    frame #13: 0x0000000105ea2077 libG4track.dylib`G4ParticleChange::CheckIt(this=0x000000010870f730, aTrack=0x000000011672b220) + 4663 at G4ParticleChange.cc:658
+       655    // dump out information of this particle change
+       656  #ifdef G4VERBOSE
+       657    if (!itsOK) { 
+    -> 658      DumpInfo();
+       659    }
+       660  #endif
+       661  
+    (lldb) p itsOK
+    (G4bool) $0 = false
+    (lldb) p itsOKforMomentum
+    (G4bool) $1 = true
+    (lldb) p itsOKforEnergy
+    (G4bool) $2 = true
+    (lldb) p itsOKforVelocity
+    (G4bool) $3 = false
+    (lldb) p itsOKforProperTime
+    (G4bool) $4 = true
+    (lldb) p itsOKforGlobalTime
+    (G4bool) $5 = true
+
+Check the GROUPVEL calc::
+
+    (lldb) b "G4Track::CalculateVelocityForOpticalPhoton() const" 
+
 
  
 EOU

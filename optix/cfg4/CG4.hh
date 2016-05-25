@@ -25,7 +25,7 @@ class Recorder ;
 class Rec ; 
 class CStepRec ; 
 
-#define OLDPHYS 1
+//#define OLDPHYS 1
 
 #ifdef OLDPHYS
 class PhysicsList ; 

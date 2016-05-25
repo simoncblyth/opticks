@@ -17,12 +17,16 @@ public:
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length );
    static GProperty<T>* make_one_minus(GProperty<T>* a);
    static GProperty<T>* make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c=NULL, GProperty<T>* d=NULL );
-   static std::string   make_table(GProperty<T>* a, const char* atitle, 
+   static std::string   make_table(int fwid, T dscale, bool dreciprocal,
+                                   GProperty<T>* a, const char* atitle, 
                                    GProperty<T>* b, const char* btitle,
                                    GProperty<T>* c=NULL, const char* ctitle=NULL, 
                                    GProperty<T>* d=NULL, const char* dtitle=NULL,
                                    GProperty<T>* e=NULL, const char* etitle=NULL,
-                                   int fw=20 );
+                                   GProperty<T>* f=NULL, const char* ftitle=NULL,
+                                   GProperty<T>* g=NULL, const char* gtitle=NULL,
+                                   GProperty<T>* h=NULL, const char* htitle=NULL
+                                   );
 
 
    static GProperty<T>* ramp(T low, T step, T* domain, unsigned int length );

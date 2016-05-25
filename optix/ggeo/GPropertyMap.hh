@@ -34,6 +34,8 @@ class GPropertyMap {
       std::string getPDigestString(int ifr, int ito);
       std::string getKeysString(); 
       std::string description();
+  public:
+      std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
 
   private:
       void findShortName(const char* prefix="__dd__Materials__");

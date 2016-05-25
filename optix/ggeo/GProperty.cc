@@ -159,27 +159,41 @@ GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GPro
 
 template <typename T>
 std::string GProperty<T>::make_table(
+       int fw, T dscale, bool dreciprocal, 
        GProperty<T>* a, const char* atitle, 
        GProperty<T>* b, const char* btitle, 
        GProperty<T>* c, const char* ctitle, 
        GProperty<T>* d, const char* dtitle, 
        GProperty<T>* e, const char* etitle, 
-       int fw)
+       GProperty<T>* f, const char* ftitle, 
+       GProperty<T>* g, const char* gtitle, 
+       GProperty<T>* h, const char* htitle
+       )
 {
     if(a && b) assert(hasSameDomain(a,b));
     if(a && c) assert(hasSameDomain(a,c));
     if(a && d) assert(hasSameDomain(a,d));
     if(a && e) assert(hasSameDomain(a,e));
+    if(a && f) assert(hasSameDomain(a,f));
+    if(a && g) assert(hasSameDomain(a,g));
+    if(a && h) assert(hasSameDomain(a,h));
 
+    //const char* pt = "." ; 
+    const char* pt = "" ; 
 
     std::stringstream ss ; 
     ss << std::setw(fw) << "domain" ; 
-    if(a) ss << std::setw(fw) << atitle ; 
-    if(b) ss << std::setw(fw) << btitle ; 
-    if(c) ss << std::setw(fw) << ctitle ; 
-    if(d) ss << std::setw(fw) << dtitle ; 
-    if(e) ss << std::setw(fw) << etitle ; 
+    if(a) ss << std::setw(fw) << atitle << pt ; 
+    if(b) ss << std::setw(fw) << btitle << pt ; 
+    if(c) ss << std::setw(fw) << ctitle << pt ; 
+    if(d) ss << std::setw(fw) << dtitle << pt ; 
+    if(e) ss << std::setw(fw) << etitle << pt ; 
+    if(f) ss << std::setw(fw) << ftitle << pt ; 
+    if(g) ss << std::setw(fw) << gtitle << pt ; 
+    if(h) ss << std::setw(fw) << htitle << pt ; 
     ss << std::endl ; 
+
+    T one(1); 
 
     GAry<T>* doms = a ? a->getDomain() : NULL ;
     if(doms)
@@ -189,15 +203,23 @@ std::string GProperty<T>::make_table(
         GAry<T>* cc = c ? c->getValues() : NULL ;  
         GAry<T>* dd = d ? d->getValues() : NULL ;  
         GAry<T>* ee = e ? e->getValues() : NULL ;  
+        GAry<T>* ff = f ? f->getValues() : NULL ;  
+        GAry<T>* gg = g ? g->getValues() : NULL ;  
+        GAry<T>* hh = h ? h->getValues() : NULL ;  
 
         for(unsigned int i=0 ; i < doms->getLength() ; i++)
         {
-            ss << std::setw(fw) << doms->getValue(i) ; 
-            ss << std::setw(fw) << ( aa ? aa->getValue(i) : -2. ) ; 
-            ss << std::setw(fw) << ( bb ? bb->getValue(i) : -2. ) ; 
-            ss << std::setw(fw) << ( cc ? cc->getValue(i) : -2. ) ; 
-            ss << std::setw(fw) << ( dd ? dd->getValue(i) : -2. ) ; 
-            ss << std::setw(fw) << ( ee ? ee->getValue(i) : -2. ) ; 
+            T dval = doms->getValue(i) ; 
+            if(dreciprocal) dval = one/dval ; 
+            ss << std::setw(fw) << dval*dscale ; 
+            if(aa) ss << std::setw(fw) << ( aa ? aa->getValue(i) : -2. ) ; 
+            if(bb) ss << std::setw(fw) << ( bb ? bb->getValue(i) : -2. ) ; 
+            if(cc) ss << std::setw(fw) << ( cc ? cc->getValue(i) : -2. ) ; 
+            if(dd) ss << std::setw(fw) << ( dd ? dd->getValue(i) : -2. ) ; 
+            if(ee) ss << std::setw(fw) << ( ee ? ee->getValue(i) : -2. ) ; 
+            if(ff) ss << std::setw(fw) << ( ff ? ff->getValue(i) : -2. ) ; 
+            if(gg) ss << std::setw(fw) << ( gg ? gg->getValue(i) : -2. ) ; 
+            if(hh) ss << std::setw(fw) << ( hh ? hh->getValue(i) : -2. ) ; 
             ss << std::endl ; 
         }
     }

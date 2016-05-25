@@ -437,6 +437,23 @@ void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
 
 
 template <typename T>
+std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool dreciprocal)
+{
+   return GProperty<T>::make_table( 
+                           fw, dscale, dreciprocal, 
+                           getPropertyByIndex(0), getPropertyNameByIndex(0),
+                           getPropertyByIndex(1), getPropertyNameByIndex(1),
+                           getPropertyByIndex(2), getPropertyNameByIndex(2),
+                           getPropertyByIndex(3), getPropertyNameByIndex(3),
+                           getPropertyByIndex(4), getPropertyNameByIndex(4),
+                           getPropertyByIndex(5), getPropertyNameByIndex(5),
+                           getPropertyByIndex(6), getPropertyNameByIndex(6),
+                           getPropertyByIndex(7), getPropertyNameByIndex(7)
+                           );
+}
+
+
+template <typename T>
 unsigned int GPropertyMap<T>::getNumProperties() const 
 {
 

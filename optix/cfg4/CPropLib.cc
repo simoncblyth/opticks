@@ -1,7 +1,10 @@
+// op --cproplib
+
 #include "CPropLib.hh"
 
 
 // ggeo-
+#include "GConstant.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
@@ -39,6 +42,8 @@ void CPropLib::init()
     if(m_verbosity>2)
     m_sensor_surface->Summary("CPropLib::init cathode_surface");
 
+    checkConstants(); 
+    convert();
 }
 
 unsigned int CPropLib::getNumMaterials()
@@ -53,6 +58,28 @@ const GMaterial* CPropLib::getMaterial(const char* shortname)
 {
    return m_mlib->getMaterial(shortname); 
 }
+
+void CPropLib::convert()
+{
+    unsigned int ngg = getNumMaterials() ;
+    for(unsigned int i=0 ; i < ngg ; i++)
+    {
+        const GMaterial* ggmat = getMaterial(i);
+        const char* name = ggmat->getShortName() ;
+        const G4Material* g4mat = convertMaterial(ggmat);
+        std::string keys = getMaterialKeys(g4mat);
+        m_g4mat[name] = g4mat ; 
+        LOG(info) << "CPropLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
+    }
+}
+
+
+
+const G4Material* CPropLib::getG4Material(const char* shortname)
+{
+    return m_g4mat.count(shortname) == 1 ? m_g4mat[shortname] : NULL ; 
+}
+
 
 
 const G4Material* CPropLib::makeInnerMaterial(const char* spec)
@@ -123,6 +150,24 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
 }
 
 
+/*
+ GROUPVEL kludge causing "generational" confusion
+ as it assumed that no such property already existed
+
+     if(strcmp(lkey,"RINDEX")==0)
+     {
+         if(m_groupvel_kludge)
+         {
+             LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
+             addProperty(mpt, "GROUPVEL", prop );
+         }
+     }
+
+
+*/
+
+
+
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
     const char* name = ggmat->getShortName();
@@ -142,18 +187,27 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     {
         const char* key = ggm->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
         const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
-        GProperty<float>* prop = ggm->getPropertyByIndex(i);
-        addProperty(mpt, lkey, prop );
 
-        if(strcmp(lkey,"RINDEX")==0)
+        if(m_verbosity>2)
+        LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
+                  << " i " << i  
+                  << " key " << key  
+                  << " lkey [" << lkey << "]"
+                  << " len(lkey) " << strlen(lkey)
+                  ;  
+
+        if(lkey && strlen(lkey) > 0)
         {
-            if(m_groupvel_kludge)
+            if(strcmp(lkey,"GROUPVEL")==0)
             {
-                LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
-                addProperty(mpt, "GROUPVEL", prop );
+                LOG(info) << "CPropLib::makeMaterialPropertiesTable " <<  "skip GROUPVEL" ; 
+            }
+            else
+            {
+                GProperty<float>* prop = ggm->getPropertyByIndex(i);
+                addProperty(mpt, lkey, prop );
             }
         }
-
     }
 
     // this was not enough, need optical surface to inject EFFICIENCY for optical photons
@@ -186,7 +240,24 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     return mpt ;
 }
 
+void CPropLib::checkConstants()
+{
 
+    LOG(info) << "CPropLib::checkConstants" 
+               << " mm " << mm 
+               << " MeV " << MeV
+               << " nanosecond " << nanosecond
+               << " ns " << ns
+               << " nm " << nm
+               << " GC::nanometer " << GConstant::nanometer
+               << " h_Planck " << h_Planck
+               << " GC::h_Planck " << GConstant::h_Planck
+               << " c_light " << c_light
+               << " GC::c_light " << GConstant::c_light
+               ;   
+
+
+}
 
 
 
@@ -235,14 +306,13 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
         dval[nval-1-j] = G4double(value) ;
     }
 
+
+    //LOG(info) << "CPropLib::addProperty lkey " << lkey ; 
     mpt->AddProperty(lkey, ddom, dval, nval)->SetSpline(true); 
 
     delete [] ddom ; 
     delete [] dval ; 
 }
-
-
-
 
 
 
@@ -282,6 +352,7 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     const char* name = kmat->getShortName();
     if(m_ggtog4.count(kmat) == 1)
     {
+        assert(0 && "now do all conversions up front ");
         LOG(info) << "CPropLib::convertMaterial" 
                   << " return preexisting " << name 
                   ;
@@ -289,6 +360,7 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     }
 
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
+
 
     LOG(info) << "CPropLib::convertMaterial  " 
               << " name " << name
@@ -313,7 +385,6 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     }
 
     G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(kmat);
-    //mpt->DumpTable();
 
     material->SetMaterialPropertiesTable(mpt);
 
@@ -351,6 +422,30 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
 }
 
 
+
+/*
+void CPropLib::dump(const char* msg)
+{
+    int index = m_cache->getLastArgInt();
+    const char* lastarg = m_cache->getLastArg();
+
+    if(hasMaterial(index))
+    {   
+        dump(index);
+    }   
+    else if(hasMaterial(lastarg))
+    {   
+        GMaterial* mat = getMaterial(lastarg);
+        dump(mat);
+    }   
+    else
+        for(unsigned int i=0 ; i < ni ; i++) dump(i);
+
+}
+*/
+
+
+
 void CPropLib::dumpMaterials(const char* msg)
 {
     unsigned int ngg = getNumMaterials() ;
@@ -365,8 +460,6 @@ void CPropLib::dumpMaterials(const char* msg)
                   << " ggm (shortName) " << ggm->getShortName() 
                   ;
     }
-
-
 
     typedef std::map<const G4Material*, unsigned int> MMU ; 
     LOG(info) << " g4toix " << m_g4toix.size() << " " ; 
@@ -383,6 +476,9 @@ void CPropLib::dumpMaterials(const char* msg)
                   << std::setw(5) << idx 
                   << std::setw(40) << name_2
                   << std::endl ; 
+
+
+
     }
 
     LOG(info) << msg  << " ggtog4" ; 
@@ -399,11 +495,79 @@ void CPropLib::dumpMaterials(const char* msg)
                   << std::setw(40) << ggname 
                   << std::endl ; 
 
-        G4MaterialPropertiesTable* mpt = g4mat->GetMaterialPropertiesTable();
-        mpt->DumpTable();
-
+        dumpMaterial(g4mat, "g4mat");
     }
 }
 
+
+
+
+
+void CPropLib::dumpMaterial(const G4Material* mat, const char* msg)
+{
+    const G4String& name = mat->GetName();
+    LOG(info) << msg << " name " << name ; 
+
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    //mpt->DumpTable();
+
+    GPropertyMap<float>* pmap = convertTable( mpt , name );
+
+    unsigned int fw = 20 ;  
+    float dscale = GConstant::h_Planck*GConstant::c_light/GConstant::nanometer ;
+    bool dreciprocal = true ; 
+
+    std::cout << pmap->make_table(fw, dscale, dreciprocal) << std::endl ;
+}
+
+
+
+
+std::string CPropLib::getMaterialKeys(const G4Material* mat)
+{   
+    std::stringstream ss ;
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ; 
+    MKP* kp = mpt->GetPropertiesMap() ;
+    for(MKP::const_iterator it=kp->begin() ; it != kp->end() ; it++)
+    {
+        G4String k = it->first ; 
+        ss << k << " " ; 
+    } 
+    return ss.str(); 
+}
+
+
+GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, const char* name)
+{    
+    GPropertyMap<float>* pmap = new GPropertyMap<float>(name);
+    
+    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ; 
+    MKP* kp = mpt->GetPropertiesMap() ;
+    for(MKP::const_iterator it=kp->begin() ; it != kp->end() ; it++)
+    {
+        G4String k = it->first ; 
+        G4MaterialPropertyVector* pvec = it->second ; 
+        GProperty<float>* prop = convertVector(pvec);        
+        pmap->addProperty( k.c_str(), prop );  
+   }
+   return pmap ;    
+}
+
+GProperty<float>* CPropLib::convertVector(G4PhysicsVector* pvec)
+{
+    unsigned int length = pvec->GetVectorLength() ;
+    float* domain = new float[length] ;
+    float* values = new float[length] ;
+    for(unsigned int i=0 ; i < length ; i++)
+    {
+         domain[i] = pvec->Energy(i) ;
+         values[i] = (*pvec)[i] ;
+    }
+    GProperty<float>* prop = new GProperty<float>(values, domain, length );    
+    delete domain ;  
+    delete values ;  
+    return prop ; 
+}
 
 

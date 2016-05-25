@@ -44,7 +44,7 @@ add_definitions(${DEFINITIONS})
 
 
 set(SOURCES
-
+    GConstant.cc
     GProperty.cc
     GDomain.cc
     GAry.cc
@@ -100,7 +100,7 @@ set(SOURCES
 
 
 SET(HEADERS
-
+    GConstant.hh
     GGeo.hh
     GGeoCfg.hh
     GMaterial.hh

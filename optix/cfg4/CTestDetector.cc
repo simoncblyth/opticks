@@ -92,6 +92,8 @@ G4VPhysicalVolume* CTestDetector::Construct()
     for(unsigned int i=0 ; i < n ; i++)
     {   
         const char* spec = m_config->getBoundary(i);
+
+        // hmm better for CPropLib to not know about spec ? 
         const G4Material* material = m_lib->makeInnerMaterial(spec);
 
         glm::vec4 param = m_config->getParameters(i);
