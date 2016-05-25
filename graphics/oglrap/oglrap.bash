@@ -309,10 +309,11 @@ oglrap-install(){
 
 oglrap--()
 {
-    oglrap-make clean
-    oglrap-make
-    oglrap-install
+    #oglrap-make clean
+    #oglrap-make
+    #oglrap-install
 
+    ( oglrap-bcd ; make ${1:-install} )
 }
 
 

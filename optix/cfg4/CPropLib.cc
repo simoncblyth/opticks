@@ -69,8 +69,10 @@ void CPropLib::convert()
         const G4Material* g4mat = convertMaterial(ggmat);
         std::string keys = getMaterialKeys(g4mat);
         m_g4mat[name] = g4mat ; 
-        LOG(info) << "CPropLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
+        LOG(debug) << "CPropLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
     }
+
+    LOG(info) << "CPropLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
 }
 
 
@@ -200,7 +202,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         {
             if(strcmp(lkey,"GROUPVEL")==0)
             {
-                LOG(info) << "CPropLib::makeMaterialPropertiesTable " <<  "skip GROUPVEL" ; 
+                LOG(debug) << "CPropLib::makeMaterialPropertiesTable " <<  "skip GROUPVEL" ; 
             }
             else
             {
@@ -362,7 +364,7 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
 
 
-    LOG(info) << "CPropLib::convertMaterial  " 
+    LOG(debug) << "CPropLib::convertMaterial  " 
               << " name " << name
               << " materialIndex " << materialIndex
               ;

@@ -135,99 +135,7 @@ npy-;npy-cd;i
 
 ggv-;ggv-pmt-test --cfg4 --load
     # load propagation and visualize 
-
-
-Following the g4gun generalizations viz shows very different behaviour.
-Very slow moving photons... 
-
-* switching back to old PhysicsList shows same mis-behaviour 
-
-* pmt_test.py indicate material/flag sequence histories are matching... points 
-  to problem with time  
-
-* running with --steppingdbg shows the photons are moving very slowly 
-  taking 200ns to get to the PMT.  What was that groupvel kludge ? 
-
-* pmt_test_distrib.py shows problem is with G4 times, looks like always getting smth close to -10 for other than 1st::
-
-    ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
-    4/PmtInBox/torch : 107598/107251  :   X     Y     Z     T        A     B     C     R     
-    ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
-    [TO] BT SD                             0.91  0.73  0.56  0.56     0.98  1.09  0.56  0.94 
-    TO [BT] SD                             0.91  0.73  0.81 11936.06  0.98  1.09  0.56  0.94 
-    TO BT [SD]                             1.00  0.83  0.97 9341.26   0.98  1.09  0.56  0.93 
-    ===================================== ===== ===== ===== ======== ===== ===== ===== ===== 
-
-::
-
-    (lldb) b "G4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&)" 
-
-    (lldb) b 537
-    Breakpoint 2: where = libG4processes.dylib`G4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&) + 8675 at G4OpBoundaryProcess.cc:537, address = 0x00000001042b7123
-    (lldb) c
-       ...
-       534             G4MaterialPropertyVector* groupvel =
-       535             Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
-       536             G4double finalVelocity = groupvel->Value(thePhotonMomentum);
-    -> 537             aParticleChange.ProposeVelocity(finalVelocity);
-       538          }
-       539  
-    (lldb) p finalVelocity
-    (G4double) $0 = 0.99930819333333331
-
-    ## huh : speed of light should be ~300 mm/ns
-
-    (lldb) p groupvel
-    (G4MaterialPropertyVector *) $1 = 0x00000001091d3bc0
-    (lldb) p *groupvel
-    (G4MaterialPropertyVector) $2 = {
-      G4PhysicsVector = {
-        type = T_G4PhysicsOrderedFreeVector
-        edgeMin = 0.0000015120022870975581
-        edgeMax = 0.000020664031256999959
-        numberOfNodes = 39
-        dataVector = size=39 {
-          [0] = 0.99930819333333331
-          [1] = 0.99930819333333331
-          [2] = 0.99930819333333331
-          [3] = 0.99930819333333331
-          [4] = 0.99930819333333331
-          [5] = 0.99930819333333331
-          [6] = 0.99930819333333331
-          [7] = 0.99930819333333331
-          [8] = 0.99930819333333331
-
-
-
-Disabling the groupvel kludge via testconfig leads to G4ParticleChange not OK for velocity
-and loadsa output. This suggests RINDEX is messed up ?::
-
-    (lldb) f 13
-    frame #13: 0x0000000105ea2077 libG4track.dylib`G4ParticleChange::CheckIt(this=0x000000010870f730, aTrack=0x000000011672b220) + 4663 at G4ParticleChange.cc:658
-       655    // dump out information of this particle change
-       656  #ifdef G4VERBOSE
-       657    if (!itsOK) { 
-    -> 658      DumpInfo();
-       659    }
-       660  #endif
-       661  
-    (lldb) p itsOK
-    (G4bool) $0 = false
-    (lldb) p itsOKforMomentum
-    (G4bool) $1 = true
-    (lldb) p itsOKforEnergy
-    (G4bool) $2 = true
-    (lldb) p itsOKforVelocity
-    (G4bool) $3 = false
-    (lldb) p itsOKforProperTime
-    (G4bool) $4 = true
-    (lldb) p itsOKforGlobalTime
-    (G4bool) $5 = true
-
-Check the GROUPVEL calc::
-
-    (lldb) b "G4Track::CalculateVelocityForOpticalPhoton() const" 
-
+    # slow photons revealed issues/groupvel/generational
 
  
 EOU
@@ -342,6 +250,20 @@ ggv-pmt-test(){
 
 ggv-phycache(){ echo /tmp/$FUNCNAME ; }
 
+
+ggv-g4gun-notes(){ cat <<EON
+::
+
+   ggv-;ggv-g4gun
+         # geant4 particle gun simulation within default DYB geometry, loaded from GDML
+
+   ggv-;ggv-g4gun --load --target 3153
+         # visualize the geant4 propagation, with GGeoView
+         # see also issues/nopstep_vis_debug.rst  
+
+EON
+}
+
 ggv-g4gun()
 {
     type $FUNCNAME
@@ -355,14 +277,14 @@ ggv-g4gun()
 
     local g4gun_config=(
                  comment=$FUNCNAME
-                 particle=mu-
+                 particle=e+
                  number=1
                  frame=3153
                  position=0,0,0
                  direction=0,0,1
               polarization=1,0,0
                       time=0.
-                    energy=10.0
+                    energy=100.0
                    ) 
           # mm, ns, MeV
 
@@ -399,17 +321,6 @@ EOI
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 
-}
-
-ggv-g4gun-notes(){ cat <<EON
-
-Lots of G4 init noise from:
-
-   G4VUserPhysicsList::BuildPhysicsTable
-
-   find source -name 'G4VEmProcess.hh'
-
-EON
 }
 
 

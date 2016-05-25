@@ -27,9 +27,15 @@ class G4LogicalBorderSurface ;
 class G4OpticalSurface ;
 class G4PhysicsVector ;
 
-
 // CPropLib is a constituent of CTestDetector that converts
 // GGeo materials and surfaces into G4 materials and surfaces
+//
+//  TODO: this need simplification
+//
+//     * far too much public API
+//     * moving to convert internally all at once approach 
+//       and provide simple accessors
+//
 
 class CPropLib {
    public:
@@ -45,7 +51,10 @@ class CPropLib {
        unsigned int getNumMaterials();
        const GMaterial* getMaterial(unsigned int index);
        const GMaterial* getMaterial(const char* shortname);
+   public:
+       // G4 material access
        const G4Material* getG4Material(const char* shortname);
+       std::string getMaterialKeys(const G4Material* mat);
    public:
        const G4Material* makeInnerMaterial(const char* spec);
        const G4Material* makeMaterial(const char* matname);
@@ -55,7 +64,6 @@ class CPropLib {
        const char*  getMaterialName(unsigned int index);
        std::string MaterialSequence(unsigned long long seqmat);
        void setGroupvelKludge(bool gk=true);
-   public:
    public:
        G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
        G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
@@ -71,9 +79,10 @@ class CPropLib {
    public: 
        void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
        void dumpMaterial(const G4Material* mat, const char* msg="CPropLib::dumpMaterial");
+   private:
        GProperty<float>* convertVector(G4PhysicsVector* pvec);
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
-       std::string getMaterialKeys(const G4Material* mat);
+
    private:
        GCache*            m_cache ; 
        int                m_verbosity ; 

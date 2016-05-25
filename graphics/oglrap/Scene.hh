@@ -42,6 +42,7 @@ class Scene : public NConfigurable {
         static const char* PHOTON ;
         static const char* AXIS ;
         static const char* GENSTEP ;
+        static const char* NOPSTEP ;
         static const char* GLOBAL ;
         static const char* RECORD ;
    public:
@@ -180,6 +181,7 @@ class Scene : public NConfigurable {
    public:
         Rdr*          getAxisRenderer();
         Rdr*          getGenstepRenderer();
+        Rdr*          getNopstepRenderer();
         Rdr*          getPhotonRenderer();
         Rdr*          getRecordRenderer();
         Rdr*          getRecordRenderer(RecordStyle_t style);
@@ -209,6 +211,7 @@ class Scene : public NConfigurable {
    private:
         Rdr*         m_axis_renderer ; 
         Rdr*         m_genstep_renderer ; 
+        Rdr*         m_nopstep_renderer ; 
         Rdr*         m_photon_renderer ; 
         Rdr*         m_record_renderer ; 
         Rdr*         m_altrecord_renderer ; 
@@ -231,6 +234,7 @@ class Scene : public NConfigurable {
         bool         m_bbox_mode[MAX_INSTANCE_RENDERER] ; 
         bool         m_axis_mode ; 
         bool         m_genstep_mode ; 
+        bool         m_nopstep_mode ; 
         bool         m_photon_mode ; 
         bool         m_record_mode ; 
    private:
@@ -265,6 +269,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_raytrace_renderer(NULL),
             m_axis_renderer(NULL),
             m_genstep_renderer(NULL),
+            m_nopstep_renderer(NULL),
             m_photon_renderer(NULL),
             m_record_renderer(NULL),
             m_altrecord_renderer(NULL),
@@ -282,6 +287,7 @@ inline Scene::Scene(const char* shader_dir, const char* shader_incl_path, const 
             m_globalvec_mode(false),
             m_axis_mode(true),
             m_genstep_mode(true),
+            m_nopstep_mode(true),
             m_photon_mode(true),
             m_record_mode(true),
             m_record_style(ALTREC),
@@ -386,6 +392,10 @@ inline Rdr* Scene::getAxisRenderer()
 inline Rdr* Scene::getGenstepRenderer()
 {
     return m_genstep_renderer ; 
+}
+inline Rdr* Scene::getNopstepRenderer()
+{
+    return m_nopstep_renderer ; 
 }
 inline Rdr* Scene::getPhotonRenderer()
 {

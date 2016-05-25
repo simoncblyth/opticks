@@ -38,15 +38,18 @@ void Rdr::setPrimitive(Primitive_t prim )
 }
 
 
-void Rdr::upload(MultiViewNPY* mvn)
+void Rdr::upload(MultiViewNPY* mvn, bool debug)
 {
     if(!mvn) return ; 
 
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
 
-    LOG(debug) << "Rdr::upload mvn " << mvn->getName() ; 
-    //mvn->Summary("Rdr::upload mvn");
+    if(debug)
+    {
+        LOG(info) << "Rdr::upload mvn [" << mvn->getName() << "]" ; 
+        mvn->Summary("Rdr::upload mvn");
+    }
 
     // need to compile and link shader for access to attribute locations
     if(m_first_upload)
@@ -70,7 +73,8 @@ void Rdr::upload(MultiViewNPY* mvn)
 
             if(m_first_upload)
             {
-                LOG(debug) << "Rdr::upload" 
+                if(debug)
+                LOG(info) << "Rdr::upload" 
                           << " mvn " << mvn->getName() 
                           << " (first)count " << count
                            ;
@@ -78,7 +82,8 @@ void Rdr::upload(MultiViewNPY* mvn)
             }
             else
             {
-                LOG(debug) << "Rdr::upload" 
+                if(debug)
+                LOG(info) << "Rdr::upload" 
                           << " mvn " << mvn->getName() 
                           << " expected  " << getCountDefault()
                           << " found " << count 
@@ -391,6 +396,7 @@ void Rdr::update_uniforms()
     } 
     else
     { 
+        assert(0 && "Rdr without composition");
         glm::mat4 identity ; 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE, glm::value_ptr(identity));
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, glm::value_ptr(identity));

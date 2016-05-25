@@ -99,7 +99,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
     if( type == G4OpticalPhoton::OpticalPhotonDefinition())
     {
-        //LOG(info) << "CSteppingAction::UserSteppingAction skip optical " ; 
+        LOG(info) << "CSteppingAction::UserSteppingAction optical " ; 
         UserSteppingActionOptical(step);
     }
     else
@@ -163,9 +163,10 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         m_recorder->setRecordId(record_id);
         m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);
 
-        bool done = m_recorder->RecordStep(step); 
+        bool done = m_recorder->RecordStep(step);  // true for *absorption* of photon or *truncation* when get to maximum records to store 
 
         m_rec->add(new State(step, boundary_status, preMaterial, postMaterial));
+
         if(done)
         {
             unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;

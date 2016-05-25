@@ -17,6 +17,45 @@
 #include "NLog.hpp"
 
 
+
+
+const char* ViewNPY::BYTE_ = "BYTE"; 
+const char* ViewNPY::UNSIGNED_BYTE_ = "UNSIGNED_BYTE" ; 
+const char* ViewNPY::SHORT_ = "SHORT"; 
+const char* ViewNPY::UNSIGNED_SHORT_ = "UNSIGNED_SHORT" ; 
+const char* ViewNPY::INT_ = "INT" ; 
+const char* ViewNPY::UNSIGNED_INT_ = "UNSIGNED_INT" ; 
+const char* ViewNPY::HALF_FLOAT_ = "HALF_FLOAT" ; 
+const char* ViewNPY::FLOAT_ = "FLOAT" ; 
+const char* ViewNPY::DOUBLE_ = "DOUBLE" ; 
+const char* ViewNPY::FIXED_ = "FIXED" ; 
+const char* ViewNPY::INT_2_10_10_10_REV_ = "INT_2_10_10_10_REV"  ; 
+const char* ViewNPY::UNSIGNED_INT_2_10_10_10_REV_ = "UNSIGNED_INT_2_10_10_10_REV" ; 
+const char* ViewNPY::UNSIGNED_INT_10F_11F_11F_REV_ = "UNSIGNED_INT_10F_11F_11F_REV" ;
+
+const char* ViewNPY::getTypeName()
+{
+    const char* name = NULL ; 
+    switch(m_type)
+    {
+       case BYTE:           name = BYTE_            ;break;
+       case UNSIGNED_BYTE:  name = UNSIGNED_BYTE_   ;break;
+       case SHORT:          name = SHORT_           ;break;
+       case UNSIGNED_SHORT: name = UNSIGNED_SHORT_  ;break;
+       case INT:            name = INT_             ;break;
+       case UNSIGNED_INT:   name = UNSIGNED_INT_    ;break;
+       case HALF_FLOAT:     name = HALF_FLOAT_      ;break;
+       case FLOAT:          name = FLOAT_           ;break;
+       case DOUBLE:         name = DOUBLE_          ;break;
+       case FIXED:          name = FIXED_           ;break;
+       case INT_2_10_10_10_REV: name = INT_2_10_10_10_REV_  ;break;
+       case UNSIGNED_INT_2_10_10_10_REV: name = UNSIGNED_INT_2_10_10_10_REV_ ;break;
+       case UNSIGNED_INT_10F_11F_11F_REV: name = UNSIGNED_INT_10F_11F_11F_REV_ ;break;
+    }
+    return name ;
+}
+
+
 void ViewNPY::init()
 {
     m_bytes    = m_npy->getBytes() ;
@@ -196,7 +235,7 @@ void ViewNPY::Summary(const char* msg)
 
 void ViewNPY::Print(const char* msg)
 {
-    printf("%s name %s type %c numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, m_numbytes, m_stride, m_offset, m_count, m_extent );
+    printf("%s name %s type [%d] typeName %s numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, getTypeName(), m_numbytes, m_stride, m_offset, m_count, m_extent );
 }
 
 std::string ViewNPY::description()

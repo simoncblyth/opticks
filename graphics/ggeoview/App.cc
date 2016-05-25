@@ -210,6 +210,7 @@ void App::configure(int argc, char** argv)
     if(!hasOpt("noevent"))
     {
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
+        // TODO: organize wrt event loading, currently loading happens latter and trumps this evt ?
         m_evt = m_opticks->makeEvt() ; 
         m_evt->setFlat(true);
     } 

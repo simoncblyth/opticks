@@ -102,7 +102,7 @@ class NumpyEvt {
        void loadIndex();
        void load(bool verbose=true);
    private:
-       // invoked internally, as knock on from setGenstepData
+       // invoked internally, as knock on from setGenstepData and setNopstepData
        void createHostBuffers(); 
        void createHostIndexBuffers(); 
        void seedPhotonData();

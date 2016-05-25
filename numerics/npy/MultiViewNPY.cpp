@@ -56,7 +56,7 @@ void MultiViewNPY::Print(const char* msg)
 
 void MultiViewNPY::Summary(const char* msg)
 {
-    printf("%s\n", msg);
+    printf("[%s]\n", msg);
     for(unsigned int i=0 ; i < m_vecs.size() ; i++)
     {
         ViewNPY* vnpy = m_vecs[i];

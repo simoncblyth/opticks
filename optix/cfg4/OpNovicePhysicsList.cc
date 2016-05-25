@@ -326,13 +326,12 @@ void OpNovicePhysicsList::ConstructEM()
 
 void OpNovicePhysicsList::ConstructOp()
 {
-
   /*
   fCerenkovProcess = new G4Cerenkov("Cerenkov");
   fCerenkovProcess->SetMaxNumPhotonsPerStep(fMaxNumPhotonStep);
   fCerenkovProcess->SetMaxBetaChangePerStep(10.0);
   fCerenkovProcess->SetTrackSecondariesFirst(true);
-  */ 
+  */
 
   fScintillationProcess = new G4Scintillation("Scintillation");
   fScintillationProcess->SetScintillationYieldFactor(1.);

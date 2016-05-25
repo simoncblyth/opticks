@@ -118,8 +118,8 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     m_num_gensteps = m_genstep_data->getShape(0) ;
     m_num_photons = m_genstep_data->getUSum(0,3);
 
-
     createHostBuffers();
+
 
     if(m_step)
     {
@@ -481,14 +481,16 @@ void NumpyEvt::setNopstepData(NPY<float>* nopstep)
               ;
 
     //                                                j k l sz   type         norm   iatt
-    ViewNPY* rpos = new ViewNPY("rpos",m_nopstep_data,0,0,0,4,ViewNPY::FLOAT ,false,  false);
-    ViewNPY* rdir = new ViewNPY("rdir",m_nopstep_data,1,0,0,4,ViewNPY::FLOAT ,false,  false);   
-    ViewNPY* rpol = new ViewNPY("rpol",m_nopstep_data,2,0,0,4,ViewNPY::FLOAT ,false,  false);   
+    ViewNPY* vpos = new ViewNPY("vpos",m_nopstep_data,0,0,0,4,ViewNPY::FLOAT ,false,  false);
+    ViewNPY* vdir = new ViewNPY("vdir",m_nopstep_data,1,0,0,4,ViewNPY::FLOAT ,false,  false);   
+    ViewNPY* vpol = new ViewNPY("vpol",m_nopstep_data,2,0,0,4,ViewNPY::FLOAT ,false,  false);   
 
     m_nopstep_attr = new MultiViewNPY("nopstep_attr");
-    m_nopstep_attr->add(rpos);
-    m_nopstep_attr->add(rdir);
-    m_nopstep_attr->add(rpol);
+    m_nopstep_attr->add(vpos);
+    m_nopstep_attr->add(vdir);
+    m_nopstep_attr->add(vpol);
+
+    createHostBuffers();  // only allocates small buffers, big ones deferred til usage
 }
 
 
@@ -671,6 +673,10 @@ void NumpyEvt::save(bool verbose)
    //  no-prefix
    //     (float) genstep data : eg cerenkov or scintillation
    //
+   //  no 
+   //     (float)nopstepData
+   //     non optical particle steps obtained from G4 eg with g4gun
+   //
    //  pr 
    //     (float)primaryData 
    //     (not yet used, intended to allow use of exactly the same initial photons
@@ -750,6 +756,13 @@ void NumpyEvt::save(bool verbose)
 
     NPY<int>* idom = getIDomain();
     if(idom) idom->save("idom%s", m_typ,  m_tag, udet);
+
+    if(no)
+    {
+       assert(idom && "NumpyEvt::save non-null nopstep BUT HAS NULL IDOM ");
+    }
+
+ 
 
 
     saveIndex(verbose);
@@ -899,6 +912,7 @@ void NumpyEvt::loadReport()
 void NumpyEvt::load(bool verbose)
 {
 
+
     (*m_timer)("_load");
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
 
@@ -931,6 +945,7 @@ void NumpyEvt::load(bool verbose)
     dumpDomains("NumpyEvt::load dumpDomains");
 
 
+    NPY<float>* no = NPY<float>::load("no%s", m_typ,  m_tag, udet );
     NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet );
     NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
     NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );
@@ -949,10 +964,13 @@ void NumpyEvt::load(bool verbose)
         rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet );
     }
 
-
+    unsigned int num_nopstep = no ? no->getShape(0) : 0 ;
     unsigned int num_photons = ox ? ox->getShape(0) : 0 ;
     unsigned int num_history = ph ? ph->getShape(0) : 0 ;
     unsigned int num_phosel  = ps ? ps->getShape(0) : 0 ;
+
+    LOG(info) << "NumpyEvt::load num_nopstep " << num_nopstep ; 
+
 
     assert(num_history == 0 || num_photons == num_history );
     assert(num_phosel == 0 || num_photons == num_phosel );
@@ -1007,6 +1025,7 @@ void NumpyEvt::load(bool verbose)
          LOG(info) << "NumpyEvt::load no step " ; 
     }
 
+    setNopstepData(no);
     setPrimaryData(pr);
     setPhotonData(ox);
     setSequenceData(ph);
@@ -1023,6 +1042,7 @@ void NumpyEvt::load(bool verbose)
         fdom->Summary("fdom");
         idom->Summary("idom");
 
+        if(no) no->Summary("no");
         if(ox) ox->Summary("ox");
         if(rx) rx->Summary("rx");
         if(ph) ph->Summary("ph");

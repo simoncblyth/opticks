@@ -25,10 +25,27 @@ class MultiViewNPY ;
 
 class ViewNPY {
     public:
+        static const char* BYTE_ ; 
+        static const char* UNSIGNED_BYTE_ ; 
+        static const char* SHORT_ ; 
+        static const char* UNSIGNED_SHORT_ ; 
+        static const char* INT_ ; 
+        static const char* UNSIGNED_INT_ ; 
+        static const char* HALF_FLOAT_ ; 
+        static const char* FLOAT_ ; 
+        static const char* DOUBLE_ ; 
+        static const char* FIXED_ ; 
+        static const char* INT_2_10_10_10_REV_ ; 
+        static const char* UNSIGNED_INT_2_10_10_10_REV_ ; 
+        static const char* UNSIGNED_INT_10F_11F_11F_REV_ ;
+
         typedef enum { 
-                   BYTE,   UNSIGNED_BYTE,
-                   SHORT,  UNSIGNED_SHORT,
-                   INT,    UNSIGNED_INT,
+                   BYTE,   
+                   UNSIGNED_BYTE,
+                   SHORT,  
+                   UNSIGNED_SHORT,
+                   INT,    
+                   UNSIGNED_INT,
                    HALF_FLOAT,
                    FLOAT,
                    DOUBLE,
@@ -40,6 +57,7 @@ class ViewNPY {
     public:
         ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
         void addressNPY();
+        std::string getTypeString();
         void setCustomOffset(unsigned long offset);
         unsigned int getValueOffset(); // ?? multiply by sizeof(att-type) to get byte offset
     private:
@@ -60,6 +78,7 @@ class ViewNPY {
         bool         getNorm(){ return m_norm ; }
         bool         getIatt(){ return m_iatt ; }
         Type_t       getType(){ return m_type ; }
+        const char*  getTypeName();
         const char*  getName(){ return m_name ; }
 
     public:

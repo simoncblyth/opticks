@@ -30,7 +30,7 @@ class Rdr : public RendererBase  {
       void setPrimitive( Primitive_t prim );
 
   public: 
-      void upload(MultiViewNPY* mvn);
+      void upload(MultiViewNPY* mvn, bool debug=false);
       void upload_colors();
   private:
       void upload(NPYBase* npy, ViewNPY* vnpy);

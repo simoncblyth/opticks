@@ -624,7 +624,11 @@ opticks-make(){
 }
 
 
-opticks--()
+opticks--(){
+  ( opticks-bcd ; make ${1:-install} )
+}
+
+opticks-full()
 {
     local msg="=== $FUNCNAME :"
     echo $msg START $(date)

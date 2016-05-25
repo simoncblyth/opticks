@@ -52,6 +52,7 @@ const char* Scene::getPrefix()
 const char* Scene::AXIS   = "axis" ; 
 const char* Scene::PHOTON = "photon" ; 
 const char* Scene::GENSTEP = "genstep" ; 
+const char* Scene::NOPSTEP = "nopstep" ; 
 const char* Scene::GLOBAL  = "global" ; 
 
 const char* Scene::_INSTANCE  = "in" ; 
@@ -205,6 +206,8 @@ void Scene::write(DynamicDefine* dd)
 
 void Scene::setRenderMode(const char* s)
 {
+    // setting renderer toggles
+
     std::vector<std::string> elem ; 
     boost::split(elem, s, boost::is_any_of(","));
     
@@ -235,9 +238,11 @@ void Scene::setRenderMode(const char* s)
              if(ins < MAX_INSTANCE_RENDERER)
                   *(m_instance_mode+ins) = setting ;  
         } 
+        
         if(strcmp(el, GLOBAL)==0)  m_global_mode = setting ; 
         if(strcmp(el, AXIS)==0)    m_axis_mode = setting ; 
         if(strcmp(el, GENSTEP)==0) m_genstep_mode = setting ; 
+        if(strcmp(el, NOPSTEP)==0) m_nopstep_mode = setting ; 
         if(strcmp(el, PHOTON)==0)  m_photon_mode = setting ; 
         if(strcmp(el, RECORD)==0)  m_record_mode = setting ; 
     }
@@ -252,6 +257,7 @@ std::string Scene::getRenderMode()
     if(m_global_mode)  ss << GLOBAL << delim ; 
     if(m_axis_mode)    ss << AXIS << delim ; 
     if(m_genstep_mode) ss << GENSTEP << delim ; 
+    if(m_nopstep_mode) ss << NOPSTEP << delim ; 
     if(m_photon_mode) ss << PHOTON << delim ; 
     if(m_record_mode) ss << RECORD << delim ; 
 
@@ -284,11 +290,13 @@ void Scene::gui()
 
      ImGui::Checkbox(AXIS,     &m_axis_mode);
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
+     ImGui::Checkbox(NOPSTEP,  &m_nopstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
      ImGui::Checkbox(RECORD,   &m_record_mode);
      ImGui::Text(" target: %u ", m_target );
-     ImGui::Text(" genstep %d photon %d record %d \n", 
+     ImGui::Text(" genstep %d nopstep %d photon %d record %d \n", 
              m_genstep_renderer->getCountDefault(),
+             m_nopstep_renderer->getCountDefault(),
              m_photon_renderer->getCountDefault(),
              m_record_renderer->getCountDefault()
      );
@@ -421,6 +429,18 @@ void Scene::initRenderers()
 
     m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
 
+    bool nopdbg = false ; 
+    if(nopdbg)
+    {
+        m_nopstep_renderer = new Rdr(m_device, "dbg", m_shader_dir, m_shader_incl_path);
+    }
+    else
+    {
+        m_nopstep_renderer = new Rdr(m_device, "nop", m_shader_dir, m_shader_incl_path);
+        m_nopstep_renderer->setPrimitive(Rdr::LINE_STRIP);
+    }
+
+
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
 
 
@@ -466,6 +486,7 @@ void Scene::setComposition(Composition* composition)
 
     m_axis_renderer->setComposition(composition);
     m_genstep_renderer->setComposition(composition);
+    m_nopstep_renderer->setComposition(composition);
     m_photon_renderer->setComposition(composition);
     m_record_renderer->setComposition(composition);
     m_altrecord_renderer->setComposition(composition);
@@ -618,6 +639,8 @@ void Scene::uploadEvt()
 
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
 
+    m_nopstep_renderer->upload(m_evt->getNopstepAttr(), true);
+
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 
     uploadRecordAttr(m_evt->getRecordAttr());
@@ -670,6 +693,7 @@ void Scene::renderGeometry()
 void Scene::renderEvent()
 {
     if(m_genstep_mode)  m_genstep_renderer->render();  
+    if(m_nopstep_mode)  m_nopstep_renderer->render();  
     if(m_photon_mode)   m_photon_renderer->render();
     if(m_record_mode)
     {

@@ -87,6 +87,7 @@ void CG4::configure(int argc, char** argv)
 
     // maybe evt setup should happen outside CG4 ?
     m_evt = m_opticks->makeEvt();  
+
     NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
     m_evt->setNopstepData(nopstep);
 
