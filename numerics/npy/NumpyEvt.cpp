@@ -945,7 +945,20 @@ void NumpyEvt::load(bool verbose)
     dumpDomains("NumpyEvt::load dumpDomains");
 
 
-    NPY<float>* no = NPY<float>::load("no%s", m_typ,  m_tag, udet );
+    NPY<float>* no = NULL ; 
+    bool fake_nopstep = true ; 
+    if(fake_nopstep)
+    {
+        const char* path = "/tmp/nopstep.npy" ;
+        LOG(warning) << "NumpyEvt::load fake nopstep " << path ; 
+        no = NPY<float>::debugload(path);
+    }
+    else
+    {  
+        no = NPY<float>::load("no%s", m_typ,  m_tag, udet );
+    }
+
+
     NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet );
     NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
     NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );

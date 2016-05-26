@@ -16,6 +16,7 @@
 
 // npy-
 #include "NLog.hpp"
+#include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
@@ -34,7 +35,8 @@ int main(int argc, char** argv)
 
     m_detector->setVerbosity(2) ;
 
-    m_detector->saveTransforms("/tmp/gdml.npy");
+    NPY<float>* gtransforms = m_detector->getGlobalTransforms();
+    gtransforms->save("/tmp/gdml.npy");
 
 
     unsigned int index = 3160 ; 

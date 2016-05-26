@@ -13,6 +13,9 @@ class CTraverser ;
 // g4-
 class G4VPhysicalVolume;
 
+// npy-
+template <typename T> class NPY ; 
+
 
 #include <glm/glm.hpp>
 #include "G4VUserDetectorConstruction.hh"
@@ -29,14 +32,16 @@ class CDetector : public G4VUserDetectorConstruction
     void init();
  public:
     void setVerbosity(unsigned int verbosity);
-    void setTop(G4VPhysicalVolume* top);
+    void setTop(G4VPhysicalVolume* top);   // invokes the traverse
     virtual G4VPhysicalVolume* Construct();
-    void saveTransforms(const char* path);
+    void saveTransforms(const char* objname, unsigned int objindex);
  public: 
     unsigned int getNumGlobalTransforms();
     unsigned int getNumLocalTransforms();
     glm::mat4 getGlobalTransform(unsigned int index);
     glm::mat4 getLocalTransform(unsigned int index);
+    NPY<float>* getGlobalTransforms();
+    NPY<float>* getLocalTransforms();
     const char* getPVName(unsigned int index);
  private:
     void traverse(G4VPhysicalVolume* top); 

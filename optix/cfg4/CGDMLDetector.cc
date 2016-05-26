@@ -33,7 +33,9 @@ void CGDMLDetector::init()
 
     G4GDMLParser parser;
     parser.Read(gdmlpath, validate);
-    setTop(parser.GetWorldVolume());
+    setTop(parser.GetWorldVolume());   // invokes *CDetector::traverse*
+
+    saveTransforms("CGDMLDetector", 0);    
 
     addMPT();
 }

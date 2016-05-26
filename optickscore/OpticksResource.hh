@@ -52,6 +52,7 @@ class OpticksResource {
        const char* getEnvPrefix();
        bool idPathContains(const char* s); 
        void Summary(const char* msg="OpticksResource::Summary");
+       void Dump(const char* msg="OpticksResource::Dump");
     public:
        const char* getDAEPath();
        const char* getGDMLPath();

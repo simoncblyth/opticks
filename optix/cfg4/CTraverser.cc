@@ -233,13 +233,6 @@ void CTraverser::collectTransformT(NPY<float>* buffer, const G4Transform3D& T)
 }
 
 
-void CTraverser::saveTransforms(const char* path)
-{
-    //m_ltransforms->save(path);
-    m_gtransforms->save(path);
-}
-
-
 void CTraverser::Visit(const G4LogicalVolume* const lv)
 {
     const G4String lvname = lv->GetName();

@@ -17,7 +17,6 @@ class CTraverser {
         static const char* GROUPVEL ; 
     public:
         CTraverser(G4VPhysicalVolume* top);
-        void saveTransforms(const char* path);
     private:
         void init();
     public:
@@ -37,6 +36,8 @@ class CTraverser {
         glm::mat4 getLocalTransform(unsigned int index);
         unsigned int getNumGlobalTransforms();
         unsigned int getNumLocalTransforms();
+        NPY<float>*  getGlobalTransforms();
+        NPY<float>*  getLocalTransforms();
     private:
         void collectTransformT(NPY<float>* buffer, const G4Transform3D& T);
         void collectTransform(NPY<float>* buffer, const G4Transform3D& T);
@@ -104,3 +105,16 @@ inline void CTraverser::setVerbosity(unsigned int verbosity)
 {
     m_verbosity = verbosity ; 
 }
+
+inline NPY<float>* CTraverser::getGlobalTransforms()
+{
+    return m_gtransforms ; 
+}
+inline NPY<float>* CTraverser::getLocalTransforms()
+{
+    return m_ltransforms ; 
+}
+
+
+
+

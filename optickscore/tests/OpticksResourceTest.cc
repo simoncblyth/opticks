@@ -13,6 +13,6 @@ int main(int argc, char** argv, char** envp)
     }
 
     OpticksResource res ;
-    res.Summary();
+    res.Dump();
     return 0 ; 
 }

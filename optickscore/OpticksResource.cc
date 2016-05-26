@@ -186,7 +186,16 @@ void OpticksResource::readMetadata()
     }
 }
 
+void OpticksResource::Dump(const char* msg)
+{
+    Summary(msg);
 
+    std::string mmsp = getMergedMeshPath(0);
+    std::string pmtp = getPmtPath(0);
+
+    std::cerr << "mmsp(0) :" << mmsp << std::endl ;  
+    std::cerr << "pmtp(0) :" << pmtp << std::endl ;  
+}
 
 void OpticksResource::Summary(const char* msg)
 {

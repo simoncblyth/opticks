@@ -4,15 +4,18 @@
 
 // npy-
 #include "NLog.hpp"
+#include "NPY.hpp"
 #include "GLMFormat.hpp"
 
 // cfg4-
 #include "CPropLib.hh"
 #include "CTraverser.hh"
 
+// optickscore-
+#include "OpticksResource.hh"
+
 // ggeo-
 #include "GCache.hh"
-
 
 // g4-
 #include "G4PVPlacement.hh"
@@ -25,15 +28,25 @@ void CDetector::init()
 
 void CDetector::traverse(G4VPhysicalVolume* top)
 {
+    // invoked from CGDMLDetector::init via setTop 
     m_traverser = new CTraverser(top); 
     m_traverser->Traverse();
     m_traverser->Summary("CDetector::traverse");
 }
 
-void CDetector::saveTransforms(const char* path)
+void CDetector::saveTransforms(const char* objname, unsigned int objindex)
 {
     assert(m_traverser);
-    m_traverser->saveTransforms(path);
+
+    OpticksResource* resource = m_cache->getResource();
+
+    std::string cachedir = resource->getObjectPath(objname, objindex);
+
+    NPY<float>* gtransforms = m_traverser->getGlobalTransforms(); 
+    NPY<float>* ltransforms = m_traverser->getLocalTransforms(); 
+
+    gtransforms->save(cachedir.c_str(), "gtransforms.npy");
+    ltransforms->save(cachedir.c_str(), "ltransforms.npy");
 }
 
 unsigned int CDetector::getNumGlobalTransforms()
@@ -57,6 +70,21 @@ glm::mat4 CDetector::getLocalTransform(unsigned int index)
     assert(m_traverser);
     return m_traverser->getLocalTransform(index);
 }
+
+NPY<float>* CDetector::getGlobalTransforms()
+{
+    assert(m_traverser);
+    return m_traverser->getGlobalTransforms();
+}
+
+NPY<float>* CDetector::getLocalTransforms()
+{
+    assert(m_traverser);
+    return m_traverser->getLocalTransforms();
+}
+
+
+
 const char* CDetector::getPVName(unsigned int index)
 {
     assert(m_traverser);

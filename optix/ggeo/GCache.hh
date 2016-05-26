@@ -17,6 +17,9 @@ class Typ ;
 // but is used too widely to migrate all at once
 // so eat away from the inside whilst keeping some 
 // of the API working via passthrus
+//
+// SO, FOR NEW RESOURCES : DIRECTLY USE Opticks/OpticksResource
+//
 
 class GCache {
     public:

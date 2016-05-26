@@ -16,6 +16,10 @@ class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 
+//
+// TODO: migrate into OpticksCore ? for:
+//      * easy access to config 
+//
 
 class NumpyEvt {
    public:
