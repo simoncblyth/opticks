@@ -50,6 +50,11 @@ class GPropertyLib {
         static unsigned int NUM_PROP ; 
         static unsigned int NUM_FLOAT4 ; 
     public:
+        static const char* material ; 
+        static const char* surface ;
+        static const char* source ; 
+        static const char* bnd ;
+    public:
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
     public:
@@ -57,8 +62,16 @@ class GPropertyLib {
         virtual ~GPropertyLib();
     public:
         const char* getType();
+        const char* getComponentType();
         std::string getCacheDir();
         std::string getPreferenceDir();
+    public:
+        void dumpRaw(const char* msg="GPropertyLib::dumpRaw");
+        void addRaw(GPropertyMap<float>* pmap);
+        unsigned int getNumRaw();
+        GPropertyMap<float>* getRaw(unsigned int index);
+        void saveRaw();
+        void loadRaw();
     public:
         //void setOrder(std::map<std::string, unsigned int>& order);
         std::map<std::string, unsigned int>& getOrder(); 
@@ -127,13 +140,15 @@ class GPropertyLib {
         GAttrSeq*                            m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
         const char*                          m_type ; 
+        const char*                          m_comptype ; 
         GDomain<float>*                      m_standard_domain ;  
-
     private:
         GPropertyMap<float>*                 m_defaults ;  
         std::map<std::string, std::string>   m_keymap ;   
         bool                                 m_closed ;  
         bool                                 m_valid ;  
+    private:
+        std::vector<GPropertyMap<float>*>    m_raw ; 
 };
 
 inline GPropertyLib::GPropertyLib(GCache* cache, const char* type) 
@@ -144,6 +159,7 @@ inline GPropertyLib::GPropertyLib(GCache* cache, const char* type)
      m_attrnames(NULL),
      m_names(NULL),
      m_type(strdup(type)),
+     m_comptype(NULL),
      m_standard_domain(NULL),
      m_defaults(NULL),
      m_closed(false),
@@ -153,10 +169,20 @@ inline GPropertyLib::GPropertyLib(GCache* cache, const char* type)
 }
 
 
+
+
 inline const char* GPropertyLib::getType()
 {
     return m_type ; 
 }
+
+inline const char* GPropertyLib::getComponentType()
+{
+    return m_comptype ; 
+}
+
+
+
 
 inline GPropertyLib::~GPropertyLib()
 {
@@ -214,6 +240,11 @@ inline void GPropertyLib::setValid(bool valid)
 inline bool GPropertyLib::isValid()
 {
     return m_valid ; 
+}
+
+inline unsigned int GPropertyLib::getNumRaw()
+{
+    return m_raw.size();
 }
 
 

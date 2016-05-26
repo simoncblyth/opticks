@@ -10,6 +10,7 @@
 // npy-
 #include "NPY.hpp"
 #include "Map.hpp"
+#include "dirutil.hpp"
 
 
 
@@ -54,6 +55,10 @@ GDomain<float>* GPropertyLib::getDefaultDomain()
    return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
 }
 
+const char* GPropertyLib::material = "material" ; 
+const char* GPropertyLib::surface  = "surface" ; 
+const char* GPropertyLib::source   = "source" ; 
+const char* GPropertyLib::bnd      = "bnd" ; 
 
 void GPropertyLib::init()
 {
@@ -80,6 +85,23 @@ void GPropertyLib::init()
 
     m_attrnames = new GAttrSeq(m_cache, m_type);
     m_attrnames->loadPrefs(); // color, abbrev and order 
+
+
+    // hmm GPropertyMap expects bordersurface or skinsurface
+
+    if(     strcmp(m_type, "GMaterialLib")==0)      m_comptype=material ;
+    else if(strcmp(m_type, "GScintillatorLib")==0)  m_comptype=material ;
+    else if(strcmp(m_type, "GSurfaceLib")==0)       m_comptype=surface ;
+    else if(strcmp(m_type, "GSourceLib")==0)        m_comptype=source ;
+    else if(strcmp(m_type, "GBndLib")==0)           m_comptype=bnd ;
+    else                                            m_comptype=NULL  ;
+
+    if(!m_comptype)
+    {
+        LOG(fatal) << "GPropertyLib::init " << m_type ;  
+        assert( 0 &&  "unexpected GPropertyLib type");
+    }    
+
 
 }
 
@@ -338,6 +360,65 @@ void GPropertyLib::importUint4Buffer(std::vector<guint4>& vec, NPY<unsigned int>
         entry.w = idat[i*nj+3] ;
 
         vec.push_back(entry);
+    }
+}
+
+
+
+void GPropertyLib::addRaw(GPropertyMap<float>* pmap)
+{
+    m_raw.push_back(pmap);
+}
+
+GPropertyMap<float>* GPropertyLib::getRaw(unsigned int index)
+{
+    return index < m_raw.size() ? m_raw[index] : NULL ;
+}
+
+
+void GPropertyLib::loadRaw()
+{
+    std::string dir = getCacheDir();   // eg $IDPATH/GScintillatorLib
+
+    std::vector<std::string> names ; 
+    dirdirlist(names, dir.c_str() );   // find sub-directory names for all raw items in lib eg GdDopedLS,LiquidScintillator
+   
+    for(std::vector<std::string>::iterator it=names.begin() ; it != names.end() ; it++ )
+    {
+        std::string name = *it ; 
+        LOG(debug) << "GPropertyLib::loadRaw " << name << " " << m_comptype ; 
+
+        GPropertyMap<float>* pmap = GPropertyMap<float>::load( dir.c_str(), name.c_str(), m_comptype );
+        if(pmap)
+        {
+            LOG(info) << "GPropertyLib::loadRaw " << name << " " << m_comptype << " num properties:" << pmap->getNumProperties() ; 
+            addRaw(pmap);
+        }
+
+    }
+}
+
+void GPropertyLib::dumpRaw(const char* msg)
+{
+    LOG(info) << msg ; 
+    unsigned int nraw = m_raw.size();
+    for(unsigned int i=0 ; i < nraw ; i++)
+    {
+        GPropertyMap<float>* pmap = m_raw[i] ;
+        LOG(info) << "component " << pmap->getName() << std::endl << pmap->make_table() ;
+    }
+}
+
+
+ 
+void GPropertyLib::saveRaw()
+{
+    std::string dir = getCacheDir(); 
+    unsigned int nraw = m_raw.size();
+    for(unsigned int i=0 ; i < nraw ; i++)
+    {
+        GPropertyMap<float>* pmap = m_raw[i] ;
+        pmap->save(dir.c_str());
     }
 }
 

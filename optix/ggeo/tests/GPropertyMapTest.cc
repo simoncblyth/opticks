@@ -1,3 +1,5 @@
+// op --gpropertymap
+
 #include "GProperty.hh"
 #include "GDomain.hh"
 #include "GMaterialLib.hh"
@@ -12,7 +14,9 @@ int main(int argc, char** argv)
 
     GDomain<float>* sd = GPropertyLib::getDefaultDomain();
 
-    GPropertyMap<float>* pmap = new GPropertyMap<float>("FlintGlass");
+    const char* matname = "FlintGlass" ;
+
+    GPropertyMap<float>* pmap = new GPropertyMap<float>(matname);
 
     pmap->setStandardDomain(sd);
 
@@ -24,6 +28,11 @@ int main(int argc, char** argv)
 
     rip->save("/tmp/f2.npy");
 
+    const char* matdir = "/tmp/opticks/GPropertyMapTest";
+
+    pmap->save(matdir);
+
+    GPropertyMap<float>* qmap = GPropertyMap<float>::load(matdir, matname, "material");
 
 
     return 0 ; 

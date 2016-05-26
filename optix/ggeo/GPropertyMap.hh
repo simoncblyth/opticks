@@ -20,7 +20,9 @@ class GPropertyMap {
       GPropertyMap(const char* name);
       GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL);
       virtual ~GPropertyMap();
+  public:
       void save(const char* path);
+      static GPropertyMap<T>* load(const char* path, const char* name, const char* type);
   public:
      // caller should free the char* returned after dumping 
       //char* ndigest();

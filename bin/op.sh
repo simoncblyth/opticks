@@ -43,7 +43,8 @@ op-binary-name()
   --cgdmldetector) echo CGDMLDetectorTest ;;
        --cproplib) echo CPropLibTest ;;
      --ngunconfig) echo NGunConfigTest ;;
-
+   --gpropertymap) echo GPropertyMapTest ;;
+  --gscintillatorlib) echo GScintillatorLibTest ;;
 
      --boundaries) echo BoundariesNPYTest ;;
            --recs) echo RecordsNPYTest ;;
@@ -61,7 +62,6 @@ op-binary-name()
          --gmaker) echo GMakerTest ;;
             --pmt) echo GPmtTest ;;
            --attr) echo GAttrSeqTest ;;
-         --tscint) echo GScintillatorLibTest ;;
          --oscint) echo OScintillatorLibTest ;;
           --flags) echo GFlagsTest ;;
         --gbuffer) echo GBufferTest ;;
@@ -90,6 +90,8 @@ op-binary-desc()
   --cgdmldetector) echo "Test Geant4 GDML full detector construction using cfg4-/CGDMLDetector " ;; 
        --cproblib) echo "Test Opticks/Geant4 material property library/converter cfg4-/CPropLib " ;; 
      --ngunconfig) echo "Test Geant4 Gun configuration with npy-/NGunConfigTest ";;
+   --gpropertymap) echo "Test creation and persisting of GPropertyMap " ;;
+  --gscintillatorlib) echo "Test loading of GScintillatorLib " ;;
    esac 
 }
 

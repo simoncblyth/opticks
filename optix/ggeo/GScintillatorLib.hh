@@ -34,7 +34,6 @@ class GScintillatorLib : public GPropertyLib {
         GProperty<float>* constructReemissionCDF(GPropertyMap<float>* pmap);
         GProperty<float>* constructInvertedReemissionCDF(GPropertyMap<float>* pmap);
     private:
-        std::vector<GPropertyMap<float>*> m_scintillators ; 
         unsigned int m_icdf_length ; 
 
 };
@@ -49,7 +48,7 @@ inline GScintillatorLib::GScintillatorLib( GCache* cache, unsigned int icdf_leng
 
 inline unsigned int GScintillatorLib::getNumScintillators()
 {
-    return m_scintillators.size();
+    return getNumRaw();
 }
 
 

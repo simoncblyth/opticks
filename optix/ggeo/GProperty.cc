@@ -41,7 +41,7 @@ GProperty<T>* GProperty<T>::load(const char* path)
         return NULL ; 
     }
 
-    npy->Summary();
+    //npy->Summary();
 
     assert(npy->getDimensions() == 2);
 
@@ -110,6 +110,7 @@ T GProperty<T>::maxdiff(GProperty<T>* a, GProperty<T>* b)
 
 
 
+
 template <typename T>
 GProperty<T>* GProperty<T>::from_constant(T value, T* domain, unsigned int length ) 
 {
@@ -157,6 +158,53 @@ GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GPro
 }
 
 
+
+
+
+template <typename T>
+std::string GProperty<T>::make_table(int fw, T dscale, bool dreciprocal, bool constant, std::vector< GProperty<T>* >& columns, std::vector<std::string>& titles)
+{
+    assert(columns.size() == titles.size());
+    unsigned int ncol = columns.size();
+
+    std::stringstream ss ; 
+    if(ncol == 0) 
+    {
+        ss << "no columns" ; 
+    }
+    else
+    {
+        GProperty<T>* a = columns[0] ;
+        for(unsigned int c=1 ; c < ncol ; c++) assert(hasSameDomain(a,columns[c]));
+        GAry<T>* doms = a ? a->getDomain() : NULL ;
+        assert(doms);
+
+        ss << std::setw(fw) << "domain" ; 
+        for(unsigned int c=0 ; c < ncol ; c++) ss << std::setw(fw) << titles[c] ; 
+        ss << std::endl ; 
+
+        T one(1); 
+        std::vector< GAry<T>* > values ; 
+        for(unsigned int c=0 ; c < ncol ; c++) values.push_back(columns[c]->getValues()) ; 
+
+        unsigned int nr = doms->getLength(); 
+
+        for(unsigned int r=0 ; r < nr ; r++)
+        {
+            if(constant && !(r == 0 || r == nr - 1)) continue ;
+
+            T dval = doms->getValue(r) ; 
+            if(dreciprocal) dval = one/dval ; 
+            ss << std::setw(fw) << dval*dscale ;
+
+            for(unsigned int c=0 ; c < ncol ; c++) ss << std::setw(fw) << ( values[c] ? values[c]->getValue(r) : -2. ) ; 
+            ss << std::endl ; 
+        }
+    }
+    return ss.str();
+}
+
+
 template <typename T>
 std::string GProperty<T>::make_table(
        int fw, T dscale, bool dreciprocal, 
@@ -194,7 +242,6 @@ std::string GProperty<T>::make_table(
     ss << std::endl ; 
 
     T one(1); 
-
     GAry<T>* doms = a ? a->getDomain() : NULL ;
     if(doms)
     { 
@@ -293,6 +340,30 @@ void GProperty<T>::save(const char* dir, const char* reldir, const char* name)
     std::string path = preparePath(dir, reldir, name, create);
     LOG(debug) << "GProperty<T>::save to " << path ; 
     save(path.c_str());
+}
+
+
+
+template <typename T>
+bool GProperty<T>::isConstant()
+{
+    unsigned int len = getLength();
+    if(len == 0) return false ; 
+    if(len == 1) return true ; 
+
+    T first = m_values->getValue(0); 
+    for(unsigned int i=1 ; i < len ; i++)
+    {
+        if(first != m_values->getValue(i)) return false ;   
+    }
+    return true ; 
+}
+
+template <typename T>
+T GProperty<T>::getConstant()
+{
+    assert(getLength() > 0);
+    return m_values->getValue(0); 
 }
 
 

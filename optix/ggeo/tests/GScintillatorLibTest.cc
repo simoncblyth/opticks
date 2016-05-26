@@ -1,4 +1,4 @@
-// op --scint --debug
+// op --gscintillatorlib
 
 #include "Opticks.hh"
 

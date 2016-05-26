@@ -19,28 +19,23 @@ const char* GScintillatorLib::keyspec =
 void GScintillatorLib::dump(const char* msg)
 {
    LOG(info) << msg 
-             << " num_scintillators " << getNumScintillators() 
+             << " num_scintillators " << getNumRaw() 
              ;
+
+   dumpRaw(msg); 
 }
 
 void GScintillatorLib::save()
 {
     saveToCache();
-
-    std::string dir = getCacheDir(); 
-    unsigned int nscint = m_scintillators.size();
-    for(unsigned int i=0 ; i < nscint ; i++)
-    {
-        GPropertyMap<float>* scint = m_scintillators[i] ;
-        scint->save(dir.c_str());
-    }
-
+    saveRaw();
 }
 
 GScintillatorLib* GScintillatorLib::load(GCache* cache)
 {
     GScintillatorLib* lib = new GScintillatorLib(cache);
     lib->loadFromCache();
+    lib->loadRaw();
     return lib ; 
 }
 
@@ -53,7 +48,7 @@ void GScintillatorLib::init()
 void GScintillatorLib::add(GPropertyMap<float>* scint)
 {
     assert(!isClosed());
-    m_scintillators.push_back(scint);
+    addRaw(scint);
 }
 
 void GScintillatorLib::defineDefaults(GPropertyMap<float>* /*defaults*/)
@@ -72,7 +67,7 @@ void GScintillatorLib::import()
 
 NPY<float>* GScintillatorLib::createBuffer()
 {
-    unsigned int ni = getNumScintillators();
+    unsigned int ni = getNumRaw();
     unsigned int nj = m_icdf_length ;
     unsigned int nk = 1 ; 
 
@@ -88,7 +83,7 @@ NPY<float>* GScintillatorLib::createBuffer()
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* scint = m_scintillators[i] ;
+        GPropertyMap<float>* scint = getRaw(i) ;
         GProperty<float>* cdf = constructReemissionCDF(scint);
         assert(cdf);
 
@@ -108,11 +103,11 @@ NPY<float>* GScintillatorLib::createBuffer()
 
 GItemList*  GScintillatorLib::createNames()
 {
-    unsigned int ni = getNumScintillators();
+    unsigned int ni = getNumRaw();
     GItemList* names = new GItemList(getType());
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* scint = m_scintillators[i] ;
+        GPropertyMap<float>* scint = getRaw(i) ;
         names->add(scint->getShortName());
     }
     return names ; 

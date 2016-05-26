@@ -2,6 +2,7 @@
 
 #include "GAry.hh"
 #include "GDomain.hh"
+#include <vector>
 #include <string>
 
 
@@ -29,6 +30,11 @@ public:
                                    );
 
 
+   static std::string make_table(int fwid, T dscale, bool dreciprocal,  bool constant,
+         std::vector< GProperty<T>* >& columns,
+         std::vector< std::string >& titles 
+         );
+
    static GProperty<T>* ramp(T low, T step, T* domain, unsigned int length );
    static GProperty<T>* planck_spectral_radiance(GDomain<T>* nm, T blackbody_temp_kelvin=6500.);
 public:
@@ -48,7 +54,9 @@ public:
    GAry<T>* getDomain();
    char* digest();   
    std::string getDigestString();
-
+public:
+   bool isConstant();
+   T getConstant(); 
 public:
    // **lookup** here means that the input values are already within the domain 
    // this is appropriate for InverseCDF where the domain is 0:1 and 

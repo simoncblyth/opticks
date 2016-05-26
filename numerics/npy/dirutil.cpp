@@ -42,3 +42,25 @@ void dirlist(std::vector<std::string>& names,  const char* path)
     }
 }
 
+
+void dirdirlist(std::vector<std::string>& names,  const char* path)
+{
+    fs::path dir(path);
+    if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 
+
+    fs::directory_iterator it(dir) ;
+    fs::directory_iterator end ;
+   
+    for(; it != end ; ++it)
+    {
+        if(fs::is_directory(it->path()))
+        {
+            std::string name = it->path().filename().string() ;
+            //std::cout << "dirdirlist " << name << std::endl ;
+            names.push_back(name);
+        }
+    }
+}
+
+
+

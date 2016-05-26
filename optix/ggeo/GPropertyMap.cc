@@ -4,10 +4,16 @@
 #include "string.h"
 
 #include "stringutil.hpp"
+#include "dirutil.hpp"
 #include "limits.h"
 #include "assert.h"
 #include <sstream>
 #include <iomanip>
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+#include "NLog.hpp"
 
 
 template <typename T>
@@ -436,9 +442,62 @@ void GPropertyMap<T>::Summary(const char* msg, unsigned int nline)
 }
 
 
+
+
+
+
+
 template <typename T>
 std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool dreciprocal)
 {
+
+   std::vector< GProperty<T>* > vprops ; 
+   std::vector< std::string > vtitles ; 
+
+   std::vector< GProperty<T>* > cprops ; 
+   std::vector< std::string > ctitles ; 
+
+   std::vector< GProperty<T>* > dprops ; 
+   std::vector< std::string > dtitles ; 
+
+
+   unsigned int nprop = getNumProperties() ;
+   for(unsigned int i=0 ; i < nprop ; i++)
+   {
+       GProperty<T>* prop = getPropertyByIndex(i);
+       std::string name = getPropertyNameByIndex(i) ;
+       assert(prop);
+      
+       if(prop->isConstant()) 
+       {
+
+           if(cprops.size() < 10)
+           {
+               cprops.push_back(prop);
+               ctitles.push_back(name);
+           }
+           else
+           {
+               dprops.push_back(prop);
+               dtitles.push_back(name);
+           }
+       }
+       else
+       {
+           vprops.push_back(prop);
+           vtitles.push_back(name);
+       }
+   }
+
+   std::stringstream ss ; 
+   if(vprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, false,vprops, vtitles ) ;
+   if(cprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, true ,cprops, ctitles )  ;
+   if(dprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, true ,dprops, dtitles )  ;
+   return ss.str();
+
+                            
+
+/*
    return GProperty<T>::make_table( 
                            fw, dscale, dreciprocal, 
                            getPropertyByIndex(0), getPropertyNameByIndex(0),
@@ -450,6 +509,9 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
                            getPropertyByIndex(6), getPropertyNameByIndex(6),
                            getPropertyByIndex(7), getPropertyNameByIndex(7)
                            );
+
+*/
+
 }
 
 
@@ -506,6 +568,41 @@ void GPropertyMap<T>::save(const char* path)
        prop->save(path, m_shortname, propname.c_str());
    } 
 }
+
+
+template <typename T>
+GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const char* type)
+{
+    // path eg $IDPATH/GScintillatorLib
+    // name eg GdDopedLS
+    // type eg material
+
+    unsigned int index = 0 ; 
+    GPropertyMap<T>* pmap = new GPropertyMap<T>(name,  index, type, NULL );
+    fs::path dir(path);
+    const char* ext = ".npy"  ;
+    if(fs::exists(dir) && fs::is_directory(dir))
+    {
+        dir /= name ; 
+        if(fs::exists(dir) && fs::is_directory(dir))
+        {    
+            std::vector<std::string> basenames ; 
+            dirlist( basenames, dir.string().c_str(), ext);
+            for(std::vector<std::string>::const_iterator it=basenames.begin() ; it != basenames.end()   ; it++)
+            {
+                 std::string propname = *it ;  
+                 fs::path pp(dir) ;
+                 pp /= propname + ext ;
+                 LOG(debug) << "GPropertyMap<T>::load prop " << propname << " pp " << pp.string() ; 
+
+                 GProperty<T>* prop = GProperty<T>::load( pp.string().c_str() );
+                 pmap->addProperty( propname.c_str(), prop );    
+            } 
+        }
+    }
+    return pmap ; 
+}
+
 
 
 /*
