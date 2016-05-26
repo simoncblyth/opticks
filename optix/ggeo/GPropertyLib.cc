@@ -375,6 +375,19 @@ GPropertyMap<float>* GPropertyLib::getRaw(unsigned int index)
     return index < m_raw.size() ? m_raw[index] : NULL ;
 }
 
+GPropertyMap<float>* GPropertyLib::getRaw(const char* shortname)
+{
+    unsigned int nraw = m_raw.size();
+    for(unsigned int i=0 ; i < nraw ; i++)
+    {  
+        GPropertyMap<float>* pmap = m_raw[i];
+        const char* name = pmap->getShortName();
+        if(strcmp(shortname, name) == 0) return pmap ;         
+    }
+    return NULL ; 
+}
+
+
 
 void GPropertyLib::loadRaw()
 {

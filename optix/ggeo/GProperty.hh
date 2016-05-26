@@ -55,6 +55,7 @@ public:
    char* digest();   
    std::string getDigestString();
 public:
+   bool isZero();
    bool isConstant();
    T getConstant(); 
 public:

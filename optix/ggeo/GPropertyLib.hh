@@ -70,6 +70,7 @@ class GPropertyLib {
         void addRaw(GPropertyMap<float>* pmap);
         unsigned int getNumRaw();
         GPropertyMap<float>* getRaw(unsigned int index);
+        GPropertyMap<float>* getRaw(const char* shortname);
         void saveRaw();
         void loadRaw();
     public:

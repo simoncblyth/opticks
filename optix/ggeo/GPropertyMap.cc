@@ -372,13 +372,17 @@ GProperty<T>* GPropertyMap<T>::getProperty(const char* pname, const char* prefix
     return (m_prop.find(key.c_str()) != m_prop.end()) ? m_prop[key.c_str()] : NULL ;
 }
 
-
-
-
+template <typename T>
+bool GPropertyMap<T>::hasNonZeroProperty(const char* pname) 
+{
+     if(!hasProperty(pname)) return false ; 
+     GProperty<T>* prop = getProperty(pname);
+     return !prop->isZero();
+}
 
 
 template <typename T>
-bool GPropertyMap<T>::hasProperty(const char* pname)
+bool GPropertyMap<T>::hasProperty(const char* pname)  
 {
    return m_prop.find(pname) != m_prop.end() ;
 }
@@ -415,9 +419,10 @@ const char* GPropertyMap<T>::getPropertyNameByIndex(int index)
 
 
 template <typename T>
-void GPropertyMap<T>::dump(const char* msg, unsigned int nline)
+void GPropertyMap<T>::dump(const char* msg, unsigned int /*nline*/)
 {
-    Summary(msg, nline);
+    //Summary(msg, nline);
+    LOG(info) << msg << std::endl << make_table();
 }
 
 
@@ -467,6 +472,8 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
        GProperty<T>* prop = getPropertyByIndex(i);
        std::string name = getPropertyNameByIndex(i) ;
        assert(prop);
+       if(strlen(name.c_str()) == 0)
+           LOG(warning) << "GPropertyMap<T>::make_table " << getName() << " property " << i << " has blank name " ;  
       
        if(prop->isConstant()) 
        {
@@ -490,12 +497,16 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
    }
 
    std::stringstream ss ; 
+   ss << "GPropertyMap<T>::make_table"
+      << " vprops " << vprops.size()
+      << " cprops " << cprops.size()
+      << " dprops " << dprops.size()
+      << std::endl;
+
    if(vprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, false,vprops, vtitles ) ;
    if(cprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, true ,cprops, ctitles )  ;
    if(dprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, true ,dprops, dtitles )  ;
    return ss.str();
-
-                            
 
 /*
    return GProperty<T>::make_table( 

@@ -33,6 +33,7 @@ int main(int argc, char** argv)
     pmap->save(matdir);
 
     GPropertyMap<float>* qmap = GPropertyMap<float>::load(matdir, matname, "material");
+    qmap->dump("qmap", 10);
 
 
     return 0 ; 

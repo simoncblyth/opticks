@@ -35,6 +35,10 @@ int main(int argc, char** argv)
     GScintillatorLib* slib = GScintillatorLib::load(&gc);
     slib->dump();
 
+    GPropertyMap<float>* ls = slib->getRaw("LiquidScintillator");
+    ls->dump("ls");
+
+
     return 0 ;
 }
 

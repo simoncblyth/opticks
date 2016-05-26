@@ -344,6 +344,21 @@ void GProperty<T>::save(const char* dir, const char* reldir, const char* name)
 
 
 
+
+template <typename T>
+bool GProperty<T>::isZero()
+{
+    T zero(0);
+    unsigned int len = getLength();
+    unsigned int num(0) ;
+
+    for(unsigned int i=0 ; i < len ; i++)
+        if(m_values->getValue(i) == zero) num += 1 ; 
+
+    return len == num ; 
+}
+
+
 template <typename T>
 bool GProperty<T>::isConstant()
 {

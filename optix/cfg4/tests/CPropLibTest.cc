@@ -1,4 +1,6 @@
 // op --cproplib 
+// op --cproplib 0
+// op --cproplib GdDopedLS
 
 #include "Opticks.hh"
 #include "GCache.hh"
@@ -17,7 +19,8 @@ int main(int argc, char** argv)
 
     CPropLib* m_lib = new CPropLib(m_cache); 
 
-    m_lib->dumpMaterials();
+    m_lib->dump();
+    //m_lib->dumpMaterials();
 
 
 

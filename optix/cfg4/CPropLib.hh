@@ -9,6 +9,7 @@ class GCache ;
 class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
+class GScintillatorLib ;
 
 class GCSG ; 
 class GMaterial ;
@@ -51,6 +52,7 @@ class CPropLib {
        unsigned int getNumMaterials();
        const GMaterial* getMaterial(unsigned int index);
        const GMaterial* getMaterial(const char* shortname);
+       bool hasMaterial(const char* shortname); 
    public:
        // G4 material access
        const G4Material* getG4Material(const char* shortname);
@@ -76,7 +78,11 @@ class CPropLib {
        void addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop );
    public:
        G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
+   private: 
+       void addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal=true);
    public: 
+       void dump(const char* msg="CPropLib::dump");
+       void dump(const GMaterial* mat, const char* msg="CPropLib::dump");
        void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
        void dumpMaterial(const G4Material* mat, const char* msg="CPropLib::dumpMaterial");
    private:
@@ -89,6 +95,8 @@ class CPropLib {
        GBndLib*           m_bndlib ; 
        GMaterialLib*      m_mlib ; 
        GSurfaceLib*       m_slib ; 
+       GScintillatorLib*  m_sclib ; 
+
        GPropertyMap<float>* m_sensor_surface ; 
 
        std::map<const GMaterial*, const G4Material*>   m_ggtog4 ; 
@@ -108,6 +116,7 @@ inline CPropLib::CPropLib(GCache* cache, int verbosity)
   m_bndlib(NULL),
   m_mlib(NULL),
   m_slib(NULL),
+  m_sclib(NULL),
   m_groupvel_kludge(true)
 {
     init();

@@ -1,13 +1,19 @@
 // op --cproplib
 
+
+#include <algorithm>
+#include <boost/algorithm/string.hpp>
+
 #include "CPropLib.hh"
 
 
 // ggeo-
+#include "GCache.hh"
 #include "GConstant.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GScintillatorLib.hh"
 
 #include "GMaterial.hh"
 #include "GPmt.hh"
@@ -15,6 +21,8 @@
 
 // npy-
 #include "NLog.hpp"
+
+
 
 
 // g4-
@@ -37,6 +45,8 @@ void CPropLib::init()
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
 
+    m_sclib = GScintillatorLib::load(m_cache);
+
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
     if(m_verbosity>2)
@@ -54,6 +64,11 @@ const GMaterial* CPropLib::getMaterial(unsigned int index)
 {
    return m_mlib->getMaterial(index); 
 }
+
+bool CPropLib::hasMaterial(const char* shortname)
+{
+   return m_mlib->hasMaterial(shortname); 
+}
 const GMaterial* CPropLib::getMaterial(const char* shortname)
 {
    return m_mlib->getMaterial(shortname); 
@@ -65,11 +80,15 @@ void CPropLib::convert()
     for(unsigned int i=0 ; i < ngg ; i++)
     {
         const GMaterial* ggmat = getMaterial(i);
+
+
         const char* name = ggmat->getShortName() ;
         const G4Material* g4mat = convertMaterial(ggmat);
         std::string keys = getMaterialKeys(g4mat);
         m_g4mat[name] = g4mat ; 
         LOG(debug) << "CPropLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
+
+       
     }
 
     LOG(info) << "CPropLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
@@ -169,76 +188,63 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
 */
 
 
+void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal)
+{
+    std::vector<std::string> keys ; 
+    boost::split(keys, _keys, boost::is_any_of(","));   
+
+    const char* name = pmap->getShortName();
+    unsigned int nprop = pmap->getNumProperties();
+    std::stringstream ss ; 
+
+    for(unsigned int i=0 ; i<nprop ; i++)
+    {
+        const char* key =  pmap->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
+        const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
+        const char* ukey = keylocal ? lkey : key ;
+
+        LOG(debug) << "CPropLib::addProperties " << name << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
+
+        if(ukey && std::find(keys.begin(), keys.end(), ukey) != keys.end())
+        {
+            GProperty<float>* prop = pmap->getPropertyByIndex(i);
+            addProperty(mpt, ukey , prop );
+            ss << ukey << " " ; 
+        }
+        else
+        {
+            LOG(debug) << "CPropLib::addProperties " << std::setw(30) << name << "skipped " << ukey ;
+        }
+    }
+    std::string lka = ss.str(); 
+    LOG(info) << "CPropLib::addProperties MPT of " << std::setw(30) << name << " keys: " << lka ; ; 
+}
 
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
     const char* name = ggmat->getShortName();
-    unsigned int mprop = ggmat->getNumProperties();
-
-    if(m_verbosity>1)
-    LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
-              << " name " << name
-              << " mprop " << mprop 
-              ;   
+    GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // wont change it, i promise 
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
+    addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB");
 
-    GMaterial* ggm = const_cast<GMaterial*>(ggmat) ; // not easily to do this properly 
-
-    for(unsigned int i=0 ; i<mprop ; i++)
-    {
-        const char* key = ggm->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
-        const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
-
-        if(m_verbosity>2)
-        LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
-                  << " i " << i  
-                  << " key " << key  
-                  << " lkey [" << lkey << "]"
-                  << " len(lkey) " << strlen(lkey)
-                  ;  
-
-        if(lkey && strlen(lkey) > 0)
-        {
-            if(strcmp(lkey,"GROUPVEL")==0)
-            {
-                LOG(debug) << "CPropLib::makeMaterialPropertiesTable " <<  "skip GROUPVEL" ; 
-            }
-            else
-            {
-                GProperty<float>* prop = ggm->getPropertyByIndex(i);
-                addProperty(mpt, lkey, prop );
-            }
-        }
-    }
-
-    // this was not enough, need optical surface to inject EFFICIENCY for optical photons
     if(strcmp(name, SENSOR_MATERIAL)==0)
     {
         GPropertyMap<float>* surf = m_sensor_surface ; 
         assert(surf);
-        unsigned int sprop = surf->getNumProperties() ;
+        addProperties(mpt, surf, "EFFICIENCY");
+     }
 
-        LOG(info) << "CPropLib::makeMaterialPropertiesTable" 
-                  << " material " << name
-                  << " adding sensor surface properties "
-                  << " from " << surf->getShortName()
-                  << " sprop " << sprop 
-                  ;   
-
-        for(unsigned int j=0 ; j<sprop ; j++)
-        {
-            const char* key = surf->getPropertyNameByIndex(j); 
-            const char* lkey = m_slib->getLocalKey(key) ; 
-            if(strcmp(lkey,"EFFICIENCY")==0)
-            {
-                GProperty<float>* prop = surf->getPropertyByIndex(j);
-                addProperty(mpt, lkey, prop );
-            }
-        }
+    if(_ggmat->hasNonZeroProperty("reemission_prob"))
+    {
+        GPropertyMap<float>* scintillator = m_sclib->getRaw(name);
+        assert(scintillator && "non-zero reemission prob materials should has an associated raw scintillator");
+        LOG(debug) << "CPropLib::makeMaterialPropertiesTable found corresponding scintillator from sclib " 
+                  << " name " << name 
+                  << " keys " << scintillator->getKeysString() 
+                   ; 
+        addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT,SCINTILLATIONYIELD", false);
     }
-
-
     return mpt ;
 }
 
@@ -352,6 +358,9 @@ G4Material* CPropLib::makeVacuum(const char* name)
 const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 {
     const char* name = kmat->getShortName();
+
+
+
     if(m_ggtog4.count(kmat) == 1)
     {
         assert(0 && "now do all conversions up front ");
@@ -424,27 +433,39 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
 }
 
 
+void CPropLib::dump(const GMaterial* mat, const char* msg)
+{
+    GMaterial* _mat = const_cast<GMaterial*>(mat); 
+    const G4Material* g4mat = getG4Material(_mat->getName());
+    dumpMaterial(g4mat, msg);
+}
 
-/*
+
 void CPropLib::dump(const char* msg)
 {
+    unsigned int ni = getNumMaterials() ;
     int index = m_cache->getLastArgInt();
     const char* lastarg = m_cache->getLastArg();
 
-    if(hasMaterial(index))
+    if(index < ni)
     {   
-        dump(index);
+        const GMaterial* mat = getMaterial(index);
+        dump(mat, msg);
     }   
     else if(hasMaterial(lastarg))
     {   
-        GMaterial* mat = getMaterial(lastarg);
-        dump(mat);
+        const GMaterial* mat = getMaterial(lastarg);
+        dump(mat, msg);
     }   
     else
-        for(unsigned int i=0 ; i < ni ; i++) dump(i);
-
+    {
+        for(unsigned int i=0 ; i < ni ; i++)
+        {
+           const GMaterial* mat = getMaterial(i);
+           dump(mat, msg);
+        }
+    }
 }
-*/
 
 
 
@@ -478,10 +499,8 @@ void CPropLib::dumpMaterials(const char* msg)
                   << std::setw(5) << idx 
                   << std::setw(40) << name_2
                   << std::endl ; 
-
-
-
     }
+
 
     LOG(info) << msg  << " ggtog4" ; 
     typedef std::map<const GMaterial*, const G4Material*> MMM ; 
@@ -500,6 +519,8 @@ void CPropLib::dumpMaterials(const char* msg)
         dumpMaterial(g4mat, "g4mat");
     }
 }
+
+
 
 
 
