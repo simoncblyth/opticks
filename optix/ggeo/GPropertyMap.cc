@@ -493,7 +493,19 @@ void GPropertyMap<T>::add(GPropertyMap<T>* other, const char* prefix)
 }
 
 
+template <typename T>
+void GPropertyMap<T>::save(const char* path)
+{
+   for(std::vector<std::string>::iterator it=m_keys.begin() ; it != m_keys.end() ; it++ )
+   {
+       std::string key = *it ;
+       std::string propname(key) ; 
+       propname += ".npy" ;
 
+       GProperty<T>* prop = m_prop[key] ; 
+       prop->save(path, m_shortname, propname.c_str());
+   } 
+}
 
 
 /*

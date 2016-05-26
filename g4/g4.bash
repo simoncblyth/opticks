@@ -131,17 +131,34 @@ g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H ${1:-G4GammaConversion
 g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
 
 
+g4-cls(){
+   local iwd=$PWD
+   g4-cd
+   local name=${1:-G4Scintillation}
+
+   local hh=$(find source -name "$name.hh")
+   local cc=$(find source -name "$name.cc")
+   local icc=$(find source -name "$name.icc")
+
+   local vcmd="vi -R $hh $icc $cc"
+   echo $vcmd
+   eval $vcmd
+
+   cd $iwd
+}
 
 g4-look(){ 
    local iwd=$PWD
    g4-cd
    local spec=${1:-G4RunManagerKernel.cc:707}
+
    local name=${spec%:*}
    local line=${spec##*:}
    [ "$line" == "$spec" ] && line=1
 
    local fcmd="find source -name $name"
    local path=$($fcmd)
+
    echo $spec $name $line $path 
 
    if [ "$path" == "" ]; then 

@@ -1,4 +1,4 @@
-// ggv --scint --debug
+// op --scint --debug
 
 #include "Opticks.hh"
 

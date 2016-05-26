@@ -817,11 +817,15 @@ void GGeo::prepareScintillatorLib()
     }
     else
     {
-        GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(0));  
+        LOG(info) << "GGeo::prepareScintillatorLib found " << nscint << " scintillator materials  " ; 
 
         GScintillatorLib* sclib = getScintillatorLib() ;
 
-        sclib->add(scint);
+        for(unsigned int i=0 ; i < nscint ; i++)
+        {
+            GPropertyMap<float>* scint = dynamic_cast<GPropertyMap<float>*>(getScintillatorMaterial(i));  
+            sclib->add(scint);
+        }
 
         sclib->close(); 
     }

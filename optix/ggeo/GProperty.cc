@@ -15,11 +15,11 @@
 #include "GDomain.hh"
 #include "GAry.hh"
 
-#include "NPY.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "jsonutil.hpp"
+#include "NPY.hpp"
+#include "NLog.hpp"
+
 
 
 template <typename T>
@@ -286,6 +286,15 @@ unsigned int GProperty<T>::getLength()
 }
 
 
+template <typename T>
+void GProperty<T>::save(const char* dir, const char* reldir, const char* name)
+{
+    bool create = true ; 
+    std::string path = preparePath(dir, reldir, name, create);
+    LOG(debug) << "GProperty<T>::save to " << path ; 
+    save(path.c_str());
+}
+
 
 template <typename T>
 void GProperty<T>::save(const char* path)
@@ -307,7 +316,7 @@ void GProperty<T>::save(const char* path)
        }
     }
     }
-    LOG(info) << "GProperty::save 2d array of length " << len << " to : " << path ;  
+    LOG(debug) << "GProperty::save 2d array of length " << len << " to : " << path ;  
     NPY<T> npy(shape, data, metadata);
     npy.save(path);
 }

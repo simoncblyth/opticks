@@ -26,6 +26,15 @@ void GScintillatorLib::dump(const char* msg)
 void GScintillatorLib::save()
 {
     saveToCache();
+
+    std::string dir = getCacheDir(); 
+    unsigned int nscint = m_scintillators.size();
+    for(unsigned int i=0 ; i < nscint ; i++)
+    {
+        GPropertyMap<float>* scint = m_scintillators[i] ;
+        scint->save(dir.c_str());
+    }
+
 }
 
 GScintillatorLib* GScintillatorLib::load(GCache* cache)
@@ -181,7 +190,6 @@ GProperty<float>* GScintillatorLib::constructReemissionCDF(GPropertyMap<float>* 
     delete rrd ; 
     return cdf ;
 }
-
 
 
 

@@ -45,6 +45,13 @@ bool existsPath(const char* dir_, const char* name )
     return false ; 
 }
 
+std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
+{
+    fs::path fpath(dir_);
+    fpath /= reldir_ ;
+    return preparePath(fpath.string().c_str(), name, create);
+}
+
 
 std::string preparePath(const char* dir_, const char* name, bool create )
 {

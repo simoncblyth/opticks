@@ -39,6 +39,7 @@ public:
 
 public:
    void save(const char* path);
+   void save(const char* dir, const char* reldir, const char* name);
    T getValue(unsigned int index);
    T getDomain(unsigned int index);
    T getInterpolatedValue(T val);
