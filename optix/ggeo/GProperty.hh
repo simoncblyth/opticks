@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 
+//template <typename T> class GPropertyMap ; 
+
 
 template <class T>
 class GProperty {
@@ -16,6 +18,7 @@ public:
    static bool hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta=1e-6);
    static GProperty<T>* load(const char* path);
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length );
+   static GProperty<T>* from_constant(T value, T dlow, T dhigh);
    static GProperty<T>* make_one_minus(GProperty<T>* a);
    static GProperty<T>* make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c=NULL, GProperty<T>* d=NULL );
    static std::string   make_table(int fwid, T dscale, bool dreciprocal,

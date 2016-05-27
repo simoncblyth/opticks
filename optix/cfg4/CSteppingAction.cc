@@ -99,7 +99,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
     if( type == G4OpticalPhoton::OpticalPhotonDefinition())
     {
-        LOG(info) << "CSteppingAction::UserSteppingAction optical " ; 
+        //LOG(info) << "CSteppingAction::UserSteppingAction optical " ; 
         UserSteppingActionOptical(step);
     }
     else

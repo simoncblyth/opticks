@@ -31,6 +31,8 @@
 #include "globals.hh"
 #include "OpNovicePhysicsList.hh"
 #include "OpNovicePhysicsListMessenger.hh"
+#include "CMPT.hh"
+
 
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTypes.hh"
@@ -423,4 +425,48 @@ void OpNovicePhysicsList::SetCuts()
 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void OpNovicePhysicsList::dump(const char* msg)
+{
+    dumpMaterials(msg);
+    dumpRayleigh(msg);
+}
+
+void OpNovicePhysicsList::dumpMaterials(const char* msg)
+{
+    const G4MaterialTable* theMaterialTable = G4Material::GetMaterialTable();
+    const G4int numOfMaterials = G4Material::GetNumberOfMaterials();
+
+    LOG(info) << msg 
+              << " numOfMaterials " << numOfMaterials
+              ;
+
+    
+    for(unsigned int i=0 ; i < numOfMaterials ; i++)
+    {
+        G4Material* material = (*theMaterialTable)[i];
+        G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
+
+        CMPT cmpt(mpt);
+        LOG(info) << msg << cmpt.description(material->GetName().c_str()) ; 
+
+    }
+
+
+}
+
+void OpNovicePhysicsList::dumpRayleigh(const char* msg)
+{
+    LOG(info) << msg ; 
+    if(fRayleighScatteringProcess)
+    {
+        G4PhysicsTable* ptab = fRayleighScatteringProcess->GetPhysicsTable();
+        if(ptab) 
+            fRayleighScatteringProcess->DumpPhysicsTable() ;    
+        else
+            LOG(info) << "OpNovicePhysicsList::dumpRayleigh no physics table"   ;
+    }
+
+}
+
+

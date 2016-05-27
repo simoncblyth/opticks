@@ -14,6 +14,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
+#include "GDomain.hh"
 
 #include "GMaterial.hh"
 #include "GPmt.hh"
@@ -46,15 +47,58 @@ void CPropLib::init()
     m_slib = m_bndlib->getSurfaceLib();
 
     m_sclib = GScintillatorLib::load(m_cache);
+    m_domain = m_mlib->getDefaultDomain();
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
     if(m_verbosity>2)
     m_sensor_surface->Summary("CPropLib::init cathode_surface");
 
+    m_dscale = GConstant::h_Planck*GConstant::c_light/GConstant::nanometer ;
+
     checkConstants(); 
+
+    setupOverrides();
+ 
     convert();
 }
+
+
+void CPropLib::setupOverrides()
+{
+    float yield = 10.f ; 
+
+    std::map<std::string, float>  gdls ; 
+    gdls["SCINTILLATIONYIELD"] = yield ;  
+
+    std::map<std::string, float>  ls ; 
+    ls["SCINTILLATIONYIELD"] = yield ;  
+
+    m_const_override["GdDopedLS"] = gdls ; 
+    m_const_override["LiquidScintillator"] = ls ; 
+}
+
+
+void CPropLib::checkConstants()
+{
+
+    LOG(info) << "CPropLib::checkConstants" 
+               << " mm " << mm 
+               << " MeV " << MeV
+               << " nanosecond " << nanosecond
+               << " ns " << ns
+               << " nm " << nm
+               << " GC::nanometer " << GConstant::nanometer
+               << " h_Planck " << h_Planck
+               << " GC::h_Planck " << GConstant::h_Planck
+               << " c_light " << c_light
+               << " GC::c_light " << GConstant::c_light
+               << " dscale " << m_dscale 
+               ;   
+
+}
+
+
 
 unsigned int CPropLib::getNumMaterials()
 {
@@ -87,10 +131,7 @@ void CPropLib::convert()
         std::string keys = getMaterialKeys(g4mat);
         m_g4mat[name] = g4mat ; 
         LOG(debug) << "CPropLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
-
-       
     }
-
     LOG(info) << "CPropLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
 }
 
@@ -148,8 +189,8 @@ G4LogicalBorderSurface* CPropLib::makeConstantSurface(const char* name, G4VPhysi
     GProperty<float>* reflectivity = m_mlib->makeConstantProperty(refl);
  
     G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
-    addProperty(mpt, "EFFICIENCY" , efficiency );
-    addProperty(mpt, "REFLECTIVITY" , reflectivity );
+    addProperty(mpt, name, "EFFICIENCY" , efficiency );
+    addProperty(mpt, name, "REFLECTIVITY" , reflectivity );
 
     G4LogicalBorderSurface* lbs = new G4LogicalBorderSurface(name,pv1,pv2,os);
     return lbs ; 
@@ -163,8 +204,8 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
     GProperty<float>* reflectivity = m_mlib->makeConstantProperty(0.f);
 
     G4MaterialPropertiesTable* mpt = os->GetMaterialPropertiesTable() ;
-    addProperty(mpt, "EFFICIENCY" , detect );
-    addProperty(mpt, "REFLECTIVITY" , reflectivity );
+    addProperty(mpt, name, "EFFICIENCY" , detect );
+    addProperty(mpt, name, "REFLECTIVITY" , reflectivity );
 
     G4LogicalBorderSurface* lbs = new G4LogicalBorderSurface(name,pv1,pv2,os);
     return lbs ; 
@@ -188,37 +229,6 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
 */
 
 
-void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal)
-{
-    std::vector<std::string> keys ; 
-    boost::split(keys, _keys, boost::is_any_of(","));   
-
-    const char* name = pmap->getShortName();
-    unsigned int nprop = pmap->getNumProperties();
-    std::stringstream ss ; 
-
-    for(unsigned int i=0 ; i<nprop ; i++)
-    {
-        const char* key =  pmap->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
-        const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
-        const char* ukey = keylocal ? lkey : key ;
-
-        LOG(debug) << "CPropLib::addProperties " << name << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
-
-        if(ukey && std::find(keys.begin(), keys.end(), ukey) != keys.end())
-        {
-            GProperty<float>* prop = pmap->getPropertyByIndex(i);
-            addProperty(mpt, ukey , prop );
-            ss << ukey << " " ; 
-        }
-        else
-        {
-            LOG(debug) << "CPropLib::addProperties " << std::setw(30) << name << "skipped " << ukey ;
-        }
-    }
-    std::string lka = ss.str(); 
-    LOG(info) << "CPropLib::addProperties MPT of " << std::setw(30) << name << " keys: " << lka ; ; 
-}
 
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
@@ -233,7 +243,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
         GPropertyMap<float>* surf = m_sensor_surface ; 
         assert(surf);
         addProperties(mpt, surf, "EFFICIENCY");
-     }
+    }
 
     if(_ggmat->hasNonZeroProperty("reemission_prob"))
     {
@@ -243,33 +253,85 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
                   << " name " << name 
                   << " keys " << scintillator->getKeysString() 
                    ; 
-        addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT,SCINTILLATIONYIELD", false);
+        bool keylocal, constant ; 
+        addProperties(mpt, scintillator, "SLOWCOMPONENT,FASTCOMPONENT", keylocal=false, constant=false);
+        addProperties(mpt, scintillator, "SCINTILLATIONYIELD,RESOLUTIONSCALE,YIELDRATIO,FASTTIMECONSTANT,SLOWTIMECONSTANT", keylocal=false, constant=true );
+
+        // NB the above skips prefixed versions of the constants: Alpha, 
+        //addProperties(mpt, scintillator, "ALL",          keylocal=false, constant=true );
     }
     return mpt ;
 }
 
-void CPropLib::checkConstants()
+
+void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal, bool constant)
 {
+    std::vector<std::string> keys ; 
+    boost::split(keys, _keys, boost::is_any_of(","));   
 
-    LOG(info) << "CPropLib::checkConstants" 
-               << " mm " << mm 
-               << " MeV " << MeV
-               << " nanosecond " << nanosecond
-               << " ns " << ns
-               << " nm " << nm
-               << " GC::nanometer " << GConstant::nanometer
-               << " h_Planck " << h_Planck
-               << " GC::h_Planck " << GConstant::h_Planck
-               << " c_light " << c_light
-               << " GC::c_light " << GConstant::c_light
-               ;   
+    bool all = keys.size() == 1 && keys[0].compare("ALL") == 0 ;
 
+    const char* matname = pmap->getShortName();
+    unsigned int nprop = pmap->getNumProperties();
+    std::stringstream ss ; 
 
+    for(unsigned int i=0 ; i<nprop ; i++)
+    {
+        const char* key =  pmap->getPropertyNameByIndex(i); // refractive_index absorption_length scattering_length reemission_prob
+        const char* lkey = m_mlib->getLocalKey(key) ;      // RINDEX ABSLENGTH RAYLEIGH REEMISSIONPROB
+        const char* ukey = keylocal ? lkey : key ;
+
+        if(!ukey) LOG(fatal) << "CPropLib::addProperties missing key for prop " << i ; 
+        assert(ukey);
+
+        LOG(debug) << "CPropLib::addProperties " << matname << " " << i  << " key " << key << " lkey " << lkey << " ukey " << ukey  ;
+
+        bool select = all ? true : std::find(keys.begin(), keys.end(), ukey) != keys.end() ;
+        if(select)
+        {
+            GProperty<float>* prop = pmap->getPropertyByIndex(i);
+            if(constant)
+                addConstProperty(mpt, matname, ukey , prop );
+            else
+                addProperty(mpt, matname, ukey , prop );
+ 
+            ss << ukey << " " ; 
+        }
+        else
+        {
+            LOG(debug) << "CPropLib::addProperties " << std::setw(30) << matname << "skipped " << ukey ;
+        }
+    }
+    std::string lka = ss.str(); 
+    LOG(info) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
 }
 
 
+void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop )
+{
+    if(!prop->isConstant())
+    { 
+        LOG(warning) << "CPropLib::addConstProperty " << matname << "." << lkey << " SKIP NON-CONSTANT PROP " ; 
+        return  ;
+    }
 
-void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop )
+    float value = prop->getConstant();
+    float uvalue =  m_const_override.count(matname)==1 && m_const_override[matname].count(lkey) == 1 ? m_const_override[matname][lkey] : value ;  
+          
+    if( value != uvalue )
+    {
+        LOG(warning) << "CPropLib::addConstProperty"
+                     << " OVERRIDE "  
+                     << matname << "." << lkey 
+                     << " from " << value
+                     << " to " << uvalue 
+                     ;
+    }
+
+    mpt->AddConstProperty(lkey, uvalue); 
+}
+
+void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop )
 {
     bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
     bool groupvel = strcmp(lkey, "GROUPVEL") == 0 ; 
@@ -316,7 +378,9 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GP
 
 
     //LOG(info) << "CPropLib::addProperty lkey " << lkey ; 
-    mpt->AddProperty(lkey, ddom, dval, nval)->SetSpline(true); 
+
+    G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval);
+    mpv->SetSpline(true); 
 
     delete [] ddom ; 
     delete [] dval ; 
@@ -358,20 +422,7 @@ G4Material* CPropLib::makeVacuum(const char* name)
 const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 {
     const char* name = kmat->getShortName();
-
-
-
-    if(m_ggtog4.count(kmat) == 1)
-    {
-        assert(0 && "now do all conversions up front ");
-        LOG(info) << "CPropLib::convertMaterial" 
-                  << " return preexisting " << name 
-                  ;
-        return m_ggtog4[kmat] ;
-    }
-
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
-
 
     LOG(debug) << "CPropLib::convertMaterial  " 
               << " name " << name
@@ -379,15 +430,10 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
               ;
 
     G4Material* material(NULL);
-
     if(strcmp(name,"MainH2OHale")==0)
     {
         material = makeWater(name) ;
     } 
-    //else if(strcmp(name,"Vacuum")==0)
-    //{
-    //    material = makeVacuum(name) ;
-    //}
     else
     {
         G4double z, a, density ;
@@ -396,7 +442,6 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     }
 
     G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(kmat);
-
     material->SetMaterialPropertiesTable(mpt);
 
     m_ggtog4[kmat] = material ; 
@@ -433,14 +478,6 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
 }
 
 
-void CPropLib::dump(const GMaterial* mat, const char* msg)
-{
-    GMaterial* _mat = const_cast<GMaterial*>(mat); 
-    const G4Material* g4mat = getG4Material(_mat->getName());
-    dumpMaterial(g4mat, msg);
-}
-
-
 void CPropLib::dump(const char* msg)
 {
     unsigned int ni = getNumMaterials() ;
@@ -466,6 +503,33 @@ void CPropLib::dump(const char* msg)
         }
     }
 }
+
+
+void CPropLib::dump(const GMaterial* mat, const char* msg)
+{
+    GMaterial* _mat = const_cast<GMaterial*>(mat); 
+    const G4Material* g4mat = getG4Material(_mat->getName());
+    dumpMaterial(g4mat, msg);
+}
+
+
+void CPropLib::dumpMaterial(const G4Material* mat, const char* msg)
+{
+    const G4String& name = mat->GetName();
+    LOG(info) << msg << " name " << name ; 
+
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    //mpt->DumpTable();
+
+    GPropertyMap<float>* pmap = convertTable( mpt , name );  // back into GGeo language for dumping purpose only
+
+    unsigned int fw = 20 ;  
+    bool dreciprocal = true ; 
+
+    std::cout << pmap->make_table(fw, m_dscale, dreciprocal) << std::endl ;
+}
+
+
 
 
 
@@ -520,32 +584,6 @@ void CPropLib::dumpMaterials(const char* msg)
     }
 }
 
-
-
-
-
-
-
-void CPropLib::dumpMaterial(const G4Material* mat, const char* msg)
-{
-    const G4String& name = mat->GetName();
-    LOG(info) << msg << " name " << name ; 
-
-    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
-    //mpt->DumpTable();
-
-    GPropertyMap<float>* pmap = convertTable( mpt , name );
-
-    unsigned int fw = 20 ;  
-    float dscale = GConstant::h_Planck*GConstant::c_light/GConstant::nanometer ;
-    bool dreciprocal = true ; 
-
-    std::cout << pmap->make_table(fw, dscale, dreciprocal) << std::endl ;
-}
-
-
-
-
 std::string CPropLib::getMaterialKeys(const G4Material* mat)
 {   
     std::stringstream ss ;
@@ -566,12 +604,36 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
     GPropertyMap<float>* pmap = new GPropertyMap<float>(name);
     
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ; 
-    MKP* kp = mpt->GetPropertiesMap() ;
-    for(MKP::const_iterator it=kp->begin() ; it != kp->end() ; it++)
+    MKP* pm = mpt->GetPropertiesMap() ;
+    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
     {
         G4String k = it->first ; 
         G4MaterialPropertyVector* pvec = it->second ; 
         GProperty<float>* prop = convertVector(pvec);        
+        pmap->addProperty( k.c_str(), prop );  
+   }
+
+   typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
+   MKC* cm = mpt->GetPropertiesCMap() ;
+   for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)
+   {
+        G4String k = it->first ; 
+        G4double v = it->second ;
+
+        // express standard Opticks nm range in MeV, and swap order
+        float dlow  = m_dscale/m_domain->getHigh() ; 
+        float dhigh = m_dscale/m_domain->getLow() ;  
+
+        LOG(info) << "CPropLib::convertTable" 
+                  << " domlow (nm) "  << m_domain->getLow()  
+                  << " domhigh (nm) " << m_domain->getHigh()
+                  << " dscale MeV/nm " << m_dscale 
+                  << " dlow  (MeV)  " << dlow 
+                  << " dhigh (MeV) " << dhigh
+                  ;
+
+
+        GProperty<float>* prop = GProperty<float>::from_constant(v, dlow, dhigh );        
         pmap->addProperty( k.c_str(), prop );  
    }
    return pmap ;    
@@ -588,8 +650,15 @@ GProperty<float>* CPropLib::convertVector(G4PhysicsVector* pvec)
          values[i] = (*pvec)[i] ;
     }
     GProperty<float>* prop = new GProperty<float>(values, domain, length );    
-    delete domain ;  
-    delete values ;  
+
+    LOG(debug) << "CPropLib::convertVector" 
+              << " raw domain  (MeV) " << domain[0] << " : " << domain[length-1] 
+              << " m_dscale*(1/domain) (nm) " << m_dscale*1./domain[0] << " : " << m_dscale*1./domain[length-1] 
+              ;  
+
+    delete [] domain ;  
+    delete [] values ; 
+
     return prop ; 
 }
 

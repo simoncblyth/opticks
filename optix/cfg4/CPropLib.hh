@@ -16,6 +16,7 @@ class GMaterial ;
 
 template <typename T> class GProperty ; 
 template <typename T> class GPropertyMap ; 
+template <typename T> class GDomain ; 
 
 // npy-
 struct NSlice ; 
@@ -37,6 +38,8 @@ class G4PhysicsVector ;
 //     * moving to convert internally all at once approach 
 //       and provide simple accessors
 //
+//     * maybe split off conversion "reconstruction" into separate class
+//
 
 class CPropLib {
    public:
@@ -45,8 +48,9 @@ class CPropLib {
        CPropLib(GCache* cache, int verbosity=0);
    private:
        void init();
-       void convert();
        void checkConstants(); 
+       void setupOverrides(); 
+       void convert();
    public:
        // GGeo material access
        unsigned int getNumMaterials();
@@ -75,11 +79,13 @@ class CPropLib {
        const G4Material* convertMaterial(const GMaterial* kmat);
        G4Material* makeVacuum(const char* name);
        G4Material* makeWater(const char* name);
-       void addProperty(G4MaterialPropertiesTable* mpt, const char* lkey,  GProperty<float>* prop );
    public:
+       // used by CGDMLDetector::addMPT TODO: privatize
        G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
    private: 
-       void addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal=true);
+       void addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal=true, bool constant=false);
+       void addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
+       void addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
    public: 
        void dump(const char* msg="CPropLib::dump");
        void dump(const GMaterial* mat, const char* msg="CPropLib::dump");
@@ -96,6 +102,8 @@ class CPropLib {
        GMaterialLib*      m_mlib ; 
        GSurfaceLib*       m_slib ; 
        GScintillatorLib*  m_sclib ; 
+       GDomain<float>*    m_domain ; 
+       float              m_dscale ;  
 
        GPropertyMap<float>* m_sensor_surface ; 
 
@@ -106,6 +114,7 @@ class CPropLib {
        bool              m_groupvel_kludge ; 
    private:
        std::map<std::string, const G4Material*>   m_g4mat ; 
+       std::map<std::string, std::map<std::string, float> > m_const_override ; 
 
 };
 
@@ -117,6 +126,8 @@ inline CPropLib::CPropLib(GCache* cache, int verbosity)
   m_mlib(NULL),
   m_slib(NULL),
   m_sclib(NULL),
+  m_domain(NULL),
+  m_dscale(1), 
   m_groupvel_kludge(true)
 {
     init();

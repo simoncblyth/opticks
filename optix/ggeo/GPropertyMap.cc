@@ -465,6 +465,18 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
    std::vector< GProperty<T>* > dprops ; 
    std::vector< std::string > dtitles ; 
 
+   std::vector< GProperty<T>* > eprops ; 
+   std::vector< std::string > etitles ; 
+
+   std::vector< GProperty<T>* > fprops ; 
+   std::vector< std::string > ftitles ; 
+
+   std::vector< GProperty<T>* > gprops ; 
+   std::vector< std::string > gtitles ; 
+
+
+
+   unsigned int clim = 5 ; 
 
    unsigned int nprop = getNumProperties() ;
    for(unsigned int i=0 ; i < nprop ; i++)
@@ -477,17 +489,32 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
       
        if(prop->isConstant()) 
        {
-
-           if(cprops.size() < 10)
+           if(cprops.size() < clim)
            {
                cprops.push_back(prop);
                ctitles.push_back(name);
            }
-           else
+           else if(dprops.size() < clim)
            {
                dprops.push_back(prop);
                dtitles.push_back(name);
            }
+           else if(eprops.size() < clim)
+           {
+               eprops.push_back(prop);
+               etitles.push_back(name);
+           }
+           else if(fprops.size() < clim)
+           {
+               fprops.push_back(prop);
+               ftitles.push_back(name);
+           }
+           else if(gprops.size() < clim)
+           {
+               gprops.push_back(prop);
+               gtitles.push_back(name);
+           }
+
        }
        else
        {
@@ -501,11 +528,19 @@ std::string GPropertyMap<T>::make_table(unsigned int fw, T dscale, bool drecipro
       << " vprops " << vprops.size()
       << " cprops " << cprops.size()
       << " dprops " << dprops.size()
+      << " eprops " << eprops.size()
+      << " fprops " << fprops.size()
+      << " gprops " << gprops.size()
       << std::endl;
 
+   unsigned int cfw = 10 + fw ; 
+
    if(vprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, false,vprops, vtitles ) ;
-   if(cprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, true ,cprops, ctitles )  ;
-   if(dprops.size() > 0) ss << GProperty<T>::make_table( fw, dscale, dreciprocal, true ,dprops, dtitles )  ;
+   if(cprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,cprops, ctitles )  ;
+   if(dprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,dprops, dtitles )  ;
+   if(eprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,eprops, etitles )  ;
+   if(fprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,fprops, ftitles )  ;
+   if(gprops.size() > 0) ss << GProperty<T>::make_table( cfw, dscale, dreciprocal, true ,gprops, gtitles )  ;
    return ss.str();
 
 /*

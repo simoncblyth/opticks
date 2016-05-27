@@ -166,7 +166,8 @@ std::string Format(std::vector<const CStep*>& steps, const char* msg, bool op)
          const CStep* cstep = steps[i] ;
          const G4Step* step = cstep->getStep();
          unsigned int step_id = cstep->getStepId();
-         assert(step_id == i );
+
+        //  assert(step_id == i );  not always so ?
 
          G4StepPoint* pre = step->GetPreStepPoint() ;
 

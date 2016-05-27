@@ -58,9 +58,14 @@ class OpNovicePhysicsList : public G4VUserPhysicsList
   public:
     void Summary(const char* msg="OpNovicePhysicsList::Summary");
     void collectProcesses();
-    void dumpProcesses(const char* msg="OpNovicePhysicsList::dumpProcesses");
     void setProcessVerbosity(unsigned int verbosity);
     void setupEmVerbosity(unsigned int verbosity);
+  public:
+    void dump(const char* msg="OpNovicePhysicsList::dump");
+  private:
+    void dumpRayleigh(const char* msg="OpNovicePhysicsList::dumpRayleigh");
+    void dumpMaterials(const char* msg="OpNovicePhysicsList::dumpMaterials");
+    void dumpProcesses(const char* msg="OpNovicePhysicsList::dumpProcesses");
   public:
 
     virtual void ConstructParticle();

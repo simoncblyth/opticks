@@ -121,6 +121,20 @@ GProperty<T>* GProperty<T>::from_constant(T value, T* domain, unsigned int lengt
 
 
 template <typename T>
+GProperty<T>* GProperty<T>::from_constant(T value, T dlow, T dhigh)
+{
+    unsigned int nval = 2 ; 
+    T* domain = new T[nval] ; 
+    domain[0] = T(dlow) ;
+    domain[1] = T(dhigh) ;
+
+    GProperty<T>* prop = from_constant(value, domain, nval );
+    delete [] domain ; 
+    return prop ; 
+}
+
+
+template <typename T>
 bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta)
 {
     if(a->getLength() != b->getLength())  return false ; 
@@ -295,6 +309,7 @@ GProperty<T>* GProperty<T>::ramp(T low, T step, T* domain, unsigned int length )
 }
 
 
+
 template <typename T>
 GProperty<T>::GProperty(GProperty<T>* other) : m_length(other->getLength())
 {
@@ -305,7 +320,6 @@ GProperty<T>::GProperty(GProperty<T>* other) : m_length(other->getLength())
 template <typename T>
 GProperty<T>::GProperty(T* values, T* domain, unsigned int length ) : m_length(length)
 {
-    //assert(length < 1000);
     m_values = new GAry<T>(length, values);
     m_domain = new GAry<T>(length, domain);
 }
