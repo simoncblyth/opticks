@@ -43,7 +43,7 @@ void CStepRec::store(unsigned int event_id, unsigned int track_id, int particle_
          const CStep* cstep = m_steps[i] ;
          const G4Step* step = cstep->getStep();
          unsigned int step_id = cstep->getStepId();
-         assert(step_id == i);
+         //assert(step_id == i);
 
          store(event_id, track_id, particle_id, i, step->GetPreStepPoint() ) ;
 

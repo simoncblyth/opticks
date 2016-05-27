@@ -84,6 +84,8 @@ OpStatus.cc
 PhysicsList.cc
 OpNovicePhysicsList.cc
 OpNovicePhysicsListMessenger.cc
+OpRayleigh.cc
+Scintillation.cc
 CDetector.cc
 CTestDetector.cc
 CGDMLDetector.cc
@@ -112,6 +114,8 @@ OpStatus.hh
 PhysicsList.hh
 OpNovicePhysicsList.hh
 OpNovicePhysicsListMessenger.hh
+OpRayleigh.hh
+Scintillation.hh
 CDetector.hh
 CTestDetector.hh
 CGDMLDetector.hh

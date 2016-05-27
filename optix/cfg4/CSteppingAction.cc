@@ -85,11 +85,34 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     bool startEvent = m_event_id != event_id ; 
     bool startTrack = m_track_id != track_id || startEvent ; 
 
+    if(startEvent)
+    {
+       m_event_total += 1 ; 
+       m_track_count = 0 ; 
+    }
+    if(startTrack)
+    {
+       m_track_count += 1 ; 
+       m_step_count = 0 ; 
+       m_track_total += 1 ; 
+    }
+    m_step_count += 1 ; 
+    m_step_total += 1 ; 
+
+
+    //if(m_step_total % 1000 == 0) 
+         LOG(info) << "CSA tots" 
+                   << " evt " <<  m_event_total
+                   << " trk " <<  m_track_total
+                   << " stp " <<  m_step_total
+                   ;
+
+
     const G4ParticleDefinition* type = track->GetDefinition();
     const G4ParticleDefinition* type2 = track->GetDynamicParticle()->GetParticleDefinition(); 
     assert( type == type2 );
 
-    G4String particleName = type->GetParticleName();
+    //G4String particleName = type->GetParticleName();
     G4int pdgCode = type->GetPDGEncoding();
 
     setEventId(event_id);     

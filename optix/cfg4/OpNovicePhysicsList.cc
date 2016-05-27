@@ -48,9 +48,13 @@
 #include "G4ProcessManager.hh"
 
 #include "G4Cerenkov.hh"
-#include "G4Scintillation.hh"
+//#include "G4Scintillation.hh"
+#include "Scintillation.hh"
 #include "G4OpAbsorption.hh"
-#include "G4OpRayleigh.hh"
+
+//#include "G4OpRayleigh.hh"
+#include "OpRayleigh.hh"
+
 #include "G4OpMieHG.hh"
 #include "G4OpBoundaryProcess.hh"
 
@@ -60,9 +64,15 @@
 G4ThreadLocal G4int OpNovicePhysicsList::fVerboseLevel = 1;
 G4ThreadLocal G4int OpNovicePhysicsList::fMaxNumPhotonStep = 20;
 G4ThreadLocal G4Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
-G4ThreadLocal G4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+
+//G4ThreadLocal G4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+G4ThreadLocal Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+
 G4ThreadLocal G4OpAbsorption* OpNovicePhysicsList::fAbsorptionProcess = 0;
-G4ThreadLocal G4OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
+
+//G4ThreadLocal G4OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
+G4ThreadLocal OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
+
 G4ThreadLocal G4OpMieHG* OpNovicePhysicsList::fMieHGScatteringProcess = 0;
 G4ThreadLocal G4OpBoundaryProcess* OpNovicePhysicsList::fBoundaryProcess = 0;
  
@@ -118,6 +128,8 @@ void OpNovicePhysicsList::ConstructProcess()
   ConstructDecay();
   ConstructEM();
   ConstructOp();
+
+  dump("OpNovicePhysicsList::ConstructProcess"); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -335,11 +347,15 @@ void OpNovicePhysicsList::ConstructOp()
   fCerenkovProcess->SetTrackSecondariesFirst(true);
   */
 
-  fScintillationProcess = new G4Scintillation("Scintillation");
+  //fScintillationProcess = new G4Scintillation("Scintillation");
+  fScintillationProcess = new Scintillation("Scintillation");
   fScintillationProcess->SetScintillationYieldFactor(1.);
   fScintillationProcess->SetTrackSecondariesFirst(true);
   fAbsorptionProcess = new G4OpAbsorption();
-  fRayleighScatteringProcess = new G4OpRayleigh();
+
+  //fRayleighScatteringProcess = new G4OpRayleigh();
+  fRayleighScatteringProcess = new OpRayleigh();
+
   fMieHGScatteringProcess = new G4OpMieHG();
   fBoundaryProcess = new G4OpBoundaryProcess();
 

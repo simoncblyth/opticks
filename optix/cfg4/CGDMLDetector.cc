@@ -87,7 +87,7 @@ void CGDMLDetector::addMPT()
 
         G4MaterialPropertiesTable* mpt = m_lib->makeMaterialPropertiesTable(ggmat);
         g4mat->SetMaterialPropertiesTable(mpt);
-        m_lib->dumpMaterial(g4mat, "CGDMLDetector::addMPT");        
+        //m_lib->dumpMaterial(g4mat, "CGDMLDetector::addMPT");        
          
     }
 

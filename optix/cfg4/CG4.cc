@@ -134,7 +134,6 @@ void CG4::initialize()
 #ifdef OLDPHYS
 #else
     m_physics->setProcessVerbosity(0); 
-    m_physics->dump("CG4::initialize");
 #endif
 
     TIMER("initialize");

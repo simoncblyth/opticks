@@ -284,7 +284,7 @@ ggv-g4gun()
                  direction=0,0,1
               polarization=1,0,0
                       time=0.
-                    energy=100.0
+                    energy=10.0
                    ) 
           # mm, ns, MeV
 
@@ -298,9 +298,12 @@ ggv-g4gun()
    cat << EOI > $inimac
 /OpNovice/phys/verbose 0
 /run/particle/verbose 1
-/run/particle/retrievePhysicsTable $phycache
 EOI
 
+   cat << COM > /dev/null
+/run/particle/retrievePhysicsTable $phycache
+/run/particle/storePhysicsTable $phycache
+COM
 
    local finmac
    if [ -f "$phycache/material.dat" ]; then 
@@ -308,7 +311,6 @@ EOI
    else
        finmac=/tmp/g4fin.mac
        cat << EOI > $finmac
-/run/particle/storePhysicsTable $phycache
 EOI
    fi
 

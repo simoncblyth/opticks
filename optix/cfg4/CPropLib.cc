@@ -60,7 +60,7 @@ void CPropLib::init()
 
     setupOverrides();
  
-    convert();
+    //convert();
 }
 
 
@@ -124,8 +124,6 @@ void CPropLib::convert()
     for(unsigned int i=0 ; i < ngg ; i++)
     {
         const GMaterial* ggmat = getMaterial(i);
-
-
         const char* name = ggmat->getShortName() ;
         const G4Material* g4mat = convertMaterial(ggmat);
         std::string keys = getMaterialKeys(g4mat);
@@ -136,12 +134,10 @@ void CPropLib::convert()
 }
 
 
-
 const G4Material* CPropLib::getG4Material(const char* shortname)
 {
     return m_g4mat.count(shortname) == 1 ? m_g4mat[shortname] : NULL ; 
 }
-
 
 
 const G4Material* CPropLib::makeInnerMaterial(const char* spec)
@@ -303,7 +299,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
         }
     }
     std::string lka = ss.str(); 
-    LOG(info) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
+    LOG(debug) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
 }
 
 
@@ -333,7 +329,10 @@ void CPropLib::addConstProperty(G4MaterialPropertiesTable* mpt, const char* matn
 
 void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop )
 {
-    bool length = strcmp(lkey, "ABSLENGTH") == 0 || strcmp(lkey, "RAYLEIGH") == 0  ;
+
+    bool abslength = strcmp(lkey, "ABSLENGTH") == 0 ;
+    bool rayleigh = strcmp(lkey, "RAYLEIGH") == 0 ;
+    bool length = abslength || rayleigh ;
     bool groupvel = strcmp(lkey, "GROUPVEL") == 0 ; 
 
     unsigned int nval  = prop->getLength();
@@ -380,7 +379,17 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     //LOG(info) << "CPropLib::addProperty lkey " << lkey ; 
 
     G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval);
-    mpv->SetSpline(true); 
+
+    if(abslength)
+    {
+       // see issue/optical_local_time_goes_backward.rst
+        mpv->SetSpline(false);
+    }
+    else
+    {
+        mpv->SetSpline(true);
+
+    } 
 
     delete [] ddom ; 
     delete [] dval ; 

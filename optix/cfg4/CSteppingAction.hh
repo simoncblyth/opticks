@@ -39,6 +39,11 @@ class CSteppingAction : public G4UserSteppingAction
     int          m_verbosity ; 
     int          m_event_id ; 
     int          m_track_id ; 
+    unsigned int m_event_total ; 
+    unsigned int m_track_total ; 
+    unsigned int m_step_total ; 
+    unsigned int m_track_count ; 
+    unsigned int m_step_count ; 
 };
 
 inline CSteppingAction::CSteppingAction(CG4* g4)
@@ -50,7 +55,12 @@ inline CSteppingAction::CSteppingAction(CG4* g4)
    m_rec(NULL),
    m_verbosity(0),
    m_event_id(-1),
-   m_track_id(-1)
+   m_track_id(-1),
+   m_event_total(0),
+   m_track_total(0),
+   m_step_total(0),
+   m_track_count(0),
+   m_step_count(0)
 { 
    init();
 }

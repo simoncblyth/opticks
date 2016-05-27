@@ -1,7 +1,23 @@
 Scattering : GdLS missing RAYLEIGH
 =====================================
 
-Argh this is flaky ... some MPT are corrupted. 
+Argh this is flaky ... some MPT are corrupted ?
+
+Somehow the attempt to use physics table persisting and loading for fast 
+start results in a double "OpRayleigh::BuildPhysicsTable" with the 
+second one with crazy properties.
+
+Removing the lines from ggv-g4gun seem to avoid the problem with corrupt rayleigh scattering props::
+
+    /run/particle/retrievePhysicsTable $phycache
+
+    /run/particle/storePhysicsTable $phycache
+
+But the backwards in time issue remains.
+
+
+
+
 
 ::
 
@@ -164,6 +180,120 @@ Huh where is RAYLEIGH?::
         [7] = 0.0003026714279642655
         [8] = 0.00032894631812999808
         [9] = 0.00035223680480944263
+
+
+
+::
+
+    (lldb) b "G4OpRayleigh::GetMeanFreePath(G4Track const&, double, G4ForceCondition*)" 
+
+
+
+Physics table is only created during beamOn, plus the process
+has no virtuals so are forced to copy process source to debug.
+
+::
+
+       226  // --------------------------------------------------------
+       227  void OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
+       228  {
+    -> 229    if (thePhysicsTable) {
+       230       thePhysicsTable->clearAndDestroy();
+       231       delete thePhysicsTable;
+       232       thePhysicsTable = NULL;
+    (lldb) bt
+    * thread #1: tid = 0x732c57, 0x0000000101595b07 libcfg4.dylib`OpRayleigh::BuildPhysicsTable(this=0x000000010d33ee80, (null)=0x000000010904f120) + 23 at OpRayleigh.cc:229, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x0000000101595b07 libcfg4.dylib`OpRayleigh::BuildPhysicsTable(this=0x000000010d33ee80, (null)=0x000000010904f120) + 23 at OpRayleigh.cc:229
+        frame #1: 0x0000000102d4d68f libG4run.dylib`G4VUserPhysicsList::RetrievePhysicsTable(this=0x0000000109048c10, particle=0x000000010904f120, directory=0x0000000109048c48, ascii=true) + 559 at G4VUserPhysicsList.cc:912
+        frame #2: 0x0000000102d4c3d8 libG4run.dylib`G4VUserPhysicsList::BuildPhysicsTable(this=0x0000000109048c10, particle=0x000000010904f120) + 536 at G4VUserPhysicsList.cc:621
+        frame #3: 0x0000000102d4beaf libG4run.dylib`G4VUserPhysicsList::BuildPhysicsTable(this=0x0000000109048c10) + 1535 at G4VUserPhysicsList.cc:583
+        frame #4: 0x0000000102d2883c libG4run.dylib`G4RunManagerKernel::BuildPhysicsTables(this=0x00000001087253c0, fakeRun=false) + 76 at G4RunManagerKernel.cc:707
+        frame #5: 0x0000000102d28367 libG4run.dylib`G4RunManagerKernel::RunInitialization(this=0x00000001087253c0, fakeRun=false) + 279 at G4RunManagerKernel.cc:609
+        frame #6: 0x0000000102d04bb8 libG4run.dylib`G4RunManager::RunInitialization(this=0x0000000108724fb0) + 56 at G4RunManager.cc:313
+        frame #7: 0x0000000102d048b2 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000108724fb0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 146 at G4RunManager.cc:272
+        frame #8: 0x000000010155b6ad libcfg4.dylib`CG4::propagate(this=0x0000000108721880) + 605 at CG4.cc:180
+        frame #9: 0x000000010000d542 CG4Test`main(argc=16, argv=0x00007fff5fbfd870) + 210 at CG4Test.cc:20
+        frame #10: 0x00007fff89e755fd libdyld.dylib`start + 1
+    (lldb) 
+
+::
+
+      (lldb) b "OpRayleigh::BuildPhysicsTable(G4ParticleDefinition const&)" 
+
+
+Huh table built twice, the 2nd time with messed up values ?::
+
+    G4ProductionCutsTable::CheckForRetrieveCutsTable!!
+    [2016-May-27 17:37:47.334780]:info: OpRayleigh::check mat /dd/Materials/PPE min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.334935]:info: OpRayleigh::check mat /dd/Materials/MixGas min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.335049]:info: OpRayleigh::check mat /dd/Materials/Air min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.335139]:info: OpRayleigh::check mat /dd/Materials/Bakelite min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.335231]:info: OpRayleigh::check mat /dd/Materials/Foam min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.335338]:info: OpRayleigh::check mat /dd/Materials/Aluminium min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.335429]:info: OpRayleigh::check mat /dd/Materials/Iron min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.335516]:info: OpRayleigh::check mat /dd/Materials/GdDopedLS min 500000 max 850 num 39
+    ...
+    [2016-May-27 17:37:47.337585]:info: OpRayleigh::check mat /dd/Materials/ADTableStainlessSteel min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.337683]:info: OpRayleigh::check mat /dd/Materials/Tyvek min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.337771]:info: OpRayleigh::check mat /dd/Materials/OwsWater min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.337862]:info: OpRayleigh::check mat /dd/Materials/DeadWater min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.337953]:info: OpRayleigh::check mat /dd/Materials/RadRock min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.338044]:info: OpRayleigh::check mat /dd/Materials/Rock min 1e+06 max 1e+06 num 39
+    [2016-May-27 17:37:47.338134]:info: OpRayleigh::BuildPhysicsTable
+    [2016-May-27 17:37:47.338232]:info: OpRayleigh::check mat /dd/Materials/PPE min 0 max 6.36599e-314 num 39
+    [2016-May-27 17:37:47.338327]:info: OpRayleigh::check mat /dd/Materials/MixGas min 2.31584e+77 max 2.22383e-314 num 39
+    [2016-May-27 17:37:47.338429]:info: OpRayleigh::check mat /dd/Materials/Air min -1.3899e-315 max 2.22387e-314 num 39
+    [2016-May-27 17:37:47.338526]:info: OpRayleigh::check mat /dd/Materials/Bakelite min -2.68156e+154 max 2.22385e-314 num 39
+    [2016-May-27 17:37:47.338627]:info: OpRayleigh::check mat /dd/Materials/Foam min 2 max 2.22384e-314 num 39
+    [2016-May-27 17:37:47.338719]:info: OpRayleigh::check mat /dd/Materials/Aluminium min -1.49167e-154 max 2.22386e-314 num 39
+    [2016-May-27 17:37:47.338845]:info: OpRayleigh::check mat /dd/Materials/Iron min 1.38991e-315 max 2.22384e-314 num 39
+    [2016-May-27 17:37:47.338944]:info: OpRayleigh::check mat /dd/Materials/GdDopedLS min 2.68156e+154 max 2.22386e-314 num 39
+    ...
+    [2016-May-27 17:37:47.341240]:info: OpRayleigh::check mat /dd/Materials/ADTableStainlessSteel min -2 max 2.22394e-314 num 39
+    [2016-May-27 17:37:47.341344]:info: OpRayleigh::check mat /dd/Materials/Tyvek min 1.49167e-154 max -2 num 39
+    [2016-May-27 17:37:47.341436]:info: OpRayleigh::check mat /dd/Materials/OwsWater min -1.38996e-315 max 2.22395e-314 num 39
+    [2016-May-27 17:37:47.341537]:info: OpRayleigh::check mat /dd/Materials/DeadWater min -2.68156e+154 max -1.38971e-315 num 39
+    [2016-May-27 17:37:47.341638]:info: OpRayleigh::check mat /dd/Materials/RadRock min 2 max 2.22395e-314 num 39
+    [2016-May-27 17:37:47.341730]:info: OpRayleigh::check mat /dd/Materials/Rock min -1.49167e-154 max 2.22386e-314 num 39
+    [2016-May-27 17:37:47.341826]:info: OpRayleigh::BuildPhysicsTable
+
+
+
+First::
+
+    (lldb) bt
+    * thread #1: tid = 0x733d38, 0x0000000101595797 libcfg4.dylib`OpRayleigh::BuildPhysicsTable(this=0x000000010e1f67d0, (null)=0x000000010904f120) + 23 at OpRayleigh.cc:229, queue = 'com.apple.main-thread', stop reason = breakpoint 2.1
+      * frame #0: 0x0000000101595797 libcfg4.dylib`OpRayleigh::BuildPhysicsTable(this=0x000000010e1f67d0, (null)=0x000000010904f120) + 23 at OpRayleigh.cc:229
+        frame #1: 0x0000000102d4d68f libG4run.dylib`G4VUserPhysicsList::RetrievePhysicsTable(this=0x0000000109048c10, particle=0x000000010904f120, directory=0x0000000109048c48, ascii=true) + 559 at G4VUserPhysicsList.cc:912
+        frame #2: 0x0000000102d4c3d8 libG4run.dylib`G4VUserPhysicsList::BuildPhysicsTable(this=0x0000000109048c10, particle=0x000000010904f120) + 536 at G4VUserPhysicsList.cc:621
+        frame #3: 0x0000000102d4beaf libG4run.dylib`G4VUserPhysicsList::BuildPhysicsTable(this=0x0000000109048c10) + 1535 at G4VUserPhysicsList.cc:583
+        frame #4: 0x0000000102d2883c libG4run.dylib`G4RunManagerKernel::BuildPhysicsTables(this=0x00000001087253c0, fakeRun=false) + 76 at G4RunManagerKernel.cc:707
+        frame #5: 0x0000000102d28367 libG4run.dylib`G4RunManagerKernel::RunInitialization(this=0x00000001087253c0, fakeRun=false) + 279 at G4RunManagerKernel.cc:609
+        frame #6: 0x0000000102d04bb8 libG4run.dylib`G4RunManager::RunInitialization(this=0x0000000108724fb0) + 56 at G4RunManager.cc:313
+        frame #7: 0x0000000102d048b2 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000108724fb0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 146 at G4RunManager.cc:272
+        frame #8: 0x000000010155b33d libcfg4.dylib`CG4::propagate(this=0x0000000108721880) + 605 at CG4.cc:180
+        frame #9: 0x000000010000d542 CG4Test`main(argc=16, argv=0x00007fff5fbfd818) + 210 at CG4Test.cc:20
+        frame #10: 0x00007fff89e755fd libdyld.dylib`start + 1
+        frame #11: 0x00007fff89e755fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+Second::
+
+    (lldb) bt
+    * thread #1: tid = 0x733d38, 0x0000000101595797 libcfg4.dylib`OpRayleigh::BuildPhysicsTable(this=0x000000010e1f67d0, (null)=0x000000010904f120) + 23 at OpRayleigh.cc:229, queue = 'com.apple.main-thread', stop reason = breakpoint 2.1
+      * frame #0: 0x0000000101595797 libcfg4.dylib`OpRayleigh::BuildPhysicsTable(this=0x000000010e1f67d0, (null)=0x000000010904f120) + 23 at OpRayleigh.cc:229
+        frame #1: 0x0000000102d4c976 libG4run.dylib`G4VUserPhysicsList::BuildPhysicsTable(this=0x0000000109048c10, particle=0x000000010904f120) + 1974 at G4VUserPhysicsList.cc:689
+        frame #2: 0x0000000102d4beaf libG4run.dylib`G4VUserPhysicsList::BuildPhysicsTable(this=0x0000000109048c10) + 1535 at G4VUserPhysicsList.cc:583
+        frame #3: 0x0000000102d2883c libG4run.dylib`G4RunManagerKernel::BuildPhysicsTables(this=0x00000001087253c0, fakeRun=false) + 76 at G4RunManagerKernel.cc:707
+        frame #4: 0x0000000102d28367 libG4run.dylib`G4RunManagerKernel::RunInitialization(this=0x00000001087253c0, fakeRun=false) + 279 at G4RunManagerKernel.cc:609
+        frame #5: 0x0000000102d04bb8 libG4run.dylib`G4RunManager::RunInitialization(this=0x0000000108724fb0) + 56 at G4RunManager.cc:313
+        frame #6: 0x0000000102d048b2 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000108724fb0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 146 at G4RunManager.cc:272
+        frame #7: 0x000000010155b33d libcfg4.dylib`CG4::propagate(this=0x0000000108721880) + 605 at CG4.cc:180
+        frame #8: 0x000000010000d542 CG4Test`main(argc=16, argv=0x00007fff5fbfd818) + 210 at CG4Test.cc:20
+        frame #9: 0x00007fff89e755fd libdyld.dylib`start + 1
+    (lldb) 
+
 
 
 
