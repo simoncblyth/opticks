@@ -46,6 +46,8 @@ int main(int argc, char** argv)
 
         if(!app.hasOpt("noevent"))
         {
+            app.setupEventInEngine();
+ 
             app.preparePropagator();       // creates OptiX buffers and OBuf wrappers as members of OPropagator
 
             app.seedPhotonsFromGensteps(); // distributes genstep indices into the photons buffer
@@ -80,6 +82,8 @@ int main(int argc, char** argv)
             app.prepareOptiX();            // places geometry into OptiX context with OGeo 
 
             app.prepareOptiXViz();         // creates ORenderer, OTracer
+
+            app.setupEventInEngine();   // for indexing 
         } 
 #endif
 

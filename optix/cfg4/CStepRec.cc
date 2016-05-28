@@ -20,24 +20,26 @@ void CStepRec::init()
     m_nopstep = m_evt->getNopstepData();
 }
 
-void CStepRec::record(const G4Step* step, unsigned int step_id)
+void CStepRec::collectStep(const G4Step* step, unsigned int step_id)
 {
-    G4Track* track = step->GetTrack();
-
     m_steps.push_back(new CStep(step, step_id ));
 }
 
-void CStepRec::store(unsigned int event_id, unsigned int track_id, int particle_id)
+void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id, int particle_id)
 {
-    LOG(info) << "CStepRec::store" 
+    m_store_count += 1 ; 
+    unsigned int nsteps = m_steps.size();
+
+    LOG(info) << "CStepRec::storeStepsCollected" 
+              << " store_count " << m_store_count 
               << " event_id " << event_id
               << " track_id " << track_id
               << " particle_id " << particle_id
+              << " nsteps " << nsteps 
               << "\n"
               << Format( m_steps , "steps", false )
               ;
 
-    unsigned int nsteps = m_steps.size();
     for(unsigned int i=0 ; i < nsteps ; i++)
     {
          const CStep* cstep = m_steps[i] ;
@@ -45,17 +47,17 @@ void CStepRec::store(unsigned int event_id, unsigned int track_id, int particle_
          unsigned int step_id = cstep->getStepId();
          //assert(step_id == i);
 
-         store(event_id, track_id, particle_id, i, step->GetPreStepPoint() ) ;
+         storePoint(event_id, track_id, particle_id, i, step->GetPreStepPoint() ) ;
 
          if( i == nsteps - 1) 
-             store(event_id, track_id, particle_id, i+1, step->GetPostStepPoint() );
+             storePoint(event_id, track_id, particle_id, i+1, step->GetPostStepPoint() );
     }
 
     m_steps.clear();
 }
 
 
-void CStepRec::store(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point)
+void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point)
 {
     const G4ThreeVector& pos = point->GetPosition();
     G4double time = point->GetGlobalTime();

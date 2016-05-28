@@ -261,6 +261,14 @@ ggv-g4gun-notes(){ cat <<EON
          # visualize the geant4 propagation, with GGeoView
          # see also issues/nopstep_vis_debug.rst  
 
+   ggv-;ggv-g4gun --dbg --load --optixviz
+
+         # attempting to load the CFG4 Geant4/CPU simulated nopstep,photons,records,history
+         # needs the optixviz in order to setup OpEngine for indexing the history sequence
+         #
+         # TODO: revive/re-implement CPU indexer, so can do the lot without GPU (albeit very slowly)
+
+
 EON
 }
 

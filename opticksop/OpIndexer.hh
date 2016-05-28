@@ -99,6 +99,7 @@ class OpIndexer {
       void indexSequence(); 
       void indexBoundaries(); 
    private:
+      void checkTarget(const char* msg);
       void indexSequenceLoaded();  
       void indexSequenceInterop();  
       void indexSequenceCompute();  

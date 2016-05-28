@@ -44,6 +44,7 @@ class NumpyEvt {
    private:
        void init();
    public:
+       static const char* incoming ;
        static const char* primary ;
        static const char* genstep ;
        static const char* nopstep ;
@@ -105,12 +106,18 @@ class NumpyEvt {
        void saveIndex(bool verbose=false);
        void loadIndex();
        void load(bool verbose=true);
+   public: 
+       void createBuffers(); 
    private:
-       // invoked internally, as knock on from setGenstepData and setNopstepData
+       // invoked internally, as knock on from setGenstepData 
        void createHostBuffers(); 
        void createHostIndexBuffers(); 
+       void createDomainBuffers();
+       void createPhotonBuffers(unsigned int num_photons);
+       void createFlatRecordBuffers(unsigned int num_records);
+       void createStructuredRecordBuffers(unsigned int num_photons, unsigned int maxrec);
+   private:
        void seedPhotonData();
-       
        void setPrimaryData(NPY<float>* primary_data);
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
@@ -138,7 +145,9 @@ class NumpyEvt {
        NPY<unsigned char>*  getPhoselData();
        NPY<unsigned char>*  getRecselData();
        NPY<unsigned long long>*  getSequenceData();
-
+   public:
+       NPYBase*             getData(const char* name);
+       std::string          getShapeString(); 
    public:
        // optionals lodged here for debug dumping single photons/records  
        void setRecordsNPY(RecordsNPY* recs);
@@ -147,6 +156,8 @@ class NumpyEvt {
        PhotonsNPY*          getPhotonsNPY();
        NPY<float>*          getFDomain();
        NPY<int>*            getIDomain();
+   public:
+       void setFakeNopstepPath(const char* path);
    public:
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getNopstepAttr();
@@ -165,7 +176,9 @@ class NumpyEvt {
        unsigned int getNumPhotons();
        unsigned int getNumRecords();
        unsigned int getMaxRec();  // per-photon
-
+   private:
+       // set by setGenstepData based on summation over Cerenkov/Scintillation photons to generate
+       void setNumPhotons(unsigned int num_photons);
    public:
        void Summary(const char* msg="NumpyEvt::Summary");
        std::string  description(const char* msg="NumpyEvt::description");
@@ -206,6 +219,8 @@ class NumpyEvt {
        NPY<float>*           m_fdom ; 
        NPY<int>*             m_idom ; 
 
+
+
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_nopstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
@@ -233,7 +248,9 @@ class NumpyEvt {
        Index*          m_seqmat ; 
        Index*          m_bndidx ; 
 
+       std::vector<std::string> m_data_names ; 
 
+       const char*     m_fake_nopstep_path ; 
 
 };
 
@@ -285,7 +302,8 @@ inline NumpyEvt::NumpyEvt(const char* typ, const char* tag, const char* det, con
           m_maxrec(1),
           m_seqhis(NULL),
           m_seqmat(NULL),
-          m_bndidx(NULL)
+          m_bndidx(NULL),
+          m_fake_nopstep_path(NULL)
 {
     init();
 }
@@ -333,11 +351,16 @@ inline unsigned int NumpyEvt::getNumNopsteps()
     return m_num_nopsteps ; 
 }
 
-
+inline void NumpyEvt::setNumPhotons(unsigned int num_photons)
+{
+    m_num_photons = num_photons ; 
+}
 inline unsigned int NumpyEvt::getNumPhotons()
 {
     return m_num_photons ; 
 }
+
+
 inline unsigned int NumpyEvt::getNumRecords()
 {
     return m_num_photons * m_maxrec ; 
@@ -560,16 +583,17 @@ inline const glm::vec4& NumpyEvt::getWavelengthDomain()
 
 inline void NumpyEvt::setBoundaryIdx(Index* bndidx)
 {
+    // called from OpIndexer::indexBoundaries
     m_bndidx = bndidx ; 
 }
 inline void NumpyEvt::setHistorySeq(Index* seqhis)
 {
+    // called from OpIndexer::indexSequenceLoaded 
     m_seqhis = seqhis ; 
 }
-
 inline void NumpyEvt::setMaterialSeq(Index* seqmat)
 {
-    assert(0);
+    // called from OpIndexer::indexSequenceLoaded
     m_seqmat = seqmat ; 
 }
 

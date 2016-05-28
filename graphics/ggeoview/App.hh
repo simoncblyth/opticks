@@ -104,6 +104,7 @@ class App {
        void prepareOptiX();
        void prepareOptiXViz();
 
+       void setupEventInEngine();
        void preparePropagator();
        void seedPhotonsFromGensteps();
        void initRecords();

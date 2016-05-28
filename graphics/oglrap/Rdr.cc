@@ -40,14 +40,17 @@ void Rdr::setPrimitive(Primitive_t prim )
 
 void Rdr::upload(MultiViewNPY* mvn, bool debug)
 {
+
     if(!mvn) return ; 
 
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
 
+    char* tag = getShaderTag();
+   
     if(debug)
     {
-        LOG(info) << "Rdr::upload mvn [" << mvn->getName() << "]" ; 
+        LOG(info) << "Rdr::upload tag [" << tag << "] mvn [" << mvn->getName() << "]" ; 
         mvn->Summary("Rdr::upload mvn");
     }
 
@@ -82,13 +85,15 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
             }
             else
             {
-                if(debug)
-                LOG(info) << "Rdr::upload" 
-                          << " mvn " << mvn->getName() 
-                          << " expected  " << getCountDefault()
-                          << " found " << count 
-                          ; 
-                assert(count == getCountDefault() && "subsequent Rdr::uploads must have same count as first");
+                bool count_match = count == getCountDefault() ;
+                if(!count_match)
+                LOG(fatal) << "Rdr::upload COUNT MISMATCH " 
+                           << " tag " << tag 
+                           << " mvn " << mvn->getName() 
+                           << " expected  " << getCountDefault()
+                           << " found " << count 
+                           ; 
+                assert(count_match && "all buffers fed to the Rdr pipeline must have the same counts");
             }
 
             npy = vnpy->getNPY(); 

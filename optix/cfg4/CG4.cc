@@ -85,15 +85,9 @@ void CG4::configure(int argc, char** argv)
 
     m_cache = new GCache(m_opticks);
 
-    // maybe evt setup should happen outside CG4 ?
-    m_evt = m_opticks->makeEvt();  
-
-    NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
-    m_evt->setNopstepData(nopstep);
-
+    initEvent();
 
     m_g4ui = m_cfg->hasOpt("g4ui") ; 
-
     LOG(info) << "CG4::configure"
               << " g4ui " << m_g4ui
               ; 
@@ -107,6 +101,24 @@ void CG4::configure(int argc, char** argv)
 
     TIMER("configure");
 }
+
+
+void CG4::initEvent()
+{
+    // maybe evt setup should happen outside CG4 ?
+    m_evt = m_opticks->makeEvt();  
+
+    NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
+    m_evt->setNopstepData(nopstep);
+
+    assert(m_evt->getNumPhotons() == 0);
+    assert(m_evt->getNumRecords() == 0);
+
+    m_evt->createBuffers();  // the zeros means they are dynamic buffers
+
+    // maybe can just make ni=0 "dynamic" buffers by default ? within the Opticks::makeEvt ? 
+}
+
 
 
 void CG4::execute(const char* path)

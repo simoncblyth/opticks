@@ -71,6 +71,7 @@ add_definitions(${DEFINITIONS})
 add_library(${name} SHARED 
 CG4.cc
 CMPT.cc
+CTrack.cc
 Format.cc
 Recorder.cc
 Rec.cc
@@ -101,6 +102,7 @@ SteppingVerbose.cc
 SET(hdrs 
 CG4.hh
 CMPT.hh
+CTrack.hh
 Format.hh
 Recorder.hh
 Rec.hh

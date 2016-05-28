@@ -96,7 +96,7 @@
 #ifdef WITH_OPTIX
 // optixgl-
 #include "OpViz.hh"
-// opop-
+// opticksop-
 #include "OpEngine.hh"
 #endif
 
@@ -689,7 +689,8 @@ void App::targetViz()
 
 void App::loadEvtFromFile()
 {
-    m_evt->load(true);
+    bool verbose ; 
+    m_evt->load(verbose=false);
 
     if(m_evt->isNoLoad())
         LOG(warning) << "App::loadEvtFromFile LOAD FAILED " ;
@@ -862,7 +863,9 @@ void App::indexEvt()
 
 
 #ifdef WITH_OPTIX 
+    LOG(info) << "App::indexEvt WITH_OPTIX" ; 
     indexSequence();
+    LOG(info) << "App::indexEvt WITH_OPTIX DONE" ; 
 #endif
 
     indexBoundariesHost();
@@ -1080,14 +1083,10 @@ bool App::hasOpt(const char* name)
 
 
 
-
-
-
-
-
 #ifdef WITH_OPTIX
 void App::prepareOptiX()
 {
+    LOG(info) << "App::prepareOptiX create OpEngine " ; 
     m_ope = new OpEngine(m_opticks, m_ggeo);
     m_ope->prepareOptiX();
 }
@@ -1098,10 +1097,18 @@ void App::prepareOptiXViz()
     m_opv = new OpViz(m_ope, m_scene); 
 }
 
+void App::setupEventInEngine()
+{
+    if(!m_ope) return ; 
+
+    //m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers
+
+    m_ope->setEvent(m_evt);  // without this cannot index
+}
+
 void App::preparePropagator()
 {
     if(!m_ope) return ; 
-    m_ope->setEvent(m_evt);
     m_ope->preparePropagator();
 }
 
@@ -1142,8 +1149,15 @@ void App::saveEvt()
 
 void App::indexSequence()
 {
-    if(!m_ope) return ; 
+    if(!m_ope)
+    {
+        LOG(warning) << "App::indexSequence NULL OpEngine " ;
+        return ; 
+    }
+    m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers
+
     m_ope->indexSequence();
+    LOG(info) << "App::indexSequence DONE" ;
 }
 
 #endif

@@ -4,6 +4,8 @@
 //    /usr/local/env/g4/geant4.10.02/source/externals/clhep/include/CLHEP/Units/SystemOfUnits.h 
 //    /usr/local/env/g4/geant4.10.02/source/externals/clhep/include/CLHEP/Units/PhysicalConstants.h
 //
+// TODO: move this to optickscore- as globally applicable 
+//
 
 const double GConstant::meter = 1000. ;          // mm is 1 
 const double GConstant::second = 1.e+9 ;         // ns is 1 

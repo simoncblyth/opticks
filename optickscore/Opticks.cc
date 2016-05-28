@@ -378,7 +378,6 @@ std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
 
 NumpyEvt* Opticks::makeEvt()
 {
-
     unsigned int code = getSourceCode();
     std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
     std::string tag = m_cfg->getEventTag();

@@ -23,6 +23,7 @@
 
 #include "NLog.hpp"
 
+const char* NumpyEvt::incoming = "incoming" ; 
 const char* NumpyEvt::primary = "primary" ; 
 const char* NumpyEvt::genstep = "genstep" ; 
 const char* NumpyEvt::nopstep = "nopstep" ; 
@@ -60,7 +61,49 @@ void NumpyEvt::init()
     m_parameters->add<std::string>("Detector", m_det );
     m_parameters->add<std::string>("Cat", m_cat );
     m_parameters->add<std::string>("UDet", getUDet() );
+
+    m_data_names.push_back(genstep);
+    m_data_names.push_back(incoming);
+    m_data_names.push_back(primary);
+    m_data_names.push_back(nopstep);
+    m_data_names.push_back(photon);
+    m_data_names.push_back(record);
+    m_data_names.push_back(aux);
+    m_data_names.push_back(phosel);
+    m_data_names.push_back(recsel);
+    m_data_names.push_back(sequence);
 }
+
+
+NPYBase* NumpyEvt::getData(const char* name)
+{
+    NPYBase* data = NULL ; 
+    if(     strcmp(name, genstep)==0) data = static_cast<NPYBase*>(m_genstep_data) ; 
+    else if(strcmp(name, incoming)==0) data = static_cast<NPYBase*>(m_incoming_data) ;
+    else if(strcmp(name, primary)==0) data = static_cast<NPYBase*>(m_primary_data) ;
+    else if(strcmp(name, nopstep)==0) data = static_cast<NPYBase*>(m_nopstep_data) ;
+    else if(strcmp(name, photon)==0)  data = static_cast<NPYBase*>(m_photon_data) ;
+    else if(strcmp(name, record)==0)  data = static_cast<NPYBase*>(m_record_data) ;
+    else if(strcmp(name, aux)==0)  data = static_cast<NPYBase*>(m_aux_data) ;
+    else if(strcmp(name, phosel)==0)  data = static_cast<NPYBase*>(m_phosel_data) ;
+    else if(strcmp(name, recsel)==0)  data = static_cast<NPYBase*>(m_recsel_data) ;
+    else if(strcmp(name, sequence)==0) data = static_cast<NPYBase*>(m_sequence_data) ;
+    return data ; 
+}
+
+std::string NumpyEvt::getShapeString()
+{
+    std::stringstream ss ; 
+    for(std::vector<std::string>::const_iterator it=m_data_names.begin() ; it != m_data_names.end() ; it++)
+    {
+         std::string name = *it ; 
+         NPYBase* data = getData(name.c_str());
+         ss << " " << name << " " << ( data ? data->getShapeString() : "NULL" )  ; 
+    }
+    return ss.str();
+}
+
+
 
 std::string NumpyEvt::getTimeStamp()
 {
@@ -115,23 +158,24 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
     // attribute offset calulated by  npy->getByteIndex(0,j,k) 
     // assuming the size of the attribute type matches that of the NPY<T>
 
-    m_num_gensteps = m_genstep_data->getShape(0) ;
-    m_num_photons = m_genstep_data->getUSum(0,3);
-
-    createHostBuffers();
-
-
-    if(m_step)
     {
-        createHostIndexBuffers();
-    }
+        m_num_gensteps = m_genstep_data->getShape(0) ;
+        unsigned int num_photons = m_genstep_data->getUSum(0,3);
+        setNumPhotons(num_photons);
 
-    m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
-    m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
+        createHostBuffers();
+        if(m_step)
+        {
+            createHostIndexBuffers();
+        }
 
-    if(m_step)
-    {
-        m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
+        m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
+        m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
+
+        if(m_step)
+        {
+            m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
+        }
     }
    
 }
@@ -157,56 +201,123 @@ void NumpyEvt::prepareForPrimaryRecording()
 
 
 
+void NumpyEvt::createBuffers()
+{
+    // CPU running does not have the CUDA thread
+    // not knowing the order problem, so it is possible
+    // to not know the allocation ahead of time
+
+    createHostBuffers();
+    createHostIndexBuffers();
+}
+
+
 void NumpyEvt::createHostBuffers()
 {
+    // NB this does not allocate much memory, the NPY just hold
+    // the shapes. Allocations are triggered by zero-ing the buffers. 
+    //  
+    // CFG4 CPU Geant4 running creates:
+    //     photon, record, sequence buffers that can be just loaded 
+    //
+
     (*m_timer)("_createHostBuffers");
+
+    unsigned int num_photons = getNumPhotons();
+    unsigned int num_records = getNumRecords();
 
     LOG(info) << "NumpyEvt::createHostBuffers "
               << " flat " << m_flat 
-              << " m_num_photons " << m_num_photons  
+              << " num_photons " << num_photons  
+              << " num_records " << num_records  
+              << " maxrec " << m_maxrec
+               ;
+
+    createPhotonBuffers(num_photons);
+
+    if(m_flat)
+        createFlatRecordBuffers(num_records);
+    else
+        createStructuredRecordBuffers(num_photons, m_maxrec);
+
+    createDomainBuffers();
+
+    LOG(info) << "NumpyEvt::createHostBuffers DONE " ;
+
+    (*m_timer)("createHostBuffers");
+}
+
+
+void NumpyEvt::createHostIndexBuffers()
+{
+    assert( m_step );
+
+    // this unceremoniously replaces prior buffers...
+
+    unsigned int num_photons = getNumPhotons();
+    unsigned int num_records = getNumRecords();
+
+    LOG(info) << "NumpyEvt::createHostIndexBuffers "
+              << " flat " << m_flat 
+              << " num_photons " << num_photons  
+              << " num_records " << num_records 
               << " m_maxrec " << m_maxrec
                ;
 
-    NPY<float>* pho = NPY<float>::make(m_num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
+    setPhoselData(phosel);   
+
+    NPY<unsigned char>* recsel = NULL ; 
+    if(m_flat)
+        recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+    else
+        recsel = NPY<unsigned char>::make(num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+
+    setRecselData(recsel);   
+}
+
+
+void NumpyEvt::createPhotonBuffers(unsigned int num_photons)
+{
+    NPY<float>* pho = NPY<float>::make(num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
+    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
+    setSequenceData(seq);   
+}
+
+void NumpyEvt::createFlatRecordBuffers(unsigned int num_records)
+{
     if(m_step)
     {
-        NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
-        setSequenceData(seq);   
+        NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
+        setRecordData(rec);   
+
+        //NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+        //setRecselData(recsel);   
     }
 
-    if(m_flat)
+    NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
+    setAuxData(aux);   
+}
+
+void NumpyEvt::createStructuredRecordBuffers(unsigned int num_photons, unsigned int maxrec)
+{
+    if(m_step)
     {
-        unsigned int num_records = getNumRecords();
-        if(m_step)
-        {
-            NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
-            setRecordData(rec);   
+        NPY<short>* rec = NPY<short>::make(num_photons, maxrec, 2, 4); 
+        setRecordData(rec);   
 
-            NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-            setRecselData(recsel);   
-        }
-
-        NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
-        setAuxData(aux);   
-    }
-    else
-    {
-        if(m_step)
-        {
-            NPY<short>* rec = NPY<short>::make(m_num_photons, m_maxrec, 2, 4); 
-            setRecordData(rec);   
-
-            NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-            setRecselData(recsel);   
-        }
-
-        NPY<short>* aux = NPY<short>::make(m_num_photons, m_maxrec, 1, 4);  // shape (nr,1,4)
-        setAuxData(aux);   
+        //NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_photons, maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+        //setRecselData(recsel);   
     }
 
+    NPY<short>* aux = NPY<short>::make(num_photons, maxrec, 1, 4);  // shape (nr,1,4)
+    setAuxData(aux);   
+}
 
+void NumpyEvt::createDomainBuffers()
+{
     NPY<float>* fdom = NPY<float>::make(3,1,4);
     setFDomain(fdom);
 
@@ -216,41 +327,6 @@ void NumpyEvt::createHostBuffers()
     // these small ones can be zeroed directly 
     fdom->zero();
     idom->zero();
-
-    LOG(info) << "NumpyEvt::createHostBuffers DONE " ;
-
-    (*m_timer)("createHostBuffers");
-}
-
-
-
-
-
-void NumpyEvt::createHostIndexBuffers()
-{
-    assert( m_step );
-
-    LOG(info) << "NumpyEvt::createHostIndexBuffers "
-              << " flat " << m_flat 
-              << " m_num_photons " << m_num_photons  
-              << " m_maxrec " << m_maxrec
-               ;
-
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
-    setPhoselData(phosel);   
-
-    if(m_flat)
-    {
-        unsigned int num_records = getNumRecords();
-
-        NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-        setRecselData(recsel);   
-    }
-    else
-    {
-        NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-        setRecselData(recsel);   
-    }
 }
 
 
@@ -467,12 +543,9 @@ void NumpyEvt::setAuxData(NPY<short>* aux_data)
 
 
 
-
-
 void NumpyEvt::setNopstepData(NPY<float>* nopstep)
 {
     m_nopstep_data = nopstep  ;
-
     if(!nopstep) return ; 
 
     m_num_nopsteps = m_nopstep_data->getShape(0) ;
@@ -490,7 +563,8 @@ void NumpyEvt::setNopstepData(NPY<float>* nopstep)
     m_nopstep_attr->add(vdir);
     m_nopstep_attr->add(vpol);
 
-    createHostBuffers();  // only allocates small buffers, big ones deferred til usage
+    // createHostBuffers();  
+    // only allocates small buffers, big ones deferred til usage
 }
 
 
@@ -665,6 +739,8 @@ void NumpyEvt::save(bool verbose)
               << " cat: " << m_cat
               << " udet: " << udet 
               ;    
+
+    LOG(info) << "NumpyEvt::save " << getShapeString() ; 
 
    // genstep normally not saved as it exists already coming from elsewhere,
    //  but for TorchStep that insnt the case
@@ -907,12 +983,16 @@ void NumpyEvt::loadReport()
     m_report = Report::load(mdd.c_str());
 }
 
+void NumpyEvt::setFakeNopstepPath(const char* path)
+{
+    // fake path used by NumpyEvt::load rather than standard one
+    // see npy-/nopstep_viz_debug.py
 
+    m_fake_nopstep_path = path ? strdup(path) : NULL ;
+}
 
 void NumpyEvt::load(bool verbose)
 {
-
-
     (*m_timer)("_load");
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
 
@@ -944,14 +1024,11 @@ void NumpyEvt::load(bool verbose)
     readDomainsBuffer();
     dumpDomains("NumpyEvt::load dumpDomains");
 
-
     NPY<float>* no = NULL ; 
-    bool fake_nopstep = true ; 
-    if(fake_nopstep)
+    if(m_fake_nopstep_path)
     {
-        const char* path = "/tmp/nopstep.npy" ;
-        LOG(warning) << "NumpyEvt::load fake nopstep " << path ; 
-        no = NPY<float>::debugload(path);
+        LOG(warning) << "NumpyEvt::load using setFakeNopstepPath " << m_fake_nopstep_path ; 
+        no = NPY<float>::debugload(m_fake_nopstep_path);
     }
     else
     {  
@@ -982,17 +1059,32 @@ void NumpyEvt::load(bool verbose)
     unsigned int num_history = ph ? ph->getShape(0) : 0 ;
     unsigned int num_phosel  = ps ? ps->getShape(0) : 0 ;
 
-    LOG(info) << "NumpyEvt::load num_nopstep " << num_nopstep ; 
-
-
+    // either zero or matching 
     assert(num_history == 0 || num_photons == num_history );
     assert(num_phosel == 0 || num_photons == num_phosel );
 
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
     unsigned int num_aux     = au ? au->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
+
     assert(num_records == 0 || num_aux == 0 || num_records == num_aux ); 
     assert(num_recsel == 0 || num_records == num_recsel );
+
+
+    LOG(info) << "NumpyEvt::load shape(0) before reshaping "
+              << " num_nopstep " << num_nopstep
+              << " [ "
+              << " num_photons " << num_photons
+              << " num_history " << num_history
+              << " num_phosel " << num_phosel 
+              << " ] "
+              << " [ "
+              << " num_records " << num_records
+              << " num_recsel " << num_recsel
+              << " num_aux " << num_aux 
+              << " ] "
+              ; 
+
 
     if(num_records == num_photons*m_maxrec)
     {
@@ -1001,7 +1093,8 @@ void NumpyEvt::load(bool verbose)
     } 
     else if(num_records == num_photons)
     {
-        LOG(info) << "NumpyEvt::load non-flat records (cfg4- style) detected :  RESHAPING " ;
+        LOG(info) << "NumpyEvt::load structured records (cfg4- style) detected :  RESHAPING " ;
+        if(rx && num_records > 0)
         {
             if(verbose) rx->Summary("rx init");
             unsigned int ni = rx->getShape(0);
@@ -1012,7 +1105,7 @@ void NumpyEvt::load(bool verbose)
             if(verbose) rx->Summary("rx reshaped");
         }       
         
-        if(rs)
+        if(rs && num_recsel > 0)
         {
             if(verbose) rs->Summary("rs init");
             unsigned int ni = rs->getShape(0);
@@ -1022,6 +1115,7 @@ void NumpyEvt::load(bool verbose)
             rs->reshape(ni*nj, nk, nl, 0);
             if(verbose) rs->Summary("rs reshaped");
         }       
+        if(au && num_aux > 0)
         {
             if(verbose) au->Summary("au init");
             unsigned int ni = au->getShape(0);
@@ -1038,6 +1132,8 @@ void NumpyEvt::load(bool verbose)
          LOG(info) << "NumpyEvt::load no step " ; 
     }
 
+
+
     setNopstepData(no);
     setPrimaryData(pr);
     setPhotonData(ox);
@@ -1049,6 +1145,9 @@ void NumpyEvt::load(bool verbose)
     setRecselData(rs);
 
     (*m_timer)("load");
+
+
+    LOG(info) << "NumpyEvt::load " << getShapeString() ; 
 
     if(verbose)
     {

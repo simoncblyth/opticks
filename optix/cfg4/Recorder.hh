@@ -25,12 +25,23 @@ template <typename T> class NPY ;
 //  Recorder
 //  =============
 //
+//  The principal objective of *Recorder* is to collect  
+//  Geant4 photon steps in a format that precisely matches the
+//  Opticks GPU photon records allowing use of the Opticks analysis 
+//  and visualization tools.
+//  To this end *Recorder* saves non-dynamically into buffer of
+//  fixed number of photons and max steps per photon 
+//  in order to match on-GPU restrictions.  setQuad with
+//  a computed record_id and slot_id is used to mimick
+//  separate CUDA thread writes into tranches of record buffer. 
+//
+//  
+//
 //  Recorder should really be called "OpticalPhotonRecorder".
 //  It is instanciated by CG4::configureGenerator 
 //  and is mainly used from CSteppingAction.
 //  It is also used for Recorder::RecordPrimaryVertex.
 //  from CGunSource and CTorchSource.
-//
 //
 //  *RecordStep* is called for all G4Step
 //  each of which is comprised of *pre* and *post* G4StepPoint, 
@@ -42,6 +53,25 @@ template <typename T> class NPY ;
 //  *photons_per_g4event* is used by defineRecordId so the different
 //  technical g4 events all get slotted into the same NumpyEvt record 
 //  buffers
+//
+//
+//
+//  Traditional GPU Opticks simulation workflow:
+//
+//  * gensteps (Cerenkov/Scintillation) harvested from Geant4
+//    and persisted into NumpyEvt
+//
+//  * gensteps seeded onto GPU using Thrust, summation over photons 
+//    to generate per step provide photon and record buffer 
+//    dimensions up frount 
+//
+//  * Cerenkov/Scintillation on GPU generation and propagation      
+//    populate the pre-sized GPU record buffer 
+//
+//  This works because all gensteps are available before doing 
+//  any optical simulation. BUT when operating on CPU doing the 
+//  non-optical and optical simulation together, do not know the 
+//  photon counts ahead of time.
 //
 //
 class Recorder {
@@ -77,6 +107,7 @@ class Recorder {
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
         bool hasIssue();
    public:
+        bool isDynamic(); 
         bool isSelected(); 
         bool isHistorySelected(); 
         bool isMaterialSelected(); 
@@ -109,7 +140,7 @@ class Recorder {
         NumpyEvt*    m_evt ; 
 
         unsigned int m_gen ; 
-
+       
         unsigned int m_record_max ; 
         unsigned int m_bounce_max ; 
         unsigned int m_steps_per_photon ; 
@@ -150,6 +181,14 @@ class Recorder {
         NPY<short>*               m_records ; 
         NPY<unsigned long long>*  m_history ; 
 
+        bool                      m_dynamic ;
+
+        NPY<float>*               m_dynamic_primary ; 
+        NPY<short>*               m_dynamic_records ; 
+        NPY<float>*               m_dynamic_photons ; 
+        NPY<unsigned long long>*  m_dynamic_history ; 
+
+
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned int>               m_flags ; 
         std::vector<unsigned int>               m_materials ; 
@@ -169,6 +208,7 @@ inline Recorder::Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity)
    m_record_max(0),
    m_bounce_max(0),
    m_steps_per_photon(0), 
+
    m_photons_per_g4event(0),
 
    m_verbosity(verbosity),
@@ -201,7 +241,14 @@ inline Recorder::Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity)
    m_primary(0),
    m_photons(0),
    m_records(0),
-   m_history(0)
+   m_history(0),
+
+   m_dynamic(false),
+
+   m_dynamic_primary(NULL),
+   m_dynamic_photons(NULL),
+   m_dynamic_records(NULL),
+   m_dynamic_history(NULL)
 {
    init();
    
@@ -314,4 +361,7 @@ inline void Recorder::RecordEndOfRun(const G4Run*)
 {
 }
 
-
+inline bool Recorder::isDynamic()
+{
+    return m_dynamic ; 
+}

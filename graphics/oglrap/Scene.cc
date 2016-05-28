@@ -639,13 +639,23 @@ void Scene::uploadEvt()
 
     m_genstep_renderer->upload(m_evt->getGenstepAttr());
 
-    m_nopstep_renderer->upload(m_evt->getNopstepAttr(), true);
+    m_nopstep_renderer->upload(m_evt->getNopstepAttr(), false);
 
     m_photon_renderer->upload(m_evt->getPhotonAttr());
 
+
     uploadRecordAttr(m_evt->getRecordAttr());
 
-    uploadRecordAttr(m_evt->getAuxAttr());
+    //uploadRecordAttr(m_evt->getAuxAttr());
+
+    // Note that the above means that the same record renderers are 
+    // uploading mutiple things from different NPY.
+    // For this to work the counts must match.
+    //
+    // This is necessary for the photon records and the selection index.
+    //
+    // All renderers ready to roll so can live switch between them, 
+    // data is not duplicated thanks to Device register of uploads
 }
 
 
@@ -660,19 +670,16 @@ void Scene::uploadSelection()
 }
 
 
-void Scene::uploadRecordAttr(MultiViewNPY* attr)
+void Scene::uploadRecordAttr(MultiViewNPY* attr, bool debug)
 {
     if(!attr) return ;  
     //assert(attr);
 
-    // all renderers ready to roll so can live switch between them, 
-    // data is not duplicated thanks to Device register of uploads
+    m_record_renderer->upload(attr, debug);
+    m_altrecord_renderer->upload(attr, debug);
+    m_devrecord_renderer->upload(attr, debug);
 
-    m_record_renderer->upload(attr);
-    m_altrecord_renderer->upload(attr);
-    m_devrecord_renderer->upload(attr);
 }
-
 
 
 

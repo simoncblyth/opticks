@@ -53,13 +53,34 @@ void Recorder::init()
     m_c4.u = 0u ; 
 
     m_photons_per_g4event = m_evt->getNumPhotonsPerG4Event() ; 
-    m_record_max = m_evt->getNumPhotons(); 
+    m_record_max = m_evt->getNumPhotons();   // from the genstep summation
+
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
+
+    m_dynamic = m_record_max == 0 ; 
+    if(m_dynamic)
+    {
+        // shapes must match NumpyEvt::createHostBuffers
+
+        m_dynamic_records = NPY<short>::make(1, m_steps_per_photon, 2, 4) ;
+        m_dynamic_records->zero();
+
+        m_dynamic_photons = NPY<float>::make(1, 4, 4) ;
+        m_dynamic_photons->zero();
+
+        m_dynamic_primary = NPY<float>::make(1, 4, 4) ;
+        m_dynamic_primary->zero();
+
+        m_dynamic_history = NPY<unsigned long long>::make(1, 1, 2) ;
+        m_dynamic_history->zero();
+
+    } 
 
     m_step = m_evt->isStep();
 
     LOG(info) << "Recorder::init"
+              << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
@@ -74,11 +95,18 @@ void Recorder::init()
     m_photons = m_evt->getPhotonData();
     m_records = m_evt->getRecordData();
 
+    assert( m_history && "Recorder requires history buffer" );
+    assert( m_photons && "Recorder requires photons buffer" );
+    assert( m_records && "Recorder requires records buffer" );
+
     const char* typ = m_evt->getTyp();
 
     m_gen = Opticks::SourceCode(typ);
 
     assert( m_gen == TORCH || m_gen == G4GUN  );
+
+
+
 }
 
 
@@ -104,6 +132,7 @@ void Recorder::startPhoton()
 
     m_seqmat = 0 ; 
     m_seqhis = 0 ; 
+
     //m_seqhis_select = 0xfbbbbbbbcd ;
     //m_seqhis_select = 0x8cbbbbbc0 ;
     m_seqhis_select = 0x8bd ;
@@ -206,8 +235,14 @@ bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsi
     m_slot += 1 ; 
 
     bool truncate = m_slot > m_bounce_max  ;  
+    bool done = truncate || absorb ;
 
-    return truncate || absorb ;
+    if(done && m_dynamic)
+    {
+        m_records->add(m_dynamic_records);
+    }
+
+    return done ; 
 }
 
 
@@ -257,7 +292,6 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
      */
   
 
-    m_records->setQuad(m_record_id, slot, 0, posx, posy, posz, time_ );
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );
@@ -276,7 +310,14 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
-    m_records->setQuad(m_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
+    NPY<short>* target = m_dynamic ? m_dynamic_records : m_records ; 
+    unsigned int target_record_id = m_dynamic ? 0 : m_record_id ; 
+
+    target->setQuad(target_record_id, slot, 0, posx, posy, posz, time_ );
+    target->setQuad(target_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
+
+    // dynamic mode : fills in slots into single photon dynamic_records structure 
+    // static mode  : fills directly into a large fixed dimension records structure
 }
 
 void Recorder::RecordQuadrant(const G4Step* step)
@@ -300,6 +341,8 @@ void Recorder::RecordQuadrant(const G4Step* step)
 
 void Recorder::RecordPhoton(const G4Step* step)
 {
+    // gets called at last step (eg absorption) or when truncated
+
     const G4StepPoint* point  = step->GetPostStepPoint() ; 
 
     const G4ThreeVector& pos = point->GetPosition();
@@ -311,14 +354,23 @@ void Recorder::RecordPhoton(const G4Step* step)
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
 
-    m_photons->setQuad(m_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-    m_photons->setQuad(m_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-    m_photons->setQuad(m_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+    NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons ; 
+    unsigned int target_record_id = m_dynamic ? 0 : m_record_id ; 
 
-    m_photons->setUInt(m_record_id, 3, 0, 0, m_slot );
-    m_photons->setUInt(m_record_id, 3, 0, 1, 0u );
-    m_photons->setUInt(m_record_id, 3, 0, 2, m_c4.u );
-    m_photons->setUInt(m_record_id, 3, 0, 3, 0u );
+
+    target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+
+    target->setUInt(target_record_id, 3, 0, 0, m_slot );
+    target->setUInt(target_record_id, 3, 0, 1, 0u );
+    target->setUInt(target_record_id, 3, 0, 2, m_c4.u );
+    target->setUInt(target_record_id, 3, 0, 3, 0u );
+
+    if(m_dynamic)
+    {
+        m_photons->add(m_dynamic_photons);
+    }
 
     // generate.cu
     //
@@ -330,9 +382,17 @@ void Recorder::RecordPhoton(const G4Step* step)
 
     if(m_step)
     {
-        unsigned long long* history = m_history->getValues() + 2*m_record_id ;
+
+        NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ; 
+
+        unsigned long long* history = h_target->getValues() + 2*target_record_id ;
         *(history+0) = m_seqhis ; 
         *(history+1) = m_seqmat ; 
+
+        if(m_dynamic)
+        {
+            m_history->add(m_dynamic_history);
+        }
     }
 }
 

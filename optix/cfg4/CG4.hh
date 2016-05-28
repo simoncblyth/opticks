@@ -50,6 +50,7 @@ class CG4
         void save();
    private:
         void init();
+        void initEvent();
         void configureDetector();
         void configurePhysics();
         void configureGenerator();

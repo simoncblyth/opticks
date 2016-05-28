@@ -204,16 +204,15 @@ void OpIndexer::indexSequenceLoaded()
 
     LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
     update();
-    if(m_evt->isIndexed()) return ;  
+    if(m_evt->isIndexed()) 
+    {
+        LOG(info) << "OpIndexer::indexSequenceLoaded evt already indexed" ; 
+        return ;  
+    }
 
     NPY<unsigned long long>* ph = m_evt->getSequenceData(); 
-
-    if(!ph)
-        LOG(fatal) << "OpIndexer::indexSequenceLoaded"
-                   << " ph NULL " ; 
-
+    if(!ph) LOG(fatal) << "OpIndexer::indexSequenceLoaded" << " ph NULL " ; 
     assert(ph);
-
 
     thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
     CBufSpec cph = make_bufspec<unsigned long long>(dph); 
@@ -230,7 +229,7 @@ void OpIndexer::indexSequenceLoaded()
     m_evt->setHistorySeq(seqhis.getIndex());
     m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
-    assert(m_phosel != 0 && m_recsel != 0);
+    checkTarget("indexSequenceLoaded");
 
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
@@ -238,7 +237,24 @@ void OpIndexer::indexSequenceLoaded()
 }
 
 
+void OpIndexer::checkTarget(const char* msg)
+{
+    assert(m_phosel && "photon index lookups are written to phosel, this must be allocated with num photons length " );
+    assert(m_recsel && "photon index lookups are repeated to into recsel, this must be allocated with num records length " );
 
+    LOG(info) << "OpIndexer::checkTarget"
+              << " (" << msg << ") " 
+              << " phosel " << m_phosel->getShapeString() 
+              << " recsel " << m_recsel->getShapeString() 
+              ;
+
+    //assert(m_phosel->getShape(0) > 0 );
+    //assert(m_recsel->getShape(0) > 0 );
+
+    //if(m_phosel->getShape(0) == 0 && m_recsel->getShape(0) == 0)
+    //    m_evt->prepareForIndexing();
+
+}
 
 
 

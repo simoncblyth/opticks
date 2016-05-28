@@ -56,8 +56,6 @@ void OpEngine::init()
 
 void OpEngine::prepareOptiX()
 {
-    // TODO: move inside OGeo or new opop-/OpEngine ? 
-
     LOG(info) << "OpEngine::prepareOptiX START" ;  
 
     std::string builder_   = m_fcfg->getBuilder(); 
@@ -208,12 +206,18 @@ void OpEngine::saveEvt()
 
 void OpEngine::indexSequence()
 {
-    if(!m_evt) return ; 
+    if(!m_evt)
+    { 
+       LOG(warning) << "OpEngine::indexSequence NULL evt : skipping  " ;
+       return ; 
+    }
     if(!m_evt->isStep())
     {
         LOG(info) << "OpEngine::indexSequence --nostep mode skipping " ;
         return ; 
     }
+
+    LOG(info) << "OpEngine::indexSequence proceeding  " ;
 
     OpIndexer* indexer = new OpIndexer(m_ocontext);
     //indexer->setVerbose(hasOpt("indexdbg"));
@@ -231,3 +235,5 @@ void OpEngine::cleanup()
 {
     if(m_ocontext) m_ocontext->cleanUp();
 }
+
+

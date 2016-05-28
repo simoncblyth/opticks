@@ -175,9 +175,9 @@ void OPropagator::initEvent(NumpyEvt* evt)
 
 
 /*
-    m_aux_buffer = m_ocontext->createIOBuffer<short>( evt->getAuxData(), "aux" );
-    if(m_aux_buffer.get())
-       m_context["aux_buffer"]->set( m_aux_buffer );
+//    m_aux_buffer = m_ocontext->createIOBuffer<short>( evt->getAuxData(), "aux" );
+//    if(m_aux_buffer.get())
+//       m_context["aux_buffer"]->set( m_aux_buffer );
 */
 
 

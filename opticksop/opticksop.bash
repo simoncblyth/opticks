@@ -123,9 +123,10 @@ opticksop-install(){
 
 opticksop--()
 {
-    opticksop-make clean
-    opticksop-make
-    opticksop-install
+    #opticksop-make clean
+    #opticksop-make
+    #opticksop-install
+   ( opticksop-bcd ; make ${1:-install} ; )
 }
 
 opticksop-index(){

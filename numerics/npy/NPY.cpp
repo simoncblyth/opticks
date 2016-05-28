@@ -119,13 +119,21 @@ void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they mus
 {
     unsigned int orig = getNumItems();
     unsigned int extra = other->getNumItems();
+    bool same_itemsize = other->getNumValues(1) == getNumValues(1) ;
 
-    LOG(debug) << "NPY<T>::add items "
-              << " orig " << orig 
-              << " extra " << extra 
+    if(!same_itemsize)
+    {
+         LOG(fatal) << "NPY<T>::add itemsize mismatch "
+              << " NumItems " << orig 
+              << " otherNumItems " << extra 
+              << " shape " << getShapeString()
+              << " NumValues(1) " << getNumValues(1)
+              << " otherShape " << other->getShapeString()
+              << " otherNumValues(1) " << other->getNumValues(1)
               ;
+    }
 
-    assert(other->getNumValues(1) == getNumValues(1));
+    assert(same_itemsize);
     memcpy( grow(extra), other->getBytes(), other->getNumBytes(0) );
 
     setNumItems( orig + extra );
