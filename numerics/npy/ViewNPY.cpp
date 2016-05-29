@@ -64,6 +64,7 @@ void ViewNPY::init()
     m_numbytes = m_npy->getNumBytes(0) ;
     m_stride   = m_npy->getNumBytes(1) ;
     m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;
+    //m_count = m_npy->getShape(0) ;
 
     if( m_npy->hasData() )
     { 
@@ -74,6 +75,7 @@ void ViewNPY::init()
 unsigned int ViewNPY::getCount()
 {
     // this can now be changed, so dont store the count at init
+    //return m_count ;
     return m_npy->getShape(0) ;
 }
 

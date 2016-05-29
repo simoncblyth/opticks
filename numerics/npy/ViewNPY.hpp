@@ -111,6 +111,7 @@ class ViewNPY {
         unsigned int  m_numbytes ;  
         unsigned int  m_stride ;  
         unsigned long m_offset ;  
+        //unsigned long m_count ;  
 
     private:
         glm::vec3*  m_low ;

@@ -1,4 +1,5 @@
 #include "CTraverser.hh"
+#include "CSolid.hh"
 
 #include <algorithm>
 #include <sstream>
@@ -51,6 +52,8 @@ void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestor
      for (int i=0 ; i<lv->GetNoDaughters() ;i++) AncestorTraverse(ancestors, lv->GetDaughter(i) ); 
 }
 
+
+
 void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors)
 {
     G4Transform3D T ; 
@@ -71,6 +74,11 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors)
         T = T*P ; 
     }
     const G4VPhysicalVolume* pv = ancestors.back() ; 
+    G4LogicalVolume* lv = pv->GetLogicalVolume() ;
+    G4VSolid* so = lv->GetSolid() ;
+
+    CSolid cso(so);
+    cso.extent(T);
 
     LOG(debug) << "CTraverser::AncestorVisit " 
               << " size " << std::setw(3) << ancestors.size() 
@@ -78,6 +86,7 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors)
               << " pvname " << pv->GetName() 
               ;
     m_gcount += 1 ; 
+
 
     collectTransformT(m_gtransforms, T );
     m_pvnames.push_back(pv->GetName());
@@ -200,6 +209,7 @@ void CTraverser::collectTransform(NPY<float>* buffer, const G4Transform3D& T)
 
     delete vals ; 
 }
+
 
 
 void CTraverser::collectTransformT(NPY<float>* buffer, const G4Transform3D& T)

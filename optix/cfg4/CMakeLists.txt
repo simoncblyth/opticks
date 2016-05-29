@@ -72,6 +72,8 @@ add_library(${name} SHARED
 CG4.cc
 CMPT.cc
 CTrack.cc
+CSolid.cc
+CMath.cc
 Format.cc
 Recorder.cc
 Rec.cc
@@ -103,6 +105,8 @@ SET(hdrs
 CG4.hh
 CMPT.hh
 CTrack.hh
+CSolid.hh
+CMath.hh
 Format.hh
 Recorder.hh
 Rec.hh

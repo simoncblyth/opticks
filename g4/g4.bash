@@ -151,11 +151,12 @@ g4-cls(){
    g4-cd
    local name=${1:-G4Scintillation}
 
+   local h=$(find source -name "$name.h")
    local hh=$(find source -name "$name.hh")
    local cc=$(find source -name "$name.cc")
    local icc=$(find source -name "$name.icc")
 
-   local vcmd="vi -R $hh $icc $cc"
+   local vcmd="vi -R $h $hh $icc $cc"
    echo $vcmd
    eval $vcmd
 

@@ -666,13 +666,14 @@ void App::targetViz()
     if(m_opticks->isCompute()) return ; 
 
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
+
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     bool geocenter  = m_fcfg->hasOpt("geocenter");
     glm::vec4 uuce = geocenter ? mmce : gsce ;
 
-    //print(mmce, "loadGenstep mmce");
-    //print(gsce, "loadGenstep gsce");
-    //print(uuce, "loadGenstep uuce");
+    print(mmce, "loadGenstep mmce");
+    print(gsce, "loadGenstep gsce");
+    print(uuce, "loadGenstep uuce");
 
     if(m_scene->getTarget() == 0)
     {
