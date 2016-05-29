@@ -121,7 +121,7 @@ void OPropagator::initEvent()
     initEvent(m_evt);
 }
 
-void OPropagator::initEvent(NumpyEvt* evt)
+void OPropagator::initEvent(NumpyEvt* evt)  
 {
     // when isInterop() == true 
     // the OptiX buffers for the evt data are actually references 

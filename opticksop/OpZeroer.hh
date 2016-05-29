@@ -6,6 +6,7 @@ class NumpyEvt ;
 class OPropagator ; 
 class OContext ; 
 
+// zeroes on GPU record buffer via OptiX or OpenGL
 
 class OpZeroer {
    public:

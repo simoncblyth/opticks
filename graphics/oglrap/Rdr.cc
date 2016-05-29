@@ -73,7 +73,6 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
         if(npy == NULL)
         {
             count = vnpy->getCount();
-
             if(m_first_upload)
             {
                 if(debug)

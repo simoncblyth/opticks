@@ -66,6 +66,9 @@ ggv-env(){      elocal- ; }
 ggv-dir(){ echo $(env-home)/graphics/ggeoview ; }
 ggv-cd(){  cd $(ggv-dir); }
 
+ggv--(){ ggeoview-- $* ; }
+
+
 join(){ local IFS="$1"; shift; echo "$*"; }
 
 ggv-jpmt-cd(){   cd $(ggv-jpmt-idp) ; }

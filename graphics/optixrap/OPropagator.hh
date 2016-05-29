@@ -27,7 +27,7 @@ class OPropagator {
         OPropagator(OContext* ocontext, Opticks* opticks); 
         void initRng();
     public:
-        void initEvent();
+        void initEvent();      // creates GPU buffers: genstep, photon, record, sequence
         void prelaunch();
         void launch();
         void downloadEvent();

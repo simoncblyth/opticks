@@ -89,7 +89,8 @@ class NPYBase {
        void Summary(const char* msg="NPYBase::Summary");
        std::string description(const char* msg="NPYBase::description");
 
-   protected:
+   //protected:
+    public:
        void setNumItems(unsigned int ni);
    protected:
        unsigned int       m_dim ; 

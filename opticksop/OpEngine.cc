@@ -106,9 +106,6 @@ void OpEngine::prepareOptiX()
 
 }
 
-
-
-
 void OpEngine::preparePropagator()
 {
     bool noevent    = m_fcfg->hasOpt("noevent");
@@ -162,7 +159,8 @@ void OpEngine::initRecords()
     zeroer->setEvt(m_evt);
     zeroer->setPropagator(m_opropagator);  // only used in compute mode
 
-    zeroer->zeroRecords();
+    zeroer->zeroRecords();   
+    // zeros on GPU record buffer via OptiX or OpenGL
 }
 
 

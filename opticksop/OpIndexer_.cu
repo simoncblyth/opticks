@@ -36,9 +36,12 @@ void OpIndexer::indexSequenceViaThrust(
    bool verbose
 )
 {
+    NPY<unsigned char>* phosel = m_evt->getPhoselData() ;
+    NPY<unsigned char>* recsel = m_evt->getRecselData() ;
+
     // allocate phosel and recsel GPU buffers
-    thrust::device_vector<unsigned char> dps(m_phosel->getNumValues());
-    thrust::device_vector<unsigned char> drs(m_recsel->getNumValues());
+    thrust::device_vector<unsigned char> dps(phosel->getNumValues());
+    thrust::device_vector<unsigned char> drs(recsel->getNumValues());
 
     // refs to the buffers
     CBufSpec rps = make_bufspec<unsigned char>(dps); 
@@ -53,8 +56,11 @@ void OpIndexer::indexSequenceViaOpenGL(
    bool verbose
 )
 {
-    CResource rphosel( m_phosel->getBufferId(), CResource::W );
-    CResource rrecsel( m_recsel->getBufferId(), CResource::W );
+    NPY<unsigned char>* phosel = m_evt->getPhoselData() ;
+    NPY<unsigned char>* recsel = m_evt->getRecselData() ;
+
+    CResource rphosel( phosel->getBufferId(), CResource::W );
+    CResource rrecsel( recsel->getBufferId(), CResource::W );
 
     // grab refs to the OpenGL GPU buffers
     CBufSpec rps = rphosel.mapGLToCUDA<unsigned char>() ;
@@ -111,9 +117,13 @@ void OpIndexer::indexSequenceImp(
     tphosel.repeat_to<unsigned char>( &trecsel, 4, 0, tphosel.getSize(), m_maxrec );  // other, stride, begin, end, repeats
 
 
+
+    NPY<unsigned char>* phosel = m_evt->getPhoselData() ;
+    NPY<unsigned char>* recsel = m_evt->getRecselData() ;
+
     // hmm: this pull back to host might not be necessary : only used on GPU ?
-    tphosel.download<unsigned char>( m_phosel );  // cudaMemcpyDeviceToHost
-    trecsel.download<unsigned char>( m_recsel );
+    tphosel.download<unsigned char>( phosel );  // cudaMemcpyDeviceToHost
+    trecsel.download<unsigned char>( recsel );
 }
 
 

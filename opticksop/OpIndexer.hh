@@ -98,6 +98,7 @@ class OpIndexer {
    public:
       void indexSequence(); 
       void indexBoundaries(); 
+      void prepareTarget(const char* msg="OpIndexer::prepareTarget");
    private:
       void checkTarget(const char* msg);
       void indexSequenceLoaded();  
@@ -147,8 +148,8 @@ class OpIndexer {
       bool                     m_verbose ; 
    private:
       // transients updated by updateEvt at indexSequence
-      NPY<unsigned char>*      m_phosel ;
-      NPY<unsigned char>*      m_recsel ;
+      // NPY<unsigned char>*      m_phosel ;
+      // NPY<unsigned char>*      m_recsel ;
       unsigned int             m_maxrec ; 
       unsigned int             m_num_photons ; 
 
@@ -162,8 +163,8 @@ inline OpIndexer::OpIndexer(OContext* ocontext)
      m_pho(NULL),
      m_evt(NULL),
      m_verbose(false),
-     m_phosel(NULL),
-     m_recsel(NULL),
+    // m_phosel(NULL),
+    // m_recsel(NULL),
      m_maxrec(0),
      m_num_photons(0)
 {

@@ -9,6 +9,9 @@ geant4_opticks_integration
    ancient_gdml_export_lacks_material_properties
    time_goes_backward
    g4gun_debug
+   broken_indexing
+
+
 
 
 

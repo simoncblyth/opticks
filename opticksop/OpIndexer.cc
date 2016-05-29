@@ -44,8 +44,11 @@
 void OpIndexer::update()
 {
     assert(m_evt) ;
-    m_phosel = m_evt->getPhoselData(); 
-    m_recsel = m_evt->getRecselData();
+
+    // this pattern is problematic for pointers that become stale
+    //m_phosel = m_evt->getPhoselData(); 
+    //m_recsel = m_evt->getRecselData();
+
     m_maxrec = m_evt->getMaxRec(); 
 
     setNumPhotons(m_evt->getNumPhotons());
@@ -229,7 +232,7 @@ void OpIndexer::indexSequenceLoaded()
     m_evt->setHistorySeq(seqhis.getIndex());
     m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
-    checkTarget("indexSequenceLoaded");
+    prepareTarget("indexSequenceLoaded");
 
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
@@ -237,22 +240,24 @@ void OpIndexer::indexSequenceLoaded()
 }
 
 
-void OpIndexer::checkTarget(const char* msg)
+void OpIndexer::prepareTarget(const char* msg)
 {
-    assert(m_phosel && "photon index lookups are written to phosel, this must be allocated with num photons length " );
-    assert(m_recsel && "photon index lookups are repeated to into recsel, this must be allocated with num records length " );
+    NPY<unsigned char>*  phosel = m_evt->getPhoselData();
+    NPY<unsigned char>*  recsel = m_evt->getRecselData();
+
+    assert(phosel && "photon index lookups are written to phosel, this must be allocated with num photons length " );
+    assert(recsel && "photon index lookups are repeated to into recsel, this must be allocated with num records length " );
 
     LOG(info) << "OpIndexer::checkTarget"
               << " (" << msg << ") " 
-              << " phosel " << m_phosel->getShapeString() 
-              << " recsel " << m_recsel->getShapeString() 
+              << " phosel " << phosel->getShapeString() 
+              << " recsel " << recsel->getShapeString() 
               ;
 
-    //assert(m_phosel->getShape(0) > 0 );
-    //assert(m_recsel->getShape(0) > 0 );
-
-    //if(m_phosel->getShape(0) == 0 && m_recsel->getShape(0) == 0)
-    //    m_evt->prepareForIndexing();
+    if(phosel->getShape(0) == 0 && recsel->getShape(0) == 0)
+    {
+        m_evt->resizeIndices();
+    }
 
 }
 

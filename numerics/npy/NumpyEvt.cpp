@@ -180,6 +180,36 @@ void NumpyEvt::setGenstepData(NPY<float>* genstep)
    
 }
 
+void NumpyEvt::resizeIndices()
+{
+    // needed for G4 loaded photon indexing 
+
+    unsigned int num_photons = getNumPhotons();
+    unsigned int num_records = getNumRecords();
+    unsigned int num_phosel = m_phosel_data->getShape(0);
+    unsigned int num_recsel = m_recsel_data->getShape(0);
+
+    LOG(info) << "NumpyEvt::resizeIndices"
+              << " num_photons " << num_photons  
+              << " num_records " << num_records
+              << " num_phosel " << num_phosel  
+              << " num_recsel " << num_recsel
+              ;
+
+    assert(num_photons > 0 );
+    assert(num_records > 0 );
+
+    if(num_phosel != num_photons)
+    {
+        m_phosel_data->setNumItems(num_photons);
+        LOG(warning) << "NumpyEvt::resizeIndices changed phosel items from " << num_phosel << " to " << num_photons ; 
+    }
+    if(num_recsel != num_records)
+    {
+        m_recsel_data->setNumItems(num_records);
+        LOG(warning) << "NumpyEvt::resizeIndices changed recsel items from " << num_recsel << " to " << num_records ; 
+    }
+}
 
 void NumpyEvt::prepareForIndexing()
 {
@@ -252,7 +282,7 @@ void NumpyEvt::createHostIndexBuffers()
 {
     assert( m_step );
 
-    // this unceremoniously replaces prior buffers...
+    // this unceremoniously replaces/leaks prior buffers...
 
     unsigned int num_photons = getNumPhotons();
     unsigned int num_records = getNumRecords();

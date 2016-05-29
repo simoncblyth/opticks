@@ -63,6 +63,7 @@ class NumpyEvt {
        void dumpDomains(const char* msg="NumpyEvt::dumpDomains");
        void prepareForIndexing();
        void prepareForPrimaryRecording();
+       void resizeIndices();
    public:
        Parameters* getParameters();
        Timer*      getTimer();

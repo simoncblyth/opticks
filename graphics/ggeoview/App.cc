@@ -852,19 +852,21 @@ void App::indexEvt()
    */
 
     if(!m_evt) return ; 
-  
 
     if(m_evt->isIndexed())
     {
         LOG(info) << "App::indexEvt" 
                   << " skip as already indexed "
                   ;
+        return ; 
     }
 
 
 #ifdef WITH_OPTIX 
     LOG(info) << "App::indexEvt WITH_OPTIX" ; 
+
     indexSequence();
+
     LOG(info) << "App::indexEvt WITH_OPTIX DONE" ; 
 #endif
 
@@ -1100,9 +1102,6 @@ void App::prepareOptiXViz()
 void App::setupEventInEngine()
 {
     if(!m_ope) return ; 
-
-    //m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers
-
     m_ope->setEvent(m_evt);  // without this cannot index
 }
 
@@ -1123,6 +1122,7 @@ void App::initRecords()
     if(!m_ope) return ; 
     m_ope->initRecords();
 }
+
 void App::propagate()
 {
     if(hasOpt("nooptix|noevent|nopropagate")) 
@@ -1130,7 +1130,6 @@ void App::propagate()
         LOG(warning) << "App::propagate skip due to --nooptix/--noevent/--nopropagate " ;
         return ;
     }
-
     if(!m_ope) return ; 
     m_ope->propagate();
 }
@@ -1138,12 +1137,10 @@ void App::propagate()
 void App::saveEvt()
 {
     if(!m_ope) return ; 
-
     if(!m_opticks->isCompute()) 
     {
         Rdr::download(m_evt);
     }
-
     m_ope->saveEvt();
 }
 
@@ -1154,7 +1151,9 @@ void App::indexSequence()
         LOG(warning) << "App::indexSequence NULL OpEngine " ;
         return ; 
     }
-    m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers
+
+    //m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers, causes CUDA error with Op indexing, but needed for G4 indexing  
+    LOG(info) << "App::indexSequence evt shape " << m_evt->getShapeString() ;
 
     m_ope->indexSequence();
     LOG(info) << "App::indexSequence DONE" ;
