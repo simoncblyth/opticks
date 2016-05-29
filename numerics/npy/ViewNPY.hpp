@@ -73,7 +73,7 @@ class ViewNPY {
         unsigned int getNumBytes(){  return m_numbytes ; }
         unsigned int getStride(){ return m_stride ; }
         unsigned long getOffset(){ return m_offset ; }
-        unsigned int getCount(){  return m_count ; }
+        unsigned int getCount();
         unsigned int getSize(){   return m_size ; }  //typically 1,2,3,4 
         bool         getNorm(){ return m_norm ; }
         bool         getIatt(){ return m_iatt ; }
@@ -111,7 +111,6 @@ class ViewNPY {
         unsigned int  m_numbytes ;  
         unsigned int  m_stride ;  
         unsigned long m_offset ;  
-        unsigned int  m_count ;  
 
     private:
         glm::vec3*  m_low ;
@@ -144,7 +143,6 @@ inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned
             m_numbytes(0),
             m_stride(0),
             m_offset(0),
-            m_count(0),
             m_low(NULL),
             m_high(NULL),
             m_dimensions(NULL),

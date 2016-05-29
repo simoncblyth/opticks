@@ -21,6 +21,7 @@ class Rdr : public RendererBase  {
       void check_uniforms();
       void update_uniforms();
       void dump_uniforms();
+      void dump_uploads_table();
 
       void log(const char* msg, int value);
       void prepare_vao();
@@ -95,6 +96,8 @@ class Rdr : public RendererBase  {
       GLint  m_pickphoton_location ;
 
       GLenum m_primitive ; 
+
+      std::vector<MultiViewNPY*> m_uploads ; 
 
 };      
 

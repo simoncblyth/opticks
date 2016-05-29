@@ -38,10 +38,40 @@ void Rdr::setPrimitive(Primitive_t prim )
 }
 
 
+
+
+void Rdr::dump_uploads_table()
+{
+    char* tag = getShaderTag();
+    LOG(info) << "Rdr::dump_uploads_table for rendering pipeline with shader tag: " << tag ; 
+    typedef std::vector<MultiViewNPY*> VMVN ; 
+    for(VMVN::const_iterator it=m_uploads.begin() ; it != m_uploads.end() ; it++)
+    {
+        MultiViewNPY* mvn = *it ;
+        const char* name = mvn->getName() ;
+        unsigned int nvec = mvn->getNumVecs() ;
+        for(unsigned int i=0 ; i < nvec ; i++)
+        {
+           ViewNPY* vnpy = (*mvn)[i] ;
+           std::cout
+              << std::setw(15) << name 
+              << std::setw(2) << i << "/" 
+              << std::setw(2) << nvec
+              << " vnpy " 
+              << std::setw(10) << vnpy->getName() 
+              << std::setw(10) << vnpy->getCount()
+              <<  std::endl ;
+        }
+    }
+}
+
+
 void Rdr::upload(MultiViewNPY* mvn, bool debug)
 {
 
     if(!mvn) return ; 
+
+    m_uploads.push_back(mvn);
 
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
@@ -86,12 +116,15 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
             {
                 bool count_match = count == getCountDefault() ;
                 if(!count_match)
-                LOG(fatal) << "Rdr::upload COUNT MISMATCH " 
-                           << " tag " << tag 
-                           << " mvn " << mvn->getName() 
-                           << " expected  " << getCountDefault()
-                           << " found " << count 
-                           ; 
+                {
+                    LOG(fatal) << "Rdr::upload COUNT MISMATCH " 
+                               << " tag " << tag 
+                               << " mvn " << mvn->getName() 
+                               << " expected  " << getCountDefault()
+                               << " found " << count 
+                               ; 
+                    dump_uploads_table();
+                }
                 assert(count_match && "all buffers fed to the Rdr pipeline must have the same counts");
             }
 

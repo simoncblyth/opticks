@@ -64,7 +64,6 @@ void ViewNPY::init()
     m_numbytes = m_npy->getNumBytes(0) ;
     m_stride   = m_npy->getNumBytes(1) ;
     m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;
-    m_count    = m_npy->getShape(0) ;
 
     if( m_npy->hasData() )
     { 
@@ -72,6 +71,11 @@ void ViewNPY::init()
     } 
 }
 
+unsigned int ViewNPY::getCount()
+{
+    // this can now be changed, so dont store the count at init
+    return m_npy->getShape(0) ;
+}
 
 void ViewNPY::addressNPY()
 {
@@ -119,7 +123,10 @@ void ViewNPY::dump(const char* msg)
     printf("%s name %s \n", msg, m_name);
     const char* fmt = "ViewNPY::dump %5s %6u/%6u :  %15f %15f %15f \n";
 
-    for(unsigned int i=0 ; i < m_count ; ++i )
+
+    unsigned int count = getCount();
+
+    for(unsigned int i=0 ; i < count ; ++i )
     {   
         char* ptr = (char*)m_bytes + m_offset + i*m_stride  ;   
         float* f = (float*)ptr ; 
@@ -136,7 +143,7 @@ void ViewNPY::dump(const char* msg)
         if( z<zz[0] ) zz[0] = z ;  
         if( z>zz[1] ) zz[1] = z ;  
 
-        if(i < 5 || i > m_count - 5) printf(fmt, "", i,m_count, x, y, z);
+        if(i < 5 || i > count - 5) printf(fmt, "", i,count, x, y, z);
     }
 
     xx[2] = xx[1] - xx[0] ;
@@ -161,7 +168,8 @@ void ViewNPY::findBounds()
 
     //printf("ViewNPY::findBounds name %s bytes %p offset %lu stride %u count %u \n", m_name, m_bytes, m_offset, m_stride, m_count );
 
-    for(unsigned int i=0 ; i < m_count ; ++i )
+    unsigned int count = getCount();
+    for(unsigned int i=0 ; i < count ; ++i )
     {   
         char* ptr = (char*)m_bytes + m_offset + i*m_stride  ;   
         float* f = (float*)ptr ; 
@@ -235,7 +243,8 @@ void ViewNPY::Summary(const char* msg)
 
 void ViewNPY::Print(const char* msg)
 {
-    printf("%s name %s type [%d] typeName %s numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, getTypeName(), m_numbytes, m_stride, m_offset, m_count, m_extent );
+    unsigned int count = getCount();
+    printf("%s name %s type [%d] typeName %s numbytes %u stride %u offset %lu count %u extent %f\n", msg, m_name, m_type, getTypeName(), m_numbytes, m_stride, m_offset, count, m_extent );
 }
 
 std::string ViewNPY::description()
@@ -247,8 +256,6 @@ std::string ViewNPY::description()
 
     return ss.str();
 }
-
-
 
 
 
