@@ -247,12 +247,19 @@ assimprap-run(){
     $DEBUG $(assimprap-bin) $*  
 }
 
-assimprap--(){
+assimprap-full(){
     assimprap-make clean
     assimprap-make
     [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
     assimprap-install $*
 }
+
+assimprap--(){
+   ( assimprap-bcd ; make ${1:-install} )
+}
+
+
+
 
 assimprap-lldb(){
     DEBUG=lldb assimprap-run

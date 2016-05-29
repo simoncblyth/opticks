@@ -5,6 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from collections import OrderedDict 
 from env.python.utils import *
 from env.numerics.npy.types import SeqHis, seqhis_int
 from env.numerics.npy.nload import A, I, II
@@ -41,6 +42,7 @@ class Evt(object):
 
         self.label = label
         self.rec = rec
+        self.desc = OrderedDict()
 
         self.init_metadata(tag, src, det, dbg)
         self.init_photons(tag, src, det, dbg)
@@ -51,6 +53,7 @@ class Evt(object):
         else:
             self.history = None
         pass
+
 
     def init_metadata(self, tag, src, det, dbg):
         self.tag = str(tag)
@@ -70,6 +73,11 @@ class Evt(object):
         self.fdom = fdom
         self.idom = idom
 
+        fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
+        self.desc['fdom'] = fdom.desc
+        self.desc['idom'] = "(metadata) int domain"
+         
+
     def init_photons(self, tag, src, det, dbg):
         """
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
@@ -80,13 +88,21 @@ class Evt(object):
 
         log.debug("ox shape %s " % str(ox.shape))
 
-        self.c4 = c4
         self.ox = ox
         self.wl = wl
         self.post = ox[:,0] 
         self.dirw = ox[:,1]
         self.polw = ox[:,2]
         self.flags = ox.view(np.uint32)[:,3,3]
+        self.c4 = c4
+
+        self.desc['ox'] = "(photons) final photon step"
+        self.desc['wl'] = "(photons) wavelength"
+        self.desc['post'] = "(photons) final photon step: position, time"
+        self.desc['dirw'] = "(photons) final photon step: direction, weight "
+        self.desc['polw'] = "(photons) final photon step: polarization, wavelength "
+        self.desc['flags'] = "(photons) final photon step: flags "
+        self.desc['c4'] = "(photons) final photon step: dtype split uint8 view of ox flags"
 
     def init_records(self, tag, src, det, dbg):
 
@@ -121,7 +137,8 @@ class Evt(object):
         self.histype = histype
         self.mattype = mattype
 
-
+        self.desc['rx'] = "(records) photon step records"
+        self.desc['ph'] = "(records) photon history flag/material sequence"
 
     def init_selection(self, seqs, not_):
         if not self.rec or len(seqs) == 0:return  
@@ -137,16 +154,17 @@ class Evt(object):
         self.history = SeqAna(self.seqhis[psel], self.histype)   # history with selection applied
 
         # TODO: material with history selection applied
+    
  
-
     x = property(lambda self:self.ox[:,0,0])
     y = property(lambda self:self.ox[:,0,1])
     z = property(lambda self:self.ox[:,0,2])
     t = property(lambda self:self.ox[:,0,3])
 
-    def __repr__(self):
-        return "Evt(%s,\"%s\",\"%s\",\"%s\", seqs=\"%s\")" % (self.tag, self.src, self.det,self.label, repr(self.seqs))
+    description = property(lambda self:"\n".join(["%5s : %15s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
 
+    def __repr__(self):
+        return "Evt(%s,\"%s\",\"%s\",\"%s\", seqs=\"%s\")\n%s" % (self.tag, self.src, self.det,self.label, repr(self.seqs), self.description)
 
     def msize(self):
         return float(self.ox.shape[0])/1e6

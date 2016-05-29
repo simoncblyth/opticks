@@ -1,3 +1,5 @@
+
+// assimprap-
 #include "AssimpGeometry.hh"
 #include "AssimpCommon.hh"
 #include "AssimpTree.hh"
@@ -6,22 +8,22 @@
 
 /*
    http://assimp.sourceforge.net/lib_html/data.html
-
    http://www.tinysg.de/techGuides/tg7_assimpLoader.html
-
-
 */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sstream>
+#include <cassert>
 
-#include "assert.h"
+// optickscore-
+#include "OpticksQuery.hh"
 
 // npy-
 #include "stringutil.hpp"
 
+// assimp-
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
 
@@ -106,6 +108,8 @@ void AssimpGeometry::info()
 }
 
 
+
+/*
 const char* AssimpGeometry::identityFilename( const char* path, const char* query)
 {
     // Used when geometry is loaded using options: -g/--g4dae path  
@@ -123,7 +127,7 @@ const char* AssimpGeometry::identityFilename( const char* path, const char* quer
     //printf("AssimpGeometry::identityFilename\n path %s\n query %s\n digest %s\n kfn %s \n", path, query, digest.c_str(), kfn.c_str() );
     return kfn.c_str();
 }
-
+*/
 
 
 unsigned int AssimpGeometry::defaultProcessFlags()
@@ -205,7 +209,7 @@ void AssimpGeometry::traverse()
     m_tree->traverse();
 }
 
-AssimpSelection* AssimpGeometry::select(const char* query)
+AssimpSelection* AssimpGeometry::select(OpticksQuery* query)
 {
 
     if(!m_tree) 
@@ -219,7 +223,7 @@ AssimpSelection* AssimpGeometry::select(const char* query)
 
     if(selection->getNumSelected() == 0)
     {
-        printf("AssimpGeometry::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query );
+        printf("AssimpGeometry::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query->getQueryString() );
     }
     return selection ; 
 }

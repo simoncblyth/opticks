@@ -1,5 +1,7 @@
 #pragma once
 
+class OpticksQuery ; 
+
 class AssimpTree ; 
 class AssimpNode ; 
 class AssimpSelection ; 
@@ -31,7 +33,7 @@ public:
     unsigned int getProcessFlags();
     unsigned int getSceneFlags();
     unsigned int defaultProcessFlags();
-    static const char* identityFilename(const char* path, const char* query);
+    //static const char* identityFilename(const char* path, const char* query);
     void info();
     void dump();
     void dumpMaterials(const char* msg="AssimpGeometry::dumpMaterials");
@@ -42,7 +44,7 @@ public:
     aiMaterial*  getMaterial(unsigned int index);
 
 public:
-    AssimpSelection* select(const char* query);
+    AssimpSelection* select(OpticksQuery* query);
     aiMesh* createMergedMesh(AssimpSelection* selection);
 
 protected:

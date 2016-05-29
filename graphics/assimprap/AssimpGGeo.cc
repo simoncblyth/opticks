@@ -37,6 +37,7 @@
 
 //opticks-
 #include "OpticksResource.hh"
+#include "OpticksQuery.hh"
 
 
 #include <boost/algorithm/string.hpp>
@@ -81,17 +82,17 @@ int AssimpGGeo::load(GGeo* ggeo)
 {
     GCache* cache = ggeo->getCache();
     OpticksResource* resource = cache->getResource();
+    OpticksQuery* query = resource->getQuery() ;
 
-    const char* idpath_ = resource->getIdPath() ;
+    //const char* idpath_ = resource->getIdPath() ;
     const char* path = resource->getDAEPath() ;
-    const char* query = resource->getQuery() ;
     const char* ctrl = resource->getCtrl() ;
     unsigned int verbosity = ggeo->getLoaderVerbosity();
 
 
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << path 
-             << " query " << query 
+             << " query " << query->getQueryString()
              << " ctrl " << ctrl 
              << " verbosity " << verbosity 
              ; 
@@ -102,9 +103,8 @@ int AssimpGGeo::load(GGeo* ggeo)
 
     AssimpGeometry ageo(path);
 
-    const char* idpath = ageo.identityFilename(path, query);
-
-    assert(strcmp(idpath, idpath_) == 0);
+    //const char* idpath = ageo.identityFilename(path, query);
+    //assert(strcmp(idpath, idpath_) == 0);
 
     ageo.import();
 

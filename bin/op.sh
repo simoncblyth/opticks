@@ -45,6 +45,7 @@ op-binary-name()
      --ngunconfig) echo NGunConfigTest ;;
    --gpropertymap) echo GPropertyMapTest ;;
   --gscintillatorlib) echo GScintillatorLibTest ;;
+  --opticksquery) echo OpticksQueryTest ;;  
 
      --boundaries) echo BoundariesNPYTest ;;
            --recs) echo RecordsNPYTest ;;
@@ -92,6 +93,7 @@ op-binary-desc()
      --ngunconfig) echo "Test Geant4 Gun configuration with npy-/NGunConfigTest ";;
    --gpropertymap) echo "Test creation and persisting of GPropertyMap " ;;
   --gscintillatorlib) echo "Test loading of GScintillatorLib " ;;
+  --opticksquery) echo "Test parsing of OPTICKS_QUERY geometry selection"  ;;  
    esac 
 }
 

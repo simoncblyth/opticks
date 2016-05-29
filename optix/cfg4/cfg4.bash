@@ -6,6 +6,7 @@ cfg4-usage(){ cat << EOU
 
 Comparisons of Opticks against Geant4 for simple test geometries
 ==================================================================
+
 Features
 ------------
 

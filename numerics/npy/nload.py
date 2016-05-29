@@ -48,7 +48,10 @@ class A(np.ndarray):
         return a
 
     def __repr__(self):
-        return "A(%s,%s,%s)" % (self.typ, self.tag, self.det)
+        if hasattr(self, 'typ'):
+            return "A(%s,%s,%s)%s\n%s" % (self.typ, self.tag, self.det, getattr(self,'desc','-'),np.ndarray.__repr__(self))
+        pass
+        return "A()sliced\n%s" % (np.ndarray.__repr__(self))
  
     def derivative_path(self, postfix="track"):
         tag = "%s_%s" % (self.tag, postfix)

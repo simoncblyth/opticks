@@ -5,6 +5,8 @@
 #include <cstring>
 #include <glm/glm.hpp>
 
+class OpticksQuery ; 
+
 
 class OpticksResource {
     private:
@@ -56,8 +58,10 @@ class OpticksResource {
     public:
        const char* getDAEPath();
        const char* getGDMLPath();
-       const char* getQuery();
+       const char* getQueryString();
        const char* getCtrl();
+    public:
+       OpticksQuery* getQuery();
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
@@ -80,7 +84,7 @@ class OpticksResource {
        const char* m_geokey ;
        const char* m_daepath ;
        const char* m_gdmlpath ;
-       const char* m_query ;
+       const char* m_query_string ;
        const char* m_ctrl ;
        const char* m_metapath ;
        const char* m_meshfix ;
@@ -89,6 +93,8 @@ class OpticksResource {
        const char* m_idfold ;
        const char* m_digest ;
        bool        m_valid ; 
+   private:
+       OpticksQuery* m_query ;
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 
@@ -108,7 +114,7 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
        m_geokey(NULL),
        m_daepath(NULL),
        m_gdmlpath(NULL),
-       m_query(NULL),
+       m_query_string(NULL),
        m_ctrl(NULL),
        m_metapath(NULL),
        m_meshfix(NULL),
@@ -117,6 +123,7 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
        m_idfold(NULL),
        m_digest(NULL),
        m_valid(true),
+       m_query(NULL),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),
@@ -161,11 +168,16 @@ inline const char* OpticksResource::getMetaPath()
 }
 
 
-
-inline const char* OpticksResource::getQuery()
+inline const char* OpticksResource::getQueryString()
+{
+    return m_query_string ;
+}
+inline OpticksQuery* OpticksResource::getQuery()
 {
     return m_query ;
 }
+
+
 inline const char* OpticksResource::getCtrl()
 {
     return m_ctrl ;

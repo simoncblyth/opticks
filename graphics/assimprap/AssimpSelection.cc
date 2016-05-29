@@ -11,27 +11,24 @@
 #include "stringutil.hpp"
 #include "NLog.hpp"
 
-
-
-const char* AssimpSelection::UNDEFINED_ = "undefined" ; 
-const char* AssimpSelection::NAME_ = "name" ; 
-const char* AssimpSelection::INDEX_ = "index" ; 
-const char* AssimpSelection::MERGE_ = "merge" ; 
-const char* AssimpSelection::DEPTH_ = "depth" ; 
-const char* AssimpSelection::RANGE_ = "range" ; 
-
-
+// optickscore-
+#include "OpticksQuery.hh"
 
 void AssimpSelection::init()
 {
-    parseQuery(m_query);    
-    dumpQuery("AssimpSelection::init dumpQuery");    
+    m_no_selection = m_query->isNoSelection();
+    m_flat_selection = m_query->isFlatSelection();
+    m_query_string = m_query->getQueryString();
+    m_query_name = m_query->getQueryName();
+    m_query_index = m_query->getQueryIndex();
+    m_query_depth = m_query->getQueryDepth();
+    m_query_range = m_query->getQueryRange();
 
     m_selection.clear();
 
     LOG(info) << "AssimpSelection::AssimpSelection"
               << " before SelectNodes " 
-              << " m_query " << m_query 
+              << " m_query_string " << m_query_string 
               << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
               << " m_query_index " <<  m_query_index 
               ;
@@ -47,11 +44,6 @@ void AssimpSelection::init()
     assert(m_selection.size() > 0 );
 
     findBounds();
-}
-
-AssimpSelection::~AssimpSelection()
-{
-   free(m_query);
 }
 
 
@@ -75,143 +67,6 @@ void AssimpSelection::dumpSelection()
    } 
    */
 }
-
-
-unsigned int AssimpSelection::getNumSelected()
-{
-    return m_selection.size();
-}
-
-AssimpNode* AssimpSelection::getSelectedNode(unsigned int i)
-{
-    return i < m_selection.size() ? m_selection[i] : NULL ; 
-}
-
-void AssimpSelection::addToSelection(AssimpNode* node)
-{
-     m_selection.push_back(node);
-}
-
-void AssimpSelection::parseQuery(const char* query)
-{
-   // "name:helo,index:yo,range:10"
-   // split at "," and then extract values beyond the "token:" 
-
-   std::vector<std::string> elem ; 
-   split(elem, query, ',');
-
-   for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
-
-   if(elem.size() == 0)
-   {
-      m_no_selection = true ; 
-   }
-
-   LOG(info) << "AssimpSelection::parseQuery" 
-             << " query:[" << query << "]"
-             << " elements:" << elem.size()  
-             << " queryType:" << getQueryTypeString()
-             ;
-
-
-}
-
-void AssimpSelection::dumpQuery(const char* msg)
-{
-    LOG(info) << msg 
-              << " queryType " << getQueryTypeString() ;
-
-   if(m_query_type == RANGE)
-   {
-       size_t nrange = m_query_range.size() ;
-       std::cout << " nrange " << nrange ;
-       for(unsigned int i=0 ; i < nrange ; i++)
-       {
-          std::cout << " : " << m_query_range[i] ;
-       }
-       std::cout << std::endl ; 
-   } 
-           
-}
-
-AssimpSelection::AssimpQuery_t AssimpSelection::getQueryType()
-{
-    return m_query_type ; 
-}
-
-const char* AssimpSelection::getQueryTypeString()
-{
-   const char* type = UNDEFINED_ ;
-   switch(m_query_type)
-   {
-      case UNDEFINED: type=UNDEFINED_ ;break; 
-      case NAME     : type=NAME_      ;break; 
-      case INDEX    : type=INDEX_     ;break; 
-      case RANGE    : type=RANGE_     ;break; 
-      case MERGE    : type=MERGE_     ;break; 
-      case DEPTH    : type=DEPTH_     ;break; 
-      default       : type=UNDEFINED_ ;break; 
-   }
-   return type ; 
-}
-
-
-
-void AssimpSelection::parseQueryElement(const char* query)
-{
-   const char* name_token  = "name:" ;
-   const char* index_token = "index:" ;
-   const char* range_token = "range:" ;
-   const char* merge_token = "merge:" ;
-   const char* depth_token = "depth:" ;
-
-   m_query_type = UNDEFINED ; 
-
-   if(strncmp(query,name_token, strlen(name_token)) == 0)
-   {
-       m_query_type = NAME ; 
-       m_query_name = strdup(query+strlen(name_token));
-   }  
-   else if(strncmp(query,index_token, strlen(index_token)) == 0)
-   {
-       m_query_type = INDEX ; 
-       int query_index = atoi(query+strlen(index_token));
-       assert(query_index > -1);
-       m_query_index = query_index ;
-   }
-   else if(strncmp(query,merge_token, strlen(merge_token)) == 0)
-   {
-       m_query_type = MERGE ; 
-       int query_merge = atoi(query+strlen(merge_token));
-       assert(query_merge > -1);
-       m_query_merge = query_merge ;
-   }
-   else if(strncmp(query,depth_token, strlen(depth_token)) == 0)
-   {
-       m_query_type = DEPTH ; 
-       int query_depth = atoi(query+strlen(depth_token));
-       assert(query_depth > -1);
-       m_query_depth = query_depth ;
-   }
-   else if(strncmp(query,range_token, strlen(range_token)) == 0)
-   {
-       m_query_type = RANGE ; 
-       std::vector<std::string> elem ; 
-       split(elem, query+strlen(range_token), ':'); 
-       assert(elem.size() == 2);
-       //m_query_range.clear();
-       for(unsigned int i=0 ; i<elem.size() ; ++i)
-       {
-           int query_range_elem = atoi(elem[i].c_str());
-           assert(query_range_elem > -1 );
-           m_query_range.push_back(query_range_elem) ;
-       }
-       m_flat_selection = true ; 
-  } 
-}
-
-
-
 
 void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rselect )
 {
@@ -269,6 +124,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
 
    for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1, rselect );
 }
+
 
 
 
@@ -334,7 +190,7 @@ void AssimpSelection::findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& 
 
 void AssimpSelection::dump()
 {
-    printf("AssimpSelection::dump query %s selection matched %lu nodes \n", m_query, m_selection.size() ); 
+    printf("AssimpSelection::dump query %s selection matched %lu nodes \n", m_query->getQueryString(), m_selection.size() ); 
     bounds();
     //dumpSelection();
 }

@@ -1,4 +1,5 @@
 #include "OpticksResource.hh"
+#include "OpticksQuery.hh"
 #include <cassert>
 
 // npy-
@@ -124,13 +125,14 @@ void OpticksResource::readEnvironment()
     }
 
 
-    m_query = getenvvar(m_envprefix, "QUERY");
+    m_query_string = getenvvar(m_envprefix, "QUERY");
 
-    if(m_query == NULL)
+    if(m_query_string == NULL)
     {
-        m_query = DEFAULT_QUERY ;  
-        printf("OpticksResource::readEnvironment USING DEFAULT geo query %s \n", m_query );
+        m_query_string = DEFAULT_QUERY ;  
+        printf("OpticksResource::readEnvironment USING DEFAULT geo query %s \n", m_query_string );
     }
+    m_query = new OpticksQuery(m_query_string);
 
 
     m_ctrl = getenvvar(m_envprefix, "CTRL");
@@ -143,8 +145,9 @@ void OpticksResource::readEnvironment()
     m_meshfix = getenvvar(m_envprefix, "MESHFIX");
     m_meshfixcfg = getenvvar(m_envprefix, "MESHFIX_CFG");
 
-    std::string digest = md5digest( m_query, strlen(m_query));
-    m_digest = strdup(digest.c_str());
+
+    std::string query_digest = md5digest( m_query_string, strlen(m_query_string));
+    m_digest = strdup(query_digest.c_str());
  
     // idpath incorporates digest of geometry selection envvar 
     // allowing to benefit from caching as vary geometry selection 
@@ -206,7 +209,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
     std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
     std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
-    std::cerr << "query    : " <<  (m_query?m_query:"NULL") << std::endl; 
+    std::cerr << "query    : " <<  (m_query_string?m_query_string:"NULL") << std::endl; 
     std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
     std::cerr << "digest   : " <<  (m_digest?m_digest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
