@@ -80,10 +80,10 @@ class NPY : public NPYBase {
 
    public:
        static NPY<T>* debugload(const char* path);
-       static NPY<T>* load(const char* path);
-       static NPY<T>* load(const char* dir, const char* name);
-       static NPY<T>* load(const char* typ, const char* tag, const char* det);
-       static NPY<T>* load(const char* tfmt, const char* targ, const char* tag, const char* det, bool verbose=false); 
+       static NPY<T>* load(const char* path, bool quietly=false);
+       static NPY<T>* load(const char* dir, const char* name, bool quietly=false);
+       static NPY<T>* load(const char* typ, const char* tag, const char* det, bool quietly=false);
+       static NPY<T>* load(const char* tfmt, const char* targ, const char* tag, const char* det, bool quietly=false); 
  
        void save(const char* path);
        void save(const char* dir, const char* name);

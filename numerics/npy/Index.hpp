@@ -20,6 +20,7 @@ class Index : public NSequence {
         bool exists(const char* idpath);
         void save(const char* idpath);
         void save(const char* pfold, const char* rfold);
+        std::string description();
    public:
        // debugging only
         std::string getPath(const char* idpath, const char* prefix);
@@ -101,7 +102,6 @@ inline const char* Index::getItemType()
 {
     return m_itemtype ; 
 }
-
 inline const char* Index::getTitle()
 {
     return m_title ; 

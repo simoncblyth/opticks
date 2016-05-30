@@ -993,7 +993,7 @@ NPYBase* GMesh::getNPYBuffer(const char* name)
 void GMesh::loadNPYBuffer(const char* path, const char* name)
 {
 
-    LOG(info) << "GMesh::loadNPYBuffer" 
+    LOG(debug) << "GMesh::loadNPYBuffer" 
               << " name " << name
               << " path " << path 
               ; 

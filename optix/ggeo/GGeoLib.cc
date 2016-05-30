@@ -32,7 +32,7 @@ GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
 
     unsigned int meshverbosity = m_ggeo ? m_ggeo->getMeshVerbosity() : 0 ; 
 
-    LOG(info) << "GGeoLib::getMergedMesh"
+    LOG(debug) << "GGeoLib::getMergedMesh"
               << " index " << index 
               << " m_ggeo " << m_ggeo
               << " mm " << mm
@@ -53,7 +53,7 @@ void GGeoLib::loadFromCache()
     const char* idpath = m_cache->getIdPath() ;
 
     m_ggeo = m_cache->getGGeo();
-    LOG(info) << "GGeoLib::loadFromCache" 
+    LOG(debug) << "GGeoLib::loadFromCache" 
               << " ggeo " << m_ggeo 
               ;
 

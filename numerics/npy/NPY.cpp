@@ -262,7 +262,7 @@ NPY<T>* NPY<T>::debugload(const char* path)
 
 
 template <typename T>
-NPY<T>* NPY<T>::load(const char* path_)
+NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 {
     std::string path = os_path_expandvars( path_ ); 
 
@@ -277,10 +277,11 @@ NPY<T>* NPY<T>::load(const char* path_)
     {
         aoba::LoadArrayFromNumpy<T>(path.c_str(), shape, data );
         npy = new NPY<T>(shape,data,metadata) ;
-    } 
+    }
     catch(const std::runtime_error& error)
     {
-        std::cout << "NPY<T>::load failed for path [" << path << "] use debugload to see why" <<  std::endl ; 
+        if(!quietly)
+        LOG(warning) << "NPY<T>::load failed for path [" << path << "] use debugload to see why" <<  std::endl ; 
     }
 
     return npy ;
@@ -288,13 +289,13 @@ NPY<T>* NPY<T>::load(const char* path_)
 
 
 template <typename T>
-NPY<T>* NPY<T>::load(const char* tfmt, const char* targ, const char* tag, const char* det, bool verbose)
+NPY<T>* NPY<T>::load(const char* tfmt, const char* targ, const char* tag, const char* det, bool quietly)
 {
     char typ[64];
     snprintf(typ, 64, tfmt, targ ); 
     std::string path = NPYBase::path(typ, tag, det);
 
-    if(verbose) LOG(info) 
+    if(!quietly) LOG(info) 
                   << "NPY<T>::load" 
                   << " tfmt " << tfmt 
                   << " targ " << targ
@@ -304,22 +305,22 @@ NPY<T>* NPY<T>::load(const char* tfmt, const char* targ, const char* tag, const 
                   << " path [" << path << "]"
                   ;
     
-    return load(path.c_str());
+    return load(path.c_str(),quietly);
 }
 
 
 template <typename T>
-NPY<T>* NPY<T>::load(const char* typ, const char* tag, const char* det)
+NPY<T>* NPY<T>::load(const char* typ, const char* tag, const char* det, bool quietly)
 {
     std::string path = NPYBase::path(typ, tag, det);
-    return load(path.c_str());
+    return load(path.c_str(), quietly);
 }
 
 template <typename T>
-NPY<T>* NPY<T>::load(const char* dir, const char* name)
+NPY<T>* NPY<T>::load(const char* dir, const char* name, bool quietly)
 {
     std::string path = NPYBase::path(dir, name);
-    return load(path.c_str());
+    return load(path.c_str(), quietly);
 }
  
 

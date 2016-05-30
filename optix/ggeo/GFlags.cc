@@ -12,12 +12,22 @@
 
 
 //const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
-const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
+//const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
+const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
 
 void GFlags::init(const char* path)
 {
     m_index = parseFlags(path);
+    unsigned int num_flags = m_index ? m_index->getNumItems() : 0 ;
+
+    LOG(info) << "GFlags::init"
+              << " path " << path 
+              << " num_flags " << num_flags 
+              << " " << ( m_index ? m_index->description() : "NULL index" )
+              ;
     
+    assert(num_flags > 0 && "missing envvar ENV_HOME or you need to update ENUM_HEADER_PATH ");
+
     m_aindex = new GAttrSeq(m_cache, "GFlags");
     m_aindex->loadPrefs(); // color, abbrev and order 
 
@@ -48,6 +58,10 @@ Index* GFlags::parseFlags(const char* path)
         assert( mask == xmask);
         index->add( p.second.c_str(), bitpos );
     }
+
+
+
+
     return index ; 
 }
 

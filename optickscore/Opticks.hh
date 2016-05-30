@@ -158,7 +158,7 @@ class Opticks {
        const glm::uvec4& getPosition();
    public:
        void setSpaceDomain(const glm::vec4& pd);
-       void dumpDomains(const char* msg="Opticks::dumpDomains");
+       std::string description();
    public:
        unsigned int getRngMax();
        unsigned int getBounceMax();

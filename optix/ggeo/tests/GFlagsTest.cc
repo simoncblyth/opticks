@@ -1,12 +1,14 @@
+// op --flags 
+
 #include "Opticks.hh"
 #include "GCache.hh"
 #include "GFlags.hh"
 #include "GAttrSeq.hh"
 #include "Index.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-    Opticks ok ; 
+    Opticks ok(argc, argv) ; 
 
     GCache gc(&ok);
 

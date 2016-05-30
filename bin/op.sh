@@ -45,7 +45,9 @@ op-binary-name()
      --ngunconfig) echo NGunConfigTest ;;
    --gpropertymap) echo GPropertyMapTest ;;
   --gscintillatorlib) echo GScintillatorLibTest ;;
-  --opticksquery) echo OpticksQueryTest ;;  
+   --opticksquery) echo OpticksQueryTest ;;  
+    --gitemindex) echo GItemIndexTest ;;  
+        --nindex) echo IndexTest ;;  
 
      --boundaries) echo BoundariesNPYTest ;;
            --recs) echo RecordsNPYTest ;;
@@ -94,6 +96,8 @@ op-binary-desc()
    --gpropertymap) echo "Test creation and persisting of GPropertyMap " ;;
   --gscintillatorlib) echo "Test loading of GScintillatorLib " ;;
   --opticksquery) echo "Test parsing of OPTICKS_QUERY geometry selection"  ;;  
+    --gitemindex) echo "Test presentation of item indices, such as seqmat and seqhis photon flag sequences " ;;  
+        --nindex) echo "npy-/Index test " ;;  
    esac 
 }
 
@@ -195,8 +199,7 @@ op-help(){
    op-binary-names | while read cmd ; do
       bin=$(op-binary-name "--$cmd")
       desc=$(op-binary-desc "--$cmd")
-      hlp=$(printf " %s (%s)" "$desc" $bin)  
-      printf " %20s : %s \n" $cmd "$hlp"
+      printf " %20s : %25s : %s \n" $cmd  $bin  "$desc"
    done
 }
 

@@ -8,11 +8,26 @@
 #include <sstream>
 
 #include "jsonutil.hpp"
+#include "NLog.hpp"
 
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+std::string Index::description()
+{
+    std::stringstream ss ; 
+
+    const char* type = getItemType() ;
+    const char* title = getTitle() ;
+
+    ss << "Index" 
+       << " itemtype " << ( type ? type : "NULL" )
+       << " title " << ( title ? title : "NULL" )
+       << " numItems " << getNumItems()
+       ;
+
+    return ss.str();
+}
+
+
 
 void Index::add(const VS& vs)
 {

@@ -5,7 +5,7 @@
 #include "GBuffer.hh"
 #include "GVector.hh"
 
-#include "assert.h"
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -16,10 +16,7 @@
 #include "Index.hpp"
 #include "Types.hpp"
 #include "jsonutil.hpp"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
 GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)
@@ -52,41 +49,60 @@ void GItemIndex::loadIndex(const char* idpath, const char* override)
         LOG(warning)<<"GItemIndex::loadIndex using override itemtype " << itemtype << " instead of default " << m_index->getItemType() ;
     }
     m_index = Index::load(idpath, itemtype);
+    if(!m_index)
+        LOG(warning) << "GItemIndex::loadIndex"
+                     << " failed for "
+                     << " idpath " << idpath
+                     << " override " << ( override ? override : "NULL" )
+                     ; 
+
 }
 
 void GItemIndex::add(const char* name, unsigned int source)
 {
+    assert(m_index);
     m_index->add(name, source);
 }
 
 unsigned int GItemIndex::getIndexLocal(const char* name, unsigned int missing)
 {
+    assert(m_index);
     return m_index->getIndexLocal(name, missing);
 }
 
 bool GItemIndex::hasItem(const char* key)
 {
+    assert(m_index);
     return m_index->hasItem(key);
 }
 
 
 void GItemIndex::save(const char* idpath)
 {
+    assert(m_index);
     m_index->save(idpath);
 }
 
 unsigned int GItemIndex::getNumItems()
 {
+    assert(m_index);
     return m_index->getNumItems();
 }
 
 void GItemIndex::test(const char* msg, bool verbose)
 {
+    assert(m_index);
     m_index->test(msg, verbose);
 }
 
 void GItemIndex::dump(const char* msg)
 {
+   if(!m_index)
+   {
+       LOG(warning) << msg << " NULL index "; 
+       return ; 
+   }  
+
    LOG(info) << msg << " itemtype: " << m_index->getItemType()  ; 
 
    typedef std::vector<std::string> VS ; 
@@ -284,6 +300,36 @@ GBuffer* GItemIndex::getColorBuffer()
        m_colorbuffer = makeColorBuffer();
    }  
    return m_colorbuffer ; 
+}
+
+
+
+std::string GItemIndex::gui_radio_select_debug()
+{
+    assert(m_index);
+    Index* ii = m_index ; 
+
+    std::stringstream ss ; 
+    typedef std::vector<std::string> VS ;
+
+    VS  names = ii->getNames();
+    VS& labels = getLabels(); 
+
+    LOG(info) << "GItemIndex::gui_radio_select_debug"
+              << " names " << names.size()
+              << " labels " << labels.size()
+              ;
+
+    assert(names.size() == labels.size());
+
+    ss << " title " << ii->getTitle() << std::endl ;
+    for(unsigned int i=0 ; i < labels.size() ; i++) 
+            ss << std::setw(3) << i 
+               << " name  " << std::setw(20) << names[i]
+               << " label " << std::setw(50) << labels[i]
+               << std::endl ; 
+
+    return ss.str();
 }
 
 

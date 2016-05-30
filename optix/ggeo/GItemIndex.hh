@@ -50,6 +50,7 @@ class GItemIndex {
         static std::string materialSeqLabeller(GItemIndex* self, const char* key, unsigned int& colorcode);
         static std::string historySeqLabeller(GItemIndex* self, const char* key, unsigned int& colorcode);
    public:
+        std::string gui_radio_select_debug();
         void setLabeller(GItemIndexLabellerPtr labeller);
         void setLabeller(Labeller_t labeller );
         std::string getLabel(const char* key, unsigned int& colorcode);

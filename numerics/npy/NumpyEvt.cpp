@@ -72,6 +72,18 @@ void NumpyEvt::init()
     m_data_names.push_back(phosel);
     m_data_names.push_back(recsel);
     m_data_names.push_back(sequence);
+
+    m_abbrev[genstep] = "" ;      // no-prefix : cerenkov or scintillation
+    m_abbrev[incoming] = "in" ;   // not yet used
+    m_abbrev[primary] = "pr" ;    // not yet used
+    m_abbrev[nopstep] = "no" ;    // non optical particle steps obtained from G4 eg with g4gun
+    m_abbrev[photon] = "ox" ;     // photon final step uncompressed 
+    m_abbrev[record] = "rx" ;     // photon step compressed record
+    m_abbrev[aux] = "au" ;        // formerly used for photon level debug 
+    m_abbrev[phosel] = "ps" ;     // photon selection index
+    m_abbrev[recsel] = "rs" ;     // record selection index
+    m_abbrev[sequence] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
+
 }
 
 
@@ -773,43 +785,7 @@ void NumpyEvt::save(bool verbose)
     LOG(info) << "NumpyEvt::save " << getShapeString() ; 
 
    // genstep normally not saved as it exists already coming from elsewhere,
-   //  but for TorchStep that insnt the case
-   //
-   //
-   //  no-prefix
-   //     (float) genstep data : eg cerenkov or scintillation
-   //
-   //  no 
-   //     (float)nopstepData
-   //     non optical particle steps obtained from G4 eg with g4gun
-   //
-   //  pr 
-   //     (float)primaryData 
-   //     (not yet used, intended to allow use of exactly the same initial photons
-   //     between simulations under comparison)
-   //   
-   //  ox
-   //     (float)photonData 
-   //
-   //  rx 
-   //     (short)recordData
-   //
-   //  ph
-   //     (unsigned long long)sequenceData
-   //  
-   //  ps
-   //
-   //  rs
-   //
-   //  au
-   //     (short)auxData
-   //
-   //  fdom 
-   //     (float) FDomain
-   //
-   //  idom
-   //     (int) IDomain
-   //
+   // but for TorchStep that insnt the case
 
     NPY<float>* pr = getPrimaryData();
     if(pr)
@@ -817,7 +793,6 @@ void NumpyEvt::save(bool verbose)
         pr->setVerbose(verbose);
         pr->save("pr%s", m_typ,  m_tag, udet);
     }
-
 
     NPY<float>* no = getNopstepData();
     if(no)
@@ -867,8 +842,6 @@ void NumpyEvt::save(bool verbose)
     {
        assert(idom && "NumpyEvt::save non-null nopstep BUT HAS NULL IDOM ");
     }
-
- 
 
 
     saveIndex(verbose);
@@ -954,11 +927,17 @@ void NumpyEvt::makeReport()
 }
 
 
+std::string NumpyEvt::speciesDir(const char* species, const char* udet, const char* typ)
+{
+    std::string dir = NPYBase::directory(species, typ, udet );
+    return dir ; 
+}
+
+
 std::string NumpyEvt::getSpeciesDir(const char* species)
 {
     const char* udet = getUDet();
-    std::string dir = NPYBase::directory(species, m_typ, udet );
-    return dir ; 
+    return speciesDir(species, udet, m_typ );
 }
 
 std::string NumpyEvt::getTagDir(const char* species, bool tstamp)
@@ -1026,7 +1005,8 @@ void NumpyEvt::load(bool verbose)
     (*m_timer)("_load");
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
 
-    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet );
+    bool qload = true ; 
+    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet, qload);
     if(!idom)
     {
         m_noload = true ; 
@@ -1042,7 +1022,7 @@ void NumpyEvt::load(bool verbose)
 
     m_loaded = true ; 
 
-    NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet );
+    NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet, qload );
 
     setIDomain(idom);
     setFDomain(fdom);
@@ -1062,13 +1042,14 @@ void NumpyEvt::load(bool verbose)
     }
     else
     {  
-        no = NPY<float>::load("no%s", m_typ,  m_tag, udet );
+        no = NPY<float>::load("no%s", m_typ,  m_tag, udet, qload);
     }
 
 
-    NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet );
-    NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet );
-    NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet );
+
+    NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet, qload);
+    NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet, qload);
+    NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet, qload);
     
     NPY<unsigned long long>* ph = NULL ; 
     NPY<short>*              rx = NULL ; 
@@ -1078,10 +1059,10 @@ void NumpyEvt::load(bool verbose)
     // hmm should m_step be detected from the files or imposed from config  
     if(m_step)
     {
-        rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet );
-        ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet );
-        ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet );
-        rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet );
+        rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet, qload);
+        ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet, qload );
+        ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet, qload );
+        rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet, qload );
     }
 
     unsigned int num_nopstep = no ? no->getShape(0) : 0 ;
@@ -1202,21 +1183,28 @@ bool NumpyEvt::isIndexed()
 
 
 
-NPY<float>* NumpyEvt::loadGenstepDerivativeFromFile(const char* postfix)
+NPY<float>* NumpyEvt::loadGenstepDerivativeFromFile(const char* postfix, bool quietly)
 {
     char tag[128];
     snprintf(tag, 128, "%s_%s", m_tag, postfix );
 
+
+    if(!quietly)
     LOG(info) << "NumpyEvt::loadGenstepDerivativeFromFile  "
               << " typ " << m_typ
               << " tag " << tag
               << " det " << m_det
               ;
 
-    NPY<float>* npy = NPY<float>::load(m_typ, tag, m_det ) ;
+    NPY<float>* npy = NPY<float>::load(m_typ, tag, m_det, quietly) ;
     if(npy)
     {
         npy->dump("NumpyEvt::loadGenstepDerivativeFromFile");
+    }
+    else
+    {
+        if(!quietly)
+        LOG(warning) << "NumpyEvt::loadGenstepDerivativeFromFile FAILED for postfix " << postfix ;
     }
     return npy ; 
 }

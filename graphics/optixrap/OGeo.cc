@@ -223,9 +223,9 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
               << " numTransforms " << numTransforms 
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
+              << " islice " << islice->description() 
               ; 
 
-    printf("OGeo::makeRepeatedGroup islice %s \n", islice->description() );
 
     float* tptr = (float*)itransforms->getPointer(); 
 

@@ -626,6 +626,9 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
 
     LOG(info) << "Composition::setCenterExtent"
               << " ce " << gformat(m_center_extent) 
+              ;
+
+    LOG(debug) << "Composition::setCenterExtent"
               << " model_to_world " << gformat(m_model_to_world)
               << " world_to_model " << gformat(m_world_to_model)
               ;

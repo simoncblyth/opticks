@@ -333,21 +333,18 @@ void Opticks::configureDomains()
                   ;
 
    //assert(e_rng_max == x_rng_max && "Configured RngMax must match envvar CUDAWRAP_RNG_MAX and corresponding files, see cudawrap- ");    
-
-
-
 }
 
-void Opticks::dumpDomains(const char* msg)
+std::string Opticks::description()
 {
-    LOG(info) << msg << std::endl 
-              << " time " << gformat(m_time_domain)  
-              << " space " << gformat(m_space_domain) 
-              << " wavelength " << gformat(m_wavelength_domain) 
-              ;
+    std::stringstream ss ; 
+    ss << "Opticks"
+       << " time " << gformat(m_time_domain)  
+       << " space " << gformat(m_space_domain) 
+       << " wavelength " << gformat(m_wavelength_domain) 
+       ;
+    return ss.str();
 }
-
-
 
 
 std::string Opticks::getModeString()

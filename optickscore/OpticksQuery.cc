@@ -24,7 +24,7 @@ void OpticksQuery::init()
 
 void OpticksQuery::dumpQuery(const char* msg)
 {
-    LOG(info) << msg << std::endl << description() ; 
+    LOG(info) << msg << description() ; 
 }
 
 std::string OpticksQuery::description()

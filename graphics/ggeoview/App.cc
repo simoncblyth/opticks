@@ -138,6 +138,8 @@ void App::init(int argc, char** argv)
     m_delegate    = new numpydelegate ; 
     m_cfg->add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
 #endif
+
+    TIMER("init");
 }
 
 void App::initViz()
@@ -167,6 +169,7 @@ void App::initViz()
     m_cfg->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_cfg->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
+    TIMER("initViz");
 }
 
 
@@ -246,7 +249,7 @@ void App::configureViz()
     m_state = m_opticks->getState();
     m_state->setVerbose(false);
 
-    LOG(info) << "App::configure " << m_state->description();
+    LOG(info) << "App::configureViz " << m_state->description();
 
     assert(m_composition);
 
@@ -261,20 +264,24 @@ void App::configureViz()
         m_composition->setEvt(m_evt);
         m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
 
-        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track");
+        bool quietly = true ; 
+        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track", quietly);
         m_composition->setTrack(track);
     }
+
+    LOG(info) << "App::configureViz m_setup bookmarks" ;  
 
     m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
     m_bookmarks->setState(m_state);
     m_bookmarks->setVerbose();
     m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
 
-
     if(m_interactor)
     {
         m_interactor->setBookmarks(m_bookmarks);
     }
+
+    TIMER("configureViz");
 }
 
 
@@ -340,9 +347,7 @@ void App::prepareViz()
     m_composition->setBookmarks(m_bookmarks);
 
 
-    TIMER("prepareScene");
-
-    LOG(debug) << "App::prepareScene DONE ";
+    TIMER("prepareViz");
 } 
 
 
@@ -378,7 +383,7 @@ void App::loadGeometry()
 
     configureGeometry();
 
-    LOG(info) << "App::loadGeometry DONE" ; 
+    TIMER("loadGeometry");
 }
 
 
@@ -472,6 +477,7 @@ void App::fixGeometry()
         GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
         mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
     }
+    TIMER("fixGeometry"); 
 }
 
 
@@ -545,7 +551,7 @@ void App::registerGeometry()
     if(m_evt)
     {
        // TODO: migrate npy-/NumpyEvt to opop-/OpEvent so this can happen at more specific level 
-        m_opticks->dumpDomains("App::registerGeometry copy Opticks domains to m_evt");
+        LOG(info) << "App::registerGeometry " << m_opticks->description() ;
         m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
     }
 
@@ -556,6 +562,7 @@ void App::registerGeometry()
                       << " w " << ce0.w
                       ;
  
+    TIMER("registerGeometry"); 
 }
 
 
@@ -671,11 +678,17 @@ void App::targetViz()
     bool geocenter  = m_fcfg->hasOpt("geocenter");
     glm::vec4 uuce = geocenter ? mmce : gsce ;
 
-    print(mmce, "loadGenstep mmce");
-    print(gsce, "loadGenstep gsce");
-    print(uuce, "loadGenstep uuce");
+    unsigned int target = m_scene->getTarget() ;
 
-    if(m_scene->getTarget() == 0)
+    LOG(info) << "App::targetViz"
+              << " target " << target      
+              << " geocenter " << geocenter      
+              << " mmce " << gformat(mmce)
+              << " gsce " << gformat(gsce)
+              << " uuce " << gformat(uuce)
+              ;
+
+    if(target == 0)
     {
         // only pointing based in genstep if not already targetted
         bool autocam = true ; 
@@ -690,13 +703,16 @@ void App::targetViz()
 
 void App::loadEvtFromFile()
 {
+    LOG(info) << "App::loadEvtFromFile START" ;
+   
     bool verbose ; 
     m_evt->load(verbose=false);
 
     if(m_evt->isNoLoad())
         LOG(warning) << "App::loadEvtFromFile LOAD FAILED " ;
-}
 
+    TIMER("loadEvtFromFile"); 
+}
 
 
 void App::uploadEvtViz()
@@ -734,19 +750,37 @@ void App::indexPresentationPrep()
     Index* seqmat = m_evt->getMaterialSeq();
     Index* bndidx = m_evt->getBoundaryIdx();
 
-
     if(!seqhis)
     {
          LOG(warning) << "App::indexPresentationPrep NULL seqhis" ;
     }
     else
     {
-        GAttrSeq* qflg = m_cache->getFlags()->getAttrIndex();
-        qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-        //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
         m_seqhis = new GItemIndex(seqhis) ;  
         m_seqhis->setTitle("Photon Flag Sequence Selection");
-        m_seqhis->setHandler(qflg);
+
+        bool oldway = false ; 
+        if(oldway)
+        {
+           // this succeeds to display the labels like : "TORCH BT SA" 
+           // BUT: the radio button selection does not select, all photons disappear 
+           //
+            Types* types = m_cache->getTypes();    
+            m_seqhis->setTypes(types);        
+            m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
+        }
+        else
+        {
+            // displays "NULL NULL NULL" labels and selection doesnt work  in some cases 
+
+            GFlags* flags = m_cache->getFlags();
+            GAttrSeq* qflg = flags->getAttrIndex();
+
+            qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+            qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
+
+            m_seqhis->setHandler(qflg);
+        }
         m_seqhis->formTable();
     }
 
@@ -967,6 +1001,7 @@ void App::prepareGUI()
 
 #endif
 
+    TIMER("prepareGUI"); 
 }
 
 

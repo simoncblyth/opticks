@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <string>
 #include <cstring>
 #include <cassert>
@@ -56,7 +57,7 @@ class NumpyEvt {
        static const char* aux ;
    public:
        NPY<float>* loadGenstepFromFile(int modulo=0);
-       NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track");
+       NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
        void setGenstepData(NPY<float>* genstep_data);
        void setNopstepData(NPY<float>* nopstep_data);
        void zero();
@@ -126,6 +127,8 @@ class NumpyEvt {
        void setAuxData(NPY<short>* aux_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
+   public:
+       static std::string speciesDir(const char* species, const char* udet, const char* typ);
    private:
        void recordDigests();
        std::string getSpeciesDir(const char* species); // tag in the name
@@ -239,6 +242,8 @@ class NumpyEvt {
        unsigned int    m_num_photons ; 
        unsigned int    m_maxrec ; 
 
+       // hmm much of this can move to NPYBase ?
+
        glm::vec4       m_space_domain ; 
        glm::vec4       m_time_domain ; 
        glm::vec4       m_wavelength_domain ; 
@@ -250,6 +255,7 @@ class NumpyEvt {
        Index*          m_bndidx ; 
 
        std::vector<std::string> m_data_names ; 
+       std::map<std::string, std::string> m_abbrev ; 
 
        const char*     m_fake_nopstep_path ; 
 

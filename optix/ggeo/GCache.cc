@@ -24,6 +24,7 @@ void GCache::init()
     m_resource = m_opticks->getResource();
     assert(g_instance == NULL && "GCache::init only one instance is allowed");
     g_instance = this ; 
+
 }
 
 OpticksQuery* GCache::getQuery()
@@ -86,12 +87,11 @@ const char* GCache::getLastArg()
 
 
 
-
-
 Types* GCache::getTypes()
 {
-    if(m_types == NULL)
+    if(!m_types)
     {
+        // deferred because idpath not known at init ?
         m_types = new Types ;  
         m_types->saveFlags(getIdPath(), ".ini");
     }
@@ -103,6 +103,7 @@ GFlags* GCache::getFlags()
 {
     if(m_flags == NULL)
     {
+        // deferred because idpath not known at init ?
         m_flags = new GFlags(this);  // parses the flags enum source, from $ENV_HOME/opticks/OpticksPhoton.h
         m_flags->save(getIdPath());
     }

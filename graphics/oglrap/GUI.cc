@@ -612,7 +612,6 @@ void GUI::gui_item_index(const char* type, std::vector<std::string>& labels, std
 }
 
 
-
 void GUI::gui_radio_select(GItemIndex* ii)
 {
 #ifdef GUI_
