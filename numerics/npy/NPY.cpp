@@ -165,6 +165,12 @@ void NPY<T>::add(void* bytes, unsigned int nbytes)
 
 
 template <typename T>
+void NPY<T>::add(const glm::vec4& v)
+{
+    add(v.x, v.y, v.z, v.w);
+}
+
+template <typename T>
 void NPY<T>::add(T x, T y, T z, T w)  
 {
     unsigned int orig = getNumItems();
@@ -184,6 +190,10 @@ void NPY<T>::add(T x, T y, T z, T w)
 
     setNumItems( orig + extra );
 }
+
+
+
+
 
 
 template <typename T>

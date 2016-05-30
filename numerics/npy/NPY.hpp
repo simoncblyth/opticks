@@ -120,6 +120,7 @@ class NPY : public NPYBase {
        void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
+       void add(const glm::vec4& v ) ;  // add quad, itemsize must be 4 
     public:
        std::vector<T>& data();
        void setData(T* data);

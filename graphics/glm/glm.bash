@@ -133,6 +133,10 @@ glm-get(){
 glm-doc(){ open file://$(glm-dir)/doc/api/modules.html ; }
 glm-pdf(){ open file://$(glm-dir)/doc/glm.pdf ; }
 
+
+
+
+
 glm-find()
 {
    glm-icd

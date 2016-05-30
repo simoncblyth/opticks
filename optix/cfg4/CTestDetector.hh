@@ -54,12 +54,10 @@ class CTestDetector : public CDetector
   private:
     void init();
   public:
-    virtual G4VPhysicalVolume* Construct();
-    virtual ~CTestDetector();
-  public:
     bool isPmtInBox();
     bool isBoxInBox();
   private:
+    G4VPhysicalVolume* makeDetector();
     void makePMT(G4LogicalVolume* mother);
     void kludgePhotoCathode();
     G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
@@ -82,8 +80,5 @@ inline CTestDetector::CTestDetector(GCache* cache, GGeoTestConfig* config)
 }
 
 
-inline CTestDetector::~CTestDetector()
-{
-}
 
 

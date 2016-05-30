@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 
 class OpticksQuery {
 
@@ -16,9 +17,11 @@ public:
     const char* getQueryTypeString();
     OpticksQuery_t getQueryType();
     void dumpQuery(const char* msg="OpticksQuery::dumpQuery");
+    std::string description();
 
 public:
     OpticksQuery(const char* query);
+    bool selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select );
 private:
     void init();
 public:

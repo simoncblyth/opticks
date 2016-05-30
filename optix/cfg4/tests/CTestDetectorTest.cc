@@ -15,7 +15,7 @@
 
 #include "G4DAEParser.hh"
 
-
+#include "NBoundingBox.hpp"
 #include "NLog.hpp"
 
 int main(int argc, char** argv)
@@ -44,9 +44,13 @@ int main(int argc, char** argv)
 
     G4VPhysicalVolume* world_pv = m_detector->Construct();
 
+    NBoundingBox* bbox = m_detector->getBoundingBox();
+
     //clib->dumpMaterials();
 
-    CTraverser* m_traverser = new CTraverser(world_pv) ;
+    OpticksQuery* query = NULL ; 
+
+    CTraverser* m_traverser = new CTraverser(world_pv, bbox, query) ;
 
     m_traverser->Traverse(); 
 

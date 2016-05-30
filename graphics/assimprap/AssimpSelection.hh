@@ -35,17 +35,6 @@ public:
 
 private:
     OpticksQuery* m_query ; 
-
-    const char* m_query_string ; 
-    const char* m_query_name ;
-    unsigned int m_query_index ; 
-    unsigned int m_query_merge ; 
-    unsigned int m_query_depth ; 
-//    AssimpQuery_t m_query_type ; 
-    bool m_flat_selection ; 
-    bool m_no_selection ; 
-    std::vector<unsigned int> m_query_range ; 
-
 private:
     std::vector<AssimpNode*> m_selection ; 
 private:
@@ -63,15 +52,6 @@ private:
 inline AssimpSelection::AssimpSelection(AssimpNode* root, OpticksQuery* query) 
     : 
     m_query(query),
-    m_query_string(NULL),
-    m_query_name(NULL),
-    m_query_index(0), 
-    m_query_merge(0), 
-    m_query_depth(0), 
-//    m_query_type(UNDEFINED), 
-    m_flat_selection(false),
-    m_no_selection(false),
-
     m_count(0),
     m_index(0),
     m_root(root),    
@@ -91,16 +71,33 @@ inline unsigned int AssimpSelection::getNumSelected()
 {
     return m_selection.size();
 }
-
 inline AssimpNode* AssimpSelection::getSelectedNode(unsigned int i)
 {
     return i < m_selection.size() ? m_selection[i] : NULL ; 
 }
-
 inline void AssimpSelection::addToSelection(AssimpNode* node)
 {
-     m_selection.push_back(node);
+    m_selection.push_back(node);
 }
-
+inline aiVector3D* AssimpSelection::getLow()
+{
+    return m_low ; 
+}
+inline aiVector3D* AssimpSelection::getHigh()
+{
+    return m_high ; 
+}
+inline aiVector3D* AssimpSelection::getCenter()
+{
+    return m_center ; 
+}
+inline aiVector3D* AssimpSelection::getExtent()
+{
+    return m_extent ; 
+}
+inline aiVector3D* AssimpSelection::getUp()
+{
+    return m_up ; 
+}
 
 

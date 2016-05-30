@@ -80,6 +80,7 @@ add_library( ${name}  SHARED
     NQuad.cpp
     NPart.cpp
     NPrism.cpp
+    NBoundingBox.cpp
     NTesselate.cpp
     NTriangle.cpp
     NTrianglesNPY.cpp
@@ -143,6 +144,7 @@ NPlane.hpp
 NQuad.hpp
 NPart.hpp
 NPrism.hpp
+NBoundingBox.hpp
 NTesselate.hpp
 NTriangle.hpp
 NTrianglesNPY.hpp

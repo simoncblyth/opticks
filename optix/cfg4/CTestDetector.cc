@@ -47,6 +47,9 @@ void CTestDetector::init()
 {
     m_lib->setGroupvelKludge(m_config->getGroupvel());
     m_maker = new CMaker(m_cache);
+
+    G4VPhysicalVolume* top = makeDetector();
+    setTop(top) ; 
 }
 
 bool CTestDetector::isPmtInBox()
@@ -61,7 +64,7 @@ bool CTestDetector::isBoxInBox()
 }
 
 
-G4VPhysicalVolume* CTestDetector::Construct()
+G4VPhysicalVolume* CTestDetector::makeDetector()
 {
    // analagous to ggeo-/GGeoTest::CreateBoxInBox
    // but need to translate from a surface based geometry spec into a volume based one
@@ -123,7 +126,8 @@ G4VPhysicalVolume* CTestDetector::Construct()
         if(top == NULL)
         {
             top = pv ; 
-            setCenterExtent(param.x, param.y, param.z, param.w );
+            //setCenterExtent(param.x, param.y, param.z, param.w );
+            // this is now discerned by the CTraverser as a result of setTop
         }
         mother = lv ; 
     }   
@@ -134,6 +138,8 @@ G4VPhysicalVolume* CTestDetector::Construct()
     }
 
     //m_lib->dumpMaterials("CTestDetector::Construct CPropLib::dumpMaterials");
+
+    
     return top ;  
 }
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <sstream>
 
 // npy-
 #include "stringutil.hpp"
@@ -19,12 +20,35 @@ void OpticksQuery::init()
 {
     parseQuery(m_query_string);    
     dumpQuery("OpticksQuery::init dumpQuery");    
+}
 
-    LOG(info) << "OpticksQuery::OpticksQuery"
-              << " m_query_string " << m_query_string 
-              << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
-              << " m_query_index " <<  m_query_index 
-              ;
+void OpticksQuery::dumpQuery(const char* msg)
+{
+    LOG(info) << msg << std::endl << description() ; 
+}
+
+std::string OpticksQuery::description()
+{
+   std::stringstream ss ;  
+   ss 
+      << " queryType " << getQueryTypeString() 
+      << " m_query_string " << m_query_string 
+      << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
+      << " m_query_index " <<  m_query_index 
+      ;
+
+   if(m_query_type == RANGE)
+   {
+       size_t nrange = m_query_range.size() ;
+       ss << " nrange " << nrange ;
+       for(unsigned int i=0 ; i < nrange ; i++)
+       {
+          ss << " : " << m_query_range[i] ;
+       }
+       ss << std::endl ; 
+   } 
+
+   return ss.str();
 }
 
 void OpticksQuery::parseQuery(const char* query)
@@ -50,23 +74,6 @@ void OpticksQuery::parseQuery(const char* query)
 
 }
 
-void OpticksQuery::dumpQuery(const char* msg)
-{
-    LOG(info) << msg 
-              << " queryType " << getQueryTypeString() ;
-
-   if(m_query_type == RANGE)
-   {
-       size_t nrange = m_query_range.size() ;
-       std::cerr << " nrange " << nrange ;
-       for(unsigned int i=0 ; i < nrange ; i++)
-       {
-          std::cerr << " : " << m_query_range[i] ;
-       }
-       std::cerr << std::endl ; 
-   } 
-           
-}
 
 OpticksQuery::OpticksQuery_t OpticksQuery::getQueryType()
 {
@@ -142,6 +149,48 @@ void OpticksQuery::parseQueryElement(const char* query)
        }
        m_flat_selection = true ; 
   } 
+}
+
+bool OpticksQuery::selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select )
+{
+   bool _selected(false) ; 
+
+   if(m_no_selection)
+   {
+       _selected = true ;
+   }
+   else if(m_query_name)
+   {
+       if(strncmp(name,m_query_name,strlen(m_query_name)) == 0)
+       {
+           _selected = true ;
+       }
+   }
+   else if (m_query_index != 0)
+   {
+       if( index == m_query_index )
+       {
+           _selected = true ;
+
+           recursive_select = true ;
+
+           // kick-off recursive select, note it then never 
+           // gets turned off, but it only causes selection for depth within range 
+       }
+       else if ( recursive_select )
+       {
+           if( m_query_depth > 0 && depth < m_query_depth ) _selected = true ;
+       }
+   }
+   else if(m_query_range.size() > 0)
+   {
+       assert(m_query_range.size() % 2 == 0);
+       for(unsigned int i=0 ; i < m_query_range.size()/2 ; i++ )
+       {
+           if( index >= m_query_range[i*2+0] && index < m_query_range[i*2+1] ) _selected = true ;
+       }
+   }
+   return _selected ; 
 }
 
 

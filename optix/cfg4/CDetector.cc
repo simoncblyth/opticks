@@ -5,6 +5,7 @@
 // npy-
 #include "NLog.hpp"
 #include "NPY.hpp"
+#include "NBoundingBox.hpp"
 #include "GLMFormat.hpp"
 
 // cfg4-
@@ -13,6 +14,7 @@
 
 // optickscore-
 #include "OpticksResource.hh"
+#include "OpticksQuery.hh"
 
 // ggeo-
 #include "GCache.hh"
@@ -24,30 +26,41 @@
 void CDetector::init()
 {
     m_lib = new CPropLib(m_cache);
+    m_bbox = new NBoundingBox ;
+    m_resource = m_cache->getResource();
 }
 
 void CDetector::traverse(G4VPhysicalVolume* top)
 {
-    // invoked from CGDMLDetector::init via setTop 
-    m_traverser = new CTraverser(top); 
+    // invoked from CGDMLDetector::init via setTop
+    OpticksQuery* query = m_resource->getQuery();
+    m_traverser = new CTraverser(m_top, m_bbox, query ); 
     m_traverser->Traverse();
     m_traverser->Summary("CDetector::traverse");
 }
 
-void CDetector::saveTransforms(const char* objname, unsigned int objindex)
+const glm::vec4& CDetector::getCenterExtent()
+{
+    return m_bbox->getCenterExtent() ; 
+}
+
+void CDetector::saveBuffers(const char* objname, unsigned int objindex)
 {
     assert(m_traverser);
 
     OpticksResource* resource = m_cache->getResource();
-
     std::string cachedir = resource->getObjectPath(objname, objindex);
 
     NPY<float>* gtransforms = m_traverser->getGlobalTransforms(); 
     NPY<float>* ltransforms = m_traverser->getLocalTransforms(); 
+    NPY<float>* center_extent = m_traverser->getCenterExtent(); 
 
     gtransforms->save(cachedir.c_str(), "gtransforms.npy");
     ltransforms->save(cachedir.c_str(), "ltransforms.npy");
+    center_extent->save(cachedir.c_str(), "center_extent.npy");
 }
+
+
 
 unsigned int CDetector::getNumGlobalTransforms()
 {
@@ -83,13 +96,15 @@ NPY<float>* CDetector::getLocalTransforms()
     return m_traverser->getLocalTransforms();
 }
 
-
-
 const char* CDetector::getPVName(unsigned int index)
 {
     assert(m_traverser);
     return m_traverser->getPVName(index);
 }
+
+
+
+
 
 
 void CDetector::dumpPV(const char* msg)

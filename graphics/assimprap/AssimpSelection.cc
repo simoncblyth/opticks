@@ -16,21 +16,11 @@
 
 void AssimpSelection::init()
 {
-    m_no_selection = m_query->isNoSelection();
-    m_flat_selection = m_query->isFlatSelection();
-    m_query_string = m_query->getQueryString();
-    m_query_name = m_query->getQueryName();
-    m_query_index = m_query->getQueryIndex();
-    m_query_depth = m_query->getQueryDepth();
-    m_query_range = m_query->getQueryRange();
-
     m_selection.clear();
 
     LOG(info) << "AssimpSelection::AssimpSelection"
               << " before SelectNodes " 
-              << " m_query_string " << m_query_string 
-              << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
-              << " m_query_index " <<  m_query_index 
+              << m_query->description()
               ;
 
     selectNodes(m_root, 0, false);
@@ -68,19 +58,20 @@ void AssimpSelection::dumpSelection()
    */
 }
 
-void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rselect )
+void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool recursive_select )
 {
    // recursive traverse, adding nodes fulfiling the selection
    // criteria into m_selection 
 
    m_count++ ; 
    m_index++ ; 
+
    const char* name = node->getName(); 
    unsigned int index = node->getIndex();
 
    if(m_count < 10)
    {
-      LOG(debug) << "AssimpSelection::selectNodes "
+      LOG(info) << "AssimpSelection::selectNodes "
                 << " m_count " << m_count 
                 << " m_index " << m_index
                 << " index " << index 
@@ -88,44 +79,15 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rse
                 ;
    } 
 
-   if(m_no_selection)
+   bool selected = m_query->selected(name, index, depth, recursive_select);
+
+   if(selected)
    {
        m_selection.push_back(node); 
-   }
-   else if(m_query_name)
-   {
-       if(strncmp(name,m_query_name,strlen(m_query_name)) == 0)
-       {
-           m_selection.push_back(node); 
-       }
-   }
-   else if (m_query_index != 0)
-   {
-       if( index == m_query_index )
-       {
-           m_selection.push_back(node); 
-           rselect = true ;   
-           // kick-off recursive select, note it then never 
-           // gets turned off, but it only causes selection for depth within range 
-       }
-       else if ( rselect ) 
-       {
-           if( m_query_depth > 0 && depth < m_query_depth ) m_selection.push_back(node); 
-       }
-   }
-   else if(m_query_range.size() > 0)
-   {
-       assert(m_query_range.size() % 2 == 0); 
-       for(unsigned int i=0 ; i < m_query_range.size()/2 ; i++ )
-       {
-           if( index >= m_query_range[i*2+0] && index < m_query_range[i*2+1] ) m_selection.push_back(node); 
-       }
-   }
+   } 
 
-   for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1, rselect );
+   for(unsigned int i = 0; i < node->getNumChildren(); i++) selectNodes(node->getChild(i), depth + 1, recursive_select );
 }
-
-
 
 
 void AssimpSelection::findBounds()
@@ -204,26 +166,5 @@ void AssimpSelection::bounds()
                printf("AssimpSelection::bounds ext  %10.3f %10.3f %10.3f \n", m_extent->x, m_extent->y, m_extent->z );
 }
 
-
-aiVector3D* AssimpSelection::getLow()
-{
-    return m_low ; 
-}
-aiVector3D* AssimpSelection::getHigh()
-{
-    return m_high ; 
-}
-aiVector3D* AssimpSelection::getCenter()
-{
-    return m_center ; 
-}
-aiVector3D* AssimpSelection::getExtent()
-{
-    return m_extent ; 
-}
-aiVector3D* AssimpSelection::getUp()
-{
-    return m_up ; 
-}
 
 

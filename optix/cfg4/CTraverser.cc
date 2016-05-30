@@ -11,50 +11,94 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+// optickscore-
+#include "OpticksQuery.hh"
+
 // npy-
 #include "NPY.hpp"
 #include "NLog.hpp"
+#include "NBoundingBox.hpp"
+#include "GLMFormat.hpp"
 
 
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
-
 
 void CTraverser::init()
 {
     m_ltransforms = NPY<float>::make(0, 4, 4);
     m_gtransforms = NPY<float>::make(0, 4, 4);
+    m_center_extent = NPY<float>::make(0, 4);
 }
 
+
+void CTraverser::Summary(const char* msg)
+{
+    LOG(info) << msg 
+              << " numMaterials " << getNumMaterials() 
+              << " numMaterialsWithoutMPT " << getNumMaterialsWithoutMPT() 
+              ;
+}
+
+
+std::string CTraverser::description()
+{   
+    std::stringstream ss ; 
+
+    ss 
+       << " numSelected " << getNumSelected()
+       << " bbox " << m_bbox->description()
+       ;
+
+    return ss.str();
+}
 
 void CTraverser::Traverse()
 {
-     if(!m_top) 
-     {
-        LOG(fatal) << "CTraverser::Traverse m_top NULL" ;
-        return ;
-     }
-
-     G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
-     TraverseVolumeTree(lv, 0 );
-
-
-     m_pvnames.clear();
-     std::vector<const G4VPhysicalVolume*> ancestors ; 
-     AncestorTraverse(ancestors, m_top);
+    VolumeTreeTraverse();
+    AncestorTraverse();
 }
 
-void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestors, const G4VPhysicalVolume* pv)
+
+void CTraverser::VolumeTreeTraverse()
+{
+     assert(m_top) ;
+     G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
+     VolumeTreeTraverse(lv, 0 );
+}
+
+void CTraverser::AncestorTraverse()
+{
+     assert(m_top) ;
+     m_pvnames.clear();
+     m_ancestor_index = 0 ; 
+     std::vector<const G4VPhysicalVolume*> ancestors ; 
+
+     AncestorTraverse(ancestors, m_top, 0, false);
+
+     LOG(info) << "CTraverser::AncestorTraverse " << description() ;
+}
+
+
+void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestors, const G4VPhysicalVolume* pv, unsigned int depth, bool recursive_select )
 {
      ancestors.push_back(pv); 
-     AncestorVisit(ancestors);
+     
+     const char* pvname = pv->GetName() ; 
+     bool selected = m_query->selected(pvname, m_ancestor_index, depth, recursive_select);
+     if(selected)
+     {
+         m_selection.push_back(m_ancestor_index);
+     }
+
+     AncestorVisit(ancestors, selected);
+
 
      G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-     for (int i=0 ; i<lv->GetNoDaughters() ;i++) AncestorTraverse(ancestors, lv->GetDaughter(i) ); 
+     for (int i=0 ; i<lv->GetNoDaughters() ;i++) AncestorTraverse(ancestors, lv->GetDaughter(i), depth+1, recursive_select ); 
 }
 
 
-
-void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors)
+void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, bool selected)
 {
     G4Transform3D T ; 
 
@@ -75,10 +119,9 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors)
     }
     const G4VPhysicalVolume* pv = ancestors.back() ; 
     G4LogicalVolume* lv = pv->GetLogicalVolume() ;
-    G4VSolid* so = lv->GetSolid() ;
 
-    CSolid cso(so);
-    cso.extent(T);
+
+    updateBoundingBox(lv->GetSolid(), T, selected);
 
     LOG(debug) << "CTraverser::AncestorVisit " 
               << " size " << std::setw(3) << ancestors.size() 
@@ -90,7 +133,34 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors)
 
     collectTransformT(m_gtransforms, T );
     m_pvnames.push_back(pv->GetName());
+    m_ancestor_index += 1 ; 
 }
+
+
+void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& transform, bool selected)
+{
+    glm::vec3 low ; 
+    glm::vec3 high ; 
+    glm::vec4 center_extent ; 
+
+    CSolid csolid(solid);
+    csolid.extent(transform, low, high, center_extent);
+    m_center_extent->add(center_extent);
+
+    if(selected)
+    {
+        m_bbox->update(low, high);
+    }
+
+    LOG(debug) << "CTraverser::updateBoundingBox"
+              << " low " << gformat(low)
+              << " high " << gformat(high)
+              << " ce " << gformat(center_extent)
+              << " bb " << m_bbox->description()
+              ;
+
+}
+
 
 glm::mat4 CTraverser::getGlobalTransform(unsigned int index)
 {
@@ -100,6 +170,13 @@ glm::mat4 CTraverser::getLocalTransform(unsigned int index)
 {
     return m_ltransforms->getMat4(index);
 }
+glm::vec4 CTraverser::getCenterExtent(unsigned int index)
+{
+    return m_center_extent->getQuad(index);
+}
+
+
+
 
 unsigned int CTraverser::getNumGlobalTransforms()
 {
@@ -119,7 +196,7 @@ const char* CTraverser::getPVName(unsigned int index)
 
 
 
-G4Transform3D CTraverser::TraverseVolumeTree(const G4LogicalVolume* const lv, const G4int depth)
+G4Transform3D CTraverser::VolumeTreeTraverse(const G4LogicalVolume* const lv, const G4int depth)
 {
      G4Transform3D R, invR ;  // huh invR stays identity, see g4dae/src/G4DAEWriteStructure.cc
      Visit(lv);
@@ -138,7 +215,7 @@ G4Transform3D CTraverser::TraverseVolumeTree(const G4LogicalVolume* const lv, co
             invrot = rot.inverse();
          }
 
-         daughterR = TraverseVolumeTree(physvol->GetLogicalVolume(),depth+1); 
+         daughterR = VolumeTreeTraverse(physvol->GetLogicalVolume(),depth+1); 
 
          // G4Transform3D P(rot,physvol->GetObjectTranslation());  GDML does this : not inverting the rotation portion 
          G4Transform3D P(invrot,physvol->GetObjectTranslation());
@@ -327,13 +404,6 @@ void CTraverser::createGroupVel()
     } 
 }
 
-void CTraverser::Summary(const char* msg)
-{
-    LOG(info) << msg 
-              << " numMaterials " << getNumMaterials() 
-              << " numMaterialsWithoutMPT " << getNumMaterialsWithoutMPT() 
-              ;
-}
 
 void CTraverser::dumpMaterial(const G4Material* material)
 {
