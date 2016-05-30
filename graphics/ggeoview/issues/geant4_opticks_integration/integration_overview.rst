@@ -54,6 +54,12 @@ DEBUGGING
 TODO
 ----
 
+* pmt test broken by g4gun generalizations
+
+* CPU indexing, to support non-CUDA capable nodes 
+
+  * also currently the indexing of G4 saved events gets done at every viz
+
 * where to slot in CG4/CGDMLDetector into the machinery, cli, options, config ?
 
 * bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 

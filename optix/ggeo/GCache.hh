@@ -6,6 +6,7 @@
 
 class Opticks ; 
 class OpticksResource ; 
+class OpticksQuery ; 
 class NLog ; 
 class GColors ; 
 class GFlags ; 
@@ -40,6 +41,7 @@ class GCache {
          Typ*     getTyp();
          Opticks* getOpticks();
          OpticksResource* getResource();
+         OpticksQuery*    getQuery();
 
     public:
          const char* getDAEPath();
@@ -99,6 +101,7 @@ inline OpticksResource* GCache::getResource()
 {
     return m_resource ; 
 }
+
 inline Opticks* GCache::getOpticks()
 {
     return m_opticks ; 

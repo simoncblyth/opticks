@@ -26,6 +26,11 @@ void GCache::init()
     g_instance = this ; 
 }
 
+OpticksQuery* GCache::getQuery()
+{
+    return m_resource ? m_resource->getQuery() : NULL  ; 
+}
+
 
 // lazy constituent construction : as want to avoid any output until after logging is configured
 

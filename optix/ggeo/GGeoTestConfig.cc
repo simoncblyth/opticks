@@ -11,10 +11,15 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-
 const char* GGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
-    "boundary=Rock///MineralOil_"
+    "pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0_"
+    "control=1,0,0,0_"
+    "analytic=1_"
+    "groupvel=0_"
+    "shape=box_"
+    "boundary=Rock//perfectAbsorbSurface/MineralOil_"
+    "parameters=0,0,0,300_"
     ;
 
 const char* GGeoTestConfig::MODE_ = "mode"; 

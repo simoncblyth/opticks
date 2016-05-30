@@ -12,6 +12,9 @@
 #include "GCache.hh"
 #include "GMaterial.hh"
 
+// optickscore-
+#include "OpticksResource.hh"
+
 // cfg4-
 #include "CPropLib.hh"
 #include "CTraverser.hh"

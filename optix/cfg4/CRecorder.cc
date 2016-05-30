@@ -115,7 +115,7 @@ void CRecorder::startPhoton()
 {
     //LOG(info) << "CRecorder::startPhoton" ; 
 
-    if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton") ;
+    if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton(%10k)") ;
 
     assert(m_step_id == 0);
 

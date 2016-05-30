@@ -5,6 +5,7 @@
 
 // optickscore-
 class OpticksResource ; 
+class OpticksQuery ; 
 
 // ggeo-
 class GCache ;
@@ -20,7 +21,6 @@ class G4VPhysicalVolume;
 template <typename T> class NPY ; 
 class NBoundingBox ;
 
-
 #include <glm/glm.hpp>
 #include "G4VUserDetectorConstruction.hh"
 
@@ -30,18 +30,21 @@ class CDetector : public G4VUserDetectorConstruction
     friend class CTestDetector ; 
     friend class CGDMLDetector ; 
  public:
-    CDetector(GCache* cache);
+    CDetector(GCache* cache, OpticksQuery* query);
+    void setVerbosity(unsigned int verbosity);
     virtual ~CDetector();
  private:
     void init();
+    void traverse(G4VPhysicalVolume* top); 
  public:
-    void setVerbosity(unsigned int verbosity);
     void setTop(G4VPhysicalVolume* top);   // invokes the traverse
+ public:
+    // G4VUserDetectorConstruction 
     virtual G4VPhysicalVolume* Construct();
-    void saveBuffers(const char* objname, unsigned int objindex);
  public: 
-    NBoundingBox*  getBoundingBox();
-    CPropLib*      getPropLib();
+    NBoundingBox*      getBoundingBox();
+    CPropLib*          getPropLib();
+    G4VPhysicalVolume* getTop();
  public: 
     const char*    getPVName(unsigned int index);
     G4VPhysicalVolume* getPV(const char* name);
@@ -55,15 +58,13 @@ class CDetector : public G4VUserDetectorConstruction
     NPY<float>*    getGlobalTransforms();
     NPY<float>*    getLocalTransforms();
  public: 
+    void saveBuffers(const char* objname, unsigned int objindex);
+ public: 
     // via bbox
     const glm::vec4& getCenterExtent();
-
-  private:
-    void traverse(G4VPhysicalVolume* top); 
-
-  private:
-    GCache*            m_cache ; 
-    OpticksResource*   m_resource ;
+ private:
+    GCache*            m_cache ;
+    OpticksQuery*      m_query ;
     CPropLib*          m_lib ; 
     G4VPhysicalVolume* m_top ;
     CTraverser*        m_traverser ; 
@@ -72,10 +73,10 @@ class CDetector : public G4VUserDetectorConstruction
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
 }; 
 
-inline CDetector::CDetector(GCache* cache)
+inline CDetector::CDetector(GCache* cache, OpticksQuery* query)
   : 
   m_cache(cache),
-  m_resource(NULL),
+  m_query(query),
   m_lib(NULL),
   m_top(NULL),
   m_traverser(NULL),
@@ -86,19 +87,22 @@ inline CDetector::CDetector(GCache* cache)
 }
 
 
-inline G4VPhysicalVolume* CDetector::Construct()
-{
-    return m_top ; 
-}
+
 inline void CDetector::setTop(G4VPhysicalVolume* top)
 {
     m_top = top ; 
     traverse(m_top);
 }
-inline void CDetector::setVerbosity(unsigned int verbosity)
+inline G4VPhysicalVolume* CDetector::Construct()
 {
-    m_verbosity = verbosity ; 
+    return m_top ; 
 }
+inline G4VPhysicalVolume* CDetector::getTop()
+{
+    return m_top ; 
+}
+
+
 inline CPropLib* CDetector::getPropLib()
 {
     return m_lib ; 
@@ -106,5 +110,10 @@ inline CPropLib* CDetector::getPropLib()
 inline NBoundingBox* CDetector::getBoundingBox()
 {
     return m_bbox ; 
+}
+
+inline void CDetector::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
 }
 

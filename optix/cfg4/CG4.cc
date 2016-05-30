@@ -239,13 +239,15 @@ void CG4::configureDetector()
         LOG(info) << "CG4::configureDetector G4 simple test geometry " ; 
         std::string testconfig = m_cfg->getTestConfig();
         GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-        detector  = static_cast<CDetector*>(new CTestDetector(m_cache, ggtc)) ; 
+        OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
+        detector  = static_cast<CDetector*>(new CTestDetector(m_cache, ggtc, query)) ; 
     }
     else
     {
         // no options here: will load the .gdml sidecar of the geocache .dae 
         LOG(info) << "CG4::configureDetector G4 GDML geometry " ; 
-        detector  = static_cast<CDetector*>(new CGDMLDetector(m_cache)) ; 
+        OpticksQuery* query = m_cache->getQuery();
+        detector  = static_cast<CDetector*>(new CGDMLDetector(m_cache, query)) ; 
     }
 
     m_detector = detector ; 

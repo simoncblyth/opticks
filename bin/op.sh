@@ -195,8 +195,8 @@ op-help(){
    op-binary-names | while read cmd ; do
       bin=$(op-binary-name "--$cmd")
       desc=$(op-binary-desc "--$cmd")
-      hlp=$(printf "%s (%s)" "$desc" $bin)  
-      printf " %10s : %s \n" $cmd "$hlp"
+      hlp=$(printf " %s (%s)" "$desc" $bin)  
+      printf " %20s : %s \n" $cmd "$hlp"
    done
 }
 

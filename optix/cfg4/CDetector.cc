@@ -1,3 +1,6 @@
+// op --cgdmldetector
+// op --ctestdetector
+
 #include "CDetector.hh"
 
 #include <cstdio>
@@ -27,14 +30,13 @@ void CDetector::init()
 {
     m_lib = new CPropLib(m_cache);
     m_bbox = new NBoundingBox ;
-    m_resource = m_cache->getResource();
 }
 
 void CDetector::traverse(G4VPhysicalVolume* top)
 {
     // invoked from CGDMLDetector::init via setTop
-    OpticksQuery* query = m_resource->getQuery();
-    m_traverser = new CTraverser(m_top, m_bbox, query ); 
+
+    m_traverser = new CTraverser(m_top, m_bbox, m_query ); 
     m_traverser->Traverse();
     m_traverser->Summary("CDetector::traverse");
 }

@@ -994,6 +994,8 @@ if __name__ == '__main__':
     a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=seqs)
     b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
 
+
+
     a0 = a.rpost_(0)
     a0r = np.linalg.norm(a0[:,:2],2,1)
     if len(a0r)>0:

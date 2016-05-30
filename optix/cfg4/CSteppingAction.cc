@@ -88,8 +88,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
     if(startEvent)
     {
-       LOG(info) << std::endl 
-                 << "CSA (startEvent)"
+       LOG(info) << "CSA (startEvent)"
                  << " event_id " << event_id
                  << " event_total " <<  m_event_total
                  ; 
@@ -110,7 +109,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
        particle_name = type->GetParticleName();
        pdg_encoding = type->GetPDGEncoding();
 
-       LOG(info) << std::endl
+       LOG(debug) << std::endl
                  << "CSA (trak)"
                  << " event_id " << event_id
                  << " track_id " << track_id
@@ -155,8 +154,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
               << " trackStatus " << CTrack::TrackStatusString(status)
               ;
 
-   if(m_step_total % 1000 == 0) 
-       LOG(info) << "CSA (totals)"
+   if(m_step_total % 10000 == 0) 
+       LOG(debug) << "CSA (totals%10k)"
                  << " track_total " <<  m_track_total
                  << " step_total " <<  m_step_total
                  ;
@@ -191,7 +190,7 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     unsigned int record_max = m_recorder->getRecordMax() ;
 
     if(startPhoton)
-         LOG(info) << "    (opti)"
+         LOG(debug) << "    (opti)"
                    << " photon_id " << photon_id 
                    << " step_id " << step_id 
                    << " record_id " << record_id 

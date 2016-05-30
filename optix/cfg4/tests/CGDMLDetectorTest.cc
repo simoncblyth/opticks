@@ -2,6 +2,7 @@
 
 // optickscore-
 #include "Opticks.hh"
+#include "OpticksQuery.hh"
 #include "OpticksCfg.hh"
 
 // ggeo-
@@ -30,8 +31,9 @@ int main(int argc, char** argv)
 
     m_cfg->commandline(argc, argv);  
 
+    OpticksQuery* query = m_cache->getQuery();   // non-done inside Detector classes for transparent control/flexibility 
 
-    CGDMLDetector* m_detector  = new CGDMLDetector(m_cache) ; 
+    CGDMLDetector* m_detector  = new CGDMLDetector(m_cache, query) ; 
 
     m_detector->setVerbosity(2) ;
 

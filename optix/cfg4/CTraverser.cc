@@ -54,10 +54,11 @@ std::string CTraverser::description()
 
 void CTraverser::Traverse()
 {
+    LOG(info) << "CTraverser::Traverse" ;
     VolumeTreeTraverse();
     AncestorTraverse();
+    LOG(info) << "CTraverser::Traverse DONE" ;
 }
-
 
 void CTraverser::VolumeTreeTraverse()
 {
@@ -84,7 +85,14 @@ void CTraverser::AncestorTraverse(std::vector<const G4VPhysicalVolume*> ancestor
      ancestors.push_back(pv); 
      
      const char* pvname = pv->GetName() ; 
-     bool selected = m_query->selected(pvname, m_ancestor_index, depth, recursive_select);
+
+     bool selected = m_query ? m_query->selected(pvname, m_ancestor_index, depth, recursive_select) : true ;
+
+     LOG(debug) << "CTraverser::AncestorTraverse"
+               << " pvname " << pvname
+               << " selected " << selected
+               ;
+
      if(selected)
      {
          m_selection.push_back(m_ancestor_index);
