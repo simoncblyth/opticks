@@ -25,7 +25,7 @@
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 #include "CPropLib.hh"
-#include "Recorder.hh"
+#include "CRecorder.hh"
 #include "Rec.hh"
 #include "CStepRec.hh"
 
@@ -327,7 +327,7 @@ void CG4::configureGenerator()
 
     int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
     // recorder is back here in order to pass to source for primary recording (unused?)
-    m_recorder = new Recorder(m_lib, m_evt, stepping_verbosity ); 
+    m_recorder = new CRecorder(m_lib, m_evt, stepping_verbosity ); 
     m_rec = new Rec(m_lib, m_evt) ; 
     if(m_cfg->hasOpt("primary"))
          m_recorder->setupPrimaryRecording();

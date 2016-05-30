@@ -1,4 +1,4 @@
-#include "Recorder.hh"
+#include "CRecorder.hh"
 #include "Format.hh"
 
 #include "Opticks.hh"
@@ -23,7 +23,7 @@
 #include "NLog.hpp"
 
 // cfg4-
-#include "Recorder.h"
+#include "CRecorder.h"
 #include "CPropLib.hh"
 
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
@@ -45,10 +45,10 @@ unsigned char uchar_( float f )  // f in range -1.:1.
     return ipol ; 
 }
 
-const char* Recorder::PRE  = "PRE" ; 
-const char* Recorder::POST = "POST" ; 
+const char* CRecorder::PRE  = "PRE" ; 
+const char* CRecorder::POST = "POST" ; 
 
-void Recorder::init()
+void CRecorder::init()
 {
     m_c4.u = 0u ; 
 
@@ -79,7 +79,7 @@ void Recorder::init()
 
     m_step = m_evt->isStep();
 
-    LOG(info) << "Recorder::init"
+    LOG(info) << "CRecorder::init"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
@@ -95,9 +95,9 @@ void Recorder::init()
     m_photons = m_evt->getPhotonData();
     m_records = m_evt->getRecordData();
 
-    assert( m_history && "Recorder requires history buffer" );
-    assert( m_photons && "Recorder requires photons buffer" );
-    assert( m_records && "Recorder requires records buffer" );
+    assert( m_history && "CRecorder requires history buffer" );
+    assert( m_photons && "CRecorder requires photons buffer" );
+    assert( m_records && "CRecorder requires records buffer" );
 
     const char* typ = m_evt->getTyp();
 
@@ -111,11 +111,11 @@ void Recorder::init()
 
 
 
-void Recorder::startPhoton()
+void CRecorder::startPhoton()
 {
-    //LOG(info) << "Recorder::startPhoton" ; 
+    //LOG(info) << "CRecorder::startPhoton" ; 
 
-    if(m_record_id % 10000 == 0) Summary("Recorder::startPhoton") ;
+    if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton") ;
 
     assert(m_step_id == 0);
 
@@ -144,7 +144,7 @@ void Recorder::startPhoton()
 }
 
 
-void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
 {
     // this is invoked before RecordStep is called from SteppingAction
     m_prior_boundary_status = m_boundary_status ; 
@@ -156,7 +156,7 @@ void Recorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsi
     m_postmat = postmat ; 
 }
   
-bool Recorder::RecordStep(const G4Step* step)
+bool CRecorder::RecordStep(const G4Step* step)
 {
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -210,7 +210,7 @@ bool Recorder::RecordStep(const G4Step* step)
 }
 
 
-bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
+bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
 {
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
@@ -246,10 +246,10 @@ bool Recorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsi
 }
 
 
-void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label )
+void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label )
 {
     /*
-    LOG(info) << "Recorder::RecordStepPoint" 
+    LOG(info) << "CRecorder::RecordStepPoint" 
               << " label " << label 
               << " m_record_id " << m_record_id 
               << " m_step_id " << m_step_id 
@@ -281,7 +281,7 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     short time_ = shortnorm(time/ns,   td.x, td.y );
 
     /*
-    LOG(info) << "Recorder::RecordStepPoint"
+    LOG(info) << "CRecorder::RecordStepPoint"
               << " globalTime " << time 
               << " td.x " << td.x
               << " td.y " << td.y
@@ -320,7 +320,7 @@ void Recorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsi
     // static mode  : fills directly into a large fixed dimension records structure
 }
 
-void Recorder::RecordQuadrant(const G4Step* step)
+void CRecorder::RecordQuadrant(const G4Step* step)
 {
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4ThreeVector& pos = pre->GetPosition();
@@ -339,7 +339,7 @@ void Recorder::RecordQuadrant(const G4Step* step)
     m_c4.uchar_.w = 4u ; 
 }
 
-void Recorder::RecordPhoton(const G4Step* step)
+void CRecorder::RecordPhoton(const G4Step* step)
 {
     // gets called at last step (eg absorption) or when truncated
 
@@ -396,7 +396,7 @@ void Recorder::RecordPhoton(const G4Step* step)
     }
 }
 
-bool Recorder::hasIssue()
+bool CRecorder::hasIssue()
 {
     unsigned int npoints = m_points.size() ;
     assert(m_flags.size() == npoints);
@@ -411,14 +411,14 @@ bool Recorder::hasIssue()
     return issue ; 
 }
 
-void Recorder::Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
+void CRecorder::Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
 {
     std::string bs = OpBoundaryAbbrevString(boundary_status) ;
     G4ThreeVector origin ; 
     std::cout << std::setw(7) << index << " " << std::setw(15) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
 }
 
-void Recorder::Dump(const char* msg)
+void CRecorder::Dump(const char* msg)
 {
     LOG(info) << msg 
               << " record_id " << std::setw(7) << m_record_id
@@ -447,7 +447,7 @@ void Recorder::Dump(const char* msg)
     }
 }
 
-void Recorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
 {
     assert(m_debug);
     m_points.push_back(new G4StepPoint(*point));
@@ -458,7 +458,7 @@ void Recorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int
     m_seqmat_dbg.push_back(seqmat);
 }
 
-void Recorder::Clear()
+void CRecorder::Clear()
 {
     assert(m_debug);
     for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
@@ -471,7 +471,7 @@ void Recorder::Clear()
 }
 
 
-void Recorder::setupPrimaryRecording()
+void CRecorder::setupPrimaryRecording()
 {
     m_evt->prepareForPrimaryRecording();
 
@@ -481,12 +481,12 @@ void Recorder::setupPrimaryRecording()
     m_primary_id = 0 ;  
     m_primary->zero();
 
-    LOG(info) << "Recorder::setupPrimaryRecording"
+    LOG(info) << "CRecorder::setupPrimaryRecording"
               << " primary_max " << m_primary_max 
               ; 
 }
 
-void Recorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
+void CRecorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
 {
     if(m_primary == NULL || m_primary_id >= m_primary_max ) return ; 
 
@@ -514,7 +514,7 @@ void Recorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
     m_primary_id += 1 ; 
 }
 
-void Recorder::Summary(const char* msg)
+void CRecorder::Summary(const char* msg)
 {
     LOG(info) <<  msg
               << " event_id " << m_event_id 

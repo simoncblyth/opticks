@@ -8,7 +8,7 @@
 #include "NLog.hpp"
 
 // cfg4-
-#include "Recorder.hh"
+#include "CRecorder.hh"
 
 // g4-
 #include "G4AutoLock.hh"

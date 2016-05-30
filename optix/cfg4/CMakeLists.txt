@@ -75,7 +75,7 @@ CTrack.cc
 CSolid.cc
 CMath.cc
 Format.cc
-Recorder.cc
+CRecorder.cc
 Rec.cc
 State.cc
 CTorchSource.cc
@@ -108,7 +108,7 @@ CTrack.hh
 CSolid.hh
 CMath.hh
 Format.hh
-Recorder.hh
+CRecorder.hh
 Rec.hh
 State.hh
 CTorchSource.hh

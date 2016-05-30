@@ -15,21 +15,21 @@ class G4PrimaryVertex ;
 // cfg4-
 class CPropLib ; 
 
-#include "Recorder.h"
+#include "CRecorder.h"
 
 // npy-
 #include "NumpyEvt.hpp"
 template <typename T> class NPY ;
 
 
-//  Recorder
+//  CRecorder
 //  =============
 //
-//  The principal objective of *Recorder* is to collect  
+//  The principal objective of *CRecorder* is to collect  
 //  Geant4 photon steps in a format that precisely matches the
 //  Opticks GPU photon records allowing use of the Opticks analysis 
 //  and visualization tools.
-//  To this end *Recorder* saves non-dynamically into buffer of
+//  To this end *CRecorder* saves non-dynamically into buffer of
 //  fixed number of photons and max steps per photon 
 //  in order to match on-GPU restrictions.  setQuad with
 //  a computed record_id and slot_id is used to mimick
@@ -37,10 +37,10 @@ template <typename T> class NPY ;
 //
 //  
 //
-//  Recorder should really be called "OpticalPhotonRecorder".
+//  CRecorder should really be called "OpticalPhotonCRecorder".
 //  It is instanciated by CG4::configureGenerator 
 //  and is mainly used from CSteppingAction.
-//  It is also used for Recorder::RecordPrimaryVertex.
+//  It is also used for CRecorder::RecordPrimaryVertex.
 //  from CGunSource and CTorchSource.
 //
 //  *RecordStep* is called for all G4Step
@@ -74,12 +74,12 @@ template <typename T> class NPY ;
 //  photon counts ahead of time.
 //
 //
-class Recorder {
+class CRecorder {
    public:
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity);
+        CRecorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity);
    public:
         void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
@@ -93,7 +93,7 @@ class Recorder {
         void RecordPrimaryVertex(G4PrimaryVertex* vertex);
 
         void Summary(const char* msg);
-        void DumpSteps(const char* msg="Recorder::DumpSteps");
+        void DumpSteps(const char* msg="CRecorder::DumpSteps");
         void DumpStep(const G4Step* step);
    public:
         NumpyEvt* getEvt();
@@ -112,7 +112,7 @@ class Recorder {
         bool isHistorySelected(); 
         bool isMaterialSelected(); 
 
-        void Dump(const char* msg="Recorder::Dump");
+        void Dump(const char* msg="CRecorder::Dump");
         void Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname );
    public:
         void setEventId(unsigned int event_id);
@@ -199,7 +199,7 @@ class Recorder {
 
 };
 
-inline Recorder::Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity) 
+inline CRecorder::CRecorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity) 
    :
    m_clib(clib),
    m_evt(evt),
@@ -255,28 +255,28 @@ inline Recorder::Recorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity)
 }
 
 
-inline unsigned int Recorder::getVerbosity()
+inline unsigned int CRecorder::getVerbosity()
 {
     return m_verbosity ; 
 }
-inline bool Recorder::isHistorySelected()
+inline bool CRecorder::isHistorySelected()
 {
    return m_seqhis_select == m_seqhis ; 
 }
-inline bool Recorder::isMaterialSelected()
+inline bool CRecorder::isMaterialSelected()
 {
    return m_seqmat_select == m_seqmat ; 
 }
-inline bool Recorder::isSelected()
+inline bool CRecorder::isSelected()
 {
    return isHistorySelected() || isMaterialSelected() ;
 }
 
-inline unsigned long long Recorder::getSeqHis()
+inline unsigned long long CRecorder::getSeqHis()
 {
     return m_seqhis ; 
 }
-inline unsigned long long Recorder::getSeqMat()
+inline unsigned long long CRecorder::getSeqMat()
 {
     return m_seqmat ; 
 }
@@ -286,35 +286,35 @@ inline unsigned long long Recorder::getSeqMat()
 
 
 
-inline void Recorder::setPropLib(CPropLib* clib)
+inline void CRecorder::setPropLib(CPropLib* clib)
 {
     m_clib = clib  ; 
 }
 
 
-inline NumpyEvt* Recorder::getEvt()
+inline NumpyEvt* CRecorder::getEvt()
 {
     return m_evt ; 
 }
-inline unsigned int Recorder::getRecordMax()
+inline unsigned int CRecorder::getRecordMax()
 {
     return m_record_max ; 
 }
 
 
-inline unsigned int Recorder::getEventId()
+inline unsigned int CRecorder::getEventId()
 {
    return m_event_id ; 
 }
-inline unsigned int Recorder::getPhotonId()
+inline unsigned int CRecorder::getPhotonId()
 {
    return m_photon_id ; 
 }
-inline unsigned int Recorder::getStepId()
+inline unsigned int CRecorder::getStepId()
 {
    return m_step_id ; 
 }
-inline unsigned int Recorder::getRecordId()
+inline unsigned int CRecorder::getRecordId()
 {
    return m_record_id ; 
 }
@@ -322,46 +322,46 @@ inline unsigned int Recorder::getRecordId()
 
 
 
-inline G4OpBoundaryProcessStatus Recorder::getBoundaryStatus()
+inline G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
 {
    return m_boundary_status ; 
 }
 
 
 
-inline void Recorder::setEventId(unsigned int event_id)
+inline void CRecorder::setEventId(unsigned int event_id)
 {
     m_event_id = event_id ; 
 }
-inline void Recorder::setPhotonId(unsigned int photon_id)
+inline void CRecorder::setPhotonId(unsigned int photon_id)
 {
     m_photon_id = photon_id ; 
 }
-inline void Recorder::setStepId(unsigned int step_id)
+inline void CRecorder::setStepId(unsigned int step_id)
 {
     m_step_id = step_id ; 
 }
-inline unsigned int Recorder::defineRecordId()   
+inline unsigned int CRecorder::defineRecordId()   
 {
    return m_photons_per_g4event*m_event_id + m_photon_id ; 
 }
 
-inline void Recorder::setRecordId(unsigned int record_id)
+inline void CRecorder::setRecordId(unsigned int record_id)
 {
     m_record_id = record_id ; 
 }
 
 
 
-inline void Recorder::RecordBeginOfRun(const G4Run*)
+inline void CRecorder::RecordBeginOfRun(const G4Run*)
 {
 }
 
-inline void Recorder::RecordEndOfRun(const G4Run*)
+inline void CRecorder::RecordEndOfRun(const G4Run*)
 {
 }
 
-inline bool Recorder::isDynamic()
+inline bool CRecorder::isDynamic()
 {
     return m_dynamic ; 
 }

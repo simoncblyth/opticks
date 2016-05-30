@@ -8,7 +8,7 @@
 
 // cfg4-
 #include "CTorchSource.hh"
-#include "Recorder.hh"
+#include "CRecorder.hh"
 
 // g4-
 #include "G4AutoLock.hh"

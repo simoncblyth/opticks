@@ -13,7 +13,7 @@
 // cg4-
 class CG4 ; 
 class CPropLib ; 
-class Recorder ; 
+class CRecorder ; 
 class Rec ; 
 class CStepRec ; 
 
@@ -37,7 +37,7 @@ class CSteppingAction : public G4UserSteppingAction
   private:
     CG4*         m_g4 ; 
     CPropLib*    m_clib ; 
-    Recorder*    m_recorder   ; 
+    CRecorder*   m_recorder   ; 
     Rec*         m_rec   ; 
     CStepRec*    m_steprec   ; 
     bool         m_dynamic ; 

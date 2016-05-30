@@ -13,7 +13,7 @@
 
 // cg4-
 #include "CG4.hh"
-#include "Recorder.hh"
+#include "CRecorder.hh"
 #include "Rec.hh"
 #include "State.hh"
 #include "Format.hh"

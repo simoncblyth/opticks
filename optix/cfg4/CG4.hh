@@ -21,7 +21,7 @@ class NumpyEvt ;
 // cfg4-
 class CPropLib ; 
 class CDetector ; 
-class Recorder ; 
+class CRecorder ; 
 class Rec ; 
 class CStepRec ; 
 
@@ -64,7 +64,7 @@ class CG4
    public:
         void BeamOn(unsigned int num);
    public:
-        Recorder* getRecorder();
+        CRecorder* getRecorder();
         CStepRec* getStepRec();
         Rec*      getRec();
         CPropLib* getPropLib();
@@ -77,7 +77,7 @@ class CG4
    private:
         CDetector*            m_detector ; 
         CPropLib*             m_lib ; 
-        Recorder*             m_recorder ; 
+        CRecorder*             m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
    private:
@@ -122,7 +122,7 @@ inline CG4::CG4(Opticks* opticks)
 }
 
 
-inline Recorder* CG4::getRecorder()
+inline CRecorder* CG4::getRecorder()
 {
     return m_recorder ; 
 }

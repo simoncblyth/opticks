@@ -1,6 +1,6 @@
 #pragma once
 
-class Recorder ; 
+class CRecorder ; 
 class G4Event ; 
 class G4ParticleDefinition ;
 
@@ -16,7 +16,7 @@ class CSource : public G4VPrimaryGenerator
     friend class CGunSource ; 
   public:
     CSource(int verbosity);
-    void setRecorder(Recorder* recorder);
+    void setRecorder(CRecorder* recorder);
     void setParticle(const char* name);
     virtual ~CSource();
   public:
@@ -44,7 +44,7 @@ class CSource : public G4VPrimaryGenerator
     G4double              GetParticleEnergy() const ;
     G4double              GetParticleTime() const;
   private:
-    Recorder*             m_recorder ; 
+    CRecorder*            m_recorder ; 
     G4int                 m_num;
     G4ParticleDefinition* m_definition;
 
@@ -81,7 +81,7 @@ inline CSource::~CSource()
 {
 }  
 
-inline void CSource::setRecorder(Recorder* recorder)
+inline void CSource::setRecorder(CRecorder* recorder)
 {
    m_recorder = recorder ;  
 }
