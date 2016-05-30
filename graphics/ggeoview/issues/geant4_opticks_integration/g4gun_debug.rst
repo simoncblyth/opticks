@@ -13,7 +13,7 @@ From ggv-g4gun-notes::
          # visualize the geant4 propagation, with GGeoView
          # see also issues/nopstep_vis_debug.rst  
 
-   ggv-;ggv-g4gun --dbg --load --optixviz
+   ggv-;ggv-g4gun --dbg --load --target 3153 --optixviz
 
          # attempting to load the CFG4 Geant4/CPU simulated nopstep,photons,records,history
          # needs the optixviz in order to setup OpEngine for indexing the history sequence
@@ -29,9 +29,22 @@ domains
 
 position/time/wavelength domains::
 
-    In [2]: run g4gun.py
+    simon:cfg4 blyth$ ii
+    SQLITE3_DATABASE=/usr/local/env/nuwa/mocknuwa.db
+    Python 2.7.11 (default, Dec  5 2015, 23:51:51) 
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 1.2.1 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+
+    IPython profile: g4opticks
+
+    In [1]: run g4gun.py 
     Evt(-1,"G4Gun","G4Gun","G4Gun/G4Gun/-1 : ", seqs="[]")
-     fdom :       (3, 1, 4) : (metadata) 3*float4 domains of position, time, wavelength (used for comporession) 
+     fdom :       (3, 1, 4) : (metadata) 3*float4 domains of position, time, wavelength (used for compression) 
      idom :       (1, 1, 4) : (metadata) int domain 
        ox :      (96, 4, 4) : (photons) final photon step 
        wl :           (96,) : (photons) wavelength 
@@ -43,20 +56,18 @@ position/time/wavelength domains::
        rx :  (96, 10, 2, 4) : (records) photon step records 
        ph :      (96, 1, 2) : (records) photon history flag/material sequence 
 
-    In [3]: evt.fdom
-    Out[3]: 
-    A(fdomG4Gun,-1,G4Gun)(metadata) 3*float4 domains of position, time, wavelength (used for comporession)
-    A([[[   0.,    0.,    0.,    0.]],
+    In [2]: evt.fdom
+    Out[2]: 
+    A(fdomG4Gun,-1,G4Gun)(metadata) 3*float4 domains of position, time, wavelength (used for compression)
+    A([[[ -16520.   , -802110.   ,   -7125.   ,    7710.625]],
 
-           [[   0.,  200.,   50.,    0.]],
+           [[      0.   ,     200.   ,      50.   ,       0.   ]],
 
-           [[  60.,  820.,   20.,  760.]]], dtype=float32)
+           [[     60.   ,     820.   ,      20.   ,     760.   ]]], dtype=float32)
 
 
-Without positional domain (center,extent) set the decompression will yield crazy positions,
-so no surprise that viz does not show anything.
 
-Actually all positions are at origin::
+Previously lacked positional domain (center,extent) causing all positions are at origin::
 
     In [8]: evt.rpost_(slice(0,5))
     Out[8]: 
@@ -72,6 +83,49 @@ Actually all positions are at origin::
             [  0.   ,   0.   ,   0.   ,   8.319],
             [  0.   ,   0.   ,   0.   ,  10.566],
             [  0.   ,   0.   ,   0.   ,  10.663]],
+
+
+After fix::
+
+    In [3]: evt.rpost_(slice(0,5))
+    Out[3]: 
+    A()sliced
+    A([[[ -18079.444, -799699.415,   -6603.538,       0.012],
+            [ -19508.758, -800298.767,   -6191.734,       8.264],
+            [ -19518.171, -800302.767,   -6189.145,       8.319],
+            [ -19907.15 , -800465.842,   -6077.134,      10.566],
+            [ -19923.857, -800472.901,   -6072.193,      10.663]],
+
+           [[ -18079.444, -799699.415,   -6604.95 ,       6.738],
+            [ -18094.034, -799738.477,   -6590.831,       6.97 ],
+            [ -19518.171, -800302.767,   -6189.145,       8.319],
+            [ -19907.15 , -800465.842,   -6077.134,      10.566],
+            [ -19923.857, -800472.901,   -6072.193,      10.663]],
+
+           [[ -18079.444, -799699.415,   -6603.538,       4.895],
+            [ -18839.753, -799749.773,   -8635.028,      16.254],
+            [ -18845.4  , -799750.008,   -8650.088,      16.34 ],
+            [ -18999.533, -799760.362,   -9062.128,      18.647],
+            [ -19923.857, -800472.901,   -6072.193,      10.663]],
+
+           ..., 
+           [[ -18109.565, -799757.538,   -6583.065,       3.821],
+            [ -18120.86 , -799746.714,   -6584.713,       3.906],
+            [ -17526.215, -801158.144,   -8181.102,      25.373],
+            [ -17410.674, -801565.242,   -8713.624,      28.864],
+            [ -17405.732, -801582.655,   -8735.979,      29.011]],
+
+           [[ -18038.029, -799830.957,   -6568.476,       1.508],
+            [ -19382.158, -800539.496,   -6052.191,       9.723],
+            [ -19390.865, -800544.202,   -6048.896,       9.778],
+            [ -19765.489, -800741.633,   -5905.118,      12.067],
+            [ -19781.255, -800749.869,   -5899.   ,      12.165]],
+
+           [[ -18058.972, -799810.72 ,   -6608.48 ,      41.279],
+            [ -18061.09 , -799810.014,   -6609.186,      41.298],
+            [ -19390.865, -800544.202,   -6048.896,       9.778],
+            [ -19765.489, -800741.633,   -5905.118,      12.067],
+            [ -19781.255, -800749.869,   -5899.   ,      12.165]]])
 
 
 Opticks Space Domain
@@ -118,6 +172,8 @@ extents ? Differences between multiple volumes would get close.
 To get extents need to dynamically cast solids into specific 
 shapes. 
 
+* actually: used capabilities of *G4VSolid* in *cg4-/CSolid*
+
 ::
 
    op --cgdmldetector
@@ -132,6 +188,7 @@ Geometry Selection
 
 But the compression is only applied to optical photon steps.
 So should apply equivalent geometrical selection to GDML 
+
 
 
 ::
@@ -159,17 +216,7 @@ So should apply equivalent geometrical selection to GDML
 Access with OpticksResource::getQuery 
 Argh, query parsing done in assimprap-/AssimpSelection.
 
-
-Migrate query parsing into optickscore-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* for use from both Op and G4 
-
-::
-
-    delta:optickscore blyth$ cp /Users/blyth/env/graphics/assimprap/AssimpSelection.hh OpticksSelection.hh
-    delta:optickscore blyth$ cp /Users/blyth/env/graphics/assimprap/AssimpSelection.cc OpticksSelection.cc
-
+* to avoid duplication moved selection into *OpticksQuery* for use from *assimprap-* and *cg4-*
 
 
 shape

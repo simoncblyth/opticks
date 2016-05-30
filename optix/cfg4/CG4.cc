@@ -48,6 +48,7 @@
 #include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NGunConfig.hpp"
+#include "GLMFormat.hpp"
 #include "NLog.hpp"
 
 //opticks-
@@ -105,7 +106,7 @@ void CG4::configure(int argc, char** argv)
 
 void CG4::initEvent()
 {
-    // maybe evt setup should happen outside CG4 ?
+    // TODO: move evt setup outside CG4
     m_evt = m_opticks->makeEvt();  
 
     NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
@@ -155,7 +156,7 @@ void CG4::initialize()
 
 void CG4::postinitialize()
 {
-    setupCompressionDomains();
+    setupCompressionDomains(); // should this be at end of configureDetector after the traverse has established domains ?
 
 
     m_uiManager = G4UImanager::GetUIpointer();
@@ -349,7 +350,14 @@ void CG4::configureStepping()
 void CG4::setupCompressionDomains()
 {
     m_detector->dumpPV("CG4::setupCompressionDomains dumpPV");
-    m_opticks->setSpaceDomain(m_detector->getCenterExtent());
+
+    glm::vec4 ce = m_detector->getCenterExtent();
+
+    LOG(info) << "CG4::setupCompressionDomains"
+              << " center_extent " << gformat(ce) 
+              ;    
+
+    m_opticks->setSpaceDomain(ce);
 
     m_evt->setTimeDomain(m_opticks->getTimeDomain());  
     m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain()) ; 

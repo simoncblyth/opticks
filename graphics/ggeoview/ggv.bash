@@ -295,7 +295,7 @@ ggv-g4gun()
                  direction=0,0,1
               polarization=1,0,0
                       time=0.
-                    energy=10.0
+                    energy=100.0
                    ) 
           # mm, ns, MeV
 
