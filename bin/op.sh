@@ -48,6 +48,8 @@ op-binary-name()
    --opticksquery) echo OpticksQueryTest ;;  
     --gitemindex) echo GItemIndexTest ;;  
         --nindex) echo IndexTest ;;  
+      --tindexer) echo IndexerTest ;;  
+      --tevtload) echo EvtLoadTest ;;  
 
      --boundaries) echo BoundariesNPYTest ;;
            --recs) echo RecordsNPYTest ;;
@@ -98,6 +100,8 @@ op-binary-desc()
   --opticksquery) echo "Test parsing of OPTICKS_QUERY geometry selection"  ;;  
     --gitemindex) echo "Test presentation of item indices, such as seqmat and seqhis photon flag sequences " ;;  
         --nindex) echo "npy-/Index test " ;;  
+      --tindexer) echo "optickscore-/IndexerTest " ;;  
+      --tevtload) echo "optickscore-/EvtLoadTest " ;;  
    esac 
 }
 

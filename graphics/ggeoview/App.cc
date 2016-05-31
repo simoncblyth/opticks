@@ -706,7 +706,7 @@ void App::loadEvtFromFile()
     LOG(info) << "App::loadEvtFromFile START" ;
    
     bool verbose ; 
-    m_evt->load(verbose=false);
+    m_evt->loadBuffers(verbose=false);
 
     if(m_evt->isNoLoad())
         LOG(warning) << "App::loadEvtFromFile LOAD FAILED " ;

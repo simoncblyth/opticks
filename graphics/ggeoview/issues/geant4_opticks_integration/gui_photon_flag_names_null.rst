@@ -1,12 +1,11 @@
-GUI Photon Flag Names All NULL
-================================
+[FIXED] GUI Photon Flag Names All NULL
+=========================================
 
 progress
 ---------
 
 * fixed the labels (was an outdated path in GFlags)
-* BUT pmt-test GUI selection still not working 
-
+* moved selection problem into :doc:`gui_photon_selection_failure`
 
 initial issue
 ---------------
@@ -19,10 +18,7 @@ for both::
    ggv-;ggv-g4gun --dbg --load --target 3153 --optixviz 
 
 
-Also selecting does not work for pmt-test but it does for g4gun.
-
-
-But the test seems to get the labels just fine:: 
+But the test seems to get the labels just fine (test was using the old way that did not depend on outdated path):: 
 
     simon:ggeoview blyth$ op --gitemindex
     104 -rwxr-xr-x  1 blyth  staff  49200 May 30 19:27 /usr/local/opticks/bin/GItemIndexTest

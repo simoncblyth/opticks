@@ -45,6 +45,8 @@ add_library( ${name}  SHARED
     OpticksQuery.cc
     Opticks.cc
     OpticksCfg.cc
+    Indexer.cc
+    Sparse.cc
 
     Composition.cc
     CompositionCfg.cc
@@ -74,6 +76,8 @@ SET(hdrs
     OpticksQuery.hh
     Opticks.hh
     OpticksCfg.hh
+    Indexer.hh
+    Sparse.hh
 
     Composition.hh
     CompositionCfg.hh

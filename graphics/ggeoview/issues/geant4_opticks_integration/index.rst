@@ -10,7 +10,8 @@ geant4_opticks_integration
    time_goes_backward
    g4gun_debug
    broken_indexing
-
+   broken_pmttest
+   gui_photon_flag_names_null
 
 
 

@@ -28,6 +28,12 @@ class NumpyEvt {
       static const char* TIMEFORMAT ;  
       static std::string timestamp();
    public:
+      //    typ: cerenkov/scintillaton/torch/g4gun
+      //    tag: 1/-1/2/-2/...  convention: -ve tags propagated by Geant4, +ve by Opticks
+      //    det: dayabay/...    identifes the geocache  
+      //    cat: OPTIONAL used for test categorization, eg PmtInBox
+      static NumpyEvt* load(const char* typ, const char* tag, const char* det, const char* cat=NULL, bool verbose=false);
+   public:
        NumpyEvt(const char* typ, const char* tag, const char* det, const char* cat=NULL);
        void setFlat(bool flat);
        void setStep(bool step);
@@ -107,7 +113,7 @@ class NumpyEvt {
        void save(bool verbose=false);
        void saveIndex(bool verbose=false);
        void loadIndex();
-       void load(bool verbose=true);
+       void loadBuffers(bool verbose=true);
    public: 
        void createBuffers(); 
    private:

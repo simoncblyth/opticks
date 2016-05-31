@@ -47,7 +47,7 @@ void test_load()
     const char* cat = "PmtInBox" ; 
  
     NumpyEvt* m_evt = new NumpyEvt(typ, tag, det, cat) ;
-    m_evt->load();
+    m_evt->loadBuffers();
 
     bool m_flat = m_evt->isFlat() ;
     assert(m_flat) ;

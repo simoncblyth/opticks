@@ -39,7 +39,7 @@ void OpIndexerApp::configure(int argc, char** argv)
 
 void OpIndexerApp::loadEvtFromFile(bool verbose)
 {
-    m_evt->load(verbose);
+    m_evt->loadBuffers(verbose);
 
     if(m_evt->isNoLoad())
     {    

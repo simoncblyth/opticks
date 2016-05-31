@@ -23,17 +23,6 @@
 
 #include "NLog.hpp"
 
-const char* NumpyEvt::incoming = "incoming" ; 
-const char* NumpyEvt::primary = "primary" ; 
-const char* NumpyEvt::genstep = "genstep" ; 
-const char* NumpyEvt::nopstep = "nopstep" ; 
-const char* NumpyEvt::photon  = "photon" ; 
-const char* NumpyEvt::record  = "record" ; 
-const char* NumpyEvt::phosel = "phosel" ; 
-const char* NumpyEvt::recsel  = "recsel" ; 
-const char* NumpyEvt::sequence  = "sequence" ; 
-const char* NumpyEvt::aux = "aux" ; 
-
 const char* NumpyEvt::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 const char* NumpyEvt::PARAMETERS_NAME = "parameters.json" ;
 
@@ -45,6 +34,16 @@ std::string NumpyEvt::timestamp()
     return timestamp ; 
 }
 
+const char* NumpyEvt::incoming = "incoming" ; 
+const char* NumpyEvt::primary = "primary" ; 
+const char* NumpyEvt::genstep = "genstep" ; 
+const char* NumpyEvt::nopstep = "nopstep" ; 
+const char* NumpyEvt::photon  = "photon" ; 
+const char* NumpyEvt::record  = "record" ; 
+const char* NumpyEvt::phosel = "phosel" ; 
+const char* NumpyEvt::recsel  = "recsel" ; 
+const char* NumpyEvt::sequence  = "sequence" ; 
+const char* NumpyEvt::aux = "aux" ; 
 
 void NumpyEvt::init()
 {
@@ -83,7 +82,6 @@ void NumpyEvt::init()
     m_abbrev[phosel] = "ps" ;     // photon selection index
     m_abbrev[recsel] = "rs" ;     // record selection index
     m_abbrev[sequence] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
-
 }
 
 
@@ -115,13 +113,10 @@ std::string NumpyEvt::getShapeString()
     return ss.str();
 }
 
-
-
 std::string NumpyEvt::getTimeStamp()
 {
     return m_parameters->get<std::string>("TimeStamp");
 }
-
 unsigned int NumpyEvt::getBounceMax()
 {
     return m_parameters->get<unsigned int>("BounceMax");
@@ -241,8 +236,6 @@ void NumpyEvt::prepareForPrimaryRecording()
    setPrimaryData(primary);
 }
 
-
-
 void NumpyEvt::createBuffers()
 {
     // CPU running does not have the CUDA thread
@@ -252,7 +245,6 @@ void NumpyEvt::createBuffers()
     createHostBuffers();
     createHostIndexBuffers();
 }
-
 
 void NumpyEvt::createHostBuffers()
 {
@@ -1000,7 +992,22 @@ void NumpyEvt::setFakeNopstepPath(const char* path)
     m_fake_nopstep_path = path ? strdup(path) : NULL ;
 }
 
-void NumpyEvt::load(bool verbose)
+
+NumpyEvt* NumpyEvt::load(const char* typ, const char* tag, const char* det, const char* cat, bool verbose)
+{
+    NumpyEvt* evt = new NumpyEvt(typ, tag, det, cat);
+    evt->loadBuffers(verbose);
+    if(evt->isNoLoad())
+    {
+         LOG(warning) << "NumpyEvt::load FAILED " ;
+         delete evt ;
+         evt = NULL ;
+    } 
+    return evt ;  
+}
+
+
+void NumpyEvt::loadBuffers(bool verbose)
 {
     (*m_timer)("_load");
     const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
