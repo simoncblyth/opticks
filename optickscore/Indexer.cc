@@ -16,22 +16,28 @@ void Indexer<T>::indexSequence()
     splitSequence();
     save();
 
-    m_seqhis = new Sparse<T>(m_his, "his");
-    m_seqmat = new Sparse<T>(m_mat, "mat");
-
-    m_seqhis->count_unique();
-    m_seqmat->count_unique();
-
+    m_seqhis = new Sparse<T>("seqhis", m_his);
+    m_seqhis->make_lookup();
     m_seqhis->dump("indexSequence seqhis");
-    m_seqmat->dump("indexSequence seqmat");
 
+    m_seqmat = new Sparse<T>("seqmar", m_mat);
+    m_seqmat->make_lookup();
+    m_seqmat->dump("indexSequence seqmat");
+}
+
+
+template <typename T>
+template <typename S>
+void Indexer<T>::applyLookup(S* target)
+{
+    m_seqhis->template apply_lookup<S>(target,4,0 );
+    m_seqmat->template apply_lookup<S>(target,4,1 );
+    //  http://stackoverflow.com/questions/3786360/confusing-template-error
 }
 
 template <typename T>
 void Indexer<T>::splitSequence()
 {
-    m_seq = m_evt->getSequenceData();
-
     unsigned int num_photons = m_seq->getShape(0);
     typedef std::vector<T> V ;  
     V& seq = m_seq->data();
@@ -44,7 +50,6 @@ void Indexer<T>::splitSequence()
               ;
 
     assert( seq.size() == num_photons*2 );
-
     m_his = NPY<T>::make( num_photons, 1 );
     m_mat = NPY<T>::make( num_photons, 1 );
     m_his->zero();
@@ -74,6 +79,6 @@ void Indexer<T>::save()
     m_mat->save("/tmp/mat.npy");    
 }
 
-
-
 template class Indexer<unsigned long long> ;
+template void Indexer<unsigned long long>::applyLookup<unsigned char>(unsigned char* target);
+

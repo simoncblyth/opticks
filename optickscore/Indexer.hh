@@ -1,31 +1,29 @@
 #pragma once
 
 #include <cstdlib>
-class NumpyEvt ; 
 template <typename T> class NPY ;
 template <typename T> class Sparse ;
 
-// CPU only indexer, based on CUDA/Thrust version:
+// CPU only indexer, translating from CUDA/Thrust version
+// seeks to duplicate results of the GPU indexer
 //   
 //     opticksop-/OpIndexer
 //     thrustrap-/TSparse.hh 
 //     thrustrap-/TSparse_.cu
 // 
-// http://www.boost.org/doc/libs/1_51_0/libs/range/doc/html/range/reference/adaptors/reference/strided.html
-//
 
 template <typename T>
 class Indexer {
    public:
-       Indexer();
-       void setEvt(NumpyEvt* evt);
+       Indexer(NPY<T>* seq);
        void indexSequence();
+       template <typename S> void applyLookup(S* target);
    private:
        void splitSequence();
        void save();
    private:
-       NumpyEvt*  m_evt ;  
        NPY<T>*    m_seq ;
+   private:
        NPY<T>*    m_his ;
        NPY<T>*    m_mat ;
        Sparse<T>* m_seqhis ; 
@@ -35,22 +33,13 @@ class Indexer {
 };
 
 template <typename T>
-inline Indexer<T>::Indexer()
+inline Indexer<T>::Indexer(NPY<T>* seq)
    :
-   m_evt(NULL),
-   m_seq(NULL),
+   m_seq(seq),
    m_his(NULL),
    m_mat(NULL),
    m_seqhis(NULL),
    m_seqmat(NULL)
 {
 }
-
-template <typename T>
-inline void Indexer<T>::setEvt(NumpyEvt* evt)
-{
-    m_evt = evt ;
-}
-
-
 

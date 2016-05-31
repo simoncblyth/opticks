@@ -18,10 +18,15 @@ int main(int argc, char** argv)
     assert(evt);   
     LOG(info) << evt->getShapeString() ; 
 
-    Indexer<unsigned long long>* idx = new Indexer<unsigned long long>() ; 
-    idx->setEvt(evt); 
-    idx->indexSequence();
+    NPY<unsigned long long>* sequence = evt->getSequenceData();
+    NPY<unsigned char>*        phosel = evt->getPhoselData();
+    assert(sequence->getShape(0) == phosel->getShape(0));
 
+    Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
+    idx->indexSequence();
+    idx->applyLookup<unsigned char>(phosel->getValues());
+
+    phosel->save("/tmp/phosel.npy"); 
 
 
     return 0 ; 
