@@ -9,6 +9,7 @@ template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
 class NumpyEvt ;
+class OpticksEvent ;
 class NLog ;
 class NState ;
 class Parameters ; 
@@ -146,7 +147,9 @@ class Opticks {
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        TorchStepNPY*        makeSimpleTorchStep();
-       NumpyEvt*            makeEvt(); 
+   public:
+       OpticksEvent*        makeEvent(); 
+       NumpyEvt*            makeEvt();  // TODO: eliminate this one
    public:
        const glm::vec4&  getTimeDomain();
        const glm::vec4&  getSpaceDomain();

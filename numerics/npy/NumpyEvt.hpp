@@ -92,12 +92,12 @@ class NumpyEvt {
        unsigned int getNumG4Event();
        unsigned int getNumPhotonsPerG4Event();
    public:
-       void setBoundaryIdx(Index* bndidx);
-       void setHistorySeq(Index* seqhis);
-       void setMaterialSeq(Index* seqmat);
-       Index* getBoundaryIdx();
-       Index* getHistorySeq();
-       Index* getMaterialSeq();
+       void setBoundaryIndex(Index* bndidx);
+       void setHistoryIndex(Index* seqhis);
+       void setMaterialIndex(Index* seqmat);
+       Index* getBoundaryIndex();
+       Index* getHistoryIndex();
+       Index* getMaterialIndex();
    public:
        // domains used for record compression
        void setSpaceDomain(const glm::vec4& space_domain);
@@ -594,32 +594,32 @@ inline const glm::vec4& NumpyEvt::getWavelengthDomain()
     return m_wavelength_domain ; 
 }
 
-inline void NumpyEvt::setBoundaryIdx(Index* bndidx)
+inline void NumpyEvt::setBoundaryIndex(Index* bndidx)
 {
     // called from OpIndexer::indexBoundaries
     m_bndidx = bndidx ; 
 }
-inline void NumpyEvt::setHistorySeq(Index* seqhis)
+inline void NumpyEvt::setHistoryIndex(Index* seqhis)
 {
     // called from OpIndexer::indexSequenceLoaded 
     m_seqhis = seqhis ; 
 }
-inline void NumpyEvt::setMaterialSeq(Index* seqmat)
+inline void NumpyEvt::setMaterialIndex(Index* seqmat)
 {
     // called from OpIndexer::indexSequenceLoaded
     m_seqmat = seqmat ; 
 }
 
 
-inline Index* NumpyEvt::getHistorySeq()
+inline Index* NumpyEvt::getHistoryIndex()
 {
     return m_seqhis ; 
 } 
-inline Index* NumpyEvt::getMaterialSeq()
+inline Index* NumpyEvt::getMaterialIndex()
 {
     return m_seqmat ; 
 } 
-inline Index* NumpyEvt::getBoundaryIdx()
+inline Index* NumpyEvt::getBoundaryIndex()
 {
     return m_bndidx ; 
 }

@@ -100,7 +100,7 @@ void OpIndexer::indexBoundaries()
 
     TSparse<int> boundaries(Opticks::BNDIDX_NAME_, m_pho->slice(4*4,4*3+0), hexkey); // stride,begin  hexkey effects Index and dumping only 
 
-    m_evt->setBoundaryIdx(boundaries.getIndex());
+    m_evt->setBoundaryIndex(boundaries.getIndex());
 
     boundaries.make_lookup();
 
@@ -159,8 +159,8 @@ void OpIndexer::indexSequenceCompute()
     TSparse<unsigned long long> seqhis(Opticks::SEQHIS_NAME_, seqh );
     TSparse<unsigned long long> seqmat(Opticks::SEQMAT_NAME_, seqm ); 
 
-    m_evt->setHistorySeq(seqhis.getIndex());
-    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
+    m_evt->setHistoryIndex(seqhis.getIndex());
+    m_evt->setMaterialIndex(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
@@ -192,8 +192,8 @@ void OpIndexer::indexSequenceInterop()
     TSparse<unsigned long long> seqhis(Opticks::SEQHIS_NAME_, seqh );
     TSparse<unsigned long long> seqmat(Opticks::SEQMAT_NAME_, seqm ); 
 
-    m_evt->setHistorySeq(seqhis.getIndex());
-    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
+    m_evt->setHistoryIndex(seqhis.getIndex());
+    m_evt->setMaterialIndex(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
     indexSequenceViaOpenGL(seqhis, seqmat, m_verbose );
 
@@ -229,8 +229,8 @@ void OpIndexer::indexSequenceLoaded()
     TSparse<unsigned long long> seqhis(Opticks::SEQHIS_NAME_,  phh );
     TSparse<unsigned long long> seqmat(Opticks::SEQMAT_NAME_, phm ); 
 
-    m_evt->setHistorySeq(seqhis.getIndex());
-    m_evt->setMaterialSeq(seqmat.getIndex());  // the indices are populated by the make_lookup below
+    m_evt->setHistoryIndex(seqhis.getIndex());
+    m_evt->setMaterialIndex(seqmat.getIndex());  // the indices are populated by the make_lookup below
 
     prepareTarget("indexSequenceLoaded");
 

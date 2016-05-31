@@ -3,6 +3,7 @@
 #include <cstdlib>
 template <typename T> class NPY ;
 template <typename T> class Sparse ;
+class Index ; 
 
 // CPU only indexer, translating from CUDA/Thrust version
 // seeks to duplicate results of the GPU indexer
@@ -18,6 +19,8 @@ class Indexer {
        Indexer(NPY<T>* seq);
        void indexSequence();
        template <typename S> void applyLookup(S* target);
+       Index* getHistoryIndex();
+       Index* getMaterialIndex();
    private:
        void splitSequence();
        void save();

@@ -1,5 +1,6 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "OpticksEvent.hh"
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
 
@@ -372,6 +373,11 @@ std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
     return m_resource->getPreferenceDir(type, udet, subtype);
 }
 
+OpticksEvent* Opticks::makeEvent()
+{
+    NumpyEvt* evt = makeEvt();
+    return new OpticksEvent(evt);
+}
 
 NumpyEvt* Opticks::makeEvt()
 {

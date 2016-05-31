@@ -43,6 +43,7 @@ set(LIBRARIES
 add_library( ${name}  SHARED
     OpticksResource.cc
     OpticksQuery.cc
+    OpticksEvent.cc
     Opticks.cc
     OpticksCfg.cc
     Indexer.cc
@@ -74,6 +75,7 @@ add_library( ${name}  SHARED
 SET(hdrs 
     OpticksResource.hh
     OpticksQuery.hh
+    OpticksEvent.hh
     Opticks.hh
     OpticksCfg.hh
     Indexer.hh

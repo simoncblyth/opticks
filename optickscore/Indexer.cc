@@ -27,9 +27,24 @@ void Indexer<T>::indexSequence()
 
 
 template <typename T>
+Index* Indexer<T>::getHistoryIndex()
+{
+    return m_seqhis ? m_seqhis->getIndex() : NULL ; 
+}
+
+template <typename T>
+Index* Indexer<T>::getMaterialIndex()
+{
+    return m_seqhis ? m_seqhis->getIndex() : NULL ; 
+}
+
+
+template <typename T>
 template <typename S>
 void Indexer<T>::applyLookup(S* target)
 {
+    // fill phosel target with the 
+
     m_seqhis->template apply_lookup<S>(target,4,0 );
     m_seqmat->template apply_lookup<S>(target,4,1 );
     //  http://stackoverflow.com/questions/3786360/confusing-template-error

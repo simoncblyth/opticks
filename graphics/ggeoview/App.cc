@@ -746,9 +746,9 @@ void App::indexPresentationPrep()
 
     if(!m_evt) return ; 
 
-    Index* seqhis = m_evt->getHistorySeq() ;
-    Index* seqmat = m_evt->getMaterialSeq();
-    Index* bndidx = m_evt->getBoundaryIdx();
+    Index* seqhis = m_evt->getHistoryIndex() ;
+    Index* seqmat = m_evt->getMaterialIndex();
+    Index* bndidx = m_evt->getBoundaryIndex();
 
     if(!seqhis)
     {

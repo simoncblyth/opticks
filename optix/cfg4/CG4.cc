@@ -40,6 +40,7 @@
 
 // optickscore-
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 #include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
 
@@ -107,7 +108,9 @@ void CG4::configure(int argc, char** argv)
 void CG4::initEvent()
 {
     // TODO: move evt setup outside CG4
-    m_evt = m_opticks->makeEvt();  
+    m_event = m_opticks->makeEvent();  
+    m_evt = m_event->getEvt();  
+
 
     NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
     m_evt->setNopstepData(nopstep);
@@ -206,6 +209,9 @@ void CG4::postpropagate()
     std::string finmac = m_cfg->getG4FinMac();
     LOG(info) << "CG4::postpropagate [" << finmac << "]"  ;
     if(!finmac.empty()) execute(finmac.c_str());
+
+
+    m_event->indexPhotonsCPU();
 }
 
 
@@ -358,6 +364,8 @@ void CG4::setupCompressionDomains()
     LOG(info) << "CG4::setupCompressionDomains"
               << " center_extent " << gformat(ce) 
               ;    
+
+    // TODO: move to m_event should mop up this kinda thing 
 
     m_opticks->setSpaceDomain(ce);
 

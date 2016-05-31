@@ -3,6 +3,7 @@
 
 // optickscore-
 class Opticks ; 
+class OpticksEvent ; 
 template <typename T> class OpticksCfg ;
 
 // g4-
@@ -72,12 +73,13 @@ class CG4
         Opticks*              m_opticks ; 
         OpticksCfg<Opticks>*  m_cfg ;
         GCache*               m_cache ; 
+        OpticksEvent*         m_event ; 
         NumpyEvt*             m_evt ; 
         TorchStepNPY*         m_torch ; 
    private:
         CDetector*            m_detector ; 
         CPropLib*             m_lib ; 
-        CRecorder*             m_recorder ; 
+        CRecorder*            m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
    private:
@@ -102,6 +104,7 @@ inline CG4::CG4(Opticks* opticks)
      m_opticks(opticks),
      m_cfg(NULL),
      m_cache(NULL),
+     m_event(NULL),
      m_evt(NULL),
      m_torch(NULL),
      m_detector(NULL),
