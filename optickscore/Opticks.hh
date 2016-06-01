@@ -106,12 +106,13 @@ class Opticks {
        Opticks(int argc=0, char** argv=NULL, const char* logname="opticks.log", const char* envprefix="OPTICKS_");
 
    private:
-       void init(int argc, char** argv);
+       void init();
        void preargs(int argc, char** argv);
        void preconfigure(int argc, char** argv);
    public:
        void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
+       void dumpArgs(const char* msg="Opticks::dumpArgs");
    public:
        // from OpticksResource
        bool isJuno();
@@ -181,6 +182,9 @@ class Opticks {
        void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
+       int                  m_argc ; 
+       char**               m_argv ; 
+
        const char*      m_logname  ; 
        const char*      m_envprefix ;
        OpticksResource* m_resource ; 
@@ -218,6 +222,8 @@ class Opticks {
 
 inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* envprefix)
      :
+       m_argc(argc),
+       m_argv(argv),
        m_logname(strdup(logname)),
        m_envprefix(strdup(envprefix)),
        m_resource(NULL),
@@ -237,7 +243,7 @@ inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* 
        m_detector(NULL),
        m_mode(0u)
 {
-       init(argc, argv);
+       init();
 }
 
 inline void Opticks::setCfg(OpticksCfg<Opticks>* cfg)

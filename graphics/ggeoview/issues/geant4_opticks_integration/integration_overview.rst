@@ -46,6 +46,10 @@ DONE
   * CTestDetector for simple partial geometries
   * CGDMLDetector for full GDML loaded geometries 
 
+* pmt test broken by g4gun generalizations, fixed up to the groupvel issue
+* CPU indexing, to support non-CUDA capable nodes 
+
+
 DEBUGGING
 ----------
 
@@ -54,18 +58,26 @@ DEBUGGING
 TODO
 ----
 
-* pmt test broken by g4gun generalizations
-
-* CPU indexing, to support non-CUDA capable nodes 
-
-  * also currently the indexing of G4 saved events gets done at every viz
+* workout where/how best to do the with/without CUDA split, 
+  
+  * currently done very coarsely in App with preprocessor macro WITH_OPTIX
 
 * where to slot in CG4/CGDMLDetector into the machinery, cli, options, config ?
+
+  * ggv-/App needs overhaul/simplification before attempting to bring in CG4
+  * CG4 similarly needs cleanup, especially re event handling 
+
+  * need to arrange CG4 and OpEngine to have a common 
+    high level OpticksEngine API 
+
+    * common aspects are: event handling/saving 
+ 
 
 * bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 
   with the customized step collecting Cerenkov and Scintillation processes
 
 * gun control interface, ImGui?  particle palette, shooter mode
+
 * updated JUNO export, both DAE and GDML 
 
 

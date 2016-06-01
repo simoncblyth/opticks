@@ -1,11 +1,6 @@
 #pragma once
 #include <cstdlib>
 
-// optickscore-
-class Opticks ; 
-class OpticksEvent ; 
-template <typename T> class OpticksCfg ;
-
 // g4-
 class G4RunManager ; 
 class G4VisManager ; 
@@ -26,21 +21,19 @@ class Rec ;
 class CStepRec ; 
 
 //#define OLDPHYS 1
-
 #ifdef OLDPHYS
 class PhysicsList ; 
 #else
 class OpNovicePhysicsList ; 
 #endif
 
-// ggeo-
-class GCache ; 
+#include "OpticksEngine.hh"
 
-class CG4 
+class CG4 : public OpticksEngine
 {
    public:
         CG4(Opticks* opticks);
-        void configure(int argc, char** argv);
+        void configure();
         void interactive(int argc, char** argv);
         void cleanup();
         virtual ~CG4();
@@ -50,7 +43,7 @@ class CG4
         void save();
    private:
         void init();
-        void initEvent();
+        //void initEvent();
         void configureDetector();
         void configurePhysics();
         void configureGenerator();
@@ -69,10 +62,6 @@ class CG4
         Rec*      getRec();
         CPropLib* getPropLib();
    private:
-        Opticks*              m_opticks ; 
-        OpticksCfg<Opticks>*  m_cfg ;
-        GCache*               m_cache ; 
-        OpticksEvent*         m_evt ; 
         TorchStepNPY*         m_torch ; 
    private:
         CDetector*            m_detector ; 
@@ -99,10 +88,7 @@ class CG4
 
 inline CG4::CG4(Opticks* opticks) 
    :
-     m_opticks(opticks),
-     m_cfg(NULL),
-     m_cache(NULL),
-     m_evt(NULL),
+     OpticksEngine(opticks),
      m_torch(NULL),
      m_detector(NULL),
      m_lib(NULL),
@@ -138,4 +124,5 @@ inline CPropLib* CG4::getPropLib()
 {
     return m_lib ; 
 }
+
 

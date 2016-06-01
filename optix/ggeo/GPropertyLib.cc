@@ -404,7 +404,7 @@ void GPropertyLib::loadRaw()
         GPropertyMap<float>* pmap = GPropertyMap<float>::load( dir.c_str(), name.c_str(), m_comptype );
         if(pmap)
         {
-            LOG(info) << "GPropertyLib::loadRaw " << name << " " << m_comptype << " num properties:" << pmap->getNumProperties() ; 
+            LOG(debug) << "GPropertyLib::loadRaw " << name << " " << m_comptype << " num properties:" << pmap->getNumProperties() ; 
             addRaw(pmap);
         }
 

@@ -176,6 +176,9 @@ ggv-pmt-test(){
     local tgt=0,0,0
     local radius=100
     local testverbosity=3 
+    if [ "${cmdline/--load}" != "$cmdline" ]; then 
+        testverbosity=1 
+    fi  
 
     local mode=""
     local polarization=""

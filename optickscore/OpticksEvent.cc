@@ -409,9 +409,7 @@ void OpticksEvent::updateDomainsBuffer()
         LOG(warning) << "OpticksEvent::updateDomainsBuffer fdom NULL " ;
     }
 
-
     NPY<int>* idom = getIDomain();
-
     if(idom)
         idom->setQuad(m_settings, 0 );
     else
@@ -419,46 +417,54 @@ void OpticksEvent::updateDomainsBuffer()
     
 }
 
-void OpticksEvent::readDomainsBuffer()
+
+void OpticksEvent::importDomainsBuffer()
 {
     NPY<float>* fdom = getFDomain();
-
+    assert(fdom);
     if(fdom)
     {
         m_space_domain = fdom->getQuad(0);
         m_time_domain = fdom->getQuad(1);
         m_wavelength_domain = fdom->getQuad(2);
+
+        if(m_space_domain.w <= 0.)
+        {
+            LOG(fatal) << "OpticksEvent::importDomainsBuffer BAD FDOMAIN" ; 
+            dumpDomains("OpticksEvent::importDomainsBuffer");
+            assert(0);
+        }
+
     }
     else
-    {
-        LOG(warning) << "OpticksEvent::readDomainsBuffer"
+        LOG(warning) << "OpticksEvent::importDomainsBuffer"
                      << " fdom NULL "
                      ;
-    }
-
 
     NPY<int>* idom = getIDomain();
-
+    assert(idom);
     if(idom)
     {
         m_settings = idom->getQuad(0); 
         m_maxrec = m_settings.w ; 
 
-        LOG(info) << "OpticksEvent::readDomainsBuffer" 
-                  << " from idom settings m_maxrec " << m_maxrec 
-                  ;
+        if(m_maxrec != 10)
+        {
+            LOG(fatal) << "OpticksEvent::importDomainsBuffer" 
+                       << " from idom settings m_maxrec BUT EXPECT 10 " << m_maxrec 
+                        ;
+            assert(0);
+        }
+
     }
     else
     {
-        LOG(warning) << "OpticksEvent::readDomainsBuffer"
+        LOG(warning) << "OpticksEvent::importDomainsBuffer"
                      << " idom NULL "
                      ;
  
     }
- 
-
 }
-
 
 
 void OpticksEvent::zero()
@@ -472,13 +478,13 @@ void OpticksEvent::zero()
 
     if(m_step)
     {
+       // TODO: defer these allocations until actually needed, often that will be never 
         if(m_phosel_data)   m_phosel_data->zero();
         if(m_record_data)   m_record_data->zero();
         if(m_recsel_data)   m_recsel_data->zero();
         if(m_sequence_data) m_sequence_data->zero();
     }
 }
-
 
 
 void OpticksEvent::seedPhotonData()
@@ -534,7 +540,7 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
     {
         m_num_photons = photon_data->getShape(0) ;
 
-        LOG(info) << "OpticksEvent::setPhotonData"
+        LOG(debug) << "OpticksEvent::setPhotonData"
                   << " setting m_num_photons from shape(0) " << m_num_photons 
                   ;
     }
@@ -602,7 +608,7 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
     if(!nopstep) return ; 
 
     m_num_nopsteps = m_nopstep_data->getShape(0) ;
-    LOG(info) << "OpticksEvent::setNopstepData"
+    LOG(debug) << "OpticksEvent::setNopstepData"
               << " shape " << nopstep->getShapeString()
               ;
 
@@ -1029,8 +1035,9 @@ OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* d
 
 void OpticksEvent::loadBuffers(bool verbose)
 {
-    (*m_timer)("_load");
-    const char* udet = strlen(m_cat) > 0 ? m_cat : m_det ; 
+    TIMER("_load");
+
+    const char* udet = getUDet(); // cat overrides det if present 
 
     bool qload = true ; 
     NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet, qload);
@@ -1058,8 +1065,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     loadParameters();
     loadIndex();
 
-    readDomainsBuffer();
-    dumpDomains("OpticksEvent::load dumpDomains");
+    importDomainsBuffer();
 
     NPY<float>* no = NULL ; 
     if(m_fake_nopstep_path)
@@ -1071,7 +1077,6 @@ void OpticksEvent::loadBuffers(bool verbose)
     {  
         no = NPY<float>::load("no%s", m_typ,  m_tag, udet, qload);
     }
-
 
 
     NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet, qload);
@@ -1126,12 +1131,12 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     if(num_records == num_photons*m_maxrec)
     {
-        LOG(info) << "OpticksEvent::load flat records (Opticks style) detected " ;
+        LOG(debug) << "OpticksEvent::load flat records (Opticks style) detected " ;
         setFlat(true);
     } 
     else if(num_records == num_photons)
     {
-        LOG(info) << "OpticksEvent::load structured records (cfg4- style) detected :  RESHAPING " ;
+        LOG(debug) << "OpticksEvent::load structured records (cfg4- style) detected :  RESHAPING " ;
         if(rx && num_records > 0)
         {
             if(verbose) rx->Summary("rx init");
@@ -1301,7 +1306,7 @@ void OpticksEvent::indexPhotonsCPU()
     assert(phosel->hasItemShape(1,4));
     assert(recsel0->hasItemShape(m_maxrec,1,4));
    
-    // sequence 500000,1,2 phosel 500000,1,4 recsel 500000,10,1,4
+    // eg: sequence 500000,1,2 phosel 500000,1,4 recsel 500000,10,1,4
     // expecting structured, not-flat when running on CPU 
 
     assert(sequence->getShape(0) == phosel->getShape(0));

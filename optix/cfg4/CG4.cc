@@ -34,10 +34,6 @@
 #include "CTorchSource.hh"
 #include "CGunSource.hh"
 
-// ggeo-
-#include "GCache.hh"
-#include "GGeoTestConfig.hh"
-
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
@@ -51,16 +47,10 @@
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
 
-//opticks-
-#include "Opticks.hh"
-#include "OpticksPhoton.h"
-#include "OpticksCfg.hh"
-
 //ggeo-
 #include "GCache.hh"
 #include "GBndLib.hh"
 #include "GGeoTestConfig.hh"
-
 
 
 #define TIMER(s) \
@@ -78,20 +68,25 @@ void CG4::init()
     TIMER("init");
 }
 
-void CG4::configure(int argc, char** argv)
+void CG4::configure()
 {
+    configureEngine(); 
+
+
+   /*
     m_cfg = m_opticks->getCfg();  
     m_cfg->commandline(argc, argv);   // why is this config deferred ... 
     m_cfg->dump(); 
-
     m_cache = new GCache(m_opticks);
+    */
 
-    initEvent();
+    //initEvent();
 
     m_g4ui = m_cfg->hasOpt("g4ui") ; 
     LOG(info) << "CG4::configure"
               << " g4ui " << m_g4ui
               ; 
+
 
     m_runManager = new G4RunManager;
 
@@ -104,11 +99,11 @@ void CG4::configure(int argc, char** argv)
 }
 
 
+/*
 void CG4::initEvent()
 {
     // TODO: move evt setup outside CG4
     m_evt = m_opticks->makeEvent();  
-
 
     NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
     m_evt->setNopstepData(nopstep);
@@ -120,6 +115,7 @@ void CG4::initEvent()
 
     // maybe can just make ni=0 "dynamic" buffers by default ? within the Opticks::makeEvt ? 
 }
+*/
 
 
 

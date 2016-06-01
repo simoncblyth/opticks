@@ -142,9 +142,9 @@ unsigned int Opticks::SourceCode(const char* type)
 }
 
 
-void Opticks::init(int argc, char** argv)
+void Opticks::init()
 {
-    preargs(argc, argv);
+    preargs(m_argc, m_argv);
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
@@ -154,7 +154,7 @@ void Opticks::init(int argc, char** argv)
 
     setDetector( m_resource->getDetector() );
 
-    preconfigure(argc, argv);
+    preconfigure(m_argc, m_argv);
 }
 
 
@@ -167,6 +167,7 @@ void Opticks::preargs(int argc, char** argv)
     bool compute = false ;
     const char* logname = NULL ;
     if(dump) std::cerr << "Opticks::preargs argc " << argc << std::endl ; 
+
     for(int i=1 ; i < argc ; i++ )
     {
         if(strcmp(argv[i], COMPUTE) == 0) compute = true ; 
@@ -205,10 +206,20 @@ void Opticks::preconfigure(int argc, char** argv)
 
 }
 
+void Opticks::dumpArgs(const char* msg)
+{
+    LOG(info) << msg << " argc " << m_argc ;
+    for(unsigned int i=0 ; i < m_argc ; i++) 
+          std::cout << std::setw(3) << i << m_argv[i] << std::endl ;
 
+}
 
 void Opticks::configure()
 {
+    dumpArgs();
+
+    m_cfg->commandline(m_argc, m_argv);
+
     const std::string& ssize = m_cfg->getSize();
 
     if(!ssize.empty()) 

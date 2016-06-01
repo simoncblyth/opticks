@@ -106,7 +106,7 @@ class OpticksEvent {
        const glm::vec4& getWavelengthDomain();
    private:
        void updateDomainsBuffer();
-       void readDomainsBuffer();
+       void importDomainsBuffer();
    public:
        void save(bool verbose=false);
        void saveIndex(bool verbose=false);

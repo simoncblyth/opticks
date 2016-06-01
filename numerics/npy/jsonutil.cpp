@@ -208,10 +208,10 @@ int loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, uns
 template<typename A, typename B> 
 void loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const char* name)
 {
-    std::cout << "loadList"
+    LOG(trace) << "loadList"
               << " dir [" << dir << "]" 
               << " name [" << name << "]" 
-              << std::endl ;
+              ;
 
     std::string path = preparePath(dir, name, false);
     if(!path.empty())

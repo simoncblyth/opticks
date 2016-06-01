@@ -65,7 +65,7 @@ void GBndLib::loadIndexBuffer()
     }
     else
     {
-        LOG(info) << "GBndLib::loadIndexBuffer"
+        LOG(debug) << "GBndLib::loadIndexBuffer"
                   << " shape " << indexBuf->getShapeString() ;
     }
 }
@@ -122,14 +122,14 @@ void GBndLib::importIndexBuffer()
          return ;
     }
 
-    LOG(info) << "GBndLib::importIndexBuffer BEFORE IMPORT" 
+    LOG(debug) << "GBndLib::importIndexBuffer BEFORE IMPORT" 
               << " ibuf " << ibuf->getShapeString()
               << " m_bnd.size() " << m_bnd.size()
              ; 
 
     importUint4Buffer(m_bnd, ibuf );
 
-    LOG(info) << "GBndLib::importIndexBuffer AFTER IMPORT" 
+    LOG(debug) << "GBndLib::importIndexBuffer AFTER IMPORT" 
               << " ibuf " << ibuf->getShapeString()
               << " m_bnd.size() " << m_bnd.size()
              ; 

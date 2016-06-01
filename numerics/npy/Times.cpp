@@ -1,15 +1,12 @@
-#include "Times.hpp"
 
-#include "assert.h"
-#include "jsonutil.hpp"
-
+#include <cassert>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "Times.hpp"
+#include "jsonutil.hpp"
+#include "NLog.hpp"
 
 
 void Times::save(const char* dir)

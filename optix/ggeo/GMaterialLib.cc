@@ -305,8 +305,8 @@ void GMaterialLib::import()
 
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );
 
-    LOG(info) << "GMaterialLib::import"    
-              << m_buffer->getShapeString()
+    LOG(debug) << "GMaterialLib::import"    
+              << " buffer shape " << m_buffer->getShapeString()
               ;
 
     importForTex2d();

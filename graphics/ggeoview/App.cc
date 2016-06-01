@@ -771,13 +771,11 @@ void App::indexPresentationPrep()
         }
         else
         {
-            // displays "NULL NULL NULL" labels and selection doesnt work  in some cases 
-
             GFlags* flags = m_cache->getFlags();
             GAttrSeq* qflg = flags->getAttrIndex();
 
             qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
-            qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
+            //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
 
             m_seqhis->setHandler(qflg);
         }

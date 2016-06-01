@@ -1,17 +1,14 @@
-#include "GSurfaceLib.hh"
+#include <iomanip>
 
+#include "GSurfaceLib.hh"
 #include "GCache.hh"
 #include "GOpticalSurface.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
-
 #include "GItemList.hh"
+
 #include "NPY.hpp"
-
-#include <iomanip>
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 
@@ -475,8 +472,8 @@ void GSurfaceLib::import()
         return ;  
     }
 
-    LOG(info) << "GSurfaceLib::import "    
-               << m_buffer->getShapeString()
+    LOG(debug) << "GSurfaceLib::import "    
+               << " buffer shape " << m_buffer->getShapeString()
              ;
 
     assert( m_buffer->getNumItems() == m_names->getNumKeys() );

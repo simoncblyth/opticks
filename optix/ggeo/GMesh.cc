@@ -234,7 +234,7 @@ void GMesh::setCenterExtent(gfloat4* center_extent)
 {
     m_center_extent = center_extent ;  
 
-    LOG(info) << "GMesh::setCenterExtent (creates buffer) " 
+    LOG(debug) << "GMesh::setCenterExtent (creates buffer) " 
               << " m_center_extent " << m_center_extent
               << " m_num_solids " << m_num_solids 
               ; 
@@ -252,7 +252,7 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     m_num_solids = numBytes/sizeof(gfloat4) ;
 
-    LOG(info) << "GMesh::setCenterExtentBuffer  (creates array from buffer) " 
+    LOG(debug) << "GMesh::setCenterExtentBuffer  (creates array from buffer) " 
               << " m_center_extent " << m_center_extent
               << " m_num_solids " << m_num_solids 
               ; 
@@ -801,7 +801,7 @@ void GMesh::updateBounds()
         // avoid stomping on position of array of center_extent in case of MergedMesh, 
         // instead just overwrite solid 0 
 
-        LOG(info) << "GMesh::updateBounds"
+        LOG(debug) << "GMesh::updateBounds"
                   << " overwrite solid 0 ce "
                   <<  m_center_extent[0].description()
                   << " with " 

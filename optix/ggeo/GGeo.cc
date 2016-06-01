@@ -360,11 +360,10 @@ void GGeo::loadAnalyticPmt()
 
     if(m_pmt)
     {
-        LOG(info) << "GGeo::loadAnalyticPmt SUCCEEDED"
-                  << m_pmt->getPath()   
-                   ;
+        LOG(trace) << "GGeo::loadAnalyticPmt SUCCEEDED "
+                   << m_pmt->getPath()   
+                    ;
     }
-
 }
 
 
