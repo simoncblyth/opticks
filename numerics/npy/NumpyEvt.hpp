@@ -17,12 +17,8 @@ class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 
-//
-// TODO: migrate into OpticksCore ? for:
-//      * easy access to config 
-//
 
-class NumpyEvt {
+class OpticksEvent {
    public:
       static const char* PARAMETERS_NAME ;  
       static const char* TIMEFORMAT ;  
@@ -43,6 +39,8 @@ class NumpyEvt {
        bool isLoaded();
        bool isIndexed();
        bool isStep();
+   public:
+       void indexPhotonsCPU();
    public:
        // from parameters
        unsigned int getBounceMax();

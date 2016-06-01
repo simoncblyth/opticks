@@ -1,5 +1,10 @@
-#include "NumpyEvt.hpp"
 
+// optickscore-
+#include "OpticksEvent.hh"
+#include "Indexer.hh"
+
+
+// npy-
 #include "uif.h"
 #include "NPY.hpp"
 #include "G4StepNPY.hpp"
@@ -22,6 +27,20 @@
 #include <sstream>
 
 #include "NLog.hpp"
+
+
+#define TIMER(s) \
+    { \
+       if(m_timer)\
+       {\
+          Timer& t = *(m_timer) ;\
+          t((s)) ;\
+       }\
+    }
+
+
+
+
 
 const char* NumpyEvt::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 const char* NumpyEvt::PARAMETERS_NAME = "parameters.json" ;
@@ -1261,5 +1280,27 @@ unsigned int NumpyEvt::getNumPhotonsPerG4Event()
    return m_parameters->get<int>("NumPhotonsPerG4Event");
 }
  
+
+void OpticksEvent::indexPhotonsCPU()
+{
+    // see tests/IndexerTest
+
+    LOG(info) << "OpticksEvent::indexPhotonsCPU" ; 
+
+    NPY<unsigned long long>* sequence = m_evt->getSequenceData();
+    NPY<unsigned char>*        phosel = m_evt->getPhoselData();
+    assert(sequence->getShape(0) == phosel->getShape(0));
+
+    Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
+    idx->indexSequence();
+    idx->applyLookup<unsigned char>(phosel->getValues());
+
+    // TODO: phosel->recsel by repeating by maxrec
+
+    m_evt->setHistoryIndex(idx->getHistoryIndex());
+    m_evt->setMaterialIndex(idx->getMaterialIndex());
+
+    TIMER("indexPhotonsCPU");    
+}
 
 
