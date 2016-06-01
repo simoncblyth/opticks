@@ -1,15 +1,16 @@
-GUI Photon Selection Failure
-==============================
+[FIXED] GUI Photon Selection Failure
+=======================================
 
 GUI section of photon seqhis/seqmat subsets titled 
 is working for some events, but not others
 Any selection other than "All" in both seqhis and seqmat makes 
 all photons disappear. 
 
-Progess
+FIXED
 ---------
 
-* note rs(recsel) shape inconsistencies
+* fixed by implementing CPU indexing and migrating to OpticksEvent
+
 
 Background
 -----------
@@ -27,7 +28,7 @@ Background
 Approach to solving
 --------------------
 
-* Implement CPU only indexing so that the pure G4 workflow 
+* [DONE] Implement CPU only indexing so that the pure G4 workflow 
   can simulate and index without GPU assistance
 
 * develop index test, that checks validity of an index both the 
@@ -35,11 +36,12 @@ Approach to solving
 
 
 Not Working
---------------
+---------------------
 
 The persisted phosel and recsel are all zeroes::
 
-   ggv-;ggv-pmt-test --cfg4 --load
+   ggv-;ggv-pmt-test --cfg4            ## create
+   ggv-;ggv-pmt-test --cfg4 --load     ## vizualize
 
 
     In [1]: run pmt_test_evt.py

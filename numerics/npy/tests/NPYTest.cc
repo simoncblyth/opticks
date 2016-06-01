@@ -7,6 +7,32 @@
 
 #include <glm/glm.hpp>
 
+void test_repeat()
+{
+   // see associated tests/NPYTest.py 
+
+   NPY<int>* aa = NPY<int>::make(100,1,4) ;
+   aa->zero();
+
+   for(unsigned int i=0 ; i < aa->getShape(0) ; i++){
+   for(unsigned int j=0 ; j < aa->getShape(1) ; j++){
+   for(unsigned int k=0 ; k < aa->getShape(2) ; k++){
+   for(unsigned int l=0 ; l < std::max(1u,aa->getShape(3)) ; l++)
+   {
+       int value = i*100+j*10+k ;
+       aa->setValue(i,j,k,l, value);  
+   }
+   }
+   }
+   }
+
+   unsigned int n = 10 ; 
+   NPY<int>* bb = NPY<int>::make_repeat(aa, n) ; 
+   aa->save("/tmp/aa.npy"); 
+   bb->save("/tmp/bb.npy"); 
+   bb->reshape(-1, n, 1, 4);
+   bb->save("/tmp/cc.npy"); 
+}
 
 
 void test_reshape()
@@ -345,7 +371,8 @@ int main()
     //test_dump();
 
     //test_transform();
-    test_reshape();
+    //test_reshape();
+    test_repeat();
 
     return 0 ;
 }

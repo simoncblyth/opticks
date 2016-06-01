@@ -673,6 +673,7 @@ void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
 {
     assert(m_step);
     m_recsel_data = recsel_data ;
+
     if(!m_recsel_data) return ; 
     //                                               j k l sz   type                norm   iatt
     ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
@@ -1285,18 +1286,40 @@ void OpticksEvent::indexPhotonsCPU()
 {
     // see tests/IndexerTest
 
-    LOG(info) << "OpticksEvent::indexPhotonsCPU" ; 
-
     NPY<unsigned long long>* sequence = getSequenceData();
     NPY<unsigned char>*        phosel = getPhoselData();
+    NPY<unsigned char>*        recsel0 = getRecselData();
+
+    LOG(info) << "OpticksEvent::indexPhotonsCPU" 
+              << " sequence " << sequence->getShapeString()
+              << " phosel "   << phosel->getShapeString()
+              << " recsel0 "   << recsel0->getShapeString()
+              << " recsel0.hasData "   << recsel0->hasData()
+              ;
+
+    assert(sequence->hasItemShape(1,2));
+    assert(phosel->hasItemShape(1,4));
+    assert(recsel0->hasItemShape(m_maxrec,1,4));
+   
+    // sequence 500000,1,2 phosel 500000,1,4 recsel 500000,10,1,4
+    // expecting structured, not-flat when running on CPU 
+
     assert(sequence->getShape(0) == phosel->getShape(0));
+    assert(sequence->getShape(0) == recsel0->getShape(0));
 
     Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
     idx->indexSequence();
     idx->applyLookup<unsigned char>(phosel->getValues());
 
-    // idx->repeat_to( m_maxrec ...)
-    // TODO: phosel->recsel by repeating by maxrec
+
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make_repeat(phosel, m_maxrec ) ;
+    recsel->reshape(-1, m_maxrec, 1, 4);
+    //recsel->save("/tmp/recsel.npy"); 
+
+
+    // TODO: fix leak?, review recsel0 creation/zeroing/allocation
+    setRecselData(recsel);
+
 
     setHistoryIndex(idx->getHistoryIndex());
     setMaterialIndex(idx->getMaterialIndex());

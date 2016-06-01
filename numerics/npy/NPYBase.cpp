@@ -34,6 +34,17 @@ void NPYBase::updateDimensions()
     m_dim = m_shape.size();
 }
 
+bool NPYBase::hasShape(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl)
+{
+    return m_ni == ni && m_nj == nj && m_nk == nk && m_nl == nl ;
+}
+
+bool NPYBase::hasItemShape(unsigned int nj, unsigned int nk, unsigned int nl)
+{
+    return m_nj == nj && m_nk == nk && m_nl == nl ;
+}
+
+
 
 void NPYBase::setNumItems(unsigned int ni)
 {

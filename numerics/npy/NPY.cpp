@@ -474,10 +474,36 @@ NPY<T>* NPY<T>::make(std::vector<int>& shape)
 }
 
 
+template <typename T>
+NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
+{
+    unsigned int ni = src->getShape(0);
+    assert( ni > 0);
+
+    std::vector<int> dshape(src->getShapeVector());
+    dshape[0] *= n ;          // bump up first dimension
+
+    NPY<T>* dst = NPY<T>::make(dshape) ;
+    dst->zero();
 
 
+    unsigned int size = src->getNumBytes(1);  // item size in bytes (from dimension 1)  
 
 
+    char* sbytes = (char*)src->getBytes();
+    char* dbytes = (char*)dst->getBytes();
+
+    assert(size == dst->getNumBytes(1)) ;
+   
+    for(unsigned int i=0 ; i < ni ; i++){
+    for(unsigned int r=0 ; r < n ;  r++){
+
+        memcpy( (void*)(dbytes + i*n*size + r*size ),(void*)(sbytes + size*i), size ) ; 
+
+    }
+    }   
+    return dst ; 
+}
 
 
 template <typename T>

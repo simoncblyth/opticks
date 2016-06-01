@@ -21,6 +21,8 @@ class NPYBase {
    public:
        // shape related
        std::vector<int>& getShapeVector();
+       bool hasShape(unsigned int ni, unsigned int nj=0, unsigned int nk=0, unsigned int nl=0);
+       bool hasItemShape(unsigned int nj, unsigned int nk=0, unsigned int nl=0);
        std::string  getItemShape(unsigned int ifr=1);
        std::string  getDigestString();
        static std::string  getDigestString(void* bytes, unsigned int nbytes);
@@ -153,6 +155,7 @@ inline std::vector<int>& NPYBase::getShapeVector()
 {
     return m_shape ; 
 }
+
 
 
 
