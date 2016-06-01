@@ -39,7 +39,6 @@ endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 
 add_library( ${name}  SHARED
-    NumpyEvt.cpp
     NPYBase.cpp
     NPY.cpp
     ViewNPY.cpp
@@ -105,7 +104,6 @@ ucharfour.h
 charfour.h
 GLMPrint.hpp
 GLMFormat.hpp
-NumpyEvt.hpp
 NPYBase.hpp
 NPY.hpp
 ViewNPY.hpp

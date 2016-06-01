@@ -5,11 +5,11 @@
 #include "Opticks.hh"
 #include "CPropLib.hh"
 
-// opticks-
+// optickscore-
 #include "OpticksPhoton.h"
+#include "OpticksEvent.hh"
 
 // npy-
-#include "NumpyEvt.hpp"
 #include "NLog.hpp"
 
 // g4-

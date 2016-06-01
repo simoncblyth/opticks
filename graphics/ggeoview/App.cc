@@ -9,9 +9,10 @@
 #include "GUI.hh"
 #endif
 
-// opticks-
+// optickscore-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
+#include "OpticksEvent.hh"
 #include "OpticksPhoton.h"
 #include "OpticksResource.hh"
 #include "Bookmarks.hh"
@@ -44,7 +45,6 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "NumpyEvt.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "Lookup.hpp"
@@ -214,7 +214,7 @@ void App::configure(int argc, char** argv)
     {
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         // TODO: organize wrt event loading, currently loading happens latter and trumps this evt ?
-        m_evt = m_opticks->makeEvt() ; 
+        m_evt = m_opticks->makeEvent() ; 
         m_evt->setFlat(true);
     } 
 
@@ -222,7 +222,7 @@ void App::configure(int argc, char** argv)
     if(!hasOpt("nonet"))
     {
         m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
-        m_delegate->setNumpyEvt(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
+        m_delegate->setEvent(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
 
         try { 
             m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
@@ -298,7 +298,7 @@ void App::prepareViz()
               << " position " << gformat(position)
               ;
 
-    m_scene->setNumpyEvt(m_evt);
+    m_scene->setEvent(m_evt);
     if(m_opticks->isJuno())
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
@@ -550,7 +550,7 @@ void App::registerGeometry()
 
     if(m_evt)
     {
-       // TODO: migrate npy-/NumpyEvt to opop-/OpEvent so this can happen at more specific level 
+       // TODO: profit from migrated OpticksEvent 
         LOG(info) << "App::registerGeometry " << m_opticks->description() ;
         m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
     }

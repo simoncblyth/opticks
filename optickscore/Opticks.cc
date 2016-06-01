@@ -8,7 +8,6 @@
 #include "Map.hpp"
 #include "stringutil.hpp"
 #include "Parameters.hpp"
-#include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
@@ -373,13 +372,9 @@ std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
     return m_resource->getPreferenceDir(type, udet, subtype);
 }
 
-OpticksEvent* Opticks::makeEvent()
-{
-    NumpyEvt* evt = makeEvt();
-    return new OpticksEvent(evt);
-}
 
-NumpyEvt* Opticks::makeEvt()
+
+OpticksEvent* Opticks::makeEvent()
 {
     unsigned int code = getSourceCode();
     std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
@@ -388,7 +383,7 @@ NumpyEvt* Opticks::makeEvt()
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
-   LOG(info) << "Opticks::makeEvt"
+   LOG(info) << "Opticks::makeEvent"
               << " code " << code
               << " typ " << typ
               << " tag " << tag
@@ -397,7 +392,7 @@ NumpyEvt* Opticks::makeEvt()
               ;
 
 
-    NumpyEvt* evt = new NumpyEvt(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+    OpticksEvent* evt = new OpticksEvent(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
     assert(strcmp(evt->getUDet(), getUDet()) == 0);
 
     configureDomains();

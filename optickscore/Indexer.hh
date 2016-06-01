@@ -25,7 +25,7 @@ class Indexer {
        void splitSequence();
        void save();
    private:
-       NPY<T>*    m_seq ;
+       NPY<T>*       m_seq ;
    private:
        NPY<T>*    m_his ;
        NPY<T>*    m_mat ;

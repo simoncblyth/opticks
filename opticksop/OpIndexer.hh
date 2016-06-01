@@ -52,7 +52,7 @@ class OPropagator ;
 
 class TBuf ; 
 
-class NumpyEvt ; 
+class OpticksEvent ; 
 struct CBufSlice ; 
 struct CBufSpec ; 
 template <typename T> class NPY ;
@@ -90,7 +90,7 @@ class OpIndexer {
    public:
       OpIndexer(OContext* ocontext);
       void setVerbose(bool verbose=true);
-      void setEvt(NumpyEvt* evt);
+      void setEvent(OpticksEvent* evt);
       void setNumPhotons(unsigned int num_photons);
       void setSeq(OBuf* seq);
       void setPho(OBuf* pho);
@@ -144,12 +144,10 @@ class OpIndexer {
       OPropagator*             m_propagator ; 
       OBuf*                    m_seq ; 
       OBuf*                    m_pho ; 
-      NumpyEvt*                m_evt ;
+      OpticksEvent*            m_evt ;
       bool                     m_verbose ; 
    private:
       // transients updated by updateEvt at indexSequence
-      // NPY<unsigned char>*      m_phosel ;
-      // NPY<unsigned char>*      m_recsel ;
       unsigned int             m_maxrec ; 
       unsigned int             m_num_photons ; 
 
@@ -163,8 +161,6 @@ inline OpIndexer::OpIndexer(OContext* ocontext)
      m_pho(NULL),
      m_evt(NULL),
      m_verbose(false),
-    // m_phosel(NULL),
-    // m_recsel(NULL),
      m_maxrec(0),
      m_num_photons(0)
 {
@@ -190,7 +186,7 @@ inline void OpIndexer::setPropagator(OPropagator* propagator)
 {
     m_propagator = propagator ; 
 }
-inline void OpIndexer::setEvt(NumpyEvt* evt)
+inline void OpIndexer::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }

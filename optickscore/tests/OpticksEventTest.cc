@@ -1,4 +1,6 @@
-#include "NumpyEvt.hpp"
+#include "OpticksEvent.hh"
+
+// npy-
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "RecordsNPY.hpp"
@@ -10,7 +12,7 @@
 
 void test_genstep_derivative()
 {
-    NumpyEvt evt("cerenkov", "1", "dayabay", "") ;
+    OpticksEvent evt("cerenkov", "1", "dayabay", "") ;
 
     NPY<float>* trk = evt.loadGenstepDerivativeFromFile("track");
     assert(trk);
@@ -31,7 +33,7 @@ void test_genstep_derivative()
 
 void test_genstep()
 {   
-    NumpyEvt evt("cerenkov", "1", "dayabay", "") ;
+    OpticksEvent evt("cerenkov", "1", "dayabay", "") ;
 
     evt.setGenstepData(evt.loadGenstepFromFile());
 
@@ -46,7 +48,7 @@ void test_load()
     const char* det = "dayabay" ; 
     const char* cat = "PmtInBox" ; 
  
-    NumpyEvt* m_evt = new NumpyEvt(typ, tag, det, cat) ;
+    OpticksEvent* m_evt = new OpticksEvent(typ, tag, det, cat) ;
     m_evt->loadBuffers();
 
     bool m_flat = m_evt->isFlat() ;
@@ -88,7 +90,7 @@ void test_load()
 
 int main(int argc, char** argv)
 {
-    NLog nl("NumpyEvtTest.log","info");
+    NLog nl("OpticksEventTest.log","info");
     nl.configure(argc, argv, "/tmp"); 
 
     test_genstep_derivative();

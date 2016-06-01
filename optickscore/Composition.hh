@@ -11,7 +11,6 @@ class Cfg ;
 template<typename T> class NPY ; 
 class MultiViewNPY ; 
 class NState ; 
-class NumpyEvt ; 
 #include "NConfigurable.hpp"
 
 // opticks-
@@ -23,6 +22,8 @@ class Trackball ;
 class Clipper ; 
 class Animator ; 
 class Bookmarks ; 
+class OpticksEvent ; 
+
 #include "View.hh"
 
 
@@ -192,8 +193,8 @@ class Composition : public NConfigurable {
       void setPick(std::string pick);
       glm::ivec4& getPick();
   public:
-      void setEvt(NumpyEvt* evt);
-      NumpyEvt* getEvt();
+      void setEvt(OpticksEvent* evt);
+      OpticksEvent* getEvt();
   public:
       void addConfig(Cfg* cfg);
   public:
@@ -377,7 +378,7 @@ class Composition : public NConfigurable {
 
   private:
       // visitors
-      NumpyEvt*     m_evt ; 
+      OpticksEvent*  m_evt ; 
 
   private:
       // updated by *update* based on inputs and residents
@@ -522,11 +523,11 @@ inline void Composition::setBookmarks(Bookmarks* bookmarks)
 
 
 
-inline NumpyEvt* Composition::getEvt()
+inline OpticksEvent* Composition::getEvt()
 {
     return m_evt ; 
 }
-inline void Composition::setEvt(NumpyEvt* evt)
+inline void Composition::setEvt(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }

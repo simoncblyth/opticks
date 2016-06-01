@@ -1,6 +1,6 @@
 // op --tevtload
 
-#include "NumpyEvt.hpp"
+#include "OpticksEvent.hh"
 #include "Indexer.hh"
 #include "NLog.hpp"
 
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     const char* det = "dayabay" ; 
     const char* cat = "PmtInBox" ; 
  
-    NumpyEvt* evt = NumpyEvt::load(typ, tag, det, cat) ;
+    OpticksEvent* evt = OpticksEvent::load(typ, tag, det, cat) ;
     assert(evt);   
 
     LOG(info) << evt->getShapeString() ; 

@@ -2,6 +2,7 @@
 
 // opticks-
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 
 // optixrap-
 #include "OContext.hh"
@@ -18,7 +19,6 @@
 #include "GLMPrint.hpp"
 #include "timeutil.hpp"
 #include "NPY.hpp"
-#include "NumpyEvt.hpp"
 #include "NLog.hpp"
 
 
@@ -121,7 +121,7 @@ void OPropagator::initEvent()
     initEvent(m_evt);
 }
 
-void OPropagator::initEvent(NumpyEvt* evt)  
+void OPropagator::initEvent(OpticksEvent* evt)  
 {
     // when isInterop() == true 
     // the OptiX buffers for the evt data are actually references 

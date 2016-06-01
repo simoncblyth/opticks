@@ -6,17 +6,20 @@
 class G4Step ; 
 class G4StepPoint ; 
 
+
+// optickscore-
+class OpticksEvent ; 
+
 // cg4-
 class CStep ;
 
 // npy-
-class NumpyEvt ; 
 template <typename T> class NPY ;
 
 
 class CStepRec {
    public:
-       CStepRec(NumpyEvt* evt);
+       CStepRec(OpticksEvent* evt);
    private:
        void init();    
    public:
@@ -26,7 +29,7 @@ class CStepRec {
    private:
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
-       NumpyEvt*                   m_evt ; 
+       OpticksEvent*                   m_evt ; 
        NPY<float>*                 m_nopstep ; 
        std::vector<const CStep*>   m_steps ; 
        unsigned int                m_store_count ; 
@@ -34,7 +37,7 @@ class CStepRec {
 };
 
 
-inline CStepRec::CStepRec( NumpyEvt* evt )
+inline CStepRec::CStepRec( OpticksEvent* evt )
    :
    m_evt(evt),
    m_nopstep(NULL),

@@ -1,11 +1,9 @@
-#include "CRecorder.hh"
-#include "Format.hh"
-
+// optickscore-
 #include "Opticks.hh"
 #include "OpticksFlags.h"
+#include "OpticksEvent.hh"
 
-#include "OpStatus.hh"
-
+// g4-
 #include "G4Track.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
@@ -13,18 +11,22 @@
 #include "G4ThreeVector.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
-
-
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-#include "NumpyEvt.hpp"
+// npy-
 #include "NPY.hpp"
 #include "NLog.hpp"
 
 // cfg4-
+// TODO: standardize name of OpStatus
+#include "OpStatus.hh"
 #include "CRecorder.h"
 #include "CPropLib.hh"
+#include "CRecorder.hh"
+#include "Format.hh"
+
+
 
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
 #define iround(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
@@ -61,7 +63,8 @@ void CRecorder::init()
     m_dynamic = m_record_max == 0 ; 
     if(m_dynamic)
     {
-        // shapes must match NumpyEvt::createHostBuffers
+        // shapes must match OpticksEvent::createHostBuffers
+        // TODO: avoid this duplicity 
 
         m_dynamic_records = NPY<short>::make(1, m_steps_per_photon, 2, 4) ;
         m_dynamic_records->zero();

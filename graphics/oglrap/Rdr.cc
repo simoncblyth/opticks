@@ -1,27 +1,26 @@
 #include <GL/glew.h>
 
 #include <iomanip>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
+// oglrap-
 #include "Device.hh"
 #include "Rdr.hh"
 #include "Prog.hh"
+
+// optickscore-
 #include "Composition.hh"
+#include "OpticksEvent.hh"
 
 // npy-
 #include "NPY.hpp"
-#include "NumpyEvt.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "stringutil.hpp"
 #include "GLMPrint.hpp"
-
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "NLog.hpp"
 
 
 const char* Rdr::PRINT = "print" ; 
@@ -485,7 +484,7 @@ void Rdr::dump_uniforms()
 
 
 
-void Rdr::download( NumpyEvt* evt )
+void Rdr::download( OpticksEvent* evt )
 {
     NPY<float>* ox = evt->getPhotonData();
     if(ox)

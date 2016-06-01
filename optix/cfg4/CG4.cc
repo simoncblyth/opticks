@@ -46,7 +46,6 @@
 
 // npy-
 #include "Timer.hpp"
-#include "NumpyEvt.hpp"
 #include "TorchStepNPY.hpp"
 #include "NGunConfig.hpp"
 #include "GLMFormat.hpp"
@@ -108,8 +107,7 @@ void CG4::configure(int argc, char** argv)
 void CG4::initEvent()
 {
     // TODO: move evt setup outside CG4
-    m_event = m_opticks->makeEvent();  
-    m_evt = m_event->getEvt();  
+    m_evt = m_opticks->makeEvent();  
 
 
     NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
@@ -211,7 +209,7 @@ void CG4::postpropagate()
     if(!finmac.empty()) execute(finmac.c_str());
 
 
-    m_event->indexPhotonsCPU();
+    m_evt->indexPhotonsCPU();
 }
 
 
@@ -365,7 +363,6 @@ void CG4::setupCompressionDomains()
               << " center_extent " << gformat(ce) 
               ;    
 
-    // TODO: move to m_event should mop up this kinda thing 
 
     m_opticks->setSpaceDomain(ce);
 

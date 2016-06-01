@@ -1,9 +1,11 @@
 #include "OpZeroer.hh"
 
+// optickscore-
+#include "OpticksEvent.hh"
+
 // npy-
 #include "Timer.hpp"
 #include "NLog.hpp"
-#include "NumpyEvt.hpp"
 #include "NPY.hpp"
 
 // cudawrap-

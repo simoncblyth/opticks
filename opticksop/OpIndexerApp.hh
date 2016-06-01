@@ -1,14 +1,16 @@
 #pragma once
 #include <cstddef>
 
+// optickscore-
 class Opticks ; 
+class OpticksEvent ; 
 template <typename T> class OpticksCfg ;
 
-class NLog ; 
-class NumpyEvt ; 
-
+// opticksop-
 class OpIndexer ; 
 
+// npy-
+class NLog ; 
 
 class OpIndexerApp {
    public:
@@ -22,7 +24,7 @@ class OpIndexerApp {
       NLog*                 m_log ; 
       Opticks*              m_opticks ;   
       OpticksCfg<Opticks>*  m_cfg ;
-      NumpyEvt*             m_evt ; // TODO: migrated to Opticks and rename: OpticksEvt 
+      OpticksEvent*         m_evt ;
       OpIndexer*            m_indexer ; 
 
 };

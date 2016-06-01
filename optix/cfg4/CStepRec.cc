@@ -1,5 +1,7 @@
+// optickscore-
+#include "OpticksEvent.hh"
+
 // npy-
-#include "NumpyEvt.hpp"
 #include "NPY.hpp"
 #include "NLog.hpp"
 #include "uif.h"

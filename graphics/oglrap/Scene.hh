@@ -10,7 +10,7 @@
 #include <glm/glm.hpp>
 
 
-class NumpyEvt ; 
+class OpticksEvent ; 
 class MultiViewNPY ;
 
 // ggeo-
@@ -133,7 +133,7 @@ class Scene : public NConfigurable {
    public:
         void configureI(const char* name, std::vector<int> values);
         void setComposition(Composition* composition);
-        void setNumpyEvt(NumpyEvt* evt);
+        void setEvent(OpticksEvent* evt);
         void setPhotons(Photons* photons);
    public:
         void setGeometry(GGeo* gg);
@@ -187,7 +187,7 @@ class Scene : public NConfigurable {
         Rdr*          getRecordRenderer(RecordStyle_t style);
         //GMergedMesh*  getGeometry();
         Composition*  getComposition();
-        NumpyEvt*     getNumpyEvt();
+        OpticksEvent* getEvt();
         Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
         const char*   getRecordTag();
@@ -217,7 +217,7 @@ class Scene : public NConfigurable {
         Rdr*         m_altrecord_renderer ; 
         Rdr*         m_devrecord_renderer ; 
    private:
-        NumpyEvt*    m_evt ;
+        OpticksEvent*    m_evt ;
         Photons*     m_photons ; 
         GGeo*        m_ggeo ;
         GMergedMesh* m_mesh0 ; 
@@ -410,7 +410,7 @@ inline Composition* Scene::getComposition()
     return m_composition ; 
 }
 
-inline NumpyEvt* Scene::getNumpyEvt()
+inline OpticksEvent* Scene::getEvt()
 {
     return m_evt ; 
 }
@@ -422,14 +422,7 @@ inline Photons* Scene::getPhotons()
 
 
 
-
-//inline GMergedMesh* Scene::getGeometry()
-//{
-//    return m_geometry ; 
-//}
-
-
-inline void Scene::setNumpyEvt(NumpyEvt* evt)
+inline void Scene::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }

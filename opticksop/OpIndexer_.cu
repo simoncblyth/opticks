@@ -2,9 +2,11 @@
 
 #include <cassert>
 
+// optickscore-
+#include "OpticksEvent.hh"  
+
 // npy-
 #include "Timer.hpp"  
-#include "NumpyEvt.hpp"  
 #include "NPY.hpp"  
 
 // cudawrap-

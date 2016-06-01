@@ -25,7 +25,7 @@
 
 #include <cstddef>
 
-class NumpyEvt ; 
+class OpticksEvent ; 
 class OPropagator ; 
 class OContext ; 
 
@@ -36,7 +36,7 @@ class OpSeeder {
    public:
       OpSeeder(OContext* ocontext);
    public:
-      void setEvt(NumpyEvt* evt);
+      void setEvent(OpticksEvent* evt);
       void setPropagator(OPropagator* propagator);
    public:
       void seedPhotonsFromGensteps();
@@ -48,7 +48,7 @@ class OpSeeder {
       void init();
    private:
       OContext*                m_ocontext ;
-      NumpyEvt*                m_evt ;
+      OpticksEvent*                m_evt ;
       OPropagator*             m_propagator ;
 };
 
@@ -65,7 +65,7 @@ inline void OpSeeder::init()
 {
 }
 
-inline void OpSeeder::setEvt(NumpyEvt* evt)
+inline void OpSeeder::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }  

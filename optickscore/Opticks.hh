@@ -8,7 +8,6 @@
 template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
-class NumpyEvt ;
 class OpticksEvent ;
 class NLog ;
 class NState ;
@@ -149,7 +148,6 @@ class Opticks {
        TorchStepNPY*        makeSimpleTorchStep();
    public:
        OpticksEvent*        makeEvent(); 
-       NumpyEvt*            makeEvt();  // TODO: eliminate this one
    public:
        const glm::vec4&  getTimeDomain();
        const glm::vec4&  getSpaceDomain();

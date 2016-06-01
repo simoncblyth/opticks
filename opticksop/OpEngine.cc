@@ -3,11 +3,11 @@
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 #include "Composition.hh"
+#include "OpticksEvent.hh"
 
 // npy-
 #include "NLog.hpp"
 #include "Timer.hpp"
-#include "NumpyEvt.hpp"
 
 // ggeo-
 #include "GGeo.hh"
@@ -118,7 +118,7 @@ void OpEngine::preparePropagator()
 
     m_opropagator = new OPropagator(m_ocontext, m_opticks);
 
-    m_opropagator->setNumpyEvt(m_evt);
+    m_opropagator->setEvent(m_evt);
 
     m_opropagator->setTrivial(trivial);
     m_opropagator->setOverride(override);
@@ -137,7 +137,7 @@ void OpEngine::seedPhotonsFromGensteps()
 
     OpSeeder* seeder = new OpSeeder(m_ocontext) ; 
 
-    seeder->setEvt(m_evt);
+    seeder->setEvent(m_evt);
     seeder->setPropagator(m_opropagator);  // only used in compute mode
 
     seeder->seedPhotonsFromGensteps();
@@ -156,7 +156,7 @@ void OpEngine::initRecords()
 
     OpZeroer* zeroer = new OpZeroer(m_ocontext) ; 
 
-    zeroer->setEvt(m_evt);
+    zeroer->setEvent(m_evt);
     zeroer->setPropagator(m_opropagator);  // only used in compute mode
 
     zeroer->zeroRecords();   
@@ -219,7 +219,7 @@ void OpEngine::indexSequence()
 
     OpIndexer* indexer = new OpIndexer(m_ocontext);
     //indexer->setVerbose(hasOpt("indexdbg"));
-    indexer->setEvt(m_evt);
+    indexer->setEvent(m_evt);
     indexer->setPropagator(m_opropagator);
 
     indexer->indexSequence();

@@ -4,7 +4,7 @@
 template <typename T> class NPY ;
 
 class cuRANDWrapper ; 
-class NumpyEvt ; 
+class OpticksEvent ; 
 class Opticks ; 
 
 class OContext ; 
@@ -32,8 +32,8 @@ class OPropagator {
         void launch();
         void downloadEvent();
     public:
-        void setNumpyEvt(NumpyEvt* evt);
-        NumpyEvt*    getNumpyEvt();
+        void setEvent(OpticksEvent* evt);
+        OpticksEvent*    getEvent();
 
     public:
         void setTrivial(bool trivial=true);
@@ -50,7 +50,7 @@ class OPropagator {
 
     private:
         void init();
-        void initEvent(NumpyEvt* evt);
+        void initEvent(OpticksEvent* evt);
         void makeDomains();
         void recordDomains();
 
@@ -58,7 +58,7 @@ class OPropagator {
         OContext*        m_ocontext ; 
         Opticks*         m_opticks ; 
         optix::Context   m_context ;
-        NumpyEvt*        m_evt ; 
+        OpticksEvent*        m_evt ; 
         OTimes*          m_prelaunch_times ; 
         OTimes*          m_launch_times ; 
         bool             m_prelaunch ;
@@ -132,11 +132,11 @@ inline void OPropagator::setOverride(unsigned int override)
 
 
 
-inline void OPropagator::setNumpyEvt(NumpyEvt* evt)
+inline void OPropagator::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ;
 }
-inline NumpyEvt* OPropagator::getNumpyEvt()
+inline OpticksEvent* OPropagator::getEvent()
 {
     return m_evt ;
 }

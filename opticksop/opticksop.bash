@@ -27,7 +27,7 @@ OpEngine
     Very high level control:: 
 
        void prepareOptiX();
-       void setEvent(NumpyEvt* evt);
+       void setEvent(OpticksEvent* evt);
        void preparePropagator();
        void seedPhotonsFromGensteps();
        void initRecords();
@@ -120,12 +120,15 @@ opticksop-install(){
    opticksop-make install
 }
 
+opticksop-full()
+{
+   opticksop-make clean
+   opticksop-make
+   opticksop-install
+}
 
 opticksop--()
 {
-    #opticksop-make clean
-    #opticksop-make
-    #opticksop-install
    ( opticksop-bcd ; make ${1:-install} ; )
 }
 

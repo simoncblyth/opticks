@@ -5,9 +5,9 @@
 // opticks-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
+#include "OpticksEvent.hh"
 
 // npy-
-#include "NumpyEvt.hpp"
 #include "NLog.hpp"
 
 
@@ -30,10 +30,10 @@ void OpIndexerApp::configure(int argc, char** argv)
 
     LOG(debug) << "OpIndexerApp::configure" ; 
 
-    m_evt = m_opticks->makeEvt();
+    m_evt = m_opticks->makeEvent();
     m_evt->Summary("OpIndexerApp::configure");
 
-    m_indexer->setEvt(m_evt);
+    m_indexer->setEvent(m_evt);
 }
 
 

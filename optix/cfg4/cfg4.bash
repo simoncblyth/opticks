@@ -93,7 +93,7 @@ OpStatus
 Recorder
      Collects G4Step/G4StepPoint optical photon data  
      into NPY arrays in Opticks array format
-     which are persisted to .npy  within a NumpyEvt
+     which are persisted to .npy  within a OpticksEvent
 
      *RecordStep* is called for all G4Step
      each of which is comprised of *pre* and *post* G4StepPoint, 

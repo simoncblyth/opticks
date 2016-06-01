@@ -1060,12 +1060,18 @@ ggeo-run(){
     $DEBUG $(ggeo-bin) $*  
 }
 
-ggeo--(){
-   # ggeo-cmake
-   # ggeo-make
-   # [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-   # ggeo-install $*
 
+ggeo-full(){
+   ggeo-wipe
+   ggeo-cmake
+   ggeo-make
+   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
+   ggeo-install $*
+}
+
+
+
+ggeo--(){
    ( ggeo-bcd ; make ${1:-install} ) 
 }
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 class CPropLib ; 
-class NumpyEvt ; 
+class OpticksEvent ; 
 class State ; 
 
 
@@ -125,7 +125,7 @@ class Rec {
        typedef enum { OK, SKIP_STS } Rec_t ; 
        typedef enum { PRE, POST } Flag_t ; 
    public:
-       Rec(CPropLib* clib, NumpyEvt* evt);
+       Rec(CPropLib* clib, OpticksEvent* evt);
    private:
        void init();
    public:
@@ -148,7 +148,7 @@ class Rec {
        void setDebug(bool debug=true);
    private:
        CPropLib*                   m_clib ; 
-       NumpyEvt*                   m_evt ;  
+       OpticksEvent*                   m_evt ;  
        unsigned int                m_genflag ;
        std::vector<const State*>   m_states ; 
 
@@ -169,7 +169,7 @@ class Rec {
 
 };
 
-inline Rec::Rec(CPropLib* clib, NumpyEvt* evt)  
+inline Rec::Rec(CPropLib* clib, OpticksEvent* evt)  
    :
     m_clib(clib),
     m_evt(evt), 

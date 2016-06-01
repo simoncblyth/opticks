@@ -5,6 +5,7 @@
 
 // opticks-
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 
 // ggeo-
 #include "GMergedMesh.hh"
@@ -24,7 +25,6 @@
 #include "Interactor.hh"
 
 // npy-
-#include "NumpyEvt.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 
@@ -607,7 +607,7 @@ void Scene::upload()
 
     LOG(debug) << "Scene::upload uploadAxis  DONE " ;
 
-    uploadEvt();  // Scene, Rdr uploads orchestrated by NumpyEvt/MultiViewNPY
+    uploadEvt();  // Scene, Rdr uploads orchestrated by OpticksEvent/MultiViewNPY
 
     LOG(debug) << "Scene::upload uploadEvt  DONE " ;
 

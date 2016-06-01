@@ -4,8 +4,9 @@
 #include "Sparse.hh"
 
 // npy-
-#include "NumpyEvt.hpp"
+#include "NPY.hpp"
 #include "NLog.hpp"
+
 
 #include <numeric>
 
@@ -20,7 +21,7 @@ void Indexer<T>::indexSequence()
     m_seqhis->make_lookup();
     m_seqhis->dump("indexSequence seqhis");
 
-    m_seqmat = new Sparse<T>("seqmar", m_mat);
+    m_seqmat = new Sparse<T>("seqmat", m_mat);
     m_seqmat->make_lookup();
     m_seqmat->dump("indexSequence seqmat");
 }

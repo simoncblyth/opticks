@@ -9,7 +9,8 @@
 // npy-
 #include "Types.hpp"
 #include "Index.hpp"
-#include "NumpyEvt.hpp"
+#include "NPYBase.hpp"
+
 
 void dump(GItemIndex* idx, const char* msg)
 {
@@ -30,7 +31,8 @@ int main(int argc, char** argv)
     //const char* m_tag = "-1" ;
     //const char* m_udet = "G4Gun" ; 
 
-    std::string ixdir = NumpyEvt::speciesDir( "ix", m_udet, m_typ );  
+    std::string ixdir = NPYBase::directory( "ix", m_typ, m_udet );  
+
     std::cout << argv[0] << " ixdir " << ixdir << std::endl ;  
 
     if(1)

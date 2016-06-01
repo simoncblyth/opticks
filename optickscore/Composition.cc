@@ -15,10 +15,10 @@
 #include "Animator.hh"
 #include "Light.hh"
 #include "Bookmarks.hh"
+#include "OpticksEvent.hh"
 
 // npy-
 #include "NPY.hpp"
-#include "NumpyEvt.hpp"
 #include "RecordsNPY.hpp"
 #include "PhotonsNPY.hpp"
 #include "ViewNPY.hpp"
@@ -29,8 +29,6 @@
 #include "GLMFormat.hpp"
 #include "NLog.hpp"
 
-// ggeo-
-//#include "GGeo.hh"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>

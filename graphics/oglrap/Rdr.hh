@@ -6,7 +6,7 @@
 
 class MultiViewNPY ;
 class ViewNPY ;
-class NumpyEvt ; 
+class OpticksEvent ; 
 
 class Composition ; 
 class Device ; 
@@ -43,7 +43,7 @@ class Rdr : public RendererBase  {
       template <typename T>
       static void download(NPY<T>* npy);  
 
-      static void download( NumpyEvt* evt );
+      static void download( OpticksEvent* evt );
 
       static void* mapbuffer( int buffer_id, GLenum target );
       static void unmapbuffer(GLenum target);

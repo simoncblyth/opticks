@@ -2,10 +2,10 @@
 
 // npy-
 class Timer ; 
-class NumpyEvt ; 
 
 // opticks-
 class Opticks ; 
+class OpticksEvent ; 
 template <typename> class OpticksCfg ;
 class Composition ; 
 
@@ -35,7 +35,7 @@ class OpEngine {
 
        void prepareOptiX();             // creates OptiX context and populates with geometry info
 
-       void setEvent(NumpyEvt* evt);
+       void setEvent(OpticksEvent* evt);
        void preparePropagator();        // OPropagator : initEvent creates GPU buffers: genstep, photon, record, sequence
        void seedPhotonsFromGensteps();  // OpSeeder : seeds GPU photon buffer with genstep indices
        void initRecords();              // OpZeroer : zeros GPU record buffer via OptiX or OpenGL
@@ -55,7 +55,7 @@ class OpEngine {
     private:
        Composition*         m_composition ; 
     private:
-       NumpyEvt*            m_evt ; 
+       OpticksEvent*        m_evt ; 
     private:
        OContext*        m_ocontext ; 
        OColors*         m_ocolors ; 
@@ -102,7 +102,7 @@ inline OContext* OpEngine::getOContext()
 
 
 
-inline void OpEngine::setEvent(NumpyEvt* evt)
+inline void OpEngine::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }

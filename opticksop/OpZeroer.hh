@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-class NumpyEvt ; 
+class OpticksEvent ; 
 class OPropagator ; 
 class OContext ; 
 
@@ -12,7 +12,7 @@ class OpZeroer {
    public:
       OpZeroer(OContext* ocontext);
    public:
-      void setEvt(NumpyEvt* evt);
+      void setEvent(OpticksEvent* evt);
       void setPropagator(OPropagator* propagator);
    public:
       void zeroRecords();
@@ -21,7 +21,7 @@ class OpZeroer {
       void zeroRecordsViaOptiX();
    private:
       OContext*                m_ocontext ;
-      NumpyEvt*                m_evt ;
+      OpticksEvent*                m_evt ;
       OPropagator*             m_propagator ;
 };
 
@@ -33,7 +33,7 @@ inline OpZeroer::OpZeroer(OContext* ocontext)
 {
 }
 
-inline void OpZeroer::setEvt(NumpyEvt* evt)
+inline void OpZeroer::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }  

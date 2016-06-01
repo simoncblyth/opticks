@@ -12,13 +12,17 @@ class G4Run ;
 class G4Step ; 
 class G4PrimaryVertex ; 
 
+// optickscore-
+//#include "OpticksEvent.hh"
+class OpticksEvent ;
+
+
 // cfg4-
 class CPropLib ; 
 
 #include "CRecorder.h"
 
 // npy-
-#include "NumpyEvt.hpp"
 template <typename T> class NPY ;
 
 
@@ -51,7 +55,7 @@ template <typename T> class NPY ;
 //  except for the last G4Step pair where both points are recorded
 //
 //  *photons_per_g4event* is used by defineRecordId so the different
-//  technical g4 events all get slotted into the same NumpyEvt record 
+//  technical g4 events all get slotted into the same OpticksEvent record 
 //  buffers
 //
 //
@@ -59,7 +63,7 @@ template <typename T> class NPY ;
 //  Traditional GPU Opticks simulation workflow:
 //
 //  * gensteps (Cerenkov/Scintillation) harvested from Geant4
-//    and persisted into NumpyEvt
+//    and persisted into OpticksEvent
 //
 //  * gensteps seeded onto GPU using Thrust, summation over photons 
 //    to generate per step provide photon and record buffer 
@@ -79,7 +83,7 @@ class CRecorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        CRecorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity);
+        CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity);
    public:
         void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
@@ -96,7 +100,7 @@ class CRecorder {
         void DumpSteps(const char* msg="CRecorder::DumpSteps");
         void DumpStep(const G4Step* step);
    public:
-        NumpyEvt* getEvt();
+        OpticksEvent* getEvent();
         unsigned int getVerbosity();
    public:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
@@ -137,7 +141,7 @@ class CRecorder {
         void init();
    private:
         CPropLib*    m_clib ; 
-        NumpyEvt*    m_evt ; 
+        OpticksEvent*    m_evt ; 
 
         unsigned int m_gen ; 
        
@@ -199,7 +203,7 @@ class CRecorder {
 
 };
 
-inline CRecorder::CRecorder(CPropLib* clib, NumpyEvt* evt, unsigned int verbosity) 
+inline CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity) 
    :
    m_clib(clib),
    m_evt(evt),
@@ -292,7 +296,7 @@ inline void CRecorder::setPropLib(CPropLib* clib)
 }
 
 
-inline NumpyEvt* CRecorder::getEvt()
+inline OpticksEvent* CRecorder::getEvent()
 {
     return m_evt ; 
 }

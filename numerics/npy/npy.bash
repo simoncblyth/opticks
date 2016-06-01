@@ -169,12 +169,16 @@ npy-install(){
    npy-make install
 }
 
+
+npy-full()
+{
+   npy-make clean
+   npy-make
+   npy-install
+}
+
 npy--()
 {
-   # npy-make clean
-   # npy-make
-   # npy-install
-
    ( npy-bcd ; make ${1:-install} ; )
 }
 

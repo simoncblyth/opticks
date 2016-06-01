@@ -17,7 +17,6 @@ class G4UserSteppingAction ;
 
 // npy--
 class TorchStepNPY ;
-class NumpyEvt ; 
 
 // cfg4-
 class CPropLib ; 
@@ -73,8 +72,7 @@ class CG4
         Opticks*              m_opticks ; 
         OpticksCfg<Opticks>*  m_cfg ;
         GCache*               m_cache ; 
-        OpticksEvent*         m_event ; 
-        NumpyEvt*             m_evt ; 
+        OpticksEvent*         m_evt ; 
         TorchStepNPY*         m_torch ; 
    private:
         CDetector*            m_detector ; 
@@ -104,7 +102,6 @@ inline CG4::CG4(Opticks* opticks)
      m_opticks(opticks),
      m_cfg(NULL),
      m_cache(NULL),
-     m_event(NULL),
      m_evt(NULL),
      m_torch(NULL),
      m_detector(NULL),

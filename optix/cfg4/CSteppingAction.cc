@@ -24,6 +24,7 @@
 
 // optickscore-
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 
 // npy-
 #include "NLog.hpp"
@@ -63,7 +64,7 @@ void CSteppingAction::init()
     m_verbosity = m_recorder->getVerbosity(); 
     m_dynamic = m_recorder->isDynamic(); 
 
-    NumpyEvt* evt = m_recorder->getEvt();
+    OpticksEvent* evt = m_recorder->getEvent();
     LOG(info) << "CSteppingAction::init " 
               << " evt " << evt->description() 
               << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )

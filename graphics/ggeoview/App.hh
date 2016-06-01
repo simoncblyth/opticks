@@ -6,7 +6,6 @@ class Cfg ;
  
 // npy-
 template <typename> class NPY ;
-class NumpyEvt ; 
 class G4StepNPY ; 
 class TorchStepNPY ; 
 class BoundariesNPY ; 
@@ -20,6 +19,7 @@ class NState ;
 
 //opticks-
 class Opticks ; 
+class OpticksEvent ; 
 template <typename> class OpticksCfg ;
 class Composition ; 
 class Bookmarks ; 
@@ -147,7 +147,7 @@ class App {
        numpydelegate* m_delegate ; 
        numpyserver<numpydelegate>* m_server ;
 #endif
-       NumpyEvt*        m_evt ;
+       OpticksEvent*    m_evt ;
        Cfg*             m_cfg ;
 
        OpticksCfg<Opticks>* m_fcfg ;   

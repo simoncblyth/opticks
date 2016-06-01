@@ -1,21 +1,23 @@
-#include "OpIndexer.hh"
-#include "Opticks.hh"
 
 #include <algorithm>
 #include <cassert>
 
+// opticksop-
+#include "OpIndexer.hh"
+
+// optickscore-
+#include "Opticks.hh"
+#include "OpticksEvent.hh"
+
 // npy-
 #include "NLog.hpp"
 #include "Timer.hpp"
-#include "NumpyEvt.hpp"  
 #include "NPY.hpp"  
-
 
 // thrustrap-
 #include "TBuf.hh"
 #include "TSparse.hh"
 #include "TUtil.hh"
-
 
 // optixrap-
 #include "OBuf.hh"
@@ -44,10 +46,6 @@
 void OpIndexer::update()
 {
     assert(m_evt) ;
-
-    // this pattern is problematic for pointers that become stale
-    //m_phosel = m_evt->getPhoselData(); 
-    //m_recsel = m_evt->getRecselData();
 
     m_maxrec = m_evt->getMaxRec(); 
 
