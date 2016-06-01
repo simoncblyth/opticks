@@ -4,7 +4,8 @@ log = logging.getLogger(__name__)
 import numpy as np
 from base import ini_
 
-DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2"  ## cf C++ NPYBase::
+DEFAULT_BASE = "$LOCAL_BASE/env/opticks"
+DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2"  ## cf C++ NPYBase::
 
 def path_(typ, tag, det="dayabay", name=None):
     tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ)) 
@@ -25,6 +26,9 @@ def tpaths_(typ, tag, det="dayabay", name=None):
     tdirs = sorted(tdirs, reverse=True)
     tnams = filter( os.path.exists, map(lambda tdir:os.path.join(tdir, name), tdirs))
     return tnams
+
+ 
+
 
 
 class A(np.ndarray):

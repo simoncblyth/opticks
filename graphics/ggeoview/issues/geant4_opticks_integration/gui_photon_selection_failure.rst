@@ -6,6 +6,11 @@ is working for some events, but not others
 Any selection other than "All" in both seqhis and seqmat makes 
 all photons disappear. 
 
+Progess
+---------
+
+* note rs(recsel) shape inconsistencies
+
 Background
 -----------
 
@@ -78,6 +83,50 @@ The persisted phosel and recsel are all zeroes::
             [[0, 0, 0, 0],
              [0, 0, 0, 0]],
 
+Also the shape looks funny::
+
+       ps :       (500000, 1, 4) : (photons) phosel sequence frequency index lookups (uniques 1) 
+       rs :   (250000, 10, 2, 4) : (records) recsel sequence frequency index lookups (uniques 1) 
+
+Actually this was due to python level reshaping, not a problem with the original, now fixed::
+
+    In [1]: run pmt_test_evt.py
+    WARNING:env.numerics.npy.evt:init_index finds too few (ps)phosel uniques : 1
+    WARNING:env.numerics.npy.evt:init_index finds too few (rs)recsel uniques : 1
+    WARNING:env.numerics.npy.evt:init_index finds too few (rsr)reshaped-recsel uniques : 1
+    Evt(-4,"torch","PmtInBox","PmtInBox/torch/-4 : ", seqs="[]")
+     fdom :            (3, 1, 4) : (metadata) 3*float4 domains of position, time, wavelength (used for compression) 
+     idom :            (1, 1, 4) : (metadata) int domain 
+       ox :       (500000, 4, 4) : (photons) final photon step 
+       wl :            (500000,) : (photons) wavelength 
+     post :          (500000, 4) : (photons) final photon step: position, time 
+     dirw :          (500000, 4) : (photons) final photon step: direction, weight  
+     polw :          (500000, 4) : (photons) final photon step: polarization, wavelength  
+    flags :            (500000,) : (photons) final photon step: flags  
+       c4 :            (500000,) : (photons) final photon step: dtype split uint8 view of ox flags 
+       rx :   (500000, 10, 2, 4) : (records) photon step records 
+       ph :       (500000, 1, 2) : (records) photon history flag/material sequence 
+       ps :       (500000, 1, 4) : (photons) phosel sequence frequency index lookups (uniques 1) 
+       rs :   (500000, 10, 1, 4) : (records) RAW recsel sequence frequency index lookups (uniques 1) 
+      rsr :   (500000, 10, 1, 4) : (records) RESHAPED recsel sequence frequency index lookups (uniques 1) 
+
+
+
+Did recent changes in NumpyEvt mess up the recsel shape? Perhaps are matching record shape ?::
+
+     301     NPY<unsigned char>* phosel = NPY<unsigned char>::make(num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
+     302     setPhoselData(phosel);
+     303 
+     304     NPY<unsigned char>* recsel = NULL ;
+     305     if(m_flat)
+     306         recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+     307     else
+     308         recsel = NPY<unsigned char>::make(num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
+     309 
+     310     setRecselData(recsel);
+     311 }
+
+
 
 Working
 ---------
@@ -108,6 +157,19 @@ Looking at a good index, see the phosel and recsel are not persisted::
        ph :       (226486, 1, 2) : (records) photon history flag/material sequence 
        ps :            (0, 1, 4) : (photons) phosel sequence frequency index lookups (uniques 0) 
        rs :        (0, 10, 2, 4) : (records) recsel sequence frequency index lookups (uniques 0) 
+
+    ### rs shape? should it not be  (0, 10, 1, 4) 
+
+Yep, twas incorrect python level reshaping::
+
+       rx :   (226486, 10, 2, 4) : (records) photon step records 
+       ph :       (226486, 1, 2) : (records) photon history flag/material sequence 
+       ps :            (0, 1, 4) : (photons) phosel sequence frequency index lookups (uniques 0) 
+       rs :        (0, 10, 1, 4) : (records) RAW recsel sequence frequency index lookups (uniques 0) 
+       rsr :       (0, 10, 1, 4) : (records) RESHAPED recsel sequence frequency index lookups (uniques 0) 
+
+
+::
 
     In [8]: map(hex_, np.unique(evt.seqmat))
     Out[8]: 

@@ -142,25 +142,31 @@ class Evt(object):
         self.desc['ph'] = "(records) photon history flag/material sequence"
 
 
-
     def init_index(self, tag, src, det, dbg):
         ps = A.load_("ps"+src,tag,det,dbg)
-        rs = A.load_("rs"+src,tag,det,dbg).reshape(-1, self.nrec, 2, 4)        
+        rs = A.load_("rs"+src,tag,det,dbg)
+        rsr = rs.reshape(-1, self.nrec, 1, 4)        
  
         ups = len(np.unique(ps))
         urs = len(np.unique(rs))
+        ursr = len(np.unique(rsr))
 
         if ups <= 1:
             log.warning("init_index finds too few (ps)phosel uniques : %s" % ups ) 
         if urs <= 1:
             log.warning("init_index finds too few (rs)recsel uniques : %s" % urs ) 
+        if ursr <= 1:
+            log.warning("init_index finds too few (rsr)reshaped-recsel uniques : %s" % ursr ) 
 
         ps.desc = "(photons) phosel sequence frequency index lookups (uniques %d)"  % ups
-        rs.desc = "(records) recsel sequence frequency index lookups (uniques %d)"  % urs 
+        rs.desc = "(records) RAW recsel sequence frequency index lookups (uniques %d)"  % urs 
+        rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
         self.ps = ps
         self.rs = rs 
+        self.rsr = rsr 
         self.desc['ps'] = ps.desc
         self.desc['rs'] = rs.desc
+        self.desc['rsr'] = rsr.desc
 
 
     def init_selection(self, seqs, not_):
