@@ -26,7 +26,6 @@ class OpticksEngine {
        OpticksEngine(Opticks* opticks);
        void setEvent(OpticksEvent* evt);
        void setCache(GCache* cache);
-       void configureEngine();
    public:
         Opticks*      getOpticks();
         OpticksEvent* getEvent();
@@ -47,6 +46,7 @@ inline OpticksEngine::OpticksEngine(Opticks* opticks)
       m_cache(NULL),
       m_evt(NULL)
 {
+     init();
 }
 
 inline void OpticksEngine::setEvent(OpticksEvent* evt)
@@ -57,7 +57,6 @@ inline void OpticksEngine::setCache(GCache* cache)
 {
     m_cache = cache ; 
 }
-
 
 inline Opticks* OpticksEngine::getOpticks()
 {

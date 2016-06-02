@@ -17,7 +17,7 @@ template <typename T>
 class Indexer {
    public:
        Indexer(NPY<T>* seq);
-       void indexSequence();
+       void indexSequence(const char* seqhis_label, const char* seqmat_label);
        template <typename S> void applyLookup(S* target);
        Index* getHistoryIndex();
        Index* getMaterialIndex();

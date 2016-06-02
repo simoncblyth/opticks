@@ -71,6 +71,7 @@ TODO
     high level OpticksEngine API 
 
     * common aspects are: event handling/saving 
+    * see :doc:`high_level_refactor`
  
 
 * bring over, cleanup, simplify G4DAEChroma gdc- (no need for ZMQ) 

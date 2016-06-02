@@ -197,7 +197,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
 		vertex->SetPrimary(particle);
 
-        m_recorder->RecordPrimaryVertex(vertex);
+        //m_recorder->RecordPrimaryVertex(vertex);
 
         evt->AddPrimaryVertex(vertex);
 	}

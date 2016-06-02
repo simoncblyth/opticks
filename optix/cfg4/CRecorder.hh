@@ -93,8 +93,8 @@ class CRecorder {
         void RecordPhoton(const G4Step* step);
         void startPhoton();
 
-        void setupPrimaryRecording();
-        void RecordPrimaryVertex(G4PrimaryVertex* vertex);
+        //void setupPrimaryRecording();
+        //void RecordPrimaryVertex(G4PrimaryVertex* vertex);
 
         void Summary(const char* msg);
         void DumpSteps(const char* msg="CRecorder::DumpSteps");

@@ -113,6 +113,7 @@ class Opticks {
        void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
+       bool hasOpt(const char* name);
    public:
        // from OpticksResource
        bool isJuno();

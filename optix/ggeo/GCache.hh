@@ -4,13 +4,20 @@
 #include <string>
 #include <cstring>
 
+// npy-
+class NLog ; 
+
+
+// optickscore-
 class Opticks ; 
 class OpticksResource ; 
 class OpticksQuery ; 
-class NLog ; 
+
+// ggeo-
 class GColors ; 
 class GFlags ; 
 class GGeo ; 
+
 class Types ; 
 class Typ ; 
 

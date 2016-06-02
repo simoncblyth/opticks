@@ -63,7 +63,7 @@ void CRecorder::init()
     m_dynamic = m_record_max == 0 ; 
     if(m_dynamic)
     {
-        // shapes must match OpticksEvent::createHostBuffers
+        // shapes must match OpticksEvent::createBuffers
         // TODO: avoid this duplicity 
 
         m_dynamic_records = NPY<short>::make(1, m_steps_per_photon, 2, 4) ;
@@ -80,7 +80,8 @@ void CRecorder::init()
 
     } 
 
-    m_step = m_evt->isStep();
+    //m_step = m_evt->isStep();
+    m_step = true ;
 
     LOG(info) << "CRecorder::init"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
@@ -92,7 +93,7 @@ void CRecorder::init()
               << " isStep " << m_step  
               ;
 
-    m_evt->zero();
+    //m_evt->zero();
 
     m_history = m_evt->getSequenceData();
     m_photons = m_evt->getPhotonData();
@@ -474,6 +475,7 @@ void CRecorder::Clear()
 }
 
 
+/*
 void CRecorder::setupPrimaryRecording()
 {
     m_evt->prepareForPrimaryRecording();
@@ -488,6 +490,7 @@ void CRecorder::setupPrimaryRecording()
               << " primary_max " << m_primary_max 
               ; 
 }
+
 
 void CRecorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
 {
@@ -516,6 +519,10 @@ void CRecorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
 
     m_primary_id += 1 ; 
 }
+
+*/
+
+
 
 void CRecorder::Summary(const char* msg)
 {

@@ -94,7 +94,7 @@ void CGunSource::GeneratePrimaryVertex(G4Event *evt)
               << " position.z " << position.z() 
               ; 
 
-    m_recorder->RecordPrimaryVertex(vertex);
+    //m_recorder->RecordPrimaryVertex(vertex);
 
 }
 

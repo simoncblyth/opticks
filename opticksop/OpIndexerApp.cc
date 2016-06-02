@@ -59,7 +59,7 @@ void OpIndexerApp::makeIndex()
 
     m_evt->Summary("OpIndexerApp::makeIndex");
 
-    m_evt->prepareForIndexing();
+    //m_evt->prepareForIndexing();
 
     m_indexer->indexSequence();
 

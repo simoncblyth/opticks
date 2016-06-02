@@ -482,44 +482,26 @@ how to do this within ggeo/OptiX
 Classes
 --------
 
-GGeo
-    top level control and holder of other instances:
-    GMesh GSolid GMaterial GSkinSurface GBorderSurface GBoundaryLib
-
-GMesh
-    holder of vertices, indices which fulfils GDrawable
-    The GBuffer are created when setters like setVertices etc.. 
-    are called 
-
-    NB a relatively small number ~250 of GMesh instances are referenced
-    from a much larger number ~12k of GNode arranged in the geometry tree 
-
-    MUST THINK OF GMESH AS ABSTRACT SHAPES **NOT PLACED INSTANCES OF GEOMETRY**
-    IT IS INCORRECT TO ASCRIBE SUBSTANCE OR NODE INDICES FOR EXAMPLE  
-    SUCH THINGS BELONG ON THE GNODE
 
 
-GMergedMesh
-    specialization of GMesh that combines a tree of GNode 
-    and referenced GNode shapes into a flattened single instance
-    with transforms applied
 
 
-GSolid
-    GNode specialized with associated GBoundary and selection bit constituents
+GArray
 
-GNode
-    identity index, GMesh and GMatrixF transform 
-    also constituent unsigned int* arrays of length matching the face count
-
-    m_substance_indices
-
-    m_node_indices
+GAry<T>
+    array of values with linear interpolation functionality
 
 
-GDrawable
-    abstract interface definition returning GBuffer for vertices, normals, colors, texcoordinates, ...
-    Only GMesh and GMergedMesh (by inheritance) fulfil the GDrawable interface
+
+GAttrSeq
+GBBoxMesh
+
+GBndLib
+    manager of boundary spec which comrise 4 integer indices pointing at 
+    inner/outer materials and surfaces
+
+GBorderSurface
+    PropertyMap specialization, specialization only used for creation
 
 GBuffer
     holds pointer to some bytes together with integers describing the bytes : 
@@ -533,38 +515,119 @@ GBuffer
            (eg item could be gfloat3 of itemsize 12, with nelem 3 
            corresponding to 3 floats) 
 
-GBoundary
-    holder of inner/outer material and inner/outer surface GPropertMaps
-
-GBoundaryLib
-    manager of substances, ensures duplicates are not created via digests
+    NB: PLAN TO EVENTUALLY REPLACE THIS WITH NPY BUFFERS
 
 
-GBorderSurface
-    PropertyMap specialization, specialization only used for creation
-GSkinSurface
-    PropertyMap specialization, specialization only used for creation
-GMaterial
-    PropertyMap specialization, specialization only used for creation
-GPropertyMap
-    ordered holder of GProperty<double> and GDomain<double>
-GProperty<T>
-    pair of GAry<T> for values and domain
-GAry<T>
-    array of values with linear interpolation functionality
+GCIE
+GCSG
+GCache
+GColorMap
+GColorizer
+GColors
+GConstant
+
 GDomain
     standard range for properties, eg wavelength range and step
 
+GDrawable
+    abstract interface definition returning GBuffer for vertices, normals, colors, texcoordinates, ...
+    Only GMesh and GMergedMesh (by inheritance) fulfil the GDrawable interface
 
-GVector
-    gfloat3 guint3 structs
-GMatrix
-    4x4 matrix
 GEnums
     material/surface property enums 
 
-md5digest
-    hashing
+GFlags
+    TODO: migrate to optickscore- NOT GEOMETRY RELATED
+
+GGeo
+    top level control and holder of other instances:
+    GMesh GSolid GMaterial GSkinSurface GBorderSurface GBoundaryLib
+
+GGeoCfg
+GGeoLib
+GGeoTest
+GGeoTestConfig
+GIds
+GItemIndex
+GItemList
+GMaker
+
+GMaterial
+    PropertyMap specialization, specialization only used for creation
+
+GMaterialLib
+    PropertyLib specialization
+
+GMatrix
+    4x4 matrix
+
+
+GMergedMesh
+    specialization of GMesh that combines a tree of GNode 
+    and referenced GNode shapes into a flattened single instance
+    with transforms applied
+
+GMesh
+    holder of vertices, indices which fulfils GDrawable
+    The GBuffer are created when setters like setVertices etc.. 
+    are called 
+
+    NB a relatively small number ~250 of GMesh instances are referenced
+    from a much larger number ~12k of GNode arranged in the geometry tree 
+
+    MUST THINK OF GMESH AS ABSTRACT SHAPES **NOT PLACED INSTANCES OF GEOMETRY**
+    IT IS INCORRECT TO ASCRIBE SUBSTANCE OR NODE INDICES FOR EXAMPLE  
+    SUCH THINGS BELONG ON THE GNODE
+
+GMeshFixer
+
+GNode
+    identity index, GMesh and GMatrixF transform 
+    also constituent unsigned int* arrays of length matching the face count
+
+GOpticalSurface
+GParts
+GPmt
+
+GProperty<T>
+    pair of GAry<T> for values and domain
+
+GPropertyLib
+    vector of GPropertyMap<float> corresponding via subclasses 
+    to libraries of materials, surfaces, scintillators, boundaries or sources
+
+GPropertyMap
+    ordered holder of GProperty<double> and GDomain<double>
+
+GScintillatorLib
+    GPropertyLib specialization with methods such as: constructInvertedReemissionCDF, constructReemissionCDF 
+
+GSkinSurface
+    PropertyMap specialization, specialization only used for creation
+
+GSolid
+    GNode specialized with associated GBoundary and selection bit constituents
+
+GSource
+
+GSourceLib
+    GPropertyLib specialization, methods include constructSourceCDF, constructInvertedSourceCDF, generateBlackBodySample
+
+GSurfaceIndex
+GSurfaceLib
+GTransforms
+GTraverse
+GTreeCheck
+GTreePresent
+
+GVector
+    gfloat3 guint3 structs
+
+
+
+
+
+
 
 
 Where are substance indices formed and associated to every triangle ?

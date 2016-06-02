@@ -388,7 +388,7 @@ void NPY<T>::save(const char* dir, const char* name)
 template <typename T>
 void NPY<T>::save(const char* path_)
 {
-    if(m_verbose) LOG(info) << "NPY::save np.load(\"" << path_ << "\") " ; 
+    if(m_verbose || GLOBAL_VERBOSE) LOG(info) << "NPY::save np.load(\"" << path_ << "\") " ; 
     fs::path path(path_);
     fs::path dir = path.parent_path();
 

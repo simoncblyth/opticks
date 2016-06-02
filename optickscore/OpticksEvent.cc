@@ -1,5 +1,6 @@
 
 // optickscore-
+#include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
 
@@ -40,8 +41,6 @@
 
 
 
-
-
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 const char* OpticksEvent::PARAMETERS_NAME = "parameters.json" ;
 
@@ -53,8 +52,6 @@ std::string OpticksEvent::timestamp()
     return timestamp ; 
 }
 
-const char* OpticksEvent::incoming = "incoming" ; 
-const char* OpticksEvent::primary = "primary" ; 
 const char* OpticksEvent::genstep = "genstep" ; 
 const char* OpticksEvent::nopstep = "nopstep" ; 
 const char* OpticksEvent::photon  = "photon" ; 
@@ -62,7 +59,6 @@ const char* OpticksEvent::record  = "record" ;
 const char* OpticksEvent::phosel = "phosel" ; 
 const char* OpticksEvent::recsel  = "recsel" ; 
 const char* OpticksEvent::sequence  = "sequence" ; 
-const char* OpticksEvent::aux = "aux" ; 
 
 void OpticksEvent::init()
 {
@@ -81,23 +77,17 @@ void OpticksEvent::init()
     m_parameters->add<std::string>("UDet", getUDet() );
 
     m_data_names.push_back(genstep);
-    m_data_names.push_back(incoming);
-    m_data_names.push_back(primary);
     m_data_names.push_back(nopstep);
     m_data_names.push_back(photon);
     m_data_names.push_back(record);
-    m_data_names.push_back(aux);
     m_data_names.push_back(phosel);
     m_data_names.push_back(recsel);
     m_data_names.push_back(sequence);
 
     m_abbrev[genstep] = "" ;      // no-prefix : cerenkov or scintillation
-    m_abbrev[incoming] = "in" ;   // not yet used
-    m_abbrev[primary] = "pr" ;    // not yet used
     m_abbrev[nopstep] = "no" ;    // non optical particle steps obtained from G4 eg with g4gun
     m_abbrev[photon] = "ox" ;     // photon final step uncompressed 
     m_abbrev[record] = "rx" ;     // photon step compressed record
-    m_abbrev[aux] = "au" ;        // formerly used for photon level debug 
     m_abbrev[phosel] = "ps" ;     // photon selection index
     m_abbrev[recsel] = "rs" ;     // record selection index
     m_abbrev[sequence] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
@@ -108,12 +98,9 @@ NPYBase* OpticksEvent::getData(const char* name)
 {
     NPYBase* data = NULL ; 
     if(     strcmp(name, genstep)==0) data = static_cast<NPYBase*>(m_genstep_data) ; 
-    else if(strcmp(name, incoming)==0) data = static_cast<NPYBase*>(m_incoming_data) ;
-    else if(strcmp(name, primary)==0) data = static_cast<NPYBase*>(m_primary_data) ;
     else if(strcmp(name, nopstep)==0) data = static_cast<NPYBase*>(m_nopstep_data) ;
     else if(strcmp(name, photon)==0)  data = static_cast<NPYBase*>(m_photon_data) ;
     else if(strcmp(name, record)==0)  data = static_cast<NPYBase*>(m_record_data) ;
-    else if(strcmp(name, aux)==0)  data = static_cast<NPYBase*>(m_aux_data) ;
     else if(strcmp(name, phosel)==0)  data = static_cast<NPYBase*>(m_phosel_data) ;
     else if(strcmp(name, recsel)==0)  data = static_cast<NPYBase*>(m_recsel_data) ;
     else if(strcmp(name, sequence)==0) data = static_cast<NPYBase*>(m_sequence_data) ;
@@ -161,216 +148,39 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     else if(elem[0] == phosel)   mvn = m_phosel_attr ;
     else if(elem[0] == recsel)   mvn = m_recsel_attr ;
     else if(elem[0] == sequence) mvn = m_sequence_attr ;
-    else if(elem[0] == aux)      mvn = m_aux_attr ;
 
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
 }
 
 
-void OpticksEvent::setGenstepData(NPY<float>* genstep)
-{
-    m_genstep_data = genstep  ;
-    m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
-
-    //                                                j k l sz   type        norm   iatt
-    ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false);    // (x0, t0)                     2nd GenStep quad 
-    ViewNPY* vdir = new ViewNPY("vdir",m_genstep_data,2,0,0,4,ViewNPY::FLOAT,false,false);    // (DeltaPosition, step_length) 3rd GenStep quad
-
-    m_genstep_attr = new MultiViewNPY("genstep_attr");
-    m_genstep_attr->add(vpos);
-    m_genstep_attr->add(vdir);
-
-    // attribute offset calulated by  npy->getByteIndex(0,j,k) 
-    // assuming the size of the attribute type matches that of the NPY<T>
-
-    {
-        m_num_gensteps = m_genstep_data->getShape(0) ;
-        unsigned int num_photons = m_genstep_data->getUSum(0,3);
-        setNumPhotons(num_photons);
-
-        createHostBuffers();
-        if(m_step)
-        {
-            createHostIndexBuffers();
-        }
-
-        m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
-        m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
-
-        if(m_step)
-        {
-            m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
-        }
-    }
-   
-}
-
-void OpticksEvent::resizeIndices()
-{
-    // needed for G4 loaded photon indexing 
-
-    unsigned int num_photons = getNumPhotons();
-    unsigned int num_records = getNumRecords();
-    unsigned int num_phosel = m_phosel_data->getShape(0);
-    unsigned int num_recsel = m_recsel_data->getShape(0);
-
-    LOG(info) << "OpticksEvent::resizeIndices"
-              << " num_photons " << num_photons  
-              << " num_records " << num_records
-              << " num_phosel " << num_phosel  
-              << " num_recsel " << num_recsel
-              ;
-
-    assert(num_photons > 0 );
-    assert(num_records > 0 );
-
-    if(num_phosel != num_photons)
-    {
-        m_phosel_data->setNumItems(num_photons);
-        LOG(warning) << "OpticksEvent::resizeIndices changed phosel items from " << num_phosel << " to " << num_photons ; 
-    }
-    if(num_recsel != num_records)
-    {
-        m_recsel_data->setNumItems(num_records);
-        LOG(warning) << "OpticksEvent::resizeIndices changed recsel items from " << num_recsel << " to " << num_records ; 
-    }
-}
-
-void OpticksEvent::prepareForIndexing()
-{
-    if(!m_step) return ; 
-    assert(m_num_photons > 0 );
-
-    createHostIndexBuffers();
-}
-
-void OpticksEvent::prepareForPrimaryRecording()
-{
-    LOG(info) << "OpticksEvent::prepareForPrimaryRecording"
-              << " m_num_photons " << m_num_photons  
-               ;
-
-   NPY<float>* primary = NPY<float>::make(m_num_photons, 4, 4) ;
-   setPrimaryData(primary);
-}
 
 void OpticksEvent::createBuffers()
 {
-    // CPU running does not have the CUDA thread
-    // not knowing the order problem, so it is possible
-    // to not know the allocation ahead of time
+    // invoked by Opticks::makeEvent 
 
-    createHostBuffers();
-    createHostIndexBuffers();
-}
-
-void OpticksEvent::createHostBuffers()
-{
-    // NB this does not allocate much memory, the NPY just hold
-    // the shapes. Allocations are triggered by zero-ing the buffers. 
-    //  
-    // CFG4 CPU Geant4 running creates:
-    //     photon, record, sequence buffers that can be just loaded 
-    //
-
-    (*m_timer)("_createHostBuffers");
-
-    unsigned int num_photons = getNumPhotons();
-    unsigned int num_records = getNumRecords();
-
-    LOG(info) << "OpticksEvent::createHostBuffers "
-              << " flat " << m_flat 
-              << " num_photons " << num_photons  
-              << " num_records " << num_records  
-              << " maxrec " << m_maxrec
-               ;
-
-    createPhotonBuffers(num_photons);
-
-    if(m_flat)
-        createFlatRecordBuffers(num_records);
-    else
-        createStructuredRecordBuffers(num_photons, m_maxrec);
-
-    createDomainBuffers();
-
-    LOG(info) << "OpticksEvent::createHostBuffers DONE " ;
-
-    (*m_timer)("createHostBuffers");
-}
+    // NB allocation is deferred until zeroing and they start at 0 items anyhow
+    // NB no gensteps yet, those come externally 
 
 
-void OpticksEvent::createHostIndexBuffers()
-{
-    assert( m_step );
+    NPY<float>* nop = NPY<float>::make(0, 4, 4); 
+    setNopstepData(nop);   
 
-    // this unceremoniously replaces/leaks prior buffers...
-
-    unsigned int num_photons = getNumPhotons();
-    unsigned int num_records = getNumRecords();
-
-    LOG(info) << "OpticksEvent::createHostIndexBuffers "
-              << " flat " << m_flat 
-              << " num_photons " << num_photons  
-              << " num_records " << num_records 
-              << " m_maxrec " << m_maxrec
-               ;
-
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make(num_photons,1,4); // shape (np,1,4) (formerly initialized to 0)
-    setPhoselData(phosel);   
-
-    NPY<unsigned char>* recsel = NULL ; 
-    if(m_flat)
-        recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-    else
-        recsel = NPY<unsigned char>::make(num_photons, m_maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-
-    setRecselData(recsel);   
-}
-
-
-void OpticksEvent::createPhotonBuffers(unsigned int num_photons)
-{
-    NPY<float>* pho = NPY<float>::make(num_photons, 4, 4); // must match GPU side photon.h:PNUMQUAD
+    NPY<float>* pho = NPY<float>::make(0, 4, 4); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(num_photons, 1, 2);  // shape (np,1,2) (formerly initialized to 0)
+    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(0, 1, 2);  
     setSequenceData(seq);   
-}
 
-void OpticksEvent::createFlatRecordBuffers(unsigned int num_records)
-{
-    if(m_step)
-    {
-        NPY<short>* rec = NPY<short>::make(num_records, 2, 4);  // shape (nr,2,4) formerly initialized to SHRT_MIN
-        setRecordData(rec);   
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(0,1,4); 
+    setPhoselData(phosel);   
 
-        //NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_records,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-        //setRecselData(recsel);   
-    }
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(0, m_maxrec,1,4); 
+    setRecselData(recsel);   
 
-    NPY<short>* aux = NPY<short>::make(num_records, 1, 4);  // shape (nr,1,4)
-    setAuxData(aux);   
-}
+    NPY<short>* rec = NPY<short>::make(0, m_maxrec, 2, 4); 
+    setRecordData(rec);   
 
-void OpticksEvent::createStructuredRecordBuffers(unsigned int num_photons, unsigned int maxrec)
-{
-    if(m_step)
-    {
-        NPY<short>* rec = NPY<short>::make(num_photons, maxrec, 2, 4); 
-        setRecordData(rec);   
-
-        //NPY<unsigned char>* recsel = NPY<unsigned char>::make(num_photons, maxrec,1,4); // shape (nr,1,4) (formerly initialized to 0) 
-        //setRecselData(recsel);   
-    }
-
-    NPY<short>* aux = NPY<short>::make(num_photons, maxrec, 1, 4);  // shape (nr,1,4)
-    setAuxData(aux);   
-}
-
-void OpticksEvent::createDomainBuffers()
-{
     NPY<float>* fdom = NPY<float>::make(3,1,4);
     setFDomain(fdom);
 
@@ -383,7 +193,50 @@ void OpticksEvent::createDomainBuffers()
 }
 
 
+void OpticksEvent::resize()
+{
+    // NB these are all photon level qtys on the first dimension
+    //    including recsel and record thanks to structured arrays (num_photons, maxrec, ...)
 
+    assert(m_photon_data);
+    assert(m_sequence_data);
+    assert(m_phosel_data);
+    assert(m_recsel_data);
+    assert(m_record_data);
+
+    unsigned int num_photons = getNumPhotons();
+    unsigned int num_records = getNumRecords();
+
+    LOG(info) << "OpticksEvent::resize " 
+              << " num_photons " << num_photons  
+              << " num_records " << num_records 
+              << " m_maxrec " << m_maxrec
+              ;
+
+    m_photon_data->setNumItems(num_photons);
+    m_sequence_data->setNumItems(num_photons);
+    m_phosel_data->setNumItems(num_photons);
+    m_recsel_data->setNumItems(num_photons);
+    m_record_data->setNumItems(num_photons);
+
+    m_parameters->add<unsigned int>("NumGensteps", getNumGensteps());
+    m_parameters->add<unsigned int>("NumPhotons",  getNumPhotons());
+    m_parameters->add<unsigned int>("NumRecords",  getNumRecords());
+
+}
+
+
+void OpticksEvent::zero()
+{
+    if(m_photon_data)   m_photon_data->zero();
+    if(m_sequence_data) m_sequence_data->zero();
+    if(m_record_data)   m_record_data->zero();
+
+    // when operating CPU side phosel and recsel are derived from sequence data
+    // when operating GPU side they need not ever come to CPU
+    //if(m_phosel_data)   m_phosel_data->zero();
+    //if(m_recsel_data)   m_recsel_data->zero();
+}
 
 
 void OpticksEvent::dumpDomains(const char* msg)
@@ -467,71 +320,28 @@ void OpticksEvent::importDomainsBuffer()
 }
 
 
-void OpticksEvent::zero()
+
+
+
+void OpticksEvent::setGenstepData(NPY<float>* genstep)
 {
-    if(m_photon_data)
-        m_photon_data->zero();
-    else
-        LOG(warning) << "OpticksEvent::zero NULL photon_data " ;
+    m_genstep_data = genstep  ;
+    m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
 
-    if(m_aux_data) m_aux_data->zero();
+    //                                                j k l sz   type        norm   iatt
+    ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false);    // (x0, t0)                     2nd GenStep quad 
+    ViewNPY* vdir = new ViewNPY("vdir",m_genstep_data,2,0,0,4,ViewNPY::FLOAT,false,false);    // (DeltaPosition, step_length) 3rd GenStep quad
 
-    if(m_step)
+    m_genstep_attr = new MultiViewNPY("genstep_attr");
+    m_genstep_attr->add(vpos);
+    m_genstep_attr->add(vdir);
+
     {
-       // TODO: defer these allocations until actually needed, often that will be never 
-        if(m_phosel_data)   m_phosel_data->zero();
-        if(m_record_data)   m_record_data->zero();
-        if(m_recsel_data)   m_recsel_data->zero();
-        if(m_sequence_data) m_sequence_data->zero();
+        m_num_gensteps = m_genstep_data->getShape(0) ;
+        unsigned int num_photons = m_genstep_data->getUSum(0,3);
+        setNumPhotons(num_photons); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
     }
 }
-
-
-void OpticksEvent::seedPhotonData()
-{
-    assert(0); // this is now done by opop-/OpSeeder
-
-    G4StepNPY gs(m_genstep_data);  
-
-    unsigned int numStep   = m_genstep_data->getShape(0);
-    unsigned int numPhoton = m_photon_data->getShape(0);
-    assert(numPhoton == m_num_photons);
-
-    unsigned int count(0) ;
-    for(unsigned int index=0 ; index < numStep ; index++)
-    {
-        unsigned int npho = m_genstep_data->getUInt(index, 0, 3);
-        if(gs.isCerenkovStep(index))
-        {
-            //assert(npho > 0 && npho < 150); // by observation of Cerenkov steps
-            assert(npho > 0 && npho < 3000);  
-        }
-        else if(gs.isScintillationStep(index))
-        {
-            assert(npho >= 0 && npho < 5000);     // by observation of Scintillation steps                  
-        } 
-
-        for(unsigned int n=0 ; n < npho ; ++n)
-        { 
-            assert(count < numPhoton);
-            m_photon_data->setUInt(count, 0,0,0, index );  // set "phead" : repeating step index for every photon to be generated for the step
-            count += 1 ;         
-        }  // over photons for each step
-    }      // over gen steps
-
-
-    LOG(info) << "OpticksEvent::setGenstepData " 
-              << " stepId(0) " << gs.getStepId(0) 
-              << " genstep length " << numStep 
-              << " photon length " << numPhoton
-              << "  num_photons " << m_num_photons  ; 
-
-    assert(count == m_num_photons ); 
-    assert(count == numPhoton ); 
-    // not m_num_photons-1 as last incremented count value is not used by setUInt
-    (*m_timer)("seedPhotonData");
-}
-
 
 void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 {
@@ -584,22 +394,6 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
     //
 }
 
-void OpticksEvent::setAuxData(NPY<short>* aux_data)
-{
-    m_aux_data = aux_data  ;
-
-    if(m_aux_data == NULL)
-    {
-       LOG(warning) << "OpticksEvent::setAuxData NULL";
-       return ;  
-    }
-
-    m_aux_attr = new MultiViewNPY("aux_attr");
-    //                                            j k l sz   type                  norm   iatt
-    ViewNPY* ibnd = new ViewNPY("ibnd",m_aux_data,0,0,0,4,ViewNPY::SHORT          ,false,  true);
-    m_aux_attr->add(ibnd);
-}
-
 
 
 void OpticksEvent::setNopstepData(NPY<float>* nopstep)
@@ -622,15 +416,11 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
     m_nopstep_attr->add(vdir);
     m_nopstep_attr->add(vpol);
 
-    // createHostBuffers();  
-    // only allocates small buffers, big ones deferred til usage
 }
 
 
 void OpticksEvent::setRecordData(NPY<short>* record_data)
 {
-    assert(m_step);
-
     m_record_data = record_data  ;
 
     //                                               j k l sz   type                  norm   iatt
@@ -664,7 +454,6 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 
 void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
 {
-    assert(m_step);
     m_phosel_data = phosel_data ;
     if(!m_phosel_data) return ; 
 
@@ -677,7 +466,6 @@ void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
 
 void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
 {
-    assert(m_step);
     m_recsel_data = recsel_data ;
 
     if(!m_recsel_data) return ; 
@@ -690,7 +478,6 @@ void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
 
 void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
 {
-    assert(m_step);
     m_sequence_data = sequence_data  ;
     assert(sizeof(unsigned long long) == 4*sizeof(unsigned short));  
     //
@@ -710,6 +497,10 @@ void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
     m_sequence_attr->add(pmat);
 
 }
+
+
+
+
 
 
 void OpticksEvent::dumpPhotonData()
@@ -764,25 +555,17 @@ std::string OpticksEvent::description(const char* msg)
 
 void OpticksEvent::recordDigests()
 {
-
     NPY<float>* ox = getPhotonData() ;
     if(ox && ox->hasData())
         m_parameters->add<std::string>("photonData",   ox->getDigestString()  );
 
-    NPY<short>* au = getAuxData() ;
-    if(au && au->hasData())
-        m_parameters->add<std::string>("auxData",      au->getDigestString()  );
+    NPY<short>* rx = getRecordData() ;
+    if(rx && rx->hasData())
+        m_parameters->add<std::string>("recordData",   rx->getDigestString()  );
 
-    if(m_step)
-    {
-        NPY<short>* rx = getRecordData() ;
-        if(rx && rx->hasData())
-            m_parameters->add<std::string>("recordData",   rx->getDigestString()  );
-
-        NPY<unsigned long long>* ph = getSequenceData() ;
-        if(ph && ph->hasData())
-            m_parameters->add<std::string>("sequenceData", ph->getDigestString()  );
-    }
+    NPY<unsigned long long>* ph = getSequenceData() ;
+    if(ph && ph->hasData())
+        m_parameters->add<std::string>("sequenceData", ph->getDigestString()  );
 }
 
 void OpticksEvent::save(bool verbose)
@@ -805,15 +588,9 @@ void OpticksEvent::save(bool verbose)
    // genstep normally not saved as it exists already coming from elsewhere,
    // but for TorchStep that insnt the case
 
-    NPY<float>* pr = getPrimaryData();
-    if(pr)
-    {
-        pr->setVerbose(verbose);
-        pr->save("pr%s", m_typ,  m_tag, udet);
-    }
 
     NPY<float>* no = getNopstepData();
-    if(no)
+    //if(no)
     {
         no->setVerbose(verbose);
         no->save("no%s", m_typ,  m_tag, udet);
@@ -821,32 +598,28 @@ void OpticksEvent::save(bool verbose)
     }
 
     NPY<float>* ox = getPhotonData();
-    if(ox)
+    //if(ox)
     {
         ox->setVerbose(verbose);
         ox->save("ox%s", m_typ,  m_tag, udet);
     } 
 
     NPY<short>* rx = getRecordData();    
-    if(rx)
+    //if(rx)
     {
         rx->setVerbose(verbose);
         rx->save("rx%s", m_typ,  m_tag, udet);
     }
 
     NPY<unsigned long long>* ph = getSequenceData();
-    if(ph)
+    //if(ph)
     {
         ph->setVerbose(verbose);
         ph->save("ph%s", m_typ,  m_tag, udet);
     }
 
-    NPY<short>* au = getAuxData();
-    if(au && au->hasData())
-    {
-        au->setVerbose(verbose);
-        au->save("au%s", m_typ,  m_tag, udet);
-    } 
+
+
 
     updateDomainsBuffer();
 
@@ -869,62 +642,6 @@ void OpticksEvent::save(bool verbose)
 
     makeReport();  // after timer save, in order to include that in the report
     saveReport();
-}
-
-
-
-void OpticksEvent::saveIndex(bool verbose)
-{
-    const char* udet = getUDet();
-
-    NPY<unsigned char>* ps = getPhoselData();
-    if(ps)
-    {
-        ps->setVerbose(verbose);
-        ps->save("ps%s", m_typ,  m_tag, udet);
-    }
-
-    NPY<unsigned char>* rs = getRecselData();
-    if(rs)
-    {
-        rs->setVerbose(verbose);
-        rs->save("rs%s", m_typ,  m_tag, udet);
-    }
-
-    std::string ixdir = getSpeciesDir("ix");
-    LOG(info) << "OpticksEvent::saveIndex"
-              << " ixdir " << ixdir
-              << " seqhis " << m_seqhis
-              << " seqmat " << m_seqmat
-              << " bndidx " << m_bndidx
-              ; 
-   
-
-    if(m_seqhis)
-        m_seqhis->save(ixdir.c_str(), m_tag);        
-    else
-        LOG(warning) << "OpticksEvent::saveIndex no seqhis to save " ;
-
-    if(m_seqmat)
-        m_seqmat->save(ixdir.c_str(), m_tag);        
-    else
-        LOG(warning) << "OpticksEvent::saveIndex no seqmat to save " ;
-
-    if(m_bndidx)
-        m_bndidx->save(ixdir.c_str(), m_tag);        
-    else
-        LOG(warning) << "OpticksEvent::saveIndex no bndidx to save " ;
-
-}
-
-
-void OpticksEvent::loadIndex()
-{
-    std::string ixdir = getSpeciesDir("ix");
-    // TODO: promote OpticksEvent into Opticks OR OpOp in order to have access to the opticks- header for this
-    m_seqhis = Index::load(ixdir.c_str(), m_tag, "History_Sequence" );  // SEQHIS_NAME_
-    m_seqmat = Index::load(ixdir.c_str(), m_tag, "Material_Sequence");  // SEQMAT_NAME_
-    m_bndidx = Index::load(ixdir.c_str(), m_tag, "Boundary_Index");     // BNDIDX_NAME_
 }
 
 
@@ -1078,24 +795,11 @@ void OpticksEvent::loadBuffers(bool verbose)
         no = NPY<float>::load("no%s", m_typ,  m_tag, udet, qload);
     }
 
-
-    NPY<float>* pr = NPY<float>::load("pr%s", m_typ,  m_tag, udet, qload);
-    NPY<float>* ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet, qload);
-    NPY<short>* au = NPY<short>::load("au%s", m_typ,  m_tag, udet, qload);
-    
-    NPY<unsigned long long>* ph = NULL ; 
-    NPY<short>*              rx = NULL ; 
-    NPY<unsigned char>*      ps = NULL ; 
-    NPY<unsigned char>*      rs = NULL ; 
-
-    // hmm should m_step be detected from the files or imposed from config  
-    if(m_step)
-    {
-        rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet, qload);
-        ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet, qload );
-        ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet, qload );
-        rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet, qload );
-    }
+    NPY<float>*              ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet, qload);
+    NPY<short>*              rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet, qload);
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet, qload );
+    NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet, qload );
+    NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet, qload );
 
     unsigned int num_nopstep = no ? no->getShape(0) : 0 ;
     unsigned int num_photons = ox ? ox->getShape(0) : 0 ;
@@ -1107,10 +811,8 @@ void OpticksEvent::loadBuffers(bool verbose)
     assert(num_phosel == 0 || num_photons == num_phosel );
 
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
-    unsigned int num_aux     = au ? au->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
 
-    assert(num_records == 0 || num_aux == 0 || num_records == num_aux ); 
     assert(num_recsel == 0 || num_records == num_recsel );
 
 
@@ -1124,15 +826,15 @@ void OpticksEvent::loadBuffers(bool verbose)
               << " [ "
               << " num_records " << num_records
               << " num_recsel " << num_recsel
-              << " num_aux " << num_aux 
               << " ] "
               ; 
 
 
     if(num_records == num_photons*m_maxrec)
     {
+        assert(0 && "have standardized on structured : use reshape at point of creation");
         LOG(debug) << "OpticksEvent::load flat records (Opticks style) detected " ;
-        setFlat(true);
+        //setFlat(true);
     } 
     else if(num_records == num_photons)
     {
@@ -1158,17 +860,7 @@ void OpticksEvent::loadBuffers(bool verbose)
             rs->reshape(ni*nj, nk, nl, 0);
             if(verbose) rs->Summary("rs reshaped");
         }       
-        if(au && num_aux > 0)
-        {
-            if(verbose) au->Summary("au init");
-            unsigned int ni = au->getShape(0);
-            unsigned int nj = au->getShape(1);
-            unsigned int nk = au->getShape(2);
-            unsigned int nl = au->getShape(3);
-            au->reshape(ni*nj, nk, nl, 0);       
-            if(verbose) au->Summary("au reshaped");
-        }
-        setFlat(true);
+        //setFlat(true);
     }
     else
     {
@@ -1178,11 +870,9 @@ void OpticksEvent::loadBuffers(bool verbose)
 
 
     setNopstepData(no);
-    setPrimaryData(pr);
     setPhotonData(ox);
     setSequenceData(ph);
     setRecordData(rx);
-    setAuxData(au);
 
     setPhoselData(ps);
     setRecselData(rs);
@@ -1201,7 +891,6 @@ void OpticksEvent::loadBuffers(bool verbose)
         if(ox) ox->Summary("ox");
         if(rx) rx->Summary("rx");
         if(ph) ph->Summary("ph");
-        if(au) au->Summary("au");
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
     }
@@ -1286,44 +975,58 @@ unsigned int OpticksEvent::getNumPhotonsPerG4Event()
    return m_parameters->get<int>("NumPhotonsPerG4Event");
 }
  
+void OpticksEvent::postPropagateGeant4()
+{
+    unsigned int num_photons = m_photon_data->getShape(0);
+
+    setNumPhotons(num_photons);  // triggers resize
+
+    LOG(info) << "OpticksEvent::postPropagateGeant4" 
+              << " num_photons " << num_photons
+              ;
+
+    indexPhotonsCPU();    
+}
 
 void OpticksEvent::indexPhotonsCPU()
 {
     // see tests/IndexerTest
 
-    NPY<unsigned long long>* sequence = getSequenceData();
-    NPY<unsigned char>*        phosel = getPhoselData();
-    NPY<unsigned char>*        recsel0 = getRecselData();
+    NPY<unsigned long long>* sequence_ = getSequenceData();
+    NPY<unsigned char>*        phosel_ = getPhoselData();
+    NPY<unsigned char>*        recsel0_ = getRecselData();
 
     LOG(info) << "OpticksEvent::indexPhotonsCPU" 
-              << " sequence " << sequence->getShapeString()
-              << " phosel "   << phosel->getShapeString()
-              << " recsel0 "   << recsel0->getShapeString()
-              << " recsel0.hasData "   << recsel0->hasData()
+              << " sequence " << sequence_->getShapeString()
+              << " phosel "   << phosel_->getShapeString()
+              << " phosel.hasData "   << phosel_->hasData()
+              << " recsel0 "   << recsel0_->getShapeString()
+              << " recsel0.hasData "   << recsel0_->hasData()
               ;
 
-    assert(sequence->hasItemShape(1,2));
-    assert(phosel->hasItemShape(1,4));
-    assert(recsel0->hasItemShape(m_maxrec,1,4));
-   
-    // eg: sequence 500000,1,2 phosel 500000,1,4 recsel 500000,10,1,4
-    // expecting structured, not-flat when running on CPU 
+    assert(sequence_->hasItemShape(1,2));
+    assert(phosel_->hasItemShape(1,4));
+    assert(recsel0_->hasItemShape(m_maxrec,1,4));
+    assert(sequence_->getShape(0) == phosel_->getShape(0));
+    assert(sequence_->getShape(0) == recsel0_->getShape(0));
 
-    assert(sequence->getShape(0) == phosel->getShape(0));
-    assert(sequence->getShape(0) == recsel0->getShape(0));
+    Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence_) ; 
+    idx->indexSequence(Opticks::SEQHIS_NAME_, Opticks::SEQMAT_NAME_);
 
-    Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
-    idx->indexSequence();
-    idx->applyLookup<unsigned char>(phosel->getValues());
+    assert(!phosel_->hasData()) ; 
+
+    phosel_->zero();
+    unsigned char* phosel_values = phosel_->getValues() ;
+    assert(phosel_values);
+    idx->applyLookup<unsigned char>(phosel_values);
 
 
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make_repeat(phosel, m_maxrec ) ;
-    recsel->reshape(-1, m_maxrec, 1, 4);
+    NPY<unsigned char>* recsel_ = NPY<unsigned char>::make_repeat(phosel_, m_maxrec ) ;
+    recsel_->reshape(-1, m_maxrec, 1, 4);
     //recsel->save("/tmp/recsel.npy"); 
 
-
     // TODO: fix leak?, review recsel0 creation/zeroing/allocation
-    setRecselData(recsel);
+    setRecselData(recsel_);
 
 
     setHistoryIndex(idx->getHistoryIndex());
@@ -1331,5 +1034,56 @@ void OpticksEvent::indexPhotonsCPU()
 
     TIMER("indexPhotonsCPU");    
 }
+
+
+void OpticksEvent::saveIndex(bool verbose)
+{
+    const char* udet = getUDet();
+
+    NPYBase::setGlobalVerbose(true);
+
+    NPY<unsigned char>* ps = getPhoselData();
+    NPY<unsigned char>* rs = getRecselData();
+
+    assert(ps);
+    assert(rs);
+
+    ps->save("ps%s", m_typ,  m_tag, udet);
+    rs->save("rs%s", m_typ,  m_tag, udet);
+
+    NPYBase::setGlobalVerbose(false);
+
+    std::string ixdir = getSpeciesDir("ix");
+    LOG(info) << "OpticksEvent::saveIndex"
+              << " ixdir " << ixdir
+              << " seqhis " << m_seqhis
+              << " seqmat " << m_seqmat
+              << " bndidx " << m_bndidx
+              ; 
+
+    if(m_seqhis)
+        m_seqhis->save(ixdir.c_str(), m_tag);        
+    else
+        LOG(warning) << "OpticksEvent::saveIndex no seqhis to save " ;
+
+    if(m_seqmat)
+        m_seqmat->save(ixdir.c_str(), m_tag);        
+    else
+        LOG(warning) << "OpticksEvent::saveIndex no seqmat to save " ;
+
+    if(m_bndidx)
+        m_bndidx->save(ixdir.c_str(), m_tag);        
+    else
+        LOG(warning) << "OpticksEvent::saveIndex no bndidx to save " ;
+}
+
+void OpticksEvent::loadIndex()
+{
+    std::string ixdir = getSpeciesDir("ix");
+    m_seqhis = Index::load(ixdir.c_str(), m_tag, Opticks::SEQHIS_NAME_ );
+    m_seqmat = Index::load(ixdir.c_str(), m_tag, Opticks::SEQMAT_NAME_ );  
+    m_bndidx = Index::load(ixdir.c_str(), m_tag, Opticks::BNDIDX_NAME_ );
+}
+
 
 

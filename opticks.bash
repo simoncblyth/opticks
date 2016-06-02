@@ -13,7 +13,6 @@ together with top level superbuild CMakeLists.txt
 Intend to allow building independent of the env.
 
 
-
 Windows 7 MSYS2 build
 -----------------------
 
@@ -72,7 +71,6 @@ Steps::
    #     
 
 
-
 See Also
 ----------
 
@@ -96,7 +94,7 @@ Only needed whilst making sweeping changes::
     simon:~ blyth$ opticks-fullclean         # check what will be deleted
     simon:~ blyth$ opticks-fullclean | sh    # delete 
 
-    simon:~ blyth$ opticks- ; opticks--
+    simon:~ blyth$ opticks- ; opticks-full
 
 
 G4PB build
@@ -317,7 +315,7 @@ are already installed the getting, building and installation of the other extern
 takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 
     simon:env blyth$ opticks-fullclean | sh 
-    simon:env blyth$ opticks- ; opticks--
+    simon:env blyth$ opticks- ; opticks-full
     === opticks-- : START Tue Apr 26 15:33:27 CST 2016
     === opticks-externals-install : START Tue Apr 26 15:33:27 CST 2016
     ...
@@ -494,6 +492,10 @@ Building Opticks
 To build Opticks run::
 
    opticks-
+   opticks-full   
+
+After the first full build, faster update builds can be done with::
+
    opticks--
 
 Full Opticks functionality with GPU simulation of optical photons requires all
@@ -522,7 +524,7 @@ opticksop              opticksop-       OpticksOp       OptiX CUDA Boost GLM BCf
 opticksgl              opticksgl-       OpticksGL       OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap OptiXRap OpticksOp
 graphics/ggeoview      ggv-             GGeoView        OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY BCfg OpticksCore 
                                                         Assimp AssimpRap OpenMesh OpenMeshRap GGeo ImGui BRegex OptiXRap CUDARap ThrustRap OpticksOp OpticksGL 
-optix/cfg4             cfg4-            CfG4            Boost BRegex GLM NPY BCfg GGeo OpticksCore Geant4 EnvXercesC G4DAE 
+optix/cfg4             cfg4-            CfG4            Boost GLM BRegex BCfg NPY GGeo OpticksCore Geant4 EnvXercesC G4DAE 
 =====================  ===============  =============   ==============================================================================
 
 

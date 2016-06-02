@@ -14,6 +14,7 @@ class NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
        static const char* DEFAULT_DIR_TEMPLATE  ; 
+       static bool GLOBAL_VERBOSE ; 
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
         void setHasData(bool has_data=true);
@@ -70,7 +71,7 @@ class NPYBase {
        static std::string path(const char* pfx, const char* gen, const char* tag, const char* det);
        void setVerbose(bool verbose=true);
        void setAllowPrealloc(bool allow=true); 
-
+       static void setGlobalVerbose(bool verbose=true);
    public:
        // provided by subclass
        virtual void read(void* ptr) = 0;

@@ -254,7 +254,7 @@ void OpIndexer::prepareTarget(const char* msg)
 
     if(phosel->getShape(0) == 0 && recsel->getShape(0) == 0)
     {
-        m_evt->resizeIndices();
+        //m_evt->resizeIndices();
     }
 
 }

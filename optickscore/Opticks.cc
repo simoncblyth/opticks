@@ -81,6 +81,10 @@ float Opticks::getEpsilon()
     return m_cfg->getEpsilon()  ;
 }
 
+bool Opticks::hasOpt(const char* name)
+{
+    return m_cfg->hasOpt(name);
+}
 
 std::string Opticks::getRelativePath(const char* path)
 {
@@ -210,13 +214,13 @@ void Opticks::dumpArgs(const char* msg)
 {
     LOG(info) << msg << " argc " << m_argc ;
     for(unsigned int i=0 ; i < m_argc ; i++) 
-          std::cout << std::setw(3) << i << m_argv[i] << std::endl ;
+          std::cout << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
 
 }
 
 void Opticks::configure()
 {
-    dumpArgs();
+    dumpArgs("Opticks::configure");
 
     m_cfg->commandline(m_argc, m_argv);
 
@@ -412,9 +416,9 @@ OpticksEvent* Opticks::makeEvent()
     evt->setSpaceDomain(getSpaceDomain());   // default, will be updated in App:registerGeometry following geometry loading
     evt->setWavelengthDomain(getWavelengthDomain());
 
-    bool nostep = m_cfg->hasOpt("nostep") ;
-    evt->setStep(!nostep);
     evt->setMaxRec(m_cfg->getRecordMax());
+
+    evt->createBuffers();  // not-allocated and with itemcount 0 
  
     // ctor args define the identity of the Evt, coming in from config
     // other params are best keep in m_parameters where they get saved/loaded  

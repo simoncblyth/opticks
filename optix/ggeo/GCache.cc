@@ -85,8 +85,6 @@ const char* GCache::getLastArg()
     return m_opticks->getLastArg();
 }
 
-
-
 Types* GCache::getTypes()
 {
     if(!m_types)
@@ -97,7 +95,6 @@ Types* GCache::getTypes()
     }
     return m_types ;
 }
-
 
 GFlags* GCache::getFlags()
 {
@@ -115,5 +112,4 @@ void GCache::Summary(const char* msg)
 {
     printf("%s \n", msg );
 }
-
 

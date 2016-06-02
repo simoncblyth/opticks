@@ -215,7 +215,7 @@ void App::configure(int argc, char** argv)
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         // TODO: organize wrt event loading, currently loading happens latter and trumps this evt ?
         m_evt = m_opticks->makeEvent() ; 
-        m_evt->setFlat(true);
+        //m_evt->setFlat(true);
     } 
 
 #ifdef WITH_NPYSERVER

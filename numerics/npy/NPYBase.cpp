@@ -18,6 +18,14 @@
 #include "NLog.hpp"
 
 
+bool NPYBase::GLOBAL_VERBOSE = false ; 
+
+
+void NPYBase::setGlobalVerbose(bool verbose)
+{
+    GLOBAL_VERBOSE = verbose ;
+}
+
 const char* NPYBase::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ; 
 
 void NPYBase::init()

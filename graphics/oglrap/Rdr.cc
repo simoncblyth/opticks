@@ -498,8 +498,10 @@ void Rdr::download( OpticksEvent* evt )
     if(ph)
         Rdr::download(ph);
 
+    /*
     NPY<short>* au = evt->getAuxData();
     if(au)
         Rdr::download(au);
+    */
 }
 

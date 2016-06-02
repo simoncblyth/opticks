@@ -12,16 +12,16 @@
 
 
 template <typename T>
-void Indexer<T>::indexSequence()
+void Indexer<T>::indexSequence(const char* seqhis_label, const char* seqmat_label)
 {
     splitSequence();
     save();
 
-    m_seqhis = new Sparse<T>("seqhis", m_his);
+    m_seqhis = new Sparse<T>(seqhis_label, m_his);
     m_seqhis->make_lookup();
     m_seqhis->dump("indexSequence seqhis");
 
-    m_seqmat = new Sparse<T>("seqmat", m_mat);
+    m_seqmat = new Sparse<T>(seqmat_label, m_mat);
     m_seqmat->make_lookup();
     m_seqmat->dump("indexSequence seqmat");
 }
@@ -36,7 +36,7 @@ Index* Indexer<T>::getHistoryIndex()
 template <typename T>
 Index* Indexer<T>::getMaterialIndex()
 {
-    return m_seqhis ? m_seqhis->getIndex() : NULL ; 
+    return m_seqmat ? m_seqmat->getIndex() : NULL ; 
 }
 
 

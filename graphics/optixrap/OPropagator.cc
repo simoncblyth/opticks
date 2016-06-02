@@ -153,7 +153,8 @@ void OPropagator::initEvent(OpticksEvent* evt)
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer );
 
-    if(evt->isStep())
+    //if(evt->isStep())
+    if(true)
     {
         NPY<short>* rx = evt->getRecordData() ;
         assert(rx);
@@ -253,7 +254,8 @@ void OPropagator::downloadEvent()
     NPY<float>* dpho = m_evt->getPhotonData();
     OContext::download<float>( m_photon_buffer, dpho );
 
-    if(m_evt->isStep())
+    //if(m_evt->isStep())
+    if(true)
     {
         NPY<short>* drec = m_evt->getRecordData();
         OContext::download<short>( m_record_buffer, drec );

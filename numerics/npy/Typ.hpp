@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+// TODO: migrate to optickscore-
+
 // attack class to kill Types
 class Typ {
     public:

@@ -36,14 +36,11 @@ class CG4 : public OpticksEngine
         void configure();
         void interactive(int argc, char** argv);
         void cleanup();
-        virtual ~CG4();
    public:
         void initialize();
         void propagate();
-        void save();
    private:
         void init();
-        //void initEvent();
         void configureDetector();
         void configurePhysics();
         void configureGenerator();

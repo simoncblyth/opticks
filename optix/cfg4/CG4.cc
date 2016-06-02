@@ -70,23 +70,10 @@ void CG4::init()
 
 void CG4::configure()
 {
-    configureEngine(); 
-
-
-   /*
-    m_cfg = m_opticks->getCfg();  
-    m_cfg->commandline(argc, argv);   // why is this config deferred ... 
-    m_cfg->dump(); 
-    m_cache = new GCache(m_opticks);
-    */
-
-    //initEvent();
-
-    m_g4ui = m_cfg->hasOpt("g4ui") ; 
+    m_g4ui = m_opticks->hasOpt("g4ui") ; 
     LOG(info) << "CG4::configure"
               << " g4ui " << m_g4ui
               ; 
-
 
     m_runManager = new G4RunManager;
 
@@ -97,26 +84,6 @@ void CG4::configure()
 
     TIMER("configure");
 }
-
-
-/*
-void CG4::initEvent()
-{
-    // TODO: move evt setup outside CG4
-    m_evt = m_opticks->makeEvent();  
-
-    NPY<float>* nopstep = NPY<float>::make(0,4,4) ;  
-    m_evt->setNopstepData(nopstep);
-
-    assert(m_evt->getNumPhotons() == 0);
-    assert(m_evt->getNumRecords() == 0);
-
-    m_evt->createBuffers();  // the zeros means they are dynamic buffers
-
-    // maybe can just make ni=0 "dynamic" buffers by default ? within the Opticks::makeEvt ? 
-}
-*/
-
 
 
 void CG4::execute(const char* path)
@@ -157,6 +124,8 @@ void CG4::postinitialize()
 
 
     m_uiManager = G4UImanager::GetUIpointer();
+
+    assert(m_cfg);    
 
     std::string inimac = m_cfg->getG4IniMac();
     if(!inimac.empty()) execute(inimac.c_str()) ;
@@ -204,15 +173,9 @@ void CG4::postpropagate()
     LOG(info) << "CG4::postpropagate [" << finmac << "]"  ;
     if(!finmac.empty()) execute(finmac.c_str());
 
+    // G4 specific, so it belongs here
+    m_evt->postPropagateGeant4();
 
-    m_evt->indexPhotonsCPU();
-}
-
-
-
-void CG4::save()
-{
-    m_evt->save(true);
 }
 
 
@@ -234,7 +197,7 @@ void CG4::configurePhysics()
 void CG4::configureDetector()
 {
     CDetector* detector = NULL ; 
-    if(m_cfg->hasOpt("test"))
+    if(m_opticks->hasOpt("test"))
     {
         LOG(info) << "CG4::configureDetector G4 simple test geometry " ; 
         std::string testconfig = m_cfg->getTestConfig();
@@ -262,6 +225,10 @@ void CG4::configureGenerator()
 {
     CSource* source = NULL ; 
 
+    // THIS IS AN EVENT LEVEL THING : RENAME initEvent ?
+
+    // HMM THIS CODE LOOKS TO BE DUPLICITOUS AND OUT OF PLACE : NEEDS MOVING 
+
     if(m_opticks->getSourceCode() == TORCH)
     {
         LOG(info) << "CG4::configureGenerator TORCH " ; 
@@ -272,6 +239,10 @@ void CG4::configureGenerator()
         m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
         m_evt->setNumG4Event(m_torch->getNumG4Event()); 
         m_evt->setNumPhotonsPerG4Event(m_torch->getNumPhotonsPerG4Event()); 
+
+        m_evt->zero();  
+        // IS THIS ALWAYS NEEDED WITH setGenstepData
+        // OPERATING FROM GENSTEP : YOU KNOW THE TOTAL NUMBER OF PHOTONS AHEAD OF TIME
 
 
         int torch_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
@@ -331,8 +302,9 @@ void CG4::configureGenerator()
     // recorder is back here in order to pass to source for primary recording (unused?)
     m_recorder = new CRecorder(m_lib, m_evt, stepping_verbosity ); 
     m_rec = new Rec(m_lib, m_evt) ; 
-    if(m_cfg->hasOpt("primary"))
-         m_recorder->setupPrimaryRecording();
+
+    //if(m_cfg->hasOpt("primary"))
+    //     m_recorder->setupPrimaryRecording();
 
     source->setRecorder(m_recorder);
 
@@ -374,14 +346,6 @@ void CG4::cleanup()
 {
     LOG(info) << "CG4::cleanup opening geometry" ; 
     G4GeometryManager::GetInstance()->OpenGeometry();
-}
-
-
-
-CG4::~CG4()
-{
-    //delete m_detector ; 
-    //delete m_runManager;
 }
 
 
