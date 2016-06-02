@@ -33,6 +33,26 @@ void NPYBase::init()
    updateDimensions(); 
 }
 
+unsigned int NPYBase::getNumQuads()
+{
+   unsigned int num_quad ;  
+   unsigned int ndim = m_shape.size() ;
+   unsigned int last_dimension = ndim > 1 ? m_shape[ndim-1] : 0  ;
+
+   if(last_dimension != 4 )
+   {
+       LOG(warning) << "NPYBase::getNumQuads last dim expected to be 4  " << getShapeString()  ;
+       num_quad = 0 ; 
+   } 
+   else
+   {
+       num_quad = 1 ; 
+       for(int i=0 ; i < ndim - 1 ; i++ ) num_quad *= m_shape[i] ; 
+   } 
+   return num_quad ;
+}
+
+
 void NPYBase::updateDimensions()
 {
     m_ni = getShape(0); 

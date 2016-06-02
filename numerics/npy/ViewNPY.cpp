@@ -56,15 +56,26 @@ const char* ViewNPY::getTypeName()
 }
 
 
+
+std::string ViewNPY::getShapeString()
+{
+    return m_npy->getShapeString();
+}
+unsigned int ViewNPY::getNumQuads()
+{
+    return m_npy->getNumQuads();
+}
+
 void ViewNPY::init()
 {
     m_bytes    = m_npy->getBytes() ;
 
+    assert(m_item_from_dim == 1 || m_item_from_dim == 2);
+
     // these dont require the data, just the shape
     m_numbytes = m_npy->getNumBytes(0) ;
-    m_stride   = m_npy->getNumBytes(1) ;
-    m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;
-    //m_count = m_npy->getShape(0) ;
+    m_stride   = m_npy->getNumBytes(m_item_from_dim) ;
+    m_offset   = m_npy->getByteIndex(0,m_j,m_k,m_l) ;  //  i*nj*nk*nl + j*nk*nl + k*nl + l     scaled by sizeoftype
 
     if( m_npy->hasData() )
     { 
@@ -74,9 +85,31 @@ void ViewNPY::init()
 
 unsigned int ViewNPY::getCount()
 {
-    // this can now be changed, so dont store the count at init
-    //return m_count ;
-    return m_npy->getShape(0) ;
+    unsigned int count ;
+
+    if(m_item_from_dim == 1)   // the default, only 1st dim is count
+    {
+        count =  m_npy->getShape(0) ;
+    }
+    else if(m_item_from_dim == 2)   // structured records, 1st*2nd dim is count
+    {
+        count =  m_npy->getShape(0)*m_npy->getShape(1) ;
+    }
+    else 
+    {
+        assert(0 && "bad m_item_from_dim");
+    }               
+
+    if(count == 0)
+    {
+        LOG(fatal) << "ViewNPY::getCount UNEXPECTED"
+                   << " desc " << description()
+                   << " count " << count 
+                   << getShapeString() 
+                   ;
+    }
+
+    return count ; 
 }
 
 void ViewNPY::addressNPY()
@@ -258,6 +291,5 @@ std::string ViewNPY::description()
 
     return ss.str();
 }
-
 
 

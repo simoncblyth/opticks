@@ -1203,10 +1203,10 @@ void Composition::setAxisData(NPY<float>* axis_data)
 {
     m_axis_data = axis_data ;  
     m_axis_attr = new MultiViewNPY("axis_attr");
-    //                                              j k l sz   type          norm   iatt
-    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,0,4,ViewNPY::FLOAT, false, false));     
-    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,0,4,ViewNPY::FLOAT, false, false));     
-    m_axis_attr->add(new ViewNPY("vcol",m_axis_data,2,0,0,4,ViewNPY::FLOAT, false, false));     
+    //                                              j k l sz   type          norm   iatt  item_from_dim
+    m_axis_attr->add(new ViewNPY("vpos",m_axis_data,0,0,0,4,ViewNPY::FLOAT, false, false, 1));     
+    m_axis_attr->add(new ViewNPY("vdir",m_axis_data,1,0,0,4,ViewNPY::FLOAT, false, false, 1));     
+    m_axis_attr->add(new ViewNPY("vcol",m_axis_data,2,0,0,4,ViewNPY::FLOAT, false, false, 1));     
 }
 
 

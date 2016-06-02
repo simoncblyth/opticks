@@ -328,9 +328,9 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep)
     m_genstep_data = genstep  ;
     m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
 
-    //                                                j k l sz   type        norm   iatt
-    ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false);    // (x0, t0)                     2nd GenStep quad 
-    ViewNPY* vdir = new ViewNPY("vdir",m_genstep_data,2,0,0,4,ViewNPY::FLOAT,false,false);    // (DeltaPosition, step_length) 3rd GenStep quad
+    //                                                j k l sz   type        norm   iatt  item_from_dim
+    ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false, 1);    // (x0, t0)                     2nd GenStep quad 
+    ViewNPY* vdir = new ViewNPY("vdir",m_genstep_data,2,0,0,4,ViewNPY::FLOAT,false,false, 1);    // (DeltaPosition, step_length) 3rd GenStep quad
 
     m_genstep_attr = new MultiViewNPY("genstep_attr");
     m_genstep_attr->add(vpos);
@@ -361,11 +361,11 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 
     m_photon_data->setDynamic();  // need to update with seeding so GL_DYNAMIC_DRAW needed 
     m_photon_attr = new MultiViewNPY("photon_attr");
-    //                                                  j k l,sz   type          norm   iatt
-    m_photon_attr->add(new ViewNPY("vpos",m_photon_data,0,0,0,4,ViewNPY::FLOAT, false, false));      // 1st quad
-    m_photon_attr->add(new ViewNPY("vdir",m_photon_data,1,0,0,4,ViewNPY::FLOAT, false, false));      // 2nd quad
-    m_photon_attr->add(new ViewNPY("vpol",m_photon_data,2,0,0,4,ViewNPY::FLOAT, false, false));      // 3rd quad
-    m_photon_attr->add(new ViewNPY("iflg",m_photon_data,3,0,0,4,ViewNPY::INT  , false, true ));      // 4th quad
+    //                                                  j k l,sz   type          norm   iatt  item_from_dim
+    m_photon_attr->add(new ViewNPY("vpos",m_photon_data,0,0,0,4,ViewNPY::FLOAT, false, false, 1));      // 1st quad
+    m_photon_attr->add(new ViewNPY("vdir",m_photon_data,1,0,0,4,ViewNPY::FLOAT, false, false, 1));      // 2nd quad
+    m_photon_attr->add(new ViewNPY("vpol",m_photon_data,2,0,0,4,ViewNPY::FLOAT, false, false, 1));      // 3rd quad
+    m_photon_attr->add(new ViewNPY("iflg",m_photon_data,3,0,0,4,ViewNPY::INT  , false, true , 1));      // 4th quad
 
     //
     //  photon array 
@@ -406,10 +406,10 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
               << " shape " << nopstep->getShapeString()
               ;
 
-    //                                                j k l sz   type         norm   iatt
-    ViewNPY* vpos = new ViewNPY("vpos",m_nopstep_data,0,0,0,4,ViewNPY::FLOAT ,false,  false);
-    ViewNPY* vdir = new ViewNPY("vdir",m_nopstep_data,1,0,0,4,ViewNPY::FLOAT ,false,  false);   
-    ViewNPY* vpol = new ViewNPY("vpol",m_nopstep_data,2,0,0,4,ViewNPY::FLOAT ,false,  false);   
+    //                                                j k l sz   type         norm   iatt   item_from_dim
+    ViewNPY* vpos = new ViewNPY("vpos",m_nopstep_data,0,0,0,4,ViewNPY::FLOAT ,false,  false, 1);
+    ViewNPY* vdir = new ViewNPY("vdir",m_nopstep_data,1,0,0,4,ViewNPY::FLOAT ,false,  false, 1);   
+    ViewNPY* vpol = new ViewNPY("vpol",m_nopstep_data,2,0,0,4,ViewNPY::FLOAT ,false,  false, 1);   
 
     m_nopstep_attr = new MultiViewNPY("nopstep_attr");
     m_nopstep_attr->add(vpos);
@@ -423,16 +423,18 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 {
     m_record_data = record_data  ;
 
-    //                                               j k l sz   type                  norm   iatt
-    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0,4,ViewNPY::SHORT          ,true,  false);
-    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false);   
+    //                                               j k l sz   type                  norm   iatt   item_from_dim
+    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0,4,ViewNPY::SHORT          ,true,  false, 2);
+    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
 
-    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,0,2,ViewNPY::UNSIGNED_SHORT ,false, true);   
+    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,0,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
     // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
 
-    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,0,4,ViewNPY::UNSIGNED_BYTE  ,false, true);   
+    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,0,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
     // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
     
+    // structured record array => item_from_dim=2 the count comes from product of 1st two dimensions
+
 
     // ViewNPY::TYPE need not match the NPY<T>,
     // OpenGL shaders will view the data as of the ViewNPY::TYPE, 
@@ -457,8 +459,8 @@ void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
     m_phosel_data = phosel_data ;
     if(!m_phosel_data) return ; 
 
-    //                                               j k l sz   type                norm   iatt
-    ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    //                                               j k l sz   type                norm   iatt   item_from_dim
+    ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true, 1);
     m_phosel_attr = new MultiViewNPY("phosel_attr");
     m_phosel_attr->add(psel);
 }
@@ -469,8 +471,10 @@ void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
     m_recsel_data = recsel_data ;
 
     if(!m_recsel_data) return ; 
-    //                                               j k l sz   type                norm   iatt
-    ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true);
+    //                                               j k l sz   type                norm   iatt   item_from_dim
+    ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true, 2);
+    // structured recsel array, means the count needs to come from product of 1st two dimensions, 
+
     m_recsel_attr = new MultiViewNPY("recsel_attr");
     m_recsel_attr->add(rsel);
 }
@@ -489,9 +493,9 @@ void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
     //      Have not taken the diddling route, 
     //      instead using separate Recsel/Phosel buffers for the indices
     // 
-    //                                                 j k l sz   type                norm   iatt
-    ViewNPY* phis = new ViewNPY("phis",m_sequence_data,0,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
-    ViewNPY* pmat = new ViewNPY("pmat",m_sequence_data,0,1,0,4,ViewNPY::UNSIGNED_SHORT,false,  true);
+    //                                                 j k l sz   type                norm   iatt    item_from_dim
+    ViewNPY* phis = new ViewNPY("phis",m_sequence_data,0,0,0,4,ViewNPY::UNSIGNED_SHORT,false,  true, 1);
+    ViewNPY* pmat = new ViewNPY("pmat",m_sequence_data,0,1,0,4,ViewNPY::UNSIGNED_SHORT,false,  true, 1);
     m_sequence_attr = new MultiViewNPY("sequence_attr");
     m_sequence_attr->add(phis);
     m_sequence_attr->add(pmat);

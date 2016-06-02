@@ -162,7 +162,10 @@ void OPropagator::initEvent(OpticksEvent* evt)
         m_context["record_buffer"]->set( m_record_buffer );
         m_record_buf = new OBuf("record", m_record_buffer );
 
-        m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( evt->getSequenceData(), "sequence" );
+
+        NPY<unsigned long long>* sq = evt->getSequenceData() ;
+        assert(sq);
+        m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( sq, "sequence" );
         m_context["sequence_buffer"]->set( m_sequence_buffer );
 
         m_sequence_buf = new OBuf("sequence", m_sequence_buffer );

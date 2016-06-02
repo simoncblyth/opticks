@@ -678,9 +678,16 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr, bool debug)
     m_record_renderer->upload(attr, debug);
     m_altrecord_renderer->upload(attr, debug);
     m_devrecord_renderer->upload(attr, debug);
-
 }
 
+void Scene::dump_uploads_table(const char* msg)
+{
+    LOG(info) << msg ; 
+    m_photon_renderer->dump_uploads_table("photon");
+    m_record_renderer->dump_uploads_table("record");
+    m_altrecord_renderer->dump_uploads_table("altrecord");
+    m_devrecord_renderer->dump_uploads_table("devrecord");
+}
 
 
 void Scene::renderGeometry()

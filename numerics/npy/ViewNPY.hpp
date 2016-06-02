@@ -55,7 +55,14 @@ class ViewNPY {
                    UNSIGNED_INT_10F_11F_11F_REV } Type_t ;
          
     public:
-        ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size=4, Type_t type=FLOAT, bool norm=false, bool iatt=false) ;
+        ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, 
+               unsigned int size=4, 
+               Type_t type=FLOAT, 
+               bool norm=false, 
+               bool iatt=false, 
+               unsigned int item_from_dim=1) ;
+
+     //   void setCountDimensions(unsigned int count_dimensions);  // 0: 1st dim only [default], 1: 1st*2nd dim eg for structured records
         void addressNPY();
         std::string getTypeString();
         void setCustomOffset(unsigned long offset);
@@ -67,6 +74,8 @@ class ViewNPY {
         void Summary(const char* msg);
         void Print(const char* msg);
         std::string description();
+        std::string getShapeString();
+        unsigned int getNumQuads();
 
         NPYBase*     getNPY(){    return m_npy   ; }
         void*        getBytes(){  return m_bytes ; }
@@ -80,6 +89,7 @@ class ViewNPY {
         Type_t       getType(){ return m_type ; }
         const char*  getTypeName();
         const char*  getName(){ return m_name ; }
+       //unsigned int getCountDimensions(){ return m_count_dimensions ; }
 
     public:
         glm::vec4&   getCenterExtent();
@@ -107,11 +117,12 @@ class ViewNPY {
         Type_t        m_type ; 
         bool          m_norm ;
         bool          m_iatt ;
+        unsigned int  m_item_from_dim ;   // 0-based dimension from which the item starts, preceding dimensions correspond to the count 
     private:
         unsigned int  m_numbytes ;  
         unsigned int  m_stride ;  
         unsigned long m_offset ;  
-        //unsigned long m_count ;  
+     //   unsigned int  m_count_dimensions ;  
 
     private:
         glm::vec3*  m_low ;
@@ -128,7 +139,7 @@ class ViewNPY {
 
 
 
-inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt) 
+inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt, unsigned int item_from_dim) 
   :
             m_name(strdup(name)),
             m_npy(npy),
@@ -141,9 +152,12 @@ inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned
             m_type(type),
             m_norm(norm),
             m_iatt(iatt),
+            m_item_from_dim(item_from_dim),
+
             m_numbytes(0),
             m_stride(0),
             m_offset(0),
+      //      m_count_dimensions(0),
             m_low(NULL),
             m_high(NULL),
             m_dimensions(NULL),
@@ -156,7 +170,13 @@ inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned
 }
 
 
-
+/*
+inline void ViewNPY::setCountDimensions(unsigned int count_dimensions)
+{
+     // 0: 1st dim only [default], 1: 1st*2nd dim eg for structured records
+    m_count_dimensions = count_dimensions ;
+}
+*/
 
 
 inline glm::vec4& ViewNPY::getCenterExtent()

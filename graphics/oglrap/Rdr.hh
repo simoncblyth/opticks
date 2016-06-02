@@ -21,7 +21,7 @@ class Rdr : public RendererBase  {
       void check_uniforms();
       void update_uniforms();
       void dump_uniforms();
-      void dump_uploads_table();
+      void dump_uploads_table(const char* msg="Rdr::dump_uploads_table");
 
       void log(const char* msg, int value);
       void prepare_vao();

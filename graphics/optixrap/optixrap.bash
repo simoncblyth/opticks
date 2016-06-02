@@ -285,12 +285,16 @@ optixrap-run(){
 }
 
 
-
-optixrap--()
+optixrap-full()
 {
     optixrap-make clean
     optixrap-make
     optixrap-install
+}
+
+optixrap--()
+{
+   ( optixrap-bcd ; make ${1:-install} ; )
 }
 
 

@@ -240,10 +240,10 @@ template <typename T>
 optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
-    unsigned int ni = npy->getShape(0);
-    unsigned int nj = npy->getShape(1);  
-    unsigned int nk = npy->getShape(2);  
-    //unsigned int nl = npy->getShape(3);  
+    unsigned int ni = std::max(1u,npy->getShape(0));
+    unsigned int nj = std::max(1u,npy->getShape(1));  
+    unsigned int nk = std::max(1u,npy->getShape(2));  
+    unsigned int nl = std::max(1u,npy->getShape(3));  
 
     bool compute = isCompute();
 
@@ -254,10 +254,9 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
         if(buffer_id > -1 )
         {
             buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
-            LOG(debug) << "OContext::createIOBuffer (INTEROP) createBufferFromGLBO " 
+            LOG(info) << "OContext::createIOBuffer (INTEROP) createBufferFromGLBO " 
                       << " name " << std::setw(20) << name
                       << " buffer_id " << buffer_id 
-                      << " ( " << ni << "," << nj << "," << nk << ")"
                       ;
         } 
         else
@@ -289,18 +288,23 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
     {
         buffer->setElementSize(sizeof(T));
         size = ni*nj*nk ; 
-        LOG(debug) << "OContext::createIOBuffer "
-                  << " RT_FORMAT_USER " 
+        LOG(info) << "OContext::createIOBuffer "
+                  << " (USER) " 
+                  << " name " << std::setw(20) << name
+                  << " size (ijk) " << size 
+                  << " ( " << ni << "," << nj << "," << nk << "," << nl << ")"
                   << " elementsize " << sizeof(T)
-                  << " size " << size 
                   ;
     }
     else
     {
-        size = ni*nj ; 
-        LOG(debug) << "OContext::createIOBuffer "
+        //size = ni*nj ;
+        size = npy->getNumQuads() ;  
+        LOG(info) << "OContext::createIOBuffer "
                   << " (quad) " 
-                  << " size (ni*nj) " << size 
+                  << " name " << std::setw(20) << name
+                  << " size (getNumQuads) " << size 
+                  << " ( " << ni << "," << nj << "," << nk << "," << nl << ")"
                   ;
 
     }

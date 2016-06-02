@@ -107,7 +107,8 @@ class Evt(object):
 
     def init_records(self, tag, src, det, dbg):
 
-        rx = A.load_("rx"+src,tag,det,dbg).reshape(-1, self.nrec, 2, 4)
+        rx_raw = A.load_("rx"+src,tag,det,dbg)
+        rx = rx_raw.reshape(-1, self.nrec, 2, 4)
         ph = A.load_("ph"+src,tag,det,dbg)
 
         log.debug("rx shape %s " % str(rx.shape))
@@ -123,6 +124,7 @@ class Evt(object):
         all_history = SeqAna(seqhis, histype , cnames=[cn])  
         all_material = SeqAna(seqmat, mattype , cnames=[cn])  
 
+        self.rx_raw = rx_raw
         self.rx = rx
         self.ph = ph
 
@@ -138,6 +140,7 @@ class Evt(object):
         self.histype = histype
         self.mattype = mattype
 
+        self.desc['rx_raw'] = "(records) photon step records RAW:before reshaping"
         self.desc['rx'] = "(records) photon step records"
         self.desc['ph'] = "(records) photon history flag/material sequence"
 
@@ -191,6 +194,7 @@ class Evt(object):
     t = property(lambda self:self.ox[:,0,3])
 
     description = property(lambda self:"\n".join(["%5s : %20s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
+    paths = property(lambda self:"\n".join(["%5s : %s " % (k, repr(getattr(getattr(self,k),'path','-'))) for k,label in self.desc.items()]))
 
     def __repr__(self):
         return "Evt(%s,\"%s\",\"%s\",\"%s\", seqs=\"%s\")\n%s" % (self.tag, self.src, self.det,self.label, repr(self.seqs), self.description)

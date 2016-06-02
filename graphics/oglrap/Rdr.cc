@@ -39,10 +39,10 @@ void Rdr::setPrimitive(Primitive_t prim )
 
 
 
-void Rdr::dump_uploads_table()
+void Rdr::dump_uploads_table(const char* msg)
 {
     char* tag = getShaderTag();
-    LOG(info) << "Rdr::dump_uploads_table for rendering pipeline with shader tag: " << tag ; 
+    LOG(info) << msg << " Rdr tag: " << tag ; 
     typedef std::vector<MultiViewNPY*> VMVN ; 
     for(VMVN::const_iterator it=m_uploads.begin() ; it != m_uploads.end() ; it++)
     {
@@ -52,6 +52,7 @@ void Rdr::dump_uploads_table()
         for(unsigned int i=0 ; i < nvec ; i++)
         {
            ViewNPY* vnpy = (*mvn)[i] ;
+           NPYBase*  npy = vnpy->getNPY();
            std::cout
               << std::setw(15) << name 
               << std::setw(2) << i << "/" 
@@ -59,6 +60,10 @@ void Rdr::dump_uploads_table()
               << " vnpy " 
               << std::setw(10) << vnpy->getName() 
               << std::setw(10) << vnpy->getCount()
+              << " npy "
+              << npy->getShapeString()
+              << " npy.hasData "
+              << npy->hasData()
               <<  std::endl ;
         }
     }
@@ -210,6 +215,7 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
                   << std::setw(15) << parent->getName() 
                   << std::setw(5)  << vnpy->getName()
                   << " count " << std::setw(8) << vnpy->getCount()
+                  << " shape " << std::setw(20) << vnpy->getShapeString()
                   << " buffer_id " << std::setw(5) << buffer_id
                   << " data " << std::setw(16) << repdata 
                   << " hasData " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
@@ -295,8 +301,6 @@ void Rdr::address(ViewNPY* vnpy)
     }
 
 
-    LOG(debug) << "Rdr::address " << std::setw(10) << getShaderTag() <<  " name " << name << " type " << vnpy->getType() ;
-
     GLuint       index = location  ;       //  generic vertex attribute to be modified
     GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4
     GLboolean     norm = vnpy->getNorm() ; 
@@ -305,6 +309,18 @@ void Rdr::address(ViewNPY* vnpy)
 
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
+
+    LOG(info) << "Rdr::address (glVertexAttribPointer) "
+              << std::setw(10) << getShaderTag() 
+              << " name " << name 
+              << " type " << vnpy->getType() 
+              << " index " << index
+              << " norm " << norm
+              << " size " << size
+              << " stride " << stride
+              << " offset " << vnpy->getOffset() 
+              ;
+
 
     if( vnpy->getIatt() )
     {

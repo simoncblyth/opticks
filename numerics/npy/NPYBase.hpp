@@ -29,7 +29,7 @@ class NPYBase {
        static std::string  getDigestString(void* bytes, unsigned int nbytes);
        bool isEqualTo(void* bytes, unsigned int nbytes);
        bool isEqualTo(NPYBase* other);
-
+       unsigned int getNumQuads();  // product of all dimensions excluding the last, which must be 4 
        //unsigned int getLength();
        unsigned int getNumItems(int ifr=0, int ito=1);  // default ifr/ito=0/1 is size of 1st dimension
        unsigned int getNumElements();   // size of last dimension

@@ -733,6 +733,9 @@ void App::uploadEvtViz()
 
     m_scene->uploadSelection();
 
+    m_scene->dump_uploads_table("App::uploadEvtViz");
+
+
     TIMER("uploadEvtViz"); 
 }
 

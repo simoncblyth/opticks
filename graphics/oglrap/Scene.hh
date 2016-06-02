@@ -75,6 +75,7 @@ class Scene : public NConfigurable {
    public:
         void setRenderMode(const char* s);
         std::string getRenderMode();
+        void dump_uploads_table(const char* msg="Scene::dump_uploads_table");
    public:
         typedef enum { REC, ALTREC, DEVREC, NUM_RECORD_STYLE } RecordStyle_t ;
         void setRecordStyle(Scene::RecordStyle_t style);
