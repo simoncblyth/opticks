@@ -305,7 +305,10 @@ void Rdr::address(ViewNPY* vnpy)
     GLint         size = vnpy->getSize() ;      //  number of components per generic vertex attribute, must be 1,2,3,4
     GLboolean     norm = vnpy->getNorm() ; 
     GLsizei       stride = vnpy->getStride();   // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
-    const GLvoid* offset = (const GLvoid*)vnpy->getOffset() ;      
+
+    unsigned long offset_ = vnpy->getOffset() ;
+
+    const GLvoid* offset = (const GLvoid*)offset_ ;      
 
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
@@ -318,9 +321,10 @@ void Rdr::address(ViewNPY* vnpy)
               << " norm " << norm
               << " size " << size
               << " stride " << stride
-              << " offset " << vnpy->getOffset() 
+              << " offset_ " << offset_
               ;
 
+    assert( offset_ < stride && "offset_ should always be less than the stride, see ggv-/issues/gui_broken_photon_record_colors");
 
     if( vnpy->getIatt() )
     {

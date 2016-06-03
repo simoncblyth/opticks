@@ -80,10 +80,12 @@ After fix::
     [2016-Jun-03 11:09:11.866378]:info: Rdr::address (glVertexAttribPointer)        rec name rpol type        UNSIGNED_BYTE index 1 norm  size 4 stride 16 offset 8
     [2016-Jun-03 11:09:11.866539]:info: Rdr::address (glVertexAttribPointer)        rec name rflg type       UNSIGNED_SHORT index 2 norm  size 2 stride 16 offset 12
     [2016-Jun-03 11:09:11.866699]:info: Rdr::address (glVertexAttribPointer)        rec name rflq type        UNSIGNED_BYTE index 4 norm  size 4 stride 16 offset 12
+
     [2016-Jun-03 11:09:11.878231]:info: Rdr::address (glVertexAttribPointer)     altrec name rpos type                SHORT index 0 norm  size 4 stride 16 offset 0
     [2016-Jun-03 11:09:11.878409]:info: Rdr::address (glVertexAttribPointer)     altrec name rpol type        UNSIGNED_BYTE index 1 norm  size 4 stride 16 offset 8
     [2016-Jun-03 11:09:11.878542]:info: Rdr::address (glVertexAttribPointer)     altrec name rflg type       UNSIGNED_SHORT index 2 norm  size 2 stride 16 offset 12
     [2016-Jun-03 11:09:11.878684]:info: Rdr::address (glVertexAttribPointer)     altrec name rflq type        UNSIGNED_BYTE index 4 norm  size 4 stride 16 offset 12
+
     [2016-Jun-03 11:09:11.889749]:info: Rdr::address (glVertexAttribPointer)     devrec name rpos type                SHORT index 0 norm  size 4 stride 16 offset 0
     [2016-Jun-03 11:09:11.889904]:info: Rdr::address (glVertexAttribPointer)     devrec name rpol type        UNSIGNED_BYTE index 1 norm  size 4 stride 16 offset 8
     [2016-Jun-03 11:09:11.890067]:info: Rdr::address (glVertexAttribPointer)     devrec name rflg type       UNSIGNED_SHORT index 2 norm  size 2 stride 16 offset 12

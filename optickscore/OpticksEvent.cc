@@ -8,6 +8,8 @@
 // npy-
 #include "uif.h"
 #include "NPY.hpp"
+#include "NPYSpec.hpp"
+
 #include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -43,6 +45,8 @@
 
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 const char* OpticksEvent::PARAMETERS_NAME = "parameters.json" ;
+
+
 
 std::string OpticksEvent::timestamp()
 {
@@ -153,6 +157,21 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     return (*mvn)[elem[1].c_str()] ;
 }
 
+void OpticksEvent::createSpec()
+{
+    // invoked by Opticks::makeEvent   or OpticksEvent::load
+
+    m_genstep_spec = new NPYSpec(0,6,4,0, NPYBase::FLOAT) ;
+    m_fdom_spec = new NPYSpec(3,1,4,0, NPYBase::FLOAT) ;
+    m_idom_spec = new NPYSpec(1,1,4,0, NPYBase::INT) ;
+
+    m_nopstep_spec = new NPYSpec(0,4,4,0, NPYBase::FLOAT) ;
+    m_photon_spec = new NPYSpec(0,4,4,0, NPYBase::FLOAT) ;
+    m_sequence_spec = new NPYSpec(0,1,2,0, NPYBase::ULONGLONG) ;
+    m_phosel_spec = new NPYSpec(0,1,4,0, NPYBase::UCHAR) ;
+    m_record_spec = new NPYSpec(0,m_maxrec,2,4, NPYBase::SHORT) ;
+    m_recsel_spec = new NPYSpec(0,m_maxrec,1,4, NPYBase::UCHAR) ;
+}
 
 
 void OpticksEvent::createBuffers()
@@ -162,29 +181,29 @@ void OpticksEvent::createBuffers()
     // NB allocation is deferred until zeroing and they start at 0 items anyhow
     // NB no gensteps yet, those come externally 
 
-
-    NPY<float>* nop = NPY<float>::make(0, 4, 4); 
+    NPY<float>* nop = NPY<float>::make(m_nopstep_spec); 
     setNopstepData(nop);   
 
-    NPY<float>* pho = NPY<float>::make(0, 4, 4); // must match GPU side photon.h:PNUMQUAD
+    NPY<float>* pho = NPY<float>::make(m_photon_spec); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(0, 1, 2);  
+    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec);  
     setSequenceData(seq);   
 
-    NPY<unsigned char>* phosel = NPY<unsigned char>::make(0,1,4); 
+    NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_phosel_spec); 
     setPhoselData(phosel);   
 
-    NPY<unsigned char>* recsel = NPY<unsigned char>::make(0, m_maxrec,1,4); 
+    NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_recsel_spec); 
     setRecselData(recsel);   
 
-    NPY<short>* rec = NPY<short>::make(0, m_maxrec, 2, 4); 
+    NPY<short>* rec = NPY<short>::make(m_record_spec); 
     setRecordData(rec);   
 
-    NPY<float>* fdom = NPY<float>::make(3,1,4);
+
+    NPY<float>* fdom = NPY<float>::make(m_fdom_spec);
     setFDomain(fdom);
 
-    NPY<int>* idom = NPY<int>::make(1,1,4);
+    NPY<int>* idom = NPY<int>::make(m_idom_spec);
     setIDomain(idom);
 
     // these small ones can be zeroed directly 
@@ -275,48 +294,28 @@ void OpticksEvent::importDomainsBuffer()
 {
     NPY<float>* fdom = getFDomain();
     assert(fdom);
-    if(fdom)
-    {
-        m_space_domain = fdom->getQuad(0);
-        m_time_domain = fdom->getQuad(1);
-        m_wavelength_domain = fdom->getQuad(2);
+    m_space_domain = fdom->getQuad(0);
+    m_time_domain = fdom->getQuad(1);
+    m_wavelength_domain = fdom->getQuad(2);
 
-        if(m_space_domain.w <= 0.)
-        {
+    if(m_space_domain.w <= 0.)
+    {
             LOG(fatal) << "OpticksEvent::importDomainsBuffer BAD FDOMAIN" ; 
             dumpDomains("OpticksEvent::importDomainsBuffer");
             assert(0);
-        }
-
     }
-    else
-        LOG(warning) << "OpticksEvent::importDomainsBuffer"
-                     << " fdom NULL "
-                     ;
 
     NPY<int>* idom = getIDomain();
     assert(idom);
-    if(idom)
-    {
-        m_settings = idom->getQuad(0); 
-        m_maxrec = m_settings.w ; 
 
-        if(m_maxrec != 10)
-        {
+    m_settings = idom->getQuad(0); 
+    m_maxrec = m_settings.w ; 
+
+    if(m_maxrec != 10)
             LOG(fatal) << "OpticksEvent::importDomainsBuffer" 
                        << " from idom settings m_maxrec BUT EXPECT 10 " << m_maxrec 
                         ;
-            assert(0);
-        }
-
-    }
-    else
-    {
-        LOG(warning) << "OpticksEvent::importDomainsBuffer"
-                     << " idom NULL "
-                     ;
- 
-    }
+    assert(m_maxrec == 10);
 }
 
 
@@ -759,6 +758,7 @@ void OpticksEvent::setFakeNopstepPath(const char* path)
 OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* det, const char* cat, bool verbose)
 {
     OpticksEvent* evt = new OpticksEvent(typ, tag, det, cat);
+
     evt->loadBuffers(verbose);
     if(evt->isNoLoad())
     {
@@ -804,6 +804,13 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     importDomainsBuffer();
 
+    createSpec();      // domains import sets m_maxrec allowing spec to be created 
+
+    assert(idom->hasShapeSpec(m_idom_spec));
+    assert(fdom->hasShapeSpec(m_fdom_spec));
+ 
+
+
     NPY<float>* no = NULL ; 
     if(m_fake_nopstep_path)
     {
@@ -814,12 +821,20 @@ void OpticksEvent::loadBuffers(bool verbose)
     {  
         no = NPY<float>::load("no%s", m_typ,  m_tag, udet, qload);
     }
+    if(no) assert(no->hasItemSpec(m_nopstep_spec) );
 
     NPY<float>*              ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet, qload);
     NPY<short>*              rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet, qload);
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet, qload );
+
+    if(ox) assert(ox->hasItemSpec(m_photon_spec) );
+    if(rx) assert(rx->hasItemSpec(m_record_spec) );
+    if(ph) assert(ph->hasItemSpec(m_sequence_spec) );
+    if(ps) assert(ps->hasItemSpec(m_phosel_spec) );
+    if(rs) assert(rs->hasItemSpec(m_recsel_spec) );
+
 
     unsigned int num_nopstep = no ? no->getShape(0) : 0 ;
     unsigned int num_photons = ox ? ox->getShape(0) : 0 ;
@@ -848,45 +863,6 @@ void OpticksEvent::loadBuffers(bool verbose)
               << " num_recsel " << num_recsel
               << " ] "
               ; 
-
-
-    if(num_records == num_photons*m_maxrec)
-    {
-        assert(0 && "have standardized on structured : use reshape at point of creation");
-        LOG(debug) << "OpticksEvent::load flat records (Opticks style) detected " ;
-        //setFlat(true);
-    } 
-    else if(num_records == num_photons)
-    {
-        LOG(debug) << "OpticksEvent::load structured records (cfg4- style) detected :  RESHAPING " ;
-        if(rx && num_records > 0)
-        {
-            if(verbose) rx->Summary("rx init");
-            unsigned int ni = rx->getShape(0);
-            unsigned int nj = rx->getShape(1);
-            unsigned int nk = rx->getShape(2);
-            unsigned int nl = rx->getShape(3);
-            rx->reshape(ni*nj, nk, nl, 0);
-            if(verbose) rx->Summary("rx reshaped");
-        }       
-        
-        if(rs && num_recsel > 0)
-        {
-            if(verbose) rs->Summary("rs init");
-            unsigned int ni = rs->getShape(0);
-            unsigned int nj = rs->getShape(1);
-            unsigned int nk = rs->getShape(2);
-            unsigned int nl = rs->getShape(3);
-            rs->reshape(ni*nj, nk, nl, 0);
-            if(verbose) rs->Summary("rs reshaped");
-        }       
-        //setFlat(true);
-    }
-    else
-    {
-         LOG(info) << "OpticksEvent::load no step " ; 
-    }
-
 
 
     setNopstepData(no);

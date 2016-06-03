@@ -104,21 +104,31 @@ Cannot reproduce. Five invokations without trouble::
 
 
 
-
-
-
-
-ISSUE : Photon record coloring M key seems wrong 
+FIXED: Photon record coloring M key seems wrong 
 ----------------------------------------------------------
 
 Suspect the offsets are wrong in Rdr::address 
 
+* covered in ggv-/issues/gui_broken_photon_record_colors :doc:`../gui_broken_photon_record_colors`
 
 
+Move GCache/OpticksResource inside Opticks ?
+---------------------------------------------- 
+
+* how does CG4 use GCache ? Can it use OpticksResource directly ?
 
 
+[FIXED] CFG4 load count mismatch assert
+------------------------------------------
 
+* fixed by removing the reshaping on load
 
+::
+
+    simon:geant4_opticks_integration blyth$ 
+    simon:geant4_opticks_integration blyth$ ggv-pmt-test --cfg4  --load
+
+    ...
 
 
 Tests Commands To Run Whilst Refactoring

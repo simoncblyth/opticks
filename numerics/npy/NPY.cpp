@@ -3,8 +3,9 @@
 
 #include <iomanip>
 #include <algorithm>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+#include "NPYSpec.hpp"
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 
@@ -406,6 +407,37 @@ void NPY<T>::save(const char* path_)
 
     aoba::SaveArrayAsNumpy<T>(path_, itemcount, itemshape.c_str(), getValues());
 }
+
+
+
+
+
+
+template <typename T>
+NPY<T>* NPY<T>::make(NPYSpec* argspec)
+{
+    std::vector<int> shape ; 
+    for(unsigned int x=0 ; x < 4 ; x++)
+    {
+        unsigned int nx = argspec->getDimension(x) ;
+        if(x == 0 || nx > 0) shape.push_back(nx) ;
+        // only 1st dimension zero is admissable
+    }
+
+    NPY<T>* npy = make(shape);
+    NPYSpec* npyspec = npy->getShapeSpec(); 
+
+    bool spec_match = npyspec->isEqualTo(argspec) ;
+
+    if(!spec_match)
+    {
+       argspec->Summary("argspec"); 
+       npyspec->Summary("npyspec"); 
+    }
+    assert( spec_match && "NPY<T>::make spec mismatch " );
+    return npy ; 
+}
+
 
 
 template <typename T>

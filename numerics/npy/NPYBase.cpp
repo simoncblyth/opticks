@@ -15,10 +15,39 @@
 #include <boost/algorithm/string/replace.hpp>
 
 
+#include "NPYSpec.hpp"
 #include "NLog.hpp"
 
 
 bool NPYBase::GLOBAL_VERBOSE = false ; 
+
+
+const char* NPYBase::FLOAT_ = "FLOAT" ; 
+const char* NPYBase::SHORT_ = "SHORT" ; 
+const char* NPYBase::DOUBLE_ = "DOUBLE" ; 
+const char* NPYBase::INT_ = "INT" ; 
+const char* NPYBase::UINT_ = "UINT" ; 
+const char* NPYBase::CHAR_ = "CHAR" ; 
+const char* NPYBase::UCHAR_ = "UCHAR" ; 
+const char* NPYBase::ULONGLONG_ = "ULONGLONG" ; 
+
+const char* NPYBase::TypeName(Type_t type)
+{
+    const char* name = NULL ; 
+    switch(type)
+    { 
+        case FLOAT:name=FLOAT_;break;
+        case SHORT:name=SHORT_;break;
+        case DOUBLE:name=DOUBLE_;break;
+        case INT:name=INT_;break;
+        case UINT:name=UINT_;break;
+        case CHAR:name=CHAR_;break;
+        case UCHAR:name=UCHAR_;break;
+        case ULONGLONG:name=ULONGLONG_;break;
+    } 
+    return name ; 
+}
+
 
 
 void NPYBase::setGlobalVerbose(bool verbose)
@@ -31,7 +60,20 @@ const char* NPYBase::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ;
 void NPYBase::init()
 {
    updateDimensions(); 
+   m_shape_spec = new NPYSpec(m_ni, m_nj, m_nk, m_nl, m_type ); 
+   m_item_spec = new NPYSpec(0, m_nj, m_nk, m_nl, m_type ); 
 }
+
+
+void NPYBase::updateDimensions()
+{
+    m_ni = getShape(0); 
+    m_nj = getShape(1);
+    m_nk = getShape(2);
+    m_nl = getShape(3);  // gives 0 when beyond dimensions
+    m_dim = m_shape.size();
+}
+
 
 unsigned int NPYBase::getNumQuads()
 {
@@ -53,14 +95,6 @@ unsigned int NPYBase::getNumQuads()
 }
 
 
-void NPYBase::updateDimensions()
-{
-    m_ni = getShape(0); 
-    m_nj = getShape(1);
-    m_nk = getShape(2);
-    m_nl = getShape(3);  // gives 0 when beyond dimensions
-    m_dim = m_shape.size();
-}
 
 bool NPYBase::hasShape(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl)
 {
@@ -71,6 +105,18 @@ bool NPYBase::hasItemShape(unsigned int nj, unsigned int nk, unsigned int nl)
 {
     return m_nj == nj && m_nk == nk && m_nl == nl ;
 }
+
+bool NPYBase::hasItemSpec(NPYSpec* item_spec)
+{
+    return m_item_spec->isEqualTo(item_spec); 
+}
+
+bool NPYBase::hasShapeSpec(NPYSpec* shape_spec)
+{
+    return m_shape_spec->isEqualTo(shape_spec); 
+}
+
+
 
 
 

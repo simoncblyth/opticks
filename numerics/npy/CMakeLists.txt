@@ -42,6 +42,7 @@ add_library( ${name}  SHARED
     NPYBase.cpp
     NPY.cpp
     ViewNPY.cpp
+    NPYSpec.cpp
     MultiViewNPY.cpp
     GLMPrint.cpp
     GLMFormat.cpp
@@ -107,6 +108,7 @@ GLMFormat.hpp
 NPYBase.hpp
 NPY.hpp
 ViewNPY.hpp
+NPYSpec.hpp
 MultiViewNPY.hpp
 G4StepNPY.hpp
 TorchStepNPY.hpp

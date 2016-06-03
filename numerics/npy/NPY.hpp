@@ -20,7 +20,7 @@ class G4StepNPY ;
 #include "NQuad.hpp"
 
 struct NSlice ; 
-
+class NPYSpec ; 
 
 /*
 Interop NumPy -> NPY
@@ -45,7 +45,6 @@ recognises the type on loading, thanks to the numpy.hpp metadata header.
 
 */
 
-
 template <class T>
 class NPY : public NPYBase {
 
@@ -65,6 +64,7 @@ class NPY : public NPYBase {
        // NB favor vec4 over vec3 for better GPU performance (due to memory coalescing/alignment)
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
 
+       static NPY<T>* make(NPYSpec* spec);
        static NPY<T>* make(std::vector<int>& shape);
        static NPY<T>* make(unsigned int ni);
        static NPY<T>* make(unsigned int ni, unsigned int nj );

@@ -16,6 +16,7 @@ class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
+class NPYSpec ; 
 
 /*
 OpticksEvent
@@ -67,6 +68,7 @@ primary
 
 
 class OpticksEvent {
+      friend class Opticks ; 
    public:
       static const char* PARAMETERS_NAME ;  
       static const char* TIMEFORMAT ;  
@@ -81,6 +83,8 @@ class OpticksEvent {
       static OpticksEvent* load(const char* typ, const char* tag, const char* det, const char* cat=NULL, bool verbose=false);
    public:
        OpticksEvent(const char* typ, const char* tag, const char* det, const char* cat=NULL);
+       // CAUTION: typically created via Opticks::makeEvent 
+       //          which sets maxrec before creating buffers
    public:
        bool isNoLoad();
        bool isLoaded();
@@ -156,8 +160,7 @@ class OpticksEvent {
    public: 
        void createBuffers(); 
    private:
-       // invoked internally, as knock on from setGenstepData 
-       void createHostBuffers(); 
+       void createSpec(); 
    private:
        void setPhotonData(NPY<float>* photon_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
@@ -289,6 +292,16 @@ class OpticksEvent {
 
        const char*     m_fake_nopstep_path ; 
 
+       NPYSpec* m_fdom_spec ;  
+       NPYSpec* m_idom_spec ;  
+       NPYSpec* m_genstep_spec ;  
+       NPYSpec* m_nopstep_spec ;  
+       NPYSpec* m_photon_spec ;  
+       NPYSpec* m_record_spec ;  
+       NPYSpec* m_phosel_spec ;  
+       NPYSpec* m_recsel_spec ;  
+       NPYSpec* m_sequence_spec ;  
+
 };
 
 
@@ -336,7 +349,17 @@ inline OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* 
           m_seqhis(NULL),
           m_seqmat(NULL),
           m_bndidx(NULL),
-          m_fake_nopstep_path(NULL)
+          m_fake_nopstep_path(NULL),
+
+          m_fdom_spec(NULL),
+          m_idom_spec(NULL),
+          m_genstep_spec(NULL),
+          m_nopstep_spec(NULL),
+          m_photon_spec(NULL),
+          m_record_spec(NULL),
+          m_phosel_spec(NULL),
+          m_recsel_spec(NULL),
+          m_sequence_spec(NULL)
 {
     init();
 }

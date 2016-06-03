@@ -9,11 +9,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+class NPYSpec ; 
 
 class NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
        static const char* DEFAULT_DIR_TEMPLATE  ; 
+
+       static const char* FLOAT_ ; 
+       static const char* SHORT_ ; 
+       static const char* DOUBLE_ ; 
+       static const char* INT_ ; 
+       static const char* UINT_ ; 
+       static const char* CHAR_ ; 
+       static const char* UCHAR_ ; 
+       static const char* ULONGLONG_ ; 
+
+       static const char* TypeName(Type_t type);
+
        static bool GLOBAL_VERBOSE ; 
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
@@ -21,9 +34,16 @@ class NPYBase {
         bool hasData();
    public:
        // shape related
+       NPYSpec* getShapeSpec();
+       NPYSpec* getItemSpec();
        std::vector<int>& getShapeVector();
+
        bool hasShape(unsigned int ni, unsigned int nj=0, unsigned int nk=0, unsigned int nl=0);
        bool hasItemShape(unsigned int nj, unsigned int nk=0, unsigned int nl=0);
+
+       bool hasShapeSpec(NPYSpec* spec); 
+       bool hasItemSpec(NPYSpec* spec); 
+
        std::string  getItemShape(unsigned int ifr=1);
        std::string  getDigestString();
        static std::string  getDigestString(void* bytes, unsigned int nbytes);
@@ -101,6 +121,8 @@ class NPYBase {
        unsigned int       m_nj ; 
        unsigned int       m_nk ; 
        unsigned int       m_nl ; 
+       NPYSpec*           m_shape_spec ; 
+       NPYSpec*           m_item_spec ; 
 
        unsigned char      m_sizeoftype ; 
        Type_t             m_type ; 
@@ -121,6 +143,8 @@ class NPYBase {
 
 inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
          :
+         m_shape_spec(NULL),
+         m_item_spec(NULL),
          m_sizeoftype(sizeoftype),
          m_type(type),
          m_buffer_id(-1),
@@ -148,6 +172,17 @@ inline bool NPYBase::hasData()
 {
     return m_has_data ; 
 }
+
+inline NPYSpec* NPYBase::getShapeSpec()
+{
+    return m_shape_spec ; 
+}
+inline NPYSpec* NPYBase::getItemSpec()
+{
+    return m_item_spec ; 
+}
+
+
 
 
 // shape related

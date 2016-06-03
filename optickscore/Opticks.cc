@@ -417,7 +417,7 @@ OpticksEvent* Opticks::makeEvent()
     evt->setWavelengthDomain(getWavelengthDomain());
 
     evt->setMaxRec(m_cfg->getRecordMax());
-
+    evt->createSpec();
     evt->createBuffers();  // not-allocated and with itemcount 0 
  
     // ctor args define the identity of the Evt, coming in from config
