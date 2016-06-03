@@ -423,18 +423,34 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 {
     m_record_data = record_data  ;
 
-    //                                               j k l sz   type                  norm   iatt   item_from_dim
-    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0,4,ViewNPY::SHORT          ,true,  false, 2);
-    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,0,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
 
-    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,0,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
+#ifdef OLDWAY
+    //                                               j k l  sz   type                  norm   iatt   item_from_dim
+    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0 ,4,ViewNPY::SHORT          ,true,  false, 2);
+    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,1,0,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
+
+    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,1,2,0 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
     // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
 
-    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,0,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
+    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,1,2,0 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
     // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
-    
-    // structured record array => item_from_dim=2 the count comes from product of 1st two dimensions
 
+#else
+    // see ggv-/issues/gui_broken_photon_record_colors.rst note the shift of one to the right of the (j,k,l)
+
+    //                                               j k l  sz   type                  norm   iatt   item_from_dim
+    ViewNPY* rpos = new ViewNPY("rpos",m_record_data,0,0,0 ,4,ViewNPY::SHORT          ,true,  false, 2);
+    ViewNPY* rpol = new ViewNPY("rpol",m_record_data,0,1,0 ,4,ViewNPY::UNSIGNED_BYTE  ,true,  false, 2);   
+
+    ViewNPY* rflg = new ViewNPY("rflg",m_record_data,0,1,2 ,2,ViewNPY::UNSIGNED_SHORT ,false, true,  2);   
+    // NB k=2, value offset from which to start accessing data to fill the shaders uvec4 x y (z, w)  
+
+    ViewNPY* rflq = new ViewNPY("rflq",m_record_data,0,1,2 ,4,ViewNPY::UNSIGNED_BYTE  ,false, true,  2);   
+    // NB k=2 again : try a UBYTE view of the same data for access to boundary,m1,history-hi,history-lo
+
+#endif
+
+    // structured record array => item_from_dim=2 the count comes from product of 1st two dimensions
 
     // ViewNPY::TYPE need not match the NPY<T>,
     // OpenGL shaders will view the data as of the ViewNPY::TYPE, 

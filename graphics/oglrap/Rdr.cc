@@ -301,10 +301,10 @@ void Rdr::address(ViewNPY* vnpy)
     }
 
 
-    GLuint       index = location  ;       //  generic vertex attribute to be modified
-    GLint         size = vnpy->getSize() ; //  number of components per generic vertex attribute, must be 1,2,3,4
+    GLuint       index = location  ;            //  generic vertex attribute to be modified
+    GLint         size = vnpy->getSize() ;      //  number of components per generic vertex attribute, must be 1,2,3,4
     GLboolean     norm = vnpy->getNorm() ; 
-    GLsizei       stride = vnpy->getStride();  ;         // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
+    GLsizei       stride = vnpy->getStride();   // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
     const GLvoid* offset = (const GLvoid*)vnpy->getOffset() ;      
 
     // offset of the first component of the first generic vertex attribute 
@@ -313,7 +313,7 @@ void Rdr::address(ViewNPY* vnpy)
     LOG(info) << "Rdr::address (glVertexAttribPointer) "
               << std::setw(10) << getShaderTag() 
               << " name " << name 
-              << " type " << vnpy->getType() 
+              << " type " << std::setw(20) << vnpy->getTypeName() 
               << " index " << index
               << " norm " << norm
               << " size " << size
@@ -514,10 +514,5 @@ void Rdr::download( OpticksEvent* evt )
     if(ph)
         Rdr::download(ph);
 
-    /*
-    NPY<short>* au = evt->getAuxData();
-    if(au)
-        Rdr::download(au);
-    */
 }
 

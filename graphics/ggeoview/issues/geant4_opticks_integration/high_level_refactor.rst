@@ -84,6 +84,30 @@ Full build seems to fix::
     opticks-full
 
 
+Nope its back::
+
+    simon:~ blyth$ op -c
+    ...
+    [2016-Jun-03 10:21:38.910721]:info: OPropertyLib::makeTexture bufShape 2,4096,1 numBytes 32768 nx 4096 ny 1 empty false
+    [2016-Jun-03 10:21:38.911186]:info: OpEngine::prepareOptiX (OSourceLib)
+    [2016-Jun-03 10:21:38.911296]:info: OPropertyLib::makeTexture bufShape 1,1024,1 numBytes 4096 nx 1024 ny 1 empty false
+    /Users/blyth/env/bin/op.sh: line 372: 97061 Segmentation fault: 11  /usr/local/opticks/bin/GGeoView -c
+    simon:~ blyth$ 
+
+
+Cannot reproduce. Five invokations without trouble::
+
+    op
+    op -c
+    op -s 
+
+
+
+
+
+
+
+
 ISSUE : Photon record coloring M key seems wrong 
 ----------------------------------------------------------
 
