@@ -39,9 +39,9 @@ class GSurfaceLib : public GPropertyLib {
        static const char* keyspec ;
    public:
        void save();
-       static GSurfaceLib* load(GCache* cache);
+       static GSurfaceLib* load(Opticks* cache);
    public:
-       GSurfaceLib(GCache* cache); 
+       GSurfaceLib(Opticks* cache); 
    public:
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");
@@ -108,7 +108,7 @@ class GSurfaceLib : public GPropertyLib {
 
 };
 
-inline GSurfaceLib::GSurfaceLib(GCache* cache) 
+inline GSurfaceLib::GSurfaceLib(Opticks* cache) 
     :
     GPropertyLib(cache, "GSurfaceLib"),
     m_fake_efficiency(-1.f),

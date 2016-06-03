@@ -4,11 +4,8 @@
 #include <string>
 
 // optickscore-
-class OpticksResource ; 
+class Opticks ; 
 class OpticksQuery ; 
-
-// ggeo-
-class GCache ;
 
 // cfg4-
 class CPropLib ; 
@@ -30,7 +27,7 @@ class CDetector : public G4VUserDetectorConstruction
     friend class CTestDetector ; 
     friend class CGDMLDetector ; 
  public:
-    CDetector(GCache* cache, OpticksQuery* query);
+    CDetector(Opticks* opticks, OpticksQuery* query);
     void setVerbosity(unsigned int verbosity);
     virtual ~CDetector();
  private:
@@ -63,8 +60,7 @@ class CDetector : public G4VUserDetectorConstruction
     // via bbox
     const glm::vec4& getCenterExtent();
  private:
-    GCache*            m_cache ;
-    OpticksResource*   m_resource ;
+    Opticks*           m_opticks ;
     OpticksQuery*      m_query ;
     CPropLib*          m_lib ; 
     G4VPhysicalVolume* m_top ;
@@ -74,10 +70,9 @@ class CDetector : public G4VUserDetectorConstruction
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
 }; 
 
-inline CDetector::CDetector(GCache* cache, OpticksQuery* query)
+inline CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
   : 
-  m_cache(cache),
-  m_resource(NULL),
+  m_opticks(opticks),
   m_query(query),
   m_lib(NULL),
   m_top(NULL),

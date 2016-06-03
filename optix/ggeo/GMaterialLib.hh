@@ -80,9 +80,9 @@ class GMaterialLib : public GPropertyLib {
        static const char* keyspec ;
    public:
        void save();
-       static GMaterialLib* load(GCache* cache);
+       static GMaterialLib* load(Opticks* cache);
    public:
-       GMaterialLib(GCache* cache); 
+       GMaterialLib(Opticks* cache); 
    public:
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");
@@ -128,7 +128,7 @@ class GMaterialLib : public GPropertyLib {
 
 };
 
-inline GMaterialLib::GMaterialLib(GCache* cache) 
+inline GMaterialLib::GMaterialLib(Opticks* cache) 
     :
     GPropertyLib(cache, "GMaterialLib")
 {

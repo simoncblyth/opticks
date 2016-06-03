@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 class OpticksQuery ; 
+class OpticksColors ; 
 
 
 class OpticksResource {
@@ -62,6 +63,7 @@ class OpticksResource {
        const char* getCtrl();
     public:
        OpticksQuery* getQuery();
+       OpticksColors* getColors();
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
@@ -94,7 +96,8 @@ class OpticksResource {
        const char* m_digest ;
        bool        m_valid ; 
    private:
-       OpticksQuery* m_query ;
+       OpticksQuery*  m_query ;
+       OpticksColors* m_colors ;
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 
@@ -102,6 +105,7 @@ class OpticksResource {
        bool        m_dpib ; 
        bool        m_other ; 
        const char* m_detector ;
+       
    private:
       std::map<std::string, std::string> m_metadata ;  
 };
@@ -124,6 +128,7 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
        m_digest(NULL),
        m_valid(true),
        m_query(NULL),
+       m_colors(NULL),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),

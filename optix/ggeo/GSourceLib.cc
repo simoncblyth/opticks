@@ -16,7 +16,7 @@ void GSourceLib::save()
     saveToCache();
 }
 
-GSourceLib* GSourceLib::load(GCache* cache)
+GSourceLib* GSourceLib::load(Opticks* cache)
 {
     GSourceLib* lib = new GSourceLib(cache);
     lib->loadFromCache();

@@ -24,8 +24,8 @@
 template <typename T> class NPY ;
 class NPYBase ; 
 
+class Opticks ; 
 class OpticksResource ; 
-class GCache ; 
 class GItemList ; 
 class GAttrSeq ; 
 
@@ -58,7 +58,7 @@ class GPropertyLib {
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
     public:
-        GPropertyLib(GCache* cache, const char* type);
+        GPropertyLib(Opticks* cache, const char* type);
         virtual ~GPropertyLib();
     public:
         const char* getType();
@@ -135,7 +135,7 @@ class GPropertyLib {
         void         setBuffer(NPY<float>* buf);
         void         setNames(GItemList* names);
     protected:
-        GCache*                              m_cache ; 
+        Opticks*                             m_cache ; 
         OpticksResource*                     m_resource ; 
         NPY<float>*                          m_buffer ; 
         GAttrSeq*                            m_attrnames ; // attributed name list 
@@ -152,7 +152,7 @@ class GPropertyLib {
         std::vector<GPropertyMap<float>*>    m_raw ; 
 };
 
-inline GPropertyLib::GPropertyLib(GCache* cache, const char* type) 
+inline GPropertyLib::GPropertyLib(Opticks* cache, const char* type) 
      :
      m_cache(cache),
      m_resource(NULL),

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-class GCache ; 
+class Opticks ; 
 class GItemList ;
 template <typename T> class GPropertyMap ;
 
@@ -15,9 +15,9 @@ class GScintillatorLib : public GPropertyLib {
     public:
         void save();
         void dump(const char* msg="GScintillatorLib::dump");
-        static GScintillatorLib* load(GCache* cache);
+        static GScintillatorLib* load(Opticks* cache);
     public:
-        GScintillatorLib(GCache* cache, unsigned int icdf_length=4096);
+        GScintillatorLib(Opticks* cache, unsigned int icdf_length=4096);
     public:
         void add(GPropertyMap<float>* scint);
         unsigned int getNumScintillators();
@@ -38,7 +38,7 @@ class GScintillatorLib : public GPropertyLib {
 
 };
 
-inline GScintillatorLib::GScintillatorLib( GCache* cache, unsigned int icdf_length) 
+inline GScintillatorLib::GScintillatorLib( Opticks* cache, unsigned int icdf_length) 
     :
     GPropertyLib(cache, "GScintillatorLib"),
     m_icdf_length(icdf_length)

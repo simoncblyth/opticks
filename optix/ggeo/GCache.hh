@@ -66,7 +66,6 @@ class GCache {
     private:
           Opticks*          m_opticks ; 
           OpticksResource*  m_resource; 
-          OpticksColors*    m_colors ; 
           GFlags*           m_flags ; 
           Types*            m_types ;
           Typ*              m_typ ;
@@ -85,7 +84,6 @@ inline GCache::GCache(Opticks* opticks)
        :
        m_opticks(opticks),
        m_resource(NULL),
-       m_colors(NULL),
        m_flags(NULL),
        m_types(NULL),
        m_typ(NULL),
@@ -108,7 +106,6 @@ inline OpticksResource* GCache::getResource()
 {
     return m_resource ; 
 }
-
 inline Opticks* GCache::getOpticks()
 {
     return m_opticks ; 

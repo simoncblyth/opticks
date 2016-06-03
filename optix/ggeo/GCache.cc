@@ -37,12 +37,7 @@ OpticksQuery* GCache::getQuery()
 
 OpticksColors* GCache::getColors()
 {
-    if(m_colors == NULL)
-    {
-        std::string prefdir = m_resource->getPreferenceDir("GCache");
-        m_colors = OpticksColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
-    }
-    return m_colors ;
+    return m_resource->getColors() ;
 }
 
 Typ* GCache::getTyp()

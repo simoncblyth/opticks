@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-class GCache ; 
+class Opticks ; 
 class GItemList ;
 class GSource ; 
 template <typename T> class GPropertyMap ;
@@ -13,9 +13,9 @@ class GSourceLib : public GPropertyLib {
         static const unsigned int icdf_length ; 
         static const char* radiance_ ; 
         void save();
-        static GSourceLib* load(GCache* cache);
+        static GSourceLib* load(Opticks* cache);
     public:
-        GSourceLib(GCache* cache);
+        GSourceLib(Opticks* cache);
     public:
         void add(GSource* source);
         unsigned int getNumSources();
@@ -38,7 +38,7 @@ class GSourceLib : public GPropertyLib {
 
 };
 
-inline GSourceLib::GSourceLib( GCache* cache) 
+inline GSourceLib::GSourceLib( Opticks* cache) 
     :
     GPropertyLib(cache, "GSourceLib")
 {

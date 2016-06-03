@@ -12,6 +12,7 @@
 
 
 // opticks-
+class Opticks ; 
 class OpticksColors ; 
 class Composition ; 
 
@@ -86,8 +87,8 @@ class GGeo : public NConfigurable {
         typedef std::map<unsigned int, std::string> Index_t ;
         static bool ctrlHasKey(const char* ctrl, const char* key);
     public:
-        GGeo(GCache* cache); 
-        GCache* getCache();
+        GGeo(Opticks* cache); 
+        Opticks* getCache();
         const char* getIdPath();
         bool isValid();
     public:
@@ -292,7 +293,7 @@ class GGeo : public NConfigurable {
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
-        GCache*                       m_cache ; 
+        Opticks*                      m_cache ; 
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
@@ -356,7 +357,7 @@ class GGeo : public NConfigurable {
 };
 
 
-inline GGeo::GGeo(GCache* cache) :
+inline GGeo::GGeo(Opticks* cache) :
    m_cache(cache), 
    m_composition(NULL), 
    m_treecheck(NULL), 
@@ -584,7 +585,7 @@ inline gfloat3* GGeo::getHigh()
 
 
 
-inline GCache* GGeo::getCache()
+inline Opticks* GGeo::getCache()
 {
     return m_cache ; 
 }

@@ -76,7 +76,7 @@ void GGeo::init()
 {
    m_cache->setGGeo(this); 
 
-   Opticks* opticks = m_cache->getOpticks(); 
+   //Opticks* opticks = m_cache->getOpticks(); 
    OpticksResource* resource = m_cache->getResource(); 
 
    const char* idpath = resource->getIdPath() ;
@@ -123,6 +123,7 @@ void GGeo::init()
 
    m_colorizer = new GColorizer( this, style ); // colorizer needs full tree, so pre-cache only 
 
+
    m_bndlib = new GBndLib(m_cache);
    m_materiallib = new GMaterialLib(m_cache);
    m_surfacelib  = new GSurfaceLib(m_cache);
@@ -131,7 +132,7 @@ void GGeo::init()
    m_bndlib->setSurfaceLib(m_surfacelib);
 
    m_scintillatorlib  = new GScintillatorLib(m_cache);
-   m_sourcelib  = new GSourceLib(m_cache);
+   m_sourcelib  = new GSourceLib(opticks);
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 

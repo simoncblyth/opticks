@@ -6,6 +6,7 @@
 
 #include "Index.hpp"
 #include "GAttrSeq.hh"
+#include "Opticks.hh"
 
 #include "regexsearch.hh"
 #include "NLog.hpp"

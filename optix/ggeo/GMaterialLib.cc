@@ -1,5 +1,5 @@
 #include "GMaterialLib.hh"
-#include "GCache.hh"
+#include "Opticks.hh"
 #include "GMaterial.hh"
 #include "GItemList.hh"
 #include "NPY.hpp"
@@ -33,7 +33,7 @@ void GMaterialLib::save()
     saveToCache();
 }
 
-GMaterialLib* GMaterialLib::load(GCache* cache)
+GMaterialLib* GMaterialLib::load(Opticks* cache)
 {
     GMaterialLib* mlib = new GMaterialLib(cache);
     mlib->loadFromCache();

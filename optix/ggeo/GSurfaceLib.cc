@@ -1,7 +1,8 @@
 #include <iomanip>
 
+#include "Opticks.hh"
+
 #include "GSurfaceLib.hh"
-#include "GCache.hh"
 #include "GOpticalSurface.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
@@ -44,7 +45,7 @@ void GSurfaceLib::save()
     saveToCache();
     saveOpticalBuffer();
 }
-GSurfaceLib* GSurfaceLib::load(GCache* cache)
+GSurfaceLib* GSurfaceLib::load(Opticks* cache)
 {
     GSurfaceLib* lib = new GSurfaceLib(cache);
     lib->loadFromCache();

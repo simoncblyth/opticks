@@ -6,6 +6,9 @@
 
 #include "CPropLib.hh"
 
+// optickscore-
+#include "Opticks.hh"
+
 
 // ggeo-
 #include "GCache.hh"
@@ -42,11 +45,12 @@ const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
 void CPropLib::init()
 {
     bool constituents ; 
-    m_bndlib = GBndLib::load(m_cache, constituents=true);
+
+    m_bndlib = GBndLib::load(m_opticks, constituents=true);
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
 
-    m_sclib = GScintillatorLib::load(m_cache);
+    m_sclib = GScintillatorLib::load(m_opticks);
     m_domain = m_mlib->getDefaultDomain();
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
@@ -158,7 +162,7 @@ const G4Material* CPropLib::makeMaterial(const char* matname)
 
 GCSG* CPropLib::getPmtCSG(NSlice* slice)
 {
-    GPmt* pmt = GPmt::load( m_cache, m_bndlib, 0, slice );    // pmtIndex:0
+    GPmt* pmt = GPmt::load( m_opticks, m_bndlib, 0, slice );    // pmtIndex:0
     GCSG* csg = pmt->getCSG();
     return csg ;
 }
@@ -490,8 +494,8 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
 void CPropLib::dump(const char* msg)
 {
     unsigned int ni = getNumMaterials() ;
-    int index = m_cache->getLastArgInt();
-    const char* lastarg = m_cache->getLastArg();
+    int index = m_opticks->getLastArgInt();
+    const char* lastarg = m_opticks->getLastArg();
 
     if(index < ni)
     {   

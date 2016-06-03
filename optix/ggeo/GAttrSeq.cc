@@ -1,6 +1,7 @@
 #include "GAttrSeq.hh"
 
 //opticks-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 

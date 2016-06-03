@@ -34,7 +34,7 @@ void GBndLib::save()
     saveIndexBuffer();  
 }
 
-GBndLib* GBndLib::load(GCache* cache, bool constituents)
+GBndLib* GBndLib::load(Opticks* cache, bool constituents)
 {
     GBndLib* blib = new GBndLib(cache);
     blib->loadIndexBuffer();

@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-class GCache ; 
+class Opticks ; 
 class GAttrSeq ; 
 class Index ; 
 
@@ -14,7 +14,7 @@ class GFlags {
     public:
         static const char* ENUM_HEADER_PATH ;  
     public:
-        GFlags(GCache* cache, const char* path=ENUM_HEADER_PATH);
+        GFlags(Opticks* cache, const char* path=ENUM_HEADER_PATH);
         void save(const char* idpath);
     private:
         void init(const char* path);
@@ -25,13 +25,13 @@ class GFlags {
         Index*      getIndex();  
         GAttrSeq*   getAttrIndex();  
     private:
-        GCache*      m_cache  ;
+        Opticks*      m_cache  ;
         GAttrSeq*    m_aindex ; 
         Index*       m_index ; 
 };
 
 
-inline GFlags::GFlags(GCache* cache, const char* path) 
+inline GFlags::GFlags(Opticks* cache, const char* path) 
     :
     m_cache(cache),
     m_aindex(NULL),

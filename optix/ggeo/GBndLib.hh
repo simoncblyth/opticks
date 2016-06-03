@@ -7,8 +7,9 @@
 #include "GVector.hh"
 #include "GPropertyLib.hh"
 
+class Opticks ; 
+
 template <typename T> class GPropertyMap ;
-class GCache ; 
 class GMaterialLib ; 
 class GSurfaceLib ; 
 //class GBnd ; 
@@ -40,9 +41,9 @@ class GBndLib : public GPropertyLib {
             };
   public:
        void save();
-       static GBndLib* load(GCache* cache, bool constituents=false);
+       static GBndLib* load(Opticks* cache, bool constituents=false);
   public:
-       GBndLib(GCache* cache);
+       GBndLib(Opticks* cache);
   private:
        void init(); 
   public:
@@ -136,7 +137,7 @@ class GBndLib : public GPropertyLib {
 };
 
 
-inline GBndLib::GBndLib(GCache* cache) 
+inline GBndLib::GBndLib(Opticks* cache) 
    :
     GPropertyLib(cache, "GBndLib"),
     m_mlib(NULL),

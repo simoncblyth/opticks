@@ -31,7 +31,7 @@ void GScintillatorLib::save()
     saveRaw();
 }
 
-GScintillatorLib* GScintillatorLib::load(GCache* cache)
+GScintillatorLib* GScintillatorLib::load(Opticks* cache)
 {
     GScintillatorLib* lib = new GScintillatorLib(cache);
     lib->loadFromCache();

@@ -1,5 +1,6 @@
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
+#include "OpticksColors.hh"
 #include <cassert>
 
 // npy-
@@ -387,6 +388,16 @@ const char* OpticksResource::getMetaValue(const char* key)
 }
 
 
+OpticksColors* OpticksResource::getColors()
+{
+    if(!m_colors)
+    {
+        // deferred to avoid output prior to logging setup
+        std::string prefdir = getPreferenceDir("GCache");
+        m_colors = OpticksColors::load(prefdir.c_str(),"GColors.json");   // colorname => hexcode
+    }
+    return m_colors ;
+}
 
 
 

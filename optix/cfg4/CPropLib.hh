@@ -4,6 +4,10 @@
 #include <string>
 #include <map>
 
+// optickscore-
+class Opticks; 
+
+
 // ggeo-
 class GCache ; 
 class GBndLib ;
@@ -45,7 +49,7 @@ class CPropLib {
    public:
        static const char* SENSOR_MATERIAL ;
    public:
-       CPropLib(GCache* cache, int verbosity=0);
+       CPropLib(Opticks* opticks, int verbosity=0);
    private:
        void init();
        void checkConstants(); 
@@ -96,7 +100,7 @@ class CPropLib {
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
 
    private:
-       GCache*            m_cache ; 
+       Opticks*           m_opticks ; 
        int                m_verbosity ; 
        GBndLib*           m_bndlib ; 
        GMaterialLib*      m_mlib ; 
@@ -118,9 +122,9 @@ class CPropLib {
 
 };
 
-inline CPropLib::CPropLib(GCache* cache, int verbosity)
+inline CPropLib::CPropLib(Opticks* opticks, int verbosity)
   : 
-  m_cache(cache),
+  m_opticks(opticks),
   m_verbosity(verbosity),
   m_bndlib(NULL),
   m_mlib(NULL),
