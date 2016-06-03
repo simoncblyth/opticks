@@ -23,6 +23,48 @@ Approach
 * move infrastructure like GCache/OpticksResource into Opticks
 
 
+Move GCache/OpticksResource inside Opticks ?
+---------------------------------------------- 
+
+* how does CG4 use GCache ? Can it use OpticksResource directly ?
+
+* move from GCache to OpticksResource held up only by GColors use of GBuffer
+
+  * migrating GColors from GBuffer to NPY would allow GColors to become OpticksColors
+    and then the GCache could be replaced by OpticksResource  
+
+
+Tests Commands To Run Whilst Refactoring
+------------------------------------------
+
+
+G4 running::
+
+    ## G4 test running starting from genstep, which means non-dynamic record/photon/sequence collection
+
+    ggv-pmt-test --cfg4  --dbg                ## geant4 with test PMT in box geometry
+
+    ggv-pmt-test --cfg4  --dbg --load         ## loading and vizualizing into GGeoView
+
+    
+    ## G4 gdml geometry running starting from nothing, dynamic collection
+
+    ggv-g4gun --dbg 
+
+    ggv-g4gun --dbg  --load
+
+        ## photon selection menu item doesnt show up in GUI
+ 
+
+Op running::
+
+    ## Op full geometry running from torch genstep 
+
+    op 
+
+
+
+
 [FIXED] OP record vis broken by OpticksEvent simplifications
 ----------------------------------------------------------------
 
@@ -102,6 +144,8 @@ Cannot reproduce. Five invokations without trouble::
     op -s 
 
 
+* maybe an issue with build system dependencies, on rare occasions have trouble getting an update in NPY thru to optickscore 
+
 
 
 FIXED: Photon record coloring M key seems wrong 
@@ -111,11 +155,6 @@ Suspect the offsets are wrong in Rdr::address
 
 * covered in ggv-/issues/gui_broken_photon_record_colors :doc:`../gui_broken_photon_record_colors`
 
-
-Move GCache/OpticksResource inside Opticks ?
----------------------------------------------- 
-
-* how does CG4 use GCache ? Can it use OpticksResource directly ?
 
 
 [FIXED] CFG4 load count mismatch assert
@@ -129,36 +168,5 @@ Move GCache/OpticksResource inside Opticks ?
     simon:geant4_opticks_integration blyth$ ggv-pmt-test --cfg4  --load
 
     ...
-
-
-Tests Commands To Run Whilst Refactoring
-------------------------------------------
-
-
-G4 running::
-
-    ## G4 test running starting from genstep, which means non-dynamic record/photon/sequence collection
-
-    ggv-pmt-test --cfg4  --dbg                ## geant4 with test PMT in box geometry
-
-    ggv-pmt-test --cfg4  --dbg --load         ## loading and vizualizing into GGeoView
-
-    
-    ## G4 gdml geometry running starting from nothing, dynamic collection
-
-    ggv-g4gun --dbg 
-
-    ggv-g4gun --dbg  --load
-
-        ## photon selection menu item doesnt show up in GUI
- 
-
-Op running::
-
-    ## Op full geometry running from genstep 
-
-    op 
-
-
 
 

@@ -23,6 +23,8 @@ History
 #include <string>
 #include <vector>
 
+class OpticksResource ;
+
 class GCache ; 
 class NSequence ; 
 class Index ; 
@@ -76,7 +78,10 @@ class GAttrSeq {
     public:
         void dumpTable(   Index* table, const char* msg="GAttrSeq::dumpTable");
     private:
+        void init();
+    private:
         GCache*                              m_cache ; 
+        OpticksResource*                     m_resource ; 
         const char*                          m_type ; 
         unsigned char                        m_ctrl ; 
         NSequence*                           m_sequence ; 
@@ -93,10 +98,12 @@ class GAttrSeq {
 inline GAttrSeq::GAttrSeq(GCache* cache, const char* type)
    :
    m_cache(cache),
+   m_resource(NULL),
    m_type(strdup(type)),
    m_ctrl(0),
    m_sequence(NULL)
 {
+   init();
 }
 
 inline const char* GAttrSeq::getType()

@@ -28,6 +28,7 @@
 
 void CDetector::init()
 {
+    m_resource = m_cache->getResource();
     m_lib = new CPropLib(m_cache);
     m_bbox = new NBoundingBox ;
 }
@@ -50,8 +51,7 @@ void CDetector::saveBuffers(const char* objname, unsigned int objindex)
 {
     assert(m_traverser);
 
-    OpticksResource* resource = m_cache->getResource();
-    std::string cachedir = resource->getObjectPath(objname, objindex);
+    std::string cachedir = m_resource->getObjectPath(objname, objindex);
 
     NPY<float>* gtransforms = m_traverser->getGlobalTransforms(); 
     NPY<float>* ltransforms = m_traverser->getLocalTransforms(); 

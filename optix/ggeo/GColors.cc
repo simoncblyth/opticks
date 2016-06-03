@@ -12,6 +12,7 @@
 
 #include "NSpectral.hpp"
 #include "NLog.hpp"
+#include "NPY.hpp"
 
 using namespace std ; 
 
@@ -271,6 +272,44 @@ GBuffer* GColors::make_uchar4_buffer(std::vector<unsigned int>& codes)
 
 
 
+
+NPY<unsigned char>* GColors::make_buffer()
+{
+    std::vector<unsigned int> codes ; 
+    typedef std::map<std::string, std::string> MSS ; 
+    //unsigned int count(0);
+    for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) 
+    {
+        unsigned int code = getCode(it->first.c_str());
+        codes.push_back(code);
+    }   
+    return make_buffer( codes) ; 
+}
+
+NPY<unsigned char>* GColors::make_buffer(std::vector<unsigned int>& codes)
+{
+    unsigned int n = codes.size();
+    unsigned char alpha = 0xFF ; 
+    NPY<unsigned char>* buf = NPY<unsigned char>::make(n, 4 ); 
+
+    for(unsigned int i=0 ; i < n ; i++)
+    {
+        unsigned int color = codes[i] ;
+        unsigned int red   = (color & 0xFF0000) >> 16;
+        unsigned int green = (color & 0x00FF00) >> 8 ;
+        unsigned int blue  = (color & 0x0000FF)      ;
+
+        buf->setValue( i, 0, 0, 0, red); 
+        buf->setValue( i, 1, 0, 0, green); 
+        buf->setValue( i, 2, 0, 0, blue); 
+        buf->setValue( i, 3, 0, 0, alpha); 
+    }  
+    return buf ; 
+}
+
+
+
+
 void GColors::initCompositeColorBuffer(unsigned int max_colors)
 {
     unsigned int itemsize = sizeof(unsigned char)*4 ;
@@ -284,13 +323,26 @@ void GColors::initCompositeColorBuffer(unsigned int max_colors)
     unsigned char* colors = new unsigned char[n] ; 
     while(n--) colors[n] = 0x44 ;  //  default to dull grey  
 
+
     m_composite = new GBuffer( itemsize*max_colors, colors, itemsize, 1 );
+
+
+
+    std::vector<int> shape ; 
+    shape.push_back(max_colors);
+    shape.push_back(4);
+    std::string metadata = "{}" ;
+
+    m_composite_ = new NPY<unsigned char>(shape, colors, metadata  );
 }
 
 void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
 {
     unsigned int max_colors = m_composite->getNumItems();
     unsigned char* colors = (unsigned char*)m_composite->getPointer() ;
+
+    unsigned char* colors_ = m_composite_->getValues() ;
+
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
 
@@ -317,6 +369,11 @@ void GColors::addColors(std::vector<unsigned int>& codes, unsigned int start )
         colors[offset + 2] = blue ;  
         colors[offset + 3] = alpha  ; 
 
+        colors_[offset + 0] = red ; 
+        colors_[offset + 1] = green ; 
+        colors_[offset + 2] = blue ;  
+        colors_[offset + 3] = alpha  ; 
+
         count++ ; 
     } 
 }
@@ -325,6 +382,8 @@ void GColors::dumpCompositeBuffer(const char* msg)
 {
     LOG(info) << msg ; 
     dump_uchar4_buffer(m_composite);
+
+    m_composite_->dump(msg);
 }
 
 void GColors::dump_uchar4_buffer( GBuffer* buffer )
@@ -373,6 +432,7 @@ void GColors::setupCompositeColorBuffer(std::vector<unsigned int>&  material_cod
     unsigned int colormax = COLORMAX ; 
     initCompositeColorBuffer(colormax);
     assert( m_composite->getNumItems() == colormax );
+    assert( m_composite_->getNumItems() == colormax );
 
     unsigned int material_color_offset = MATERIAL_COLOR_OFFSET ; 
     unsigned int flag_color_offset     = FLAG_COLOR_OFFSET ; 

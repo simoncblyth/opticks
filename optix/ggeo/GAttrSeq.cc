@@ -23,18 +23,21 @@
 
 unsigned int GAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
 
+void GAttrSeq::init()
+{
+    m_resource = m_cache->getResource();
+}
+
 
 void GAttrSeq::loadPrefs()
 {
-    OpticksResource* resource = m_cache->getResource();
-
-    if(resource->loadPreference(m_color, m_type, "color.json"))
+    if(m_resource->loadPreference(m_color, m_type, "color.json"))
         LOG(debug) << "GAttrSeq::loadPrefs color " << m_type ;
 
-    if(resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
+    if(m_resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
         LOG(debug) << "GAttrSeq::loadPrefs abbrev " << m_type ;
 
-    if(resource->loadPreference(m_order, m_type, "order.json"))
+    if(m_resource->loadPreference(m_order, m_type, "order.json"))
         LOG(debug) << "GAttrSeq::loadPrefs order " << m_type ;
 }
 

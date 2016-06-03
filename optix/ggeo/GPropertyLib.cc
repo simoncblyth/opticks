@@ -203,7 +203,7 @@ void GPropertyLib::saveToCache()
 
     if(m_names)
     {
-        m_names->save(m_cache->getIdPath());
+        m_names->save(m_resource->getIdPath());
     }
 }
 
@@ -214,7 +214,7 @@ void GPropertyLib::loadFromCache()
 
     setBuffer(NPY<float>::load(dir.c_str(), name.c_str())); 
 
-    GItemList* names = GItemList::load(m_cache->getIdPath(), m_type);
+    GItemList* names = GItemList::load(m_resource->getIdPath(), m_type);
     setNames(names); 
 
     import();

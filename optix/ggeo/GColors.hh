@@ -8,6 +8,9 @@
 
 class GBuffer ; 
 
+template <typename T> class NPY ; 
+
+
 /*
 
 *GColors* associates color names to RGB hexcodes
@@ -79,10 +82,13 @@ class GColors {
        GBuffer* make_uchar4_buffer();
        GBuffer* make_uchar4_buffer(std::vector<unsigned int>& codes);
        void dump_uchar4_buffer( GBuffer* buffer );
-
+   public: 
+       NPY<unsigned char>* make_buffer();
+       NPY<unsigned char>* make_buffer(std::vector<unsigned int>& codes);
    public: 
        void setupCompositeColorBuffer(std::vector<unsigned int>&  material_codes, std::vector<unsigned int>& flag_codes);
        GBuffer* getCompositeBuffer();
+       NPY<unsigned char>* getCompositeBuffer_();
        guint4   getCompositeDomain();
        void dumpCompositeBuffer(const char* msg="GColors::dumpCompositeBuffer");
 
@@ -98,6 +104,7 @@ class GColors {
        std::vector<unsigned int>           m_spectral_codes ;
        std::map<std::string, std::string>  m_name2hex ; 
        GBuffer*                            m_composite ; 
+       NPY<unsigned char>*                 m_composite_ ; 
        guint4                              m_composite_domain ; 
 
 };
@@ -105,6 +112,7 @@ class GColors {
 inline GColors::GColors()  
     :
     m_composite(NULL),
+    m_composite_(NULL),
     m_composite_domain(0,0,0,0)
 {
 }
@@ -113,4 +121,8 @@ inline GBuffer* GColors::getCompositeBuffer()
     return m_composite ;  
 }
 
+inline NPY<unsigned char>* GColors::getCompositeBuffer_()
+{
+    return m_composite_ ;  
+}
 

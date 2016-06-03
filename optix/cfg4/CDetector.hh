@@ -64,6 +64,7 @@ class CDetector : public G4VUserDetectorConstruction
     const glm::vec4& getCenterExtent();
  private:
     GCache*            m_cache ;
+    OpticksResource*   m_resource ;
     OpticksQuery*      m_query ;
     CPropLib*          m_lib ; 
     G4VPhysicalVolume* m_top ;
@@ -76,6 +77,7 @@ class CDetector : public G4VUserDetectorConstruction
 inline CDetector::CDetector(GCache* cache, OpticksQuery* query)
   : 
   m_cache(cache),
+  m_resource(NULL),
   m_query(query),
   m_lib(NULL),
   m_top(NULL),

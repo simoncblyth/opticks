@@ -216,6 +216,7 @@ class Evt(object):
     def material_table(self):
         seqmat = self.seqmat
         cu = count_unique(seqmat)
+        ## TODO: fix this  
         seqmat_table(cu)
         tot = cu[:,1].astype(np.int32).sum()
         print "tot:", tot

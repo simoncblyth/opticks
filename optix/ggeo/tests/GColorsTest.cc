@@ -1,10 +1,15 @@
 #include "GColors.hh"
 #include <vector>
+#include "NPY.hpp"
+
 #include "stdlib.h"
+
+// see tests/GColorsTest.py 
+
 
 int main(int argc, char** argv)
 {
-    GColors* m_colors = GColors::load("$HOME/.opticks","GColors.json");
+    GColors* m_colors = GColors::load("$HOME/.opticks/GCache","GColors.json");
     m_colors->dump();
     m_colors->test(); 
 
@@ -15,23 +20,25 @@ int main(int argc, char** argv)
     m_colors->setupCompositeColorBuffer(material_codes, flag_codes);   
     GBuffer* m_color_buffer = m_colors->getCompositeBuffer(); 
 
+    NPY<unsigned char>* m_color_buffer_ = m_colors->getCompositeBuffer_(); 
+
+
     // really its uchar4 but aoba wull probably not handle that, so use unsigned int
     assert(sizeof(unsigned char)*4 == sizeof(unsigned int));
 
-    m_color_buffer->save<unsigned int>("/tmp/colors.npy");
+    m_color_buffer->save<unsigned int>("/tmp/colors_GBuffer.npy");
+
+    // m_color_buffer->save<unsigned char>("/tmp/colors1.npy");   GBuffer asserts on this one
 
     m_color_buffer->Summary();
+
+    m_color_buffer_->save("/tmp/colors_NPY.npy");
 
 
 }
 
 
 /*
-
-
-
-
-
 
 color_dump 63 : 137 137 137 137 
 color_dump 64 : 0 0 0 0 
@@ -77,27 +84,6 @@ color_dump 103 : 225 129 145 0
 color_dump 104 : 225 129 145 0 
 color_dump 105 : 239 137 154 0 
 color_dump 106 : 239 137 154 0 
-
-
-
-
-::
-
-    In [1]: c = np.load("/tmp/colors.npy")
-
-    In [2]: c.shape
-    Out[2]: (256, 1)
-
-    In [3]: c
-    Out[3]: 
-    array([[1145324612],
-           [1145324612],
-           [1145324612],
-           [1145324612],
-    ...
-           [1145324612],
-           [1145324612],
-           [1145324612]], dtype=uint32)
 
 
 View as smaller type splits the items::
