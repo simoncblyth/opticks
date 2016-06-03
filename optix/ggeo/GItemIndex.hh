@@ -1,15 +1,20 @@
 #pragma once
 
-class GColors ; 
-class GColorMap ; 
-class GAttrSeq ; 
-class GBuffer ; 
+// optickscore-
+class OpticksColors ; 
 
-struct gfloat3 ; 
+// npy-
+template <typename T> class NPY ; 
 class Index ; 
 class Types ; 
 
-#include "string.h"
+// ggeo-
+class GColorMap ; 
+class GAttrSeq ; 
+
+#include "NQuad.hpp"
+
+#include <cstring>
 #include <string>
 #include <map>
 #include <vector>
@@ -75,7 +80,7 @@ class GItemIndex {
         unsigned int getNumItems();
         unsigned int getColorCode(const char* key);
         const char*  getColorName(const char* key);
-        static gfloat3* makeColor( unsigned int rgb );
+        static nvec3 makeColor( unsigned int rgb );
 
    public:
         Index*       getIndex();
@@ -92,14 +97,14 @@ class GItemIndex {
 
    public:
         // color
-        void     setColorSource(GColors* colors);
+        void     setColorSource(OpticksColors* colors);
         void     setColorMap(GColorMap* colormap);
 
-        GColors* getColorSource();
+        OpticksColors* getColorSource();
         GColorMap* getColorMap();
 
-        GBuffer* makeColorBuffer();
-        GBuffer* getColorBuffer();
+        NPY<unsigned char>* makeColorBuffer();
+        NPY<unsigned char>* getColorBuffer();
 
         std::vector<unsigned int>&    getCodes();
         std::vector<std::string>&     getLabels();
@@ -111,9 +116,9 @@ class GItemIndex {
         Index*                               m_index ; 
         GItemIndexLabellerPtr                m_labeller ;
    private:
-        GColors*                             m_colors ; 
+        OpticksColors*                       m_colors ; 
         GColorMap*                           m_colormap ; 
-        GBuffer*                             m_colorbuffer ; 
+        NPY<unsigned char>*                  m_colorbuffer ; 
         Types*                               m_types ; 
    private:
         GAttrSeq*                            m_handler ; 
@@ -155,7 +160,7 @@ inline void GItemIndex::setLabeller(GItemIndexLabellerPtr labeller)
 {
    m_labeller = labeller ; 
 }
-inline void GItemIndex::setColorSource(GColors* colors)
+inline void GItemIndex::setColorSource(OpticksColors* colors)
 {
    m_colors = colors ; 
 }
@@ -180,7 +185,7 @@ inline Types* GItemIndex::getTypes()
 }
 
 
-inline GColors* GItemIndex::getColorSource()
+inline OpticksColors* GItemIndex::getColorSource()
 {
    return m_colors ; 
 }

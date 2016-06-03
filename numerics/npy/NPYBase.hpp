@@ -30,6 +30,7 @@ class NPYBase {
        static bool GLOBAL_VERBOSE ; 
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
+        virtual ~NPYBase();
         void setHasData(bool has_data=true);
         bool hasData();
    public:
@@ -160,7 +161,9 @@ inline NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_
    init();
 } 
 
-
+inline NPYBase::~NPYBase()
+{
+}
 
 
 inline void NPYBase::setHasData(bool has_data)

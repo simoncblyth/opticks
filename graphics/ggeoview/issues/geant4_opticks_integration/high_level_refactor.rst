@@ -33,6 +33,29 @@ Move GCache/OpticksResource inside Opticks ?
   * migrating GColors from GBuffer to NPY would allow GColors to become OpticksColors
     and then the GCache could be replaced by OpticksResource  
 
+* also GFlags stands in the way 
+
+
+Color migration unspecific breakage::
+
+      frame #12: 0x00007fff8805f685 libc++.1.dylib`std::__1::basic_ostream<char, std::__1::char_traits<char> >::operator<<(std::__1::basic_streambuf<char, std::__1::char_traits<char> >*) + 181
+        frame #13: 0x00000001027997b2 liboptix.1.dylib`___lldb_unnamed_function4143$$liboptix.1.dylib + 594
+        frame #14: 0x0000000102590884 liboptix.1.dylib`___lldb_unnamed_function972$$liboptix.1.dylib + 212
+        frame #15: 0x00000001024ea001 liboptix.1.dylib`rtProgramCreateFromPTXFile + 545
+        frame #16: 0x0000000103467d6c libOptiXRap.dylib`optix::ContextObj::createProgramFromPTXFile(this=0x000000011ecce7b0, filename=0x00007fff5fbfcf90, program_name=0x00007fff5fbfcf78) + 620 at optixpp_namespace.h:2166
+        frame #17: 0x0000000103466158 libOptiXRap.dylib`OConfig::createProgram(this=0x000000011eccb540, filename=0x000000010353210b, progname=0x000000010353211f) + 2120 at OConfig.cc:30
+        frame #18: 0x0000000103448350 libOptiXRap.dylib`OContext::createProgram(this=0x000000011ecd02a0, filename=0x000000010353210b, progname=0x000000010353211f) + 48 at OContext.cc:89
+        frame #19: 0x000000010345350a libOptiXRap.dylib`OGeo::makeTriangulatedGeometry(this=0x000000011ecd2320, mm=0x0000000110673600) + 138 at OGeo.cc:520
+        frame #20: 0x00000001034516ce libOptiXRap.dylib`OGeo::makeGeometry(this=0x000000011ecd2320, mergedmesh=0x0000000110673600) + 174 at OGeo.cc:410
+        frame #21: 0x0000000103450d4f libOptiXRap.dylib`OGeo::convert(this=0x000000011ecd2320) + 927 at OGeo.cc:163
+        frame #22: 0x00000001042f1c2f libOpticksOp.dylib`OpEngine::prepareOptiX(this=0x0000000106255e80) + 5199 at OpEngine.cc:94
+        frame #23: 0x000000010444469e libGGeoViewLib.dylib`App::prepareOptiX(this=0x00007fff5fbfe398) + 366 at App.cc:1131
+        frame #24: 0x000000010000b902 GGeoView`main(argc=2, argv=0x00007fff5fbfe4f0) + 626 at main.cc:43
+        frame #25: 0x00007fff89e755fd libdyld.dylib`start + 1
+    (lldb) f 23
+
+
+
 
 Tests Commands To Run Whilst Refactoring
 ------------------------------------------

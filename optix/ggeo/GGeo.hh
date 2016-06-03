@@ -12,6 +12,7 @@
 
 
 // opticks-
+class OpticksColors ; 
 class Composition ; 
 
 
@@ -36,7 +37,6 @@ class GPmt ;
 class GTreeCheck ;
 class GTreePresent ;
 class GColorizer ; 
-class GColors ; 
 class GFlags ; 
 class GGeoTest ;
 
@@ -219,7 +219,7 @@ class GGeo : public NConfigurable {
         Lookup*            getLookup(); 
     public:
         GColorizer*        getColorizer();
-        GColors*           getColors();
+        OpticksColors*     getColors();
         GFlags*            getFlags(); 
     public:
         GMesh* getMesh(unsigned int index);  

@@ -1,8 +1,6 @@
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
 #include "GColorMap.hh"
-#include "GColors.hh"
-#include "GBuffer.hh"
 #include "GVector.hh"
 
 #include <cassert>
@@ -12,10 +10,16 @@
 #include <algorithm>
 #include <sstream>
 
+
+// optickscore-
+#include "OpticksColors.hh"
+
 // npy-
 #include "Index.hpp"
 #include "Types.hpp"
 #include "jsonutil.hpp"
+#include "NPY.hpp"
+#include "NQuad.hpp"
 #include "NLog.hpp"
 
 
@@ -188,7 +192,7 @@ unsigned int GItemIndex::getColorCode(const char* key )
 }
 
 
-gfloat3* GItemIndex::makeColor( unsigned int rgb )
+nvec3 GItemIndex::makeColor( unsigned int rgb )
 {
     unsigned int red   =  ( rgb & 0xFF0000 ) >> 16 ;  
     unsigned int green =  ( rgb & 0x00FF00 ) >>  8 ;  
@@ -199,7 +203,7 @@ gfloat3* GItemIndex::makeColor( unsigned int rgb )
     float g = float(green)/d ;
     float b = float(blue)/d ;
 
-    return new gfloat3( r, g, b) ;
+    return make_nvec3( r, g, b) ;
 }
 
 
@@ -283,17 +287,17 @@ void GItemIndex::formTable(bool verbose)
 
 
 
-GBuffer* GItemIndex::makeColorBuffer()
+NPY<unsigned char>* GItemIndex::makeColorBuffer()
 {
    if(m_colors==NULL)
        LOG(warning) << "GItemIndex::makeColorBuffer no colors defined will provide defaults"  ; 
 
    formTable(); 
    LOG(info) << "GItemIndex::makeColorBuffer codes " << m_codes.size() ;  
-   return m_colors->make_uchar4_buffer(m_codes) ; 
+   return m_colors->make_buffer(m_codes) ; 
 }
 
-GBuffer* GItemIndex::getColorBuffer()
+NPY<unsigned char>* GItemIndex::getColorBuffer()
 {
    if(!m_colorbuffer)
    {

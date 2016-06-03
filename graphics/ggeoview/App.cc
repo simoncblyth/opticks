@@ -64,6 +64,7 @@
 #include "Parameters.hpp"
 #include "Report.hpp"
 #include "NSlice.hpp"
+#include "NQuad.hpp"
 
 // glm-
 #include <glm/glm.hpp>
@@ -82,7 +83,7 @@
 #include "GPmt.hh"
 #include "GParts.hh"
 #include "GFlags.hh"
-#include "GColors.hh"
+#include "OpticksColors.hh"
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
 
@@ -327,10 +328,10 @@ void App::prepareViz()
     m_dd->add("MAXTIME",m_fcfg->getTimeMax());    
     m_dd->add("PNUMQUAD", 4);  // quads per photon
     m_dd->add("RNUMQUAD", 2);  // quads per record 
-    m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)GColors::MATERIAL_COLOR_OFFSET );
-    m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)GColors::FLAG_COLOR_OFFSET );
-    m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)GColors::PSYCHEDELIC_COLOR_OFFSET );
-    m_dd->add("SPECTRAL_COLOR_OFFSET", (unsigned int)GColors::SPECTRAL_COLOR_OFFSET );
+    m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)OpticksColors::MATERIAL_COLOR_OFFSET );
+    m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)OpticksColors::FLAG_COLOR_OFFSET );
+    m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)OpticksColors::PSYCHEDELIC_COLOR_OFFSET );
+    m_dd->add("SPECTRAL_COLOR_OFFSET", (unsigned int)OpticksColors::SPECTRAL_COLOR_OFFSET );
 
 
     m_scene->write(m_dd);
@@ -573,9 +574,9 @@ void App::uploadGeometryViz()
     if(m_opticks->isCompute()) return ; 
 
 
-    GColors* colors = m_cache->getColors();
+    OpticksColors* colors = m_cache->getColors();
 
-    guint4 cd = colors->getCompositeDomain() ; 
+    nuvec4 cd = colors->getCompositeDomain() ; 
     glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
   
     m_composition->setColorDomain(cd_); 

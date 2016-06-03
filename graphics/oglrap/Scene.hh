@@ -10,6 +10,8 @@
 #include <glm/glm.hpp>
 
 
+template <typename T> class NPY ; 
+
 class OpticksEvent ; 
 class MultiViewNPY ;
 
@@ -18,7 +20,6 @@ class GDrawable ;
 class GMergedMesh ;
 class GGeo ;
 class GBoundaryLibMetadata ;
-class GBuffer ; 
 
 // oglrap-
 class DynamicDefine ; 
@@ -142,7 +143,7 @@ class Scene : public NConfigurable {
 
         void uploadGeometry(); 
    public:
-        void uploadColorBuffer(GBuffer* colorbuffer);
+        void uploadColorBuffer(NPY<unsigned char>* colorbuffer);
    public:
         // target cannot live in Composition, as needs geometry 
         // to convert solid index into CenterExtent to give to Composition
@@ -223,7 +224,7 @@ class Scene : public NConfigurable {
         GGeo*        m_ggeo ;
         GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
-        GBuffer*     m_colorbuffer ;
+        NPY<unsigned char>*     m_colorbuffer ;
         unsigned int m_target ;
         unsigned int m_target_deferred ;
         unsigned int m_touch ;

@@ -1,4 +1,4 @@
-#include "GColors.hh"
+#include "OpticksColors.hh"
 #include <vector>
 #include "NPY.hpp"
 
@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv)
 {
-    GColors* m_colors = GColors::load("$HOME/.opticks/GCache","GColors.json");
+    OpticksColors* m_colors = OpticksColors::load("$HOME/.opticks/GCache","GColors.json");
     m_colors->dump();
     m_colors->test(); 
 
@@ -18,21 +18,20 @@ int main(int argc, char** argv)
 
     // canonically done in GLoader
     m_colors->setupCompositeColorBuffer(material_codes, flag_codes);   
-    GBuffer* m_color_buffer = m_colors->getCompositeBuffer(); 
+    
+    //GBuffer* m_color_buffer = m_colors->getCompositeBuffer(); 
 
-    NPY<unsigned char>* m_color_buffer_ = m_colors->getCompositeBuffer_(); 
+    NPY<unsigned char>* m_color_buffer = m_colors->getCompositeBuffer(); 
 
 
     // really its uchar4 but aoba wull probably not handle that, so use unsigned int
     assert(sizeof(unsigned char)*4 == sizeof(unsigned int));
 
-    m_color_buffer->save<unsigned int>("/tmp/colors_GBuffer.npy");
-
-    // m_color_buffer->save<unsigned char>("/tmp/colors1.npy");   GBuffer asserts on this one
+    //m_color_buffer->save<unsigned int>("/tmp/colors_GBuffer.npy");
 
     m_color_buffer->Summary();
 
-    m_color_buffer_->save("/tmp/colors_NPY.npy");
+    m_color_buffer->save("/tmp/colors_NPY.npy");
 
 
 }

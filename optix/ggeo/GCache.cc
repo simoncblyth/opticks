@@ -1,6 +1,5 @@
 #include "GCache.hh"
 #include "GFlags.hh"
-#include "GColors.hh"
 
 #include <sstream>
 #include <cassert>
@@ -9,6 +8,7 @@
 //opticks-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "OpticksColors.hh"
 
 // npy-
 #include "NLog.hpp"
@@ -35,12 +35,12 @@ OpticksQuery* GCache::getQuery()
 
 // lazy constituent construction : as want to avoid any output until after logging is configured
 
-GColors* GCache::getColors()
+OpticksColors* GCache::getColors()
 {
     if(m_colors == NULL)
     {
         std::string prefdir = m_resource->getPreferenceDir("GCache");
-        m_colors = GColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
+        m_colors = OpticksColors::load(prefdir.c_str(),"GColors.json");  // colorname => hexcode 
     }
     return m_colors ;
 }

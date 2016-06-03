@@ -13,7 +13,6 @@
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
 #include "GPmt.hh"
-#include "GColors.hh"
 
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
@@ -25,7 +24,6 @@
 #include "GAttrSeq.hh"
 
 #include "GMergedMesh.hh"
-#include "GColors.hh"
 #include "GItemIndex.hh"
 #include "GItemList.hh"
 
@@ -36,6 +34,7 @@
 
 // npy-
 #include "NPY.hpp"
+#include "NQuad.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "TorchStepNPY.hpp"
@@ -48,6 +47,7 @@
 // opticks-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "OpticksColors.hh"
 #include "Composition.hh"
 
 #include "assert.h"
@@ -191,7 +191,7 @@ const char* GGeo::getIdPath()
 {
     return m_cache->getIdPath();
 }
-GColors* GGeo::getColors()
+OpticksColors* GGeo::getColors()
 {
    return m_cache->getColors() ; 
 }
@@ -325,7 +325,7 @@ void GGeo::setupColors()
     std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
     std::vector<unsigned int>& flag_codes     = flags->getAttrIndex()->getColorCodes() ; 
 
-    GColors* colors = m_cache->getColors();
+    OpticksColors* colors = m_cache->getColors();
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 }
 
@@ -891,8 +891,7 @@ void GGeo::prepareVertexColors()
 
     GColorizer* czr = getColorizer();
 
-    czr->setTarget( vertex_colors );
-    //czr->setSurfaces(m_surfaces);   NO LONGER USING this GLoader approach 
+    czr->setTarget( reinterpret_cast<nvec3*>(vertex_colors) );
     czr->setRepeatIndex(mesh0->getIndex()); 
     czr->traverse();
 

@@ -31,7 +31,11 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     float yy = (4.*d*d*R*R - dd_m_rr_p_RR*dd_m_rr_p_RR)/(4.*d*d)  ;
     float y = yy > 0 ? sqrt(yy) : 0 ;   
 
-    return ndisc(nplane(0,0,1,z + a.param.z),y);  // return to original frame
+
+    nplane plane = make_nplane(0,0,1,z + a.param.z) ;
+    ndisc  disc = make_ndisc(plane, y) ;
+
+    return disc ;      // return to original frame
 }
 
 
@@ -46,7 +50,7 @@ npart nsphere::part()
     float _z = z() ;  
     float r  = radius() ; 
 
-    nbbox bb(_z - r, _z + r, -r, r);
+    nbbox bb = make_nbbox(_z - r, _z + r, -r, r);
 
     npart p ; 
     p.zero();            
@@ -65,7 +69,7 @@ npart nsphere::zlhs(const ndisc& dsk)
 
     float _z = z() ;  
     float r  = radius() ; 
-    nbbox bb(_z - r, dsk.z(), -dsk.radius, dsk.radius);
+    nbbox bb = make_nbbox(_z - r, dsk.z(), -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 
@@ -77,7 +81,7 @@ npart nsphere::zrhs(const ndisc& dsk)
 
     float _z = z() ;  
     float r  = radius() ; 
-    nbbox bb(dsk.z(), _z + r, -dsk.radius, dsk.radius);
+    nbbox bb = make_nbbox(dsk.z(), _z + r, -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 

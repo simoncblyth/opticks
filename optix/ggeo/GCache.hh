@@ -11,10 +11,10 @@ class NLog ;
 // optickscore-
 class Opticks ; 
 class OpticksResource ; 
+class OpticksColors ; 
 class OpticksQuery ; 
 
 // ggeo-
-class GColors ; 
 class GFlags ; 
 class GGeo ; 
 
@@ -42,7 +42,7 @@ class GCache {
     private:
          void init();
     public:
-         GColors* getColors();
+         OpticksColors* getColors();
          GFlags*  getFlags();
          Types*   getTypes();
          Typ*     getTyp();
@@ -66,7 +66,7 @@ class GCache {
     private:
           Opticks*          m_opticks ; 
           OpticksResource*  m_resource; 
-          GColors*          m_colors ; 
+          OpticksColors*    m_colors ; 
           GFlags*           m_flags ; 
           Types*            m_types ;
           Typ*              m_typ ;

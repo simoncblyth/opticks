@@ -1,15 +1,15 @@
 #include "OColors.hh"
-#include "GColors.hh"
+#include "OpticksColors.hh"
+#include "NPY.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 
 void OColors::convert()
 {
-    GBuffer* buffer = m_colors->getCompositeBuffer();
-    guint4 cd = m_colors->getCompositeDomain();
+    NPY<unsigned char>* buffer = m_colors->getCompositeBuffer();
+    nuvec4 cd = m_colors->getCompositeDomain();
 
     optix::TextureSampler tex = makeColorSampler(buffer);
     m_context["color_texture"]->setTextureSampler(tex);
@@ -19,15 +19,17 @@ void OColors::convert()
 }
 
 
-optix::TextureSampler OColors::makeColorSampler(GBuffer* buffer)
+
+
+optix::TextureSampler OColors::makeColorSampler(NPY<unsigned char>* buffer)
 {
-    unsigned int numElem  = buffer->getNumElements();
-    unsigned int numItems = buffer->getNumItems();
-    unsigned int numElemTot  = buffer->getNumElementsTotal();
+    unsigned int n = buffer->getNumItems();
+    assert(buffer->hasShape(n,4));
 
-    assert(numElem == 1 && numElemTot == numItems);
+    // the move from GBuffer (ncol, 1) to NPY<unsigned char> (ncol, 4)
+    // just changes the "width" not the length, so should nx should stay = n (and not change to n*4)
 
-    unsigned int nx = numItems ;
+    unsigned int nx = n ;  
     unsigned int ny = 1 ;
 
     LOG(debug) << "OColors::makeColorSampler "
@@ -40,7 +42,7 @@ optix::TextureSampler OColors::makeColorSampler(GBuffer* buffer)
 
 
 
-optix::TextureSampler OColors::makeSampler(GBuffer* buffer, RTformat format, unsigned int nx, unsigned int ny)
+optix::TextureSampler OColors::makeSampler(NPY<unsigned char>* buffer, RTformat format, unsigned int nx, unsigned int ny)
 {
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, format, nx, ny );
     memcpy( optixBuffer->map(), buffer->getPointer(), buffer->getNumBytes() );

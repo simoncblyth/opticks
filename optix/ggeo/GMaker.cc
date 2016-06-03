@@ -310,8 +310,8 @@ void GMaker::makeZSphereIntersect(std::vector<GSolid*>& solids,  glm::vec4& para
 
     */
 
-    nsphere a(0,0,a_zpos,a_radius);
-    nsphere b(0,0,b_zpos,b_radius);
+    nsphere a = make_nsphere(0,0,a_zpos,a_radius);
+    nsphere b = make_nsphere(0,0,b_zpos,b_radius);
     ndisc d = nsphere::intersect(a,b) ;
     float zd = d.z();
 

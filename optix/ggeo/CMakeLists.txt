@@ -78,7 +78,6 @@ set(SOURCES
     GCache.cc
     GItemIndex.cc
 
-    GColors.cc
     GColorMap.cc
     GTraverse.cc
     GColorizer.cc
@@ -133,7 +132,6 @@ SET(HEADERS
     GArray.hh
     GCache.hh
     GItemIndex.hh
-    GColors.hh
     GColorMap.hh
     GTraverse.hh
     GColorizer.hh

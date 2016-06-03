@@ -1,23 +1,22 @@
 #pragma once
 
 class Device ; 
-class GBuffer ; 
+template <typename T> class NPY ; 
+
 
 class Colors {
   public:
       Colors(Device* dev);
   public: 
-      void setColorBuffer(GBuffer* colorbuffer);
+      void setColorBuffer(NPY<unsigned char>* colorbuffer);
       unsigned int getNumColors();
-
   public: 
       void upload();
-
   private:
       Device*      m_device ; 
       GLuint       m_colors_tex ;
       bool         m_colors_uploaded ; 
-      GBuffer*     m_colorbuffer ; 
+      NPY<unsigned char>*     m_colorbuffer ; 
 
 
 };      
@@ -32,7 +31,7 @@ inline Colors::Colors(Device* device)
 }
 
 
-inline void Colors::setColorBuffer(GBuffer* colorbuffer)
+inline void Colors::setColorBuffer(NPY<unsigned char>* colorbuffer)
 {
     m_colorbuffer = colorbuffer ; 
 }

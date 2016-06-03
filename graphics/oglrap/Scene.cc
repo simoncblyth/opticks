@@ -25,6 +25,7 @@
 #include "Interactor.hh"
 
 // npy-
+#include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 
@@ -572,7 +573,7 @@ void Scene::uploadGeometry()
     applyGeometryStyle(); // sets m_instance_mode m_bbox_mode switches, change with "B"  nextGeometryStyle()
 }
 
-void Scene::uploadColorBuffer(GBuffer* colorbuffer)
+void Scene::uploadColorBuffer(NPY<unsigned char>* colorbuffer)
 {
     m_colorbuffer = colorbuffer ; 
     m_colors->setColorBuffer(colorbuffer);

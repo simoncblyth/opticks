@@ -7,8 +7,8 @@ struct ndisc ;
 struct npart ;
 
 struct nsphere {
-    nsphere(float x, float y, float z, float w);
-    nsphere(const nvec4& param_);
+
+    // NO CTOR
 
     float x();
     float y();
@@ -29,18 +29,17 @@ struct nsphere {
 };
 
 
-inline nsphere::nsphere(float x, float y, float z, float w)
+inline nsphere make_nsphere(float x, float y, float z, float w)
 {
-    param.x = x  ;
-    param.y = y  ;
-    param.z = z  ;
-    param.w = w  ;
+    nsphere s ; s.param.x = x ; s.param.y = y ; s.param.z = z ; s.param.w = w ; return s ;
 }
 
-inline nsphere::nsphere(const nvec4& param_)
+inline nsphere make_nsphere(const nvec4& p)
 {
-    param = param_ ;
+    nsphere s ; s.param.x = p.x ; s.param.y = p.y ; s.param.z = p.z ; s.param.w = p.w ; return s ;
 }
+
+
 
 inline float nsphere::radius(){ return param.w ; }
 inline float nsphere::x(){      return param.x ; }

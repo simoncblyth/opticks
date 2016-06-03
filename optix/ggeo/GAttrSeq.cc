@@ -2,6 +2,7 @@
 
 //opticks-
 #include "OpticksResource.hh"
+#include "OpticksColors.hh"
 
 // npy-
 #include "Index.hpp"
@@ -9,7 +10,6 @@
 
 #include "GItemList.hh"
 #include "GCache.hh"
-#include "GColors.hh"
 
 #include <sstream>
 #include <iostream>
@@ -69,7 +69,7 @@ const char* GAttrSeq::getColorName(const char* key)
 unsigned int GAttrSeq::getColorCode(const char* key )
 {
     const char*  colorname =  getColorName(key) ;
-    GColors* palette = m_cache->getColors();
+    OpticksColors* palette = m_cache->getColors();
     unsigned int colorcode  = palette->getCode(colorname, 0xFFFFFF) ; 
     return colorcode ; 
 }

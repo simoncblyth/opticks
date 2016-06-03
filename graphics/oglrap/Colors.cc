@@ -1,11 +1,11 @@
 #include <GL/glew.h>
 
-#include "GBuffer.hh"
+
 #include "Colors.hh"
 #include "Device.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "NPY.hpp"
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 
@@ -36,7 +36,13 @@ void Colors::upload()
          return ; 
     }
 
-    unsigned char* colors = (unsigned char*)m_colorbuffer->getPointer();
+
+    // moving from GBuffer to NPY<unsigned char> changes shape from (ncol, 1) -> (ncol, 4)
+    // ie the big bitshift uchar4 combination lives in the new buffer as separate uchar 
+    //
+
+    //unsigned char* colors = (unsigned char*)m_colorbuffer->getPointer();
+    unsigned char* colors = m_colorbuffer->getValues();
     LOG(debug) <<"Colors::upload ncol " << ncol ;  
 
     // https://open.gl/textures

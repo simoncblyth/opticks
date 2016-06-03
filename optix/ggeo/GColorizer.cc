@@ -1,20 +1,20 @@
 #include "GColorizer.hh"
+
 #include "GVector.hh"
+
 #include "GGeo.hh"
 #include "GMesh.hh"
 #include "GSolid.hh"
 #include "GItemIndex.hh"
 #include "GAttrSeq.hh"
-//#include "GBoundary.hh"
-//#include "GBoundaryLib.hh"
-#include "GColors.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
 #include <iomanip>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "OpticksColors.hh"
+#include "NQuad.hpp"
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 void GColorizer::init()
@@ -48,15 +48,9 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
     {
         if( m_style == SURFACE_INDEX )
         { 
-            gfloat3* surfcolor = getSurfaceColor( node );
-            //gfloat3* surfcolor = getSurfaceColor_PRIOR( node );
-
-            if(surfcolor) 
-            {
-                ++m_num_colorized ; 
-                for(unsigned int i=0 ; i<nvert ; ++i ) m_target[m_cur_vertices+i] = *surfcolor ; 
-            }
-            delete surfcolor ; 
+            nvec3 surfcolor = getSurfaceColor( node );
+            ++m_num_colorized ; 
+            for(unsigned int i=0 ; i<nvert ; ++i ) m_target[m_cur_vertices+i] = surfcolor ; 
         } 
         else if( m_style == PSYCHEDELIC_VERTEX || m_style == PSYCHEDELIC_NODE || m_style == PSYCHEDELIC_MESH )  // every VERTEX/SOLID/MESH a different color 
         {
@@ -82,52 +76,9 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
 
 
 
-
-/*
-gfloat3* GColorizer::getSurfaceColor_PRIOR(GNode* node)
-{
-    if(!m_surfaces) return NULL ; 
-
-    gfloat3* nodecolor(NULL) ; 
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
-    GBoundary* boundary = solid->getBoundary();
-
-    GPropertyMap<float>* imat = boundary->getInnerMaterial() ;
-    GPropertyMap<float>* omat = boundary->getOuterMaterial() ;
-    GPropertyMap<float>* isur = boundary->getInnerSurface() ;
-    GPropertyMap<float>* osur = boundary->getOuterSurface() ;
-
-    unsigned int colorcode(UINT_MAX) ; 
-
-    if(isur->hasDefinedName() && m_surfaces->hasItem(isur->getShortName()))
-    {
-         colorcode = m_surfaces->getColorCode(isur->getShortName());
-
-         LOG(debug) << "GColorizer::getSurfaceColor " 
-                    << " inner " << std::setw(25) << isur->getShortName() 
-                    << " color " << std::hex << colorcode << std::dec
-                     ;   
-    }
-    else if(osur->hasDefinedName() && m_surfaces->hasItem(osur->getShortName()))
-    {
-         colorcode = m_surfaces->getColorCode(osur->getShortName());
-
-         LOG(debug) << "GColorizer::getSurfaceColor " 
-                    << " outer " << std::setw(25) << osur->getShortName() 
-                    << " color " << std::hex << colorcode << std::dec 
-                    ;
-    }
-
-    return colorcode == UINT_MAX ? NULL : GItemIndex::makeColor(colorcode) ; 
-}
-*/
-
-
-gfloat3* GColorizer::getSurfaceColor(GNode* node)
+nvec3 GColorizer::getSurfaceColor(GNode* node)
 {
 
-    //gfloat3* nodecolor(NULL) ; 
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
     unsigned int boundary = solid->getBoundary();
@@ -156,8 +107,7 @@ gfloat3* GColorizer::getSurfaceColor(GNode* node)
               << " colorcode " << std::hex << colorcode  << std::dec 
               ; 
 
- 
-   return colorcode == UINT_MAX ? NULL : GItemIndex::makeColor(colorcode) ; 
+   return colorcode == UINT_MAX ? make_nvec3(1,0,1) : GItemIndex::makeColor(colorcode) ; 
 }
 
 

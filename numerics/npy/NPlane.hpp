@@ -3,30 +3,28 @@
 #include "NQuad.hpp"
 
 struct nbbox {
-    nbbox(); 
-    // ctor assuming rotational symmetry around z axis
-    nbbox(float zmin, float zmax, float ymin, float ymax); 
+
+    // NO CTOR
+
     void dump(const char* msg);
 
     nvec4 min ; 
     nvec4 max ; 
 };
 
-inline nbbox::nbbox()
+
+// "ctor" assuming rotational symmetry around z axis
+inline nbbox make_nbbox(float zmin, float zmax, float ymin, float ymax)
 {
+    nbbox bb ; 
+    bb.min = make_nvec4( ymin, ymin, zmin, 0) ;
+    bb.max = make_nvec4( ymax, ymax, zmax, 0) ;
+    return bb ;
 }
 
-inline nbbox::nbbox(float zmin, float zmax, float ymin, float ymax)
+inline nbbox make_nbbox()
 {
-    min.x = ymin ; 
-    min.y = ymin ; 
-    min.z = zmin ;
-    min.w = 0 ;
-
-    max.x = ymax ; 
-    max.y = ymax ; 
-    max.z = zmax ;
-    max.w = 0 ;
+    return make_nbbox(0,0,0,0) ;
 }
 
 
@@ -34,29 +32,24 @@ struct nplane {
     // http://mathworld.wolfram.com/Plane.html
     // xyz: normalized normal vector, w:distance from origin
 
-    nplane(float x, float y, float z, float w);
-    nplane(const nvec4& param_);
     void dump(const char* msg);
 
     nvec4 param ; 
 };
 
-inline nplane::nplane(float x, float y, float z, float w)
-{
-    param.x = x  ;
-    param.y = y  ;
-    param.z = z  ;
-    param.w = w  ;
+
+inline nplane make_nplane(float x, float y, float z, float w)
+{  
+   nplane pl ; pl.param.x = x ; pl.param.y = y ; pl.param.z = z ; pl.param.w = w ; return pl ; 
 }
 
-inline nplane::nplane(const nvec4& param_)
-{
-    param = param_ ;
+inline nplane make_nplane(const nvec4& p)
+{  
+   nplane pl ; pl.param.x = p.x ; pl.param.y = p.y ; pl.param.z = p.z ; pl.param.w = p.w ; return pl ; 
 }
 
 
 struct ndisc {
-    ndisc( const nplane& plane_, float radius_ );
     float z() const;
     nplane plane ;
     float radius ;  
@@ -64,11 +57,10 @@ struct ndisc {
     void dump(const char* msg);
 };
 
-inline ndisc::ndisc(const nplane& plane_, float radius_) 
-    :
-    plane(plane_),
-    radius(radius_)
+
+inline ndisc make_ndisc(const nplane& plane_, float radius_) 
 {
+   ndisc d ; d.plane = plane_ ; d.radius = radius_ ; return d ; 
 }
 
 

@@ -1154,6 +1154,13 @@ ggeoview-cmake-deprecated-nooptix(){
 }
 
 
+ggeoview--()
+{
+   ( ggeoview-bcd ; make ${1:-install} ; )
+}
+
+
+
 ggeoview-make(){
    local iwd=$PWD
 
