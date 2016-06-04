@@ -168,6 +168,7 @@ bcfg-wipe(){
    rm -rf $bdir
 }
 
+bcfg-txt(){ vi $(bcfg-sdir)/CMakeLists.txt ; }
 
 bcfg-make(){
    local iwd=$PWD

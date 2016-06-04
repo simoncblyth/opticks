@@ -69,6 +69,14 @@ Steps::
    # imgui-cmake succeed
    # imgui-make  : undefined references in link to glGetIntegerv etc...
    #     
+   # imgui-- : needed to configure the opengl libs and set defintion to avoid IME 
+   #
+   # assimp-cmake : fails to find DirectX : avoid by switch off tool building
+   # opticks-cmake : fails to find Boost 
+
+   pacman -S mingw-w64-x86_64-boost
+
+    
 
 
 See Also
@@ -545,6 +553,7 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
 opticks-bindir(){ echo $(opticks-prefix)/bin ; }
+opticks-xdir(){ echo $(opticks-prefix)/externals ; }
 
 opticks-optix-install-dir(){ echo /Developer/OptiX ; }
 
@@ -553,6 +562,7 @@ opticks-scd(){  cd $(opticks-sdir); }
 opticks-cd(){   cd $(opticks-sdir); }
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
+opticks-xcd(){  cd $(opticks-xdir); }
 
 opticks-wipe(){
    local bdir=$(opticks-bdir)
@@ -581,6 +591,7 @@ opticks-cmake(){
    opticks-bcd
 
    cmake \
+        -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \

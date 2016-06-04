@@ -50,7 +50,14 @@ endif()
 
 add_subdirectory(graphics/ggeoview)
 
-add_subdirectory(optix/cfg4)
+
+
+find_package(Geant4 QUIET)
+if(Geant4_FOUND)
+   add_subdirectory(optix/cfg4)
+else(Geant4_FOUND)
+   message("No Geant4 ")
+endif(Geant4_FOUND)
 
 
 

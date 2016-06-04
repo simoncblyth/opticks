@@ -372,8 +372,10 @@ assimp-cmake(){
    [ "$(uname)" == "Darwin" ] && opts="-DCMAKE_MACOSX_RPATH:BOOL=ON" 
 
    cmake \
+        -G "$(opticks-cmake-generator)" \
         -DCMAKE_INSTALL_PREFIX=$(assimp-prefix)  \
         -DASSIMP_BUILD_TESTS=OFF  \
+        -DASSIMP_BUILD_ASSIMP_TOOLS=OFF  \
          $opts \
          $(assimp-dir) 
 

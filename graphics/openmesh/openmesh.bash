@@ -121,6 +121,7 @@ openmesh-cmake(){
   openmesh-bcd
 
   cmake $(openmesh-dir) \
+       -G "$(opticks-cmake-generator)" \
       -DCMAKE_BUILD_TYPE=Debug \
       -DCMAKE_INSTALL_PREFIX=$(openmesh-idir) \
       -DBUILD_APPS=OFF 

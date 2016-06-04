@@ -80,6 +80,8 @@ bregex-wipe(){
    rm -rf $bdir
 }
 
+
+bregex-txt(){ vi $(bregex-dir)/CMakeLists.txt ; }
 bregex-make(){
    local iwd=$PWD
 
@@ -112,11 +114,15 @@ bregex-lldb()
    lldb $bin -- $*
 }
 
-bregex--()
+bregex-full()
 {
     bregex-make clean
     bregex-make
     bregex-install
+}
+bregex--()
+{
+  ( bregex-bcd ; make ${1:-install} ; )
 }
 
 

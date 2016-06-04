@@ -151,7 +151,7 @@ SET(HEADERS
 add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
 
-install(TARGETS ${name} LIBRARY DESTINATION lib)
+install(TARGETS ${name} DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
