@@ -131,7 +131,7 @@ GMergedMesh* GGeoTest::loadPmt()
     GPmt* pmt = slice == NULL ? 
                                  m_ggeo->getPmt() 
                               : 
-                                 GPmt::load( m_cache, m_bndlib, 0, slice )  // pmtIndex:0
+                                 GPmt::load( m_opticks, m_bndlib, 0, slice )  // pmtIndex:0
                               ;  
 
 

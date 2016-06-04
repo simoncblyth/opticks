@@ -16,6 +16,11 @@ History
         provide the singing and dancing add-ons around the persistable GItemList 
         (by pulling from GItemIndex) without persistency 
 
+
+   OpticksAttrSeq
+         migration of ggeo-/GAttrSeq into optickscore- in move to get
+         infrastructure out of ggeo- for wider access
+
 */
 
 #include <map>
@@ -31,7 +36,7 @@ class Index ;
 /*
 Classes fulfilling NSequence include GItemList 
 */
-class GAttrSeq {
+class OpticksAttrSeq {
     public:
         static unsigned int UNSET ; 
         static unsigned int ERROR_COLOR ; 
@@ -49,7 +54,7 @@ class GAttrSeq {
              };
 
     public:
-        GAttrSeq(Opticks* cache, const char* type);
+        OpticksAttrSeq(Opticks* cache, const char* type);
         void setCtrl(unsigned char ctrl);
         void loadPrefs();
         const char* getType();
@@ -73,10 +78,10 @@ class GAttrSeq {
         std::string decodeHexSequenceString(const char* seq, unsigned char ctrl=REVERSE|ABBREVIATE|ONEBASED );
         std::string decodeString(const char* seq, unsigned char ctrl=ABBREVIATE|ONEBASED);
     public:
-        void dump(const char* keys=NULL, const char* msg="GAttrSeq::dump");
+        void dump(const char* keys=NULL, const char* msg="OpticksAttrSeq::dump");
         void dumpKey(const char* key);
     public:
-        void dumpTable(   Index* table, const char* msg="GAttrSeq::dumpTable");
+        void dumpTable(   Index* table, const char* msg="OpticksAttrSeq::dumpTable");
     private:
         void init();
     private:
@@ -95,7 +100,7 @@ class GAttrSeq {
 
 };
 
-inline GAttrSeq::GAttrSeq(Opticks* cache, const char* type)
+inline OpticksAttrSeq::OpticksAttrSeq(Opticks* cache, const char* type)
    :
    m_cache(cache),
    m_resource(NULL),
@@ -106,22 +111,22 @@ inline GAttrSeq::GAttrSeq(Opticks* cache, const char* type)
    init();
 }
 
-inline const char* GAttrSeq::getType()
+inline const char* OpticksAttrSeq::getType()
 {
     return m_type ; 
 }
 
-inline std::map<std::string, unsigned int>&  GAttrSeq::getOrder()
+inline std::map<std::string, unsigned int>&  OpticksAttrSeq::getOrder()
 {
     return m_order ;
 }
 
-inline void GAttrSeq::setCtrl(unsigned char ctrl)
+inline void OpticksAttrSeq::setCtrl(unsigned char ctrl)
 {
     m_ctrl = ctrl ; 
 }
 
-inline bool GAttrSeq::hasSequence()
+inline bool OpticksAttrSeq::hasSequence()
 {
     return m_sequence != NULL ; 
 }

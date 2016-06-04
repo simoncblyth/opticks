@@ -1,6 +1,8 @@
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 #include "OpticksColors.hh"
+#include "OpticksFlags.hh"
+
 #include <cassert>
 
 // npy-
@@ -397,6 +399,16 @@ OpticksColors* OpticksResource::getColors()
         m_colors = OpticksColors::load(prefdir.c_str(),"GColors.json");   // colorname => hexcode
     }
     return m_colors ;
+}
+
+OpticksFlags* OpticksResource::getFlags()
+{
+    if(!m_flags)
+    {
+        m_flags = new OpticksFlags(m_opticks); 
+        m_flags->save(getIdPath());
+    }
+    return m_flags ;
 }
 
 

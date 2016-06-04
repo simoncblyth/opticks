@@ -5,6 +5,7 @@
 
 // optickscore-
 class Opticks ; 
+class OpticksResource ; 
 class OpticksQuery ; 
 
 // cfg4-
@@ -62,6 +63,7 @@ class CDetector : public G4VUserDetectorConstruction
  private:
     Opticks*           m_opticks ;
     OpticksQuery*      m_query ;
+    OpticksResource*   m_resource ;
     CPropLib*          m_lib ; 
     G4VPhysicalVolume* m_top ;
     CTraverser*        m_traverser ; 
@@ -74,6 +76,7 @@ inline CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
   : 
   m_opticks(opticks),
   m_query(query),
+  m_resource(NULL),
   m_lib(NULL),
   m_top(NULL),
   m_traverser(NULL),

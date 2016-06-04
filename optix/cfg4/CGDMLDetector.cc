@@ -9,10 +9,10 @@
 #include "GLMFormat.hpp"
 
 // ggeo-
-#include "GCache.hh"
 #include "GMaterial.hh"
 
 // optickscore-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 
 // cfg4-
@@ -29,7 +29,7 @@
 
 void CGDMLDetector::init()
 {
-    const char* gdmlpath = m_cache->getGDMLPath();
+    const char* gdmlpath = m_opticks->getGDMLPath();
     LOG(info) << "CGDMLDetector::Construct " << gdmlpath ; 
 
     bool validate = false ; 
@@ -97,7 +97,5 @@ void CGDMLDetector::addMPT()
     LOG(info) << "CGDMLDetector::addMPT added MPT to " <<  ng4mat << " g4 materials " ; 
 
 }
-
-
 
  

@@ -4,7 +4,6 @@
 
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "GSource.hh"
 #include "GSourceLib.hh"
 
@@ -15,9 +14,7 @@ int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "gsrclib.log");
 
-    GCache* cache = new GCache(opticks);
-
-    GSourceLib* sl = new GSourceLib(cache);
+    GSourceLib* sl = new GSourceLib(opticks);
 
     sl->generateBlackBodySample();
 

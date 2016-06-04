@@ -1,20 +1,20 @@
 // op --flags 
 
 #include "Opticks.hh"
-#include "GCache.hh"
-#include "GFlags.hh"
-#include "GAttrSeq.hh"
+//#include "GCache.hh"
+#include "OpticksFlags.hh"
+#include "OpticksAttrSeq.hh"
 #include "Index.hpp"
 
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv) ; 
 
-    GCache gc(&ok);
+    //GCache gc(&ok);
 
-    GFlags gf(&gc);
+    OpticksFlags gf(&ok);
 
-    GAttrSeq* q = gf.getAttrIndex(); 
+    OpticksAttrSeq* q = gf.getAttrIndex(); 
 
     q->dump();
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
     idx->setExt(".ini");
 
-    idx->save(gc.getIdPath());
+    idx->save(ok.getIdPath());
 
 
 

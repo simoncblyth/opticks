@@ -1,15 +1,13 @@
 #include "OScintillatorLib.hh"
 #include "Opticks.hh"
-#include "GCache.hh"
 #include "GScintillatorLib.hh"
 
 
 int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks(argc, argv, "oscint.log");
-    GCache gc(opticks);
+    Opticks ok(argc, argv, "oscint.log");
 
-    GScintillatorLib* slib = GScintillatorLib::load(&gc);
+    GScintillatorLib* slib = GScintillatorLib::load(&ok);
     slib->dump();
 
     optix::Context context = optix::Context::create();

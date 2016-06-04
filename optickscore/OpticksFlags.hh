@@ -5,16 +5,16 @@
 #include <map>
 
 class Opticks ; 
-class GAttrSeq ; 
+class OpticksAttrSeq ; 
 class Index ; 
 
 // replacing part of Types
 
-class GFlags {
+class OpticksFlags {
     public:
         static const char* ENUM_HEADER_PATH ;  
     public:
-        GFlags(Opticks* cache, const char* path=ENUM_HEADER_PATH);
+        OpticksFlags(Opticks* cache, const char* path=ENUM_HEADER_PATH);
         void save(const char* idpath);
     private:
         void init(const char* path);
@@ -23,14 +23,14 @@ class GFlags {
         std::map<unsigned int, std::string> getNamesMap(); 
     public:
         Index*      getIndex();  
-        GAttrSeq*   getAttrIndex();  
+        OpticksAttrSeq*   getAttrIndex();  
     private:
         Opticks*     m_cache  ;
-        GAttrSeq*    m_aindex ; 
+        OpticksAttrSeq*    m_aindex ; 
         Index*       m_index ; 
 };
 
-inline GFlags::GFlags(Opticks* cache, const char* path) 
+inline OpticksFlags::OpticksFlags(Opticks* cache, const char* path) 
     :
     m_cache(cache),
     m_aindex(NULL),
@@ -39,11 +39,11 @@ inline GFlags::GFlags(Opticks* cache, const char* path)
     init(path);
 }
 
-inline GAttrSeq* GFlags::getAttrIndex()
+inline OpticksAttrSeq* OpticksFlags::getAttrIndex()
 {
     return m_aindex ; 
 }  
-inline Index* GFlags::getIndex()
+inline Index* OpticksFlags::getIndex()
 {
     return m_index ; 
 }  

@@ -1,27 +1,27 @@
-#include "GFlags.hh"
+#include "OpticksFlags.hh"
 
 #include <map>
 #include <vector>
 #include <string>
 
 #include "Index.hpp"
-#include "GAttrSeq.hh"
+#include "OpticksAttrSeq.hh"
 #include "Opticks.hh"
 
 #include "regexsearch.hh"
 #include "NLog.hpp"
 
 
-//const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
-//const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
-const char* GFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
+//const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
+//const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
+const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
 
-void GFlags::init(const char* path)
+void OpticksFlags::init(const char* path)
 {
     m_index = parseFlags(path);
     unsigned int num_flags = m_index ? m_index->getNumItems() : 0 ;
 
-    LOG(info) << "GFlags::init"
+    LOG(info) << "OpticksFlags::init"
               << " path " << path 
               << " num_flags " << num_flags 
               << " " << ( m_index ? m_index->description() : "NULL index" )
@@ -29,18 +29,18 @@ void GFlags::init(const char* path)
     
     assert(num_flags > 0 && "missing envvar ENV_HOME or you need to update ENUM_HEADER_PATH ");
 
-    m_aindex = new GAttrSeq(m_cache, "GFlags");
+    m_aindex = new OpticksAttrSeq(m_cache, "GFlags");
     m_aindex->loadPrefs(); // color, abbrev and order 
     m_aindex->setSequence(m_index);
 }
 
-void GFlags::save(const char* idpath)
+void OpticksFlags::save(const char* idpath)
 {
     m_index->setExt(".ini"); 
     m_index->save(idpath);    
 }
 
-Index* GFlags::parseFlags(const char* path)
+Index* OpticksFlags::parseFlags(const char* path)
 {
     typedef std::pair<unsigned int, std::string>  upair_t ;
     typedef std::vector<upair_t>                  upairs_t ;
@@ -60,7 +60,7 @@ Index* GFlags::parseFlags(const char* path)
     return index ; 
 }
 
-std::map<unsigned int, std::string> GFlags::getNamesMap()
+std::map<unsigned int, std::string> OpticksFlags::getNamesMap()
 {
     return m_aindex->getNamesMap() ; 
 }

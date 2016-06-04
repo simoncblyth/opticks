@@ -27,7 +27,7 @@ class NPYBase ;
 class Opticks ; 
 class OpticksResource ; 
 class GItemList ; 
-class GAttrSeq ; 
+class OpticksAttrSeq ; 
 
 
 /*
@@ -126,7 +126,7 @@ class GPropertyLib {
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         GItemList*   getNames();
-        GAttrSeq*    getAttrNames();
+        OpticksAttrSeq*    getAttrNames();
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();
@@ -138,7 +138,7 @@ class GPropertyLib {
         Opticks*                             m_cache ; 
         OpticksResource*                     m_resource ; 
         NPY<float>*                          m_buffer ; 
-        GAttrSeq*                            m_attrnames ; // attributed name list 
+        OpticksAttrSeq*                            m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
         const char*                          m_type ; 
         const char*                          m_comptype ; 
@@ -219,7 +219,7 @@ inline GItemList* GPropertyLib::getNames()
 {
     return m_names ;
 }
-inline GAttrSeq* GPropertyLib::getAttrNames()
+inline OpticksAttrSeq* GPropertyLib::getAttrNames()
 {
     return m_attrnames ;
 }

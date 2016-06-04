@@ -41,6 +41,8 @@ set(LIBRARIES
 )
 
 add_library( ${name}  SHARED
+    OpticksFlags.cc
+    OpticksAttrSeq.cc
     OpticksResource.cc
     OpticksColors.cc
     OpticksQuery.cc
@@ -75,6 +77,8 @@ add_library( ${name}  SHARED
 )
 
 SET(hdrs 
+    OpticksFlags.hh
+    OpticksAttrSeq.hh
     OpticksResource.hh
     OpticksColors.hh
     OpticksQuery.hh

@@ -1,5 +1,5 @@
 #include "GCache.hh"
-#include "GFlags.hh"
+#include "OpticksFlags.hh"
 
 #include <sstream>
 #include <cassert>
@@ -40,6 +40,15 @@ OpticksColors* GCache::getColors()
     return m_resource->getColors() ;
 }
 
+OpticksFlags* GCache::getFlags()
+{
+    return m_resource->getFlags() ;
+}
+
+
+
+
+
 Typ* GCache::getTyp()
 {
     if(m_typ == NULL)
@@ -48,6 +57,8 @@ Typ* GCache::getTyp()
     }
     return m_typ ; 
 }
+
+
 Types* GCache::getTypes()
 {
     if(!m_types)
@@ -58,18 +69,6 @@ Types* GCache::getTypes()
     }
     return m_types ;
 }
-
-GFlags* GCache::getFlags()
-{
-    if(m_flags == NULL)
-    {
-        // deferred because idpath not known at init ?
-        m_flags = new GFlags(m_opticks);  // parses the flags enum source, from $ENV_HOME/opticks/OpticksPhoton.h
-        m_flags->save(getIdPath());
-    }
-    return m_flags ;
-}
-
 
 
 

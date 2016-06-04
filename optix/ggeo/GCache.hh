@@ -15,7 +15,7 @@ class OpticksColors ;
 class OpticksQuery ; 
 
 // ggeo-
-class GFlags ; 
+class OpticksFlags ; 
 class GGeo ; 
 
 class Types ; 
@@ -43,7 +43,7 @@ class GCache {
          void init();
     public:
          OpticksColors* getColors();
-         GFlags*  getFlags();
+         OpticksFlags*  getFlags();
          Types*   getTypes();
          Typ*     getTyp();
          Opticks* getOpticks();
@@ -66,7 +66,7 @@ class GCache {
     private:
           Opticks*          m_opticks ; 
           OpticksResource*  m_resource; 
-          GFlags*           m_flags ; 
+          OpticksFlags*     m_flags ; 
           Types*            m_types ;
           Typ*              m_typ ;
           GGeo*             m_ggeo ; 

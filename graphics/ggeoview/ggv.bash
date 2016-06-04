@@ -62,7 +62,7 @@ many more undocumented
 
 EOU
 }
-ggv-env(){      elocal- ; }
+ggv-env(){      elocal- ; ggeoview- ;  }
 ggv-dir(){ echo $(env-home)/graphics/ggeoview ; }
 ggv-cd(){  cd $(ggv-dir); }
 

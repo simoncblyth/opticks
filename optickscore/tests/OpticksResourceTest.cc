@@ -1,5 +1,6 @@
 // op --resource
 
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 
 int main(int argc, char** argv, char** envp)
@@ -12,7 +13,8 @@ int main(int argc, char** argv, char** envp)
        printf("%s\n", thisEnv);    
     }
 
-    OpticksResource res ;
+    Opticks op(argc, argv) ;
+    OpticksResource res(&op) ;  // TODO: remove duplication of envprefix beween both these
     res.Dump();
     return 0 ; 
 }

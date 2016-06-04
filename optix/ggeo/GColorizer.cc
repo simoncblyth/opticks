@@ -6,12 +6,12 @@
 #include "GMesh.hh"
 #include "GSolid.hh"
 #include "GItemIndex.hh"
-#include "GAttrSeq.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
 #include <iomanip>
 
+#include "OpticksAttrSeq.hh"
 #include "OpticksColors.hh"
 #include "NQuad.hpp"
 #include "NLog.hpp"

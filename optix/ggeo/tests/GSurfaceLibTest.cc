@@ -4,16 +4,14 @@
 
 
 #include "Opticks.hh"
-
-#include "GCache.hh"
 #include "GSurfaceLib.hh"
 
 int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "surf.log");
-    GCache gc(opticks);
 
-    GSurfaceLib* slib = GSurfaceLib::load(&gc);
+    GSurfaceLib* slib = GSurfaceLib::load(opticks);
+
     slib->dump();
 
     return 0 ;

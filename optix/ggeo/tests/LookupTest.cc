@@ -4,7 +4,6 @@
 
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "GBndLib.hh"
 #include "Lookup.hpp"
 
@@ -13,16 +12,15 @@ int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "lookup.log");
 
-    GCache* m_cache = new GCache(opticks);
+    GBndLib* blib = GBndLib::load(opticks, true );
 
-    GBndLib* blib = GBndLib::load(m_cache, true );
     blib->dump();
 
 
 
     Lookup* m_lookup = new Lookup();
 
-    m_lookup->loadA( m_cache->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
+    m_lookup->loadA( opticks->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
 
     blib->fillMaterialLineMap( m_lookup->getB() ) ;    
 

@@ -4,7 +4,6 @@
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 
-#include "GCache.hh"
 #include "GGeoTestConfig.hh"
 
 #include "CPropLib.hh"
@@ -23,26 +22,21 @@ int main(int argc, char** argv)
     Opticks* m_opticks = new Opticks(argc, argv, "CTestDetectorTest.log");
     m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
-    GCache* m_cache = new GCache(m_opticks);
     OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
     m_cfg->commandline(argc, argv);  
-
-
-    
 
 
     std::string testconfig = m_cfg->getTestConfig();
 
     GGeoTestConfig* m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
 
-    CTestDetector* m_detector  = new CTestDetector(m_cache, m_testconfig) ; 
+    CTestDetector* m_detector  = new CTestDetector(m_opticks, m_testconfig) ; 
 
     m_detector->setVerbosity(2) ;
 
     CPropLib* clib = m_detector->getPropLib() ;
 
     G4VPhysicalVolume* world_pv = m_detector->getTop();
-
 
     bool expo = m_cfg->hasOpt("export");
     std::string expoconfig = m_cfg->getExportConfig();
@@ -61,7 +55,6 @@ int main(int argc, char** argv)
 
         g4dae->Write(path, world_pv, refs, recreatePoly, nodeIndex );
     }
-
 
     return 0 ; 
 }

@@ -9,6 +9,9 @@
 #include "CTestDetector.hh"
 #include <map>
 
+
+#include "Opticks.hh"
+
 // npy-
 #include "NLog.hpp"
 #include "GLMFormat.hpp"
@@ -19,7 +22,6 @@
 
 // ggeo-
 #include "GMaker.hh"
-#include "GCache.hh"
 
 #include "GCSG.hh"
 
@@ -46,7 +48,7 @@
 void CTestDetector::init()
 {
     m_lib->setGroupvelKludge(m_config->getGroupvel());
-    m_maker = new CMaker(m_cache);
+    m_maker = new CMaker(m_opticks);
 
     G4VPhysicalVolume* top = makeDetector();
     setTop(top) ; 

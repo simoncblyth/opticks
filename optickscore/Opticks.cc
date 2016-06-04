@@ -91,9 +91,18 @@ std::string Opticks::getRelativePath(const char* path)
     return m_resource->getRelativePath(path);
 }
 
+
+OpticksQuery* Opticks::getQuery()
+{
+    return m_resource->getQuery();
+}
 OpticksColors* Opticks::getColors()
 {
     return m_resource->getColors();
+}
+OpticksFlags* Opticks::getFlags()
+{
+    return m_resource->getFlags();
 }
 
 
@@ -159,7 +168,7 @@ void Opticks::init()
 
     m_parameters = new Parameters ;  
 
-    m_resource = new OpticksResource(m_envprefix, m_lastarg);
+    m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
 
     setDetector( m_resource->getDetector() );
 
@@ -282,6 +291,10 @@ void Opticks::configure()
 const char* Opticks::getIdPath()
 {
     return m_resource ? m_resource->getIdPath() : NULL ; 
+}
+const char* Opticks::getIdFold()
+{
+    return m_resource ? m_resource->getIdFold() : NULL ; 
 }
 const char* Opticks::getGDMLPath()
 {

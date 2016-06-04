@@ -1,7 +1,7 @@
 #include "GPropertyLib.hh"
 #include "GCache.hh"
 #include "GItemList.hh"
-#include "GAttrSeq.hh"
+#include "OpticksAttrSeq.hh"
 
 // opticks-
 #include "Opticks.hh"
@@ -83,7 +83,7 @@ void GPropertyLib::init()
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
 
-    m_attrnames = new GAttrSeq(m_cache, m_type);
+    m_attrnames = new OpticksAttrSeq(m_cache, m_type);
     m_attrnames->loadPrefs(); // color, abbrev and order 
 
 

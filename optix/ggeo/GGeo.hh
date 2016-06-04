@@ -38,7 +38,7 @@ class GPmt ;
 class GTreeCheck ;
 class GTreePresent ;
 class GColorizer ; 
-class GFlags ; 
+class OpticksFlags ; 
 class GGeoTest ;
 
 class GItemIndex ; 
@@ -228,7 +228,7 @@ class GGeo : public NConfigurable {
     public:
         GColorizer*        getColorizer();
         OpticksColors*     getColors();
-        GFlags*            getFlags(); 
+        OpticksFlags*            getFlags(); 
     public:
         GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  

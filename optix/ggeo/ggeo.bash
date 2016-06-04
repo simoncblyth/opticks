@@ -493,7 +493,7 @@ GAry<T>
 
 
 
-GAttrSeq
+OpticksAttrSeq
 GBBoxMesh
 
 GBndLib

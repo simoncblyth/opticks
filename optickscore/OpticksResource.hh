@@ -5,8 +5,10 @@
 #include <cstring>
 #include <glm/glm.hpp>
 
+class Opticks ; 
 class OpticksQuery ; 
 class OpticksColors ; 
+class OpticksFlags ; 
 
 
 class OpticksResource {
@@ -26,7 +28,7 @@ class OpticksResource {
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(const char* envprefix="OPTICKS_", const char* lastarg=NULL);
+       OpticksResource(Opticks* opticks=NULL, const char* envprefix="OPTICKS_", const char* lastarg=NULL);
        bool isValid();
     private:
        void init();
@@ -64,6 +66,7 @@ class OpticksResource {
     public:
        OpticksQuery* getQuery();
        OpticksColors* getColors();
+       OpticksFlags*  getFlags();
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
@@ -79,6 +82,7 @@ class OpticksResource {
        bool        isPmtInBox();
        bool        isOther();
    private:
+       Opticks*    m_opticks ; 
        const char* m_envprefix ; 
        const char* m_lastarg ; 
    private:
@@ -98,6 +102,7 @@ class OpticksResource {
    private:
        OpticksQuery*  m_query ;
        OpticksColors* m_colors ;
+       OpticksFlags*  m_flags ;
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 
@@ -111,8 +116,9 @@ class OpticksResource {
 };
 
 
-inline OpticksResource::OpticksResource(const char* envprefix, const char* lastarg) 
+inline OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
     :
+       m_opticks(opticks),
        m_envprefix(strdup(envprefix)),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
        m_geokey(NULL),
@@ -129,6 +135,7 @@ inline OpticksResource::OpticksResource(const char* envprefix, const char* lasta
        m_valid(true),
        m_query(NULL),
        m_colors(NULL),
+       m_flags(NULL),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),

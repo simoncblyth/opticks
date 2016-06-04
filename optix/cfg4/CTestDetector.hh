@@ -4,10 +4,10 @@
 #include <string>
 
 // optickscore-
+class Opticks ; 
 class OpticksQuery ; 
 
 // ggeo-
-class GCache ;
 class GGeoTestConfig ; 
 class GMaterial ;
 class GCSG ; 
@@ -53,7 +53,7 @@ class G4VSolid;
 class CTestDetector : public CDetector
 {
  public:
-    CTestDetector(GCache* cache, GGeoTestConfig* config, OpticksQuery* query=NULL);
+    CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query=NULL);
   private:
     void init();
   public:
@@ -73,7 +73,7 @@ class CTestDetector : public CDetector
 
 
 
-inline CTestDetector::CTestDetector(GCache* cache, GGeoTestConfig* config, OpticksQuery* query)
+inline CTestDetector::CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query)
   : 
   CDetector(cache, query),
   m_config(config),

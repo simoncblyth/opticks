@@ -1,5 +1,5 @@
 #include <cassert>
-#include "GCache.hh"
+//#include "GCache.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
@@ -13,11 +13,11 @@
 int main()
 {
     Opticks ok ;
-    GCache gc(&ok);
+    //GCache gc(&ok);
 
-    GBndLib* blib = GBndLib::load(&gc);
-    GMaterialLib* mlib = GMaterialLib::load(&gc);
-    GSurfaceLib*  slib = GSurfaceLib::load(&gc);
+    GBndLib* blib = GBndLib::load(&ok);
+    GMaterialLib* mlib = GMaterialLib::load(&ok);
+    GSurfaceLib*  slib = GSurfaceLib::load(&ok);
 
     blib->setMaterialLib(mlib);
     blib->setSurfaceLib(slib);

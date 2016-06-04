@@ -1,8 +1,6 @@
 // op --gscintillatorlib
 
 #include "Opticks.hh"
-
-#include "GCache.hh"
 #include "GScintillatorLib.hh"
 
 /*
@@ -30,9 +28,8 @@ Out[3]: (1, 4096, 1)
 int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "scint.log");
-    GCache gc(opticks);
 
-    GScintillatorLib* slib = GScintillatorLib::load(&gc);
+    GScintillatorLib* slib = GScintillatorLib::load(opticks);
     slib->dump();
 
     GPropertyMap<float>* ls = slib->getRaw("LiquidScintillator");

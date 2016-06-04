@@ -19,13 +19,13 @@
 #include "TrackView.hh"
 #include "OrbitalView.hh"
 #include "InterpolatedView.hh"
+#include "OpticksFlags.hh"
+#include "OpticksAttrSeq.hh"
 
 // ggeo-
 #include "GGeo.hh"
 #include "GSurfaceLib.hh"
 #include "GMaterialLib.hh"
-#include "GFlags.hh"
-#include "GAttrSeq.hh"
 #include "GItemIndex.hh"
 
 // oglrap-
@@ -514,21 +514,21 @@ void GUI::show(bool* opened)
 
 
 
-    GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames();
+    OpticksAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames();
     if(qmat)
     {
         ImGui::Spacing();
         gui_item_index(qmat);
     } 
 
-    GAttrSeq* qsur = m_ggeo->getSurfaceLib()->getAttrNames();
+    OpticksAttrSeq* qsur = m_ggeo->getSurfaceLib()->getAttrNames();
     if(qsur)
     {
         ImGui::Spacing();
         gui_item_index(qsur);
     } 
 
-    GAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
+    OpticksAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
     if(qflg)
     {
         ImGui::Spacing();
@@ -580,7 +580,7 @@ GUI::~GUI()
 
 
 
-void GUI::gui_item_index(GAttrSeq* al)
+void GUI::gui_item_index(OpticksAttrSeq* al)
 {
     gui_item_index( al->getType(), al->getLabels(), al->getColorCodes());
 }

@@ -20,8 +20,8 @@
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
 #include "GSourceLib.hh"
-#include "GFlags.hh"
-#include "GAttrSeq.hh"
+#include "OpticksFlags.hh"
+#include "OpticksAttrSeq.hh"
 
 #include "GMergedMesh.hh"
 #include "GItemIndex.hh"
@@ -198,7 +198,7 @@ OpticksColors* GGeo::getColors()
 {
    return m_cache->getColors() ; 
 }
-GFlags* GGeo::getFlags()
+OpticksFlags* GGeo::getFlags()
 {
     return m_cache->getFlags();
 }
@@ -315,7 +315,7 @@ void GGeo::setupTyp()
 {
    // hmm maybe better elsewhere to avoid repetition from tests ? 
     Typ* typ = m_cache->getTyp();
-    GFlags* flags = m_cache->getFlags();
+    OpticksFlags* flags = m_cache->getFlags();
     typ->setMaterialNames(m_materiallib->getNamesMap());
     typ->setFlagNames(flags->getNamesMap());
 }
@@ -324,7 +324,7 @@ void GGeo::setupColors()
 {
     LOG(debug) << "GGeo::setupColors" ; 
 
-    GFlags* flags = m_cache->getFlags();
+    OpticksFlags* flags = m_cache->getFlags();
 
     std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
     std::vector<unsigned int>& flag_codes     = flags->getAttrIndex()->getColorCodes() ; 
@@ -360,7 +360,7 @@ void GGeo::loadAnalyticPmt()
 
     unsigned int pmtIndex = 0 ;  
 
-    m_pmt = GPmt::load( m_cache, m_bndlib, pmtIndex, slice ); 
+    m_pmt = GPmt::load( m_opticks, m_bndlib, pmtIndex, slice ); 
 
     if(m_pmt)
     {

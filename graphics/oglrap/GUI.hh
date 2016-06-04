@@ -9,7 +9,7 @@
 class GGeo ; 
 //class GLoader ; 
 class GItemIndex ; 
-class GAttrSeq ; 
+class OpticksAttrSeq ; 
 
 class Interactor ; 
 class Scene ; 
@@ -79,7 +79,7 @@ class GUI {
 
    public:
        //static void gui_item_index(GItemIndex* ii);
-       static void gui_item_index(GAttrSeq* al);
+       static void gui_item_index(OpticksAttrSeq* al);
        static void gui_item_index(const char* type, std::vector<std::string>& labels, std::vector<unsigned int>& codes);
 
 

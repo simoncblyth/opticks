@@ -82,10 +82,13 @@
 #include "GSurfaceLib.hh"
 #include "GPmt.hh"
 #include "GParts.hh"
-#include "GFlags.hh"
-#include "OpticksColors.hh"
 #include "GItemIndex.hh"
-#include "GAttrSeq.hh"
+
+// opticks-
+#include "OpticksFlags.hh"
+#include "OpticksColors.hh"
+#include "OpticksAttrSeq.hh"
+
 
 // assimpwrap
 #include "AssimpGGeo.hh"
@@ -775,10 +778,10 @@ void App::indexPresentationPrep()
         }
         else
         {
-            GFlags* flags = m_cache->getFlags();
-            GAttrSeq* qflg = flags->getAttrIndex();
+            OpticksFlags* flags = m_cache->getFlags();
+            OpticksAttrSeq* qflg = flags->getAttrIndex();
 
-            qflg->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+            qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
             //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
 
             m_seqhis->setHandler(qflg);
@@ -793,8 +796,8 @@ void App::indexPresentationPrep()
     }
     else
     {
-        GAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
-        qmat->setCtrl(GAttrSeq::SEQUENCE_DEFAULTS);
+        OpticksAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
+        qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
         //qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
         m_seqmat = new GItemIndex(seqmat) ;  
         m_seqmat->setTitle("Photon Material Sequence Selection");
@@ -810,13 +813,13 @@ void App::indexPresentationPrep()
     else
     {
         GBndLib* blib = m_ggeo->getBndLib();
-        GAttrSeq* qbnd = blib->getAttrNames();
+        OpticksAttrSeq* qbnd = blib->getAttrNames();
         if(!qbnd->hasSequence())
         {
             blib->close();
             assert(qbnd->hasSequence());
         }
-        qbnd->setCtrl(GAttrSeq::VALUE_DEFAULTS);
+        qbnd->setCtrl(OpticksAttrSeq::VALUE_DEFAULTS);
         //qbnd->dumpTable(bndidx, "App::indexPresentationPrep bndidx"); 
 
         m_boundaries = new GItemIndex(bndidx) ;  
@@ -838,14 +841,14 @@ void App::indexBoundariesHost()
     if(!m_evt) return ; 
 
     GBndLib* blib = m_ggeo->getBndLib();
-    GAttrSeq* qbnd = blib->getAttrNames();
+    OpticksAttrSeq* qbnd = blib->getAttrNames();
     if(!qbnd->hasSequence())
     {
          blib->close();
          assert(qbnd->hasSequence());
     }
 
-    std::map<unsigned int, std::string> boundary_names = qbnd->getNamesMap(GAttrSeq::ONEBASED) ;
+    std::map<unsigned int, std::string> boundary_names = qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
 
     NPY<float>* dpho = m_evt->getPhotonData();
     if(dpho && dpho->hasData())

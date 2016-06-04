@@ -1,6 +1,6 @@
 #include "GPmt.hh"
 
-#include "GCache.hh"
+//#include "GCache.hh"
 #include "GVector.hh"
 #include "GItemList.hh"
 #include "GBndLib.hh"
@@ -9,6 +9,7 @@
 #include "GParts.hh"
 
 //opticks-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 
 // npy-
@@ -26,7 +27,7 @@ const char* GPmt::FILENAME = "GPmt.npy" ;
 const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
 
 
-GPmt* GPmt::load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* slice)
+GPmt* GPmt::load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* slice)
 {
     GPmt* pmt = NULL ; 
     OpticksResource* resource = cache->getResource();

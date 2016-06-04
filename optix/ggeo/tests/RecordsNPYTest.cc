@@ -9,7 +9,7 @@
 #include "Opticks.hh"
 
 #include "GCache.cc"
-#include "GFlags.cc"
+#include "OpticksFlags.cc"
 #include "GBndLib.cc"
 #include "GMaterialLib.cc"
 #include "GSurfaceLib.cc"
@@ -33,13 +33,13 @@ int main(int argc, char** argv)
     GCache* cache = new GCache(opticks);
     Types* types = cache->getTypes();
 
-    GBndLib* blib = GBndLib::load(cache, true); 
+    GBndLib* blib = GBndLib::load(opticks, true); 
     GMaterialLib* mlib = blib->getMaterialLib();
     //GSurfaceLib*  slib = blib->getSurfaceLib();
 
     // see GGeo::setupTyp
     Typ* typ = cache->getTyp();
-    GFlags* flags = cache->getFlags();
+    OpticksFlags* flags = cache->getFlags();
     typ->setMaterialNames(mlib->getNamesMap());
     typ->setFlagNames(flags->getNamesMap());
 

@@ -3,9 +3,7 @@
 // op --cproplib GdDopedLS
 
 #include "Opticks.hh"
-#include "GCache.hh"
 #include "CPropLib.hh"
-
 
 #include "NLog.hpp"
 
@@ -15,11 +13,10 @@ int main(int argc, char** argv)
     
     m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
-    GCache* m_cache = new GCache(m_opticks);
-
-    CPropLib* m_lib = new CPropLib(m_cache); 
+    CPropLib* m_lib = new CPropLib(m_opticks); 
 
     m_lib->dump();
+
     //m_lib->dumpMaterials();
 
 

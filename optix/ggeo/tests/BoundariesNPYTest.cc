@@ -2,7 +2,7 @@
 
 //#include "GCache.hh"
 #include "GBndLib.hh"
-#include "GAttrSeq.hh"
+#include "OpticksAttrSeq.hh"
 
 
 #include "BoundariesNPY.hpp"
@@ -17,9 +17,9 @@ int main(int argc, char** argv)
     //GCache* cache = new GCache(opticks);
 
     GBndLib* blib = GBndLib::load(opticks, true );
-    GAttrSeq* qbnd = blib->getAttrNames();
-    blib->close();     //  BndLib is dynamic so requires a close before setNames is called setting the sequence for GAttrSeq
-    std::map<unsigned int, std::string> nm = qbnd->getNamesMap(GAttrSeq::ONEBASED) ;
+    OpticksAttrSeq* qbnd = blib->getAttrNames();
+    blib->close();     //  BndLib is dynamic so requires a close before setNames is called setting the sequence for OpticksAttrSeq
+    std::map<unsigned int, std::string> nm = qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
 
     //qbnd->dump();
     

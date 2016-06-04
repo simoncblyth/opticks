@@ -10,7 +10,7 @@ class Types ;
 
 // ggeo-
 class GColorMap ; 
-class GAttrSeq ; 
+class OpticksAttrSeq ; 
 
 #include "NQuad.hpp"
 
@@ -34,7 +34,7 @@ class GAttrSeq ;
 //
 //  TODO:
 //      rejig labelling functionality, remove from here 
-//      and use from the GAttrSeq constituent
+//      and use from the OpticksAttrSeq constituent
 //      of GMaterialLib GSurfaceLib GBndLib GFlags 
 //
 //  
@@ -70,7 +70,7 @@ class GItemIndex {
         // 
         // all the color stuff belongs in the handler, not here 
         //
-        void     setHandler(GAttrSeq* handler);  
+        void     setHandler(OpticksAttrSeq* handler);  
         //
    public:
         void add(const char* name, unsigned int source);
@@ -121,7 +121,7 @@ class GItemIndex {
         NPY<unsigned char>*                  m_colorbuffer ; 
         Types*                               m_types ; 
    private:
-        GAttrSeq*                            m_handler ; 
+        OpticksAttrSeq*                            m_handler ; 
    private:
         // populated by formTable
         std::vector<std::string>             m_labels ; 
@@ -172,7 +172,7 @@ inline void GItemIndex::setTypes(Types* types)
 {
    m_types = types ; 
 }
-inline void GItemIndex::setHandler(GAttrSeq* handler)
+inline void GItemIndex::setHandler(OpticksAttrSeq* handler)
 {
    m_handler = handler ; 
 }

@@ -16,11 +16,10 @@
 #include "CTraverser.hh"
 
 // optickscore-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 
-// ggeo-
-#include "GCache.hh"
 
 // g4-
 #include "G4PVPlacement.hh"
@@ -28,8 +27,8 @@
 
 void CDetector::init()
 {
-    m_resource = m_cache->getResource();
-    m_lib = new CPropLib(m_cache);
+    m_resource = m_opticks->getResource();
+    m_lib = new CPropLib(m_opticks);
     m_bbox = new NBoundingBox ;
 }
 

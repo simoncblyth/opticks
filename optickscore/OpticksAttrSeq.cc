@@ -1,4 +1,3 @@
-#include "GAttrSeq.hh"
 
 #include <climits>
 #include <sstream>
@@ -9,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 
 //opticks-
+#include "OpticksAttrSeq.hh"
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
@@ -18,34 +18,34 @@
 #include "stringutil.hpp"
 #include "NLog.hpp"
 
-unsigned int GAttrSeq::UNSET = UINT_MAX ; 
-unsigned int GAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
+unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
+unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
 
-void GAttrSeq::init()
+void OpticksAttrSeq::init()
 {
     m_resource = m_cache->getResource();
 }
 
-void GAttrSeq::loadPrefs()
+void OpticksAttrSeq::loadPrefs()
 {
     // json -> maps : m_color, m_abbrev, m_order
 
     if(m_resource->loadPreference(m_color, m_type, "color.json"))
-        LOG(debug) << "GAttrSeq::loadPrefs color " << m_type ;
+        LOG(debug) << "OpticksAttrSeq::loadPrefs color " << m_type ;
 
     if(m_resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
-        LOG(debug) << "GAttrSeq::loadPrefs abbrev " << m_type ;
+        LOG(debug) << "OpticksAttrSeq::loadPrefs abbrev " << m_type ;
 
     if(m_resource->loadPreference(m_order, m_type, "order.json"))
-        LOG(debug) << "GAttrSeq::loadPrefs order " << m_type ;
+        LOG(debug) << "OpticksAttrSeq::loadPrefs order " << m_type ;
 }
 
-void GAttrSeq::setSequence(NSequence* seq)
+void OpticksAttrSeq::setSequence(NSequence* seq)
 {
     m_sequence = seq ; 
 }
 
-std::map<unsigned int, std::string> GAttrSeq::getNamesMap(unsigned char ctrl)
+std::map<unsigned int, std::string> OpticksAttrSeq::getNamesMap(unsigned char ctrl)
 {
      std::map<unsigned int, std::string> mus ; 
      unsigned int ni = m_sequence->getNumKeys();
@@ -58,12 +58,12 @@ std::map<unsigned int, std::string> GAttrSeq::getNamesMap(unsigned char ctrl)
      return mus ; 
 }
 
-const char* GAttrSeq::getColorName(const char* key)
+const char* OpticksAttrSeq::getColorName(const char* key)
 {
     return m_color.count(key) == 1 ? m_color[key].c_str() : NULL ; 
 }
 
-unsigned int GAttrSeq::getColorCode(const char* key )
+unsigned int OpticksAttrSeq::getColorCode(const char* key )
 {
     const char*  colorname =  getColorName(key) ;
     OpticksColors* palette = m_cache->getColors();
@@ -71,7 +71,7 @@ unsigned int GAttrSeq::getColorCode(const char* key )
     return colorcode ; 
 }
 
-std::vector<unsigned int>& GAttrSeq::getColorCodes()
+std::vector<unsigned int>& OpticksAttrSeq::getColorCodes()
 {
     if(m_sequence && m_color_codes.size() == 0)
     {
@@ -86,7 +86,7 @@ std::vector<unsigned int>& GAttrSeq::getColorCodes()
     return m_color_codes ; 
 }
 
-std::vector<std::string>& GAttrSeq::getLabels()
+std::vector<std::string>& OpticksAttrSeq::getLabels()
 {
     if(m_sequence && m_labels.size() == 0)
     {
@@ -113,18 +113,18 @@ std::vector<std::string>& GAttrSeq::getLabels()
 }
 
 
-std::string GAttrSeq::getAbbr(const char* key)
+std::string OpticksAttrSeq::getAbbr(const char* key)
 {
     if(key == NULL) return "NULL" ; 
     return m_abbrev.count(key) == 1 ? m_abbrev[key] : key ;  // copying key into string
 }
 
 
-void GAttrSeq::dump(const char* keys, const char* msg)
+void OpticksAttrSeq::dump(const char* keys, const char* msg)
 {
     if(!m_sequence) 
     {
-        LOG(warning) << "GAttrSeq::dump no sequence " ; 
+        LOG(warning) << "OpticksAttrSeq::dump no sequence " ; 
         return ; 
     }
     LOG(info) << msg << " " << ( keys ? keys : "-" ) ; 
@@ -148,11 +148,11 @@ void GAttrSeq::dump(const char* keys, const char* msg)
     }
 }
 
-void GAttrSeq::dumpKey(const char* key)
+void OpticksAttrSeq::dumpKey(const char* key)
 {
     if(key == NULL)
     {
-        LOG(warning) << "GAttrSeq::dump NULL key " ;
+        LOG(warning) << "OpticksAttrSeq::dump NULL key " ;
         return ;   
     }
  
@@ -160,7 +160,7 @@ void GAttrSeq::dumpKey(const char* key)
     unsigned int idx = m_sequence->getIndex(key);
     if(idx == UNSET)
     {
-        LOG(warning) << "GAttrSeq::dump no item named: " << key ; 
+        LOG(warning) << "OpticksAttrSeq::dump no item named: " << key ; 
     }
     else
     {
@@ -179,7 +179,7 @@ void GAttrSeq::dumpKey(const char* key)
 
 
 
-std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctrl)
+std::string OpticksAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctrl)
 {
     // decodes hex keys like "4ccc1"  eg those from seqmat and seqhis 
     if(!seq) return "NULL" ;
@@ -203,7 +203,7 @@ std::string GAttrSeq::decodeHexSequenceString(const char* seq, unsigned char ctr
 
 
 
-std::string GAttrSeq::decodeString(const char* seq, unsigned char ctrl)
+std::string OpticksAttrSeq::decodeString(const char* seq, unsigned char ctrl)
 {
     // decodes keys like "-38"  eg those from boundaries
     if(!seq) return "NULL" ;
@@ -220,7 +220,7 @@ std::string GAttrSeq::decodeString(const char* seq, unsigned char ctrl)
 
 
 
-std::string GAttrSeq::getLabel(Index* index, const char* key, unsigned int& colorcode)
+std::string OpticksAttrSeq::getLabel(Index* index, const char* key, unsigned int& colorcode)
 {
     colorcode = 0xFFFFFF ;
 
@@ -245,7 +245,7 @@ std::string GAttrSeq::getLabel(Index* index, const char* key, unsigned int& colo
 }
 
 
-void GAttrSeq::dumpTable(Index* seqtab, const char* msg)
+void OpticksAttrSeq::dumpTable(Index* seqtab, const char* msg)
 {
     LOG(info) << msg ;
 

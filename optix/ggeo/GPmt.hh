@@ -2,7 +2,9 @@
 
 #include <cstring>
 
-class GCache ; 
+class Opticks ; 
+
+
 class GParts ; 
 class GCSG ; 
 class GBndLib ; 
@@ -18,9 +20,9 @@ class GPmt {
        static const char* GPMT ;  
    public:
        // loads persisted GParts buffer and associates with the GPmt
-       static GPmt* load(GCache* cache, GBndLib* bndlib, unsigned int index, NSlice* slice=NULL);
+       static GPmt* load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* slice=NULL);
    public:
-       GPmt(GCache* cache, GBndLib* bndlib, unsigned int index);
+       GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index);
        void setPath(const char* path);
    public:
        void addContainer(gbbox& bb, const char* bnd );
@@ -34,7 +36,7 @@ class GPmt {
        GCSG*   getCSG();
        const char* getPath();
    private:
-       GCache*            m_cache ; 
+       Opticks*           m_cache ; 
        GBndLib*           m_bndlib ; 
        unsigned int       m_index ;
        GParts*            m_parts ;
@@ -43,7 +45,7 @@ class GPmt {
 };
 
 
-inline GPmt::GPmt(GCache* cache, GBndLib* bndlib, unsigned int index) 
+inline GPmt::GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index) 
     :
     m_cache(cache),
     m_bndlib(bndlib),

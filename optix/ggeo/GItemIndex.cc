@@ -1,5 +1,5 @@
 #include "GItemIndex.hh"
-#include "GAttrSeq.hh"
+#include "OpticksAttrSeq.hh"
 #include "GColorMap.hh"
 #include "GVector.hh"
 

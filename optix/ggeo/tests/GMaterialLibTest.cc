@@ -4,7 +4,7 @@
 
 #include "GCache.hh"
 #include "GMaterialLib.hh"
-#include "GAttrSeq.hh"
+#include "OpticksAttrSeq.hh"
 
 
 #include "GProperty.hh"
@@ -41,7 +41,7 @@ void attrdump( GMaterialLib* mlib)
 {
     const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
 
-    GAttrSeq* amat = mlib->getAttrNames();
+    OpticksAttrSeq* amat = mlib->getAttrNames();
 
     amat->dump(mats);
 }
@@ -77,9 +77,9 @@ int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "mats.log");
 
-    GCache gc(&ok);
+    //GCache gc(&ok);
 
-    GMaterialLib* mlib = GMaterialLib::load(&gc);
+    GMaterialLib* mlib = GMaterialLib::load(&ok);
 
     //test_addTestMaterial(mlib);
 

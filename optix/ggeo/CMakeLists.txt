@@ -61,7 +61,6 @@ set(SOURCES
     GScintillatorLib.cc
     GSourceLib.cc
     GPropertyLib.cc
-    GFlags.cc
     GSolid.cc
     GMesh.cc
     GMergedMesh.cc
@@ -85,7 +84,6 @@ set(SOURCES
     GTreePresent.cc
     GBBoxMesh.cc
     GItemList.cc
-    GAttrSeq.cc
     GMeshFixer.cc
     GParts.cc
     GCSG.cc
@@ -121,7 +119,6 @@ SET(HEADERS
     GBndLib.hh
     GMaterialLib.hh
     GSurfaceLib.hh
-    GFlags.hh
     GVector.hh
     GMatrix.hh
     GIds.hh
@@ -139,7 +136,6 @@ SET(HEADERS
     GTreePresent.hh
     GBBoxMesh.hh
     GItemList.hh
-    GAttrSeq.hh
     GMeshFixer.hh
     GParts.hh
     GCSG.hh

@@ -4,7 +4,7 @@
 
 #include "Opticks.hh"
 
-#include "GCache.hh"
+//#include "GCache.hh"
 #include "GBndLib.hh"
 #include "GPmt.hh"
 #include "GParts.hh"
@@ -17,14 +17,14 @@ int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "pmttest.log");
 
-    GCache* cache = new GCache(opticks);
+    //GCache* cache = new GCache(opticks);
 
     for(int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
     NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;
 
-    GBndLib* blib = GBndLib::load(cache, true);
+    GBndLib* blib = GBndLib::load(opticks, true);
 
-    GPmt* pmt = GPmt::load(cache, blib, 0, slice);
+    GPmt* pmt = GPmt::load(opticks, blib, 0, slice);
 
     GParts* ppmt = pmt->getParts();
 

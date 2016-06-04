@@ -8,13 +8,17 @@
 template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
-class OpticksEvent ;
 class NLog ;
 class NState ;
 class Parameters ; 
+class NPropNames ; 
+
+class OpticksEvent ;
 class OpticksResource ; 
 class OpticksColors ; 
-class NPropNames ; 
+class OpticksQuery; 
+class OpticksFlags ;
+ 
 
 #include "OpticksPhoton.h"
 
@@ -126,6 +130,7 @@ class Opticks {
        const char* getDAEPath();
        const char* getGDMLPath();
        const char* getIdPath();
+       const char* getIdFold();
        const char* getLastArg();
        int         getLastArgInt();
    public:
@@ -142,7 +147,11 @@ class Opticks {
    public:
        OpticksCfg<Opticks>* getCfg();
        OpticksResource*     getResource(); 
+   public:
+       OpticksQuery*        getQuery(); 
        OpticksColors*       getColors(); 
+       OpticksFlags*        getFlags(); 
+   public:
        Parameters*          getParameters();
        NState*              getState();
        std::string          getModeString();

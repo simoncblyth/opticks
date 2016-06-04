@@ -9,7 +9,6 @@ class Opticks;
 
 
 // ggeo-
-class GCache ; 
 class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;

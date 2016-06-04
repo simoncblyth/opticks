@@ -1,17 +1,16 @@
 // op --cgdmldetector
 #pragma once
 
-// ggeo-
-class GCache ; 
 
 // optickscore-
+class Opticks ;
 class OpticksQuery ;
 
 #include "CDetector.hh"
 class CGDMLDetector : public CDetector
 {
   public:
-    CGDMLDetector(GCache* cache, OpticksQuery* query);
+    CGDMLDetector(Opticks* cache, OpticksQuery* query);
     virtual ~CGDMLDetector();
   private:
     void init();
@@ -19,7 +18,7 @@ class CGDMLDetector : public CDetector
     void addMPT();
 };
 
-inline CGDMLDetector::CGDMLDetector(GCache* cache, OpticksQuery* query)
+inline CGDMLDetector::CGDMLDetector(Opticks* cache, OpticksQuery* query)
   : 
   CDetector(cache, query)
 {
