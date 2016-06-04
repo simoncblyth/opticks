@@ -4,7 +4,6 @@
 
 #include "NLog.hpp"
 
-
 void OpticksEngine::init()
 {
     m_cfg = m_opticks->getCfg();  
@@ -13,7 +12,6 @@ void OpticksEngine::init()
 
     assert(m_cfg);
 }
-
 
 
 

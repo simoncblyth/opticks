@@ -9,7 +9,6 @@
 //  * Opticks simulator  opticksop-/OpEngine
 //
 //  So they can be used(at a very high level) interchangably 
-//
 
 #include <cstddef>
 
@@ -18,14 +17,11 @@ class Opticks ;
 class OpticksEvent ;
 template <typename T> class OpticksCfg ;
 
-// ggeo-
-class GCache ; 
-
 class OpticksEngine {
    public:
        OpticksEngine(Opticks* opticks);
+   public:
        void setEvent(OpticksEvent* evt);
-       void setCache(GCache* cache);
    public:
         Opticks*      getOpticks();
         OpticksEvent* getEvent();
@@ -34,7 +30,6 @@ class OpticksEngine {
    protected:
        Opticks*              m_opticks ; 
        OpticksCfg<Opticks>*  m_cfg ;
-       GCache*               m_cache ; 
        OpticksEvent*         m_evt ; 
 
 };
@@ -43,7 +38,6 @@ inline OpticksEngine::OpticksEngine(Opticks* opticks)
     :
       m_opticks(opticks),
       m_cfg(NULL),
-      m_cache(NULL),
       m_evt(NULL)
 {
      init();
@@ -53,11 +47,6 @@ inline void OpticksEngine::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
 }
-inline void OpticksEngine::setCache(GCache* cache)
-{
-    m_cache = cache ; 
-}
-
 inline Opticks* OpticksEngine::getOpticks()
 {
     return m_opticks ; 
