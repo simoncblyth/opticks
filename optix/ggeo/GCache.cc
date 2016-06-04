@@ -64,7 +64,7 @@ GFlags* GCache::getFlags()
     if(m_flags == NULL)
     {
         // deferred because idpath not known at init ?
-        m_flags = new GFlags(this);  // parses the flags enum source, from $ENV_HOME/opticks/OpticksPhoton.h
+        m_flags = new GFlags(m_opticks);  // parses the flags enum source, from $ENV_HOME/opticks/OpticksPhoton.h
         m_flags->save(getIdPath());
     }
     return m_flags ;

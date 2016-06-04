@@ -10,6 +10,8 @@ class GBndLib ;
 class GMaker ; 
 class GMergedMesh ; 
 
+class Opticks ; 
+
 class GGeoTest {
     public:
        GGeoTest(GCache* cache, GGeoTestConfig* config);
@@ -25,6 +27,7 @@ class GGeoTest {
        GMergedMesh* loadPmt();
     private:
        GCache*          m_cache ; 
+       Opticks*         m_opticks ; 
        GGeoTestConfig*  m_config ; 
        GGeo*            m_ggeo ; 
        GGeoLib*         m_geolib ; 
@@ -37,6 +40,7 @@ class GGeoTest {
 inline GGeoTest::GGeoTest(GCache* cache, GGeoTestConfig* config) 
     : 
     m_cache(cache),
+    m_opticks(NULL),
     m_config(config),
     m_ggeo(NULL),
     m_geolib(NULL),

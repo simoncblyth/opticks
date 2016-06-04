@@ -86,9 +86,16 @@ class GGeo : public NConfigurable {
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
         static bool ctrlHasKey(const char* ctrl, const char* key);
+
     public:
+#ifdef NEWWAY
         GGeo(Opticks* cache); 
         Opticks* getCache();
+#else
+        GGeo(GCache* cache); 
+        GCache* getCache();
+#endif
+    public:
         const char* getIdPath();
         bool isValid();
     public:
@@ -293,7 +300,12 @@ class GGeo : public NConfigurable {
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
+#ifdef NEWWAY
         Opticks*                      m_cache ; 
+#else
+        GCache*                       m_cache ; 
+#endif
+        Opticks*                      m_opticks ;  // transitional
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
@@ -357,8 +369,15 @@ class GGeo : public NConfigurable {
 };
 
 
+#ifdef NEWWAY
 inline GGeo::GGeo(Opticks* cache) :
    m_cache(cache), 
+   m_opticks(cache), 
+#else
+inline GGeo::GGeo(GCache* cache) :
+   m_cache(cache), 
+   m_opticks(NULL), 
+#endif
    m_composition(NULL), 
    m_treecheck(NULL), 
    m_treepresent(NULL), 
@@ -584,8 +603,11 @@ inline gfloat3* GGeo::getHigh()
 }
 
 
-
+#ifdef NEWWAY
 inline Opticks* GGeo::getCache()
+#else
+inline GCache* GGeo::getCache()
+#endif
 {
     return m_cache ; 
 }

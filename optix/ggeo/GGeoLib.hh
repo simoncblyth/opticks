@@ -8,6 +8,9 @@ class GCache ;
 class GMergedMesh ; 
 class GNode ; 
 
+class Opticks ; 
+
+
 class GGeoLib {
     public:
         static const char* GMERGEDMESH ; 
@@ -47,17 +50,10 @@ inline GGeoLib::GGeoLib(GCache* cache)
 {
 }
 
-
 inline unsigned int GGeoLib::getNumMergedMesh()
 {
     return m_merged_mesh.size();
 }
-
-
-
-
-
-
 inline void GGeoLib::setMeshVersion(const char* mesh_version)
 {
     m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
@@ -66,5 +62,4 @@ inline const char* GGeoLib::getMeshVersion()
 {
     return m_mesh_version ;
 }
-
 

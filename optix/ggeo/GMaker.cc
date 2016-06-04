@@ -113,7 +113,9 @@ std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4&
 
 void GMaker::init()
 {
+    m_opticks = m_cache->getOpticks();
     m_ggeo = m_cache->getGGeo();
+   
     if(m_ggeo)
     {
         m_geolib = m_ggeo->getGeoLib();
@@ -123,7 +125,7 @@ void GMaker::init()
     {
         LOG(warning) << "GMaker::init booting from cache" ; 
         m_geolib = GGeoLib::load(m_cache);
-        m_bndlib = GBndLib::load(m_cache, true );
+        m_bndlib = GBndLib::load(m_opticks, true );
     }
 }
 

@@ -15,6 +15,8 @@ class GGeoLib ;
 class GBndLib ; 
 class GSolid ; 
 
+class Opticks ; 
+
 class GMaker {
    public:
        static const char* ZSPHERE ; 
@@ -44,6 +46,7 @@ class GMaker {
        static GSolid* makeSphere(NTrianglesNPY* tris);
    private:
        GCache*   m_cache ; 
+       Opticks*  m_opticks ; 
        GGeo*     m_ggeo ; 
        GGeoLib*  m_geolib ; 
        GBndLib*  m_bndlib ; 
@@ -53,6 +56,7 @@ class GMaker {
 inline GMaker::GMaker(GCache* cache)
     :
     m_cache(cache),
+    m_opticks(NULL),
     m_ggeo(NULL),
     m_geolib(NULL),
     m_bndlib(NULL)

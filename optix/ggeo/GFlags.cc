@@ -31,7 +31,6 @@ void GFlags::init(const char* path)
 
     m_aindex = new GAttrSeq(m_cache, "GFlags");
     m_aindex->loadPrefs(); // color, abbrev and order 
-
     m_aindex->setSequence(m_index);
 }
 
@@ -40,7 +39,6 @@ void GFlags::save(const char* idpath)
     m_index->setExt(".ini"); 
     m_index->save(idpath);    
 }
-
 
 Index* GFlags::parseFlags(const char* path)
 {
@@ -59,13 +57,8 @@ Index* GFlags::parseFlags(const char* path)
         assert( mask == xmask);
         index->add( p.second.c_str(), bitpos );
     }
-
-
-
-
     return index ; 
 }
-
 
 std::map<unsigned int, std::string> GFlags::getNamesMap()
 {

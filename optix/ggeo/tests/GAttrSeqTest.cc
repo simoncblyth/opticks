@@ -12,7 +12,7 @@
 #include <iomanip>
 
 
-void test_history_sequence(GCache* cache)
+void test_history_sequence(Opticks* cache)
 {
     GFlags* flags = cache->getFlags();
     GAttrSeq* qflg = flags->getAttrIndex();
@@ -25,7 +25,7 @@ void test_history_sequence(GCache* cache)
     qflg->dumpTable(seqhis, "seqhis"); 
 }
 
-void test_material_sequence(GCache* cache)
+void test_material_sequence(Opticks* cache)
 {
     GMaterialLib* mlib = GMaterialLib::load(cache);
     GAttrSeq* qmat = mlib->getAttrNames();
@@ -38,7 +38,7 @@ void test_material_sequence(GCache* cache)
     qmat->dumpTable(seqmat, "seqmat"); 
 }
 
-void test_index_boundaries(GCache* cache)
+void test_index_boundaries(Opticks* cache)
 {
     GBndLib* blib = GBndLib::load(cache, true);
     blib->close(); 
@@ -55,7 +55,7 @@ void test_index_boundaries(GCache* cache)
 }
 
 
-void test_material_dump(GCache* cache)
+void test_material_dump(Opticks* cache)
 {
     GMaterialLib* mlib = GMaterialLib::load(cache);
     GAttrSeq* qmat = mlib->getAttrNames();
@@ -67,11 +67,11 @@ void test_material_dump(GCache* cache)
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv);
-    GCache gc(&ok);
+    //GCache gc(&ok);
 
-    test_history_sequence(&gc);
-    test_material_sequence(&gc);
-    test_material_dump(&gc);
+    test_history_sequence(&ok);
+    test_material_sequence(&ok);
+    test_material_dump(&ok);
     
-    test_index_boundaries(&gc);
+    test_index_boundaries(&ok);
 }

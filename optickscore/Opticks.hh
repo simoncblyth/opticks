@@ -13,6 +13,7 @@ class NLog ;
 class NState ;
 class Parameters ; 
 class OpticksResource ; 
+class OpticksColors ; 
 class NPropNames ; 
 
 #include "OpticksPhoton.h"
@@ -141,6 +142,7 @@ class Opticks {
    public:
        OpticksCfg<Opticks>* getCfg();
        OpticksResource*     getResource(); 
+       OpticksColors*       getColors(); 
        Parameters*          getParameters();
        NState*              getState();
        std::string          getModeString();

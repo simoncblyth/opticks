@@ -1,5 +1,13 @@
 #include "GAttrSeq.hh"
 
+#include <climits>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+
 //opticks-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
@@ -8,20 +16,9 @@
 // npy-
 #include "Index.hpp"
 #include "stringutil.hpp"
-
-#include "GItemList.hh"
-#include "GCache.hh"
-
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-
 #include "NLog.hpp"
 
-
+unsigned int GAttrSeq::UNSET = UINT_MAX ; 
 unsigned int GAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
 
 void GAttrSeq::init()
@@ -29,9 +26,10 @@ void GAttrSeq::init()
     m_resource = m_cache->getResource();
 }
 
-
 void GAttrSeq::loadPrefs()
 {
+    // json -> maps : m_color, m_abbrev, m_order
+
     if(m_resource->loadPreference(m_color, m_type, "color.json"))
         LOG(debug) << "GAttrSeq::loadPrefs color " << m_type ;
 
@@ -42,12 +40,10 @@ void GAttrSeq::loadPrefs()
         LOG(debug) << "GAttrSeq::loadPrefs order " << m_type ;
 }
 
-
 void GAttrSeq::setSequence(NSequence* seq)
 {
     m_sequence = seq ; 
 }
-
 
 std::map<unsigned int, std::string> GAttrSeq::getNamesMap(unsigned char ctrl)
 {
@@ -162,7 +158,7 @@ void GAttrSeq::dumpKey(const char* key)
  
 
     unsigned int idx = m_sequence->getIndex(key);
-    if(idx == GItemList::UNSET)
+    if(idx == UNSET)
     {
         LOG(warning) << "GAttrSeq::dump no item named: " << key ; 
     }
@@ -272,8 +268,6 @@ void GAttrSeq::dumpTable(Index* seqtab, const char* msg)
 
     LOG(info) << std::endl << ss.str() ;
 }
-
-
 
 
 

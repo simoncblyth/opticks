@@ -34,6 +34,7 @@
 
 void GGeoTest::init()
 {
+    m_opticks = m_cache->getOpticks();
     m_ggeo = m_cache->getGGeo();
     if(m_ggeo)
     {
@@ -44,7 +45,7 @@ void GGeoTest::init()
     {
         LOG(warning) << "GGeoTest::init booting from cache" ; 
         m_geolib = GGeoLib::load(m_cache);
-        m_bndlib = GBndLib::load(m_cache, true );
+        m_bndlib = GBndLib::load(m_opticks, true );
     }
     m_maker = new GMaker(m_cache);
 }

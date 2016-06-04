@@ -74,24 +74,26 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 void GGeo::init()
 {
-   m_cache->setGGeo(this); 
+#ifdef NEWWAY
+#else
+   m_opticks = m_cache->getOpticks(); // m_cache is GCache
+   m_cache->setGGeo(this);  
+#endif
 
-   //Opticks* opticks = m_cache->getOpticks(); 
-   OpticksResource* resource = m_cache->getResource(); 
-
+   OpticksResource* resource = m_opticks->getResource(); 
    const char* idpath = resource->getIdPath() ;
 
    fs::path geocache(idpath); 
 
-   bool gc_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
-   bool gc_request = opticks->isGeocache() ; 
+   bool cache_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
+   bool cache_requested = m_opticks->isGeocache() ; 
 
-   m_loaded = gc_exists && gc_request ;
+   m_loaded = cache_exists && cache_requested ;
 
    LOG(debug) << "GGeo::init"
              << " idpath " << idpath
-             << " gc_exists " << gc_exists 
-             << " gc_request " << gc_request
+             << " cache_exists " << cache_exists 
+             << " cache_requested " << cache_requested
              << " m_loaded " << m_loaded 
              ;
 
@@ -124,15 +126,15 @@ void GGeo::init()
    m_colorizer = new GColorizer( this, style ); // colorizer needs full tree, so pre-cache only 
 
 
-   m_bndlib = new GBndLib(m_cache);
-   m_materiallib = new GMaterialLib(m_cache);
-   m_surfacelib  = new GSurfaceLib(m_cache);
+   m_bndlib = new GBndLib(m_opticks);
+   m_materiallib = new GMaterialLib(m_opticks);
+   m_surfacelib  = new GSurfaceLib(m_opticks);
 
    m_bndlib->setMaterialLib(m_materiallib);
    m_bndlib->setSurfaceLib(m_surfacelib);
 
-   m_scintillatorlib  = new GScintillatorLib(m_cache);
-   m_sourcelib  = new GSourceLib(opticks);
+   m_scintillatorlib  = new GScintillatorLib(m_opticks);
+   m_sourcelib  = new GSourceLib(m_opticks);
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -275,17 +277,18 @@ void GGeo::loadFromCache()
         m_lvlist = GItemList::load(idpath, "LVNames");
     }
 
-    m_bndlib = GBndLib::load(m_cache);  // GBndLib is persisted via index buffer, not float buffer
+    m_bndlib = GBndLib::load(m_opticks);  // GBndLib is persisted via index buffer, not float buffer
 
     
 
-    m_materiallib = GMaterialLib::load(m_cache);
-    m_surfacelib  = GSurfaceLib::load(m_cache);
+    m_materiallib = GMaterialLib::load(m_opticks);
+    m_surfacelib  = GSurfaceLib::load(m_opticks);
+
     m_bndlib->setMaterialLib(m_materiallib);
     m_bndlib->setSurfaceLib(m_surfacelib);
 
-    m_scintillatorlib  = GScintillatorLib::load(m_cache);
-    m_sourcelib  = GSourceLib::load(m_cache);
+    m_scintillatorlib  = GScintillatorLib::load(m_opticks);
+    m_sourcelib  = GSourceLib::load(m_opticks);
 
 
 

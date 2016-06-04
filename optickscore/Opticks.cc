@@ -91,6 +91,11 @@ std::string Opticks::getRelativePath(const char* path)
     return m_resource->getRelativePath(path);
 }
 
+OpticksColors* Opticks::getColors()
+{
+    return m_resource->getColors();
+}
+
 
 glm::vec4 Opticks::getDefaultDomainSpec()
 {

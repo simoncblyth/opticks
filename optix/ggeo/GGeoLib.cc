@@ -7,8 +7,8 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 #include <boost/filesystem.hpp>

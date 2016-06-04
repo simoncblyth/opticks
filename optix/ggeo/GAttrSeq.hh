@@ -33,6 +33,7 @@ Classes fulfilling NSequence include GItemList
 */
 class GAttrSeq {
     public:
+        static unsigned int UNSET ; 
         static unsigned int ERROR_COLOR ; 
 
         enum {

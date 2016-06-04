@@ -1,6 +1,6 @@
 #include "Opticks.hh"
 
-#include "GCache.hh"
+//#include "GCache.hh"
 #include "GBndLib.hh"
 #include "GAttrSeq.hh"
 
@@ -14,9 +14,9 @@
 int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv);
-    GCache* cache = new GCache(opticks);
+    //GCache* cache = new GCache(opticks);
 
-    GBndLib* blib = GBndLib::load(cache, true );
+    GBndLib* blib = GBndLib::load(opticks, true );
     GAttrSeq* qbnd = blib->getAttrNames();
     blib->close();     //  BndLib is dynamic so requires a close before setNames is called setting the sequence for GAttrSeq
     std::map<unsigned int, std::string> nm = qbnd->getNamesMap(GAttrSeq::ONEBASED) ;

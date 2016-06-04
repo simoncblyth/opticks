@@ -25,11 +25,10 @@ class GFlags {
         Index*      getIndex();  
         GAttrSeq*   getAttrIndex();  
     private:
-        Opticks*      m_cache  ;
+        Opticks*     m_cache  ;
         GAttrSeq*    m_aindex ; 
         Index*       m_index ; 
 };
-
 
 inline GFlags::GFlags(Opticks* cache, const char* path) 
     :
@@ -48,4 +47,3 @@ inline Index* GFlags::getIndex()
 {
     return m_index ; 
 }  
-
