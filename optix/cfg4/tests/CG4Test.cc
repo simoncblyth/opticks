@@ -1,13 +1,11 @@
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
-#include "GCache.hh"
 #include "CG4.hh"
 
 #include <cstdio>
 
 int main(int argc, char** argv)
 {
-
     Opticks* m_opticks = new Opticks(argc, argv, "CG4Test.log");
 
     m_opticks->setMode( Opticks::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
@@ -15,23 +13,12 @@ int main(int argc, char** argv)
     m_opticks->configure();
 
 
-
-
-    GCache* m_cache = new GCache(m_opticks);  // awkward, so fundamental should be internal to optickscore-
-
-
-
-
     OpticksEvent* m_evt = m_opticks->makeEvent();     // has to be after configure
-
-
 
 
     CG4* m_geant4 = new CG4(m_opticks) ; 
 
     m_geant4->setEvent(m_evt);
-
-    m_geant4->setCache(m_cache);   // awkward : move into Opticks
 
     m_geant4->configure();
 
@@ -45,8 +32,6 @@ int main(int argc, char** argv)
 
 
     m_evt->save();
-
-
 
 
 

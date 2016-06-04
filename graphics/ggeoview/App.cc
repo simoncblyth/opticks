@@ -126,12 +126,18 @@ void App::init(int argc, char** argv)
 
     m_cache = new GCache(m_opticks);
 
+    // hmm all this infrastructural stuff into Opticks ?
+   
+
     m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
     m_timer      = new Timer("App::");
     m_timer->setVerbose(true);
     m_timer->start();
 
     m_composition = new Composition ;   // Composition no longer Viz only
+
+
+    // TODO: review Cfg machinery and relocate into Opticks
 
     m_cfg  = new Cfg("umbrella", false) ; 
     m_fcfg = m_opticks->getCfg();
@@ -149,6 +155,8 @@ void App::init(int argc, char** argv)
 void App::initViz()
 {
     if(m_opticks->isCompute()) return ; 
+
+    // perhaps a VizManager to contain this lot 
 
     // envvars normally not defined, using cmake configure_file values instead
     const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
@@ -199,7 +207,7 @@ void App::configure(int argc, char** argv)
     bool compute = hasOpt("compute") ;
     assert(compute == m_opticks->isCompute() && "App::configure compute mismatch between GCache pre-configure and configure"  ); 
 
-    if(hasOpt("idpath")) std::cout << m_cache->getIdPath() << std::endl ;
+    if(hasOpt("idpath")) std::cout << m_opticks->getIdPath() << std::endl ;
     if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
     if(hasOpt("help|version|idpath"))
     {
@@ -353,6 +361,9 @@ void App::prepareViz()
 
     TIMER("prepareViz");
 } 
+
+
+
 
 
 
@@ -577,7 +588,7 @@ void App::uploadGeometryViz()
     if(m_opticks->isCompute()) return ; 
 
 
-    OpticksColors* colors = m_cache->getColors();
+    OpticksColors* colors = m_opticks->getColors();
 
     nuvec4 cd = colors->getCompositeDomain() ; 
     glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
@@ -778,7 +789,7 @@ void App::indexPresentationPrep()
         }
         else
         {
-            OpticksFlags* flags = m_cache->getFlags();
+            OpticksFlags* flags = m_opticks->getFlags();
             OpticksAttrSeq* qflg = flags->getAttrIndex();
 
             qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
