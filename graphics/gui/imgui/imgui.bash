@@ -184,6 +184,7 @@ imgui-url(){
    echo git://github.com/simoncblyth/imgui.git
 } 
 
+imgui-edit(){ vi $(imgui-edir)/CMakeLists.txt ; }
 
 imgui-get(){
    local iwd=$PWD

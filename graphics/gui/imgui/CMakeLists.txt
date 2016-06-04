@@ -12,6 +12,11 @@ include(EnvBuildOptions)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 
+
+
+set(IMGUI_DEFINITIONS
+)
+
 set(LIBRARIES
    ${GLEW_LIBRARIES} 
    ${GLFW_LIBRARIES}
@@ -62,7 +67,15 @@ endif(MSYS)
 
 
 if(MINGW)
-   message("MINGW....")
+
+    set( LIBRARIES 
+               ${LIBRARIES} -lopengl32 )
+
+   message("MINGW....   LIBS ${LIBRARIES}")
+
+
+
+    set(IMGUI_DEFINITIONS  ${IMGUI_DEFINITIONS} -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCS )
 endif(MINGW)
 
 
@@ -81,8 +94,12 @@ set(INCLUDE_DIRS
 set(DEFINITIONS
    ${GLEW_DEFINITIONS}
    ${GLFW_DEFINITIONS}
+   ${IMGUI_DEFINITIONS}
 )
 
+
+
+message(" DEFINITIONS : ${DEFINITIONS} ")
 set(SOURCES
    imgui.cpp
    imgui_draw.cpp
@@ -97,7 +114,7 @@ SET(HEADERS
 )
 
 include_directories(${INCLUDE_DIRS})
-add_definitions(${DEFINTIONS})
+add_definitions(${DEFINITIONS})
 add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
 
