@@ -522,8 +522,9 @@ boost/bregex           bregex-          BRegex          Boost
 numerics/npy           npy-             NPY             Boost GLM BRegex 
 optickscore            optickscore-     OpticksCore     Boost GLM BRegex BCfg NPY 
 optix/ggeo             ggeo-            GGeo            Boost GLM BRegex BCfg NPY OpticksCore
-graphics/assimprap     assimprap-       AssimpRap       Boost Assimp GGeo GLM NPY OpticksCore
+graphics/assimprap     assimprap-       AssimpRap       Boost GLM Assimp GGeo NPY OpticksCore
 graphics/openmeshrap   openmeshrap-     OpenMeshRap     Boost GLM NPY GGeo OpticksCore OpenMesh 
+opticksgeo             opticksgeo-      OpticksGeo      Boost GLM BRegex BCfg NPY OpticksCore Assimp AssimpRap OpenMesh OpenMeshRap
 graphics/oglrap        oglrap-          OGLRap          GLEW GLFW GLM Boost BCfg Opticks GGeo NPY BRegex ImGui        
 cuda/cudarap           cudarap-         CUDARap         CUDA (ssl)
 numerics/thrustrap     thrustrap-       ThrustRap       CUDA Boost GLM NPY CUDARap 
@@ -640,6 +641,12 @@ opticks-make(){
 opticks--(){
   ( opticks-bcd ; make ${1:-install} )
 }
+
+opticks-ctest(){
+  ( opticks-bcd ; ctest $* ; )
+}
+
+
 
 opticks-full()
 {

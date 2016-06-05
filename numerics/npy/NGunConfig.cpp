@@ -106,7 +106,7 @@ void NGunConfig::parse(const char* config_)
 {
     m_config = strdup(config_ == NULL ? DEFAULT_CONFIG : config_); 
 
-    std::string config(config_);
+    std::string config(m_config);
     typedef std::pair<std::string,std::string> KV ; 
     std::vector<KV> ekv = ekv_split(config.c_str(),'_',"=");
 

@@ -36,6 +36,7 @@
 
 
 //opticks-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 
@@ -80,12 +81,12 @@ void AssimpGGeo::init()
 
 int AssimpGGeo::load(GGeo* ggeo)
 {
-    GCache* cache = ggeo->getCache();
-    OpticksResource* resource = cache->getResource();
-    OpticksQuery* query = resource->getQuery() ;
+    //GCache* cache = ggeo->getCache();
+    Opticks* opticks = ggeo->getOpticks();
+    OpticksResource* resource = opticks->getResource();
+    OpticksQuery* query = opticks->getQuery() ;
 
-    //const char* idpath_ = resource->getIdPath() ;
-    const char* path = resource->getDAEPath() ;
+    const char* path = opticks->getDAEPath() ;
     const char* ctrl = resource->getCtrl() ;
     unsigned int verbosity = ggeo->getLoaderVerbosity();
 

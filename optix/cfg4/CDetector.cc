@@ -50,7 +50,7 @@ void CDetector::saveBuffers(const char* objname, unsigned int objindex)
 {
     assert(m_traverser);
 
-    std::string cachedir = m_resource->getObjectPath(objname, objindex);
+    std::string cachedir = m_opticks->getObjectPath(objname, objindex);
 
     NPY<float>* gtransforms = m_traverser->getGlobalTransforms(); 
     NPY<float>* ltransforms = m_traverser->getLocalTransforms(); 

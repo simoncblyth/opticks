@@ -50,6 +50,7 @@ op-binary-name()
         --nindex) echo IndexTest ;;  
       --tindexer) echo IndexerTest ;;  
       --tevtload) echo EvtLoadTest ;;  
+--topticksgeometry) echo OpticksGeometryTest ;;  
 
      --boundaries) echo BoundariesNPYTest ;;
            --recs) echo RecordsNPYTest ;;
@@ -102,6 +103,7 @@ op-binary-desc()
         --nindex) echo "npy-/Index test " ;;  
       --tindexer) echo "optickscore-/IndexerTest " ;;  
       --tevtload) echo "optickscore-/EvtLoadTest " ;;  
+--topticksgeometry) echo "opticksgeo-/OpticksGeometryTest"  ;;  
    esac 
 }
 

@@ -36,9 +36,11 @@ class DynamicDefine ;
 struct GLFWwindow ; 
 
 // ggeo-
-class GCache ;
 class GGeo ;
-class GMergedMesh ; 
+class GCache ;
+
+class OpticksGeometry ; 
+
 class GItemIndex ; 
 
 
@@ -70,22 +72,14 @@ class App {
        App(const char* prefix, int argc, char** argv );
        void initViz();
        void configure(int argc, char** argv);
-       bool isExit();
   private:
        void init(int argc, char** argv);
-       void setExit(bool exit=true);
   public:
        void prepareViz();   // creates OpenGL context window and OpenGL renderers loading shaders
-
-  public:
        void loadGeometry();
+       bool isExit();
   private: 
-       void loadGeometryBase();
-       void modifyGeometry();
-       void fixGeometry();
-       void registerGeometry();
        void configureViz(); 
-       void configureGeometry(); 
 
   public:
        void uploadGeometryViz();
@@ -152,8 +146,9 @@ class App {
 
        OpticksCfg<Opticks>* m_fcfg ;   
        Types*           m_types ; 
+
+       OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ; 
-       GMergedMesh*     m_mesh0 ;  
 
 #ifdef WITH_OPTIX
        OpEngine*        m_ope ; 
@@ -173,7 +168,6 @@ class App {
        GUI*             m_gui ; 
        G4StepNPY*       m_g4step ; 
        TorchStepNPY*    m_torchstep ; 
-       bool             m_exit ; 
 
 
    private:
@@ -207,8 +201,8 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_cfg(NULL),
       m_fcfg(NULL),
       m_types(NULL),
+      m_geometry(NULL),
       m_ggeo(NULL),
-      m_mesh0(NULL),
 
 #ifdef WITH_OPTIX
       m_ope(NULL),
@@ -225,8 +219,7 @@ inline App::App(const char* prefix, int argc, char** argv )
       m_photons(NULL),
       m_gui(NULL),
       m_g4step(NULL),
-      m_torchstep(NULL),
-      m_exit(false)
+      m_torchstep(NULL)
 {
     init(argc, argv);
 }
@@ -241,12 +234,4 @@ inline OpticksCfg<Opticks>* App::getOpticksCfg()
     return m_fcfg ; 
 }
 
-inline bool App::isExit()
-{
-    return m_exit ; 
-}
-inline void App::setExit(bool exit)
-{
-    m_exit = exit  ; 
-}
 

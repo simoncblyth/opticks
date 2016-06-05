@@ -14,6 +14,7 @@
 // opticks-
 class Opticks ; 
 class OpticksColors ; 
+class OpticksResource ; 
 class Composition ; 
 
 
@@ -228,7 +229,9 @@ class GGeo : public NConfigurable {
     public:
         GColorizer*        getColorizer();
         OpticksColors*     getColors();
-        OpticksFlags*            getFlags(); 
+        OpticksFlags*      getFlags(); 
+        OpticksResource*   getResource();
+        Opticks*           getOpticks();
     public:
         GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  
@@ -659,3 +662,8 @@ inline void GGeo::dumpCathodeLV(const char* msg)
     }
 }
 
+
+inline Opticks* GGeo::getOpticks()
+{
+    return m_opticks ; 
+}

@@ -1,0 +1,310 @@
+// opticksgeo-
+#include "OpticksGeometry.hh"
+
+// optickscore-
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+#include "OpticksAttrSeq.hh"
+#include "OpticksCfg.hh"
+
+// ggeo-
+#include "GMergedMesh.hh"
+#include "GCache.hh"
+#include "GGeo.hh"
+#include "GGeoLib.hh"
+#include "GBndLib.hh"
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
+#include "GPmt.hh"
+#include "GParts.hh"
+
+// assimpwrap
+#include "AssimpGGeo.hh"
+
+// openmeshrap-
+#include "MFixer.hh"
+#include "MTool.hh"
+
+// npy-
+#include "Timer.hpp"
+#include "GLMFormat.hpp"
+#include "GLMPrint.hpp"
+#include "NSlice.hpp"
+#include "NLog.hpp"
+
+#define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
+
+
+#define TIMER(s) \
+    { \
+       if(m_opticks)\
+       {\
+          Timer& t = *(m_opticks->getTimer()) ;\
+          t((s)) ;\
+       }\
+    }
+
+
+
+void OpticksGeometry::init()
+{
+    m_fcfg = m_opticks->getCfg();
+    m_ggeo = new GGeo(m_cache);
+}
+
+glm::vec4 OpticksGeometry::getCenterExtent()
+{
+    glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
+    return mmce ; 
+}
+
+
+OpticksAttrSeq* OpticksGeometry::getMaterialNames()
+{
+     OpticksAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames();
+     qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
+     return qmat ; 
+}
+
+OpticksAttrSeq* OpticksGeometry::getBoundaryNames()
+{
+     GBndLib* blib = m_ggeo->getBndLib();
+     OpticksAttrSeq* qbnd = blib->getAttrNames();
+     if(!qbnd->hasSequence())
+     {    
+         blib->close();
+         assert(qbnd->hasSequence());
+     }    
+     qbnd->setCtrl(OpticksAttrSeq::VALUE_DEFAULTS);
+     return qbnd ;
+}
+
+std::map<unsigned int, std::string> OpticksGeometry::getBoundaryNamesMap()
+{
+    OpticksAttrSeq* qbnd = getBoundaryNames() ;
+    return qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
+}
+
+
+
+void OpticksGeometry::loadGeometry()
+{
+    bool modify = m_opticks->hasOpt("test") ;
+
+    LOG(info) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
+
+    loadGeometryBase();
+
+    if(!m_ggeo->isValid())
+    {
+        LOG(warning) << "OpticksGeometry::loadGeometry finds invalid geometry, try creating geocache with --nogeocache/-G option " ; 
+        m_opticks->setExit(true); 
+        return ; 
+    }
+
+    if(modify) modifyGeometry() ;
+
+
+    fixGeometry();
+
+    registerGeometry();
+
+    if(!m_opticks->isGeocache())
+    {
+        LOG(info) << "OpticksGeometry::loadGeometry early exit due to --nogeocache/-G option " ; 
+        m_opticks->setExit(true); 
+    }
+
+    configureGeometry();
+
+    TIMER("loadGeometry");
+}
+
+
+void OpticksGeometry::loadGeometryBase()
+{
+    // hmm funny placement, move this just after config 
+    m_opticks->setGeocache(!m_fcfg->hasOpt("nogeocache"));
+    m_opticks->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
+
+    OpticksResource* resource = m_opticks->getResource();
+
+
+    if(m_opticks->hasOpt("qe1"))
+        m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
+
+
+    m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
+
+    m_ggeo->setLoaderVerbosity(m_fcfg->getLoaderVerbosity());    
+
+    m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
+    m_ggeo->setMeshVerbosity(m_fcfg->getMeshVerbosity());    
+    m_ggeo->setMeshJoinCfg( resource->getMeshfix() );
+
+    std::string meshversion = m_fcfg->getMeshVersion() ;;
+    if(!meshversion.empty())
+    {
+        LOG(warning) << "OpticksGeometry::loadGeometry using debug meshversion " << meshversion ;  
+        m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
+    }
+
+    m_ggeo->loadGeometry();
+        
+    if(m_ggeo->getMeshVerbosity() > 2)
+    {
+        GMergedMesh* mesh1 = m_ggeo->getMergedMesh(1);
+        if(mesh1)
+        {
+            mesh1->dumpSolids("OpticksGeometry::loadGeometryBase mesh1");
+            mesh1->save("/tmp", "GMergedMesh", "baseGeometry") ;
+        }
+    }
+
+    TIMER("loadGeometryBase");
+}
+
+void OpticksGeometry::modifyGeometry()
+{
+    assert(m_opticks->hasOpt("test"));
+    LOG(debug) << "OpticksGeometry::modifyGeometry" ;
+
+    std::string testconf = m_fcfg->getTestConfig();
+    m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
+
+
+    if(m_ggeo->getMeshVerbosity() > 2)
+    {
+        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
+        if(mesh0)
+        { 
+            mesh0->dumpSolids("OpticksGeometry::modifyGeometry mesh0");
+            mesh0->save("/tmp", "GMergedMesh", "modifyGeometry") ;
+        }
+    }
+
+
+    TIMER("modifyGeometry"); 
+}
+
+
+void OpticksGeometry::fixGeometry()
+{
+    if(m_ggeo->isLoaded())
+    {
+        LOG(debug) << "OpticksGeometry::fixGeometry needs to be done precache " ;
+        return ; 
+    }
+    LOG(info) << "OpticksGeometry::fixGeometry" ; 
+
+    MFixer* fixer = new MFixer(m_ggeo);
+    fixer->setVerbose(m_opticks->hasOpt("meshfixdbg"));
+    fixer->fixMesh();
+ 
+    bool zexplode = m_opticks->hasOpt("zexplode");
+    if(zexplode)
+    {
+       // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
+        glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
+        print(zexplodeconfig, "zexplodeconfig");
+
+        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
+        mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
+    }
+    TIMER("fixGeometry"); 
+}
+
+
+
+void OpticksGeometry::configureGeometry()
+{
+    int restrict_mesh = m_fcfg->getRestrictMesh() ;  
+    int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
+
+    int nmm = m_ggeo->getNumMergedMesh();
+
+    LOG(info) << "OpticksGeometry::configureGeometry" 
+              << " restrict_mesh " << restrict_mesh
+              << " analytic_mesh " << analytic_mesh
+              << " nmm " << nmm
+              ;
+
+    std::string instance_slice = m_fcfg->getISlice() ;;
+    std::string face_slice = m_fcfg->getFSlice() ;;
+    std::string part_slice = m_fcfg->getPSlice() ;;
+
+    NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ; 
+    NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
+    NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
+
+    for(int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(Opticks::GEOCODE_SKIP);      
+        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
+        {
+            GPmt* pmt = m_ggeo->getPmt(); 
+            assert(pmt && "analyticmesh requires PMT resource");
+
+            GParts* analytic = pmt->getParts() ;
+            // TODO: the strings should come from config, as detector specific
+
+            analytic->setVerbose(true); 
+            analytic->setContainingMaterial("MineralOil");       
+            analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
+
+            mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
+            mm->setParts(analytic);  
+        }
+        if(i>0) mm->setInstanceSlice(islice);
+
+        // restrict to non-global for now
+        if(i>0) mm->setFaceSlice(fslice);   
+        if(i>0) mm->setPartSlice(pslice);   
+    }
+
+    TIMER("configureGeometry"); 
+}
+
+
+
+
+void OpticksGeometry::registerGeometry()
+{
+    LOG(info) << "OpticksGeometry::registerGeometry" ; 
+
+    //for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
+
+    m_mesh0 = m_ggeo->getMergedMesh(0); 
+
+
+    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+    m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
+
+
+    /*
+    // below moved to App::loadGeometry
+
+     m_ggeo->setComposition(m_composition); 
+    if(m_evt)
+    {
+        LOG(info) << "OpticksGeometry::registerGeometry " << m_opticks->description() ;
+        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
+    }
+
+    */
+
+
+    LOG(debug) << "OpticksGeometry::registerGeometry ce0: " 
+                      << " x " << ce0.x
+                      << " y " << ce0.y
+                      << " z " << ce0.z
+                      << " w " << ce0.w
+                      ;
+ 
+    TIMER("registerGeometry"); 
+}
+
+
+
+

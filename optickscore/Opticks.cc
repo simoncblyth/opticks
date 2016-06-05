@@ -7,6 +7,7 @@
 // npy-
 #include "Map.hpp"
 #include "stringutil.hpp"
+#include "Timer.hpp"
 #include "Parameters.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
@@ -104,6 +105,19 @@ OpticksFlags* Opticks::getFlags()
 {
     return m_resource->getFlags();
 }
+Types* Opticks::getTypes()
+{
+    return m_resource->getTypes();
+}
+Typ* Opticks::getTyp()
+{
+    return m_resource->getTyp();
+}
+
+
+
+
+
 
 
 glm::vec4 Opticks::getDefaultDomainSpec()
@@ -165,6 +179,12 @@ void Opticks::init()
     preargs(m_argc, m_argv);
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+
+    m_timer = new Timer("Opticks::");
+
+    m_timer->setVerbose(true);
+
+    m_timer->start();
 
     m_parameters = new Parameters ;  
 
@@ -648,6 +668,13 @@ bool Opticks::isValid()
 {
     return m_resource->isValid();
 }
+
+std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool relative)
+{
+    return m_resource->getObjectPath(name, ridx, relative);
+}
+
+
 
 
 

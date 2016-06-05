@@ -12,6 +12,10 @@ class NLog ;
 class NState ;
 class Parameters ; 
 class NPropNames ; 
+class Timer ; 
+
+class Types ;
+class Typ ;
 
 class OpticksEvent ;
 class OpticksResource ; 
@@ -127,6 +131,7 @@ class Opticks {
        bool isOther();
        bool isValid();
    public:
+       std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
        const char* getDAEPath();
        const char* getGDMLPath();
        const char* getIdPath();
@@ -152,6 +157,10 @@ class Opticks {
        OpticksColors*       getColors(); 
        OpticksFlags*        getFlags(); 
    public:
+       Types*               getTypes();
+       Typ*                 getTyp();
+   public:
+       Timer*               getTimer();
        Parameters*          getParameters();
        NState*              getState();
        std::string          getModeString();
@@ -182,6 +191,9 @@ class Opticks {
        unsigned int getSourceCode();
        std::string getSourceType();
    public:
+       void setExit(bool exit=true);
+   public:
+       bool isExit();
        bool isCompute();
        bool isInterop();
        bool isCfG4();
@@ -204,6 +216,7 @@ class Opticks {
        NLog*            m_log ; 
        NState*          m_state ; 
    private:
+       bool             m_exit ; 
        bool             m_compute ; 
        bool             m_geocache ; 
        bool             m_instanced ; 
@@ -211,6 +224,7 @@ class Opticks {
 
    private:
        OpticksCfg<Opticks>* m_cfg ; 
+       Timer*               m_timer ; 
        Parameters*          m_parameters ; 
        const char*          m_detector ; 
 
@@ -244,6 +258,7 @@ inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* 
        m_log(NULL),
        m_state(NULL),
 
+       m_exit(false),
        m_compute(false),
        m_geocache(false),
        m_instanced(true),
@@ -251,6 +266,7 @@ inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* 
        m_lastarg(NULL),
 
        m_cfg(NULL),
+       m_timer(NULL),
        m_parameters(NULL),
        m_detector(NULL),
        m_mode(0u)
@@ -266,10 +282,16 @@ inline OpticksCfg<Opticks>* Opticks::getCfg()
 {
     return m_cfg ; 
 }
+
+inline Timer* Opticks::getTimer()
+{
+    return m_timer ; 
+}
 inline Parameters* Opticks::getParameters()
 {
     return m_parameters ; 
 }
+
 inline OpticksResource* Opticks::getResource()
 {
     return m_resource  ; 
@@ -374,6 +396,14 @@ inline void Opticks::configureI(const char* name, std::vector<int> values)
 {
 }
 
+inline bool Opticks::isExit()
+{
+    return m_exit ; 
+}
+inline void Opticks::setExit(bool exit)
+{
+    m_exit = exit  ;   
+}
 
 
 

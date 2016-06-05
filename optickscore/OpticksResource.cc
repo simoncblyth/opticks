@@ -11,6 +11,9 @@
 #include "NLog.hpp"
 #include "Map.hpp"
 
+#include "Typ.hpp"
+#include "Types.hpp"
+
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -411,5 +414,25 @@ OpticksFlags* OpticksResource::getFlags()
     return m_flags ;
 }
 
+Typ* OpticksResource::getTyp()
+{
+    if(m_typ == NULL)
+    {   
+       m_typ = new Typ ; 
+    }   
+    return m_typ ; 
+}
+
+
+Types* OpticksResource::getTypes()
+{
+    if(!m_types)
+    {   
+        // deferred because idpath not known at init ?
+        m_types = new Types ;   
+        m_types->saveFlags(getIdPath(), ".ini");
+    }   
+    return m_types ;
+}
 
 

@@ -81,7 +81,7 @@ void GGeo::init()
 #endif
 
    OpticksResource* resource = m_opticks->getResource(); 
-   const char* idpath = resource->getIdPath() ;
+   const char* idpath = m_opticks->getIdPath() ;
 
    fs::path geocache(idpath); 
 
@@ -125,7 +125,6 @@ void GGeo::init()
 
    m_colorizer = new GColorizer( this, style ); // colorizer needs full tree, so pre-cache only 
 
-
    m_bndlib = new GBndLib(m_opticks);
    m_materiallib = new GMaterialLib(m_opticks);
    m_surfacelib  = new GSurfaceLib(m_opticks);
@@ -144,11 +143,6 @@ void GGeo::init()
        m_lvlist = new GItemList("LVNames") ; 
    }
 }
-
-
-
-
-
 
 
 
@@ -192,16 +186,25 @@ GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
 
 const char* GGeo::getIdPath()
 {
-    return m_cache->getIdPath();
+    return m_opticks->getIdPath();
 }
 OpticksColors* GGeo::getColors()
 {
-   return m_cache->getColors() ; 
+   return m_opticks->getColors() ; 
 }
 OpticksFlags* GGeo::getFlags()
 {
-    return m_cache->getFlags();
+    return m_opticks->getFlags();
 }
+OpticksResource* GGeo::getResource()
+{
+    return m_opticks->getResource();
+}
+
+
+
+
+
 
 unsigned int GGeo::getMaterialLine(const char* shortname)
 {
@@ -268,7 +271,7 @@ void GGeo::loadFromCache()
 
     m_geolib = GGeoLib::load(m_cache);
         
-    const char* idpath = m_cache->getIdPath() ;
+    const char* idpath = m_opticks->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
 
     if(m_volnames)
@@ -302,7 +305,7 @@ void GGeo::setupLookup()
     // see ggeo-/tests/LookupTest.cc
     m_lookup = new Lookup() ; 
 
-    m_lookup->loadA( m_cache->getResource()->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
+    m_lookup->loadA( m_opticks->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
 
     m_bndlib->fillMaterialLineMap( m_lookup->getB() ) ;    
 
@@ -314,8 +317,8 @@ void GGeo::setupLookup()
 void GGeo::setupTyp()
 {
    // hmm maybe better elsewhere to avoid repetition from tests ? 
-    Typ* typ = m_cache->getTyp();
-    OpticksFlags* flags = m_cache->getFlags();
+    Typ* typ = m_opticks->getTyp();
+    OpticksFlags* flags = m_opticks->getFlags();
     typ->setMaterialNames(m_materiallib->getNamesMap());
     typ->setFlagNames(flags->getNamesMap());
 }
@@ -324,12 +327,12 @@ void GGeo::setupColors()
 {
     LOG(debug) << "GGeo::setupColors" ; 
 
-    OpticksFlags* flags = m_cache->getFlags();
+    OpticksFlags* flags = m_opticks->getFlags();
 
     std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
     std::vector<unsigned int>& flag_codes     = flags->getAttrIndex()->getColorCodes() ; 
 
-    OpticksColors* colors = m_cache->getColors();
+    OpticksColors* colors = m_opticks->getColors();
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 }
 
@@ -867,7 +870,7 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 void GGeo::prepareMeshes()
 {
-    bool instanced = m_cache->getOpticks()->isInstanced();
+    bool instanced = m_opticks->isInstanced();
 
     LOG(info) << "GGeo::prepareMeshes START" 
               << " instanced " << instanced 

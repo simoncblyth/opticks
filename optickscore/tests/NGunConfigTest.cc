@@ -1,5 +1,6 @@
 // op --ngunconfig
 
+#include "Opticks.hh"
 #include "NGunConfig.hpp"
 
 #include "NPY.hpp"
@@ -7,11 +8,15 @@
 
 int main(int argc, char** argv)
 {
+    Opticks ok(argc, argv, "NGunConfigTest.log" );
+
     NGunConfig* gc = new NGunConfig ; 
     gc->parse();
 
-    // hmm GDML needs to write things into geocache too..
-    NPY<float>* transforms = NPY<float>::load("/tmp/gdml.npy");
+    std::string cachedir = ok.getObjectPath("CGDMLDetector", 0);
+
+    NPY<float>* transforms = NPY<float>::load(cachedir.c_str(), "gtransforms.npy");
+    assert(transforms);
 
     unsigned int frameIndex = gc->getFrame() ;
 

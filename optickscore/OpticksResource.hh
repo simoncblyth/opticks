@@ -10,6 +10,9 @@ class OpticksQuery ;
 class OpticksColors ; 
 class OpticksFlags ; 
 
+class Types ;
+class Typ ;
+
 
 class OpticksResource {
     private:
@@ -67,6 +70,9 @@ class OpticksResource {
        OpticksQuery* getQuery();
        OpticksColors* getColors();
        OpticksFlags*  getFlags();
+   public:
+       Types*         getTypes();
+       Typ*           getTyp();
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
@@ -103,6 +109,8 @@ class OpticksResource {
        OpticksQuery*  m_query ;
        OpticksColors* m_colors ;
        OpticksFlags*  m_flags ;
+       Types*         m_types ;
+       Typ*           m_typ ;
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 
@@ -136,6 +144,8 @@ inline OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix,
        m_query(NULL),
        m_colors(NULL),
        m_flags(NULL),
+       m_types(NULL),
+       m_typ(NULL),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),

@@ -114,6 +114,7 @@ find_package(AssimpRap REQUIRED)
 find_package(OpenMesh REQUIRED)
 find_package(OpenMeshRap REQUIRED)
 find_package(GGeo REQUIRED)
+find_package(OpticksGeometry REQUIRED)
 
 set(GEOMETRY_INCLUDES
    ${Assimp_INCLUDE_DIRS}  
@@ -121,6 +122,7 @@ set(GEOMETRY_INCLUDES
    ${OpenMesh_INCLUDE_DIRS}  
    ${OpenMeshRap_INCLUDE_DIRS}  
    ${GGeo_INCLUDE_DIRS}  
+   ${OpticksGeometry_INCLUDE_DIRS}  
 )
 set(GEOMETRY_LIBRARIES
    ${Assimp_LIBRARIES} 
@@ -128,6 +130,7 @@ set(GEOMETRY_LIBRARIES
    ${OpenMesh_LIBRARIES} 
    ${OpenMeshRap_LIBRARIES} 
    ${GGeo_LIBRARIES} 
+   ${OpticksGeometry_LIBRARIES}  
 )
 set(GEOMETRY_DEFINITIONS
    ${Assimp_DEFINITIONS}  
@@ -135,6 +138,7 @@ set(GEOMETRY_DEFINITIONS
    ${OpenMesh_DEFINITIONS}  
    ${OpenMeshRap_DEFINITIONS}  
    ${GGeo_DEFINITIONS}  
+   ${OpticksGeometry_DEFINITIONS}  
 )
 
 ########### OPENGL #####

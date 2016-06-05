@@ -72,30 +72,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// ggeo-
-#include "GCache.hh"
-#include "GGeo.hh"
-#include "GMergedMesh.hh"
-#include "GGeoLib.hh"
-#include "GBndLib.hh"
-#include "GMaterialLib.hh"
-#include "GSurfaceLib.hh"
-#include "GPmt.hh"
-#include "GParts.hh"
-#include "GItemIndex.hh"
+
 
 // opticks-
 #include "OpticksFlags.hh"
 #include "OpticksColors.hh"
 #include "OpticksAttrSeq.hh"
 
+// opticksgeo-
+#include "OpticksGeometry.hh"
 
-// assimpwrap
-#include "AssimpGGeo.hh"
+// ggeo-
+#include "GGeo.hh"
+// TODO: infrastructural GItemIndex should not be in ggeo-
+#include "GItemIndex.hh"
 
-// openmeshrap-
-#include "MFixer.hh"
-#include "MTool.hh"
+// TODO: eliminate
+#include "GCache.hh"
+
 
 #ifdef WITH_OPTIX
 // optixgl-
@@ -105,15 +99,16 @@
 #endif
 
 
-
-#define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
-
 #define TIMER(s) \
     { \
-       (*m_timer)((s)); \
        if(m_evt)\
        {\
           Timer& t = *(m_evt->getTimer()) ;\
+          t((s)) ;\
+       }\
+       else if(m_opticks) \
+       {\
+          Timer& t = *(m_opticks->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -125,14 +120,6 @@ void App::init(int argc, char** argv)
     m_opticks->Summary("App::init OpticksResource::Summary");
 
     m_cache = new GCache(m_opticks);
-
-    // hmm all this infrastructural stuff into Opticks ?
-   
-
-    m_parameters = new Parameters ;  // favor evt params over these, as evt params are persisted with the evt
-    m_timer      = new Timer("App::");
-    m_timer->setVerbose(true);
-    m_timer->start();
 
     m_composition = new Composition ;   // Composition no longer Viz only
 
@@ -200,7 +187,7 @@ void App::configure(int argc, char** argv)
     {
         LOG(fatal) << "App::config parse error " << m_fcfg->getErrorMessage() ; 
         m_fcfg->dump("App::config m_fcfg");
-        setExit(true);
+        m_opticks->setExit(true);
         return ; 
     }
 
@@ -211,7 +198,7 @@ void App::configure(int argc, char** argv)
     if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
     if(hasOpt("help|version|idpath"))
     {
-        setExit(true);
+        m_opticks->setExit(true);
         return ; 
     }
 
@@ -227,7 +214,6 @@ void App::configure(int argc, char** argv)
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
         // TODO: organize wrt event loading, currently loading happens latter and trumps this evt ?
         m_evt = m_opticks->makeEvent() ; 
-        //m_evt->setFlat(true);
     } 
 
 #ifdef WITH_NPYSERVER
@@ -252,6 +238,11 @@ void App::configure(int argc, char** argv)
     TIMER("configure");
 }
 
+
+bool App::isExit()
+{
+    return m_opticks->isExit() ; 
+}
 
 
 void App::configureViz()
@@ -364,223 +355,29 @@ void App::prepareViz()
 
 
 
-
-
-
-
 void App::loadGeometry()
 {
-    bool modify = hasOpt("test") ;
+    m_geometry = new OpticksGeometry(m_opticks, m_cache);
 
-    LOG(info) << "App::loadGeometry START, modifyGeometry? " << modify  ; 
+    m_geometry->loadGeometry();
 
-    loadGeometryBase();
-
-    if(!m_ggeo->isValid())
-    {
-        LOG(warning) << "App::loadGeometry finds invalid geometry, try creating geocache with --nogeocache/-G option " ; 
-        setExit(true); 
-        return ; 
-    }
-
-    if(modify) modifyGeometry() ;
+    m_ggeo = m_geometry->getGGeo();
 
 
-    fixGeometry();
-
-    registerGeometry();
-
-    if(!m_opticks->isGeocache())
-    {
-        LOG(info) << "App::loadGeometry early exit due to --nogeocache/-G option " ; 
-        setExit(true); 
-    }
-
-    configureGeometry();
-
-    TIMER("loadGeometry");
-}
-
-
-void App::loadGeometryBase()
-{
-    // hmm funny placement, move this just after config 
-    m_opticks->setGeocache(!m_fcfg->hasOpt("nogeocache"));
-    m_opticks->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
-
-    OpticksResource* resource = m_opticks->getResource();
-
-    m_ggeo = new GGeo(m_cache);
-
-    if(hasOpt("qe1"))
-        m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
-
-    m_ggeo->setLoaderImp(&AssimpGGeo::load);    // setting GLoaderImpFunctionPtr
-    m_ggeo->setLoaderVerbosity(m_fcfg->getLoaderVerbosity());    
-    m_ggeo->setMeshVerbosity(m_fcfg->getMeshVerbosity());    
-
-
-    m_ggeo->setMeshJoinImp(&MTool::joinSplitUnion);
-    m_ggeo->setMeshJoinCfg( resource->getMeshfix() );
-
-    std::string meshversion = m_fcfg->getMeshVersion() ;;
-    if(!meshversion.empty())
-    {
-        LOG(warning) << "App::loadGeometry using debug meshversion " << meshversion ;  
-        m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
-    }
-
-    m_ggeo->loadGeometry();
-        
-    if(m_ggeo->getMeshVerbosity() > 2)
-    {
-        GMergedMesh* mesh1 = m_ggeo->getMergedMesh(1);
-        if(mesh1)
-        {
-            mesh1->dumpSolids("App::loadGeometryBase mesh1");
-            mesh1->save("/tmp", "GMergedMesh", "baseGeometry") ;
-        }
-    }
-
-    TIMER("loadGeometryBase");
-}
-
-void App::modifyGeometry()
-{
-    assert(hasOpt("test"));
-    LOG(debug) << "App::modifyGeometry" ;
-
-    std::string testconf = m_fcfg->getTestConfig();
-    m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
-
-
-    if(m_ggeo->getMeshVerbosity() > 2)
-    {
-        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
-        if(mesh0)
-        { 
-            mesh0->dumpSolids("App::modifyGeometry mesh0");
-            mesh0->save("/tmp", "GMergedMesh", "modifyGeometry") ;
-        }
-    }
-
-
-    TIMER("modifyGeometry"); 
-}
-
-
-void App::fixGeometry()
-{
-    if(m_ggeo->isLoaded())
-    {
-        LOG(debug) << "App::fixGeometry needs to be done precache " ;
-        return ; 
-    }
-    LOG(info) << "App::fixGeometry" ; 
-
-    MFixer* fixer = new MFixer(m_ggeo);
-    fixer->setVerbose(hasOpt("meshfixdbg"));
-    fixer->fixMesh();
- 
-    bool zexplode = m_fcfg->hasOpt("zexplode");
-    if(zexplode)
-    {
-       // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
-        glm::vec4 zexplodeconfig = gvec4(m_fcfg->getZExplodeConfig());
-        print(zexplodeconfig, "zexplodeconfig");
-
-        GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
-        mesh0->explodeZVertices(zexplodeconfig.y, zexplodeconfig.x ); 
-    }
-    TIMER("fixGeometry"); 
-}
-
-
-
-void App::configureGeometry()
-{
-    int restrict_mesh = m_fcfg->getRestrictMesh() ;  
-    int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
-
-    int nmm = m_ggeo->getNumMergedMesh();
-
-    LOG(info) << "App::configureGeometry" 
-              << " restrict_mesh " << restrict_mesh
-              << " analytic_mesh " << analytic_mesh
-              << " nmm " << nmm
-              ;
-
-    std::string instance_slice = m_fcfg->getISlice() ;;
-    std::string face_slice = m_fcfg->getFSlice() ;;
-    std::string part_slice = m_fcfg->getPSlice() ;;
-
-    NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ; 
-    NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
-    NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
-
-    for(int i=0 ; i < nmm ; i++)
-    {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(Opticks::GEOCODE_SKIP);      
-        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
-        {
-            GPmt* pmt = m_ggeo->getPmt(); 
-            assert(pmt && "analyticmesh requires PMT resource");
-
-            GParts* analytic = pmt->getParts() ;
-            // TODO: the strings should come from config, as detector specific
-
-            analytic->setVerbose(true); 
-            analytic->setContainingMaterial("MineralOil");       
-            analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
-
-            mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
-            mm->setParts(analytic);  
-        }
-        if(i>0) mm->setInstanceSlice(islice);
-
-        // restrict to non-global for now
-        if(i>0) mm->setFaceSlice(fslice);   
-        if(i>0) mm->setPartSlice(pslice);   
-    }
-
-    TIMER("configureGeometry"); 
-}
-
-
-
-
-void App::registerGeometry()
-{
-    LOG(info) << "App::registerGeometry" ; 
-
-    //for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
-
-    m_mesh0 = m_ggeo->getMergedMesh(0); 
+    //// hmm placement ? these are refugees from the OpticksGeometry::registerGeometry
 
     m_ggeo->setComposition(m_composition);
 
-    gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
-    m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
-
     if(m_evt)
-    {
+    {   
        // TODO: profit from migrated OpticksEvent 
-        LOG(info) << "App::registerGeometry " << m_opticks->description() ;
+        LOG(info) << "OpticksGeometry::registerGeometry " << m_opticks->description() ;
         m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-    }
+    }   
 
-    LOG(debug) << "App::registerGeometry ce0: " 
-                      << " x " << ce0.x
-                      << " y " << ce0.y
-                      << " z " << ce0.z
-                      << " w " << ce0.w
-                      ;
- 
-    TIMER("registerGeometry"); 
+
+
 }
-
-
 
 
 void App::uploadGeometryViz()
@@ -687,8 +484,7 @@ void App::targetViz()
 {
     if(m_opticks->isCompute()) return ; 
 
-    glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
-
+    glm::vec4 mmce = m_geometry->getCenterExtent();
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     bool geocenter  = m_fcfg->hasOpt("geocenter");
     glm::vec4 uuce = geocenter ? mmce : gsce ;
@@ -807,8 +603,7 @@ void App::indexPresentationPrep()
     }
     else
     {
-        OpticksAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames(); 
-        qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
+        OpticksAttrSeq* qmat = m_geometry->getMaterialNames();
         //qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
         m_seqmat = new GItemIndex(seqmat) ;  
         m_seqmat->setTitle("Photon Material Sequence Selection");
@@ -823,14 +618,7 @@ void App::indexPresentationPrep()
     }
     else
     {
-        GBndLib* blib = m_ggeo->getBndLib();
-        OpticksAttrSeq* qbnd = blib->getAttrNames();
-        if(!qbnd->hasSequence())
-        {
-            blib->close();
-            assert(qbnd->hasSequence());
-        }
-        qbnd->setCtrl(OpticksAttrSeq::VALUE_DEFAULTS);
+        OpticksAttrSeq* qbnd = m_geometry->getBoundaryNames();
         //qbnd->dumpTable(bndidx, "App::indexPresentationPrep bndidx"); 
 
         m_boundaries = new GItemIndex(bndidx) ;  
@@ -851,15 +639,7 @@ void App::indexBoundariesHost()
 
     if(!m_evt) return ; 
 
-    GBndLib* blib = m_ggeo->getBndLib();
-    OpticksAttrSeq* qbnd = blib->getAttrNames();
-    if(!qbnd->hasSequence())
-    {
-         blib->close();
-         assert(qbnd->hasSequence());
-    }
-
-    std::map<unsigned int, std::string> boundary_names = qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
+    std::map<unsigned int, std::string> boundary_names = m_geometry->getBoundaryNamesMap();
 
     NPY<float>* dpho = m_evt->getPhotonData();
     if(dpho && dpho->hasData())
