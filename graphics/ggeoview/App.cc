@@ -372,9 +372,6 @@ void App::loadGeometry()
         LOG(info) << "OpticksGeometry::registerGeometry " << m_opticks->description() ;
         m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
     }   
-
-
-
 }
 
 
@@ -616,6 +613,7 @@ void App::indexBoundariesHost()
 {
     // Indexing the final signed integer boundary code (p.flags.i.x = prd.boundary) from optixrap-/cu/generate.cu
     // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
+    // also see optickscore-/Indexer for another CPU version 
 
     if(!m_evt) return ; 
 
@@ -972,8 +970,6 @@ void App::indexSequence()
 }
 
 #endif
-
-
 
 
 

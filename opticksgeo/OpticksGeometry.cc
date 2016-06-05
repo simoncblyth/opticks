@@ -48,6 +48,18 @@
 void OpticksGeometry::init()
 {
     m_fcfg = m_opticks->getCfg();
+
+    bool geocache = !m_fcfg->hasOpt("nogeocache") ;
+    bool instanced = !m_fcfg->hasOpt("noinstanced") ; // find repeated geometry 
+
+    LOG(info) << "OpticksGeometry::init"
+              << " geocache " << geocache 
+              << " instanced " << instanced
+              ;
+
+    m_opticks->setGeocache(geocache);
+    m_opticks->setInstanced(instanced); // find repeated geometry 
+
     m_ggeo = new GGeo(m_opticks);
 }
 
@@ -122,12 +134,7 @@ void OpticksGeometry::loadGeometry()
 
 void OpticksGeometry::loadGeometryBase()
 {
-    // hmm funny placement, move this just after config 
-    m_opticks->setGeocache(!m_fcfg->hasOpt("nogeocache"));
-    m_opticks->setInstanced( !m_fcfg->hasOpt("noinstanced")  ); // find repeated geometry 
-
     OpticksResource* resource = m_opticks->getResource();
-
 
     if(m_opticks->hasOpt("qe1"))
         m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);

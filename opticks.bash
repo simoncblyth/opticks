@@ -532,9 +532,54 @@ graphics/optixrap      optixrap-        OptiXRap        OptiX CUDA Boost GLM NPY
 opticksop              opticksop-       OpticksOp       OptiX CUDA Boost GLM BCfg Opticks GGeo NPY OptiXRap CUDARap ThrustRap      
 opticksgl              opticksgl-       OpticksGL       OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap OptiXRap OpticksOp
 graphics/ggeoview      ggv-             GGeoView        OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY BCfg OpticksCore 
-                                                        Assimp AssimpRap OpenMesh OpenMeshRap GGeo ImGui BRegex OptiXRap CUDARap ThrustRap OpticksOp OpticksGL 
+                                                        Assimp AssimpRap OpenMesh OpenMeshRap GGeo ImGui BRegex OptiXRap CUDARap ThrustRap OpticksOp OpticksGL OpticksGeo
 optix/cfg4             cfg4-            CfG4            Boost GLM BRegex BCfg NPY GGeo OpticksCore Geant4 EnvXercesC G4DAE 
 =====================  ===============  =============   ==============================================================================
+
+
+bcfg
+    commandline parsing 
+bregex
+    regular expression matching
+npy
+    array handling 
+optickscore
+    definitions, loosely the model of the app 
+ggeo
+    geometry representation 
+assimprap
+    G4DAE parsing into GGeo repr 
+openmeshrap
+    geometry fixing
+opticksgeo
+    bring together ggeo, assimprap and openmeshrap to load and fix geometry
+oglrap
+    OpenGL rendering, including GLSL shader sources
+cudarap
+    loading curand persisted state
+thrustrap
+    fast GPU photon indexing using interop techniques 
+optixrap
+    conversion of GGeo geometry into OptiX GPU geometry, OptiX programs for propagation 
+opticksop
+    high level OptiX control 
+opticksgl 
+    combination of oglrap- OpenGL and OptiX raytracing 
+    TODO: change name ?
+ggeoview
+    putting together all the above
+cfg4
+    contained geant4 
+
+     
+
+
+
+
+
+
+
+ 
 
 
 

@@ -11,9 +11,13 @@ Approach
 
 * streamlining to make ggv-/GGeoView clean and simple
 
-  * common base OpticksEngine
-  * most of GGeoView is geometry setup, need a GGeoManager to mop this up
+  * pull indexing out of OpticksEvent up into OpticksAnalysis(OpticksEvent* evt),
+    mop up index mechanics from App into OpticksAnalysis
 
+  * oglrap-/OpticksViz to take the App::xxxViz methods (composition, scene, frame, ... )
+    (keep OptiX separate, as want this to work on on-CUDA machines)
+ 
+  * common base OpticksEngine
 
 * consistent externalized event handling, allow multiple g4gun firing yielding multiple events 
 
@@ -28,6 +32,7 @@ DONE
 * drastic simplification of OpticksEvent
 * streamlining to make cfg4-/CG4Test clean and simple
 * move infrastructure like GCache/OpticksResource into Opticks
+* moved geometry loading into new pkg opticksgeo-/OpticksGeometry 
 
 
 Tests Commands To Run Whilst Refactoring

@@ -70,7 +70,6 @@ namespace fs = boost::filesystem;
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 const char* GGeo::PICKFACE = "pickface" ;
 
-
 void GGeo::init()
 {
    OpticksResource* resource = m_opticks->getResource(); 
@@ -83,7 +82,7 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(debug) << "GGeo::init"
+   LOG(info) << "GGeo::init"
              << " idpath " << idpath
              << " cache_exists " << cache_exists 
              << " cache_requested " << cache_requested
@@ -219,10 +218,11 @@ unsigned int GGeo::getMaterialLine(const char* shortname)
 
 void GGeo::loadGeometry()
 {
-    LOG(debug) << "GGeo::loadGeometry START" ; 
+    bool loaded = isLoaded() ;
+    LOG(info) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
     const char* idpath = getIdPath() ;
 
-    if(!isLoaded())
+    if(!loaded)
     {
         loadFromG4DAE();
         save(idpath);
