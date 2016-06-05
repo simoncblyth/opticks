@@ -21,6 +21,68 @@ Fora Posts
 * https://devtalk.nvidia.com/default/topic/817572/optix/graph-nodes-in-optix/
 * https://devtalk.nvidia.com/default/topic/771998/optix/optix-acceleration-structure/
 
+OptiX 4.0 Beta 
+----------------
+
+* does not support Mac
+
+
+OptiX 3.9 (December 2015)
+--------------------------
+
+* https://devtalk.nvidia.com/default/topic/903433/optix/optix-3-9-is-released-/
+
+With this release, we're also introducing a new download mechanism and you'll
+be able to download the SDK directly from our website after joining the
+DesignWorks developer program and completing a short survey. You will no longer
+need to use the FTP site to download OptiX.
+
+* https://devtalk.nvidia.com/default/topic/939304/optix/running-optix-on-cpu/
+
+  * updating to 3.9 is advised
+
+Login as NVIDIA registered developer, then 
+
+* https://developer.nvidia.com/designworks
+* https://developer.nvidia.com/designworks/optix/
+* https://developer.nvidia.com/designworks/optix/downloads/legacy
+
+Release Notes
+~~~~~~~~~~~~~~~~
+
+Hardware 
+    CUDA capable devices of Compute Capability 2.0 (“Fermi”) or higher are supported on GeForce, Quadro, or Tesla
+
+Driver
+    The CUDA R346 or later driver is required. For the Mac, the driver extension
+    module supplied with CUDA 7.5 will need to be installed.
+
+OS
+    Windows 7/8/8.1/10 64-bit; Linux RHEL 4.8+ or Ubuntu 10.10+ - 64-bit; MacOS
+    10.9+ Note: 32-bit operating systems are no longer supported.
+
+CUDA Toolkit 4.0 – 7.5.
+    OptiX 3.9 has been built with CUDA 7.5, but any specified toolkit should work
+    when compiling PTX for OptiX. If an application links against both the OptiX
+    library and the CUDA runtime on Linux, it is recommended to use the same
+    version of CUDA that was used to build OptiX.
+
+C/C++ Compiler
+    Visual Studio 2008, 2010, 2012, or 2013 is required on Windows systems. 
+    gcc 4.4-4.8 have been tested on Linux. 
+    Xcode 6 has been tested on Mac OSX 10.9. 
+    See the CUDA Toolkit documentation for more information on supported compilers.
+
+
+
+Observations
+~~~~~~~~~~~~~~
+
+* currently on CUDA 7.0
+* no windows MINGW ? 
+
+
+
 
 Conference Talks
 -------------------
