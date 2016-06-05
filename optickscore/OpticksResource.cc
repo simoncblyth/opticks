@@ -2,6 +2,7 @@
 #include "OpticksQuery.hh"
 #include "OpticksColors.hh"
 #include "OpticksFlags.hh"
+#include "OpticksAttrSeq.hh"
 
 #include <cassert>
 
@@ -413,6 +414,16 @@ OpticksFlags* OpticksResource::getFlags()
     }
     return m_flags ;
 }
+
+
+OpticksAttrSeq* OpticksResource::getFlagNames()
+{
+    OpticksFlags* flags = getFlags();
+    OpticksAttrSeq* qflg = flags->getAttrIndex();
+    qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);    
+    return qflg ; 
+}
+
 
 Typ* OpticksResource::getTyp()
 {

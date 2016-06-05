@@ -48,7 +48,6 @@
 #include "NLog.hpp"
 
 //ggeo-
-#include "GCache.hh"
 #include "GBndLib.hh"
 #include "GGeoTestConfig.hh"
 

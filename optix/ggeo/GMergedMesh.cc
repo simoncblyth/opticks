@@ -1,5 +1,4 @@
 #include "GMergedMesh.hh"
-#include "GCache.hh"
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GParts.hh"
@@ -532,9 +531,9 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
 
 
 
-GMergedMesh* GMergedMesh::load(GCache* cache, unsigned int ridx, const char* version)
+GMergedMesh* GMergedMesh::load(Opticks* opticks, unsigned int ridx, const char* version)
 {
-    std::string mmpath = cache->getResource()->getMergedMeshPath(ridx);
+    std::string mmpath = opticks->getResource()->getMergedMeshPath(ridx);
     GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx, version);
     return mm ; 
 }

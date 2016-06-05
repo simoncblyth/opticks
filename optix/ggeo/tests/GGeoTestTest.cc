@@ -1,21 +1,19 @@
 //  ggv --geotest
 
 #include "Opticks.hh"
-#include "GCache.hh"
-
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
 
 
-void test_geotest(GCache* cache, const char* config)
+void test_geotest(Opticks* opticks, const char* config)
 {
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
-    GGeoTest* geotest = new GGeoTest(cache, gtc);
+    GGeoTest* geotest = new GGeoTest(opticks, gtc);
     geotest->dump();
     geotest->modifyGeometry();
 }
 
-void test_bib(GCache* cache)
+void test_bib(Opticks* opticks)
 {
     const char* config = 
     "mode=BoxInBox;"
@@ -24,7 +22,7 @@ void test_bib(GCache* cache)
     "boundary=Pyrex/MineralOil//;"
     ;
 
-    test_geotest(cache, config);
+    test_geotest(opticks, config);
 }
 
 void test_config()
@@ -46,9 +44,8 @@ int main(int argc, char** argv)
     test_config();
 
     Opticks* opticks = new Opticks(argc, argv, "geotest.log");
-    GCache* cache = new GCache(opticks);
 
-    test_bib(cache);
+    test_bib(opticks);
 
     return 1 ;
 }

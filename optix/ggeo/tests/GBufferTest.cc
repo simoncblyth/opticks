@@ -1,5 +1,4 @@
 #include "Opticks.hh"
-#include "GCache.hh"
 #include "GBuffer.hh"
 
 /*
@@ -7,13 +6,12 @@
 */
 
 
-
 /*
-void test_slice(GCache& gc)
+void test_slice(Opticks& ok)
 {
    // TODO: update: itransforms have been migrated to NPY and use 3d eg (672, 4, 4), see GMesh
 
-    GBuffer* buf = GBuffer::load<float>(gc.getIdPath(), "GMergedMesh/1/itransforms.npy" );
+    GBuffer* buf = GBuffer::load<float>(ok.getIdPath(), "GMergedMesh/1/itransforms.npy" );
     buf->Summary();
     buf->dump<float>("itran");
 
@@ -24,9 +22,9 @@ void test_slice(GCache& gc)
 */
 
 
-void test_reshape(GCache& gc)
+void test_reshape(Opticks& ok)
 {
-    GBuffer* buf = GBuffer::load<int>(gc.getIdPath(), "GMergedMesh/1/indices.npy" );
+    GBuffer* buf = GBuffer::load<int>(ok.getIdPath(), "GMergedMesh/1/indices.npy" );
     buf->Summary();
     buf->dump<int>("indices", 50);
 
@@ -37,9 +35,9 @@ void test_reshape(GCache& gc)
     buf->dump<int>("indices after reshape(1)", 50);
 }
 
-void test_reshape_slice(GCache& gc)
+void test_reshape_slice(Opticks& ok)
 {
-    GBuffer* buf = GBuffer::load<int>(gc.getIdPath(), "GMergedMesh/1/indices.npy" );
+    GBuffer* buf = GBuffer::load<int>(ok.getIdPath(), "GMergedMesh/1/indices.npy" );
     buf->Summary();
 
     unsigned int nelem = buf->getNumElements();
@@ -58,11 +56,10 @@ void test_reshape_slice(GCache& gc)
 int main()
 {
     Opticks ok ; 
-    GCache gc(&ok);
 
     //test_slice(gc);
-    test_reshape(gc);
-    test_reshape_slice(gc);
+    test_reshape(ok);
+    test_reshape_slice(ok);
 
     return 0 ; 
 }

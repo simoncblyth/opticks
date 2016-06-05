@@ -2,7 +2,6 @@
 
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "GMaker.hh"
 #include "GSolid.hh"
 #include "GMesh.hh"
@@ -13,9 +12,7 @@ int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "gmaker.log");
 
-    GCache* cache = new GCache(opticks);
-
-    GMaker* maker = new GMaker(cache);
+    GMaker* maker = new GMaker(opticks);
 
     glm::vec4 param(0.f,0.f,0.f,100.f) ; 
 

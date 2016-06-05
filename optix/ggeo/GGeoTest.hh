@@ -2,7 +2,8 @@
 
 #include <cstddef>
 
-class GCache ; 
+class Opticks ; 
+
 class GGeoTestConfig ; 
 class GGeo ; 
 class GGeoLib ; 
@@ -10,11 +11,11 @@ class GBndLib ;
 class GMaker ; 
 class GMergedMesh ; 
 
-class Opticks ; 
+// creates simple test geometries from a commandline specification
 
 class GGeoTest {
     public:
-       GGeoTest(GCache* cache, GGeoTestConfig* config);
+       GGeoTest(Opticks* opticks, GGeoTestConfig* config, GGeo* ggeo=NULL);
        void dump(const char* msg="GGeoTest::dump");
        void modifyGeometry();
     private:
@@ -26,7 +27,6 @@ class GGeoTest {
        GMergedMesh* createBoxInBox();
        GMergedMesh* loadPmt();
     private:
-       GCache*          m_cache ; 
        Opticks*         m_opticks ; 
        GGeoTestConfig*  m_config ; 
        GGeo*            m_ggeo ; 
@@ -37,12 +37,11 @@ class GGeoTest {
 
 };
 
-inline GGeoTest::GGeoTest(GCache* cache, GGeoTestConfig* config) 
+inline GGeoTest::GGeoTest(Opticks* opticks, GGeoTestConfig* config, GGeo* ggeo) 
     : 
-    m_cache(cache),
-    m_opticks(NULL),
+    m_opticks(opticks),
     m_config(config),
-    m_ggeo(NULL),
+    m_ggeo(ggeo),
     m_geolib(NULL),
     m_bndlib(NULL),
     m_maker(NULL),

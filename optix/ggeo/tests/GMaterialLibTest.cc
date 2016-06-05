@@ -2,7 +2,6 @@
 
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "GMaterialLib.hh"
 #include "OpticksAttrSeq.hh"
 
@@ -76,8 +75,6 @@ void test_addTestMaterial(GMaterialLib* mlib)
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "mats.log");
-
-    //GCache gc(&ok);
 
     GMaterialLib* mlib = GMaterialLib::load(&ok);
 

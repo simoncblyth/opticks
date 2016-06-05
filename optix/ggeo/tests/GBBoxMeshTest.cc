@@ -1,6 +1,5 @@
 
 
-#include "GCache.hh"
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
 
@@ -11,10 +10,9 @@
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv);
-    GCache gc(&ok);
     unsigned int ridx = 1 ;  
 
-    OpticksResource* resource = gc.getResource();
+    OpticksResource* resource = ok.getResource();
 
     std::string mmpath = resource->getMergedMeshPath(ridx);
     GMergedMesh* mm = GMergedMesh::load(mmpath.c_str(), ridx);

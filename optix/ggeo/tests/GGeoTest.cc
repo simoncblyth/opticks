@@ -1,13 +1,7 @@
-
-
-#include "GCache.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-
 #include "Opticks.hh"
-
 #include "NLog.hpp"
-
 
 void misc(GGeo* m_ggeo)
 {
@@ -43,15 +37,13 @@ void misc(GGeo* m_ggeo)
 
 int main(int argc, char* argv[])
 {
-    Opticks* m_opticks = new Opticks(argc, argv);
+    Opticks* opticks = new Opticks(argc, argv);
 
-    GCache* m_cache = new GCache(m_opticks);
+    GGeo* ggeo = new GGeo(opticks);
 
-    GGeo* m_ggeo = new GGeo(m_cache);
+    ggeo->loadFromCache();
 
-    m_ggeo->loadFromCache();
-
-    m_ggeo->dumpStats();
+    ggeo->dumpStats();
 
     return 0 ;
 }

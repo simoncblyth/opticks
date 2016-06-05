@@ -9,7 +9,8 @@
 #include <vector>
 #include <string>
 
-class GCache ; 
+class Opticks ; 
+
 class GGeo ; 
 class GNode ;
 class GSolid ; 
@@ -23,7 +24,7 @@ public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
     static GMergedMesh* create(unsigned int index, GGeo* ggeo, GNode* base=NULL);
-    static GMergedMesh* load(GCache* cache  , unsigned int index=0, const char* version=NULL );
+    static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids) ;
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid ) ;

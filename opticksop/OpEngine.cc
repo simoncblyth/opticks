@@ -11,7 +11,6 @@
 
 // ggeo-
 #include "GGeo.hh"
-#include "GCache.hh"
 
 // opop-
 #include "OpEngine.hh"
@@ -46,7 +45,6 @@
 void OpEngine::init()
 {
     m_fcfg = m_opticks->getCfg();
-    m_cache = m_ggeo->getCache(); 
 
     m_timer      = new Timer("OpEngine::");
     m_timer->setVerbose(true);
@@ -75,7 +73,7 @@ void OpEngine::prepareOptiX()
     m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
 
     LOG(info) << "OpEngine::prepareOptiX (OColors)" ;
-    m_ocolors = new OColors(context, m_cache->getColors() );
+    m_ocolors = new OColors(context, m_opticks->getColors() );
     m_ocolors->convert();
 
     // formerly did OBndLib here, too soon

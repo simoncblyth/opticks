@@ -2,12 +2,12 @@
 
 #include <string>
 class GMesh ; 
-class GCache ; 
+class Opticks ; 
 
 class MTool {
    public:
        MTool();
-       static GMesh* joinSplitUnion(GMesh* mesh, GCache* config);
+       static GMesh* joinSplitUnion(GMesh* mesh, Opticks* opticks);
    public:
        unsigned int countMeshComponents(GMesh* gm);
    public:

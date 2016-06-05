@@ -8,7 +8,6 @@
 
 #include "Opticks.hh"
 
-#include "GCache.cc"
 #include "OpticksFlags.cc"
 #include "GBndLib.cc"
 #include "GMaterialLib.cc"
@@ -28,12 +27,11 @@ int main(int argc, char** argv)
 
     const char* src = "torch" ; 
     const char* tag = "2" ; 
-    Opticks* opticks = new Opticks(argc, argv, "recs.log");
+    Opticks* cache = new Opticks(argc, argv, "recs.log");
 
-    GCache* cache = new GCache(opticks);
     Types* types = cache->getTypes();
 
-    GBndLib* blib = GBndLib::load(opticks, true); 
+    GBndLib* blib = GBndLib::load(cache, true); 
     GMaterialLib* mlib = blib->getMaterialLib();
     //GSurfaceLib*  slib = blib->getSurfaceLib();
 

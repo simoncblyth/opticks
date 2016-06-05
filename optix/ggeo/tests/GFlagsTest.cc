@@ -1,7 +1,6 @@
 // op --flags 
 
 #include "Opticks.hh"
-//#include "GCache.hh"
 #include "OpticksFlags.hh"
 #include "OpticksAttrSeq.hh"
 #include "Index.hpp"
@@ -9,8 +8,6 @@
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv) ; 
-
-    //GCache gc(&ok);
 
     OpticksFlags gf(&ok);
 

@@ -19,7 +19,6 @@ class Composition ;
 
 
 // ggeo-
-class GCache; 
 
 class GMesh ; 
 class GSolid ; 
@@ -79,7 +78,7 @@ class GGeo : public NConfigurable {
         void setMeshVerbosity(unsigned int verbosity);
         unsigned int getMeshVerbosity();
     public:
-        typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, GCache*);
+        typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, Opticks*);
         void setMeshJoinImp(GJoinImpFunctionPtr imp);
         void setMeshJoinCfg(const char* config);
         bool shouldMeshJoin(GMesh* mesh);
@@ -89,13 +88,7 @@ class GGeo : public NConfigurable {
         static bool ctrlHasKey(const char* ctrl, const char* key);
 
     public:
-#ifdef NEWWAY
-        GGeo(Opticks* cache); 
-        Opticks* getCache();
-#else
-        GGeo(GCache* cache); 
-        GCache* getCache();
-#endif
+        GGeo(Opticks* opticks); 
     public:
         const char* getIdPath();
         bool isValid();
@@ -303,12 +296,7 @@ class GGeo : public NConfigurable {
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
-#ifdef NEWWAY
-        Opticks*                      m_cache ; 
-#else
-        GCache*                       m_cache ; 
-#endif
-        Opticks*                      m_opticks ;  // transitional
+        Opticks*                      m_opticks ;  
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
@@ -372,15 +360,9 @@ class GGeo : public NConfigurable {
 };
 
 
-#ifdef NEWWAY
-inline GGeo::GGeo(Opticks* cache) :
-   m_cache(cache), 
-   m_opticks(cache), 
-#else
-inline GGeo::GGeo(GCache* cache) :
-   m_cache(cache), 
-   m_opticks(NULL), 
-#endif
+inline GGeo::GGeo(Opticks* opticks)
+  :
+   m_opticks(opticks), 
    m_composition(NULL), 
    m_treecheck(NULL), 
    m_treepresent(NULL), 
@@ -606,14 +588,6 @@ inline gfloat3* GGeo::getHigh()
 }
 
 
-#ifdef NEWWAY
-inline Opticks* GGeo::getCache()
-#else
-inline GCache* GGeo::getCache()
-#endif
-{
-    return m_cache ; 
-}
 inline GTreeCheck* GGeo::getTreeCheck()
 {
     return m_treecheck ;

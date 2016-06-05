@@ -14,7 +14,6 @@ Comparing with pycollada
 #include "AssimpNode.hh"
 #include "AssimpGGeo.hh"
 
-#include "GCache.hh"
 #include "GGeo.hh"
 
 #include "GMaterial.hh"
@@ -44,10 +43,7 @@ int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "assimpwrap.log");
 
-    GCache cache(&ok);
-    cache.Summary();
-    
-    GGeo* m_ggeo = new GGeo(&cache);
+    GGeo* m_ggeo = new GGeo(&ok);
     m_ggeo->setLoaderImp(&AssimpGGeo::load); 
     m_ggeo->loadFromG4DAE();
     m_ggeo->Summary("main");    

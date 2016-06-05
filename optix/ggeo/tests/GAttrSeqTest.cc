@@ -1,7 +1,6 @@
 //  ggv --attr
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "OpticksFlags.hh"
 #include "GMaterialLib.hh"
 #include "GBndLib.hh"
@@ -67,7 +66,6 @@ void test_material_dump(Opticks* cache)
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv);
-    //GCache gc(&ok);
 
     test_history_sequence(&ok);
     test_material_sequence(&ok);

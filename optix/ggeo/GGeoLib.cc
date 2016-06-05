@@ -1,9 +1,10 @@
 #include "GGeoLib.hh"
 
-#include "GGeo.hh"
-#include "GCache.hh"
+//#include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "GNode.hh"
+
+#include "Opticks.hh"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -17,55 +18,32 @@ namespace fs = boost::filesystem;
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
 
 
-GGeoLib* GGeoLib::load(GCache* cache)
+GGeoLib* GGeoLib::load(Opticks* opticks)
 {
-    GGeoLib* glib = new GGeoLib(cache);
+    GGeoLib* glib = new GGeoLib(opticks);
     glib->loadFromCache();
     return glib ; 
 }
-
 
 GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
     GMergedMesh* mm = m_merged_mesh[index] ;
-
-    unsigned int meshverbosity = m_ggeo ? m_ggeo->getMeshVerbosity() : 0 ; 
-
-    LOG(debug) << "GGeoLib::getMergedMesh"
-              << " index " << index 
-              << " m_ggeo " << m_ggeo
-              << " mm " << mm
-              << " meshverbosity " << meshverbosity
-              ;
-
-    if(mm)
-        mm->setVerbosity(meshverbosity);
-   
     return mm ; 
 }
 
-
-
-
 void GGeoLib::loadFromCache()
 {
-    const char* idpath = m_cache->getIdPath() ;
-
-    m_ggeo = m_cache->getGGeo();
-    LOG(debug) << "GGeoLib::loadFromCache" 
-              << " ggeo " << m_ggeo 
-              ;
-
+    const char* idpath = m_opticks->getIdPath() ;
+    LOG(debug) << "GGeoLib::loadFromCache" ;
     loadMergedMeshes(idpath);
 }
 
 void GGeoLib::saveToCache()
 {
-    const char* idpath = m_cache->getIdPath() ;
+    const char* idpath = m_opticks->getIdPath() ;
     saveMergedMeshes(idpath);
 }
-
 
 void GGeoLib::removeMergedMeshes(const char* idpath )
 {
@@ -94,7 +72,7 @@ void GGeoLib::loadMergedMeshes(const char* idpath )
         if(fs::exists(mmdir) && fs::is_directory(mmdir))
         {   
             const char* path = mmdir.string().c_str() ;
-            LOG(debug) << "GGeoLib::loadMergedMeshes " << m_cache->getRelativePath(path) ;
+            LOG(debug) << "GGeoLib::loadMergedMeshes " << m_opticks->getRelativePath(path) ;
             m_merged_mesh[ridx] = GMergedMesh::load( path, ridx, m_mesh_version );
         }
         else

@@ -11,7 +11,6 @@ class Composition ;
 
 // ggeo-
 class GGeo ; 
-class GCache ; 
 
 // optixrap-
 class OContext ; 
@@ -51,7 +50,6 @@ class OpEngine {
        OpticksCfg<Opticks>* m_fcfg ;   
     private:
        GGeo*                m_ggeo ; 
-       GCache*              m_cache ; 
     private:
        Composition*         m_composition ; 
     private:
@@ -76,7 +74,6 @@ inline OpEngine::OpEngine(Opticks* opticks, GGeo* ggeo)
       m_opticks(opticks),
       m_fcfg(NULL),
       m_ggeo(ggeo),
-      m_cache(NULL),
       m_evt(NULL),
       m_ocontext(NULL),
       m_ocolors(NULL),
@@ -99,8 +96,6 @@ inline OContext* OpEngine::getOContext()
 {
     return m_ocontext ; 
 }
-
-
 
 inline void OpEngine::setEvent(OpticksEvent* evt)
 {

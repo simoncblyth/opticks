@@ -2,7 +2,6 @@
 #include "GProperty.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
-#include "GCache.hh"
 //#include "GBoundaryLib.hh"
 
 #include <string>
@@ -66,17 +65,6 @@ void test_material()
     GProperty<float>* prop = mat->getProperty("pname");
     prop->Summary("prop dump");
 }
-
-
-/*
-void test_substancelib()
-{
-    GCache gc("GGEOVIEW_");
-    GBoundaryLib* lib = new GBoundaryLib(&gc);
-    const char* ri = lib->getLocalKey("refractive_index");
-    printf("ri %s \n", ri );
-}
-*/
 
 
 

@@ -3,7 +3,6 @@
 
 #include "GMaker.hh"
 
-#include "GCache.hh"
 #include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
@@ -113,18 +112,16 @@ std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4&
 
 void GMaker::init()
 {
-    m_opticks = m_cache->getOpticks();
-    m_ggeo = m_cache->getGGeo();
-   
     if(m_ggeo)
     {
+        LOG(warning) << "GMaker::init booting from m_ggeo" ; 
         m_geolib = m_ggeo->getGeoLib();
         m_bndlib = m_ggeo->getBndLib();
     }
     else
     {
         LOG(warning) << "GMaker::init booting from cache" ; 
-        m_geolib = GGeoLib::load(m_cache);
+        m_geolib = GGeoLib::load(m_opticks);
         m_bndlib = GBndLib::load(m_opticks, true );
     }
 }

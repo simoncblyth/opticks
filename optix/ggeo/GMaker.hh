@@ -9,7 +9,6 @@ class NTrianglesNPY ;
 
 struct gbbox ; 
 
-class GCache ; 
 class GGeo ; 
 class GGeoLib ; 
 class GBndLib ; 
@@ -29,7 +28,7 @@ class GMaker {
        static const char* ShapeName(char shapecode); 
        static char ShapeCode(const char* shapename); 
    public:
-       GMaker(GCache* cache);
+       GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
        std::vector<GSolid*> make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
    private:
@@ -45,7 +44,6 @@ class GMaker {
        static NTrianglesNPY* makeSubdivSphere(unsigned int nsubdiv=3, const char* type="I");
        static GSolid* makeSphere(NTrianglesNPY* tris);
    private:
-       GCache*   m_cache ; 
        Opticks*  m_opticks ; 
        GGeo*     m_ggeo ; 
        GGeoLib*  m_geolib ; 
@@ -53,11 +51,10 @@ class GMaker {
 };
 
 
-inline GMaker::GMaker(GCache* cache)
+inline GMaker::GMaker(Opticks* opticks, GGeo* ggeo)
     :
-    m_cache(cache),
-    m_opticks(NULL),
-    m_ggeo(NULL),
+    m_opticks(opticks),
+    m_ggeo(ggeo),
     m_geolib(NULL),
     m_bndlib(NULL)
 {

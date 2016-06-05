@@ -2,7 +2,6 @@
 
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "NLog.hpp"
@@ -11,9 +10,7 @@ int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "mm.log");
 
-    GCache gc(&ok);
-
-    GMergedMesh* mm = GMergedMesh::load(&gc, 1);
+    GMergedMesh* mm = GMergedMesh::load(&ok, 1);
 
     mm->Summary("mm loading");
     mm->dump("mm dump", 10);

@@ -1,5 +1,4 @@
 #include "GPropertyLib.hh"
-#include "GCache.hh"
 #include "GItemList.hh"
 #include "OpticksAttrSeq.hh"
 

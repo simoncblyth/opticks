@@ -3,7 +3,6 @@
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
 #include "GBuffer.hh"
-#include "GCache.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -15,9 +14,7 @@ int main(int argc, char** argv)
 {
     Opticks* ok = new Opticks(argc, argv, "geolib.log");
 
-    GCache* cache = new GCache(ok);
-
-    GGeoLib* geolib = GGeoLib::load(cache); 
+    GGeoLib* geolib = GGeoLib::load(ok); 
 
     GMergedMesh* mm = geolib->getMergedMesh(1);
 

@@ -1,6 +1,5 @@
 #include "Opticks.hh"
 
-//#include "GCache.hh"
 #include "GBndLib.hh"
 #include "OpticksAttrSeq.hh"
 
@@ -14,7 +13,6 @@
 int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv);
-    //GCache* cache = new GCache(opticks);
 
     GBndLib* blib = GBndLib::load(opticks, true );
     OpticksAttrSeq* qbnd = blib->getAttrNames();

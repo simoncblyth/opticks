@@ -9,7 +9,6 @@
 
 // ggeo-
 #include "GMergedMesh.hh"
-#include "GCache.hh"
 #include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
@@ -49,7 +48,7 @@
 void OpticksGeometry::init()
 {
     m_fcfg = m_opticks->getCfg();
-    m_ggeo = new GGeo(m_cache);
+    m_ggeo = new GGeo(m_opticks);
 }
 
 glm::vec4 OpticksGeometry::getCenterExtent()

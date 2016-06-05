@@ -1,6 +1,5 @@
 #include "GGeo.hh"
 
-#include "GCache.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
@@ -74,12 +73,6 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 void GGeo::init()
 {
-#ifdef NEWWAY
-#else
-   m_opticks = m_cache->getOpticks(); // m_cache is GCache
-   m_cache->setGGeo(this);  
-#endif
-
    OpticksResource* resource = m_opticks->getResource(); 
    const char* idpath = m_opticks->getIdPath() ;
 
@@ -112,7 +105,7 @@ void GGeo::init()
 
    //////////////  below only when operating pre-cache //////////////////////////
 
-   m_geolib = new GGeoLib(m_cache);
+   m_geolib = new GGeoLib(m_opticks);
 
    m_treecheck = new GTreeCheck(this) ;
    if(resource->isJuno())
@@ -174,7 +167,20 @@ unsigned int GGeo::getNumMergedMesh()
 
 GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 {
-    return m_geolib->getMergedMesh(index);
+    GMergedMesh* mm = m_geolib->getMergedMesh(index);
+
+    unsigned int meshverbosity = getMeshVerbosity() ; 
+
+    LOG(debug) << "GGeo::getMergedMesh"
+              << " index " << index 
+              << " mm " << mm
+              << " meshverbosity " << meshverbosity
+              ;
+
+    if(mm)
+        mm->setVerbosity(meshverbosity);
+
+    return mm ; 
 }
 
 GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
@@ -269,7 +275,7 @@ void GGeo::loadFromCache()
 {   
     LOG(debug) << "GGeo::loadFromCache START" ; 
 
-    m_geolib = GGeoLib::load(m_cache);
+    m_geolib = GGeoLib::load(m_opticks);
         
     const char* idpath = m_opticks->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
@@ -386,7 +392,7 @@ void GGeo::modifyGeometry(const char* config)
 
     assert(m_geotest == NULL);
 
-    m_geotest = new GGeoTest(m_cache, gtc);
+    m_geotest = new GGeoTest(m_opticks, gtc, this);
     m_geotest->modifyGeometry();
 }
 
@@ -1399,7 +1405,7 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     bool join = shouldMeshJoin(mesh);
     if(join)
     {
-        result = (*m_join_imp)(mesh, m_cache ); 
+        result = (*m_join_imp)(mesh, m_opticks); 
 
         result->setName(mesh->getName()); 
         result->setIndex(mesh->getIndex()); 

@@ -128,7 +128,6 @@ const char* OGeo::description(const char* msg)
 
 void OGeo::init()
 {
-    m_cache = m_ggeo->getCache();
     m_context = m_ocontext->getContext();
     m_geometry_group = m_context->createGeometryGroup();
     m_repeated_group = m_context->createGroup();

@@ -5,11 +5,11 @@
 #include "NLog.hpp"
 
 // opticks-
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 
 // ggeo-
 #include "GMesh.hh"
-#include "GCache.hh"
 #include "MWrap.hh"
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
@@ -52,9 +52,9 @@ unsigned int MTool::countMeshComponents_(GMesh* gmesh)
 }
 
 
-GMesh* MTool::joinSplitUnion(GMesh* gmesh, GCache* cache)
+GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
 {
-    OpticksResource* resource = cache->getResource();
+    OpticksResource* resource = opticks->getResource();
 
     // hmm this is pure static, could create an MTool instance
     // if find need to split this up a bit 

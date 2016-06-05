@@ -87,8 +87,6 @@
 // TODO: infrastructural GItemIndex should not be in ggeo-
 #include "GItemIndex.hh"
 
-// TODO: eliminate
-#include "GCache.hh"
 
 
 #ifdef WITH_OPTIX
@@ -119,12 +117,12 @@ void App::init(int argc, char** argv)
     m_opticks = new Opticks(argc, argv);
     m_opticks->Summary("App::init OpticksResource::Summary");
 
-    m_cache = new GCache(m_opticks);
 
     m_composition = new Composition ;   // Composition no longer Viz only
 
-
     // TODO: review Cfg machinery and relocate into Opticks
+    //       .. nope it needs to live mostly at App level
+    //       .. due to templated tree of Cfg objects approach 
 
     m_cfg  = new Cfg("umbrella", false) ; 
     m_fcfg = m_opticks->getCfg();
@@ -192,7 +190,7 @@ void App::configure(int argc, char** argv)
     }
 
     bool compute = hasOpt("compute") ;
-    assert(compute == m_opticks->isCompute() && "App::configure compute mismatch between GCache pre-configure and configure"  ); 
+    assert(compute == m_opticks->isCompute() && "App::configure compute mismatch between pre-configure and configure"  ); 
 
     if(hasOpt("idpath")) std::cout << m_opticks->getIdPath() << std::endl ;
     if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
@@ -357,7 +355,7 @@ void App::prepareViz()
 
 void App::loadGeometry()
 {
-    m_geometry = new OpticksGeometry(m_opticks, m_cache);
+    m_geometry = new OpticksGeometry(m_opticks);
 
     m_geometry->loadGeometry();
 
@@ -570,32 +568,14 @@ void App::indexPresentationPrep()
     }
     else
     {
+        OpticksAttrSeq* qflg = m_opticks->getFlagNames();
+        //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
+
         m_seqhis = new GItemIndex(seqhis) ;  
         m_seqhis->setTitle("Photon Flag Sequence Selection");
-
-        bool oldway = false ; 
-        if(oldway)
-        {
-           // this succeeds to display the labels like : "TORCH BT SA" 
-           // BUT: the radio button selection does not select, all photons disappear 
-           //
-            Types* types = m_cache->getTypes();    
-            m_seqhis->setTypes(types);        
-            m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
-        }
-        else
-        {
-            OpticksFlags* flags = m_opticks->getFlags();
-            OpticksAttrSeq* qflg = flags->getAttrIndex();
-
-            qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
-            //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
-
-            m_seqhis->setHandler(qflg);
-        }
+        m_seqhis->setHandler(qflg);
         m_seqhis->formTable();
     }
-
 
     if(!seqmat)
     {
@@ -712,8 +692,8 @@ void App::indexEvtOld()
     if(!m_evt) return ; 
 
     // TODO: wean this off use of Types, for the new way (GFlags..)
-    Types* types = m_cache->getTypes();
-    Typ* typ = m_cache->getTyp();
+    Types* types = m_opticks->getTypes();
+    Typ* typ = m_opticks->getTyp();
 
     NPY<float>* ox = m_evt->getPhotonData();
 
@@ -766,7 +746,7 @@ void App::prepareGUI()
 
 #ifdef GUI_
 
-    m_types = m_cache->getTypes();  // needed for each render
+    m_types = m_opticks->getTypes();  // needed for each render
     m_photons = new Photons(m_types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
     m_scene->setPhotons(m_photons);
 

@@ -74,7 +74,6 @@ set(SOURCES
     GBuffer.cc
     GDrawable.cc
     GArray.cc
-    GCache.cc
     GItemIndex.cc
 
     GColorMap.cc
@@ -127,7 +126,6 @@ SET(HEADERS
     GBuffer.hh
     GDrawable.hh
     GArray.hh
-    GCache.hh
     GItemIndex.hh
     GColorMap.hh
     GTraverse.hh

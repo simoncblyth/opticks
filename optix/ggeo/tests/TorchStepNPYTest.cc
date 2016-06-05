@@ -9,7 +9,6 @@
 
 #include <cstring>
 
-#include "GCache.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 
@@ -23,9 +22,8 @@
 int main(int argc, char* argv[])
 {
     Opticks* opticks = new Opticks(argc, argv, "torch.log");
-    GCache* m_cache = new GCache(opticks);
 
-    GGeo* m_ggeo = new GGeo(m_cache);
+    GGeo* m_ggeo = new GGeo(opticks);
 
     m_ggeo->loadFromCache();
 

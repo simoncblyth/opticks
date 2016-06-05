@@ -1,7 +1,6 @@
 // ggv --itemlist
 #include "Opticks.hh"
 
-#include "GCache.hh"
 #include "GItemList.hh"
 
 #include <string>
@@ -39,7 +38,7 @@ void base()
 }
 
 
-void test_replaceFields(GCache* cache)
+void test_replaceFields(Opticks* cache)
 {
     GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
     il->dump();
@@ -50,7 +49,7 @@ void test_replaceFields(GCache* cache)
 }
 
 
-void test_makeSlice(GCache* cache)
+void test_makeSlice(Opticks* cache)
 {
     GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
     il->dump();
@@ -69,10 +68,9 @@ void test_makeSlice(GCache* cache)
 int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv, "GItemList.log");
-    GCache* cache = new GCache(opticks);
 
-    //test_replaceFields(cache);
-    test_makeSlice(cache);
+    //test_replaceFields(opticks);
+    test_makeSlice(opticks);
 
     return 0 ;
 

@@ -13,7 +13,6 @@
 #include <climits>
 
 
-#include "GCache.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GGeo.hh"
@@ -81,7 +80,6 @@ void AssimpGGeo::init()
 
 int AssimpGGeo::load(GGeo* ggeo)
 {
-    //GCache* cache = ggeo->getCache();
     Opticks* opticks = ggeo->getOpticks();
     OpticksResource* resource = opticks->getResource();
     OpticksQuery* query = opticks->getQuery() ;

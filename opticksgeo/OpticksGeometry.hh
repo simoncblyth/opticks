@@ -10,13 +10,12 @@ class Opticks ;
 class OpticksAttrSeq ;
 template <typename> class OpticksCfg ;
 class GGeo ; 
-class GCache ;
 class GMesh ;
 class GMergedMesh ;
 
 class OpticksGeometry {
    public:
-       OpticksGeometry(Opticks* opticks, GCache* cache);
+       OpticksGeometry(Opticks* opticks);
   public:
        void loadGeometry();
   public:
@@ -35,17 +34,15 @@ class OpticksGeometry {
        void init();
    private:
        Opticks*             m_opticks ; 
-       GCache*              m_cache ; 
        OpticksCfg<Opticks>* m_fcfg ;
        GGeo*                m_ggeo ; 
        GMergedMesh*         m_mesh0 ;  
 
 };
 
-inline OpticksGeometry::OpticksGeometry(Opticks* opticks, GCache* cache)
+inline OpticksGeometry::OpticksGeometry(Opticks* opticks)
    :
    m_opticks(opticks),
-   m_cache(cache),
    m_fcfg(NULL),
    m_ggeo(NULL),
    m_mesh0(NULL)

@@ -105,6 +105,11 @@ OpticksFlags* Opticks::getFlags()
 {
     return m_resource->getFlags();
 }
+OpticksAttrSeq* Opticks::getFlagNames()
+{
+    return m_resource->getFlagNames();
+}
+
 Types* Opticks::getTypes()
 {
     return m_resource->getTypes();

@@ -22,6 +22,10 @@ class OpticksResource ;
 class OpticksColors ; 
 class OpticksQuery; 
 class OpticksFlags ;
+
+class OpticksAttrSeq ;
+
+
  
 
 #include "OpticksPhoton.h"
@@ -156,6 +160,7 @@ class Opticks {
        OpticksQuery*        getQuery(); 
        OpticksColors*       getColors(); 
        OpticksFlags*        getFlags(); 
+       OpticksAttrSeq*      getFlagNames();
    public:
        Types*               getTypes();
        Typ*                 getTyp();

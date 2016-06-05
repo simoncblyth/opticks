@@ -4,21 +4,19 @@
 #include <map>
 
 class GGeo ; 
-class GCache ; 
 class GMergedMesh ; 
 class GNode ; 
 
 class Opticks ; 
-
 
 class GGeoLib {
     public:
         static const char* GMERGEDMESH ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
-        static GGeoLib* load(GCache* cache);
+        static GGeoLib* load(Opticks* opticks);
     public:
-        GGeoLib(GCache* cache);
+        GGeoLib(Opticks* opticks);
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion();
     public:
@@ -36,16 +34,14 @@ class GGeoLib {
         void eraseMergedMesh(unsigned int index);
         void clear();
     private:
-        GGeo*   m_ggeo ; 
-        GCache* m_cache ; 
+        Opticks* m_opticks ; 
         char*   m_mesh_version ;
         std::map<unsigned int,GMergedMesh*>  m_merged_mesh ; 
 };
 
-inline GGeoLib::GGeoLib(GCache* cache) 
+inline GGeoLib::GGeoLib(Opticks* opticks) 
      :
-     m_ggeo(NULL),
-     m_cache(cache),
+     m_opticks(opticks),
      m_mesh_version(NULL)
 {
 }

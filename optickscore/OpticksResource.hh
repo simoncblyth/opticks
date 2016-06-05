@@ -9,6 +9,7 @@ class Opticks ;
 class OpticksQuery ; 
 class OpticksColors ; 
 class OpticksFlags ; 
+class OpticksAttrSeq ;
 
 class Types ;
 class Typ ;
@@ -70,6 +71,7 @@ class OpticksResource {
        OpticksQuery* getQuery();
        OpticksColors* getColors();
        OpticksFlags*  getFlags();
+       OpticksAttrSeq* getFlagNames();
    public:
        Types*         getTypes();
        Typ*           getTyp();

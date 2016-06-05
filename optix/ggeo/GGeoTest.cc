@@ -2,7 +2,6 @@
 #include "GGeoTestConfig.hh"
 
 #include "GVector.hh"
-#include "GCache.hh"
 #include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
@@ -34,20 +33,19 @@
 
 void GGeoTest::init()
 {
-    m_opticks = m_cache->getOpticks();
-    m_ggeo = m_cache->getGGeo();
     if(m_ggeo)
     {
+        LOG(warning) << "GGeoTest::init booting from m_ggeo " ; 
         m_geolib = m_ggeo->getGeoLib();
         m_bndlib = m_ggeo->getBndLib();
     }
     else
     {
-        LOG(warning) << "GGeoTest::init booting from cache" ; 
-        m_geolib = GGeoLib::load(m_cache);
+        LOG(warning) << "GGeoTest::init booting from m_opticks cache" ; 
+        m_geolib = GGeoLib::load(m_opticks);
         m_bndlib = GBndLib::load(m_opticks, true );
     }
-    m_maker = new GMaker(m_cache);
+    m_maker = new GMaker(m_opticks);
 }
 
 

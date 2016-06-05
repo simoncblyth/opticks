@@ -16,7 +16,6 @@
 #include "NLog.hpp"
 
 // ggeo-
-#include "GCache.hh"
 #include "GMesh.hh"
 
 //
@@ -30,9 +29,7 @@ int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "openmeshrap.log");
 
-    GCache cache(&ok);
-
-    const char* idpath = cache.getIdPath();
+    const char* idpath = ok.getIdPath();
     LOG(info) << "idpath " << idpath ; 
 
     GMesh* gm = GMesh::load_deduped( idpath, "GMergedMesh/0" );
@@ -77,7 +74,7 @@ int main(int argc, char** argv)
     // xyz delta maximum and w: minimal dot product of normals, -0.999 means very nearly back-to-back
     //glm::vec4 delta(10.f, 10.f, 10.f, -0.999 ); 
 
-    OpticksResource* resource = cache.getResource(); 
+    OpticksResource* resource = ok.getResource(); 
     glm::vec4 delta = resource->getMeshfixFacePairingCriteria();
 
     MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
