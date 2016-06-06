@@ -128,7 +128,11 @@ void Trackball::configureF(const char* name, std::vector<float> values)
          float vlast = values.back() ;
 
 #ifdef VERBOSE
-         printf("Trackball::configureF %s : %llu values : ", name, values.size());
+         LOG(info) << "Trackball::configureF"
+                   << " name " << name 
+                   << " vals " << values.size()
+                   ;
+
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 #endif
@@ -151,7 +155,11 @@ void Trackball::configureS(const char* name, std::vector<std::string> values)
      {
          std::string  vlast = values.back() ;
 #ifdef VERBOSE
-         printf("Trackball::configureS %s : %llu values : ", name, values.size());
+         LOG(info) << "Trackball::configureS"
+                   << " name " << name 
+                   << " vals " << values.size()
+                   ;
+
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%20s ", values[i].c_str());
          printf(" : vlast %20s \n", vlast.c_str() );
 #endif

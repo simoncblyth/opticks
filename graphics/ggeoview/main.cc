@@ -61,7 +61,7 @@ int main(int argc, char** argv)
                 app.indexPresentationPrep();
             } 
 
-            if(app.hasOpt("save") && !app.hasOpt("load")
+            if(app.hasOpt("save") && !app.hasOpt("load"))
             {
                 app.saveEvt();
 

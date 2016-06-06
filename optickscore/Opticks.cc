@@ -594,7 +594,11 @@ void Opticks::configureF(const char* name, std::vector<float> values)
      {   
          float vlast = values.back() ;
 
-         printf("Opticks::parameter_set %s : %llu values : ", name, values.size());
+         LOG(info) << "Opticks::configureF"
+                   << " name " << name 
+                   << " vals " << values.size()
+                   ;
+
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 

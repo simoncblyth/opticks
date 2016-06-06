@@ -3,6 +3,7 @@
 // npy-
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
+#include "NLog.hpp"
 
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  
@@ -117,7 +118,11 @@ void Camera::configureF(const char* name, std::vector<float> values)
          float vlast = values.back() ;
 
 #ifdef VERBOSE
-         printf("Camera::parameter_set %s : %llu values : ", name, values.size());
+         LOG(info) << "Camera::configureF"
+                   << " name " << name
+                   << " vals " << values.size()
+                   ;
+
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 #endif

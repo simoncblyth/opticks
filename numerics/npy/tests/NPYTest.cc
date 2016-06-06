@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <iostream>
-#include "assert.h"
+#include <cassert>
 
 #include <glm/glm.hpp>
 
@@ -294,7 +294,7 @@ void test_string()
 {
     typedef unsigned long long ULL ; 
 
-    printf("sizeof(ULL) : %llu \n", sizeof(ULL) );
+    std::cout << "sizeof(ULL) " << sizeof(ULL) << std::endl ; 
 
     assert(sizeof(ULL) == 8 );
 
