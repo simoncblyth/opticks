@@ -18,22 +18,28 @@ add_definitions(
    ${OpticksBoost_DEFINITIONS} 
 )
 
-add_library( ${name}  SHARED
+
+set(SOURCES
    regexsearch.cc
-)
+   fsutil.cc 
+) 
 
-target_link_libraries( ${name} 
-      ${OpticksBoost_LIBRARIES}
-)
-
-
-SET(hdrs 
+set(HEADERS
    regexsearch.hh
+   fsutil.hh 
+   dbg.hh
 )
+
+
+
+add_library( ${name}  SHARED ${SOURCES})
+
+target_link_libraries( ${name}  ${LIBRARIES} )
 
 
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
+install(FILES ${HEADERS} DESTINATION include/${name})
+
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)

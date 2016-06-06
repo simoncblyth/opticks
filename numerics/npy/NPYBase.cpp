@@ -10,10 +10,10 @@
 #include "md5digest.hpp"
 
 //bregex- 
+#include "fsutil.hh"
 #include "regexsearch.hh"
 
 #include <boost/algorithm/string/replace.hpp>
-
 
 #include "NPYSpec.hpp"
 #include "NLog.hpp"
@@ -47,6 +47,7 @@ const char* NPYBase::TypeName(Type_t type)
     } 
     return name ; 
 }
+
 
 
 
@@ -320,6 +321,9 @@ std::string NPYBase::path(const char* dir, const char* name)
 {
     char path[256];
     snprintf(path, 256, "%s/%s", dir, name);
+
+    //std::string path = fsutil::FormPath(dir, name);  
+    // provides native style path with auto-prefixing based on envvar  
     return path ; 
 }
 

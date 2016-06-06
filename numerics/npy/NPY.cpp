@@ -11,6 +11,7 @@
 
 //bregex- 
 #include "regexsearch.hh"
+#include "fsutil.hh"
 
 
 #include <boost/filesystem.hpp>
@@ -387,25 +388,39 @@ void NPY<T>::save(const char* dir, const char* name)
  
 
 template <typename T>
-void NPY<T>::save(const char* path_)
+void NPY<T>::save(const char* raw)
 {
-    if(m_verbose || GLOBAL_VERBOSE) LOG(info) << "NPY::save np.load(\"" << path_ << "\") " ; 
-    fs::path path(path_);
+    std::string native = fsutil::FormPath(raw);   // potentially with prefixing/windozing 
+
+    if(m_verbose || GLOBAL_VERBOSE) 
+    {
+        LOG(info) << "NPY::save raw    np.load(\"" << raw << "\") " ; 
+        LOG(info) << "NPY::save native np.load(\"" << native << "\") " ; 
+    }
+
+    fs::path path(native);
     fs::path dir = path.parent_path();
 
     if(!fs::exists(dir))
     {   
-        LOG(info)<< "NPYBase::save creating directories [" << dir.string() << "]" << path_ ;
+        LOG(info)<< "NPYBase::save creating directories [" << dir.string() << "]" << raw ;
         if (fs::create_directories(dir))
         {   
             LOG(info)<< "NPYBase::save created directories [" << dir.string() << "]" ;
         }   
     }   
+    else
+    {
+        if(m_verbose || GLOBAL_VERBOSE) 
+            LOG(info) << "NPY::save dir exists \"" << path.string() << "\" " ; 
+    }
+
+
 
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
 
-    aoba::SaveArrayAsNumpy<T>(path_, itemcount, itemshape.c_str(), getValues());
+    aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), getValues());
 }
 
 

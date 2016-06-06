@@ -1,10 +1,11 @@
 #include "NLog.hpp"
 
 #include <string>
+#include <iostream>
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
+// bregex-
+#include "dbg.hh"
+#include "fsutil.hh"
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -28,20 +29,19 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     if(level.compare("error") == 0)  ll = boost::log::trivial::error ; 
     if(level.compare("fatal") == 0)  ll = boost::log::trivial::fatal ; 
 
-    fs::path logdir(ldir ? ldir : fs::current_path());
-    if(!fs::exists(logdir))
-    {    
-        if (fs::create_directories(logdir))
-        {    
-            printf("NLog logging_init: created directory %s \n", ldir) ;
-        }    
-    }    
+    DBG("NLog::","lname ", lname)   ; 
 
-    fs::path logpath(logdir / lname );
+    fsutil::CreateDir(ldir);
+    std::string logpath = fsutil::FormPath(ldir, lname) ;
+    const char* path = logpath.c_str(); 
 
-    const char* path = logpath.string().c_str(); 
 
-    boost::log::add_file_log(path);
+    DBG("NLog::","logpath string", logpath )  ; 
+    DBG("NLog::","logpath c_str", path)  ; 
+
+    boost::log::add_file_log(logpath);
+
+    DBG("NLog::","logpath added", path)  ; 
 
     boost::log::core::get()->set_filter
     (    
@@ -98,14 +98,28 @@ void NLog::configure(int argc, char** argv, const char* idpath)
     if(idpath)
         init(idpath) ;
 
+
+    std::cout << "NLog::configure"
+              << " logname " << m_logname
+              << " loglevel " << m_loglevel
+              << std::endl ;  
+
+
 }
 
 
 void NLog::init(const char* idpath)
 {
+
+    std::cout << "NLog::init"
+              << " logname " << m_logname
+              << " loglevel " << m_loglevel
+              << " idpath " << idpath 
+              << std::endl ;  
+
+
     logging_init(idpath, m_logname, m_loglevel );
 }
-
 
 
 

@@ -660,7 +660,23 @@ opticks-export()
   if [ "${PATH/$bindir}" == "${PATH}" ]; then
       export PATH=$bindir:$PATH
   fi   
+
+  case $(uname -s) in
+     MINGW*) opticks-export-mingw ;;
+  esac
 }
+
+opticks-export-mingw()
+{
+  local dlldir=$(opticks-prefix)/lib
+  if [ "${PATH/$dlldir}" == "${PATH}" ]; then
+      export PATH=$dlldir:$PATH
+  fi   
+
+  # see bregex-/fsutil
+  export OPTICKS_PATH_PREFIX="C:\\msys64" 
+}
+
 
 opticks-configure-local-boost(){
     local msg="=== $FUNCNAME :"

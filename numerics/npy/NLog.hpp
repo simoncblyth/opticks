@@ -6,6 +6,7 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
+
 class NLog {
     public:
          NLog(const char* logname="ggeoview.log", const char* loglevel="info");

@@ -93,6 +93,7 @@ class NPYBase {
        void setVerbose(bool verbose=true);
        void setAllowPrealloc(bool allow=true); 
        static void setGlobalVerbose(bool verbose=true);
+
    public:
        // provided by subclass
        virtual void read(void* ptr) = 0;

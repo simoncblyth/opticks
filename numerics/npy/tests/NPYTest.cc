@@ -1,4 +1,10 @@
+
+
+// bregex-
+#include "dbg.hh"
+
 #include "NPY.hpp"
+#include "NLog.hpp"
 #include "G4StepNPY.hpp"
 
 #include <vector>
@@ -344,8 +350,19 @@ array([[['|u~lo123']]],
 }
 
 
-int main()
+int main(int argc, char** argv )
 {
+    DBG("NPYTest::","main", argv[0] );
+
+    NLog nl("NPYTest.log","debug");
+
+    DBG("NPYTest::","main", "after nl" );
+
+    nl.configure(argc, argv, "/tmp");
+
+    DBG("NPYTest::", "main", "after nlc" );
+
+
     //test_ctor();
     //test_path();
     //test_load();
@@ -372,7 +389,13 @@ int main()
 
     //test_transform();
     //test_reshape();
+
+
+    NPYBase::setGlobalVerbose(true);
+
     test_repeat();
+
+    DBG("NPYTest::", "main", "after repeat" );
 
     return 0 ;
 }
