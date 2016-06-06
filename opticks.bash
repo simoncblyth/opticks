@@ -76,7 +76,10 @@ Steps::
 
    pacman -S mingw-w64-x86_64-boost
 
-    
+
+   # for testing, need numpy and ipython
+   pacman -S mingw-w64-x86_64-python2-numpy
+   pacman -S mingw-w64-x86_64-python2-ipython 
 
 
 See Also

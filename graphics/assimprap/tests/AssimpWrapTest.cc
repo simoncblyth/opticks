@@ -9,6 +9,7 @@ Comparing with pycollada
 
 */
 
+
 #include "AssimpGeometry.hh"
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
@@ -29,9 +30,9 @@ Comparing with pycollada
 #include "NPY.hpp"
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cassert>
 
 
 #include "NLog.hpp"
@@ -42,6 +43,9 @@ Comparing with pycollada
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "assimpwrap.log");
+
+    printf("after ok\n");
+
 
     GGeo* m_ggeo = new GGeo(&ok);
     m_ggeo->setLoaderImp(&AssimpGGeo::load); 

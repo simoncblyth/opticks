@@ -2,7 +2,8 @@
 #include <vector>
 #include "NPY.hpp"
 
-#include "stdlib.h"
+#include <cstdlib>
+#include <cassert>
 
 // see tests/GColorsTest.py 
 
@@ -10,6 +11,8 @@
 int main(int argc, char** argv)
 {
     OpticksColors* m_colors = OpticksColors::load("$HOME/.opticks/GCache","GColors.json");
+    assert(m_colors);
+
     m_colors->dump();
     m_colors->test(); 
 

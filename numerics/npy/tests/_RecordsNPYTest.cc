@@ -8,6 +8,9 @@
 
 int main(int argc, char** argv)
 {
+    Types types ; 
+    types.dumpFlags();
+
     const char* idpath = getenv("IDPATH");
     const char* tag = "1" ;
 
@@ -15,12 +18,9 @@ int main(int argc, char** argv)
     NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
     NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
 
-    unsigned int maxrec = idom->getValue(0,0,3) ; // TODO: enumerate the k indices 
+    unsigned int maxrec = idom ? idom->getValue(0,0,3) : 0  ; // TODO: enumerate the k indices 
     assert(maxrec == 10);
 
-    Types types ; 
-    types.readFlags("$ENV_HOME/optickscore/OpticksPhoton.h");
-    types.dumpFlags();
     types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
 

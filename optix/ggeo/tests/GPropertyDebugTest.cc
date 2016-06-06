@@ -1,5 +1,5 @@
 #include "GProperty.hh"
-#include "assert.h"
+#include <cassert>
 
 typedef GProperty<float> P ; 
 
@@ -8,6 +8,8 @@ void test_createInverseCDF_Debug()
 {
 
     P* slow = P::load("/tmp/slowcomponent.npy");   // 79.99 -> 799.898  odd zero bins at low end
+    assert(slow);
+
     slow->Summary("slow",20);
 
    /*
@@ -31,6 +33,7 @@ void test_createInverseCDF_Debug()
 
 
     P* rrd = slow->createReversedReciprocalDomain();
+    assert(rrd);
     rrd->Summary("rrd", 20);  
     rrd->save("/tmp/rrd.npy");        
 
@@ -61,6 +64,7 @@ void test_createInverseCDF_Debug()
 
     //P* srrd = rrd->createSliced(0, -2);  // trim the trailing 2 zero bins
     P* srrd = rrd->createZeroTrimmed();  // trim the trailing 2 zero bins
+    assert(srrd);
     srrd->Summary("srrd", 20);  
     srrd->save("/tmp/srrd.npy");        
     assert( srrd->getLength() == rrd->getLength() - 2);
@@ -68,6 +72,7 @@ void test_createInverseCDF_Debug()
 
 
     P* rcdf = srrd->createCDF();
+    assert(rcdf);
     rcdf->Summary("rcdf", 20);
     rcdf->save("/tmp/rcdf.npy");
 
@@ -91,6 +96,7 @@ void test_createInverseCDF_Debug()
 
 
     P* icdf = rcdf->createInverseCDF(10001);  // +1 for nicer bin widths
+    assert(icdf);
     icdf->save("/tmp/icdf.npy");
 
     /*
@@ -133,6 +139,7 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
 
 
     GAry<float>* isample = icdf->lookupCDF(1e6);
+    assert(isample);
     isample->Summary("icdf->lookupCDF(1e6)  *1e3", 1, 1e3);
     isample->save("/tmp/isample.npy");
   

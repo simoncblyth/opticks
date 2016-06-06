@@ -6,6 +6,7 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 
+#include <cassert>
 #include <sstream>
 
 #include <glm/glm.hpp>
@@ -68,6 +69,8 @@ unsigned int ViewNPY::getNumQuads()
 
 void ViewNPY::init()
 {
+    assert(m_npy);
+
     m_bytes    = m_npy->getBytes() ;
 
     assert(m_item_from_dim == 1 || m_item_from_dim == 2);

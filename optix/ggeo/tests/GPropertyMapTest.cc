@@ -6,9 +6,13 @@
 #include "GPropertyLib.hh"
 #include "GPropertyMap.hh"
 
+#include <cassert>
+
+
 int main(int argc, char** argv)
 {
     GProperty<float>* f2 = GProperty<float>::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
+    assert(f2);
 
     f2->Summary("F2 ri", 100);
 
@@ -33,6 +37,7 @@ int main(int argc, char** argv)
     pmap->save(matdir);
 
     GPropertyMap<float>* qmap = GPropertyMap<float>::load(matdir, matname, "material");
+    assert(qmap);
     qmap->dump("qmap", 10);
 
 

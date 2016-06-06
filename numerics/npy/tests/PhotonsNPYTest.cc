@@ -5,31 +5,43 @@
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 
-#include "stdlib.h"
-#include "assert.h"
+#include <cstdlib>
+#include <cassert>
+
+#include "dbg.hh"
+
 
 int main(int argc, char** argv)
 {
-    const char* idpath = getenv("IDPATH");
-    const char* tag = "1" ;
-
-    NPY<float>* photons = NPY<float>::load("oxcerenkov", tag,"dayabay");
-    NPY<short>* records = NPY<short>::load("rxcerenkov", tag,"dayabay");
-    NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
-    NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
-    unsigned int maxrec = idom->getValue(0,0,3) ; // TODO: enumerate the k indices 
-    assert(maxrec == 10);
+    DBG(argv[0], "START with args", argc);
 
     Types types ; 
-    types.readFlags("$ENV_HOME/graphics/optixrap/cu/photon.h");
     types.dumpFlags();
 
+    DBG(argv[0], "after types", argc);
 
+
+    const char* tag = "1" ;
+    NPY<float>* photons = NPY<float>::load("oxcerenkov", tag,"dayabay");
+    DBG(argv[0], "after photons", argc);
+
+
+    NPY<short>* records = NPY<short>::load("rxcerenkov", tag,"dayabay");
+    DBG(argv[0], "after records", argc);
+    NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
+    DBG(argv[0], "after domains", argc);
+    NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
+    DBG(argv[0], "after idom", argc);
+
+    unsigned int maxrec = idom ? idom->getValue(0,0,3) : 0 ;  // TODO: enumerate the k indices 
+    DBG(argv[0], "maxrec", maxrec );
+    assert(maxrec == 10);
+
+
+    const char* idpath = getenv("IDPATH");
     Index* materials = Index::load(idpath, "GMaterialIndex");
+
     types.setMaterialsIndex(materials);
-
-    
-
     types.dumpMaterials();
 
 

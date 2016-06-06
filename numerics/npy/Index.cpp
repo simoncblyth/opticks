@@ -271,6 +271,7 @@ std::string Index::getPath(const char* idpath, const char* prefix)
 
 bool Index::exists(const char* idpath)
 {
+    if(!idpath) return false ;
     bool sx = existsPath(idpath, getPrefixedString("Source").c_str());
     bool lx = existsPath(idpath, getPrefixedString("Local").c_str());
     return sx && lx ; 
@@ -293,6 +294,7 @@ Index* Index::load(const char* pfold, const char* rfold, const char* itemtype)
 
 Index* Index::load(const char* idpath, const char* itemtype)
 {
+
     Index* idx = new Index(itemtype);
     if(idx->exists(idpath))
     {
@@ -301,7 +303,7 @@ Index* Index::load(const char* idpath, const char* itemtype)
     else
     {
         LOG(warning) << "Index::load FAILED to load index " 
-                     << " idpath " << idpath 
+                     << " idpath " << ( idpath ? idpath : "NULL" )
                      << " itemtype " << itemtype 
                      << " Source path " << idx->getPath(idpath, "Source")
                      << " Local path " << idx->getPath(idpath, "Local")

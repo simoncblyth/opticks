@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <cassert>
 
 // ggeo-
 #include "GItemIndex.hh"
@@ -14,6 +15,7 @@
 
 void dump(GItemIndex* idx, const char* msg)
 {
+    assert(idx);
     std::cout << idx->gui_radio_select_debug();
     idx->test();
     idx->dump(msg);
@@ -38,6 +40,8 @@ int main(int argc, char** argv)
     if(1)
     {
         Index* seqhis = Index::load(ixdir.c_str(), m_tag, "History_Sequence" );  // SEQHIS_NAME_
+        assert(seqhis);
+
         GItemIndex* m_seqhis = new GItemIndex(seqhis);
         m_seqhis->setTypes(&types);
         m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
