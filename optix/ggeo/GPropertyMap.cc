@@ -566,9 +566,11 @@ unsigned int GPropertyMap<T>::getNumProperties() const
 {
 
    if(m_prop.size() != m_keys.size())
-   {
-      printf("GPropertyMap<T>::getNumProperties prop/keys mismatch prop %lu  keys %lu \n", m_prop.size(), m_keys.size()); 
-   }
+      LOG(fatal) << "GPropertyMap<T>::getNumProperties"
+                 << " prop/keys mismatch "
+                 << " prop " << m_prop.size()
+                 << " keys " << m_keys.size()
+                 ; 
 
    assert(m_prop.size() == m_keys.size()); // maybe a duplicated key can trigger this
    return m_prop.size();

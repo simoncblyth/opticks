@@ -8,6 +8,7 @@
 #include "OpticksAttrSeq.hh"
 #include "Opticks.hh"
 
+#include "crossplatform.hh"
 #include "regexsearch.hh"
 #include "NLog.hpp"
 

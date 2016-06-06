@@ -1,11 +1,8 @@
 #include "AssimpRegistry.hh"
 #include "AssimpNode.hh"
-#include "assert.h"
-#include "stdio.h"
+#include <cassert>
 
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 
@@ -31,7 +28,9 @@ AssimpNode* AssimpRegistry::lookup(std::size_t digest)
 
 void AssimpRegistry::summary(const char* msg)
 {
-   printf("%s size %lu \n", msg, m_registry.size() );
+   LOG(info) << msg 
+             << " size " << m_registry.size()
+             ;
 }
 
 

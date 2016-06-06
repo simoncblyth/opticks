@@ -89,7 +89,7 @@ unsigned int NPYBase::getNumQuads()
    else
    {
        num_quad = 1 ; 
-       for(int i=0 ; i < ndim - 1 ; i++ ) num_quad *= m_shape[i] ; 
+       for(unsigned int i=0 ; i < ndim - 1 ; i++ ) num_quad *= m_shape[i] ; 
    } 
    return num_quad ;
 }

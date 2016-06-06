@@ -217,7 +217,7 @@ void MWrap<MeshT>::calcFaceCentroids(const char* fpropname)
     MeshT* mesh = m_mesh ; 
 
     typedef typename MeshT::FaceIter FI ; 
-    typedef typename MeshT::ConstFaceVertexIter FVI ; 
+    //typedef typename MeshT::ConstFaceVertexIter FVI ; 
     typedef typename MeshT::Point P ; 
 
     OpenMesh::FPropHandleT<P> centroid;
@@ -357,8 +357,8 @@ void MWrap<MeshT>::partialCopyTo(MeshT* dst, const char* ivpropname, int ivpropv
     typedef typename MeshT::FaceIter FI ; 
     typedef typename MeshT::VertexFaceIter VFI ; 
     typedef typename MeshT::VertexHandle VH ; 
-    typedef typename MeshT::FaceHandle FH ; 
-    typedef typename MeshT::Point P ; 
+    //typedef typename MeshT::FaceHandle FH ; 
+    //typedef typename MeshT::Point P ; 
     typedef typename MeshT::ConstFaceVertexIter FVI ; 
 
     MeshT* mesh = m_mesh ;  
@@ -594,11 +594,11 @@ void MWrap<MeshT>::dump(const char* msg, unsigned int detail)
 template <typename MeshT>
 unsigned int MWrap<MeshT>::collectBoundaryLoop()  
 {
-    typedef typename MeshT::FaceIter FI ; 
+    //typedef typename MeshT::FaceIter FI ; 
     typedef typename MeshT::VertexIter VI ; 
     typedef typename MeshT::VertexHandle VH ;
     typedef typename MeshT::HalfedgeHandle HH ;
-    typedef typename MeshT::Point P ; 
+    //typedef typename MeshT::Point P ; 
 
     MeshT* mesh = m_mesh ; 
     std::vector<VH>& vbnd = m_boundary ; 

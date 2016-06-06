@@ -18,6 +18,7 @@ char* trimPointerSuffixPrefix(const char* origname, const char* prefix);
 
 int getenvint( const char* envkey, int fallback=-1 );
 const char* getenvvar( const char* envprefix, const char* envkey );
+int setenvvar( const char* envprefix, const char* key, const char* value);
 const char* uppercase( const char* str );
 
 void split( std::vector<std::string>& elem, const char* line, char delim );

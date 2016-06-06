@@ -42,7 +42,7 @@ void MFixer::fixMesh()
         assert(nodes.size() == nodeCount );
 
         std::stringstream nss ; 
-        for(unsigned int i=0 ; i < std::min( nodes.size(), 5ul ) ; i++) nss << nodes[i] << "," ;
+        for(unsigned int i=0 ; i < std::min( nodeCount, 5u ) ; i++) nss << nodes[i] << "," ;
 
 
         GMesh* mesh = m_ggeo->getMesh(meshIndex);

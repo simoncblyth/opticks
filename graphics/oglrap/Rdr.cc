@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <stdint.h>
 
 #include <iomanip>
 #include <cstdio>
@@ -306,7 +307,8 @@ void Rdr::address(ViewNPY* vnpy)
     GLboolean     norm = vnpy->getNorm() ; 
     GLsizei       stride = vnpy->getStride();   // byte offset between consecutive generic vertex attributes, or 0 for tightly packed
 
-    unsigned long offset_ = vnpy->getOffset() ;
+    uintptr_t stride_ = stride ;
+    uintptr_t offset_ = vnpy->getOffset() ;
 
     const GLvoid* offset = (const GLvoid*)offset_ ;      
 
@@ -324,7 +326,7 @@ void Rdr::address(ViewNPY* vnpy)
               << " offset_ " << offset_
               ;
 
-    assert( offset_ < stride && "offset_ should always be less than the stride, see ggv-/issues/gui_broken_photon_record_colors");
+    assert( offset_ < stride_ && "offset_ should always be less than the stride_, see ggv-/issues/gui_broken_photon_record_colors");
 
     if( vnpy->getIatt() )
     {

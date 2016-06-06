@@ -104,7 +104,9 @@ template<typename T>
 void Counts<T>::dump(const char* msg, unsigned long nline)
 {
     LOG(info) << msg << " " << m_name ; 
-    for(unsigned int i=0 ; i < std::min(nline,m_counts.size()) ; i++)
+
+    unsigned long size = m_counts.size() ;
+    for(unsigned int i=0 ; i < std::min(nline,size); i++)
     {
         ST& p = m_counts[i];
         std::cout << std::setw(5) << std::dec << i 

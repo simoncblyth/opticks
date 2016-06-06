@@ -1,4 +1,5 @@
 #include "Composition.hh"
+#include <boost/math/constants/constants.hpp>
 
 // opticks-
 #include "View.hh"
@@ -1093,7 +1094,8 @@ void Composition::update()
 
     m_viewport = glm::vec4( 0.f, 0.f, getPixelWidth(), getPixelHeight() );
 
-    m_lookrotation = glm::rotate(glm::mat4(1.f), m_lookphi*float(M_PI)/180.f , Y );
+    float pi = boost::math::constants::pi<float>() ;
+    m_lookrotation = glm::rotate(glm::mat4(1.f), m_lookphi*float(pi)/180.f , Y );
     m_ilookrotation = glm::transpose(m_lookrotation);
 
 

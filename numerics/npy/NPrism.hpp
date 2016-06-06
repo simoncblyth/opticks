@@ -1,6 +1,7 @@
 #pragma once
 #include "NQuad.hpp"
 #include <cmath>
+#include <boost/math/constants/constants.hpp>
 
 struct npart ;
 
@@ -43,7 +44,8 @@ inline float nprism::depth()
 }
 inline float nprism::hwidth()
 {
-    return height()*tan((M_PI/180.f)*param.x/2.0f) ;
+    float pi = boost::math::constants::pi<float>() ;
+    return height()*tan((pi/180.f)*param.x/2.0f) ;
 }
 
 

@@ -100,6 +100,7 @@ add_library( ${name}  SHARED
 target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
+crossplatform.hh
 uif.h
 ucharfour.h
 charfour.h

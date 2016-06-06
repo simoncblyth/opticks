@@ -18,15 +18,17 @@ GMatrix<float>* GMesh_make_model_to_world(const gfloat3& low, const gfloat3& hig
 {
     GMatrix<float>* m_model_to_world ; 
 
-    gfloat3 *m_low, *m_high, *m_dimensions, *m_center ;   // * belongs to the var, not the type
-    float m_extent ; 
 
    // from GMesh::updateBounds 
-    m_low = new gfloat3(low.x, low.y, low.z) ;
-    m_high = new gfloat3(high.x, high.y, high.z);
+    //gfloat3 *m_low, *m_high ;
+    //m_low = new gfloat3(low.x, low.y, low.z) ;
+    //m_high = new gfloat3(high.x, high.y, high.z);
 
+    gfloat3  *m_dimensions, *m_center ;   // * belongs to the var, not the type
     m_dimensions = new gfloat3(high.x - low.x, high.y - low.y, high.z - low.z );
     m_center     = new gfloat3((high.x + low.x)/2.0f, (high.y + low.y)/2.0f , (high.z + low.z)/2.0f );
+
+    float m_extent ; 
     m_extent = 0.f ;
     m_extent = std::max( m_dimensions->x , m_extent );
     m_extent = std::max( m_dimensions->y , m_extent );
@@ -56,14 +58,16 @@ GMatrix<float>* GMesh_make_model_to_world(const gfloat3& low, const gfloat3& hig
 
 glm::mat4 GLM_make_model_to_world(const gfloat3& low, const gfloat3& high, bool correct=true)
 {
-    glm::vec3 *m_low, *m_high, *m_dimensions, *m_center ;   // * belongs to the var, not the type
-    float m_extent ; 
 
-    m_low = new glm::vec3(low.x, low.y, low.z);
-    m_high = new glm::vec3(high.x, high.y, high.z);
+    //glm::vec3 *m_low, *m_high ; 
+    //m_low = new glm::vec3(low.x, low.y, low.z);
+    //m_high = new glm::vec3(high.x, high.y, high.z);
 
+    glm::vec3 *m_dimensions, *m_center ;   // * belongs to the var, not the type
     m_dimensions = new glm::vec3(high.x - low.x, high.y - low.y, high.z - low.z );
     m_center     = new glm::vec3((high.x + low.x)/2.0f, (high.y + low.y)/2.0f , (high.z + low.z)/2.0f );
+
+    float m_extent ; 
     m_extent = 0.f ;
     m_extent = std::max( m_dimensions->x , m_extent );
     m_extent = std::max( m_dimensions->y , m_extent );

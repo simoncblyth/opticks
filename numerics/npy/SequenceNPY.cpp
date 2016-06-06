@@ -363,7 +363,10 @@ Index* SequenceNPY::makeSequenceCountsIndex(
     typedef std::pair<std::string, unsigned int> PSU ;
 
     // index truncation is a feature, not a limitation
-    for(unsigned int i=0 ; i < std::min(maxidx, vp.size()) ; i++)
+
+    unsigned long size = vp.size();
+
+    for(unsigned int i=0 ; i < std::min(maxidx, size) ; i++)
     {
         PSU p = vp[i];
         total += p.second ;  

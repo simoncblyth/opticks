@@ -16,6 +16,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
 
 
 const char* Trackball::PREFIX = "trackball" ;
@@ -127,7 +128,7 @@ void Trackball::configureF(const char* name, std::vector<float> values)
          float vlast = values.back() ;
 
 #ifdef VERBOSE
-         printf("Trackball::configureF %s : %lu values : ", name, values.size());
+         printf("Trackball::configureF %s : %llu values : ", name, values.size());
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 #endif
@@ -150,7 +151,7 @@ void Trackball::configureS(const char* name, std::vector<std::string> values)
      {
          std::string  vlast = values.back() ;
 #ifdef VERBOSE
-         printf("Trackball::configureS %s : %lu values : ", name, values.size());
+         printf("Trackball::configureS %s : %llu values : ", name, values.size());
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%20s ", values[i].c_str());
          printf(" : vlast %20s \n", vlast.c_str() );
 #endif
@@ -266,8 +267,9 @@ void Trackball::setOrientation(float _theta, float _phi)
 
 void Trackball::setOrientation()
 {
-    float theta = m_theta_deg*M_PI/180. ;
-    float phi   = m_phi_deg*M_PI/180. ;
+    float pi = boost::math::constants::pi<float>() ;
+    float theta = m_theta_deg*pi/180. ;
+    float phi   = m_phi_deg*pi/180. ;
 
     glm::quat xrot(cos(0.5*theta),sin(0.5*theta),0,0);
     glm::quat zrot(cos(0.5*phi),  0,0,sin(0.5*phi));
@@ -301,14 +303,14 @@ void Trackball::drag_to(float x, float y, float dx, float dy)
     glm::quat drag = rotate(x,y,dx,dy);
 
     bool bad =
-                isnan(drag.x) || 
-                isnan(drag.y) || 
-                isnan(drag.z) || 
-                isnan(drag.w) ||
-                isinf(drag.x) || 
-                isinf(drag.y) || 
-                isinf(drag.z) || 
-                isinf(drag.w)  ;
+                std::isnan(drag.x) || 
+                std::isnan(drag.y) || 
+                std::isnan(drag.z) || 
+                std::isnan(drag.w) ||
+                std::isinf(drag.x) || 
+                std::isinf(drag.y) || 
+                std::isinf(drag.z) || 
+                std::isinf(drag.w)  ;
 
     if(bad)
     {

@@ -3,6 +3,9 @@
 #include <glm/glm.hpp>
 
 //npy-
+
+#include "crossplatform.hh"
+
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 #include "Index.hpp"

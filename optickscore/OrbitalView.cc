@@ -4,6 +4,7 @@
 #include "GLMFormat.hpp"
 
 #include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <sstream>
 
 
@@ -74,7 +75,8 @@ void OrbitalView::update()
     tmp.z = 0.f ;  // hmm should dot product with up direction ?
     float r = glm::length(tmp) ; 
     float phase = atan2( tmp.y, tmp.x ) ;  // hmm, tis tangential view anyhow so a jump is inevitable
-    float phi = phase + m_fraction*float(M_PI)*2.0f  ;
+    float pi = boost::math::constants::pi<float>() ;
+    float phi = phase + m_fraction*pi*2.0f  ;
     float sinphi = sin(phi);
     float cosphi = cos(phi);
 

@@ -22,7 +22,7 @@ private:
     void selectNodes(AssimpNode* node, unsigned int depth, bool rselect=false);
 public:
     // bounds
-    void dump();
+    void dump(const char* msg="AssimpSelection::dump");
     void bounds();
     aiVector3D* getLow();
     aiVector3D* getHigh();

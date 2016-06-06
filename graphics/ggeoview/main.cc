@@ -24,11 +24,9 @@ int main(int argc, char** argv)
 
 
 
-    bool nooptix = app.hasOpt("nooptix");
-    bool save    = app.hasOpt("save");
-    bool load    = app.hasOpt("load");
-    if(load) save = false ;    // "load" trumps "save" 
+    bool load = app.hasOpt("load");
 
+    bool nooptix = app.hasOpt("nooptix");
 
     if(!nooptix && !load)
     {
@@ -63,7 +61,7 @@ int main(int argc, char** argv)
                 app.indexPresentationPrep();
             } 
 
-            if(save)
+            if(app.hasOpt("save") && !app.hasOpt("load")
             {
                 app.saveEvt();
 

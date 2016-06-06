@@ -3,6 +3,7 @@
 #include "NTriangle.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+#include <boost/math/constants/constants.hpp>
 
 
 NTrianglesNPY::NTrianglesNPY()
@@ -280,10 +281,13 @@ NTrianglesNPY* NTrianglesNPY::sphere(float ctmin, float ctmax, unsigned int n_po
  
     assert(ctmax > ctmin && ctmax <= 1.f && ctmin >= -1.f);
 
+
+    float pi = boost::math::constants::pi<float>() ;
+
     for(unsigned int t=0 ; t < n_polar ; t++)
     {
-        double t0 = 1.0f*M_PI*float(t)/n_polar ; 
-        double t1 = 1.0f*M_PI*float(t+1)/n_polar ;
+        double t0 = 1.0f*pi*float(t)/n_polar ; 
+        double t1 = 1.0f*pi*float(t+1)/n_polar ;
 
         double st0,st1,ct0,ct1 ;
         sincos_<double>(t0, st0, ct0 ); 
@@ -310,8 +314,8 @@ NTrianglesNPY* NTrianglesNPY::sphere(float ctmin, float ctmax, unsigned int n_po
 
         for(unsigned int p=0 ; p < n_azimuthal ; p++)
         {
-            float p0 = 2.0f*M_PI*float(p)/n_azimuthal ;
-            float p1 = 2.0f*M_PI*float(p+1)/n_azimuthal ;
+            float p0 = 2.0f*pi*float(p)/n_azimuthal ;
+            float p1 = 2.0f*pi*float(p+1)/n_azimuthal ;
 
             double sp0,sp1,cp0,cp1 ;
             sincos_<double>(p0, sp0, cp0 ); 
@@ -367,12 +371,13 @@ NTrianglesNPY* NTrianglesNPY::disk(glm::vec4& param, unsigned int n_azimuthal)
     float ct = param.x ; 
     double ct0, st0 ;
     sincos_<double>(acos(ct), st0, ct0 ); 
+    float pi = boost::math::constants::pi<float>() ;
 
     NTrianglesNPY* tris = new NTrianglesNPY();
     for(unsigned int p=0 ; p < n_azimuthal ; p++)
     {
-        float p0 = 2.0f*M_PI*float(p)/n_azimuthal ;
-        float p1 = 2.0f*M_PI*float(p+1)/n_azimuthal ;
+        float p0 = 2.0f*pi*float(p)/n_azimuthal ;
+        float p1 = 2.0f*pi*float(p+1)/n_azimuthal ;
 
         double sp0,sp1,cp0,cp1 ;
         sincos_<double>(p0, sp0, cp0 ); 
@@ -447,7 +452,8 @@ NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
     float height = param.y > 0.f ? param.y : param.w  ;
     float depth = param.z > 0.f ? param.z : param.w ;
 
-    float hwidth = height*tan((M_PI/180.f)*angle/2.0f) ;      
+    float pi = boost::math::constants::pi<float>() ;
+    float hwidth = height*tan((pi/180.f)*angle/2.0f) ;      
 
     float ymax =  height/2.0f ; 
     float ymin = -height/2.0f ; 

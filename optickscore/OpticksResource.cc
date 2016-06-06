@@ -166,8 +166,13 @@ void OpticksResource::readEnvironment()
 
         m_idpath = strdup(kfn.c_str());
     
-        int overwrite = 1; 
-        assert(setenv("IDPATH", m_idpath, overwrite)==0);  // TODO: avoid this, windoze lacks setenv 
+        //int overwrite = 1; 
+        //assert(setenv("IDPATH", m_idpath, overwrite)==0);  // TODO: avoid this, windoze lacks setenv 
+
+        assert(setenvvar("","IDPATH", m_idpath )==0);  // uses putenv for windows mingw compat 
+        
+
+
     }
     else
     {

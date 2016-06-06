@@ -4,6 +4,14 @@
 #include <cstdio>
 #include <cstring>
 
+
+#include <string>
+#include <vector>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
+
+
 const char* NSlice::description()
 {
     if(!_description)
@@ -32,6 +40,20 @@ NSlice::NSlice(const char* slice, const char* delim)
     step = 1 ; 
     _description = 0 ; 
 
+
+    std::vector<std::string> elem ;
+    boost::split(elem, slice, boost::is_any_of(delim));
+    unsigned int size = elem.size();
+
+    if(size > 0) low = boost::lexical_cast<unsigned int>(elem[0]);
+    if(size > 1) high = boost::lexical_cast<unsigned int>(elem[1]);
+    if(size > 2) step = boost::lexical_cast<unsigned int>(elem[2]);
+
+    if(size == 1) high = low + 1 ;  // only provided low
+
+
+/*
+   // strsep has portability issues
     unsigned int i = 0 ;
     char* str = strdup(slice);   
     char* token;
@@ -45,7 +67,10 @@ NSlice::NSlice(const char* slice, const char* delim)
        }
        i++ ;
     }
-
     if(i == 1) high = low+1 ;  // when only single int provided
+*/
+
+
+
 
 }

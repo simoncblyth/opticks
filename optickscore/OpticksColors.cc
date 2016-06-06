@@ -54,8 +54,6 @@ void OpticksColors::sort()
 
 void OpticksColors::dump(const char* msg)
 {
-    typedef std::map<std::string, std::string> MSS ; 
-
     unsigned int num_colors = getNumColors();
 
     LOG(info) << msg 

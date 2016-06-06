@@ -213,10 +213,7 @@ void Index::dump(const char* msg)
 
 void Index::crossreference()
 {
-   typedef std::map<std::string, unsigned int> MSU ; 
    typedef std::vector<std::string> VS ; 
-
-
    for(VS::iterator it=m_names.begin() ; it != m_names.end() ; it++ )
    {
        std::string k = *it ; 

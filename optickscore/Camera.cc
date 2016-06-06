@@ -117,7 +117,7 @@ void Camera::configureF(const char* name, std::vector<float> values)
          float vlast = values.back() ;
 
 #ifdef VERBOSE
-         printf("Camera::parameter_set %s : %lu values : ", name, values.size());
+         printf("Camera::parameter_set %s : %llu values : ", name, values.size());
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 #endif

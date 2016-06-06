@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "NConfigurable.hpp"
+#include <boost/math/constants/constants.hpp>
 
 
 /*
@@ -437,12 +438,14 @@ inline void Camera::setYfov(float yfov)
     // fov = 2atan(1/zoom)
     // zoom = 1/tan(fov/2)
 
-    float zoom = 1.f/tan(yfov*0.5f*M_PI/180.f );
+    float pi = boost::math::constants::pi<float>() ;
+    float zoom = 1.f/tan(yfov*0.5f*pi/180.f );
     setZoom( zoom );
 }
 inline float Camera::getYfov()
 {
-    return 2.f*atan(1./m_zoom)*180./M_PI;
+    float pi = boost::math::constants::pi<float>() ;
+    return 2.f*atan(1./m_zoom)*180./pi ;
 }
 
 

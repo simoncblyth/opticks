@@ -2,10 +2,10 @@
 #include "GProperty.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
-//#include "GBoundaryLib.hh"
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 
 void test_matrix()
@@ -74,8 +74,11 @@ int main(int argc, char* argv[])
     GMatrixF* m = new GMatrixF(100.f, 200.f, 100.f,  10.f );
     m->Summary();
 
-    printf(" size %lu   %lu \n", sizeof(GMatrixF), sizeof(float)*4*4 );
-    
+    std::cout << " sizeof(GMatrixF) " << sizeof(GMatrixF)
+              << " sizeof(float)*4*4 " << sizeof(float)*4*4 
+              << std::endl 
+              ;
+
 
 
     return 0 ;

@@ -1,4 +1,5 @@
 #include <GL/glew.h>
+#include <stdint.h>
 
 #include "Renderer.hh"
 #include "Prog.hh"
@@ -247,7 +248,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
         LOG(debug) << "Renderer::upload_buffers setup instance transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
 
-        long qsize = sizeof(GLfloat) * 4 ;
+        uintptr_t qsize = sizeof(GLfloat) * 4 ;
         GLsizei matrix_stride = qsize * 4 ;
 
         glVertexAttribPointer(vTransform + 0 , 4, GL_FLOAT, normalized, matrix_stride, (void*)0 );

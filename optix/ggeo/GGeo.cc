@@ -439,7 +439,14 @@ void GGeo::updateBounds(GNode* node)
 
 void GGeo::Summary(const char* msg)
 {
-    printf("%s ms %lu so %lu mt %lu bs %lu ss %lu \n", msg, m_meshes.size(), m_solids.size(), m_materials.size(), m_border_surfaces.size(), m_skin_surfaces.size() );  
+    LOG(info) << msg
+              << " ms " << m_meshes.size()
+              << " so " << m_solids.size()
+              << " mt " << m_materials.size()
+              << " bs " << m_border_surfaces.size()
+              << " ss " << m_skin_surfaces.size()
+              ;
+
 
     if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
     if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);
@@ -447,7 +454,8 @@ void GGeo::Summary(const char* msg)
 
 void GGeo::Details(const char* msg)
 {
-    printf("%s  #border_surfaces %lu #skin_surfaces %lu #materials %lu \n", msg, m_border_surfaces.size(),  m_skin_surfaces.size(), m_materials.size()); 
+    Summary(msg) ;
+
     char mbuf[BSIZ];
 
     /*

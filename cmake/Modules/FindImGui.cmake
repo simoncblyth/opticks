@@ -36,6 +36,25 @@ if(UNIX AND NOT APPLE)
    #message("FindImGUI:UNIX AND NOT APPLE")
 endif(UNIX AND NOT APPLE)
 
+
+if(MINGW)
+    find_library( OpenGL_LIBRARY NAMES opengl32 )
+
+    message("FindImGui MINGW OpenGL_LIBRARY : ${OpenGL_LIBRARY} " )
+
+    set( ImGui_LIBRARIES 
+               ${ImGui_LIBRARIES} 
+               ${GLFW_LIBRARIES} 
+               ${OpenGL_LIBRARY}
+               )
+
+
+endif(MINGW)
+
+
+
+
+
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")
 set(ImGui_DEFINITIONS "")
 

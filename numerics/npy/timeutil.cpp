@@ -11,6 +11,11 @@
 #if defined(_WIN32)
 #include <Windows.h>
 
+#if defined(__MINGW32__)
+#include <time.h>
+#endif
+
+
 #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
 #include <unistd.h>	/* POSIX flags */
 #include <time.h>	/* clock_gettime(), time() */

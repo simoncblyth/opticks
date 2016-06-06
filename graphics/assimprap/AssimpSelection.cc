@@ -4,7 +4,7 @@
 #include "AssimpRegistry.hh"
 
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 #include <assimp/scene.h>
 
 // npy-
@@ -150,9 +150,14 @@ void AssimpSelection::findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& 
 
 
 
-void AssimpSelection::dump()
+void AssimpSelection::dump(const char* msg)
 {
-    printf("AssimpSelection::dump query %s selection matched %lu nodes \n", m_query->getQueryString(), m_selection.size() ); 
+    LOG(info) << msg 
+              << " query " << m_query->getQueryString() 
+              << " matches nodes " << m_selection.size()  
+              ;
+               
+
     bounds();
     //dumpSelection();
 }

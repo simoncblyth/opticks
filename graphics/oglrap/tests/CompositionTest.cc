@@ -6,6 +6,7 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
+#include <boost/math/constants/constants.hpp>
 
 void test_rotate()
 {
@@ -26,7 +27,8 @@ void test_rotate()
             case 5:angle = 180.f ; break;   
         }
 
-        float a = angle*M_PI/180. ; 
+        float pi = boost::math::constants::pi<float>() ;
+        float a = angle*pi/180. ; 
         printf(" angle %10.4f a %10.4f \n", angle, a );
 
         glm::mat4 rotX = glm::rotate(glm::mat4(1.0), a, X );

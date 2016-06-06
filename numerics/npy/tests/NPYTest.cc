@@ -294,7 +294,7 @@ void test_string()
 {
     typedef unsigned long long ULL ; 
 
-    printf("sizeof(ULL) : %lu \n", sizeof(ULL) );
+    printf("sizeof(ULL) : %llu \n", sizeof(ULL) );
 
     assert(sizeof(ULL) == 8 );
 

@@ -70,6 +70,15 @@ const char* getenvvar( const char* envprefix, const char* envkey )
     return getenv(envvar);
 }
 
+int setenvvar( const char* envprefix, const char* key, const char* value)
+{
+    char* ekv = new char[128] ;  // heap as putenv does not copy
+    snprintf(ekv, 128, "%s%s=%s", envprefix, key, value );
+    std::cout << "putenvvar [" << ekv << "]" << std::endl ; 
+    return putenv(ekv);
+}
+
+
 
 std::string patternPickField(std::string str, std::string ptn, int num )
 {
@@ -121,7 +130,6 @@ std::vector<std::pair<std::string, std::string>> ekv_split( const char* line_, c
 
 std::string join(std::vector<std::string>& elem, char delim )
 {
-    typedef std::vector<std::string> Vec_t ;
     std::stringstream ss ;
     for(size_t i=0 ; i < elem.size() ; ++i)
     {

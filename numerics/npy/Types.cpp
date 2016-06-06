@@ -4,6 +4,7 @@
 #include "jsonutil.hpp" 
 #include "stringutil.hpp" 
 #include "regexsearch.hh"
+#include "crossplatform.hh"
 
 #include <sstream>
 #include <iostream>

@@ -252,7 +252,7 @@ void Opticks::preconfigure(int argc, char** argv)
 void Opticks::dumpArgs(const char* msg)
 {
     LOG(info) << msg << " argc " << m_argc ;
-    for(unsigned int i=0 ; i < m_argc ; i++) 
+    for(int i=0 ; i < m_argc ; i++) 
           std::cout << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
 
 }
@@ -594,7 +594,7 @@ void Opticks::configureF(const char* name, std::vector<float> values)
      {   
          float vlast = values.back() ;
 
-         printf("Opticks::parameter_set %s : %lu values : ", name, values.size());
+         printf("Opticks::parameter_set %s : %llu values : ", name, values.size());
          for(size_t i=0 ; i < values.size() ; i++ ) printf("%10.3f ", values[i]);
          printf(" : vlast %10.3f \n", vlast );
 
