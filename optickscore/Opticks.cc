@@ -198,6 +198,8 @@ void Opticks::init()
     setDetector( m_resource->getDetector() );
 
     preconfigure(m_argc, m_argv);
+
+    std::cerr << "Opticks::init DONE " << std::endl ;
 }
 
 
@@ -243,11 +245,14 @@ void Opticks::preconfigure(int argc, char** argv)
     //           << " detector " << m_resource->getDetector()
     //           ;
 
+    std::cerr << "Opticks::preconfigure" << std::endl ; 
+
     m_log = new NLog(m_logname, m_loglevel);
     m_log->configure(argc, argv);
     const char* idpath = getIdPath();
     m_log->init(idpath);
 
+    std::cerr << "Opticks::preconfigure DONE" << std::endl ; 
 }
 
 void Opticks::dumpArgs(const char* msg)

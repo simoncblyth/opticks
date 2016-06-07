@@ -46,3 +46,30 @@ opticksdata-get(){
    [ ! -d "$nam" ] && hg clone $url 
 
 }
+
+opticksdata-name(){ echo $(opticksdata-xname $1).dae ; }
+opticksdata-xname(){
+  local base=$(opticksdata-dir)/export
+  case $1 in 
+       dyb) echo $base/DayaBay_VGDX_20140414-1300/g4_00 ;;
+       dybf) echo $base/DayaBay_VGDX_20140414-1300/g4_00 ;;
+       dpib) echo $base/dpib/cfg4 ;; 
+       far) echo $base/Far_VGDX_20140414-1256/g4_00 ;;
+    lingao) echo $base/Lingao_VGDX_20140414-1247/g4_00 ;;
+       lxe) echo $base/LXe/g4_00 ;;
+       jpmt) echo $base/juno/test3 ;;
+       juno) echo $base/juno/nopmt ;;
+       jtst) echo $base/juno/test ;;
+  esac
+}
+
+
+
+opticksdata-export(){
+   export DAE_NAME=$(opticksdata-name dyb)
+   export DAE_NAME_DYB=$(opticksdata-name dyb)
+   export DAE_NAME_DPIB=$(opticksdata-name dpib)
+}
+
+
+

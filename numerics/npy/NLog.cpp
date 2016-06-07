@@ -29,19 +29,24 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     if(level.compare("error") == 0)  ll = boost::log::trivial::error ; 
     if(level.compare("fatal") == 0)  ll = boost::log::trivial::fatal ; 
 
-    // DBG("NLog::","lname ", lname)   ; 
+    DBG("NLog::","lname ", lname)   ; 
+    DBG("NLog::","ldir", ldir )   ; 
 
     fsutil::CreateDir(ldir);
+
+    DBG("NLog::","ldir created", ldir )   ; 
+
+
     std::string logpath = fsutil::FormPath(ldir, lname) ;
     const char* path = logpath.c_str(); 
 
 
-    //DBG("NLog::","logpath string", logpath )  ; 
-    //DBG("NLog::","logpath c_str", path)  ; 
+    DBG("NLog::","logpath string", logpath )  ; 
+    DBG("NLog::","logpath c_str", path)  ; 
 
     boost::log::add_file_log(logpath);
 
-    //DBG("NLog::","logpath added", path)  ; 
+    DBG("NLog::","logpath added", path)  ; 
 
     boost::log::core::get()->set_filter
     (    
@@ -99,7 +104,7 @@ void NLog::configure(int argc, char** argv, const char* idpath)
         init(idpath) ;
 
 
-    //std::cout << "NLog::configure" << " logname " << m_logname << " loglevel " << m_loglevel << std::endl ;  
+    std::cout << "NLog::configure" << " logname " << m_logname << " loglevel " << m_loglevel << std::endl ;  
 
 
 }
@@ -108,7 +113,7 @@ void NLog::configure(int argc, char** argv, const char* idpath)
 void NLog::init(const char* idpath)
 {
 
-    //std::cout << "NLog::init" << " logname " << m_logname << " loglevel " << m_loglevel << " idpath " << ( idpath ? idpath : "NULL" ) << std::endl ;  
+    std::cout << "NLog::init" << " logname " << m_logname << " loglevel " << m_loglevel << " idpath " << ( idpath ? idpath : "NULL" ) << std::endl ;  
 
 
     logging_init(idpath, m_logname, m_loglevel );

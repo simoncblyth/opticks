@@ -33,9 +33,13 @@ const char* OpticksResource::DEFAULT_CTRL = "volnames" ;
 
 void OpticksResource::init()
 {
+   std::cerr << "OpticksResource::init"<< std::endl ; 
+
    readEnvironment();
    readMetadata();
    identifyGeometry();
+
+   std::cerr << "OpticksResource::init DONE"<< std::endl ; 
 }
 
 void OpticksResource::identifyGeometry()
