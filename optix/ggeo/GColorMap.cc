@@ -1,6 +1,7 @@
 #include "GColorMap.hh"
 #include "jsonutil.hpp"
-#include "assert.h"
+
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 
@@ -11,6 +12,8 @@
 
 GColorMap* GColorMap::load(const char* dir, const char* name)
 {
+    assert(0);
+
     if(!existsPath(dir, name))
     {
         LOG(warning) << "GColorMap::load FAILED no file at  " << dir << "/" << name ; 

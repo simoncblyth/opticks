@@ -53,8 +53,9 @@ void test_bbox_enlarge()
 
 int main()
 {
+    test_bbox_matrix_scaling();
     test_bbox_enlarge();
-    return 1 ; 
+    return 0 ; 
 }
 
 

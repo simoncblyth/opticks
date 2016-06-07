@@ -11,6 +11,7 @@
 
 // bregex
 #include "regexsearch.hh"
+#include "fsutil.hh"
 
 
 
@@ -25,7 +26,7 @@ NState* NState::load(const char* dir, unsigned int num)
 
 void NState::init()
 {
-    std::string dir = os_path_expandvars(m_dir);
+    std::string dir = fsutil::FormPath(m_dir);
     if(strcmp(dir.c_str(),m_dir)!=0)
     {
         free((void*)m_dir);

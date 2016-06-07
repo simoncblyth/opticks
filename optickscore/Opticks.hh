@@ -129,6 +129,7 @@ class Opticks {
        bool hasOpt(const char* name);
    public:
        // from OpticksResource
+       const char* getDetector();
        bool isJuno();
        bool isDayabay();
        bool isPmtInBox();

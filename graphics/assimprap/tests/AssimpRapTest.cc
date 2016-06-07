@@ -42,8 +42,13 @@ Comparing with pycollada
 
 int main(int argc, char** argv)
 {
-    Opticks ok(argc, argv, "assimpwrap.log");
+    Opticks ok(argc, argv, "AssimpWrapTest.log");
     printf("after ok\n");
+
+    ok.configure();
+
+    const char* daepath = ok.getDAEPath();
+    assert(daepath && "hmm need to export-export to bring DAE_NAME_DYB into env");
 
 
     GGeo* m_ggeo = new GGeo(&ok);

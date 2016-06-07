@@ -77,7 +77,7 @@ void OpticksEvent::init()
     m_parameters->add<std::string>("Type", m_typ );
     m_parameters->add<std::string>("Tag", m_tag );
     m_parameters->add<std::string>("Detector", m_det );
-    m_parameters->add<std::string>("Cat", m_cat );
+    if(m_cat) m_parameters->add<std::string>("Cat", m_cat );
     m_parameters->add<std::string>("UDet", getUDet() );
 
     m_data_names.push_back(genstep);
@@ -560,7 +560,7 @@ std::string OpticksEvent::description(const char* msg)
        << " typ: " << m_typ 
        << " tag: " << m_tag 
        << " det: " << m_det 
-       << " cat: " << m_cat 
+       << " cat: " << ( m_cat ? m_cat : "NULL" ) 
        << " udet: " << getUDet()
        << " num_photons: " <<  m_num_photons
        ;
@@ -598,7 +598,7 @@ void OpticksEvent::save(bool verbose)
               << " typ: " << m_typ
               << " tag: " << m_tag
               << " det: " << m_det
-              << " cat: " << m_cat
+              << " cat: " << ( m_cat ? m_cat : "NULL" )
               << " udet: " << udet 
               ;    
 
@@ -757,6 +757,13 @@ void OpticksEvent::setFakeNopstepPath(const char* path)
 
 OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* det, const char* cat, bool verbose)
 {
+    LOG(info) << "OpticksEvent::load"
+              << " typ " << typ
+              << " tag " << tag
+              << " det " << det
+              << " cat " << ( cat ? cat : "NULL" )
+              ;
+
     OpticksEvent* evt = new OpticksEvent(typ, tag, det, cat);
 
     evt->loadBuffers(verbose);
@@ -785,7 +792,7 @@ void OpticksEvent::loadBuffers(bool verbose)
                      << " typ: " << m_typ
                      << " tag: " << m_tag
                      << " det: " << m_det
-                     << " cat: " << m_cat
+                     << " cat: " << ( m_cat ? m_cat : "NULL" )
                      << " udet: " << udet 
                     ;     
         return ; 

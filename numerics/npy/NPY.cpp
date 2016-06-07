@@ -266,7 +266,7 @@ NPY<T>* NPY<T>::debugload(const char* path)
 template <typename T>
 NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 {
-    std::string path = os_path_expandvars( path_ ); 
+    std::string path = fsutil::FormPath( path_ ); 
 
     std::vector<int> shape ;
     std::vector<T> data ;

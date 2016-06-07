@@ -1,5 +1,7 @@
 //  ggv --recs
 
+#include <cassert>
+
 #include "Types.hpp"
 #include "Typ.hpp"
 
@@ -8,10 +10,11 @@
 
 #include "Opticks.hh"
 
-#include "OpticksFlags.cc"
-#include "GBndLib.cc"
-#include "GMaterialLib.cc"
-#include "GSurfaceLib.cc"
+#include "OpticksEvent.hh"
+#include "OpticksFlags.hh"
+#include "GBndLib.hh"
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
 
 // architecture problem, need ggeo-/GPropertyLib funciontality 
 // regards meanings of things at the lower npy- level 
@@ -25,23 +28,33 @@ int main(int argc, char** argv)
 {
     // canonically App::indexEvtOld , contrast with npy-/ana.py
 
-    const char* src = "torch" ; 
-    const char* tag = "2" ; 
-    Opticks* cache = new Opticks(argc, argv, "recs.log");
+    Opticks* ok = new Opticks(argc, argv, "recs.log");
 
-    Types* types = cache->getTypes();
+    Types* types = ok->getTypes();
 
-    GBndLib* blib = GBndLib::load(cache, true); 
+    GBndLib* blib = GBndLib::load(ok, true); 
     GMaterialLib* mlib = blib->getMaterialLib();
     //GSurfaceLib*  slib = blib->getSurfaceLib();
 
     // see GGeo::setupTyp
-    Typ* typ = cache->getTyp();
-    OpticksFlags* flags = cache->getFlags();
+    Typ* typ = ok->getTyp();
+    OpticksFlags* flags = ok->getFlags();
     typ->setMaterialNames(mlib->getNamesMap());
     typ->setFlagNames(flags->getNamesMap());
 
+    const char* src = "torch" ; 
+    const char* tag = "1" ; 
+    const char* det = ok->getDetector() ; 
 
+    OpticksEvent* evt = OpticksEvent::load(src, tag, det) ;
+    assert(evt); 
+
+    NPY<float>* fd = evt->getFDomain();
+    NPY<float>* ox = evt->getPhotonData();
+    NPY<short>* rx = evt->getRecordData();
+
+
+/*
     const char* idpath = cache->getIdPath();
     NPY<float>* fdom = NPY<float>::load(idpath, "OPropagatorF.npy");
     //NPY<int>*   idom = NPY<int>::load(idpath, "OPropagatorI.npy");
@@ -55,10 +68,13 @@ int main(int argc, char** argv)
     NPY<short>* rx = NPY<short>::load("rx", src, tag, "dayabay");
     rx->Summary();
 
+*/
+
+
     unsigned int maxrec = 10 ; 
     bool flat = true ; 
     RecordsNPY* rec = new RecordsNPY(rx, maxrec, flat);
-    rec->setDomains(fdom);
+    rec->setDomains(fd);
     rec->setTypes(types);
     rec->setTyp(typ);
 

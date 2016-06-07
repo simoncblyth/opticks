@@ -310,7 +310,7 @@ inline OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* 
           m_typ(strdup(typ)),
           m_tag(strdup(tag)),
           m_det(strdup(det)),
-          m_cat(strdup(cat)),
+          m_cat(cat ? strdup(cat) : NULL),
 
           m_noload(false),
           m_loaded(false),
@@ -496,7 +496,7 @@ inline const char* OpticksEvent::getCat()
 }
 inline const char* OpticksEvent::getUDet()
 {
-    return strlen(m_cat) > 0 ? m_cat : m_det ; 
+    return m_cat && strlen(m_cat) > 0 ? m_cat : m_det ; 
 }
 
 

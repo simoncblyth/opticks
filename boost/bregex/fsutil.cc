@@ -36,8 +36,6 @@ void fsutil::setOpticksPathPrefixFromEnv(const char* envvar)
 }
 
 
-
-
 void dump(boost::cmatch& m)
 {
     std::cout << " prefix " << m.prefix() << std::endl ;  
@@ -100,21 +98,26 @@ std::string expandvar(const char* s)
 
 std::string fsutil::FormPath(const char* path, const char* sub, const char* name)
 {
+   assert(path);
+
    if(!OPTICKS_PATH_PREFIX)
        setOpticksPathPrefixFromEnv();
 
    fs::path p ; 
 
+
+   std::string xpath ; 
+
    if(path && path[0] == '$')
    {
-      std::string xpath = expandvar(path);
-      p /= xpath ;    
+      xpath.assign(expandvar(path));
    } 
    else if(OPTICKS_PATH_PREFIX)
    { 
       p /= OPTICKS_PATH_PREFIX ;
-      if(path)  p /= path ;    
    } 
+
+   p /= xpath.empty() ? path : xpath ; 
 
    if(sub)   p /= sub ;    
    if(name)  p /= name ;    
@@ -129,21 +132,38 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
 
 void fsutil::CreateDir(const char* path, const char* sub)
 {
+
+#ifdef DEBUG    
+    std::cerr << "fsutil::CreateDir"
+              << " path " << ( path ? path : "NULL" ) 
+              << " sub " << ( sub ?  sub : "NULL" ) 
+              << std::endl ;
+              ;
+#endif
+
     std::string ppath = FormPath(path, sub) ;
+    assert(!ppath.empty());
 
     fs::path dir(ppath);
-    if(!fs::exists(dir))
+
+    bool exists = fs::exists(dir) ;
+
+#ifdef DEBUG    
+    std::cerr << "fsutil::CreateDir"
+              << " ppath " << ppath
+              << " exists " << exists 
+              << std::endl ;
+              ;
+#endif
+
+    if(!exists && fs::create_directories(dir))
     {    
-        DBG("fsutil::","dir does not exists",path)  ; 
-        if (fs::create_directories(dir))
-        {    
-            DBG("fsutil::","created directory",path)  ; 
-        }    
+       std::cerr << "fsutil::CreateDir"
+                 << " created " << ppath
+                 << std::endl ;
+                 ;
     }    
-    else
-    {
-        DBG("fsutil::","dir exists", ( path ? path : "NULL" ) )  ; 
-    }
+
 }
 
 

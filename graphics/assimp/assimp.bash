@@ -298,6 +298,7 @@ assimp-base(){   echo $(opticks-prefix)/externals/assimp ; }
 assimp-dir(){    echo $(assimp-base)/$(assimp-name) ; }
 #assimp-prefix(){ echo $(assimp-base)/assimp ; }
 assimp-prefix(){ echo $(opticks-prefix)/externals ; }
+assimp-edit(){ vi $(opticks-home)/cmake/Modules/FindAssimp.cmake ; }
 
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir).build ; }

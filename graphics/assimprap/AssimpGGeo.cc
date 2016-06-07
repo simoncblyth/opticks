@@ -88,11 +88,10 @@ int AssimpGGeo::load(GGeo* ggeo)
     const char* ctrl = resource->getCtrl() ;
     unsigned int verbosity = ggeo->getLoaderVerbosity();
 
-
     LOG(info)<< "AssimpGGeo::load "  
-             << " path " << path 
-             << " query " << query->getQueryString()
-             << " ctrl " << ctrl 
+             << " path " << ( path ? path : "NULL" ) 
+             << " query " << ( query ? query->getQueryString() : "NULL" )
+             << " ctrl " << ( ctrl ? ctrl : "NULL" )
              << " verbosity " << verbosity 
              ; 
 

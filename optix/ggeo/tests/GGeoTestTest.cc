@@ -5,6 +5,18 @@
 #include "GGeoTest.hh"
 
 
+const char* CONFIG = 
+    "mode=BoxInBox_"
+    "shape=box_"
+    "boundary=MineralOil/Rock/perfectAbsorbSurface/_"
+    "parameters=-1,1,0,500_"
+    "shape=box_"
+    "boundary=Pyrex/MineralOil//_"
+    "parameters=-1,1,0,100_"
+    ;
+
+
+
 void test_geotest(Opticks* opticks, const char* config)
 {
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
@@ -15,25 +27,12 @@ void test_geotest(Opticks* opticks, const char* config)
 
 void test_bib(Opticks* opticks)
 {
-    const char* config = 
-    "mode=BoxInBox;"
-    "dimensions=4,2,0,0;"
-    "boundary=MineralOil/Rock/perfectAbsorbSurface/;"
-    "boundary=Pyrex/MineralOil//;"
-    ;
-
-    test_geotest(opticks, config);
+    test_geotest(opticks, CONFIG);
 }
 
 void test_config()
 {
-    const char* config = 
-    "mode=BoxInBox;"
-    "dimensions=4,2,0,0;"
-    "boundary=MineralOil/Rock/perfectAbsorbSurface/;"
-    "boundary=Pyrex/MineralOil//;"
-    ;
-
+    const char* config = CONFIG ; 
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
     gtc->dump();
 }
@@ -47,5 +46,5 @@ int main(int argc, char** argv)
 
     test_bib(opticks);
 
-    return 1 ;
+    return 0 ;
 }

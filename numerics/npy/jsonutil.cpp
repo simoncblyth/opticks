@@ -1,6 +1,7 @@
 #include "jsonutil.hpp"
 
 #include "regexsearch.hh"
+#include "fsutil.hh"
 
 #include <string>
 #include <sstream>
@@ -33,7 +34,7 @@ bool existsPath(const char* path )
 
 bool existsPath(const char* dir_, const char* name )
 {
-    std::string dir = os_path_expandvars(dir_) ; 
+    std::string dir = fsutil::FormPath(dir_) ; 
     fs::path fdir(dir);
     if(fs::exists(fdir) && fs::is_directory(fdir))
     {
@@ -55,7 +56,7 @@ std::string preparePath(const char* dir_, const char* reldir_, const char* name,
 
 std::string preparePath(const char* dir_, const char* name, bool create )
 {
-    std::string dir = os_path_expandvars(dir_) ; 
+    std::string dir = fsutil::FormPath(dir_) ; 
     fs::path fdir(dir.c_str());
     if(!fs::exists(fdir) && create)
     {
@@ -176,7 +177,7 @@ int loadTree(pt::ptree& t , const char* path)
 
 std::string prefixShorten( const char* path, const char* prefix_)
 {
-    std::string prefix = os_path_expandvars(prefix_);  
+    std::string prefix = fsutil::FormPath(prefix_);  
     if(strncmp(path, prefix.c_str(), strlen(prefix.c_str()))==0)
         return path + strlen(prefix.c_str()) ;
     else

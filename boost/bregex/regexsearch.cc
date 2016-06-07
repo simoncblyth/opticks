@@ -1,6 +1,7 @@
 // started from http://www.boost.org/doc/libs/1_58_0/libs/regex/doc/html/boost_regex/partial_matches.html
 
 #include "regexsearch.hh"
+#include "fsutil.hh"
 
 #include <strings.h>
 #include <sstream>
@@ -205,6 +206,8 @@ std::string os_path_expandvars(const char* s, bool debug)
 
     printf("os_path_expandvars IS DEPRECATED : MOVE TO fsutil::FormPath approach \n");
 
+    assert(0);
+
     // const char* ptn = "\\$(\\w+)(/.+)?" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
     const char* ptn = "\\$(\\w+)" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
 
@@ -263,7 +266,7 @@ void enum_read(std::map<std::string, unsigned int>& emap, const char* path)
     const char* ptn = "^\\s*(\\w+)\\s*=\\s*(.*?),*\\s*?$" ;  
     boost::regex e(ptn);
 
-    std::string epath = os_path_expandvars(path);
+    std::string epath = fsutil::FormPath(path);
     std::ifstream is(epath.c_str(), std::ifstream::binary); 
 
     pairs_t   pairs ; 
@@ -300,7 +303,7 @@ enum
     const char* ptn = "^\\s*(\\w+)\\s*=\\s*(.*?),*\\s*?$" ;  
     boost::regex e(ptn);
 
-    std::string epath = os_path_expandvars(path);
+    std::string epath = fsutil::FormPath(path);
     std::ifstream is(epath.c_str(), std::ifstream::binary); 
 
     pairs_t   pairs ; 

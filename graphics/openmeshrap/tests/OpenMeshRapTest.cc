@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     gm->Summary();
 
     MWrap<MyMesh> ws(new MyMesh);
-    ws.load(gm);
+    ws.load(gm);  // asserting in here
 
     int ncomp = ws.labelConnectedComponentVertices("component"); 
     printf("ncomp: %d \n", ncomp);

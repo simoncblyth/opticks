@@ -1,13 +1,11 @@
 #include "regexsearch.hh"
+#include "fsutil.hh"
 #include <cstdio>
 #include <vector>
 
 int main(int argc, char** argv)
 {
     printf("%s\n", argv[0]);
-
-
-    bool debug = false ; 
 
     // observe special casing of getenv("HOME") on mingw 
     // so better to avoid HOME ? 
@@ -26,7 +24,8 @@ int main(int argc, char** argv)
 
        std::string s = ss[i] ;
        //std::string x = s ;
-       std::string x = os_path_expandvars(s.c_str(), debug);
+       //std::string x = os_path_expandvars(s.c_str() );
+       std::string x = fsutil::FormPath(s.c_str() );
        printf("  [%s] -->  [%s] \n", s.c_str(), x.c_str());
     }
 

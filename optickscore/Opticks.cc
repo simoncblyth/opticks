@@ -245,7 +245,8 @@ void Opticks::preconfigure(int argc, char** argv)
 
     m_log = new NLog(m_logname, m_loglevel);
     m_log->configure(argc, argv);
-    m_log->init(getIdPath());
+    const char* idpath = getIdPath();
+    m_log->init(idpath);
 
 }
 
@@ -656,11 +657,16 @@ bool Opticks::isControl(unsigned int modifiers)
 
 
 
+const char* Opticks::getDetector()
+{
+    return m_resource->getDetector();
+}
 
 bool Opticks::isJuno()
 {
     return m_resource->isJuno();
 }
+
 bool Opticks::isDayabay()
 {
     return m_resource->isDayabay();

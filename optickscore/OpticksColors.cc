@@ -181,6 +181,14 @@ void OpticksColors::test(const char* msg)
              << setw(20) << hex << rgb<< dec
              << endl ; 
 
+
+        if(color != rgb)
+            LOG(fatal) << "OpticksColors::test"
+                       << " color " << hex << color << dec
+                       << " rgb " << hex << rgb << dec
+                       ;
+
+
         assert(color == rgb);
         count++ ; 
     } 
@@ -239,6 +247,7 @@ NPY<unsigned char>* OpticksColors::make_buffer(std::vector<unsigned int>& codes)
     unsigned int n = codes.size();
     unsigned char alpha = 0xFF ; 
     NPY<unsigned char>* buf = NPY<unsigned char>::make(n, 4 ); 
+    buf->zero();
 
     for(unsigned int i=0 ; i < n ; i++)
     {

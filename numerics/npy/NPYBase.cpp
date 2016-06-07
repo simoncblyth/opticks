@@ -286,7 +286,7 @@ std::string NPYBase::directory(const char* typ, const char* det)
     std::string deftmpl(DEFAULT_DIR_TEMPLATE) ; 
     boost::replace_first(deftmpl, "$1", det );
     boost::replace_first(deftmpl, "$2", typ );
-    std::string dir = os_path_expandvars( deftmpl.c_str() ); 
+    std::string dir = fsutil::FormPath( deftmpl.c_str() ); 
     return dir ;
 }
   
