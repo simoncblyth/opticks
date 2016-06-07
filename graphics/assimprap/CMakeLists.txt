@@ -6,6 +6,7 @@ include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
 find_package(OpticksBoost REQUIRED)
+find_package(Bregex REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(GLM REQUIRED)
@@ -16,6 +17,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 
     ${OpticksBoost_INCLUDE_DIRS}  
+    ${Bregex_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
     ${GLM_INCLUDE_DIRS}  
@@ -25,6 +27,7 @@ include_directories(
 
 add_definitions(
     ${OpticksBoost_DEFINITIONS}  
+    ${Bregex_DEFINITIONS}  
     ${Assimp_DEFINITIONS} 
     ${GGeo_DEFINITIONS} 
     ${GLM_DEFINITIONS} 
@@ -34,6 +37,7 @@ add_definitions(
 
 set(LIBRARIES
     ${OpticksBoost_LIBRARIES} 
+    ${Bregex_LIBRARIES} 
     ${Assimp_LIBRARIES} 
     ${GGeo_LIBRARIES} 
     ${NPY_LIBRARIES} 

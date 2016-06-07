@@ -22,12 +22,14 @@ add_definitions(
 set(SOURCES
    regexsearch.cc
    fsutil.cc 
+   NLog.cpp
 ) 
 
 set(HEADERS
    regexsearch.hh
    fsutil.hh 
    dbg.hh
+   NLog.hpp
 )
 
 

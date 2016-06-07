@@ -74,7 +74,6 @@ add_library( ${name}  SHARED
     NSensorList.cpp
     NSlice.cpp
     NSequence.cpp
-    NLog.cpp
     NSphere.cpp
     NPlane.cpp
     NQuad.cpp
@@ -156,7 +155,6 @@ NPropNames.hpp
 NSpectral.hpp
 NState.hpp
 NConfigurable.hpp
-NLog.hpp
 Parameters.hpp
 md5digest.hpp
 )
