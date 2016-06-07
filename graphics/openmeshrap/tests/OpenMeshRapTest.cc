@@ -30,7 +30,8 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv, "openmeshrap.log");
 
     const char* idpath = ok.getIdPath();
-    LOG(info) << "idpath " << idpath ; 
+    LOG(info) << "idpath " << ( idpath ? idpath : "NULL" ) ; 
+    assert(idpath && "OpenMeshRapTest::main idpath is required");
 
     GMesh* gm = GMesh::load_deduped( idpath, "GMergedMesh/0" );
     gm->Summary();

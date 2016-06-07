@@ -153,9 +153,10 @@ imgui-env(){      elocal- ; opticks- ;  }
 imgui-edir(){ echo $(opticks-home)/graphics/gui/imgui ; }
 imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }
 
-imgui-prefix(){ echo $(imgui-base)/imgui.install ; }
+#imgui-prefix(){ echo $(imgui-base)/imgui.install ; }
+imgui-prefix(){ echo $(opticks-prefix)/externals ; }
 
-imgui-idir(){ echo $(imgui-base)/imgui.install ; }
+imgui-idir(){ echo $(imgui-prefix) ; }
 imgui-bdir(){ echo $(imgui-base)/imgui.build   ; }
 imgui-sdir(){ echo $(imgui-base)/imgui ; }
 imgui-dir(){  echo $(imgui-base)/imgui ; }
@@ -184,7 +185,7 @@ imgui-url(){
    echo git://github.com/simoncblyth/imgui.git
 } 
 
-imgui-edit(){ vi $(imgui-edir)/CMakeLists.txt ; }
+imgui-edit(){ vi $(imgui-edir)/CMakeLists.txt $(opticks-home)/cmake/Modules/FindImGui.cmake ; }
 
 imgui-get(){
    local iwd=$PWD
@@ -235,10 +236,18 @@ imgui-cmake(){
   mkdir -p $bdir
   imgui-bcd
 
-  [ -f CMakeCache.txt ] && echo $msg already configured : imgui-wipe 1st to force reconfigure  && return 
-  cmake -G "$(opticks-cmake-generator)" -DCMAKE_INSTALL_PREFIX=$(imgui-idir) -DCMAKE_BUILD_TYPE=Debug $(imgui-sdir) 
+  [ -f CMakeCache.txt ] && echo $msg already configured : imgui-configure to reconfigure  && return 
+  cmake -G "$(opticks-cmake-generator)" -DCMAKE_INSTALL_PREFIX=$(imgui-prefix) -DCMAKE_BUILD_TYPE=Debug $(imgui-sdir) 
   cd $iwd
 }
+
+
+imgui-configure()
+{
+   imgui-wipe
+   imgui-cmake $*
+}
+
 
 imgui-make(){
   local iwd=$PWD

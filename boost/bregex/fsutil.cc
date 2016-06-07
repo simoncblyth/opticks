@@ -5,7 +5,9 @@
 #include <cstring>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 
+#include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
@@ -34,6 +36,68 @@ void fsutil::setOpticksPathPrefixFromEnv(const char* envvar)
 }
 
 
+
+
+void dump(boost::cmatch& m)
+{
+    std::cout << " prefix " << m.prefix() << std::endl ;  
+    for(unsigned int i=0 ; i < m.size() ; i++)
+    {       
+       std::string sm = m[i] ; 
+       std::cout << std::setw(3) << i 
+                 << " sm " << sm  
+                 << " first [" << m[i].first << "]"
+                 << " second [" << m[i].second << "]"
+                 << " matched [" << m[i].matched << "]"
+                 << std::endl ;
+    }
+}
+
+
+
+std::string expandvar(const char* s)
+{
+    fs::path p ; 
+
+    std::string dollar("$");
+    boost::regex e("(\\$)(\\w+)(.*?)"); // eg $HOME/.opticks/hello
+    boost::cmatch m ; 
+
+    if(boost::regex_match(s,m,e))  
+    {
+        //dump(m);  
+
+        unsigned int size = m.size();
+
+        if(size == 4 && dollar.compare(m[1]) == 0)
+        {
+           std::string key = m[2] ;  
+           char* evalue = getenv(key.c_str()) ;
+              
+           p /= evalue ? evalue : key ; 
+
+           std::string tail = m[3] ;  
+
+           p /= tail ;            
+        }  
+    }
+    else
+    {
+        p /= s ;
+    } 
+
+
+    p.make_preferred(); 
+
+    std::string x = p.string() ; 
+    return x ; 
+}
+
+
+
+
+
+
 std::string fsutil::FormPath(const char* path, const char* sub, const char* name)
 {
    if(!OPTICKS_PATH_PREFIX)
@@ -41,9 +105,17 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
 
    fs::path p ; 
 
-   if(OPTICKS_PATH_PREFIX) p /= OPTICKS_PATH_PREFIX ;
+   if(path && path[0] == '$')
+   {
+      std::string xpath = expandvar(path);
+      p /= xpath ;    
+   } 
+   else if(OPTICKS_PATH_PREFIX)
+   { 
+      p /= OPTICKS_PATH_PREFIX ;
+      if(path)  p /= path ;    
+   } 
 
-   if(path)  p /= path ;    
    if(sub)   p /= sub ;    
    if(name)  p /= name ;    
 
@@ -70,7 +142,7 @@ void fsutil::CreateDir(const char* path, const char* sub)
     }    
     else
     {
-        DBG("fsutil::","dir exists",path)  ; 
+        DBG("fsutil::","dir exists", ( path ? path : "NULL" ) )  ; 
     }
 }
 

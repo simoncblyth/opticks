@@ -3,6 +3,8 @@
 #include "View.hh"
 
 #include <iomanip>
+#include <cassert>
+
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
@@ -48,8 +50,6 @@ void test_rotate()
         print(rotZ, "rotZ"); 
         print(irotZ, "irotZ"); 
 
-
-
    }
 }
 
@@ -58,6 +58,8 @@ void test_rotate()
 void test_center_extent()
 {
    NPY<float>* dom = NPY<float>::load("domain", "1", "dayabay");
+   if(!dom) return ; 
+
    dom->dump();
    glm::vec4 ce = dom->getQuad(0,0);
    print(ce, "ce");
@@ -187,9 +189,9 @@ void test_depth()
 
 int main()
 {
-   //test_center_extent();
-   //test_setCenterExtent();
-   //test_rotate();
+   test_rotate();
+   test_center_extent();
+   test_setCenterExtent();
    test_depth();
 
     

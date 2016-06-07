@@ -192,6 +192,24 @@ DONE
 
 
 
+Windows Launching
+--------------------
+
+Informative::
+
+    $ BookmarksTest.exe
+    Segmentation fault
+
+Many absentees::
+
+    $ ldd $(which BookmarksTest.exe) | grep opticks
+            libOpticksCore.dll => /usr/local/opticks/lib/libOpticksCore.dll (0x623c0000)
+            libBCfg.dll => /usr/local/opticks/lib/libBCfg.dll (0x65180000)
+            libBRegex.dll => /usr/local/opticks/lib/libBRegex.dll (0x6cbc0000)
+            libNPY.dll => /usr/local/opticks/lib/libNPY.dll (0x1cd0000)
+
+
+
 
 Classes
 --------

@@ -1,16 +1,23 @@
 #include "DynamicDefine.hh"
+
 #include <boost/lexical_cast.hpp>
-#include "jsonutil.hpp"
 #include <iostream>
 #include <fstream>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "jsonutil.hpp"
+#include "NLog.hpp"
 // trace/debug/info/warning/error/fatal
 
 
 void DynamicDefine::write(const char* dir, const char* name)
 {
+
+    LOG(info) << "DynamicDefine::write"
+              << " dir " << dir
+              << " name " << name
+              ;
+
+
      bool create = true ; 
      std::string path = preparePath(dir,  name, create );   
 
@@ -42,6 +49,12 @@ void DynamicDefine::write(const char* dir, const char* name)
 template <typename T>
 void DynamicDefine::add(const char* name, T value)
 {
+    LOG(info) << "DynamicDefine::add"
+              << " name " << name
+              << " value " << value
+              ; 
+
+
     m_defines.push_back(std::pair<std::string, std::string>(name, boost::lexical_cast<std::string>(value))) ;
 }
 

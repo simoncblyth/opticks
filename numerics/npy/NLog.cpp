@@ -114,7 +114,7 @@ void NLog::init(const char* idpath)
     std::cout << "NLog::init"
               << " logname " << m_logname
               << " loglevel " << m_loglevel
-              << " idpath " << idpath 
+              << " idpath " << ( idpath ? idpath : "NULL" )
               << std::endl ;  
 
 

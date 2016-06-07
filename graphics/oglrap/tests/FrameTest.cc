@@ -9,7 +9,7 @@ int main(int argc, char** argv)
     if(argc < 2)  
     {   
         printf("%s : expecting argument with path to ppm file\n", argv[0]);
-        return 1;  
+        return 0 ;  
     }   
     char* ppmpath = argv[1] ;
 

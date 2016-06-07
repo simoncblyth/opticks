@@ -659,22 +659,35 @@ opticks-configure(){
 
 opticks-export()
 {
-  local bindir=$(opticks-prefix)/bin
-  if [ "${PATH/$bindir}" == "${PATH}" ]; then
-      export PATH=$bindir:$PATH
-  fi   
+  opticks-path-add $(opticks-prefix)/bin
 
   case $(uname -s) in
      MINGW*) opticks-export-mingw ;;
   esac
 }
 
+opticks-path-add()
+{
+  local dir=$1 
+  [ "${PATH/$dir}" == "${PATH}" ] && export PATH=$dir:$PATH
+
+}
+
+opticks-path()
+{
+   echo $PATH | tr ":" "\n"
+}
+
 opticks-export-mingw()
 {
-  local dlldir=$(opticks-prefix)/lib
-  if [ "${PATH/$dlldir}" == "${PATH}" ]; then
-      export PATH=$dlldir:$PATH
-  fi   
+
+  local dirs="lib externals/bin externals/lib"
+  local dir
+  for dir in $dirs 
+  do
+      opticks-path-add $(opticks-prefix)/$dir
+  done 
+  
 
   # see bregex-/fsutil
   export OPTICKS_PATH_PREFIX="C:\\msys64" 

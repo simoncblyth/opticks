@@ -12,7 +12,8 @@ gleq-dir(){ echo $(opticks-prefix)/externals/gleq ; }
 gleq-sdir(){ echo $(env-home)/graphics/gleq ; }
 gleq-cd(){  cd $(gleq-dir); }
 gleq-scd(){  cd $(gleq-sdir); }
-gleq-mate(){ mate $(gleq-dir) ; }
+gleq-edit(){ vi $(opticks-home)/cmake/Modules/FindGLEQ.cmake ; }
+
 
 gleq-get(){
    local iwd=$PWD

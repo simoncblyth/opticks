@@ -84,10 +84,11 @@ openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(
 openmesh-edir(){ echo $(opticks-home)/graphics/openmesh ; }
 openmesh-old-base(){ echo $(local-base)/env/graphics/openmesh ; }
 openmesh-base(){ echo $(opticks-prefix)/externals/openmesh ; }
-openmesh-prefix(){ echo $(openmesh-base)/$(openmesh-vers) ; }
+
+openmesh-prefix(){ echo $(opticks-prefix)/externals ; }
+openmesh-idir(){ echo $(openmesh-prefix) ; }
 
 openmesh-dir(){  echo $(openmesh-base)/$(openmesh-name) ; }
-openmesh-idir(){ echo $(openmesh-base)/$(openmesh-vers) ; }
 openmesh-bdir(){ echo $(openmesh-base)/$(openmesh-name).build ; }
 
 openmesh-ecd(){  cd $(openmesh-edir); }
@@ -111,23 +112,33 @@ openmesh-wipe(){
   rm -rf $bdir 
 
 }
+
+openmesh-edit(){ vi $(opticks-home)/cmake/Modules/FindOpenMesh.cmake ; }
+
 openmesh-cmake(){
   local iwd=$PWD
   local bdir=$(openmesh-bdir)
   mkdir -p $bdir
 
-  [ -f "$bdir/CMakeCache.txt" ] && echo $msg already configured : openmesh-wipe then openmesh-cmake to reconfigure && return 
+  [ -f "$bdir/CMakeCache.txt" ] && echo $msg already configured : openmesh-configure to reconfigure && return 
 
   openmesh-bcd
 
   cmake $(openmesh-dir) \
        -G "$(opticks-cmake-generator)" \
       -DCMAKE_BUILD_TYPE=Debug \
-      -DCMAKE_INSTALL_PREFIX=$(openmesh-idir) \
+      -DCMAKE_INSTALL_PREFIX=$(openmesh-prefix) \
       -DBUILD_APPS=OFF 
 
   cd $iwd
 }
+
+openmesh-configure()
+{
+   openmesh-wipe
+   openmesh-cmake $*
+}
+
 
 openmesh-make(){
   local iwd=$PWD
@@ -142,4 +153,7 @@ openmesh--(){
   openmesh-make
   openmesh-make install
 }
+
+
+
 

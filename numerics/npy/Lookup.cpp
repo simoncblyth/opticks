@@ -1,6 +1,7 @@
 #include "Lookup.hpp"
 #include "jsonutil.hpp"
 #include <cstring>
+#include <iostream>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -55,10 +56,12 @@ std::string Lookup::bcode2name(unsigned int bcode)
 
 void Lookup::dump(const char* msg)
 {
-    printf("Lookup::dump %s \n", msg );
-    printf("A   %lu entries \n", m_A.size());  
-    printf("B   %lu entries \n", m_B.size());  
-    printf("A2B %lu entries in lookup  \n", m_A2B.size() );  
+    std::cout << msg
+              << " A entries " <<  m_A.size() 
+              << " B entries " <<  m_B.size() 
+              << " A2B entries " <<  m_A2B.size() 
+              ;
+
 
     for(Lookup_t::iterator it=m_A2B.begin() ; it != m_A2B.end() ; it++)
     {

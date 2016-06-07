@@ -65,6 +65,19 @@ Yep aiMetadata is meant for simple info, faking materials
 looks easiest.
 
 
+
+CMake on Windows
+---------------------
+
+Windows install puts dll in bin::
+
+    -- Installing: C:/msys64/usr/local/opticks/externals/lib/libassimp.dll.a
+    -- Installing: C:/msys64/usr/local/opticks/externals/bin/libassimp.dll
+    -- Installing: C:/msys64/usr/local/opticks/externals/include/assimp/anim.h
+
+
+
+
 Warning 
 --------
 
@@ -283,7 +296,8 @@ assimp-fold(){ echo $(dirname $(assimp-dir)); }
 
 assimp-base(){   echo $(opticks-prefix)/externals/assimp ; }
 assimp-dir(){    echo $(assimp-base)/$(assimp-name) ; }
-assimp-prefix(){ echo $(assimp-base)/assimp ; }
+#assimp-prefix(){ echo $(assimp-base)/assimp ; }
+assimp-prefix(){ echo $(opticks-prefix)/externals ; }
 
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir).build ; }
@@ -360,12 +374,18 @@ assimp-wipe(){
    rm -rf $bdir
 }
 
+assimp-configure(){
+   assimp-wipe
+   assimp-cmake $* 
+}
+
+
 assimp-cmake(){
    local msg="=== $FUNCNAME :"
    local iwd=$PWD
    local bdir=$(assimp-bdir)
    mkdir -p $bdir
-   [ -f $bdir/CMakeCache.txt ] && echo $msg configured already : use assimp-wipe then assimp-cmake to reconfigure  && return 
+   [ -f $bdir/CMakeCache.txt ] && echo $msg configured already : use assimp-configure to reconfigure  && return 
    assimp-bcd
 
    local opts=""

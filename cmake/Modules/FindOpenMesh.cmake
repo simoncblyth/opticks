@@ -1,5 +1,6 @@
 
-set(OpenMesh_PREFIX "${OPTICKS_PREFIX}/externals/openmesh/4.1")
+#set(OpenMesh_PREFIX "${OPTICKS_PREFIX}/externals/openmesh/4.1")
+set(OpenMesh_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( OpenMeshCore_LIBRARY 
               NAMES OpenMeshCored

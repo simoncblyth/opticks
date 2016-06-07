@@ -43,20 +43,17 @@ Comparing with pycollada
 int main(int argc, char** argv)
 {
     Opticks ok(argc, argv, "assimpwrap.log");
-
     printf("after ok\n");
 
 
     GGeo* m_ggeo = new GGeo(&ok);
+    printf("after gg\n");
     m_ggeo->setLoaderImp(&AssimpGGeo::load); 
     m_ggeo->loadFromG4DAE();
     m_ggeo->Summary("main");    
 
     m_ggeo->traverse();
 
-    //GBoundaryLib* blib = m_ggeo->getBoundaryLib();
-    //blib->Summary("GBoundaryLib");
-    //blib->dumpSurfaces();
 
     GMergedMesh* mm = m_ggeo->makeMergedMesh();
     mm->Summary("GMergedMesh");

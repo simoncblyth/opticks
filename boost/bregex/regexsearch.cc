@@ -9,7 +9,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-
 #ifdef __MINGW32__
 #define ffs __builtin_ffs
 #endif
@@ -198,10 +197,17 @@ std::string regex_extract_quoted(const char* line)
 }
 
 
-std::string os_path_expandvars(const char* s)
+
+
+
+std::string os_path_expandvars(const char* s, bool debug)
 {
+
+    printf("os_path_expandvars IS DEPRECATED : MOVE TO fsutil::FormPath approach \n");
+
     // const char* ptn = "\\$(\\w+)(/.+)?" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
     const char* ptn = "\\$(\\w+)" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
+
 
     std::string str = s ;
 
@@ -215,23 +221,38 @@ std::string os_path_expandvars(const char* s)
         if(mt != me)
         {
              std::string evar  = (*mt)[1].str();
-             char* eval = getenv(evar.c_str());
+             const char* key = evar.c_str();
+             char* eval = getenv(key);
+
+             printf("  getenv(\"%s\") -> \"%s\" \n", key, eval ? eval : "NULL" );
+
 
              if( eval )
              {
                  std::string seval = eval;
-                 // printf("---> os_path_expandvars  evar %s eval %s  \n", evar.c_str(), seval.c_str() );
+
+                 if(debug)  
+                 printf("---> os_path_expandvars  evar %s eval %s  \n", evar.c_str(), seval.c_str() );
 
                  std::string skey = "\\$";
                  skey= skey+evar;
 
-                 // printf("----> %s replace in %s \n", skey.c_str(), str.c_str());
+                 if(debug)  
+                 printf("----> %s replace in %s \n", skey.c_str(), str.c_str());
+
                  boost::regex rep(skey);
                  str = boost::regex_replace(str, rep, seval);
-                 // printf("-----> %s \n", str.c_str());
+
+                 if(debug)  
+                 printf("-----> %s \n", str.c_str());
              } 
         }
     }  
+
+
+    if(debug)  
+    printf("---> os_path_expandvars(\"%s\") = \"%s\" \n", s, str.c_str() ) ;
+
 
     return str; 
 }

@@ -184,7 +184,8 @@ glfw-dir(){  echo $(opticks-prefix)/externals/glfw/$(glfw-name) ; }
 glfw-bdir(){ echo $(glfw-dir).build ; }
 
 #glfw-idir(){ echo $(local-base)/env/graphics/glfw/$(glfw-version) ; }
-glfw-idir(){ echo $(opticks-prefix)/externals/glfw/glfw ; }
+glfw-idir(){ echo $(opticks-prefix)/externals ; }
+glfw-prefix(){ echo $(opticks-prefix)/externals ; }
 
 glfw-scd(){ cd $(glfw-sdir); }
 glfw-cd(){  cd $(glfw-dir); }
@@ -192,7 +193,6 @@ glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
 
 
-glfw-prefix(){ echo $(glfw-idir) ; }
 
 glfw-export()
 {
@@ -202,11 +202,11 @@ glfw-export()
 
 
 glfw-pc(){
-  PKG_CONFIG_PATH=$(glfw-idir)/lib/pkgconfig pkg-config GLFW3 $*
+  PKG_CONFIG_PATH=$(glfw-prefix)/lib/pkgconfig pkg-config GLFW3 $*
 }
 
 glfw-pc-kludge(){
-   cd $(glfw-idir)/lib/pkgconfig
+   cd $(glfw-prefix)/lib/pkgconfig
    mv glfw3.pc GLFW3.pc
 }
 
@@ -231,7 +231,6 @@ glfw-get(){
 }
 
 
-
 glfw-wipe(){
   local bdir=$(glfw-bdir)
   rm -rf $bdir
@@ -246,21 +245,24 @@ glfw-cmake(){
   else
       mkdir -p $bdir
       glfw-bcd
-      cmake -G "$(opticks-cmake-generator)" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-idir) $(glfw-dir)
+      cmake -G "$(opticks-cmake-generator)" -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=$(glfw-prefix) $(glfw-dir)
   fi 
 
   cd $iwd
 }
 
-glfw-make(){
-  local iwd=$PWD
-
-  glfw-bcd
-  make $* 
-
-  cd $iwd
+glfw-configure()
+{
+   glfw-wipe
+   glfw-cmake $*
 }
 
+glfw-make(){
+  local iwd=$PWD
+  glfw-bcd
+  make $* 
+  cd $iwd
+}
 
 glfw-install(){
    glfw-make install
@@ -271,5 +273,7 @@ glfw--(){
    glfw-cmake
    glfw-make
    glfw-install
-
 }
+
+
+

@@ -22,7 +22,6 @@ void test_cie()
    Y->Summary("cie_Y");
    Z->Summary("cie_Z");
 
-
 }
 
 
@@ -80,8 +79,9 @@ void test_sliced()
 
 int main(int argc, char** argv)
 {
-    //test_sliced();   
-    //test_planck();   
     test_cie();   
+    test_planck();   
+    test_misc();   
+    test_sliced();   
     return 0 ;
 }

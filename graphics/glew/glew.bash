@@ -44,6 +44,7 @@ glew-fold(){ echo $(opticks-prefix)/externals/glew ; }
 glew-dir(){  echo $(glew-fold)/$(glew-name) ; }
 #glew-idir(){ echo $(glew-fold)/$(glew-version) ; }
 glew-idir(){ echo $(glew-fold)/glew ; }
+glew-prefix(){ echo $(opticks-prefix)/externals ; }
 
 
 glew-sdir(){ echo $(glew-dir) ; }
@@ -78,20 +79,19 @@ glew-export (){
     export GLEW_PREFIX=$(glew-prefix)
 }
 
-glew-prefix(){ 
-    echo $(glew-idir)
-}
+
+glew-edit(){ vi $(opticks-home)/cmake/Modules/FindGLEW.cmake ; }
 
 glew-make(){
    local iwd=$PWD
    glew-scd
-   make GLEW_PREFIX=$(glew-idir) GLEW_DEST=$(glew-idir)  
+   make GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix)  
    cd $iwd
 }
 glew-install(){
    local iwd=$PWD
    glew-scd
-   make install GLEW_PREFIX=$(glew-idir) GLEW_DEST=$(glew-idir)  
+   make install GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix)  
    cd $iwd
 }
 

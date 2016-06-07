@@ -92,6 +92,64 @@ Switch this off in AssimpGeometry.cc::
      m_importer->SetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,1);
 
 
+
+Windows Runtime Launch Failures 
+------------------------------------
+
+::
+
+    ntuhep@ntuhep-PC MINGW64 ~/env/graphics/assimprap/tests
+    $ AssimpWrapTest.exe
+    C:/msys64/usr/local/opticks/bin/AssimpWrapTest.exe: error while loading shared libraries: libGGeo.dll: cannot open shared object file: No such file or directory
+
+Lots of absentees in ldd::
+
+    $ ldd $(which AssimpWrapTest.exe) | grep opticks
+            libAssimpRap.dll => /usr/local/opticks/lib/libAssimpRap.dll (0x62000000)
+
+After adjust assimp-prefix to use a common location and include that in PATH get::
+
+    $ ldd $(which AssimpWrapTest.exe) | grep opticks
+            libAssimpRap.dll => /usr/local/opticks/lib/libAssimpRap.dll (0x62000000)
+            libassimp.dll => /usr/local/opticks/externals/bin/libassimp.dll (0x540000)
+            libOpticksCore.dll => /usr/local/opticks/lib/libOpticksCore.dll (0xd90000)
+            libBCfg.dll => /usr/local/opticks/lib/libBCfg.dll (0x65180000)
+            libBRegex.dll => /usr/local/opticks/lib/libBRegex.dll (0x6cbc0000)
+            libNPY.dll => /usr/local/opticks/lib/libNPY.dll (0x30c0000)
+            libGGeo.dll => /usr/local/opticks/lib/libGGeo.dll (0x69740000)
+
+And it runs::
+
+    $ AssimpWrapTest.exe
+    Opticks::preargs argc 1
+    [2016-06-06 20:34:22.972810] [0x00000694] [info]    Opticks:: START
+    OpticksResource::readEnvironment USING DEFAULT geokey DAE_NAME_DYB
+    OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey DAE_NAME_DYB path (null)
+    OpticksResource::readEnvironment USING DEFAULT geo query range:3153:12221
+    [2016-06-06 20:34:22.972810] [0x00000694] [info]    OpticksQuery::parseQuery query:[range:3153:12221] elements:1 queryType:range
+    [2016-06-06 20:34:22.972810] [0x00000694] [info]    OpticksQuery::init dumpQuery queryType range m_query_string range:3153:12221 m_query_name NULL m_query_index 0 nrange 2 : 3153 : 12221
+
+    OpticksResource::readEnvironment USING DEFAULT geo ctrl volnames
+    NLog::configure logname opticks.log loglevel info
+    NLog::init logname opticks.log loglevel info idpath
+    This application has requested the Runtime to terminate it in an unusual way.
+    Please contact the application's support team for more information.
+    after ok
+    Assertion failed!
+
+    Program: C:\msys64\usr\local\opticks\bin\AssimpWrapTest.exe
+    File: C:/msys64/mingw64/include/boost/filesystem/path_traits.hpp, Line 331
+
+    Expression: c_str
+     
+
+Note:
+
+* **failed launch due to failure to find lib/dll error messages are abysmal**
+
+
+
+
 Workflow
 ---------
 

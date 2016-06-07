@@ -136,6 +136,25 @@ FaceVertex iterator and add the face with the mapped vertex handles to the new
 mesh.
 
 
+Windows Libs
+--------------
+
+Bizarre, test runs but no libOpenMesh ?
+
+::
+
+    $ ldd $(which OpenMeshRapTest.exe) | grep opticks
+            libOpenMeshRap.dll => /usr/local/opticks/lib/libOpenMeshRap.dll (0x6dac0000)
+            libGGeo.dll => /usr/local/opticks/lib/libGGeo.dll (0x69740000)
+            libOpticksCore.dll => /usr/local/opticks/lib/libOpticksCore.dll (0x623c0000)
+            libBCfg.dll => /usr/local/opticks/lib/libBCfg.dll (0x65180000)
+            libBRegex.dll => /usr/local/opticks/lib/libBRegex.dll (0x6cbc0000)
+            libNPY.dll => /usr/local/opticks/lib/libNPY.dll (0x20b0000)
+
+
+
+
+
 
 EOU
 }
@@ -168,9 +187,14 @@ openmeshrap-install(){
   openmeshrap-make install
 }
 
-openmeshrap--(){
+openmeshrap-full(){
   openmeshrap-make clean
   openmeshrap-make
   openmeshrap-install
 }
+
+openmeshrap--(){
+  ( openmeshrap-bcd ; make ${1:-install} ; )
+}
+
 

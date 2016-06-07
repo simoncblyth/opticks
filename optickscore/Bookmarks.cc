@@ -3,7 +3,7 @@
 #include <boost/lexical_cast.hpp>
 
 // bregex-
-#include "regexsearch.hh"
+#include "fsutil.hh"
 
 // npy-
 #include "dirutil.hpp"
@@ -18,7 +18,18 @@
 
 void Bookmarks::init(const char* dir)
 {
-    std::string _dir = os_path_expandvars(dir) ;
+
+    LOG(info) << "Bookmarks::init"
+              << " dir " << ( dir ? dir : "NULL" )
+              ; 
+
+    std::string _dir = fsutil::FormPath(dir) ;
+
+    LOG(info) << "Bookmarks::init"
+              << " expandvars dir " << _dir 
+              ; 
+
+
     m_dir = strdup(_dir.c_str());
     readdir();
 }
@@ -72,12 +83,12 @@ int Bookmarks::parseName(const std::string& basename)
 void Bookmarks::readdir()
 {
     m_bookmarks.clear();
+    LOG(info) << "Bookmarks::readdir " << m_dir ;
 
     typedef std::vector<std::string> VS ;
     VS basenames ; 
     dirlist(basenames, m_dir, ".ini" );  // basenames do not include the .ini
 
-    LOG(debug) << "Bookmarks::readdir " << m_dir ;
 
     for(VS::const_iterator it=basenames.begin() ; it != basenames.end() ; it++)
     {

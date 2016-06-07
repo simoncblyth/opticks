@@ -41,6 +41,8 @@
 #include "NSensor.hpp"
 #include "Lookup.hpp"
 #include "Typ.hpp"
+#include "stringutil.hpp"
+#include "NLog.hpp"
 
 
 // opticks-
@@ -49,21 +51,16 @@
 #include "OpticksColors.hh"
 #include "Composition.hh"
 
-#include "assert.h"
-#include "stdio.h"
-#include "string.h"
-#include "stringutil.hpp"
-
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include <iomanip>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-
-#include "NLog.hpp"
-
-
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+
 
 #define BSIZ 50
 
@@ -72,8 +69,16 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 void GGeo::init()
 {
+   LOG(info) << "GGeo::init" ; 
+
    OpticksResource* resource = m_opticks->getResource(); 
    const char* idpath = m_opticks->getIdPath() ;
+
+   LOG(info) << "GGeo::init" 
+             << " idpath " << ( idpath ? idpath : "NULL" )
+             ; 
+
+   assert(idpath && "GGeo::init idpath is required" );
 
    fs::path geocache(idpath); 
 
