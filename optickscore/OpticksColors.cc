@@ -19,14 +19,16 @@ const char* OpticksColors::NAME = "GColors.json" ;
 
 OpticksColors* OpticksColors::load(const char* dir, const char* name)
 {
-    if(!existsPath(dir, name))
-    {
-        LOG(warning) << "OpticksColors::load FAILED no file at  " << dir << "/" << name ; 
-        return NULL ;
-    }
-
     OpticksColors* gc = new OpticksColors ; 
-    gc->loadMaps(dir);
+
+    if(!existsPath(dir, name))
+    { 
+        LOG(warning) << "OpticksColors::load FAILED no file at  dir " << dir << " with name " << name ; 
+    }
+    else
+    {
+        gc->loadMaps(dir);
+    }
     return gc ; 
 }
 
@@ -51,6 +53,14 @@ void OpticksColors::sort()
         m_psychedelic_codes.push_back(code); 
     } 
 }
+
+
+bool OpticksColors::operator() (const std::string& a, const std::string& b)
+{
+    // sort order for dump 
+    return getCode(a.c_str(),0) < getCode(b.c_str(),0) ; 
+}
+
 
 void OpticksColors::dump(const char* msg)
 {
@@ -80,11 +90,6 @@ void OpticksColors::dump(const char* msg)
     }
 }
 
-bool OpticksColors::operator() (const std::string& a, const std::string& b)
-{
-    // sort order for dump 
-    return getCode(a.c_str(),0) < getCode(b.c_str(),0) ; 
-}
 
 unsigned int OpticksColors::getCode(const char* name, unsigned int missing)
 {
@@ -111,15 +116,30 @@ nvec3 OpticksColors::getColor(const char* name, unsigned int missing)
 
 const char* OpticksColors::getNamePsychedelic(unsigned int index)
 {
-    if(m_psychedelic_names.size() == 0) sort();
-    return m_psychedelic_names[index].c_str() ;
+    if(m_psychedelic_names.size() == 0 && m_name2hex.size() > 0) sort();
+    return 
+       index < m_psychedelic_names.size() 
+             ?
+             m_psychedelic_names[index].c_str() 
+             :
+             NULL  
+             ;
 }
 
 
 nvec3 OpticksColors::getPsychedelic(unsigned int num)
 {
-    unsigned int index = num % getNumColors() ;
+    unsigned int num_colors = getNumColors();
+    unsigned int index = num_colors > 0 ? num % num_colors : 0 ;
     const char* cname = getNamePsychedelic(index);    
+
+    LOG(trace) << "OpticksColors::getPsychedelic"
+              << " num " << num 
+              << " index " << index
+              << " num_colors " << num_colors 
+              << " cname " << ( cname ? cname : "NULL" )
+              ;
+
     return getColor( cname );
 }
 
@@ -294,7 +314,7 @@ void OpticksColors::addColors(std::vector<unsigned int>& codes, unsigned int sta
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
 
-    LOG(debug) << "OpticksColors::addColors " 
+    LOG(info) << "OpticksColors::addColors " 
               << " codes.size " << codes.size()
               << " start " << start 
               << " max_colors " << max_colors 
@@ -309,6 +329,8 @@ void OpticksColors::addColors(std::vector<unsigned int>& codes, unsigned int sta
         unsigned int blue  = (color & 0x0000FF)      ;
 
         unsigned int offset = count*4 ;  
+        if(!( offset < 4*max_colors))
+             LOG(fatal) << "OpticksColors::addColors out of range " << offset ;
 
         assert( offset < 4*max_colors && " going over size of buffer" );
 
@@ -358,6 +380,19 @@ void OpticksColors::setupCompositeColorBuffer(std::vector<unsigned int>&  materi
     unsigned int psychedelic_color_offset = PSYCHEDELIC_COLOR_OFFSET ; 
     unsigned int spectral_color_offset = SPECTRAL_COLOR_OFFSET ; 
 
+
+    LOG(info) << "OpticksColors::setupCompositeColorBuffer"
+              << " material_codes " << material_codes.size()
+              << " flag_codes " << flag_codes.size()
+              << " psychedelic_codes " << psychedelic_codes.size()
+              << " spectral_codes " << spectral_codes.size()
+              << " material_color_offset " << material_color_offset
+              << " flag_color_offset " << flag_color_offset
+              << " psychedelic_color_offset " << psychedelic_color_offset
+              << " spectral_color_offset " << spectral_color_offset
+              ;
+              
+
     if(material_codes.size() > 0)
     {
         assert(material_codes.size() < 64 );
@@ -392,5 +427,6 @@ void OpticksColors::setupCompositeColorBuffer(std::vector<unsigned int>&  materi
     //
     //     fcolor = texture(Colors, (float(flq[0].x) + MATERIAL_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) 
     //
+    LOG(info) << "OpticksColors::setupCompositeColorBuffer DONE " ;
 }
 

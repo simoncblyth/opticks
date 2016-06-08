@@ -11,11 +11,9 @@
 #include <iterator>
 
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+// brap-
+#include "fsutil.hh"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
 
@@ -86,33 +84,17 @@ void GTreePresent::dump(const char* msg)
 
 void GTreePresent::write(const char* dir)
 {
-    fs::path cachedir(dir);
-    if(!fs::exists(cachedir))
-    {
-        if (fs::create_directory(cachedir))
-        {
-            printf("GTreePresent::write created directory %s \n", dir );
-        }
+    fsutil::CreateDir(dir);
+
+    std::string txtpath = fsutil::FormPath(dir, "GTreePresent.txt");
+    const char* path = txtpath.c_str();
+    LOG(info) << "GTreePresent::write " << path ;  
+    { 
+        std::ofstream fp(path, std::ios::out );
+        std::copy(m_flat.begin(), m_flat.end(), std::ostream_iterator<std::string>(fp, "\n"));
     }
+    LOG(info) << "GTreePresent::write " << path << "DONE"  ;  
 
-    if(fs::exists(cachedir) && fs::is_directory(cachedir))
-    {
-
-        fs::path txtpath(dir);
-        txtpath /= "GTreePresent.txt" ; 
-        const char* path = txtpath.string().c_str();
-        LOG(info) << "GTreePresent::write " << path ;  
-
-        { 
-            std::ofstream fp(path, std::ios::out );
-            std::copy(m_flat.begin(), m_flat.end(), std::ostream_iterator<std::string>(fp, "\n"));
-        }
-
-    }
-    else
-    {
-        printf("GTreePresent::wrte directory %s DOES NOT EXIST \n", dir);
-    }
 }
 
 

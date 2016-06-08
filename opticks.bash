@@ -588,6 +588,10 @@ opticks-export()
 {
   opticks-path-add $(opticks-prefix)/bin
 
+  opticksdata-
+  opticksdata-export
+ 
+
   case $(uname -s) in
      MINGW*) opticks-export-mingw ;;
   esac

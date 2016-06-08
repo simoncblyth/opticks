@@ -1,4 +1,5 @@
 #include "BLog.hh"
+#include "BSys.hh"
 
 #include <string>
 #include <iostream>
@@ -89,6 +90,9 @@ void BLog::configure(int argc, char** argv, const char* idpath)
         if(strcmp(argv[i], "--warning")==0) loglevel = "warning" ;
         if(strcmp(argv[i], "--error")==0)   loglevel = "error" ;
         if(strcmp(argv[i], "--fatal")==0)   loglevel = "fatal" ;
+
+                                    
+        if(strcmp(argv[i], "--pause")==0)   setPause(true) ;    
     }
 
     // dont print anything here, it messes with --idp
@@ -106,6 +110,8 @@ void BLog::configure(int argc, char** argv, const char* idpath)
 
     std::cout << "BLog::configure" << " logname " << m_logname << " loglevel " << m_loglevel << std::endl ;  
 
+
+    if(m_pause) BSys::WaitForInput("Blog::configure pausing...");
 
 }
 

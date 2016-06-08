@@ -139,6 +139,8 @@ void GGeo::init()
        m_pvlist = new GItemList("PVNames") ; 
        m_lvlist = new GItemList("LVNames") ; 
    }
+
+   LOG(info) << "GGeo::init DONE" ; 
 }
 
 
@@ -278,7 +280,7 @@ bool GGeo::isValid()
 
 void GGeo::loadFromCache()
 {   
-    LOG(debug) << "GGeo::loadFromCache START" ; 
+    LOG(info) << "GGeo::loadFromCache START" ; 
 
     m_geolib = GGeoLib::load(m_opticks);
         
@@ -305,8 +307,7 @@ void GGeo::loadFromCache()
     m_sourcelib  = GSourceLib::load(m_opticks);
 
 
-
-    LOG(debug) << "GGeo::loadFromCache DONE" ; 
+    LOG(info) << "GGeo::loadFromCache DONE" ; 
 }
 
 
@@ -336,7 +337,7 @@ void GGeo::setupTyp()
 
 void GGeo::setupColors()
 {
-    LOG(debug) << "GGeo::setupColors" ; 
+    LOG(info) << "GGeo::setupColors" ; 
 
     OpticksFlags* flags = m_opticks->getFlags();
 
@@ -344,7 +345,10 @@ void GGeo::setupColors()
     std::vector<unsigned int>& flag_codes     = flags->getAttrIndex()->getColorCodes() ; 
 
     OpticksColors* colors = m_opticks->getColors();
+
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
+
+    LOG(info) << "GGeo::setupColors DONE" ; 
 }
 
 void GGeo::save(const char* idpath)
@@ -912,15 +916,26 @@ void GGeo::prepareMeshes()
 void GGeo::prepareVertexColors()
 {
     // GColorizer needs full tree,  so have to use pre-cache
+
+
+    LOG(trace) << "GGeo::prepareVertexColors START" ;
+
+
     GMergedMesh* mesh0 = getMergedMesh(0);
+
+    assert(mesh0);
+
     gfloat3* vertex_colors = mesh0->getColors();
 
     GColorizer* czr = getColorizer();
+
+    assert(czr);
 
     czr->setTarget( reinterpret_cast<nvec3*>(vertex_colors) );
     czr->setRepeatIndex(mesh0->getIndex()); 
     czr->traverse();
 
+    LOG(trace) << "GGeo::prepareVertexColors DONE " ;
 }
 
 

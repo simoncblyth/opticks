@@ -24,6 +24,7 @@ set(SOURCES
    fsutil.cc 
    BLog.cc
    BCfg.cc
+   BSys.cc
 ) 
 
 set(HEADERS
@@ -32,6 +33,7 @@ set(HEADERS
    dbg.hh
    BLog.hh
    BCfg.hh
+   BSys.hh
 )
 
 

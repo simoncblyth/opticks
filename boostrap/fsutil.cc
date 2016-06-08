@@ -105,6 +105,8 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
 
    fs::path p ; 
 
+   bool dbg(false);
+
 
    std::string xpath ; 
 
@@ -116,9 +118,13 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
    { 
       //  eg windows prefix C:\msys64
       if(path[1] == ':') 
-          std::cerr << "fsutil::FormPath path is already prefixed " << path << std::endl ; 
+      { 
+          if(dbg) std::cerr << "fsutil::FormPath path is already prefixed " << path << std::endl ; 
+      } 
       else
+      {
           p /= OPTICKS_PATH_PREFIX ;
+      } 
    } 
 
    p /= xpath.empty() ? path : xpath ; 

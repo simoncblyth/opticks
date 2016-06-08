@@ -71,8 +71,9 @@ void GGeoLib::loadMergedMeshes(const char* idpath )
         fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
         if(fs::exists(mmdir) && fs::is_directory(mmdir))
         {   
-            const char* path = mmdir.string().c_str() ;
-            LOG(debug) << "GGeoLib::loadMergedMeshes " << m_opticks->getRelativePath(path) ;
+            std::string spath = mmdir.string() ;
+            const char* path = spath.c_str() ;
+            LOG(debug) << "GGeoLib::loadMergedMeshes " << path ; 
             m_merged_mesh[ridx] = GMergedMesh::load( path, ridx, m_mesh_version );
         }
         else

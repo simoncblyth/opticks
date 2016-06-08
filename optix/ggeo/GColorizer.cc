@@ -22,6 +22,10 @@ void GColorizer::init()
     m_blib = m_ggeo->getBndLib();
     m_slib = m_ggeo->getSurfaceLib();
     m_colors = m_ggeo->getColors();
+
+    if(!m_colors)
+         LOG(warning) << "GColorizer::init m_colors NULL " ; 
+
 }
 
 
@@ -32,8 +36,11 @@ void GColorizer::traverse()
         LOG(warning) << "GColorizer::traverse must setTarget before traverse " ;
         return ;  
     }
+    LOG(info) << "GColorizer::traverse START" ; 
+
     GSolid* root = m_ggeo->getSolid(0);
     traverse(root, 0);
+
     LOG(info) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
 }
 
@@ -43,7 +50,17 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
 
+
     bool selected = solid->isSelected() && solid->getRepeatIndex() == m_repeat_index ;
+
+    LOG(trace) << "GColorizer::traverse"
+              << " depth " << depth
+              << " node " << ( node ? node->getIndex() : 0 )
+              << " nvert " << nvert
+              << " selected " << selected
+              ; 
+
+
     if(selected)
     {
         if( m_style == SURFACE_INDEX )
@@ -54,7 +71,6 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
         } 
         else if( m_style == PSYCHEDELIC_VERTEX || m_style == PSYCHEDELIC_NODE || m_style == PSYCHEDELIC_MESH )  // every VERTEX/SOLID/MESH a different color 
         {
-            assert(m_colors);
             for(unsigned int i=0 ; i<nvert ; ++i ) 
             {
                 unsigned int index ; 
@@ -65,7 +81,12 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
                     case PSYCHEDELIC_MESH   : index = mesh->getIndex() ;break; 
                     default                 : index = 0                ;break; 
                 }
-                m_target[m_cur_vertices+i] = m_colors->getPsychedelic(index) ; 
+
+                if(m_colors)
+                { 
+                    m_target[m_cur_vertices+i] = m_colors->getPsychedelic(index) ;
+                }
+      
             } 
         }
 

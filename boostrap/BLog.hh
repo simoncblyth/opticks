@@ -12,16 +12,22 @@ class BLog {
          BLog(const char* logname="ggeoview.log", const char* loglevel="info");
          void configure(int argc, char** argv, const char* idpath=NULL);
          void init(const char* idpath);
+         void setPause(bool pause=true);
     private:
          const char* m_logname ; 
          const char* m_loglevel ; 
+         bool        m_pause ;    
 };
 
 inline BLog::BLog(const char* logname, const char* loglevel)
    :
      m_logname(strdup(logname)),
-     m_loglevel(strdup(loglevel))
+     m_loglevel(strdup(loglevel)),
+     m_pause(false)
 {
 }
 
-
+inline void BLog::setPause(bool pause)
+{
+    m_pause = pause ; 
+}
