@@ -6,7 +6,7 @@
 
 #include <algorithm>
 #include <sstream>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 void MFixer::init()
 {

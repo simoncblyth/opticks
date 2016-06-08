@@ -13,7 +13,7 @@
 #include "OpticksResource.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // ggeo-
 #include "GMesh.hh"

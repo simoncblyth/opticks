@@ -22,7 +22,7 @@ void test_p1()
 
 int main(int argc, char** argv)
 {
-    NLog nl("part.log","info");
+    BLog nl("part.log","info");
     nl.configure(argc, argv, "/tmp");
 
     test_p0();

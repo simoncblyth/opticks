@@ -2,7 +2,7 @@
 #include "GSourceLib.hh"
 
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void OSourceLib::convert()

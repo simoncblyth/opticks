@@ -16,7 +16,7 @@
 
 //npy-
 #include "TorchStepNPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 int main(int argc, char* argv[])

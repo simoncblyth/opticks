@@ -19,7 +19,7 @@
 #include "G4SystemOfUnits.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 

@@ -7,9 +7,9 @@ int main(int argc, char** argv)
 {
     Opticks* opticks = new Opticks(argc, argv);
 
-    Cfg* cfg  = new Cfg("umbrella", false) ;
+    BCfg* cfg  = new BCfg("umbrella", false) ;
 
-    Cfg* ocfg = new OpticksCfg<Opticks>("opticks", opticks,false);
+    BCfg* ocfg = new OpticksCfg<Opticks>("opticks", opticks,false);
 
     cfg->add(ocfg);
 

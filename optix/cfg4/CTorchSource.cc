@@ -3,7 +3,7 @@
 
 // npy-
 #include "TorchStepNPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "GLMFormat.hpp"
 
 // cfg4-

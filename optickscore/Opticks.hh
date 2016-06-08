@@ -8,7 +8,7 @@
 template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
-class NLog ;
+class BLog ;
 class NState ;
 class Parameters ; 
 class NPropNames ; 
@@ -204,7 +204,7 @@ class Opticks {
        bool isInterop();
        bool isCfG4();
    public:
-       // methods required by Cfg listener classes
+       // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);
        void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);
@@ -219,7 +219,7 @@ class Opticks {
        const char*      m_envprefix ;
        OpticksResource* m_resource ; 
        const char*      m_loglevel  ; 
-       NLog*            m_log ; 
+       BLog*            m_log ; 
        NState*          m_state ; 
    private:
        bool             m_exit ; 

@@ -354,7 +354,7 @@ int main(int argc, char** argv )
 {
     DBG("NPYTest::","main", argv[0] );
 
-    NLog nl("NPYTest.log","debug");
+    BLog nl("NPYTest.log","debug");
 
     DBG("NPYTest::","main", "after nl" );
 

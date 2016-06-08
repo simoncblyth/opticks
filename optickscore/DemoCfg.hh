@@ -1,13 +1,13 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 
 
 
 template <class Listener>
-class DemoCfg : public Cfg {
+class DemoCfg : public BCfg {
 public:
-   DemoCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   DemoCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
       addOptionF<Listener>(listener, Listener::A, "A");
       addOptionF<Listener>(listener, Listener::B, "B");

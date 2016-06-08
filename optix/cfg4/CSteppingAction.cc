@@ -27,7 +27,7 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()

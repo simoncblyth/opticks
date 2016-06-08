@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class CompositionCfg : public Cfg {
+class CompositionCfg : public BCfg {
 public:
-   CompositionCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   CompositionCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
        addOptionI<Listener>(listener, Listener::PRINT,    "Print");
        addOptionS<Listener>(listener, Listener::SELECT,   "Selection, four comma delimited integers");

@@ -484,7 +484,7 @@ optickscore-idir(){ echo $(opticks-idir) ; }
 optickscore-bdir(){ echo $(opticks-bdir)/$(optickscore-rel) ; }
 
 optickscore-scd(){  cd $(optickscore-sdir); }
-optickscore-cd(){  cd $(optickscore-sdir); }
+optickscore-cd(){  cd $(optickscore-sdir)/$1 ; }
 
 optickscore-icd(){  cd $(optickscore-idir); }
 optickscore-bcd(){  cd $(optickscore-bdir); }

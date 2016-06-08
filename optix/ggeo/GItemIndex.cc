@@ -20,7 +20,7 @@
 #include "jsonutil.hpp"
 #include "NPY.hpp"
 #include "NQuad.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)

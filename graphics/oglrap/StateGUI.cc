@@ -1,6 +1,6 @@
 #include "StateGUI.hh"
 #include "NState.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #ifdef GUI_
 #include <imgui.h>

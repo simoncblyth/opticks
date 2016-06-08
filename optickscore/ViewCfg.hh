@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class ViewCfg : public Cfg {
+class ViewCfg : public BCfg {
 public:
-   ViewCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   ViewCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
        addOptionS<Listener>(listener, "eye", "Comma delimited eye position in model-extent coordinates, eg 0,0,-1  ");
        addOptionS<Listener>(listener, "look","Comma delimited look position in model-extent coordinates, eg 0,0,0  ");

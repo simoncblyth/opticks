@@ -8,12 +8,12 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void OpIndexerApp::init()
 {
-    m_log = new NLog("OpIndexerApp.log", "info");
+    m_log = new BLog("OpIndexerApp.log", "info");
     m_opticks = new Opticks();
     m_cfg = m_opticks->getCfg();
 

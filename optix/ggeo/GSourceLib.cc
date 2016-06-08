@@ -5,7 +5,7 @@
 #include <cassert>
 
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 const unsigned int GSourceLib::icdf_length = 1024 ; 
 const char* GSourceLib::radiance_ = "radiance" ; 

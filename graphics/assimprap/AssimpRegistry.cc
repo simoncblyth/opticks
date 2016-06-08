@@ -2,7 +2,7 @@
 #include "AssimpNode.hh"
 #include <cassert>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
 

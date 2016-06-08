@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class SceneCfg : public Cfg {
+class SceneCfg : public BCfg {
 public:
-   SceneCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   SceneCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {   
        addOptionI<Listener>(listener, Listener::TARGET, "Absolute index of target solid, 0 is treated differently corresponding to entire geometry");
 

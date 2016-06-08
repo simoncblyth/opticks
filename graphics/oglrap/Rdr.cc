@@ -21,7 +21,7 @@
 #include "MultiViewNPY.hpp"
 #include "stringutil.hpp"
 #include "GLMPrint.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 const char* Rdr::PRINT = "print" ; 

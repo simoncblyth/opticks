@@ -1,7 +1,7 @@
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 #include "Opticks.hh"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 void misc(GGeo* m_ggeo)
 {

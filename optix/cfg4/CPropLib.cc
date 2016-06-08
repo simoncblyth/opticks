@@ -23,7 +23,7 @@
 #include "GCSG.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 

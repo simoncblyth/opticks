@@ -137,7 +137,7 @@ npy-sdir(){ echo $(env-home)/numerics/npy ; }
 npy-idir(){ echo $(opticks-idir) ; }
 npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
-npy-cd(){   cd $(npy-sdir); }
+npy-cd(){   cd $(npy-sdir)/$1 ; }
 npy-scd(){  cd $(npy-sdir); }
 npy-icd(){  cd $(npy-idir); }
 npy-bcd(){  cd $(npy-bdir); }

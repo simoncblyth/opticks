@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // oglrap-
 #include "Texture.hh"

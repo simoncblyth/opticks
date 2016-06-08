@@ -12,7 +12,7 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "timeutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 // opticks-

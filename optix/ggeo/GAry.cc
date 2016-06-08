@@ -17,7 +17,7 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 

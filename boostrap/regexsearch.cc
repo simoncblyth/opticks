@@ -15,7 +15,7 @@
 #endif
 
 
-// cannot NLog.hpp this as bregex- is below NPY
+// cannot BLog.hh this as bregex- is below NPY
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal

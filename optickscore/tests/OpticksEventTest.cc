@@ -92,7 +92,7 @@ void test_load()
 
 int main(int argc, char** argv)
 {
-    NLog nl("OpticksEventTest.log","info");
+    BLog nl("OpticksEventTest.log","info");
     nl.configure(argc, argv, "/tmp"); 
 
     //test_genstep_derivative();

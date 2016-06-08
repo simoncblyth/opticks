@@ -16,7 +16,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 #include <boost/filesystem.hpp>

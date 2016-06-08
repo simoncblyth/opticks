@@ -23,7 +23,7 @@
 #include "GParts.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "stringutil.hpp"

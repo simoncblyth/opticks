@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv)
 {
-    NLog nl("EvtLoadTest.log","info");
+    BLog nl("EvtLoadTest.log","info");
     nl.configure(argc, argv, "/tmp");
 
     const char* typ = "torch" ; 

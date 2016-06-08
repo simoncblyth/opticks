@@ -11,7 +11,7 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "NSlice.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <glm/glm.hpp>  
 #include <glm/gtx/transform.hpp>

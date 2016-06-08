@@ -31,7 +31,7 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 using namespace Assimp ; 
 

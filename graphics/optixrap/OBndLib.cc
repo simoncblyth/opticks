@@ -6,7 +6,7 @@
 #include "GPropertyLib.hh"
 
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void OBndLib::convert()

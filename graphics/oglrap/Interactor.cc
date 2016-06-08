@@ -23,7 +23,7 @@
 #include <sstream>
 
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #ifdef GUI_
 #include <imgui.h>

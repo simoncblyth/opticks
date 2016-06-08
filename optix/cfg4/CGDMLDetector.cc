@@ -5,7 +5,7 @@
 #include <boost/algorithm/string.hpp>
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "GLMFormat.hpp"
 
 // ggeo-

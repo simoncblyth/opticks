@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    NLog nl("IndexerTest.log","info");
+    BLog nl("IndexerTest.log","info");
     nl.configure(argc, argv, "/tmp");
 
     const char* typ = "torch" ; 

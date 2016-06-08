@@ -10,7 +10,7 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "Timer.hpp"
 #include "NPY.hpp"  
 

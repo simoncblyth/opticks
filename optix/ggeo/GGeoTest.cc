@@ -18,7 +18,7 @@
 
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
 #include "stringutil.hpp"

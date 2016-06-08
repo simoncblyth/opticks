@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>  
 
 // bcfg-
-class Cfg ;
+class BCfg ;
 
 // npy-
 template<typename T> class NPY ; 
@@ -196,7 +196,7 @@ class Composition : public NConfigurable {
       void setEvt(OpticksEvent* evt);
       OpticksEvent* getEvt();
   public:
-      void addConfig(Cfg* cfg);
+      void addConfig(BCfg* cfg);
   public:
       void setLookAngle(float phi);
       float* getLookAnglePtr();

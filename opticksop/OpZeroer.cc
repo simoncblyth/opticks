@@ -5,7 +5,7 @@
 
 // npy-
 #include "Timer.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 
 // cudawrap-

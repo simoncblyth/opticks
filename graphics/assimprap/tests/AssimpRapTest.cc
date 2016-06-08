@@ -35,7 +35,7 @@ Comparing with pycollada
 #include <cassert>
 
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 // cf with App::loadGeometry and GLoader::load where the below is canonically done  

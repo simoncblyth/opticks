@@ -38,7 +38,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 const char* Scene::PREFIX = "scene" ;

@@ -29,24 +29,24 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     if(level.compare("error") == 0)  ll = boost::log::trivial::error ; 
     if(level.compare("fatal") == 0)  ll = boost::log::trivial::fatal ; 
 
-    DBG("NLog::","lname ", lname)   ; 
-    DBG("NLog::","ldir", ldir )   ; 
+    DBG("BLog::","lname ", lname)   ; 
+    DBG("BLog::","ldir", ldir )   ; 
 
     fsutil::CreateDir(ldir);
 
-    DBG("NLog::","ldir created", ldir )   ; 
+    DBG("BLog::","ldir created", ldir )   ; 
 
 
     std::string logpath = fsutil::FormPath(ldir, lname) ;
     const char* path = logpath.c_str(); 
 
 
-    DBG("NLog::","logpath string", logpath )  ; 
-    DBG("NLog::","logpath c_str", path)  ; 
+    DBG("BLog::","logpath string", logpath )  ; 
+    DBG("BLog::","logpath c_str", path)  ; 
 
     boost::log::add_file_log(logpath);
 
-    DBG("NLog::","logpath added", path)  ; 
+    DBG("BLog::","logpath added", path)  ; 
 
     boost::log::core::get()->set_filter
     (    
@@ -64,12 +64,12 @@ void logging_init(const char* ldir, const char* lname, const char* level_)
     );   
 
 
-    LOG(debug) << "NLog logging_init " << path ; 
+    LOG(debug) << "BLog logging_init " << path ; 
 }
 
 
 
-void NLog::configure(int argc, char** argv, const char* idpath)
+void BLog::configure(int argc, char** argv, const char* idpath)
 {
     // full argument parsing is done in App::config, 
     // but logging setup needs to happen before that 
@@ -104,16 +104,16 @@ void NLog::configure(int argc, char** argv, const char* idpath)
         init(idpath) ;
 
 
-    std::cout << "NLog::configure" << " logname " << m_logname << " loglevel " << m_loglevel << std::endl ;  
+    std::cout << "BLog::configure" << " logname " << m_logname << " loglevel " << m_loglevel << std::endl ;  
 
 
 }
 
 
-void NLog::init(const char* idpath)
+void BLog::init(const char* idpath)
 {
 
-    std::cout << "NLog::init" << " logname " << m_logname << " loglevel " << m_loglevel << " idpath " << ( idpath ? idpath : "NULL" ) << std::endl ;  
+    std::cout << "BLog::init" << " logname " << m_logname << " loglevel " << m_loglevel << " idpath " << ( idpath ? idpath : "NULL" ) << std::endl ;  
 
 
     logging_init(idpath, m_logname, m_loglevel );

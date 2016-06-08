@@ -1,8 +1,8 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class OpticksCfg : public Cfg {
+class OpticksCfg : public BCfg {
   public:
      OpticksCfg(const char* name, Listener* listener, bool live);
   public:
@@ -114,7 +114,7 @@ private:
 template <class Listener>
 inline OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live) 
        : 
-       Cfg(name, live),
+       BCfg(name, live),
        m_listener(listener),
        m_size(""),
        m_position(""),

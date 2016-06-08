@@ -1,6 +1,6 @@
 #include "OConfig.hh"
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include "Config.hh"  // ptxpath, RNGDIR
 

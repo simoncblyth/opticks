@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class TrackballCfg : public Cfg {
+class TrackballCfg : public BCfg {
 public:
-   TrackballCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   TrackballCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
        addOptionF<Listener>(listener, Listener::RADIUS,          "Trackball radius");
        addOptionF<Listener>(listener, Listener::TRANSLATEFACTOR, "Translation factor");

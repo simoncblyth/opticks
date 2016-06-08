@@ -1,7 +1,7 @@
 #include "GCSG.hh"
 #include "GItemList.hh"
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 const char* GCSG::SPHERE_ = "Sphere" ;
 const char* GCSG::TUBS_   = "Tubs" ;

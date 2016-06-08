@@ -15,7 +15,7 @@
 #include "G4DAEParser.hh"
 
 #include "NBoundingBox.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 int main(int argc, char** argv)
 {

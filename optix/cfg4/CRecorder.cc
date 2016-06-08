@@ -16,7 +16,7 @@
 
 // npy-
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // cfg4-
 // TODO: standardize name of OpStatus

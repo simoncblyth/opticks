@@ -1,7 +1,7 @@
 #include "OPropertyLib.hh"
 
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 optix::TextureSampler OPropertyLib::makeTexture(NPY<float>* buffer, RTformat format, unsigned int nx, unsigned int ny, bool empty)

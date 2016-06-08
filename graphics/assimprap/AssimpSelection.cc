@@ -9,7 +9,7 @@
 
 // npy-
 #include "stringutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // optickscore-
 #include "OpticksQuery.hh"

@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include "jsonutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
 

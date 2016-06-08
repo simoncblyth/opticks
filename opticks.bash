@@ -12,76 +12,6 @@ Aiming for opticks.bash to go in top level of a new Opticks repo
 together with top level superbuild CMakeLists.txt
 Intend to allow building independent of the env.
 
-
-Windows 7 MSYS2 build
------------------------
-
-Steps::
-  
-   # installed MSYS2 following web instructions to setup/update pacman
-
-   pacman -S git
-   pacman -S mercurial
-
-   hg clone http://bitbucket.org/simoncblyth/env
-
-   # hookup env to .bash_profile 
-   # alias vi="vim"
-
-   pacman -S cmake
-
-   opticks-;opticks-externals-install   
-
-   # glm- misses unzip
-   pacman -S unzip
-
-   # imgui- misses diff
-   pacman -Ss diff
-   pacman -S diffutils
-
-   # assimp-get : connection reset by peer, but switch from git: to http: protocol and it works
-   # openmesh-get : misses tar
-
-   pacman -S tar 
-
-   # glfw-cmake : runs into lack of toolchain
-
-   pacman -S mingw-w64-x86_64-cmake    # from my notes msys2-
-
-   # glfw-cmake : misses make
-
-   pacman -S mingw-w64-x86_64-make     # guess
-   pacman -S mingw-w64-x86_64-toolchain     # guess
-   pacman -S base-devel           # guess
-  
-   # how to setup path to use the right ones ? 
-   # see .bash_profile putting /mingw64/bin at head
-
-   # adjust glfw-cmake imgui-cmake to specify opticks-cmake-generator 
-   # glfw--   succeeds to cmake/make
-   # glew--   succeeds to make (no cmake)
-   # imgui-cmake   problems finding GLEW   
-   #     maybe windows directory issue 
-   #        what in MSYS2 appears as /usr/local/opticks/externals/
-   #        is actually at C:\msys64\usr\local\opticks\externals\ 
-   #     nope looks like windows lib naming, on mac its libGLEW.dylib on windows libglew32.a and libglew32.dll.a
-   #     problem seems to be glew-get use of symbolic link, change glew-idir to avoid enables the find
-   # imgui-cmake succeed
-   # imgui-make  : undefined references in link to glGetIntegerv etc...
-   #     
-   # imgui-- : needed to configure the opengl libs and set defintion to avoid IME 
-   #
-   # assimp-cmake : fails to find DirectX : avoid by switch off tool building
-   # opticks-cmake : fails to find Boost 
-
-   pacman -S mingw-w64-x86_64-boost
-
-
-   # for testing, need numpy and ipython
-   pacman -S mingw-w64-x86_64-python2-numpy
-   pacman -S mingw-w64-x86_64-python2-ipython 
-
-
 See Also
 ----------
 
@@ -520,9 +450,8 @@ photon propagations loaded from file.
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        required find package 
 =====================  ===============  =============   ==============================================================================
-boost/bpo/bcfg         bcfg-            BCfg            Boost
-boost/bregex           bregex-          BRegex          Boost
-numerics/npy           npy-             NPY             Boost GLM BRegex 
+boostrap               brap-            BoostRap        OpticksBoost
+numerics/npy           npy-             NPY             Boost GLM BoostRap
 optickscore            optickscore-     OpticksCore     Boost GLM BRegex BCfg NPY 
 optix/ggeo             ggeo-            GGeo            Boost GLM BRegex BCfg NPY OpticksCore
 graphics/assimprap     assimprap-       AssimpRap       Boost GLM Assimp GGeo NPY OpticksCore
@@ -540,10 +469,8 @@ optix/cfg4             cfg4-            CfG4            Boost GLM BRegex BCfg NP
 =====================  ===============  =============   ==============================================================================
 
 
-bcfg
-    commandline parsing 
-bregex
-    regular expression matching
+boostrap
+    logging, filesystem utils, regular expression matching, commandline parsing 
 npy
     array handling 
 optickscore
@@ -960,6 +887,29 @@ opticks-check(){
    local dae=$HOME/g4_00.dae
    [ ! -f "$dae" ] && echo $msg missing geometry file $dae && return 
    $(opticks-prefix)/bin/GGeoView --size 1024,768,1 $dae
+}
+
+opticks-grep()
+{
+   local iwd=$PWD
+   local msg="=== $FUNCNAME : "
+   opticks-
+   local dir 
+   local base=$(opticks-home)
+   opticks-dirs | while read dir 
+   do
+      local subdirs="${base}/${dir} ${base}/${dir}/tests"
+      local sub
+      for sub in $subdirs 
+      do
+         if [ -d "$sub" ]; then 
+            cd $sub
+            echo $msg $sub
+            grep $1 *.*
+         fi
+      done 
+   done
+   cd $iwd
 }
 
 

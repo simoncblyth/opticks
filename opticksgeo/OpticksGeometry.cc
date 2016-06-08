@@ -29,7 +29,7 @@
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 #include "NSlice.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 

@@ -40,7 +40,7 @@
 #endif
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NState.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
@@ -120,11 +120,11 @@ void App::init(int argc, char** argv)
 
     m_composition = new Composition ;   // Composition no longer Viz only
 
-    // TODO: review Cfg machinery and relocate into Opticks
+    // TODO: review BCfg machinery and relocate into Opticks
     //       .. nope it needs to live mostly at App level
-    //       .. due to templated tree of Cfg objects approach 
+    //       .. due to templated tree of BCfg objects approach 
 
-    m_cfg  = new Cfg("umbrella", false) ; 
+    m_cfg  = new BCfg("umbrella", false) ; 
     m_fcfg = m_opticks->getCfg();
 
     m_cfg->add(m_fcfg);

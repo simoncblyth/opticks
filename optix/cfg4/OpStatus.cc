@@ -2,7 +2,7 @@
 
 #include "Opticks.hh"
 #include <sstream>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include "G4StepPoint.hh"
 

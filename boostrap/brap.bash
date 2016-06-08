@@ -55,13 +55,12 @@ brap-usage(){ cat << EOU
 EOU
 }
 
-brap-dir(){ echo $(env-home)/boost/brap ; }
-brap-cd(){  cd $(brap-dir); }
+brap-sdir(){ echo $(env-home)/boostrap ; }
+brap-dir(){  echo $(brap-sdir) ; }
 
 brap-env(){      elocal- ; opticks- ;  }
 
-brap-name(){ echo Bregex ; }
-brap-sdir(){ echo $(env-home)/boost/brap ; }
+brap-name(){ echo BoostRap ; }
 
 brap-idir(){ echo $(opticks-idir); }
 brap-bdir(){ echo $(opticks-bdir)/$(brap-rel) ; }
@@ -201,15 +200,46 @@ brap-relog()
 }
 
 
+brap-relog-all()
+{
+   local iwd=$PWD
+   local msg="=== $FUNCNAME : "
+   opticks-
+   local dir
+   local base=$(opticks-home)
+   opticks-dirs | while read dir 
+   do
+      cd ${base}/${dir}       &&  brap-relog || echo $msg missing dir $dir
+      cd ${base}/${dir}/tests  && brap-relog || echo $msg missing dir ${dir}/tests 
+   done
+   cd $iwd
+}
+
+
+
+
+
 brap-recfg()
 {
    local msg="=== $FUNCNAME :"
    local path
-   grep -l Cfg\.hh *.* | while read path 
+   grep -l \"Cfg\.hh\" *.* | while read path 
    do 
       echo $msg $path
-      perl -pi -e 's,Cfg\.hh,BCfg.hh,mg' $path
+      perl -pi -e 's,\"Cfg\.hh\","BCfg.hh",mg' $path
    done
 }
 
+brap-vicfg(){ cat << \EOU
 
+To replace the Cfg class for BCfg use cmds like below in bash and vim:: 
+
+    vi $(grep -l \ Cfg *.*)
+
+    .,$s/ Cfg/ BCfg/gc
+
+EOU
+ 
+
+
+}

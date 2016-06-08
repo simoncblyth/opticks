@@ -130,8 +130,7 @@ And it runs::
     [2016-06-06 20:34:22.972810] [0x00000694] [info]    OpticksQuery::init dumpQuery queryType range m_query_string range:3153:12221 m_query_name NULL m_query_index 0 nrange 2 : 3153 : 12221
 
     OpticksResource::readEnvironment USING DEFAULT geo ctrl volnames
-    NLog::configure logname opticks.log loglevel info
-    NLog::init logname opticks.log loglevel info idpath
+
     This application has requested the Runtime to terminate it in an unusual way.
     Please contact the application's support team for more information.
     after ok

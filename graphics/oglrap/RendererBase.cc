@@ -4,7 +4,7 @@
 #include "RendererBase.hh"
 #include "Prog.hh"
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_path)
     :

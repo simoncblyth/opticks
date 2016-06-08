@@ -7,9 +7,9 @@
 // trace/debug/info/warning/error/fatal
 
 
-class NLog {
+class BLog {
     public:
-         NLog(const char* logname="ggeoview.log", const char* loglevel="info");
+         BLog(const char* logname="ggeoview.log", const char* loglevel="info");
          void configure(int argc, char** argv, const char* idpath=NULL);
          void init(const char* idpath);
     private:
@@ -17,7 +17,7 @@ class NLog {
          const char* m_loglevel ; 
 };
 
-inline NLog::NLog(const char* logname, const char* loglevel)
+inline BLog::BLog(const char* logname, const char* loglevel)
    :
      m_logname(strdup(logname)),
      m_loglevel(strdup(loglevel))

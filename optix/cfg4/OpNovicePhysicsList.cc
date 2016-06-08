@@ -178,7 +178,7 @@ void OpNovicePhysicsList::ConstructDecay()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 void OpNovicePhysicsList::Summary(const char* msg)
 {

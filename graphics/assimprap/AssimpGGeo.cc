@@ -41,7 +41,7 @@
 
 
 #include <boost/algorithm/string.hpp>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 /*

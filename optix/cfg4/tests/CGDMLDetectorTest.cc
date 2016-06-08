@@ -13,7 +13,7 @@
 #include "G4VPhysicalVolume.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"

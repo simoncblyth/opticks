@@ -42,7 +42,7 @@
 #include "Lookup.hpp"
 #include "Typ.hpp"
 #include "stringutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 // opticks-

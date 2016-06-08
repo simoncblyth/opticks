@@ -12,8 +12,6 @@
 message(STATUS "Configuring ${name}")
 
 set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
-#set(OPTICKS_PREFIX "/usr/local/opticks")
-
 
 
 set(OPTICKS_HOME   "$ENV{ENV_HOME}")
@@ -26,32 +24,10 @@ OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)
 
 
-# The _SOURCE_DIR are auto set for the superbuild
-# but presumably not for individual buils. 
+# _SOURCE_DIR are auto set for the superbuild
 # Can see in cache::
 #
 #     simon:build blyth$ grep _SOURCE_DIR CMakeCache.txt
-#
-#
-#set(AssimpRap_SOURCE_DIR   "${OPTICKS_HOME}/graphics/assimprap")
-#set(BRegex_SOURCE_DIR      "${OPTICKS_HOME}/boost/bregex")
-#set(CUDARap_SOURCE_DIR     "${OPTICKS_HOME}/cuda/cudarap")
-#set(BCfg_SOURCE_DIR        "${OPTICKS_HOME}/boost/bpo/bcfg")
-#set(GGeo_SOURCE_DIR        "${OPTICKS_HOME}/optix/ggeo")
-#set(NPY_SOURCE_DIR         "${OPTICKS_HOME}/numerics/npy")
-#set(NumpyServer_SOURCE_DIR "${OPTICKS_HOME}/boost/basio/numpyserver")
-#set(OGLRap_SOURCE_DIR      "${OPTICKS_HOME}/graphics/oglrap")
-#set(OpenMeshRap_SOURCE_DIR "${OPTICKS_HOME}/graphics/openmeshrap")
-#set(OptiXRap_SOURCE_DIR    "${OPTICKS_HOME}/graphics/optixrap")
-#set(OptiXThrust_SOURCE_DIR "${OPTICKS_HOME}/optix/optixthrust")
-#set(Opticks_SOURCE_DIR     "${OPTICKS_HOME}/opticks")
-#set(OpticksGL_SOURCE_DIR   "${OPTICKS_HOME}/opticksgl")
-#set(OpticksOp_SOURCE_DIR   "${OPTICKS_HOME}/opticksop")
-#set(PPM_SOURCE_DIR         "${OPTICKS_HOME}/graphics/ppm")
-#set(ThrustRap_SOURCE_DIR   "${OPTICKS_HOME}/numerics/thrustrap")
-
-
-
 # https://cmake.org/Wiki/CMake_RPATH_handling
 
 if (APPLE)

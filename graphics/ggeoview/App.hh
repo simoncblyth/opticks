@@ -2,7 +2,7 @@
 
 
 // bcfg-
-class Cfg ;
+class BCfg ;
  
 // npy-
 template <typename> class NPY ;
@@ -142,7 +142,7 @@ class App {
        numpyserver<numpydelegate>* m_server ;
 #endif
        OpticksEvent*    m_evt ;
-       Cfg*             m_cfg ;
+       BCfg*             m_cfg ;
 
        OpticksCfg<Opticks>* m_fcfg ;   
        Types*           m_types ; 

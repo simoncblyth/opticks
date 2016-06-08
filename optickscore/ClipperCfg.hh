@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class ClipperCfg : public Cfg {
+class ClipperCfg : public BCfg {
 public:
-   ClipperCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   ClipperCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
        addOptionI<Listener>(listener, Listener::CUTPRINT, "Print debug info, when 1 is provided  ");
        addOptionI<Listener>(listener, Listener::CUTMODE,  "Integer cutmode control, -1 for disabled  ");

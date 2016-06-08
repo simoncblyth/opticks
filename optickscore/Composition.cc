@@ -204,7 +204,7 @@ void Composition::configureI(const char* name, std::vector<int> values )
     }
 }
 
-void Composition::addConfig(Cfg* cfg)
+void Composition::addConfig(BCfg* cfg)
 {
     // hmm problematic with bookmarks that swap out Camera, View, ...
     cfg->add(new CompositionCfg<Composition>("composition", this,          true));

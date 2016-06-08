@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class GGeoCfg : public Cfg {
+class GGeoCfg : public BCfg {
 public:
-   GGeoCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   GGeoCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
 
        addOptionS<Listener>(listener, Listener::PICKFACE, 

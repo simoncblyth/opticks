@@ -13,7 +13,7 @@
 #include "Opticks.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "GLMFormat.hpp"
 
 // cfg4-

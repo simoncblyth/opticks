@@ -8,7 +8,7 @@
 // npy-
 #include "NPY.hpp"
 #include "NSlice.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPart.hpp"
 #include "GLMFormat.hpp"
 

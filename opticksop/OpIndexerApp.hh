@@ -10,7 +10,7 @@ template <typename T> class OpticksCfg ;
 class OpIndexer ; 
 
 // npy-
-class NLog ; 
+class BLog ; 
 
 class OpIndexerApp {
    public:
@@ -21,7 +21,7 @@ class OpIndexerApp {
    private:
       void init();
    private:
-      NLog*                 m_log ; 
+      BLog*                 m_log ; 
       Opticks*              m_opticks ;   
       OpticksCfg<Opticks>*  m_cfg ;
       OpticksEvent*         m_evt ;

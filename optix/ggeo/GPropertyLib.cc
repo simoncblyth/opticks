@@ -22,7 +22,7 @@
 #include <iomanip>
 
 #include <boost/algorithm/string.hpp>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 

@@ -10,7 +10,7 @@
 
 // npy-
 #include "timeutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // optixrap-
 #include "OFrame.hh"

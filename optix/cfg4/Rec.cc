@@ -10,7 +10,7 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // g4-
 #include "G4Step.hh"

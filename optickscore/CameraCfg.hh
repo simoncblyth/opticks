@@ -1,10 +1,10 @@
 #pragma once
-#include "Cfg.hh"
+#include "BCfg.hh"
 
 template <class Listener>
-class CameraCfg : public Cfg {
+class CameraCfg : public BCfg {
 public:
-   CameraCfg(const char* name, Listener* listener, bool live) : Cfg(name, live) 
+   CameraCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {
        addOptionI<Listener>(listener, Listener::PRINT,    "Print");
 

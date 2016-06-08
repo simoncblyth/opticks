@@ -7,7 +7,7 @@
 
 #include <sstream>
 #include <string>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 template <typename T>

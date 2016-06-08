@@ -19,7 +19,7 @@
 #include "GLMPrint.hpp"
 #include "timeutil.hpp"
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 using namespace optix ; 

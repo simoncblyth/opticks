@@ -247,7 +247,7 @@ void Opticks::preconfigure(int argc, char** argv)
 
     std::cerr << "Opticks::preconfigure" << std::endl ; 
 
-    m_log = new NLog(m_logname, m_loglevel);
+    m_log = new BLog(m_logname, m_loglevel);
     m_log->configure(argc, argv);
     const char* idpath = getIdPath();
     m_log->init(idpath);

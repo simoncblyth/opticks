@@ -14,7 +14,7 @@
 // npy-
 #include "NPY.hpp"
 #include "NSlice.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <map>
 #include <cstdio>

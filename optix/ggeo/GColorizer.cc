@@ -14,7 +14,7 @@
 #include "OpticksAttrSeq.hh"
 #include "OpticksColors.hh"
 #include "NQuad.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
 void GColorizer::init()
