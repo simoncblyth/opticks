@@ -41,7 +41,7 @@
 #include "NSensor.hpp"
 #include "Lookup.hpp"
 #include "Typ.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "BLog.hh"
 
 

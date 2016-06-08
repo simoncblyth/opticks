@@ -19,7 +19,7 @@
 #include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "GLMPrint.hpp"
 #include "BLog.hh"
 

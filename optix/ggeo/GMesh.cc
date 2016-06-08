@@ -7,7 +7,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "assert.h"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 
 #include <iomanip>
 #include <algorithm>

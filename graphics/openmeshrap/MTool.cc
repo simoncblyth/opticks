@@ -1,7 +1,7 @@
 #include "MTool.hh"
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "BLog.hh"
 
 // opticks-

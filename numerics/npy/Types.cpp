@@ -2,7 +2,7 @@
 #include "Types.hpp"
 #include "Index.hpp"
 #include "jsonutil.hpp" 
-#include "stringutil.hpp" 
+#include "stringutil.hh" 
 #include "regexsearch.hh"
 #include "crossplatform.hh"
 

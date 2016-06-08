@@ -3,7 +3,7 @@
 #include "md5digest.hpp"
 #include "string.h"
 
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "dirutil.hpp"
 #include "limits.h"
 #include "assert.h"

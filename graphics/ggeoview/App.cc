@@ -57,7 +57,7 @@
 #include "SequenceNPY.hpp"
 #include "Types.hpp"
 #include "Index.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"

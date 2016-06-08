@@ -5,7 +5,7 @@
 #include <sstream>
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "BLog.hh"
 
 

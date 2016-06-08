@@ -61,7 +61,7 @@ void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const cha
 
 
 
-// duplicating whats in npy-/stringutil.hpp but dont want to depend on npy- here 
+// duplicating whats in npy-/stringutil.hh but dont want to depend on npy- here 
 template<typename T>
 inline T hex_lexical_cast(const char* in) {
     T out;

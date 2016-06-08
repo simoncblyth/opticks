@@ -1,6 +1,6 @@
 #include "Sparse.hh"
 
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "NPY.hpp"
 #include "BLog.hh"
 #include "Index.hpp"

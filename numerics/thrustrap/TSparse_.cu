@@ -1,7 +1,7 @@
 #include "TSparse.hh"
 #include "TBuf.hh"
 
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "Index.hpp"
 
 #include <sstream>

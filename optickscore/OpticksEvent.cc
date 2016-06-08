@@ -17,7 +17,7 @@
 #include "GLMFormat.hpp"
 #include "Index.hpp"
 
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "timeutil.hpp"
 
 #include "Report.hpp"

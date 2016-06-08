@@ -7,7 +7,7 @@
 #include <cassert>
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "GLMFormat.hpp"
 #include "BLog.hh"
 #include "Map.hpp"

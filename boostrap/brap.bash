@@ -188,19 +188,23 @@ EOE
 
 brap-photon(){  $(brap-bin)/enum_regexsearchTest \$ENV_HOME/graphics/ggeoview/cu/photon.h ; }
 
-brap-rename()
+brap-hpp2hh()
 {
    local msg="=== $FUNCNAME :"
    local path
-   grep -l NLog\.hpp *.* | while read path 
+   
+   #local cls=stringutil 
+   local cls=stringutil 
+
+   grep -l $cls\.hpp *.* | while read path 
    do 
       echo $msg $path
-      perl -pi -e 's,stringutil\.hpp,stringutil.hh,mg' $path
+      perl -pi -e "s,$cls\.hpp,$cls.hh,mg" $path
    done
 }
 
 
-brap-rename-all()
+brap-hpp2hh-all()
 {
    local iwd=$PWD
    local msg="=== $FUNCNAME : "
@@ -209,8 +213,8 @@ brap-rename-all()
    local base=$(opticks-home)
    opticks-dirs | while read dir 
    do
-      cd ${base}/${dir}       &&  brap-rename || echo $msg missing dir $dir
-      cd ${base}/${dir}/tests  && brap-rename || echo $msg missing dir ${dir}/tests 
+      cd ${base}/${dir}       &&  brap-hpp2hh || echo $msg missing dir $dir
+      cd ${base}/${dir}/tests  && brap-hpp2hh || echo $msg missing dir ${dir}/tests 
    done
    cd $iwd
 }

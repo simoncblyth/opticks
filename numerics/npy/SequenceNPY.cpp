@@ -14,7 +14,7 @@
 #include "limits.h"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 
 
 #include <boost/log/trivial.hpp>

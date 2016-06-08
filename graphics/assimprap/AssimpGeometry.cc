@@ -21,7 +21,7 @@
 #include "OpticksQuery.hh"
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 
 // assimp-
 #include <assimp/Importer.hpp>

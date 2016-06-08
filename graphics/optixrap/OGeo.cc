@@ -26,7 +26,7 @@
 #include "BLog.hh"
 #include "NPY.hpp"
 #include "NSlice.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 
 
 #include "OConfig.hh"

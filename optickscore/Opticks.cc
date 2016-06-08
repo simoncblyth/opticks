@@ -9,7 +9,7 @@
 
 // npy-
 #include "Map.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "Timer.hpp"
 #include "Parameters.hpp"
 #include "TorchStepNPY.hpp"

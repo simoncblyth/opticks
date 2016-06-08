@@ -29,7 +29,7 @@
 #include "GSurfaceLib.hh"
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 

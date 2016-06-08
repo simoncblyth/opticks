@@ -2,7 +2,7 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "uif.h"
 
 #include <vector>

@@ -15,7 +15,7 @@
 
 // npy-
 #include "Index.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "BLog.hh"
 
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 

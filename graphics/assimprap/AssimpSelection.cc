@@ -8,7 +8,7 @@
 #include <assimp/scene.h>
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "BLog.hh"
 
 // optickscore-

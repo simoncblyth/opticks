@@ -5,7 +5,7 @@
 #include "BLog.hh"
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
-#include "stringutil.hpp"
+#include "stringutil.hh"
 
 #include <iomanip>
 #include <boost/lexical_cast.hpp>

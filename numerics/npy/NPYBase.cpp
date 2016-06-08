@@ -6,7 +6,7 @@
 #include <algorithm>
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "md5digest.hpp"
 
 //bregex- 

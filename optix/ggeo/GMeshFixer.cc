@@ -2,7 +2,7 @@
 #include "GMesh.hh"
 
 // npy-
-#include "stringutil.hpp"
+#include "stringutil.hh"
 
 void GMeshFixer::copyWithoutVertexDuplicates()
 {
