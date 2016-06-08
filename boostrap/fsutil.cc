@@ -98,7 +98,7 @@ std::string expandvar(const char* s)
 
 std::string fsutil::FormPath(const char* path, const char* sub, const char* name)
 {
-   assert(path);
+   assert(path && strlen(path) > 2);
 
    if(!OPTICKS_PATH_PREFIX)
        setOpticksPathPrefixFromEnv();
@@ -108,13 +108,17 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
 
    std::string xpath ; 
 
-   if(path && path[0] == '$')
+   if(path[0] == '$')
    {
       xpath.assign(expandvar(path));
    } 
    else if(OPTICKS_PATH_PREFIX)
    { 
-      p /= OPTICKS_PATH_PREFIX ;
+      //  eg windows prefix C:\msys64
+      if(path[1] == ':') 
+          std::cerr << "fsutil::FormPath path is already prefixed " << path << std::endl ; 
+      else
+          p /= OPTICKS_PATH_PREFIX ;
    } 
 
    p /= xpath.empty() ? path : xpath ; 
