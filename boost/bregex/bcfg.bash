@@ -1,5 +1,5 @@
 # === func-gen- : boost/bpo/bcfg/bcfg fgp boost/bpo/bcfg/bcfg.bash fgn bcfg fgh boost/bpo/bcfg
-bcfg-rel(){      echo boost/bpo/bcfg ; }
+bcfg-rel(){      echo boost/bregex ; }
 bcfg-src(){      echo $(bcfg-rel)/bcfg.bash ; }
 bcfg-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bcfg-src)} ; }
 bcfg-vi(){       vi $(bcfg-source) ; }
@@ -7,6 +7,9 @@ bcfg-usage(){ cat << EOU
 
 Boost Bind Based Configuration
 ================================
+
+Config code formerly lived at boost/bpo/bcfg, 
+now consolidated into boost/bregex.
 
 main::
 

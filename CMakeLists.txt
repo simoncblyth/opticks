@@ -23,7 +23,6 @@ endif()
 
 find_package(OpticksBoost REQUIRED QUIET)
 
-add_subdirectory(boost/bpo/bcfg)  
 add_subdirectory(boost/bregex)    
 add_subdirectory(numerics/npy)   
 

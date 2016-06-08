@@ -1,4 +1,4 @@
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <string>
 #include <iostream>

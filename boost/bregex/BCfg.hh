@@ -21,10 +21,10 @@ setter method as selected by the name.
 
 */
 
-class Cfg {
+class BCfg {
 
 public:
-     void dumpTree(const char* msg="Cfg::dumpTree");
+     void dumpTree(const char* msg="BCfg::dumpTree");
 private:
      void dumpTree_(unsigned int depth=0);
 
@@ -44,19 +44,19 @@ protected:
     void addOptionS(Listener* listener, const char* name, const char* description);
 
 public:
-    Cfg(const char* name, bool live);
+    BCfg(const char* name, bool live);
     bool isLive();
     const char* getName();
     bool hasOpt(const char* opt);   
 
 public:
     // holding others 
-    void add(Cfg* cfg);
+    void add(BCfg* cfg);
     bool containsOthers();
     unsigned int getNumOthers();
-    Cfg* getOther(unsigned int index);
-    Cfg* findOther(const char* name);
-    Cfg* operator [](const char* name);
+    BCfg* getOther(unsigned int index);
+    BCfg* findOther(const char* name);
+    BCfg* operator [](const char* name);
 
 public:
     void setVerbose(bool verbose=true);
@@ -84,7 +84,7 @@ public:
     std::string getErrorMessage(); 
 private:
     const char*       m_name ;    
-    std::vector<Cfg*> m_others ; 
+    std::vector<BCfg*> m_others ; 
     std::string       m_commandline ; 
     bool              m_live ; 
     bool              m_error ; 
@@ -94,29 +94,29 @@ private:
 };
 
 
-inline void Cfg::setVerbose(bool verbose)
+inline void BCfg::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
 }
 
 
-inline bool Cfg::hasError()
+inline bool BCfg::hasError()
 {
     return m_error ; 
 }
 
-inline std::string Cfg::getErrorMessage()
+inline std::string BCfg::getErrorMessage()
 {
     return m_error_message ; 
 }
 
 
-inline const std::string& Cfg::getCommandLine()
+inline const std::string& BCfg::getCommandLine()
 {
     return m_commandline ; 
 }
 
-inline bool Cfg::hasOpt(const char* opt)
+inline bool BCfg::hasOpt(const char* opt)
 { 
    std::vector<std::string> elem;
    boost::split(elem,opt,boost::is_any_of("|")); 
@@ -129,12 +129,12 @@ inline bool Cfg::hasOpt(const char* opt)
 }   
 
 
-inline const char* Cfg::getName()
+inline const char* BCfg::getName()
 {
     return m_name ; 
 }
 
-inline bool Cfg::isLive()
+inline bool BCfg::isLive()
 {
     return m_live ; 
 }
@@ -144,7 +144,7 @@ inline bool Cfg::isLive()
 
 
 template <class Listener>
-void Cfg::addOptionF(Listener* listener, const char* name, const char* description )
+void BCfg::addOptionF(Listener* listener, const char* name, const char* description )
 {
         m_desc.add_options()(name, 
                              boost::program_options::value<std::vector<float> >()
@@ -154,7 +154,7 @@ void Cfg::addOptionF(Listener* listener, const char* name, const char* descripti
 }
 
 template <class Listener>
-void Cfg::addOptionI(Listener* listener, const char* name, const char* description )
+void BCfg::addOptionI(Listener* listener, const char* name, const char* description )
 {
         m_desc.add_options()(name, 
                              boost::program_options::value<std::vector<int> >()
@@ -165,11 +165,11 @@ void Cfg::addOptionI(Listener* listener, const char* name, const char* descripti
 
 
 template <class Listener>
-void Cfg::addOptionS(Listener* listener, const char* name, const char* description )
+void BCfg::addOptionS(Listener* listener, const char* name, const char* description )
 {
         if(m_verbose)
         {
-             printf("Cfg::addOptionS %s %s \n", name, description);
+             printf("BCfg::addOptionS %s %s \n", name, description);
         }
         m_desc.add_options()(name, 
                              boost::program_options::value<std::vector<std::string> >()

@@ -190,5 +190,11 @@ EOE
 
 bregex-photon(){  $(bregex-bin)/enum_regexsearchTest \$ENV_HOME/graphics/ggeoview/cu/photon.h ; }
 
+bregex-relog()
+{
+   perl -pi -e 's,NLog\.hpp,BLog.hh,mg' $1
+
+}
+
 
 
