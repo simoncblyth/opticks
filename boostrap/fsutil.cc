@@ -12,6 +12,9 @@
 namespace fs = boost::filesystem;
 
 
+#include "BLog.hh"
+
+
 char* fsutil::OPTICKS_PATH_PREFIX = NULL ;
 
 void fsutil::setOpticksPathPrefix(const char* prefix)
@@ -94,11 +97,65 @@ std::string expandvar(const char* s)
 
 
 
+bool fsutil::ExistsDir(const char* path, const char* sub, const char* name)
+{
+    std::string p = FormPath(path, sub, name) ;
+    assert(!p.empty());
+    fs::path fsp(p);
+    return fs::exists(fsp) && fs::is_directory(fsp) ;
+}
+bool fsutil::ExistsNativeDir(const std::string& native)
+{
+    fs::path fsp(native);
+    return fs::exists(fsp) && fs::is_directory(fsp) ;
+}
+
+
+
+bool fsutil::ExistsFile(const char* path, const char* sub, const char* name)
+{
+    std::string p = FormPath(path, sub, name) ;
+    assert(!p.empty());
+    fs::path fsp(p);
+    return fs::exists(fsp) && fs::is_regular_file(fsp) ;
+}
+bool fsutil::ExistsNativeFile(const std::string& native)
+{
+    fs::path fsp(native);
+    return fs::exists(fsp) && fs::is_regular_file(fsp) ;
+}
+
+
 
 
 std::string fsutil::FormPath(const char* path, const char* sub, const char* name)
 {
-   assert(path && strlen(path) > 2);
+   std::string empty ; 
+   if(!path)
+   {
+       LOG(debug) << "fsutil::FormPath return empty "
+                  << " path " << ( path ? path : "NULL" )
+                  << " sub " << ( sub ? sub : "NULL" )
+                  << " name " << ( name ? name : "NULL" )
+                  ;
+       return empty ; 
+   }
+
+
+   if(strlen(path)<2)
+   {
+       LOG(debug) << "fsutil::FormPath return empty "
+                  << " strlen(path) " << strlen(path)
+                  << " path " << ( path ? path : "NULL" )
+                  << " sub " << ( sub ? sub : "NULL" )
+                  << " name " << ( name ? name : "NULL" )
+                  ;
+       return empty ; 
+   }
+
+
+
+
 
    if(!OPTICKS_PATH_PREFIX)
        setOpticksPathPrefixFromEnv();

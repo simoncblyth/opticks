@@ -1,15 +1,14 @@
 #include <cstdio>
+#include <iostream>
+
 #include "Prog.hh"
 #include "Shdr.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+#include "fsutil.hh"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
-#include <boost/filesystem.hpp>
-#include <iostream>
-
-namespace fs = boost::filesystem;
 
 const char* GL_type_to_string (GLenum type);
 
@@ -26,13 +25,10 @@ Prog::Prog(const char* basedir, const char* tag, const char* incl_path) :
     setInclPath(incl_path);
     setup();
 
-    fs::path tagdir(basedir);
-    tagdir /= tag ;
-
-    m_tagdir = strdup(tagdir.string().c_str()); 
-
-    if(fs::exists(tagdir) && fs::is_directory(tagdir)) 
+    std::string tagdir = fsutil::FormPath(basedir, tag);
+    if(fsutil::ExistsNativeDir(tagdir)) 
     {
+        m_tagdir = strdup(tagdir.c_str());
         readSources(m_tagdir);
     }
     else
@@ -56,23 +52,21 @@ void Prog::setup()
 
 void Prog::readSources(const char* tagdir)
 {
-    LOG(debug) << "Prog::examine  tag directory at [" << tagdir << "]"  ; 
+    LOG(debug) << "Prog::examine tagdir [" << tagdir << "]"  ; 
 
     for(unsigned int i=0 ; i < m_names.size() ; ++i)
     {
-        fs::path glsl(tagdir);
-        glsl /= m_names[i] ;
-
-        if(fs::exists(glsl) && fs::is_regular_file(glsl))
+        std::string glsl = fsutil::FormPath(tagdir, m_names[i].c_str()) ;  
+        if(fsutil::ExistsNativeFile(glsl))
         {
-            const char* path = glsl.string().c_str();
+            const char* path = glsl.c_str();
             GLenum type = m_codes[i] ;
             Shdr* shdr = new Shdr(path, type, m_incl_path.c_str()); 
             m_shaders.push_back(shdr);
         }
         else
         {
-            LOG(debug) << "Prog::examine didnt find file " << glsl.string() ; 
+            LOG(debug) << "Prog::examine didnt find glsl file " << glsl ; 
         } 
     }     
 }

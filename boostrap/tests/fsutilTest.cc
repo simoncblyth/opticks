@@ -3,8 +3,7 @@
 
 #include <vector>
 #include <string>
-
-
+#include <cassert>
 
 
 int main(int argc, char** argv)
@@ -18,12 +17,24 @@ int main(int argc, char** argv)
     ss.push_back("$HOME");
     ss.push_back("$ENV_HOME");
     ss.push_back("$HOME/$ENV_HOME");
+    ss.push_back("/tmp");
 
     for(unsigned int i=0 ; i < ss.size() ; i++)
     {
        std::string s = ss[i] ;
        std::string x = fsutil::FormPath(s.c_str());
-       printf("  fsutil::FormPath(\"%s\") -->  [%s] \n", s.c_str(), x.c_str());
+
+       bool xdir = fsutil::ExistsDir(s.c_str());
+       bool xfile = fsutil::ExistsFile(s.c_str());
+
+       bool xdir2 = fsutil::ExistsNativeDir(x);
+       bool xfile2 = fsutil::ExistsNativeFile(x);
+
+       assert( xdir == xdir2 );
+       assert( xfile == xfile2 );
+
+
+       printf("  fsutil::FormPath(\"%s\") -->  [%s] dir %d file %d  \n", s.c_str(), x.c_str(), xdir, xfile);
     }
 
 

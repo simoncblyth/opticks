@@ -20,7 +20,7 @@ class Shdr {
        GLuint getId();
  
    private:
-       void setInclPath(const char* path); // colon delimited list of directories to look for glsl inclusions
+       void setInclPath(const char* path, const char* delim=";"); // semicolon delimited list of directories to look for glsl inclusions
        std::string resolve(const char* name);
        void readFile(const char* path);
        void _print_shader_info_log();

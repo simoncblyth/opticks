@@ -11,11 +11,9 @@
 
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "fsutil.hh"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
 const char* Shdr::incl_prefix = "#incl" ;  // not "#include" to remind that this is non-standard
@@ -70,9 +68,16 @@ void Shdr::_print_shader_info_log()
 
 
 
-void Shdr::setInclPath(const char* incl_path)
+void Shdr::setInclPath(const char* incl_path, const char* delim)
 {
-    boost::split(m_incl_dirs,incl_path,boost::is_any_of(":"));
+    boost::split(m_incl_dirs,incl_path,boost::is_any_of(delim));
+
+    LOG(info) << "Shdr::setInclPath "
+              << " incl_path " << incl_path
+              << " delim " << delim
+              << " elems " << m_incl_dirs.size()
+              ;
+
 }
 
 
@@ -81,11 +86,10 @@ std::string Shdr::resolve(const char* name)
     std::string path ; 
     for(unsigned int i=0 ; i < m_incl_dirs.size() ; i++)
     {
-        fs::path candidate(m_incl_dirs[i]) ;
-        candidate /= name ;
-        if(fs::exists(candidate) && fs::is_regular_file(candidate))
+        std::string candidate = fsutil::FormPath(m_incl_dirs[i].c_str(), name );  
+        if(fsutil::ExistsNativeFile(candidate))
         {
-            path = candidate.string() ;
+            path = candidate ;
             break ;  
         }
     }
@@ -94,12 +98,18 @@ std::string Shdr::resolve(const char* name)
 
 void Shdr::readFile(const char* path)
 {
-    LOG(debug) << "Shdr::readFile " << path << std::endl ; 
+    std::string npath = fsutil::FormPath(path);
 
-    std::ifstream fs(path, std::ios::in);
+    LOG(debug) << "Shdr::readFile " 
+               << " path " << path 
+               << " npath " << npath 
+               << std::endl ; 
+     
+
+    std::ifstream fs(npath.c_str(), std::ios::in);
     if(!fs.is_open()) 
     {
-        LOG(fatal) << "Shdr::readFile failed to open " << path ; 
+        LOG(fatal) << "Shdr::readFile failed to open " << npath ; 
         return ;
     }   
 
