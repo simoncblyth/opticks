@@ -4,6 +4,9 @@
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
 
+// CMake generatewd in binary_dir/inc
+#include "OpticksCMakeConfig.hh"   
+
 // npy-
 #include "Map.hpp"
 #include "stringutil.hpp"
@@ -181,6 +184,12 @@ unsigned int Opticks::SourceCode(const char* type)
 
 void Opticks::init()
 {
+    m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX);
+
+    LOG(trace) << "Opticks::init" 
+               << " install_prefix " << m_install_prefix
+               ;
+
     preargs(m_argc, m_argv);
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
@@ -199,7 +208,7 @@ void Opticks::init()
 
     preconfigure(m_argc, m_argv);
 
-    std::cerr << "Opticks::init DONE " << std::endl ;
+    LOG(trace) << "Opticks::init DONE " ;
 }
 
 
@@ -211,7 +220,7 @@ void Opticks::preargs(int argc, char** argv)
     bool dump = true ; 
     bool compute = false ;
     const char* logname = NULL ;
-    if(dump) std::cerr << "Opticks::preargs argc " << argc << std::endl ; 
+    LOG(trace) << "Opticks::preargs argc " << argc  ; 
 
     for(int i=1 ; i < argc ; i++ )
     {
@@ -240,19 +249,14 @@ void Opticks::preargs(int argc, char** argv)
 
 void Opticks::preconfigure(int argc, char** argv)
 {
-    // logging not yet configured, so be more quiet
-    //LOG(debug) << "Opticks::preconfigure" 
-    //           << " detector " << m_resource->getDetector()
-    //           ;
-
-    std::cerr << "Opticks::preconfigure" << std::endl ; 
+    LOG(trace) << "Opticks::preconfigure" ;
 
     m_log = new BLog(m_logname, m_loglevel);
     m_log->configure(argc, argv);
     const char* idpath = getIdPath();
     m_log->init(idpath);
 
-    std::cerr << "Opticks::preconfigure DONE" << std::endl ; 
+    LOG(trace) << "Opticks::preconfigure DONE" ;
 }
 
 void Opticks::dumpArgs(const char* msg)
@@ -695,6 +699,11 @@ std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool rel
 }
 
 
-
+void Opticks::cleanup()
+{
+    LOG(info) << "Opticks::cleanup" ;
+    delete m_log ; 
+    m_log = NULL ;
+}
 
 

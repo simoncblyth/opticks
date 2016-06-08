@@ -1,4 +1,4 @@
-#include "dirutil.hpp"
+#include "dirutil.hh"
 #include <cstdio>
 
 int main(int argc, char** argv)

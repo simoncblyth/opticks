@@ -3,6 +3,6 @@
 
 int main(int argc, char** argv)
 {
-    BSys::WaitForInput();
+   // BSys::WaitForInput();
     return 0 ; 
 }

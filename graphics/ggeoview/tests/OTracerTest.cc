@@ -1,4 +1,5 @@
 #include "App.hh"
+#include <cstdio>
 
 int main(int argc, char** argv)
 {
@@ -30,6 +31,9 @@ int main(int argc, char** argv)
     app.renderLoop();
 
     app.cleanup();
+
+
+    printf("%s exit\n", argv[0] );
 
     exit(EXIT_SUCCESS);
 }

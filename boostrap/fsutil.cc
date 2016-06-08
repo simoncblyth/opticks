@@ -6,7 +6,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -125,6 +127,33 @@ bool fsutil::ExistsNativeFile(const std::string& native)
     return fs::exists(fsp) && fs::is_regular_file(fsp) ;
 }
 
+
+
+std::string fsutil::FindFile(const char* dirlist, const char* sub, const char* name, const char* dirlist_delim)
+{
+    std::vector<std::string> dirs ; 
+    boost::split(dirs,dirlist,boost::is_any_of(dirlist_delim));
+
+    LOG(info) << "fsutil::FindFile"
+              << " dirlist " << dirlist 
+              << " sub " << sub
+              << " name " << name
+              << " dirlist_delim " << dirlist_delim
+              << " elems " << dirs.size()
+              ;
+
+    std::string path ; 
+    for(unsigned int i=0 ; i < dirs.size() ; i++)
+    {
+        std::string candidate = fsutil::FormPath(dirs[i].c_str(), sub, name );  
+        if(fsutil::ExistsNativeFile(candidate))
+        {
+            path = candidate ;
+            break ;  
+        }
+    }
+    return path ; 
+}
 
 
 

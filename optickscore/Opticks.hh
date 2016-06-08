@@ -25,7 +25,6 @@ class OpticksFlags ;
 
 class OpticksAttrSeq ;
 
-
  
 
 #include "OpticksPhoton.h"
@@ -127,6 +126,7 @@ class Opticks {
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        bool hasOpt(const char* name);
+       void cleanup();
    public:
        // from OpticksResource
        const char* getDetector();
@@ -136,6 +136,7 @@ class Opticks {
        bool isOther();
        bool isValid();
    public:
+       const char* getInstallPrefix();
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
        const char* getDAEPath();
        const char* getGDMLPath();
@@ -215,6 +216,7 @@ class Opticks {
        int                  m_argc ; 
        char**               m_argv ; 
 
+       const char*      m_install_prefix ;  // from OpticksCMakeConfig header
        const char*      m_logname  ; 
        const char*      m_envprefix ;
        OpticksResource* m_resource ; 
@@ -256,6 +258,7 @@ inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* 
      :
        m_argc(argc),
        m_argv(argv),
+       m_install_prefix(NULL),
        m_logname(strdup(logname)),
        m_envprefix(strdup(envprefix)),
        m_resource(NULL),
@@ -411,7 +414,9 @@ inline void Opticks::setExit(bool exit)
     m_exit = exit  ;   
 }
 
-
-
+inline const char* Opticks::getInstallPrefix()
+{
+    return m_install_prefix ; 
+}
 
  

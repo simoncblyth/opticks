@@ -1,4 +1,4 @@
-#include "stringutil.hpp"
+#include "stringutil.hh"
 #include "md5digest.h"
 
 #include <sstream>

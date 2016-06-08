@@ -885,6 +885,9 @@ void App::cleanup()
     if(m_gui) m_gui->shutdown();
 #endif
     if(m_frame) m_frame->exit();
+
+
+    m_opticks->cleanup(); 
 }
 
 

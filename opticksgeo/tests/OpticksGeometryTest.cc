@@ -14,7 +14,5 @@ int main(int argc, char** argv)
 
     og.loadGeometry();
 
-    BSys::WaitForInput("OpticksGeometryTest::main waiting..."); 
-
     return 0 ; 
 }

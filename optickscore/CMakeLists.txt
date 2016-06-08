@@ -13,6 +13,8 @@ find_package(NPY REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}/inc
+
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
 
@@ -35,6 +37,13 @@ set(LIBRARIES
    ${NPY_LIBRARIES}
    ${BoostRap_LIBRARIES}
 )
+
+
+# generate define header for hardcoding in the library 
+set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
+configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
+
+
 
 add_library( ${name}  SHARED
     OpticksFlags.cc

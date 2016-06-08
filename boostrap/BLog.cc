@@ -93,6 +93,7 @@ void BLog::configure(int argc, char** argv, const char* idpath)
 
                                     
         if(strcmp(argv[i], "--pause")==0)   setPause(true) ;    
+        if(strcmp(argv[i], "--exitpause")==0)   setExitPause(true) ;    
     }
 
     // dont print anything here, it messes with --idp
@@ -114,6 +115,12 @@ void BLog::configure(int argc, char** argv, const char* idpath)
     if(m_pause) BSys::WaitForInput("Blog::configure pausing...");
 
 }
+
+BLog::~BLog()
+{
+    if(m_exitpause) BSys::WaitForInput("Blog::~BLog exit-pausing...");
+}
+
 
 
 void BLog::init(const char* idpath)

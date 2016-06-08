@@ -5,6 +5,7 @@
 class fsutil {
     public:
        static std::string FormPath(const char* path, const char* sub=NULL, const char* name=NULL);
+       static std::string FindFile(const char* dirlist, const char* sub, const char* name=NULL, const char* dirlist_delim=";");
 
        static bool ExistsNativeFile(const std::string& native);
        static bool ExistsNativeDir(const std::string& native);

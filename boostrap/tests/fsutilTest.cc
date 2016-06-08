@@ -6,6 +6,25 @@
 #include <cassert>
 
 
+
+
+
+void test_find(const char* dirlist, const char* sub, const char* name)
+{
+    std::string aa = fsutil::FindFile( dirlist, sub, name );
+    if(!aa.empty())
+    {
+        printf("found sub %s name %s at %s \n", sub, name, aa.c_str());  
+    }
+    else
+    {
+        printf("NOT found sub %s name %s \n", sub, name);  
+    }
+} 
+
+
+
+
 int main(int argc, char** argv)
 {
 
@@ -39,14 +58,12 @@ int main(int argc, char** argv)
 
 
 
-
-/*
-   DBG(argv[0]," fsutil::FormPath(\"/tmp\",\"name.npy\") ", fsutil::FormPath("/tmp","name.npy") ); 
-   DBG(argv[0]," fsutil::FormPath(\"/tmp\",\"sub\",\"name.npy\") ", fsutil::FormPath("/tmp","sub","name.npy") ); 
+   const char* dirlist = "$HOME/.opticks;$OPTICKS_PREFIX/.opticks" ;
+   test_find( dirlist, "OpticksResource", "OpticksColors.json");
 
 
-   fsutil::CreateDir("/tmp/a/b/c");
-*/
+
+   //fsutil::CreateDir("/tmp/a/b/c");
 
    return 0 ; 
 }
