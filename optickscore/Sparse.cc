@@ -2,7 +2,7 @@
 
 #include "stringutil.hpp"
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "Index.hpp"
 
 #include <numeric>

@@ -10,7 +10,7 @@
 
 #include <sstream>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 const char* Report::NAME = "report.txt" ;
 const char* Report::TIMEFORMAT = "%Y%m%d_%H%M%S" ;

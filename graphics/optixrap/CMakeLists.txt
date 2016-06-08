@@ -26,6 +26,7 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 include(EnvCompilationFlags)   
 
 find_package(OpticksBoost REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
@@ -44,6 +45,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
     ${OpticksBoost_INCLUDE_DIRS} 
+    ${BoostRap_INCLUDE_DIRS} 
 
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
@@ -62,6 +64,7 @@ include_directories(
 
 set(LIBRARIES
       ${OpticksBoost_LIBRARIES}
+      ${BoostRap_LIBRARIES} 
 
       ${Assimp_LIBRARIES}
       ${AssimpRap_LIBRARIES}
@@ -78,6 +81,7 @@ set(LIBRARIES
 
 add_definitions(
     ${OpticksBoost_DEFINITIONS}
+    ${BoostRap_DEFINITIONS} 
     ${OpticksCore_DEFINITIONS} 
     ${Assimp_DEFINITIONS} 
     ${AssimpRap_DEFINITIONS} 

@@ -5,7 +5,7 @@
 #include <iomanip>
 
 #include "jsonutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 template <typename T>

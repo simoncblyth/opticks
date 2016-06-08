@@ -1,6 +1,6 @@
 #include "OrbitalView.hh"
 #include "Animator.hh"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "GLMFormat.hpp"
 
 #include <boost/lexical_cast.hpp>

@@ -16,7 +16,7 @@
 // npy-
 #include "Index.hpp"
 #include "stringutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
 unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 

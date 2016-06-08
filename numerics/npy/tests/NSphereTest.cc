@@ -1,7 +1,7 @@
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void test_part()

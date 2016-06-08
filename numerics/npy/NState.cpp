@@ -6,7 +6,7 @@
 
 // npy-
 #include "jsonutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 // bregex

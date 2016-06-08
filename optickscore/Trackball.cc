@@ -6,7 +6,7 @@
 // npy-
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>

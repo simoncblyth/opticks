@@ -2,7 +2,7 @@
 
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 int main(int argc, char** argv)
 {

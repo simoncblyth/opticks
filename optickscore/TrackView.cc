@@ -2,7 +2,7 @@
 #include "Animator.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
 

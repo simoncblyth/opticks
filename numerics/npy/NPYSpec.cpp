@@ -1,5 +1,5 @@
 #include "NPYSpec.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include <cstring>
 #include <cstdio>
 

@@ -8,7 +8,7 @@
 // npy-
 #include "dirutil.hpp"
 #include "NState.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 // opticks-
 #include "Opticks.hh"

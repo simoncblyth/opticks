@@ -1,6 +1,6 @@
 #include "NSpectral.hpp"
 
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "GLMFormat.hpp"
 #include "NCIE.hpp"
 

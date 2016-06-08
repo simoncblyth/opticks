@@ -9,7 +9,7 @@
 // npy-
 #include "stringutil.hpp"
 #include "GLMFormat.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "Map.hpp"
 
 #include "Typ.hpp"

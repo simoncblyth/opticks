@@ -23,7 +23,7 @@ endif()
 
 find_package(OpticksBoost REQUIRED QUIET)
 
-add_subdirectory(boost/bregex)    
+add_subdirectory(boostrap)    
 add_subdirectory(numerics/npy)   
 
 add_subdirectory(optickscore)         

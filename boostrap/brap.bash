@@ -1,39 +1,38 @@
-# === func-gen- : boost/bregex/bregex fgp boost/bregex/bregex.bash fgn bregex fgh boost/bregex
-bregex-rel(){      echo boost/bregex ; }
-bregex-src(){      echo boost/bregex/bregex.bash ; }
-bregex-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bregex-src)} ; }
-bregex-vi(){       vi $(bregex-source) ; }
-bregex-usage(){ cat << EOU
+brap-rel(){      echo boostrap ; }
+brap-src(){      echo boostrap/brap.bash ; }
+brap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(brap-src)} ; }
+brap-vi(){       vi $(brap-source) ; }
+brap-usage(){ cat << EOU
 
-*bregex-test*
+*brap-test*
     for developing boost regex patterns, via search matching against cin
 
     ::
 
-        bregex-test "<[^>]*>"
-        bregex-test "\w*\d"
+        brap-test "<[^>]*>"
+        brap-test "\w*\d"
 
 
 ::
 
-    simon:~ blyth$ bregex-test "\"(.*?)\""
+    simon:~ blyth$ brap-test "\"(.*?)\""
     search cin for text matching regex "(.*?)"
     pairs plucked using regexp : 2
                             path.h :           
                       other_path.h :         
 
 
-*bregex-enum*
+*brap-enum*
     plucking names and values from an enum string
 
     ::
        
-        bregex-enum "^\s*(\\w+)\s*=\s*(.*?),*\s*?$"
+        brap-enum "^\s*(\\w+)\s*=\s*(.*?),*\s*?$"
 
 
 ::
 
-    simon:thrust blyth$ bregex-flags
+    simon:thrust blyth$ brap-flags
     extract enum pairs from file $ENV_HOME/graphics/ggeoview/cu/photon.h
     udump : 13
                           CERENKOV : 1 :          1 :          1
@@ -56,83 +55,83 @@ bregex-usage(){ cat << EOU
 EOU
 }
 
-bregex-dir(){ echo $(env-home)/boost/bregex ; }
-bregex-cd(){  cd $(bregex-dir); }
+brap-dir(){ echo $(env-home)/boost/brap ; }
+brap-cd(){  cd $(brap-dir); }
 
-bregex-env(){      elocal- ; opticks- ;  }
+brap-env(){      elocal- ; opticks- ;  }
 
-bregex-name(){ echo Bregex ; }
-bregex-sdir(){ echo $(env-home)/boost/bregex ; }
+brap-name(){ echo Bregex ; }
+brap-sdir(){ echo $(env-home)/boost/brap ; }
 
-bregex-idir(){ echo $(opticks-idir); }
-bregex-bdir(){ echo $(opticks-bdir)/$(bregex-rel) ; }
+brap-idir(){ echo $(opticks-idir); }
+brap-bdir(){ echo $(opticks-bdir)/$(brap-rel) ; }
 
-bregex-scd(){  cd $(bregex-sdir); }
-bregex-cd(){  cd $(bregex-sdir); }
+brap-scd(){  cd $(brap-sdir); }
+brap-cd(){  cd $(brap-sdir); }
 
-bregex-icd(){  cd $(bregex-idir); }
-bregex-bcd(){  cd $(bregex-bdir); }
+brap-icd(){  cd $(brap-idir); }
+brap-bcd(){  cd $(brap-bdir); }
 
-bregex-flags(){ $(bregex-idir)/bin/enum_regexsearchTest $* ; }
+brap-flags(){ $(brap-idir)/bin/enum_regexsearchTest $* ; }
 
-bregex-wipe(){
-   local bdir=$(bregex-bdir)
+brap-wipe(){
+   local bdir=$(brap-bdir)
    rm -rf $bdir
 }
 
 
-bregex-txt(){ vi $(bregex-dir)/CMakeLists.txt ; }
-bregex-make(){
+brap-txt(){ vi $(brap-dir)/CMakeLists.txt ; }
+brap-make(){
    local iwd=$PWD
 
-   bregex-bcd
+   brap-bcd
    make $*
 
    cd $iwd
 }
 
-bregex-install(){
-   bregex-make install
+brap-install(){
+   brap-make install
 }
 
-bregex-bin(){ echo $(bregex-idir)/bin ; }
-bregex-export()
+brap-bin(){ echo $(brap-idir)/bin ; }
+brap-export()
 {
    echo -n
 }
 
-bregex-run(){
-   local bin=$(bregex-bin)
-   bregex-export
+brap-run(){
+   local bin=$(brap-bin)
+   brap-export
    $bin $*
 }
 
-bregex-lldb()
+brap-lldb()
 {
-   local bin=$(bregex-bin)
-   bregex-export
+   local bin=$(brap-bin)
+   brap-export
    lldb $bin -- $*
 }
 
-bregex-full()
+brap-full()
 {
-    bregex-make clean
-    bregex-make
-    bregex-install
+    brap-make clean
+    brap-make
+    brap-install
 }
-bregex--()
+brap--()
 {
-  ( bregex-bcd ; make ${1:-install} ; )
-}
-
-
-bregex-hello()
-{
-   echo "<hello>world</hello>" | $(bregex-bin)/regexsearchTest 
+  ( brap-bcd ; make ${1:-install} ; )
 }
 
-bregex-test(){ $FUNCNAME- | $(bregex-bin)/regexsearchTest "$1" ; }
-bregex-test-(){ cat << EOT
+
+brap-hello()
+{
+   echo "<hello>world</hello>" | $(brap-bin)/regexsearchTest 
+}
+
+brap-test(){ $FUNCNAME- | $(brap-bin)/regexsearchTest "$1" ; }
+brap-test-(){ cat << EOT
    <hello>world1</hello>
    <hello>world2</hello>
    <hello>world3</hello>
@@ -158,8 +157,8 @@ EOT
 
 
 
-bregex-enum(){ $FUNCNAME- | $(bregex-bin)/regexsearchTest "$1" ; }
-bregex-enum-(){ cat << EOE
+brap-enum(){ $FUNCNAME- | $(brap-bin)/regexsearchTest "$1" ; }
+brap-enum-(){ cat << EOE
 enum
 {
     NO_HIT                 = 0x1 << 0,
@@ -188,13 +187,29 @@ EOE
 
 
 
-bregex-photon(){  $(bregex-bin)/enum_regexsearchTest \$ENV_HOME/graphics/ggeoview/cu/photon.h ; }
+brap-photon(){  $(brap-bin)/enum_regexsearchTest \$ENV_HOME/graphics/ggeoview/cu/photon.h ; }
 
-bregex-relog()
+brap-relog()
 {
-   perl -pi -e 's,NLog\.hpp,BLog.hh,mg' $1
-
+   local msg="=== $FUNCNAME :"
+   local path
+   grep -l NLog\.hpp *.* | while read path 
+   do 
+      echo $msg $path
+      perl -pi -e 's,NLog\.hpp,BLog.hh,mg' $path
+   done
 }
 
+
+brap-recfg()
+{
+   local msg="=== $FUNCNAME :"
+   local path
+   grep -l Cfg\.hh *.* | while read path 
+   do 
+      echo $msg $path
+      perl -pi -e 's,Cfg\.hh,BCfg.hh,mg' $path
+   done
+}
 
 

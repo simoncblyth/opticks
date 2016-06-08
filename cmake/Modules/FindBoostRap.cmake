@@ -1,10 +1,10 @@
-find_library( BRegex_LIBRARIES 
-              NAMES BRegex
+find_library( BoostRap_LIBRARIES 
+              NAMES BoostRap
               PATHS ${OPTICKS_PREFIX}/lib )
 
 if(SUPERBUILD)
-    if(NOT BRegex_LIBRARIES)
-       set(BRegex_LIBRARIES BRegex)
+    if(NOT BoostRap_LIBRARIES)
+       set(BoostRap_LIBRARIES BoostRap)
     endif()
 endif(SUPERBUILD)
 
@@ -15,7 +15,7 @@ endif(SUPERBUILD)
 # which will allow the build to succeed if the target
 # is included amongst the add_subdirectory of the super build
 
-set(BRegex_INCLUDE_DIRS "${BRegex_SOURCE_DIR}")
+set(BoostRap_INCLUDE_DIRS "${BoostRap_SOURCE_DIR}")
 
-set(BRegex_DEFINITIONS "")
+set(BoostRap_DEFINITIONS "")
 

@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "NPYSpec.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
 

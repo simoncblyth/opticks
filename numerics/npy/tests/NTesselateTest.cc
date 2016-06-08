@@ -1,5 +1,5 @@
 #include "NTrianglesNPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 
 void test_icosahedron_subdiv(unsigned int nsd)

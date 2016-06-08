@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "NSpectral.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 
 using namespace std ; 

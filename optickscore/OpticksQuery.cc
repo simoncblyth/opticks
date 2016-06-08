@@ -6,7 +6,7 @@
 
 // npy-
 #include "stringutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 const char* OpticksQuery::UNDEFINED_ = "undefined" ; 

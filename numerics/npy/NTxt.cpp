@@ -1,5 +1,5 @@
 #include "NTxt.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include <iostream>
 #include <fstream>
 

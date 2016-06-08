@@ -1,5 +1,5 @@
 #include "NGunConfig.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 #include "GLMPrint.hpp"
@@ -13,7 +13,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 const char* NGunConfig::DEFAULT_CONFIG = 

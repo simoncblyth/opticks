@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name BRegexTest)
+set(name BoostRapTest)
 project(${name})
 
 file(GLOB TEST_CC_SRCS "*Test.cc")
@@ -11,7 +11,7 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} BRegex)
+    target_link_libraries(${TGT} ${LIBRARIES} BoostRap)
     install(TARGETS ${TGT} DESTINATION bin)
 endforeach()
 

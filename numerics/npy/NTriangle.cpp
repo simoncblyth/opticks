@@ -1,7 +1,7 @@
 #include "NTriangle.hpp"
 
 #include "GLMPrint.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 void ntriangle::dump(const char* msg)
 {

@@ -2,7 +2,7 @@
 #include "NTriangle.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include "GLMPrint.hpp"
 #include <glm/glm.hpp>

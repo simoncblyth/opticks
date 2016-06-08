@@ -8,8 +8,7 @@ include(EnvCompilationFlags)
 find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
 
-find_package(BRegex REQUIRED)
-find_package(BCfg REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 
 include_directories(
@@ -17,8 +16,7 @@ include_directories(
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
 
-   ${BRegex_INCLUDE_DIRS}  
-   ${BCfg_INCLUDE_DIRS}  
+   ${BoostRap_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
 )
 
@@ -26,8 +24,7 @@ add_definitions(
    ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
-   ${BCfg_DEFINITIONS} 
-   ${BRegex_DEFINITIONS} 
+   ${BoostRap_DEFINITIONS} 
     -DVERBOSE 
 )
 
@@ -36,8 +33,7 @@ set(LIBRARIES
    ${GLM_LIBRARIES}
 
    ${NPY_LIBRARIES}
-   ${BCfg_LIBRARIES}
-   ${BRegex_LIBRARIES}
+   ${BoostRap_LIBRARIES}
 )
 
 add_library( ${name}  SHARED

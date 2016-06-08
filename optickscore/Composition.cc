@@ -28,7 +28,7 @@
 #include "NState.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 #include <glm/glm.hpp>  

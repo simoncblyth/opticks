@@ -8,6 +8,7 @@ include(EnvCompilationFlags)
 # see cuda-/FindCuda.cmake
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 find_package(OpticksBoost REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(CUDARap  REQUIRED)
@@ -15,6 +16,7 @@ find_package(CUDARap  REQUIRED)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${OpticksBoost_INCLUDE_DIRS} 
+    ${BoostRap_INCLUDE_DIRS} 
     ${GLM_INCLUDE_DIRS} 
     ${NPY_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS}
@@ -23,11 +25,13 @@ include_directories(
 
 add_definitions(
     ${OpticksBoost_DEFINITIONS}
+    ${BoostRap_DEFINITIONS}
     ${CUDARap_DEFINITIONS}
 )
 
 set(LIBRARIES
       ${OpticksBoost_LIBRARIES}
+      ${BoostRap_LIBRARIES}
       ${NPY_LIBRARIES}
       ${CUDARap_LIBRARIES}
 )

@@ -1,6 +1,6 @@
 #include "InterpolatedView.hh"
 #include "Animator.hh"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <boost/lexical_cast.hpp>
 #include <sstream>

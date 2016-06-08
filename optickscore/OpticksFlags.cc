@@ -10,7 +10,7 @@
 
 #include "crossplatform.hh"
 #include "regexsearch.hh"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;

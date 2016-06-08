@@ -6,7 +6,7 @@
 
 #include "Times.hpp"
 #include "jsonutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void Times::save(const char* dir)

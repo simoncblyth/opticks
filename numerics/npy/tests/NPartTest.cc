@@ -1,5 +1,5 @@
 #include "NPart.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void test_p0()

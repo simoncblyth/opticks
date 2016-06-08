@@ -11,10 +11,9 @@ set(BUILD_SHARED_LIBS ON)
 include(EnvBuildOptions)
 
 find_package(OpticksBoost REQUIRED)
-find_package(BRegex REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
-find_package(BCfg REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(OpticksCore REQUIRED)
 
@@ -25,10 +24,9 @@ find_package(G4DAE  REQUIRED)
 set(INCLUDE_DIRS  
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${OpticksBoost_INCLUDE_DIRS}
-   ${BRegex_INCLUDE_DIRS} 
+   ${BoostRap_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS}
-   ${BCfg_INCLUDE_DIRS}
    ${GGeo_INCLUDE_DIRS}
    ${OpticksCore_INCLUDE_DIRS}
    ${Geant4_INCLUDE_DIRS}
@@ -38,9 +36,8 @@ set(INCLUDE_DIRS
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
-   ${BRegex_LIBRARIES}
+   ${BoostRap_LIBRARIES}
    ${NPY_LIBRARIES}
-   ${BCfg_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${Geant4_LIBRARIES}
@@ -50,10 +47,9 @@ set(LIBRARIES
 
 set(DEFINITIONS
    ${OpticksBoost_DEFINITIONS} 
-   ${BRegex_DEFINITIONS} 
+   ${BoostRap_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
    ${GGeo_DEFINITIONS} 
-   ${BCfg_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS}
    ${Geant4_DEFINITIONS}
    ${XERCESC_DEFINITIONS}

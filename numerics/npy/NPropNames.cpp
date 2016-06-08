@@ -1,6 +1,6 @@
 #include "NPropNames.hpp"
 #include "NTxt.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <cstdlib>
 #include <cassert>

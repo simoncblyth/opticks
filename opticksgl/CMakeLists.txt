@@ -27,6 +27,7 @@ include(EnvCompilationFlags)
 
 
 find_package(OpticksBoost REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(GLM  REQUIRED)
 
 find_package(GLEW REQUIRED)
@@ -51,6 +52,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
     ${OpticksBoost_INCLUDE_DIRS} 
+    ${BoostRap_INCLUDE_DIRS} 
 
     ${GLEW_INCLUDE_DIRS} 
     ${GLFW_INCLUDE_DIRS} 
@@ -75,6 +77,7 @@ include_directories(
 
 set(LIBRARIES
       ${OpticksBoost_LIBRARIES}
+      ${BoostRap_LIBRARIES} 
 
       ${GLEW_LIBRARIES}
       ${GLFW_LIBRARIES}
@@ -98,6 +101,7 @@ set(LIBRARIES
 
 add_definitions(
     ${OpticksBoost_DEFINITIONS}
+    ${BoostRap_DEFINITIONS} 
 
     ${GLEW_DEFINITIONS}
     ${GLFW_DEFINITIONS}

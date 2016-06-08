@@ -1,6 +1,6 @@
 #include "Animator.hh"
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 const char* Animator::OFF_  = "OFF" ; 

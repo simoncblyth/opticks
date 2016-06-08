@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "jsonutil.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 std::string Index::description()

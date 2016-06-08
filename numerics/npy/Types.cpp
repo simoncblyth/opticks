@@ -11,7 +11,7 @@
 #include <iomanip>
 
 #include "NPropNames.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 const char* Types::TAIL = " " ;
 

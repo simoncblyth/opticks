@@ -11,9 +11,9 @@ find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
 find_package(OpticksBoost REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(GLM REQUIRED)
 
-find_package(BCfg REQUIRED)
 find_package(OpticksCore REQUIRED)
 find_package(GGeo  REQUIRED)
 find_package(NPY REQUIRED)
@@ -28,9 +28,9 @@ include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
    ${OpticksBoost_INCLUDE_DIRS} 
+   ${BoostRap_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
-   ${BCfg_INCLUDE_DIRS}  
    ${OpticksCore_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
    ${CUDA_INCLUDE_DIRS}
@@ -42,9 +42,9 @@ include_directories(
 
 add_definitions( 
    ${OpticksBoost_DEFINITIONS} 
+   ${BoostRap_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
-   ${BCfg_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS}
    ${GGeo_DEFINITIONS} 
    ${CUDA_DEFINITIONS} 
@@ -60,9 +60,9 @@ add_definitions(
 set(LIBRARIES
 
    ${OpticksBoost_LIBRARIES}
+   ${BoostRap_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
-   ${BCfg_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${CUDA_LIBRARIES}

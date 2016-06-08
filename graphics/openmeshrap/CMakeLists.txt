@@ -6,6 +6,7 @@ include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
 find_package(OpticksBoost REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(GLM    REQUIRED)
 find_package(NPY REQUIRED)
 find_package(GGeo REQUIRED)
@@ -16,6 +17,7 @@ include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
    ${OpticksBoost_INCLUDE_DIRS} 
+   ${BoostRap_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${NPY_INCLUDE_DIRS} 
    ${OpticksCore_INCLUDE_DIRS} 
@@ -24,21 +26,23 @@ include_directories(
 )
 
 add_definitions(
-   ${OpenMesh_DEFINITIONS}
+   ${OpticksBoost_DEFINITIONS}
+   ${BoostRap_DEFINITIONS} 
    ${GLM_DEFINITIONS}
    ${NPY_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
    ${GGeo_DEFINITIONS}
-   ${OpticksBoost_DEFINITIONS}
+   ${OpenMesh_DEFINITIONS}
 )
 
 set(LIBRARIES
-   ${OpenMesh_LIBRARIES}
+   ${OpticksBoost_LIBRARIES}
+   ${BoostRap_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
-   ${OpticksBoost_LIBRARIES}
+   ${OpenMesh_LIBRARIES}
 )
 
 set(SOURCES

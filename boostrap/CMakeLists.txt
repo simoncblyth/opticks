@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name BRegex)
+set(name BoostRap)
 project(${name})
 
 include(EnvBuildOptions)
@@ -33,6 +33,11 @@ set(HEADERS
    BLog.hh
    BCfg.hh
 )
+
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+   set_source_files_properties(BLog.cc      PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
+endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 
 

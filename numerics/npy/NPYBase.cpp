@@ -16,7 +16,7 @@
 #include <boost/algorithm/string/replace.hpp>
 
 #include "NPYSpec.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 bool NPYBase::GLOBAL_VERBOSE = false ; 

@@ -2,7 +2,7 @@
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 void OpticksEngine::init()
 {

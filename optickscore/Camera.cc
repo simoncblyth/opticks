@@ -3,7 +3,7 @@
 // npy-
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include "stdio.h"
 #include <glm/gtc/matrix_transform.hpp>  

@@ -801,15 +801,14 @@ opticks-libtyp()
 
 
 
-
 opticks-dirs(){  cat << EOL
-boost/bpo/bcfg
-boost/bregex
+boostrap
 numerics/npy
 optickscore
 optix/ggeo
 graphics/assimprap
 graphics/openmeshrap
+opticksgeo
 graphics/oglrap
 cuda/cudarap
 numerics/thrustrap

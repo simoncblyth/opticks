@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 const char* Timer::COLUMNS = "t_absolute,t_delta" ;
 const char* Timer::START = "START" ;

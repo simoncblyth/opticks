@@ -11,7 +11,7 @@
 #include "Parameters.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NState.hpp"
 #include "NPropNames.hpp"
 

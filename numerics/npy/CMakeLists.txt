@@ -7,26 +7,26 @@ include(EnvCompilationFlags)
 
 find_package(OpticksBoost  REQUIRED)
 find_package(GLM    REQUIRED)
-find_package(BRegex REQUIRED)
+find_package(BoostRap REQUIRED)
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
-   ${BRegex_INCLUDE_DIRS} 
+   ${BoostRap_INCLUDE_DIRS} 
 )
 
 add_definitions( 
    ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
-   ${BRegex_DEFINITIONS} 
+   ${BoostRap_DEFINITIONS} 
 )
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
-   ${BRegex_LIBRARIES}
+   ${BoostRap_LIBRARIES}
    ssl 
    crypto
 )
@@ -34,7 +34,6 @@ set(LIBRARIES
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(jsonutil.cpp PROPERTIES COMPILE_FLAGS -Wno-all) 
-   set_source_files_properties(NLog.cpp     PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
 endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 
@@ -46,10 +45,7 @@ add_library( ${name}  SHARED
     MultiViewNPY.cpp
     GLMPrint.cpp
     GLMFormat.cpp
-    dirutil.cpp
-    stringutil.cpp
-    jsonutil.cpp
-    timeutil.cpp
+
     Lookup.cpp
     G4StepNPY.cpp
     TorchStepNPY.cpp
@@ -92,6 +88,11 @@ add_library( ${name}  SHARED
     NConfigurable.cpp
     Parameters.cpp
     Report.cpp
+
+    dirutil.cpp
+    stringutil.cpp
+    jsonutil.cpp
+    timeutil.cpp
     md5digest.cpp
 )
 

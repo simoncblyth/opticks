@@ -29,7 +29,7 @@
 #include "assert.h"
 #include <sstream>
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 #define TIMER(s) \

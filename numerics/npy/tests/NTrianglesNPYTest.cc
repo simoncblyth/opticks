@@ -1,5 +1,5 @@
 #include "NTrianglesNPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 

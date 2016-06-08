@@ -4,7 +4,7 @@
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "RecordsNPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 
 #include <cassert>
 #include <iostream>

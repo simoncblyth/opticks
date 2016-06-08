@@ -1,6 +1,6 @@
 #include "TimesTable.hpp"
 #include "Times.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include <iostream>
 #include <sstream>
 

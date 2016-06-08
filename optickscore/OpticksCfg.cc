@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "Opticks.hh"
 
 template <class Listener>

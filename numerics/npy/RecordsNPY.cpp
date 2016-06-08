@@ -18,7 +18,7 @@
 
 #include "Typ.hpp"
 
-#include "NLog.hpp"
+#include "BLog.hh"
 
 
 void RecordsNPY::setDomains(NPY<float>* domains)

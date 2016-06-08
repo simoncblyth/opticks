@@ -4,7 +4,7 @@
 #include "dbg.hh"
 
 #include "NPY.hpp"
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "G4StepNPY.hpp"
 
 #include <vector>

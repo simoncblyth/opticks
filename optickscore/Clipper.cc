@@ -1,7 +1,7 @@
 #include "Clipper.hh"
 
 // npy-
-#include "NLog.hpp"
+#include "BLog.hh"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
