@@ -1,7 +1,7 @@
 #include <glm/glm.hpp>
 #include "Types.hpp"
 #include "Index.hpp"
-#include "jsonutil.hpp" 
+#include "jsonutil.hh" 
 #include "stringutil.hh" 
 #include "regexsearch.hh"
 #include "crossplatform.hh"

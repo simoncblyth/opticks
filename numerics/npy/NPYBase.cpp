@@ -5,13 +5,11 @@
 #include <iostream>
 #include <algorithm>
 
-// npy-
-#include "stringutil.hh"
-#include "md5digest.hpp"
-
-//bregex- 
+//brap- 
 #include "fsutil.hh"
 #include "regexsearch.hh"
+#include "stringutil.hh"
+#include "md5digest.hh"
 
 #include <boost/algorithm/string/replace.hpp>
 

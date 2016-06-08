@@ -1,5 +1,5 @@
 #include "Lookup.hpp"
-#include "jsonutil.hpp"
+#include "jsonutil.hh"
 #include <cstring>
 #include <iostream>
 

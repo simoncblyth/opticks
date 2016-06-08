@@ -17,7 +17,7 @@
 // npy-
 #include "Index.hpp"
 #include "Types.hpp"
-#include "jsonutil.hpp"
+#include "jsonutil.hh"
 #include "NPY.hpp"
 #include "NQuad.hpp"
 #include "BLog.hh"

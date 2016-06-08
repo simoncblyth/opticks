@@ -1,5 +1,5 @@
 #include "GColorMap.hh"
-#include "jsonutil.hpp"
+#include "jsonutil.hh"
 
 #include <cassert>
 #include <iostream>

@@ -193,8 +193,7 @@ brap-hpp2hh()
    local msg="=== $FUNCNAME :"
    local path
    
-   #local cls=stringutil 
-   local cls=stringutil 
+   local cls=${1:-stringutil} 
 
    grep -l $cls\.hpp *.* | while read path 
    do 
@@ -206,6 +205,7 @@ brap-hpp2hh()
 
 brap-hpp2hh-all()
 {
+   local cls=${1:-stringutil} 
    local iwd=$PWD
    local msg="=== $FUNCNAME : "
    opticks-
@@ -213,8 +213,8 @@ brap-hpp2hh-all()
    local base=$(opticks-home)
    opticks-dirs | while read dir 
    do
-      cd ${base}/${dir}       &&  brap-hpp2hh || echo $msg missing dir $dir
-      cd ${base}/${dir}/tests  && brap-hpp2hh || echo $msg missing dir ${dir}/tests 
+      cd ${base}/${dir}       &&  brap-hpp2hh $cls || echo $msg missing dir $dir
+      cd ${base}/${dir}/tests  && brap-hpp2hh $cls || echo $msg missing dir ${dir}/tests 
    done
    cd $iwd
 }

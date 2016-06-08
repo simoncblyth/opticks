@@ -1,5 +1,5 @@
 #include "Counts.hpp"
-#include "jsonutil.hpp"
+#include "jsonutil.hh"
 
 #include "Index.hpp"
 

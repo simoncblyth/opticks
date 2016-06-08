@@ -1,6 +1,6 @@
 #include "OpticksColors.hh"
 
-#include "jsonutil.hpp"
+#include "jsonutil.hh"
 #include "assert.h"
 
 #include <algorithm>

@@ -1,6 +1,6 @@
 #include "Report.hpp"
 
-#include "jsonutil.hpp"
+#include "jsonutil.hh"
 #include "timeutil.hpp"
 
 #include <algorithm>
