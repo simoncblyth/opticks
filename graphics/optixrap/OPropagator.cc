@@ -1,6 +1,6 @@
 #include "OPropagator.hh"
 
-// opticks-
+// optickscore-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 
@@ -15,15 +15,15 @@
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>
 
-// npy-
-#include "GLMPrint.hpp"
-#include "timeutil.hpp"
-#include "NPY.hpp"
+// brap-
+#include "timeutil.hh"
 #include "BLog.hh"
 
+// npy-
+#include "GLMPrint.hpp"
+#include "NPY.hpp"
 
 using namespace optix ; 
-
 
 // cudawrap-
 #include "cuRANDWrapper.hh"

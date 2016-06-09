@@ -13,20 +13,16 @@
 
 void OpIndexerApp::init()
 {
-    m_log = new BLog("OpIndexerApp.log", "info");
-    m_opticks = new Opticks();
+    m_opticks = new Opticks(m_argc, m_argv);
     m_cfg = m_opticks->getCfg();
 
     m_indexer = new OpIndexer(NULL);
 } 
 
 
-void OpIndexerApp::configure(int argc, char** argv)
+void OpIndexerApp::configure()
 {
-    m_log->configure(argc, argv);
-    m_log->init("/tmp");
-
-    m_cfg->commandline(argc, argv); 
+    m_cfg->commandline(m_argc, m_argv); 
 
     LOG(debug) << "OpIndexerApp::configure" ; 
 
@@ -65,9 +61,6 @@ void OpIndexerApp::makeIndex()
 
     m_evt->saveIndex(true);
 }
-
-
-
 
 
 

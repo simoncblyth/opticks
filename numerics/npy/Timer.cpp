@@ -3,11 +3,11 @@
 #include "Times.hpp"
 #include "TimesTable.hpp"
 
-#include "timeutil.hpp"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 
+#include "timeutil.hh"
 #include "BLog.hh"
 
 const char* Timer::COLUMNS = "t_absolute,t_delta" ;

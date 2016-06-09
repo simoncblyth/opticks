@@ -2,9 +2,9 @@
 
 int main(int argc, char** argv)
 {
-    OpIndexerApp app ;
+    OpIndexerApp app(argc, argv) ;
 
-    app.configure(argc, argv);
+    app.configure();
 
     app.loadEvtFromFile();
 

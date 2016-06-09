@@ -1,21 +1,20 @@
+#include <iomanip>
 
+// brap-
+#include "timeutil.hh"
+#include "BLog.hh"
+// trace/debug/info/warning/error/fatal
+
+// npy-
+#include "NPY.hpp"
+#include "GLMFormat.hpp"
+
+// optixrap-
 #include "OContext.hh"
 #include "OTimes.hh"
 #include "OConfig.hh"
 
-// npy-
-#include "timeutil.hpp"
-#include "NPY.hpp"
-#include "GLMFormat.hpp"
-
-#include <iomanip>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
 using namespace optix ; 
-
-
 
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 

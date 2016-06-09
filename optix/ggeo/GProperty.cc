@@ -1,25 +1,25 @@
 #include "GProperty.hh"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <cmath> 
+#include <cassert>
 
-
-#include <math.h> 
-#include "assert.h"
-#include "md5digest.hpp"
-
-#include "GDomain.hh"
-#include "GAry.hh"
-
-
+// brap-
+#include "md5digest.hh"
 #include "jsonutil.hh"
-#include "NPY.hpp"
 #include "BLog.hh"
 
+// npy-
+#include "NPY.hpp"
+
+// ggeo-
+#include "GDomain.hh"
+#include "GAry.hh"
 
 
 template <typename T>
@@ -27,8 +27,6 @@ const char* GProperty<T>::DOMAIN_FMT = " %10.3f" ;
 
 template <typename T>
 const char* GProperty<T>::VALUE_FMT = " %10.3f" ; 
-
-
 
 
 template <typename T>

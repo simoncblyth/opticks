@@ -8,8 +8,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-// npy-
-#include "timeutil.hpp"
+// brap-
+#include "timeutil.hh"
 #include "BLog.hh"
 
 // optixrap-

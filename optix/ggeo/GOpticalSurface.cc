@@ -1,16 +1,18 @@
-#include "GOpticalSurface.hh"
-
-#include "md5digest.hpp"
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 #include <sstream>
 #include <iomanip>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+// brap-
+#include "md5digest.hh"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
+
+// ggeo-
+#include "GOpticalSurface.hh"
 
 
 GOpticalSurface* GOpticalSurface::create(const char* name, guint4 optical )

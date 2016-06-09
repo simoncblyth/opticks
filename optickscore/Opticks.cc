@@ -7,14 +7,17 @@
 // CMake generatewd in binary_dir/inc
 #include "OpticksCMakeConfig.hh"   
 
+// brap-
+#include "stringutil.hh"
+#include "BLog.hh"
+#include "BSys.hh"
+
 // npy-
 #include "Map.hpp"
-#include "stringutil.hh"
 #include "Timer.hpp"
 #include "Parameters.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
-#include "BLog.hh"
 #include "NState.hpp"
 #include "NPropNames.hpp"
 
@@ -123,11 +126,6 @@ Typ* Opticks::getTyp()
 }
 
 
-
-
-
-
-
 glm::vec4 Opticks::getDefaultDomainSpec()
 {
     glm::vec4 bd ;
@@ -139,9 +137,6 @@ glm::vec4 Opticks::getDefaultDomainSpec()
 
     return bd ; 
 }
-
-
-
 
 const char* Opticks::SourceType( int code )
 {
@@ -184,6 +179,8 @@ unsigned int Opticks::SourceCode(const char* type)
 
 void Opticks::init()
 {
+    m_log = new BLog(m_argc, m_argv);
+
     m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX);
 
     LOG(trace) << "Opticks::init" 
@@ -191,6 +188,7 @@ void Opticks::init()
                ;
 
     preargs(m_argc, m_argv);
+
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
@@ -206,7 +204,8 @@ void Opticks::init()
 
     setDetector( m_resource->getDetector() );
 
-    preconfigure(m_argc, m_argv);
+    m_log->setDir( m_resource->getIdPath() );
+
 
     LOG(trace) << "Opticks::init DONE " ;
 }
@@ -217,47 +216,21 @@ void Opticks::preargs(int argc, char** argv)
     // need to know whether compute mode is active prior to standard configuration is done, 
     // in order to skip the Viz methods, so do in the pre-configure here 
 
-    bool dump = true ; 
     bool compute = false ;
-    const char* logname = NULL ;
     LOG(trace) << "Opticks::preargs argc " << argc  ; 
 
     for(int i=1 ; i < argc ; i++ )
     {
         if(strcmp(argv[i], COMPUTE) == 0) compute = true ; 
-        if(strcmp(argv[i], "--logname") == 0 && i+1 < argc ) logname = argv[i+1] ;
-        if(dump) std::cerr << "[" << argv[i] << "]" << std::endl ;  
+        //std::cerr << "[" << argv[i] << "]" << std::endl ;  
     }
 
     setMode( compute ? COMPUTE_MODE : INTEROP_MODE );
-
-    /*
-    // logging not yet configured so be quiet
-    LOG(info) << "Opticks::preargs" 
-              << " argc " << argc 
-              << " argv[0] " << ( argv ? argv[0] : "NULL" )
-              << " mode " << getModeString() 
-              ;
-    */
-
-    m_logname = logname ? logname : "opticks.log" ; 
-    m_loglevel = "info" ;  // default level
 
     m_lastarg = argc > 1 ? strdup(argv[argc-1]) : NULL ;
 }
 
 
-void Opticks::preconfigure(int argc, char** argv)
-{
-    LOG(trace) << "Opticks::preconfigure" ;
-
-    m_log = new BLog(m_logname, m_loglevel);
-    m_log->configure(argc, argv);
-    const char* idpath = getIdPath();
-    m_log->init(idpath);
-
-    LOG(trace) << "Opticks::preconfigure DONE" ;
-}
 
 void Opticks::dumpArgs(const char* msg)
 {
@@ -352,6 +325,8 @@ void Opticks::Summary(const char* msg)
               ; 
 
     m_resource->Summary(msg);
+
+    LOG(info) << msg << "DONE" ; 
 }
 
 
@@ -390,7 +365,7 @@ void Opticks::configureDomains()
 
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
-   int e_rng_max = getenvint("CUDAWRAP_RNG_MAX",-1); 
+   int e_rng_max = BSys::getenvint("CUDAWRAP_RNG_MAX",-1); 
 
    int x_rng_max = getRngMax() ;
 

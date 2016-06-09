@@ -501,27 +501,13 @@ ggeoview
 cfg4
     contained geant4 
 
-     
-
-
-
-
-
-
-
- 
-
-
-
 EOU
 }
-
 
 opticks-env(){      
    elocal-
    g4- 
 }
-
 opticks-home(){   echo $(env-home) ; }
 opticks-dir(){    echo $(local-base)/opticks ; }
 opticks-prefix(){ echo $(local-base)/opticks ; }
@@ -540,12 +526,22 @@ opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 opticks-xcd(){  cd $(opticks-xdir); }
 
-opticks-wipe(){
-   local bdir=$(opticks-bdir)
-   rm -rf $bdir
+
+opticks-externals-install(){
+   local msg="=== $FUNCNAME :"
+
+   local exts="glm glfw glew gleq imgui assimp openmesh"
+   echo $msg START $(date)
+
+   local ext
+   for ext in $exts 
+   do
+        echo $msg $ext
+        $ext-
+        $ext--
+   done
+   echo $msg DONE $(date)
 }
-
-
 
 opticks-cmake-generator()
 {
@@ -555,17 +551,13 @@ opticks-cmake-generator()
     esac                          
 }
 
-
 opticks-cmake(){
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
    local bdir=$(opticks-bdir)
    mkdir -p $bdir
-
-   [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already  && return  
-
+   [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to reconfigure  && return  
    opticks-bcd
-
    cmake \
         -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
@@ -577,84 +569,39 @@ opticks-cmake(){
 
    cd $iwd
 }
-
+opticks-wipe(){
+   local bdir=$(opticks-bdir)
+   rm -rf $bdir
+}
 opticks-configure(){
    opticks-wipe
    opticks-cmake $*
 }
-
-
-opticks-export()
-{
-  opticks-path-add $(opticks-prefix)/bin
-
-  opticksdata-
-  opticksdata-export
- 
-
-  case $(uname -s) in
-     MINGW*) opticks-export-mingw ;;
-  esac
-}
-
-opticks-path-add()
-{
-  local dir=$1 
-  [ "${PATH/$dir}" == "${PATH}" ] && export PATH=$dir:$PATH
-
-}
-
-opticks-path()
-{
-   echo $PATH | tr ":" "\n"
-}
-
-opticks-export-mingw()
-{
-
-  local dirs="lib externals/bin externals/lib"
-  local dir
-  for dir in $dirs 
-  do
-      opticks-path-add $(opticks-prefix)/$dir
-  done 
-  
-
-  # see bregex-/fsutil
-  export OPTICKS_PATH_PREFIX="C:\\msys64" 
-}
-
-
 opticks-configure-local-boost(){
     local msg="=== $FUNCNAME :"
     boost-
     local prefix=$(boost-prefix)
-
     [ ! -d "$prefix" ] && type $FUNCNAME && return  
     echo $msg prefix $prefix
     opticks-configure -DBOOST_ROOT=$prefix
 }
 
+opticks--(){     ( opticks-bcd ; make ${1:-install} ) ; }
+opticks-ctest(){ ( opticks-bcd ; ctest $* ; ) ; }
 
-opticks-make(){
-   local iwd=$PWD
-
-   opticks-bcd
-   make $*
-
-   cd $iwd
+opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
+opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }
+opticks-rmdirs-(){
+   local base=$(opticks-dir)
+   local msg="# $FUNCNAME : "
+   echo $msg pipe to sh to do the deletion
+   local name
+   for name in $*
+   do 
+      local dir=$base/$name
+      [ -d "$dir" ] && echo rm -rf $dir ;
+   done
 }
-
-
-opticks--(){
-  ( opticks-bcd ; make ${1:-install} )
-}
-
-opticks-ctest(){
-  ( opticks-bcd ; ctest $* ; )
-}
-
-
 
 opticks-full()
 {
@@ -665,71 +612,71 @@ opticks-full()
          opticks-externals-install
     fi 
 
-    opticks-cmake $*
-    opticks-make install
+    opticks-configure
+    opticks--
 
     echo $msg DONE $(date)
 }
 
+opticks-cleanbuild()
+{
+   opticks-distclean 
+   opticks-distclean | sh 
+   opticks-full 
+}
 
 
+########## runtime setup ########################
 
-
-
-opticks-externals-install(){
+opticks-check(){ 
+   # last arg dae running is not the usual approach 
    local msg="=== $FUNCNAME :"
-
-   local exts="glm glfw glew gleq imgui assimp openmesh"
-
-   echo $msg START $(date)
-
-   local ext
-   for ext in $exts 
-   do
-        echo $msg $ext
-        $ext-
-        $ext--
-   done
-
-   echo $msg DONE $(date)
+   local dae=$HOME/g4_00.dae
+   [ ! -f "$dae" ] && echo $msg missing geometry file $dae && return 
+   $(opticks-prefix)/bin/GGeoView --size 1024,768,1 $dae
 }
 
-
-
-
-
-opticks-bin(){ echo $(opticks-idir)/bin/GGeoView ; }
-
-opticks-run()
-{
-
-    export-
-    export-export   ## needed to setup DAE_NAME_DYB the envvar name pointed at by the default opticks_GEOKEY 
-
-    local bin=$(opticks-bin)
-    $bin $*         ## bare running with no bash script, for checking defaults 
-
+opticks-path(){ echo $PATH | tr ":" "\n" ; }
+opticks-path-add(){
+  local dir=$1 
+  [ "${PATH/$dir}" == "${PATH}" ] && export PATH=$dir:$PATH
 }
 
-
-
-
-
-opticks-libtyp()
+opticks-export()
 {
+   opticks-export-common
+
    case $(uname -s) in
-     Darwin) echo dylib ;;
-     Linux)  echo so ;;
-         *)  echo dll ;;
+      MINGW*) opticks-export-mingw ;;
    esac
 }
+opticks-export-common()
+{
+   opticks-path-add $(opticks-prefix)/bin
 
+   opticksdata-
+   opticksdata-export
 
+   # oldway 
+   #export-
+   #export-export   ## needed to setup DAE_NAME_DYB the envvar name pointed at by the default opticks_GEOKEY 
+
+}
+opticks-export-mingw()
+{
+  local dirs="lib externals/bin externals/lib"
+  local dir
+  for dir in $dirs 
+  do
+      opticks-path-add $(opticks-prefix)/$dir
+  done 
+
+  # see brap-/fsutil
+  export OPTICKS_PATH_PREFIX="C:\\msys64" 
+}
 
 
 ########## below are for development  ########################
-
-
 
 
 opticks-dirs(){  cat << EOL
@@ -751,8 +698,7 @@ optix/cfg4
 EOL
 }
 opticks-internals(){  cat << EOI
-BCfg
-BRegex
+BoostRap
 NPY
 OpticksCore
 GGeo
@@ -820,23 +766,6 @@ opticks-o(){ vi $(opticks-find-cmake- other) ; }
 
 
 
-opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
-opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }
-
-opticks-rmdirs-(){
-   local base=$(opticks-dir)
-   local msg="# $FUNCNAME : "
-   echo $msg pipe to sh to do the deletion
-   local name
-   for name in $*
-   do 
-      local dir=$base/$name
-      [ -d "$dir" ] && echo rm -rf $dir ;
-   done
-}
-
-
-
 opticks-edit(){  cd $ENV_HOME ; vi opticks.bash $(opticks-bash-list) CMakeLists.txt $(opticks-txt-list) ; } 
 opticks-txt(){   cd $ENV_HOME ; vi CMakeLists.txt $(opticks-txt-list) ; }
 opticks-bash(){  cd $ENV_HOME ; vi opticks.bash $(opticks-bash-list) ; }
@@ -872,27 +801,6 @@ opticks-bash-list(){
       fi
   done
 }
-
-
-# not needed as RPATH is working 
-#opticks-ldpath(){ 
-#   boost-
-#   assimp-
-#   openmesh-
-#   glew-
-#   glfw-
-#   imgui-
-#   echo "$(boost-prefix)/lib;$(opticks-prefix)/lib;$(assimp-prefix)/lib;$(openmesh-prefix)/lib;$(glew-prefix)/lib64;$(glfw-prefix)/lib;$(imgui-prefix)/lib"
-#}
-
-
-opticks-check(){ 
-   local msg="=== $FUNCNAME :"
-   local dae=$HOME/g4_00.dae
-   [ ! -f "$dae" ] && echo $msg missing geometry file $dae && return 
-   $(opticks-prefix)/bin/GGeoView --size 1024,768,1 $dae
-}
-
 opticks-grep()
 {
    local iwd=$PWD
@@ -908,12 +816,13 @@ opticks-grep()
       do
          if [ -d "$sub" ]; then 
             cd $sub
-            echo $msg $sub
-            grep $1 *.*
+            #echo $msg $sub
+            grep $* $PWD/*.*
          fi
       done 
    done
    cd $iwd
 }
 
+opticks-grep-vi(){ vi $(opticks-grep -l ${1:-BLog}) ; }
 

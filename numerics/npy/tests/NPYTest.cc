@@ -352,15 +352,7 @@ array([[['|u~lo123']]],
 
 int main(int argc, char** argv )
 {
-    DBG("NPYTest::","main", argv[0] );
-
-    BLog nl("NPYTest.log","debug");
-
-    DBG("NPYTest::","main", "after nl" );
-
-    nl.configure(argc, argv, "/tmp");
-
-    DBG("NPYTest::", "main", "after nlc" );
+    BLog nl(argc, argv);
 
 
     //test_ctor();

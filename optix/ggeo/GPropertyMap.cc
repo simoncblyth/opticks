@@ -1,26 +1,26 @@
-#include "GPropertyMap.hh"
-#include "GOpticalSurface.hh"
-#include "md5digest.hpp"
-#include "string.h"
 
-#include "stringutil.hh"
-#include "dirutil.hpp"
-#include "limits.h"
-#include "assert.h"
+#include <climits>
+#include <cassert>
 #include <sstream>
 #include <iomanip>
+#include <cstring>
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+// brap-
 #include "BLog.hh"
+#include "md5digest.hh"
+#include "stringutil.hh"
+#include "dirutil.hh"
+
+// ggeo-
+#include "GPropertyMap.hh"
+#include "GOpticalSurface.hh"
 
 
 template <typename T>
 const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
-
-
-
 
 template <typename T>
 GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other) 

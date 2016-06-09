@@ -2,15 +2,15 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-// bregex-
+// brap-
 #include "fsutil.hh"
-
-// npy-
-#include "dirutil.hpp"
-#include "NState.hpp"
+#include "dirutil.hh"
 #include "BLog.hh"
 
-// opticks-
+// npy-
+#include "NState.hpp"
+
+// optickscore-
 #include "Opticks.hh"
 #include "InterpolatedView.hh"
 #include "Bookmarks.hh"
@@ -18,7 +18,6 @@
 
 void Bookmarks::init(const char* dir)
 {
-
     LOG(info) << "Bookmarks::init"
               << " dir " << ( dir ? dir : "NULL" )
               ; 

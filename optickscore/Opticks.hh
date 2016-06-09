@@ -115,12 +115,11 @@ class Opticks {
        static glm::vec4    getDefaultDomainSpec();
 
    public:
-       Opticks(int argc=0, char** argv=NULL, const char* logname="opticks.log", const char* envprefix="OPTICKS_");
+       Opticks(int argc=0, char** argv=NULL, const char* envprefix="OPTICKS_");
 
    private:
        void init();
        void preargs(int argc, char** argv);
-       void preconfigure(int argc, char** argv);
    public:
        void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
@@ -217,10 +216,8 @@ class Opticks {
        char**               m_argv ; 
 
        const char*      m_install_prefix ;  // from OpticksCMakeConfig header
-       const char*      m_logname  ; 
        const char*      m_envprefix ;
        OpticksResource* m_resource ; 
-       const char*      m_loglevel  ; 
        BLog*            m_log ; 
        NState*          m_state ; 
    private:
@@ -254,16 +251,14 @@ class Opticks {
 
 
 
-inline Opticks::Opticks(int argc, char** argv, const char* logname, const char* envprefix)
+inline Opticks::Opticks(int argc, char** argv, const char* envprefix)
      :
        m_argc(argc),
        m_argv(argv),
        m_install_prefix(NULL),
-       m_logname(strdup(logname)),
        m_envprefix(strdup(envprefix)),
        m_resource(NULL),
 
-       m_loglevel(NULL),
        m_log(NULL),
        m_state(NULL),
 

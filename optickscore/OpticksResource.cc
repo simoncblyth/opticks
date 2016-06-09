@@ -1,3 +1,5 @@
+
+#include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 #include "OpticksColors.hh"
@@ -6,10 +8,13 @@
 
 #include <cassert>
 
-// npy-
+// brap-
 #include "stringutil.hh"
-#include "GLMFormat.hpp"
 #include "BLog.hh"
+#include "BSys.hh"
+
+// npy-
+#include "GLMFormat.hpp"
 #include "Map.hpp"
 
 #include "Typ.hpp"
@@ -19,6 +24,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#define LL info
 
 const char* OpticksResource::JUNO    = "juno" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
@@ -33,27 +39,27 @@ const char* OpticksResource::DEFAULT_CTRL = "volnames" ;
 
 void OpticksResource::init()
 {
-   std::cerr << "OpticksResource::init"<< std::endl ; 
+   LOG(trace) << "OpticksResource::init" ; 
 
    readEnvironment();
    readMetadata();
    identifyGeometry();
 
-   std::cerr << "OpticksResource::init DONE"<< std::endl ; 
+   LOG(trace) << "OpticksResource::init DONE" ; 
 }
 
 void OpticksResource::identifyGeometry()
 {
    // TODO: somehow extract detector name from the exported file metadata or sidecar
 
-   m_juno     = idPathContains("env/geant4/geometry/export/juno") ;
-   m_dayabay  = idPathContains("env/geant4/geometry/export/DayaBay") ;
-   m_dpib     = idPathContains("env/geant4/geometry/export/dpib") ;
+   m_juno     = idPathContains("export/juno") ;
+   m_dayabay  = idPathContains("export/DayaBay") ;
+   m_dpib     = idPathContains("export/dpib") ;
 
    if(m_juno == false && m_dayabay == false && m_dpib == false )
    {
        const char* detector = getMetaValue("detector") ;
-       if(detector)
+      if(detector)
        {
            if(     strcmp(detector, DAYABAY) == 0) m_dayabay = true ; 
            else if(strcmp(detector, JUNO)    == 0) m_juno = true ; 
@@ -61,7 +67,9 @@ void OpticksResource::identifyGeometry()
            else 
                  m_other = true ;
 
-           printf("OpticksResource::identifyGeometry from metadata : %s \n", detector ); 
+           LOG(trace) << "OpticksResource::identifyGeometry" 
+                      << " metavalue detector " <<  detector 
+                      ; 
        }
        else
            m_other = true ;
@@ -101,15 +109,9 @@ void OpticksResource::readEnvironment()
      not currently used?
 
 */
+    assert(BSys::setenvvar(m_envprefix,"INSTALL_PREFIX", m_opticks->getInstallPrefix(), true )==0); 
 
-    m_geokey = getenvvar(m_envprefix, "GEOKEY" );
-
-    if(m_geokey == NULL)
-    {
-        m_geokey = DEFAULT_GEOKEY ;  
-        printf("OpticksResource::readEnvironment USING DEFAULT geokey %s \n", m_geokey );
-    }
-
+    m_geokey = BSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
     m_daepath = getenv(m_geokey);
 
     if(m_daepath == NULL)
@@ -117,13 +119,24 @@ void OpticksResource::readEnvironment()
         if(m_lastarg && existsFile(m_lastarg))
         {
             m_daepath = m_lastarg ; 
-            printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s but lastarg is a path %s \n", m_geokey, m_daepath );
+            LOG(warning) << "OpticksResource::readEnvironment"
+                         << " MISSING ENVVAR "
+                         << " geokey " << m_geokey 
+                         << " lastarg " << m_lastarg
+                         << " daepath " << m_daepath
+                         ;
         }
     }
 
     if(m_daepath == NULL)
     {
-        printf("OpticksResource::readEnvironment MISSING ENVVAR pointing to geometry for geokey %s path %s \n", m_geokey, m_daepath );
+        LOG(warning) << "OpticksResource::readEnvironment"
+                     << " NO DAEPATH "
+                     << " geokey " << m_geokey 
+                     << " lastarg " << ( m_lastarg ? m_lastarg : "NULL" )
+                     << " daepath " << ( m_daepath ? m_daepath : "NULL" )
+                     ;
+ 
         //assert(0);
         setValid(false);
     } 
@@ -136,28 +149,14 @@ void OpticksResource::readEnvironment()
     }
 
 
-    m_query_string = getenvvar(m_envprefix, "QUERY");
+    m_query_string = BSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
+    m_ctrl         = BSys::getenvvar(m_envprefix, "CTRL", DEFAULT_CTRL);
+    m_meshfix      = BSys::getenvvar(m_envprefix, "MESHFIX");
+    m_meshfixcfg   = BSys::getenvvar(m_envprefix, "MESHFIX_CFG");
 
-    if(m_query_string == NULL)
-    {
-        m_query_string = DEFAULT_QUERY ;  
-        printf("OpticksResource::readEnvironment USING DEFAULT geo query %s \n", m_query_string );
-    }
     m_query = new OpticksQuery(m_query_string);
-
-
-    m_ctrl = getenvvar(m_envprefix, "CTRL");
-    if(m_ctrl == NULL)
-    {
-        m_ctrl = DEFAULT_CTRL ;  
-        printf("OpticksResource::readEnvironment USING DEFAULT geo ctrl %s \n", m_ctrl );
-    }
-
-    m_meshfix = getenvvar(m_envprefix, "MESHFIX");
-    m_meshfixcfg = getenvvar(m_envprefix, "MESHFIX_CFG");
-
-
     std::string query_digest = md5digest( m_query_string, strlen(m_query_string));
+
     m_digest = strdup(query_digest.c_str());
  
     // idpath incorporates digest of geometry selection envvar 
@@ -169,13 +168,13 @@ void OpticksResource::readEnvironment()
         std::string kfn = insertField( m_daepath, '.', -1 , m_digest );
 
         m_idpath = strdup(kfn.c_str());
-    
-        //int overwrite = 1; 
-        //assert(setenv("IDPATH", m_idpath, overwrite)==0);  // TODO: avoid this, windoze lacks setenv 
 
-        assert(setenvvar("","IDPATH", m_idpath )==0);  // uses putenv for windows mingw compat 
-        
+        assert(BSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
 
+        // Where is IDPATH used ? 
+        //    Mainly by NPY tests as a resource access workaround as NPY 
+        //    is lower level than optickscore- so lacks its resource access machinery.
+        //
 
     }
     else

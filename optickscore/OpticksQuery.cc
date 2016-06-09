@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <sstream>
 
-// npy-
+// brap-
 #include "stringutil.hh"
 #include "BLog.hh"
 
@@ -19,7 +19,7 @@ const char* OpticksQuery::RANGE_ = "range" ;
 void OpticksQuery::init()
 {
     parseQuery(m_query_string);    
-    dumpQuery("OpticksQuery::init dumpQuery");    
+    //dumpQuery("OpticksQuery::init");    
 }
 
 void OpticksQuery::dumpQuery(const char* msg)
@@ -32,9 +32,9 @@ std::string OpticksQuery::description()
    std::stringstream ss ;  
    ss 
       << " queryType " << getQueryTypeString() 
-      << " m_query_string " << m_query_string 
-      << " m_query_name " <<  (m_query_name ? m_query_name : "NULL" )
-      << " m_query_index " <<  m_query_index 
+      << " query_string " << m_query_string 
+      << " query_name " <<  (m_query_name ? m_query_name : "NULL" )
+      << " query_index " <<  m_query_index 
       ;
 
    if(m_query_type == RANGE)
@@ -45,9 +45,7 @@ std::string OpticksQuery::description()
        {
           ss << " : " << m_query_range[i] ;
        }
-       ss << std::endl ; 
    } 
-
    return ss.str();
 }
 
@@ -66,7 +64,7 @@ void OpticksQuery::parseQuery(const char* query)
       m_no_selection = true ; 
    }
 
-   LOG(info) << "OpticksQuery::parseQuery" 
+   LOG(trace) << "OpticksQuery::parseQuery" 
              << " query:[" << query << "]"
              << " elements:" << elem.size()  
              << " queryType:" << getQueryTypeString()

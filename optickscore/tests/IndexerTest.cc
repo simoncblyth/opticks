@@ -7,8 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    BLog nl("IndexerTest.log","info");
-    nl.configure(argc, argv, "/tmp");
+    BLog nl(argc, argv);
 
     const char* typ = "torch" ; 
     const char* tag = "4" ; 

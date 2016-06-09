@@ -57,8 +57,7 @@ void test_icosahedron()
 
 int main(int argc, char**argv)
 {
-    BLog nl("triangles.log", "info");
-    nl.configure(argc, argv, "/tmp");
+    BLog nl(argc, argv);
 
     //test_icosahedron();
     //test_transform();

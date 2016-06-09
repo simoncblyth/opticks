@@ -1,17 +1,18 @@
-#include "GNode.hh"
-#include "GMesh.hh"
-
-#include "md5digest.hpp"
-#include "assert.h"
-#include "stdio.h"
-#include "stdlib.h"
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+// brap-
+#include "md5digest.hh"
+#include "BLog.hh"
 // trace/debug/info/warning/error/fatal
+
+// ggeo-
+#include "GNode.hh"
+#include "GMesh.hh"
 
 
 void GNode::init()

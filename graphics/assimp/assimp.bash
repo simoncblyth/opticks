@@ -425,14 +425,12 @@ assimp-build(){
 }
 
 assimp-libname(){
-   local typ=$(opticks-libtyp)   
    case $(uname -s) in 
-     Darwin) echo libassimp.3.$typ ;;
-      Linux)  echo libassimp.$typ.3 ;;
-          *)  echo libassimp.$typ.3 ;;
+     Darwin) echo libassimp.3.dylib ;;
+      Linux)  echo libassimp.so.3 ;;
+          *)  echo libassimp.dll.3 ;;
    esac
 }
-
 
 assimp-rpath-kludge()
 {

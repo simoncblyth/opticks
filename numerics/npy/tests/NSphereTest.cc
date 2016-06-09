@@ -30,8 +30,7 @@ void test_intersect()
 
 int main(int argc, char** argv)
 {
-    BLog nl("sphere.log","info");
-    nl.configure(argc, argv, "/tmp");
+    BLog nl(argc, argv);
 
     //test_part();
     test_intersect();

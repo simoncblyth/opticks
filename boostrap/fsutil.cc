@@ -97,6 +97,21 @@ std::string expandvar(const char* s)
 }
 
 
+std::string fsutil::Stem(const char* path)
+{
+    fs::path fsp(path);
+    std::string stem = fsp.stem().string() ;
+    return stem ;
+}
+
+std::string fsutil::Name(const char* path)
+{
+    fs::path fsp(path);
+    std::string name = fsp.filename().string() ;
+    return name ; 
+}
+
+
 
 
 bool fsutil::ExistsDir(const char* path, const char* sub, const char* name)

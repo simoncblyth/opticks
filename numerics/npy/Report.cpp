@@ -1,7 +1,7 @@
 #include "Report.hpp"
 
 #include "jsonutil.hh"
-#include "timeutil.hpp"
+#include "timeutil.hh"
 
 #include <algorithm>
 #include <iterator>

@@ -9,19 +9,18 @@ template <typename T> class OpticksCfg ;
 // opticksop-
 class OpIndexer ; 
 
-// npy-
-class BLog ; 
 
 class OpIndexerApp {
    public:
-      OpIndexerApp();
-      void configure(int argc, char** argv);
+      OpIndexerApp(int argc, char** argv);
+      void configure();
       void loadEvtFromFile(bool verbose=false);
       void makeIndex();
    private:
       void init();
    private:
-      BLog*                 m_log ; 
+      int                   m_argc ; 
+      char**                m_argv ; 
       Opticks*              m_opticks ;   
       OpticksCfg<Opticks>*  m_cfg ;
       OpticksEvent*         m_evt ;
@@ -30,9 +29,10 @@ class OpIndexerApp {
 };
 
 
-inline OpIndexerApp::OpIndexerApp() 
+inline OpIndexerApp::OpIndexerApp(int argc, char** argv) 
    :   
-     m_log(NULL),
+     m_argc(argc),
+     m_argv(argv),
      m_opticks(NULL),
      m_cfg(NULL),
      m_evt(NULL),

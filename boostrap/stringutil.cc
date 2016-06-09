@@ -44,12 +44,8 @@ char* trimPointerSuffixPrefix(const char* origname, const char* prefix)
 }
 
 
-int getenvint( const char* envkey, int fallback )
-{
-    char* val = getenv(envkey);
-    int ival = val ? boost::lexical_cast<int>(val) : fallback ;
-    return ival ; 
-}
+
+
 
 const char* uppercase( const char* str )
 {
@@ -63,20 +59,7 @@ const char* uppercase( const char* str )
     return STR ;
 }
 
-const char* getenvvar( const char* envprefix, const char* envkey )
-{
-    char envvar[128];
-    snprintf(envvar, 128, "%s%s", envprefix, envkey );
-    return getenv(envvar);
-}
 
-int setenvvar( const char* envprefix, const char* key, const char* value)
-{
-    char* ekv = new char[128] ;  // heap as putenv does not copy
-    snprintf(ekv, 128, "%s%s=%s", envprefix, key, value );
-    std::cout << "putenvvar [" << ekv << "]" << std::endl ; 
-    return putenv(ekv);
-}
 
 
 

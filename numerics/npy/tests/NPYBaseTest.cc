@@ -2,8 +2,7 @@
 
 int main(int argc, char** argv)
 {
-   BLog nl("NPYBaseTest.log", "debug");
-   nl.configure(argc, argv, "/tmp");
+   BLog nl(argc, argv);
 
    LOG(info) << argv[0] ;
 

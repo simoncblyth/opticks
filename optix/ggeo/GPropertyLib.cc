@@ -1,28 +1,28 @@
-#include "GPropertyLib.hh"
-#include "GItemList.hh"
-#include "OpticksAttrSeq.hh"
-
-// opticks-
-#include "Opticks.hh"
-#include "OpticksResource.hh"
-
-// npy-
-#include "NPY.hpp"
-#include "Map.hpp"
-#include "dirutil.hpp"
-
-
-
 #include <cassert>
 #include <climits>
-
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
 #include <boost/algorithm/string.hpp>
+
+// brap-
+#include "dirutil.hh"
 #include "BLog.hh"
+
+// npy-
+#include "NPY.hpp"
+#include "Map.hpp"
+
+// optickscore-
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+#include "OpticksAttrSeq.hh"
+
+// ggeo-
+#include "GPropertyLib.hh"
+#include "GItemList.hh"
 
 
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 

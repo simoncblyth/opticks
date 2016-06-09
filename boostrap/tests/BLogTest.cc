@@ -3,10 +3,13 @@
 
 int main(int argc, char** argv)
 {
-    BLog bl("BLogTest.log", "info");
+    BLog bl(argc, argv);
 
-    bl.configure(argc, argv);
+    LOG(info) << argv[0] << " before " ;
 
+    bl.setDir("/tmp");
+
+    LOG(info) << argv[0] << " after " ;
 
     return 0 ; 
 }

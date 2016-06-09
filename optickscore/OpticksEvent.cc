@@ -1,9 +1,16 @@
+#include <climits>
+#include <cassert>
+#include <sstream>
+
+// brap-
+#include "stringutil.hh"
+#include "timeutil.hh"
+#include "BLog.hh"
 
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
-
 
 // npy-
 #include "uif.h"
@@ -17,20 +24,10 @@
 #include "GLMFormat.hpp"
 #include "Index.hpp"
 
-#include "stringutil.hh"
-#include "timeutil.hpp"
-
 #include "Report.hpp"
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
-
-#include "limits.h"
-#include "assert.h"
-#include <sstream>
-
-#include "BLog.hh"
-
 
 #define TIMER(s) \
     { \
@@ -42,10 +39,8 @@
     }
 
 
-
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 const char* OpticksEvent::PARAMETERS_NAME = "parameters.json" ;
-
 
 
 std::string OpticksEvent::timestamp()

@@ -47,8 +47,7 @@ void test_octahedron_subdiv()
 
 int main(int argc, char** argv)
 {
-    BLog nl("tess.log","info");
-    nl.configure(argc, argv, "/tmp");
+    BLog nl(argc, argv);
 
     test_icosahedron_subdiv();
     test_octahedron_subdiv();
