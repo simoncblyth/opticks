@@ -1,14 +1,25 @@
 #include "GProperty.hh"
+#include "BLog.hh"
+
 #include <cassert>
 
 typedef GProperty<float> P ; 
 
 
-void test_createInverseCDF_Debug()
+int test_createInverseCDF_Debug()
 {
 
-    P* slow = P::load("/tmp/slowcomponent.npy");   // 79.99 -> 799.898  odd zero bins at low end
-    assert(slow);
+    const char* path = "/tmp/slowcomponent.npy" ;
+
+    P* slow = P::load(path);   // 79.99 -> 799.898  odd zero bins at low end
+
+    if(!slow)
+    {
+        LOG(fatal) << "FAILED TO LOAD " << path ;
+        return 1 ; 
+    }
+
+
 
     slow->Summary("slow",20);
 
@@ -154,10 +165,10 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
        Trimming 2 extreme zero bins fixes this,
 
     */
+    return 0 ; 
 }
 
 int main(int argc, char** argv)
 {
-    test_createInverseCDF_Debug();
-    return 0 ;
+    return test_createInverseCDF_Debug();
 }

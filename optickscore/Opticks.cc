@@ -1,11 +1,9 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksCfg.hh"
 #include "OpticksPhoton.h"
-
-// CMake generatewd in binary_dir/inc
-#include "OpticksCMakeConfig.hh"   
 
 // brap-
 #include "stringutil.hh"
@@ -27,103 +25,19 @@ NPropNames* Opticks::G_MATERIAL_NAMES = NULL ;
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 const char* Opticks::COMPUTE = "--compute" ; 
 
-const char* Opticks::ZERO_              = "." ;
-const char* Opticks::CERENKOV_          = "CERENKOV" ;
-const char* Opticks::SCINTILLATION_     = "SCINTILLATION" ;
-const char* Opticks::MISS_              = "MISS" ;
-const char* Opticks::OTHER_             = "OTHER" ;
-const char* Opticks::BULK_ABSORB_       = "BULK_ABSORB" ;
-const char* Opticks::BULK_REEMIT_       = "BULK_REEMIT" ;
-const char* Opticks::BULK_SCATTER_      = "BULK_SCATTER" ; 
-const char* Opticks::SURFACE_DETECT_    = "SURFACE_DETECT" ;
-const char* Opticks::SURFACE_ABSORB_    = "SURFACE_ABSORB" ; 
-const char* Opticks::SURFACE_DREFLECT_  = "SURFACE_DREFLECT" ; 
-const char* Opticks::SURFACE_SREFLECT_  = "SURFACE_SREFLECT" ; 
-const char* Opticks::BOUNDARY_REFLECT_  = "BOUNDARY_REFLECT" ; 
-const char* Opticks::BOUNDARY_TRANSMIT_ = "BOUNDARY_TRANSMIT" ; 
-const char* Opticks::TORCH_             = "TORCH" ; 
-const char* Opticks::G4GUN_             = "G4GUN" ; 
-const char* Opticks::NAN_ABORT_         = "NAN_ABORT" ; 
-const char* Opticks::BAD_FLAG_          = "BAD_FLAG" ; 
-
-const char* Opticks::cerenkov_          = "cerenkov" ;
-const char* Opticks::scintillation_     = "scintillation" ;
-const char* Opticks::torch_             = "torch" ; 
-const char* Opticks::g4gun_             = "g4gun" ; 
-const char* Opticks::other_             = "other" ;
-
 const char* Opticks::BNDIDX_NAME_  = "Boundary_Index" ;
 const char* Opticks::SEQHIS_NAME_  = "History_Sequence" ;
 const char* Opticks::SEQMAT_NAME_  = "Material_Sequence" ;
 
-
 const char* Opticks::COMPUTE_MODE_  = "Compute" ;
 const char* Opticks::INTEROP_MODE_  = "Interop" ;
 const char* Opticks::CFG4_MODE_  = "CfG4" ;
-
-
 
 // formerly of GPropertyLib, now booted upstairs
 float        Opticks::DOMAIN_LOW  = 60.f ;
 float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time  
 float        Opticks::DOMAIN_STEP = 20.f ; 
 unsigned int Opticks::DOMAIN_LENGTH = 39  ;
-
-
-
-unsigned int Opticks::getRngMax()
-{
-    return m_cfg->getRngMax(); 
-}
-unsigned int Opticks::getBounceMax()
-{
-    return m_cfg->getBounceMax();
-}
-unsigned int Opticks::getRecordMax()
-{
-    return m_cfg->getRecordMax() ;
-}
-float Opticks::getEpsilon()
-{
-    return m_cfg->getEpsilon()  ;
-}
-
-bool Opticks::hasOpt(const char* name)
-{
-    return m_cfg->hasOpt(name);
-}
-
-std::string Opticks::getRelativePath(const char* path)
-{
-    return m_resource->getRelativePath(path);
-}
-
-
-OpticksQuery* Opticks::getQuery()
-{
-    return m_resource->getQuery();
-}
-OpticksColors* Opticks::getColors()
-{
-    return m_resource->getColors();
-}
-OpticksFlags* Opticks::getFlags()
-{
-    return m_resource->getFlags();
-}
-OpticksAttrSeq* Opticks::getFlagNames()
-{
-    return m_resource->getFlagNames();
-}
-
-Types* Opticks::getTypes()
-{
-    return m_resource->getTypes();
-}
-Typ* Opticks::getTyp()
-{
-    return m_resource->getTyp();
-}
 
 
 glm::vec4 Opticks::getDefaultDomainSpec()
@@ -138,56 +52,12 @@ glm::vec4 Opticks::getDefaultDomainSpec()
     return bd ; 
 }
 
-const char* Opticks::SourceType( int code )
-{
-    const char* name = 0 ; 
-    switch(code)
-    {
-       case CERENKOV     :name = CERENKOV_      ;break;
-       case SCINTILLATION:name = SCINTILLATION_ ;break;
-       case TORCH        :name = TORCH_         ;break;
-       case G4GUN        :name = G4GUN_         ;break;
-       default           :name = OTHER_         ;break; 
-    }
-    return name ; 
-}
-
-const char* Opticks::SourceTypeLowercase( int code )
-{
-    const char* name = 0 ; 
-    switch(code)
-    {
-       case CERENKOV     :name = cerenkov_      ;break;
-       case SCINTILLATION:name = scintillation_ ;break;
-       case TORCH        :name = torch_         ;break;
-       case G4GUN        :name = g4gun_         ;break;
-       default           :name = other_         ;break; 
-    }
-    return name ; 
-}
-
-unsigned int Opticks::SourceCode(const char* type)
-{
-    unsigned int code = 0 ; 
-    if(     strcmp(type,torch_)==0)         code = TORCH ;
-    else if(strcmp(type,cerenkov_)==0)      code = CERENKOV ;
-    else if(strcmp(type,scintillation_)==0) code = SCINTILLATION ;
-    else if(strcmp(type,g4gun_)==0)         code = G4GUN ;
-    return code ; 
-}
-
 
 void Opticks::init()
 {
     m_log = new BLog(m_argc, m_argv);
 
-    m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX);
-
-    LOG(trace) << "Opticks::init" 
-               << " install_prefix " << m_install_prefix
-               ;
-
-    preargs(m_argc, m_argv);
+    setMode( hasArg(COMPUTE) ? COMPUTE_MODE : INTEROP_MODE );
 
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
@@ -198,7 +68,11 @@ void Opticks::init()
 
     m_timer->start();
 
+
     m_parameters = new Parameters ;  
+
+    m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
+
 
     m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
 
@@ -208,26 +82,6 @@ void Opticks::init()
 
 
     LOG(trace) << "Opticks::init DONE " ;
-}
-
-
-void Opticks::preargs(int argc, char** argv)
-{
-    // need to know whether compute mode is active prior to standard configuration is done, 
-    // in order to skip the Viz methods, so do in the pre-configure here 
-
-    bool compute = false ;
-    LOG(trace) << "Opticks::preargs argc " << argc  ; 
-
-    for(int i=1 ; i < argc ; i++ )
-    {
-        if(strcmp(argv[i], COMPUTE) == 0) compute = true ; 
-        //std::cerr << "[" << argv[i] << "]" << std::endl ;  
-    }
-
-    setMode( compute ? COMPUTE_MODE : INTEROP_MODE );
-
-    m_lastarg = argc > 1 ? strdup(argv[argc-1]) : NULL ;
 }
 
 
@@ -294,24 +148,6 @@ void Opticks::configure()
 
 }
 
-
-
-const char* Opticks::getIdPath()
-{
-    return m_resource ? m_resource->getIdPath() : NULL ; 
-}
-const char* Opticks::getIdFold()
-{
-    return m_resource ? m_resource->getIdFold() : NULL ; 
-}
-const char* Opticks::getGDMLPath()
-{
-    return m_resource ? m_resource->getGDMLPath() : NULL ; 
-}
-const char* Opticks::getDAEPath()
-{
-    return m_resource ? m_resource->getDAEPath() : NULL ; 
-}
 
 
 
@@ -389,7 +225,6 @@ std::string Opticks::description()
     return ss.str();
 }
 
-
 std::string Opticks::getModeString()
 {
     std::stringstream ss ; 
@@ -409,33 +244,86 @@ const char* Opticks::getUDet()
     return strlen(cat_) > 0 ? cat_ : det ;  
 }
 
-std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
+
+unsigned int Opticks::getSourceCode()
 {
-    const char* udet = getUDet();
-    return m_resource->getPreferenceDir(type, udet, subtype);
+    unsigned int code ;
+    if(     m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
+    else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
+    else if(m_cfg->hasOpt("torch"))         code = TORCH ;
+    else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;
+    else                                    code = TORCH ;
+    return code ;
 }
+
+const char* Opticks::getSourceType()
+{
+    unsigned int code = getSourceCode();
+    return OpticksFlags::SourceTypeLowercase(code) ; 
+}
+
+const char* Opticks::getEventTag()
+{
+    if(!m_tag)
+    {
+        std::string tag = m_cfg->getEventTag();
+        m_tag = strdup(tag.c_str());
+    }
+    return m_tag ; 
+}
+
+const char* Opticks::getEventCat()
+{
+    if(!m_cat)
+    {
+        std::string cat = m_cfg->getEventCat();
+        m_cat = strdup(cat.c_str());
+    }
+    return m_cat ; 
+}
+
+
+Index* Opticks::loadHistoryIndex()
+{
+    const char* typ = getSourceType();
+    const char* tag = getEventTag();
+    const char* udet = getUDet();
+    return OpticksEvent::loadHistoryIndex(typ, tag, udet) ;
+}
+Index* Opticks::loadMaterialIndex()
+{
+    const char* typ = getSourceType();
+    const char* tag = getEventTag();
+    const char* udet = getUDet();
+    return OpticksEvent::loadMaterialIndex(typ, tag, udet ) ;
+}
+Index* Opticks::loadBoundaryIndex()
+{
+    const char* typ = getSourceType();
+    const char* tag = getEventTag();
+    const char* udet = getUDet();
+    return OpticksEvent::loadBoundaryIndex(typ, tag, udet ) ;
+}
+
 
 
 
 OpticksEvent* Opticks::makeEvent()
 {
-    unsigned int code = getSourceCode();
-    std::string typ = SourceTypeLowercase(code); // cerenkov, scintillation, torch
-    std::string tag = m_cfg->getEventTag();
+    const char* typ = getSourceType(); 
+    const char* tag = getEventTag();
 
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
    LOG(info) << "Opticks::makeEvent"
-              << " code " << code
               << " typ " << typ
               << " tag " << tag
               << " det " << det
               << " cat " << cat
               ;
 
-
-    OpticksEvent* evt = new OpticksEvent(typ.c_str(), tag.c_str(), det.c_str(), cat.c_str() );
+    OpticksEvent* evt = new OpticksEvent(typ, tag, det.c_str(), cat.c_str() );
     assert(strcmp(evt->getUDet(), getUDet()) == 0);
 
     configureDomains();
@@ -481,71 +369,6 @@ OpticksEvent* Opticks::makeEvent()
 
 
 
-unsigned int Opticks::getSourceCode()
-{
-    unsigned int code ;
-    if(     m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
-    else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
-    else if(m_cfg->hasOpt("torch"))         code = TORCH ;
-    else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;
-    else                                    code = TORCH ;
-    return code ;
-}
-
-
-std::string Opticks::getSourceType()
-{
-    unsigned int code = getSourceCode();
-    std::string typ = SourceType(code) ; 
-    boost::algorithm::to_lower(typ);
-    return typ ; 
-}
-
-const char* Opticks::Flag(const unsigned int flag)
-{
-    const char* s = 0 ; 
-    switch(flag)
-    {
-        case 0:                s=ZERO_;break;
-        case CERENKOV:         s=CERENKOV_;break;
-        case SCINTILLATION:    s=SCINTILLATION_ ;break; 
-        case MISS:             s=MISS_ ;break; 
-        case BULK_ABSORB:      s=BULK_ABSORB_ ;break; 
-        case BULK_REEMIT:      s=BULK_REEMIT_ ;break; 
-        case BULK_SCATTER:     s=BULK_SCATTER_ ;break; 
-        case SURFACE_DETECT:   s=SURFACE_DETECT_ ;break; 
-        case SURFACE_ABSORB:   s=SURFACE_ABSORB_ ;break; 
-        case SURFACE_DREFLECT: s=SURFACE_DREFLECT_ ;break; 
-        case SURFACE_SREFLECT: s=SURFACE_SREFLECT_ ;break; 
-        case BOUNDARY_REFLECT: s=BOUNDARY_REFLECT_ ;break; 
-        case BOUNDARY_TRANSMIT:s=BOUNDARY_TRANSMIT_ ;break; 
-        case TORCH:            s=TORCH_ ;break; 
-        case NAN_ABORT:        s=NAN_ABORT_ ;break; 
-        case G4GUN:            s=G4GUN_ ;break; 
-        default:               s=BAD_FLAG_  ;
-                               LOG(warning) << "Opticks::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
-    }
-    return s;
-}
-
-
- 
-
-std::string Opticks::FlagSequence(const unsigned long long seqhis)
-{
-    std::stringstream ss ;
-    assert(sizeof(unsigned long long)*8 == 16*4);
-    for(unsigned int i=0 ; i < 16 ; i++)
-    {
-        unsigned long long f = (seqhis >> i*4) & 0xF ; 
-        unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
-        ss << Flag(flg) << " " ;
-    }
-    return ss.str();
-}
-
-
-
 const char* Opticks::Material(const unsigned int mat)
 {
     if(G_MATERIAL_NAMES == NULL) G_MATERIAL_NAMES = new NPropNames("GMaterialLib") ;
@@ -565,8 +388,83 @@ std::string Opticks::MaterialSequence(const unsigned long long seqmat)
 }
 
 
+TorchStepNPY* Opticks::makeSimpleTorchStep()
+{
+    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1);
+
+    std::string config = m_cfg->getTorchConfig() ;
+
+    if(!config.empty()) torchstep->configure(config.c_str());
+
+    unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
+    torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
+
+    return torchstep ; 
+}
 
 
+
+std::string Opticks::describeModifiers(unsigned int modifiers)
+{
+    std::stringstream ss ; 
+    if(modifiers & e_shift)   ss << "shift " ; 
+    if(modifiers & e_control) ss << "control " ; 
+    if(modifiers & e_option)  ss << "option " ; 
+    if(modifiers & e_command) ss << "command " ;
+    return ss.str(); 
+}
+bool Opticks::isShift(unsigned int modifiers) { return modifiers & e_shift ; }
+bool Opticks::isOption(unsigned int modifiers) { return modifiers & e_option ; }
+bool Opticks::isCommand(unsigned int modifiers) { return modifiers & e_command ; }
+bool Opticks::isControl(unsigned int modifiers) { return modifiers & e_control ; }
+
+
+unsigned int Opticks::getRngMax(){       return m_cfg->getRngMax(); }
+unsigned int Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
+unsigned int Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
+float Opticks::getEpsilon() {            return m_cfg->getEpsilon()  ; }
+bool Opticks::hasOpt(const char* name) { return m_cfg->hasOpt(name); }
+
+
+
+
+
+
+const char* Opticks::getDetector() { return m_resource->getDetector(); }
+bool Opticks::isJuno() {    return m_resource->isJuno(); }
+bool Opticks::isDayabay() { return m_resource->isDayabay(); }
+bool Opticks::isPmtInBox(){ return m_resource->isPmtInBox(); }
+bool Opticks::isOther() {   return m_resource->isOther(); }
+bool Opticks::isValid() {   return m_resource->isValid(); }
+
+std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
+{
+    const char* udet = getUDet();
+    return m_resource->getPreferenceDir(type, udet, subtype);
+}
+
+std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool relative) { return m_resource->getObjectPath(name, ridx, relative); }
+std::string Opticks::getRelativePath(const char* path) { return m_resource->getRelativePath(path); }
+
+OpticksQuery*   Opticks::getQuery() {     return m_resource->getQuery(); }
+OpticksColors*  Opticks::getColors() {    return m_resource->getColors(); }
+OpticksFlags*   Opticks::getFlags() {     return m_resource->getFlags(); }
+OpticksAttrSeq* Opticks::getFlagNames() { return m_resource->getFlagNames(); }
+Types*          Opticks::getTypes() {     return m_resource->getTypes(); }
+Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
+const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdPath() : NULL ; }
+const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdFold() : NULL ; }
+const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
+const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
+const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
+
+
+void Opticks::cleanup()
+{
+    LOG(info) << "Opticks::cleanup" ;
+    delete m_log ; 
+    m_log = NULL ;
+}
 
 
 void Opticks::configureF(const char* name, std::vector<float> values)
@@ -591,94 +489,4 @@ void Opticks::configureF(const char* name, std::vector<float> values)
      }   
 }
  
-
-
-
-TorchStepNPY* Opticks::makeSimpleTorchStep()
-{
-    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1);
-
-    std::string config = m_cfg->getTorchConfig() ;
-
-    if(!config.empty()) torchstep->configure(config.c_str());
-
-
-    unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
-    torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
-
-    return torchstep ; 
-}
-
-
-
-
-std::string Opticks::describeModifiers(unsigned int modifiers)
-{
-    std::stringstream ss ; 
-    if(modifiers & e_shift)   ss << "shift " ; 
-    if(modifiers & e_control) ss << "control " ; 
-    if(modifiers & e_option)  ss << "option " ; 
-    if(modifiers & e_command) ss << "command " ;
-    return ss.str(); 
-}
-
-bool Opticks::isShift(unsigned int modifiers)
-{
-    return modifiers & e_shift ; 
-}
-bool Opticks::isOption(unsigned int modifiers)
-{
-    return modifiers & e_option ; 
-}
-bool Opticks::isCommand(unsigned int modifiers)
-{
-    return modifiers & e_command ; 
-}
-bool Opticks::isControl(unsigned int modifiers)
-{
-    return modifiers & e_control ; 
-}
-
-
-
-const char* Opticks::getDetector()
-{
-    return m_resource->getDetector();
-}
-
-bool Opticks::isJuno()
-{
-    return m_resource->isJuno();
-}
-
-bool Opticks::isDayabay()
-{
-    return m_resource->isDayabay();
-}
-bool Opticks::isPmtInBox()
-{
-    return m_resource->isPmtInBox();
-}
-bool Opticks::isOther()
-{
-    return m_resource->isOther();
-}
-bool Opticks::isValid()
-{
-    return m_resource->isValid();
-}
-
-std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool relative)
-{
-    return m_resource->getObjectPath(name, ridx, relative);
-}
-
-
-void Opticks::cleanup()
-{
-    LOG(info) << "Opticks::cleanup" ;
-    delete m_log ; 
-    m_log = NULL ;
-}
-
 

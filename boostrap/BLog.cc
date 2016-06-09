@@ -55,14 +55,13 @@ void BLog::configure(int argc, char** argv)
         if(strcmp(argv[i], "--exitpause")==0)   setExitPause(true) ;    
     }
 
+    if(argc > 0)
     {
         std::string stem = fsutil::Stem(argv[0]);
         std::string logname(stem) ;
         if(nogeocache) logname += ".nogeocache" ; 
-        logname += ".log" ; 
-
+        logname += ".log" ;
         // LOG(trace) << "BLog::configure" << " logname " << logname ;
-
         setName(logname.c_str()); // logname derived from basename of executable, always available
     }
 

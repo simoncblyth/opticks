@@ -1,6 +1,7 @@
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksFlags.h"
+#include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 
 // g4-
@@ -105,7 +106,7 @@ void CRecorder::init()
 
     const char* typ = m_evt->getTyp();
 
-    m_gen = Opticks::SourceCode(typ);
+    m_gen = OpticksFlags::SourceCode(typ);
 
     assert( m_gen == TORCH || m_gen == G4GUN  );
 
@@ -428,7 +429,7 @@ void CRecorder::Dump(const char* msg)
               << " record_id " << std::setw(7) << m_record_id
               << std::endl 
               << " seqhis " << std::hex << m_seqhis << std::dec 
-              << " " << Opticks::FlagSequence(m_seqhis) 
+              << " " << OpticksFlags::FlagSequence(m_seqhis) 
               << std::endl 
               << " seqmat " << std::hex << m_seqmat << std::dec 
               << " " << m_clib->MaterialSequence(m_seqmat) 

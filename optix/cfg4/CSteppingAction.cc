@@ -25,6 +25,7 @@
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
+#include "OpticksFlags.hh"
 
 // npy-
 #include "BLog.hh"
@@ -265,8 +266,8 @@ void CSteppingAction::compareRecords()
 
         if(!same_seqhis)
         { 
-             std::cout << "(rec)" << Opticks::FlagSequence(rec_seqhis) << std::endl ;  
-             std::cout << "(rdr)" << Opticks::FlagSequence(rdr_seqhis) << std::endl ;  
+             std::cout << "(rec)" << OpticksFlags::FlagSequence(rec_seqhis) << std::endl ;  
+             std::cout << "(rdr)" << OpticksFlags::FlagSequence(rdr_seqhis) << std::endl ;  
         }
         if(!same_seqmat)
         { 

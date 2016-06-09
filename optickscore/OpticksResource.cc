@@ -1,4 +1,7 @@
 
+// CMake generated defines from binary_dir/inc
+#include "OpticksCMakeConfig.hh"   
+
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
@@ -40,6 +43,8 @@ const char* OpticksResource::DEFAULT_CTRL = "volnames" ;
 void OpticksResource::init()
 {
    LOG(trace) << "OpticksResource::init" ; 
+
+   m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ;
 
    readEnvironment();
    readMetadata();

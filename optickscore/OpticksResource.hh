@@ -5,6 +5,7 @@
 #include <cstring>
 #include <glm/glm.hpp>
 
+
 class Opticks ; 
 class OpticksQuery ; 
 class OpticksColors ; 
@@ -41,6 +42,7 @@ class OpticksResource {
        void identifyGeometry();
        void setValid(bool valid);
     public:
+       const char* getInstallPrefix();
        const char* getIdPath();
        const char* getIdFold();  // parent directory of idpath
        std::string getRelativePath(const char* path); 
@@ -93,6 +95,7 @@ class OpticksResource {
        Opticks*    m_opticks ; 
        const char* m_envprefix ; 
        const char* m_lastarg ; 
+       const char* m_install_prefix ;  // from OpticksCMakeConfig header
    private:
        // results of readEnvironment
        const char* m_geokey ;
@@ -131,6 +134,8 @@ inline OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix,
        m_opticks(opticks),
        m_envprefix(strdup(envprefix)),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
+       m_install_prefix(NULL),
+
        m_geokey(NULL),
        m_daepath(NULL),
        m_gdmlpath(NULL),
@@ -156,6 +161,14 @@ inline OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix,
 {
     init();
 }
+
+
+
+inline const char* OpticksResource::getInstallPrefix()
+{
+    return m_install_prefix ; 
+}
+
 
 
 inline void OpticksResource::setValid(bool valid)

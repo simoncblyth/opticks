@@ -1,51 +1,58 @@
 //  ggv --attr
 #include "Opticks.hh"
 
+#include "OpticksAttrSeq.hh"
 #include "OpticksFlags.hh"
+#include "OpticksEvent.hh"
+
 #include "GMaterialLib.hh"
 #include "GBndLib.hh"
-#include "OpticksAttrSeq.hh"
 #include "Index.hpp"
 
 #include <iostream>
 #include <iomanip>
+#include <cassert>
 
 
-void test_history_sequence(Opticks* cache)
+void test_history_sequence(Opticks* opticks)
 {
-    OpticksFlags* flags = cache->getFlags();
+    OpticksFlags* flags = opticks->getFlags();
     OpticksAttrSeq* qflg = flags->getAttrIndex();
+    assert(qflg);
     qflg->dump();
 
-    Index* seqhis = Index::load(cache->getIdPath(), "History_Sequence");
+    Index* seqhis = opticks->loadHistoryIndex(); 
+    assert(seqhis);
     seqhis->dump();
 
     qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
     qflg->dumpTable(seqhis, "seqhis"); 
 }
 
-void test_material_sequence(Opticks* cache)
+void test_material_sequence(Opticks* opticks)
 {
-    GMaterialLib* mlib = GMaterialLib::load(cache);
+    GMaterialLib* mlib = GMaterialLib::load(opticks);
     OpticksAttrSeq* qmat = mlib->getAttrNames();
     qmat->dump();
 
-    Index* seqmat = Index::load(cache->getIdPath(), "Material_Sequence");
+    Index* seqmat = opticks->loadMaterialIndex(); 
+    assert(seqmat);
     seqmat->dump();
 
     qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
     qmat->dumpTable(seqmat, "seqmat"); 
 }
 
-void test_index_boundaries(Opticks* cache)
+void test_index_boundaries(Opticks* opticks)
 {
-    GBndLib* blib = GBndLib::load(cache, true);
+    GBndLib* blib = GBndLib::load(opticks, true);
     blib->close(); 
 
     OpticksAttrSeq* qbnd = blib->getAttrNames();
     qbnd->dump();
 
-    Index* boundaries = Index::load(cache->getIdPath(), "indexBoundaries");
+    Index* boundaries = opticks->loadBoundaryIndex(); 
+    assert(boundaries);
     boundaries->dump();
    
 
@@ -54,9 +61,9 @@ void test_index_boundaries(Opticks* cache)
 }
 
 
-void test_material_dump(Opticks* cache)
+void test_material_dump(Opticks* opticks)
 {
-    GMaterialLib* mlib = GMaterialLib::load(cache);
+    GMaterialLib* mlib = GMaterialLib::load(opticks);
     OpticksAttrSeq* qmat = mlib->getAttrNames();
     const char* mats = "Acrylic,GdDopedLS,LiquidScintillator,ESR,MineralOil" ;
     qmat->dump(mats);

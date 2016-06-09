@@ -17,6 +17,7 @@ class Timer ;
 class Types ;
 class Typ ;
 
+class Index ; 
 class OpticksEvent ;
 class OpticksResource ; 
 class OpticksColors ; 
@@ -54,34 +55,6 @@ class Opticks {
 
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
-       static const char* ZERO_ ;
-       static const char* CERENKOV_ ;
-       static const char* SCINTILLATION_ ;
-
-       static const char* MISS_ ;
-       static const char* BULK_ABSORB_ ;
-       static const char* BULK_REEMIT_ ;
-       static const char* BULK_SCATTER_ ;
-       static const char* SURFACE_DETECT_ ;
-       static const char* SURFACE_ABSORB_ ;
-       static const char* SURFACE_DREFLECT_ ;
-       static const char* SURFACE_SREFLECT_ ;
-       static const char* BOUNDARY_REFLECT_ ;
-       static const char* BOUNDARY_TRANSMIT_ ;
-       static const char* TORCH_ ;
-
-        // unclear how to handle as cannot do parallel wise like TORCH_, G4 only 
-       static const char* G4GUN_ ;   
-
-       static const char* NAN_ABORT_ ;
-       static const char* BAD_FLAG_ ;
-       static const char* OTHER_ ;
-
-       static const char* cerenkov_ ;
-       static const char* scintillation_ ;
-       static const char* torch_ ;
-       static const char* g4gun_ ;
-       static const char* other_ ;
 
        static const char* BNDIDX_NAME_ ;
        static const char* SEQHIS_NAME_ ;
@@ -97,11 +70,6 @@ class Opticks {
                 CFG4_MODE = 0x1 << 3
             }; 
          
-       static const char* SourceType(int code);
-       static const char* SourceTypeLowercase(int code);
-       static unsigned int SourceCode(const char* type);
-       static const char* Flag(const unsigned int flag);
-       static std::string FlagSequence(const unsigned long long seqhis);
    public:
        static NPropNames* G_MATERIAL_NAMES ;
        static const char* Material(const unsigned int mat);
@@ -116,10 +84,8 @@ class Opticks {
 
    public:
        Opticks(int argc=0, char** argv=NULL, const char* envprefix="OPTICKS_");
-
    private:
        void init();
-       void preargs(int argc, char** argv);
    public:
        void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
@@ -170,12 +136,23 @@ class Opticks {
        Parameters*          getParameters();
        NState*              getState();
        std::string          getModeString();
+   public:
+       unsigned int         getSourceCode();
+       const char*          getSourceType();
+       const char*          getEventTag();
+       const char*          getEventCat();
        const char*          getUDet();
+   public:
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        TorchStepNPY*        makeSimpleTorchStep();
    public:
        OpticksEvent*        makeEvent(); 
+   public:
+       // load precooked indices
+       Index*               loadHistoryIndex();
+       Index*               loadMaterialIndex();
+       Index*               loadBoundaryIndex();
    public:
        const glm::vec4&  getTimeDomain();
        const glm::vec4&  getSpaceDomain();
@@ -194,11 +171,9 @@ class Opticks {
        unsigned int getRecordMax();
        float        getEpsilon();
    public:
-       unsigned int getSourceCode();
-       std::string getSourceType();
-   public:
        void setExit(bool exit=true);
    public:
+       bool hasArg(const char* arg);
        bool isExit();
        bool isCompute();
        bool isInterop();
@@ -214,12 +189,11 @@ class Opticks {
    private:
        int                  m_argc ; 
        char**               m_argv ; 
-
-       const char*      m_install_prefix ;  // from OpticksCMakeConfig header
-       const char*      m_envprefix ;
-       OpticksResource* m_resource ; 
-       BLog*            m_log ; 
-       NState*          m_state ; 
+       const char*          m_envprefix ;
+   private:
+       OpticksResource*     m_resource ; 
+       BLog*                m_log ; 
+       NState*              m_state ; 
    private:
        bool             m_exit ; 
        bool             m_compute ; 
@@ -231,8 +205,10 @@ class Opticks {
        OpticksCfg<Opticks>* m_cfg ; 
        Timer*               m_timer ; 
        Parameters*          m_parameters ; 
+   private:
        const char*          m_detector ; 
-
+       const char*          m_tag ; 
+       const char*          m_cat ; 
    private:
        glm::vec4            m_time_domain ; 
        glm::vec4            m_space_domain ; 
@@ -255,10 +231,9 @@ inline Opticks::Opticks(int argc, char** argv, const char* envprefix)
      :
        m_argc(argc),
        m_argv(argv),
-       m_install_prefix(NULL),
        m_envprefix(strdup(envprefix)),
-       m_resource(NULL),
 
+       m_resource(NULL),
        m_log(NULL),
        m_state(NULL),
 
@@ -273,9 +248,20 @@ inline Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_timer(NULL),
        m_parameters(NULL),
        m_detector(NULL),
+       m_tag(NULL),
+       m_cat(NULL),
        m_mode(0u)
 {
        init();
+}
+
+
+
+inline bool Opticks::hasArg(const char* arg)
+{
+    bool has = false ; 
+    for(int i=1 ; i < m_argc ; i++ ) if(strcmp(m_argv[i], arg) == 0) has = true ; 
+    return has ; 
 }
 
 inline void Opticks::setCfg(OpticksCfg<Opticks>* cfg)
@@ -408,10 +394,4 @@ inline void Opticks::setExit(bool exit)
 {
     m_exit = exit  ;   
 }
-
-inline const char* Opticks::getInstallPrefix()
-{
-    return m_install_prefix ; 
-}
-
  

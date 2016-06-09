@@ -2,12 +2,13 @@
 #include "Format.hh"
 #include "State.hh"
 #include "OpStatus.hh"
-#include "Opticks.hh"
 #include "CPropLib.hh"
 
 // optickscore-
+#include "Opticks.hh"
 #include "OpticksPhoton.h"
 #include "OpticksEvent.hh"
+#include "OpticksFlags.hh"
 
 // npy-
 #include "BLog.hh"
@@ -23,7 +24,7 @@ void Rec::init()
     m_steps_per_photon = m_evt->getMaxRec() ;    
 
     const char* typ = m_evt->getTyp();
-    m_genflag = Opticks::SourceCode(typ);
+    m_genflag = OpticksFlags::SourceCode(typ);
 
     assert( m_genflag == TORCH || m_genflag == G4GUN );
 }
@@ -213,7 +214,7 @@ void Rec::Dump(const char* msg)
                   << std::endl
                   << ::Format("stepStatus", OpStepString(pre->GetStepStatus()), OpStepString(post->GetStepStatus()) )
                   << std::endl
-                  << ::Format("flag", Opticks::Flag(preFlag), Opticks::Flag(postFlag) )
+                  << ::Format("flag", OpticksFlags::Flag(preFlag), OpticksFlags::Flag(postFlag) )
                   << std::endl
                   << ::Format("bs pri/cur", OpBoundaryAbbrevString(prior_boundary_status),OpBoundaryAbbrevString(boundary_status))
                   << std::endl
@@ -225,7 +226,7 @@ void Rec::Dump(const char* msg)
     }
 
     std::cout << "(rec)FlagSequence "
-              << Opticks::FlagSequence(m_seqhis) 
+              << OpticksFlags::FlagSequence(m_seqhis) 
               << std::endl ;
 
     std::cout << "(rec)MaterialSequence "

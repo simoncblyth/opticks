@@ -1,5 +1,6 @@
 // ggv --itemlist
 #include "Opticks.hh"
+#include "BLog.hh"
 
 #include "GItemList.hh"
 
@@ -54,6 +55,12 @@ void test_makeSlice(Opticks* cache)
     GItemList* il = GItemList::load(cache->getIdPath(), "GPmt", "GPmt/0");
     il->dump();
 
+    if(il->getNumKeys() == 0) 
+    {
+        LOG(fatal) << "test_makeSlice FAILED TO LOAD PMT" ;
+        return ; 
+    }
+
     GItemList* sl = il->make_slice("0:4");
     sl->dump("sliced");
 }
@@ -63,11 +70,9 @@ void test_makeSlice(Opticks* cache)
 
 
 
-
-
 int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks(argc, argv, "GItemList.log");
+    Opticks* opticks = new Opticks(argc, argv);
 
     //test_replaceFields(opticks);
     test_makeSlice(opticks);

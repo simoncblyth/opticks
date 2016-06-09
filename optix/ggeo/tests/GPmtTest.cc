@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks(argc, argv, "pmttest.log");
+    Opticks* opticks = new Opticks(argc, argv);
 
     for(int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
     NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;
@@ -22,6 +22,11 @@ int main(int argc, char** argv)
     GBndLib* blib = GBndLib::load(opticks, true);
 
     GPmt* pmt = GPmt::load(opticks, blib, 0, slice);
+    if(!pmt)
+    {
+        LOG(fatal) << argv[0] << " FAILED TO LOAD PMT " ; 
+        return 1 ;
+    }
 
     GParts* ppmt = pmt->getParts();
 

@@ -81,6 +81,10 @@ class OpticksEvent {
       //    cat: optional override of det for test categorization, eg PmtInBox
       //
       static OpticksEvent* load(const char* typ, const char* tag, const char* det, const char* cat=NULL, bool verbose=false);
+      static Index* loadHistoryIndex(  const char* typ, const char* tag, const char* udet);
+      static Index* loadMaterialIndex( const char* typ, const char* tag, const char* udet);
+      static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
+      static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
    public:
        OpticksEvent(const char* typ, const char* tag, const char* det, const char* cat=NULL);
        // CAUTION: typically created via Opticks::makeEvent 
@@ -528,6 +532,10 @@ inline const glm::vec4& OpticksEvent::getWavelengthDomain()
 { 
     return m_wavelength_domain ; 
 }
+
+
+
+
 
 inline void OpticksEvent::setBoundaryIndex(Index* bndidx)
 {

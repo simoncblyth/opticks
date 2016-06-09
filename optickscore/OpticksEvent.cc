@@ -682,9 +682,9 @@ std::string OpticksEvent::speciesDir(const char* species, const char* udet, cons
     return dir ; 
 }
 
-
 std::string OpticksEvent::getSpeciesDir(const char* species)
 {
+   // eg species  "ix" for indices
     const char* udet = getUDet();
     return speciesDir(species, udet, m_typ );
 }
@@ -1034,6 +1034,8 @@ void OpticksEvent::indexPhotonsCPU()
 }
 
 
+
+
 void OpticksEvent::saveIndex(bool verbose)
 {
     const char* udet = getUDet();
@@ -1082,6 +1084,33 @@ void OpticksEvent::loadIndex()
     m_seqmat = Index::load(ixdir.c_str(), m_tag, Opticks::SEQMAT_NAME_ );  
     m_bndidx = Index::load(ixdir.c_str(), m_tag, Opticks::BNDIDX_NAME_ );
 }
+
+
+Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const char* udet, const char* name)
+{
+    const char* species = "ix" ; 
+    std::string ixdir = speciesDir(species, udet, typ);
+    Index* seqhis = Index::load(ixdir.c_str(), tag, name );
+    return seqhis ; 
+}
+
+Index* OpticksEvent::loadHistoryIndex( const char* typ, const char* tag, const char* udet)
+{
+    return loadNamedIndex(typ, tag, udet, Opticks::SEQHIS_NAME_); 
+}
+Index* OpticksEvent::loadMaterialIndex( const char* typ, const char* tag, const char* udet)
+{
+    return loadNamedIndex(typ, tag, udet, Opticks::SEQMAT_NAME_); 
+}
+Index* OpticksEvent::loadBoundaryIndex( const char* typ, const char* tag, const char* udet)
+{
+    return loadNamedIndex(typ, tag, udet, Opticks::BNDIDX_NAME_); 
+}
+
+
+
+
+
 
 
 

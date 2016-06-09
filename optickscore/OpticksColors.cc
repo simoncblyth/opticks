@@ -20,15 +20,10 @@ const char* OpticksColors::NAME = "GColors.json" ;
 OpticksColors* OpticksColors::load(const char* dir, const char* name)
 {
     OpticksColors* gc = new OpticksColors ; 
-
     if(!existsPath(dir, name))
-    { 
         LOG(warning) << "OpticksColors::load FAILED no file at  dir " << dir << " with name " << name ; 
-    }
     else
-    {
         gc->loadMaps(dir);
-    }
     return gc ; 
 }
 
@@ -37,11 +32,9 @@ void OpticksColors::loadMaps(const char* dir)
     loadMap<std::string, std::string>( m_name2hex, dir, NAME );
 }
 
-
 void OpticksColors::sort()
 {
     LOG(debug) << "OpticksColors::sort" ; 
-
     typedef std::map<std::string, std::string> MSS ; 
     for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) m_psychedelic_names.push_back(it->first) ;
     std::sort(m_psychedelic_names.begin(), m_psychedelic_names.end(), *this );
@@ -54,18 +47,15 @@ void OpticksColors::sort()
     } 
 }
 
-
 bool OpticksColors::operator() (const std::string& a, const std::string& b)
 {
     // sort order for dump 
     return getCode(a.c_str(),0) < getCode(b.c_str(),0) ; 
 }
 
-
 void OpticksColors::dump(const char* msg)
 {
     unsigned int num_colors = getNumColors();
-
     LOG(info) << msg 
               << " num_colors " << num_colors ; 
 
@@ -105,7 +95,6 @@ const char* OpticksColors::getHex( const char* name, const char* missing)
 {
     return m_name2hex.count(name) == 1 ? m_name2hex[name].c_str() : missing ;
 }
-
 
 nvec3 OpticksColors::getColor(const char* name, unsigned int missing)
 {
@@ -155,9 +144,6 @@ std::vector<unsigned int>& OpticksColors::getSpectralCodes()
     return m_spectral_codes ;
 }
 
-
-
-
 const char* OpticksColors::getName( const char* hex_, const char* missing)
 {
     typedef std::map<std::string, std::string> MSS ; 
@@ -169,8 +155,11 @@ const char* OpticksColors::getName( const char* hex_, const char* missing)
 void OpticksColors::test(const char* msg)
 {
     NPY<unsigned char>* buffer = make_buffer();
+    buffer->save("/tmp/OpticksColors.npy");
+
     unsigned char* data = buffer->getValues();
 
+    unsigned int nfail(0); 
     unsigned int count(0); 
     typedef std::map<std::string, std::string> MSS ; 
     for(MSS::iterator it=m_name2hex.begin() ; it != m_name2hex.end() ; it++ ) 
@@ -193,25 +182,27 @@ void OpticksColors::test(const char* msg)
              << setw(3)  << dec << count 
              << setw(20) << name  
              << setw(20) << hex_ 
+             << " [ color  "
              << setw(20) << dec << color 
              << setw(20) << hex << color
+             << " ] "
+             << " [ rgb "
+             << setw(20) << dec << rgb 
+             << setw(20) << hex << rgb << dec
+             << " ] "
              << setw(4)  << hex << red 
              << setw(4)  << hex << green
              << setw(4)  << hex << blue 
-             << setw(20) << hex << rgb<< dec
+             << " " << ( color != rgb  ? "MISMATCH" : "OK" )
              << endl ; 
 
-
         if(color != rgb)
-            LOG(fatal) << "OpticksColors::test"
-                       << " color " << hex << color << dec
-                       << " rgb " << hex << rgb << dec
-                       ;
-
-
-        assert(color == rgb);
+        {
+            nfail +=  1; 
+        }
         count++ ; 
     } 
+    assert(nfail == 0);
 
     delete buffer ; 
 
@@ -265,9 +256,14 @@ NPY<unsigned char>* OpticksColors::make_buffer()
 NPY<unsigned char>* OpticksColors::make_buffer(std::vector<unsigned int>& codes)
 {
     unsigned int n = codes.size();
-    unsigned char alpha = 0xFF ; 
+    unsigned char c_alpha = 0xFF ; 
     NPY<unsigned char>* buf = NPY<unsigned char>::make(n, 4 ); 
-    buf->zero();
+    buf->zero();    
+    unsigned char* data = buf->getValues();
+
+    LOG(trace) << "OpticksColors::make_buffer" 
+               << " n " << n 
+               ; 
 
     for(unsigned int i=0 ; i < n ; i++)
     {
@@ -276,10 +272,22 @@ NPY<unsigned char>* OpticksColors::make_buffer(std::vector<unsigned int>& codes)
         unsigned int green = (color & 0x00FF00) >> 8 ;
         unsigned int blue  = (color & 0x0000FF)      ;
 
-        buf->setValue( i, 0, 0, 0, red); 
-        buf->setValue( i, 1, 0, 0, green); 
-        buf->setValue( i, 2, 0, 0, blue); 
-        buf->setValue( i, 3, 0, 0, alpha); 
+        LOG(trace) << std::setw(4) << i 
+                  << std::setw(10) << hex << color << dec
+                  << std::setw(10) << hex << red << dec
+                  << std::setw(10) << hex << green << dec
+                  << std::setw(10) << hex << blue << dec
+                  ;
+
+        unsigned char c_red(red);
+        unsigned char c_green(green);
+        unsigned char c_blue(blue);
+
+        *(data + i*4 + 0) = c_red ; 
+        *(data + i*4 + 1) = c_green ; 
+        *(data + i*4 + 2) = c_blue ; 
+        *(data + i*4 + 3) = c_alpha ; 
+
     }  
     return buf ; 
 }
