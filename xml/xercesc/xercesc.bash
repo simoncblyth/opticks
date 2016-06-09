@@ -61,20 +61,27 @@ geant4 cmake options
 
 EOU
 }
-xercesc-dir(){ echo $(local-base)/env/xml/xercesc/xml/xercesc-xercesc ; }
-xercesc-cd(){  cd $(xercesc-dir); }
-xercesc-mate(){ mate $(xercesc-dir) ; }
-xercesc-get(){
-   local dir=$(dirname $(xercesc-dir)) &&  mkdir -p $dir && cd $dir
 
+xercesc-prefix(){  
+  case $(uname -s) in 
+      Darwin) echo /opt/local ;;
+    MINGW64*) echo /mingw64 ;;
+           *) echo /usr/local ;;
+  esac  
 }
 
-xercesc-prefix(){  echo /opt/local ; }
-xercesc-include-dir(){ echo /opt/local/include ; }
-xercesc-library(){  echo /opt/local/lib/libxerces-c.dylib ; }
+
+xercesc-include-dir(){ echo $(xercesc-prefix)/include ; }
+xercesc-library(){  
+  case $(uname -s) in 
+    Darwin) echo    $(xercesc-prefix)/lib/libxerces-c.dylib    ;;
+     MINGW64*) echo $(xercesc-prefix)/bin/libxerces-c-3-1.dll  ;;
+  esac 
+}
 
 xercesc-geant4-export(){
-  [ "$NODE_TAG" != "D" ] && return  
   export XERCESC_INCLUDE_DIR=$(xercesc-include-dir)
   export XERCESC_LIBRARY=$(xercesc-library)
 }
+
+

@@ -2,7 +2,7 @@
 g4-src(){      echo g4/g4.bash ; }
 g4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(g4-src)} ; }
 g4-vi(){       vi $(g4-source) ; }
-g4-usage(){ cat << EOU
+g4-usage(){ cat << \EOU
 
 Geant4
 ========
@@ -113,6 +113,7 @@ EOU
 g4-env(){      
    elocal-  
    xercesc-  
+   opticks-
 }
 
 g4-name(){ echo geant4.10.02 ; } 
@@ -120,9 +121,89 @@ g4-name2(){ echo Geant4-10.2.0 ; }
 
 
 g4-edir(){ echo $(env-home)/g4 ; }
-g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
-g4-idir(){ echo $(g4-dir).install ; }
+#g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
+g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
+
+
+g4-prefix(){  echo $(opticks-prefix)/externals ; }
 g4-bdir(){ echo $(g4-dir).build ; }
+
+g4-cmake-dir(){     echo $(g4-prefix)/lib/$(g4-name2) ; }
+g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
+
+
+g4-ecd(){  cd $(g4-edir); }
+g4-cd(){   cd $(g4-dir); }
+g4-icd(){  cd $(g4-prefix); }
+g4-bcd(){  cd $(g4-bdir); }
+g4-ccd(){  cd $(g4-cmake-dir); }
+g4-xcd(){  cd $(g4-examples-dir); }
+
+
+g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name).tar.gz ; }
+g4-get(){
+   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
+   local url=$(g4-url)
+   local tgz=$(basename $url)
+   local nam=${tgz/.tar.gz}
+
+   [ ! -f "$tgz" ] && curl -L -O $url 
+   [ ! -d "$nam" ] && tar zxvf $tgz 
+}
+
+
+g4-wipe(){
+   local bdir=$(g4-bdir)
+   rm -rf $bdir
+}
+
+g4-cmake(){
+   local iwd=$PWD
+
+   local bdir=$(g4-bdir)
+   mkdir -p $bdir
+
+   local idir=$(g4-prefix)
+   mkdir -p $idir
+
+   g4-bcd
+   cmake \
+       -G "$(opticks-cmake-generator)" \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DGEANT4_INSTALL_DATA=ON \
+       -DGEANT4_USE_GDML=ON \
+       -DXERCESC_ROOT_DIR=$(xercesc-prefix) \
+       -DCMAKE_INSTALL_PREFIX=$idir \
+       $(g4-dir)
+
+   cd $iwd
+}
+
+
+g4-configure()
+{
+   g4-wipe
+   g4-cmake $*
+}
+
+g4-make(){
+   g4-bcd
+   make -j4
+}
+
+g4--(){
+   ( g4-bcd ; make ${1:-install} ; )
+ }
+
+
+g4-export(){
+   source $(g4-idir)/bin/geant4.sh
+}
+
+
+
+
+################# below funcions for styduing G4 source ##################################
 
 g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
 g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
@@ -187,72 +268,5 @@ g4-look(){
      
    cd $iwd
 }
-
-
-g4-cmake-dir(){ echo $(g4-idir)/lib/$(g4-name2) ; }
-g4-examples-dir(){  echo $(g4-idir)/share/$(g4-name2)/examples ; }
-
-
-g4-ecd(){  cd $(g4-edir); }
-g4-cd(){   cd $(g4-dir); }
-g4-icd(){  cd $(g4-idir); }
-g4-bcd(){  cd $(g4-bdir); }
-g4-ccd(){  cd $(g4-cmake-dir); }
-g4-xcd(){  cd $(g4-examples-dir); }
-
-
-g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name).tar.gz ; }
-g4-get(){
-   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
-   local url=$(g4-url)
-   local tgz=$(basename $url)
-   local nam=${tgz/.tar.gz}
-
-   [ ! -f "$tgz" ] && curl -L -O $url 
-   [ ! -d "$nam" ] && tar zxvf $tgz 
-}
-
-
-g4-wipe(){
-   local bdir=$(g4-bdir)
-   rm -rf $bdir
-}
-
-g4-cmake(){
-   local iwd=$PWD
-
-   local bdir=$(g4-bdir)
-   mkdir -p $bdir
-
-   local idir=$(g4-idir)
-   mkdir -p $idir
-
-   g4-bcd
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DGEANT4_INSTALL_DATA=ON \
-       -DGEANT4_USE_GDML=ON \
-       -DXERCESC_ROOT_DIR=$(xercesc-prefix) \
-       -DCMAKE_INSTALL_PREFIX=$idir \
-       $(g4-dir)
-
-   cd $iwd
-}
-
-g4-make(){
-   g4-bcd
-   make -j4
-}
-
-g4-install(){
-   g4-bcd
-   make install
-}
-
-
-g4-export(){
-   source $(g4-idir)/bin/geant4.sh
-}
-
 
 

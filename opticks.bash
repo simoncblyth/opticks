@@ -506,7 +506,7 @@ EOU
 
 opticks-env(){      
    elocal-
-   g4- 
+   # dont pollute : otherwise can get loops 
 }
 opticks-home(){   echo $(env-home) ; }
 opticks-dir(){    echo $(local-base)/opticks ; }
@@ -558,6 +558,8 @@ opticks-cmake(){
    mkdir -p $bdir
    [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to reconfigure  && return  
    opticks-bcd
+   g4- 
+
    cmake \
         -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
