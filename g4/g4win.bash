@@ -50,6 +50,7 @@ MinGW/NSYS2 Approach
     [  4%] Linking CXX static library ../../BuildProducts/lib/lib_G4intercoms-archive.a
     [  4%] Built target _G4intercoms-archive
     Scanning dependencies of target genwindef
+
     [  4%] Building CXX object CMakeFiles/genwindef.dir/cmake/Modules/genwindef/genwindef.cpp.obj
     C:/msys64/usr/local/opticks/externals/g4/geant4.10.02/cmake/Modules/genwindef/genwindef.cpp:6:0: warning: ignoring #pragma warning  [-Wunknown-pragmas]
        #pragma warning ( disable : 4273 )
@@ -61,6 +62,7 @@ MinGW/NSYS2 Approach
     C:/msys64/usr/local/opticks/externals/g4/geant4.10.02/cmake/Modules/genwindef/genwindef.cpp:36:8: warning: unused variable 'debug' [-Wunused-variable]
        bool debug(false);
             ^
+
     [  4%] Building CXX object CMakeFiles/genwindef.dir/cmake/Modules/genwindef/LibSymbolInfo.cpp.obj
     C:/msys64/usr/local/opticks/externals/g4/geant4.10.02/cmake/Modules/genwindef/LibSymbolInfo.cpp: In member function 'BOOL CLibSymbolInfo::Dump(LPTSTR, std::ostr                             eam&)':
     C:/msys64/usr/local/opticks/externals/g4/geant4.10.02/cmake/Modules/genwindef/LibSymbolInfo.cpp:18:59: error: cast from 'PSTR {aka char*}' to 'DWORD {aka long u                             nsigned int}' loses precision [-fpermissive]
