@@ -91,13 +91,13 @@ Tools like hg, git, curl, tar, zip are assumed to be in your PATH.
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        notes
 =====================  ===============  =============   ==============================================================================
-graphics/assimp        assimp-          Assimp          github.com/simoncblyth/assimp fork of unspecified github version that handles G4DAE extras 
-graphics/openmesh      openmesh-        OpenMesh        www.openmesh.org OpenMesh 4.1 tarball 
+graphics/assimp        assimp-          Assimp          github.com/simoncblyth/assimp fork of unspecified github version that handles G4DAE extras, cmake configured
+graphics/openmesh      openmesh-        OpenMesh        www.openmesh.org OpenMesh 4.1 tarball, cmake configured, provides VS2015 binaries http://www.openmesh.org/download/
 graphics/glm           glm-             GLM             sourceforge tarball 0.9.6.3, header only
-graphics/glew          glew-            GLEW            sourceforge tarball 1.12.0, OpenGL extensions loading library   
-graphics/glfw          glfw-            GLFW            sourceforge tarball 3.1.1, library for creating windows with OpenGL and receiving input   
-graphics/gleq          gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example
-graphics/gui/imgui     imgui-                           github.com/simoncblyth/imgui
+graphics/glew          glew-            GLEW            sourceforge tarball 1.12.0, OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
+graphics/glfw          glfw-            GLFW            sourceforge tarball 3.1.1, library for creating windows with OpenGL and receiving input, cmake generation    
+graphics/gleq          gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example, header only
+graphics/gui/imgui     imgui-                           github.com/simoncblyth/imgui expected to drop source into using project, simple CMakeLists.txt added by me
 =====================  ===============  =============   ==============================================================================
 
 

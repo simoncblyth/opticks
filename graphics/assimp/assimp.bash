@@ -292,6 +292,9 @@ assimp-release-url(){  echo http://downloads.sourceforge.net/project/assimp/assi
 assimp-dev-url(){      echo git@github.com:simoncblyth/assimp.git ; } 
 assimp-url(){          echo http://github.com/simoncblyth/assimp.git ; } 
 
+assimp-doc(){ open   ; }
+
+
 assimp-fold(){ echo $(dirname $(assimp-dir)); }
 
 assimp-base(){   echo $(opticks-prefix)/externals/assimp ; }
