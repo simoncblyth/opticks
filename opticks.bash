@@ -353,12 +353,20 @@ opticks-externals-install(){
    echo $msg DONE $(date)
 }
 
+
+
+
 opticks-cmake-generator()
 {
-    case $(uname -s) in
-       MINGW64_NT*)  echo MSYS Makefiles ;;
-                 *)  echo Unix Makefiles ;;
-    esac                          
+    if [ "$NODE_TAG" == "M" ]; then
+       echo  MSYS Makefiles 
+    else  
+       case $(uname -s) in
+         MINGW64_NT*)  echo Visual Studio 14 2015 ;;
+                   *)  echo Unix Makefiles ;;
+       esac                          
+    fi
+
 }
 
 opticks-cmake(){

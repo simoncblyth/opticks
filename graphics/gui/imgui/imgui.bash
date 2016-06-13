@@ -16,11 +16,28 @@ that allows usage of env/cmake/Modules/FindImGui.cmake
 This is tested by imguitest-
 
 
+
+Windows VS2015
+------------------
+
+Need to generalize the env FindGLEW.cmake FindGLFW.cmake to work with WIN32::
+
+    WIN32....
+     DEFINITIONS :
+    CMake Error: The following variables are used in this project, but they are set to NOTFOUND.
+    Please set them or make sure they are set and tested correctly in the CMake files:
+    GLEW_LIBRARY
+        linked by target "ImGui" in directory C:/usr/local/opticks/externals/imgui/imgui
+    GLFW_LIBRARY
+        linked by target "ImGui" in directory C:/usr/local/opticks/externals/imgui/imgui
+
+
+
+
 Issues
 -------
 
 * keeps dropping a imgui.ini from the launch directory, how to control or change location ?
-
 * need to find way to share input events between GLEQ and ImGui
 
 
@@ -249,19 +266,23 @@ imgui-configure()
 }
 
 
+imgui-config(){ echo Debug ; }
 imgui-make(){
   local iwd=$PWD
   imgui-bcd
-  make $*
+
+  #make $*
+  cmake --build . --config $(imgui-config) --target ${1:-install}
+
+
   cd $iwd
 }
 
 imgui--(){
   imgui-get
   imgui-cmake
-  imgui-make
-  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
   imgui-make install 
+  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
 }
 
 

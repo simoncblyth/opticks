@@ -257,22 +257,28 @@ glfw-configure()
    glfw-cmake $*
 }
 
+
+glfw-config()
+{
+   echo Debug
+}
+
 glfw-make(){
   local iwd=$PWD
   glfw-bcd
-  make $* 
+
+  #make $* 
+  cmake --build . --config $(glfw-config) --target ${1:-install}
+
+
   cd $iwd
 }
 
-glfw-install(){
-   glfw-make install
-}
 
 glfw--(){
    glfw-get
    glfw-cmake
-   glfw-make
-   glfw-install
+   glfw-make install
 }
 
 

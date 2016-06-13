@@ -10,7 +10,7 @@ set(GLEW_PREFIX "${OPTICKS_PREFIX}/externals")
 LINK_DIRECTORIES(${GLEW_PREFIX}/lib)
 
 find_library( GLEW_LIBRARY 
-              NAMES glew GLEW libglew32
+              NAMES glew GLEW libglew32 glew32
               PATHS ${GLEW_PREFIX}/lib )
 
 set( GLEW_LIBRARIES ${GLEW_LIBRARY} )

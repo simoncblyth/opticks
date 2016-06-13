@@ -406,10 +406,17 @@ assimp-cmake(){
    cd $iwd
 }
 
+
+
+assimp-config(){ echo "Debug" ; }
+
 assimp-make(){
    local iwd=$PWD
    assimp-bcd
-   make $*  && cd $iwd
+
+   #make $*  
+   cmake --build . --config $(assimp-config) --target ${1:-install}
+
    cd $iwd
 }
 
