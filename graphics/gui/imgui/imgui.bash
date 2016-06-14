@@ -20,16 +20,24 @@ This is tested by imguitest-
 Windows VS2015
 ------------------
 
-Need to generalize the env FindGLEW.cmake FindGLFW.cmake to work with WIN32::
 
-    WIN32....
-     DEFINITIONS :
-    CMake Error: The following variables are used in this project, but they are set to NOTFOUND.
-    Please set them or make sure they are set and tested correctly in the CMake files:
-    GLEW_LIBRARY
-        linked by target "ImGui" in directory C:/usr/local/opticks/externals/imgui/imgui
-    GLFW_LIBRARY
-        linked by target "ImGui" in directory C:/usr/local/opticks/externals/imgui/imgui
+Finding GLFW and GLEW
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Rejigged glfw- and glew- to install into standard locations on windows.
+
+
+link.exe missing OpenGL symbols
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    imgui_impl_glfw_gl3.obj : error LNK2019: unresolved external symbol __imp__glBindTexture@8 referenced in function "bool __cdecl ImGui_ImplGlfwGL                                                         3_CreateDeviceObjects(void)" (?ImGui_ImplGlfwGL3_CreateDeviceObjects@@YA_NXZ) [C:\usr\local\opticks\externals\imgui\imgui.build\ImGui.vcxproj]
+    imgui_impl_glfw_gl3.obj : error LNK2019: unresolved external symbol __imp__glBlendFunc@8 referenced in function "void __cdecl ImGui_ImplGlfwGL3_                                                         RenderDrawLists(struct ImDrawData *)" (?ImGui_ImplGlfwGL3_RenderDrawLists@@YAXPAUImDrawData@@@Z) [C:\usr\local\opticks\externals\imgui\imgui.bui                                                         ld\ImGui.vcxproj]
+     
+
+
 
 
 
@@ -217,6 +225,16 @@ imgui-get(){
    cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/
    cd $iwd
 }
+
+imgui-cmake-diff(){
+   local cmd="diff $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/CMakeLists.txt"
+   echo $cmd
+   eval $cmd
+}
+imgui-cmake-copyback(){
+   cp $(imgui-sdir)/CMakeLists.txt $(imgui-edir)/CMakeLists.txt 
+}
+
 
 imgui-status(){
   local iwd=$PWD

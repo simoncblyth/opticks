@@ -1,7 +1,6 @@
 boost-src(){      echo boost/boost.bash ; }
 boost-source(){   echo ${BASH_SOURCE:-$(env-home)/$(boost-src)} ; }
 boost-vi(){       vim $(boost-source) ; }
-boost-env(){      elocal- ; }
 boost-usage(){ cat << EOU
 
 BOOST
@@ -213,67 +212,32 @@ boost python build
 
 EOU
 }
-boost-dir(){ echo $(local-base)/env/boost/$(boost-name) ; }
-boost-bdir(){   echo $(boost-dir).build ; }
-boost-prefix(){ echo $(boost-dir).local ; }
 
-boost-icd(){ cd $(boost-prefix) ; }
-
-
-
+boost-env(){      elocal- ; opticks- ;  }
 boost-ver(){ 
     #echo 1.54.0 
-    echo 1.60.0 
+    #echo 1.60.0 
+    echo 1.61.0 
 }
-
-boost-nuwa-plat(){
-  case $NODE_TAG in
-     N) echo i686-slc5-gcc41-dbg ;;
-     C) echo i686-slc4-gcc34-dbg ;;
-  esac
-}
-boost-libdir(){  
-   case $(boost-ver) in 
-     nuwa) echo $DYB/external/Boost/1.38.0_python2.7/$(boost-nuwa-plat)/lib ;;
-        *) echo  $(boost-prefix)/lib ;;
-   esac
-}
-boost-incdir(){  
-   case $(boost-ver) in 
-    nuwa) echo $DYB/external/Boost/1.38.0_python2.7/$(boost-nuwa-plat)/include/boost-1_38 ;; 
-       *) echo  $(boost-prefix)/include ;; 
-   esac
-}
-
-boost-python-lib(){
-   case $(boost-ver) in 
-     nuwa) echo $(boost-python-lib-nuwa) ;; 
-        *) echo boost_python ;; 
-   esac
-}
-
-boost-python-lib-nuwa(){
-  case $NODE_TAG in 
-     N) echo boost_python-gcc41-mt ;;
-     C) echo boost_python-gcc34-mt ;;
-  esac   
-}
-
-boost-cd(){  cd $(boost-dir); }
+boost-name(){ local ver=$(boost-ver) ; echo boost_${ver//./_} ; }
+boost-url(){ echo "http://downloads.sourceforge.net/project/boost/boost/$(boost-ver)/$(boost-name).tar.gz" ;  }
 
 
-boost-name(){ 
-  case $(boost-ver) in 
-    1.54.0) echo boost_1_54_0 ;; 
-    1.60.0) echo boost_1_60_0 ;; 
-  esac       
-}
-boost-url(){ 
-  case $(boost-ver) in 
-    1.54.0) echo http://downloads.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.gz ;; 
-    1.60.0) echo http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.gz ;; 
-  esac
-}
+boost-fold(){   echo $(opticks-prefix)/externals/boost ; }
+boost-dir(){    echo $(opticks-prefix)/externals/boost/$(boost-name) ; }
+boost-prefix(){ echo $(opticks-prefix)/externals ; }
+
+boost-bdir(){   echo $(boost-dir).build ; }
+boost-idir(){   echo $(boost-prefix)/include/boost ; }
+
+boost-cd(){   cd $(boost-dir); }
+boost-bcd(){  cd $(boost-bdir); }
+boost-icd(){  cd $(boost-idir); }
+boost-fcd(){  cd $(boost-fold); }
+
+
+boost-dir-old(){ echo $(local-base)/env/boost/$(boost-name) ; }
+boost-prefix-old(){ echo $(boost-dir).local ; }
 
 boost-get(){
    local iwd=$PWD
@@ -287,6 +251,45 @@ boost-get(){
 
    cd $iwd
 }
+
+
+
+boost--() {
+   boost-get
+   boost-bootstrap-build
+   boost-build
+}
+
+
+boost-bootstrap-help(){
+  boost-cd
+  ./bootstrap.sh --help
+}
+
+boost-bootstrap-build(){
+  boost-cd
+
+   case $(opticks-cmake-generator) in
+     "Visual Studio 14 2015") cmd "/C bootstrap.bat" ;;
+                           *) ./bootstrap.sh --prefix=$(boost-prefix) ;;  
+   esac
+
+  #./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
+}
+
+boost-build(){
+  boost-cd
+  ./b2 --build-dir=$(boost-bdir) install
+}
+
+
+
+
+
+
+
+
+
 
 
 boost-example-(){ cat << EOE
@@ -311,23 +314,13 @@ boost-example(){
   echo 1 2 3 4 5 6 7 8 9 | ./example 
 }
 
-boost-bootstrap-help(){
-  boost-cd
-  ./bootstrap.sh --help
-}
 
-boost-bootstrap-build(){
-  boost-cd
-  #./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
-  ./bootstrap.sh --prefix=$(boost-prefix)
-}
 
-boost-build(){
-  boost-cd
-  ./b2 --build-dir=$(boost-bdir) install
-}
 
-boost-install-dir() {
+
+
+
+old-boost-install-dir() {
     case $NODE_TAG in
         D) echo /opt/local ;;
         LT) echo /home/ihep/data/doc/home/ihep/juno-dev-new/ExternalLibs/Boost/1.55.0/ ;;
@@ -335,20 +328,45 @@ boost-install-dir() {
         *) echo $(local-base);;
     esac
 }
-
-boost-idir() {
-    boost-install-dir
-}
-
-boost-suffix() {
+old-boost-suffix() {
     case $NODE_TAG in
         D) echo '-mt' ;;
         *) echo ;;
     esac
 }
-
-boost-export() {
+old-boost-export() {
     export BOOST_INSTALL_DIR=$(boost-install-dir)
     export BOOST_SUFFIX=$(boost-suffix)
+}
+
+old-boost-nuwa-plat(){
+  case $NODE_TAG in
+     N) echo i686-slc5-gcc41-dbg ;;
+     C) echo i686-slc4-gcc34-dbg ;;
+  esac
+}
+old-boost-libdir(){  
+   case $(boost-ver) in 
+     nuwa) echo $DYB/external/Boost/1.38.0_python2.7/$(boost-nuwa-plat)/lib ;;
+        *) echo  $(boost-prefix)/lib ;;
+   esac
+}
+old-boost-incdir(){  
+   case $(boost-ver) in 
+    nuwa) echo $DYB/external/Boost/1.38.0_python2.7/$(boost-nuwa-plat)/include/boost-1_38 ;; 
+       *) echo  $(boost-prefix)/include ;; 
+   esac
+}
+old-boost-python-lib(){
+   case $(boost-ver) in 
+     nuwa) echo $(boost-python-lib-nuwa) ;; 
+        *) echo boost_python ;; 
+   esac
+}
+old-boost-python-lib-nuwa(){
+  case $NODE_TAG in 
+     N) echo boost_python-gcc41-mt ;;
+     C) echo boost_python-gcc34-mt ;;
+  esac   
 }
 

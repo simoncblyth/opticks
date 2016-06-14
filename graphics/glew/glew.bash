@@ -57,10 +57,23 @@ glew-bcd(){  cd $(glew-bdir); }
 glew-icd(){  cd $(glew-idir); }
 glew-ecd(){  cd $(glew-edir); }
 
-glew-version(){ echo 1.12.0 ; }
+#glew-version(){ echo 1.12.0 ; }
+glew-version(){ echo 1.13.0 ; }
 glew-name(){ echo glew-$(glew-version) ;}
 
-glew-url(){ echo http://downloads.sourceforge.net/project/glew/glew/$(glew-version)/$(glew-name).zip ; }
+glew-url(){ 
+   local gen=$(opticks-cmake-generator)
+   case $gen in
+      "Visual Studio 14 2015") echo http://downloads.sourceforge.net/project/glew/glew/$(glew-version)/$(glew-name)-win32.zip ;;
+                            *) echo http://downloads.sourceforge.net/project/glew/glew/$(glew-version)/$(glew-name).zip ;;
+   esac
+}
+
+
+glew-doc(){
+  local doc=$(glew-dir)/doc/index.html
+  env-open $doc
+}
 
 glew-get(){
    local dir=$(dirname $(glew-dir)) &&  mkdir -p $dir && cd $dir
@@ -82,24 +95,55 @@ glew-export (){
 
 glew-edit(){ vi $(opticks-home)/cmake/Modules/FindGLEW.cmake ; }
 
+
 glew-make(){
+
+   local target=${1:-install}
    local iwd=$PWD
    glew-scd
-   make GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix)  
-   cd $iwd
-}
-glew-install(){
-   local iwd=$PWD
-   glew-scd
-   make install GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix)  
+
+   local gen=$(opticks-cmake-generator)
+   case $gen in 
+      "Visual Studio 14 2015") glew-install-win ;; 
+                            *) make $target GLEW_PREFIX=$(glew-prefix) GLEW_DEST=$(glew-prefix)  ;;
+   esac
    cd $iwd
 }
 
+
+glew-install-win(){
+   local msg=" === $FUNCNAME :"
+   local iwd=$PWD
+   glew-scd
+
+   local bin=$(glew-prefix)/bin
+   local lib=$(glew-prefix)/lib
+   local inc=$(glew-prefix)/include/GL
+
+   [ ! -d "$bin" ] && echo $msg making bin $bin && mkdir -p $bin
+   [ ! -d "$lib" ] && echo $msg making lib $lib && mkdir -p $lib
+   [ ! -d "$inc" ] && echo $msg making inc $inc && mkdir -p $inc
+
+   cp -v bin/Release/Win32/glew32.dll $bin/
+   cp -v lib/Release/Win32/glew32.lib $lib/
+   
+   local hdr
+   for hdr in $(ls -1 include/GL); do
+      cp -v include/GL/$hdr $inc/  
+   done
+
+   cd $iwd
+}
+
+
+
 glew--() {
     glew-get
-    glew-make
-    glew-install
+    glew-make install
 }
+
+
+
 
 glew-cmake-not-working(){
    local iwd=$PWD

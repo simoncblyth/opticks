@@ -52,7 +52,10 @@ endif(UNIX AND NOT APPLE)
 
 
 if(WIN32)
-   message("WIN32....")
+   # find_library( OpenGL_LIBRARY NAMES opengl32 )
+   set( LIBRARIES ${LIBRARIES} opengl32.lib )
+   message("WIN32....   LIBS ${LIBRARIES}")
+   set(IMGUI_DEFINITIONS  ${IMGUI_DEFINITIONS} -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCS )
 endif(WIN32)
 
 
@@ -67,14 +70,8 @@ endif(MSYS)
 
 
 if(MINGW)
-
-    set( LIBRARIES 
-               ${LIBRARIES} -lopengl32 )
-
-   message("MINGW....   LIBS ${LIBRARIES}")
-
-
-
+    set( LIBRARIES ${LIBRARIES} -lopengl32 )
+    message("MINGW....   LIBS ${LIBRARIES}")
     set(IMGUI_DEFINITIONS  ${IMGUI_DEFINITIONS} -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCS )
 endif(MINGW)
 

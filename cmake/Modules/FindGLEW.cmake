@@ -4,7 +4,7 @@
 set(GLEW_PREFIX "${OPTICKS_PREFIX}/externals")
 
 
-#message("GLEW_PREFIX:${GLEW_PREFIX}")
+message("GLEW_PREFIX:${GLEW_PREFIX}")
 
 
 LINK_DIRECTORIES(${GLEW_PREFIX}/lib)

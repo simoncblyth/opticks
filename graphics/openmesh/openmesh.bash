@@ -140,17 +140,21 @@ openmesh-configure()
 }
 
 
+openmesh-config(){ echo "Debug" ; }
 openmesh-make(){
   local iwd=$PWD
   openmesh-bcd
-  make $* 
+
+  #make $* 
+  cmake --build . --config $(openmesh-config) --target ${1:-install}
+
+
   cd $iwd
 }
 
 openmesh--(){
   openmesh-get 
   openmesh-cmake
-  openmesh-make
   openmesh-make install
 }
 

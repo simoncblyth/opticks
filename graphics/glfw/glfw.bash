@@ -15,6 +15,26 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
+
+Windows
+--------
+
+gitbash glfw-make which uses "cmake --build ."::
+
+      -- Install configuration: "Debug"
+      -- Up-to-date: C:/usr/local/opticks/externals/include/GLFW
+      -- Up-to-date: C:/usr/local/opticks/externals/include/GLFW/glfw3.h
+      -- Up-to-date: C:/usr/local/opticks/externals/include/GLFW/glfw3native.h
+      -- Installing: C:/usr/local/opticks/externals/lib/cmake/glfw/glfw3Config.cmake
+      -- Installing: C:/usr/local/opticks/externals/lib/cmake/glfw/glfw3ConfigVersion.cmake
+      -- Installing: C:/usr/local/opticks/externals/lib/cmake/glfw/glfwTargets.cmake
+      -- Installing: C:/usr/local/opticks/externals/lib/cmake/glfw/glfwTargets-debug.cmake
+      -- Installing: C:/usr/local/opticks/externals/lib/pkgconfig/glfw3.pc
+      -- Installing: C:/usr/local/opticks/externals/lib/glfw3dll.lib
+      -- Installing: C:/usr/local/opticks/externals/lib/glfw3.dll
+
+
+
 OSX 10.11 sensitivity to clang version
 ----------------------------------------
 

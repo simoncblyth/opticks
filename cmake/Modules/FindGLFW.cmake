@@ -4,7 +4,7 @@
 set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( GLFW_LIBRARY 
-              NAMES glfw3 glfw
+              NAMES glfw3 glfw glfw3dll
               PATHS ${GLFW_PREFIX}/lib )
 
 set( GLFW_LIBRARIES ${GLFW_LIBRARY} )

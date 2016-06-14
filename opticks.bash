@@ -101,6 +101,20 @@ graphics/gui/imgui     imgui-                           github.com/simoncblyth/i
 =====================  ===============  =============   ==============================================================================
 
 
+Dependencies of externals:
+
+============  ====================  ==============================
+pkg           depends on            notes  
+============  ====================  ==============================
+glm                                 headers only  
+gleq                                headers only  
+glew          system opengl
+glfw
+imgui         glfw glew 
+============  ====================  ==============================
+
+
+
 Boost Infrastructure Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
