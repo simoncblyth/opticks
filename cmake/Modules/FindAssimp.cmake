@@ -3,7 +3,7 @@
 set(Assimp_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( Assimp_LIBRARIES 
-              NAMES assimp
+              NAMES assimp  assimp-vc100-mtd
               PATHS ${Assimp_PREFIX}/lib )
 
 set(Assimp_INCLUDE_DIRS "${Assimp_PREFIX}/include")

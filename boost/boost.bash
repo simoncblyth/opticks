@@ -288,7 +288,7 @@ boost-url(){ echo "http://downloads.sourceforge.net/project/boost/boost/$(boost-
 
 boost-fold(){   echo $(opticks-prefix)/externals/boost ; }
 boost-dir(){    echo $(opticks-prefix)/externals/boost/$(boost-name) ; }
-boost-prefix(){ echo $(opticks-prefix)/externals ; }
+boost-prefix(){ echo $(opticks-prefix)/externals  ; }
 
 boost-bdir(){   echo $(boost-dir).build ; }
 boost-idir(){   echo $(boost-prefix)/include/boost ; }
@@ -331,11 +331,10 @@ boost-bootstrap-help(){
 
 boost-bootstrap-build(){
   boost-cd
-
-   case $(opticks-cmake-generator) in
+  case $(opticks-cmake-generator) in
      "Visual Studio 14 2015") cmd "/C bootstrap.bat" ;;
                            *) ./bootstrap.sh --prefix=$(boost-prefix) ;;  
-   esac
+  esac
 
   #./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
 }
@@ -405,9 +404,11 @@ boost-example(){
 
 
 
-
-
-
+old-boost-export() {
+    # hmm this was being called from env-env : what is using it ?
+    export BOOST_INSTALL_DIR=$(old-boost-install-dir)
+    export BOOST_SUFFIX=$(old-boost-suffix)
+}
 old-boost-install-dir() {
     case $NODE_TAG in
         D) echo /opt/local ;;
@@ -422,11 +423,6 @@ old-boost-suffix() {
         *) echo ;;
     esac
 }
-old-boost-export() {
-    export BOOST_INSTALL_DIR=$(boost-install-dir)
-    export BOOST_SUFFIX=$(boost-suffix)
-}
-
 old-boost-nuwa-plat(){
   case $NODE_TAG in
      N) echo i686-slc5-gcc41-dbg ;;

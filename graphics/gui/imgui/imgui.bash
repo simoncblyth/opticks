@@ -39,6 +39,13 @@ link.exe missing OpenGL symbols
 
 
 
+need export header and linker library .lib for this
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+*  http://gernotklingler.com/blog/creating-using-shared-libraries-different-compilers-different-operating-systems/
+* https://github.com/Kitware/CMake/blob/master/Modules/GenerateExportHeader.cmake
+
 
 
 

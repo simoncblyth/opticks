@@ -52,10 +52,16 @@ endif(UNIX AND NOT APPLE)
 
 
 if(WIN32)
+   include(GenerateExportHeader)
+
    # find_library( OpenGL_LIBRARY NAMES opengl32 )
    set( LIBRARIES ${LIBRARIES} opengl32.lib )
    message("WIN32....   LIBS ${LIBRARIES}")
-   set(IMGUI_DEFINITIONS  ${IMGUI_DEFINITIONS} -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCS )
+   set(IMGUI_DEFINITIONS  
+            ${IMGUI_DEFINITIONS} 
+            -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCS 
+           )
+         #   -DIMGUI_API=IMGUI_EXPORT 
 endif(WIN32)
 
 
@@ -74,10 +80,6 @@ if(MINGW)
     message("MINGW....   LIBS ${LIBRARIES}")
     set(IMGUI_DEFINITIONS  ${IMGUI_DEFINITIONS} -DIMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCS )
 endif(MINGW)
-
-
-
-
 
 
 
@@ -113,6 +115,15 @@ SET(HEADERS
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 add_library(${name} SHARED ${SOURCES})
+
+if(WIN32)
+   generate_export_header(${name})
+   set(HEADERS 
+             ${HEADERS} 
+             ${CMAKE_CURRENT_BINARY_DIR}/${name}_export.h
+      )
+endif(WIN32)
+
 target_link_libraries(${name} ${LIBRARIES})
 
 install(TARGETS ${name}  DESTINATION lib)

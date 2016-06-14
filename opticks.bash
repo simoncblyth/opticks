@@ -330,7 +330,7 @@ EOU
 
 opticks-env(){      
    elocal-
-   # dont pollute : otherwise can get loops 
+   # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
 }
 opticks-home(){   echo $(env-home) ; }
 opticks-dir(){    echo $(local-base)/opticks ; }
@@ -412,12 +412,19 @@ opticks-configure(){
    opticks-cmake $*
 }
 opticks-configure-local-boost(){
+
+    type $FUNCNAME
+
     local msg="=== $FUNCNAME :"
     boost-
     local prefix=$(boost-prefix)
     [ ! -d "$prefix" ] && type $FUNCNAME && return  
     echo $msg prefix $prefix
-    opticks-configure -DBOOST_ROOT=$prefix
+    opticks-configure \
+              -DBOOST_ROOT=$prefix \
+              -DBoost_USE_STATIC_LIBS=1 \
+              -DBoost_NO_SYSTEM_PATHS=1 \
+              -DBoost_DEBUG=0 
 }
 
 opticks--(){     ( opticks-bcd ; make ${1:-install} ) ; }
