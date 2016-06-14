@@ -9,6 +9,69 @@ BOOST
 * http://www.boost.org/
 * http://www.boost.org/users/history/
 
+
+Windows VS2015
+--------------------
+
+boost-build::
+
+    ...failed updating 56 targets...
+    ...skipped 4 targets...
+    ...updated 14206 targets...
+
+    ntuhep@ntuhep-PC MINGW64 /c/usr/local/opticks/externals/boost/boost_1_61_0
+
+
+Rerunning indicates errors all due to lack of pyconfig.h.
+
+::
+
+    ntuhep@ntuhep-PC MINGW64 /c/usr/local/opticks/externals/boost/boost_1_61_0
+    $ boost-b2 --show-libraries
+    The following libraries require building:
+        - atomic
+        - chrono
+        - container
+        - context
+        - coroutine
+        - coroutine2
+        - date_time
+        - exception
+        - filesystem
+        - graph
+        - graph_parallel
+        - iostreams
+        - locale
+        - log
+        - math
+        - metaparse
+        - mpi
+        - program_options
+        - python
+        - random
+        - regex
+        - serialization
+        - signals
+        - system
+        - test
+        - thread
+        - timer
+        - type_erasure
+        - wave
+
+
+Building again with boost-b2-options for just the 
+needed libs seems to succeed to build them but are not installed.
+Reruning gives error::
+
+    $ boost-build
+    C:/usr/local/opticks/externals/boost/boost_1_61_0/tools/build/src/util\path.jam:461: in makedirs from module path
+    error: Could not create directory '/c'
+
+
+Rearranging the paths given to b2 to be windows style succeeds to install.
+
+
 FindBoost.cmake
 ----------------
 
@@ -278,17 +341,42 @@ boost-bootstrap-build(){
 }
 
 boost-build(){
-  boost-cd
-  ./b2 --build-dir=$(boost-bdir) install
+  boost-b2 $(boost-b2-options) install  
 }
 
 
+boost-gitbash2win(){
+  local gbp=$1
+  local wnp 
+  case $gbp in
+    /c/*) wnp=${gbp//\//\\}  ;;
+       *) echo expecting gitbash style path starting with /c ;;
+  esac
+  echo "C:${wnp:2}"
+}
 
 
+boost-prefix-win(){ echo $(boost-gitbash2win $(boost-prefix)) ; }
+boost-bdir-win(){   echo $(boost-gitbash2win $(boost-bdir)) ; }
 
+boost-b2(){
+   boost-cd
 
+   case $(opticks-cmake-generator) in
+     "Visual Studio 14 2015") cmd "/C b2 --prefix=$(boost-prefix-win) --build-dir=$(boost-bdir-win) $*  " ;;
+                           *) ./b2 --prefix=$(boost-prefix) --build-dir=$(boost-bdir) $* ;;
+   esac
+}
 
-
+boost-b2-options(){ cat << EOO
+        --with-system
+        --with-thread
+        --with-program_options
+        --with-log  
+        --with-filesystem
+        --with-regex
+EOO
+}
 
 
 
