@@ -4,6 +4,75 @@ brap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(brap-src)} ; }
 brap-vi(){       vi $(brap-source) ; }
 brap-usage(){ cat << EOU
 
+
+BoostRap
+===========
+
+Windows VS2015
+---------------
+
+Testing BLog.cc alone get link failure::
+
+
+    "C:\usr\local\opticks\build\boostrap\BoostRap.vcxproj" (default target) (4) ->
+    (Link target) ->
+      LINK : fatal error LNK1104: cannot open file 'boost_log-vc140-mt-gd-1_61.lib' 
+             [C:\usr\local\opticks\build\boostrap\BoostRap.vcxproj]
+
+        6 Warning(s)
+        1 Error(s)
+
+
+Changing the config to Release in the brap-- "make" leads to missing another.
+
+    "C:\usr\local\opticks\build\boostrap\BoostRap.vcxproj" (default target) (4) ->
+    (Link target) ->
+      LINK : fatal error LNK1104: cannot open file 'boost_log-vc140-mt-1_61.lib'
+       [C:\usr\local\opticks\build\boostrap\BoostRap.vcxproj]
+
+
+Where did the un-lib suffixed name come from ?
+Found the cause BOOST_LOG_DYN_LINK in FindOpticksBoost.cmake::
+
+     35     if(Boost_FOUND)
+     36         set_property(GLOBAL PROPERTY gOpticksBoost_FOUND "YES")
+     37         set_property(GLOBAL PROPERTY gOpticksBoost_LIBRARIES    ${Boost_LIBRARIES})
+     38         set_property(GLOBAL PROPERTY gOpticksBoost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+     39      #   set_property(GLOBAL PROPERTY gOpticksBoost_DEFINITIONS  ${Boost_DEFINITIONS} -DBOOST_LOG_DYN_LINK)
+     40     endif(Boost_FOUND)
+
+
+
+BoostRap:LIBRARIES resulting from the cmake find are lib prefixed (that means static?) 
+and all actually exist::
+
+      optimized;C:/usr/local/opticks/externals/lib/libboost_system-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_system-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_thread-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_thread-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_program_options-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_program_options-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_log-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_log-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_log_setup-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_log_setup-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_filesystem-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_filesystem-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_regex-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_regex-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_chrono-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_chrono-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_date_time-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_date_time-vc140-mt-gd-1_61.lib;
+      optimized;C:/usr/local/opticks/externals/lib/libboost_atomic-vc140-mt-1_61.lib;
+          debug;C:/usr/local/opticks/externals/lib/libboost_atomic-vc140-mt-gd-1_61.lib
+
+
+
+
+
+
+
 *brap-test*
     for developing boost regex patterns, via search matching against cin
 
@@ -82,10 +151,8 @@ brap-wipe(){
 brap-txt(){ vi $(brap-dir)/CMakeLists.txt ; }
 brap-make(){
    local iwd=$PWD
-
    brap-bcd
    make $*
-
    cd $iwd
 }
 
@@ -118,9 +185,19 @@ brap-full()
     brap-make
     brap-install
 }
+
+brap-config(){ echo Release ; }
 brap--()
 {
-  ( brap-bcd ; make ${1:-install} ; )
+   local iwd=$PWD
+   brap-bcd ; 
+   #make ${1:-install}  
+   cmake \
+          --build . \
+          --config $(brap-config) \
+          --target ${1:-install} 
+
+   cd $iwd
 }
 
 

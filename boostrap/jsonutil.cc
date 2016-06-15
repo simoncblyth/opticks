@@ -157,7 +157,7 @@ int loadTree(pt::ptree& t , const char* path)
     LOG(debug) << "jsonutil.loadTree: "
               << " load path: " << path;
 
-    if ( not (fs::exists(fpath ) && fs::is_regular_file(fpath)) ) {
+    if (!(fs::exists(fpath ) && fs::is_regular_file(fpath))) {
         LOG(warning) << "jsonutil.loadTree: "
                      << "can't find file " << path;
         return 1;

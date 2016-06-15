@@ -3,7 +3,7 @@
 #include "regexsearch.hh"
 #include "fsutil.hh"
 
-#include <strings.h>
+#include <cstring>
 #include <sstream>
 #include <fstream>
 #include <iomanip>

@@ -24,15 +24,17 @@ endif()
 find_package(OpticksBoost REQUIRED QUIET)
 
 add_subdirectory(boostrap)    
-add_subdirectory(numerics/npy)   
 
-add_subdirectory(optickscore)         
-add_subdirectory(optix/ggeo)     
-add_subdirectory(graphics/assimprap)   
-add_subdirectory(graphics/openmeshrap)  
-add_subdirectory(opticksgeo)  
 
-add_subdirectory(graphics/oglrap)       
+if(REST)
+   add_subdirectory(numerics/npy)   
+   add_subdirectory(optickscore)         
+   add_subdirectory(optix/ggeo)     
+   add_subdirectory(graphics/assimprap)   
+   add_subdirectory(graphics/openmeshrap)  
+   add_subdirectory(opticksgeo)  
+   add_subdirectory(graphics/oglrap)       
+endif(REST)
 
 find_package(CUDA ${OPTICKS_CUDA_VERSION})
 find_package(OptiX ${OPTICKS_OPTIX_VERSION})
@@ -49,7 +51,10 @@ else(CUDA_FOUND AND OptiX_FOUND)
     message("Failed to find at least CUDA ${OPTICKS_CUDA_VERSION} and OptiX ${OPTICKS_OPTIX_VERSION} : proceeding with viz only configure.") 
 endif()
 
-add_subdirectory(graphics/ggeoview)
+
+if(REST)
+   add_subdirectory(graphics/ggeoview)
+endif(REST)
 
 
 

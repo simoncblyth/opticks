@@ -11,22 +11,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__APPLE__)
-#  define COMMON_DIGEST_FOR_OPENSSL
-#  include <CommonCrypto/CommonDigest.h>
-#  define SHA1 CC_SHA1
-#else
-#  include <openssl/md5.h>
-#endif
+#include "BRAP_API_EXPORT.h"
 
-
+#include "md5crossplatform.h"
 
 extern char* md5digest_str2md5(char* buffer, int length) ;
 extern void md5digest_str2md5_update(MD5_CTX& ctx, char* buffer, int length) ;
 extern char* md5digest_str2md5_finalize(MD5_CTX& ctx) ;
 
 
-class MD5Digest 
+class BRAP_API MD5Digest 
 {
    public:
        MD5Digest();
@@ -38,9 +32,6 @@ class MD5Digest
        MD5_CTX m_ctx ;
 
 };
-
-
-
 
 
 

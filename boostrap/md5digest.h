@@ -8,15 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__APPLE__)
-#  define COMMON_DIGEST_FOR_OPENSSL
-#  include <CommonCrypto/CommonDigest.h>
-#  define SHA1 CC_SHA1
-#else
-#  include <openssl/md5.h>
-#endif
+#include "BRAP_API_EXPORT.h"
 
-char* md5digest_str2md5(const char *buffer, int length) 
+#include "md5crossplatform.h"
+
+
+char* BRAP_API md5digest_str2md5(const char *buffer, int length) 
 {
     // user should free the returned string digest 
 

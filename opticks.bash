@@ -403,31 +403,55 @@ opticks-cmake(){
 
    cd $iwd
 }
+
 opticks-wipe(){
    local bdir=$(opticks-bdir)
    rm -rf $bdir
 }
+
 opticks-configure(){
    opticks-wipe
-   opticks-cmake $*
+   case $(opticks-cmake-generator) in
+       "Visual Studio 14 2015") opticks-configure-local-boost $* ;;
+                             *) opticks-configure-system-boost $* ;;
+   esac
 }
-opticks-configure-local-boost(){
 
+opticks-configure-system-boost(){
+   opticks-cmake $* 
+}
+
+opticks-configure-local-boost(){
     type $FUNCNAME
 
     local msg="=== $FUNCNAME :"
     boost-
+
     local prefix=$(boost-prefix)
     [ ! -d "$prefix" ] && type $FUNCNAME && return  
     echo $msg prefix $prefix
-    opticks-configure \
+
+    opticks-cmake \
               -DBOOST_ROOT=$prefix \
               -DBoost_USE_STATIC_LIBS=1 \
               -DBoost_NO_SYSTEM_PATHS=1 \
               -DBoost_DEBUG=0 
 }
 
-opticks--(){     ( opticks-bcd ; make ${1:-install} ) ; }
+
+
+opticks-config(){ echo Debug ; }
+opticks--(){     
+
+   local iwd=$PWD
+
+   opticks-bcd 
+
+   #make ${1:-install}  
+   cmake --build . --config $(opticks-config) --target ${1:-install}
+
+   cd $iwd
+}
 opticks-ctest(){ ( opticks-bcd ; ctest $* ; ) ; }
 
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
