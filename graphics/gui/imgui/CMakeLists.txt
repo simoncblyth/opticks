@@ -85,6 +85,8 @@ endif(MINGW)
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}
+
    ${ImGui_SOURCE_DIR}/examples/opengl3_example
    ${GLEW_INCLUDE_DIRS} 
    ${GLFW_INCLUDE_DIRS} 
@@ -117,10 +119,13 @@ add_definitions(${DEFINITIONS})
 add_library(${name} SHARED ${SOURCES})
 
 if(WIN32)
-   generate_export_header(${name})
+   generate_export_header(${name}
+                  EXPORT_MACRO_NAME IMGUI_API
+                  EXPORT_FILE_NAME IMGUI_EXPORTS.h
+             )
    set(HEADERS 
              ${HEADERS} 
-             ${CMAKE_CURRENT_BINARY_DIR}/${name}_export.h
+             ${CMAKE_CURRENT_BINARY_DIR}/IMGUI_EXPORTS.h
       )
 endif(WIN32)
 
