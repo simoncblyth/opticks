@@ -36,7 +36,10 @@ else()
         set_property(GLOBAL PROPERTY gOpticksBoost_FOUND "YES")
         set_property(GLOBAL PROPERTY gOpticksBoost_LIBRARIES    ${Boost_LIBRARIES})
         set_property(GLOBAL PROPERTY gOpticksBoost_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-     #   set_property(GLOBAL PROPERTY gOpticksBoost_DEFINITIONS  ${Boost_DEFINITIONS} -DBOOST_LOG_DYN_LINK)
+
+        if(APPLE)
+            set_property(GLOBAL PROPERTY gOpticksBoost_DEFINITIONS  ${Boost_DEFINITIONS} -DBOOST_LOG_DYN_LINK)
+        endif(APPLE)
     endif(Boost_FOUND)
 
 endif()

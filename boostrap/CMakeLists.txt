@@ -21,7 +21,7 @@ if(UNIX)
    set(LIBRARIES ${LIBRARIES} ssl crypto)
 endif(UNIX)
 
-message("${name}:LIBRARIES : ${LIBRARIES} ")
+#message("${name}:LIBRARIES : ${LIBRARIES} ")
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -52,22 +52,14 @@ set(SOURCES
   
   md5.c
   md5digest.cc
+  timeutil.cc
 
 ) 
 
 set(SOURCES_FAILING
-
-  timeutil.cc
-
 )
-
 
 set(HEADERS
-)
-
-
-set(HEADERS_ALL
-
 BCfg.hh
 BLog.hh
 BSys.hh
@@ -78,17 +70,14 @@ md5digest.hh
 regexsearch.hh
 stringutil.hh
 timeutil.hh
-
 dbg.hh
 )
-
 
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(BLog.cc      PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
    set_source_files_properties(jsonutil.cc  PROPERTIES COMPILE_FLAGS -Wno-all)
 endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-
 
 
 add_library( ${name}  SHARED ${SOURCES})

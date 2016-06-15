@@ -12,6 +12,7 @@
 #include <cassert>
 
 // brap-
+#include "md5digest.hh"
 #include "stringutil.hh"
 #include "BLog.hh"
 #include "BSys.hh"
@@ -160,7 +161,7 @@ void OpticksResource::readEnvironment()
     m_meshfixcfg   = BSys::getenvvar(m_envprefix, "MESHFIX_CFG");
 
     m_query = new OpticksQuery(m_query_string);
-    std::string query_digest = md5digest( m_query_string, strlen(m_query_string));
+    std::string query_digest = MD5Digest::md5digest( m_query_string, strlen(m_query_string));
 
     m_digest = strdup(query_digest.c_str());
  

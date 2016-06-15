@@ -1,9 +1,7 @@
 #include "md5digest.hh"
 
 
-
-
-char* md5digest_str2md5_monlithic(const char *buffer, int length) 
+char* md5digest_str2md5_monolithic(const char *buffer, int length) 
 {
     // user should free the returned string digest 
 
@@ -33,18 +31,6 @@ char* md5digest_str2md5_monlithic(const char *buffer, int length)
 }
 
 
-char* md5digest_str2md5(char* buffer, int length) 
-{
-    // user should free the returned string digest 
-
-    MD5_CTX ctx;
-    MD5_Init(&ctx);
-
-    md5digest_str2md5_update(ctx, buffer, length );
-
-    return md5digest_str2md5_finalize(ctx);
-}
-
 void md5digest_str2md5_update(MD5_CTX& ctx, char* buffer, int length) 
 {
     const int blocksize = 512 ; 
@@ -72,7 +58,17 @@ char* md5digest_str2md5_finalize( MD5_CTX& ctx )
     return out;
 }
 
+char* md5digest_str2md5(char* buffer, int length) 
+{
+    // user should free the returned string digest 
 
+    MD5_CTX ctx;
+    MD5_Init(&ctx);
+
+    md5digest_str2md5_update(ctx, buffer, length );
+
+    return md5digest_str2md5_finalize(ctx);
+}
 
 
 
