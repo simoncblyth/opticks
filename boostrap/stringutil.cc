@@ -1,5 +1,4 @@
 #include "stringutil.hh"
-#include "md5digest.h"
 
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -31,7 +30,6 @@ bool listHasKey(const char* dlist, const char* key, const char* delim)
 }
 
 
-
 char* trimPointerSuffixPrefix(const char* origname, const char* prefix)
 {
     //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
@@ -42,9 +40,6 @@ char* trimPointerSuffixPrefix(const char* origname, const char* prefix)
     if(prefix) name += strlen(prefix) ;
     return name ;   
 }
-
-
-
 
 
 const char* uppercase( const char* str )
@@ -58,9 +53,6 @@ const char* uppercase( const char* str )
     } 
     return STR ;
 }
-
-
-
 
 
 std::string patternPickField(std::string str, std::string ptn, int num )
@@ -180,21 +172,6 @@ std::string insertField(const char* line, char delim, int index, const char* fie
 
 
 
-std::string md5digest( const char* buffer, int len )
-{
-    char* out = md5digest_str2md5(buffer, len);
-    std::string digest(out);
-    free(out);
-    return digest;
-}
-
-
-template<typename T>
-std::string arraydigest( T* data, unsigned int n )
-{
-    return md5digest( (char*)data, sizeof(T)*n );
-}
-
 
 
 #define RGBA(r,g,b,a) \
@@ -269,8 +246,4 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
 
 
 
-
-template std::string arraydigest( float*, unsigned int);
-template std::string arraydigest( int*, unsigned int);
-template std::string arraydigest( unsigned int*, unsigned int);
 

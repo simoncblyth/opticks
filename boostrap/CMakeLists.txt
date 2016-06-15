@@ -51,13 +51,13 @@ set(SOURCES
   stringutil.cc
   
   md5.c
+  md5digest.cc
 
 ) 
 
 set(SOURCES_FAILING
 
   timeutil.cc
-  md5digest.cc
 
 )
 

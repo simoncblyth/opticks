@@ -28,7 +28,8 @@ std::string patternPickField(std::string str, std::string ptn, int num );
 
 std::string join(std::vector<std::string>& elem, char delim );
 std::string insertField(const char* line, char delim, int index, const char* field);
-std::string md5digest( const char* buffer, int len );
+
+
 
 void removeField(char* dest, const char* line, char delim, int index );
 
@@ -63,9 +64,6 @@ inline std::string as_dec(T in) {
 
 
 
-
-template<typename T>
-std::string arraydigest( T* data, unsigned int n );
 
 
 // http://stackoverflow.com/questions/5419356/redirect-stdout-stderr-to-a-string

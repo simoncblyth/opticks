@@ -10,10 +10,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#ifdef __MINGW32__
-#define ffs __builtin_ffs
-#endif
-
+#include "bffs.hh"
 
 // cannot BLog.hh this as bregex- is below NPY
 #include <boost/log/trivial.hpp>
