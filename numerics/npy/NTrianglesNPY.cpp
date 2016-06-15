@@ -203,9 +203,13 @@ void sincos_(const T angle, T& s, T& c)
 {
 #ifdef __APPLE__
     __sincos( angle, &s, &c);
-#else
+#elif __linux
     sincos( angle, &s, &c);
+#else
+    s = sin(angle);
+    c = cos(angle) ;
 #endif
+
 }
 
 

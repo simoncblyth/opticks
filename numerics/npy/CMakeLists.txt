@@ -8,6 +8,8 @@ include(EnvCompilationFlags)
 find_package(OpticksBoost  REQUIRED)
 find_package(GLM    REQUIRED)
 find_package(BoostRap REQUIRED)
+message("NPY.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
+
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -89,7 +91,6 @@ add_library( ${name}  SHARED
 target_link_libraries( ${name} ${LIBRARIES} )
 
 SET(hdrs 
-crossplatform.hh
 uif.h
 ucharfour.h
 charfour.h

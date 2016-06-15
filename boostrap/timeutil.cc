@@ -113,28 +113,4 @@ double getRealTime( )
 
 
 
-/// second precision only below, but has absolute meaning unlike the above 
-
-#include "string.h"
-
-
-void current_time(char* buf, int buflen, const char* tfmt, int utc)
-{
-   time_t t;
-   time (&t); 
-   struct tm* tt = utc ? gmtime(&t) : localtime(&t) ;
-   strftime(buf, buflen, tfmt, tt);
-}
-
-
-// heap allocated, so you need to free it
-char* now(const char* tfmt, const int buflen, int utc )
-{
-    char buf[buflen];
-    current_time( buf, buflen, tfmt, utc );  
-    return strdup(buf); 
-}
-
-
-
 

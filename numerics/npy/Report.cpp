@@ -11,6 +11,8 @@
 #include <sstream>
 
 #include "BLog.hh"
+#include "BTime.hh"
+
 
 const char* Report::NAME = "report.txt" ;
 const char* Report::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
@@ -64,9 +66,11 @@ void Report::dump(const char* msg)
 
 std::string Report::timestamp()
 {
-    char* tsl =  now(Report::TIMEFORMAT, 20, 0);
-    std::string timestamp =  tsl ;
-    free((void*)tsl);
+    //char* tsl =  now(Report::TIMEFORMAT, 20, 0);
+    
+    std::string timestamp =  BTime::now(Report::TIMEFORMAT,0);
+
+    //free((void*)tsl);
     return timestamp ; 
 }
 

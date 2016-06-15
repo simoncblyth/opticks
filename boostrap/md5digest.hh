@@ -12,27 +12,21 @@
 #include <string>
 
 
-#include <boost/predef.h>
+#if defined __APPLE__
 
-
-#if defined BOOST_OS_MACOS
-
-//#   pragma message("BOOST_OS_MACOS")
 #   define BRAP_API 
 #   define COMMON_DIGEST_FOR_OPENSSL
 #   include <CommonCrypto/CommonDigest.h>
 #   define SHA1 CC_SHA1
 
-#elif defined BOOST_OS_WINDOWS 
+#elif defined _MSC_VER
 
-#   include "BRAP_API_EXPORT.h"
-#   pragma message("BOOST_OS_WINDOWS")
-#   include "md5.h"
+#   include "BRAP_API_EXPORT.hh"
+#   include "md5.hh"
 
-#elif defined BOOST_OS_LINUX
+#elif __linux
 
 #   define BRAP_API 
-#   pragma message("BOOST_OS_LINUX")
 #   include <openssl/md5.h>
 
 #endif

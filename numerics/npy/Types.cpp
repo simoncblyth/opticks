@@ -1,17 +1,21 @@
-#include <glm/glm.hpp>
-#include "Types.hpp"
-#include "Index.hpp"
-#include "jsonutil.hh" 
-#include "stringutil.hh" 
-#include "regexsearch.hh"
-#include "crossplatform.hh"
-
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 
-#include "NPropNames.hpp"
+#include <glm/glm.hpp>
+
+// brap-
+#include "jsonutil.hh" 
+#include "stringutil.hh" 
+#include "regexsearch.hh"
+#include "bffs.hh"
 #include "BLog.hh"
+
+// npy-
+#include "Types.hpp"
+#include "Index.hpp"
+#include "NPropNames.hpp"
+
 
 const char* Types::TAIL = " " ;
 
@@ -442,7 +446,7 @@ void Types::readFlags(const char* path)
     {
         upair_t p = ups[i];
         unsigned int mask = p.first ; 
-        unsigned int bitpos = ffs(mask);  // first set bit, 1-based bit position
+        unsigned int bitpos = bffs(mask);  // first set bit, 1-based bit position
         unsigned int xmask =  1 << (bitpos-1) ;
         assert( mask == xmask );
         m_flags->add( p.second.c_str(), bitpos ); 

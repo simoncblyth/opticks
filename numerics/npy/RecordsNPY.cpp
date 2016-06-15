@@ -1,24 +1,21 @@
 #include "RecordsNPY.hpp"
 
-#include <glm/glm.hpp>
-
-//npy-
-
-#include "crossplatform.hh"
-
-#include "GLMFormat.hpp"
-#include "GLMPrint.hpp"
-#include "Index.hpp"
-
-#include "regexsearch.hh"
-
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
 
-#include "Typ.hpp"
+#include <glm/glm.hpp>
 
+//brap-
+#include "bffs.hh"
+#include "regexsearch.hh"
 #include "BLog.hh"
+
+// npy-
+#include "GLMFormat.hpp"
+#include "GLMPrint.hpp"
+#include "Index.hpp"
+#include "Typ.hpp"
 
 
 void RecordsNPY::setDomains(NPY<float>* domains)
@@ -539,14 +536,14 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         if(bitpos < 32)
         { 
             unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); 
-            unsigned int first = ffs(bitmask) ;
+            unsigned int first = bffs(bitmask) ;
             assert(first == bitpos);
             if(first != bitpos)
             {
                  LOG(warning) << "RecordsNPY::getSequenceString"
                               << " UNEXPECTED ffs(bitmask) != bitpos "
                               << " bitmask " << std::hex << bitmask << std::dec
-                              << " ffs(bitmask) " <<  ffs(bitmask)
+                              << " ffs(bitmask) " <<  bffs(bitmask)
                               << " bitpos " << bitpos 
                               ; 
 

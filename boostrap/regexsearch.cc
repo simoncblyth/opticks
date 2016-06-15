@@ -46,7 +46,7 @@ void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const cha
         std::cout 
                  << std::setw(30) << k  
                  << " : " 
-                 << std::setw(1) << std::hex << ffs(v) 
+                 << std::setw(1) << std::hex << bffs(v) 
                  << " : " 
                  << std::setw(10) << std::dec << v
                  << " : " 

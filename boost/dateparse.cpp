@@ -6,7 +6,7 @@
 
 int main() 
 {
-    using namespace boost::gregorian;
+    using namepace boost::gregorian;
     using namespace boost::posix_time;
     using namespace boost::local_time;
     using namespace std;

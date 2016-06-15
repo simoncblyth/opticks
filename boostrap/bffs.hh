@@ -1,7 +1,7 @@
 
 #if defined(_MSC_VER)
 
-int ffs(int i)
+int bffs(int i)
 {
     // https://msdn.microsoft.com/en-us/library/wfd9z0bb.aspx
     unsigned long mask = i ;
@@ -12,7 +12,11 @@ int ffs(int i)
 
 #elif defined(__MINGW32__)
 
-#   define ffs __builtin_ffs
+#   define bffs __builtin_ffs
+
+#else
+
+#   define bffs ffs
 
 #endif
 

@@ -40,6 +40,7 @@ add_definitions(
 
 
 set(SOURCES
+  BTime.cc
   BLog.cc
   fsutil.cc
   BSys.cc
@@ -50,7 +51,7 @@ set(SOURCES
   regexsearch.cc
   stringutil.cc
   
-  md5.c
+  md5.cc
   md5digest.cc
   timeutil.cc
 
@@ -60,6 +61,8 @@ set(SOURCES_FAILING
 )
 
 set(HEADERS
+BTime.hh
+bffs.hh
 BCfg.hh
 BLog.hh
 BSys.hh
@@ -83,7 +86,7 @@ endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 add_library( ${name}  SHARED ${SOURCES})
 
 
-set(EXPORT_HDR BRAP_API_EXPORT.h)
+set(EXPORT_HDR BRAP_API_EXPORT.hh)
 generate_export_header(${name}
                         EXPORT_MACRO_NAME BRAP_API
                          EXPORT_FILE_NAME ${EXPORT_HDR}
