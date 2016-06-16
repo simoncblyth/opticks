@@ -1,3 +1,4 @@
+#pragma once
 #include <map>
 #include <vector>
 #include <string>
@@ -11,7 +12,6 @@ class BRAP_API BJson {
     static bool existsPath(const char* dir, const char* name );
     static std::string preparePath(const char* dir_, const char* name, bool create=false );
     static std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create=false );
-
 
 
     template<typename A, typename B> 

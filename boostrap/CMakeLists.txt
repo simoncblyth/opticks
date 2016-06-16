@@ -43,6 +43,7 @@ set(SOURCES
   BCfg.cc
   BDir.cc
   BJson.cc
+  BMap.cc
 
   regexsearch.cc
   stringutil.cc
@@ -66,6 +67,7 @@ BLog.hh
 BSys.hh
 BDir.hh
 BJson.hh
+BMap.hh
 
 fsutil.hh
 md5digest.hh
@@ -93,6 +95,6 @@ install(FILES ${HEADERS} DESTINATION include/${name})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 
