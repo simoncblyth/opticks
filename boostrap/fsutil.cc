@@ -278,5 +278,74 @@ void fsutil::CreateDir(const char* path, const char* sub)
 }
 
 
+bool fsutil::existsPath(const char* path )
+{
+    fs::path fpath(path);
+    return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
+}
+
+bool fsutil::existsPath(const char* dir_, const char* name )
+{
+    std::string dir = fsutil::FormPath(dir_) ; 
+    fs::path fdir(dir);
+    if(fs::exists(fdir) && fs::is_directory(fdir))
+    {
+        fs::path fpath(dir);
+        fpath /= name ;
+        return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
+    }
+  
+    return false ; 
+}
+
+std::string fsutil::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
+{
+    fs::path fpath(dir_);
+    fpath /= reldir_ ;
+    return preparePath(fpath.string().c_str(), name, create);
+}
+
+
+std::string fsutil::preparePath(const char* dir_, const char* name, bool create )
+{
+    std::string dir = fsutil::FormPath(dir_) ; 
+    fs::path fdir(dir.c_str());
+    if(!fs::exists(fdir) && create)
+    {
+        if (fs::create_directories(fdir))
+        {
+            LOG(info)<< "preparePath : created directory " << dir ;
+        }
+    }
+    if(fs::exists(fdir) && fs::is_directory(fdir))
+    {
+        fs::path fpath(dir);
+        fpath /= name ;
+        return fpath.string();
+    }
+    else
+    {
+        LOG(warning)<< "preparePath : FAILED " 
+                    << " dir " << dir 
+                    << " dir_ " << dir_ 
+                    << " name " << name ;
+    }
+    std::string empty ; 
+    return empty ; 
+}
+
+
+
+std::string fsutil::prefixShorten( const char* path, const char* prefix_)
+{
+    std::string prefix = fsutil::FormPath(prefix_);  
+    if(strncmp(path, prefix.c_str(), strlen(prefix.c_str()))==0)
+        return path + strlen(prefix.c_str()) ;
+    else
+        return path  ;
+}
+
+
+
 
 

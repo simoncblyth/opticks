@@ -14,6 +14,17 @@ class fsutil {
        static bool ExistsFile(const char* path, const char* sub=NULL, const char* name=NULL);
        static bool ExistsDir(const char* path, const char* sub=NULL, const char* name=NULL);
        static void CreateDir(const char* path, const char* sub=NULL);
+
+
+    public:
+        // refugees from BJson in need of de-duping
+        static bool existsPath(const char* path );
+        static bool existsPath(const char* dir, const char* name );
+        static std::string preparePath(const char* dir_, const char* name, bool create=false );
+        static std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create=false );
+        static std::string prefixShorten( const char* path, const char* prefix_);
+
+
     private:
        static void setOpticksPathPrefix(const char* prefix);
        static void setOpticksPathPrefixFromEnv(const char* envvar="OPTICKS_PATH_PREFIX");

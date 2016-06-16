@@ -1,4 +1,5 @@
 #include "BJson.hh"
+#include "BTree.hh"
 
 #include "regexsearch.hh"
 #include "fsutil.hh"
@@ -26,90 +27,16 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
 
-bool BJson::existsPath(const char* path )
-{
-    fs::path fpath(path);
-    return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
-}
-
-bool BJson::existsPath(const char* dir_, const char* name )
-{
-    std::string dir = fsutil::FormPath(dir_) ; 
-    fs::path fdir(dir);
-    if(fs::exists(fdir) && fs::is_directory(fdir))
-    {
-        fs::path fpath(dir);
-        fpath /= name ;
-        return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
-    }
-  
-    return false ; 
-}
-
-std::string BJson::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
-{
-    fs::path fpath(dir_);
-    fpath /= reldir_ ;
-    return preparePath(fpath.string().c_str(), name, create);
-}
-
-
-std::string BJson::preparePath(const char* dir_, const char* name, bool create )
-{
-    std::string dir = fsutil::FormPath(dir_) ; 
-    fs::path fdir(dir.c_str());
-    if(!fs::exists(fdir) && create)
-    {
-        if (fs::create_directories(fdir))
-        {
-            LOG(info)<< "preparePath : created directory " << dir ;
-        }
-    }
-    if(fs::exists(fdir) && fs::is_directory(fdir))
-    {
-        fs::path fpath(dir);
-        fpath /= name ;
-        return fpath.string();
-    }
-    else
-    {
-        LOG(warning)<< "preparePath : FAILED " 
-                    << " dir " << dir 
-                    << " dir_ " << dir_ 
-                    << " name " << name ;
-    }
-    std::string empty ; 
-    return empty ; 
-}
-
-
-template<typename A, typename B> 
-void BJson::saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
-{
-     std::string path = preparePath(dir, name, true);
-     LOG(debug) << "saveMap to " << path ;
-
-     if(!path.empty()) saveMap( mp, path.c_str() );
-}
-
 
 
 template<typename A, typename B> 
 void BJson::saveList( typename std::vector<std::pair<A,B> > & vp, const char* dir, const char* name)
 {
-     std::string path = preparePath(dir, name, true);
+     std::string path = fsutil::preparePath(dir, name, true);
      LOG(debug) << "saveList to " << path ;
 
      if(!path.empty()) saveList( vp, path.c_str() );
 }
-
-
-
-
-// non-exposed function decls
-void saveTree(const pt::ptree& t , const char* path);
-
-
 
 template<typename A, typename B> 
 void BJson::saveList( typename std::vector<std::pair<A,B> > & vp, const char* path)
@@ -122,9 +49,85 @@ void BJson::saveList( typename std::vector<std::pair<A,B> > & vp, const char* pa
            boost::lexical_cast<std::string>(it->second)
              ) ;
     }
-    saveTree(t, path);
+    BTree::saveTree(t, path);
 }
 
+
+template<typename A, typename B> 
+void BJson::loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const char* name)
+{
+    LOG(trace) << "loadList"
+              << " dir [" << dir << "]" 
+              << " name [" << name << "]" 
+              ;
+
+    std::string path = fsutil::preparePath(dir, name, false);
+    if(!path.empty())
+    {
+        std::string shortpath = fsutil::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        LOG(debug) << "loadMap " << shortpath  ;
+        loadList( vp, path.c_str() );
+    }
+    else
+    {
+        LOG(fatal)<< "loadList : no such directory " << dir ;
+    }
+}
+
+template<typename A, typename B> 
+void BJson::loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
+{
+    pt::ptree t;
+    BTree::loadTree(t, path );
+
+    BOOST_FOREACH( pt::ptree::value_type const& ab, t.get_child("") )
+    {
+         A a = boost::lexical_cast<A>(ab.first.data());
+         B b = boost::lexical_cast<B>(ab.second.data());
+         vp.push_back( std::pair<A,B>(a,b) );
+    }
+}
+
+
+template<typename A, typename B> 
+void BJson::dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
+{
+    LOG(info) << msg ; 
+    for(typename std::vector<std::pair<A,B> >::iterator it=vp.begin() ; it != vp.end() ; it++)
+    {
+         std::cout << std::setw(25) << boost::lexical_cast<std::string>(it->first)
+                   << std::setw(50) << boost::lexical_cast<std::string>(it->second)
+                   << std::endl ; 
+                   ;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename A, typename B> 
+void BJson::saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
+{
+     std::string path = fsutil::preparePath(dir, name, true);
+     LOG(debug) << "saveMap to " << path ;
+
+     if(!path.empty()) saveMap( mp, path.c_str() );
+}
 
 template<typename A, typename B> 
 void BJson::saveMap( typename std::map<A,B> & mp, const char* path)
@@ -137,78 +140,17 @@ void BJson::saveMap( typename std::map<A,B> & mp, const char* path)
            boost::lexical_cast<std::string>(it->second)
              ) ;
     }
-    saveTree(t, path);
+    BTree::saveTree(t, path);
 }
-
-
-
-
-
-
-
-
-
-// non-exposed functions
-
-
-void saveTree(const pt::ptree& t , const char* path)
-{
-    fs::path fpath(path);
-    std::string ext = fpath.extension().string();
-    if(ext.compare(".json")==0)
-        pt::write_json(path, t );
-    else if(ext.compare(".ini")==0)
-        pt::write_ini(path, t );
-    else
-        LOG(warning) << "saveTree cannot write to path with extension " << ext ; 
-}
-
-
-int loadTree(pt::ptree& t , const char* path)
-{
-    fs::path fpath(path);
-    LOG(debug) << "jsonutil.loadTree: "
-              << " load path: " << path;
-
-    if (!(fs::exists(fpath ) && fs::is_regular_file(fpath))) {
-        LOG(warning) << "jsonutil.loadTree: "
-                     << "can't find file " << path;
-        return 1;
-    }
-    std::string ext = fpath.extension().string();
-    if(ext.compare(".json")==0)
-        pt::read_json(path, t );
-    else if(ext.compare(".ini")==0)
-        pt::read_ini(path, t );
-    else
-        LOG(warning) << "readTree cannot read path with extension " << ext ; 
-
-    return 0 ; 
-}
-
-std::string prefixShorten( const char* path, const char* prefix_)
-{
-    std::string prefix = fsutil::FormPath(prefix_);  
-    if(strncmp(path, prefix.c_str(), strlen(prefix.c_str()))==0)
-        return path + strlen(prefix.c_str()) ;
-    else
-        return path  ;
-}
-
-
-
-
-
 
 template<typename A, typename B> 
 int BJson::loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
 {
-
     int rc(0) ; 
-    std::string path = preparePath(dir, name, false);
+    std::string path = fsutil::preparePath(dir, name, false);
     if(!path.empty())
     {
-        std::string shortpath = prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        std::string shortpath = fsutil::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
         rc = loadMap( mp, path.c_str(), depth );
     }
@@ -222,50 +164,10 @@ int BJson::loadMap( typename std::map<A,B> & mp, const char* dir, const char* na
 
 
 template<typename A, typename B> 
-void BJson::loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const char* name)
-{
-    LOG(trace) << "loadList"
-              << " dir [" << dir << "]" 
-              << " name [" << name << "]" 
-              ;
-
-    std::string path = preparePath(dir, name, false);
-    if(!path.empty())
-    {
-        std::string shortpath = prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
-        LOG(debug) << "loadMap " << shortpath  ;
-        loadList( vp, path.c_str() );
-    }
-    else
-    {
-        LOG(fatal)<< "loadList : no such directory " << dir ;
-    }
-}
-
-
-
-
-
-
-template<typename A, typename B> 
-void BJson::loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
-{
-    pt::ptree t;
-    loadTree(t, path );
-
-    BOOST_FOREACH( pt::ptree::value_type const& ab, t.get_child("") )
-    {
-         A a = boost::lexical_cast<A>(ab.first.data());
-         B b = boost::lexical_cast<B>(ab.second.data());
-         vp.push_back( std::pair<A,B>(a,b) );
-    }
-}
-
-template<typename A, typename B> 
 int BJson::loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
 {
     pt::ptree t;
-    int rc = loadTree(t, path );
+    int rc = BTree::loadTree(t, path );
 
     if(depth == 0)
     {
@@ -311,14 +213,6 @@ int BJson::loadMap( typename std::map<A,B> & mp, const char* path, unsigned int 
 }
 
 
-
-
-
-
-
-
-
-
 template<typename A, typename B> 
 void BJson::dumpMap( typename std::map<A,B> & mp, const char* msg)
 {
@@ -334,24 +228,12 @@ void BJson::dumpMap( typename std::map<A,B> & mp, const char* msg)
 
 
 
-template<typename A, typename B> 
-void BJson::dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
-{
-    LOG(info) << msg ; 
-    for(typename std::vector<std::pair<A,B> >::iterator it=vp.begin() ; it != vp.end() ; it++)
-    {
-         std::cout << std::setw(25) << boost::lexical_cast<std::string>(it->first)
-                   << std::setw(50) << boost::lexical_cast<std::string>(it->second)
-                   << std::endl ; 
-                   ;
-    }
-}
 
 
 
-
-
-
+//  below not being exported/imported on windows ... so try a template class approach 
+//  http://stackoverflow.com/questions/666628/importing-explicitly-instantiated-template-class-from-dll
+//
 // explicit instantiation of template functions, 
 // allowing declaration and definition to reside in separate header and implementation files
 
