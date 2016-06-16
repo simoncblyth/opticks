@@ -2,10 +2,8 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name BoostRap)
 project(${name})
 
-include(GenerateExportHeader)
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
-
 
 set(Boost_USE_STATIC_LIBS 1)
 
@@ -14,7 +12,6 @@ find_package(OpticksBoost REQUIRED)
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
 )
-
 
 
 if(UNIX) 
@@ -33,13 +30,12 @@ add_definitions(
 )
 
 
-# BLog fsutil BSys depend on each other and boost 
+# BLog,fsutil,BSys depend on each other and boost 
 # BCfg depends only on boost
 
 
-
-
 set(SOURCES
+  BDemo.cc 
   BTime.cc
   BLog.cc
   fsutil.cc
@@ -54,13 +50,11 @@ set(SOURCES
   md5.cc
   md5digest.cc
   timeutil.cc
-
 ) 
 
-set(SOURCES_FAILING
-)
 
 set(HEADERS
+BDemo.hh 
 BTime.hh
 bffs.hh
 BCfg.hh
@@ -74,6 +68,7 @@ regexsearch.hh
 stringutil.hh
 timeutil.hh
 dbg.hh
+BRAP_API_EXPORT.hh
 )
 
 # appends to flags for specific files : trying to quell warnings from underlying boost code
@@ -85,20 +80,7 @@ endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 add_library( ${name}  SHARED ${SOURCES})
 
-
-set(EXPORT_HDR BRAP_API_EXPORT.hh)
-generate_export_header(${name}
-                        EXPORT_MACRO_NAME BRAP_API
-                         EXPORT_FILE_NAME ${EXPORT_HDR}
-                      )
-
 target_link_libraries( ${name}  ${LIBRARIES} )
-
-set(HEADERS 
-        ${HEADERS} 
-        ${CMAKE_CURRENT_BINARY_DIR}/${EXPORT_HDR}
-)
-
 
 
 install(TARGETS ${name} DESTINATION lib)

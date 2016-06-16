@@ -24,8 +24,9 @@ endif()
 find_package(OpticksBoost REQUIRED QUIET)
 
 add_subdirectory(boostrap)    
+add_subdirectory(boostrapclient)    
 
-set(REST ON)
+#set(REST ON)
 if(REST)
    add_subdirectory(numerics/npy)   
    add_subdirectory(optickscore)         
@@ -34,38 +35,32 @@ if(REST)
    add_subdirectory(graphics/openmeshrap)  
    add_subdirectory(opticksgeo)  
    add_subdirectory(graphics/oglrap)       
-endif(REST)
 
-find_package(CUDA ${OPTICKS_CUDA_VERSION})
-find_package(OptiX ${OPTICKS_OPTIX_VERSION})
+   find_package(CUDA ${OPTICKS_CUDA_VERSION})
+   find_package(OptiX ${OPTICKS_OPTIX_VERSION})
 
-if(CUDA_FOUND AND OptiX_FOUND)
-    set(WITH_OPTIX ON)
-    add_subdirectory(cuda/cudarap)        
-    add_subdirectory(numerics/thrustrap)
-    add_subdirectory(graphics/optixrap)
-    add_subdirectory(opticksop)
-    add_subdirectory(opticksgl)
-else(CUDA_FOUND AND OptiX_FOUND)
-    set(WITH_OPTIX OFF)
-    message("Failed to find at least CUDA ${OPTICKS_CUDA_VERSION} and OptiX ${OPTICKS_OPTIX_VERSION} : proceeding with viz only configure.") 
-endif()
-
-
-if(REST)
+   if(CUDA_FOUND AND OptiX_FOUND)
+       set(WITH_OPTIX ON)
+       add_subdirectory(cuda/cudarap)        
+       add_subdirectory(numerics/thrustrap)
+       add_subdirectory(graphics/optixrap)
+       add_subdirectory(opticksop)
+       add_subdirectory(opticksgl)
+   else(CUDA_FOUND AND OptiX_FOUND)
+       set(WITH_OPTIX OFF)
+       message("Failed to find at least CUDA ${OPTICKS_CUDA_VERSION} and OptiX ${OPTICKS_OPTIX_VERSION} ")
+       message("proceeding with viz only configure.") 
+   endif()
    add_subdirectory(graphics/ggeoview)
+
+   find_package(Geant4 QUIET)
+   if(Geant4_FOUND)
+      add_subdirectory(optix/cfg4)
+   else(Geant4_FOUND)
+      message("No Geant4 ")
+   endif(Geant4_FOUND)
+
 endif(REST)
-
-
-
-find_package(Geant4 QUIET)
-if(Geant4_FOUND)
-   add_subdirectory(optix/cfg4)
-else(Geant4_FOUND)
-   message("No Geant4 ")
-endif(Geant4_FOUND)
-
-
 
 
 

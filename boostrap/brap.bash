@@ -125,6 +125,10 @@ EOU
 }
 
 brap-sdir(){ echo $(env-home)/boostrap ; }
+
+
+
+
 brap-dir(){  echo $(brap-sdir) ; }
 
 brap-env(){      elocal- ; opticks- ;  }
@@ -139,6 +143,8 @@ brap-cd(){  cd $(brap-sdir); }
 
 brap-icd(){  cd $(brap-idir); }
 brap-bcd(){  cd $(brap-bdir); }
+
+
 
 brap-flags(){ $(brap-idir)/bin/enum_regexsearchTest $* ; }
 
@@ -155,6 +161,16 @@ brap-make(){
    make $*
    cd $iwd
 }
+
+
+brap-generate-exports(){
+
+   brap-scd 
+   importlib-
+   importlib-exports BoostRap BRAP_API
+}
+
+
 
 brap-install(){
    brap-make install
@@ -186,7 +202,12 @@ brap-full()
     brap-install
 }
 
-brap-config(){ echo Release ; }
+
+
+
+brap-libdir(){ echo $(brap-bdir)/$(brap-config) ; }
+
+brap-config(){ echo Debug ; }
 brap--()
 {
    local iwd=$PWD

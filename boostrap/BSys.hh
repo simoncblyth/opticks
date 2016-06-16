@@ -2,7 +2,6 @@
 
 #include <cstddef>
 
-// TODO: scross platform sleep , get process id
 
 class BSys {
   public:

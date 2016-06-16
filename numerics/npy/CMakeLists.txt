@@ -29,9 +29,12 @@ set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
    ${BoostRap_LIBRARIES}
-   ssl 
-   crypto
 )
+
+if(UNIX)
+   list(APPEND LIBRARIES ssl crypto)
+endif(UNIX)
+
 
 
 add_library( ${name}  SHARED
