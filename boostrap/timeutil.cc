@@ -48,6 +48,7 @@ double getRealTime( )
 	GetSystemTimePreciseAsFileTime( &tm );
 #else
 	/* Windows 2000 and later. ---------------------------------- */
+    // CHECK WITHOUT 
 	GetSystemTimeAsFileTime( &tm );
 #endif
 	t = ((ULONGLONG)tm.dwHighDateTime << 32) | (ULONGLONG)tm.dwLowDateTime;
@@ -108,8 +109,6 @@ double getRealTime( )
 	return -1.0;		/* Failed. */
 #endif
 }
-
-
 
 
 

@@ -20,8 +20,9 @@ Typically the last value in the vector should be used to call the Listeners
 setter method as selected by the name.
 
 */
+#include "BRAP_API_EXPORT.hh"
 
-class BCfg {
+class BRAP_API BCfg {
 
 public:
      void dumpTree(const char* msg="BCfg::dumpTree");

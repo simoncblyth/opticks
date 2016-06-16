@@ -1,9 +1,12 @@
+#include "BDir.hh"
+
 #include <iostream>
 #include <boost/filesystem.hpp>
 
+
 namespace fs = boost::filesystem;
 
-void dirlist(std::vector<std::string>& basenames,  const char* path, const char* ext)
+void BDir::dirlist(std::vector<std::string>& basenames,  const char* path, const char* ext)
 {
     fs::path dir(path);
     if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 
@@ -26,7 +29,7 @@ void dirlist(std::vector<std::string>& basenames,  const char* path, const char*
 }
 
 
-void dirlist(std::vector<std::string>& names,  const char* path)
+void BDir::dirlist(std::vector<std::string>& names,  const char* path)
 {
     fs::path dir(path);
     if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 
@@ -43,7 +46,7 @@ void dirlist(std::vector<std::string>& names,  const char* path)
 }
 
 
-void dirdirlist(std::vector<std::string>& names,  const char* path)
+void BDir::dirdirlist(std::vector<std::string>& names,  const char* path)
 {
     fs::path dir(path);
     if(!( fs::exists(dir) && fs::is_directory(dir))) return ; 

@@ -16,7 +16,7 @@ message("BoostRapClient.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
 message("BoostRapClient.BoostRap_LIBRARIES:${BoostRap_LIBRARIES} ")
 
 
-set(BoostRap_LIBRARIES /usr/local/opticks/build/boostrap/Debug/BoostRap.lib)
+#set(BoostRap_LIBRARIES /usr/local/opticks/build/boostrap/Debug/BoostRap.lib)
 
 
 include_directories(
@@ -43,5 +43,8 @@ set(LIBRARIES
 add_executable(${name} ${name}.cc)
 
 target_link_libraries( ${name} ${LIBRARIES} )
+
+install(TARGETS ${name} DESTINATION lib)  # place .exe next to .lib and .dll for simplicity
+
 
 

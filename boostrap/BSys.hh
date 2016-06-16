@@ -2,8 +2,9 @@
 
 #include <cstddef>
 
+#include "BRAP_API_EXPORT.hh"
 
-class BSys {
+class BRAP_API BSys {
   public:
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
      static int getenvint( const char* envkey, int fallback=-1 );

@@ -41,16 +41,20 @@ set(SOURCES
   fsutil.cc
   BSys.cc
   BCfg.cc
-  dirutil.cc
-  jsonutil.cc
+  BDir.cc
+  BJson.cc
 
   regexsearch.cc
   stringutil.cc
   
   md5.cc
   md5digest.cc
-  timeutil.cc
 ) 
+
+set(PROBLEM_SOURCES
+  timeutil.cc
+)
+
 
 
 set(HEADERS
@@ -60,9 +64,10 @@ bffs.hh
 BCfg.hh
 BLog.hh
 BSys.hh
-dirutil.hh
+BDir.hh
+BJson.hh
+
 fsutil.hh
-jsonutil.hh
 md5digest.hh
 regexsearch.hh
 stringutil.hh

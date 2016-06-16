@@ -1,4 +1,4 @@
-#include "jsonutil.hh"
+#include "BJson.hh"
 
 #include "regexsearch.hh"
 #include "fsutil.hh"
@@ -26,13 +26,13 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
 
-bool existsPath(const char* path )
+bool BJson::existsPath(const char* path )
 {
     fs::path fpath(path);
     return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
 }
 
-bool existsPath(const char* dir_, const char* name )
+bool BJson::existsPath(const char* dir_, const char* name )
 {
     std::string dir = fsutil::FormPath(dir_) ; 
     fs::path fdir(dir);
@@ -46,7 +46,7 @@ bool existsPath(const char* dir_, const char* name )
     return false ; 
 }
 
-std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
+std::string BJson::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
 {
     fs::path fpath(dir_);
     fpath /= reldir_ ;
@@ -54,7 +54,7 @@ std::string preparePath(const char* dir_, const char* reldir_, const char* name,
 }
 
 
-std::string preparePath(const char* dir_, const char* name, bool create )
+std::string BJson::preparePath(const char* dir_, const char* name, bool create )
 {
     std::string dir = fsutil::FormPath(dir_) ; 
     fs::path fdir(dir.c_str());
@@ -84,7 +84,7 @@ std::string preparePath(const char* dir_, const char* name, bool create )
 
 
 template<typename A, typename B> 
-void saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
+void BJson::saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
 {
      std::string path = preparePath(dir, name, true);
      LOG(debug) << "saveMap to " << path ;
@@ -95,7 +95,7 @@ void saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
 
 
 template<typename A, typename B> 
-void saveList( typename std::vector<std::pair<A,B> > & vp, const char* dir, const char* name)
+void BJson::saveList( typename std::vector<std::pair<A,B> > & vp, const char* dir, const char* name)
 {
      std::string path = preparePath(dir, name, true);
      LOG(debug) << "saveList to " << path ;
@@ -104,11 +104,15 @@ void saveList( typename std::vector<std::pair<A,B> > & vp, const char* dir, cons
 }
 
 
+
+
+// non-exposed function decls
 void saveTree(const pt::ptree& t , const char* path);
 
 
+
 template<typename A, typename B> 
-void saveList( typename std::vector<std::pair<A,B> > & vp, const char* path)
+void BJson::saveList( typename std::vector<std::pair<A,B> > & vp, const char* path)
 {
     pt::ptree t;
     for(typename std::vector<std::pair<A,B> >::iterator it=vp.begin() ; it != vp.end() ; it++)
@@ -123,7 +127,7 @@ void saveList( typename std::vector<std::pair<A,B> > & vp, const char* path)
 
 
 template<typename A, typename B> 
-void saveMap( typename std::map<A,B> & mp, const char* path)
+void BJson::saveMap( typename std::map<A,B> & mp, const char* path)
 {
     pt::ptree t;
     for(typename std::map<A,B>::iterator it=mp.begin() ; it != mp.end() ; it++)
@@ -137,6 +141,16 @@ void saveMap( typename std::map<A,B> & mp, const char* path)
 }
 
 
+
+
+
+
+
+
+
+// non-exposed functions
+
+
 void saveTree(const pt::ptree& t , const char* path)
 {
     fs::path fpath(path);
@@ -148,7 +162,6 @@ void saveTree(const pt::ptree& t , const char* path)
     else
         LOG(warning) << "saveTree cannot write to path with extension " << ext ; 
 }
-
 
 
 int loadTree(pt::ptree& t , const char* path)
@@ -173,8 +186,6 @@ int loadTree(pt::ptree& t , const char* path)
     return 0 ; 
 }
 
-
-
 std::string prefixShorten( const char* path, const char* prefix_)
 {
     std::string prefix = fsutil::FormPath(prefix_);  
@@ -185,8 +196,12 @@ std::string prefixShorten( const char* path, const char* prefix_)
 }
 
 
+
+
+
+
 template<typename A, typename B> 
-int loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
+int BJson::loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
 {
 
     int rc(0) ; 
@@ -207,7 +222,7 @@ int loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, uns
 
 
 template<typename A, typename B> 
-void loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const char* name)
+void BJson::loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const char* name)
 {
     LOG(trace) << "loadList"
               << " dir [" << dir << "]" 
@@ -233,7 +248,7 @@ void loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir, const
 
 
 template<typename A, typename B> 
-void loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
+void BJson::loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
 {
     pt::ptree t;
     loadTree(t, path );
@@ -247,7 +262,7 @@ void loadList( typename std::vector<std::pair<A,B> > & vp, const char* path)
 }
 
 template<typename A, typename B> 
-int loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
+int BJson::loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
 {
     pt::ptree t;
     int rc = loadTree(t, path );
@@ -305,7 +320,7 @@ int loadMap( typename std::map<A,B> & mp, const char* path, unsigned int depth)
 
 
 template<typename A, typename B> 
-void dumpMap( typename std::map<A,B> & mp, const char* msg)
+void BJson::dumpMap( typename std::map<A,B> & mp, const char* msg)
 {
     LOG(info) << msg ; 
     for(typename std::map<A,B>::iterator it=mp.begin() ; it != mp.end() ; it++)
@@ -320,7 +335,7 @@ void dumpMap( typename std::map<A,B> & mp, const char* msg)
 
 
 template<typename A, typename B> 
-void dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
+void BJson::dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
 {
     LOG(info) << msg ; 
     for(typename std::vector<std::pair<A,B> >::iterator it=vp.begin() ; it != vp.end() ; it++)
@@ -342,67 +357,67 @@ void dumpList( typename std::vector<std::pair<A,B> > & vp, const char* msg)
 
 ///////////////  US /////////////////
 
-template void saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name) ;
-template void saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path) ;
+template void BJson::saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name) ;
+template void BJson::saveMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path) ;
 
-template int loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
-template int loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path, unsigned int depth ) ;
+template int BJson::loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
+template int BJson::loadMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* path, unsigned int depth ) ;
 
-template void dumpMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* msg) ;
+template void BJson::dumpMap<unsigned int, std::string>(std::map<unsigned int, std::string>& mp, const char* msg) ;
 
 
 
 ///////////////  SU /////////////////
 
-template void saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name ) ;
-template void saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path) ;
+template void BJson::saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name ) ;
+template void BJson::saveMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path) ;
 
-template int loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name, unsigned int depth) ;
-template int loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path, unsigned int depth ) ;
+template int BJson::loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* dir, const char* name, unsigned int depth) ;
+template int BJson::loadMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* path, unsigned int depth ) ;
 
-template void dumpMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* msg) ;
+template void BJson::dumpMap<std::string, unsigned int>(std::map<std::string, unsigned int>& mp, const char* msg) ;
 
 
-template void saveList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* dir, const char* name) ;
-template void saveList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* path) ;
+template void BJson::saveList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* dir, const char* name) ;
+template void BJson::saveList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* path) ;
 
-template void loadList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* dir, const char* name) ;
-template void loadList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* path) ;
+template void BJson::loadList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* dir, const char* name) ;
+template void BJson::loadList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* path) ;
 
-template void dumpList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* msg) ;
+template void BJson::dumpList<std::string, unsigned int>(std::vector<std::pair<std::string, unsigned int> >& vp, const char* msg) ;
 
 ///////////////  SD /////////////////
 
-template void saveList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* dir, const char* name) ;
-template void saveList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* path) ;
+template void BJson::saveList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* dir, const char* name) ;
+template void BJson::saveList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* path) ;
 
-template void loadList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* dir, const char* name) ;
-template void loadList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* path) ;
-
-
-
-///////////////  SS /////////////////
-
-template void saveList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* dir, const char* name) ;
-template void saveList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* path) ;
-
-template void loadList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* dir, const char* name) ;
-template void loadList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* path) ;
-
+template void BJson::loadList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* dir, const char* name) ;
+template void BJson::loadList<std::string, double>(std::vector<std::pair<std::string, double> >& vp, const char* path) ;
 
 
 
 ///////////////  SS /////////////////
 
+template void BJson::saveList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* dir, const char* name) ;
+template void BJson::saveList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* path) ;
 
-template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
-template void saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
-
-template int loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
-template int loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path, unsigned int depth) ;
-
+template void BJson::loadList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* dir, const char* name) ;
+template void BJson::loadList<std::string, std::string>(std::vector<std::pair<std::string, std::string> >& vp, const char* path) ;
 
 
-template void dumpMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* msg) ;
+
+
+///////////////  SS /////////////////
+
+
+template void BJson::saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name ) ;
+template void BJson::saveMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path) ;
+
+template int BJson::loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* dir, const char* name, unsigned int depth) ;
+template int BJson::loadMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* path, unsigned int depth) ;
+
+
+
+template void BJson::dumpMap<std::string, std::string>(std::map<std::string, std::string>& mp, const char* msg) ;
 
 

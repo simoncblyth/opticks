@@ -6,7 +6,10 @@
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-class BLog {
+
+#include "BRAP_API_EXPORT.hh"
+
+class BRAP_API BLog {
     public:
          BLog(int argc, char** argv);
          void setDir( const char* dir);
