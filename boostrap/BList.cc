@@ -1,11 +1,3 @@
-#include "BList.hh"
-#include "BTree.hh"
-
-#include <iostream>
-
-#include "regexsearch.hh"
-#include "fsutil.hh"
-
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -29,6 +21,49 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
 
+#include "BList.hh"
+#include "BTree.hh"
+#include "BFile.hh"
+
+
+
+
+template <typename A, typename B>
+void BList<A,B>::save( std::vector<std::pair<A,B> >* li, const char* dir, const char* name) 
+{
+    BList<A,B> bli(li);
+    bli.save(dir, name);  
+}
+template <typename A, typename B>
+void BList<A,B>::save( std::vector<std::pair<A,B> >* li, const char* path) 
+{
+    BList<A,B> bli(li);
+    bli.save(path);  
+}
+template <typename A, typename B>
+void BList<A,B>::load( std::vector<std::pair<A,B> >* li, const char* dir, const char* name) 
+{
+    BList<A,B> bli(li);
+    bli.load(dir, name);  
+}
+template <typename A, typename B>
+void BList<A,B>::load( std::vector<std::pair<A,B> >* li, const char* path )
+{
+    BList<A,B> bli(li);
+    bli.load(path);  
+}
+template <typename A, typename B>
+void BList<A,B>::dump( std::vector<std::pair<A,B> >* li, const char* msg) 
+{
+    BList<A,B> bli(li);
+    bli.dump(msg);  
+}
+
+
+
+
+
+
 
 template <typename A, typename B>
 BList<A,B>::BList(std::vector<std::pair<A,B> >* vec) 
@@ -41,7 +76,7 @@ BList<A,B>::BList(std::vector<std::pair<A,B> >* vec)
 template<typename A, typename B> 
 void BList<A,B>::save(  const char* dir, const char* name)
 {
-     std::string path = fsutil::preparePath(dir, name, true);
+     std::string path = BFile::preparePath(dir, name, true);
      LOG(debug) << "BList::save to " << path ;
 
      if(!path.empty()) save(path.c_str() );
@@ -70,10 +105,10 @@ void BList<A,B>::load(const char* dir, const char* name)
               << " name [" << name << "]" 
               ;
 
-    std::string path = fsutil::preparePath(dir, name, false);
+    std::string path = BFile::preparePath(dir, name, false);
     if(!path.empty())
     {
-        std::string shortpath = fsutil::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        std::string shortpath = BFile::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
         load(path.c_str() );
     }
@@ -115,6 +150,8 @@ void BList<A,B>::dump(  const char* msg)
 
 
 template class BList<std::string, std::string>;
+template class BList<std::string, unsigned int>;
+template class BList<unsigned int, std::string>;
 
 
 

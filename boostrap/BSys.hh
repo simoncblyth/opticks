@@ -3,6 +3,7 @@
 #include <cstddef>
 
 #include "BRAP_API_EXPORT.hh"
+#include "BRAP_FLAGS.hh"
 
 class BRAP_API BSys {
   public:

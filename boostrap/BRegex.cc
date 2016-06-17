@@ -1,8 +1,5 @@
 // started from http://www.boost.org/doc/libs/1_58_0/libs/regex/doc/html/boost_regex/partial_matches.html
 
-#include "regexsearch.hh"
-#include "fsutil.hh"
-
 #include <cstring>
 #include <sstream>
 #include <fstream>
@@ -10,14 +7,24 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include "bffs.hh"
 
 // cannot BLog.hh this as bregex- is below NPY
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
-void dump( pairs_t& pairs, const char* msg)
+
+#include "BRegex.hh"
+#include "BFile.hh"
+#include "BStr.hh"
+#include "BHex.hh"
+#include "bffs.hh"
+
+
+#include "BRAP_FLAGS.hh"
+
+
+void BRegex::dump( pairs_t& pairs, const char* msg)
 {
     std::cout << msg << " : " << pairs.size() << std::endl ; 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
@@ -33,7 +40,7 @@ void dump( pairs_t& pairs, const char* msg)
 
 
 //template <typename T>
-void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const char* msg)
+void BRegex::udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const char* msg)
 {
     std::cout << msg << " : " << pairs.size() << std::endl ; 
     for(unsigned int i=0 ; i < pairs.size() ; i++)
@@ -58,18 +65,6 @@ void udump( std::vector<std::pair<unsigned int, std::string> >& pairs, const cha
 
 
 
-// duplicating whats in npy-/stringutil.hh but dont want to depend on npy- here 
-template<typename T>
-inline T hex_lexical_cast(const char* in) {
-    T out;
-    std::stringstream ss; 
-    ss <<  std::hex << in; 
-    ss >> out;
-    return out;
-}
-
-
-
 
 template <typename T>
 bool parse( T& result, std::string expr )
@@ -91,7 +86,7 @@ bool parse( T& result, std::string expr )
          while(mt != me)
          {
              std::string base = (*mt)[1].str() ;
-             int ibase = hex_lexical_cast<T>(base.c_str()) ;
+             int ibase = BHex<T>::hex_lexical_cast(base.c_str()) ;
              int ishift = boost::lexical_cast<T>((*mt)[2]) ;
 
              /*
@@ -105,7 +100,7 @@ bool parse( T& result, std::string expr )
              result = ibase << ishift ;
              return true ;
              // taking first match only
-             mt++ ;
+             //mt++ ;
          }
     } 
     return false ; 
@@ -114,7 +109,7 @@ bool parse( T& result, std::string expr )
 
 
 
-std::string regex_matched_element(const char* line)
+std::string BRegex::regex_matched_element(const char* line)
 {
     const char* ptn = "__([^_\\s]+)\\s*$" ;
     boost::regex re(ptn);
@@ -136,7 +131,7 @@ std::string regex_matched_element(const char* line)
 }
 
 /*
-std::string regex_matched_element_0(const char* line)
+std::string BRegex::regex_matched_element_0(const char* line)
 {
     const char* ptn = "__([^_]*)$" ;
     boost::regex e(ptn);
@@ -157,7 +152,7 @@ std::string regex_matched_element_0(const char* line)
 
 
 
-std::string regex_extract_quoted(const char* line)
+std::string BRegex::regex_extract_quoted(const char* line)
 {
     std::string str = line ;
 
@@ -198,10 +193,10 @@ std::string regex_extract_quoted(const char* line)
 
 
 
-std::string os_path_expandvars(const char* s, bool debug)
+std::string BRegex::os_path_expandvars(const char* s, bool debug)
 {
 
-    printf("os_path_expandvars IS DEPRECATED : MOVE TO fsutil::FormPath approach \n");
+    printf("os_path_expandvars IS DEPRECATED : MOVE TO BFile::FormPath approach \n");
 
     assert(0);
 
@@ -258,12 +253,12 @@ std::string os_path_expandvars(const char* s, bool debug)
 }
 
 
-void enum_read(std::map<std::string, unsigned int>& emap, const char* path)
+void BRegex::enum_read(std::map<std::string, unsigned int>& emap, const char* path)
 {
     const char* ptn = "^\\s*(\\w+)\\s*=\\s*(.*?),*\\s*?$" ;  
     boost::regex e(ptn);
 
-    std::string epath = fsutil::FormPath(path);
+    std::string epath = BFile::FormPath(path);
     std::ifstream is(epath.c_str(), std::ifstream::binary); 
 
     pairs_t   pairs ; 
@@ -279,7 +274,7 @@ void enum_read(std::map<std::string, unsigned int>& emap, const char* path)
 }
 
 
-void enum_regexsearch( upairs_t& upairs, const char* path )
+void BRegex::enum_regexsearch( upairs_t& upairs, const char* path )
 {
 /*
 Extracts names and values from files containing enum definitions looking like:
@@ -300,7 +295,7 @@ enum
     const char* ptn = "^\\s*(\\w+)\\s*=\\s*(.*?),*\\s*?$" ;  
     boost::regex e(ptn);
 
-    std::string epath = fsutil::FormPath(path);
+    std::string epath = BFile::FormPath(path);
     std::ifstream is(epath.c_str(), std::ifstream::binary); 
 
     pairs_t   pairs ; 
@@ -315,7 +310,7 @@ enum
 
 
 
-void regexsearch( pairs_t& pairs, std::istream& is, boost::regex& e )
+void BRegex::regexsearch( pairs_t& pairs, std::istream& is, boost::regex& e )
 {
    char buf[4096];
    const char* next_pos = buf + sizeof(buf);  // end of buf
@@ -325,12 +320,12 @@ void regexsearch( pairs_t& pairs, std::istream& is, boost::regex& e )
 
    while(more)
    {
-      unsigned leftover = (buf + sizeof(buf)) - next_pos;
-      unsigned size = next_pos - buf;        // 
+      unsigned long leftover = (buf + sizeof(buf)) - next_pos;
+      std::streamsize size = next_pos - buf;        // 
 
       std::memmove(buf, next_pos, leftover); // shunt leftovers from prior partial matches to buf head
       is.read(buf + leftover, size);         // fill from stream
-      unsigned read = is.gcount();
+      std::streamsize read = is.gcount();
       more = read == size;                   // stream succeeds to fill buffer, so probably more available
       next_pos = buf + sizeof(buf);
 

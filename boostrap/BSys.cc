@@ -8,10 +8,13 @@
 #include "BLog.hh"
 
 
+
+
+
 void BSys::WaitForInput(const char* msg)
 {
     LOG(info) << "BSys::WaitForInput " << msg  ; 
-    char c = '\0' ;
+    int c = '\0' ;
     do
     {
         c = std::cin.get() ;  

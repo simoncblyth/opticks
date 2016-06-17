@@ -30,7 +30,7 @@ add_definitions(
 )
 
 
-# BLog,fsutil,BSys depend on each other and boost 
+# BLog,BFile,BSys depend on each other and boost 
 # BCfg depends only on boost
 
 
@@ -38,48 +38,55 @@ set(SOURCES
   BDemo.cc 
   BTime.cc
   BLog.cc
-  fsutil.cc
   BSys.cc
   BCfg.cc
   BDir.cc
-  BTree.cc
   BJson.cc
   BMap.cc
   BList.cc
+  BStr.cc
+  BHex.cc
+  BFile.cc
+  BRegex.cc
+  BDigest.cc
+  BArrayDigest.cc
 
-  regexsearch.cc
-  stringutil.cc
-  
   md5.cc
-  md5digest.cc
+  BTree.cc
 ) 
 
 set(PROBLEM_SOURCES
   timeutil.cc
 )
 
-
-
 set(HEADERS
-BDemo.hh 
-BTime.hh
-bffs.hh
-BCfg.hh
-BLog.hh
-BSys.hh
-BDir.hh
-BJson.hh
-BMap.hh
-BList.hh
+  BRAP_API_EXPORT.hh
 
-fsutil.hh
-md5digest.hh
-regexsearch.hh
-stringutil.hh
-timeutil.hh
-dbg.hh
-BRAP_API_EXPORT.hh
+  BDemo.hh 
+  BTime.hh
+  BLog.hh
+  BSys.hh
+  BCfg.hh
+  BDir.hh
+  BJson.hh
+  BMap.hh
+  BList.hh
+  BStr.hh
+  BHex.hh
+  BFile.hh
+  BRegex.hh
+  BDigest.hh
+  BArrayDigest.hh
+
+  bffs.hh
+  dbg.hh
 )
+
+set(PROBLEM_HEADERS
+  timeutil.hh
+)
+
+
 
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
@@ -98,6 +105,6 @@ install(FILES ${HEADERS} DESTINATION include/${name})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 

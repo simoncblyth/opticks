@@ -1,6 +1,14 @@
 #include <string>
 #include <iostream>
 
+
+
+#ifdef _MSC_VER
+// signed/unsigned mismatch
+#pragma warning( disable : 4018 )
+#endif
+
+
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include "boost/log/utility/setup.hpp"
@@ -9,9 +17,12 @@
 // trace/debug/info/warning/error/fatal
 
 // brap-
-#include "fsutil.hh"
+#include "BFile.hh"
 #include "BLog.hh"
 #include "BSys.hh"
+
+
+
 
 
 void BLog::init()
@@ -57,7 +68,7 @@ void BLog::configure(int argc, char** argv)
 
     if(argc > 0)
     {
-        std::string stem = fsutil::Stem(argv[0]);
+        std::string stem = BFile::Stem(argv[0]);
         std::string logname(stem) ;
         if(nogeocache) logname += ".nogeocache" ; 
         logname += ".log" ;
@@ -137,8 +148,8 @@ void BLog::addFileLog()
     {
        m_addfile = true ; 
 
-       fsutil::CreateDir(m_logdir);
-       std::string logpath = fsutil::FormPath(m_logdir, m_logname) ;
+       BFile::CreateDir(m_logdir);
+       std::string logpath = BFile::FormPath(m_logdir, m_logname) ;
        boost::log::add_file_log(
               logpath,
               boost::log::keywords::format = "[%TimeStamp%]:%Severity%: %Message%"

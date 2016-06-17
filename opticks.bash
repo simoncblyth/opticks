@@ -452,7 +452,23 @@ opticks--(){
 
    cd $iwd
 }
-opticks-ctest(){ ( opticks-bcd ; ctest $* ; ) ; }
+opticks-ctest()
+{ 
+   local msg="$FUNCNAME : "
+   local iwd=$PWD
+   opticks-bcd 
+
+   if [ "$USERPROFILE" == "" ]; then 
+      ctest $*   
+   else
+      # windows needs PATH to find libs
+      PATH=$(opticks-prefix)/lib:$PATH ctest $*   
+   fi
+
+   cd $iwd
+
+   echo $msg use opticks-ctest -V to show output 
+}
 
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
 opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }

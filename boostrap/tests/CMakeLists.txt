@@ -2,7 +2,25 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name BoostRapTest)
 project(${name})
 
-file(GLOB TEST_CC_SRCS "*Test.cc")
+#file(GLOB TEST_CC_SRCS "B*Test.cc")
+
+set(TEST_CC_SRCS
+   BDirTest.cc
+   BTimeTest.cc
+   BMapTest.cc
+   BListTest.cc
+   BSysTest.cc
+   BLogTest.cc
+   BFileTest.cc
+   BRegexTest.cc
+)
+
+
+set(FAIL_TO_LINK
+   BJsonTest.cc
+)
+
+
 
 foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
@@ -12,7 +30,7 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     add_dependencies(check ${TGT})
 
     target_link_libraries(${TGT} ${LIBRARIES} BoostRap)
-    install(TARGETS ${TGT} DESTINATION bin)
+    install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
 

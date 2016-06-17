@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/property_tree/ptree.hpp>
+#include "BRAP_FLAGS.hh"
 
 
 class BTree {

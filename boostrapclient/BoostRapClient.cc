@@ -11,6 +11,14 @@
 #include "BMap.hh"
 #include "BList.hh"
 
+#include "BStr.hh"
+#include "BHex.hh"
+#include "BFile.hh"
+
+#include "BDigest.hh"
+#include "BArrayDigest.hh"
+
+
 
 
 int main(int argc, char** argv)
@@ -41,9 +49,16 @@ int main(int argc, char** argv)
     std::cerr << bc.getName() << std::endl ; 
 
 
+    std::string path = BFile::FormPath("~", "BoostRapClient.txt" );
+    std::cerr << " path " << path << std::endl ; 
+
+    std::string home = BFile::FormPath("~");
+    std::cerr << " home " << home << std::endl ; 
+
+
 
     std::cerr << " PATH " << BSys::getenvvar("","PATH","no-path-?") << std::endl ; 
-    const char* dir = "C:\\Users\\ntuhep" ;
+    const char* dir = home.c_str() ;
 
  
     typedef std::vector<std::string> VS ; 
@@ -87,11 +102,31 @@ int main(int argc, char** argv)
     bl2.dump("bl2");
 
 
+    assert(BStr::listHasKey("red,green,blue", "green", ",") == true); 
+    assert(BStr::listHasKey("red,green,blue", "cyan", ",") == false ); 
+
+    BHex<int> bh(15) ;
+    std::cout << " as_hex " << bh.as_hex() << std::endl ; 
+
+
+    const char* buf = "hello" ;
+    std::string digest = BDigest::md5digest(buf, strlen(buf));
+    std::cout << " digest of " << buf << " is " << digest << std::endl ; 
+
+
+    int arr[3]; 
+    arr[0] = 0 ;  
+    arr[1] = 1 ;  
+    arr[2] = 2 ;
+
+    std::string adigest = BArrayDigest<int>::arraydigest(arr, 3);
+    std::cout << " adigest  " << adigest << std::endl ; 
+
+
+  
 
 
     //BJson::saveMap(m, "C:\\Users\\ntuhep", "BoostRapClient.json" );
-
-
 
     return 0 ; 
 }

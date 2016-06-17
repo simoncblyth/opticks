@@ -9,11 +9,11 @@ find_package(OpticksBoost  REQUIRED)
 find_package(GLM           REQUIRED)
 find_package(BoostRap      REQUIRED)
 
-message("BoostRapClient.OpticksBoost_INCLUDE_DIRS:${OpticksBoost_INCLUDE_DIRS} ")
-message("BoostRapClient.OpticksBoost_LIBRARIES:${OpticksBoost_LIBRARIES} ")
+#message("BoostRapClient.OpticksBoost_INCLUDE_DIRS:${OpticksBoost_INCLUDE_DIRS} ")
+#message("BoostRapClient.OpticksBoost_LIBRARIES:${OpticksBoost_LIBRARIES} ")
 
-message("BoostRapClient.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
-message("BoostRapClient.BoostRap_LIBRARIES:${BoostRap_LIBRARIES} ")
+#message("BoostRapClient.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
+#message("BoostRapClient.BoostRap_LIBRARIES:${BoostRap_LIBRARIES} ")
 
 
 #set(BoostRap_LIBRARIES /usr/local/opticks/build/boostrap/Debug/BoostRap.lib)

@@ -1,5 +1,5 @@
 
-#include "fsutil.hh"
+#include "BFile.hh"
 #include "dbg.hh"
 
 #include <cstring>
@@ -17,26 +17,26 @@ namespace fs = boost::filesystem;
 #include "BLog.hh"
 
 
-char* fsutil::OPTICKS_PATH_PREFIX = NULL ;
+char* BFile::OPTICKS_PATH_PREFIX = NULL ;
 
-void fsutil::setOpticksPathPrefix(const char* prefix)
+void BFile::setOpticksPathPrefix(const char* prefix)
 {
     OPTICKS_PATH_PREFIX = prefix ? strdup(prefix) : NULL ;
 }
-void fsutil::dumpOpticksPathPrefix(const char* msg)
+void BFile::dumpOpticksPathPrefix(const char* msg)
 {
      std::cout << msg
                << " OPTICKS_PATH_PREFIX " << ( OPTICKS_PATH_PREFIX ? OPTICKS_PATH_PREFIX : "NULL" ) 
                << std::endl ;
 }
 
-void fsutil::setOpticksPathPrefixFromEnv(const char* envvar)
+void BFile::setOpticksPathPrefixFromEnv(const char* envvar)
 {
     char* prefix = getenv(envvar);
     if(prefix)
     {
         setOpticksPathPrefix(prefix);
-        dumpOpticksPathPrefix("fsutil::setOpticksPathPrefixFromEnv envvar ");
+        dumpOpticksPathPrefix("BFile::setOpticksPathPrefixFromEnv envvar ");
     }
 }
 
@@ -97,14 +97,28 @@ std::string expandvar(const char* s)
 }
 
 
-std::string fsutil::Stem(const char* path)
+std::string expandhome(const char* s)
+{
+    assert(strcmp(s,"~")==0);
+#ifdef _WIN32
+    const char* home = "$USERPROFILE" ;
+#else
+    const char* home = "$HOME" ;
+#endif
+    return expandvar(home);
+}
+
+
+
+
+std::string BFile::Stem(const char* path)
 {
     fs::path fsp(path);
     std::string stem = fsp.stem().string() ;
     return stem ;
 }
 
-std::string fsutil::Name(const char* path)
+std::string BFile::Name(const char* path)
 {
     fs::path fsp(path);
     std::string name = fsp.filename().string() ;
@@ -114,14 +128,14 @@ std::string fsutil::Name(const char* path)
 
 
 
-bool fsutil::ExistsDir(const char* path, const char* sub, const char* name)
+bool BFile::ExistsDir(const char* path, const char* sub, const char* name)
 {
     std::string p = FormPath(path, sub, name) ;
     assert(!p.empty());
     fs::path fsp(p);
     return fs::exists(fsp) && fs::is_directory(fsp) ;
 }
-bool fsutil::ExistsNativeDir(const std::string& native)
+bool BFile::ExistsNativeDir(const std::string& native)
 {
     fs::path fsp(native);
     return fs::exists(fsp) && fs::is_directory(fsp) ;
@@ -129,14 +143,14 @@ bool fsutil::ExistsNativeDir(const std::string& native)
 
 
 
-bool fsutil::ExistsFile(const char* path, const char* sub, const char* name)
+bool BFile::ExistsFile(const char* path, const char* sub, const char* name)
 {
     std::string p = FormPath(path, sub, name) ;
     assert(!p.empty());
     fs::path fsp(p);
     return fs::exists(fsp) && fs::is_regular_file(fsp) ;
 }
-bool fsutil::ExistsNativeFile(const std::string& native)
+bool BFile::ExistsNativeFile(const std::string& native)
 {
     fs::path fsp(native);
     return fs::exists(fsp) && fs::is_regular_file(fsp) ;
@@ -144,12 +158,12 @@ bool fsutil::ExistsNativeFile(const std::string& native)
 
 
 
-std::string fsutil::FindFile(const char* dirlist, const char* sub, const char* name, const char* dirlist_delim)
+std::string BFile::FindFile(const char* dirlist, const char* sub, const char* name, const char* dirlist_delim)
 {
     std::vector<std::string> dirs ; 
     boost::split(dirs,dirlist,boost::is_any_of(dirlist_delim));
 
-    LOG(info) << "fsutil::FindFile"
+    LOG(info) << "BFile::FindFile"
               << " dirlist " << dirlist 
               << " sub " << sub
               << " name " << name
@@ -160,8 +174,8 @@ std::string fsutil::FindFile(const char* dirlist, const char* sub, const char* n
     std::string path ; 
     for(unsigned int i=0 ; i < dirs.size() ; i++)
     {
-        std::string candidate = fsutil::FormPath(dirs[i].c_str(), sub, name );  
-        if(fsutil::ExistsNativeFile(candidate))
+        std::string candidate = BFile::FormPath(dirs[i].c_str(), sub, name );  
+        if(BFile::ExistsNativeFile(candidate))
         {
             path = candidate ;
             break ;  
@@ -172,12 +186,12 @@ std::string fsutil::FindFile(const char* dirlist, const char* sub, const char* n
 
 
 
-std::string fsutil::FormPath(const char* path, const char* sub, const char* name)
+std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 {
    std::string empty ; 
    if(!path)
    {
-       LOG(debug) << "fsutil::FormPath return empty "
+       LOG(debug) << "BFile::FormPath return empty "
                   << " path " << ( path ? path : "NULL" )
                   << " sub " << ( sub ? sub : "NULL" )
                   << " name " << ( name ? name : "NULL" )
@@ -186,9 +200,9 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
    }
 
 
-   if(strlen(path)<2)
+   if(strlen(path)<1)
    {
-       LOG(debug) << "fsutil::FormPath return empty "
+       LOG(debug) << "BFile::FormPath return empty "
                   << " strlen(path) " << strlen(path)
                   << " path " << ( path ? path : "NULL" )
                   << " sub " << ( sub ? sub : "NULL" )
@@ -196,8 +210,6 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
                   ;
        return empty ; 
    }
-
-
 
 
 
@@ -215,12 +227,16 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
    {
       xpath.assign(expandvar(path));
    } 
+   else if(path[0] == '~')
+   {
+      xpath.assign(expandhome(path));
+   }
    else if(OPTICKS_PATH_PREFIX)
    { 
       //  eg windows prefix C:\msys64
-      if(path[1] == ':') 
+      if(strlen(path) > 1 && path[1] == ':') 
       { 
-          if(dbg) std::cerr << "fsutil::FormPath path is already prefixed " << path << std::endl ; 
+          if(dbg) std::cerr << "BFile::FormPath path is already prefixed " << path << std::endl ; 
       } 
       else
       {
@@ -241,11 +257,11 @@ std::string fsutil::FormPath(const char* path, const char* sub, const char* name
 }
 
 
-void fsutil::CreateDir(const char* path, const char* sub)
+void BFile::CreateDir(const char* path, const char* sub)
 {
 
 #ifdef DEBUG    
-    std::cerr << "fsutil::CreateDir"
+    std::cerr << "BFile::CreateDir"
               << " path " << ( path ? path : "NULL" ) 
               << " sub " << ( sub ?  sub : "NULL" ) 
               << std::endl ;
@@ -260,7 +276,7 @@ void fsutil::CreateDir(const char* path, const char* sub)
     bool exists = fs::exists(dir) ;
 
 #ifdef DEBUG    
-    std::cerr << "fsutil::CreateDir"
+    std::cerr << "BFile::CreateDir"
               << " ppath " << ppath
               << " exists " << exists 
               << std::endl ;
@@ -269,7 +285,7 @@ void fsutil::CreateDir(const char* path, const char* sub)
 
     if(!exists && fs::create_directories(dir))
     {    
-       std::cerr << "fsutil::CreateDir"
+       std::cerr << "BFile::CreateDir"
                  << " created " << ppath
                  << std::endl ;
                  ;
@@ -278,15 +294,15 @@ void fsutil::CreateDir(const char* path, const char* sub)
 }
 
 
-bool fsutil::existsPath(const char* path )
+bool BFile::existsPath(const char* path )
 {
     fs::path fpath(path);
     return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
 }
 
-bool fsutil::existsPath(const char* dir_, const char* name )
+bool BFile::existsPath(const char* dir_, const char* name )
 {
-    std::string dir = fsutil::FormPath(dir_) ; 
+    std::string dir = BFile::FormPath(dir_) ; 
     fs::path fdir(dir);
     if(fs::exists(fdir) && fs::is_directory(fdir))
     {
@@ -298,7 +314,7 @@ bool fsutil::existsPath(const char* dir_, const char* name )
     return false ; 
 }
 
-std::string fsutil::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
+std::string BFile::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
 {
     fs::path fpath(dir_);
     fpath /= reldir_ ;
@@ -306,9 +322,9 @@ std::string fsutil::preparePath(const char* dir_, const char* reldir_, const cha
 }
 
 
-std::string fsutil::preparePath(const char* dir_, const char* name, bool create )
+std::string BFile::preparePath(const char* dir_, const char* name, bool create )
 {
-    std::string dir = fsutil::FormPath(dir_) ; 
+    std::string dir = BFile::FormPath(dir_) ; 
     fs::path fdir(dir.c_str());
     if(!fs::exists(fdir) && create)
     {
@@ -336,9 +352,9 @@ std::string fsutil::preparePath(const char* dir_, const char* name, bool create 
 
 
 
-std::string fsutil::prefixShorten( const char* path, const char* prefix_)
+std::string BFile::prefixShorten( const char* path, const char* prefix_)
 {
-    std::string prefix = fsutil::FormPath(prefix_);  
+    std::string prefix = BFile::FormPath(prefix_);  
     if(strncmp(path, prefix.c_str(), strlen(prefix.c_str()))==0)
         return path + strlen(prefix.c_str()) ;
     else

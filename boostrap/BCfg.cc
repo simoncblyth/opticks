@@ -12,7 +12,6 @@ typedef std::vector<std::string>::const_iterator VSI ;
 namespace po = boost::program_options;
 
 
-
 BCfg::BCfg(const char* name, bool live)
     : 
     m_desc(name), 
@@ -324,7 +323,7 @@ void BCfg::dump(boost::program_options::parsed_options& opts, const char* msg )
     }
 }
 
-void BCfg::dump(boost::program_options::options_description& desc, const char* msg)
+void BCfg::dump(boost::program_options::options_description& /*desc*/, const char* msg)
 {
     std::cout << "\nBCfg::dumpdesc " << msg << std::endl ;
     // for (auto opt: desc.options())

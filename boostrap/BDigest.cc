@@ -1,4 +1,8 @@
-#include "md5digest.hh"
+#include "BDigest.hh"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 
 char* md5digest_str2md5_monolithic(const char *buffer, int length) 
@@ -72,50 +76,33 @@ char* md5digest_str2md5(char* buffer, int length)
 
 
 
-MD5Digest::MD5Digest()
+BDigest::BDigest()
 {
    MD5_Init(&m_ctx); 
 }
-MD5Digest::~MD5Digest()
+BDigest::~BDigest()
 {
 }
 
-void MD5Digest::update(char* buffer, int length)
+void BDigest::update(char* buffer, int length)
 {
     md5digest_str2md5_update(m_ctx, buffer, length );
 }
 
-char* MD5Digest::finalize()
+char* BDigest::finalize()
 {
     return md5digest_str2md5_finalize(m_ctx);  
 }
 
 
 
-std::string MD5Digest::md5digest( const char* buffer, int len )
+std::string BDigest::md5digest( const char* buffer, int len )
 {
     char* out = md5digest_str2md5_monolithic(buffer, len);
     std::string digest(out);
     free(out);
     return digest;
 }
-
-
-template<typename T>
-std::string MD5Digest::arraydigest( T* data, unsigned int n )
-{
-    return md5digest( (char*)data, sizeof(T)*n );
-}
-
-
-
-
-
-template std::string MD5Digest::arraydigest( float*, unsigned int);
-template std::string MD5Digest::arraydigest( int*, unsigned int);
-template std::string MD5Digest::arraydigest( unsigned int*, unsigned int);
-
-
 
 
 

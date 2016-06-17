@@ -1,19 +1,19 @@
-#include "stringutil.hh"
+#include "BStr.hh"
 
 #include <sstream>
+#include <sstream>
+#include <iostream>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-namespace pt = boost::property_tree;
 
 
-bool listHasKey(const char* dlist, const char* key, const char* delim)
+
+bool BStr::listHasKey(const char* dlist, const char* key, const char* delim)
 {  
     std::vector<std::string> elems ; 
     boost::split(elems, dlist, boost::is_any_of(delim));
@@ -30,7 +30,7 @@ bool listHasKey(const char* dlist, const char* key, const char* delim)
 }
 
 
-char* trimPointerSuffixPrefix(const char* origname, const char* prefix)
+char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
 {
     //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
     const char* ox = "0x" ;
@@ -42,7 +42,7 @@ char* trimPointerSuffixPrefix(const char* origname, const char* prefix)
 }
 
 
-const char* uppercase( const char* str )
+const char* BStr::uppercase( const char* str )
 {
     char* STR = strdup(str);
     char* p = STR ;
@@ -55,7 +55,7 @@ const char* uppercase( const char* str )
 }
 
 
-std::string patternPickField(std::string str, std::string ptn, int num )
+std::string BStr::patternPickField(std::string str, std::string ptn, int num )
 {
     std::vector<std::string> result;
     boost::algorithm::split_regex( result, str, boost::regex(ptn) ) ;
@@ -70,7 +70,7 @@ std::string patternPickField(std::string str, std::string ptn, int num )
 }
 
 
-void split( std::vector<std::string>& elem, const char* line, char delim )
+void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
 {
     if(line == NULL) return ; 
     std::istringstream f(line);
@@ -79,7 +79,8 @@ void split( std::vector<std::string>& elem, const char* line, char delim )
 }
 
 
-std::vector<std::pair<std::string, std::string>> ekv_split( const char* line_, char edelim, const char* kvdelim )
+std::vector<std::pair<std::string, std::string> > 
+BStr::ekv_split( const char* line_, char edelim, const char* kvdelim )
 {
     const char* line = strdup(line_);
     typedef std::pair<std::string,std::string> KV ;  
@@ -103,7 +104,7 @@ std::vector<std::pair<std::string, std::string>> ekv_split( const char* line_, c
 }
     
 
-std::string join(std::vector<std::string>& elem, char delim )
+std::string BStr::join(std::vector<std::string>& elem, char delim )
 {
     std::stringstream ss ;
     for(size_t i=0 ; i < elem.size() ; ++i)
@@ -114,7 +115,7 @@ std::string join(std::vector<std::string>& elem, char delim )
     return ss.str();
 }
 
-void removeField(char* dest, const char* line, char delim, int index )
+void BStr::removeField(char* dest, const char* line, char delim, int index )
 {
     //  
     //   split the line with the delim
@@ -148,7 +149,7 @@ void removeField(char* dest, const char* line, char delim, int index )
 }
 
 
-std::string insertField(const char* line, char delim, int index, const char* field)
+std::string BStr::insertField(const char* line, char delim, int index, const char* field)
 {
     std::vector<std::string> elem ;
     split(elem, line, delim);    
@@ -185,7 +186,7 @@ std::string insertField(const char* line, char delim, int index, const char* fie
 
 
 
-unsigned char* make_uchar4_colors(unsigned int n)
+unsigned char* BStr::make_uchar4_colors(unsigned int n)
 {
     unsigned char* colors = new unsigned char[n*4] ; 
     for(unsigned int i=0 ; i < n ; i++ )
@@ -244,6 +245,40 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
     return colors ; 
 }
 
+
+
+/*
+
+moved to BHex
+
+template<typename T>
+T BStr::hex_lexical_cast(const char* in) 
+{
+    T out;
+    std::stringstream ss; 
+    ss <<  std::hex << in; 
+    ss >> out;
+    return out;
+}
+
+template<typename T>
+std::string BStr::as_hex(T in)
+{
+    std::stringstream ss; 
+    ss <<  std::hex << in; 
+    return ss.str();
+}
+
+template<typename T>
+std::string BStr::as_dec(T in) 
+{
+    std::stringstream ss; 
+    ss <<  std::dec << in; 
+    return ss.str();
+}
+
+
+*/
 
 
 

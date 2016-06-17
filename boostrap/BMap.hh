@@ -2,9 +2,16 @@
 
 #include <map>
 #include "BRAP_API_EXPORT.hh"
+#include "BRAP_FLAGS.hh"
 
 template <typename A, typename B>
 class BRAP_API  BMap {
+   public:
+      static void save( std::map<A,B>* , const char* dir, const char* name) ;
+      static void save( std::map<A,B>* , const char* path) ;
+      static int  load( std::map<A,B>* , const char* dir, const char* name, unsigned int depth=0) ;
+      static int  load( std::map<A,B>* , const char* path, unsigned int depth=0 ) ;
+      static void dump( std::map<A,B>* , const char* msg="BMap::dump");
    public:
       BMap( std::map<A,B>* mp );
    public:

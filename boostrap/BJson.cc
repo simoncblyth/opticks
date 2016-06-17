@@ -1,9 +1,3 @@
-#include "BJson.hh"
-#include "BTree.hh"
-
-#include "regexsearch.hh"
-#include "fsutil.hh"
-
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -26,13 +20,17 @@
 namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
+#include "BJson.hh"
+#include "BTree.hh"
+#include "BFile.hh"
+
 
 
 
 template<typename A, typename B> 
 void BJson::saveList( typename std::vector<std::pair<A,B> > & vp, const char* dir, const char* name)
 {
-     std::string path = fsutil::preparePath(dir, name, true);
+     std::string path = BFile::preparePath(dir, name, true);
      LOG(debug) << "saveList to " << path ;
 
      if(!path.empty()) saveList( vp, path.c_str() );
@@ -61,10 +59,10 @@ void BJson::loadList( typename std::vector<std::pair<A,B> >& vp, const char* dir
               << " name [" << name << "]" 
               ;
 
-    std::string path = fsutil::preparePath(dir, name, false);
+    std::string path = BFile::preparePath(dir, name, false);
     if(!path.empty())
     {
-        std::string shortpath = fsutil::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        std::string shortpath = BFile::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
         loadList( vp, path.c_str() );
     }
@@ -105,25 +103,10 @@ void BJson::dumpList( typename std::vector<std::pair<A,B> > & vp, const char* ms
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 template<typename A, typename B> 
 void BJson::saveMap( typename std::map<A,B> & mp, const char* dir, const char* name)
 {
-     std::string path = fsutil::preparePath(dir, name, true);
+     std::string path = BFile::preparePath(dir, name, true);
      LOG(debug) << "saveMap to " << path ;
 
      if(!path.empty()) saveMap( mp, path.c_str() );
@@ -147,10 +130,10 @@ template<typename A, typename B>
 int BJson::loadMap( typename std::map<A,B> & mp, const char* dir, const char* name, unsigned int depth)
 {
     int rc(0) ; 
-    std::string path = fsutil::preparePath(dir, name, false);
+    std::string path = BFile::preparePath(dir, name, false);
     if(!path.empty())
     {
-        std::string shortpath = fsutil::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        std::string shortpath = BFile::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
         rc = loadMap( mp, path.c_str(), depth );
     }
@@ -160,6 +143,13 @@ int BJson::loadMap( typename std::map<A,B> & mp, const char* dir, const char* na
     }
     return rc ;
 }
+
+
+
+#ifdef _MSC_VER
+// foreach shadowing
+#pragma warning( disable : 4456)
+#endif
 
 
 

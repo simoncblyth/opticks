@@ -2,7 +2,10 @@
 
 #include <string>
 
-class fsutil {
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_FLAGS.hh"
+
+class BRAP_API BFile {
     public:
        static std::string FormPath(const char* path, const char* sub=NULL, const char* name=NULL);
        static std::string FindFile(const char* dirlist, const char* sub, const char* name=NULL, const char* dirlist_delim=";");
@@ -28,7 +31,7 @@ class fsutil {
     private:
        static void setOpticksPathPrefix(const char* prefix);
        static void setOpticksPathPrefixFromEnv(const char* envvar="OPTICKS_PATH_PREFIX");
-       static void dumpOpticksPathPrefix(const char* msg="fsutil::dumpOpticksPathPrefix");
+       static void dumpOpticksPathPrefix(const char* msg="BFile::dumpOpticksPathPrefix");
     private:
        static char* OPTICKS_PATH_PREFIX ; 
 };

@@ -21,6 +21,14 @@ setter method as selected by the name.
 
 */
 #include "BRAP_API_EXPORT.hh"
+#include "BRAP_FLAGS.hh"
+
+
+#ifdef _MSC_VER
+// m_vm m_desc m_others m_commandline m_error_message needs dll-interface
+#pragma warning( disable : 4251 )
+#endif
+
 
 class BRAP_API BCfg {
 

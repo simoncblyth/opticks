@@ -1,11 +1,3 @@
-#include "BMap.hh"
-#include "BTree.hh"
-
-#include <iostream>
-
-#include "regexsearch.hh"
-#include "fsutil.hh"
-
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -29,6 +21,60 @@ namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
 
 
+#include "BMap.hh"
+#include "BTree.hh"
+#include "BFile.hh"
+
+
+
+#ifdef _MSC_VER
+
+// foreach shadowing
+#pragma warning( disable : 4456)
+
+#endif
+
+
+
+
+template <typename A, typename B>
+void BMap<A,B>::save( std::map<A,B>* mp, const char* dir, const char* name) 
+{
+    BMap<A,B> bmp(mp);
+    bmp.save(dir, name);  
+}
+
+template <typename A, typename B>
+void BMap<A,B>::save( std::map<A,B>* mp, const char* path) 
+{
+    BMap<A,B> bmp(mp);
+    bmp.save(path);  
+}
+
+template <typename A, typename B>
+int  BMap<A,B>::load( std::map<A,B>* mp, const char* dir, const char* name, unsigned int depth) 
+{
+    BMap<A,B> bmp(mp);
+    return bmp.load(dir, name, depth);  
+}
+
+template <typename A, typename B>
+int  BMap<A,B>::load( std::map<A,B>* mp, const char* path, unsigned int depth )
+{
+    BMap<A,B> bmp(mp);
+    return bmp.load(path, depth);  
+}
+
+template <typename A, typename B>
+void BMap<A,B>::dump( std::map<A,B>* mp, const char* msg) 
+{
+    BMap<A,B> bmp(mp);
+    bmp.dump(msg);  
+}
+
+
+
+
 
 
 template <typename A, typename B>
@@ -47,7 +93,7 @@ void BMap<A,B>::save(const char* dir, const char* name)
              << " name  " << name
              << std::endl ;  
 
-     std::string path = fsutil::preparePath(dir, name, true);
+     std::string path = BFile::preparePath(dir, name, true);
      LOG(debug) << "saveMap to " << path ;
 
      if(!path.empty()) save( path.c_str() );
@@ -77,10 +123,10 @@ template<typename A, typename B>
 int BMap<A,B>::load( const char* dir, const char* name, unsigned int depth)
 {
     int rc(0) ; 
-    std::string path = fsutil::preparePath(dir, name, false);
+    std::string path = BFile::preparePath(dir, name, false);
     if(!path.empty())
     {
-        std::string shortpath = fsutil::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        std::string shortpath = BFile::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
         rc = load( path.c_str(), depth );
     }
@@ -160,6 +206,8 @@ void BMap<A,B>::dump( const char* msg)
 
 
 template class BMap<std::string, std::string>;
+template class BMap<std::string, unsigned int>;
+template class BMap<unsigned int, std::string>;
 
 
 

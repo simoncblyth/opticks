@@ -243,6 +243,13 @@ void MD5_Update(MD5_CTX *ctx, const void *data, unsigned long size)
 	memcpy(ctx->buffer, data, size);
 }
 
+
+
+#ifdef _MSC_VER
+// possible loss in conversion
+#pragma warning( disable : 4244 )
+#endif
+
 void MD5_Final(unsigned char *result, MD5_CTX *ctx)
 {
 	unsigned long used, available;
