@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_FLAGS.hh"
 

@@ -1,3 +1,4 @@
+#include <string>
 #include "BList.hh"
 
 const char* ini = "/tmp/BListTest.ini" ;
@@ -25,6 +26,7 @@ void test_loadList()
    BList<std::string,unsigned int>::load(&vp, json);
    BList<std::string,unsigned int>::dump(&vp, "loadList.json");
 }
+
 
 
 int main()

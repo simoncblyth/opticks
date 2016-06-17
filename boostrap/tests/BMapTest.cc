@@ -1,3 +1,4 @@
+#include <string>
 #include "BMap.hh"
 
 const char* pathSU = "/tmp/BMapTestSU.json" ; 
