@@ -1,20 +1,22 @@
-
 #include <cassert>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 
-#include "Times.hpp"
-#include "jsonutil.hh"
+// brap-
+#include "BFile.hh"
+#include "BList.hh"
 #include "BLog.hh"
+
+#include "Times.hpp"
 
 
 void Times::save(const char* dir)
 {
     std::string nam = name();
-    std::string path = preparePath(dir, nam.c_str(), true);
+    std::string path = BFile::preparePath(dir, nam.c_str(), true);
     LOG(info) << "Times::save to " << path ;
-    saveList<std::string, double>( m_times, dir, nam.c_str());
+    BList<std::string, double>::save( &m_times, dir, nam.c_str());
 }
 
 
@@ -26,7 +28,7 @@ Times* Times::load(const char* label, const char* dir, const char* name)
 }
 void Times::load(const char* dir, const char* name)
 {
-    loadList<std::string, double>( m_times, dir, name);
+    BList<std::string, double>::load( &m_times, dir, name);
 }
 void Times::load(const char* dir)
 {
@@ -120,9 +122,6 @@ void Times::compare(const std::vector<Times*>& vt, unsigned int nwid, unsigned i
          }
          std::cout << std::endl ; 
     }
-
-
 }
-
 
 

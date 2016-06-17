@@ -96,7 +96,7 @@ numpy
          import numpy as np
          a = np.load("/path/to/name.npy")
 
-stringutil
+BStr
     string and MD5 digest utils
 
 GLMPrint

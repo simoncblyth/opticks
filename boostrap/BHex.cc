@@ -54,5 +54,8 @@ std::string BHex<T>::as_dec()
 
 template class BHex<int>;
 template class BHex<unsigned int>;
+template class BHex<unsigned long long>;
+
+
 
 

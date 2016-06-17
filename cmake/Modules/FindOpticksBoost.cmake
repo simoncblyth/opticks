@@ -26,7 +26,7 @@ else()
     #set(Boost_DEBUG 1) 
 
 
-    find_package(Boost REQUIRED COMPONENTS system thread program_options log log_setup filesystem regex)
+    find_package(Boost REQUIRED COMPONENTS system thread program_options log log_setup filesystem regex timer)
 
     if (CMAKE_VERSION VERSION_EQUAL "3.0" OR CMAKE_VERSION VERSION_GREATER "3.0")
         cmake_policy(POP)

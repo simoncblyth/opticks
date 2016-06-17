@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "jsonutil.hh"
+#include "BList.hh"
 #include "BLog.hh"
 
 
@@ -53,16 +53,13 @@ T Parameters::get(const char* name, const char* fallback)
 
 
 
-
-
-
 void Parameters::load_(const char* path)
 {
-    loadList<std::string, std::string>(m_parameters, path);
+    BList<std::string, std::string>::load(&m_parameters, path);
 }
 void Parameters::load_(const char* dir, const char* name)
 {
-    loadList<std::string, std::string>(m_parameters, dir, name);
+    BList<std::string, std::string>::load(&m_parameters, dir, name);
 }
 Parameters* Parameters::load(const char* path)
 {
@@ -81,14 +78,12 @@ Parameters* Parameters::load(const char* dir, const char* name)
 
 void Parameters::save(const char* path)
 {
-    saveList<std::string, std::string>(m_parameters, path);
+    BList<std::string, std::string>::save(&m_parameters, path);
 }
 void Parameters::save(const char* dir, const char* name)
 {
-    saveList<std::string, std::string>(m_parameters, dir, name);
+    BList<std::string, std::string>::save(&m_parameters, dir, name);
 }
-
-
 
 
 

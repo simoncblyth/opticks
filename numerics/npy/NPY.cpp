@@ -10,8 +10,8 @@
 
 
 //bregex- 
-#include "regexsearch.hh"
-#include "fsutil.hh"
+//#include "BRegex.hh"
+#include "BFile.hh"
 
 
 #include <boost/filesystem.hpp>
@@ -266,7 +266,7 @@ NPY<T>* NPY<T>::debugload(const char* path)
 template <typename T>
 NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 {
-    std::string path = fsutil::FormPath( path_ ); 
+    std::string path = BFile::FormPath( path_ ); 
 
     std::vector<int> shape ;
     std::vector<T> data ;
@@ -390,7 +390,7 @@ void NPY<T>::save(const char* dir, const char* name)
 template <typename T>
 void NPY<T>::save(const char* raw)
 {
-    std::string native = fsutil::FormPath(raw);   // potentially with prefixing/windozing 
+    std::string native = BFile::FormPath(raw);   // potentially with prefixing/windozing 
 
     if(m_verbose || GLOBAL_VERBOSE) 
     {

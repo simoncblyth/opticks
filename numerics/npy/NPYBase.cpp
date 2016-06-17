@@ -6,10 +6,9 @@
 #include <algorithm>
 
 //brap- 
-#include "fsutil.hh"
-#include "regexsearch.hh"
-#include "stringutil.hh"
-#include "md5digest.hh"
+#include "BFile.hh"
+#include "BStr.hh"
+#include "BDigest.hh"
 
 #include <boost/algorithm/string/replace.hpp>
 
@@ -172,9 +171,7 @@ std::string NPYBase::getDigestString()
 
 std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
 {
-    MD5Digest dig ;
-    dig.update( (char*)bytes, nbytes);
-    return dig.finalize();
+    return BDigest::digest(bytes, nbytes);
 }
 
 bool NPYBase::isEqualTo(NPYBase* other)
@@ -284,7 +281,7 @@ std::string NPYBase::directory(const char* typ, const char* det)
     std::string deftmpl(DEFAULT_DIR_TEMPLATE) ; 
     boost::replace_first(deftmpl, "$1", det );
     boost::replace_first(deftmpl, "$2", typ );
-    std::string dir = fsutil::FormPath( deftmpl.c_str() ); 
+    std::string dir = BFile::FormPath( deftmpl.c_str() ); 
     return dir ;
 }
   
@@ -320,7 +317,7 @@ std::string NPYBase::path(const char* dir, const char* name)
     char path[256];
     snprintf(path, 256, "%s/%s", dir, name);
 
-    //std::string path = fsutil::FormPath(dir, name);  
+    //std::string path = BFile::FormPath(dir, name);  
     // provides native style path with auto-prefixing based on envvar  
     return path ; 
 }

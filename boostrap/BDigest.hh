@@ -34,6 +34,7 @@ class BRAP_API BDigest
 {
    public:
        static std::string md5digest( const char* buffer, int len );
+       static std::string digest( void* buffer, int len );
    public:
        BDigest();
        virtual ~BDigest();

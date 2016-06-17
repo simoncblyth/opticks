@@ -13,10 +13,12 @@ set(TEST_CC_SRCS
    BLogTest.cc
    BFileTest.cc
    BRegexTest.cc
+   BDigestTest.cc
+   BStrTest.cc
 )
 
 
-set(FAIL_TO_LINK
+set(FAIL_TO_LINK_ON_WINDOWS
    BJsonTest.cc
 )
 

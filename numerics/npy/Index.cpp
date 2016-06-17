@@ -1,14 +1,19 @@
-#include "Index.hpp"
-
-#include "assert.h"
+#include <cassert>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <sstream>
 
-#include "jsonutil.hh"
+// brap-
+#include "BMap.hh"
+#include "BFile.hh"
 #include "BLog.hh"
+
+// npy-
+#include "Index.hpp"
+
+
 
 
 std::string Index::description()
@@ -251,8 +256,8 @@ void Index::save(const char* idpath)
               << " ext " << m_ext 
               ;
 
-    saveMap<std::string, unsigned int>( m_source, idpath, sname.c_str() );  
-    saveMap<std::string, unsigned int>( m_local , idpath, lname.c_str() );  
+    BMap<std::string, unsigned int>::save( &m_source, idpath, sname.c_str() );  
+    BMap<std::string, unsigned int>::save( &m_local , idpath, lname.c_str() );  
 }
 std::string Index::getPrefixedString(const char* tail)
 {
@@ -263,7 +268,7 @@ std::string Index::getPrefixedString(const char* tail)
 std::string Index::getPath(const char* idpath, const char* prefix)
 {
      bool create_idpath_dir = true ; 
-     std::string path = preparePath(idpath, getPrefixedString(prefix).c_str(), create_idpath_dir);
+     std::string path = BFile::preparePath(idpath, getPrefixedString(prefix).c_str(), create_idpath_dir);
      return path;
 }
 
@@ -272,15 +277,15 @@ std::string Index::getPath(const char* idpath, const char* prefix)
 bool Index::exists(const char* idpath)
 {
     if(!idpath) return false ;
-    bool sx = existsPath(idpath, getPrefixedString("Source").c_str());
-    bool lx = existsPath(idpath, getPrefixedString("Local").c_str());
+    bool sx = BFile::existsPath(idpath, getPrefixedString("Source").c_str());
+    bool lx = BFile::existsPath(idpath, getPrefixedString("Local").c_str());
     return sx && lx ; 
 }
 
 void Index::loadMaps(const char* idpath)
 {
-    loadMap<std::string, unsigned int>( m_source, idpath, getPrefixedString("Source").c_str() );  
-    loadMap<std::string, unsigned int>( m_local , idpath, getPrefixedString("Local").c_str() );  
+    BMap<std::string, unsigned int>::load( &m_source, idpath, getPrefixedString("Source").c_str() );  
+    BMap<std::string, unsigned int>::load( &m_local , idpath, getPrefixedString("Local").c_str() );  
 
     sortNames();
     crossreference();
@@ -316,8 +321,8 @@ Index* Index::load(const char* idpath, const char* itemtype)
 void Index::dumpPaths(const char* idpath, const char* msg)
 {
 
-    bool sx = existsPath(idpath, getPrefixedString("Source").c_str());
-    bool lx = existsPath(idpath, getPrefixedString("Local").c_str());
+    bool sx = BFile::existsPath(idpath, getPrefixedString("Source").c_str());
+    bool lx = BFile::existsPath(idpath, getPrefixedString("Local").c_str());
 
     LOG(info) << msg 
               << std::endl

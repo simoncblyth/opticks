@@ -106,4 +106,12 @@ std::string BDigest::md5digest( const char* buffer, int len )
 
 
 
+std::string BDigest::digest( void* buffer, int len )
+{
+    BDigest dig ; 
+    dig.update( (char*)buffer, len );
+    return dig.finalize();
+}
+
+
 

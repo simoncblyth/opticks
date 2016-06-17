@@ -1,18 +1,15 @@
-#include "Counts.hpp"
-#include "jsonutil.hh"
-
-#include "Index.hpp"
-
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
-#include "string.h"
+#include <cstring>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+// brap-
+#include "BList.hh"
+#include "BLog.hh"
 
-
+// npy-
+#include "Counts.hpp"
+#include "Index.hpp"
 
 
 
@@ -122,25 +119,25 @@ void Counts<T>::dump(const char* msg, unsigned long nline)
 template<typename T>
 void Counts<T>::save(const char* path)
 {
-    saveList<std::string, T>(m_counts, path);
+    BList<std::string,T>::save(&m_counts, path);
 }
 
 template<typename T>
 void Counts<T>::save(const char* dir, const char* name)
 {
-    saveList<std::string, T>(m_counts, dir, name);
+    BList<std::string,T>::save(&m_counts, dir, name);
 }
 
 template<typename T>
 void Counts<T>::load_(const char* path)
 {
-    loadList<std::string, T>( m_counts, path);
+    BList<std::string,T>::load(&m_counts, path);
 }
 
 template<typename T>
 void Counts<T>::load_(const char* dir, const char* name)
 {
-    loadList<std::string, T>( m_counts, dir, name);
+    BList<std::string,T>::load(&m_counts, dir, name);
 }
 
 template<typename T>

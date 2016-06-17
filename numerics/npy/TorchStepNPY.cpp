@@ -1,19 +1,20 @@
-#include "TorchStepNPY.hpp"
-#include "NPY.hpp"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-#include "stringutil.hh"
-#include "uif.h"
-
 #include <vector>
 #include <iomanip>
 #include <sstream>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+
+// brap-
+#include "BStr.hh"
+#include "BLog.hh"
+
+// npy-
+#include "TorchStepNPY.hpp"
+#include "NPY.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+#include "uif.h"
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
     "type=sphere_"
@@ -234,7 +235,7 @@ void TorchStepNPY::configure(const char* config_)
 
     std::string config(config_);
     typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = ekv_split(config.c_str(),'_',"=");
+    std::vector<KV> ekv = BStr::ekv_split(config.c_str(),'_',"=");
 
     LOG(debug) << "TorchStepNPY::configure " <<  config.c_str() ;
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)

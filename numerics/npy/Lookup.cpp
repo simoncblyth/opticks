@@ -1,16 +1,15 @@
-#include "Lookup.hpp"
-#include "jsonutil.hh"
 #include <cstring>
 #include <iostream>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+
+#include "BLog.hh"
+#include "BMap.hh"
+
+#include "Lookup.hpp"
 
 namespace fs = boost::filesystem;
-
 
 
 void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
@@ -18,7 +17,7 @@ void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
     typedef std::map<std::string, unsigned int> SU_t ; 
 
     SU_t raw ; 
-    loadMap<std::string, unsigned int>(raw, adir, aname );
+    BMap<std::string, unsigned int>::load(&raw, adir, aname );
 
     for(SU_t::iterator it=raw.begin() ; it != raw.end() ; it++)
     {
@@ -33,7 +32,7 @@ void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
 
 void Lookup::loadB(const char* bdir, const char* bname, const char* bprefix)
 {
-    loadMap<std::string, unsigned int>(m_B, bdir, bname);
+    BMap<std::string, unsigned int>::load(&m_B, bdir, bname);
 }
 
 

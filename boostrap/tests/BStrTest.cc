@@ -1,17 +1,4 @@
-#include "stringutil.hh"
-
-
-
-/*
-void test_saveIndexJSON()
-{
-   std::map<unsigned int, std::string> index ;
-   index[0] = "hello0" ; 
-   index[1] = "hello1" ; 
-   index[10] = "hello10" ; 
-   saveIndexJSON(index, "/tmp/test_saveIndexJSON.json");
-}
-*/
+#include "BStr.hh"
 
 void test_patternPickField()
 {
@@ -21,17 +8,15 @@ void test_patternPickField()
     for(int field=-5 ; field < 5 ; field++ )
     {
         printf("patternPickField(%s,%s,%d) --> ", str.c_str(), ptn.c_str(), field  );
-        std::string pick = patternPickField(str, ptn,field);
+        std::string pick = BStr::patternPickField(str, ptn,field);
         printf(" %s \n", pick.c_str());
     }
 }
 
 
-
 int main()
 {
     test_patternPickField();
-    //test_saveIndexJSON();
     return 0 ; 
 }
 

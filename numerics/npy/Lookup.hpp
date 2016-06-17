@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 
-
 // see ggeo-/tests/LookupTest.cc for usage
 class Lookup {
    public:  

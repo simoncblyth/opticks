@@ -5,9 +5,10 @@
 #include <glm/glm.hpp>
 
 // brap-
-#include "jsonutil.hh" 
-#include "stringutil.hh" 
-#include "regexsearch.hh"
+#include "BMap.hh" 
+#include "BStr.hh" 
+#include "BHex.hh" 
+#include "BRegex.hh"
 #include "bffs.hh"
 #include "BLog.hh"
 
@@ -57,7 +58,7 @@ void Types::readMaterialsOld(const char* idpath, const char* name)
     typedef std::map<std::string, unsigned int> MSU ; 
 
     MSU mats ; 
-    loadMap<std::string, unsigned int>(mats, idpath, name);
+    BMap<std::string, unsigned int>::load(&mats, idpath, name);
     for(MSU::iterator it=mats.begin() ; it != mats.end() ; it++)
     {
         m_materials[it->first + m_tail] = it->second ; 
@@ -175,7 +176,7 @@ std::string Types::getMaterialAbbrevInvert(std::string label, bool hex)
 {
      if(hex)
      {
-         std::string name = m_materials_index ? m_materials_index->getNameLocal(hex_lexical_cast<unsigned int>(label.c_str()), "?" ) : label ;
+         std::string name = m_materials_index ? m_materials_index->getNameLocal(BHex<unsigned int>::hex_lexical_cast(label.c_str()), "?" ) : label ;
          return name + m_tail ; 
      }
      return m_abbrev2material.count(label) == 1 ? m_abbrev2material[label] : label  ;
@@ -183,7 +184,7 @@ std::string Types::getMaterialAbbrevInvert(std::string label, bool hex)
 
 unsigned int Types::getMaterialAbbrevInvertAsCode(std::string label, bool hex)
 {
-     if(hex) return hex_lexical_cast<unsigned int>(label.c_str()) ;
+     if(hex) return BHex<unsigned int>::hex_lexical_cast(label.c_str()) ;
 
      unsigned int n = m_abbrev2material.count(label) ;
 
@@ -296,7 +297,7 @@ std::string Types::getHistoryAbbrevInvert(std::string label, bool hex)
 {
      if(hex)
      {
-         std::string name = m_flags->getNameLocal(hex_lexical_cast<unsigned int>(label.c_str()), "?" );
+         std::string name = m_flags->getNameLocal(BHex<unsigned int>::hex_lexical_cast(label.c_str()), "?" );
          return name + m_tail ; 
      } 
 
@@ -307,7 +308,7 @@ std::string Types::getHistoryAbbrevInvert(std::string label, bool hex)
 
 unsigned int Types::getHistoryAbbrevInvertAsCode(std::string label, bool hex)
 {
-     if(hex) return hex_lexical_cast<unsigned int>(label.c_str()) ;
+     if(hex) return BHex<unsigned int>::hex_lexical_cast(label.c_str()) ;
 
      unsigned int n = m_abbrev2flag.count(label) ;
     // printf("Types::getHistoryAbbrevInvert [%s] %u \n", label.c_str(), n );  
@@ -432,10 +433,11 @@ void Types::readFlags(const char* path)
               << " path[" << path << "]"
               ;
 
-    typedef std::pair<unsigned int, std::string>  upair_t ;
-    typedef std::vector<upair_t>                  upairs_t ;
-    upairs_t ups ; 
-    enum_regexsearch( ups, path ); 
+    //typedef std::pair<unsigned int, std::string>  upair_t ;
+    //typedef std::vector<upair_t>                  upairs_t ;
+
+    BRegex::upairs_t ups ; 
+    BRegex::enum_regexsearch( ups, path ); 
 
     LOG(info) << "Types::readFlags"
               << " pair count " << ups.size() ; 
@@ -444,7 +446,7 @@ void Types::readFlags(const char* path)
     m_flags = new Index("GFlagIndex");
     for(unsigned int i=0 ; i < ups.size() ; i++)
     {
-        upair_t p = ups[i];
+        BRegex::upair_t p = ups[i];
         unsigned int mask = p.first ; 
         unsigned int bitpos = bffs(mask);  // first set bit, 1-based bit position
         unsigned int xmask =  1 << (bitpos-1) ;
@@ -460,7 +462,7 @@ void Types::readFlags(const char* path)
     m_flag_codes.clear();
     for(unsigned int i=0 ; i < ups.size() ; i++)
     {   
-        upair_t p = ups[i];
+        BRegex::upair_t p = ups[i];
         m_flag_codes.push_back(p.first);         
         m_flag_labels.push_back(p.second + m_tail); // include tail for readability of lists and consistency          
     }   

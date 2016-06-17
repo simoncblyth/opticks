@@ -25,10 +25,10 @@ find_package(OpticksBoost REQUIRED QUIET)
 
 add_subdirectory(boostrap)    
 add_subdirectory(boostrapclient)    
+add_subdirectory(numerics/npy)   
 
 #set(REST ON)
 if(REST)
-   add_subdirectory(numerics/npy)   
    add_subdirectory(optickscore)         
    add_subdirectory(optix/ggeo)     
    add_subdirectory(graphics/assimprap)   

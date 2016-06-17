@@ -1,25 +1,25 @@
-#include "SequenceNPY.hpp"
-#include "uif.h"
-#include "NPY.hpp"
-#include "RecordsNPY.hpp"
-#include "Index.hpp"
-
 #include <set>
 #include <map>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <climits>
 
 #include <glm/glm.hpp>
-#include "limits.h"
+
+// brap-
+#include "BStr.hh"
+#include "BHex.hh"
+#include "BLog.hh"
+
+// npy-
+#include "SequenceNPY.hpp"
+#include "uif.h"
+#include "NPY.hpp"
+#include "RecordsNPY.hpp"
+#include "Index.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
-#include "stringutil.hh"
-
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 
 void SequenceNPY::setRecs(RecordsNPY* recs)
@@ -376,7 +376,7 @@ Index* SequenceNPY::makeSequenceCountsIndex(
         {
             // use sequence hex string as key to enable comparison with ThrustHistogram saves
             unsigned long long xseq = m_types->convertSequenceString( p.first, etype, false ) ;
-            xkey = as_hex(xseq);
+            xkey = BHex<unsigned long long>::as_hex(xseq);
         }
 
         idx->add( xkey.c_str(), i, false ); // dont sort names while adding

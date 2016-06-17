@@ -1,18 +1,14 @@
-#include "NState.hpp"
-#include "NConfigurable.hpp"
-
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 
-// npy-
-#include "jsonutil.hh"
+// brap-
+#include "BMap.hh"
 #include "BLog.hh"
+#include "BFile.hh"
 
-
-// bregex
-#include "regexsearch.hh"
-#include "fsutil.hh"
-
+// npy-
+#include "NState.hpp"
+#include "NConfigurable.hpp"
 
 
 NState* NState::load(const char* dir, unsigned int num)
@@ -26,7 +22,7 @@ NState* NState::load(const char* dir, unsigned int num)
 
 void NState::init()
 {
-    std::string dir = fsutil::FormPath(m_dir);
+    std::string dir = BFile::FormPath(m_dir);
     if(strcmp(dir.c_str(),m_dir)!=0)
     {
         free((void*)m_dir);
@@ -281,19 +277,19 @@ void NState::save()
     update();
 
     std::string filename = getFileName();
-    std::string path = preparePath(m_dir, filename.c_str());
+    std::string path = BFile::preparePath(m_dir, filename.c_str());
     LOG(debug) << "NState::save " << path ;  
-    saveMap<std::string, std::string>(m_kv, m_dir, filename.c_str() ) ;
+    BMap<std::string, std::string>::save(&m_kv, m_dir, filename.c_str() ) ;
 }
 
 int NState::load()
 {
     std::string filename = getFileName();
     unsigned int depth = 1 ; 
-    std::string path = preparePath(m_dir, filename.c_str());
+    std::string path = BFile::preparePath(m_dir, filename.c_str());
     LOG(debug) << "NState::load " << path ;  
 
-    int rc = loadMap<std::string, std::string>(m_kv, m_dir, filename.c_str(), depth ) ;
+    int rc = BMap<std::string, std::string>::load(&m_kv, m_dir, filename.c_str(), depth ) ;
     return rc  ; 
 }
 
@@ -303,10 +299,6 @@ void NState::roundtrip()
     save();
     load();
 }
-
-
-
-
 
 
 

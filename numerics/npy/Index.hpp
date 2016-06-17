@@ -1,7 +1,7 @@
 #pragma once
 
-#include "stdlib.h"
-#include "string.h"
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <map>
 #include <vector>
@@ -141,9 +141,6 @@ inline int* Index::getSelectedPtr()
 {
     return &m_selected ; 
 }
-
-
-
 
 
 

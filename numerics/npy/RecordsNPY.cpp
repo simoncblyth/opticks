@@ -8,7 +8,7 @@
 
 //brap-
 #include "bffs.hh"
-#include "regexsearch.hh"
+//#include "BRegex.hh"
 #include "BLog.hh"
 
 // npy-

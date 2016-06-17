@@ -1,17 +1,16 @@
-#include "Report.hpp"
-
-#include "jsonutil.hh"
-#include "timeutil.hh"
-
 #include <algorithm>
 #include <iterator>
 #include <iostream>
 #include <fstream>
-
 #include <sstream>
 
+// brap-
 #include "BLog.hh"
 #include "BTime.hh"
+#include "BFile.hh"
+
+// npy-
+#include "Report.hpp"
 
 
 const char* Report::NAME = "report.txt" ;
@@ -31,7 +30,7 @@ Report* Report::load(const char* dir)
 
 void Report::load(const char* dir, const char* name)
 {
-    std::string path = preparePath(dir, name, true);
+    std::string path = BFile::preparePath(dir, name, true);
     if(path.empty()) return ; 
 
     LOG(info)<<"Report::load from " << path ; 
@@ -47,7 +46,7 @@ void Report::load(const char* dir, const char* name)
 
 void Report::save(const char* dir, const char* name)
 {
-    std::string path = preparePath(dir, name, true);
+    std::string path = BFile::preparePath(dir, name, true);
     if(path.empty()) return ; 
 
     LOG(info)<<"Report::save to " << path ; 
@@ -63,17 +62,11 @@ void Report::dump(const char* msg)
 }
 
 
-
 std::string Report::timestamp()
 {
-    //char* tsl =  now(Report::TIMEFORMAT, 20, 0);
-    
     std::string timestamp =  BTime::now(Report::TIMEFORMAT,0);
-
-    //free((void*)tsl);
     return timestamp ; 
 }
-
 
 std::string Report::name(const char* typ, const char* tag)
 {
@@ -88,4 +81,5 @@ std::string Report::name(const char* typ, const char* tag)
 
     return ss.str() ;
 }
+
 

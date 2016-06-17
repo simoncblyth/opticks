@@ -52,11 +52,11 @@ set(SOURCES
   BArrayDigest.cc
 
   md5.cc
+  timeutil.cc
   BTree.cc
 ) 
 
 set(PROBLEM_SOURCES
-  timeutil.cc
 )
 
 set(HEADERS

@@ -151,6 +151,7 @@ void BList<A,B>::dump(  const char* msg)
 
 template class BList<std::string, std::string>;
 template class BList<std::string, unsigned int>;
+template class BList<std::string, double>;
 template class BList<unsigned int, std::string>;
 
 

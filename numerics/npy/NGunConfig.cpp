@@ -1,19 +1,20 @@
-#include "NGunConfig.hpp"
-#include "BLog.hh"
-
-
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-#include "stringutil.hh"
-#include "uif.h"
-
 #include <vector>
 #include <iomanip>
 #include <sstream>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+
+// brap-
 #include "BLog.hh"
+#include "BStr.hh"
+
+// npy-
+#include "NGunConfig.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+#include "uif.h"
+
 
 
 const char* NGunConfig::DEFAULT_CONFIG = 
@@ -108,7 +109,7 @@ void NGunConfig::parse(const char* config_)
 
     std::string config(m_config);
     typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = ekv_split(config.c_str(),'_',"=");
+    std::vector<KV> ekv = BStr::ekv_split(config.c_str(),'_',"=");
 
     LOG(debug) << "NGunConfig::parse " <<  config.c_str() ;
     for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)

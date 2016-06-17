@@ -38,9 +38,11 @@
  * The returned real time is only useful for computing an elapsed time
  * between two calls to this function.
  */
-double getRealTime( )
+
+
+#ifdef _WIN32
+double getRealTime()
 {
-#if defined(_WIN32)
 	FILETIME tm;
 	ULONGLONG t;
 #if defined(NTDDI_WIN8) && NTDDI_VERSION >= NTDDI_WIN8
@@ -53,12 +55,13 @@ double getRealTime( )
 #endif
 	t = ((ULONGLONG)tm.dwHighDateTime << 32) | (ULONGLONG)tm.dwLowDateTime;
 	return (double)t / 10000000.0;
+}
+#endif
 
-#elif (defined(__hpux) || defined(hpux)) || ((defined(__sun__) || defined(__sun) || defined(sun)) && (defined(__SVR4) || defined(__svr4__)))
-	/* HP-UX, Solaris. ------------------------------------------ */
-	return (double)gethrtime( ) / 1000000000.0;
 
-#elif defined(__MACH__) && defined(__APPLE__)
+#if defined(__MACH__) && defined(__APPLE__) 
+double getRealTime()
+{
 	/* OSX. ----------------------------------------------------- */
 	static double timeConvert = 0.0;
 	if ( timeConvert == 0.0 )
@@ -70,8 +73,22 @@ double getRealTime( )
 			1000000000.0;
 	}
 	return (double)mach_absolute_time( ) * timeConvert;
+}
+#endif
 
-#elif defined(_POSIX_VERSION)
+
+#if (defined(__hpux) || defined(hpux)) || ((defined(__sun__) || defined(__sun) || defined(sun)) && (defined(__SVR4) || defined(__svr4__)))
+double getRealTime( )
+{
+	/* HP-UX, Solaris. ------------------------------------------ */
+	return (double)gethrtime( ) / 1000000000.0;
+}
+#endif
+
+
+#if defined(_POSIX_VERSION) && !defined(__APPLE__)
+double getRealTime( )
+{
 	/* POSIX. --------------------------------------------------- */
 #if defined(_POSIX_TIMERS) && (_POSIX_TIMERS > 0)
 	{
@@ -105,11 +122,8 @@ double getRealTime( )
 	struct timeval tm;
 	gettimeofday( &tm, NULL );
 	return (double)tm.tv_sec + (double)tm.tv_usec / 1000000.0;
-#else
-	return -1.0;		/* Failed. */
-#endif
 }
-
+#endif
 
 
 
