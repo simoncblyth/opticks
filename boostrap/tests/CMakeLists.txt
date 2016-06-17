@@ -15,6 +15,8 @@ set(TEST_CC_SRCS
    BRegexTest.cc
    BDigestTest.cc
    BStrTest.cc
+   BTimerTest.cc
+   BBitTest.cc
 )
 
 

@@ -9,7 +9,7 @@
 #include "BStr.hh" 
 #include "BHex.hh" 
 #include "BRegex.hh"
-#include "bffs.hh"
+#include "BBit.hh"
 #include "BLog.hh"
 
 // npy-
@@ -448,7 +448,7 @@ void Types::readFlags(const char* path)
     {
         BRegex::upair_t p = ups[i];
         unsigned int mask = p.first ; 
-        unsigned int bitpos = bffs(mask);  // first set bit, 1-based bit position
+        unsigned int bitpos = BBit::ffs(mask);  // first set bit, 1-based bit position
         unsigned int xmask =  1 << (bitpos-1) ;
         assert( mask == xmask );
         m_flags->add( p.second.c_str(), bitpos ); 

@@ -18,7 +18,7 @@
 #include "BFile.hh"
 #include "BStr.hh"
 #include "BHex.hh"
-#include "bffs.hh"
+#include "BBit.hh"
 
 
 #include "BRAP_FLAGS.hh"
@@ -53,7 +53,7 @@ void BRegex::udump( std::vector<std::pair<unsigned int, std::string> >& pairs, c
         std::cout 
                  << std::setw(30) << k  
                  << " : " 
-                 << std::setw(1) << std::hex << bffs(v) 
+                 << std::setw(1) << std::hex << BBit::ffs(v) 
                  << " : " 
                  << std::setw(10) << std::dec << v
                  << " : " 

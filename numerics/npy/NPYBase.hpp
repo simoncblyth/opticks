@@ -2,7 +2,11 @@
 
 #include <vector>
 #include <string>
-#include "assert.h"
+#include <cassert>
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_FLAGS.hh"
+
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -11,7 +15,7 @@
 
 class NPYSpec ; 
 
-class NPYBase {
+class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
        static const char* DEFAULT_DIR_TEMPLATE  ; 

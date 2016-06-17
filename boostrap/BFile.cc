@@ -1,6 +1,5 @@
 
 #include "BFile.hh"
-#include "dbg.hh"
 
 #include <cstring>
 #include <cstdlib>

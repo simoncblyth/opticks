@@ -1,26 +1,29 @@
 #pragma once
 
-class G4StepNPY ; 
-
-#include "uif.h"
-#include "ucharfour.h"
-#include "charfour.h"
-
-#include "numpy.hpp"
 #include <vector>
 #include <string>
 #include <set>
 #include <map>
-
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
+
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_FLAGS.hh"
+
+#include "uif.h"
+#include "ucharfour.h"
+#include "charfour.h"
+#include "numpy.hpp"
+
 
 #include "NPYBase.hpp"
 #include "NQuad.hpp"
 
 struct NSlice ; 
 class NPYSpec ; 
+class G4StepNPY ; 
 
 /*
 Interop NumPy -> NPY
@@ -45,8 +48,13 @@ recognises the type on loading, thanks to the numpy.hpp metadata header.
 
 */
 
+// hmm most of the inlines should go into .cpp 
+// and the NPY_FLAGS should go there too
+// otherwise type conversion warning quellings will spread to clients ?
+
+
 template <class T>
-class NPY : public NPYBase {
+class NPY_API NPY : public NPYBase {
 
    friend class AxisNPY ; 
    friend class SequenceNPY ; 
@@ -193,365 +201,6 @@ class NPY : public NPYBase {
  
 };
 
-
-
-
-template <typename T> 
-inline std::vector<T>& NPY<T>::data()
-{
-    return m_data ;
-}
-
-
-template <typename T> 
-inline T* NPY<T>::getValues()
-{
-    return m_data.data();
-}
-
-
-template <typename T> 
-inline T* NPY<T>::begin()
-{
-    return m_data.data();
-}
-
-template <typename T> 
-inline T* NPY<T>::end()
-{
-    return m_data.data() + getNumValues(0) ;
-}
-
-
-
-
-
-
-//template <typename T> 
-//inline unsigned int NPY<T>::getNumValues()
-//{
-//    return m_data.size();
-//}
-
-
-template <typename T> 
-inline T* NPY<T>::getValues(unsigned int i, unsigned int j)
-{
-    unsigned int idx = getValueIndex(i,j,0);
-    return m_data.data() + idx ;
-}
-
-
-template <typename T> 
-inline void* NPY<T>::getBytes()
-{
-    return hasData() ? (void*)getValues() : NULL ;
-}
-
-template <typename T> 
-inline void* NPY<T>::getPointer()
-{
-    return getBytes() ;
-}
-
-
-
-
-template <typename T> 
-inline T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
-{
-    unsigned int idx = getValueIndex(i,j,k,l);
-    T* data = getValues();
-    return  *(data + idx);
-}
-
-template <typename T> 
-inline void NPY<T>::getU( short& value, unsigned short& uvalue, unsigned char& msb, unsigned char& lsb, unsigned int i, unsigned int j, unsigned int k, unsigned int l)
-{
-    // used for unpacking photon records
-
-    assert(type == SHORT); // pragmatic template specialization, by death if you try to use the wrong one...
-
-    unsigned int index = getValueIndex(i,j,k,l);
-
-    value = m_data[index] ;
-
-    hui_t hui ;
-    hui.short_ = value ; 
-
-    uvalue = hui.ushort_ ;
-
-    msb = ( uvalue & 0xFF00 ) >> 8  ;  
-
-    lsb = ( uvalue & 0xFF ) ;  
-}
-
-template <typename T> 
-ucharfour  NPY<T>::getUChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 )
-{
-    assert(type == SHORT); // OOPS: pragmatic template specialization, by death if you try to use the wrong one... 
-
-    unsigned int index_0 = getValueIndex(i,j,k,l0);
-    unsigned int index_1 = getValueIndex(i,j,k,l1);
-
-    hui_t hui_0, hui_1 ;
-
-    hui_0.short_ = m_data[index_0];
-    hui_1.short_ = m_data[index_1];
-
-    ucharfour v ; 
-
-    v.x = (hui_0.ushort_ & 0xFF ) ; 
-    v.y = (hui_0.ushort_ & 0xFF00 ) >> 8 ; 
-    v.z = (hui_1.ushort_ & 0xFF ) ; 
-    v.w = (hui_1.ushort_ & 0xFF00 ) >> 8 ; 
-
-    return v ;
-}
-
-template <typename T> 
-charfour  NPY<T>::getChar4( unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1 )
-{
-    assert(type == SHORT); // OOPS: pragmatic template specialization, by death if you try to use the wrong one... 
-
-    unsigned int index_0 = getValueIndex(i,j,k,l0);
-    unsigned int index_1 = getValueIndex(i,j,k,l1);
-
-    hui_t hui_0, hui_1 ;
-
-    hui_0.short_ = m_data[index_0];
-    hui_1.short_ = m_data[index_1];
-
-    charfour v ; 
-
-    v.x = (hui_0.short_ & 0xFF ) ; 
-    v.y = (hui_0.short_ & 0xFF00 ) >> 8 ; 
-    v.z = (hui_1.short_ & 0xFF ) ; 
-    v.w = (hui_1.short_ & 0xFF00 ) >> 8 ; 
-
-    // hmm signbit complications ?
-    return v ;
-}
-
-
-
-
-/*
-template <typename T> 
-inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, T value)
-{
-    unsigned int idx = getValueIndex(i,j,k);
-    T* dat = getValues();
-    assert(dat && "must zero() the buffer before can setValue");
-    *(dat + idx) = value ;
-}
-*/
-
-
-template <typename T> 
-inline void NPY<T>::setValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l, T value)
-{
-    unsigned int idx = getValueIndex(i,j,k,l);
-    T* dat = getValues();
-    assert(dat && "must zero() the buffer before can setValue");
-    *(dat + idx) = value ;
-}
-
-
-
-// same type quad setters
-template <typename T> 
-inline void NPY<T>::setQuad(const nvec4& f, unsigned int i, unsigned int j, unsigned int k )
-{
-    glm::vec4 vec(f.x,f.y,f.z,f.w); 
-    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
-}
-template <typename T> 
-inline void NPY<T>::setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k )
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
-}
-template <typename T> 
-inline void NPY<T>::setQuad(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
-}
-template <typename T> 
-inline void NPY<T>::setQuad(const glm::uvec4& vec, unsigned int i, unsigned int j, unsigned int k )
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
-}
-
-
-template <typename T> 
-inline void NPY<T>::setQuad(unsigned int i, unsigned int j, float x, float y, float z, float w )
-{
-    glm::vec4 vec(x,y,z,w); 
-    setQuad(vec, i, j);
-}
-template <typename T> 
-inline void NPY<T>::setQuad(unsigned int i, unsigned int j, unsigned int k, float x, float y, float z, float w )
-{
-    glm::vec4 vec(x,y,z,w); 
-    setQuad(vec, i, j, k);
-}
-
-
-// type shifting quad setters
-template <typename T> 
-inline void NPY<T>::setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setInt(i,j,k,l,vec[l]); 
-}
-template <typename T> 
-inline void NPY<T>::setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j, unsigned int k )
-{
-    for(unsigned int l=0 ; l < 4 ; l++) setUInt(i,j,k,l,vec[l]); 
-}
-
-
-template <typename T> 
-inline glm::mat4 NPY<T>::getMat4(unsigned int i)
-{
-    T* vals = getValues(i);
-    return glm::make_mat4(vals);
-}
-
-
-template <typename T> 
-inline glm::vec4 NPY<T>::getQuad(unsigned int i, unsigned int j, unsigned int k)
-{
-    glm::vec4 vec ; 
-    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
-    return vec ; 
-}
-
-template <typename T> 
-inline glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k)
-{
-    glm::ivec4 vec ; 
-    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getValue(i,j,k,l); 
-    return vec ; 
-}
-
-template <typename T> 
-inline glm::uvec4 NPY<T>::getQuadU(unsigned int i, unsigned int j, unsigned int k)
-{
-    glm::uvec4 vec ; 
-    for(unsigned int l=0 ; l < 4 ; l++) vec[l] = getUInt(i,j,k,l); 
-    return vec ; 
-}
-
-
-
-
-
-// type shifting get/set using union trick
-
-
-template <typename T> 
-inline float NPY<T>::getFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
-{
-    uif_t uif ; 
-
-    T t = getValue(i,j,k,l);
-    switch(type)
-    {
-        case FLOAT:uif.f = t ; break ; 
-        case DOUBLE:uif.f = t ; break ; 
-        case SHORT:uif.i = t ; break ; 
-        default: assert(0);  break ;
-    }
-    return uif.f ;
-}
-
-template <typename T> 
-inline void NPY<T>::setFloat(unsigned int i, unsigned int j, unsigned int k, unsigned int l, float  value)
-{
-    uif_t uif ; 
-    uif.f = value ;
-
-    T t ;
-    switch(type)
-    {
-        case FLOAT:t = uif.f ; break ; 
-        case DOUBLE:t = uif.f ; break ; 
-        case SHORT:t = uif.i ; break ; 
-        default: assert(0);  break ;
-    }
-    setValue(i,j,k,l,t); 
-}
-
-
-
-template <typename T> 
-inline unsigned int NPY<T>::getUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
-{
-    uif_t uif ; 
-
-    T t = getValue(i,j,k,l);
-    switch(type)
-    {
-        case FLOAT:uif.f = t ; break ; 
-        case DOUBLE:uif.f = t ; break ; 
-        case SHORT:uif.i = t ; break ; 
-        case UINT:uif.u = t ; break ; 
-        case INT:uif.i = t ; break ; 
-        default: assert(0);  break ;
-    }
-    return uif.u ;
-}
-
-template <typename T> 
-inline void NPY<T>::setUInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, unsigned int value)
-{
-    uif_t uif ; 
-    uif.u = value ;
-
-    T t ;
-    switch(type)
-    {
-        case FLOAT:t = uif.f ; break ; 
-        case DOUBLE:t = uif.f ; break ; 
-        case SHORT:t = uif.i ; break ; 
-        case UINT:t = uif.u ; break ; 
-        case INT:t = uif.i ; break ; 
-        default: assert(0);  break ;
-    }
-    setValue(i,j,k,l, t); 
-}
-
-template <typename T> 
-inline int NPY<T>::getInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
-{
-    uif_t uif ;             // how does union handle different sizes ? 
-    T t = getValue(i,j,k,l);
-    switch(type)
-    {   
-        case FLOAT: uif.f = t ; break;
-        case DOUBLE: uif.f = t ; break;
-        case SHORT: uif.i = t ; break;
-        default: assert(0);   break;
-    }
-    return uif.i ;
-}
-
-template <typename T> 
-inline void NPY<T>::setInt(unsigned int i, unsigned int j, unsigned int k, unsigned int l, int value)
-{
-    uif_t uif ; 
-    uif.i = value ;
-
-    T t ;
-    switch(type)
-    {
-        case FLOAT:t = uif.f ; break ; 
-        case DOUBLE:t = uif.f ; break ; 
-        case SHORT:t = uif.i ; break ; 
-        default: assert(0);  break ;
-    }
-    setValue(i,j,k,l, t); 
-}
 
 
 

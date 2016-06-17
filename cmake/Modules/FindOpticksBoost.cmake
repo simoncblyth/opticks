@@ -8,6 +8,25 @@
 # use the cmake supplied FindBoost.cmake not BoostConfig.cmake
 set(Boost_NO_BOOST_CMAKE ON)
 
+
+set(OPTICKS_BOOST_COMPONENTS
+    system 
+    thread 
+    program_options 
+    log 
+    log_setup 
+    filesystem 
+    regex 
+)
+
+
+# use of timer is being evaluated on mac in brap-/tests/BTimeTest
+if(APPLE)
+   list(APPEND OPTICKS_BOOST_COMPONENTS timer)
+endif(APPLE)
+
+
+
 get_property(OpticksBoost_FOUND        GLOBAL PROPERTY gOpticksBoost_FOUND SET)
 
 if(OpticksBoost_FOUND)
@@ -25,8 +44,7 @@ else()
 
     #set(Boost_DEBUG 1) 
 
-
-    find_package(Boost REQUIRED COMPONENTS system thread program_options log log_setup filesystem regex timer)
+    find_package(Boost REQUIRED COMPONENTS ${OPTICKS_BOOST_COMPONENTS} )
 
     if (CMAKE_VERSION VERSION_EQUAL "3.0" OR CMAKE_VERSION VERSION_GREATER "3.0")
         cmake_policy(POP)

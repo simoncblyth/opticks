@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "timeutil.hh"
+#include "BTimer.hh"
 #include "BLog.hh"
 
 const char* Timer::COLUMNS = "t_absolute,t_delta" ;
@@ -16,7 +16,7 @@ const char* Timer::STOP  = "STOP" ;
 
 void Timer::operator()(const char* mark)
 {
-    m_marks.push_back(SD(mark, getRealTime()));
+    m_marks.push_back(SD(mark, BTimer::RealTime() ));
     if(m_verbose) LOG(info) << m_name << " " << mark ; 
 }
 

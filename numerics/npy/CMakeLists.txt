@@ -8,7 +8,7 @@ include(EnvCompilationFlags)
 find_package(OpticksBoost  REQUIRED)
 find_package(GLM    REQUIRED)
 find_package(BoostRap REQUIRED)
-message("NPY.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
+#message("NPY.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
 
 
 include_directories(
@@ -37,9 +37,17 @@ endif(UNIX)
 
 
 
-add_library( ${name}  SHARED
+set(SOURCES
+
     NPYBase.cpp
+    NPYSpec.cpp
+    NSlice.cpp
     NPY.cpp
+
+)
+
+set(REST_SOURCES
+
     ViewNPY.cpp
     NPYSpec.cpp
     MultiViewNPY.cpp
@@ -68,7 +76,6 @@ add_library( ${name}  SHARED
     NCache.cpp
     NSensor.cpp
     NSensorList.cpp
-    NSlice.cpp
     NSequence.cpp
     NSphere.cpp
     NPlane.cpp
@@ -90,10 +97,8 @@ add_library( ${name}  SHARED
     Report.cpp
 )
 
-
-target_link_libraries( ${name} ${LIBRARIES} )
-
-SET(hdrs 
+SET(HEADERS
+ 
 uif.h
 ucharfour.h
 charfour.h
@@ -150,9 +155,12 @@ NConfigurable.hpp
 Parameters.hpp
 )
 
-install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${hdrs} DESTINATION include/${name})
 
+
+add_library( ${name}  SHARED ${SOURCES} )
+target_link_libraries( ${name} ${LIBRARIES} )
+install(TARGETS ${name}  DESTINATION lib)
+install(FILES ${HEADERS} DESTINATION include/${name})
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 

@@ -1,7 +1,10 @@
+#include "BBit.hh"
 
 #if defined(_MSC_VER)
 
-int bffs(int i)
+#include <intrin.h>
+
+int BBit::ffs(int i)
 {
     // https://msdn.microsoft.com/en-us/library/wfd9z0bb.aspx
     unsigned long mask = i ;
@@ -12,11 +15,17 @@ int bffs(int i)
 
 #elif defined(__MINGW32__)
 
-#   define bffs __builtin_ffs
+int BBit::ffs(int i)
+{
+   return __builtin_ffs(i)
+}
 
 #else
 
-#   define bffs ffs
+int BBit::ffs(int i)
+{
+   return ffs(i)
+}
 
 #endif
 

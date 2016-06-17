@@ -37,6 +37,7 @@ add_definitions(
 set(SOURCES
   BDemo.cc 
   BTime.cc
+  BTimer.cc
   BLog.cc
   BSys.cc
   BCfg.cc
@@ -46,17 +47,18 @@ set(SOURCES
   BList.cc
   BStr.cc
   BHex.cc
+  BBit.cc
   BFile.cc
   BRegex.cc
   BDigest.cc
   BArrayDigest.cc
 
   md5.cc
-  timeutil.cc
   BTree.cc
 ) 
 
-set(PROBLEM_SOURCES
+set(TOXIC_SOURCES
+  timeutil.cc
 )
 
 set(HEADERS
@@ -64,6 +66,7 @@ set(HEADERS
 
   BDemo.hh 
   BTime.hh
+  BTimer.hh
   BLog.hh
   BSys.hh
   BCfg.hh
@@ -73,16 +76,14 @@ set(HEADERS
   BList.hh
   BStr.hh
   BHex.hh
+  BBit.hh
   BFile.hh
   BRegex.hh
   BDigest.hh
   BArrayDigest.hh
-
-  bffs.hh
-  dbg.hh
 )
 
-set(PROBLEM_HEADERS
+set(TOXIC_HEADERS
   timeutil.hh
 )
 
@@ -91,7 +92,8 @@ set(PROBLEM_HEADERS
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(BLog.cc      PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
-   set_source_files_properties(jsonutil.cc  PROPERTIES COMPILE_FLAGS -Wno-all)
+   set_source_files_properties(BMap.cc  PROPERTIES COMPILE_FLAGS -Wno-all)
+   set_source_files_properties(BList.cc  PROPERTIES COMPILE_FLAGS -Wno-all)
 endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 
@@ -105,6 +107,6 @@ install(FILES ${HEADERS} DESTINATION include/${name})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 
 

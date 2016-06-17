@@ -7,9 +7,8 @@
 #include <glm/glm.hpp>
 
 //brap-
-#include "bffs.hh"
-//#include "BRegex.hh"
 #include "BLog.hh"
+#include "BBit.hh"
 
 // npy-
 #include "GLMFormat.hpp"
@@ -67,6 +66,11 @@ float RecordsNPY::unshortnorm_time(short v, unsigned int k )
 }
 
 
+
+#if defined(_MSC_VER)
+// conversion from 'glm::uint' to 'short'
+#pragma warning( disable : 4244 )
+#endif
 
 
 
@@ -536,14 +540,14 @@ std::string RecordsNPY::getSequenceString(unsigned int photon_id, Types::Item_t 
         if(bitpos < 32)
         { 
             unsigned int bitmask = bitpos == 0 ? 0 : 1 << (bitpos - 1); 
-            unsigned int first = bffs(bitmask) ;
+            unsigned int first = BBit::ffs(bitmask) ;
             assert(first == bitpos);
             if(first != bitpos)
             {
                  LOG(warning) << "RecordsNPY::getSequenceString"
                               << " UNEXPECTED ffs(bitmask) != bitpos "
                               << " bitmask " << std::hex << bitmask << std::dec
-                              << " ffs(bitmask) " <<  bffs(bitmask)
+                              << " ffs(bitmask) " <<  BBit::ffs(bitmask)
                               << " bitpos " << bitpos 
                               ; 
 

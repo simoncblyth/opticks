@@ -4,6 +4,10 @@ template<typename T>
 class NPY ; 
 
 
+#include "NPY_API_EXPORT.hh"
+#include "NPY_FLAGS.hh"
+
+
 class AxisNPY {
    public:  
        AxisNPY(NPY<float>* axis); 

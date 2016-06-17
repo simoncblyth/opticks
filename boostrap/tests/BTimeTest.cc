@@ -1,7 +1,6 @@
 #include "BTime.hh"
 
 #include <boost/chrono/chrono.hpp>
-#include <boost/timer/timer.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <iostream>
@@ -19,7 +18,7 @@ double check_second_clock(unsigned int sleep_milli)
     _sleep(sleep_milli);
     boost::posix_time::ptime t2 = boost::posix_time::second_clock::local_time();
     boost::posix_time::time_duration dt = t2 - t1;
-    double diff = dt.total_milliseconds() ; 
+    double diff = dt.total_milliseconds()/1e6 ; 
     return diff ;
 }
 
@@ -30,9 +29,13 @@ double check_microsec_clock(unsigned int sleep_milli)
     _sleep(sleep_milli);
     boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::local_time();
     boost::posix_time::time_duration dt = t2 - t1;
-    double diff = dt.total_milliseconds() ; 
+    double diff = dt.total_milliseconds()/1e6 ; 
     return diff ;
 }
+
+
+#ifdef __APPLE__
+#include <boost/timer/timer.hpp>
 
 double check_timer(unsigned int sleep_milli)
 {
@@ -51,6 +54,9 @@ double check_timer2(unsigned int sleep_milli)
    sec_t seconds = boost::chrono::nanoseconds(timer.elapsed().user);
    return seconds.count();
 }
+
+#endif
+
 
 
 int main(int argc, char** argv)
@@ -74,8 +80,10 @@ int main(int argc, char** argv)
                  << " sleep_milli " << std::setw(10) << sleep_milli
                  << " second " << std::setw(10) << check_second_clock(sleep_milli)
                  << " microsec " << std::setw(10) << check_microsec_clock(sleep_milli)
+#ifdef __APPLE__
                  << " timer " << std::setw(10) << check_timer(sleep_milli)
                  << " timer2 " << std::setw(10) << check_timer2(sleep_milli)
+#endif
                  << std::endl ; 
        
    } 

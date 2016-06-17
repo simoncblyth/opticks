@@ -177,9 +177,31 @@ npy-full()
    npy-install
 }
 
+
+npy-generate-exports()
+{
+   npy-scd
+   importlib-
+   importlib-exports NPY NPY_API
+}
+
+
+npy-config(){ echo Debug ; }
 npy--()
 {
-   ( npy-bcd ; make ${1:-install} ; )
+   local iwd=$PWD
+
+   npy-bcd 
+
+   cmake \
+          --build . \
+          --config $(npy-config) \
+          --target ${1:-install}
+
+
+   #make ${1:-install}  
+
+   cd $iwd
 }
 
 npy-lookup-test()
