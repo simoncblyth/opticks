@@ -853,8 +853,14 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
     }
 
 
-    T* ptr = getValues();
+    LOG(trace) << "NPY<T>::dump " 
+               << " dim " << m_dim 
+               << " ni " << ni
+               << " nj " << nj
+               << " nk " << nk
+               ;
 
+    T* ptr = getValues();
 
     for(unsigned int i=0 ; i < std::min(ni, limit) ; i++)
     {   
@@ -863,6 +869,14 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
             for(unsigned int k=0 ; k < nk ; k++)
             {   
                 unsigned int offset = i*nj*nk + j*nk + k ; 
+
+                LOG(trace) << "NPY<T>::dump " 
+                           << " i " << i 
+                           << " j " << j 
+                           << " k " << k
+                           << " offset " << offset 
+                           ; 
+
                 T* v = ptr + offset ; 
                 if(k%nk == 0) std::cout << std::endl ; 
 
@@ -873,6 +887,7 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
    }   
 
 
+   LOG(trace) << "NPY<T>::dump DONE " ; 
 
    std::cout << std::endl ; 
 }

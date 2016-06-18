@@ -4,8 +4,17 @@
 #include <string>
 #include <sstream>
 
+#include "NPY_API_EXPORT.hh"
 
-class GLMFormat {
+
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// members needs to have dll-interface to be used by clients
+#pragma warning( disable : 4251 )
+#endif
+
+class NPY_API GLMFormat {
 
    public:
        GLMFormat(const char* delim="," , unsigned int precision=4);
@@ -43,33 +52,38 @@ class GLMFormat {
 };
 
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
-std::string gformat(float f);
-std::string gformat(int i);
-std::string gformat(unsigned int i);
 
-std::string gformat(const glm::vec3& v );
-std::string gformat(const glm::vec4& v );
-std::string gformat(const glm::ivec4& v );
-std::string gformat(const glm::uvec4& v );
-std::string gformat(const glm::ivec3& v );
-std::string gformat(const glm::quat& q );
-std::string gformat(const glm::mat4& m );
-std::string gformat(const glm::mat3& m );
 
-float       gfloat_(const std::string& s );
-int           gint_(const std::string& s );
-unsigned int guint_(const std::string& s );
-glm::vec3   gvec3(const std::string& s );
-glm::vec4   gvec4(const std::string& s );
-glm::ivec4  givec4(const std::string& s );
-glm::uvec4  guvec4(const std::string& s );
-glm::ivec3  givec3(const std::string& s );
-glm::quat   gquat(const std::string& s );
-glm::mat4   gmat4(const std::string& s, bool flip=false, const char* delim=",");
-glm::mat3   gmat3(const std::string& s, bool flip=false, const char* delim=",");
+NPY_API std::string gformat(float f);
+NPY_API std::string gformat(int i);
+NPY_API std::string gformat(unsigned int i);
 
-std::string gpresent(const glm::vec4& v, unsigned int prec=3, unsigned int wid=10);
+NPY_API std::string gformat(const glm::vec3& v );
+NPY_API std::string gformat(const glm::vec4& v );
+NPY_API std::string gformat(const glm::ivec4& v );
+NPY_API std::string gformat(const glm::uvec4& v );
+NPY_API std::string gformat(const glm::ivec3& v );
+NPY_API std::string gformat(const glm::quat& q );
+NPY_API std::string gformat(const glm::mat4& m );
+NPY_API std::string gformat(const glm::mat3& m );
+
+NPY_API float       gfloat_(const std::string& s );
+NPY_API int           gint_(const std::string& s );
+NPY_API unsigned int guint_(const std::string& s );
+NPY_API glm::vec3   gvec3(const std::string& s );
+NPY_API glm::vec4   gvec4(const std::string& s );
+NPY_API glm::ivec4  givec4(const std::string& s );
+NPY_API glm::uvec4  guvec4(const std::string& s );
+NPY_API glm::ivec3  givec3(const std::string& s );
+NPY_API glm::quat   gquat(const std::string& s );
+NPY_API glm::mat4   gmat4(const std::string& s, bool flip=false, const char* delim=",");
+NPY_API glm::mat3   gmat3(const std::string& s, bool flip=false, const char* delim=",");
+
+NPY_API std::string gpresent(const glm::vec4& v, unsigned int prec=3, unsigned int wid=10);
 
 
 

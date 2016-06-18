@@ -11,6 +11,53 @@
 #include "NConfigurable.hpp"
 
 
+
+
+
+NState::NState(const char* dir, const char* name) 
+    :
+    m_verbose(false),
+    m_dir(strdup(dir)),
+    m_name(strdup(name)),
+    m_num_changes(0)
+{
+    init();
+}
+
+
+void NState::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+void NState::setName(const char* name)
+{
+    free((void*)m_name);
+    m_name = strdup(name);
+}
+
+const char* NState::getName()
+{
+   return m_name ; 
+}
+const char* NState::getDir()
+{
+   return m_dir ; 
+}
+
+
+void NState::setNumChanges(unsigned int num_changes)
+{
+    m_num_changes = num_changes ; 
+}
+unsigned int NState::getNumChanges()
+{
+    return m_num_changes ; 
+}
+
+
+
+
 NState* NState::load(const char* dir, unsigned int num)
 {
     std::string name = FormName(num) ;

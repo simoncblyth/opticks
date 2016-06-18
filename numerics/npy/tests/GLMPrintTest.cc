@@ -1,6 +1,8 @@
+
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include <glm/glm.hpp>
+#include "NGLM.hpp"
+
 #include <string>
 
 int main()

@@ -1,15 +1,28 @@
-#include "NSlice.hpp"
+
+#include "NPY_FLAGS.hh"
 
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-
-
 #include <string>
 #include <vector>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
+
+#include "NSlice.hpp"
+
+
+NSlice::NSlice(unsigned int low, unsigned int high, unsigned int step) 
+    :
+    low(low),
+    high(high),
+    step(step),
+    _description(0)
+{
+}
+
 
 
 const char* NSlice::description()

@@ -1,11 +1,18 @@
 #pragma once
 
 #include <vector>
-#include <cstring>
-
 class ViewNPY ; 
 
-class MultiViewNPY {
+#include "NPY_API_EXPORT.hh"
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// members needs to have dll-interface to be used by clients
+#pragma warning( disable : 4251 )
+#endif
+
+
+class NPY_API MultiViewNPY {
     public:
         MultiViewNPY(const char* name="no-name");
         const char* getName();
@@ -28,14 +35,9 @@ class MultiViewNPY {
 
 };
 
-inline MultiViewNPY::MultiViewNPY(const char* name)
-   :   
-    m_name(strdup(name))
-{
-}
 
-inline const char* MultiViewNPY::getName()
-{
-    return m_name ;
-}
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 

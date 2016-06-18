@@ -1,23 +1,17 @@
-#include "ViewNPY.hpp"
-#include "MultiViewNPY.hpp"
-
-#include "float.h"
-#include "string.h"
-#include "NPY.hpp"
-#include "GLMPrint.hpp"
-
 #include <cassert>
 #include <sstream>
-
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
+#include <cfloat>
+#include <cstring>
 
 #include "BLog.hh"
 
+#include "NPY.hpp"
 
+#include "GLMPrint.hpp"
+#include "NGLM.hpp"
+
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
 
 
 const char* ViewNPY::BYTE_ = "BYTE"; 
@@ -58,6 +52,82 @@ const char* ViewNPY::getTypeName()
 
 
 
+
+
+ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt, unsigned int item_from_dim) 
+  :
+            m_name(strdup(name)),
+            m_npy(npy),
+            m_parent(NULL),
+            m_bytes(NULL),
+            m_j(j),
+            m_k(k),
+            m_l(l),
+            m_size(size),
+            m_type(type),
+            m_norm(norm),
+            m_iatt(iatt),
+            m_item_from_dim(item_from_dim),
+
+            m_numbytes(0),
+            m_stride(0),
+            m_offset(0),
+            m_low(NULL),
+            m_high(NULL),
+            m_dimensions(NULL),
+            m_center(NULL),
+            m_model_to_world(0),
+            m_center_extent(0),
+            m_extent(0.f),
+            m_addressed(false)
+{
+    init();
+}
+
+
+glm::vec4& ViewNPY::getCenterExtent()
+{
+    return m_center_extent ; 
+} 
+glm::mat4& ViewNPY::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+float* ViewNPY::getModelToWorldPtr()
+{
+    return glm::value_ptr(m_model_to_world) ; 
+}
+float ViewNPY::getExtent()
+{
+    return m_extent ; 
+}
+
+
+
+MultiViewNPY* ViewNPY::getParent()
+{
+    return m_parent ; 
+}
+void ViewNPY::setParent(MultiViewNPY* parent)
+{
+    m_parent = parent ; 
+}
+
+
+
+
+NPYBase*     ViewNPY::getNPY(){    return m_npy   ; }
+void*        ViewNPY::getBytes(){  return m_bytes ; }
+unsigned int ViewNPY::getNumBytes(){  return m_numbytes ; }
+unsigned int ViewNPY::getStride(){ return m_stride ; }
+unsigned long ViewNPY::getOffset(){ return m_offset ; }
+unsigned int ViewNPY::getSize(){   return m_size ; }  //typically 1,2,3,4 
+bool         ViewNPY::getNorm(){ return m_norm ; }
+bool         ViewNPY::getIatt(){ return m_iatt ; }
+ViewNPY::Type_t  ViewNPY::getType(){ return m_type ; }
+const char*  ViewNPY::getName(){ return m_name ; }
+ 
+
 std::string ViewNPY::getShapeString()
 {
     return m_npy->getShapeString();
@@ -88,7 +158,7 @@ void ViewNPY::init()
 
 unsigned int ViewNPY::getCount()
 {
-    unsigned int count ;
+    unsigned int count(0) ;
 
     if(m_item_from_dim == 1)   // the default, only 1st dim is count
     {
@@ -136,20 +206,6 @@ void ViewNPY::setCustomOffset(unsigned long offset)
     m_offset = offset ;
 }
 
-
-
-glm::mat4& ViewNPY::getModelToWorld()
-{
-    return m_model_to_world ; 
-}
-float* ViewNPY::getModelToWorldPtr()
-{
-    return glm::value_ptr(m_model_to_world) ; 
-}
-float ViewNPY::getExtent()
-{
-    return m_extent ; 
-}
 
 
 void ViewNPY::dump(const char* msg)
@@ -254,13 +310,12 @@ void ViewNPY::findBounds()
 
     glm::vec3 s(m_extent);
     glm::vec3 t(*m_center);
-
     m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), t), s); 
 
     m_center_extent.x = (hi.x + lo.x)/2.0f ;
     m_center_extent.y = (hi.y + lo.y)/2.0f ;
-    m_center_extent.z = (hi.z + lo.z)/2.0f ; 
-    m_center_extent.w =  m_extent ;
+    m_center_extent.z = (hi.z + lo.z)/2.0f ;
+    m_center_extent.w = m_extent ; 
 
     //Summary("ViewNPY::findBounds");
 }
@@ -294,5 +349,7 @@ std::string ViewNPY::description()
 
     return ss.str();
 }
+
+
 
 

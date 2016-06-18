@@ -204,6 +204,21 @@ npy--()
    cd $iwd
 }
 
+
+npy-ctest()
+{
+   local iwd=$PWD
+   npy-bcd 
+
+   # PATH env for windows is set in tests/CMakeLists.txt
+
+   ctest $*
+
+   cd $iwd
+}
+
+
+
 npy-lookup-test()
 {
     ggeo-

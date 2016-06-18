@@ -2,7 +2,14 @@
 
 #include <iomanip>
 #include <cstring>
+
+
+// headers here so the macro can work elsewhere easily
+#include <boost/log/core.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include "boost/log/utility/setup.hpp"
+
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
 
@@ -11,8 +18,32 @@
 #include "BRAP_FLAGS.hh"
 
 
+// textual workaround to get across the dll divide
+// using static methods of Blog 
+#define BLOG(argc, argv) \
+{ \
+    boost::log::add_common_attributes(); \
+    boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");  \
+    boost::log::add_console_log(  \
+        std::cerr,   \
+        boost::log::keywords::format = "[%TimeStamp%]:%Severity%: %Message%", \
+        boost::log::keywords::auto_flush = true \
+    );  \
+    boost::log::core::get()->set_filter \
+    (  \
+        boost::log::trivial::severity >= BLog::FilterLevel((argc), (argv)) \
+    ); \
+} \
+
+
 
 class BRAP_API BLog {
+    public:
+         static int FilterLevel(int argc, char** argv);
+         static int FilterLevel(const char* level);
+    public:
+         // smth doesnt cross the dll divide
+         static void setFilter(const char* level);
     public:
          BLog(int argc, char** argv);
          void setDir( const char* dir);
@@ -40,39 +71,5 @@ class BRAP_API BLog {
          bool        m_addfile ; 
          bool        m_setup ; 
 };
-
-inline BLog::BLog(int argc, char** argv)
-   :
-     m_argc(argc),
-     m_argv(argv),
-
-     m_logname(NULL),
-     m_loglevel(NULL),
-     m_logdir(NULL),
-
-     m_pause(false),
-     m_exitpause(false),
-     m_addfile(false),
-     m_setup(false)
-{
-     init();
-}
-
-inline void BLog::setPause(bool pause)
-{
-    m_pause = pause ; 
-}
-inline void BLog::setExitPause(bool pause)
-{
-    m_exitpause = pause ; 
-}
-inline void BLog::setName(const char* logname)
-{
-    if(logname) m_logname = strdup(logname) ;
-}
-inline void BLog::setLevel(const char* loglevel)
-{
-    if(loglevel) m_loglevel = strdup(loglevel) ;
-}
 
 

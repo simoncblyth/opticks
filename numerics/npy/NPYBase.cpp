@@ -55,6 +55,223 @@ void NPYBase::setGlobalVerbose(bool verbose)
 
 const char* NPYBase::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ; 
 
+
+
+NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
+         :
+         m_shape_spec(NULL),
+         m_item_spec(NULL),
+         m_sizeoftype(sizeoftype),
+         m_type(type),
+         m_buffer_id(-1),
+         m_buffer_target(-1),
+         m_aux(NULL),
+         m_verbose(false),
+         m_allow_prealloc(false),
+         m_shape(shape),
+         m_metadata(metadata),
+         m_has_data(has_data),
+         m_dynamic(false)
+{
+   init();
+} 
+
+ NPYBase::~NPYBase()
+{
+}
+
+
+ void NPYBase::setHasData(bool has_data)
+{
+    m_has_data = has_data ; 
+}
+
+ bool NPYBase::hasData()
+{
+    return m_has_data ; 
+}
+
+ NPYSpec* NPYBase::getShapeSpec()
+{
+    return m_shape_spec ; 
+}
+ NPYSpec* NPYBase::getItemSpec()
+{
+    return m_item_spec ; 
+}
+
+
+
+
+// shape related
+
+ std::vector<int>& NPYBase::getShapeVector()
+{
+    return m_shape ; 
+}
+
+
+
+
+ unsigned int NPYBase::getNumItems(int ifr, int ito)
+{
+    //  A) default ifr/ito  0/1 correponds to shape of 1st dimension
+    //
+    //  B) example ifr/ito  0/-1  gives number of items excluding last dimension 
+    //               -->    0/2   --> shape(0)*shape(1)    for ndim 3 
+    //
+    //  C)       ifr/ito  0/3 for ndim 3   shape(0)*shape(1)*shape(2)
+    //
+    //  D)  ifr/ito 0/0     for any dimension
+    //           -> 0/ndim     -> shape of all dimensions  
+    //
+    //
+    int ndim = m_shape.size();
+    if(ifr <  0) ifr += ndim ; 
+    if(ito <= 0) ito += ndim ; 
+
+    assert(ifr >= 0 && ifr < ndim);
+    assert(ito >= 0 && ito <= ndim);
+
+    unsigned int nit(1) ; 
+    for(int i=ifr ; i < ito ; i++) nit *= getShape(i);
+    return nit ;
+}
+ unsigned int NPYBase::getNumElements()
+{
+    return getShape(m_shape.size()-1);
+}
+
+
+ unsigned int NPYBase::getDimensions()
+{
+    return m_shape.size();
+}
+ unsigned int NPYBase::getShape(unsigned int n)
+{
+    return n < m_shape.size() ? m_shape[n] : 0 ;
+}
+
+
+
+// OpenGL related
+
+ void NPYBase::setBufferId(int buffer_id)
+{
+    m_buffer_id = buffer_id  ;
+}
+ int NPYBase::getBufferId()
+{
+    return m_buffer_id ;
+}
+
+ void NPYBase::setBufferTarget(int buffer_target)
+{
+    m_buffer_target = buffer_target  ;
+}
+ int NPYBase::getBufferTarget()
+{
+    return m_buffer_target ;
+}
+
+
+
+
+
+// used for CUDA OpenGL interop
+ void NPYBase::setAux(void* aux)
+{
+    m_aux = aux ; 
+}
+ void* NPYBase::getAux()
+{
+    return m_aux ; 
+}
+
+
+
+
+
+
+
+ void NPYBase::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+ void NPYBase::setAllowPrealloc(bool allow)
+{
+    m_allow_prealloc = allow ; 
+}
+
+
+ unsigned int NPYBase::getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+{
+    //assert(m_dim == 3 ); 
+    unsigned int nj = m_nj ;
+    unsigned int nk = m_nk ;
+    unsigned int nl = m_nl == 0 ? 1 : m_nl ;
+
+    return  i*nj*nk*nl + j*nk*nl + k*nl + l ;
+}
+
+ unsigned int NPYBase::getNumValues(unsigned int from_dim)
+{
+    unsigned int nvals = 1 ; 
+    for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nvals *= m_shape[i] ;
+    return nvals ;  
+}
+
+
+// depending on sizeoftype
+
+ unsigned char NPYBase::getSizeOfType()
+{
+    return m_sizeoftype;
+}
+ NPYBase::Type_t NPYBase::getType()
+{
+    return m_type;
+}
+
+
+
+ unsigned int NPYBase::getNumBytes(unsigned int from_dim)
+{
+    return m_sizeoftype*getNumValues(from_dim);
+}
+ unsigned int NPYBase::getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+{
+    return m_sizeoftype*getValueIndex(i,j,k,l);
+}
+
+ void NPYBase::setDynamic(bool dynamic)
+{
+    m_dynamic = dynamic ; 
+}
+ bool NPYBase::isDynamic()
+{
+    return m_dynamic ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void NPYBase::init()
 {
    updateDimensions(); 
@@ -321,5 +538,22 @@ std::string NPYBase::path(const char* dir, const char* name)
     // provides native style path with auto-prefixing based on envvar  
     return path ; 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

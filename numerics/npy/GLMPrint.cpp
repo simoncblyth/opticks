@@ -1,19 +1,20 @@
-#include "GLMPrint.hpp"
 
-#include "stdio.h"
-#include "float.h"
+#include <cstdio>
+#include <cfloat>
 #include <algorithm>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/quaternion.hpp>  
-#include <glm/gtc/type_ptr.hpp>
-
-#include <boost/algorithm/string/join.hpp>
 #include <vector>
 #include <sstream>
 #include <iomanip>
 
+#include <boost/algorithm/string/join.hpp>
+
+#ifdef _MSC_VER
+// members needs to have dll-interface to be used by clients
+#pragma warning( disable : 4251 )
+#endif
+
+#include "NGLM.hpp"
+#include "GLMPrint.hpp"
 
 void assert_same(const char* msg, const glm::vec4& a, const glm::vec4& b)
 {

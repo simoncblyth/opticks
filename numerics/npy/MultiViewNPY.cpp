@@ -1,10 +1,23 @@
 
-#include "MultiViewNPY.hpp"
-#include "ViewNPY.hpp"
-#include "stdio.h"
-#include "string.h"
-#include "assert.h"
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
+
+#include "NPY_FLAGS.hh"
+
+MultiViewNPY::MultiViewNPY(const char* name)
+   :   
+    m_name(strdup(name))
+{
+}
+
+const char* MultiViewNPY::getName()
+{
+    return m_name ;
+}
 
 
 void MultiViewNPY::add(ViewNPY* vec)

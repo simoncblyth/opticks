@@ -1,7 +1,9 @@
 #pragma once
-#include <cstring>
 
-struct NSlice {
+#include "NPY_API_EXPORT.hh"
+
+struct NPY_API NSlice {
+
      unsigned int low ; 
      unsigned int high ; 
      unsigned int step ; 
@@ -9,18 +11,8 @@ struct NSlice {
 
      NSlice(const char* slice, const char* delim=":");
      NSlice(unsigned int low, unsigned int high, unsigned int step=1);
+
      const char* description();
      unsigned int count();
 };
-
-
-inline NSlice::NSlice(unsigned int low, unsigned int high, unsigned int step) 
-    :
-    low(low),
-    high(high),
-    step(step),
-    _description(0)
-{
-}
-
 

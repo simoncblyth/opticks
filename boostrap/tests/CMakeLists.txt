@@ -17,6 +17,8 @@ set(TEST_CC_SRCS
    BStrTest.cc
    BTimerTest.cc
    BBitTest.cc
+
+   BoostLogTest.cc 
 )
 
 

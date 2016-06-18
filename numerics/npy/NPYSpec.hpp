@@ -1,12 +1,13 @@
 #pragma once
 
 #include <string>
-#include <climits>
 
 #include "NPYBase.hpp"
+#include "NPY_API_EXPORT.hh"
 
+// TODO: maybe type enum and statics should live in here to simplify NPYBase
 
-class NPYSpec {
+class NPY_API NPYSpec {
    public:
         NPYSpec(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type);
 
@@ -25,24 +26,6 @@ class NPYSpec {
         unsigned int m_bad_index ; 
         NPYBase::Type_t  m_type ; 
 };
-
-
-inline NPYSpec::NPYSpec(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type)
-  :
-    m_ni(ni),
-    m_nj(nj),
-    m_nk(nk),
-    m_nl(nl),
-    m_bad_index(UINT_MAX), 
-    m_type(type)
-{
-}
-
-inline NPYBase::Type_t NPYSpec::getType()
-{ 
-    return m_type ;
-}
-
 
 
  

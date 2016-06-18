@@ -1,7 +1,4 @@
-
-
 #ifdef _MSC_VER
-
 // strdup
 #pragma warning( disable : 4996 )
 
@@ -14,6 +11,5 @@
 // members needs to have dll-interface to be used by clients
 #pragma warning( disable : 4251 )
 
-
-
 #endif
+

@@ -1,7 +1,29 @@
 #include "NPYSpec.hpp"
 #include "BLog.hh"
+
 #include <cstring>
 #include <cstdio>
+#include <climits>
+
+
+
+NPYSpec::NPYSpec(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type)
+  :
+    m_ni(ni),
+    m_nj(nj),
+    m_nk(nk),
+    m_nl(nl),
+    m_bad_index(UINT_MAX), 
+    m_type(type)
+{
+}
+
+NPYBase::Type_t NPYSpec::getType()
+{ 
+    return m_type ;
+}
+
+
 
 void NPYSpec::Summary(const char* msg) 
 {

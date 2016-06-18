@@ -1,9 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <string>
-#include <cstring>
-
+#include "NGLM.hpp"
 
 /*
 
@@ -23,7 +21,15 @@ Trailing dimension usually 4 as quads are convenient and efficient on GPU.
 class NPYBase ; 
 class MultiViewNPY ; 
 
-class ViewNPY {
+#include "NPY_API_EXPORT.hh"
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// members needs to have dll-interface to be used by clients
+#pragma warning( disable : 4251 )
+#endif
+
+class NPY_API ViewNPY {
     public:
         static const char* BYTE_ ; 
         static const char* UNSIGNED_BYTE_ ; 
@@ -62,7 +68,6 @@ class ViewNPY {
                bool iatt=false, 
                unsigned int item_from_dim=1) ;
 
-     //   void setCountDimensions(unsigned int count_dimensions);  // 0: 1st dim only [default], 1: 1st*2nd dim eg for structured records
         void addressNPY();
         std::string getTypeString();
         void setCustomOffset(unsigned long offset);
@@ -77,23 +82,22 @@ class ViewNPY {
         std::string getShapeString();
         unsigned int getNumQuads();
 
-        NPYBase*     getNPY(){    return m_npy   ; }
-        void*        getBytes(){  return m_bytes ; }
-        unsigned int getNumBytes(){  return m_numbytes ; }
-        unsigned int getStride(){ return m_stride ; }
-        unsigned long getOffset(){ return m_offset ; }
+        NPYBase*     getNPY();
+        void*        getBytes();
+        unsigned int getNumBytes();
+        unsigned int getStride();
+        unsigned long getOffset();
         unsigned int getCount();
-        unsigned int getSize(){   return m_size ; }  //typically 1,2,3,4 
-        bool         getNorm(){ return m_norm ; }
-        bool         getIatt(){ return m_iatt ; }
-        Type_t       getType(){ return m_type ; }
+        unsigned int getSize();  //typically 1,2,3,4 
+        bool         getNorm();
+        bool         getIatt();
+        Type_t       getType();
         const char*  getTypeName();
-        const char*  getName(){ return m_name ; }
-       //unsigned int getCountDimensions(){ return m_count_dimensions ; }
+        const char*  getName();
 
     public:
         glm::vec4&   getCenterExtent();
-        glm::mat4&   getModelToWorld();
+        glm::mat4 &  getModelToWorld();
         float*       getModelToWorldPtr();
         float        getExtent();
 
@@ -122,7 +126,6 @@ class ViewNPY {
         unsigned int  m_numbytes ;  
         unsigned int  m_stride ;  
         unsigned long m_offset ;  
-     //   unsigned int  m_count_dimensions ;  
 
     private:
         glm::vec3*  m_low ;
@@ -137,62 +140,9 @@ class ViewNPY {
 };
 
 
-
-
-inline ViewNPY::ViewNPY(const char* name, NPYBase* npy, unsigned int j, unsigned int k, unsigned int l, unsigned int size, Type_t type, bool norm, bool iatt, unsigned int item_from_dim) 
-  :
-            m_name(strdup(name)),
-            m_npy(npy),
-            m_parent(NULL),
-            m_bytes(NULL),
-            m_j(j),
-            m_k(k),
-            m_l(l),
-            m_size(size),
-            m_type(type),
-            m_norm(norm),
-            m_iatt(iatt),
-            m_item_from_dim(item_from_dim),
-
-            m_numbytes(0),
-            m_stride(0),
-            m_offset(0),
-      //      m_count_dimensions(0),
-            m_low(NULL),
-            m_high(NULL),
-            m_dimensions(NULL),
-            m_center(NULL),
-            m_model_to_world(),
-            m_extent(0.f),
-            m_addressed(false)
-{
-    init();
-}
-
-
-/*
-inline void ViewNPY::setCountDimensions(unsigned int count_dimensions)
-{
-     // 0: 1st dim only [default], 1: 1st*2nd dim eg for structured records
-    m_count_dimensions = count_dimensions ;
-}
-*/
-
-
-inline glm::vec4& ViewNPY::getCenterExtent()
-{
-    return m_center_extent ; 
-} 
-inline MultiViewNPY* ViewNPY::getParent()
-{
-    return m_parent ; 
-}
-inline void ViewNPY::setParent(MultiViewNPY* parent)
-{
-    m_parent = parent ; 
-}
-
-
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 
 

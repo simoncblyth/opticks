@@ -1,22 +1,27 @@
-#include "GLMFormat.hpp"
 
-#include "assert.h"
-#include "stdio.h"
+#include <cassert>
+#include <cstdio>
 #include <algorithm>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>  
+#include <vector>
+#include <iomanip>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 
-#include <vector>
-#include <iomanip>
+#include "NGLM.hpp"
+
+#ifdef _MSC_VER
+// members needs to have dll-interface to be used by clients
+#pragma warning( disable : 4251 )
+#endif
+
+
 
 #include "BLog.hh"
 
 
+#include "GLMFormat.hpp"
 
 GLMFormat::GLMFormat(const char* delim, unsigned int prec)
 {

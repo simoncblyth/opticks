@@ -8,11 +8,16 @@
 #include "BLog.hh"
 
 
-template <typename T>
-void Parameters::add(const char* name, T value)
+Parameters::Parameters()
 {
-    m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
 }
+
+std::vector<std::string>& Parameters::getLines()
+{
+    if(m_lines.size() == 0 ) prepLines();
+    return m_lines ;
+}
+
 
 
 std::string Parameters::getStringValue(const char* name)
@@ -24,6 +29,15 @@ std::string Parameters::getStringValue(const char* name)
         if( strncmp(npar.c_str(), name, strlen(name))==0) value = it->second ; 
     }
     return value ;  
+}
+
+
+
+
+template <typename T>
+void Parameters::add(const char* name, T value)
+{
+    m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
 }
 
 

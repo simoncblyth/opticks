@@ -41,7 +41,15 @@
 
 class NConfigurable ; 
 
-class NState {
+#include "NPY_API_EXPORT.hh"
+
+#ifdef _MSC_VER
+#pragma warning(push)
+// members needs to have dll-interface to be used by clients
+#pragma warning( disable : 4251 )
+#endif
+
+class NPY_API NState {
    public:
        static NState* load(const char* dir, unsigned int num);
    public:
@@ -93,44 +101,10 @@ class NState {
 
 };
 
-inline NState::NState(const char* dir, const char* name) 
-    :
-    m_verbose(false),
-    m_dir(strdup(dir)),
-    m_name(strdup(name)),
-    m_num_changes(0)
-{
-    init();
-}
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 
-inline void NState::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
-
-inline void NState::setName(const char* name)
-{
-    free((void*)m_name);
-    m_name = strdup(name);
-}
-
-inline const char* NState::getName()
-{
-   return m_name ; 
-}
-inline const char* NState::getDir()
-{
-   return m_dir ; 
-}
-
-
-inline void NState::setNumChanges(unsigned int num_changes)
-{
-    m_num_changes = num_changes ; 
-}
-inline unsigned int NState::getNumChanges()
-{
-    return m_num_changes ; 
-}
 

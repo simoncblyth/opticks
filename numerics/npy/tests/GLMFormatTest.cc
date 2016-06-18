@@ -1,14 +1,13 @@
+#include <cstdio>
+#include <cassert>
+#include <vector>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>  
 
+#include "BLog.hh"
+
+#include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
-
-#include "stdio.h"
-#include "assert.h"
-
-#include <vector>
 
 
 void test_gmat4()
@@ -17,8 +16,6 @@ void test_gmat4()
     glm::mat4 m = gmat4(s);
     print(m, "mat4");
 }
-
-
 
 void test_ivec4()
 {
@@ -38,7 +35,6 @@ void test_ivec4()
          print(v, s.c_str());
     }
 }
-
 
 void test_misc()
 {
@@ -60,10 +56,14 @@ void test_misc()
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
-    //test_ivec4();
+    BLOG(argc, argv);
+
     test_gmat4();
+    test_ivec4();
+    test_misc();
+
     return 0 ; 
 }
 

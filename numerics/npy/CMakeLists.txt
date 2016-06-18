@@ -44,15 +44,19 @@ set(SOURCES
     NSlice.cpp
     NPY.cpp
 
+    GLMPrint.cpp
+    GLMFormat.cpp
+
+    ViewNPY.cpp
+    MultiViewNPY.cpp
+
+    NState.cpp
+    NConfigurable.cpp
+
+    Parameters.cpp
 )
 
 set(REST_SOURCES
-
-    ViewNPY.cpp
-    NPYSpec.cpp
-    MultiViewNPY.cpp
-    GLMPrint.cpp
-    GLMFormat.cpp
 
     Lookup.cpp
     G4StepNPY.cpp
@@ -91,14 +95,13 @@ set(REST_SOURCES
     NTxt.cpp
     NPropNames.cpp
     NSpectral.cpp
-    NState.cpp
-    NConfigurable.cpp
-    Parameters.cpp
+
     Report.cpp
 )
 
 SET(HEADERS
- 
+
+NGLM.hpp 
 uif.h
 ucharfour.h
 charfour.h
@@ -162,5 +165,5 @@ target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
