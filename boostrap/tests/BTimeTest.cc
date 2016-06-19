@@ -72,9 +72,9 @@ int main(int argc, char** argv)
    // http://stackoverflow.com/questions/6734375/c-boost-get-current-time-in-milliseconds
 
 
-   for(unsigned int i=0 ; i < 100 ; i++)
+   for(unsigned int i=0 ; i < 10 ; i++)
    {
-       unsigned int sleep_milli = i ; 
+       unsigned int sleep_milli = i*10 ; 
 
        std::cout << std::setw(5) << i 
                  << " sleep_milli " << std::setw(10) << sleep_milli

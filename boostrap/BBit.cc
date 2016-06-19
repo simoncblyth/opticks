@@ -1,5 +1,7 @@
 #include "BBit.hh"
 
+#include <cstring>
+
 #if defined(_MSC_VER)
 
 #include <intrin.h>
@@ -17,14 +19,14 @@ int BBit::ffs(int i)
 
 int BBit::ffs(int i)
 {
-   return __builtin_ffs(i)
+   return __builtin_ffs(i);
 }
 
 #else
 
 int BBit::ffs(int i)
 {
-   return ffs(i)
+   return ::ffs(i);
 }
 
 #endif
