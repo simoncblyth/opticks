@@ -2,8 +2,9 @@
 
 template <typename T> class NPY ;
 
+#include "NPY_API_EXPORT.hh"
 
-class MaterialLibNPY {
+class NPY_API MaterialLibNPY {
    public:  
        MaterialLibNPY(NPY<float>* mlib); 
    public:  
@@ -13,14 +14,6 @@ class MaterialLibNPY {
        NPY<float>*   m_lib ; 
  
 };
-
-inline MaterialLibNPY::MaterialLibNPY(NPY<float>* mlib) 
-       :  
-       m_lib(mlib)
-{
-}
-
-
 
 
 

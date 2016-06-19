@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glm/fwd.hpp"
+#include "NGLM.hpp"
 
 #include <map>
 #include <string>
@@ -8,7 +8,8 @@
 
 #include "Types.hpp"
 #include "Counts.hpp"
-#include "NPY.hpp"
+
+template <typename T> class NPY ; 
 
 class RecordsNPY ; 
 class Index ; 
@@ -22,7 +23,9 @@ class Index ;
 //    succeeds to give perfect agreement  
 //                 
 
-class SequenceNPY {
+#include "NPY_API_EXPORT.hh"
+
+class NPY_API SequenceNPY {
    public:  
        enum {
               e_seqhis , 
@@ -109,52 +112,5 @@ class SequenceNPY {
 
 };
 
-
-inline SequenceNPY::SequenceNPY(NPY<float>* photons) 
-       :  
-       m_photons(photons),
-       m_recs(NULL),
-       m_types(NULL),
-       m_seqidx(NULL),
-       m_maxrec(0),
-       m_seqhis(NULL),
-       m_seqhis_hex(NULL),
-       m_seqhis_npy(NULL),
-       m_seqmat(NULL)
-{
-}
-
-inline void SequenceNPY::setTypes(Types* types)
-{  
-    m_types = types ; 
-}
-
-
-inline Index* SequenceNPY::getSeqHis()
-{
-    return m_seqhis ; 
-}
-inline Index* SequenceNPY::getSeqHisHex()
-{
-    return m_seqhis_hex ; 
-}
-inline Index* SequenceNPY::getSeqMat()
-{
-    return m_seqmat ; 
-}
-inline NPY<unsigned long long>* SequenceNPY::getSeqHisNpy()
-{
-    return m_seqhis_npy ; 
-}
-
-
-inline void SequenceNPY::setSeqIdx(NPY<unsigned char>* seqidx)
-{
-    m_seqidx = seqidx ;
-}
-inline NPY<unsigned char>* SequenceNPY::getSeqIdx()
-{
-    return m_seqidx ; 
-}
 
 

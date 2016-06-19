@@ -1,11 +1,36 @@
-#include "G4StepNPY.hpp"
+#include <cassert>
+#include <iostream>
+
+
+#include "BLog.hh"
+
+#include "uif.h"
 #include "NPY.hpp"
 #include "Lookup.hpp"
+#include "G4StepNPY.hpp"
+#include "NPY.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
+
+G4StepNPY::G4StepNPY(NPY<float>* npy) 
+       :  
+       m_npy(npy),
+       m_lookup(NULL)
+{
+}
+
+NPY<float>* G4StepNPY::getNPY()
+{
+    return m_npy ; 
+}
+void G4StepNPY::setLookup(Lookup* lookup)
+{
+    m_lookup = lookup ;
+} 
+Lookup* G4StepNPY::getLookup()
+{
+    return m_lookup ;
+} 
 
 
 
@@ -54,7 +79,6 @@ void G4StepNPY::dump(const char* msg)
     }
     }
 }
-
 
 
 

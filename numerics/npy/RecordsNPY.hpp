@@ -1,14 +1,16 @@
 #pragma once
 
-#include "glm/fwd.hpp"
-#include <string>
+#include "NGLM.hpp"
 #include "Types.hpp"
-#include "NPY.hpp"
 
+template <typename T> class NPY ; 
 class Index ; 
 class Typ ;
 
-class RecordsNPY {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API RecordsNPY {
    public:  
        RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat); 
    public:  
@@ -74,54 +76,6 @@ class RecordsNPY {
 
 }; 
 
-
-inline RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat)
-    :
-    m_records(records),
-    m_maxrec(maxrec),
-    m_flat(flat),
-    m_types(NULL),
-    m_typ(NULL)
-{
-}
-
-inline NPY<short>* RecordsNPY::getRecords()
-{
-    return m_records; 
-}
-
-inline bool RecordsNPY::isFlat()
-{
-    return m_flat ; 
-}
-
-inline unsigned int RecordsNPY::getMaxRec()
-{
-    return m_maxrec ; 
-}
-
-
-inline void RecordsNPY::setCenterExtent(glm::vec4& ce)
-{
-    m_center_extent = ce ; 
-}
-inline void RecordsNPY::setTimeDomain(glm::vec4& td)
-{
-    m_time_domain = td ; 
-}
-inline void RecordsNPY::setWavelengthDomain(glm::vec4& wd)
-{
-    m_wavelength_domain = wd ; 
-}
-
-
-inline void RecordsNPY::setTypes(Types* types)
-{  
-    m_types = types ; 
-}
-inline void RecordsNPY::setTyp(Typ* typ)
-{  
-    m_typ = typ ; 
-}
+#include "NPY_TAIL.hh"
 
 

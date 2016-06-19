@@ -1,40 +1,29 @@
+#include <cstdlib>
+#include <cassert>
+
 #include "NPY.hpp"
 #include "Types.hpp"
 #include "Index.hpp"
+
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 
-#include <cstdlib>
-#include <cassert>
-
-#include "dbg.hh"
-
 
 int main(int argc, char** argv)
 {
-    DBG(argv[0], "START with args", argc);
-
     Types types ; 
     types.dumpFlags();
 
-    DBG(argv[0], "after types", argc);
-
-
     const char* tag = "1" ;
     NPY<float>* photons = NPY<float>::load("oxcerenkov", tag,"dayabay");
-    DBG(argv[0], "after photons", argc);
-
+    if(!photons) return 0 ;   
 
     NPY<short>* records = NPY<short>::load("rxcerenkov", tag,"dayabay");
-    DBG(argv[0], "after records", argc);
     NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
-    DBG(argv[0], "after domains", argc);
     NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
-    DBG(argv[0], "after idom", argc);
 
     unsigned int maxrec = idom ? idom->getValue(0,0,3) : 0 ;  // TODO: enumerate the k indices 
-    DBG(argv[0], "maxrec", maxrec );
     assert(maxrec == 10);
 
 

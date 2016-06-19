@@ -1,17 +1,42 @@
-#include "BoundariesNPY.hpp"
 
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <climits>
 
-#include <glm/glm.hpp>
-#include "limits.h"
+#include "BLog.hh"
+
+#include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+#include "Types.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "BoundariesNPY.hpp"
+
+
+
+BoundariesNPY::BoundariesNPY(NPY<float>* photons) 
+       :  
+       m_photons(photons),
+       m_total(0)
+{
+}
+void BoundariesNPY::setTypes(Types* types)
+{  
+    m_types = types ; 
+}
+void BoundariesNPY::setBoundaryNames(std::map<unsigned int, std::string> names)
+{
+    m_names = names ; 
+}
+std::vector< std::pair<int, std::string> >& BoundariesNPY::getBoundaries()
+{
+    return m_boundaries ; 
+}
+
+
+
+
 
 
 bool BoundariesNPY::second_value_order(const std::pair<int,int>&a, const std::pair<int,int>&b)

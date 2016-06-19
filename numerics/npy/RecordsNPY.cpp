@@ -1,5 +1,6 @@
 #include "RecordsNPY.hpp"
 
+#include <string>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -13,8 +14,60 @@
 // npy-
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+#include "NPY.hpp"
 #include "Index.hpp"
 #include "Typ.hpp"
+
+
+RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat)
+    :
+    m_records(records),
+    m_maxrec(maxrec),
+    m_flat(flat),
+    m_types(NULL),
+    m_typ(NULL)
+{
+}
+
+NPY<short>* RecordsNPY::getRecords()
+{
+    return m_records; 
+}
+
+bool RecordsNPY::isFlat()
+{
+    return m_flat ; 
+}
+
+unsigned int RecordsNPY::getMaxRec()
+{
+    return m_maxrec ; 
+}
+
+
+void RecordsNPY::setCenterExtent(glm::vec4& ce)
+{
+    m_center_extent = ce ; 
+}
+void RecordsNPY::setTimeDomain(glm::vec4& td)
+{
+    m_time_domain = td ; 
+}
+void RecordsNPY::setWavelengthDomain(glm::vec4& wd)
+{
+    m_wavelength_domain = wd ; 
+}
+void RecordsNPY::setTypes(Types* types)
+{  
+    m_types = types ; 
+}
+void RecordsNPY::setTyp(Typ* typ)
+{  
+    m_typ = typ ; 
+}
+
+
+
 
 
 void RecordsNPY::setDomains(NPY<float>* domains)

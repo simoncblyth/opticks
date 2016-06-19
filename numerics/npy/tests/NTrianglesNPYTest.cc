@@ -1,7 +1,8 @@
-#include "NTrianglesNPY.hpp"
 #include "BLog.hh"
+
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
+#include "NTrianglesNPY.hpp"
 
 void test_prism()
 {
@@ -57,25 +58,12 @@ void test_icosahedron()
 
 int main(int argc, char**argv)
 {
-    BLog nl(argc, argv);
+    BLOG(argc, argv);
 
-    //test_icosahedron();
-    //test_transform();
-    //test_latlon();
     test_prism();
-
+    test_transform();
+    test_latlon();
+    test_icosahedron();
 }
 
-
-
-/*
-    In [3]: np.linalg.norm(i.reshape(-1,3), 2, 1 )
-    Out[3]: 
-    array([ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
-            1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.], dtype=float32)
-
-*/
 

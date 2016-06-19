@@ -1,13 +1,14 @@
+#include <cassert>
+#include <cstdlib>
+
+
 #include "NPY.hpp"
+#include "Index.hpp"
 #include "Types.hpp"
+
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "SequenceNPY.hpp"
-#include "Index.hpp"
-
-#include "assert.h"
-#include "stdlib.h"
-
 
 
 /*
@@ -26,8 +27,7 @@
 
 
 
-
-int main(int argc, char** argv)
+int main(int , char** )
 {
     const char* idpath = getenv("IDPATH");
     const char* tag = "1" ;
@@ -37,8 +37,7 @@ int main(int argc, char** argv)
     NPY<float>* dom = NPY<float>::load("domain","1", "dayabay");
     NPY<int>*   idom = NPY<int>::load("idomain","1", "dayabay");
 
-
-    assert(records);
+    if(!records) return 0 ;
     unsigned int maxrec = idom->getValue(0,0,3) ; 
     assert(maxrec == 10);
 

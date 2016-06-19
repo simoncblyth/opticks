@@ -1,10 +1,19 @@
-#include "HitsNPY.hpp"
-#include "NSensorList.hpp"
-#include "NSensor.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "BLog.hh"
+
+#include "NSensor.hpp"
+#include "NSensorList.hpp"
+#include "NPY.hpp"
+
+#include "HitsNPY.hpp"
+
+
+HitsNPY::HitsNPY(NPY<float>* photons, NSensorList* sensorlist) 
+       :  
+       m_photons(photons),
+       m_sensorlist(sensorlist)
+{
+}
 
 
 void HitsNPY::debugdump(const char* msg)

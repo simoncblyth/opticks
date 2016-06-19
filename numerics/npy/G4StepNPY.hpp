@@ -1,11 +1,7 @@
 #pragma once
 
-#include "assert.h"
-#include "uif.h"
-#include <iostream>
 #include <set>
-
-#include "NPY.hpp"
+template <typename T> class NPY ; 
 class Lookup ; 
 
 //
@@ -22,7 +18,10 @@ class Lookup ;
 // give G4StepNPY access to innards of NPY
 //
  
-class G4StepNPY {
+
+#include "NPY_API_EXPORT.hh"
+
+class NPY_API G4StepNPY {
    public:  
         typedef std::set<unsigned int> Set_t ; 
    public:  
@@ -54,24 +53,5 @@ class G4StepNPY {
  
 };
 
-inline NPY<float>* G4StepNPY::getNPY()
-{
-    return m_npy ; 
-}
-inline void G4StepNPY::setLookup(Lookup* lookup)
-{
-    m_lookup = lookup ;
-} 
-inline Lookup* G4StepNPY::getLookup()
-{
-    return m_lookup ;
-} 
-
-inline G4StepNPY::G4StepNPY(NPY<float>* npy) 
-       :  
-       m_npy(npy),
-       m_lookup(NULL)
-{
-}
 
 

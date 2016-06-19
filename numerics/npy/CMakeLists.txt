@@ -94,19 +94,20 @@ set(SOURCES
     NPlanck.cpp
     NCIE.cpp
     NSpectral.cpp
-)
-
-set(REST_SOURCES
 
     G4StepNPY.cpp
     TorchStepNPY.cpp
+    AxisNPY.cpp
+
+    SequenceNPY.cpp
     PhotonsNPY.cpp
-    HitsNPY.cpp
     RecordsNPY.cpp
+    HitsNPY.cpp
     BoundariesNPY.cpp
     MaterialLibNPY.cpp
-    SequenceNPY.cpp
-    AxisNPY.cpp
+)
+
+set(REST_SOURCES
 )
 
 SET(HEADERS

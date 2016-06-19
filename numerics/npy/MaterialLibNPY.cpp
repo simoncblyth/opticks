@@ -1,9 +1,13 @@
-#include "MaterialLibNPY.hpp"
-#include "NPY.hpp"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "BLog.hh"
+#include "NPY.hpp"
+#include "MaterialLibNPY.hpp"
+
+MaterialLibNPY::MaterialLibNPY(NPY<float>* mlib) 
+       :  
+       m_lib(mlib)
+{
+}
 
 
 void MaterialLibNPY::dump(const char* msg)

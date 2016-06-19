@@ -1,21 +1,15 @@
 #pragma once
 
-#include "glm/fwd.hpp"
-#include <map>
-#include <string>
-#include <vector>
-
-#include "Types.hpp"
-#include "NPY.hpp"
-
+template <typename T> class NPY ; 
 class Typ ; 
+class Types ; 
 class RecordsNPY ; 
 class Index ; 
 
-//
 // detailed host based photon and record dumper 
-//
-class PhotonsNPY {
+
+#include "NPY_API_EXPORT.hh"
+class NPY_API PhotonsNPY {
    public:  
        PhotonsNPY(NPY<float>* photons); 
    public:  
@@ -35,7 +29,6 @@ class PhotonsNPY {
        void dumpPhoton(unsigned int i, const char* msg="pho");
    public:  
        void dumpPhotons(const char* msg="PhotonsNPY::dumpPhotons", unsigned int ndump=5);
-       //glm::ivec4 getFlags();
    public:
        void debugdump(const char* msg);
 
@@ -48,39 +41,4 @@ class PhotonsNPY {
        unsigned int                 m_maxrec ; 
 
 };
-
-inline PhotonsNPY::PhotonsNPY(NPY<float>* photons) 
-       :  
-       m_photons(photons),
-       m_flat(false),
-       m_recs(NULL),
-       m_types(NULL),
-       m_typ(NULL),
-       m_maxrec(0)
-{
-}
-
-inline void PhotonsNPY::setTypes(Types* types)
-{  
-    m_types = types ; 
-}
-inline void PhotonsNPY::setTyp(Typ* typ)
-{  
-    m_typ = typ ; 
-}
-
-inline NPY<float>* PhotonsNPY::getPhotons()
-{
-    return m_photons ; 
-}
-inline RecordsNPY* PhotonsNPY::getRecs()
-{
-    return m_recs ; 
-}
-inline Types* PhotonsNPY::getTypes()
-{
-    return m_types ; 
-}
-
-
 

@@ -1,6 +1,8 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
+#include <cstring>
+#include <cassert>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -227,6 +229,179 @@ void TorchStepNPY::set(Param_t p, const char* s)
                     LOG(warning) << "TorchStepNPY::set WARNING ignoring unrecognized parameter " ; 
     }
 }
+
+
+
+
+TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step, const char* config) 
+       :  
+       m_genstep_id(genstep_id), 
+       m_config(config ? strdup(config) : DEFAULT_CONFIG),
+       m_material(NULL),
+       m_frame_targetted(false),
+       m_num_step(num_step),
+       m_step_index(0),
+       m_npy(NULL),
+       m_num_photons_per_g4event(10000)
+{
+   configure(m_config);
+}
+
+
+glm::ivec4& TorchStepNPY::getFrame()
+{
+    return m_frame ; 
+}
+void TorchStepNPY::setFrameTransform(glm::mat4& frame_transform)
+{
+    m_frame_transform = frame_transform ;
+}
+const glm::mat4& TorchStepNPY::getFrameTransform()
+{
+    return m_frame_transform ;
+}
+void TorchStepNPY::setFrameTargetted(bool targetted)
+{
+    m_frame_targetted = targetted ;
+}
+bool TorchStepNPY::isFrameTargetted()
+{
+    return m_frame_targetted ;
+} 
+
+
+
+glm::vec4& TorchStepNPY::getSourceLocal()
+{
+    return m_source_local ; 
+}
+glm::vec4& TorchStepNPY::getTargetLocal()
+{
+    return m_target_local ; 
+}
+glm::vec4& TorchStepNPY::getPolarizationLocal()
+{
+    return m_polarization_local ; 
+}
+
+
+
+
+const char* TorchStepNPY::getMaterial()
+{
+    return m_material ; 
+}
+const char* TorchStepNPY::getConfig()
+{
+    return m_config ; 
+}
+
+
+// used from cfg4-
+void TorchStepNPY::setNumPhotonsPerG4Event(unsigned int n)
+{
+    m_num_photons_per_g4event = n ; 
+}
+unsigned int TorchStepNPY::getNumPhotonsPerG4Event()
+{
+    return m_num_photons_per_g4event ;
+}
+unsigned int TorchStepNPY::getNumG4Event()
+{
+    unsigned int num_photons = getNumPhotons();
+    unsigned int ppe = m_num_photons_per_g4event ; 
+    unsigned int num_g4event ; 
+    if(num_photons == 1)
+    {
+        num_g4event = 1 ; 
+    }
+    else
+    {
+        assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
+        num_g4event = num_photons / ppe ; 
+    }
+    return num_g4event ; 
+}
+
+
+bool TorchStepNPY::isIncidentSphere()
+{
+    ::Torch_t type = getType();
+    return type == T_DISC_INTERSECT_SPHERE  ;
+}
+
+
+
+bool TorchStepNPY::isDisc()
+{
+    ::Torch_t type = getType();
+    return type == T_DISC  ;
+}
+bool TorchStepNPY::isDiscLinear()
+{
+    ::Torch_t type = getType();
+    return type == T_DISCLIN  ;
+}
+
+bool TorchStepNPY::isRing()
+{
+    ::Torch_t type = getType();
+    return type == T_RING  ;
+}
+
+bool TorchStepNPY::isPoint()
+{
+    ::Torch_t type = getType();
+    return type == T_POINT  ;
+}
+
+
+bool TorchStepNPY::isReflTest()
+{
+    ::Torch_t type = getType();
+    return type == T_REFLTEST ;
+}
+
+
+bool TorchStepNPY::isSPolarized()
+{
+    ::Mode_t  mode = getMode();
+    return (mode & M_SPOL) != 0  ;
+}
+bool TorchStepNPY::isPPolarized()
+{
+    ::Mode_t  mode = getMode();
+    return (mode & M_PPOL) != 0  ;
+}
+bool TorchStepNPY::isFixPolarized()
+{
+    ::Mode_t  mode = getMode();
+    return (mode & M_FIXPOL) != 0  ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void TorchStepNPY::configure(const char* config_)

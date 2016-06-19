@@ -1,15 +1,14 @@
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+
+#include "NPY.hpp"
 #include "HitsNPY.hpp"
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
-#include "stdlib.h"
-#include "stdio.h"
-#include "assert.h"
 
-#include "dbg.hh"
-
-
-int main(int argc, char** argv)
+int main(int , char** argv)
 {
     char* idpath = getenv("IDPATH");
     if(!idpath) 

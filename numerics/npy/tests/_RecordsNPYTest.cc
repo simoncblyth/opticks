@@ -1,12 +1,14 @@
+
+#include <cstdlib>
+#include <cassert>
+
 #include "NPY.hpp"
 #include "Types.hpp"
 #include "RecordsNPY.hpp"
 #include "RecordsNPY.hpp"
 
-#include "stdlib.h"
-#include "assert.h"
 
-int main(int argc, char** argv)
+int main(int , char** )
 {
     Types types ; 
     types.dumpFlags();
@@ -15,6 +17,9 @@ int main(int argc, char** argv)
     const char* tag = "1" ;
 
     NPY<short>* records = NPY<short>::load("rxcerenkov", tag, "dayabay");
+    if(!records) return 0 ; 
+
+
     NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
     NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
 

@@ -1,20 +1,23 @@
+#include <cstdlib>
+
 #include "NPY.hpp"
+#include "GLMPrint.hpp"
 #include "Types.hpp"
+
 #include "PhotonsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
-#include "GLMPrint.hpp"
-#include "stdlib.h"
 
 
 // see ggv-/tests/BoundariesNPYTest.cc
 
-int main(int argc, char** argv)
+int main(int, char** argv)
 {
     const char* idpath = getenv("IDPATH");
     if(idpath == NULL)
     {
        std::cout << argv[0] << " missing envvat IDPATH " << std::endl ; 
+       return 0 ;    
     }
 
     const char* tag = "1" ;
@@ -28,7 +31,6 @@ int main(int argc, char** argv)
     } 
 
     Types types ; 
-    types.readFlags("$ENV_HOME/graphics/ggeoview/cu/photon.h");
     types.dumpFlags();
     types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
@@ -100,7 +102,6 @@ array([[   -55,     28],
        [    32,    149],
        [    51,   2562],
        [    54,      2]])
-
 
 */
 

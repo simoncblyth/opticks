@@ -1,19 +1,26 @@
-#include "AxisNPY.hpp"
-#include "NPY.hpp"
-
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
 
-#include <glm/glm.hpp>
+#include "NGLM.hpp"
+#include "BLog.hh"
+
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+#include "NPY.hpp"
+
+#include "AxisNPY.hpp"
 
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
+AxisNPY::AxisNPY(NPY<float>* axis) 
+       :  
+       m_axis(axis)
+{
+}
+NPY<float>* AxisNPY::getAxis()
+{
+    return m_axis ; 
+}
 
 void AxisNPY::dump(const char* msg)
 {
@@ -40,7 +47,6 @@ void AxisNPY::dump(const char* msg)
                 gpresent(vcol,2,7).c_str()
              );
     }
-
 }
 
 

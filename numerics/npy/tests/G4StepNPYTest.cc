@@ -6,6 +6,8 @@
 void test_g4stepnpy()
 {
     NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
+    if(!npy) return ; 
+
     G4StepNPY* step = new G4StepNPY(npy);   
     step->dump("G4StepNPY");
 }
@@ -13,11 +15,13 @@ void test_g4stepnpy()
 void test_make_modulo()
 {
     NPY<float>* npy0 = NPY<float>::load("cerenkov","1", "dayabay");
+    if(!npy0) return ; 
     G4StepNPY* step0 = new G4StepNPY(npy0);   
     step0->dump("G4StepNPY0");
 
 
     NPY<float>* npy1 = NPY<float>::make_modulo(npy0, 10) ;
+    assert(npy1); 
     G4StepNPY* step1 = new G4StepNPY(npy1);   
     step1->dump("G4StepNPY1");
 
@@ -30,6 +34,7 @@ void test_g4stepnpy_materials()
     const char* det = "juno" ; 
 
     NPY<float>* npy = NPY<float>::load("cerenkov","1", det);
+    if(!npy) return ; 
     G4StepNPY* step = new G4StepNPY(npy);   
     step->dump("G4StepNPY");
 
@@ -53,7 +58,7 @@ void test_g4stepnpy_materials()
 
 
 
-int main(int argc, char** argv)
+int main(int , char** )
 {
     test_g4stepnpy();
     test_g4stepnpy_materials();

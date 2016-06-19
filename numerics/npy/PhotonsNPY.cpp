@@ -1,21 +1,61 @@
-#include "PhotonsNPY.hpp"
-#include "uif.h"
-#include "NPY.hpp"
-#include "RecordsNPY.hpp"
 
-#include <map>
+#include <string>
+#include <vector>
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
+#include <climits>
 
-#include <glm/glm.hpp>
-#include "limits.h"
+#include "BLog.hh"
+
+#include "NGLM.hpp"
+#include "uif.h"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 
+#include "NPY.hpp"
+#include "PhotonsNPY.hpp"
+#include "RecordsNPY.hpp"
+
+#include "Types.hpp"
 #include "Typ.hpp"
 
-#include "BLog.hh"
+
+
+PhotonsNPY::PhotonsNPY(NPY<float>* photons) 
+       :  
+       m_photons(photons),
+       m_flat(false),
+       m_recs(NULL),
+       m_types(NULL),
+       m_typ(NULL),
+       m_maxrec(0)
+{
+}
+
+void PhotonsNPY::setTypes(Types* types)
+{  
+    m_types = types ; 
+}
+void PhotonsNPY::setTyp(Typ* typ)
+{  
+    m_typ = typ ; 
+}
+
+NPY<float>* PhotonsNPY::getPhotons()
+{
+    return m_photons ; 
+}
+RecordsNPY* PhotonsNPY::getRecs()
+{
+    return m_recs ; 
+}
+Types* PhotonsNPY::getTypes()
+{
+    return m_types ; 
+}
+
+
 
 void PhotonsNPY::setRecs(RecordsNPY* recs)
 {

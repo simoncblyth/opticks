@@ -1,9 +1,10 @@
 #pragma once
-#include "NPY.hpp"
 
+template <typename T> class NPY ; 
 class NSensorList ; 
 
-class HitsNPY {
+#include "NPY_API_EXPORT.hh"
+class NPY_API HitsNPY {
    public:  
        HitsNPY(NPY<float>* photons, NSensorList* sensorlist); 
    public:
@@ -13,12 +14,5 @@ class HitsNPY {
        NSensorList*                 m_sensorlist ; 
 
 };
-
-inline HitsNPY::HitsNPY(NPY<float>* photons, NSensorList* sensorlist) 
-       :  
-       m_photons(photons),
-       m_sensorlist(sensorlist)
-{
-}
 
 

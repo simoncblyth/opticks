@@ -6,7 +6,7 @@ project(${name})
 
 #file(GLOB TEST_SOURCES "*Test.cc")
 
-set(TEST_OK
+set(TEST_SOURCES
 
 LogTest.cc
 EnvTest.cc
@@ -39,10 +39,6 @@ readFlagsTest.cc
 
 NSensorListTest.cc
 NGunConfigTest.cc
-)
-
-
-set(TEST_SOURCES
 
 NQuadTest.cc
 NBoundingBoxTest.cc
@@ -50,23 +46,19 @@ NPartTest.cc
 NSpectralTest.cc
 NSphereTest.cc
 NTesselateTest.cc
-
-)
-
-
-set(FUTURE_TEST_SOURCES
-
-_BoundariesNPYTest.cc
-_RecordsNPYTest.cc
+G4StepNPYTest.cc
 _TorchStepNPYTest.cc
 
-G4StepNPYTest.cc
+SequenceNPYTest.cc
 HitsNPYTest.cc
+_BoundariesNPYTest.cc
+_RecordsNPYTest.cc
 NTrianglesNPYTest.cc
 PhotonsNPYTest.cc
-SequenceNPYTest.cc
 
 )
+
+
 
 
 foreach(TEST_SOURCE ${TEST_SOURCES})
@@ -81,6 +73,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
     add_test(${testname} ${TGT})
 
     if(WIN32)
+       # MAYBE AVOID THIS MESS JUST BY SETTING PATH FOR VS PROCESS ? 
        # https://cmake.org/pipermail/cmake/2010-December/041176.html
        set(PATH_STRING   "PATH=${CMAKE_INSTALL_PREFIX}/lib;$ENV{PATH}")
        STRING(REPLACE "\\;" ";" PATH_STRING "${PATH_STRING}")

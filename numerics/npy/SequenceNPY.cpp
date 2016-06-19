@@ -5,21 +5,70 @@
 #include <algorithm>
 #include <climits>
 
-#include <glm/glm.hpp>
-
 // brap-
 #include "BStr.hh"
 #include "BHex.hh"
 #include "BLog.hh"
 
 // npy-
-#include "SequenceNPY.hpp"
 #include "uif.h"
-#include "NPY.hpp"
-#include "RecordsNPY.hpp"
-#include "Index.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+#include "Index.hpp"
+
+#include "NPY.hpp"
+#include "SequenceNPY.hpp"
+#include "RecordsNPY.hpp"
+
+
+
+SequenceNPY::SequenceNPY(NPY<float>* photons) 
+       :  
+       m_photons(photons),
+       m_recs(NULL),
+       m_types(NULL),
+       m_seqidx(NULL),
+       m_maxrec(0),
+       m_seqhis(NULL),
+       m_seqhis_hex(NULL),
+       m_seqhis_npy(NULL),
+       m_seqmat(NULL)
+{
+}
+
+void SequenceNPY::setTypes(Types* types)
+{  
+    m_types = types ; 
+}
+
+
+Index* SequenceNPY::getSeqHis()
+{
+    return m_seqhis ; 
+}
+Index* SequenceNPY::getSeqHisHex()
+{
+    return m_seqhis_hex ; 
+}
+Index* SequenceNPY::getSeqMat()
+{
+    return m_seqmat ; 
+}
+NPY<unsigned long long>* SequenceNPY::getSeqHisNpy()
+{
+    return m_seqhis_npy ; 
+}
+
+void SequenceNPY::setSeqIdx(NPY<unsigned char>* seqidx)
+{
+    m_seqidx = seqidx ;
+}
+NPY<unsigned char>* SequenceNPY::getSeqIdx()
+{
+    return m_seqidx ; 
+}
+
+
 
 
 void SequenceNPY::setRecs(RecordsNPY* recs)
