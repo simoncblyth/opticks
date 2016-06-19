@@ -36,6 +36,7 @@ add_definitions(
 
 set(SOURCES
   BDemo.cc 
+  BFoo.cc 
   BTime.cc
   BTimer.cc
   BLog.cc

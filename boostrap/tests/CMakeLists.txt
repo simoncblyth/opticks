@@ -5,6 +5,7 @@ project(${name})
 #file(GLOB TEST_CC_SRCS "B*Test.cc")
 
 set(TEST_CC_SRCS
+   BFooTest.cc
    BDirTest.cc
    BTimeTest.cc
    BMapTest.cc

@@ -12,7 +12,6 @@ class BRAP_API BDemo {
 
 };
 
-
 inline BDemo::BDemo(int i)
     :
     m_i(i)

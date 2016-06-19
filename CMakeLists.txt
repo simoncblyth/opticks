@@ -24,9 +24,9 @@ endif()
 find_package(OpticksBoost REQUIRED QUIET)
 
 add_subdirectory(boostrap)    
-add_subdirectory(boostrapclient)    
-add_subdirectory(numerics/npy)   
-add_subdirectory(numerics/npyclient)   
+#add_subdirectory(boostrapclient)    
+#add_subdirectory(numerics/npy)   
+#add_subdirectory(numerics/npyclient)   
 
 #set(REST ON)
 if(REST)
