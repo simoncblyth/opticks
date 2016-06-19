@@ -1,26 +1,53 @@
-#include "OpticksColors.hh"
-
-#include "jsonutil.hh"
-#include "assert.h"
-
+#include <cassert>
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <vector>
 
-#include "NSpectral.hpp"
 #include "BLog.hh"
+#include "BFile.hh"
+#include "BMap.hh"
+
 #include "NPY.hpp"
+#include "NSpectral.hpp"
+
+
+#include "OpticksColors.hh"
 
 using namespace std ; 
 
 const char* OpticksColors::NAME = "GColors.json" ;
 
+
+
+OpticksColors::OpticksColors()  
+    :
+    m_composite(NULL)
+{
+   m_composite_domain.x = 0 ; 
+   m_composite_domain.y = 0 ; 
+   m_composite_domain.z = 0 ; 
+   m_composite_domain.w = 0 ; 
+}
+
+
+nuvec4 OpticksColors::getCompositeDomain()
+{
+    return m_composite_domain ; 
+}
+
+NPY<unsigned char>* OpticksColors::getCompositeBuffer()
+{
+    return m_composite ;  
+}
+
+
+
 OpticksColors* OpticksColors::load(const char* dir, const char* name)
 {
     OpticksColors* gc = new OpticksColors ; 
-    if(!existsPath(dir, name))
+    if(!BFile::existsPath(dir, name))
         LOG(warning) << "OpticksColors::load FAILED no file at  dir " << dir << " with name " << name ; 
     else
         gc->loadMaps(dir);
@@ -29,7 +56,7 @@ OpticksColors* OpticksColors::load(const char* dir, const char* name)
 
 void OpticksColors::loadMaps(const char* dir)
 {
-    loadMap<std::string, std::string>( m_name2hex, dir, NAME );
+    BMap<std::string, std::string>::load( &m_name2hex, dir, NAME );
 }
 
 void OpticksColors::sort()

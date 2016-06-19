@@ -1,14 +1,25 @@
 // op --tindexer
 
+#include <numeric>
+
+#include "BLog.hh"
 #include "Indexer.hh"
 #include "Sparse.hh"
 
 // npy-
 #include "NPY.hpp"
-#include "BLog.hh"
 
 
-#include <numeric>
+template <typename T>
+Indexer<T>::Indexer(NPY<T>* seq)
+   :
+   m_seq(seq),
+   m_his(NULL),
+   m_mat(NULL),
+   m_seqhis(NULL),
+   m_seqmat(NULL)
+{
+}
 
 
 template <typename T>

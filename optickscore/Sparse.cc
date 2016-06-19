@@ -1,12 +1,37 @@
-#include "Sparse.hh"
-
-#include "stringutil.hh"
-#include "NPY.hpp"
-#include "BLog.hh"
-#include "Index.hpp"
-
 #include <numeric>
 #include <algorithm>
+#include <cstring>
+
+#include "BStr.hh"
+#include "BHex.hh"
+#include "BLog.hh"
+
+#include "NPY.hpp"
+#include "Index.hpp"
+
+#include "Sparse.hh"
+
+
+template <typename T>
+Sparse<T>::Sparse(const char* label, NPY<T>* source, bool hexkey) 
+   :
+   m_label(strdup(label)),
+   m_source(source),
+   m_hexkey(hexkey),
+   m_num_unique(0),
+   m_num_lookup(0),
+   m_index(NULL)
+{
+   init();
+}
+
+template <typename T>
+Index* Sparse<T>::getIndex()
+{
+    return m_index ; 
+}
+
+
 
 
 
@@ -92,7 +117,7 @@ void Sparse<T>::reduce_by_key(std::vector<T>& data)
     int count(1) ; 
     unsigned int unique(0) ;
 
-    T value ; 
+    T value(0) ; 
 
     // from the second
     for(unsigned int i=1 ; i < n ; i++)
@@ -211,7 +236,7 @@ void Sparse<T>::populate_index(Index* index)
         T value = valuecount.first ;
         int count = valuecount.second ;
 
-        std::string key = m_hexkey ? as_hex(value) : as_dec(value) ;
+        std::string key = m_hexkey ? BHex<T>::as_hex(value) : BHex<T>::as_dec(value) ;
         if(count > 0) index->add(key.c_str(), count );
 
 #ifdef DEBUG

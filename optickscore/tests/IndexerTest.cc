@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    BLog nl(argc, argv);
+    BLOG(argc, argv);
 
     const char* typ = "torch" ; 
     const char* tag = "4" ; 
@@ -15,7 +15,8 @@ int main(int argc, char** argv)
     const char* cat = "PmtInBox" ; 
  
     OpticksEvent* evt = OpticksEvent::load(typ, tag, det, cat) ;
-    assert(evt);   
+    if(!evt) return 0 ; 
+
     LOG(info) << evt->getShapeString() ; 
 
     NPY<unsigned long long>* sequence = evt->getSequenceData();

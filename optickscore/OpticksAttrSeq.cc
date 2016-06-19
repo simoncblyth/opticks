@@ -7,16 +7,18 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+// brap-
+#include "BStr.hh"
+#include "BLog.hh"
+
+// npy-
+#include "Index.hpp"
+
 //opticks-
 #include "OpticksAttrSeq.hh"
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
-
-// npy-
-#include "Index.hpp"
-#include "stringutil.hh"
-#include "BLog.hh"
 
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
 unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 

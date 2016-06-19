@@ -499,26 +499,26 @@ optickscore-wipe(){
    rm -rf $bdir
 }
 
-optickscore-make(){
-   local iwd=$PWD
+optickscore-config(){ echo Debug ; }
 
+optickscore--(){
+   local iwd=$PWD
    optickscore-bcd
-   make $*
+   cmake \
+          --build . \
+          --config $(optickscore-config) \
+          --target ${1:-install}
+
 
    cd $iwd
 }
 
-
-
-optickscore-install(){
-   optickscore-make install
-}
-
-optickscore--()
+optickscore-generate-exports()
 {
-   # optickscore-make clean
-   # optickscore-make
-   # optickscore-install
-   ( optickscore-bcd ; make ${1:-install} )
+   optickscore-scd
+   importlib-
+   importlib-exports OpticksCore OKCORE_API    
+
 }
+
 

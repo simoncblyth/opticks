@@ -66,7 +66,6 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
     get_filename_component(TGT ${TEST_SOURCE} NAME_WE)
     add_executable(${TGT} ${TEST_SOURCE})
 
-
     set(testname ${name}.${TGT})  
 
     # see cmakex-

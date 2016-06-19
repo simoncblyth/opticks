@@ -1,13 +1,14 @@
-#include "OpticksQuery.hh"
-
 #include <algorithm>
 #include <cstdio>
 #include <sstream>
+#include <cstring>
 
 // brap-
-#include "stringutil.hh"
+#include "BStr.hh"
 #include "BLog.hh"
 
+// optickscore-
+#include "OpticksQuery.hh"
 
 const char* OpticksQuery::UNDEFINED_ = "undefined" ; 
 const char* OpticksQuery::NAME_ = "name" ; 
@@ -15,6 +16,59 @@ const char* OpticksQuery::INDEX_ = "index" ;
 const char* OpticksQuery::MERGE_ = "merge" ; 
 const char* OpticksQuery::DEPTH_ = "depth" ; 
 const char* OpticksQuery::RANGE_ = "range" ; 
+
+
+OpticksQuery::OpticksQuery(const char* query) 
+    : 
+    m_query_string(strdup(query)),
+    m_query_name(NULL),
+    m_query_index(0), 
+    m_query_merge(0), 
+    m_query_depth(0), 
+    m_query_type(UNDEFINED), 
+    m_flat_selection(false),
+    m_no_selection(false)
+{
+    init();
+}
+
+const char* OpticksQuery::getQueryString()
+{
+    return m_query_string ; 
+}
+const char* OpticksQuery::getQueryName()
+{
+    return m_query_name ; 
+}
+int OpticksQuery::getQueryIndex()
+{
+    return m_query_index ;  
+}
+int OpticksQuery::getQueryMerge()
+{
+    return m_query_merge ;  
+}
+int OpticksQuery::getQueryDepth()
+{
+    return m_query_depth == 0 ? 100 : m_query_depth ;  
+}
+std::vector<unsigned int> OpticksQuery::getQueryRange()
+{
+    return m_query_range ;  
+}
+
+bool OpticksQuery::isFlatSelection()
+{
+    return m_flat_selection ; 
+}
+bool OpticksQuery::isNoSelection()
+{
+    return m_no_selection ; 
+}
+
+
+
+
 
 void OpticksQuery::init()
 {
@@ -55,7 +109,7 @@ void OpticksQuery::parseQuery(const char* query)
    // split at "," and then extract values beyond the "token:" 
 
    std::vector<std::string> elem ; 
-   split(elem, query, ',');
+   BStr::split(elem, query, ',');
 
    for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
 
@@ -136,7 +190,7 @@ void OpticksQuery::parseQueryElement(const char* query)
    {
        m_query_type = RANGE ; 
        std::vector<std::string> elem ; 
-       split(elem, query+strlen(range_token), ':'); 
+       BStr::split(elem, query+strlen(range_token), ':'); 
        assert(elem.size() == 2);
        //m_query_range.clear();
        for(unsigned int i=0 ; i<elem.size() ; ++i)

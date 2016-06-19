@@ -1,3 +1,26 @@
+#define LL info
+
+#include <cstring>
+#include <cassert>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
+// brap-
+#include "BDigest.hh"
+#include "BStr.hh"
+#include "BLog.hh"
+#include "BSys.hh"
+
+// npy-
+#include "NGLM.hpp"
+#include "GLMFormat.hpp"
+#include "Map.hpp"
+#include "Typ.hpp"
+#include "Types.hpp"
+
 
 // CMake generated defines from binary_dir/inc
 #include "OpticksCMakeConfig.hh"   
@@ -9,26 +32,6 @@
 #include "OpticksFlags.hh"
 #include "OpticksAttrSeq.hh"
 
-#include <cassert>
-
-// brap-
-#include "md5digest.hh"
-#include "stringutil.hh"
-#include "BLog.hh"
-#include "BSys.hh"
-
-// npy-
-#include "GLMFormat.hpp"
-#include "Map.hpp"
-
-#include "Typ.hpp"
-#include "Types.hpp"
-
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
-#define LL info
 
 const char* OpticksResource::JUNO    = "juno" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
@@ -40,6 +43,159 @@ const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ;
 const char* OpticksResource::DEFAULT_GEOKEY = "DAE_NAME_DYB" ; 
 const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
 const char* OpticksResource::DEFAULT_CTRL = "volnames" ; 
+
+
+OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
+    :
+       m_opticks(opticks),
+       m_envprefix(strdup(envprefix)),
+       m_lastarg(lastarg ? strdup(lastarg) : NULL),
+       m_install_prefix(NULL),
+
+       m_geokey(NULL),
+       m_daepath(NULL),
+       m_gdmlpath(NULL),
+       m_query_string(NULL),
+       m_ctrl(NULL),
+       m_metapath(NULL),
+       m_meshfix(NULL),
+       m_meshfixcfg(NULL),
+       m_idpath(NULL),
+       m_idfold(NULL),
+       m_digest(NULL),
+       m_valid(true),
+       m_query(NULL),
+       m_colors(NULL),
+       m_flags(NULL),
+       m_types(NULL),
+       m_typ(NULL),
+       m_dayabay(false),
+       m_juno(false),
+       m_dpib(false),
+       m_other(false),
+       m_detector(NULL)
+{
+    init();
+}
+
+
+
+const char* OpticksResource::getInstallPrefix()
+{
+    return m_install_prefix ; 
+}
+
+
+
+void OpticksResource::setValid(bool valid)
+{
+    m_valid = valid ; 
+}
+bool OpticksResource::isValid()
+{
+   return m_valid ; 
+}
+const char* OpticksResource::getIdPath()
+{
+    return m_idpath ;
+}
+const char* OpticksResource::getIdFold()
+{
+    return m_idfold ;
+}
+const char* OpticksResource::getEnvPrefix()
+{
+    return m_envprefix ;
+}
+const char* OpticksResource::getDAEPath()
+{
+    return m_daepath ;
+}
+const char* OpticksResource::getGDMLPath()
+{
+    return m_gdmlpath ;
+}
+const char* OpticksResource::getMetaPath()
+{
+    return m_metapath ;
+}
+
+
+const char* OpticksResource::getQueryString()
+{
+    return m_query_string ;
+}
+OpticksQuery* OpticksResource::getQuery()
+{
+    return m_query ;
+}
+
+
+const char* OpticksResource::getCtrl()
+{
+    return m_ctrl ;
+}
+const char* OpticksResource::getMeshfix()
+{
+    return m_meshfix ;
+}
+const char* OpticksResource::getMeshfixCfg()
+{
+    return m_meshfixcfg ;
+}
+
+
+const char* OpticksResource::getDetector()
+{
+    return m_detector ;
+}
+bool OpticksResource::isJuno()
+{
+   return m_juno ; 
+}
+bool OpticksResource::isDayabay()
+{
+   return m_dayabay ; 
+}
+bool OpticksResource::isPmtInBox()
+{
+   return m_dpib ; 
+}
+bool OpticksResource::isOther()
+{
+   return m_other ; 
+}
+
+
+
+bool OpticksResource::idPathContains(const char* s)
+{
+    bool ret = false ; 
+    if(m_idpath)
+    {
+        std::string idp(m_idpath);
+        std::string ss(s);
+        ret = idp.find(ss) != std::string::npos ;
+    }
+    return ret ; 
+}
+
+std::string OpticksResource::getRelativePath(const char* path)
+{
+    if(strncmp(m_idpath, path, strlen(m_idpath)) == 0)
+    {
+        return path + strlen(m_idpath) + 1 ; 
+    }
+    else
+    {
+        return path ;  
+    }
+}
+
+
+
+
+
 
 void OpticksResource::init()
 {

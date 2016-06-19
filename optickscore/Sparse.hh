@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <cstring>
 #include <vector>
 
 class Index ; 
@@ -10,8 +9,10 @@ template <typename T> class Indexer ;
 
 // translation of thrustrap-/TSparse for indexing when CUDA not available
 
+#include "OKCORE_API_EXPORT.hh"
+
 template <typename T>
-class Sparse {
+class OKCORE_API Sparse {
    public:
        friend class Indexer<T> ; 
        typedef std::pair<T, int> P ;
@@ -45,22 +46,4 @@ class Sparse {
 
 };
 
-template <typename T>
-inline Sparse<T>::Sparse(const char* label, NPY<T>* source, bool hexkey) 
-   :
-   m_label(strdup(label)),
-   m_source(source),
-   m_hexkey(hexkey),
-   m_num_unique(0),
-   m_num_lookup(0),
-   m_index(NULL)
-{
-   init();
-}
-
-template <typename T>
-inline Index* Sparse<T>::getIndex()
-{
-    return m_index ; 
-}
 

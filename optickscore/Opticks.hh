@@ -3,7 +3,8 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include <glm/glm.hpp>
+
+#include "NGLM.hpp"
 
 template <typename> class OpticksCfg ;
 
@@ -26,11 +27,13 @@ class OpticksFlags ;
 
 class OpticksAttrSeq ;
 
- 
 
 #include "OpticksPhoton.h"
 
-class Opticks {
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+
+class OKCORE_API Opticks {
        friend class OpticksCfg<Opticks> ; 
    public:
        static const char* COMPUTE ; 
@@ -225,173 +228,6 @@ class Opticks {
 
 };
 
+#include "OKCORE_TAIL.hh"
 
 
-inline Opticks::Opticks(int argc, char** argv, const char* envprefix)
-     :
-       m_argc(argc),
-       m_argv(argv),
-       m_envprefix(strdup(envprefix)),
-
-       m_resource(NULL),
-       m_log(NULL),
-       m_state(NULL),
-
-       m_exit(false),
-       m_compute(false),
-       m_geocache(false),
-       m_instanced(true),
-
-       m_lastarg(NULL),
-
-       m_cfg(NULL),
-       m_timer(NULL),
-       m_parameters(NULL),
-       m_detector(NULL),
-       m_tag(NULL),
-       m_cat(NULL),
-       m_mode(0u)
-{
-       init();
-}
-
-
-
-inline bool Opticks::hasArg(const char* arg)
-{
-    bool has = false ; 
-    for(int i=1 ; i < m_argc ; i++ ) if(strcmp(m_argv[i], arg) == 0) has = true ; 
-    return has ; 
-}
-
-inline void Opticks::setCfg(OpticksCfg<Opticks>* cfg)
-{
-    m_cfg = cfg ; 
-}
-inline OpticksCfg<Opticks>* Opticks::getCfg()
-{
-    return m_cfg ; 
-}
-
-inline Timer* Opticks::getTimer()
-{
-    return m_timer ; 
-}
-inline Parameters* Opticks::getParameters()
-{
-    return m_parameters ; 
-}
-
-inline OpticksResource* Opticks::getResource()
-{
-    return m_resource  ; 
-}
-inline NState* Opticks::getState()
-{
-    return m_state  ; 
-}
-
-inline const char* Opticks::getLastArg()
-{
-   return m_lastarg ; 
-}
-
-
-inline void Opticks::setMode(unsigned int mode)
-{
-    m_mode = mode ; 
-}
-inline bool Opticks::isCompute()
-{
-    return (m_mode & COMPUTE_MODE) != 0  ; 
-}
-inline bool Opticks::isInterop()
-{
-    return (m_mode & INTEROP_MODE) != 0  ; 
-}
-inline bool Opticks::isCfG4()
-{
-    return (m_mode & CFG4_MODE) != 0  ; 
-}
-
-
-
-inline void Opticks::setGeocache(bool geocache)
-{
-    m_geocache = geocache ; 
-}
-inline bool Opticks::isGeocache()
-{
-    return m_geocache ;
-}
-
-inline void Opticks::setInstanced(bool instanced)
-{
-   m_instanced = instanced ;
-}
-inline bool Opticks::isInstanced()
-{
-   return m_instanced ; 
-}
-
-
-inline const glm::vec4& Opticks::getTimeDomain()
-{
-    return m_time_domain ; 
-}
-inline const glm::vec4& Opticks::getSpaceDomain()
-{
-    return m_space_domain ; 
-}
-inline const glm::vec4& Opticks::getWavelengthDomain()
-{
-    return m_wavelength_domain ; 
-}
-inline const glm::ivec4& Opticks::getSettings()
-{
-    return m_settings ; 
-}
-
-
-inline const glm::uvec4& Opticks::getSize()
-{
-    return m_size ; 
-}
-inline const glm::uvec4& Opticks::getPosition()
-{
-    return m_position ; 
-}
-
-
-
-
-inline void Opticks::setDetector(const char* detector)
-{
-    m_detector = detector ? strdup(detector) : NULL ; 
-}
-inline void Opticks::setSpaceDomain(const glm::vec4& sd)
-{
-    m_space_domain.x = sd.x  ; 
-    m_space_domain.y = sd.y  ; 
-    m_space_domain.z = sd.z  ; 
-    m_space_domain.w = sd.w  ; 
-}
-
-
-inline void Opticks::configureS(const char* name, std::vector<std::string> values)
-{
-}
-
-inline void Opticks::configureI(const char* name, std::vector<int> values)
-{
-}
-
-inline bool Opticks::isExit()
-{
-    return m_exit ; 
-}
-inline void Opticks::setExit(bool exit)
-{
-    m_exit = exit  ;   
-}
- 

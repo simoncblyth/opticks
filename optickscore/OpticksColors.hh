@@ -40,7 +40,12 @@ this is put togther in GLoader::load
 
 */
 
-class OpticksColors {  
+
+
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+
+class OKCORE_API OpticksColors {  
    public:
         enum {
            MATERIAL_COLOR_OFFSET    = 0,  
@@ -100,24 +105,6 @@ class OpticksColors {
 
 };
 
-inline OpticksColors::OpticksColors()  
-    :
-    m_composite(NULL)
-{
-   m_composite_domain.x = 0 ; 
-   m_composite_domain.y = 0 ; 
-   m_composite_domain.z = 0 ; 
-   m_composite_domain.w = 0 ; 
-}
+#include "OKCORE_TAIL.hh"
 
-
-inline nuvec4 OpticksColors::getCompositeDomain()
-{
-    return m_composite_domain ; 
-}
-
-inline NPY<unsigned char>* OpticksColors::getCompositeBuffer()
-{
-    return m_composite ;  
-}
 

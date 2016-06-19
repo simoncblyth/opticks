@@ -6,7 +6,7 @@
 #include "OpticksPhoton.h"
 
 // brap-
-#include "stringutil.hh"
+#include "BStr.hh"
 #include "BLog.hh"
 #include "BSys.hh"
 
@@ -51,6 +51,186 @@ glm::vec4 Opticks::getDefaultDomainSpec()
 
     return bd ; 
 }
+
+
+
+
+
+Opticks::Opticks(int argc, char** argv, const char* envprefix)
+     :
+       m_argc(argc),
+       m_argv(argv),
+       m_envprefix(strdup(envprefix)),
+
+       m_resource(NULL),
+       m_log(NULL),
+       m_state(NULL),
+
+       m_exit(false),
+       m_compute(false),
+       m_geocache(false),
+       m_instanced(true),
+
+       m_lastarg(NULL),
+
+       m_cfg(NULL),
+       m_timer(NULL),
+       m_parameters(NULL),
+       m_detector(NULL),
+       m_tag(NULL),
+       m_cat(NULL),
+       m_mode(0u)
+{
+       init();
+}
+
+
+
+bool Opticks::hasArg(const char* arg)
+{
+    bool has = false ; 
+    for(int i=1 ; i < m_argc ; i++ ) if(strcmp(m_argv[i], arg) == 0) has = true ; 
+    return has ; 
+}
+
+void Opticks::setCfg(OpticksCfg<Opticks>* cfg)
+{
+    m_cfg = cfg ; 
+}
+OpticksCfg<Opticks>* Opticks::getCfg()
+{
+    return m_cfg ; 
+}
+
+Timer* Opticks::getTimer()
+{
+    return m_timer ; 
+}
+Parameters* Opticks::getParameters()
+{
+    return m_parameters ; 
+}
+
+OpticksResource* Opticks::getResource()
+{
+    return m_resource  ; 
+}
+NState* Opticks::getState()
+{
+    return m_state  ; 
+}
+
+const char* Opticks::getLastArg()
+{
+   return m_lastarg ; 
+}
+
+
+void Opticks::setMode(unsigned int mode)
+{
+    m_mode = mode ; 
+}
+bool Opticks::isCompute()
+{
+    return (m_mode & COMPUTE_MODE) != 0  ; 
+}
+bool Opticks::isInterop()
+{
+    return (m_mode & INTEROP_MODE) != 0  ; 
+}
+bool Opticks::isCfG4()
+{
+    return (m_mode & CFG4_MODE) != 0  ; 
+}
+
+
+
+void Opticks::setGeocache(bool geocache)
+{
+    m_geocache = geocache ; 
+}
+bool Opticks::isGeocache()
+{
+    return m_geocache ;
+}
+
+void Opticks::setInstanced(bool instanced)
+{
+   m_instanced = instanced ;
+}
+bool Opticks::isInstanced()
+{
+   return m_instanced ; 
+}
+
+
+const glm::vec4& Opticks::getTimeDomain()
+{
+    return m_time_domain ; 
+}
+const glm::vec4& Opticks::getSpaceDomain()
+{
+    return m_space_domain ; 
+}
+const glm::vec4& Opticks::getWavelengthDomain()
+{
+    return m_wavelength_domain ; 
+}
+const glm::ivec4& Opticks::getSettings()
+{
+    return m_settings ; 
+}
+
+
+const glm::uvec4& Opticks::getSize()
+{
+    return m_size ; 
+}
+const glm::uvec4& Opticks::getPosition()
+{
+    return m_position ; 
+}
+
+
+
+
+void Opticks::setDetector(const char* detector)
+{
+    m_detector = detector ? strdup(detector) : NULL ; 
+}
+void Opticks::setSpaceDomain(const glm::vec4& sd)
+{
+    m_space_domain.x = sd.x  ; 
+    m_space_domain.y = sd.y  ; 
+    m_space_domain.z = sd.z  ; 
+    m_space_domain.w = sd.w  ; 
+}
+
+
+void Opticks::configureS(const char* name, std::vector<std::string> values)
+{
+}
+
+void Opticks::configureI(const char* name, std::vector<int> values)
+{
+}
+
+bool Opticks::isExit()
+{
+    return m_exit ; 
+}
+void Opticks::setExit(bool exit)
+{
+    m_exit = exit  ;   
+}
+ 
+
+
+
+
+
+
+
 
 
 void Opticks::init()

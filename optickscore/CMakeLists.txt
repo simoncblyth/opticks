@@ -43,20 +43,24 @@ set(LIBRARIES
 set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
 configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
+set(SOURCES
 
+    OpticksQuery.cc
+    OpticksColors.cc
+    Sparse.cc
+    OpticksEvent.cc
 
-add_library( ${name}  SHARED
+)
+
+set(REST_SOURCES
+
+    Opticks.cc
     OpticksFlags.cc
     OpticksAttrSeq.cc
     OpticksResource.cc
-    OpticksColors.cc
-    OpticksQuery.cc
-    OpticksEvent.cc
     OpticksEngine.cc
-    Opticks.cc
     OpticksCfg.cc
     Indexer.cc
-    Sparse.cc
 
     Composition.cc
     CompositionCfg.cc
@@ -76,12 +80,17 @@ add_library( ${name}  SHARED
     Bookmarks.cc
     Light.cc
 
-
     Demo.cc
     DemoCfg.cc
 )
 
-SET(hdrs 
+
+set(HEADERS
+
+    OKCORE_API_EXPORT.hh
+    OKCORE_HEAD.hh
+    OKCORE_TAIL.hh
+
     OpticksFlags.hh
     OpticksAttrSeq.hh
     OpticksResource.hh
@@ -116,6 +125,7 @@ SET(hdrs
     OpticksFlags.h
 )
 
+add_library( ${name}  SHARED ${SOURCES} )
 target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})

@@ -13,8 +13,11 @@ class Index ;
 //     thrustrap-/TSparse_.cu
 // 
 
+
+#include "OKCORE_API_EXPORT.hh"
+
 template <typename T>
-class Indexer {
+class OKCORE_API Indexer {
    public:
        Indexer(NPY<T>* seq);
        void indexSequence(const char* seqhis_label, const char* seqmat_label);
@@ -35,14 +38,4 @@ class Indexer {
 
 };
 
-template <typename T>
-inline Indexer<T>::Indexer(NPY<T>* seq)
-   :
-   m_seq(seq),
-   m_his(NULL),
-   m_mat(NULL),
-   m_seqhis(NULL),
-   m_seqmat(NULL)
-{
-}
 

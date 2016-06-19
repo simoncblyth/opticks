@@ -1,10 +1,12 @@
 #pragma once
+
 #include <map>
 #include <string>
-#include <cstring>
-#include <cassert>
+
+//template <typename T> class NPY ; 
 
 #include "NPY.hpp"
+
 
 class Timer ; 
 class Parameters ;
@@ -66,8 +68,10 @@ primary
 
 */
 
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 
-class OpticksEvent {
+class OKCORE_API OpticksEvent {
       friend class Opticks ; 
    public:
       static const char* PARAMETERS_NAME ;  
@@ -106,13 +110,13 @@ class OpticksEvent {
        void init();
        void indexPhotonsCPU();
    public:
-       static const char* genstep ;
-       static const char* nopstep ;
-       static const char* photon ;
-       static const char* record  ;
-       static const char* phosel ;
-       static const char* recsel  ;
-       static const char* sequence  ;
+       static const char* genstep_ ;
+       static const char* nopstep_ ;
+       static const char* photon_ ;
+       static const char* record_  ;
+       static const char* phosel_ ;
+       static const char* recsel_  ;
+       static const char* sequence_  ;
    public:
        NPY<float>* loadGenstepFromFile(int modulo=0);
        NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
@@ -308,279 +312,5 @@ class OpticksEvent {
 
 };
 
-
-inline OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, const char* cat) 
-          :
-          m_typ(strdup(typ)),
-          m_tag(strdup(tag)),
-          m_det(strdup(det)),
-          m_cat(cat ? strdup(cat) : NULL),
-
-          m_noload(false),
-          m_loaded(false),
-
-          m_timer(NULL),
-          m_parameters(NULL),
-          m_report(NULL),
-          m_ttable(NULL),
-
-          m_primary_data(NULL),
-          m_genstep_data(NULL),
-          m_nopstep_data(NULL),
-          m_photon_data(NULL),
-          m_record_data(NULL),
-          m_phosel_data(NULL),
-          m_recsel_data(NULL),
-          m_sequence_data(NULL),
-
-          m_fdom(NULL),
-          m_idom(NULL),
-
-          m_genstep_attr(NULL),
-          m_nopstep_attr(NULL),
-          m_photon_attr(NULL),
-          m_record_attr(NULL),
-          m_phosel_attr(NULL),
-          m_recsel_attr(NULL),
-          m_sequence_attr(NULL),
-
-          m_records(NULL),
-          m_photons(NULL),
-          m_num_gensteps(0),
-          m_num_nopsteps(0),
-          m_num_photons(0),
-          m_maxrec(1),
-          m_seqhis(NULL),
-          m_seqmat(NULL),
-          m_bndidx(NULL),
-          m_fake_nopstep_path(NULL),
-
-          m_fdom_spec(NULL),
-          m_idom_spec(NULL),
-          m_genstep_spec(NULL),
-          m_nopstep_spec(NULL),
-          m_photon_spec(NULL),
-          m_record_spec(NULL),
-          m_phosel_spec(NULL),
-          m_recsel_spec(NULL),
-          m_sequence_spec(NULL)
-{
-    init();
-}
-
-
-inline bool OpticksEvent::isNoLoad()
-{
-    return m_noload ; 
-}
-inline bool OpticksEvent::isLoaded()
-{
-    return m_loaded ; 
-}
-inline bool OpticksEvent::isStep()
-{
-    return true  ; 
-}
-inline bool OpticksEvent::isFlat()
-{
-    return false  ; 
-}
-
-
-
-
-inline unsigned int OpticksEvent::getNumGensteps()
-{
-    return m_num_gensteps ; 
-}
-inline unsigned int OpticksEvent::getNumNopsteps()
-{
-    return m_num_nopsteps ; 
-}
-
-inline void OpticksEvent::setNumPhotons(unsigned int num_photons)
-{
-    m_num_photons = num_photons ; 
-    resize();
-}
-inline unsigned int OpticksEvent::getNumPhotons()
-{
-    return m_num_photons ; 
-}
-
-
-inline unsigned int OpticksEvent::getNumRecords()
-{
-    return m_num_photons * m_maxrec ; 
-}
-inline unsigned int OpticksEvent::getMaxRec()
-{
-    return m_maxrec ; 
-}
-inline void OpticksEvent::setMaxRec(unsigned int maxrec)
-{
-    m_maxrec = maxrec ; 
-    m_settings.w = m_maxrec ; 
-}
-
-
-
-
-
-inline NPY<float>* OpticksEvent::getGenstepData(){ return m_genstep_data ; }
-inline NPY<float>* OpticksEvent::getNopstepData() { return m_nopstep_data ; }
-inline NPY<float>* OpticksEvent::getPhotonData(){ return m_photon_data ; } 
-inline NPY<short>* OpticksEvent::getRecordData(){ return m_record_data ; }
-inline NPY<unsigned char>* OpticksEvent::getPhoselData(){ return m_phosel_data ; }
-inline NPY<unsigned char>* OpticksEvent::getRecselData(){ return m_recsel_data ; }
-inline NPY<unsigned long long>* OpticksEvent::getSequenceData(){ return m_sequence_data ; }
-
-inline MultiViewNPY* OpticksEvent::getGenstepAttr(){ return m_genstep_attr ; }
-inline MultiViewNPY* OpticksEvent::getNopstepAttr(){ return m_nopstep_attr ; }
-inline MultiViewNPY* OpticksEvent::getPhotonAttr(){ return m_photon_attr ; }
-inline MultiViewNPY* OpticksEvent::getRecordAttr(){ return m_record_attr ; }
-inline MultiViewNPY* OpticksEvent::getPhoselAttr(){ return m_phosel_attr ; }
-inline MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
-inline MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
-
-
-
-inline void OpticksEvent::setRecordsNPY(RecordsNPY* records)
-{
-    m_records = records ; 
-}
-inline RecordsNPY* OpticksEvent::getRecordsNPY()
-{
-    return m_records ;
-}
-
-inline void OpticksEvent::setPhotonsNPY(PhotonsNPY* photons)
-{
-    m_photons = photons ; 
-}
-inline PhotonsNPY* OpticksEvent::getPhotonsNPY()
-{
-    return m_photons ;
-}
-
-
-inline void OpticksEvent::setFDomain(NPY<float>* fdom)
-{
-    m_fdom = fdom ; 
-}
-inline void OpticksEvent::setIDomain(NPY<int>* idom)
-{
-    m_idom = idom ; 
-}
-
-inline NPY<float>* OpticksEvent::getFDomain()
-{
-    return m_fdom ; 
-}
-inline NPY<int>* OpticksEvent::getIDomain()
-{
-    return m_idom ; 
-}
-
-inline const char* OpticksEvent::getTyp()
-{
-    return m_typ ; 
-}
-inline const char* OpticksEvent::getTag()
-{
-    return m_tag ; 
-}
-inline const char* OpticksEvent::getDet()
-{
-    return m_det ; 
-}
-inline const char* OpticksEvent::getCat()
-{
-    return m_cat ; 
-}
-inline const char* OpticksEvent::getUDet()
-{
-    return m_cat && strlen(m_cat) > 0 ? m_cat : m_det ; 
-}
-
-
-
-
-inline void OpticksEvent::setSpaceDomain(const glm::vec4& space_domain)
-{
-    m_space_domain = space_domain ; 
-}
-inline void OpticksEvent::setTimeDomain(const glm::vec4& time_domain)
-{
-    m_time_domain = time_domain  ; 
-}
-inline void OpticksEvent::setWavelengthDomain(const glm::vec4& wavelength_domain)
-{
-    m_wavelength_domain = wavelength_domain  ; 
-}
-
-
-inline const glm::vec4& OpticksEvent::getSpaceDomain()
-{
-    return m_space_domain ; 
-}
-inline const glm::vec4& OpticksEvent::getTimeDomain()
-{
-    return m_time_domain ;
-}
-inline const glm::vec4& OpticksEvent::getWavelengthDomain()
-{ 
-    return m_wavelength_domain ; 
-}
-
-
-
-
-
-inline void OpticksEvent::setBoundaryIndex(Index* bndidx)
-{
-    // called from OpIndexer::indexBoundaries
-    m_bndidx = bndidx ; 
-}
-inline void OpticksEvent::setHistoryIndex(Index* seqhis)
-{
-    // called from OpIndexer::indexSequenceLoaded 
-    m_seqhis = seqhis ; 
-}
-inline void OpticksEvent::setMaterialIndex(Index* seqmat)
-{
-    // called from OpIndexer::indexSequenceLoaded
-    m_seqmat = seqmat ; 
-}
-
-
-inline Index* OpticksEvent::getHistoryIndex()
-{
-    return m_seqhis ; 
-} 
-inline Index* OpticksEvent::getMaterialIndex()
-{
-    return m_seqmat ; 
-} 
-inline Index* OpticksEvent::getBoundaryIndex()
-{
-    return m_bndidx ; 
-}
-
-
-
-
-inline Parameters* OpticksEvent::getParameters()
-{
-    return m_parameters ;
-}
-inline Timer* OpticksEvent::getTimer()
-{
-    return m_timer ;
-}
-inline TimesTable* OpticksEvent::getTimesTable()
-{
-    return m_ttable ;
-}
-
+#include "OKCORE_TAIL.hh"
   

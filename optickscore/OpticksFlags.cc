@@ -1,4 +1,3 @@
-#include "OpticksFlags.hh"
 
 #include <map>
 #include <vector>
@@ -11,6 +10,8 @@
 #include "crossplatform.hh"
 #include "regexsearch.hh"
 #include "BLog.hh"
+
+#include "OpticksFlags.hh"
 
 
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;

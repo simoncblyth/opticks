@@ -1,9 +1,11 @@
 #pragma once
 #include <vector>
 #include <string>
-#include <cstring>
 
-class OpticksQuery {
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+
+class OKCORE_API OpticksQuery {
 
 public:
     typedef enum { UNDEFINED, NAME, INDEX, MERGE, DEPTH, RANGE } OpticksQuery_t ;
@@ -52,52 +54,6 @@ private:
 
 };
 
-inline OpticksQuery::OpticksQuery(const char* query) 
-    : 
-    m_query_string(strdup(query)),
-    m_query_name(NULL),
-    m_query_index(0), 
-    m_query_merge(0), 
-    m_query_depth(0), 
-    m_query_type(UNDEFINED), 
-    m_flat_selection(false),
-    m_no_selection(false)
-{
-    init();
-}
-
-inline const char* OpticksQuery::getQueryString()
-{
-    return m_query_string ; 
-}
-inline const char* OpticksQuery::getQueryName()
-{
-    return m_query_name ; 
-}
-inline int OpticksQuery::getQueryIndex()
-{
-    return m_query_index ;  
-}
-inline int OpticksQuery::getQueryMerge()
-{
-    return m_query_merge ;  
-}
-inline int OpticksQuery::getQueryDepth()
-{
-    return m_query_depth == 0 ? 100 : m_query_depth ;  
-}
-inline std::vector<unsigned int> OpticksQuery::getQueryRange()
-{
-    return m_query_range ;  
-}
-
-inline bool OpticksQuery::isFlatSelection()
-{
-    return m_flat_selection ; 
-}
-inline bool OpticksQuery::isNoSelection()
-{
-    return m_no_selection ; 
-}
+#include "OKCORE_TAIL.hh"
 
 
