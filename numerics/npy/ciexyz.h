@@ -38,7 +38,7 @@ void dump()
 {
     for(int iw=400 ; iw < 800 ; iw+=20 )
     {
-       float w = iw ; 
+       float w = (float)iw ; 
        float x = xFit_1931(w);
        float y = yFit_1931(w);
        float z = zFit_1931(w);

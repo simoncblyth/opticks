@@ -4,7 +4,7 @@
 #include <cstring>
 
 
-int main(int argc, char** argv)
+int main(int, char** )
 {
     char* idp = getenv("IDPATH") ;
     char path[256];

@@ -13,5 +13,20 @@ int main(int, char** argv)
     foo(i);
     foo(n);
 
+    BBar bb ;
+    bb.foo(d);
+    bb.foo(i);
+    bb.foo(n);
+
+
+    BCar bc ;
+    bc.foo(d);
+    bc.foo(i);
+    bc.foo(n);
+
+
+
+
+
     return 0 ; 
 }

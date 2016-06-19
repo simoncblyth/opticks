@@ -12,6 +12,32 @@
 #include "Index.hpp"
 
 
+template<typename T>
+Counts<T>::Counts(const char* name)
+       :
+       m_name(name ? strdup(name) : NULL)
+{
+} 
+
+template<typename T>
+std::vector<std::pair<std::string,T> >& Counts<T>::counts()
+{
+     return m_counts ; 
+} 
+
+template<typename T>
+unsigned int  Counts<T>::size()
+{
+     return m_counts.size() ; 
+} 
+
+template<typename T>
+typename std::pair<std::string, T>&  Counts<T>::get(unsigned int index)
+{
+    return m_counts[index] ;
+} 
+
+
 
 template<typename T>
 class FindKey {

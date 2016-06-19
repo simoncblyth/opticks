@@ -7,6 +7,11 @@ void nplane::dump(const char* msg)
     param.dump(msg);
 }
 
+float ndisc::z() const 
+{
+   return plane.param.w ;  
+}
+
 void ndisc::dump(const char* msg)
 {
     char dmsg[128];
@@ -20,5 +25,9 @@ void nbbox::dump(const char* msg)
     min.dump("bb min");
     max.dump("bb max");
 }
+
+
+
+
 
 

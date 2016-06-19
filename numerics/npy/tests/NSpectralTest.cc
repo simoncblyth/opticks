@@ -1,8 +1,9 @@
 #include "NSpectral.hpp"
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
     NSpectral spect ; 
+    spect.dump("NSpectralTest");
 
     return 0 ; 
 }

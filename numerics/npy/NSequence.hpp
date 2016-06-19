@@ -1,6 +1,8 @@
 #pragma once
 
-class NSequence {
+#include "NPY_API_EXPORT.hh"
+
+class NPY_API NSequence {
   public:
       virtual ~NSequence(){}
 

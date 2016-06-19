@@ -4,12 +4,19 @@
 #include <string>
 
 // see ggeo-/tests/LookupTest.cc for usage
-class Lookup {
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API Lookup {
    public:  
-
-   typedef std::map<unsigned int, unsigned int> Lookup_t ;
-   typedef std::map<std::string, unsigned int> Map_t ;
-
+       typedef std::map<unsigned int, unsigned int> Lookup_t ;
+       typedef std::map<std::string, unsigned int> Map_t ;
+   public:  
+       static void mockup(const char* dir="/tmp", const char* aname="mockA.json", const char* bname="mockB.json");
+   private:
+       static void mockA(const char* adir, const char* aname);
+       static void mockB(const char* bdir, const char* bname);
    public:  
        Lookup();
        void crossReference();
@@ -38,21 +45,7 @@ class Lookup {
  
 };
 
-
-inline Lookup::Lookup()
-{
-}
-
-inline std::map<std::string, unsigned int>& Lookup::getA()
-{
-    return m_A ; 
-}
-inline std::map<std::string, unsigned int>& Lookup::getB()
-{
-    return m_B ; 
-}
-
-
+#include "NPY_TAIL.hh"
 
 
 

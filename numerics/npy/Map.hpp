@@ -4,8 +4,12 @@
 #include <map>
 
 
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+
 template <typename K, typename V>
-class Map {
+class NPY_API Map {
     public:
         Map();
 
@@ -24,15 +28,6 @@ class Map {
 
 };
 
+#include "NPY_TAIL.hh"
 
-template <typename K, typename V>
-inline Map<K,V>::Map()
-{
-}
-
-template <typename K, typename V>
-inline std::map<K, V>& Map<K,V>::getMap()
-{
-    return m_map ; 
-}
 

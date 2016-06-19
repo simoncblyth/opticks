@@ -1,11 +1,12 @@
 #pragma once
-#include <cstring>
+
 #include <string>
-#include <glm/glm.hpp>
-#include <cassert>
+#include "NGLM.hpp"
 
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
 
-class NGunConfig {
+class NPY_API NGunConfig {
    public:
        static const char* DEFAULT_CONFIG ; 
 
@@ -97,102 +98,7 @@ class NGunConfig {
    private:
        glm::mat4    m_frame_transform ; 
 
-
 };
 
-inline NGunConfig::NGunConfig()
-    :
-     m_config(NULL),
-     m_comment(NULL),
-     m_particle(NULL),
-     m_number(1),
-     m_time(0.),
-     m_energy(0.)
-{
-    init();
-}
-
-
-inline void NGunConfig::setTime(float time)
-{
-    m_time = time ; 
-}
-inline void NGunConfig::setEnergy(float energy)
-{
-    m_energy = energy ; 
-}
-inline void NGunConfig::setNumber(unsigned int number)
-{
-    m_number = number ; 
-}
-
-
-inline void NGunConfig::setFrameTransform(glm::mat4& frame_transform)
-{
-    m_frame_transform = frame_transform ;
-    update();
-}
-inline const glm::mat4& NGunConfig::getFrameTransform()
-{
-    return m_frame_transform ;
-}
-
-inline void NGunConfig::setPosition(const glm::vec3& pos )
-{
-    m_position = pos ; 
-}
-inline void NGunConfig::setDirection(const glm::vec3& dir )
-{
-    m_direction = dir ; 
-}
-inline void NGunConfig::setPolarization(const glm::vec3& pol )
-{
-    m_polarization = pol ; 
-}
-
-
-inline const char* NGunConfig::getComment()
-{
-    return m_comment ; 
-}
-inline const char* NGunConfig::getParticle()
-{
-    return m_particle ; 
-}
-
-inline float NGunConfig::getTime()
-{
-    return m_time ; 
-}
-inline float NGunConfig::getEnergy()
-{
-    return m_energy ; 
-}
-
-inline int NGunConfig::getFrame()
-{
-    return m_frame.x ; 
-}
-inline unsigned int NGunConfig::getNumber()
-{
-    return m_number ; 
-}
-
-
-
-inline glm::vec3 NGunConfig::getPosition()
-{
-    return m_position ; 
-}
-inline glm::vec3 NGunConfig::getDirection()
-{
-    return m_direction ; 
-}
-inline glm::vec3 NGunConfig::getPolarization()
-{
-    return m_polarization ; 
-}
-
-
-
+#include "NPY_TAIL.hh"
 

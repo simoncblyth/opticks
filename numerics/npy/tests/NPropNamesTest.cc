@@ -1,14 +1,25 @@
 #include "NPropNames.hpp"
+#include "NTxt.hpp"
 
 #include <iostream>
 #include <iomanip>
 #include <cassert>
 #include <climits>
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
 
-    NPropNames pn("GMaterialLib");
+    //const char* lib = "GMaterialLib.txt" ;   // requires geocache 
+    const char* lib = "/tmp/GMaterialLib.txt" ;  // absolute path mode for testing
+
+    NTxt txt(lib);
+    txt.addLine("red");
+    txt.addLine("green");
+    txt.addLine("blue");
+    txt.write();
+
+
+    NPropNames pn(lib);
 
     for(unsigned int i=0 ; i < pn.getNumLines() ; i++)
     {

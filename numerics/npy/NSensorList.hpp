@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 #include <vector>
 #include <set>
 #include <string>
@@ -9,7 +8,10 @@
 class NSensor ; 
 
 
-class NSensorList {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API NSensorList {
     public:
         NSensorList();
         void load(const char* idpath, const char* ext="idmap");
@@ -33,15 +35,5 @@ class NSensorList {
 
 };
 
+#include "NPY_TAIL.hh"
 
-inline NSensorList::NSensorList()
-{
-}
-inline NSensor* NSensorList::getSensor(unsigned int index)
-{
-    return index < m_sensors.size() ? m_sensors[index] : NULL ; 
-}
-inline unsigned int NSensorList::getNumSensors()
-{
-    return m_sensors.size();
-}

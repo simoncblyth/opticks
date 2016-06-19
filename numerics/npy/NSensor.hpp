@@ -1,5 +1,4 @@
 #pragma once
-#include "string.h"
 #include <string>
 
 /*
@@ -23,7 +22,10 @@ NSensor  index      9 idhex 1010102 iddec 16843010 node_index   3209 name /dd/Ge
 */
 
 
-class NSensor {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API NSensor {
    public:
        static unsigned int RefIndex(NSensor* sensor);
        static const unsigned int UNSET_INDEX ;   
@@ -48,42 +50,8 @@ class NSensor {
        unsigned int m_node_index ;
 };
 
-inline NSensor::NSensor(unsigned int index, unsigned int id, const char* node_name, unsigned int node_index)
-       :
-       m_index(index),
-       m_id(id),
-       m_node_name(strdup(node_name)),
-       m_node_index(node_index)
-{
-}
 
-inline unsigned int NSensor::getIndex()
-{
-    return m_index ; 
-}
-inline unsigned int NSensor::getIndex1()
-{
-    return m_index + 1 ; 
-}
-
-inline unsigned int NSensor::RefIndex(NSensor* sensor)
-{
-    return sensor ? sensor->getIndex1() : NSensor::UNSET_INDEX  ;
-}
-
-
-inline unsigned int NSensor::getNodeIndex()
-{
-    return m_node_index ; 
-}
-inline unsigned int NSensor::getId()
-{
-    return m_id ; 
-}
-inline const char* NSensor::getNodeName()
-{
-    return m_node_name ; 
-}
+#include "NPY_TAIL.hh"
 
 
 

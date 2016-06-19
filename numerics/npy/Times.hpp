@@ -5,7 +5,10 @@
 #include <map>
 #include <cstring>
 
-class Times {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API Times {
   public:
      typedef std::pair<std::string, double>  SD ; 
      typedef std::vector<SD>                VSD ; 
@@ -41,58 +44,6 @@ class Times {
 
 };
 
-inline Times::Times(const char* label)  
-   : 
-     m_scale(1.0) , 
-     m_label(strdup(label)) 
-{
-}
+#include "NPY_TAIL.hh"
 
-inline void Times::setLabel(const char* label)
-{
-    m_label = strdup(label);
-}
-
-inline Times* Times::clone(const char* label)
-{
-    Times* ts = new Times(label) ; 
-    for(VSD::const_iterator it=m_times.begin() ; it != m_times.end() ; it++) ts->add(it->first.c_str(), it->second) ;
-    return ts ; 
-}
-
-inline unsigned int Times::getNumEntries()
-{
-    return m_times.size();
-}
-inline std::pair<std::string, double>&  Times::getEntry(unsigned int i)
-{
-    return m_times[i] ;
-}
-
-inline void Times::add(const char* name, double t )
-{
-    m_times.push_back(SD(name, t));
-}
-inline unsigned int Times::getSize()
-{
-    return m_times.size();
-}
-inline std::vector<std::pair<std::string, double> >& Times::getTimes()
-{
-    return m_times ;
-}
-inline double Times::getScale()
-{
-    return m_scale ; 
-}
-inline void Times::setScale(double scale)
-{
-    m_scale = scale  ; 
-}
-
-
-inline const char* Times::getLabel()
-{
-    return m_label ; 
-}
 

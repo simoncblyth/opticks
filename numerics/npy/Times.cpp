@@ -11,6 +11,68 @@
 #include "Times.hpp"
 
 
+
+
+
+Times::Times(const char* label)  
+   : 
+     m_scale(1.0) , 
+     m_label(strdup(label)) 
+{
+}
+
+void Times::setLabel(const char* label)
+{
+    m_label = strdup(label);
+}
+
+Times* Times::clone(const char* label)
+{
+    Times* ts = new Times(label) ; 
+    for(VSD::const_iterator it=m_times.begin() ; it != m_times.end() ; it++) ts->add(it->first.c_str(), it->second) ;
+    return ts ; 
+}
+
+unsigned int Times::getNumEntries()
+{
+    return m_times.size();
+}
+std::pair<std::string, double>&  Times::getEntry(unsigned int i)
+{
+    return m_times[i] ;
+}
+
+void Times::add(const char* name, double t )
+{
+    m_times.push_back(SD(name, t));
+}
+unsigned int Times::getSize()
+{
+    return m_times.size();
+}
+std::vector<std::pair<std::string, double> >& Times::getTimes()
+{
+    return m_times ;
+}
+double Times::getScale()
+{
+    return m_scale ; 
+}
+void Times::setScale(double scale)
+{
+    m_scale = scale  ; 
+}
+
+
+const char* Times::getLabel()
+{
+    return m_label ; 
+}
+
+
+
+
+
 void Times::save(const char* dir)
 {
     std::string nam = name();

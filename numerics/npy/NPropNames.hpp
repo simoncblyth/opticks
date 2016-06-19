@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
-#include <cstring>
 
 class NTxt ; 
 
-class NPropNames {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API NPropNames {
    public:
        static std::string libpath(const char* libname);
    public:
@@ -21,11 +23,6 @@ class NPropNames {
 
 };
 
-inline NPropNames::NPropNames(const char* libname)
-   :
-   m_libname(strdup(libname)),
-   m_txt(NULL) 
-{
-   read(); 
-}
+
+#include "NPY_TAIL.hh"
 

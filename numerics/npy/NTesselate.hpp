@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstddef>
-#include <glm/glm.hpp>
+
+#include <glm/fwd.hpp>
 
 template <typename T> class NPY ;
 class NTrianglesNPY ; 
@@ -16,8 +16,9 @@ class NTrianglesNPY ;
 //
 //
 struct ntriangle ; 
+#include "NPY_API_EXPORT.hh"
 
-class NTesselate {
+class NPY_API NTesselate {
     public:
         NTesselate(NPY<float>* basis);
         void subdivide(unsigned int nsubdiv);
@@ -31,13 +32,5 @@ class NTesselate {
         NTrianglesNPY* m_tris ; 
 };
 
-
-inline NTesselate::NTesselate(NPY<float>* basis) 
-    :
-    m_basis(basis),
-    m_tris(NULL)
-{
-    init();
-}
 
 

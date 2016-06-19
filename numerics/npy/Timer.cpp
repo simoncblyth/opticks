@@ -14,6 +14,24 @@ const char* Timer::COLUMNS = "t_absolute,t_delta" ;
 const char* Timer::START = "START" ;
 const char* Timer::STOP  = "STOP" ;
 
+
+Timer::Timer(const char* name) 
+       : 
+       m_name(strdup(name)),
+       m_verbose(false)
+{
+}
+
+void Timer::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+const char* Timer::getName()
+{
+    return m_name ; 
+}
+
+
 void Timer::operator()(const char* mark)
 {
     m_marks.push_back(SD(mark, BTimer::RealTime() ));

@@ -16,6 +16,77 @@
 
 
 
+
+Index::Index(const char* itemtype, const char* title, bool onebased)
+   : 
+   NSequence(),
+   m_itemtype(strdup(itemtype)),
+   m_title(title ? strdup(title) : strdup(itemtype)),
+   m_ext(".json"),
+   m_selected(0),
+   m_onebased(onebased),
+   m_source_total(0)
+{
+}
+const char* Index::getItemType()
+{
+    return m_itemtype ; 
+}
+const char* Index::getTitle()
+{
+    return m_title ; 
+}
+
+bool Index::isOneBased()
+{
+    return m_onebased ; 
+}
+
+
+
+void Index::setTitle(const char* title)
+{
+    if(!title) return ;
+    free((void*)m_title);
+    m_title = strdup(title); 
+}
+
+
+std::vector<std::string>& Index::getNames()
+{
+    return m_names ;  
+}
+
+void Index::setExt(const char* ext)
+{   
+    m_ext = strdup(ext);
+}
+
+
+int Index::getSelected()
+{
+    return m_selected ; 
+}
+int* Index::getSelectedPtr()
+{
+    return &m_selected ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 std::string Index::description()
 {
     std::stringstream ss ; 

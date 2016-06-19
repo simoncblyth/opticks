@@ -8,7 +8,11 @@
 
 #include "NSequence.hpp"
 
-class Index : public NSequence {
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API Index : public NSequence {
    public:
         typedef std::vector<std::string> VS ;
    public:
@@ -87,60 +91,5 @@ class Index : public NSequence {
         std::vector<unsigned int>            m_codes ; 
 };
 
-inline Index::Index(const char* itemtype, const char* title, bool onebased)
-   : 
-   NSequence(),
-   m_itemtype(strdup(itemtype)),
-   m_title(title ? strdup(title) : strdup(itemtype)),
-   m_ext(".json"),
-   m_selected(0),
-   m_onebased(onebased),
-   m_source_total(0)
-{
-}
-inline const char* Index::getItemType()
-{
-    return m_itemtype ; 
-}
-inline const char* Index::getTitle()
-{
-    return m_title ; 
-}
-
-inline bool Index::isOneBased()
-{
-    return m_onebased ; 
-}
-
-
-
-inline void Index::setTitle(const char* title)
-{
-    if(!title) return ;
-    free((void*)m_title);
-    m_title = strdup(title); 
-}
-
-
-inline std::vector<std::string>& Index::getNames()
-{
-    return m_names ;  
-}
-
-inline void Index::setExt(const char* ext)
-{   
-    m_ext = strdup(ext);
-}
-
-
-inline int Index::getSelected()
-{
-    return m_selected ; 
-}
-inline int* Index::getSelectedPtr()
-{
-    return &m_selected ; 
-}
-
-
+#include "NPY_TAIL.hh"
 

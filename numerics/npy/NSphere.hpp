@@ -6,7 +6,9 @@ struct nplane ;
 struct ndisc ; 
 struct npart ;
 
-struct nsphere {
+#include "NPY_API_EXPORT.hh"
+
+struct NPY_API nsphere {
 
     // NO CTOR
 
@@ -29,24 +31,14 @@ struct nsphere {
 };
 
 
-inline nsphere make_nsphere(float x, float y, float z, float w)
+inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
 {
     nsphere s ; s.param.x = x ; s.param.y = y ; s.param.z = z ; s.param.w = w ; return s ;
 }
 
-inline nsphere make_nsphere(const nvec4& p)
+inline NPY_API nsphere make_nsphere(const nvec4& p)
 {
     nsphere s ; s.param.x = p.x ; s.param.y = p.y ; s.param.z = p.z ; s.param.w = p.w ; return s ;
 }
 
 
-
-inline float nsphere::radius(){ return param.w ; }
-inline float nsphere::x(){      return param.x ; }
-inline float nsphere::y(){      return param.y ; }
-inline float nsphere::z(){      return param.z ; }
-
-inline float nsphere::costheta(float z)
-{
-   return (z - param.z)/param.w ;  
-}

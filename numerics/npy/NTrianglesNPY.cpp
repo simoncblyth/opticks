@@ -1,9 +1,40 @@
+
+#include <boost/math/constants/constants.hpp>
+
+#include "GLMPrint.hpp"
+#include "NPY.hpp"
+
 #include "NTrianglesNPY.hpp"
 #include "NTesselate.hpp"
 #include "NTriangle.hpp"
-#include "NPY.hpp"
-#include "GLMPrint.hpp"
-#include <boost/math/constants/constants.hpp>
+
+
+#ifdef _MSC_VER
+// instanciations of 'NTrianglesNPY' raise warning:
+//    object allocated on the heap may not be aligned 16
+// https://github.com/g-truc/glm/issues/235
+// apparently fixed by 0.9.7.1 Release : currently on 0.9.6.3
+
+#pragma warning( disable : 4316 )
+#endif
+
+
+
+NPY<float>* NTrianglesNPY::getBuffer()
+{
+    return m_tris ; 
+}
+
+void NTrianglesNPY::setTransform(const glm::mat4& transform)
+{
+    m_transform = transform ; 
+}
+glm::mat4 NTrianglesNPY::getTransform()
+{
+    return m_transform ; 
+}
+
+
 
 
 NTrianglesNPY::NTrianglesNPY()

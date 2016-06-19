@@ -1,9 +1,11 @@
+
+
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
-
-#include "stdlib.h"
-#include "stdio.h"
-#include "assert.h"
 
 int main(int argc, char** argv)
 {
@@ -21,7 +23,6 @@ int main(int argc, char** argv)
        NSensor* sensor = sens.findSensorForNode(nodeIndex);
        printf("nodeIndex %u sensor %s \n ", nodeIndex, ( sensor ? sensor->description().c_str() : "NULL" ) );
     }
-
 
 
     return 0 ;

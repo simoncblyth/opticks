@@ -9,6 +9,17 @@
 #include "Map.hpp"
 
 
+template <typename K, typename V>
+Map<K,V>::Map()
+{
+}
+
+template <typename K, typename V>
+std::map<K, V>& Map<K,V>::getMap()
+{
+    return m_map ; 
+}
+
 
 template <typename K, typename V>
 Map<K,V>* Map<K,V>::load(const char* dir, const char* name)

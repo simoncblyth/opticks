@@ -34,38 +34,6 @@ std::string Parameters::getStringValue(const char* name)
 
 
 
-template <typename T>
-void Parameters::add(const char* name, T value)
-{
-    m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
-}
-
-
-template <typename T>
-T Parameters::get(const char* name)
-{
-    std::string value = getStringValue(name);
-    if(value.empty())
-    {
-        LOG(fatal) << "Parameters::get " << name << " EMPTY VALUE "  ;
-    }
-    return boost::lexical_cast<T>(value);
-}
-
-
-template <typename T>
-T Parameters::get(const char* name, const char* fallback)
-{
-    std::string value = getStringValue(name);
-    if(value.empty())
-    {
-        value = fallback ;  
-        LOG(warning) << "Parameters::get " << name << " value empty, using fallback value: " << fallback  ;
-    }
-    return boost::lexical_cast<T>(value);
-}
-
-
 
 void Parameters::load_(const char* path)
 {
@@ -130,17 +98,67 @@ void Parameters::prepLines()
 
 
 
-template void Parameters::add(const char* name, int value);
-template void Parameters::add(const char* name, unsigned int value);
-template void Parameters::add(const char* name, std::string value);
-template void Parameters::add(const char* name, float value);
 
 
-template int          Parameters::get(const char* name);
-template unsigned int Parameters::get(const char* name);
-template std::string  Parameters::get(const char* name);
-template float        Parameters::get(const char* name);
 
+
+
+
+
+
+template <typename T>
+void Parameters::add(const char* name, T value)
+{
+    m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
+}
+
+
+template <typename T>
+T Parameters::get(const char* name)
+{
+    std::string value = getStringValue(name);
+    if(value.empty())
+    {
+        LOG(fatal) << "Parameters::get " << name << " EMPTY VALUE "  ;
+    }
+    return boost::lexical_cast<T>(value);
+}
+
+
+template <typename T>
+T Parameters::get(const char* name, const char* fallback)
+{
+    std::string value = getStringValue(name);
+    if(value.empty())
+    {
+        value = fallback ;  
+        LOG(warning) << "Parameters::get " << name << " value empty, using fallback value: " << fallback  ;
+    }
+    return boost::lexical_cast<T>(value);
+}
+
+
+
+
+
+
+
+template NPY_API void Parameters::add(const char* name, int value);
+template NPY_API void Parameters::add(const char* name, unsigned int value);
+template NPY_API void Parameters::add(const char* name, std::string value);
+template NPY_API void Parameters::add(const char* name, float value);
+
+
+template NPY_API int          Parameters::get(const char* name);
+template NPY_API unsigned int Parameters::get(const char* name);
+template NPY_API std::string  Parameters::get(const char* name);
+template NPY_API float        Parameters::get(const char* name);
+
+
+template NPY_API int          Parameters::get(const char* name, const char* fallback);
+template NPY_API unsigned int Parameters::get(const char* name, const char* fallback);
+template NPY_API std::string  Parameters::get(const char* name, const char* fallback);
+template NPY_API float        Parameters::get(const char* name, const char* fallback);
 
 
 

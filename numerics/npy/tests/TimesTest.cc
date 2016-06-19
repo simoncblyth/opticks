@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdlib>
 
-int main(int argc, char** argv)
+int main(int, char** argv)
 {
 
     std::vector<Times*> vt ; 

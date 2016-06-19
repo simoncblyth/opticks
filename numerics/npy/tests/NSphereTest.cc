@@ -1,6 +1,7 @@
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
+
 #include "BLog.hh"
 
 
@@ -32,7 +33,7 @@ int main(int argc, char** argv)
 {
     BLog nl(argc, argv);
 
-    //test_part();
+    test_part();
     test_intersect();
 
     return 0 ; 

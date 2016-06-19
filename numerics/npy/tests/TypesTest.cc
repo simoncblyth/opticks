@@ -1,10 +1,10 @@
 #include "Types.hpp"
 
-#include "stdlib.h"
-#include "assert.h"
-#include "stdio.h"
+#include <cstdlib>
+#include <cassert>
+#include <cstdio>
 
-int main(int argc, char** argv)
+int main(int,char**)
 {
 
     const char* idpath = getenv("IDPATH");

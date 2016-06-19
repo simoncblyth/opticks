@@ -6,7 +6,7 @@ project(${name})
 
 #file(GLOB TEST_SOURCES "*Test.cc")
 
-set(TEST_SOURCES
+set(TEST_OK
 
 LogTest.cc
 EnvTest.cc
@@ -20,9 +20,37 @@ GLMFormatTest.cc
 
 ViewNPYTest.cc
 MultiViewNPYTest.cc
-
 NStateTest.cc
 ParametersTest.cc
+ReportTest.cc
+LookupTest.cc
+MapTest.cc
+IndexTest.cc
+NPropNamesTest.cc
+CountsTest.cc
+
+TimerTest.cc
+TimesTableTest.cc
+TimesTest.cc
+NTxtTest.cc
+
+TypesTest.cc
+readFlagsTest.cc
+
+NSensorListTest.cc
+NGunConfigTest.cc
+)
+
+
+set(TEST_SOURCES
+
+NQuadTest.cc
+NBoundingBoxTest.cc
+NPartTest.cc
+NSpectralTest.cc
+NSphereTest.cc
+NTesselateTest.cc
+
 )
 
 
@@ -31,29 +59,12 @@ set(FUTURE_TEST_SOURCES
 _BoundariesNPYTest.cc
 _RecordsNPYTest.cc
 _TorchStepNPYTest.cc
-CountsTest.cc
+
 G4StepNPYTest.cc
 HitsNPYTest.cc
-IndexTest.cc
-MapTest.cc
-NBoundingBoxTest.cc
-NPartTest.cc
-NPropNamesTest.cc
-NQuadTest.cc
-NSensorListTest.cc
-NSpectralTest.cc
-NSphereTest.cc
-NTesselateTest.cc
 NTrianglesNPYTest.cc
-NTxtTest.cc
 PhotonsNPYTest.cc
-readFlagsTest.cc
-ReportTest.cc
 SequenceNPYTest.cc
-TimerTest.cc
-TimesTableTest.cc
-TimesTest.cc
-TypesTest.cc
 
 )
 

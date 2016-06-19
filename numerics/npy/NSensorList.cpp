@@ -1,13 +1,5 @@
-#include "NSensorList.hpp"
-#include "NSensor.hpp"
-
-#include "assert.h"
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-#include "stdio.h"
-
+#include <cassert>
+#include <cstdio>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -18,6 +10,12 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
+
+#include "BLog.hh"
+
+#include "NSensorList.hpp"
+#include "NSensor.hpp"
+
 
 namespace fs = boost::filesystem;
 
@@ -51,6 +49,20 @@ simon:DayaBay_VGDX_20140414-1300 blyth$
 
 */
 
+
+
+
+NSensorList::NSensorList()
+{
+}
+NSensor* NSensorList::getSensor(unsigned int index)
+{
+    return index < m_sensors.size() ? m_sensors[index] : NULL ; 
+}
+unsigned int NSensorList::getNumSensors()
+{
+    return m_sensors.size();
+}
 
 
 

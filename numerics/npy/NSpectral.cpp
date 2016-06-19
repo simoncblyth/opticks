@@ -1,8 +1,9 @@
-#include "NSpectral.hpp"
 
 #include "BLog.hh"
+
 #include "GLMFormat.hpp"
 #include "NCIE.hpp"
+#include "NSpectral.hpp"
 
 
 const char* NSpectral::sRGB_D65 = 
@@ -10,6 +11,17 @@ const char* NSpectral::sRGB_D65 =
 "-0.9692660  1.8760108  0.0415560 "
 " 0.0556434 -0.2040259  1.0572252 "
 ;
+
+
+NSpectral::NSpectral(unsigned int num_colors, unsigned int wlmin, unsigned int wlmax) 
+    :
+    m_num_colors(num_colors),
+    m_wlmin(wlmin),
+    m_wlmax(wlmax)
+{
+    init();
+}
+
 
 void NSpectral::init()
 { 
@@ -25,6 +37,12 @@ void NSpectral::init()
         unsigned int code = getColorCode(w) ;
         m_color_codes.push_back(code);
     }
+}
+
+
+const std::vector<unsigned int>& NSpectral::getColorCodes()
+{
+    return m_color_codes ; 
 }
 
 
@@ -52,6 +70,20 @@ unsigned int NSpectral::getColorCode(float w)
               << " RGB " << gformat(RGB)
               ;
 
-
+    // huh not used ?
     return 0 ; 
 }
+
+void NSpectral::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+
+    for(VU_t::const_iterator it=m_color_codes.begin() ; it != m_color_codes.end() ; it++)
+    {
+        LOG(info) << *it ;    
+    } 
+}
+
+
+
+

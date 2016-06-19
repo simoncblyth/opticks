@@ -54,14 +54,52 @@ set(SOURCES
     NConfigurable.cpp
 
     Parameters.cpp
+    Report.cpp
+
+    Lookup.cpp
+
+    Map.cpp
+
+    NSequence.cpp
+    Index.cpp
+    Counts.cpp
+
+    NTxt.cpp
+    NPropNames.cpp
+
+    Timer.cpp
+    Times.cpp
+    TimesTable.cpp
+
+    Types.cpp
+    Typ.cpp
+
+    NCache.cpp
+
+    NSensor.cpp
+    NSensorList.cpp
+
+    NGunConfig.cpp
+
+    NQuad.cpp
+    NSphere.cpp
+    NPlane.cpp
+    NPart.cpp
+    NPrism.cpp
+    NTriangle.cpp
+    NBoundingBox.cpp
+    NTesselate.cpp
+    NTrianglesNPY.cpp
+
+    NPlanck.cpp
+    NCIE.cpp
+    NSpectral.cpp
 )
 
 set(REST_SOURCES
 
-    Lookup.cpp
     G4StepNPY.cpp
     TorchStepNPY.cpp
-    NGunConfig.cpp
     PhotonsNPY.cpp
     HitsNPY.cpp
     RecordsNPY.cpp
@@ -69,39 +107,15 @@ set(REST_SOURCES
     MaterialLibNPY.cpp
     SequenceNPY.cpp
     AxisNPY.cpp
-    Counts.cpp
-    Types.cpp
-    Typ.cpp
-    Index.cpp
-    Map.cpp
-    Timer.cpp
-    Times.cpp
-    TimesTable.cpp
-    NCache.cpp
-    NSensor.cpp
-    NSensorList.cpp
-    NSequence.cpp
-    NSphere.cpp
-    NPlane.cpp
-    NQuad.cpp
-    NPart.cpp
-    NPrism.cpp
-    NBoundingBox.cpp
-    NTesselate.cpp
-    NTriangle.cpp
-    NTrianglesNPY.cpp
-    NPlanck.cpp
-    NCIE.cpp
-    NTxt.cpp
-    NPropNames.cpp
-    NSpectral.cpp
-
-    Report.cpp
 )
 
 SET(HEADERS
 
 NGLM.hpp 
+NPY_HEAD.hh
+NPY_TAIL.hh
+NPY_API_EXPORT.hh
+
 uif.h
 ucharfour.h
 charfour.h

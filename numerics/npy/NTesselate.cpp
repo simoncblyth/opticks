@@ -1,14 +1,30 @@
+
+
+#include "BLog.hh"
+
+#include "NGLM.hpp"
+#include "GLMPrint.hpp"
+
 #include "NTesselate.hpp"
 #include "NTriangle.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
-#include "BLog.hh"
 
-#include "GLMPrint.hpp"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#ifdef _MSC_VER
+// 'ViewNPY' or 'NTrianglesNPY' : object allocated on the heap may not be aligned 16
+// https://github.com/g-truc/glm/issues/235
+// apparently fixed by 0.9.7.1 Release : currently on 0.9.6.3
+#pragma warning( disable : 4316 )
+#endif
 
 
+NTesselate::NTesselate(NPY<float>* basis) 
+    :
+    m_basis(basis),
+    m_tris(NULL)
+{
+    init();
+}
 
 
 
@@ -25,6 +41,7 @@ NPY<float>* NTesselate::getBuffer()
 {
     return m_tris->getBuffer() ; 
 }
+
 
 
 void NTesselate::subdivide(unsigned int nsubdiv)
@@ -45,6 +62,7 @@ void NTesselate::subdivide(unsigned int nsubdiv)
     }
     assert(m_tris->getNumTriangles() == ntri);
 }
+
 
 
 void NTesselate::subdivide(unsigned int nsubdiv, ntriangle& t)

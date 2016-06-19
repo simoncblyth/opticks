@@ -1,7 +1,9 @@
+#include <climits>
+
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
-#include "limits.h"
+
 
 int main()
 {

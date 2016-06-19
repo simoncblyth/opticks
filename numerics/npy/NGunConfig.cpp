@@ -1,6 +1,9 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
+#include <cstring>
+#include <cassert>
+
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -14,6 +17,102 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "uif.h"
+
+
+
+NGunConfig::NGunConfig()
+    :
+     m_config(NULL),
+     m_comment(NULL),
+     m_particle(NULL),
+     m_number(1),
+     m_time(0.),
+     m_energy(0.)
+{
+    init();
+}
+
+
+void NGunConfig::setTime(float time)
+{
+    m_time = time ; 
+}
+void NGunConfig::setEnergy(float energy)
+{
+    m_energy = energy ; 
+}
+void NGunConfig::setNumber(unsigned int number)
+{
+    m_number = number ; 
+}
+
+
+void NGunConfig::setFrameTransform(glm::mat4& frame_transform)
+{
+    m_frame_transform = frame_transform ;
+    update();
+}
+const glm::mat4& NGunConfig::getFrameTransform()
+{
+    return m_frame_transform ;
+}
+
+void NGunConfig::setPosition(const glm::vec3& pos )
+{
+    m_position = pos ; 
+}
+void NGunConfig::setDirection(const glm::vec3& dir )
+{
+    m_direction = dir ; 
+}
+void NGunConfig::setPolarization(const glm::vec3& pol )
+{
+    m_polarization = pol ; 
+}
+
+
+const char* NGunConfig::getComment()
+{
+    return m_comment ; 
+}
+const char* NGunConfig::getParticle()
+{
+    return m_particle ; 
+}
+
+float NGunConfig::getTime()
+{
+    return m_time ; 
+}
+float NGunConfig::getEnergy()
+{
+    return m_energy ; 
+}
+
+int NGunConfig::getFrame()
+{
+    return m_frame.x ; 
+}
+unsigned int NGunConfig::getNumber()
+{
+    return m_number ; 
+}
+
+
+
+glm::vec3 NGunConfig::getPosition()
+{
+    return m_position ; 
+}
+glm::vec3 NGunConfig::getDirection()
+{
+    return m_direction ; 
+}
+glm::vec3 NGunConfig::getPolarization()
+{
+    return m_polarization ; 
+}
+
 
 
 

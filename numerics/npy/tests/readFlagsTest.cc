@@ -1,15 +1,15 @@
-#include "assert.h"
-#include "stdio.h"
-#include "stdlib.h"
-
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <vector>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <cstring>
+#include <string>
 
 
-int main(int argc, char** argv)
+int main(int, char** argv)
 {
     const char* flags = "/tmp/GFlagIndexLocal.ini";
     std::ifstream fs(flags, std::ios::in);

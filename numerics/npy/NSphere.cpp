@@ -5,6 +5,18 @@
 #include <cmath>
 #include <cassert>
 
+
+float nsphere::radius(){ return param.w ; }
+float nsphere::x(){      return param.x ; }
+float nsphere::y(){      return param.y ; }
+float nsphere::z(){      return param.z ; }
+
+float nsphere::costheta(float z)
+{
+   return (z - param.z)/param.w ;  
+}
+
+
 ndisc nsphere::intersect(nsphere& a, nsphere& b)
 {
     // Find Z intersection disc of two Z offset spheres,
@@ -27,8 +39,8 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
 
     float d = dz ;  
     float dd_m_rr_p_RR = d*d - r*r + R*R  ; 
-    float z = dd_m_rr_p_RR/(2.*d) ;
-    float yy = (4.*d*d*R*R - dd_m_rr_p_RR*dd_m_rr_p_RR)/(4.*d*d)  ;
+    float z = dd_m_rr_p_RR/(2.f*d) ;
+    float yy = (4.f*d*d*R*R - dd_m_rr_p_RR*dd_m_rr_p_RR)/(4.f*d*d)  ;
     float y = yy > 0 ? sqrt(yy) : 0 ;   
 
 

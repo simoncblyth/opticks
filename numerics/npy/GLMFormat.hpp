@@ -5,14 +5,7 @@
 #include <sstream>
 
 #include "NPY_API_EXPORT.hh"
-
-
-
-#ifdef _MSC_VER
-#pragma warning(push)
-// members needs to have dll-interface to be used by clients
-#pragma warning( disable : 4251 )
-#endif
+#include "NPY_HEAD.hh"
 
 class NPY_API GLMFormat {
 
@@ -51,10 +44,7 @@ class NPY_API GLMFormat {
 
 };
 
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+#include "NPY_TAIL.hh"
 
 
 

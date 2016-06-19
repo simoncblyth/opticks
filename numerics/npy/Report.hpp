@@ -3,7 +3,10 @@
 #include <vector>
 #include <string>
 
-class Report {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API Report {
    public:
       typedef std::vector<std::string> VS ; 
    public:
@@ -26,12 +29,5 @@ class Report {
 
 };
 
-inline Report::Report()
-{
-}
-
-inline void Report::add(const VS& lines)
-{
-    for(VS::const_iterator it=lines.begin() ; it!=lines.end() ; it++) m_lines.push_back(*it);
-}
+#include "NPY_TAIL.hh"
 

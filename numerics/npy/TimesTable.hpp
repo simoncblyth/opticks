@@ -5,7 +5,10 @@
 
 class Times ; 
 
-class TimesTable {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API TimesTable {
     public:
         TimesTable(const char* columns, const char* delim=","); 
         TimesTable(const std::vector<std::string>& columns);
@@ -23,21 +26,9 @@ class TimesTable {
         std::vector<std::string> m_lines ; 
 };
 
+#include "NPY_TAIL.hh"
 
-inline TimesTable::TimesTable(const std::vector<std::string>& columns)
-{
-    init(columns);
-}
 
-inline Times* TimesTable::getColumn(unsigned int j)
-{
-    return m_table[j] ; 
-}
-inline std::vector<std::string>& TimesTable::getLines()
-{
-    makeLines(); 
-    return m_lines ;  
-}
 
 
  

@@ -1,8 +1,9 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <cstring>
 
-#include <glm/glm.hpp>
+#include "NGLM.hpp" 
 
 // brap-
 #include "BMap.hh" 
@@ -25,7 +26,52 @@ const char* Types::MATERIAL_ = "material" ;
 const char* Types::HISTORYSEQ_ = "historyseq" ;
 const char* Types::MATERIALSEQ_ = "materialseq" ;
 
- const char* Types::PHOTON_FLAGS_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ; 
+const char* Types::PHOTON_FLAGS_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ; 
+
+
+Types::Types() :
+     m_materials_index(NULL),
+     m_flags(NULL),
+     m_tail(TAIL),
+     m_abbrev(false)
+{
+    init();
+};
+
+
+std::vector<std::string>& Types::getFlagLabels()
+{
+     return m_flag_labels ; 
+}
+bool* Types::getFlagSelection()
+{
+     return m_flag_selection ; 
+}
+Index* Types::getFlagsIndex()
+{
+     return m_flags ; 
+}
+
+
+void Types::setTail(const char* tail)
+{
+     m_tail = strdup(tail);
+}
+void Types::setAbbrev(bool abbrev)
+{
+     m_abbrev = abbrev ;
+}
+const char* Types::getTail()
+{
+    return m_tail ; 
+}
+Index* Types::getMaterialsIndex()
+{
+    return m_materials_index ; 
+}
+
+
+
 
 void Types::init()
 {
@@ -352,7 +398,7 @@ std::string Types::getAbbrevInvert(std::string label, Item_t etype, bool hex)
 
 unsigned int Types::getAbbrevInvertAsCode(std::string label, Item_t etype, bool hex)
 {
-    unsigned int bpos ; 
+    unsigned int bpos(0) ; 
     switch(etype)
     {
         case HISTORY     : bpos = getHistoryAbbrevInvertAsCode(label, hex)  ; break ; 
@@ -559,8 +605,10 @@ std::string Types::getSequenceString(unsigned long long seq)
         unsigned int i4 = i*4 ; 
         unsigned long long mask = (0xFull << i4) ;   // tis essential to use 0xFull rather than 0xF for going beyond 32 bit
         unsigned long long portion = (seq & mask) >> i4 ;  
-        unsigned int code = portion ;
-        std::string name = getHistoryString( 0x1 << (code-1) );
+        unsigned int code = (unsigned int)portion ;
+        unsigned int flags = 0x1 << (code-1) ;
+
+        std::string name = getHistoryString( flags );
      /*
         std::cout << std::setw(3) << std::dec << i 
                   << std::setw(30) << std::hex << portion 

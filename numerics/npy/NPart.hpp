@@ -29,7 +29,7 @@ enum { NODEINDEX_J = 3, NODEINDEX_K = 3 };
 
 struct nbbox ; 
 
-struct npart 
+struct NPY_API npart 
 {
     nquad q0 ; 
     nquad q1 ; 

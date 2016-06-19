@@ -9,10 +9,12 @@ int main()
     a->add("green",2); 
     a->add("blue",3); 
 
-    a->save("/tmp", "test.json");
+    const char* name = "MapTest.json" ;
+
+    a->save("/tmp", name);
 
 
-    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load("/tmp", "test.json");
+    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load("/tmp", name);
     b->dump();
 
 

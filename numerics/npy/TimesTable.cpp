@@ -1,10 +1,28 @@
-#include "TimesTable.hpp"
-#include "Times.hpp"
-#include "BLog.hh"
 #include <iostream>
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include "BLog.hh"
+
+
+#include "TimesTable.hpp"
+#include "Times.hpp"
+
+
+TimesTable::TimesTable(const std::vector<std::string>& columns)
+{
+    init(columns);
+}
+
+Times* TimesTable::getColumn(unsigned int j)
+{
+    return m_table[j] ; 
+}
+std::vector<std::string>& TimesTable::getLines()
+{
+    makeLines(); 
+    return m_lines ;  
+}
 
 
 TimesTable::TimesTable(const char* cols, const char* delim)

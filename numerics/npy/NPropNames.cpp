@@ -2,8 +2,19 @@
 #include "NTxt.hpp"
 #include "BLog.hh"
 
+#include <cstring>
 #include <cstdlib>
 #include <cassert>
+
+
+NPropNames::NPropNames(const char* libname)
+   :
+   m_libname(strdup(libname)),
+   m_txt(NULL) 
+{
+   read(); 
+}
+
 
 std::string NPropNames::libpath(const char* libname)
 {
@@ -18,8 +29,17 @@ void NPropNames::read()
 {
     if(!m_txt)
     {
-        std::string path = libpath(m_libname) ; 
-        m_txt = new NTxt(path.c_str());
+        if(strlen(m_libname) > 0 && m_libname[0] == '/' )
+        {
+            // absolute path for testing  
+            m_txt = new NTxt(m_libname);
+        } 
+        else
+        {
+            // GItemList name like GMaterialLib 
+            std::string path = libpath(m_libname) ; 
+            m_txt = new NTxt(path.c_str());
+        }
     }
     m_txt->read();
 }

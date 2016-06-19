@@ -16,6 +16,18 @@
 const char* Report::NAME = "report.txt" ;
 const char* Report::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 
+
+Report::Report()
+{
+}
+
+void Report::add(const VS& lines)
+{
+    for(VS::const_iterator it=lines.begin() ; it!=lines.end() ; it++) m_lines.push_back(*it);
+}
+
+
+
 void Report::save(const char* dir)
 {
     save(dir, NAME);

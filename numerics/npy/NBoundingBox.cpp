@@ -1,9 +1,10 @@
-#include "NBoundingBox.hpp"
 #include <cfloat>
 #include <algorithm>
 #include <sstream>
 
 #include "GLMFormat.hpp"
+#include "NBoundingBox.hpp"
+
 
 NBoundingBox::NBoundingBox()
    :
@@ -11,6 +12,13 @@ NBoundingBox::NBoundingBox()
     m_high(-FLT_MAX)
 {
 }    
+
+
+const glm::vec4& NBoundingBox::getCenterExtent()
+{
+    return m_center_extent ; 
+}
+
 
 void NBoundingBox::update(const glm::vec3& low, const glm::vec3& high)
 {

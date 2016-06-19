@@ -11,15 +11,53 @@
 
 namespace fs = boost::filesystem;
 
+Lookup::Lookup()
+{
+}
+
+std::map<std::string, unsigned int>& Lookup::getA()
+{
+    return m_A ; 
+}
+std::map<std::string, unsigned int>& Lookup::getB()
+{
+    return m_B ; 
+}
+
+
+void Lookup::mockup(const char* dir, const char* aname, const char* bname)
+{
+    mockA(dir, aname);
+    mockB(dir, bname);
+}
+void Lookup::mockA(const char* adir, const char* aname)
+{
+    Map_t mp ; 
+    mp["/dd/Materials/red"] = 10 ; 
+    mp["/dd/Materials/green"] = 20 ; 
+    mp["/dd/Materials/blue"] = 30 ; 
+    BMap<std::string, unsigned int>::save(&mp, adir, aname );
+}
+void Lookup::mockB(const char* bdir, const char* bname)
+{
+    Map_t mp; 
+    mp["red"] = 1 ; 
+    mp["green"] = 2 ; 
+    mp["blue"] = 3 ; 
+    BMap<std::string, unsigned int>::save(&mp, bdir, bname );
+}
+
+
+
 
 void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
 {
-    typedef std::map<std::string, unsigned int> SU_t ; 
+    //typedef std::map<std::string, unsigned int> SU_t ; 
 
-    SU_t raw ; 
+    Map_t raw ; 
     BMap<std::string, unsigned int>::load(&raw, adir, aname );
 
-    for(SU_t::iterator it=raw.begin() ; it != raw.end() ; it++)
+    for(Map_t::iterator it=raw.begin() ; it != raw.end() ; it++)
     {
         const char* name = it->first.c_str() ; 
         if(strncmp(name, aprefix, strlen(aprefix)) == 0)
@@ -59,6 +97,7 @@ void Lookup::dump(const char* msg)
               << " A entries " <<  m_A.size() 
               << " B entries " <<  m_B.size() 
               << " A2B entries " <<  m_A2B.size() 
+              << std::endl   
               ;
 
 

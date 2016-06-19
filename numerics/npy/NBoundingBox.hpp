@@ -1,9 +1,12 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <string>
+#include "NGLM.hpp"
 
-class NBoundingBox {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API NBoundingBox {
    public:
         NBoundingBox();
         void update(const glm::vec3& low, const glm::vec3& high);
@@ -18,9 +21,5 @@ class NBoundingBox {
        glm::vec4          m_center_extent ; 
 };
 
-inline const glm::vec4& NBoundingBox::getCenterExtent()
-{
-    return m_center_extent ; 
-}
-
+#include "NPY_TAIL.hh"
 

@@ -3,7 +3,6 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "string.h"
 
 #include "glm/fwd.hpp"
 
@@ -49,7 +48,11 @@ Places to migrate to Typ::
 */
 
 
-class Types {
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API Types {
    public:
        static const char* PHOTON_FLAGS_PATH ; 
    public:
@@ -150,48 +153,6 @@ class Types {
 
 };
 
+#include "NPY_TAIL.hh"
 
-inline Types::Types() :
-     m_materials_index(NULL),
-     m_flags(NULL),
-     m_tail(TAIL),
-     m_abbrev(false)
-{
-    init();
-};
-
-
-inline std::vector<std::string>& Types::getFlagLabels()
-{
-     return m_flag_labels ; 
-}
-inline bool* Types::getFlagSelection()
-{
-     return m_flag_selection ; 
-}
-inline Index* Types::getFlagsIndex()
-{
-     return m_flags ; 
-}
-
-
-inline void Types::setTail(const char* tail)
-{
-     m_tail = strdup(tail);
-}
-inline void Types::setAbbrev(bool abbrev)
-{
-     m_abbrev = abbrev ;
-}
-inline const char* Types::getTail()
-{
-    return m_tail ; 
-}
-
-
-
-inline Index* Types::getMaterialsIndex()
-{
-    return m_materials_index ; 
-}
 

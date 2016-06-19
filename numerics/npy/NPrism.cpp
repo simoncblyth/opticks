@@ -1,17 +1,46 @@
+#include <cmath>
+#include <cassert>
+#include <cmath>
+
+#include <boost/math/constants/constants.hpp>
+
 #include "NPrism.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
 
-#include <cmath>
-#include <cassert>
+
+nprism::nprism(float apex_angle_degrees, float height_mm, float depth_mm, float fallback_mm)
+{
+    param.x = apex_angle_degrees  ;
+    param.y = height_mm  ;
+    param.z = depth_mm  ;
+    param.w = fallback_mm  ;
+}
+
+nprism::nprism(const nvec4& param_)
+{
+    param = param_ ;
+}
+
+float nprism::height()
+{
+    return param.y > 0.f ? param.y : param.w ; 
+}
+float nprism::depth()
+{
+    return param.z > 0.f ? param.z : param.w ; 
+}
+float nprism::hwidth()
+{
+    float pi = boost::math::constants::pi<float>() ;
+    return height()*tan((pi/180.f)*param.x/2.0f) ;
+}
 
 
 void nprism::dump(const char* msg)
 {
     param.dump(msg);
 }
-
-
 
 npart nprism::part()
 {

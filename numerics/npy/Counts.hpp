@@ -2,12 +2,15 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <cstring>
 
 class Index ; 
 
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
 template<typename T>
-class Counts {
+class NPY_API Counts {
     public:
           typedef typename std::map<std::string, T>    MST ; 
           typedef typename std::pair<std::string, T>    ST ; 
@@ -49,31 +52,6 @@ class Counts {
           std::vector<ST>  m_counts  ;
 };
 
-template<typename T>
-inline Counts<T>::Counts(const char* name)
-       :
-       m_name(name ? strdup(name) : NULL)
-{
-} 
-
-template<typename T>
-inline std::vector<std::pair<std::string,T> >& Counts<T>::counts()
-{
-     return m_counts ; 
-} 
-
-template<typename T>
-inline unsigned int  Counts<T>::size()
-{
-     return m_counts.size() ; 
-} 
-
-template<typename T>
-inline typename std::pair<std::string, T>&  Counts<T>::get(unsigned int index)
-{
-    return m_counts[index] ;
-} 
-
-
+#include "NPY_TAIL.hh"
 
 

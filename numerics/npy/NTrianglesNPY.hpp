@@ -1,11 +1,14 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include "NGLM.hpp"
 
 template <typename T> class NPY ;
 struct ntriangle ; 
 
-class NTrianglesNPY {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API NTrianglesNPY {
     public:
         static NTrianglesNPY* hemi_octahedron();
         static NTrianglesNPY* octahedron();
@@ -67,24 +70,8 @@ class NTrianglesNPY {
     private:
         NPY<float>*  m_tris ; 
         glm::mat4    m_transform ; 
-
 };
 
-
-inline NPY<float>* NTrianglesNPY::getBuffer()
-{
-    return m_tris ; 
-}
-
-inline void NTrianglesNPY::setTransform(const glm::mat4& transform)
-{
-    m_transform = transform ; 
-}
-inline glm::mat4 NTrianglesNPY::getTransform()
-{
-    return m_transform ; 
-}
-
-
+#include "NPY_TAIL.hh"
 
 

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
 
 class NPY_API Parameters {
    public:
@@ -17,7 +18,7 @@ class NPY_API Parameters {
    public:
        Parameters();
        std::string getStringValue(const char* name);
-
+   public:
        template <typename T> 
        void add(const char* name, T value);
 
@@ -26,11 +27,9 @@ class NPY_API Parameters {
 
        template <typename T> 
        T get(const char* name, const char* fallback);
-
-
+   public:
        void dump(const char* msg="Parameters::dump");
        void prepLines();
-
        std::vector<std::string>& getLines();
    public:
        void save(const char* path);
@@ -44,18 +43,6 @@ class NPY_API Parameters {
 
 };
 
+#include "NPY_TAIL.hh"
 
-
-/*
-
-https://social.msdn.microsoft.com/Forums/vstudio/en-US/4fd49664-e28e-4f23-b1eb-b669d35ad264/function-template-instantation-export-from-dll?forum=vcgeneral
-
-
-https://social.msdn.microsoft.com/Forums/vstudio/en-US/0d613b65-52ac-4fb7-bf65-8a543dfbcc6e/visual-c-error-lnk2019-unresolved-external-symbol?forum=vcgeneral
-
-
-
-
-
-*/
 

@@ -8,7 +8,10 @@
 class Times ; 
 class TimesTable ; 
 
-class Timer {
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+class NPY_API Timer {
     public:
         static const char* COLUMNS ; 
     public:
@@ -40,18 +43,5 @@ class Timer {
 
 };
 
-inline Timer::Timer(const char* name) 
-       : 
-       m_name(strdup(name)),
-       m_verbose(false)
-{
-}
+#include "NPY_TAIL.hh"
 
-inline void Timer::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
-inline const char* Timer::getName()
-{
-    return m_name ; 
-}

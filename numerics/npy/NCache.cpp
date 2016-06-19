@@ -3,6 +3,14 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+
+NCache::NCache(const char* dir) 
+   : 
+      m_cache(dir) 
+{
+} 
+
+
 std::string NCache::path(const char* relative)
 {   
     fs::path cpath(m_cache/relative); 

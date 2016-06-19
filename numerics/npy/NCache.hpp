@@ -3,7 +3,13 @@
 #include <string>
 #include <boost/filesystem.hpp>
 
-class NCache {
+
+#include "NPY_API_EXPORT.hh"
+#include "NPY_HEAD.hh"
+
+// TODO: adopt BFile::FormPath
+
+class NPY_API NCache {
    public:
       NCache(const char* dir);
    public:
@@ -15,10 +21,5 @@ class NCache {
 
 };
 
-
-inline NCache::NCache(const char* dir) 
-   : 
-      m_cache(dir) 
-{
-} 
+#include "NPY_TAIL.hh"
 
