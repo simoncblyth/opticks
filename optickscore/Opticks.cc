@@ -558,8 +558,12 @@ OpticksEvent* Opticks::makeEvent()
 
 const char* Opticks::Material(const unsigned int mat)
 {
-    if(G_MATERIAL_NAMES == NULL) G_MATERIAL_NAMES = new NPropNames("GMaterialLib") ;
-    return G_MATERIAL_NAMES->getLine(mat) ;
+    if(G_MATERIAL_NAMES == NULL)
+    {
+        LOG(info) << "Opticks::Material populating global G_MATERIAL_NAMES " ;
+        G_MATERIAL_NAMES = new NPropNames("GMaterialLib") ;
+    }
+    return G_MATERIAL_NAMES ? G_MATERIAL_NAMES->getLine(mat) : "Opticks::Material-ERROR-NO-GMaterialLib" ;
 }
 
 std::string Opticks::MaterialSequence(const unsigned long long seqmat)

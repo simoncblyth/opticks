@@ -1,10 +1,12 @@
-#include "NPropNames.hpp"
-#include "NTxt.hpp"
-#include "BLog.hh"
-
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
+
+#include "BFile.hh"
+#include "BLog.hh"
+
+#include "NTxt.hpp"
+#include "NPropNames.hpp"
 
 
 NPropNames::NPropNames(const char* libname)
@@ -18,9 +20,7 @@ NPropNames::NPropNames(const char* libname)
 
 std::string NPropNames::libpath(const char* libname)
 {
-    char* idp = getenv("IDPATH") ;
-    char path[256];
-    snprintf(path, 256, "%s/GItemList/%s.txt", idp, libname );
+    std::string path = BFile::FormPath("$IDPATH", "GItemList", libname ); 
     return path ; 
 }
 
@@ -29,6 +29,7 @@ void NPropNames::read()
 {
     if(!m_txt)
     {
+
         if(strlen(m_libname) > 0 && m_libname[0] == '/' )
         {
             // absolute path for testing  
@@ -38,6 +39,9 @@ void NPropNames::read()
         {
             // GItemList name like GMaterialLib 
             std::string path = libpath(m_libname) ; 
+            LOG(trace) << "NPropNames::read"
+                       << " path " << path ; 
+
             m_txt = new NTxt(path.c_str());
         }
     }

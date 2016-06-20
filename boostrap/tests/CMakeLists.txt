@@ -4,7 +4,8 @@ project(${name})
 
 #file(GLOB TEST_CC_SRCS "B*Test.cc")
 
-set(TEST_CC_SRCS
+set(TEST_SOURCES_OK
+
    BFooTest.cc
    BDirTest.cc
    BTimeTest.cc
@@ -18,8 +19,12 @@ set(TEST_CC_SRCS
    BStrTest.cc
    BTimerTest.cc
    BBitTest.cc
-
    BoostLogTest.cc 
+)
+
+
+set(TEST_SOURCES
+   PLogTest.cc 
 )
 
 
@@ -29,7 +34,7 @@ set(FAIL_TO_LINK_ON_WINDOWS
 
 
 
-foreach(TEST_CC_SRC ${TEST_CC_SRCS})
+foreach(TEST_CC_SRC ${TEST_SOURCES})
     get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
     add_executable(${TGT} ${TEST_CC_SRC})
 

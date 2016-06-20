@@ -9,12 +9,30 @@
 #endif
 
 
+#ifdef USE_BOOST_LOGGING
+
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include "boost/log/utility/setup.hpp"
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
+
+
+
+
+#else
+
+
+
+
+#endif
+
+
+
+
+
+
 
 // brap-
 #include "BFile.hh"

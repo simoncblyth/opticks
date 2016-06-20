@@ -8,9 +8,11 @@ include(EnvCompilationFlags)
 set(Boost_USE_STATIC_LIBS 1)
 
 find_package(OpticksBoost REQUIRED)
+find_package(PLog REQUIRED)
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
+   ${PLog_LIBRARIES}
 )
 
 
@@ -19,14 +21,20 @@ if(UNIX)
 endif(UNIX)
 
 #message("${name}:LIBRARIES : ${LIBRARIES} ")
+message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}
    ${OpticksBoost_INCLUDE_DIRS} 
+   ${PLog_INCLUDE_DIRS} 
 )
+
+
+
 add_definitions(
    ${OpticksBoost_DEFINITIONS} 
+   ${PLog_DEFINITIONS} 
 )
 
 
@@ -109,6 +117,6 @@ install(FILES ${HEADERS} DESTINATION include/${name})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 

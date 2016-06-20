@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <iomanip>
 #include <cstring>
 
@@ -10,9 +11,14 @@
 #include <boost/log/expressions.hpp>
 #include "boost/log/utility/setup.hpp"
 
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
+
+
+
+#define LOG BOOST_LOG_TRIVIAL
+
+
+// trace/debug/info/warning/error/fatal
 
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_FLAGS.hh"
