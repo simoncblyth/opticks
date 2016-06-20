@@ -17,6 +17,10 @@ template BRAP_API void foo<double>(double);
 template BRAP_API void foo<char*>(char*);
 
 
+
+
+////////////////  explicit instanciation in .hh /////////////
+
 class BRAP_API BBar {
    public:
         template <typename T>
@@ -36,9 +40,7 @@ template BRAP_API void BBar::foo<double>(double);
 template BRAP_API void BBar::foo<char*>(char*);
 
 
-
-
-
+////////////////  explicit instanciation in  .cc /////////////
 
 class BRAP_API BCar {
    public:
@@ -47,8 +49,7 @@ class BRAP_API BCar {
 
 };
 
-
-
+/////////////////////////////////////////////////////////////////////////
 
 
 

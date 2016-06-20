@@ -24,11 +24,6 @@ NPropNames* Opticks::G_MATERIAL_NAMES = NULL ;
 
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 const char* Opticks::COMPUTE = "--compute" ; 
-
-const char* Opticks::BNDIDX_NAME_  = "Boundary_Index" ;
-const char* Opticks::SEQHIS_NAME_  = "History_Sequence" ;
-const char* Opticks::SEQMAT_NAME_  = "Material_Sequence" ;
-
 const char* Opticks::COMPUTE_MODE_  = "Compute" ;
 const char* Opticks::INTEROP_MODE_  = "Interop" ;
 const char* Opticks::CFG4_MODE_  = "CfG4" ;
@@ -51,9 +46,6 @@ glm::vec4 Opticks::getDefaultDomainSpec()
 
     return bd ; 
 }
-
-
-
 
 
 Opticks::Opticks(int argc, char** argv, const char* envprefix)

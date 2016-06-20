@@ -19,7 +19,7 @@
 #include "BLog.hh"
 
 // optickscore-
-#include "Opticks.hh"
+#include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
 
@@ -1301,7 +1301,7 @@ void OpticksEvent::indexPhotonsCPU()
     assert(sequence->getShape(0) == recsel0->getShape(0));
 
     Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
-    idx->indexSequence(Opticks::SEQHIS_NAME_, Opticks::SEQMAT_NAME_);
+    idx->indexSequence(OpticksConst::SEQHIS_NAME_, OpticksConst::SEQMAT_NAME_);
 
     assert(!phosel->hasData()) ; 
 
@@ -1372,9 +1372,9 @@ void OpticksEvent::saveIndex(bool verbose)
 void OpticksEvent::loadIndex()
 {
     std::string ixdir = getSpeciesDir("ix");
-    m_seqhis = Index::load(ixdir.c_str(), m_tag, Opticks::SEQHIS_NAME_ );
-    m_seqmat = Index::load(ixdir.c_str(), m_tag, Opticks::SEQMAT_NAME_ );  
-    m_bndidx = Index::load(ixdir.c_str(), m_tag, Opticks::BNDIDX_NAME_ );
+    m_seqhis = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQHIS_NAME_ );
+    m_seqmat = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQMAT_NAME_ );  
+    m_bndidx = Index::load(ixdir.c_str(), m_tag, OpticksConst::BNDIDX_NAME_ );
 }
 
 
@@ -1388,15 +1388,15 @@ Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const cha
 
 Index* OpticksEvent::loadHistoryIndex( const char* typ, const char* tag, const char* udet)
 {
-    return loadNamedIndex(typ, tag, udet, Opticks::SEQHIS_NAME_); 
+    return loadNamedIndex(typ, tag, udet, OpticksConst::SEQHIS_NAME_); 
 }
 Index* OpticksEvent::loadMaterialIndex( const char* typ, const char* tag, const char* udet)
 {
-    return loadNamedIndex(typ, tag, udet, Opticks::SEQMAT_NAME_); 
+    return loadNamedIndex(typ, tag, udet, OpticksConst::SEQMAT_NAME_); 
 }
 Index* OpticksEvent::loadBoundaryIndex( const char* typ, const char* tag, const char* udet)
 {
-    return loadNamedIndex(typ, tag, udet, Opticks::BNDIDX_NAME_); 
+    return loadNamedIndex(typ, tag, udet, OpticksConst::BNDIDX_NAME_); 
 }
 
 

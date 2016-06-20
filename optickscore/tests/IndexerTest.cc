@@ -1,6 +1,6 @@
 // op --tindexer
 
-#include "Opticks.hh"
+#include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
 #include "BLog.hh"
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     assert(sequence->getShape(0) == phosel->getShape(0));
 
     Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
-    idx->indexSequence(Opticks::SEQHIS_NAME_, Opticks::SEQMAT_NAME_);
+    idx->indexSequence(OpticksConst::SEQHIS_NAME_, OpticksConst::SEQMAT_NAME_);
     idx->applyLookup<unsigned char>(phosel->getValues());
 
     phosel->save("/tmp/phosel.npy"); 

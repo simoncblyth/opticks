@@ -14,11 +14,10 @@ class NState ;
 class Parameters ; 
 class NPropNames ; 
 class Timer ; 
-
 class Types ;
 class Typ ;
-
 class Index ; 
+
 class OpticksEvent ;
 class OpticksResource ; 
 class OpticksColors ; 

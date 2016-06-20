@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdlib>
 template <typename T> class NPY ;
 template <typename T> class Sparse ;
 class Index ; 
@@ -13,15 +12,16 @@ class Index ;
 //     thrustrap-/TSparse_.cu
 // 
 
-
 #include "OKCORE_API_EXPORT.hh"
-
 template <typename T>
 class OKCORE_API Indexer {
    public:
        Indexer(NPY<T>* seq);
        void indexSequence(const char* seqhis_label, const char* seqmat_label);
-       template <typename S> void applyLookup(S* target);
+
+       template <typename S> 
+       void applyLookup(S* target);
+
        Index* getHistoryIndex();
        Index* getMaterialIndex();
    private:

@@ -3,11 +3,13 @@
 #include <numeric>
 
 #include "BLog.hh"
-#include "Indexer.hh"
-#include "Sparse.hh"
 
 // npy-
 #include "NPY.hpp"
+
+// okc-
+#include "Indexer.hh"
+#include "Sparse.hh"
 
 
 template <typename T>
@@ -106,6 +108,11 @@ void Indexer<T>::save()
     m_mat->save("/tmp/mat.npy");    
 }
 
+
 template class Indexer<unsigned long long> ;
-template void Indexer<unsigned long long>::applyLookup<unsigned char>(unsigned char* target);
+template OKCORE_API void Indexer<unsigned long long>::applyLookup<unsigned char>(unsigned char* target);
+
+
+
+
 

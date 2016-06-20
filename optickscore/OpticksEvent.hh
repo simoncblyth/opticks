@@ -72,7 +72,7 @@ primary
 #include "OKCORE_HEAD.hh"
 
 class OKCORE_API OpticksEvent {
-      friend class Opticks ; 
+      //friend class Opticks ; 
    public:
       static const char* PARAMETERS_NAME ;  
       static const char* TIMEFORMAT ;  

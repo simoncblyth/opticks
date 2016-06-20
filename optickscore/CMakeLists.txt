@@ -45,10 +45,12 @@ configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
 set(SOURCES
 
+    OpticksConst.cc
     OpticksQuery.cc
     OpticksColors.cc
     Sparse.cc
     OpticksEvent.cc
+    Indexer.cc
 
 )
 
@@ -60,7 +62,6 @@ set(REST_SOURCES
     OpticksResource.cc
     OpticksEngine.cc
     OpticksCfg.cc
-    Indexer.cc
 
     Composition.cc
     CompositionCfg.cc
@@ -91,17 +92,19 @@ set(HEADERS
     OKCORE_HEAD.hh
     OKCORE_TAIL.hh
 
+    OpticksConst.hh
+    OpticksQuery.hh
+    OpticksColors.hh
+    Sparse.hh
+    OpticksEvent.hh
+    Indexer.hh
+
     OpticksFlags.hh
     OpticksAttrSeq.hh
     OpticksResource.hh
-    OpticksColors.hh
-    OpticksQuery.hh
-    OpticksEvent.hh
     OpticksEngine.hh
     Opticks.hh
     OpticksCfg.hh
-    Indexer.hh
-    Sparse.hh
 
     Composition.hh
     CompositionCfg.hh
