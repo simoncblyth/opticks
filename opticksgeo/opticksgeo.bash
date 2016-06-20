@@ -25,8 +25,13 @@ opticksgeo-wipe(){
     rm -rf $bdir
 }
 
-opticksgeo--(){
-   ( opticksgeo-bcd ; make ${1:-install} )
+opticksgeo-config(){ echo Debug ; }
+opticksgeo--()
+{
+   local iwd=$PWD;
+   opticksgeo-bcd;
+   cmake --build . --config $(opticksgeo-config) --target ${1:-install};
+   cd $iwd
 }
 
 

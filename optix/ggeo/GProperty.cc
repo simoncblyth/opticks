@@ -1,4 +1,3 @@
-#include "GProperty.hh"
 
 #include <cstring>
 #include <cstdlib>
@@ -10,14 +9,16 @@
 #include <cassert>
 
 // brap-
-#include "md5digest.hh"
-#include "jsonutil.hh"
+#include "BFile.hh"
+#include "BDigest.hh"
+#include "BMap.hh"
 #include "BLog.hh"
 
 // npy-
 #include "NPY.hpp"
 
 // ggeo-
+#include "GProperty.hh"
 #include "GDomain.hh"
 #include "GAry.hh"
 
@@ -349,7 +350,7 @@ template <typename T>
 void GProperty<T>::save(const char* dir, const char* reldir, const char* name)
 {
     bool create = true ; 
-    std::string path = preparePath(dir, reldir, name, create);
+    std::string path = BFile::preparePath(dir, reldir, name, create);
     LOG(debug) << "GProperty<T>::save to " << path ; 
     save(path.c_str());
 }
@@ -480,7 +481,7 @@ char* GProperty<T>::digest()
     size_t d_nbytes = m_domain->getNbytes();
     assert(v_nbytes == d_nbytes);
 
-    MD5Digest dig ;
+    BDigest dig ;
     dig.update( (char*)m_values->getValues(), v_nbytes);
     dig.update( (char*)m_domain->getValues(), d_nbytes );
     return dig.finalize();

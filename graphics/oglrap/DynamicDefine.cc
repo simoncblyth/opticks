@@ -1,13 +1,11 @@
-#include "DynamicDefine.hh"
-
-#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <fstream>
+#include <boost/lexical_cast.hpp>
 
-#include "jsonutil.hh"
+#include "BFile.hh"
 #include "BLog.hh"
-// trace/debug/info/warning/error/fatal
 
+#include "DynamicDefine.hh"
 
 void DynamicDefine::write(const char* dir, const char* name)
 {
@@ -19,7 +17,7 @@ void DynamicDefine::write(const char* dir, const char* name)
 
 
      bool create = true ; 
-     std::string path = preparePath(dir,  name, create );   
+     std::string path = BFile::preparePath(dir,  name, create );   
 
      if(path.empty())
      {

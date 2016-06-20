@@ -1,12 +1,14 @@
-#include "TSparse.hh"
-#include "TBuf.hh"
-
-#include "stringutil.hh"
-#include "Index.hpp"
-
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+
+// rejig? BHex for boost avoidance ?
+#include "BHex.hh"
+#include "Index.hpp"
+
+#include "TSparse.hh"
+#include "TBuf.hh"
+
 
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
@@ -229,7 +231,7 @@ void TSparse<T>::populate_index(Index* index)
     { 
         T val = m_values_h[i] ; 
         int cnt = m_counts_h[i] ;
-        std::string key = m_hexkey ? as_hex(val) : as_dec(val) ;
+        std::string key = m_hexkey ? BHex<T>::as_hex(val) : BHex<T>::as_dec(val) ;
 
 #ifdef DEBUG
         std::cout << "TSparse<T>::populate_index " 

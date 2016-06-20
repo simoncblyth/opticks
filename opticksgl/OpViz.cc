@@ -1,5 +1,6 @@
-// npy-
 #include "BLog.hh"
+// npy-
+#include "NGLM.hpp"
 
 // opticks-
 #include "Composition.hh"

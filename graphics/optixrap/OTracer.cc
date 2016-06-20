@@ -8,7 +8,7 @@
 #include <optixu/optixu_math_stream_namespace.h>
 
 // brap-
-#include "timeutil.hh"
+#include "BTimer.hh"
 #include "BLog.hh"
 
 // npy-
@@ -50,7 +50,7 @@ void OTracer::trace()
 {
     LOG(debug) << "OTracer::trace " << m_trace_count ; 
 
-    double t0 = getRealTime();
+    double t0 = BTimer::RealTime();
 
     glm::vec3 eye ;
     glm::vec3 U ;
@@ -97,14 +97,14 @@ void OTracer::trace()
                    << " front " <<  gformat(front) 
                    ;
 
-    double t1 = getRealTime();
+    double t1 = BTimer::RealTime();
 
     unsigned int lmode = m_trace_count == 0 ? OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH|OContext::LAUNCH : OContext::LAUNCH ;
 
     //OContext::e_pinhole_camera_entry
     m_ocontext->launch( lmode,  m_entry_index,  width, height, m_trace_times );
 
-    double t2 = getRealTime();
+    double t2 = BTimer::RealTime();
 
     m_trace_count += 1 ; 
     m_trace_prep += t1 - t0 ; 

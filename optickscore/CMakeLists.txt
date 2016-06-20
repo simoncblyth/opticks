@@ -70,9 +70,6 @@ set(SOURCES
     OpticksEvent.cc
     Indexer.cc
 
-)
-
-set(REST_SOURCES
 
     Opticks.cc
     OpticksCfg.cc
@@ -130,7 +127,9 @@ set(HEADERS
     OpticksFlags.h
 )
 
-add_library( ${name}  SHARED ${SOURCES} )
+
+add_library( ${name}  SHARED ${SOURCES}  )
+
 target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})

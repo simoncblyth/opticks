@@ -323,16 +323,15 @@ oglrap-install(){
    oglrap-make install
 }
 
-
-
+oglrap-config(){ echo Debug ; }
 oglrap--()
 {
-    #oglrap-make clean
-    #oglrap-make
-    #oglrap-install
-
-    ( oglrap-bcd ; make ${1:-install} )
+   local iwd=$PWD;
+   oglrap-bcd;
+   cmake --build . --config $(oglrap-config) --target ${1:-install};
+   cd $iwd
 }
+
 
 
 oglrap-export()

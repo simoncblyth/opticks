@@ -90,11 +90,15 @@ opticksgl-install(){
    opticksgl-make install
 }
 
+opticksgl-config(){ echo Debug ; }
 opticksgl--()
 {
-    opticksgl-make clean
-    opticksgl-make
-    opticksgl-install
+   local iwd=$PWD;
+   opticksgl-bcd;
+   cmake --build . --config $(opticksgl-config) --target ${1:-install};
+   cd $iwd
 }
+
+
 
 

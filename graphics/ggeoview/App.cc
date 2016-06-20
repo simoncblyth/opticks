@@ -39,8 +39,12 @@
 #include "numpyserver.hpp"
 #endif
 
-// npy-
+
 #include "BLog.hh"
+#include "BStr.hh"
+
+// npy-
+#include "NGLM.hpp"
 #include "NState.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
@@ -57,7 +61,6 @@
 #include "SequenceNPY.hpp"
 #include "Types.hpp"
 #include "Index.hpp"
-#include "stringutil.hh"
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
@@ -65,13 +68,6 @@
 #include "Report.hpp"
 #include "NSlice.hpp"
 #include "NQuad.hpp"
-
-// glm-
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 
 
 // opticks-

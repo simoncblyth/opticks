@@ -5,7 +5,6 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_FLAGS.hh"
 
-
 template <typename T>
 class BRAP_API BHex {
    public:

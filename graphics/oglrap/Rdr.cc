@@ -1,27 +1,29 @@
-#include <GL/glew.h>
-#include <stdint.h>
-
+#include <cstdint>
 #include <iomanip>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-// oglrap-
-#include "Device.hh"
-#include "Rdr.hh"
-#include "Prog.hh"
-
-// optickscore-
-#include "Composition.hh"
-#include "OpticksEvent.hh"
+#include "BLog.hh"
+#include "BStr.hh"
 
 // npy-
 #include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
-#include "stringutil.hh"
 #include "GLMPrint.hpp"
-#include "BLog.hh"
+
+// optickscore-
+#include "Composition.hh"
+#include "OpticksEvent.hh"
+
+
+#include <GL/glew.h>
+
+// oglrap-
+#include "Device.hh"
+#include "Rdr.hh"
+#include "Prog.hh"
 
 
 const char* Rdr::PRINT = "print" ; 

@@ -10,9 +10,9 @@ namespace fs = boost::filesystem;
 
 // brap-
 #include "BLog.hh"
-#include "md5digest.hh"
-#include "stringutil.hh"
-#include "dirutil.hh"
+#include "BDigest.hh"
+#include "BStr.hh"
+#include "BDir.hh"
 
 // ggeo-
 #include "GPropertyMap.hh"
@@ -133,7 +133,7 @@ char* GPropertyMap<T>::ndigest()
 template <typename T>
 char* GPropertyMap<T>::pdigest(int ifr, int ito)
 {
-    MD5Digest dig ;
+    BDigest dig ;
 
     if(ito == ifr) printf("GPropertyMap<T>::pdigest unexpected ifr/ito %d/%d \n", ifr, ito); 
     assert(ito >= ifr);
@@ -207,7 +207,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
     }  
     else if(strncmp( m_name.c_str(), prefix, strlen(prefix)) == 0)
     { 
-        m_shortname = trimPointerSuffixPrefix(m_name.c_str(), prefix); 
+        m_shortname = BStr::trimPointerSuffixPrefix(m_name.c_str(), prefix); 
     }
     else
     {
@@ -223,7 +223,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
         else
         {
             //  JUNO names have no prefix and are short, so just trim the 0x tail
-            m_shortname = trimPointerSuffixPrefix(m_name.c_str(), NULL) ; 
+            m_shortname = BStr::trimPointerSuffixPrefix(m_name.c_str(), NULL) ; 
         }
 
 
@@ -635,7 +635,7 @@ GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const
         if(fs::exists(dir) && fs::is_directory(dir))
         {    
             std::vector<std::string> basenames ; 
-            dirlist( basenames, dir.string().c_str(), ext);
+            BDir::dirlist( basenames, dir.string().c_str(), ext);
             for(std::vector<std::string>::const_iterator it=basenames.begin() ; it != basenames.end()   ; it++)
             {
                  std::string propname = *it ;  

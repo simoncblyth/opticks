@@ -1,5 +1,38 @@
-#include "GGeo.hh"
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+#include <iomanip>
 
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+#include "BStr.hh"
+#include "BLog.hh"
+
+#include "NGLM.hpp"
+
+// npy-
+#include "NPY.hpp"
+#include "NQuad.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+#include "TorchStepNPY.hpp"
+#include "NSensorList.hpp"
+#include "NSensor.hpp"
+#include "Lookup.hpp"
+#include "Typ.hpp"
+
+
+// opticks-
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+#include "OpticksColors.hh"
+#include "Composition.hh"
+
+// ggeo-
+#include "GGeo.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
@@ -25,41 +58,6 @@
 #include "GMergedMesh.hh"
 #include "GItemIndex.hh"
 #include "GItemList.hh"
-
-
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-// npy-
-#include "NPY.hpp"
-#include "NQuad.hpp"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-#include "TorchStepNPY.hpp"
-#include "NSensorList.hpp"
-#include "NSensor.hpp"
-#include "Lookup.hpp"
-#include "Typ.hpp"
-#include "stringutil.hh"
-#include "BLog.hh"
-
-
-// opticks-
-#include "Opticks.hh"
-#include "OpticksResource.hh"
-#include "OpticksColors.hh"
-#include "Composition.hh"
-
-#include <cassert>
-#include <cstdio>
-#include <cstring>
-#include <iomanip>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 
 #define BSIZ 50
@@ -208,6 +206,11 @@ OpticksFlags* GGeo::getFlags()
 {
     return m_opticks->getFlags();
 }
+OpticksAttrSeq* GGeo::getFlagNames()
+{
+    return m_opticks->getFlagNames();
+} 
+
 OpticksResource* GGeo::getResource()
 {
     return m_opticks->getResource();
@@ -330,19 +333,18 @@ void GGeo::setupTyp()
 {
    // hmm maybe better elsewhere to avoid repetition from tests ? 
     Typ* typ = m_opticks->getTyp();
-    OpticksFlags* flags = m_opticks->getFlags();
     typ->setMaterialNames(m_materiallib->getNamesMap());
-    typ->setFlagNames(flags->getNamesMap());
+    typ->setFlagNames(m_opticks->getFlagNamesMap());
 }
 
 void GGeo::setupColors()
 {
     LOG(info) << "GGeo::setupColors" ; 
 
-    OpticksFlags* flags = m_opticks->getFlags();
+    //OpticksFlags* flags = m_opticks->getFlags();
 
     std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
-    std::vector<unsigned int>& flag_codes     = flags->getAttrIndex()->getColorCodes() ; 
+    std::vector<unsigned int>& flag_codes     = m_opticks->getFlagNames()->getColorCodes() ; 
 
     OpticksColors* colors = m_opticks->getColors();
 
@@ -421,7 +423,7 @@ const char* GGeo::getLVName(unsigned int index)
 
 bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 {
-    return listHasKey(ctrl, key, ",");
+    return BStr::listHasKey(ctrl, key, ",");
 }
 
 
@@ -1415,7 +1417,7 @@ glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int 
 bool GGeo::shouldMeshJoin(GMesh* mesh)
 {
     const char* shortname = mesh->getShortName();
-    bool join = m_join_cfg && listHasKey(m_join_cfg, shortname, ",") ; 
+    bool join = m_join_cfg && BStr::listHasKey(m_join_cfg, shortname, ",") ; 
 
     LOG(debug)<< "GGeo::shouldMeshJoin"
              << " shortname " << shortname

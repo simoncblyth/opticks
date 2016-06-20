@@ -4,9 +4,7 @@
 #include <string>
 
 //template <typename T> class NPY ; 
-
 #include "NPY.hpp"
-
 
 class Timer ; 
 class Parameters ;
@@ -167,7 +165,6 @@ class OKCORE_API OpticksEvent {
        void loadBuffers(bool verbose=true);
    public: 
        void createBuffers(); 
-   private:
        void createSpec(); 
    private:
        void setPhotonData(NPY<float>* photon_data);

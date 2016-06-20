@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <cstring>
 #include <vector>
@@ -113,6 +114,7 @@ class OKCORE_API Opticks {
        OpticksColors*       getColors(); 
        OpticksFlags*        getFlags(); 
        OpticksAttrSeq*      getFlagNames();
+       std::map<unsigned int, std::string> getFlagNamesMap();
    public:
        Types*               getTypes();
        Typ*                 getTyp();

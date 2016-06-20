@@ -1,22 +1,22 @@
+#include <cstdint>
+
 #include <GL/glew.h>
-#include <stdint.h>
+
+//
+#include "BLog.hh"
+
+// npy-
+#include "NPY.hpp"
+#include "NGLM.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+#include "NSlice.hpp"
 
 #include "Renderer.hh"
 #include "Prog.hh"
 #include "Composition.hh"
 #include "Texture.hh"
 
-// npy-
-#include "NPY.hpp"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-#include "NSlice.hpp"
-#include "BLog.hh"
-
-#include <glm/glm.hpp>  
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
 
 // ggeo
 #include "GArray.hh"

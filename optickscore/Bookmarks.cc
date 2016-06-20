@@ -10,6 +10,7 @@
 #include "BLog.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "NState.hpp"
 
 // optickscore-
@@ -117,7 +118,7 @@ void Bookmarks::init(const char* dir)
               << " dir " << ( dir ? dir : "NULL" )
               ; 
 
-    std::string _dir = fsutil::FormPath(dir) ;
+    std::string _dir = BFile::FormPath(dir) ;
 
     LOG(info) << "Bookmarks::init"
               << " expandvars dir " << _dir 
@@ -181,7 +182,7 @@ void Bookmarks::readdir()
 
     typedef std::vector<std::string> VS ;
     VS basenames ; 
-    dirlist(basenames, m_dir, ".ini" );  // basenames do not include the .ini
+    BDir::dirlist(basenames, m_dir, ".ini" );  // basenames do not include the .ini
 
 
     for(VS::const_iterator it=basenames.begin() ; it != basenames.end() ; it++)
@@ -234,7 +235,7 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
     }
     else
     {
-        if(Opticks::isShift(modifiers))
+        if(OpticksConst::isShift(modifiers))
         {
             create(num);
         }

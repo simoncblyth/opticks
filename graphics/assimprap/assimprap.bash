@@ -311,11 +311,15 @@ assimprap-full(){
     assimprap-install $*
 }
 
-assimprap--(){
-   ( assimprap-bcd ; make ${1:-install} )
+
+assimprap-config(){ echo Debug ; }
+assimprap--()
+{
+   local iwd=$PWD;
+   assimprap-bcd;
+   cmake --build . --config $(assimprap-config) --target ${1:-install};
+   cd $iwd
 }
-
-
 
 
 assimprap-lldb(){

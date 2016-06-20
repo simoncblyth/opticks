@@ -1,20 +1,19 @@
-#include "GColorMap.hh"
-#include "jsonutil.hh"
-
 #include <cassert>
 #include <iostream>
 #include <iomanip>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+#include "BLog.hh"
+#include "BFile.hh"
+#include "BMap.hh"
+
+#include "GColorMap.hh"
 
 
 GColorMap* GColorMap::load(const char* dir, const char* name)
 {
     assert(0);
 
-    if(!existsPath(dir, name))
+    if(!BFile::existsPath(dir, name))
     {
         LOG(warning) << "GColorMap::load FAILED no file at  " << dir << "/" << name ; 
         return NULL ;
@@ -26,7 +25,7 @@ GColorMap* GColorMap::load(const char* dir, const char* name)
 
 void GColorMap::loadMaps(const char* idpath, const char* name)
 {
-    loadMap<std::string, std::string>( m_iname2color, idpath, name );  
+    BMap<std::string, std::string>::load( &m_iname2color, idpath, name );  
 }
 
 void GColorMap::dump(const char* msg)

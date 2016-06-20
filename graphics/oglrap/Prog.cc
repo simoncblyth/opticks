@@ -4,10 +4,8 @@
 #include "Prog.hh"
 #include "Shdr.hh"
 
-
-#include "fsutil.hh"
+#include "BFile.hh"
 #include "BLog.hh"
-// trace/debug/info/warning/error/fatal
 
 
 const char* GL_type_to_string (GLenum type);
@@ -25,8 +23,8 @@ Prog::Prog(const char* basedir, const char* tag, const char* incl_path) :
     setInclPath(incl_path);
     setup();
 
-    std::string tagdir = fsutil::FormPath(basedir, tag);
-    if(fsutil::ExistsNativeDir(tagdir)) 
+    std::string tagdir = BFile::FormPath(basedir, tag);
+    if(BFile::ExistsNativeDir(tagdir)) 
     {
         m_tagdir = strdup(tagdir.c_str());
         readSources(m_tagdir);
@@ -56,8 +54,8 @@ void Prog::readSources(const char* tagdir)
 
     for(unsigned int i=0 ; i < m_names.size() ; ++i)
     {
-        std::string glsl = fsutil::FormPath(tagdir, m_names[i].c_str()) ;  
-        if(fsutil::ExistsNativeFile(glsl))
+        std::string glsl = BFile::FormPath(tagdir, m_names[i].c_str()) ;  
+        if(BFile::ExistsNativeFile(glsl))
         {
             const char* path = glsl.c_str();
             GLenum type = m_codes[i] ;

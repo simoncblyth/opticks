@@ -193,8 +193,13 @@ openmeshrap-full(){
   openmeshrap-install
 }
 
-openmeshrap--(){
-  ( openmeshrap-bcd ; make ${1:-install} ; )
+openmeshrap-config(){ echo Debug ; }
+openmeshrap--()
+{
+   local iwd=$PWD;
+   openmeshrap-bcd;
+   cmake --build . --config $(openmeshrap-config) --target ${1:-install};
+   cd $iwd
 }
 
 

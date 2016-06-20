@@ -16,8 +16,10 @@
 
 void test_history_sequence(Opticks* opticks)
 {
-    OpticksFlags* flags = opticks->getFlags();
-    OpticksAttrSeq* qflg = flags->getAttrIndex();
+    //OpticksFlags* flags = opticks->getFlags();
+    //OpticksAttrSeq* qflg = flags->getAttrIndex();
+    OpticksAttrSeq* qflg = opticks->getFlagNames();
+
     assert(qflg);
     qflg->dump();
 

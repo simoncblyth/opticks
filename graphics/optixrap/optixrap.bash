@@ -292,13 +292,14 @@ optixrap-full()
     optixrap-install
 }
 
+optixrap-config(){ echo Debug ; }
 optixrap--()
 {
-   ( optixrap-bcd ; make ${1:-install} ; )
+   local iwd=$PWD;
+   optixrap-bcd;
+   cmake --build . --config $(optixrap-config) --target ${1:-install};
+   cd $iwd
 }
-
-
-
 
 
 

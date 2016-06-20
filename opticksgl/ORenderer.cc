@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 
 // brap-
-#include "timeutil.hh"
+#include "BTimer.hh"
 #include "BLog.hh"
 
 // optixrap-
@@ -42,15 +42,15 @@ void ORenderer::render()
 {
     LOG(debug) << "ORenderer::render " << m_render_count ; 
 
-    double t0 = getRealTime();
+    double t0 = BTimer::RealTime();
 
     m_frame->push_PBO_to_Texture();
 
-    double t1 = getRealTime();
+    double t1 = BTimer::RealTime();
 
     m_renderer->render();
 
-    double t2 = getRealTime();
+    double t2 = BTimer::RealTime();
 
     m_render_count += 1 ; 
     m_render_prep += t1 - t0 ; 

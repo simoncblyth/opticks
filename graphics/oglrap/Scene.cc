@@ -4,7 +4,7 @@
 #include <cstring>
 
 // opticks-
-#include "Opticks.hh"
+#include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 
 // ggeo-
@@ -806,7 +806,7 @@ void Scene::setTarget(unsigned int target, bool aim)
 
 void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
 {
-    bool nudge = modifiers & Opticks::e_shift ;
+    bool nudge = modifiers & OpticksConst::e_shift ;
     if(nudge)
     {
         m_composition->setChanged(true) ;

@@ -5,8 +5,9 @@
 
 #include "OpticksPhoton.h"
 
-class Opticks ; 
-class OpticksAttrSeq ; 
+//class Opticks ; 
+//class OpticksAttrSeq ; 
+
 class Index ; 
 
 // replacing part of Types
@@ -52,19 +53,20 @@ class OKCORE_API OpticksFlags {
        static const char* Flag(const unsigned int flag);
        static std::string FlagSequence(const unsigned long long seqhis);
     public:
-        OpticksFlags(Opticks* cache, const char* path=ENUM_HEADER_PATH);
+    //    OpticksFlags(Opticks* cache, const char* path=ENUM_HEADER_PATH);
+        OpticksFlags(const char* path=ENUM_HEADER_PATH);
         void save(const char* idpath);
     private:
         void init(const char* path);
         Index* parseFlags(const char* path);
     public:
-        std::map<unsigned int, std::string> getNamesMap(); 
+//        std::map<unsigned int, std::string> getNamesMap(); 
     public:
         Index*             getIndex();  
-        OpticksAttrSeq*    getAttrIndex();  
+//        OpticksAttrSeq*    getAttrIndex();  
     private:
-        Opticks*           m_cache  ;
-        OpticksAttrSeq*    m_aindex ; 
+//        Opticks*           m_cache  ;
+//        OpticksAttrSeq*    m_aindex ; 
         Index*             m_index ; 
 };
 

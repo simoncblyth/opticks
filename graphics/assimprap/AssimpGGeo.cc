@@ -1,17 +1,20 @@
-
-
-#include "AssimpGGeo.hh"
-#include "AssimpGeometry.hh"
-#include "AssimpTree.hh"
-#include "AssimpSelection.hh"
-#include "AssimpNode.hh"
-
-#include <assimp/types.h>
-#include <assimp/scene.h>
 #include <algorithm>
 #include <iomanip>
 #include <climits>
 
+#include <boost/algorithm/string.hpp>
+
+#include "BLog.hh"
+#include "BStr.hh"
+
+// npy-
+#include "NSensorList.hpp"
+#include "NSensor.hpp"
+
+//okc-
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+#include "OpticksQuery.hh"
 
 #include "GVector.hh"
 #include "GMatrix.hh"
@@ -23,25 +26,18 @@
 #include "GOpticalSurface.hh"
 #include "GSolid.hh"
 #include "GDomain.hh"
-
-
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
-// npy-
-#include "stringutil.hh"
-#include "NSensorList.hpp"
-#include "NSensor.hpp"
+#include "AssimpGGeo.hh"
+#include "AssimpGeometry.hh"
+#include "AssimpTree.hh"
+#include "AssimpSelection.hh"
+#include "AssimpNode.hh"
 
+#include <assimp/types.h>
+#include <assimp/scene.h>
 
-//opticks-
-#include "Opticks.hh"
-#include "OpticksResource.hh"
-#include "OpticksQuery.hh"
-
-
-#include <boost/algorithm/string.hpp>
-#include "BLog.hh"
 
 
 /*
@@ -499,7 +495,7 @@ which are fabricated by AssimpGGeo::convertSensors.
                   << " sslv " << sslv 
                   ;
 
-        std::string name = trimPointerSuffixPrefix(sslv, NULL );
+        std::string name = BStr::trimPointerSuffixPrefix(sslv, NULL );
         name += GSurfaceLib::SENSOR_SURFACE ; 
 
         const char* osnam = name.c_str() ;

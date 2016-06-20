@@ -127,9 +127,13 @@ opticksop-full()
    opticksop-install
 }
 
+opticksop-config(){ echo Debug ; }
 opticksop--()
 {
-   ( opticksop-bcd ; make ${1:-install} ; )
+   local iwd=$PWD;
+   opticksop-bcd;
+   cmake --build . --config $(opticksop-config) --target ${1:-install};
+   cd $iwd
 }
 
 opticksop-index(){

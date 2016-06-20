@@ -64,6 +64,7 @@ set(TOXIC_SOURCES
 
 set(HEADERS
   BRAP_API_EXPORT.hh
+  BDirect.hh 
 
   BDemo.hh 
   BTime.hh

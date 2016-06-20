@@ -7,7 +7,7 @@
 #include <boost/lexical_cast.hpp>
 
 // brap-
-#include "md5digest.hh"
+#include "BDigest.hh"
 #include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
@@ -116,7 +116,7 @@ GOpticalSurface::~GOpticalSurface()
 
 char* GOpticalSurface::digest()
 {
-    MD5Digest dig ;
+    BDigest dig ;
     dig.update( m_type,   strlen(m_type) );
     dig.update( m_model,  strlen(m_model) );
     dig.update( m_finish, strlen(m_finish) );

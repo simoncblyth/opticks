@@ -1,18 +1,19 @@
+#include <algorithm>
+#include <cstdio>
+
+// npy-
+#include "BStr.hh"
+#include "BLog.hh"
+
+// okc-
+#include "OpticksQuery.hh"
+
 #include "AssimpSelection.hh"
 #include "AssimpNode.hh"
 #include "AssimpCommon.hh"
 #include "AssimpRegistry.hh"
 
-#include <algorithm>
-#include <cstdio>
 #include <assimp/scene.h>
-
-// npy-
-#include "stringutil.hh"
-#include "BLog.hh"
-
-// optickscore-
-#include "OpticksQuery.hh"
 
 void AssimpSelection::init()
 {

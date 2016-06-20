@@ -528,7 +528,8 @@ void GUI::show(bool* opened)
         gui_item_index(qsur);
     } 
 
-    OpticksAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
+    //OpticksAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
+    OpticksAttrSeq* qflg = m_ggeo->getFlagNames();
     if(qflg)
     {
         ImGui::Spacing();

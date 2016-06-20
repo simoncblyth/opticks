@@ -8,7 +8,7 @@
 #include <boost/algorithm/string.hpp>
 
 // brap-
-#include "dirutil.hh"
+#include "BDir.hh"
 #include "BLog.hh"
 
 // npy-
@@ -393,7 +393,7 @@ void GPropertyLib::loadRaw()
     std::string dir = getCacheDir();   // eg $IDPATH/GScintillatorLib
 
     std::vector<std::string> names ; 
-    dirdirlist(names, dir.c_str() );   // find sub-directory names for all raw items in lib eg GdDopedLS,LiquidScintillator
+    BDir::dirdirlist(names, dir.c_str() );   // find sub-directory names for all raw items in lib eg GdDopedLS,LiquidScintillator
    
     for(std::vector<std::string>::iterator it=names.begin() ; it != names.end() ; it++ )
     {

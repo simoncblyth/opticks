@@ -1,20 +1,17 @@
-#include "Shdr.hh"
-
-#include <GL/glew.h>
-
-
-#include "string.h"
-
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 
-
 #include <boost/algorithm/string.hpp>
 
-#include "fsutil.hh"
+#include "BFile.hh"
 #include "BLog.hh"
-// trace/debug/info/warning/error/fatal
+
+#include "Shdr.hh"
+
+#include <GL/glew.h>
+
 
 const char* Shdr::incl_prefix = "#incl" ;  // not "#include" to remind that this is non-standard
 
@@ -86,8 +83,8 @@ std::string Shdr::resolve(const char* name)
     std::string path ; 
     for(unsigned int i=0 ; i < m_incl_dirs.size() ; i++)
     {
-        std::string candidate = fsutil::FormPath(m_incl_dirs[i].c_str(), name );  
-        if(fsutil::ExistsNativeFile(candidate))
+        std::string candidate = BFile::FormPath(m_incl_dirs[i].c_str(), name );  
+        if(BFile::ExistsNativeFile(candidate))
         {
             path = candidate ;
             break ;  
@@ -98,7 +95,7 @@ std::string Shdr::resolve(const char* name)
 
 void Shdr::readFile(const char* path)
 {
-    std::string npath = fsutil::FormPath(path);
+    std::string npath = BFile::FormPath(path);
 
     LOG(debug) << "Shdr::readFile " 
                << " path " << path 

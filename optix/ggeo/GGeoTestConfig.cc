@@ -1,15 +1,15 @@
-#include "GGeoTestConfig.hh"
-
-#include "GMaker.hh"
-
-#include "BLog.hh"
-#include "NSlice.hpp"
-#include "GLMFormat.hpp"
-#include "stringutil.hh"
-
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include "BLog.hh"
+#include "BStr.hh"
+
+#include "NSlice.hpp"
+#include "GLMFormat.hpp"
+
+#include "GMaker.hh"
+#include "GGeoTestConfig.hh"
 
 const char* GGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
@@ -44,7 +44,7 @@ void GGeoTestConfig::configure(const char* config)
     LOG(debug) << "GGeoTestConfig::configure" ; 
     m_config = config ? strdup(config) : DEFAULT_CONFIG ; 
 
-    m_cfg = ekv_split(m_config,'_',"="); // element-delim, keyval-delim
+    m_cfg = BStr::ekv_split(m_config,'_',"="); // element-delim, keyval-delim
 
     for(std::vector<KV>::const_iterator it=m_cfg.begin() ; it!=m_cfg.end() ; it++)
     {

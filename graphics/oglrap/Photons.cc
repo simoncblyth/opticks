@@ -5,8 +5,8 @@
 
 // npy-
 #include "PhotonsNPY.hpp"
-//#include "BoundariesNPY.hpp"
 #include "Index.hpp"
+#include "Types.hpp"
 
 // ggeo-
 #include "GItemIndex.hh"
@@ -56,6 +56,7 @@ void Photons::gui()
 void Photons::gui_flag_selection()
 {
 #ifdef GUI_
+    // huh not replaced by OpticksAttrSeq ? 
     std::vector<std::string>& labels = m_types->getFlagLabels();  
     bool* flag_selection = m_types->getFlagSelection();
     for(unsigned int i=0 ; i < labels.size() ; i++)

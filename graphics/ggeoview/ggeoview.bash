@@ -1311,13 +1311,13 @@ ggeoview-dbg()
 }
 
 
+ggeoview-config(){ echo Debug ; }
 ggeoview--()
 {
-   # ggeoview-make clean
-   # ggeoview-make
-   # ggeoview-install
-
-   ( ggeoview-bcd ; make ${1:-install} )
+   local iwd=$PWD;
+   ggeoview-bcd;
+   cmake --build . --config $(ggeoview-config) --target ${1:-install};
+   cd $iwd
 }
 
 

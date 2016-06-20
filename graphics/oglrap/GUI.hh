@@ -7,7 +7,6 @@
 #include <vector>
 
 class GGeo ; 
-//class GLoader ; 
 class GItemIndex ; 
 class OpticksAttrSeq ; 
 

@@ -1,8 +1,3 @@
-#include  "GTreePresent.hh"
-#include "GGeo.hh"
-#include "GMesh.hh"
-#include "GSolid.hh"
-
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -10,12 +5,14 @@
 #include <algorithm>
 #include <iterator>
 
-
 // brap-
-#include "fsutil.hh"
+#include "BFile.hh"
 #include "BLog.hh"
-// trace/debug/info/warning/error/fatal
 
+#include "GTreePresent.hh"
+#include "GGeo.hh"
+#include "GMesh.hh"
+#include "GSolid.hh"
 
 void GTreePresent::traverse()
 {
@@ -84,9 +81,9 @@ void GTreePresent::dump(const char* msg)
 
 void GTreePresent::write(const char* dir)
 {
-    fsutil::CreateDir(dir);
+    BFile::CreateDir(dir);
 
-    std::string txtpath = fsutil::FormPath(dir, "GTreePresent.txt");
+    std::string txtpath = BFile::FormPath(dir, "GTreePresent.txt");
     const char* path = txtpath.c_str();
     LOG(info) << "GTreePresent::write " << path ;  
     { 

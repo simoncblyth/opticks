@@ -1,9 +1,8 @@
 #include <iomanip>
 
 // brap-
-#include "timeutil.hh"
+#include "BTimer.hh"
 #include "BLog.hh"
-// trace/debug/info/warning/error/fatal
 
 // npy-
 #include "NPY.hpp"
@@ -154,22 +153,22 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     if(lmode & VALIDATE)
     {
         double t0, t1 ; 
-        t0 = getRealTime();
+        t0 = BTimer::RealTime();
 
         m_context->validate();
 
-        t1 = getRealTime();
+        t1 = BTimer::RealTime();
         if(times) times->validate  += t1 - t0 ;
     }
 
     if(lmode & COMPILE)
     {
         double t0, t1 ; 
-        t0 = getRealTime();
+        t0 = BTimer::RealTime();
 
         m_context->compile();
 
-        t1 = getRealTime();
+        t1 = BTimer::RealTime();
         if(times) times->compile  += t1 - t0 ;
     }
 
@@ -177,11 +176,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     if(lmode & PRELAUNCH)
     {
         double t0, t1 ; 
-        t0 = getRealTime();
+        t0 = BTimer::RealTime();
 
         m_context->launch( entry, 0, 0); 
 
-        t1 = getRealTime();
+        t1 = BTimer::RealTime();
         if(times) times->prelaunch  += t1 - t0 ;
     }
 
@@ -189,11 +188,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     if(lmode & LAUNCH)
     {
         double t0, t1 ; 
-        t0 = getRealTime();
+        t0 = BTimer::RealTime();
 
         m_context->launch( entry, width, height ); 
 
-        t1 = getRealTime();
+        t1 = BTimer::RealTime();
         if(times) times->launch  += t1 - t0 ;
     }
 

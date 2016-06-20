@@ -1,9 +1,9 @@
 # === func-gen- : optickscore/optickscore fgp optickscore/optickscore.bash fgn optickscore fgh optickscore
-optickscore-rel(){      echo optickscore ; }
-optickscore-src(){      echo optickscore/optickscore.bash ; }
-optickscore-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optickscore-src)} ; }
-optickscore-vi(){       vi $(optickscore-source) ; }
-optickscore-usage(){ cat << EOU
+okc-rel(){      echo optickscore ; }
+okc-src(){      echo optickscore/optickscore.bash ; }
+okc-source(){   echo ${BASH_SOURCE:-$(env-home)/$(okc-src)} ; }
+okc-vi(){       vi $(okc-source) ; }
+okc-usage(){ cat << EOU
 
 Brief History
 ==============
@@ -476,46 +476,46 @@ Related
 EOU
 }
 
-optickscore-env(){      elocal- ; opticks- ;  }
-optickscore-sdir(){ echo $(env-home)/optickscore ; }
+okc-env(){      elocal- ; opticks- ;  }
+okc-sdir(){ echo $(env-home)/optickscore ; }
 
 
-optickscore-idir(){ echo $(opticks-idir) ; }
-optickscore-bdir(){ echo $(opticks-bdir)/$(optickscore-rel) ; }
+okc-idir(){ echo $(opticks-idir) ; }
+okc-bdir(){ echo $(opticks-bdir)/$(okc-rel) ; }
 
-optickscore-scd(){  cd $(optickscore-sdir); }
-optickscore-cd(){  cd $(optickscore-sdir)/$1 ; }
+okc-scd(){  cd $(okc-sdir); }
+okc-cd(){  cd $(okc-sdir)/$1 ; }
 
-optickscore-icd(){  cd $(optickscore-idir); }
-optickscore-bcd(){  cd $(optickscore-bdir); }
+okc-icd(){  cd $(okc-idir); }
+okc-bcd(){  cd $(okc-bdir); }
 
-optickscore-name(){ echo OpticksCore ; }
+okc-name(){ echo OpticksCore ; }
 
-optickscore-bin(){ echo $(optickscore-idir)/bin/${1:-OpticksResourceTest} ; }
+okc-bin(){ echo $(okc-idir)/bin/${1:-OpticksResourceTest} ; }
 
 
-optickscore-wipe(){
-   local bdir=$(optickscore-bdir)
+okc-wipe(){
+   local bdir=$(okc-bdir)
    rm -rf $bdir
 }
 
-optickscore-config(){ echo Debug ; }
+okc-config(){ echo Debug ; }
 
-optickscore--(){
+okc--(){
    local iwd=$PWD
-   optickscore-bcd
+   okc-bcd
    cmake \
           --build . \
-          --config $(optickscore-config) \
+          --config $(okc-config) \
           --target ${1:-install}
 
 
    cd $iwd
 }
 
-optickscore-generate-exports()
+okc-generate-exports()
 {
-   optickscore-scd
+   okc-scd
    importlib-
    importlib-exports OpticksCore OKCORE_API    
 

@@ -29,7 +29,7 @@ add_subdirectory(numerics/npy)
 #add_subdirectory(numerics/npyclient)   
 add_subdirectory(optickscore)         
 
-#set(REST ON)
+set(REST ON)
 if(REST)
    add_subdirectory(optix/ggeo)     
    add_subdirectory(graphics/assimprap)   

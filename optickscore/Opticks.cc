@@ -505,7 +505,7 @@ OpticksEvent* Opticks::makeEvent()
     evt->setWavelengthDomain(getWavelengthDomain());
 
     evt->setMaxRec(m_cfg->getRecordMax());
-    evt->createSpec();
+    evt->createSpec();   
     evt->createBuffers();  // not-allocated and with itemcount 0 
  
     // ctor args define the identity of the Evt, coming in from config
@@ -606,6 +606,13 @@ OpticksQuery*   Opticks::getQuery() {     return m_resource->getQuery(); }
 OpticksColors*  Opticks::getColors() {    return m_resource->getColors(); }
 OpticksFlags*   Opticks::getFlags() {     return m_resource->getFlags(); }
 OpticksAttrSeq* Opticks::getFlagNames() { return m_resource->getFlagNames(); }
+
+std::map<unsigned int, std::string> Opticks::getFlagNamesMap()
+{   
+    return m_resource->getFlagNamesMap() ;
+}
+
+
 Types*          Opticks::getTypes() {     return m_resource->getTypes(); }
 Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdPath() : NULL ; }

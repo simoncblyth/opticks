@@ -1132,10 +1132,12 @@ ggeo-full(){
    ggeo-install $*
 }
 
-
-
+ggeo-config(){ echo Debug ; }
 ggeo--(){
-   ( ggeo-bcd ; make ${1:-install} ) 
+   local iwd=$PWD;
+   ggeo-bcd;
+   cmake --build . --config $(ggeo-config) --target ${1:-install};
+   cd $iwd
 }
 
 ggeo-lldb(){

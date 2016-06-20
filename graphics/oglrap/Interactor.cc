@@ -1,29 +1,28 @@
-#include "Interactor.hh"
-#include "stdio.h"
+#include <cstdio>
+#include <string>
+#include <sstream>
 
-#include "Frame.hh"
-//#include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
+#include "BLog.hh"
 
+#include "NGLM.hpp"
 
-#include "Opticks.hh"
-
+#include "OpticksConst.hh"
 #include "Composition.hh"
 #include "Bookmarks.hh"
-
 #include "Camera.hh"
 #include "View.hh"
 #include "Trackball.hh"
 #include "Clipper.hh"
-#include "Touchable.hh"
-#include "Scene.hh"
 #include "Animator.hh"
 
 
-#include <string>
-#include <sstream>
+#include "Frame.hh"
+#include "Touchable.hh"
+#include "Scene.hh"
+#include "Interactor.hh"
 
+//#include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
 
-#include "BLog.hh"
 
 #ifdef GUI_
 #include <imgui.h>
@@ -38,7 +37,7 @@ const char* Interactor::OPTIXMODE  = "optixmode" ;
 
 void Interactor::nextOptiXResolutionScale(unsigned int modifiers)
 {
-    if(modifiers & Opticks::e_shift)
+    if(modifiers & OpticksConst::e_shift)
         setOptiXResolutionScale(getOptiXResolutionScale()/2);
     else
         setOptiXResolutionScale(getOptiXResolutionScale()*2);
@@ -318,10 +317,10 @@ void Interactor::key_pressed(unsigned int key)
 unsigned int Interactor::getModifiers()
 {
     unsigned int modifiers = 0 ;
-    if( m_keys_down[GLFW_KEY_LEFT_SHIFT]   || m_keys_down[GLFW_KEY_RIGHT_SHIFT] )    modifiers += Opticks::e_shift ;
-    if( m_keys_down[GLFW_KEY_LEFT_CONTROL] || m_keys_down[GLFW_KEY_RIGHT_CONTROL] )  modifiers += Opticks::e_control ;
-    if( m_keys_down[GLFW_KEY_LEFT_ALT]     || m_keys_down[GLFW_KEY_RIGHT_ALT] )      modifiers += Opticks::e_option ;
-    if( m_keys_down[GLFW_KEY_LEFT_SUPER]   || m_keys_down[GLFW_KEY_RIGHT_SUPER] )    modifiers += Opticks::e_command ;
+    if( m_keys_down[GLFW_KEY_LEFT_SHIFT]   || m_keys_down[GLFW_KEY_RIGHT_SHIFT] )    modifiers += OpticksConst::e_shift ;
+    if( m_keys_down[GLFW_KEY_LEFT_CONTROL] || m_keys_down[GLFW_KEY_RIGHT_CONTROL] )  modifiers += OpticksConst::e_control ;
+    if( m_keys_down[GLFW_KEY_LEFT_ALT]     || m_keys_down[GLFW_KEY_RIGHT_ALT] )      modifiers += OpticksConst::e_option ;
+    if( m_keys_down[GLFW_KEY_LEFT_SUPER]   || m_keys_down[GLFW_KEY_RIGHT_SUPER] )    modifiers += OpticksConst::e_command ;
     return modifiers ; 
 }
 

@@ -6,7 +6,7 @@
 #include <iomanip>
 
 // brap-
-#include "md5digest.hh"
+#include "BDigest.hh"
 #include "BLog.hh"
 // trace/debug/info/warning/error/fatal
 
@@ -188,7 +188,7 @@ std::string GNode::localDigest()
     char meshidx[8];
     snprintf(meshidx, 8, "%u", m_mesh->getIndex());
 
-    MD5Digest dig ;
+    BDigest dig ;
     dig.update( (char*)tdig.c_str(), strlen(tdig.c_str()) ); 
     dig.update( meshidx , strlen(meshidx) ); 
     return dig.finalize();
@@ -205,7 +205,7 @@ std::string GNode::meshDigest()
 
 std::string GNode::localDigest(std::vector<GNode*>& nodes, GNode* extra)
 {
-    MD5Digest dig ;
+    BDigest dig ;
     for(unsigned int i=0 ; i < nodes.size() ; i++)
     {
         GNode* node = nodes[i];

@@ -1,22 +1,20 @@
+
+#include <cfloat>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
+#include <iomanip>
+#include <algorithm>
+
+#include "BStr.hh"
+#include "BLog.hh"
+
 #include "GMesh.hh"
 #include "NPY.hpp"
 #include "GMeshFixer.hh"
 #include "GBuffer.hh"
 
-#include "float.h"
-#include "stdio.h"
-#include "string.h"
-#include "assert.h"
-#include "stringutil.hh"
-
-#include <iomanip>
-#include <algorithm>
-
 #include "numpy.hpp"
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -1163,7 +1161,7 @@ GMesh* GMesh::load_deduped(const char* dir, const char* typedir, const char* ins
 void GMesh::findShortName()
 {
    if(!m_name) return ; 
-   m_shortname = trimPointerSuffixPrefix(m_name, NULL );   
+   m_shortname = BStr::trimPointerSuffixPrefix(m_name, NULL );   
 }
 
 

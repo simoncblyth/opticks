@@ -15,6 +15,7 @@
 class Opticks ; 
 class OpticksColors ; 
 class OpticksResource ; 
+class OpticksAttrSeq ; 
 class Composition ; 
 
 
@@ -224,6 +225,7 @@ class GGeo : public NConfigurable {
         OpticksColors*     getColors();
         OpticksFlags*      getFlags(); 
         OpticksResource*   getResource();
+        OpticksAttrSeq*    getFlagNames(); 
         Opticks*           getOpticks();
     public:
         GMesh* getMesh(unsigned int index);  

@@ -5,7 +5,7 @@
 #include <cstdio>
 
 // brap-
-#include "md5digest.hh"
+#include "BDigest.hh"
 
 // ggeo-
 #include "GMatrix.hh"
@@ -277,7 +277,7 @@ std::string GMatrix<T>::brief(unsigned int w)
 template<typename T>
 std::string GMatrix<T>::digest()
 {
-    MD5Digest dig ;
+    BDigest dig ;
     dig.update( (char*)getPointer(), sizeof(T)*16 );  
     return dig.finalize();
 }

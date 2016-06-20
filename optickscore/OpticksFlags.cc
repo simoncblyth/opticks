@@ -4,11 +4,12 @@
 #include <string>
 
 #include "Index.hpp"
-#include "OpticksAttrSeq.hh"
-#include "Opticks.hh"
 
-#include "crossplatform.hh"
-#include "regexsearch.hh"
+//#include "OpticksAttrSeq.hh"
+//#include "Opticks.hh"
+
+#include "BBit.hh"
+#include "BRegex.hh"
 #include "BLog.hh"
 
 #include "OpticksFlags.hh"
@@ -129,31 +130,20 @@ unsigned int OpticksFlags::SourceCode(const char* type)
 
 
 
-
-
-
-OpticksFlags::OpticksFlags(Opticks* cache, const char* path) 
+OpticksFlags::OpticksFlags(const char* path) 
     :
-    m_cache(cache),
-    m_aindex(NULL),
     m_index(NULL)
 {
     init(path);
 }
 
-OpticksAttrSeq* OpticksFlags::getAttrIndex()
-{
-    return m_aindex ; 
-}  
+ 
+
+
 Index* OpticksFlags::getIndex()
 {
     return m_index ; 
 } 
-
-
-
-
-
 
 void OpticksFlags::init(const char* path)
 {
@@ -168,10 +158,16 @@ void OpticksFlags::init(const char* path)
     
     assert(num_flags > 0 && "missing envvar ENV_HOME or you need to update ENUM_HEADER_PATH ");
 
-    m_aindex = new OpticksAttrSeq(m_cache, "GFlags");
-    m_aindex->loadPrefs(); // color, abbrev and order 
-    m_aindex->setSequence(m_index);
+   // moved to OpticksResource
+   // m_aindex = new OpticksAttrSeq(m_cache, "GFlags");
+   // m_aindex->loadPrefs(); // color, abbrev and order 
+   // m_aindex->setSequence(m_index);
 }
+
+//OpticksAttrSeq* OpticksFlags::getAttrIndex()
+//{
+//    return m_aindex ; 
+//} 
 
 void OpticksFlags::save(const char* idpath)
 {
@@ -184,14 +180,14 @@ Index* OpticksFlags::parseFlags(const char* path)
     typedef std::pair<unsigned int, std::string>  upair_t ;
     typedef std::vector<upair_t>                  upairs_t ;
     upairs_t ups ;
-    enum_regexsearch( ups, path ); 
+    BRegex::enum_regexsearch( ups, path ); 
 
     Index* index = new Index("GFlags");
     for(unsigned int i=0 ; i < ups.size() ; i++)
     {
         upair_t p = ups[i];
         unsigned int mask = p.first ;
-        unsigned int bitpos = ffs(mask);  // first set bit, 1-based bit position
+        unsigned int bitpos = BBit::ffs(mask);  // first set bit, 1-based bit position
         unsigned int xmask = 1 << (bitpos-1) ; 
         assert( mask == xmask);
         index->add( p.second.c_str(), bitpos );
@@ -199,8 +195,8 @@ Index* OpticksFlags::parseFlags(const char* path)
     return index ; 
 }
 
-std::map<unsigned int, std::string> OpticksFlags::getNamesMap()
-{
-    return m_aindex->getNamesMap() ; 
-}
+//std::map<unsigned int, std::string> OpticksFlags::getNamesMap()
+//{
+//    return m_aindex->getNamesMap() ; 
+//}
 

@@ -2,8 +2,7 @@
 #include "GMesh.hh"
 
 // brap-
-//#include "stringutil.hh"
-#include "md5digest.hh"
+#include "BArrayDigest.hh"
 
 void GMeshFixer::copyWithoutVertexDuplicates()
 {
@@ -25,7 +24,7 @@ void GMeshFixer::mapVertices()
     unsigned int vidx = 0 ;         // new de-duped vertex index, into array to be created
     for(unsigned int i=0 ; i < num_vertices ; i++)
     {
-        std::string dig = MD5Digest::arraydigest<float>(vertices + 3*i, 3);
+        std::string dig = BArrayDigest<float>::arraydigest(vertices + 3*i, 3);
 
         if(m_vtxmap.count(dig) == 0)  // unseen vertex based on digest identity
         {

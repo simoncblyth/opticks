@@ -20,6 +20,7 @@ namespace fs = boost::filesystem;
 #include "Map.hpp"
 #include "Typ.hpp"
 #include "Types.hpp"
+#include "Index.hpp"
 
 
 // CMake generated defines from binary_dir/inc
@@ -67,6 +68,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_query(NULL),
        m_colors(NULL),
        m_flags(NULL),
+       m_flagnames(NULL),
        m_types(NULL),
        m_typ(NULL),
        m_dayabay(false),
@@ -317,7 +319,7 @@ void OpticksResource::readEnvironment()
     m_meshfixcfg   = BSys::getenvvar(m_envprefix, "MESHFIX_CFG");
 
     m_query = new OpticksQuery(m_query_string);
-    std::string query_digest = MD5Digest::md5digest( m_query_string, strlen(m_query_string));
+    std::string query_digest = BDigest::md5digest( m_query_string, strlen(m_query_string));
 
     m_digest = strdup(query_digest.c_str());
  
@@ -327,7 +329,7 @@ void OpticksResource::readEnvironment()
 
     if(m_daepath)
     {
-        std::string kfn = insertField( m_daepath, '.', -1 , m_digest );
+        std::string kfn = BStr::insertField( m_daepath, '.', -1 , m_digest );
 
         m_idpath = strdup(kfn.c_str());
 
@@ -579,7 +581,8 @@ OpticksFlags* OpticksResource::getFlags()
 {
     if(!m_flags)
     {
-        m_flags = new OpticksFlags(m_opticks); 
+        //m_flags = new OpticksFlags(m_opticks); 
+        m_flags = new OpticksFlags(); 
         m_flags->save(getIdPath());
     }
     return m_flags ;
@@ -588,11 +591,31 @@ OpticksFlags* OpticksResource::getFlags()
 
 OpticksAttrSeq* OpticksResource::getFlagNames()
 {
-    OpticksFlags* flags = getFlags();
-    OpticksAttrSeq* qflg = flags->getAttrIndex();
-    qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);    
-    return qflg ; 
+    if(!m_flagnames)
+    {
+        OpticksFlags* flags = getFlags();
+        Index* index = flags->getIndex();
+
+        m_flagnames = new OpticksAttrSeq(m_opticks, "GFlags");
+        m_flagnames->loadPrefs(); // color, abbrev and order 
+        m_flagnames->setSequence(index);
+        m_flagnames->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);    
+    }
+    return m_flagnames ; 
 }
+
+
+std::map<unsigned int, std::string> OpticksResource::getFlagNamesMap()
+{
+    OpticksAttrSeq* flagnames = getFlagNames();
+    return flagnames->getNamesMap() ; 
+}
+
+
+
+
+
+
 
 
 Typ* OpticksResource::getTyp()

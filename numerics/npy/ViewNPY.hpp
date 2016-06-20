@@ -128,8 +128,8 @@ class NPY_API ViewNPY {
         glm::vec3*  m_dimensions ;
         glm::vec3*  m_center ;
         glm::mat4   m_model_to_world ; 
-        float       m_extent ; 
         glm::vec4   m_center_extent ; 
+        float       m_extent ; 
         bool        m_addressed ; 
 
 };

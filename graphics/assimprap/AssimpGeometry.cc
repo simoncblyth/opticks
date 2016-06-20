@@ -1,4 +1,16 @@
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sstream>
+#include <cassert>
+
+#include "BStr.hh"
+#include "BLog.hh"
+
+// okc--
+#include "OpticksQuery.hh"
+
 // assimprap-
 #include "AssimpGeometry.hh"
 #include "AssimpCommon.hh"
@@ -7,31 +19,17 @@
 #include "AssimpSelection.hh"
 
 /*
-   http://assimp.sourceforge.net/lib_html/data.html
-   http://www.tinysg.de/techGuides/tg7_assimpLoader.html
+http://assimp.sourceforge.net/lib_html/data.html
+http://www.tinysg.de/techGuides/tg7_assimpLoader.html
 */
-
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sstream>
-#include <cassert>
-
-// optickscore-
-#include "OpticksQuery.hh"
-
-// npy-
-#include "stringutil.hh"
 
 // assimp-
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
-
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <assimp/material.h>
 
-#include "BLog.hh"
 
 using namespace Assimp ; 
 

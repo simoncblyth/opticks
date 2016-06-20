@@ -72,6 +72,7 @@ class OpticksResource {
        OpticksColors* getColors();
        OpticksFlags*  getFlags();
        OpticksAttrSeq* getFlagNames();
+       std::map<unsigned int, std::string> getFlagNamesMap();
    public:
        Types*         getTypes();
        Typ*           getTyp();
@@ -112,6 +113,7 @@ class OpticksResource {
        OpticksQuery*  m_query ;
        OpticksColors* m_colors ;
        OpticksFlags*  m_flags ;
+       OpticksAttrSeq* m_flagnames ;
        Types*         m_types ;
        Typ*           m_typ ;
    private:

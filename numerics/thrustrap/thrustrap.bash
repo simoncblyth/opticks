@@ -349,13 +349,18 @@ thrustrap-run(){
 }
 
 
+thrustrap-config(){ echo Debug ; }
 thrustrap--()
 {
-    thrustrap-make clean
-    thrustrap-make
-    thrustrap-install
-
+   local iwd=$PWD;
+   thrustrap-bcd;
+   cmake --build . --config $(thrustrap-config) --target ${1:-install};
+   cd $iwd
 }
+
+
+
+
 
 
 

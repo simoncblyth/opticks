@@ -38,9 +38,11 @@ int main(int argc, char** argv)
 
     // see GGeo::setupTyp
     Typ* typ = ok->getTyp();
-    OpticksFlags* flags = ok->getFlags();
     typ->setMaterialNames(mlib->getNamesMap());
-    typ->setFlagNames(flags->getNamesMap());
+
+    //OpticksFlags* flags = ok->getFlags();
+    //typ->setFlagNames(flags->getNamesMap());
+    typ->setFlagNames(ok->getFlagNamesMap());
 
     const char* src = "torch" ; 
     const char* tag = "1" ; 

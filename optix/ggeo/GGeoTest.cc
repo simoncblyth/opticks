@@ -1,3 +1,20 @@
+
+#include <iomanip>
+#include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
+
+
+
+#include "BLog.hh"
+#include "BStr.hh"
+
+// npy-
+#include "NSlice.hpp"
+#include "GLMFormat.hpp"
+
+// opticks-
+#include "Opticks.hh"
+
 #include "GGeoTest.hh"
 #include "GGeoTestConfig.hh"
 
@@ -15,21 +32,6 @@
 #include "GParts.hh"
 #include "GTransforms.hh"
 #include "GIds.hh"
-
-
-// npy-
-#include "BLog.hh"
-#include "NSlice.hpp"
-#include "GLMFormat.hpp"
-#include "stringutil.hh"
-
-// opticks-
-#include "Opticks.hh"
-
-
-#include <iomanip>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 void GGeoTest::init()
 {

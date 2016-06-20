@@ -1,4 +1,3 @@
-#include "BStr.hh"
 
 #include <sstream>
 #include <sstream>
@@ -10,6 +9,7 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
 
+#include "BStr.hh"
 
 
 
@@ -245,40 +245,6 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
     return colors ; 
 }
 
-
-
-/*
-
-moved to BHex
-
-template<typename T>
-T BStr::hex_lexical_cast(const char* in) 
-{
-    T out;
-    std::stringstream ss; 
-    ss <<  std::hex << in; 
-    ss >> out;
-    return out;
-}
-
-template<typename T>
-std::string BStr::as_hex(T in)
-{
-    std::stringstream ss; 
-    ss <<  std::hex << in; 
-    return ss.str();
-}
-
-template<typename T>
-std::string BStr::as_dec(T in) 
-{
-    std::stringstream ss; 
-    ss <<  std::dec << in; 
-    return ss.str();
-}
-
-
-*/
 
 
 
