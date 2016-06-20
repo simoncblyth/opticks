@@ -1,12 +1,14 @@
 #pragma once
-#include <glm/glm.hpp>  
-#include <glm/gtc/quaternion.hpp>
+
 #include <vector>
 #include <string>
+#include <glm/fwd.hpp>  
 
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 #include "NConfigurable.hpp"
 
-class Trackball : public NConfigurable {
+class OKCORE_API Trackball : public NConfigurable {
    public:
        static const char* PREFIX ;
        const char* getPrefix();
@@ -116,141 +118,7 @@ class Trackball : public NConfigurable {
 
 };
 
+#include "OKCORE_TAIL.hh"
 
-
-inline float Trackball::getTranslationMin()
-{
-    return -m_translate_max ; 
-}
-
-inline float Trackball::getTranslationMax()
-{
-    return m_translate_max ; 
-}
-
-
-inline float* Trackball::getRadiusPtr()
-{
-    return &m_radius ;
-}
-inline float Trackball::getRadiusMin()
-{
-    return m_radius_clip[0] ; 
-}
-inline float Trackball::getRadiusMax()
-{
-    return m_radius_clip[1] ; 
-}
-
-
-
-inline float* Trackball::getTFactorPtr()
-{
-    return &m_translatefactor ;
-}
-inline float Trackball::getTFactorMin()
-{
-    return m_translatefactor_clip[0] ; 
-}
-inline float Trackball::getTFactorMax()
-{
-    return m_translatefactor_clip[1] ; 
-}
-
-
-
-
-
-
-
-inline Trackball::Trackball() :
-          m_radius(1.f),
-          m_translatefactor(1000.f),
-          m_drag_renorm(97),
-          m_drag_count(0),
-          m_changed(true)
-{
-    home();
-
-    setTranslateMax(1e5);
-    setRadiusClip(0.1, 10.f);
-    setTranslateFactorClip(10.f, 1e6);
-}
-
-
-inline void Trackball::setTranslateMax(float _max)
-{
-    m_translate_max = _max ; 
-}
-
-inline void Trackball::setRadiusClip(float _min, float _max)
-{
-    m_radius_clip[0] = _min ;  
-    m_radius_clip[1] = _max ;  
-}
-
-inline void Trackball::setTranslateFactorClip(float _min, float _max)
-{
-    m_translatefactor_clip[0] = _min ;  
-    m_translatefactor_clip[1] = _max ;  
-}
-
-
-inline float Trackball::getRadius()
-{
-    return m_radius ; 
-}
-inline float Trackball::getTranslateFactor()
-{
-    return m_translatefactor  ; 
-}
-
-
-inline void Trackball::setRadius(float r)
-{
-    m_radius = r ; 
-    m_changed = true ; 
-}
-inline void Trackball::setTranslateFactor(float tf)
-{
-    m_translatefactor = tf ; 
-    m_changed = true ; 
-}
-inline void Trackball::setTranslate(float x, float y, float z)
-{
-    m_translate.x = x;
-    m_translate.y = y;
-    m_translate.z = z;
-    m_changed = true ; 
-}
- 
-inline void Trackball::home()
-{
-    m_translate.x = 0.f ; 
-    m_translate.y = 0.f ; 
-    m_translate.z = 0.f ; 
-    setOrientation(0.f, 0.f);
-    m_changed = true ; 
-}
-inline void Trackball::zoom_to(float x, float y, float dx, float dy)
-{
-    m_translate.z += dy*m_translatefactor ;
-    m_changed = true ; 
-} 
-inline void Trackball::pan_to(float x, float y, float dx, float dy)
-{
-    m_translate.x += dx*m_translatefactor ;
-    m_translate.y += dy*m_translatefactor ;
-    m_changed = true ; 
-} 
-
-inline bool Trackball::hasChanged()
-{
-    return m_changed ; 
-}
-inline void Trackball::setChanged(bool changed)
-{
-    m_changed = changed ; 
-}
 
 

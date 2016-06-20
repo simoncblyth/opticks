@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include "View.hh"
 class Animator ; 
 
 // created by Bookmarks::makeInterpolatedView
@@ -13,8 +12,11 @@ class Animator ;
 // void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
 //
 //
+#include "View.hh"
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 
-class InterpolatedView :  public View {
+class OKCORE_API InterpolatedView :  public View {
     public:
         static const char* PREFIX ; 
         virtual const char* getPrefix();
@@ -57,66 +59,5 @@ class InterpolatedView :  public View {
 
 };
 
-inline InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
-     : 
-     View(INTERPOLATED),
-     m_i(0),
-     m_j(1),
-     m_count(0),
-     m_period(period),
-     m_fraction(0.f),
-     m_animator(NULL),
-     m_verbose(verbose)
-{
-    init();
-}
-
-
-
-inline Animator* InterpolatedView::getAnimator()
-{
-    return m_animator ; 
-}
-
-inline void InterpolatedView::addView(View* view)
-{
-    m_views.push_back(view);
-}
-inline unsigned int InterpolatedView::getNumViews()
-{
-   return m_views.size();
-}
-inline View* InterpolatedView::getView(unsigned int index)
-{
-    return index < getNumViews() ? m_views[index] : NULL ;
-}
-inline View* InterpolatedView::getCurrentView()
-{
-    return getView(m_i);
-}
-inline View* InterpolatedView::getNextView()
-{
-    return getView(m_j);
-}
-
-inline void InterpolatedView::setFraction(float fraction)
-{
-    m_fraction = fraction ; 
-}
-
-inline void InterpolatedView::setPair(unsigned int i, unsigned int j)
-{
-    m_i = i ;
-    m_j = j ; 
-}
-
-inline void InterpolatedView::nextPair()
-{
-    unsigned int n = getNumViews();
-    unsigned int i = (m_i + 1) % n ;   
-    unsigned int j = (m_j + 1) % n ;
-    setPair(i,j);
-}
-
-
+#include "OKCORE_TAIL.hh"
 

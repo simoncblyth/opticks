@@ -1,20 +1,22 @@
-#include "View.hh"
-
-// npy-
-#include "BLog.hh"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-
-#include <glm/glm.hpp>  
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
 
 #include <cstdio>
+#include <cmath>
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include "NGLM.hpp"
+
+#include "BLog.hh"
+
+// npy-
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+
+// okc-
+#include "View.hh"
+
 
 const char* View::PREFIX = "view" ;
 const char* View::getPrefix()
@@ -84,6 +86,135 @@ void View::configureS(const char* name, std::vector<std::string> values)
     std::string last = values.back();
     set(name, last);
 }
+
+
+
+
+
+
+
+
+View::View(View_t type)  : m_type(type) 
+{
+    home();
+
+    m_axes.push_back(glm::vec4(0,1,0,0));
+    m_axes.push_back(glm::vec4(0,0,1,0));
+    m_axes.push_back(glm::vec4(1,0,0,0));
+}
+
+
+View::~View()
+{
+}
+
+
+bool View::isStandard()
+{
+    return m_type == STANDARD ; 
+}
+bool View::isInterpolated()
+{
+    return m_type == INTERPOLATED ; 
+}
+bool View::isOrbital()
+{
+    return m_type == ORBITAL ; 
+}
+bool View::isTrack()
+{
+    return m_type == TRACK ; 
+}
+
+
+
+
+
+
+
+bool View::hasChanged()
+{
+    return m_changed ; 
+}
+
+void View::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
+
+void View::home()
+{
+    m_changed = true ; 
+    m_eye.x = -1.f ; 
+    m_eye.y = -1.f ; 
+    m_eye.z =  0.f ;
+
+    m_look.x =  0.f ; 
+    m_look.y =  0.f ; 
+    m_look.z =  0.f ;
+
+    m_up.x =  0.f ; 
+    m_up.y =  0.f ; 
+    m_up.z =  1.f ;
+}
+
+void View::setEye( float _x, float _y, float _z)
+{
+    m_eye.x = _x ;  
+    m_eye.y = _y ;  
+    m_eye.z = _z ;  
+
+    handleDegenerates();
+    m_changed = true ; 
+
+#ifdef VIEW_DEBUG
+    printf("View::setEye %10.3f %10.3f %10.3f \n", _x, _y, _z);
+#endif
+}  
+
+void View::setLook(float _x, float _y, float _z)
+{
+    m_look.x = _x ;  
+    m_look.y = _y ;  
+    m_look.z = _z ;  
+
+    handleDegenerates();
+    m_changed = true ; 
+
+#ifdef VIEW_DEBUG
+    printf("View::setLook %10.3f %10.3f %10.3f \n", _x, _y, _z);
+#endif
+}
+
+void View::setUp(  float _x, float _y, float _z)
+{
+    m_up.x = _x ;  
+    m_up.y = _y ;  
+    m_up.z = _z ;  
+
+    handleDegenerates();
+    m_changed = true ; 
+} 
+
+void View::setLook(glm::vec4& look)
+{
+    setLook(look.x, look.y, look.z );
+}
+void View::setEye(glm::vec4& eye)
+{
+    setEye(eye.x, eye.y, eye.z );
+}
+void View::setUp(glm::vec4& up)
+{
+    setUp(up.x, up.y, up.z );
+}
+
+
+
+
+
+
+
 
 
 

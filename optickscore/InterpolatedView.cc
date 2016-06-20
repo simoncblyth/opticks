@@ -1,10 +1,12 @@
-#include "InterpolatedView.hh"
-#include "Animator.hh"
-#include "BLog.hh"
-
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 
+#include "BLog.hh"
+
+#include "NGLM.hpp"
+
+#include "Animator.hh"
+#include "InterpolatedView.hh"
 
 
 const char* InterpolatedView::PREFIX = "interpolatedview" ;
@@ -12,6 +14,82 @@ const char* InterpolatedView::getPrefix()
 {
     return PREFIX ; 
 }
+
+
+InterpolatedView::InterpolatedView(unsigned int period, bool verbose) 
+     : 
+     View(INTERPOLATED),
+     m_i(0),
+     m_j(1),
+     m_count(0),
+     m_period(period),
+     m_fraction(0.f),
+     m_animator(NULL),
+     m_verbose(verbose)
+{
+    init();
+}
+
+
+
+Animator* InterpolatedView::getAnimator()
+{
+    return m_animator ; 
+}
+
+void InterpolatedView::addView(View* view)
+{
+    m_views.push_back(view);
+}
+unsigned int InterpolatedView::getNumViews()
+{
+   return m_views.size();
+}
+View* InterpolatedView::getView(unsigned int index)
+{
+    return index < getNumViews() ? m_views[index] : NULL ;
+}
+View* InterpolatedView::getCurrentView()
+{
+    return getView(m_i);
+}
+View* InterpolatedView::getNextView()
+{
+    return getView(m_j);
+}
+
+void InterpolatedView::setFraction(float fraction)
+{
+    m_fraction = fraction ; 
+}
+
+void InterpolatedView::setPair(unsigned int i, unsigned int j)
+{
+    m_i = i ;
+    m_j = j ; 
+}
+
+void InterpolatedView::nextPair()
+{
+    unsigned int n = getNumViews();
+    unsigned int i = (m_i + 1) % n ;   
+    unsigned int j = (m_j + 1) % n ;
+    setPair(i,j);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void InterpolatedView::init()
 {

@@ -1,5 +1,9 @@
-#include "Camera.hh"
+#include <cstdio>
+
+#include "NGLM.hpp"
 #include "GLMPrint.hpp"
+
+#include "Camera.hh"
 
 int main()
 {

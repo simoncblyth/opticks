@@ -1,13 +1,14 @@
-#include "TrackView.hh"
-#include "Animator.hh"
+#include <sstream>
+#include <boost/lexical_cast.hpp>
 
-// npy-
 #include "BLog.hh"
+// npy-
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
+#include "NGLM.hpp"
 
-#include <boost/lexical_cast.hpp>
-#include <sstream>
+#include "Animator.hh"
+#include "TrackView.hh"
 
 
 const char* TrackView::PREFIX = "trackview" ;
@@ -15,6 +16,72 @@ const char* TrackView::getPrefix()
 {
     return PREFIX ; 
 }
+
+
+
+
+float* TrackView::getTEyeOffsetPtr()
+{
+    return &m_teye_offset ; 
+}
+float* TrackView::getTLookOffsetPtr()
+{
+    return &m_tlook_offset ; 
+}
+float* TrackView::getTMinOffsetPtr()
+{
+    return &m_tmin_offset ; 
+}
+
+float* TrackView::getTMaxOffsetPtr()
+{
+    return &m_tmax_offset ; 
+}
+float* TrackView::getFractionScalePtr()
+{
+    return &m_fraction_scale ; 
+}
+
+
+
+
+TrackView::TrackView(NPY<float>* track, unsigned int period, bool verbose) 
+     : 
+     View(TRACK),
+     m_count(0),
+     m_period(period),
+     m_fraction(0.f),
+     m_animator(NULL),
+     m_verbose(verbose),
+     m_track(track),
+     m_teye_offset(10.f),
+     m_tlook_offset(0.f),
+     m_tmin_offset(0.f),
+     m_tmax_offset(0.f),
+     m_fraction_scale(1.f),
+     m_external(false)
+{
+    init();
+}
+
+
+void TrackView::setFraction(float fraction)
+{
+    m_fraction = fraction ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void TrackView::setAnimator(Animator* animator)

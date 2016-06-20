@@ -42,30 +42,13 @@ class OKCORE_API Opticks {
                GEOCODE_TRIANGULATED = 'T',  
                GEOCODE_SKIP = 'K'
             } ;
-   public:
-       enum { 
-              e_shift   = 1 << 0,  
-              e_control = 1 << 1,  
-              e_option  = 1 << 2,  
-              e_command = 1 << 3 
-            } ; 
-       static std::string describeModifiers(unsigned int modifiers);
-       static bool isShift(unsigned int modifiers);
-       static bool isControl(unsigned int modifiers);
-       static bool isCommand(unsigned int modifiers);
-       static bool isOption(unsigned int modifiers);
 
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
 
-       static const char* BNDIDX_NAME_ ;
-       static const char* SEQHIS_NAME_ ;
-       static const char* SEQMAT_NAME_ ;
-
        static const char* COMPUTE_MODE_ ;
        static const char* INTEROP_MODE_ ;
        static const char* CFG4_MODE_ ;
-
        enum {
                 COMPUTE_MODE = 0x1 << 1, 
                 INTEROP_MODE = 0x1 << 2, 

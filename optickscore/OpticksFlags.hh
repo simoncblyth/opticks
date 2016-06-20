@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <string>
 #include <map>
 
@@ -11,8 +10,11 @@ class OpticksAttrSeq ;
 class Index ; 
 
 // replacing part of Types
+// hmm this should be low level, but needing to pass in Opticks makes it not so
 
-class OpticksFlags {
+
+#include "OKCORE_API_EXPORT.hh"
+class OKCORE_API OpticksFlags {
     public:
        static const char* ENUM_HEADER_PATH ;  
     public:
@@ -58,28 +60,12 @@ class OpticksFlags {
     public:
         std::map<unsigned int, std::string> getNamesMap(); 
     public:
-        Index*      getIndex();  
-        OpticksAttrSeq*   getAttrIndex();  
+        Index*             getIndex();  
+        OpticksAttrSeq*    getAttrIndex();  
     private:
-        Opticks*     m_cache  ;
+        Opticks*           m_cache  ;
         OpticksAttrSeq*    m_aindex ; 
-        Index*       m_index ; 
+        Index*             m_index ; 
 };
 
-inline OpticksFlags::OpticksFlags(Opticks* cache, const char* path) 
-    :
-    m_cache(cache),
-    m_aindex(NULL),
-    m_index(NULL)
-{
-    init(path);
-}
-
-inline OpticksAttrSeq* OpticksFlags::getAttrIndex()
-{
-    return m_aindex ; 
-}  
-inline Index* OpticksFlags::getIndex()
-{
-    return m_index ; 
-}  
+ 

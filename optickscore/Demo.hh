@@ -3,9 +3,10 @@
 #include <vector>
 #include <string>
 
+#include "OKCORE_API_EXPORT.hh"
 #include "NConfigurable.hpp"
 
-class Demo : public NConfigurable  {
+class OKCORE_API Demo : public NConfigurable  {
    public:
        static const char* A ;
        static const char* B ;
@@ -34,31 +35,5 @@ class Demo : public NConfigurable  {
        float m_c ; 
 
 };
-
-
-inline Demo::Demo() 
-  :
-   m_a(0.f),
-   m_b(0.f),
-   m_c(0.f)
-{
-}
-
-inline float Demo::getA(){ return m_a ; }
-inline float Demo::getB(){ return m_b ; }
-inline float Demo::getC(){ return m_c ; }
-
-inline void Demo::setA(float a){ m_a = a ; }
-inline void Demo::setB(float b){ m_b = b ; }
-inline void Demo::setC(float c){ m_c = c ; }
-
-inline std::vector<std::string> Demo::getTags()
-{
-    std::vector<std::string> tags ;
-    tags.push_back(A);
-    tags.push_back(B);
-    //tags.push_back(C);
-    return tags ; 
-}
 
 

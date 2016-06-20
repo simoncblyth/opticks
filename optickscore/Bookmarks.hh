@@ -3,7 +3,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <cstdio>
 
 // npy-
 class NConfigurable ; 
@@ -30,7 +29,9 @@ class InterpolatedView ;
 //
 //
 
-class Bookmarks {
+#include "OKCORE_API_EXPORT.hh"
+
+class OKCORE_API Bookmarks {
 public:
    enum { UNSET = -1, N=10 };
    typedef std::map<unsigned int, NState*>::const_iterator MUSI ; 
@@ -85,87 +86,6 @@ private:
    int                                  m_ivperiod ; 
 
 };
-
-
-
-inline Bookmarks::Bookmarks(const char* dir)  
-       :
-       m_dir(NULL),
-       m_state(NULL),
-       m_view(NULL),
-       m_current(UNSET),
-       m_current_gui(UNSET),
-       m_verbose(false),
-       m_ivperiod(100)
-{
-    init(dir);
-}
-
-
-inline int* Bookmarks::getIVPeriodPtr()
-{
-    return &m_ivperiod ; 
-}
-inline int* Bookmarks::getCurrentGuiPtr()
-{
-    return &m_current_gui ; 
-}
-inline int* Bookmarks::getCurrentPtr()
-{
-    return &m_current ; 
-}
-
-
-inline unsigned int Bookmarks::getNumBookmarks()
-{
-    return m_bookmarks.size(); 
-}
-inline Bookmarks::MUSI Bookmarks::begin()
-{
-    return m_bookmarks.begin();
-}
-inline Bookmarks::MUSI Bookmarks::end()
-{
-    return m_bookmarks.end();
-}
-
-
-
-
-
-
-
-
-
-inline const char* Bookmarks::getTitle()
-{
-   return &m_title[0] ; 
-}
-
-inline void Bookmarks::setVerbose(bool verbose)
-{
-   m_verbose = verbose ; 
-}
-inline void Bookmarks::setInterpolatedViewPeriod(unsigned int ivperiod)
-{
-   m_ivperiod = ivperiod ; 
-}
-
-
-inline bool Bookmarks::exists(unsigned int num)
-{
-    return m_bookmarks.count(num) == 1 ; 
-}
-
-inline void Bookmarks::setCurrent(unsigned int num)
-{
-    m_current = num ; 
-}
-inline unsigned int Bookmarks::getCurrent()
-{
-    return m_current ; 
-}
-
 
 
 

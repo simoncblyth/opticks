@@ -1,15 +1,18 @@
-#include "Camera.hh"
+#include <cmath> 
+#include <cstdio>
 
-// npy-
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/math/constants/constants.hpp>
+
 #include "BLog.hh"
 
-#include "stdio.h"
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtx/transform.hpp>
-#include <boost/lexical_cast.hpp>
+// npy-
+#include "NGLM.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
 
+// okc-
+#include "Camera.hh"
 
 const char* Camera::PREFIX = "camera" ;
 const char* Camera::getPrefix()
@@ -130,6 +133,301 @@ void Camera::configureF(const char* name, std::vector<float> values)
      }
 }
  
+
+
+
+
+Camera::Camera(int width, int height, float basis ) 
+       :
+         m_zoom(1.0f),
+         m_parallel(false),
+         m_changed(true)
+{
+    setSize(width, height);
+    setPixelFactor(1); 
+
+    aim(basis);
+
+    setZoomClip(0.01f, 100.f);
+} 
+
+void Camera::aim(float basis)
+{
+   float a_near = basis/10.f ;
+   float a_far  = basis*5.f ;
+   float a_scale = basis ; 
+
+   //printf("Camera::aim basis %10.4f a_near %10.4f a_far %10.4f a_scale %10.4f \n", basis, a_near, a_far, a_scale );
+
+   setBasis(basis);
+   setNear( a_near );
+   setFar(  a_far );
+
+   setNearClip( a_near/10.f,  a_near*10.f) ;
+   setFarClip(  a_far/10.f,   a_far*10.f );
+   setScaleClip( a_scale/10.f, a_scale*10.f );
+
+   setScale( a_scale );  // scale should be renamed to Ortho scale, as only relevant to Orthographic projection
+}
+
+void Camera::setBasis(float basis)
+{
+    m_basis = basis ; 
+}
+
+
+
+
+bool Camera::hasChanged()
+{
+    return m_changed ; 
+}
+void Camera::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
+
+
+void Camera::nextStyle()
+{
+    int next = (getStyle() + 1) % NUM_CAMERA_STYLE ; 
+    setStyle( (Style_t)next ) ; 
+}
+void Camera::setStyle(Style_t style)
+{
+    m_parallel = int(style) == 1  ;
+}
+Camera::Style_t Camera::getStyle()
+{
+    return (Style_t)(m_parallel ? 1 : 0 ) ;
+}
+
+
+
+
+
+
+void Camera::setParallel(bool parallel)
+{
+    m_parallel = parallel ;
+    m_changed = true ; 
+}
+bool Camera::getParallel(){ return m_parallel ; }
+
+void Camera::setSize(int width, int height )
+{
+    m_size[0] = width ;
+    m_size[1] = height ;
+    m_aspect  = (float)width/(float)height ;   // (> 1 for landscape) 
+    m_changed = true ; 
+}
+void Camera::setPixelFactor(unsigned int factor)
+{
+    m_pixel_factor = factor ; 
+    m_changed = true ; 
+}
+
+unsigned int Camera::getWidth(){  return m_size[0]; }
+unsigned int Camera::getHeight(){ return m_size[1]; }
+float        Camera::getAspect(){ return m_aspect ; }
+
+unsigned int Camera::getPixelWidth(){  return m_size[0]*m_pixel_factor; }
+unsigned int Camera::getPixelHeight(){ return m_size[1]*m_pixel_factor; }
+unsigned int Camera::getPixelFactor(){ return m_pixel_factor ; }
+
+
+
+
+void Camera::near_to( float x, float y, float dx, float dy )
+{
+    setNear(m_near + m_near*dy );
+    //printf("Camera::near_to %10.3f \n", m_near);
+}
+void Camera::far_to( float x, float y, float dx, float dy )
+{
+    setFar(m_far + m_far*dy );
+    //printf("Camera::far_to %10.3f \n", m_far);
+}
+void Camera::zoom_to( float x, float y, float dx, float dy )
+{
+    setZoom(m_zoom + 30.f*dy) ;
+    //printf("Camera::zoom_to %10.3f \n", m_zoom);
+}
+void Camera::scale_to( float x, float y, float dx, float dy )
+{
+    setScale(m_scale + 30.f*dy) ;
+    //printf("Camera::scale_to %10.3f \n", m_scale);
+}
+
+
+
+
+void Camera::setNear(float near)
+{
+    if(      near < m_nearclip[0] )  m_near = m_nearclip[0] ;
+    else if( near > m_nearclip[1] )  m_near = m_nearclip[1] ;
+    else                             m_near = near ;
+    m_changed = true ; 
+}
+void Camera::setFar(float far)
+{
+    if(      far < m_farclip[0] )  m_far = m_farclip[0] ;
+    else if( far > m_farclip[1] )  m_far = m_farclip[1] ;
+    else                           m_far = far ;
+    m_changed = true ; 
+}
+void Camera::setZoom(float zoom)
+{
+    if(      zoom < m_zoomclip[0] )  m_zoom = m_zoomclip[0] ;
+    else if( zoom > m_zoomclip[1] )  m_zoom = m_zoomclip[1] ;
+    else                             m_zoom = zoom ;
+    m_changed = true ; 
+}
+
+void Camera::setScale(float scale)
+{
+    if(      scale < m_scaleclip[0] )  m_scale = m_scaleclip[0] ;
+    else if( scale > m_scaleclip[1] )  m_scale = m_scaleclip[1] ;
+    else                               m_scale = scale ;
+    m_changed = true ; 
+}
+
+
+
+float Camera::getBasis(){ return m_basis ; } 
+
+float Camera::getNear(){  return m_near ; }
+float Camera::getFar(){   return m_far ;  }
+float Camera::getZoom(){  return m_zoom ; } 
+
+
+
+
+
+
+float Camera::getScale(){ return m_parallel ? m_scale  : m_near ; }
+
+float Camera::getDepth(){   return m_far - m_near ; }
+float Camera::getTanYfov(){ return 1.f/m_zoom ; }  // actually tan(Yfov/2)
+
+float Camera::getTop(){    return getScale() / m_zoom ; }
+float Camera::getBottom(){ return -getScale() / m_zoom ; }
+float Camera::getLeft(){   return -m_aspect * getScale() / m_zoom ; } 
+float Camera::getRight(){  return  m_aspect * getScale() / m_zoom ; } 
+
+void Camera::setYfov(float yfov)
+{
+    // setYfov(90.) -> setZoom(1.)
+
+    // fov = 2atan(1/zoom)
+    // zoom = 1/tan(fov/2)
+
+    float pi = boost::math::constants::pi<float>() ;
+    float zoom = 1.f/tan(yfov*0.5f*pi/180.f );
+    setZoom( zoom );
+}
+float Camera::getYfov()
+{
+    float pi = boost::math::constants::pi<float>() ;
+    return 2.f*atan(1.f/m_zoom)*180.f/pi ;
+}
+
+
+
+
+
+void Camera::setNearClip(float _min, float _max)
+{
+    m_nearclip[0] = _min ;  
+    m_nearclip[1] = _max ;  
+}
+void Camera::setFarClip(float _min, float _max)
+{
+    m_farclip[0] = _min ;  
+    m_farclip[1] = _max ;  
+}
+void Camera::setZoomClip(float _min, float _max)
+{
+    m_zoomclip[0] = _min ;  
+    m_zoomclip[1] = _max ;  
+}
+void Camera::setScaleClip(float _min, float _max)
+{
+    m_scaleclip[0] = _min ;  
+    m_scaleclip[1] = _max ;  
+}
+
+
+
+
+
+float* Camera::getNearPtr()
+{
+    return &m_near ;
+}
+float* Camera::getFarPtr()
+{
+    return &m_far ;
+}
+float* Camera::getZoomPtr()
+{
+    return &m_zoom ;
+}
+float* Camera::getScalePtr()
+{
+    return &m_scale ;
+}
+bool* Camera::getParallelPtr()
+{
+    return &m_parallel ;
+}
+
+
+
+float Camera::getNearMin()
+{
+    return m_nearclip[0];
+}
+float Camera::getNearMax()
+{
+    return std::min(m_far, m_nearclip[1]);
+}
+
+
+float Camera::getFarMin()
+{
+    return std::max(m_near, m_farclip[0]);
+}
+float Camera::getFarMax()
+{
+    return m_farclip[1];
+}
+
+
+float Camera::getZoomMin()
+{
+    return m_zoomclip[0];
+}
+float Camera::getZoomMax()
+{
+    return m_zoomclip[1];
+}
+
+
+float Camera::getScaleMin()
+{
+    return m_scaleclip[0];
+}
+float Camera::getScaleMax()
+{
+    return m_scaleclip[1];
+}
+
+
+
+
+
+
 
 
 

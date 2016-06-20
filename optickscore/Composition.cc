@@ -1,7 +1,26 @@
-#include "Composition.hh"
-#include <boost/math/constants/constants.hpp>
+#include <climits>
 
-// opticks-
+#include <boost/math/constants/constants.hpp>
+#include "NGLM.hpp"
+
+#include "BLog.hh"
+
+
+// npy-
+
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+
+#include "NPY.hpp"
+#include "RecordsNPY.hpp"
+#include "PhotonsNPY.hpp"
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
+#include "AxisNPY.hpp"
+#include "NState.hpp"
+
+
+// okc-
 #include "View.hh"
 #include "ViewCfg.hh"
 #include "Camera.hh"
@@ -10,35 +29,18 @@
 #include "TrackballCfg.hh"
 #include "Clipper.hh"
 #include "ClipperCfg.hh"
+
 #include "InterpolatedView.hh"
 #include "OrbitalView.hh"
 #include "TrackView.hh"
+
 #include "Animator.hh"
 #include "Light.hh"
 #include "Bookmarks.hh"
+
 #include "OpticksEvent.hh"
 
-// npy-
-#include "NPY.hpp"
-#include "RecordsNPY.hpp"
-#include "PhotonsNPY.hpp"
-#include "ViewNPY.hpp"
-#include "MultiViewNPY.hpp"
-#include "AxisNPY.hpp"
-#include "NState.hpp"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-#include "BLog.hh"
-
-
-#include <glm/glm.hpp>  
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
-
-#include "limits.h"
-
-// oglrap-
+#include "Composition.hh"
 #include "CompositionCfg.hh"
 
 
@@ -107,6 +109,362 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
     assert(0);
     return NULL ; 
 }
+
+
+
+
+
+
+
+
+
+
+Composition::Composition()
+  :
+  m_model_to_world(),
+  m_world_to_model(),
+  m_extent(1.0f),
+  m_center_extent(),
+  m_pickphoton(0,0,0,0), 
+  m_pickface(0,0,0,0), 
+  m_recselect(), 
+  m_colorparam(int(POL1),0,0,0), 
+  m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
+  m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
+  m_param(25.f,0.030f,0.f,0.f),   // x: arbitrary scaling of genstep length, y: vector length dfrac
+  m_scanparam(0.f,1.0f,0.5f,0.01f),   // ct scan  x:clip-z-cut y:slice-width
+  m_animator(NULL),
+  m_rotator(NULL),
+  m_camera(NULL),
+  m_trackball(NULL),
+  m_bookmarks(NULL),
+  m_view(NULL),
+  m_standard_view(NULL),
+  m_viewtype(View::STANDARD),
+  m_animator_period(200),
+  m_ovperiod(180),
+  m_tvperiod(100),
+  m_track(NULL), 
+  m_light(NULL),
+  m_clipper(NULL),
+  m_count(0),
+  m_axis_data(NULL),
+  m_axis_attr(NULL),
+  m_changed(true), 
+  m_evt(NULL), 
+  m_lookphi(0.f), 
+  m_axis_x(1000.f,    0.f,    0.f, 0.f),
+  m_axis_y(0.f   , 1000.f,    0.f, 0.f),
+  m_axis_z(0.f   ,    0.f, 1000.f, 0.f),
+  m_axis_x_color(1.f,0.f,0.f,1.f),
+  m_axis_y_color(0.f,1.f,0.f,1.f),
+  m_axis_z_color(0.f,0.f,1.f,1.f),
+  m_command_length(256),
+  m_frame_position(0,0,0,0)
+{
+    init();
+}
+
+
+void Composition::setFramePosition(const glm::uvec4& position)
+{
+    m_frame_position = position ; 
+}
+glm::uvec4& Composition::getFramePosition()
+{
+    return m_frame_position ; 
+}
+
+
+Camera* Composition::getCamera()
+{
+    return m_camera ;
+}
+
+View* Composition::getView()
+{
+    return m_view ;
+}
+Light* Composition::getLight()
+{
+    return m_light ;
+}
+Trackball* Composition::getTrackball()
+{
+    return m_trackball ;
+}
+Clipper* Composition::getClipper()
+{
+    return m_clipper ;
+}
+
+void Composition::setCamera(Camera* camera)
+{
+    m_camera = camera ; 
+}
+
+
+void Composition::setBookmarks(Bookmarks* bookmarks)
+{
+    m_bookmarks = bookmarks ; 
+}
+
+
+
+OpticksEvent* Composition::getEvt()
+{
+    return m_evt ; 
+}
+void Composition::setEvt(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}
+
+
+glm::vec4& Composition::getCenterExtent()
+{
+    return m_center_extent ; 
+}
+glm::vec4& Composition::getDomainCenterExtent()
+{
+    return m_domain_center_extent ; 
+}
+glm::vec4& Composition::getTimeDomain()
+{
+    return m_domain_time ; 
+}
+glm::uvec4& Composition::getColorDomain()
+{
+    return m_domain_color ; 
+}
+glm::vec4& Composition::getLightPosition()
+{
+    return m_light_position ; 
+}
+glm::vec4& Composition::getLightDirection()
+{
+    return m_light_direction ; 
+}
+
+void Composition::setOrbitalViewPeriod(int ovperiod)
+{
+    m_ovperiod = ovperiod ; 
+}
+void Composition::setAnimatorPeriod(int period)
+{
+    m_animator_period = period ; 
+}
+
+
+void Composition::setTrackViewPeriod(int tvperiod)
+{
+    m_tvperiod = tvperiod ; 
+}
+void Composition::setTrack(NPY<float>* track)
+{
+    m_track = track ; 
+}
+
+
+
+
+
+
+glm::mat4& Composition::getDomainISNorm()
+{
+    return m_domain_isnorm ; 
+}
+
+
+glm::ivec4& Composition::getPickPhoton()
+{
+    return m_pickphoton ; 
+}
+
+glm::ivec4& Composition::getPickFace()
+{
+    return m_pickface ; 
+}
+
+
+
+glm::ivec4& Composition::getRecSelect()
+{
+    return m_recselect ; 
+}
+
+glm::ivec4& Composition::getColorParam()
+{
+    return m_colorparam ; 
+}
+
+glm::ivec4& Composition::getSelection()
+{
+    return m_selection ; 
+}
+
+glm::ivec4& Composition::getFlags()
+{
+    return m_flags ; 
+}
+glm::ivec4& Composition::getPick()
+{
+    return m_pick; 
+}
+glm::vec4& Composition::getParam()
+{
+    return m_param ; 
+}
+glm::mat4& Composition::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+glm::mat4& Composition::getWorldToModel()
+{
+    return m_world_to_model ; 
+}
+
+
+float Composition::getExtent()
+{
+    return m_extent ; 
+}
+
+
+
+unsigned int Composition::getCount()
+{
+    return m_count ; 
+}
+
+NPY<float>* Composition::getAxisData()
+{
+    return m_axis_data ; 
+}
+
+MultiViewNPY* Composition::getAxisAttr()
+{
+    return m_axis_attr ; 
+}
+
+void Composition::nextColorStyle()
+{
+    int next = (getColorStyle() + 1) % NUM_COLOR_STYLE ; 
+    setColorStyle( (ColorStyle_t)next ) ; 
+}
+
+
+
+void Composition::nextNormalStyle()
+{
+    int next = (getNormalStyle() + 1) % NUM_NORMAL_STYLE ; 
+    setNormalStyle( (NormalStyle_t)next ) ; 
+}
+void Composition::setNormalStyle(NormalStyle_t style)
+{
+    m_nrmparam.x = int(style) ;
+}
+Composition::NormalStyle_t Composition::getNormalStyle()
+{
+    return (NormalStyle_t)m_nrmparam.x ;
+}
+
+
+
+
+void Composition::nextGeometryStyle()
+{
+    int next = (getGeometryStyle() + 1) % NUM_GEOMETRY_STYLE ; 
+    setGeometryStyle( (GeometryStyle_t)next ) ; 
+}
+void Composition::setGeometryStyle(GeometryStyle_t style)
+{
+    m_nrmparam.y = int(style) ;
+}
+Composition::GeometryStyle_t Composition::getGeometryStyle()
+{
+    return (GeometryStyle_t)m_nrmparam.y ;
+}
+const char* Composition::getGeometryStyleName()
+{
+    return Composition::getGeometryStyleName(getGeometryStyle());
+}
+
+
+
+
+
+void Composition::nextViewType(unsigned int modifiers)
+{
+    int next = (getViewType() + 1) % View::NUM_VIEW_TYPE ; 
+    setViewType( (View::View_t)next ) ; 
+}
+
+void Composition::setViewType(View::View_t type)
+{
+    m_viewtype = type ;
+    applyViewType();
+}
+
+View::View_t Composition::getViewType()
+{
+    return m_viewtype ;
+}
+
+
+
+void Composition::nextPickPhotonStyle()
+{
+    int next = (getPickPhotonStyle() + 1) % NUM_PICKPHOTON_STYLE ; 
+    setPickPhotonStyle( (PickPhotonStyle_t)next ) ; 
+}
+void Composition::setPickPhotonStyle(PickPhotonStyle_t style)
+{
+    m_pickphoton.y = int(style) ;
+}
+Composition::PickPhotonStyle_t Composition::getPickPhotonStyle()
+{
+    return (PickPhotonStyle_t)m_pickphoton.y ;
+}
+
+
+
+void Composition::setColorStyle(ColorStyle_t style)
+{
+    m_colorparam.x = int(style);
+}
+Composition::ColorStyle_t Composition::getColorStyle()
+{
+    return (ColorStyle_t)m_colorparam.x ; 
+}
+
+const char* Composition::getColorStyleName()
+{
+    return Composition::getColorStyleName(getColorStyle());
+}
+
+
+
+
+void Composition::setLookAngle(float phi)
+{
+    m_lookphi = phi ; 
+}
+float* Composition::getLookAnglePtr()
+{
+    return &m_lookphi ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

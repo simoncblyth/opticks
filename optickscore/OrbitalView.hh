@@ -13,7 +13,10 @@ class Animator ;
 // void View::getTransforms(const glm::mat4& m2w, glm::mat4& world2camera, glm::mat4& camera2world, glm::vec4& gaze )
 //
 
-class OrbitalView :  public View {
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+
+class OKCORE_API OrbitalView :  public View {
     public:
         static const char* PREFIX ; 
         virtual const char* getPrefix();
@@ -54,27 +57,5 @@ class OrbitalView :  public View {
 
 };
 
-inline OrbitalView::OrbitalView(View* basis, unsigned int period, bool verbose) 
-     : 
-     View(ORBITAL),
-     m_basis(basis),
-     m_count(0),
-     m_period(period),
-     m_fraction(0.f),
-     m_animator(NULL),
-     m_verbose(verbose)
-{
-    init();
-}
-
-inline Animator* OrbitalView::getAnimator()
-{
-    return m_animator ; 
-}
-
-inline void OrbitalView::setFraction(float fraction)
-{
-    m_fraction = fraction ; 
-}
-
+#include "OKCORE_TAIL.hh"
 

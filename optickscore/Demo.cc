@@ -1,5 +1,4 @@
 #include "Demo.hh"
-
 #include "GLMFormat.hpp"
 
 const char* Demo::PREFIX = "demo" ;
@@ -13,6 +12,41 @@ const char* Demo::getPrefix()
 {    
    return PREFIX ; 
 }
+
+
+
+
+
+
+Demo::Demo() 
+  :
+   m_a(0.f),
+   m_b(0.f),
+   m_c(0.f)
+{
+}
+
+float Demo::getA(){ return m_a ; }
+float Demo::getB(){ return m_b ; }
+float Demo::getC(){ return m_c ; }
+
+void Demo::setA(float a){ m_a = a ; }
+void Demo::setB(float b){ m_b = b ; }
+void Demo::setC(float c){ m_c = c ; }
+
+std::vector<std::string> Demo::getTags()
+{
+    std::vector<std::string> tags ;
+    tags.push_back(A);
+    tags.push_back(B);
+    //tags.push_back(C);
+    return tags ; 
+}
+
+
+
+
+
 
 
 std::string Demo::get(const char* name)

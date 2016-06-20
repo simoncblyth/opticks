@@ -1,17 +1,16 @@
-#include "Clipper.hh"
-
-// npy-
-#include "BLog.hh"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-
-#include <glm/glm.hpp>  
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include "BLog.hh"
+
+// npy-
+#include "NGLM.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+
+// okc-
+#include "Clipper.hh"
 
 
 const char* Clipper::PREFIX = "clipper" ;
@@ -51,6 +50,51 @@ std::vector<std::string> Clipper::getTags()
 //    tags.push_back(CUTPRINT);
     return tags ; 
 }
+
+
+Clipper::Clipper() :
+   m_mode(-1),
+   m_absolute(false), 
+   m_point(0,0,0),
+   m_normal(1,0,0),
+   m_absplane(1,0,0,1),   // placeholder 
+   m_float3(NULL)
+{
+   m_float3 = new float[3];
+   m_float3[0] = 0.1f ;  
+   m_float3[1] = 0.2f ;  
+   m_float3[2] = 0.3f ;  
+}
+
+
+glm::vec3& Clipper::getPoint()
+{
+    return m_point ; 
+}
+glm::vec3& Clipper::getNormal()
+{
+    return m_normal ; 
+}
+glm::vec4& Clipper::getPlane()
+{
+    return m_absplane ; 
+}
+
+
+int Clipper::getMode()
+{
+    return m_mode ; 
+}
+
+void Clipper::next()
+{
+    // Interactor invokes this on pressing C, for now just toggle between -1 and 0
+    m_mode = m_mode != -1 ? -1 : 0 ; 
+}
+
+
+
+
 
 
 void Clipper::configure(const char* name, const char* value_)

@@ -1,14 +1,17 @@
 #pragma once 
 
-#include <glm/glm.hpp>  
+
 #include <string>
 #include <vector>
 
-// how to handle multiple planes ?
+#include <glm/fwd.hpp>
+
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 
 #include "NConfigurable.hpp"
 
-class Clipper : public NConfigurable {
+class OKCORE_API Clipper : public NConfigurable {
    public:
         static const char* PREFIX ;
         const char* getPrefix();
@@ -91,45 +94,5 @@ class Clipper : public NConfigurable {
         float*    m_float3 ; 
 };
 
-
-inline Clipper::Clipper() :
-   m_mode(-1),
-   m_absolute(false), 
-   m_point(0,0,0),
-   m_normal(1,0,0),
-   m_absplane(1,0,0,1),   // placeholder 
-   m_float3(NULL)
-{
-   m_float3 = new float[3];
-   m_float3[0] = 0.1f ;  
-   m_float3[1] = 0.2f ;  
-   m_float3[2] = 0.3f ;  
-}
-
-
-inline glm::vec3& Clipper::getPoint()
-{
-    return m_point ; 
-}
-inline glm::vec3& Clipper::getNormal()
-{
-    return m_normal ; 
-}
-inline glm::vec4& Clipper::getPlane()
-{
-    return m_absplane ; 
-}
-
-
-inline int Clipper::getMode()
-{
-    return m_mode ; 
-}
-
-inline void Clipper::next()
-{
-    // Interactor invokes this on pressing C, for now just toggle between -1 and 0
-    m_mode = m_mode != -1 ? -1 : 0 ; 
-}
-
+#include "OKCORE_TAIL.hh"
 

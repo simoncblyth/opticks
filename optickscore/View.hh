@@ -1,16 +1,17 @@
 #pragma once
 
-#include <glm/glm.hpp>  
+
 #include <vector>
 #include <string>
-#include <cstdio>
-#include <math.h>
 
-#include "NConfigurable.hpp"
+#include <glm/fwd.hpp>  
 
 //#define VIEW_DEBUG
+#include "NConfigurable.hpp"
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 
-class View : public NConfigurable {
+class OKCORE_API View : public NConfigurable {
 public:
    typedef enum { STANDARD, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 
 
@@ -93,119 +94,6 @@ private:
 
 };
 
+#include "OKCORE_TAIL.hh"
 
-inline View::View(View_t type)  : m_type(type) 
-{
-    home();
-
-    m_axes.push_back(glm::vec4(0,1,0,0));
-    m_axes.push_back(glm::vec4(0,0,1,0));
-    m_axes.push_back(glm::vec4(1,0,0,0));
-}
-
-
-inline View::~View()
-{
-}
-
-
-inline bool View::isStandard()
-{
-    return m_type == STANDARD ; 
-}
-inline bool View::isInterpolated()
-{
-    return m_type == INTERPOLATED ; 
-}
-inline bool View::isOrbital()
-{
-    return m_type == ORBITAL ; 
-}
-inline bool View::isTrack()
-{
-    return m_type == TRACK ; 
-}
-
-
-
-
-
-
-
-inline bool View::hasChanged()
-{
-    return m_changed ; 
-}
-
-inline void View::setChanged(bool changed)
-{
-    m_changed = changed ; 
-}
-
-inline void View::home()
-{
-    m_changed = true ; 
-    m_eye.x = -1.f ; 
-    m_eye.y = -1.f ; 
-    m_eye.z =  0.f ;
-
-    m_look.x =  0.f ; 
-    m_look.y =  0.f ; 
-    m_look.z =  0.f ;
-
-    m_up.x =  0.f ; 
-    m_up.y =  0.f ; 
-    m_up.z =  1.f ;
-}
-
-inline void View::setEye( float _x, float _y, float _z)
-{
-    m_eye.x = _x ;  
-    m_eye.y = _y ;  
-    m_eye.z = _z ;  
-
-    handleDegenerates();
-    m_changed = true ; 
-
-#ifdef VIEW_DEBUG
-    printf("View::setEye %10.3f %10.3f %10.3f \n", _x, _y, _z);
-#endif
-}  
-
-inline void View::setLook(float _x, float _y, float _z)
-{
-    m_look.x = _x ;  
-    m_look.y = _y ;  
-    m_look.z = _z ;  
-
-    handleDegenerates();
-    m_changed = true ; 
-
-#ifdef VIEW_DEBUG
-    printf("View::setLook %10.3f %10.3f %10.3f \n", _x, _y, _z);
-#endif
-}
-
-inline void View::setUp(  float _x, float _y, float _z)
-{
-    m_up.x = _x ;  
-    m_up.y = _y ;  
-    m_up.z = _z ;  
-
-    handleDegenerates();
-    m_changed = true ; 
-} 
-
-inline void View::setLook(glm::vec4& look)
-{
-    setLook(look.x, look.y, look.z );
-}
-inline void View::setEye(glm::vec4& eye)
-{
-    setEye(eye.x, eye.y, eye.z );
-}
-inline void View::setUp(glm::vec4& up)
-{
-    setUp(up.x, up.y, up.z );
-}
 

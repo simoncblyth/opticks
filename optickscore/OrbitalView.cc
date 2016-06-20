@@ -1,11 +1,14 @@
-#include "OrbitalView.hh"
-#include "Animator.hh"
-#include "BLog.hh"
-#include "GLMFormat.hpp"
+#include <sstream>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
-#include <sstream>
+
+#include "BLog.hh"
+
+#include "NGLM.hpp"
+#include "GLMFormat.hpp"
+#include "Animator.hh"
+#include "OrbitalView.hh"
 
 
 const char* OrbitalView::PREFIX = "orbitalview" ;
@@ -13,6 +16,39 @@ const char* OrbitalView::getPrefix()
 {
     return PREFIX ; 
 }
+
+
+OrbitalView::OrbitalView(View* basis, unsigned int period, bool verbose) 
+     : 
+     View(ORBITAL),
+     m_basis(basis),
+     m_count(0),
+     m_period(period),
+     m_fraction(0.f),
+     m_animator(NULL),
+     m_verbose(verbose)
+{
+    init();
+}
+
+Animator* OrbitalView::getAnimator()
+{
+    return m_animator ; 
+}
+
+void OrbitalView::setFraction(float fraction)
+{
+    m_fraction = fraction ; 
+}
+
+
+
+
+
+
+
+
+
 
 void OrbitalView::init()
 {

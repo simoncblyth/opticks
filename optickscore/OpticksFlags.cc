@@ -89,12 +89,6 @@ std::string OpticksFlags::FlagSequence(const unsigned long long seqhis)
 
 
 
-
-
-
-
-
-
 const char* OpticksFlags::SourceType( int code )
 {
     const char* name = 0 ; 
@@ -133,6 +127,28 @@ unsigned int OpticksFlags::SourceCode(const char* type)
     return code ; 
 }
 
+
+
+
+
+
+OpticksFlags::OpticksFlags(Opticks* cache, const char* path) 
+    :
+    m_cache(cache),
+    m_aindex(NULL),
+    m_index(NULL)
+{
+    init(path);
+}
+
+OpticksAttrSeq* OpticksFlags::getAttrIndex()
+{
+    return m_aindex ; 
+}  
+Index* OpticksFlags::getIndex()
+{
+    return m_index ; 
+} 
 
 
 

@@ -1,6 +1,14 @@
+
+#include "NGLM.hpp"
 #include "Light.hh"
 
-#include <glm/gtc/type_ptr.hpp>
+
+Light::Light()
+   :
+   m_position(0.f,0.f,0.f),
+   m_direction(1.f,0.f,0.f)
+{
+}
 
 
 glm::vec4 Light::getPosition()
@@ -11,7 +19,6 @@ glm::vec4 Light::getDirection()
 {
     return glm::vec4(m_direction.x, m_direction.y, m_direction.z,0.0f);
 }   
-
 
 
 float* Light::getPositionPtr()

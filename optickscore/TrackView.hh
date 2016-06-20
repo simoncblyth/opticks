@@ -1,10 +1,5 @@
 #pragma once
 
-template <typename T> class NPY ;
-#include "View.hh"
-
-class Animator ; 
-
 // operates from Composition via base class method View::getTransforms 
 // which invokes the overriden getEye, getLook, getUp
 // updating w2c c2w gaze
@@ -19,9 +14,15 @@ class Animator ;
 //  See npy-/genstep.py for creation of the eg 1_track.npy file
 //  that defines the path.
 //  
-//
 
-class TrackView :  public View {
+template <typename T> class NPY ;
+class Animator ; 
+
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+#include "View.hh"
+
+class OKCORE_API TrackView :  public View {
     public:
         static const char* PREFIX ; 
         virtual const char* getPrefix();
@@ -78,57 +79,6 @@ class TrackView :  public View {
 
 };
 
-
-
-
-inline float* TrackView::getTEyeOffsetPtr()
-{
-    return &m_teye_offset ; 
-}
-inline float* TrackView::getTLookOffsetPtr()
-{
-    return &m_tlook_offset ; 
-}
-inline float* TrackView::getTMinOffsetPtr()
-{
-    return &m_tmin_offset ; 
-}
-
-inline float* TrackView::getTMaxOffsetPtr()
-{
-    return &m_tmax_offset ; 
-}
-inline float* TrackView::getFractionScalePtr()
-{
-    return &m_fraction_scale ; 
-}
-
-
-
-
-inline TrackView::TrackView(NPY<float>* track, unsigned int period, bool verbose) 
-     : 
-     View(TRACK),
-     m_count(0),
-     m_period(period),
-     m_fraction(0.f),
-     m_animator(NULL),
-     m_verbose(verbose),
-     m_track(track),
-     m_teye_offset(10.f),
-     m_tlook_offset(0.f),
-     m_tmin_offset(0.f),
-     m_tmax_offset(0.f),
-     m_fraction_scale(1.f),
-     m_external(false)
-{
-    init();
-}
-
-
-inline void TrackView::setFraction(float fraction)
-{
-    m_fraction = fraction ; 
-}
+#include "OKCORE_TAIL.hh"
 
 

@@ -45,6 +45,24 @@ configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
 set(SOURCES
 
+    Animator.cc
+    View.cc
+    Clipper.cc
+    Camera.cc
+    Light.cc
+    Trackball.cc
+    InterpolatedView.cc
+    OrbitalView.cc
+    TrackView.cc
+    Demo.cc
+
+    DemoCfg.cc
+    CameraCfg.cc
+    ViewCfg.cc
+    TrackballCfg.cc
+    ClipperCfg.cc
+    CompositionCfg.cc
+
     OpticksConst.cc
     OpticksQuery.cc
     OpticksColors.cc
@@ -57,40 +75,31 @@ set(SOURCES
 set(REST_SOURCES
 
     Opticks.cc
+    OpticksCfg.cc
+
     OpticksFlags.cc
     OpticksAttrSeq.cc
     OpticksResource.cc
     OpticksEngine.cc
-    OpticksCfg.cc
 
-    Composition.cc
-    CompositionCfg.cc
-    View.cc
-    ViewCfg.cc
-    Camera.cc
-    CameraCfg.cc
-    Trackball.cc
-    TrackballCfg.cc
-    Clipper.cc
-    ClipperCfg.cc
-    InterpolatedView.cc
-    OrbitalView.cc
-    TrackView.cc
-
-    Animator.cc
     Bookmarks.cc
-    Light.cc
-
-    Demo.cc
-    DemoCfg.cc
+    Composition.cc
 )
-
 
 set(HEADERS
 
     OKCORE_API_EXPORT.hh
     OKCORE_HEAD.hh
     OKCORE_TAIL.hh
+
+    Animator.hh
+    View.hh
+    Clipper.hh
+    Camera.hh
+    Light.hh
+    Trackball.hh
+    InterpolatedView.hh
+    OrbitalView.hh
 
     OpticksConst.hh
     OpticksQuery.hh
@@ -107,22 +116,15 @@ set(HEADERS
     OpticksCfg.hh
 
     Composition.hh
-    CompositionCfg.hh
-    View.hh
-    ViewCfg.hh
-    Camera.hh
-    CameraCfg.hh
-    Trackball.hh
-    TrackballCfg.hh
-    Clipper.hh
-    ClipperCfg.hh
-    InterpolatedView.hh
-    OrbitalView.hh
-    TrackView.hh
 
-    Animator.hh
+    CompositionCfg.hh
+    ViewCfg.hh
+    CameraCfg.hh
+    TrackballCfg.hh
+    ClipperCfg.hh
+
+    TrackView.hh
     Bookmarks.hh
-    Light.hh
 
     OpticksPhoton.h
     OpticksFlags.h

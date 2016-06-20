@@ -1,8 +1,11 @@
-#include "OpticksCfg.hh"
 
 #include <string>
 #include <vector>
+
 #include "BLog.hh"
+
+#include "OpticksCfg.hh"
+
 #include "Opticks.hh"
 
 template <class Listener>

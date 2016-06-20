@@ -1,19 +1,114 @@
+#include <cstdio>
 #include <cstring>
 #include <sstream>
+
 #include <boost/lexical_cast.hpp>
 
 // brap-
-#include "fsutil.hh"
-#include "dirutil.hh"
+#include "BFile.hh"
+#include "BDir.hh"
 #include "BLog.hh"
 
 // npy-
 #include "NState.hpp"
 
 // optickscore-
-#include "Opticks.hh"
+#include "OpticksConst.hh"
 #include "InterpolatedView.hh"
 #include "Bookmarks.hh"
+
+
+
+Bookmarks::Bookmarks(const char* dir)  
+       :
+       m_dir(NULL),
+       m_state(NULL),
+       m_view(NULL),
+       m_current(UNSET),
+       m_current_gui(UNSET),
+       m_verbose(false),
+       m_ivperiod(100)
+{
+    init(dir);
+}
+
+
+int* Bookmarks::getIVPeriodPtr()
+{
+    return &m_ivperiod ; 
+}
+int* Bookmarks::getCurrentGuiPtr()
+{
+    return &m_current_gui ; 
+}
+int* Bookmarks::getCurrentPtr()
+{
+    return &m_current ; 
+}
+
+
+unsigned int Bookmarks::getNumBookmarks()
+{
+    return m_bookmarks.size(); 
+}
+Bookmarks::MUSI Bookmarks::begin()
+{
+    return m_bookmarks.begin();
+}
+Bookmarks::MUSI Bookmarks::end()
+{
+    return m_bookmarks.end();
+}
+
+
+
+
+
+
+
+
+
+const char* Bookmarks::getTitle()
+{
+   return &m_title[0] ; 
+}
+
+void Bookmarks::setVerbose(bool verbose)
+{
+   m_verbose = verbose ; 
+}
+void Bookmarks::setInterpolatedViewPeriod(unsigned int ivperiod)
+{
+   m_ivperiod = ivperiod ; 
+}
+
+
+bool Bookmarks::exists(unsigned int num)
+{
+    return m_bookmarks.count(num) == 1 ; 
+}
+
+void Bookmarks::setCurrent(unsigned int num)
+{
+    m_current = num ; 
+}
+unsigned int Bookmarks::getCurrent()
+{
+    return m_current ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void Bookmarks::init(const char* dir)
@@ -116,10 +211,10 @@ void Bookmarks::number_key_pressed(unsigned int num, unsigned int modifiers)
 {
     LOG(debug) << "Bookmarks::number_key_pressed "
                << " num "  << num 
-               << " modifiers " << Opticks::describeModifiers(modifiers) 
+               << " modifiers " << OpticksConst::describeModifiers(modifiers) 
                ; 
 
-    bool shift = Opticks::isShift(modifiers) ;
+    bool shift = OpticksConst::isShift(modifiers) ;
     bool exists_ = exists(num);
     if(exists_)
     {

@@ -1,7 +1,10 @@
 #pragma once
-#include <glm/glm.hpp>  
 
-class Light {
+#include <glm/fwd.hpp>  
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+
+class OKCORE_API Light {
    public:
        Light();
    public:
@@ -18,11 +21,5 @@ class Light {
 
 };
 
-
-inline Light::Light()
-   :
-   m_position(0.f,0.f,0.f),
-   m_direction(1.f,0.f,0.f)
-{
-}
+#include "OKCORE_TAIL.hh"
 

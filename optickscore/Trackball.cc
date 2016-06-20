@@ -1,22 +1,20 @@
-#include "Trackball.hh"
 
 #include <cstdio>
-#include <math.h>  
-
-// npy-
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-#include "BLog.hh"
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <cmath>  
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
+
+#include "NGLM.hpp"
+
+#include "BLog.hh"
+
+// npy-
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+
+#include "Trackball.hh"
 
 
 const char* Trackball::PREFIX = "trackball" ;
@@ -42,6 +40,169 @@ std::vector<std::string> Trackball::getTags()
     tags.push_back(TRANSLATEFACTOR);
     return tags ; 
 }
+
+
+
+
+
+
+
+
+float Trackball::getTranslationMin()
+{
+    return -m_translate_max ; 
+}
+
+float Trackball::getTranslationMax()
+{
+    return m_translate_max ; 
+}
+
+
+float* Trackball::getRadiusPtr()
+{
+    return &m_radius ;
+}
+float Trackball::getRadiusMin()
+{
+    return m_radius_clip[0] ; 
+}
+float Trackball::getRadiusMax()
+{
+    return m_radius_clip[1] ; 
+}
+
+
+
+float* Trackball::getTFactorPtr()
+{
+    return &m_translatefactor ;
+}
+float Trackball::getTFactorMin()
+{
+    return m_translatefactor_clip[0] ; 
+}
+float Trackball::getTFactorMax()
+{
+    return m_translatefactor_clip[1] ; 
+}
+
+
+
+
+
+
+
+Trackball::Trackball() :
+          m_radius(1.f),
+          m_translatefactor(1000.f),
+          m_drag_renorm(97),
+          m_drag_count(0),
+          m_changed(true)
+{
+    home();
+
+    setTranslateMax(1e5);
+    setRadiusClip(0.1f, 10.f);
+    setTranslateFactorClip(10.f, 1e6);
+}
+
+
+void Trackball::setTranslateMax(float _max)
+{
+    m_translate_max = _max ; 
+}
+
+void Trackball::setRadiusClip(float _min, float _max)
+{
+    m_radius_clip[0] = _min ;  
+    m_radius_clip[1] = _max ;  
+}
+
+void Trackball::setTranslateFactorClip(float _min, float _max)
+{
+    m_translatefactor_clip[0] = _min ;  
+    m_translatefactor_clip[1] = _max ;  
+}
+
+
+float Trackball::getRadius()
+{
+    return m_radius ; 
+}
+float Trackball::getTranslateFactor()
+{
+    return m_translatefactor  ; 
+}
+
+
+void Trackball::setRadius(float r)
+{
+    m_radius = r ; 
+    m_changed = true ; 
+}
+void Trackball::setTranslateFactor(float tf)
+{
+    m_translatefactor = tf ; 
+    m_changed = true ; 
+}
+void Trackball::setTranslate(float x, float y, float z)
+{
+    m_translate.x = x;
+    m_translate.y = y;
+    m_translate.z = z;
+    m_changed = true ; 
+}
+ 
+void Trackball::home()
+{
+    m_translate.x = 0.f ; 
+    m_translate.y = 0.f ; 
+    m_translate.z = 0.f ; 
+    setOrientation(0.f, 0.f);
+    m_changed = true ; 
+}
+void Trackball::zoom_to(float x, float y, float dx, float dy)
+{
+    m_translate.z += dy*m_translatefactor ;
+    m_changed = true ; 
+} 
+void Trackball::pan_to(float x, float y, float dx, float dy)
+{
+    m_translate.x += dx*m_translatefactor ;
+    m_translate.y += dy*m_translatefactor ;
+    m_changed = true ; 
+} 
+
+bool Trackball::hasChanged()
+{
+    return m_changed ; 
+}
+void Trackball::setChanged(bool changed)
+{
+    m_changed = changed ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 glm::vec3 Trackball::getTranslation()
@@ -276,11 +437,11 @@ void Trackball::setOrientation(float _theta, float _phi)
 void Trackball::setOrientation()
 {
     float pi = boost::math::constants::pi<float>() ;
-    float theta = m_theta_deg*pi/180. ;
-    float phi   = m_phi_deg*pi/180. ;
+    float theta = m_theta_deg*pi/180.f ;
+    float phi   = m_phi_deg*pi/180.f ;
 
-    glm::quat xrot(cos(0.5*theta),sin(0.5*theta),0,0);
-    glm::quat zrot(cos(0.5*phi),  0,0,sin(0.5*phi));
+    glm::quat xrot(cos(0.5f*theta),sin(0.5f*theta),0.f,0.f);
+    glm::quat zrot(cos(0.5f*phi),  0.f,0.f,sin(0.5f*phi));
     glm::quat q = xrot * zrot ; 
     setOrientation(q);
 }
@@ -360,8 +521,8 @@ glm::quat Trackball::rotate(float x, float y, float dx, float dy)
     glm::vec3 axis = glm::cross(p1, p0);
 
     // angle of rotation
-    float t = glm::clamp(glm::length(p1-p0)/(2.*m_radius), -1., 1. ) ;
-    float phi = 2.0 * asin(t) ;
+    float t = glm::clamp(glm::length(p1-p0)/(2.f*m_radius), -1.f, 1.f ) ;
+    float phi = 2.f * asin(t) ;
 
     glm::quat q = glm::angleAxis( phi, glm::normalize(axis) );
 
@@ -405,13 +566,13 @@ float Trackball::project(float r, float x, float y)
  
   float z, t, d ;
   d = sqrt(x*x + y*y);
-  if (d < r * 0.70710678118654752440)
+  if (d < r * 0.70710678118654752440f)
   {     
       z = sqrt(r*r - d*d);
   }
   else
   {   
-     t = r / 1.41421356237309504880 ;
+     t = r / 1.41421356237309504880f ;
      z = t*t / d  ;
   }
   return z;
