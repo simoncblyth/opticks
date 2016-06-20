@@ -16,7 +16,7 @@ int test_createInverseCDF_Debug()
     if(!slow)
     {
         LOG(fatal) << "FAILED TO LOAD " << path ;
-        return 1 ; 
+        return 0 ; 
     }
 
 

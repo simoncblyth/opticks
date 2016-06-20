@@ -473,6 +473,9 @@ opticks-ctest()
    local iwd=$PWD
    opticks-bcd 
 
+   export-
+   export-export 
+
    if [ "$USERPROFILE" == "" ]; then 
       ctest $*   
    else

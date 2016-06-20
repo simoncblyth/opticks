@@ -19,14 +19,49 @@ See also
 * ggv- examples of ggeoview invokations
 
 
-cmake cycling
---------------
+OTracerTest and ggeoview running FAILING with malloc errors
+--------------------------------------------------------------
+
+Have observed the below before, usually after a long while away. 
+Symptom is malloc errors related to setting up the optix context that go away 
+without obvious reason after a little investigation and recompilations.  
+
+Running without optix works::
+
+    op --nooptix
+
+Perhaps a stale ptx build issue ? 
+
 
 ::
 
-   ggeoview-wipe;ggeoview-cmake;ggeoview-make;ggeoview-install
+    simon:env blyth$ op --tracer
+
+    save dir /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae name  GFlagsLocal.ini
+    OTracerTest(83607,0x7fff74d63310) malloc: *** error for object 0x7fdd0bdaa408: incorrect checksum for freed object - object was probably modified after being freed.
+    *** set a breakpoint in malloc_error_break to debug
+    /Users/blyth/env/bin/op.sh: line 374: 83607 Abort trap: 6           /usr/local/opticks/bin/OTracerTest --tracer
 
 
+::
+
+        frame #11: 0x0000000102919d6d liboptix.1.dylib`___lldb_unnamed_function3395$$liboptix.1.dylib + 173
+        frame #12: 0x0000000102765e86 liboptix.1.dylib`___lldb_unnamed_function1141$$liboptix.1.dylib + 678
+        frame #13: 0x000000010268e04a liboptix.1.dylib`rtBufferMap + 122
+        frame #14: 0x00000001035fd6cf libOptiXRap.dylib`optix::BufferObj::map(this=0x00000001165321c0) + 47 at optixpp_namespace.h:3755
+        frame #15: 0x0000000103619647 libOptiXRap.dylib`OPropertyLib::makeTexture(this=0x0000000116532240, buffer=0x0000000112f58a70, format=RT_FORMAT_FLOAT, nx=1024, ny=1, empty=false) + 871 at OPropertyLib.cc:38
+        frame #16: 0x0000000103618f38 libOptiXRap.dylib`OSourceLib::makeSourceTexture(this=0x0000000116532240, buf=0x0000000112f58a70) + 824 at OSourceLib.cc:34
+        frame #17: 0x0000000103618bd9 libOptiXRap.dylib`OSourceLib::convert(this=0x0000000116532240) + 313 at OSourceLib.cc:12
+        frame #18: 0x000000010450287e libOpticksOp.dylib`OpEngine::prepareOptiX(this=0x000000010650a300) + 4606 at OpEngine.cc:87
+        frame #19: 0x000000010465aebe libGGeoViewLib.dylib`App::prepareOptiX() + 366
+        frame #20: 0x000000010000b8f1 OTracerTest`main(argc=3, argv=0x00007fff5fbfe4a8) + 321 at OTracerTest.cc:23
+        frame #21: 0x00007fff89e755fd libdyld.dylib`start + 1
+        frame #22: 0x00007fff89e755fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+ 
 
 Tips for Geometry Debug
 --------------------------

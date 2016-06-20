@@ -12,6 +12,6 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     add_dependencies(check ${TGT})
 
     target_link_libraries(${TGT} ${LIBRARIES} AssimpRap)
-    install(TARGETS ${TGT} DESTINATION bin)
+    install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

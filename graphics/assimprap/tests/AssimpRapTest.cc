@@ -1,3 +1,5 @@
+// op --assimp
+
 /*
 Setup envvars and run with:
 

@@ -227,7 +227,9 @@ void Opticks::setExit(bool exit)
 
 void Opticks::init()
 {
-    m_log = new BLog(m_argc, m_argv);
+    BLOG(m_argc, m_argv);
+
+    //m_log = new BLog(m_argc, m_argv);
 
     setMode( hasArg(COMPUTE) ? COMPUTE_MODE : INTEROP_MODE );
 
@@ -250,7 +252,7 @@ void Opticks::init()
 
     setDetector( m_resource->getDetector() );
 
-    m_log->setDir( m_resource->getIdPath() );
+    //m_log->setDir( m_resource->getIdPath() );
 
 
     LOG(trace) << "Opticks::init DONE " ;

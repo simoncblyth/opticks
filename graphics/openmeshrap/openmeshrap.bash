@@ -19,6 +19,48 @@ Add AssimpGGeo methods to be invoked prior to convertMeshes that operate at ai l
     AssimpGGeo::fixMeshes  
     AssimpGGeo::convertMeshes 
 
+Test is failing
+------------------
+
+::
+
+    simon:env blyth$ op --openmesh
+
+    ...
+    PolyMeshT::add_face: complex edge
+    PolyMeshT::add_face: complex edge
+    Assertion failed: (boundary_prev.is_valid()), function add_face, file /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/PolyConnectivity.cc, line 276.
+    /Users/blyth/env/bin/op.sh: line 374: 82728 Abort trap: 6           /usr/local/opticks/bin/OpenMeshRapTest --openmesh
+    simon:env blyth$ 
+
+
+    simon:env blyth$ opticks-ctest -R OpenMeshRapTest.OpenMeshRapTest -V
+
+    42: PolyMeshT::add_face: complex vertex
+    42: PolyMeshT::add_face: complex vertex
+    42: PolyMeshT::add_face: complex vertex
+    42: PolyMeshT::add_face: complex vertex
+    42: PolyMeshT::add_face: complex vertex
+    42: PolyMeshT::add_face: complex vertex
+    42: PolyMeshT::add_face: complex edge
+    42: PolyMeshT::add_face: complex edge
+    42: PolyMeshT::add_face: complex edge
+    42: PolyMeshT::add_face: complex edge
+    42: Assertion failed: (boundary_prev.is_valid()), function add_face, file /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/PolyConnectivity.cc, line 276.
+    1/1 Test #42: OpenMeshRapTest.OpenMeshRapTest ...***Exception: Other  1.95 sec
+
+    0% tests passed, 1 tests failed out of 1
+
+    Total Test time (real) =   1.95 sec
+
+    The following tests FAILED:
+         42 - OpenMeshRapTest.OpenMeshRapTest (OTHER_FAULT)
+    Errors while running CTest
+
+
+
+
+
 TODO
 -----
 

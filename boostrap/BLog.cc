@@ -88,7 +88,7 @@ void BLog::init()
 
 #ifdef DBG
     std::cerr << "BLog::init"
-               << " logname " << m_logname
+               << " logname " << ( m_logname ? m_logname : "NULL" )
                << " loglevel " << m_loglevel 
                << " logdir " << ( m_logdir ? m_logdir : "NULL" )
               << std::endl ;    
@@ -144,7 +144,7 @@ void BLog::configure(int argc, char** argv)
 
 #ifdef DBG
    std::cerr << "BLog::configure" 
-             << " logname " << m_logname 
+             << " logname " << ( m_logname ? m_logname : "NULL" )
              << " loglevel " << m_loglevel
              << std::endl  
               ;  
