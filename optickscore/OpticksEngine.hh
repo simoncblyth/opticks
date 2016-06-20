@@ -10,14 +10,16 @@
 //
 //  So they can be used(at a very high level) interchangably 
 
-#include <cstddef>
 
-// optickscore-
+// okc-
 class Opticks ;
 class OpticksEvent ;
 template <typename T> class OpticksCfg ;
 
-class OpticksEngine {
+
+#include "OKCORE_API_EXPORT.hh"
+
+class OKCORE_API OpticksEngine {
    public:
        OpticksEngine(Opticks* opticks);
    public:
@@ -34,25 +36,4 @@ class OpticksEngine {
 
 };
 
-inline OpticksEngine::OpticksEngine(Opticks* opticks) 
-    :
-      m_opticks(opticks),
-      m_cfg(NULL),
-      m_evt(NULL)
-{
-     init();
-}
-
-inline void OpticksEngine::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}
-inline Opticks* OpticksEngine::getOpticks()
-{
-    return m_opticks ; 
-}
-inline OpticksEvent* OpticksEngine::getEvent()
-{
-    return m_evt ; 
-}
 

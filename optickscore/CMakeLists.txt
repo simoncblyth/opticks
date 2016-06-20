@@ -54,14 +54,6 @@ set(SOURCES
     InterpolatedView.cc
     OrbitalView.cc
     TrackView.cc
-    Demo.cc
-
-    DemoCfg.cc
-    CameraCfg.cc
-    ViewCfg.cc
-    TrackballCfg.cc
-    ClipperCfg.cc
-    CompositionCfg.cc
 
     OpticksConst.cc
     OpticksQuery.cc
@@ -70,17 +62,24 @@ set(SOURCES
     OpticksEvent.cc
     Indexer.cc
 
-
-    Opticks.cc
-    OpticksCfg.cc
-
     OpticksFlags.cc
     OpticksAttrSeq.cc
+    Opticks.cc
+    OpticksCfg.cc
     OpticksResource.cc
-    OpticksEngine.cc
 
+    CameraCfg.cc
+    ViewCfg.cc
+    TrackballCfg.cc
+    ClipperCfg.cc
+    CompositionCfg.cc
+
+    OpticksEngine.cc
     Bookmarks.cc
     Composition.cc
+
+    Demo.cc
+    DemoCfg.cc
 )
 
 set(HEADERS
@@ -97,6 +96,7 @@ set(HEADERS
     Trackball.hh
     InterpolatedView.hh
     OrbitalView.hh
+    TrackView.hh
 
     OpticksConst.hh
     OpticksQuery.hh
@@ -107,21 +107,19 @@ set(HEADERS
 
     OpticksFlags.hh
     OpticksAttrSeq.hh
-    OpticksResource.hh
-    OpticksEngine.hh
     Opticks.hh
     OpticksCfg.hh
+    OpticksResource.hh
 
-    Composition.hh
-
-    CompositionCfg.hh
-    ViewCfg.hh
     CameraCfg.hh
+    ViewCfg.hh
     TrackballCfg.hh
     ClipperCfg.hh
+    CompositionCfg.hh
 
-    TrackView.hh
+    OpticksEngine.hh
     Bookmarks.hh
+    Composition.hh
 
     OpticksPhoton.h
     OpticksFlags.h
@@ -129,7 +127,6 @@ set(HEADERS
 
 
 add_library( ${name}  SHARED ${SOURCES}  )
-
 target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${hdrs} DESTINATION include/${name})

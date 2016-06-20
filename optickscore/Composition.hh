@@ -31,7 +31,7 @@ class OpticksEvent ;
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
-class Composition : public NConfigurable {
+class OKCORE_API Composition : public NConfigurable {
    public:
       friend class GUI ; 
    public:
@@ -147,32 +147,32 @@ class Composition : public NConfigurable {
       void setTimeDomain(const glm::vec4& td);
   public:
       // avaiable as uniform inside shaders allowing GPU-side selections 
-      void setSelection(glm::ivec4 sel);
+      void setSelection(const glm::ivec4& sel);
       void setSelection(std::string sel);
       glm::ivec4& getSelection();
 
   public:
-      void setRecSelect(glm::ivec4 sel);
+      void setRecSelect(const glm::ivec4& sel);
       void setRecSelect(std::string sel);
       glm::ivec4& getRecSelect();
 
   public:
-      void setPickPhoton(glm::ivec4 pp);
+      void setPickPhoton(const glm::ivec4& pp);
       void setPickPhoton(std::string pp);
       glm::ivec4& getPickPhoton();
       int* getPickPtr();
   public:
-      void setPickFace(glm::ivec4 pf);
+      void setPickFace(const glm::ivec4& pf);
       void setPickFace(std::string pf);
       glm::ivec4& getPickFace();
 
   public:
-      void setColorParam(glm::ivec4 cp);
+      void setColorParam(const glm::ivec4& cp);
       void setColorParam(std::string cp);
       glm::ivec4& getColorParam();
       int* getColorParamPtr();
   public:
-      void setParam(glm::vec4 par);
+      void setParam(const glm::vec4& par);
       void setParam(std::string par);
       glm::vec4&  getParam();
       float*      getParamPtr();
@@ -188,12 +188,12 @@ class Composition : public NConfigurable {
       int*         getNrmParamPtr();
 
   public:
-      void setFlags(glm::ivec4 flags);
+      void setFlags(const glm::ivec4& flags);
       void setFlags(std::string flags);
       glm::ivec4& getFlags();
 
   public:
-      void setPick(glm::ivec4 pick);
+      void setPick(const glm::ivec4& pick);
       void setPick(std::string pick);
       glm::ivec4& getPick();
   public:
@@ -205,16 +205,16 @@ class Composition : public NConfigurable {
       void setLookAngle(float phi);
       float* getLookAnglePtr();
   public:
-      void setLookW(glm::vec4 lookw);
+      void setLookW(const glm::vec4& lookw);
       void setLookW(std::string lookw);
   public:
-      void setEyeW(glm::vec4 eyew);
+      void setEyeW(const glm::vec4& eyew);
       void setEyeW(std::string eyew);
   public:
-      void setUpW(glm::vec4 upw);
+      void setUpW(const glm::vec4& upw);
       void setUpW(std::string upw);
   public:
-      void setEyeGUI(glm::vec3 gui);
+      void setEyeGUI(const glm::vec3& gui);
   public: 
       void home();
       void update();
@@ -270,7 +270,7 @@ class Composition : public NConfigurable {
       unsigned int getPixelHeight();
       unsigned int getPixelFactor();
       void setSize(unsigned int width, unsigned int height, unsigned int pixelfactor=1);
-      void setSize(glm::uvec4 size); // x, y will be scaled down by the pixelfactor
+      void setSize(const glm::uvec4& size); // x, y will be scaled down by the pixelfactor
       void setFramePosition(const glm::uvec4& position);
       glm::uvec4& getFramePosition();
   public:

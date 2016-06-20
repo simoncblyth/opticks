@@ -1,14 +1,19 @@
-#include "Opticks.hh"
-#include "OpticksResource.hh"
-#include "OpticksFlags.hh"
-#include "OpticksEvent.hh"
-#include "OpticksCfg.hh"
-#include "OpticksPhoton.h"
+
+#ifdef _MSC_VER
+// object allocated on the heap may not be aligned 16
+// https://github.com/g-truc/glm/issues/235
+// apparently fixed by 0.9.7.1 Release : currently on 0.9.6.3
+
+#pragma warning( disable : 4316 )
+#endif
+
+
 
 // brap-
 #include "BStr.hh"
 #include "BLog.hh"
 #include "BSys.hh"
+
 
 // npy-
 #include "Map.hpp"
@@ -18,6 +23,14 @@
 #include "GLMFormat.hpp"
 #include "NState.hpp"
 #include "NPropNames.hpp"
+
+// okc-
+#include "OpticksPhoton.h"
+#include "OpticksFlags.hh"
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+#include "OpticksEvent.hh"
+#include "OpticksCfg.hh"
 
 
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
@@ -320,6 +333,7 @@ void Opticks::configure()
 
     m_state = new NState(prefdir.c_str(), "state")  ;
 
+    LOG(info) << "Opticks::configure DONE " ;
 }
 
 
@@ -478,7 +492,6 @@ Index* Opticks::loadBoundaryIndex()
     const char* udet = getUDet();
     return OpticksEvent::loadBoundaryIndex(typ, tag, udet ) ;
 }
-
 
 
 

@@ -1,3 +1,12 @@
+#ifdef _MSC_VER
+// object allocated on the heap may not be aligned 16
+// https://github.com/g-truc/glm/issues/235
+// apparently fixed by 0.9.7.1 Release : currently on 0.9.6.3
+
+#pragma warning( disable : 4316 )
+#endif
+
+
 #include <climits>
 
 #include <boost/math/constants/constants.hpp>
@@ -790,7 +799,7 @@ unsigned int Composition::getPixelFactor()
    return m_camera->getPixelFactor();
 }
 
-void Composition::setSize(glm::uvec4 size)
+void Composition::setSize(const glm::uvec4& size)
 {
     LOG(debug) << "Composition::setSize "
               << " x " << size.x 
@@ -808,9 +817,10 @@ void Composition::setSize(unsigned int width, unsigned int height, unsigned int 
 
 void Composition::setSelection(std::string selection)
 {
-    setSelection(givec4(selection));
+    glm::ivec4 sel = givec4(selection);
+    setSelection(sel);
 }
-void Composition::setSelection(glm::ivec4 selection) 
+void Composition::setSelection(const glm::ivec4& selection) 
 {
     m_selection = selection ;  
 }
@@ -818,9 +828,10 @@ void Composition::setSelection(glm::ivec4 selection)
 
 void Composition::setRecSelect(std::string recselect)
 {
-    setRecSelect(givec4(recselect));
+    glm::ivec4 sel = givec4(recselect);
+    setRecSelect(sel);
 }
-void Composition::setRecSelect(glm::ivec4 recselect) 
+void Composition::setRecSelect(const glm::ivec4& recselect) 
 {
     m_recselect = recselect ;  
 }
@@ -832,7 +843,7 @@ void Composition::setPickPhoton(std::string pickphoton)
 
 
 
-void Composition::setPickPhoton(glm::ivec4 pickphoton) 
+void Composition::setPickPhoton(const glm::ivec4& pickphoton) 
 {
    // currently this relies on photon/record data being downloaded to host
 
@@ -863,7 +874,7 @@ void Composition::setPickPhoton(glm::ivec4 pickphoton)
 
 
 
-void Composition::setPickFace(glm::ivec4 pickface) 
+void Composition::setPickFace(const glm::ivec4& pickface) 
 {
     m_pickface = pickface ;  
     // the aiming is done by GGeo::setPickFace
@@ -876,26 +887,21 @@ void Composition::setPickFace(glm::ivec4 pickface)
 
 void Composition::setColorParam(std::string colorparam)
 {
-    setColorParam(givec4(colorparam));
+    glm::ivec4 cp = givec4(colorparam);
+    setColorParam(cp);
 }
-void Composition::setColorParam(glm::ivec4 colorparam) 
+void Composition::setColorParam(const glm::ivec4& colorparam) 
 {
     m_colorparam = colorparam ;  
 }
 
 
-
-
-
-
-
-
-
 void Composition::setFlags(std::string flags) 
 {
-    setFlags(givec4(flags));
+    glm::ivec4 fl = givec4(flags);
+    setFlags(fl);
 }
-void Composition::setFlags(glm::ivec4 flags) 
+void Composition::setFlags(const glm::ivec4& flags) 
 {
     m_flags = flags ;  
 }
@@ -903,23 +909,21 @@ void Composition::setFlags(glm::ivec4 flags)
 
 void Composition::setPick(std::string pick) 
 {
-    setPick(givec4(pick));
+    glm::ivec4 pk = givec4(pick);
+    setPick(pk);
 }
-void Composition::setPick(glm::ivec4 pick) 
+void Composition::setPick(const glm::ivec4& pick) 
 {
     m_pick = pick ;  
 }
 
 
-
-
-
-
 void Composition::setParam(std::string param)
 {
-    setParam(gvec4(param));
+    glm::vec4 pm = gvec4(param);
+    setParam(pm);
 }
-void Composition::setParam(glm::vec4 param)
+void Composition::setParam(const glm::vec4& param)
 {
     m_param = param ;
 }
@@ -1021,10 +1025,12 @@ void Composition::setUpW(std::string upw)
 
 
 
-void Composition::setLookW(glm::vec4 lookw)
+void Composition::setLookW(const glm::vec4& lookw)
 {
-    lookw.w = 1.0f ; 
-    glm::vec4 look = m_world_to_model * lookw ; 
+    glm::vec4 _lookw(lookw);
+    _lookw.w = 1.0f ; 
+
+    glm::vec4 look = m_world_to_model * _lookw ; 
 
     LOG(debug) << "Composition::setLookW" 
                << " world_to_model " << gformat(m_world_to_model) 
@@ -1035,10 +1041,11 @@ void Composition::setLookW(glm::vec4 lookw)
     m_view->setLook(look);
 }
 
-void Composition::setEyeW(glm::vec4 eyew)
+void Composition::setEyeW(const glm::vec4& eyew)
 {
-    eyew.w = 1.0f ; 
-    glm::vec4 eye = m_world_to_model * eyew ; 
+    glm::vec4 _eyew(eyew);
+    _eyew.w = 1.0f ; 
+    glm::vec4 eye = m_world_to_model * _eyew ; 
 
     LOG(debug) << "Composition::setEyeW" 
                << " world_to_model " << gformat(m_world_to_model) 
@@ -1050,12 +1057,13 @@ void Composition::setEyeW(glm::vec4 eyew)
     m_view->setEye(eye);
 }
 
-void Composition::setUpW(glm::vec4 upw)
+void Composition::setUpW(const glm::vec4& upw)
 {
-    upw.w = 0.0f ; 
-    upw *= m_extent ; // scale length of up vector
+    glm::vec4 _upw(upw);
+    _upw.w = 0.0f ; 
+    _upw *= m_extent ; // scale length of up vector
 
-    glm::vec4 up = m_world_to_model * upw ; 
+    glm::vec4 up = m_world_to_model * _upw ; 
     glm::vec4 upn = glm::normalize(up) ;
 
     LOG(info)  << "Composition::setUpW" 
@@ -1077,7 +1085,7 @@ void Composition::setUpW(glm::vec4 upw)
 
 
 
-void Composition::setEyeGUI(glm::vec3 gui)
+void Composition::setEyeGUI(const glm::vec3& gui)
 {
     glm::vec4 eyew ;
 

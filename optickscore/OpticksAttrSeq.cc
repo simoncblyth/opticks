@@ -1,4 +1,5 @@
 
+#include <cstring>
 #include <climits>
 #include <sstream>
 #include <iostream>
@@ -23,6 +24,45 @@
 
 unsigned int OpticksAttrSeq::UNSET = UINT_MAX ; 
 unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ; 
+
+
+
+
+
+OpticksAttrSeq::OpticksAttrSeq(Opticks* cache, const char* type)
+   :
+   m_cache(cache),
+   m_resource(NULL),
+   m_type(strdup(type)),
+   m_ctrl(0),
+   m_sequence(NULL)
+{
+   init();
+}
+
+const char* OpticksAttrSeq::getType()
+{
+    return m_type ; 
+}
+
+std::map<std::string, unsigned int>&  OpticksAttrSeq::getOrder()
+{
+    return m_order ;
+}
+
+void OpticksAttrSeq::setCtrl(unsigned char ctrl)
+{
+    m_ctrl = ctrl ; 
+}
+
+bool OpticksAttrSeq::hasSequence()
+{
+    return m_sequence != NULL ; 
+}
+
+
+
+
 
 void OpticksAttrSeq::init()
 {

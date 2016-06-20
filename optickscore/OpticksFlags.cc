@@ -3,14 +3,11 @@
 #include <vector>
 #include <string>
 
-#include "Index.hpp"
-
-//#include "OpticksAttrSeq.hh"
-//#include "Opticks.hh"
-
 #include "BBit.hh"
 #include "BRegex.hh"
 #include "BLog.hh"
+
+#include "Index.hpp"
 
 #include "OpticksFlags.hh"
 
@@ -39,13 +36,11 @@ const char* OpticksFlags::NAN_ABORT_         = "NAN_ABORT" ;
 const char* OpticksFlags::BAD_FLAG_          = "BAD_FLAG" ; 
 
 
-
 const char* OpticksFlags::cerenkov_          = "cerenkov" ;
 const char* OpticksFlags::scintillation_     = "scintillation" ;
 const char* OpticksFlags::torch_             = "torch" ; 
 const char* OpticksFlags::g4gun_             = "g4gun" ; 
 const char* OpticksFlags::other_             = "other" ;
-
 
 
 const char* OpticksFlags::Flag(const unsigned int flag)
@@ -137,7 +132,6 @@ OpticksFlags::OpticksFlags(const char* path)
     init(path);
 }
 
- 
 
 
 Index* OpticksFlags::getIndex()
@@ -157,17 +151,8 @@ void OpticksFlags::init(const char* path)
               ;
     
     assert(num_flags > 0 && "missing envvar ENV_HOME or you need to update ENUM_HEADER_PATH ");
-
-   // moved to OpticksResource
-   // m_aindex = new OpticksAttrSeq(m_cache, "GFlags");
-   // m_aindex->loadPrefs(); // color, abbrev and order 
-   // m_aindex->setSequence(m_index);
 }
 
-//OpticksAttrSeq* OpticksFlags::getAttrIndex()
-//{
-//    return m_aindex ; 
-//} 
 
 void OpticksFlags::save(const char* idpath)
 {
@@ -195,8 +180,4 @@ Index* OpticksFlags::parseFlags(const char* path)
     return index ; 
 }
 
-//std::map<unsigned int, std::string> OpticksFlags::getNamesMap()
-//{
-//    return m_aindex->getNamesMap() ; 
-//}
 

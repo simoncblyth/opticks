@@ -24,7 +24,6 @@ class OpticksResource ;
 class OpticksColors ; 
 class OpticksQuery; 
 class OpticksFlags ;
-
 class OpticksAttrSeq ;
 
 

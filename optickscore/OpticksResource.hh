@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 
-
 class Opticks ; 
 class OpticksQuery ; 
 class OpticksColors ; 
@@ -13,8 +12,10 @@ class OpticksAttrSeq ;
 class Types ;
 class Typ ;
 
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 
-class OpticksResource {
+class OKCORE_API OpticksResource {
     private:
        static const char* JUNO ; 
        static const char* DAYABAY ; 
@@ -129,4 +130,5 @@ class OpticksResource {
 };
 
 
+#include "OKCORE_TAIL.hh"
 

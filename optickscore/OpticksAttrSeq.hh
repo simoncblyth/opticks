@@ -24,7 +24,6 @@ History
 */
 
 #include <map>
-#include <cstring>
 #include <string>
 #include <vector>
 
@@ -33,10 +32,10 @@ class OpticksResource ;
 class NSequence ; 
 class Index ; 
 
-/*
-Classes fulfilling NSequence include GItemList 
-*/
-class OpticksAttrSeq {
+#include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
+
+class OKCORE_API OpticksAttrSeq {
     public:
         static unsigned int UNSET ; 
         static unsigned int ERROR_COLOR ; 
@@ -58,11 +57,7 @@ class OpticksAttrSeq {
         void setCtrl(unsigned char ctrl);
         void loadPrefs();
         const char* getType();
-
         std::map<std::string, unsigned int>& getOrder();
-        //std::map<std::string, std::string>& getColor();
-        //std::map<std::string, std::string>& getAbbrev();
-
         void setSequence(NSequence* seq);
         bool hasSequence();
     public:
@@ -100,34 +95,5 @@ class OpticksAttrSeq {
 
 };
 
-inline OpticksAttrSeq::OpticksAttrSeq(Opticks* cache, const char* type)
-   :
-   m_cache(cache),
-   m_resource(NULL),
-   m_type(strdup(type)),
-   m_ctrl(0),
-   m_sequence(NULL)
-{
-   init();
-}
-
-inline const char* OpticksAttrSeq::getType()
-{
-    return m_type ; 
-}
-
-inline std::map<std::string, unsigned int>&  OpticksAttrSeq::getOrder()
-{
-    return m_order ;
-}
-
-inline void OpticksAttrSeq::setCtrl(unsigned char ctrl)
-{
-    m_ctrl = ctrl ; 
-}
-
-inline bool OpticksAttrSeq::hasSequence()
-{
-    return m_sequence != NULL ; 
-}
+#include "OKCORE_TAIL.hh"
 

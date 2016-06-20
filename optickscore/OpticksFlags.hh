@@ -4,14 +4,7 @@
 #include <map>
 
 #include "OpticksPhoton.h"
-
-//class Opticks ; 
-//class OpticksAttrSeq ; 
-
 class Index ; 
-
-// replacing part of Types
-// hmm this should be low level, but needing to pass in Opticks makes it not so
 
 
 #include "OKCORE_API_EXPORT.hh"
@@ -53,20 +46,14 @@ class OKCORE_API OpticksFlags {
        static const char* Flag(const unsigned int flag);
        static std::string FlagSequence(const unsigned long long seqhis);
     public:
-    //    OpticksFlags(Opticks* cache, const char* path=ENUM_HEADER_PATH);
         OpticksFlags(const char* path=ENUM_HEADER_PATH);
         void save(const char* idpath);
     private:
         void init(const char* path);
         Index* parseFlags(const char* path);
     public:
-//        std::map<unsigned int, std::string> getNamesMap(); 
-    public:
         Index*             getIndex();  
-//        OpticksAttrSeq*    getAttrIndex();  
     private:
-//        Opticks*           m_cache  ;
-//        OpticksAttrSeq*    m_aindex ; 
         Index*             m_index ; 
 };
 
