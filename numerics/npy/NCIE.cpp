@@ -1,3 +1,5 @@
+
+#include "NCIE.hpp"
 #include "ciexyz.h"
 
 
@@ -20,7 +22,9 @@ float cie_Z(float nm)
 }
 
 
-
+float NCIE::X(float nm) { return xFit_1931(nm); }
+float NCIE::Y(float nm) { return yFit_1931(nm); }
+float NCIE::Z(float nm) { return zFit_1931(nm); }
 
 
 

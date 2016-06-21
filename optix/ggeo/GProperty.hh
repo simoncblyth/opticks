@@ -1,15 +1,18 @@
 #pragma once
 
-#include "GAry.hh"
-#include "GDomain.hh"
 #include <vector>
 #include <string>
 
-//template <typename T> class GPropertyMap ; 
 
+template <typename T> class GDomain ; 
+template <typename T> class GAry ; 
+template <typename T> class GProperty ; 
+
+
+#include "GGEO_API_EXPORT.hh"
 
 template <class T>
-class GProperty {
+class GGEO_API GProperty {
 public: 
    static const char* DOMAIN_FMT ;
    static const char* VALUE_FMT ;
@@ -103,35 +106,8 @@ private:
 
 
 
-template <typename T>
-inline T GProperty<T>::getValue(unsigned int index)
-{
-    return m_values->getValue(index);
-}
-
-template <typename T>
-inline T GProperty<T>::getDomain(unsigned int index)
-{
-    return m_domain->getValue(index);
-}
-
- 
-template <typename T>
-GAry<T>* GProperty<T>::getValues()
-{
-    return m_values ; 
-}
-
-template <typename T>
-GAry<T>* GProperty<T>::getDomain()
-{
-    return m_domain ; 
-}
-
-
 
 typedef GProperty<float>  GPropertyF ;
 typedef GProperty<double> GPropertyD ;
-
 
 

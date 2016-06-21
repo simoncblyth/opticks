@@ -490,6 +490,7 @@ okc-icd(){  cd $(okc-idir); }
 okc-bcd(){  cd $(okc-bdir); }
 
 okc-name(){ echo OpticksCore ; }
+okc-tag(){  echo OKCORE ; }
 
 okc-bin(){ echo $(okc-idir)/bin/${1:-OpticksResourceTest} ; }
 
@@ -513,12 +514,12 @@ okc--(){
    cd $iwd
 }
 
-okc-generate-exports()
+
+
+okc-genproj()
 {
    okc-scd
-   importlib-
-   importlib-exports OpticksCore OKCORE_API    
-
+   opticks-genproj $(okc-name) $(okc-tag)
 }
 
 

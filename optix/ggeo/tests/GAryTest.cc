@@ -1,9 +1,11 @@
-#include "GAry.hh"
+#include <cassert>
 #include "GDomain.hh"
-#include "assert.h"
+#include "GAry.hh"
+
+#include "PLOG.hh"
+#include "NPY_LOG.hh"
 
 typedef GAry<float> A ;
-
 
 
 void test_cie()
@@ -79,6 +81,9 @@ void test_sliced()
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    NPY_LOG_ ;
+
     test_cie();   
     test_planck();   
     test_misc();   

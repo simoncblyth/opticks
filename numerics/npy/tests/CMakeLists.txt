@@ -6,7 +6,7 @@ project(${name})
 
 #file(GLOB TEST_SOURCES "*Test.cc")
 
-set(TEST_SOURCES
+set(ALL_TEST_SOURCES
 
 LogTest.cc
 EnvTest.cc
@@ -55,6 +55,12 @@ _BoundariesNPYTest.cc
 _RecordsNPYTest.cc
 NTrianglesNPYTest.cc
 PhotonsNPYTest.cc
+
+)
+
+set(TEST_SOURCES
+
+NCIETest.cc
 
 )
 

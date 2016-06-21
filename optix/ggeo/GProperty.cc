@@ -12,7 +12,6 @@
 #include "BFile.hh"
 #include "BDigest.hh"
 #include "BMap.hh"
-#include "BLog.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -22,12 +21,47 @@
 #include "GDomain.hh"
 #include "GAry.hh"
 
+#include "PLOG.hh"
+
+
 
 template <typename T>
 const char* GProperty<T>::DOMAIN_FMT = " %10.3f" ; 
 
 template <typename T>
 const char* GProperty<T>::VALUE_FMT = " %10.3f" ; 
+
+
+
+
+template <typename T>
+T GProperty<T>::getValue(unsigned int index)
+{
+    return m_values->getValue(index);
+}
+
+template <typename T>
+T GProperty<T>::getDomain(unsigned int index)
+{
+    return m_domain->getValue(index);
+}
+
+ 
+template <typename T>
+GAry<T>* GProperty<T>::getValues()
+{
+    return m_values ; 
+}
+
+template <typename T>
+GAry<T>* GProperty<T>::getDomain()
+{
+    return m_domain ; 
+}
+
+
+
+
 
 
 template <typename T>

@@ -27,7 +27,6 @@ int main(int argc, char** argv)
     OKCORE_LOG_ ; 
      
 
-
     //BRAP_LOG::Initialize(logger, logger->getMaxSeverity() );
     //BRAP_LOG::Check("main -> BRAP_LOG");
 
@@ -36,8 +35,6 @@ int main(int argc, char** argv)
 
     //OKCORE_LOG::Initialize(logger, logger->getMaxSeverity() );
     //OKCORE_LOG::Check("main -> OKCORE_LOG");
-
-
 
 
 

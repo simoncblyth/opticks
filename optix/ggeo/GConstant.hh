@@ -1,6 +1,8 @@
 #pragma once
 
-class GConstant {
+#include "GGEO_API_EXPORT.hh"
+
+class GGEO_API GConstant {
    public:
 
       static const double meter ;

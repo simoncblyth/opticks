@@ -1,9 +1,12 @@
 #pragma once
 
+template <class T> class GAry ; 
 template <class T> class GDomain ; 
 
+#include "GGEO_API_EXPORT.hh"
+
 template <class T>
-class GAry {
+class GGEO_API GAry {
 
 public: 
    static GAry<T>* urandom(unsigned int n=100); 

@@ -5,6 +5,7 @@ project(${name})
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
+find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
 find_package(BoostRap REQUIRED)
@@ -14,6 +15,7 @@ find_package(OpticksCore REQUIRED)
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${PLog_INCLUDE_DIRS}
    ${OpticksBoost_INCLUDE_DIRS}
    ${GLM_INCLUDE_DIRS} 
 
@@ -23,6 +25,7 @@ set(INCLUDE_DIRS
 )
 
 set(LIBRARIES
+   ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${NPY_LIBRARIES}
@@ -30,6 +33,7 @@ set(LIBRARIES
 )
 
 set(DEFINITIONS
+   ${PLog_DEFINITIONS}
    ${OpticksBoost_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS} 
@@ -39,11 +43,8 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 
-set(SOURCES
-    GConstant.cc
-    GProperty.cc
-    GDomain.cc
-    GAry.cc
+set(ALL_SOURCES
+
     GPropertyMap.cc
     GMaterial.cc
     GSource.cc
@@ -87,11 +88,35 @@ set(SOURCES
     GCIE.cc
     GGeoTest.cc
     GGeoTestConfig.cc
-
 )
 
 
-SET(HEADERS
+
+
+set(SOURCES
+
+    GGEO_LOG.cc
+
+    GConstant.cc
+    GDomain.cc
+    GAry.cc
+    GProperty.cc
+
+)
+set(HEADERS
+
+    GGEO_LOG.hh
+    GGEO_API_EXPORT.hh
+    GGEO_HEAD.hh
+    GGEO_TAIL.hh
+
+    GConstant.hh
+)
+
+
+
+
+SET(ALL_HEADERS
     GConstant.hh
     GGeo.hh
     GGeoCfg.hh

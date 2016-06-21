@@ -743,3 +743,56 @@ opticks-api-export-vi(){ vi $(opticks-api-export) ; }
 opticks-grep-vi(){ vi $(opticks-grep -l ${1:-BLog}) ; }
 
 
+
+opticks-genproj()
+{
+    # this is typically called from projs like ggeo- 
+
+    local msg=" === $FUNCNAME :"
+    local proj=${1}
+    local tag=${2}
+
+    [ -z "$proj" -o -z "$tag" ] && echo $msg need both proj $proj and tag $tag  && return 
+
+
+
+    importlib-  
+    importlib-exports ${proj} ${tag}_API
+
+    plog-
+    plog-genlog
+
+    echo $msg merge the below sources into CMakeLists.txt
+    opticks-genproj-sources- $tag
+
+}
+
+opticks-genproj-sources-(){ 
+
+
+   local tag=${1:-OKCORE}
+   cat << EOS
+
+set(SOURCES
+     
+   ${tag}_LOG.cc
+
+)
+set(HEADERS
+
+    ${tag}_LOG.hh
+    ${tag}_API_EXPORT.hh
+    ${tag}_HEAD.hh
+    ${tag}_TAIL.hh
+
+)
+EOS
+}
+
+
+
+
+
+
+
+

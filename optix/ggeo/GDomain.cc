@@ -1,13 +1,14 @@
-#include "GDomain.hh"
 
-#include "assert.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
+#include <cassert>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <sstream>
 #include <string>
-#include "BLog.hh"
+
+#include "GDomain.hh"
+
+#include "PLOG.hh"
 
 
 template <typename T>

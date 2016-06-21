@@ -1,7 +1,11 @@
 #pragma once
 
+
+#include "GGEO_API_EXPORT.hh"
+
+
 template <class T>
-class GDomain {
+class GGEO_API GDomain {
   public: 
      GDomain(T low, T high, T step) : m_low(low), m_high(high), m_step(step) {}
      virtual ~GDomain() {}

@@ -1,23 +1,23 @@
-#include "GAry.hh"
-#include "GDomain.hh"
 
-#include "assert.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "float.h"
+#include <cassert>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+#include <cfloat>
 #include <vector>
-
-
-#include "NPY.hpp"
-#include "NPlanck.hpp"
-#include "NCIE.hpp"
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "BLog.hh"
+#include "NPY.hpp"
+#include "NPlanck.hpp"
+#include "NCIE.hpp"
+
+#include "GAry.hh"
+#include "GDomain.hh"
+
+#include "PLOG.hh"
 
 
 
@@ -334,9 +334,9 @@ GAry<T>* GAry<T>::cie_weight(GAry<T>* nm, unsigned int component)
     {
         switch(component)
         {
-            case 0:vals[i] = ::cie_X(nmv[i]) ;break;  
-            case 1:vals[i] = ::cie_Y(nmv[i]) ;break;  
-            case 2:vals[i] = ::cie_Z(nmv[i]) ;break;  
+            case 0:vals[i] = NCIE::X(nmv[i]) ;break;  
+            case 1:vals[i] = NCIE::Y(nmv[i]) ;break;  
+            case 2:vals[i] = NCIE::Z(nmv[i]) ;break;  
         }
     }
     return ary ;
