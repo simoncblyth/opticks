@@ -108,15 +108,14 @@ zoom defined as apparent size of an object relative to the size for a 90 degree 
 #include "NConfigurable.hpp"
 #include "OKCORE_API_EXPORT.hh"
 
-class OKCORE_API  Camera : public NConfigurable  {
+class OKCORE_API Camera : public NConfigurable  {
    public:
        static const char* PREFIX ;
        const char* getPrefix();
   public:
      static const char* PRINT ; 
-
-     static const char* NEAR ; 
-     static const char* FAR ; 
+     static const char* NEAR_ ; 
+     static const char* FAR_ ; 
      static const char* ZOOM ; 
      static const char* SCALE ; 
 

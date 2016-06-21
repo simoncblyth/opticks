@@ -1,8 +1,8 @@
-#include "BLog.hh"
 
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "NTrianglesNPY.hpp"
+#include "PLOG.hh"
 
 void test_prism()
 {
@@ -58,7 +58,7 @@ void test_icosahedron()
 
 int main(int argc, char**argv)
 {
-    BLOG(argc, argv);
+    PLOG_(argc, argv);
 
     test_prism();
     test_transform();

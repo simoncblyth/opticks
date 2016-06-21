@@ -9,7 +9,6 @@
 
 // brap-
 #include "BStr.hh"
-#include "BLog.hh"
 
 // npy-
 #include "TorchStepNPY.hpp"
@@ -17,6 +16,8 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "uif.h"
+
+#include "PLOG.hh"
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
     "type=sphere_"

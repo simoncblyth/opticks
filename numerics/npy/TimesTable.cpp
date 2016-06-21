@@ -2,12 +2,12 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
-#include "BLog.hh"
 
 
 #include "TimesTable.hpp"
 #include "Times.hpp"
 
+#include "PLOG.hh"
 
 TimesTable::TimesTable(const std::vector<std::string>& columns)
 {

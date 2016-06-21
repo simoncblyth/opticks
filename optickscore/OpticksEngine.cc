@@ -4,7 +4,7 @@
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 OpticksEngine::OpticksEngine(Opticks* opticks) 

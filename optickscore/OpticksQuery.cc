@@ -5,7 +5,7 @@
 
 // brap-
 #include "BStr.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // optickscore-
 #include "OpticksQuery.hh"

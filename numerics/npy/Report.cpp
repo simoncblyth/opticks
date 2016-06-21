@@ -5,13 +5,13 @@
 #include <sstream>
 
 // brap-
-#include "BLog.hh"
 #include "BTime.hh"
 #include "BFile.hh"
 
 // npy-
 #include "Report.hpp"
 
+#include "PLOG.hh"
 
 const char* Report::NAME = "report.txt" ;
 const char* Report::TIMEFORMAT = "%Y%m%d_%H%M%S" ;

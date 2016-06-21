@@ -3,11 +3,12 @@
 #include <vector>
 
 
-#include "BLog.hh"
 
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
+
+#include "PLOG.hh"
 
 
 void test_gmat4()
@@ -58,7 +59,7 @@ void test_misc()
 
 int main(int argc, char** argv)
 {
-    BLOG(argc, argv);
+    PLOG_(argc, argv);
 
     test_gmat4();
     test_ivec4();

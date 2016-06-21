@@ -1,7 +1,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 // npy-
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
@@ -196,24 +196,24 @@ glm::vec4 TrackView::getTrackPoint(float fraction)
     return glm::vec4(m.x, m.y, m.z, 1.0f ) ; 
 }
 
-glm::vec4 TrackView::getEye(const glm::mat4& m2w) 
+glm::vec4 TrackView::getEye(const glm::mat4& /*m2w*/) 
 { 
     glm::vec4 trkp = getTrackPoint(); 
     return trkp + m_teye_offset*m_direction  ; 
 }
 
-glm::vec4 TrackView::getLook(const glm::mat4& m2w) 
+glm::vec4 TrackView::getLook(const glm::mat4& /*m2w*/) 
 { 
     glm::vec4 trkp = getTrackPoint(); 
     return trkp + m_tlook_offset*m_direction ; 
 } 
 
-glm::vec4 TrackView::getUp(const glm::mat4& m2w) 
+glm::vec4 TrackView::getUp(const glm::mat4& /*m2w*/) 
 { 
     return glm::vec4(0,0,1000,0) ;  
 } 
 
-glm::vec4 TrackView::getGaze(const glm::mat4& m2w, bool debug)
+glm::vec4 TrackView::getGaze(const glm::mat4& m2w, bool )
 {
     glm::vec4 eye = getEye(m2w);
     glm::vec4 look = getLook(m2w);

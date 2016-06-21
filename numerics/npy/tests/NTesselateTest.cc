@@ -1,6 +1,6 @@
 #include "NTrianglesNPY.hpp"
-#include "BLog.hh"
 #include "NPY.hpp"
+#include "PLOG.hh"
 
 void test_icosahedron_subdiv(unsigned int nsd)
 {
@@ -47,7 +47,7 @@ void test_octahedron_subdiv()
 
 int main(int argc, char** argv)
 {
-    BLog nl(argc, argv);
+    PLOG_(argc, argv);
 
     test_icosahedron_subdiv();
     test_octahedron_subdiv();

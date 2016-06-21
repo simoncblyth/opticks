@@ -1,5 +1,4 @@
 
-#include "BLog.hh"
 
 #include "NGLM.hpp"
 #include "GLMPrint.hpp"
@@ -9,6 +8,7 @@
 #include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
 
+#include "PLOG.hh"
 
 #ifdef _MSC_VER
 // 'ViewNPY' or 'NTrianglesNPY' : object allocated on the heap may not be aligned 16

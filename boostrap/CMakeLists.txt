@@ -50,7 +50,6 @@ set(SOURCES
   BFoo.cc 
   BTime.cc
   BTimer.cc
-  BLog.cc
   BSys.cc
   BCfg.cc
   BDir.cc
@@ -70,6 +69,7 @@ set(SOURCES
 ) 
 
 set(TOXIC_SOURCES
+  BLog.cc
   timeutil.cc
 )
 
@@ -83,7 +83,6 @@ set(HEADERS
   BDemo.hh 
   BTime.hh
   BTimer.hh
-  BLog.hh
   BSys.hh
   BCfg.hh
   BDir.hh
@@ -101,6 +100,7 @@ set(HEADERS
 
 set(TOXIC_HEADERS
   timeutil.hh
+  BLog.hh
 )
 
 

@@ -3,9 +3,15 @@
 #include <cstring>
 #include <climits>
 
-#include "BLog.hh"
 
 #include "NTxt.hpp"
+#include "PLOG.hh"
+
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
+
+
 
 NTxt::NTxt(const char* path)
    :

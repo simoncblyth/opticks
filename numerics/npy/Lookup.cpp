@@ -4,10 +4,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "BLog.hh"
 #include "BMap.hh"
 
 #include "Lookup.hpp"
+#include "PLOG.hh"
 
 namespace fs = boost::filesystem;
 

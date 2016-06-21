@@ -1,4 +1,8 @@
-#include <plog/Severity.h>
+
+// NB DANGEROUS DEFINES : INCLUDE AS THE LAST HEADER
+//    OTHERWISE RANDOMLY REPLACES STRINGS IN SYSTEM HEADERS
+
+#include <plog/Log.h>
 
 // translate from boost log levels to plog 
 using plog::fatal ;
@@ -10,10 +14,16 @@ using plog::verbose ;
 
 // hmm dangerous but what alternative 
 #define trace plog::verbose 
+
 #include "BRAP_API_EXPORT.hh"
 struct BRAP_API PLOG 
 {
     int   level ; 
     PLOG(int argc, char** argv);
 };
+
+
+
+#include "PLOG_INIT.hh"
+
 

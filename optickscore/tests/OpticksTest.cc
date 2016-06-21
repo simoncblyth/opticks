@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "PLOG.hh"
-#include "PLOG_INIT.hh"
 
 #include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
@@ -18,21 +17,25 @@
 
 int main(int argc, char** argv)
 {
-    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; 
-    PLOG_INIT( &consoleAppender, PLOG(argc,argv).level );
+    PLOG_(argc,argv);
     LOG(info) << argv[0] ;
 
+    //plog::Logger<0>* logger = plog::get(); 
 
-    plog::Logger<0>* logger = plog::get(); 
+    BRAP_LOG_ ; 
+    NPY_LOG_ ; 
+    OKCORE_LOG_ ; 
+     
 
-    BRAP_LOG::Initialize(logger, logger->getMaxSeverity() );
-    BRAP_LOG::Check("main -> BRAP_LOG");
 
-    NPY_LOG::Initialize(logger, logger->getMaxSeverity() );
-    NPY_LOG::Check("main -> NPY_LOG");
+    //BRAP_LOG::Initialize(logger, logger->getMaxSeverity() );
+    //BRAP_LOG::Check("main -> BRAP_LOG");
 
-    OKCORE_LOG::Initialize(logger, logger->getMaxSeverity() );
-    OKCORE_LOG::Check("main -> OKCORE_LOG");
+    //NPY_LOG::Initialize(logger, logger->getMaxSeverity() );
+    //NPY_LOG::Check("main -> NPY_LOG");
+
+    //OKCORE_LOG::Initialize(logger, logger->getMaxSeverity() );
+    //OKCORE_LOG::Check("main -> OKCORE_LOG");
 
 
 

@@ -10,7 +10,6 @@
 template <typename> class OpticksCfg ;
 
 class TorchStepNPY ; 
-class BLog ;
 class NState ;
 class Parameters ; 
 class NPropNames ; 
@@ -77,7 +76,6 @@ class OKCORE_API Opticks {
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        bool hasOpt(const char* name);
        void cleanup();
-       int getLogLevel();
    public:
        // from OpticksResource
        const char* getDetector();
@@ -179,7 +177,6 @@ class OKCORE_API Opticks {
        const char*          m_envprefix ;
    private:
        OpticksResource*     m_resource ; 
-       BLog*                m_log ; 
        NState*              m_state ; 
    private:
        bool             m_exit ; 

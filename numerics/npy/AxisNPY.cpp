@@ -3,13 +3,13 @@
 #include <algorithm>
 
 #include "NGLM.hpp"
-#include "BLog.hh"
 
 #include "GLMFormat.hpp"
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 
 #include "AxisNPY.hpp"
+#include "PLOG.hh"
 
 
 AxisNPY::AxisNPY(NPY<float>* axis) 

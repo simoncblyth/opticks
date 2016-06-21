@@ -3,11 +3,11 @@
 #include <cassert>
 
 #include "BFile.hh"
-#include "BLog.hh"
 
 #include "NTxt.hpp"
 #include "NPropNames.hpp"
 
+#include "PLOG.hh"
 
 NPropNames::NPropNames(const char* libname)
    :

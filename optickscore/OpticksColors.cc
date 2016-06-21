@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "BFile.hh"
 #include "BMap.hh"
 

@@ -2,7 +2,7 @@
 
 #include <numeric>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // npy-
 #include "NPY.hpp"

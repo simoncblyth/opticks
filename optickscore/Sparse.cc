@@ -1,10 +1,11 @@
 #include <numeric>
 #include <algorithm>
+#include <functional>
 #include <cstring>
 
 #include "BStr.hh"
 #include "BHex.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "NPY.hpp"
 #include "Index.hpp"

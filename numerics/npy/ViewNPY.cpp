@@ -12,7 +12,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 const char* ViewNPY::BYTE_ = "BYTE"; 
 const char* ViewNPY::UNSIGNED_BYTE_ = "UNSIGNED_BYTE" ; 

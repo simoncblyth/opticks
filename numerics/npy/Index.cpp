@@ -8,13 +8,13 @@
 // brap-
 #include "BMap.hh"
 #include "BFile.hh"
-#include "BLog.hh"
 
 // npy-
 #include "Index.hpp"
 
 
 
+#include "PLOG.hh"
 
 
 Index::Index(const char* itemtype, const char* title, bool onebased)

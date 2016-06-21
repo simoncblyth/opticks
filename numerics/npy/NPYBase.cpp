@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <boost/algorithm/string/replace.hpp>
+
 #include "NPYBase.hpp"
 
 #include <cstring>
@@ -10,10 +13,9 @@
 #include "BStr.hh"
 #include "BDigest.hh"
 
-#include <boost/algorithm/string/replace.hpp>
 
 #include "NPYSpec.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 bool NPYBase::GLOBAL_VERBOSE = false ; 

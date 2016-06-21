@@ -11,13 +11,13 @@
 #include "BHex.hh" 
 #include "BRegex.hh"
 #include "BBit.hh"
-#include "BLog.hh"
 
 // npy-
 #include "Types.hpp"
 #include "Index.hpp"
 #include "NPropNames.hpp"
 
+#include "PLOG.hh"
 
 const char* Types::TAIL = " " ;
 

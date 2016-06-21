@@ -6,12 +6,12 @@
 // brap-
 #include "BFile.hh"
 #include "BList.hh"
-#include "BLog.hh"
 
 #include "Times.hpp"
 
 
 
+#include "PLOG.hh"
 
 
 Times::Times(const char* label)  

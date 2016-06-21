@@ -1,8 +1,8 @@
 
 #include "GLMPrint.hpp"
-#include "BLog.hh"
 
 #include "NTriangle.hpp"
+#include "PLOG.hh"
 
 ntriangle::ntriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) 
 {

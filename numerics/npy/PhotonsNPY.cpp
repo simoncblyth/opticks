@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <climits>
 
-#include "BLog.hh"
 
 #include "NGLM.hpp"
 #include "uif.h"
@@ -20,6 +19,7 @@
 #include "Types.hpp"
 #include "Typ.hpp"
 
+#include "PLOG.hh"
 
 
 PhotonsNPY::PhotonsNPY(NPY<float>* photons) 

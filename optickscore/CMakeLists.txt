@@ -87,6 +87,12 @@ set(SOURCES
     DemoCfg.cc
 )
 
+
+set(_SOURCES
+
+) 
+
+
 set(HEADERS
 
     OKCORE_LOG.hh

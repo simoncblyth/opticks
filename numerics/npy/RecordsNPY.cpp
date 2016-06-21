@@ -8,7 +8,6 @@
 #include <glm/glm.hpp>
 
 //brap-
-#include "BLog.hh"
 #include "BBit.hh"
 
 // npy-
@@ -18,6 +17,7 @@
 #include "Index.hpp"
 #include "Typ.hpp"
 
+#include "PLOG.hh"
 
 RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat)
     :

@@ -5,7 +5,7 @@
 
 #include "BBit.hh"
 #include "BRegex.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "Index.hpp"
 

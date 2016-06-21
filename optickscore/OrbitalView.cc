@@ -3,7 +3,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
@@ -156,7 +156,7 @@ glm::vec4 OrbitalView::getUp(const glm::mat4& m2w)
     return up_w ;  
 } 
 
-glm::vec4 OrbitalView::getGaze(const glm::mat4& m2w, bool debug)
+glm::vec4 OrbitalView::getGaze(const glm::mat4& m2w, bool )
 {
     glm::vec4 eye = getEye(m2w);
     glm::vec4 look = getLook(m2w);

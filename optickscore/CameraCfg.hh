@@ -12,8 +12,8 @@ public:
 
        addOptionF<Listener>(listener, Listener::ZOOM,     "Zoom factor");
        addOptionF<Listener>(listener, Listener::SCALE,    "Screen Scale");
-       addOptionF<Listener>(listener, Listener::NEAR,     "Near distance");
-       addOptionF<Listener>(listener, Listener::FAR,      "Far distance" );
+       addOptionF<Listener>(listener, Listener::NEAR_,     "Near distance");
+       addOptionF<Listener>(listener, Listener::FAR_,      "Far distance" );
        addOptionF<Listener>(listener, Listener::PARALLEL, "Parallel or perspective");
    }
 };

@@ -9,7 +9,6 @@
 #include <boost/algorithm/string.hpp>
 
 // brap-
-#include "BLog.hh"
 #include "BStr.hh"
 
 // npy-
@@ -19,6 +18,7 @@
 #include "uif.h"
 
 
+#include "PLOG.hh"
 
 NGunConfig::NGunConfig()
     :

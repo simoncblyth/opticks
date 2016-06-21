@@ -1,8 +1,8 @@
-#include "BLog.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
-    BLog bl(argc, argv);
+    PLOG_(argc, argv);
 
     LOG(trace) << argv[0] ;
     LOG(debug) << argv[0] ;

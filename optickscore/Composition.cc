@@ -12,7 +12,7 @@
 #include <boost/math/constants/constants.hpp>
 #include "NGLM.hpp"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 // npy-

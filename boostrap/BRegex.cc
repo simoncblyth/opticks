@@ -8,12 +8,6 @@
 #include <boost/lexical_cast.hpp>
 
 
-// cannot BLog.hh this as bregex- is below NPY
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
-
 #include "BRegex.hh"
 #include "BFile.hh"
 #include "BStr.hh"
@@ -22,6 +16,7 @@
 
 
 #include "BRAP_FLAGS.hh"
+#include "PLOG.hh"
 
 
 void BRegex::dump( pairs_t& pairs, const char* msg)

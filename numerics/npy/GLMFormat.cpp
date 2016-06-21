@@ -17,11 +17,8 @@
 #endif
 
 
-
-#include "BLog.hh"
-
-
 #include "GLMFormat.hpp"
+#include "PLOG.hh"
 
 GLMFormat::GLMFormat(const char* delim, unsigned int prec)
 {

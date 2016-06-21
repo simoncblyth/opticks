@@ -22,8 +22,12 @@ Resolve by moving the BLog.hh include after NPY.hpp::
 EOU
 }
 plog-env(){      opticks- ;  }
-plog-dir(){ echo $(opticks-prefix)/externals/plog ; }
-plog-cd(){  cd $(plog-dir); }
+plog-dir(){  echo $(opticks-prefix)/externals/plog ; }
+plog-idir(){ echo $(opticks-prefix)/externals/plog/include/plog ; }
+plog-cd(){   cd $(plog-dir); }
+plog-icd(){  cd $(plog-idir); }
+
+
 plog-url(){  echo https://github.com/SergiusTheBest/plog ; }
 plog-get(){
    local dir=$(dirname $(plog-dir)) &&  mkdir -p $dir && cd $dir
@@ -64,6 +68,13 @@ plog-genlog-hh(){
 
 #pragma once
 #include "${tag}_API_EXPORT.hh"
+
+
+#define ${tag}_LOG_ \
+{ \
+    ${tag}_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); \
+} \
+
 
 class ${tag}_API ${tag}_LOG {
    public:

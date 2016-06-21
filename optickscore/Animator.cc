@@ -5,11 +5,10 @@
 #include <cstdio>
 #include <cassert>
 
-
-#include "BLog.hh"
 #include "OpticksConst.hh"
 #include "Animator.hh"
 
+#include "PLOG.hh"
 
 const char* Animator::OFF_  = "OFF" ; 
 const char* Animator::SLOW_ = "SLOW" ; 
@@ -130,8 +129,8 @@ void Animator::nextMode(unsigned int modifiers)
 {
     if(modifiers & OpticksConst::e_shift) m_increment = -m_increment ;
 
-    bool option = modifiers & OpticksConst::e_option ;    
-    bool control = modifiers & OpticksConst::e_control ;    
+    bool option = 0 != (modifiers & OpticksConst::e_option) ;    
+    bool control = 0 != (modifiers & OpticksConst::e_control) ;    
 
     unsigned int num_mode = getNumMode();
 
@@ -169,14 +168,14 @@ void Animator::setTarget(float* target)
     m_target = target ;
 }
 
-void Animator::scrub_to(float x, float y, float dx, float dy) // Interactor:K scrub_mode
+void Animator::scrub_to(float , float , float , float dy) // Interactor:K scrub_mode
 {
    // hmm maybe easier to make separate mostly transparent ImGui window with just the time scrubber
    // to avoid wheel reinvention
     if(m_mode == OFF) return ; 
 
     float val = getValue();
-    val += 30.*dy ; 
+    val += 30.f*dy ; 
     setTargetValue(val);
 }
 

@@ -5,7 +5,7 @@
 #include <iomanip>
 
 #include "BList.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 Parameters::Parameters()

@@ -13,7 +13,7 @@
 namespace fs = boost::filesystem;
 
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 char* BFile::OPTICKS_PATH_PREFIX = NULL ;
@@ -187,6 +187,15 @@ std::string BFile::FindFile(const char* dirlist, const char* sub, const char* na
 
 std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 {
+
+   LOG(trace) << "BFile::FormPath"
+              << " path " << path 
+              << " sub " << sub
+              << " name " << name
+              ;   
+
+
+
    std::string empty ; 
    if(!path)
    {

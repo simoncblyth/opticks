@@ -11,7 +11,7 @@
 // brap-
 #include "BStr.hh"
 #include "BHex.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // npy-
 #include "Index.hpp"

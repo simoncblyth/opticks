@@ -3,23 +3,12 @@
 
 #include <iomanip>
 #include <algorithm>
-
-#include "NPYSpec.hpp"
-#include "BLog.hh"
-// trace/debug/info/warning/error/fatal
-
-
-//bregex- 
-#include "BFile.hh"
-
-
-
-
-
-
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#include "BFile.hh"
+#include "NPYSpec.hpp"
+#include "PLOG.hh"
 
 // ctor takes ownership of a copy of the inputs 
 

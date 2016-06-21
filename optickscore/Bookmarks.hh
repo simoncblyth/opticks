@@ -30,6 +30,7 @@ class InterpolatedView ;
 //
 
 #include "OKCORE_API_EXPORT.hh"
+#include "OKCORE_HEAD.hh"
 
 class OKCORE_API Bookmarks {
 public:
@@ -88,4 +89,5 @@ private:
 };
 
 
+#include "OKCORE_TAIL.hh"
 

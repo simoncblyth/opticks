@@ -11,7 +11,7 @@ namespace fs = boost::filesystem;
 // brap-
 #include "BDigest.hh"
 #include "BStr.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "BSys.hh"
 
 // npy-

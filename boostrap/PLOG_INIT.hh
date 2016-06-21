@@ -1,4 +1,7 @@
 #include <plog/Log.h>
+#include <plog/Appenders/ColorConsoleAppender.h>
+#include <plog/Appenders/ConsoleAppender.h>
+
 
 #define PLOG_INIT(whatever, level ) \
 { \
@@ -7,6 +10,17 @@
     plog::init( severity ,  appender ); \
 } \
 
+#define PLOG_COLOR(argc, argv) \
+{ \
+    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender; \
+    PLOG_INIT(  &consoleAppender, PLOG(argc,argv).level ); \
+} \
+
+#define PLOG_(argc, argv) \
+{ \
+    static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender; \
+    PLOG_INIT(  &consoleAppender, PLOG(argc,argv).level ); \
+} \
 
 #define PLOG_CHECK(msg) \
 { \

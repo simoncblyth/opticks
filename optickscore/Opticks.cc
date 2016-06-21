@@ -11,7 +11,7 @@
 
 // brap-
 #include "BStr.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "BSys.hh"
 
 
@@ -68,7 +68,6 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_envprefix(strdup(envprefix)),
 
        m_resource(NULL),
-       m_log(NULL),
        m_state(NULL),
 
        m_exit(false),
@@ -89,10 +88,6 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        init();
 }
 
-int Opticks::getLogLevel()
-{
-    return m_log ? m_log->getLevel() : 0 ; 
-}
 
 bool Opticks::hasArg(const char* arg)
 {
@@ -243,9 +238,6 @@ void Opticks::setExit(bool exit)
 
 void Opticks::init()
 {
-    //BLOG(m_argc, m_argv);
-
-    //m_log = new BLog(m_argc, m_argv);
 
     setMode( hasArg(COMPUTE) ? COMPUTE_MODE : INTEROP_MODE );
 
@@ -268,7 +260,6 @@ void Opticks::init()
 
     setDetector( m_resource->getDetector() );
 
-    //m_log->setDir( m_resource->getIdPath() );
 
 
     LOG(trace) << "Opticks::init DONE " ;
@@ -653,8 +644,6 @@ const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->ge
 void Opticks::cleanup()
 {
     LOG(info) << "Opticks::cleanup" ;
-    delete m_log ; 
-    m_log = NULL ;
 }
 
 

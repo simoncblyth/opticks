@@ -2,7 +2,6 @@
 #include <iostream>
 
 
-#include "BLog.hh"
 
 #include "uif.h"
 #include "NPY.hpp"
@@ -11,6 +10,7 @@
 #include "NPY.hpp"
 
 
+#include "PLOG.hh"
 
 G4StepNPY::G4StepNPY(NPY<float>* npy) 
        :  

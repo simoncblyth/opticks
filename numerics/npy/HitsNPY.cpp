@@ -1,11 +1,12 @@
 
-#include "BLog.hh"
 
 #include "NSensor.hpp"
 #include "NSensorList.hpp"
 #include "NPY.hpp"
 
 #include "HitsNPY.hpp"
+
+#include "PLOG.hh"
 
 
 HitsNPY::HitsNPY(NPY<float>* photons, NSensorList* sensorlist) 

@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <climits>
 
-#include "BLog.hh"
 
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
@@ -13,6 +12,7 @@
 
 #include "BoundariesNPY.hpp"
 
+#include "PLOG.hh"
 
 
 BoundariesNPY::BoundariesNPY(NPY<float>* photons) 

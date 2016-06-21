@@ -1,11 +1,11 @@
 #include "NPYSpec.hpp"
-#include "BLog.hh"
 
 #include <cstring>
 #include <cstdio>
 #include <climits>
 
 
+#include "PLOG.hh"
 
 NPYSpec::NPYSpec(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type)
   :

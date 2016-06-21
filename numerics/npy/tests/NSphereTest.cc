@@ -2,7 +2,7 @@
 #include "NPlane.hpp"
 #include "NPart.hpp"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 void test_part()
@@ -31,7 +31,7 @@ void test_intersect()
 
 int main(int argc, char** argv)
 {
-    BLog nl(argc, argv);
+    PLOG_(argc, argv);
 
     test_part();
     test_intersect();

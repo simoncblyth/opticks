@@ -7,7 +7,6 @@
 #pragma warning( disable : 4018 )
 #endif
 
-#ifdef USE_BOOST_LOG
 
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -15,10 +14,6 @@
 #include <boost/log/trivial.hpp>
 #define LOG BOOST_LOG_TRIVIAL
 // trace/debug/info/warning/error/fatal
-#else
-#include <plog/Log.h>
-#include <plog/Appenders/ColorConsoleAppender.h>
-#endif
 
 // brap-
 #include "BFile.hh"
@@ -97,7 +92,6 @@ void BLog::parse(int argc, char** argv )
 
 int BLog::SeverityLevel(const char* ll)
 {
-#ifdef USE_BOOST_LOG
     int bll = boost::log::trivial::info ;
     std::string level(ll);
     if(level.compare("TRACE") == 0) bll = boost::log::trivial::trace ; 
@@ -107,10 +101,6 @@ int BLog::SeverityLevel(const char* ll)
     if(level.compare("ERROR") == 0)  bll = boost::log::trivial::error ; 
     if(level.compare("FATAL") == 0)  bll = boost::log::trivial::fatal ; 
     return static_cast<int>(bll); 
-#else
-    plog::Severity severity = ll && ll[0] == 'T'  ? plog::verbose : plog::severityFromString(ll) ;
-    return static_cast<int>(severity); 
-#endif
 }
 
 
@@ -128,12 +118,7 @@ void BLog::setDir(const char* logdir)
 void BLog::init()
 {
     parse(m_argc, m_argv);
-#ifdef USE_BOOST_LOG
     initialize(NULL) ;
-#else
-    static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-    initialize(&consoleAppender);
-#endif
 
     if(m_logdir) addFileLog();
 
@@ -147,8 +132,6 @@ void BLog::initialize(void* whatever)
 
 void BLog::Initialize(void* whatever, int level)
 {
-#ifdef USE_BOOST_LOG
-
     boost::log::core::get()->set_filter
     (    
         boost::log::trivial::severity >= level
@@ -162,22 +145,6 @@ void BLog::Initialize(void* whatever, int level)
         boost::log::keywords::auto_flush = true 
     );   
 */
-
-#else
-
-
-    plog::Severity severity = static_cast<plog::Severity>(level) ;
-
-    plog::IAppender* appender = static_cast<plog::IAppender*>(whatever) ;
-
-    plog::init(severity, appender);
-
-    std::cerr << "BLog::initialize" 
-              << " severity " << severity 
-              << std::endl ; 
- 
-
-#endif
 }
 
 
@@ -190,12 +157,10 @@ void BLog::addFileLog()
        BFile::CreateDir(m_logdir);
        std::string logpath = BFile::FormPath(m_logdir, m_logname) ;
 
-#ifdef USE_BOOST_LOG
        boost::log::add_file_log(
               logpath,
               boost::log::keywords::format = "[%TimeStamp%]:%Severity%: %Message%"
              );
-#endif
 
 
 #ifdef DBG

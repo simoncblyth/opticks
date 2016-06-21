@@ -16,7 +16,7 @@
 // brap-
 #include "BStr.hh"
 #include "BTime.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // optickscore-
 #include "OpticksConst.hh"

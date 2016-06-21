@@ -4,9 +4,9 @@
 
 #include "BFile.hh"
 #include "BMap.hh"
-#include "BLog.hh"
 
 #include "Map.hpp"
+#include "PLOG.hh"
 
 
 template <typename K, typename V>

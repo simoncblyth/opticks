@@ -4,7 +4,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
 
-#include "BLog.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -13,31 +12,43 @@
 
 // okc-
 #include "Camera.hh"
+#include "PLOG.hh"
+
+// Unexplained interference between plog and Camera..
+// will not compile on MSVC unless change 
+//
+//         NEAR -> NEAR_
+//         near -> near_
+//         FAR -> FAR_
+//         far -> far_
+
+
 
 const char* Camera::PREFIX = "camera" ;
-const char* Camera::getPrefix()
-{
-   return PREFIX ; 
-}
-
-
 const char* Camera::PRINT    = "print" ;
 
-const char* Camera::NEAR     = "near" ;
-const char* Camera::FAR      = "far" ;
+const char* Camera::NEAR_     = "near" ;
+const char* Camera::FAR_      = "far" ;
 const char* Camera::ZOOM     = "zoom" ;
 const char* Camera::SCALE     = "scale" ;
 
 const char* Camera::PARALLEL = "parallel" ;
 
 
+
+const char* Camera::getPrefix()
+{
+   return PREFIX ; 
+}
+
+
 bool Camera::accepts(const char* name)
 {
     return 
-          strcmp(name, NEAR) == 0  ||
-          strcmp(name, FAR ) == 0  || 
+          strcmp(name, NEAR_) == 0  ||
+          strcmp(name, FAR_ ) == 0  || 
           strcmp(name, SCALE ) == 0  || 
-          strcmp(name, ZOOM ) == 0  ;
+          strcmp(name, ZOOM) == 0  ;
 }  
 
 
@@ -45,8 +56,8 @@ bool Camera::accepts(const char* name)
 std::vector<std::string> Camera::getTags()
 {
     std::vector<std::string> tags ;
-    tags.push_back(NEAR);
-    tags.push_back(FAR);
+    tags.push_back(NEAR_);
+    tags.push_back(FAR_);
     tags.push_back(ZOOM);
     tags.push_back(SCALE);
     return tags ; 
@@ -56,8 +67,8 @@ std::string Camera::get(const char* name)
 {
     float v(0.f) ; 
 
-    if(     strcmp(name,NEAR)==0)     v = getNear();
-    else if(strcmp(name,FAR)== 0 )    v = getFar();
+    if(     strcmp(name,NEAR_)==0)     v = getNear();
+    else if(strcmp(name,FAR_)== 0 )    v = getFar();
     else if(strcmp(name,ZOOM)== 0 )   v = getZoom();
     else if(strcmp(name,SCALE)== 0 )  v = getScale();
     else
@@ -70,8 +81,8 @@ void Camera::set(const char* name, std::string& s)
 {
     float v = gfloat_(s); 
 
-    if(     strcmp(name,NEAR)==0)    setNear(v);
-    else if(strcmp(name,FAR)== 0 )   setFar(v);
+    if(     strcmp(name,NEAR_)==0)    setNear(v);
+    else if(strcmp(name,FAR_)== 0 )   setFar(v);
     else if(strcmp(name,ZOOM)== 0 )  setZoom(v);
     else if(strcmp(name,SCALE)== 0 ) setScale(v);
     else
@@ -89,8 +100,8 @@ void Camera::configure(const char* name, float value)
 {
     if( strcmp(name, ZOOM) ==  0)      setZoom(value);
     else if( strcmp(name, SCALE) ==  0)     setScale(value);
-    else if( strcmp(name, NEAR) ==  0)      setNear(value);
-    else if( strcmp(name, FAR) ==  0)       setFar(value);
+    else if( strcmp(name, NEAR_) ==  0)      setNear(value);
+    else if( strcmp(name, FAR_) ==  0)       setFar(value);
     else if( strcmp(name, PARALLEL) ==  0)  setParallel( value==0.f ? false : true );
     else
         printf("Camera::configure ignoring unknown parameter %s : %10.3f \n", name, value); 
@@ -101,7 +112,7 @@ void Camera::configure(const char* name, float value)
 
 
 
-void Camera::configureS(const char* name, std::vector<std::string> values)
+void Camera::configureS(const char* , std::vector<std::string> )
 {
 }
 
@@ -238,22 +249,22 @@ unsigned int Camera::getPixelFactor(){ return m_pixel_factor ; }
 
 
 
-void Camera::near_to( float x, float y, float dx, float dy )
+void Camera::near_to( float , float , float , float dy )
 {
     setNear(m_near + m_near*dy );
     //printf("Camera::near_to %10.3f \n", m_near);
 }
-void Camera::far_to( float x, float y, float dx, float dy )
+void Camera::far_to( float , float, float , float dy )
 {
     setFar(m_far + m_far*dy );
     //printf("Camera::far_to %10.3f \n", m_far);
 }
-void Camera::zoom_to( float x, float y, float dx, float dy )
+void Camera::zoom_to( float , float , float , float dy )
 {
     setZoom(m_zoom + 30.f*dy) ;
     //printf("Camera::zoom_to %10.3f \n", m_zoom);
 }
-void Camera::scale_to( float x, float y, float dx, float dy )
+void Camera::scale_to( float , float , float , float dy )
 {
     setScale(m_scale + 30.f*dy) ;
     //printf("Camera::scale_to %10.3f \n", m_scale);
@@ -262,18 +273,18 @@ void Camera::scale_to( float x, float y, float dx, float dy )
 
 
 
-void Camera::setNear(float near)
+void Camera::setNear(float near_)
 {
-    if(      near < m_nearclip[0] )  m_near = m_nearclip[0] ;
-    else if( near > m_nearclip[1] )  m_near = m_nearclip[1] ;
-    else                             m_near = near ;
+    if(      near_ < m_nearclip[0] )  m_near = m_nearclip[0] ;
+    else if( near_ > m_nearclip[1] )  m_near = m_nearclip[1] ;
+    else                             m_near = near_ ;
     m_changed = true ; 
 }
-void Camera::setFar(float far)
+void Camera::setFar(float far_)
 {
-    if(      far < m_farclip[0] )  m_far = m_farclip[0] ;
-    else if( far > m_farclip[1] )  m_far = m_farclip[1] ;
-    else                           m_far = far ;
+    if(      far_ < m_farclip[0] )  m_far = m_farclip[0] ;
+    else if( far_ > m_farclip[1] )  m_far = m_farclip[1] ;
+    else                           m_far = far_ ;
     m_changed = true ; 
 }
 void Camera::setZoom(float zoom)

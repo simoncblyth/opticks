@@ -44,15 +44,20 @@ object.
 #else
 
 #include <plog/Log.h>
+
+//
+// such dirty tricks need to come in as the last header 
+// before code you control
+//
 // translate from boost log levels to plog 
-using plog::fatal ;
-using plog::error ;
-using plog::warning ;
-using plog::info ;
-using plog::debug ;
-using plog::verbose ;
+//using plog::fatal ;
+//using plog::error ;
+//using plog::warning ;
+//using plog::info ;
+//using plog::debug ;
+//using plog::verbose ;
 // defines are dangerous 
-#define trace plog::verbose
+//#define trace plog::verbose
 
 #endif
 

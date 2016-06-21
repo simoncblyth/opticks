@@ -2,7 +2,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "BLog.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -12,6 +11,7 @@
 // okc-
 #include "Clipper.hh"
 
+#include "PLOG.hh"
 
 const char* Clipper::PREFIX = "clipper" ;
 const char* Clipper::getPrefix()

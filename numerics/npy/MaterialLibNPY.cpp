@@ -1,7 +1,7 @@
 
-#include "BLog.hh"
 #include "NPY.hpp"
 #include "MaterialLibNPY.hpp"
+#include "PLOG.hh"
 
 MaterialLibNPY::MaterialLibNPY(NPY<float>* mlib) 
        :  
@@ -30,7 +30,7 @@ void MaterialLibNPY::dump(const char* msg)
     }
 }
 
-void MaterialLibNPY::dumpMaterial(unsigned int i)
+void MaterialLibNPY::dumpMaterial(unsigned int)
 {
     
 

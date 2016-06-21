@@ -5,12 +5,12 @@
 
 // brap-
 #include "BList.hh"
-#include "BLog.hh"
 
 // npy-
 #include "Counts.hpp"
 #include "Index.hpp"
 
+#include "PLOG.hh"
 
 template<typename T>
 Counts<T>::Counts(const char* name)

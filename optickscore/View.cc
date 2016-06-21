@@ -8,7 +8,6 @@
 
 #include "NGLM.hpp"
 
-#include "BLog.hh"
 
 // npy-
 #include "GLMPrint.hpp"
@@ -17,6 +16,7 @@
 // okc-
 #include "View.hh"
 
+#include "PLOG.hh"
 
 const char* View::PREFIX = "view" ;
 const char* View::getPrefix()
@@ -219,7 +219,7 @@ void View::setUp(glm::vec4& up)
 
 
 
-void View::Print(const char* msg)
+void View::Print(const char* )
 {
     print(getEye(), getLook(), getUp() , "eye/look/up");
 }

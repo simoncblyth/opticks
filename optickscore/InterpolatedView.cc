@@ -1,7 +1,7 @@
 #include <boost/lexical_cast.hpp>
 #include <sstream>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "NGLM.hpp"
 
@@ -173,7 +173,7 @@ glm::vec4 InterpolatedView::getUp(const glm::mat4& m2w)
     return glm::vec4(m.x, m.y, m.z, 0.0f ) ; // w=0 as direction
 } 
 
-glm::vec4 InterpolatedView::getGaze(const glm::mat4& m2w, bool debug)
+glm::vec4 InterpolatedView::getGaze(const glm::mat4& m2w, bool )
 {
     glm::vec4 eye = getEye(m2w);
     glm::vec4 look = getLook(m2w);

@@ -7,11 +7,12 @@
 
 #include <glm/glm.hpp>
 
-// brap-
-#include "BLog.hh"
 
 // npy-
 #include "NPY.hpp"
+
+#include "BRAP_LOG.hh"
+#include "PLOG.hh"
 
 void test_repeat()
 {
@@ -332,7 +333,11 @@ array([[['|u~lo123']]],
 
 int main(int argc, char** argv )
 {
-    BLOG(argc, argv);
+    PLOG_(argc, argv);
+    BRAP_LOG_ ;   
+
+    //BRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() );
+
 
     NPYBase::setGlobalVerbose(true);
 

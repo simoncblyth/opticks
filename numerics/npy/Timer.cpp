@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "BTimer.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 const char* Timer::COLUMNS = "t_absolute,t_delta" ;
 const char* Timer::START = "START" ;

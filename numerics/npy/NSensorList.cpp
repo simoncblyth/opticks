@@ -11,11 +11,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/tokenizer.hpp>
 
-#include "BLog.hh"
 
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
+#include "PLOG.hh"
 
 namespace fs = boost::filesystem;
 

@@ -8,7 +8,7 @@
 
 #include "NGLM.hpp"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // npy-
 #include "GLMPrint.hpp"
@@ -162,12 +162,12 @@ void Trackball::home()
     setOrientation(0.f, 0.f);
     m_changed = true ; 
 }
-void Trackball::zoom_to(float x, float y, float dx, float dy)
+void Trackball::zoom_to(float , float , float , float dy)
 {
     m_translate.z += dy*m_translatefactor ;
     m_changed = true ; 
 } 
-void Trackball::pan_to(float x, float y, float dx, float dy)
+void Trackball::pan_to(float , float , float dx, float dy)
 {
     m_translate.x += dx*m_translatefactor ;
     m_translate.y += dy*m_translatefactor ;

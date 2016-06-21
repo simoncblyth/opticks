@@ -1,5 +1,5 @@
 #include "NPart.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 void test_p0()
@@ -22,7 +22,7 @@ void test_p1()
 
 int main(int argc, char** argv)
 {
-    BLog nl(argc, argv);
+    PLOG_(argc, argv);
 
     test_p0();
     test_p1();

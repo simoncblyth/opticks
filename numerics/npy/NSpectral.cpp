@@ -1,9 +1,9 @@
 
-#include "BLog.hh"
 
 #include "GLMFormat.hpp"
 #include "NCIE.hpp"
 #include "NSpectral.hpp"
+#include "PLOG.hh"
 
 
 const char* NSpectral::sRGB_D65 = 

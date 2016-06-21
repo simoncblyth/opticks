@@ -8,7 +8,6 @@
 // brap-
 #include "BStr.hh"
 #include "BHex.hh"
-#include "BLog.hh"
 
 // npy-
 #include "uif.h"
@@ -20,6 +19,7 @@
 #include "SequenceNPY.hpp"
 #include "RecordsNPY.hpp"
 
+#include "PLOG.hh"
 
 
 SequenceNPY::SequenceNPY(NPY<float>* photons) 
