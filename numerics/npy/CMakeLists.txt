@@ -8,6 +8,7 @@ include(EnvCompilationFlags)
 find_package(OpticksBoost  REQUIRED)
 find_package(GLM    REQUIRED)
 find_package(BoostRap REQUIRED)
+find_package(PLog REQUIRED)
 #message("NPY.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
 
 
@@ -16,18 +17,21 @@ include_directories(
 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
+   ${PLog_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
 )
 
 add_definitions( 
    ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
+   ${PLog_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
 )
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
+   ${PLog_LIBRARIES} 
    ${BoostRap_LIBRARIES}
 )
 
@@ -38,7 +42,9 @@ endif(UNIX)
 
 
 set(SOURCES
+    NPY_LOG.cc
 
+    foo.cpp
     NPYBase.cpp
     NPYSpec.cpp
     NSlice.cpp
@@ -116,6 +122,7 @@ NGLM.hpp
 NPY_HEAD.hh
 NPY_TAIL.hh
 NPY_API_EXPORT.hh
+NPY_LOG.hh
 
 uif.h
 ucharfour.h

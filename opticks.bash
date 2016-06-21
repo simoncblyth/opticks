@@ -723,5 +723,23 @@ opticks-grep()
    cd $iwd
 }
 
+
+opticks-api-export()
+{
+  opticks-cd 
+  local dir
+  opticks-dirs | while read dir 
+  do
+      local name=$(ls -1 $dir/*_API_EXPORT.hh 2>/dev/null) 
+      [ ! -z "$name" ] && echo $name
+  done
+}
+
+opticks-api-export-vi(){ vi $(opticks-api-export) ; }
+
+
+
+
 opticks-grep-vi(){ vi $(opticks-grep -l ${1:-BLog}) ; }
+
 

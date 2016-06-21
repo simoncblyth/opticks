@@ -27,6 +27,10 @@ std::string NPropNames::libpath(const char* libname)
 
 void NPropNames::read()
 {
+    LOG(trace) << "NPropNames::read" 
+               << " libname " << ( m_libname ? m_libname : "NULL" )
+               ;
+
     if(!m_txt)
     {
 

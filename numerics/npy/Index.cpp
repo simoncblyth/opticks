@@ -395,8 +395,8 @@ void Index::dumpPaths(const char* idpath, const char* msg)
     bool sx = BFile::existsPath(idpath, getPrefixedString("Source").c_str());
     bool lx = BFile::existsPath(idpath, getPrefixedString("Local").c_str());
 
-    LOG(info) << msg 
-              << std::endl
+    LOG(info) << msg ;
+    LOG(info) 
               << " Source:" << ( sx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Source")
               << "  Local:" << ( lx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Local")
               ;

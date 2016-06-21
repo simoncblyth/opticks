@@ -89,7 +89,10 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        init();
 }
 
-
+int Opticks::getLogLevel()
+{
+    return m_log ? m_log->getLevel() : 0 ; 
+}
 
 bool Opticks::hasArg(const char* arg)
 {
@@ -240,7 +243,7 @@ void Opticks::setExit(bool exit)
 
 void Opticks::init()
 {
-    BLOG(m_argc, m_argv);
+    //BLOG(m_argc, m_argv);
 
     //m_log = new BLog(m_argc, m_argv);
 
@@ -568,12 +571,18 @@ const char* Opticks::Material(const unsigned int mat)
 
 std::string Opticks::MaterialSequence(const unsigned long long seqmat)
 {
+    LOG(info) << "Opticks::MaterialSequence"
+              << " seqmat " << std::hex << seqmat << std::dec ; 
+
     std::stringstream ss ;
     assert(sizeof(unsigned long long)*8 == 16*4);
     for(unsigned int i=0 ; i < 16 ; i++)
     {
         unsigned long long m = (seqmat >> i*4) & 0xF ; 
-        ss << Opticks::Material(m) << " " ;
+
+        const char* mat = Opticks::Material(m)  ; 
+
+        ss << ( mat ? mat : "NULL" ) << " " ;
     }
     return ss.str();
 }

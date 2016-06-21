@@ -3,7 +3,6 @@
 #include <cfloat>
 #include <cstring>
 
-#include "BLog.hh"
 
 #include "NPY.hpp"
 
@@ -13,6 +12,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 
+#include "BLog.hh"
 
 const char* ViewNPY::BYTE_ = "BYTE"; 
 const char* ViewNPY::UNSIGNED_BYTE_ = "UNSIGNED_BYTE" ; 

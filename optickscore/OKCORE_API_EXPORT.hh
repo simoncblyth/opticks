@@ -30,7 +30,7 @@ building a DLL on windows.
 
 #else
 
-   #define OKCORE_API
+   #define OKCORE_API  __attribute__ ((visibility ("default")))
 
 #endif
 

@@ -10,25 +10,22 @@
 
 #if defined __APPLE__
 
-#   define BRAP_API 
 #   define COMMON_DIGEST_FOR_OPENSSL
 #   include <CommonCrypto/CommonDigest.h>
 #   define SHA1 CC_SHA1
 
 #elif defined _MSC_VER
 
-#   include "BRAP_API_EXPORT.hh"
 #   include "md5.hh"
 
 #elif __linux
 
-#   define BRAP_API 
 #   include <openssl/md5.h>
 
 #endif
 
+#include "BRAP_API_EXPORT.hh"
 #include "BRAP_FLAGS.hh"
-
 
 class BRAP_API BDigest 
 {

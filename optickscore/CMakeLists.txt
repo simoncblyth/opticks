@@ -8,6 +8,7 @@ include(EnvCompilationFlags)
 find_package(OpticksBoost REQUIRED)
 find_package(GLM REQUIRED)
 
+find_package(PLog REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 
@@ -15,6 +16,7 @@ include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/inc
 
+   ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
 
@@ -24,6 +26,7 @@ include_directories(
 
 add_definitions( 
    ${OpticksBoost_DEFINITIONS} 
+   ${PLog_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
@@ -32,6 +35,7 @@ add_definitions(
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
+   ${PLog_LIBRARIES} 
    ${GLM_LIBRARIES}
 
    ${NPY_LIBRARIES}
@@ -44,6 +48,7 @@ set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
 configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
 set(SOURCES
+    OKCORE_LOG.cc
 
     Animator.cc
     View.cc
@@ -84,6 +89,7 @@ set(SOURCES
 
 set(HEADERS
 
+    OKCORE_LOG.hh
     OKCORE_API_EXPORT.hh
     OKCORE_HEAD.hh
     OKCORE_TAIL.hh

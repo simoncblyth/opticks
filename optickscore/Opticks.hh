@@ -77,6 +77,7 @@ class OKCORE_API Opticks {
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        bool hasOpt(const char* name);
        void cleanup();
+       int getLogLevel();
    public:
        // from OpticksResource
        const char* getDetector();

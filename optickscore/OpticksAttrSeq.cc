@@ -309,7 +309,7 @@ void OpticksAttrSeq::dumpTable(Index* seqtab, const char* msg)
               << std::setw(10) << seqtab->getIndexSourceTotal()
               << std::endl ;
 
-    LOG(info) << std::endl << ss.str() ;
+    LOG(info) << ss.str() ;
 }
 
 

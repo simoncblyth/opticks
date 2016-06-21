@@ -30,7 +30,7 @@ building a DLL on windows.
 
 #else
 
-   #define BRAP_API
+   #define BRAP_API  __attribute__ ((visibility ("default")))
 
 #endif
 

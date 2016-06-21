@@ -286,7 +286,7 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     catch(const std::runtime_error& /*error*/)
     {
         if(!quietly)
-        LOG(warning) << "NPY<T>::load failed for path [" << path << "] use debugload to see why" <<  std::endl ; 
+        LOG(warning) << "NPY<T>::load failed for path [" << path << "] use debugload to see why"  ; 
     }
 
     return npy ;

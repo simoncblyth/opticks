@@ -17,6 +17,7 @@ set(TEST_SOURCES_OK
 
 set(TEST_SOURCES 
 
+    fooTest.cc
     OpticksTest.cc
 
 )

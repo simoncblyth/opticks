@@ -43,6 +43,9 @@ add_definitions(
 
 
 set(SOURCES
+  BRAP_LOG.cc 
+  PLOG.cc 
+
   BDemo.cc 
   BFoo.cc 
   BTime.cc
@@ -72,6 +75,9 @@ set(TOXIC_SOURCES
 
 set(HEADERS
   BRAP_API_EXPORT.hh
+  BRAP_LOG.hh
+  PLOG.hh
+  PLOG_INIT.hh  
   BDirect.hh 
 
   BDemo.hh 

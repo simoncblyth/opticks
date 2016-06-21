@@ -12,7 +12,6 @@ set(TEST_SOURCES_OK
    BMapTest.cc
    BListTest.cc
    BSysTest.cc
-   BLogTest.cc
    BFileTest.cc
    BRegexTest.cc
    BDigestTest.cc
@@ -25,6 +24,7 @@ set(TEST_SOURCES_OK
 
 set(TEST_SOURCES
    PLogTest.cc 
+   BLogTest.cc
 )
 
 

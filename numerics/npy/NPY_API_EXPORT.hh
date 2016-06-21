@@ -30,7 +30,7 @@ building a DLL on windows.
 
 #else
 
-   #define NPY_API
+   #define NPY_API  __attribute__ ((visibility ("default")))
 
 #endif
 
