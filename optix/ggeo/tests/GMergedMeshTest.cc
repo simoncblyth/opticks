@@ -4,7 +4,7 @@
 
 #include "GVector.hh"
 #include "GMergedMesh.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {

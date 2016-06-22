@@ -1,30 +1,23 @@
 #include "Opticks.hh"
 #include "GBuffer.hh"
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
 
 /*
    ggv --gbuffer
 */
 
 
-/*
-void test_slice(Opticks& ok)
-{
-   // TODO: update: itransforms have been migrated to NPY and use 3d eg (672, 4, 4), see GMesh
-
-    GBuffer* buf = GBuffer::load<float>(ok.getIdPath(), "GMergedMesh/1/itransforms.npy" );
-    buf->Summary();
-    buf->dump<float>("itran");
-
-    GBuffer* sbuf = buf->make_slice("660:672") ;
-    sbuf->reshape(4);
-    sbuf->dump<float>("sbuf");
-}
-*/
-
-
 void test_reshape(Opticks& ok)
 {
-    GBuffer* buf = GBuffer::load<int>(ok.getIdPath(), "GMergedMesh/1/indices.npy" );
+    const char* idpath = ok.getIdPath() ;
+    LOG(info) << "[" 
+              << " idpath " << idpath 
+              ; 
+
+    GBuffer* buf = GBuffer::load<int>(idpath, "GMergedMesh/1/indices.npy" );
+    if(!buf) return ; 
+ 
     buf->Summary();
     buf->dump<int>("indices", 50);
 
@@ -33,11 +26,16 @@ void test_reshape(Opticks& ok)
 
     buf->reshape(1);
     buf->dump<int>("indices after reshape(1)", 50);
+
+    LOG(info) << "]" ; 
 }
 
 void test_reshape_slice(Opticks& ok)
 {
-    GBuffer* buf = GBuffer::load<int>(ok.getIdPath(), "GMergedMesh/1/indices.npy" );
+    const char* idpath = ok.getIdPath() ;
+    LOG(info) << "[" ; 
+    GBuffer* buf = GBuffer::load<int>(idpath, "GMergedMesh/1/indices.npy" );
+    if(!buf) return ; 
     buf->Summary();
 
     unsigned int nelem = buf->getNumElements();
@@ -49,15 +47,23 @@ void test_reshape_slice(Opticks& ok)
 
     sbuf->reshape(1);
     sbuf->dump<int>("after reshape(1)",100);
+    LOG(info) << "]" ; 
 }
 
 
 
-int main()
+int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;  
+
+ 
+    LOG(info) << argv[0] ; 
+
     Opticks ok ; 
 
-    //test_slice(gc);
+    LOG(info) << " after ok " ; 
+
     test_reshape(ok);
     test_reshape_slice(ok);
 

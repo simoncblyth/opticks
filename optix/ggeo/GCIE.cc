@@ -2,7 +2,7 @@
 #include "GAry.hh"
 
 #include "GLMFormat.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 const char* GCIE::sRGB_D65 = 
 " 3.2404542 -1.5371385 -0.4985314 "

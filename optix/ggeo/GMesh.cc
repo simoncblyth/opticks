@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "BStr.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "GMesh.hh"
 #include "NPY.hpp"

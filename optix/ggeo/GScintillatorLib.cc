@@ -4,7 +4,7 @@
 #include "GItemList.hh"
 #include "NPY.hpp"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 const char* GScintillatorLib::slow_component    = "slow_component" ;
 const char* GScintillatorLib::fast_component    = "fast_component" ;

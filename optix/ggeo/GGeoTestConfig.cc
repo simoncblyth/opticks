@@ -2,7 +2,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "BStr.hh"
 
 #include "NSlice.hpp"

@@ -5,7 +5,7 @@
 
 #include "Opticks.hh"
 #include "OpticksResource.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {

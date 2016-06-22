@@ -9,7 +9,7 @@
 #include "GItemList.hh"
 
 #include "NPY.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 

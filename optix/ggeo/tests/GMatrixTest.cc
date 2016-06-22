@@ -1,12 +1,15 @@
+#include "NGLM.hpp"
 #include "GMatrix.hh"
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
 
-int main()
+int main(int argc, char** argv)
 {
+     PLOG_(argc, argv);
+     GGEO_LOG_ ;  
+
+
      glm::vec3 sc(10.) ; 
      glm::vec3 tr(1.,2.,3.) ; 
     
@@ -29,6 +32,5 @@ int main()
      gg.Summary("gg");
 
 
-
-
+     return 0 ; 
 }

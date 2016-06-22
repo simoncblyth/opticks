@@ -119,4 +119,10 @@ plog-genlog(){
 }
 
 
+plog-inplace-edit(){
+   perl -pi -e 's,BLog\.hh,PLOG.hh,g' *.cc && rm *.cc.bak
+}
+
+
+
 

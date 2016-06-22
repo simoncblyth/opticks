@@ -1,19 +1,17 @@
-#include "GBuffer.hh"
 
 #include <cstdio>
 #include <cstring>
 #include <cassert>
-
 #include <iostream>
 #include <iomanip>
 
 #include "numpy.hpp"
+
+#include "BFile.hh"
 #include "NSlice.hpp"
+#include "GBuffer.hh"
 
-#include <iomanip>
-
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 
@@ -21,6 +19,90 @@ bool GBuffer::isEqual(GBuffer* other)
 {
     return other->getNumBytes() == getNumBytes() && memcmp(other->getPointer(), getPointer(), getNumBytes()) == 0 ;
 }
+
+
+
+GBuffer::GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem)
+         :
+         m_nbytes(nbytes),     // total number of bytes 
+         m_pointer(pointer),   // pointer to the bytes
+         m_itemsize(itemsize), // sizeof each item, eg sizeof(gfloat3) = 3*4 = 12
+         m_nelem(nelem),       // number of elements for each item, eg 2 or 3 for floats per vertex or 16 for a 4x4 matrix
+         m_buffer_id(-1),       // OpenGL buffer Id, set by Renderer on uploading to GPU 
+         m_buffer_target(0)
+{
+}
+
+
+unsigned int GBuffer::getNumBytes()
+{
+    return m_nbytes ;
+}
+void* GBuffer::getPointer()
+{
+    return m_pointer ;
+}
+unsigned int GBuffer::getItemSize()
+{
+    return m_itemsize ;
+}
+unsigned int GBuffer::getNumElements()
+{
+    return m_nelem ;
+}
+unsigned int GBuffer::getNumItems()
+{
+    return m_nbytes/m_itemsize ;
+}
+unsigned int GBuffer::getNumElementsTotal()
+{
+    return m_nbytes/m_itemsize*m_nelem ;
+}
+
+void GBuffer::reshape(unsigned int nelem)
+{
+    if(nelem == m_nelem) return ; 
+
+    bool up = nelem > m_nelem ; 
+    if(up) 
+    { 
+        // reinterpret to a larger "item" with more elements
+        assert(nelem % m_nelem == 0);
+        unsigned int factor = nelem/m_nelem  ;
+        m_nelem = nelem ;
+        m_itemsize = m_itemsize*factor ; 
+    }
+    else
+    { 
+        // reinterpret to a smaller "item" with less elements  
+        assert(m_nelem % nelem == 0);
+        unsigned int factor = m_nelem/nelem  ;
+        m_nelem = nelem ;
+        m_itemsize = m_itemsize/factor ; 
+    }
+}
+
+
+
+// OpenGL related
+void GBuffer::setBufferId(int buffer_id)
+{
+    m_buffer_id = buffer_id  ;
+}
+int GBuffer::getBufferId()
+{
+    return m_buffer_id ;
+}
+void GBuffer::setBufferTarget(int buffer_target)
+{
+    m_buffer_target = buffer_target  ;
+}
+int GBuffer::getBufferTarget()
+{
+    return m_buffer_target ;
+}
+
+
 
 
 void GBuffer::Summary(const char* msg)
@@ -106,9 +188,24 @@ void GBuffer::save(const char* path)
 template<typename T>
 GBuffer* GBuffer::load(const char* dir, const char* name)
 {
-    char path[256];
-    snprintf(path, 256,"%s/%s", dir, name);
-    return GBuffer::load<T>(path);
+    std::string path = BFile::FormPath(dir, name);
+
+
+/*
+    if(!BFile::ExistsFile(path.c_str())
+    {
+         LOG(warning) << "GBuffer::load"
+                      << " FILE DOES NOT EXIST "
+                      << " dir " <<  dir
+                      << " name " <<  name
+                      << " path " << path 
+                      ;
+          return NULL ;  
+ 
+    }
+*/
+
+    return GBuffer::load<T>(path.c_str());
 }
 
 template<typename T>
@@ -116,14 +213,41 @@ GBuffer* GBuffer::load(const char* path)
 {
     //printf("GBuffer::load path %s \n", path );
 
+
+    LOG(info) << " path "  << path ; 
+              
+
     std::vector<T> vdata ;
     int numItems ; 
     int numElements ; 
 
-    // hmm this is asserting with 3d itransforms (672, 4, 4) in GBufferTest
 
-    aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  // 2d load
+    // windows produces obnoxious dialog boxes and do not say where 
+    // they occurred when runtime errors are not caught
+
+    try
+    {
+        aoba::LoadArrayFromNumpy<T>( path, numItems, numElements, vdata );  // 2d load
+    }
+    catch(const std::runtime_error& /*error*/)
+    {
+        LOG(warning) << " aoba::LoadArrayFromNumpy FAILED " 
+                     << " path " << path 
+                     ;        
+
+        return NULL ;   
+
+    }
+
+
+    LOG(info) << " path "  << path 
+              << " numItems " << numItems 
+              << " numElements " << numElements
+              ;
+
+
     assert(numElements < 17);
+    // hmm this is asserting with 3d itransforms (672, 4, 4) in GBufferTest
 
     unsigned int numBytes = numItems*numElements*sizeof(T);
     unsigned int numValues = numBytes/sizeof(T);
@@ -205,34 +329,33 @@ void GBuffer::dump(const char* msg, unsigned int limit)
 
 
 
-template void GBuffer::dump<int>(const char* , unsigned int );
-template void GBuffer::dump<unsigned int>(const char* , unsigned int);
-template void GBuffer::dump<unsigned char>(const char* , unsigned int);
-template void GBuffer::dump<float>(const char* , unsigned int);
-template void GBuffer::dump<short>(const char* , unsigned int);
-template void GBuffer::dump<unsigned long long>(const char* , unsigned int);
+template GGEO_API void GBuffer::dump<int>(const char* , unsigned int );
+template GGEO_API void GBuffer::dump<unsigned int>(const char* , unsigned int);
+template GGEO_API void GBuffer::dump<unsigned char>(const char* , unsigned int);
+template GGEO_API void GBuffer::dump<float>(const char* , unsigned int);
+template GGEO_API void GBuffer::dump<short>(const char* , unsigned int);
+template GGEO_API void GBuffer::dump<unsigned long long>(const char* , unsigned int);
 
-template void GBuffer::save<int>(const char* );
-template void GBuffer::save<unsigned int>(const char* );
-template void GBuffer::save<unsigned char>(const char* );
-template void GBuffer::save<float>(const char* );
-template void GBuffer::save<short>(const char* );
-template void GBuffer::save<unsigned long long>(const char* );
+template GGEO_API void GBuffer::save<int>(const char* );
+template GGEO_API void GBuffer::save<unsigned int>(const char* );
+template GGEO_API void GBuffer::save<unsigned char>(const char* );
+template GGEO_API void GBuffer::save<float>(const char* );
+template GGEO_API void GBuffer::save<short>(const char* );
+template GGEO_API void GBuffer::save<unsigned long long>(const char* );
 
-template GBuffer* GBuffer::load<int>(const char* );
-template GBuffer* GBuffer::load<unsigned int>(const char* );
-template GBuffer* GBuffer::load<unsigned char>(const char* );
-template GBuffer* GBuffer::load<float>(const char* );
-template GBuffer* GBuffer::load<short>(const char* );
-template GBuffer* GBuffer::load<unsigned long long>(const char* );
+template GGEO_API GBuffer* GBuffer::load<int>(const char* );
+template GGEO_API GBuffer* GBuffer::load<unsigned int>(const char* );
+template GGEO_API GBuffer* GBuffer::load<unsigned char>(const char* );
+template GGEO_API GBuffer* GBuffer::load<float>(const char* );
+template GGEO_API GBuffer* GBuffer::load<short>(const char* );
+template GGEO_API GBuffer* GBuffer::load<unsigned long long>(const char* );
 
-template GBuffer* GBuffer::load<int>(const char* , const char* );
-template GBuffer* GBuffer::load<unsigned int>(const char* , const char* );
-template GBuffer* GBuffer::load<unsigned char>(const char* , const char* );
-template GBuffer* GBuffer::load<float>(const char* , const char* );
-template GBuffer* GBuffer::load<short>(const char* , const char* );
-template GBuffer* GBuffer::load<unsigned long long>(const char* , const char* );
-
+template GGEO_API GBuffer* GBuffer::load<int>(const char* , const char* );
+template GGEO_API GBuffer* GBuffer::load<unsigned int>(const char* , const char* );
+template GGEO_API GBuffer* GBuffer::load<unsigned char>(const char* , const char* );
+template GGEO_API GBuffer* GBuffer::load<float>(const char* , const char* );
+template GGEO_API GBuffer* GBuffer::load<short>(const char* , const char* );
+template GGEO_API GBuffer* GBuffer::load<unsigned long long>(const char* , const char* );
 
 
 

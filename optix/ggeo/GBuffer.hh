@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cassert>
 
 /*
 eg 10 float3 vertices, where the item is regarded at the float3 
@@ -18,7 +17,9 @@ struct NSlice ;
 // ARE TRANSITIONING FROM GBuffer TO NPY<T> WHERE POSSIBLE : 
 //    **DO NOT USE GBuffer IN NEW DEVELOPMENTS**
 
-class GBuffer {
+#include "GGEO_API_EXPORT.hh"
+
+class GGEO_API GBuffer {
     public:
         GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem);
     public:
@@ -68,88 +69,6 @@ class GBuffer {
          int          m_buffer_target ; 
 
 }; 
-
-
-
-inline GBuffer::GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsigned int nelem)
-         :
-         m_nbytes(nbytes),     // total number of bytes 
-         m_pointer(pointer),   // pointer to the bytes
-         m_itemsize(itemsize), // sizeof each item, eg sizeof(gfloat3) = 3*4 = 12
-         m_nelem(nelem),       // number of elements for each item, eg 2 or 3 for floats per vertex or 16 for a 4x4 matrix
-         m_buffer_id(-1),       // OpenGL buffer Id, set by Renderer on uploading to GPU 
-         m_buffer_target(0)
-{
-}
-
-
-inline unsigned int GBuffer::getNumBytes()
-{
-    return m_nbytes ;
-}
-inline void* GBuffer::getPointer()
-{
-    return m_pointer ;
-}
-inline unsigned int GBuffer::getItemSize()
-{
-    return m_itemsize ;
-}
-inline unsigned int GBuffer::getNumElements()
-{
-    return m_nelem ;
-}
-inline unsigned int GBuffer::getNumItems()
-{
-    return m_nbytes/m_itemsize ;
-}
-inline unsigned int GBuffer::getNumElementsTotal()
-{
-    return m_nbytes/m_itemsize*m_nelem ;
-}
-
-inline void GBuffer::reshape(unsigned int nelem)
-{
-    if(nelem == m_nelem) return ; 
-
-    bool up = nelem > m_nelem ; 
-    if(up) 
-    { 
-        // reinterpret to a larger "item" with more elements
-        assert(nelem % m_nelem == 0);
-        unsigned int factor = nelem/m_nelem  ;
-        m_nelem = nelem ;
-        m_itemsize = m_itemsize*factor ; 
-    }
-    else
-    { 
-        // reinterpret to a smaller "item" with less elements  
-        assert(m_nelem % nelem == 0);
-        unsigned int factor = m_nelem/nelem  ;
-        m_nelem = nelem ;
-        m_itemsize = m_itemsize/factor ; 
-    }
-}
-
-
-
-// OpenGL related
-inline void GBuffer::setBufferId(int buffer_id)
-{
-    m_buffer_id = buffer_id  ;
-}
-inline int GBuffer::getBufferId()
-{
-    return m_buffer_id ;
-}
-inline void GBuffer::setBufferTarget(int buffer_target)
-{
-    m_buffer_target = buffer_target  ;
-}
-inline int GBuffer::getBufferTarget()
-{
-    return m_buffer_target ;
-}
 
 
 

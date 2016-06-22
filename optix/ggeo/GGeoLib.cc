@@ -9,7 +9,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 #include <boost/filesystem.hpp>

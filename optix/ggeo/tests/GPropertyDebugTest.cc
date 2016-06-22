@@ -1,5 +1,5 @@
 #include "GProperty.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include <cassert>
 

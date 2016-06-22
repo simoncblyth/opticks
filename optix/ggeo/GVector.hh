@@ -1,11 +1,16 @@
 #pragma once
 
-#include "GMatrix.hh"
 #include <cmath>
 #include <climits>
 #include <string>
+#include <algorithm>
 
-struct gfloat2 
+#include "GMatrix.hh"
+
+#include "GGEO_API_EXPORT.hh"
+
+
+struct GGEO_API gfloat2 
 {
     gfloat2() : u(0.f), v(0.f) {} ;
     gfloat2(float _u, float _v) : u(_u), v(_v) {} ;
@@ -22,7 +27,7 @@ struct gfloat2
 
 
 
-struct gfloat3 
+struct GGEO_API gfloat3 
 {
     static gfloat3 minimum(const gfloat3& a, const gfloat3& b)
     {
@@ -89,7 +94,7 @@ struct gfloat3
 
 
 
-struct gfloat4 
+struct GGEO_API gfloat4 
 {
     gfloat4() : x(0.f), y(0.f), z(0.f), w(0.f) {} ;
     gfloat4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {} ;
@@ -137,7 +142,7 @@ struct gfloat4
 
 
 
-struct gbbox 
+struct GGEO_API gbbox 
 {
    gbbox() : min(gfloat3(0.f)), max(gfloat3(0.f)) {} ;
    gbbox(float s) :  min(gfloat3(-s)), max(gfloat3(s)) {} ; 
@@ -218,7 +223,7 @@ struct gbbox
 
 
 
-struct guint3 
+struct GGEO_API guint3 
 {
     guint3() : x(0), y(0), z(0) {} ;
     guint3(unsigned int _x, unsigned int _y, unsigned int _z) : x(_x), y(_y), z(_z) {} ;
@@ -228,7 +233,7 @@ struct guint3
 
 
 
-struct guint4
+struct GGEO_API guint4
 {
     guint4() : x(0), y(0), z(0), w(0) {} ;
     guint4(unsigned int _x, unsigned int _y, unsigned int _z, unsigned int _w) : x(_x), y(_y), z(_z), w(_w) {} ;

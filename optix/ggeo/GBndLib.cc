@@ -18,7 +18,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 void GBndLib::save()
 {

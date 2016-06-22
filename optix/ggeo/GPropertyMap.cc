@@ -9,15 +9,20 @@
 namespace fs = boost::filesystem;
 
 // brap-
-#include "BLog.hh"
 #include "BDigest.hh"
 #include "BStr.hh"
 #include "BDir.hh"
 
 // ggeo-
-#include "GPropertyMap.hh"
-#include "GOpticalSurface.hh"
 
+
+#include "GAry.hh"
+#include "GProperty.hh"
+#include "GDomain.hh"
+#include "GOpticalSurface.hh"
+#include "GPropertyMap.hh"
+
+#include "PLOG.hh"
 
 template <typename T>
 const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
@@ -72,6 +77,54 @@ GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* 
 template <typename T>
 GPropertyMap<T>::~GPropertyMap()
 {
+}
+
+
+
+
+
+
+
+
+template <class T>
+void GPropertyMap<T>::setOpticalSurface(GOpticalSurface* optical_surface)
+{
+    m_optical_surface = optical_surface ;
+}
+template <class T>
+GOpticalSurface* GPropertyMap<T>::getOpticalSurface()
+{
+    return m_optical_surface ; 
+}
+template <class T>
+bool GPropertyMap<T>::hasNameEnding(const char* end)
+{
+    std::string suffix(end) ;
+    return m_name.size() >= suffix.size() &&
+           m_name.compare(m_name.size() - suffix.size(), suffix.size(), suffix) == 0;  
+}
+
+
+template <class T>
+bool GPropertyMap<T>::isSensor()
+{
+    return m_sensor ; 
+}
+template <class T>
+void GPropertyMap<T>::setSensor(bool sensor)
+{
+    m_sensor = sensor ; 
+}
+
+template <class T>
+bool GPropertyMap<T>::isValid()
+{
+    return m_valid ; 
+}
+template <class T>
+void GPropertyMap<T>::setValid(bool valid)
+{
+    m_valid = valid ; 
 }
 
 
@@ -422,7 +475,8 @@ template <typename T>
 void GPropertyMap<T>::dump(const char* msg, unsigned int /*nline*/)
 {
     //Summary(msg, nline);
-    LOG(info) << msg << std::endl << make_table();
+    LOG(info) << msg ;
+    LOG(info) << make_table();
 }
 
 

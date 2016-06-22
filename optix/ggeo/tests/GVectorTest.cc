@@ -1,11 +1,15 @@
 #include "GMatrix.hh"
 #include "GVector.hh"
-//#include <glm/glm.hpp>
 
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
 
 
 void test_bbox_matrix_scaling()
 {
+
+    LOG(info) << "[" ;
+
     // hmm this way is too complicated...
     gfloat3 min = gfloat3(10.f, 10.f, 10.f );
     gfloat3 max = gfloat3(20.f, 20.f, 20.f );
@@ -38,21 +42,29 @@ void test_bbox_matrix_scaling()
     bb *= m ; 
      
     bb.Summary("aft");
+    LOG(info) << "]" ;
 }
 
 void test_bbox_enlarge()
 {
+    LOG(info) << "[" ;
+
     gfloat3 min = gfloat3(10.f, 10.f, 10.f );
     gfloat3 max = gfloat3(20.f, 20.f, 20.f );
     gbbox bb(min, max); 
     bb.Summary("bef");
     bb.enlarge(1.0f) ;  // factor of the extent
     bb.Summary("aft");
+
+    LOG(info) << "]" ;
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ; 
+ 
     test_bbox_matrix_scaling();
     test_bbox_enlarge();
     return 0 ; 

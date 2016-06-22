@@ -19,7 +19,7 @@
 // npy-
 #include "NPY.hpp"
 #include "NTrianglesNPY.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "NSphere.hpp"
 #include "NPlane.hpp"

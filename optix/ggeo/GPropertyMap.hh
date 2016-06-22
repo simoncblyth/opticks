@@ -1,19 +1,22 @@
 #pragma once
 
-#include "GProperty.hh"
-#include "GDomain.hh"
-
-class GOpticalSurface ; 
-
 #include <string>
 #include <vector>
 #include <map>
 
 
+template <typename T> class GProperty ; 
+template <typename T> class GDomain ; 
+
+class GOpticalSurface ; 
+
 // TODO: const correctness would be good, although painful to implement
 
+
+#include "GGEO_API_EXPORT.hh"
+
 template <class T>
-class GPropertyMap {
+class GGEO_API GPropertyMap {
 
   static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
@@ -105,55 +108,13 @@ class GPropertyMap {
       bool         m_sensor ;  
       bool         m_valid ;  
 
-      GPropertyMap_t m_prop ; 
+      GPropertyMap_t           m_prop ; 
       std::vector<std::string> m_keys ;  // key ordering
 
-      GDomain<T>* m_standard_domain ; 
+      GDomain<T>*      m_standard_domain ; 
       GOpticalSurface* m_optical_surface ; 
 
 };
-
-
-template <class T>
-inline void GPropertyMap<T>::setOpticalSurface(GOpticalSurface* optical_surface)
-{
-    m_optical_surface = optical_surface ;
-}
-template <class T>
-inline GOpticalSurface* GPropertyMap<T>::getOpticalSurface()
-{
-    return m_optical_surface ; 
-}
-template <class T>
-inline bool GPropertyMap<T>::hasNameEnding(const char* end)
-{
-    std::string suffix(end) ;
-    return m_name.size() >= suffix.size() &&
-           m_name.compare(m_name.size() - suffix.size(), suffix.size(), suffix) == 0;  
-}
-
-
-template <class T>
-inline bool GPropertyMap<T>::isSensor()
-{
-    return m_sensor ; 
-}
-template <class T>
-inline void GPropertyMap<T>::setSensor(bool sensor)
-{
-    m_sensor = sensor ; 
-}
-
-template <class T>
-inline bool GPropertyMap<T>::isValid()
-{
-    return m_valid ; 
-}
-template <class T>
-inline void GPropertyMap<T>::setValid(bool valid)
-{
-    m_valid = valid ; 
-}
 
 
 

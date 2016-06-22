@@ -5,12 +5,23 @@ project(${name})
 #file(GLOB TEST_CC_SRCS "*Test.cc")
 
 
-set(TEST_SOURCES
- 
+set(TEST_OK
+
     GConstantTest.cc
     GDomainTest.cc
     GAryTest.cc
     GPropertyBaseTest.cc
+
+
+    GBufferTest.cc
+    GMatrixTest.cc
+    GVectorTest.cc
+
+)
+
+
+set(TEST_SOURCES
+
 
 )
 

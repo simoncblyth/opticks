@@ -286,8 +286,6 @@ std::string GMatrix<T>::digest()
 
 
 
-
-
 template class GMatrix<float>;
 template class GMatrix<double>;
 

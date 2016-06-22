@@ -20,7 +20,7 @@
 
 #include "NPY.hpp"
 #include "NQuad.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)

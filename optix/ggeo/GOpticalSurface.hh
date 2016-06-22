@@ -1,9 +1,11 @@
 #pragma once
-#include <string>
-#include <cassert>
-#include "GVector.hh"
 
-class GOpticalSurface {
+#include <string>
+struct guint4 ; 
+
+#include "GGEO_API_EXPORT.hh"
+
+class GGEO_API GOpticalSurface {
   public:
       static GOpticalSurface* create(const char* name, guint4 opt );
       GOpticalSurface(GOpticalSurface* other);
@@ -38,51 +40,5 @@ class GOpticalSurface {
       char* m_shortname ;  
 
 };
-
-inline char* GOpticalSurface::getName()
-{
-    return m_name ; 
-}
-inline char* GOpticalSurface::getType()
-{
-    return m_type ; 
-}
-inline char* GOpticalSurface::getModel()
-{
-    return m_model ; 
-}
-inline char* GOpticalSurface::getFinish()
-{
-    return m_finish ; 
-}
-
-/*
- source/materials/include/G4OpticalSurface.hh 
-
- 61 enum G4OpticalSurfaceFinish
- 62 {
- 63    polished,                    // smooth perfectly polished surface
- 64    polishedfrontpainted,        // smooth top-layer (front) paint
- 65    polishedbackpainted,         // same is 'polished' but with a back-paint
- 66 
- 67    ground,                      // rough surface
- 68    groundfrontpainted,          // rough top-layer (front) paint
- 69    groundbackpainted,           // same as 'ground' but with a back-paint
- 70 
-
-*/
-
-
-
-
-inline char* GOpticalSurface::getValue()
-{
-    return m_value ; 
-}
-
-inline char* GOpticalSurface::getShortName()
-{
-    return m_shortname ; 
-}
 
 

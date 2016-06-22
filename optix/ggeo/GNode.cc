@@ -7,7 +7,7 @@
 
 // brap-
 #include "BDigest.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 // ggeo-

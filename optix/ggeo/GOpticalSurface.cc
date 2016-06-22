@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
@@ -8,11 +9,62 @@
 
 // brap-
 #include "BDigest.hh"
-#include "BLog.hh"
-// trace/debug/info/warning/error/fatal
 
 // ggeo-
+#include "GVector.hh"
 #include "GOpticalSurface.hh"
+
+#include "PLOG.hh"
+// trace/debug/info/warning/error/fatal
+
+
+
+char* GOpticalSurface::getName()
+{
+    return m_name ; 
+}
+char* GOpticalSurface::getType()
+{
+    return m_type ; 
+}
+char* GOpticalSurface::getModel()
+{
+    return m_model ; 
+}
+char* GOpticalSurface::getFinish()
+{
+    return m_finish ; 
+}
+
+/*
+ source/materials/include/G4OpticalSurface.hh 
+
+ 61 enum G4OpticalSurfaceFinish
+ 62 {
+ 63    polished,                    // smooth perfectly polished surface
+ 64    polishedfrontpainted,        // smooth top-layer (front) paint
+ 65    polishedbackpainted,         // same is 'polished' but with a back-paint
+ 66 
+ 67    ground,                      // rough surface
+ 68    groundfrontpainted,          // rough top-layer (front) paint
+ 69    groundbackpainted,           // same as 'ground' but with a back-paint
+ 70 
+
+*/
+
+
+char* GOpticalSurface::getValue()
+{
+    return m_value ; 
+}
+
+char* GOpticalSurface::getShortName()
+{
+    return m_shortname ; 
+}
+
+
+
 
 
 GOpticalSurface* GOpticalSurface::create(const char* name, guint4 optical )
@@ -32,7 +84,10 @@ guint4 GOpticalSurface::getOptical()
    optical.x = UINT_MAX ; //  place holder
    optical.y = boost::lexical_cast<unsigned int>(getType()); 
    optical.z = boost::lexical_cast<unsigned int>(getFinish()); 
-   optical.w = boost::lexical_cast<float>(getValue())*100.f ;   // express as integer percentage 
+
+   float percent = boost::lexical_cast<float>(getValue())*100.f ;   // express as integer percentage 
+   optical.w = boost::lexical_cast<unsigned int>(percent) ;
+
    return optical ; 
 }
 

@@ -3,7 +3,7 @@
 #include "GMaterial.hh"
 #include "GItemList.hh"
 #include "NPY.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 const float GMaterialLib::MATERIAL_UNSET   = 0.0f  ;
 

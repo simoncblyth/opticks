@@ -9,7 +9,7 @@
 
 // brap-
 #include "BDir.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // npy-
 #include "NPY.hpp"

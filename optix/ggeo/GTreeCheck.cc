@@ -12,7 +12,7 @@
 #include "NSensor.hpp"
 #include "Counts.hpp"
 #include "Timer.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include <glm/glm.hpp>
 

@@ -9,7 +9,7 @@
 namespace fs = boost::filesystem;
 
 #include "BStr.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "NGLM.hpp"
 

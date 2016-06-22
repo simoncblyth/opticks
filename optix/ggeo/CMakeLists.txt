@@ -45,30 +45,28 @@ add_definitions(${DEFINITIONS})
 
 set(ALL_SOURCES
 
-    GPropertyMap.cc
     GMaterial.cc
     GSource.cc
     GSkinSurface.cc
     GBorderSurface.cc
-    GOpticalSurface.cc
+
+    GPropertyLib.cc
     GGeoLib.cc
     GMaterialLib.cc
     GSurfaceLib.cc
     GBndLib.cc
     GScintillatorLib.cc
     GSourceLib.cc
-    GPropertyLib.cc
+
     GSolid.cc
     GMesh.cc
     GMergedMesh.cc
+    GNode.cc
+
     GGeo.cc
     GGeoCfg.cc
-    GVector.cc
-    GMatrix.cc
     GIds.cc
     GTransforms.cc
-    GNode.cc
-    GBuffer.cc
     GDrawable.cc
     GArray.cc
     GItemIndex.cc
@@ -88,14 +86,21 @@ set(ALL_SOURCES
     GCIE.cc
     GGeoTest.cc
     GGeoTestConfig.cc
+
+
+
+    GPropertyMap.cc
+
 )
-
-
-
 
 set(SOURCES
 
     GGEO_LOG.cc
+
+    GBuffer.cc
+    GMatrix.cc
+    GVector.cc
+    GOpticalSurface.cc
 
     GConstant.cc
     GDomain.cc

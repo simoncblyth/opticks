@@ -10,7 +10,7 @@
 #include "GCSG.hh"
 #include "NPY.hpp"
 #include "NSlice.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {

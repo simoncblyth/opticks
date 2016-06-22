@@ -5,12 +5,18 @@
 
 // TODO: replace with glm ?
 
+
+#include "GGEO_API_EXPORT.hh"
+
 template<typename T>
-class GMatrix : public GBuffer 
+class GGEO_API GMatrix : public GBuffer 
 {
    public:
-       GMatrix(T _s);                   // homogenous scaling  matrix
-       GMatrix(T _x, T _y, T _z, T _s=1.0f); // homogenous translate then scale matrix (ie translation not scaled)
+       GMatrix(T _s); 
+       // homogenous scaling  matrix
+       GMatrix(T _x, T _y, T _z, T _s=1.0f); 
+       // homogenous translate then scale matrix (ie translation not scaled)
+
        GMatrix();
        GMatrix(const GMatrix& m);
        GMatrix(T* buf);
@@ -41,9 +47,6 @@ class GMatrix : public GBuffer
        T b1, b2, b3, b4 ; 
        T c1, c2, c3, c4 ; 
        T d1, d2, d3, d4 ; 
-
-
-
 
 };
 
