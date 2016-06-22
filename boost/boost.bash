@@ -9,6 +9,28 @@ BOOST
 * http://www.boost.org/
 * http://www.boost.org/users/history/
 
+Boost Log Not Fit for Purpose
+------------------------------
+
+When boost is used from static libs, boost log does not work 
+across DLLs. The symptoms are failure to set levels, missing msgs and crashes.
+
+* https://sourceforge.net/p/boost-log/discussion/710022/thread/17cab0b7/
+
+This issue prompted me to migrate opticks logging to plog-.
+
+Also due to the crucial nature of logging that needs to 
+work at every level of an application, I have formed the opinion:
+
+* **regard logging as external to a project** 
+* **do log setup via macros invoked from executable main**
+* **NO integration of logging with application code, other than logging statements**
+
+::
+
+
+   LOG(info) << "hello" ;
+
 
 Windows VS2015
 --------------------

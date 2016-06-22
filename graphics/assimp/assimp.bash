@@ -21,6 +21,12 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+Assimp on Windows
+-------------------
+
+* http://www.assimp.org/lib_html/install.html
+
+
 Mesh Processing Flags
 -----------------------
 

@@ -4,6 +4,19 @@ plog-source(){   echo ${BASH_SOURCE:-$(env-home)/$(plog-src)} ; }
 plog-vi(){       vi $(plog-source) ; }
 plog-usage(){ cat << EOU
 
+PLOG : Simple header only logging that works across DLLs
+============================================================
+
+Inclusion of plog/Log.h brings in Windef.h that does::
+
+   #define near 
+   #define far
+
+So windows dictates:
+
+* you cannot have identifiers called "near" or "far"
+
+
 
 ::
 
