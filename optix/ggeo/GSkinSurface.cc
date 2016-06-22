@@ -1,14 +1,21 @@
-#include "GSkinSurface.hh"
-#include "GOpticalSurface.hh"
-#include "GPropertyMap.hh"
+
 #include <cstdio>
-#include "assert.h"
-#include "stdlib.h"
-#include "string.h"
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <sstream>
 
 
-GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface) : 
+#include "GOpticalSurface.hh"
+#include "GSkinSurface.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+
+#include "GGEO_CC.hh"
+
+
+GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface) 
+   : 
     GPropertyMap<float>(name, index, "skinsurface", optical_surface ),
     m_skinsurface_vol(NULL)
 {

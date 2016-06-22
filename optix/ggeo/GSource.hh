@@ -1,8 +1,10 @@
 #pragma once
 
 #include "GPropertyMap.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GSource : public GPropertyMap<float> {
+class GGEO_API GSource : public GPropertyMap<float> {
   public:
       static GSource* make_blackbody_source(const char* name, unsigned int index, float kelvin=6500.f);
   public:
@@ -15,6 +17,8 @@ class GSource : public GPropertyMap<float> {
       void Summary(const char* msg="GSource::Summary");
 
 };
+
+#include "GGEO_TAIL.hh"
 
 
 

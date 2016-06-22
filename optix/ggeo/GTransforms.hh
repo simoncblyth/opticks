@@ -1,9 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 template <typename T> class NPY ;
 
-class GTransforms {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GTransforms {
     public:
         static GTransforms* make(unsigned int n);
     public:
@@ -23,14 +24,4 @@ class GTransforms {
 };
 
 
-inline GTransforms::GTransforms(NPY<float>* buf) 
-    :
-    m_buffer(buf)
-{
-}
-
-inline NPY<float>* GTransforms::getBuffer()
-{
-    return m_buffer ; 
-}
 

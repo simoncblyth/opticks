@@ -2,15 +2,18 @@
 
 #include <string>
 #include <vector>
-#include "string.h"
-#include "GVector.hh"
-#include "GMatrix.hh"
 
+#include "GVector.hh"
+
+template <typename T> class GMatrix ; 
 class GMesh ;
 
-class GNode {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GNode {
   public:
-      GNode(unsigned int index, GMatrixF* transform, GMesh* mesh);
+      GNode(unsigned int index, GMatrix<float>* transform, GMesh* mesh);
       void setIndex(unsigned int index);
       virtual ~GNode();
 
@@ -152,130 +155,6 @@ class GNode {
 };
 
 
+#include "GGEO_TAIL.hh"
 
- 
-
-
-inline GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) 
-    :
-    m_selfdigest(true),
-    m_index(index), 
-    m_parent(NULL),
-    m_description(NULL),
-    m_transform(transform),
-    m_ltransform(NULL),
-    m_mesh(mesh),
-    m_low(NULL),
-    m_high(NULL),
-    m_boundary_indices(NULL),
-    m_sensor_indices(NULL),
-    m_node_indices(NULL),
-    m_name(NULL),
-    m_progeny_count(0),
-    m_repeat_index(0),
-    m_progeny_num_vertices(0)
-{
-    init();
-}
-
-
-inline void GNode::setIndex(unsigned int index)
-{
-    m_index = index ; 
-}
-
-inline gfloat3* GNode::getLow()
-{
-    return m_low ; 
-}
-inline gfloat3* GNode::getHigh()
-{
-    return m_high ; 
-}
-inline GMesh* GNode::getMesh()
-{
-   return m_mesh ;
-}
-inline GMatrixF* GNode::getTransform()
-{
-   return m_transform ;
-}
-
-inline unsigned int* GNode::getBoundaryIndices()
-{
-    return m_boundary_indices ; 
-}
-inline unsigned int* GNode::getNodeIndices()
-{
-    return m_node_indices ; 
-}
-inline unsigned int* GNode::getSensorIndices()
-{
-    return m_sensor_indices ; 
-}
-
-
-
-inline void GNode::setBoundaryIndices(unsigned int* boundary_indices)
-{
-    m_boundary_indices = boundary_indices ; 
-}
-inline unsigned int GNode::getIndex()
-{
-    return m_index ; 
-}
-inline void GNode::setParent(GNode* parent)
-{ 
-    m_parent = parent ; 
-}
-inline GNode* GNode::getParent()
-{
-    return m_parent ; 
-}
-inline char* GNode::getDescription()
-{
-    return m_description ;
-}
-inline void GNode::setDescription(char* description)
-{ 
-    m_description = strdup(description) ; 
-}
-inline void GNode::addChild(GNode* child)
-{
-    m_children.push_back(child);
-}
-inline GNode* GNode::getChild(unsigned int index)
-{
-    return index < getNumChildren() ? m_children[index] : NULL ;
-}
-inline unsigned int GNode::getNumChildren()
-{
-    return m_children.size();
-}
-
-inline void GNode::setLevelTransform(GMatrixF* ltransform)
-{
-   m_ltransform = ltransform ; 
-}
-inline GMatrixF* GNode::getLevelTransform()
-{
-   return m_ltransform ; 
-}
-
-inline void GNode::setName(const char* name)
-{
-    m_name = strdup(name); 
-}
-inline const char* GNode::getName()
-{
-    return m_name ; 
-}
-inline void GNode::setRepeatIndex(unsigned int index)
-{
-    m_repeat_index = index ; 
-}
-inline unsigned int GNode::getRepeatIndex()
-{
-    return m_repeat_index ; 
-}
 

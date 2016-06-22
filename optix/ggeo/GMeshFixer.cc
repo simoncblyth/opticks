@@ -1,8 +1,43 @@
+// brap-
+#include "BArrayDigest.hh"
+
 #include "GMeshFixer.hh"
 #include "GMesh.hh"
 
-// brap-
-#include "BArrayDigest.hh"
+
+
+GMeshFixer::GMeshFixer(GMesh* src) 
+   :
+      m_src(src),
+      m_old2new(NULL),
+      m_new2old(NULL),
+      m_num_deduped_vertices(0)
+{
+}
+
+GMesh* GMeshFixer::getSrc()
+{
+    return m_src ; 
+}
+GMesh* GMeshFixer::getDst()
+{
+    return m_dst ; 
+}
+
+
+GMeshFixer::~GMeshFixer()
+{
+    delete[] m_old2new ; 
+    delete[] m_new2old ; 
+}
+
+
+
+
+
+
+
+
 
 void GMeshFixer::copyWithoutVertexDuplicates()
 {

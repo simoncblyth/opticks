@@ -1,8 +1,9 @@
 #pragma once
 
 #include <vector>
-#include "GVector.hh"
-#include "GPropertyLib.hh"
+
+
+
 
 
 // skin and border surfaces have an associated optical surface 
@@ -10,12 +11,17 @@
 // in addition to 1(for skin) or 2(for border) volume names
 //     
 
+struct guint4 ; 
 class GOpticalSurface ; 
 class GSkinSurface ; 
 class GBorderSurface ; 
 class GItemList ; 
 
-class GSurfaceLib : public GPropertyLib {
+#include "GPropertyLib.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GSurfaceLib : public GPropertyLib {
    public:
        static const char* propertyName(unsigned int k);
        // 4 standard surface property names : interleaved into float4 wavelength texture
@@ -108,31 +114,6 @@ class GSurfaceLib : public GPropertyLib {
 
 };
 
-inline GSurfaceLib::GSurfaceLib(Opticks* cache) 
-    :
-    GPropertyLib(cache, "GSurfaceLib"),
-    m_fake_efficiency(-1.f),
-    m_optical_buffer(NULL)
-{
-    init();
-}
- 
-inline unsigned int GSurfaceLib::getNumSurfaces()
-{
-    return m_surfaces.size();
-}
+#include "GGEO_TAIL.hh"
 
-
-inline void GSurfaceLib::setFakeEfficiency(float fake_efficiency)
-{
-    m_fake_efficiency = fake_efficiency ; 
-}
-inline void GSurfaceLib::setOpticalBuffer(NPY<unsigned int>* ibuf)
-{
-    m_optical_buffer = ibuf ; 
-}
-inline NPY<unsigned int>* GSurfaceLib::getOpticalBuffer()
-{
-    return m_optical_buffer ;
-}
 

@@ -1,8 +1,12 @@
-#include "GScintillatorLib.hh"
 #include <cassert>
-
-#include "GItemList.hh"
 #include "NPY.hpp"
+
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GItemList.hh"
+#include "GScintillatorLib.hh"
 
 #include "PLOG.hh"
 
@@ -38,6 +42,23 @@ GScintillatorLib* GScintillatorLib::load(Opticks* cache)
     lib->loadRaw();
     return lib ; 
 }
+
+
+GScintillatorLib::GScintillatorLib( Opticks* cache, unsigned int icdf_length) 
+    :
+    GPropertyLib(cache, "GScintillatorLib"),
+    m_icdf_length(icdf_length)
+{
+    init();
+}
+
+unsigned int GScintillatorLib::getNumScintillators()
+{
+    return getNumRaw();
+}
+
+
+
 
 void GScintillatorLib::init()
 {

@@ -8,16 +8,18 @@
 #include <iterator>
 #include <iomanip>
 
-#include "NSlice.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
-
 #include <boost/filesystem.hpp>
+
+
+#include "BFile.hh"
+#include "NSlice.hpp"
+
+#include "PLOG.hh"
+
 namespace fs = boost::filesystem;
 
 const char* GItemList::GITEMLIST = "GItemList" ; 
@@ -49,6 +51,11 @@ GItemList* GItemList::load(const char* idpath, const char* itemtype, const char*
 
 void GItemList::load_(const char* idpath)
 {
+
+   // TODO: adopt BFile
+
+   /*
+
    fs::path cachedir(idpath);
    fs::path typedir(cachedir / m_reldir );
 
@@ -62,6 +69,26 @@ void GItemList::load_(const char* idpath)
             read_(txtpath.string().c_str());
        }
    }
+
+   */
+
+   std::string txtname = m_itemtype + ".txt" ;  
+   std::string txtpath = BFile::FormPath(idpath, m_reldir.c_str(), txtname.c_str()) ;
+
+   if(BFile::ExistsFile(txtpath.c_str()))
+   {
+       read_(txtpath.c_str());  
+   } 
+   else
+   {
+       LOG(warning) << "GItemList::load_"
+                    << " NO SUCH TXTPATH " 
+                    << txtpath 
+                    ;
+  
+   }
+
+
 }
 
 void GItemList::read_(const char* txtpath)
@@ -103,6 +130,51 @@ void GItemList::save(const char* idpath)
        ofs.close();
    }
 }
+
+
+
+
+
+
+GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()
+{
+    m_itemtype = itemtype ; 
+    m_reldir   = reldir ? reldir : GITEMLIST ; 
+}
+
+void GItemList::add(const char* name)
+{
+    m_list.push_back(name);
+}
+
+unsigned int GItemList::getNumItems()
+{
+    return m_list.size();
+}
+unsigned int GItemList::getNumKeys()
+{
+    return m_list.size();
+}
+
+const char* GItemList::getKey(unsigned int index)
+{
+    return index < m_list.size() ? m_list[index].c_str() : NULL  ;
+}
+
+void GItemList::setKey(unsigned int index, const char* newkey)
+{
+    if(index < m_list.size()) m_list[index] = newkey  ; 
+}
+
+
+void GItemList::setOrder(std::map<std::string, unsigned int>& order)
+{
+    m_order = order ; 
+}
+
+
+
+
 
 void GItemList::dump(const char* msg)
 {

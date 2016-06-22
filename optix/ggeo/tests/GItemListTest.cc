@@ -1,14 +1,21 @@
 // ggv --itemlist
 #include "Opticks.hh"
-#include "PLOG.hh"
 
+#include "Map.hpp"
 #include "GItemList.hh"
 
 #include <string>
-#include "Map.hpp"
+#include "PLOG.hh"
+#include "BRAP_LOG.hh"
+#include "GGEO_LOG.hh"
 
 
-void base()
+
+#include "GGEO_CC.hh"
+
+
+
+void test_base()
 {
     GItemList l("testlist");
 
@@ -72,9 +79,18 @@ void test_makeSlice(Opticks* cache)
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+    BRAP_LOG_ ;
+
+    LOG(info) << argv[0] ; 
+
+
     Opticks* opticks = new Opticks(argc, argv);
 
-    //test_replaceFields(opticks);
+
+    test_base();
+    test_replaceFields(opticks);
     test_makeSlice(opticks);
 
     return 0 ;

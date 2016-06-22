@@ -14,6 +14,7 @@ class GOpticalSurface ;
 
 
 #include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
 template <class T>
 class GGEO_API GPropertyMap {
@@ -117,5 +118,5 @@ class GGEO_API GPropertyMap {
 };
 
 
-
+#include "GGEO_TAIL.hh"
 

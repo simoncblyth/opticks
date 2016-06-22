@@ -1,14 +1,36 @@
-#include "GCIE.hh"
-#include "GAry.hh"
+#include <cstddef>
 
+#include "NGLM.hpp"
 #include "GLMFormat.hpp"
+
+#include "GAry.hh"
+#include "GDomain.hh" 
+#include "GCIE.hh"
+
 #include "PLOG.hh"
+
+
 
 const char* GCIE::sRGB_D65 = 
 " 3.2404542 -1.5371385 -0.4985314 "
 "-0.9692660  1.8760108  0.0415560 "
 " 0.0556434 -0.2040259  1.0572252 "
 ;
+
+
+GCIE::GCIE(float wmin, float wmax, float wstep) 
+    :
+    m_domain(new GDomain<float>(wmin, wmax, wstep)),
+    m_nm(NULL),
+    m_X(NULL),
+    m_Y(NULL),
+    m_Z(NULL)
+{
+    init();
+}
+
+
+
 void GCIE::init()
 {
     m_XYZ2RGB = gmat3(sRGB_D65, true, " "); 

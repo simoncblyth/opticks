@@ -10,21 +10,50 @@ set(TEST_OK
     GConstantTest.cc
     GDomainTest.cc
     GAryTest.cc
-    GPropertyBaseTest.cc
 
 
     GBufferTest.cc
     GMatrixTest.cc
     GVectorTest.cc
 
+    GPropertyMapBaseTest.cc
+    GPropertyBaseTest.cc
+
+    GItemListTest.cc
+    GMaterialTest.cc
+    GMaterialLibTest.cc
+
+    GSkinSurfaceTest.cc
+    GBorderSurfaceTest.cc
+    GScintillatorLibTest.cc
+    GSourceTest.cc
+    GSourceLibTest.cc
+    GBndLibTest.cc
+
+    GMeshTest.cc
+    GNodeTest.cc
+    GSolidTest.cc
+    GCIETest.cc
+    GArrayTest.cc
+    GTransformsTest.cc
+    GIdsTest.cc
 )
 
 
 set(TEST_SOURCES
 
+    GItemIndexTest.cc
+
 
 )
 
+
+set(OTHERS
+
+    GPropertyMapTest.cc
+
+
+)
 
 
 

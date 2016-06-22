@@ -3,31 +3,31 @@
 // for all (non-CUDA and CUDA) compilation
 #define BOUNDARY_NUM_PROP 8
 #define BOUNDARY_NUM_FLOAT4 2
-
 #define BOUNDARY_NUM_MATSUR 4
-
 
 #ifndef __CUDACC__
 // only non-CUDA compilation
 
 #include <map>
 #include <string>
-#include <cstring>
-
 #include <vector>
-#include <glm/glm.hpp>
 
-#include "GDomain.hh"
-#include "GPropertyMap.hh"
-#include "GVector.hh"
+#include <glm/fwd.hpp>
+
 
 template <typename T> class NPY ;
 class NPYBase ; 
 
 class Opticks ; 
 class OpticksResource ; 
-class GItemList ; 
 class OpticksAttrSeq ; 
+
+class GItemList ; 
+template <typename T> class GDomain ;
+template <typename T> class GProperty ;
+template <typename T> class GPropertyMap ;
+
+struct guint4 ; 
 
 
 /*
@@ -43,7 +43,10 @@ GSurfaceLib.hh     :class GSurfaceLib : public GPropertyLib {
 
 */
 
-class GPropertyLib {
+
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+class GGEO_API GPropertyLib {
     public:
         static unsigned int UNSET ; 
         static unsigned int NUM_MATSUR ;    // number of material/surfaces in the boundary 
@@ -53,7 +56,7 @@ class GPropertyLib {
         static const char* material ; 
         static const char* surface ;
         static const char* source ; 
-        static const char* bnd ;
+        static const char* bnd_ ;
     public:
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
@@ -132,13 +135,13 @@ class GPropertyLib {
        void saveToCache();
        void loadFromCache();
     public:
-        void         setBuffer(NPY<float>* buf);
-        void         setNames(GItemList* names);
+        void setBuffer(NPY<float>* buf);
+        void setNames(GItemList* names);
     protected:
         Opticks*                             m_cache ; 
         OpticksResource*                     m_resource ; 
         NPY<float>*                          m_buffer ; 
-        OpticksAttrSeq*                            m_attrnames ; // attributed name list 
+        OpticksAttrSeq*                      m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
         const char*                          m_type ; 
         const char*                          m_comptype ; 
@@ -152,101 +155,7 @@ class GPropertyLib {
         std::vector<GPropertyMap<float>*>    m_raw ; 
 };
 
-inline GPropertyLib::GPropertyLib(Opticks* cache, const char* type) 
-     :
-     m_cache(cache),
-     m_resource(NULL),
-     m_buffer(NULL),
-     m_attrnames(NULL),
-     m_names(NULL),
-     m_type(strdup(type)),
-     m_comptype(NULL),
-     m_standard_domain(NULL),
-     m_defaults(NULL),
-     m_closed(false),
-     m_valid(true)
-{
-     init();
-}
-
-
-
-
-inline const char* GPropertyLib::getType()
-{
-    return m_type ; 
-}
-
-inline const char* GPropertyLib::getComponentType()
-{
-    return m_comptype ; 
-}
-
-
-
-
-inline GPropertyLib::~GPropertyLib()
-{
-}
-
-inline GDomain<float>* GPropertyLib::getStandardDomain()
-{
-    return m_standard_domain ;
-}
-
-/*
-inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
-{
-    m_order = order ; 
-}
-*/
-
-inline GPropertyMap<float>* GPropertyLib::getDefaults()
-{
-    return m_defaults ;
-}
-
-inline void GPropertyLib::setBuffer(NPY<float>* buf)
-{
-    m_buffer = buf ;
-}
-inline NPY<float>* GPropertyLib::getBuffer()
-{
-    return m_buffer ;
-}
-
-inline GItemList* GPropertyLib::getNames()
-{
-    return m_names ;
-}
-inline OpticksAttrSeq* GPropertyLib::getAttrNames()
-{
-    return m_attrnames ;
-}
-
-
-inline void GPropertyLib::setClosed(bool closed)
-{
-    m_closed = closed ; 
-}
-inline bool GPropertyLib::isClosed()
-{
-    return m_closed ; 
-}
-
-inline void GPropertyLib::setValid(bool valid)
-{
-    m_valid = valid ; 
-}
-inline bool GPropertyLib::isValid()
-{
-    return m_valid ; 
-}
-
-inline unsigned int GPropertyLib::getNumRaw()
-{
-    return m_raw.size();
-}
+#include "GGEO_TAIL.hh"
 
 
 #endif

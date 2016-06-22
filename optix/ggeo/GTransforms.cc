@@ -1,6 +1,19 @@
-#include "GTransforms.hh"
-#include <glm/gtc/type_ptr.hpp>
+#include "NGLM.hpp"
 #include "NPY.hpp"
+
+#include "GTransforms.hh"
+
+
+GTransforms::GTransforms(NPY<float>* buf) 
+    :
+    m_buffer(buf)
+{
+}
+
+NPY<float>* GTransforms::getBuffer()
+{
+    return m_buffer ; 
+}
 
 
 GTransforms* GTransforms::make(unsigned int n)

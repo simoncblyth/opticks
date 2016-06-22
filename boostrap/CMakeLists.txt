@@ -122,7 +122,7 @@ install(TARGETS ${name} DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 
 
-add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+#add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests)
 
 

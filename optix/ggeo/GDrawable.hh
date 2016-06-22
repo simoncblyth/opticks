@@ -1,12 +1,14 @@
 #pragma once
 
+#include <vector>
 #include "GBuffer.hh"
 #include "GVector.hh"
-#include <vector>
+
 template <typename T> class NPY ;
 
+#include "GGEO_API_EXPORT.hh"
 
-class GDrawable {
+class GGEO_API GDrawable {
   public:
       virtual ~GDrawable(){}
 

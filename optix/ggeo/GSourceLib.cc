@@ -1,10 +1,17 @@
+#include <cassert>
+
+#include "NPY.hpp"
+
+#include "GAry.hh"
+#include "GDomain.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+
 #include "GSourceLib.hh"
 #include "GSource.hh"
 #include "GItemList.hh"
 
-#include <cassert>
 
-#include "NPY.hpp"
 #include "PLOG.hh"
 
 const unsigned int GSourceLib::icdf_length = 1024 ; 
@@ -23,15 +30,36 @@ GSourceLib* GSourceLib::load(Opticks* cache)
     return lib ; 
 }
 
+
+
+
+
+
+GSourceLib::GSourceLib( Opticks* cache) 
+    :
+    GPropertyLib(cache, "GSourceLib")
+{
+    init();
+}
+
+unsigned int GSourceLib::getNumSources()
+{
+    return m_source.size();
+}
+
+
+
+
+
 void GSourceLib::init()
 {
     defineDefaults(getDefaults());
 }
 
-void GSourceLib::add(GSource* source)
+void GSourceLib::add(GSource* s)
 {
     assert(!isClosed());
-    m_source.push_back(source);
+    m_source.push_back(s);
 }
 
 
@@ -52,8 +80,8 @@ void GSourceLib::import()
 
 void GSourceLib::generateBlackBodySample(unsigned int n)
 {
-    GSource* source = GSource::make_blackbody_source("D65", 0, 6500.f );    
-    GProperty<float>* icdf = constructInvertedSourceCDF(source);
+    GSource* bbs = GSource::make_blackbody_source("D65", 0, 6500.f );    
+    GProperty<float>* icdf = constructInvertedSourceCDF(bbs);
     GAry<float>* sample = icdf->lookupCDF(n);     
     sample->save("/tmp/blackbody.npy");
 }
@@ -65,8 +93,8 @@ NPY<float>* GSourceLib::createBuffer()
     if(getNumSources() == 0)
     {
         LOG(info) << "GSourceLib::createBuffer adding standard source " ;
-        GSource* source = GSource::make_blackbody_source("D65", 0, 6500.f );    
-        add(source);
+        GSource* bbs = GSource::make_blackbody_source("D65", 0, 6500.f );    
+        add(bbs);
     } 
 
 
@@ -86,11 +114,11 @@ NPY<float>* GSourceLib::createBuffer()
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* source = m_source[i] ;
-        GProperty<float>* cdf = constructSourceCDF(source);
+        GPropertyMap<float>* s = m_source[i] ;
+        GProperty<float>* cdf = constructSourceCDF(s);
         assert(cdf);
 
-        GProperty<float>* icdf = constructInvertedSourceCDF(source);
+        GProperty<float>* icdf = constructInvertedSourceCDF(s);
         assert(icdf);
         assert(icdf->getLength() == nj);
 
@@ -110,8 +138,8 @@ GItemList*  GSourceLib::createNames()
     GItemList* names = new GItemList(getType());
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* source = m_source[i] ;
-        names->add(source->getShortName());
+        GPropertyMap<float>* s = m_source[i] ;
+        names->add(s->getShortName());
     }
     return names ; 
 }

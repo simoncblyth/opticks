@@ -4,13 +4,17 @@
 #include <iostream>
 #include <cassert>
 
-// ggeo-
-#include "GItemIndex.hh"
-
 // npy-
 #include "Types.hpp"
 #include "Index.hpp"
 #include "NPYBase.hpp"
+
+// ggeo-
+#include "GItemIndex.hh"
+
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+
 
 
 void dump(GItemIndex* idx, const char* msg)
@@ -23,6 +27,11 @@ void dump(GItemIndex* idx, const char* msg)
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+    
+
+
     Types types ; 
 
     const char* m_typ = "torch" ; 

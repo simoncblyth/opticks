@@ -18,8 +18,10 @@ class GParts ;
 
 #include "GMesh.hh"
 #include "GVector.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GMergedMesh : public GMesh {
+class GGEO_API GMergedMesh : public GMesh {
 public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
@@ -66,34 +68,5 @@ private:
      
 };
 
-inline GMergedMesh::GMergedMesh(unsigned int index)
-       : 
-       GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
-       m_cur_vertices(0),
-       m_cur_faces(0),
-       m_cur_solid(0),
-       m_cur_base(NULL)
-{
-} 
-
-inline void GMergedMesh::setCurrentBase(GNode* base)
-{
-    m_cur_base = base ; 
-}
-inline GNode* GMergedMesh::getCurrentBase()
-{
-    return m_cur_base ; 
-}
-
-
-inline bool GMergedMesh::isGlobal()
-{
-    return m_cur_base == NULL ; 
-}
-inline bool GMergedMesh::isInstanced()
-{
-    return m_cur_base != NULL ; 
-}
-
-
+#include "GGEO_TAIL.hh"
 

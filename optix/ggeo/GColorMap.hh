@@ -4,17 +4,17 @@
 #include <string>
 
 /*
-
 *GColorMap* manages the association of named items with colors
-
 */
 
-//
 // hmm this is just a string string map, nothing special for color .. 
 // replacing with npy-/Map<std::string, std::string> in new GPropertyLib approach 
-//
 
-class GColorMap  {
+
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GColorMap  {
    public:
        static GColorMap* load(const char* dir, const char* name);
    public:
@@ -33,21 +33,5 @@ class GColorMap  {
 
 };
 
-
-inline GColorMap::GColorMap()
-{
-}
-
-inline void GColorMap::addItemColor(const char* iname, const char* color)
-{
-     m_iname2color[iname] = color ; 
-}
-
-inline const char* GColorMap::getItemColor(const char* iname, const char* missing)
-{
-     // hmm maybe string data moved around as item/color are added to map, 
-     // so best to query only after the map is completed for consistent pointers
-     return m_iname2color.count(iname) == 1 ? m_iname2color[iname].c_str() : missing ; 
-}
-
+#include "GGEO_TAIL.hh"
 

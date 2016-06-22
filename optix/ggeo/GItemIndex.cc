@@ -1,8 +1,4 @@
-#include "GItemIndex.hh"
-#include "OpticksAttrSeq.hh"
-#include "GColorMap.hh"
-#include "GVector.hh"
-
+#include <cstring>
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -11,15 +7,23 @@
 #include <sstream>
 
 
-// optickscore-
+// okc-
+#include "OpticksAttrSeq.hh"
 #include "OpticksColors.hh"
 
 // npy-
+#include "NGLM.hpp"
+#include "NPY.hpp"
 #include "Index.hpp"
 #include "Types.hpp"
 
-#include "NPY.hpp"
 #include "NQuad.hpp"
+
+
+#include "GColorMap.hh"
+#include "GVector.hh"
+#include "GItemIndex.hh"
+
 #include "PLOG.hh"
 
 
@@ -29,6 +33,106 @@ GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)
     idx->loadIndex(idpath);
     return idx ; 
 }
+
+
+
+
+
+GItemIndex::GItemIndex(const char* itemtype)
+   : 
+   m_index(NULL),
+   m_colors(NULL),
+   m_colormap(NULL),
+   m_colorbuffer(NULL),
+   m_types(NULL),
+   m_handler(NULL)
+{
+   init(itemtype);
+   setLabeller(DEFAULT);
+}
+
+
+
+GItemIndex::GItemIndex(Index* index)
+   : 
+   m_index(index),
+   m_colors(NULL),
+   m_colormap(NULL),
+   m_colorbuffer(NULL),
+   m_types(NULL),
+   m_handler(NULL)
+{
+   setLabeller(DEFAULT);
+}
+
+
+void GItemIndex::setLabeller(GItemIndexLabellerPtr labeller)
+{
+   m_labeller = labeller ; 
+}
+void GItemIndex::setColorSource(OpticksColors* colors)
+{
+   m_colors = colors ; 
+}
+void GItemIndex::setColorMap(GColorMap* colormap)
+{
+   m_colormap = colormap ; 
+}
+void GItemIndex::setTypes(Types* types)
+{
+   m_types = types ; 
+}
+void GItemIndex::setHandler(OpticksAttrSeq* handler)
+{
+   m_handler = handler ; 
+}
+
+
+
+Types* GItemIndex::getTypes()
+{
+   return m_types ;
+}
+
+
+OpticksColors* GItemIndex::getColorSource()
+{
+   return m_colors ; 
+}
+GColorMap* GItemIndex::getColorMap()
+{
+   return m_colormap ; 
+}
+
+Index* GItemIndex::getIndex()
+{
+   return m_index ; 
+}
+
+
+
+
+
+std::vector<unsigned int>& GItemIndex::getCodes()
+{
+   return m_codes ; 
+}
+
+std::vector<std::string>& GItemIndex::getLabels()
+{
+   return m_labels ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 void GItemIndex::init(const char* itemtype)
 {
@@ -155,7 +259,7 @@ void GItemIndex::setLabeller(Labeller_t labeller )
     }
 }
 
-std::string GItemIndex::defaultLabeller(GItemIndex* self, const char* key, unsigned int& colorcode)
+std::string GItemIndex::defaultLabeller(GItemIndex* /*self*/, const char* key, unsigned int& colorcode)
 {
    colorcode = 0xFFFFFF ; 
    return key ;  

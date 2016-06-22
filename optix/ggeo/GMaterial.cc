@@ -1,4 +1,7 @@
 #include "GMaterial.hh"
+
+
+// TODO: move default domain down into OKCORE okc-
 #include "GPropertyLib.hh"
 
 

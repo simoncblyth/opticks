@@ -124,6 +124,13 @@ std::string BFile::Name(const char* path)
     return name ; 
 }
 
+std::string BFile::ParentDir(const char* path)
+{
+    fs::path fsp(path);
+    std::string fold = fsp.parent_path().string() ;
+    return fold ; 
+}
+
 
 
 
@@ -145,7 +152,18 @@ bool BFile::ExistsNativeDir(const std::string& native)
 bool BFile::ExistsFile(const char* path, const char* sub, const char* name)
 {
     std::string p = FormPath(path, sub, name) ;
-    assert(!p.empty());
+
+    if(p.empty())
+    {
+        LOG(error) << "BFile::ExistsFile BAD PATH"
+                     << " path " << ( path ? path : "NULL" )
+                     << " sub " << ( sub ? sub : "NULL" )
+                     << " name " << ( name ? name : "NULL" )
+                     ;
+         return false ;  
+    } 
+
+    //assert(!p.empty());
     fs::path fsp(p);
     return fs::exists(fsp) && fs::is_regular_file(fsp) ;
 }

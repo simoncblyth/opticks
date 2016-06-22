@@ -10,8 +10,10 @@
 //
 
 #include "GPropertyMap.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GMaterial : public GPropertyMap<float> {
+class GGEO_API GMaterial : public GPropertyMap<float> {
   public:
       GMaterial(GMaterial* other);
       GMaterial(const char* name, unsigned int index);
@@ -23,6 +25,6 @@ class GMaterial : public GPropertyMap<float> {
 
 };
 
-
+#include "GGEO_TAIL.hh"
 
 

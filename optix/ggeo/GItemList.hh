@@ -9,7 +9,10 @@ struct NSlice ;
 
 // TODO: rename to GNameList/GKeyList/GStringList  
 
-class GItemList : public NSequence {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GItemList : public NSequence {
    public:
        static unsigned int UNSET ; 
        static const char* GITEMLIST ; 
@@ -51,44 +54,5 @@ class GItemList : public NSequence {
        std::string              m_empty ; 
 };
 
-inline GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()
-{
-    m_itemtype = itemtype ; 
-    m_reldir   = reldir ? reldir : GITEMLIST ; 
-}
-
-inline void GItemList::add(const char* name)
-{
-    m_list.push_back(name);
-}
-
-inline unsigned int GItemList::getNumItems()
-{
-    return m_list.size();
-}
-inline unsigned int GItemList::getNumKeys()
-{
-    return m_list.size();
-}
-
-inline const char* GItemList::getKey(unsigned int index)
-{
-    return index < m_list.size() ? m_list[index].c_str() : NULL  ;
-}
-
-inline void GItemList::setKey(unsigned int index, const char* newkey)
-{
-    if(index < m_list.size()) m_list[index] = newkey  ; 
-}
-
-
-inline void GItemList::setOrder(std::map<std::string, unsigned int>& order)
-{
-    m_order = order ; 
-}
-
-
-
-
-
+#include "GGEO_TAIL.hh"
 

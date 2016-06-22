@@ -7,8 +7,10 @@ class GSource ;
 template <typename T> class GPropertyMap ;
 
 #include "GPropertyLib.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GSourceLib : public GPropertyLib {
+class GGEO_API GSourceLib : public GPropertyLib {
     public:
         static const unsigned int icdf_length ; 
         static const char* radiance_ ; 
@@ -38,16 +40,5 @@ class GSourceLib : public GPropertyLib {
 
 };
 
-inline GSourceLib::GSourceLib( Opticks* cache) 
-    :
-    GPropertyLib(cache, "GSourceLib")
-{
-    init();
-}
-
-inline unsigned int GSourceLib::getNumSources()
-{
-    return m_source.size();
-}
-
+#include "GGEO_TAIL.hh"
 

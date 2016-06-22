@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include <algorithm>
@@ -7,16 +8,159 @@
 
 // brap-
 #include "BDigest.hh"
+
+// ggeo-
+#include "GMatrix.hh"
+#include "GMesh.hh"
+#include "GNode.hh"
+
+
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-// ggeo-
-#include "GNode.hh"
-#include "GMesh.hh"
+
+
+GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) 
+    :
+    m_selfdigest(true),
+    m_index(index), 
+    m_parent(NULL),
+    m_description(NULL),
+    m_transform(transform),
+    m_ltransform(NULL),
+    m_mesh(mesh),
+    m_low(NULL),
+    m_high(NULL),
+    m_boundary_indices(NULL),
+    m_sensor_indices(NULL),
+    m_node_indices(NULL),
+    m_name(NULL),
+    m_progeny_count(0),
+    m_repeat_index(0),
+    m_progeny_num_vertices(0)
+{
+    init();
+}
+
+
+void GNode::setIndex(unsigned int index)
+{
+    m_index = index ; 
+}
+
+gfloat3* GNode::getLow()
+{
+    return m_low ; 
+}
+gfloat3* GNode::getHigh()
+{
+    return m_high ; 
+}
+GMesh* GNode::getMesh()
+{
+   return m_mesh ;
+}
+GMatrixF* GNode::getTransform()
+{
+   return m_transform ;
+}
+
+unsigned int* GNode::getBoundaryIndices()
+{
+    return m_boundary_indices ; 
+}
+unsigned int* GNode::getNodeIndices()
+{
+    return m_node_indices ; 
+}
+unsigned int* GNode::getSensorIndices()
+{
+    return m_sensor_indices ; 
+}
+
+
+
+void GNode::setBoundaryIndices(unsigned int* boundary_indices)
+{
+    m_boundary_indices = boundary_indices ; 
+}
+unsigned int GNode::getIndex()
+{
+    return m_index ; 
+}
+void GNode::setParent(GNode* parent)
+{ 
+    m_parent = parent ; 
+}
+GNode* GNode::getParent()
+{
+    return m_parent ; 
+}
+char* GNode::getDescription()
+{
+    return m_description ;
+}
+void GNode::setDescription(char* description)
+{ 
+    m_description = strdup(description) ; 
+}
+void GNode::addChild(GNode* child)
+{
+    m_children.push_back(child);
+}
+GNode* GNode::getChild(unsigned int index)
+{
+    return index < getNumChildren() ? m_children[index] : NULL ;
+}
+unsigned int GNode::getNumChildren()
+{
+    return m_children.size();
+}
+
+void GNode::setLevelTransform(GMatrixF* ltransform)
+{
+   m_ltransform = ltransform ; 
+}
+GMatrixF* GNode::getLevelTransform()
+{
+   return m_ltransform ; 
+}
+
+void GNode::setName(const char* name)
+{
+    m_name = strdup(name); 
+}
+const char* GNode::getName()
+{
+    return m_name ; 
+}
+void GNode::setRepeatIndex(unsigned int index)
+{
+    m_repeat_index = index ; 
+}
+unsigned int GNode::getRepeatIndex()
+{
+    return m_repeat_index ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 void GNode::init()
 {
+    if(!m_mesh)
+    {
+        LOG(error) << "GNode::init mesh NULL " ; 
+        return ; 
+    } 
+
     updateBounds();
     setNodeIndices(m_index);
 }

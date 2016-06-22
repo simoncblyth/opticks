@@ -4,15 +4,12 @@
 #include <vector>
 #include <string>
 
-#include "GVector.hh"
-#include "GPropertyLib.hh"
-
 class Opticks ; 
 
+struct guint4 ; 
 template <typename T> class GPropertyMap ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
-//class GBnd ; 
 
 //
 // *GBndLib* differs from *GMaterialLib* and *GSurfaceLib* in that 
@@ -31,7 +28,11 @@ class GSurfaceLib ;
 // is now moved to *GSurfaceLib*   
 //
 
-class GBndLib : public GPropertyLib {
+#include "GPropertyLib.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GBndLib : public GPropertyLib {
   public:
        enum {
                OMAT,
@@ -136,63 +137,6 @@ class GBndLib : public GPropertyLib {
        NPY<unsigned int>*   m_optical_buffer ;  
 };
 
-
-inline GBndLib::GBndLib(Opticks* cache) 
-   :
-    GPropertyLib(cache, "GBndLib"),
-    m_mlib(NULL),
-    m_slib(NULL),
-    m_index_buffer(NULL),
-    m_optical_buffer(NULL)
-{
-    init();
-}
-
-inline void GBndLib::setMaterialLib(GMaterialLib* mlib)
-{
-    m_mlib = mlib ;  
-}
-inline void GBndLib::setSurfaceLib(GSurfaceLib* slib)
-{
-    m_slib = slib ;  
-}
-inline GMaterialLib* GBndLib::getMaterialLib()
-{
-    return m_mlib ; 
-}
-inline GSurfaceLib* GBndLib::getSurfaceLib()
-{
-    return m_slib ; 
-}
-
-
-inline unsigned int GBndLib::getNumBnd()
-{
-    return m_bnd.size() ; 
-}
-
-inline NPY<unsigned int>* GBndLib::getIndexBuffer()
-{
-    return m_index_buffer ;
-}
-
-inline bool GBndLib::hasIndexBuffer()
-{
-    return m_index_buffer != NULL ; 
-}
-
-inline void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
-{
-    m_index_buffer = index_buffer ;
-}
-
-inline NPY<unsigned int>* GBndLib::getOpticalBuffer()
-{
-    return m_optical_buffer ;
-}
-inline void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
-{
-    m_optical_buffer = optical_buffer ;
-}
+#include "GGEO_TAIL.hh"
 
 

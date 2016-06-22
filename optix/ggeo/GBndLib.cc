@@ -1,12 +1,3 @@
-#include "GBndLib.hh"
-#include "GPropertyMap.hh"
-
-#include "Opticks.hh"
-#include "NPY.hpp"
-
-#include "GMaterialLib.hh"
-#include "GSurfaceLib.hh"
-#include "GItemList.hh"
 
 #include <climits>
 #include <cassert>
@@ -17,6 +8,21 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include "NGLM.hpp"
+#include "NPY.hpp"
+#include "Opticks.hh"
+
+#include "GVector.hh"
+#include "GItemList.hh"
+#include "GAry.hh"
+#include "GDomain.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
+#include "GBndLib.hh"
 
 #include "PLOG.hh"
 
@@ -37,7 +43,12 @@ void GBndLib::save()
 GBndLib* GBndLib::load(Opticks* cache, bool constituents)
 {
     GBndLib* blib = new GBndLib(cache);
+
+    LOG(trace) << "GBndLib::load" ; 
+
     blib->loadIndexBuffer();
+
+    LOG(trace) << "GBndLib::load indexBuffer loaded" ; 
     blib->importIndexBuffer();
 
     if(constituents)
@@ -47,14 +58,32 @@ GBndLib* GBndLib::load(Opticks* cache, bool constituents)
         blib->setMaterialLib(mlib);
         blib->setSurfaceLib(slib);
     }
+
+    LOG(trace) << "GBndLib::load DONE" ; 
+
     return blib ; 
 }
 
 void GBndLib::loadIndexBuffer()
 {
+    LOG(trace) << "GBndLib::loadIndexBuffer" ; 
+
     std::string dir = getCacheDir(); 
     std::string name = getBufferName("Index");
+
+    LOG(trace) << "GBndLib::loadIndexBuffer" 
+               << " dir " << dir
+               << " name " << name 
+                ; 
+
+
     NPY<unsigned int>* indexBuf = NPY<unsigned int>::load(dir.c_str(), name.c_str()); 
+
+
+    LOG(trace) << "GBndLib::loadIndexBuffer" 
+               << " indexBuf " << indexBuf
+               ;
+
 
     setIndexBuffer(indexBuf); 
 
@@ -105,14 +134,26 @@ void GBndLib::createDynamicBuffers()
 }
 
 
-
 NPY<unsigned int>* GBndLib::createIndexBuffer()
 {
-    return createUint4Buffer(m_bnd);
+    NPY<unsigned int>* idx = NULL ;  
+    if(m_bnd.size() > 0)
+    { 
+       idx = createUint4Buffer(m_bnd);
+    } 
+    else
+    {
+        LOG(error) << "GBndLib::createIndexBuffer"
+                   << " BUT SIZE IS ZERO "
+                   ;
+  
+    } 
+    return idx ;
 }
 
 void GBndLib::importIndexBuffer()
 {
+    LOG(trace) << "GBndLib::importIndexBuffer" ; 
     NPY<unsigned int>* ibuf = getIndexBuffer();
 
     if(ibuf == NULL)
@@ -134,6 +175,66 @@ void GBndLib::importIndexBuffer()
               << " m_bnd.size() " << m_bnd.size()
              ; 
 }
+
+
+GBndLib::GBndLib(Opticks* cache) 
+   :
+    GPropertyLib(cache, "GBndLib"),
+    m_mlib(NULL),
+    m_slib(NULL),
+    m_index_buffer(NULL),
+    m_optical_buffer(NULL)
+{
+    init();
+}
+
+void GBndLib::setMaterialLib(GMaterialLib* mlib)
+{
+    m_mlib = mlib ;  
+}
+void GBndLib::setSurfaceLib(GSurfaceLib* slib)
+{
+    m_slib = slib ;  
+}
+GMaterialLib* GBndLib::getMaterialLib()
+{
+    return m_mlib ; 
+}
+GSurfaceLib* GBndLib::getSurfaceLib()
+{
+    return m_slib ; 
+}
+
+
+unsigned int GBndLib::getNumBnd()
+{
+    return m_bnd.size() ; 
+}
+
+NPY<unsigned int>* GBndLib::getIndexBuffer()
+{
+    return m_index_buffer ;
+}
+
+bool GBndLib::hasIndexBuffer()
+{
+    return m_index_buffer != NULL ; 
+}
+
+void GBndLib::setIndexBuffer(NPY<unsigned int>* index_buffer)
+{
+    m_index_buffer = index_buffer ;
+}
+
+NPY<unsigned int>* GBndLib::getOpticalBuffer()
+{
+    return m_optical_buffer ;
+}
+void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
+{
+    m_optical_buffer = optical_buffer ;
+}
+
 
 
 void GBndLib::init()
@@ -481,8 +582,26 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
     */
 
+    LOG(trace) << "GBndLib::createBufferForTex2d" ;
+
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
+
+    LOG(trace) << "GBndLib::createBufferForTex2d" 
+               << " mat " << mat 
+               << " sur " << sur
+               ; 
+
+    if(mat == NULL || sur == NULL)
+    {
+        LOG(error) << "GBndLib::createBufferForTex2d" 
+                   << " NULL BUFFERS "
+                   << " mat " << mat 
+                   << " sur " << sur
+                   ; 
+        return NULL ; 
+    }
+
 
     unsigned int ni = getNumBnd();
     unsigned int nj = NUM_MATSUR ;    // om-os-is-im
@@ -493,7 +612,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
     unsigned int nm = 4 ; 
 
 
-    assert(nl = getStandardDomainLength()) ;
+    assert(nl == getStandardDomainLength()) ;
     assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
     assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
 
@@ -565,7 +684,7 @@ NPY<float>* GBndLib::createBufferOld()
 
     assert( nl == 4 || nl == 8);
 
-    assert(nk = getStandardDomainLength()) ;
+    assert(nk == getStandardDomainLength()) ;
     assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
     assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
 
@@ -679,7 +798,7 @@ void GBndLib::sort()
 {
     LOG(debug) << "GBndLib::sort" ; 
 }
-void GBndLib::defineDefaults(GPropertyMap<float>* defaults)
+void GBndLib::defineDefaults(GPropertyMap<float>* /*defaults*/)
 {
     LOG(debug) << "GBndLib::defineDefaults" ; 
 }
@@ -692,8 +811,11 @@ void GBndLib::Summary(const char* msg)
 
 void GBndLib::dump(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg ;
     unsigned int ni = getNumBnd();
+    LOG(info) << msg 
+              << " ni " << ni 
+               ; 
 
     for(unsigned int i=0 ; i < ni ; i++)
     {

@@ -269,7 +269,13 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     NPY* npy = NULL ;
     try 
     {
+
+        LOG(trace) <<  "NPY<T>::load before aoba " ; 
+         
         aoba::LoadArrayFromNumpy<T>(path.c_str(), shape, data );
+
+        LOG(trace) <<  "NPY<T>::load after aoba " ; 
+
         npy = new NPY<T>(shape,data,metadata) ;
     }
     catch(const std::runtime_error& /*error*/)

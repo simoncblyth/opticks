@@ -1,9 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 template <typename T> class NPY ;
 
-class GIds {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GIds {
     public:
         static GIds* make(unsigned int n);
     public:
@@ -22,19 +23,5 @@ class GIds {
         NPY<unsigned int>*  m_buffer; 
 
 };
-
-
-inline GIds::GIds(NPY<unsigned int>* buf) 
-    :
-     m_buffer(buf)
-{
-}
-
-inline NPY<unsigned int>* GIds::getBuffer()
-{
-    return m_buffer ; 
-}
-
-
 
 

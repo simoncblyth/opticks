@@ -1,15 +1,88 @@
-#include "GSolid.hh"
+#include <cstdio>
+#include <climits>
+
+// npy-
+#include "NGLM.hpp"
+#include "NSensor.hpp"
+
 #include "GPropertyMap.hh"
 #include "GMesh.hh"
 
-#include "GGeo.hh"
+#include "GMatrix.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
-// npy-
-#include "NSensor.hpp"
+#include "GSolid.hh"
 
-#include "stdio.h"
+#include "GGEO_CC.hh"
+
+
+GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsigned int boundary, NSensor* sensor)
+         : 
+         GNode(index, transform, mesh ),
+         m_boundary(boundary),
+         m_sensor(sensor),
+         m_selected(true),
+         m_pvname(NULL),
+         m_lvname(NULL),
+         m_sensor_surface_index(0)
+{
+}
+
+
+unsigned int GSolid::getBoundary()
+{
+    return m_boundary ; 
+}
+
+NSensor* GSolid::getSensor()
+{
+    return m_sensor ; 
+}
+
+void GSolid::setSelected(bool selected)
+{
+    m_selected = selected ; 
+}
+bool GSolid::isSelected()
+{
+   return m_selected ; 
+}
+
+void GSolid::setPVName(const char* pvname)
+{
+    m_pvname = strdup(pvname);
+}
+void GSolid::setLVName(const char* lvname)
+{
+    m_lvname = strdup(lvname);
+}
+
+const char* GSolid::getPVName()
+{
+    return m_pvname ; 
+}
+const char* GSolid::getLVName()
+{
+    return m_lvname ; 
+}
+
+void GSolid::setSensorSurfaceIndex(unsigned int ssi)
+{
+    m_sensor_surface_index = ssi ; 
+}
+unsigned int GSolid::getSensorSurfaceIndex()
+{
+    return m_sensor_surface_index ; 
+}
+
+
+
+
+
+
+
+
 
 void GSolid::Summary(const char* msg )
 {

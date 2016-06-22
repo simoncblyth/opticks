@@ -18,7 +18,8 @@ ggeo-tdir(){ echo $(env-home)/optix/ggeo/tests ; }
 
 ggeo-icd(){  cd $(ggeo-idir); }
 ggeo-bcd(){  cd $(ggeo-bdir); }
-ggeo-scd(){  cd $(ggeo-sdir); }
+ggeo-scd(){  cd $(ggeo-sdir)/$1; }
+ggeo-tcd(){  cd $(ggeo-tdir) ; }
 ggeo-cd(){  cd $(ggeo-sdir); }
 
 ggeo-wipe(){
@@ -35,6 +36,16 @@ ggeo-genproj()
    opticks-genproj $(ggeo-name) $(ggeo-tag) 
 }
 
+ggeo-gentest()
+{
+   local iwd=$PWD
+   ggeo-scd tests
+   local cls=${1:-GMaterial}
+   opticks-gentest $cls $(ggeo-tag) 
+   cd $iwd
+}
+
+
 
 ggeo-config(){ echo Debug ; }
 ggeo--(){
@@ -46,5 +57,17 @@ ggeo--(){
 
 
    
+ggeo-sln(){ echo $(ggeo-bdir)/$(ggeo-name).sln ; }
+ggeo-slnw(){ vs- ; echo $(vs-wp $(ggeo-sln)) ; }
 
+ggeo-vs(){ cat << EOC
+  
+# paste the below into PowerShell after checking profile with vip
 
+vs-export
+
+devenv /useenv $(ggeo-slnw)
+
+ 
+EOC
+}

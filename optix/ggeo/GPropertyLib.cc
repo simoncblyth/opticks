@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include <climits>
 #include <algorithm>
 #include <iostream>
@@ -9,9 +10,9 @@
 
 // brap-
 #include "BDir.hh"
-#include "PLOG.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "NPY.hpp"
 #include "Map.hpp"
 
@@ -21,8 +22,14 @@
 #include "OpticksAttrSeq.hh"
 
 // ggeo-
-#include "GPropertyLib.hh"
+#include "GVector.hh"
+#include "GDomain.hh"
 #include "GItemList.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GPropertyLib.hh"
+
+#include "PLOG.hh"
 
 
 unsigned int GPropertyLib::UNSET = UINT_MAX ; 
@@ -57,7 +64,107 @@ GDomain<float>* GPropertyLib::getDefaultDomain()
 const char* GPropertyLib::material = "material" ; 
 const char* GPropertyLib::surface  = "surface" ; 
 const char* GPropertyLib::source   = "source" ; 
-const char* GPropertyLib::bnd      = "bnd" ; 
+const char* GPropertyLib::bnd_     = "bnd" ; 
+
+
+
+
+
+
+
+GPropertyLib::GPropertyLib(Opticks* cache, const char* type) 
+     :
+     m_cache(cache),
+     m_resource(NULL),
+     m_buffer(NULL),
+     m_attrnames(NULL),
+     m_names(NULL),
+     m_type(strdup(type)),
+     m_comptype(NULL),
+     m_standard_domain(NULL),
+     m_defaults(NULL),
+     m_closed(false),
+     m_valid(true)
+{
+     init();
+}
+
+const char* GPropertyLib::getType()
+{
+    return m_type ; 
+}
+
+const char* GPropertyLib::getComponentType()
+{
+    return m_comptype ; 
+}
+
+GPropertyLib::~GPropertyLib()
+{
+}
+
+GDomain<float>* GPropertyLib::getStandardDomain()
+{
+    return m_standard_domain ;
+}
+
+/*
+inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
+{
+    m_order = order ; 
+}
+*/
+
+GPropertyMap<float>* GPropertyLib::getDefaults()
+{
+    return m_defaults ;
+}
+
+void GPropertyLib::setBuffer(NPY<float>* buf)
+{
+    m_buffer = buf ;
+}
+NPY<float>* GPropertyLib::getBuffer()
+{
+    return m_buffer ;
+}
+
+GItemList* GPropertyLib::getNames()
+{
+    return m_names ;
+}
+OpticksAttrSeq* GPropertyLib::getAttrNames()
+{
+    return m_attrnames ;
+}
+
+
+void GPropertyLib::setClosed(bool closed)
+{
+    m_closed = closed ; 
+}
+bool GPropertyLib::isClosed()
+{
+    return m_closed ; 
+}
+
+void GPropertyLib::setValid(bool valid)
+{
+    m_valid = valid ; 
+}
+bool GPropertyLib::isValid()
+{
+    return m_valid ; 
+}
+
+unsigned int GPropertyLib::getNumRaw()
+{
+    return m_raw.size();
+}
+
+
+
+
 
 void GPropertyLib::init()
 {
@@ -92,7 +199,7 @@ void GPropertyLib::init()
     else if(strcmp(m_type, "GScintillatorLib")==0)  m_comptype=material ;
     else if(strcmp(m_type, "GSurfaceLib")==0)       m_comptype=surface ;
     else if(strcmp(m_type, "GSourceLib")==0)        m_comptype=source ;
-    else if(strcmp(m_type, "GBndLib")==0)           m_comptype=bnd ;
+    else if(strcmp(m_type, "GBndLib")==0)           m_comptype=bnd_ ;
     else                                            m_comptype=NULL  ;
 
     if(!m_comptype)
@@ -162,16 +269,22 @@ std::string GPropertyLib::getBufferName(const char* suffix)
 
 void GPropertyLib::close()
 {
-    //assert(0);
+    LOG(trace) << "GPropertyLib::close" ;
 
     sort();
+    LOG(trace) << "GPropertyLib::close after sort " ;
 
     GItemList* names = createNames();
+    LOG(trace) << "GPropertyLib::close " 
+               << " names " << names 
+               ;
+
+
     NPY<float>* buf = createBuffer() ;
 
     LOG(info) << "GPropertyLib::close"
               << " type " << m_type 
-              << " buf " << buf->getShapeString()
+              << " buf " <<  ( buf ? buf->getShapeString() : "NULL" )
               ; 
 
     //names->dump("GPropertyLib::close") ;
@@ -179,6 +292,8 @@ void GPropertyLib::close()
     setNames(names);
     setBuffer(buf);
     setClosed();
+
+    LOG(trace) << "GPropertyLib::close DONE" ;
 }
 
 void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
@@ -186,11 +301,27 @@ void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
     assert(suffix);
     std::string dir = getCacheDir(); 
     std::string name = getBufferName(suffix);
-    buffer->save(dir.c_str(), name.c_str());   
+
+    if(buffer)
+    {
+        buffer->save(dir.c_str(), name.c_str());   
+    }
+    else
+    {
+        LOG(error) << "GPropertyLib::saveToCache"
+                   << " NULL BUFFER "
+                   << " dir " << dir
+                   << " name " << name
+                   ; 
+    }
 }
 
 void GPropertyLib::saveToCache()
 {
+
+    LOG(trace) << "GPropertyLib::saveToCache" ; 
+ 
+
     if(!isClosed()) close();
 
     if(m_buffer)
@@ -204,14 +335,27 @@ void GPropertyLib::saveToCache()
     {
         m_names->save(m_resource->getIdPath());
     }
+
+    LOG(trace) << "GPropertyLib::saveToCache DONE" ; 
+
 }
 
 void GPropertyLib::loadFromCache()
 {
+    LOG(info) << "GPropertyLib::loadFromCache" ;
+
     std::string dir = getCacheDir(); 
     std::string name = getBufferName();
 
-    setBuffer(NPY<float>::load(dir.c_str(), name.c_str())); 
+    LOG(info) << "GPropertyLib::loadFromCache" 
+              << " dir " << dir
+              << " name " << name 
+               ;
+
+  
+    NPY<float>* buf = NPY<float>::load(dir.c_str(), name.c_str()); 
+
+    setBuffer(buf); 
 
     GItemList* names = GItemList::load(m_resource->getIdPath(), m_type);
     setNames(names); 
@@ -417,7 +561,8 @@ void GPropertyLib::dumpRaw(const char* msg)
     for(unsigned int i=0 ; i < nraw ; i++)
     {
         GPropertyMap<float>* pmap = m_raw[i] ;
-        LOG(info) << "component " << pmap->getName() << std::endl << pmap->make_table() ;
+        LOG(info) << " component " << pmap->getName() ;
+        LOG(info) << " table " << pmap->make_table() ;
     }
 }
 

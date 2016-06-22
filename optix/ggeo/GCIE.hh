@@ -1,12 +1,14 @@
 #pragma once
 
-#include <cstddef>
-#include <glm/glm.hpp>
-#include "GDomain.hh" 
+#include <glm/fwd.hpp>
 
+template <typename T> class GDomain ;
 template <typename T> class GAry ;
 
-class GCIE {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GCIE {
    public:
         static const char* sRGB_D65 ;
    public:
@@ -35,15 +37,6 @@ class GCIE {
 
 };
 
+#include "GGEO_TAIL.hh"
 
-inline GCIE::GCIE(float wmin, float wmax, float wstep) 
-    :
-    m_domain(new GDomain<float>(wmin, wmax, wstep)),
-    m_nm(NULL),
-    m_X(NULL),
-    m_Y(NULL),
-    m_Z(NULL)
-{
-    init();
-}
 

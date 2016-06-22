@@ -1,10 +1,12 @@
 #pragma once
-#include "GPropertyMap.hh"
+
 #include <string>
-
 class GOpticalSurface ; 
+#include "GPropertyMap.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GBorderSurface : public GPropertyMap<float> {
+class GGEO_API GBorderSurface : public GPropertyMap<float> {
   public:
       GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface );
       virtual ~GBorderSurface();
@@ -28,4 +30,5 @@ class GBorderSurface : public GPropertyMap<float> {
 
 };
 
+#include "GGEO_TAIL.hh"
 

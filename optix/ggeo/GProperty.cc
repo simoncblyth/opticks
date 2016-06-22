@@ -14,6 +14,7 @@
 #include "BMap.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "NPY.hpp"
 
 // ggeo-

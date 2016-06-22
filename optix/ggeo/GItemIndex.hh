@@ -1,23 +1,26 @@
 #pragma once
 
-// optickscore-
-class OpticksColors ; 
+
+#include <string>
+#include <map>
+#include <vector>
+
 
 // npy-
 template <typename T> class NPY ; 
 class Index ; 
 class Types ; 
 
-// ggeo-
-class GColorMap ; 
+
+// okc-
+class OpticksColors ; 
 class OpticksAttrSeq ; 
 
-#include "NQuad.hpp"
 
-#include <cstring>
-#include <string>
-#include <map>
-#include <vector>
+// ggeo-
+class GColorMap ; 
+
+#include "NQuad.hpp"
 
 //
 // TODO: sort out tension/duplication between GItemIndex and Index
@@ -40,7 +43,11 @@ class OpticksAttrSeq ;
 //  
 //
 // adds colors and gui to basis Index constituent 
-class GItemIndex {
+
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GItemIndex {
    public:
         GItemIndex(Index* index);
         GItemIndex(const char* itemtype);
@@ -128,90 +135,5 @@ class GItemIndex {
         std::vector<unsigned int>            m_codes ; 
 };
 
-inline GItemIndex::GItemIndex(const char* itemtype)
-   : 
-   m_index(NULL),
-   m_colors(NULL),
-   m_colormap(NULL),
-   m_colorbuffer(NULL),
-   m_types(NULL),
-   m_handler(NULL)
-{
-   init(itemtype);
-   setLabeller(DEFAULT);
-}
-
-
-
-inline GItemIndex::GItemIndex(Index* index)
-   : 
-   m_index(index),
-   m_colors(NULL),
-   m_colormap(NULL),
-   m_colorbuffer(NULL),
-   m_types(NULL),
-   m_handler(NULL)
-{
-   setLabeller(DEFAULT);
-}
-
-
-inline void GItemIndex::setLabeller(GItemIndexLabellerPtr labeller)
-{
-   m_labeller = labeller ; 
-}
-inline void GItemIndex::setColorSource(OpticksColors* colors)
-{
-   m_colors = colors ; 
-}
-inline void GItemIndex::setColorMap(GColorMap* colormap)
-{
-   m_colormap = colormap ; 
-}
-inline void GItemIndex::setTypes(Types* types)
-{
-   m_types = types ; 
-}
-inline void GItemIndex::setHandler(OpticksAttrSeq* handler)
-{
-   m_handler = handler ; 
-}
-
-
-
-inline Types* GItemIndex::getTypes()
-{
-   return m_types ;
-}
-
-
-inline OpticksColors* GItemIndex::getColorSource()
-{
-   return m_colors ; 
-}
-inline GColorMap* GItemIndex::getColorMap()
-{
-   return m_colormap ; 
-}
-
-inline Index* GItemIndex::getIndex()
-{
-   return m_index ; 
-}
-
-
-
-
-
-inline std::vector<unsigned int>& GItemIndex::getCodes()
-{
-   return m_codes ; 
-}
-
-inline std::vector<std::string>& GItemIndex::getLabels()
-{
-   return m_labels ; 
-}
-
-
+#include "GGEO_TAIL.hh"
 

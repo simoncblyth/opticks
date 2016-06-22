@@ -1,10 +1,15 @@
 #pragma once
-#include "GPropertyMap.hh"
+
+
 #include <string>
 
 class GOpticalSurface ;
 
-class GSkinSurface : public GPropertyMap<float> {
+#include "GPropertyMap.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GSkinSurface : public GPropertyMap<float> {
   public:
       GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface);
       virtual ~GSkinSurface();
@@ -23,6 +28,7 @@ class GSkinSurface : public GPropertyMap<float> {
 
 };
 
+#include "GGEO_TAIL.hh"
 
 
 

@@ -1,8 +1,11 @@
-#include "GSource.hh"
-#include "GPropertyLib.hh"
-
 #include <cassert>
 
+#include "GAry.hh"
+#include "GDomain.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GPropertyLib.hh"
+#include "GSource.hh"
 
 
 GSource::GSource(GSource* other) : GPropertyMap<float>(other)
@@ -31,7 +34,7 @@ void GSource::init()
 }
 
 
-GSource* GSource::make_blackbody_source(const char* name, unsigned int index, float kelvin)
+GSource* GSource::make_blackbody_source(const char* name, unsigned int index, float /*kelvin*/)
 {
     GSource* source = new GSource(name, index);
 

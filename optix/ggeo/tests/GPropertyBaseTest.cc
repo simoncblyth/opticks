@@ -20,6 +20,9 @@ int main(int argc, char** argv)
     GProperty<float>* prop = new GProperty<float>(val,dom,N);
     prop->Summary();
 
+    GProperty<float>* cprop = GProperty<float>::from_constant( 1.f , val, N );
+    cprop->Summary(); 
+
 
     return 0 ; 
 }

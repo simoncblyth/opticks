@@ -9,6 +9,7 @@ namespace fs = boost::filesystem;
 
 
 // brap-
+#include "BFile.hh"
 #include "BDigest.hh"
 #include "BStr.hh"
 #include "PLOG.hh"
@@ -349,10 +350,8 @@ void OpticksResource::readEnvironment()
 
     if(m_idpath)
     {
-        m_idfold = strdup(m_idpath);
-        char* p = (char*)strrchr(m_idfold, '/');  // point to last slash 
-        *p = '\0' ;                               // chop to give parent fold
-        // TODO: avoid this dirty way, do with boost fs
+        std::string fold = BFile::ParentDir(m_idpath);
+        m_idfold = strdup(fold.c_str());
     } 
 
     // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS

@@ -6,8 +6,10 @@ class GItemList ;
 template <typename T> class GPropertyMap ;
 
 #include "GPropertyLib.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GScintillatorLib : public GPropertyLib {
+class GGEO_API GScintillatorLib : public GPropertyLib {
     public:
         static const char* slow_component; 
         static const char* fast_component; 
@@ -38,17 +40,6 @@ class GScintillatorLib : public GPropertyLib {
 
 };
 
-inline GScintillatorLib::GScintillatorLib( Opticks* cache, unsigned int icdf_length) 
-    :
-    GPropertyLib(cache, "GScintillatorLib"),
-    m_icdf_length(icdf_length)
-{
-    init();
-}
-
-inline unsigned int GScintillatorLib::getNumScintillators()
-{
-    return getNumRaw();
-}
+#include "GGEO_TAIL.hh"
 
 

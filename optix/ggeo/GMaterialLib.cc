@@ -1,8 +1,13 @@
-#include "GMaterialLib.hh"
+#include "NPY.hpp"
 #include "Opticks.hh"
+
+#include "GDomain.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GMaterialLib.hh"
 #include "GMaterial.hh"
 #include "GItemList.hh"
-#include "NPY.hpp"
+
 #include "PLOG.hh"
 
 const float GMaterialLib::MATERIAL_UNSET   = 0.0f  ;
@@ -39,6 +44,21 @@ GMaterialLib* GMaterialLib::load(Opticks* cache)
     mlib->loadFromCache();
     return mlib ; 
 }
+
+
+
+GMaterialLib::GMaterialLib(Opticks* cache) 
+    :
+    GPropertyLib(cache, "GMaterialLib")
+{
+    init();
+}
+ 
+unsigned int GMaterialLib::getNumMaterials()
+{
+    return m_materials.size();
+}
+
 
 void GMaterialLib::init()
 {
@@ -162,13 +182,13 @@ GItemList* GMaterialLib::createNames()
 }
 
 
-unsigned int GMaterialLib::getMaterialIndex(const GMaterial* material)
+unsigned int GMaterialLib::getMaterialIndex(const GMaterial* qmaterial)
 {
     unsigned int ni = getNumMaterials();
     for(unsigned int i=0 ; i < ni ; i++)
     {
         GMaterial* mat = m_materials[i] ;
-        if(mat == material) return i  ;
+        if(mat == qmaterial) return i  ;
     }     
     return UINT_MAX ;  
 }
@@ -192,7 +212,19 @@ NPY<float>* GMaterialLib::createBufferForTex2d()
     unsigned int nk = getStandardDomain()->getLength();
     unsigned int nl = 4 ;
 
-    assert(ni > 0 && nj > 0);
+   
+    if(ni == 0 || nj == 0)
+    {
+        LOG(error) << "GMaterialLib::createBufferForTex2d"
+                   << " NO MATERIALS ? "
+                   << " ni " << ni 
+                   << " nj " << nj 
+                   ;
+
+        return NULL ;  
+    } 
+
+
 
     NPY<float>* mbuf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
     mbuf->zero();
@@ -240,8 +272,14 @@ NPY<float>* GMaterialLib::createBufferOld()
 
     float* data = mbuf->getValues();
 
-    GProperty<float> *p0,*p1,*p2,*p3 ; 
-    GProperty<float> *p4,*p5,*p6,*p7 ; 
+    GProperty<float>* p0(NULL) ; 
+    GProperty<float>* p1(NULL) ; 
+    GProperty<float>* p2(NULL) ; 
+    GProperty<float>* p3(NULL) ; 
+    GProperty<float>* p4(NULL) ; 
+    GProperty<float>* p5(NULL) ; 
+    GProperty<float>* p6(NULL) ; 
+    GProperty<float>* p7(NULL) ; 
 
     for(unsigned int i=0 ; i < ni ; i++)
     {

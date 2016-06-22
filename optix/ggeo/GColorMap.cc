@@ -2,11 +2,31 @@
 #include <iostream>
 #include <iomanip>
 
-#include "PLOG.hh"
 #include "BFile.hh"
 #include "BMap.hh"
 
 #include "GColorMap.hh"
+
+#include "PLOG.hh"
+
+
+
+GColorMap::GColorMap()
+{
+}
+
+void GColorMap::addItemColor(const char* iname, const char* color)
+{
+     m_iname2color[iname] = color ; 
+}
+
+const char* GColorMap::getItemColor(const char* iname, const char* missing)
+{
+     // hmm maybe string data moved around as item/color are added to map, 
+     // so best to query only after the map is completed for consistent pointers
+     return m_iname2color.count(iname) == 1 ? m_iname2color[iname].c_str() : missing ; 
+}
+
 
 
 GColorMap* GColorMap::load(const char* dir, const char* name)

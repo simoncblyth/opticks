@@ -1,6 +1,19 @@
-#include "GIds.hh"
-#include <glm/gtc/type_ptr.hpp>
+#include "NGLM.hpp"
 #include "NPY.hpp"
+
+#include "GIds.hh"
+
+
+GIds::GIds(NPY<unsigned int>* buf) 
+    :
+     m_buffer(buf)
+{
+}
+
+NPY<unsigned int>* GIds::getBuffer()
+{
+    return m_buffer ; 
+}
 
 
 GIds* GIds::make(unsigned int n)

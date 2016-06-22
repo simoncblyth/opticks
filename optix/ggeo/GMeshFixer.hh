@@ -17,7 +17,10 @@ at a later stage as it is then easy to visualize the meshes.
 
 */
 
-class GMeshFixer {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GMeshFixer {
     public:
         GMeshFixer(GMesh* src);
         ~GMeshFixer();
@@ -43,30 +46,6 @@ class GMeshFixer {
 
 };
 
-
-inline GMeshFixer::GMeshFixer(GMesh* src) 
-   :
-      m_src(src),
-      m_old2new(NULL),
-      m_new2old(NULL),
-      m_num_deduped_vertices(0)
-{
-}
-
-inline GMesh* GMeshFixer::getSrc()
-{
-    return m_src ; 
-}
-inline GMesh* GMeshFixer::getDst()
-{
-    return m_dst ; 
-}
-
-
-inline GMeshFixer::~GMeshFixer()
-{
-    delete[] m_old2new ; 
-    delete[] m_new2old ; 
-}
+#include "GGEO_TAIL.hh"
 
 

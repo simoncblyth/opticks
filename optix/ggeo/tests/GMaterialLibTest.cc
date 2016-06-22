@@ -1,5 +1,17 @@
 // ggv --mat
 
+
+
+#include <string>
+#include <iostream>
+#include <ostream>   
+#include <algorithm>
+#include <iterator>
+#include <iomanip>
+
+
+
+#include "BSys.hh"
 #include "Opticks.hh"
 
 #include "GMaterialLib.hh"
@@ -11,13 +23,8 @@
 #include "GMaterial.hh"
 #include "GPropertyMap.hh"
 
-
-#include <string>
-#include <iostream>
-#include <ostream>   
-#include <algorithm>
-#include <iterator>
-#include <iomanip>
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
 
 
 
@@ -74,13 +81,22 @@ void test_addTestMaterial(GMaterialLib* mlib)
 
 int main(int argc, char** argv)
 {
-    Opticks ok(argc, argv, "mats.log");
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
+    BSys::setenvvar("", "IDPATH", "/tmp", true );
+
+    Opticks ok(argc, argv);
+
+    LOG(info) << " ok " ; 
 
     GMaterialLib* mlib = GMaterialLib::load(&ok);
 
+    LOG(info) << " after load " ; 
     //test_addTestMaterial(mlib);
 
     mlib->dump();
+    LOG(info) << " after dump " ; 
 
     return 0 ;
 }

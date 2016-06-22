@@ -5,15 +5,11 @@ template <typename T> class NPY ;
 class NPYBase ; 
 class GParts ; 
 
-// TODO: move over to glm
-//#include <glm/glm.hpp>
 
-#include "GMatrix.hh"
-#include "GDrawable.hh"
+template <typename T> class GMatrix ; 
+
 #include "GVector.hh"
-
 #include <vector>
-#include <cstring>
 #include <string>
 
 class GBuffer ; 
@@ -154,38 +150,41 @@ Indices relation to nodeinfo
 
 
 */
+#include "GDrawable.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GMesh : public GDrawable {
+class GGEO_API GMesh : public GDrawable {
       friend class GMergedMesh  ;
   public:
       static int g_instance_count ; 
 
       // per-vertex
-      static const char* vertices ; 
-      static const char* normals ; 
-      static const char* colors ; 
-      static const char* texcoords ; 
+      static const char* vertices_ ; 
+      static const char* normals_ ; 
+      static const char* colors_ ; 
+      static const char* texcoords_ ; 
 
       // per-face
-      static const char* indices ; 
+      static const char* indices_ ; 
 
-      static const char* nodes ; 
-      static const char* boundaries ; 
-      static const char* sensors ; 
+      static const char* nodes_ ; 
+      static const char* boundaries_ ; 
+      static const char* sensors_ ; 
 
       // per-solid (used from the composite GMergedMesh)
-      static const char* center_extent ; 
-      static const char* bbox ; 
-      static const char* transforms ;    
-      static const char* meshes ;        // mesh indices
-      static const char* nodeinfo ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
+      static const char* center_extent_ ; 
+      static const char* bbox_ ; 
+      static const char* transforms_ ;    
+      static const char* meshes_ ;        // mesh indices
+      static const char* nodeinfo_ ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
 
-      static const char* identity ;      // guint4: node, mesh, boundary, sensor : aiming to replace uint nodes/boundaries/sensors/meshes
+      static const char* identity_ ;      // guint4: node, mesh, boundary, sensor : aiming to replace uint nodes/boundaries/sensors/meshes
 
       // per instance global transforms of repeated geometry 
-      static const char* itransforms ;    
-      static const char* iidentity ;     // guint4: node, mesh, boundary, sensor
-      static const char* aiidentity ;    
+      static const char* itransforms_ ;    
+      static const char* iidentity_ ;     // guint4: node, mesh, boundary, sensor
+      static const char* aiidentity_ ;    
 
       static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
       static GMesh* make_mesh(NPY<float>* triangles, unsigned int meshindex=0);
@@ -518,497 +517,6 @@ class GMesh : public GDrawable {
 };
 
 
-
-inline GMesh::GMesh(unsigned int index, 
-             gfloat3* vertices, 
-             unsigned int num_vertices, 
-             guint3* faces, 
-             unsigned int num_faces, 
-             gfloat3* normals, 
-             gfloat2* texcoords
-            ) 
-        :
-      GDrawable(),
-      m_index(index),
-
-      m_num_vertices(num_vertices), 
-      m_num_faces(num_faces),
-      m_num_solids(0),
-      m_num_solids_selected(0),
-
-      m_nodes(NULL),          
-      m_boundaries(NULL),
-      m_sensors(NULL),
-
-      m_vertices(NULL),
-      m_normals(NULL),
-      m_colors(NULL),
-      m_texcoords(NULL),
-      m_faces(NULL),
-
-      m_low(NULL),
-      m_high(NULL),
-      m_dimensions(NULL),
-      m_center(NULL),
-      m_extent(0.f),
-
-      m_center_extent(NULL),
-      m_bbox(NULL),
-      m_transforms(NULL),
-      m_itransforms(NULL),
-      m_meshes(NULL),
-      m_nodeinfo(NULL),
-      m_identity(NULL),
-      m_iidentity(NULL),
-
-      m_model_to_world(NULL),
-      m_name(NULL),
-      m_shortname(NULL),
-      m_version(NULL),
-      m_geocode('T'),
-      m_islice(NULL),
-      m_fslice(NULL),
-      m_pslice(NULL),
-
-      m_vertices_buffer(NULL),
-      m_normals_buffer(NULL),
-      m_colors_buffer(NULL),
-      m_texcoords_buffer(NULL),
-      m_indices_buffer(NULL),
-      m_center_extent_buffer(NULL),
-      m_bbox_buffer(NULL),
-      m_boundaries_buffer(NULL),
-      m_sensors_buffer(NULL),
-      m_transforms_buffer(NULL),
-      m_meshes_buffer(NULL),
-      m_nodeinfo_buffer(NULL),
-      m_identity_buffer(NULL),
-
-      m_itransforms_buffer(NULL),
-      m_iidentity_buffer(NULL),
-      m_aiidentity_buffer(NULL),
-
-      m_facerepeated_identity_buffer(NULL),
-      m_facerepeated_iidentity_buffer(NULL),
-      m_analytic_geometry_buffer(NULL),
-
-      m_parts(NULL),
-      m_verbosity(0)
-{
-     init(vertices, faces, normals, texcoords);
-}
-
-
-
-inline void GMesh::deallocate()
-{
-    delete[] m_vertices ;  
-    delete[] m_normals ;  
-    delete[] m_colors ;  
-    delete[] m_texcoords ;  
-    delete[] m_faces ;  
-
-    delete[] m_center_extent ;  
-    delete[] m_bbox ;  
-    delete[] m_transforms ;  
-    delete[] m_itransforms ;  
-    delete[] m_meshes ;  
-    delete[] m_nodeinfo ;  
-    delete[] m_identity ;  
-    delete[] m_iidentity ;  
-
-    // NB buffers and the rest are very lightweight 
-}
-
-
-inline GMesh::~GMesh()
-{
-    deallocate();
-}
-
-inline void GMesh::setVerbosity(unsigned int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
-
-inline unsigned int GMesh::getVerbosity()
-{
-    return m_verbosity ; 
-}
-
-inline void GMesh::setName(const char* name)
-{
-     m_name = name ? strdup(name) : NULL ;
-     if(m_name) findShortName();
-}  
-inline const char* GMesh::getName()
-{
-     return m_name ; 
-}
-inline const char* GMesh::getShortName()
-{
-     return m_shortname ; 
-}
-
-
-inline void GMesh::setVersion(const char* version)
-{
-     m_version = version ? strdup(version) : NULL ;
-}  
-inline const char* GMesh::getVersion()
-{
-     return m_version ; 
-}
-
-
-
-
-inline unsigned int GMesh::getIndex()
-{
-    return m_index ; 
-}
-inline unsigned int GMesh::getNumVertices()
-{
-    return m_num_vertices ; 
-}
-inline unsigned int GMesh::getNumFaces()
-{
-    return m_num_faces ; 
-}
-inline unsigned int GMesh::getNumSolids()
-{
-    return m_num_solids ; 
-}
-inline unsigned int GMesh::getNumSolidsSelected()
-{
-    return m_num_solids_selected ; 
-}
-
-
-
-
-inline void GMesh::setIndex(unsigned int index)
-{
-   m_index = index ;
-}
-inline void GMesh::setNumVertices(unsigned int num_vertices)
-{
-    m_num_vertices = num_vertices ; 
-}
-inline void GMesh::setNumFaces(unsigned int num_faces)
-{
-    m_num_faces = num_faces ; 
-}
-
-
-
-
-inline void GMesh::setLow(gfloat3* low)
-{
-    m_low = low ;
-}
-inline void GMesh::setHigh(gfloat3* high)
-{
-    m_high = high ;
-}
-inline bool GMesh::hasTexcoords()
-{
-    return m_texcoords != NULL ;
-}
-
-
-
-
-
-
-
-inline gfloat3* GMesh::getLow()
-{
-    return m_low ;
-}
-inline gfloat3* GMesh::getHigh()
-{
-    return m_high ;
-}
-inline gfloat3* GMesh::getDimensions()
-{
-    return m_dimensions ; 
-}
-
-inline GMatrix<float>* GMesh::getModelToWorld()
-{
-    return m_model_to_world ; 
-}
-
-
-inline gfloat3* GMesh::getVertices()
-{
-    return m_vertices ;
-}
-inline gfloat3* GMesh::getNormals()
-{
-    return m_normals ;
-}
-
-inline gfloat3* GMesh::getColors()
-{
-    return m_colors ;
-}
-inline gfloat2* GMesh::getTexcoords()
-{
-    return m_texcoords ;
-}
-
-
-inline guint3*  GMesh::getFaces()
-{
-    return m_faces ;
-}
-
-
-// index is used from subclass
-inline gfloat4 GMesh::getCenterExtent(unsigned int index)
-{
-    return m_center_extent[index] ;
-}
-
-
-
-inline gbbox GMesh::getBBox(unsigned int index)
-{
-    return m_bbox[index] ;
-}
-inline gbbox* GMesh::getBBoxPtr()
-{
-    return m_bbox ;
-}
-
-
-
-
-
-
-inline float GMesh::getExtent()
-{
-     return m_extent ;  
-}
-
-
-
-inline GBuffer*  GMesh::getModelToWorldBuffer()
-{
-    return (GBuffer*)m_model_to_world ;
-}
-
-inline float* GMesh::getModelToWorldPtr(unsigned int index)
-{
-     return (float*)getModelToWorldBuffer()->getPointer() ; 
-}
-
-
-inline unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
-{
-    return m_nodes ;
-}
-
-
-
-inline unsigned int* GMesh::getMeshIndice()  
-{
-    return m_meshes ;
-}
-inline unsigned int GMesh::getMeshIndice(unsigned int index)  
-{
-    return m_meshes[index] ;
-}
-
-
-
-inline guint4* GMesh::getNodeInfo()
-{
-    return m_nodeinfo ; 
-}
-inline guint4 GMesh::getNodeInfo(unsigned int index)
-{
-    return m_nodeinfo[index] ; 
-}
-
-inline guint4* GMesh::getIdentity()
-{
-    return m_identity ; 
-}
-inline guint4 GMesh::getIdentity(unsigned int index)
-{
-    return m_identity[index] ; 
-}
-
-inline guint4* GMesh::getInstancedIdentity()
-{
-    return m_iidentity ; 
-}
-inline guint4 GMesh::getInstancedIdentity(unsigned int index)
-{
-    return m_iidentity[index] ; 
-}
-
-
-
-inline unsigned int* GMesh::getBoundaries()
-{
-    return m_boundaries ;
-}
-inline unsigned int* GMesh::getSensors()
-{
-    return m_sensors ;
-}
-
-
-
-
-inline GBuffer* GMesh::getVerticesBuffer()
-{
-    return m_vertices_buffer ;
-}
-inline GBuffer* GMesh::getNormalsBuffer()
-{
-    return m_normals_buffer ;
-}
-inline GBuffer* GMesh::getColorsBuffer()
-{
-    return m_colors_buffer ;
-}
-inline GBuffer* GMesh::getTexcoordsBuffer()
-{
-    return m_texcoords_buffer ;
-}
-inline GBuffer*  GMesh::getCenterExtentBuffer()
-{
-    return m_center_extent_buffer ;
-}
-inline GBuffer*  GMesh::getBBoxBuffer()
-{
-    return m_bbox_buffer ;
-}
-
-inline GBuffer*  GMesh::getTransformsBuffer()
-{
-    return m_transforms_buffer ;
-}
-inline NPY<float>*  GMesh::getITransformsBuffer()
-{
-    return m_itransforms_buffer ;
-}
-
-
-
-inline GBuffer*  GMesh::getMeshesBuffer()
-{
-    return m_meshes_buffer ;
-}
-inline GBuffer*  GMesh::getNodeInfoBuffer()
-{
-    return m_nodeinfo_buffer ;
-}
-inline GBuffer*  GMesh::getIdentityBuffer()
-{
-    return m_identity_buffer ;
-}
-inline NPY<unsigned int>*  GMesh::getInstancedIdentityBuffer()
-{
-    return m_iidentity_buffer ;
-}
-inline NPY<unsigned int>*  GMesh::getAnalyticInstancedIdentityBuffer()
-{
-    return m_aiidentity_buffer ;
-}
-
-
-
-
-inline GBuffer*  GMesh::getIndicesBuffer()
-{
-    return m_indices_buffer ;
-}
-inline GBuffer*  GMesh::getNodesBuffer()
-{
-    return m_nodes_buffer ;
-}
-inline GBuffer*  GMesh::getBoundariesBuffer()
-{
-    return m_boundaries_buffer ;
-}
-inline GBuffer*  GMesh::getSensorsBuffer()
-{
-    return m_sensors_buffer ;
-}
-
-inline bool GMesh::hasTransformsBuffer()
-{
-    return m_transforms_buffer != NULL ; 
-}
-inline bool GMesh::hasITransformsBuffer()
-{
-    return m_itransforms_buffer != NULL ; 
-}
-
-
-
-
-
-
-
-inline char GMesh::getGeoCode()
-{
-    return m_geocode ; 
-}
-inline void GMesh::setGeoCode(char geocode)
-{
-    m_geocode = geocode ; 
-}
-
-
-inline void GMesh::setInstanceSlice(NSlice* slice)
-{
-    m_islice = slice ; 
-}
-inline NSlice* GMesh::getInstanceSlice()
-{
-    return m_islice ; 
-}
-
-
-inline void GMesh::setFaceSlice(NSlice* slice)
-{
-    m_fslice = slice ; 
-}
-inline NSlice* GMesh::getFaceSlice()
-{
-    return m_fslice ; 
-}
-
-inline void GMesh::setPartSlice(NSlice* slice)
-{
-    m_pslice = slice ; 
-}
-inline NSlice* GMesh::getPartSlice()
-{
-    return m_pslice ; 
-}
-
-
-
-inline void GMesh::setParts(GParts* parts)
-{
-    m_parts = parts ; 
-}
-inline GParts* GMesh::getParts()
-{
-    return m_parts ; 
-}
-
-
-
-
-
+#include "GGEO_TAIL.hh"
 
 

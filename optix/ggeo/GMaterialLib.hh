@@ -54,12 +54,15 @@ Lifecycle of all property lib are similar:
 
 */
 #include <vector>
-#include "GPropertyLib.hh"
 
 class GMaterial ; 
 class GItemList ; 
 
-class GMaterialLib : public GPropertyLib {
+#include "GPropertyLib.hh"
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        // 4 standard material property names : interleaved into float4 wavelength texture
        static const float MATERIAL_UNSET ; 
@@ -125,20 +128,7 @@ class GMaterialLib : public GPropertyLib {
    private:
        std::vector<GMaterial*>       m_materials ; 
 
-
 };
-
-inline GMaterialLib::GMaterialLib(Opticks* cache) 
-    :
-    GPropertyLib(cache, "GMaterialLib")
-{
-    init();
-}
- 
-inline unsigned int GMaterialLib::getNumMaterials()
-{
-    return m_materials.size();
-}
-
+#include "GGEO_TAIL.hh"
 
  

@@ -1,14 +1,22 @@
 #include <iomanip>
 
+#include "NGLM.hpp"
+#include "NPY.hpp"
+
 #include "Opticks.hh"
 
-#include "GSurfaceLib.hh"
+#include "GVector.hh"
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
+
 #include "GOpticalSurface.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GItemList.hh"
 
-#include "NPY.hpp"
+#include "GSurfaceLib.hh"
+
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
@@ -68,6 +76,39 @@ void GSurfaceLib::saveOpticalBuffer()
     saveToCache(ibuf, "Optical") ; 
     setOpticalBuffer(ibuf);
 }
+
+
+
+GSurfaceLib::GSurfaceLib(Opticks* cache) 
+    :
+    GPropertyLib(cache, "GSurfaceLib"),
+    m_fake_efficiency(-1.f),
+    m_optical_buffer(NULL)
+{
+    init();
+}
+ 
+unsigned int GSurfaceLib::getNumSurfaces()
+{
+    return m_surfaces.size();
+}
+
+
+void GSurfaceLib::setFakeEfficiency(float fake_efficiency)
+{
+    m_fake_efficiency = fake_efficiency ; 
+}
+void GSurfaceLib::setOpticalBuffer(NPY<unsigned int>* ibuf)
+{
+    m_optical_buffer = ibuf ; 
+}
+NPY<unsigned int>* GSurfaceLib::getOpticalBuffer()
+{
+    return m_optical_buffer ;
+}
+
+
+
 
 
 
@@ -427,7 +468,10 @@ NPY<float>* GSurfaceLib::createBufferOld()
     float* data = buf->getValues();
 
     GProperty<float> *p0,*p1,*p2,*p3 ; 
-    GProperty<float> *p4,*p5,*p6,*p7 ; 
+    GProperty<float>* p4(NULL);
+    GProperty<float>* p5(NULL);
+    GProperty<float>* p6(NULL);
+    GProperty<float>* p7(NULL);
 
     for(unsigned int i=0 ; i < ni ; i++)
     {
@@ -668,7 +712,7 @@ void GSurfaceLib::dump( GPropertyMap<float>* surf, const char* msg)
 
 GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
 {
-    GPropertyMap<float>* surface = NULL ; 
+    GPropertyMap<float>* ss = NULL ; 
 
     unsigned int count = 0 ; 
     for(unsigned int index=0 ; index < getNumSurfaces() ; index++)
@@ -676,7 +720,7 @@ GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
         const char* name = getName(index); 
         if(isSensorSurface(index))
         {
-             if(count == offset) surface = getSurface(index) ;
+             if(count == offset) ss = getSurface(index) ;
              count += 1 ; 
 
         } 
@@ -687,13 +731,13 @@ GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
                   ;
 
     }
-    return surface ; 
+    return ss ; 
 }  
 
-bool GSurfaceLib::isSensorSurface(unsigned int surface)
+bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
 {
     // name suffix based, see AssimpGGeo::convertSensor
-    const char* name = getName(surface); 
+    const char* name = getName(qsurface); 
     if(!name) return false ; 
 
     int pos = strlen(name) - strlen(SENSOR_SURFACE) ;
@@ -701,7 +745,7 @@ bool GSurfaceLib::isSensorSurface(unsigned int surface)
 
     if(iss)
     LOG(debug) << "GSurfaceLib::isSensorSurface"
-              << " surface " << surface  
+              << " surface " << qsurface  
               << " name " << name 
               << " pos " << pos 
               << " iss " << iss 

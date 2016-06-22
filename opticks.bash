@@ -790,6 +790,55 @@ EOS
 }
 
 
+opticks-testname(){ echo ${cls}Test.cc ; }
+opticks-gentest()
+{
+   local msg=" === $FUNCNAME :"
+   local cls=${1:-GMaterial}
+   local tag=${2:-GGEO} 
+
+   [ -z "$cls" -o -z "$tag" ] && echo $msg a classname $cls and project tag $tag must be provided && return 
+   local name=$(opticks-testname $cls)
+   [ -f "$name" ] && echo $msg a file named $name exists already in $PWD && return
+   echo $msg cls $cls generating test named $name in $PWD
+   opticks-gentest- $cls $tag > $name
+   #cat $name
+
+   vi $name
+
+}
+opticks-gentest-(){
+
+   local cls=${1:-GMaterial}
+   local tag=${2:-GGEO}
+
+   cat << EOT
+
+#include <cassert>
+#include "${cls}.hh"
+
+#include "PLOG.hh"
+#include "${tag}_LOG.hh"
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    ${tag}_LOG_ ;
+
+
+
+
+    return 0 ;
+}
+
+EOT
+
+}
+
+
+
+
+
 
 
 

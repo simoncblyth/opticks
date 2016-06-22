@@ -43,53 +43,29 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 
-set(ALL_SOURCES
+set(NEXT_SOURCES
 
-    GMaterial.cc
-    GSource.cc
-    GSkinSurface.cc
-    GBorderSurface.cc
-
-    GPropertyLib.cc
     GGeoLib.cc
-    GMaterialLib.cc
-    GSurfaceLib.cc
-    GBndLib.cc
-    GScintillatorLib.cc
-    GSourceLib.cc
 
-    GSolid.cc
-    GMesh.cc
-    GMergedMesh.cc
-    GNode.cc
 
-    GGeo.cc
     GGeoCfg.cc
-    GIds.cc
-    GTransforms.cc
-    GDrawable.cc
-    GArray.cc
-    GItemIndex.cc
 
-    GColorMap.cc
     GTraverse.cc
     GColorizer.cc
     GTreeCheck.cc
     GTreePresent.cc
+
     GBBoxMesh.cc
-    GItemList.cc
-    GMeshFixer.cc
     GParts.cc
     GCSG.cc
     GPmt.cc
     GMaker.cc
-    GCIE.cc
     GGeoTest.cc
     GGeoTestConfig.cc
 
 
-
-    GPropertyMap.cc
+    GMergedMesh.cc
+    GGeo.cc
 
 )
 
@@ -97,16 +73,51 @@ set(SOURCES
 
     GGEO_LOG.cc
 
+
+    GColorMap.cc
+    GTransforms.cc
+    GIds.cc
+
+    GItemList.cc
+    GItemIndex.cc
+
     GBuffer.cc
+    GArray.cc
     GMatrix.cc
+
     GVector.cc
+
+    GDrawable.cc
     GOpticalSurface.cc
 
     GConstant.cc
     GDomain.cc
     GAry.cc
-    GProperty.cc
+    GCIE.cc
 
+    GProperty.cc
+    GPropertyMap.cc
+
+    GPropertyLib.cc
+    GMaterial.cc
+    GMaterialLib.cc
+
+    GSkinSurface.cc
+    GBorderSurface.cc
+
+    GSurfaceLib.cc
+    GScintillatorLib.cc
+
+    GSource.cc
+    GSourceLib.cc
+
+    GBndLib.cc
+
+    GMeshFixer.cc
+    GMesh.cc
+    GNode.cc
+
+    GSolid.cc
 )
 set(HEADERS
 

@@ -1,11 +1,15 @@
-#include "BFile.hh"
 
 #include <vector>
 #include <string>
 #include <cassert>
 
 
-void test_find(const char* dirlist, const char* sub, const char* name)
+#include "BFile.hh"
+#include "PLOG.hh"
+#include "BRAP_LOG.hh"
+
+
+void test_FindFile_(const char* dirlist, const char* sub, const char* name)
 {
     std::string aa = BFile::FindFile( dirlist, sub, name );
     if(!aa.empty())
@@ -18,8 +22,14 @@ void test_find(const char* dirlist, const char* sub, const char* name)
     }
 } 
 
+void test_FindFile()
+{
+   const char* dirlist = "$HOME/.opticks;$OPTICKS_PREFIX/.opticks" ;
+   test_FindFile_( dirlist, "OpticksResource", "OpticksColors.json");
+}
 
-int main(int argc, char** argv)
+
+void test_ExistsDir()
 {
 
     std::vector<std::string> ss ; 
@@ -49,15 +59,55 @@ int main(int argc, char** argv)
 
        printf("  BFile::FormPath(\"%s\") -->  [%s] dir %d file %d  \n", s.c_str(), x.c_str(), xdir, xfile);
     }
+}
+
+
+void test_CreateDir()
+{
+   BFile::CreateDir("/tmp/a/b/c");
+}
+
+void test_ParentDir()
+{
+    std::vector<std::string> ss ; 
+    ss.push_back("$ENV_HOME/optickscore/OpticksPhoton.h");
+    ss.push_back("$HOME/.opticks/GColors.json");
+    ss.push_back("C:\\tmp");
+    ss.push_back("C:\\tmp\\TestIDPath");
+ 
+    for(unsigned int i=0 ; i < ss.size() ; i++)
+    {
+       std::string s = ss[i] ;
+       std::string x = BFile::FormPath(s.c_str());
+
+
+       std::string p = BFile::ParentDir(s.c_str());
+
+       LOG(info) 
+               << " s " << std::setw(40) << s  
+               << " x " << std::setw(40) << x  
+               << " p " << std::setw(40) << p
+               ;  
+
+    } 
+
+}
 
 
 
-   const char* dirlist = "$HOME/.opticks;$OPTICKS_PREFIX/.opticks" ;
-   test_find( dirlist, "OpticksResource", "OpticksColors.json");
 
 
+int main(int argc, char** argv)
+{
+   PLOG_(argc, argv);
+   BRAP_LOG_ ;
 
-   //BFile::CreateDir("/tmp/a/b/c");
+   //test_FindFile();
+   //test_ExistsDir();
+   //test_CreateDir();
+   test_ParentDir();
+
+
 
    return 0 ; 
 }

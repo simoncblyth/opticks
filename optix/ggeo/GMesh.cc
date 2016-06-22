@@ -6,45 +6,578 @@
 #include <iomanip>
 #include <algorithm>
 
-#include "BStr.hh"
-#include "PLOG.hh"
+#include <boost/filesystem.hpp>
 
-#include "GMesh.hh"
+#include "BStr.hh"
+
+
+// huh why both ?
+#include "numpy.hpp"
 #include "NPY.hpp"
+
+
+#include "GMatrix.hh"
 #include "GMeshFixer.hh"
 #include "GBuffer.hh"
+#include "GMesh.hh"
 
-#include "numpy.hpp"
+#include "PLOG.hh"
 
-#include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
 
-const char* GMesh::vertices     = "vertices" ;
-const char* GMesh::normals      = "normals" ;
-const char* GMesh::colors       = "colors" ;
-const char* GMesh::texcoords    = "texcoords" ;
+const char* GMesh::vertices_     = "vertices" ;
+const char* GMesh::normals_      = "normals" ;
+const char* GMesh::colors_       = "colors" ;
+const char* GMesh::texcoords_    = "texcoords" ;
 
-const char* GMesh::indices      = "indices" ;
-const char* GMesh::nodes        = "nodes" ;
-const char* GMesh::boundaries   = "boundaries" ;
-const char* GMesh::sensors      = "sensors" ;
+const char* GMesh::indices_      = "indices" ;
+const char* GMesh::nodes_        = "nodes" ;
+const char* GMesh::boundaries_   = "boundaries" ;
+const char* GMesh::sensors_      = "sensors" ;
 
-const char* GMesh::center_extent = "center_extent" ;
-const char* GMesh::bbox           = "bbox" ;
-const char* GMesh::transforms     = "transforms" ;
-const char* GMesh::meshes         = "meshes" ;
-const char* GMesh::nodeinfo       = "nodeinfo" ;
-const char* GMesh::identity       = "identity" ;
+const char* GMesh::center_extent_ = "center_extent" ;
+const char* GMesh::bbox_           = "bbox" ;
+const char* GMesh::transforms_     = "transforms" ;
+const char* GMesh::meshes_         = "meshes" ;
+const char* GMesh::nodeinfo_       = "nodeinfo" ;
+const char* GMesh::identity_       = "identity" ;
 
 
-const char* GMesh::itransforms    = "itransforms" ;
-const char* GMesh::iidentity       = "iidentity" ;
-const char* GMesh::aiidentity      = "aiidentity" ;
+const char* GMesh::itransforms_    = "itransforms" ;
+const char* GMesh::iidentity_       = "iidentity" ;
+const char* GMesh::aiidentity_      = "aiidentity" ;
 
+
+void GMesh::nameConstituents(std::vector<std::string>& names)
+{
+    names.push_back(vertices_); 
+    names.push_back(normals_); 
+    names.push_back(colors_); 
+    names.push_back(texcoords_); 
+
+    names.push_back(indices_); 
+    names.push_back(nodes_); 
+    names.push_back(boundaries_); 
+    names.push_back(sensors_); 
+
+    names.push_back(center_extent_); 
+    names.push_back(bbox_); 
+    names.push_back(transforms_); 
+    names.push_back(meshes_); 
+    names.push_back(nodeinfo_); 
+    names.push_back(identity_); 
+
+    names.push_back(itransforms_); 
+    names.push_back(iidentity_); 
+    names.push_back(aiidentity_); 
+}
 
 
 int GMesh::g_instance_count = 0 ;
+
+
+
+GMesh::GMesh(unsigned int index, 
+             gfloat3* vertices, 
+             unsigned int num_vertices, 
+             guint3* faces, 
+             unsigned int num_faces, 
+             gfloat3* normals, 
+             gfloat2* texcoords
+            ) 
+        :
+      GDrawable(),
+      m_index(index),
+
+      m_num_vertices(num_vertices), 
+      m_num_faces(num_faces),
+      m_num_solids(0),
+      m_num_solids_selected(0),
+
+      m_nodes(NULL),          
+      m_boundaries(NULL),
+      m_sensors(NULL),
+
+      m_vertices(NULL),
+      m_normals(NULL),
+      m_colors(NULL),
+      m_texcoords(NULL),
+      m_faces(NULL),
+
+      m_low(NULL),
+      m_high(NULL),
+      m_dimensions(NULL),
+      m_center(NULL),
+      m_extent(0.f),
+
+      m_center_extent(NULL),
+      m_bbox(NULL),
+      m_transforms(NULL),
+      m_itransforms(NULL),
+      m_meshes(NULL),
+      m_nodeinfo(NULL),
+      m_identity(NULL),
+      m_iidentity(NULL),
+
+      m_model_to_world(NULL),
+      m_name(NULL),
+      m_shortname(NULL),
+      m_version(NULL),
+      m_geocode('T'),
+      m_islice(NULL),
+      m_fslice(NULL),
+      m_pslice(NULL),
+
+      m_vertices_buffer(NULL),
+      m_normals_buffer(NULL),
+      m_colors_buffer(NULL),
+      m_texcoords_buffer(NULL),
+      m_indices_buffer(NULL),
+      m_center_extent_buffer(NULL),
+      m_bbox_buffer(NULL),
+      m_boundaries_buffer(NULL),
+      m_sensors_buffer(NULL),
+      m_transforms_buffer(NULL),
+      m_meshes_buffer(NULL),
+      m_nodeinfo_buffer(NULL),
+      m_identity_buffer(NULL),
+
+      m_itransforms_buffer(NULL),
+      m_iidentity_buffer(NULL),
+      m_aiidentity_buffer(NULL),
+
+      m_facerepeated_identity_buffer(NULL),
+      m_facerepeated_iidentity_buffer(NULL),
+      m_analytic_geometry_buffer(NULL),
+
+      m_parts(NULL),
+      m_verbosity(0)
+{
+     init(vertices, faces, normals, texcoords);
+}
+
+
+
+void GMesh::deallocate()
+{
+    delete[] m_vertices ;  
+    delete[] m_normals ;  
+    delete[] m_colors ;  
+    delete[] m_texcoords ;  
+    delete[] m_faces ;  
+
+    delete[] m_center_extent ;  
+    delete[] m_bbox ;  
+    delete[] m_transforms ;  
+    delete[] m_itransforms ;  
+    delete[] m_meshes ;  
+    delete[] m_nodeinfo ;  
+    delete[] m_identity ;  
+    delete[] m_iidentity ;  
+
+    // NB buffers and the rest are very lightweight 
+}
+
+
+GMesh::~GMesh()
+{
+    deallocate();
+}
+
+void GMesh::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+
+unsigned int GMesh::getVerbosity()
+{
+    return m_verbosity ; 
+}
+
+void GMesh::setName(const char* name)
+{
+     m_name = name ? strdup(name) : NULL ;
+     if(m_name) findShortName();
+}  
+const char* GMesh::getName()
+{
+     return m_name ; 
+}
+const char* GMesh::getShortName()
+{
+     return m_shortname ; 
+}
+
+
+void GMesh::setVersion(const char* version)
+{
+     m_version = version ? strdup(version) : NULL ;
+}  
+const char* GMesh::getVersion()
+{
+     return m_version ; 
+}
+
+
+
+
+unsigned int GMesh::getIndex()
+{
+    return m_index ; 
+}
+unsigned int GMesh::getNumVertices()
+{
+    return m_num_vertices ; 
+}
+unsigned int GMesh::getNumFaces()
+{
+    return m_num_faces ; 
+}
+unsigned int GMesh::getNumSolids()
+{
+    return m_num_solids ; 
+}
+unsigned int GMesh::getNumSolidsSelected()
+{
+    return m_num_solids_selected ; 
+}
+
+
+
+
+void GMesh::setIndex(unsigned int index)
+{
+   m_index = index ;
+}
+void GMesh::setNumVertices(unsigned int num_vertices)
+{
+    m_num_vertices = num_vertices ; 
+}
+void GMesh::setNumFaces(unsigned int num_faces)
+{
+    m_num_faces = num_faces ; 
+}
+
+
+
+
+void GMesh::setLow(gfloat3* low)
+{
+    m_low = low ;
+}
+void GMesh::setHigh(gfloat3* high)
+{
+    m_high = high ;
+}
+bool GMesh::hasTexcoords()
+{
+    return m_texcoords != NULL ;
+}
+
+
+
+
+
+
+
+gfloat3* GMesh::getLow()
+{
+    return m_low ;
+}
+gfloat3* GMesh::getHigh()
+{
+    return m_high ;
+}
+gfloat3* GMesh::getDimensions()
+{
+    return m_dimensions ; 
+}
+
+GMatrix<float>* GMesh::getModelToWorld()
+{
+    return m_model_to_world ; 
+}
+
+
+gfloat3* GMesh::getVertices()
+{
+    return m_vertices ;
+}
+gfloat3* GMesh::getNormals()
+{
+    return m_normals ;
+}
+
+gfloat3* GMesh::getColors()
+{
+    return m_colors ;
+}
+gfloat2* GMesh::getTexcoords()
+{
+    return m_texcoords ;
+}
+
+
+guint3*  GMesh::getFaces()
+{
+    return m_faces ;
+}
+
+
+// index is used from subclass
+gfloat4 GMesh::getCenterExtent(unsigned int index)
+{
+    return m_center_extent[index] ;
+}
+
+
+
+gbbox GMesh::getBBox(unsigned int index)
+{
+    return m_bbox[index] ;
+}
+gbbox* GMesh::getBBoxPtr()
+{
+    return m_bbox ;
+}
+
+
+
+
+
+
+float GMesh::getExtent()
+{
+     return m_extent ;  
+}
+
+
+
+GBuffer*  GMesh::getModelToWorldBuffer()
+{
+    return (GBuffer*)m_model_to_world ;
+}
+
+float* GMesh::getModelToWorldPtr(unsigned int index)
+{
+     return (float*)getModelToWorldBuffer()->getPointer() ; 
+}
+
+
+unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
+{
+    return m_nodes ;
+}
+
+
+
+unsigned int* GMesh::getMeshIndice()  
+{
+    return m_meshes ;
+}
+unsigned int GMesh::getMeshIndice(unsigned int index)  
+{
+    return m_meshes[index] ;
+}
+
+
+
+guint4* GMesh::getNodeInfo()
+{
+    return m_nodeinfo ; 
+}
+guint4 GMesh::getNodeInfo(unsigned int index)
+{
+    return m_nodeinfo[index] ; 
+}
+
+guint4* GMesh::getIdentity()
+{
+    return m_identity ; 
+}
+guint4 GMesh::getIdentity(unsigned int index)
+{
+    return m_identity[index] ; 
+}
+
+guint4* GMesh::getInstancedIdentity()
+{
+    return m_iidentity ; 
+}
+guint4 GMesh::getInstancedIdentity(unsigned int index)
+{
+    return m_iidentity[index] ; 
+}
+
+
+
+unsigned int* GMesh::getBoundaries()
+{
+    return m_boundaries ;
+}
+unsigned int* GMesh::getSensors()
+{
+    return m_sensors ;
+}
+
+
+
+
+GBuffer* GMesh::getVerticesBuffer()
+{
+    return m_vertices_buffer ;
+}
+GBuffer* GMesh::getNormalsBuffer()
+{
+    return m_normals_buffer ;
+}
+GBuffer* GMesh::getColorsBuffer()
+{
+    return m_colors_buffer ;
+}
+GBuffer* GMesh::getTexcoordsBuffer()
+{
+    return m_texcoords_buffer ;
+}
+GBuffer*  GMesh::getCenterExtentBuffer()
+{
+    return m_center_extent_buffer ;
+}
+GBuffer*  GMesh::getBBoxBuffer()
+{
+    return m_bbox_buffer ;
+}
+
+GBuffer*  GMesh::getTransformsBuffer()
+{
+    return m_transforms_buffer ;
+}
+NPY<float>*  GMesh::getITransformsBuffer()
+{
+    return m_itransforms_buffer ;
+}
+
+
+
+GBuffer*  GMesh::getMeshesBuffer()
+{
+    return m_meshes_buffer ;
+}
+GBuffer*  GMesh::getNodeInfoBuffer()
+{
+    return m_nodeinfo_buffer ;
+}
+GBuffer*  GMesh::getIdentityBuffer()
+{
+    return m_identity_buffer ;
+}
+NPY<unsigned int>*  GMesh::getInstancedIdentityBuffer()
+{
+    return m_iidentity_buffer ;
+}
+NPY<unsigned int>*  GMesh::getAnalyticInstancedIdentityBuffer()
+{
+    return m_aiidentity_buffer ;
+}
+
+
+
+
+GBuffer*  GMesh::getIndicesBuffer()
+{
+    return m_indices_buffer ;
+}
+GBuffer*  GMesh::getNodesBuffer()
+{
+    return m_nodes_buffer ;
+}
+GBuffer*  GMesh::getBoundariesBuffer()
+{
+    return m_boundaries_buffer ;
+}
+GBuffer*  GMesh::getSensorsBuffer()
+{
+    return m_sensors_buffer ;
+}
+
+bool GMesh::hasTransformsBuffer()
+{
+    return m_transforms_buffer != NULL ; 
+}
+bool GMesh::hasITransformsBuffer()
+{
+    return m_itransforms_buffer != NULL ; 
+}
+
+
+
+
+
+
+
+char GMesh::getGeoCode()
+{
+    return m_geocode ; 
+}
+void GMesh::setGeoCode(char geocode)
+{
+    m_geocode = geocode ; 
+}
+
+
+void GMesh::setInstanceSlice(NSlice* slice)
+{
+    m_islice = slice ; 
+}
+NSlice* GMesh::getInstanceSlice()
+{
+    return m_islice ; 
+}
+
+
+void GMesh::setFaceSlice(NSlice* slice)
+{
+    m_fslice = slice ; 
+}
+NSlice* GMesh::getFaceSlice()
+{
+    return m_fslice ; 
+}
+
+void GMesh::setPartSlice(NSlice* slice)
+{
+    m_pslice = slice ; 
+}
+NSlice* GMesh::getPartSlice()
+{
+    return m_pslice ; 
+}
+
+
+
+void GMesh::setParts(GParts* parts)
+{
+    m_parts = parts ; 
+}
+GParts* GMesh::getParts()
+{
+    return m_parts ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords)
 {
@@ -55,30 +588,6 @@ void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* te
    setTexcoords(texcoords);
    updateBounds();
    nameConstituents(m_names);
-}
-
-void GMesh::nameConstituents(std::vector<std::string>& names)
-{
-    names.push_back(vertices); 
-    names.push_back(normals); 
-    names.push_back(colors); 
-    names.push_back(texcoords); 
-
-    names.push_back(indices); 
-    names.push_back(nodes); 
-    names.push_back(boundaries); 
-    names.push_back(sensors); 
-
-    names.push_back(center_extent); 
-    names.push_back(bbox); 
-    names.push_back(transforms); 
-    names.push_back(meshes); 
-    names.push_back(nodeinfo); 
-    names.push_back(identity); 
-
-    names.push_back(itransforms); 
-    names.push_back(iidentity); 
-    names.push_back(aiidentity); 
 }
 
 
@@ -132,22 +641,22 @@ GBuffer* GMesh::getBuffer(const char* name)
 {
     if(isNPYBuffer(name)) return NULL ; 
 
-    if(strcmp(name, vertices) == 0)     return m_vertices_buffer ; 
-    if(strcmp(name, normals) == 0)      return m_normals_buffer ; 
-    if(strcmp(name, colors) == 0)       return m_colors_buffer ; 
-    if(strcmp(name, texcoords) == 0)    return m_texcoords_buffer ; 
+    if(strcmp(name, vertices_) == 0)     return m_vertices_buffer ; 
+    if(strcmp(name, normals_) == 0)      return m_normals_buffer ; 
+    if(strcmp(name, colors_) == 0)       return m_colors_buffer ; 
+    if(strcmp(name, texcoords_) == 0)    return m_texcoords_buffer ; 
 
-    if(strcmp(name, indices) == 0)      return m_indices_buffer ; 
-    if(strcmp(name, nodes) == 0)        return m_nodes_buffer ; 
-    if(strcmp(name, boundaries) == 0)   return m_boundaries_buffer ; 
-    if(strcmp(name, sensors) == 0)      return m_sensors_buffer ; 
+    if(strcmp(name, indices_) == 0)      return m_indices_buffer ; 
+    if(strcmp(name, nodes_) == 0)        return m_nodes_buffer ; 
+    if(strcmp(name, boundaries_) == 0)   return m_boundaries_buffer ; 
+    if(strcmp(name, sensors_) == 0)      return m_sensors_buffer ; 
 
-    if(strcmp(name, center_extent) == 0)   return m_center_extent_buffer ; 
-    if(strcmp(name, bbox) == 0)            return m_bbox_buffer ; 
-    if(strcmp(name, transforms) == 0)      return m_transforms_buffer ; 
-    if(strcmp(name, meshes) == 0)          return m_meshes_buffer ; 
-    if(strcmp(name, nodeinfo) == 0)        return m_nodeinfo_buffer ; 
-    if(strcmp(name, identity) == 0)        return m_identity_buffer ; 
+    if(strcmp(name, center_extent_) == 0)   return m_center_extent_buffer ; 
+    if(strcmp(name, bbox_) == 0)            return m_bbox_buffer ; 
+    if(strcmp(name, transforms_) == 0)      return m_transforms_buffer ; 
+    if(strcmp(name, meshes_) == 0)          return m_meshes_buffer ; 
+    if(strcmp(name, nodeinfo_) == 0)        return m_nodeinfo_buffer ; 
+    if(strcmp(name, identity_) == 0)        return m_identity_buffer ; 
 
     return NULL ;
 }
@@ -157,22 +666,22 @@ void GMesh::setBuffer(const char* name, GBuffer* buffer)
 {
     if(isNPYBuffer(name)) return ; 
 
-    if(strcmp(name, vertices) == 0)     setVerticesBuffer(buffer) ; 
-    if(strcmp(name, normals) == 0)      setNormalsBuffer(buffer) ; 
-    if(strcmp(name, colors) == 0)       setColorsBuffer(buffer) ; 
-    if(strcmp(name, texcoords) == 0)    setTexcoordsBuffer(buffer) ; 
+    if(strcmp(name, vertices_) == 0)     setVerticesBuffer(buffer) ; 
+    if(strcmp(name, normals_) == 0)      setNormalsBuffer(buffer) ; 
+    if(strcmp(name, colors_) == 0)       setColorsBuffer(buffer) ; 
+    if(strcmp(name, texcoords_) == 0)    setTexcoordsBuffer(buffer) ; 
 
-    if(strcmp(name, indices) == 0)      setIndicesBuffer(buffer) ; 
-    if(strcmp(name, nodes) == 0)        setNodesBuffer(buffer) ; 
-    if(strcmp(name, boundaries) == 0)   setBoundariesBuffer(buffer) ; 
-    if(strcmp(name, sensors) == 0)      setSensorsBuffer(buffer) ; 
+    if(strcmp(name, indices_) == 0)      setIndicesBuffer(buffer) ; 
+    if(strcmp(name, nodes_) == 0)        setNodesBuffer(buffer) ; 
+    if(strcmp(name, boundaries_) == 0)   setBoundariesBuffer(buffer) ; 
+    if(strcmp(name, sensors_) == 0)      setSensorsBuffer(buffer) ; 
 
-    if(strcmp(name, center_extent) == 0)   setCenterExtentBuffer(buffer) ; 
-    if(strcmp(name, bbox) == 0)            setBBoxBuffer(buffer) ; 
-    if(strcmp(name, transforms) == 0)      setTransformsBuffer(buffer) ; 
-    if(strcmp(name, meshes) == 0)          setMeshesBuffer(buffer) ; 
-    if(strcmp(name, nodeinfo) == 0)        setNodeInfoBuffer(buffer) ; 
-    if(strcmp(name, identity) == 0)        setIdentityBuffer(buffer) ; 
+    if(strcmp(name, center_extent_) == 0)   setCenterExtentBuffer(buffer) ; 
+    if(strcmp(name, bbox_) == 0)            setBBoxBuffer(buffer) ; 
+    if(strcmp(name, transforms_) == 0)      setTransformsBuffer(buffer) ; 
+    if(strcmp(name, meshes_) == 0)          setMeshesBuffer(buffer) ; 
+    if(strcmp(name, nodeinfo_) == 0)        setNodeInfoBuffer(buffer) ; 
+    if(strcmp(name, identity_) == 0)        setIdentityBuffer(buffer) ; 
 
 }
 
@@ -900,31 +1409,31 @@ std::vector<unsigned int>& GMesh::getDistinctBoundaries()
 bool GMesh::isFloatBuffer(const char* name)
 {
 
-    return ( strcmp( name, vertices) == 0 || 
-             strcmp( name, normals) == 0  || 
-             strcmp( name, center_extent ) == 0  || 
-             strcmp( name, bbox ) == 0  || 
-             strcmp( name, transforms ) == 0  || 
-             strcmp( name, colors) == 0 );
+    return ( strcmp( name, vertices_) == 0 || 
+             strcmp( name, normals_) == 0  || 
+             strcmp( name, center_extent_) == 0  || 
+             strcmp( name, bbox_) == 0  || 
+             strcmp( name, transforms_) == 0  || 
+             strcmp( name, colors_) == 0 );
 }
 
 bool GMesh::isIntBuffer(const char* name)
 {
     return ( 
-             strcmp( name, indices) == 0     || 
-             strcmp( name, nodes) == 0       || 
-             strcmp( name, sensors) == 0     || 
-             strcmp( name, boundaries ) == 0 
+             strcmp( name, indices_) == 0     || 
+             strcmp( name, nodes_) == 0       || 
+             strcmp( name, sensors_) == 0     || 
+             strcmp( name, boundaries_) == 0 
           );
 }
 bool GMesh::isUIntBuffer(const char* name)
 {
     return 
            ( 
-              strcmp( name, nodeinfo) == 0  ||
-              strcmp( name, identity) == 0  ||
-              strcmp( name, iidentity) == 0  ||
-              strcmp( name, meshes) == 0  
+              strcmp( name, nodeinfo_) == 0  ||
+              strcmp( name, identity_) == 0  ||
+              strcmp( name, iidentity_) == 0  ||
+              strcmp( name, meshes_) == 0  
            );
 }
 
@@ -933,9 +1442,9 @@ bool GMesh::isNPYBuffer(const char* name)
 {
     return 
            ( 
-              strcmp( name, aiidentity ) == 0  ||
-              strcmp( name, iidentity ) == 0  ||
-              strcmp( name, itransforms) == 0  
+              strcmp( name, aiidentity_) == 0  ||
+              strcmp( name, iidentity_) == 0  ||
+              strcmp( name, itransforms_) == 0  
            );
 }
 
@@ -981,9 +1490,9 @@ void GMesh::saveNPYBuffer(const char* path, const char* name)
 NPYBase* GMesh::getNPYBuffer(const char* name)
 {
     NPYBase* buf(NULL);
-    if(     strcmp(name, aiidentity)  == 0) buf = getAnalyticInstancedIdentityBuffer();
-    else if(strcmp(name, iidentity) == 0)   buf = getInstancedIdentityBuffer();
-    else if(strcmp(name, itransforms) == 0) buf = getITransformsBuffer();
+    if(     strcmp(name, aiidentity_)  == 0) buf = getAnalyticInstancedIdentityBuffer();
+    else if(strcmp(name, iidentity_) == 0)   buf = getInstancedIdentityBuffer();
+    else if(strcmp(name, itransforms_) == 0) buf = getITransformsBuffer();
     return buf ; 
 }
 
@@ -996,17 +1505,17 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
               << " path " << path 
               ; 
 
-    if(strcmp(name, aiidentity) == 0)
+    if(strcmp(name, aiidentity_) == 0)
     {
         NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
         setAnalyticInstancedIdentityBuffer(buf);
     }
-    else if(strcmp(name, iidentity) == 0)
+    else if(strcmp(name, iidentity_) == 0)
     {
         NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
         setInstancedIdentityBuffer(buf);
     }
-    else if(strcmp(name, itransforms) == 0)
+    else if(strcmp(name, itransforms_) == 0)
     {
         NPY<float>* buf = NPY<float>::load(path) ;
         setITransformsBuffer(buf);
@@ -1652,3 +2161,6 @@ GMesh* GMesh::make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshinde
 
     return mesh ; 
 }
+
+
+

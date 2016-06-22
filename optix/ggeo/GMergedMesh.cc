@@ -1,25 +1,29 @@
-#include "GMergedMesh.hh"
-#include "GGeo.hh"
-#include "GSolid.hh"
-#include "GParts.hh"
-
-// opticks-
-#include "Opticks.hh"
-#include "OpticksResource.hh"
-
-// npy-
-#include "Timer.hpp"
-#include "NSensor.hpp"
 
 #include <vector>
 #include <climits>
 #include <iostream>
 #include <iomanip>
 
+#include <boost/filesystem.hpp>
+
+// npy-
+#include "Timer.hpp"
+#include "NSensor.hpp"
+
+// opticks-
+#include "Opticks.hh"
+#include "OpticksResource.hh"
+
+
+#include "GGeo.hh"
+#include "GSolid.hh"
+#include "GParts.hh"
+#include "GMergedMesh.hh"
+
+
 #include "PLOG.hh"
 
 
-#include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
 
@@ -35,6 +39,43 @@ bool GMergedMesh::isTriangulated()
 {
    return m_geocode == Opticks::GEOCODE_TRIANGULATED ;  
 }
+
+
+
+GMergedMesh::GMergedMesh(unsigned int index)
+       : 
+       GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
+       m_cur_vertices(0),
+       m_cur_faces(0),
+       m_cur_solid(0),
+       m_cur_base(NULL)
+{
+} 
+
+void GMergedMesh::setCurrentBase(GNode* base)
+{
+    m_cur_base = base ; 
+}
+GNode* GMergedMesh::getCurrentBase()
+{
+    return m_cur_base ; 
+}
+
+
+bool GMergedMesh::isGlobal()
+{
+    return m_cur_base == NULL ; 
+}
+bool GMergedMesh::isInstanced()
+{
+    return m_cur_base != NULL ; 
+}
+
+
+
+
+
+
 
 
 

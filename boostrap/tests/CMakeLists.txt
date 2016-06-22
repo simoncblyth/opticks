@@ -12,19 +12,19 @@ set(TEST_SOURCES_OK
    BMapTest.cc
    BListTest.cc
    BSysTest.cc
-   BFileTest.cc
    BRegexTest.cc
    BDigestTest.cc
    BStrTest.cc
    BTimerTest.cc
    BBitTest.cc
    BoostLogTest.cc 
+   PLogTest.cc 
+   BLogTest.cc
 )
 
 
 set(TEST_SOURCES
-   PLogTest.cc 
-   BLogTest.cc
+   BFileTest.cc
 )
 
 

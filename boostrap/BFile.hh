@@ -11,6 +11,7 @@ class BRAP_API BFile {
        static std::string FindFile(const char* dirlist, const char* sub, const char* name=NULL, const char* dirlist_delim=";");
        static std::string Stem(const char* path);
        static std::string Name(const char* path);
+       static std::string ParentDir(const char* path);
 
        static bool ExistsNativeFile(const std::string& native);
        static bool ExistsNativeDir(const std::string& native);
