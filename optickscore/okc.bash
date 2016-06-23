@@ -477,49 +477,31 @@ EOU
 }
 
 okc-env(){      elocal- ; opticks- ;  }
+
 okc-sdir(){ echo $(env-home)/optickscore ; }
-
-
+okc-tdir(){ echo $(env-home)/optickscore/tests ; }
 okc-idir(){ echo $(opticks-idir) ; }
 okc-bdir(){ echo $(opticks-bdir)/$(okc-rel) ; }
 
 okc-scd(){  cd $(okc-sdir); }
-okc-cd(){  cd $(okc-sdir)/$1 ; }
-
+okc-tcd(){  cd $(okc-sdir); }
+okc-cd(){   cd $(okc-sdir)/$1 ; }
 okc-icd(){  cd $(okc-idir); }
 okc-bcd(){  cd $(okc-bdir); }
+
+okc-bin(){ echo $(okc-idir)/bin/${1:-OpticksResourceTest} ; }
+
+okc-wipe(){ local bdir=$(okc-bdir) ; rm -rf $bdir ;  }
 
 okc-name(){ echo OpticksCore ; }
 okc-tag(){  echo OKCORE ; }
 
-okc-bin(){ echo $(okc-idir)/bin/${1:-OpticksResourceTest} ; }
+okc--(){        opticks--     $(okc-bdir) ; }
+okc-ctest(){    opticks-ctest $(okc-bdir) $* ; }
+okc-genproj(){  okc-scd ; opticks-genproj $(okc-name) $(okc-tag) ; }
+okc-gentest(){  okc-tcd ; opticks-gentest ${1:-OpticksGeometry} $(okc-tag) ; }
+okc-txt(){ vi $(okc-sdir)/CMakeLists.txt $(okc-tdir)/CMakeLists.txt ; }
 
 
-okc-wipe(){
-   local bdir=$(okc-bdir)
-   rm -rf $bdir
-}
-
-okc-config(){ echo Debug ; }
-
-okc--(){
-   local iwd=$PWD
-   okc-bcd
-   cmake \
-          --build . \
-          --config $(okc-config) \
-          --target ${1:-install}
-
-
-   cd $iwd
-}
-
-
-
-okc-genproj()
-{
-   okc-scd
-   opticks-genproj $(okc-name) $(okc-tag)
-}
 
 

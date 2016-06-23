@@ -362,10 +362,6 @@ oglrap-loadtest(){
    $LLDB $bin $*  
 }
 
-   
-
-
-
 
 oglrap-frametest-lldb()
 {

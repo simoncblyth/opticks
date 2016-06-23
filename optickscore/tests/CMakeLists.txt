@@ -12,13 +12,14 @@ set(TEST_SOURCES_OK
     AnimatorTest.cc
     TrackballTest.cc
     OpticksFlagsTest.cc
+    fooTest.cc
+    OpticksTest.cc
 )
 
 
 set(TEST_SOURCES 
 
-    fooTest.cc
-    OpticksTest.cc
+    OpticksCfgTest.cc
 
 )
 
@@ -26,14 +27,12 @@ set(TEST_SOURCES_NOK
 
     EvtLoadTest.cc
     NGunConfigTest.cc
-    OpticksCfgTest.cc
     OpticksEventTest.cc
     OpticksResourceTest.cc
 
     BookmarksTest.cc
     CompositionTest.cc
     InterpolatedViewTest.cc
-
 )
 
 foreach(TEST_SOURCE ${TEST_SOURCES})

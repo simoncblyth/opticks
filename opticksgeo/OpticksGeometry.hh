@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <string>
 #include <map>
-
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 
 class Opticks ; 
 class OpticksAttrSeq ;
@@ -13,7 +11,8 @@ class GGeo ;
 class GMesh ;
 class GMergedMesh ;
 
-class OpticksGeometry {
+#include "OKGEO_API_EXPORT.hh"
+class OKGEO_API OpticksGeometry {
    public:
        OpticksGeometry(Opticks* opticks);
   public:
@@ -39,20 +38,5 @@ class OpticksGeometry {
        GMergedMesh*         m_mesh0 ;  
 
 };
-
-inline OpticksGeometry::OpticksGeometry(Opticks* opticks)
-   :
-   m_opticks(opticks),
-   m_fcfg(NULL),
-   m_ggeo(NULL),
-   m_mesh0(NULL)
-{
-    init();
-}
-
-inline GGeo* OpticksGeometry::getGGeo()
-{
-   return m_ggeo ; 
-}
 
 

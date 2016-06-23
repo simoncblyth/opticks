@@ -12,6 +12,7 @@ opticksgeo-env(){      elocal- ; opticks- ; }
 
 opticksgeo-dir(){  echo $(env-home)/opticksgeo ; }
 opticksgeo-sdir(){ echo $(env-home)/opticksgeo ; }
+opticksgeo-tdir(){ echo $(env-home)/opticksgeo/tests ; }
 opticksgeo-idir(){ echo $(opticks-idir); } 
 opticksgeo-bdir(){ echo $(opticks-bdir)/opticksgeo ; }  
 
@@ -19,20 +20,22 @@ opticksgeo-cd(){   cd $(opticksgeo-dir); }
 opticksgeo-icd(){  cd $(opticksgeo-idir); }
 opticksgeo-bcd(){  cd $(opticksgeo-bdir); }
 opticksgeo-scd(){  cd $(opticksgeo-sdir); }
+opticksgeo-tcd(){  cd $(opticksgeo-tdir); }
 
 opticksgeo-wipe(){
     local bdir=$(opticksgeo-bdir)
     rm -rf $bdir
 }
 
-opticksgeo-config(){ echo Debug ; }
-opticksgeo--()
-{
-   local iwd=$PWD;
-   opticksgeo-bcd;
-   cmake --build . --config $(opticksgeo-config) --target ${1:-install};
-   cd $iwd
-}
+opticksgeo-name(){ echo OpticksGeometry ; }
+opticksgeo-tag(){  echo OKGEO ; }
+
+opticksgeo--(){        opticks--     $(opticksgeo-bdir) ; }
+opticksgeo-ctest(){    opticks-ctest $(opticksgeo-bdir) $* ; }
+opticksgeo-genproj(){  opticksgeo-scd ; opticks-genproj $(opticksgeo-name) $(opticksgeo-tag) ; }
+opticksgeo-gentest(){  opticksgeo-tcd ; opticks-gentest ${1:-OpticksGeometry} $(opticksgeo-tag) ; }
+
+opticksgeo-txt(){   vi $(opticksgeo-sdir)/CMakeLists.txt $(opticksgeo-tdir)/CMakeLists.txt ; }
 
 
 

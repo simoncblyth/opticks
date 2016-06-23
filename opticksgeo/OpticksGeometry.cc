@@ -1,21 +1,27 @@
-// opticksgeo-
-#include "OpticksGeometry.hh"
+
+// npy-
+#include "Timer.hpp"
+#include "NGLM.hpp"
+#include "GLMFormat.hpp"
+#include "GLMPrint.hpp"
+#include "NSlice.hpp"
 
 // optickscore-
 #include "Opticks.hh"
+#include "OpticksConst.hh"
 #include "OpticksResource.hh"
 #include "OpticksAttrSeq.hh"
 #include "OpticksCfg.hh"
 
 // ggeo-
-#include "GMergedMesh.hh"
-#include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GPmt.hh"
 #include "GParts.hh"
+#include "GMergedMesh.hh"
+#include "GGeo.hh"
 
 // assimpwrap
 #include "AssimpGGeo.hh"
@@ -24,12 +30,12 @@
 #include "MFixer.hh"
 #include "MTool.hh"
 
-// npy-
-#include "Timer.hpp"
-#include "GLMFormat.hpp"
-#include "GLMPrint.hpp"
-#include "NSlice.hpp"
-#include "BLog.hh"
+
+// opticksgeo-
+#include "OpticksGeometry.hh"
+
+
+#include "PLOG.hh"
 
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
@@ -43,6 +49,21 @@
        }\
     }
 
+
+OpticksGeometry::OpticksGeometry(Opticks* opticks)
+   :
+   m_opticks(opticks),
+   m_fcfg(NULL),
+   m_ggeo(NULL),
+   m_mesh0(NULL)
+{
+    init();
+}
+
+GGeo* OpticksGeometry::getGGeo()
+{
+   return m_ggeo ; 
+}
 
 
 void OpticksGeometry::init()
@@ -246,7 +267,7 @@ void OpticksGeometry::configureGeometry()
     for(int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(Opticks::GEOCODE_SKIP);      
+        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
         if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
         {
             GPmt* pmt = m_ggeo->getPmt(); 
@@ -259,7 +280,7 @@ void OpticksGeometry::configureGeometry()
             analytic->setContainingMaterial("MineralOil");       
             analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
 
-            mm->setGeoCode(Opticks::GEOCODE_ANALYTIC);      
+            mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);      
             mm->setParts(analytic);  
         }
         if(i>0) mm->setInstanceSlice(islice);
@@ -282,6 +303,14 @@ void OpticksGeometry::registerGeometry()
     //for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
 
     m_mesh0 = m_ggeo->getMergedMesh(0); 
+
+    if(!m_mesh0)
+    {
+        LOG(error) << "OpticksGeometry::registerGeometry"
+                   <<  " NULL mesh0 "
+                   ;
+        return ;   
+    }   
 
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
