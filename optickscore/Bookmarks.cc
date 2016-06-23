@@ -151,7 +151,7 @@ void Bookmarks::Summary(const char* msg)
 void Bookmarks::updateTitle()
 {
     m_title[N] = '\0' ;
-    for(char i=0 ; i < N ; i++) m_title[i] = exists(i) ? i + '0' : '_' ; 
+    for(char i=0 ; i < N ; i++) *(m_title + i) = exists(i) ? i + '0' : '_' ; 
 }
 
 
