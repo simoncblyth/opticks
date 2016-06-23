@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 
 #include "NQuad.hpp"
 
@@ -11,8 +10,8 @@ class OpticksColors ;
 class GBndLib ; 
 class GSurfaceLib ; 
 
-
-class GColorizer {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GColorizer {
    public:
         typedef enum { SURFACE_INDEX, 
                        PSYCHEDELIC_VERTEX, 
@@ -47,31 +46,5 @@ class GColorizer {
         unsigned int           m_num_colorized ;
         unsigned int           m_repeat_index ; 
 };
-
-
-inline GColorizer::GColorizer(GGeo* ggeo, GColorizer::Style_t style ) 
-       :
-       m_target(NULL),
-       m_ggeo(ggeo),
-       m_blib(NULL),
-       m_slib(NULL),
-       m_colors(NULL),
-       m_style(style),
-       m_cur_vertices(0),
-       m_num_colorized(0),
-       m_repeat_index(0)
-{
-     init();
-}
-
-
-inline void GColorizer::setTarget(nvec3* target)
-{
-    m_target =  target ; 
-}
-inline void GColorizer::setRepeatIndex(unsigned int ridx)
-{
-    m_repeat_index = ridx ; 
-}
 
 

@@ -5,7 +5,6 @@
 
 
 
-#include "PLOG.hh"
 #include "BStr.hh"
 
 // npy-
@@ -14,9 +13,8 @@
 
 // opticks-
 #include "Opticks.hh"
+#include "OpticksConst.hh"
 
-#include "GGeoTest.hh"
-#include "GGeoTestConfig.hh"
 
 #include "GVector.hh"
 #include "GGeo.hh"
@@ -25,13 +23,32 @@
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
 #include "GSolid.hh"
-
 #include "GMaker.hh"
-
 #include "GItemList.hh"
 #include "GParts.hh"
 #include "GTransforms.hh"
 #include "GIds.hh"
+
+#include "GGeoTestConfig.hh"
+#include "GGeoTest.hh"
+
+#include "PLOG.hh"
+
+
+
+GGeoTest::GGeoTest(Opticks* opticks, GGeoTestConfig* config, GGeo* ggeo) 
+    : 
+    m_opticks(opticks),
+    m_config(config),
+    m_ggeo(ggeo),
+    m_geolib(NULL),
+    m_bndlib(NULL),
+    m_maker(NULL),
+    m_verbosity(0)
+{
+    init();
+}
+
 
 void GGeoTest::init()
 {
@@ -65,8 +82,9 @@ void GGeoTest::modifyGeometry()
     bool analytic = m_config->getAnalytic();
 
     GMergedMesh* tmm = create();
+    char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
+    tmm->setGeoCode( geocode );
 
-    tmm->setGeoCode( analytic ? Opticks::GEOCODE_ANALYTIC : Opticks::GEOCODE_TRIANGULATED );  // to OGeo
     if(tmm->isTriangulated()) 
     { 
         tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 

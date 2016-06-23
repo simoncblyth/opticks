@@ -1,8 +1,10 @@
 #pragma once
 #include "BCfg.hh"
 
+#include "GGEO_API_EXPORT.hh"
+
 template <class Listener>
-class GGeoCfg : public BCfg {
+class GGEO_API GGeoCfg : public BCfg {
 public:
    GGeoCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {

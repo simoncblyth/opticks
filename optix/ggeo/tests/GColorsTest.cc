@@ -1,15 +1,24 @@
-#include "OpticksColors.hh"
-#include <vector>
-#include "NPY.hpp"
-
 #include <cstdlib>
 #include <cassert>
+
+#include <vector>
+
+
+#include "NGLM.hpp"
+#include "NPY.hpp"
+
+#include "OpticksColors.hh"
+
+#include "PLOG.hh"
 
 // see tests/GColorsTest.py 
 
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);    
+
+
     OpticksColors* m_colors = OpticksColors::load("$HOME/.opticks/GCache","GColors.json");
     assert(m_colors);
 

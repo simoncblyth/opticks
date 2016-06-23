@@ -36,12 +36,6 @@ class OKCORE_API Opticks {
    public:
        static const char* COMPUTE ; 
    public:
-       enum {
-               GEOCODE_ANALYTIC = 'A',   
-               GEOCODE_TRIANGULATED = 'T',  
-               GEOCODE_SKIP = 'K'
-            } ;
-
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
 

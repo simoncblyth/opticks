@@ -420,7 +420,16 @@ NPY<float>* GSurfaceLib::createBufferForTex2d()
     unsigned int nk = getStandardDomain()->getLength();
     unsigned int nl = 4 ;
 
-    assert(ni > 0 && nj > 0);
+    if(ni == 0 || nj == 0)
+    {
+        LOG(error) << "GSurfaceLib::createBufferForTex2d"
+                   << " zeros "
+                   << " ni " << ni      
+                   << " nj " << nj
+                   ;
+        return NULL ;        
+    }  
+
 
     NPY<float>* buf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
     buf->zero();

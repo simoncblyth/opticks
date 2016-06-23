@@ -1,19 +1,15 @@
 #pragma once
 
-#include <cstring>
-
+struct NSlice ; 
 class Opticks ; 
 
-
+struct gbbox ; 
 class GParts ; 
 class GCSG ; 
 class GBndLib ; 
 
-struct gbbox ; 
-struct NSlice ; 
-
-
-class GPmt {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GPmt {
   public:
        static const char* FILENAME ;  
        static const char* FILENAME_CSG ;  
@@ -44,44 +40,5 @@ class GPmt {
        const char*        m_path ;
 };
 
-
-inline GPmt::GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index) 
-    :
-    m_cache(cache),
-    m_bndlib(bndlib),
-    m_index(index),
-    m_parts(NULL),
-    m_csg(NULL),
-    m_path(NULL)
-{
-}
-
-inline void GPmt::setParts(GParts* parts)
-{
-    m_parts = parts ; 
-}
-inline GParts* GPmt::getParts()
-{
-    return m_parts ; 
-}
-
-inline void GPmt::setCSG(GCSG* csg)
-{
-    m_csg = csg ; 
-}
-inline GCSG* GPmt::getCSG()
-{
-    return m_csg ; 
-}
-
-
-inline void GPmt::setPath(const char* path)
-{
-    m_path = path ? strdup(path) : NULL  ; 
-}
-inline const char* GPmt::getPath()
-{
-    return m_path ; 
-}
 
 

@@ -1,19 +1,21 @@
-#include "GGeoLib.hh"
-
-//#include "GGeo.hh"
-#include "GMergedMesh.hh"
-#include "GNode.hh"
-
-#include "Opticks.hh"
-
+#include <cstring>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "Opticks.hh"
+
+#include "GGeoLib.hh"
+#include "GMergedMesh.hh"
+#include "GNode.hh"
+
+
+#include "GGEO_CC.hh"
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-#include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+
 
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
 
@@ -24,6 +26,29 @@ GGeoLib* GGeoLib::load(Opticks* opticks)
     glib->loadFromCache();
     return glib ; 
 }
+
+
+
+GGeoLib::GGeoLib(Opticks* opticks) 
+     :
+     m_opticks(opticks),
+     m_mesh_version(NULL)
+{
+}
+
+unsigned int GGeoLib::getNumMergedMesh()
+{
+    return m_merged_mesh.size();
+}
+void GGeoLib::setMeshVersion(const char* mesh_version)
+{
+    m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
+}
+const char* GGeoLib::getMeshVersion()
+{
+    return m_mesh_version ;
+}
+
 
 GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
 {
@@ -54,7 +79,7 @@ void GGeoLib::removeMergedMeshes(const char* idpath )
         fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
         if(fs::exists(mmdir) && fs::is_directory(mmdir))
         {   
-            unsigned long nrm = fs::remove_all(mmdir);
+            unsigned long long nrm = fs::remove_all(mmdir);
             LOG(info) << "GGeoLib::removeMergedMeshes " << mmdir.string() 
                       << " removed " << nrm 
                       ; 

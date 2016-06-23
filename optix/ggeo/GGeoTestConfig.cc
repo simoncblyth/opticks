@@ -1,15 +1,19 @@
+#include <cstddef>
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "PLOG.hh"
 #include "BStr.hh"
 
+#include "NGLM.hpp"
 #include "NSlice.hpp"
 #include "GLMFormat.hpp"
 
 #include "GMaker.hh"
 #include "GGeoTestConfig.hh"
+
+#include "PLOG.hh"
+
 
 const char* GGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
@@ -33,6 +37,76 @@ const char* GGeoTestConfig::DEBUG_ = "debug";
 const char* GGeoTestConfig::CONTROL_ = "control"; 
 const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
 const char* GGeoTestConfig::GROUPVEL_ = "groupvel"; 
+
+
+
+GGeoTestConfig::GGeoTestConfig(const char* config) 
+    : 
+    m_config(NULL),
+    m_mode(NULL),
+    m_pmtpath(NULL),
+    m_slice(NULL),
+    m_frame(0,0,0,0),
+    m_analytic(0,0,0,0),
+    m_groupvel(0,0,0,0),
+    m_debug(1.f,0.f,0.f,0.f),
+    m_control(0,0,0,0)
+{
+    init(config);
+}
+
+std::vector<std::pair<std::string, std::string> >& GGeoTestConfig::getCfg()
+{
+    return m_cfg ; 
+}
+NSlice* GGeoTestConfig::getSlice()
+{
+    return m_slice ; 
+}
+unsigned int GGeoTestConfig::getNumBoundaries()
+{
+    return m_boundaries.size();
+}
+unsigned int GGeoTestConfig::getNumParameters()
+{
+    return m_parameters.size() ; 
+}
+unsigned int GGeoTestConfig::getNumShapes()
+{
+    return m_shapes.size() ; 
+}
+
+bool GGeoTestConfig::getAnalytic()
+{
+    bool analytic = m_analytic.x > 0 ;
+    return analytic ; 
+}
+bool GGeoTestConfig::getGroupvel()
+{
+    bool groupvel = m_groupvel.x > 0 ;
+    return groupvel ; 
+}
+
+
+const char* GGeoTestConfig::getMode()
+{
+    return m_mode ; 
+}
+const char* GGeoTestConfig::getPmtPath()
+{
+    return m_pmtpath ; 
+}
+
+int GGeoTestConfig::getVerbosity()
+{
+    return m_control.x  ; 
+}
+
+
+
+
+
+
 
 void GGeoTestConfig::init(const char* config)
 {

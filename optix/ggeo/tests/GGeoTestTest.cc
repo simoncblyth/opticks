@@ -5,6 +5,11 @@
 #include "GGeoTest.hh"
 
 
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+#include "GGEO_CC.hh"
+
+
 const char* CONFIG = 
     "mode=BoxInBox_"
     "shape=box_"
@@ -40,9 +45,12 @@ void test_config()
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
     test_config();
 
-    Opticks* opticks = new Opticks(argc, argv, "geotest.log");
+    Opticks* opticks = new Opticks(argc, argv);
 
     test_bib(opticks);
 

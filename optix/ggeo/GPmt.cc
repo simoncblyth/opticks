@@ -1,26 +1,27 @@
-#include "GPmt.hh"
+#include <cstdio>
+#include <cassert>
+#include <cstring>
+#include <climits>
+#include <map>
 
-#include "GVector.hh"
-#include "GItemList.hh"
-#include "GBndLib.hh"
+// npy-
+#include "NGLM.hpp"
+#include "NPY.hpp"
+#include "NSlice.hpp"
 
-#include "GCSG.hh"
-#include "GParts.hh"
-
-//opticks-
+// okc-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 
-// npy-
-#include "NPY.hpp"
-#include "NSlice.hpp"
+// ggeo-
+#include "GVector.hh"
+#include "GItemList.hh"
+#include "GBndLib.hh"
+#include "GCSG.hh"
+#include "GParts.hh"
+#include "GPmt.hh"
+
 #include "PLOG.hh"
-
-#include <map>
-#include <cstdio>
-#include <cassert>
-#include <climits>
-
 
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
@@ -92,6 +93,54 @@ void GPmt::loadFromCache(NSlice* slice)
     setCSG(csg);
 
 }
+
+
+
+
+
+
+GPmt::GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index) 
+    :
+    m_cache(cache),
+    m_bndlib(bndlib),
+    m_index(index),
+    m_parts(NULL),
+    m_csg(NULL),
+    m_path(NULL)
+{
+}
+
+void GPmt::setParts(GParts* parts)
+{
+    m_parts = parts ; 
+}
+GParts* GPmt::getParts()
+{
+    return m_parts ; 
+}
+
+void GPmt::setCSG(GCSG* csg)
+{
+    m_csg = csg ; 
+}
+GCSG* GPmt::getCSG()
+{
+    return m_csg ; 
+}
+
+
+void GPmt::setPath(const char* path)
+{
+    m_path = path ? strdup(path) : NULL  ; 
+}
+const char* GPmt::getPath()
+{
+    return m_path ; 
+}
+
+
+
+
 
 
 

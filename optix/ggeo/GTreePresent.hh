@@ -3,24 +3,33 @@
 #include <string>
 #include <vector>
 
-class GGeo ; 
 class GNode ; 
 
-class GTreePresent {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+
+/*
+Removed GGeo dependency, now pass in top node at use::
+
+    GNode* top = m_ggeo->getSolid(0); 
+    treepresent->traverse(top)
+
+*/
+
+class GGEO_API GTreePresent {
 
    // cf env/geant4/geometry/collada/g4daenode.py DAESubTree
 
    public:
-        GTreePresent(GGeo* ggeo, unsigned int top, unsigned int depth_max, unsigned int sibling_max );
+        GTreePresent(unsigned int depth_max, unsigned int sibling_max );
    public:
-        void traverse();
+        void traverse(GNode* top);
         void dump(const char* msg="GTreePresent::dump");
         void write(const char* path);
    private:
         void traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide);
    private:
-       GGeo*                    m_ggeo ; 
-       unsigned int             m_top ; 
        unsigned int             m_depth_max ; 
        unsigned int             m_sibling_max ; 
    private:
@@ -28,16 +37,6 @@ class GTreePresent {
  
 };
 
-
-inline GTreePresent::GTreePresent(GGeo* ggeo, unsigned int top, unsigned int depth_max, unsigned int sibling_max) 
-       :
-       m_ggeo(ggeo),
-       m_top(top),
-       m_depth_max(depth_max),
-       m_sibling_max(sibling_max)
-       {
-       }
-
-
+#include "GGEO_TAIL.hh"
 
 

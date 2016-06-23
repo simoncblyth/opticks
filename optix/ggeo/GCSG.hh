@@ -3,7 +3,8 @@
 template <typename T> class NPY ;
 class GItemList ; 
 
-class GCSG {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GCSG {
     public:
         // shapes with analytic intersection implementations 
         static const char* SPHERE_ ;
@@ -69,75 +70,6 @@ class GCSG {
         GItemList*         m_lvnames ; 
         GItemList*         m_pvnames ; 
 };
-
-
-inline GCSG::GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames) 
-      :
-      m_csg_buffer(buffer),
-      m_materials(materials),
-      m_lvnames(lvnames),
-      m_pvnames(pvnames)
-
-{
-}
-      
-inline NPY<float>* GCSG::getCSGBuffer()
-{
-    return m_csg_buffer ; 
-}
-
-
-
-inline bool GCSG::isUnion(unsigned int i)
-{
-    return getTypeCode(i) == UNION ; 
-}
-inline bool GCSG::isIntersection(unsigned int i)
-{
-    return getTypeCode(i) == INTERSECTION ; 
-}
-inline bool GCSG::isSphere(unsigned int i)
-{
-    return getTypeCode(i) == SPHERE ; 
-}
-inline bool GCSG::isTubs(unsigned int i)
-{
-    return getTypeCode(i) == TUBS ; 
-}
-
-
-
-
-
-inline const char* GCSG::getTypeName(unsigned int i)
-{
-    unsigned int tc = getTypeCode(i);
-    return TypeName(tc) ;
-}
-
-
-
-
-inline float GCSG::getX(unsigned int i){            return getFloat(i, 0, 0 ); }
-inline float GCSG::getY(unsigned int i){            return getFloat(i, 0, 1 ); }
-inline float GCSG::getZ(unsigned int i){            return getFloat(i, 0, 2 ); }
-inline float GCSG::getOuterRadius(unsigned int i){  return getFloat(i, 0, 3 ); }
-
-inline float GCSG::getStartTheta(unsigned int i) {  return getFloat(i, 1, 0 ); }
-inline float GCSG::getDeltaTheta(unsigned int i) {  return getFloat(i, 1, 1 ); }
-inline float GCSG::getSizeZ(unsigned int i) {       return getFloat(i, 1, 2 ); }
-inline float GCSG::getInnerRadius(unsigned int i) { return getFloat(i, 1, 3 ); }
-
-inline unsigned int GCSG::getTypeCode(unsigned int i){         return getUInt(i, 2, 0); }
-inline unsigned int GCSG::getNodeIndex(unsigned int i) {       return getUInt(i, 2, 1); }
-inline unsigned int GCSG::getParentIndex(unsigned int i) {     return getUInt(i, 2, 2); }
-
-inline unsigned int GCSG::getIndex(unsigned int i) {           return getUInt(i, 3, 0); }
-inline unsigned int GCSG::getNumChildren(unsigned int i) {     return getUInt(i, 3, 1); }
-inline unsigned int GCSG::getFirstChildIndex(unsigned int i) { return getUInt(i, 3, 2); }
-inline unsigned int GCSG::getLastChildIndex(unsigned int i) {  return getUInt(i, 3, 3); }
-
-
 
 
 

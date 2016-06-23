@@ -133,7 +133,6 @@ EOU
 }
 
 npy-sdir(){ echo $(env-home)/numerics/npy ; }
-
 npy-idir(){ echo $(opticks-idir) ; }
 npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
@@ -156,28 +155,6 @@ npy-wipe(){
    rm -rf $bdir
 }
 
-npy-make(){
-   local iwd=$PWD
-
-   npy-bcd
-   make $*
-
-   cd $iwd
-}
-
-npy-install(){
-   npy-make install
-}
-
-
-npy-full()
-{
-   npy-make clean
-   npy-make
-   npy-install
-}
-
-
 npy-generate-exports()
 {
    npy-scd
@@ -186,54 +163,7 @@ npy-generate-exports()
 }
 
 
-npy-config(){ echo Debug ; }
-npy--()
-{
-   local iwd=$PWD
-
-   npy-bcd 
-
-   cmake \
-          --build . \
-          --config $(npy-config) \
-          --target ${1:-install}
-
-
-   #make ${1:-install}  
-
-   cd $iwd
-}
-
-
-npy-ctest()
-{
-   local iwd=$PWD
-   npy-bcd 
-
-   # PATH env for windows is set in tests/CMakeLists.txt
-
-   ctest $*
-
-   cd $iwd
-}
-
-
-
-npy-lookup-test()
-{
-    ggeo-
-    $(npy-bindir)/LookupTest $(ggeo-meta-dir)
-}
-
-npy-g4stepnpy-test()
-{
-    ggeo-
-    $(npy-bindir)/G4StepNPYTest $(ggeo-meta-dir)
-}
-
-npy-dump()
-{
-   $(npy-bindir)/PhotonsNPYTest $*
-}
+npy--(){      opticks--     $(npy-bdir) $* ; }
+npy-ctest() { opticks-ctest $(npy-bdir) $* ; }
 
 

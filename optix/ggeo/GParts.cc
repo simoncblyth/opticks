@@ -1,26 +1,26 @@
-#include "GParts.hh"
-#include "NPY.hpp"
-#include "GItemList.hh"
-
-#include "GVector.hh"
-#include "GBndLib.hh"
-
-// npy-
-#include "NPY.hpp"
-#include "NSlice.hpp"
-#include "PLOG.hh"
-#include "NPart.hpp"
-#include "GLMFormat.hpp"
-
 #include <map>
 #include <iomanip>
 #include <cstdio>
 #include <cassert>
 #include <climits>
 
+// npy-
+#include "NGLM.hpp"
+#include "NPY.hpp"
+#include "NSlice.hpp"
+#include "NPart.hpp"
+#include "GLMFormat.hpp"
+
+#include "GVector.hh"
+#include "GItemList.hh"
+#include "GBndLib.hh"
+#include "GParts.hh"
+
+#include "PLOG.hh"
+
+
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
-
 
 const char* GParts::SPHERE_ = "Sphere" ;
 const char* GParts::TUBS_   = "Tubs" ;
@@ -111,6 +111,99 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
 } 
 
 
+
+GParts::GParts(GBndLib* bndlib) 
+      :
+      m_part_buffer(NULL),
+      m_bndspec(NULL),
+      m_bndlib(bndlib),
+      m_solid_buffer(NULL),
+      m_closed(false),
+      m_verbose(false)
+{
+      init() ; 
+}
+
+GParts::GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib) 
+      :
+      m_part_buffer(buffer),
+      m_bndspec(NULL),
+      m_bndlib(bndlib),
+      m_solid_buffer(NULL),
+      m_closed(false)
+{
+      init(spec) ; 
+}
+      
+GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib) 
+      :
+      m_part_buffer(buffer),
+      m_bndspec(spec),
+      m_bndlib(bndlib),
+      m_solid_buffer(NULL),
+      m_closed(false)
+{
+      init() ; 
+}
+
+void GParts::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+bool GParts::isClosed()
+{
+    return m_closed ; 
+}
+
+
+
+unsigned int GParts::getSolidNumParts(unsigned int solid_index)
+{
+    return m_parts_per_solid.count(solid_index)==1 ? m_parts_per_solid[solid_index] : 0 ; 
+}
+
+
+void GParts::setBndSpec(GItemList* bndspec)
+{
+    m_bndspec = bndspec ;
+}
+GItemList* GParts::getBndSpec()
+{
+    return m_bndspec ; 
+}
+
+void GParts::setBndLib(GBndLib* bndlib)
+{
+    m_bndlib = bndlib ; 
+}
+GBndLib* GParts::getBndLib()
+{
+    return m_bndlib ; 
+}
+
+
+void GParts::setSolidBuffer(NPY<unsigned int>* solid_buffer)
+{
+    m_solid_buffer = solid_buffer ; 
+}
+NPY<unsigned int>* GParts::getSolidBuffer()
+{
+    return m_solid_buffer ; 
+}
+
+void GParts::setPartBuffer(NPY<float>* part_buffer)
+{
+    m_part_buffer = part_buffer ; 
+}
+NPY<float>* GParts::getPartBuffer()
+{
+    return m_part_buffer ; 
+}
+
+
+
+
 void GParts::init(const char* spec)
 {
     m_bndspec = new GItemList("GParts");
@@ -121,6 +214,8 @@ void GParts::init()
 {
     if(m_part_buffer == NULL && m_bndspec == NULL)
     {
+        LOG(trace) << "GParts::init creating empty part_buffer and bndspec " ; 
+
         NPY<float>* empty = NPY<float>::make(0, NJ, NK );
         empty->zero();
 
@@ -138,6 +233,12 @@ void GParts::init()
 
 unsigned int GParts::getNumParts()
 {
+    if(!m_part_buffer)
+    {
+        LOG(error) << "GParts::getNumParts NULL part_buffer" ; 
+        return 0 ; 
+    }
+
     assert(m_part_buffer->getNumItems() == m_bndspec->getNumItems() );
     return m_part_buffer->getNumItems() ;
 }

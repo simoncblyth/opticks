@@ -1,8 +1,9 @@
 #pragma once
 
 #include "GItemIndex.hh"
+#include "GGEO_API_EXPORT.hh"
 
-class GSurfaceIndex : public GItemIndex  {
+class GGEO_API GSurfaceIndex : public GItemIndex  {
    public:
         static GSurfaceIndex* load(const char* idpath);
    public:
@@ -10,7 +11,4 @@ class GSurfaceIndex : public GItemIndex  {
 
 };
 
-inline GSurfaceIndex::GSurfaceIndex() : GItemIndex("GSurfaceIndex")
-{
-}
 

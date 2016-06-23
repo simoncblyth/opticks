@@ -5,7 +5,9 @@ class NTrianglesNPY ;
 
 #include <vector>
 #include <cstddef>
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
+
+class Opticks ; 
 
 struct gbbox ; 
 
@@ -14,9 +16,8 @@ class GGeoLib ;
 class GBndLib ; 
 class GSolid ; 
 
-class Opticks ; 
-
-class GMaker {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GMaker {
    public:
        static const char* ZSPHERE ; 
        static const char* ZLENS ; 
@@ -49,16 +50,5 @@ class GMaker {
        GGeoLib*  m_geolib ; 
        GBndLib*  m_bndlib ; 
 };
-
-
-inline GMaker::GMaker(Opticks* opticks, GGeo* ggeo)
-    :
-    m_opticks(opticks),
-    m_ggeo(ggeo),
-    m_geolib(NULL),
-    m_bndlib(NULL)
-{
-    init();
-}
 
 

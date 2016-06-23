@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 
 class Opticks ; 
 
@@ -13,7 +12,9 @@ class GMergedMesh ;
 
 // creates simple test geometries from a commandline specification
 
-class GGeoTest {
+
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GGeoTest {
     public:
        GGeoTest(Opticks* opticks, GGeoTestConfig* config, GGeo* ggeo=NULL);
        void dump(const char* msg="GGeoTest::dump");
@@ -36,19 +37,5 @@ class GGeoTest {
        unsigned int     m_verbosity ;
 
 };
-
-inline GGeoTest::GGeoTest(Opticks* opticks, GGeoTestConfig* config, GGeo* ggeo) 
-    : 
-    m_opticks(opticks),
-    m_config(config),
-    m_ggeo(ggeo),
-    m_geolib(NULL),
-    m_bndlib(NULL),
-    m_maker(NULL),
-    m_verbosity(0)
-{
-    init();
-}
-
 
 

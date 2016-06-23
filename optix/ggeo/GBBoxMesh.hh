@@ -1,9 +1,10 @@
 #pragma once
 
-#include "GMesh.hh"
-#include "GMergedMesh.hh"
+class GMergedMesh ; 
 
-class GBBoxMesh : public GMesh {
+#include "GMesh.hh"
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GBBoxMesh : public GMesh {
 public:
     //enum { NUM_VERTICES = 8, NUM_FACES = 6*2 } ;
     enum { NUM_VERTICES = 24, NUM_FACES = 6*2 } ;
@@ -21,11 +22,6 @@ private:
     GMergedMesh* m_mergedmesh ; 
      
 };
-
-
-inline GBBoxMesh::~GBBoxMesh()
-{
-}
 
 
 

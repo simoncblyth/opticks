@@ -1,21 +1,49 @@
-#include "GColorizer.hh"
-
-#include "GVector.hh"
-
-#include "GGeo.hh"
-#include "GMesh.hh"
-#include "GSolid.hh"
-#include "GItemIndex.hh"
-#include "GBndLib.hh"
-#include "GSurfaceLib.hh"
-
+#include <cstddef>
 #include <iomanip>
 
 #include "OpticksAttrSeq.hh"
 #include "OpticksColors.hh"
 #include "NQuad.hpp"
+
+#include "GVector.hh"
+#include "GMesh.hh"
+#include "GSolid.hh"
+#include "GItemIndex.hh"
+#include "GBndLib.hh"
+#include "GSurfaceLib.hh"
+#include "GGeo.hh"
+#include "GColorizer.hh"
+
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
+
+
+GColorizer::GColorizer(GGeo* ggeo, GColorizer::Style_t style ) 
+       :
+       m_target(NULL),
+       m_ggeo(ggeo),
+       m_blib(NULL),
+       m_slib(NULL),
+       m_colors(NULL),
+       m_style(style),
+       m_cur_vertices(0),
+       m_num_colorized(0),
+       m_repeat_index(0)
+{
+     init();
+}
+
+
+void GColorizer::setTarget(nvec3* target)
+{
+    m_target =  target ; 
+}
+void GColorizer::setRepeatIndex(unsigned int ridx)
+{
+    m_repeat_index = ridx ; 
+}
+
+
 
 void GColorizer::init()
 {

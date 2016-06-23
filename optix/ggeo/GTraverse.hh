@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stdlib.h"
 
 
 template<class T> class Counts ;
@@ -10,7 +9,8 @@ class GBndLib ;
 class GMaterialLib ; 
 class GNode ; 
 
-class GTraverse {
+#include "GGEO_API_EXPORT.hh"
+class GGEO_API GTraverse {
    public:
         GTraverse(GGeo* ggeo);
    public:
@@ -25,18 +25,5 @@ class GTraverse {
        Counts<unsigned int>*  m_materials_count ; 
  
 };
-
-
-inline GTraverse::GTraverse(GGeo* ggeo) 
-       :
-       m_ggeo(ggeo),
-       m_blib(NULL),
-       m_mlib(NULL),
-       m_materials_count(NULL)
-       {
-          init();
-       }
-
-
 
 

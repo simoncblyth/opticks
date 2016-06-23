@@ -31,7 +31,6 @@ int main(int argc, char** argv)
     GGEO_LOG_ ;
     
 
-
     Types types ; 
 
     const char* m_typ = "torch" ; 
@@ -49,7 +48,11 @@ int main(int argc, char** argv)
     if(1)
     {
         Index* seqhis = Index::load(ixdir.c_str(), m_tag, "History_Sequence" );  // SEQHIS_NAME_
-        assert(seqhis);
+        if(!seqhis)
+        {
+            LOG(error) << " NULL seqhis " ; 
+            return 0 ;  
+        } 
 
         GItemIndex* m_seqhis = new GItemIndex(seqhis);
         m_seqhis->setTypes(&types);

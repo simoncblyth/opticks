@@ -45,28 +45,6 @@ add_definitions(${DEFINITIONS})
 
 set(NEXT_SOURCES
 
-    GGeoLib.cc
-
-
-    GGeoCfg.cc
-
-    GTraverse.cc
-    GColorizer.cc
-    GTreeCheck.cc
-    GTreePresent.cc
-
-    GBBoxMesh.cc
-    GParts.cc
-    GCSG.cc
-    GPmt.cc
-    GMaker.cc
-    GGeoTest.cc
-    GGeoTestConfig.cc
-
-
-    GMergedMesh.cc
-    GGeo.cc
-
 )
 
 set(SOURCES
@@ -79,6 +57,8 @@ set(SOURCES
     GIds.cc
 
     GItemList.cc
+    GCSG.cc
+
     GItemIndex.cc
 
     GBuffer.cc
@@ -112,12 +92,29 @@ set(SOURCES
     GSourceLib.cc
 
     GBndLib.cc
+    GParts.cc
+    GPmt.cc
 
     GMeshFixer.cc
     GMesh.cc
     GNode.cc
+    GTreePresent.cc
 
     GSolid.cc
+
+
+
+    GGeoLib.cc
+    GGeoCfg.cc
+    GGeoTest.cc
+    GGeoTestConfig.cc
+    GMaker.cc
+    GBBoxMesh.cc
+    GColorizer.cc
+    GTreeCheck.cc
+    GTraverse.cc
+    GMergedMesh.cc
+    GGeo.cc
 )
 set(HEADERS
 

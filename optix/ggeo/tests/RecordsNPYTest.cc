@@ -4,17 +4,20 @@
 
 #include "Types.hpp"
 #include "Typ.hpp"
-
 #include "RecordsNPY.hpp"
 #include "PhotonsNPY.hpp"
 
 #include "Opticks.hh"
-
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
+
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+
+#include "GGEO_CC.hh"
+#include "PLOG.hh"
+
 
 // architecture problem, need ggeo-/GPropertyLib funciontality 
 // regards meanings of things at the lower npy- level 
@@ -26,6 +29,10 @@
 
 int main(int argc, char** argv)
 {
+
+    PLOG_(argc, argv);
+
+
     // canonically App::indexEvtOld , contrast with npy-/ana.py
 
     Opticks* ok = new Opticks(argc, argv, "recs.log");
@@ -49,7 +56,11 @@ int main(int argc, char** argv)
     const char* det = ok->getDetector() ; 
 
     OpticksEvent* evt = OpticksEvent::load(src, tag, det) ;
-    assert(evt); 
+    if(!evt)
+    {
+        LOG(error) << "failed to load evt " ;
+        return 0 ;  
+    }    
 
     NPY<float>* fd = evt->getFDomain();
     NPY<float>* ox = evt->getPhotonData();

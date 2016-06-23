@@ -20,6 +20,11 @@ class OKCORE_API OpticksConst {
        static bool isCommand(unsigned int modifiers);
        static bool isOption(unsigned int modifiers);
        static std::string describeModifiers(unsigned int modifiers);
+   public:
+       static const char GEOCODE_ANALYTIC ;
+       static const char GEOCODE_TRIANGULATED ;
+       static const char GEOCODE_SKIP  ;
+
 };
 
 

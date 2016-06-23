@@ -7,16 +7,31 @@
 
 // brap-
 #include "BFile.hh"
-#include "PLOG.hh"
 
 #include "GTreePresent.hh"
-#include "GGeo.hh"
 #include "GMesh.hh"
 #include "GSolid.hh"
 
-void GTreePresent::traverse()
+#include "PLOG.hh"
+
+
+// elimnate state that is only used once, instead pass in as arguments when needed
+
+GTreePresent::GTreePresent(unsigned int depth_max, unsigned int sibling_max) 
+       :
+       m_depth_max(depth_max),
+       m_sibling_max(sibling_max)
 {
-    GSolid* top = m_ggeo->getSolid(m_top);
+}
+
+
+void GTreePresent::traverse(GNode* top)
+{
+    if(!top)
+    {
+        LOG(error) << "GTreePresent::traverse top NULL " ;
+        return ; 
+    }
     traverse(top, 0, 0, 0, false);
 }
 

@@ -1,6 +1,6 @@
-#ifndef GENUMS_H
-#define GENUMS_H
+#pragma once
 
+// GGEO_API
 // documents wavelength_texture property ordering for line 0.5f 
 // split into separate header to allow from kernel usage
 //
@@ -27,5 +27,4 @@ enum {
 };
 
 
-#endif
 

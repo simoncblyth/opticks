@@ -7,10 +7,16 @@
 #include "GBndLib.hh"
 #include "Lookup.hpp"
 
+#include "GGEO_CC.hh"
+#include "PLOG.hh"
+
+
 
 int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks(argc, argv, "lookup.log");
+    PLOG_(argc, argv);
+
+    Opticks* opticks = new Opticks(argc, argv);
 
     GBndLib* blib = GBndLib::load(opticks, true );
 

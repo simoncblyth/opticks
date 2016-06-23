@@ -9,11 +9,9 @@
 namespace fs = boost::filesystem;
 
 #include "BStr.hh"
-#include "PLOG.hh"
-
-#include "NGLM.hpp"
 
 // npy-
+#include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NQuad.hpp"
 #include "GLMPrint.hpp"
@@ -29,15 +27,29 @@ namespace fs = boost::filesystem;
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
+#include "OpticksFlags.hh"
+#include "OpticksAttrSeq.hh"
 #include "Composition.hh"
 
 // ggeo-
-#include "GGeo.hh"
+
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GPropertyLib.hh"
+#include "GOpticalSurface.hh"
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
-#include "GPropertyMap.hh"
+#include "GGeoLib.hh"
+#include "GBndLib.hh"
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
+#include "GScintillatorLib.hh"
+#include "GSourceLib.hh"
 #include "GSolid.hh"
+
 #include "GMesh.hh"
 #include "GTreeCheck.hh"
 #include "GTreePresent.hh"
@@ -46,24 +58,313 @@ namespace fs = boost::filesystem;
 #include "GGeoTest.hh"
 #include "GPmt.hh"
 
-#include "GGeoLib.hh"
-#include "GBndLib.hh"
-#include "GMaterialLib.hh"
-#include "GSurfaceLib.hh"
-#include "GScintillatorLib.hh"
-#include "GSourceLib.hh"
-#include "OpticksFlags.hh"
-#include "OpticksAttrSeq.hh"
-
 #include "GMergedMesh.hh"
 #include "GItemIndex.hh"
 #include "GItemList.hh"
 
+#include "GGeo.hh"
+
+
+
+
+#include "GGEO_CC.hh"
+#include "PLOG.hh"
 
 #define BSIZ 50
 
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 const char* GGeo::PICKFACE = "pickface" ;
+
+
+
+GGeo::GGeo(Opticks* opticks)
+  :
+   m_opticks(opticks), 
+   m_composition(NULL), 
+   m_treecheck(NULL), 
+   m_treepresent(NULL), 
+   m_loaded(false), 
+   m_lookup(NULL),
+   m_geolib(NULL),
+   m_bndlib(NULL),
+   m_materiallib(NULL),
+   m_surfacelib(NULL),
+   m_scintillatorlib(NULL),
+   m_sourcelib(NULL),
+   m_pmt(NULL),
+   m_colorizer(NULL),
+   m_geotest(NULL),
+   m_sensor_list(NULL),
+   m_low(NULL),
+   m_high(NULL),
+   m_meshindex(NULL),
+   m_pvlist(NULL),
+   m_lvlist(NULL),
+   m_sensitive_count(0),
+   m_volnames(false),
+   m_cathode(NULL),
+   m_join_cfg(NULL),
+   m_loader_verbosity(0),
+   m_mesh_verbosity(0)
+{
+   init(); 
+}
+
+
+
+// setLoaderImp : sets implementation that does the actual loading
+// using a function pointer to the implementation 
+// avoids ggeo-/GLoader depending on all the implementations
+
+void GGeo::setLoaderImp(GLoaderImpFunctionPtr imp)
+{
+    m_loader_imp = imp ; 
+}
+void GGeo::setLoaderVerbosity(unsigned int verbosity)
+{
+    m_loader_verbosity = verbosity  ; 
+}
+unsigned int GGeo::getLoaderVerbosity()
+{
+    return m_loader_verbosity ;
+}
+
+void GGeo::setComposition(Composition* composition)
+{
+    m_composition = composition ; 
+}
+Composition* GGeo::getComposition()
+{
+    return m_composition ; 
+}
+
+
+
+void GGeo::setMeshVerbosity(unsigned int verbosity)
+{
+    m_mesh_verbosity = verbosity  ; 
+}
+unsigned int GGeo::getMeshVerbosity()
+{
+    return m_mesh_verbosity ;
+}
+
+
+
+
+
+void GGeo::setMeshJoinImp(GJoinImpFunctionPtr imp)
+{
+    m_join_imp = imp ; 
+}
+void GGeo::setMeshJoinCfg(const char* cfg)
+{
+    m_join_cfg = cfg ? strdup(cfg) : NULL  ; 
+}
+
+bool GGeo::isLoaded()
+{
+    return m_loaded ; 
+}
+
+bool GGeo::isVolnames()
+{
+    return m_volnames ; 
+}
+
+
+void GGeo::addRaw(GMaterial* material)
+{
+    m_materials_raw.push_back(material);
+}
+void GGeo::addRaw(GBorderSurface* surface)
+{
+    m_border_surfaces_raw.push_back(surface);
+}
+void GGeo::addRaw(GSkinSurface* surface)
+{
+    m_skin_surfaces_raw.push_back(surface);
+}
+
+
+unsigned int GGeo::getNumMeshes()
+{
+    return m_meshes.size();
+}
+unsigned int GGeo::getNumSolids()
+{
+    return m_solids.size();
+}
+unsigned int GGeo::getNumMaterials()
+{
+    return m_materials.size();
+}
+unsigned int GGeo::getNumBorderSurfaces()
+{
+    return m_border_surfaces.size();
+}
+unsigned int GGeo::getNumSkinSurfaces()
+{
+    return m_skin_surfaces.size();
+}
+unsigned int GGeo::getNumRawMaterials()
+{
+    return m_materials_raw.size();
+}
+unsigned int GGeo::getNumRawBorderSurfaces()
+{
+    return m_border_surfaces_raw.size();
+}
+unsigned int GGeo::getNumRawSkinSurfaces()
+{
+    return m_skin_surfaces_raw.size();
+}
+
+
+
+
+GSolid* GGeo::getSolidSimple(unsigned int index)
+{
+    return m_solids[index];
+}
+GSkinSurface* GGeo::getSkinSurface(unsigned int index)
+{
+    return m_skin_surfaces[index];
+}
+GBorderSurface* GGeo::getBorderSurface(unsigned int index)
+{
+    return m_border_surfaces[index];
+}
+
+
+GGeoLib* GGeo::getGeoLib()
+{
+    return m_geolib ; 
+}
+GBndLib* GGeo::getBndLib()
+{
+    return m_bndlib ; 
+}
+
+GMaterialLib* GGeo::getMaterialLib()
+{
+    return m_materiallib ; 
+}
+GSurfaceLib* GGeo::getSurfaceLib()
+{
+    return m_surfacelib ; 
+}
+GScintillatorLib* GGeo::getScintillatorLib()
+{
+    return m_scintillatorlib ; 
+}
+GSourceLib* GGeo::getSourceLib()
+{
+    return m_sourcelib ; 
+}
+GPmt* GGeo::getPmt()
+{
+    return m_pmt ; 
+}
+Lookup* GGeo::getLookup()
+{
+    return m_lookup ; 
+}
+
+GColorizer* GGeo::getColorizer()
+{
+    return m_colorizer ; 
+}
+NSensorList* GGeo::getSensorList()
+{
+    return m_sensor_list ; 
+}
+GItemIndex* GGeo::getMeshIndex()
+{
+    return m_meshindex ; 
+}
+GItemList* GGeo::getPVList()
+{
+    return m_pvlist ; 
+}
+GItemList* GGeo::getLVList()
+{
+    return m_lvlist ; 
+}
+
+
+
+
+gfloat3* GGeo::getLow()
+{
+   return m_low ; 
+}
+gfloat3* GGeo::getHigh()
+{
+   return m_high ; 
+}
+
+
+GTreeCheck* GGeo::getTreeCheck()
+{
+    return m_treecheck ;
+}
+GTreePresent* GGeo::getTreePresent()
+{
+    return m_treepresent ;
+}
+
+
+
+
+GMaterial* GGeo::getCathode()
+{
+    return m_cathode ; 
+}
+void GGeo::setCathode(GMaterial* cathode)
+{
+    m_cathode = cathode ; 
+}
+
+void GGeo::addCathodeLV(const char* lv)
+{
+   m_cathode_lv.insert(lv);
+}
+
+unsigned int GGeo::getNumCathodeLV()
+{
+   return m_cathode_lv.size() ; 
+}
+const char* GGeo::getCathodeLV(unsigned int index)
+{
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    UCI it = m_cathode_lv.begin() ; 
+    std::advance( it, index );
+    return it != m_cathode_lv.end() ? it->c_str() : NULL  ; 
+}
+
+void GGeo::dumpCathodeLV(const char* msg)
+{
+    printf("%s\n", msg);
+    typedef std::unordered_set<std::string>::const_iterator UCI ; 
+    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++)
+    {
+        printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
+    }
+}
+
+
+Opticks* GGeo::getOpticks()
+{
+    return m_opticks ; 
+}
+
+
+
+
+
+
+
 
 void GGeo::init()
 {
@@ -113,7 +414,8 @@ void GGeo::init()
    if(resource->isJuno())
        m_treecheck->setVertexMin(250);
 
-   m_treepresent = new GTreePresent(this, 0, 100, 1000);   // top,depth_max,sibling_max
+
+   m_treepresent = new GTreePresent(100, 1000);   // depth_max,sibling_max
 
    //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
@@ -1454,7 +1756,8 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
 
 void GGeo::setPickFace(std::string pickface)
 {
-    setPickFace(givec4(pickface));
+    glm::ivec4 pf = givec4(pickface) ;
+    setPickFace(pf);
 }
 
 glm::ivec4& GGeo::getPickFace()
@@ -1462,7 +1765,7 @@ glm::ivec4& GGeo::getPickFace()
     return m_composition->getPickFace();
 }
 
-void GGeo::setPickFace(glm::ivec4 pickface) 
+void GGeo::setPickFace(const glm::ivec4& pickface) 
 {
     m_composition->setPickFace(pickface);
 

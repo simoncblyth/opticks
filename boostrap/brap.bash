@@ -221,20 +221,7 @@ brap--()
    cd $iwd
 }
 
-brap-ctest () 
-{ 
-    local msg="$FUNCNAME : ";
-    local iwd=$PWD;
-    brap-bcd;
-    if [ "$USERPROFILE" == "" ]; then
-        ctest $*;
-    else
-        PATH=$(opticks-prefix)/lib:$PATH ctest $*;
-    fi;
-    cd $iwd;
-    echo $msg use $FUNCNAME -V to show output
-}
-
+brap-ctest(){ opticks-ctest $(brap-bdir) $* ; }
 
 brap-hello()
 {

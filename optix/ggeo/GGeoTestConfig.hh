@@ -1,14 +1,15 @@
 #pragma once
 
-#include <cstddef>
-#include <glm/glm.hpp>
 #include <string>
 #include <vector>
 #include <map>
 
+#include <glm/fwd.hpp>
 struct NSlice ; 
 
-class GGeoTestConfig {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+class GGEO_API GGeoTestConfig {
     public:
        typedef enum { 
                       MODE, 
@@ -93,66 +94,6 @@ class GGeoTestConfig {
        std::vector<KV> m_cfg ; 
 };
 
-inline GGeoTestConfig::GGeoTestConfig(const char* config) 
-    : 
-    m_config(NULL),
-    m_mode(NULL),
-    m_pmtpath(NULL),
-    m_slice(NULL),
-    m_frame(0,0,0,0),
-    m_analytic(0,0,0,0),
-    m_groupvel(0,0,0,0),
-    m_debug(1.f,0.f,0.f,0.f),
-    m_control(0,0,0,0)
-{
-    init(config);
-}
-
-inline std::vector<std::pair<std::string, std::string> >& GGeoTestConfig::getCfg()
-{
-    return m_cfg ; 
-}
-inline NSlice* GGeoTestConfig::getSlice()
-{
-    return m_slice ; 
-}
-inline unsigned int GGeoTestConfig::getNumBoundaries()
-{
-    return m_boundaries.size();
-}
-inline unsigned int GGeoTestConfig::getNumParameters()
-{
-    return m_parameters.size() ; 
-}
-inline unsigned int GGeoTestConfig::getNumShapes()
-{
-    return m_shapes.size() ; 
-}
-
-inline bool GGeoTestConfig::getAnalytic()
-{
-    bool analytic = m_analytic.x > 0 ;
-    return analytic ; 
-}
-inline bool GGeoTestConfig::getGroupvel()
-{
-    bool groupvel = m_groupvel.x > 0 ;
-    return groupvel ; 
-}
-
-
-inline const char* GGeoTestConfig::getMode()
-{
-    return m_mode ; 
-}
-inline const char* GGeoTestConfig::getPmtPath()
-{
-    return m_pmtpath ; 
-}
-
-inline int GGeoTestConfig::getVerbosity()
-{
-    return m_control.x  ; 
-}
+#include "GGEO_TAIL.hh"
 
 

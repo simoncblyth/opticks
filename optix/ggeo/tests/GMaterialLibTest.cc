@@ -1,7 +1,5 @@
 // ggv --mat
 
-
-
 #include <string>
 #include <iostream>
 #include <ostream>   
@@ -10,18 +8,15 @@
 #include <iomanip>
 
 
-
 #include "BSys.hh"
-#include "Opticks.hh"
 
-#include "GMaterialLib.hh"
+#include "Opticks.hh"
 #include "OpticksAttrSeq.hh"
 
-
 #include "GProperty.hh"
-//#include "GDomain.hh"
-#include "GMaterial.hh"
 #include "GPropertyMap.hh"
+#include "GMaterial.hh"
+#include "GMaterialLib.hh"
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"

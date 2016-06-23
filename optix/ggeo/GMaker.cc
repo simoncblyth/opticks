@@ -1,33 +1,28 @@
-#include <glm/glm.hpp>
-#include "GLMFormat.hpp"
-
-#include "GMaker.hh"
-
-#include "GGeo.hh"
-#include "GGeoLib.hh"
-#include "GBndLib.hh"
-#include "GParts.hh"
-
-
-#include "GBBoxMesh.hh"
-
-#include "GMesh.hh"
-#include "GSolid.hh"
-#include "GVector.hh"
-#include "GMatrix.hh"
 
 // npy-
+#include "NGLM.hpp"
+#include "GLMFormat.hpp"
 #include "NPY.hpp"
 #include "NTrianglesNPY.hpp"
-#include "PLOG.hh"
 
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPrism.hpp"
 #include "NPart.hpp"
 
-#include <glm/glm.hpp>
+// ggeo-
+#include "GGeo.hh"
+#include "GGeoLib.hh"
+#include "GBndLib.hh"
+#include "GParts.hh"
+#include "GBBoxMesh.hh"
+#include "GMesh.hh"
+#include "GSolid.hh"
+#include "GVector.hh"
+#include "GMatrix.hh"
+#include "GMaker.hh"
 
+#include "PLOG.hh"
 
 
 const char* GMaker::BOX = "box" ; 
@@ -67,7 +62,7 @@ char GMaker::ShapeCode(const char* shapename)
 
 
 
-std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4& param, const char* spec )
+std::vector<GSolid*> GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
 {
     std::vector<GSolid*> solids ; 
     bool is_composite = shapecode == 'L' ;
@@ -108,6 +103,21 @@ std::vector<GSolid*> GMaker::make(unsigned int index, char shapecode, glm::vec4&
     } 
     return solids ; 
 }
+
+
+
+
+GMaker::GMaker(Opticks* opticks, GGeo* ggeo)
+    :
+    m_opticks(opticks),
+    m_ggeo(ggeo),
+    m_geolib(NULL),
+    m_bndlib(NULL)
+{
+    init();
+}
+
+
 
 
 void GMaker::init()

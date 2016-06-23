@@ -1,4 +1,12 @@
-#include "GTreeCheck.hh"
+
+// npy-
+#include "NGLM.hpp"
+#include "NPY.hpp"
+#include "NSensor.hpp"
+#include "Counts.hpp"
+#include "Timer.hpp"
+
+
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
 #include "GGeo.hh"
@@ -6,15 +14,44 @@
 #include "GSolid.hh"
 #include "GMatrix.hh"
 #include "GBuffer.hh"
+#include "GTreeCheck.hh"
 
-// npy-
-#include "NPY.hpp"
-#include "NSensor.hpp"
-#include "Counts.hpp"
-#include "Timer.hpp"
+
 #include "PLOG.hh"
 
-#include <glm/glm.hpp>
+
+// Following enabling of vertex de-duping (done at AssimpWrap level) 
+// the below criteria are finding fewer repeats, for DYB only the hemi pmt
+// TODO: retune
+
+GTreeCheck::GTreeCheck(GGeo* ggeo) 
+       :
+       m_ggeo(ggeo),
+       m_geolib(NULL),
+       m_repeat_min(120),
+       m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
+       m_root(NULL),
+       m_count(0),
+       m_labels(0)
+       {
+          init();
+       }
+
+
+unsigned int GTreeCheck::getNumRepeats()
+{
+    return m_repeat_candidates.size();
+}
+
+void GTreeCheck::setRepeatMin(unsigned int repeat_min)
+{
+   m_repeat_min = repeat_min ; 
+}
+void GTreeCheck::setVertexMin(unsigned int vertex_min)
+{
+   m_vertex_min = vertex_min ; 
+}
+
 
 void GTreeCheck::init()
 {
@@ -52,17 +89,18 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
          GNode*   rbase          = getRepeatExample(ridx) ; 
-         GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(ridx, rbase); 
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase); 
 
-         makeInstancedBuffers(mergedmesh, ridx);
+         makeInstancedBuffers(mm, ridx);
      
-         //mergedmesh->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
+         //mm->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
     t("makeRepeatTransforms"); 
 
 
     GTreePresent* tp = m_ggeo->getTreePresent();
-    tp->traverse();
+    GNode* top = static_cast<GNode*>(m_ggeo->getSolid(0)) ; 
+    tp->traverse(top);
     //tp->dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
     tp->write(m_ggeo->getIdPath());
     

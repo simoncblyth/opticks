@@ -1,16 +1,25 @@
 //  ggv --gmaker
 
+#include "NGLM.hpp"
+
 #include "Opticks.hh"
 
-#include "GMaker.hh"
-#include "GSolid.hh"
 #include "GMesh.hh"
+#include "GSolid.hh"
+#include "GMaker.hh"
 
-#include "glm/glm.hpp"
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+#include "GGEO_CC.hh"
+
 
 int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks(argc, argv, "gmaker.log");
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
+
+    Opticks* opticks = new Opticks(argc, argv);
 
     GMaker* maker = new GMaker(opticks);
 

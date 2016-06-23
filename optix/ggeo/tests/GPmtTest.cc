@@ -2,18 +2,28 @@
 //  ggv --pmt 0:10
 //
 
+
+#include "NGLM.hpp"
+#include "NPY.hpp"
+#include "NSlice.hpp"
+
 #include "Opticks.hh"
 
 #include "GBndLib.hh"
 #include "GPmt.hh"
 #include "GParts.hh"
 #include "GCSG.hh"
-#include "NPY.hpp"
-#include "NSlice.hpp"
+
 #include "PLOG.hh"
+#include "GGEO_LOG.hh"
+#include "GGEO_CC.hh"
 
 int main(int argc, char** argv)
 {
+
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
     Opticks* opticks = new Opticks(argc, argv);
 
     for(int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
@@ -25,7 +35,7 @@ int main(int argc, char** argv)
     if(!pmt)
     {
         LOG(fatal) << argv[0] << " FAILED TO LOAD PMT " ; 
-        return 1 ;
+        return 0 ;
     }
 
     GParts* ppmt = pmt->getParts();

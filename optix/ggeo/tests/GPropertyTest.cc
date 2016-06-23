@@ -1,7 +1,14 @@
+#include <cassert>
+#include <cstdio>
+
+#include "GDomain.hh"
 #include "GAry.hh"
 #include "GProperty.hh"
-#include "assert.h"
-#include <cstdio>
+
+
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+
 /*
 // Why does lookup "sampling" require so many more bins to get good results than standard sampling ?
 //
@@ -44,12 +51,10 @@ typedef GProperty<float> P ;
 typedef GDomain<float> D ;
 
 
-
 void test_interpolate()
 {
    P* ri = P::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
    ri->Summary("F2 ri", 100);
-
 }
 
 void test_planck()
@@ -104,7 +109,7 @@ void test_createReciprocalCDF()
 void test_traditional_remission_cdf_sampling()
 {
     P* pcdf = P::load("/tmp/reemission_cdf.npy");  // 79.98 -> 799.89
-    A* psample = pcdf->sampleCDF(1e6); 
+    A* psample = pcdf->sampleCDF(1000000); 
     psample->Summary("psample *1e3", 1, 1e3);
     psample->save("/tmp/psample.npy");
 
@@ -186,7 +191,7 @@ void test_inverseCDF_lookup()
     icdf->save("/tmp/icdf.npy");
 
     // two ways yield same characteristics
-      A* isample = icdf->lookupCDF(1e6);
+      A* isample = icdf->lookupCDF(1000000);
     //A* isample = icdf->lookupCDF_ValueLookup(1e6);
 
     isample->Summary("icdf->lookupCDF(1e6)  *1e3", 1, 1e3);
@@ -196,10 +201,11 @@ void test_inverseCDF_lookup()
 
 
 
-
-
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ; 
+
     //test_createSliced();
     //test_createReciprocalCDF();
     //test_traditional_remission_cdf_sampling();

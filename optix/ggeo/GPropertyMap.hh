@@ -5,6 +5,7 @@
 #include <map>
 
 
+template <typename T> class GPropertyMap ; 
 template <typename T> class GProperty ; 
 template <typename T> class GDomain ; 
 

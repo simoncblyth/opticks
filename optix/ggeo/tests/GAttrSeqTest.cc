@@ -1,17 +1,21 @@
 //  ggv --attr
-#include "Opticks.hh"
 
+#include <iostream>
+#include <iomanip>
+#include <cassert>
+
+#include "Index.hpp"
+
+#include "Opticks.hh"
 #include "OpticksAttrSeq.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 
 #include "GMaterialLib.hh"
 #include "GBndLib.hh"
-#include "Index.hpp"
 
-#include <iostream>
-#include <iomanip>
-#include <cassert>
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
 
 
 void test_history_sequence(Opticks* opticks)
@@ -24,7 +28,11 @@ void test_history_sequence(Opticks* opticks)
     qflg->dump();
 
     Index* seqhis = opticks->loadHistoryIndex(); 
-    assert(seqhis);
+    if(!seqhis)
+    {
+        LOG(error) << "NULL seqhis" ;
+        return ; 
+    } 
     seqhis->dump();
 
     qflg->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
@@ -38,7 +46,11 @@ void test_material_sequence(Opticks* opticks)
     qmat->dump();
 
     Index* seqmat = opticks->loadMaterialIndex(); 
-    assert(seqmat);
+    if(!seqmat)
+    {
+        LOG(error) << "NULL seqmat" ;
+        return ; 
+    } 
     seqmat->dump();
 
     qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
@@ -54,9 +66,12 @@ void test_index_boundaries(Opticks* opticks)
     qbnd->dump();
 
     Index* boundaries = opticks->loadBoundaryIndex(); 
-    assert(boundaries);
+    if(!boundaries)
+    {
+        LOG(error) << "NULL boundaries" ;
+        return ; 
+    } 
     boundaries->dump();
-   
 
     qbnd->setCtrl(OpticksAttrSeq::VALUE_DEFAULTS);
     qbnd->dumpTable(boundaries, "test_index_boundaries:dumpTable");
@@ -74,6 +89,9 @@ void test_material_dump(Opticks* opticks)
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
     Opticks ok(argc, argv);
 
     test_history_sequence(&ok);

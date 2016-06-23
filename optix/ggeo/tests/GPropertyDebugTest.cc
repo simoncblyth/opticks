@@ -1,7 +1,12 @@
-#include "GProperty.hh"
-#include "PLOG.hh"
-
 #include <cassert>
+
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
+
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+
 
 typedef GProperty<float> P ; 
 
@@ -149,7 +154,7 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
     */
 
 
-    GAry<float>* isample = icdf->lookupCDF(1e6);
+    GAry<float>* isample = icdf->lookupCDF(1000000);
     assert(isample);
     isample->Summary("icdf->lookupCDF(1e6)  *1e3", 1, 1e3);
     isample->save("/tmp/isample.npy");
@@ -170,5 +175,8 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ; 
+
     return test_createInverseCDF_Debug();
 }

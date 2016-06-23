@@ -56,6 +56,9 @@ ggeo--(){
 }
 
 
+
+ggeo-ctest(){ opticks-ctest $(ggeo-bdir) $* ; }
+
    
 ggeo-sln(){ echo $(ggeo-bdir)/$(ggeo-name).sln ; }
 ggeo-slnw(){ vs- ; echo $(vs-wp $(ggeo-sln)) ; }

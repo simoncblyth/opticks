@@ -77,6 +77,17 @@ void NSensorList::load(const char* idpath_, const char* ext)
     std::vector<std::string> elem ;
     boost::split(elem, name, boost::is_any_of("."));
 
+    if(elem.size() != 3 )
+    {
+        LOG(error) << "NSensorList::load"
+                   << " idpath is expected to be in 3-parts separted by dot eg  g4_00.gdasdyig3736781.dae "
+                   << " idpath " << idpath_
+                    ; 
+
+        return ; 
+    }
+    
+
     assert(elem.size() == 3 );
     elem.erase(elem.begin() + 1); // remove hex digest
 

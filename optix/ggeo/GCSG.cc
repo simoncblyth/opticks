@@ -1,6 +1,10 @@
-#include "GCSG.hh"
-#include "GItemList.hh"
+
+#include "NGLM.hpp"
 #include "NPY.hpp"
+
+#include "GItemList.hh"
+#include "GCSG.hh"
+
 #include "PLOG.hh"
 
 const char* GCSG::SPHERE_ = "Sphere" ;
@@ -22,6 +26,71 @@ const char* GCSG::TypeName(unsigned int typecode)
     return NULL ; 
 }
 
+
+
+GCSG::GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames) 
+      :
+      m_csg_buffer(buffer),
+      m_materials(materials),
+      m_lvnames(lvnames),
+      m_pvnames(pvnames)
+
+{
+}
+      
+NPY<float>* GCSG::getCSGBuffer()
+{
+    return m_csg_buffer ; 
+}
+
+
+bool GCSG::isUnion(unsigned int i)
+{
+    return getTypeCode(i) == UNION ; 
+}
+bool GCSG::isIntersection(unsigned int i)
+{
+    return getTypeCode(i) == INTERSECTION ; 
+}
+bool GCSG::isSphere(unsigned int i)
+{
+    return getTypeCode(i) == SPHERE ; 
+}
+bool GCSG::isTubs(unsigned int i)
+{
+    return getTypeCode(i) == TUBS ; 
+}
+
+
+
+const char* GCSG::getTypeName(unsigned int i)
+{
+    unsigned int tc = getTypeCode(i);
+    return TypeName(tc) ;
+}
+
+
+float GCSG::getX(unsigned int i){            return getFloat(i, 0, 0 ); }
+float GCSG::getY(unsigned int i){            return getFloat(i, 0, 1 ); }
+float GCSG::getZ(unsigned int i){            return getFloat(i, 0, 2 ); }
+float GCSG::getOuterRadius(unsigned int i){  return getFloat(i, 0, 3 ); }
+
+float GCSG::getStartTheta(unsigned int i) {  return getFloat(i, 1, 0 ); }
+float GCSG::getDeltaTheta(unsigned int i) {  return getFloat(i, 1, 1 ); }
+float GCSG::getSizeZ(unsigned int i) {       return getFloat(i, 1, 2 ); }
+float GCSG::getInnerRadius(unsigned int i) { return getFloat(i, 1, 3 ); }
+
+unsigned int GCSG::getTypeCode(unsigned int i){         return getUInt(i, 2, 0); }
+unsigned int GCSG::getNodeIndex(unsigned int i) {       return getUInt(i, 2, 1); }
+unsigned int GCSG::getParentIndex(unsigned int i) {     return getUInt(i, 2, 2); }
+
+unsigned int GCSG::getIndex(unsigned int i) {           return getUInt(i, 3, 0); }
+unsigned int GCSG::getNumChildren(unsigned int i) {     return getUInt(i, 3, 1); }
+unsigned int GCSG::getFirstChildIndex(unsigned int i) { return getUInt(i, 3, 2); }
+unsigned int GCSG::getLastChildIndex(unsigned int i) {  return getUInt(i, 3, 3); }
+
+
+
 unsigned int GCSG::getUInt(unsigned int i, unsigned int j, unsigned int k)
 {
     assert(i < getNumItems() );
@@ -39,6 +108,11 @@ float GCSG::getFloat(unsigned int i, unsigned int j, unsigned int k)
 
 unsigned int GCSG::getNumItems()
 {
+    if(!m_csg_buffer)
+    {
+        LOG(error) << "GCSG::getNumItems NULL buffer" ;
+        return 0 ;  
+    }
     return m_csg_buffer->getNumItems() ;
 }
 
@@ -63,11 +137,10 @@ const char* GCSG::getPVName(unsigned int nodeindex)
 
 
 
-
-
-
 void GCSG::dump(const char* msg)
 {
+    LOG(info) << msg ; 
+
     NPY<float>* buf = m_csg_buffer ; 
     assert(buf);
     assert(buf->getDimensions() == 3);
@@ -113,7 +186,6 @@ void GCSG::dump(const char* msg)
        printf("\n");
     }   
 }
-
 
 
 

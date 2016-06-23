@@ -1,22 +1,35 @@
 // ggv --geolib
 
-#include "GGeoLib.hh"
-#include "GMergedMesh.hh"
-#include "GBuffer.hh"
-
 // npy-
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 
 #include "Opticks.hh"
 
+#include "GBuffer.hh"
+#include "GMergedMesh.hh"
+#include "GGeoLib.hh"
+
+#include "GGEO_CC.hh"
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+
 int main(int argc, char** argv)
 {
-    Opticks* ok = new Opticks(argc, argv, "geolib.log");
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
+    Opticks* ok = new Opticks(argc, argv);
 
     GGeoLib* geolib = GGeoLib::load(ok); 
 
     GMergedMesh* mm = geolib->getMergedMesh(1);
+
+    if(!mm)
+    {
+        LOG(error) << "NULL mm" ;
+        return 0 ; 
+    }
 
 
     //GBuffer* itransforms = mm->getITransformsBuffer();

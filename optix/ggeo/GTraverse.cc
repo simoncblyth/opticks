@@ -1,10 +1,26 @@
-#include "GTraverse.hh"
+#include <cstddef>
+
+#include "Counts.hpp"
+
 #include "GGeo.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSolid.hh"
 
-#include "Counts.hpp"
+#include "GTraverse.hh"
+
+
+GTraverse::GTraverse(GGeo* ggeo) 
+       :
+       m_ggeo(ggeo),
+       m_blib(NULL),
+       m_mlib(NULL),
+       m_materials_count(NULL)
+       {
+          init();
+       }
+
+
 
 void GTraverse::init()
 {

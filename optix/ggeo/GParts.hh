@@ -2,28 +2,30 @@
 
 #include <map>
 #include <string>
-#include <cassert>
 #include <vector>
-#include <glm/glm.hpp>
 
+#include <glm/fwd.hpp>
 
 struct npart ; 
+struct NSlice ; 
+template <typename T> class NPY ;
 
 struct guint4 ; 
 struct gbbox ; 
 struct gfloat3 ; 
+
 class GItemList ; 
 class GBndLib ; 
-
-struct NSlice ; 
-template <typename T> class NPY ;
 
 // *GParts* 
 //     creates *solid* buffer from the *parts* buffer
 //     the *parts* buffer .npy is created by detdesc partitioning with pmt-/tree.py 
 //
 
-class GParts {
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GParts {
     public:
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
@@ -124,100 +126,6 @@ class GParts {
         bool               m_verbose ; 
 };
 
-
-
-inline GParts::GParts(GBndLib* bndlib) 
-      :
-      m_part_buffer(NULL),
-      m_bndspec(NULL),
-      m_bndlib(bndlib),
-      m_solid_buffer(NULL),
-      m_closed(false),
-      m_verbose(false)
-{
-      init() ; 
-}
-
-inline GParts::GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib) 
-      :
-      m_part_buffer(buffer),
-      m_bndspec(NULL),
-      m_bndlib(bndlib),
-      m_solid_buffer(NULL),
-      m_closed(false)
-{
-      init(spec) ; 
-}
-      
-inline GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib) 
-      :
-      m_part_buffer(buffer),
-      m_bndspec(spec),
-      m_bndlib(bndlib),
-      m_solid_buffer(NULL),
-      m_closed(false)
-{
-      init() ; 
-}
-
-inline void GParts::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
-
-inline bool GParts::isClosed()
-{
-    return m_closed ; 
-}
-
-
-
-inline unsigned int GParts::getSolidNumParts(unsigned int solid_index)
-{
-    return m_parts_per_solid.count(solid_index)==1 ? m_parts_per_solid[solid_index] : 0 ; 
-}
-
-
-inline void GParts::setBndSpec(GItemList* bndspec)
-{
-    m_bndspec = bndspec ;
-}
-inline GItemList* GParts::getBndSpec()
-{
-    return m_bndspec ; 
-}
-
-inline void GParts::setBndLib(GBndLib* bndlib)
-{
-    m_bndlib = bndlib ; 
-}
-inline GBndLib* GParts::getBndLib()
-{
-    return m_bndlib ; 
-}
-
-
-
-
-
-inline void GParts::setSolidBuffer(NPY<unsigned int>* solid_buffer)
-{
-    m_solid_buffer = solid_buffer ; 
-}
-inline NPY<unsigned int>* GParts::getSolidBuffer()
-{
-    return m_solid_buffer ; 
-}
-
-inline void GParts::setPartBuffer(NPY<float>* part_buffer)
-{
-    m_part_buffer = part_buffer ; 
-}
-inline NPY<float>* GParts::getPartBuffer()
-{
-    return m_part_buffer ; 
-}
-
-
+#include "GGEO_TAIL.hh"
 
 

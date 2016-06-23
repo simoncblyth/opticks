@@ -1,25 +1,35 @@
 #pragma once
 
+// NB GGeo is a dumb substrate from which the geometry model is created,
+//    eg by AssimpGGeo::convert 
+
+
 #include <map>
 #include <vector>
 #include <unordered_set>
 #include <iterator>
 
-#include <glm/glm.hpp>
-#include "GVector.hh"
-#include "GDomain.hh"
-#include "GPropertyMap.hh"
+#include <glm/fwd.hpp>
 
+// npy-
+#include "NConfigurable.hpp"
+class NSensorList ; 
+class Lookup ; 
+class TorchStepNPY ; 
 
-// opticks-
+// okc-
 class Opticks ; 
 class OpticksColors ; 
+class OpticksFlags ; 
 class OpticksResource ; 
 class OpticksAttrSeq ; 
 class Composition ; 
 
-
 // ggeo-
+#include "GVector.hh"
+template <typename T> class GDomain ; 
+template <typename T> class GPropertyMap ; 
+template <typename T> class GProperty ; 
 
 class GMesh ; 
 class GSolid ; 
@@ -39,7 +49,6 @@ class GPmt ;
 class GTreeCheck ;
 class GTreePresent ;
 class GColorizer ; 
-class OpticksFlags ; 
 class GGeoTest ;
 
 class GItemIndex ; 
@@ -47,17 +56,10 @@ class GItemList ;
 class GMergedMesh ;
 
 
-// npy-
-#include "NConfigurable.hpp"
-class NSensorList ; 
-class Lookup ; 
-class TorchStepNPY ; 
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-//
-// NB GGeo is a dumb substrate from which the geometry model is created,
-//    eg by AssimpGGeo::convert 
-//
-class GGeo : public NConfigurable {
+class GGEO_API GGeo : public NConfigurable {
     public:
         static const char* CATHODE_MATERIAL ; 
     public:
@@ -293,7 +295,7 @@ class GGeo : public NConfigurable {
         GTreePresent* getTreePresent();
     public:
         void setPickFace(std::string pickface);
-        void setPickFace(glm::ivec4 pickface);
+        void setPickFace(const glm::ivec4& pickface);
         void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
@@ -361,285 +363,6 @@ class GGeo : public NConfigurable {
 
 };
 
-
-inline GGeo::GGeo(Opticks* opticks)
-  :
-   m_opticks(opticks), 
-   m_composition(NULL), 
-   m_treecheck(NULL), 
-   m_treepresent(NULL), 
-   m_loaded(false), 
-   m_lookup(NULL),
-   m_geolib(NULL),
-   m_bndlib(NULL),
-   m_materiallib(NULL),
-   m_surfacelib(NULL),
-   m_scintillatorlib(NULL),
-   m_sourcelib(NULL),
-   m_pmt(NULL),
-   m_colorizer(NULL),
-   m_geotest(NULL),
-   m_sensor_list(NULL),
-   m_low(NULL),
-   m_high(NULL),
-   m_meshindex(NULL),
-   m_pvlist(NULL),
-   m_lvlist(NULL),
-   m_sensitive_count(0),
-   m_volnames(false),
-   m_cathode(NULL),
-   m_join_cfg(NULL),
-   m_loader_verbosity(0),
-   m_mesh_verbosity(0)
-{
-   init(); 
-}
+#include "GGEO_TAIL.hh"
 
 
-
-// setLoaderImp : sets implementation that does the actual loading
-// using a function pointer to the implementation 
-// avoids ggeo-/GLoader depending on all the implementations
-
-inline void GGeo::setLoaderImp(GLoaderImpFunctionPtr imp)
-{
-    m_loader_imp = imp ; 
-}
-inline void GGeo::setLoaderVerbosity(unsigned int verbosity)
-{
-    m_loader_verbosity = verbosity  ; 
-}
-inline unsigned int GGeo::getLoaderVerbosity()
-{
-    return m_loader_verbosity ;
-}
-
-inline void GGeo::setComposition(Composition* composition)
-{
-    m_composition = composition ; 
-}
-inline Composition* GGeo::getComposition()
-{
-    return m_composition ; 
-}
-
-
-
-inline void GGeo::setMeshVerbosity(unsigned int verbosity)
-{
-    m_mesh_verbosity = verbosity  ; 
-}
-inline unsigned int GGeo::getMeshVerbosity()
-{
-    return m_mesh_verbosity ;
-}
-
-
-
-
-
-inline void GGeo::setMeshJoinImp(GJoinImpFunctionPtr imp)
-{
-    m_join_imp = imp ; 
-}
-inline void GGeo::setMeshJoinCfg(const char* cfg)
-{
-    m_join_cfg = cfg ? strdup(cfg) : NULL  ; 
-}
-
-inline bool GGeo::isLoaded()
-{
-    return m_loaded ; 
-}
-
-inline bool GGeo::isVolnames()
-{
-    return m_volnames ; 
-}
-
-
-inline void GGeo::addRaw(GMaterial* material)
-{
-    m_materials_raw.push_back(material);
-}
-inline void GGeo::addRaw(GBorderSurface* surface)
-{
-    m_border_surfaces_raw.push_back(surface);
-}
-inline void GGeo::addRaw(GSkinSurface* surface)
-{
-    m_skin_surfaces_raw.push_back(surface);
-}
-
-
-inline unsigned int GGeo::getNumMeshes()
-{
-    return m_meshes.size();
-}
-inline unsigned int GGeo::getNumSolids()
-{
-    return m_solids.size();
-}
-inline unsigned int GGeo::getNumMaterials()
-{
-    return m_materials.size();
-}
-inline unsigned int GGeo::getNumBorderSurfaces()
-{
-    return m_border_surfaces.size();
-}
-inline unsigned int GGeo::getNumSkinSurfaces()
-{
-    return m_skin_surfaces.size();
-}
-inline unsigned int GGeo::getNumRawMaterials()
-{
-    return m_materials_raw.size();
-}
-inline unsigned int GGeo::getNumRawBorderSurfaces()
-{
-    return m_border_surfaces_raw.size();
-}
-inline unsigned int GGeo::getNumRawSkinSurfaces()
-{
-    return m_skin_surfaces_raw.size();
-}
-
-
-
-
-inline GSolid* GGeo::getSolidSimple(unsigned int index)
-{
-    return m_solids[index];
-}
-inline GSkinSurface* GGeo::getSkinSurface(unsigned int index)
-{
-    return m_skin_surfaces[index];
-}
-inline GBorderSurface* GGeo::getBorderSurface(unsigned int index)
-{
-    return m_border_surfaces[index];
-}
-
-
-inline GGeoLib* GGeo::getGeoLib()
-{
-    return m_geolib ; 
-}
-inline GBndLib* GGeo::getBndLib()
-{
-    return m_bndlib ; 
-}
-
-inline GMaterialLib* GGeo::getMaterialLib()
-{
-    return m_materiallib ; 
-}
-inline GSurfaceLib* GGeo::getSurfaceLib()
-{
-    return m_surfacelib ; 
-}
-inline GScintillatorLib* GGeo::getScintillatorLib()
-{
-    return m_scintillatorlib ; 
-}
-inline GSourceLib* GGeo::getSourceLib()
-{
-    return m_sourcelib ; 
-}
-inline GPmt* GGeo::getPmt()
-{
-    return m_pmt ; 
-}
-inline Lookup* GGeo::getLookup()
-{
-    return m_lookup ; 
-}
-
-inline GColorizer* GGeo::getColorizer()
-{
-    return m_colorizer ; 
-}
-inline NSensorList* GGeo::getSensorList()
-{
-    return m_sensor_list ; 
-}
-inline GItemIndex* GGeo::getMeshIndex()
-{
-    return m_meshindex ; 
-}
-inline GItemList* GGeo::getPVList()
-{
-    return m_pvlist ; 
-}
-inline GItemList* GGeo::getLVList()
-{
-    return m_lvlist ; 
-}
-
-
-
-
-inline gfloat3* GGeo::getLow()
-{
-   return m_low ; 
-}
-inline gfloat3* GGeo::getHigh()
-{
-   return m_high ; 
-}
-
-
-inline GTreeCheck* GGeo::getTreeCheck()
-{
-    return m_treecheck ;
-}
-inline GTreePresent* GGeo::getTreePresent()
-{
-    return m_treepresent ;
-}
-
-
-
-
-inline GMaterial* GGeo::getCathode()
-{
-    return m_cathode ; 
-}
-inline void GGeo::setCathode(GMaterial* cathode)
-{
-    m_cathode = cathode ; 
-}
-
-inline void GGeo::addCathodeLV(const char* lv)
-{
-   m_cathode_lv.insert(lv);
-}
-
-inline unsigned int GGeo::getNumCathodeLV()
-{
-   return m_cathode_lv.size() ; 
-}
-inline const char* GGeo::getCathodeLV(unsigned int index)
-{
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    UCI it = m_cathode_lv.begin() ; 
-    std::advance( it, index );
-    return it != m_cathode_lv.end() ? it->c_str() : NULL  ; 
-}
-
-inline void GGeo::dumpCathodeLV(const char* msg)
-{
-    printf("%s\n", msg);
-    typedef std::unordered_set<std::string>::const_iterator UCI ; 
-    for(UCI it=m_cathode_lv.begin() ; it != m_cathode_lv.end() ; it++)
-    {
-        printf("GGeo::dumpCathodeLV %s \n", it->c_str() ); 
-    }
-}
-
-
-inline Opticks* GGeo::getOpticks()
-{
-    return m_opticks ; 
-}

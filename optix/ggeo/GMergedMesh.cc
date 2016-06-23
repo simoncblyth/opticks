@@ -12,6 +12,7 @@
 
 // opticks-
 #include "Opticks.hh"
+#include "OpticksConst.hh"
 #include "OpticksResource.hh"
 
 
@@ -29,15 +30,15 @@ namespace fs = boost::filesystem;
 
 bool GMergedMesh::isSkip()
 {
-   return m_geocode == Opticks::GEOCODE_SKIP ;  
+   return m_geocode == OpticksConst::GEOCODE_SKIP ;  
 }
 bool GMergedMesh::isAnalytic()
 {
-   return m_geocode == Opticks::GEOCODE_ANALYTIC ;  
+   return m_geocode == OpticksConst::GEOCODE_ANALYTIC ;  
 }
 bool GMergedMesh::isTriangulated()
 {
-   return m_geocode == Opticks::GEOCODE_TRIANGULATED ;  
+   return m_geocode == OpticksConst::GEOCODE_TRIANGULATED ;  
 }
 
 

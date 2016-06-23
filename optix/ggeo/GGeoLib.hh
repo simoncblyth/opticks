@@ -1,15 +1,16 @@
 #pragma once
 
-#include <cstring>
 #include <map>
+class Opticks ; 
 
 class GGeo ; 
 class GMergedMesh ; 
 class GNode ; 
 
-class Opticks ; 
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
 
-class GGeoLib {
+class GGEO_API GGeoLib {
     public:
         static const char* GMERGEDMESH ; 
         enum { MAX_MERGED_MESH = 10 } ;
@@ -39,23 +40,5 @@ class GGeoLib {
         std::map<unsigned int,GMergedMesh*>  m_merged_mesh ; 
 };
 
-inline GGeoLib::GGeoLib(Opticks* opticks) 
-     :
-     m_opticks(opticks),
-     m_mesh_version(NULL)
-{
-}
-
-inline unsigned int GGeoLib::getNumMergedMesh()
-{
-    return m_merged_mesh.size();
-}
-inline void GGeoLib::setMeshVersion(const char* mesh_version)
-{
-    m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
-}
-inline const char* GGeoLib::getMeshVersion()
-{
-    return m_mesh_version ;
-}
+#include "GGEO_TAIL.hh"
 

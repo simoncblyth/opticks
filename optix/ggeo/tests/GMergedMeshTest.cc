@@ -5,12 +5,24 @@
 #include "GVector.hh"
 #include "GMergedMesh.hh"
 #include "PLOG.hh"
+#include "GGEO_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    Opticks ok(argc, argv, "mm.log");
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
+
+    Opticks ok(argc, argv);
 
     GMergedMesh* mm = GMergedMesh::load(&ok, 1);
+
+    if(!mm)
+    {
+        LOG(error) << "NULL mm" ;
+        return 0 ; 
+    } 
+
 
     mm->Summary("mm loading");
     mm->dump("mm dump", 10);

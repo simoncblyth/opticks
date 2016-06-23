@@ -1,5 +1,6 @@
 #include "GSurfaceIndex.hh"
 
+
 GSurfaceIndex* GSurfaceIndex::load(const char* idpath)
 {
     GSurfaceIndex* gsi = new GSurfaceIndex ;  
@@ -7,4 +8,7 @@ GSurfaceIndex* GSurfaceIndex::load(const char* idpath)
     return gsi ; 
 }
 
+GSurfaceIndex::GSurfaceIndex() : GItemIndex("GSurfaceIndex")
+{
+}
 

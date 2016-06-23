@@ -1,7 +1,10 @@
+#include "Opticks.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-#include "Opticks.hh"
+
 #include "PLOG.hh"
+#include "GGEO_LOG.hh"
+#include "GGEO_CC.hh"
 
 void misc(GGeo* m_ggeo)
 {
@@ -35,8 +38,11 @@ void misc(GGeo* m_ggeo)
 
 
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
     Opticks* opticks = new Opticks(argc, argv);
 
     GGeo* ggeo = new GGeo(opticks);

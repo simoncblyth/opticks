@@ -1,7 +1,7 @@
 #pragma once
 
+//#include <map>
 #include <string>
-#include <map>
 #include <vector>
 
 class GGeo ; 
@@ -17,9 +17,13 @@ template<class T> class NPY ;
 
 // *createInstancedMergedMeshes* is canonically invoked by GGeo::loadFromG4DAE GGeo::prepareMeshes
 
-class GTreeCheck {
+
+#include "GGEO_API_EXPORT.hh"
+#include "GGEO_HEAD.hh"
+
+class GGEO_API GTreeCheck {
    public:
-        typedef std::map<std::string, std::vector<GNode*> > MSVN ; 
+       // typedef std::map<std::string, std::vector<GNode*> > MSVN ; 
    public:
         GTreeCheck(GGeo* ggeo);
         void setRepeatMin(unsigned int repeat_min);
@@ -69,36 +73,7 @@ class GTreeCheck {
 };
 
 
-// Following enabling of vertex de-duping (done at AssimpWrap level) 
-// the below criteria are finding fewer repeats, for DYB only the hemi pmt
-// TODO: retune
+#include "GGEO_TAIL.hh"
 
-inline GTreeCheck::GTreeCheck(GGeo* ggeo) 
-       :
-       m_ggeo(ggeo),
-       m_geolib(NULL),
-       m_repeat_min(120),
-       m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
-       m_root(NULL),
-       m_count(0),
-       m_labels(0)
-       {
-          init();
-       }
-
-
-inline unsigned int GTreeCheck::getNumRepeats()
-{
-    return m_repeat_candidates.size();
-}
-
-inline void GTreeCheck::setRepeatMin(unsigned int repeat_min)
-{
-   m_repeat_min = repeat_min ; 
-}
-inline void GTreeCheck::setVertexMin(unsigned int vertex_min)
-{
-   m_vertex_min = vertex_min ; 
-}
 
 

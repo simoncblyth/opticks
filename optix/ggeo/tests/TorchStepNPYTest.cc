@@ -9,19 +9,24 @@
 
 #include <cstring>
 
-#include "GGeo.hh"
-#include "GMergedMesh.hh"
-
 #include "Opticks.hh"
 
 //npy-
 #include "TorchStepNPY.hpp"
+
+
+#include "GGeo.hh"
+#include "GMergedMesh.hh"
+
+#include "GGEO_CC.hh"
 #include "PLOG.hh"
 
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-    Opticks* opticks = new Opticks(argc, argv, "torch.log");
+    PLOG_(argc, argv);
+
+    Opticks* opticks = new Opticks(argc, argv);
 
     GGeo* m_ggeo = new GGeo(opticks);
 

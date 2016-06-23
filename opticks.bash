@@ -460,9 +460,12 @@ opticks--(){
 
    local iwd=$PWD
 
-   opticks-bcd 
+   local bdir=$1
+   shift
+   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
 
-   #make ${1:-install}  
+   cd $bdir
+
    cmake --build . --config $(opticks-config) --target ${1:-install}
 
    cd $iwd
@@ -471,7 +474,12 @@ opticks-ctest()
 { 
    local msg="$FUNCNAME : "
    local iwd=$PWD
-   opticks-bcd 
+
+   local bdir=$1
+   shift
+   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+
+   cd $bdir
 
    export-
    export-export 
@@ -485,7 +493,7 @@ opticks-ctest()
 
    cd $iwd
 
-   echo $msg use opticks-ctest -V to show output 
+   echo $msg use -V to show output 
 }
 
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }

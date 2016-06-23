@@ -11,14 +11,19 @@
 #include "GGEO_LOG.hh"
 
 
-
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     GGEO_LOG_ ;
 
+    const char* path = "$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy";
+    GProperty<float>* f2 = GProperty<float>::load(path);
+    if(!f2)
+    {
+        LOG(error) << " failed to load " << path ; 
+        return 0 ;      
+    } 
 
-    GProperty<float>* f2 = GProperty<float>::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
     assert(f2);
 
     f2->Summary("F2 ri", 100);

@@ -1,11 +1,13 @@
-#include "GBBoxMesh.hh"
 
 #define DEBUG 1 
-#ifdef DEBUG
+
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#endif
+
+#include "GVector.hh"
+#include "GMergedMesh.hh"
+#include "GBBoxMesh.hh"
 
 
 GBBoxMesh* GBBoxMesh::create(GMergedMesh* mergedmesh)
@@ -14,6 +16,10 @@ GBBoxMesh* GBBoxMesh::create(GMergedMesh* mergedmesh)
     return bbm ;
 }
 
+
+GBBoxMesh::~GBBoxMesh()
+{
+}
 
 
 GBBoxMesh::GBBoxMesh(GMergedMesh* mergedmesh)
