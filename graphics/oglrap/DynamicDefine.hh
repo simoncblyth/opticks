@@ -1,12 +1,13 @@
 #pragma once
 
-#include <cstring>
 #include <string>
 #include <map>
 #include <vector>
 
+#include "OGLRAP_API_EXPORT.hh"
+#include "OGLRAP_HEAD.hh"
 
-class DynamicDefine {
+class OGLRAP_API DynamicDefine {
     public:
        DynamicDefine();  
     public:
@@ -19,9 +20,5 @@ class DynamicDefine {
 
 };
 
-
-inline DynamicDefine::DynamicDefine() 
-{
-}    
-
+#include "OGLRAP_TAIL.hh"
 

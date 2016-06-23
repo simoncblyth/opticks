@@ -4,10 +4,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "BStr.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "NPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -27,6 +28,81 @@
 
 
 const char* Rdr::PRINT = "print" ; 
+
+
+Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path)
+    :
+    RendererBase(tag, dir, incl_path),  
+    m_first_upload(true),
+    m_device(device),
+    m_vao(0),
+    m_vao_generated(false),
+    //m_buffer(0),
+    m_countdefault(0),
+    m_composition(NULL),
+    m_mv_location(-1),
+    m_mvp_location(-1),
+    m_p_location(-1),
+    m_isnorm_mvp_location(-1),
+    m_selection_location(-1),
+    m_flags_location(-1),
+    m_pick_location(-1),
+    m_param_location(-1),
+    m_nrmparam_location(-1),
+    m_scanparam_location(-1),
+    m_timedomain_location(-1),
+    m_colordomain_location(-1),
+    m_colors_location(-1),
+    m_recselect_location(-1),
+    m_colorparam_location(-1),
+    m_lightposition_location(-1),
+    m_pickphoton_location(-1),
+    m_primitive(GL_POINTS)
+{
+}
+
+
+template <typename T>
+void Rdr::download( NPY<T>* npy )
+{
+    GLenum target = GL_ARRAY_BUFFER ;
+    void* ptr = mapbuffer( npy->getBufferId(), target );
+    if(ptr)
+    {
+       npy->read(ptr);
+       unmapbuffer(target);
+    }
+}
+
+
+void Rdr::configureI(const char* name, std::vector<int> values )
+{
+    if(values.empty()) return ; 
+    if(strcmp(name, PRINT)==0) Print("Rdr::configureI");
+}
+void Rdr::Print(const char* msg)
+{
+    printf("%s\n", msg);
+}
+void Rdr::setCountDefault(unsigned int count)
+{
+    m_countdefault = count ;
+}
+unsigned int Rdr::getCountDefault()
+{
+    return m_countdefault ;
+}
+void Rdr::setComposition(Composition* composition)
+{
+    m_composition = composition ;
+}
+Composition* Rdr::getComposition()
+{
+    return m_composition ;
+}
+
+
+
 
 void Rdr::setPrimitive(Primitive_t prim )
 {
@@ -141,7 +217,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
         else
         {
             assert(npy == vnpy->getNPY());     
-            LOG(debug) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
+            LOG(trace) << "Rdr::upload counts, prior: " << count << " current: " << vnpy->getCount() ; 
             assert(count == vnpy->getCount());
         } 
         address(vnpy); 
@@ -284,7 +360,7 @@ void Rdr::address(ViewNPY* vnpy)
          return ;
     }
 
-    GLenum type ;              //  of each component in the array
+    GLenum type = GL_FLOAT  ;              //  of each component in the array
     switch(vnpy->getType())
     {
         case ViewNPY::BYTE:                         type = GL_BYTE           ; break ;

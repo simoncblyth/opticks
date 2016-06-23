@@ -1,8 +1,9 @@
-#include "Demo.hh"
-#include "stdio.h"
-#include "assert.h"
+#include <cstdio>
+#include <cassert>
 
 #include "GVector.hh"
+
+#include "Demo.hh"
 
 /*
  
@@ -48,8 +49,6 @@ const float Demo::ptexcoord[] = {
   1.0f, 0.0f,
   1.0f, 1.0f
 };
-
-
 
 
 const unsigned int Demo::pindex[] = {

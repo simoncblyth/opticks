@@ -1,20 +1,22 @@
 #pragma once
 
+#include <cstddef>
 #include <vector>
+
+struct NSlice ; 
+class Composition ;
 
 class GDrawable ; 
 class GMergedMesh ; 
 class GBBoxMesh ; 
+class GBuffer ;
+
 class Texture ; 
 
-class GBuffer ;
-class Composition ;
-
-struct NSlice ; 
-
 #include "RendererBase.hh"
+#include "OGLRAP_API_EXPORT.hh"
 
-class Renderer : public RendererBase  {
+class OGLRAP_API Renderer : public RendererBase  {
   public:
 
   static const char* PRINT ;  
@@ -111,60 +113,6 @@ class Renderer : public RendererBase  {
       bool m_instanced ; 
       bool m_wireframe ; 
 };      
-
-
-inline Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
-    :
-    RendererBase(tag, dir, incl_path),
-    m_texcoords(0),
-    m_mv_location(-1),
-    m_mvp_location(-1),
-    m_clip_location(-1),
-    m_param_location(-1),
-    m_scanparam_location(-1),
-    m_nrmparam_location(-1),
-    m_lightposition_location(-1),
-    m_itransform_location(-1),
-    m_colordomain_location(-1),
-    m_colors_location(-1),
-    m_pickface_location(-1),
-    m_colorTex_location(-1),
-    m_depthTex_location(-1),
-    m_itransform_count(0),
-    m_draw_count(0),
-    m_indices_count(0),
-    m_drawable(NULL),
-    m_geometry(NULL),
-    m_bboxmesh(NULL),
-    m_texture(NULL),
-    m_texture_id(-1),
-    m_composition(NULL),
-    m_has_tex(false),
-    m_has_transforms(false),
-    m_instanced(false),
-    m_wireframe(false)
-{
-}
-
-
-inline void Renderer::setInstanced(bool instanced)
-{
-    m_instanced = instanced ; 
-}
-inline void Renderer::setWireframe(bool wireframe)
-{
-    m_wireframe = wireframe ; 
-}
-inline void Renderer::setComposition(Composition* composition)
-{
-    m_composition = composition ;
-}
-inline Composition* Renderer::getComposition()
-{
-    return m_composition ;
-}
-
-
 
 
 

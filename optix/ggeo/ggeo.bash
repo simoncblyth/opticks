@@ -48,7 +48,7 @@ ggeo-gentest()
 
 
 ggeo--(){  opticks-- $(ggeo-bdir) ; }
-
+ggeo-txt(){ vi $(ggeo-sdir)/CMakeLists.txt $(ggeo-tdir)/CMakeLists.txt ; }
 
 
 ggeo-ctest(){ opticks-ctest $(ggeo-bdir) $* ; }

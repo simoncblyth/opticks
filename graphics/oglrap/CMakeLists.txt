@@ -8,6 +8,7 @@ include(EnvCompilationFlags)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
+find_package(PLog REQUIRED) 
 find_package(OpticksBoost REQUIRED) 
 find_package(BoostRap REQUIRED)
 find_package(OpticksCore REQUIRED)
@@ -15,7 +16,6 @@ find_package(OpticksCore REQUIRED)
 find_package(GGeo REQUIRED)  
 find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
-
 find_package(ImGui REQUIRED)
 
 
@@ -27,6 +27,7 @@ set(INCLUDE_DIRS
    ${GLFW_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
+   ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${OpticksCore_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
@@ -48,6 +49,7 @@ set(DEFINITIONS
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
+   ${PLog_DEFINITIONS}
    ${OpticksBoost_DEFINITIONS}
    ${BoostRap_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
@@ -59,43 +61,65 @@ set(LIBRARIES
    ${GLFW_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
+   ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${NPY_LIBRARIES}
-   
    ${ImGui_LIBRARIES}
 )
+
+if(WIN32)
+   set( LIBRARIES ${LIBRARIES} opengl32.lib )
+endif(WIN32)
+
+message("${name}.LIBRARIES : ${LIBRARIES} " )
+
 
 include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
-
 ## NB only classes needing OpenGL should be here 
-set(SOURCES
-    Texture.cc
-    Frame.cc
-    Interactor.cc
-    InteractorCfg.cc
-    Scene.cc
-    SceneCfg.cc
-    RendererBase.cc
-    Renderer.cc
-    RendererCfg.cc
-    Device.cc
-    Rdr.cc
 
-    StateGUI.cc
-    Demo.cc
-    Prog.cc
-    Shdr.cc
-    Touchable.cc
-    GUI.cc
-    Photons.cc
-    Colors.cc
-    DynamicDefine.cc
+set(_SOURCES
+
 )
 
-SET(HEADERS
+set(SOURCES
+
+    OGLRAP_LOG.cc
+
+    Texture.cc
+    Device.cc
+    Shdr.cc
+    Prog.cc
+    DynamicDefine.cc
+    Colors.cc
+    Demo.cc
+    Touchable.cc
+    StateGUI.cc
+    Photons.cc
+    GUI.cc
+
+    RendererBase.cc
+    Rdr.cc
+    InteractorCfg.cc
+    Interactor.cc
+    Scene.cc
+    SceneCfg.cc
+
+    Frame.cc
+
+    Renderer.cc
+    RendererCfg.cc
+)
+
+SET(_HEADERS
+
+    OGLRAP_LOG.hh
+    OGLRAP_API_EXPORT.hh
+    OGLRAP_HEAD.hh
+    OGLRAP_TAIL.hh
+
     Texture.hh
     Frame.hh
     Interactor.hh
@@ -105,8 +129,8 @@ SET(HEADERS
     RendererBase.hh
     Renderer.hh
     RendererCfg.hh
-    Device.hh
     Rdr.hh
+    Device.hh
 
     StateGUI.hh
     Demo.hh
@@ -125,9 +149,9 @@ add_library( ${name}  SHARED ${SOURCES})
 target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
-install(DIRECTORY gl/ DESTINATION gl)
+#install(FILES ${HEADERS} DESTINATION include/${name})
+#install(DIRECTORY gl/ DESTINATION gl)
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 

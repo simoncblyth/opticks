@@ -7,7 +7,9 @@ class GItemIndex ;
 // TODO: Checkbox multiple-select that works with GItemList
 //       collapse this class into GUI ?
 
-class Photons {
+#include "OGLRAP_API_EXPORT.hh"
+
+class OGLRAP_API Photons {
    public:
        Photons(Types* types, GItemIndex* boundaries, GItemIndex* seqhis, GItemIndex* seqmat);
    public:
@@ -21,15 +23,5 @@ class Photons {
         GItemIndex*       m_seqhis ;  
         GItemIndex*       m_seqmat ;  
 };
-
-
-inline Photons::Photons(Types* types, GItemIndex* boundaries, GItemIndex* seqhis, GItemIndex* seqmat)
-    :
-    m_types(types),
-    m_boundaries(boundaries),
-    m_seqhis(seqhis),
-    m_seqmat(seqmat)
-{
-}
 
 

@@ -35,6 +35,21 @@ gitbash glfw-make which uses "cmake --build ."::
 
 
 
+APIENTRY Macro Redefinition
+-----------------------------
+
+oglrap-- build warning::
+::
+
+      Shdr.cc
+      Texture.cc
+    C:\Program Files (x86)\Windows Kits\8.1\Include\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition [C:\usr\local\opticks\build\graphics\oglrap\OGLRap.vcxproj]
+      C:\usr\local\opticks\externals\include\GLFW/glfw3.h(85): note: see previous definition of 'APIENTRY'
+
+
+
+
+
 OSX 10.11 sensitivity to clang version
 ----------------------------------------
 

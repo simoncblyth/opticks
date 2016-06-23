@@ -1,8 +1,10 @@
 #pragma once
+#include "Interactor.hh"
 #include "BCfg.hh"
+#include "OGLRAP_API_EXPORT.hh"
 
 template <class Listener>
-class InteractorCfg : public BCfg {
+class OGLRAP_API InteractorCfg : public BCfg {
 public:
    InteractorCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {   
@@ -11,4 +13,6 @@ public:
    }   
 };
 
+
+template class OGLRAP_API InteractorCfg<Interactor> ;
 

@@ -27,8 +27,10 @@ class StateGUI ;
 class Photons ; 
 class Animator ; 
 
+#include "OGLRAP_API_EXPORT.hh"
+#include "OGLRAP_HEAD.hh"
 
-class GUI {
+class OGLRAP_API GUI {
   public:
        // TODO: perhaps simplify to (unsigned int nlabel, const char**) 
        //       seems ImGui doesnt need to known the underly code
@@ -114,80 +116,6 @@ class GUI {
 
 
 };
-
-
-inline GUI::GUI(GGeo* ggeo) 
-   :
-   m_ggeo(ggeo),
-   m_show_test_window(false),
-   m_bg_alpha(0.65f),
-   m_scrub_alpha(0.01f),
-   m_interactor(NULL),
-   m_scene(NULL),
-   m_composition(NULL),
-   m_view(NULL),
-   m_camera(NULL),
-   m_clipper(NULL),
-   m_trackball(NULL),
-   m_bookmarks(NULL),
-   m_state_gui(NULL),
-   m_photons(NULL),
-   m_animator(NULL)
-{
-}
-
-inline void GUI::setInteractor(Interactor* interactor)
-{
-    m_interactor = interactor ; 
-}
-inline void GUI::setPhotons(Photons* photons)
-{
-    m_photons = photons ; 
-}
-
-inline void GUI::setView(View* view)
-{
-    m_view = view ; 
-}
-
-inline void GUI::setCamera(Camera* camera)
-{
-    m_camera = camera ; 
-}
-inline void GUI::setClipper(Clipper* clipper)
-{
-    m_clipper = clipper ; 
-}
-inline void GUI::setTrackball(Trackball* trackball)
-{
-    m_trackball = trackball ; 
-}
-inline void GUI::setBookmarks(Bookmarks* bookmarks)
-{
-    m_bookmarks = bookmarks ; 
-}
-inline void GUI::setStateGUI(StateGUI* state_gui)
-{
-    m_state_gui = state_gui ; 
-}
-inline void GUI::setAnimator(Animator* animator)
-{
-    m_animator = animator ; 
-}
-
-
-inline void GUI::setupHelpText(const std::string& txt)
-{
-    m_help = txt ; 
-} 
-
-inline void GUI::setupStats(const std::vector<std::string>& stats)
-{
-    m_stats = stats ; 
-}
-inline void GUI::setupParams(const std::vector<std::string>& params)
-{
-    m_params = params ; 
-}
+#include "OGLRAP_TAIL.hh"
 
 

@@ -4,7 +4,20 @@
 #include "RendererBase.hh"
 #include "Prog.hh"
 
-#include "BLog.hh"
+#include "PLOG.hh"
+
+#include "OGLRAP_BODY.hh"
+
+
+char* RendererBase::getShaderDir()
+{
+    return m_shaderdir ;
+}
+char* RendererBase::getShaderTag()
+{
+    return m_shadertag ;
+}
+
 
 RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_path)
     :

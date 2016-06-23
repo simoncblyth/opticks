@@ -32,14 +32,13 @@ add_subdirectory(optix/ggeo)
 add_subdirectory(graphics/assimprap)   
 add_subdirectory(graphics/openmeshrap)  
 add_subdirectory(opticksgeo)  
+add_subdirectory(graphics/oglrap)       
 
 #set(REST ON)
 if(REST)
-   add_subdirectory(graphics/oglrap)       
 
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
-
    if(CUDA_FOUND AND OptiX_FOUND)
        set(WITH_OPTIX ON)
        add_subdirectory(cuda/cudarap)        

@@ -1,9 +1,9 @@
-#ifndef DEMO_H 
-#define DEMO_H
+#pragma once 
 
 #include "GMesh.hh"
+#include "OGLRAP_API_EXPORT.hh"
 
-class Demo : public GMesh {
+class OGLRAP_API Demo : public GMesh {
   private:
       static const float pvertex[] ;
       static const float pnormal[] ;
@@ -17,7 +17,6 @@ class Demo : public GMesh {
 };      
 
 
-#endif
 
 
 

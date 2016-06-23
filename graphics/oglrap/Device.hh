@@ -2,33 +2,18 @@
 
 #include <vector>
 
-//class NPYBase ; 
+#include "OGLRAP_API_EXPORT.hh"
+#include "OGLRAP_HEAD.hh"
 
-class Device {
+class OGLRAP_API Device {
     public:
         Device();
         void add(void* smth);
         bool isUploaded(void* smth);
-
     private:
         std::vector<void*> m_uploads ; 
 
 };
+#include "OGLRAP_TAIL.hh"
 
-
-inline Device::Device()
-{
-}
-
-inline void Device::add(void* smth)
-{
-    m_uploads.push_back(smth);
-}
-
-
-inline bool Device::isUploaded(void* smth)
-{
-    for(unsigned int i=0 ; i < m_uploads.size() ; i++) if(m_uploads[i] == smth) return true ;   
-    return false ; 
-}
 

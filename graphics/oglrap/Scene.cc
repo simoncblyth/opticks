@@ -1,7 +1,24 @@
-#include "Scene.hh"
-
-#include <GL/glew.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
 #include <cstring>
+#include <string>
+#include <vector>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include "Scene.hh"
+#include <GL/glew.h>
+
+
+// npy-
+#include "NGLM.hpp"
+#include "GLMPrint.hpp"
+#include "GLMFormat.hpp"
+#include "NPY.hpp"
+#include "ViewNPY.hpp"
+#include "MultiViewNPY.hpp"
 
 // opticks-
 #include "OpticksConst.hh"
@@ -24,21 +41,13 @@
 #include "Colors.hh"
 #include "Interactor.hh"
 
-// npy-
-#include "NPY.hpp"
-#include "ViewNPY.hpp"
-#include "MultiViewNPY.hpp"
-
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-
 #ifdef GUI_
 #include <imgui.h>
 #endif
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include "BLog.hh"
+
+
+#include "PLOG.hh"
 
 
 const char* Scene::PREFIX = "scene" ;
@@ -121,9 +130,9 @@ const char* Scene::getGeometryStyleName()
 
 void Scene::applyGeometryStyle()  // B:key 
 {
-    bool inst ; 
-    bool bbox ; 
-    bool wire ; 
+    bool inst(false) ; 
+    bool bbox(false) ; 
+    bool wire(false) ; 
 
     switch(m_geometry_style)
     {
@@ -823,5 +832,356 @@ void Scene::applyRenderStyle()
     // nothing to do, style is honoured by  Scene::render
 }
 
+
+Scene::Scene(const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
+            :
+            m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
+            m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
+            m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
+            m_device(NULL),
+            m_colors(NULL),
+            m_interactor(NULL),
+            m_num_instance_renderer(0),
+            m_geometry_renderer(NULL),
+            m_global_renderer(NULL),
+            m_globalvec_renderer(NULL),
+            m_raytrace_renderer(NULL),
+            m_axis_renderer(NULL),
+            m_genstep_renderer(NULL),
+            m_nopstep_renderer(NULL),
+            m_photon_renderer(NULL),
+            m_record_renderer(NULL),
+            m_altrecord_renderer(NULL),
+            m_devrecord_renderer(NULL),
+            m_evt(NULL),
+            m_photons(NULL),
+            m_ggeo(NULL),
+            m_mesh0(NULL),
+            m_composition(NULL),
+            m_colorbuffer(NULL),
+            m_target(0),
+            m_target_deferred(0),
+            m_touch(0),
+            m_global_mode(false),
+            m_globalvec_mode(false),
+            m_axis_mode(true),
+            m_genstep_mode(true),
+            m_nopstep_mode(true),
+            m_photon_mode(true),
+            m_record_mode(true),
+            m_record_style(ALTREC),
+            m_geometry_style(BBOX),
+            m_num_geometry_style(0),
+            m_global_style(GVIS),
+            m_num_global_style(0),
+            m_instance_style(IVIS),
+            m_render_style(R_PROJECTIVE),
+            m_initialized(false),
+            m_time_fraction(0.f)
+{
+
+    init();
+
+    for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
+    {
+        m_instance_renderer[i] = NULL ; 
+        m_bbox_renderer[i] = NULL ; 
+        m_instance_mode[i] = false ; 
+        m_bbox_mode[i] = false ; 
+    }
+}
+
+
+
+const char* Scene::getShaderDir()
+{
+    return m_shader_dir ;
+}
+const char* Scene::getShaderInclPath()
+{
+    return m_shader_incl_path ;
+}
+
+
+void Scene::setGeometry(GGeo* gg)
+{
+    m_ggeo = gg ;
+}
+GGeo* Scene::getGeometry()
+{
+    return m_ggeo ; 
+}
+
+void Scene::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ;
+}
+Interactor* Scene::getInteractor()
+{
+    return m_interactor ; 
+}
+
+
+
+
+
+
+
+unsigned int Scene::getNumInstanceRenderer()
+{
+    return m_num_instance_renderer ; 
+}
+
+float Scene::getTimeFraction()
+{
+    return m_time_fraction ; 
+}
+
+unsigned int Scene::getTarget()
+{
+    return m_target ;
+}
+unsigned int Scene::getTouch()
+{
+    return m_touch ;
+}
+void Scene::setTouch(unsigned int touch)
+{
+    m_touch = touch ; 
+}
+
+
+
+Renderer* Scene::getGeometryRenderer()
+{
+    return m_geometry_renderer ; 
+}
+
+Renderer* Scene::getRaytraceRenderer()
+{
+    return m_raytrace_renderer ; 
+}
+
+
+
+Rdr* Scene::getAxisRenderer()
+{
+    return m_axis_renderer ; 
+}
+Rdr* Scene::getGenstepRenderer()
+{
+    return m_genstep_renderer ; 
+}
+Rdr* Scene::getNopstepRenderer()
+{
+    return m_nopstep_renderer ; 
+}
+Rdr* Scene::getPhotonRenderer()
+{
+    return m_photon_renderer ; 
+}
+
+
+
+
+Composition* Scene::getComposition()
+{
+    return m_composition ; 
+}
+
+OpticksEvent* Scene::getEvt()
+{
+    return m_evt ; 
+}
+
+Photons* Scene::getPhotons()
+{
+    return m_photons ; 
+}
+
+
+
+void Scene::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}
+void Scene::setPhotons(Photons* photons)
+{
+    m_photons = photons ; 
+}
+
+
+
+
+void Scene::setRecordStyle(RecordStyle_t style)
+{
+    m_record_style = style ; 
+}
+
+Scene::RecordStyle_t Scene::getRecordStyle()
+{
+    return m_record_style ; 
+}
+
+
+
+
+
+
+
+void Scene::nextPhotonStyle()
+{
+    int next = (m_record_style + 1) % NUM_RECORD_STYLE ; 
+    m_record_style = (RecordStyle_t)next ; 
+}
+
+
+
+
+unsigned int Scene::getNumGeometryStyle()
+{
+    return m_num_geometry_style == 0 ? NUM_GEOMETRY_STYLE : m_num_geometry_style ;
+}
+void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
+{
+    m_num_geometry_style = num_geometry_style ;
+}
+
+
+
+unsigned int Scene::getNumGlobalStyle()
+{
+    return m_num_global_style == 0 ? NUM_GLOBAL_STYLE : m_num_global_style ;
+}
+void Scene::setNumGlobalStyle(unsigned int num_global_style)
+{
+    m_num_global_style = num_global_style ;
+}
+
+
+
+
+
+
+void Scene::nextGeometryStyle()
+{
+    int next = (m_geometry_style + 1) % getNumGeometryStyle(); 
+    setGeometryStyle( (GeometryStyle_t)next );
+
+    const char* stylename = getGeometryStyleName();
+    printf("Scene::nextGeometryStyle : %s \n", stylename);
+}
+
+void Scene::setGeometryStyle(GeometryStyle_t style)
+{
+    m_geometry_style = style ; 
+    applyGeometryStyle();
+}
+
+void Scene::nextGlobalStyle()
+{
+    int next = (m_global_style + 1) % getNumGlobalStyle() ; 
+    m_global_style = (GlobalStyle_t)next ; 
+    applyGlobalStyle();
+}
+
+
+
+void Scene::applyGlobalStyle()
+{
+   // { GVIS, 
+   //   GINVIS, 
+   //   GVISVEC, 
+   //   GVEC, 
+   //   NUM_GLOBAL_STYLE }
+
+
+    switch(m_global_style)
+    {
+        case GVIS:
+                  m_global_mode = true ;    
+                  m_globalvec_mode = false ;    
+                  break ; 
+        case GVISVEC:
+                  m_global_mode = true ;    
+                  m_globalvec_mode = true ;
+                  break ; 
+        case GVEC:
+                  m_global_mode = false ;    
+                  m_globalvec_mode = true ;
+                  break ; 
+        case GINVIS:
+                  m_global_mode = false ;    
+                  m_globalvec_mode = false ;
+                  break ; 
+        default:
+                  assert(0);
+        
+    }
+}
+
+
+
+
+
+
+
+bool Scene::isProjectiveRender()
+{
+   return m_render_style == R_PROJECTIVE ;
+}
+bool Scene::isRaytracedRender()
+{
+   return m_render_style == R_RAYTRACED ;
+}
+bool Scene::isCompositeRender()
+{
+   return m_render_style == R_COMPOSITE ;
+}
+
+
+ 
+
+
+void Scene::nextInstanceStyle()
+{
+    int next = (m_instance_style + 1) % NUM_INSTANCE_STYLE ; 
+    m_instance_style = (InstanceStyle_t)next ; 
+    applyInstanceStyle();
+}
+
+void Scene::applyInstanceStyle()  // I:key 
+{
+    // hmm some overlap with GeometryStyle ... but that includes wireframe which can be very slow
+    bool inst(false);
+    switch(m_instance_style)
+    {
+        case IVIS:
+                  inst = true ;    
+                  break ; 
+        case IINVIS:
+                  inst = false ;    
+                  break ; 
+         default:
+                  assert(0);
+        
+    }
+
+   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+   {
+       m_instance_mode[i] = inst ; 
+       //m_bbox_mode[i] = !inst ; 
+   } 
+
+}
+
+
+
+
+
+unsigned int Scene::getTargetDeferred()
+{
+    return m_target_deferred ; 
+}
 
 

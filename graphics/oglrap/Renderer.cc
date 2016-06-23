@@ -1,13 +1,9 @@
 #include <cstdint>
-
 #include <GL/glew.h>
 
-//
-#include "BLog.hh"
-
 // npy-
-#include "NPY.hpp"
 #include "NGLM.hpp"
+#include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "NSlice.hpp"
@@ -17,7 +13,6 @@
 #include "Composition.hh"
 #include "Texture.hh"
 
-
 // ggeo
 #include "GArray.hh"
 #include "GBuffer.hh"
@@ -25,11 +20,65 @@
 #include "GBBoxMesh.hh"
 #include "GDrawable.hh"
 
+#include "PLOG.hh"
 
 const char* Renderer::PRINT = "print" ; 
 
+
+Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
+    :
+    RendererBase(tag, dir, incl_path),
+    m_texcoords(0),
+    m_mv_location(-1),
+    m_mvp_location(-1),
+    m_clip_location(-1),
+    m_param_location(-1),
+    m_scanparam_location(-1),
+    m_nrmparam_location(-1),
+    m_lightposition_location(-1),
+    m_itransform_location(-1),
+    m_colordomain_location(-1),
+    m_colors_location(-1),
+    m_pickface_location(-1),
+    m_colorTex_location(-1),
+    m_depthTex_location(-1),
+    m_itransform_count(0),
+    m_draw_count(0),
+    m_indices_count(0),
+    m_drawable(NULL),
+    m_geometry(NULL),
+    m_bboxmesh(NULL),
+    m_texture(NULL),
+    m_texture_id(-1),
+    m_composition(NULL),
+    m_has_tex(false),
+    m_has_transforms(false),
+    m_instanced(false),
+    m_wireframe(false)
+{
+}
+
+
 Renderer::~Renderer()
 {
+}
+
+
+void Renderer::setInstanced(bool instanced)
+{
+    m_instanced = instanced ; 
+}
+void Renderer::setWireframe(bool wireframe)
+{
+    m_wireframe = wireframe ; 
+}
+void Renderer::setComposition(Composition* composition)
+{
+    m_composition = composition ;
+}
+Composition* Renderer::getComposition()
+{
+    return m_composition ;
 }
 
 void Renderer::configureI(const char* name, std::vector<int> values )
@@ -66,7 +115,7 @@ GLuint Renderer::upload(GLenum target, GLenum usage, B* buffer, const char* name
     return buffer_id ; 
 }
 
-void Renderer::upload(GBBoxMesh* bboxmesh, bool debug)
+void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
     m_bboxmesh = bboxmesh ;
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
@@ -75,7 +124,7 @@ void Renderer::upload(GBBoxMesh* bboxmesh, bool debug)
     NSlice* fslice = m_bboxmesh->getFaceSlice();
     upload_buffers(islice, fslice);
 }
-void Renderer::upload(GMergedMesh* geometry, bool debug)
+void Renderer::upload(GMergedMesh* geometry, bool /*debug*/)
 {
     m_geometry = geometry ;
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
@@ -85,7 +134,7 @@ void Renderer::upload(GMergedMesh* geometry, bool debug)
     upload_buffers(islice, fslice);
 }
 
-void Renderer::upload(Texture* texture, bool debug)
+void Renderer::upload(Texture* texture, bool /*debug*/)
 {
     setTexture(texture);
 
@@ -198,11 +247,11 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     {
         m_transforms = upload<NPY<float> >(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
         m_itransform_count = ibuf->getNumItems() ;
-        LOG(debug) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
+        LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
     else
     {
-        LOG(debug) << "Renderer::upload_buffers NO TRANSFORMS " ;
+        LOG(trace) << "Renderer::upload_buffers NO TRANSFORMS " ;
     }
 
 
@@ -245,7 +294,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 
     if(hasTransforms())
     {
-        LOG(debug) << "Renderer::upload_buffers setup instance transform attributes " ;
+        LOG(trace) << "Renderer::upload_buffers setup instance transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
 
         uintptr_t qsize = sizeof(GLfloat) * 4 ;
@@ -273,9 +322,9 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 
     glUseProgram(m_program);  // moved prior to check uniforms following Rdr::upload
 
-    LOG(debug) <<  "Renderer::upload_buffers after make_shader " ; 
+    LOG(trace) <<  "Renderer::upload_buffers after make_shader " ; 
     check_uniforms();
-    LOG(debug) <<  "Renderer::upload_buffers after check_uniforms " ; 
+    LOG(trace) <<  "Renderer::upload_buffers after check_uniforms " ; 
 
 }
 
@@ -291,7 +340,7 @@ void Renderer::check_uniforms()
     bool inrm = tag.compare("inrm") == 0 ; 
     bool tex = tag.compare("tex") == 0 ; 
 
-    LOG(debug) << "Renderer::check_uniforms " 
+    LOG(trace) << "Renderer::check_uniforms " 
               << " tag " << tag  
               << " nrm " << nrm  
               << " nrmvec " << nrmvec  
@@ -343,7 +392,7 @@ void Renderer::check_uniforms()
         assert(0); 
     }
 
-    LOG(debug) << "Renderer::check_uniforms "
+    LOG(trace) << "Renderer::check_uniforms "
               << " tag " << tag 
               << " mvp " << m_mvp_location
               << " mv " << m_mv_location 
@@ -496,7 +545,7 @@ void Renderer::render()
 
 
 
-void Renderer::dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count )
+void Renderer::dump(void* data, unsigned int /*nbytes*/, unsigned int stride, unsigned long offset, unsigned int count )
 {
     //assert(m_composition) rememeber OptiXEngine uses a renderer internally to draw the quad texture
     if(m_composition) m_composition->update();

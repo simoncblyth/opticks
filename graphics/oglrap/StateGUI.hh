@@ -2,20 +2,15 @@
 
 class NState ; 
 
-class StateGUI {
+#include "OGLRAP_API_EXPORT.hh"
+
+class OGLRAP_API StateGUI {
     public:
          StateGUI(NState* state);
          void gui();
     private:
          NState*           m_state ; 
 };
-
-
-inline StateGUI::StateGUI(NState* state) 
-    :
-    m_state(state)
-{
-}
 
 
 

@@ -5,10 +5,22 @@
 #include "Shdr.hh"
 
 #include "BFile.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 const char* GL_type_to_string (GLenum type);
+
+
+GLuint Prog::getId()
+{
+    return m_id ; 
+}
+
+void Prog::setInclPath(const char* path)
+{   
+    if(!path) return ;
+    m_incl_path = path ; 
+}
 
 
 Prog::Prog(const char* basedir, const char* tag, const char* incl_path) :

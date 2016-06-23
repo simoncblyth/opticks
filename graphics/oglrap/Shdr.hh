@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 
-class Shdr {
+#include "OGLRAP_API_EXPORT.hh"
+#include "OGLRAP_HEAD.hh"
 
+class OGLRAP_API Shdr {
    //friend class Prog ; 
-
    public:
        static const char* incl_prefix ; 
 
@@ -38,10 +39,5 @@ class Shdr {
 
 };
 
-
-inline GLuint Shdr::getId()
-{
-    return m_id ; 
-}
-
+#include "OGLRAP_TAIL.hh"
 

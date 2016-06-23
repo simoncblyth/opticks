@@ -2,10 +2,9 @@
 
 #include <vector>
 #include <string>
-#include <cstring>
-#include <cstdio>
 
-#include "Opticks.hh"
+
+class Opticks ; 
 
 class Composition ;
 class Bookmarks ; 
@@ -19,8 +18,8 @@ class Frame ;
 class Scene ;   
 class Animator ; 
 
-
-class Interactor {
+#include "OGLRAP_API_EXPORT.hh"
+class OGLRAP_API Interactor {
   public:
        enum { NUM_KEYS = 512 } ;
 
@@ -121,174 +120,6 @@ class Interactor {
        GUIStyle_t m_gui_style ; 
 
 };
-
-
-
-
-inline Interactor::Interactor() 
-   :
-   m_composition(NULL),
-   m_bookmarks(NULL),
-   m_camera(NULL),
-   m_view(NULL),
-   m_trackball(NULL),
-   m_clipper(NULL),
-   m_touchable(NULL),
-   m_frame(NULL),
-   m_scene(NULL),
-   m_animator(NULL),
-   m_zoom_mode(false), 
-   m_pan_mode(false), 
-   m_near_mode(false), 
-   m_far_mode(false), 
-   m_yfov_mode(false),
-   m_scale_mode(false),
-   m_rotate_mode(false),
-   m_bookmark_mode(false),
-   m_gui_mode(false),
-   m_scrub_mode(false),
-   //m_optix_mode(0),
-   m_optix_resolution_scale(1),
-   m_dragfactor(1.f),
-   m_container(0),
-   m_changed(true),
-   m_gui_style(NONE)
-{
-   for(unsigned int i=0 ; i < NUM_KEYS ; i++) m_keys_down[i] = false ; 
-   m_status[0] = '\0' ;
-}
-
-
-
-
-
-
-inline bool* Interactor::getGUIModeAddress()
-{
-    return &m_gui_mode ; 
-}
-
-inline bool* Interactor::getScrubModeAddress()
-{
-    return &m_scrub_mode ; 
-}
-
-inline void Interactor::nextGUIStyle()
-{
-    int next = (m_gui_style + 1) % NUM_GUI_STYLE ; 
-    m_gui_style = (GUIStyle_t)next ; 
-    applyGUIStyle();
-}
-
-inline void Interactor::applyGUIStyle()  // G:key 
-{
-    switch(m_gui_style)
-    {
-        case NONE:
-                  m_gui_mode = false ;    
-                  m_scrub_mode = false ;    
-                  break ; 
-        case SCRUB:
-                  m_gui_mode = false ;    
-                  m_scrub_mode = true ;    
-                  break ; 
-        case FULL:
-                  m_gui_mode = true ;    
-                  m_scrub_mode = true ;    
-                  break ; 
-        default:
-                  break ; 
-                   
-    }
-}
-
-
-
-
-
-
-/*
-inline bool* Interactor::getModeAddress(const char* name)
-{
-    if(strcmp(name, GUI_MODE)==0) return &m_gui_mode ;
-    return NULL ;
-}
-*/
-
-
-inline void Interactor::setScene(Scene* scene)
-{
-    m_scene = scene ; 
-}
-inline void Interactor::setTouchable(Touchable* touchable)
-{
-    m_touchable = touchable ; 
-}
-inline Touchable* Interactor::getTouchable()
-{
-    return m_touchable ; 
-}
-inline void Interactor::setFrame(Frame* frame)
-{
-    m_frame = frame ; 
-}
-inline Frame* Interactor::getFrame()
-{
-    return m_frame ; 
-}
-
-
-inline void Interactor::setContainer(unsigned int container)
-{
-    printf("Interactor::setContainer %u \n", container);
-    m_container = container ; 
-}
-
-inline unsigned int Interactor::getContainer()
-{
-    return m_container ;  
-}
-
-
-/*
-inline bool Interactor::isOptiXMode()
-{ 
-    return m_optix_mode > 0 ; 
-}
-inline void Interactor::setOptiXMode(int optix_mode)
-{
-    m_optix_mode =  optix_mode ; 
-    m_changed = true ; 
-}
-inline int Interactor::getOptiXMode()
-{ 
-    return m_optix_mode ; 
-}
-*/
-
-
-
-inline unsigned int Interactor::getOptiXResolutionScale()
-{ 
-    return m_optix_resolution_scale  ; 
-}
-inline void Interactor::setOptiXResolutionScale(unsigned int scale)
-{
-    m_optix_resolution_scale = (scale > 0 && scale <= 32) ? scale : 1 ;  
-    printf("Interactor::setOptiXResolutionScale %u \n", m_optix_resolution_scale);
-    m_changed = true ; 
-}
-
-
-inline bool Interactor::hasChanged()
-{
-    return m_changed ; 
-}
-inline void Interactor::setChanged(bool changed)
-{
-    m_changed = changed ; 
-}
-
 
 
 

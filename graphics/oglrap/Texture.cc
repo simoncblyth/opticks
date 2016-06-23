@@ -1,9 +1,14 @@
 #include "Texture.hh"
 
+
+
+// warning from APIENTRY macro redefinition if after glfw3
+#include "PLOG.hh"
+
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "BLog.hh"
 
 #define LOADPPM_IMPLEMENTATION
 #include "loadPPM.h"
@@ -62,6 +67,29 @@ Texture::Texture(bool zbuf) :
 {
     setColors( (gfloat3*)&pcolor[0] );
 }
+
+
+
+
+void Texture::setSize(unsigned int width, unsigned int height)
+{
+    m_width = width ; 
+    m_height = height ; 
+}
+unsigned int Texture::getId()
+{
+    return m_texture_id ;
+}
+unsigned int Texture::getWidth()
+{
+    return m_width ;
+}
+unsigned int Texture::getHeight()
+{
+    return m_height ;
+}
+
+
 
 
 void Texture::loadPPM(const char* path)

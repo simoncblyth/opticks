@@ -1,10 +1,17 @@
 #pragma once
 
+#include <cstddef>
+
 // env/pycuda/pycuda_pyopengl_interop/pixel_buffer.py
 
-#include "GMesh.hh"
 
-struct Tex {
+// hmm Texture is too general, QuadTexture better
+
+#include "GMesh.hh"
+#include "OGLRAP_API_EXPORT.hh"
+
+
+struct OGLRAP_API Tex {
    Tex(bool zbuf_) : width(0), height(0), rgb(NULL), rgba(NULL), depth(NULL), zbuf(zbuf_) {}
 
    int width  ;
@@ -15,8 +22,8 @@ struct Tex {
    bool zbuf ; 
 };
 
-// hmm Texture is too general, QuadTexture better
-class Texture : public GMesh {
+
+class OGLRAP_API Texture : public GMesh {
    public:
        Texture(bool zbuf=false);
 
@@ -40,25 +47,5 @@ class Texture : public GMesh {
        unsigned int m_texture_id ; 
        Tex          m_tex ; 
 };
-
-
-inline void Texture::setSize(unsigned int width, unsigned int height)
-{
-    m_width = width ; 
-    m_height = height ; 
-}
-inline unsigned int Texture::getId()
-{
-    return m_texture_id ;
-}
-inline unsigned int Texture::getWidth()
-{
-    return m_width ;
-}
-inline unsigned int Texture::getHeight()
-{
-    return m_height ;
-}
-
 
 

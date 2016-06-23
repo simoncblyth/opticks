@@ -1,6 +1,5 @@
 // op --gitemindex
 
-#include "Photons.hh"
 
 
 // npy-
@@ -12,11 +11,24 @@
 #include "GItemIndex.hh"
 
 
+#include "Photons.hh"
+
+
 #ifdef GUI_
 #include <imgui.h>
 #endif
 
 #include "GUI.hh"
+
+
+Photons::Photons(Types* types, GItemIndex* boundaries, GItemIndex* seqhis, GItemIndex* seqmat)
+    :
+    m_types(types),
+    m_boundaries(boundaries),
+    m_seqhis(seqhis),
+    m_seqmat(seqmat)
+{
+}
 
 
 void Photons::gui()

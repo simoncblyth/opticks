@@ -291,18 +291,21 @@ EOU
 oglrap-env(){      elocal- ; opticks- ; }
 
 oglrap-sdir(){ echo $(env-home)/graphics/oglrap ; }
-
+oglrap-tdir(){ echo $(env-home)/graphics/oglrap/tests ; }
 oglrap-idir(){ echo $(opticks-idir) ; }
 oglrap-bdir(){ echo $(opticks-bdir)/$(oglrap-rel) ; }
 
 oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
 
-oglrap-scd(){  cd $(oglrap-sdir); }
 oglrap-cd(){   cd $(oglrap-sdir); }
-
+oglrap-scd(){  cd $(oglrap-sdir); }
+oglrap-tcd(){  cd $(oglrap-tdir); }
 oglrap-icd(){  cd $(oglrap-idir); }
 oglrap-bcd(){  cd $(oglrap-bdir); }
+
+
 oglrap-name(){ echo OGLRap ; }
+oglrap-tag(){  echo OGLRAP ; }
 
 oglrap-wipe(){
    local bdir=$(oglrap-bdir)
@@ -310,27 +313,11 @@ oglrap-wipe(){
 }
 
 
-oglrap-make(){
-   local iwd=$PWD
-
-   oglrap-bcd 
-   make $*
-
-   cd $iwd
-}
-
-oglrap-install(){
-   oglrap-make install
-}
-
-oglrap-config(){ echo Debug ; }
-oglrap--()
-{
-   local iwd=$PWD;
-   oglrap-bcd;
-   cmake --build . --config $(oglrap-config) --target ${1:-install};
-   cd $iwd
-}
+oglrap--(){        opticks--     $(oglrap-bdir) ; }
+oglrap-ctest(){    opticks-ctest $(oglrap-bdir) $* ; }
+oglrap-genproj(){  oglrap-scd ; opticks-genproj $(oglrap-name) $(oglrap-tag) ; }
+oglrap-gentest(){  oglrap-tcd ; opticks-gentest ${1:-Scene} $(oglrap-tag) ; }
+oglrap-txt(){     vi $(oglrap-sdir)/CMakeLists.txt $(oglrap-tdir)/CMakeLists.txt ; }
 
 
 

@@ -1,18 +1,21 @@
 #pragma once
 
 #include <vector>
-#include "RendererBase.hh"
-#include "NPY.hpp"
 
+template <typename T> class NPY ; 
 class MultiViewNPY ;
 class ViewNPY ;
-class OpticksEvent ; 
 
+class OpticksEvent ; 
 class Composition ; 
+
 class Device ; 
 
+#include "RendererBase.hh"
+#include "OGLRAP_API_EXPORT.hh"
+#include "OGLRAP_HEAD.hh"
 
-class Rdr : public RendererBase  {
+class OGLRAP_API Rdr : public RendererBase  {
   public:
       Rdr(Device* dev, const char* tag, const char* dir=NULL, const char* incl_path=NULL);
 
@@ -94,85 +97,11 @@ class Rdr : public RendererBase  {
       GLint  m_colorparam_location ;
       GLint  m_lightposition_location ;
       GLint  m_pickphoton_location ;
-
       GLenum m_primitive ; 
 
       std::vector<MultiViewNPY*> m_uploads ; 
-
 };      
 
-
-inline Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path)
-    :
-    RendererBase(tag, dir, incl_path),  
-    m_first_upload(true),
-    m_device(device),
-    m_vao(0),
-    m_vao_generated(false),
-    //m_buffer(0),
-    m_countdefault(0),
-    m_composition(NULL),
-    m_mv_location(-1),
-    m_mvp_location(-1),
-    m_p_location(-1),
-    m_isnorm_mvp_location(-1),
-    m_selection_location(-1),
-    m_flags_location(-1),
-    m_pick_location(-1),
-    m_param_location(-1),
-    m_nrmparam_location(-1),
-    m_scanparam_location(-1),
-    m_timedomain_location(-1),
-    m_colordomain_location(-1),
-    m_colors_location(-1),
-    m_recselect_location(-1),
-    m_colorparam_location(-1),
-    m_lightposition_location(-1),
-    m_pickphoton_location(-1),
-    m_primitive(GL_POINTS)
-{
-}
-
-
-template <typename T>
-inline void Rdr::download( NPY<T>* npy )
-{
-    GLenum target = GL_ARRAY_BUFFER ;
-    void* ptr = mapbuffer( npy->getBufferId(), target );
-    if(ptr)
-    {
-       npy->read(ptr);
-       unmapbuffer(target);
-    }
-}
-
-
-inline void Rdr::configureI(const char* name, std::vector<int> values )
-{
-    if(values.empty()) return ; 
-    if(strcmp(name, PRINT)==0) Print("Rdr::configureI");
-}
-inline void Rdr::Print(const char* msg)
-{
-    printf("%s\n", msg);
-}
-inline void Rdr::setCountDefault(unsigned int count)
-{
-    m_countdefault = count ;
-}
-inline unsigned int Rdr::getCountDefault()
-{
-    return m_countdefault ;
-}
-inline void Rdr::setComposition(Composition* composition)
-{
-    m_composition = composition ;
-}
-inline Composition* Rdr::getComposition()
-{
-    return m_composition ;
-}
-
-
+#include "OGLRAP_TAIL.hh"
 
  

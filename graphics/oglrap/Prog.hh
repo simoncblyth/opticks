@@ -1,14 +1,17 @@
 #pragma once
 
 #include <GL/glew.h>
+
 #include <string>
 #include <vector>
 #include <map>
 
 class Shdr ;
 
+#include "OGLRAP_API_EXPORT.hh"
+#include "OGLRAP_HEAD.hh"
 
-class Prog {
+class OGLRAP_API Prog {
    public:
       Prog(const char* basedir, const char* tag, const char* incl_path=NULL);
 
@@ -64,14 +67,5 @@ class Prog {
 
 };
 
-inline GLuint Prog::getId()
-{
-    return m_id ; 
-}
-
-inline void Prog::setInclPath(const char* path)
-{   
-    if(!path) return ;
-    m_incl_path = path ; 
-}
+#include "OGLRAP_TAIL.hh"
 

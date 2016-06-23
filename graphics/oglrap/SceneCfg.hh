@@ -1,8 +1,10 @@
 #pragma once
+#include "Scene.hh"
 #include "BCfg.hh"
+#include "OGLRAP_API_EXPORT.hh"
 
 template <class Listener>
-class SceneCfg : public BCfg {
+class OGLRAP_API SceneCfg : public BCfg {
 public:
    SceneCfg(const char* name, Listener* listener, bool live) : BCfg(name, live) 
    {   
@@ -12,4 +14,5 @@ public:
    }   
 };
 
+template class OGLRAP_API SceneCfg<Scene> ;
 

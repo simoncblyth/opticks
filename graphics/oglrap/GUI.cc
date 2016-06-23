@@ -62,6 +62,84 @@ void GUI::setScene(Scene* scene)
 }
 
 
+
+GUI::GUI(GGeo* ggeo) 
+   :
+   m_ggeo(ggeo),
+   m_show_test_window(false),
+   m_bg_alpha(0.65f),
+   m_scrub_alpha(0.01f),
+   m_interactor(NULL),
+   m_scene(NULL),
+   m_composition(NULL),
+   m_view(NULL),
+   m_camera(NULL),
+   m_clipper(NULL),
+   m_trackball(NULL),
+   m_bookmarks(NULL),
+   m_state_gui(NULL),
+   m_photons(NULL),
+   m_animator(NULL)
+{
+}
+
+void GUI::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ; 
+}
+void GUI::setPhotons(Photons* photons)
+{
+    m_photons = photons ; 
+}
+
+void GUI::setView(View* view)
+{
+    m_view = view ; 
+}
+
+void GUI::setCamera(Camera* camera)
+{
+    m_camera = camera ; 
+}
+void GUI::setClipper(Clipper* clipper)
+{
+    m_clipper = clipper ; 
+}
+void GUI::setTrackball(Trackball* trackball)
+{
+    m_trackball = trackball ; 
+}
+void GUI::setBookmarks(Bookmarks* bookmarks)
+{
+    m_bookmarks = bookmarks ; 
+}
+void GUI::setStateGUI(StateGUI* state_gui)
+{
+    m_state_gui = state_gui ; 
+}
+void GUI::setAnimator(Animator* animator)
+{
+    m_animator = animator ; 
+}
+
+
+void GUI::setupHelpText(const std::string& txt)
+{
+    m_help = txt ; 
+} 
+
+void GUI::setupStats(const std::vector<std::string>& stats)
+{
+    m_stats = stats ; 
+}
+void GUI::setupParams(const std::vector<std::string>& params)
+{
+    m_params = params ; 
+}
+
+
+
+
 void GUI::init(GLFWwindow* window)
 {
     bool install_callbacks = false ; 
@@ -353,7 +431,7 @@ void GUI::composition_gui(Composition* composition)
 
     int* pickp = composition->getPickPtr() ;
     ImGui::SliderInt( "pick.x", pickp + 0,  1, 100 );  // modulo scale down
-    ImGui::SliderInt( "pick.w", pickp + 3,  0, 1e6 );  // single photon pick
+    ImGui::SliderInt( "pick.w", pickp + 3,  0, 1000000 );  // single photon pick
 
     int* colpar = composition->getColorParamPtr() ;
     ImGui::SliderInt( "colorparam.x", colpar + 0,  0, Composition::NUM_COLOR_STYLE  );  // record color mode
@@ -606,7 +684,7 @@ void GUI::gui_item_index(const char* type, std::vector<std::string>& labels, std
            unsigned int green = (code & 0x00FF00) >>  8 ; 
            unsigned int blue  = (code & 0x0000FF)  ;
 
-           ImGui::TextColored(ImVec4(red/256.,green/256.,blue/256.,1.0f), "%s", labels[i].c_str() );
+           ImGui::TextColored(ImVec4(red/256.f,green/256.f,blue/256.f,1.0f), "%s", labels[i].c_str() );
        }   
     }   
 #endif

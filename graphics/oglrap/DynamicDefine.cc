@@ -1,11 +1,19 @@
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <boost/lexical_cast.hpp>
 
 #include "BFile.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #include "DynamicDefine.hh"
+
+
+
+inline DynamicDefine::DynamicDefine() 
+{
+}    
+
 
 void DynamicDefine::write(const char* dir, const char* name)
 {
@@ -58,6 +66,6 @@ void DynamicDefine::add(const char* name, T value)
 
 
 // explicit instanciation
-template void DynamicDefine::add<int>(const char* name, int value);
-template void DynamicDefine::add<unsigned int>(const char* name, unsigned int value);
-template void DynamicDefine::add<float>(const char* name, float value);
+template OGLRAP_API void DynamicDefine::add<int>(const char* name, int value);
+template OGLRAP_API void DynamicDefine::add<unsigned int>(const char* name, unsigned int value);
+template OGLRAP_API void DynamicDefine::add<float>(const char* name, float value);

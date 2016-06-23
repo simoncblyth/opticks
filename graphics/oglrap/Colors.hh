@@ -3,8 +3,9 @@
 class Device ; 
 template <typename T> class NPY ; 
 
+#include "OGLRAP_API_EXPORT.hh"
 
-class Colors {
+class OGLRAP_API Colors {
   public:
       Colors(Device* dev);
   public: 
@@ -21,17 +22,4 @@ class Colors {
 
 };      
 
-inline Colors::Colors(Device* device)
-    :
-    m_device(device),
-    m_colors_tex(0),
-    m_colors_uploaded(false),
-    m_colorbuffer(NULL)
-{
-}
 
-
-inline void Colors::setColorBuffer(NPY<unsigned char>* colorbuffer)
-{
-    m_colorbuffer = colorbuffer ; 
-}

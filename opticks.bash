@@ -783,15 +783,15 @@ opticks-genproj-sources-(){
 
 set(SOURCES
      
-   ${tag}_LOG.cc
+    ${tag}_LOG.cc
 
 )
 set(HEADERS
 
-    ${tag}_LOG.hh
-    ${tag}_API_EXPORT.hh
-    ${tag}_HEAD.hh
-    ${tag}_TAIL.hh
+     ${tag}_LOG.hh
+     ${tag}_API_EXPORT.hh
+     ${tag}_HEAD.hh
+     ${tag}_TAIL.hh
 
 )
 EOS

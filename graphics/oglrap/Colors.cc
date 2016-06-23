@@ -1,12 +1,26 @@
 #include <GL/glew.h>
 
-
 #include "Colors.hh"
 #include "Device.hh"
 
 #include "NPY.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
+
+
+Colors::Colors(Device* device)
+    :
+    m_device(device),
+    m_colors_tex(0),
+    m_colors_uploaded(false),
+    m_colorbuffer(NULL)
+{
+}
+
+void Colors::setColorBuffer(NPY<unsigned char>* colorbuffer)
+{
+    m_colorbuffer = colorbuffer ; 
+}
 
 
 unsigned int Colors::getNumColors()

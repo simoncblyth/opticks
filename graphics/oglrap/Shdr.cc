@@ -4,16 +4,17 @@
 #include <fstream>
 
 #include <boost/algorithm/string.hpp>
-
 #include "BFile.hh"
-#include "BLog.hh"
 
 #include "Shdr.hh"
-
 #include <GL/glew.h>
+
+#include "PLOG.hh"
+
 
 
 const char* Shdr::incl_prefix = "#incl" ;  // not "#include" to remind that this is non-standard
+
 
 Shdr::Shdr(const char* path, GLenum type, const char* incl_path )
     :
@@ -23,6 +24,12 @@ Shdr::Shdr(const char* path, GLenum type, const char* incl_path )
 {
     setInclPath(incl_path);
     readFile(m_path);
+}
+
+
+GLuint Shdr::getId()
+{
+    return m_id ; 
 }
 
 
@@ -100,7 +107,7 @@ void Shdr::readFile(const char* path)
     LOG(debug) << "Shdr::readFile " 
                << " path " << path 
                << " npath " << npath 
-               << std::endl ; 
+               ;
      
 
     std::ifstream fs(npath.c_str(), std::ios::in);

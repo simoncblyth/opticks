@@ -1,10 +1,17 @@
 #include "StateGUI.hh"
 #include "NState.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 #ifdef GUI_
 #include <imgui.h>
 #endif
+
+
+StateGUI::StateGUI(NState* state) 
+    :
+    m_state(state)
+{
+}
 
 
 void StateGUI::gui()

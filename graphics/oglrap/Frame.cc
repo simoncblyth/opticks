@@ -1,28 +1,82 @@
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
+#include <iostream>
+#include <iomanip>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <boost/algorithm/string.hpp> 
+#include <boost/lexical_cast.hpp>
+
+#include "OGLRAP_BODY.hh"
+#include "PLOG.hh"
+//
+//  C:\Program Files (x86)\Windows Kits\8.1\Include\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
+// when PLOG is after glfw3
+
+
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
+#include "NGLM.hpp"
+
 #include "Frame.hh"
 #include "Interactor.hh"
 #include "Composition.hh"
 #include "Scene.hh"
 
-#include <iostream>
-#include <iomanip>
-#include <boost/algorithm/string.hpp> 
-#include <boost/lexical_cast.hpp>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
+Frame::Frame() : 
+     m_fullscreen(false),
+     m_is_fullscreen(false),
+     m_coord2pixel(1),
+     m_title(NULL),
+     m_window(NULL),
+     m_interactor(NULL),
+     m_cursor_inwindow(true),
+     m_cursor_x(-1.f),
+     m_cursor_y(-1.f),
+     m_dumpevent(0),
+     m_pixel_factor(1),
+     m_pos_x(0),
+     m_pos_y(0)
+{
+}
 
+
+GLFWwindow* Frame::getWindow()
+{ 
+    return m_window ; 
+}
+unsigned int Frame::getWidth()
+{  
+    return m_width ; 
+} 
+unsigned int Frame::getHeight()
+{ 
+   return m_height ; 
+} 
+unsigned int Frame::getCoord2pixel()
+{ 
+   return m_coord2pixel ; 
+} 
+
+
+void Frame::setInteractor(Interactor* interactor)
+{
+    m_interactor = interactor ;
+}
+void Frame::setComposition(Composition* composition)
+{
+   m_composition = composition ; 
+}
+void Frame::setScene(Scene* scene)
+{
+   m_scene = scene ; 
+}
 
 
 
@@ -49,7 +103,7 @@ void _update_fps_counter (GLFWwindow* window, const char* status) {
 }
 
 
-static void error_callback(int error, const char* description)
+static void error_callback(int /*error*/, const char* description)
 {
     fputs(description, stderr);
 }
@@ -406,8 +460,8 @@ void Frame::getCursorPos()
     double xpos ;  
     double ypos ;
     glfwGetCursorPos(m_window, &xpos, &ypos );
-    m_pos_x = floor(xpos)*m_coord2pixel;
-    m_pos_y = floor(ypos)*m_coord2pixel;
+    m_pos_x = static_cast<int>(floor(xpos)*m_coord2pixel);
+    m_pos_y = static_cast<int>(floor(ypos)*m_coord2pixel);
     //printf("Frame::getCursorPos    %d %d  (%d)    \n", m_pos_x, m_pos_y, m_coord2pixel );
 }
 
@@ -440,11 +494,11 @@ void Frame::handle_event(GLEQevent& event)
         case GLEQ_CURSOR_MOVED:
              if(m_cursor_inwindow)
              {
-                  float cursor_dx = m_cursor_x > 0. ? event.pos.x - m_cursor_x : 0.f ; 
-                  float cursor_dy = m_cursor_y > 0. ? event.pos.y - m_cursor_y : 0.f ; 
+                  float cursor_dx = m_cursor_x > 0.f ? float(event.pos.x) - m_cursor_x : 0.f ; 
+                  float cursor_dy = m_cursor_y > 0.f ? float(event.pos.y) - m_cursor_y : 0.f ; 
 
-                  m_cursor_x = event.pos.x ;
-                  m_cursor_y = event.pos.y ;
+                  m_cursor_x = float(event.pos.x) ;
+                  m_cursor_y = float(event.pos.y) ;
 
                   //printf("Cursor x,y %0.2f,%0.2f dx,dy  %0.2f,%0.2f \n", m_cursor_x, m_cursor_y, cursor_dx, cursor_dy );
                   //
@@ -455,11 +509,11 @@ void Frame::handle_event(GLEQevent& event)
                   //       bottom left  (-1,-1)
                   //
 
-                  float x = (2.*m_cursor_x - m_width)/m_width ;
-                  float y = (m_height - 2.*m_cursor_y)/m_height ;
+                  float x = (2.f*m_cursor_x - m_width)/m_width ;
+                  float y = (m_height - 2.f*m_cursor_y)/m_height ;
  
-                  float dx = 2.*cursor_dx/m_width  ;
-                  float dy = -2.*cursor_dy/m_height ;
+                  float dx = 2.f*cursor_dx/m_width  ;
+                  float dy = -2.f*cursor_dy/m_height ;
 
                   // problem with this is how to end the drag, lifting finger and tapping 
                   // screen comes over as sudden large drag, causing large trackball rotations

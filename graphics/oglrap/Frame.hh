@@ -1,13 +1,14 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "gleq.h"
-#include <glm/glm.hpp>  
+#include <glm/fwd.hpp>  
 
 #include "Touchable.hh"
-#include <string>
-#include <vector>
 
 class Config ;
 class Interactor ; 
@@ -47,8 +48,8 @@ class Scene ;
 // * trim some seconds off initialization
 
 
-
-class Frame : public Touchable {
+#include "OGLRAP_API_EXPORT.hh"
+class OGLRAP_API Frame : public Touchable {
    public:
        Frame();
        virtual ~Frame();
@@ -145,59 +146,6 @@ class Frame : public Touchable {
        int           m_pos_y ;
 
 };
-
-inline Frame::Frame() : 
-     m_fullscreen(false),
-     m_is_fullscreen(false),
-     m_coord2pixel(1),
-     m_title(NULL),
-     m_window(NULL),
-     m_interactor(NULL),
-     m_cursor_inwindow(true),
-     m_cursor_x(-1.f),
-     m_cursor_y(-1.f),
-     m_dumpevent(0),
-     m_pixel_factor(1),
-     m_pos_x(0),
-     m_pos_y(0)
-{
-}
-
-
-inline GLFWwindow* Frame::getWindow()
-{ 
-    return m_window ; 
-}
-inline unsigned int Frame::getWidth()
-{  
-    return m_width ; 
-} 
-inline unsigned int Frame::getHeight()
-{ 
-   return m_height ; 
-} 
-inline unsigned int Frame::getCoord2pixel()
-{ 
-   return m_coord2pixel ; 
-} 
-
-
-inline void Frame::setInteractor(Interactor* interactor)
-{
-    m_interactor = interactor ;
-}
-inline void Frame::setComposition(Composition* composition)
-{
-   m_composition = composition ; 
-}
-inline void Frame::setScene(Scene* scene)
-{
-   m_scene = scene ; 
-}
-
-
-
-
 
 
 
