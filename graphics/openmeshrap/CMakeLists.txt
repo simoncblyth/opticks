@@ -5,6 +5,7 @@ project(${name})
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
+find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(GLM    REQUIRED)
@@ -16,6 +17,7 @@ find_package(OpenMesh REQUIRED)
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
+   ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
@@ -26,6 +28,7 @@ include_directories(
 )
 
 add_definitions(
+   ${PLog_DEFINITIONS}
    ${OpticksBoost_DEFINITIONS}
    ${BoostRap_DEFINITIONS} 
    ${GLM_DEFINITIONS}
@@ -36,6 +39,7 @@ add_definitions(
 )
 
 set(LIBRARIES
+   ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${GLM_LIBRARIES}
@@ -45,12 +49,21 @@ set(LIBRARIES
    ${OpenMesh_LIBRARIES}
 )
 
+
 set(SOURCES
+     MESHRAP_LOG.cc
+
      MWrap.cc
      MTool.cc
      MFixer.cc
 )
 set(HEADERS
+
+     MESHRAP_LOG.hh
+     MESHRAP_API_EXPORT.hh
+     MESHRAP_HEAD.hh
+     MESHRAP_TAIL.hh
+
      MWrap.hh
      MTool.hh
      MFixer.hh

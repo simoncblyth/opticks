@@ -13,13 +13,15 @@
 #include "OpticksResource.hh"
 
 // npy-
-#include "BLog.hh"
 
 // ggeo-
 #include "GMesh.hh"
 
 //
 #include "MWrap.hh"
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+#include "MESHRAP_LOG.hh"
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
@@ -27,14 +29,30 @@ typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
 int main(int argc, char** argv)
 {
-    Opticks ok(argc, argv, "openmeshrap.log");
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+    MESHRAP_LOG_ ;
+
+    LOG(info) << argv[0] ;
+
+    Opticks ok(argc, argv);
 
     const char* idpath = ok.getIdPath();
     LOG(info) << "idpath " << ( idpath ? idpath : "NULL" ) ; 
     assert(idpath && "OpenMeshRapTest::main idpath is required");
 
     GMesh* gm = GMesh::load_deduped( idpath, "GMergedMesh/0" );
+    LOG(info) << " after load_deduped " ;  
+
+    if(!gm)
+    {
+        LOG(error) << "gm NULL " ;
+        return 0 ;   
+    } 
+
     gm->Summary();
+
+
 
     MWrap<MyMesh> ws(new MyMesh);
     ws.load(gm);  // asserting in here

@@ -1,10 +1,10 @@
 #pragma once
-#include <cstddef>
 
 class GGeo ; 
 class MTool ; 
 
-class MFixer {
+#include "MESHRAP_API_EXPORT.hh"
+class MESHRAP_API MFixer {
    public:
        MFixer(GGeo* ggeo);
        void setVerbose(bool verbose=true);
@@ -18,16 +18,4 @@ class MFixer {
 
 };
 
-inline MFixer::MFixer(GGeo* ggeo) : 
-    m_ggeo(ggeo), 
-    m_tool(NULL),
-    m_verbose(false)
-{
-    init();
-}
-
-inline void MFixer::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
 

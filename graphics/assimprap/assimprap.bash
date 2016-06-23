@@ -19,6 +19,37 @@ which adds handling of G4DAE extra material/surface properties.
 * used by raytrace-
 
 
+
+Windows MSVC
+-------------
+
+::
+
+    $ AssimpRapTest.exe
+    C:/usr/local/opticks/lib/AssimpRapTest.exe: error while loading shared libraries: ?: cannot open shared object file: No such file or directory
+
+
+Copying the assimp .lib (from ../externals/lib) and .dll from (../externals/bin) 
+into /c/usr/local/opticks/lib allows the test to run::
+
+    ntuhep@ntuhep-PC MINGW64 /c/usr/local/opticks/lib
+    $ ll assimp*
+    -rw-r--r-- 1 ntuhep 197121   164518 Jun 23 16:31 assimp-vc100-mtd.lib
+    -rwxr-xr-x 1 ntuhep 197121 13109760 Jun 23 16:33 assimp-vc100-mtd.dll*
+
+
+Getting DAE for the test
+----------------------------
+
+::
+
+    opticksdata-
+    opticksdata-get
+    opticksdata-export
+
+
+
+
 Classes/compilation units
 ----------------------------
 

@@ -30,10 +30,10 @@ add_subdirectory(numerics/npy)
 add_subdirectory(optickscore)         
 add_subdirectory(optix/ggeo)     
 add_subdirectory(graphics/assimprap)   
+add_subdirectory(graphics/openmeshrap)  
 
 #set(REST ON)
 if(REST)
-   add_subdirectory(graphics/openmeshrap)  
    add_subdirectory(opticksgeo)  
    add_subdirectory(graphics/oglrap)       
 

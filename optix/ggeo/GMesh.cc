@@ -1661,7 +1661,25 @@ GMesh* GMesh::makeDedupedCopy()
 
 GMesh* GMesh::load_deduped(const char* dir, const char* typedir, const char* instancedir)
 {
+    LOG(trace) << "GMesh::load_deduped"
+               << " dir " << dir
+               << " typedir " << typedir
+               << " instancedir " << instancedir
+               ;
+
     GMesh* gm = GMesh::load(dir, typedir, instancedir) ;
+
+    if(!gm)
+    {
+         LOG(error) << "GMesh::load_deduped FAILED to load mesh"
+               << " dir " << dir
+               << " typedir " << typedir
+               << " instancedir " << instancedir
+               ;
+
+         return NULL ; 
+    }    
+
     GMesh* dm = gm->makeDedupedCopy();
     delete gm ; 
     return dm ; 

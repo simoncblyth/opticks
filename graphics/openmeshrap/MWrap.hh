@@ -2,7 +2,11 @@
 
 #include <vector>
 #include <map>
-#include <glm/glm.hpp>
+#include "NGLM.hpp"
+
+#include <OpenMesh/Core/IO/MeshIO.hh>
+#include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
 class GMesh ; 
 
@@ -12,8 +16,11 @@ struct BBox {
 };
 
 
+#include "MESHRAP_API_EXPORT.hh"
+#include "MESHRAP_HEAD.hh"
+
 template <typename MeshT>
-class MWrap { 
+class MESHRAP_API MWrap { 
     // Developed with single/few mesh caches in mind like --jdyb --kdyb 
    public:
        MWrap(MeshT* mesh);
@@ -51,7 +58,7 @@ class MWrap {
       void partialCopyTo(MeshT* dst, const char* ivpropname, int ivpropval, std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle>& src2dst );
 
    public:
-      static int labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const char* fposprop, const char* fpropname);
+      static int labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, const char* fposprop, const char* fpropname);
       static std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> findBoundaryVertexMap(MWrap<MeshT>* wa, MWrap<MeshT>* wb);
    public:
       static MWrap<MeshT>* load(const char* dir);
@@ -68,21 +75,7 @@ class MWrap {
 };
 
 
-template <typename MeshT>
-inline MWrap<MeshT>::MWrap(MeshT* mesh) : m_mesh(mesh) 
-{
-}
+#include "MESHRAP_TAIL.hh"
 
-template <typename MeshT>
-inline MeshT* MWrap<MeshT>::getMesh()
-{
-    return m_mesh ; 
-}
-
-template <typename MeshT>
-inline std::vector<typename MeshT::VertexHandle>& MWrap<MeshT>::getBoundaryLoop()
-{
-    return m_boundary ; 
-}
-
+template class MWrap<MyMesh>;
 

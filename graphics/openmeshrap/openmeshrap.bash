@@ -202,14 +202,15 @@ EOU
 }
 openmeshrap-env(){      elocal- ; opticks- ;  }
 openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
-
-
+openmeshrap-sdir(){ echo $(env-home)/graphics/openmeshrap ; }
 openmeshrap-idir(){ echo $(opticks-idir) ; }
 openmeshrap-bdir(){ echo $(opticks-bdir)/$(openmeshrap-rel) ; }
 
 openmeshrap-cd(){   cd $(openmeshrap-dir); }
+openmeshrap-scd(){  cd $(openmeshrap-sdir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }
 openmeshrap-bcd(){  cd $(openmeshrap-bdir); }
+
 openmeshrap-bin(){  echo $(openmeshrap-idir)/bin/OpenMeshRapTest ; }
 
 openmeshrap-wipe(){
@@ -218,30 +219,17 @@ openmeshrap-wipe(){
 
 }
 
-openmeshrap-make(){
-  local iwd=$PWD
-  openmeshrap-bcd
-  make $*
-  cd $iwd
-}
 
-openmeshrap-install(){
-  openmeshrap-make install
-}
+openmeshrap-name(){ echo OpenMeshRap ; }
+openmeshrap-tag(){  echo MESHRAP ; }
 
-openmeshrap-full(){
-  openmeshrap-make clean
-  openmeshrap-make
-  openmeshrap-install
-}
 
-openmeshrap-config(){ echo Debug ; }
-openmeshrap--()
-{
-   local iwd=$PWD;
-   openmeshrap-bcd;
-   cmake --build . --config $(openmeshrap-config) --target ${1:-install};
-   cd $iwd
-}
+openmeshrap--(){        opticks--     $(openmeshrap-bdir) ; }
+openmeshrap-ctest(){    opticks-ctest $(openmeshrap-bdir) $* ; }
+openmeshrap-genproj(){  openmeshrap-scd ; opticks-genproj $(openmeshrap-name) $(openmeshrap-tag) ; }
+openmeshrap-gentest(){  openmeshrap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(openmeshrap-tag) ; }
+
+
+
 
 

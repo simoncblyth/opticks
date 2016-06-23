@@ -43,12 +43,23 @@ Comparing with pycollada
 
 #include "PLOG.hh"
 
+#include "BRAP_LOG.hh"
+#include "NPY_LOG.hh"
+#include "OKCORE_LOG.hh"
+#include "GGEO_LOG.hh"
+#include "ASIRAP_LOG.hh"
+
 
 // cf with App::loadGeometry and GLoader::load where the below is canonically done  
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+    BRAP_LOG_ ;
+    NPY_LOG_ ;
+    OKCORE_LOG_ ;
+    GGEO_LOG_ ;
+    ASIRAP_LOG_ ;
 
     Opticks ok(argc, argv);
 

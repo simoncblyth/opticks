@@ -1,23 +1,39 @@
-#include "MWrap.hh"
-
 #include <iostream>
 #include <iomanip>
 
 // npy-
+#include "NGLM.hpp"
 #include "NCache.hpp"
 #include "GLMPrint.hpp"
 
 // ggeo-
 #include "GMesh.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+#include "MWrap.hh"
+
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-#include <OpenMesh/Core/IO/MeshIO.hh>
-#include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
-typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
+
+
+template <typename MeshT>
+MWrap<MeshT>::MWrap(MeshT* mesh) : m_mesh(mesh) 
+{
+}
+
+template <typename MeshT>
+MeshT* MWrap<MeshT>::getMesh()
+{
+    return m_mesh ; 
+}
+
+template <typename MeshT>
+std::vector<typename MeshT::VertexHandle>& MWrap<MeshT>::getBoundaryLoop()
+{
+    return m_boundary ; 
+}
 
 
 
@@ -108,7 +124,7 @@ GMesh* MWrap<MeshT>::createGMesh()
 
 
 template <typename MeshT>
-void MWrap<MeshT>::copyOut(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces, float* ndata  )  
+void MWrap<MeshT>::copyOut(float* vdata, unsigned int /*num_vertices*/, unsigned int* fdata, unsigned int /*num_faces*/, float* ndata  )  
 {
     typedef typename MeshT::Point P ; 
     typedef typename MeshT::VertexHandle VH ; 
@@ -233,7 +249,7 @@ void MWrap<MeshT>::calcFaceCentroids(const char* fpropname)
 
 
 template <typename MeshT>
-int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const char* fposprop, const char* fpropname)  
+int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, const char* fposprop, const char* fpropname)  
 {
     typedef typename MeshT::Point P ; 
     typedef typename MeshT::FaceIter FI ; 
@@ -285,6 +301,7 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const c
 
             if(close && backtoback) 
             {
+#ifdef DOLOG        
                  LOG(debug)
                        << std::setw(3) << npair 
                        << " (" << std::setw(3) << fa
@@ -294,7 +311,8 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, glm::vec4 delta, const c
                        << " bn " << std::setprecision(3) << std::fixed << std::setw(20)  << bn 
                        << " a.b " << std::setprecision(3) << std::fixed << std::setw(10) << adotb
                        << " dp " << std::setprecision(3) << std::fixed << std::setw(20)  << dp
-                       << std::endl ;  
+                       ;
+#endif
                  npair++ ; 
 
                  // mark the paired faces
@@ -473,6 +491,7 @@ void MWrap<MeshT>::dumpStats(const char* msg)
     assert( nvert == n_vert );
     assert( nedge == n_edge );
 
+#ifdef DOLOG        
     LOG(info) << msg  
               << " nface " << nface 
               << " nvert " << nvert 
@@ -480,11 +499,12 @@ void MWrap<MeshT>::dumpStats(const char* msg)
               << " V - E + F = " << nvert - nedge + nface 
               << " (should be 2 for Euler Polyhedra) "   
               ; 
+#endif
 }
  
 
 template <typename MeshT>
-void MWrap<MeshT>::dumpFaces(const char* msg, unsigned int detail)
+void MWrap<MeshT>::dumpFaces(const char* msg, unsigned int /*detail*/)
 {
     typedef typename MeshT::FaceIter FI ; 
     typedef typename MeshT::ConstFaceVertexIter FVI ; 
@@ -697,6 +717,7 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
                 bmin = dpn ; 
                 bclosest = *bv ; 
             }   
+#ifdef DOLOG        
             LOG(debug)
                 << " (" << std::setw(3) << ai
                 << "->" << std::setw(3) << bi 
@@ -705,7 +726,8 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
                 << " bp " << std::setprecision(3) << std::fixed << std::setw(20)  << bp 
                 << " dp " << std::setprecision(3) << std::fixed << std::setw(20)  << dp
                 << " dpn " << std::setprecision(3) << std::fixed << std::setw(10)  << dpn
-                << std::endl ;  
+                ;
+#endif
         } 
         
         P bpc = b->point(bclosest);
@@ -714,6 +736,7 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
 
         a2b[*av] = bclosest ; 
 
+#ifdef DOLOG        
         LOG(debug)
                 << " (" << std::setw(3) << ai
                 << "->" << std::setw(3) << bic 
@@ -722,7 +745,8 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
                 << " bpc " << std::setprecision(3) << std::fixed << std::setw(20)  << bpc 
                 << " dpc " << std::setprecision(3) << std::fixed << std::setw(20)  << dpc
                 << " dpcn " << std::setprecision(3) << std::fixed << std::setw(10)  << dpc.norm()
-                << std::endl ;  
+                ;  
+#endif
 
     }
     return a2b ; 
@@ -780,10 +804,12 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
         VH avc = a2c[av] ;  
         VH bvc = b2c[bv] ; 
 
+#ifdef DOLOG        
         LOG(debug)
              << "(" << av.idx() << "->" << bv.idx() << ")" 
              << "(" << avc.idx() << "->" << bvc.idx() << ")" 
-             << std::endl ; 
+             ;
+#endif
     }
 
     /*
@@ -818,7 +844,8 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
          // opposite winding order causes lots of complex edge errors
          c->add_face( a0c, a1c, b0c );
          c->add_face( b1c, b0c, a1c );
-        
+
+#ifdef DOLOG        
          LOG(debug)
              << " a0 " << std::setw(3) << a0.idx() 
              << " a1 " << std::setw(3) << a1.idx() 
@@ -828,7 +855,10 @@ void MWrap<MeshT>::createWithWeldedBoundary(MWrap<MeshT>* wa, MWrap<MeshT>* wb, 
              << " a1c " << std::setw(3) << a1c.idx() 
              << " b0c " << std::setw(3) << b0c.idx() 
              << " b1c " << std::setw(3) << b1c.idx() 
-             << std::endl ; 
+             ;
+#endif
+
+
     }
 
     c->request_face_normals();
@@ -862,5 +892,3 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
 
 
 
-
-template class MWrap<MyMesh>;

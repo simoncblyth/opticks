@@ -1,12 +1,27 @@
-#include "MFixer.hh"
-#include "MTool.hh"
+#include <algorithm>
+#include <sstream>
 
 #include "GGeo.hh"
 #include "GMesh.hh"
 
-#include <algorithm>
-#include <sstream>
-#include "BLog.hh"
+#include "MFixer.hh"
+#include "MTool.hh"
+
+#include "PLOG.hh"
+
+
+MFixer::MFixer(GGeo* ggeo) : 
+    m_ggeo(ggeo), 
+    m_tool(NULL),
+    m_verbose(false)
+{
+    init();
+}
+
+void MFixer::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
 
 void MFixer::init()
 {

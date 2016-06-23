@@ -1,7 +1,6 @@
 
 // npy-
 #include "BStr.hh"
-#include "BLog.hh"
 #include "BDirect.hh"
 
 // okc-
@@ -19,6 +18,26 @@
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
+#include "PLOG.hh"
+
+
+
+MTool::MTool() : m_noise(0) 
+{
+}
+
+std::string& MTool::getOut()
+{
+    return m_out ; 
+}
+std::string& MTool::getErr()
+{
+    return m_err ; 
+}
+unsigned int MTool::getNoise()
+{
+    return m_noise ; 
+}
 
 
 unsigned int MTool::countMeshComponents(GMesh* gmesh)

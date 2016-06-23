@@ -1,10 +1,13 @@
 #pragma once
 
 #include <string>
+
 class GMesh ; 
 class Opticks ; 
 
-class MTool {
+#include "MESHRAP_API_EXPORT.hh"
+#include "MESHRAP_HEAD.hh"
+class MESHRAP_API MTool {
    public:
        MTool();
        static GMesh* joinSplitUnion(GMesh* mesh, Opticks* opticks);
@@ -24,25 +27,5 @@ class MTool {
 
 };
 
-
-inline MTool::MTool() : m_noise(0) 
-{
-}
-
-inline std::string& MTool::getOut()
-{
-    return m_out ; 
-}
-inline std::string& MTool::getErr()
-{
-    return m_err ; 
-}
-inline unsigned int MTool::getNoise()
-{
-    return m_noise ; 
-}
-
-
-
-
+#include "MESHRAP_TAIL.hh"
 
