@@ -19,7 +19,9 @@ namespace Assimp
 #include <assimp/types.h>
 #include <vector>
 
-class AssimpGeometry 
+#include "ASIRAP_API_EXPORT.hh"
+
+class ASIRAP_API AssimpGeometry 
 {
 public:
     AssimpGeometry(const char* path);
@@ -34,7 +36,7 @@ public:
     unsigned int getSceneFlags();
     unsigned int defaultProcessFlags();
     //static const char* identityFilename(const char* path, const char* query);
-    void info();
+    void Summary(const char* msg="AssimpGeometry::Summary");
     void dump();
     void dumpMaterials(const char* msg="AssimpGeometry::dumpMaterials");
     void traverse();
@@ -56,17 +58,5 @@ private:
     Assimp::Importer* m_importer;
     AssimpTree*       m_tree ; 
 };
-
-inline AssimpGeometry::AssimpGeometry(const char* path)
-          : 
-          m_aiscene(NULL),
-          m_index(0),
-          m_process_flags(0),
-          m_path(NULL),
-          m_importer(NULL),
-          m_tree(NULL)
-{
-   init(path);
-}
 
 

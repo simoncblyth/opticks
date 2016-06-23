@@ -12,45 +12,57 @@ Comparing with pycollada
 */
 
 
-#include "AssimpGeometry.hh"
-#include "AssimpTree.hh"
-#include "AssimpNode.hh"
-#include "AssimpGGeo.hh"
-
-#include "GGeo.hh"
-
-#include "GMaterial.hh"
-#include "GBndLib.hh"
-#include "GMaterialLib.hh"
-#include "GSurfaceLib.hh"
-#include "GScintillatorLib.hh"
-
-#include "GMergedMesh.hh"
-
-#include "Opticks.hh"
-
-#include "NPY.hpp"
-
 
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 
+#include "NGLM.hpp"
+#include "NPY.hpp"
+#include "Opticks.hh"
 
-#include "BLog.hh"
+
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GMaterial.hh"
+#include "GMaterialLib.hh"
+#include "GBndLib.hh"
+#include "GSurfaceLib.hh"
+#include "GScintillatorLib.hh"
+#include "GMergedMesh.hh"
+#include "GGeo.hh"
+
+
+#include "AssimpGeometry.hh"
+#include "AssimpTree.hh"
+#include "AssimpNode.hh"
+#include "AssimpGGeo.hh"
+
+
+#include "PLOG.hh"
 
 
 // cf with App::loadGeometry and GLoader::load where the below is canonically done  
 
 int main(int argc, char** argv)
 {
-    Opticks ok(argc, argv, "AssimpWrapTest.log");
-    printf("after ok\n");
+    PLOG_(argc, argv);
+
+    Opticks ok(argc, argv);
+
+    LOG(info) << "ok" ;
 
     ok.configure();
 
     const char* daepath = ok.getDAEPath();
-    assert(daepath && "hmm need to export-export to bring DAE_NAME_DYB into env");
+
+    if(!daepath)
+    {
+        LOG(error) << "NULL daepath" ;
+        return 0 ; 
+    } 
 
 
     GGeo* m_ggeo = new GGeo(&ok);

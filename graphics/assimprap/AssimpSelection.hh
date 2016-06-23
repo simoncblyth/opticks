@@ -6,7 +6,10 @@
 class AssimpNode ;
 class OpticksQuery ; 
 
-class AssimpSelection {
+#include "ASIRAP_API_EXPORT.hh"
+#include "ASIRAP_HEAD.hh"
+
+class ASIRAP_API AssimpSelection {
 public:
     AssimpSelection(AssimpNode* root, OpticksQuery* query);
 private:
@@ -49,55 +52,6 @@ private:
    aiVector3D* m_up ; 
 };
 
-inline AssimpSelection::AssimpSelection(AssimpNode* root, OpticksQuery* query) 
-    : 
-    m_query(query),
-    m_count(0),
-    m_index(0),
-    m_root(root),    
-
-    m_low(NULL),
-    m_high(NULL),
-    m_center(NULL),
-    m_extent(NULL),
-    m_up(NULL)
-{
-    init();
-}
-
-
-
-inline unsigned int AssimpSelection::getNumSelected()
-{
-    return m_selection.size();
-}
-inline AssimpNode* AssimpSelection::getSelectedNode(unsigned int i)
-{
-    return i < m_selection.size() ? m_selection[i] : NULL ; 
-}
-inline void AssimpSelection::addToSelection(AssimpNode* node)
-{
-    m_selection.push_back(node);
-}
-inline aiVector3D* AssimpSelection::getLow()
-{
-    return m_low ; 
-}
-inline aiVector3D* AssimpSelection::getHigh()
-{
-    return m_high ; 
-}
-inline aiVector3D* AssimpSelection::getCenter()
-{
-    return m_center ; 
-}
-inline aiVector3D* AssimpSelection::getExtent()
-{
-    return m_extent ; 
-}
-inline aiVector3D* AssimpSelection::getUp()
-{
-    return m_up ; 
-}
+#include "ASIRAP_TAIL.hh"
 
 

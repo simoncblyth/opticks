@@ -236,12 +236,14 @@ EOU
 assimprap-env(){      elocal- ; opticks- ;  }
 
 assimprap-sdir(){ echo $(env-home)/graphics/assimprap ; }
+assimprap-tdir(){ echo $(env-home)/graphics/assimprap/tests ; }
 assimprap-idir(){ echo $(opticks-idir); }
 assimprap-bdir(){ echo $(opticks-bdir)/$(assimprap-rel) ; }
 
 assimprap-icd(){  cd $(assimprap-idir); }
 assimprap-bcd(){  cd $(assimprap-bdir); }
 assimprap-scd(){  cd $(assimprap-sdir); }
+assimprap-tcd(){  cd $(assimprap-tdir); }
 
 assimprap-cd(){  cd $(assimprap-sdir); }
 
@@ -251,19 +253,18 @@ assimprap-wipe(){
 }
 
 
-assimprap-make(){
-    local iwd=$PWD
-    assimprap-bcd
-    local rc
-    make $*
-    rc=$?
-    cd $iwd
-    return $rc 
-}
+assimprap-name(){ echo AssimpRap ; }
+assimprap-tag(){  echo ASIRAP ; }
 
-assimprap-install(){
-   assimprap-make install
-}
+
+assimprap--(){        opticks--     $(assimprap-bdir) ; }
+assimprap-ctest(){    opticks-ctest $(assimprap-bdir) $* ; }
+assimprap-genproj(){  assimprap-scd ; opticks-genproj $(assimprap-name) $(assimprap-tag) ; }
+assimprap-gentest(){  assimprap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(assimprap-tag) ; }
+
+
+
+
 
 
 assimprap-bbin(){ echo $(assimprap-bdir)/AssimpRapTest ; }
@@ -311,15 +312,6 @@ assimprap-full(){
     assimprap-install $*
 }
 
-
-assimprap-config(){ echo Debug ; }
-assimprap--()
-{
-   local iwd=$PWD;
-   assimprap-bcd;
-   cmake --build . --config $(assimprap-config) --target ${1:-install};
-   cd $iwd
-}
 
 
 assimprap-lldb(){

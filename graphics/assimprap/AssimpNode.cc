@@ -1,9 +1,15 @@
+#include <cassert>
+#include <cstdio>
+
 #include "AssimpNode.hh"
 #include "AssimpTree.hh"
 #include "AssimpCommon.hh"
-#include "assert.h"
-#include "stdio.h"
+
 #include <assimp/scene.h>
+
+
+#include "ASIRAP_BODY.hh"
+
 
 AssimpNode::~AssimpNode()
 {
@@ -36,6 +42,79 @@ AssimpNode::AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree)
 
    setDepth(leafdepth);
 }
+
+
+
+void AssimpNode::setParent(AssimpNode* parent){
+    m_parent = parent ;
+}
+void AssimpNode::setIndex(unsigned int index){
+    m_index = index ; 
+}
+void AssimpNode::setDepth(unsigned int depth){
+    m_depth = depth ; 
+}
+
+
+AssimpNode* AssimpNode::getParent(){
+    return m_parent ;  
+}
+unsigned int AssimpNode::getIndex(){
+    return m_index ; 
+}
+unsigned int AssimpNode::getDepth(){
+    return m_depth ; 
+}
+
+std::size_t AssimpNode::getDigest()
+{
+   return m_digest ;
+}
+std::size_t AssimpNode::getParentDigest()
+{
+   return m_pdigest ;
+}
+
+
+
+void AssimpNode::addChild(AssimpNode* child)
+{
+    m_children.push_back(child); 
+}
+unsigned int AssimpNode::getNumChildren(){
+    return m_children.size(); 
+}
+AssimpNode* AssimpNode::getChild(unsigned int n){
+    return n < getNumChildren() ? m_children[n] : NULL ;
+}
+
+
+
+aiVector3D* AssimpNode::getLow()
+{
+    return m_low ; 
+}
+aiVector3D* AssimpNode::getHigh()
+{
+    return m_high ; 
+}
+aiVector3D* AssimpNode::getCenter()
+{
+    return m_center ; 
+}
+aiVector3D* AssimpNode::getExtent()
+{
+    return m_extent ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 

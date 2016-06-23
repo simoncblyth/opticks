@@ -3,8 +3,6 @@
 #include <climits>
 
 #include <boost/algorithm/string.hpp>
-
-#include "BLog.hh"
 #include "BStr.hh"
 
 // npy-
@@ -18,16 +16,24 @@
 
 #include "GVector.hh"
 #include "GMatrix.hh"
-#include "GGeo.hh"
-#include "GMesh.hh"
+
+#include "GDomain.hh" 
+#include "GAry.hh" 
+#include "GProperty.hh" 
+#include "GPropertyMap.hh" 
+
 #include "GMaterial.hh"
 #include "GBorderSurface.hh"
 #include "GSkinSurface.hh"
 #include "GOpticalSurface.hh"
-#include "GSolid.hh"
-#include "GDomain.hh"
+
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
+
+#include "GMesh.hh"
+#include "GSolid.hh"
+#include "GGeo.hh"
+
 
 #include "AssimpGGeo.hh"
 #include "AssimpGeometry.hh"
@@ -56,17 +62,53 @@
 
 
 
+#include "PLOG.hh"
+
+
+AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection) 
+   : 
+   m_ggeo(ggeo),
+   m_tree(tree),
+   m_selection(selection),
+   m_domain_scale(1.f),
+   m_values_scale(1.f),
+   m_domain_reciprocal(true),
+   m_skin_surface(0),
+   m_inborder_surface(0),
+   m_outborder_surface(0),
+   m_no_surface(0),
+   m_volnames(false),
+   m_reverse(true),        // true: ascending wavelength ordering of properties
+   m_cathode(NULL),
+   m_verbosity(0)
+{
+    init();
+}
+
+
+bool AssimpGGeo::getVolNames()
+{
+    return m_volnames ; 
+}
+void AssimpGGeo::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+
 
 
 void AssimpGGeo::init()
 {
+    // TODO: consolidate constant handling into okc-
+    //       see also ggeo-/GConstant and probably elsewhere
+    //
     // see g4daenode.py as_optical_property_vector
 
-    float hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
-    float hc_over_MeV = hc_over_GeV*1000. ;
+    double hc_over_GeV = 1.2398424468024265e-06 ;  // h_Planck * c_light / GeV / nanometer #  (approx, hc = 1240 eV.nm )  
+    double hc_over_MeV = hc_over_GeV*1000. ;
     //float hc_over_eV  = hc_over_GeV*1.e9 ;
 
-    m_domain_scale = hc_over_MeV ; 
+    m_domain_scale = static_cast<float>(hc_over_MeV) ; 
     m_values_scale = 1.0f ; 
 
     m_volnames = m_ggeo->isVolnames();
@@ -174,14 +216,14 @@ void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiM
 
     for( unsigned int i = 0 ; i < npair ; i++ ) 
     {
-        float d0 = data[2*i] ; 
-        float d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
-        float v = data[2*i+1]*vscale  ;
+        double d0 = data[2*i] ; 
+        double d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ; 
+        double v = data[2*i+1]*vscale  ;
 
-        float dd = noscale ? d0 : d ; 
+        double dd = noscale ? d0 : d ; 
 
-        domain.push_back( dd );
-        vals.push_back( v );  
+        domain.push_back( static_cast<float>(dd) );
+        vals.push_back( static_cast<float>(v) );  
 
         //if( noscale && ( i < 5 || i > npair - 5) )
         //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );

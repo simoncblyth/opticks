@@ -1,10 +1,12 @@
-#ifndef ASSIMPREGISTRY_H
-#define ASSIMPREGISTRY_H
+#pragma once
 
 #include <map>
 class AssimpNode ; 
 
-class AssimpRegistry {
+#include "ASIRAP_API_EXPORT.hh"
+#include "ASIRAP_HEAD.hh"
+
+class ASIRAP_API AssimpRegistry {
 public:
    AssimpRegistry();
    virtual ~AssimpRegistry();
@@ -18,6 +20,6 @@ private:
    std::map<std::size_t, AssimpNode*> m_registry ;  
 };
 
+#include "ASIRAP_TAIL.hh"
 
-#endif
 

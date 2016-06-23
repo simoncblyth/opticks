@@ -5,6 +5,7 @@ project(${name})
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
+find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(Assimp REQUIRED)
@@ -16,6 +17,7 @@ find_package(OpticksCore REQUIRED)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 
+    ${PLog_INCLUDE_DIRS}  
     ${OpticksBoost_INCLUDE_DIRS}  
     ${BoostRap_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
@@ -26,6 +28,7 @@ include_directories(
 )
 
 add_definitions(
+    ${PLog_DEFINITIONS}  
     ${OpticksBoost_DEFINITIONS}  
     ${BoostRap_DEFINITIONS}  
     ${Assimp_DEFINITIONS} 
@@ -36,28 +39,46 @@ add_definitions(
 )
 
 set(LIBRARIES
+    ${PLog_LIBRARIES}  
     ${OpticksBoost_LIBRARIES} 
     ${BoostRap_LIBRARIES} 
     ${Assimp_LIBRARIES} 
     ${GGeo_LIBRARIES} 
     ${NPY_LIBRARIES} 
     ${OpticksCore_LIBRARIES} 
-
-    ssl
-    crypto
 )
 
+if(UNIX)
+  set(LIBRARIES ${LIBRARIES} ssl crypto)
+endif(UNIX)
+
+
+set(_SOURCES
+)
+
+
 set(SOURCES
-    AssimpGeometry.cc
+
+    ASIRAP_LOG.cc
+
     AssimpCommon.cc
-    AssimpNode.cc
-    AssimpTree.cc
     AssimpRegistry.cc
-    AssimpGGeo.cc
     AssimpSelection.cc
+    AssimpTree.cc
+    AssimpNode.cc
+
+    AssimpGGeo.cc
+    AssimpGeometry.cc
 )
 
 set(HEADERS
+
+    ASIRAP_LOG.hh
+    ASIRAP_API_EXPORT.hh
+    ASIRAP_HEAD.hh
+    ASIRAP_TAIL.hh
+
+
     AssimpCommon.hh
     AssimpGGeo.hh
     AssimpGeometry.hh

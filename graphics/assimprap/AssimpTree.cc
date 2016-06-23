@@ -1,14 +1,15 @@
+#include <cstdio>
+
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
 #include "AssimpCommon.hh"
 #include "AssimpRegistry.hh"
 #include "AssimpSelection.hh"
 
-#include <stdio.h>
 #include <assimp/scene.h>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "ASIRAP_BODY.hh"
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 
@@ -193,9 +194,9 @@ aiMesh* AssimpTree::createMergedMesh(AssimpSelection* selection)
     for(unsigned int i=0 ; i < selection->getNumSelected() ; i++ )
     {
         AssimpNode* node = selection->getSelectedNode(i);
-        for(unsigned int i = 0; i < node->getNumMeshes(); i++)
+        for(unsigned int j = 0; j < node->getNumMeshes(); j++)
         {   
-            aiMesh* mesh = node->getMesh(i);   // these are copied and globally positioned meshes 
+            aiMesh* mesh = node->getMesh(j);   // these are copied and globally positioned meshes 
             out->mNumVertices += mesh->mNumVertices;
             out->mNumFaces += mesh->mNumFaces;
             out->mNumBones += mesh->mNumBones;
@@ -206,13 +207,13 @@ aiMesh* AssimpTree::createMergedMesh(AssimpSelection* selection)
     assert(out->mNumVertices);
     assert(!out->mNumBones);
 
-	aiVector3D* pv ; 
-	aiVector3D* pn ; 
-	aiVector3D* pt ; 
-	aiVector3D* pb ; 
-	aiVector3D* px ; 
-    aiColor4D* pc ;
-    aiFace* pf ;  
+	aiVector3D* pv(NULL) ; 
+	aiVector3D* pn(NULL) ; 
+	aiVector3D* pt(NULL) ; 
+	aiVector3D* pb(NULL) ; 
+	aiVector3D* px(NULL) ; 
+    aiColor4D* pc(NULL) ;
+    aiFace* pf(NULL) ;  
 
     bool first = true ;
     unsigned int n ;
@@ -221,9 +222,9 @@ aiMesh* AssimpTree::createMergedMesh(AssimpSelection* selection)
     for(unsigned int i=0 ; i < selection->getNumSelected() ; i++ )
     {
         AssimpNode* node = selection->getSelectedNode(i);
-        for(unsigned int i = 0; i < node->getNumMeshes(); i++)
+        for(unsigned int j = 0; j < node->getNumMeshes(); j++)
         {
-            aiMesh* mesh = node->getMesh(i);   // these are copied and globally positioned meshes 
+            aiMesh* mesh = node->getMesh(j);   // these are copied and globally positioned meshes 
 
             if(first)
             {

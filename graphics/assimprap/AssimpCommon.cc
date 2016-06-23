@@ -1,13 +1,14 @@
-#include "AssimpCommon.hh"
-//#include "md5digest.h"
+#include <cstdio>
+
 #include <assimp/scene.h>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
-#include <cstdio>
-//#include <sstream>
+
+#include "AssimpCommon.hh"
 
 
-aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
+aiNode* findNode(const char* query, aiNode* node, unsigned int depth )
+{
    const char* name = node->mName.C_Str(); 
    if(strncmp(name,query,strlen(query)) == 0) return node;
    for(unsigned int i = 0; i < node->mNumChildren; i++){   
@@ -17,7 +18,7 @@ aiNode* findNode(const char* query, aiNode* node, unsigned int depth ){
    return NULL ; 
 }
 
-bool selectNode( aiNode* node, unsigned int depth, unsigned int index )
+bool selectNode( aiNode* node, unsigned int /*depth*/, unsigned int index )
 {
    if(!node) return false ;
    //unsigned int NumMeshes = node->mNumMeshes ;
@@ -79,10 +80,10 @@ void dumpMaterial( aiMaterial* material )
            printf("\n");
            unsigned int size = len/sizeof(float) ;
            float* data = (float*)property->mData ;
-           for(unsigned int i=0 ; i < size ; i++)
+           for(unsigned int j=0 ; j < size ; j++)
            {
-              if(i < 5 || i > size - 5)
-              printf("%4d %10.3e \n", i, data[i]);
+              if(j < 5 || j > size - 5)
+              printf("%4d %10.3e \n", j, data[j]);
            }
         } 
         else if(type == aiPTI_Integer)
@@ -90,10 +91,10 @@ void dumpMaterial( aiMaterial* material )
            printf("\n");
            unsigned int size = len/sizeof(int) ;
            int* data = (int*)property->mData ;
-           for(unsigned int i=0 ; i < size ; i++)
+           for(unsigned int j=0 ; j < size ; j++)
            {
-              if(i < 5 || i > size - 5)
-              printf("%4d %10d \n", i, data[i]);
+              if(j < 5 || j > size - 5)
+              printf("%4d %10d \n", j, data[j]);
            }
         } 
         printf("\n");
@@ -197,9 +198,9 @@ void copyMesh(aiMesh* dst, aiMesh* src, const aiMatrix4x4& mat )
        {
 		   dst->mTangents = new aiVector3D[src->mNumVertices];
 		   dst->mBitangents = new aiVector3D[src->mNumVertices];
-           for (unsigned int i = 0; i < src->mNumVertices; ++i) {
-               dst->mTangents[i]   = (m * src->mTangents[i]).Normalize();
-               dst->mBitangents[i] = (m * src->mBitangents[i]).Normalize();
+           for (unsigned int j = 0; j < src->mNumVertices; ++j) {
+               dst->mTangents[j]   = (m * src->mTangents[j]).Normalize();
+               dst->mBitangents[j] = (m * src->mBitangents[j]).Normalize();
            }
        }
    }

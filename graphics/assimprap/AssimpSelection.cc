@@ -3,7 +3,6 @@
 
 // npy-
 #include "BStr.hh"
-#include "BLog.hh"
 
 // okc-
 #include "OpticksQuery.hh"
@@ -14,6 +13,63 @@
 #include "AssimpRegistry.hh"
 
 #include <assimp/scene.h>
+
+#include "PLOG.hh"
+
+
+
+AssimpSelection::AssimpSelection(AssimpNode* root, OpticksQuery* query) 
+    : 
+    m_query(query),
+    m_count(0),
+    m_index(0),
+    m_root(root),    
+
+    m_low(NULL),
+    m_high(NULL),
+    m_center(NULL),
+    m_extent(NULL),
+    m_up(NULL)
+{
+    init();
+}
+
+
+
+unsigned int AssimpSelection::getNumSelected()
+{
+    return m_selection.size();
+}
+AssimpNode* AssimpSelection::getSelectedNode(unsigned int i)
+{
+    return i < m_selection.size() ? m_selection[i] : NULL ; 
+}
+void AssimpSelection::addToSelection(AssimpNode* node)
+{
+    m_selection.push_back(node);
+}
+aiVector3D* AssimpSelection::getLow()
+{
+    return m_low ; 
+}
+aiVector3D* AssimpSelection::getHigh()
+{
+    return m_high ; 
+}
+aiVector3D* AssimpSelection::getCenter()
+{
+    return m_center ; 
+}
+aiVector3D* AssimpSelection::getExtent()
+{
+    return m_extent ; 
+}
+aiVector3D* AssimpSelection::getUp()
+{
+    return m_up ; 
+}
+
+
 
 void AssimpSelection::init()
 {

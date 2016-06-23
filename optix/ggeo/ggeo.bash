@@ -47,13 +47,7 @@ ggeo-gentest()
 
 
 
-ggeo-config(){ echo Debug ; }
-ggeo--(){
-   local iwd=$PWD;
-   ggeo-bcd;
-   cmake --build . --config $(ggeo-config) --target ${1:-install};
-   cd $iwd
-}
+ggeo--(){  opticks-- $(ggeo-bdir) ; }
 
 
 

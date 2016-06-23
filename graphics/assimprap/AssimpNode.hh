@@ -7,7 +7,10 @@ class AssimpTree ;
 struct aiNode ; 
 struct aiMesh ; 
 
-class AssimpNode {
+#include "ASIRAP_API_EXPORT.hh"
+#include "ASIRAP_HEAD.hh"
+
+class ASIRAP_API AssimpNode {
       friend class AssimpTree ; 
 
   public:
@@ -105,71 +108,7 @@ class AssimpNode {
 };
 
 
-
-
-
-
-inline void AssimpNode::setParent(AssimpNode* parent){
-    m_parent = parent ;
-}
-inline void AssimpNode::setIndex(unsigned int index){
-    m_index = index ; 
-}
-inline void AssimpNode::setDepth(unsigned int depth){
-    m_depth = depth ; 
-}
-
-
-inline AssimpNode* AssimpNode::getParent(){
-    return m_parent ;  
-}
-inline unsigned int AssimpNode::getIndex(){
-    return m_index ; 
-}
-inline unsigned int AssimpNode::getDepth(){
-    return m_depth ; 
-}
-
-inline std::size_t AssimpNode::getDigest()
-{
-   return m_digest ;
-}
-inline std::size_t AssimpNode::getParentDigest()
-{
-   return m_pdigest ;
-}
-
-
-
-inline void AssimpNode::addChild(AssimpNode* child)
-{
-    m_children.push_back(child); 
-}
-inline unsigned int AssimpNode::getNumChildren(){
-    return m_children.size(); 
-}
-inline AssimpNode* AssimpNode::getChild(unsigned int n){
-    return n < getNumChildren() ? m_children[n] : NULL ;
-}
-
-
-
-inline aiVector3D* AssimpNode::getLow()
-{
-    return m_low ; 
-}
-inline aiVector3D* AssimpNode::getHigh()
-{
-    return m_high ; 
-}
-inline aiVector3D* AssimpNode::getCenter()
-{
-    return m_center ; 
-}
-inline aiVector3D* AssimpNode::getExtent()
-{
-    return m_extent ; 
-}
+#include "ASIRAP_TAIL.hh"
 
 
 

@@ -5,8 +5,14 @@
 #include <sstream>
 #include <cassert>
 
+// assimp-
+#include <assimp/Importer.hpp>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/material.h>
+
 #include "BStr.hh"
-#include "BLog.hh"
 
 // okc--
 #include "OpticksQuery.hh"
@@ -23,13 +29,8 @@ http://assimp.sourceforge.net/lib_html/data.html
 http://www.tinysg.de/techGuides/tg7_assimpLoader.html
 */
 
-// assimp-
-#include <assimp/Importer.hpp>
-#include <assimp/DefaultLogger.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
-#include <assimp/material.h>
 
+#include "PLOG.hh"
 
 using namespace Assimp ; 
 
@@ -49,6 +50,23 @@ public:
                 ::printf("myStream %s", message);
         }
 };
+
+
+
+
+
+
+AssimpGeometry::AssimpGeometry(const char* path)
+          : 
+          m_aiscene(NULL),
+          m_index(0),
+          m_process_flags(0),
+          m_path(NULL),
+          m_importer(NULL),
+          m_tree(NULL)
+{
+   init(path);
+}
 
 
 void AssimpGeometry::init(const char* path)
@@ -86,10 +104,13 @@ AssimpTree* AssimpGeometry::getTree()
 }
 
 
-void AssimpGeometry::info()
+void AssimpGeometry::Summary(const char* msg)
 {
+
     if(!m_aiscene) return ; 
-    LOG(debug) << "AssimpGeometry::info m_aiscene " 
+    
+    LOG(info) << msg ;   
+    LOG(info) << "AssimpGeometry::info m_aiscene " 
                << " NumMaterials " << m_aiscene->mNumMaterials
                << " NumMeshes " << m_aiscene->mNumMeshes ;
   
@@ -186,7 +207,7 @@ void AssimpGeometry::import(unsigned int flags)
     //dumpProcessFlags("AssimpGeometry::import", flags);
     //dumpSceneFlags("AssimpGeometry::import", m_aiscene->mFlags);
 
-    info();
+    Summary("AssimpGeometry::import DONE");
 
     m_tree = new AssimpTree(m_aiscene);
 }

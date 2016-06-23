@@ -1,7 +1,5 @@
 #pragma once
 
-#include "GPropertyMap.hh" 
-
 class AssimpTree ; 
 class AssimpSelection ; 
 class AssimpNode ; 
@@ -11,12 +9,15 @@ class GSurface ;
 class GMaterial ;
 class GSolid ; 
 
+template <typename T> class GPropertyMap ; 
 
 struct aiMaterial ;
 struct aiMaterialProperty ;
 struct aiScene ;
 
-class AssimpGGeo {
+#include "ASIRAP_API_EXPORT.hh"
+
+class ASIRAP_API AssimpGGeo {
 public:
     AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection);
     int convert(const char* ctrl);
@@ -89,35 +90,4 @@ private:
 };
 
 
-
-inline AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection) 
-   : 
-   m_ggeo(ggeo),
-   m_tree(tree),
-   m_selection(selection),
-   m_domain_scale(1.f),
-   m_values_scale(1.f),
-   m_domain_reciprocal(true),
-   m_skin_surface(0),
-   m_inborder_surface(0),
-   m_outborder_surface(0),
-   m_no_surface(0),
-   m_volnames(false),
-   m_reverse(true),        // true: ascending wavelength ordering of properties
-   m_cathode(NULL),
-   m_verbosity(0)
-{
-    init();
-}
-
-
-inline bool AssimpGGeo::getVolNames()
-{
-    return m_volnames ; 
-}
-
-inline void AssimpGGeo::setVerbosity(unsigned int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
 
