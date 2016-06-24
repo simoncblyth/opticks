@@ -3,7 +3,11 @@
 #include <cstddef>
 #include <vector>
 
+struct BBufSpec ; 
 struct NSlice ; 
+
+template <typename T> class NPY ; 
+
 class Composition ;
 
 class GDrawable ; 
@@ -57,8 +61,14 @@ class OGLRAP_API Renderer : public RendererBase  {
   private:
       void upload_buffers(NSlice* islice, NSlice* fslice);
 
+#ifdef OLD_TEMPLATED_UPLOAD
       template <typename B>
       GLuint upload(GLenum target, GLenum usage, B* buffer, const char* name=NULL);
+#else
+      GLuint upload_GBuffer(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
+      GLuint upload_NPY(    GLenum target, GLenum usage, NPY<float>* buffer, const char* name=NULL);
+      GLuint upload(        GLenum target, GLenum usage, BBufSpec* bufspec, const char* name=NULL);
+#endif
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }

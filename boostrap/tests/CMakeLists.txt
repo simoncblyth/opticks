@@ -20,11 +20,14 @@ set(TEST_SOURCES_OK
    BoostLogTest.cc 
    PLogTest.cc 
    BLogTest.cc
+   BFileTest.cc
 )
 
 
 set(TEST_SOURCES
-   BFileTest.cc
+
+   BBufSpecTest.cc
+
 )
 
 

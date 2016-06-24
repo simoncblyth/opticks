@@ -1,17 +1,12 @@
-#include "GVector.hh"
-#include "GMatrix.hh"
-
 #include <algorithm>
 #include <iostream>
 
 // npy-
+#include "NGLM.hpp"
 #include "GLMPrint.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
+#include "GVector.hh"
+#include "GMatrix.hh"
 
 
 GMatrix<float>* GMesh_make_model_to_world(const gfloat3& low, const gfloat3& high)

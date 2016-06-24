@@ -72,7 +72,7 @@ if(WIN32)
    set( LIBRARIES ${LIBRARIES} opengl32.lib )
 endif(WIN32)
 
-message("${name}.LIBRARIES : ${LIBRARIES} " )
+#message("${name}.LIBRARIES : ${LIBRARIES} " )
 
 
 include_directories(${INCLUDE_DIRS})
@@ -149,9 +149,9 @@ add_library( ${name}  SHARED ${SOURCES})
 target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)
-#install(FILES ${HEADERS} DESTINATION include/${name})
-#install(DIRECTORY gl/ DESTINATION gl)
+install(FILES ${HEADERS} DESTINATION include/${name})
+install(DIRECTORY gl/ DESTINATION gl)
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 

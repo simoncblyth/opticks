@@ -12,6 +12,7 @@
 #include "NPY_API_EXPORT.hh"
 #include "NPY_FLAGS.hh"
 
+
 #include "uif.h"
 #include "ucharfour.h"
 #include "charfour.h"
@@ -21,6 +22,7 @@
 #include "NPYBase.hpp"
 #include "NQuad.hpp"
 
+struct BBufSpec ; 
 struct NSlice ; 
 class NPYSpec ; 
 class G4StepNPY ; 
@@ -123,6 +125,8 @@ class NPY_API NPY : public NPYBase {
        T* getValues(unsigned int i, unsigned int j=0);
        void* getBytes();
        void* getPointer();   // aping GBuffer for easier migration
+       BBufSpec* getBufSpec();
+
        void read(void* ptr);
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:
@@ -198,6 +202,7 @@ class NPY_API NPY : public NPYBase {
    public:
        std::vector<T>     m_data ; 
        T*                 m_unset_item ; 
+       BBufSpec*          m_bufspec ; 
  
 };
 

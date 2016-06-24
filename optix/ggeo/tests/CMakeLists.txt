@@ -3,7 +3,7 @@ set(name GGeoTest)
 project(${name})
 
 #file(GLOB TEST_SOURCES "*Test.cc")
-set(TEST_SOURCES
+set(_TEST_SOURCES
 
     GConstantTest.cc
     GDomainTest.cc
@@ -67,12 +67,11 @@ set(TEST_SOURCES
 
 )
 
-set(_TEST_SOURCES
+set(TEST_SOURCES
 
-
+    GBufferTest.cc
 
 )
-
 
 
 

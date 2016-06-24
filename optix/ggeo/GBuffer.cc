@@ -7,6 +7,7 @@
 
 #include "numpy.hpp"
 
+#include "BBufSpec.hh"
 #include "BFile.hh"
 #include "NSlice.hpp"
 #include "GBuffer.hh"
@@ -29,8 +30,24 @@ GBuffer::GBuffer(unsigned int nbytes, void* pointer, unsigned int itemsize, unsi
          m_itemsize(itemsize), // sizeof each item, eg sizeof(gfloat3) = 3*4 = 12
          m_nelem(nelem),       // number of elements for each item, eg 2 or 3 for floats per vertex or 16 for a 4x4 matrix
          m_buffer_id(-1),       // OpenGL buffer Id, set by Renderer on uploading to GPU 
-         m_buffer_target(0)
+         m_buffer_target(0),
+         m_bufspec(NULL)
 {
+}
+
+
+
+BBufSpec* GBuffer::getBufSpec()
+{   
+    if(m_bufspec == NULL)
+    {
+        int id = getBufferId();
+        void* ptr = getPointer();
+        unsigned int num_bytes = getNumBytes();
+        int target = getBufferTarget() ;  
+        m_bufspec = new BBufSpec(id, ptr, num_bytes, target);
+    }
+    return m_bufspec ; 
 }
 
 

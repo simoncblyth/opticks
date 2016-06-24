@@ -1,3 +1,5 @@
+#include "BBufSpec.hh"
+
 #include "Opticks.hh"
 #include "GBuffer.hh"
 #include "PLOG.hh"
@@ -51,6 +53,32 @@ void test_reshape_slice(Opticks& ok)
 }
 
 
+void test_getBufSpec()
+{
+    unsigned int N = 4 ; 
+
+    float* f = new float[N] ;
+    for(unsigned int i=0 ; i < N ; i++ ) f[i] = float(i) ;
+
+    unsigned int nbytes =  sizeof(float)*N ;
+    void* pointer = static_cast<void*>(f) ;
+    unsigned int itemsize = 4 ; 
+    unsigned int nelem = 1 ;
+
+    GBuffer* buf = new GBuffer( nbytes, pointer, itemsize, nelem );
+
+
+    BBufSpec* bs = buf->getBufSpec();
+
+    bs->Summary("test_getBufSpec");
+
+    assert(bs->id == -1);
+    assert(bs->ptr == pointer);
+    assert(bs->num_bytes == nbytes);
+    assert(bs->target == 0);
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -66,6 +94,8 @@ int main(int argc, char** argv)
 
     test_reshape(ok);
     test_reshape_slice(ok);
+
+    test_getBufSpec();
 
     return 0 ; 
 }

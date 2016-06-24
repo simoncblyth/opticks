@@ -12,10 +12,12 @@ eg 10 float3 vertices, where the item is regarded at the float3
 */ 
 
 
+struct BBufSpec ; 
 struct NSlice ; 
 
 // ARE TRANSITIONING FROM GBuffer TO NPY<T> WHERE POSSIBLE : 
 //    **DO NOT USE GBuffer IN NEW DEVELOPMENTS**
+
 
 #include "GGEO_API_EXPORT.hh"
 
@@ -29,6 +31,8 @@ class GGEO_API GBuffer {
     public:
         unsigned int getNumBytes();
         void*        getPointer();
+        BBufSpec*    getBufSpec();
+
         unsigned int getItemSize();
         unsigned int getNumElements();
         unsigned int getNumItems();
@@ -58,7 +62,7 @@ class GGEO_API GBuffer {
         int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
         void         setBufferTarget(int buffer_target);
         int          getBufferTarget();
-
+        void         didUpload(); 
     protected:
          unsigned int m_nbytes ;
          void*        m_pointer ; 
@@ -67,6 +71,7 @@ class GGEO_API GBuffer {
     private:
          int          m_buffer_id ; 
          int          m_buffer_target ; 
+         BBufSpec*    m_bufspec ; 
 
 }; 
 

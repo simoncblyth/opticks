@@ -1,5 +1,9 @@
 #include <cstdint>
+
 #include <GL/glew.h>
+
+// brap-
+#include "BBufSpec.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -88,6 +92,8 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 }
 
 
+
+#ifdef OLD_TEMPLATED_UPLOAD
 template <typename B>
 GLuint Renderer::upload(GLenum target, GLenum usage, B* buffer, const char* name)
 {
@@ -114,6 +120,64 @@ GLuint Renderer::upload(GLenum target, GLenum usage, B* buffer, const char* name
     }
     return buffer_id ; 
 }
+#else
+GLuint Renderer::upload_GBuffer(GLenum target, GLenum usage, GBuffer* buf, const char* name)
+{
+    BBufSpec* spec = buf->getBufSpec(); 
+
+    GLuint id = upload(target, usage, spec, name );
+
+    buf->setBufferId(id);
+    buf->setBufferTarget(target);
+
+    return id ;
+}
+
+
+GLuint Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const char* name)
+{
+    BBufSpec* spec = buf->getBufSpec(); 
+
+    GLuint id = upload(target, usage, spec, name );
+
+    buf->setBufferId(id);
+    buf->setBufferTarget(target);
+
+    return id ;
+}
+
+GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char* name)
+{
+    GLuint buffer_id ; 
+    int prior_id = spec->id ;
+
+    if(prior_id == -1)
+    {
+        glGenBuffers(1, &buffer_id);
+        glBindBuffer(target, buffer_id);
+
+        glBufferData(target, spec->num_bytes, spec->ptr , usage);
+
+        spec->id = buffer_id ; 
+        spec->target = target ; 
+
+        LOG(debug) << "Renderer::upload " << name  ; 
+        //buffer->Summary(name);
+    }
+    else
+    {
+        buffer_id = prior_id ; 
+        LOG(debug) << "Renderer::upload binding to prior buffer : " << buffer_id ; 
+        glBindBuffer(target, buffer_id);
+    }
+    return buffer_id ; 
+}
+#endif
+
+
+
+
+
 
 void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
@@ -210,7 +274,6 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     }
       
 
-
     //printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
 
 
@@ -231,32 +294,44 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
         dump( vbuf->getPointer(),vbuf->getNumBytes(),vbuf->getNumElements()*sizeof(float),0,vbuf->getNumItems() ); 
     }
 
- 
-    m_vertices  = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
-    m_normals   = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
-    m_colors    = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
+    if(m_instanced) assert(hasTransforms()) ;
 
+
+#ifdef OLD_TEMPLATED_UPLOAD
+    m_vertices  = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
+    m_colors    = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
+    m_normals   = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
     if(hasTex())
     {
         m_texcoords = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
     }
-
-    if(m_instanced) assert(hasTransforms()) ;
-
     if(hasTransforms())
     {
         m_transforms = upload<NPY<float> >(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
         m_itransform_count = ibuf->getNumItems() ;
-        LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
     }
-    else
-    {
-        LOG(trace) << "Renderer::upload_buffers NO TRANSFORMS " ;
-    }
-
-
     m_indices  = upload<GBuffer>(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
     m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
+
+#else
+    m_vertices  = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
+    m_colors    = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
+    m_normals   = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
+    if(hasTex())
+    {
+        m_texcoords = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
+    }
+
+    if(hasTransforms())
+    {
+        m_transforms = upload_NPY(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
+        m_itransform_count = ibuf->getNumItems() ;
+    }
+    m_indices  = upload_GBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
+    m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
+
+#endif
+    LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
 
     GLboolean normalized = GL_FALSE ; 
     GLsizei stride = 0 ;

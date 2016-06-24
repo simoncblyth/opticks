@@ -21,7 +21,7 @@ if(UNIX)
 endif(UNIX)
 
 #message("${name}:LIBRARIES : ${LIBRARIES} ")
-message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
+#message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -46,6 +46,7 @@ set(SOURCES
   BRAP_LOG.cc 
   PLOG.cc 
 
+  BBufSpec.cc 
   BDemo.cc 
   BFoo.cc 
   BTime.cc
@@ -80,6 +81,7 @@ set(HEADERS
   PLOG_INIT.hh  
   BDirect.hh 
 
+  BBufSpec.hh 
   BDemo.hh 
   BTime.hh
   BTimer.hh

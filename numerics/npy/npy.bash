@@ -133,19 +133,29 @@ EOU
 }
 
 npy-sdir(){ echo $(env-home)/numerics/npy ; }
+npy-tdir(){ echo $(env-home)/numerics/npy/tests ; }
 npy-idir(){ echo $(opticks-idir) ; }
 npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
 npy-cd(){   cd $(npy-sdir)/$1 ; }
 npy-scd(){  cd $(npy-sdir); }
+npy-tcd(){  cd $(npy-tdir); }
 npy-icd(){  cd $(npy-idir); }
 npy-bcd(){  cd $(npy-bdir); }
 
 
-npy-i(){
-   npy-cd
-   i
-}
+npy-name(){ echo NPY ; }
+npy-tag(){  echo NPY ; }
+
+npy--(){      opticks--     $(npy-bdir) $* ; }
+npy-ctest() { opticks-ctest $(npy-bdir) $* ; }
+npy-genproj(){ npy-scd ; opticks-genproj $(npy-name) $(npy-tag) ; }
+npy-gentest(){ npy-tcd ; opticks-gentest ${1:-NExample} $(npy-tag) ; }
+npy-txt(){     vi $(npy-sdir)/CMakeLists.txt $(npy-tdir)/CMakeLists.txt ; }
+
+
+
+npy-i(){ npy-scd ; i ; }
 
 npy-bindir(){ echo $(npy-idir)/bin ; } 
 npy-bin(){    echo $(npy-bindir)/$1 ; } 
@@ -154,16 +164,3 @@ npy-wipe(){
    local bdir=$(npy-bdir)
    rm -rf $bdir
 }
-
-npy-generate-exports()
-{
-   npy-scd
-   importlib-
-   importlib-exports NPY NPY_API
-}
-
-
-npy--(){      opticks--     $(npy-bdir) $* ; }
-npy-ctest() { opticks-ctest $(npy-bdir) $* ; }
-
-

@@ -1,8 +1,11 @@
-#include "DynamicDefine.hh"
 #include <cstdio>
+#include "DynamicDefine.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+
     printf("%s\n", argv[0]);
 
     DynamicDefine dd ;

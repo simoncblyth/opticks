@@ -7,6 +7,8 @@
 namespace fs = boost::filesystem;
 
 #include "BFile.hh"
+#include "BBufSpec.hh"
+
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 
@@ -17,7 +19,8 @@ NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata
          :
          NPYBase(shape, sizeof(T), type, metadata, data.size() > 0),
          m_data(data),      // copies the vector
-         m_unset_item(NULL)
+         m_unset_item(NULL),
+         m_bufspec(NULL)
 {
 } 
 
@@ -26,7 +29,8 @@ NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata)
          :
          NPYBase(shape, sizeof(T), type, metadata, data != NULL),
          m_data(),      
-         m_unset_item(NULL)
+         m_unset_item(NULL),
+         m_bufspec(NULL)
 {
     if(data) 
     {
@@ -962,27 +966,27 @@ NPY<T>* NPY<T>::transform(glm::mat4& mat)
 
 
 template <typename T> 
- std::vector<T>& NPY<T>::data()
+std::vector<T>& NPY<T>::data()
 {
     return m_data ;
 }
 
 
 template <typename T> 
- T* NPY<T>::getValues()
+T* NPY<T>::getValues()
 {
     return m_data.data();
 }
 
 
 template <typename T> 
- T* NPY<T>::begin()
+T* NPY<T>::begin()
 {
     return m_data.data();
 }
 
 template <typename T> 
- T* NPY<T>::end()
+T* NPY<T>::end()
 {
     return m_data.data() + getNumValues(0) ;
 }
@@ -1000,7 +1004,7 @@ template <typename T>
 
 
 template <typename T> 
- T* NPY<T>::getValues(unsigned int i, unsigned int j)
+T* NPY<T>::getValues(unsigned int i, unsigned int j)
 {
     unsigned int idx = getValueIndex(i,j,0);
     return m_data.data() + idx ;
@@ -1008,19 +1012,30 @@ template <typename T>
 
 
 template <typename T> 
- void* NPY<T>::getBytes()
+void* NPY<T>::getBytes()
 {
     return hasData() ? (void*)getValues() : NULL ;
 }
 
 template <typename T> 
- void* NPY<T>::getPointer()
+void* NPY<T>::getPointer()
 {
     return getBytes() ;
 }
 
-
-
+template <typename T> 
+BBufSpec* NPY<T>::getBufSpec()
+{
+   if(m_bufspec == NULL)
+   {
+      int id = getBufferId();
+      void* ptr = getBytes();
+      unsigned int num_bytes = getNumBytes();
+      int target = getBufferTarget() ; 
+      m_bufspec = new BBufSpec(id, ptr, num_bytes, target);
+   }
+   return m_bufspec ; 
+}
 
 template <typename T> 
  T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l)

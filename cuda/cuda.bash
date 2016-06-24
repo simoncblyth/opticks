@@ -533,10 +533,18 @@ cuda-nvcc-flags(){
 #cuda-version(){      echo ${CUDA_VERSION:-5.5} ; }
 cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
 cuda-download-dir(){ echo $(local-base)/env/cuda ; }
-cuda-dir(){          echo $(cuda-dir-$(uname)) ; }
-cuda-prefix(){       echo $(cuda-dir-$(uname)) ; }
-cuda-dir-Linux(){    echo /usr/local/cuda-$(cuda-version) ; }
-cuda-dir-Darwin(){   echo /Developer/NVIDIA/CUDA-$(cuda-version) ; }
+
+cuda-dir()
+{       
+   case $(uname) in 
+       Linux) echo /usr/local/cuda-$(cuda-version) ;;
+      Darwin) echo /Developer/NVIDIA/CUDA-$(cuda-version) ;; 
+    MINGW64*) echo /tmp ;;
+   esac
+}
+
+cuda-prefix(){       echo $(cuda-dir) ; }
+
 cuda-idir(){         echo $(cuda-dir)/include ; }
 cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
 cuda-samples-dir(){  echo $(cuda-writable-dir)/NVIDIA_CUDA-$(cuda-version)_Samples ; }

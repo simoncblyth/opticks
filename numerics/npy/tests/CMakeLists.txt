@@ -12,7 +12,6 @@ LogTest.cc
 EnvTest.cc
 NPYBaseTest.cc
 NSliceTest.cc
-NPYTest.cc
 NPYSpecTest.cc
 
 GLMPrintTest.cc
@@ -56,11 +55,12 @@ _RecordsNPYTest.cc
 NTrianglesNPYTest.cc
 PhotonsNPYTest.cc
 
+NCIETest.cc
 )
 
 set(TEST_SOURCES
 
-NCIETest.cc
+NPYTest.cc
 
 )
 

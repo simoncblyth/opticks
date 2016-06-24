@@ -124,104 +124,39 @@ and all actually exist::
 EOU
 }
 
-brap-sdir(){ echo $(env-home)/boostrap ; }
-
-
-
-
-brap-dir(){  echo $(brap-sdir) ; }
-
 brap-env(){      elocal- ; opticks- ;  }
 
-brap-name(){ echo BoostRap ; }
-
+brap-dir(){  echo $(brap-sdir) ; }
+brap-sdir(){ echo $(env-home)/boostrap ; }
+brap-tdir(){ echo $(env-home)/boostrap/tests ; }
 brap-idir(){ echo $(opticks-idir); }
 brap-bdir(){ echo $(opticks-bdir)/$(brap-rel) ; }
 
+brap-cd(){   cd $(brap-sdir); }
 brap-scd(){  cd $(brap-sdir); }
-brap-cd(){  cd $(brap-sdir); }
-
+brap-tcd(){  cd $(brap-tdir); }
 brap-icd(){  cd $(brap-idir); }
 brap-bcd(){  cd $(brap-bdir); }
 
-
-
-brap-flags(){ $(brap-idir)/bin/enum_regexsearchTest $* ; }
+brap-name(){ echo BoostRap ; }
+brap-tag(){  echo BRAP ; }
 
 brap-wipe(){
    local bdir=$(brap-bdir)
    rm -rf $bdir
 }
 
-
-brap-txt(){ vi $(brap-dir)/CMakeLists.txt ; }
-brap-make(){
-   local iwd=$PWD
-   brap-bcd
-   make $*
-   cd $iwd
-}
-
-
-brap-generate-exports(){
-
-   brap-scd 
-   importlib-
-   importlib-exports BoostRap BRAP_API
-}
+brap--(){       opticks-- $(brap-bdir) ; }
+brap-ctest(){   opticks-ctest $(brap-bdir) $* ; }
+brap-genproj(){ brap-scd ; opticks-genproj $(brap-name) $(brap-tag) ; }
+brap-gentest(){ brap-tcd ; opticks-gentest ${1:-BBufSpec} $(brap-tag) ; }
+brap-txt(){     vi $(brap-sdir)/CMakeLists.txt $(brap-tdir)/CMakeLists.txt ; }
 
 
 
-brap-install(){
-   brap-make install
-}
+################## OLD TESTING STUFF #######################################
 
-brap-bin(){ echo $(brap-idir)/bin ; }
-brap-export()
-{
-   echo -n
-}
-
-brap-run(){
-   local bin=$(brap-bin)
-   brap-export
-   $bin $*
-}
-
-brap-lldb()
-{
-   local bin=$(brap-bin)
-   brap-export
-   lldb $bin -- $*
-}
-
-brap-full()
-{
-    brap-make clean
-    brap-make
-    brap-install
-}
-
-
-
-
-brap-libdir(){ echo $(brap-bdir)/$(brap-config) ; }
-
-brap-config(){ echo Debug ; }
-brap--()
-{
-   local iwd=$PWD
-   brap-bcd ; 
-   #make ${1:-install}  
-   cmake \
-          --build . \
-          --config $(brap-config) \
-          --target ${1:-install} 
-
-   cd $iwd
-}
-
-brap-ctest(){ opticks-ctest $(brap-bdir) $* ; }
+brap-flags(){ $(brap-idir)/bin/enum_regexsearchTest $* ; }
 
 brap-hello()
 {
@@ -249,11 +184,6 @@ brap-test-(){ cat << EOT
 
 EOT
 }
-
-
-
-
-
 
 brap-enum(){ $FUNCNAME- | $(brap-bin)/regexsearchTest "$1" ; }
 brap-enum-(){ cat << EOE

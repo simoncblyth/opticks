@@ -5,10 +5,11 @@
 #include <iostream>
 #include <cassert>
 
-#include <glm/glm.hpp>
 
+#include "BBufSpec.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "NPY.hpp"
 
 #include "BRAP_LOG.hh"
@@ -143,6 +144,7 @@ void test_add()
 
 }
 
+
 void test_slice()
 {
    LOG(info) << "test_slice" ; 
@@ -172,6 +174,9 @@ void test_setQuad()
     
    dom->save("/tmp/test_setQuad.npy");
 }
+
+
+
 
 
 void test_ctor_segfaults()
@@ -331,6 +336,27 @@ array([[['|u~lo123']]],
 }
 
 
+
+void test_getBufSpec()
+{
+   NPY<float>* buf = NPY<float>::make(1,1,4) ;
+   buf->fill(1.f);
+   buf->dump();   
+
+   BBufSpec* bs = buf->getBufSpec();
+
+   bs->Summary("test_getBufSpec");
+
+   assert(bs->id == -1);
+   assert(bs->ptr != NULL);
+   assert(bs->num_bytes > 0);
+   assert(bs->target == -1);
+
+}
+
+
+
+
 int main(int argc, char** argv )
 {
     PLOG_(argc, argv);
@@ -363,6 +389,8 @@ int main(int argc, char** argv )
     test_getData();
     test_getUSum();
     test_string();
+
+    test_getBufSpec();
 
     return 0 ;
 }
