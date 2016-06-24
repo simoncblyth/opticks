@@ -77,5 +77,4 @@ class MESHRAP_API MWrap {
 
 #include "MESHRAP_TAIL.hh"
 
-template class MWrap<MyMesh>;
 

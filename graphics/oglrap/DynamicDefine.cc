@@ -10,7 +10,7 @@
 
 
 
-inline DynamicDefine::DynamicDefine() 
+DynamicDefine::DynamicDefine() 
 {
 }    
 

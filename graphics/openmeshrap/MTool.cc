@@ -21,7 +21,6 @@ typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 #include "PLOG.hh"
 
 
-
 MTool::MTool() : m_noise(0) 
 {
 }

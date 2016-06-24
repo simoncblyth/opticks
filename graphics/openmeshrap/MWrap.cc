@@ -15,7 +15,7 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-
+#define DOLOG 1
 
 
 template <typename MeshT>
@@ -891,4 +891,5 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
 }
 
 
+template class MESHRAP_API MWrap<MyMesh>;
 
