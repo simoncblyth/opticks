@@ -1113,17 +1113,20 @@ ggeoview-env(){
 
 
 ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
-
-#ggeoview-idir(){ echo $(local-base)/env/graphics/ggeoview ; }
-#ggeoview-bdir(){ echo $(ggeoview-idir).build ; }
-
+ggeoview-tdir(){ echo $(env-home)/graphics/ggeoview/tests ; }
 ggeoview-idir(){ echo $(opticks-idir) ; }
 ggeoview-bdir(){ echo $(opticks-bdir)/$(ggeoview-rel) ; }
+
+ggeoview-cd(){   cd $(ggeoview-sdir)/$1 ; }
+ggeoview-scd(){  cd $(ggeoview-sdir); }
+ggeoview-tcd(){  cd $(ggeoview-tdir); }
+ggeoview-icd(){  cd $(ggeoview-idir); }
+ggeoview-bcd(){  cd $(ggeoview-bdir); }
+
 
 ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
 ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
 ggeoview-bin(){ echo ${OPTICKS_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
-
 
 #ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
 ggeoview-rng-dir(){ echo $(ggeoview-idir)/cache/rng ; }
@@ -1132,12 +1135,8 @@ ggeoview-ptx-dir(){ echo $(ggeoview-bdir)/lib/ptx ; }
 ggeoview-rng-ls(){  ls -l $(ggeoview-rng-dir) ; }
 ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
 
-ggeoview-scd(){  cd $(ggeoview-sdir); }
-ggeoview-cd(){  cd $(ggeoview-sdir)/$1 ; }
-
-ggeoview-icd(){  cd $(ggeoview-idir); }
-ggeoview-bcd(){  cd $(ggeoview-bdir); }
 ggeoview-name(){ echo GGeoView ; }
+ggeoview-tag(){  echo GGV ; }
 
 ggeoview-edit(){     vi $(ggeoview-sdir)/ggv.sh ; }
 
@@ -1146,13 +1145,17 @@ ggeoview-wipe(){
    rm -rf $bdir
 }
 
-ggeoview-options()
-{
-    case $NODE_TAG in 
-      NONE) echo -DWITH_NPYSERVER:BOOL=OFF ;;
-    esac
-}
 
+ggeoview--(){        opticks--     $(ggeoview-bdir) ; }
+ggeoview-ctest(){    opticks-ctest $(ggeoview-bdir) $* ; }
+ggeoview-genproj(){  ggeoview-scd ; opticks-genproj $(ggeoview-name) $(ggeoview-tag) ; }
+ggeoview-gentest(){  ggeoview-tcd ; opticks-gentest ${1:-Scene} $(ggeoview-tag) ; }
+ggeoview-txt(){      vi $(ggeoview-sdir)/CMakeLists.txt $(ggeoview-tdir)/CMakeLists.txt ; }
+
+
+
+
+################### BELOW FUNCS FROM WHEN GGEOVOEW WAS TOP DOG ######################
 
 ggeoview-cmake-deprecated(){
    local iwd=$PWD
@@ -1188,25 +1191,11 @@ ggeoview-cmake-deprecated-nooptix(){
 
 }
 
-
-ggeoview--()
+ggeoview-options()
 {
-   ( ggeoview-bcd ; make ${1:-install} ; )
-}
-
-
-
-ggeoview-make(){
-   local iwd=$PWD
-
-   ggeoview-bcd 
-   make $*
-
-   cd $iwd
-}
-
-ggeoview-install(){
-   ggeoview-make install
+    case $NODE_TAG in 
+      NONE) echo -DWITH_NPYSERVER:BOOL=OFF ;;
+    esac
 }
 
 
@@ -1345,15 +1334,6 @@ ggeoview-dbg()
    esac
 }
 
-
-ggeoview-config(){ echo Debug ; }
-ggeoview--()
-{
-   local iwd=$PWD;
-   ggeoview-bcd;
-   cmake --build . --config $(ggeoview-config) --target ${1:-install};
-   cd $iwd
-}
 
 
 ggeoview-dep-action()

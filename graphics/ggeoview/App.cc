@@ -1,46 +1,4 @@
-#include "App.hh"
-
-// oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
-#include "Frame.hh"
-
-// oglrap-
-#define GUI_ 1
-#ifdef GUI_
-#include "GUI.hh"
-#endif
-
-// optickscore-
-#include "Opticks.hh"
-#include "OpticksCfg.hh"
-#include "OpticksEvent.hh"
-#include "OpticksPhoton.h"
-#include "OpticksResource.hh"
-#include "Bookmarks.hh"
-#include "Composition.hh"
-#include "InterpolatedView.hh"
-
-// oglrap-
-#include "StateGUI.hh"
-#include "Scene.hh"
-#include "SceneCfg.hh"
-#include "Renderer.hh"
-#include "RendererCfg.hh"
-#include "Interactor.hh"
-#include "InteractorCfg.hh"
-#include "Rdr.hh"
-#include "Texture.hh"
-#include "Photons.hh"
-#include "DynamicDefine.hh"
-
-// numpyserver-
-#ifdef WITH_NPYSERVER
-#include "numpydelegate.hpp"
-#include "numpydelegateCfg.hpp"
-#include "numpyserver.hpp"
-#endif
-
-
-#include "BLog.hh"
+#include <cstring>
 #include "BStr.hh"
 
 // npy-
@@ -69,19 +27,57 @@
 #include "NSlice.hpp"
 #include "NQuad.hpp"
 
+// numpyserver-
+#ifdef WITH_NPYSERVER
+#include "numpydelegate.hpp"
+#include "numpydelegateCfg.hpp"
+#include "numpyserver.hpp"
+#endif
 
-// opticks-
+// okc-
+#include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "OpticksColors.hh"
 #include "OpticksAttrSeq.hh"
+#include "OpticksCfg.hh"
+#include "OpticksEvent.hh"
+#include "OpticksPhoton.h"
+#include "OpticksResource.hh"
+#include "Bookmarks.hh"
+#include "Composition.hh"
+#include "InterpolatedView.hh"
+
+// ggeo-
+#include "GGeo.hh"
+#include "GItemIndex.hh"
 
 // opticksgeo-
 #include "OpticksGeometry.hh"
 
-// ggeo-
-#include "GGeo.hh"
-// TODO: infrastructural GItemIndex should not be in ggeo-
-#include "GItemIndex.hh"
+
+// windows headers from PLOG need to be before glfw 
+// http://stackoverflow.com/questions/3927810/how-to-prevent-macro-redefinition
+#include "PLOG.hh"
+
+// oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
+#include "Frame.hh"
+
+#define GUI_ 1
+#ifdef GUI_
+#include "GUI.hh"
+#endif
+
+#include "StateGUI.hh"
+#include "Scene.hh"
+#include "SceneCfg.hh"
+#include "Renderer.hh"
+#include "RendererCfg.hh"
+#include "Interactor.hh"
+#include "InteractorCfg.hh"
+#include "Rdr.hh"
+#include "Texture.hh"
+#include "Photons.hh"
+#include "DynamicDefine.hh"
 
 
 
@@ -91,6 +87,9 @@
 // opticksop-
 #include "OpEngine.hh"
 #endif
+
+#include "App.hh"
+#include "GGV_BODY.hh"
 
 
 #define TIMER(s) \
@@ -106,6 +105,66 @@
           t((s)) ;\
        }\
     }
+
+
+
+
+App::App(const char* prefix, int argc, char** argv )
+   : 
+      m_opticks(NULL),
+      m_prefix(strdup(prefix)),
+      m_parameters(NULL),
+      m_timer(NULL),
+      m_cache(NULL),
+      m_dd(NULL),
+      m_state(NULL),
+      m_scene(NULL),
+      m_composition(NULL),
+      m_frame(NULL),
+      m_window(NULL),
+      m_bookmarks(NULL),
+      m_interactor(NULL),
+#ifdef WITH_NPYSERVER
+      m_delegate(NULL),
+      m_server(NULL),
+#endif
+      m_evt(NULL), 
+      m_cfg(NULL),
+      m_fcfg(NULL),
+      m_types(NULL),
+      m_geometry(NULL),
+      m_ggeo(NULL),
+
+#ifdef WITH_OPTIX
+      m_ope(NULL),
+      m_opv(NULL),
+#endif
+
+      m_bnd(NULL),
+      m_pho(NULL),
+      m_hit(NULL),
+      m_rec(NULL),
+      m_seqhis(NULL),
+      m_seqmat(NULL),
+      m_boundaries(NULL),
+      m_photons(NULL),
+      m_gui(NULL),
+      m_g4step(NULL),
+      m_torchstep(NULL)
+{
+    init(argc, argv);
+}
+
+GCache* App::getCache()
+{
+    return m_cache ; 
+}
+
+OpticksCfg<Opticks>* App::getOpticksCfg()
+{
+    return m_fcfg ; 
+}
+
 
 
 void App::init(int argc, char** argv)

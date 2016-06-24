@@ -725,4 +725,5 @@ void OpticksCfg<Listener>::dump(const char* msg)
 }
 
 
+template class OKCORE_API OpticksCfg<Opticks> ;
 

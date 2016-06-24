@@ -34,9 +34,8 @@ add_subdirectory(graphics/openmeshrap)
 add_subdirectory(opticksgeo)  
 add_subdirectory(graphics/oglrap)       
 
-#set(REST ON)
-if(REST)
-
+#set(GPU ON)
+if(GPU)
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
    if(CUDA_FOUND AND OptiX_FOUND)
@@ -51,6 +50,11 @@ if(REST)
        message("Failed to find at least CUDA ${OPTICKS_CUDA_VERSION} and OptiX ${OPTICKS_OPTIX_VERSION} ")
        message("proceeding with viz only configure.") 
    endif()
+endif(GPU)
+
+
+set(REST ON)
+if(REST)
    add_subdirectory(graphics/ggeoview)
 
    find_package(Geant4 QUIET)

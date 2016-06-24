@@ -113,5 +113,4 @@ private:
      int         m_meshverbosity ; 
 };
 
-template class OKCORE_API OpticksCfg<Opticks> ;
 

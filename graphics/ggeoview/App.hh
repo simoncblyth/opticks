@@ -1,7 +1,10 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <glm/fwd.hpp>
 
-// bcfg-
+// brap-
 class BCfg ;
  
 // npy-
@@ -38,10 +41,9 @@ struct GLFWwindow ;
 // ggeo-
 class GGeo ;
 class GCache ;
+class GItemIndex ; 
 
 class OpticksGeometry ; 
-
-class GItemIndex ; 
 
 
 #ifdef WITH_NPYSERVER
@@ -59,15 +61,10 @@ class OpEngine ;
 class OpViz ; 
 #endif
 
-#include <map>
-#include <string>
-#include <cstring>
+#include "GGV_API_EXPORT.hh"
+#include "GGV_HEAD.hh"
 
-// glm-
-#include <glm/glm.hpp>
-
-
-class App {
+class GGV_API App {
   public:
        App(const char* prefix, int argc, char** argv );
        void initViz();
@@ -80,24 +77,17 @@ class App {
        bool isExit();
   private: 
        void configureViz(); 
-
   public:
        void uploadGeometryViz();
   public:
        void loadGenstep();
        void targetViz();
-
        void loadEvtFromFile();
-
-
        void uploadEvtViz();
-
-
 #ifdef WITH_OPTIX
   public:
        void prepareOptiX();
        void prepareOptiXViz();
-
        void setupEventInEngine();
        void preparePropagator();
        void seedPhotonsFromGensteps();
@@ -106,7 +96,6 @@ class App {
        void saveEvt();
        void indexSequence();
 #endif
-
        void indexEvt();
        void indexPresentationPrep();
        void indexBoundariesHost();
@@ -149,12 +138,10 @@ class App {
 
        OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ; 
-
 #ifdef WITH_OPTIX
        OpEngine*        m_ope ; 
        OpViz*           m_opv ; 
 #endif
-
        BoundariesNPY*   m_bnd ; 
        PhotonsNPY*      m_pho ; 
        HitsNPY*         m_hit ; 
@@ -168,70 +155,11 @@ class App {
        GUI*             m_gui ; 
        G4StepNPY*       m_g4step ; 
        TorchStepNPY*    m_torchstep ; 
-
-
    private:
        glm::uvec4       m_size ;
 
 };
 
-
-
-
-inline App::App(const char* prefix, int argc, char** argv )
-   : 
-      m_opticks(NULL),
-      m_prefix(strdup(prefix)),
-      m_parameters(NULL),
-      m_timer(NULL),
-      m_cache(NULL),
-      m_dd(NULL),
-      m_state(NULL),
-      m_scene(NULL),
-      m_composition(NULL),
-      m_frame(NULL),
-      m_window(NULL),
-      m_bookmarks(NULL),
-      m_interactor(NULL),
-#ifdef WITH_NPYSERVER
-      m_delegate(NULL),
-      m_server(NULL),
-#endif
-      m_evt(NULL), 
-      m_cfg(NULL),
-      m_fcfg(NULL),
-      m_types(NULL),
-      m_geometry(NULL),
-      m_ggeo(NULL),
-
-#ifdef WITH_OPTIX
-      m_ope(NULL),
-      m_opv(NULL),
-#endif
-
-      m_bnd(NULL),
-      m_pho(NULL),
-      m_hit(NULL),
-      m_rec(NULL),
-      m_seqhis(NULL),
-      m_seqmat(NULL),
-      m_boundaries(NULL),
-      m_photons(NULL),
-      m_gui(NULL),
-      m_g4step(NULL),
-      m_torchstep(NULL)
-{
-    init(argc, argv);
-}
-
-inline GCache* App::getCache()
-{
-    return m_cache ; 
-}
-
-inline OpticksCfg<Opticks>* App::getOpticksCfg()
-{
-    return m_fcfg ; 
-}
+#include "GGV_TAIL.hh"
 
 

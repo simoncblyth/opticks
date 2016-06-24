@@ -74,6 +74,7 @@ include(EnvCompilationFlags)
 
 ########### BASE #####
 
+find_package(PLog REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(OpticksBoost REQUIRED)
 find_package(BoostRap REQUIRED)
@@ -81,6 +82,7 @@ find_package(NPY   REQUIRED)
 find_package(OpticksCore REQUIRED)
 
 set(BASE_INCLUDES
+   ${PLog_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS}
@@ -88,6 +90,7 @@ set(BASE_INCLUDES
    ${OpticksCore_INCLUDE_DIRS} 
 )
 set(BASE_LIBRARIES
+   ${PLog_LIBRARIES}
    ${GLM_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
    ${BoostRap_LIBRARIES}
@@ -95,6 +98,7 @@ set(BASE_LIBRARIES
    ${OpticksCore_LIBRARIES}
 )
 set(BASE_DEFINITIONS
+   ${PLog_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${OpticksBoost_DEFINITIONS} 
    ${BoostRap_DEFINITIONS}
@@ -222,24 +226,30 @@ set(LIBRARIES
 
 include_directories(${INCLUDES})
 add_definitions(${DEFINITIONS})
-add_library(${name}Lib SHARED
-              App.cc 
+
+
+
+set(SOURCES
+
+    GGV_LOG.cc
+    App.cc 
+)
+set(HEADERS
+
+    GGV_LOG.hh
+    GGV_API_EXPORT.hh
+    GGV_HEAD.hh
+    GGV_TAIL.hh
+
+    App.hh
 )
 
-SET(hdrs 
-              App.hh
-)
 
-target_link_libraries( ${name}Lib ${LIBRARIES})
+add_library(${name} SHARED  ${SOURCES})
+target_link_libraries( ${name} ${LIBRARIES})
 
-add_executable( ${name} main.cc ) 
-
-target_link_libraries( ${name} ${LIBRARIES} ${name}Lib )
-
-install(TARGETS ${name}Lib DESTINATION lib)
-install(TARGETS ${name}    DESTINATION bin)
-install(FILES ${hdrs}   DESTINATION include/${name})
-
+install(TARGETS ${name}  DESTINATION lib)
+install(FILES ${HEADERS} DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
