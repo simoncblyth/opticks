@@ -301,7 +301,6 @@ thrustrap-txt(){ vi $(thrustrap-sdir)/CMakeLists.txt $(thrustrap-tdir)/CMakeList
 
 
 
-thrustrap-wipe(){ local bdir=$(thrustrap-bdir) ; rm -rf $bdir ; } 
 thrustrap-env(){  
    elocal- 
    cuda-

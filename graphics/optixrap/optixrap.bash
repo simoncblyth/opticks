@@ -224,22 +224,32 @@ optixrap-env(){
 
 
 optixrap-sdir(){ echo $(env-home)/graphics/optixrap ; }
-
+optixrap-tdir(){ echo $(env-home)/graphics/optixrap/tests ; }
 optixrap-idir(){ echo $(opticks-idir); }
 optixrap-bdir(){ echo $(opticks-bdir)/$(optixrap-rel) ; }
 
-
-optixrap-scd(){  cd $(optixrap-sdir); }
 optixrap-cd(){   cd $(optixrap-sdir); }
-
+optixrap-scd(){  cd $(optixrap-sdir); }
+optixrap-tcd(){  cd $(optixrap-tdir); }
 optixrap-icd(){  cd $(optixrap-idir); }
 optixrap-bcd(){  cd $(optixrap-bdir); }
-optixrap-name(){ echo OptiXRap ; }
 
-optixrap-wipe(){
-   local bdir=$(optixrap-bdir)
-   rm -rf $bdir
-}
+optixrap-name(){ echo OptiXRap ; }
+optixrap-tag(){  echo OXRAP ; }
+
+optixrap-wipe(){ local bdir=$(optixrap-bdir) ; rm -rf $bdir ; } 
+
+optixrap--(){                   opticks-- $(optixrap-bdir) ; } 
+optixrap-ctest(){               opticks-ctest $(optixrap-bdir) $* ; } 
+optixrap-genproj() { optixrap-scd ; opticks-genproj $(optixrap-name) $(optixrap-tag) ; } 
+optixrap-gentest() { optixrap-tcd ; opticks-gentest ${1:-OExample} $(optixrap-tag) ; } 
+optixrap-txt(){ vi $(optixrap-sdir)/CMakeLists.txt $(optixrap-tdir)/CMakeLists.txt ; } 
+
+
+
+
+
+################# OLD FUNCS ####################
 
 optixrap-cmake-deprecated(){
    local iwd=$PWD
@@ -259,19 +269,6 @@ optixrap-cmake-deprecated(){
 }
 
 
-optixrap-make(){
-   local iwd=$PWD
-
-   optixrap-bcd 
-   make $*
-
-   cd $iwd
-}
-
-optixrap-install(){
-   optixrap-make install
-}
-
 optixrap-bin(){ echo $(optixrap-idir)/bin/${1:-OptiXRapTest} ; }
 optixrap-export()
 {
@@ -283,24 +280,6 @@ optixrap-run(){
    optixrap-export
    $bin $*
 }
-
-
-optixrap-full()
-{
-    optixrap-make clean
-    optixrap-make
-    optixrap-install
-}
-
-optixrap-config(){ echo Debug ; }
-optixrap--()
-{
-   local iwd=$PWD;
-   optixrap-bcd;
-   cmake --build . --config $(optixrap-config) --target ${1:-install};
-   cd $iwd
-}
-
 
 
 

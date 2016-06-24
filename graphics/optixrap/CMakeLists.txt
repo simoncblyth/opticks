@@ -25,13 +25,13 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 
 include(EnvCompilationFlags)   
 
+find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
+find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
-
-# TODO: look into isolating Assimp dependency usage
 
 find_package(Assimp REQUIRED)
 find_package(AssimpRap REQUIRED)
@@ -44,7 +44,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
+    ${PLog_INCLUDE_DIRS} 
     ${OpticksBoost_INCLUDE_DIRS} 
+    ${SysRap_INCLUDE_DIRS} 
     ${BoostRap_INCLUDE_DIRS} 
 
     ${GLM_INCLUDE_DIRS} 
@@ -63,7 +65,9 @@ include_directories(
 
 
 set(LIBRARIES
+      ${PLog_LIBRARIES}
       ${OpticksBoost_LIBRARIES}
+      ${SysRap_LIBRARIES} 
       ${BoostRap_LIBRARIES} 
 
       ${Assimp_LIBRARIES}
@@ -80,7 +84,9 @@ set(LIBRARIES
 )
 
 add_definitions(
+    ${PLog_DEFINITIONS}
     ${OpticksBoost_DEFINITIONS}
+    ${SysRap_DEFINITIONS} 
     ${BoostRap_DEFINITIONS} 
     ${OpticksCore_DEFINITIONS} 
     ${Assimp_DEFINITIONS} 
@@ -91,83 +97,92 @@ add_definitions(
 
 
 
+set(SOURCES
+     
+    OXRAP_LOG.cc
 
-# OptiX prog within subdir "cu/" Thrust/CUDA not in subdir 
-optixthrust_add_library( ${name} 
-       OptiXUtil.cc
-       OContext.cc
-       OProg.cc
-       OTimes.cc
-       OGeo.cc
+    OptiXUtil.cc
+    OContext.cc
+    OProg.cc
+    OTimes.cc
+    OGeo.cc
 
-       OTracer.cc
+    OTracer.cc
 
-       OColors.cc
-       OBndLib.cc
-       OScintillatorLib.cc
-       OSourceLib.cc
-       OPropertyLib.cc
-       OConfig.cc
-       OAccel.cc
-       OPropagator.cc
+    OColors.cc
+    OBndLib.cc
+    OScintillatorLib.cc
+    OSourceLib.cc
+    OPropertyLib.cc
+    OConfig.cc
+    OAccel.cc
+    OPropagator.cc
 
-       cu/pinhole_camera.cu
-       cu/constantbg.cu
-       cu/material1_radiance.cu 
-       cu/material1_propagate.cu 
-       cu/TriangleMesh.cu 
-       cu/sphere.cu 
-       cu/hemi-pmt.cu 
-       cu/generate.cu
+    cu/pinhole_camera.cu
+    cu/constantbg.cu
+    cu/material1_radiance.cu 
+    cu/material1_propagate.cu 
+    cu/TriangleMesh.cu 
+    cu/sphere.cu 
+    cu/hemi-pmt.cu 
+    cu/generate.cu
 
-       OBuf_.cu     
-       OBufBase_.cu     
-       OBufPair_.cu     
+    OBuf_.cu     
+    OBufBase_.cu     
+    OBufPair_.cu     
+)
 
-      OPTIONS 
-          -gencode=arch=compute_30,code=sm_30
-) 
-
-set(cuptxs
+set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_pinhole_camera.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_constantbg.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_radiance.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_propagate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_hemi-pmt.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
 )
 
-set(cuhdrs
+
+set(HEADERS
+
+    OXRAP_LOG.hh
+    OXRAP_API_EXPORT.hh
+    OXRAP_HEAD.hh
+    OXRAP_TAIL.hh
+
+    OptiXUtil.hh
+    OContext.hh
+    OConfig.hh
+    OProg.hh
+    OTimes.hh
+    OGeo.hh
+    OTracer.hh
+
+    OColors.hh
+    OBndLib.hh
+    OScintillatorLib.hh
+    OSourceLib.hh
+    OPropertyLib.hh
+    OAccel.hh
+    OPropagator.hh
+    define.h
+
+    OBuf.hh
+    OBufBase.hh
+    OBufPair.hh 
+)
+
+
+set(OX_HEADERS
+
     cu/enums.h
     cu/photon.h
 )
 
 
-set(hdrs 
-  OptiXUtil.hh
-  OContext.hh
-  OConfig.hh
-  OProg.hh
-  OTimes.hh
-  OGeo.hh
-  OTracer.hh
-
-  OColors.hh
-  OBndLib.hh
-  OScintillatorLib.hh
-  OSourceLib.hh
-  OPropertyLib.hh
-  OAccel.hh
-  OPropagator.hh
-  define.h
-
-  OBuf.hh
-  OBufBase.hh
-  OBufPair.hh 
-)
- 
+# OptiX prog within "cu/"  Thrust/CUDA not in "cu/"
+optixthrust_add_library( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30) 
 target_link_libraries( ${name} ${LIBRARIES} )
 
 set(TARGET    "${name}")
@@ -176,10 +191,12 @@ set(RNGDIR    "$ENV{LOCAL_BASE}/env/graphics/ggeoview/cache/rng")  # TODO: move 
 configure_file(Config.hh.in inc/Config.hh)
 
 
-install(TARGETS ${name} DESTINATION lib)
-install(FILES ${cuptxs} DESTINATION ptx)
-install(FILES ${hdrs}   DESTINATION include/${name})
-install(FILES ${cuhdrs} DESTINATION include/${name}/cu)
+install(TARGETS ${name}     DESTINATION lib)
+install(FILES ${OX_PTXS}    DESTINATION ptx)
+install(FILES ${OX_HEADERS} DESTINATION include/${name}/cu)
+install(FILES ${HEADERS}    DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
+
+
