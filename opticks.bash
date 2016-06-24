@@ -440,16 +440,21 @@ opticks-configure-local-boost(){
 
 
 
-opticks-sln(){ echo $(opticks-bdir)/Opticks.sln ; }
+opticks-name(){ echo Opticks ; }
+opticks-sln(){ echo $(opticks-bdir)/$(opticks-name).sln ; }
 opticks-slnw(){  vs- ; echo $(vs-wp $(opticks-sln)) ; }
+opticks-vs(){ 
+   vs-
+   local sln=$1
+   [ -z "$sln" ] && sln=$(opticks-sln) 
+   local slnw=$(vs-wp $sln)
 
-opticks-vs(){ cat << EOC
+    cat << EOC
+# sln  $sln
+# slnw $slnw
 # copy/paste into powershell v2
-vs-export ; devenv $(opticks-slnw) 
-EOC
-cat << \EOC
-# in Project > Properties set debugging environment PATH to 
-PATH=C:\usr\local\opticks\lib;%PATH%;
+vs-export 
+devenv /useenv $slnw
 EOC
 
 }
@@ -842,12 +847,6 @@ int main(int argc, char** argv)
 EOT
 
 }
-
-
-
-
-
-
 
 
 

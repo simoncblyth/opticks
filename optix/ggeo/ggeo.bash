@@ -56,15 +56,7 @@ ggeo-ctest(){ opticks-ctest $(ggeo-bdir) $* ; }
    
 ggeo-sln(){ echo $(ggeo-bdir)/$(ggeo-name).sln ; }
 ggeo-slnw(){ vs- ; echo $(vs-wp $(ggeo-sln)) ; }
+ggeo-vs(){  opticks-vs $(ggeo-sln) ; }
 
-ggeo-vs(){ cat << EOC
-  
-# paste the below into PowerShell after checking profile with vip
 
-vs-export
 
-devenv /useenv $(ggeo-slnw)
-
- 
-EOC
-}

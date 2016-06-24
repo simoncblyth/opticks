@@ -15,7 +15,12 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
+
+#ifdef _MSC_VER
+// some logging issue on MSVC
+#else
 #define DOLOG 1
+#endif
 
 
 template <typename MeshT>

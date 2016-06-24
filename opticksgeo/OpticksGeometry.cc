@@ -86,6 +86,17 @@ void OpticksGeometry::init()
 
 glm::vec4 OpticksGeometry::getCenterExtent()
 {
+
+    if(!m_mesh0)
+    {
+        LOG(fatal) << "OpticksGeometry::getCenterExtent" 
+                   << " mesh0 NULL "
+                   ;
+        
+        return glm::vec4(0.f,0.f,0.f,1.f) ;
+    } 
+
+
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     return mmce ; 
 }

@@ -72,4 +72,22 @@ opticksdata-export(){
 }
 
 
+opticksdata-export-ps(){  
+
+   vs- 
+   cat << EOP
+
+# paste into powershell profile
+
+
+\$env:DAE_NAME = "$(vs-wp $(opticksdata-name dyb))"
+\$env:DAE_NAME_DYB = "$(vs-wp $(opticksdata-name dyb))"
+\$env:DAE_NAME_DPIB = "$(vs-wp $(opticksdata-name dpib))"
+
+
+EOP
+}
+
+
+
 
