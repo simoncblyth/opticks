@@ -275,25 +275,33 @@ EOU
 }
 
 thrustrap-env(){      elocal- ; opticks- ; }
+
+
 thrustrap-sdir(){ echo $(env-home)/numerics/thrustrap ; }
-
-
+thrustrap-tdir(){ echo $(env-home)/numerics/thrustrap/tests ; }
 thrustrap-idir(){ echo $(opticks-idir) ; }
 thrustrap-bdir(){ echo $(opticks-bdir)/$(thrustrap-rel) ; }
 
-
-thrustrap-scd(){  cd $(thrustrap-sdir); }
 thrustrap-cd(){   cd $(thrustrap-sdir); }
-
+thrustrap-scd(){  cd $(thrustrap-sdir); }
+thrustrap-tcd(){  cd $(thrustrap-tdir); }
 thrustrap-icd(){  cd $(thrustrap-idir); }
 thrustrap-bcd(){  cd $(thrustrap-bdir); }
+
 thrustrap-name(){ echo ThrustRap ; }
+thrustrap-tag(){  echo THRAP ; }
 
-thrustrap-wipe(){
-   local bdir=$(thrustrap-bdir)
-   rm -rf $bdir
-}
+thrustrap-wipe(){ local bdir=$(thrustrap-bdir) ;  rm -rf $bdir ; }
 
+thrustrap--(){                   opticks-- $(thrustrap-bdir) ; } 
+thrustrap-ctest(){               opticks-ctest $(thrustrap-bdir) $* ; } 
+thrustrap-genproj() { thrustrap-scd ; opticks-genproj $(thrustrap-name) $(thrustrap-tag) ; } 
+thrustrap-gentest() { thrustrap-tcd ; opticks-gentest ${1:-TExample} $(thrustrap-tag) ; } 
+thrustrap-txt(){ vi $(thrustrap-sdir)/CMakeLists.txt $(thrustrap-tdir)/CMakeLists.txt ; } 
+
+
+
+thrustrap-wipe(){ local bdir=$(thrustrap-bdir) ; rm -rf $bdir ; } 
 thrustrap-env(){  
    elocal- 
    cuda-
@@ -324,19 +332,6 @@ thrustrap-cmake-deprecated(){
    cd $iwd
 }
 
-thrustrap-make(){
-   local iwd=$PWD
-
-   thrustrap-bcd
-   make $*
-
-   cd $iwd
-}
-
-thrustrap-install(){
-   thrustrap-make install
-}
-
 thrustrap-bin(){ echo $(thrustrap-idir)/bin/$(thrustrap-name)Test ; }
 thrustrap-export()
 { 
@@ -347,17 +342,6 @@ thrustrap-run(){
    thrustrap-export
    $bin $*
 }
-
-
-thrustrap-config(){ echo Debug ; }
-thrustrap--()
-{
-   local iwd=$PWD;
-   thrustrap-bcd;
-   cmake --build . --config $(thrustrap-config) --target ${1:-install};
-   cd $iwd
-}
-
 
 
 

@@ -31,25 +31,19 @@ add_definitions(
 set(SOURCES
     SYSRAP_LOG.cc 
     PLOG.cc 
-
     SSys.cc
     SDigest.cc
     SArrayDigest.cc
-
     md5.cc
 ) 
 
-
 set(HEADERS
-
     SYSRAP_LOG.hh
     SYSRAP_API_EXPORT.hh
     SYSRAP_HEAD.hh
     SYSRAP_TAIL.hh
-
     PLOG.hh
     PLOG_INIT.hh  
-
     SSys.hh
     SDigest.hh
     SArrayDigest.hh

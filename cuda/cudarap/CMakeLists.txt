@@ -27,7 +27,7 @@ set(LIBRARIES
    ${PLog_LIBRARIES}
    ${SysRap_LIBRARIES}
 )
-message("${name}.SysRap_LIBRARIES : ${SysRap_LIBRARIES} ")
+#message("${name}.SysRap_LIBRARIES : ${SysRap_LIBRARIES} ")
 
 if(UNIX)
   set(LIBRARIES ${LIBRARIES} ssl )  

@@ -16,11 +16,11 @@ CBufSpec make_bufspec(const thrust::device_vector<T>& d_vec )
 
 
 
-template CBufSpec make_bufspec<unsigned long long>(const thrust::device_vector<unsigned long long>& );
-template CBufSpec make_bufspec<unsigned int>(const thrust::device_vector<unsigned int>& );
-template CBufSpec make_bufspec<unsigned char>(const thrust::device_vector<unsigned char>& );
-template CBufSpec make_bufspec<int>(const thrust::device_vector<int>& );
-template CBufSpec make_bufspec<float4>(const thrust::device_vector<float4>& );
+template THRAP_API CBufSpec make_bufspec<unsigned long long>(const thrust::device_vector<unsigned long long>& );
+template THRAP_API CBufSpec make_bufspec<unsigned int>(const thrust::device_vector<unsigned int>& );
+template THRAP_API CBufSpec make_bufspec<unsigned char>(const thrust::device_vector<unsigned char>& );
+template THRAP_API CBufSpec make_bufspec<int>(const thrust::device_vector<int>& );
+template THRAP_API CBufSpec make_bufspec<float4>(const thrust::device_vector<float4>& );
 
 
 

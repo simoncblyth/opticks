@@ -1,7 +1,9 @@
 #pragma once
-#include "stdio.h"
+#include <cstdio>
 
-struct CBufSlice 
+#include "CUDARAP_API_EXPORT.hh"
+
+struct CUDARAP_API CBufSlice 
 {
    void*        dev_ptr ;
    unsigned int size ; 

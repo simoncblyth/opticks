@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name CUDARapTest)
 project(${name})
 
-
-message("${name}.INCLUDE_DIRS : ${INCLUDE_DIRS}")
-message("${name}.LIBRARIES    : ${LIBRARIES}")
+#message("${name}.INCLUDE_DIRS : ${INCLUDE_DIRS}")
+#message("${name}.LIBRARIES    : ${LIBRARIES}")
 
 set(TEST_SOURCES
    LaunchSequenceTest.cc

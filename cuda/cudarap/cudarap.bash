@@ -348,15 +348,7 @@ cudarap-tcd(){  cd $(cudarap-tdir); }
 cudarap-bcd(){  cd $(cudarap-bdir); }
 cudarap-ccd(){  cd $(cudarap-rng-dir); }
 
-
-cudarap-wipe(){
-   local msg=" === $FUNCNAME :"
-   echo $msg 
-   local bdir=$(cudarap-bdir)
-   rm -rf $bdir
-}
-
-
+cudarap-wipe(){ local bdir=$(cudarap-bdir) ;  rm -rf $bdir ; } 
 
 cudarap-name(){ echo CUDARap ; }
 cudarap-tag(){  echo CUDARAP ; }

@@ -1,16 +1,50 @@
+#include <cstdio>
+#include <iterator>
+#include <iomanip>
+#include <iostream>
+
+#include <thrust/device_vector.h>
+#include <thrust/copy.h>
+
 #include "TBuf.hh"
 #include "TUtil.hh"
 
 #include "strided_range.h"
 #include "strided_repeated_range.h"
 
-#include <thrust/device_vector.h>
-#include <thrust/copy.h>
-#include <iterator>
-#include <iomanip>
-#include <iostream>
-
 #include "NPY.hpp"
+
+
+
+TBuf::TBuf(const char* name, CBufSpec spec ) :
+        m_name(strdup(name)),
+        m_spec(spec)
+{
+}
+
+CBufSlice TBuf::slice( unsigned int stride, unsigned int begin, unsigned int end ) const 
+{
+    if(end == 0u) end = m_spec.size ;  
+    return CBufSlice(m_spec.dev_ptr, m_spec.size, m_spec.num_bytes, stride, begin, end);
+}
+
+void TBuf::Summary(const char* msg) const 
+{
+    printf("%s %s \n", msg, m_name );
+}
+
+void* TBuf::getDevicePtr() const 
+{
+    return m_spec.dev_ptr ; 
+}
+unsigned int TBuf::getNumBytes() const 
+{
+    return m_spec.num_bytes ; 
+}
+unsigned int TBuf::getSize() const 
+{
+    return m_spec.size ; 
+}
 
 
 template <typename T>

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(Opticks)
+set(name Opticks)
+project(${name})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules") 
 set(OptiX_INSTALL_DIR "/Developer/OptiX" CACHE PATH "Path to OptiX installed location.")
@@ -64,7 +65,7 @@ if(REST)
    if(Geant4_FOUND)
       add_subdirectory(optix/cfg4)
    else(Geant4_FOUND)
-      message("No Geant4 ")
+      message("${name}.Geant4_FOUND_NOT")
    endif(Geant4_FOUND)
 
 endif(REST)
