@@ -8,6 +8,8 @@ include(EnvCompilationFlags)
 find_package(GLM REQUIRED)
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
+
+find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 find_package(OpticksCore REQUIRED)
@@ -16,6 +18,7 @@ set(BASE_INCLUDES
    ${GLM_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
+   ${SysRap_INCLUDE_DIRS}
    ${BoostRap_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS} 
    ${OpticksCore_INCLUDE_DIRS} 
@@ -24,6 +27,7 @@ set(BASE_LIBRARIES
    ${GLM_LIBRARIES}
    ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
+   ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${NPY_LIBRARIES}
    ${OpticksCore_LIBRARIES}
@@ -32,6 +36,7 @@ set(BASE_DEFINITIONS
    ${GLM_DEFINITIONS} 
    ${PLog_DEFINITIONS} 
    ${OpticksBoost_DEFINITIONS} 
+   ${SysRap_DEFINITIONS}
    ${BoostRap_DEFINITIONS}
    ${NPY_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}

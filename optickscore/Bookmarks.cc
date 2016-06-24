@@ -63,12 +63,6 @@ Bookmarks::MUSI Bookmarks::end()
 
 
 
-
-
-
-
-
-
 const char* Bookmarks::getTitle()
 {
    return &m_title[0] ; 
@@ -300,9 +294,6 @@ void Bookmarks::apply()
         m_current = UNSET ; 
     } 
 }
-
-
-
 
 InterpolatedView* Bookmarks::makeInterpolatedView()
 {

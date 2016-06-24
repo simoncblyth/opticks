@@ -8,9 +8,11 @@
 #include <cmath> 
 #include <cassert>
 
+
+// sysrap-
+#include "SDigest.hh"
 // brap-
 #include "BFile.hh"
-#include "BDigest.hh"
 #include "BMap.hh"
 
 // npy-
@@ -516,7 +518,7 @@ char* GProperty<T>::digest()
     size_t d_nbytes = m_domain->getNbytes();
     assert(v_nbytes == d_nbytes);
 
-    BDigest dig ;
+    SDigest dig ;
     dig.update( (char*)m_values->getValues(), v_nbytes);
     dig.update( (char*)m_domain->getValues(), d_nbytes );
     return dig.finalize();

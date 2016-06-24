@@ -8,12 +8,13 @@
 namespace fs = boost::filesystem;
 
 
+// sysrap
+#include "SDigest.hh"
+#include "SSys.hh"
 // brap-
 #include "BFile.hh"
-#include "BDigest.hh"
 #include "BStr.hh"
 #include "PLOG.hh"
-#include "BSys.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -274,9 +275,9 @@ void OpticksResource::readEnvironment()
      not currently used?
 
 */
-    assert(BSys::setenvvar(m_envprefix,"INSTALL_PREFIX", m_opticks->getInstallPrefix(), true )==0); 
+    assert(SSys::setenvvar(m_envprefix,"INSTALL_PREFIX", m_opticks->getInstallPrefix(), true )==0); 
 
-    m_geokey = BSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
+    m_geokey = SSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
     m_daepath = getenv(m_geokey);
 
     if(m_daepath == NULL)
@@ -314,13 +315,13 @@ void OpticksResource::readEnvironment()
     }
 
 
-    m_query_string = BSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
-    m_ctrl         = BSys::getenvvar(m_envprefix, "CTRL", DEFAULT_CTRL);
-    m_meshfix      = BSys::getenvvar(m_envprefix, "MESHFIX");
-    m_meshfixcfg   = BSys::getenvvar(m_envprefix, "MESHFIX_CFG");
+    m_query_string = SSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
+    m_ctrl         = SSys::getenvvar(m_envprefix, "CTRL", DEFAULT_CTRL);
+    m_meshfix      = SSys::getenvvar(m_envprefix, "MESHFIX");
+    m_meshfixcfg   = SSys::getenvvar(m_envprefix, "MESHFIX_CFG");
 
     m_query = new OpticksQuery(m_query_string);
-    std::string query_digest = BDigest::md5digest( m_query_string, strlen(m_query_string));
+    std::string query_digest = SDigest::md5digest( m_query_string, strlen(m_query_string));
 
     m_digest = strdup(query_digest.c_str());
  
@@ -334,7 +335,7 @@ void OpticksResource::readEnvironment()
 
         m_idpath = strdup(kfn.c_str());
 
-        assert(BSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
+        assert(SSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
 
         // Where is IDPATH used ? 
         //    Mainly by NPY tests as a resource access workaround as NPY 

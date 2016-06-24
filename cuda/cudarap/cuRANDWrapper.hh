@@ -39,15 +39,12 @@ class LaunchSequence ;
         delta:cudawrap blyth$ md5 /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin
         MD5 (/tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin) = eb42d4f18f8636a9a7f70577092ff22d
 
-
-
 */
 
+#include "CUDARAP_API_EXPORT.hh"
+#include "CUDARAP_HEAD.hh"
 
-
-
-
-class cuRANDWrapper {
+class CUDARAP_API cuRANDWrapper {
   public: 
      cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0 );
  
@@ -128,54 +125,7 @@ class cuRANDWrapper {
 
 };
 
-
-
-inline unsigned int cuRANDWrapper::getSeed()
-{  
-    return m_seed ; 
-}
-inline unsigned int cuRANDWrapper::getOffset()
-{ 
-    return m_offset ; 
-}
-inline LaunchSequence* cuRANDWrapper::getLaunchSequence()
-{ 
-    return m_launchseq ; 
-}
-inline void cuRANDWrapper::setCacheEnabled(bool enabled)
-{ 
-    m_cache_enabled = enabled ; 
-}
-inline bool cuRANDWrapper::hasCacheEnabled()
-{
-    return m_cache_enabled ; 
-}
-
-inline void cuRANDWrapper::setDevRngStates(CUdeviceptr dev_rng_states, bool owner )
-{
-    m_dev_rng_states = dev_rng_states ;
-    m_owner = owner ; 
-} 
-inline CUdeviceptr cuRANDWrapper::getDevRngStates()
-{ 
-    return m_dev_rng_states ; 
-}
-inline bool cuRANDWrapper::isOwner()
-{ 
-    return m_owner ; 
-} 
-
-inline curandState* cuRANDWrapper::getHostRngStates()
-{ 
-    return m_host_rng_states ; 
-}
-
-inline void cuRANDWrapper::setImod(unsigned int imod)
-{
-    m_imod = imod ; 
-}
-
-
+#include "CUDARAP_TAIL.hh"
 
 
 

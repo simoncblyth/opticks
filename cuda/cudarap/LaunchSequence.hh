@@ -1,10 +1,9 @@
-#ifndef LAUNCHSEQUENCE_H
-#define LAUNCHSEQUENCE_H
+#pragma once
 
 #include <vector>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 struct Launch {
    Launch(unsigned int _thread_offset, 
@@ -41,9 +40,8 @@ struct Launch {
    unsigned int blocks_per_launch ; 
    unsigned int threads_per_block ; 
    unsigned int sequence_index ; 
-   float kernel_time ; 
+   float        kernel_time ; 
 }; 
-
 
 
 
@@ -182,4 +180,3 @@ private:
 
 
 
-#endif

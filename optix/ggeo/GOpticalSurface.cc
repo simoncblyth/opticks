@@ -7,8 +7,8 @@
 
 #include <boost/lexical_cast.hpp>
 
-// brap-
-#include "BDigest.hh"
+// sysrap-
+#include "SDigest.hh"
 
 // ggeo-
 #include "GVector.hh"
@@ -171,7 +171,7 @@ GOpticalSurface::~GOpticalSurface()
 
 char* GOpticalSurface::digest()
 {
-    BDigest dig ;
+    SDigest dig ;
     dig.update( m_type,   strlen(m_type) );
     dig.update( m_model,  strlen(m_model) );
     dig.update( m_finish, strlen(m_finish) );

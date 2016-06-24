@@ -9,9 +9,11 @@ set(Boost_USE_STATIC_LIBS 1)
 
 find_package(OpticksBoost REQUIRED)
 find_package(PLog REQUIRED)
+find_package(SysRap REQUIRED)
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
+   ${SysRap_LIBRARIES}
    ${PLog_LIBRARIES}
 )
 
@@ -27,34 +29,28 @@ include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}
    ${OpticksBoost_INCLUDE_DIRS} 
+   ${SysRap_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
 )
 
 
-
 add_definitions(
    ${OpticksBoost_DEFINITIONS} 
+   ${SysRap_DEFINITIONS} 
    ${PLog_DEFINITIONS} 
 )
 
 
-# BLog,BFile,BSys depend on each other and boost 
-# BCfg depends only on boost
-
-
 set(SOURCES
   BRAP_LOG.cc 
-  PLOG.cc 
 
   BBufSpec.cc 
   BDemo.cc 
   BFoo.cc 
   BTime.cc
   BTimer.cc
-  BSys.cc
   BCfg.cc
   BDir.cc
-  BJson.cc
   BMap.cc
   BList.cc
   BStr.cc
@@ -62,33 +58,21 @@ set(SOURCES
   BBit.cc
   BFile.cc
   BRegex.cc
-  BDigest.cc
-  BArrayDigest.cc
-
-  md5.cc
   BTree.cc
-) 
 
-set(TOXIC_SOURCES
-  BLog.cc
-  timeutil.cc
-)
+) 
 
 set(HEADERS
   BRAP_API_EXPORT.hh
   BRAP_LOG.hh
-  PLOG.hh
-  PLOG_INIT.hh  
   BDirect.hh 
 
   BBufSpec.hh 
   BDemo.hh 
   BTime.hh
   BTimer.hh
-  BSys.hh
   BCfg.hh
   BDir.hh
-  BJson.hh
   BMap.hh
   BList.hh
   BStr.hh
@@ -96,10 +80,14 @@ set(HEADERS
   BBit.hh
   BFile.hh
   BRegex.hh
-  BDigest.hh
-  BArrayDigest.hh
+
 )
 
+
+set(TOXIC_SOURCES
+  BLog.cc
+  timeutil.cc
+)
 set(TOXIC_HEADERS
   timeutil.hh
   BLog.hh

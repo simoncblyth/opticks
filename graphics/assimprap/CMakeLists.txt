@@ -7,6 +7,8 @@ include(EnvCompilationFlags)
 
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
+
+find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(Assimp REQUIRED)
 find_package(GGeo REQUIRED)
@@ -16,9 +18,9 @@ find_package(OpticksCore REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-
     ${PLog_INCLUDE_DIRS}  
     ${OpticksBoost_INCLUDE_DIRS}  
+    ${SysRap_INCLUDE_DIRS}  
     ${BoostRap_INCLUDE_DIRS}  
     ${Assimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
@@ -30,6 +32,7 @@ include_directories(
 add_definitions(
     ${PLog_DEFINITIONS}  
     ${OpticksBoost_DEFINITIONS}  
+    ${SysRap_DEFINITIONS}  
     ${BoostRap_DEFINITIONS}  
     ${Assimp_DEFINITIONS} 
     ${GGeo_DEFINITIONS} 
@@ -41,6 +44,7 @@ add_definitions(
 set(LIBRARIES
     ${PLog_LIBRARIES}  
     ${OpticksBoost_LIBRARIES} 
+    ${SysRap_LIBRARIES} 
     ${BoostRap_LIBRARIES} 
     ${Assimp_LIBRARIES} 
     ${GGeo_LIBRARIES} 

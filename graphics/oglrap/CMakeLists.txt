@@ -10,9 +10,10 @@ find_package(GLFW REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(PLog REQUIRED) 
 find_package(OpticksBoost REQUIRED) 
+
+find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(OpticksCore REQUIRED)
-
 find_package(GGeo REQUIRED)  
 find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
@@ -32,6 +33,7 @@ set(INCLUDE_DIRS
    ${OpticksCore_INCLUDE_DIRS}
    ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
+   ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
    ${ImGui_INCLUDE_DIRS}
 ) 
@@ -51,6 +53,7 @@ set(DEFINITIONS
    ${OpticksCore_DEFINITIONS}
    ${PLog_DEFINITIONS}
    ${OpticksBoost_DEFINITIONS}
+   ${SysRap_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
    ${ImGui_DEFINITIONS}
    -DGUI_
@@ -63,6 +66,7 @@ set(LIBRARIES
    ${GGeo_LIBRARIES}
    ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
+   ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${NPY_LIBRARIES}
    ${ImGui_LIBRARIES}

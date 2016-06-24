@@ -46,7 +46,6 @@ plog-get(){
    local dir=$(dirname $(plog-dir)) &&  mkdir -p $dir && cd $dir
 
    [ ! -d plog ] && git clone $(plog-url) 
-
 }
 
 plog-edit(){  vi $(opticks-home)/cmake/Modules/FindPLog.cmake ; }

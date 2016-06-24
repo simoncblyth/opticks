@@ -34,10 +34,6 @@ GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)
     return idx ; 
 }
 
-
-
-
-
 GItemIndex::GItemIndex(const char* itemtype)
    : 
    m_index(NULL),
@@ -50,8 +46,6 @@ GItemIndex::GItemIndex(const char* itemtype)
    init(itemtype);
    setLabeller(DEFAULT);
 }
-
-
 
 GItemIndex::GItemIndex(Index* index)
    : 
@@ -122,14 +116,6 @@ std::vector<std::string>& GItemIndex::getLabels()
 {
    return m_labels ; 
 }
-
-
-
-
-
-
-
-
 
 
 

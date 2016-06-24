@@ -22,10 +22,7 @@ opticksgeo-bcd(){  cd $(opticksgeo-bdir); }
 opticksgeo-scd(){  cd $(opticksgeo-sdir); }
 opticksgeo-tcd(){  cd $(opticksgeo-tdir); }
 
-opticksgeo-wipe(){
-    local bdir=$(opticksgeo-bdir)
-    rm -rf $bdir
-}
+opticksgeo-wipe(){ local bdir=$(opticksgeo-bdir) ; rm -rf $bdir ; }
 
 opticksgeo-name(){ echo OpticksGeometry ; }
 opticksgeo-tag(){  echo OKGEO ; }
@@ -36,6 +33,5 @@ opticksgeo-genproj(){  opticksgeo-scd ; opticks-genproj $(opticksgeo-name) $(opt
 opticksgeo-gentest(){  opticksgeo-tcd ; opticks-gentest ${1:-OpticksGeometry} $(opticksgeo-tag) ; }
 
 opticksgeo-txt(){   vi $(opticksgeo-sdir)/CMakeLists.txt $(opticksgeo-tdir)/CMakeLists.txt ; }
-
 
 

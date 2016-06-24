@@ -7,8 +7,10 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+
+// sysrap-
+#include "SDigest.hh"
 // brap-
-#include "BDigest.hh"
 #include "BStr.hh"
 #include "BDir.hh"
 
@@ -185,7 +187,7 @@ char* GPropertyMap<T>::ndigest()
 template <typename T>
 char* GPropertyMap<T>::pdigest(int ifr, int ito)
 {
-    BDigest dig ;
+    SDigest dig ;
 
     if(ito == ifr) printf("GPropertyMap<T>::pdigest unexpected ifr/ito %d/%d \n", ifr, ito); 
     assert(ito >= ifr);

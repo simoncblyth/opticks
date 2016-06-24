@@ -1,10 +1,12 @@
 #include "LaunchCommon.hh"
 
-#include <string.h>   
-#include <stdlib.h>   
+#include <cstring>   
+#include <cstdlib>   
 #include <sys/stat.h>   
 #include <errno.h>
 
+
+/*
 int getenvvar(const char* name, int def)
 {
    int ivar = def ; 
@@ -12,7 +14,7 @@ int getenvvar(const char* name, int def)
    if (evar!=NULL) ivar = atoi(evar);
    return ivar ;
 }
-
+*/
 
 int mkdirp(const char* _path, int mode) 
 {

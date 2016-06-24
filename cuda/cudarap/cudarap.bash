@@ -335,16 +335,16 @@ cudarap-name(){ echo CUDARap ; }
 
 cudarap-idir(){ echo $(opticks-idir); }
 cudarap-bdir(){ echo $(opticks-bdir)/$(cudarap-rel) ; }
-
-
 cudarap-sdir(){ echo $(env-home)/cuda/cudarap ; }
-cudarap-ibin(){ echo $(cudarap-idir)/bin/cuRANDWrapperTest ; }
+cudarap-tdir(){ echo $(env-home)/cuda/cudarap/tests ; }
+cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }
 
 cudarap-rng-dir(){ echo $(local-base)/env/cuda/CUDARap/rngcache ; }
 cudarap-rng(){  ls -l $(cudarap-rng-dir) ; }
 
 cudarap-cd(){   cd $(cudarap-sdir); }
 cudarap-scd(){  cd $(cudarap-sdir); }
+cudarap-tcd(){  cd $(cudarap-tdir); }
 cudarap-bcd(){  cd $(cudarap-bdir); }
 cudarap-ccd(){  cd $(cudarap-rng-dir); }
 
@@ -355,6 +355,18 @@ cudarap-wipe(){
    local bdir=$(cudarap-bdir)
    rm -rf $bdir
 }
+
+
+
+cudarap-name(){ echo CUDARap ; }
+cudarap-tag(){  echo CUDARAP ; }
+
+cudarap--(){                   opticks-- $(cudarap-bdir) ; } 
+cudarap-ctest(){               opticks-ctest $(cudarap-bdir) $* ; } 
+cudarap-genproj() { cudarap-scd ; opticks-genproj $(cudarap-name) $(cudarap-tag) ; } 
+cudarap-gentest() { cudarap-tcd ; opticks-gentest ${1:-CExample} $(cudarap-tag) ; } 
+cudarap-txt(){ vi $(cudarap-sdir)/CMakeLists.txt $(cudarap-tdir)/CMakeLists.txt ; } 
+
 
 
 cudarap-cmake-deprecated(){
@@ -373,19 +385,6 @@ cudarap-cmake-deprecated(){
           $(cudarap-sdir) 
 
    cd $iwd
-}
-
-cudarap-make(){
-   local iwd=$PWD
-   cudarap-bcd
-   local rc
-
-   make $*
-   rc=$?
-
-   cd $iwd
-   [ $rc -ne 0 ] && echo $FUNCNAME ERROR && return 1
-   return 0
 }
 
 
@@ -411,19 +410,6 @@ cudarap-run(){
       $(cudarap-bin) $*
   fi
 }
-
-
-cudarap--(){
-  cudarap-make clean
-  cudarap-make
-  [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
-  cudarap-install $*
-}
-
-cudarap-install(){
-  cudarap-make install 
-}
-
 cudarap-test()
 {
    local iwd=$PWD

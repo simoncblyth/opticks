@@ -1,12 +1,15 @@
+#include <cstdio>
+#include <cassert>
+
+// sysrap-
+#include "SDigest.hh"
+
 #include "cuRANDWrapper.hh"
 #include "cuRANDWrapper_kernel.hh"
 #include "LaunchCommon.hh"
 #include "LaunchSequence.hh"
 
 #include "curand_kernel.h"
-#include "md5digest.hh"
-#include "stdio.h"
-#include <cassert>
 
 
 cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset )
@@ -26,6 +29,55 @@ cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed
     setCacheDir("/tmp"); 
 }
 
+unsigned int cuRANDWrapper::getSeed()
+{  
+    return m_seed ; 
+}
+unsigned int cuRANDWrapper::getOffset()
+{ 
+    return m_offset ; 
+}
+LaunchSequence* cuRANDWrapper::getLaunchSequence()
+{ 
+    return m_launchseq ; 
+}
+void cuRANDWrapper::setCacheEnabled(bool enabled)
+{ 
+    m_cache_enabled = enabled ; 
+}
+bool cuRANDWrapper::hasCacheEnabled()
+{
+    return m_cache_enabled ; 
+}
+
+void cuRANDWrapper::setDevRngStates(CUdeviceptr dev_rng_states, bool owner )
+{
+    m_dev_rng_states = dev_rng_states ;
+    m_owner = owner ; 
+} 
+CUdeviceptr cuRANDWrapper::getDevRngStates()
+{ 
+    return m_dev_rng_states ; 
+}
+bool cuRANDWrapper::isOwner()
+{ 
+    return m_owner ; 
+} 
+
+curandState* cuRANDWrapper::getHostRngStates()
+{ 
+    return m_host_rng_states ; 
+}
+
+void cuRANDWrapper::setImod(unsigned int imod)
+{
+    m_imod = imod ; 
+}
+
+
+
+
+
 void cuRANDWrapper::setCacheDir(const char* dir)
 {
     m_cache_dir = strdup(dir);
@@ -44,14 +96,14 @@ char* cuRANDWrapper::digest()
 {
     if(!m_host_rng_states) return 0 ;
 
-    MD5Digest dig ;
+    SDigest dig ;
     dig.update( (char*)m_host_rng_states, sizeof(curandState)*getItems()) ; 
     return dig.finalize();
 }
 
 char* cuRANDWrapper::testdigest()
 {
-    MD5Digest dig ;
+    SDigest dig ;
     dig.update( (char*)m_test, sizeof(float)*getItems()) ; 
     return dig.finalize();
 }
@@ -447,8 +499,6 @@ int cuRANDWrapper::fillHostBuffer(curandState* host_rng_states, unsigned int ele
     return rc ;
 
 }
-
-
 
 
 

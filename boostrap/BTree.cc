@@ -9,8 +9,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 namespace fs = boost::filesystem;
@@ -34,11 +34,11 @@ void BTree::saveTree(const pt::ptree& t , const char* path)
 int BTree::loadTree(pt::ptree& t , const char* path)
 {
     fs::path fpath(path);
-    LOG(debug) << "jsonutil.loadTree: "
+    LOG(debug) << "BTree.loadTree: "
               << " load path: " << path;
 
     if (!(fs::exists(fpath ) && fs::is_regular_file(fpath))) {
-        LOG(warning) << "jsonutil.loadTree: "
+        LOG(warning) << "BTree.loadTree: "
                      << "can't find file " << path;
         return 1;
     }

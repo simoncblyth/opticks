@@ -7,6 +7,7 @@ include(EnvCompilationFlags)
 
 find_package(OpticksBoost  REQUIRED)
 find_package(GLM    REQUIRED)
+find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(PLog REQUIRED)
 #message("NPY.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
@@ -18,6 +19,7 @@ include_directories(
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
+   ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
 )
 
@@ -25,6 +27,7 @@ add_definitions(
    ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${PLog_DEFINITIONS} 
+   ${SysRap_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
 )
 
@@ -32,6 +35,7 @@ set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
    ${GLM_LIBRARIES}
    ${PLog_LIBRARIES} 
+   ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
 )
 

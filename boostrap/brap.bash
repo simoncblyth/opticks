@@ -4,7 +4,6 @@ brap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(brap-src)} ; }
 brap-vi(){       vi $(brap-source) ; }
 brap-usage(){ cat << EOU
 
-
 BoostRap
 ===========
 

@@ -6,8 +6,8 @@
 #include <iostream>
 #include <iomanip>
 
-// brap-
-#include "BDigest.hh"
+// sysrap-
+#include "SDigest.hh"
 
 // ggeo-
 #include "GMatrix.hh"
@@ -332,7 +332,7 @@ std::string GNode::localDigest()
     char meshidx[8];
     snprintf(meshidx, 8, "%u", m_mesh->getIndex());
 
-    BDigest dig ;
+    SDigest dig ;
     dig.update( (char*)tdig.c_str(), strlen(tdig.c_str()) ); 
     dig.update( meshidx , strlen(meshidx) ); 
     return dig.finalize();
@@ -349,7 +349,7 @@ std::string GNode::meshDigest()
 
 std::string GNode::localDigest(std::vector<GNode*>& nodes, GNode* extra)
 {
-    BDigest dig ;
+    SDigest dig ;
     for(unsigned int i=0 ; i < nodes.size() ; i++)
     {
         GNode* node = nodes[i];

@@ -23,6 +23,7 @@ endif()
 
 find_package(OpticksBoost REQUIRED QUIET)
 
+add_subdirectory(sysrap)    
 add_subdirectory(boostrap)    
 #add_subdirectory(boostrapclient)    
 add_subdirectory(numerics/npy)   
@@ -34,7 +35,9 @@ add_subdirectory(graphics/openmeshrap)
 add_subdirectory(opticksgeo)  
 add_subdirectory(graphics/oglrap)       
 
-#set(GPU ON)
+if(APPLE)
+    set(GPU ON)
+endif(APPLE)
 if(GPU)
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})

@@ -13,8 +13,7 @@
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 namespace fs = boost::filesystem;
@@ -25,16 +24,10 @@ namespace pt = boost::property_tree;
 #include "BTree.hh"
 #include "BFile.hh"
 
-
-
 #ifdef _MSC_VER
-
 // foreach shadowing
 #pragma warning( disable : 4456)
-
 #endif
-
-
 
 
 template <typename A, typename B>
@@ -73,10 +66,6 @@ void BMap<A,B>::dump( std::map<A,B>* mp, const char* msg)
 }
 
 
-
-
-
-
 template <typename A, typename B>
 BMap<A,B>::BMap(std::map<A,B>* mp) 
    :
@@ -88,17 +77,10 @@ BMap<A,B>::BMap(std::map<A,B>* mp)
 template <typename A, typename B>
 void BMap<A,B>::save(const char* dir, const char* name)
 {
-     std::cerr << "save" 
-             << " dir " << dir 
-             << " name  " << name
-             << std::endl ;  
-
      std::string path = BFile::preparePath(dir, name, true);
      LOG(debug) << "saveMap to " << path ;
-
      if(!path.empty()) save( path.c_str() );
 }
-
 
 
 template<typename A, typename B> 

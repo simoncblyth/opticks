@@ -1,4 +1,4 @@
-#include "BDigest.hh"
+#include "SDigest.hh"
 
 #include <cstdio>
 #include <cstdlib>
@@ -76,27 +76,27 @@ char* md5digest_str2md5(char* buffer, int length)
 
 
 
-BDigest::BDigest()
+SDigest::SDigest()
 {
    MD5_Init(&m_ctx); 
 }
-BDigest::~BDigest()
+SDigest::~SDigest()
 {
 }
 
-void BDigest::update(char* buffer, int length)
+void SDigest::update(char* buffer, int length)
 {
     md5digest_str2md5_update(m_ctx, buffer, length );
 }
 
-char* BDigest::finalize()
+char* SDigest::finalize()
 {
     return md5digest_str2md5_finalize(m_ctx);  
 }
 
 
 
-std::string BDigest::md5digest( const char* buffer, int len )
+std::string SDigest::md5digest( const char* buffer, int len )
 {
     char* out = md5digest_str2md5_monolithic(buffer, len);
     std::string digest(out);
@@ -106,9 +106,9 @@ std::string BDigest::md5digest( const char* buffer, int len )
 
 
 
-std::string BDigest::digest( void* buffer, int len )
+std::string SDigest::digest( void* buffer, int len )
 {
-    BDigest dig ; 
+    SDigest dig ; 
     dig.update( (char*)buffer, len );
     return dig.finalize();
 }

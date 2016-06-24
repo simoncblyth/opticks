@@ -1,8 +1,8 @@
-#include "BSys.hh"
+#include "SSys.hh"
 
 
 int main(int argc, char** argv)
 {
-   // BSys::WaitForInput();
+   // SSys::WaitForInput();
     return 0 ; 
 }

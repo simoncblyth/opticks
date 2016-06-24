@@ -24,17 +24,16 @@
 
 #endif
 
-#include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "SYSRAP_API_EXPORT.hh"
 
-class BRAP_API BDigest 
+class SYSRAP_API SDigest 
 {
    public:
        static std::string md5digest( const char* buffer, int len );
        static std::string digest( void* buffer, int len );
    public:
-       BDigest();
-       virtual ~BDigest();
+       SDigest();
+       virtual ~SDigest();
    public:
        void update(char* buffer, int length);
        char* finalize();

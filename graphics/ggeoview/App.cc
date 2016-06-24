@@ -337,6 +337,8 @@ void App::configureViz()
         m_interactor->setBookmarks(m_bookmarks);
     }
 
+    LOG(info) << "App::configureViz m_setup bookmarks DONE" ;  
+
     TIMER("configureViz");
 }
 

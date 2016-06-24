@@ -471,11 +471,11 @@ void LoadArrayFromNumpy(
     std::vector<Scalar>& data)
 {
 
-    std::cerr << "LoadArrayFromNumpy filenme " << filename << std::endl ; 
+    //std::cerr << "LoadArrayFromNumpy filenme " << filename << std::endl ; 
 
     std::ifstream stream(filename.c_str(), std::ios::in|std::ios::binary);
     if(!stream) {
-        printf("LoadArrayFromNumpy failed to open path %s \n", filename.c_str() );
+        //printf("LoadArrayFromNumpy failed to open path %s \n", filename.c_str() );
         throw std::runtime_error("io error: failed to open a file.");
     }
     // check if this file is the valid .npy file

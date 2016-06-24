@@ -73,20 +73,6 @@ int* Index::getSelectedPtr()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 std::string Index::description()
 {
     std::stringstream ss ; 
@@ -329,6 +315,9 @@ void Index::save(const char* idpath)
 
     BMap<std::string, unsigned int>::save( &m_source, idpath, sname.c_str() );  
     BMap<std::string, unsigned int>::save( &m_local , idpath, lname.c_str() );  
+
+    LOG(info) << "Index::save DONE" ;
+
 }
 std::string Index::getPrefixedString(const char* tail)
 {

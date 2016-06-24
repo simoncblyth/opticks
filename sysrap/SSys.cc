@@ -2,18 +2,14 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <boost/lexical_cast.hpp>
 
-#include "BSys.hh"
+#include "SSys.hh"
 #include "PLOG.hh"
 
 
-
-
-
-void BSys::WaitForInput(const char* msg)
+void SSys::WaitForInput(const char* msg)
 {
-    LOG(info) << "BSys::WaitForInput " << msg  ; 
+    LOG(info) << "SSys::WaitForInput " << msg  ; 
     int c = '\0' ;
     do
     {
@@ -21,17 +17,27 @@ void BSys::WaitForInput(const char* msg)
 
     } while(c != '\n' ); 
    
-    LOG(info) << "BSys::WaitForInput DONE " ; 
+    LOG(info) << "SSys::WaitForInput DONE " ; 
 }
 
-int BSys::getenvint( const char* envkey, int fallback )
+int SSys::getenvint( const char* envkey, int fallback )
 {
     char* val = getenv(envkey);
-    int ival = val ? boost::lexical_cast<int>(val) : fallback ;
+    int ival = val ? atoi_(val) : fallback ;
     return ival ; 
 }
 
-const char* BSys::getenvvar( const char* envprefix, const char* envkey, const char* fallback )
+int SSys::atoi_( const char* a )
+{
+    std::string s(a);
+    std::istringstream iss(s);
+    int i ;
+    iss >> i ; 
+    return i ;
+}
+
+
+const char* SSys::getenvvar( const char* envprefix, const char* envkey, const char* fallback )
 {
     char envvar[128];
     snprintf(envvar, 128, "%s%s", envprefix, envkey );
@@ -39,7 +45,7 @@ const char* BSys::getenvvar( const char* envprefix, const char* envkey, const ch
     return evalue ? evalue : fallback ; 
 }
 
-int BSys::setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite)
+int SSys::setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite)
 {
     // heap as putenv does not copy
 
@@ -55,7 +61,7 @@ int BSys::setenvvar( const char* envprefix, const char* key, const char* value, 
 
     const char* after = getenv(ekey) ;
 
-    LOG(trace) << "BSys::setenvvar"
+    LOG(trace) << "SSys::setenvvar"
               << " ekey " << ekey 
               << " overwrite " << overwrite
               << " prior " << ( prior ? prior : "NULL" )

@@ -461,6 +461,29 @@ EOC
 
 
 opticks-config(){ echo Debug ; }
+opticks---(){ 
+
+  brap-
+  brap--
+  npy-
+  npy--
+  okc-
+  okc--
+  ggeo-
+  ggeo--
+  assimprap-
+  assimprap--
+  openmeshrap-
+  openmeshrap--
+  opticksgeo-
+  opticksgeo--
+
+  # skipping GPU libs for now 
+  
+  ggeoview-
+  ggeoview--
+
+}    
 opticks--(){     
 
    local iwd=$PWD
@@ -793,10 +816,10 @@ set(SOURCES
 )
 set(HEADERS
 
-     ${tag}_LOG.hh
-     ${tag}_API_EXPORT.hh
-     ${tag}_HEAD.hh
-     ${tag}_TAIL.hh
+    ${tag}_LOG.hh
+    ${tag}_API_EXPORT.hh
+    ${tag}_HEAD.hh
+    ${tag}_TAIL.hh
 
 )
 EOS

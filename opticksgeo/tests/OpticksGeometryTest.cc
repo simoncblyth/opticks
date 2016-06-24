@@ -2,7 +2,6 @@
 
 #include "Opticks.hh"
 #include "OpticksGeometry.hh"
-#include "BSys.hh"
 
 #include "PLOG.hh"
 #include "OKCORE_LOG.hh"

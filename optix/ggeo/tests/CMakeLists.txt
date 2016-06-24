@@ -68,11 +68,8 @@ set(_TEST_SOURCES
 )
 
 set(TEST_SOURCES
-
     GBufferTest.cc
-
 )
-
 
 
 foreach(TEST_CC_SRC ${TEST_SOURCES})
@@ -83,3 +80,6 @@ foreach(TEST_CC_SRC ${TEST_SOURCES})
     target_link_libraries(${TGT} ${LIBRARIES} GGeo)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
+
+
+

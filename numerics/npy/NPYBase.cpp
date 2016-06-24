@@ -8,10 +8,12 @@
 #include <iostream>
 #include <algorithm>
 
+// sysrap-
+#include "SDigest.hh"
+
 //brap- 
 #include "BFile.hh"
 #include "BStr.hh"
-#include "BDigest.hh"
 
 
 #include "NPYSpec.hpp"
@@ -390,7 +392,7 @@ std::string NPYBase::getDigestString()
 
 std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
 {
-    return BDigest::digest(bytes, nbytes);
+    return SDigest::digest(bytes, nbytes);
 }
 
 bool NPYBase::isEqualTo(NPYBase* other)

@@ -1,11 +1,10 @@
 #pragma once
 #include <string>
 
-#include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "SYSRAP_API_EXPORT.hh"
 
 template <typename T>
-class BRAP_API BArrayDigest 
+class SYSRAP_API SArrayDigest 
 {
     public:
        static std::string arraydigest( T* data, unsigned int n );

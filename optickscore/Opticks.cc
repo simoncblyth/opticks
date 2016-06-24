@@ -9,10 +9,10 @@
 
 
 
+#include "SSys.hh"
 // brap-
 #include "BStr.hh"
 #include "PLOG.hh"
-#include "BSys.hh"
 
 
 // npy-
@@ -383,7 +383,7 @@ void Opticks::configureDomains()
 
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
-   int e_rng_max = BSys::getenvint("CUDAWRAP_RNG_MAX",-1); 
+   int e_rng_max = SSys::getenvint("CUDAWRAP_RNG_MAX",-1); 
 
    int x_rng_max = getRngMax() ;
 

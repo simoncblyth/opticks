@@ -15,8 +15,8 @@ using plog::verbose ;
 // hmm dangerous but what alternative 
 #define trace plog::verbose 
 
-#include "BRAP_API_EXPORT.hh"
-struct BRAP_API PLOG 
+#include "SYSRAP_API_EXPORT.hh"
+struct SYSRAP_API PLOG 
 {
     int   level ; 
     PLOG(int argc, char** argv);

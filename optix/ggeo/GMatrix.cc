@@ -4,8 +4,8 @@
 #include <iomanip>
 #include <cstdio>
 
-// brap-
-#include "BDigest.hh"
+// sysrap-
+#include "SDigest.hh"
 
 // ggeo-
 #include "GMatrix.hh"
@@ -277,7 +277,7 @@ std::string GMatrix<T>::brief(unsigned int w)
 template<typename T>
 std::string GMatrix<T>::digest()
 {
-    BDigest dig ;
+    SDigest dig ;
     dig.update( (char*)getPointer(), sizeof(T)*16 );  
     return dig.finalize();
 }

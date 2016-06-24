@@ -27,36 +27,18 @@ ggeo-wipe(){
     rm -rf $bdir
 }
 
-
 ggeo-name(){ echo GGeo ; }
 ggeo-tag(){  echo GGEO ; }
-ggeo-genproj()
-{
-   ggeo-scd
-   opticks-genproj $(ggeo-name) $(ggeo-tag) 
-}
 
-ggeo-gentest()
-{
-   local iwd=$PWD
-   ggeo-scd tests
-   local cls=${1:-GMaterial}
-   opticks-gentest $cls $(ggeo-tag) 
-   cd $iwd
-}
-
-
-
-ggeo--(){  opticks-- $(ggeo-bdir) ; }
+ggeo--(){                   opticks-- $(ggeo-bdir) ; }
+ggeo-ctest(){               opticks-ctest $(ggeo-bdir) $* ; }
+ggeo-genproj() { ggeo-scd ; opticks-genproj $(ggeo-name) $(ggeo-tag) ; }
+ggeo-gentest() { ggeo-tcd ; opticks-gentest ${1:-GExample} $(ggeo-tag) ; }
 ggeo-txt(){ vi $(ggeo-sdir)/CMakeLists.txt $(ggeo-tdir)/CMakeLists.txt ; }
-
-
-ggeo-ctest(){ opticks-ctest $(ggeo-bdir) $* ; }
 
    
 ggeo-sln(){ echo $(ggeo-bdir)/$(ggeo-name).sln ; }
 ggeo-slnw(){ vs- ; echo $(vs-wp $(ggeo-sln)) ; }
 ggeo-vs(){  opticks-vs $(ggeo-sln) ; }
-
 
 
