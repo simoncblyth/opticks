@@ -11,7 +11,8 @@ class OContext ;
 class OBuf ; 
 struct OTimes ; 
 
-class OPropagator {
+#include "OXRAP_API_EXPORT.hh"
+class OXRAP_API OPropagator {
     public:
         enum { 
                 e_config_idomain,
@@ -93,79 +94,5 @@ class OPropagator {
         int             m_override ; 
  
 };
-
-
-
-inline OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) 
-   :
-    m_ocontext(ocontext),
-    m_opticks(opticks),
-    m_evt(NULL),
-    m_prelaunch_times(NULL),
-    m_launch_times(NULL),
-    m_prelaunch(false),
-    m_entry_index(-1),
-    m_photon_buf(NULL),
-    m_sequence_buf(NULL),
-    m_genstep_buf(NULL),
-    m_record_buf(NULL),
-    m_rng_wrapper(NULL),
-    m_trivial(false),
-    m_count(0),
-    m_width(0),
-    m_height(0),
-    m_prep(0),
-    m_time(0),
-    m_override(0)
-{
-    init();
-}
-
-inline void OPropagator::setTrivial(bool trivial)
-{
-    m_trivial = trivial ; 
-}
-inline void OPropagator::setOverride(unsigned int override)
-{
-    m_override = override ; 
-}
-
-
-
-inline void OPropagator::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ;
-}
-inline OpticksEvent* OPropagator::getEvent()
-{
-    return m_evt ;
-}
-
-inline OBuf* OPropagator::getSequenceBuf()
-{
-    return m_sequence_buf ; 
-}
-inline OBuf* OPropagator::getPhotonBuf()
-{
-    return m_photon_buf ; 
-}
-inline OBuf* OPropagator::getGenstepBuf()
-{
-    return m_genstep_buf ; 
-}
-inline OBuf* OPropagator::getRecordBuf()
-{
-    return m_record_buf ; 
-}
-
-inline OTimes* OPropagator::getPrelaunchTimes()
-{
-    return m_prelaunch_times ; 
-}
-
-inline OTimes* OPropagator::getLaunchTimes()
-{
-    return m_launch_times ; 
-}
 
 

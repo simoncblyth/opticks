@@ -42,6 +42,11 @@ __host__ std::ostream& operator<< (std::ostream& os, const unsigned char& p)
 
 
 
+OBuf::OBuf(const char* name, optix::Buffer& buffer) : OBufBase(name, buffer)
+{
+}
+
+
 
 template <typename T>
 void OBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end)
@@ -129,24 +134,6 @@ T OBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end )
 }
 
 
-
-
-
-
-//
-// Using a templated class rather than templated member functions 
-// has the advantage of only having to explicitly instanciate the class::
-//
-//    template class OBuf<optix::float4> ;
-//    template class OBuf<optix::uint4> ;
-//    template class OBuf<unsigned int> ;
-//
-// as opposed to having to explicly instanciate all the member functions.
-//
-// But when want differently typed "views" of the 
-// same data it seems more logical to used templated member functions.
-//
-
 /*
 template optix::float4* OBuf::getDevicePtr<optix::float4>();
 template optix::uint4* OBuf::getDevicePtr<optix::uint4>();
@@ -154,18 +141,18 @@ template unsigned int* OBuf::getDevicePtr<unsigned int>();
 template unsigned long long* OBuf::getDevicePtr<unsigned long long>();
 */
 
-template void OBuf::dump<optix::float4>(const char*, unsigned int, unsigned int, unsigned int);
-template void OBuf::dump<optix::uint4>(const char*, unsigned int, unsigned int, unsigned int);
-template void OBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
-template void OBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int);
-template void OBuf::dump<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
-template void OBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<optix::float4>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<optix::uint4>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int);
 
-template void OBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
+template OXRAP_API void OBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned int, unsigned int);
 
 
-template unsigned int OBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);
-template unsigned long long OBuf::reduce<unsigned long long>(unsigned int, unsigned int, unsigned int);
+template OXRAP_API unsigned int OBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int);
+template OXRAP_API unsigned long long OBuf::reduce<unsigned long long>(unsigned int, unsigned int, unsigned int);
 
 
 

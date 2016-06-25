@@ -1,7 +1,16 @@
 #include "OBufPair.hh"
 #include "OBuf.hh"
+
 #include "strided_range.h"
 #include "iexpand.h"
+
+template <typename T>
+OBufPair<T>::OBufPair(CBufSlice src, CBufSlice dst ) 
+   :
+   m_src(src),
+   m_dst(dst)
+{
+}
 
 
 template <typename T>
@@ -26,5 +35,5 @@ void OBufPair<T>::seedDestination()
 }
 
 
-template class OBufPair<unsigned int> ;
+template class OXRAP_API OBufPair<unsigned int> ;
 

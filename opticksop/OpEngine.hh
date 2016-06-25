@@ -22,8 +22,8 @@ class OTracer ;
 class OPropagator ; 
 class OColors ; 
 
-
-class OpEngine {
+#include "OKOP_API_EXPORT.hh"
+class OKOP_API OpEngine {
     public:
        OpEngine(Opticks* opticks, GGeo* ggeo);
     private:
@@ -64,41 +64,6 @@ class OpEngine {
        OTracer*         m_otracer ; 
        OPropagator*     m_opropagator ; 
 
-
 };
 
-
-inline OpEngine::OpEngine(Opticks* opticks, GGeo* ggeo) 
-     : 
-      m_timer(NULL),
-      m_opticks(opticks),
-      m_fcfg(NULL),
-      m_ggeo(ggeo),
-      m_evt(NULL),
-      m_ocontext(NULL),
-      m_ocolors(NULL),
-      m_ogeo(NULL),
-      m_olib(NULL),
-      m_oscin(NULL),
-      m_osrc(NULL),
-      m_otracer(NULL),
-      m_opropagator(NULL)
-{
-      init();
-}
-
-
-inline Opticks* OpEngine::getOpticks()
-{
-    return m_opticks ; 
-}
-inline OContext* OpEngine::getOContext()
-{
-    return m_ocontext ; 
-}
-
-inline void OpEngine::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}
 

@@ -7,8 +7,9 @@ class GBndLib ;
 template <typename T> class NPY ;
 
 #include "OPropertyLib.hh"
+#include "OXRAP_API_EXPORT.hh"
 
-class OBndLib  : public OPropertyLib 
+class OXRAP_API OBndLib  : public OPropertyLib 
 {
 public:
     OBndLib(optix::Context& ctx, GBndLib* lib);
@@ -21,13 +22,5 @@ private:
     GBndLib*             m_lib ; 
 
 };
-
-
-inline OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
-    : 
-    OPropertyLib(ctx),
-    m_lib(lib)
-{
-}
 
 

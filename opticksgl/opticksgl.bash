@@ -30,35 +30,45 @@ EOU
 }
 
 
-opticksgl-env(){      elocal- ; opticks- ; }
-
 opticksgl-sdir(){ echo $(env-home)/opticksgl ; }
-
+opticksgl-tdir(){ echo $(env-home)/opticksgl/tests ; }
 opticksgl-idir(){ echo $(opticks-idir) ; }
 opticksgl-bdir(){ echo $(opticks-bdir)/$(opticksgl-rel) ; }
 
-
-opticksgl-scd(){  cd $(opticksgl-sdir); }
 opticksgl-cd(){   cd $(opticksgl-sdir); }
-
+opticksgl-scd(){  cd $(opticksgl-sdir); }
+opticksgl-tcd(){  cd $(opticksgl-tdir); }
 opticksgl-icd(){  cd $(opticksgl-idir); }
 opticksgl-bcd(){  cd $(opticksgl-bdir); }
 
-opticksgl-name(){ echo OpticksGL ; }
-
-opticksgl-wipe(){
-   local bdir=$(opticksgl-bdir)
-   rm -rf $bdir
-}
 
 opticksgl-env(){  
    elocal- 
+   opticks-
 
    optix-
    optix-export 
    optixrap-
    optixrap-export 
 }
+
+
+opticksgl-name(){ echo OpticksGL ; }
+opticksgl-tag(){ echo OKGL ; }
+
+opticksgl-wipe(){ local bdir=$(opticksgl-bdir) ; rm -rf $bdir ; } 
+
+opticksgl--(){                   opticks-- $(opticksgl-bdir) ; } 
+opticksgl-ctest(){               opticks-ctest $(opticksgl-bdir) $* ; } 
+opticksgl-genproj() { opticksgl-scd ; opticks-genproj $(opticksgl-name) $(opticksgl-tag) ; } 
+opticksgl-gentest() { opticksgl-tcd ; opticks-gentest ${1:-Example} $(opticksgl-tag) ; } 
+opticksgl-txt(){ vi $(opticksgl-sdir)/CMakeLists.txt $(opticksgl-tdir)/CMakeLists.txt ; } 
+
+
+
+
+
+
 
 opticksgl-cmake-deprecated(){
    local iwd=$PWD
@@ -76,29 +86,6 @@ opticksgl-cmake-deprecated(){
 
    cd $iwd
 }
-
-opticksgl-make(){
-   local iwd=$PWD
-
-   opticksgl-bcd 
-   make $*
-
-   cd $iwd
-}
-
-opticksgl-install(){
-   opticksgl-make install
-}
-
-opticksgl-config(){ echo Debug ; }
-opticksgl--()
-{
-   local iwd=$PWD;
-   opticksgl-bcd;
-   cmake --build . --config $(opticksgl-config) --target ${1:-install};
-   cd $iwd
-}
-
 
 
 

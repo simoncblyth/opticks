@@ -10,10 +10,12 @@ include(EnvCompilationFlags)
 find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
+find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
-find_package(BoostRap REQUIRED)
 find_package(GLM REQUIRED)
 
+find_package(SysRap REQUIRED)
+find_package(BoostRap REQUIRED)
 find_package(OpticksCore REQUIRED)
 find_package(GGeo  REQUIRED)
 find_package(NPY REQUIRED)
@@ -21,13 +23,15 @@ find_package(OptiXRap REQUIRED)
 find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
-# NB no OpenGL/GLEW/GLFW 
+# NB **NO OpenGL/GLEW/GLFW** 
 #    use opticksgl- not opticksop- for viz things 
 
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
 
+   ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
+   ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS}  
    ${NPY_INCLUDE_DIRS}  
@@ -41,7 +45,9 @@ include_directories(
 )
 
 add_definitions( 
+   ${PLog_DEFINITIONS} 
    ${OpticksBoost_DEFINITIONS} 
+   ${SysRap_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${NPY_DEFINITIONS} 
@@ -58,8 +64,9 @@ add_definitions(
 
 
 set(LIBRARIES
-
+   ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
+   ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${GLM_LIBRARIES}
    ${NPY_LIBRARIES}
@@ -70,35 +77,44 @@ set(LIBRARIES
    ${OptiXRap_LIBRARIES}
    ${CUDARap_LIBRARIES}
    ${ThrustRap_LIBRARIES}
-
-   ssl
-   crypto 
 )
 
+if(UNIX)
+   set(LIBRARIES ${LIBRARIES} ssl crypto)
+endif(UNIX)
 
-CUDA_ADD_LIBRARY( ${name} SHARED
+
+set(SOURCES
+     
+    OKOP_LOG.cc
+
+    OpZeroer.cc
+    OpSeeder.cc
+    OpIndexer.cc
+    OpIndexer_.cu
     OpIndexerApp.cc
     OpEngine.cc
-    OpIndexer.cc
-    OpSeeder.cc
-    OpZeroer.cc
-    OpIndexer_.cu
-
-    OPTIONS -gencode=arch=compute_30,code=sm_30
 )
 
+set(HEADERS
+
+    OKOP_LOG.hh
+    OKOP_API_EXPORT.hh
+    OKOP_HEAD.hh
+    OKOP_TAIL.hh
+
+    OpZeroer.hh
+    OpSeeder.hh
+    OpIndexer.hh
+    OpIndexerApp.hh
+    OpEngine.hh
+)
+
+CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30)
 target_link_libraries( ${name} ${LIBRARIES} )
 
-SET(hdrs 
-    OpEngine.hh
-    OpIndexer.hh
-    OpSeeder.hh
-    OpZeroer.hh
-    OpIndexerApp.hh
-)
-
 install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${hdrs}   DESTINATION include/${name})
+install(FILES ${HEADERS}   DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)

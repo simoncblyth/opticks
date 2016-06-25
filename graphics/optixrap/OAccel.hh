@@ -1,9 +1,10 @@
 #pragma once
-#include <cstddef>
-#include <cstring>
+
 #include <optixu/optixpp_namespace.h>
 
-class OAccel {
+#include "OXRAP_API_EXPORT.hh"
+
+class OXRAP_API OAccel {
     public:
         OAccel(optix::Acceleration accel, const char* path);
     public:
@@ -19,14 +20,5 @@ class OAccel {
         bool                   m_loaded ; 
 
 };
-
-
-inline OAccel::OAccel(optix::Acceleration accel, const char* path) :
-   m_accel(accel),
-   m_path( path ? strdup(path) : NULL ),
-   m_size( 0ull ),
-   m_loaded(false)
-{
-}
 
 

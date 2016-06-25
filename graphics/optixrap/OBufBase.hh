@@ -9,7 +9,9 @@
 class NPYBase ; 
 
 // non-view-type specifics
-class OBufBase {
+#include "OXRAP_API_EXPORT.hh"
+
+class OXRAP_API OBufBase {
    public:
       OBufBase( const char* name, optix::Buffer& buffer );
    public:
@@ -49,71 +51,5 @@ class OBufBase {
       unsigned int   m_device ; 
       bool           m_hexdump ; 
 };
-
-
-inline OBufBase::OBufBase(const char* name, optix::Buffer& buffer) 
-   :
-   m_buffer(buffer), 
-   m_name(strdup(name)), 
-   m_size(0u),
-   m_multiplicity(0u), 
-   m_sizeofatom(0u), 
-   m_numbytes(0u), 
-   m_device(0u),
-   m_hexdump(false)
-{
-    init();
-}
-
-
-inline CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
-{
-   return CBufSlice( getDevicePtr(), getSize(), getNumBytes(), stride, begin, end == 0u ? getNumAtoms() : end);
-}
-
-inline CBufSpec OBufBase::bufspec()
-{
-   return CBufSpec( getDevicePtr(), getSize(), getNumBytes()) ;
-}
-
-
-inline void OBufBase::Summary(const char* msg)
-{
-    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", msg, m_name, m_size, m_multiplicity, m_sizeofatom, getNumAtoms(), m_numbytes );
-}
-
-inline void OBufBase::setHexDump(bool hexdump)
-{
-   m_hexdump = hexdump ; 
-}
-
-/*
-   *getSize()* Excludes multiplicity of the type of the OptiX buffer
-
-        e.g a Cerenkov genstep NPY<float> buffer with dimensions (7836,6,4)
-        is canonically represented as an OptiX float4 buffer of size 7836*6 = 47016 
-*/
-
-inline unsigned int OBufBase::getSize()  
-{
-    return m_size ; 
-}
-inline unsigned int OBufBase::getMultiplicity()
-{
-    return m_multiplicity ; 
-}
-inline unsigned int OBufBase::getNumAtoms()
-{
-    return m_size*m_multiplicity ; 
-}
-inline unsigned int OBufBase::getSizeOfAtom()
-{
-    return m_sizeofatom ; 
-}
-inline unsigned int OBufBase::getNumBytes()
-{
-    return m_numbytes ; 
-}
-
 
 

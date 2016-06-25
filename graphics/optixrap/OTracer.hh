@@ -6,11 +6,12 @@ class OContext ;
 class Composition ; 
 struct OTimes ; 
 
-class OTracer {
+#include "OXRAP_API_EXPORT.hh"
+class OXRAP_API OTracer {
    public:
        OTracer(OContext* ocontext, Composition* composition);
    public:
-       void trace();
+       void trace_();
        void report(const char* msg="OTracer::report");
        void setResolutionScale(unsigned int resolution_scale);
        unsigned int getResolutionScale();
@@ -32,36 +33,6 @@ class OTracer {
        int              m_entry_index ; 
 
 };
-
-
-inline OTracer::OTracer(OContext* ocontext, Composition* composition) 
-    :
-    m_ocontext(ocontext),
-    m_composition(composition),
-    m_resolution_scale(1),
-    m_trace_times(NULL),
-    m_trace_count(0),
-    m_trace_prep(0),
-    m_trace_time(0),
-    m_entry_index(-1)
-{
-    init();
-}
-
-
-inline void OTracer::setResolutionScale(unsigned int resolution_scale)
-{
-    m_resolution_scale = resolution_scale ; 
-}
-inline unsigned int OTracer::getResolutionScale()
-{
-    return m_resolution_scale ; 
-}
-inline unsigned int OTracer::getTraceCount()
-{
-    return m_trace_count ; 
-}
-
 
 
 

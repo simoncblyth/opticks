@@ -30,7 +30,7 @@ TODO
 EOU
 }
 
-op-binary-name-default(){ echo GGeoView ; }
+op-binary-name-default(){ echo GGeoViewTest ; }
 op-binary-name()
 {
    case $1 in 

@@ -459,27 +459,45 @@ EOC
 
 }
 
-
 opticks-config(){ echo Debug ; }
 opticks---(){ 
 
   brap-
   brap--
+
   npy-
   npy--
+
   okc-
   okc--
+
   ggeo-
   ggeo--
+
   assimprap-
   assimprap--
+
   openmeshrap-
   openmeshrap--
+
   opticksgeo-
   opticksgeo--
 
-  # skipping GPU libs for now 
-  
+  cudarap-
+  cudarap--
+
+  thrustrap- 
+  thrustrap--
+
+  optixrap-
+  optixrap--
+
+  opticksop-
+  opticksop--
+
+  opticksgl-
+  opticksgl--
+ 
   ggeoview-
   ggeoview--
 

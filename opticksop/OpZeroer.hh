@@ -1,14 +1,14 @@
 #pragma once
 
-#include <cstddef>
-
 class OpticksEvent ; 
 class OPropagator ; 
 class OContext ; 
 
 // zeroes on GPU record buffer via OptiX or OpenGL
 
-class OpZeroer {
+#include "OKOP_API_EXPORT.hh"
+
+class OKOP_API OpZeroer {
    public:
       OpZeroer(OContext* ocontext);
    public:
@@ -24,23 +24,4 @@ class OpZeroer {
       OpticksEvent*                m_evt ;
       OPropagator*             m_propagator ;
 };
-
-inline OpZeroer::OpZeroer(OContext* ocontext)  
-   :
-     m_ocontext(ocontext),
-     m_evt(NULL),
-     m_propagator(NULL)
-{
-}
-
-inline void OpZeroer::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}  
-inline void OpZeroer::setPropagator(OPropagator* propagator)
-{
-    m_propagator = propagator ; 
-}  
-
-
 

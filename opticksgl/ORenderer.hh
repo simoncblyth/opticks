@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cstddef>
-
 class Renderer ; 
 class Texture ; 
 class OFrame ; 
 
-class ORenderer {
+#include "OKGL_API_EXPORT.hh"
+class OKGL_API ORenderer {
     public:
         ORenderer( Renderer* renderer, OFrame* frame, const char* dir, const char* incl_path);
         void render();
@@ -26,20 +25,5 @@ class ORenderer {
         double           m_render_prep ; 
         double           m_render_time ; 
 };
-
-
-inline ORenderer::ORenderer(Renderer* renderer, OFrame* frame, const char* dir, const char* incl_path)
-    :
-    m_frame(frame),
-    m_renderer(renderer),
-    m_texture(NULL),
-    m_texture_id(-1),
-
-    m_render_count(0),
-    m_render_prep(0),
-    m_render_time(0)
-{
-    init(dir, incl_path);
-}
 
 

@@ -2,17 +2,18 @@
 
 // brap-
 #include "BTimer.hh"
-#include "BLog.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
 
 // optixrap-
-#include "OContext.hh"
 #include "OTimes.hh"
 #include "OConfig.hh"
+#include "OContext.hh"
 
+#include "PLOG.hh"
 using namespace optix ; 
 
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
@@ -27,6 +28,62 @@ const char* OContext::getModeName()
     }
     assert(0);
 }
+
+
+OContext::OContext(optix::Context context, Mode_t mode) 
+    : 
+    m_context(context),
+    m_mode(mode),
+    m_debug_photon(-1),
+    m_entry(0),
+    m_closed(false)
+{
+    init();
+}
+
+optix::Context OContext::getContext()
+{
+     return m_context ; 
+}
+optix::Group OContext::getTop()
+{
+     return m_top ; 
+}
+unsigned int OContext::getNumRayType()
+{
+    return e_rayTypeCount ;
+}
+
+
+void OContext::setDebugPhoton(unsigned int debug_photon)
+{
+    m_debug_photon = debug_photon ; 
+}
+unsigned int OContext::getDebugPhoton()
+{
+    return m_debug_photon ; 
+}
+
+
+OContext::Mode_t OContext::getMode()
+{
+    return m_mode ; 
+}
+
+
+bool OContext::isCompute()
+{
+    return m_mode == COMPUTE ; 
+}
+bool OContext::isInterop()
+{
+    return m_mode == INTEROP ; 
+}
+
+
+
+
+
 
 
 void OContext::setStackSize(unsigned int stacksize)
@@ -334,28 +391,18 @@ RTformat OContext::getFormat(NPYBase::Type_t type)
 
 
 
+template OXRAP_API void OContext::upload<float>(optix::Buffer&, NPY<float>* );
+template OXRAP_API void OContext::download<float>(optix::Buffer&, NPY<float>* );
+
+template OXRAP_API void OContext::upload<short>(optix::Buffer&, NPY<short>* );
+template OXRAP_API void OContext::download<short>(optix::Buffer&, NPY<short>* );
+
+template OXRAP_API void OContext::upload<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
+template OXRAP_API void OContext::download<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
 
 
-
-
-
-
-
-
-
-
-template void OContext::upload<float>(optix::Buffer&, NPY<float>* );
-template void OContext::download<float>(optix::Buffer&, NPY<float>* );
-
-template void OContext::upload<short>(optix::Buffer&, NPY<short>* );
-template void OContext::download<short>(optix::Buffer&, NPY<short>* );
-
-template void OContext::upload<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
-template void OContext::download<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
-
-
-template optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*);
-template optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*);
-template optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*);
+template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*);
+template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*);
+template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*);
 
 

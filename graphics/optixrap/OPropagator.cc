@@ -8,6 +8,7 @@
 #include "OContext.hh"
 #include "OConfig.hh"
 #include "OTimes.hh"
+
 #include "OBuf.hh"
 #include "OBufPair.hh"
 
@@ -17,7 +18,6 @@
 
 // brap-
 #include "timeutil.hh"
-#include "BLog.hh"
 
 // npy-
 #include "GLMPrint.hpp"
@@ -25,8 +25,84 @@
 
 using namespace optix ; 
 
-// cudawrap-
+// cudawrap-  NB needs to be after namespace optix
 #include "cuRANDWrapper.hh"
+
+
+#include "PLOG.hh"
+
+
+OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) 
+   :
+    m_ocontext(ocontext),
+    m_opticks(opticks),
+    m_evt(NULL),
+    m_prelaunch_times(NULL),
+    m_launch_times(NULL),
+    m_prelaunch(false),
+    m_entry_index(-1),
+    m_photon_buf(NULL),
+    m_sequence_buf(NULL),
+    m_genstep_buf(NULL),
+    m_record_buf(NULL),
+    m_rng_wrapper(NULL),
+    m_trivial(false),
+    m_count(0),
+    m_width(0),
+    m_height(0),
+    m_prep(0),
+    m_time(0),
+    m_override(0)
+{
+    init();
+}
+
+void OPropagator::setTrivial(bool trivial)
+{
+    m_trivial = trivial ; 
+}
+void OPropagator::setOverride(unsigned int override)
+{
+    m_override = override ; 
+}
+
+
+
+void OPropagator::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ;
+}
+OpticksEvent* OPropagator::getEvent()
+{
+    return m_evt ;
+}
+
+OBuf* OPropagator::getSequenceBuf()
+{
+    return m_sequence_buf ; 
+}
+OBuf* OPropagator::getPhotonBuf()
+{
+    return m_photon_buf ; 
+}
+OBuf* OPropagator::getGenstepBuf()
+{
+    return m_genstep_buf ; 
+}
+OBuf* OPropagator::getRecordBuf()
+{
+    return m_record_buf ; 
+}
+
+OTimes* OPropagator::getPrelaunchTimes()
+{
+    return m_prelaunch_times ; 
+}
+
+OTimes* OPropagator::getLaunchTimes()
+{
+    return m_launch_times ; 
+}
 
 
 void OPropagator::init()

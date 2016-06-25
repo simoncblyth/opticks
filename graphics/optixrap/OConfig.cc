@@ -1,13 +1,23 @@
-#include "OConfig.hh"
-
-#include "BLog.hh"
-
-#include "Config.hh"  // ptxpath, RNGDIR
-
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 
+#include "OProg.hh"
+#include "OConfig.hh"
+
+#include "PLOG.hh"
+
+#include "Config.hh"  // ptxpath, RNGDIR
+
+
+OConfig::OConfig(optix::Context context )
+        : 
+        m_context(context),
+        m_index_max(-1),
+        m_raygen_index(0),
+        m_exception_index(0)
+{
+}
 
 const char* OConfig::RngDir()
 {

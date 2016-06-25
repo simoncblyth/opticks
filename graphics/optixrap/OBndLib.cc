@@ -1,12 +1,18 @@
-#include "OBndLib.hh"
-#include "GBndLib.hh"
-
-
-#include "Opticks.hh"
-#include "GPropertyLib.hh"
 
 #include "NPY.hpp"
-#include "BLog.hh"
+#include "Opticks.hh"
+#include "GPropertyLib.hh"
+#include "GBndLib.hh"
+#include "OBndLib.hh"
+#include "PLOG.hh"
+
+
+OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
+    : 
+    OPropertyLib(ctx),
+    m_lib(lib)
+{
+}
 
 
 void OBndLib::convert()
@@ -76,7 +82,16 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " ny " << ny  
               ;
 
-    optix::TextureSampler tex = makeTexture(buf, RT_FORMAT_FLOAT4, nx, ny);
+
+    
+    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
+    upload(optixBuffer, buf);
+
+    optix::TextureSampler tex = m_context->createTextureSampler();
+    configureSampler(tex, optixBuffer);
+
+
+
 
     unsigned int wmin = 0 ; 
     unsigned int wmax = nx - 1 ; 

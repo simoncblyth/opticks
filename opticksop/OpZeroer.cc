@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include "OpZeroer.hh"
 
 // optickscore-
@@ -5,7 +7,7 @@
 
 // npy-
 #include "Timer.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "NPY.hpp"
 
 // cudawrap-
@@ -29,6 +31,28 @@
           t((s)) ;\
        }\
     }
+
+
+
+
+OpZeroer::OpZeroer(OContext* ocontext)  
+   :
+     m_ocontext(ocontext),
+     m_evt(NULL),
+     m_propagator(NULL)
+{
+}
+
+void OpZeroer::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}  
+void OpZeroer::setPropagator(OPropagator* propagator)
+{
+    m_propagator = propagator ; 
+}  
+
+
 
 
 

@@ -6,7 +6,7 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "Timer.hpp"
 
 // ggeo-
@@ -40,6 +40,43 @@
           t((s)) ;\
        }\
     }
+
+
+OpEngine::OpEngine(Opticks* opticks, GGeo* ggeo) 
+     : 
+      m_timer(NULL),
+      m_opticks(opticks),
+      m_fcfg(NULL),
+      m_ggeo(ggeo),
+      m_evt(NULL),
+      m_ocontext(NULL),
+      m_ocolors(NULL),
+      m_ogeo(NULL),
+      m_olib(NULL),
+      m_oscin(NULL),
+      m_osrc(NULL),
+      m_otracer(NULL),
+      m_opropagator(NULL)
+{
+      init();
+}
+
+
+Opticks* OpEngine::getOpticks()
+{
+    return m_opticks ; 
+}
+OContext* OpEngine::getOContext()
+{
+    return m_ocontext ; 
+}
+
+void OpEngine::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}
+
+
 
 
 void OpEngine::init()
@@ -78,13 +115,16 @@ void OpEngine::prepareOptiX()
 
     // formerly did OBndLib here, too soon
 
-    LOG(info) << "OpEngine::prepareOptiX (OScintillatorLib)" ;
-    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
-    m_oscin->convert(); 
 
     LOG(info) << "OpEngine::prepareOptiX (OSourceLib)" ;
     m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
     m_osrc->convert(); 
+
+
+    LOG(info) << "OpEngine::prepareOptiX (OScintillatorLib)" ;
+    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
+    m_oscin->convert(); 
+
 
     LOG(info) << "OpEngine::prepareOptiX (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);

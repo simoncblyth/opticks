@@ -6,19 +6,17 @@
 #include <optixu/optixu_math_namespace.h>
 #include <optixu/optixu_aabb_namespace.h>
 
-
 class RayTraceConfig ; 
 
 class OContext ; 
-
 class GGeo ; 
 class GMergedMesh ; 
 class GBuffer ; 
 template <typename S> class NPY ;
 
 // used by OEngine::initGeometry
-
-class OGeo 
+#include "OXRAP_API_EXPORT.hh"
+class OXRAP_API  OGeo 
 {
 public:
     static const char* BUILDER ; 
@@ -73,22 +71,4 @@ private:
     bool                 m_verbose ; 
 
 };
-
-inline OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char* traverser)
-           : 
-           m_ocontext(ocontext),
-           m_ggeo(gg),
-           m_builder(builder ? strdup(builder) : BUILDER),
-           m_traverser(traverser ? strdup(traverser) : TRAVERSER),
-           m_description(NULL),
-           m_verbose(false)
-{
-    init();
-}
-
-
-inline void OGeo::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
 

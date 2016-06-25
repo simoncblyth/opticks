@@ -97,26 +97,31 @@ add_definitions(
 
 
 
+## OGeo needs _API template instanciation
+
 set(SOURCES
      
     OXRAP_LOG.cc
 
     OptiXUtil.cc
-    OContext.cc
+    OAccel.cc
     OProg.cc
     OTimes.cc
-    OGeo.cc
-
-    OTracer.cc
-
+    OConfig.cc
+    OContext.cc
     OColors.cc
+    OPropertyLib.cc
     OBndLib.cc
     OScintillatorLib.cc
     OSourceLib.cc
-    OPropertyLib.cc
-    OConfig.cc
-    OAccel.cc
+    OTracer.cc
+
+    OBuf_.cu     
+    OBufBase_.cu     
+    OBufPair_.cu     
     OPropagator.cc
+
+    OGeo.cc
 
     cu/pinhole_camera.cu
     cu/constantbg.cu
@@ -126,11 +131,8 @@ set(SOURCES
     cu/sphere.cu 
     cu/hemi-pmt.cu 
     cu/generate.cu
-
-    OBuf_.cu     
-    OBufBase_.cu     
-    OBufPair_.cu     
 )
+
 
 set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_pinhole_camera.cu.ptx

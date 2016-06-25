@@ -2,8 +2,9 @@
 
 #include "CBufSlice.hh"
 
+#include "THRAP_API_EXPORT.hh"
 template <typename T>
-class TBufPair {
+class THRAP_API TBufPair {
    public:
       TBufPair( CBufSlice src, CBufSlice dst );
       void seedDestination();
@@ -12,12 +13,4 @@ class TBufPair {
       CBufSlice m_dst ;
 };
     
-
-template <typename T>
-inline TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst )
-   :
-   m_src(src),
-   m_dst(dst)
-{
-}
 

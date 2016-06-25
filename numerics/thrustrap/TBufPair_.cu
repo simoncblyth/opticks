@@ -4,6 +4,14 @@
 #include "iexpand.h"
 
 template <typename T>
+TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst )
+   :
+   m_src(src),
+   m_dst(dst)
+{
+}
+
+template <typename T>
 void TBufPair<T>::seedDestination()
 {  
     m_src.Summary("seedDestination src");
@@ -28,5 +36,5 @@ void TBufPair<T>::seedDestination()
 
 }
 
-template class TBufPair<unsigned int> ;
+template class THRAP_API TBufPair<unsigned int> ;
 

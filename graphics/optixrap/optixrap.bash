@@ -21,8 +21,18 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+macOS Warning
+---------------
+
+::
+
+    [ 85%] Building NVCC (Device) object graphics/optixrap/CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBufPair_.cu.o
+    /Developer/OptiX/include/optixu/optixpp_namespace.h(593): 
+    warning: overloaded virtual function "optix::APIObj::checkError" 
+    is only partially overridden in class "optix::ContextObj"
 
 
+* http://stackoverflow.com/questions/21462908/warning-overloaded-virtual-function-baseprocess-is-only-partially-overridde
 
 
 
@@ -246,6 +256,16 @@ optixrap-gentest() { optixrap-tcd ; opticks-gentest ${1:-OExample} $(optixrap-ta
 optixrap-txt(){ vi $(optixrap-sdir)/CMakeLists.txt $(optixrap-tdir)/CMakeLists.txt ; } 
 
 
+
+optixrap-lsptx(){
+   ls -l $(optixrap-bdir)/*.ptx
+   ls -l $(opticks-prefix)/ptx/*.ptx
+}
+
+optixrap-rmptx(){
+   rm $(optixrap-bdir)/*.ptx
+   rm $(opticks-prefix)/ptx/*.ptx
+}
 
 
 

@@ -45,7 +45,6 @@
 // object so must apply the lookup before making another 
 
 
-#include <cstddef>
 class OBuf ; 
 class OContext ; 
 class OPropagator ; 
@@ -81,12 +80,11 @@ Sequence Indexing histograms the per-photon sequ
 
    The sequence data is uploaded to the GPU using thrust device_vectors
    and output indices are written to thrust created  
-    
-
 
 */
 
-class OpIndexer {
+#include "OKOP_API_EXPORT.hh"
+class OKOP_API OpIndexer {
    public:
       OpIndexer(OContext* ocontext);
       void setVerbose(bool verbose=true);
@@ -150,46 +148,5 @@ class OpIndexer {
       // transients updated by updateEvt at indexSequence
       unsigned int             m_maxrec ; 
       unsigned int             m_num_photons ; 
-
 };
-
-inline OpIndexer::OpIndexer(OContext* ocontext)  
-   :
-     m_ocontext(ocontext),
-     m_propagator(NULL),
-     m_seq(NULL),
-     m_pho(NULL),
-     m_evt(NULL),
-     m_verbose(false),
-     m_maxrec(0),
-     m_num_photons(0)
-{
-}
-
-inline void OpIndexer::setSeq(OBuf* seq)
-{
-    m_seq = seq ; 
-}
-inline void OpIndexer::setPho(OBuf* pho)
-{
-    m_pho = pho ; 
-}
-inline void OpIndexer::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
-
-
-
-
-inline void OpIndexer::setPropagator(OPropagator* propagator)
-{
-    m_propagator = propagator ; 
-}
-inline void OpIndexer::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}
-
-
 

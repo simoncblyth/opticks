@@ -1,14 +1,17 @@
 #pragma once
 
 #include <string>
-#include "stdio.h"
+
 #include "CBufSlice.hh"
 #include <thrust/device_vector.h>
 class Index ; 
 
 #define TSPARSE_LOOKUP_N 32
+
+#include "THRAP_API_EXPORT.hh"
+
 template <typename T>
-class TSparse {
+class THRAP_API TSparse {
    public:
       TSparse(const char* label, CBufSlice source, bool hexkey=true);
    private:
@@ -39,22 +42,5 @@ class TSparse {
       bool                         m_hexkey ; 
 
 };
-
-template <typename T>
-inline TSparse<T>::TSparse(const char* label, CBufSlice source, bool hexkey ) :
-        m_label(strdup(label)),
-        m_source(source),
-        m_num_unique(0u),
-        m_index_h(NULL),
-        m_hexkey(hexkey)
-{
-    init();
-}
-
-template <typename T>
-inline Index* TSparse<T>::getIndex()
-{
-    return m_index_h ;
-}
 
 

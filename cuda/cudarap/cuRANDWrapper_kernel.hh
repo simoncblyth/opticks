@@ -1,5 +1,6 @@
-#ifndef CURANDWRAPPER_KERNEL_H
-#define CURANDWRAPPER_KERNEL_H
+#pragma once
+
+// not exporting, as look local
 
 #include "cuda.h"
 #include "curand_kernel.h"
@@ -18,4 +19,3 @@ CUdeviceptr copytodevice_rng_wrapper( LaunchSequence* launchseq, void* host_rng_
 void devicesync_wrapper();
 
 
-#endif

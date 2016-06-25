@@ -1,25 +1,59 @@
 #include <iomanip>
-
-#include "OTracer.hh"
-#include "OContext.hh"
-#include "OTimes.hh"
-
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>
 
 // brap-
 #include "BTimer.hh"
-#include "BLog.hh"
 
 // npy-
+#include "NGLM.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
-// optickscore-
+// okc-
 #include "Composition.hh"
 
+#include "OTracer.hh"
+#include "OContext.hh"
+#include "OTimes.hh"
 
+
+#include "PLOG.hh"
 using namespace optix ; 
+
+
+OTracer::OTracer(OContext* ocontext, Composition* composition) 
+    :
+    m_ocontext(ocontext),
+    m_composition(composition),
+    m_resolution_scale(1),
+    m_trace_times(NULL),
+    m_trace_count(0),
+    m_trace_prep(0),
+    m_trace_time(0),
+    m_entry_index(-1)
+{
+    init();
+}
+
+
+void OTracer::setResolutionScale(unsigned int resolution_scale)
+{
+    m_resolution_scale = resolution_scale ; 
+}
+unsigned int OTracer::getResolutionScale()
+{
+    return m_resolution_scale ; 
+}
+unsigned int OTracer::getTraceCount()
+{
+    return m_trace_count ; 
+}
+
+
+
+
+
 
 
 void OTracer::init()
@@ -46,9 +80,9 @@ void OTracer::init()
 }
 
 
-void OTracer::trace()
+void OTracer::trace_()
 {
-    LOG(debug) << "OTracer::trace " << m_trace_count ; 
+    LOG(debug) << "OTracer::trace_ " << m_trace_count ; 
 
     double t0 = BTimer::RealTime();
 

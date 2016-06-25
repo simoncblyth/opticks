@@ -1,5 +1,4 @@
 #pragma once
-#include <cstddef>
 
 // optickscore-
 class Opticks ; 
@@ -9,8 +8,8 @@ template <typename T> class OpticksCfg ;
 // opticksop-
 class OpIndexer ; 
 
-
-class OpIndexerApp {
+#include "OKOP_API_EXPORT.hh"
+class OKOP_API OpIndexerApp {
    public:
       OpIndexerApp(int argc, char** argv);
       void configure();
@@ -27,19 +26,5 @@ class OpIndexerApp {
       OpIndexer*            m_indexer ; 
 
 };
-
-
-inline OpIndexerApp::OpIndexerApp(int argc, char** argv) 
-   :   
-     m_argc(argc),
-     m_argv(argv),
-     m_opticks(NULL),
-     m_cfg(NULL),
-     m_evt(NULL),
-     m_indexer(NULL)
-{
-    init();
-}
-
 
 

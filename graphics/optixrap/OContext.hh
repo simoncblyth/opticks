@@ -1,33 +1,22 @@
 #pragma once
 
-class OConfig ; 
-struct OTimes ; 
 #include <string>
 #include <optixu/optixpp_namespace.h>
-#include "NPY.hpp"
 
-//  problem in tracer mode is that context doesnt 
-//  compile when no generate program is attached
-//  dumb fix is to flip enum ordering, need better way
+#include "NPYBase.hpp"
+template <typename T> class NPY ; 
+class OConfig ; 
+struct OTimes ; 
 
-class OContext {
+#include "OXRAP_API_EXPORT.hh"
+class OXRAP_API OContext {
     public:
-
-      /*
-        enum { 
-               e_generate_entry,
-               e_pinhole_camera_entry,
-               e_entryPointCount 
-            };
-       */
-
         enum {
                 e_propagate_ray,
                 e_radiance_ray,
                 e_touch_ray,
                 e_rayTypeCount 
              };
-
 
         enum {
                 VALIDATE  = 0x1 << 1, 
@@ -91,60 +80,6 @@ class OContext {
             int               m_debug_photon ; 
             unsigned int      m_entry ; 
             bool              m_closed ; 
-           
-
 };
-
-
-inline OContext::OContext(optix::Context context, Mode_t mode) 
-    : 
-    m_context(context),
-    m_mode(mode),
-    m_debug_photon(-1),
-    m_entry(0),
-    m_closed(false)
-{
-    init();
-}
-
-inline optix::Context OContext::getContext()
-{
-     return m_context ; 
-}
-inline optix::Group OContext::getTop()
-{
-     return m_top ; 
-}
-inline unsigned int OContext::getNumRayType()
-{
-    return e_rayTypeCount ;
-}
-
-
-inline void OContext::setDebugPhoton(unsigned int debug_photon)
-{
-    m_debug_photon = debug_photon ; 
-}
-inline unsigned int OContext::getDebugPhoton()
-{
-    return m_debug_photon ; 
-}
-
-
-inline OContext::Mode_t OContext::getMode()
-{
-    return m_mode ; 
-}
-
-
-inline bool OContext::isCompute()
-{
-    return m_mode == COMPUTE ; 
-}
-inline bool OContext::isInterop()
-{
-    return m_mode == INTEROP ; 
-}
-
 
 

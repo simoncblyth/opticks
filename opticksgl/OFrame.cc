@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // oglrap-
 #include "Texture.hh"
@@ -17,6 +17,45 @@
 #include <cassert>
 
 using namespace optix ; 
+
+
+OFrame::OFrame(optix::Context& context, unsigned int width, unsigned int height)
+     :
+     m_context(context),
+     m_texture(NULL),
+     m_texture_id(-1),
+     m_pbo(0),
+     m_pbo_data(NULL),
+     m_push_count(0)
+{
+    init(width, height);
+}
+
+optix::Buffer& OFrame::getOutputBuffer()
+{
+    return m_output_buffer ; 
+}
+
+Texture* OFrame::getTexture()
+{
+    return m_texture ; 
+}
+
+int OFrame::getTextureId()
+{
+    return m_texture_id ; 
+}
+
+unsigned int OFrame::getWidth()
+{
+    return m_width ; 
+}
+unsigned int OFrame::getHeight()
+{
+    return m_height ; 
+}
+
+
 
 
 void OFrame::init(unsigned int width, unsigned int height)

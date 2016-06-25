@@ -1,6 +1,8 @@
 #pragma once
 
-struct OTimes {
+#include "OXRAP_API_EXPORT.hh"
+
+struct OXRAP_API OTimes {
 
    unsigned int count ; 
    double validate ; 

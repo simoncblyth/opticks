@@ -1,19 +1,19 @@
 #pragma once
 
-#include "OProg.hh"
-#include <optixu/optixpp_namespace.h>
-#include <optixu/optixu_math_namespace.h>
-
 #include <string>
 #include <map>
 #include <vector>
 
-class OConfig {
+#include <optixu/optixpp_namespace.h>
+#include <optixu/optixu_math_namespace.h>
+
+struct OProg ; 
+
+#include "OXRAP_API_EXPORT.hh"
+#include "OXRAP_HEAD.hh"
+
+class OXRAP_API OConfig {
 public:
-  // singleton 
-  //static OConfig* g_instance ; 
-  //static OConfig* getInstance();
-  //static OConfig* makeInstance(optix::Context context);
 
   static const char* _RT_FORMAT_UNKNOWN;
 
@@ -92,16 +92,7 @@ private:
 
 };
 
-
-inline OConfig::OConfig(optix::Context context )
-        : 
-        m_context(context),
-        m_index_max(-1),
-        m_raygen_index(0),
-        m_exception_index(0)
-{
-}
-
+#include "OXRAP_TAIL.hh"
 
 
 

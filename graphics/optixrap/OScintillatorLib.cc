@@ -1,11 +1,16 @@
-#include "OScintillatorLib.hh"
-#include "GScintillatorLib.hh"
-
 #include "NPY.hpp"
+#include "GScintillatorLib.hh"
+#include "OScintillatorLib.hh"
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
+
+OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
+           : 
+           OPropertyLib(ctx),
+           m_lib(lib)
+{
+}
 
 
 void OScintillatorLib::convert()
@@ -43,7 +48,17 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     if(empty)
         LOG(warning) << "OScintillatorLib::makeReemissionTexture no scintillators, creating empty texture " ;
 
-    optix::TextureSampler tex = makeTexture(buf, RT_FORMAT_FLOAT, nx, ny, empty);
+ 
+    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
+    if(!empty)
+    {
+        upload(optixBuffer, buf);
+    }
+
+    optix::TextureSampler tex = m_context->createTextureSampler();
+    configureSampler(tex, optixBuffer);
+
+
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);
 }

@@ -1,3 +1,4 @@
+#include <cstddef>
 // opop-
 #include "OpIndexerApp.hh"
 #include "OpIndexer.hh"
@@ -8,7 +9,21 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
+
+
+
+OpIndexerApp::OpIndexerApp(int argc, char** argv) 
+   :   
+     m_argc(argc),
+     m_argv(argv),
+     m_opticks(NULL),
+     m_cfg(NULL),
+     m_evt(NULL),
+     m_indexer(NULL)
+{
+    init();
+}
 
 
 void OpIndexerApp::init()

@@ -1,16 +1,28 @@
-#include "OAccel.hh"
 
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cstddef>
+#include <cstring>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
+#include "OAccel.hh"
+
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
+
+OAccel::OAccel(optix::Acceleration accel, const char* path) :
+   m_accel(accel),
+   m_path( path ? strdup(path) : NULL ),
+   m_size( 0ull ),
+   m_loaded(false)
+{
+}
 
 
 char* OAccel::read(const char* path)
 {
+    LOG(trace) << "OAccel::read path " << path ; 
+
     std::ifstream in( path, std::ifstream::in | std::ifstream::binary );
     if(!in)
     {

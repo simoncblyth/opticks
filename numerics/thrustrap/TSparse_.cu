@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -29,6 +30,24 @@
 //
 
 __constant__ unsigned long long dev_tsparse_lookup[TSPARSE_LOOKUP_N]; 
+
+
+template <typename T>
+TSparse<T>::TSparse(const char* label, CBufSlice source, bool hexkey ) :
+        m_label(strdup(label)),
+        m_source(source),
+        m_num_unique(0u),
+        m_index_h(NULL),
+        m_hexkey(hexkey)
+{
+    init();
+}
+
+template <typename T>
+Index* TSparse<T>::getIndex()
+{
+    return m_index_h ;
+}
 
 
 template <typename T>
@@ -248,10 +267,10 @@ void TSparse<T>::populate_index(Index* index)
 }
 
 
-template class TSparse<unsigned long long> ;
-template class TSparse<int> ;
+template class THRAP_API TSparse<unsigned long long> ;
+template class THRAP_API TSparse<int> ;
 
-template void TSparse<unsigned long long>::apply_lookup<unsigned char>(CBufSlice target);
-template void TSparse<int>::apply_lookup<char>(CBufSlice target);
+template THRAP_API void TSparse<unsigned long long>::apply_lookup<unsigned char>(CBufSlice target);
+template THRAP_API void TSparse<int>::apply_lookup<char>(CBufSlice target);
 
 

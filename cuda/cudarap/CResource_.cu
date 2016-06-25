@@ -1,7 +1,8 @@
+#include <cstdlib>
+#include <cassert>
 
-#include "CResource.hh"
-#include "assert.h"
 #include <cuda_gl_interop.h>
+#include "CResource.hh"
 #include "helper_cuda.h"
 
 struct CResourceImp {
@@ -109,10 +110,10 @@ void CResource::unmapGLToCUDA()
 
 
 
-template CBufSpec CResource::mapGLToCUDA<unsigned char>();
-template CBufSpec CResource::mapGLToCUDA<unsigned int>();
-template CBufSpec CResource::mapGLToCUDA<unsigned long long>();
-template CBufSpec CResource::mapGLToCUDA<short>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned char>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned int>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned long long>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<short>();
 
 
 

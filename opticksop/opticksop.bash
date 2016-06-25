@@ -20,6 +20,76 @@ Opticks Operations
 
 
 
+Familiar Issue
+----------------
+
+::
+
+        recsel_attr 0/ 1 vnpy       rsel   5000000 npy 500000,10,1,4 npy.hasData 0
+    2016-06-25 14:37:38.597 INFO  [12495653] [App::prepareOptiX@961] App::prepareOptiX create OpEngine 
+    2016-06-25 14:37:38.597 INFO  [12495653] [Timer::operator@38] OpEngine:: START
+    GGeoViewTest(69035,0x7fff74d63310) malloc: *** error for object 0x109e11208: incorrect checksum for freed object - object was probably modified after being freed.
+    *** set a breakpoint in malloc_error_break to debug
+    Process 69035 stopped
+    (lldb) bt
+    * thread #1: tid = 0xbeab25, 0x00007fff8ea02866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff8ea02866 libsystem_kernel.dylib`__pthread_kill + 10
+        ...
+        frame #13: 0x00000001025df04a liboptix.1.dylib`rtBufferMap + 122
+        frame #14: 0x000000010355e2cf libOptiXRap.dylib`optix::BufferObj::map(this=0x000000011ec51f00) + 47 at optixpp_namespace.h:3755
+        frame #15: 0x0000000103564875 libOptiXRap.dylib`OPropertyLib::makeTexture(this=0x000000011ec51f80, buffer=0x0000000111d21e10, format=RT_FORMAT_FLOAT, nx=1024, ny=1, empty=false) + 805 at OPropertyLib.cc:44
+        frame #16: 0x00000001035672ea libOptiXRap.dylib`OSourceLib::makeSourceTexture(this=0x000000011ec51f80, buf=0x0000000111d21e10) + 762 at OSourceLib.cc:40
+        frame #17: 0x0000000103566fd4 libOptiXRap.dylib`OSourceLib::convert(this=0x000000011ec51f80) + 276 at OSourceLib.cc:18
+        frame #18: 0x00000001044009ce libOpticksOp.dylib`OpEngine::prepareOptiX(this=0x0000000106553d10) + 3950 at OpEngine.cc:124
+        frame #19: 0x0000000104532e96 libGGeoView.dylib`App::prepareOptiX(this=0x00007fff5fbfe350) + 326 at App.cc:963
+        frame #20: 0x000000010000c38f GGeoViewTest`main(argc=2, argv=0x00007fff5fbfe4c8) + 1071 at GGeoViewTest.cc:70
+        frame #21: 0x00007fff89e755fd libdyld.dylib`start + 1
+        frame #22: 0x00007fff89e755fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+::
+
+    (lldb) f 16
+    frame #16: 0x0000000102bb02ea libOptiXRap.dylib`OSourceLib::makeSourceTexture(this=0x000000011fd0d480, buf=0x0000000112cdbd70) + 762 at OSourceLib.cc:40
+       37   
+       38       float step = 1.f/float(nx) ;
+       39       optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
+    -> 40       optix::TextureSampler tex = makeTexture(buf, RT_FORMAT_FLOAT, nx, ny);
+       41   
+       42       m_context["source_texture"]->setTextureSampler(tex);
+       43       m_context["source_domain"]->setFloat(domain);
+    (lldb) p nx
+    (unsigned int) $1 = 1024
+    (lldb) p ny
+    (unsigned int) $2 = 1
+
+    (lldb) f 15 
+    frame #15: 0x0000000102bad875 libOptiXRap.dylib`OPropertyLib::makeTexture(this=0x000000011fd0d480, buffer=0x0000000112cdbd70, format=RT_FORMAT_FLOAT, nx=1024, ny=1, empty=false) + 805 at OPropertyLib.cc:44
+       41          //    
+       42          //
+       43   
+    -> 44           memcpy( optixBuffer->map(), buffer->getBytes(), numBytes );
+       45           optixBuffer->unmap(); 
+       46       }
+       47   
+    (lldb) p numBytes
+    (unsigned int) $3 = 4096
+
+    (lldb) f 14
+    frame #14: 0x0000000102ba72cf libOptiXRap.dylib`optix::BufferObj::map(this=0x000000011fd0d400) + 47 at optixpp_namespace.h:3755
+       3752   inline void* BufferObj::map()
+       3753   {
+       3754     void* result;
+    -> 3755     checkError( rtBufferMap( m_buffer, &result ) );
+       3756     return result;
+       3757   }
+       3758 
+
+
+
+
+
 Classes
 ---------
 
@@ -65,23 +135,33 @@ opticksop-env(){
 }
 
 opticksop-sdir(){ echo $(env-home)/opticksop ; }
+opticksop-tdir(){ echo $(env-home)/opticksop/tests ; }
 opticksop-idir(){ echo $(opticks-idir); }
 opticksop-bdir(){ echo $(opticks-bdir)/$(opticksop-rel) ; }
 
-
 opticksop-bin(){  echo $(opticksop-idir)/bin/${1:-OpIndexerTest} ; }
 
+opticksop-cd(){   cd $(opticksop-sdir); }
 opticksop-scd(){  cd $(opticksop-sdir); }
-opticksop-cd(){  cd $(opticksop-sdir); }
-
+opticksop-tcd(){  cd $(opticksop-tdir); }
 opticksop-icd(){  cd $(opticksop-idir); }
 opticksop-bcd(){  cd $(opticksop-bdir); }
-opticksop-name(){ echo OpticksOp ; }
 
-opticksop-wipe(){
-   local bdir=$(opticksop-bdir)
-   rm -rf $bdir
-}
+opticksop-name(){ echo OpticksOp ; }
+opticksop-tag(){  echo OKOP ; }
+
+opticksop-wipe(){ local bdir=$(opticksop-bdir) ; rm -rf $bdir ; } 
+opticksop--(){                   opticks-- $(opticksop-bdir) ; } 
+opticksop-ctest(){               opticks-ctest $(opticksop-bdir) $* ; } 
+opticksop-genproj() { opticksop-scd ; opticks-genproj $(opticksop-name) $(opticksop-tag) ; } 
+opticksop-gentest() { opticksop-tcd ; opticks-gentest ${1:-OExample} $(opticksop-tag) ; } 
+opticksop-txt(){ vi $(opticksop-sdir)/CMakeLists.txt $(opticksop-tdir)/CMakeLists.txt ; } 
+
+
+
+
+
+
 
 opticksop-options(){
    echo -n
@@ -104,35 +184,6 @@ opticksop-cmake-deprecated(){
        $(opticksop-sdir)
 
 
-   cd $iwd
-}
-
-opticksop-make(){
-   local iwd=$PWD
-
-   opticksop-bcd
-   make $*
-
-   cd $iwd
-}
-
-opticksop-install(){
-   opticksop-make install
-}
-
-opticksop-full()
-{
-   opticksop-make clean
-   opticksop-make
-   opticksop-install
-}
-
-opticksop-config(){ echo Debug ; }
-opticksop--()
-{
-   local iwd=$PWD;
-   opticksop-bcd;
-   cmake --build . --config $(opticksop-config) --target ${1:-install};
    cd $iwd
 }
 
@@ -161,7 +212,6 @@ opticksop-index(){
     esac
 }
 
-
 opticksop-index-path(){
     local cmp=${1:-ps}
     local tag=${2:-5}
@@ -187,7 +237,5 @@ opticksop-index-op(){
        echo $path
    done
 }
-
-
 
 

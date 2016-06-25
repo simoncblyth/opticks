@@ -5,8 +5,9 @@
 class Texture ; 
 
 #include "Touchable.hh"
+#include "OKGL_API_EXPORT.hh"
 
-class OFrame : public Touchable {
+class OKGL_API OFrame : public Touchable {
     public:
        OFrame(optix::Context& context, unsigned int width, unsigned int height ); 
     public:
@@ -50,44 +51,6 @@ class OFrame : public Touchable {
         unsigned int     m_push_count ; 
 
 };
-
-
-inline OFrame::OFrame(optix::Context& context, unsigned int width, unsigned int height)
-     :
-     m_context(context),
-     m_texture(NULL),
-     m_texture_id(-1),
-     m_pbo(0),
-     m_pbo_data(NULL),
-     m_push_count(0)
-{
-    init(width, height);
-}
-
-inline optix::Buffer& OFrame::getOutputBuffer()
-{
-    return m_output_buffer ; 
-}
-
-inline Texture* OFrame::getTexture()
-{
-    return m_texture ; 
-}
-
-inline int OFrame::getTextureId()
-{
-    return m_texture_id ; 
-}
-
-inline unsigned int OFrame::getWidth()
-{
-    return m_width ; 
-}
-inline unsigned int OFrame::getHeight()
-{
-    return m_height ; 
-}
-
 
 
 

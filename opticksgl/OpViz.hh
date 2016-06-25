@@ -20,7 +20,9 @@ class Scene ;
 class Interactor ; 
 
 
-class OpViz {
+#include "OKGL_API_EXPORT.hh"
+
+class OKGL_API OpViz {
     public:
        OpViz(OpEngine* ope, Scene* scene);
     private:
@@ -43,22 +45,5 @@ class OpViz {
        OTracer*         m_otracer ;
 
 };
-
-
-inline OpViz::OpViz(OpEngine* ope, Scene* scene) 
-   :
-      m_ope(ope),
-      m_scene(scene),
-
-      m_opticks(NULL),
-      m_ocontext(NULL),
-      m_composition(NULL),
-      m_interactor(NULL),
-      m_oframe(NULL),
-      m_orenderer(NULL),
-      m_otracer(NULL)
-{
-   init();
-}
 
 

@@ -26,14 +26,16 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 include(EnvCompilationFlags)   
 
 
+find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
-find_package(BoostRap REQUIRED)
 find_package(GLM  REQUIRED)
-
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
-find_package(OGLRap REQUIRED)
 
+
+find_package(SysRap REQUIRED)
+find_package(BoostRap REQUIRED)
+find_package(OGLRap REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
 
@@ -45,13 +47,16 @@ find_package(ThrustRap REQUIRED)
 find_package(OptiXRap REQUIRED)
 find_package(OpticksOp REQUIRED)
 
+#message("${name}.OpticksOp_INCLUDE_DIRS : ${OpticksOp_INCLUDE_DIRS} " )
 
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
+    ${PLog_INCLUDE_DIRS} 
     ${OpticksBoost_INCLUDE_DIRS} 
+    ${SysRap_INCLUDE_DIRS} 
     ${BoostRap_INCLUDE_DIRS} 
 
     ${GLEW_INCLUDE_DIRS} 
@@ -75,8 +80,12 @@ include_directories(
 )
 
 
+
+
 set(LIBRARIES
+      ${PLog_LIBRARIES}
       ${OpticksBoost_LIBRARIES}
+      ${SysRap_LIBRARIES} 
       ${BoostRap_LIBRARIES} 
 
       ${GLEW_LIBRARIES}
@@ -100,7 +109,9 @@ set(LIBRARIES
 )
 
 add_definitions(
+    ${PLog_DEFINITIONS}
     ${OpticksBoost_DEFINITIONS}
+    ${SysRap_DEFINITIONS} 
     ${BoostRap_DEFINITIONS} 
 
     ${GLEW_DEFINITIONS}
@@ -127,21 +138,34 @@ add_definitions(
 # NB only for classes with OpenGL dependency 
 #    for others use opticksop- not opticksgl-
 
-add_library( ${name}  SHARED
-       OFrame.cc
-       ORenderer.cc
-       OpViz.cc
-) 
+set(SOURCES
+     
+    OKGL_LOG.cc
 
-set(hdrs 
-  OFrame.hh
-  ORenderer.hh
-  OpViz.hh
+    OFrame.cc
+    ORenderer.cc
+    OpViz.cc
+
 )
- 
+set(HEADERS
+
+    OKGL_LOG.hh
+    OKGL_API_EXPORT.hh
+    OKGL_HEAD.hh
+    OKGL_TAIL.hh
+
+    OFrame.hh
+    ORenderer.hh
+    OpViz.hh
+)
+
+add_library( ${name}  SHARED  ${SOURCES} )
 target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name} DESTINATION lib)
-install(FILES ${hdrs}   DESTINATION include/${name})
+install(FILES ${HEADERS}   DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
+
+
+

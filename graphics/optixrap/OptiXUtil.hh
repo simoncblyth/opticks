@@ -3,7 +3,10 @@
 #include <thrust/device_vector.h>
 #include <optixu/optixpp_namespace.h>
 
-class OptiXUtil {
+
+#include "OXRAP_API_EXPORT.hh"
+
+class OXRAP_API OptiXUtil {
     public:
 
     static unsigned int getBufferSize1D(optix::Buffer& buffer)
@@ -26,10 +29,6 @@ class OptiXUtil {
     {
         return thrust::device_pointer_cast(getDevicePtr<T>(buffer, deviceNumber));
     }
-
-
-
-
 
 
 };

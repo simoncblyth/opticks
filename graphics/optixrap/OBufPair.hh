@@ -2,8 +2,11 @@
 
 #include "CBufSlice.hh"
 
+
+#include "OXRAP_API_EXPORT.hh"
+
 template <typename T>
-class OBufPair {
+class OXRAP_API OBufPair {
    public:
       OBufPair( CBufSlice src, CBufSlice dst );
       void seedDestination();
@@ -12,14 +15,5 @@ class OBufPair {
       CBufSlice m_src ;   
       CBufSlice m_dst ;   
 };
-
-
-template <typename T>
-inline OBufPair<T>::OBufPair(CBufSlice src, CBufSlice dst ) 
-   :
-   m_src(src),
-   m_dst(dst)
-{
-}
 
 

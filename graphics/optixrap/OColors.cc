@@ -1,9 +1,17 @@
-#include "OColors.hh"
-#include "OpticksColors.hh"
 #include "NPY.hpp"
+#include "OpticksColors.hh"
+#include "OColors.hh"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
+
+
+OColors::OColors(optix::Context& ctx, OpticksColors* colors)
+           : 
+           m_context(ctx),
+           m_colors(colors)
+{
+}
 
 
 void OColors::convert()

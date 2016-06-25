@@ -12,7 +12,7 @@
 #include <optix_world.h>
 
 // opticks-
-#include "Opticks.hh"
+#include "OpticksConst.hh"
 
 // optixrap-
 #include "OContext.hh"
@@ -23,7 +23,7 @@
 #include "GParts.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "BStr.hh"
@@ -115,6 +115,39 @@ const char* OGeo::BUILDER = "Sbvh" ;
 const char* OGeo::TRAVERSER = "Bvh" ; 
 
 
+
+
+OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char* traverser)
+           : 
+           m_ocontext(ocontext),
+           m_ggeo(gg),
+           m_builder(builder ? strdup(builder) : BUILDER),
+           m_traverser(traverser ? strdup(traverser) : TRAVERSER),
+           m_description(NULL),
+           m_verbose(false)
+{
+    init();
+}
+
+
+void OGeo::init()
+{
+    m_context = m_ocontext->getContext();
+    m_geometry_group = m_context->createGeometryGroup();
+    m_repeated_group = m_context->createGroup();
+}
+
+
+void OGeo::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+void OGeo::setTop(optix::Group top)
+{
+    m_top = top ; 
+}
+
 const char* OGeo::description(const char* msg)
 {
     if(!m_description)
@@ -124,18 +157,6 @@ const char* OGeo::description(const char* msg)
         m_description = strdup(desc); 
     }
     return m_description ;
-}
-
-void OGeo::init()
-{
-    m_context = m_ocontext->getContext();
-    m_geometry_group = m_context->createGeometryGroup();
-    m_repeated_group = m_context->createGroup();
-}
-
-void OGeo::setTop(optix::Group top)
-{
-    m_top = top ; 
 }
 
 void OGeo::convert()
@@ -403,23 +424,21 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 {
     optix::Geometry geometry ; 
     const char geocode = mergedmesh->getGeoCode();
-    switch(geocode)
-    { 
-        case Opticks::GEOCODE_TRIANGULATED:
-                   geometry = makeTriangulatedGeometry(mergedmesh);
-                   break ; 
-        case Opticks::GEOCODE_ANALYTIC:
-                   geometry = makeAnalyticGeometry(mergedmesh);
-                   break ; 
-        default:
-                   LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
-                   assert(0);
-                   break ; 
+    if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
+    {
+        geometry = makeTriangulatedGeometry(mergedmesh);
+    }
+    else if(geocode == OpticksConst::GEOCODE_ANALYTIC)
+    {
+        geometry = makeAnalyticGeometry(mergedmesh);
+    }
+    else
+    {
+        LOG(fatal) << "OGeo::makeGeometry geocode must be triangulated or analytic, not [" << (char)geocode  << "]" ;
+        assert(0);
     }
     return geometry ; 
-
 }
-
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {

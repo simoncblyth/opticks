@@ -1,4 +1,4 @@
-
+#include <cstddef>
 #include <algorithm>
 #include <cassert>
 
@@ -10,7 +10,7 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "Timer.hpp"
 #include "NPY.hpp"  
 
@@ -40,6 +40,48 @@
           t((s)) ;\
        }\
     }
+
+
+OpIndexer::OpIndexer(OContext* ocontext)  
+   :
+     m_ocontext(ocontext),
+     m_propagator(NULL),
+     m_seq(NULL),
+     m_pho(NULL),
+     m_evt(NULL),
+     m_verbose(false),
+     m_maxrec(0),
+     m_num_photons(0)
+{
+}
+
+void OpIndexer::setSeq(OBuf* seq)
+{
+    m_seq = seq ; 
+}
+void OpIndexer::setPho(OBuf* pho)
+{
+    m_pho = pho ; 
+}
+void OpIndexer::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+
+
+
+void OpIndexer::setPropagator(OPropagator* propagator)
+{
+    m_propagator = propagator ; 
+}
+void OpIndexer::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}
+
+
+
 
 
 

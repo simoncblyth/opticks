@@ -8,8 +8,9 @@ class GSourceLib ;
 template <typename T> class NPY ;
 
 #include "OPropertyLib.hh"
+#include "OXRAP_API_EXPORT.hh"
 
-class OSourceLib : public OPropertyLib {
+class OXRAP_API OSourceLib : public OPropertyLib {
     public:
         OSourceLib(optix::Context& ctx, GSourceLib* lib);
     public:
@@ -19,14 +20,6 @@ class OSourceLib : public OPropertyLib {
     private:
         GSourceLib*    m_lib ;
 };
-
-inline OSourceLib::OSourceLib(optix::Context& ctx, GSourceLib* lib)
-           : 
-           OPropertyLib(ctx),
-           m_lib(lib)
-{
-}
-
 
 
 

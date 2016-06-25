@@ -1,8 +1,9 @@
-#include "BLog.hh"
+#include "PLOG.hh"
 // npy-
 #include "NGLM.hpp"
 
-// opticks-
+// okc-
+#include "Opticks.hh"
 #include "Composition.hh"
 
 // optixrap-
@@ -23,6 +24,23 @@
 #include "OpViz.hh"
 #include "OFrame.hh"
 #include "ORenderer.hh"
+
+
+OpViz::OpViz(OpEngine* ope, Scene* scene) 
+   :
+      m_ope(ope),
+      m_scene(scene),
+
+      m_opticks(NULL),
+      m_ocontext(NULL),
+      m_composition(NULL),
+      m_interactor(NULL),
+      m_oframe(NULL),
+      m_orenderer(NULL),
+      m_otracer(NULL)
+{
+   init();
+}
 
 
 void OpViz::init()
@@ -74,7 +92,7 @@ void OpViz::render()
         {
             unsigned int scale = m_interactor->getOptiXResolutionScale() ;
             m_otracer->setResolutionScale(scale) ;
-            m_otracer->trace();
+            m_otracer->trace_();
             m_oframe->push_PBO_to_Texture();
         }
         else

@@ -36,7 +36,6 @@ endif(UNIX)
 set(SOURCES
     CUDARAP_LOG.cc
 
-    md5digest.cc
     cuRANDWrapper.cc
     cuRANDWrapper_kernel.cu
     LaunchSequence.cc

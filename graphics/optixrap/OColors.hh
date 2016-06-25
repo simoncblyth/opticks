@@ -8,7 +8,9 @@ template <typename T> class NPY ;
 
 // TODO: avoid duplication of makeSampler with OPropertyLib by moving it to OContext and using that
 
-class OColors 
+#include "OXRAP_API_EXPORT.hh"
+
+class OXRAP_API OColors 
 {
 public:
     OColors(optix::Context& ctx, OpticksColors* colors);
@@ -22,13 +24,5 @@ private:
     OpticksColors*       m_colors ; 
 
 };
-
-
-inline OColors::OColors(optix::Context& ctx, OpticksColors* colors)
-           : 
-           m_context(ctx),
-           m_colors(colors)
-{
-}
 
 

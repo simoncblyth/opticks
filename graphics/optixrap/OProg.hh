@@ -1,17 +1,10 @@
 #pragma once
-#include <cstring>
-#include <cstdio>
 
-struct OProg {
-    OProg(char type_, unsigned int index_, const char* filename_, const char* progname_)  
-         :
-         type(type_),
-         index(index_),
-         filename(strdup(filename_)),
-         progname(strdup(progname_)),
-         _description(NULL)
-    {
-    }
+#include "OXRAP_API_EXPORT.hh"
+
+struct OXRAP_API OProg {
+
+    OProg(char type_, unsigned int index_, const char* filename_, const char* progname_);
 
     const char* description();
 

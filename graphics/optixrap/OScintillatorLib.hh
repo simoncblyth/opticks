@@ -4,12 +4,15 @@
 #include <optixu/optixu_math_namespace.h>
 
 
+
+
 class GScintillatorLib ;
 template <typename T> class NPY ;
 
 #include "OPropertyLib.hh"
+#include "OXRAP_API_EXPORT.hh"
 
-class OScintillatorLib : public OPropertyLib {
+class OXRAP_API OScintillatorLib : public OPropertyLib {
     public:
         OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib);
     public:
@@ -19,15 +22,6 @@ class OScintillatorLib : public OPropertyLib {
     private:
         GScintillatorLib*    m_lib ;
 };
-
-inline OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
-           : 
-           OPropertyLib(ctx),
-           m_lib(lib)
-{
-}
-
-
 
 
 

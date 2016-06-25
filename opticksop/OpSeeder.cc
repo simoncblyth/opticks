@@ -1,3 +1,4 @@
+#include <cstddef>
 #include "OpSeeder.hh"
 
 // optickscore-
@@ -5,7 +6,6 @@
 
 // npy-
 #include "Timer.hpp"
-#include "BLog.hh"
 #include "NPY.hpp"
 
 // cudawrap-
@@ -21,6 +21,7 @@
 #include "OPropagator.hh"
 #include "OBuf.hh"
 
+#include "PLOG.hh"
 
 #define TIMER(s) \
     { \
@@ -30,6 +31,32 @@
           t((s)) ;\
        }\
     }
+
+
+
+OpSeeder::OpSeeder(OContext* ocontext)  
+   :
+     m_ocontext(ocontext),
+     m_evt(NULL),
+     m_propagator(NULL)
+{
+   init(); 
+}
+
+void OpSeeder::init()
+{
+}
+
+void OpSeeder::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}  
+void OpSeeder::setPropagator(OPropagator* propagator)
+{
+    m_propagator = propagator ; 
+}  
+
+
 
 
 

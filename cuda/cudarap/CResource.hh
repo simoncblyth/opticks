@@ -1,11 +1,13 @@
 #pragma once
-#include "stdlib.h"
+
 #include "CBufSpec.hh"
 
 struct CResourceImp ; 
 
 // OpenGL buffer made available as a CUDA Resource 
-class CResource {
+
+#include "CUDARAP_API_EXPORT.hh"
+class CUDARAP_API CResource {
     public:
        typedef enum { RW, R, W } Access_t ; 
     public:
@@ -23,16 +25,6 @@ class CResource {
        Access_t       m_access ; 
        bool           m_mapped ; 
 };
-
-
-inline CResource::CResource(unsigned int buffer_id, Access_t access ) :
-   m_imp(NULL),
-   m_buffer_id(buffer_id),
-   m_access(access),
-   m_mapped(false)
-{
-   init();
-}
 
 
 

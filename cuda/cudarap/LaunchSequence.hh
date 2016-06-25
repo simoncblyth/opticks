@@ -1,11 +1,12 @@
 #pragma once
-
 #include <vector>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 
-struct Launch {
+#include "CUDARAP_API_EXPORT.hh"
+
+struct CUDARAP_API Launch {
    Launch(unsigned int _thread_offset, 
           unsigned int _threads_per_launch, 
           unsigned int _blocks_per_launch, 
@@ -45,7 +46,7 @@ struct Launch {
 
 
 
-class LaunchSequence {
+class CUDARAP_API LaunchSequence {
 public:
     LaunchSequence( unsigned int items, unsigned int threads_per_block , unsigned int max_blocks, bool reverse=false) : 
         m_items(items),
