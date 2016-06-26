@@ -5,7 +5,7 @@
 
 // npy-
 #include "NGunConfig.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // cfg4-
 #include "CRecorder.hh"

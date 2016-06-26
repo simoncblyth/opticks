@@ -15,9 +15,12 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+
+#include "BBit.hh"
+
 // npy-
 #include "NPY.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 // cfg4-
 // TODO: standardize name of OpStatus
@@ -227,7 +230,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     {
         unsigned long long shift = slot*4ull ;   
         unsigned long long msk = 0xFull << shift ; 
-        unsigned long long his = ffs(flag) & 0xFull ; 
+        unsigned long long his = BBit::ffs(flag) & 0xFull ; 
         unsigned long long mat = material < 0xFull ? material : 0xFull ; 
         m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
         m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
@@ -307,7 +310,7 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     qaux.uchar_.x = material ; 
     qaux.uchar_.y = 0 ; // TODO:m2 
     qaux.char_.z  = 0 ; // TODO:boundary (G4 equivalent ?)
-    qaux.uchar_.w = ffs(flag) ;   // ? duplicates seqhis  
+    qaux.uchar_.w = BBit::ffs(flag) ;   // ? duplicates seqhis  
 
     hquad polw ; 
     polw.ushort_.x = polx | poly << 8 ; 
@@ -426,11 +429,13 @@ void CRecorder::Dump(const char* msg, unsigned int index, const G4StepPoint* poi
 void CRecorder::Dump(const char* msg)
 {
     LOG(info) << msg 
-              << " record_id " << std::setw(7) << m_record_id
-              << std::endl 
+              << " record_id " << std::setw(7) << m_record_id 
+              ;
+    LOG(info) 
               << " seqhis " << std::hex << m_seqhis << std::dec 
               << " " << OpticksFlags::FlagSequence(m_seqhis) 
-              << std::endl 
+              ;
+    LOG(info) 
               << " seqmat " << std::hex << m_seqmat << std::dec 
               << " " << m_clib->MaterialSequence(m_seqmat) 
               ;

@@ -137,16 +137,31 @@ g4-env(){
    opticks-
 }
 
-g4-name(){ echo geant4.10.02 ; } 
-g4-name2(){ echo Geant4-10.2.0 ; }
-
 
 g4-edir(){ echo $(env-home)/g4 ; }
 
 #g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
-g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
+#g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
 
-g4-prefix(){  echo $(opticks-prefix)/externals ; }
+#g4-prefix(){  echo $(opticks-prefix)/externals ; }
+g4-prefix(){  echo $HOME/local/opticks/externals ; }
+
+g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
+
+
+# follow env/psm1/dist/dist.psm1 approach : everythinh based off the url
+
+
+g4-tag(){   echo g4 ; }
+g4-url(){   echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ; }
+g4-name2(){  echo Geant4-10.2.1 ; }
+
+g4-filename(){  echo $(basename $(g4-url)) ; }
+g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }  
+# hmm .tar.gz would still have a .tar on the name
+
+
+
 g4-bdir(){ echo $(g4-dir).build ; }
 
 g4-cmake-dir(){     echo $(g4-prefix)/lib/$(g4-name2) ; }
@@ -161,8 +176,11 @@ g4-ccd(){  cd $(g4-cmake-dir); }
 g4-xcd(){  cd $(g4-examples-dir); }
 
 
-g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name).tar.gz ; }
-g4-get(){
+#g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name).tar.gz ; }
+#g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name-zip).zip ; }
+
+
+g4-get-tgz(){
    local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(g4-url)
    local tgz=$(basename $url)
@@ -172,13 +190,25 @@ g4-get(){
    [ ! -d "$nam" ] && tar zxvf $tgz 
 }
 
+g4-get(){
+   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
+   local url=$(g4-url)
+   local dst=$(basename $url)
+   local nam=${dst/.zip}
+
+   [ ! -f "$dst" ] && curl -L -O $url 
+   [ ! -d "$nam" ] && unzip $dst 
+}
+
+
+
 
 g4-wipe(){
    local bdir=$(g4-bdir)
    rm -rf $bdir
 }
 
-g4-cmake(){
+g4-cmake-old(){
    local iwd=$PWD
 
    local bdir=$(g4-bdir)
@@ -201,6 +231,31 @@ g4-cmake(){
 }
 
 
+
+g4-cmake(){
+   local iwd=$PWD
+
+   local bdir=$(g4-bdir)
+   mkdir -p $bdir
+
+   local idir=$(g4-prefix)
+   mkdir -p $idir
+
+   g4-bcd
+   cmake \
+       -G "$(opticks-cmake-generator)" \
+       -DGEANT4_INSTALL_DATA=ON \
+       -DGEANT4_USE_GDML=ON \
+       -DXERCESC_LIBRARY=$(xercesc-library) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include) \
+       -DCMAKE_INSTALL_PREFIX=$idir \
+       $(g4-dir)
+
+   cd $iwd
+}
+
+
+
 g4-configure()
 {
    g4-wipe
@@ -208,7 +263,8 @@ g4-configure()
 }
 
 
-g4-config(){ echo Debug ; }
+#g4-config(){ echo Debug ; }
+g4-config(){ echo RelWithDebInfo ; }
 g4--(){
    g4-bcd
    cmake --build . --config $(g4-config) --target ${1:-install}

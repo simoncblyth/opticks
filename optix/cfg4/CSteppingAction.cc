@@ -28,7 +28,7 @@
 #include "OpticksFlags.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
@@ -111,7 +111,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
        particle_name = type->GetParticleName();
        pdg_encoding = type->GetPDGEncoding();
 
-       LOG(debug) << std::endl
+       LOG(debug) 
                  << "CSA (trak)"
                  << " event_id " << event_id
                  << " track_id " << track_id

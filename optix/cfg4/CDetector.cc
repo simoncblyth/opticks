@@ -6,7 +6,7 @@
 #include <cstdio>
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "NPY.hpp"
 #include "NBoundingBox.hpp"
 #include "GLMFormat.hpp"

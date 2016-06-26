@@ -22,7 +22,7 @@ find_package(OpticksCore REQUIRED)
 
 find_package(Geant4 REQUIRED) ## invoke cmake with -DGeant4_DIR=$(g4-cmake-dir) 
 find_package(EnvXercesC  REQUIRED)  
-find_package(G4DAE  REQUIRED)  
+#find_package(G4DAE  REQUIRED)  
 
 set(INCLUDE_DIRS  
    ${CMAKE_CURRENT_SOURCE_DIR}
@@ -36,7 +36,7 @@ set(INCLUDE_DIRS
    ${OpticksCore_INCLUDE_DIRS}
    ${Geant4_INCLUDE_DIRS}
    ${XERCESC_INCLUDE_DIR}
-   ${G4DAE_INCLUDE_DIRS}
+ #  ${G4DAE_INCLUDE_DIRS}
 )
 
 set(LIBRARIES
@@ -49,7 +49,7 @@ set(LIBRARIES
    ${OpticksCore_LIBRARIES}
    ${Geant4_LIBRARIES}
    ${XERCESC_LIBRARIES}
-   ${G4DAE_LIBRARIES}
+  # ${G4DAE_LIBRARIES}
 )
 
 set(DEFINITIONS
@@ -62,7 +62,7 @@ set(DEFINITIONS
    ${OpticksCore_DEFINITIONS}
    ${Geant4_DEFINITIONS}
    ${XERCESC_DEFINITIONS}
-   ${G4DAE_DEFINITIONS}
+  #${G4DAE_DEFINITIONS}
 )
 
 #message(STATUS "XERCESC_INCLUDE_DIR  : ${XERCESC_INCLUDE_DIR}")
@@ -140,8 +140,8 @@ SET(HEADERS
 
 add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
-install(TARGETS ${name} LIBRARY DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include)
+install(TARGETS ${name} DESTINATION lib)
+install(FILES ${HEADERS} DESTINATION include/${name})
 
 add_subdirectory(tests)
 

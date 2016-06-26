@@ -29,7 +29,7 @@ void test_standard_usage(int argc, char** argv)
 }
 
 
-int main(int argc, char** argv)
+int main(int, char** )
 {
     std::vector<std::string> tt  ; 
     tt.push_back( "--trace" );

@@ -8,7 +8,7 @@
 #include "G4AffineTransform.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "NBoundingBox.hpp"
 #include "GLMFormat.hpp"
 

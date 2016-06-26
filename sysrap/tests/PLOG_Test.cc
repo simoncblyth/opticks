@@ -1,7 +1,7 @@
 #include "PLOG.hh"
 #include "SArgs.hh"
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
     std::vector<std::string> tt  ; 
     tt.push_back( "--trace" );

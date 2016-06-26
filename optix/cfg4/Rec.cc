@@ -11,7 +11,8 @@
 #include "OpticksFlags.hh"
 
 // npy-
-#include "BLog.hh"
+#include "BBit.hh"
+#include "PLOG.hh"
 
 // g4-
 #include "G4Step.hh"
@@ -130,7 +131,7 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material)
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
     unsigned long long shift = slot*4ull ;   
     unsigned long long msk = 0xFull << shift ; 
-    unsigned long long his = ffs(flag) & 0xFull ; 
+    unsigned long long his = BBit::ffs(flag) & 0xFull ; 
     unsigned long long mat = material < 0xFull ? material : 0xFull ; 
 
     m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ;

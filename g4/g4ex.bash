@@ -11,22 +11,24 @@ EOU
 g4ex-env(){    
    elocal- 
    g4- 
-   g4-export
+  # g4-export
 
 }
 
-#g4ex-name(){ echo basic/B1 ; }
+g4ex-name(){ echo basic/B1 ; }
 #g4ex-name(){ echo extended/optical/LXe ; }
 #g4ex-name(){ echo extended/optical/OpNovice ; }
 #g4ex-name(){ echo extended/optical/wls ; }
 #g4ex-name(){ echo extended/eventgenerator/exgps ; }
-g4ex-name(){ echo extended/eventgenerator/GunGPS ; }
+#g4ex-name(){ echo extended/eventgenerator/GunGPS ; }
 
 
 g4ex-cd(){   cd $(g4ex-dir); }
 g4ex-dir(){  echo $(g4-examples-dir)/$(g4ex-name) ; }
 g4ex-bdir(){ echo $(local-base)/env/g4ex/$(g4ex-name).build   ; }
 g4ex-idir(){ echo $(local-base)/env/g4ex/$(g4ex-name).install ; }
+g4ex-prefix(){ echo $(local-base)/env/g4ex ; }
+
 
 g4ex-hhfind(){ find $(g4-examples-dir) -name '*.hh' -exec grep -H ${1:-Gun} {} \; ; }
 g4ex-ccfind(){ find $(g4-examples-dir) -name '*.cc' -exec grep -H ${1:-Gun} {} \; ; }
@@ -41,13 +43,31 @@ g4ex-cmake(){
    local bdir=$(g4ex-bdir)
    mkdir -p $bdir  
    cd $bdir
-   cmake -DGeant4_DIR=$(g4-cmake-dir) -DWITH_GEANT4_UIVIS=OFF $sdir
+
+
+   cmake \
+         -DGeant4_DIR=$(g4-cmake-dir) \
+         -DWITH_GEANT4_UIVIS=OFF \
+         -DCMAKE_INSTALL_PREFIX=$(g4ex-prefix) \
+         $sdir
 }
+
+g4ex-configure()
+{
+   g4ex-wipe
+   g4ex-cmake
+}
+
+
+
+#g4ex-config(){ echo Debug ; }
+g4ex-config(){ echo RelWithDebInfo ; }
 
 g4ex-make(){
    local bdir=$(g4ex-bdir)
+   mkdir -p $bdir
    cd $bdir
-   make -j4 VERBOSE=1
+   cmake --build . --config $(g4ex-config) --target ${1:-install}
 }
 
 g4ex-run(){

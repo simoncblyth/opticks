@@ -16,7 +16,7 @@
 
 // npy-
 #include "NPY.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 #include "NBoundingBox.hpp"
 #include "GLMFormat.hpp"
 

@@ -28,6 +28,110 @@ Huh almost no symbols exported::
 * does that mean must use static G4 on windows ?
 
 
+config/genwindef.cc reads .dll writes .def
+-------------------------------------------------
+
+::
+
+    ntuhep@ntuhep-PC MINGW64 ~/local/opticks/externals/g4/geant4_10_02_p01
+    $ find . -name '*.txt'  -exec grep -H genwindef {} \;
+    ./ReleaseNotes/Patch4.10.0-2.txt:        DLLs build on Windows with genwindef used also in CMake.
+
+::
+
+    $ find . -name '*.cmake'  -exec grep -H genwindef {} \;
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:# On WIN32, we need to build the genwindef application to create export
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:# if it can be protected so that the genwindef target wouldn't be defined
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:  get_filename_component(_genwindef_src_dir ${CMAKE_CURRENT_LIST_FILE} PATH)
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:  add_executable(genwindef EXCLUDE_FROM_ALL
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:    ${_genwindef_src_dir}/genwindef/genwindef.cpp
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:    ${_genwindef_src_dir}/genwindef/LibSymbolInfo.h
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake:    ${_genwindef_src_dir}/genwindef/LibSymbolInfo.cpp)
+    ./cmake/Modules/Geant4MacroLibraryTargets.cmake:        COMMAND genwindef -o _${G4LIBTARGET_NAME}-${CMAKE_CFG_INTDIR}.def -l ${G4LIBTARGET_NAME} $<TARGET_FILE:${_archive}>
+    ./cmake/Modules/Geant4MacroLibraryTargets.cmake:        DEPENDS ${_archive} genwindef)
+    ./cmake/Templates/UseGeant4_internal.cmake:    # - Use genwindef to create .def file listing symbols
+    ./cmake/Templates/UseGeant4_internal.cmake:      COMMAND ${genwindef_cmd} -o ${library}.def -l ${library} ${LIBRARY_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/${library}-arc.lib
+    ./cmake/Templates/UseGeant4_internal.cmake:      DEPENDS ${library}-arc genwindef)
+
+
+
+cmake/Templates/UseGeant4_internal.cmake::
+
+     17 function(geant4_link_library library)
+     18   cmake_parse_arguments(ARG "TYPE;LIBRARIES" "" ${ARGN})
+     19   set(sources)
+     20
+     21   # - Fill sources
+     22   foreach(fp ${ARG_UNPARSED_ARGUMENTS})
+     23     if(IS_ABSOLUTE ${fp})
+     24       file(GLOB files ${fp})
+     25     else()
+     26       file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${fp})
+     27     endif()
+     28     if(files)
+     29       set(sources ${sources} ${files})
+     30     else()
+     31       set(sources ${sources} ${fp})
+     32     endif()
+     33   endforeach()
+     34
+     35   # - Shared library unless specified
+     36   if(NOT ARG_TYPE)
+     37     set(ARG_TYPE SHARED)
+     38   endif()
+     39
+     40   # - Make sure we can access our own headers
+     41   include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+     42
+     43   # - Deal with Win32 DLLs that don't export via declspec
+     44   if(WIN32 AND ARG_TYPE STREQUAL SHARED)
+     45     # - Dummy archive library
+     46     add_library( ${library}-arc STATIC EXCLUDE_FROM_ALL ${sources})
+
+     47
+     48     # - Use genwindef to create .def file listing symbols
+     49     add_custom_command(
+     50       OUTPUT ${library}.def
+     51       COMMAND ${genwindef_cmd} -o ${library}.def -l ${library} ${LIBRARY_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/${library}-arc.lib
+     52       DEPENDS ${library}-arc genwindef)
+     53
+     54     #- Dummy cpp file needed to satisfy Visual Studio.
+     55     file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/${library}.cpp "// empty file\n" )
+     56     add_library( ${library} SHARED ${library}.cpp ${library}.def)
+
+     //     compile sources into static lib,
+     //     pull out the symbols with genwindef to make .def  
+     //     
+
+
+     57     target_link_libraries(${library} ${library}-arc ${ARG_LIBRARIES})
+     58     set_target_properties(${library} PROPERTIES LINK_INTERFACE_LIBRARIES ${ARG_LIBRARIES} ${Geant4_LIBRARIES})
+     59   else()
+     60     add_library( ${library} ${ARG_TYPE} ${sources})
+     61     target_link_libraries(${library} ${ARG_LIBRARIES} ${Geant4_LIBRARIES})
+     62   endif()
+     63 endfunction()
+
+
+So cmake consumes the .def and uses it to rustle up the .dll 
+
+
+* https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/
+
+
+
+
+Exporting from DLL using DEF files
+-------------------------------------
+
+* https://msdn.microsoft.com/en-us/library/d91k01sh.aspx
+
+* http://stackoverflow.com/questions/6720655/linking-to-a-dll-with-a-def-file-instead-of-a-lib-file
+
+* http://stackoverflow.com/questions/225432/export-all-symbols-when-creating-a-dll
+
+
+
 building against G4, mentions windows but not DLLs
 ----------------------------------------------------
 

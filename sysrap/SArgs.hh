@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iterator>
 
 struct SArgs
 {
@@ -27,12 +28,12 @@ struct SArgs
         argv = new char*[argc];
 
         argv[0] = const_cast<char*>("dummy") ;
-        for(unsigned i=1 ; i < argc ; i++) argv[i] = const_cast<char*>(elem[i-1].c_str()) ;
+        for(int i=1 ; i < argc ; i++) argv[i] = const_cast<char*>(elem[i-1].c_str()) ;
     }
 
     void dump()
     {
-        for(unsigned i=0 ; i < argc ; i++)
+        for(int i=0 ; i < argc ; i++)
         {
             std::cout << std::setw(3) << i 
                       << std::setw(15) << elem[i]

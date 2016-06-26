@@ -390,6 +390,7 @@ opticks-cmake(){
    [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to reconfigure  && return  
    opticks-bcd
    g4- 
+   xercesc-
 
    cmake \
         -G "$(opticks-cmake-generator)" \
@@ -397,11 +398,25 @@ opticks-cmake(){
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        -DGeant4_DIR=$(g4-cmake-dir) \
+       -DXERCESC_LIBRARY=$(xercesc-library) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include) \
        $* \
        $(opticks-sdir)
 
    cd $iwd
 }
+
+opticks-cmake-modify(){
+  opticks-bcd
+  g4-
+  xercesc- 
+  cmake \
+       -DGeant4_DIR=$(g4-cmake-dir) \
+       -DXERCESC_LIBRARY=$(xercesc-library) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include) \
+          . 
+}
+
 
 opticks-wipe(){
    local bdir=$(opticks-bdir)
@@ -461,6 +476,9 @@ EOC
 opticks-config(){ echo Debug ; }
 opticks---(){ 
 
+  sysrap-
+  sysrap--
+
   brap-
   brap--
 
@@ -503,11 +521,13 @@ opticks---(){
 }    
 opticks--(){     
 
+   local msg="$FUNCNAME : "
    local iwd=$PWD
 
    local bdir=$1
    shift
    [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+   [ ! -d "$bdir" ] && echo $msg bdir $bdir does not exist && return 
 
    cd $bdir
 

@@ -76,7 +76,7 @@
 #include "G4OpProcessSubType.hh"
 
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 /////////////////////////

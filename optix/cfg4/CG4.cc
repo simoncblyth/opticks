@@ -45,7 +45,7 @@
 #include "TorchStepNPY.hpp"
 #include "NGunConfig.hpp"
 #include "GLMFormat.hpp"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 //ggeo-
 #include "GBndLib.hh"

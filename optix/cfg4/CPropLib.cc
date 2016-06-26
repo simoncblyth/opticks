@@ -11,19 +11,21 @@
 
 
 // ggeo-
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
 #include "GConstant.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GScintillatorLib.hh"
-#include "GDomain.hh"
 
 #include "GMaterial.hh"
 #include "GPmt.hh"
 #include "GCSG.hh"
 
 // npy-
-#include "BLog.hh"
+#include "PLOG.hh"
 
 
 
