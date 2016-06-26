@@ -343,9 +343,8 @@ opticks-xdir(){ echo $(opticks-prefix)/externals ; }
 
 opticks-optix-install-dir(){ echo /Developer/OptiX ; }
 
-opticks-cd(){   cd $(opticks-dir); }
-opticks-scd(){  cd $(opticks-sdir); }
-opticks-cd(){   cd $(opticks-sdir); }
+opticks-cd(){   cd $(opticks-dir) ; }
+opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 opticks-xcd(){  cd $(opticks-xdir); }
@@ -633,6 +632,7 @@ opticks-export-mingw()
 
 
 opticks-dirs(){  cat << EOL
+sysrap
 boostrap
 numerics/npy
 optickscore
@@ -809,7 +809,6 @@ opticks-genproj()
     [ -z "$proj" -o -z "$tag" ] && echo $msg need both proj $proj and tag $tag  && return 
 
 
-
     importlib-  
     importlib-exports ${proj} ${tag}_API
 
@@ -820,6 +819,27 @@ opticks-genproj()
     opticks-genproj-sources- $tag
 
 }
+
+
+
+opticks-genlog()
+{
+    opticks-scd 
+    local dir
+    plog-
+    opticks-dirs | while read dir 
+    do
+        opticks-scd $dir
+
+        local name=$(ls -1 *_API_EXPORT.hh 2>/dev/null) 
+        [ -z "$name" ] && echo MISSING API_EXPORT in $PWD && return 
+        [ ! -z "$name" ] && echo $name
+
+        echo $PWD
+        plog-genlog FORCE
+    done
+}
+
 
 opticks-genproj-sources-(){ 
 

@@ -81,6 +81,11 @@ plog-genlog-hh(){
 #pragma once
 #include "${tag}_API_EXPORT.hh"
 
+#define ${tag}_LOG__ \
+ { \
+    ${tag}_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "${tag}") ); \
+ } \
+
 
 #define ${tag}_LOG_ \
 { \
@@ -98,14 +103,19 @@ EOL
 }
 
 plog-genlog(){
+  local cmd=$1 
   local msg="=== $FUNCNAME :"
   local ex=$(ls -1 *_API_EXPORT.hh 2>/dev/null) 
   [ -z "$ex" ] && echo $msg ERROR there is no export in PWD $PWD : run from project source with the correct tag : not $tag && return 
 
   local tag=${ex/_API_EXPORT.hh} 
-
   local cc=${tag}_LOG.cc
   local hh=${tag}_LOG.hh
+
+  if [ "$cmd" == "FORCE" ] ; then 
+     rm -f $cc
+     rm -f $hh
+  fi
 
   [ -f "$cc" -o -f "$hh" ] && echo $msg cc $cc or hh $hh exists already : delete to regenerate && return  
 

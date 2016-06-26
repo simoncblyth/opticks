@@ -8,6 +8,7 @@ set(TEST_SOURCES
    SDigestTest.cc
    PLogTest.cc 
    PLOG_Test.cc 
+   SYSRAP_LOG_Test.cc 
 )
 
 foreach(SRC ${TEST_SOURCES})

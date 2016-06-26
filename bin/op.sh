@@ -73,7 +73,7 @@ op-binary-name()
         --gbuffer) echo GBufferTest ;;
            --meta) echo GBoundaryLibMetadataTest ;;
          --sensor) echo GSensorListTest ;;
-           --ggeo) echo GGeoTest ;;
+          --tggeo) echo GGeoTest ;;
          --assimp) echo AssimpRapTest ;;
        --openmesh) echo OpenMeshRapTest ;;
       --torchstep) echo TorchStepNPYTest ;;  

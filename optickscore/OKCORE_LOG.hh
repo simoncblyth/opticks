@@ -2,6 +2,7 @@
 #pragma once
 #include "OKCORE_API_EXPORT.hh"
 
+#define OKCORE_LOG__  {     OKCORE_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "OKCORE") );  } 
 
 #define OKCORE_LOG_ {     OKCORE_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

@@ -221,34 +221,39 @@ cfg4-env(){
 }
 
 
-cfg4-name(){ echo cfg4Test ; }
-cfg4-bin(){ echo ${CFG4_BINARY:-$(cfg4-idir)/bin/$(cfg4-name)} ; }
+
+cfg4-bin(){ echo ${CFG4_BINARY:-$(cfg4-idir)/bin/$(cfg4-name)Test} ; }
 cfg4-tbin(){ echo $(cfg4-idir)/bin/$1 ; }
 
-
 cfg4-idir(){ echo $(local-base)/env/optix/cfg4; } 
-
-#cfg4-bdir(){ echo $(local-base)/env/optix/cfg4.build ; }
 cfg4-bdir(){ echo $(opticks-bdir)/$(cfg4-rel) ; }
-
 cfg4-sdir(){ echo $(env-home)/optix/cfg4 ; }
+cfg4-tdir(){ echo $(env-home)/optix/cfg4/tests ; }
 
 cfg4-icd(){  cd $(cfg4-idir); }
 cfg4-bcd(){  cd $(cfg4-bdir); }
 cfg4-scd(){  cd $(cfg4-sdir); }
+cfg4-tcd(){  cd $(cfg4-tdir); }
 
 cfg4-dir(){  echo $(cfg4-sdir) ; }
 cfg4-cd(){   cd $(cfg4-dir); }
 
 
+cfg4-name(){ echo cfg4 ; }
+cfg4-tag(){  echo CFG4 ; }
 
-cfg4-wipe(){
-    local bdir=$(cfg4-bdir)
-    rm -rf $bdir
-}
+cfg4-wipe(){    local bdir=$(cfg4-bdir) ; rm -rf $bdir ; } 
+
+cfg4--(){       opticks-- $(cfg4-bdir) ; } 
+cfg4-ctest(){   opticks-ctest $(cfg4-bdir) $* ; } 
+cfg4-genproj(){ cfg4-scd ; opticks-genproj $(cfg4-name) $(cfg4-tag) ; } 
+cfg4-gentest(){ cfg4-tcd ; opticks-gentest ${1:-CExample} $(cfg4-tag) ; } 
+cfg4-txt(){     vi $(cfg4-sdir)/CMakeLists.txt $(cfg4-tdir)/CMakeLists.txt ; } 
 
 
 
+
+############### old funcs predating SUPERBUILD approach  #################
 
 
 cfg4-cmake-standalone(){
@@ -266,35 +271,6 @@ cfg4-cmake-standalone(){
          $(cfg4-sdir)
    cd $iwd 
 }
-
-cfg4-make(){
-    local iwd=$PWD
-    cfg4-bcd
-    make $*
-    cd $iwd 
-}
-
-cfg4-install(){
-   cfg4-make install
-}
-
-cfg4---(){
-   cfg4-wipe
-   cfg4-cmake
-   cfg4-make
-   cfg4-install
-}
-
-cfg4--(){
-
-   #opticks-
-   #opticks-- 
-   #cfg4-make
-   #cfg4-install
-
-   ( cfg4-bcd ; make ${1:-install} )
-}
-
 
 cfg4-export()
 {

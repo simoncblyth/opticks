@@ -2,6 +2,7 @@
 #pragma once
 #include "THRAP_API_EXPORT.hh"
 
+#define THRAP_LOG__  {     THRAP_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "THRAP") );  } 
 
 #define THRAP_LOG_ {     THRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

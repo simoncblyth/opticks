@@ -2,6 +2,7 @@
 #pragma once
 #include "GGV_API_EXPORT.hh"
 
+#define GGV_LOG__  {     GGV_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "GGV") );  } 
 
 #define GGV_LOG_ {     GGV_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

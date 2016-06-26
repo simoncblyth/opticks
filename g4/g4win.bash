@@ -8,6 +8,89 @@ g4win-usage(){ cat << EOU
 G4 On Windows notes
 =====================
 
+G4 Windows dllexport/dllimport ?
+-----------------------------------
+
+::
+
+    delta:geant4.10.02 blyth$ find source -name '*.hh' -exec grep -H dll {} \;
+    source/g3tog4/include/G3toG4Defs.hh:      #define G3G4DLL_API __declspec( dllexport )
+    source/g3tog4/include/G3toG4Defs.hh:      #define G3G4DLL_API __declspec( dllimport )
+    source/global/management/include/G4Types.hh:    #define G4DLLEXPORT __declspec( dllexport )
+    source/global/management/include/G4Types.hh:    #define G4DLLIMPORT __declspec( dllimport )
+    delta:geant4.10.02 blyth$ 
+
+Huh almost no symbols exported::
+
+    delta:geant4.10.02 blyth$ find source -name '*.hh' -exec grep -H DLL {} \; | wc -l
+         125
+
+* does that mean must use static G4 on windows ?
+
+
+building against G4, mentions windows but not DLLs
+----------------------------------------------------
+
+* http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/InstallationGuide/html/ch03s02.html
+
+
+bin/G4global.dll (windows only)
+-------------------------------------
+
+* http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/InstallationGuide/html/ch03.html
+
+
+
+G4 Forum for install/config issues
+------------------------------------
+
+* http://hypernews.slac.stanford.edu/HyperNews/geant4/get/installconfig.html
+
+DLL Search Order
+~~~~~~~~~~~~~~~~~~
+
+* https://msdn.microsoft.com/en-us/library/windows/desktop/ms682586(v=vs.85).aspx
+
+
+Portable G4
+~~~~~~~~~~~~~~~
+
+* http://hypernews.slac.stanford.edu/HyperNews/geant4/get/installconfig/1799/1.html
+
+Ben Morgan 
+
+At least for the Geant4 libraries, these can be linked statically to the
+application and this will typically result in a smaller bundle (depending on
+what physics processes the application uses). To link an application to static
+Geant4 libraries rather than dynamic, ensure the install of Geant4 is done with
+the cmake argument BUILD_STATIC_LIBS enabled. When building the application
+with cmake, add the static component to the list of features needed in the call
+to find_package:
+
+::
+
+    find_package(Geant4 REQUIRED static)
+
+    add_executable(foo foo.cc)
+    target_link_libraries(foo ${Geant4_LIBRARIES})
+
+Here, the addition of the static argument ensures that the Geant4_LIBRARIES
+variable is populated with static rather than dynamic arguments.
+
+
+Comparison of static/dynamic linkage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://www.codeproject.com/Articles/85391/Microsoft-Visual-C-Static-and-Dynamic-Libraries
+
+Interesting points:
+
+* with static libs when you dont have a header you can use::
+
+    extern int add(int a, int b);
+
+* looks like using static libs avoids the need for dllexport/dllimport
+
 
 
 MSVC Approach
@@ -21,6 +104,12 @@ Officially supported: Windows 7 with Visual Studio 2013 or 2015, 64bit.
 * web/installer download of Visual Studio 2015 community 
 
 
+Painful GUI Walkthru of installing G4 on Windows
+--------------------------------------------------
+
+* http://www2.warwick.ac.uk/fac/sci/physics/staff/research/bmorgan/geant4/installingonwindows/
+
+Includes advice to individually set envvars via GUI panel.
 
 MinGW/NSYS2 Approach 
 ------------------------

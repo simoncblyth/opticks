@@ -1,5 +1,33 @@
+#include <cassert>
 #include "PLOG.hh"
 #include "SArgs.hh"
+
+#include "SYSRAP_LOG.hh"
+
+
+void check(const char* msg)
+{
+    LOG(trace) << msg ; 
+    LOG(verbose) << msg ; 
+    LOG(info) << msg ; 
+    LOG(debug) << msg ; 
+    LOG(warning) << msg ; 
+    LOG(error) << msg ; 
+    LOG(fatal) << msg ; 
+}
+
+
+void test_standard_usage(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    SYSRAP_LOG__ ; 
+
+    assert(PLOG::instance);
+
+    check("local");
+    SYSRAP_LOG::Check("calling SYSRAP lib from test main");
+}
+
 
 int main(int argc, char** argv)
 {
@@ -57,15 +85,13 @@ int main(int argc, char** argv)
 
         SArgs* a = new SArgs(t) ;
 
-        PLOG* pl = j == 0 ?
-                             new PLOG(a->argc, a->argv, fallback ) 
-                          :
-                             new PLOG(a->argc, a->argv, fallback, prefix )
-                          ; 
+        const char* uprefix = j == 0 ? NULL : prefix ; 
+
+        PLOG* pl = new PLOG(a->argc, a->argv, fallback, uprefix );
 
         std::stringstream ss ; 
         ss << "PLOG(..," << fallback ; 
-        if(j==1) ss << "," << prefix ;
+        if(j==1) ss << "," << uprefix ;
         ss << ")" ;
 
         std::string label = ss.str();
@@ -79,6 +105,5 @@ int main(int argc, char** argv)
     } 
     }
 
-    
     return 0 ; 
-} 
+}

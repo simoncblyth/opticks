@@ -2,6 +2,7 @@
 #pragma once
 #include "OKOP_API_EXPORT.hh"
 
+#define OKOP_LOG__  {     OKOP_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "OKOP") );  } 
 
 #define OKOP_LOG_ {     OKOP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

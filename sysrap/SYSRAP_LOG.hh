@@ -2,6 +2,7 @@
 #pragma once
 #include "SYSRAP_API_EXPORT.hh"
 
+#define SYSRAP_LOG__  {     SYSRAP_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "SYSRAP") );  } 
 
 #define SYSRAP_LOG_ {     SYSRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

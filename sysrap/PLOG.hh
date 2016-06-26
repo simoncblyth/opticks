@@ -17,20 +17,31 @@ using plog::verbose ;
 #define trace plog::verbose 
 
 #include "SYSRAP_API_EXPORT.hh"
+
+struct PLOG ; 
+
 struct SYSRAP_API PLOG 
 {
+    int    argc ; 
+    char** argv ;
     int   level ; 
 
-    PLOG(int argc, char** argv, const char* fallback="INFO");
-    PLOG(int argc, char** argv, const char* fallback, const char* prefix );
+    PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
+
     const char* name(); 
+    int parse( const char* fallback);
+    int parse( plog::Severity _fallback);
+    int prefix_parse( const char* fallback, const char* prefix);
+    int prefix_parse( plog::Severity _fallback, const char* prefix);
 
-    static int parse(int argc, char** argv, const char* fallback);
-    static int prefix_parse(int argc, char** argv, const char* fallback, const char* prefix);
-    static void dump(const char* msg, int argc, char** argv);
+    static int  _parse(int argc, char** argv, const char* fallback);
+    static int  _prefix_parse(int argc, char** argv, const char* fallback, const char* prefix);
+    static void _dump(const char* msg, int argc, char** argv);
+    static const char* _name(plog::Severity severity);
+    static const char* _name(int level);
 
+    static PLOG* instance ; 
 };
-
 
 
 #include "PLOG_INIT.hh"

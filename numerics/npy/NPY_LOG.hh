@@ -2,6 +2,7 @@
 #pragma once
 #include "NPY_API_EXPORT.hh"
 
+#define NPY_LOG__  {     NPY_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "NPY") );  } 
 
 #define NPY_LOG_ {     NPY_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

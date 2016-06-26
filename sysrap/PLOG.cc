@@ -5,8 +5,10 @@
 
 #include "PLOG.hh"
 
+PLOG* PLOG::instance = NULL ; 
 
-void PLOG::dump(const char* msg, int argc, char** argv)
+
+void PLOG::_dump(const char* msg, int argc, char** argv)
 {
     std::cerr <<  msg
               << " argc " << argc ;
@@ -15,7 +17,7 @@ void PLOG::dump(const char* msg, int argc, char** argv)
     std::cerr << std::endl ;               
 }
 
-int PLOG::parse(int argc, char** argv, const char* fallback)
+int PLOG::_parse(int argc, char** argv, const char* fallback)
 {
     // Simple commandline parse to find global logging level
 
@@ -30,7 +32,9 @@ int PLOG::parse(int argc, char** argv, const char* fallback)
         if(arg.compare("--info")==0)    ll = "INFO" ; 
         if(arg.compare("--warning")==0) ll = "WARNING" ; 
         if(arg.compare("--error")==0)   ll = "ERROR" ; 
-        if(arg.compare("--fatal")==0)   ll = "FATAL" ; 
+        if(arg.compare("--fatal")==0)   ll = "FATAL" ;
+
+        // severityFromString uses first char 
     }
      
     std::transform(ll.begin(), ll.end(), ll.begin(), ::toupper);
@@ -38,12 +42,13 @@ int PLOG::parse(int argc, char** argv, const char* fallback)
 
     int level = static_cast<int>(severity); 
 
-    //dump("PLOG::parse", argc, argv );
+    //_dump("PLOG::parse", argc, argv );
 
     return level ;  
 }
 
-int PLOG::prefix_parse(int argc, char** argv, const char* fallback, const char* prefix)
+
+int PLOG::_prefix_parse(int argc, char** argv, const char* fallback, const char* prefix)
 {
     // Parse commandline to find project logging level  
     // looking for a single project prefix, eg 
@@ -75,35 +80,87 @@ int PLOG::prefix_parse(int argc, char** argv, const char* fallback, const char* 
     std::transform(ll.begin(), ll.end(), ll.begin(), ::toupper);
 
     const char* llc = ll.c_str();
-    plog::Severity severity = strcmp(llc, "TRACE")==0 ? plog::severityFromString("VERBOSE") : plog::severityFromString(llc) ;
+    plog::Severity severity = strcmp(llc, "TRACE")==0 ? plog::severityFromString("VERB") : plog::severityFromString(llc) ;
     int level = static_cast<int>(severity); 
 
-    //dump("PLOG::prefix_parse", argc, argv );
+    //_dump("PLOG::prefix_parse", argc, argv );
 
     return level ; 
 }
 
 
 
-PLOG::PLOG(int argc, char** argv, const char* fallback)  : level(info)
+
+int PLOG::parse(plog::Severity _fallback)
 {
-   level = parse(argc, argv, fallback); 
+    const char* fallback = _name(_fallback);
+    return parse(fallback);
+}
+int PLOG::parse(const char* fallback)
+{
+    int level = _parse(argc, argv, fallback);
+
+#ifdef DBG
+    std::cerr << "PLOG::parse"
+              << " fallback " << fallback
+              << " level " << level 
+              << " name " << _name(level)
+              << std::endl ;
+#endif
+
+    return level ; 
 }
 
-PLOG::PLOG(int argc, char** argv, const char* fallback, const char* prefix=NULL)
+
+int PLOG::prefix_parse(plog::Severity _fallback, const char* prefix)
 {
-   level = prefix == NULL ? 
-                             parse(argc, argv, fallback) 
-                          : 
-                             prefix_parse(argc, argv, fallback, prefix )
-                          ;    
+    const char* fallback = _name(_fallback);
+    return prefix_parse(fallback, prefix) ; 
+}
+int PLOG::prefix_parse(const char* fallback, const char* prefix)
+{
+    int level =  _prefix_parse(argc, argv, fallback, prefix);
+
+#ifdef DBG
+    std::cerr << "PLOG::prefix_parse"
+              << " fallback " << fallback
+              << " prefix " << prefix 
+              << " level " << level 
+              << " name " << _name(level)
+              << std::endl ;
+#endif
+
+    return level ; 
 }
 
 
-const char* PLOG::name()
+
+const char* PLOG::_name(int level)
 {
    plog::Severity severity  = static_cast<plog::Severity>(level); 
    return plog::severityToString(severity);
 }
+const char* PLOG::_name(plog::Severity severity)
+{
+   return plog::severityToString(severity);
+}
+
+const char* PLOG::name()
+{
+   plog::Severity severity  = static_cast<plog::Severity>(level); 
+   return _name(severity);
+}
+
+
+PLOG::PLOG(int argc, char** argv, const char* fallback, const char* prefix)
+    :
+      argc(argc),
+      argv(argv),
+      level(info)
+{
+   level = prefix == NULL ?  parse(fallback) : prefix_parse(fallback, prefix ) ;    
+   instance = this ; 
+}
+
 
 

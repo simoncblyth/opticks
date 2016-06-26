@@ -2,6 +2,7 @@
 #pragma once
 #include "ASIRAP_API_EXPORT.hh"
 
+#define ASIRAP_LOG__  {     ASIRAP_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "ASIRAP") );  } 
 
 #define ASIRAP_LOG_ {     ASIRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

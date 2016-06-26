@@ -2,6 +2,7 @@
 #pragma once
 #include "OKGEO_API_EXPORT.hh"
 
+#define OKGEO_LOG__  {     OKGEO_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "OKGEO") );  } 
 
 #define OKGEO_LOG_ {     OKGEO_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

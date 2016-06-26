@@ -14,6 +14,27 @@ Geant4 10.2, December 4th, 2015
 * https://geant4.web.cern.ch/geant4/support/download.shtml
 * http://geant4.web.cern.ch/geant4/UserDocumentation/UsersGuides/InstallationGuide/html/
 
+G4 Windows dllexport/dllimport ?
+-----------------------------------
+
+::
+
+    delta:geant4.10.02 blyth$ find source -name '*.hh' -exec grep -H dll {} \;
+    source/g3tog4/include/G3toG4Defs.hh:      #define G3G4DLL_API __declspec( dllexport )
+    source/g3tog4/include/G3toG4Defs.hh:      #define G3G4DLL_API __declspec( dllimport )
+    source/global/management/include/G4Types.hh:    #define G4DLLEXPORT __declspec( dllexport )
+    source/global/management/include/G4Types.hh:    #define G4DLLIMPORT __declspec( dllimport )
+    delta:geant4.10.02 blyth$ 
+
+
+Huh not many of them::
+
+    delta:geant4.10.02 blyth$ find source -name '*.hh' -exec grep -H DLL {} \; | wc -l
+         125
+
+See g4win-
+
+
 Prerequisites
 ---------------
 
@@ -121,9 +142,9 @@ g4-name2(){ echo Geant4-10.2.0 ; }
 
 
 g4-edir(){ echo $(env-home)/g4 ; }
+
 #g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
 g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
-
 
 g4-prefix(){  echo $(opticks-prefix)/externals ; }
 g4-bdir(){ echo $(g4-dir).build ; }
@@ -186,14 +207,12 @@ g4-configure()
    g4-cmake $*
 }
 
-g4-make(){
-   g4-bcd
-   make -j4
-}
 
+g4-config(){ echo Debug ; }
 g4--(){
-   ( g4-bcd ; make ${1:-install} ; )
- }
+   g4-bcd
+   cmake --build . --config $(g4-config) --target ${1:-install}
+}
 
 
 g4-export(){

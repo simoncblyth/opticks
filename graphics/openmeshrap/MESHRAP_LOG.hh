@@ -2,6 +2,7 @@
 #pragma once
 #include "MESHRAP_API_EXPORT.hh"
 
+#define MESHRAP_LOG__  {     MESHRAP_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "MESHRAP") );  } 
 
 #define MESHRAP_LOG_ {     MESHRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 

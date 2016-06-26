@@ -2,6 +2,7 @@
 #pragma once
 #include "BRAP_API_EXPORT.hh"
 
+#define BRAP_LOG__  {     BRAP_LOG::Initialize(plog::get(), PLOG::instance->prefix_parse( info, "BRAP") );  } 
 
 #define BRAP_LOG_ {     BRAP_LOG::Initialize(plog::get(), plog::get()->getMaxSeverity() ); } 
 
