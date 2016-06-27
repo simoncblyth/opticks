@@ -8,7 +8,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 set(BUILD_SHARED_LIBS ON)
 
+message("${name}.CMAKE_CXX_FLAGS (init) : ${CMAKE_CXX_FLAGS} ")
 include(EnvBuildOptions)
+message("${name}.CMAKE_CXX_FLAGS (ebo)  : ${CMAKE_CXX_FLAGS} ")
+include(EnvCompilationFlags)
+message("${name}.CMAKE_CXX_FLAGS (ecf)  : ${CMAKE_CXX_FLAGS} ")
+
 
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
@@ -21,6 +26,10 @@ find_package(GGeo REQUIRED)
 find_package(OpticksCore REQUIRED)
 
 find_package(Geant4 REQUIRED) ## invoke cmake with -DGeant4_DIR=$(g4-cmake-dir) 
+
+message("${name}.CMAKE_CXX_FLAGS (fg4)  : ${CMAKE_CXX_FLAGS} ")
+
+
 find_package(EnvXercesC  REQUIRED)  
 #find_package(G4DAE  REQUIRED)  
 
