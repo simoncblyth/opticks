@@ -407,6 +407,10 @@ opticks-cmake(){
 }
 
 opticks-cmake-modify(){
+  local msg="=== $FUNCNAME : "
+  local bdir=$(opticks-bdir)
+  local bcache=$bdir/CMakeCache.txt
+  [ ! -f "$bcache" ] && echo $msg requires a preexisting $bcache from prior opticks-cmake run && return 
   opticks-bcd
   g4-
   xercesc- 

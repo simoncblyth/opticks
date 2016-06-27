@@ -144,10 +144,15 @@ g4-edir(){ echo $(env-home)/g4 ; }
 #g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
 
 #g4-prefix(){  echo $(opticks-prefix)/externals ; }
-g4-prefix(){  echo $HOME/local/opticks/externals ; }
+g4-prefix(){ 
+    case $NODE_TAG in 
+       MGB) echo $HOME/local/opticks/externals ;;
+         D) echo /usr/local/opticks/externals ;;
+         *) echo /usr/local/opticks/externals ;;
+    esac
+ }
 
 g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
-
 
 # follow env/psm1/dist/dist.psm1 approach : everythinh based off the url
 
@@ -174,10 +179,6 @@ g4-icd(){  cd $(g4-prefix); }
 g4-bcd(){  cd $(g4-bdir); }
 g4-ccd(){  cd $(g4-cmake-dir); }
 g4-xcd(){  cd $(g4-examples-dir); }
-
-
-#g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name).tar.gz ; }
-#g4-url(){ echo http://geant4.cern.ch/support/source/$(g4-name-zip).zip ; }
 
 
 g4-get-tgz(){
@@ -247,9 +248,16 @@ g4-cmake(){
        -DGEANT4_INSTALL_DATA=ON \
        -DGEANT4_USE_GDML=ON \
        -DXERCESC_LIBRARY=$(xercesc-library) \
-       -DXERCESC_INCLUDE_DIR=$(xercesc-include) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
        -DCMAKE_INSTALL_PREFIX=$idir \
        $(g4-dir)
+
+
+   ## NB MSVC cmake build was configured using PowerShell invokation 
+   #
+   # env/psm1/g4/g4.psm1   
+   # env/psm1/xercesc/xerces.psm1   
+   # 
 
    cd $iwd
 }

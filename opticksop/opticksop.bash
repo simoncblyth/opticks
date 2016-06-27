@@ -20,6 +20,18 @@ Opticks Operations
 
 
 
+Still There 
+----------------------------
+
+Flaky issue that tends to occur at first run::
+
+    2016-06-27 15:01:55.616 INFO  [12827887] [OpEngine::prepareOptiX@129] OpEngine::prepareOptiX (OGeo)
+    2016-06-27 15:01:55.617 INFO  [12827887] [OGeo::convert@166] OGeo::convert nmm 2
+    GGeoViewTest(45352,0x7fff74d63310) malloc: *** error for object 0x7ff5a895d408: incorrect checksum for freed object - object was probably modified after being freed.
+    *** set a breakpoint in malloc_error_break to debug
+    /Users/blyth/env/bin/op.sh: line 374: 45352 Abort trap: 6           /usr/local/opticks/lib/GGeoViewTest
+
+
 Familiar Issue
 ----------------
 
