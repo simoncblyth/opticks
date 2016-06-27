@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-// optickscore-
+// okc-
 class Opticks ; 
 class OpticksResource ; 
 class OpticksQuery ; 
@@ -19,10 +19,12 @@ class G4VPhysicalVolume;
 template <typename T> class NPY ; 
 class NBoundingBox ;
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include "G4VUserDetectorConstruction.hh"
 
-class CDetector : public G4VUserDetectorConstruction
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+class CFG4_API CDetector : public G4VUserDetectorConstruction
 {
  public:
     friend class CTestDetector ; 
@@ -71,49 +73,6 @@ class CDetector : public G4VUserDetectorConstruction
     int                m_verbosity ; 
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
 }; 
+#include "CFG4_TAIL.hh"
 
-inline CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
-  : 
-  m_opticks(opticks),
-  m_query(query),
-  m_resource(NULL),
-  m_lib(NULL),
-  m_top(NULL),
-  m_traverser(NULL),
-  m_bbox(NULL),
-  m_verbosity(0)
-{
-    init();
-}
-
-
-
-inline void CDetector::setTop(G4VPhysicalVolume* top)
-{
-    m_top = top ; 
-    traverse(m_top);
-}
-inline G4VPhysicalVolume* CDetector::Construct()
-{
-    return m_top ; 
-}
-inline G4VPhysicalVolume* CDetector::getTop()
-{
-    return m_top ; 
-}
-
-
-inline CPropLib* CDetector::getPropLib()
-{
-    return m_lib ; 
-}
-inline NBoundingBox* CDetector::getBoundingBox()
-{
-    return m_bbox ; 
-}
-
-inline void CDetector::setVerbosity(unsigned int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
 

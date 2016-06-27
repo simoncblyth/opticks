@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include <vector>
 #include <string>
 
@@ -14,7 +14,7 @@ class G4VSolid;
 #include "G4MaterialPropertyVector.hh" 
 // fwd-decl difficult due to typedef 
 
-// optickscore-
+// okc-
 class OpticksQuery ; 
 
 // npy-
@@ -24,7 +24,11 @@ class NBoundingBox ;
 
 // TODO: get rid of the VolumeTreeTraverse
 
-class CTraverser {
+
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+
+class CFG4_API CTraverser {
     public:
         static const char* GROUPVEL ; 
     public:
@@ -100,70 +104,8 @@ class CTraverser {
  
         std::vector<std::string> m_pvnames ; 
         std::vector<unsigned int> m_selection ; 
-
-
 };
 
-
-
-inline CTraverser::CTraverser(G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query) 
-   :
-   m_top(top),
-   m_bbox(bbox),
-   m_query(query),
-   m_ancestor_index(0),
-   m_verbosity(1),
-   m_gcount(0),
-   m_lcount(0),
-   m_gtransforms(NULL),
-   m_ltransforms(NULL),
-   m_center_extent(NULL)
-{
-   init();
-}
-
-
-
-inline unsigned int CTraverser::getNumMaterials()
-{
-   return m_materials.size();
-}
-inline unsigned int CTraverser::getNumSelected()
-{
-   return m_selection.size();
-}
-
-inline unsigned int CTraverser::getNumMaterialsWithoutMPT()
-{
-   return m_materials_without_mpt.size();
-}
-inline const G4Material* CTraverser::getMaterial(unsigned int index)
-{
-   return m_materials[index];
-}
-inline G4Material* CTraverser::getMaterialWithoutMPT(unsigned int index)
-{
-   return m_materials_without_mpt[index];
-}
-inline void CTraverser::setVerbosity(unsigned int verbosity)
-{
-    m_verbosity = verbosity ; 
-}
-
-inline NPY<float>* CTraverser::getGlobalTransforms()
-{
-    return m_gtransforms ; 
-}
-inline NPY<float>* CTraverser::getLocalTransforms()
-{
-    return m_ltransforms ; 
-}
-inline NPY<float>* CTraverser::getCenterExtent()
-{
-    return m_center_extent  ; 
-}
-
-
-
+#include "CFG4_TAIL.hh"
 
 

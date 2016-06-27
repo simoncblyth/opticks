@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 
-// optickscore-
+// okc-
 class Opticks ; 
 class OpticksQuery ; 
 
@@ -49,8 +49,9 @@ class G4VSolid;
 
 
 #include "CDetector.hh"
+#include "CFG4_API_EXPORT.hh"
 
-class CTestDetector : public CDetector
+class CFG4_API CTestDetector : public CDetector
 {
  public:
     CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query=NULL);
@@ -70,18 +71,6 @@ class CTestDetector : public CDetector
     CMaker*            m_maker ; 
 
 };
-
-
-
-inline CTestDetector::CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query)
-  : 
-  CDetector(cache, query),
-  m_config(config),
-  m_maker(NULL)
-{
-    init();
-}
-
 
 
 

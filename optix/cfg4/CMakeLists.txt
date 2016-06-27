@@ -73,69 +73,90 @@ include_directories(${INCLUDE_DIRS})
 add_definitions(${DEFINITIONS})
 
 set(SOURCES
-    CG4.cc
-    CMPT.cc
-    CTrack.cc
-    CSolid.cc
-    CMath.cc
-    Format.cc
-    CRecorder.cc
-    Rec.cc
-    State.cc
-    CTorchSource.cc
-    CGunSource.cc
-    CSource.cc
-    CStep.cc
-    CStepRec.cc
-    OpStatus.cc
+    CFG4_LOG.cc
+
     PhysicsList.cc
-    OpNovicePhysicsList.cc
-    OpNovicePhysicsListMessenger.cc
-    OpRayleigh.cc
     Scintillation.cc
+    OpRayleigh.cc
+
+    OpNovicePhysicsListMessenger.cc
+    OpNovicePhysicsList.cc
+
+    SteppingVerbose.cc
+    ActionInitialization.cc
+
+    CStep.cc
+    CTrack.cc
+    CPropLib.cc
+    CMath.cc
+    CSolid.cc
+    CMPT.cc
+    OpStatus.cc
+    Format.cc
+    CTraverser.cc
+    State.cc
+
+    CSource.cc
+    CPrimaryGeneratorAction.cc
+
+    CRecorder.cc
     CDetector.cc
-    CTestDetector.cc
     CGDMLDetector.cc
     CMaker.cc
-    CPropLib.cc
-    CTraverser.cc
-    CPrimaryGeneratorAction.cc
-    ActionInitialization.cc
+    CTestDetector.cc
+    Rec.cc
+    CStepRec.cc
+    CGunSource.cc
+    CTorchSource.cc
+
     CSteppingAction.cc
-    SteppingVerbose.cc
+    CG4.cc
 )
 
-SET(HEADERS
-    CG4.hh
-    CMPT.hh
-    CTrack.hh
-    CSolid.hh
-    CMath.hh
-    Format.hh
-    CRecorder.hh
-    Rec.hh
-    State.hh
-    CTorchSource.hh
-    CGunSource.hh
-    CSource.hh
-    CStep.hh
-    CStepRec.hh
-    OpStatus.hh
+set(HEADERS
+    CFG4_LOG.hh
+    CFG4_API_EXPORT.hh
+    CFG4_HEAD.hh
+    CFG4_TAIL.hh
+    CFG4_PUSH.hh
+    CFG4_POP.hh
+
     PhysicsList.hh
-    OpNovicePhysicsList.hh
-    OpNovicePhysicsListMessenger.hh
-    OpRayleigh.hh
     Scintillation.hh
+    OpRayleigh.hh
+
+    OpNovicePhysicsListMessenger.hh
+    OpNovicePhysicsList.hh
+
+    SteppingVerbose.hh
+    ActionInitialization.hh
+
+    CStep.hh
+    CTrack.hh
+    CPropLib.hh
+    CMath.hh
+    CSolid.hh
+    CMPT.hh
+    OpStatus.hh
+    Format.hh
+    CTraverser.hh
+    State.hh
+
+    CSource.hh
+    CPrimaryGeneratorAction.hh
+
+    CRecorder.hh
     CDetector.hh
-    CTestDetector.hh
     CGDMLDetector.hh
     CMaker.hh
-    CPropLib.hh
-    CTraverser.hh
-    CPrimaryGeneratorAction.hh
-    ActionInitialization.hh
+    CTestDetector.hh
+    Rec.hh
+    CStepRec.hh
+    CGunSource.hh
+    CTorchSource.hh
+
     CSteppingAction.hh
-    SteppingVerbose.hh
+    CG4.hh
 )
 
 add_library(${name} SHARED ${SOURCES})

@@ -74,7 +74,10 @@
 // Class Definition
 /////////////////////
 
-class OpRayleigh : public G4VDiscreteProcess 
+
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+class CFG4_API OpRayleigh : public G4VDiscreteProcess 
 {
 
 public:
@@ -157,6 +160,10 @@ protected:
 
 private:
 };
+
+#include "CFG4_TAIL.hh"
+
+
 
 ////////////////////
 // Inline methods

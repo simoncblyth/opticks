@@ -1,12 +1,17 @@
+#include "CFG4_BODY.hh"
+
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "CG4.hh"
 
-#include <cstdio>
+#include "PLOG.hh"
+
 
 int main(int argc, char** argv)
 {
-    Opticks* m_opticks = new Opticks(argc, argv, "CG4Test.log");
+    PLOG_(argc, argv);
+
+    Opticks* m_opticks = new Opticks(argc, argv);
 
     m_opticks->setMode( Opticks::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
@@ -30,14 +35,11 @@ int main(int argc, char** argv)
     m_geant4->propagate();
 
 
-
     m_evt->save();
-
-
 
     m_geant4->cleanup();
 
-    printf("main: exitting %s\n", argv[0]);
+    LOG(info) << "exiting " << argv[0] ; 
 
     return 0 ; 
 }

@@ -1,8 +1,7 @@
-#include "Format.hh"
-#include "CStep.hh"
-#include "OpStatus.hh"
+#include <sstream>
 
 
+#include "CFG4_PUSH.hh"
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
@@ -12,8 +11,14 @@
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+#include "CFG4_POP.hh"
 
-#include <sstream>
+
+#include "Format.hh"
+#include "CStep.hh"
+#include "OpStatus.hh"
+
+
 
 
 std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid)

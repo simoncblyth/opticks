@@ -1,17 +1,16 @@
 // cfg4--;op --cgdmldetector
-#include "CGDMLDetector.hh"
 
 // boost-
+#include "CFG4_BODY.hh"
 #include <boost/algorithm/string.hpp>
 
 // npy-
-#include "PLOG.hh"
 #include "GLMFormat.hpp"
 
 // ggeo-
 #include "GMaterial.hh"
 
-// optickscore-
+// okc-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 
@@ -22,9 +21,23 @@
 // g4-
 #include "G4LogicalVolume.hh"
 #include "G4Material.hh"
-
-// painfully this is not standard in G4
 #include "G4GDMLParser.hh"
+
+#include "CGDMLDetector.hh"
+
+#include "PLOG.hh"
+
+
+CGDMLDetector::CGDMLDetector(Opticks* cache, OpticksQuery* query)
+  : 
+  CDetector(cache, query)
+{
+    init();
+}
+
+CGDMLDetector::~CGDMLDetector()
+{
+}
 
 
 void CGDMLDetector::init()

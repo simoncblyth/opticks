@@ -1,9 +1,8 @@
-// optickscore-
+// okc-
 #include "OpticksEvent.hh"
 
 // npy-
 #include "NPY.hpp"
-#include "PLOG.hh"
 #include "uif.h"
 
 // cg4-
@@ -16,6 +15,25 @@
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+
+#include "PLOG.hh"
+
+
+CStepRec::CStepRec( OpticksEvent* evt )
+   :
+   m_evt(evt),
+   m_nopstep(NULL),
+   m_store_count(0)
+{
+    init();
+}
+
+unsigned int CStepRec::getStoreCount()
+{
+   return m_store_count ; 
+}
+
+
 
 void CStepRec::init()
 {

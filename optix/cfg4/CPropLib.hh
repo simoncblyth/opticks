@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-// optickscore-
+// okc-
 class Opticks; 
 
 
@@ -13,7 +13,6 @@ class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
-
 class GCSG ; 
 class GMaterial ;
 
@@ -44,7 +43,10 @@ class G4PhysicsVector ;
 //     * maybe split off conversion "reconstruction" into separate class
 //
 
-class CPropLib {
+
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+class CFG4_API CPropLib {
    public:
        static const char* SENSOR_MATERIAL ;
    public:
@@ -120,26 +122,6 @@ class CPropLib {
        std::map<std::string, std::map<std::string, float> > m_const_override ; 
 
 };
-
-inline CPropLib::CPropLib(Opticks* opticks, int verbosity)
-  : 
-  m_opticks(opticks),
-  m_verbosity(verbosity),
-  m_bndlib(NULL),
-  m_mlib(NULL),
-  m_slib(NULL),
-  m_sclib(NULL),
-  m_domain(NULL),
-  m_dscale(1), 
-  m_groupvel_kludge(true)
-{
-    init();
-}
-
-
-inline void CPropLib::setGroupvelKludge(bool gvk)
-{
-   m_groupvel_kludge = gvk ; 
-}
+#include "CFG4_TAIL.hh"
 
 

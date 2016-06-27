@@ -1,5 +1,8 @@
 #include "CMaker.hh"
 
+// npy-
+#include "NGLM.hpp"
+
 // ggeo-
 #include "GCSG.hh"
 
@@ -18,9 +21,16 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
-// npy-
 #include "PLOG.hh"
 
+
+
+CMaker::CMaker(Opticks* cache, int verbosity) 
+   :
+   m_cache(cache),
+   m_verbosity(verbosity)
+{
+}   
 
 
 std::string CMaker::LVName(const char* shapename)
@@ -175,15 +185,15 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 
        std::string sp_name = ss.str();
 
-       float inner = csg->getInnerRadius(index)*mm ;
-       float outer = csg->getOuterRadius(index)*mm ;
-       float startTheta = csg->getStartTheta(index)*pi/180. ;
-       float deltaTheta = csg->getDeltaTheta(index)*pi/180. ;
+       float inner = float(csg->getInnerRadius(index)*mm) ;
+       float outer = float(csg->getOuterRadius(index)*mm) ;
+       float startTheta = float(csg->getStartTheta(index)*pi/180.) ;
+       float deltaTheta = float(csg->getDeltaTheta(index)*pi/180.) ;
 
        assert(outer > 0 ) ; 
 
        float startPhi = 0.f ; 
-       float deltaPhi = 2.f*pi ; 
+       float deltaPhi = 2.f*float(pi) ; 
 
        LOG(info) << "CMaker::makeSolid csg Sphere"
                  << " inner " << inner 
@@ -205,9 +215,9 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 
        std::string tb_name = ss.str();
        float inner = 0.f ; // csg->getInnerRadius(i); kludge to avoid rejig as sizeZ occupies innerRadius spot
-       float outer = csg->getOuterRadius(index)*mm ;
-       float sizeZ = csg->getSizeZ(index)*mm ;   // half length   
-       sizeZ /= 2.0 ;   
+       float outer = float(csg->getOuterRadius(index)*mm) ;
+       float sizeZ = float(csg->getSizeZ(index)*mm) ;   // half length   
+       sizeZ /= 2.f ;   
 
        // PMT base looks too long without the halfing (as seen by photon interaction position), 
        // but tis contrary to manual http://lhcb-comp.web.cern.ch/lhcb-comp/Frameworks/DetDesc/Documents/Solids.pdf
@@ -215,7 +225,7 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
        assert(sizeZ > 0 ) ; 
 
        float startPhi = 0.f ; 
-       float deltaPhi = 2.f*pi ; 
+       float deltaPhi = 2.f*float(pi) ; 
 
        if(m_verbosity>0)
        LOG(info) << "CMaker::makeSolid"

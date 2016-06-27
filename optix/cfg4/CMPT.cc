@@ -1,8 +1,16 @@
-#include "CMPT.hh"
-#include "G4MaterialPropertiesTable.hh"
 #include <cassert>
 #include <sstream>
 #include <iomanip>
+
+#include "G4MaterialPropertiesTable.hh"
+
+#include "CMPT.hh"
+
+CMPT::CMPT(G4MaterialPropertiesTable* mpt)
+    :
+     m_mpt(mpt)
+{
+}
 
 
 std::string CMPT::description(const char* msg)

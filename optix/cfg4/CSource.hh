@@ -9,7 +9,9 @@ class G4ParticleDefinition ;
 #include "G4Cache.hh"
 #include "G4VPrimaryGenerator.hh"
 
-class CSource : public G4VPrimaryGenerator
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+class CFG4_API CSource : public G4VPrimaryGenerator
 {
   public:
     friend class CTorchSource ; 
@@ -60,93 +62,6 @@ class CSource : public G4VPrimaryGenerator
     G4ThreeVector         m_polarization;
     G4int                 m_verbosityLevel;
     G4Mutex               m_mutex;
-
- 
 };
-
-
-inline CSource::CSource(int verbosity)  
-    :
-    m_recorder(NULL),
-	m_num(1),
-	m_time(0.0),
-	m_polarization(1.0,0.0,0.0),
-    m_verbosityLevel(verbosity)
-{
-    init();
-}
-
-
-inline CSource::~CSource()
-{
-}  
-
-inline void CSource::setRecorder(CRecorder* recorder)
-{
-   m_recorder = recorder ;  
-}
-
-
-
-
-inline void CSource::SetNumberOfParticles(G4int num) 
-{
-    m_num = num;
-}
-inline void CSource::SetParticleTime(G4double time) 
-{
-    m_time = time;
-}
-inline void CSource::SetParticlePolarization(G4ThreeVector polarization) 
-{
-    m_polarization = polarization ;
-}
-inline void CSource::SetParticlePosition(G4ThreeVector position) 
-{
-    part_prop_t& pp = m_pp.Get();
-    pp.position = position ; 
-}
-inline void CSource::SetParticleMomentumDirection(G4ThreeVector direction) 
-{
-    part_prop_t& pp = m_pp.Get();
-    pp.momentum_direction = direction  ; 
-}
-inline void CSource::SetParticleEnergy(G4double energy) 
-{
-    part_prop_t& pp = m_pp.Get();
-    pp.energy = energy ; 
-}
-
-
-
-inline G4int CSource::GetNumberOfParticles() const 
-{
-    return m_num ;
-}
-inline G4ParticleDefinition* CSource::GetParticleDefinition() const 
-{
-    return m_definition;
-}
-inline G4double CSource::GetParticleTime() const 
-{
-    return m_time;
-}
-
-inline G4ThreeVector CSource::GetParticlePolarization() const 
-{
-    return m_polarization;
-}
-inline G4ThreeVector CSource::GetParticlePosition() const 
-{
-    return m_pp.Get().position;
-}
-inline G4ThreeVector CSource::GetParticleMomentumDirection() const 
-{
-    return m_pp.Get().momentum_direction;
-}
-inline G4double CSource::GetParticleEnergy() const 
-{
-    return m_pp.Get().energy;
-}
-
+#include "CFG4_TAIL.hh"
 

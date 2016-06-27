@@ -1,28 +1,80 @@
 // op --cgdmldetector
 // op --ctestdetector
 
-#include "CDetector.hh"
-
 #include <cstdio>
 
+// g4-
+#include "G4PVPlacement.hh"
+
 // npy-
-#include "PLOG.hh"
+#include "NGLM.hpp"
+#include "GLMFormat.hpp"
 #include "NPY.hpp"
 #include "NBoundingBox.hpp"
-#include "GLMFormat.hpp"
 
-// cfg4-
-#include "CPropLib.hh"
-#include "CTraverser.hh"
-
-// optickscore-
+// okc-
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 
+// cfg4-
+#include "CPropLib.hh"
+#include "CTraverser.hh"
+#include "CDetector.hh"
 
-// g4-
-#include "G4PVPlacement.hh"
+#include "CFG4_BODY.hh"
+#include "PLOG.hh"
+
+
+
+CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
+  : 
+  m_opticks(opticks),
+  m_query(query),
+  m_resource(NULL),
+  m_lib(NULL),
+  m_top(NULL),
+  m_traverser(NULL),
+  m_bbox(NULL),
+  m_verbosity(0)
+{
+    init();
+}
+
+
+
+void CDetector::setTop(G4VPhysicalVolume* top)
+{
+    m_top = top ; 
+    traverse(m_top);
+}
+G4VPhysicalVolume* CDetector::Construct()
+{
+    return m_top ; 
+}
+G4VPhysicalVolume* CDetector::getTop()
+{
+    return m_top ; 
+}
+
+
+CPropLib* CDetector::getPropLib()
+{
+    return m_lib ; 
+}
+NBoundingBox* CDetector::getBoundingBox()
+{
+    return m_bbox ; 
+}
+
+void CDetector::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+
+
+
+
 
 
 void CDetector::init()

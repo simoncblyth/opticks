@@ -85,7 +85,9 @@
 // Class Definition
 /////////////////////
 
-class Scintillation : public G4VRestDiscreteProcess
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+class CFG4_API Scintillation : public G4VRestDiscreteProcess
 {
 
 public:
@@ -248,91 +250,6 @@ private:
 
 };
 
-////////////////////
-// Inline methods
-////////////////////
-
-inline 
-G4bool Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
-{
-       if (aParticleType.GetParticleName() == "opticalphoton") return false;
-       if (aParticleType.IsShortLived()) return false;
-
-       return true;
-}
-
-inline
-G4bool Scintillation::GetTrackSecondariesFirst() const
-{
-        return fTrackSecondariesFirst;
-}
-
-inline 
-G4bool Scintillation::GetFiniteRiseTime() const
-{
-        return fFiniteRiseTime;
-}
-
-inline
-G4double Scintillation::GetScintillationYieldFactor() const
-{
-        return fYieldFactor;
-}
-
-inline
-G4double Scintillation::GetScintillationExcitationRatio() const
-{
-        return fExcitationRatio;
-}
-
-inline
-G4PhysicsTable* Scintillation::GetSlowIntegralTable() const
-{
-        return fSlowIntegralTable;
-}
-
-inline
-G4PhysicsTable* Scintillation::GetFastIntegralTable() const
-{
-        return fFastIntegralTable;
-}
-
-inline
-void Scintillation::DumpPhysicsTable() const
-{
-        if (fFastIntegralTable) {
-           G4int PhysicsTableSize = fFastIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
-
-           for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
-           {
-        	v = (G4PhysicsOrderedFreeVector*)(*fFastIntegralTable)[i];
-        	v->DumpValues();
-           }
-         }
-
-        if (fSlowIntegralTable) {
-           G4int PhysicsTableSize = fSlowIntegralTable->entries();
-           G4PhysicsOrderedFreeVector *v;
-
-           for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
-           {
-                v = (G4PhysicsOrderedFreeVector*)(*fSlowIntegralTable)[i];
-                v->DumpValues();
-           }
-         }
-}
-
-inline
-G4double Scintillation::single_exp(G4double t, G4double tau2)
-{
-         return std::exp(-1.0*t/tau2)/tau2;
-}
-
-inline
-G4double Scintillation::bi_exp(G4double t, G4double tau1, G4double tau2)
-{
-         return std::exp(-1.0*t/tau2)*(1-std::exp(-1.0*t/tau1))/tau2/tau2*(tau1+tau2);
-}
+#include "CFG4_TAIL.hh"
 
 #endif /* Scintillation_h */

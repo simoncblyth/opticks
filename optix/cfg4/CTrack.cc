@@ -8,6 +8,12 @@ const char* CTrack::fKillTrackAndSecondaries_  = "fKillTrackAndSecondaries" ;
 const char* CTrack::fSuspend_                  = "fSuspend" ;
 const char* CTrack::fPostponeToNextEvent_      = "fPostponeToNextEvent" ;
 
+CTrack::CTrack(G4Track* track) 
+   :
+     m_track(track)
+{
+}
+
 const char* CTrack::TrackStatusString(G4TrackStatus status)
 {
    const char* s = NULL ; 

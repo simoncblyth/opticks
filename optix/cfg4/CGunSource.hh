@@ -4,8 +4,9 @@
 class NGunConfig ; 
 
 #include "CSource.hh"
+#include "CFG4_API_EXPORT.hh"
 
-class CGunSource: public CSource
+class CFG4_API CGunSource: public CSource
 {
   public:
     CGunSource(int verbosity);
@@ -19,19 +20,6 @@ class CGunSource: public CSource
   private:
     NGunConfig*           m_config ; 
 
-
 };
-
-
-inline CGunSource::CGunSource(int verbosity)  
-    :
-    CSource(verbosity),
-    m_config(NULL)
-{
-    init();
-}
-
-
-
 
 

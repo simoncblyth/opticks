@@ -3,11 +3,15 @@
 #include <climits>
 #include <cstring>
 #include <vector>
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 
 // g4-
 
+
+#include "CFG4_PUSH.hh"
 #include "G4OpBoundaryProcess.hh"
+#include "CFG4_POP.hh"
+
 class G4Run ;
 class G4Step ; 
 class G4PrimaryVertex ; 
@@ -78,7 +82,11 @@ template <typename T> class NPY ;
 //  photon counts ahead of time.
 //
 //
-class CRecorder {
+
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+
+class CFG4_API CRecorder {
    public:
         static const char* PRE ; 
         static const char* POST ; 
@@ -192,180 +200,12 @@ class CRecorder {
         NPY<float>*               m_dynamic_photons ; 
         NPY<unsigned long long>*  m_dynamic_history ; 
 
-
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned int>               m_flags ; 
         std::vector<unsigned int>               m_materials ; 
         std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
         std::vector<unsigned long long>         m_seqhis_dbg  ; 
         std::vector<unsigned long long>         m_seqmat_dbg  ; 
-
-
 };
+#include "CFG4_TAIL.hh"
 
-inline CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity) 
-   :
-   m_clib(clib),
-   m_evt(evt),
-   m_gen(0),
-
-   m_record_max(0),
-   m_bounce_max(0),
-   m_steps_per_photon(0), 
-
-   m_photons_per_g4event(0),
-
-   m_verbosity(verbosity),
-   m_debug(verbosity > 0),
-   m_event_id(UINT_MAX),
-   m_photon_id(UINT_MAX),
-   m_step_id(UINT_MAX),
-   m_record_id(UINT_MAX),
-
-   m_primary_id(UINT_MAX),
-   m_primary_max(0),
-
-   m_boundary_status(Undefined),
-   m_prior_boundary_status(Undefined),
-
-   m_premat(0),
-   m_prior_premat(0),
-
-   m_postmat(0),
-   m_prior_postmat(0),
-
-   m_seqhis(0),
-   m_seqmat(0),
-   m_seqhis_select(0),
-   m_seqmat_select(0),
-   m_slot(0),
-   m_truncate(false),
-   m_step(true),
-
-   m_primary(0),
-   m_photons(0),
-   m_records(0),
-   m_history(0),
-
-   m_dynamic(false),
-
-   m_dynamic_primary(NULL),
-   m_dynamic_photons(NULL),
-   m_dynamic_records(NULL),
-   m_dynamic_history(NULL)
-{
-   init();
-   
-}
-
-
-inline unsigned int CRecorder::getVerbosity()
-{
-    return m_verbosity ; 
-}
-inline bool CRecorder::isHistorySelected()
-{
-   return m_seqhis_select == m_seqhis ; 
-}
-inline bool CRecorder::isMaterialSelected()
-{
-   return m_seqmat_select == m_seqmat ; 
-}
-inline bool CRecorder::isSelected()
-{
-   return isHistorySelected() || isMaterialSelected() ;
-}
-
-inline unsigned long long CRecorder::getSeqHis()
-{
-    return m_seqhis ; 
-}
-inline unsigned long long CRecorder::getSeqMat()
-{
-    return m_seqmat ; 
-}
-
-
-
-
-
-
-inline void CRecorder::setPropLib(CPropLib* clib)
-{
-    m_clib = clib  ; 
-}
-
-
-inline OpticksEvent* CRecorder::getEvent()
-{
-    return m_evt ; 
-}
-inline unsigned int CRecorder::getRecordMax()
-{
-    return m_record_max ; 
-}
-
-
-inline unsigned int CRecorder::getEventId()
-{
-   return m_event_id ; 
-}
-inline unsigned int CRecorder::getPhotonId()
-{
-   return m_photon_id ; 
-}
-inline unsigned int CRecorder::getStepId()
-{
-   return m_step_id ; 
-}
-inline unsigned int CRecorder::getRecordId()
-{
-   return m_record_id ; 
-}
-
-
-
-
-inline G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
-{
-   return m_boundary_status ; 
-}
-
-
-
-inline void CRecorder::setEventId(unsigned int event_id)
-{
-    m_event_id = event_id ; 
-}
-inline void CRecorder::setPhotonId(unsigned int photon_id)
-{
-    m_photon_id = photon_id ; 
-}
-inline void CRecorder::setStepId(unsigned int step_id)
-{
-    m_step_id = step_id ; 
-}
-inline unsigned int CRecorder::defineRecordId()   
-{
-   return m_photons_per_g4event*m_event_id + m_photon_id ; 
-}
-
-inline void CRecorder::setRecordId(unsigned int record_id)
-{
-    m_record_id = record_id ; 
-}
-
-
-
-inline void CRecorder::RecordBeginOfRun(const G4Run*)
-{
-}
-
-inline void CRecorder::RecordEndOfRun(const G4Run*)
-{
-}
-
-inline bool CRecorder::isDynamic()
-{
-    return m_dynamic ; 
-}

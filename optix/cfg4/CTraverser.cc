@@ -1,6 +1,3 @@
-#include "CTraverser.hh"
-#include "CSolid.hh"
-
 #include <algorithm>
 #include <sstream>
 
@@ -11,17 +8,85 @@
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
-// optickscore-
+// okc-
 #include "OpticksQuery.hh"
 
 // npy-
-#include "NPY.hpp"
-#include "PLOG.hh"
-#include "NBoundingBox.hpp"
+#include "NGLM.hpp"
 #include "GLMFormat.hpp"
+#include "NPY.hpp"
+#include "NBoundingBox.hpp"
+#include "PLOG.hh"
+
+#include "CSolid.hh"
+#include "CTraverser.hh"
 
 
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
+
+
+CTraverser::CTraverser(G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query) 
+   :
+   m_top(top),
+   m_bbox(bbox),
+   m_query(query),
+   m_ancestor_index(0),
+   m_verbosity(1),
+   m_gcount(0),
+   m_lcount(0),
+   m_gtransforms(NULL),
+   m_ltransforms(NULL),
+   m_center_extent(NULL)
+{
+   init();
+}
+
+
+
+unsigned int CTraverser::getNumMaterials()
+{
+   return m_materials.size();
+}
+unsigned int CTraverser::getNumSelected()
+{
+   return m_selection.size();
+}
+
+unsigned int CTraverser::getNumMaterialsWithoutMPT()
+{
+   return m_materials_without_mpt.size();
+}
+const G4Material* CTraverser::getMaterial(unsigned int index)
+{
+   return m_materials[index];
+}
+G4Material* CTraverser::getMaterialWithoutMPT(unsigned int index)
+{
+   return m_materials_without_mpt[index];
+}
+void CTraverser::setVerbosity(unsigned int verbosity)
+{
+    m_verbosity = verbosity ; 
+}
+
+NPY<float>* CTraverser::getGlobalTransforms()
+{
+    return m_gtransforms ; 
+}
+NPY<float>* CTraverser::getLocalTransforms()
+{
+    return m_ltransforms ; 
+}
+NPY<float>* CTraverser::getCenterExtent()
+{
+    return m_center_extent  ; 
+}
+
+
+
+
+
+
 
 void CTraverser::init()
 {

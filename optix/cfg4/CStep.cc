@@ -1,7 +1,16 @@
 #include "CStep.hh"
-
-#include "State.hh"
 #include "G4Step.hh"
+
+
+const G4Step* CStep::getStep() const 
+{
+    return m_step ; 
+}
+unsigned int CStep::getStepId() const 
+{
+    return m_step_id ; 
+}
+
 
 CStep::CStep(const G4Step* step, unsigned int step_id) 
    :

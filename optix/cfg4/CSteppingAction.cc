@@ -1,5 +1,7 @@
-
 // g4-
+
+#include "CFG4_PUSH.hh"
+
 #include "G4ProcessManager.hh"
 #include "G4RunManager.hh"
 #include "G4Event.hh"
@@ -12,7 +14,6 @@
 #include "G4PhysicalConstants.hh"
 
 // cg4-
-#include "CG4.hh"
 #include "CRecorder.hh"
 #include "Rec.hh"
 #include "State.hh"
@@ -21,6 +22,10 @@
 #include "CStepRec.hh"
 #include "CSteppingAction.hh"
 #include "CTrack.hh"
+#include "CG4.hh"
+
+#include "CFG4_POP.hh"
+
 
 // optickscore-
 #include "Opticks.hh"
@@ -53,6 +58,48 @@ G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
     }
     return status ; 
 }
+
+
+
+CSteppingAction::CSteppingAction(CG4* g4)
+   : 
+   G4UserSteppingAction(),
+   m_g4(g4),
+   m_clib(NULL),
+   m_recorder(NULL),
+   m_rec(NULL),
+   m_steprec(NULL),
+   m_dynamic(false),
+   m_verbosity(0),
+   m_event_id(-1),
+   m_track_id(-1),
+   m_event_total(0),
+   m_track_total(0),
+   m_step_total(0),
+   m_event_track_count(0),
+   m_track_step_count(0),
+   m_steprec_store_count(0)
+{ 
+   init();
+}
+
+CSteppingAction::~CSteppingAction()
+{ 
+}
+
+
+void CSteppingAction::setTrackId(unsigned int track_id)
+{
+    m_track_id = track_id ; 
+}
+void CSteppingAction::setEventId(unsigned int event_id)
+{
+    m_event_id = event_id ; 
+}
+
+
+
+
 
 
 void CSteppingAction::init()

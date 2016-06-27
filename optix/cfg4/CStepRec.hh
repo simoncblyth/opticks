@@ -2,12 +2,11 @@
 
 #include <vector>
 
-// g4
+// g4-
 class G4Step ; 
 class G4StepPoint ; 
 
-
-// optickscore-
+// okc-
 class OpticksEvent ; 
 
 // cg4-
@@ -17,7 +16,10 @@ class CStep ;
 template <typename T> class NPY ;
 
 
-class CStepRec {
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+
+class CFG4_API CStepRec {
    public:
        CStepRec(OpticksEvent* evt);
    private:
@@ -29,25 +31,13 @@ class CStepRec {
    private:
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
-       OpticksEvent*                   m_evt ; 
+       OpticksEvent*               m_evt ; 
        NPY<float>*                 m_nopstep ; 
        std::vector<const CStep*>   m_steps ; 
        unsigned int                m_store_count ; 
 
 };
 
+#include "CFG4_TAIL.hh"
 
-inline CStepRec::CStepRec( OpticksEvent* evt )
-   :
-   m_evt(evt),
-   m_nopstep(NULL),
-   m_store_count(0)
-{
-    init();
-}
-
-inline unsigned int CStepRec::getStoreCount()
-{
-   return m_store_count ; 
-}
 

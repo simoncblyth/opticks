@@ -1,6 +1,9 @@
 #pragma once
 
-struct short4 
+
+#include "CFG4_API_EXPORT.hh"
+
+struct CFG4_API short4 
 {  
    short x ; 
    short y ; 
@@ -8,7 +11,7 @@ struct short4
    short w ; 
 };
 
-struct ushort4 
+struct CFG4_API ushort4 
 {  
    unsigned short x ; 
    unsigned short y ; 
@@ -16,13 +19,13 @@ struct ushort4
    unsigned short w ; 
 };
 
-union hquad
+union CFG4_API hquad
 {   
    short4   short_ ;
    ushort4  ushort_ ;
 };  
 
-struct char4
+struct CFG4_API char4
 {
    char x ; 
    char y ; 
@@ -30,7 +33,7 @@ struct char4
    char w ; 
 };
 
-struct uchar4
+struct CFG4_API uchar4
 {
    unsigned char x ; 
    unsigned char y ; 
@@ -38,13 +41,13 @@ struct uchar4
    unsigned char w ; 
 };
 
-union qquad
+union CFG4_API qquad
 {   
    char4   char_   ;
    uchar4  uchar_  ;
 };  
 
-union uifchar4
+union CFG4_API uifchar4
 {
    unsigned int u ; 
    int          i ; 

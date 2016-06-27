@@ -4,7 +4,8 @@
 #include <string>
 class G4MaterialPropertiesTable ;
 
-class CMPT {
+#include "CFG4_API_EXPORT.hh"
+class CFG4_API CMPT {
    public:
        CMPT(G4MaterialPropertiesTable* mpt);
    public:
@@ -16,12 +17,6 @@ class CMPT {
    private:
        G4MaterialPropertiesTable* m_mpt ; 
 };
-
-inline CMPT::CMPT(G4MaterialPropertiesTable* mpt)
-    :
-     m_mpt(mpt)
-{
-}
 
 
 

@@ -68,6 +68,9 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+
+#include "CFG4_PUSH.hh"
+
 #include "OpRayleigh.hh"
 
 #include "G4ios.hh"
@@ -75,6 +78,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4OpProcessSubType.hh"
 
+#include "CFG4_POP.hh"
 
 #include "PLOG.hh"
 

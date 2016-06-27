@@ -118,9 +118,10 @@ Consider truncated case with bounce_max = 9, MAXREC = 10
 
 
 
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
 
-
-class Rec {
+class CFG4_API Rec {
    public:
        typedef enum { OK, SKIP_STS } Rec_t ; 
        typedef enum { PRE, POST } Flag_t ; 
@@ -148,7 +149,7 @@ class Rec {
        void setDebug(bool debug=true);
    private:
        CPropLib*                   m_clib ; 
-       OpticksEvent*                   m_evt ;  
+       OpticksEvent*               m_evt ;  
        unsigned int                m_genflag ;
        std::vector<const State*>   m_states ; 
 
@@ -159,47 +160,9 @@ class Rec {
        unsigned int m_record_max ; 
        unsigned int m_bounce_max ; 
        unsigned int m_steps_per_photon ; 
- 
+
        bool         m_debug ; 
-
-
-
-
-
-
 };
 
-inline Rec::Rec(CPropLib* clib, OpticksEvent* evt)  
-   :
-    m_clib(clib),
-    m_evt(evt), 
-    m_genflag(0),
-    m_seqhis(0ull),
-    m_seqmat(0ull),
-    m_slot(0),
-    m_record_max(0),
-    m_bounce_max(0),
-    m_steps_per_photon(0),
-    m_debug(false)
-{
-   init();
-}
-
-
-inline void Rec::setDebug(bool debug)
-{
-    m_debug = debug ; 
-}
-
-inline unsigned long long Rec::getSeqHis()
-{
-    return m_seqhis ; 
-}
-inline unsigned long long Rec::getSeqMat()
-{
-    return m_seqmat ; 
-}
-
-
-
+#include "CFG4_TAIL.hh"
 

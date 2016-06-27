@@ -4,12 +4,16 @@
 
 #include "Opticks.hh"
 #include "CPropLib.hh"
+#include "CFG4_BODY.hh"
 
-#include "BLog.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
-    Opticks* m_opticks = new Opticks(argc, argv, "CPropLibTest.log");
+    PLOG_(argc, argv);
+
+
+    Opticks* m_opticks = new Opticks(argc, argv);
     
     m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
@@ -18,9 +22,6 @@ int main(int argc, char** argv)
     m_lib->dump();
 
     //m_lib->dumpMaterials();
-
-
-
 
 
 

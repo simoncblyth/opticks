@@ -1,5 +1,28 @@
+
+
 #include "State.hh"
 #include "G4Step.hh"
+
+
+
+const G4Step* State::getStep() const 
+{
+    return m_step ; 
+}
+G4OpBoundaryProcessStatus State::getBoundaryStatus() const
+{
+    return m_boundary_status ; 
+}
+unsigned int State::getPreMaterial() const 
+{
+    return m_premat ; 
+}
+unsigned int State::getPostMaterial() const
+{
+    return m_postmat ; 
+}
+
+
 
 State::State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat) 
    :

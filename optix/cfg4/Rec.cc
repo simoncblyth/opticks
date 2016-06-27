@@ -1,21 +1,57 @@
-#include "Rec.hh"
-#include "Format.hh"
-#include "State.hh"
-#include "OpStatus.hh"
-#include "CPropLib.hh"
+// npy-
+#include "BBit.hh"
 
-// optickscore-
+// okc-
 #include "Opticks.hh"
 #include "OpticksPhoton.h"
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
 
-// npy-
-#include "BBit.hh"
-#include "PLOG.hh"
-
 // g4-
 #include "G4Step.hh"
+
+// cfg4-
+#include "Format.hh"
+#include "State.hh"
+#include "OpStatus.hh"
+#include "CPropLib.hh"
+#include "Rec.hh"
+
+#include "PLOG.hh"
+
+
+Rec::Rec(CPropLib* clib, OpticksEvent* evt)  
+   :
+    m_clib(clib),
+    m_evt(evt), 
+    m_genflag(0),
+    m_seqhis(0ull),
+    m_seqmat(0ull),
+    m_slot(0),
+    m_record_max(0),
+    m_bounce_max(0),
+    m_steps_per_photon(0),
+    m_debug(false)
+{
+   init();
+}
+
+
+void Rec::setDebug(bool debug)
+{
+    m_debug = debug ; 
+}
+
+unsigned long long Rec::getSeqHis()
+{
+    return m_seqhis ; 
+}
+unsigned long long Rec::getSeqMat()
+{
+    return m_seqmat ; 
+}
+
+
 
 
 void Rec::init()

@@ -1,7 +1,10 @@
+
+#include "CFG4_PUSH.hh"
 #include "SteppingVerbose.hh"
 
 #include "G4SteppingManager.hh"
 #include "G4UnitsTable.hh"
+#include "CFG4_POP.hh"
 
 
 SteppingVerbose::SteppingVerbose()
@@ -21,7 +24,7 @@ void SteppingVerbose::StepInfo()
   verboseLevel = 5 ; 
   VerboseTrack(); 
 
-  G4int prec = G4cout.precision(3);
+  G4int prec = G4int(G4cout.precision(3));
 
   if( verboseLevel >= 1 ){
     if( verboseLevel >= 4 ) VerboseTrack();
@@ -114,7 +117,7 @@ void SteppingVerbose::TrackingStarted()
 {
 
   CopyState();
-  G4int prec = G4cout.precision(3);
+  G4int prec = G4int(G4cout.precision(3));
   if( verboseLevel > 0 ){
 
     G4cout << std::setw( 5) << "Step#"      << " "

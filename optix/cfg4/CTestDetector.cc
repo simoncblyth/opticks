@@ -5,36 +5,28 @@
 //  ggv-;ggv-pmt-test --cfg4 --load 1
 //
 
-
-#include "CTestDetector.hh"
 #include <map>
 
-
+// okc-
 #include "Opticks.hh"
 
 // npy-
-#include "PLOG.hh"
+#include "NGLM.hpp"
 #include "GLMFormat.hpp"
-
-// cfg4-
-#include "CMaker.hh"
-#include "CPropLib.hh"
 
 // ggeo-
 #include "GMaker.hh"
-
 #include "GCSG.hh"
-
 #include "GMaterial.hh"
 #include "GGeoTestConfig.hh"
 
 // g4-
-#include "G4RunManager.hh"
+#include "CFG4_PUSH.hh"
 
+#include "G4RunManager.hh"
 #include "G4NistManager.hh"
 #include "G4MaterialTable.hh"
 #include "G4Material.hh"
-
 #include "G4LogicalVolume.hh"
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
@@ -43,6 +35,29 @@
 #include "globals.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+
+#include "CFG4_POP.hh"
+
+
+
+// cfg4-
+#include "CMaker.hh"
+#include "CPropLib.hh"
+#include "CTestDetector.hh"
+
+#include "PLOG.hh"
+
+
+
+CTestDetector::CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query)
+  : 
+  CDetector(cache, query),
+  m_config(config),
+  m_maker(NULL)
+{
+    init();
+}
+
 
 
 void CTestDetector::init()

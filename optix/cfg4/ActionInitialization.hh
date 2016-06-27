@@ -4,8 +4,10 @@ class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
 
 #include "G4VUserActionInitialization.hh"
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
 
-class ActionInitialization : public G4VUserActionInitialization
+class CFG4_API ActionInitialization : public G4VUserActionInitialization
 {
   public:
     ActionInitialization(G4VUserPrimaryGeneratorAction* pga, G4UserSteppingAction* sa);
@@ -19,14 +21,6 @@ class ActionInitialization : public G4VUserActionInitialization
     G4UserSteppingAction*          m_sa ; 
 
 };
-
-
-inline ActionInitialization::ActionInitialization(G4VUserPrimaryGeneratorAction* pga, G4UserSteppingAction* sa)
-    : 
-    G4VUserActionInitialization(), 
-    m_pga(pga),
-    m_sa(sa)
-{}
-
+#include "CFG4_TAIL.hh"
 
 

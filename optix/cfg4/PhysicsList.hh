@@ -1,9 +1,10 @@
 #pragma once
 
 #include "G4VModularPhysicsList.hh"
-#include "globals.hh"
 
-class PhysicsList: public G4VModularPhysicsList
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+class CFG4_API PhysicsList : public G4VModularPhysicsList
 {
   public:
 
@@ -16,4 +17,5 @@ class PhysicsList: public G4VModularPhysicsList
     virtual void SetCuts();
 
 };
+#include "CFG4_TAIL.hh"
 

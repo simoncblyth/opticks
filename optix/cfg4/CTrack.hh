@@ -1,9 +1,11 @@
 #pragma once
 
+// Simple G4Track wrapper providing getTrackStatusString()
+
 class G4Track ;
 #include "G4TrackStatus.hh"  
-
-class CTrack {
+#include "CFG4_API_EXPORT.hh"
+class CFG4_API CTrack {
    public:
     static const char* fAlive_ ;
     static const char* fStopButAlive_ ;
@@ -19,11 +21,5 @@ class CTrack {
       G4Track* m_track ; 
 };
 
-
-inline CTrack::CTrack(G4Track* track) 
-   :
-     m_track(track)
-{
-}
 
 

@@ -2,6 +2,28 @@
 // cfg4-;cfg4--;op --cfg4 --g4gun --dbg 
 // cfg4-;cfg4--;ggv-;ggv-g4gun --dbg
 
+#include "CFG4_BODY.hh"
+
+// okc-
+#include "Opticks.hh"
+#include "OpticksEvent.hh"
+#include "OpticksPhoton.h"
+#include "OpticksCfg.hh"
+
+
+
+// npy-
+#include "Timer.hpp"
+#include "TorchStepNPY.hpp"
+#include "NGunConfig.hpp"
+#include "GLMFormat.hpp"
+
+//ggeo-
+#include "GBndLib.hh"
+#include "GGeoTestConfig.hh"
+
+
+#include "CFG4_PUSH.hh"
 //g4-
 #include "G4RunManager.hh"
 #include "G4String.hh"
@@ -11,9 +33,8 @@
 #include "G4UIExecutive.hh"
 #include "G4GeometryManager.hh"
 
-//cg4-
-#include "CG4.hh"
 
+//cg4-
 #include "ActionInitialization.hh"
 
 #ifdef OLDPHYS
@@ -33,24 +54,16 @@
 #include "CSteppingAction.hh"
 #include "CTorchSource.hh"
 #include "CGunSource.hh"
+#include "CG4.hh"
 
-// optickscore-
-#include "Opticks.hh"
-#include "OpticksEvent.hh"
-#include "OpticksPhoton.h"
-#include "OpticksCfg.hh"
 
-// npy-
-#include "Timer.hpp"
-#include "TorchStepNPY.hpp"
-#include "NGunConfig.hpp"
-#include "GLMFormat.hpp"
+#include "CFG4_POP.hh"
+#include "CFG4_BODY.hh"
+
+
+
+
 #include "PLOG.hh"
-
-//ggeo-
-#include "GBndLib.hh"
-#include "GGeoTestConfig.hh"
-
 
 #define TIMER(s) \
     { \
@@ -60,6 +73,49 @@
           t((s)) ;\
        }\
     }
+
+
+
+CG4::CG4(Opticks* opticks) 
+   :
+     OpticksEngine(opticks),
+     m_torch(NULL),
+     m_detector(NULL),
+     m_lib(NULL),
+     m_recorder(NULL),
+     m_rec(NULL),
+     m_steprec(NULL),
+     m_physics(NULL),
+     m_runManager(NULL),
+     m_g4ui(false),
+     m_visManager(NULL),
+     m_uiManager(NULL),
+     m_ui(NULL),
+     m_pga(NULL),
+     m_sa(NULL)
+{
+     init();
+}
+
+
+CRecorder* CG4::getRecorder()
+{
+    return m_recorder ; 
+}
+Rec* CG4::getRec()
+{
+    return m_rec ; 
+}
+CStepRec* CG4::getStepRec()
+{
+    return m_steprec ; 
+}
+CPropLib* CG4::getPropLib()
+{
+    return m_lib ; 
+}
+
+
 
 void CG4::init()
 {

@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdlib>
 
 // g4-
 class G4RunManager ; 
@@ -28,8 +27,9 @@ class OpNovicePhysicsList ;
 #endif
 
 #include "OpticksEngine.hh"
+#include "CFG4_API_EXPORT.hh"
 
-class CG4 : public OpticksEngine
+class CFG4_API CG4 : public OpticksEngine
 {
    public:
         CG4(Opticks* opticks);
@@ -82,44 +82,4 @@ class CG4 : public OpticksEngine
         G4UserSteppingAction*          m_sa ; 
         
 };
-
-inline CG4::CG4(Opticks* opticks) 
-   :
-     OpticksEngine(opticks),
-     m_torch(NULL),
-     m_detector(NULL),
-     m_lib(NULL),
-     m_recorder(NULL),
-     m_rec(NULL),
-     m_steprec(NULL),
-     m_physics(NULL),
-     m_runManager(NULL),
-     m_g4ui(false),
-     m_visManager(NULL),
-     m_uiManager(NULL),
-     m_ui(NULL),
-     m_pga(NULL),
-     m_sa(NULL)
-{
-     init();
-}
-
-
-inline CRecorder* CG4::getRecorder()
-{
-    return m_recorder ; 
-}
-inline Rec* CG4::getRec()
-{
-    return m_rec ; 
-}
-inline CStepRec* CG4::getStepRec()
-{
-    return m_steprec ; 
-}
-inline CPropLib* CG4::getPropLib()
-{
-    return m_lib ; 
-}
-
 

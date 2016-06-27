@@ -1,37 +1,10 @@
-//
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-//
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+
+#include "CFG4_PUSH.hh"
 
 #include "globals.hh"
 #include "OpNovicePhysicsList.hh"
 #include "OpNovicePhysicsListMessenger.hh"
-#include "CMPT.hh"
 
 
 #include "G4ParticleDefinition.hh"
@@ -49,17 +22,25 @@
 
 #include "G4Cerenkov.hh"
 //#include "G4Scintillation.hh"
-#include "Scintillation.hh"
 #include "G4OpAbsorption.hh"
-
 //#include "G4OpRayleigh.hh"
-#include "OpRayleigh.hh"
-
 #include "G4OpMieHG.hh"
 #include "G4OpBoundaryProcess.hh"
 
 #include "G4LossTableManager.hh"
 #include "G4EmSaturation.hh"
+
+#include "CFG4_POP.hh"
+
+
+
+// cfg4-
+#include "CMPT.hh"
+#include "OpRayleigh.hh"
+#include "Scintillation.hh"
+
+
+
 
 G4ThreadLocal G4int OpNovicePhysicsList::fVerboseLevel = 1;
 G4ThreadLocal G4int OpNovicePhysicsList::fMaxNumPhotonStep = 20;
@@ -76,7 +57,6 @@ G4ThreadLocal OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
 G4ThreadLocal G4OpMieHG* OpNovicePhysicsList::fMieHGScatteringProcess = 0;
 G4ThreadLocal G4OpBoundaryProcess* OpNovicePhysicsList::fBoundaryProcess = 0;
  
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 OpNovicePhysicsList::OpNovicePhysicsList() 
  : G4VUserPhysicsList()
@@ -84,11 +64,9 @@ OpNovicePhysicsList::OpNovicePhysicsList()
   fMessenger = new OpNovicePhysicsListMessenger(this);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 OpNovicePhysicsList::~OpNovicePhysicsList() { delete fMessenger; }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpNovicePhysicsList::ConstructParticle()
 {
@@ -113,7 +91,6 @@ void OpNovicePhysicsList::ConstructParticle()
   iConstructor.ConstructParticle(); 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
 
@@ -132,11 +109,9 @@ void OpNovicePhysicsList::ConstructProcess()
   dump("OpNovicePhysicsList::ConstructProcess"); 
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "G4Decay.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpNovicePhysicsList::ConstructDecay()
 {
@@ -155,7 +130,6 @@ void OpNovicePhysicsList::ConstructDecay()
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "G4ComptonScattering.hh"
 #include "G4GammaConversion.hh"
@@ -175,7 +149,6 @@ void OpNovicePhysicsList::ConstructDecay()
 
 #include "G4hIonisation.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
 #include "PLOG.hh"
@@ -190,7 +163,7 @@ void OpNovicePhysicsList::Summary(const char* msg)
 
          G4ProcessManager* pmanager = particle->GetProcessManager();
 
-         int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+         unsigned int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
          LOG(info) << particleName << " " << npro ;
 
          if(!pmanager) continue ;  
@@ -237,7 +210,7 @@ void  OpNovicePhysicsList::setProcessVerbosity(unsigned int verbosity)
          G4ProcessManager* pmanager = particle->GetProcessManager();
          if(!pmanager) continue ; 
 
-         int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+         unsigned int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
          G4ProcessVector* procs = pmanager->GetProcessList();
          for(unsigned int i=0 ; i < npro ; i++)
          {
@@ -269,7 +242,7 @@ void OpNovicePhysicsList::collectProcesses()
             continue ;  
          }
 
-         int npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
+         unsigned npro = pmanager ? pmanager->GetProcessListLength() : 0 ;
          G4ProcessVector* procs = pmanager->GetProcessList();
          for(unsigned int i=0 ; i < npro ; i++)
          {
@@ -335,7 +308,6 @@ void OpNovicePhysicsList::ConstructEM()
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 #include "G4Threading.hh"
 
 void OpNovicePhysicsList::ConstructOp()
@@ -398,7 +370,6 @@ void OpNovicePhysicsList::ConstructOp()
   }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpNovicePhysicsList::SetVerbose(G4int verbose)
 {
@@ -414,7 +385,6 @@ void OpNovicePhysicsList::SetVerbose(G4int verbose)
   fBoundaryProcess->SetVerboseLevel(fVerboseLevel);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpNovicePhysicsList::SetNbOfPhotonsCerenkov(G4int MaxNumber)
 {
@@ -424,7 +394,6 @@ void OpNovicePhysicsList::SetNbOfPhotonsCerenkov(G4int MaxNumber)
   fCerenkovProcess->SetMaxNumPhotonsPerStep(fMaxNumPhotonStep);
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void OpNovicePhysicsList::SetCuts()
 {
@@ -456,7 +425,7 @@ void OpNovicePhysicsList::dumpMaterials(const char* msg)
               ;
 
     
-    for(unsigned int i=0 ; i < numOfMaterials ; i++)
+    for(int i=0 ; i < numOfMaterials ; i++)
     {
         G4Material* material = (*theMaterialTable)[i];
         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();

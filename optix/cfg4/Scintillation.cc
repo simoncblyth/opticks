@@ -68,6 +68,10 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
+
+
+#include "CFG4_PUSH.hh"
+
 #include "G4ios.hh"
 #include "globals.hh"
 #include "G4PhysicalConstants.hh"
@@ -76,6 +80,7 @@
 #include "G4EmProcessSubType.hh"
 
 #include "Scintillation.hh"
+#include "CFG4_POP.hh"
 
 /////////////////////////
 // Class Implementation
@@ -93,6 +98,114 @@
 //G4bool Scintillation::fScintillationByParticleType = false;
 //G4EmSaturation* Scintillation::fEmSaturation = NULL;
 
+
+
+
+
+
+
+
+
+////////////////////
+// Inline methods
+////////////////////
+
+
+G4bool Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
+{
+       if (aParticleType.GetParticleName() == "opticalphoton") return false;
+       if (aParticleType.IsShortLived()) return false;
+
+       return true;
+}
+
+inline
+G4bool Scintillation::GetTrackSecondariesFirst() const
+{
+        return fTrackSecondariesFirst;
+}
+
+
+G4bool Scintillation::GetFiniteRiseTime() const
+{
+        return fFiniteRiseTime;
+}
+
+inline
+G4double Scintillation::GetScintillationYieldFactor() const
+{
+        return fYieldFactor;
+}
+
+inline
+G4double Scintillation::GetScintillationExcitationRatio() const
+{
+        return fExcitationRatio;
+}
+
+inline
+G4PhysicsTable* Scintillation::GetSlowIntegralTable() const
+{
+        return fSlowIntegralTable;
+}
+
+inline
+G4PhysicsTable* Scintillation::GetFastIntegralTable() const
+{
+        return fFastIntegralTable;
+}
+
+inline
+void Scintillation::DumpPhysicsTable() const
+{
+        if (fFastIntegralTable) {
+           G4int PhysicsTableSize = fFastIntegralTable->entries();
+           G4PhysicsOrderedFreeVector *v;
+
+           for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
+           {
+        	v = (G4PhysicsOrderedFreeVector*)(*fFastIntegralTable)[i];
+        	v->DumpValues();
+           }
+         }
+
+        if (fSlowIntegralTable) {
+           G4int PhysicsTableSize = fSlowIntegralTable->entries();
+           G4PhysicsOrderedFreeVector *v;
+
+           for (G4int i = 0 ; i < PhysicsTableSize ; i++ )
+           {
+                v = (G4PhysicsOrderedFreeVector*)(*fSlowIntegralTable)[i];
+                v->DumpValues();
+           }
+         }
+}
+
+inline
+G4double Scintillation::single_exp(G4double t, G4double tau2)
+{
+         return std::exp(-1.0*t/tau2)/tau2;
+}
+
+inline
+G4double Scintillation::bi_exp(G4double t, G4double tau1, G4double tau2)
+{
+         return std::exp(-1.0*t/tau2)*(1-std::exp(-1.0*t/tau1))/tau2/tau2*(tau1+tau2);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         //////////////
         // Operators
         //////////////
@@ -104,6 +217,15 @@
         /////////////////
         // Constructors
         /////////////////
+
+
+
+
+
+
+
+
+
 
 Scintillation::Scintillation(const G4String& processName,
                                        G4ProcessType type)
@@ -256,8 +378,13 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         if (fScintillationByParticleType)
            MeanNumberOfPhotons = ScintillationYield;
         else if (fEmSaturation)
+
+
            MeanNumberOfPhotons = ScintillationYield*
-                              (fEmSaturation->VisibleEnergyDeposition(&aStep));
+                              (fEmSaturation->VisibleEnergyDepositionAtAStep(&aStep));  // huh API changed ?  added AtAStep to compile
+
+
+
         else
            MeanNumberOfPhotons = ScintillationYield*TotalEnergyDeposit;
 

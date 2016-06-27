@@ -1,14 +1,16 @@
 #pragma once
 
 class TorchStepNPY ; 
+
 class G4SPSPosDistribution ;
 class G4SPSAngDistribution ;
 class G4SPSEneDistribution ;
 class G4SPSRandomGenerator ;
 
 #include "CSource.hh"
+#include "CFG4_API_EXPORT.hh"
 
-class CTorchSource: public CSource
+class CFG4_API CTorchSource: public CSource
 {
   public:
     CTorchSource(TorchStepNPY* torch, unsigned int verbosity);
@@ -27,18 +29,5 @@ class CTorchSource: public CSource
     G4SPSRandomGenerator* m_ranGen;
 
 };
-
-
-inline CTorchSource::CTorchSource(TorchStepNPY* torch, unsigned int verbosity)  
-    :
-    CSource(verbosity),
-    m_torch(torch),
-    m_posGen(NULL),
-    m_angGen(NULL),
-    m_eneGen(NULL),
-    m_ranGen(NULL)
-{
-    init();
-}
 
 

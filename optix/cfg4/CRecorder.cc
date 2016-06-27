@@ -1,4 +1,11 @@
-// optickscore-
+// brap-
+#include "BBit.hh"
+
+// npy-
+#include "NGLM.hpp"
+#include "NPY.hpp"
+
+// okc-
 #include "Opticks.hh"
 #include "OpticksFlags.h"
 #include "OpticksFlags.hh"
@@ -15,21 +22,14 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
-
-#include "BBit.hh"
-
-// npy-
-#include "NPY.hpp"
-#include "PLOG.hh"
-
 // cfg4-
-// TODO: standardize name of OpStatus
 #include "OpStatus.hh"
 #include "CRecorder.h"
 #include "CPropLib.hh"
-#include "CRecorder.hh"
 #include "Format.hh"
+#include "CRecorder.hh"
 
+#include "PLOG.hh"
 
 
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
@@ -53,6 +53,182 @@ unsigned char uchar_( float f )  // f in range -1.:1.
 
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
+
+
+
+
+CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity) 
+   :
+   m_clib(clib),
+   m_evt(evt),
+   m_gen(0),
+
+   m_record_max(0),
+   m_bounce_max(0),
+   m_steps_per_photon(0), 
+
+   m_photons_per_g4event(0),
+
+   m_verbosity(verbosity),
+   m_debug(verbosity > 0),
+   m_event_id(UINT_MAX),
+   m_photon_id(UINT_MAX),
+   m_step_id(UINT_MAX),
+   m_record_id(UINT_MAX),
+
+   m_primary_id(UINT_MAX),
+   m_primary_max(0),
+
+   m_boundary_status(Undefined),
+   m_prior_boundary_status(Undefined),
+
+   m_premat(0),
+   m_prior_premat(0),
+
+   m_postmat(0),
+   m_prior_postmat(0),
+
+   m_seqhis(0),
+   m_seqmat(0),
+   m_seqhis_select(0),
+   m_seqmat_select(0),
+   m_slot(0),
+   m_truncate(false),
+   m_step(true),
+
+   m_primary(0),
+   m_photons(0),
+   m_records(0),
+   m_history(0),
+
+   m_dynamic(false),
+
+   m_dynamic_primary(NULL),
+   m_dynamic_photons(NULL),
+   m_dynamic_records(NULL),
+   m_dynamic_history(NULL)
+{
+   init();
+   
+}
+
+
+unsigned int CRecorder::getVerbosity()
+{
+    return m_verbosity ; 
+}
+bool CRecorder::isHistorySelected()
+{
+   return m_seqhis_select == m_seqhis ; 
+}
+bool CRecorder::isMaterialSelected()
+{
+   return m_seqmat_select == m_seqmat ; 
+}
+bool CRecorder::isSelected()
+{
+   return isHistorySelected() || isMaterialSelected() ;
+}
+
+unsigned long long CRecorder::getSeqHis()
+{
+    return m_seqhis ; 
+}
+unsigned long long CRecorder::getSeqMat()
+{
+    return m_seqmat ; 
+}
+
+
+
+
+
+
+void CRecorder::setPropLib(CPropLib* clib)
+{
+    m_clib = clib  ; 
+}
+
+
+OpticksEvent* CRecorder::getEvent()
+{
+    return m_evt ; 
+}
+unsigned int CRecorder::getRecordMax()
+{
+    return m_record_max ; 
+}
+
+
+unsigned int CRecorder::getEventId()
+{
+   return m_event_id ; 
+}
+unsigned int CRecorder::getPhotonId()
+{
+   return m_photon_id ; 
+}
+unsigned int CRecorder::getStepId()
+{
+   return m_step_id ; 
+}
+unsigned int CRecorder::getRecordId()
+{
+   return m_record_id ; 
+}
+
+
+
+
+G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
+{
+   return m_boundary_status ; 
+}
+
+
+
+void CRecorder::setEventId(unsigned int event_id)
+{
+    m_event_id = event_id ; 
+}
+void CRecorder::setPhotonId(unsigned int photon_id)
+{
+    m_photon_id = photon_id ; 
+}
+void CRecorder::setStepId(unsigned int step_id)
+{
+    m_step_id = step_id ; 
+}
+unsigned int CRecorder::defineRecordId()   
+{
+   return m_photons_per_g4event*m_event_id + m_photon_id ; 
+}
+
+void CRecorder::setRecordId(unsigned int record_id)
+{
+    m_record_id = record_id ; 
+}
+
+
+
+void CRecorder::RecordBeginOfRun(const G4Run*)
+{
+}
+
+void CRecorder::RecordEndOfRun(const G4Run*)
+{
+}
+
+bool CRecorder::isDynamic()
+{
+    return m_dynamic ; 
+}
+
+
+
+
+
+
 
 void CRecorder::init()
 {

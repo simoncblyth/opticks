@@ -1,10 +1,13 @@
-#include "OpStatus.hh"
-
-#include "Opticks.hh"
 #include <sstream>
-#include "PLOG.hh"
 
 #include "G4StepPoint.hh"
+#include "Opticks.hh"
+#include "OpticksFlags.h"
+
+
+#include "OpStatus.hh"
+
+#include "PLOG.hh"
 
 
 std::string OpStepString(const G4StepStatus status)

@@ -1,14 +1,11 @@
 // op --cproplib
 
-
+#include "CFG4_BODY.hh"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 
-#include "CPropLib.hh"
-
-// optickscore-
+// okc-
 #include "Opticks.hh"
-
 
 // ggeo-
 #include "GDomain.hh"
@@ -24,12 +21,6 @@
 #include "GPmt.hh"
 #include "GCSG.hh"
 
-// npy-
-#include "PLOG.hh"
-
-
-
-
 // g4-
 #include "G4MaterialTable.hh"
 #include "G4Material.hh"
@@ -40,8 +31,37 @@
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 
+// cg4-
+#include "CPropLib.hh"
+
+// npy-
+#include "PLOG.hh"
+
 
 const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
+
+
+CPropLib::CPropLib(Opticks* opticks, int verbosity)
+  : 
+  m_opticks(opticks),
+  m_verbosity(verbosity),
+  m_bndlib(NULL),
+  m_mlib(NULL),
+  m_slib(NULL),
+  m_sclib(NULL),
+  m_domain(NULL),
+  m_dscale(1), 
+  m_groupvel_kludge(true)
+{
+    init();
+}
+
+
+void CPropLib::setGroupvelKludge(bool gvk)
+{
+   m_groupvel_kludge = gvk ; 
+}
+
 
 void CPropLib::init()
 {
@@ -59,7 +79,7 @@ void CPropLib::init()
     if(m_verbosity>2)
     m_sensor_surface->Summary("CPropLib::init cathode_surface");
 
-    m_dscale = GConstant::h_Planck*GConstant::c_light/GConstant::nanometer ;
+    m_dscale = float(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
 
     checkConstants(); 
 
@@ -485,7 +505,10 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
     for(unsigned int i=0 ; i < 16 ; i++)
     {   
         unsigned long long m = (seqmat >> i*4) & 0xF ; 
-        ss << ( m > 0 ? getMaterialName(m - 1) : "-" ) << " " ;
+
+        unsigned int idx = unsigned(m - 1);  
+
+        ss << ( m > 0 ? getMaterialName(idx) : "-" ) << " " ;
         // using 1-based material indices, so 0 represents None
     }   
     return ss.str();
@@ -498,7 +521,7 @@ void CPropLib::dump(const char* msg)
     int index = m_opticks->getLastArgInt();
     const char* lastarg = m_opticks->getLastArg();
 
-    if(index < ni)
+    if(index < int(ni))
     {   
         const GMaterial* mat = getMaterial(index);
         dump(mat, msg);
@@ -632,7 +655,7 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
    for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)
    {
         G4String k = it->first ; 
-        G4double v = it->second ;
+        float v = float(it->second) ;
 
         // express standard Opticks nm range in MeV, and swap order
         float dlow  = m_dscale/m_domain->getHigh() ; 
@@ -660,8 +683,8 @@ GProperty<float>* CPropLib::convertVector(G4PhysicsVector* pvec)
     float* values = new float[length] ;
     for(unsigned int i=0 ; i < length ; i++)
     {
-         domain[i] = pvec->Energy(i) ;
-         values[i] = (*pvec)[i] ;
+         domain[i] = float(pvec->Energy(i)) ;
+         values[i] = float((*pvec)[i]) ;
     }
     GProperty<float>* prop = new GProperty<float>(values, domain, length );    
 

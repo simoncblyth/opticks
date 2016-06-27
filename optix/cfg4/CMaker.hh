@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include <string>
 
 class GCSG ; 
@@ -13,7 +13,9 @@ class Opticks ;
 // G4VPhysicalVolume* CTestDetector::Construct() 
 //
 
-class CMaker {
+#include "CFG4_API_EXPORT.hh"
+
+class CFG4_API CMaker {
     public:
         static std::string PVName(const char* shapename);
         static std::string LVName(const char* shapename);
@@ -30,12 +32,5 @@ class CMaker {
         int      m_verbosity ; 
 
 };
-
-inline CMaker::CMaker(Opticks* cache, int verbosity) 
-   :
-   m_cache(cache),
-   m_verbosity(verbosity)
-{
-}   
 
 

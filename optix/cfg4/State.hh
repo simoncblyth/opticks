@@ -1,10 +1,18 @@
 #pragma once
 
+
+#include "CFG4_PUSH.hh"
+// huh: G4OpBoundaryProcess pulls in CLHEP/Random headers that raise warnings
 #include "G4OpBoundaryProcess.hh"
+#include "CFG4_POP.hh"
+
+
 class G4Step ; 
 class G4StepPoint ; 
 
-class State 
+
+#include "CFG4_API_EXPORT.hh"
+class CFG4_API State 
 {
    public:
        State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat );
@@ -22,26 +30,6 @@ class State
        unsigned int              m_premat ;
        unsigned int              m_postmat ;
 };
-
-
-
-inline const G4Step* State::getStep() const 
-{
-    return m_step ; 
-}
-inline G4OpBoundaryProcessStatus State::getBoundaryStatus() const
-{
-    return m_boundary_status ; 
-}
-inline unsigned int State::getPreMaterial() const 
-{
-    return m_premat ; 
-}
-inline unsigned int State::getPostMaterial() const
-{
-    return m_postmat ; 
-}
-
 
 
 

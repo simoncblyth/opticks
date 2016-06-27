@@ -1,6 +1,8 @@
 // cfg4--;op --cgdmldetector --dbg
 
-// optickscore-
+#include "CFG4_BODY.hh"
+
+// okc-
 #include "Opticks.hh"
 #include "OpticksQuery.hh"
 #include "OpticksCfg.hh"
@@ -13,14 +15,18 @@
 #include "G4VPhysicalVolume.hh"
 
 // npy-
-#include "BLog.hh"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
+#include "PLOG.hh"
+
+
 int main(int argc, char** argv)
 {
-    Opticks* m_opticks = new Opticks(argc, argv, "CGDMLDetectorTest.log");
+    PLOG_(argc, argv);
+
+    Opticks* m_opticks = new Opticks(argc, argv);
 
     OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
 

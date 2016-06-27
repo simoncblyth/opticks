@@ -3,7 +3,6 @@
 
 // npy-
 #include "TorchStepNPY.hpp"
-#include "PLOG.hh"
 #include "GLMFormat.hpp"
 
 // cfg4-
@@ -27,6 +26,21 @@
 #include "G4SPSAngDistribution.hh"
 #include "G4SPSEneDistribution.hh"
 #include "G4SPSRandomGenerator.hh"
+
+#include "PLOG.hh"
+
+
+CTorchSource::CTorchSource(TorchStepNPY* torch, unsigned int verbosity)  
+    :
+    CSource(verbosity),
+    m_torch(torch),
+    m_posGen(NULL),
+    m_angGen(NULL),
+    m_eneGen(NULL),
+    m_ranGen(NULL)
+{
+    init();
+}
 
 
 void CTorchSource::init()
@@ -286,7 +300,7 @@ void CTorchSource::configure()
         else
         {
             m_posGen->SetPosDisShape("Annulus");
-            float radius0 = _radius*mm*ze_x ;
+            float radius0 = float(_radius*mm*ze_x) ;
 
             m_posGen->SetRadius0(radius0);
             m_posGen->SetRadius( _radius*mm*ze_y);

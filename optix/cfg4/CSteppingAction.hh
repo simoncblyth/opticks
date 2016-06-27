@@ -17,7 +17,11 @@ class CRecorder ;
 class Rec ; 
 class CStepRec ; 
 
-class CSteppingAction : public G4UserSteppingAction
+
+#include "CFG4_API_EXPORT.hh"
+#include "CFG4_HEAD.hh"
+
+class CFG4_API CSteppingAction : public G4UserSteppingAction
 {
   static const unsigned long long SEQHIS_TO_SA ; 
   static const unsigned long long SEQMAT_MO_PY_BK ; 
@@ -52,39 +56,5 @@ class CSteppingAction : public G4UserSteppingAction
     unsigned int m_steprec_store_count ;
 };
 
-inline CSteppingAction::CSteppingAction(CG4* g4)
-   : 
-   G4UserSteppingAction(),
-   m_g4(g4),
-   m_clib(NULL),
-   m_recorder(NULL),
-   m_rec(NULL),
-   m_steprec(NULL),
-   m_dynamic(false),
-   m_verbosity(0),
-   m_event_id(-1),
-   m_track_id(-1),
-   m_event_total(0),
-   m_track_total(0),
-   m_step_total(0),
-   m_event_track_count(0),
-   m_track_step_count(0),
-   m_steprec_store_count(0)
-{ 
-   init();
-}
-
-inline CSteppingAction::~CSteppingAction()
-{ 
-}
-
-
-inline void CSteppingAction::setTrackId(unsigned int track_id)
-{
-    m_track_id = track_id ; 
-}
-inline void CSteppingAction::setEventId(unsigned int event_id)
-{
-    m_event_id = event_id ; 
-}
+#include "CFG4_TAIL.hh"
 

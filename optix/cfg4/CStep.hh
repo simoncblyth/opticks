@@ -1,8 +1,11 @@
 #pragma once
 
+// Holds copy of a step together with id 
+
 class G4Step ; 
 
-class CStep {
+#include "CFG4_API_EXPORT.hh"
+class CFG4_API CStep {
    public:
        CStep(const G4Step* step, unsigned int step_id);
        virtual ~CStep();
@@ -12,15 +15,5 @@ class CStep {
        const G4Step* m_step ; 
        unsigned int  m_step_id ; 
 };
-
-
-inline const G4Step* CStep::getStep() const 
-{
-    return m_step ; 
-}
-inline unsigned int CStep::getStepId() const 
-{
-    return m_step_id ; 
-}
 
 

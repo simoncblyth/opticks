@@ -1,14 +1,7 @@
-#include "CGunSource.hh"
-
 #include <cassert>
-
 
 // npy-
 #include "NGunConfig.hpp"
-#include "PLOG.hh"
-
-// cfg4-
-#include "CRecorder.hh"
 
 // g4-
 #include "G4AutoLock.hh"
@@ -17,6 +10,22 @@
 #include "G4PrimaryParticle.hh"
 #include "G4Event.hh"
 #include "G4ParticleMomentum.hh"
+
+// cfg4-
+#include "CRecorder.hh"
+#include "CGunSource.hh"
+
+#include "PLOG.hh"
+
+
+
+CGunSource::CGunSource(int verbosity)  
+    :
+    CSource(verbosity),
+    m_config(NULL)
+{
+    init();
+}
 
 
 void CGunSource::init()

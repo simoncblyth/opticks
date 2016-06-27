@@ -2,12 +2,14 @@
 #pragma once
 
 
-// optickscore-
+// okc-
 class Opticks ;
 class OpticksQuery ;
 
 #include "CDetector.hh"
-class CGDMLDetector : public CDetector
+#include "CFG4_API_EXPORT.hh"
+
+class CFG4_API CGDMLDetector : public CDetector
 {
   public:
     CGDMLDetector(Opticks* cache, OpticksQuery* query);
@@ -17,16 +19,5 @@ class CGDMLDetector : public CDetector
   private:
     void addMPT();
 };
-
-inline CGDMLDetector::CGDMLDetector(Opticks* cache, OpticksQuery* query)
-  : 
-  CDetector(cache, query)
-{
-    init();
-}
-
-inline CGDMLDetector::~CGDMLDetector()
-{
-}
 
 
