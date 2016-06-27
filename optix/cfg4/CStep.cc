@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 #include "CStep.hh"
 #include "G4Step.hh"
 

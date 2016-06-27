@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 // based on /usr/local/env/g4/geant4.10.02/source/event/include/G4SingleParticleSource.hh 
 #include <cmath>
 

@@ -15,6 +15,8 @@ set(TEST_SOURCES
     CGDMLDetectorTest.cc
     CG4Test.cc
     G4MaterialTest.cc
+    G4StringTest.cc
+    G4BoxTest.cc
 
 )
 

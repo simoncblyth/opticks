@@ -19,12 +19,17 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
+#include "CFG4_LOG.hh"
 #include "PLOG.hh"
 
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+
+    LOG(info) << argv[0] ;
+
+    CFG4_LOG__ ; 
 
     Opticks* m_opticks = new Opticks(argc, argv);
 
@@ -35,6 +40,15 @@ int main(int argc, char** argv)
     OpticksQuery* query = m_opticks->getQuery();   // non-done inside Detector classes for transparent control/flexibility 
 
     CGDMLDetector* m_detector  = new CGDMLDetector(m_opticks, query) ; 
+
+
+    bool valid = m_detector->isValid();
+    if(!valid)
+    {
+        LOG(error) << "CGDMLDetector not valid " ;
+        return 0 ;  
+    }
+
 
     m_detector->setVerbosity(2) ;
 

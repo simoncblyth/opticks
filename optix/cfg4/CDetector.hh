@@ -45,6 +45,9 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     NBoundingBox*      getBoundingBox();
     CPropLib*          getPropLib();
     G4VPhysicalVolume* getTop();
+    bool               isValid();
+ protected:
+    void               setValid(bool valid); 
  public: 
     const char*    getPVName(unsigned int index);
     G4VPhysicalVolume* getPV(const char* name);
@@ -71,6 +74,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     CTraverser*        m_traverser ; 
     NBoundingBox*      m_bbox ; 
     int                m_verbosity ; 
+    bool               m_valid ;
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
 }; 
 #include "CFG4_TAIL.hh"

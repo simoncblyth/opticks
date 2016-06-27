@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 #include "CMath.hh"
 
 #include "G4RotationMatrix.hh"

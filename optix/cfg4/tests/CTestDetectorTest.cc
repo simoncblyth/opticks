@@ -19,11 +19,17 @@
 #endif
 
 #include "NBoundingBox.hpp"
+#include "CFG4_LOG.hh"
 #include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv)
+
+    CFG4_LOG__ ; 
+
+    LOG(info) << argv[0] ; 
+
 
     Opticks* m_opticks = new Opticks(argc, argv);
     m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
@@ -37,6 +43,16 @@ int main(int argc, char** argv)
     GGeoTestConfig* m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
 
     CTestDetector* m_detector  = new CTestDetector(m_opticks, m_testconfig) ; 
+
+    bool valid = m_detector->isValid();
+
+    if(!valid)
+    {
+        LOG(error) << "CTestDetector not valid " ;
+        return 0 ; 
+    } 
+
+
 
     m_detector->setVerbosity(2) ;
 

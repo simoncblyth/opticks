@@ -4,6 +4,10 @@
 #include "CFG4_BODY.hh"
 #include <boost/algorithm/string.hpp>
 
+
+#include "BFile.hh"
+
+
 // npy-
 #include "GLMFormat.hpp"
 
@@ -42,13 +46,40 @@ CGDMLDetector::~CGDMLDetector()
 
 void CGDMLDetector::init()
 {
-    const char* gdmlpath = m_opticks->getGDMLPath();
-    LOG(info) << "CGDMLDetector::Construct " << gdmlpath ; 
+    const char* path = m_opticks->getGDMLPath();
+    bool exists = BFile::ExistsFile(path);
+    std::string npath = BFile::FormPath(path);
+
+    LOG(info) << "CGDMLDetector::init" 
+              << " path " << path
+              << " npath " << npath
+              ; 
+
+
+    if(!exists)
+    {
+         LOG(error)
+              << "CGDMLDetector::init" 
+              << " PATH DOES NOT EXIST "
+              << " path " << path
+              << " npath " << npath
+              ; 
+
+         setValid(false);  
+
+         return ; 
+     }
+
+
 
     bool validate = false ; 
 
+    G4String gpath = npath ; 
+    LOG(trace) << "parse " << gpath ; 
+
+
     G4GDMLParser parser;
-    parser.Read(gdmlpath, validate);
+    parser.Read(gpath, validate);
 
     setTop(parser.GetWorldVolume());   // invokes *CDetector::traverse*
     saveBuffers("CGDMLDetector", 0);    

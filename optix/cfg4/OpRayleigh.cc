@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 //
 //  Local copy from 
 //      /usr/local/env/g4/geant4.10.02/

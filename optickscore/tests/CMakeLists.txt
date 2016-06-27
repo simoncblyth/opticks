@@ -13,13 +13,13 @@ set(TEST_SOURCES_OK
     TrackballTest.cc
     OpticksFlagsTest.cc
     fooTest.cc
-    OpticksTest.cc
+    OpticksCfgTest.cc
 )
 
 
 set(TEST_SOURCES 
 
-    OpticksCfgTest.cc
+    OpticksTest.cc
 
 )
 

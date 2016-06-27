@@ -395,6 +395,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
                << " nval " << std::setw(10) << nval
                << " length " << std::setw(10) << length
                << " mm " << std::setw(10) << mm 
+               << " matname " << matname
                ;   
 
     G4double* ddom = new G4double[nval] ;
@@ -482,11 +483,12 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     const char* name = kmat->getShortName();
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
 
-    std::string sname = name ; 
+    G4String sname = name ; 
 
 
     LOG(debug) << "CPropLib::convertMaterial  " 
               << " name " << name
+              << " sname " << sname
               << " materialIndex " << materialIndex
               ;
 
@@ -534,11 +536,11 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
     assert(sizeof(unsigned long long)*8 == 16*4);
     for(unsigned int i=0 ; i < 16 ; i++)
     {   
-        unsigned long long m = (seqmat >> i*4) & 0xF ; 
+        unsigned long long msk = (seqmat >> i*4) & 0xF ; 
 
-        unsigned int idx = unsigned(m - 1);  
+        unsigned int idx = unsigned(msk - 1);  
 
-        ss << ( m > 0 ? getMaterialName(idx) : "-" ) << " " ;
+        ss << ( msk > 0 ? getMaterialName(idx) : "-" ) << " " ;
         // using 1-based material indices, so 0 represents None
     }   
     return ss.str();
@@ -705,8 +707,8 @@ GPropertyMap<float>* CPropLib::convertTable(G4MaterialPropertiesTable* mpt, cons
    }
 
    typedef const std::map< G4String, G4double, std::less<G4String> > MKC ; 
-   MKC* cm = mpt->GetPropertiesCMap() ;
-   for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)
+   MKC* cmap = mpt->GetPropertiesCMap() ;
+   for(MKC::const_iterator it=cmap->begin() ; it != cmap->end() ; it++)
    {
         G4String k = it->first ; 
         float v = float(it->second) ;

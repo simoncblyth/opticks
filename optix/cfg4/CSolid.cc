@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 
 // g4-
 #include "G4VSolid.hh"

@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 // g4-
 
 #include "CFG4_PUSH.hh"
@@ -219,8 +220,8 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
     G4Track* track = step->GetTrack();
-    G4int photon_id = track->GetTrackID() - 1;
-    G4int step_id  = track->GetCurrentStepNumber() - 1 ;
+    unsigned photon_id = track->GetTrackID() - 1;
+    unsigned step_id  = track->GetCurrentStepNumber() - 1 ;
 
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 

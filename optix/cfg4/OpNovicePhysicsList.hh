@@ -31,7 +31,7 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
   public:
     void Summary(const char* msg="OpNovicePhysicsList::Summary");
     void collectProcesses();
-    void setProcessVerbosity(unsigned int verbosity);
+    void setProcessVerbosity(int verbosity);
     void setupEmVerbosity(unsigned int verbosity);
   public:
     void dump(const char* msg="OpNovicePhysicsList::dump");

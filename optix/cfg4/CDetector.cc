@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 // op --cgdmldetector
 // op --ctestdetector
 
@@ -22,7 +23,6 @@
 #include "CTraverser.hh"
 #include "CDetector.hh"
 
-#include "CFG4_BODY.hh"
 #include "PLOG.hh"
 
 
@@ -36,10 +36,24 @@ CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
   m_top(NULL),
   m_traverser(NULL),
   m_bbox(NULL),
-  m_verbosity(0)
+  m_verbosity(0),
+  m_valid(true)
 {
     init();
 }
+
+
+bool CDetector::isValid()
+{
+    return m_valid ; 
+}
+
+void CDetector::setValid(bool valid)
+{
+    m_valid = valid ; 
+}
+
+
 
 
 
@@ -84,7 +98,7 @@ void CDetector::init()
     m_bbox = new NBoundingBox ;
 }
 
-void CDetector::traverse(G4VPhysicalVolume* top)
+void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 {
     // invoked from CGDMLDetector::init via setTop
 

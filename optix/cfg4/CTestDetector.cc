@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 // cfg4-
 
 //
@@ -204,7 +205,7 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
         lvm[nix-1] = logvol ;
 
-        G4LogicalVolume* mother = NULL ; 
+        mother = NULL ; 
 
         if(nix - 1 == 0)
         { 

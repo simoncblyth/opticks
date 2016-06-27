@@ -8,6 +8,46 @@ g4win-usage(){ cat << EOU
 G4 On Windows notes
 =====================
 
+
+
+
+
+
+MSVC Passing strings incompatibility
+--------------------------------------
+
+* http://programmers.stackexchange.com/questions/176681/did-c11-address-concerns-passing-std-lib-objects-between-dynamic-shared-librar
+
+
+MSVC iterator debugging
+-------------------------
+
+* https://msdn.microsoft.com/en-us/library/aa985982.aspx
+
+See: cfg4/tests/G4BoxTest.cc
+
+The nasty dialog box entitled "Microsoft Visual C++ Runtime Library" 
+can be avoided with the define::
+
+    #define _HAS_ITERATOR_DEBUGGING 0
+
+This also allows to pass strings to G4. 
+
+
+_ITERATOR_DEBUG_LEVEL
+------------------------
+
+
+Because the _SECURE_SCL and _HAS_ITERATOR_DEBUGGING macros support similar
+functionality, users are often uncertain which macro and macro value to use in
+a particular situation. To resolve this issue, we recommend that you use only
+the _ITERATOR_DEBUG_LEVEL macro.
+
+* https://msdn.microsoft.com/en-us/library/hh697468.aspx
+
+
+
+
 G4 Windows dllexport/dllimport ?
 -----------------------------------
 

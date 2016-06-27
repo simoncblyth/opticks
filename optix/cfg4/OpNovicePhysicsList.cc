@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 
 
 #include "CFG4_PUSH.hh"
@@ -201,7 +202,7 @@ void  OpNovicePhysicsList::setupEmVerbosity(unsigned int verbosity)
 }
 
 
-void  OpNovicePhysicsList::setProcessVerbosity(unsigned int verbosity)
+void  OpNovicePhysicsList::setProcessVerbosity(int verbosity)
 {
     theParticleIterator->reset();
     while( (*theParticleIterator)() ){

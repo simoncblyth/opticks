@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 #include "ActionInitialization.hh"
 
 //#include "PrimaryGeneratorAction.hh"

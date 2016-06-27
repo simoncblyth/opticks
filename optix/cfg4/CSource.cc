@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 #include <cstring>
 
 #include "G4Geantino.hh"

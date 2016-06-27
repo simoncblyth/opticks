@@ -9,7 +9,9 @@
 // http://stackoverflow.com/questions/14141476/warning-with-boostsplit-when-compiling
 // https://msdn.microsoft.com/en-us/library/aa985974.aspx
 // needed include before the boost algorithm string include, not just before the boost::split usage
-#define _SCL_SECURE_NO_WARNINGS  
+//
+//  done via CMAKE_CXX_FLAGS
+//#define _SCL_SECURE_NO_WARNINGS  
 
 
 #endif

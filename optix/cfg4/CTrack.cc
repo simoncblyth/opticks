@@ -1,3 +1,4 @@
+#include "CFG4_BODY.hh"
 #include "CTrack.hh"
 #include "G4Track.hh"
 
