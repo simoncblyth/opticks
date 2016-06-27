@@ -51,11 +51,12 @@ class CFG4_API CPropLib {
        static const char* SENSOR_MATERIAL ;
    public:
        CPropLib(Opticks* opticks, int verbosity=0);
+       void convert(); // commented in init 
    private:
        void init();
        void checkConstants(); 
        void setupOverrides(); 
-       void convert();
+       //void convert();  commented in init 
    public:
        // GGeo material access
        unsigned int getNumMaterials();
@@ -109,6 +110,7 @@ class CFG4_API CPropLib {
        GScintillatorLib*  m_sclib ; 
        GDomain<float>*    m_domain ; 
        float              m_dscale ;  
+       bool               m_converted ;      
 
        GPropertyMap<float>* m_sensor_surface ; 
 

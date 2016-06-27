@@ -51,6 +51,7 @@ CPropLib::CPropLib(Opticks* opticks, int verbosity)
   m_sclib(NULL),
   m_domain(NULL),
   m_dscale(1), 
+  m_converted(false), 
   m_groupvel_kludge(true)
 {
     init();
@@ -127,6 +128,13 @@ void CPropLib::checkConstants()
 
 unsigned int CPropLib::getNumMaterials()
 {
+   LOG(trace) << "." ; 
+   if(m_mlib == NULL)
+   {
+       LOG(error) << "mlib NULL" ;
+       return 0 ;    
+   } 
+
    return m_mlib->getNumMaterials();
 }
 const GMaterial* CPropLib::getMaterial(unsigned int index)
@@ -145,6 +153,9 @@ const GMaterial* CPropLib::getMaterial(const char* shortname)
 
 void CPropLib::convert()
 {
+    assert(m_converted == false);
+    m_converted = true ; 
+
     unsigned int ngg = getNumMaterials() ;
     for(unsigned int i=0 ; i < ngg ; i++)
     {
@@ -161,7 +172,17 @@ void CPropLib::convert()
 
 const G4Material* CPropLib::getG4Material(const char* shortname)
 {
-    return m_g4mat.count(shortname) == 1 ? m_g4mat[shortname] : NULL ; 
+    const G4Material* mat =  m_g4mat.count(shortname) == 1 ? m_g4mat[shortname] : NULL ; 
+
+    if(mat == NULL)
+    {
+        LOG(error) << " No G4Material in m_g4mat with shortname " << shortname 
+                   << " out of " << m_g4mat.size()
+                    ; 
+                     
+     
+    }
+    return mat ; 
 }
 
 
@@ -255,6 +276,9 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 {
     const char* name = ggmat->getShortName();
     GMaterial* _ggmat = const_cast<GMaterial*>(ggmat) ; // wont change it, i promise 
+
+    LOG(trace) << " name " << name ; 
+
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB");
@@ -458,6 +482,9 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     const char* name = kmat->getShortName();
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
 
+    std::string sname = name ; 
+
+
     LOG(debug) << "CPropLib::convertMaterial  " 
               << " name " << name
               << " materialIndex " << materialIndex
@@ -472,8 +499,11 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     {
         G4double z, a, density ;
         // presumably z, a and density are not relevant for optical photons 
-        material = new G4Material(name, z=1., a=1.01*g/mole, density=universe_mean_density );
+        material = new G4Material(sname, z=1., a=1.01*g/mole, density=universe_mean_density );
     }
+
+
+    LOG(trace) << "." ; 
 
     G4MaterialPropertiesTable* mpt = makeMaterialPropertiesTable(kmat);
     material->SetMaterialPropertiesTable(mpt);
@@ -517,22 +547,34 @@ std::string CPropLib::MaterialSequence(unsigned long long seqmat)
 
 void CPropLib::dump(const char* msg)
 {
+    LOG(info) <<  msg ; 
+
     unsigned int ni = getNumMaterials() ;
     int index = m_opticks->getLastArgInt();
     const char* lastarg = m_opticks->getLastArg();
 
-    if(index < int(ni))
+
+    LOG(trace) <<  " ni " << ni 
+               << " index " << index
+               << " lastarg " << lastarg
+              ; 
+
+
+    if(index < int(ni) && index >=0)
     {   
+        LOG(trace) << " dump index " << index ;
         const GMaterial* mat = getMaterial(index);
         dump(mat, msg);
     }   
     else if(hasMaterial(lastarg))
     {   
+        LOG(trace) << " dump lastarg " << lastarg ;
         const GMaterial* mat = getMaterial(lastarg);
         dump(mat, msg);
     }   
     else
     {
+        LOG(trace) << " dump ni " << ni  ;
         for(unsigned int i=0 ; i < ni ; i++)
         {
            const GMaterial* mat = getMaterial(i);
@@ -544,14 +586,26 @@ void CPropLib::dump(const char* msg)
 
 void CPropLib::dump(const GMaterial* mat, const char* msg)
 {
+    LOG(trace) << " dump mat " << mat ;
     GMaterial* _mat = const_cast<GMaterial*>(mat); 
-    const G4Material* g4mat = getG4Material(_mat->getName());
+    const char* _name = _mat->getName();
+    LOG(trace) << " dump _name " << _name ;
+    const G4Material* g4mat = getG4Material(_name);
+    LOG(trace) << " dump g4mat " << g4mat ;
     dumpMaterial(g4mat, msg);
 }
 
 
 void CPropLib::dumpMaterial(const G4Material* mat, const char* msg)
 {
+
+    if(mat == NULL)
+    {
+         LOG(error) << " NULL G4Material mat " << msg ; 
+         return ; 
+    }
+
+
     const G4String& name = mat->GetName();
     LOG(info) << msg << " name " << name ; 
 

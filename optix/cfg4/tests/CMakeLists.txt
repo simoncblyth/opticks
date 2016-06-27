@@ -14,6 +14,7 @@ set(TEST_SOURCES
     CTestDetectorTest.cc
     CGDMLDetectorTest.cc
     CG4Test.cc
+    G4MaterialTest.cc
 
 )
 

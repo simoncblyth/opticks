@@ -144,6 +144,7 @@ g4-edir(){ echo $(env-home)/g4 ; }
 #g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
 
 #g4-prefix(){  echo $(opticks-prefix)/externals ; }
+
 g4-prefix(){ 
     case $NODE_TAG in 
        MGB) echo $HOME/local/opticks/externals ;;
@@ -152,6 +153,7 @@ g4-prefix(){
     esac
  }
 
+g4-idir(){ echo $(g4-prefix) ; }
 g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
 
 # follow env/psm1/dist/dist.psm1 approach : everythinh based off the url
@@ -279,9 +281,8 @@ g4--(){
 }
 
 
-g4-export(){
-   source $(g4-idir)/bin/geant4.sh
-}
+g4-sh(){ echo $(g4-idir)/bin/geant4.sh ; }
+g4-export(){ source $(g4-sh) ; }
 
 
 

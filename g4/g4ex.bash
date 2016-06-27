@@ -30,6 +30,19 @@ g4ex-idir(){ echo $(local-base)/env/g4ex/$(g4ex-name).install ; }
 g4ex-prefix(){ echo $(local-base)/env/g4ex ; }
 
 
+g4ex-exe-(){ echo $(g4ex-bdir)/$(g4ex-config)/${1}.exe ; }
+g4ex-exename(){
+   case $(g4ex-name) in 
+                  "basic/B1") echo exampleB1 ;;
+      "extended/optical/LXe") echo LXe ;;
+   esac 
+}
+g4ex-exe(){ echo $(g4ex-exe- $(g4ex-exename)) ; }
+
+
+
+
+
 g4ex-hhfind(){ find $(g4-examples-dir) -name '*.hh' -exec grep -H ${1:-Gun} {} \; ; }
 g4ex-ccfind(){ find $(g4-examples-dir) -name '*.cc' -exec grep -H ${1:-Gun} {} \; ; }
 
@@ -79,6 +92,14 @@ g4ex-run(){
    esac 
 
 }
+
+g4ex-srun(){
+
+   g4ex-cd
+   local exe=$
+}
+
+
 
 g4ex--(){
    g4ex-wipe
