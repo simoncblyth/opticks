@@ -28,6 +28,25 @@ TODO
 * light source config, blackbody
 
 
+Resource Issue ?
+-------------------
+
+::
+
+    2016-06-28 21:00:05.591 DEBUG [13284] [CSteppingAction::UserSteppingAction@199]     (step) event_id 33 track_id 2902 track_step_count 1 step_id 0 trackStatus fAlive
+    2016-06-28 21:00:05.591 DEBUG [13284] [CSteppingAction::UserSteppingAction@199]     (step) event_id 33 track_id 2902 track_step_count 2 step_id 1 trackStatus fStopAndKill
+    2016-06-28 21:00:05.591 DEBUG [13284] [CSteppingAction::UserSteppingAction@162] CSA (trak) event_id 33 track_id 2901 parent_id 0 event_track_count 7099 pdg_encoding 0 optical 1 particle_name opticalphoton steprec_store_count 0
+    2016-06-28 21:00:05.591 DEBUG [13284] [CSteppingAction::UserSteppingActionOptical@243]     (opti) photon_id 2900 step_id 0 record_id 332900 record_max 500000
+    2016-06-28 21:00:05.591 DEBUG [13284] [CSteppingAction::UserSteppingAction@199]     (step) event_id 33 track_id 2901 track_step_count 1 step_id 0 trackStatus fStopAndKill
+    WARNING - Attempt to delete the physical volume store while geometry closed !
+    WARNING - Attempt to delete the logical volume store while geometry closed !
+    WARNING - Attempt to delete the solid store while geometry closed !
+    WARNING - Attempt to delete the region store while geometry closed !
+
+    ntuhep@ntuhep-PC MINGW64 ~/env/optix/cfg4
+
+
+
 Plumbing Classes
 -------------------
 

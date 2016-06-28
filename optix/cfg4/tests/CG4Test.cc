@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     CFG4_LOG__ ; 
 
 
-    LOG(trace) << argv[0] ;
+    LOG(info) << argv[0] ;
 
     Opticks* m_opticks = new Opticks(argc, argv);
 
@@ -29,30 +29,30 @@ int main(int argc, char** argv)
 
     CG4* m_geant4 = new CG4(m_opticks) ; 
 
-    LOG(trace) << "  CG4 ctor DONE "  ;
+    LOG(info) << "  CG4 ctor DONE "  ;
 
     m_geant4->setEvent(m_evt);
 
     m_geant4->configure();
 
-    LOG(trace) << "  CG4 configure DONE "  ;
+    LOG(info) << "  CG4 configure DONE "  ;
 
     m_geant4->initialize();
 
-    LOG(trace) << "  CG4 initialize DONE "  ;
+    LOG(info) << "  CG4 initialize DONE "  ;
 
 
     m_geant4->interactive(argc, argv);
 
-    LOG(trace) << "  CG4 interactive DONE "  ;
+    LOG(info) << "  CG4 interactive DONE "  ;
 
     m_geant4->propagate();
 
-    LOG(trace) << "  CG4 propagate DONE "  ;
+    LOG(info) << "  CG4 propagate DONE "  ;
 
     m_evt->save();
 
-    LOG(trace) << "  evt save DONE "  ;
+    LOG(info) << "  evt save DONE "  ;
 
     m_geant4->cleanup();
 
