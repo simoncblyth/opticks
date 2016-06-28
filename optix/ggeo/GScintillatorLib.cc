@@ -20,6 +20,13 @@ const char* GScintillatorLib::keyspec =
 "reemission_cdf:DUMMY," 
 ;
 
+void GScintillatorLib::Summary(const char* msg)
+{
+   LOG(info) << msg 
+             << " num_scintillators " << getNumRaw() 
+             ;
+}
+
 void GScintillatorLib::dump(const char* msg)
 {
    LOG(info) << msg 

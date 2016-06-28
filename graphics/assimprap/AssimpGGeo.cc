@@ -525,7 +525,6 @@ which are fabricated by AssimpGGeo::convertSensors.
 
     unsigned int nclv = gg->getNumCathodeLV();
 
-    //GDomain<float>* standard_domain = gg->getBoundaryLib()->getStandardDomain(); 
     GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
 
     // DYB: nclv=2 for hemi and headon PMTs 

@@ -63,10 +63,18 @@ CTestDetector::CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuer
 
 void CTestDetector::init()
 {
+    LOG(trace) << "CTestDetector::init" ; 
+
     m_lib->setGroupvelKludge(m_config->getGroupvel());
+
     m_maker = new CMaker(m_opticks);
 
+    LOG(trace) << "CTestDetector::init CMaker created" ; 
+
     G4VPhysicalVolume* top = makeDetector();
+
+    LOG(trace) << "CTestDetector::init makeDetector DONE" ; 
+
     setTop(top) ; 
 }
 
@@ -94,10 +102,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
     bool is_pib = isPmtInBox() ;
     bool is_bib = isBoxInBox() ;
 
-    if(m_verbosity > 0)
-    LOG(info) << "CTestDetector::Construct"
-              << " pib " << is_pib
-              << " bib " << is_bib
+    LOG(trace) << "CTestDetector::Construct"
+               << " PmtInBox " << is_pib
+               << " BoxInBox " << is_bib
               ;
 
     assert( is_pib || is_bib && "CTestDetector::Construct mode not recognized");
@@ -166,9 +173,20 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 {
     // try without creating an explicit node tree 
 
+    LOG(trace) << "CTestDetector::makePMT" ; 
+
     NSlice* slice = m_config->getSlice();
 
     GCSG* csg = m_lib->getPmtCSG(slice);
+
+    if(csg == NULL)
+    {
+        LOG(fatal) << " CTestDetector::makePMT NULL csg from CPropLib " ;
+        setValid(false);
+        return ; 
+    }   
+
+
     if(m_verbosity > 1)
     csg->dump();
 

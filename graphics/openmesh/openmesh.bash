@@ -33,6 +33,39 @@ Flag Consistency
       OpenMeshCored.lib(BaseProperty.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary':
       value 'MDd_DynamicDebug' doesn't match value 'MD_DynamicRelease' in MESHRAP_LOG.obj [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
 
+Warnings
+--------------
+
+::
+
+    "C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj" (default target) (88) ->
+    (ClCompile target) ->
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(140): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(143): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(146): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(149): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(152): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(155): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(158): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(161): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(164): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(167): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(170): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(173): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(176): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(179): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(182): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(185): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(188): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(191): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
 
 
 

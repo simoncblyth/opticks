@@ -2,9 +2,14 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OpenMeshRapTest)
 project(${name})
 
-file(GLOB TEST_CC_SRCS "*Test.cc")
+#file(GLOB TEST_SOURCES "*Test.cc")
+set(TEST_SOURCES
+     OpenMeshRapTest.cc 
+)
 
-foreach(TEST_CC_SRC ${TEST_CC_SRCS})
+
+
+foreach(TEST_CC_SRC ${TEST_SOURCES})
     get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
     add_executable(${TGT} ${TEST_CC_SRC})
 

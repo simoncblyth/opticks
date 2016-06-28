@@ -65,6 +65,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_meshfixcfg(NULL),
        m_idpath(NULL),
        m_idfold(NULL),
+       m_idbase(NULL),
        m_digest(NULL),
        m_valid(true),
        m_query(NULL),
@@ -77,7 +78,8 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_juno(false),
        m_dpib(false),
        m_other(false),
-       m_detector(NULL)
+       m_detector(NULL),
+       m_detector_name(NULL)
 {
     init();
 }
@@ -107,6 +109,18 @@ const char* OpticksResource::getIdFold()
 {
     return m_idfold ;
 }
+const char* OpticksResource::getIdBase()
+{
+    return m_idbase ;
+}
+const char* OpticksResource::getDetectorBase()
+{
+    return m_detector_base ;
+}
+
+
+
+
 const char* OpticksResource::getEnvPrefix()
 {
     return m_envprefix ;
@@ -153,6 +167,14 @@ const char* OpticksResource::getDetector()
 {
     return m_detector ;
 }
+const char* OpticksResource::getDetectorName()
+{
+    return m_detector_name ;
+}
+
+
+
+
 bool OpticksResource::isJuno()
 {
    return m_juno ; 
@@ -210,6 +232,7 @@ void OpticksResource::init()
    readEnvironment();
    readMetadata();
    identifyGeometry();
+   assignDetectorName(); 
 
    LOG(trace) << "OpticksResource::init DONE" ; 
 }
@@ -218,6 +241,7 @@ void OpticksResource::identifyGeometry()
 {
    // TODO: somehow extract detector name from the exported file metadata or sidecar
 
+
    m_juno     = idPathContains("export/juno") ;
    m_dayabay  = idPathContains("export/DayaBay") ;
    m_dpib     = idPathContains("export/dpib") ;
@@ -225,8 +249,9 @@ void OpticksResource::identifyGeometry()
    if(m_juno == false && m_dayabay == false && m_dpib == false )
    {
        const char* detector = getMetaValue("detector") ;
-      if(detector)
+       if(detector)
        {
+
            if(     strcmp(detector, DAYABAY) == 0) m_dayabay = true ; 
            else if(strcmp(detector, JUNO)    == 0) m_juno = true ; 
            else if(strcmp(detector, DPIB)    == 0) m_dpib = true ; 
@@ -248,7 +273,25 @@ void OpticksResource::identifyGeometry()
    if(m_dayabay) m_detector = DAYABAY ; 
    if(m_dpib)    m_detector = DPIB ; 
    if(m_other)   m_detector = OTHER ; 
+
 }
+
+void OpticksResource::assignDetectorName()
+{
+   std::map<std::string, std::string> detname ; 
+   detname["juno"]    = "juno" ;
+   detname["dayabay"] = "DayaBay" ;
+   detname["dpib"]    = "dpib" ;
+
+   if(m_detector && detname.count(m_detector) == 1) m_detector_name =  strdup(detname[m_detector].c_str()) ; 
+
+   if(m_detector_name && m_idbase )
+   {
+        std::string detbase = BFile::FormPath(m_idbase, m_detector_name);
+        m_detector_base = strdup(detbase.c_str());
+   }
+}
+
 
 
 void OpticksResource::readEnvironment()
@@ -353,6 +396,17 @@ void OpticksResource::readEnvironment()
     {
         std::string fold = BFile::ParentDir(m_idpath);
         m_idfold = strdup(fold.c_str());
+
+        // Parent of the IDPATH is the IDFOLD, typically contains
+        //
+        //       g4_00.dae 
+        //       g4_00.gdml 
+        //       ChromaMaterialMap.json  
+
+
+        std::string base = BFile::ParentDir(m_idfold);
+        m_idbase = strdup(base.c_str());
+
     } 
 
     // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS
@@ -392,6 +446,12 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
     std::cerr << "digest   : " <<  (m_digest?m_digest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
+    std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
+    std::cerr << "idbase   : " <<  (m_idbase?m_idbase:"NULL") << std::endl; 
+    std::cerr << "detector : " <<  (m_detector?m_detector:"NULL") << std::endl; 
+    std::cerr << "detector_name : " <<  (m_detector_name?m_detector_name:"NULL") << std::endl; 
+    std::cerr << "detector_base : " <<  (m_detector_base?m_detector_base:"NULL") << std::endl; 
+    std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
 
     typedef std::map<std::string, std::string> SS ;
@@ -423,25 +483,46 @@ std::string OpticksResource::getMergedMeshPath(unsigned int index)
 
 std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
 {
-    return getObjectPath("GPmt", index, relative);
+    return relative ?
+                        getRelativePath("GPmt", index)
+                    :
+                        getDetectorPath("GPmt", index)
+                    ;
+
+    // relocate from inside the "digested" idpath up to eg export/Dayabay/GPmt/0
+    // as analytic PMT definitions dont change with the geometry selection parameters
+
 }
 
-std::string OpticksResource::getObjectPath(const char* name, unsigned int index, bool relative)
+std::string OpticksResource::getObjectPath(const char* name, unsigned int index)
 {
-    fs::path dir ; 
-    if(!relative)
-    {
-        assert(m_idpath && "OpticksResource::getObjectPath idpath not set");
-        fs::path cachedir(m_idpath);
-        dir = cachedir/name/boost::lexical_cast<std::string>(index) ;
-    }
-    else
-    {
-        fs::path reldir(name);
-        dir = reldir/boost::lexical_cast<std::string>(index) ;
-    }
+    assert(m_idpath && "OpticksResource::getObjectPath idpath not set");
+    fs::path dir(m_idpath);
+    dir /= name ;
+    dir /= boost::lexical_cast<std::string>(index) ;
     return dir.string() ;
 }
+
+
+std::string OpticksResource::getRelativePath(const char* name, unsigned int index)
+{
+    // used eg by GPmt::loadFromCache returning "GPmt/0"
+    fs::path reldir(name);
+    reldir /= boost::lexical_cast<std::string>(index) ;
+    return reldir.string() ;
+}
+
+
+std::string OpticksResource::getDetectorPath(const char* name, unsigned int index)
+{
+    assert(m_detector_base && "OpticksResource::getDetectorPath detector_path not set");
+    fs::path dir(m_detector_base);
+    dir /= name ;
+    dir /= boost::lexical_cast<std::string>(index) ;
+    return dir.string() ;
+}
+
+
 
 std::string OpticksResource::getPropertyLibDir(const char* name)
 {

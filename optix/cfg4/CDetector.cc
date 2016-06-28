@@ -88,11 +88,10 @@ void CDetector::setVerbosity(unsigned int verbosity)
 
 
 
-
-
-
 void CDetector::init()
 {
+    LOG(trace) << "CDetector::init" ;
+
     m_resource = m_opticks->getResource();
     m_lib = new CPropLib(m_opticks);
     m_bbox = new NBoundingBox ;

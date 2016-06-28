@@ -4,6 +4,7 @@ project(${name})
 
 set(TEST_SOURCES
 
+   SEnvTest.cc
    SSysTest.cc
    SDigestTest.cc
    PLogTest.cc 

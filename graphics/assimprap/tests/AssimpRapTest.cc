@@ -43,6 +43,7 @@ Comparing with pycollada
 
 #include "PLOG.hh"
 
+#include "SYSRAP_LOG.hh"
 #include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
@@ -50,16 +51,18 @@ Comparing with pycollada
 #include "ASIRAP_LOG.hh"
 
 
-// cf with App::loadGeometry and GLoader::load where the below is canonically done  
+// cf with canonical : opticksgeo-/OpticksGeometry::loadGeometry()
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    BRAP_LOG_ ;
-    NPY_LOG_ ;
-    OKCORE_LOG_ ;
-    GGEO_LOG_ ;
-    ASIRAP_LOG_ ;
+
+    SYSRAP_LOG__ ;
+    BRAP_LOG__ ;
+    NPY_LOG__ ;
+    OKCORE_LOG__ ;
+    GGEO_LOG__ ;
+    ASIRAP_LOG__ ;
 
     Opticks ok(argc, argv);
 
@@ -85,25 +88,20 @@ int main(int argc, char** argv)
     m_ggeo->traverse();
 
 
-    GMergedMesh* mm = m_ggeo->makeMergedMesh();
+    GMergedMesh* mm = m_ggeo->makeMergedMesh(); // this only makes when not existing TODO:split 
     mm->Summary("GMergedMesh");
 
     GMaterialLib* mlib = m_ggeo->getMaterialLib();
     mlib->Summary();
-    mlib->save();
 
     GSurfaceLib* slib = m_ggeo->getSurfaceLib();
-    //slib->dump();
-    slib->save();
-
+    slib->Summary();
 
     GScintillatorLib* sclib = m_ggeo->getScintillatorLib();  // gets populated by GGeo::prepareScintillatorLib/GGeo::loadFromG4DAE
-    sclib->save();
-
+    sclib->Summary();
 
     GBndLib* bnd = m_ggeo->getBndLib();
-    //bnd->dump();
-    bnd->save();
+    bnd->Summary();
 
 
     return 0 ; 

@@ -19,6 +19,10 @@
 #endif
 
 #include "NBoundingBox.hpp"
+
+#include "BRAP_LOG.hh"
+#include "NPY_LOG.hh"
+#include "GGEO_LOG.hh"
 #include "CFG4_LOG.hh"
 #include "PLOG.hh"
 
@@ -26,6 +30,9 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv)
 
+    BRAP_LOG__ ; 
+    NPY_LOG__ ; 
+    GGEO_LOG__ ; 
     CFG4_LOG__ ; 
 
     LOG(info) << argv[0] ; 
@@ -42,7 +49,11 @@ int main(int argc, char** argv)
 
     GGeoTestConfig* m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
 
+    LOG(info) << "create CTestDetector" ; 
+
     CTestDetector* m_detector  = new CTestDetector(m_opticks, m_testconfig) ; 
+
+    LOG(info) << "create CTestDetector DONE " ; 
 
     bool valid = m_detector->isValid();
 

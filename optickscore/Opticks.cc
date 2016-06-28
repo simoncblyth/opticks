@@ -618,7 +618,14 @@ std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
     return m_resource->getPreferenceDir(type, udet, subtype);
 }
 
-std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool relative) { return m_resource->getObjectPath(name, ridx, relative); }
+std::string Opticks::getObjectPath(const char* name, unsigned int ridx, bool relative) 
+{
+   return relative ?
+                     m_resource->getRelativePath(name, ridx)
+                   :
+                     m_resource->getObjectPath(name, ridx)
+                   ; 
+}
 std::string Opticks::getRelativePath(const char* path) { return m_resource->getRelativePath(path); }
 
 OpticksQuery*   Opticks::getQuery() {     return m_resource->getQuery(); }

@@ -26,6 +26,13 @@
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
 
+/*
+Analytic PMT description obtained from parsing DetDesc
+see python scripts in ~/env/nuwa/detdesc/pmt/
+and env bash functions pmt- 
+
+*/
+
 
 GPmt* GPmt::load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* slice)
 {
@@ -50,18 +57,26 @@ void GPmt::loadFromCache(NSlice* slice)
 {
     OpticksResource* resource = m_cache->getResource();
 
-    std::string relpath = resource->getPmtPath(m_index, true); 
+    //const char* base = resource->getIdPath();
+    const char* base = resource->getDetectorBase();
 
-    GItemList*  bndSpec_orig = GItemList::load(resource->getIdPath(), "GPmt_boundaries", relpath.c_str() );
+    bool relative ;   
+    std::string relpath = resource->getPmtPath(m_index, relative=true); 
+    std::string path    = resource->getPmtPath(m_index, relative=false ); 
 
-    GItemList*  materials = GItemList::load(resource->getIdPath(), "GPmt_materials", relpath.c_str() );
-    GItemList*  lvnames = GItemList::load(resource->getIdPath(), "GPmt_lvnames", relpath.c_str() );
-    GItemList*  pvnames = GItemList::load(resource->getIdPath(), "GPmt_pvnames", relpath.c_str() );
+    LOG(trace) << "GPmt::loadFromCache"
+               << " base " << base
+               << " relpath " << relpath 
+               << " path " << path 
+               ;
 
-    std::string path = resource->getPmtPath(m_index); 
+
+    GItemList*  bndSpec_orig = GItemList::load(base, "GPmt_boundaries", relpath.c_str() );
+    GItemList*  materials = GItemList::load(base, "GPmt_materials", relpath.c_str() );
+    GItemList*  lvnames = GItemList::load(base, "GPmt_lvnames", relpath.c_str() );
+    GItemList*  pvnames = GItemList::load(base, "GPmt_pvnames", relpath.c_str() );
 
     NPY<float>* partBuf_orig = NPY<float>::load( path.c_str(), FILENAME );
-
     NPY<float>* csgBuf_orig = NPY<float>::load( path.c_str(), FILENAME_CSG );
 
     NPY<float>* csgBuf(NULL);

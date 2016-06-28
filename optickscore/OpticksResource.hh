@@ -39,13 +39,19 @@ class OKCORE_API OpticksResource {
        void readEnvironment();
        void readMetadata();
        void identifyGeometry();
+       void assignDetectorName();
        void setValid(bool valid);
     public:
        const char* getInstallPrefix();
        const char* getIdPath();
-       const char* getIdFold();  // parent directory of idpath
+       const char* getIdFold();  // parent directory of idpath containing g4_00.dae
+       const char* getIdBase();  // parent directory of idfold, typically the "export" folder
+       const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
+    public:
        std::string getRelativePath(const char* path); 
-       std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
+       std::string getRelativePath(const char* name, unsigned int ridx);
+       std::string getObjectPath(const char* name, unsigned int ridx);
+       std::string getDetectorPath(const char* name, unsigned int ridx);
        std::string getMergedMeshPath(unsigned int ridx);
        std::string getPmtPath(unsigned int index, bool relative=false);
        std::string getPropertyLibDir(const char* name);
@@ -87,6 +93,7 @@ class OKCORE_API OpticksResource {
        glm::vec4   getMeshfixFacePairingCriteria();
     public:
        const char* getDetector();
+       const char* getDetectorName();
        bool        isJuno();
        bool        isDayabay();
        bool        isPmtInBox();
@@ -108,6 +115,7 @@ class OKCORE_API OpticksResource {
        const char* m_meshfixcfg ;
        const char* m_idpath ;
        const char* m_idfold ;
+       const char* m_idbase ;
        const char* m_digest ;
        bool        m_valid ; 
    private:
@@ -124,6 +132,8 @@ class OKCORE_API OpticksResource {
        bool        m_dpib ; 
        bool        m_other ; 
        const char* m_detector ;
+       const char* m_detector_name ;
+       const char* m_detector_base ;
        
    private:
       std::map<std::string, std::string> m_metadata ;  

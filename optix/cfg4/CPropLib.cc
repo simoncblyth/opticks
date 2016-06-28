@@ -66,6 +66,8 @@ void CPropLib::setGroupvelKludge(bool gvk)
 
 void CPropLib::init()
 {
+    LOG(trace) << "CPropLib::init" ; 
+
     bool constituents ; 
 
     m_bndlib = GBndLib::load(m_opticks, constituents=true);
@@ -77,8 +79,17 @@ void CPropLib::init()
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
-    if(m_verbosity>2)
-    m_sensor_surface->Summary("CPropLib::init cathode_surface");
+    if(m_sensor_surface == NULL)
+    {
+        LOG(warning) << "CPropLib::init"
+                     << " surface lib sensor_surface NULL "
+                     ; 
+    }
+    else
+    {
+        if(m_verbosity>2)
+        m_sensor_surface->Summary("CPropLib::init cathode_surface");
+    }
 
     m_dscale = float(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
 
@@ -205,7 +216,23 @@ const G4Material* CPropLib::makeMaterial(const char* matname)
 GCSG* CPropLib::getPmtCSG(NSlice* slice)
 {
     GPmt* pmt = GPmt::load( m_opticks, m_bndlib, 0, slice );    // pmtIndex:0
+
+    if(pmt == NULL)
+    {
+        LOG(error) << "CPropLib::getPmtCSG failed to load PMT" ;
+        return NULL ;
+    }
+
+
     GCSG* csg = pmt->getCSG();
+
+    if(csg == NULL)
+    {
+        LOG(error) << "CPropLib::getPmtCSG failed to getCSG from GPmt" ;
+        return NULL ;
+    }
+
+
     return csg ;
 }
 
@@ -286,6 +313,12 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     if(strcmp(name, SENSOR_MATERIAL)==0)
     {
         GPropertyMap<float>* surf = m_sensor_surface ; 
+
+        LOG(fatal) << "CPropLib::makeMaterialPropertiesTable"  
+                   << " material with SENSOR_MATERIAL name " << name 
+                   << " but no sensor_surface "
+                   ; 
+
         assert(surf);
         addProperties(mpt, surf, "EFFICIENCY");
     }

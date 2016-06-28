@@ -4,7 +4,7 @@ project(${name})
 
 #file(GLOB TEST_SOURCES "*Test.cc")
 
-set(TEST_SOURCES_OK
+set(TEST_SOURCES
 
     OpticksQueryTest.cc
     IndexerTest.cc
@@ -14,21 +14,17 @@ set(TEST_SOURCES_OK
     OpticksFlagsTest.cc
     fooTest.cc
     OpticksCfgTest.cc
-)
-
-
-set(TEST_SOURCES 
-
     OpticksTest.cc
+    OpticksResourceTest.cc
 
 )
+
 
 set(TEST_SOURCES_NOK 
 
     EvtLoadTest.cc
     NGunConfigTest.cc
     OpticksEventTest.cc
-    OpticksResourceTest.cc
 
     BookmarksTest.cc
     CompositionTest.cc

@@ -6,7 +6,7 @@
 #include "GLMPrint.hpp"
 #include "NSlice.hpp"
 
-// optickscore-
+// okc-
 #include "Opticks.hh"
 #include "OpticksConst.hh"
 #include "OpticksResource.hh"

@@ -3,11 +3,11 @@
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 #include "Indexer.hh"
-#include "BLog.hh"
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
-    BLOG(argc, argv);
+    PLOG_(argc, argv);
 
     const char* typ = "torch" ; 
     const char* tag = "4" ; 

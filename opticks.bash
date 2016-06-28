@@ -491,7 +491,7 @@ opticks--(){
 
    local bdir=$1
    shift
-   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+   [ -z "$bdir" -o "$bdir" == "." ] && bdir=$(opticks-bdir) 
    [ ! -d "$bdir" ] && echo $msg bdir $bdir does not exist && return 
 
    cd $bdir
@@ -500,8 +500,21 @@ opticks--(){
 
    cd $iwd
 }
+
+
 opticks-ctest()
-{ 
+{
+   # 
+   # Basic environment (PATH and envvars to find data) 
+   # should happen at profile level (or at least be invoked from there) 
+   # not here (and there) for clarity of a single location 
+   # where smth is done.
+   #
+   # Powershell presents a challenge to this principal,
+   # TODO:find a cross platform way of doing envvar setup 
+   #
+   #
+
    local msg="$FUNCNAME : "
    local iwd=$PWD
 
@@ -511,8 +524,33 @@ opticks-ctest()
 
    cd $bdir
 
-   export-
-   export-export 
+   ctest $*
+
+
+   cd $iwd
+   echo $msg use -V to show output 
+}
+
+
+
+opticks-ctest-deprecated()
+{ 
+
+   local msg="$FUNCNAME : "
+   local iwd=$PWD
+
+   local bdir=$1
+   shift
+   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+
+   cd $bdir
+
+   #export-
+   #export-export 
+
+   opticksdata-
+   opticksdata-export
+
 
    if [ "$USERPROFILE" == "" ]; then 
       ctest $*   

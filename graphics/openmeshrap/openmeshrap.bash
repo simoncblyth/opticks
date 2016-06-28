@@ -204,11 +204,13 @@ EOU
 openmeshrap-env(){      elocal- ; opticks- ;  }
 openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
 openmeshrap-sdir(){ echo $(env-home)/graphics/openmeshrap ; }
+openmeshrap-tdir(){ echo $(env-home)/graphics/openmeshrap/tests ; }
 openmeshrap-idir(){ echo $(opticks-idir) ; }
 openmeshrap-bdir(){ echo $(opticks-bdir)/$(openmeshrap-rel) ; }
 
 openmeshrap-cd(){   cd $(openmeshrap-dir); }
 openmeshrap-scd(){  cd $(openmeshrap-sdir); }
+openmeshrap-tcd(){  cd $(openmeshrap-tdir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }
 openmeshrap-bcd(){  cd $(openmeshrap-bdir); }
 
@@ -230,7 +232,7 @@ openmeshrap-ctest(){    opticks-ctest $(openmeshrap-bdir) $* ; }
 openmeshrap-genproj(){  openmeshrap-scd ; opticks-genproj $(openmeshrap-name) $(openmeshrap-tag) ; }
 openmeshrap-gentest(){  openmeshrap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(openmeshrap-tag) ; }
 
-
+openmeshrap-txt(){ vi $(openmeshrap-sdir)/CMakeLists.txt  $(openmeshrap-tdir)/CMakeLists.txt ; }
 
 
 

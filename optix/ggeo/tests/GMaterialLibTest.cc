@@ -8,7 +8,7 @@
 #include <iomanip>
 
 
-#include "BSys.hh"
+#include "SSys.hh"
 
 #include "Opticks.hh"
 #include "OpticksAttrSeq.hh"
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     GGEO_LOG_ ;
 
-    BSys::setenvvar("", "IDPATH", "/tmp", true );
+    SSys::setenvvar("", "IDPATH", "/tmp", true );
 
     Opticks ok(argc, argv);
 

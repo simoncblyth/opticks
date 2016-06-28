@@ -3,7 +3,10 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 
-int main(int argc, char** argv, char** envp)
+
+
+
+void dumpenv_0(char** envp)
 {
    // http://stackoverflow.com/questions/2085302/printing-all-environment-variables-in-c-c
     char** env;
@@ -12,7 +15,18 @@ int main(int argc, char** argv, char** envp)
        char* thisEnv = *env;
        printf("%s\n", thisEnv);    
     }
+}
 
+
+void dumpenv_1(char** envp)
+{
+    while(*envp) printf("%s\n",*envp++);
+}
+
+
+
+int main(int argc, char** argv, char** /*envp*/)
+{
     Opticks op(argc, argv) ;
     OpticksResource res(&op) ;  // TODO: remove duplication of envprefix beween both these
     res.Dump();

@@ -745,7 +745,7 @@ GPropertyMap<float>* GSurfaceLib::getSensorSurface(unsigned int offset)
 
 bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
 {
-    // name suffix based, see AssimpGGeo::convertSensor
+    // "SensorSurface" name suffix based, see AssimpGGeo::convertSensor
     const char* name = getName(qsurface); 
     if(!name) return false ; 
 
