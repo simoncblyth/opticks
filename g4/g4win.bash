@@ -8,9 +8,10 @@ g4win-usage(){ cat << EOU
 G4 On Windows notes
 =====================
 
+Former Opticks FLAGS
+----------------------
 
-Opticks FLAGS
--------------------
+Have now adopted the G4 flags approach, the below are cmake defaults.
 
 /c/usr/local/opticks/build/CMakeCache.txt::
 
@@ -35,7 +36,6 @@ Opticks FLAGS
     173 //Libraries linked by default with all C++ applications.
     174 CMAKE_CXX_STANDARD_LIBRARIES:STRING=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
     175
-
 
 Hmm this doesnt incorporate env/cmake/Modules/EnvCompilationFlags.cmake::
 
@@ -140,8 +140,7 @@ The rules are almost the first thing done in top level CMakeLists.txt::
 
 
 Problem with just adopting these is that it prevents a Debug build from talking to 
-
-
+a Release one.  
 
 
 g4win-;g4win-configure::
@@ -283,6 +282,12 @@ macro is available but does not evaluate its argument and has no effect.
 _ITERATOR_DEBUG_LEVEL
 --------------------------
 
+* http://blogs.warwick.ac.uk/ahazelden/entry/visual_studio_stl/
+
+* https://channel9.msdn.com/shows/Going+Deep/STL-Iterator-Debugging-and-Secure-SCL/
+
+  Video from Microsoft STL Guy on this flags
+
 * https://msdn.microsoft.com/en-us/library/hh697468.aspx
 
 The _ITERATOR_DEBUG_LEVEL (IDL) macro supersedes and combines the functionality of the _SECURE_SCL (SCL) 
@@ -304,6 +309,12 @@ Getting Debug code (-MDd) to talk to Release (-MD) code ?
 
 Seems that setting _ITERATOR_DEBUG_LEVEL to 0  in Debug should allow it to talk with Release binaries ?
 
+* suspect this kind of interop may be impossible, or not worth the effort 
+
+* problem is that the Geant4 Debug build fails due to too many symbols in Processes lib,
+  forcing use of RelWithDebInfo
+
+* lets see how Opticks with RelWithDebInfo looks like in debugger
 
 
 Boost complains at link
