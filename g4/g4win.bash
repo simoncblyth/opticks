@@ -9,6 +9,326 @@ G4 On Windows notes
 =====================
 
 
+Opticks FLAGS
+-------------------
+
+/c/usr/local/opticks/build/CMakeCache.txt::
+
+    155 CMAKE_CONFIGURATION_TYPES:STRING=Debug;Release;MinSizeRel;RelWithDebInfo
+    156
+    157 //Flags used by the compiler during all build types.
+    158 CMAKE_CXX_FLAGS:STRING= /DWIN32 /D_WINDOWS /W3 /GR /EHsc
+    159
+    160 //Flags used by the compiler during debug builds.
+    161 CMAKE_CXX_FLAGS_DEBUG:STRING=/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1
+    162
+    163 //Flags used by the compiler during release builds for minimum
+    164 // size.
+    165 CMAKE_CXX_FLAGS_MINSIZEREL:STRING=/MD /O1 /Ob1 /D NDEBUG
+    166
+    167 //Flags used by the compiler during release builds.
+    168 CMAKE_CXX_FLAGS_RELEASE:STRING=/MD /O2 /Ob2 /D NDEBUG
+    169
+    170 //Flags used by the compiler during release builds with debug info.
+    171 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=/MD /Zi /O2 /Ob1 /D NDEBUG
+    172
+    173 //Libraries linked by default with all C++ applications.
+    174 CMAKE_CXX_STANDARD_LIBRARIES:STRING=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+    175
+
+
+Hmm this doesnt incorporate env/cmake/Modules/EnvCompilationFlags.cmake::
+
+     04 if(WIN32)
+      5
+      6   # need to detect compiler not os?
+      7   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4")
+      8   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX")
+      9   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_SCL_SECURE_NO_WARNINGS")
+     10   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_WARNINGS")
+     11   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
+     12
+
+CMake defaults from cmak-;cmak-flags::
+
+    .CMAKE_CXX_FLAGS :  /DWIN32 /D_WINDOWS /W3 /GR /EHsc
+    .CMAKE_CXX_FLAGS_DEBUG : /D_DEBUG /MDd /Zi /Ob0 /Od /RTC1
+    .CMAKE_CXX_FLAGS_MINSIZEREL : /MD /O1 /Ob1 /D NDEBUG
+    .CMAKE_CXX_FLAGS_RELEASE : /MD /O2 /Ob2 /D NDEBUG
+    .CMAKE_CXX_FLAGS_RELWITHDEBINFO : /MD /Zi /O2 /Ob1 /D NDEBUG
+    .CMAKE_EXE_LINKER_FLAGS :  /machine:X86
+
+
+G4 MSVC CXX FLAGS
+------------------
+
+~/local/opticks/externals/g4/geant4_10_02_p01.build/CMakeCache.txt::
+
+
+     23 //Semicolon separated list of supported configuration types, only
+     24 // supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything
+     25 // else will be ignored.
+     26 CMAKE_CONFIGURATION_TYPES:STRING=Debug;Release;MinSizeRel;RelWithDebInfo
+     27
+     28 //Flags used by the compiler during all build types.
+     29 CMAKE_CXX_FLAGS:STRING= -GR -EHsc -Zm200 -nologo -D_CONSOLE -D_WIN32 -DWIN32 -DOS -DXPNET -D_CRT_SECURE_NO_DEPRECATE
+     30
+     31 //Flags used by the compiler during debug builds.
+     32 CMAKE_CXX_FLAGS_DEBUG:STRING=-MDd -Od -Zi
+     33
+     34 //Flags used by the compiler during release builds for minimum
+     35 // size.
+     36 CMAKE_CXX_FLAGS_MINSIZEREL:STRING=-MD -Os -DNDEBUG
+     37
+     38 //Flags used by the compiler during release builds.
+     39 CMAKE_CXX_FLAGS_RELEASE:STRING=-MD -O2 -DNDEBUG
+     40
+     41 //Flags used by the compiler during release builds with debug info.
+     42 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-MD -O2 -Zi
+     43
+     44 //Libraries linked by default with all C++ applications.
+     45 CMAKE_CXX_STANDARD_LIBRARIES:STRING=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+     46
+
+
+What is in CMakeCache may not be full story::
+
+    ntuhep@ntuhep-PC MINGW64 ~/local/opticks/externals/g4/geant4_10_02_p01
+    $ find . -name '*.txt' -exec grep -H CMAKE_CXX_FLAGS {} \;
+    ./examples/advanced/brachytherapy/CMakeLists.txt:       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS}")
+
+
+    $ find . -name '*.cmake' -exec grep -l CMAKE_CXX_FLAGS {} \;
+    ./cmake/Modules/Geant4BuildModes.cmake
+    ./cmake/Modules/Geant4BuildProjectConfig.cmake
+    ./cmake/Modules/Geant4LibraryBuildOptions.cmake
+    ./cmake/Modules/Geant4MakeRules_cxx.cmake
+    ./cmake/Templates/UseGeant4.cmake
+
+
+
+./cmake/Modules/Geant4MakeRules_cxx.cmake::
+
+
+     57 # MSVC - all (?) versions
+     58 if(MSVC)
+     59   # Hmm, WIN32-VC.gmk uses dashes, but cmake uses slashes, latter probably
+     60   # best for native build.
+     61   set(CMAKE_CXX_FLAGS_INIT "-GR -EHsc -Zm200 -nologo -D_CONSOLE -D_WIN32 -DWIN32 -DOS -DXPNET -D_CRT_SECURE_NO_DEPRECATE")
+     62   set(CMAKE_CXX_FLAGS_DEBUG_INIT "-MDd -Od -Zi")
+     63   set(CMAKE_CXX_FLAGS_RELEASE_INIT "-MD -O2 -DNDEBUG")
+     64   set(CMAKE_CXX_FLAGS_MINSIZEREL_INIT "-MD -Os -DNDEBUG")
+     65   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-MD -O2 -Zi")
+     66
+     67   # Extra modes
+     68   set(CMAKE_CXX_FLAGS_TESTRELEASE_INIT "-MDd -Zi -G4DEBUG_VERBOSE")
+     69   set(CMAKE_CXX_FLAGS_MAINTAINER_INIT "-MDd -Zi")
+     70
+     71 endif()
+
+
+The rules are almost the first thing done in top level CMakeLists.txt::
+
+     23 # - Define CMake requirements and override make rules as needed
+     24 #
+     25 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
+     26
+     27 # - Any policy requirements should go here
+     28
+     29 set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX
+     30    ${CMAKE_SOURCE_DIR}/cmake/Modules/Geant4MakeRules_cxx.cmake)
+
+
+Problem with just adopting these is that it prevents a Debug build from talking to 
+
+
+
+
+g4win-;g4win-configure::
+
+    G4Win.Geant4_INCLUDE_DIRS : C:/Users/ntuhep/local/opticks/externals/include/Geant4;/usr/local/env/windows/ome/xerces-c-3.1.3/src
+    G4Win.Geant4_DEFINITIONS : -DG4_STORE_TRAJECTORY;-DG4VERBOSE;-DG4UI_USE;-DG4VIS_USE
+    G4Win.Geant4_CXX_FLAGS :  -GR -EHsc -Zm200 -nologo -D_CONSOLE -D_WIN32 -DWIN32 -DOS -DXPNET -D_CRT_SECURE_NO_DEPRECATE -DG4USE_STD11
+
+    // only -DG4USE_STD11 added relative to CMakeCache
+
+    G4Win.Geant4_CXX_FLAGS_DEBUG : -MDd -Od -Zi
+    G4Win.Geant4_CXX_FLAGS_MINSIZEREL : -MD -Os -DNDEBUG
+    G4Win.Geant4_CXX_FLAGS_RELEASE : -MD -O2 -DNDEBUG
+    G4Win.Geant4_CXX_FLAGS_RELWITHDEBINFO : -MD -O2 -Zi
+    G4Win.Geant4_EXE_LINKER_FLAGS :  /machine:X86
+
+
+
+cmake/Templates/UseGeant4.cmake::
+
+
+     10 #
+     11 #  include(${Geant4_USE_FILE})
+     12 #
+     13 # results in the addition of the Geant4 compile definitions and
+     14 # include directories to those of the directory in which this file is
+     15 # included.
+     16 #
+     17 # Header paths are added to include_directories as SYSTEM type directories
+     18 #
+     19 # The recommended Geant4 compiler flags are also prepended to
+     20 # CMAKE_CXX_FLAGS but duplicated flags are NOT removed. This permits
+     21 # client of UseGeant4 to override Geant4's recommended flags if required
+     22 # and at their own risk.
+     23 #
+     24 # Advanced users requiring special sets of flags, or the removal of
+     25 # duplicate flags should therefore *not* use this file, preferring the
+     26 # direct use of the Geant4_XXXX variables set by the Geant4Config file.
+     27 #
+     28 # The last thing the module does is to optionally include an internal Use
+     29 # file. This file can contain variables, functions and macros for strict
+     30 # internal use in Geant4, such as building and running validation tests.
+     31 #
+     32
+     33 #-----------------------------------------------------------------------
+     34 # We need to set the compile definitions and include directories
+     35 #
+     36 add_definitions(${Geant4_DEFINITIONS})
+     37 include_directories(AFTER SYSTEM ${Geant4_INCLUDE_DIRS})
+     38
+     39 #-----------------------------------------------------------------------
+     40 # Because Geant4 is sensitive to the compiler flags, let's set the base
+     41 # set here. This reproduces as far as possible the behaviour of the
+     42 # original makefile system. However, we append any existing CMake flags in
+     43 # case the user wishes to override these (at their own risk).
+     44 # Though this may lead to duplication, that should not affect behaviour.
+     45 #
+     46 set(CMAKE_CXX_FLAGS                "${Geant4_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+     47 set(CMAKE_CXX_FLAGS_DEBUG          "${Geant4_CXX_FLAGS_DEBUG} ${CMAKE_CXX_FLAGS_DEBUG}")
+     48 set(CMAKE_CXX_FLAGS_MINSIZEREL     "${Geant4_CXX_FLAGS_MINSIZEREL} ${CMAKE_CXX_FLAGS_MINSIZEREL}")
+     49 set(CMAKE_CXX_FLAGS_RELEASE        "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS_RELEASE}")
+     50 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${Geant4_CXX_FLAGS_RELWITHDEBINFO} ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+     51 set(CMAKE_EXE_LINKER_FLAGS         "${Geant4_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS}")
+     52
+
+
+
+
+
+
+
+Visual Studio 2015 : Compiler Options
+------------------------------------------
+
+
+* https://msdn.microsoft.com/en-us/library/9s7c9wdw.aspx
+
+
+GR
+    Enables run-time type information (RTTI).
+EH
+    Specifies the model of exception handling.
+
+EHsc
+    If "c" is used with "s" (/EHsc), catches C++ exceptions only 
+    and tells the compiler to assume that functions declared 
+    as extern "C" never throw a C++ exception.
+  
+MD
+    Creates a multithreaded DLL using MSVCRT.lib.
+MDd
+    Creates a debug multithreaded DLL using MSVCRTD.lib.
+
+0d
+    Disables optimization
+O2
+    Creates fast code.    
+Zi
+    Generates complete debugging information.
+
+
+
+g4win-;g4win-configure::
+
+    G4Win.Geant4_INCLUDE_DIRS : C:/Users/ntuhep/local/opticks/externals/include/Geant4;/usr/local/env/windows/ome/xerces-c-3.1.3/src
+    G4Win.Geant4_DEFINITIONS : -DG4_STORE_TRAJECTORY;-DG4VERBOSE;-DG4UI_USE;-DG4VIS_USE
+    G4Win.Geant4_CXX_FLAGS :  -GR -EHsc -Zm200 -nologo -D_CONSOLE -D_WIN32 -DWIN32 -DOS -DXPNET -D_CRT_SECURE_NO_DEPRECATE -DG4USE_STD11
+
+    // only -DG4USE_STD11 added relative to CMakeCache
+
+    G4Win.Geant4_CXX_FLAGS_DEBUG          : -MDd -Od -Zi
+
+    G4Win.Geant4_CXX_FLAGS_RELWITHDEBINFO : -MD  -O2 -Zi
+    G4Win.Geant4_CXX_FLAGS_RELEASE        : -MD  -O2      -DNDEBUG
+    G4Win.Geant4_CXX_FLAGS_MINSIZEREL     : -MD  -Os      -DNDEBUG
+
+    G4Win.Geant4_EXE_LINKER_FLAGS :  /machine:X86
+
+
+Visual Studio defines _DEBUG when you specify the /MTd or /MDd option, 
+NDEBUG disables standard-C assertions.
+
+
+
+NDEBUG
+----------
+
+assert Macro
+
+* https://msdn.microsoft.com/en-us/library/9sb57dw4.aspx
+
+The assert macro is enabled in both the release and debug versions of the C
+run-time libraries when NDEBUG is not defined. When NDEBUG is defined, the
+macro is available but does not evaluate its argument and has no effect.
+
+
+
+
+_ITERATOR_DEBUG_LEVEL
+--------------------------
+
+* https://msdn.microsoft.com/en-us/library/hh697468.aspx
+
+The _ITERATOR_DEBUG_LEVEL (IDL) macro supersedes and combines the functionality of the _SECURE_SCL (SCL) 
+and _HAS_ITERATOR_DEBUGGING (HID) macros.
+
+::
+
+
+    Debug    IDL=0               SCL=0, HID=0                  Disables checked iterators and disables iterator debugging.
+    Debug    IDL=1               SCL=1, HID=0                  Enables checked iterators and disables iterator debugging.
+    Debug    IDL=2 (Default)     SCL=(does not apply), HID=1   By default, enables iterator debugging; checked iterators are not relevant.
+
+    Release  IDL=0 (Default)     SCL=0                         By default, disables checked iterators.
+    Release  IDL=1               SCL=1                         Enables checked iterators; iterator debugging is not relevant.
+
+
+Getting Debug code (-MDd) to talk to Release (-MD) code ?
+-----------------------------------------------------------
+
+Seems that setting _ITERATOR_DEBUG_LEVEL to 0  in Debug should allow it to talk with Release binaries ?
+
+
+
+Boost complains at link
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     libboost_regex-vc140-mt-gd-1_61.lib(regex_raw_buffer.obj) :
+     error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '2' doesn't match value '0' 
+     in BRAP_LOG.obj [C:\usr\local\opticks\build\boostrap\BoostRap.vcxproj]
+
+
+Move to using the Release static Boost libs still complaint::
+
+     libboost_regex-vc140-mt-1_61.lib(w32_regex_traits.obj) : 
+     error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' 
+     in BRAP_LOG.obj [C:\usr\local\opticks\build\boostrap\BoostRap.vcxproj]
+
+
+Nope so try using RelWithDebInfo for Opticks.
+Using opticks-cleanbuild to wipe everything (other than externals) when making such changes.
+
+This gets further... 
+
+
 
 
 
@@ -337,10 +657,115 @@ MinGW/NSYS2 Approach
 
 EOU
 }
-g4win-dir(){ echo $(local-base)/env/g4/g4-g4win ; }
-g4win-cd(){  cd $(g4win-dir); }
-g4win-mate(){ mate $(g4win-dir) ; }
-g4win-get(){
-   local dir=$(dirname $(g4win-dir)) &&  mkdir -p $dir && cd $dir
 
+
+g4win-dir(){    echo $(env-home)/g4 ; }
+g4win-sdir(){   echo $(local-base)/env/g4win/g4win.source ; }
+g4win-bdir(){   echo $(local-base)/env/g4win/g4win.build ; }
+g4win-prefix(){ echo $(local-base)/env/g4win/g4win.install ; }
+
+g4win-cd(){    cd $(g4win-dir); }
+g4win-scd(){   cd $(g4win-sdir); }
+g4win-bcd(){   cd $(g4win-bdir); }
+g4win-icd(){   cd $(g4win-idir); }
+
+g4win-config(){ echo Debug ; }
+
+g4win-cmake(){
+   local msg="=== $FUNCNAME : "
+   local iwd=$PWD
+   local bdir=$(g4win-bdir)
+   mkdir -p $bdir
+   [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use g4win-configure to reconfigure  && return
+
+   g4win-bcd
+
+   g4-
+   xercesc-
+
+   cmake \
+       -DCMAKE_INSTALL_PREFIX=$(g4win-prefix) \
+       -DGeant4_DIR=$(g4-cmake-dir) \
+       -DXERCESC_LIBRARY=$(xercesc-library) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
+       $* \
+       $(g4win-sdir)
+
+   cd $iwd
 }
+
+g4win-wipe(){
+   local bdir=$(g4win-bdir)
+   rm -rf $bdir
+}
+
+g4win-configure(){
+
+   local sdir=$(g4win-sdir)
+   [ ! -d "$sdir" ] && mkdir -p $sdir
+
+   g4win-scd
+
+   # do everything, everytime
+  
+   rm -f CMakeLists.txt
+   g4win-cmak-txt- > CMakeLists.txt
+   g4win-wipe 
+ 
+   g4win-cmake 
+}
+
+
+
+g4win--(){
+
+   local msg="$FUNCNAME : "
+   local iwd=$PWD
+
+   local bdir=$(g4win-bdir)
+   [ ! -d "$bdir" ] && echo $msg bdir $bdir does not exist && return
+
+   cd $bdir
+
+   cmake --build . --config $(g4win-config) --target ${1:-install}
+
+   cd $iwd
+}
+
+
+g4win-cmak-vars-(){ local name=${1:-Geant4} ; cat << EOV
+${name}_LIBRARY
+${name}_LIBRARIES
+${name}_INCLUDE_DIRS
+${name}_DEFINITIONS
+${name}_CXX_FLAGS
+${name}_CXX_FLAGS_DEBUG
+${name}_CXX_FLAGS_MINSIZEREL
+${name}_CXX_FLAGS_RELEASE
+${name}_CXX_FLAGS_RELWITHDEBINFO
+${name}_EXE_LINKER_FLAGS
+EOV
+}
+
+
+g4win-cmak-txt-(){
+     local name=$1
+     cat << EOH
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+set(name G4Win)
+project(\${name})
+
+find_package(Geant4 REQUIRED)
+
+EOH
+     local var 
+     g4win-cmak-vars- | while read var ; do 
+          cat << EOM   
+message("\${name}.$var : \${$var} ")
+EOM
+     done
+}
+
+
+
+

@@ -399,7 +399,7 @@ opticks-cmake(){
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        -DGeant4_DIR=$(g4-cmake-dir) \
        -DXERCESC_LIBRARY=$(xercesc-library) \
-       -DXERCESC_INCLUDE_DIR=$(xercesc-include) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
        $* \
        $(opticks-sdir)
 
@@ -417,7 +417,7 @@ opticks-cmake-modify(){
   cmake \
        -DGeant4_DIR=$(g4-cmake-dir) \
        -DXERCESC_LIBRARY=$(xercesc-library) \
-       -DXERCESC_INCLUDE_DIR=$(xercesc-include) \
+       -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
           . 
 }
 
@@ -452,8 +452,12 @@ opticks-configure-local-boost(){
     opticks-cmake \
               -DBOOST_ROOT=$prefix \
               -DBoost_USE_STATIC_LIBS=1 \
+              -DBoost_USE_DEBUG_RUNTIME=0 \
               -DBoost_NO_SYSTEM_PATHS=1 \
               -DBoost_DEBUG=0 
+
+    # vi $(cmake-find-package Boost)
+
 }
 
 
@@ -476,8 +480,57 @@ devenv /useenv $slnw
 EOC
 
 }
+   
 
-opticks-config(){ echo Debug ; }
+#opticks-config(){ echo Debug ; }
+opticks-config(){ echo RelWithDebInfo ; }
+opticks--(){     
+
+   local msg="$FUNCNAME : "
+   local iwd=$PWD
+
+   local bdir=$1
+   shift
+   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+   [ ! -d "$bdir" ] && echo $msg bdir $bdir does not exist && return 
+
+   cd $bdir
+
+   cmake --build . --config $(opticks-config) --target ${1:-install}
+
+   cd $iwd
+}
+opticks-ctest()
+{ 
+   local msg="$FUNCNAME : "
+   local iwd=$PWD
+
+   local bdir=$1
+   shift
+   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+
+   cd $bdir
+
+   export-
+   export-export 
+
+   if [ "$USERPROFILE" == "" ]; then 
+      ctest $*   
+   else
+      # windows needs PATH to find libs
+      PATH=$(opticks-prefix)/lib:$PATH ctest $*   
+   fi
+
+   cd $iwd
+
+   echo $msg use -V to show output 
+}
+
+
+
+
+
+
 opticks---(){ 
 
   sysrap-
@@ -522,48 +575,13 @@ opticks---(){
   ggeoview-
   ggeoview--
 
-}    
-opticks--(){     
+} 
 
-   local msg="$FUNCNAME : "
-   local iwd=$PWD
 
-   local bdir=$1
-   shift
-   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
-   [ ! -d "$bdir" ] && echo $msg bdir $bdir does not exist && return 
 
-   cd $bdir
 
-   cmake --build . --config $(opticks-config) --target ${1:-install}
 
-   cd $iwd
-}
-opticks-ctest()
-{ 
-   local msg="$FUNCNAME : "
-   local iwd=$PWD
 
-   local bdir=$1
-   shift
-   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
-
-   cd $bdir
-
-   export-
-   export-export 
-
-   if [ "$USERPROFILE" == "" ]; then 
-      ctest $*   
-   else
-      # windows needs PATH to find libs
-      PATH=$(opticks-prefix)/lib:$PATH ctest $*   
-   fi
-
-   cd $iwd
-
-   echo $msg use -V to show output 
-}
 
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
 opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }

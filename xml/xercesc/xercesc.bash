@@ -170,12 +170,25 @@ xercesc-prefix(){
 }
 
 
-xercesc-include-dir(){ echo $(xercesc-prefix)/include ; }
+xercesc-include-dir(){ 
+  if [ "$NODE_TAG" == "MGB" ]; then
+      ome-
+      ome-xercesc-include
+  else
+      echo $(xercesc-prefix)/include ;
+  fi
+}
 xercesc-library(){  
-  case $(uname -s) in 
-    Darwin) echo    $(xercesc-prefix)/lib/libxerces-c.dylib    ;;
-     MINGW64*) echo $(xercesc-prefix)/bin/libxerces-c-3-1.dll  ;;
-  esac 
+
+  if [ "$NODE_TAG" == "MGB" ]; then
+      ome-
+      ome-xercesc-lib
+  else 
+      case $(uname -s) in 
+        Darwin) echo    $(xercesc-prefix)/lib/libxerces-c.dylib    ;;
+         MINGW64*) echo $(xercesc-prefix)/bin/libxerces-c-3-1.dll  ;;
+      esac
+  fi 
 }
 
 xercesc-geant4-export(){

@@ -7,6 +7,10 @@ openmesh-usage(){ cat << EOU
 OpenMesh
 ==========
 
+
+* http://openmesh.org/Documentation/OpenMesh-Doc-Latest/a00030.html
+
+
 cmake::
 
     -- Checking the Boost Python configuration
@@ -14,6 +18,23 @@ cmake::
     Reason: An error occurred while running a small Boost Python test project.
     Make sure that your Python and Boost Python libraries match.
     Skipping Python Bindings.
+
+
+
+Flag Consistency
+-----------------
+
+::
+
+    (Link target) ->
+      OpenMeshCored.lib(BaseProperty.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': 
+      value '2' doesn't match value '0' in MESHRAP_LOG.obj [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+
+      OpenMeshCored.lib(BaseProperty.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary':
+      value 'MDd_DynamicDebug' doesn't match value 'MD_DynamicRelease' in MESHRAP_LOG.obj [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
+
+
+
 
 
 Boundary handling
@@ -124,9 +145,11 @@ openmesh-cmake(){
 
   openmesh-bcd
 
+
+  # -G "$(opticks-cmake-generator)" \
+
   cmake $(openmesh-dir) \
-       -G "$(opticks-cmake-generator)" \
-      -DCMAKE_BUILD_TYPE=Debug \
+      -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_INSTALL_PREFIX=$(openmesh-prefix) \
       -DBUILD_APPS=OFF 
 
@@ -140,14 +163,11 @@ openmesh-configure()
 }
 
 
-openmesh-config(){ echo "Debug" ; }
 openmesh-make(){
   local iwd=$PWD
   openmesh-bcd
 
-  #make $* 
-  cmake --build . --config $(openmesh-config) --target ${1:-install}
-
+  cmake --build . --config Release --target ${1:-install}
 
   cd $iwd
 }

@@ -32,6 +32,36 @@ work at every level of an application, I have formed the opinion:
    LOG(info) << "hello" ;
 
 
+
+Need to use Release for ITERATOR_DEBUGGING compatibility
+-----------------------------------------------------------
+
+::
+
+    boost-bcd 
+
+    $ find . -name '*.lib'
+    ./boost/bin.v2/libs/atomic/build/msvc-14.0/debug/link-static/threading-multi/libboost_atomic-vc140-mt-gd-1_61.lib
+    ./boost/bin.v2/libs/atomic/build/msvc-14.0/release/link-static/threading-multi/libboost_atomic-vc140-mt-1_61.lib
+    ./boost/bin.v2/libs/chrono/build/msvc-14.0/debug/link-static/threading-multi/libboost_chrono-vc140-mt-gd-1_61.lib
+    ./boost/bin.v2/libs/chrono/build/msvc-14.0/release/link-static/threading-multi/libboost_chrono-vc140-mt-1_61.lib
+    ./boost/bin.v2/libs/container/build/msvc-14.0/debug/link-static/threading-multi/libboost_container-vc140-mt-gd-1_61.lib
+    ./boost/bin.v2/libs/container/build/msvc-14.0/release/link-static/threading-multi/libboost_container-vc140-mt-1_61.lib
+    ./boost/bin.v2/libs/context/build/msvc-14.0/debug/link-static/threading-multi/libboost_context-vc140-mt-gd-1_61.lib
+    ./boost/bin.v2/libs/context/build/msvc-14.0/release/link-static/threading-multi/libboost_context-vc140-mt-1_61.lib
+
+
+The release variants without gd already installed::
+
+    ntuhep@ntuhep-PC MINGW64 /c/usr/local/opticks/externals/lib
+    $ ll libboost_system*
+    -rw-r--r-- 1 ntuhep 197121 619790 Jun 14 17:37 libboost_system-vc140-mt-gd-1_61.lib
+    -rw-r--r-- 1 ntuhep 197121  80798 Jun 14 17:42 libboost_system-vc140-mt-1_61.lib
+
+
+
+
+
 Windows VS2015
 --------------------
 
@@ -361,10 +391,6 @@ boost-bootstrap-build(){
   #./bootstrap.sh --prefix=$(boost-prefix) --with-libraries=python
 }
 
-boost-build(){
-  boost-b2 $(boost-b2-options) install  
-}
-
 
 boost-gitbash2win(){
   local gbp=$1
@@ -397,6 +423,10 @@ boost-b2-options(){ cat << EOO
         --with-filesystem
         --with-regex
 EOO
+}
+
+boost-build(){
+  boost-b2 $(boost-b2-options) install  
 }
 
 

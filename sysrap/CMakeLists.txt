@@ -38,8 +38,6 @@ set(SOURCES
 ) 
 
 set(HEADERS
-    SYSRAP_GLOBAL.hh
-
     SYSRAP_LOG.hh
     SYSRAP_API_EXPORT.hh
     SYSRAP_HEAD.hh

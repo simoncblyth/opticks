@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+   message(FATAL_ERROR "in-source build detected : DONT DO THAT")
+endif()
+
+set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_SOURCE_DIR}/cmake/Modules/Geant4MakeRules_cxx.cmake)
+
 set(name Opticks)
 project(${name})
 
@@ -13,6 +20,7 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
 
+set(DUMP ON)
 if(DUMP)
    # https://cmake.org/Wiki/CMake_Useful_Variables
    message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")

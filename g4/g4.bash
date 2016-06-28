@@ -168,6 +168,8 @@ g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }
 # hmm .tar.gz would still have a .tar on the name
 
 
+g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
+
 
 g4-bdir(){ echo $(g4-dir).build ; }
 
