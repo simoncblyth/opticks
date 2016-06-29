@@ -1,3 +1,4 @@
+#include <cassert>
 // cfg4--;op --cgdmldetector --dbg
 
 #include "CFG4_BODY.hh"
@@ -67,6 +68,7 @@ int main(int argc, char** argv)
               ;
 
     G4VPhysicalVolume* world_pv = m_detector->Construct();
+    assert(world_pv);
 
     return 0 ; 
 }

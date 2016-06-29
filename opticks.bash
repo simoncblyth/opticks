@@ -626,11 +626,6 @@ opticks---(){
 } 
 
 
-
-
-
-
-
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
 opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }
 opticks-rmdirs-(){
@@ -655,6 +650,7 @@ opticks-full()
     fi 
 
     opticks-configure
+
     opticks--
 
     echo $msg DONE $(date)

@@ -16,6 +16,8 @@ Warnings regards symbol visibility
 * :google:`boost symbol visibility hidden`
 * http://stackoverflow.com/questions/15059360/compiling-boost-1-53-libraries-with-gcc-with-symbol-visibility-hidden
 
+Why does this only show up in okc- ?
+
 ::
 
     simon:optickscore blyth$ okc--
@@ -24,6 +26,17 @@ Warnings regards symbol visibility
     ld: warning: direct access in boost::typeindex::stl_type_index boost::typeindex::stl_type_index::type_id<std::__1::vector<int, std::__1::allocator<int> > >() to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
     [ 87%] Built target OpticksCore
 
+
+* http://stackoverflow.com/questions/8685045/xcode-with-boost-linkerid-warning-about-visibility-settings
+
+The linker complains about different visibility settings between your project and Boost.
+You can also fix that issue by recompiling Boost with the same compatibility settings.
+Just add to the bjam command line.::
+  
+   cxxflags=-fvisibility=hidden
+   cxxflags=-fvisibility-inlines-hidden
+
+   #    -fvisibility=hidden implies -fvisibility-inlines-hidden. Only the former is necessary. 
 
 
 

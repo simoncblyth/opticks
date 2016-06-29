@@ -1,6 +1,7 @@
 // ggv-;ggv-pmt-test --cdetector
 // ggv-;ggv-pmt-test --cdetector --export --exportconfig /tmp/test.dae
 
+#include <cassert>
 #include "CFG4_BODY.hh"
 
 #include "Opticks.hh"
@@ -68,8 +69,10 @@ int main(int argc, char** argv)
     m_detector->setVerbosity(2) ;
 
     CPropLib* clib = m_detector->getPropLib() ;
+    assert(clib); 
 
     G4VPhysicalVolume* world_pv = m_detector->getTop();
+    assert(world_pv);
 
     bool expo = m_cfg->hasOpt("export");
     std::string expoconfig = m_cfg->getExportConfig();
