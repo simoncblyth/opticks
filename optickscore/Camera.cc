@@ -116,7 +116,7 @@ void Camera::configureS(const char* , std::vector<std::string> )
 {
 }
 
-void Camera::configureI(const char* name, std::vector<int> values)
+void Camera::configureI(const char* name, std::vector<int> /*values*/)
 {
     if( strcmp(name, PRINT) ==  0)  Print("liveline --print");
 }

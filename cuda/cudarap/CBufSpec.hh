@@ -9,11 +9,11 @@ struct CUDARAP_API CBufSpec
    unsigned int size ; 
    unsigned int num_bytes ; 
 
-   CBufSpec(void* dev_ptr, unsigned int size, unsigned int num_bytes) 
+   CBufSpec(void* dev_ptr_, unsigned int size_, unsigned int num_bytes_) 
      :
-       dev_ptr(dev_ptr),
-       size(size),
-       num_bytes(num_bytes)
+       dev_ptr(dev_ptr_),
+       size(size_),
+       num_bytes(num_bytes_)
    {
    }
    void Summary(const char* msg)

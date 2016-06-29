@@ -105,8 +105,8 @@ CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity)
    m_dynamic(false),
 
    m_dynamic_primary(NULL),
-   m_dynamic_photons(NULL),
    m_dynamic_records(NULL),
+   m_dynamic_photons(NULL),
    m_dynamic_history(NULL)
 {
    init();
@@ -431,7 +431,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 }
 
 
-void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label )
+void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
 {
     /*
     LOG(info) << "CRecorder::RecordStepPoint" 
@@ -448,13 +448,13 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     */
 
     const G4ThreeVector& pos = point->GetPosition();
-    const G4ThreeVector& dir = point->GetMomentumDirection();
+    //const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
 
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
-    G4double weight = 1.0 ; 
+    //G4double weight = 1.0 ; 
 
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 
     const glm::vec4& td = m_evt->getTimeDomain() ; 
@@ -598,6 +598,7 @@ bool CRecorder::hasIssue()
 
 void CRecorder::Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
 {
+    LOG(info) << msg ; 
     std::string bs = OpBoundaryAbbrevString(boundary_status) ;
     G4ThreeVector origin ; 
     std::cout << std::setw(7) << index << " " << std::setw(15) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
@@ -621,8 +622,8 @@ void CRecorder::Dump(const char* msg)
 
     for(unsigned int i=0 ; i<m_points.size() ; i++) 
     {
-       unsigned long long seqhis = m_seqhis_dbg[i] ;
-       unsigned long long seqmat = m_seqmat_dbg[i] ;
+       //unsigned long long seqhis = m_seqhis_dbg[i] ;
+       //unsigned long long seqmat = m_seqmat_dbg[i] ;
        G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
        unsigned int mat = m_materials[i] ;
        const char* matname = ( mat == 0 ? "-" : m_clib->getMaterialName(mat-1)  ) ;

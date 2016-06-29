@@ -13,7 +13,12 @@ Get Opticks
 Clone the repository from bitbucket::
 
    cd
+   hg clone http://bitbucket.org/simoncblyth/env
+
+In future Opticks is intended to move, then you will need to::
+
    hg clone http://bitbucket.org/simoncblyth/opticks 
+
 
 Connect the opticks bash functions to your shell by adding a line to your .bash_profile::
 
@@ -372,7 +377,7 @@ opticks-externals-install(){
 opticks-cmake-generator()
 {
     if [ "$NODE_TAG" == "M" ]; then
-       echo  MSYS Makefiles 
+       echo MSYS Makefiles 
     else  
        case $(uname -s) in
          MINGW64_NT*)  echo Visual Studio 14 2015 ;;
@@ -474,7 +479,7 @@ opticks-vs(){
     cat << EOC
 # sln  $sln
 # slnw $slnw
-# copy/paste into powershell v2
+# copy/paste into powershell v2 OR just use opticks-vs Powershell function
 vs-export 
 devenv /useenv $slnw
 EOC
@@ -595,6 +600,10 @@ opticks---(){
   opticksgeo-
   opticksgeo--
 
+  oglrap-
+  oglrap--
+
+  ############ CUDA NEEDED 
   cudarap-
   cudarap--
 
@@ -609,6 +618,7 @@ opticks---(){
 
   opticksgl-
   opticksgl--
+  ####################### 
  
   ggeoview-
   ggeoview--

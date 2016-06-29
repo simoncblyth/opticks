@@ -8,6 +8,23 @@ okc-usage(){ cat << EOU
 Brief History
 ==============
 
+
+macOS warning
+---------------
+
+::
+
+    simon:optickscore blyth$ okc--
+    [  0%] Linking CXX shared library libOpticksCore.dylib
+    ld: warning: direct access in boost::program_options::typed_value<std::__1::vector<int, std::__1::allocator<int> >, char>::value_type() const to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+    ld: warning: direct access in boost::typeindex::stl_type_index boost::typeindex::stl_type_index::type_id<std::__1::vector<int, std::__1::allocator<int> > >() to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+    [ 87%] Built target OpticksCore
+
+
+
+
+
+
 2013
 ------
 

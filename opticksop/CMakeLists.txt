@@ -110,7 +110,8 @@ set(HEADERS
     OpEngine.hh
 )
 
-CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30)
+set(XOPT --disable-warnings)
+CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT})
 target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name}  DESTINATION lib)

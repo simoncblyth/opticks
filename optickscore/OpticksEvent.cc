@@ -16,15 +16,10 @@
 // brap-
 #include "BStr.hh"
 #include "BTime.hh"
-#include "PLOG.hh"
-
-// optickscore-
-#include "OpticksConst.hh"
-#include "OpticksEvent.hh"
-#include "Indexer.hh"
 
 // npy-
 #include "uif.h"
+#include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NPYSpec.hpp"
 
@@ -39,6 +34,15 @@
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
+
+// okc-
+#include "OpticksConst.hh"
+#include "OpticksDomain.hh"
+#include "OpticksEvent.hh"
+#include "Indexer.hh"
+
+#include "PLOG.hh"
+
 
 #define TIMER(s) \
     { \
@@ -96,8 +100,7 @@ OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, co
           m_recsel_data(NULL),
           m_sequence_data(NULL),
 
-          m_fdom(NULL),
-          m_idom(NULL),
+          m_domain(NULL),
 
           m_genstep_attr(NULL),
           m_nopstep_attr(NULL),
@@ -112,7 +115,7 @@ OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, co
           m_num_gensteps(0),
           m_num_nopsteps(0),
           m_num_photons(0),
-          m_maxrec(1),
+
           m_seqhis(NULL),
           m_seqmat(NULL),
           m_bndidx(NULL),
@@ -174,16 +177,16 @@ unsigned int OpticksEvent::getNumPhotons()
 
 unsigned int OpticksEvent::getNumRecords()
 {
-    return m_num_photons * m_maxrec ; 
+    unsigned int maxrec = getMaxRec();
+    return m_num_photons * maxrec ; 
 }
 unsigned int OpticksEvent::getMaxRec()
 {
-    return m_maxrec ; 
+    return m_domain->getMaxRec() ; 
 }
 void OpticksEvent::setMaxRec(unsigned int maxrec)
 {
-    m_maxrec = maxrec ; 
-    m_settings.w = m_maxrec ; 
+    m_domain->setMaxRec(maxrec);
 }
 
 
@@ -227,24 +230,6 @@ PhotonsNPY* OpticksEvent::getPhotonsNPY()
 }
 
 
-void OpticksEvent::setFDomain(NPY<float>* fdom)
-{
-    m_fdom = fdom ; 
-}
-void OpticksEvent::setIDomain(NPY<int>* idom)
-{
-    m_idom = idom ; 
-}
-
-NPY<float>* OpticksEvent::getFDomain()
-{
-    return m_fdom ; 
-}
-NPY<int>* OpticksEvent::getIDomain()
-{
-    return m_idom ; 
-}
-
 const char* OpticksEvent::getTyp()
 {
     return m_typ ; 
@@ -269,31 +254,54 @@ const char* OpticksEvent::getUDet()
 
 
 
+
+
+
+
+
+void OpticksEvent::setFDomain(NPY<float>* fdom)
+{
+    m_domain->setFDomain(fdom) ; 
+}
+void OpticksEvent::setIDomain(NPY<int>* idom)
+{
+    m_domain->setIDomain(idom) ; 
+}
+
+NPY<float>* OpticksEvent::getFDomain()
+{
+    return m_domain->getFDomain() ; 
+}
+NPY<int>* OpticksEvent::getIDomain()
+{
+    return m_domain->getIDomain() ; 
+}
+
 void OpticksEvent::setSpaceDomain(const glm::vec4& space_domain)
 {
-    m_space_domain = space_domain ; 
+    m_domain->setSpaceDomain(space_domain) ; 
 }
 void OpticksEvent::setTimeDomain(const glm::vec4& time_domain)
 {
-    m_time_domain = time_domain  ; 
+    m_domain->setTimeDomain(time_domain)  ; 
 }
 void OpticksEvent::setWavelengthDomain(const glm::vec4& wavelength_domain)
 {
-    m_wavelength_domain = wavelength_domain  ; 
+    m_domain->setWavelengthDomain(wavelength_domain)  ; 
 }
 
 
 const glm::vec4& OpticksEvent::getSpaceDomain()
 {
-    return m_space_domain ; 
+    return m_domain->getSpaceDomain() ; 
 }
 const glm::vec4& OpticksEvent::getTimeDomain()
 {
-    return m_time_domain ;
+    return m_domain->getTimeDomain() ;
 }
 const glm::vec4& OpticksEvent::getWavelengthDomain()
 { 
-    return m_wavelength_domain ; 
+    return m_domain->getWavelengthDomain() ; 
 }
 
 
@@ -359,6 +367,7 @@ void OpticksEvent::init()
 
     m_parameters = new Parameters ;
     m_report = new Report ; 
+    m_domain = new OpticksDomain ; 
 
     m_parameters->add<std::string>("TimeStamp", timestamp() );
     m_parameters->add<std::string>("Type", m_typ );
@@ -447,6 +456,7 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
 void OpticksEvent::createSpec()
 {
     // invoked by Opticks::makeEvent   or OpticksEvent::load
+    unsigned int maxrec = getMaxRec();
 
     m_genstep_spec = new NPYSpec(0,6,4,0, NPYBase::FLOAT) ;
     m_fdom_spec = new NPYSpec(3,1,4,0, NPYBase::FLOAT) ;
@@ -456,8 +466,8 @@ void OpticksEvent::createSpec()
     m_photon_spec = new NPYSpec(0,4,4,0, NPYBase::FLOAT) ;
     m_sequence_spec = new NPYSpec(0,1,2,0, NPYBase::ULONGLONG) ;
     m_phosel_spec = new NPYSpec(0,1,4,0, NPYBase::UCHAR) ;
-    m_record_spec = new NPYSpec(0,m_maxrec,2,4, NPYBase::SHORT) ;
-    m_recsel_spec = new NPYSpec(0,m_maxrec,1,4, NPYBase::UCHAR) ;
+    m_record_spec = new NPYSpec(0,maxrec,2,4, NPYBase::SHORT) ;
+    m_recsel_spec = new NPYSpec(0,maxrec,1,4, NPYBase::UCHAR) ;
 }
 
 
@@ -512,11 +522,13 @@ void OpticksEvent::resize()
 
     unsigned int num_photons = getNumPhotons();
     unsigned int num_records = getNumRecords();
+    unsigned int maxrec = getMaxRec();
+ 
 
     LOG(info) << "OpticksEvent::resize " 
               << " num_photons " << num_photons  
               << " num_records " << num_records 
-              << " m_maxrec " << m_maxrec
+              << " maxrec " << maxrec
               ;
 
     m_photon_data->setNumItems(num_photons);
@@ -547,65 +559,16 @@ void OpticksEvent::zero()
 
 void OpticksEvent::dumpDomains(const char* msg)
 {
-    LOG(info) << msg 
-              << "\n space_domain      " << gformat(m_space_domain)
-              << "\n time_domain       " << gformat(m_time_domain)
-              << "\n wavelength_domain " << gformat(m_wavelength_domain)
-              ;
+    m_domain->dump(msg);
 }
-
 void OpticksEvent::updateDomainsBuffer()
 {
-    NPY<float>* fdom = getFDomain();
-    if(fdom)
-    {
-        fdom->setQuad(m_space_domain     , 0);
-        fdom->setQuad(m_time_domain      , 1);
-        fdom->setQuad(m_wavelength_domain, 2);
-    }
-    else
-    {
-        LOG(warning) << "OpticksEvent::updateDomainsBuffer fdom NULL " ;
-    }
-
-    NPY<int>* idom = getIDomain();
-    if(idom)
-        idom->setQuad(m_settings, 0 );
-    else
-        LOG(warning) << "OpticksEvent::updateDomainsBuffer idom NULL " ;
-    
+    m_domain->updateBuffer();
 }
-
-
 void OpticksEvent::importDomainsBuffer()
 {
-    NPY<float>* fdom = getFDomain();
-    assert(fdom);
-    m_space_domain = fdom->getQuad(0);
-    m_time_domain = fdom->getQuad(1);
-    m_wavelength_domain = fdom->getQuad(2);
-
-    if(m_space_domain.w <= 0.)
-    {
-            LOG(fatal) << "OpticksEvent::importDomainsBuffer BAD FDOMAIN" ; 
-            dumpDomains("OpticksEvent::importDomainsBuffer");
-            assert(0);
-    }
-
-    NPY<int>* idom = getIDomain();
-    assert(idom);
-
-    m_settings = idom->getQuad(0); 
-    m_maxrec = m_settings.w ; 
-
-    if(m_maxrec != 10)
-            LOG(fatal) << "OpticksEvent::importDomainsBuffer" 
-                       << " from idom settings m_maxrec BUT EXPECT 10 " << m_maxrec 
-                        ;
-    assert(m_maxrec == 10);
+    m_domain->importBuffer();
 }
-
-
 
 
 
@@ -1098,7 +1061,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     importDomainsBuffer();
 
-    createSpec();      // domains import sets m_maxrec allowing spec to be created 
+    createSpec();      // domains import sets maxrec allowing spec to be created 
 
     assert(idom->hasShapeSpec(m_idom_spec));
     assert(fdom->hasShapeSpec(m_fdom_spec));
@@ -1294,9 +1257,12 @@ void OpticksEvent::indexPhotonsCPU()
               << " recsel0.hasData "   << recsel0->hasData()
               ;
 
+
+    unsigned int maxrec = getMaxRec();
+
     assert(sequence->hasItemShape(1,2));
     assert(phosel->hasItemShape(1,4));
-    assert(recsel0->hasItemShape(m_maxrec,1,4));
+    assert(recsel0->hasItemShape(maxrec,1,4));
     assert(sequence->getShape(0) == phosel->getShape(0));
     assert(sequence->getShape(0) == recsel0->getShape(0));
 
@@ -1311,8 +1277,9 @@ void OpticksEvent::indexPhotonsCPU()
     idx->applyLookup<unsigned char>(phosel_values);
 
 
-    NPY<unsigned char>* recsel1 = NPY<unsigned char>::make_repeat(phosel, m_maxrec ) ;
-    recsel1->reshape(-1, m_maxrec, 1, 4);
+
+    NPY<unsigned char>* recsel1 = NPY<unsigned char>::make_repeat(phosel, maxrec ) ;
+    recsel1->reshape(-1, maxrec, 1, 4);
     //recsel->save("/tmp/recsel.npy"); 
 
     // TODO: fix leak?, review recsel0 creation/zeroing/allocation
@@ -1328,11 +1295,11 @@ void OpticksEvent::indexPhotonsCPU()
 
 
 
-void OpticksEvent::saveIndex(bool verbose)
+void OpticksEvent::saveIndex(bool verbose_)
 {
     const char* udet = getUDet();
 
-    NPYBase::setGlobalVerbose(true);
+    NPYBase::setGlobalVerbose(verbose_);
 
     NPY<unsigned char>* ps = getPhoselData();
     NPY<unsigned char>* rs = getRecselData();

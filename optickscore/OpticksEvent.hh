@@ -11,12 +11,15 @@ class Parameters ;
 class Report ;
 class TimesTable ; 
 
+
 class Index ; 
 class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 class NPYSpec ; 
+
+class OpticksDomain ; 
 
 /*
 OpticksEvent
@@ -259,10 +262,7 @@ class OKCORE_API OpticksEvent {
        NPY<unsigned char>*   m_recsel_data ;
        NPY<unsigned long long>*  m_sequence_data ;
 
-       NPY<float>*           m_fdom ; 
-       NPY<int>*             m_idom ; 
-
-
+       OpticksDomain*        m_domain ; 
 
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_nopstep_attr ;
@@ -278,21 +278,12 @@ class OKCORE_API OpticksEvent {
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_nopsteps ; 
        unsigned int    m_num_photons ; 
-       unsigned int    m_maxrec ; 
-
-       // hmm much of this can move to NPYBase ?
-
-       glm::vec4       m_space_domain ; 
-       glm::vec4       m_time_domain ; 
-       glm::vec4       m_wavelength_domain ; 
-
-       glm::ivec4      m_settings ; 
 
        Index*          m_seqhis ; 
        Index*          m_seqmat ; 
        Index*          m_bndidx ; 
 
-       std::vector<std::string> m_data_names ; 
+       std::vector<std::string>           m_data_names ; 
        std::map<std::string, std::string> m_abbrev ; 
 
        const char*     m_fake_nopstep_path ; 
@@ -308,6 +299,12 @@ class OKCORE_API OpticksEvent {
        NPYSpec* m_sequence_spec ;  
 
 };
+
+//
+// avoiding class members simplifies usage, as full type spec is not needed for pointers : forward declarations sufficient
+// for this reason moved glm domain vector members down into OpticksDomain
+// this simplifies use with nvcc compiler
+// 
 
 #include "OKCORE_TAIL.hh"
   

@@ -68,7 +68,7 @@ void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
     }
 }
 
-void Lookup::loadB(const char* bdir, const char* bname, const char* bprefix)
+void Lookup::loadB(const char* bdir, const char* bname, const char* /*bprefix*/)
 {
     BMap<std::string, unsigned int>::load(&m_B, bdir, bname);
 }

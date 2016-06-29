@@ -9,6 +9,24 @@ BOOST
 * http://www.boost.org/
 * http://www.boost.org/users/history/
 
+
+Warnings regards symbol visibility
+-------------------------------------
+
+* :google:`boost symbol visibility hidden`
+* http://stackoverflow.com/questions/15059360/compiling-boost-1-53-libraries-with-gcc-with-symbol-visibility-hidden
+
+::
+
+    simon:optickscore blyth$ okc--
+    [  0%] Linking CXX shared library libOpticksCore.dylib
+    ld: warning: direct access in boost::program_options::typed_value<std::__1::vector<int, std::__1::allocator<int> >, char>::value_type() const to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+    ld: warning: direct access in boost::typeindex::stl_type_index boost::typeindex::stl_type_index::type_id<std::__1::vector<int, std::__1::allocator<int> > >() to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+    [ 87%] Built target OpticksCore
+
+
+
+
 Boost Log Not Fit for Purpose
 ------------------------------
 

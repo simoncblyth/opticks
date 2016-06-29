@@ -1,8 +1,22 @@
+#include <cstdio>
+#include <cassert>
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#endif
+
 #include "cuRANDWrapper_kernel.hh"
 #include "LaunchSequence.hh"
 #include "curand_kernel.h"
-#include "stdio.h"
-#include "assert.h"
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
+
+
 
 #define CUDA_SAFE_CALL( call) do {                                         \
     cudaError err = call;                                                    \

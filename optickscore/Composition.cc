@@ -12,7 +12,6 @@
 #include <boost/math/constants/constants.hpp>
 #include "NGLM.hpp"
 
-#include "PLOG.hh"
 
 
 // npy-
@@ -52,6 +51,7 @@
 #include "Composition.hh"
 #include "CompositionCfg.hh"
 
+#include "PLOG.hh"
 
 const char* Composition::PREFIX = "composition" ;
 const char* Composition::getPrefix()
@@ -403,7 +403,7 @@ const char* Composition::getGeometryStyleName()
 
 
 
-void Composition::nextViewType(unsigned int modifiers)
+void Composition::nextViewType(unsigned int /*modifiers*/)
 {
     int next = (getViewType() + 1) % View::NUM_VIEW_TYPE ; 
     setViewType( (View::View_t)next ) ; 
@@ -1742,6 +1742,7 @@ void Composition::test_getEyeUVW()
 
 void Composition::Details(const char* msg)
 {
+    LOG(info) << msg ; 
     update();
     print(m_gaze, "m_gaze = look - eye ");
     print(m_eye2look, "m_eye2look translation");

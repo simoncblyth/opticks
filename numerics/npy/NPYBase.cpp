@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <boost/algorithm/string/replace.hpp>
 
+#include "NGLM.hpp"
 #include "NPYBase.hpp"
 
 #include <cstring>

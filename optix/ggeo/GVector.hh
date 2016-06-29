@@ -238,7 +238,7 @@ struct GGEO_API guint4
     guint4() : x(0), y(0), z(0), w(0) {} ;
     guint4(unsigned int _x, unsigned int _y, unsigned int _z, unsigned int _w) : x(_x), y(_y), z(_z), w(_w) {} ;
 
-    unsigned int const operator[](unsigned int index) const
+    unsigned int operator[](unsigned int index) const
     {
         switch(index)
         {  

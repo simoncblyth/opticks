@@ -180,7 +180,7 @@ char* GOpticalSurface::digest()
 }
 
 
-void GOpticalSurface::Summary(const char* msg, unsigned int imod)
+void GOpticalSurface::Summary(const char* msg, unsigned int /*imod*/)
 {
     printf("%s : type %s model %s finish %s value %4s shortname %s \n", msg, m_type, m_model, m_finish, m_value, m_shortname );
 }

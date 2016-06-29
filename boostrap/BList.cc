@@ -7,15 +7,12 @@
 #include <boost/lexical_cast.hpp>
 
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include "BJSONParser.hh"
 
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 
-#include <boost/log/trivial.hpp>
-#define LOG BOOST_LOG_TRIVIAL
-// trace/debug/info/warning/error/fatal
 
 namespace fs = boost::filesystem;
 namespace pt = boost::property_tree;
@@ -25,7 +22,8 @@ namespace pt = boost::property_tree;
 #include "BTree.hh"
 #include "BFile.hh"
 
-
+#include "PLOG.hh"
+// trace/debug/info/warning/error/fatal
 
 
 template <typename A, typename B>

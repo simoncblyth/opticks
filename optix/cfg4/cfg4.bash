@@ -28,8 +28,64 @@ TODO
 * light source config, blackbody
 
 
-Resource Issue ?
--------------------
+macOS : 2 test fails
+-----------------------
+
+::
+
+    simon:cfg4 blyth$ CPropLibTest
+    2016-06-29 14:53:38.811 INFO  [13144929] [main@18] CPropLibTest
+    2016-06-29 14:53:38.820 WARN  [13144929] [CPropLib::init@84] CPropLib::init surface lib sensor_surface NULL 
+    2016-06-29 14:53:38.820 INFO  [13144929] [CPropLib::checkConstants@122] CPropLib::checkConstants mm 1 MeV 1 nanosecond 1 ns 1 nm 1e-06 GC::nanometer 1e-06 h_Planck 4.13567e-12 GC::h_Planck 4.13567e-12 c_light 299.792 GC::c_light 299.792 dscale 0.00123984
+    2016-06-29 14:53:38.820 INFO  [13144929] [main@26] CPropLibTest convert 
+    2016-06-29 14:53:38.821 WARN  [13144929] [CPropLib::addConstProperty@401] CPropLib::addConstProperty OVERRIDE GdDopedLS.SCINTILLATIONYIELD from 11522 to 10
+    2016-06-29 14:53:38.821 WARN  [13144929] [CPropLib::addConstProperty@401] CPropLib::addConstProperty OVERRIDE LiquidScintillator.SCINTILLATIONYIELD from 11522 to 10
+    2016-06-29 14:53:38.821 FATAL [13144929] [*CPropLib::makeMaterialPropertiesTable@317] CPropLib::makeMaterialPropertiesTable material with SENSOR_MATERIAL name Bialkali but no sensor_surface 
+    Assertion failed: (surf), function makeMaterialPropertiesTable, file /Users/blyth/env/optix/cfg4/CPropLib.cc, line 322.
+    Abort trap: 6
+    simon:cfg4 blyth$ CG4Test
+    2016-06-29 14:54:11.079 INFO  [13145139] [main@18] CG4Test
+      0 : CG4Test
+    CG4::init opticks summary
+    valid    :valid
+    envprefix: OPTICKS_
+    geokey   : DAE_NAME_DYB
+    daepath  : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    gdmlpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
+    metapath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini
+    query    : range:3153:12221
+    ctrl     : volnames
+    digest   : 96ff965744a2f6b78c24e33c80d3a4cd
+    idpath   : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
+    idfold   : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
+    idbase   : /usr/local/opticks/opticksdata/export
+    detector : dayabay
+    detector_name : DayaBay
+    detector_base : /usr/local/opticks/opticksdata/export/DayaBay
+    getPmtPath(0) : /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0
+    meshfix  : NULL
+    2016-06-29 14:54:11.082 INFO  [13145139] [main@32]   CG4 ctor DONE 
+    2016-06-29 14:54:11.082 INFO  [13145139] [CG4::configure@129] CG4::configure g4ui 0
+
+    -------- EEEE ------- G4Exception-START -------- EEEE -------
+    *** G4Exception : PART70000
+          issued by : G4NuclideTable
+    G4ENSDFSTATEDATA environment variable must be set
+    *** Fatal Exception *** core dump ***
+    -------- EEEE -------- G4Exception-END --------- EEEE -------
+
+
+    *** G4Exception: Aborting execution ***
+    Abort trap: 6
+    simon:cfg4 blyth$ echo $?
+    134
+
+
+
+
+
+Windows : Resource Issue ?
+-----------------------------
 
 ::
 

@@ -64,9 +64,6 @@ namespace fs = boost::filesystem;
 
 #include "GGeo.hh"
 
-
-
-
 #include "GGEO_CC.hh"
 #include "PLOG.hh"
 
@@ -1054,6 +1051,8 @@ GBorderSurface* GGeo::findBorderSurface(const char* pv1, const char* pv2)
 
 void GGeo::dumpRawSkinSurface(const char* name)
 {
+    LOG(info) << "GGeo::dumpRawSkinSurface " << name ; 
+
     GSkinSurface* ss = NULL ; 
     unsigned int n = getNumRawSkinSurfaces();
     for(unsigned int i = 0 ; i < n ; i++)
@@ -1065,6 +1064,7 @@ void GGeo::dumpRawSkinSurface(const char* name)
 
 void GGeo::dumpRawBorderSurface(const char* name)
 {
+    LOG(info) << "GGeo::dumpRawBorderSurface " << name ; 
     GBorderSurface* bs = NULL ; 
     unsigned int n = getNumRawBorderSurfaces();
     for(unsigned int i = 0 ; i < n ; i++)
@@ -1315,8 +1315,9 @@ std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, c
 
 
 
-void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv)
+void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* /*lv*/, const char* /*pv*/)
 {
+
      // called during GGeo creation from: void AssimpGGeo::convertStructure(GGeo* gg)
      //printf("GGeo::countMeshUsage %d %d %s %s \n", meshIndex, nodeIndex, lv, pv);
      m_mesh_usage[meshIndex] += 1 ; 

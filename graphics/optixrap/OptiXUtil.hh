@@ -1,8 +1,19 @@
 #pragma once
 
-#include <thrust/device_vector.h>
-#include <optixu/optixpp_namespace.h>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+
+#include <thrust/device_vector.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
+#include "OXPPNS.hh"
 
 #include "OXRAP_API_EXPORT.hh"
 

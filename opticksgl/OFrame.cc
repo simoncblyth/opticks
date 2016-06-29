@@ -83,7 +83,7 @@ void OFrame::init(unsigned int width, unsigned int height)
 }
 
 
-void OFrame::setSize(unsigned int width, unsigned int height)
+void OFrame::setSize(unsigned int , unsigned int )
 {
     assert(0);
 }
@@ -100,7 +100,7 @@ void OFrame::setSize(unsigned int width, unsigned int height)
 // But the output requirements are very different ? Which would argue for a separate entry point.
 
 
-optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height, bool depth)
+optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, unsigned int width, unsigned int height, bool /*depth*/)
 {
     Buffer buffer;
 

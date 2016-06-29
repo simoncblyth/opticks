@@ -1,15 +1,17 @@
-#include "NPY.hpp"
-#include "NSlice.hpp"
-
 #include <iomanip>
 #include <algorithm>
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 #include "BFile.hh"
 #include "BBufSpec.hh"
 
+#include "NSlice.hpp"
+#include "NGLM.hpp"
 #include "NPYSpec.hpp"
+#include "NPY.hpp"
+
 #include "PLOG.hh"
 
 // ctor takes ownership of a copy of the inputs 

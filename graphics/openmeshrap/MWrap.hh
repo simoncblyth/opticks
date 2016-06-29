@@ -4,8 +4,19 @@
 #include <map>
 #include "NGLM.hpp"
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 
 class GMesh ; 

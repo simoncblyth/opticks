@@ -13,15 +13,17 @@ struct CResourceImp {
    struct cudaGraphicsResource*  resource ;
    void*         dev_ptr ;   
 
-   CResourceImp(unsigned int buffer_id, unsigned int flags, cudaStream_t stream) : 
-       buffer_id(buffer_id),
+   CResourceImp(unsigned int buffer_id_, unsigned int flags_, cudaStream_t stream_) : 
+       buffer_id(buffer_id_),
        bufsize(0),
-       flags(flags),  
-       stream(NULL),
+       flags(flags_),  
+       stream(stream_),
        resource(NULL),
        dev_ptr(NULL)
    {
    }
+    
+   // HMM : stream_ arg was previously ignored with steam(NULL) : Changed to taking copy of stream arg Jun 26, 2016 
 
    const char* getFlagDescription()
    {

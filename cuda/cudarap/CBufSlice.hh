@@ -12,14 +12,14 @@ struct CUDARAP_API CBufSlice
    unsigned int begin ; 
    unsigned int end ; 
 
-   CBufSlice(void* dev_ptr, unsigned int size, unsigned int num_bytes, unsigned int stride, unsigned int begin, unsigned int end ) 
+   CBufSlice(void* dev_ptr_, unsigned int size_, unsigned int num_bytes_, unsigned int stride_, unsigned int begin_, unsigned int end_ ) 
      :
-       dev_ptr(dev_ptr),
-       size(size),
-       num_bytes(num_bytes),
-       stride(stride),
-       begin(begin),
-       end(end)
+       dev_ptr(dev_ptr_),
+       size(size_),
+       num_bytes(num_bytes_),
+       stride(stride_),
+       begin(begin_),
+       end(end_)
    {
    }
    void Summary(const char* msg)

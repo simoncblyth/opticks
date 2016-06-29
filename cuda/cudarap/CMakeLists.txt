@@ -60,7 +60,13 @@ SET(HEADERS
     CBufSlice.hh
 )
 
-CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 )
+
+#
+# CUDA headers yield many:
+#   /usr/local/cuda/include/device_functions.hpp:283:3:   warning: extension used [-Wlanguage-extension-token]
+#
+set(XOPT --disable-warnings) # TODO: find way to selectively disable warnings
+CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT}  )
 target_link_libraries(${name} ${LIBRARIES} )
 
 set(LIBRARIES ${LIBRARIES} ${name} )  

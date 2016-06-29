@@ -624,6 +624,7 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     if(sensor && mt == gg->getCathode())
     {
          LOG(debug) << "AssimpGGeo::convertSensorsVisit " 
+                   << " depth " << depth 
                    << " lv " << lv  
                    << " pv " << pv  
                    ;
@@ -637,7 +638,7 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
 
 
 
-void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* query)
+void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*query*/)
 {
     LOG(info)<< "AssimpGGeo::convertMeshes NumMeshes " << scene->mNumMeshes ;
 
@@ -789,7 +790,7 @@ void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth
 
 
 
-GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* /*parent*/)
 {
     // Associates node to extra information analogous to collada_to_chroma.py:visit
     //
@@ -832,6 +833,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     if(!mesh)
     {
        LOG(fatal) << "AssimpGGeo::convertStructureVisit NULL mesh"
+                  << " depth " << depth 
                   << " msi " << msi 
                   ;
 

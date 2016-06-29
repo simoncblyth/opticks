@@ -1,7 +1,7 @@
 #include "SSys.hh"
 
 
-int main(int argc, char** argv)
+int main(int , char** )
 {
    // SSys::WaitForInput();
     return 0 ; 

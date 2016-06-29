@@ -53,8 +53,8 @@ npart nprism::part()
     float d  = depth();
 
     nbbox bb ;
-    bb.min = {-hw,0.f,-d/2.f } ;
-    bb.max = { hw,  h, d/2.f } ;
+    bb.min = {-hw,0.f,-d/2.f, 0.f } ;
+    bb.max = { hw,  h, d/2.f, 0.f } ;
 
     npart p ; 
     p.zero();            

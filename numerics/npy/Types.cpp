@@ -112,7 +112,7 @@ void Types::readMaterialsOld(const char* idpath, const char* name)
     makeMaterialAbbrev();
 }
 
-void Types::readMaterials(const char* idpath, const char* name)
+void Types::readMaterials(const char* /*idpath*/, const char* name)
 {
     assert(strcmp(name, "GMaterialLib")==0);
 
@@ -254,6 +254,8 @@ unsigned int Types::getMaterialAbbrevInvertAsCode(std::string label, bool hex)
 
 void Types::dumpMaterials(const char* msg)
 {
+    LOG(info) << msg ; 
+
     //dumpMap<std::string, unsigned int>(m_materials, msg);
     typedef std::map<std::string, unsigned int> MSU ; 
     for(MSU::iterator it=m_materials.begin() ; it != m_materials.end() ; it++)

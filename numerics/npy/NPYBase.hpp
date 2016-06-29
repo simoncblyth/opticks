@@ -6,10 +6,10 @@
 
 #include "NPY_FLAGS.hh"
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+// dont include NGLM.hpp here as it causes problem for thrustrap-
+//#include "NGLM.hpp"
+#include <glm/fwd.hpp>
+
 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"

@@ -10,12 +10,12 @@ struct BRAP_API BBufSpec {
     unsigned int num_bytes ; 
     int target ; 
 
-    BBufSpec(int id, void* ptr, unsigned int num_bytes, int target)
+    BBufSpec(int id_, void* ptr_, unsigned int num_bytes_, int target_)
        :
-          id(id),
-          ptr(ptr),
-          num_bytes(num_bytes),
-          target(target)
+          id(id_),
+          ptr(ptr_),
+          num_bytes(num_bytes_),
+          target(target_)
     {
     }
     void Summary(const char* msg)

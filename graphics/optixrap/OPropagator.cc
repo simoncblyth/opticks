@@ -129,7 +129,7 @@ void OPropagator::init()
     // OContext::e_generate_entry
 
     m_entry_index = m_ocontext->addRayGenerationProgram( "generate.cu.ptx", raygenprg );
-    unsigned int exception_index = m_ocontext->addExceptionProgram( "generate.cu.ptx", "exception");
+    int exception_index = m_ocontext->addExceptionProgram( "generate.cu.ptx", "exception");
     assert(m_entry_index == exception_index);
 
     m_launch_times = new OTimes ; 

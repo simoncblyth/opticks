@@ -68,6 +68,7 @@ set(SOURCES
     OpticksQuery.cc
     OpticksColors.cc
     Sparse.cc
+    OpticksDomain.cc
     OpticksEvent.cc
     Indexer.cc
 
@@ -118,6 +119,7 @@ set(HEADERS
     OpticksQuery.hh
     OpticksColors.hh
     Sparse.hh
+    OpticksDomain.hh
     OpticksEvent.hh
     Indexer.hh
 

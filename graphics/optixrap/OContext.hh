@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <optixu/optixpp_namespace.h>
+#include "OXPPNS.hh"
 
 #include "NPYBase.hpp"
 template <typename T> class NPY ; 

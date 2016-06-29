@@ -1,6 +1,6 @@
 #pragma once
 
-#include <optixu/optixpp_namespace.h>
+#include "OXPPNS.hh"
 
 #include "OXRAP_API_EXPORT.hh"
 

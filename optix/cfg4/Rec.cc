@@ -222,7 +222,7 @@ void Rec::Dump(const char* msg)
     for(unsigned int i=0 ; i < nstates ; i++)
     {
         const State* state = getState(i) ;
-        const State* prior = i > 0 ? getState(i-1) : NULL ; 
+        //const State* prior = i > 0 ? getState(i-1) : NULL ; 
 
         const G4StepPoint* pre  = state->getPreStepPoint() ; 
         const G4StepPoint* post = state->getPostStepPoint() ; 

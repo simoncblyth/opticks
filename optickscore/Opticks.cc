@@ -210,11 +210,11 @@ void Opticks::setSpaceDomain(const glm::vec4& sd)
 }
 
 
-void Opticks::configureS(const char* name, std::vector<std::string> values)
+void Opticks::configureS(const char* , std::vector<std::string> )
 {
 }
 
-void Opticks::configureI(const char* name, std::vector<int> values)
+void Opticks::configureI(const char* , std::vector<int> )
 {
 }
 

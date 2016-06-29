@@ -5,7 +5,9 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "gleq.h"
+
+#include "GLEQ.hh"
+
 #include <glm/fwd.hpp>  
 
 #include "Touchable.hh"

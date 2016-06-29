@@ -1,6 +1,6 @@
 #pragma once
 
-#include <optixu/optixpp_namespace.h>
+#include "OXPPNS.hh"
 template <typename T> class NPY ;
 
 class cuRANDWrapper ; 

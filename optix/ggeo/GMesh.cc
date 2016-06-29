@@ -12,7 +12,8 @@
 
 
 // huh why both ?
-#include "numpy.hpp"
+//#include "numpy.hpp"
+#include "NGLM.hpp"
 #include "NPY.hpp"
 
 
@@ -359,7 +360,7 @@ GBuffer*  GMesh::getModelToWorldBuffer()
     return (GBuffer*)m_model_to_world ;
 }
 
-float* GMesh::getModelToWorldPtr(unsigned int index)
+float* GMesh::getModelToWorldPtr(unsigned int /*index*/)
 {
      return (float*)getModelToWorldBuffer()->getPointer() ; 
 }

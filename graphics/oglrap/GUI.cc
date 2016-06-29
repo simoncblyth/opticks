@@ -2,7 +2,8 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "gleq.h"
+
+#include "GLEQ.hh"
 
 // npy-
 #include "Index.hpp"

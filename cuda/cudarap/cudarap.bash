@@ -8,6 +8,62 @@ cudarap-usage(){ cat << EOU
 CUDAWrap
 ==========
 
+
+
+Warnings
+---------
+
+::
+
+    simon:cudarap blyth$ cudarap--
+    [ 33%] Building NVCC (Device) object cuda/cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
+    [ 33%] Building NVCC (Device) object cuda/cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_cuRANDWrapper_kernel.cu.o
+    In file included from /usr/local/cuda/include/curand_poisson.h:231:
+    In file included from /usr/local/cuda/include/common_functions.h:219:
+    In file included from /usr/local/cuda/include/math_functions.h:9342:
+    In file included from /usr/local/cuda/include/device_functions.h:4183:
+    /usr/local/cuda/include/device_functions.hpp:283:3: warning: extension used [-Wlanguage-extension-token]
+      asm __volatile__ ("{ \n\t"
+      ^
+    /usr/local/cuda/include/device_functions.hpp:296:3: warning: extension used [-Wlanguage-extension-token]
+      asm __volatile__ ("{ \n\t"
+      ^
+
+::
+
+     65 # CUDA headers yield many:
+     66 #   /usr/local/cuda/include/device_functions.hpp:283:3:   warning: extension used [-Wlanguage-extension-token]
+     67 #
+     68 # set(XOPT --disable-warnings) 
+     69 # BUT too much of a sledgehammer to disable all warnings
+     70 #
+     71 
+     72 CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30   )
+
+
+
+Tools not cooperating on macOS
+-----------------------------------
+
+* https://devtalk.nvidia.com/default/topic/856171/unnecessary-compiler-warning-with-nvcc-/
+* http://stackoverflow.com/questions/14831051/how-to-disable-compiler-warnings-with-nvcc
+
+::
+
+    simon:boostrap blyth$ nvcc --display_error_number
+    nvcc fatal   : Unknown option '-display_error_number'
+
+
+    simon:boostrap blyth$ which cudafe
+    /Developer/NVIDIA/CUDA-7.0/bin/cudafe
+
+    simon:boostrap blyth$ cudafe --display_error_number
+    Command-line error #593: missing source file name
+
+
+
+
+
 CUDARAP usage
 ----------------
 

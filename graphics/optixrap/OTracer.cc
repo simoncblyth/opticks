@@ -62,7 +62,7 @@ void OTracer::init()
 
     // OContext::e_pinhole_camera_entry
     m_entry_index = m_ocontext->addRayGenerationProgram(  "pinhole_camera.cu.ptx", "pinhole_camera" );
-    unsigned int exception_index = m_ocontext->addExceptionProgram( "pinhole_camera.cu.ptx", "exception");
+    int exception_index = m_ocontext->addExceptionProgram( "pinhole_camera.cu.ptx", "exception");
     assert(m_entry_index == exception_index);
 
     m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu.ptx", "miss" );

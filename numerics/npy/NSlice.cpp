@@ -14,11 +14,11 @@
 #include "NSlice.hpp"
 
 
-NSlice::NSlice(unsigned int low, unsigned int high, unsigned int step) 
+NSlice::NSlice(unsigned int low_, unsigned int high_, unsigned int step_) 
     :
-    low(low),
-    high(high),
-    step(step),
+    low(low_),
+    high(high_),
+    step(step_),
     _description(0)
 {
 }

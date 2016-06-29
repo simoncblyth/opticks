@@ -8,9 +8,20 @@
  *          http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
 #include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
 
 namespace logging = boost::log;
 

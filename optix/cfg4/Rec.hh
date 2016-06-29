@@ -153,8 +153,8 @@ class CFG4_API Rec {
        unsigned int                m_genflag ;
        std::vector<const State*>   m_states ; 
 
-       unsigned long long          m_seqmat ; 
        unsigned long long          m_seqhis ; 
+       unsigned long long          m_seqmat ; 
        unsigned int                m_slot ; 
 
        unsigned int m_record_max ; 

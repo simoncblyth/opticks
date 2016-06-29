@@ -2,6 +2,8 @@
 #include "BDir.hh"
 #include <iostream>
 
+#include "PLOG.hh"
+
 
 typedef std::vector<std::string> VS ; 
 
@@ -14,6 +16,8 @@ void dump(const char* msg, std::vector<std::string>& names)
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+
     std::string home = BFile::FormPath("~");
     const char* dir = home.c_str();
 

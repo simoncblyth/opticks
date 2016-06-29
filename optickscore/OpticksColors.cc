@@ -5,15 +5,14 @@
 #include <sstream>
 #include <vector>
 
-#include "PLOG.hh"
 #include "BFile.hh"
 #include "BMap.hh"
 
 #include "NPY.hpp"
 #include "NSpectral.hpp"
 
-
 #include "OpticksColors.hh"
+#include "PLOG.hh"
 
 using namespace std ; 
 
@@ -185,6 +184,8 @@ const char* OpticksColors::getName( const char* hex_, const char* missing)
 
 void OpticksColors::test(const char* msg)
 {
+    LOG(info) << msg ;  
+
     NPY<unsigned char>* buffer = make_buffer();
     buffer->save("/tmp/OpticksColors.npy");
 

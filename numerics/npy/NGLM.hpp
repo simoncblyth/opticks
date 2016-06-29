@@ -8,6 +8,11 @@
 #pragma warning( disable : 4251 )
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#endif
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>  
 #include <glm/gtx/quaternion.hpp>  
@@ -20,6 +25,10 @@
 
 #ifdef _MSC_VER
 #pragma warning(pop)
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 
 

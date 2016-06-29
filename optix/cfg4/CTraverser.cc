@@ -489,7 +489,7 @@ void CTraverser::dumpMaterial(const G4Material* material)
     typedef std::map< G4String, G4double,std::less<G4String> > CMAP ; 
 
     const PMAP* pm = mpt->GetPropertiesMap();
-    const CMAP* cm = mpt->GetPropertiesCMap(); 
+    //const CMAP* cm = mpt->GetPropertiesCMap(); 
 
      std::stringstream ss ; 
     for(PMAP::const_iterator it=pm->begin() ; it!=pm->end() ; it++)

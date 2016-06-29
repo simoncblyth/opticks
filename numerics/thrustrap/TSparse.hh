@@ -3,7 +3,21 @@
 #include <string>
 
 #include "CBufSlice.hh"
+
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include <thrust/device_vector.h>
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
+
 class Index ; 
 
 #define TSPARSE_LOOKUP_N 32

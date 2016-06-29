@@ -36,7 +36,7 @@ ORenderer::ORenderer(Renderer* renderer, OFrame* frame, const char* dir, const c
 }
 
 
-void ORenderer::init(const char* dir, const char* incl_path)
+void ORenderer::init(const char* /*dir*/, const char* /*incl_path*/)
 {
     // TODO: move elsewhere ... diddling with another objects constituent
 

@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include <optixu/optixpp_namespace.h>
+#include "OXPPNS.hh"
 #include <optixu/optixu_math_namespace.h>
 
 struct OProg ; 

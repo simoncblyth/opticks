@@ -13,7 +13,7 @@ void PLOG::_dump(const char* msg, int argc, char** argv)
     std::cerr <<  msg
               << " argc " << argc ;
 
-    for(unsigned i=0 ; i < argc ; i++) std::cerr << argv[i] ; 
+    for(int i=0 ; i < argc ; i++) std::cerr << argv[i] ; 
     std::cerr << std::endl ;               
 }
 
@@ -98,17 +98,17 @@ int PLOG::parse(plog::Severity _fallback)
 }
 int PLOG::parse(const char* fallback)
 {
-    int level = _parse(argc, argv, fallback);
+    int ll = _parse(argc, argv, fallback);
 
 #ifdef DBG
     std::cerr << "PLOG::parse"
               << " fallback " << fallback
-              << " level " << level 
-              << " name " << _name(level)
+              << " level " << ll 
+              << " name " << _name(ll)
               << std::endl ;
 #endif
 
-    return level ; 
+    return ll ; 
 }
 
 
@@ -119,18 +119,18 @@ int PLOG::prefix_parse(plog::Severity _fallback, const char* prefix)
 }
 int PLOG::prefix_parse(const char* fallback, const char* prefix)
 {
-    int level =  _prefix_parse(argc, argv, fallback, prefix);
+    int ll =  _prefix_parse(argc, argv, fallback, prefix);
 
 #ifdef DBG
     std::cerr << "PLOG::prefix_parse"
               << " fallback " << fallback
               << " prefix " << prefix 
-              << " level " << level 
-              << " name " << _name(level)
+              << " level " << ll 
+              << " name " << _name(ll)
               << std::endl ;
 #endif
 
-    return level ; 
+    return ll ; 
 }
 
 
@@ -152,10 +152,10 @@ const char* PLOG::name()
 }
 
 
-PLOG::PLOG(int argc, char** argv, const char* fallback, const char* prefix)
+PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
-      argc(argc),
-      argv(argv),
+      argc(argc_),
+      argv(argv_),
       level(info)
 {
    level = prefix == NULL ?  parse(fallback) : prefix_parse(fallback, prefix ) ;    
