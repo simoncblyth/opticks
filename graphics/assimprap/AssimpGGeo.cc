@@ -36,7 +36,7 @@
 
 
 #include "AssimpGGeo.hh"
-#include "AssimpGeometry.hh"
+#include "AssimpImporter.hh"
 #include "AssimpTree.hh"
 #include "AssimpSelection.hh"
 #include "AssimpNode.hh"
@@ -137,16 +137,16 @@ int AssimpGGeo::load(GGeo* ggeo)
     assert(query);
     assert(ctrl);
 
-    AssimpGeometry ageo(path);
+    AssimpImporter assimp(path);
 
-    //const char* idpath = ageo.identityFilename(path, query);
-    //assert(strcmp(idpath, idpath_) == 0);
+    assimp.import();
 
-    ageo.import();
+    AssimpSelection* selection = assimp.select(query);
 
-    AssimpSelection* selection = ageo.select(query);
+    AssimpTree* tree = assimp.getTree();
 
-    AssimpGGeo agg(ggeo, ageo.getTree(), selection); 
+
+    AssimpGGeo agg(ggeo, tree, selection); 
 
     agg.setVerbosity(verbosity);
 
@@ -581,9 +581,6 @@ which are fabricated by AssimpGGeo::convertSensors.
     }
 }
 
-
-   
-
 void AssimpGGeo::convertSensors(GGeo* gg, AssimpNode* node, unsigned int depth)
 {
     // addCathodeLV into gg
@@ -610,15 +607,12 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
     GMaterial* mt = gg->getMaterial(mti);
     
     NSensorList* sens = gg->getSensorList();  
-
-
     /*
     NSensor* sensor0 = sens->getSensor( nodeIndex ); 
     NSensor* sensor1 = sens->findSensorForNode( nodeIndex ); 
     assert(sensor0 == sensor1);
     // these do not match
     */
-
     NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
 
     if(sensor && mt == gg->getCathode())
@@ -628,14 +622,78 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
                    << " lv " << lv  
                    << " pv " << pv  
                    ;
-
          gg->addCathodeLV(lv) ;   
     }
-    
 }
 
 
 
+GMesh* AssimpGGeo::convertMesh(const aiMesh* mesh, unsigned int index )
+{
+    const char* meshname = mesh->mName.C_Str() ; 
+    unsigned int numVertices = mesh->mNumVertices;
+    unsigned int numFaces = mesh->mNumFaces;
+
+    LOG(debug) << "AssimpGGeo::convertMesh " 
+               << " index " << std::setw(4) << index
+               << " v " << std::setw(4) << numVertices
+               << " f " << std::setw(4) << numFaces
+               << " n " << meshname 
+               ; 
+
+
+    aiVector3D* vertices = mesh->mVertices ; 
+    gfloat3*   gvertices = new gfloat3[numVertices];
+    for(unsigned int v = 0; v < numVertices; v++)
+    {
+        gvertices[v].x = vertices[v].x;
+        gvertices[v].y = vertices[v].y;
+        gvertices[v].z = vertices[v].z;
+    }
+
+    assert(mesh->HasNormals()); 
+    aiVector3D* normals = mesh->mNormals ; 
+    gfloat3* gnormals  = new gfloat3[numVertices];
+    for(unsigned int v = 0; v < mesh->mNumVertices; v++)
+    {
+        gnormals[v].x = normals[v].x;
+        gnormals[v].y = normals[v].y;
+        gnormals[v].z = normals[v].z;
+    }
+
+    //aiFace* faces = mesh->mFaces ; 
+    guint3*  gfaces = new guint3[numFaces];
+    for(unsigned int f = 0; f < mesh->mNumFaces; f++)
+    {
+        aiFace face = mesh->mFaces[f];
+        gfaces[f].x = face.mIndices[0];
+        gfaces[f].y = face.mIndices[1];
+        gfaces[f].z = face.mIndices[2];
+    }
+
+    gfloat2* gtexcoords = NULL ;
+
+    GMesh* gmesh = new GMesh( index, gvertices, numVertices, gfaces, numFaces, gnormals, gtexcoords); 
+    return gmesh ; 
+}
+
+
+
+
+unsigned AssimpGGeo::getNumMeshes()
+{
+    const aiScene* scene = m_tree->getScene();
+    return scene->mNumMeshes ;
+}
+
+GMesh* AssimpGGeo::convertMesh(unsigned int index )
+{
+    const aiScene* scene = m_tree->getScene();
+    assert(index < scene->mNumMeshes);
+    aiMesh* mesh = scene->mMeshes[index] ;
+    GMesh* graw = convertMesh(mesh, index );
+    return graw ; 
+}
 
 
 void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*query*/)
@@ -645,58 +703,14 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*que
     for(unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[i] ;
+    
         const char* meshname = mesh->mName.C_Str() ; 
-        unsigned int numVertices = mesh->mNumVertices;
-        unsigned int numFaces = mesh->mNumFaces;
 
-        assert(mesh->HasNormals()); 
+        GMesh* graw = convertMesh(mesh, i );
 
-        LOG(debug) << "AssimpGGeo::convertMeshes " 
-                  << " i " << std::setw(4) << i
-                  << " v " << std::setw(4) << numVertices
-                  << " f " << std::setw(4) << numFaces
-                  << " n " << meshname 
-                  ; 
+        GMesh* gmesh = graw->makeDedupedCopy(); // removes duplicate vertices, re-indexing faces accordingly
 
-        aiVector3D* vertices = mesh->mVertices ; 
-        gfloat3* gvertices = new gfloat3[numVertices];
-
-        for(unsigned int v = 0; v < mesh->mNumVertices; v++)
-        {
-            gvertices[v].x = vertices[v].x;
-            gvertices[v].y = vertices[v].y;
-            gvertices[v].z = vertices[v].z;
-        }
-
-        aiVector3D* normals = mesh->mNormals ; 
-        gfloat3* gnormals  = new gfloat3[numVertices];
-        for(unsigned int v = 0; v < mesh->mNumVertices; v++)
-        {
-            gnormals[v].x = normals[v].x;
-            gnormals[v].y = normals[v].y;
-            gnormals[v].z = normals[v].z;
-        }
-
-        //aiFace* faces = mesh->mFaces ; 
-        guint3*  gfaces = new guint3[numFaces];
-
-        for(unsigned int f = 0; f < mesh->mNumFaces; f++)
-        {
-            aiFace face = mesh->mFaces[f];
-            gfaces[f].x = face.mIndices[0];
-            gfaces[f].y = face.mIndices[1];
-            gfaces[f].z = face.mIndices[2];
-        }
-
-
-        gfloat2* gtexcoords = NULL ;
-
-
-        GMesh* gmesh_raw = new GMesh( i, gvertices, numVertices, gfaces, numFaces, gnormals, gtexcoords); 
-
-        GMesh* gmesh = gmesh_raw->makeDedupedCopy(); // removes duplicate vertices, re-indexing faces accordingly
-
-        delete gmesh_raw ; 
+        delete graw ; 
 
         gmesh->setName(meshname);
 
@@ -706,6 +720,11 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*que
 
         if(gfixed != gmesh)
         {
+            LOG(trace) << "AssimpGGeo::convertMeshes meshfixing was done for "
+                        << " meshname " << meshname 
+                        << " index " << i 
+                         ; 
+
             delete gmesh ;
         }
 
@@ -713,16 +732,6 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*que
 
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

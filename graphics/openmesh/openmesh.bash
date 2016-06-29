@@ -11,6 +11,12 @@ OpenMesh
 * http://openmesh.org/Documentation/OpenMesh-Doc-Latest/a00030.html
 
 
+
+* https://www.openmesh.org/media/Documentations/OpenMesh-4.1-Documentation/index.html
+
+
+
+
 cmake::
 
     -- Checking the Boost Python configuration

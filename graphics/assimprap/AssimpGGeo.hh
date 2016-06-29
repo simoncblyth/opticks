@@ -8,12 +8,14 @@ class GGeo ;
 class GSurface ;
 class GMaterial ;
 class GSolid ; 
+class GMesh ; 
 
 template <typename T> class GPropertyMap ; 
 
 struct aiMaterial ;
 struct aiMaterialProperty ;
 struct aiScene ;
+struct aiMesh ;
 
 #include "ASIRAP_API_EXPORT.hh"
 
@@ -41,6 +43,10 @@ public:
 
     static const char* EFFICIENCY ;
 
+public:
+    // used for debugging
+    GMesh* convertMesh(unsigned int index );
+    unsigned int getNumMeshes();
 protected:
     void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl );
     void addProperties(GPropertyMap<float>* pmap, aiMaterial* material);
@@ -50,8 +56,8 @@ protected:
     bool hasVectorProperty(aiMaterial* material, const char* propname);
     aiMaterialProperty* getVectorProperty(aiMaterial* material, const char* propname );
 protected:
+    GMesh* convertMesh(const aiMesh* mesh, unsigned int index );
     void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
-
 protected:
     void convertStructure(GGeo* gg);
     void convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent);

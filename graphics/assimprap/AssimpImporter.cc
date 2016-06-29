@@ -18,7 +18,7 @@
 #include "OpticksQuery.hh"
 
 // assimprap-
-#include "AssimpGeometry.hh"
+#include "AssimpImporter.hh"
 #include "AssimpCommon.hh"
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
@@ -56,7 +56,7 @@ public:
 
 
 
-AssimpGeometry::AssimpGeometry(const char* path)
+AssimpImporter::AssimpImporter(const char* path)
           : 
           m_aiscene(NULL),
           m_index(0),
@@ -69,13 +69,13 @@ AssimpGeometry::AssimpGeometry(const char* path)
 }
 
 
-void AssimpGeometry::init(const char* path)
+void AssimpImporter::init(const char* path)
 {
     if(!path) return ;          
 
     m_importer = new Assimp::Importer() ;
 
-    //printf("AssimpGeometry::AssimpGeometry ctor path %s  \n", path);
+    //printf("AssimpImporter::AssimpImporter ctor path %s  \n", path);
     m_path = strdup(path);
 
     m_importer->SetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION,1);
@@ -91,31 +91,31 @@ void AssimpGeometry::init(const char* path)
 }
 
 
-AssimpGeometry::~AssimpGeometry()
+AssimpImporter::~AssimpImporter()
 {
     // deleting m_importer also deletes the scene (unconfirmed)
     delete m_importer;
     free(m_path);
 }
 
-AssimpTree* AssimpGeometry::getTree()
+AssimpTree* AssimpImporter::getTree()
 {
     return m_tree ;
 }
 
 
-void AssimpGeometry::Summary(const char* msg)
+void AssimpImporter::Summary(const char* msg)
 {
 
     if(!m_aiscene) return ; 
     
     LOG(info) << msg ;   
-    LOG(info) << "AssimpGeometry::info m_aiscene " 
+    LOG(info) << "AssimpImporter::info m_aiscene " 
                << " NumMaterials " << m_aiscene->mNumMaterials
                << " NumMeshes " << m_aiscene->mNumMeshes ;
   
    /* 
-    printf("AssimpGeometry::info aiscene %p \n", m_aiscene);
+    printf("AssimpImporter::info aiscene %p \n", m_aiscene);
     printf("aiscene Flags         %d \n", m_aiscene->mFlags );
     printf("aiscene NumAnimations %d \n", m_aiscene->mNumAnimations );
     printf("aiscene NumCameras    %d \n", m_aiscene->mNumCameras );
@@ -129,7 +129,7 @@ void AssimpGeometry::Summary(const char* msg)
 
 
 /*
-const char* AssimpGeometry::identityFilename( const char* path, const char* query)
+const char* AssimpImporter::identityFilename( const char* path, const char* query)
 {
     // Used when geometry is loaded using options: -g/--g4dae path  
     //
@@ -143,13 +143,13 @@ const char* AssimpGeometry::identityFilename( const char* path, const char* quer
     //
     std::string digest = md5digest( query, strlen(query));
     static std::string kfn = insertField( path, '.', -1 , digest.c_str());
-    //printf("AssimpGeometry::identityFilename\n path %s\n query %s\n digest %s\n kfn %s \n", path, query, digest.c_str(), kfn.c_str() );
+    //printf("AssimpImporter::identityFilename\n path %s\n query %s\n digest %s\n kfn %s \n", path, query, digest.c_str(), kfn.c_str() );
     return kfn.c_str();
 }
 */
 
 
-unsigned int AssimpGeometry::defaultProcessFlags()
+unsigned int AssimpImporter::defaultProcessFlags()
 {
     unsigned int flags = 0 ;
 
@@ -171,7 +171,7 @@ unsigned int AssimpGeometry::defaultProcessFlags()
     return flags ; 
 }
 
-void AssimpGeometry::import()
+void AssimpImporter::import()
 {
     import(defaultProcessFlags());
 }
@@ -179,20 +179,20 @@ void AssimpGeometry::import()
 
 
 
-unsigned int AssimpGeometry::getProcessFlags()
+unsigned int AssimpImporter::getProcessFlags()
 {
    return m_process_flags ; 
 }
 
-unsigned int AssimpGeometry::getSceneFlags()
+unsigned int AssimpImporter::getSceneFlags()
 {
     return m_aiscene->mFlags ; 
 }
 
 
-void AssimpGeometry::import(unsigned int flags)
+void AssimpImporter::import(unsigned int flags)
 {
-    LOG(info) << "AssimpGeometry::import path " << m_path << " flags " << flags ;
+    LOG(info) << "AssimpImporter::import path " << m_path << " flags " << flags ;
     m_process_flags = flags ; 
 
     assert(m_path);
@@ -200,40 +200,40 @@ void AssimpGeometry::import(unsigned int flags)
 
     if(!m_aiscene)
     {   
-        printf("AssimpGeometry::import ERROR : \"%s\" \n", m_importer->GetErrorString() );  
+        printf("AssimpImporter::import ERROR : \"%s\" \n", m_importer->GetErrorString() );  
         return ;
     }   
 
-    //dumpProcessFlags("AssimpGeometry::import", flags);
-    //dumpSceneFlags("AssimpGeometry::import", m_aiscene->mFlags);
+    //dumpProcessFlags("AssimpImporter::import", flags);
+    //dumpSceneFlags("AssimpImporter::import", m_aiscene->mFlags);
 
-    Summary("AssimpGeometry::import DONE");
+    Summary("AssimpImporter::import DONE");
 
     m_tree = new AssimpTree(m_aiscene);
 }
 
 
-unsigned int AssimpGeometry::getNumMaterials()
+unsigned int AssimpImporter::getNumMaterials()
 {
     return m_aiscene->mNumMaterials ; 
 }
 
-aiMaterial* AssimpGeometry::getMaterial(unsigned int index)
+aiMaterial* AssimpImporter::getMaterial(unsigned int index)
 {
     return m_aiscene->mMaterials[index] ; 
 }
 
-void AssimpGeometry::traverse()
+void AssimpImporter::traverse()
 {
     m_tree->traverse();
 }
 
-AssimpSelection* AssimpGeometry::select(OpticksQuery* query)
+AssimpSelection* AssimpImporter::select(OpticksQuery* query)
 {
 
     if(!m_tree) 
     {
-        printf("AssimpGeometry::select no tree \n");
+        printf("AssimpImporter::select no tree \n");
         return 0 ;
     }
 
@@ -242,27 +242,27 @@ AssimpSelection* AssimpGeometry::select(OpticksQuery* query)
 
     if(selection->getNumSelected() == 0)
     {
-        printf("AssimpGeometry::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query->getQueryString() );
+        printf("AssimpImporter::select WARNING query \"%s\" failed to find any nodes : fallback to adding root  \n", query->getQueryString() );
     }
     return selection ; 
 }
 
-AssimpNode* AssimpGeometry::getRoot()
+AssimpNode* AssimpImporter::getRoot()
 {
     return m_tree->getRoot();
 }
 
-aiMesh* AssimpGeometry::createMergedMesh(AssimpSelection* selection)
+aiMesh* AssimpImporter::createMergedMesh(AssimpSelection* selection)
 {
     return m_tree->createMergedMesh(selection);
 }
 
-void AssimpGeometry::dump()
+void AssimpImporter::dump()
 {
     m_tree->dump();
 }
 
-void AssimpGeometry::dumpMaterials(const char* query)
+void AssimpImporter::dumpMaterials(const char* query)
 {
     m_tree->dumpMaterials(query);
 }

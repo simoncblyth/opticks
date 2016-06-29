@@ -20,15 +20,15 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    BRAP_LOG_ ;
-    NPY_LOG_ ;
-    OKCORE_LOG_ ;
-    GGEO_LOG_ ;
-    ASIRAP_LOG_ ;
-    MESHRAP_LOG_ ;
-    OKGEO_LOG_ ;
-    OGLRAP_LOG_ ;
-    GGV_LOG_ ;
+    BRAP_LOG__ ;
+    NPY_LOG__ ;
+    OKCORE_LOG__ ;
+    GGEO_LOG__ ;
+    ASIRAP_LOG__ ;
+    MESHRAP_LOG__ ;
+    OKGEO_LOG__ ;
+    OGLRAP_LOG__ ;
+    GGV_LOG__ ;
  
 
     App app("OPTICKS_", argc, argv); 

@@ -1208,7 +1208,7 @@ void GMesh::Summary(const char* msg)
           m_center_extent->z,
           m_center_extent->w);
 
-   m_model_to_world->Summary(msg);
+   //m_model_to_world->Summary(msg);
 }
 
 

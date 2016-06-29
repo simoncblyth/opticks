@@ -34,7 +34,7 @@ op-binary-name-default(){ echo GGeoViewTest ; }
 op-binary-name()
 {
    case $1 in 
-           --cfg4) echo CG4Test ;;
+          --tcfg4) echo CG4Test ;;
          --tracer) echo OTracerTest ;;
             --mat) echo GMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;
@@ -87,7 +87,7 @@ op-binary-name()
 op-binary-desc()
 {
    case $1 in 
-           --cfg4) echo "Geant4 comparison simulation of simple test geometries. Requires g4-export environment. " ;; 
+           -tcfg4) echo "Geant4 comparison simulation of simple test geometries. Requires g4-export environment. " ;; 
          --tracer) echo "Fast OpenGL viz and OptiX tracing, NO propagation. From ggeoview-/tests. Used for simple geometry/machinery checking"  ;;
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;

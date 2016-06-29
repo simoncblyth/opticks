@@ -1,3 +1,4 @@
+#include <sstream>
 #include <iostream>
 #include <iomanip>
 
@@ -8,13 +9,11 @@
 
 // ggeo-
 #include "GMesh.hh"
-
-
 #include "MWrap.hh"
+#include "MMesh.hh"
 
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
-
 
 #ifdef _MSC_VER
 // some logging issue on MSVC
@@ -45,6 +44,12 @@ std::vector<typename MeshT::VertexHandle>& MWrap<MeshT>::getBoundaryLoop()
 template <typename MeshT>
 void MWrap<MeshT>::load(GMesh* mm)
 {
+#ifdef DOLOG
+    LOG(trace) << "MWrap<MeshT>::load"
+               << " NumVertices " << mm->getNumVertices()
+               << " NumFaces " << mm->getNumFaces() 
+               ;
+#endif
     copyIn( (float*)mm->getVertices(), mm->getNumVertices(), (unsigned int*)mm->getFaces(), mm->getNumFaces() );
 }
 
@@ -52,6 +57,14 @@ void MWrap<MeshT>::load(GMesh* mm)
 template <typename MeshT>
 void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces )  
 {
+
+#ifdef DOLOG
+    LOG(trace) << "MWrap<MeshT>::load"
+               << " num_vertices " << num_vertices
+               << " num_faces " << num_faces 
+               ;
+#endif
+
     MeshT* mesh = m_mesh ; 
 
     typedef typename MeshT::VertexHandle VH ; 
@@ -173,10 +186,25 @@ void MWrap<MeshT>::copyOut(float* vdata, unsigned int /*num_vertices*/, unsigned
 template <typename MeshT>
 int MWrap<MeshT>::labelConnectedComponentVertices(const char* vpropname)
 {
+    //
+    // upshot of this is that every vertex should
+    // get a component property indicating, 
+    // in topologically correct meshes all vertices 
+    // will get labelled with 0
+    //
+    // in split meshes the splits should be labelled
+    // correspondingly
+    //
+    // NB this is not intended to be used on full merged meshes
+    // only on single solid meshes that have a hope
+    // of topological correctness
+    // 
+
+
     MeshT* mesh = m_mesh ; 
 
     OpenMesh::VPropHandleT<int> component;
-    mesh->add_property(component, vpropname); 
+    mesh->add_property(component, vpropname);  // vpropname is "component"
 
     typedef typename MeshT::VertexHandle VH ;
     typedef typename MeshT::VertexIter VI ; 
@@ -235,6 +263,11 @@ int MWrap<MeshT>::labelConnectedComponentVertices(const char* vpropname)
 template <typename MeshT>
 void MWrap<MeshT>::calcFaceCentroids(const char* fpropname)
 {
+
+    LOG(trace) << "MWrap<MeshT>::calcFaceCentroids"
+               << " fpropname " << fpropname 
+               ;
+
     MeshT* mesh = m_mesh ; 
 
     typedef typename MeshT::FaceIter FI ; 
@@ -250,14 +283,30 @@ void MWrap<MeshT>::calcFaceCentroids(const char* fpropname)
         mesh->calc_face_centroid( *f, cog);
         mesh->property(centroid,*f) = cog ; 
     }
+
 }
 
 
 template <typename MeshT>
 int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, const char* fposprop, const char* fpropname)  
 {
+    // consider all pairings between the faces of mesh a and b
+    // for pairs that are close and back to back 
+    // label both meshes with the fpropname property
+    //
+    
     typedef typename MeshT::Point P ; 
     typedef typename MeshT::FaceIter FI ; 
+
+    LOG(trace) << "MWrap<MeshT>::labelSpatialPairs"
+               << " fposprop " << fposprop
+               << " fpropname " << fpropname 
+               << " delta " 
+               << " x " << delta.x
+               << " y " << delta.y
+               << " z " << delta.z
+               << " w " << delta.w
+               ;
 
    // check the input positional face property
 
@@ -269,17 +318,14 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
 
     // setup the output boolean face property 
 
-    OpenMesh::FPropHandleT<bool> a_paired ;
+    OpenMesh::FPropHandleT<int> a_paired ;
     a->add_property(a_paired, fpropname); 
+    for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) a->property(a_paired, *af) = 0 ; 
 
-    OpenMesh::FPropHandleT<bool> b_paired ;
+    OpenMesh::FPropHandleT<int> b_paired ;
     b->add_property(b_paired, fpropname); 
+    for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) b->property(b_paired, *bf) = 0 ; 
 
-    for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) 
-         a->property(a_paired, *af) = false ; 
-
-    for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) 
-         b->property(b_paired, *bf) = false ; 
 
     // very inefficent approach, calculating all pairings 
     // but geometry surgery is a once only endeavor
@@ -296,12 +342,16 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
         { 
             int fb = bf->idx(); 
             P bp = b->property(b_fposprop, *bf) ;
-            P dp = bp - ap ; 
             P bn = b->normal(*bf);
+
+            P dp = bp - ap ; 
 
             float adotb = OpenMesh::dot(an,bn); 
 
-            bool close = fabs(dp[0]) < delta.x && fabs(dp[1]) < delta.y && fabs(dp[2]) < delta.z ;
+            bool close = fabs(dp[0]) < delta.x && 
+                         fabs(dp[1]) < delta.y && 
+                         fabs(dp[2]) < delta.z ;
+
             bool backtoback = adotb < delta.w ;  
 
             if(close && backtoback) 
@@ -321,8 +371,8 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
                  npair++ ; 
 
                  // mark the paired faces
-                 a->property(a_paired, *af ) = true ; 
-                 b->property(b_paired, *bf ) = true ; 
+                 a->property(a_paired, *af ) += 1 ; 
+                 b->property(b_paired, *bf ) += 1 ; 
             }
         }
     }
@@ -334,6 +384,16 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
               << " npair " << npair
              ; 
 
+
+    std::stringstream ssa ; 
+    for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) if(a->property(a_paired, *af) > 0) ssa << af->idx() << " " ; 
+    LOG(trace) << "MWrap<MeshT>::labelSpatialPairs" << " ssa " << ssa.str() ;
+           
+    std::stringstream ssb ; 
+    for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) if(b->property(b_paired, *bf) > 0) ssb << bf->idx() << " " ; 
+    LOG(trace) << "MWrap<MeshT>::labelSpatialPairs" << " ssb " << ssb.str() ;
+ 
+
     return npair ; 
 }
 
@@ -344,23 +404,49 @@ unsigned int MWrap<MeshT>::deleteFaces(const char* fpredicate_name )
 {
     MeshT* mesh = m_mesh ;
 
+    LOG(trace) << "MWrap<MeshT>::deleteFaces"
+               << " fpredicate_name " << fpredicate_name
+               ;
+
+
+
+
+
     typedef typename MeshT::FaceIter FI ; 
 
-    OpenMesh::FPropHandleT<bool> fpredicate ;
+    OpenMesh::FPropHandleT<int> fpredicate ;
     assert(mesh->get_property_handle(fpredicate, fpredicate_name)); 
 
     unsigned int count(0);
+    unsigned int skip(0);
+
+
+    std::stringstream ssm ; 
+    for( FI f=mesh->faces_begin() ; f != mesh->faces_end(); ++f ) if(mesh->property(fpredicate, *f) > 0) ssm << f->idx() << " " ; 
+    LOG(trace) << "MWrap<MeshT>::deleteFaces " << " ssm " << ssm.str() ;
+
+
+
     for( FI f=mesh->faces_begin() ; f != mesh->faces_end(); ++f )
     {
-        if(mesh->property(fpredicate, *f)) 
-        {
-           // std::cout << f->idx() << " " ; 
-            bool delete_isolated_vertices = true ; 
-            mesh->delete_face( *f, delete_isolated_vertices );
-            count++ ; 
+        if(mesh->property(fpredicate, *f) > 0) 
+        { 
+            if(mesh->status(*f).deleted())
+            {
+                LOG(warning) << "skip already deleted " << f->idx() ; 
+                std::cerr << "k " << f->idx() << " " ; 
+                skip++ ; 
+            }
+            else 
+            {
+                std::cerr << "d " << f->idx() << " " ; 
+                bool delete_isolated_vertices = true ; 
+                mesh->delete_face( *f, delete_isolated_vertices );
+                count++ ; 
+            }
         }
     }
-    //std::cout << std::endl ; 
+    std::cerr << std::endl ; 
 
     mesh->garbage_collection();
     LOG(info) << "MWrap::deleteFaces " << fpredicate_name << " " << count ; 
@@ -896,5 +982,5 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
 }
 
 
-template class MESHRAP_API MWrap<MyMesh>;
+template class MESHRAP_API MWrap<MMesh>;
 

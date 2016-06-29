@@ -1720,6 +1720,7 @@ glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int 
 bool GGeo::shouldMeshJoin(GMesh* mesh)
 {
     const char* shortname = mesh->getShortName();
+
     bool join = m_join_cfg && BStr::listHasKey(m_join_cfg, shortname, ",") ; 
 
     LOG(debug)<< "GGeo::shouldMeshJoin"
@@ -1738,6 +1739,8 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     bool join = shouldMeshJoin(mesh);
     if(join)
     {
+        LOG(trace) << "GGeo::invokeMeshJoin proceeding for " << mesh->getName() ; 
+
         result = (*m_join_imp)(mesh, m_opticks); 
 
         result->setName(mesh->getName()); 

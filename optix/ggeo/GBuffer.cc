@@ -231,7 +231,7 @@ GBuffer* GBuffer::load(const char* path)
     //printf("GBuffer::load path %s \n", path );
 
 
-    LOG(info) << " path "  << path ; 
+    LOG(trace) << " path "  << path ; 
               
 
     std::vector<T> vdata ;
@@ -257,7 +257,7 @@ GBuffer* GBuffer::load(const char* path)
     }
 
 
-    LOG(info) << " path "  << path 
+    LOG(trace) << " path "  << path 
               << " numItems " << numItems 
               << " numElements " << numElements
               ;

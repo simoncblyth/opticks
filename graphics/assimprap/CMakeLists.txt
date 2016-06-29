@@ -72,7 +72,7 @@ set(SOURCES
     AssimpNode.cc
 
     AssimpGGeo.cc
-    AssimpGeometry.cc
+    AssimpImporter.cc
 )
 
 set(HEADERS
@@ -85,7 +85,7 @@ set(HEADERS
 
     AssimpCommon.hh
     AssimpGGeo.hh
-    AssimpGeometry.hh
+    AssimpImporter.hh
     AssimpNode.hh
     AssimpRegistry.hh
     AssimpSelection.hh

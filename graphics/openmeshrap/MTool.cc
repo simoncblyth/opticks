@@ -12,11 +12,7 @@
 
 #include "MWrap.hh"
 #include "MTool.hh"
-
-
-#include <OpenMesh/Core/IO/MeshIO.hh>
-#include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
-typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
+#include "MMesh.hh"
 
 #include "PLOG.hh"
 
@@ -62,7 +58,7 @@ unsigned int MTool::countMeshComponents(GMesh* gmesh)
 
 unsigned int MTool::countMeshComponents_(GMesh* gmesh)
 {
-    MWrap<MyMesh> wsrc(new MyMesh);
+    MWrap<MMesh> wsrc(new MMesh);
 
     wsrc.load(gmesh);
 
@@ -84,11 +80,17 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
               << " shortname " << gmesh->getShortName()
               ;
 
-    MWrap<MyMesh> wsrc(new MyMesh);
+    MWrap<MMesh> wsrc(new MMesh);
 
     wsrc.load(gmesh);
 
     int ncomp = wsrc.labelConnectedComponentVertices("component"); 
+
+    LOG(trace) << "MTool::joinSplitUnion " 
+               << " index " << gmesh->getIndex() 
+               << " shortname " << gmesh->getShortName()
+               << " ncomp " << ncomp
+               ;
 
     if(ncomp != 2)
     {
@@ -97,11 +99,11 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
         return gmesh ; 
     }
 
-    typedef MyMesh::VertexHandle VH ; 
+    typedef MMesh::VertexHandle VH ; 
     typedef std::map<VH,VH> VHM ;
 
-    MWrap<MyMesh> wa(new MyMesh);
-    MWrap<MyMesh> wb(new MyMesh);
+    MWrap<MMesh> wa(new MMesh);
+    MWrap<MMesh> wb(new MMesh);
 
     VHM s2c_0 ;  
     wsrc.partialCopyTo(wa.getMesh(), "component", 0, s2c_0);
@@ -109,13 +111,13 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
     VHM s2c_1 ;  
     wsrc.partialCopyTo(wb.getMesh(), "component", 1, s2c_1);
 
-#ifdef DEBUG 
+//#ifdef DEBUG 
     wa.dump("wa",0);
     wb.dump("wb",0);
 
     wa.write("/tmp/comp%d.off", 0 );
     wb.write("/tmp/comp%d.off", 1 );
-#endif
+//#endif
 
     wa.calcFaceCentroids("centroid"); 
     wb.calcFaceCentroids("centroid"); 
@@ -125,17 +127,25 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
 
     glm::vec4 delta = resource->getMeshfixFacePairingCriteria();
 
-    MWrap<MyMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
+    // centroid is the input property, paired is output 
+    MWrap<MMesh>::labelSpatialPairs( wa.getMesh(), wb.getMesh(), delta, "centroid", "paired");
+
+    LOG(trace) << "MWrap<MMesh>::labelSpatialPairs DONE " ; 
 
     wa.deleteFaces("paired");
+
+    LOG(trace) << "wa.deleteFaces DONE " ; 
+
     wb.deleteFaces("paired");
+
+    LOG(trace) << "wb.deleteFaces DONE " ; 
 
     wa.collectBoundaryLoop();
     wb.collectBoundaryLoop();
 
-    VHM a2b = MWrap<MyMesh>::findBoundaryVertexMap(&wa, &wb );  
+    VHM a2b = MWrap<MMesh>::findBoundaryVertexMap(&wa, &wb );  
 
-    MWrap<MyMesh> wdst(new MyMesh);
+    MWrap<MMesh> wdst(new MMesh);
 
     wdst.createWithWeldedBoundary( &wa, &wb, a2b );
 

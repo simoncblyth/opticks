@@ -35,7 +35,7 @@ Comparing with pycollada
 #include "GGeo.hh"
 
 
-#include "AssimpGeometry.hh"
+#include "AssimpImporter.hh"
 #include "AssimpTree.hh"
 #include "AssimpNode.hh"
 #include "AssimpGGeo.hh"

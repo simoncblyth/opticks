@@ -5,6 +5,8 @@ project(${name})
 #file(GLOB TEST_SOURCES "*Test.cc")
 set(TEST_SOURCES
      OpenMeshRapTest.cc 
+
+    DeleteFaceTest.cc
 )
 
 

@@ -21,11 +21,11 @@ namespace Assimp
 
 #include "ASIRAP_API_EXPORT.hh"
 
-class ASIRAP_API AssimpGeometry 
+class ASIRAP_API AssimpImporter 
 {
 public:
-    AssimpGeometry(const char* path);
-    virtual ~AssimpGeometry();
+    AssimpImporter(const char* path);
+    virtual ~AssimpImporter();
 private:
     void init(const char* path);
 public:
@@ -36,9 +36,9 @@ public:
     unsigned int getSceneFlags();
     unsigned int defaultProcessFlags();
     //static const char* identityFilename(const char* path, const char* query);
-    void Summary(const char* msg="AssimpGeometry::Summary");
+    void Summary(const char* msg="AssimpImporter::Summary");
     void dump();
-    void dumpMaterials(const char* msg="AssimpGeometry::dumpMaterials");
+    void dumpMaterials(const char* msg="AssimpImporter::dumpMaterials");
     void traverse();
     AssimpNode* getRoot();
 public:
