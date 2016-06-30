@@ -52,7 +52,6 @@ int main(int argc, char** argv)
 
     LOG(info) << " import " << path ; 
 
-
     AssimpImporter assimp(path);
 
     assimp.import();
@@ -62,8 +61,6 @@ int main(int argc, char** argv)
     AssimpSelection* selection = assimp.select(query);
 
     AssimpTree* tree = assimp.getTree();
-
-
 
     AssimpGGeo agg(ggeo, tree, selection); 
 
@@ -75,7 +72,6 @@ int main(int argc, char** argv)
      
     assert(rc == 0);
 
-
     unsigned nmesh = agg.getNumMeshes();
 
     for(unsigned i=0 ; i < nmesh ; i++)
@@ -84,7 +80,13 @@ int main(int argc, char** argv)
         gm->Summary();
     }
 
+    GMesh* iav = agg.convertMesh("iav");
+    GMesh* oav = agg.convertMesh("oav");
 
+    if(iav) iav->Summary("iav");
+    if(oav) oav->Summary("oav");
+
+    LOG(info) << " DONE " << argv[0] ; 
 
     return 0 ;
 }

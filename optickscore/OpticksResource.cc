@@ -46,6 +46,8 @@ const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ;
 const char* OpticksResource::DEFAULT_GEOKEY = "DAE_NAME_DYB" ; 
 const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
 const char* OpticksResource::DEFAULT_CTRL = "volnames" ; 
+const char* OpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
+const char* OpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
 
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
@@ -360,8 +362,8 @@ void OpticksResource::readEnvironment()
 
     m_query_string = SSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
     m_ctrl         = SSys::getenvvar(m_envprefix, "CTRL", DEFAULT_CTRL);
-    m_meshfix      = SSys::getenvvar(m_envprefix, "MESHFIX");
-    m_meshfixcfg   = SSys::getenvvar(m_envprefix, "MESHFIX_CFG");
+    m_meshfix      = SSys::getenvvar(m_envprefix, "MESHFIX", DEFAULT_MESHFIX);
+    m_meshfixcfg   = SSys::getenvvar(m_envprefix, "MESHFIX_CFG", DEFAULT_MESHFIX_CFG);
 
     m_query = new OpticksQuery(m_query_string);
     std::string query_digest = SDigest::md5digest( m_query_string, strlen(m_query_string));

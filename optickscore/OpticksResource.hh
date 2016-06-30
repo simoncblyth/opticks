@@ -27,6 +27,8 @@ class OKCORE_API OpticksResource {
        static const char* DEFAULT_GEOKEY ;
        static const char* DEFAULT_QUERY ;
        static const char* DEFAULT_CTRL ;
+       static const char* DEFAULT_MESHFIX ;
+       static const char* DEFAULT_MESHFIX_CFG ;
     public:
        static bool existsFile(const char* path);
        static bool existsFile(const char* dir, const char* name);

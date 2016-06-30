@@ -686,6 +686,30 @@ unsigned AssimpGGeo::getNumMeshes()
     return scene->mNumMeshes ;
 }
 
+GMesh* AssimpGGeo::convertMesh(const char* qname)
+{
+    LOG(debug) << "AssimpGGeo::convertMesh qname " << qname ; 
+ 
+    const aiScene* scene = m_tree->getScene();
+    GMesh* gmesh = NULL ;  
+    for(unsigned int i = 0; i < scene->mNumMeshes; i++)
+    {
+        aiMesh* mesh = scene->mMeshes[i] ;
+        const char* meshname = mesh->mName.C_Str() ; 
+        std::string tmeshname = BStr::trimPointerSuffixPrefix(meshname, NULL );
+
+        //LOG(trace) << "AssimpGGeo::convertMesh" << " tmeshname " << tmeshname ; 
+
+        if(tmeshname.compare(qname)==0) 
+        {
+            gmesh = convertMesh(i);
+            break ;
+        }
+    }
+    return gmesh ; 
+}
+
+
 GMesh* AssimpGGeo::convertMesh(unsigned int index )
 {
     const aiScene* scene = m_tree->getScene();

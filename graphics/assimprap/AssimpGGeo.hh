@@ -46,6 +46,7 @@ public:
 public:
     // used for debugging
     GMesh* convertMesh(unsigned int index );
+    GMesh* convertMesh(const char* name);  // name eg iav or oav 
     unsigned int getNumMeshes();
 protected:
     void convertMaterials(const aiScene* scene, GGeo* gg, const char* ctrl );
