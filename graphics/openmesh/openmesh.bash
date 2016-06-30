@@ -11,6 +11,21 @@ OpenMesh
 * http://openmesh.org/Documentation/OpenMesh-Doc-Latest/a00030.html
 
 
+* https://mailman.rwth-aachen.de/mailman/listinfo/openmesh
+  
+  Argh unsearchable mailing list 
+
+
+* https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh
+
+  Web interface to git repo, issue tracker etc..
+
+
+* https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh/commit/338086152b8d5cfce75580c76e445c1de9d80381
+* https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh/blob/master/src/Unittests/unittests_delete_face.cc
+
+  gtest unittests 
+
 
 * https://www.openmesh.org/media/Documentations/OpenMesh-4.1-Documentation/index.html
 
@@ -137,9 +152,13 @@ EOU
 }
 
 openmesh-env(){  elocal- ; opticks- ; }
-openmesh-vers(){ echo 4.1 ; }
+#openmesh-vers(){ echo 4.1 ; }
+openmesh-vers(){ echo 6.1 ; }
+
 openmesh-name(){ echo OpenMesh-$(openmesh-vers) ; }
 openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(openmesh-name).tar.gz ; }
+
+
 
 openmesh-edir(){ echo $(opticks-home)/graphics/openmesh ; }
 openmesh-old-base(){ echo $(local-base)/env/graphics/openmesh ; }

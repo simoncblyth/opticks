@@ -79,10 +79,6 @@ struct MyTraits : public OpenMesh::DefaultTraits
 #endif
 
 
-
-
-
-
 typedef OpenMesh::PolyMesh_ArrayKernelT<MyTraits>  MyMesh;
 // ----------------------------------------------------------------------------
 // Build a simple cube and delete it except one face
@@ -91,17 +87,18 @@ int main()
 {
   MyMesh mesh;
 
-#ifdef NEW_WAY
+//#ifdef NEW_WAY
   // the request has to be called before a vertex/face/edge can be deleted. it grants access to the status attribute
   mesh.request_face_status();
   mesh.request_edge_status();
   mesh.request_vertex_status();
-#endif
+//#endif
 
 
   // generate vertices
   MyMesh::VertexHandle vhandle[8];
   MyMesh::FaceHandle   fhandle[6];
+
   vhandle[0] = mesh.add_vertex(MyMesh::Point(-1, -1,  1));
   vhandle[1] = mesh.add_vertex(MyMesh::Point( 1, -1,  1));
   vhandle[2] = mesh.add_vertex(MyMesh::Point( 1,  1,  1));
@@ -110,6 +107,7 @@ int main()
   vhandle[5] = mesh.add_vertex(MyMesh::Point( 1, -1, -1));
   vhandle[6] = mesh.add_vertex(MyMesh::Point( 1,  1, -1));
   vhandle[7] = mesh.add_vertex(MyMesh::Point(-1,  1, -1));
+
   // generate (quadrilateral) faces
   std::vector<MyMesh::VertexHandle>  tmp_face_vhandles;
   tmp_face_vhandles.clear();
