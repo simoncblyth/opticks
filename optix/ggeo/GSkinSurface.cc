@@ -11,7 +11,7 @@
 #include "GProperty.hh"
 #include "GPropertyMap.hh"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 
 
 GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface) 

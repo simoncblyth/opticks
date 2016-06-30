@@ -18,7 +18,7 @@
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 #include "PLOG.hh"
 
 

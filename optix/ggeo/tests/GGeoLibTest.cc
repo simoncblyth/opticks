@@ -10,7 +10,7 @@
 #include "GMergedMesh.hh"
 #include "GGeoLib.hh"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
 

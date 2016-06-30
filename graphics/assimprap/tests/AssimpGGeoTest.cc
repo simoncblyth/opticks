@@ -6,6 +6,11 @@
 #include "AssimpImporter.hh"
 
 #include "GMesh.hh"
+#include "GDomain.hh"
+#include "GAry.hh"
+#include "GProperty.hh"
+#include "GPropertyMap.hh"
+#include "GSurfaceLib.hh"
 #include "GGeo.hh"
 
 #include "OpticksQuery.hh"
@@ -17,6 +22,48 @@
 #include "PLOG.hh"
 
 // cf canonical int AssimpGGeo::load(GGeo*) 
+
+
+void test_convertMesh(AssimpGGeo* agg)
+{
+    unsigned nmesh = agg->getNumMeshes();
+
+    for(unsigned i=0 ; i < nmesh ; i++)
+    {
+        GMesh* gm = agg->convertMesh(i); 
+        gm->Summary();
+    }
+
+    GMesh* iav = agg->convertMesh("iav");
+    GMesh* oav = agg->convertMesh("oav");
+
+    if(iav) iav->Summary("iav");
+    if(oav) oav->Summary("oav");
+
+    LOG(info) << " test_convertMesh DONE " ; 
+}
+
+
+void test_getSensor(GGeo* gg)
+{
+    GSurfaceLib* m_slib = gg->getSurfaceLib();
+
+    GPropertyMap<float>*  m_sensor_surface = m_slib->getSensorSurface(0) ;
+
+    if(m_sensor_surface == NULL)
+    {   
+        LOG(warning) << "test_getSensor"
+                     << " surface lib sensor_surface NULL "
+                     ;   
+    }   
+    else
+    {   
+        m_sensor_surface->Summary("test_getSensor  cathode_surface");
+    }
+
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -72,21 +119,10 @@ int main(int argc, char** argv)
      
     assert(rc == 0);
 
-    unsigned nmesh = agg.getNumMeshes();
+    //test_convertMesh(&agg);
 
-    for(unsigned i=0 ; i < nmesh ; i++)
-    {
-        GMesh* gm = agg.convertMesh(i); 
-        gm->Summary();
-    }
+    test_getSensor(ggeo);
 
-    GMesh* iav = agg.convertMesh("iav");
-    GMesh* oav = agg.convertMesh("oav");
-
-    if(iav) iav->Summary("iav");
-    if(oav) oav->Summary("oav");
-
-    LOG(info) << " DONE " << argv[0] ; 
 
     return 0 ;
 }

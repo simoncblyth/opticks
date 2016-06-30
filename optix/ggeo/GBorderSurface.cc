@@ -8,7 +8,7 @@
 #include "GPropertyMap.hh"
 
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 
 
 

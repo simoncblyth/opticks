@@ -5,15 +5,12 @@
 #include "BFile.hh"
 #include "PLOG.hh"
 
+#include "SYSRAP_LOG.hh"
 #include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 
-
-
 #include "Opticks.hh"
-
-
 
 
 void test_MaterialSequence()
@@ -71,8 +68,8 @@ int main(int argc, char** argv)
     PLOG_(argc,argv);
     LOG(info) << argv[0] ;
 
-    //plog::Logger<0>* logger = plog::get(); 
 
+    SYSRAP_LOG__ ; 
     BRAP_LOG__ ; 
     NPY_LOG__ ; 
     OKCORE_LOG__ ; 
@@ -80,7 +77,7 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
 
-    //ok.Summary();
+    ok.Summary();
 
 
     ok.configure();

@@ -9,6 +9,8 @@ class OpticksColors ;
 class OpticksFlags ; 
 class OpticksAttrSeq ;
 
+class NEnv ; 
+
 class Types ;
 class Typ ;
 
@@ -38,6 +40,7 @@ class OKCORE_API OpticksResource {
        bool isValid();
     private:
        void init();
+       void readG4Environment();
        void readEnvironment();
        void readMetadata();
        void identifyGeometry();
@@ -127,6 +130,7 @@ class OKCORE_API OpticksResource {
        OpticksAttrSeq* m_flagnames ;
        Types*         m_types ;
        Typ*           m_typ ;
+       NEnv*          m_g4env ; 
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 

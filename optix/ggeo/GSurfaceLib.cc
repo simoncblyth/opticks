@@ -171,6 +171,7 @@ void GSurfaceLib::add(GBorderSurface* raw)
 }
 void GSurfaceLib::add(GSkinSurface* raw)
 {
+    LOG(trace) << "GSurfaceLib::add(GSkinSurface*) " << ( raw ? raw->getName() : "NULL" ) ;
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     add(surf);
 }
@@ -753,7 +754,7 @@ bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
     bool iss = pos > 0 && strncmp(name + pos, SENSOR_SURFACE, strlen(SENSOR_SURFACE)) == 0 ;
 
     if(iss)
-    LOG(debug) << "GSurfaceLib::isSensorSurface"
+    LOG(trace) << "GSurfaceLib::isSensorSurface"
               << " surface " << qsurface  
               << " name " << name 
               << " pos " << pos 

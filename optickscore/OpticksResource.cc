@@ -20,6 +20,7 @@ namespace fs = boost::filesystem;
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "Map.hpp"
+#include "NEnv.hpp"
 #include "Typ.hpp"
 #include "Types.hpp"
 #include "Index.hpp"
@@ -76,6 +77,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_flagnames(NULL),
        m_types(NULL),
        m_typ(NULL),
+       m_g4env(NULL),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),
@@ -231,6 +233,7 @@ void OpticksResource::init()
 
    m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ;
 
+   readG4Environment();
    readEnvironment();
    readMetadata();
    identifyGeometry();
@@ -294,6 +297,29 @@ void OpticksResource::assignDetectorName()
    }
 }
 
+void OpticksResource::readG4Environment()
+{
+    std::string g4ini = BFile::FormPath(m_install_prefix, "externals/bin/geant4.ini" ) ;
+
+    if(BFile::ExistsFile(g4ini.c_str()))
+    {
+        LOG(info) << "OpticksResource::readG4Environment" 
+                  << " from " << g4ini
+                  ;
+
+         m_g4env = NEnv::load(g4ini.c_str()); 
+         m_g4env->setEnvironment();
+    }
+    else
+    {
+        LOG(warning) << "OpticksResource::readG4Environment"
+                     << " MISSING FILE " << g4ini 
+                     << " (create it with bash functions: g4-;g4-export-ini ) " 
+                     ;
+
+    }
+    NEnv::dumpEnvironment();
+}
 
 
 void OpticksResource::readEnvironment()
@@ -438,7 +464,10 @@ void OpticksResource::Dump(const char* msg)
 void OpticksResource::Summary(const char* msg)
 {
     std::cerr << msg << std::endl ; 
-    std::cerr << "valid    :" <<   (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
+    const char* prefix = m_install_prefix ; 
+
+    std::cerr << "prefix   : " <<  (prefix ? prefix : "NULL" ) << std::endl ; 
+    std::cerr << "valid    : " <<  (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
     std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
     std::cerr << "geokey   : " <<  (m_geokey?m_geokey:"NULL") << std::endl; 
     std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
@@ -455,6 +484,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "detector_base : " <<  (m_detector_base?m_detector_base:"NULL") << std::endl; 
     std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
+    std::cerr << "------ from " << ( m_metapath ? m_metapath : "NULL" ) << " -------- " << std::endl ;  
 
     typedef std::map<std::string, std::string> SS ;
     for(SS::const_iterator it=m_metadata.begin() ; it != m_metadata.end() ; it++)

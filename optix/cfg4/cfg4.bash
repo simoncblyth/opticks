@@ -43,42 +43,55 @@ macOS : 2 test fails
     2016-06-29 14:53:38.821 FATAL [13144929] [*CPropLib::makeMaterialPropertiesTable@317] CPropLib::makeMaterialPropertiesTable material with SENSOR_MATERIAL name Bialkali but no sensor_surface 
     Assertion failed: (surf), function makeMaterialPropertiesTable, file /Users/blyth/env/optix/cfg4/CPropLib.cc, line 322.
     Abort trap: 6
-    simon:cfg4 blyth$ CG4Test
-    2016-06-29 14:54:11.079 INFO  [13145139] [main@18] CG4Test
-      0 : CG4Test
-    CG4::init opticks summary
+
+
+CG4Test fails for lack of g4 envvars. After g4-export CG4Test gets further but misses GDML, 
+after update opticksdata clone get to the same error as CPropLib above.
+
+
+Rearrange ggeo test to check back in ggeo. Plenty of surfaces, but no sensor surfaces.
+
+Huh old GSurfaceLib.npy::
+
+    simon:assimprap blyth$ ll /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GSurfaceLib/
+    total 128
+    drwxr-xr-x   4 blyth  staff    136 Jun  8 18:37 .
+    -rw-r--r--   1 blyth  staff    816 Jun 15 19:08 GSurfaceLibOptical.npy
+    -rw-r--r--   1 blyth  staff  57488 Jun 15 19:08 GSurfaceLib.npy
+    drwxr-xr-x  72 blyth  staff   2448 Jun 30 16:28 ..
+
+Wrong cache, pilot error from stale envvar::
+
+    simon:tests blyth$ GGeoViewTest -G
+    2016-06-30 17:24:58.392 INFO  [13430829] [Timer::operator@38] Opticks:: START
+    2016-06-30 17:24:58.393 INFO  [13430829] [Opticks::Summary@339] App::init OpticksResource::Summary sourceCode 4096 sourceType torch mode Interop
+    App::init OpticksResource::Summary
     valid    :valid
     envprefix: OPTICKS_
     geokey   : DAE_NAME_DYB
-    daepath  : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
-    gdmlpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
-    metapath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini
+    daepath  : /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    gdmlpath : /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
+    metapath : /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.ini
     query    : range:3153:12221
     ctrl     : volnames
-    digest   : 96ff965744a2f6b78c24e33c80d3a4cd
-    idpath   : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
-    idfold   : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
-    idbase   : /usr/local/opticks/opticksdata/export
-    detector : dayabay
-    detector_name : DayaBay
-    detector_base : /usr/local/opticks/opticksdata/export/DayaBay
-    getPmtPath(0) : /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0
-    meshfix  : NULL
-    2016-06-29 14:54:11.082 INFO  [13145139] [main@32]   CG4 ctor DONE 
-    2016-06-29 14:54:11.082 INFO  [13145139] [CG4::configure@129] CG4::configure g4ui 0
 
-    -------- EEEE ------- G4Exception-START -------- EEEE -------
-    *** G4Exception : PART70000
-          issued by : G4NuclideTable
-    G4ENSDFSTATEDATA environment variable must be set
-    *** Fatal Exception *** core dump ***
-    -------- EEEE -------- G4Exception-END --------- EEEE -------
+CG4Test needs below envvars::
 
-
-    *** G4Exception: Aborting execution ***
-    Abort trap: 6
-    simon:cfg4 blyth$ echo $?
-    134
+    simon:~ blyth$ env | grep G4
+    simon:~ blyth$ g4-
+    simon:~ blyth$ g4-export
+    simon:~ blyth$ env | grep G4
+    G4LEVELGAMMADATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/PhotonEvaporation3.2
+    G4NEUTRONXSDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4NEUTRONXS1.4
+    G4LEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4EMLOW6.48
+    G4NEUTRONHPDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4NDL4.5
+    G4ENSDFSTATEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4ENSDFSTATE1.2.1
+    G4RADIOACTIVEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/RadioactiveDecay4.3.1
+    G4ABLADATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4ABLA3.0
+    G4PIIDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4PII1.3
+    G4SAIDXSDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/G4SAIDDATA1.1
+    G4REALSURFACEDATA=/usr/local/opticks/externals/share/Geant4-10.2.1/data/RealSurface1.0
+    simon:~ blyth$ 
 
 
 

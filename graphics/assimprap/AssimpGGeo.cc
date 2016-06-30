@@ -525,6 +525,11 @@ which are fabricated by AssimpGGeo::convertSensors.
 
     unsigned int nclv = gg->getNumCathodeLV();
 
+
+    LOG(info) << "AssimpGGeo::convertSensors"
+              << " nclv " << nclv
+              ;
+
     GDomain<float>* standard_domain = gg->getBndLib()->getStandardDomain(); 
 
     // DYB: nclv=2 for hemi and headon PMTs 
@@ -554,6 +559,7 @@ which are fabricated by AssimpGGeo::convertSensors.
         // extend that for fake SensorSurface by toting up all 
 
         unsigned int index = gg->getNumMaterials() + gg->getNumSkinSurfaces() + gg->getNumBorderSurfaces() ; 
+
 
         GSkinSurface* gss = new GSkinSurface(name.c_str(), index, os);
 

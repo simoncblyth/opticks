@@ -8,6 +8,8 @@
 #include "NPY_HEAD.hh"
 
 
+template <typename K, typename V> class Map ; 
+
 template <typename K, typename V>
 class NPY_API Map {
     public:
@@ -20,7 +22,12 @@ class NPY_API Map {
         void loadFromCache(const char* path);
 
         void add(K key, V value);
+    
+         Map<K,V>* makeSelection(const char* prefix, char delim=',');
+
         void save(const char* dir, const char* name);
+        void save(const char* path);
+
         void dump(const char* msg="Map::dump");
         std::map<K, V>& getMap(); 
     private:

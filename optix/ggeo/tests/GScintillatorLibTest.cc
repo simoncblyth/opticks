@@ -9,7 +9,7 @@
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 
 
 

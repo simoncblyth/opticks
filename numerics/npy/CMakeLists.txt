@@ -48,6 +48,7 @@ endif(UNIX)
 set(SOURCES
     NPY_LOG.cc
 
+    NEnv.cpp
     foo.cpp
     NPYBase.cpp
     NPYSpec.cpp

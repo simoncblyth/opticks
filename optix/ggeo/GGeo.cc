@@ -64,7 +64,7 @@ namespace fs = boost::filesystem;
 
 #include "GGeo.hh"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 #include "PLOG.hh"
 
 #define BSIZ 50
@@ -456,8 +456,11 @@ void GGeo::add(GBorderSurface* surface)
 }
 void GGeo::add(GSkinSurface* surface)
 {
+    LOG(trace) << "GGeo::add(GSkinSurface*) " << ( surface ? surface->getName() : "NULL" ) ;
+
     m_surfacelib->add(surface);
     m_skin_surfaces.push_back(surface);
+
     addToIndex((GPropertyMap<float>*)surface);
 }
 

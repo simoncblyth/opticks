@@ -1,3 +1,4 @@
+#include <sstream>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
@@ -49,20 +50,29 @@ int SSys::setenvvar( const char* envprefix, const char* key, const char* value, 
 {
     // heap as putenv does not copy
 
-    char* ekey = new char[128] ;
-    snprintf(ekey, 128, "%s%s", envprefix, key );
 
-    char* ekv = new char[256] ;  
-    snprintf(ekv, 256, "%s=%s", ekey, value );
+    std::stringstream ss ;
+    if(envprefix) ss << envprefix ; 
+    if(key)       ss << key ; 
 
-    const char* prior = getenv(ekey) ;
+    std::string ekey = ss.str();
 
-    int rc = ( overwrite || !prior ) ? putenv(ekv) : 0  ; 
+    ss << "=" ;
+    if(value) ss << value ; 
 
-    const char* after = getenv(ekey) ;
+    std::string ekv = ss.str();
+
+    const char* prior = getenv(ekey.c_str()) ;
+
+    char* ekv_ = const_cast<char*>(strdup(ekv.c_str()));
+
+    int rc = ( overwrite || !prior ) ? putenv(ekv_) : 0  ; 
+
+    const char* after = getenv(ekey.c_str()) ;
 
     LOG(trace) << "SSys::setenvvar"
               << " ekey " << ekey 
+              << " ekv " << ekv 
               << " overwrite " << overwrite
               << " prior " << ( prior ? prior : "NULL" )
               << " value " << ( value ? value : "NULL" )   

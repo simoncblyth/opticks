@@ -7,7 +7,7 @@
 #include "GBndLib.hh"
 #include "Lookup.hpp"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 #include "PLOG.hh"
 
 

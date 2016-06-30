@@ -11,7 +11,7 @@
 #include "GBndLib.hh"
 #include "BoundariesNPY.hpp"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 
 
 // ggv --boundaries

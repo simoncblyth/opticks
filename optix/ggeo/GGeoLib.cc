@@ -10,7 +10,7 @@
 #include "GNode.hh"
 
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 

@@ -15,7 +15,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 
-#include "GGEO_CC.hh"
+#include "GGEO_BODY.hh"
 #include "PLOG.hh"
 
 

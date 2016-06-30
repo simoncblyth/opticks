@@ -56,11 +56,13 @@ NTrianglesNPYTest.cc
 PhotonsNPYTest.cc
 
 NCIETest.cc
+NPYTest.cc
 )
 
 set(TEST_SOURCES
 
-NPYTest.cc
+MapTest.cc
+NEnvTest.cc
 
 )
 
