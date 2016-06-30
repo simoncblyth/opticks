@@ -4,6 +4,9 @@
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
+
+// without this get assert regarding status property on delete_face, see omc-   
+#pragma GCC visibility push(default)
 #endif
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
@@ -11,6 +14,8 @@
 
 #ifdef __clang__
 #pragma clang diagnostic pop
+
+#pragma GCC visibility pop
 #endif
 
 

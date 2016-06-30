@@ -1,4 +1,3 @@
-
 // npy-
 #include "BStr.hh"
 #include "BDirect.hh"

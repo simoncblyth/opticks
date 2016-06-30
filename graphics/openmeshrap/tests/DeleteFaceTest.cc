@@ -1,69 +1,32 @@
 //  https://www.openmesh.org/media/Documentations/OpenMesh-4.1-Documentation/a00058.html
-
 //  https://mailman.rwth-aachen.de/pipermail/openmesh/2009-August/000305.html
 
-
-/* ========================================================================= *
- *                                                                           *
- *                               OpenMesh                                    *
- *           Copyright (c) 2001-2015, RWTH-Aachen University                 *
- *           Department of Computer Graphics and Multimedia                  *
- *                          All rights reserved.                             *
- *                            www.openmesh.org                               *
- *                                                                           *
- *---------------------------------------------------------------------------*
- * This file is part of OpenMesh.                                            *
- *---------------------------------------------------------------------------*
- *                                                                           *
- * Redistribution and use in source and binary forms, with or without        *
- * modification, are permitted provided that the following conditions        *
- * are met:                                                                  *
- *                                                                           *
- * 1. Redistributions of source code must retain the above copyright notice, *
- *    this list of conditions and the following disclaimer.                  *
- *                                                                           *
- * 2. Redistributions in binary form must reproduce the above copyright      *
- *    notice, this list of conditions and the following disclaimer in the    *
- *    documentation and/or other materials provided with the distribution.   *
- *                                                                           *
- * 3. Neither the name of the copyright holder nor the names of its          *
- *    contributors may be used to endorse or promote products derived from   *
- *    this software without specific prior written permission.               *
- *                                                                           *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS       *
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED *
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A           *
- * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER *
- * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,  *
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,       *
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR        *
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF    *
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING      *
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS        *
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
- *                                                                           *
- * ========================================================================= */
-/*===========================================================================*\
- *                                                                           *
- *   $Revision: 736 $                                                         *
- *   $Date: 2012-10-08 09:30:49 +0200 (Mo, 08. Okt 2012) $                   *
- *                                                                           *
-\*===========================================================================*/
-
-
-
 #include <iostream>
-// -------------------- OpenMesh
+#include <iomanip>
+
+//
+// without the bookends this asserts on attempting to delete a face
+// when the -fvisibility=hidden compiler option is in use
+//
+#ifdef __clang__
+#pragma GCC visibility push(default)
+#endif
+
+
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/System/config.h>
 #include <OpenMesh/Core/Mesh/Status.hh>
-// ----------------------------------------------------------------------------
+
+#ifdef __clang__
+#pragma GCC visibility pop
+#endif
+
+
 
 
 // follow the old documentation, not using the dy
 // https://www.openmesh.org/media/Documentations/OpenMesh-2.1-Documentation/tutorial_07b.html
-
 
 #ifdef NEW_WAY
 struct MyTraits : public OpenMesh::DefaultTraits
@@ -80,8 +43,72 @@ struct MyTraits : public OpenMesh::DefaultTraits
 
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<MyTraits>  MyMesh;
-// ----------------------------------------------------------------------------
 // Build a simple cube and delete it except one face
+
+
+template <typename MeshT>
+void dump(MeshT* mesh, const char* msg="dump")
+{
+    typedef typename MeshT::Point P ; 
+    typedef typename MeshT::VertexHandle VH ; 
+    typedef typename MeshT::FaceHandle FH ; 
+    typedef typename MeshT::ConstFaceVertexIter FVI ; 
+
+    unsigned nv = mesh->n_vertices();
+    unsigned nf = mesh->n_faces();
+   
+
+    std::cerr << msg 
+              << " nv " << nv  
+              << " nf " << nf  
+              << std::endl ; 
+ 
+    for(unsigned i=0 ; i < nv ; i++) 
+    {
+        VH v = mesh->vertex_handle(i) ;
+        P p = mesh->point(v);
+//      P n = mesh->normal(v);
+
+        std::cerr << " i " << std::setw(4) << i 
+                  << " p " 
+                  << std::setw(10) << p[0]
+                  << std::setw(10) << p[1]
+                  << std::setw(10) << p[2]
+/*
+                  << " n " 
+                  << std::setw(10) << n[0]
+                  << std::setw(10) << n[1]
+                  << std::setw(10) << n[2]
+*/
+                  << std::endl ; 
+
+    }
+
+    for(unsigned int i=0 ; i < nf ; i++)
+    {   
+        FH fh = mesh->face_handle(i) ;   
+
+        std::stringstream ssf ; 
+
+        unsigned j(0) ;   
+        for(FVI fv=mesh->cfv_iter(fh) ; fv.is_valid() ; fv++ )
+        {   
+            ssf << " " << fv->idx();
+            j++ ;
+        }   
+        assert(j == 4);
+
+        std::cerr << " f " << std::setw(4) << i
+                  << " idx " << ssf.str()
+                  << std::endl ;
+
+    }   
+
+}
+
+
+
+
   
 int main()
 {
@@ -96,91 +123,63 @@ int main()
 
 
   // generate vertices
-  MyMesh::VertexHandle vhandle[8];
-  MyMesh::FaceHandle   fhandle[6];
+  MyMesh::VertexHandle vh[8];
+  MyMesh::FaceHandle   fh[6];
 
-  vhandle[0] = mesh.add_vertex(MyMesh::Point(-1, -1,  1));
-  vhandle[1] = mesh.add_vertex(MyMesh::Point( 1, -1,  1));
-  vhandle[2] = mesh.add_vertex(MyMesh::Point( 1,  1,  1));
-  vhandle[3] = mesh.add_vertex(MyMesh::Point(-1,  1,  1));
-  vhandle[4] = mesh.add_vertex(MyMesh::Point(-1, -1, -1));
-  vhandle[5] = mesh.add_vertex(MyMesh::Point( 1, -1, -1));
-  vhandle[6] = mesh.add_vertex(MyMesh::Point( 1,  1, -1));
-  vhandle[7] = mesh.add_vertex(MyMesh::Point(-1,  1, -1));
+  vh[0] = mesh.add_vertex(MyMesh::Point(-1, -1,  1));
+  vh[1] = mesh.add_vertex(MyMesh::Point( 1, -1,  1));
+  vh[2] = mesh.add_vertex(MyMesh::Point( 1,  1,  1));
+  vh[3] = mesh.add_vertex(MyMesh::Point(-1,  1,  1));
+  vh[4] = mesh.add_vertex(MyMesh::Point(-1, -1, -1));
+  vh[5] = mesh.add_vertex(MyMesh::Point( 1, -1, -1));
+  vh[6] = mesh.add_vertex(MyMesh::Point( 1,  1, -1));
+  vh[7] = mesh.add_vertex(MyMesh::Point(-1,  1, -1));
+
+  dump(&mesh, "just vertices");
+
+  std::vector<MyMesh::VertexHandle> tfv ; //  tmp_face_vhs;
 
   // generate (quadrilateral) faces
-  std::vector<MyMesh::VertexHandle>  tmp_face_vhandles;
-  tmp_face_vhandles.clear();
-  tmp_face_vhandles.push_back(vhandle[0]);
-  tmp_face_vhandles.push_back(vhandle[1]);
-  tmp_face_vhandles.push_back(vhandle[2]);
-  tmp_face_vhandles.push_back(vhandle[3]);
-  fhandle[0] = mesh.add_face(tmp_face_vhandles);
- 
-  tmp_face_vhandles.clear();
-  tmp_face_vhandles.push_back(vhandle[7]);
-  tmp_face_vhandles.push_back(vhandle[6]);
-  tmp_face_vhandles.push_back(vhandle[5]);
-  tmp_face_vhandles.push_back(vhandle[4]);
-  fhandle[1] = mesh.add_face(tmp_face_vhandles);
- 
-  tmp_face_vhandles.clear();
-  tmp_face_vhandles.push_back(vhandle[1]);
-  tmp_face_vhandles.push_back(vhandle[0]);
-  tmp_face_vhandles.push_back(vhandle[4]);
-  tmp_face_vhandles.push_back(vhandle[5]);
-  fhandle[2] = mesh.add_face(tmp_face_vhandles);
- 
-  tmp_face_vhandles.clear();
-  tmp_face_vhandles.push_back(vhandle[2]);
-  tmp_face_vhandles.push_back(vhandle[1]);
-  tmp_face_vhandles.push_back(vhandle[5]);
-  tmp_face_vhandles.push_back(vhandle[6]);
-  fhandle[3] = mesh.add_face(tmp_face_vhandles);
-  tmp_face_vhandles.clear();
-  tmp_face_vhandles.push_back(vhandle[3]);
-  tmp_face_vhandles.push_back(vhandle[2]);
-  tmp_face_vhandles.push_back(vhandle[6]);
-  tmp_face_vhandles.push_back(vhandle[7]);
-  fhandle[4] = mesh.add_face(tmp_face_vhandles);
- 
-  tmp_face_vhandles.clear();
-  tmp_face_vhandles.push_back(vhandle[0]);
-  tmp_face_vhandles.push_back(vhandle[3]);
-  tmp_face_vhandles.push_back(vhandle[7]);
-  tmp_face_vhandles.push_back(vhandle[4]);
-  fhandle[5] = mesh.add_face(tmp_face_vhandles);
-  // And now delete all faces and vertices
-  // except face (vh[7], vh[6], vh[5], vh[4])
-  // whose handle resides in fhandle[1]
+  tfv.clear(); tfv.push_back(vh[0]); tfv.push_back(vh[1]); tfv.push_back(vh[2]); tfv.push_back(vh[3]); fh[0] = mesh.add_face(tfv); 
+  tfv.clear(); tfv.push_back(vh[7]); tfv.push_back(vh[6]); tfv.push_back(vh[5]); tfv.push_back(vh[4]); fh[1] = mesh.add_face(tfv); 
+  tfv.clear(); tfv.push_back(vh[1]); tfv.push_back(vh[0]); tfv.push_back(vh[4]); tfv.push_back(vh[5]); fh[2] = mesh.add_face(tfv); 
+  tfv.clear(); tfv.push_back(vh[2]); tfv.push_back(vh[1]); tfv.push_back(vh[5]); tfv.push_back(vh[6]); fh[3] = mesh.add_face(tfv); 
+  tfv.clear(); tfv.push_back(vh[3]); tfv.push_back(vh[2]); tfv.push_back(vh[6]); tfv.push_back(vh[7]); fh[4] = mesh.add_face(tfv); 
+  tfv.clear(); tfv.push_back(vh[0]); tfv.push_back(vh[3]); tfv.push_back(vh[7]); tfv.push_back(vh[4]); fh[5] = mesh.add_face(tfv);
+
+  dump(&mesh, "after add_face*6");
+
    
-  // Delete face 0
-  mesh.delete_face(fhandle[0], false);
-  // ... face 2
-  mesh.delete_face(fhandle[2], false);
-  // ... face 3
-  mesh.delete_face(fhandle[3], false);
-  // ... face 4
-  mesh.delete_face(fhandle[4], false);
-  // ... face 5
-  mesh.delete_face(fhandle[5], false);
-  
+  mesh.delete_face(fh[0], false);
+  //  leave fh[1]   (vh[7], vh[6], vh[5], vh[4])
+  mesh.delete_face(fh[2], false);
+  mesh.delete_face(fh[3], false);
+  mesh.delete_face(fh[4], false);
+  mesh.delete_face(fh[5], false);
+ 
+  mesh.garbage_collection();
+  dump(&mesh, "after delete_face*5");
+
+
   // If isolated vertices result in a face deletion
   // they have to be deleted manually. If you want this
   // to happen automatically, change the second parameter
   // to true.
   // Now delete the isolated vertices 0, 1, 2 and 3
-  mesh.delete_vertex(vhandle[0], false);
-  mesh.delete_vertex(vhandle[1], false);
-  mesh.delete_vertex(vhandle[2], false);
-  mesh.delete_vertex(vhandle[3], false);
-  // Delete all elements that are marked as deleted
-  // from memory.
+
+  mesh.delete_vertex(vh[0], false);
+  mesh.delete_vertex(vh[1], false);
+  mesh.delete_vertex(vh[2], false);
+  mesh.delete_vertex(vh[3], false);
+
   mesh.garbage_collection();
-  // write mesh to output.obj
+  dump(&mesh, "after delete isolated");
+
   try {
-        if ( !OpenMesh::IO::write_mesh(mesh, "output.off") ) {
-          std::cerr << "Cannot write mesh to file 'output.off'" << std::endl;
+        const char* path = "/tmp/DeleteFaceTest.off" ; 
+
+        if ( !OpenMesh::IO::write_mesh(mesh, path) ) {
+          std::cerr << "Cannot write mesh to file " << path << std::endl;
           return 1;
         }
   }
