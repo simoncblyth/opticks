@@ -308,6 +308,15 @@ op-binary-setup()
                                      *) export OPTICKS_ARGS=$cmdline ;;
        esac
     fi 
+
+    local presentation=""
+    case $(uname) in
+      MINGW*) presentation="--size 1920,1080,1 --fullscreen" ;;
+           *) presentation="" ;;
+    esac
+
+    OPTICKS_ARGS="${OPTICKS_ARGS} $presentation" 
+
 }
 
 
@@ -352,6 +361,26 @@ op-export()
    opticksdata-export
 }
 
+
+op-windows-debug(){ cat << \EOM
+
+Windows debugging from commandline not yet implemented.
+Instead try Visual Studio, from Powershell with 
+vs-export in profile run:
+
+   opticks-vs 
+
+Select "RelWithDebInfo" config 
+
+Then select the desired target as the startup project
+
+TODO: work out way of passing commandline args into Visual Studio
+      (perhaps using devenv ?)
+
+
+EOM
+}
+
 op-runline()
 {
    local runline
@@ -360,6 +389,7 @@ op-runline()
    elif [ "${OPTICKS_DBG}" == "1" ]; then 
       case $(uname) in
           Darwin) runline="lldb ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;;
+           MING*) runline="     ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;; 
                *) runline="gdb  ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;;
       esac
    else
@@ -373,6 +403,8 @@ op-runline()
 opticks-
 op-cmdline-parse
 runline=$(op-runline)
+
+
 op-export
 
 if [ "$sauce" == "1" ]; then

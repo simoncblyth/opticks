@@ -1034,9 +1034,15 @@ void OpticksEvent::loadBuffers(bool verbose)
     const char* udet = getUDet(); // cat overrides det if present 
 
     bool qload = true ; 
-    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet, qload);
+
+    const char* idom_tfmt = "idom%s" ;
+
+    NPY<int>*   idom = NPY<int>::load(idom_tfmt, m_typ,  m_tag, udet, qload);
     if(!idom)
     {
+        std::string dir = NPYBase::directory(idom_tfmt, m_typ, udet );
+
+
         m_noload = true ; 
         LOG(warning) << "OpticksEvent::load NO SUCH EVENT : RUN WITHOUT --load OPTION TO CREATE IT " 
                      << " typ: " << m_typ
@@ -1044,6 +1050,7 @@ void OpticksEvent::loadBuffers(bool verbose)
                      << " det: " << m_det
                      << " cat: " << ( m_cat ? m_cat : "NULL" )
                      << " udet: " << udet 
+                     << " dir " << dir    
                     ;     
         return ; 
     }

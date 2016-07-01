@@ -342,12 +342,12 @@ void GPropertyLib::saveToCache()
 
 void GPropertyLib::loadFromCache()
 {
-    LOG(info) << "GPropertyLib::loadFromCache" ;
+    LOG(trace) << "GPropertyLib::loadFromCache" ;
 
     std::string dir = getCacheDir(); 
     std::string name = getBufferName();
 
-    LOG(info) << "GPropertyLib::loadFromCache" 
+    LOG(trace) << "GPropertyLib::loadFromCache" 
               << " dir " << dir
               << " name " << name 
                ;

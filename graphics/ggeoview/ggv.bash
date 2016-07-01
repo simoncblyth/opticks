@@ -138,7 +138,6 @@ npy-;npy-cd;i
 
 ggv-;ggv-pmt-test --tcfg4 --load
     # load propagation and visualize 
-    # slow photons revealed issues/groupvel/generational
 
  
 EOU
@@ -235,8 +234,9 @@ ggv-pmt-test(){
         tag=-$tag  
     fi 
 
-    ## hmm such pre-launch environment setup should happen inside op.sh 
-    ## to avoid duplication
+    ## hmm some common pre-launch environment setup should happen inside op.sh 
+    ## to avoid duplication : or move into okc-/OpticksResource ?
+
 
    op.sh \
        --test --testconfig "$(join _ ${test_config[@]})" \
@@ -279,29 +279,9 @@ ggv-g4gun-notes(){ cat <<EON
 EON
 }
 
-ggv-g4gun()
+
+ggv-g4gun-phycache-attempt()
 {
-    type $FUNCNAME
-
-    local msg="=== $FUNCNAME :"
-    local tag=-1
-
-    g4-
-    g4-export
-    env | grep G4
-
-    local g4gun_config=(
-                 comment=$FUNCNAME
-                 particle=e+
-                 number=1
-                 frame=3153
-                 position=0,0,0
-                 direction=0,0,1
-              polarization=1,0,0
-                      time=0.
-                    energy=10.0
-                   ) 
-          # mm, ns, MeV
 
 
    local phycache=$(ggv-phycache)
@@ -309,11 +289,6 @@ ggv-g4gun()
       mkdir -p $phycache
    fi
 
-   local inimac=/tmp/g4ini.mac
-   cat << EOI > $inimac
-/OpNovice/phys/verbose 0
-/run/particle/verbose 1
-EOI
 
    cat << COM > /dev/null
 /run/particle/retrievePhysicsTable $phycache
@@ -330,13 +305,47 @@ EOI
    fi
 
 
+}
+
+
+ggv-g4gun()
+{
+    type $FUNCNAME
+
+    local msg="=== $FUNCNAME :"
+    local tag=-1
+
+
+    local g4gun_config=(
+                 comment=$FUNCNAME
+                 particle=e+
+                 number=1
+                 frame=3153
+                 position=0,0,0
+                 direction=0,0,1
+              polarization=1,0,0
+                      time=0.
+                    energy=10.0
+                   ) 
+          # mm, ns, MeV
+
+
+   local inimac=/tmp/g4ini.mac
+   cat << EOI > $inimac
+/OpNovice/phys/verbose 0
+/run/particle/verbose 1
+EOI
+
+
    op.sh \
        --tcfg4 \
        --cat G4Gun --tag $tag --save \
        --g4inimac "$inimac" \
-       --g4finmac "$finmac" \
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
+
+
+   #   --g4finmac "$finmac" \
 
 }
 
