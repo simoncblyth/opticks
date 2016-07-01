@@ -151,7 +151,8 @@ ggv-pmt-test(){
 
     local cmdline=$*
     local tag=4
-    local photons=500000
+    #local photons=500000
+    local photons=100000
     if [ "${cmdline/--g4ui}" != "${cmdline}" ]; then
         photons=10000
     fi 
@@ -229,9 +230,6 @@ ggv-pmt-test(){
 
     if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
         tag=-$tag  
-        g4-
-        g4-export
-        env | grep G4
     fi 
 
     ## hmm such pre-launch environment setup should happen inside op.sh 

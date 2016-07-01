@@ -27,6 +27,15 @@ TODO
   as users tend to trip over envvars
 
 
+
+* size and point to pixel defaults ?  
+
+::
+
+    op  --size 1920,1080,1 --fullscreen --geocenter
+
+
+
 EOU
 }
 
@@ -335,8 +344,12 @@ op-cmdline-parse()
 
 op-export()
 {
-   export-
-   export-export
+   #export-
+   #export-export
+
+   # TODO: avoid need for any envvars (other than PATH) 
+   opticksdata-
+   opticksdata-export
 }
 
 op-runline()
