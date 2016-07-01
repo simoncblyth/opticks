@@ -10,6 +10,7 @@
 //
 #ifdef __clang__
 #pragma GCC visibility push(default)
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #endif
 
 
@@ -19,6 +20,7 @@
 #include <OpenMesh/Core/Mesh/Status.hh>
 
 #ifdef __clang__
+#pragma clang diagnostic pop
 #pragma GCC visibility pop
 #endif
 

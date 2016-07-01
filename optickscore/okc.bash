@@ -9,19 +9,58 @@ Brief History
 ==============
 
 
-macOS warning
----------------
+macOS link warning from libOpticksCore.dylib
+----------------------------------------------
 
 ::
 
     simon:optickscore blyth$ okc--
     [  0%] Linking CXX shared library libOpticksCore.dylib
-    ld: warning: direct access in boost::program_options::typed_value<std::__1::vector<int, std::__1::allocator<int> >, char>::value_type() const to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
-    ld: warning: direct access in boost::typeindex::stl_type_index boost::typeindex::stl_type_index::type_id<std::__1::vector<int, std::__1::allocator<int> > >() to global weak symbol typeinfo for std::__1::vector<int, std::__1::allocator<int> > means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
-    [ 87%] Built target OpticksCore
+
+    ld: warning: direct access in 
+         boost::program_options::typed_value<std::__1::vector<int, std::__1::allocator<int> >, char>::value_type() const 
+    to global weak symbol 
+        typeinfo for std::__1::vector<int, std::__1::allocator<int> > 
+    means the weak symbol cannot be overridden at runtime. 
+    This was likely caused by different translation units being compiled with different visibility settings.
+
+    ld: warning: direct access in 
+          boost::typeindex::stl_type_index boost::typeindex::stl_type_index::type_id<std::__1::vector<int, std::__1::allocator<int> > >() 
+    to global weak symbol 
+         typeinfo for std::__1::vector<int, std::__1::allocator<int> > 
+    means the weak symbol cannot be overridden at runtime. 
+    This was likely caused by different translation units being compiled with different visibility settings.
 
 
+Only one use of program_options in okc- and one in brap-::
 
+    simon:optickscore blyth$ grep -l program_options *.*
+    OpticksCfg.cc
+
+    simon:boostrap blyth$ grep -l program_options *.*
+    BCfg.cc
+    BCfg.hh
+
+Curiously no such warning from libBoostRap.dylib
+
+Try in BCfg.hh::
+
+     11 #pragma GCC visibility push(default)
+     12 #include <boost/program_options.hpp>
+     13 #pragma GCC visibility pop
+
+IN okc- try movig CameraCfg implementation from .hh to .cc and 
+using explicit instanciation in the .cc.  Results in more warnings.
+
+
+clang vs clang++ used by boost build ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://stackoverflow.com/questions/19190458/visibility-linker-warnings-when-compiling-ios-app-that-uses-boost?answertab=oldest#tab-top
+
+Some guy: The warnings disappeared after I rebuilt Boost with clang.
+
+* https://github.com/danoli3/ofxiOSBoost/issues/25
 
 
 

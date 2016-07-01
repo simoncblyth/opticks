@@ -1,12 +1,16 @@
 #pragma once
 
-#include <boost/program_options.hpp>
 #include <string>
 #include <vector>
 #include <cstdio>
+
 #include <boost/bind.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/algorithm/string.hpp>
+
+#pragma GCC visibility push(default)
+#include <boost/program_options.hpp>
+#pragma GCC visibility pop
 
 /*
 Listener classes need to provide a methods::
@@ -18,7 +22,6 @@ Listener classes need to provide a methods::
 which is called whenever the option parsing methods are called. 
 Typically the last value in the vector should be used to call the Listeners 
 setter method as selected by the name.
-
 */
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_FLAGS.hh"

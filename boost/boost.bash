@@ -10,6 +10,12 @@ BOOST
 * http://www.boost.org/users/history/
 
 
+Boost on iOS : build script
+-----------------------------
+
+* https://github.com/danoli3/ofxiOSBoost
+
+
 Warnings regards symbol visibility
 -------------------------------------
 
@@ -37,6 +43,11 @@ Just add to the bjam command line.::
    cxxflags=-fvisibility-inlines-hidden
 
    #    -fvisibility=hidden implies -fvisibility-inlines-hidden. Only the former is necessary. 
+
+
+* https://svn.boost.org/trac/boost/ticket/6998
+
+* https://gcc.gnu.org/wiki/Visibility
 
 
 

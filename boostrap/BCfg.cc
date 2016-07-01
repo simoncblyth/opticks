@@ -4,16 +4,13 @@
 #include <sstream>
 #include <cstring>
 
-
 #include "BCfg.hh"
-
 
 typedef std::vector<std::string>::const_iterator VSI ; 
 
 #include <boost/tokenizer.hpp>
 
 namespace po = boost::program_options;
-
 
 BCfg::BCfg(const char* name, bool live)
     : 
@@ -24,7 +21,6 @@ BCfg::BCfg(const char* name, bool live)
     m_verbose(false)
 {
 }
-
 
 
 bool BCfg::containsOthers()
@@ -355,6 +351,5 @@ void BCfg::dump(boost::program_options::variables_map& vm, const char* msg)
                   << "\n"; 
     }
 }
-
 
 

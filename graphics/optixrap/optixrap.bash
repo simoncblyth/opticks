@@ -21,6 +21,63 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+
+first run crashes in OTracerTest and GGeoViewTest
+---------------------------------------------------
+
+Seems to happen on first run, from a cold GPU.  Subsequent runs dont crash.
+Suspect may be related to coding style that is cavalier about 
+returning objects by value. 
+
+I believed that the objects were some fancy pointer thingies that made this 
+safe, but perhaps that is not entirely true.
+
+Adjusting style to avoid passing objects around in texture creation 
+seems to have prevented crashes in the texture creation. Instead now
+get crashes in geometry conversion.
+
+TODO: adopt minimal object copy around style:
+
+* create objects in same scope where they will be placed into context
+* modularize by "setup/configure" methods rather than "make/create" 
+  passed references to the objects
+  
+
+
+
+::
+
+    14  liboptix.1.dylib                0x000000010364f884 0x103593000 + 772228
+    15  liboptix.1.dylib                0x00000001035a9001 rtProgramCreateFromPTXFile + 545
+    16  libOptiXRap.dylib               0x0000000104916f5c optix::ContextObj::createProgramFromPTXFile(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 620 (optixpp_namespace.h:2166)
+    17  libOptiXRap.dylib               0x000000010491543f OConfig::createProgram(char const*, char const*) + 1999 (OConfig.cc:40)
+    18  libOptiXRap.dylib               0x000000010491c3b0 OContext::createProgram(char const*, char const*) + 48 (OContext.cc:144)
+    19  libOptiXRap.dylib               0x000000010492e1ca OGeo::makeTriangulatedGeometry(GMergedMesh*) + 138 (OGeo.cc:538)
+    20  libOptiXRap.dylib               0x000000010492c51f OGeo::makeGeometry(GMergedMesh*) + 127 (OGeo.cc:429)
+    21  libOptiXRap.dylib               0x000000010492bbd3 OGeo::convert() + 771 (OGeo.cc:184)
+    22  libOpticksOp.dylib              0x000000010480ebaf OpEngine::prepareOptiX() + 4431 (OpEngine.cc:132)
+    23  libGGeoView.dylib               0x0000000104519ad6 App::prepareOptiX() + 326 (App.cc:964)
+    24  GGeoViewTest                    0x0000000101d26ea7 main + 1559 (GGeoViewTest.cc:90)
+    25  libdyld.dylib                   0x00007fff89e755fd start + 1
+
+
+::
+
+    15  liboptix.1.dylib                0x00000001057f1540 0x105728000 + 824640
+    16  liboptix.1.dylib                0x000000010572c3da rtAccelerationSetTraverser + 122
+    17  libOptiXRap.dylib               0x0000000106acbac5 optix::ContextObj::createAcceleration(char const*, char const*) + 149 (optixpp_namespace.h:1893)
+    18  libOptiXRap.dylib               0x0000000106ac8cb7 OGeo::makeAcceleration(char const*, char const*) + 583 (OGeo.cc:393)
+    19  libOptiXRap.dylib               0x0000000106ac84c4 OGeo::makeRepeatedGroup(GMergedMesh*) + 1204 (OGeo.cc:258)
+    20  libOptiXRap.dylib               0x0000000106ac6eb0 OGeo::convert() + 1504 (OGeo.cc:193)
+    21  libOpticksOp.dylib              0x00000001069afbaf OpEngine::prepareOptiX() + 4431 (OpEngine.cc:132)
+    22  libGGeoView.dylib               0x00000001066aead6 App::prepareOptiX() + 326 (App.cc:964)
+    23  OTracerTest                     0x0000000103ec1802 main + 994 (OTracerTest.cc:51)
+    24  libdyld.dylib                   0x00007fff89e755fd start + 1
+
+
+
+
+
 macOS Warning
 ---------------
 
