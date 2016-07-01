@@ -144,11 +144,15 @@ std::string NEnv::nativePath(const char* val)
 
     if(!is_fspath) return val ; 
 
-    std::string npath = BFile::FormPath(val);
+    bool is_gitbashpath = p.find("/c/") == 0 ;
 
+    std::string bpath = is_gitbashpath ? p.substr(2) : p ;
+
+    std::string npath = BFile::FormPath(bpath.c_str());
 
     LOG(trace) << "NEnv::nativePath"
                << " val " << val
+               << " bpath " << bpath
                << " npath " << npath
                ;    
 
