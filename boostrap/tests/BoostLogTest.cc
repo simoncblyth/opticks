@@ -8,6 +8,8 @@
  *          http://www.boost.org/LICENSE_1_0.txt)
  */
 
+#include "BRAP_FLAGS.hh"
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
@@ -20,6 +22,7 @@
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
 
 
 
@@ -37,6 +40,10 @@ void init()
 int main(int, char*[])
 {
     init();
+
+
+
+
 
     BOOST_LOG_TRIVIAL(trace) << "A trace severity message";
     BOOST_LOG_TRIVIAL(debug) << "A debug severity message";

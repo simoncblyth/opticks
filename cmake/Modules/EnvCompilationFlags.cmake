@@ -4,7 +4,8 @@
 if(WIN32)
 
   # need to detect compiler not os?
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4") # overall warning level 4
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4996")   # disable  C4996: 'strdup': The POSIX name for this item is deprecated.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_SCL_SECURE_NO_WARNINGS")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_WARNINGS")

@@ -9,5 +9,10 @@
 
 #pragma warning( disable : 4316 )
 
+
+// GLM: warning C4201: nonstandard extension used: nameless struct/union
+#pragma warning( disable : 4201 )
+
+
 #endif
 

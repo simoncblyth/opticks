@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 
+#include "CFG4_BODY.hh"
 
 #include "G4Material.hh"
 //#include "globals.hh"

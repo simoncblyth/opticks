@@ -1,5 +1,6 @@
 
 #include <cassert>
+#include "CFG4_BODY.hh"
 #include "G4String.hh"
 
 #include "PLOG.hh"

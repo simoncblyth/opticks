@@ -5,6 +5,7 @@
 #include <string>
 
 #include "SSys.hh"
+#include "BFile.hh"
 #include "BStr.hh"
 
 #include "Map.hpp"
@@ -66,6 +67,7 @@ void NEnv::readEnv()
        m_all->add(k,v);  
     }
 }
+
 
 void NEnv::readFile(const char* dir, const char* name)
 {
@@ -129,7 +131,33 @@ void NEnv::dump(const char* msg)
 }
 
 
-void NEnv::setEnvironment(bool overwrite)
+
+std::string NEnv::nativePath(const char* val)
+{
+    std::string p = val ; 
+
+    bool is_fspath = 
+                p.find("/") == 0 || 
+                p.find("\\") == 0 || 
+                p.find(":") == 1  ;
+ 
+
+    if(!is_fspath) return val ; 
+
+    std::string npath = BFile::FormPath(val);
+
+
+    LOG(trace) << "NEnv::nativePath"
+               << " val " << val
+               << " npath " << npath
+               ;    
+
+
+    return npath ; 
+}
+
+
+void NEnv::setEnvironment(bool overwrite, bool native)
 {
    if(m_selection == NULL && m_path == NULL)
    {
@@ -147,7 +175,9 @@ void NEnv::setEnvironment(bool overwrite)
         std::string k = it->first ; 
         std::string v = it->second ; 
 
-        int rc = SSys::setenvvar( NULL, k.c_str(), v.c_str(), overwrite);
+        std::string nv = native ? nativePath(v.c_str()) : v ; 
+
+        int rc = SSys::setenvvar( NULL, k.c_str(), nv.c_str(), overwrite);
         assert(rc == 0 );
 
         LOG(info) << "NEnv::setEnvironment" 

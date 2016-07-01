@@ -15,6 +15,7 @@ if(UNIX)
    set(LIBRARIES ${LIBRARIES} ssl crypto)
 endif(UNIX)
 
+message("${name}:CMAKE_CXX_FLAGS : ${CMAKE_CXX_FLAGS} ")
 #message("${name}:LIBRARIES : ${LIBRARIES} ")
 #message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
 

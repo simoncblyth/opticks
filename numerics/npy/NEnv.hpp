@@ -19,12 +19,16 @@ class NPY_API NEnv {
       void save(const char* path);
       void dump(const char* msg="NEnv::dump");
       void setPrefix(const char* prefix);
-      void setEnvironment(bool overwrite=true);
+      void setEnvironment(bool overwrite=true, bool native=true);
+
    private:
       void init();
       void readEnv();
       void readFile(const char* dir, const char* name);
       void readFile(const char* path);
+
+      std::string nativePath(const char* val);
+
    private:
       char**      m_envp ;
       const char* m_prefix ;

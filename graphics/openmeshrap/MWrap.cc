@@ -41,25 +41,13 @@ std::vector<typename MeshT::VertexHandle>& MWrap<MeshT>::getBoundaryLoop()
 
 
 
-template <typename MeshT>
-void MWrap<MeshT>::load(GMesh* mm)
-{
-#ifdef DOLOG
-    LOG(trace) << "MWrap<MeshT>::load"
-               << " NumVertices " << mm->getNumVertices()
-               << " NumFaces " << mm->getNumFaces() 
-               ;
-#endif
-    copyIn( (float*)mm->getVertices(), mm->getNumVertices(), (unsigned int*)mm->getFaces(), mm->getNumFaces() );
-}
-
 
 template <typename MeshT>
 void MWrap<MeshT>::copyIn(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces )  
 {
 
 #ifdef DOLOG
-    LOG(trace) << "MWrap<MeshT>::load"
+    LOG(trace) << "MWrap<MeshT>::copyIn"
                << " num_vertices " << num_vertices
                << " num_faces " << num_faces 
                ;
@@ -334,13 +322,17 @@ int MWrap<MeshT>::labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, 
 
     for( FI af=a->faces_begin() ; af != a->faces_end(); ++af ) 
     {
+#ifdef DOLOG
         int fa = af->idx(); 
+#endif
         P ap = a->property(a_fposprop, *af) ;
         P an = a->normal(*af);
 
         for( FI bf=b->faces_begin() ; bf != b->faces_end(); ++bf ) 
         { 
+#ifdef DOLOG
             int fb = bf->idx(); 
+#endif
             P bp = b->property(b_fposprop, *bf) ;
             P bn = b->normal(*bf);
 
@@ -566,7 +558,11 @@ void MWrap<MeshT>::dumpBounds(const char* msg)
 
 
 template <typename MeshT>
+#ifdef DOLOG        
 void MWrap<MeshT>::dumpStats(const char* msg)
+#else
+void MWrap<MeshT>::dumpStats(const char* )
+#endif
 {
     MeshT* mesh = m_mesh ; 
 
@@ -790,7 +786,9 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
     for(VHI av=abnd.begin() ; av != abnd.end() ; av++ )
     {
         P ap = a->point(*av);
+#ifdef DOLOG        
         int ai = av->idx();
+#endif
 
         float bmin(FLT_MAX);
         VH bclosest = bbnd[0] ; 
@@ -798,8 +796,6 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
         for(VHI bv=bbnd.begin() ; bv != bbnd.end() ; bv++ )
         {
             P bp = b->point(*bv);
-            int bi = bv->idx();
-
             P dp = bp - ap ; 
             float dpn = dp.norm();
           
@@ -809,6 +805,7 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
                 bclosest = *bv ; 
             }   
 #ifdef DOLOG        
+            int bi = bv->idx();
             LOG(debug)
                 << " (" << std::setw(3) << ai
                 << "->" << std::setw(3) << bi 
@@ -823,11 +820,11 @@ std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> MWrap<MeshT
         
         P bpc = b->point(bclosest);
         P dpc = bpc - ap ; 
-        int bic = bclosest.idx();
 
         a2b[*av] = bclosest ; 
 
 #ifdef DOLOG        
+        int bic = bclosest.idx();
         LOG(debug)
                 << " (" << std::setw(3) << ai
                 << "->" << std::setw(3) << bic 
@@ -980,6 +977,15 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
         std::cerr << x.what() << std::endl;
     }
 }
+
+
+
+template <typename MeshT>
+void MWrap<MeshT>::load(GMesh* mm)
+{
+    copyIn( (float*)mm->getVertices(), mm->getNumVertices(), (unsigned int*)mm->getFaces(), mm->getNumFaces() );
+}
+
 
 
 template class MESHRAP_API MWrap<MMesh>;

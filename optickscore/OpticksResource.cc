@@ -299,7 +299,8 @@ void OpticksResource::assignDetectorName()
 
 void OpticksResource::readG4Environment()
 {
-    std::string g4ini = BFile::FormPath(m_install_prefix, "externals/bin/geant4.ini" ) ;
+    // NB this path needs to match that in g4-;g4-export-ini
+    std::string g4ini = BFile::FormPath(m_install_prefix, "externals/config/geant4.ini" ) ;
 
     if(BFile::ExistsFile(g4ini.c_str()))
     {

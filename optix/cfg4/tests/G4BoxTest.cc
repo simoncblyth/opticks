@@ -25,6 +25,8 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+
+#include "CFG4_BODY.hh"
 #include "G4Box.hh"
 
 

@@ -9,8 +9,27 @@
 #pragma GCC visibility push(default)
 #endif
 
+
+#ifdef _MSC_VER
+#pragma warning( push )
+// OpenMesh/Core/Mesh/AttribKernelT.hh(140): warning C4127: conditional expression is constant
+#pragma warning( disable : 4127 )
+// OpenMesh/Core/Utils/vector_cast.hh(94): warning C4100: '_dst': unreferenced formal parameter
+#pragma warning( disable : 4100 )
+// openmesh\core\utils\property.hh(156): warning C4702: unreachable code  
+#pragma warning( disable : 4702 )
+#endif
+
+
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+
+
 
 #ifdef __clang__
 #pragma clang diagnostic pop

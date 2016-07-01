@@ -16,6 +16,8 @@ struct BBox {
 #include "MESHRAP_API_EXPORT.hh"
 #include "MESHRAP_HEAD.hh"
 
+template <typename MeshT> class MWrap ;
+
 template <typename MeshT>
 class MESHRAP_API MWrap { 
     // Developed with single/few mesh caches in mind like --jdyb --kdyb 
@@ -58,8 +60,8 @@ class MESHRAP_API MWrap {
       static int labelSpatialPairs(MeshT* a, MeshT* b, const glm::vec4& delta, const char* fposprop, const char* fpropname);
       static std::map<typename MeshT::VertexHandle, typename MeshT::VertexHandle> findBoundaryVertexMap(MWrap<MeshT>* wa, MWrap<MeshT>* wb);
    public:
-      static MWrap<MeshT>* load(const char* dir);
-      void save(const char* dir, const char* version="_v0");
+      //static MWrap<MeshT>* load(const char* dir);
+      //void save(const char* dir, const char* version="_v0");
       void write(const char* tmpl, unsigned int index);
 
    private:

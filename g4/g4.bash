@@ -284,7 +284,7 @@ g4--(){
 
 
 g4-sh(){  echo $(g4-idir)/bin/geant4.sh ; }
-g4-ini(){ echo $(g4-idir)/bin/geant4.ini ; }
+g4-ini(){ echo $(opticks-prefix)/externals/config/geant4.ini ; }
 
 g4-export(){ source $(g4-sh) ; }
 g4-export-ini()
@@ -292,6 +292,8 @@ g4-export-ini()
     local msg="=== $FUNCNAME :"
     g4-export
     local ini=$(g4-ini)
+    local dir=$(dirname $ini)
+    mkdir -p $dir 
     echo $msg writing G4 environment to $ini
     env | grep G4 > $ini
 

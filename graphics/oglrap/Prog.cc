@@ -264,7 +264,7 @@ void Prog::traverseActive(Obj_t obj, bool print)
         int max_length = 64;
         int actual_length = 0;
         int size = 0;
-        GLenum type;
+        GLenum type(0);
 
         switch(obj)
         {

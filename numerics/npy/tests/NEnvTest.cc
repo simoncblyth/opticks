@@ -4,16 +4,17 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
-int main(int argc, char** argv, char** /*envp*/)
+
+
+const char* dir = "/tmp" ; 
+const char* name = "G4.ini" ; 
+
+
+
+void testCreateSave(char** envp)
 {
-    PLOG_(argc, argv);
-
-    NPY_LOG__ ; 
-
-    const char* dir = "/tmp" ; 
-    const char* name = "G4.ini" ; 
-/*
     const char* prefix = "G4,DAE,OPTICKS,IDPATH,ENV" ; 
+
 
     NEnv* e = new NEnv(envp);
 
@@ -25,14 +26,32 @@ int main(int argc, char** argv, char** /*envp*/)
     e->setPrefix(prefix); 
     e->dump("just prefixed again");
     e->save(dir, name);
-*/
+}
 
-    std::cout << "---- f ----" << std::endl ; 
 
+void testLoad()
+{
     NEnv* f = NEnv::load(dir, name);
     f->dump("loaded from ini");
 
     f->setEnvironment();
+    NEnv::dumpEnvironment();
+}
+
+
+
+int main(int argc, char** argv, char** /*envp*/)
+{
+    PLOG_(argc, argv);
+
+    NPY_LOG__ ; 
+
+    const char* path =  "/usr/local/opticks/externals/config/geant4.ini" ;
+    //std::string npath = Bfile::FormPath(path);
+
+    NEnv* e = NEnv::load(path);
+    e->dump();
+    e->setEnvironment();
     NEnv::dumpEnvironment();
 
 

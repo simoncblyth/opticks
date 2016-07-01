@@ -5,7 +5,8 @@
 #include <map>
 #include <string>
 
-#include <glm/glm.hpp>
+#include "NGLM.hpp"
+
 
 // opticks-
 #include "Opticks.hh"
