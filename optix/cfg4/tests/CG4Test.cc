@@ -7,6 +7,7 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
+#include "GGEO_LOG.hh"
 #include "CFG4_LOG.hh"
 
 
@@ -16,6 +17,7 @@ int main(int argc, char** argv)
 
     NPY_LOG__ ; 
     OKCORE_LOG__ ; 
+    GGEO_LOG__ ; 
     CFG4_LOG__ ; 
 
 

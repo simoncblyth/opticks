@@ -224,7 +224,7 @@ ggv-pmt-test(){
                  analytic=1
                  groupvel=$groupvelkludge
                  shape=box
-                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 boundary=Rock/NONE/perfectAbsorbSurface/MineralOil
                  parameters=0,0,0,300
                    ) 
 

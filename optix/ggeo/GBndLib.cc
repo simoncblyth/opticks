@@ -254,6 +254,18 @@ guint4 GBndLib::parse( const char* spec, bool flip)
     boost::split(elem, spec, boost::is_any_of("/"));
 
     unsigned int nelem = elem.size();
+
+
+    if(nelem != 4)
+    {      
+        LOG(fatal) << "GBndLib::parse"
+                   << " bad boundary spec, expecting 4 elements"
+                   << " spec " << spec
+                   << " nelem " << nelem
+                   ;
+
+    }
+
     assert(nelem == 4);
 
     const char* omat_ = elem[0].c_str() ;
