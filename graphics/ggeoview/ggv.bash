@@ -40,7 +40,7 @@ ggv-bib
 ggv-pmt-test
       single PMT validation test, compare Opticks and Geant4::
 
-         ggv-pmt-test --cfg4       # G4
+         ggv-pmt-test --tcfg4       # G4
          ggv-pmt-test              # Opticks interop
          ggv-pmt-test --compute    # Opticks compute
 
@@ -126,17 +126,17 @@ ggv-pmt-test-usage(){ cat << EOU
 ggv-;ggv-pmt-test --load
     # load and visualize photons persisted from Opticks
 
-ggv-;ggv-pmt-test --cfg4 
+ggv-;ggv-pmt-test --tcfg4 
     # run G4 simulation, persisting propagation to file
 
-ggv-;ggv-pmt-test --cfg4 --steppingdbg
+ggv-;ggv-pmt-test --tcfg4 --steppingdbg
     # run G4 simulation verbosely, persisting propagation to file
 
 npy-;npy-cd;i
     run pmt_test.py           # compare material/flag sequence histories
     run pmt_test_distrib.py   # compare distributions
 
-ggv-;ggv-pmt-test --cfg4 --load
+ggv-;ggv-pmt-test --tcfg4 --load
     # load propagation and visualize 
     # slow photons revealed issues/groupvel/generational
 
@@ -228,7 +228,7 @@ ggv-pmt-test(){
                  parameters=0,0,0,300
                    ) 
 
-    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
 
@@ -328,7 +328,7 @@ EOI
 
 
    op.sh \
-       --cfg4 \
+       --tcfg4 \
        --cat G4Gun --tag $tag --save \
        --g4inimac "$inimac" \
        --g4finmac "$finmac" \
@@ -403,7 +403,7 @@ ggv-box-test(){
 
     local cmdline=$*
     local tag=1
-    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
 
@@ -611,19 +611,19 @@ ggv-rainbow-usage(){ cat << EOU
 ggv-;ggv-rainbow 
 ggv-;ggv-rainbow --ppol
 ggv-;ggv-rainbow --spol
-ggv-;ggv-rainbow --cfg4 --spol
-ggv-;ggv-rainbow --cfg4 --ppol
-ggv-;ggv-rainbow --cfg4 --ppol --dbg
+ggv-;ggv-rainbow --tcfg4 --spol
+ggv-;ggv-rainbow --tcfg4 --ppol
+ggv-;ggv-rainbow --tcfg4 --ppol --dbg
 
 
 ggv-;ggv-rainbow --load
     # load and visualized photons persisted from Opticks
     # checked 
 
-ggv-;ggv-rainbow --cfg4 --load
+ggv-;ggv-rainbow --tcfg4 --load
     # load and visualize photons persisted from Geant4 (cfg4) simulation
     #
-    # Option --cfg4 normally causes the CG4Test binary with Geant4 simulation capability 
+    # Option --tcfg4 normally causes the CG4Test binary with Geant4 simulation capability 
     # to be used but when --load is present the default GGeoView binary is picked
     # via an override in op.sh
     #
@@ -658,7 +658,7 @@ ggv-rainbow()
        p) tag=6 ;;   
     esac
 
-    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
 
@@ -806,7 +806,7 @@ ggv-reflect()
         s) tag=1 ;;
         p) tag=2 ;;
     esac
-    if [ "${cmdline/--cfg4}" != "${cmdline}" ]; then
+    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
     echo  pol $pol tag $tag
