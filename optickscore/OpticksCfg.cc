@@ -2,12 +2,16 @@
 #include <string>
 #include <vector>
 
-#include "PLOG.hh"
+
+#include "NGLM.hpp"
+
 
 #include "OpticksCfg.hh"
-
 #include "Opticks.hh"
 
+
+
+#include "PLOG.hh"
 
 
 template <class Listener>

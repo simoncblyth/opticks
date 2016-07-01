@@ -1,7 +1,14 @@
 #pragma once
 #include "Opticks.hh"
 #include "BCfg.hh"
+
 #include "OKCORE_API_EXPORT.hh"
+
+
+template OKCORE_API void BCfg::addOptionF<Opticks>(Opticks*, const char*, const char* );
+template OKCORE_API void BCfg::addOptionI<Opticks>(Opticks*, const char*, const char* );
+template OKCORE_API void BCfg::addOptionS<Opticks>(Opticks*, const char*, const char* );
+
 
 template <class Listener>
 class OKCORE_API OpticksCfg : public BCfg {

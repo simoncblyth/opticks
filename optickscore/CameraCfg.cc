@@ -1,6 +1,16 @@
 
+#include "NGLM.hpp"
 #include "Camera.hh"
 #include "CameraCfg.hh"
+
+
+
+template OKCORE_API void BCfg::addOptionF<Camera>(Camera*, const char*, const char* );
+template OKCORE_API void BCfg::addOptionI<Camera>(Camera*, const char*, const char* );
+template OKCORE_API void BCfg::addOptionS<Camera>(Camera*, const char*, const char* );
+
+
+
 
 template <class Listener>
 CameraCfg<Listener>::CameraCfg(const char* name, Listener* listener, bool live) 
@@ -17,4 +27,4 @@ CameraCfg<Listener>::CameraCfg(const char* name, Listener* listener, bool live)
 }
 
 
-template class CameraCfg<Camera> ;
+template class OKCORE_API CameraCfg<Camera> ;

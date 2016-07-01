@@ -8,7 +8,6 @@
 
 typedef std::vector<std::string>::const_iterator VSI ; 
 
-#include <boost/tokenizer.hpp>
 
 namespace po = boost::program_options;
 
@@ -21,6 +20,69 @@ BCfg::BCfg(const char* name, bool live)
     m_verbose(false)
 {
 }
+
+
+
+
+void BCfg::setVerbose(bool verbose)
+{
+    m_verbose = verbose ; 
+}
+
+
+bool BCfg::hasError()
+{
+    return m_error ; 
+}
+
+std::string BCfg::getErrorMessage()
+{
+    return m_error_message ; 
+}
+
+
+const std::string& BCfg::getCommandLine()
+{
+    return m_commandline ; 
+}
+
+bool BCfg::hasOpt(const char* opt)
+{ 
+   std::vector<std::string> elem;
+   boost::split(elem,opt,boost::is_any_of("|")); 
+   unsigned int count(0);
+   for(unsigned int i=0 ; i < elem.size() ; i++)
+   { 
+      count += m_vm.count(elem[i]);
+   }
+   return count > 0 ; 
+}   
+
+
+const char* BCfg::getName()
+{
+    return m_name ; 
+}
+
+bool BCfg::isLive()
+{
+    return m_live ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 bool BCfg::containsOthers()
@@ -351,5 +413,61 @@ void BCfg::dump(boost::program_options::variables_map& vm, const char* msg)
                   << "\n"; 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+template <class Listener>
+void BCfg::addOptionF(Listener* listener, const char* name, const char* description )
+{
+        m_desc.add_options()(name, 
+                             boost::program_options::value<std::vector<float> >()
+                                ->composing()
+                                ->notifier(boost::bind(&Listener::configureF, listener, name, _1)), 
+                             description) ;
+}
+
+template <class Listener>
+void BCfg::addOptionI(Listener* listener, const char* name, const char* description )
+{
+        m_desc.add_options()(name, 
+                             boost::program_options::value<std::vector<int> >()
+                                ->composing()
+                                ->notifier(boost::bind(&Listener::configureI, listener, name, _1)), 
+                             description) ;
+}
+
+
+template <class Listener>
+void BCfg::addOptionS(Listener* listener, const char* name, const char* description )
+{
+        if(m_verbose)
+        {
+             printf("BCfg::addOptionS %s %s \n", name, description);
+        }
+        m_desc.add_options()(name, 
+                             boost::program_options::value<std::vector<std::string> >()
+                                ->composing()
+                                ->notifier(boost::bind(&Listener::configureS, listener, name, _1)), 
+                             description) ;
+}
+
+
+
+
+
+
+
+
 
 
