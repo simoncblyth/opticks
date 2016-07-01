@@ -231,8 +231,7 @@ void OpticksResource::init()
 {
    LOG(trace) << "OpticksResource::init" ; 
 
-   m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ;
-
+   adoptInstallPrefix();
    readG4Environment();
    readEnvironment();
    readMetadata();
@@ -241,6 +240,34 @@ void OpticksResource::init()
 
    LOG(trace) << "OpticksResource::init DONE" ; 
 }
+
+
+void OpticksResource::adoptInstallPrefix()
+{
+   m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ; 
+   
+   const char* key = "INSTALL_PREFIX" ; 
+
+   int rc = SSys::setenvvar(m_envprefix, key, m_install_prefix, true ); 
+
+   LOG(trace) << "OpticksResource::adoptInstallPrefix " 
+              << " install_prefix " << m_install_prefix  
+              << " envprefix " << m_envprefix  
+              << " key " << key
+              << " rc " << rc
+              ;  
+ 
+   assert(rc==0); 
+
+   // The CMAKE_INSTALL_PREFIX from opticks-;opticks-cmake 
+   // is set to the result of the opticks-prefix bash function 
+   // at configure time.
+   // This is recorded into a config file by okc-/CMakeLists.txt 
+   // and gets compiled into the OpticksCore library.
+   //
+   // Canonically it is :  /usr/local/opticks 
+}
+
 
 void OpticksResource::identifyGeometry()
 {
@@ -347,7 +374,6 @@ void OpticksResource::readEnvironment()
      not currently used?
 
 */
-    assert(SSys::setenvvar(m_envprefix,"INSTALL_PREFIX", m_opticks->getInstallPrefix(), true )==0); 
 
     m_geokey = SSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
     m_daepath = getenv(m_geokey);

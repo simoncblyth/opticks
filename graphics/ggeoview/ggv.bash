@@ -217,9 +217,12 @@ ggv-pmt-test(){
 
 
     local groupvelkludge=0
+
+    ## pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
+
     local test_config=(
                  mode=PmtInBox
-                 pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
+                 pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0
                  control=$testverbosity,0,0,0
                  analytic=1
                  groupvel=$groupvelkludge

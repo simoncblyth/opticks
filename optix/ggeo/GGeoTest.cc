@@ -133,6 +133,14 @@ GMergedMesh* GGeoTest::loadPmt()
         mmpmt = GMergedMesh::load(pmtpath);  
     }
 
+    if(mmpmt == NULL)
+        LOG(fatal) << "GGeoTest::loadPmt"
+                   << " FAILED TO LOAD TESSELATED PMT FROM "
+                   << pmtpath 
+                   ; 
+    assert(mmpmt);
+
+
     if(verbosity > 1)
     {
         LOG(info) << "GGeoTest::createPmtInBox"

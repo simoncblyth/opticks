@@ -55,7 +55,7 @@ void DynamicDefine::write(const char* dir, const char* name)
 template <typename T>
 void DynamicDefine::add(const char* name, T value)
 {
-    LOG(info) << "DynamicDefine::add"
+    LOG(trace) << "DynamicDefine::add"
               << " name " << name
               << " value " << value
               ; 

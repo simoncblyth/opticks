@@ -40,6 +40,7 @@ class OKCORE_API OpticksResource {
        bool isValid();
     private:
        void init();
+       void adoptInstallPrefix();
        void readG4Environment();
        void readEnvironment();
        void readMetadata();

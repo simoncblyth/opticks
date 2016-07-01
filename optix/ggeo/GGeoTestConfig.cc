@@ -15,14 +15,16 @@
 #include "PLOG.hh"
 
 
+//    "pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0_"
+
 const char* GGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
-    "pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0_"
+    "pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0_"
     "control=1,0,0,0_"
     "analytic=1_"
     "groupvel=0_"
     "shape=box_"
-    "boundary=Rock//perfectAbsorbSurface/MineralOil_"
+    "boundary=Rock/NONE/perfectAbsorbSurface/MineralOil_"
     "parameters=0,0,0,300_"
     ;
 

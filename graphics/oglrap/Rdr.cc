@@ -132,7 +132,8 @@ void Rdr::dump_uploads_table(const char* msg)
         {
            ViewNPY* vnpy = (*mvn)[i] ;
            NPYBase*  npy = vnpy->getNPY();
-           std::cout
+
+           LOG(trace)
               << std::setw(15) << name 
               << std::setw(2) << i << "/" 
               << std::setw(2) << nvec
@@ -143,7 +144,7 @@ void Rdr::dump_uploads_table(const char* msg)
               << npy->getShapeString()
               << " npy.hasData "
               << npy->hasData()
-              <<  std::endl ;
+              ;
         }
     }
 }
@@ -393,7 +394,7 @@ void Rdr::address(ViewNPY* vnpy)
     // offset of the first component of the first generic vertex attribute 
     // in the array in the data store of the buffer currently bound to GL_ARRAY_BUFFER target
 
-    LOG(info) << "Rdr::address (glVertexAttribPointer) "
+    LOG(trace) << "Rdr::address (glVertexAttribPointer) "
               << std::setw(10) << getShaderTag() 
               << " name " << name 
               << " type " << std::setw(20) << vnpy->getTypeName() 
