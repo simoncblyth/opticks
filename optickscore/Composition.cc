@@ -559,6 +559,9 @@ void Composition::configureS(const char* name, std::vector<std::string> values)
     set(name, last);
 }
 
+void Composition::configureF(const char*, std::vector<float>  )
+{
+}
 
 void Composition::configureI(const char* name, std::vector<int> values )
 {

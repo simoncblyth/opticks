@@ -275,6 +275,9 @@ void Trackball::getTranslationMatrices(glm::mat4& tra, glm::mat4& itra)
 
 
 
+void Trackball::configureI(const char* , std::vector<int> )
+{
+}
 
 
 

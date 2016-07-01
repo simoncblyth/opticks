@@ -9,8 +9,10 @@
 // when the -fvisibility=hidden compiler option is in use
 //
 #ifdef __clang__
-#pragma GCC visibility push(default)
+#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
+
+#pragma GCC visibility push(default)
 #endif
 
 
@@ -20,8 +22,9 @@
 #include <OpenMesh/Core/Mesh/Status.hh>
 
 #ifdef __clang__
-#pragma clang diagnostic pop
 #pragma GCC visibility pop
+
+#pragma clang diagnostic pop
 #endif
 
 

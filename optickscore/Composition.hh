@@ -132,7 +132,8 @@ class OKCORE_API Composition : public NConfigurable {
       void set(const char* name, std::string& s);
       std::string get(const char* name);
 
-      // for cli/live updating 
+      // for cli/live updating : BCfg binding  
+      void configureF(const char* name, std::vector<float> values );
       void configureI(const char* name, std::vector<int> values );
       void configureS(const char* name, std::vector<std::string> values);
 

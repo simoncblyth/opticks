@@ -30,7 +30,10 @@ public:
    bool isOrbital();
    bool isTrack();
 
+   void configureF(const char* name, std::vector<float> values);
+   void configureI(const char* name, std::vector<int> values);
    void configureS(const char* name, std::vector<std::string> values);
+
 
  public:
    // Configurable

@@ -75,3 +75,16 @@ void Demo::set(const char* name, std::string& s)
 
 
 
+void Demo::configureS(const char* , std::vector<std::string> )
+{
+}
+void Demo::configureF(const char*, std::vector<float>  )
+{
+}
+void Demo::configureI(const char* , std::vector<int>  )
+{
+}
+
+
+
+

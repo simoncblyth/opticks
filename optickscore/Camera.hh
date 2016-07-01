@@ -111,7 +111,6 @@ zoom defined as apparent size of an object relative to the size for a 90 degree 
 class OKCORE_API Camera : public NConfigurable  {
    public:
        static const char* PREFIX ;
-       const char* getPrefix();
   public:
      static const char* PRINT ; 
      static const char* NEAR_ ; 
@@ -141,12 +140,14 @@ class OKCORE_API Camera : public NConfigurable  {
        Camera::Style_t getStyle();
 
  public:
-     // Configurable
+     // NConfigurable realization
+     const char* getPrefix();
+     void configure(const char* name, const char* value);
      std::vector<std::string> getTags();
-     void set(const char* name, std::string& xyz);
      std::string get(const char* name);
+     void set(const char* name, std::string& xyz);
 
-
+  public:
      static bool accepts(const char* name);
 
      // NB dont overload these as it confuses boost::bind
@@ -154,7 +155,6 @@ class OKCORE_API Camera : public NConfigurable  {
      void configureI(const char* name, std::vector<int> values);
      void configureS(const char* name, std::vector<std::string> values);
 
-     void configure(const char* name, const char* value);
      void configure(const char* name, float value);
 
   public:

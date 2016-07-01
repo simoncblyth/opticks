@@ -80,6 +80,15 @@ std::string View::get(const char* name)
 /////////////// NConfigurable protocol END
 
 
+
+void View::configureF(const char* , std::vector<float>  )
+{
+}
+
+void View::configureI(const char* , std::vector<int>  )
+{
+}
+
 void View::configureS(const char* name, std::vector<std::string> values)
 {
     if(values.empty()) return ;

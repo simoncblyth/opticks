@@ -30,6 +30,7 @@ class OKCORE_API Trackball : public NConfigurable {
 
        void gui(); 
   public:
+       void configureI(const char* name, std::vector<int> values);
        void configureF(const char* name, std::vector<float> values);
        void configureS(const char* name, std::vector<std::string> values);
 

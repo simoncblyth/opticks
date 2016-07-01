@@ -24,21 +24,23 @@ class OKCORE_API Clipper : public NConfigurable {
 
         Clipper();
 
- public:
-        // Configurable
         static bool accepts(const char* name);
+ public:
+        // NConfigurable
         void configure(const char* name, const char* value);
         std::vector<std::string> getTags();
         void set(const char* name, std::string& xyz);
         std::string get(const char* name);
 
+  public: 
+       // BCfg binding
+        void configureF(const char* name, std::vector<float> values);
+        void configureS(const char* name, std::vector<std::string> values);
+        void configureI(const char* name, std::vector<int> values);
+  public: 
 
         glm::vec4& getClipPlane(glm::mat4& model_to_world);
         void dump(const char* msg);
-
-        //void set(const char* name, std::string& _xyz);
-        void configureS(const char* name, std::vector<std::string> values);
-        void configureI(const char* name, std::vector<int> values);
 
         void setMode(int mode);
         int getMode();

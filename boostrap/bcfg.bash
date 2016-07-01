@@ -7,6 +7,14 @@ bcfg-usage(){ cat << EOU
 Boost Bind Based Configuration
 ================================
 
+NB the NConfigurable base class approach may 
+be a simpler alternative, as it allows all NConfigurable
+sub-classes to be treated via same API. Meaning that 
+can avoid the templated methods that cause create pain
+to get past compilers.
+
+
+
 Config code formerly lived at boost/bpo/bcfg, 
 now consolidated into boostrap aka brap-.
 
@@ -138,7 +146,7 @@ Requirements for listeners
 
 ::
 
-     10 class Camera : public Configurable  {
+     10 class Camera : public NConfigurable  {
      11   public:
      12     
      13      static const char* PRINT ;

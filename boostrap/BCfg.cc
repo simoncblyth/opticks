@@ -21,9 +21,6 @@ BCfg::BCfg(const char* name, bool live)
 {
 }
 
-
-
-
 void BCfg::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
@@ -68,20 +65,6 @@ bool BCfg::isLive()
 {
     return m_live ; 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -413,58 +396,6 @@ void BCfg::dump(boost::program_options::variables_map& vm, const char* msg)
                   << "\n"; 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-template <class Listener>
-void BCfg::addOptionF(Listener* listener, const char* name, const char* description )
-{
-        m_desc.add_options()(name, 
-                             boost::program_options::value<std::vector<float> >()
-                                ->composing()
-                                ->notifier(boost::bind(&Listener::configureF, listener, name, _1)), 
-                             description) ;
-}
-
-template <class Listener>
-void BCfg::addOptionI(Listener* listener, const char* name, const char* description )
-{
-        m_desc.add_options()(name, 
-                             boost::program_options::value<std::vector<int> >()
-                                ->composing()
-                                ->notifier(boost::bind(&Listener::configureI, listener, name, _1)), 
-                             description) ;
-}
-
-
-template <class Listener>
-void BCfg::addOptionS(Listener* listener, const char* name, const char* description )
-{
-        if(m_verbose)
-        {
-             printf("BCfg::addOptionS %s %s \n", name, description);
-        }
-        m_desc.add_options()(name, 
-                             boost::program_options::value<std::vector<std::string> >()
-                                ->composing()
-                                ->notifier(boost::bind(&Listener::configureS, listener, name, _1)), 
-                             description) ;
-}
-
-
-
-
 
 
 

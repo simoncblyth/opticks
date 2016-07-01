@@ -124,6 +124,13 @@ void Clipper::configureS(const char* name, std::vector<std::string> values)
     set(name, last);
 }
 
+void Clipper::configureF(const char* , std::vector<float> )
+{
+}
+
+
+
+
 
 std::string Clipper::get(const char* name)
 {

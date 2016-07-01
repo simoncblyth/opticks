@@ -15,6 +15,12 @@ class OKCORE_API Demo : public NConfigurable  {
        const char* getPrefix();
    public:
        Demo();
+
+   public:
+     // BCfg binding (unused)
+     void configureS(const char* , std::vector<std::string> );
+     void configureF(const char*, std::vector<float>  );
+     void configureI(const char* , std::vector<int>  );
    public:
      // Configurable
      std::vector<std::string> getTags();

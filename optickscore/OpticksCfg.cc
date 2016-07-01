@@ -4,11 +4,14 @@
 
 
 #include "NGLM.hpp"
-
-
 #include "OpticksCfg.hh"
 #include "Opticks.hh"
 
+class Opticks ; 
+
+template OKCORE_API void BCfg::addOptionF<Opticks>(Opticks*, const char*, const char* );
+template OKCORE_API void BCfg::addOptionI<Opticks>(Opticks*, const char*, const char* );
+template OKCORE_API void BCfg::addOptionS<Opticks>(Opticks*, const char*, const char* );
 
 
 #include "PLOG.hh"
