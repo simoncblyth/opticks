@@ -1,6 +1,6 @@
-npy-src(){      echo numerics/npy/npy.bash ; }
-npy-rel(){      echo numerics/npy ; }
-npy-src(){      echo numerics/npy ; }
+npy-src(){      echo opticksnpy/npy.bash ; }
+npy-rel(){      echo opticksnpy ; }
+npy-src(){      echo opticksnpy ; }
 npy-source(){   echo ${BASH_SOURCE:-$(env-home)/$(npy-src)} ; }
 npy-vi(){       vi $(npy-source) ; }
 npy-env(){      elocal- ; opticks- ; }
@@ -132,8 +132,8 @@ Peeking at files
 EOU
 }
 
-npy-sdir(){ echo $(env-home)/numerics/npy ; }
-npy-tdir(){ echo $(env-home)/numerics/npy/tests ; }
+npy-sdir(){ echo $(env-home)/opticksnpy ; }
+npy-tdir(){ echo $(env-home)/opticksnpy/tests ; }
 npy-idir(){ echo $(opticks-idir) ; }
 npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
