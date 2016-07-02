@@ -534,6 +534,9 @@ cuda-nvcc-flags(){
 cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
 cuda-download-dir(){ echo $(local-base)/env/cuda ; }
 
+
+
+
 cuda-dir()
 {       
    case $(uname) in 
@@ -544,8 +547,9 @@ cuda-dir()
 }
 
 cuda-prefix(){       echo $(cuda-dir) ; }
-
+cuda-edir(){         echo $(env-home)/cuda ; }
 cuda-idir(){         echo $(cuda-dir)/include ; }
+
 cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
 cuda-samples-dir(){  echo $(cuda-writable-dir)/NVIDIA_CUDA-$(cuda-version)_Samples ; }
 cuda-samples-find(){ 
@@ -554,6 +558,7 @@ cuda-samples-find(){
 
 
 cuda-cd(){           cd $(cuda-dir); }
+cuda-ecd(){          cd $(cuda-edir); }
 cuda-icd(){          cd $(cuda-idir); }
 cuda-dcd(){          cd $(cuda-download-dir); }
 cuda-wcd(){          cd $(cuda-writable-dir); }

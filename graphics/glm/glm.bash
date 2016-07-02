@@ -1,3 +1,4 @@
+glm-rel(){      echo graphics/glm ; }
 glm-src(){      echo graphics/glm/glm.bash ; }
 glm-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glm-src)} ; }
 glm-vi(){       vi $(glm-source) ; }

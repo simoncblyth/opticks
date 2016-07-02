@@ -96,9 +96,9 @@ Tools like hg, git, curl, tar, zip are assumed to be in your PATH.
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        notes
 =====================  ===============  =============   ==============================================================================
+graphics/glm           glm-             GLM             sourceforge tarball 0.9.6.3, header only
 graphics/assimp        assimp-          Assimp          github.com/simoncblyth/assimp fork of unspecified github version that handles G4DAE extras, cmake configured
 graphics/openmesh      openmesh-        OpenMesh        www.openmesh.org OpenMesh 4.1 tarball, cmake configured, provides VS2015 binaries http://www.openmesh.org/download/
-graphics/glm           glm-             GLM             sourceforge tarball 0.9.6.3, header only
 graphics/glew          glew-            GLEW            sourceforge tarball 1.12.0, OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
 graphics/glfw          glfw-            GLFW            sourceforge tarball 3.1.1, library for creating windows with OpenGL and receiving input, cmake generation    
 graphics/gleq          gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example, header only
@@ -279,6 +279,7 @@ photon propagations loaded from file.
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        required find package 
 =====================  ===============  =============   ==============================================================================
+sysrap                 sysrap-          SysRap          PLog
 boostrap               brap-            BoostRap        OpticksBoost
 numerics/npy           npy-             NPY             Boost GLM BoostRap
 optickscore            optickscore-     OpticksCore     Boost GLM BRegex BCfg NPY 
@@ -298,8 +299,10 @@ optix/cfg4             cfg4-            CfG4            Boost GLM BRegex BCfg NP
 =====================  ===============  =============   ==============================================================================
 
 
+sysrap
+    logging, string handling, envvar handling 
 boostrap
-    logging, filesystem utils, regular expression matching, commandline parsing 
+    filesystem utils, regular expression matching, commandline parsing 
 npy
     array handling 
 optickscore
@@ -570,10 +573,6 @@ opticks-ctest-deprecated()
 }
 
 
-
-
-
-
 opticks---(){ 
 
   sysrap-
@@ -622,6 +621,10 @@ opticks---(){
  
   ggeoview-
   ggeoview--
+
+  cfg4-
+  cfg4--
+
 
 } 
 
@@ -695,10 +698,6 @@ opticks-export-common()
    opticksdata-
    opticksdata-export
 
-   # oldway 
-   #export-
-   #export-export   ## needed to setup DAE_NAME_DYB the envvar name pointed at by the default opticks_GEOKEY 
-
 }
 opticks-export-mingw()
 {
@@ -736,21 +735,42 @@ graphics/ggeoview
 optix/cfg4
 EOL
 }
+
+opticks-xnames(){ cat << EOX
+boost
+glm
+plog
+gleq
+glfw
+glew
+imgui
+assimp
+openmesh
+cuda
+thrust
+optix
+xercesc
+g4
+EOX
+}
+
 opticks-internals(){  cat << EOI
+SysRap
 BoostRap
 NPY
 OpticksCore
 GGeo
 AssimpRap
 OpenMeshRap
+OpticksGeo
 OGLRap
 CUDARap
 ThrustRap
 OptiXRap
 OpticksOp
 OpticksGL
-OptiXThrust
-NumpyServer
+GGeoView
+CfG4
 EOI
 }
 opticks-xternals(){  cat << EOX
@@ -762,7 +782,6 @@ GLEW
 GLEQ
 GLFW
 ImGui
-
 EnvXercesC
 G4DAE
 ZMQ
@@ -995,7 +1014,52 @@ EOT
 
 }
 
+opticks-xcollect-notes(){ cat << EON
 
+*opticks-xcollect*
+     copies the .bash of externals into externals folder 
+     and does inplace edits to correct paths for new home.
+     Also writes an externals.bash containing the precursor bash 
+     functions.
 
+EON
+}
+opticks-xcollect()
+{
+   local ehome=$(env-home)
+   local xhome=$ehome
+   local iwd=$PWD 
 
+   cd $ehome
+
+   local xbash=$xhome/externals/externals.bash
+   [ ! -d "$xhome/externals" ] && mkdir "$xhome/externals"
+
+   echo "# $FUNCNAME " > $xbash
+   
+   local x
+   local esrc
+   local src
+   local dst
+   local nam
+
+   opticks-xnames | while read x 
+   do
+      $x-;
+      esrc=$($x-source)
+      src=${esrc/$ehome\/}
+      nam=$(basename $src)
+      dst=externals/$nam
+
+      printf "# %-15s %15s %35s \n" $x $nam $src
+
+      cp $src $xhome/$dst
+      perl -pi -e "s,$src,$dst," $xhome/$dst 
+      perl -pi -e "s,env-home,opticks-home," $xhome/$dst 
+
+      printf "%-20s %-50s %s\n" "$x-(){" ". \$(opticks-home)/externals/$nam" "&& $x-env \$* ; }"   >> $xbash
+
+   done 
+   cd $iwd
+}
 
