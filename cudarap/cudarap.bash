@@ -1,6 +1,6 @@
-# === func-gen- : cuda/cudarap/cudarap fgp cuda/cudarap/cudarap.bash fgn cudarap fgh cuda/cudarap
-cudarap-rel(){      echo cuda/cudarap ; }
-cudarap-src(){      echo cuda/cudarap/cudarap.bash ; }
+# === func-gen- : cudarap/cudarap fgp cudarap/cudarap.bash fgn cudarap fgh cudarap
+cudarap-rel(){      echo cudarap ; }
+cudarap-src(){      echo cudarap/cudarap.bash ; }
 cudarap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudarap-src)} ; }
 cudarap-vi(){       vi $(cudarap-source) ; }
 cudarap-usage(){ cat << EOU
@@ -16,8 +16,8 @@ Warnings
 ::
 
     simon:cudarap blyth$ cudarap--
-    [ 33%] Building NVCC (Device) object cuda/cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
-    [ 33%] Building NVCC (Device) object cuda/cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_cuRANDWrapper_kernel.cu.o
+    [ 33%] Building NVCC (Device) object cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
+    [ 33%] Building NVCC (Device) object cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_cuRANDWrapper_kernel.cu.o
     In file included from /usr/local/cuda/include/curand_poisson.h:231:
     In file included from /usr/local/cuda/include/common_functions.h:219:
     In file included from /usr/local/cuda/include/math_functions.h:9342:
@@ -70,10 +70,10 @@ CUDARAP usage
 ::
 
     bogon:env blyth$ find . -name '*.*' -exec grep -H CUDARAP {} \; 
-    ./cuda/cudarap/cudarap.bash:   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
-    ./cuda/cudarap/cudarap.bash:   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
-    ./cuda/cudarap/cuRANDWrapperTest.cc:    unsigned int work              = getenvvar("CUDARAP_RNG_MAX", WORK) ;
-    ./cuda/cudarap/cuRANDWrapperTest.cc:    char* cachedir = getenv("CUDARAP_RNG_DIR") ;
+    ./cudarap/cudarap.bash:   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1024*768 )) ./cuRANDWrapperTest 
+    ./cudarap/cudarap.bash:   CUDARAP_RNG_DIR=$(cudarap-rng-dir) DYLD_LIBRARY_PATH=. WORK=$(( 1440*900 )) ./cuRANDWrapperTest 
+    ./cudarap/cuRANDWrapperTest.cc:    unsigned int work              = getenvvar("CUDARAP_RNG_MAX", WORK) ;
+    ./cudarap/cuRANDWrapperTest.cc:    char* cachedir = getenv("CUDARAP_RNG_DIR") ;
     ./graphics/ggeoview/ggeoview.bash:   CUDARAP_RNG_DIR=$(ggeoview-rng-dir) CUDARAP_RNG_MAX=$(ggeoview-rng-max) $(cudarap-ibin)
 
     ./graphics/ggeoview/ggeoview.bash:   export CUDARAP_RNG_MAX=$(ggeoview-rng-max)
@@ -124,7 +124,7 @@ Presumbaly because it does not use the STL, just a few simples classes and C str
 
 ::
 
-    /usr/local/env/cuda/cudarap/lib/libCUDAWrap.dylib:
+    /usr/local/env/cudarap/lib/libCUDAWrap.dylib:
         @rpath/libCUDAWrap.dylib (compatibility version 0.0.0, current version 0.0.0)
         @rpath/libcudart.5.5.dylib (compatibility version 0.0.0, current version 5.5.28)
         /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
@@ -138,7 +138,7 @@ When place include without "using namespace optix" get::
 
     [100%] Building CXX object CMakeFiles/GGeoView.dir/main.cc.o
     In file included from /Users/blyth/env/graphics/ggeoview/main.cc:48:
-    In file included from /usr/local/env/cuda/CUDAWrap/include/cuRANDWrapper.hh:8:
+    In file included from /usr/local/env/CUDAWrap/include/cuRANDWrapper.hh:8:
     In file included from /usr/local/cuda/include/curand_kernel.h:60:
     In file included from /usr/local/cuda/include/curand.h:59:
     In file included from /usr/local/cuda/include/cuda_runtime.h:68:
@@ -237,9 +237,9 @@ see that copying boxmuller_extra_double is causing the warning::
 
 
     [ 16%] Building NVCC (Device) object CMakeFiles/CUDAEnv.dir//./CUDAEnv_generated_cuRANDWrapper_kernel.cu.o
-    /Users/blyth/env/cuda/cudarap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
+    /Users/blyth/env/cudarap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
 
-    /Users/blyth/env/cuda/cudarap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
+    /Users/blyth/env/cudarap/cuRANDWrapper_kernel.cu(123): warning: variable "rng" was declared but never referenced
 
 
 * http://stackoverflow.com/questions/19034321/cuda-double-demoted-to-float-and-understanding-ptx-output
@@ -391,11 +391,11 @@ cudarap-name(){ echo CUDARap ; }
 
 cudarap-idir(){ echo $(opticks-idir); }
 cudarap-bdir(){ echo $(opticks-bdir)/$(cudarap-rel) ; }
-cudarap-sdir(){ echo $(env-home)/cuda/cudarap ; }
-cudarap-tdir(){ echo $(env-home)/cuda/cudarap/tests ; }
+cudarap-sdir(){ echo $(env-home)/cudarap ; }
+cudarap-tdir(){ echo $(env-home)/cudarap/tests ; }
 cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }
 
-cudarap-rng-dir(){ echo $(local-base)/env/cuda/CUDARap/rngcache ; }
+cudarap-rng-dir(){ echo $(local-base)/env/CUDARap/rngcache ; }
 cudarap-rng(){  ls -l $(cudarap-rng-dir) ; }
 
 cudarap-cd(){   cd $(cudarap-sdir); }
