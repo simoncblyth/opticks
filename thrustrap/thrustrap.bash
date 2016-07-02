@@ -1,6 +1,5 @@
 # === func-gen- : numerics/thrustrap/thrustrap fgp numerics/thrustrap/thrustrap.bash fgn thrustrap fgh numerics/thrustrap
-thrustrap-rel(){      echo numerics/thrustrap ; }
-thrustrap-src(){      echo numerics/thrustrap/thrustrap.bash ; }
+thrustrap-src(){      echo thrustrap/thrustrap.bash ; }
 thrustrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrustrap-src)} ; }
 thrustrap-vi(){       vi $(thrustrap-source) ; }
 thrustrap-usage(){ cat << EOU
@@ -50,8 +49,8 @@ Other packages using CUDA
     ./graphics/optixrap/CMakeLists.txt
     ./graphics/raytrace/CMakeLists.txt
     ./graphics/thrust_opengl_interop/CMakeLists.txt
-    ./numerics/thrust/hello/CMakeLists.txt
-    ./numerics/thrustrap/CMakeLists.txt
+    ./thrust/hello/CMakeLists.txt
+    ./thrustrap/CMakeLists.txt
     ./optix/gloptixthrust/CMakeLists.txt
     ./optix/OptiXTest/CMakeLists.txt
     ./optix/optixthrust/CMakeLists.txt
@@ -87,8 +86,8 @@ can only get to compile and run without segv only by
 
 * not linking to other libs built against c++11 ie libc++
 
-delta:tests blyth$ otool -L /usr/local/env/numerics/thrustrap/bin/ThrustEngineTest
-/usr/local/env/numerics/thrustrap/bin/ThrustEngineTest:
+delta:tests blyth$ otool -L /usr/local/env/thrustrap/bin/ThrustEngineTest
+/usr/local/env/thrustrap/bin/ThrustEngineTest:
     @rpath/libcudart.5.5.dylib (compatibility version 0.0.0, current version 5.5.28)
     /usr/lib/libstdc++.6.dylib (compatibility version 7.0.0, current version 60.0.0)
     /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
@@ -245,7 +244,7 @@ Histogramming Check
 
       TODO:Compare with thrust...
 
-      /usr/local/env/numerics/thrustrap/bin/PhotonIndexTest
+      /usr/local/env/thrustrap/bin/PhotonIndexTest
     
 
 
@@ -277,10 +276,10 @@ EOU
 thrustrap-env(){      elocal- ; opticks- ; }
 
 
-thrustrap-sdir(){ echo $(env-home)/numerics/thrustrap ; }
-thrustrap-tdir(){ echo $(env-home)/numerics/thrustrap/tests ; }
+thrustrap-sdir(){ echo $(env-home)/thrustrap ; }
+thrustrap-tdir(){ echo $(env-home)/thrustrap/tests ; }
 thrustrap-idir(){ echo $(opticks-idir) ; }
-thrustrap-bdir(){ echo $(opticks-bdir)/$(thrustrap-rel) ; }
+thrustrap-bdir(){ echo $(opticks-bdir)/thrustrap ; }
 
 thrustrap-cd(){   cd $(thrustrap-sdir); }
 thrustrap-scd(){  cd $(thrustrap-sdir); }
