@@ -731,7 +731,7 @@ thrustrap
 optixrap
 opticksop
 opticksgl
-graphics/ggeoview
+ggeoview
 optix/cfg4
 EOL
 }

@@ -1,5 +1,4 @@
-ggeoview-rel(){      echo graphics/ggeoview ; }
-ggeoview-src(){      echo graphics/ggeoview/ggeoview.bash ; }
+ggeoview-src(){      echo ggeoview/ggeoview.bash ; }
 ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
 ggeoview-vi(){       vi $(ggeoview-source) ; }
 
@@ -1008,7 +1007,7 @@ Pre-cook RNG Cache
 ::
 
     delta:ggeoview blyth$ ggeoview-rng-prep
-    cuRANDWrapper::instanciate with cache enabled : cachedir /usr/local/env/graphics/ggeoview.build/lib/rng
+    cuRANDWrapper::instanciate with cache enabled : cachedir /usr/local/env/ggeoview.build/lib/rng
     cuRANDWrapper::Allocate
     cuRANDWrapper::InitFromCacheIfPossible
     cuRANDWrapper::InitFromCacheIfPossible : no cache initing and saving 
@@ -1112,10 +1111,10 @@ ggeoview-env(){
 }
 
 
-ggeoview-sdir(){ echo $(env-home)/graphics/ggeoview ; }
-ggeoview-tdir(){ echo $(env-home)/graphics/ggeoview/tests ; }
+ggeoview-sdir(){ echo $(env-home)/ggeoview ; }
+ggeoview-tdir(){ echo $(env-home)/ggeoview/tests ; }
 ggeoview-idir(){ echo $(opticks-idir) ; }
-ggeoview-bdir(){ echo $(opticks-bdir)/$(ggeoview-rel) ; }
+ggeoview-bdir(){ echo $(opticks-bdir)/ggeoview ; }
 
 ggeoview-cd(){   cd $(ggeoview-sdir)/$1 ; }
 ggeoview-scd(){  cd $(ggeoview-sdir); }

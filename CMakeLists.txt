@@ -65,7 +65,7 @@ endif(GPU)
 
 set(REST ON)
 if(REST)
-   add_subdirectory(graphics/ggeoview)
+   add_subdirectory(ggeoview)
 
    find_package(Geant4 QUIET)
    if(Geant4_FOUND)
