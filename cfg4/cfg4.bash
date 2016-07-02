@@ -1,5 +1,4 @@
-cfg4-rel(){      echo optix/cfg4 ; }
-cfg4-src(){      echo $(cfg4-rel)/cfg4.bash ; }
+cfg4-src(){      echo cfg4/cfg4.bash ; }
 cfg4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cfg4-src)} ; }
 cfg4-vi(){       vi $(cfg4-source) ; }
 cfg4-usage(){ cat << EOU
@@ -310,13 +309,10 @@ cfg4-env(){
 
 
 
-cfg4-bin(){ echo ${CFG4_BINARY:-$(cfg4-idir)/bin/$(cfg4-name)Test} ; }
-cfg4-tbin(){ echo $(cfg4-idir)/bin/$1 ; }
-
-cfg4-idir(){ echo $(local-base)/env/optix/cfg4; } 
-cfg4-bdir(){ echo $(opticks-bdir)/$(cfg4-rel) ; }
-cfg4-sdir(){ echo $(env-home)/optix/cfg4 ; }
-cfg4-tdir(){ echo $(env-home)/optix/cfg4/tests ; }
+cfg4-idir(){ echo $(opticks-idir); } 
+cfg4-bdir(){ echo $(opticks-bdir)/cfg4 ; }
+cfg4-sdir(){ echo $(opticks-home)/cfg4 ; }
+cfg4-tdir(){ echo $(opticks-home)/cfg4/tests ; }
 
 cfg4-icd(){  cd $(cfg4-idir); }
 cfg4-bcd(){  cd $(cfg4-bdir); }
@@ -342,40 +338,6 @@ cfg4-txt(){     vi $(cfg4-sdir)/CMakeLists.txt $(cfg4-tdir)/CMakeLists.txt ; }
 
 
 ############### old funcs predating SUPERBUILD approach  #################
-
-
-cfg4-cmake-standalone(){
-   local iwd=$PWD
-   local bdir=$(cfg4-bdir)
-   mkdir -p $bdir
-   cfg4-bcd
-
-  # -DWITH_GEANT4_UIVIS=OFF \
-
-   cmake \
-         -DGeant4_DIR=$(g4-cmake-dir) \
-         -DCMAKE_INSTALL_PREFIX=$(cfg4-idir) \
-         -DCMAKE_BUILD_TYPE=Debug  \
-         $(cfg4-sdir)
-   cd $iwd 
-}
-
-cfg4-export()
-{
-   g4-export
-}
-
-cfg4-run(){
-   local bin=$(cfg4-bin)
-   cfg4-export
-   $bin $*
-}
-
-cfg4-dbg(){
-   local bin=$(cfg4-bin)
-   cfg4-export
-   lldb $bin -- $*
-}
 
 
 cfg4-dpib()

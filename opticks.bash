@@ -732,7 +732,7 @@ optixrap
 opticksop
 opticksgl
 ggeoview
-optix/cfg4
+cfg4
 EOL
 }
 

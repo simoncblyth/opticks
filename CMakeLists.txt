@@ -69,7 +69,7 @@ if(REST)
 
    find_package(Geant4 QUIET)
    if(Geant4_FOUND)
-      add_subdirectory(optix/cfg4)
+      add_subdirectory(cfg4)
    else(Geant4_FOUND)
       message("${name}.Geant4_FOUND_NOT")
    endif(Geant4_FOUND)
