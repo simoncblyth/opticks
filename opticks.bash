@@ -728,7 +728,7 @@ opticksgeo
 oglrap
 cudarap
 thrustrap
-graphics/optixrap
+optixrap
 opticksop
 opticksgl
 graphics/ggeoview

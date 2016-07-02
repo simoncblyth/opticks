@@ -1,6 +1,6 @@
-# === func-gen- : graphics/optixrap/optixrap fgp graphics/optixrap/optixrap.bash fgn optixrap fgh graphics/optixrap
-optixrap-rel(){      echo graphics/optixrap  ; }
-optixrap-src(){      echo graphics/optixrap/optixrap.bash ; }
+# === func-gen- : optixrap/optixrap fgp optixrap/optixrap.bash fgn optixrap fgh optixrap
+optixrap-rel(){      echo optixrap  ; }
+optixrap-src(){      echo optixrap/optixrap.bash ; }
 optixrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixrap-src)} ; }
 optixrap-vi(){       vi $(optixrap-source) ; }
 optixrap-usage(){ cat << EOU
@@ -83,7 +83,7 @@ macOS Warning
 
 ::
 
-    [ 85%] Building NVCC (Device) object graphics/optixrap/CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBufPair_.cu.o
+    [ 85%] Building NVCC (Device) object optixrap/CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBufPair_.cu.o
     /Developer/OptiX/include/optixu/optixpp_namespace.h(593): 
     warning: overloaded virtual function "optix::APIObj::checkError" 
     is only partially overridden in class "optix::ContextObj"
@@ -290,8 +290,8 @@ optixrap-env(){
 }
 
 
-optixrap-sdir(){ echo $(env-home)/graphics/optixrap ; }
-optixrap-tdir(){ echo $(env-home)/graphics/optixrap/tests ; }
+optixrap-sdir(){ echo $(env-home)/optixrap ; }
+optixrap-tdir(){ echo $(env-home)/optixrap/tests ; }
 optixrap-idir(){ echo $(opticks-idir); }
 optixrap-bdir(){ echo $(opticks-bdir)/$(optixrap-rel) ; }
 
