@@ -281,21 +281,21 @@ directory              precursor        pkg name        required find package
 =====================  ===============  =============   ==============================================================================
 sysrap                 sysrap-          SysRap          PLog
 boostrap               brap-            BoostRap        OpticksBoost
-numerics/npy           npy-             NPY             Boost GLM BoostRap
+opticksnpy             npy-             NPY             Boost GLM BoostRap
 optickscore            optickscore-     OpticksCore     Boost GLM BRegex BCfg NPY 
-optix/ggeo             ggeo-            GGeo            Boost GLM BRegex BCfg NPY OpticksCore
-graphics/assimprap     assimprap-       AssimpRap       Boost GLM Assimp GGeo NPY OpticksCore
-graphics/openmeshrap   openmeshrap-     OpenMeshRap     Boost GLM NPY GGeo OpticksCore OpenMesh 
+ggeo                   ggeo-            GGeo            Boost GLM BRegex BCfg NPY OpticksCore
+assimprap              assimprap-       AssimpRap       Boost GLM Assimp GGeo NPY OpticksCore
+openmeshrap            openmeshrap-     OpenMeshRap     Boost GLM NPY GGeo OpticksCore OpenMesh 
 opticksgeo             opticksgeo-      OpticksGeo      Boost GLM BRegex BCfg NPY OpticksCore Assimp AssimpRap OpenMesh OpenMeshRap
-graphics/oglrap        oglrap-          OGLRap          GLEW GLFW GLM Boost BCfg Opticks GGeo NPY BRegex ImGui        
-cuda/cudarap           cudarap-         CUDARap         CUDA (ssl)
-numerics/thrustrap     thrustrap-       ThrustRap       CUDA Boost GLM NPY CUDARap 
-graphics/optixrap      optixrap-        OptiXRap        OptiX CUDA Boost GLM NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap 
+oglrap                 oglrap-          OGLRap          GLEW GLFW GLM Boost BCfg Opticks GGeo NPY BRegex ImGui        
+cudarap                cudarap-         CUDARap         CUDA (ssl)
+thrustrap              thrustrap-       ThrustRap       CUDA Boost GLM NPY CUDARap 
+optixrap               optixrap-        OptiXRap        OptiX CUDA Boost GLM NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap 
 opticksop              opticksop-       OpticksOp       OptiX CUDA Boost GLM BCfg Opticks GGeo NPY OptiXRap CUDARap ThrustRap      
 opticksgl              opticksgl-       OpticksGL       OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap OptiXRap OpticksOp
-graphics/ggeoview      ggv-             GGeoView        OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY BCfg OpticksCore 
+ggeoview               ggeoview-        GGeoView        OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY BCfg OpticksCore 
                                                         Assimp AssimpRap OpenMesh OpenMeshRap GGeo ImGui BRegex OptiXRap CUDARap ThrustRap OpticksOp OpticksGL OpticksGeo
-optix/cfg4             cfg4-            CfG4            Boost GLM BRegex BCfg NPY GGeo OpticksCore Geant4 EnvXercesC G4DAE 
+cfg4                   cfg4-            CfG4            Boost GLM BRegex BCfg NPY GGeo OpticksCore Geant4 EnvXercesC G4DAE 
 =====================  ===============  =============   ==============================================================================
 
 
@@ -303,7 +303,7 @@ sysrap
     logging, string handling, envvar handling 
 boostrap
     filesystem utils, regular expression matching, commandline parsing 
-npy
+opticksnpy
     array handling 
 optickscore
     definitions, loosely the model of the app 
@@ -327,7 +327,6 @@ opticksop
     high level OptiX control 
 opticksgl 
     combination of oglrap- OpenGL and OptiX raytracing 
-    TODO: change name ?
 ggeoview
     putting together all the above
 cfg4
@@ -1053,7 +1052,7 @@ opticks-xcollect()
 
       printf "# %-15s %15s %35s \n" $x $nam $src
 
-      cp $src $xhome/$dst
+      hg cp $src $xhome/$dst
       perl -pi -e "s,$src,$dst," $xhome/$dst 
       perl -pi -e "s,env-home,opticks-home," $xhome/$dst 
 
@@ -1062,4 +1061,31 @@ opticks-xcollect()
    done 
    cd $iwd
 }
+opticks-filemap()
+{
+   opticks-filemap-head
+   opticks-filemap-body
+}
+
+opticks-filemap-head(){ cat << EOH
+# $FUNCNAME
+# configure the spawning of opticks repo from env repo 
+# see adm-opticks
+#
+include CMakeLists.txt
+include Makefile
+include opticks.bash
+include externals
+#
+EOH
+}
+
+opticks-filemap-body(){
+   local dir
+   opticks-dirs | while read dir ; do
+      printf "include %s\n" $dir
+   done
+}
+
+
 
