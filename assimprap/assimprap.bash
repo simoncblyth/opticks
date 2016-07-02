@@ -1,6 +1,5 @@
 # === func-gen- : graphics/assimprap/assimprap fgp graphics/assimprap/assimprap.bash fgn assimprap fgh graphics/assimprap
-assimprap-rel(){      echo graphics/assimprap ; }
-assimprap-src(){      echo graphics/assimprap/assimprap.bash ; }
+assimprap-src(){      echo assimprap/assimprap.bash ; }
 assimprap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimprap-src)} ; }
 assimprap-vi(){       vi $(assimprap-source) ; }
 assimprap-usage(){ cat << EOU
@@ -266,10 +265,10 @@ EOU
 }
 assimprap-env(){      elocal- ; opticks- ;  }
 
-assimprap-sdir(){ echo $(env-home)/graphics/assimprap ; }
-assimprap-tdir(){ echo $(env-home)/graphics/assimprap/tests ; }
+assimprap-sdir(){ echo $(env-home)/assimprap ; }
+assimprap-tdir(){ echo $(env-home)/assimprap/tests ; }
 assimprap-idir(){ echo $(opticks-idir); }
-assimprap-bdir(){ echo $(opticks-bdir)/$(assimprap-rel) ; }
+assimprap-bdir(){ echo $(opticks-bdir)/assimprap ; }
 
 assimprap-icd(){  cd $(assimprap-idir); }
 assimprap-bcd(){  cd $(assimprap-bdir); }
@@ -295,79 +294,5 @@ assimprap-gentest(){  assimprap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(assimpr
 assimprap-txt(){ vi $(assimprap-sdir)/CMakeLists.txt $(assimprap-tdir)/CMakeLists.txt ; } 
 
 
-
-
-assimprap-bbin(){ echo $(assimprap-bdir)/AssimpRapTest ; }
-assimprap-bin(){ echo $(assimprap-idir)/bin/AssimpRapTest ; }
-
-assimprap-geokey(){
-    case $1 in
-      extra) echo DAE_NAME_DYB ;; 
-          *) echo DAE_NAME_DYB_NOEXTRA  ;;
-    esac  
-}
-
-assimprap-material(){
-    echo __dd__Geometry__AdDetails__AdSurfacesAll__ESRAirSurfaceBot 
-    #echo __dd__Materials__GdDopedLS0xc2a8ed0 
-}
-
-assimprap-ggctrl(){
-    echo ""
-    #echo __dd__
-}
-
-assimprap-export(){
-    export ASSIMPRAP_GEOKEY="$(assimprap-geokey $1)"
-    #export ASSIMPWRAP_QUERY="index:1,depth:2" 
-    export ASSIMPRAP_QUERY="range:5000:8000"
-    export ASSIMPRAP_MATERIAL="$(assimprap-material)"   # used for debugging single material/surface/..
-    export ASSIMPRAP_GGCTRL="$(assimprap-ggctrl)" 
-    export-
-    export-export
-    env | grep ASSIMPRAP
-}
-
-assimprap-run(){
-    assimprap-make
-    [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-    assimprap-export 
-    $DEBUG $(assimprap-bin) $*  
-}
-
-assimprap-full(){
-    assimprap-make clean
-    assimprap-make
-    [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-    assimprap-install $*
-}
-
-
-
-assimprap-lldb(){
-    DEBUG=lldb assimprap-run
-}
-
-assimprap-test(){
-   local msg="$FUNCNAME : "
-   echo $msg extra arg is added by default : following principal of requiring zero arguments for the most often needed actions 
-   $FUNCNAME- extra 
-}
-assimprap-noextra(){
-   assimprap-test- extra
-}
-
-assimprap-test-(){
-    local arg=$1
-    assimprap-make
-    [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1 
-
-    assimprap-export $arg
-    assimprap-run
-}
-
-assimprap-otool(){
-   otool -L $(assimprap-bin)
-}
 
 

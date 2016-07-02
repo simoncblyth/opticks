@@ -722,8 +722,8 @@ boostrap
 opticksnpy
 optickscore
 ggeo
-graphics/assimprap
-graphics/openmeshrap
+assimprap
+openmeshrap
 opticksgeo
 graphics/oglrap
 cuda/cudarap

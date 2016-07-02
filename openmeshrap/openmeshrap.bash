@@ -1,6 +1,6 @@
 # === func-gen- : graphics/openmeshrap/openmeshrap fgp graphics/openmeshrap/openmeshrap.bash fgn openmeshrap fgh graphics/openmeshrap
-openmeshrap-rel(){      echo graphics/openmeshrap ; }
-openmeshrap-src(){      echo graphics/openmeshrap/openmeshrap.bash ; }
+openmeshrap-rel(){      echo openmeshrap ; }
+openmeshrap-src(){      echo openmeshrap/openmeshrap.bash ; }
 openmeshrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmeshrap-src)} ; }
 openmeshrap-vi(){       vi $(openmeshrap-source) ; }
 openmeshrap-usage(){ cat << EOU
@@ -413,9 +413,9 @@ Bizarre, test runs but no libOpenMesh ?
 EOU
 }
 openmeshrap-env(){      elocal- ; opticks- ;  }
-openmeshrap-dir(){  echo $(env-home)/graphics/openmeshrap ; }
-openmeshrap-sdir(){ echo $(env-home)/graphics/openmeshrap ; }
-openmeshrap-tdir(){ echo $(env-home)/graphics/openmeshrap/tests ; }
+openmeshrap-dir(){  echo $(env-home)/openmeshrap ; }
+openmeshrap-sdir(){ echo $(env-home)/openmeshrap ; }
+openmeshrap-tdir(){ echo $(env-home)/openmeshrap/tests ; }
 openmeshrap-idir(){ echo $(opticks-idir) ; }
 openmeshrap-bdir(){ echo $(opticks-bdir)/$(openmeshrap-rel) ; }
 
@@ -425,14 +425,10 @@ openmeshrap-tcd(){  cd $(openmeshrap-tdir); }
 openmeshrap-icd(){  cd $(openmeshrap-idir); }
 openmeshrap-bcd(){  cd $(openmeshrap-bdir); }
 
-openmeshrap-bin(){  echo $(openmeshrap-idir)/bin/OpenMeshRapTest ; }
-
 openmeshrap-wipe(){
   local bdir=$(openmeshrap-bdir)
   rm -rf $bdir 
-
 }
-
 
 openmeshrap-name(){ echo OpenMeshRap ; }
 openmeshrap-tag(){  echo MESHRAP ; }
