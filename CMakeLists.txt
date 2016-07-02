@@ -40,7 +40,7 @@ add_subdirectory(ggeo)
 add_subdirectory(assimprap)   
 add_subdirectory(openmeshrap)  
 add_subdirectory(opticksgeo)  
-add_subdirectory(graphics/oglrap)       
+add_subdirectory(oglrap)       
 
 if(APPLE)
     set(GPU ON)

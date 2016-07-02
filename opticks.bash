@@ -725,7 +725,7 @@ ggeo
 assimprap
 openmeshrap
 opticksgeo
-graphics/oglrap
+oglrap
 cuda/cudarap
 numerics/thrustrap
 graphics/optixrap

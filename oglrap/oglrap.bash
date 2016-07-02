@@ -1,6 +1,5 @@
-# === func-gen- : graphics/oglrap/oglrap fgp graphics/oglrap/oglrap.bash fgn oglrap fgh graphics/oglrap
-oglrap-rel(){      echo graphics/oglrap ; }
-oglrap-src(){      echo graphics/oglrap/oglrap.bash ; }
+# === func-gen- : oglrap/oglrap fgp oglrap/oglrap.bash fgn oglrap fgh oglrap
+oglrap-src(){      echo oglrap/oglrap.bash ; }
 oglrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(oglrap-src)} ; }
 oglrap-vi(){       vi $(oglrap-source) ; }
 oglrap-usage(){ cat << EOU
@@ -290,10 +289,10 @@ EOU
 
 oglrap-env(){      elocal- ; opticks- ; }
 
-oglrap-sdir(){ echo $(env-home)/graphics/oglrap ; }
-oglrap-tdir(){ echo $(env-home)/graphics/oglrap/tests ; }
+oglrap-sdir(){ echo $(env-home)/oglrap ; }
+oglrap-tdir(){ echo $(env-home)/oglrap/tests ; }
 oglrap-idir(){ echo $(opticks-idir) ; }
-oglrap-bdir(){ echo $(opticks-bdir)/$(oglrap-rel) ; }
+oglrap-bdir(){ echo $(opticks-bdir)/oglrap ; }
 
 oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
 
