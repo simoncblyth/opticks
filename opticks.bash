@@ -719,9 +719,9 @@ opticks-export-mingw()
 opticks-dirs(){  cat << EOL
 sysrap
 boostrap
-numerics/npy
+opticksnpy
 optickscore
-optix/ggeo
+ggeo
 graphics/assimprap
 graphics/openmeshrap
 opticksgeo
