@@ -5,7 +5,9 @@ project(${name})
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-set(Boost_USE_STATIC_LIBS 1)
+if(UNIX AND NOT APPLE) 
+   set(Boost_USE_STATIC_LIBS 1)
+endif(UNIX AND NOT APPLE)
 
 find_package(OpticksBoost REQUIRED)
 find_package(PLog REQUIRED)
@@ -39,6 +41,12 @@ add_definitions(
    ${SysRap_DEFINITIONS} 
    ${PLog_DEFINITIONS} 
 )
+
+if(UNIX AND NOT APPLE) 
+add_definitions(
+   -DBOOST_LOG_DYN_LINK=1
+)
+endif(UNIX AND NOT APPLE)
 
 
 set(SOURCES

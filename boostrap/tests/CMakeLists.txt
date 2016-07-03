@@ -30,7 +30,7 @@ foreach(SRC ${TEST_SOURCES})
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} BoostRap)
+    target_link_libraries(${TGT} ${LIBRARIES} BoostRap pthread)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
