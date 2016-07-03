@@ -9,6 +9,10 @@ if(WIN32)
 else(WIN32)
    set(OpenMesh_SUFFIX "d")
 endif()
+## For SUSE Linux without debug libs.
+if(UNIX AND NOT APPLE)
+   set(OpenMesh_SUFFIX "")
+endif(UNIX AND NOT APPLE)
 
 #  Release libs : OpenMeshCore  OpenMeshTools
 #  Debug libs :   OpenMeshCored OpenMeshToolsd

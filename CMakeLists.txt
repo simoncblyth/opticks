@@ -63,7 +63,7 @@ if(GPU)
 endif(GPU)
 
 
-set(REST ON)
+set(REST ON CACHE BOOL "Build Geant4")
 if(REST)
    add_subdirectory(ggeoview)
 
