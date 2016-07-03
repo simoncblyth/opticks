@@ -348,7 +348,13 @@ opticks-bdir(){   echo $(opticks-prefix)/build ; }
 opticks-bindir(){ echo $(opticks-prefix)/lib ; }   # use lib for executables for simplicity on windows
 opticks-xdir(){ echo $(opticks-prefix)/externals ; }
 
-opticks-optix-install-dir(){ echo /Developer/OptiX ; }
+opticks-optix-install-dir(){ 
+    local t=$NODE_TAG
+    case $t in 
+    H5H2) echo ${MYENVTOP}/OptiX ;;
+       *) echo /Developer/OptiX ;;
+    esac
+}
 
 opticks-cd(){   cd $(opticks-dir) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
