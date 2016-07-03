@@ -1078,9 +1078,9 @@ opticks-filemap-head(){ cat << EOH
 # configure the spawning of opticks repo from env repo 
 # see adm-opticks
 #
-include CMakeLists.txt
-include Makefile
 include opticks.bash
+include CMakeLists.txt
+include cmake
 include externals
 #
 EOH
