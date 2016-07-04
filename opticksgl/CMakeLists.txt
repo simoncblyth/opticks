@@ -25,6 +25,7 @@ include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu pa
 
 include(EnvCompilationFlags)   
 
+string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
