@@ -1,0 +1,9 @@
+# use glob syntax.
+syntax: glob
+
+.DS_Store
+*.pyc
+*.doctree
+*.pickle
+*.swp
+*~
