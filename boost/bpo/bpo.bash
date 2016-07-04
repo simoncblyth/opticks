@@ -2,7 +2,7 @@
 bpo-src(){      echo boost/bpo/bpo.bash ; }
 bpo-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bpo-src)} ; }
 bpo-vi(){       vi $(bpo-source) ; }
-bpo-env(){      elocal- ; }
+bpo-env(){      olocal- ; }
 bpo-usage(){ cat << EOU
 
 Boost Program Options

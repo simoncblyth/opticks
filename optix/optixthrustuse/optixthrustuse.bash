@@ -2,7 +2,7 @@
 optixthrustuse-src(){      echo optix/optixthrustuse/optixthrustuse.bash ; }
 optixthrustuse-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixthrustuse-src)} ; }
 optixthrustuse-vi(){       vi $(optixthrustuse-source) ; }
-optixthrustuse-env(){      elocal- ; }
+optixthrustuse-env(){      olocal- ; }
 optixthrustuse-usage(){ cat << EOU
 
 OptiXThrustUse
@@ -24,7 +24,7 @@ optixthrustuse-dir(){ echo $(opticks-home)/optix/optixthrustuse ; }
 optixthrustuse-cd(){  cd $(optixthrustuse-dir); }
 
 optixthrustuse-env(){      
-   elocal- 
+   olocal- 
    cuda-
    optix-
 }

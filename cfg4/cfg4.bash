@@ -302,7 +302,7 @@ EOU
 }
 
 cfg4-env(){  
-   elocal- 
+   olocal- 
    g4-
    opticks-
 }

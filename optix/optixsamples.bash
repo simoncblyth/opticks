@@ -2,7 +2,7 @@
 optixsamples-src(){      echo optix/optixsamples.bash ; }
 optixsamples-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixsamples-src)} ; }
 optixsamples-vi(){       vi $(optixsamples-source) ; }
-optixsamples-env(){      elocal- ; }
+optixsamples-env(){      olocal- ; }
 optixsamples-usage(){ cat << EOU
 
 

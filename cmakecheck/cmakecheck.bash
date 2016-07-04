@@ -2,7 +2,7 @@
 cmakecheck-src(){      echo cmakecheck/cmakecheck.bash ; }
 cmakecheck-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cmakecheck-src)} ; }
 cmakecheck-vi(){       vi $(cmakecheck-source) ; }
-cmakecheck-env(){      elocal- ; }
+cmakecheck-env(){      olocal- ; }
 cmakecheck-usage(){ cat << EOU
 
 ::

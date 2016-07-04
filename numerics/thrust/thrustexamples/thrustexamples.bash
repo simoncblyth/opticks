@@ -162,7 +162,7 @@ Or maybe just use thrust to make the histogram and then apply it with ordinary C
 
 EOU
 }
-thrustexamples-env(){      elocal- ; thrust- ; }
+thrustexamples-env(){      olocal- ; thrust- ; }
 thrustexamples-dir(){  echo $(thrust-sdir)/examples ; }
 thrustexamples-bdir(){ echo $(local-base)/env/numerics/thrustexamples ; }
 thrustexamples-cd(){  cd $(thrustexamples-dir); }

@@ -2,7 +2,7 @@
 xercesc-src(){      echo externals/xercesc.bash ; }
 xercesc-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(xercesc-src)} ; }
 xercesc-vi(){       vi $(xercesc-source) ; }
-xercesc-env(){      elocal- ; }
+xercesc-env(){      olocal- ; }
 xercesc-usage(){ cat << EOU
 
 XERCESC

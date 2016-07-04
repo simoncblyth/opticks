@@ -2,7 +2,7 @@
 blogg-src(){      echo boost/blogg/blogg.bash ; }
 blogg-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(blogg-src)} ; }
 blogg-vi(){       vi $(blogg-source) ; }
-blogg-env(){      elocal- ; }
+blogg-env(){      olocal- ; }
 blogg-usage(){ cat << EOU
 
 

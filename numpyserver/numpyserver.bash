@@ -1,7 +1,7 @@
 numpyserver-src(){      echo numpyserver/numpyserver.bash ; }
 numpyserver-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(numpyserver-src)} ; }
 numpyserver-vi(){       vi $(numpyserver-source) ; }
-numpyserver-env(){      elocal- ; }
+numpyserver-env(){      olocal- ; }
 numpyserver-usage(){ cat << EOU
 
 NumpyServer 

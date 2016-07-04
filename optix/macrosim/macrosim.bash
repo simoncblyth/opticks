@@ -2,7 +2,7 @@
 macrosim-src(){      echo optix/macrosim/macrosim.bash ; }
 macrosim-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(macrosim-src)} ; }
 macrosim-vi(){       vi $(macrosim-source) ; }
-macrosim-env(){      elocal- ; }
+macrosim-env(){      olocal- ; }
 macrosim-usage(){ cat << EOU
 
 MacroSim

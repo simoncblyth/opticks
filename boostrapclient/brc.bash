@@ -65,7 +65,7 @@ Skip timeutil.cc from brap- allows brc to run
 
 EOU
 }
-brc-env(){      elocal- ; opticks- ; vs- ;  }
+brc-env(){      olocal- ; opticks- ; vs- ;  }
 
 brc-dir(){  echo $(opticks-home)/boostrapclient ; }
 brc-bdir(){ echo $(opticks-prefix)/build/boostrapclient ; }

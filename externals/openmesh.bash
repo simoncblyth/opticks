@@ -151,9 +151,9 @@ Alternates
 EOU
 }
 
-openmesh-env(){  elocal- ; opticks- ; }
-#openmesh-vers(){ echo 4.1 ; }
-openmesh-vers(){ echo 6.1 ; }
+openmesh-env(){  olocal- ; opticks- ; }
+openmesh-vers(){ echo 4.1 ; }
+#openmesh-vers(){ echo 6.1 ; }
 
 openmesh-name(){ echo OpenMesh-$(openmesh-vers) ; }
 openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(openmesh-name).tar.gz ; }

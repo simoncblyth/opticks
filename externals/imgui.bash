@@ -180,7 +180,7 @@ GUI photon selector, so can display only certain boundaries
 EOU
 }
 
-imgui-env(){      elocal- ; opticks- ;  }
+imgui-env(){      olocal- ; opticks- ;  }
 
 imgui-edir(){ echo $(opticks-home)/graphics/gui/imgui ; }
 imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }

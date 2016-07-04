@@ -10,7 +10,7 @@ glewminimal-usage(){ cat << EOU
 EOU
 }
 
-glewminimal-env(){      elocal- ; }
+glewminimal-env(){      olocal- ; }
 
 glewminimal-sdir(){ echo $(opticks-home)/graphics/glew/glewminimal ; }
 glewminimal-idir(){ echo $(local-base)/env/graphics/glew/glewminimal ; }

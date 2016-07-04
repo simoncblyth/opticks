@@ -2,7 +2,7 @@
 vids-src(){      echo graphics/ggeoview/vids.bash ; }
 vids-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(vids-src)} ; }
 vids-vi(){       vi $(vids-source) ; }
-vids-env(){      elocal- ; }
+vids-env(){      olocal- ; }
 vids-usage(){ cat << EOU
 
 GGeoView Video Captures 

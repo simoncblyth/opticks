@@ -160,7 +160,7 @@ EOU
 
 
 bcfg-sdir(){ echo $(opticks-home)/$(bcfg-rel) ; }
-bcfg-env(){      elocal- ; opticks- ;  }
+bcfg-env(){      olocal- ; opticks- ;  }
 
 bcfg-idir(){ echo $(opticks-idir) ; }
 bcfg-bdir(){ echo $(opticks-bdir)/$(bcfg-rel) ; }

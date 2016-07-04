@@ -3,7 +3,7 @@ npy-rel(){      echo opticksnpy ; }
 npy-src(){      echo opticksnpy ; }
 npy-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(npy-src)} ; }
 npy-vi(){       vi $(npy-source) ; }
-npy-env(){      elocal- ; opticks- ; }
+npy-env(){      olocal- ; opticks- ; }
 npy-usage(){ cat << EOU
 
 npy : C++ array manipulation machinery inspired by NumPy

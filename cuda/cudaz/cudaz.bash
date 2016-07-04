@@ -2,7 +2,7 @@
 cudaz-src(){      echo cuda/cudaz/cudaz.bash ; }
 cudaz-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudaz-src)} ; }
 cudaz-vi(){       vi $(cudaz-source) ; }
-cudaz-env(){      elocal- ; }
+cudaz-env(){      olocal- ; }
 cudaz-usage(){ cat << EOU
 
 CUDA-Z

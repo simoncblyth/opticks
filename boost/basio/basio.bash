@@ -2,7 +2,7 @@
 basio-src(){      echo boost/basio/basio.bash ; }
 basio-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(basio-src)} ; }
 basio-vi(){       vi $(basio-source) ; }
-basio-env(){      elocal- ; }
+basio-env(){      olocal- ; }
 basio-usage(){ cat << EOU
 
 Boost ASIO

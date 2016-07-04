@@ -9,7 +9,7 @@ EOU
 }
 
 g4ex-env(){    
-   elocal- 
+   olocal- 
    g4- 
   # g4-export
 

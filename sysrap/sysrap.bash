@@ -16,7 +16,7 @@ Boost headers.
 EOU
 }
 
-sysrap-env(){      elocal- ; opticks- ;  }
+sysrap-env(){      olocal- ; opticks- ;  }
 
 sysrap-dir(){  echo $(sysrap-sdir) ; }
 sysrap-sdir(){ echo $(opticks-home)/sysrap ; }

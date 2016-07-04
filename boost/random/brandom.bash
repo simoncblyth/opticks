@@ -2,7 +2,7 @@
 brandom-src(){      echo boost/random/brandom.bash ; }
 brandom-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(brandom-src)} ; }
 brandom-vi(){       vi $(brandom-source) ; }
-brandom-env(){      elocal- ; }
+brandom-env(){      olocal- ; }
 brandom-usage(){ cat << EOU
 
 * http://www.boost.org/doc/libs/1_58_0/doc/html/boost_random.html

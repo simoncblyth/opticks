@@ -287,7 +287,7 @@ ClipperCfg
 EOU
 }
 
-oglrap-env(){      elocal- ; opticks- ; }
+oglrap-env(){      olocal- ; opticks- ; }
 
 oglrap-sdir(){ echo $(opticks-home)/oglrap ; }
 oglrap-tdir(){ echo $(opticks-home)/oglrap/tests ; }

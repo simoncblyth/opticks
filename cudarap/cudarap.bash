@@ -382,7 +382,7 @@ EOU
 
 
 cudarap-env(){      
-  elocal-  
+  olocal-  
   cuda-
   opticks-
 }

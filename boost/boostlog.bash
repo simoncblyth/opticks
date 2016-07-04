@@ -2,7 +2,7 @@
 boostlog-src(){      echo boost/boostlog.bash ; }
 boostlog-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(boostlog-src)} ; }
 boostlog-vi(){       vi $(boostlog-source) ; }
-boostlog-env(){      elocal- ; }
+boostlog-env(){      olocal- ; }
 boostlog-usage(){ cat << EOU
 
 boost log

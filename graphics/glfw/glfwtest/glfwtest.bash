@@ -51,7 +51,7 @@ glfwtest-bcd(){  cd $(glfwtest-bdir); }
 glfwtest-name(){ echo GLFWTest ; }
 
 glfwtest-env(){      
-   elocal- 
+   olocal- 
    optix-
    optix-export 
 

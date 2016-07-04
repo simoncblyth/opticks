@@ -123,7 +123,7 @@ and all actually exist::
 EOU
 }
 
-brap-env(){      elocal- ; opticks- ;  }
+brap-env(){      olocal- ; opticks- ;  }
 
 brap-dir(){  echo $(brap-sdir) ; }
 brap-sdir(){ echo $(opticks-home)/boostrap ; }

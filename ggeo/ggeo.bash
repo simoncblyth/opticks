@@ -8,7 +8,7 @@ ggeo-usage(){ cat << \EOU
 EOU
 }
 
-ggeo-env(){      elocal- ; opticks- ; }
+ggeo-env(){      olocal- ; opticks- ; }
 
 ggeo-idir(){ echo $(opticks-idir); } 
 ggeo-bdir(){ echo $(opticks-bdir)/$(ggeo-rel) ; }  

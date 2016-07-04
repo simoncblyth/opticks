@@ -10,7 +10,7 @@ glfwminimal-usage(){ cat << EOU
 EOU
 }
 
-glfwminimal-env(){      elocal- ; }
+glfwminimal-env(){      olocal- ; }
 
 glfwminimal-sdir(){ echo $(opticks-home)/graphics/glfw/glfwminimal ; }
 glfwminimal-idir(){ echo $(local-base)/env/graphics/glfw/glfwminimal ; }

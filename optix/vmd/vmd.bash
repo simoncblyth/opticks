@@ -2,7 +2,7 @@
 vmd-src(){      echo optix/vmd/vmd.bash ; }
 vmd-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(vmd-src)} ; }
 vmd-vi(){       vi $(vmd-source) ; }
-vmd-env(){      elocal- ; }
+vmd-env(){      olocal- ; }
 vmd-usage(){ cat << EOU
 
 VMD

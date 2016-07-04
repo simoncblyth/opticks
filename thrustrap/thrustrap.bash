@@ -273,7 +273,7 @@ and unregistration calls are expensive and should be avoided if possible.
 EOU
 }
 
-thrustrap-env(){      elocal- ; opticks- ; }
+thrustrap-env(){      olocal- ; opticks- ; }
 
 
 thrustrap-sdir(){ echo $(opticks-home)/thrustrap ; }
@@ -301,7 +301,7 @@ thrustrap-txt(){ vi $(thrustrap-sdir)/CMakeLists.txt $(thrustrap-tdir)/CMakeList
 
 
 thrustrap-env(){  
-   elocal- 
+   olocal- 
    cuda-
    cuda-export
    #optix-

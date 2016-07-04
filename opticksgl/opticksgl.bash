@@ -43,7 +43,7 @@ opticksgl-bcd(){  cd $(opticksgl-bdir); }
 
 
 opticksgl-env(){  
-   elocal- 
+   olocal- 
    opticks-
 
    optix-

@@ -2,7 +2,7 @@
 optixthrust-src(){      echo optix/optixthrust/optixthrust.bash ; }
 optixthrust-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixthrust-src)} ; }
 optixthrust-vi(){       vi $(optixthrust-source) ; }
-optixthrust-env(){      elocal- ; }
+optixthrust-env(){      olocal- ; }
 optixthrust-usage(){ cat << EOU
 
 OptiX/CUDA/Thrust Interop
@@ -196,7 +196,7 @@ optixthrust-dir(){ echo $(opticks-home)/optix/optixthrust ; }
 optixthrust-cd(){  cd $(optixthrust-dir); }
 
 optixthrust-env(){      
-   elocal- 
+   olocal- 
    cuda-
    optix-
 }

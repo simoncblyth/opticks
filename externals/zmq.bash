@@ -2,7 +2,7 @@
 zmq-src(){      echo externals/zmq.bash ; }
 zmq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(zmq-src)} ; }
 zmq-vi(){       vi $(zmq-source) ; }
-zmq-env(){      elocal- ; }
+zmq-env(){      olocal- ; }
 zmq-usage(){ cat << EOU
 
 ZMQ : Low Level C API 

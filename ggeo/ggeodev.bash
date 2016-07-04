@@ -2,7 +2,7 @@
 ggeodev-src(){      echo optix/ggeo/ggeodev.bash ; }
 ggeodev-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggeodev-src)} ; }
 ggeodev-vi(){       vi $(ggeodev-source) ; }
-ggeodev-env(){      elocal- ; }
+ggeodev-env(){      olocal- ; }
 ggeodev-usage(){ cat << EOU
 
 GGEO : Intermediary Geometry Model

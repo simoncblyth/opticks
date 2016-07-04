@@ -2,7 +2,7 @@
 cudainstall-src(){      echo cuda/cudainstall.bash ; }
 cudainstall-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudainstall-src)} ; }
 cudainstall-vi(){       vi $(cudainstall-source) ; }
-cudainstall-env(){      elocal- ; }
+cudainstall-env(){      olocal- ; }
 cudainstall-usage(){ cat << EOU
 
 CUDA Install

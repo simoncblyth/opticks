@@ -2,7 +2,7 @@
 bfs-src(){      echo boost/bfs/bfs.bash ; }
 bfs-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bfs-src)} ; }
 bfs-vi(){       vi $(bfs-source) ; }
-bfs-env(){      elocal- ; }
+bfs-env(){      olocal- ; }
 bfs-usage(){ cat << EOU
 
 * http://www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/index.htm

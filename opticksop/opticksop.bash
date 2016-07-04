@@ -140,7 +140,7 @@ EOU
 
 
 opticksop-env(){
-    elocal-
+    olocal-
     optix-
     optix-export
     opticks-

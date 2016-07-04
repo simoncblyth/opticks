@@ -10,7 +10,7 @@ EOU
 }
 
 lxe-env(){  
-   elocal- 
+   olocal- 
    g4-
 }
 

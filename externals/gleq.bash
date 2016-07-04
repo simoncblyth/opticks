@@ -1,7 +1,7 @@
 gleq-src(){      echo externals/gleq.bash ; }
 gleq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(gleq-src)} ; }
 gleq-vi(){       vi $(gleq-source) ; }
-gleq-env(){      elocal- ; opticks- ; }
+gleq-env(){      olocal- ; opticks- ; }
 gleq-usage(){ cat << EOU
 
 

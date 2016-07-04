@@ -151,7 +151,7 @@ Alternates
 EOU
 }
 
-openmesh-env(){  elocal- ; opticks- ; }
+openmesh-env(){  olocal- ; opticks- ; }
 #openmesh-vers(){ echo 4.1 ; }
 openmesh-vers(){ echo 6.1 ; }
 

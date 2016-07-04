@@ -30,7 +30,7 @@ EOU
 
 ppm-sdir(){ echo $(opticks-home)/graphics/ppm ; }
 
-ppm-env(){      elocal- ; opticks- ; }
+ppm-env(){      olocal- ; opticks- ; }
 
 
 ppm-idir(){ echo $(opticks-idir) ; }

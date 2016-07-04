@@ -2,7 +2,7 @@
 optixtex-src(){      echo optix/optixtex/optixtex.bash ; }
 optixtex-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixtex-src)} ; }
 optixtex-vi(){       vi $(optixtex-source) ; }
-optixtex-env(){      elocal- ; }
+optixtex-env(){      olocal- ; }
 optixtex-usage(){ cat << EOU
 
 OptiX Textures

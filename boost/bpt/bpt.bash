@@ -36,7 +36,7 @@ bpt-wipe(){
    rm -rf $bdir
 }
 bpt-env(){     
-    elocal- 
+    olocal- 
 }
 
 bpt-cmake(){

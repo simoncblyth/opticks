@@ -412,7 +412,7 @@ Bizarre, test runs but no libOpenMesh ?
 
 EOU
 }
-openmeshrap-env(){      elocal- ; opticks- ;  }
+openmeshrap-env(){      olocal- ; opticks- ;  }
 openmeshrap-dir(){  echo $(opticks-home)/openmeshrap ; }
 openmeshrap-sdir(){ echo $(opticks-home)/openmeshrap ; }
 openmeshrap-tdir(){ echo $(opticks-home)/openmeshrap/tests ; }
