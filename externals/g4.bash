@@ -188,6 +188,8 @@ g4-xcd(){  cd $(g4-examples-dir); }
 g4-get-tgz(){
    local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(g4-url)
+   # replace zip to tar.gz
+   url=${url/.zip/.tar.gz}
    local tgz=$(basename $url)
    local nam=${tgz/.tar.gz}
 
