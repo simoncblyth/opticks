@@ -1,4 +1,4 @@
-oks-vi(){ vi $(opticks-home)/oks.bash ; }
+oks-vi(){ vi $(opticks-home)/bin/oks.bash ; }
 oks-env(){ echo -n ; }
 oks-usage(){  cat << \EOU
 

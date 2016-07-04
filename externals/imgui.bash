@@ -182,10 +182,8 @@ EOU
 
 imgui-env(){      olocal- ; opticks- ;  }
 
-imgui-edir(){ echo $(opticks-home)/graphics/gui/imgui ; }
+imgui-edir(){ echo $(opticks-home)/externals/imgui ; }
 imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }
-
-#imgui-prefix(){ echo $(imgui-base)/imgui.install ; }
 imgui-prefix(){ echo $(opticks-prefix)/externals ; }
 
 imgui-idir(){ echo $(imgui-prefix) ; }
@@ -198,13 +196,6 @@ imgui-icd(){  cd $(imgui-idir); }
 imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
 
-
-
-imgui-old-base(){ echo $(local-base)/env/graphics/gui ; }
-imgui-old-sdir(){ echo $(imgui-old-base)/imgui  ; }
-imgui-old-bdir(){ echo $(imgui-old-base)/imgui.build   ; }
-imgui-old-scd(){  cd $(imgui-old-sdir); }
-imgui-old-bcd(){  cd $(imgui-old-bdir); }
 
 imgui-cd(){  cd $(imgui-dir)/$1; }
 
@@ -304,10 +295,16 @@ imgui-make(){
 }
 
 imgui--(){
+
+  local iwd=$PWD
   imgui-get
   imgui-cmake
   imgui-make install 
+
+   
   [ $? -ne 0 ] && echo $FUNCNAME ERROR && return 1
+
+  cd $iwd
 }
 
 
