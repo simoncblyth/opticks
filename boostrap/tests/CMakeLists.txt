@@ -15,7 +15,6 @@ set(TEST_SOURCES
    BStrTest.cc
    BTimerTest.cc
    BBitTest.cc
-   BoostLogTest.cc 
    BLogTest.cc
    BFileTest.cc
    BBufSpecTest.cc
@@ -30,7 +29,7 @@ foreach(SRC ${TEST_SOURCES})
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} BoostRap pthread)
+    target_link_libraries(${TGT} ${LIBRARIES} BoostRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

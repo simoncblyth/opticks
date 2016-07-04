@@ -346,8 +346,8 @@ olocal-()
 }
 
 opticks-home(){   echo $OPTICKS_HOME ; }  ## input from profile 
-opticks-dir(){    echo $(local-base)/opticks ; }
-opticks-prefix(){ echo $(local-base)/opticks ; }
+opticks-dir(){    echo ${LOCAL_BASE}/opticks ; }
+opticks-prefix(){ echo ${LOCAL_BASE}/opticks ; }
 opticks-sdir(){   echo $(opticks-home) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
