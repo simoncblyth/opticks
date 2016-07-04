@@ -1,9 +1,9 @@
 # === func-gen- : zeromq/zmq/zmq fgp zeromq/zmq/zmq.bash fgn zmq fgh zeromq/zmq
-zmq-src(){      echo zeromq/zmq/zmq.bash ; }
-zmq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(zmq-src)} ; }
-zmq-vi(){       vi $(zmq-source) ; }
-zmq-env(){      olocal- ; }
-zmq-usage(){ cat << EOU
+zmqdev-src(){      echo zeromq/zmq/zmq.bash ; }
+zmqdev-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(zmqdev-src)} ; }
+zmqdev-vi(){       vi $(zmqdev-source) ; }
+zmqdev-env(){      olocal- ; }
+zmqdev-usage(){ cat << EOU
 
 ZMQ : Low Level C API 
 =======================
@@ -15,10 +15,10 @@ See also:
 *zeromq-*
     getting/building/installing  etc.. 
 
-*czmq-*
+*czmqdev-*
     higher level C binding
 
-*pyzmq-*
+*pyzmqdev-*
     python binding
 
 
@@ -58,12 +58,12 @@ and receive their data from the broker. Examples of workers:
 SSH Tunneling/port forwarding 
 ----------------------------------
 
-*zmq-tunnel-open*
+*zmqdev-tunnel-open*
 
      configures and opens in background an ssh tunnel and
      modifies TCPIP url according
 
-*zmq-tunnel-cmd laddr raddr*
+*zmqdev-tunnel-cmd laddr raddr*
 
      ssh -fN -p 22 -L laddr:raddr
 
@@ -120,12 +120,12 @@ Topology that works:
 
 #. put broker on belle7::
 
-   [blyth@belle7 ~]$ zmq-;zmq-broker
+   [blyth@belle7 ~]$ zmqdev-;zmqdev-broker
  
 #. worker and client elsewhere (or on belle7 too):: 
 
-   [blyth@cms02 ~]$ czmq-; ZMQ_BROKER_HOST=$(local-tag2ip N) czmq-worker
-   delta:~ blyth$ zmq-; ZMQ_BROKER_HOST=$(local-tag2ip N) zmq-client
+   [blyth@cms02 ~]$ czmqdev-; ZMQ_BROKER_HOST=$(local-tag2ip N) czmqdev-worker
+   delta:~ blyth$ zmqdev-; ZMQ_BROKER_HOST=$(local-tag2ip N) zmqdev-client
 
 
 Connecting nuwa.py/Geant4 and g4daeview.py/Chroma
@@ -136,8 +136,8 @@ objects to the broker with *CSA_CLIENT_CONFIG* envvar::
 
      68 csa-nuwarun(){
      69 
-     70    zmq-
-     71    export CSA_CLIENT_CONFIG=$(zmq-broker-url)   
+     70    zmqdev-
+     71    export CSA_CLIENT_CONFIG=$(zmqdev-broker-url)   
      72    nuwa.py -n 1 -m "fmcpmuon --chroma"
      73 
      74 }
@@ -150,17 +150,17 @@ Configure g4daeview.py/Chroma as worker receiving REP
 
 EOU
 }
-zmq-dir(){ echo $(opticks-home)/zeromq/zmq ; }
-zmq-bindir(){ echo $(local-base)/env/bin ; }
+zmqdev-dir(){ echo $(opticks-home)/zeromq/zmq ; }
+zmqdev-bindir(){ echo $(local-base)/env/bin ; }
 
-zmq-cd(){  cd $(zmq-dir); }
-zmq-scd(){  cd $(zmq-dir); }
-zmq-mate(){ mate $(zmq-dir) ; }
+zmqdev-cd(){  cd $(zmqdev-dir); }
+zmqdev-scd(){  cd $(zmqdev-dir); }
+zmqdev-mate(){ mate $(zmqdev-dir) ; }
 
-zmq-bin(){ echo $(zmq-bindir)/$1 ; }
-zmq-cc(){
+zmqdev-bin(){ echo $(zmqdev-bindir)/$1 ; }
+zmqdev-cc(){
    local name=$1
-   local bin=$(zmq-bin $name)
+   local bin=$(zmqdev-bin $name)
    mkdir -p $(dirname $bin)
    echo $msg compiling $bin 
    zeromq-
@@ -170,48 +170,48 @@ zmq-cc(){
          -Wl,-rpath,$(zeromq-prefix)/lib
 }
 
-zmq-cc-build(){
+zmqdev-cc-build(){
   echo $msg building 
-  zmq-scd
+  zmqdev-scd
   local line
   ls -1 *.c | while read line ; do 
      local name=${line/.c}
-     zmq-cc $name
+     zmqdev-cc $name
   done
 }
 
 
-zmq-broker-info(){  cat << EOI
+zmqdev-broker-info(){  cat << EOI
 
-   zmq-broker-url          : $(zmq-broker-url)
-   zmq-broker-url-frontend : $(zmq-broker-url-frontend)
-   zmq-broker-url-backend  : $(zmq-broker-url-backend)
+   zmqdev-broker-url          : $(zmqdev-broker-url)
+   zmqdev-broker-url-frontend : $(zmqdev-broker-url-frontend)
+   zmqdev-broker-url-backend  : $(zmqdev-broker-url-backend)
 
-   zmq-broker-host         : $(zmq-broker-host)
+   zmqdev-broker-host         : $(zmqdev-broker-host)
 
 EOI
 }
-zmq-frontend-port(){ echo 5001 ; }
-zmq-backend-port(){  echo 5002 ; }
-zmq-broker-tag(){ echo ${ZMQ_BROKER_TAG:-SELF} ; }
-zmq-broker-host(){ local-tag2ip $(zmq-broker-tag) ; }
+zmqdev-frontend-port(){ echo 5001 ; }
+zmqdev-backend-port(){  echo 5002 ; }
+zmqdev-broker-tag(){ echo ${ZMQ_BROKER_TAG:-SELF} ; }
+zmqdev-broker-host(){ local-tag2ip $(zmqdev-broker-tag) ; }
 
-zmq-broker-url(){ zmq-broker-url-frontend ; }
-zmq-broker-url-frontend(){ echo tcp://$(zmq-broker-host):$(zmq-frontend-port) ;}
-zmq-broker-url-backend(){  echo tcp://$(zmq-broker-host):$(zmq-backend-port) ;}
+zmqdev-broker-url(){ zmqdev-broker-url-frontend ; }
+zmqdev-broker-url-frontend(){ echo tcp://$(zmqdev-broker-host):$(zmqdev-frontend-port) ;}
+zmqdev-broker-url-backend(){  echo tcp://$(zmqdev-broker-host):$(zmqdev-backend-port) ;}
 
-zmq-broker-export(){
-   export ZMQ_BROKER_URL_FRONTEND=$(zmq-broker-url-frontend)
-   export ZMQ_BROKER_URL_BACKEND=$(zmq-broker-url-backend)
+zmqdev-broker-export(){
+   export ZMQ_BROKER_URL_FRONTEND=$(zmqdev-broker-url-frontend)
+   export ZMQ_BROKER_URL_BACKEND=$(zmqdev-broker-url-backend)
 }
 
-zmq-broker(){ FRONTEND=tcp://*:$(zmq-frontend-port) BACKEND=tcp://*:$(zmq-backend-port) $(zmq-bin zmq_broker) ; }
-zmq-client(){ FRONTEND=$(zmq-broker-url-frontend) $(zmq-bin zmq_client) ; }
-zmq-worker(){  BACKEND=$(zmq-broker-url-backend)  $(zmq-bin zmq_worker) ; }
+zmqdev-broker(){ FRONTEND=tcp://*:$(zmqdev-frontend-port) BACKEND=tcp://*:$(zmqdev-backend-port) $(zmqdev-bin zmq_broker) ; }
+zmqdev-client(){ FRONTEND=$(zmqdev-broker-url-frontend) $(zmqdev-bin zmq_client) ; }
+zmqdev-worker(){  BACKEND=$(zmqdev-broker-url-backend)  $(zmqdev-bin zmq_worker) ; }
 
 
 
-zmq-tunnel-cmd(){
+zmqdev-tunnel-cmd(){
    local laddr=$1
    local raddr=$2
    local cmd="ssh -N -p 22 -L ${laddr}:${raddr} "  
@@ -219,20 +219,20 @@ zmq-tunnel-cmd(){
    # -f go to background
    echo $cmd
 }
-zmq-tunnel-raddr(){
+zmqdev-tunnel-raddr(){
   local var=${1:-ZMQ_BROKER_URL_BACKEND}
   local url=${!var}    
   local raddr=${url/tcp:\/\/}
   echo $raddr 
 }
-zmq-tunnel-laddr(){
+zmqdev-tunnel-laddr(){
   local laddr="127.0.0.1:$(available_port.py)" 
   echo $laddr
 }
 
-zmq-tunnel-open-backend(){  zmq-tunnel-open ZMQ_BROKER_URL_BACKEND ${1:-G5} ; }
-zmq-tunnel-open-frontend(){ zmq-tunnel-open ZMQ_BROKER_URL_FRONTEND ${1:-G5} ; }
-zmq-tunnel-open(){
+zmqdev-tunnel-open-backend(){  zmqdev-tunnel-open ZMQ_BROKER_URL_BACKEND ${1:-G5} ; }
+zmqdev-tunnel-open-frontend(){ zmqdev-tunnel-open ZMQ_BROKER_URL_FRONTEND ${1:-G5} ; }
+zmqdev-tunnel-open(){
   local msg="=== $FUNCNAME :" 
   local var=${1:-ZMQ_BROKER_URL_BACKEND} 
   local node=${2}
@@ -241,9 +241,9 @@ zmq-tunnel-open(){
 
   local orig=${!var}
 
-  local laddr=$(zmq-tunnel-laddr)
-  local raddr=$(zmq-tunnel-raddr $var)
-  local cmd="$(zmq-tunnel-cmd $laddr $raddr) $node"
+  local laddr=$(zmqdev-tunnel-laddr)
+  local raddr=$(zmqdev-tunnel-raddr $var)
+  local cmd="$(zmqdev-tunnel-cmd $laddr $raddr) $node"
 
   export $var=tcp://$laddr
   echo $msg var $var node $node cmd $cmd 
@@ -257,7 +257,7 @@ zmq-tunnel-open(){
   echo $msg modified $var from $orig to ${!var} to route via tunnel
 }
 
-zmq-tunnel-close(){
+zmqdev-tunnel-close(){
   local msg="=== $FUNCNAME :" 
   [ -z "$ZMQ_TUNNEL_PID" ] && echo $msg ZMQ_TUNNEL_PID is not defined && return 
 
@@ -266,7 +266,7 @@ zmq-tunnel-close(){
   kill $ZMQ_TUNNEL_PID
 }
 
-zmq-tunnel-node-parse-cmdline(){
+zmqdev-tunnel-node-parse-cmdline(){
   local zmqtunnelnode=""
   local cmdline="$1" 
   if [ "${cmdline/--zmqtunnelnode}" != "${cmdline}" ]; then

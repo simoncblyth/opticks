@@ -47,7 +47,7 @@ opticksdata-get(){
    if [ ! -d "$nam" ]; then
         hg clone $url 
    else
-        echo $msg cloned from $url already  
+        echo $msg ALREADY CLONED from $url to $(opticksdata-dir) 
    fi
 
 }
