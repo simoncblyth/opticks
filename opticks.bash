@@ -12,19 +12,15 @@ Get Opticks
 
 Clone the repository from bitbucket::
 
-   cd
-   hg clone http://bitbucket.org/simoncblyth/env
-
-In future Opticks is intended to move, then you will need to::
-
    hg clone http://bitbucket.org/simoncblyth/opticks 
 
-
-Connect the opticks bash functions to your shell by adding a line to your .bash_profile::
+Connect the opticks bash functions to your shell by adding a line to your .bash_profile
+and configure the location of the install with the LOCAL_BASE environment variable::
 
    opticks-(){ . $HOME/opticks/opticks.bash && opticks-env $* ; }
+   export LOCAL_BASE=/usr/local   
 
-This defines the bash function *opticks-* that is termed a precursor function 
+The first line defines the bash function *opticks-* that is termed a precursor function 
 as running it will define other functions all starting with *opticks-* such as *opticks-vi*
 and *opticks-usage*.
 

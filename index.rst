@@ -1,8 +1,13 @@
-Opticks
-==========
+Opticks : GPU Accelerated Optical Photon Simulation using NVIDIA OptiX
+=======================================================================
 
 :Version: |version|
 :Date: |today|
+
+
+The Opticks repository http://bitbucket.org/simoncblyth/opticks  
+contains the sources together with scripts for getting and building externals and Opticks itself.
+Instructions for using these scripts can be found below.
 
 Contents:
 
@@ -10,25 +15,5 @@ Contents:
    :maxdepth: 2
 
    opticks 
-
-
-Adding Documentation 
-=========================
-
-Documentation sources can be housed inside bash *usage* functions 
-OR in standalone .rst files. Generate small .rst shims that includes 
-the .bash usage message with eg::
-
-    env-rst opticks.bash  # this will generate an opticks.rst shim 
-
-Include these names into the index toctree list.
-
-  
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   
 
