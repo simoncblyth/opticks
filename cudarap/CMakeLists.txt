@@ -7,6 +7,8 @@ include(EnvCompilationFlags)
 
 find_package(PLog REQUIRED)
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
+list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 find_package(SysRap REQUIRED)
 
