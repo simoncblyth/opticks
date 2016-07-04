@@ -372,7 +372,7 @@ opticks-xcd(){  cd $(opticks-xdir); }
 opticks-externals-install(){
    local msg="=== $FUNCNAME :"
 
-   local exts="glm glfw glew gleq imgui assimp openmesh"
+   local exts="glm glfw glew gleq imgui assimp openmesh plog"
    echo $msg START $(date)
 
    local ext
@@ -1104,6 +1104,24 @@ opticks-filemap-body(){
       printf "include %s\n" $dir
    done
 }
+
+
+
+opticks-htmldir(){   echo $(opticks-prefix)/html ; }
+opticks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
+opticks-docs()
+{
+   local iwd=$PWD
+   opticks-scd
+   local htmldir=${1:-$(opticks-htmldir)}
+   sphinx-build -b html  . $htmldir
+   cd $iwd
+}
+opticks-docsbb() { opticks-docs $(opticks-htmldirbb)  ;  } 
+
+opticks-html(){   open $(opticks-htmldir)/index.html ; } 
+opticks-htmlbb(){ open $(opticks-htmldirbb)/index.html ; } 
+
 
 
 ### opticks projs ###  **moved** all projs into top level folders

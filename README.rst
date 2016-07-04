@@ -23,12 +23,16 @@ Source opticks from your bash shell profile with::
     opticks-
     o(){ cd $OPTICKS_HOME ; hg st ; } 
 
+
+For instructions on building Opticks and externals see: 
+
+* http://simoncblyth.bitbucket.org/opticks/
+
+
 Transitionally it may be necessary for developers to also clone the *env* repository
 and similarly source *env*. If so that should be done prior to opticks.
 More details about bitbucket/mercurial setup can be found on the *env* frontpage:
 
 * https://bitbucket.org/simoncblyth/env
-
-
 
 
