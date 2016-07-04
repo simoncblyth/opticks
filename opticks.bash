@@ -338,8 +338,10 @@ EOU
 opticks-env(){      
    elocal-
    # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
+   . $(opticks-home)/externals/externals.bash   ## just precursors
 }
-opticks-home(){   echo $(env-home) ; }
+#opticks-home(){   echo $(env-home) ; }
+opticks-home(){   echo $OPTICKS_HOME ; }  ## input from profile 
 opticks-dir(){    echo $(local-base)/opticks ; }
 opticks-prefix(){ echo $(local-base)/opticks ; }
 opticks-sdir(){   echo $(opticks-home) ; }
@@ -1100,4 +1102,32 @@ opticks-filemap-body(){
 }
 
 
+### opticks projs ###  **moved** all projs into top level folders
+
+sysrap-(){          . $(opticks-home)/sysrap/sysrap.bash && sysrap-env $* ; }
+brap-(){            . $(opticks-home)/boostrap/brap.bash && brap-env $* ; }
+npy-(){             . $(opticks-home)/opticksnpy/npy.bash && npy-env $* ; }
+okc-(){             . $(opticks-home)/optickscore/okc.bash && okc-env $* ; }
+
+ggeo-(){            . $(opticks-home)/ggeo/ggeo.bash && ggeo-env $* ; }
+assimprap-(){       . $(opticks-home)/assimprap/assimprap.bash && assimprap-env $* ; }
+openmeshrap-(){     . $(opticks-home)/openmeshrap/openmeshrap.bash && openmeshrap-env $* ; }
+opticksgeo-(){      . $(opticks-home)/opticksgeo/opticksgeo.bash && opticksgeo-env $* ; }
+
+oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
+cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
+thrustrap-(){       . $(opticks-home)/thrustrap/thrustrap.bash && thrustrap-env $* ; }
+optixrap-(){        . $(opticks-home)/optixrap/optixrap.bash && optixrap-env $* ; }
+
+opticksop-(){       . $(opticks-home)/opticksop/opticksop.bash && opticksop-env $* ; }
+opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env $* ; }
+ggeoview-(){        . $(opticks-home)/ggeoview/ggeoview.bash && ggeoview-env $* ; }
+cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
+
+
+
+opticksdata-(){     . $(opticks-home)/opticksdata.bash && opticksdata-env $* ; }
+ggv-(){             . $(opticks-home)/ggeoview/ggv.bash && ggv-env $* ; }
+op-(){              . $(opticks-home)/bin/op.sh ; }
+#
 
