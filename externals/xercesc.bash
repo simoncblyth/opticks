@@ -195,6 +195,7 @@ xercesc-library(){
 xercesc-geant4-export(){
   export XERCESC_INCLUDE_DIR=$(xercesc-include-dir)
   export XERCESC_LIBRARY=$(xercesc-library)
+  export XERCESC_ROOT_DIR=$(xercesc-prefix)
 }
 
 xercesc--() {
