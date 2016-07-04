@@ -7,6 +7,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake")
 include(EnvBuildOptions)
 include(EnvCompilationFlags)   
 
+string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
 find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
