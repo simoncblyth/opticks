@@ -39,13 +39,24 @@ opticksdata-cd(){  cd $(opticksdata-dir); }
 opticksdata-url(){ echo http://bitbucket.org/simoncblyth/opticksdata ; }
 
 opticksdata-get(){
+   local msg="$FUNCNAME :"
    local dir=$(dirname $(opticksdata-dir)) &&  mkdir -p $dir && cd $dir
 
    local url=$(opticksdata-url)
    local nam=$(basename $url)
-   [ ! -d "$nam" ] && hg clone $url 
+   if [ ! -d "$nam" ]; then
+        hg clone $url 
+   else
+        echo $msg cloned from $url already  
+   fi
 
 }
+
+opticksdata--()
+{
+   opticksdata-get
+}
+
 
 opticksdata-name(){ echo $(opticksdata-xname $1).dae ; }
 opticksdata-xname(){

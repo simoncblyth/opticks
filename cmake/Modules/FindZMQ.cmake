@@ -1,11 +1,10 @@
-#
-#  Depends on envvar LOCAL_BASE which is set via env- precursor bash function
-#
+# NOT currently active
+set(ZMQ_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_path(
     ZMQ_INCLUDE_DIR 
     NAMES zmq.h
-    PATHS "$ENV{LOCAL_BASE}/env/zeromq"
+    PATHS "$ZMQ_PREFIX/zeromq"
     PATH_SUFFIXES include
     NO_DEFAULT_PATH
 )
@@ -13,7 +12,7 @@ find_path(
 find_library(
     ZMQ_LIBRARY
     NAMES zmq
-    PATHS "$ENV{LOCAL_BASE}/env/zeromq"
+    PATHS "$ZMQ_PREFIX/zeromq"
     PATH_SUFFIXES lib
     NO_DEFAULT_PATH
 )

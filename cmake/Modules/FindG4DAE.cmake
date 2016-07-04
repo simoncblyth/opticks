@@ -1,5 +1,6 @@
-
-set(G4DAE_PREFIX "$ENV{LOCAL_BASE}/env/g4d")
+# NOT CURRENTLY ACTIVE
+#set(G4DAE_PREFIX "$ENV{LOCAL_BASE}/env/g4d")
+set(G4DAE_PREFIX "$OPTICKS_PREFIX/externals")
 
 find_library( G4DAE_LIBRARIES 
               NAMES G4DAE

@@ -1,8 +1,7 @@
-# === func-gen- : g4/g4 fgp g4/g4.bash fgn g4 fgh g4
-g4-src(){      echo g4/g4.bash ; }
-g4-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4-src)} ; }
-g4-vi(){       vi $(g4-source) ; }
-g4-usage(){ cat << \EOU
+g4dev-src(){      echo g4/g4.bash ; }
+g4dev-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4dev-src)} ; }
+g4dev-vi(){       vi $(g4dev-source) ; }
+g4dev-usage(){ cat << \EOU
 
 Geant4
 ========
@@ -83,7 +82,7 @@ examples/extended/persistency/gdml/G01/README::
 
 After adding the above::
 
-    simon:G01 blyth$ g4-cmake
+    simon:G01 blyth$ g4dev-cmake
     -- Found XercesC: /opt/local/lib/libxerces-c.dylib  
     -- Reusing dataset G4NDL (4.5)
     -- Reusing dataset G4EMLOW (6.48)
@@ -131,21 +130,21 @@ Example B1
 
 EOU
 }
-g4-env(){      
+g4dev-env(){      
    olocal-  
    xercesc-  
    opticks-
 }
 
 
-g4-edir(){ echo $(opticks-home)/g4 ; }
+g4dev-edir(){ echo $(opticks-home)/g4 ; }
 
-#g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
-#g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }
+#g4dev-dir(){  echo $(local-base)/env/g4/$(g4dev-name) ; }
+#g4dev-dir(){  echo $(opticks-prefix)/externals/g4/$(g4dev-name) ; }
 
-#g4-prefix(){  echo $(opticks-prefix)/externals ; }
+#g4dev-prefix(){  echo $(opticks-prefix)/externals ; }
 
-g4-prefix(){ 
+g4dev-prefix(){ 
     case $NODE_TAG in 
        MGB) echo $HOME/local/opticks/externals ;;
          D) echo /usr/local/opticks/externals ;;
@@ -153,41 +152,41 @@ g4-prefix(){
     esac
  }
 
-g4-idir(){ echo $(g4-prefix) ; }
-g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
+g4dev-idir(){ echo $(g4dev-prefix) ; }
+g4dev-dir(){   echo $(g4dev-prefix)/$(g4dev-tag)/$(g4dev-name) ; } 
 
 # follow env/psm1/dist/dist.psm1 approach : everythinh based off the url
 
 
-g4-tag(){   echo g4 ; }
-g4-url(){   echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ; }
-g4-name2(){  echo Geant4-10.2.1 ; }
+g4dev-tag(){   echo g4 ; }
+g4dev-url(){   echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ; }
+g4dev-name2(){  echo Geant4-10.2.1 ; }
 
-g4-filename(){  echo $(basename $(g4-url)) ; }
-g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }  
+g4dev-filename(){  echo $(basename $(g4dev-url)) ; }
+g4dev-name(){  local filename=$(g4dev-filename) ; echo ${filename%.*} ; }  
 # hmm .tar.gz would still have a .tar on the name
 
 
-g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
+g4dev-txt(){ vi $(g4dev-dir)/CMakeLists.txt ; }
 
 
-g4-bdir(){ echo $(g4-dir).build ; }
+g4dev-bdir(){ echo $(g4dev-dir).build ; }
 
-g4-cmake-dir(){     echo $(g4-prefix)/lib/$(g4-name2) ; }
-g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
-
-
-g4-ecd(){  cd $(g4-edir); }
-g4-cd(){   cd $(g4-dir); }
-g4-icd(){  cd $(g4-prefix); }
-g4-bcd(){  cd $(g4-bdir); }
-g4-ccd(){  cd $(g4-cmake-dir); }
-g4-xcd(){  cd $(g4-examples-dir); }
+g4dev-cmake-dir(){     echo $(g4dev-prefix)/lib/$(g4dev-name2) ; }
+g4dev-examples-dir(){  echo $(g4dev-prefix)/share/$(g4dev-name2)/examples ; }
 
 
-g4-get-tgz(){
-   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
-   local url=$(g4-url)
+g4dev-ecd(){  cd $(g4dev-edir); }
+g4dev-cd(){   cd $(g4dev-dir); }
+g4dev-icd(){  cd $(g4dev-prefix); }
+g4dev-bcd(){  cd $(g4dev-bdir); }
+g4dev-ccd(){  cd $(g4dev-cmake-dir); }
+g4dev-xcd(){  cd $(g4dev-examples-dir); }
+
+
+g4dev-get-tgz(){
+   local dir=$(dirname $(g4dev-dir)) &&  mkdir -p $dir && cd $dir
+   local url=$(g4dev-url)
    local tgz=$(basename $url)
    local nam=${tgz/.tar.gz}
 
@@ -195,9 +194,9 @@ g4-get-tgz(){
    [ ! -d "$nam" ] && tar zxvf $tgz 
 }
 
-g4-get(){
-   local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
-   local url=$(g4-url)
+g4dev-get(){
+   local dir=$(dirname $(g4dev-dir)) &&  mkdir -p $dir && cd $dir
+   local url=$(g4dev-url)
    local dst=$(basename $url)
    local nam=${dst/.zip}
 
@@ -208,21 +207,21 @@ g4-get(){
 
 
 
-g4-wipe(){
-   local bdir=$(g4-bdir)
+g4dev-wipe(){
+   local bdir=$(g4dev-bdir)
    rm -rf $bdir
 }
 
-g4-cmake-old(){
+g4dev-cmake-old(){
    local iwd=$PWD
 
-   local bdir=$(g4-bdir)
+   local bdir=$(g4dev-bdir)
    mkdir -p $bdir
 
-   local idir=$(g4-prefix)
+   local idir=$(g4dev-prefix)
    mkdir -p $idir
 
-   g4-bcd
+   g4dev-bcd
    cmake \
        -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
@@ -230,23 +229,23 @@ g4-cmake-old(){
        -DGEANT4_USE_GDML=ON \
        -DXERCESC_ROOT_DIR=$(xercesc-prefix) \
        -DCMAKE_INSTALL_PREFIX=$idir \
-       $(g4-dir)
+       $(g4dev-dir)
 
    cd $iwd
 }
 
 
 
-g4-cmake(){
+g4dev-cmake(){
    local iwd=$PWD
 
-   local bdir=$(g4-bdir)
+   local bdir=$(g4dev-bdir)
    mkdir -p $bdir
 
-   local idir=$(g4-prefix)
+   local idir=$(g4dev-prefix)
    mkdir -p $idir
 
-   g4-bcd
+   g4dev-bcd
    cmake \
        -G "$(opticks-cmake-generator)" \
        -DGEANT4_INSTALL_DATA=ON \
@@ -254,7 +253,7 @@ g4-cmake(){
        -DXERCESC_LIBRARY=$(xercesc-library) \
        -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
        -DCMAKE_INSTALL_PREFIX=$idir \
-       $(g4-dir)
+       $(g4dev-dir)
 
 
    ## NB MSVC cmake build was configured using PowerShell invokation 
@@ -268,30 +267,30 @@ g4-cmake(){
 
 
 
-g4-configure()
+g4dev-configure()
 {
-   g4-wipe
-   g4-cmake $*
+   g4dev-wipe
+   g4dev-cmake $*
 }
 
 
-#g4-config(){ echo Debug ; }
-g4-config(){ echo RelWithDebInfo ; }
-g4--(){
-   g4-bcd
-   cmake --build . --config $(g4-config) --target ${1:-install}
+#g4dev-config(){ echo Debug ; }
+g4dev-config(){ echo RelWithDebInfo ; }
+g4dev--(){
+   g4dev-bcd
+   cmake --build . --config $(g4dev-config) --target ${1:-install}
 }
 
 
-g4-sh(){  echo $(g4-idir)/bin/geant4.sh ; }
-g4-ini(){ echo $(opticks-prefix)/externals/config/geant4.ini ; }
+g4dev-sh(){  echo $(g4dev-idir)/bin/geant4.sh ; }
+g4dev-ini(){ echo $(opticks-prefix)/externals/config/geant4.ini ; }
 
-g4-export(){ source $(g4-sh) ; }
-g4-export-ini()
+g4dev-export(){ source $(g4dev-sh) ; }
+g4dev-export-ini()
 {
     local msg="=== $FUNCNAME :"
-    g4-export
-    local ini=$(g4-ini)
+    g4dev-export
+    local ini=$(g4dev-ini)
     local dir=$(dirname $ini)
     mkdir -p $dir 
     echo $msg writing G4 environment to $ini
@@ -306,19 +305,19 @@ g4-export-ini()
 
 ################# below funcions for styduing G4 source ##################################
 
-g4-ifind(){ find $(g4-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
-g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
+g4dev-ifind(){ find $(g4dev-idir) -name ${1:-G4VUserActionInitialization.hh} ; }
+g4dev-sfind(){ find $(g4dev-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
 
-g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
-g4-icc(){ find $(g4-dir)/source -name '*.icc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
-g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
+g4dev-hh(){ find $(g4dev-dir)/source -name '*.hh' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
+g4dev-icc(){ find $(g4dev-dir)/source -name '*.icc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
+g4dev-cc(){ find $(g4dev-dir)/source -name '*.cc' -exec grep -H ${1:-G4GammaConversion} {} \; ; }
 
-g4-cls-copy(){
+g4dev-cls-copy(){
    local iwd=$PWD
    local name=${1:-G4Scintillation}
    local lname=${name/G4}
 
-   local sauce=$(g4-dir)/source
+   local sauce=$(g4dev-dir)/source
    local hh=$(find $sauce -name "$name.hh")
    local cc=$(find $sauce -name "$name.cc")
    local icc=$(find $sauce -name "$name.icc")
@@ -328,9 +327,9 @@ g4-cls-copy(){
    [ "$icc" != "" ] && echo cp $icc $iwd/$lname.icc
 }
 
-g4-cls(){
+g4dev-cls(){
    local iwd=$PWD
-   g4-cd
+   g4dev-cd
    local name=${1:-G4Scintillation}
 
    local h=$(find source -name "$name.h")
@@ -345,9 +344,9 @@ g4-cls(){
    cd $iwd
 }
 
-g4-look(){ 
+g4dev-look(){ 
    local iwd=$PWD
-   g4-cd
+   g4dev-cd
    local spec=${1:-G4RunManagerKernel.cc:707}
 
    local name=${spec%:*}

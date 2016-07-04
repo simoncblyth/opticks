@@ -4,11 +4,11 @@ opticks-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticks-src)} ; }
 opticks-vi(){       vi $(opticks-source) ; }
 opticks-usage(){   cat << \EOU
 
-Opticks
-=========
+Opticks Install Instructions
+==================================
 
 Get Opticks 
------------
+------------
 
 Clone the repository from bitbucket::
 
@@ -66,14 +66,8 @@ Assuming appropriate build tools and Boost, CUDA (includes Thrust) and OptiX
 are already installed the getting, building and installation of the other externals 
 takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 
-    simon:env blyth$ opticks-fullclean | sh 
+    simon:env blyth$ opticks-fullclean | sh   ## deletes dirs beneath $LOCAL_BASE/opticks
     simon:env blyth$ opticks- ; opticks-full
-    === opticks-- : START Tue Apr 26 15:33:27 CST 2016
-    === opticks-externals-install : START Tue Apr 26 15:33:27 CST 2016
-    ...
-    === opticks-externals-install : DONE Tue Apr 26 15:41:22 CST 2016
-    ...
-    === opticks-- : DONE Tue Apr 26 15:45:59 CST 2016
 
 
 Externals 
@@ -146,26 +140,9 @@ step will yield errors like the below.::
 
       Boost version: 1.41.0
 
-      Boost include path: /usr/include
-
-      Could not find the following Boost libraries:
-
-              boost_log
-              boost_log_setup
-
-      Some (but not all) of the required Boost libraries were found.  You may
-      need to install these additional Boost libraries.  Alternatively, set
-      BOOST_LIBRARYDIR to the directory containing Boost libraries or BOOST_ROOT
-      to the location of Boost.
-      Call Stack (most recent call first):
-      cmake/Modules/FindOpticksBoost.cmake:16 (find_package)
-      boost/bpo/bcfg/CMakeLists.txt:8 (find_package)
-
-
 If possible use your system package manager to update Boost. If that is 
 not possible then do a local Boost install.  Opticks includes bash functions
 starting *boost-* that can get and install Boost locally.
-
 
 ::
 
@@ -348,7 +325,15 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
 opticks-bindir(){ echo $(opticks-prefix)/lib ; }   # use lib for executables for simplicity on windows
-opticks-xdir(){ echo $(opticks-prefix)/externals ; }
+opticks-xdir(){   echo $(opticks-prefix)/externals ; }
+
+opticks-cd(){   cd $(opticks-dir) ; }
+opticks-scd(){  cd $(opticks-sdir)/$1 ; }
+opticks-icd(){  cd $(opticks-idir); }
+opticks-bcd(){  cd $(opticks-bdir); }
+opticks-xcd(){  cd $(opticks-xdir); }
+
+
 
 opticks-optix-install-dir(){ 
     local t=$NODE_TAG
@@ -359,17 +344,10 @@ opticks-optix-install-dir(){
     esac
 }
 
-opticks-cd(){   cd $(opticks-dir) ; }
-opticks-scd(){  cd $(opticks-sdir)/$1 ; }
-opticks-icd(){  cd $(opticks-idir); }
-opticks-bcd(){  cd $(opticks-bdir); }
-opticks-xcd(){  cd $(opticks-xdir); }
-
-
 opticks-externals-install(){
    local msg="=== $FUNCNAME :"
 
-   local exts="glm glfw glew gleq imgui assimp openmesh plog"
+   local exts="glm glfw glew gleq imgui assimp openmesh plog opticksdata"
    echo $msg START $(date)
 
    local ext
@@ -721,388 +699,6 @@ opticks-export-mingw()
 }
 
 
-########## below are for development  ########################
-
-
-opticks-dirs(){  cat << EOL
-sysrap
-boostrap
-opticksnpy
-optickscore
-ggeo
-assimprap
-openmeshrap
-opticksgeo
-oglrap
-cudarap
-thrustrap
-optixrap
-opticksop
-opticksgl
-ggeoview
-cfg4
-EOL
-}
-
-opticks-xnames(){ cat << EOX
-boost
-glm
-plog
-gleq
-glfw
-glew
-imgui
-assimp
-openmesh
-cuda
-thrust
-optix
-xercesc
-g4
-zmq
-asiozmq
-EOX
-}
-
-opticks-internals(){  cat << EOI
-SysRap
-BoostRap
-NPY
-OpticksCore
-GGeo
-AssimpRap
-OpenMeshRap
-OpticksGeo
-OGLRap
-CUDARap
-ThrustRap
-OptiXRap
-OpticksOp
-OpticksGL
-GGeoView
-CfG4
-EOI
-}
-opticks-xternals(){  cat << EOX
-OpticksBoost
-Assimp
-OpenMesh
-GLM
-GLEW
-GLEQ
-GLFW
-ImGui
-EnvXercesC
-G4DAE
-ZMQ
-AsioZMQ
-EOX
-}
-opticks-other(){  cat << EOO
-OpenVR
-CNPY
-NuWaCLHEP
-NuWaGeant4
-cJSON
-RapSqlite
-SQLite3
-ChromaPhotonList
-G4DAEChroma
-NuWaDataModel
-ChromaGeant4CLHEP
-CLHEP
-ROOT
-ZMQRoot
-EOO
-}
-
-
-opticks-find-cmake-(){ 
-  local f
-  local base=$(opticks-home)/CMake/Modules
-  local name
-  opticks-${1} | while read f 
-  do
-     name=$base/Find${f}.cmake
-     [ -f "$name" ] && echo $name
-  done 
-}
-
-opticks-i(){ vi $(opticks-find-cmake- internals) ; }
-opticks-x(){ vi $(opticks-find-cmake- xternals) ; }
-opticks-o(){ vi $(opticks-find-cmake- other) ; }
-
-
-
-opticks-edit(){  cd $ENV_HOME ; vi opticks.bash $(opticks-bash-list) CMakeLists.txt $(opticks-txt-list) ; } 
-opticks-txt(){   cd $ENV_HOME ; vi CMakeLists.txt $(opticks-txt-list) ; }
-opticks-bash(){  cd $ENV_HOME ; vi opticks.bash $(opticks-bash-list) ; }
-opticks-tests(){ cd $ENV_HOME ; vi $(opticks-tests-list) ; } 
-
-opticks-txt-list(){
-  local dir
-  opticks-dirs | while read dir 
-  do
-      echo $dir/CMakeLists.txt
-  done
-}
-opticks-tests-list(){
-  local dir
-  local name
-  opticks-dirs | while read dir 
-  do
-      name=$dir/tests/CMakeLists.txt
-      [ -f "$name" ] && echo $name
-  done
-
-}
-opticks-bash-list(){
-  local dir
-  opticks-dirs | while read dir 
-  do
-      local rel=$dir/$(basename $dir).bash
-      if [ -f "$rel" ]; 
-      then
-          echo $rel
-      else
-          echo MISSING $rel
-      fi
-  done
-}
-opticks-grep()
-{
-   local iwd=$PWD
-   local msg="=== $FUNCNAME : "
-   opticks-
-   local dir 
-   local base=$(opticks-home)
-   opticks-dirs | while read dir 
-   do
-      local subdirs="${base}/${dir} ${base}/${dir}/tests"
-      local sub
-      for sub in $subdirs 
-      do
-         if [ -d "$sub" ]; then 
-            cd $sub
-            #echo $msg $sub
-            grep $* $PWD/*.*
-         fi
-      done 
-   done
-   cd $iwd
-}
-
-
-opticks-api-export()
-{
-  opticks-cd 
-  local dir
-  opticks-dirs | while read dir 
-  do
-      local name=$(ls -1 $dir/*_API_EXPORT.hh 2>/dev/null) 
-      [ ! -z "$name" ] && echo $name
-  done
-}
-
-opticks-api-export-vi(){ vi $(opticks-api-export) ; }
-
-
-
-
-opticks-grep-vi(){ vi $(opticks-grep -l ${1:-BLog}) ; }
-
-
-
-opticks-genproj()
-{
-    # this is typically called from projs like ggeo- 
-
-    local msg=" === $FUNCNAME :"
-    local proj=${1}
-    local tag=${2}
-
-    [ -z "$proj" -o -z "$tag" ] && echo $msg need both proj $proj and tag $tag  && return 
-
-
-    importlib-  
-    importlib-exports ${proj} ${tag}_API
-
-    plog-
-    plog-genlog
-
-    echo $msg merge the below sources into CMakeLists.txt
-    opticks-genproj-sources- $tag
-
-}
-
-
-
-opticks-genlog()
-{
-    opticks-scd 
-    local dir
-    plog-
-    opticks-dirs | while read dir 
-    do
-        opticks-scd $dir
-
-        local name=$(ls -1 *_API_EXPORT.hh 2>/dev/null) 
-        [ -z "$name" ] && echo MISSING API_EXPORT in $PWD && return 
-        [ ! -z "$name" ] && echo $name
-
-        echo $PWD
-        plog-genlog FORCE
-    done
-}
-
-
-opticks-genproj-sources-(){ 
-
-
-   local tag=${1:-OKCORE}
-   cat << EOS
-
-set(SOURCES
-     
-    ${tag}_LOG.cc
-
-)
-set(HEADERS
-
-    ${tag}_LOG.hh
-    ${tag}_API_EXPORT.hh
-    ${tag}_HEAD.hh
-    ${tag}_TAIL.hh
-
-)
-EOS
-}
-
-
-opticks-testname(){ echo ${cls}Test.cc ; }
-opticks-gentest()
-{
-   local msg=" === $FUNCNAME :"
-   local cls=${1:-GMaterial}
-   local tag=${2:-GGEO} 
-
-   [ -z "$cls" -o -z "$tag" ] && echo $msg a classname $cls and project tag $tag must be provided && return 
-   local name=$(opticks-testname $cls)
-   [ -f "$name" ] && echo $msg a file named $name exists already in $PWD && return
-   echo $msg cls $cls generating test named $name in $PWD
-   opticks-gentest- $cls $tag > $name
-   #cat $name
-
-   vi $name
-
-}
-opticks-gentest-(){
-
-   local cls=${1:-GMaterial}
-   local tag=${2:-GGEO}
-
-   cat << EOT
-
-#include <cassert>
-#include "${cls}.hh"
-
-#include "PLOG.hh"
-#include "${tag}_LOG.hh"
-
-int main(int argc, char** argv)
-{
-    PLOG_(argc, argv);
-    ${tag}_LOG_ ;
-
-
-
-
-    return 0 ;
-}
-
-EOT
-
-}
-
-opticks-xcollect-notes(){ cat << EON
-
-*opticks-xcollect*
-     copies the .bash of externals into externals folder 
-     and does inplace edits to correct paths for new home.
-     Also writes an externals.bash containing the precursor bash 
-     functions.
-
-EON
-}
-opticks-xcollect()
-{
-   local ehome=$(opticks-home)
-   local xhome=$ehome
-   local iwd=$PWD 
-
-   cd $ehome
-
-   local xbash=$xhome/externals/externals.bash
-   [ ! -d "$xhome/externals" ] && mkdir "$xhome/externals"
-
-   echo "# $FUNCNAME " > $xbash
-   
-   local x
-   local esrc
-   local src
-   local dst
-   local nam
-   local note
-
-   opticks-xnames | while read x 
-   do
-      $x-;
-      esrc=$($x-source)
-      src=${esrc/$ehome\/}
-      nam=$(basename $src)
-      dst=externals/$nam
-       
-      if [ -f "$dst" ]; then 
-          note="previously copied to dst $dst"  
-      else
-          note="copying to dst $dst"  
-          hg cp $src $xhome/$dst
-          perl -pi -e "s,$src,$dst," $xhome/$dst 
-          perl -pi -e "s,opticks-home,opticks-home," $xhome/$dst 
-      fi
-      printf "# %-15s %15s %35s %s \n" $x $nam $src "$note"
-      printf "%-20s %-50s %s\n" "$x-(){" ". \$(opticks-home)/externals/$nam" "&& $x-env \$* ; }"   >> $xbash
-
-   done 
-   cd $iwd
-}
-opticks-filemap()
-{
-   opticks-filemap-head
-   opticks-filemap-body
-}
-
-opticks-filemap-head(){ cat << EOH
-# $FUNCNAME
-# configure the spawning of opticks repo from env repo 
-# see adm-opticks
-#
-include opticks.bash
-include CMakeLists.txt
-include cmake
-include externals
-#
-EOH
-}
-
-opticks-filemap-body(){
-   local dir
-   opticks-dirs | while read dir ; do
-      printf "include %s\n" $dir
-   done
-}
-
-
 
 opticks-htmldir(){   echo $(opticks-prefix)/html ; }
 opticks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
@@ -1145,8 +741,9 @@ cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 
 
 
+oks-(){             . $(opticks-home)/oks.bash && oks-env $* ; }
 opticksdata-(){     . $(opticks-home)/opticksdata.bash && opticksdata-env $* ; }
-ggv-(){             . $(opticks-home)/ggeoview/ggv.bash && ggv-env $* ; }
+ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }
+vids-(){            . $(opticks-home)/bin/vids.bash && vids-env $* ; }
 op-(){              . $(opticks-home)/bin/op.sh ; }
-#
 

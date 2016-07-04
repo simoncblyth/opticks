@@ -1,8 +1,8 @@
-bcfg-rel(){      echo boostrap ; }
-bcfg-src(){      echo $(bcfg-rel)/bcfg.bash ; }
-bcfg-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bcfg-src)} ; }
-bcfg-vi(){       vi $(bcfg-source) ; }
-bcfg-usage(){ cat << EOU
+brapdev-rel(){      echo boostrap ; }
+brapdev-src(){      echo $(brapdev-rel)/bcfg.bash ; }
+brapdev-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(brapdev-src)} ; }
+brapdev-vi(){       vi $(brapdev-source) ; }
+brapdev-usage(){ cat << EOU
 
 Boost Bind Based Configuration
 ================================
@@ -159,56 +159,56 @@ EOU
 }
 
 
-bcfg-sdir(){ echo $(opticks-home)/$(bcfg-rel) ; }
-bcfg-env(){      olocal- ; opticks- ;  }
+brapdev-sdir(){ echo $(opticks-home)/$(brapdev-rel) ; }
+brapdev-env(){      olocal- ; opticks- ;  }
 
-bcfg-idir(){ echo $(opticks-idir) ; }
-bcfg-bdir(){ echo $(opticks-bdir)/$(bcfg-rel) ; }
+brapdev-idir(){ echo $(opticks-idir) ; }
+brapdev-bdir(){ echo $(opticks-bdir)/$(brapdev-rel) ; }
 
-bcfg-scd(){  cd $(bcfg-sdir); }
-bcfg-cd(){  cd $(bcfg-sdir); }
+brapdev-scd(){  cd $(brapdev-sdir); }
+brapdev-cd(){  cd $(brapdev-sdir); }
 
-bcfg-icd(){  cd $(bcfg-idir); }
-bcfg-bcd(){  cd $(bcfg-bdir); }
+brapdev-icd(){  cd $(brapdev-idir); }
+brapdev-bcd(){  cd $(brapdev-bdir); }
 
-bcfg-name(){ echo CfgTest ; }
+brapdev-name(){ echo CfgTest ; }
 
-bcfg-wipe(){
-   local bdir=$(bcfg-bdir)
+brapdev-wipe(){
+   local bdir=$(brapdev-bdir)
    rm -rf $bdir
 }
 
-bcfg-txt(){ vi $(bcfg-sdir)/CMakeLists.txt ; }
+brapdev-txt(){ vi $(brapdev-sdir)/CMakeLists.txt ; }
 
-bcfg-make(){
+brapdev-make(){
    local iwd=$PWD
 
-   bcfg-bcd
+   brapdev-bcd
    make $*
 
    cd $iwd
 }
 
-bcfg-install(){
-   bcfg-make install
+brapdev-install(){
+   brapdev-make install
 }
 
-bcfg-bin(){ echo $(bcfg-idir)/bin/$(bcfg-name) ; }
+brapdev-bin(){ echo $(brapdev-idir)/bin/$(brapdev-name) ; }
 
-bcfg-export()
+brapdev-export()
 {
    echo -n
 }
 
-bcfg-run(){
-   local bin=$(bcfg-bin)
-   bcfg-export
+brapdev-run(){
+   local bin=$(brapdev-bin)
+   brapdev-export
    $bin $*
 }
 
-bcfg-runq(){
-   local bin=$(bcfg-bin)
-   bcfg-export
+brapdev-runq(){
+   local bin=$(brapdev-bin)
+   brapdev-export
 
    local parms=""
    local p
@@ -222,11 +222,11 @@ EOC
 }
 
 
-bcfg--()
+brapdev--()
 {
-    bcfg-make clean
-    bcfg-make 
-    bcfg-install
+    brapdev-make clean
+    brapdev-make 
+    brapdev-install
 }
 
 

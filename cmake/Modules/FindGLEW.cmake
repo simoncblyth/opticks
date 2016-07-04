@@ -1,11 +1,7 @@
-# http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
-#set(GLEW_PREFIX "${OPTICKS_PREFIX}/externals/glew/glew")
 set(GLEW_PREFIX "${OPTICKS_PREFIX}/externals")
 
-
 #message("GLEW_PREFIX:${GLEW_PREFIX}")
-
 
 LINK_DIRECTORIES(${GLEW_PREFIX}/lib)
 

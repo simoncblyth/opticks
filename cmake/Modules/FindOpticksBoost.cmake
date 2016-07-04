@@ -13,11 +13,11 @@ set(OPTICKS_BOOST_COMPONENTS
     system 
     thread 
     program_options 
-    log 
-    log_setup 
     filesystem 
     regex 
 )
+
+# no longer using: log log_setup
 
 
 # use of timer is being evaluated on mac in brap-/tests/BTimeTest
