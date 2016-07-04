@@ -2,7 +2,7 @@
 goofit-src(){      echo cuda/goofit/goofit.bash ; }
 goofit-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(goofit-src)} ; }
 goofit-vi(){       vi $(goofit-source) ; }
-goofit-env(){      elocal- ; }
+goofit-env(){      olocal- ; }
 goofit-usage(){ cat << EOU
 
 

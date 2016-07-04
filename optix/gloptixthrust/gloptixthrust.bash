@@ -2,7 +2,7 @@
 gloptixthrust-src(){      echo optix/gloptixthrust/gloptixthrust.bash ; }
 gloptixthrust-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(gloptixthrust-src)} ; }
 gloptixthrust-vi(){       vi $(gloptixthrust-source) ; }
-gloptixthrust-env(){      elocal- ; }
+gloptixthrust-env(){      olocal- ; }
 gloptixthrust-usage(){ cat << EOU
 
 OpenGL/OptiX/CUDA/Thrust Interop
@@ -164,7 +164,7 @@ gloptixthrust-dir(){ echo $(opticks-home)/optix/gloptixthrust ; }
 gloptixthrust-cd(){  cd $(gloptixthrust-dir); }
 
 gloptixthrust-env(){      
-   elocal- 
+   olocal- 
    cuda-
    optix-
 }

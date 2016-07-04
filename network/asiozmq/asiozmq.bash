@@ -2,7 +2,7 @@
 asiozmq-src(){      echo network/asiozmq/asiozmq.bash ; }
 asiozmq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(asiozmq-src)} ; }
 asiozmq-vi(){       vi $(asiozmq-source) ; }
-asiozmq-env(){      elocal- ; }
+asiozmq-env(){      olocal- ; }
 asiozmq-usage(){ cat << EOU
 
 Asio ZMQ 

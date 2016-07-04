@@ -226,7 +226,7 @@ thrust-update()
 
 
 thrust-env(){      
-   elocal- ; 
+   olocal- ; 
    cuda- ; 
 }
 

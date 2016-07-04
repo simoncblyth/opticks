@@ -289,7 +289,7 @@ install test
 EOU
 }
 
-assimp-env(){      elocal- ; opticks- ;  }
+assimp-env(){      olocal- ; opticks- ;  }
 assimp-fork-name(){ echo assimp-fork ; }
 assimp-name(){ echo $(assimp-fork-name) ; }
 

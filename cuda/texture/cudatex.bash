@@ -92,7 +92,7 @@ cudatex-bcd(){  cd $(cudatex-bdir); }
 cudatex-cd(){   cudatex-scd ; }
 
 cudatex-env(){      
-   elocal- 
+   olocal- 
    cuda-
 }
 

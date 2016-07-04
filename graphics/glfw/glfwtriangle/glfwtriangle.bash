@@ -246,7 +246,7 @@ glfwtriangle-dir(){ echo $(opticks-home)/graphics/glfw/glfwtriangle ; }
 glfwtriangle-cd(){  cd $(glfwtriangle-dir); }
 
 glfwtriangle-env(){      
-   elocal- 
+   olocal- 
    glew-
    glfw-
 }

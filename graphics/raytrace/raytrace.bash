@@ -558,7 +558,7 @@ raytrace-clean(){
 }
 
 raytrace-env(){      
-    elocal-  
+    olocal-  
     assimp-
     optix-
     optix-export

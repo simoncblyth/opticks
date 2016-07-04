@@ -32,7 +32,7 @@ See Also
 
 EOU
 }
-opticksdata-env(){      elocal- ; opticks- ;  }
+opticksdata-env(){      olocal- ; opticks- ;  }
 opticksdata-dir(){ echo $(opticks-prefix)/opticksdata ; }
 opticksdata-cd(){  cd $(opticksdata-dir); }
 

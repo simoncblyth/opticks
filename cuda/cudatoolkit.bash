@@ -2,7 +2,7 @@
 cudatoolkit-src(){      echo cuda/cudatoolkit.bash ; }
 cudatoolkit-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudatoolkit-src)} ; }
 cudatoolkit-vi(){       vi $(cudatoolkit-source) ; }
-cudatoolkit-env(){      elocal- ; }
+cudatoolkit-env(){      olocal- ; }
 cudatoolkit-usage(){ cat << EOU
 
 CUDA TOOLKIT

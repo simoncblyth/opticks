@@ -2,7 +2,7 @@
 asiosamples-src(){      echo boost/basio/asiosamples/asiosamples.bash ; }
 asiosamples-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(asiosamples-src)} ; }
 asiosamples-vi(){       vi $(asiosamples-source) ; }
-asiosamples-env(){      elocal- ; }
+asiosamples-env(){      olocal- ; }
 asiosamples-usage(){ cat << EOU
 
 

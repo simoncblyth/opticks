@@ -2,7 +2,7 @@
 ocelot-src(){      echo cuda/ocelot.bash ; }
 ocelot-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ocelot-src)} ; }
 ocelot-vi(){       vi $(ocelot-source) ; }
-ocelot-env(){      elocal- ; }
+ocelot-env(){      olocal- ; }
 ocelot-usage(){ cat << EOU
 
 GPU OCELOT, CUDA EMULATION

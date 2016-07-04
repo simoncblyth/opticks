@@ -2,7 +2,7 @@
 g4win-src(){      echo g4/g4win.bash ; }
 g4win-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4win-src)} ; }
 g4win-vi(){       vi $(g4win-source) ; }
-g4win-env(){      elocal- ; }
+g4win-env(){      olocal- ; }
 g4win-usage(){ cat << EOU
 
 G4 On Windows notes

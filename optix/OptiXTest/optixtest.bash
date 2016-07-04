@@ -2,7 +2,7 @@ optixtest-src(){      echo optix/OptiXTest/optixtest.bash ; }
 optixtest-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixtest-src)} ; }
 optixtest-vi(){       vi $(optixtest-source) ; }
 optixtest-env(){      
-   elocal- 
+   olocal- 
    optix- 
    optix-export
 }

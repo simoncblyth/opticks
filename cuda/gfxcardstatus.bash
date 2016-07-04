@@ -2,7 +2,7 @@
 gfxcardstatus-src(){      echo cuda/gfxcardstatus.bash ; }
 gfxcardstatus-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(gfxcardstatus-src)} ; }
 gfxcardstatus-vi(){       vi $(gfxcardstatus-source) ; }
-gfxcardstatus-env(){      elocal- ; }
+gfxcardstatus-env(){      olocal- ; }
 gfxcardstatus-usage(){ cat << EOU
 
 gfxCardStatus

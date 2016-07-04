@@ -2,7 +2,7 @@
 rcuda-src(){      echo cuda/rcuda.bash ; }
 rcuda-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(rcuda-src)} ; }
 rcuda-vi(){       vi $(rcuda-source) ; }
-rcuda-env(){      elocal- ; }
+rcuda-env(){      olocal- ; }
 rcuda-usage(){ cat << EOU
 
 rCUDA

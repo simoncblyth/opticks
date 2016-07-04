@@ -336,11 +336,15 @@ EOU
 }
 
 opticks-env(){      
-   elocal-
    # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
    . $(opticks-home)/externals/externals.bash   ## just precursors
 }
-#opticks-home(){   echo $(opticks-home) ; }
+
+olocal-()
+{
+   echo -n # transitional standin for olocal-
+}
+
 opticks-home(){   echo $OPTICKS_HOME ; }  ## input from profile 
 opticks-dir(){    echo $(local-base)/opticks ; }
 opticks-prefix(){ echo $(local-base)/opticks ; }

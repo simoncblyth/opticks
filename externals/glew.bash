@@ -38,7 +38,7 @@ glew-cmake fails
 
 EOU
 }
-glew-env(){      elocal- ; opticks- ;  }
+glew-env(){      olocal- ; opticks- ;  }
 
 glew-fold(){ echo $(opticks-prefix)/externals/glew ; }
 glew-dir(){  echo $(glew-fold)/$(glew-name) ; }

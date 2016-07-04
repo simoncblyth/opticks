@@ -532,7 +532,7 @@ Related
 EOU
 }
 
-okc-env(){      elocal- ; opticks- ;  }
+okc-env(){      olocal- ; opticks- ;  }
 
 okc-sdir(){ echo $(opticks-home)/optickscore ; }
 okc-tdir(){ echo $(opticks-home)/optickscore/tests ; }

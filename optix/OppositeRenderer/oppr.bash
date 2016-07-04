@@ -2,7 +2,7 @@
 oppr-src(){      echo optix/OppositeRenderer/oppr.bash ; }
 oppr-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(oppr-src)} ; }
 oppr-vi(){       vi $(oppr-source) ; }
-oppr-env(){      elocal- ; }
+oppr-env(){      olocal- ; }
 oppr-usage(){ cat << EOU
 
 * http://apartridge.github.io/OppositeRenderer/

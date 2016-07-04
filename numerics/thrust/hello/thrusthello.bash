@@ -67,7 +67,7 @@ thrusthello-icd(){  cd $(thrusthello-idir)/$1; }
 
 thrusthello-cd(){   cd $(thrusthello-sdir)/$1; }
 
-thrusthello-env(){      elocal- ; cuda- ; }
+thrusthello-env(){      olocal- ; cuda- ; }
 thrusthello-samples-dir(){
     echo $(cuda-dir)/samples
 }

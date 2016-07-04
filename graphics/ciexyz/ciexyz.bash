@@ -2,7 +2,7 @@
 ciexyz-src(){      echo graphics/ciexyz/ciexyz.bash ; }
 ciexyz-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ciexyz-src)} ; }
 ciexyz-vi(){       vi $(ciexyz-source) ; }
-ciexyz-env(){      elocal- ; }
+ciexyz-env(){      olocal- ; }
 ciexyz-usage(){ cat << EOU
 
 

@@ -370,7 +370,7 @@ boost python build
 EOU
 }
 
-boost-env(){      elocal- ; opticks- ;  }
+boost-env(){      olocal- ; opticks- ;  }
 boost-ver(){ 
     #echo 1.54.0 
     #echo 1.60.0 

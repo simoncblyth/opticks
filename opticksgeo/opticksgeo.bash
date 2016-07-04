@@ -8,7 +8,7 @@ opticksgeo-usage(){ cat << EOU
 EOU
 }
 
-opticksgeo-env(){      elocal- ; opticks- ; }
+opticksgeo-env(){      olocal- ; opticks- ; }
 
 opticksgeo-dir(){  echo $(opticks-home)/opticksgeo ; }
 opticksgeo-sdir(){ echo $(opticks-home)/opticksgeo ; }

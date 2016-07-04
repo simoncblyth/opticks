@@ -1,7 +1,7 @@
 optix-src(){      echo externals/optix.bash ; }
 optix-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optix-src)} ; }
 optix-vi(){       vi $(optix-source) ; }
-optix-env(){      elocal- ; }
+optix-env(){      olocal- ; }
 optix-usage(){ cat << EOU
 
 NVIDIA OptiX Ray Trace Toolkit

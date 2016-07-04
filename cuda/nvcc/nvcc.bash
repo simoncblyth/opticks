@@ -2,7 +2,7 @@
 nvcc-src(){      echo cuda/nvcc/nvcc.bash ; }
 nvcc-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(nvcc-src)} ; }
 nvcc-vi(){       vi $(nvcc-source) ; }
-nvcc-env(){      elocal- ; }
+nvcc-env(){      olocal- ; }
 nvcc-usage(){ cat << EOU
 
 NVCC Experience

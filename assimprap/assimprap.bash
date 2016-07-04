@@ -263,7 +263,7 @@ Border Surfaces Looking Reasonable with expected AD symmetry
 
 EOU
 }
-assimprap-env(){      elocal- ; opticks- ;  }
+assimprap-env(){      olocal- ; opticks- ;  }
 
 assimprap-sdir(){ echo $(opticks-home)/assimprap ; }
 assimprap-tdir(){ echo $(opticks-home)/assimprap/tests ; }

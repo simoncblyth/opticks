@@ -132,7 +132,7 @@ Example B1
 EOU
 }
 g4-env(){      
-   elocal-  
+   olocal-  
    xercesc-  
    opticks-
 }

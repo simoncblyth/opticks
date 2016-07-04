@@ -62,7 +62,7 @@ many more undocumented
 
 EOU
 }
-ggv-env(){      elocal- ; ggeoview- ;  }
+ggv-env(){      olocal- ; ggeoview- ;  }
 ggv-dir(){ echo $(opticks-home)/graphics/ggeoview ; }
 ggv-cd(){  cd $(ggv-dir); }
 

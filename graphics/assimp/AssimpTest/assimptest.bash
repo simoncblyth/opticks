@@ -2,7 +2,7 @@
 assimptest-src(){      echo graphics/assimp/AssimpTest/assimptest.bash ; }
 assimptest-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(assimptest-src)} ; }
 assimptest-vi(){       vi $(assimptest-source) ; }
-assimptest-env(){      elocal- ; }
+assimptest-env(){      olocal- ; }
 assimptest-usage(){ cat << EOU
 
 

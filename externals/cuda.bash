@@ -2,7 +2,7 @@
 cuda-src(){      echo externals/cuda.bash ; }
 cuda-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cuda-src)} ; }
 cuda-vi(){       vi $(cuda-source) ; }
-cuda-env(){      elocal- ; cuda-path ; }
+cuda-env(){      olocal- ; cuda-path ; }
 cuda-usage(){ cat << EOU
 
 CUDA

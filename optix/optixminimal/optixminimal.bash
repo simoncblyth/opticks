@@ -20,7 +20,7 @@ optixminimal-dir(){ echo $(opticks-home)/optix/optixminimal ; }
 optixminimal-cd(){  cd $(optixminimal-dir); }
 
 optixminimal-env(){      
-   elocal- 
+   olocal- 
    cuda-
    optix-
 }

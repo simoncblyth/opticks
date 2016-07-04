@@ -2,7 +2,7 @@
 optixthrustnpy-src(){      echo optix/optixthrustnpy/optixthrustnpy.bash ; }
 optixthrustnpy-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixthrustnpy-src)} ; }
 optixthrustnpy-vi(){       vi $(optixthrustnpy-source) ; }
-optixthrustnpy-env(){      elocal- ; }
+optixthrustnpy-env(){      olocal- ; }
 optixthrustnpy-usage(){ cat << EOU
 
 OptiX/CUDA/Thrust + NPY Interop
@@ -88,7 +88,7 @@ optixthrustnpy-dir(){ echo $(opticks-home)/optix/optixthrustnpy ; }
 optixthrustnpy-cd(){  cd $(optixthrustnpy-dir); }
 
 optixthrustnpy-env(){      
-   elocal- 
+   olocal- 
    cuda-
    optix-
 }
