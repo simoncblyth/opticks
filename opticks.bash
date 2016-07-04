@@ -1,6 +1,6 @@
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 opticks-src(){      echo opticks.bash ; }
-opticks-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticks-src)} ; }
+opticks-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticks-src)} ; }
 opticks-vi(){       vi $(opticks-source) ; }
 opticks-usage(){   cat << \EOU
 
@@ -340,7 +340,7 @@ opticks-env(){
    # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
    . $(opticks-home)/externals/externals.bash   ## just precursors
 }
-#opticks-home(){   echo $(env-home) ; }
+#opticks-home(){   echo $(opticks-home) ; }
 opticks-home(){   echo $OPTICKS_HOME ; }  ## input from profile 
 opticks-dir(){    echo $(local-base)/opticks ; }
 opticks-prefix(){ echo $(local-base)/opticks ; }
@@ -1035,7 +1035,7 @@ EON
 }
 opticks-xcollect()
 {
-   local ehome=$(env-home)
+   local ehome=$(opticks-home)
    local xhome=$ehome
    local iwd=$PWD 
 
@@ -1067,7 +1067,7 @@ opticks-xcollect()
           note="copying to dst $dst"  
           hg cp $src $xhome/$dst
           perl -pi -e "s,$src,$dst," $xhome/$dst 
-          perl -pi -e "s,env-home,opticks-home," $xhome/$dst 
+          perl -pi -e "s,opticks-home,opticks-home," $xhome/$dst 
       fi
       printf "# %-15s %15s %35s %s \n" $x $nam $src "$note"
       printf "%-20s %-50s %s\n" "$x-(){" ". \$(opticks-home)/externals/$nam" "&& $x-env \$* ; }"   >> $xbash

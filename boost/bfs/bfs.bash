@@ -1,6 +1,6 @@
 # === func-gen- : boost/bfs/bfs fgp boost/bfs/bfs.bash fgn bfs fgh boost/bfs
 bfs-src(){      echo boost/bfs/bfs.bash ; }
-bfs-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bfs-src)} ; }
+bfs-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bfs-src)} ; }
 bfs-vi(){       vi $(bfs-source) ; }
 bfs-env(){      elocal- ; }
 bfs-usage(){ cat << EOU
@@ -13,7 +13,7 @@ EOU
 }
 
 bfs-bdir(){ echo $(local-base)/env/boost/bfs.build ; }
-bfs-sdir(){ echo $(env-home)/boost/bfs ; }
+bfs-sdir(){ echo $(opticks-home)/boost/bfs ; }
 bfs-cd(){   cd $(bfs-sdir); }
 bfs-bcd(){  cd $(bfs-bdir); }
 

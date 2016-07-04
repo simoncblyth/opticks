@@ -1,6 +1,6 @@
 # === func-gen- : boost/basio/basio fgp boost/basio/basio.bash fgn basio fgh boost/basio
 basio-src(){      echo boost/basio/basio.bash ; }
-basio-source(){   echo ${BASH_SOURCE:-$(env-home)/$(basio-src)} ; }
+basio-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(basio-src)} ; }
 basio-vi(){       vi $(basio-source) ; }
 basio-env(){      elocal- ; }
 basio-usage(){ cat << EOU
@@ -500,7 +500,7 @@ Using ASIO with GLFW
 EOU
 }
 basio-dir(){ echo $(local-base)/env/boost/basio ; }
-basio-sdir(){ echo $(env-home)/boost/basio ; }
+basio-sdir(){ echo $(opticks-home)/boost/basio ; }
 basio-cd(){  cd $(basio-dir); }
 basio-scd(){  mkdir -p $(basio-sdir) ; cd $(basio-sdir); }
 basio-mate(){ mate $(basio-dir) ; }

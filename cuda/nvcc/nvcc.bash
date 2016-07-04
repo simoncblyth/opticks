@@ -1,6 +1,6 @@
 # === func-gen- : cuda/nvcc/nvcc fgp cuda/nvcc/nvcc.bash fgn nvcc fgh cuda/nvcc
 nvcc-src(){      echo cuda/nvcc/nvcc.bash ; }
-nvcc-source(){   echo ${BASH_SOURCE:-$(env-home)/$(nvcc-src)} ; }
+nvcc-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(nvcc-src)} ; }
 nvcc-vi(){       vi $(nvcc-source) ; }
 nvcc-env(){      elocal- ; }
 nvcc-usage(){ cat << EOU

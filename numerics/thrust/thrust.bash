@@ -1,6 +1,6 @@
 # === func-gen- : numerics/thrust/thrust fgp numerics/thrust/thrust.bash fgn thrust fgh numerics/thrust
 thrust-src(){      echo numerics/thrust/thrust.bash ; }
-thrust-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrust-src)} ; }
+thrust-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrust-src)} ; }
 thrust-vi(){       vi $(thrust-source) ; }
 thrust-usage(){ cat << EOU
 
@@ -198,7 +198,7 @@ EOU
 }
 
 
-thrust-edir(){ echo $(env-home)/numerics/thrust ; }
+thrust-edir(){ echo $(opticks-home)/numerics/thrust ; }
 thrust-sdir(){ echo $(local-base)/env/numerics/thrust ; }
 thrust-idir(){ echo $(cuda-idir)/thrust ; }
 

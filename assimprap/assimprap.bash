@@ -1,6 +1,6 @@
 # === func-gen- : graphics/assimprap/assimprap fgp graphics/assimprap/assimprap.bash fgn assimprap fgh graphics/assimprap
 assimprap-src(){      echo assimprap/assimprap.bash ; }
-assimprap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimprap-src)} ; }
+assimprap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(assimprap-src)} ; }
 assimprap-vi(){       vi $(assimprap-source) ; }
 assimprap-usage(){ cat << EOU
 
@@ -265,8 +265,8 @@ EOU
 }
 assimprap-env(){      elocal- ; opticks- ;  }
 
-assimprap-sdir(){ echo $(env-home)/assimprap ; }
-assimprap-tdir(){ echo $(env-home)/assimprap/tests ; }
+assimprap-sdir(){ echo $(opticks-home)/assimprap ; }
+assimprap-tdir(){ echo $(opticks-home)/assimprap/tests ; }
 assimprap-idir(){ echo $(opticks-idir); }
 assimprap-bdir(){ echo $(opticks-bdir)/assimprap ; }
 

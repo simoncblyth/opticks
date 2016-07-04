@@ -1,5 +1,5 @@
 ggeoview-src(){      echo ggeoview/ggeoview.bash ; }
-ggeoview-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeoview-src)} ; }
+ggeoview-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggeoview-src)} ; }
 ggeoview-vi(){       vi $(ggeoview-source) ; }
 
 ggeoview-usage(){ cat << EOU
@@ -1111,8 +1111,8 @@ ggeoview-env(){
 }
 
 
-ggeoview-sdir(){ echo $(env-home)/ggeoview ; }
-ggeoview-tdir(){ echo $(env-home)/ggeoview/tests ; }
+ggeoview-sdir(){ echo $(opticks-home)/ggeoview ; }
+ggeoview-tdir(){ echo $(opticks-home)/ggeoview/tests ; }
 ggeoview-idir(){ echo $(opticks-idir) ; }
 ggeoview-bdir(){ echo $(opticks-bdir)/ggeoview ; }
 

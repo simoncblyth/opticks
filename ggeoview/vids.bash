@@ -1,6 +1,6 @@
 # === func-gen- : graphics/ggeoview/vids fgp graphics/ggeoview/vids.bash fgn vids fgh graphics/ggeoview
 vids-src(){      echo graphics/ggeoview/vids.bash ; }
-vids-source(){   echo ${BASH_SOURCE:-$(env-home)/$(vids-src)} ; }
+vids-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(vids-src)} ; }
 vids-vi(){       vi $(vids-source) ; }
 vids-env(){      elocal- ; }
 vids-usage(){ cat << EOU

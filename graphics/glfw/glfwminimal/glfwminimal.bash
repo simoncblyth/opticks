@@ -1,6 +1,6 @@
 # === func-gen- : graphics/thrust_opengl_interop/glfwminimal fgp graphics/thrust_opengl_interop/glfwminimal.bash fgn glfwminimal fgh graphics/thrust_opengl_interop
 glfwminimal-src(){      echo graphics/thrust_opengl_interop/glfwminimal.bash ; }
-glfwminimal-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glfwminimal-src)} ; }
+glfwminimal-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glfwminimal-src)} ; }
 glfwminimal-vi(){       vi $(glfwminimal-source) ; }
 glfwminimal-usage(){ cat << EOU
 
@@ -12,7 +12,7 @@ EOU
 
 glfwminimal-env(){      elocal- ; }
 
-glfwminimal-sdir(){ echo $(env-home)/graphics/glfw/glfwminimal ; }
+glfwminimal-sdir(){ echo $(opticks-home)/graphics/glfw/glfwminimal ; }
 glfwminimal-idir(){ echo $(local-base)/env/graphics/glfw/glfwminimal ; }
 glfwminimal-bdir(){ echo $(glfwminimal-idir).build ; }
 glfwminimal-bindir(){ echo $(glfwminimal-idir)/bin ; }

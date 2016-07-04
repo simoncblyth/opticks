@@ -1,5 +1,5 @@
 numpyserver-src(){      echo numpyserver/numpyserver.bash ; }
-numpyserver-source(){   echo ${BASH_SOURCE:-$(env-home)/$(numpyserver-src)} ; }
+numpyserver-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(numpyserver-src)} ; }
 numpyserver-vi(){       vi $(numpyserver-source) ; }
 numpyserver-env(){      elocal- ; }
 numpyserver-usage(){ cat << EOU
@@ -211,7 +211,7 @@ and avoids abort at exit::
 EOU
 }
 
-numpyserver-sdir(){ echo $(env-home)/numpyserver ; }
+numpyserver-sdir(){ echo $(opticks-home)/numpyserver ; }
 numpyserver-idir(){ echo $(local-base)/opticks/numpyserver ; }
 numpyserver-bdir(){ echo $(local-base)/opticks/numpyserver.build ; }
 

@@ -1,5 +1,5 @@
 lxe-src(){      echo optix/lxe/lxe.bash ; }
-lxe-source(){   echo ${BASH_SOURCE:-$(env-home)/$(lxe-src)} ; }
+lxe-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(lxe-src)} ; }
 lxe-vi(){       vi $(lxe-source) ; }
 lxe-usage(){ cat << EOU
 
@@ -20,7 +20,7 @@ lxe-bin(){ echo ${CFG4_BINARY:-$(lxe-idir)/bin/$(lxe-name)} ; }
 
 lxe-idir(){ echo $(local-base)/env/optix/lxe; } 
 lxe-bdir(){ echo $(local-base)/env/optix/lxe.build ; }
-lxe-sdir(){ echo $(env-home)/optix/lxe ; }
+lxe-sdir(){ echo $(opticks-home)/optix/lxe ; }
 
 lxe-icd(){  cd $(lxe-idir); }
 lxe-bcd(){  cd $(lxe-bdir); }

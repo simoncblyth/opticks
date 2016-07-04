@@ -1,6 +1,6 @@
 # === func-gen- : boost/bpo/bpo fgp boost/bpo/bpo.bash fgn bpo fgh boost/bpo
 bpo-src(){      echo boost/bpo/bpo.bash ; }
-bpo-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bpo-src)} ; }
+bpo-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bpo-src)} ; }
 bpo-vi(){       vi $(bpo-source) ; }
 bpo-env(){      elocal- ; }
 bpo-usage(){ cat << EOU
@@ -35,7 +35,7 @@ EOU
 bpo-boost-prefix(){ echo /opt/local ; }
 
 bpo-dir(){  echo $(local-base)/env/boost/bpo ; }
-bpo-sdir(){ echo $(env-home)/boost/bpo ; }
+bpo-sdir(){ echo $(opticks-home)/boost/bpo ; }
 bpo-idir(){ echo $(bpo-boost-prefix)/include/boost/program_options ; }
 
 bpo-cd(){   cd $(bpo-dir); }

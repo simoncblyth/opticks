@@ -1,7 +1,7 @@
 # === func-gen- : graphics/openmeshrap/openmeshrap fgp graphics/openmeshrap/openmeshrap.bash fgn openmeshrap fgh graphics/openmeshrap
 openmeshrap-rel(){      echo openmeshrap ; }
 openmeshrap-src(){      echo openmeshrap/openmeshrap.bash ; }
-openmeshrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmeshrap-src)} ; }
+openmeshrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(openmeshrap-src)} ; }
 openmeshrap-vi(){       vi $(openmeshrap-source) ; }
 openmeshrap-usage(){ cat << EOU
 
@@ -413,9 +413,9 @@ Bizarre, test runs but no libOpenMesh ?
 EOU
 }
 openmeshrap-env(){      elocal- ; opticks- ;  }
-openmeshrap-dir(){  echo $(env-home)/openmeshrap ; }
-openmeshrap-sdir(){ echo $(env-home)/openmeshrap ; }
-openmeshrap-tdir(){ echo $(env-home)/openmeshrap/tests ; }
+openmeshrap-dir(){  echo $(opticks-home)/openmeshrap ; }
+openmeshrap-sdir(){ echo $(opticks-home)/openmeshrap ; }
+openmeshrap-tdir(){ echo $(opticks-home)/openmeshrap/tests ; }
 openmeshrap-idir(){ echo $(opticks-idir) ; }
 openmeshrap-bdir(){ echo $(opticks-bdir)/$(openmeshrap-rel) ; }
 

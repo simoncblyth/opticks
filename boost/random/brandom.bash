@@ -1,6 +1,6 @@
 # === func-gen- : boost/random/brandom fgp boost/random/brandom.bash fgn brandom fgh boost/random
 brandom-src(){      echo boost/random/brandom.bash ; }
-brandom-source(){   echo ${BASH_SOURCE:-$(env-home)/$(brandom-src)} ; }
+brandom-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(brandom-src)} ; }
 brandom-vi(){       vi $(brandom-source) ; }
 brandom-env(){      elocal- ; }
 brandom-usage(){ cat << EOU
@@ -14,7 +14,7 @@ EOU
 
 brandom-idir(){ echo $(local-base)/env/boost/random; }  # prefix
 brandom-bdir(){ echo $(local-base)/env/boost/random.build ; }
-brandom-sdir(){ echo $(env-home)/boost/random ; }
+brandom-sdir(){ echo $(opticks-home)/boost/random ; }
 
 brandom-icd(){  cd $(brandom-idir); }
 brandom-bcd(){  cd $(brandom-bdir); }

@@ -1,6 +1,6 @@
 # === func-gen- : g4/g4ex fgp g4/g4ex.bash fgn g4ex fgh g4
 g4ex-src(){      echo g4/g4ex.bash ; }
-g4ex-source(){   echo ${BASH_SOURCE:-$(env-home)/$(g4ex-src)} ; }
+g4ex-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4ex-src)} ; }
 g4ex-vi(){       vi $(g4ex-source) ; }
 g4ex-usage(){ cat << EOU
 

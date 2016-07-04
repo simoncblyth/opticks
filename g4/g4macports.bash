@@ -1,6 +1,6 @@
 # === func-gen- : g4/g4macports fgp g4/g4macports.bash fgn g4macports fgh g4
 g4macports-src(){      echo g4/g4macports.bash ; }
-g4macports-source(){   echo ${BASH_SOURCE:-$(env-home)/$(g4macports-src)} ; }
+g4macports-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4macports-src)} ; }
 g4macports-vi(){       vi $(g4macports-source) ; }
 g4macports-env(){      elocal- ; }
 g4macports-usage(){ cat << EOU

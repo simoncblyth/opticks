@@ -1,6 +1,6 @@
 # === func-gen- : graphics/glfw/glfwtest/glfwtest fgp graphics/glfw/glfwtest/glfwtest.bash fgn glfwtest fgh graphics/glfw/glfwtest
 glfwtest-src(){      echo graphics/glfw/glfwtest/glfwtest.bash ; }
-glfwtest-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glfwtest-src)} ; }
+glfwtest-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glfwtest-src)} ; }
 glfwtest-vi(){       vi $(glfwtest-source) ; }
 glfwtest-usage(){ cat << EOU
 
@@ -39,7 +39,7 @@ http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
 EOU
 }
-glfwtest-sdir(){ echo $(env-home)/graphics/glfw/glfwtest ; }
+glfwtest-sdir(){ echo $(opticks-home)/graphics/glfw/glfwtest ; }
 glfwtest-idir(){ echo $(local-base)/env/graphics/glfw/glfwtest ; }
 glfwtest-bdir(){ echo $(glfwtest-idir).build ; }
 

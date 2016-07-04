@@ -1,6 +1,6 @@
 # === func-gen- : optix/macrosim/macrosim fgp optix/macrosim/macrosim.bash fgn macrosim fgh optix/macrosim
 macrosim-src(){      echo optix/macrosim/macrosim.bash ; }
-macrosim-source(){   echo ${BASH_SOURCE:-$(env-home)/$(macrosim-src)} ; }
+macrosim-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(macrosim-src)} ; }
 macrosim-vi(){       vi $(macrosim-source) ; }
 macrosim-env(){      elocal- ; }
 macrosim-usage(){ cat << EOU

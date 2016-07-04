@@ -1,6 +1,6 @@
 # === func-gen- : network/asiozmq/asiozmq fgp network/asiozmq/asiozmq.bash fgn asiozmq fgh network/asiozmq
 asiozmq-src(){      echo network/asiozmq/asiozmq.bash ; }
-asiozmq-source(){   echo ${BASH_SOURCE:-$(env-home)/$(asiozmq-src)} ; }
+asiozmq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(asiozmq-src)} ; }
 asiozmq-vi(){       vi $(asiozmq-source) ; }
 asiozmq-env(){      elocal- ; }
 asiozmq-usage(){ cat << EOU
@@ -171,7 +171,7 @@ asiozmq-dir(){  echo $(local-base)/env/network/asiozmq ; }
 asiozmq-idir(){ echo $(asiozmq-dir)/include ; }
 asiozmq-sdir(){ echo $(asiozmq-dir)/example ; }
 asiozmq-bdir(){ echo $(asiozmq-dir)/example.build ; }
-asiozmq-edir(){ echo $(env-home)/network/asiozmq; }
+asiozmq-edir(){ echo $(opticks-home)/network/asiozmq; }
 
 asiozmq-cd(){   cd $(asiozmq-dir) ; }
 asiozmq-scd(){  cd $(asiozmq-sdir)  ; }

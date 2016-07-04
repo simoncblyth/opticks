@@ -1,6 +1,6 @@
 # === func-gen- : optix/optixtex/optixtex fgp optix/optixtex/optixtex.bash fgn optixtex fgh optix/optixtex
 optixtex-src(){      echo optix/optixtex/optixtex.bash ; }
-optixtex-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixtex-src)} ; }
+optixtex-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixtex-src)} ; }
 optixtex-vi(){       vi $(optixtex-source) ; }
 optixtex-env(){      elocal- ; }
 optixtex-usage(){ cat << EOU

@@ -1,6 +1,6 @@
 # === func-gen- : cuda/gfxcardstatus fgp cuda/gfxcardstatus.bash fgn gfxcardstatus fgh cuda
 gfxcardstatus-src(){      echo cuda/gfxcardstatus.bash ; }
-gfxcardstatus-source(){   echo ${BASH_SOURCE:-$(env-home)/$(gfxcardstatus-src)} ; }
+gfxcardstatus-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(gfxcardstatus-src)} ; }
 gfxcardstatus-vi(){       vi $(gfxcardstatus-source) ; }
 gfxcardstatus-env(){      elocal- ; }
 gfxcardstatus-usage(){ cat << EOU

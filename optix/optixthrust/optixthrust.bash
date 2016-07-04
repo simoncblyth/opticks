@@ -1,6 +1,6 @@
 # === func-gen- : optix/optixthrust/optixthrust fgp optix/optixthrust/optixthrust.bash fgn optixthrust fgh optix/optixthrust
 optixthrust-src(){      echo optix/optixthrust/optixthrust.bash ; }
-optixthrust-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixthrust-src)} ; }
+optixthrust-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixthrust-src)} ; }
 optixthrust-vi(){       vi $(optixthrust-source) ; }
 optixthrust-env(){      elocal- ; }
 optixthrust-usage(){ cat << EOU
@@ -192,7 +192,7 @@ The cause is the -Wall option::
 
 EOU
 }
-optixthrust-dir(){ echo $(env-home)/optix/optixthrust ; }
+optixthrust-dir(){ echo $(opticks-home)/optix/optixthrust ; }
 optixthrust-cd(){  cd $(optixthrust-dir); }
 
 optixthrust-env(){      

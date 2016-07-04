@@ -1,6 +1,6 @@
 # === func-gen- : cuda/cuda fgp cuda/cuda.bash fgn cuda fgh cuda
 cuda-src(){      echo cuda/cuda.bash ; }
-cuda-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cuda-src)} ; }
+cuda-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cuda-src)} ; }
 cuda-vi(){       vi $(cuda-source) ; }
 cuda-env(){      elocal- ; cuda-path ; }
 cuda-usage(){ cat << EOU
@@ -547,7 +547,7 @@ cuda-dir()
 }
 
 cuda-prefix(){       echo $(cuda-dir) ; }
-cuda-edir(){         echo $(env-home)/cuda ; }
+cuda-edir(){         echo $(opticks-home)/cuda ; }
 cuda-idir(){         echo $(cuda-dir)/include ; }
 
 cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 

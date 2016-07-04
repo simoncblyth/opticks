@@ -1,6 +1,6 @@
 # === func-gen- : graphics/ciexyz/ciexyz fgp graphics/ciexyz/ciexyz.bash fgn ciexyz fgh graphics/ciexyz
 ciexyz-src(){      echo graphics/ciexyz/ciexyz.bash ; }
-ciexyz-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ciexyz-src)} ; }
+ciexyz-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ciexyz-src)} ; }
 ciexyz-vi(){       vi $(ciexyz-source) ; }
 ciexyz-env(){      elocal- ; }
 ciexyz-usage(){ cat << EOU
@@ -128,7 +128,7 @@ A better presentation of Planck’s radiation law
 
 EOU
 }
-ciexyz-dir(){ echo $(env-home)/graphics/ciexyz ; }
+ciexyz-dir(){ echo $(opticks-home)/graphics/ciexyz ; }
 ciexyz-cd(){  cd $(ciexyz-dir); }
 
 ciexyz-pdf(){

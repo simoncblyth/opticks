@@ -1,7 +1,7 @@
 # === func-gen- : cudarap/cudarap fgp cudarap/cudarap.bash fgn cudarap fgh cudarap
 cudarap-rel(){      echo cudarap ; }
 cudarap-src(){      echo cudarap/cudarap.bash ; }
-cudarap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudarap-src)} ; }
+cudarap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudarap-src)} ; }
 cudarap-vi(){       vi $(cudarap-source) ; }
 cudarap-usage(){ cat << EOU
 
@@ -391,8 +391,8 @@ cudarap-name(){ echo CUDARap ; }
 
 cudarap-idir(){ echo $(opticks-idir); }
 cudarap-bdir(){ echo $(opticks-bdir)/$(cudarap-rel) ; }
-cudarap-sdir(){ echo $(env-home)/cudarap ; }
-cudarap-tdir(){ echo $(env-home)/cudarap/tests ; }
+cudarap-sdir(){ echo $(opticks-home)/cudarap ; }
+cudarap-tdir(){ echo $(opticks-home)/cudarap/tests ; }
 cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }
 
 cudarap-rng-dir(){ echo $(local-base)/env/CUDARap/rngcache ; }

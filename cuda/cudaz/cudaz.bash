@@ -1,6 +1,6 @@
 # === func-gen- : cuda/cudaz/cudaz fgp cuda/cudaz/cudaz.bash fgn cudaz fgh cuda/cudaz
 cudaz-src(){      echo cuda/cudaz/cudaz.bash ; }
-cudaz-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudaz-src)} ; }
+cudaz-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudaz-src)} ; }
 cudaz-vi(){       vi $(cudaz-source) ; }
 cudaz-env(){      elocal- ; }
 cudaz-usage(){ cat << EOU

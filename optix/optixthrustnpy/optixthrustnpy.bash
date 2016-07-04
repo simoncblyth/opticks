@@ -1,6 +1,6 @@
 # === func-gen- : optix/optixthrustnpy/optixthrustnpy fgp optix/optixthrustnpy/optixthrustnpy.bash fgn optixthrustnpy fgh optix/optixthrustnpy
 optixthrustnpy-src(){      echo optix/optixthrustnpy/optixthrustnpy.bash ; }
-optixthrustnpy-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixthrustnpy-src)} ; }
+optixthrustnpy-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixthrustnpy-src)} ; }
 optixthrustnpy-vi(){       vi $(optixthrustnpy-source) ; }
 optixthrustnpy-env(){      elocal- ; }
 optixthrustnpy-usage(){ cat << EOU
@@ -84,7 +84,7 @@ there is agreement and linking succeeds::
 
 EOU
 }
-optixthrustnpy-dir(){ echo $(env-home)/optix/optixthrustnpy ; }
+optixthrustnpy-dir(){ echo $(opticks-home)/optix/optixthrustnpy ; }
 optixthrustnpy-cd(){  cd $(optixthrustnpy-dir); }
 
 optixthrustnpy-env(){      

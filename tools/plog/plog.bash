@@ -1,6 +1,6 @@
 # === func-gen- : tools/plog/plog fgp tools/plog/plog.bash fgn plog fgh tools/plog
 plog-src(){      echo tools/plog/plog.bash ; }
-plog-source(){   echo ${BASH_SOURCE:-$(env-home)/$(plog-src)} ; }
+plog-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(plog-src)} ; }
 plog-vi(){       vi $(plog-source) ; }
 plog-usage(){ cat << EOU
 

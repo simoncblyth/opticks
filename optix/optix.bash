@@ -1,5 +1,5 @@
 optix-src(){      echo optix/optix.bash ; }
-optix-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optix-src)} ; }
+optix-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optix-src)} ; }
 optix-vi(){       vi $(optix-source) ; }
 optix-env(){      elocal- ; }
 optix-usage(){ cat << EOU
@@ -2603,7 +2603,7 @@ optix-download-dir(){ echo $(local-base)/env/cuda ; }
 optix-bdir(){         echo $(local-base)/env/cuda/$(optix-name) ; }
 optix-install-dir(){ echo $(dirname $(optix-sdk-dir)) ; }
 optix-idir(){        echo $(dirname $(optix-sdk-dir))/include ; }
-optix-sdir(){        echo $(env-home)/optix ; }
+optix-sdir(){        echo $(opticks-home)/optix ; }
 optix-samples-src-dir(){     echo $(local-base)/env/cuda/$(optix-name)_sdk ; }
 optix-samples-install-dir(){ echo $(local-base)/env/cuda/$(optix-name)_sdk_install ; }
 

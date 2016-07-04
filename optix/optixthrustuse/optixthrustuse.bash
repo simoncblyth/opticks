@@ -1,6 +1,6 @@
 # === func-gen- : optix/optixthrustuse/optixthrustuse fgp optix/optixthrustuse/optixthrustuse.bash fgn optixthrustuse fgh optix/optixthrustuse
 optixthrustuse-src(){      echo optix/optixthrustuse/optixthrustuse.bash ; }
-optixthrustuse-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixthrustuse-src)} ; }
+optixthrustuse-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixthrustuse-src)} ; }
 optixthrustuse-vi(){       vi $(optixthrustuse-source) ; }
 optixthrustuse-env(){      elocal- ; }
 optixthrustuse-usage(){ cat << EOU
@@ -20,7 +20,7 @@ cmake testing
 
 EOU
 }
-optixthrustuse-dir(){ echo $(env-home)/optix/optixthrustuse ; }
+optixthrustuse-dir(){ echo $(opticks-home)/optix/optixthrustuse ; }
 optixthrustuse-cd(){  cd $(optixthrustuse-dir); }
 
 optixthrustuse-env(){      

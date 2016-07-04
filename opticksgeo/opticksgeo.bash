@@ -1,5 +1,5 @@
 opticksgeo-src(){      echo opticksgeo/opticksgeo.bash ; }
-opticksgeo-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticksgeo-src)} ; }
+opticksgeo-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticksgeo-src)} ; }
 opticksgeo-vi(){       vi $(opticksgeo-source) ; }
 opticksgeo-usage(){ cat << EOU
 
@@ -10,9 +10,9 @@ EOU
 
 opticksgeo-env(){      elocal- ; opticks- ; }
 
-opticksgeo-dir(){  echo $(env-home)/opticksgeo ; }
-opticksgeo-sdir(){ echo $(env-home)/opticksgeo ; }
-opticksgeo-tdir(){ echo $(env-home)/opticksgeo/tests ; }
+opticksgeo-dir(){  echo $(opticks-home)/opticksgeo ; }
+opticksgeo-sdir(){ echo $(opticks-home)/opticksgeo ; }
+opticksgeo-tdir(){ echo $(opticks-home)/opticksgeo/tests ; }
 opticksgeo-idir(){ echo $(opticks-idir); } 
 opticksgeo-bdir(){ echo $(opticks-bdir)/opticksgeo ; }  
 

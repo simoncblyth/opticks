@@ -1,6 +1,6 @@
 # === func-gen- : optix/optixminimal/optixminimal fgp optix/optixminimal/optixminimal.bash fgn optixminimal fgh optix/optixminimal
 optixminimal-src(){      echo optix/optixminimal/optixminimal.bash ; }
-optixminimal-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixminimal-src)} ; }
+optixminimal-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixminimal-src)} ; }
 optixminimal-vi(){       vi $(optixminimal-source) ; }
 optixminimal-usage(){ cat << EOU
 
@@ -16,7 +16,7 @@ optixminimal-thrust **FAILING**
 
 EOU
 }
-optixminimal-dir(){ echo $(env-home)/optix/optixminimal ; }
+optixminimal-dir(){ echo $(opticks-home)/optix/optixminimal ; }
 optixminimal-cd(){  cd $(optixminimal-dir); }
 
 optixminimal-env(){      

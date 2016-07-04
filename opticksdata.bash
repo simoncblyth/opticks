@@ -1,5 +1,5 @@
 opticksdata-src(){      echo opticksdata.bash ; }
-opticksdata-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticksdata-src)} ; }
+opticksdata-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticksdata-src)} ; }
 opticksdata-vi(){       vi $(opticksdata-source) ; }
 opticksdata-usage(){ cat << EOU
 

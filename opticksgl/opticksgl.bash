@@ -1,6 +1,6 @@
 opticksgl-rel(){      echo opticksgl ; }
 opticksgl-src(){      echo opticksgl/opticksgl.bash ; }
-opticksgl-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticksgl-src)} ; }
+opticksgl-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticksgl-src)} ; }
 opticksgl-vi(){       vi $(opticksgl-source) ; }
 opticksgl-usage(){ cat << EOU
 
@@ -30,8 +30,8 @@ EOU
 }
 
 
-opticksgl-sdir(){ echo $(env-home)/opticksgl ; }
-opticksgl-tdir(){ echo $(env-home)/opticksgl/tests ; }
+opticksgl-sdir(){ echo $(opticks-home)/opticksgl ; }
+opticksgl-tdir(){ echo $(opticks-home)/opticksgl/tests ; }
 opticksgl-idir(){ echo $(opticks-idir) ; }
 opticksgl-bdir(){ echo $(opticks-bdir)/$(opticksgl-rel) ; }
 

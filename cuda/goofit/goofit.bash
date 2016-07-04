@@ -1,6 +1,6 @@
 # === func-gen- : cuda/goofit/goofit fgp cuda/goofit/goofit.bash fgn goofit fgh cuda/goofit
 goofit-src(){      echo cuda/goofit/goofit.bash ; }
-goofit-source(){   echo ${BASH_SOURCE:-$(env-home)/$(goofit-src)} ; }
+goofit-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(goofit-src)} ; }
 goofit-vi(){       vi $(goofit-source) ; }
 goofit-env(){      elocal- ; }
 goofit-usage(){ cat << EOU

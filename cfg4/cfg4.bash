@@ -1,5 +1,5 @@
 cfg4-src(){      echo cfg4/cfg4.bash ; }
-cfg4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cfg4-src)} ; }
+cfg4-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cfg4-src)} ; }
 cfg4-vi(){       vi $(cfg4-source) ; }
 cfg4-usage(){ cat << EOU
 

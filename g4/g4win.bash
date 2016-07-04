@@ -1,6 +1,6 @@
 # === func-gen- : g4/g4win fgp g4/g4win.bash fgn g4win fgh g4
 g4win-src(){      echo g4/g4win.bash ; }
-g4win-source(){   echo ${BASH_SOURCE:-$(env-home)/$(g4win-src)} ; }
+g4win-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4win-src)} ; }
 g4win-vi(){       vi $(g4win-source) ; }
 g4win-env(){      elocal- ; }
 g4win-usage(){ cat << EOU
@@ -670,7 +670,7 @@ EOU
 }
 
 
-g4win-dir(){    echo $(env-home)/g4 ; }
+g4win-dir(){    echo $(opticks-home)/g4 ; }
 g4win-sdir(){   echo $(local-base)/env/g4win/g4win.source ; }
 g4win-bdir(){   echo $(local-base)/env/g4win/g4win.build ; }
 g4win-prefix(){ echo $(local-base)/env/g4win/g4win.install ; }

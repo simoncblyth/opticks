@@ -1,6 +1,6 @@
 # === func-gen- : boost/blogg/blogg fgp boost/blogg/blogg.bash fgn blogg fgh boost/blogg
 blogg-src(){      echo boost/blogg/blogg.bash ; }
-blogg-source(){   echo ${BASH_SOURCE:-$(env-home)/$(blogg-src)} ; }
+blogg-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(blogg-src)} ; }
 blogg-vi(){       vi $(blogg-source) ; }
 blogg-env(){      elocal- ; }
 blogg-usage(){ cat << EOU
@@ -10,7 +10,7 @@ blogg-usage(){ cat << EOU
 
 EOU
 }
-blogg-dir(){ echo $(env-home)/boost/blogg ; }
+blogg-dir(){ echo $(opticks-home)/boost/blogg ; }
 blogg-cd(){  cd $(blogg-dir); }
 
 blogg-triv(){

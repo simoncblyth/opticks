@@ -1,6 +1,6 @@
 bcfg-rel(){      echo boostrap ; }
 bcfg-src(){      echo $(bcfg-rel)/bcfg.bash ; }
-bcfg-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bcfg-src)} ; }
+bcfg-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bcfg-src)} ; }
 bcfg-vi(){       vi $(bcfg-source) ; }
 bcfg-usage(){ cat << EOU
 
@@ -159,7 +159,7 @@ EOU
 }
 
 
-bcfg-sdir(){ echo $(env-home)/$(bcfg-rel) ; }
+bcfg-sdir(){ echo $(opticks-home)/$(bcfg-rel) ; }
 bcfg-env(){      elocal- ; opticks- ;  }
 
 bcfg-idir(){ echo $(opticks-idir) ; }

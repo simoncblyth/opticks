@@ -1,6 +1,6 @@
 # === func-gen- : cuda/texture/cudatex fgp cuda/texture/cudatex.bash fgn cudatex fgh cuda/texture
 cudatex-src(){      echo cuda/texture/cudatex.bash ; }
-cudatex-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudatex-src)} ; }
+cudatex-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudatex-src)} ; }
 cudatex-vi(){       vi $(cudatex-source) ; }
 cudatex-usage(){ cat << EOU
 
@@ -86,7 +86,7 @@ Compare with Chroma photon.h:fill_state::
 EOU
 }
 cudatex-bdir(){ echo $(local-base)/env/cuda/texture ; }
-cudatex-sdir(){ echo $(env-home)/cuda/texture ; }
+cudatex-sdir(){ echo $(opticks-home)/cuda/texture ; }
 cudatex-scd(){  cd $(cudatex-sdir); }
 cudatex-bcd(){  cd $(cudatex-bdir); }
 cudatex-cd(){   cudatex-scd ; }

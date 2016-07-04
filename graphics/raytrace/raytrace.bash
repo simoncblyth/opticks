@@ -1,6 +1,6 @@
 # === func-gen- : graphics/raytrace/raytrace fgp graphics/raytrace/raytrace.bash fgn raytrace fgh graphics/raytrace
 raytrace-src(){      echo graphics/raytrace/raytrace.bash ; }
-raytrace-source(){   echo ${BASH_SOURCE:-$(env-home)/$(raytrace-src)} ; }
+raytrace-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(raytrace-src)} ; }
 raytrace-vi(){       vi $(raytrace-source) ; }
 raytrace-usage(){ cat << EOU
 
@@ -534,7 +534,7 @@ EOU
 
 raytrace-odir(){ echo $(local-base)/env/graphics/$(optix-name)/raytrace_out ; }
 raytrace-bdir(){ echo $(local-base)/env/graphics/$(optix-name)/raytrace ; }
-raytrace-sdir(){ echo $(env-home)/graphics/raytrace ; }
+raytrace-sdir(){ echo $(opticks-home)/graphics/raytrace ; }
 
 raytrace-cd(){  cd $(raytrace-sdir); }
 raytrace-cu(){  cd $(raytrace-sdir)/cu; }

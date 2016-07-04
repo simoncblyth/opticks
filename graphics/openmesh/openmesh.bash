@@ -1,6 +1,6 @@
 # === func-gen- : graphics/openmesh/openmesh fgp graphics/openmesh/openmesh.bash fgn openmesh fgh graphics/openmesh
 openmesh-src(){      echo graphics/openmesh/openmesh.bash ; }
-openmesh-source(){   echo ${BASH_SOURCE:-$(env-home)/$(openmesh-src)} ; }
+openmesh-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(openmesh-src)} ; }
 openmesh-vi(){       vi $(openmesh-source) ; }
 openmesh-usage(){ cat << EOU
 

@@ -1,6 +1,6 @@
 # === func-gen- : boost/basio/asiosamples/asiosamples fgp boost/basio/asiosamples/asiosamples.bash fgn asiosamples fgh boost/basio/asiosamples
 asiosamples-src(){      echo boost/basio/asiosamples/asiosamples.bash ; }
-asiosamples-source(){   echo ${BASH_SOURCE:-$(env-home)/$(asiosamples-src)} ; }
+asiosamples-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(asiosamples-src)} ; }
 asiosamples-vi(){       vi $(asiosamples-source) ; }
 asiosamples-env(){      elocal- ; }
 asiosamples-usage(){ cat << EOU

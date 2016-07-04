@@ -1,6 +1,6 @@
 # === func-gen- : cuda/cudainstall fgp cuda/cudainstall.bash fgn cudainstall fgh cuda
 cudainstall-src(){      echo cuda/cudainstall.bash ; }
-cudainstall-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudainstall-src)} ; }
+cudainstall-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudainstall-src)} ; }
 cudainstall-vi(){       vi $(cudainstall-source) ; }
 cudainstall-env(){      elocal- ; }
 cudainstall-usage(){ cat << EOU

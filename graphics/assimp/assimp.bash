@@ -1,6 +1,6 @@
 # === func-gen- : graphics/assimp/assimp fgp graphics/assimp/assimp.bash fgn assimp fgh graphics/assimp
 assimp-src(){      echo graphics/assimp/assimp.bash ; }
-assimp-source(){   echo ${BASH_SOURCE:-$(env-home)/$(assimp-src)} ; }
+assimp-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(assimp-src)} ; }
 assimp-vi(){       vi $(assimp-source) ; }
 assimp-usage(){ cat << EOU
 

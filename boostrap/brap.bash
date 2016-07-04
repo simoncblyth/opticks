@@ -1,6 +1,6 @@
 brap-rel(){      echo boostrap ; }
 brap-src(){      echo boostrap/brap.bash ; }
-brap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(brap-src)} ; }
+brap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(brap-src)} ; }
 brap-vi(){       vi $(brap-source) ; }
 brap-usage(){ cat << EOU
 
@@ -126,8 +126,8 @@ EOU
 brap-env(){      elocal- ; opticks- ;  }
 
 brap-dir(){  echo $(brap-sdir) ; }
-brap-sdir(){ echo $(env-home)/boostrap ; }
-brap-tdir(){ echo $(env-home)/boostrap/tests ; }
+brap-sdir(){ echo $(opticks-home)/boostrap ; }
+brap-tdir(){ echo $(opticks-home)/boostrap/tests ; }
 brap-idir(){ echo $(opticks-idir); }
 brap-bdir(){ echo $(opticks-bdir)/$(brap-rel) ; }
 

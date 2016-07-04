@@ -1,5 +1,5 @@
 boost-src(){      echo boost/boost.bash ; }
-boost-source(){   echo ${BASH_SOURCE:-$(env-home)/$(boost-src)} ; }
+boost-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(boost-src)} ; }
 boost-vi(){       vim $(boost-source) ; }
 boost-usage(){ cat << EOU
 

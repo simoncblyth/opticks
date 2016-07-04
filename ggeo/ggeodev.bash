@@ -1,6 +1,6 @@
 # === func-gen- : optix/ggeo/ggeodev fgp optix/ggeo/ggeodev.bash fgn ggeodev fgh optix/ggeo
 ggeodev-src(){      echo optix/ggeo/ggeodev.bash ; }
-ggeodev-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeodev-src)} ; }
+ggeodev-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggeodev-src)} ; }
 ggeodev-vi(){       vi $(ggeodev-source) ; }
 ggeodev-env(){      elocal- ; }
 ggeodev-usage(){ cat << EOU

@@ -1,6 +1,6 @@
 # === func-gen- : graphics/ppm/ppm fgp graphics/ppm/ppm.bash fgn ppm fgh graphics/ppm
 ppm-src(){      echo graphics/ppm/ppm.bash ; }
-ppm-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ppm-src)} ; }
+ppm-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ppm-src)} ; }
 ppm-vi(){       vi $(ppm-source) ; }
 ppm-usage(){ cat << EOU
 
@@ -28,7 +28,7 @@ EOU
 }
 
 
-ppm-sdir(){ echo $(env-home)/graphics/ppm ; }
+ppm-sdir(){ echo $(opticks-home)/graphics/ppm ; }
 
 ppm-env(){      elocal- ; opticks- ; }
 

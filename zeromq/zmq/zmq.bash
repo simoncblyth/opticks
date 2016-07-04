@@ -1,6 +1,6 @@
 # === func-gen- : zeromq/zmq/zmq fgp zeromq/zmq/zmq.bash fgn zmq fgh zeromq/zmq
 zmq-src(){      echo zeromq/zmq/zmq.bash ; }
-zmq-source(){   echo ${BASH_SOURCE:-$(env-home)/$(zmq-src)} ; }
+zmq-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(zmq-src)} ; }
 zmq-vi(){       vi $(zmq-source) ; }
 zmq-env(){      elocal- ; }
 zmq-usage(){ cat << EOU
@@ -150,7 +150,7 @@ Configure g4daeview.py/Chroma as worker receiving REP
 
 EOU
 }
-zmq-dir(){ echo $(env-home)/zeromq/zmq ; }
+zmq-dir(){ echo $(opticks-home)/zeromq/zmq ; }
 zmq-bindir(){ echo $(local-base)/env/bin ; }
 
 zmq-cd(){  cd $(zmq-dir); }

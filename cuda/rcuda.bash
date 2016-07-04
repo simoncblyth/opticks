@@ -1,6 +1,6 @@
 # === func-gen- : cuda/rcuda fgp cuda/rcuda.bash fgn rcuda fgh cuda
 rcuda-src(){      echo cuda/rcuda.bash ; }
-rcuda-source(){   echo ${BASH_SOURCE:-$(env-home)/$(rcuda-src)} ; }
+rcuda-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(rcuda-src)} ; }
 rcuda-vi(){       vi $(rcuda-source) ; }
 rcuda-env(){      elocal- ; }
 rcuda-usage(){ cat << EOU

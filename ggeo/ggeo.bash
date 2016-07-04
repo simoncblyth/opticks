@@ -1,6 +1,6 @@
 ggeo-rel(){      echo ggeo ; }
 ggeo-src(){      echo ggeo/ggeo.bash ; }
-ggeo-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggeo-src)} ; }
+ggeo-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggeo-src)} ; }
 ggeo-vi(){       vi $(ggeo-source) ; }
 ggeo-usage(){ cat << \EOU
 
@@ -13,8 +13,8 @@ ggeo-env(){      elocal- ; opticks- ; }
 ggeo-idir(){ echo $(opticks-idir); } 
 ggeo-bdir(){ echo $(opticks-bdir)/$(ggeo-rel) ; }  
 
-ggeo-sdir(){ echo $(env-home)/ggeo ; }
-ggeo-tdir(){ echo $(env-home)/ggeo/tests ; }
+ggeo-sdir(){ echo $(opticks-home)/ggeo ; }
+ggeo-tdir(){ echo $(opticks-home)/ggeo/tests ; }
 
 ggeo-icd(){  cd $(ggeo-idir); }
 ggeo-bcd(){  cd $(ggeo-bdir); }

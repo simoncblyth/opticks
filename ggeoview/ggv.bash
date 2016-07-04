@@ -1,6 +1,6 @@
 # === func-gen- : graphics/ggeoview/ggv fgp graphics/ggeoview/ggv.bash fgn ggv fgh graphics/ggeoview
 ggv-src(){      echo graphics/ggeoview/ggv.bash ; }
-ggv-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ggv-src)} ; }
+ggv-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggv-src)} ; }
 ggv-vi(){       vi $(ggv-source) ; }
 ggv-usage(){ cat << EOU
 
@@ -63,7 +63,7 @@ many more undocumented
 EOU
 }
 ggv-env(){      elocal- ; ggeoview- ;  }
-ggv-dir(){ echo $(env-home)/graphics/ggeoview ; }
+ggv-dir(){ echo $(opticks-home)/graphics/ggeoview ; }
 ggv-cd(){  cd $(ggv-dir); }
 
 ggv--(){ ggeoview-- $* ; }

@@ -1,6 +1,6 @@
 # === func-gen- : g4/g4 fgp g4/g4.bash fgn g4 fgh g4
 g4-src(){      echo g4/g4.bash ; }
-g4-source(){   echo ${BASH_SOURCE:-$(env-home)/$(g4-src)} ; }
+g4-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4-src)} ; }
 g4-vi(){       vi $(g4-source) ; }
 g4-usage(){ cat << \EOU
 
@@ -138,7 +138,7 @@ g4-env(){
 }
 
 
-g4-edir(){ echo $(env-home)/g4 ; }
+g4-edir(){ echo $(opticks-home)/g4 ; }
 
 #g4-dir(){  echo $(local-base)/env/g4/$(g4-name) ; }
 #g4-dir(){  echo $(opticks-prefix)/externals/g4/$(g4-name) ; }

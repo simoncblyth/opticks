@@ -1,5 +1,5 @@
 optixtest-src(){      echo optix/OptiXTest/optixtest.bash ; }
-optixtest-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixtest-src)} ; }
+optixtest-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixtest-src)} ; }
 optixtest-vi(){       vi $(optixtest-source) ; }
 optixtest-env(){      
    elocal- 
@@ -18,7 +18,7 @@ EOU
 
 optixtest-name(){ echo OptiXTest ; }
 optixtest-bdir(){ echo $(local-base)/env/cuda/optix/$(optixtest-name) ; }
-optixtest-sdir(){ echo $(env-home)/optix/$(optixtest-name) ; }
+optixtest-sdir(){ echo $(opticks-home)/optix/$(optixtest-name) ; }
 optixtest-scd(){  cd $(optixtest-sdir); }
 optixtest-bcd(){  cd $(optixtest-bdir); }
 optixtest-cd(){   cd $(optixtest-sdir); }

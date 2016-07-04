@@ -1,6 +1,6 @@
 # === func-gen- : xml/xercesc/xercesc fgp xml/xercesc/xercesc.bash fgn xercesc fgh xml/xercesc
 xercesc-src(){      echo xml/xercesc/xercesc.bash ; }
-xercesc-source(){   echo ${BASH_SOURCE:-$(env-home)/$(xercesc-src)} ; }
+xercesc-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(xercesc-src)} ; }
 xercesc-vi(){       vi $(xercesc-source) ; }
 xercesc-env(){      elocal- ; }
 xercesc-usage(){ cat << EOU

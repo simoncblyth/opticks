@@ -1,7 +1,7 @@
 # === func-gen- : opticksop/opticksop fgp opticksop/opticksop.bash fgn opticksop fgh opticksop
 opticksop-rel(){      echo opticksop ; }
 opticksop-src(){      echo opticksop/opticksop.bash ; }
-opticksop-source(){   echo ${BASH_SOURCE:-$(env-home)/$(opticksop-src)} ; }
+opticksop-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticksop-src)} ; }
 opticksop-vi(){       vi $(opticksop-source) ; }
 opticksop-usage(){ cat << EOU
 
@@ -146,8 +146,8 @@ opticksop-env(){
     opticks-
 }
 
-opticksop-sdir(){ echo $(env-home)/opticksop ; }
-opticksop-tdir(){ echo $(env-home)/opticksop/tests ; }
+opticksop-sdir(){ echo $(opticks-home)/opticksop ; }
+opticksop-tdir(){ echo $(opticks-home)/opticksop/tests ; }
 opticksop-idir(){ echo $(opticks-idir); }
 opticksop-bdir(){ echo $(opticks-bdir)/$(opticksop-rel) ; }
 

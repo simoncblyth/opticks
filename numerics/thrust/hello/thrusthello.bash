@@ -1,6 +1,6 @@
 # === func-gen- : numerics/thrust/thrusthello fgp numerics/thrust/thrusthello.bash fgn thrust fgh numerics/thrust
 thrusthello-src(){      echo numerics/thrust/thrusthello.bash ; }
-thrusthello-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrusthello-src)} ; }
+thrusthello-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrusthello-src)} ; }
 thrusthello-vi(){       vi $(thrusthello-source) ; }
 thrusthello-usage(){ cat << EOU
 
@@ -57,7 +57,7 @@ EOU
 
 thrusthello-name(){ echo hello ; }
 
-thrusthello-sdir(){ echo $(env-home)/numerics/thrust/$(thrusthello-name)  ; }
+thrusthello-sdir(){ echo $(opticks-home)/numerics/thrust/$(thrusthello-name)  ; }
 thrusthello-bdir(){ echo $(local-base)/env/numerics/thrusthello/$(thrusthello-name).build  ; }
 thrusthello-idir(){ echo $(local-base)/env/numerics/thrusthello/$(thrusthello-name)  ; }
 

@@ -1,6 +1,6 @@
 # === func-gen- : graphics/gui/imgui/imgui fgp graphics/gui/imgui/imgui.bash fgn imgui fgh graphics/gui/imgui
 imgui-src(){      echo graphics/gui/imgui/imgui.bash ; }
-imgui-source(){   echo ${BASH_SOURCE:-$(env-home)/$(imgui-src)} ; }
+imgui-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(imgui-src)} ; }
 imgui-vi(){       vi $(imgui-source) ; }
 imgui-usage(){ cat << EOU
 

@@ -1,5 +1,5 @@
 brc-src(){      echo boostrapclient/brc.bash ; }
-brc-source(){   echo ${BASH_SOURCE:-$(env-home)/$(brc-src)} ; }
+brc-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(brc-src)} ; }
 brc-vi(){       vi $(brc-source) ; }
 brc-usage(){ cat << \EOU
 
@@ -67,7 +67,7 @@ EOU
 }
 brc-env(){      elocal- ; opticks- ; vs- ;  }
 
-brc-dir(){  echo $(env-home)/boostrapclient ; }
+brc-dir(){  echo $(opticks-home)/boostrapclient ; }
 brc-bdir(){ echo $(opticks-prefix)/build/boostrapclient ; }
 brc-cd(){   cd $(brc-dir); }
 brc-bcd(){  cd $(brc-bdir); }

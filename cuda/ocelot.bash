@@ -1,6 +1,6 @@
 # === func-gen- : cuda/ocelot fgp cuda/ocelot.bash fgn ocelot fgh cuda
 ocelot-src(){      echo cuda/ocelot.bash ; }
-ocelot-source(){   echo ${BASH_SOURCE:-$(env-home)/$(ocelot-src)} ; }
+ocelot-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ocelot-src)} ; }
 ocelot-vi(){       vi $(ocelot-source) ; }
 ocelot-env(){      elocal- ; }
 ocelot-usage(){ cat << EOU

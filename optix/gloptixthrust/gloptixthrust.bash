@@ -1,6 +1,6 @@
 # === func-gen- : optix/gloptixthrust/gloptixthrust fgp optix/gloptixthrust/gloptixthrust.bash fgn gloptixthrust fgh optix/gloptixthrust
 gloptixthrust-src(){      echo optix/gloptixthrust/gloptixthrust.bash ; }
-gloptixthrust-source(){   echo ${BASH_SOURCE:-$(env-home)/$(gloptixthrust-src)} ; }
+gloptixthrust-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(gloptixthrust-src)} ; }
 gloptixthrust-vi(){       vi $(gloptixthrust-source) ; }
 gloptixthrust-env(){      elocal- ; }
 gloptixthrust-usage(){ cat << EOU
@@ -160,7 +160,7 @@ result and returns it to the calling thread via the return value.
 
 EOU
 }
-gloptixthrust-dir(){ echo $(env-home)/optix/gloptixthrust ; }
+gloptixthrust-dir(){ echo $(opticks-home)/optix/gloptixthrust ; }
 gloptixthrust-cd(){  cd $(gloptixthrust-dir); }
 
 gloptixthrust-env(){      

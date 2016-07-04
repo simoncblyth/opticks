@@ -1,6 +1,6 @@
 # === func-gen- : graphics/glfw/glfw fgp graphics/glfw/glfw.bash fgn glfw fgh graphics/glfw
 glfw-src(){      echo graphics/glfw/glfw.bash ; }
-glfw-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glfw-src)} ; }
+glfw-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glfw-src)} ; }
 glfw-vi(){       vi $(glfw-source) ; }
 glfw-usage(){ cat << EOU
 

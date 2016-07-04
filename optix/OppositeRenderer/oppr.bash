@@ -1,6 +1,6 @@
 # === func-gen- : cuda/optix/OppositeRenderer/oppr fgp cuda/optix/OppositeRenderer/oppr.bash fgn oppr fgh cuda/optix/OppositeRenderer
 oppr-src(){      echo optix/OppositeRenderer/oppr.bash ; }
-oppr-source(){   echo ${BASH_SOURCE:-$(env-home)/$(oppr-src)} ; }
+oppr-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(oppr-src)} ; }
 oppr-vi(){       vi $(oppr-source) ; }
 oppr-env(){      elocal- ; }
 oppr-usage(){ cat << EOU

@@ -1,6 +1,6 @@
 # === func-gen- : boost/bpt/bpt fgp boost/bpt/bpt.bash fgn bpt fgh boost/bpt
 bpt-src(){      echo boost/bpt/bpt.bash ; }
-bpt-source(){   echo ${BASH_SOURCE:-$(env-home)/$(bpt-src)} ; }
+bpt-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(bpt-src)} ; }
 bpt-vi(){       vi $(bpt-source) ; }
 bpt-usage(){ cat << EOU
 
@@ -14,13 +14,13 @@ Boost Property Tree : with XML/JSON/INI support
 
 EOU
 }
-bpt-dir(){ echo $(env-home)/boost/bpt ; }
+bpt-dir(){ echo $(opticks-home)/boost/bpt ; }
 bpt-cd(){  cd $(bpt-dir); }
 
 
 bpt-name(){ echo BPT ; }
 
-bpt-sdir(){ echo $(env-home)/boost/bpt ; }
+bpt-sdir(){ echo $(opticks-home)/boost/bpt ; }
 bpt-idir(){ echo $(local-base)/env/boost/bpt ; }
 bpt-bdir(){ echo $(bpt-idir).build ; }
 

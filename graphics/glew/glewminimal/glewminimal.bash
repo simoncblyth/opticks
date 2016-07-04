@@ -1,6 +1,6 @@
 # === func-gen- : graphics/thrust_opengl_interop/glewminimal fgp graphics/thrust_opengl_interop/glewminimal.bash fgn glewminimal fgh graphics/thrust_opengl_interop
 glewminimal-src(){      echo graphics/thrust_opengl_interop/glewminimal.bash ; }
-glewminimal-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glewminimal-src)} ; }
+glewminimal-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glewminimal-src)} ; }
 glewminimal-vi(){       vi $(glewminimal-source) ; }
 glewminimal-usage(){ cat << EOU
 
@@ -12,7 +12,7 @@ EOU
 
 glewminimal-env(){      elocal- ; }
 
-glewminimal-sdir(){ echo $(env-home)/graphics/glew/glewminimal ; }
+glewminimal-sdir(){ echo $(opticks-home)/graphics/glew/glewminimal ; }
 glewminimal-idir(){ echo $(local-base)/env/graphics/glew/glewminimal ; }
 glewminimal-bdir(){ echo $(glewminimal-idir).build ; }
 glewminimal-bindir(){ echo $(glewminimal-idir)/bin ; }

@@ -1,6 +1,6 @@
 # === func-gen- : graphics/glew/glew fgp graphics/glew/glew.bash fgn glew fgh graphics/glew
 glew-src(){      echo graphics/glew/glew.bash ; }
-glew-source(){   echo ${BASH_SOURCE:-$(env-home)/$(glew-src)} ; }
+glew-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(glew-src)} ; }
 glew-vi(){       vi $(glew-source) ; }
 glew-usage(){ cat << EOU
 

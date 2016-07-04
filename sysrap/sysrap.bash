@@ -1,5 +1,5 @@
 sysrap-src(){      echo sysrap/sysrap.bash ; }
-sysrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(sysrap-src)} ; }
+sysrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(sysrap-src)} ; }
 sysrap-vi(){       vi $(sysrap-source) ; }
 sysrap-usage(){ cat << \EOU
 
@@ -19,8 +19,8 @@ EOU
 sysrap-env(){      elocal- ; opticks- ;  }
 
 sysrap-dir(){  echo $(sysrap-sdir) ; }
-sysrap-sdir(){ echo $(env-home)/sysrap ; }
-sysrap-tdir(){ echo $(env-home)/sysrap/tests ; }
+sysrap-sdir(){ echo $(opticks-home)/sysrap ; }
+sysrap-tdir(){ echo $(opticks-home)/sysrap/tests ; }
 sysrap-idir(){ echo $(opticks-idir); }
 sysrap-bdir(){ echo $(opticks-bdir)/sysrap ; }
 

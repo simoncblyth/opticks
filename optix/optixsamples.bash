@@ -1,6 +1,6 @@
 # === func-gen- : optix/optixsamples fgp optix/optixsamples.bash fgn optixsamples fgh optix
 optixsamples-src(){      echo optix/optixsamples.bash ; }
-optixsamples-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixsamples-src)} ; }
+optixsamples-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixsamples-src)} ; }
 optixsamples-vi(){       vi $(optixsamples-source) ; }
 optixsamples-env(){      elocal- ; }
 optixsamples-usage(){ cat << EOU

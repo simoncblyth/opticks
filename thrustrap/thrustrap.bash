@@ -1,6 +1,6 @@
 # === func-gen- : numerics/thrustrap/thrustrap fgp numerics/thrustrap/thrustrap.bash fgn thrustrap fgh numerics/thrustrap
 thrustrap-src(){      echo thrustrap/thrustrap.bash ; }
-thrustrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrustrap-src)} ; }
+thrustrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrustrap-src)} ; }
 thrustrap-vi(){       vi $(thrustrap-source) ; }
 thrustrap-usage(){ cat << EOU
 
@@ -276,8 +276,8 @@ EOU
 thrustrap-env(){      elocal- ; opticks- ; }
 
 
-thrustrap-sdir(){ echo $(env-home)/thrustrap ; }
-thrustrap-tdir(){ echo $(env-home)/thrustrap/tests ; }
+thrustrap-sdir(){ echo $(opticks-home)/thrustrap ; }
+thrustrap-tdir(){ echo $(opticks-home)/thrustrap/tests ; }
 thrustrap-idir(){ echo $(opticks-idir) ; }
 thrustrap-bdir(){ echo $(opticks-bdir)/thrustrap ; }
 

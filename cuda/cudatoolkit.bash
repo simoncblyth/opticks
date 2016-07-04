@@ -1,6 +1,6 @@
 # === func-gen- : cuda/cudatoolkit fgp cuda/cudatoolkit.bash fgn cudatoolkit fgh cuda
 cudatoolkit-src(){      echo cuda/cudatoolkit.bash ; }
-cudatoolkit-source(){   echo ${BASH_SOURCE:-$(env-home)/$(cudatoolkit-src)} ; }
+cudatoolkit-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(cudatoolkit-src)} ; }
 cudatoolkit-vi(){       vi $(cudatoolkit-source) ; }
 cudatoolkit-env(){      elocal- ; }
 cudatoolkit-usage(){ cat << EOU

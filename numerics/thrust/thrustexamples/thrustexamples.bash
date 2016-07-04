@@ -1,6 +1,6 @@
 # === func-gen- : numerics/thrust/thrustexamples/thrustexamples fgp numerics/thrust/thrustexamples/thrustexamples.bash fgn thrustexamples fgh numerics/thrust/thrustexamples
 thrustexamples-src(){      echo numerics/thrust/thrustexamples/thrustexamples.bash ; }
-thrustexamples-source(){   echo ${BASH_SOURCE:-$(env-home)/$(thrustexamples-src)} ; }
+thrustexamples-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrustexamples-src)} ; }
 thrustexamples-vi(){       vi $(thrustexamples-source) ; }
 thrustexamples-usage(){ cat << EOU
 

@@ -1,7 +1,7 @@
 # === func-gen- : optickscore/optickscore fgp optickscore/optickscore.bash fgn optickscore fgh optickscore
 okc-rel(){      echo optickscore ; }
 okc-src(){      echo optickscore/optickscore.bash ; }
-okc-source(){   echo ${BASH_SOURCE:-$(env-home)/$(okc-src)} ; }
+okc-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(okc-src)} ; }
 okc-vi(){       vi $(okc-source) ; }
 okc-usage(){ cat << EOU
 
@@ -534,8 +534,8 @@ EOU
 
 okc-env(){      elocal- ; opticks- ;  }
 
-okc-sdir(){ echo $(env-home)/optickscore ; }
-okc-tdir(){ echo $(env-home)/optickscore/tests ; }
+okc-sdir(){ echo $(opticks-home)/optickscore ; }
+okc-tdir(){ echo $(opticks-home)/optickscore/tests ; }
 okc-idir(){ echo $(opticks-idir) ; }
 okc-bdir(){ echo $(opticks-bdir)/$(okc-rel) ; }
 

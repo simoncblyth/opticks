@@ -1,6 +1,6 @@
 # === func-gen- : optix/vmd/vmd fgp optix/vmd/vmd.bash fgn vmd fgh optix/vmd
 vmd-src(){      echo optix/vmd/vmd.bash ; }
-vmd-source(){   echo ${BASH_SOURCE:-$(env-home)/$(vmd-src)} ; }
+vmd-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(vmd-src)} ; }
 vmd-vi(){       vi $(vmd-source) ; }
 vmd-env(){      elocal- ; }
 vmd-usage(){ cat << EOU

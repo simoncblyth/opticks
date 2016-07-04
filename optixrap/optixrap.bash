@@ -1,7 +1,7 @@
 # === func-gen- : optixrap/optixrap fgp optixrap/optixrap.bash fgn optixrap fgh optixrap
 optixrap-rel(){      echo optixrap  ; }
 optixrap-src(){      echo optixrap/optixrap.bash ; }
-optixrap-source(){   echo ${BASH_SOURCE:-$(env-home)/$(optixrap-src)} ; }
+optixrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixrap-src)} ; }
 optixrap-vi(){       vi $(optixrap-source) ; }
 optixrap-usage(){ cat << EOU
 
@@ -290,8 +290,8 @@ optixrap-env(){
 }
 
 
-optixrap-sdir(){ echo $(env-home)/optixrap ; }
-optixrap-tdir(){ echo $(env-home)/optixrap/tests ; }
+optixrap-sdir(){ echo $(opticks-home)/optixrap ; }
+optixrap-tdir(){ echo $(opticks-home)/optixrap/tests ; }
 optixrap-idir(){ echo $(opticks-idir); }
 optixrap-bdir(){ echo $(opticks-bdir)/$(optixrap-rel) ; }
 
