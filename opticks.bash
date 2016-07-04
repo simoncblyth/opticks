@@ -756,6 +756,8 @@ thrust
 optix
 xercesc
 g4
+zmq
+asiozmq
 EOX
 }
 
@@ -1047,6 +1049,7 @@ opticks-xcollect()
    local src
    local dst
    local nam
+   local note
 
    opticks-xnames | while read x 
    do
@@ -1055,13 +1058,16 @@ opticks-xcollect()
       src=${esrc/$ehome\/}
       nam=$(basename $src)
       dst=externals/$nam
-
-      printf "# %-15s %15s %35s \n" $x $nam $src
-
-      hg cp $src $xhome/$dst
-      perl -pi -e "s,$src,$dst," $xhome/$dst 
-      perl -pi -e "s,env-home,opticks-home," $xhome/$dst 
-
+       
+      if [ -f "$dst" ]; then 
+          note="previously copied to dst $dst"  
+      else
+          note="copying to dst $dst"  
+          hg cp $src $xhome/$dst
+          perl -pi -e "s,$src,$dst," $xhome/$dst 
+          perl -pi -e "s,env-home,opticks-home," $xhome/$dst 
+      fi
+      printf "# %-15s %15s %35s %s \n" $x $nam $src "$note"
       printf "%-20s %-50s %s\n" "$x-(){" ". \$(opticks-home)/externals/$nam" "&& $x-env \$* ; }"   >> $xbash
 
    done 

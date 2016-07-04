@@ -1,4 +1,4 @@
-numpyserver-src(){      echo boost/basio/numpyserver/numpyserver.bash ; }
+numpyserver-src(){      echo numpyserver/numpyserver.bash ; }
 numpyserver-source(){   echo ${BASH_SOURCE:-$(env-home)/$(numpyserver-src)} ; }
 numpyserver-vi(){       vi $(numpyserver-source) ; }
 numpyserver-env(){      elocal- ; }
@@ -211,9 +211,9 @@ and avoids abort at exit::
 EOU
 }
 
-numpyserver-sdir(){ echo $(env-home)/boost/basio/numpyserver ; }
-numpyserver-idir(){ echo $(local-base)/env/boost/basio/numpyserver ; }
-numpyserver-bdir(){ echo $(local-base)/env/boost/basio/numpyserver.build ; }
+numpyserver-sdir(){ echo $(env-home)/numpyserver ; }
+numpyserver-idir(){ echo $(local-base)/opticks/numpyserver ; }
+numpyserver-bdir(){ echo $(local-base)/opticks/numpyserver.build ; }
 
 numpyserver-cd(){   cd $(numpyserver-sdir); }
 numpyserver-scd(){  cd $(numpyserver-sdir); }

@@ -13,3 +13,5 @@ thrust-(){           . $(opticks-home)/externals/thrust.bash            && thrus
 optix-(){            . $(opticks-home)/externals/optix.bash             && optix-env $* ; }
 xercesc-(){          . $(opticks-home)/externals/xercesc.bash           && xercesc-env $* ; }
 g4-(){               . $(opticks-home)/externals/g4.bash                && g4-env $* ; }
+zmq-(){              . $(opticks-home)/externals/zmq.bash               && zmq-env $* ; }
+asiozmq-(){          . $(opticks-home)/externals/asiozmq.bash           && asiozmq-env $* ; }
