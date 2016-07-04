@@ -22,6 +22,7 @@
 #include <iostream>
 
 #ifdef DEBUG
+#include <cassert>
 #include <iterator>
 template <typename Vector>
 void print(const std::string& s, const Vector& v)
