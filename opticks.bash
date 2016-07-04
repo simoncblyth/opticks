@@ -742,7 +742,6 @@ cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 
 
 oks-(){             . $(opticks-home)/oks.bash && oks-env $* ; }
-opticksdata-(){     . $(opticks-home)/opticksdata.bash && opticksdata-env $* ; }
 ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }
 vids-(){            . $(opticks-home)/bin/vids.bash && vids-env $* ; }
 op-(){              . $(opticks-home)/bin/op.sh ; }

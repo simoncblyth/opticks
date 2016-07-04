@@ -1,5 +1,5 @@
 # === func-gen- : graphics/ggeoview/ggv fgp graphics/ggeoview/ggv.bash fgn ggv fgh graphics/ggeoview
-ggv-src(){      echo graphics/ggeoview/ggv.bash ; }
+ggv-src(){      echo bin/ggv.bash ; }
 ggv-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggv-src)} ; }
 ggv-vi(){       vi $(ggv-source) ; }
 ggv-usage(){ cat << EOU

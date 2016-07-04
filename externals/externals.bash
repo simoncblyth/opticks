@@ -1,4 +1,3 @@
-# opticks-xcollect 
 boost-(){            . $(opticks-home)/externals/boost.bash             && boost-env $* ; }
 glm-(){              . $(opticks-home)/externals/glm.bash               && glm-env $* ; }
 plog-(){             . $(opticks-home)/externals/plog.bash              && plog-env $* ; }
@@ -15,3 +14,5 @@ xercesc-(){          . $(opticks-home)/externals/xercesc.bash           && xerce
 g4-(){               . $(opticks-home)/externals/g4.bash                && g4-env $* ; }
 zmq-(){              . $(opticks-home)/externals/zmq.bash               && zmq-env $* ; }
 asiozmq-(){          . $(opticks-home)/externals/asiozmq.bash           && asiozmq-env $* ; }
+opticksdata-(){      . $(opticks-home)/externals/opticksdata.bash       && opticksdata-env $* ; }
+
