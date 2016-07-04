@@ -41,12 +41,20 @@ plog-cd(){   cd $(plog-dir); }
 plog-icd(){  cd $(plog-idir); }
 
 
-plog-url(){  echo https://github.com/SergiusTheBest/plog ; }
+#plog-url(){  echo https://github.com/SergiusTheBest/plog ; }
+plog-url(){  echo https://github.com/simoncblyth/plog ; }
 plog-get(){
    local dir=$(dirname $(plog-dir)) &&  mkdir -p $dir && cd $dir
 
    [ ! -d plog ] && git clone $(plog-url) 
 }
+
+plog--()
+{
+   plog-get
+}
+
+
 
 plog-edit(){  vi $(opticks-home)/cmake/Modules/FindPLog.cmake ; }
 
