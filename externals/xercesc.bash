@@ -165,7 +165,7 @@ xercesc-prefix(){
   case $(uname -s) in 
       Darwin) echo /opt/local ;;
     MINGW64*) echo /mingw64 ;;
-           *) echo /usr/local ;;
+           *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
   esac  
 }
 
@@ -187,6 +187,7 @@ xercesc-library(){
       case $(uname -s) in 
         Darwin) echo    $(xercesc-prefix)/lib/libxerces-c.dylib    ;;
          MINGW64*) echo $(xercesc-prefix)/bin/libxerces-c-3-1.dll  ;;
+         *) echo $(xercesc-prefix)/lib/libxerces-c-3-1.so  ;;
       esac
   fi 
 }
@@ -196,5 +197,30 @@ xercesc-geant4-export(){
   export XERCESC_LIBRARY=$(xercesc-library)
 }
 
+xercesc--() {
+    local url=http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.1.tar.gz
+    local tar=$(basename $url)
+    local dir=${tar/.tar.gz/}
 
+    cd $(xercesc-prefix)
+    # check tar exists or not
+    if [ ! -f "$tar" ]; then
+        # download
+        wget $url
+        # uncompress
+        tar zxvf $tar
+    fi
+
+    if [ ! -d "$dir" ]; then
+        echo 1>&2 can not find "$dir"
+        return
+    fi
+
+    cd $dir
+
+    # build
+    ./configure --prefix=$(xercesc-prefix)
+    make
+    make install
+}
 
