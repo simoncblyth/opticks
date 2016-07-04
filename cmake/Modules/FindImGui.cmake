@@ -1,4 +1,3 @@
-#set(ImGui_PREFIX "${OPTICKS_PREFIX}/externals/imgui/imgui.install")
 set(ImGui_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( ImGui_LIBRARY 
@@ -51,10 +50,6 @@ if(MINGW)
 
 
 endif(MINGW)
-
-
-
-
 
 set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")
 set(ImGui_DEFINITIONS "")

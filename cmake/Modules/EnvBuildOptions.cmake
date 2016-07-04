@@ -11,10 +11,12 @@
 
 message(STATUS "Configuring ${name}")
 
+#
+# FindX.cmake use OPTICKS_PREFIX and _SOURCE_DIR
+# set by CMake as visible in cache : grep _SOURCE_DIR CMakeCache.txt
+#
 set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
 
-
-set(OPTICKS_HOME   "$ENV{ENV_HOME}")
 set(OPTICKS_CUDA_VERSION 5.5)
 set(OPTICKS_OPTIX_VERSION 3.5)
 
@@ -24,10 +26,7 @@ OPTION(WITH_NPYSERVER  "using the numpyserver." OFF)
 OPTION(WITH_OPTIX      "using OPTIX." OFF)
 
 
-# _SOURCE_DIR are auto set for the superbuild
-# Can see in cache::
 #
-#     simon:build blyth$ grep _SOURCE_DIR CMakeCache.txt
 # https://cmake.org/Wiki/CMake_RPATH_handling
 
 if (APPLE)

@@ -1,6 +1,4 @@
-# http://www.cmake.org/Wiki/CMake:How_To_Find_Libraries
 
-#set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals/glfw/glfw")
 set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( GLFW_LIBRARY 

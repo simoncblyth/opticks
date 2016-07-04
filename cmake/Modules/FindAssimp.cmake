@@ -1,5 +1,4 @@
 
-#set(Assimp_PREFIX "${OPTICKS_PREFIX}/externals/assimp/assimp")
 set(Assimp_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( Assimp_LIBRARIES 

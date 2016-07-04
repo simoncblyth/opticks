@@ -1,5 +1,5 @@
-#ifndef LOADPPM_H
-#define LOADPPM_H
+#pragma once
+// see env-;ppm- 
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,10 +22,7 @@ extern unsigned char* loadPPM(char* path, int* width, int* height);
 
 unsigned char* loadPPM(char* path, int* width, int* height) {
   FILE* fp;
-  int i(0);
-  int w(0);
-  int h(0);
-  int d(0);
+  int i, w, h, d;
   unsigned char* image;
   char head[70]; /* max line <= 70 in PPM (per spec). */
 
@@ -67,7 +64,6 @@ unsigned char* loadPPM(char* path, int* width, int* height) {
   return image;
 }
 
-#endif
 #endif
 
 
