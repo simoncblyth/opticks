@@ -354,6 +354,7 @@ opticks-optix-install-dir(){
     local t=$NODE_TAG
     case $t in 
     H5H2) echo ${MYENVTOP}/OptiX ;;
+     GTL) echo ${MYENVTOP}/OptiX ;;
        *) echo /Developer/OptiX ;;
     esac
 }
