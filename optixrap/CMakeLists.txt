@@ -194,8 +194,15 @@ set(OX_HEADERS
 # OptiX prog within "cu/"  Thrust/CUDA not in "cu/"
 
 set(XOPT --disable-warnings)
-#optixthrust_add_library( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT}) 
-optixthrust_add_library( ${name} ${SOURCES} OPTIONS ${XOPT}) 
+
+if(APPLE)
+   set(NOPT -gencode=arch=compute_30,code=sm_30)
+else(APPLE)
+   set(NOPT)
+endif(APPLE)
+
+
+optixthrust_add_library( ${name} ${SOURCES} OPTIONS ${NOPT} ${XOPT}) 
 target_link_libraries( ${name} ${LIBRARIES} )
 
 set(TARGET    "${name}")

@@ -15,7 +15,6 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(OpticksCore REQUIRED)
 find_package(GGeo REQUIRED)  
-find_package(PPM REQUIRED) 
 find_package(NPY REQUIRED) 
 find_package(ImGui REQUIRED)
 
@@ -31,7 +30,6 @@ set(INCLUDE_DIRS
    ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${OpticksCore_INCLUDE_DIRS}
-   ${PPM_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
    ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
@@ -147,6 +145,7 @@ SET(_HEADERS
     DynamicDefine.hh
 
     gleq.h
+    loadPPM.h
 )
 
 add_library( ${name}  SHARED ${SOURCES})

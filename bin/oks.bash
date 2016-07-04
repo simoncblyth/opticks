@@ -122,6 +122,27 @@ EOO
 }
 
 
+
+
+oks-tags()
+{
+   local iwd=$PWD
+
+   opticks-scd
+
+   local hh
+   ls -1  */*_API_EXPORT.hh | while read hh ; do 
+       local proj=$(dirname $hh)
+       local name=$(basename $hh)
+       local utag=${name/_API_EXPORT.hh}
+       local tag=$(echo $utag | tr "A-Z" "a-z" )
+       printf "%20s %30s \n" $tag $proj 
+   done
+
+   cd $iwd
+}
+
+
 oks-find-cmake-(){ 
   local f
   local base=$(opticks-home)/CMake/Modules
@@ -141,6 +162,30 @@ oks-edit(){  opticks-scd ; vi opticks.bash $(oks-bash-list) CMakeLists.txt $(oks
 oks-txt(){   opticks-scd ; vi CMakeLists.txt $(oks-txt-list) ; }
 oks-bash(){  opticks-scd ; vi opticks.bash $(oks-bash-list) ; }
 oks-tests(){ opticks-scd ; vi $(oks-tests-list) ; } 
+
+
+oks-name(){ echo Opticks ; }
+oks-sln(){ echo $(opticks-bdir)/$(opticks-name).sln ; }
+oks-slnw(){  vs- ; echo $(vs-wp $(opticks-sln)) ; }
+oks-vs(){ 
+   # hmm vs- is from env-
+   vs-
+   local sln=$1
+   [ -z "$sln" ] && sln=$(opticks-sln) 
+   local slnw=$(vs-wp $sln)
+
+    cat << EOC
+# sln  $sln
+# slnw $slnw
+# copy/paste into powershell v2 OR just use opticks-vs Powershell function
+vs-export 
+devenv /useenv $slnw
+EOC
+
+}
+ 
+
+
 
 oks-txt-list(){
   local dir

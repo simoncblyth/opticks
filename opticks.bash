@@ -73,8 +73,6 @@ takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 Externals 
 -----------
 
-Geometry/OpenGL related 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use the bash function *opticks-externals-install*::
 
@@ -83,18 +81,18 @@ Use the bash function *opticks-externals-install*::
 This gets the repositories or tarballs and perform the builds and installation.
 Tools like hg, git, curl, tar, zip are assumed to be in your PATH.
 
-=====================  ===============  =============   ==============================================================================
-directory              precursor        pkg name        notes
-=====================  ===============  =============   ==============================================================================
-graphics/glm           glm-             GLM             sourceforge tarball 0.9.6.3, header only
-graphics/assimp        assimp-          Assimp          github.com/simoncblyth/assimp fork of unspecified github version that handles G4DAE extras, cmake configured
-graphics/openmesh      openmesh-        OpenMesh        www.openmesh.org OpenMesh 4.1 tarball, cmake configured, provides VS2015 binaries http://www.openmesh.org/download/
-graphics/glew          glew-            GLEW            sourceforge tarball 1.12.0, OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
-graphics/glfw          glfw-            GLFW            sourceforge tarball 3.1.1, library for creating windows with OpenGL and receiving input, cmake generation    
-graphics/gleq          gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example, header only
-graphics/gui/imgui     imgui-                           github.com/simoncblyth/imgui expected to drop source into using project, simple CMakeLists.txt added by me
-=====================  ===============  =============   ==============================================================================
-
+===============  =============   ==============================================================================
+precursor        pkg name        notes
+===============  =============   ==============================================================================
+glm-             GLM             sourceforge tarball 0.9.6.3, header only
+assimp-          Assimp          github.com/simoncblyth/assimp fork of unspecified github version that handles G4DAE extras, cmake configured
+openmesh-        OpenMesh        www.openmesh.org OpenMesh 4.1 tarball, cmake configured, provides VS2015 binaries http://www.openmesh.org/download/
+glew-            GLEW            sourceforge tarball 1.12.0, OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
+glfw-            GLFW            sourceforge tarball 3.1.1, library for creating windows with OpenGL and receiving input, cmake generation    
+gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example, header only
+imgui-           ImGui           github.com/simoncblyth/imgui expected to drop source into using project, simple CMakeLists.txt added by me
+plog-            PLog            github.com/simoncblyth/plog 
+===============  =============   ==============================================================================
 
 Dependencies of externals:
 
@@ -107,7 +105,6 @@ glew          system opengl
 glfw
 imgui         glfw glew 
 ============  ====================  ==============================
-
 
 
 Boost Infrastructure Libraries
@@ -175,7 +172,7 @@ numerics/thrust        thrust-          Thrust          included with CUDA
 Configuring and Building Opticks
 ---------------------------------
 
-CMake is used to configure Opticks and generate Makefiles. 
+CMake is used to configure Opticks and generate Makefiles or Visual Studio solution files on windows.
 For a visualization only build with system Boost 
 the defaults should work OK and there is no need to explicitly configure. 
 If a local Boost was required then::
@@ -249,28 +246,32 @@ The partial mode provides OpenGL visualizations of geometry and
 photon propagations loaded from file.
 
 
-=====================  ===============  =============   ==============================================================================
-directory              precursor        pkg name        required find package 
-=====================  ===============  =============   ==============================================================================
-sysrap                 sysrap-          SysRap          PLog
-boostrap               brap-            BoostRap        OpticksBoost
-opticksnpy             npy-             NPY             Boost GLM BoostRap
-optickscore            optickscore-     OpticksCore     Boost GLM BRegex BCfg NPY 
-ggeo                   ggeo-            GGeo            Boost GLM BRegex BCfg NPY OpticksCore
-assimprap              assimprap-       AssimpRap       Boost GLM Assimp GGeo NPY OpticksCore
-openmeshrap            openmeshrap-     OpenMeshRap     Boost GLM NPY GGeo OpticksCore OpenMesh 
-opticksgeo             opticksgeo-      OpticksGeo      Boost GLM BRegex BCfg NPY OpticksCore Assimp AssimpRap OpenMesh OpenMeshRap
-oglrap                 oglrap-          OGLRap          GLEW GLFW GLM Boost BCfg Opticks GGeo NPY BRegex ImGui        
-cudarap                cudarap-         CUDARap         CUDA (ssl)
-thrustrap              thrustrap-       ThrustRap       CUDA Boost GLM NPY CUDARap 
-optixrap               optixrap-        OptiXRap        OptiX CUDA Boost GLM NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap 
-opticksop              opticksop-       OpticksOp       OptiX CUDA Boost GLM BCfg Opticks GGeo NPY OptiXRap CUDARap ThrustRap      
-opticksgl              opticksgl-       OpticksGL       OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY OpticksCore Assimp AssimpRap GGeo CUDARap ThrustRap OptiXRap OpticksOp
-ggeoview               ggeoview-        GGeoView        OptiX CUDA Boost GLM GLEW GLFW OGLRap NPY BCfg OpticksCore 
-                                                        Assimp AssimpRap OpenMesh OpenMeshRap GGeo ImGui BRegex OptiXRap CUDARap ThrustRap OpticksOp OpticksGL OpticksGeo
-cfg4                   cfg4-            CfG4            Boost GLM BRegex BCfg NPY GGeo OpticksCore Geant4 EnvXercesC G4DAE 
-=====================  ===============  =============   ==============================================================================
+=====================  ===============  ===============   ==============================================================================
+directory              precursor        pkg name          required find packages 
+=====================  ===============  ===============   ==============================================================================
+sysrap                 sysrap-          SysRap            PLog
+boostrap               brap-            BoostRap          OpticksBoost PLog SysRap
+opticksnpy             npy-             NPY               OpticksBoost PLog SysRap BoostRap GLM
+optickscore            optickscore-     OpticksCore       OpticksBoost PLog SysRap BoostRap GLM NPY 
+ggeo                   ggeo-            GGeo              OpticksBoost PLog SysRap BoostRap GLM NPY OpticksCore (abbreviation:BASE)
+assimprap              assimprap-       AssimpRap         BASE GGeo Assimp
+openmeshrap            openmeshrap-     OpenMeshRap       BASE GGeo OpenMesh
+opticksgeo             opticksgeo-      OpticksGeometry   BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap      
+oglrap                 oglrap-          OGLRap            BASE GGeo GLEW GLFW ImGui        
+cudarap                cudarap-         CUDARap           PLog SysRap CUDA (ssl) 
+thrustrap              thrustrap-       ThrustRap         OpticksBoost PLog SysRap BoostRap GLM NPY CUDA CUDARap 
+optixrap               optixrap-        OptiXRap          BASE GGeo Assimp AssimpRap CUDARap ThrustRap
+opticksop              opticksop-       OpticksOp         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap      
+opticksgl              opticksgl-       OpticksGL         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksOp Assimp AssimpRap GLEW GLFW OGLRap 
+ggeoview               ggeoview-        GGeoView          BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap 
+cfg4                   cfg4-            CfG4              BASE GGeo Geant4 EnvXercesC [G4DAE] 
+=====================  ===============  ===============   ==============================================================================
 
+
+
+
+Roles of the Opticks projects
+---------------------------------
 
 sysrap
     logging, string handling, envvar handling 
@@ -281,9 +282,9 @@ opticksnpy
 optickscore
     definitions, loosely the model of the app 
 ggeo
-    geometry representation 
+    geometry representation appropriate for uploading to the GPU
 assimprap
-    G4DAE parsing into GGeo repr 
+    parsing G4DAE geometry file into the GGeo representation  
 openmeshrap
     geometry fixing
 opticksgeo
@@ -304,6 +305,63 @@ ggeoview
     putting together all the above
 cfg4
     contained geant4 
+
+
+Testing Installation
+----------------------
+
+The *opticks-ctest* functions runs ctests for all the opticks projects::
+
+    simon:opticks blyth$ opticks-
+    simon:opticks blyth$ opticks-ctest
+    Test project /usr/local/opticks/build
+          Start  1: SysRapTest.SEnvTest
+     1/65 Test  #1: SysRapTest.SEnvTest ........................   Passed    0.00 sec
+          Start  2: SysRapTest.SSysTest
+     2/65 Test  #2: SysRapTest.SSysTest ........................   Passed    0.00 sec
+          Start  3: SysRapTest.SDigestTest
+     3/65 Test  #3: SysRapTest.SDigestTest .....................   Passed    0.00 sec
+    .....
+    ..... 
+          Start 59: cfg4Test.CPropLibTest
+    59/65 Test #59: cfg4Test.CPropLibTest ......................   Passed    0.05 sec
+          Start 60: cfg4Test.CTestDetectorTest
+    60/65 Test #60: cfg4Test.CTestDetectorTest .................   Passed    0.04 sec
+          Start 61: cfg4Test.CGDMLDetectorTest
+    61/65 Test #61: cfg4Test.CGDMLDetectorTest .................   Passed    0.45 sec
+          Start 62: cfg4Test.CG4Test
+    62/65 Test #62: cfg4Test.CG4Test ...........................   Passed    5.06 sec
+          Start 63: cfg4Test.G4MaterialTest
+    63/65 Test #63: cfg4Test.G4MaterialTest ....................   Passed    0.02 sec
+          Start 64: cfg4Test.G4StringTest
+    64/65 Test #64: cfg4Test.G4StringTest ......................   Passed    0.02 sec
+          Start 65: cfg4Test.G4BoxTest
+    65/65 Test #65: cfg4Test.G4BoxTest .........................   Passed    0.02 sec
+
+    100% tests passed, 0 tests failed out of 65
+
+    Total Test time (real) =  59.89 sec
+    opticks-ctest : use -V to show output
+
+
+Running Individual Tests
+---------------------------
+
+All Opticks executables including the tests are installed 
+into $LOCAL_BASE/opticks/lib/ set PATH in your .bash_profile to find then::
+
+   export PATH=$LOCAL_BASE/opticks/lib:$PATH
+
+
+
+
+
+
+
+
+
+
+
 
 EOU
 }
@@ -455,26 +513,7 @@ opticks-configure-local-boost(){
 }
 
 
-
-opticks-name(){ echo Opticks ; }
-opticks-sln(){ echo $(opticks-bdir)/$(opticks-name).sln ; }
-opticks-slnw(){  vs- ; echo $(vs-wp $(opticks-sln)) ; }
-opticks-vs(){ 
-   vs-
-   local sln=$1
-   [ -z "$sln" ] && sln=$(opticks-sln) 
-   local slnw=$(vs-wp $sln)
-
-    cat << EOC
-# sln  $sln
-# slnw $slnw
-# copy/paste into powershell v2 OR just use opticks-vs Powershell function
-vs-export 
-devenv /useenv $slnw
-EOC
-
-}
-   
+  
 
 #opticks-config(){ echo Debug ; }
 opticks-config(){ echo RelWithDebInfo ; }
@@ -520,41 +559,7 @@ opticks-ctest()
 
    ctest $*
 
-
    cd $iwd
-   echo $msg use -V to show output 
-}
-
-
-
-opticks-ctest-deprecated()
-{ 
-
-   local msg="$FUNCNAME : "
-   local iwd=$PWD
-
-   local bdir=$1
-   shift
-   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
-
-   cd $bdir
-
-   #export-
-   #export-export 
-
-   opticksdata-
-   opticksdata-export
-
-
-   if [ "$USERPROFILE" == "" ]; then 
-      ctest $*   
-   else
-      # windows needs PATH to find libs
-      PATH=$(opticks-prefix)/lib:$PATH ctest $*   
-   fi
-
-   cd $iwd
-
    echo $msg use -V to show output 
 }
 
@@ -589,6 +594,7 @@ opticks---(){
   oglrap--
 
   ############ CUDA NEEDED 
+
   cudarap-
   cudarap--
 
@@ -603,6 +609,7 @@ opticks---(){
 
   opticksgl-
   opticksgl--
+
   ####################### 
  
   ggeoview-
@@ -655,14 +662,6 @@ opticks-cleanbuild()
 
 ########## runtime setup ########################
 
-opticks-check(){ 
-   # last arg dae running is not the usual approach 
-   local msg="=== $FUNCNAME :"
-   local dae=$HOME/g4_00.dae
-   [ ! -f "$dae" ] && echo $msg missing geometry file $dae && return 
-   $(opticks-prefix)/bin/GGeoView --size 1024,768,1 $dae
-}
-
 opticks-path(){ echo $PATH | tr ":" "\n" ; }
 opticks-path-add(){
   local dir=$1 
@@ -699,6 +698,7 @@ opticks-export-mingw()
 }
 
 
+########## building sphinx docs
 
 opticks-htmldir(){   echo $(opticks-prefix)/html ; }
 opticks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
@@ -714,7 +714,6 @@ opticks-docsbb() { opticks-docs $(opticks-htmldirbb)  ;  }
 
 opticks-html(){   open $(opticks-htmldir)/index.html ; } 
 opticks-htmlbb(){ open $(opticks-htmldirbb)/index.html ; } 
-
 
 
 ### opticks projs ###  **moved** all projs into top level folders
@@ -739,7 +738,7 @@ opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env 
 ggeoview-(){        . $(opticks-home)/ggeoview/ggeoview.bash && ggeoview-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 
-
+### opticks launchers ########
 
 oks-(){             . $(opticks-home)/bin/oks.bash && oks-env $* ; }
 ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }
