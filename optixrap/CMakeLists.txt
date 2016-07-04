@@ -8,6 +8,7 @@ include(EnvBuildOptions)
 
 find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 
+
 ########################## from OPTIX_SDK_DIR/CMake
 include(Macros)
 include(CompilerInfo)
@@ -21,9 +22,16 @@ endif()
 ########################
 
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
+#list(APPEND CUDA_NVCC_FLAGS "-arch=sm_30;-std=c++11;-O2;-DVERBOSE")
+#list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+#list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
+#SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
 
 include(EnvCompilationFlags)   
+
+# In SUSE Linux + gcc 4.8, if the pedantic exists, the compilation will be failed.
+string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
@@ -186,7 +194,8 @@ set(OX_HEADERS
 # OptiX prog within "cu/"  Thrust/CUDA not in "cu/"
 
 set(XOPT --disable-warnings)
-optixthrust_add_library( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT}) 
+#optixthrust_add_library( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT}) 
+optixthrust_add_library( ${name} ${SOURCES} OPTIONS ${XOPT}) 
 target_link_libraries( ${name} ${LIBRARIES} )
 
 set(TARGET    "${name}")
