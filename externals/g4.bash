@@ -149,7 +149,7 @@ g4-prefix(){
     case $NODE_TAG in 
        MGB) echo $HOME/local/opticks/externals ;;
          D) echo /usr/local/opticks/externals ;;
-         *) echo /usr/local/opticks/externals ;;
+         *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
     esac
  }
 
