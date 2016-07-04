@@ -17,6 +17,7 @@ If you need to commit to *opticks*, you need to use SSH::
 
 Source opticks from your bash shell profile with::
 
+    export LOCAL_BASE=/usr/local       # folder beneath which opticks will be installed
     export OPTICKS_HOME=$HOME/opticks
     opticks-(){  [ -r $OPTICKS_HOME/opticks.bash ] && . $OPTICKS_HOME/opticks.bash && opticks-env $* ; } 
     opticks-
