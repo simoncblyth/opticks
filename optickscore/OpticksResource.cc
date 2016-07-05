@@ -68,6 +68,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_meshfixcfg(NULL),
        m_idpath(NULL),
        m_idfold(NULL),
+       m_idname(NULL),
        m_idbase(NULL),
        m_digest(NULL),
        m_valid(true),
@@ -84,7 +85,8 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_dpib(false),
        m_other(false),
        m_detector(NULL),
-       m_detector_name(NULL)
+       m_detector_name(NULL),
+       m_detector_base(NULL)
 {
     init();
 }
@@ -199,15 +201,20 @@ bool OpticksResource::isOther()
 
 
 
-bool OpticksResource::idPathContains(const char* s)
+bool OpticksResource::idNameContains(const char* s)
 {
     bool ret = false ; 
-    if(m_idpath)
+    if(m_idname)
     {
-        std::string idp(m_idpath);
+        std::string idn(m_idname);
         std::string ss(s);
-        ret = idp.find(ss) != std::string::npos ;
+        ret = idn.find(ss) != std::string::npos ;
     }
+    else
+    {
+        LOG(warning) << " idname NULL " ; 
+    }
+
     return ret ; 
 }
 
@@ -278,9 +285,9 @@ void OpticksResource::identifyGeometry()
    // TODO: somehow extract detector name from the exported file metadata or sidecar
 
 
-   m_juno     = idPathContains("export/juno") ;
-   m_dayabay  = idPathContains("export/DayaBay") ;
-   m_dpib     = idPathContains("export/dpib") ;
+   m_juno     = idNameContains("juno") ;
+   m_dayabay  = idNameContains("DayaBay") ;
+   m_dpib     = idNameContains("dpib") ;
 
    if(m_juno == false && m_dayabay == false && m_dpib == false )
    {
@@ -505,6 +512,13 @@ void OpticksResource::readEnvironment()
         std::string base = BFile::ParentDir(m_idfold);
         m_idbase = strdup(base.c_str());
 
+        std::string name = BFile::Name(m_idfold); 
+        m_idname = strdup(name.c_str()); 
+
+        // idname is name of the idfold eg DayaBay_VGDX_20140414-1300
+
+
+
     } 
 
     // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS
@@ -548,6 +562,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "digest   : " <<  (m_digest?m_digest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
     std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
+    std::cerr << "idname   : " <<  (m_idname?m_idname:"NULL") << std::endl; 
     std::cerr << "idbase   : " <<  (m_idbase?m_idbase:"NULL") << std::endl; 
     std::cerr << "detector : " <<  (m_detector?m_detector:"NULL") << std::endl; 
     std::cerr << "detector_name : " <<  (m_detector_name?m_detector_name:"NULL") << std::endl; 

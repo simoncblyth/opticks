@@ -74,7 +74,7 @@ class OKCORE_API OpticksResource {
        const char* getMetaValue(const char* key);
     public:
        const char* getEnvPrefix();
-       bool idPathContains(const char* s); 
+       bool idNameContains(const char* s); 
        void Summary(const char* msg="OpticksResource::Summary");
        void Dump(const char* msg="OpticksResource::Dump");
     public:
@@ -123,6 +123,7 @@ class OKCORE_API OpticksResource {
        const char* m_meshfixcfg ;
        const char* m_idpath ;
        const char* m_idfold ;
+       const char* m_idname ;
        const char* m_idbase ;
        const char* m_digest ;
        bool        m_valid ; 
