@@ -440,17 +440,34 @@ EOL
    done
 }
 
+-opticks-dist(){
+   local ext
+   local dist
+   while read ext 
+   do
+        $ext-
+        dist=$($ext-dist 2>/dev/null)
+        printf "%30s :  %s \n" $ext $dist
+   done
+}
+
 opticks-externals-install(){ opticks-externals | -opticks-installer ; }
 opticks-externals-url(){     opticks-externals | -opticks-url ; }
+opticks-externals-dist(){    opticks-externals | -opticks-dist ; }
 
 opticks-optionals-install(){ opticks-optionals | -opticks-installer ; }
 opticks-optionals-url(){     opticks-optionals | -opticks-url ; }
+opticks-optionals-dist(){    opticks-optionals | -opticks-dist ; }
 
-opticks-urls(){
-   echo externals
+opticks-info(){
+   echo externals-url
    opticks-externals-url
-   echo optionals
+   echo externals-dist
+   opticks-externals-dist
+   echo optionals-url
    opticks-optionals-url
+   echo optionals-dist
+   opticks-optionals-dist
 }
 
 

@@ -236,6 +236,7 @@ glfw-pc-kludge(){
 glfw-version(){ echo 3.1.1 ; }
 glfw-name(){ echo glfw-$(glfw-version) ; }
 glfw-url(){  echo http://downloads.sourceforge.net/project/glfw/glfw/$(glfw-version)/$(glfw-name).zip ; }
+glfw-dist(){ echo $(dirname $(glfw-dir))/$(basename $(glfw-url)) ; }
 
 glfw-edit(){  vi $(opticks-home)/cmake/Modules/FindGLFW.cmake ; }
 

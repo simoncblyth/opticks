@@ -183,7 +183,16 @@ devenv /useenv $slnw
 EOC
 
 }
- 
+
+
+oks-backup-externals()
+{
+   # backup externals incase clouds are inaccessible
+   # and need to use opticks-nuclear to test complete builds
+   cd $LOCAL_BASE
+   [ ! -d "opticks_backup" ] && return 
+   cp -R opticks/externals opticks_backup/
+} 
 
 
 

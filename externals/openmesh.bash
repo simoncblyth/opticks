@@ -158,7 +158,7 @@ openmesh-vers(){ echo 4.1 ; }
 openmesh-name(){ echo OpenMesh-$(openmesh-vers) ; }
 openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(openmesh-name).tar.gz ; }
 
-
+openmesh-dist(){ echo $(dirname $(openmesh-dir))/$(basename $(openmesh-url)) ; }
 
 openmesh-edir(){ echo $(opticks-home)/graphics/openmesh ; }
 openmesh-old-base(){ echo $(local-base)/env/graphics/openmesh ; }

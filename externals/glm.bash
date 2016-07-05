@@ -118,6 +118,7 @@ glm-edit(){  vi $(opticks-home)/cmake/Modules/FindGLM.cmake ; }
 glm-version(){ echo 0.9.6.3 ; }
 glm-name(){    echo glm-$(glm-version) ; }
 glm-url(){     echo http://downloads.sourceforge.net/project/ogl-math/$(glm-name)/$(glm-name).zip ; }
+glm-dist(){    echo $(dirname $(glm-dir))/$(basename $(glm-url)) ; }
 
 glm-get(){
    local dir=$(dirname $(glm-dir)) &&  mkdir -p $dir && cd $dir

@@ -161,6 +161,8 @@ g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; }
 
 g4-tag(){   echo g4 ; }
 g4-url(){   echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ; }
+g4-dist(){ echo $(dirname $(g4-dir))/$(basename $(g4-url)) ; }
+
 g4-name2(){  echo Geant4-10.2.1 ; }
 
 g4-filename(){  echo $(basename $(g4-url)) ; }

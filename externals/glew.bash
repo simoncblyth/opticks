@@ -75,6 +75,7 @@ glew-doc(){
   env-open $doc
 }
 
+glew-dist(){ echo $(dirname $(glew-dir))/$(basename $(glew-url)) ; }
 glew-get(){
    local dir=$(dirname $(glew-dir)) &&  mkdir -p $dir && cd $dir
 
