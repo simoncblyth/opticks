@@ -19,6 +19,13 @@ int main(int argc, char** argv)
 
     const char* path = ok.getDAEPath();
 
+    if(!path)
+    {
+        LOG(error) << " NULL DAEPath " ;
+        return 0 ;     
+    }
+
+
     assert(path);
 
     LOG(info) << " import " << path ; 
