@@ -14,11 +14,12 @@ gleq-cd(){  cd $(gleq-dir); }
 gleq-scd(){  cd $(gleq-sdir); }
 gleq-edit(){ vi $(opticks-home)/cmake/Modules/FindGLEQ.cmake ; }
 
+gleq-url(){ echo https://github.com/simoncblyth/gleq ; }
 
 gleq-get(){
    local iwd=$PWD
    local dir=$(dirname $(gleq-dir)) &&  mkdir -p $dir && cd $dir
-   [ ! -d gleq ] && git clone https://github.com/simoncblyth/gleq
+   [ ! -d gleq ] && git clone $(gleq-url)
    cd $iwd
 }
 gleq-hdr(){

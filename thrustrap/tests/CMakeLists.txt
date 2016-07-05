@@ -17,7 +17,7 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
             ${LIBRARIES} 
             ThrustRap
     )
-    install(TARGETS ${TGT} DESTINATION bin)
+    install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
 
@@ -39,7 +39,7 @@ foreach(TEST_CU_SRC ${TEST_CU_SRCS})
             ${LIBRARIES} 
             ThrustRap
     )
-    install(TARGETS ${TGT} DESTINATION bin)
+    install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
 

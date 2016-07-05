@@ -72,6 +72,7 @@ set(_TEST_SOURCES
 set(TEST_SOURCES
 
     GSurfaceLibTest.cc
+    GScintillatorLibTest.cc
 
 )
 

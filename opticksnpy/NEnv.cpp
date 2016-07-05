@@ -71,10 +71,12 @@ void NEnv::readEnv()
 
 void NEnv::readFile(const char* dir, const char* name)
 {
+    LOG(trace) << " dir " << dir << " name " << name ; 
     m_all  = MSS::load(dir, name); 
 }
 void NEnv::readFile(const char* path)
 {
+    LOG(trace) << " path " << path ; 
     m_path = path ? strdup(path) : NULL ;  
     m_all  = MSS::load(path); 
 }
@@ -117,6 +119,18 @@ void NEnv::dump(const char* msg)
     typedef std::map<std::string, std::string> SS ; 
 
     MSS* mss = m_selection ? m_selection : m_all ; 
+
+    if(mss == NULL)
+    {
+       LOG(error) << "NEnv::dump FAILED TO LOAD environment map  " 
+                  << " selection " << m_selection 
+                  << " all " << m_all
+                  ;
+
+        return ;
+    } 
+
+
     SS m = mss->getMap();
 
     for(SS::iterator it=m.begin() ; it != m.end() ; it++)
@@ -172,6 +186,16 @@ void NEnv::setEnvironment(bool overwrite, bool native)
     typedef std::map<std::string, std::string> SS ; 
 
     MSS* mss = m_selection ? m_selection : m_all ; 
+    if(mss == NULL)
+    {
+       LOG(error) << "NEnv::setEnviroment FAILED TO LOAD environment map  " 
+                  << " selection " << m_selection 
+                  << " all " << m_all
+                  ;
+
+        return ;
+    } 
+
     SS m = mss->getMap();
 
     for(SS::iterator it=m.begin() ; it != m.end() ; it++)

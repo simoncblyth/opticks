@@ -214,26 +214,14 @@ EOU
 
 glfw-env(){      opticks- ;  }
 
-glfw-sdir(){ echo $(opticks-home)/graphics/glfw ; }
 glfw-dir(){  echo $(opticks-prefix)/externals/glfw/$(glfw-name) ; }
 glfw-bdir(){ echo $(glfw-dir).build ; }
-
-#glfw-idir(){ echo $(local-base)/env/graphics/glfw/$(glfw-version) ; }
 glfw-idir(){ echo $(opticks-prefix)/externals ; }
 glfw-prefix(){ echo $(opticks-prefix)/externals ; }
 
-glfw-scd(){ cd $(glfw-sdir); }
 glfw-cd(){  cd $(glfw-dir); }
 glfw-bcd(){ cd $(glfw-bdir); }
 glfw-icd(){ cd $(glfw-idir); }
-
-
-
-glfw-export()
-{
-   # for atb- examples
-   export GLFW_PREFIX=$(glfw-prefix)
-}
 
 
 glfw-pc(){

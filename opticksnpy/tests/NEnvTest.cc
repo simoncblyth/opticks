@@ -1,4 +1,6 @@
 #include <iostream>
+
+#include "BFile.hh"
 #include "NEnv.hpp"
 
 #include "PLOG.hh"
@@ -46,10 +48,10 @@ int main(int argc, char** argv, char** /*envp*/)
 
     NPY_LOG__ ; 
 
-    const char* path =  "/usr/local/opticks/externals/config/geant4.ini" ;
-    //std::string npath = Bfile::FormPath(path);
-
+    const char* path =  "$LOCAL_BASE/opticks/externals/config/geant4.ini" ;
     NEnv* e = NEnv::load(path);
+
+
     e->dump();
     e->setEnvironment();
     NEnv::dumpEnvironment();

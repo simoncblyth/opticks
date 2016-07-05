@@ -197,6 +197,19 @@ g4-get-tgz(){
    [ ! -d "$nam" ] && tar zxvf $tgz 
 }
 
+
+
+
+g4--()
+{
+    g4-get
+    g4-configure 
+    g4-build
+    g4-export-ini
+}
+
+
+
 g4-get(){
    local dir=$(dirname $(g4-dir)) &&  mkdir -p $dir && cd $dir
    local url=$(g4-url)
@@ -207,37 +220,24 @@ g4-get(){
    [ ! -d "$nam" ] && unzip $dst 
 }
 
-
-
-
 g4-wipe(){
    local bdir=$(g4-bdir)
    rm -rf $bdir
 }
 
-g4-cmake-old(){
-   local iwd=$PWD
-
+g4-configure()
+{
+   local 
    local bdir=$(g4-bdir)
-   mkdir -p $bdir
+   [ -f "$bdir/CMakeCache.txt" ] && g4-configure-msg  && return
 
-   local idir=$(g4-prefix)
-   mkdir -p $idir
-
-   g4-bcd
-   cmake \
-       -G "$(opticks-cmake-generator)" \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DGEANT4_INSTALL_DATA=ON \
-       -DGEANT4_USE_GDML=ON \
-       -DXERCESC_ROOT_DIR=$(xercesc-prefix) \
-       -DCMAKE_INSTALL_PREFIX=$idir \
-       $(g4-dir)
-
-   cd $iwd
+   g4-cmake $*
 }
-
-
+g4-configure-msg(){ cat << EOM
+g4 has been configured already, to change configuration use: g4-cmake-modify 
+or to start over use : g4-wipe then g4-configure 
+EOM
+}
 
 g4-cmake(){
    local iwd=$PWD
@@ -249,6 +249,7 @@ g4-cmake(){
    mkdir -p $idir
 
    g4-bcd
+
    cmake \
        -G "$(opticks-cmake-generator)" \
        -DGEANT4_INSTALL_DATA=ON \
@@ -258,31 +259,33 @@ g4-cmake(){
        -DCMAKE_INSTALL_PREFIX=$idir \
        $(g4-dir)
 
+   cd $iwd
+}
 
-   ## NB MSVC cmake build was configured using PowerShell invokation 
-   #
-   # env/psm1/g4/g4.psm1   
-   # env/psm1/xercesc/xerces.psm1   
-   # 
+g4-cmake-modify(){
+   local iwd=$PWD
+   local msg="=== $FUNCNAME : "
+   local bdir=$(g4-bdir)
+   local bcache=$bdir/CMakeCache.txt
+   [ ! -f "$bcache" ] && echo $msg requires a preexisting $bcache from prior g4-cmake run && return
+   g4-bcd
+
+   cmake $* . 
 
    cd $iwd
 }
 
 
 
-g4-configure()
-{
-   g4-wipe
-   g4-cmake $*
-}
 
 
 #g4-config(){ echo Debug ; }
 g4-config(){ echo RelWithDebInfo ; }
-g4--(){
+g4-build(){
    g4-bcd
    cmake --build . --config $(g4-config) --target ${1:-install}
 }
+
 
 
 g4-sh(){  echo $(g4-idir)/bin/geant4.sh ; }

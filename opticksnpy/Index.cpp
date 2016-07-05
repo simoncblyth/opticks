@@ -337,8 +337,8 @@ std::string Index::getPath(const char* idpath, const char* prefix)
 bool Index::exists(const char* idpath)
 {
     if(!idpath) return false ;
-    bool sx = BFile::existsPath(idpath, getPrefixedString("Source").c_str());
-    bool lx = BFile::existsPath(idpath, getPrefixedString("Local").c_str());
+    bool sx = BFile::ExistsFile(idpath, getPrefixedString("Source").c_str());
+    bool lx = BFile::ExistsFile(idpath, getPrefixedString("Local").c_str());
     return sx && lx ; 
 }
 
@@ -381,8 +381,8 @@ Index* Index::load(const char* idpath, const char* itemtype)
 void Index::dumpPaths(const char* idpath, const char* msg)
 {
 
-    bool sx = BFile::existsPath(idpath, getPrefixedString("Source").c_str());
-    bool lx = BFile::existsPath(idpath, getPrefixedString("Local").c_str());
+    bool sx = BFile::ExistsFile(idpath, getPrefixedString("Source").c_str());
+    bool lx = BFile::ExistsFile(idpath, getPrefixedString("Local").c_str());
 
     LOG(info) << msg ;
     LOG(info) 

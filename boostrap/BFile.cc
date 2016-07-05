@@ -320,25 +320,6 @@ void BFile::CreateDir(const char* path, const char* sub)
 }
 
 
-bool BFile::existsPath(const char* path )
-{
-    fs::path fpath(path);
-    return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
-}
-
-bool BFile::existsPath(const char* dir_, const char* name )
-{
-    std::string dir = BFile::FormPath(dir_) ; 
-    fs::path fdir(dir);
-    if(fs::exists(fdir) && fs::is_directory(fdir))
-    {
-        fs::path fpath(dir);
-        fpath /= name ;
-        return fs::exists(fpath ) && fs::is_regular_file(fpath) ; 
-    }
-  
-    return false ; 
-}
 
 std::string BFile::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
 {

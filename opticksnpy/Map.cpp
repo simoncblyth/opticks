@@ -25,7 +25,11 @@ std::map<K, V>& Map<K,V>::getMap()
 template <typename K, typename V>
 Map<K,V>* Map<K,V>::load(const char* dir, const char* name)
 {
-    if(!BFile::existsPath(dir, name)) return NULL ;  
+    if(!BFile::ExistsFile(dir, name))   
+    {
+       LOG(warning) << " no such path : dir " << dir << " name " << name  ;
+       return NULL ;  
+    }
     Map* m = new Map<K,V>() ; 
     m->loadFromCache(dir, name);
     return m ; 
@@ -34,7 +38,12 @@ Map<K,V>* Map<K,V>::load(const char* dir, const char* name)
 template <typename K, typename V>
 Map<K,V>* Map<K,V>::load(const char* path)
 {
-    if(!BFile::existsPath(path)) return NULL ;  
+    LOG(trace) << " path " << path ; 
+    if(!BFile::ExistsFile(path))
+    {
+       LOG(warning) << " no path " << path ;
+       return NULL ;  
+    }
     Map* m = new Map<K,V>() ; 
     m->loadFromCache(path);
     return m ; 

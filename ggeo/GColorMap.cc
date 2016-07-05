@@ -33,7 +33,7 @@ GColorMap* GColorMap::load(const char* dir, const char* name)
 {
     assert(0);
 
-    if(!BFile::existsPath(dir, name))
+    if(!BFile::ExistsFile(dir, name))
     {
         LOG(warning) << "GColorMap::load FAILED no file at  " << dir << "/" << name ; 
         return NULL ;

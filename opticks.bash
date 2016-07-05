@@ -73,7 +73,6 @@ takes less then 10 minutes and the Opticks build takes less than 5 minutes.::
 Externals 
 -----------
 
-
 Use the bash function *opticks-externals-install*::
 
    opticks-externals-install
@@ -84,27 +83,16 @@ Tools like hg, git, curl, tar, zip are assumed to be in your PATH.
 ===============  =============   ==============================================================================
 precursor        pkg name        notes
 ===============  =============   ==============================================================================
-glm-             GLM             sourceforge tarball 0.9.6.3, header only
-assimp-          Assimp          github.com/simoncblyth/assimp fork of unspecified github version that handles G4DAE extras, cmake configured
-openmesh-        OpenMesh        www.openmesh.org OpenMesh 4.1 tarball, cmake configured, provides VS2015 binaries http://www.openmesh.org/download/
-glew-            GLEW            sourceforge tarball 1.12.0, OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
-glfw-            GLFW            sourceforge tarball 3.1.1, library for creating windows with OpenGL and receiving input, cmake generation    
-gleq-            GLEQ            github.com/simoncblyth/gleq : GLFW author event handling example, header only
-imgui-           ImGui           github.com/simoncblyth/imgui expected to drop source into using project, simple CMakeLists.txt added by me
-plog-            PLog            github.com/simoncblyth/plog 
+glm-             GLM             OpenGL mathematics, 3D transforms 
+assimp-          Assimp          Assimp 3D asset importer, my fork that handles G4DAE extras
+openmesh-        OpenMesh        basis for mesh navigation and fixing
+glew-            GLEW            OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
+glfw-            GLFW            Interface between system and OpenGL, creating windows and receiving input
+gleq-            GLEQ            Keyboard event handling header from GLFW author, header only
+imgui-           ImGui           OpenGL immediate mode GUI, depends on glfw and glew
+plog-            PLog            Header only logging, supporting multi dll logging on windows 
+opticksdata-     -               Dayabay G4DAE and GDML geometry files for testing Opticks      
 ===============  =============   ==============================================================================
-
-Dependencies of externals:
-
-============  ====================  ==============================
-pkg           depends on            notes  
-============  ====================  ==============================
-glm                                 headers only  
-gleq                                headers only  
-glew          system opengl
-glfw
-imgui         glfw glew 
-============  ====================  ==============================
 
 
 Boost Infrastructure Libraries
@@ -163,9 +151,8 @@ Thrust is installed together with CUDA.
 =====================  ===============  =============   ==============================================================================
 directory              precursor        pkg name        notes
 =====================  ===============  =============   ==============================================================================
-cuda                   cuda-            CUDA            https://developer.nvidia.com/cuda-downloads
+cuda                   cuda-            CUDA            https://developer.nvidia.com/cuda-downloads (includes Thrust)
 optix                  optix-           OptiX           https://developer.nvidia.com/optix
-numerics/thrust        thrust-          Thrust          included with CUDA
 =====================  ===============  =============   ==============================================================================
 
 
@@ -344,6 +331,15 @@ The *opticks-ctest* functions runs ctests for all the opticks projects::
     opticks-ctest : use -V to show output
 
 
+Issues With Tests
+-------------------
+
+Some tests depend on the geometry cache being present. To create the geometry cache::
+
+   op.sh -G 
+
+
+
 Running Individual Tests
 ---------------------------
 
@@ -402,14 +398,31 @@ opticks-optix-install-dir(){
     esac
 }
 
-opticks-externals-install(){
+
+opticks-externals(){ cat << EOL
+glm
+glfw
+glew
+gleq
+imgui
+assimp
+openmesh
+plog
+opticksdata
+EOL
+}
+
+opticks-optionals(){ cat << EOL
+xercesc
+g4
+EOL
+}
+
+-opticks-installer(){
    local msg="=== $FUNCNAME :"
-
-   local exts="glm glfw glew gleq imgui assimp openmesh plog opticksdata"
    echo $msg START $(date)
-
    local ext
-   for ext in $exts 
+   while read ext 
    do
         echo $msg $ext
         $ext-
@@ -418,6 +431,27 @@ opticks-externals-install(){
    echo $msg DONE $(date)
 }
 
+-opticks-url(){
+   local ext
+   while read ext 
+   do
+        $ext-
+        printf "%30s :  %s \n" $ext $($ext-url) 
+   done
+}
+
+opticks-externals-install(){ opticks-externals | -opticks-installer ; }
+opticks-externals-url(){     opticks-externals | -opticks-url ; }
+
+opticks-optionals-install(){ opticks-optionals | -opticks-installer ; }
+opticks-optionals-url(){     opticks-optionals | -opticks-url ; }
+
+opticks-urls(){
+   echo externals
+   opticks-externals-url
+   echo optionals
+   opticks-optionals-url
+}
 
 
 
@@ -431,16 +465,18 @@ opticks-cmake-generator()
                    *)  echo Unix Makefiles ;;
        esac                          
     fi
-
 }
 
 opticks-cmake(){
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
    local bdir=$(opticks-bdir)
+
    mkdir -p $bdir
    [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to reconfigure  && return  
+
    opticks-bcd
+
    g4- 
    xercesc-
 
@@ -479,21 +515,23 @@ opticks-wipe(){
    rm -rf $bdir
 }
 
-opticks-configure(){
+opticks-configure()
+{
    opticks-wipe
+
    case $(opticks-cmake-generator) in
        "Visual Studio 14 2015") opticks-configure-local-boost $* ;;
                              *) opticks-configure-system-boost $* ;;
    esac
 }
 
-opticks-configure-system-boost(){
+opticks-configure-system-boost()
+{
    opticks-cmake $* 
 }
 
-opticks-configure-local-boost(){
-    type $FUNCNAME
-
+opticks-configure-local-boost()
+{
     local msg="=== $FUNCNAME :"
     boost-
 
@@ -509,7 +547,6 @@ opticks-configure-local-boost(){
               -DBoost_DEBUG=0 
 
     # vi $(cmake-find-package Boost)
-
 }
 
 
@@ -622,6 +659,7 @@ opticks---(){
 } 
 
 
+opticks-nuclear(){   rm -rf $LOCAL_BASE/opticks/* ; }
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
 opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }
 opticks-rmdirs-(){
