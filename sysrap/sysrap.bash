@@ -10,8 +10,8 @@ Lowest level package, beneath BoostRap and
 **explicitly not using Boost**. 
 
 A lower level pkg that BoostRap is required 
-as nvcc (CUDA compiler) has trouble compiling 
-Boost headers.
+as nvcc, the CUDA compiler, has trouble compiling 
+some Boost headers.
 
 EOU
 }

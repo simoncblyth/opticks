@@ -6,7 +6,7 @@ npy-vi(){       vi $(npy-source) ; }
 npy-env(){      olocal- ; opticks- ; }
 npy-usage(){ cat << EOU
 
-npy : C++ array manipulation machinery inspired by NumPy
+NPY : C++ array manipulation machinery inspired by NumPy
 ==========================================================
 
 Overview
@@ -28,7 +28,6 @@ Dependencies
 NB no OpenGL dependency, instead classes designed to be 
 easily usable from oglrap- when doing things like 
 uploading OpenGL buffers etc..
-
 
 Classes
 -------
@@ -96,12 +95,15 @@ numpy
          import numpy as np
          a = np.load("/path/to/name.npy")
 
-BStr
-    string and MD5 digest utils
-
 GLMPrint
     collection of print functions for various GLM vector and matrix types
 
+
+
+EOU
+}
+
+npy-notes(){ cat << \EON
 
 
 Peeking at files
@@ -129,8 +131,10 @@ Peeking at files
 
 
 
-EOU
+
+EON
 }
+
 
 npy-sdir(){ echo $(opticks-home)/opticksnpy ; }
 npy-tdir(){ echo $(opticks-home)/opticksnpy/tests ; }
