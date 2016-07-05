@@ -54,7 +54,7 @@ Places to migrate to Typ::
 
 class NPY_API Types {
    public:
-       static const char* PHOTON_FLAGS_PATH ; 
+       static const char* ENUM_HEADER_PATH ;  // NB duplicitous with OpticksFlags 
    public:
        static const char* TAIL ; 
 

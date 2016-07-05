@@ -195,8 +195,8 @@ std::string BRegex::os_path_expandvars(const char* s, bool debug)
 
     assert(0);
 
-    // const char* ptn = "\\$(\\w+)(/.+)?" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
-    const char* ptn = "\\$(\\w+)" ; // eg $ENV_HOME/graphics/ggeoview/cu/photon.h ->  ENV_HOME  graphics/ggeoview/cu/photon.h
+    // const char* ptn = "\\$(\\w+)(/.+)?" ;
+    const char* ptn = "\\$(\\w+)" ; // eg $ENVVAR/graphics/ggeoview/cu/photon.h ->  ENVVAR  graphics/ggeoview/cu/photon.h
 
 
     std::string str = s ;

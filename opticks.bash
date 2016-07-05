@@ -618,6 +618,22 @@ opticks-ctest()
 }
 
 
+opticks-find(){
+   local str=${1:-ENV_HOME}
+
+   opticks-scd
+
+   find . -name '*.cc' -exec grep -H $str {} \;
+   find . -name '*.hh' -exec grep -H $str {} \;
+   find . -name '*.cpp' -exec grep -H $str {} \;
+   find . -name '*.hpp' -exec grep -H $str {} \;
+   find . -name '*.h' -exec grep -H $str {} \;
+
+
+}
+
+
+
 opticks---(){ 
 
   sysrap-

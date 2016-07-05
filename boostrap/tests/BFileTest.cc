@@ -33,13 +33,13 @@ void test_ExistsDir()
 {
 
     std::vector<std::string> ss ; 
-    ss.push_back("$ENV_HOME/optickscore/OpticksPhoton.h");
+    ss.push_back("$OPTICKS_HOME/optickscore/OpticksPhoton.h");
     ss.push_back("$HOME/.opticks/GColors.json");
     ss.push_back("$HOME/.opticks");
     ss.push_back("$HOME/");
     ss.push_back("$HOME");
-    ss.push_back("$ENV_HOME");
-    ss.push_back("$HOME/$ENV_HOME");
+    ss.push_back("$OPTICKS_HOME");
+    ss.push_back("$HOME/$OPTICKS_HOME");
     ss.push_back("/tmp");
 
     for(unsigned int i=0 ; i < ss.size() ; i++)
@@ -70,7 +70,7 @@ void test_CreateDir()
 void test_ParentDir()
 {
     std::vector<std::string> ss ; 
-    ss.push_back("$ENV_HOME/optickscore/OpticksPhoton.h");
+    ss.push_back("$OPTICKS_HOME/optickscore/OpticksPhoton.h");
     ss.push_back("$HOME/.opticks/GColors.json");
     ss.push_back("C:\\tmp");
     ss.push_back("C:\\tmp\\TestIDPath");

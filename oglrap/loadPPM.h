@@ -22,7 +22,10 @@ extern unsigned char* loadPPM(char* path, int* width, int* height);
 
 unsigned char* loadPPM(char* path, int* width, int* height) {
   FILE* fp;
-  int i, w, h, d;
+  int i(0) ;
+  int w(0) ;
+  int h(0) ;
+  int d(0) ;
   unsigned char* image;
   char head[70]; /* max line <= 70 in PPM (per spec). */
 

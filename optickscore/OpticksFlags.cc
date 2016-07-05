@@ -14,7 +14,11 @@
 
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/graphics/optixrap/cu/photon.h" ;
 //const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/opticks/OpticksPhoton.h" ;
-const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
+//const char* OpticksFlags::ENUM_HEADER_PATH = "$ENV_HOME/optickscore/OpticksPhoton.h" ;
+
+const char* OpticksFlags::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h" ;
+//  envvar OPTICKS_INSTALL_PREFIX is set internally by OpticksResource based on cmake config 
+
 
 const char* OpticksFlags::ZERO_              = "." ;
 const char* OpticksFlags::CERENKOV_          = "CERENKOV" ;
@@ -150,7 +154,7 @@ void OpticksFlags::init(const char* path)
               << " " << ( m_index ? m_index->description() : "NULL index" )
               ;
     
-    assert(num_flags > 0 && "missing envvar ENV_HOME or you need to update ENUM_HEADER_PATH ");
+    assert(num_flags > 0 && "missing flags header : you need to update OpticksFlags::ENUM_HEADER_PATH ");
 }
 
 
