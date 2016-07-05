@@ -10,6 +10,7 @@ set(TEST_SOURCES
    BDirTest.cc
    BTimeTest.cc
    BMapTest.cc
+   MapTest.cc
    BListTest.cc
    BRegexTest.cc
    BStrTest.cc
@@ -18,6 +19,9 @@ set(TEST_SOURCES
    BLogTest.cc
    BFileTest.cc
    BBufSpecTest.cc
+   BEnvTest.cc
+   BOpticksResourceTest.cc
+
 )
 
 

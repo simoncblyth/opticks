@@ -10,11 +10,11 @@
 
 // brap-
 #include "BDir.hh"
+#include "Map.hh"
 
 // npy-
 #include "NGLM.hpp"
 #include "NPY.hpp"
-#include "Map.hpp"
 
 // optickscore-
 #include "Opticks.hh"

@@ -4,14 +4,15 @@
 #include <map>
 
 
-#include "NPY_API_EXPORT.hh"
-#include "NPY_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
+// TODO: merge Map with BMap that is uses ?
 
 template <typename K, typename V> class Map ; 
 
 template <typename K, typename V>
-class NPY_API Map {
+class BRAP_API Map {
     public:
         Map();
 
@@ -35,6 +36,6 @@ class NPY_API Map {
 
 };
 
-#include "NPY_TAIL.hh"
+#include "BRAP_TAIL.hh"
 
 

@@ -1,5 +1,7 @@
-
 #ifdef _MSC_VER
+
+#pragma warning(push)
+
 // strdup
 #pragma warning( disable : 4996 )
 

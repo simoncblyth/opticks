@@ -13,10 +13,10 @@
 // brap-
 #include "BStr.hh"
 #include "PLOG.hh"
+#include "Map.hh"
 
 
 // npy-
-#include "Map.hpp"
 #include "Timer.hpp"
 #include "Parameters.hpp"
 #include "TorchStepNPY.hpp"

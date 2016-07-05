@@ -9,7 +9,7 @@ class OpticksColors ;
 class OpticksFlags ; 
 class OpticksAttrSeq ;
 
-class NEnv ; 
+class BEnv ; 
 
 class Types ;
 class Typ ;
@@ -17,7 +17,9 @@ class Typ ;
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
-class OKCORE_API OpticksResource {
+#include "BOpticksResource.hh"
+
+class OKCORE_API OpticksResource : public BOpticksResource {
     private:
        static const char* JUNO ; 
        static const char* DAYABAY ; 
@@ -40,8 +42,7 @@ class OKCORE_API OpticksResource {
        bool isValid();
     private:
        void init();
-       void adoptInstallPrefix();
-       NEnv* readIniEnvironment(const char* relpath);
+       BEnv* readIniEnvironment(const char* relpath);
        void readG4Environment();
        void readOpticksEnvironment();
        void readEnvironment();
@@ -108,9 +109,7 @@ class OKCORE_API OpticksResource {
        bool        isOther();
    private:
        Opticks*    m_opticks ; 
-       const char* m_envprefix ; 
        const char* m_lastarg ; 
-       const char* m_install_prefix ;  // from OpticksCMakeConfig header
    private:
        // results of readEnvironment
        const char* m_geokey ;
@@ -134,8 +133,8 @@ class OKCORE_API OpticksResource {
        OpticksAttrSeq* m_flagnames ;
        Types*         m_types ;
        Typ*           m_typ ;
-       NEnv*          m_g4env ; 
-       NEnv*          m_okenv ; 
+       BEnv*          m_g4env ; 
+       BEnv*          m_okenv ; 
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 

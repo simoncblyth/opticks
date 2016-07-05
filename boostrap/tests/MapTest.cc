@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <string>
 
-#include "Map.hpp"
+#include "Map.hh"
 
 void testSaveLoad()
 {

@@ -15,19 +15,16 @@ namespace fs = boost::filesystem;
 #include "BFile.hh"
 #include "BStr.hh"
 #include "PLOG.hh"
+#include "Map.hh"
+#include "BEnv.hh"
 
 // npy-
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
-#include "Map.hpp"
-#include "NEnv.hpp"
 #include "Typ.hpp"
 #include "Types.hpp"
 #include "Index.hpp"
 
-
-// CMake generated defines from binary_dir/inc
-#include "OpticksCMakeConfig.hh"   
 
 #include "Opticks.hh"
 #include "OpticksResource.hh"
@@ -53,10 +50,9 @@ const char* OpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ;
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
     :
+       BOpticksResource(envprefix),
        m_opticks(opticks),
-       m_envprefix(strdup(envprefix)),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
-       m_install_prefix(NULL),
 
        m_geokey(NULL),
        m_daepath(NULL),
@@ -239,10 +235,9 @@ void OpticksResource::init()
 {
    LOG(trace) << "OpticksResource::init" ; 
 
-   adoptInstallPrefix();
    readG4Environment();
    readOpticksEnvironment();
-   NEnv::dumpEnvironment();
+   BEnv::dumpEnvironment();
 
    readEnvironment();
    readMetadata();
@@ -252,32 +247,6 @@ void OpticksResource::init()
    LOG(trace) << "OpticksResource::init DONE" ; 
 }
 
-
-void OpticksResource::adoptInstallPrefix()
-{
-   m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ; 
-   
-   const char* key = "INSTALL_PREFIX" ; 
-
-   int rc = SSys::setenvvar(m_envprefix, key, m_install_prefix, true ); 
-
-   LOG(trace) << "OpticksResource::adoptInstallPrefix " 
-              << " install_prefix " << m_install_prefix  
-              << " envprefix " << m_envprefix  
-              << " key " << key
-              << " rc " << rc
-              ;  
- 
-   assert(rc==0); 
-
-   // The CMAKE_INSTALL_PREFIX from opticks-;opticks-cmake 
-   // is set to the result of the opticks-prefix bash function 
-   // at configure time.
-   // This is recorded into a config file by okc-/CMakeLists.txt 
-   // and gets compiled into the OpticksCore library.
-   //
-   // Canonically it is :  /usr/local/opticks 
-}
 
 
 void OpticksResource::identifyGeometry()
@@ -379,17 +348,17 @@ void OpticksResource::readOpticksEnvironment()
 
 
 
-NEnv* OpticksResource::readIniEnvironment(const char* relpath)
+BEnv* OpticksResource::readIniEnvironment(const char* relpath)
 {
     std::string inipath = BFile::FormPath(m_install_prefix, relpath) ;
-    NEnv* env = NULL ; 
+    BEnv* env = NULL ; 
     if(BFile::ExistsFile(inipath.c_str()))
     {
         LOG(info) << "OpticksResource::readIniEnvironment" 
                   << " from " << inipath
                   ;
 
-         env = NEnv::load(inipath.c_str()); 
+         env = BEnv::load(inipath.c_str()); 
     }
     return env ;  
 }

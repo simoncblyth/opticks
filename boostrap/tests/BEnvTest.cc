@@ -1,11 +1,12 @@
 #include <iostream>
 
 #include "BFile.hh"
-#include "NEnv.hpp"
+#include "BEnv.hh"
+#include "BOpticksResource.hh"
 
 #include "PLOG.hh"
-#include "NPY_LOG.hh"
-
+#include "SYSRAP_LOG.hh"
+#include "BRAP_LOG.hh"
 
 
 const char* dir = "/tmp" ; 
@@ -18,7 +19,7 @@ void testCreateSave(char** envp)
     const char* prefix = "G4,DAE,OPTICKS,IDPATH,ENV" ; 
 
 
-    NEnv* e = new NEnv(envp);
+    BEnv* e = new BEnv(envp);
 
     e->dump("all");
     e->setPrefix(prefix); 
@@ -33,17 +34,21 @@ void testCreateSave(char** envp)
 
 void testLoad()
 {
-    NEnv* f = NEnv::load(dir, name);
+    BEnv* f = BEnv::load(dir, name);
     f->dump("loaded from ini");
 
     f->setEnvironment();
-    NEnv::dumpEnvironment();
+    BEnv::dumpEnvironment();
 }
 
 
 void testIniLoad(const char* path)
 {
-    NEnv* e = NEnv::load(path);
+    //std::string fpath = BFile::FormPath(path);
+    //BEnv* e = BEnv::load(fpath.c_str());
+
+    BEnv* e = BEnv::load(path);
+
 
     if(!e)
     {
@@ -53,7 +58,7 @@ void testIniLoad(const char* path)
 
     e->dump();
     e->setEnvironment();
-    NEnv::dumpEnvironment();
+    BEnv::dumpEnvironment();
 }
 
 
@@ -61,10 +66,11 @@ int main(int argc, char** argv, char** /*envp*/)
 {
     PLOG_(argc, argv);
 
-    NPY_LOG__ ; 
+    BRAP_LOG__ ; 
+    SYSRAP_LOG__ ; 
 
-    // cannot do that here, need to bring envvar setting down from okc- 
-    // Opticks ok(argc, argv); // sets envvar OPTICKS_INSTALL_PREFIX internally 
+    BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+    rsc.Summary();
 
     testIniLoad("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
     testIniLoad("$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini") ;

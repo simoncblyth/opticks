@@ -8,7 +8,7 @@
 #include <boost/regex.hpp>
 
 #include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "BRAP_HEAD.hh"
 
 class BRAP_API BRegex {
    public:
@@ -35,6 +35,7 @@ class BRAP_API BRegex {
 
 };
 
+#include "BRAP_TAIL.hh"
 
 
 

@@ -48,7 +48,6 @@ endif(UNIX)
 set(SOURCES
     NPY_LOG.cc
 
-    NEnv.cpp
     foo.cpp
     NPYBase.cpp
     NPYSpec.cpp
@@ -69,7 +68,6 @@ set(SOURCES
 
     Lookup.cpp
 
-    Map.cpp
 
     NSequence.cpp
     Index.cpp
@@ -157,7 +155,6 @@ Lookup.hpp
 Types.hpp
 Typ.hpp
 Index.hpp
-Map.hpp
 Timer.hpp
 Times.hpp
 TimesTable.hpp

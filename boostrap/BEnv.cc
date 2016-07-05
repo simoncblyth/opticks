@@ -5,11 +5,12 @@
 #include <string>
 
 #include "SSys.hh"
+
 #include "BFile.hh"
 #include "BStr.hh"
+#include "BEnv.hh"
+#include "Map.hh"
 
-#include "Map.hpp"
-#include "NEnv.hpp"
 #include "PLOG.hh"
 
 #ifdef _MSC_VER
@@ -18,23 +19,22 @@
 extern char **environ;
 #endif
 
-NEnv* NEnv::load(const char* dir, const char* name) 
+BEnv* BEnv::load(const char* dir, const char* name) 
 {
-   NEnv* e = new NEnv ;  
+   BEnv* e = new BEnv ;  
    e->readFile(dir, name);
    return e ; 
 }
 
-NEnv* NEnv::load(const char* path) 
+BEnv* BEnv::load(const char* path) 
 {
-   NEnv* e = new NEnv ;  
+   BEnv* e = new BEnv ;  
    e->readFile(path);
    return e ; 
 }
 
 
-
-NEnv::NEnv(char** envp) 
+BEnv::BEnv(char** envp) 
    :  
     m_envp(envp), 
     m_prefix(NULL), 
@@ -47,11 +47,11 @@ NEnv::NEnv(char** envp)
    readEnv();
 }
 
-void NEnv::init()  
+void BEnv::init()  
 {
 }
 
-void NEnv::readEnv()
+void BEnv::readEnv()
 {
     m_all = new MSS ;
     if(!m_envp) return ; 
@@ -69,24 +69,24 @@ void NEnv::readEnv()
 }
 
 
-void NEnv::readFile(const char* dir, const char* name)
+void BEnv::readFile(const char* dir, const char* name)
 {
     LOG(trace) << " dir " << dir << " name " << name ; 
     m_all  = MSS::load(dir, name); 
 }
-void NEnv::readFile(const char* path)
+void BEnv::readFile(const char* path)
 {
     LOG(trace) << " path " << path ; 
     m_path = path ? strdup(path) : NULL ;  
     m_all  = MSS::load(path); 
 }
 
-void NEnv::save(const char* dir, const char* name)
+void BEnv::save(const char* dir, const char* name)
 {
     MSS* mss = m_selection ? m_selection : m_all ; 
     mss->save(dir, name);
 }
-void NEnv::save(const char* path)
+void BEnv::save(const char* path)
 {
     MSS* mss = m_selection ? m_selection : m_all ; 
     mss->save(path);
@@ -96,7 +96,7 @@ void NEnv::save(const char* path)
 
 
 
-void NEnv::setPrefix(const char* prefix)
+void BEnv::setPrefix(const char* prefix)
 {
     delete m_selection ;
     if(prefix)
@@ -113,7 +113,7 @@ void NEnv::setPrefix(const char* prefix)
 }
 
 
-void NEnv::dump(const char* msg)
+void BEnv::dump(const char* msg)
 {
     LOG(info) << msg << " prefix " << ( m_prefix ? m_prefix : "NULL" ) ; 
     typedef std::map<std::string, std::string> SS ; 
@@ -122,7 +122,7 @@ void NEnv::dump(const char* msg)
 
     if(mss == NULL)
     {
-       LOG(error) << "NEnv::dump FAILED TO LOAD environment map  " 
+       LOG(error) << "BEnv::dump FAILED TO LOAD environment map  " 
                   << " selection " << m_selection 
                   << " all " << m_all
                   ;
@@ -146,7 +146,7 @@ void NEnv::dump(const char* msg)
 
 
 
-std::string NEnv::nativePath(const char* val)
+std::string BEnv::nativePath(const char* val)
 {
     std::string p = val ; 
 
@@ -164,7 +164,7 @@ std::string NEnv::nativePath(const char* val)
 
     std::string npath = BFile::FormPath(bpath.c_str());
 
-    LOG(trace) << "NEnv::nativePath"
+    LOG(trace) << "BEnv::nativePath"
                << " val " << val
                << " bpath " << bpath
                << " npath " << npath
@@ -175,11 +175,11 @@ std::string NEnv::nativePath(const char* val)
 }
 
 
-void NEnv::setEnvironment(bool overwrite, bool native)
+void BEnv::setEnvironment(bool overwrite, bool native)
 {
    if(m_selection == NULL && m_path == NULL)
    {
-       LOG(warning) << "NEnv::setEnvironment SAFETY RESTRICTION : MUST setPrefix non-NULL to effect a selection OR load from a file  " ; 
+       LOG(warning) << "BEnv::setEnvironment SAFETY RESTRICTION : MUST setPrefix non-NULL to effect a selection OR load from a file  " ; 
        return ;  
    } 
 
@@ -188,7 +188,7 @@ void NEnv::setEnvironment(bool overwrite, bool native)
     MSS* mss = m_selection ? m_selection : m_all ; 
     if(mss == NULL)
     {
-       LOG(error) << "NEnv::setEnviroment FAILED TO LOAD environment map  " 
+       LOG(error) << "BEnv::setEnviroment FAILED TO LOAD environment map  " 
                   << " selection " << m_selection 
                   << " all " << m_all
                   ;
@@ -208,7 +208,7 @@ void NEnv::setEnvironment(bool overwrite, bool native)
         int rc = SSys::setenvvar( NULL, k.c_str(), nv.c_str(), overwrite);
         assert(rc == 0 );
 
-        LOG(info) << "NEnv::setEnvironment" 
+        LOG(info) << "BEnv::setEnvironment" 
                    << " overwrite " << overwrite 
                    << " k " << std::setw(30) << k 
                    << " v " <<std::setw(100) << v 
@@ -219,12 +219,12 @@ void NEnv::setEnvironment(bool overwrite, bool native)
 
 
 #ifdef _MSC_VER
-void NEnv::dumpEnvironment(const char* msg, const char* )
+void BEnv::dumpEnvironment(const char* msg, const char* )
 {
    LOG(warning) << msg << " NOT IMPLEMENTED ON WINDOWS " ;     
 }
 #else
-void NEnv::dumpEnvironment(const char* msg, const char* prefix)
+void BEnv::dumpEnvironment(const char* msg, const char* prefix)
 {
     std::vector<std::string> elem ;   
     char delim = ',' ;

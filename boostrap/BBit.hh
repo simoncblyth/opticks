@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "BRAP_HEAD.hh"
 
 
 class BRAP_API BBit {
@@ -9,3 +9,7 @@ class BRAP_API BBit {
         static int ffs(int msk);
 
 }; 
+
+#include "BRAP_TAIL.hh"
+
+

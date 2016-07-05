@@ -24,3 +24,6 @@ struct BRAP_API BBufSpec {
     }
 
 };
+
+#include "BRAP_TAIL.hh"
+

@@ -31,7 +31,7 @@ Typically the last value in the vector should be used to call the Listeners
 setter method as selected by the name.
 */
 #include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "BRAP_HEAD.hh"
 
 
 #ifdef _MSC_VER
@@ -151,4 +151,5 @@ inline void BCfg::addOptionS(Listener* listener, const char* name, const char* d
 }
 
 
+#include "BRAP_TAIL.hh"
 

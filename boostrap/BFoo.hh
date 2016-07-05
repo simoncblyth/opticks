@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "BRAP_HEAD.hh"
 
 template<typename T> 
 void foo(T value)
@@ -53,6 +53,7 @@ class BRAP_API BCar {
 
 
 
+#include "BRAP_TAIL.hh"
 
 
 

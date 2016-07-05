@@ -13,9 +13,9 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 
+#   ${CMAKE_CURRENT_BINARY_DIR}/inc
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
-   ${CMAKE_CURRENT_BINARY_DIR}/inc
 
    ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
@@ -48,8 +48,8 @@ set(LIBRARIES
 
 
 # generate define header for hardcoding in the library 
-set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
-configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
+#set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
+#configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
 set(SOURCES
     OKCORE_LOG.cc

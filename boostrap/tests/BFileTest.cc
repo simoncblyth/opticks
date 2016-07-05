@@ -4,9 +4,12 @@
 #include <cassert>
 
 
+#include "BOpticksResource.hh"
 #include "BFile.hh"
-#include "PLOG.hh"
+
+#include "SYSRAP_LOG.hh"
 #include "BRAP_LOG.hh"
+#include "PLOG.hh"
 
 
 void test_FindFile_(const char* dirlist, const char* sub, const char* name)
@@ -94,18 +97,44 @@ void test_ParentDir()
 }
 
 
+void test_FormPath()
+{
+    std::vector<std::string> ss ; 
+    ss.push_back("$OPTICKS_HOME/optickscore/OpticksPhoton.h");
+    ss.push_back("$OPTICKS_INSTALL_PREFIX/include/optickscore/OpticksPhoton.h");
+    ss.push_back("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
+    ss.push_back("$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini") ;
 
+
+    ss.push_back("$HOME/.opticks/GColors.json");
+ 
+    for(unsigned int i=0 ; i < ss.size() ; i++)
+    {
+       std::string s = ss[i] ;
+       std::string x = BFile::FormPath(s.c_str());
+
+       LOG(info) 
+               << " s " << std::setw(40) << s  
+               << " x " << std::setw(40) << x  
+               ;  
+    }
+}
 
 
 int main(int argc, char** argv)
 {
    PLOG_(argc, argv);
+   SYSRAP_LOG_ ;
    BRAP_LOG_ ;
+
+   BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+   rsc.Summary();
 
    //test_FindFile();
    //test_ExistsDir();
    //test_CreateDir();
-   test_ParentDir();
+   //test_ParentDir();
+   test_FormPath();
 
 
 

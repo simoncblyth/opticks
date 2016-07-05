@@ -105,16 +105,16 @@ template<typename A, typename B>
 int BMap<A,B>::load( const char* dir, const char* name, unsigned int depth)
 {
     int rc(0) ; 
-    std::string path = BFile::preparePath(dir, name, false);
+    std::string path = BFile::FormPath(dir, name);
+
     if(!path.empty())
     {
-        std::string shortpath = BFile::prefixShorten( path.c_str(), "$OPTICKS_PREFIX/opticksdata/export/" ); // cosmetic shortening only
-        LOG(debug) << "loadMap " << shortpath  ;
+        LOG(trace) << "BMap<A,B>::load path " << path  ;
         rc = load( path.c_str(), depth );
     }
     else
     {
-        LOG(fatal)<< "loadMap : no such directory " << dir ;
+        LOG(fatal)<< "BMap<A,B>::load : no such file : dir " << dir << " name " << name ;
     }
     return rc ;
 }
@@ -124,8 +124,25 @@ int BMap<A,B>::load( const char* dir, const char* name, unsigned int depth)
 template<typename A, typename B> 
 int BMap<A,B>::load(const char* path, unsigned int depth)
 {
+    std::string fpath = BFile::FormPath(path);
+
+    if(fpath.empty())
+    {
+        LOG(warning) << "BMap<A,B>::load"
+                     << " bad path " << path ;
+
+        return 1 ; 
+    } 
+
+    LOG(trace) << "BMap<A,B>::load"  
+               << " path " << path 
+               << " fpath " << fpath 
+               << " depth " << depth
+               ; 
+
+
     pt::ptree t;
-    int rc = BTree::loadTree(t, path );
+    int rc = BTree::loadTree(t, fpath.c_str() );
 
     if(depth == 0)
     {
@@ -185,12 +202,8 @@ void BMap<A,B>::dump( const char* msg)
     }
 }
 
-
-
 template class BMap<std::string, std::string>;
 template class BMap<std::string, unsigned int>;
 template class BMap<unsigned int, std::string>;
-
-
 
 

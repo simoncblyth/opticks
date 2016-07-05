@@ -4,7 +4,7 @@
 #include <map>
 
 #include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "BRAP_HEAD.hh"
 
 
 template <typename A, typename B>
@@ -29,6 +29,7 @@ class BRAP_API BList {
 };
 
 
+#include "BRAP_TAIL.hh"
 
 
 

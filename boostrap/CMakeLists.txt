@@ -30,6 +30,8 @@ endif(UNIX)
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}/inc
+
    ${OpticksBoost_INCLUDE_DIRS} 
    ${SysRap_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
@@ -49,6 +51,12 @@ add_definitions(
 endif(UNIX AND NOT APPLE)
 
 
+# generate define header for hardcoding in the library 
+set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
+configure_file( BOpticksResourceCMakeConfig.hh.in inc/BOpticksResourceCMakeConfig.hh )
+
+
+
 set(SOURCES
   BRAP_LOG.cc 
 
@@ -60,6 +68,7 @@ set(SOURCES
   BCfg.cc
   BDir.cc
   BMap.cc
+  Map.cc
   BList.cc
   BStr.cc
   BHex.cc
@@ -67,12 +76,18 @@ set(SOURCES
   BFile.cc
   BRegex.cc
   BTree.cc
+  BEnv.cc
+  BOpticksResource.cc
 
 ) 
 
 set(HEADERS
   BRAP_API_EXPORT.hh
   BRAP_LOG.hh
+  BRAP_HEAD.hh
+  BRAP_TAIL.hh
+  BRAP_BODY.hh
+
   BDirect.hh 
 
   BBufSpec.hh 
@@ -82,12 +97,15 @@ set(HEADERS
   BCfg.hh
   BDir.hh
   BMap.hh
+  Map.hh
   BList.hh
   BStr.hh
   BHex.hh
   BBit.hh
   BFile.hh
   BRegex.hh
+  BEnv.hh
+  BOpticksResource.hh
 
 )
 

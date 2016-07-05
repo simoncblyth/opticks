@@ -3,7 +3,7 @@
 #include <string>
 
 #include "BRAP_API_EXPORT.hh"
-#include "BRAP_FLAGS.hh"
+#include "BRAP_HEAD.hh"
 
 template <typename T>
 class BRAP_API BHex {
@@ -20,4 +20,5 @@ class BRAP_API BHex {
 };
 
 
+#include "BRAP_TAIL.hh"
 

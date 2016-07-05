@@ -6,7 +6,8 @@
 #include "BStr.hh"
 #include "BMap.hh"
 
-#include "Map.hpp"
+#include "Map.hh"
+
 #include "PLOG.hh"
 
 
@@ -43,6 +44,10 @@ Map<K,V>* Map<K,V>::load(const char* path)
     {
        LOG(warning) << " no path " << path ;
        return NULL ;  
+    }
+    else
+    {
+       LOG(trace) << " Map<K,V>::load path " << path ;
     }
     Map* m = new Map<K,V>() ; 
     m->loadFromCache(path);

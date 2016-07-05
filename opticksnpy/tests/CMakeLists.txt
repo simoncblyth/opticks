@@ -23,7 +23,6 @@ NStateTest.cc
 ParametersTest.cc
 ReportTest.cc
 LookupTest.cc
-MapTest.cc
 IndexTest.cc
 NPropNamesTest.cc
 CountsTest.cc
@@ -61,8 +60,6 @@ NPYTest.cc
 
 set(TEST_SOURCES
 
-MapTest.cc
-NEnvTest.cc
 
 )
 
