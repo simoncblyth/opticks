@@ -55,6 +55,7 @@ opticksdata-get(){
 opticksdata--()
 {
    opticksdata-get
+   opticksdata-export-ini
 }
 
 
@@ -81,6 +82,25 @@ opticksdata-export(){
    export DAE_NAME_DYB=$(opticksdata-name dyb)
    export DAE_NAME_DPIB=$(opticksdata-name dpib)
 }
+
+
+opticksdata-ini(){ echo $(opticks-prefix)/opticksdata/config/opticksdata.ini ; }
+opticksdata-export-ini()
+{
+   local msg="=== $FUNCNAME :"
+
+   opticksdata-export 
+
+   local ini=$(opticksdata-ini)
+   local dir=$(dirname $ini)
+   mkdir -p $dir 
+
+   echo $msg writing DAE_NAME environment to $ini
+   env | grep DAE_NAME > $ini
+
+   cat $ini
+}
+
 
 
 opticksdata-export-ps(){  

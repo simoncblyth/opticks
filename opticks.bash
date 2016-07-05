@@ -350,15 +350,6 @@ into $LOCAL_BASE/opticks/lib/ set PATH in your .bash_profile to find then::
 
 
 
-
-
-
-
-
-
-
-
-
 EOU
 }
 
@@ -496,6 +487,13 @@ opticks-cmake(){
 
    g4- 
    xercesc-
+
+
+   echo $msg opticks-prefix:$(opticks-prefix)
+   echo $msg opticks-optix-install-dir:$(opticks-optix-install-dir)
+   echo $msg g4-cmake-dir:$(g4-cmake-dir)
+   echo $msg xercesc-library:$(xercesc-library)
+   echo $msg xercesc-include-dir:$(xercesc-include-dir)
 
    cmake \
         -G "$(opticks-cmake-generator)" \

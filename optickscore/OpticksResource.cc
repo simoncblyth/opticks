@@ -78,6 +78,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_types(NULL),
        m_typ(NULL),
        m_g4env(NULL),
+       m_okenv(NULL),
        m_dayabay(false),
        m_juno(false),
        m_dpib(false),
@@ -233,6 +234,9 @@ void OpticksResource::init()
 
    adoptInstallPrefix();
    readG4Environment();
+   readOpticksEnvironment();
+   NEnv::dumpEnvironment();
+
    readEnvironment();
    readMetadata();
    identifyGeometry();
@@ -326,28 +330,67 @@ void OpticksResource::assignDetectorName()
 
 void OpticksResource::readG4Environment()
 {
-    // NB this path needs to match that in g4-;g4-export-ini
-    std::string g4ini = BFile::FormPath(m_install_prefix, "externals/config/geant4.ini" ) ;
-
-    if(BFile::ExistsFile(g4ini.c_str()))
+    // NB this relpath needs to match that in g4-;g4-export-ini
+    //    it is relative to the install_prefix which 
+    //    is canonically /usr/local/opticks
+    //
+    const char* relpath = "externals/config/geant4.ini" ;
+    m_g4env = readIniEnvironment(relpath);
+    if(m_g4env)
     {
-        LOG(info) << "OpticksResource::readG4Environment" 
-                  << " from " << g4ini
-                  ;
-
-         m_g4env = NEnv::load(g4ini.c_str()); 
-         m_g4env->setEnvironment();
+        m_g4env->setEnvironment();
     }
     else
     {
         LOG(warning) << "OpticksResource::readG4Environment"
-                     << " MISSING FILE " << g4ini 
+                     << " MISSING FILE " << relpath
                      << " (create it with bash functions: g4-;g4-export-ini ) " 
                      ;
-
     }
-    NEnv::dumpEnvironment();
 }
+
+void OpticksResource::readOpticksEnvironment()
+{
+    // NB this relpath needs to match that in opticksdata-;opticksdata-export-ini
+    //    it is relative to the install_prefix which 
+    //    is canonically /usr/local/opticks
+    //
+    const char* relpath = "opticksdata/config/opticksdata.ini" ;
+    m_okenv = readIniEnvironment(relpath);
+    if(m_okenv)
+    {
+        m_okenv->setEnvironment();
+    }
+    else
+    {
+        LOG(warning) << "OpticksResource::readOpticksDataEnvironment"
+                     << " MISSING FILE " << relpath
+                     << " (create it with bash functions: opticksdata-;opticksdata-export-ini ) " 
+                     ;
+    }
+}
+
+
+
+NEnv* OpticksResource::readIniEnvironment(const char* relpath)
+{
+    std::string inipath = BFile::FormPath(m_install_prefix, relpath) ;
+    NEnv* env = NULL ; 
+    if(BFile::ExistsFile(inipath.c_str()))
+    {
+        LOG(info) << "OpticksResource::readIniEnvironment" 
+                  << " from " << inipath
+                  ;
+
+         env = NEnv::load(inipath.c_str()); 
+    }
+    return env ;  
+}
+
+
+
+
+
 
 
 void OpticksResource::readEnvironment()

@@ -41,7 +41,9 @@ class OKCORE_API OpticksResource {
     private:
        void init();
        void adoptInstallPrefix();
+       NEnv* readIniEnvironment(const char* relpath);
        void readG4Environment();
+       void readOpticksEnvironment();
        void readEnvironment();
        void readMetadata();
        void identifyGeometry();
@@ -132,6 +134,7 @@ class OKCORE_API OpticksResource {
        Types*         m_types ;
        Typ*           m_typ ;
        NEnv*          m_g4env ; 
+       NEnv*          m_okenv ; 
    private:
        // results of identifyGeometry
        bool        m_dayabay ; 

@@ -68,6 +68,7 @@ if(REST)
    add_subdirectory(ggeoview)
 
    find_package(Geant4 QUIET)
+   #find_package(Geant4)
    if(Geant4_FOUND)
       add_subdirectory(cfg4)
    else(Geant4_FOUND)
