@@ -73,6 +73,9 @@ set(TEST_SOURCES
 
     GSurfaceLibTest.cc
     GScintillatorLibTest.cc
+    GMaterialLibTest.cc
+    GPropertyMapTest.cc
+    GPropertyTest.cc
 
 )
 

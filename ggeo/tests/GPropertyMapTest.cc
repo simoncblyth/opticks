@@ -1,6 +1,8 @@
 #include <cassert>
 // op --gpropertymap
 
+#include "BOpticksResource.hh"
+
 #include "GProperty.hh"
 #include "GDomain.hh"
 #include "GMaterialLib.hh"
@@ -16,7 +18,9 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     GGEO_LOG_ ;
 
-    const char* path = "$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy";
+    BOpticksResource rsc ;  // sets internal envvar OPTICKS_INSTALL_PREFIX
+
+    const char* path = "$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy";
     GProperty<float>* f2 = GProperty<float>::load(path);
     if(!f2)
     {

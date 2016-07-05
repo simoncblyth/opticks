@@ -59,8 +59,10 @@ void test_getMaterial(GMaterialLib* mlib)
 void test_addTestMaterial(GMaterialLib* mlib)
 {
     // see GGeo::addTestMaterials
+    //
+    // Moved to opticksdata for portability  .,$s,LOCAL_BASE/env/physics,OPTICKS_INSTALL_PREFIX/opticksdata,g 
 
-    GProperty<float>* f2 = GProperty<float>::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
+    GProperty<float>* f2 = GProperty<float>::load("$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy");
     if(f2)
     {
         f2->Summary("F2 ri", 100);
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
     GMaterialLib* mlib = GMaterialLib::load(&ok);
 
     LOG(info) << " after load " ; 
-    //test_addTestMaterial(mlib);
+    test_addTestMaterial(mlib);
 
     mlib->dump();
     LOG(info) << " after dump " ; 

@@ -28,7 +28,7 @@ const char* Types::MATERIALSEQ_ = "materialseq" ;
 
 
 const char* Types::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h" ;
-//  envvar OPTICKS_INSTALL_PREFIX is set internally by OpticksResource based on cmake config 
+//  envvar OPTICKS_INSTALL_PREFIX is set internally by BOpticksResource based on cmake config 
 //
 // TODO: avoid duplication between here and OpticksFlags by promoting Types up to okc- 
 //       OR eliminate Types

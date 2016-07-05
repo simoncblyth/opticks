@@ -58,6 +58,17 @@ opticksdata--()
    opticksdata-export-ini
 }
 
+opticksdata-pull()
+{
+   local msg="$FUNCNAME :"
+   local iwd=$PWD
+   opticksdata-cd
+   echo $msg PWD $PWD
+   hg pull 
+   hg up
+   cd $iwd  
+}
+
 
 opticksdata-name(){ echo $(opticksdata-xname $1).dae ; }
 opticksdata-xname(){

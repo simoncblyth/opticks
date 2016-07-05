@@ -51,9 +51,9 @@ typedef GProperty<float> P ;
 typedef GDomain<float> D ;
 
 
-void test_interpolate()
+void test_loadRefractiveIndex()
 {
-   P* ri = P::load("$LOCAL_BASE/env/physics/refractiveindex/tmp/glass/schott/F2.npy");
+   P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy");
    ri->Summary("F2 ri", 100);
 }
 
@@ -211,8 +211,8 @@ int main(int argc, char** argv)
     //test_traditional_remission_cdf_sampling();
     //test_inverseCDF_lookup();
 
-    //test_interpolate();
-    test_planck();
+    test_loadRefractiveIndex();
+    //test_planck();
 
     return 0 ;
 }

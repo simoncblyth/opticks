@@ -658,7 +658,7 @@ opticks-unset()
    local tmp=/tmp/unset.sh
    opticks-unset- >  $tmp
 
-   echo unset by sourcing $tmp
+   echo unset with : . $tmp
 }
 
 
