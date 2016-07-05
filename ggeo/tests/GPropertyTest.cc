@@ -1,6 +1,9 @@
 #include <cassert>
 #include <cstdio>
 
+#include "BOpticksResource.hh"
+
+
 #include "GDomain.hh"
 #include "GAry.hh"
 #include "GProperty.hh"
@@ -54,6 +57,12 @@ typedef GDomain<float> D ;
 void test_loadRefractiveIndex()
 {
    P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy");
+   if(ri == NULL)
+   {
+       LOG(error) << " load failed " ;
+       return ;  
+   } 
+
    ri->Summary("F2 ri", 100);
 }
 
@@ -205,6 +214,8 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     GGEO_LOG_ ; 
+
+    BOpticksResource rsc ;   // sets OPTICKS_INSTALL_PREFIX envvar
 
     //test_createSliced();
     //test_createReciprocalCDF();

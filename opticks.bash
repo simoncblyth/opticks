@@ -364,8 +364,25 @@ olocal-()
 }
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
-opticks-dir(){    echo ${LOCAL_BASE}/opticks ; }
-opticks-prefix(){ echo ${LOCAL_BASE}/opticks ; }
+opticks-dir(){    echo $(opticks-prefix) ; }
+
+opticks-suffix(){
+   case $(uname) in
+      MING*) echo .exe ;;
+          *) echo -n  ;;   
+   esac
+}
+
+opticks-prefix(){ 
+   # when LOCAL_BASE unset rely instead on finding an installed binary from PATH  
+   if [ -z "$LOCAL_BASE" ]; then 
+      echo $(dirname $(dirname $(which OpticksTest$(opticks-suffix))))
+   else
+      echo ${LOCAL_BASE}/opticks ;
+   fi
+}
+
+
 opticks-sdir(){   echo $(opticks-home) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
