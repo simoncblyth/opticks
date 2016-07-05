@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
 struct BRAP_API BBufSpec {
 

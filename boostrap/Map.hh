@@ -7,7 +7,7 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
-// TODO: merge Map with BMap that is uses ?
+// TODO: merge Map with BMap that it uses ?
 
 template <typename K, typename V> class Map ; 
 
