@@ -363,7 +363,7 @@ olocal-()
    echo -n # transitional standin for olocal-
 }
 
-opticks-home(){   echo $OPTICKS_HOME ; }  ## input from profile 
+opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
 opticks-dir(){    echo ${LOCAL_BASE}/opticks ; }
 opticks-prefix(){ echo ${LOCAL_BASE}/opticks ; }
 opticks-sdir(){   echo $(opticks-home) ; }
@@ -629,6 +629,38 @@ opticks-find(){
 
 
 }
+
+
+opticks-unset--()
+{
+   local pfx=${1:-OPTICKS_}
+   local kv
+   local k
+   local v
+   env | grep $pfx | while read kv ; do 
+
+       k=${kv/=*}
+       v=${kv/*=}
+
+       #printf "%50s %s \n" $k $v  
+       echo unset $k 
+   done
+}
+
+opticks-unset-()
+{
+   opticks-unset-- OPTICKS_
+   opticks-unset-- DAE_
+   opticks-unset-- IDPATH
+}
+opticks-unset()
+{
+   local tmp=/tmp/unset.sh
+   opticks-unset- >  $tmp
+
+   echo unset by sourcing $tmp
+}
+
 
 
 

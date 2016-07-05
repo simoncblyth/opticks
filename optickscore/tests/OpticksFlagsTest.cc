@@ -1,3 +1,4 @@
+#include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "Index.hpp"
 
@@ -9,6 +10,8 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
     OKCORE_LOG__ ;   
+
+    Opticks ok(argc, argv);
 
 
     OpticksFlags f ; 

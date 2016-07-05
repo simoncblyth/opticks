@@ -106,7 +106,7 @@ void BList<A,B>::load(const char* dir, const char* name)
     std::string path = BFile::preparePath(dir, name, false);
     if(!path.empty())
     {
-        std::string shortpath = BFile::prefixShorten( path.c_str(), "$LOCAL_BASE/env/geant4/geometry/export/" ); // cosmetic shortening only
+        std::string shortpath = BFile::prefixShorten( path.c_str(), "$OPTICKS_PREFIX/opticksdata/export/" ); // cosmetic shortening only
         LOG(debug) << "loadMap " << shortpath  ;
         load(path.c_str() );
     }

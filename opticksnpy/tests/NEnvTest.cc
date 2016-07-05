@@ -41,6 +41,21 @@ void testLoad()
 }
 
 
+void testIniLoad(const char* path)
+{
+    NEnv* e = NEnv::load(path);
+
+    if(!e)
+    {
+        LOG(error) << "MISSING " << path ;   
+        return ;  
+    } 
+
+    e->dump();
+    e->setEnvironment();
+    NEnv::dumpEnvironment();
+}
+
 
 int main(int argc, char** argv, char** /*envp*/)
 {
@@ -48,14 +63,11 @@ int main(int argc, char** argv, char** /*envp*/)
 
     NPY_LOG__ ; 
 
-    const char* path =  "$LOCAL_BASE/opticks/externals/config/geant4.ini" ;
-    NEnv* e = NEnv::load(path);
+    // cannot do that here, need to bring envvar setting down from okc- 
+    // Opticks ok(argc, argv); // sets envvar OPTICKS_INSTALL_PREFIX internally 
 
-
-    e->dump();
-    e->setEnvironment();
-    NEnv::dumpEnvironment();
-
+    testIniLoad("$OPTICKS_INSTALL_PREFIX/externals/config/geant4.ini") ;
+    testIniLoad("$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini") ;
 
     return 0 ;  
 }
