@@ -26,6 +26,16 @@
 
 #include "GGV_LOG.hh"
 
+/**
+
+GGeoViewTest
+=============
+
+Executable providing geometry and event propagation visualizations.
+
+
+**/
+
 
 int main(int argc, char** argv)
 {

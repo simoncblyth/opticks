@@ -24,6 +24,17 @@ class NBoundingBox ;
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
+
+/**
+CDetector
+~~~~~~~~~~
+
+*CDetector* is the base class of *CGDMLDetector* and *CTestDetector*, 
+it is a *G4VUserDetectorConstruction* providing detector geometry to Geant4.
+
+
+**/
+
 class CFG4_API CDetector : public G4VUserDetectorConstruction
 {
  public:

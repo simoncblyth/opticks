@@ -273,6 +273,78 @@ oks-grep-vi(){ vi $(oks-grep -l ${1:-BLog}) ; }
 
 
 
+oks-genrst-(){ local hdr=$1 ; cat << EOR
+
+.. include:: $hdr
+   :start-after: /**
+   :end-before: **/
+
+EOR
+}
+oks-genrst()
+{
+   local hdr=${1:-CGDMLDetector.hh}
+   local stem=${hdr/.hh}
+   stem=${stem/.hpp} 
+
+   [ ! -f "$hdr" ] && echo $msg header name argument expected to exist hdr $hdr  && return 
+   [ "$stem" == "$hdr" ] && echo $msg BAD argument expecting header with name ending .hh or .hpp hdr $hdr stem $stem && return 
+
+   local rst=$stem.rst
+   #echo $msg hdr $hdr stem $stem rst $rst 
+
+   [ -f "$rst" ] && echo $msg rst $rst exists already : SKIP && return 
+
+   echo $msg writing sphinx docs shim for hdr $hdr to rst $rst 
+   oks-genrst- $hdr > $rst 
+
+}
+
+oks-genrst-auto()
+{
+   # write the shims for all headers containing "/**"
+   local hh=${1:-hh}
+   local hdr
+   grep -Fl "/**" *.$hh | while read hdr ; do
+       oks-genrst $hdr
+   done
+}
+
+oks-docsrc()
+{
+   grep -Fl "/**" *.{hh,hpp,cc,cpp} 2>/dev/null | while read hdr ; do
+      echo $hdr
+   done
+}
+
+oks-docvi(){ vi $(oks-docsrc) ; }
+
+########## building sphinx docs
+
+oks-htmldir(){   echo $(opticks-prefix)/html ; }
+oks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
+oks-docs()
+{
+   local iwd=$PWD
+   opticks-scd
+   local htmldir=${1:-$(oks-htmldir)}
+   sphinx-build -b html  . $htmldir
+   cd $iwd
+
+   open $htmldir/index.html
+}
+oks-docsbb() { oks-docs $(oks-htmldirbb)  ;  }   
+
+oks-html(){   open $(oks-htmldir)/index.html ; } 
+oks-htmlbb(){ open $(oks-htmldirbb)/index.html ; } 
+
+
+
+
+
+
+
+
 oks-genproj()
 {
     # this is typically called from projs like ggeo- 

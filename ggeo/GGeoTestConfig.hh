@@ -9,6 +9,21 @@ struct NSlice ;
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
+
+
+/**
+
+GGeoTestConfig
+===============
+
+Parses a configure string into the specifications of 
+simple test geometries.   The specification is used
+by both Geant4 and Opticks to create corresponding geometries.
+The Geant4 usage is done via :doc:`../cfg4/CTestDetector`.
+
+
+**/
+
 class GGEO_API GGeoTestConfig {
     public:
        typedef enum { 

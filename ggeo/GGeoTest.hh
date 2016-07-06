@@ -10,7 +10,15 @@ class GBndLib ;
 class GMaker ; 
 class GMergedMesh ; 
 
-// creates simple test geometries from a commandline specification
+
+/**
+
+GGeoTest
+=========
+
+Creates simple test geometries from a commandline specification.
+
+**/
 
 
 #include "GGEO_API_EXPORT.hh"

@@ -1,8 +1,14 @@
 
-cfg4
-=========================
+cfg4 : Comparing Opticks and Geant4 Simulations
+------------------------------------------------
 
 .. toctree::
 
-   cfg4
+   CTraverser
+   CDetector
+
+   CGDMLDetector
+   CTestDetector
+
+
 

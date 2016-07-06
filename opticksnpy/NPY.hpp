@@ -55,6 +55,22 @@ recognises the type on loading, thanks to the numpy.hpp metadata header.
 // otherwise type conversion warning quellings will spread to clients ?
 
 
+/**
+
+NPY : C++ NumPy style array 
+==============================
+
+*NPY* provides array operations includes persistency, the structure 
+and approach are inspired by the NumPy array http://www.numpy.org 
+and the **NPY** persistency format is adopted allowing Opticks
+geometry and event data to be loaded into python OR ipython sessions
+with::
+
+   import numpy as np
+   a = np.load("/path/to/file.npy")
+
+**/
+
 template <class T>
 class NPY_API NPY : public NPYBase {
 

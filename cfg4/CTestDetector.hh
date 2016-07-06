@@ -51,6 +51,19 @@ class G4VSolid;
 #include "CDetector.hh"
 #include "CFG4_API_EXPORT.hh"
 
+
+/**
+
+CTestDetector
+~~~~~~~~~~~~~~
+
+*CTestDetector* is a :doc:`CDetector` subclass that
+constructs simple Geant4 detector test geometries based on commandline specifications
+parsed and represented by an instance of :doc:`../ggeo/GGeoTestConfig`.
+
+**/
+
+
 class CFG4_API CTestDetector : public CDetector
 {
  public:

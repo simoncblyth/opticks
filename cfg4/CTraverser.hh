@@ -22,6 +22,21 @@ template <typename T> class NPY ;
 class NBoundingBox ;
 
 
+
+/**
+CTraverser
+~~~~~~~~~~~
+
+Recursively traverses a Geant4 geometry tree, collecting 
+instances of G4Material and determining the bounding box
+of the geometry.  Optionally an OpticksQuery instance
+argument allows the bounding box for a 
+selection of the geometry to be determined.
+
+*CTraverser* is an internal constituent of :doc:`CDetector`
+
+**/
+
 // TODO: get rid of the VolumeTreeTraverse
 
 
