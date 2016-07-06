@@ -149,9 +149,19 @@ g4-prefix(){
     case $NODE_TAG in 
        MGB) echo $HOME/local/opticks/externals ;;
          D) echo /usr/local/opticks/externals ;;
+         X) echo /opt/geant4 ;;
          *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
     esac
  }
+
+g4-libsuffix(){ 
+    case $NODE_TAG in 
+         X) echo 64  ;;
+         *) echo -n ;;
+    esac
+}
+
+
 
 g4-idir(){ echo $(g4-prefix) ; }
 g4-dir(){   echo $(g4-prefix)/$(g4-tag)/$(g4-name) ; } 
@@ -163,7 +173,12 @@ g4-tag(){   echo g4 ; }
 g4-url(){   echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ; }
 g4-dist(){ echo $(dirname $(g4-dir))/$(basename $(g4-url)) ; }
 
-g4-name2(){  echo Geant4-10.2.1 ; }
+g4-name2(){ 
+    case $NODE_TAG in 
+      X) echo Geant4-10.2.2 ;;
+      *) echo Geant4-10.2.1 ;; 
+    esac
+}
 
 g4-filename(){  echo $(basename $(g4-url)) ; }
 g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }  
@@ -175,7 +190,7 @@ g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
 
 g4-bdir(){ echo $(g4-dir).build ; }
 
-g4-cmake-dir(){     echo $(g4-prefix)/lib/$(g4-name2) ; }
+g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-name2) ; }
 g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
 
 

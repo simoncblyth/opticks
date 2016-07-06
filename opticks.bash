@@ -343,6 +343,7 @@ opticks-optix-install-dir(){
     case $t in 
     H5H2) echo ${MYENVTOP}/OptiX ;;
      GTL) echo ${MYENVTOP}/OptiX ;;
+       X) echo /usr/local/optix-3.8.0/NVIDIA-OptiX-SDK-3.8.0-linux64 ;;
        *) echo /Developer/OptiX ;;
     esac
 }
