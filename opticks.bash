@@ -171,7 +171,10 @@ For a full build with CUDA and OptiX configure with::
     opticks-configure -DCUDA_TOOLKIT_ROOT_DIR=/Developer/NVIDIA/CUDA-7.0 \
                       -DOptiX_INSTALL_DIR=/Developer/OptiX \
                       -DBOOST_ROOT=$(boost-prefix) 
+
+CMake will detect NVIDIA GPU automatically. However, if you want to build the software without GPU::
     
+    opticks-configure -DGPU=OFF
 
 These configuration values are cached in the CMakeCache.txt file
 in the build directory. These values are not overridden by rebuilding 
