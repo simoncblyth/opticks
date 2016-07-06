@@ -26,9 +26,23 @@ oks-txt
 issues
 ---------
 
-pthreads cmake issue
-~~~~~~~~~~~~~~~~~~~~~~~
+G5: local boost needs different options ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+::
+
+    [  7%] Linking CXX shared library libBoostRap.so
+    /usr/bin/ld: /home/blyth/local/opticks/externals/lib/libboost_system.a(error_code.o): relocation R_X86_64_32 against `.rodata.str1.1' can not be used when making a shared object; recompile with -fPIC
+    /home/blyth/local/opticks/externals/lib/libboost_system.a: could not read symbols: Bad value
+    collect2: ld returned 1 exit status
+    gmake[2]: *** [boostrap/libBoostRap.so] Error 1
+    gmake[1]: *** [boostrap/CMakeFiles/BoostRap.dir/all] Error 2
+    gmake: *** [all] Error 2
+    [blyth@ntugrid5 ~]$ 
+
+
+SDU : pthreads cmake issue
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * https://github.com/casacore/casacore/issues/104
 

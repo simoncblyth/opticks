@@ -1,5 +1,7 @@
 #include "BDir.hh"
 
+#include <cstring>
+#include <string>
 #include <iostream>
 #include <boost/filesystem.hpp>
 

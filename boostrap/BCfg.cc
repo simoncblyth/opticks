@@ -355,7 +355,7 @@ void BCfg::dump(boost::program_options::parsed_options& opts, const char* msg )
 {
     std::cout << msg << '\n' ;
 
-    std::vector<po::basic_option<char>> options = opts.options ;  
+    std::vector<po::basic_option<char> > options = opts.options ;  
     for(unsigned int i=0 ; i < options.size() ; ++i )
     {
         po::basic_option<char>& opt = options[i] ; 

@@ -51,33 +51,43 @@ xercesc-geant4-export(){
   export XERCESC_ROOT_DIR=$(xercesc-prefix)
 }
 
-
 xercesc-url(){ echo http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-3.1.1.tar.gz ; }
+xercesc-dist(){ echo $(basename $(xercesc-url)); }
+xercesc-name(){ local dist=$(xercesc-dist) ; echo ${dist/.tar.gz} ; }
+xercesc-base(){ echo $(opticks-prefix)/externals/xercesc ; }
 
-xercesc--() {
-    local url=$(xercesc-url)
-    local tar=$(basename $url)
-    local dir=${tar/.tar.gz/}
+xercesc-dir(){  echo $(opticks-prefix)/externals/xercesc/$(xercesc-name) ; }
+xercesc-bdir(){ echo $(opticks-prefix)/externals/xercesc/$(xercesc-name).build ; }
 
-    cd $(xercesc-prefix)
-    # check tar exists or not
-    if [ ! -f "$tar" ]; then
-        # download
-        wget $url
-        # uncompress
-        tar zxvf $tar
-    fi
+xercesc-cd(){   cd $(xercesc-dir); }
+xercesc-bcd(){  cd $(xercesc-bdir); }
 
-    if [ ! -d "$dir" ]; then
-        echo 1>&2 can not find "$dir"
-        return
-    fi
-
-    cd $dir
-
-    # build
-    ./configure --prefix=$(xercesc-prefix)
-    make
-    make install
+xercesc-get(){
+   local dir=$(dirname $(xercesc-dir)) &&  mkdir -p $dir && cd $dir
+   local url=$(xercesc-url)
+   local tgz=$(xercesc-dist)
+   local nam=$(xercesc-name)
+   [ ! -f "$tgz" ] && curl -L -O $url
+   [ ! -d "$nam" ] && tar zxf $tgz 
 }
+
+xercesc-configure()
+{
+   xercesc-cd
+   ./configure --prefix=$(xercesc-prefix)
+}
+
+xercesc-make()
+{
+   xercesc-cd
+   make ${1:-install}
+}
+
+xercesc--()
+{
+   xercesc-get
+   xercesc-configure
+   xercesc-make
+}
+
 
