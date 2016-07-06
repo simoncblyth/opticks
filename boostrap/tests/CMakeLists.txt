@@ -8,7 +8,6 @@ set(TEST_SOURCES
 
    BFooTest.cc
    BDirTest.cc
-   BTimeTest.cc
    BMapTest.cc
    MapTest.cc
    BListTest.cc
@@ -25,6 +24,13 @@ set(TEST_SOURCES
 
 )
 
+
+# BTimeTest.cc requires boost components : thread timer 
+set(TEST_SOURCES_NOT
+
+   BTimeTest.cc
+
+)
 
 
 foreach(SRC ${TEST_SOURCES})

@@ -11,19 +11,19 @@ set(Boost_NO_BOOST_CMAKE ON)
 
 set(OPTICKS_BOOST_COMPONENTS
     system 
-    thread 
     program_options 
     filesystem 
     regex 
 )
 
+# try without : thread 
 # no longer using: log log_setup
 
 
 # use of timer is being evaluated on mac in brap-/tests/BTimeTest
-if(APPLE)
-   list(APPEND OPTICKS_BOOST_COMPONENTS timer)
-endif(APPLE)
+#if(APPLE)
+#   list(APPEND OPTICKS_BOOST_COMPONENTS thread timer)
+#endif(APPLE)
 
 
 
