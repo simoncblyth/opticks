@@ -45,6 +45,40 @@ add_subdirectory(oglrap)
 if(APPLE)
     set(GPU ON)
 endif(APPLE)
+
+# Try to detect GPU available
+# * https://github.com/visore/Visore/blob/master/code/cmake/DetectGPU.cmake
+# 
+# Just use "nvidia-smi -L" to detect
+if(NOT DEFINED GPU)
+    find_program(_nvidia_smi "nvidia-smi")
+    # message(${_nvidia_smi})
+    if (_nvidia_smi)
+        exec_program(${_nvidia_smi} ARGS -L
+                    OUTPUT_VARIABLE _nvidia_smi_out
+                    RETURN_VALUE _nvidia_smi_ret)
+        message(${_nvidia_smi_out})
+        # message(${_nvidia_smi_ret})
+        if (_nvidia_smi_ret EQUAL 0)
+            # convert string with newlines to list of strings
+            string(REGEX REPLACE "\n" ";" _nvidia_smi_out "${_nvidia_smi_out}")
+            foreach(_line ${_nvidia_smi_out})
+                if (_line MATCHES "^GPU [0-9]+:")
+                    #math(EXPR DETECT_GPU_COUNT_NVIDIA_SMI "${DETECT_GPU_COUNT_NVIDIA_SMI}+1")
+                    # the UUID is not very useful for the user, remove it
+                    string(REGEX REPLACE " \\(UUID:.*\\)" "" _gpu_info "${_line}")
+                    # message(${_gpu_info})
+                    if (NOT _gpu_info STREQUAL "")
+                        #list(APPEND DETECT_GPU_INFO "${_gpu_info}")
+                        set(GPU ON)
+                        message("Find GPU.")
+                    endif()
+                endif()
+            endforeach()
+        endif()
+    endif()
+endif()
+
 if(GPU)
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
