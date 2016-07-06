@@ -79,7 +79,7 @@ void test_addTestMaterial(GMaterialLib* mlib)
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    GGEO_LOG__ ;
 
     SSys::setenvvar("", "IDPATH", "/tmp", true );
 

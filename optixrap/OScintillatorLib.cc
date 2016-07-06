@@ -15,9 +15,10 @@ OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
 
 void OScintillatorLib::convert()
 {
-    LOG(debug) << "OScintillatorLib::convert" ;
+    LOG(trace) << "OScintillatorLib::convert" ;
     NPY<float>* buf = m_lib->getBuffer();
     makeReemissionTexture(buf);
+    LOG(trace) << "OScintillatorLib::convert DONE" ;
 }
 
 void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
@@ -52,7 +53,9 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
     if(!empty)
     {
+        LOG(trace) << "OScintillatorLib::makeReemissionTexture uploading " ; 
         upload(optixBuffer, buf);
+        LOG(trace) << "OScintillatorLib::makeReemissionTexture uploading DONE " ; 
     }
 
     optix::TextureSampler tex = m_context->createTextureSampler();
@@ -61,6 +64,8 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
 
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);
+
+    LOG(trace) << "OScintillatorLib::makeReemissionTexture DONE " ; 
 }
 
 
