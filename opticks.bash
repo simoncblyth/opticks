@@ -621,8 +621,11 @@ opticks-ctest()
    local iwd=$PWD
 
    local bdir=$1
-   shift
-   [ -z "$bdir" ] && bdir=$(opticks-bdir) 
+   if [ -d "$bdir" ]; then
+       shift
+   else
+       bdir=$(opticks-bdir) 
+   fi
 
    cd $bdir
 

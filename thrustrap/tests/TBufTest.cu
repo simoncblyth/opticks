@@ -96,6 +96,11 @@ void test_f4()
 int main()
 {
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", "torch",  "-5", "rainbow" );
+    // check 
+    if (!ph) {
+        printf("can't load data\n");
+        return -1;
+    }
 
     thrust::device_vector<unsigned long long> d_ph(ph->begin(), ph->end());
 
