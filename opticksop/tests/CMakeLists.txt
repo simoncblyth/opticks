@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OpticksOpTest)
 project(${name})
 
-file(GLOB TEST_SOURCES "*Test.cc")
+#file(GLOB TEST_SOURCES "*Test.cc")
+set(TEST_SOURCES
+    OpIndexerTest.cc
+)
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)

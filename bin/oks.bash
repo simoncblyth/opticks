@@ -23,6 +23,17 @@ oks-txt
     edit CMakeLists.txt for interal projects 
 
 
+issues
+---------
+
+pthreads cmake issue
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* https://github.com/casacore/casacore/issues/104
+
+
+
 
 
 EOU

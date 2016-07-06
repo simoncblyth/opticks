@@ -10,6 +10,7 @@ set(TEST_SOURCES
     OTracerTest.cc
     GGeoViewTest.cc
     LogTest.cc
+    OpEngineTest.cc
 )
 
 
