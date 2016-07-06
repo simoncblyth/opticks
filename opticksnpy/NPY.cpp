@@ -6,6 +6,7 @@ namespace fs = boost::filesystem;
 
 #include "BFile.hh"
 #include "BBufSpec.hh"
+#include "BOpticksEvent.hh"
 
 #include "NSlice.hpp"
 #include "NGLM.hpp"
@@ -299,7 +300,7 @@ NPY<T>* NPY<T>::load(const char* tfmt, const char* targ, const char* tag, const 
 {
     char typ[64];
     snprintf(typ, 64, tfmt, targ ); 
-    std::string path = NPYBase::path(typ, tag, det);
+    std::string path = BOpticksEvent::path(typ, tag, det);
 
     if(!quietly) LOG(info) 
                   << "NPY<T>::load" 
@@ -318,14 +319,14 @@ NPY<T>* NPY<T>::load(const char* tfmt, const char* targ, const char* tag, const 
 template <typename T>
 NPY<T>* NPY<T>::load(const char* typ, const char* tag, const char* det, bool quietly)
 {
-    std::string path = NPYBase::path(typ, tag, det);
+    std::string path = BOpticksEvent::path(typ, tag, det);
     return load(path.c_str(), quietly);
 }
 
 template <typename T>
 NPY<T>* NPY<T>::load(const char* dir, const char* name, bool quietly)
 {
-    std::string path = NPYBase::path(dir, name);
+    std::string path = BOpticksEvent::path(dir, name);
     return load(path.c_str(), quietly);
 }
  
@@ -353,7 +354,7 @@ void NPY<T>::save(const char* tfmt, const char* targ, const char* tag, const cha
 template <typename T>
 void NPY<T>::save(const char* typ, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(typ, tag, det);
+    std::string path = BOpticksEvent::path(typ, tag, det);
     save(path.c_str());
 }
 
@@ -362,7 +363,7 @@ void NPY<T>::save(const char* typ, const char* tag, const char* det)
 template <typename T>
 bool NPY<T>::exists(const char* dir, const char* name)
 {
-    std::string path = NPYBase::path(dir, name);
+    std::string path = BOpticksEvent::path(dir, name);
     return exists(path.c_str());
 }
 
@@ -370,7 +371,7 @@ bool NPY<T>::exists(const char* dir, const char* name)
 template <typename T>
 bool NPY<T>::exists(const char* typ, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(typ, tag, det);
+    std::string path = BOpticksEvent::path(typ, tag, det);
     return exists(path.c_str());
 }
 
@@ -386,7 +387,7 @@ bool NPY<T>::exists(const char* path_)
 template <typename T>
 void NPY<T>::save(const char* dir, const char* name)
 {
-    std::string path = NPYBase::path(dir, name);
+    std::string path = BOpticksEvent::path(dir, name);
     save(path.c_str());
 }
  

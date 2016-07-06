@@ -18,6 +18,90 @@ using plog::verbose ;
 
 #include "SYSRAP_API_EXPORT.hh"
 
+/**
+
+PLOG : Logging Infrastructure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Opticks executables follow the following pattern.
+
+.. code-block:: c
+
+
+   #include "SYSRAP_LOG.hh"  // headers for each projects logger
+   #include "BRAP_LOG.hh"
+   #include "NPY_LOG.hh"
+   #include "OKCORE_LOG.hh"
+
+   #include "PLOG.hh"        // infrastructure header
+
+   int main(int argc, char** argv)
+   {
+       PLOG_(argc, argv);  // pass arguments to PLOG_ macro
+
+       SYSRAP_LOG__ ;     // setup loggers for all projects you want to see output from
+       BRAP_LOG__ ; 
+       NPY_LOG__ ;       
+       OKCORE_LOG__ ;       
+
+       Opticks ok(argc, argv);
+
+       //  ...  exercise Opticks  ... 
+
+       return 0 ; 
+   }
+
+
+*PLOG* parses command line arguments and configures the 
+logging level of each project, for example:
+
+.. code-block:: c
+
+   OpticksResourceTest --sysrap trace --npy info   # lower cased tags identify the projects
+   GGeoViewTest --npy debug    
+
+Available logging levels are:
+
+* *trace* :  most verbose level, providing a great deal of output  
+* *debug*
+* *info* : normal default logging level 
+* *warning*
+* *error*
+* *fatal*  
+
+
+The tags for each project are listed below.
+
+=======================  ============================
+ Project Folder           Tag 
+=======================  ============================
+              sysrap                         SYSRAP 
+            boostrap                           BRAP 
+          opticksnpy                            NPY 
+         optickscore                         OKCORE 
+                ggeo                           GGEO 
+           assimprap                         ASIRAP 
+         openmeshrap                        MESHRAP 
+          opticksgeo                          OKGEO 
+              oglrap                         OGLRAP 
+             cudarap                        CUDARAP 
+           thrustrap                          THRAP 
+            optixrap                          OXRAP 
+           opticksop                           OKOP 
+           opticksgl                           OKGL 
+            ggeoview                            GGV 
+                cfg4                           CFG4 
+=======================  ============================
+
+
+
+
+
+
+
+
+**/
+
 struct PLOG ; 
 
 struct SYSRAP_API PLOG 

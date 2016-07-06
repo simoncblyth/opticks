@@ -13,7 +13,6 @@
 #include "SDigest.hh"
 
 //brap- 
-#include "BFile.hh"
 #include "BStr.hh"
 
 
@@ -58,7 +57,6 @@ void NPYBase::setGlobalVerbose(bool verbose)
     GLOBAL_VERBOSE = verbose ;
 }
 
-const char* NPYBase::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ; 
 
 
 
@@ -471,93 +469,6 @@ std::string NPYBase::description(const char* msg)
 
     return ss.str();
 }
-
-std::string NPYBase::path(const char* pfx, const char* gen, const char* tag, const char* det)
-{
-    std::stringstream ss ;
-    ss << pfx << gen ;
-    return path(ss.str().c_str(), tag, det );
-}
-
-std::string NPYBase::directory(const char* tfmt, const char* targ, const char* det)
-{
-    char typ[64];
-    if(strchr (tfmt, '%' ) == NULL)
-    {
-        snprintf(typ, 64, "%s%s", tfmt, targ ); 
-    }
-    else
-    { 
-        snprintf(typ, 64, tfmt, targ ); 
-    }
-    std::string dir = directory(typ, det);
-    return dir ; 
-}
-
-
-
-
-
-std::string NPYBase::directory(const char* typ, const char* det)
-{
-    std::string deftmpl(DEFAULT_DIR_TEMPLATE) ; 
-    boost::replace_first(deftmpl, "$1", det );
-    boost::replace_first(deftmpl, "$2", typ );
-    std::string dir = BFile::FormPath( deftmpl.c_str() ); 
-    return dir ;
-}
-  
-std::string NPYBase::path(const char* typ, const char* tag, const char* det)
-{
-/*
-:param typ: object type name, eg oxcerenkov rxcerenkov 
-:param tag: event tag, usually numerical 
-:param det: detector tag, eg dyb, juno
-*/
-
-    std::string dir = directory(typ, det);
-    dir += "/%s.npy" ; 
-
-    char* tmpl = (char*)dir.c_str();
-    char path_[256];
-    snprintf(path_, 256, tmpl, tag );
-
-    LOG(debug) << "NPYBase::path"
-              << " typ " << typ
-              << " tag " << tag
-              << " det " << det
-              << " DEFAULT_DIR_TEMPLATE " << DEFAULT_DIR_TEMPLATE
-              << " tmpl " << tmpl
-              << " path_ " << path_
-              ;
-
-    return path_ ;   
-}
-
-std::string NPYBase::path(const char* dir, const char* name)
-{
-    char path[256];
-    snprintf(path, 256, "%s/%s", dir, name);
-
-    //std::string path = BFile::FormPath(dir, name);  
-    // provides native style path with auto-prefixing based on envvar  
-    return path ; 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

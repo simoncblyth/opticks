@@ -208,7 +208,7 @@ void BEnv::setEnvironment(bool overwrite, bool native)
         int rc = SSys::setenvvar( NULL, k.c_str(), nv.c_str(), overwrite);
         assert(rc == 0 );
 
-        LOG(info) << "BEnv::setEnvironment" 
+        LOG(trace) << "BEnv::setEnvironment" 
                    << " overwrite " << overwrite 
                    << " k " << std::setw(30) << k 
                    << " v " <<std::setw(100) << v 

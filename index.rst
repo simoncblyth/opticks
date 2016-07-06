@@ -16,6 +16,8 @@ Contents:
 
    opticks 
    overview
+
+   sysrap/index
    ggeo/index
    ggeoview/index
    cfg4/index

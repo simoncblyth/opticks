@@ -16,6 +16,7 @@
 // brap-
 #include "BStr.hh"
 #include "BTime.hh"
+#include "BOpticksEvent.hh"
 
 // npy-
 #include "uif.h"
@@ -933,7 +934,7 @@ void OpticksEvent::makeReport()
 
 std::string OpticksEvent::speciesDir(const char* species, const char* udet, const char* typ)
 {
-    std::string dir = NPYBase::directory(species, typ, udet );
+    std::string dir = BOpticksEvent::directory(species, typ, udet );
     return dir ; 
 }
 
@@ -1040,7 +1041,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<int>*   idom = NPY<int>::load(idom_tfmt, m_typ,  m_tag, udet, qload);
     if(!idom)
     {
-        std::string dir = NPYBase::directory(idom_tfmt, m_typ, udet );
+        std::string dir = BOpticksEvent::directory(idom_tfmt, m_typ, udet );
 
 
         m_noload = true ; 

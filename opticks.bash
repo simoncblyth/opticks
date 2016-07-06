@@ -580,6 +580,7 @@ opticks-ctest()
 opticks-find(){
    local str=${1:-ENV_HOME}
 
+   local iwd=$PWD
    opticks-scd
 
    find . -name '*.cc' -exec grep -H $str {} \;
@@ -588,7 +589,7 @@ opticks-find(){
    find . -name '*.hpp' -exec grep -H $str {} \;
    find . -name '*.h' -exec grep -H $str {} \;
 
-
+   cd $iwd
 }
 
 

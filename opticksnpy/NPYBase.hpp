@@ -17,7 +17,7 @@ class NPYSpec ;
 class NPY_API NPYBase {
    public:
        typedef enum { FLOAT, SHORT, DOUBLE, INT, UINT, CHAR, UCHAR, ULONGLONG} Type_t ;
-       static const char* DEFAULT_DIR_TEMPLATE  ; 
+      // static const char* DEFAULT_DIR_TEMPLATE  ; 
 
        static const char* FLOAT_ ; 
        static const char* SHORT_ ; 
@@ -86,13 +86,8 @@ class NPY_API NPYBase {
        void         setDynamic(bool dynamic=true);
        bool         isDynamic();    // used by oglrap-/Rdr::upload
    public:
-       // NumPy persistency
-       static std::string directory(const char* tfmt, const char* targ, const char* det);
-       static std::string directory(const char* typ, const char* det);
+       // NumPy static persistency path/dir providers moved to brap-/BOpticksEvent
 
-       static std::string path(const char* dir, const char* name);
-       static std::string path(const char* typ, const char* tag, const char* det);
-       static std::string path(const char* pfx, const char* gen, const char* tag, const char* det);
        void setVerbose(bool verbose=true);
        void setAllowPrealloc(bool allow=true); 
        static void setGlobalVerbose(bool verbose=true);

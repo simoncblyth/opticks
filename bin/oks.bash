@@ -131,12 +131,15 @@ oks-tags()
    opticks-scd
 
    local hh
-   ls -1  */*_API_EXPORT.hh | while read hh ; do 
+
+   local dir
+   oks-dirs | while read dir ; do
+       local hh=$(ls -1  $dir/*_API_EXPORT.hh 2>/dev/null)
        local proj=$(dirname $hh)
        local name=$(basename $hh)
        local utag=${name/_API_EXPORT.hh}
        local tag=$(echo $utag | tr "A-Z" "a-z" )
-       printf "%20s %30s \n" $tag $proj 
+       printf "%20s %30s \n" $proj $utag 
    done
 
    cd $iwd

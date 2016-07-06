@@ -36,7 +36,7 @@ cfg4                   cfg4-            CfG4              BASE GGeo Geant4 EnvXe
 Roles of the Opticks projects
 ---------------------------------
 
-sysrap
+:doc:`sysrap/index`
     logging, string handling, envvar handling 
 boostrap
     filesystem utils, regular expression matching, commandline parsing 
