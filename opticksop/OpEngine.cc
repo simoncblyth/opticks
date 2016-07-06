@@ -115,7 +115,6 @@ void OpEngine::prepareOptiX()
 
     // formerly did OBndLib here, too soon
 
-
     LOG(info) << "OpEngine::prepareOptiX (OSourceLib)" ;
     m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
     m_osrc->convert(); 

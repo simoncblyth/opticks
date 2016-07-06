@@ -47,20 +47,16 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
               ;
 
     if(empty)
-        LOG(warning) << "OScintillatorLib::makeReemissionTexture no scintillators, creating empty texture " ;
-
+    {
+        LOG(error) << "OScintillatorLib::makeReemissionTexture no scintillators, skipping " ;
+        return ;   
+    }
  
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
-    if(!empty)
-    {
-        LOG(trace) << "OScintillatorLib::makeReemissionTexture uploading " ; 
-        upload(optixBuffer, buf);
-        LOG(trace) << "OScintillatorLib::makeReemissionTexture uploading DONE " ; 
-    }
+    upload(optixBuffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
     configureSampler(tex, optixBuffer);
-
 
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);

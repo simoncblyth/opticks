@@ -32,6 +32,30 @@ pthreads cmake issue
 
 * https://github.com/casacore/casacore/issues/104
 
+Even after excluding boost component "thread" cmake still looks for pthread.h and pthread_create::
+
+    -- Boost version: 1.57.0
+    -- Found the following Boost libraries:
+    --   system
+    --   program_options
+    --   filesystem
+    --   regex
+    -- Configuring SysRap
+    -- Configuring BoostRap
+    -- Configuring NPY
+    -- Configuring OpticksCore
+    -- Configuring GGeo
+    -- Configuring AssimpRap
+    -- Configuring OpenMeshRap
+    -- Configuring OpticksGeometry
+    -- Configuring OGLRap
+    -- Looking for pthread.h
+    -- Looking for pthread.h - found
+    -- Looking for pthread_create
+    -- Looking for pthread_create - found
+    -- Found Threads: TRUE  
+
+
 
 
 
@@ -341,13 +365,16 @@ oks-docs()
 {
    local iwd=$PWD
    opticks-scd
-   local htmldir=${1:-$(oks-htmldir)}
+   local htmldir=$(oks-htmldir)
+   local htmldirbb=$(oks-htmldirbb)
+
+   [ -d "$htmldirbb" ] && htmldir=$htmldirbb
+
    sphinx-build -b html  . $htmldir
    cd $iwd
 
    open $htmldir/index.html
 }
-oks-docsbb() { oks-docs $(oks-htmldirbb)  ;  }   
 
 oks-html(){   open $(oks-htmldir)/index.html ; } 
 oks-htmlbb(){ open $(oks-htmldirbb)/index.html ; } 
