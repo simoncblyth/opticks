@@ -281,14 +281,37 @@ Some tests depend on the geometry cache being present. To create the geometry ca
 
 
 
-Running Individual Tests
----------------------------
+Running Opticks Scripts and Executables
+----------------------------------------
 
 All Opticks executables including the tests are installed 
-into $LOCAL_BASE/opticks/lib/ set PATH in your .bash_profile to find then::
+into $LOCAL_BASE/opticks/lib/ an example `.bash_profile` 
+to is provided below:
 
-   export PATH=$LOCAL_BASE/opticks/lib:$PATH
+.. code-block:: sh
 
+    # .bash_profile
+
+    if [ -f ~/.bashrc ]; then                 ## typical setup 
+            . ~/.bashrc
+    fi
+
+    export NODE_TAG_OVERRIDE=X                ## env hookup only needed by Opticks developers
+    export ENV_HOME=$HOME/env
+    env-(){  [ -r $ENV_HOME/env.bash ] && . $ENV_HOME/env.bash && env-env $* ; }
+    env-
+
+    export LOCAL_BASE=$HOME/local             ## opticks hookup is needed by all Opticks users 
+    export OPTICKS_HOME=$HOME/opticks
+
+    opticks-(){  [ -r $HOME/opticks/opticks.bash ] && . $HOME/opticks/opticks.bash && opticks-env $* ; }
+    opticks-                                  ## defines several bash functions beginning opticks- eg opticks-info
+
+    o(){ cd $(opticks-home) ; hg st ; }
+    op(){ op.sh $* ; }
+
+    PATH=$OPTICKS_HOME/bin:$LOCAL_BASE/opticks/lib:$PATH  ## easy access to scripts and executables
+    export PATH
 
 
 EOU
@@ -765,24 +788,6 @@ opticks-export-mingw()
   # see brap-/fsutil
   export OPTICKS_PATH_PREFIX="C:\\msys64" 
 }
-
-
-########## building sphinx docs
-
-opticks-htmldir(){   echo $(opticks-prefix)/html ; }
-opticks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
-opticks-docs()
-{
-   local iwd=$PWD
-   opticks-scd
-   local htmldir=${1:-$(opticks-htmldir)}
-   sphinx-build -b html  . $htmldir
-   cd $iwd
-}
-opticks-docsbb() { opticks-docs $(opticks-htmldirbb)  ;  } 
-
-opticks-html(){   open $(opticks-htmldir)/index.html ; } 
-opticks-htmlbb(){ open $(opticks-htmldirbb)/index.html ; } 
 
 
 ### opticks projs ###  **moved** all projs into top level folders
