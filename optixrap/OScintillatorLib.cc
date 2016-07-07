@@ -23,6 +23,12 @@ void OScintillatorLib::convert()
 
 void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
 {
+    if(!buf)
+    {
+       LOG(fatal) << "OScintillatorLib::makeReemissionTexture MISSING BUFFER " ;
+       LOG(fatal) << " you probably need to populate the geocache for the current geometry selection " ;
+
+    } 
     assert(buf) ;  
 
     unsigned int ni = buf->getShape(0);

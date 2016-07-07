@@ -99,7 +99,7 @@ int main()
     // check 
     if (!ph) {
         printf("can't load data\n");
-        return -1;
+        return 0 ;
     }
 
     thrust::device_vector<unsigned long long> d_ph(ph->begin(), ph->end());

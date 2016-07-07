@@ -202,6 +202,15 @@ const G4Material* CPropLib::makeInnerMaterial(const char* spec)
     unsigned int boundary = m_bndlib->addBoundary(spec);
     unsigned int imat = m_bndlib->getInnerMaterial(boundary);
     GMaterial* kmat = m_mlib->getMaterial(imat);
+    if(!kmat)
+    {
+        LOG(fatal) << "CPropLib::makeInnerMaterial"
+                   << " spec " << spec
+                   << " imat " << imat
+                   << " FAILED TO GET INNER MATERIAL "   
+                   ;
+    }
+    assert(kmat);
     const G4Material* material = convertMaterial(kmat);
     return material ; 
 }
@@ -513,6 +522,13 @@ G4Material* CPropLib::makeVacuum(const char* name)
 
 const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 {
+    if(!kmat)
+    {
+        LOG(fatal) << "CPropLib::convertMaterial NULL kmat " ;
+    } 
+    assert(kmat);
+
+
     const char* name = kmat->getShortName();
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
 
