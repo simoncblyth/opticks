@@ -1,8 +1,11 @@
 
+#set(name "opticks-cmake-Modules-FindGLFW.cmake")
+
 set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals")
 
+# remove glfw3 as causes to find system static lib
 find_library( GLFW_LIBRARY 
-              NAMES glfw3 glfw glfw3dll
+              NAMES glfw glfw3dll
               PATHS ${GLFW_PREFIX}/lib )
 
 set( GLFW_LIBRARIES ${GLFW_LIBRARY} )
@@ -25,4 +28,8 @@ endif(APPLE)
 
 set(GLFW_INCLUDE_DIRS "${GLFW_PREFIX}/include")
 set(GLFW_DEFINITIONS "")
+
+message("${name}.GLFW_PREFIX    : ${GLFW_PREFIX} ")
+message("${name}.GLFW_LIBRARIES : ${GLFW_LIBRARIES} ")
+
 

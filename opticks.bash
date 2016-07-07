@@ -546,6 +546,11 @@ opticks--(){
 }
 
 
+opticks-ctest-()
+{
+   [ "$(which ctest 2>/dev/null)" == "" ] && ctest3 $* || ctest $* 
+}
+
 opticks-ctest()
 {
    # 
@@ -571,7 +576,7 @@ opticks-ctest()
 
    cd $bdir
 
-   ctest $*
+   opticks-ctest- $*
 
    cd $iwd
    echo $msg use -V to show output 

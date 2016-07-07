@@ -42,8 +42,29 @@ G5: local boost needs different options ?
 
 
 
+
+X(SDU) xercesc-c dependency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Where are the headers ?
+
+::
+
+	[simonblyth@optix opticks]$ ldd /opt/geant4/lib64/libG4persistency.so  | grep xerces
+		libxerces-c-3.1.so => /lib64/libxerces-c-3.1.so (0x00007f8f5cd55000)
+	[simonblyth@optix opticks]$ 
+	[simonblyth@optix opticks]$ l /lib64/libxerces-c-3.1.so
+	-rwxr-xr-x. 1 root root 3853352 Mar 10 23:03 /lib64/libxerces-c-3.1.so
+	[simonblyth@optix opticks]$ 
+
+
 X (SDU) ImGui.so X11 ?
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+Below was caused by CMake finding the system static glfw3.a removing name "glfw3" 
+enabled to find the desired opticks external .so 
+
+Investigated this with env-;cmak-;cmak-find-GLFW
 
 ::
 

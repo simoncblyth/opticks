@@ -36,6 +36,8 @@ xercesc-library(){
   if [ "$NODE_TAG" == "MGB" ]; then
       ome-
       ome-xercesc-lib
+  elif [ "$NODE_TAG" == "X" ]; then
+      echo /lib64/libxerces-c-3.1.so    
   else 
       case $(uname -s) in 
            Darwin) echo $(xercesc-prefix)/lib/libxerces-c.dylib   ;;
