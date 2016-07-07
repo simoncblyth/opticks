@@ -26,6 +26,54 @@ oks-txt
 issues
 ---------
 
+D : cold GPU flakey fail
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tried switching OFF in "System Preferences > Energy Saver" the option [Automatic Graphics Switching]
+this means graphics always uses the NVIDIA GPU rather that switching, to see if this
+changes flakiness.
+
+
+Reruning ctests or running them individually does not reproduce the failure::
+
+    The following tests FAILED:
+         59 - OptiXRapTest.OScintillatorLibTest (OTHER_FAULT)
+         62 - GGeoViewTest.OTracerTest (OTHER_FAULT)
+
+
+    Application Specific Information:
+    abort() called
+    *** error for object 0x7fc4630c7c08: incorrect checksum for freed object - object was probably modified after being freed.
+     
+
+    Thread 0 Crashed:: Dispatch queue: com.apple.main-thread
+    0   libsystem_kernel.dylib          0x00007fff8ea02866 __pthread_kill + 10
+    1   libsystem_pthread.dylib         0x00007fff8609f35c pthread_kill + 92
+    2   libsystem_c.dylib               0x00007fff8cdefb1a abort + 125
+    3   libsystem_malloc.dylib          0x00007fff8681f690 szone_error + 587
+    4   libsystem_malloc.dylib          0x00007fff868255f0 small_malloc_from_free_list + 902
+    5   libsystem_malloc.dylib          0x00007fff868247b2 szone_malloc_should_clear + 1327
+    6   libsystem_malloc.dylib          0x00007fff86826868 malloc_zone_malloc + 71
+    7   libsystem_malloc.dylib          0x00007fff8682727c malloc + 42
+    8   libc++.1.dylib                  0x00007fff8808928e operator new(unsigned long) + 30
+    9   liboptix.1.dylib                0x000000010e82e632 0x10e7dc000 + 337458
+    10  liboptix.1.dylib                0x000000010e82f200 0x10e7dc000 + 340480
+    11  liboptix.1.dylib                0x000000010eaa1615 0x10e7dc000 + 2905621
+    12  liboptix.1.dylib                0x000000010e898884 0x10e7dc000 + 772228
+    13  liboptix.1.dylib                0x000000010e7f2001 rtProgramCreateFromPTXFile + 545
+    14  libOptiXRap.dylib               0x000000010fb0d67c optix::ContextObj::createProgramFromPTXFile(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) + 620 (optixpp_namespace.h:2166)
+    15  libOptiXRap.dylib               0x000000010fb0bb5f OConfig::createProgram(char const*, char const*) + 1999 (OConfig.cc:40)
+    16  libOptiXRap.dylib               0x000000010fb12ad0 OContext::createProgram(char const*, char const*) + 48 (OContext.cc:144)
+    17  libOptiXRap.dylib               0x000000010fb24f2a OGeo::makeTriangulatedGeometry(GMergedMesh*) + 138 (OGeo.cc:538)
+    18  libOptiXRap.dylib               0x000000010fb2327f OGeo::makeGeometry(GMergedMesh*) + 127 (OGeo.cc:429)
+    19  libOptiXRap.dylib               0x000000010fb22933 OGeo::convert() + 771 (OGeo.cc:184)
+    20  libOpticksOp.dylib              0x000000010fa246d9 OpEngine::prepareOptiX() + 5033 (OpEngine.cc:133)
+    21  libGGeoView.dylib               0x000000010f7617d6 App::prepareOptiX() + 326 (App.cc:964)
+    22  OTracerTest                     0x000000010d4bb802 main + 994 (OTracerTest.cc:51)
+    23  libdyld.dylib                   0x00007fff89e755fd start + 1
+
+
+
 G5: local boost needs different options ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -152,6 +200,19 @@ After g4-export-ini get to missing material::
 	CG4Test: /home/simonblyth/opticks/cfg4/CGDMLDetector.cc:128: void CGDMLDetector::addMPT(): Assertion `ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material"' failed.
 	Aborted (core dumped)
 
+
+
+Realise that can make geocache without OpenGL context with::
+
+    OpEngineTest --nogeocache
+
+Doing so creates the geocache but fails at::
+
+    2016-07-07 15:35:11.486 INFO  [15392] [OpEngine::prepareOptiX@94] OpEngine::prepareOptiX START
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Invalid value
+    Aborted (core dumped)
+     
 
 
 

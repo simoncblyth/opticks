@@ -6,7 +6,6 @@
 #include "OpticksEvent.hh"
 
 // npy-
-#include "PLOG.hh"
 #include "Timer.hpp"
 
 // ggeo-
@@ -19,6 +18,8 @@
 #include "OpZeroer.hh"
 
 // optixrap-
+#include "OEngineImp.hh"
+/*
 #include "OContext.hh"
 #include "OColors.hh"
 #include "OGeo.hh"
@@ -29,6 +30,10 @@
 #include "OConfig.hh"
 #include "OTracer.hh"
 #include "OPropagator.hh"
+*/
+
+
+#include "PLOG.hh"
 
 
 #define TIMER(s) \
@@ -49,14 +54,7 @@ OpEngine::OpEngine(Opticks* opticks, GGeo* ggeo)
       m_fcfg(NULL),
       m_ggeo(ggeo),
       m_evt(NULL),
-      m_ocontext(NULL),
-      m_ocolors(NULL),
-      m_ogeo(NULL),
-      m_olib(NULL),
-      m_oscin(NULL),
-      m_osrc(NULL),
-      m_otracer(NULL),
-      m_opropagator(NULL)
+      m_imp(NULL)
 {
       init();
 }
@@ -68,19 +66,20 @@ Opticks* OpEngine::getOpticks()
 }
 OContext* OpEngine::getOContext()
 {
-    return m_ocontext ; 
+    return m_imp->getOContext(); 
 }
 
 void OpEngine::setEvent(OpticksEvent* evt)
 {
-    m_evt = evt ; 
+    m_evt = evt ;
+    m_imp->setEvent(evt); 
 }
-
-
 
 
 void OpEngine::init()
 {
+    m_imp = new OEngineImp(m_opticks, m_ggeo);
+
     m_fcfg = m_opticks->getCfg();
 
     m_timer      = new Timer("OpEngine::");
@@ -92,80 +91,14 @@ void OpEngine::init()
 void OpEngine::prepareOptiX()
 {
     LOG(info) << "OpEngine::prepareOptiX START" ;  
-
-    std::string builder_   = m_fcfg->getBuilder(); 
-    std::string traverser_ = m_fcfg->getTraverser(); 
-    const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
-    const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
-
-
-    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ; 
-
-    optix::Context context = optix::Context::create();
-
-    LOG(info) << "OpEngine::prepareOptiX (OContext)" ;
-    m_ocontext = new OContext(context, mode); 
-    m_ocontext->setStackSize(m_fcfg->getStack());
-    m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
-    m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
-
-    LOG(info) << "OpEngine::prepareOptiX (OColors)" ;
-    m_ocolors = new OColors(context, m_opticks->getColors() );
-    m_ocolors->convert();
-
-    // formerly did OBndLib here, too soon
-
-    LOG(info) << "OpEngine::prepareOptiX (OSourceLib)" ;
-    m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
-    m_osrc->convert(); 
-
-
-    LOG(info) << "OpEngine::prepareOptiX (OScintillatorLib)" ;
-    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
-    m_oscin->convert(); 
-
-
-    LOG(info) << "OpEngine::prepareOptiX (OGeo)" ;
-    m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
-    LOG(info) << "OpEngine::prepareOptiX (OGeo) -> setTop" ;
-    m_ogeo->setTop(m_ocontext->getTop());
-    LOG(info) << "OpEngine::prepareOptiX (OGeo) -> convert" ;
-    m_ogeo->convert(); 
-    LOG(info) << "OpEngine::prepareOptiX (OGeo) done" ;
-
-
-    LOG(info) << "OpEngine::prepareOptiX (OBndLib)" ;
-    m_olib = new OBndLib(context,m_ggeo->getBndLib());
-    m_olib->convert(); 
-    // this creates the BndLib dynamic buffers, which needs to be after OGeo
-    // as that may add boundaries when using analytic geometry
-
-
-    LOG(debug) << m_ogeo->description("OpEngine::prepareOptiX ogeo");
+    m_imp->prepareOptiX();
     LOG(info) << "OpEngine::prepareOptiX DONE" ;  
-
 }
 
 void OpEngine::preparePropagator()
 {
-    bool noevent    = m_fcfg->hasOpt("noevent");
-    bool trivial    = m_fcfg->hasOpt("trivial");
-    int  override   = m_fcfg->getOverride();
-
-    if(!m_evt) return ; 
-
-    assert(!noevent);
-
-    m_opropagator = new OPropagator(m_ocontext, m_opticks);
-
-    m_opropagator->setEvent(m_evt);
-
-    m_opropagator->setTrivial(trivial);
-    m_opropagator->setOverride(override);
-
-    m_opropagator->initRng();
-    m_opropagator->initEvent();
-
+    LOG(info) << "OpEngine::preparePropagator START "; 
+    m_imp->preparePropagator();
     LOG(info) << "OpEngine::preparePropagator DONE "; 
 }
 
@@ -175,10 +108,15 @@ void OpEngine::seedPhotonsFromGensteps()
 {
     if(!m_evt) return ; 
 
-    OpSeeder* seeder = new OpSeeder(m_ocontext) ; 
+
+    OContext* ocontext = m_imp->getOContext();
+    OPropagator* opropagator = m_imp->getOPropagator();
+
+
+    OpSeeder* seeder = new OpSeeder(ocontext) ; 
 
     seeder->setEvent(m_evt);
-    seeder->setPropagator(m_opropagator);  // only used in compute mode
+    seeder->setPropagator(opropagator);  // only used in compute mode
 
     seeder->seedPhotonsFromGensteps();
 }
@@ -194,10 +132,14 @@ void OpEngine::initRecords()
         return ; 
     }
 
-    OpZeroer* zeroer = new OpZeroer(m_ocontext) ; 
+
+    OContext* ocontext = m_imp->getOContext();
+    OPropagator* opropagator = m_imp->getOPropagator();
+
+    OpZeroer* zeroer = new OpZeroer(ocontext) ; 
 
     zeroer->setEvent(m_evt);
-    zeroer->setPropagator(m_opropagator);  // only used in compute mode
+    zeroer->setPropagator(opropagator);  // only used in compute mode
 
     zeroer->zeroRecords();   
     // zeros on GPU record buffer via OptiX or OpenGL
@@ -206,38 +148,12 @@ void OpEngine::initRecords()
 
 void OpEngine::propagate()
 {
-    LOG(info)<< "OpEngine::propagate" ;
-
-    m_opropagator->prelaunch();     
-    TIMER("prelaunch"); 
-
-    m_opropagator->launch();     
-    TIMER("propagate"); 
-
-    m_opropagator->dumpTimes("OpEngine::propagate");
+    m_imp->propagate();
 }
-
-
 
 void OpEngine::saveEvt()
 {
-    if(!m_evt) return ; 
-
-    if(m_opticks->isCompute())
-    {
-        m_opropagator->downloadEvent();
-    }
-    else
-    {
-        //Rdr::download(m_evt);   now done from App::saveEvt
-    }
-
-    TIMER("downloadEvt"); 
-
-    m_evt->dumpDomains("OpEngine::saveEvt dumpDomains");
-    m_evt->save(true);
- 
-    TIMER("saveEvt"); 
+    m_imp->saveEvt();
 }
 
 
@@ -257,10 +173,13 @@ void OpEngine::indexSequence()
 
     LOG(info) << "OpEngine::indexSequence proceeding  " ;
 
-    OpIndexer* indexer = new OpIndexer(m_ocontext);
+    OContext* ocontext = m_imp->getOContext();
+    OPropagator* opropagator = m_imp->getOPropagator();
+
+    OpIndexer* indexer = new OpIndexer(ocontext);
     //indexer->setVerbose(hasOpt("indexdbg"));
     indexer->setEvent(m_evt);
-    indexer->setPropagator(m_opropagator);
+    indexer->setPropagator(opropagator);
 
     indexer->indexSequence();
     indexer->indexBoundaries();
@@ -271,7 +190,6 @@ void OpEngine::indexSequence()
 
 void OpEngine::cleanup()
 {
-    if(m_ocontext) m_ocontext->cleanUp();
+     m_imp->cleanup();
 }
-
 

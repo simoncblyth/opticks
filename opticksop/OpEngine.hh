@@ -13,14 +13,9 @@ class Composition ;
 class GGeo ; 
 
 // optixrap-
+class OEngineImp ; 
 class OContext ; 
-class OGeo ; 
-class OBndLib ; 
-class OScintillatorLib ; 
-class OSourceLib ; 
-class OTracer ; 
-class OPropagator ; 
-class OColors ; 
+
 
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpEngine {
@@ -30,7 +25,7 @@ class OKOP_API OpEngine {
        void init();
     public:
        Opticks* getOpticks();
-       OContext* getOContext();
+       OContext* getOContext();  // needed by opticksgl-/OpViz
 
        void prepareOptiX();             // creates OptiX context and populates with geometry info
 
@@ -55,15 +50,7 @@ class OKOP_API OpEngine {
     private:
        OpticksEvent*        m_evt ; 
     private:
-       OContext*        m_ocontext ; 
-       OColors*         m_ocolors ; 
-       OGeo*            m_ogeo ; 
-       OBndLib*          m_olib ; 
-       OScintillatorLib* m_oscin ; 
-       OSourceLib*       m_osrc ; 
-       OTracer*         m_otracer ; 
-       OPropagator*     m_opropagator ; 
-
+       OEngineImp*          m_imp ; 
 };
 
 

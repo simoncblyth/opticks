@@ -123,6 +123,7 @@ set(SOURCES
     OScintillatorLib.cc
     OSourceLib.cc
     OTracer.cc
+    OEngineImp.cc
 
     OBuf_.cu     
     OBufBase_.cu     
@@ -168,6 +169,7 @@ set(HEADERS
     OTimes.hh
     OGeo.hh
     OTracer.hh
+    OEngineImp.hh
 
     OColors.hh
     OBndLib.hh

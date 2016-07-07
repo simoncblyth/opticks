@@ -304,6 +304,11 @@ optixrap-bcd(){  cd $(optixrap-bdir); }
 optixrap-name(){ echo OptiXRap ; }
 optixrap-tag(){  echo OXRAP ; }
 
+
+optixrap-apihh(){  echo $(optixrap-sdir)/$(optixrap-tag)_API_EXPORT.hh ; }
+optixrap---(){     touch $(optixrap-apihh) ; optixrap--  ; } 
+
+
 optixrap-wipe(){ local bdir=$(optixrap-bdir) ; rm -rf $bdir ; } 
 
 optixrap--(){                   opticks-- $(optixrap-bdir) ; } 
