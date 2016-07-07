@@ -4,7 +4,7 @@ set(name ImGui)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{ENV_HOME}/cmake/Modules"
+                      "$ENV{OPTICKS_HOME}/cmake/Modules"
           ) 
 
 include(EnvBuildOptions)
