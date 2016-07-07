@@ -33,13 +33,14 @@ Tried switching OFF in "System Preferences > Energy Saver" the option [Automatic
 this means graphics always uses the NVIDIA GPU rather that switching, to see if this
 changes flakiness.
 
+Unsure about flakiness changes, but that causes GPU memory to fill after a while, operating 
+in switching mode seems better at keeping memory available.
 
 Reruning ctests or running them individually does not reproduce the failure::
 
     The following tests FAILED:
          59 - OptiXRapTest.OScintillatorLibTest (OTHER_FAULT)
          62 - GGeoViewTest.OTracerTest (OTHER_FAULT)
-
 
     Application Specific Information:
     abort() called
@@ -73,6 +74,11 @@ Reruning ctests or running them individually does not reproduce the failure::
     23  libdyld.dylib                   0x00007fff89e755fd start + 1
 
 
+This fixes a memory issue, the uploading expecting one scintillator not two.
+
+* https://bitbucket.org/simoncblyth/opticks/commits/6045c1c7b2d9af04ae9213b450d3b03d60d6e171
+
+
 
 G5: local boost needs different options ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -87,6 +93,204 @@ G5: local boost needs different options ?
     gmake[1]: *** [boostrap/CMakeFiles/BoostRap.dir/all] Error 2
     gmake: *** [all] Error 2
     [blyth@ntugrid5 ~]$ 
+
+
+
+
+
+X(SDU) compute mode to avoid X11 issue
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    [simonblyth@optix ggeoview]$ GGeoViewTest --compute
+
+    2016-07-07 20:11:20.088 INFO  [13832] [OConfig::addProg@80] OConfig::addProg desc OProg R 0 generate.cu.ptx generate  index/raytype 0
+    2016-07-07 20:11:20.088 INFO  [13832] [OConfig::addProg@80] OConfig::addProg desc OProg E 0 generate.cu.ptx exception  index/raytype 0
+    2016-07-07 20:11:20.088 INFO  [13832] [OPropagator::initRng@161] OPropagator::initRng rng_max 3000000 num_photons 100000 
+           rngCacheDir /home/simonblyth/local/env/graphics/ggeoview/cache/rng
+    cuRANDWrapper::instanciate with cache enabled : cachedir /home/simonblyth/local/env/graphics/ggeoview/cache/rng
+    cuRANDWrapper::fillHostBuffer
+    cuRANDWrapper::LoadIntoHostBuffer
+    cuRANDWrapper::LoadIntoHostBuffer : no cache /home/simonblyth/local/env/graphics/ggeoview/cache/rng/cuRANDWrapper_3000000_0_0.bin, initing and saving 
+    GGeoViewTest: /home/simonblyth/opticks/cudarap/cuRANDWrapper.cc:329: int cuRANDWrapper::LoadIntoHostBuffer(curandState*, unsigned int): Assertion `0' failed.
+    Aborted (core dumped)
+
+
+Compare with D::
+
+    2016-07-07 20:15:40.843 INFO  [14900424] [OConfig::dump@141] OpViz::prepareOptiXVix m_raygen_index 1 m_exception_index 1
+    OProg R 0 pinhole_camera.cu.ptx pinhole_camera 
+    OProg E 0 pinhole_camera.cu.ptx exception 
+    OProg M 1 constantbg.cu.ptx miss 
+    2016-07-07 20:15:40.843 INFO  [14900424] [OpEngine::preparePropagator@100] OpEngine::preparePropagator START 
+    2016-07-07 20:15:40.843 INFO  [14900424] [OConfig::addProg@80] OConfig::addProg desc OProg R 1 generate.cu.ptx generate  index/raytype 1
+    2016-07-07 20:15:40.843 INFO  [14900424] [OConfig::addProg@80] OConfig::addProg desc OProg E 1 generate.cu.ptx exception  index/raytype 1
+    2016-07-07 20:15:40.843 INFO  [14900424] [OPropagator::initRng@161] OPropagator::initRng rng_max 3000000 num_photons 100000 rngCacheDir /usr/local/env/graphics/ggeoview/cache/rng
+    cuRANDWrapper::instanciate with cache enabled : cachedir /usr/local/env/graphics/ggeoview/cache/rng
+    cuRANDWrapper::fillHostBuffer
+    cuRANDWrapper::LoadIntoHostBuffer
+    cuRANDWrapper::LoadIntoHostBuffer : loading from cache /usr/local/env/graphics/ggeoview/cache/rng/cuRANDWrapper_3000000_0_0.bin 
+    cuRANDWrapper::LoadIntoHostBuffer 3000000 items from /usr/local/env/graphics/ggeoview/cache/rng/cuRANDWrapper_3000000_0_0.bin load_digest 82f3f46e78f078d98848d3e07ee1a654 
+
+
+From ggeoview- updating for new name cudarap-::
+
+    ggeoview-rng-max()
+    {
+       # maximal number of photons that can be handled : move to cudawrap- ?
+        echo $(( 1000*1000*3 ))
+        #echo $(( 1000*1000*1 ))
+    }
+
+    ggeoview-rng-prep()
+    {
+       cudarap-
+       CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) CUDAWRAP_RNG_MAX=$(ggeoview-rng-max) $(cudarap-ibin)
+    }
+
+::
+
+    [simonblyth@optix ~]$ cudarap-
+    [simonblyth@optix ~]$ cudarap-ibin
+    /home/simonblyth/local/opticks/lib/cuRANDWrapperTest
+    [simonblyth@optix ~]$ ll /home/simonblyth/local/opticks/lib/cuRANDWrapperTest
+    -rwxr-xr-x. 1 simonblyth simonblyth 493755 Jul  7 19:03 /home/simonblyth/local/opticks/lib/cuRANDWrapperTest
+
+
+Need to prime the RNG cache::
+
+    [simonblyth@optix cudarap]$ CUDARAP_RNG_DIR=$(ggeoview-rng-dir) CUDARAP_RNG_MAX=$(ggeoview-rng-max) $(cudarap-ibin)
+    2016-07-07 20:27:24.710 INFO  [19235] [main@25]  work 3000000 max_blocks 128 seed 0 offset 0 threads_per_block 256 cachedir /home/simonblyth/local/opticks/cache/rng
+    cuRANDWrapper::instanciate with cache enabled : cachedir /home/simonblyth/local/opticks/cache/rng
+    cuRANDWrapper::Allocate
+    cuRANDWrapper::InitFromCacheIfPossible
+    cuRANDWrapper::InitFromCacheIfPossible : no cache initing and saving 
+    cuRANDWrapper::Init
+     init_rng_wrapper sequence_index   0  thread_offset       0  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time     0.0190 ms 
+     init_rng_wrapper sequence_index   1  thread_offset   32768  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time     0.0033 ms 
+     init_rng_wrapper sequence_index   2  thread_offset   65536  threads_per_launch  32768 blocks_per_launch    128   threads_per_block    256  kernel_time     0.0027 ms 
+    ...
+
+
+Still looking in wrong place::
+
+    2016-07-07 20:28:44.335 INFO  [20111] [OPropagator::initRng@161] OPropagator::initRng rng_max 3000000 num_photons 100000 rngCacheDir /home/simonblyth/local/env/graphics/ggeoview/cache/rng
+    cuRANDWrapper::instanciate with cache enabled : cachedir /home/simonblyth/local/env/graphics/ggeoview/cache/rng
+    cuRANDWrapper::fillHostBuffer
+    cuRANDWrapper::LoadIntoHostBuffer
+    cuRANDWrapper::LoadIntoHostBuffer : no cache /home/simonblyth/local/env/graphics/ggeoview/cache/rng/cuRANDWrapper_3000000_0_0.bin, initing and saving 
+    GGeoViewTest: /home/simonblyth/opticks/cudarap/cuRANDWrapper.cc:329: int cuRANDWrapper::LoadIntoHostBuffer(curandState*, unsigned int): Assertion `0' failed.
+    Aborted (core dumped)
+    [simonblyth@optix cudarap]$ ll /home/simonblyth/local/env/graphics/ggeoview/cache/rng/
+    ls: cannot access /home/simonblyth/local/env/graphics/ggeoview/cache/rng/: No such file or directory
+    [simonblyth@optix cudarap]$ 
+    [simonblyth@optix cudarap]$ ll /home/simonblyth/local/opticks/cache/rng/
+    total 129348
+    drwxrwxr-x. 3 simonblyth simonblyth        24 Jul  7 20:27 ..
+    -rw-rw-r--. 1 simonblyth simonblyth 132000000 Jul  7 20:27 cuRANDWrapper_3000000_0_0.bin
+    drwxrwxr-x. 2 simonblyth simonblyth        76 Jul  7 20:27 .
+    -rw-rw-r--. 1 simonblyth simonblyth    450560 Jul  7 20:27 cuRANDWrapper_10240_0_0.bin
+    [simonblyth@optix cudarap]$ 
+
+::
+
+    (gdb) bt
+    #0  0x00007fffefbeb5f7 in raise () from /lib64/libc.so.6
+    #1  0x00007fffefbecce8 in abort () from /lib64/libc.so.6
+    #2  0x00007fffefbe4566 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007fffefbe4612 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff37ac86a in cuRANDWrapper::LoadIntoHostBuffer (this=0x3fa1420, host_rng_states=0x7fffcb6ab010, elements=3000000) at /home/simonblyth/opticks/cudarap/cuRANDWrapper.cc:329
+    #5  0x00007ffff37acf91 in cuRANDWrapper::fillHostBuffer (this=0x3fa1420, host_rng_states=0x7fffcb6ab010, elements=3000000) at /home/simonblyth/opticks/cudarap/cuRANDWrapper.cc:497
+    #6  0x00007ffff1cf2bd1 in OPropagator::initRng (this=0x3fa09e0) at /home/simonblyth/opticks/optixrap/OPropagator.cc:182
+    #7  0x00007ffff1cf1501 in OEngineImp::preparePropagator (this=0x1893330) at /home/simonblyth/opticks/optixrap/OEngineImp.cc:167
+    #8  0x00007ffff1267f50 in OpEngine::preparePropagator (this=0x18932f0) at /home/simonblyth/opticks/opticksop/OpEngine.cc:101
+    #9  0x00007ffff07c2749 in App::preparePropagator (this=0x7fffffffdba0) at /home/simonblyth/opticks/ggeoview/App.cc:981
+    #10 0x0000000000403da0 in main (argc=2, argv=0x7fffffffddd8) at /home/simonblyth/opticks/ggeoview/tests/GGeoViewTest.cc:108
+    (gdb) 
+
+
+Config coming form optixrap-/CMakeLists.txt::
+
+    213 set(TARGET    "${name}")
+    214 set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
+    215 set(RNGDIR    "$ENV{LOCAL_BASE}/env/graphics/ggeoview/cache/rng")  # TODO: move into optixrap- OR cudawrap- fiefdom
+    216 configure_file(Config.hh.in inc/Config.hh)
+
+
+After fix that get further::
+
+    simonblyth@optix optixrap]$ GGeoViewTest --compute
+
+    2016-07-07 20:45:07.567 INFO  [23475] [OContext::createIOBuffer@358] OContext::createIOBuffer  (quad)  name               record size (getNumQuads) 2000000 ( 100000,10,2,4)
+    2016-07-07 20:45:07.567 INFO  [23475] [OContext::createIOBuffer@330] OContext::createIOBuffer name sequence desc [COMPUTE] (100000,1,2)  NumBytes(0) 1600000 NumBytes(1) 16 NumValues(0) 200000 NumValues(1) 2{}
+    2016-07-07 20:45:07.567 INFO  [23475] [OContext::createIOBuffer@346] OContext::createIOBuffer  (USER)  name             sequence size (ijk) 200000 ( 100000,1,2,1) elementsize 8
+    OBufBase::getNumBytes RT_FORMAT_USER element_size 8 size 200000 
+    2016-07-07 20:45:07.567 INFO  [23475] [OEngineImp::preparePropagator@170] OEngineImp::preparePropagator DONE 
+    2016-07-07 20:45:07.567 INFO  [23475] [OpEngine::preparePropagator@102] OpEngine::preparePropagator DONE 
+    2016-07-07 20:45:07.567 INFO  [23475] [OpSeeder::seedPhotonsFromGensteps@65] OpSeeder::seedPhotonsFromGensteps
+    terminate called after throwing an instance of 'thrust::system::system_error'
+      what():  function_attributes(): after cudaFuncGetAttributes: invalid device function
+    Aborted (core dumped)
+    [simonblyth@optix optixrap]$ 
+
+
+Maybe lack gensteps::
+   
+    /// template snow storm /// 
+    #24 0x00007ffff17c98bc in unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const () from /home/simonblyth/local/opticks/lib/libThrustRap.so
+    #25 0x00007ffff1260c20 in OpSeeder::seedPhotonsFromGenstepsImp (this=0x3fa35f0, s_gs=..., s_ox=...) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:131
+    #26 0x00007ffff1260b31 in OpSeeder::seedPhotonsFromGenstepsViaOptiX (this=0x3fa35f0) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:114
+    #27 0x00007ffff1260825 in OpSeeder::seedPhotonsFromGensteps (this=0x3fa35f0) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:72
+    #28 0x00007ffff12680c7 in OpEngine::seedPhotonsFromGensteps (this=0x18932e0) at /home/simonblyth/opticks/opticksop/OpEngine.cc:121
+    #29 0x00007ffff07c277d in App::seedPhotonsFromGensteps (this=0x7fffffffd960) at /home/simonblyth/opticks/ggeoview/App.cc:987
+    #30 0x0000000000403daf in main (argc=2, argv=0x7fffffffdb98) at /home/simonblyth/opticks/ggeoview/tests/GGeoViewTest.cc:110
+        (gdb) 
+    
+    
+    
+    
+X(SDU) test fails
+~~~~~~~~~~~~~~~~~~~~
+    
+    After creating geocache and fixing the reemission texture memory bug are down to two 
+test fails from failure to connect to remote X11::
+
+
+    62/73 Test #62: GGeoViewTest.flagsTest .....................   Passed    0.03 sec
+          Start 63: GGeoViewTest.OTracerTest
+    63/73 Test #63: GGeoViewTest.OTracerTest ...................***Failed   47.56 sec
+          Start 64: GGeoViewTest.GGeoViewTest
+    64/73 Test #64: GGeoViewTest.GGeoViewTest ..................***Failed   73.30 sec
+          Start 65: GGeoViewTest.LogTest
+    65/73 Test #65: GGeoViewTest.LogTest .......................   Passed    0.04 sec
+          Start 66: GGeoViewTest.OpEngineTest
+    66/73 Test #66: GGeoViewTest.OpEngineTest ..................   Passed    1.19 sec
+          Start 67: cfg4Test.CPropLibTest
+    67/73 Test #67: cfg4Test.CPropLibTest ......................   Passed    0.06 sec
+          Start 68: cfg4Test.CTestDetectorTest
+    68/73 Test #68: cfg4Test.CTestDetectorTest .................   Passed    0.09 sec
+          Start 69: cfg4Test.CGDMLDetectorTest
+    69/73 Test #69: cfg4Test.CGDMLDetectorTest .................   Passed    0.48 sec
+          Start 70: cfg4Test.CG4Test
+    70/73 Test #70: cfg4Test.CG4Test ...........................   Passed    6.13 sec
+          Start 71: cfg4Test.G4MaterialTest
+    71/73 Test #71: cfg4Test.G4MaterialTest ....................   Passed    0.08 sec
+          Start 72: cfg4Test.G4StringTest
+    72/73 Test #72: cfg4Test.G4StringTest ......................   Passed    0.08 sec
+          Start 73: cfg4Test.G4BoxTest
+    73/73 Test #73: cfg4Test.G4BoxTest .........................   Passed    0.06 sec
+
+    97% tests passed, 2 tests failed out of 73
+
+    Total Test time (real) = 159.35 sec
+
+    The following tests FAILED:
+         63 - GGeoViewTest.OTracerTest (Failed)
+         64 - GGeoViewTest.GGeoViewTest (Failed)
+    Errors while running CTest
+
+
 
 
 
@@ -213,6 +417,9 @@ Doing so creates the geocache but fails at::
       what():  Invalid value
     Aborted (core dumped)
      
+
+After https://bitbucket.org/simoncblyth/opticks/commits/6045c1c7b2d9af04ae9213b450d3b03d60d6e171
+that problem is fixed.
 
 
 

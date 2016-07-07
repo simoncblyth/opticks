@@ -1218,8 +1218,8 @@ ggeoview-rng-max()
 
 ggeoview-rng-prep()
 {
-   cudawrap-
-   CUDAWRAP_RNG_DIR=$(ggeoview-rng-dir) CUDAWRAP_RNG_MAX=$(ggeoview-rng-max) $(cudawrap-ibin)
+   cudarap-
+   CUDARAP_RNG_DIR=$(ggeoview-rng-dir) CUDARAP_RNG_MAX=$(ggeoview-rng-max) $(cudarap-ibin)
 }
 
 
