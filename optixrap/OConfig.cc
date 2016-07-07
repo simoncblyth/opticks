@@ -89,6 +89,14 @@ void OConfig::addProg(OProg* prog, bool defer)
     
 unsigned int OConfig::getNumEntryPoint()
 {
+    if(m_raygen_index != m_exception_index)
+    {
+        LOG(fatal) << "OConfig::getNumEntryPoint" 
+                   << " EVERY RAYGEN PROGRAM NEEDS CORRESPONDING EXCEPTION PROGRAM " 
+                   << " m_raygen_index " << m_raygen_index
+                   << " m_exception_index " << m_exception_index
+                 ;
+    } 
     assert(m_raygen_index == m_exception_index);
 
     LOG(info) << "OConfig::getNumEntryPoint" 

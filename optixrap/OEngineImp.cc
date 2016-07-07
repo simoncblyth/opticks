@@ -116,9 +116,10 @@ void OEngineImp::prepareOptiX()
     m_osrc->convert();
 
 
-    LOG(info) << "OEngineImp::prepareOptiX (OScintillatorLib)" ;
+    const char* slice = "0:1" ;
+    LOG(info) << "OEngineImp::prepareOptiX (OScintillatorLib) slice " << slice  ;
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
-    m_oscin->convert();
+    m_oscin->convert(slice);
 
 
     LOG(info) << "OEngineImp::prepareOptiX (OGeo)" ;

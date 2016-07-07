@@ -13,11 +13,28 @@ OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
 }
 
 
-void OScintillatorLib::convert()
+void OScintillatorLib::convert(const char* slice)
 {
     LOG(trace) << "OScintillatorLib::convert" ;
     NPY<float>* buf = m_lib->getBuffer();
-    makeReemissionTexture(buf);
+
+    if(slice)
+    { 
+        NPY<float>* slice_buf = buf->make_slice(slice) ;
+
+        LOG(info) << "OScintillatorLib::convert" 
+                  << " sliced buffer with " << slice
+                  << " from " << buf->getShapeString()
+                  << " to " << slice_buf->getShapeString()
+                  ;
+ 
+        makeReemissionTexture(slice_buf);
+    }
+    else
+    {
+        makeReemissionTexture(buf);
+    }
+
     LOG(trace) << "OScintillatorLib::convert DONE" ;
 }
 
@@ -39,6 +56,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
      
     unsigned int nx = 4096 ; 
     unsigned int ny = 1 ; 
+
     float step = 1.f/float(nx) ;
     optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
 
@@ -59,6 +77,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     }
  
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny );
+
     upload(optixBuffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();

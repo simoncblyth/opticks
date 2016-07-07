@@ -6,6 +6,7 @@ project(${name})
 set(TEST_SOURCES
     OPropertyLibTest.cc
     OScintillatorLibTest.cc
+    OOTextureTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

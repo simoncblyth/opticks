@@ -129,6 +129,7 @@ set(SOURCES
     OBufBase_.cu     
     OBufPair_.cu     
     OPropagator.cc
+    OTextureTest.cc
 
     OGeo.cc
 
@@ -140,6 +141,7 @@ set(SOURCES
     cu/sphere.cu 
     cu/hemi-pmt.cu 
     cu/generate.cu
+    cu/textureTest.cu
 )
 
 
@@ -152,6 +154,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_hemi-pmt.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_textureTest.cu.ptx
 )
 
 
