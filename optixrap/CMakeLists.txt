@@ -212,7 +212,7 @@ target_link_libraries( ${name} ${LIBRARIES} )
 
 set(TARGET    "${name}")
 set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
-set(RNGDIR    "$ENV{LOCAL_BASE}/env/graphics/ggeoview/cache/rng")  # TODO: move into optixrap- OR cudawrap- fiefdom
+set(RNGDIR    "$ENV{LOCAL_BASE}/opticks/cache/rng")  # TODO: move into optixrap- OR cudawrap- fiefdom
 configure_file(Config.hh.in inc/Config.hh)
 
 
