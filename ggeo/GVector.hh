@@ -4,6 +4,7 @@
 #include <climits>
 #include <string>
 #include <algorithm>
+#include <cstdio>
 
 #include "GMatrix.hh"
 

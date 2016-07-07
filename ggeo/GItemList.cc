@@ -125,7 +125,7 @@ void GItemList::save(const char* idpath)
 
        LOG(info) << "GItemList::save writing to " << txtpath.string() ;       
 
-       std::ofstream ofs(txtpath.string());
+       std::ofstream ofs(txtpath.string().c_str());
        std::copy(m_list.begin(),m_list.end(),std::ostream_iterator<std::string>( ofs,"\n"));
        ofs.close();
    }

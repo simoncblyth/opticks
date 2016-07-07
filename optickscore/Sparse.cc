@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <functional>
 #include <cstring>
+#include <limits>
 
 #include "BStr.hh"
 #include "BHex.hh"

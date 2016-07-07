@@ -1,5 +1,5 @@
 #include "NCache.hpp"
-
+#include <cstdio>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 

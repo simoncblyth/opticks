@@ -1,4 +1,5 @@
 #include "BStr.hh"
+#include <cstdio>
 
 void test_patternPickField()
 {

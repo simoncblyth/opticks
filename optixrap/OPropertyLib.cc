@@ -20,7 +20,9 @@ void OPropertyLib::dumpVals( float* vals, unsigned int n)
 void OPropertyLib::upload(optix::Buffer& optixBuffer, NPY<float>* buffer)
 {
     unsigned int numBytes = buffer->getNumBytes(0) ;
+    LOG(info) << numBytes;
     void* data = buffer->getBytes();
+    LOG(info) << data;
     memcpy( optixBuffer->map(), data, numBytes );
     optixBuffer->unmap(); 
 }

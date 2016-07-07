@@ -46,7 +46,7 @@ void Report::load(const char* dir, const char* name)
     if(path.empty()) return ; 
 
     LOG(info)<<"Report::load from " << path ; 
-    std::ifstream ifs(path) ;
+    std::ifstream ifs(path.c_str()) ;
     //std::copy(std::istream_iterator<std::string>(ifs), std::istream_iterator<std::string>(), std::back_inserter(m_lines));
     std::string line;
     while ( std::getline(ifs, line) )
@@ -62,7 +62,7 @@ void Report::save(const char* dir, const char* name)
     if(path.empty()) return ; 
 
     LOG(info)<<"Report::save to " << path ; 
-    std::ofstream ofs(path) ;
+    std::ofstream ofs(path.c_str()) ;
     std::copy( m_lines.begin(), m_lines.end(), std::ostream_iterator<std::string>(ofs, "\n"));
 
 }

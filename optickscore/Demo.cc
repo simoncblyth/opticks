@@ -1,5 +1,6 @@
 #include "Demo.hh"
 #include "GLMFormat.hpp"
+#include <cstdio>
 
 const char* Demo::PREFIX = "demo" ;
 

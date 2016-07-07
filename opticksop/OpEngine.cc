@@ -127,8 +127,11 @@ void OpEngine::prepareOptiX()
 
     LOG(info) << "OpEngine::prepareOptiX (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
+    LOG(info) << "OpEngine::prepareOptiX (OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
+    LOG(info) << "OpEngine::prepareOptiX (OGeo) -> convert" ;
     m_ogeo->convert(); 
+    LOG(info) << "OpEngine::prepareOptiX (OGeo) done" ;
 
 
     LOG(info) << "OpEngine::prepareOptiX (OBndLib)" ;
