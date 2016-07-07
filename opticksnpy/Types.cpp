@@ -42,7 +42,7 @@ Types::Types() :
      m_abbrev(false)
 {
     init();
-};
+}
 
 
 std::vector<std::string>& Types::getFlagLabels()

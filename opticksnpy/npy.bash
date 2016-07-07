@@ -151,6 +151,10 @@ npy-bcd(){  cd $(npy-bdir); }
 npy-name(){ echo NPY ; }
 npy-tag(){  echo NPY ; }
 
+npy-apihh(){  echo $(npy-sdir)/$(npy-tag)_API_EXPORT.hh ; }
+npy---(){     touch $(npy-apihh) ; npy--  ; }
+
+
 npy--(){      opticks--     $(npy-bdir) $* ; }
 npy-ctest() { opticks-ctest $(npy-bdir) $* ; }
 npy-genproj(){ npy-scd ; opticks-genproj $(npy-name) $(npy-tag) ; }

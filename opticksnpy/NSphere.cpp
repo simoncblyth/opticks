@@ -11,9 +11,9 @@ float nsphere::x(){      return param.x ; }
 float nsphere::y(){      return param.y ; }
 float nsphere::z(){      return param.z ; }
 
-float nsphere::costheta(float z)
+float nsphere::costheta(float z_)
 {
-   return (z - param.z)/param.w ;  
+   return (z_ - param.z)/param.w ;  
 }
 
 

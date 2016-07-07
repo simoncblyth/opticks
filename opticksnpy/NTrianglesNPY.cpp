@@ -25,9 +25,9 @@ NPY<float>* NTrianglesNPY::getBuffer()
     return m_tris ; 
 }
 
-void NTrianglesNPY::setTransform(const glm::mat4& transform)
+void NTrianglesNPY::setTransform(const glm::mat4& transform_)
 {
-    m_transform = transform ; 
+    m_transform = transform_ ; 
 }
 glm::mat4 NTrianglesNPY::getTransform()
 {

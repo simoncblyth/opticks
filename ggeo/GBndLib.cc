@@ -518,7 +518,7 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
 }
 
 
-unsigned int GBndLib::getMaterialLine(const char* shortname)
+unsigned int GBndLib::getMaterialLine(const char* shortname_)
 {
     // used by App::loadGenstep for setting material line in TorchStep
     unsigned int ni = getNumBnd();
@@ -529,12 +529,12 @@ unsigned int GBndLib::getMaterialLine(const char* shortname)
         const char* omat = m_mlib->getName(bnd[OMAT]);
         const char* imat = m_mlib->getName(bnd[IMAT]);
 
-        if(strncmp(imat, shortname, strlen(shortname))==0)
+        if(strncmp(imat, shortname_, strlen(shortname_))==0)
         { 
             line = getLine(i, IMAT);  // was incorrectly 0 until 2016/3/13
             break ;
         }
-        if(strncmp(omat, shortname, strlen(shortname))==0) 
+        if(strncmp(omat, shortname_, strlen(shortname_))==0) 
         { 
             line=getLine(i, OMAT);  // was incorrectly 1 until 2016/3/13
             break ;
@@ -542,7 +542,7 @@ unsigned int GBndLib::getMaterialLine(const char* shortname)
     }
 
     LOG(info) << "GBndLib::getMaterialLine"
-              << " shortname " << shortname 
+              << " shortname_ " << shortname_ 
               << " line " << line 
               ; 
 

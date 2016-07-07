@@ -40,9 +40,9 @@ Report* Report::load(const char* dir)
     return report ; 
 }
 
-void Report::load(const char* dir, const char* name)
+void Report::load(const char* dir, const char* name_)
 {
-    std::string path = BFile::preparePath(dir, name, true);
+    std::string path = BFile::preparePath(dir, name_, true);
     if(path.empty()) return ; 
 
     LOG(info)<<"Report::load from " << path ; 
@@ -56,9 +56,9 @@ void Report::load(const char* dir, const char* name)
     }
 }
 
-void Report::save(const char* dir, const char* name)
+void Report::save(const char* dir, const char* name_)
 {
-    std::string path = BFile::preparePath(dir, name, true);
+    std::string path = BFile::preparePath(dir, name_, true);
     if(path.empty()) return ; 
 
     LOG(info)<<"Report::save to " << path ; 

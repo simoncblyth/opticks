@@ -128,8 +128,8 @@ void Counts<T>::dump(const char* msg, unsigned long nline)
 {
     LOG(info) << msg << " " << m_name ; 
 
-    unsigned long size = m_counts.size() ;
-    for(unsigned int i=0 ; i < std::min(nline,size); i++)
+    unsigned long size_ = m_counts.size() ;
+    for(unsigned int i=0 ; i < std::min(nline,size_); i++)
     {
         ST& p = m_counts[i];
         std::cout << std::setw(5) << std::dec << i 

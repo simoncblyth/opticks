@@ -114,7 +114,7 @@ void Lookup::dump(const char* msg)
 
 std::map<unsigned int, unsigned int> Lookup::create(Map_t& a, Map_t&b)
 {
-    Lookup_t a2b ;
+    Lookup_t a2b_ ;
     for(Map_t::iterator ia=a.begin() ; ia != a.end() ; ia++)
     {
         std::string aname = ia->first ;
@@ -122,10 +122,10 @@ std::map<unsigned int, unsigned int> Lookup::create(Map_t& a, Map_t&b)
         if(b.find(aname) != b.end())
         {
             unsigned int bcode = b[aname];
-            a2b[acode] = bcode ; 
+            a2b_[acode] = bcode ; 
         }
     }
-    return a2b ; 
+    return a2b_ ; 
 }
 
 void Lookup::dumpMap(const char* msg, Map_t& map)

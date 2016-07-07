@@ -74,15 +74,15 @@ TimesTable* Timer::makeTable()
         std::string mark = it->first ; 
         double         t = it->second ; 
 
-        bool start = strcmp(mark.c_str(), START)==0 ;
-        bool stop  = strcmp(mark.c_str(), STOP)==0 ;
+        bool start_ = strcmp(mark.c_str(), START)==0 ;
+        bool stop_  = strcmp(mark.c_str(), STOP)==0 ;
 
-        if(start) t0 = t ; 
+        if(start_) t0 = t ; 
         
         double d0 = t - t0 ; 
         double dp = t - tp ; 
 
-        if(!start && !stop)
+        if(!start_ && !stop_)
         {
            tt->getColumn(0)->add(it->first.c_str(), d0);
            tt->getColumn(1)->add(it->first.c_str(), dp);

@@ -955,9 +955,9 @@ unsigned int Scene::getTouch()
 {
     return m_touch ;
 }
-void Scene::setTouch(unsigned int touch)
+void Scene::setTouch(unsigned int touch_)
 {
-    m_touch = touch ; 
+    m_touch = touch_ ; 
 }
 
 
@@ -1050,7 +1050,7 @@ void Scene::nextPhotonStyle()
 
 unsigned int Scene::getNumGeometryStyle()
 {
-    return m_num_geometry_style == 0 ? NUM_GEOMETRY_STYLE : m_num_geometry_style ;
+    return m_num_geometry_style == 0 ? int(NUM_GEOMETRY_STYLE) : m_num_geometry_style ;
 }
 void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
 {
@@ -1061,7 +1061,7 @@ void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
 
 unsigned int Scene::getNumGlobalStyle()
 {
-    return m_num_global_style == 0 ? NUM_GLOBAL_STYLE : m_num_global_style ;
+    return m_num_global_style == 0 ? int(NUM_GLOBAL_STYLE) : m_num_global_style ;
 }
 void Scene::setNumGlobalStyle(unsigned int num_global_style)
 {

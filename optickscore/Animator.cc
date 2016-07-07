@@ -97,9 +97,9 @@ float* Animator::make_fractions(unsigned int num)
     float high(1.f);
 
     float* frac = new float[num] ;
-    float step = (high - low)/float(num-1)  ;
+    float step_ = (high - low)/float(num-1)  ;
     // from i=0 to i=num-1 
-    for(unsigned int i=0 ; i < num ; i++) frac[i] = low + step*i ; 
+    for(unsigned int i=0 ; i < num ; i++) frac[i] = low + step_*i ; 
     return frac ; 
 
 // In [13]: np.linspace(0.,1.,11)

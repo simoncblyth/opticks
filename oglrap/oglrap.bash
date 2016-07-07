@@ -308,6 +308,11 @@ oglrap-tag(){  echo OGLRAP ; }
 
 oglrap-wipe(){ local bdir=$(oglrap-bdir) ; rm -rf $bdir ;  } 
 
+
+oglrap-apihh(){  echo $(oglrap-sdir)/$(oglrap-tag)_API_EXPORT.hh ; }
+oglrap---(){     touch $(oglrap-apihh) ; oglrap--  ; }
+
+
 oglrap--(){        opticks--     $(oglrap-bdir) ; }
 oglrap-ctest(){    opticks-ctest $(oglrap-bdir) $* ; }
 oglrap-genproj(){  oglrap-scd ; opticks-genproj $(oglrap-name) $(oglrap-tag) ; }

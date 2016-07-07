@@ -552,6 +552,9 @@ okc-wipe(){ local bdir=$(okc-bdir) ; rm -rf $bdir ;  }
 okc-name(){ echo OpticksCore ; }
 okc-tag(){  echo OKCORE ; }
 
+okc-apihh(){  echo $(okc-sdir)/$(okc-tag)_API_EXPORT.hh ; }
+okc---(){     touch $(okc-apihh) ; okc--  ; }
+
 okc--(){        opticks--     $(okc-bdir) ; }
 okc-ctest(){    opticks-ctest $(okc-bdir) $* ; }
 okc-genproj(){  okc-scd ; opticks-genproj $(okc-name) $(okc-tag) ; }

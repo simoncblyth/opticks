@@ -297,9 +297,9 @@ std::string NState::stateString()
 }
 
 
-const std::string& NState::getStateString(bool update)
+const std::string& NState::getStateString(bool update_)
 {
-    if(m_state_string.empty() || update)
+    if(m_state_string.empty() || update_)
     {
         m_state_string = stateString();
     }

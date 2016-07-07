@@ -30,6 +30,9 @@ ggeo-wipe(){
 ggeo-name(){ echo GGeo ; }
 ggeo-tag(){  echo GGEO ; }
 
+ggeo-apihh(){  echo $(ggeo-sdir)/$(ggeo-tag)_API_EXPORT.hh ; }
+ggeo---(){     touch $(ggeo-apihh) ; ggeo--  ; }
+
 ggeo--(){                   opticks-- $(ggeo-bdir) ; }
 ggeo-ctest(){               opticks-ctest $(ggeo-bdir) $* ; }
 ggeo-genproj() { ggeo-scd ; opticks-genproj $(ggeo-name) $(ggeo-tag) ; }

@@ -42,9 +42,9 @@ std::pair<std::string, double>&  Times::getEntry(unsigned int i)
     return m_times[i] ;
 }
 
-void Times::add(const char* name, double t )
+void Times::add(const char* name_, double t )
 {
-    m_times.push_back(SD(name, t));
+    m_times.push_back(SD(name_, t));
 }
 unsigned int Times::getSize()
 {
@@ -82,15 +82,15 @@ void Times::save(const char* dir)
 }
 
 
-Times* Times::load(const char* label, const char* dir, const char* name)
+Times* Times::load(const char* label, const char* dir, const char* name_)
 {
     Times* t = new Times(label) ;
-    t->load(dir, name);
+    t->load(dir, name_);
     return t ; 
 }
-void Times::load(const char* dir, const char* name)
+void Times::load(const char* dir, const char* name_)
 {
-    BList<std::string, double>::load( &m_times, dir, name);
+    BList<std::string, double>::load( &m_times, dir, name_);
 }
 void Times::load(const char* dir)
 {

@@ -433,6 +433,10 @@ openmeshrap-wipe(){
 openmeshrap-name(){ echo OpenMeshRap ; }
 openmeshrap-tag(){  echo MESHRAP ; }
 
+openmeshrap-apihh(){  echo $(openmeshrap-sdir)/$(openmeshrap-tag)_API_EXPORT.hh ; }
+openmeshrap---(){     touch $(openmeshrap-apihh) ; openmeshrap--  ; }
+
+
 
 openmeshrap--(){        opticks--     $(openmeshrap-bdir) ; }
 openmeshrap-ctest(){    opticks-ctest $(openmeshrap-bdir) $* ; }

@@ -18,36 +18,36 @@ namespace fs = boost::filesystem;
 // ctor takes ownership of a copy of the inputs 
 
 template <typename T>
-NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) 
+NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data_, std::string& metadata) 
          :
-         NPYBase(shape, sizeof(T), type, metadata, data.size() > 0),
-         m_data(data),      // copies the vector
+         NPYBase(shape, sizeof(T), type, metadata, data_.size() > 0),
+         m_data(data_),      // copies the vector
          m_unset_item(NULL),
          m_bufspec(NULL)
 {
 } 
 
 template <typename T>
-NPY<T>::NPY(std::vector<int>& shape, T* data, std::string& metadata) 
+NPY<T>::NPY(std::vector<int>& shape, T* data_, std::string& metadata) 
          :
-         NPYBase(shape, sizeof(T), type, metadata, data != NULL),
+         NPYBase(shape, sizeof(T), type, metadata, data_ != NULL),
          m_data(),      
          m_unset_item(NULL),
          m_bufspec(NULL)
 {
-    if(data) 
+    if(data_) 
     {
-        setData(data);
+        setData(data_);
     }
 }
 
 
 template <typename T>
-void NPY<T>::setData(T* data)
+void NPY<T>::setData(T* data_)
 {
-    assert(data);
+    assert(data_);
     allocate();
-    read(data);
+    read(data_);
 }
 
 template <typename T>
@@ -60,9 +60,9 @@ void NPY<T>::fill( T value)
 template <typename T>
 T* NPY<T>::zero()
 {
-    T* data = allocate();
-    memset( data, 0, getNumBytes(0) );
-    return data ; 
+    T* data_ = allocate();
+    memset( data_, 0, getNumBytes(0) );
+    return data_ ; 
 }
 
 template <typename T>
@@ -1044,8 +1044,8 @@ template <typename T>
  T NPY<T>::getValue(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
 {
     unsigned int idx = getValueIndex(i,j,k,l);
-    T* data = getValues();
-    return  *(data + idx);
+    T* data_ = getValues();
+    return  *(data_ + idx);
 }
 
 template <typename T> 
