@@ -1,10 +1,13 @@
 // ggv --itemlist
-#include "Opticks.hh"
+#include <string>
 
-#include "Map.hpp"
+// brap-
+#include "Map.hh"
+
+#include "Opticks.hh"
+// ggeo-
 #include "GItemList.hh"
 
-#include <string>
 #include "PLOG.hh"
 #include "BRAP_LOG.hh"
 #include "GGEO_LOG.hh"
@@ -27,9 +30,9 @@ void test_base()
     l.add("yellow");
     l.dump();
 
-    l.save("/tmp");
+    l.save("$TMP");
 
-    GItemList* t = GItemList::load("/tmp", "testlist");
+    GItemList* t = GItemList::load("$TMP", "testlist");
     if(t) t->dump();
 
     Map<std::string, unsigned int>* m = new Map<std::string, unsigned int>() ;

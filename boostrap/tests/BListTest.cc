@@ -1,8 +1,8 @@
 #include <string>
 #include "BList.hh"
 
-const char* ini = "/tmp/BListTest.ini" ;
-const char* json = "/tmp/BListTest.json" ;
+const char* ini = "$TMP/BListTest.ini" ;
+const char* json = "$TMP/BListTest.json" ;
 typedef std::pair<std::string, unsigned int> SU ; 
 
 void test_saveList()

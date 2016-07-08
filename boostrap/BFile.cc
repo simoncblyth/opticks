@@ -57,6 +57,22 @@ void dump(boost::cmatch& m)
 
 
 
+std::string usertmpdir(const char* base="/tmp/opticks")
+{
+    fs::path p(base) ; 
+
+#ifdef _MSC_VER
+    char* user = getenv("USERNAME") ;
+#else
+    char* user = getenv("USER") ;
+#endif
+
+    if(user) p /= user ;
+    std::string x = p.string() ; 
+    return x ; 
+}
+
+
 std::string expandvar(const char* s)
 {
     fs::path p ; 
@@ -74,9 +90,18 @@ std::string expandvar(const char* s)
         if(size == 4 && dollar.compare(m[1]) == 0)
         {
            std::string key = m[2] ;  
-           char* evalue = getenv(key.c_str()) ;
-              
-           p /= evalue ? evalue : key ; 
+
+           char* evalue_ = getenv(key.c_str()) ;
+
+           std::string evalue = evalue_ ? evalue_ : key ; 
+
+           if(evalue.compare("TMP")==0)
+           {
+               evalue = usertmpdir();
+               LOG(trace) << "expandvar replacing TMP with " << evalue ; 
+           }
+
+           p /= evalue ;
 
            std::string tail = m[3] ;  
 
@@ -283,18 +308,19 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 }
 
 
-void BFile::CreateDir(const char* path, const char* sub)
+std::string BFile::CreateDir(const char* base, const char* asub, const char* bsub)
 {
 
 #ifdef DEBUG    
     std::cerr << "BFile::CreateDir"
-              << " path " << ( path ? path : "NULL" ) 
-              << " sub " << ( sub ?  sub : "NULL" ) 
+              << " base " << ( base ? base : "NULL" ) 
+              << " asub " << ( asub ? asub : "NULL" ) 
+              << " bsub " << ( bsub ? bsub : "NULL" ) 
               << std::endl ;
               ;
 #endif
 
-    std::string ppath = FormPath(path, sub) ;
+    std::string ppath = FormPath(base, asub, bsub) ;
     assert(!ppath.empty());
 
     fs::path dir(ppath);
@@ -303,7 +329,7 @@ void BFile::CreateDir(const char* path, const char* sub)
 
 #ifdef DEBUG    
     std::cerr << "BFile::CreateDir"
-              << " ppath " << ppath
+              << " ppath" << ppath
               << " exists " << exists 
               << std::endl ;
               ;
@@ -317,6 +343,7 @@ void BFile::CreateDir(const char* path, const char* sub)
                  ;
     }    
 
+    return ppath ; 
 }
 
 
@@ -326,6 +353,14 @@ std::string BFile::preparePath(const char* dir_, const char* reldir_, const char
     fs::path fpath(dir_);
     fpath /= reldir_ ;
     return preparePath(fpath.string().c_str(), name, create);
+}
+
+
+std::string BFile::preparePath(const char* path_, bool create )
+{
+    std::string dir = BFile::ParentDir(path_);
+    std::string name = BFile::Name(path_);
+    return preparePath(dir.c_str(), name.c_str(), create);
 }
 
 
@@ -367,8 +402,6 @@ std::string BFile::prefixShorten( const char* path, const char* prefix_)
     else
         return path  ;
 }
-
-
 
 
 

@@ -10,7 +10,7 @@ int main(int, char**)
 {
 
     //const char* lib = "GMaterialLib.txt" ;   // requires geocache 
-    const char* lib = "/tmp/GMaterialLib.txt" ;  // absolute path mode for testing
+    const char* lib = "$TMP/GMaterialLib.txt" ;  // absolute path mode for testing
 
     NTxt txt(lib);
     txt.addLine("red");

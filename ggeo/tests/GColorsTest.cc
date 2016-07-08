@@ -39,11 +39,11 @@ int main(int argc, char** argv)
     // really its uchar4 but aoba wull probably not handle that, so use unsigned int
     assert(sizeof(unsigned char)*4 == sizeof(unsigned int));
 
-    //m_color_buffer->save<unsigned int>("/tmp/colors_GBuffer.npy");
+    //m_color_buffer->save<unsigned int>("$TMP/colors_GBuffer.npy");
 
     m_color_buffer->Summary();
 
-    m_color_buffer->save("/tmp/colors_NPY.npy");
+    m_color_buffer->save("$TMP/colors_NPY.npy");
 
 
 }

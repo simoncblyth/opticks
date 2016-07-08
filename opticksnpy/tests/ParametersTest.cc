@@ -18,7 +18,7 @@ void test_save_load()
     p.dump();
 
 
-    const char* path = "/tmp/parameters.json" ;
+    const char* path = "$TMP/parameters.json" ;
     p.save(path);
 
     Parameters* q = Parameters::load(path);

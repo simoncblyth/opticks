@@ -4,11 +4,11 @@
 
 int main(int, char**)
 {
-    Lookup::mockup("/tmp", "mockA.json", "mockB.json");
+    Lookup::mockup("$TMP", "mockA.json", "mockB.json");
 
     Lookup lookup;
-    lookup.loadA("/tmp", "mockA.json");
-    lookup.loadB("/tmp", "mockB.json");
+    lookup.loadA("$TMP", "mockA.json");
+    lookup.loadB("$TMP", "mockB.json");
     lookup.crossReference();
     lookup.dump("LookupTest");
 

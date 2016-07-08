@@ -5,6 +5,8 @@
 
 #include "GLEQ.hh"
 
+#include "BFile.hh"
+
 // npy-
 #include "Index.hpp"
 #include "NState.hpp"
@@ -147,7 +149,9 @@ void GUI::init(GLFWwindow* window)
     ImGui_ImplGlfwGL3_Init(window, install_callbacks );
 
     ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = "/tmp/imgui.ini";
+
+    std::string ini = BFile::preparePath("$TMP/imgui.ini");
+    io.IniFilename = strdup(ini.c_str());
 }
 
 void GUI::newframe()

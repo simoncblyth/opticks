@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     dd.add<float>("OTHER", 20.0);
 
     printf("%s write...\n", argv[0]);
-    dd.write("/tmp", "DynamicDefineTest.h");
+    dd.write("$TMP", "DynamicDefineTest.h");
 
     return 0 ; 
 }

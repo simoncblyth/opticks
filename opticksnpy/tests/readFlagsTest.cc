@@ -11,7 +11,7 @@
 
 int main(int, char** argv)
 {
-    const char* flags = "/tmp/GFlagIndexLocal.ini";
+    const char* flags = "$TMP/GFlagIndexLocal.ini";
     std::ifstream fs(flags, std::ios::in);
 
     if(!fs.is_open())

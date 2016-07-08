@@ -38,8 +38,8 @@ void test_planck()
    A* bb = A::planck_spectral_radiance( nm, 6500.f ); 
    bb->Summary("bb planck_spectral_radiance");
 
-   nm->save("/tmp/GAry_test_planck_nm.npy");
-   bb->save("/tmp/GAry_test_planck_bb.npy");
+   nm->save("$TMP/GAry_test_planck_nm.npy");
+   bb->save("$TMP/GAry_test_planck_bb.npy");
 }
 
 
@@ -53,7 +53,7 @@ void test_misc()
 
     A* u = A::urandom();
     u->Summary("u");
-    u->save("/tmp/urandom.npy");
+    u->save("$TMP/urandom.npy");
 }
 
 

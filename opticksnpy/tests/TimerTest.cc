@@ -20,7 +20,7 @@ int main()
 
 
     TimesTable* tt = t.makeTable();
-    tt->save("/tmp");
+    tt->save("$TMP");
 
     tt->dump();
 

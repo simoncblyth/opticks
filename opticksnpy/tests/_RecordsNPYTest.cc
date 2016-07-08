@@ -36,7 +36,7 @@ int main(int , char** )
 
 
     NPY<unsigned long long>* seqn = r.makeSequenceArray(Types::HISTORY);
-    seqn->save("/tmp/seqn.npy");
+    seqn->save("$TMP/seqn.npy");
 
     for(unsigned int i=0 ; i < 100 ; i++)
     { 

@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     bool flip = true ; 
     blib->add(spec, flip);
     blib->setBuffer(blib->createBuffer());
-    blib->getBuffer()->save("/tmp/bbuf.npy");
+    blib->getBuffer()->save("$TMP/bbuf.npy");
 
 */
 

@@ -469,8 +469,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     {
         partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
         solidBuf->dump("OGeo::makeAnalyticGeometry solidBuf partOffset/numParts/solidIndex/0");
-        //partBuf->save("/tmp/partBuf.npy");
-        //solidBuf->save("/tmp/solidBuf.npy");
+        //partBuf->save("$TMP/partBuf.npy");
+        //solidBuf->save("$TMP/solidBuf.npy");
     }
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();

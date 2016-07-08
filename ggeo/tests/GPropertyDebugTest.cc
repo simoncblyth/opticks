@@ -14,7 +14,7 @@ typedef GProperty<float> P ;
 int test_createInverseCDF_Debug()
 {
 
-    const char* path = "/tmp/slowcomponent.npy" ;
+    const char* path = "$TMP/slowcomponent.npy" ;
 
     P* slow = P::load(path);   // 79.99 -> 799.898  odd zero bins at low end
 
@@ -51,7 +51,7 @@ int test_createInverseCDF_Debug()
     P* rrd = slow->createReversedReciprocalDomain();
     assert(rrd);
     rrd->Summary("rrd", 20);  
-    rrd->save("/tmp/rrd.npy");        
+    rrd->save("$TMP/rrd.npy");        
 
    /*
 
@@ -82,7 +82,7 @@ int test_createInverseCDF_Debug()
     P* srrd = rrd->createZeroTrimmed();  // trim the trailing 2 zero bins
     assert(srrd);
     srrd->Summary("srrd", 20);  
-    srrd->save("/tmp/srrd.npy");        
+    srrd->save("$TMP/srrd.npy");        
     assert( srrd->getLength() == rrd->getLength() - 2);
 
 
@@ -90,10 +90,10 @@ int test_createInverseCDF_Debug()
     P* rcdf = srrd->createCDF();
     assert(rcdf);
     rcdf->Summary("rcdf", 20);
-    rcdf->save("/tmp/rcdf.npy");
+    rcdf->save("$TMP/rcdf.npy");
 
     /*
-           rcdf = np.load("/tmp/rcdf.npy")
+           rcdf = np.load("$TMP/rcdf.npy")
            plt.plot(1/rcdf[:,0],rcdf[:,1])     looks identical to pcdf
 
 
@@ -113,10 +113,10 @@ int test_createInverseCDF_Debug()
 
     P* icdf = rcdf->createInverseCDF(10001);  // +1 for nicer bin widths
     assert(icdf);
-    icdf->save("/tmp/icdf.npy");
+    icdf->save("$TMP/icdf.npy");
 
     /*
-        icdf = np.load("/tmp/icdf.npy")
+        icdf = np.load("$TMP/icdf.npy")
         plt.plot(icdf[:,0],1/icdf[:,1])       // looks like expected for inverted CDF
 
       600 nm
@@ -131,7 +131,7 @@ int test_createInverseCDF_Debug()
 
 In [8]: np.set_printoptions(precision=16)
 
-In [11]: icdf = np.load("/tmp/icdf.npy")
+In [11]: icdf = np.load("$TMP/icdf.npy")
 
 In [12]: icdf    ## use createInverseCDF(1001) for nicer bin widths
 Out[12]: 
@@ -157,11 +157,11 @@ array([ 799.89837646484375  ,  617.17462158203125  ,  559.5064697265625   ,
     GAry<float>* isample = icdf->lookupCDF(1000000);
     assert(isample);
     isample->Summary("icdf->lookupCDF(1e6)  *1e3", 1, 1e3);
-    isample->save("/tmp/isample.npy");
+    isample->save("$TMP/isample.npy");
   
     /*
 
-      In [1]: isample = 1/np.load("/tmp/isample.npy")     80:799
+      In [1]: isample = 1/np.load("$TMP/isample.npy")     80:799
       In [3]: plt.hist(isample, bins=50, log=True)
 
        something funny on the low wavelength side  : between 80:200 nm

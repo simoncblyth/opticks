@@ -103,9 +103,9 @@ void Indexer<T>::splitSequence()
 template <typename T>
 void Indexer<T>::save()
 {
-    m_seq->save("/tmp/seq.npy");    
-    m_his->save("/tmp/his.npy");    
-    m_mat->save("/tmp/mat.npy");    
+    m_seq->save("$TMP/seq.npy");    
+    m_his->save("$TMP/his.npy");    
+    m_mat->save("$TMP/mat.npy");    
 }
 
 

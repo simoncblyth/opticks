@@ -1288,7 +1288,7 @@ void OpticksEvent::indexPhotonsCPU()
 
     NPY<unsigned char>* recsel1 = NPY<unsigned char>::make_repeat(phosel, maxrec ) ;
     recsel1->reshape(-1, maxrec, 1, 4);
-    //recsel->save("/tmp/recsel.npy"); 
+    //recsel->save("$TMP/recsel.npy"); 
 
     // TODO: fix leak?, review recsel0 creation/zeroing/allocation
     setRecselData(recsel1);

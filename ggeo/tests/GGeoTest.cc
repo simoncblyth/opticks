@@ -28,10 +28,10 @@ void misc(GGeo* m_ggeo)
 
 
         GBuffer* friid = mm->getFaceRepeatedInstancedIdentityBuffer();
-        if(friid) friid->save<unsigned int>("/tmp/friid.npy");
+        if(friid) friid->save<unsigned int>("$TMP/friid.npy");
 
         GBuffer* frid = mm->getFaceRepeatedIdentityBuffer();
-        if(frid) frid->save<unsigned int>("/tmp/frid.npy");
+        if(frid) frid->save<unsigned int>("$TMP/frid.npy");
 
     }
 }

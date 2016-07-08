@@ -46,9 +46,9 @@ int main(int argc, char** argv)
    
     GProperty<float>* rip = pmap->getProperty(ri);
 
-    rip->save("/tmp/f2.npy");
+    rip->save("$TMP/f2.npy");
 
-    const char* matdir = "/tmp/opticks/GPropertyMapTest";
+    const char* matdir = "$TMP/GPropertyMapTest";
 
     pmap->save(matdir);
 

@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     idx->indexSequence(OpticksConst::SEQHIS_NAME_, OpticksConst::SEQMAT_NAME_);
     idx->applyLookup<unsigned char>(phosel->getValues());
 
-    phosel->save("/tmp/phosel.npy"); 
+    phosel->save("$TMP/phosel.npy"); 
 
 
     return 0 ; 

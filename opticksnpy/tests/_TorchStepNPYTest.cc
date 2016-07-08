@@ -25,7 +25,7 @@ int main(int , char** )
     m_torchstep->addStep();
 
     NPY<float>* npy = m_torchstep->getNPY();
-    npy->save("/tmp/torchstep.npy");
+    npy->save("$TMP/torchstep.npy");
 
 
     return 0 ;

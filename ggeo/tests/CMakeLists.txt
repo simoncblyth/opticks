@@ -4,7 +4,7 @@ project(${name})
 
 #file(GLOB TEST_SOURCES "*Test.cc")
 
-set(_TEST_SOURCES
+set(TEST_SOURCES
 
     GConstantTest.cc
     GDomainTest.cc
@@ -69,7 +69,7 @@ set(_TEST_SOURCES
 )
 
 
-set(TEST_SOURCES
+set(_TEST_SOURCES
 
     GSurfaceLibTest.cc
     GScintillatorLibTest.cc

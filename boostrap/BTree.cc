@@ -1,3 +1,4 @@
+#include "BFile.hh"
 #include "BTree.hh"
 
 #include <string>
@@ -17,8 +18,15 @@ namespace pt = boost::property_tree;
 
 
 
-void BTree::saveTree(const pt::ptree& t , const char* path)
+void BTree::saveTree(const pt::ptree& t , const char* path_)
 {
+    std::string path = BFile::preparePath(path_, true);
+    LOG(trace) << "BTree::saveTree "
+               << " path_ " << path_ 
+               << " path " << path 
+               ; 
+
+
     fs::path fpath(path);
     std::string ext = fpath.extension().string();
     if(ext.compare(".json")==0)

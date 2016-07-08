@@ -9,7 +9,7 @@
 #include "BRAP_LOG.hh"
 
 
-const char* dir = "/tmp" ; 
+const char* dir = "$TMP" ; 
 const char* name = "G4.ini" ; 
 
 

@@ -130,17 +130,17 @@ void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx
 void GTreeCheck::checkInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
 {
     NPY<float>* itransforms = mergedmesh->getITransformsBuffer();
-    itransforms->save("/tmp/itransforms.npy");
+    itransforms->save("$TMP/itransforms.npy");
 
     GBuffer* itransforms_old    = PRIOR_makeInstanceTransformsBuffer(ridx);
-    itransforms_old->save<float>("/tmp/itransforms_old.npy");
+    itransforms_old->save<float>("$TMP/itransforms_old.npy");
     assert(itransforms->isEqualTo(itransforms_old->getPointer(), itransforms_old->getNumBytes()));
     
     NPY<unsigned int>* iidentity  = mergedmesh->getInstancedIdentityBuffer();
-    iidentity->save("/tmp/iidentity.npy");
+    iidentity->save("$TMP/iidentity.npy");
 
     GBuffer* iidentity_old       = PRIOR_makeInstanceIdentityBuffer(ridx);
-    iidentity_old->save<unsigned int>("/tmp/iidentity_old.npy");
+    iidentity_old->save<unsigned int>("$TMP/iidentity_old.npy");
     assert(iidentity->isEqualTo(iidentity_old->getPointer(), iidentity_old->getNumBytes()));
 
 }

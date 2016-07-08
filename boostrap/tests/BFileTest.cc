@@ -43,7 +43,7 @@ void test_ExistsDir()
     ss.push_back("$HOME");
     ss.push_back("$OPTICKS_HOME");
     ss.push_back("$HOME/$OPTICKS_HOME");
-    ss.push_back("/tmp");
+    ss.push_back("$TMP");
 
     for(unsigned int i=0 ; i < ss.size() ; i++)
     {
@@ -67,7 +67,7 @@ void test_ExistsDir()
 
 void test_CreateDir()
 {
-   BFile::CreateDir("/tmp/a/b/c");
+   BFile::CreateDir("$TMP/a/b/c");
 }
 
 void test_ParentDir()
@@ -125,7 +125,7 @@ void test_FormPath()
 
 void test_Name_ParentDir()
 {
-    const char* path = "/tmp/opticks/blyth/somefile.txt" ; 
+    const char* path = "$TMP/opticks/blyth/somefile.txt" ; 
 
     std::string name = BFile::Name(path) ;
     std::string dir = BFile::ParentDir(path) ;

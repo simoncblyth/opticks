@@ -9,10 +9,10 @@ void test_prism()
     glm::vec4 param(90,100,100,200);
     NTrianglesNPY* m = NTrianglesNPY::prism(param);
     m->getBuffer()->dump("prism");
-    m->getBuffer()->save("/tmp/prism.npy");
+    m->getBuffer()->save("$TMP/prism.npy");
 /*
 In [1]: fig = plt.figure()
-In [2]: xyz3d(fig, "/tmp/prism.npy")
+In [2]: xyz3d(fig, "$TMP/prism.npy")
 In [3]: plt.show()
 */
 }
@@ -51,7 +51,7 @@ void test_latlon()
 void test_icosahedron()
 {
     NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
-    icos->getBuffer()->save("/tmp/icos.npy"); 
+    icos->getBuffer()->save("$TMP/icos.npy"); 
 }
 
 

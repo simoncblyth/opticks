@@ -187,7 +187,7 @@ void OpticksColors::test(const char* msg)
     LOG(info) << msg ;  
 
     NPY<unsigned char>* buffer = make_buffer();
-    buffer->save("/tmp/OpticksColors.npy");
+    buffer->save("$TMP/OpticksColors.npy");
 
     unsigned char* data = buffer->getValues();
 

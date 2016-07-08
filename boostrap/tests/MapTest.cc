@@ -14,9 +14,9 @@ void testSaveLoad()
 
     const char* name = "MapTest.json" ;
 
-    a->save("/tmp", name);
+    a->save("$TMP", name);
 
-    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load("/tmp", name);
+    Map<std::string, unsigned int>* b = Map<std::string, unsigned int>::load("$TMP", name);
     b->dump();
 
 }
@@ -49,7 +49,7 @@ int main(int, char**, char** envp)
        if(k.find(prefix)==0) m->add(k,v);  // startswith
     }
 
-    m->save("/tmp", "G4.ini");
+    m->save("$TMP", "G4.ini");
 
 
     return 0 ; 

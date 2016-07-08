@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     GArray<float>* a = new GArray<float>(3, v );
     assert( a->getLength() == 3 );
 
-    a->save<float>("/tmp/GArrayTest.npy");
+    a->save<float>("$TMP/GArrayTest.npy");
 
 
 

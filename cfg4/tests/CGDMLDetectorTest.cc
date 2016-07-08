@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     m_detector->setVerbosity(2) ;
 
     NPY<float>* gtransforms = m_detector->getGlobalTransforms();
-    gtransforms->save("/tmp/gdml.npy");
+    gtransforms->save("$TMP/gdml.npy");
 
     unsigned int index = 3160 ; 
 

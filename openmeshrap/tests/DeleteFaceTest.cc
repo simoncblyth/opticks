@@ -3,19 +3,14 @@
 
 #include <iostream>
 #include <iomanip>
+#include <string>
 
-
-
-
-
-
+#include "BFile.hh"
 
 //
 // without the bookends this asserts on attempting to delete a face
 // when the -fvisibility=hidden compiler option is in use
 //
-
-
 
 #ifdef __clang__
 
@@ -220,9 +215,10 @@ int main()
   dump(&mesh, "after delete isolated");
 
   try {
-        const char* path = "/tmp/DeleteFaceTest.off" ; 
 
-        if ( !OpenMesh::IO::write_mesh(mesh, path) ) {
+        std::string path = BFile::preparePath("$TMP/DeleteFaceTest.off");
+
+        if ( !OpenMesh::IO::write_mesh(mesh, path.c_str()) ) {
           std::cerr << "Cannot write mesh to file " << path << std::endl;
           return 1;
         }

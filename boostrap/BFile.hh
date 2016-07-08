@@ -17,13 +17,15 @@ class BRAP_API BFile {
        static bool ExistsNativeDir(const std::string& native);
        static bool ExistsFile(const char* path, const char* sub=NULL, const char* name=NULL);
        static bool ExistsDir(const char* path, const char* sub=NULL, const char* name=NULL);
-       static void CreateDir(const char* path, const char* sub=NULL);
+
+       static std::string CreateDir(const char* base, const char* asub=NULL, const char* bsub=NULL);
 
 
     public:
         // refugees from BJson in need of de-duping
-        static std::string preparePath(const char* dir_, const char* name, bool create=false );
-        static std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create=false );
+        static std::string preparePath(const char* path_, bool create=true );
+        static std::string preparePath(const char* dir_, const char* name, bool create=true );
+        static std::string preparePath(const char* dir_, const char* reldir_, const char* name, bool create=true );
         static std::string prefixShorten( const char* path, const char* prefix_);
 
 

@@ -36,10 +36,10 @@ void test_repeat()
 
    unsigned int n = 10 ; 
    NPY<int>* bb = NPY<int>::make_repeat(aa, n) ; 
-   aa->save("/tmp/aa.npy"); 
-   bb->save("/tmp/bb.npy"); 
+   aa->save("$TMP/aa.npy"); 
+   bb->save("$TMP/bb.npy"); 
    bb->reshape(-1, n, 1, 4);
-   bb->save("/tmp/cc.npy"); 
+   bb->save("$TMP/cc.npy"); 
 }
 
 
@@ -93,7 +93,7 @@ void test_transform()
 
 void test_dump()
 {
-   const char* path = "/tmp/dom.npy";  
+   const char* path = "$TMP/dom.npy";  
    typedef unsigned int T ; 
 
    NPY<T>* a = NPY<T>::make(10,1,4) ;
@@ -123,7 +123,7 @@ void test_empty_add()
    }
 
    a->dump();
-   a->save("/tmp/test_empty_add.npy");
+   a->save("$TMP/test_empty_add.npy");
 }
 
 
@@ -140,7 +140,7 @@ void test_add()
    dom->add(ext);
    dom->dump();
 
-   dom->save("/tmp/test_add.npy");
+   dom->save("$TMP/test_add.npy");
 
 }
 
@@ -172,7 +172,7 @@ void test_setQuad()
    dom->setQuad(q1, 1,0);
    dom->setQuad(q9, 9,0);
     
-   dom->save("/tmp/test_setQuad.npy");
+   dom->save("$TMP/test_setQuad.npy");
 }
 
 
@@ -223,7 +223,7 @@ void test_save_path()
     if(npy)
     { 
        std::cout << npy->description("npy") << std::endl ; 
-       npy->save("/tmp/test_save_path.npy");
+       npy->save("$TMP/test_save_path.npy");
     }
 }
 
@@ -232,7 +232,7 @@ void test_load_path_throws()
 {
     LOG(info) << "test_load_path (throws std::runtime_error causing abort as not caught)" ; 
 
-    const char* path = "/tmp/slowcomponent.npy" ;
+    const char* path = "$TMP/slowcomponent.npy" ;
     //const char* path = "/usr/local/env/cerenkov/1.npy" ;
     NPY<float>* npy = NPY<float>::debugload(path);
     if(npy) npy->Summary(path);
@@ -312,19 +312,19 @@ void test_string()
 
     NPY<ULL>* s = NPY<ULL>::make(1, 1, 1);
     s->setData(vals);
-    s->save("/tmp/test_string.npy");
+    s->save("$TMP/test_string.npy");
 
 /*
 
    messes up curiously when go beyond 8 chars, expected just truncation 
    getting garbage
 
-In [55]: np.load("/tmp/test_string.npy").view(np.dtype("S8"))
+In [55]: np.load("$TMP/test_string.npy").view(np.dtype("S8"))
 Out[55]: 
 array([[['hello123']]], 
       dtype='|S8')
 
-In [54]: np.load("/tmp/test_string.npy").view(np.dtype("S8"))
+In [54]: np.load("$TMP/test_string.npy").view(np.dtype("S8"))
 Out[54]: 
 array([[['|u~lo123']]], 
       dtype='|S8')

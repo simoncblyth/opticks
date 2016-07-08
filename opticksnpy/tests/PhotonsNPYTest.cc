@@ -53,7 +53,7 @@ int main(int argc, char** argv)
        p.dumpPhotons("photons", 30);
     
        NPY<float>* pathinfo = p.make_pathinfo();
-       pathinfo->save("/tmp/pathinfo.npy");
+       pathinfo->save("$TMP/pathinfo.npy");
     }
 
 

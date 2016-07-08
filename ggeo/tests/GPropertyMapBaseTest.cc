@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     const char* matname = "FlintGlass" ;
     GPropertyMap<float>* pmap = new GPropertyMap<float>(matname);
 
-    const char* matdir = "/tmp/opticks/GPropertyMapTest";
+    const char* matdir = "$TMP/opticks/GPropertyMapTest";
     pmap->save(matdir);
 
     GPropertyMap<float>* qmap = GPropertyMap<float>::load(matdir, matname, "material");

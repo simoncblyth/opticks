@@ -23,14 +23,14 @@ int main()
          npy->setQuad(i, 0, float(i), float(target), 0.f, 0.f );
      }
 
-     npy->save("/tmp/animator.npy");
+     npy->save("$TMP/animator.npy");
      return 0 ;
 }
 
 /*
 Aim is for a nice sawtooth with no glitches::
 
-    In [1]: a = np.load("/tmp/animator.npy")
+    In [1]: a = np.load("$TMP/animator.npy")
 
     In [2]: plt.ion()
 

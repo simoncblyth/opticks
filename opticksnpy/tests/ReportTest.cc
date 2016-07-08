@@ -8,13 +8,13 @@ void test_save()
 
     Report r ; 
     r.add(lines);
-    r.save("/tmp");
+    r.save("$TMP");
 }
 
 
 void test_load()
 {
-    Report* r = Report::load("/tmp");
+    Report* r = Report::load("$TMP");
     r->dump(); 
 }
 

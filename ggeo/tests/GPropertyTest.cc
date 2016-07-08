@@ -70,13 +70,13 @@ void test_planck()
 {
     D* dom = new D(300.,800.,1.); 
     P* p = P::planck_spectral_radiance(dom);
-    p->save("/tmp/dom_planck.npy"); 
+    p->save("$TMP/dom_planck.npy"); 
 }
 
 
 void test_createSliced()
 {
-    P* slow = P::load("/tmp/slowcomponent.npy");
+    P* slow = P::load("$TMP/slowcomponent.npy");
     //slow->Summary("slow",20);
 
     P* sslow = slow->createSliced(2, slow->getLength());
@@ -88,10 +88,10 @@ void test_createSliced()
 
 void test_createReciprocalCDF()
 {
-    P* pcdf = P::load("/tmp/reemission_cdf.npy");
+    P* pcdf = P::load("$TMP/reemission_cdf.npy");
     pcdf->Summary("pcdf",20);
 
-    P* slow = P::load("/tmp/slowcomponent.npy");
+    P* slow = P::load("$TMP/slowcomponent.npy");
     slow->Summary("slow",20);
 
     P* rrd = slow->createReversedReciprocalDomain();
@@ -117,20 +117,20 @@ void test_createReciprocalCDF()
 
 void test_traditional_remission_cdf_sampling()
 {
-    P* pcdf = P::load("/tmp/reemission_cdf.npy");  // 79.98 -> 799.89
+    P* pcdf = P::load("$TMP/reemission_cdf.npy");  // 79.98 -> 799.89
     A* psample = pcdf->sampleCDF(1000000); 
     psample->Summary("psample *1e3", 1, 1e3);
-    psample->save("/tmp/psample.npy");
+    psample->save("$TMP/psample.npy");
 
    /*
-        psample = 1/np.load("/tmp/psample.npy")   199.9 -> 799
+        psample = 1/np.load("$TMP/psample.npy")   199.9 -> 799
         plt.ion()
         plt.hist(psample, bins=50, log=True)
 
         Somehow this one avoids the zero bin problem, with clean turn on at ~199.9 nm
         (presumably a detail of the sampling implementation?)
 
-        pcdf = np.load("/tmp/reemission_cdf.npy")
+        pcdf = np.load("$TMP/reemission_cdf.npy")
         plt.plot(1/pcdf[:,0],pcdf[:,1])     
 
         Looks to be 1 all way out to 200nm
@@ -159,7 +159,7 @@ void test_inverseCDF_lookup()
 {
     bool reciprocate = true ; 
 
-    P* slow = P::load("/tmp/slowcomponent.npy");        // 79.99 -> 799.898  three zero values at low nm end
+    P* slow = P::load("$TMP/slowcomponent.npy");        // 79.99 -> 799.898  three zero values at low nm end
 
     P* rrd = reciprocate ? slow->createReversedReciprocalDomain() : slow ;   
 
@@ -197,7 +197,7 @@ void test_inverseCDF_lookup()
 
     icdf->getValues()->reciprocate();
 
-    icdf->save("/tmp/icdf.npy");
+    icdf->save("$TMP/icdf.npy");
 
     // two ways yield same characteristics
       A* isample = icdf->lookupCDF(1000000);
@@ -205,7 +205,7 @@ void test_inverseCDF_lookup()
 
     isample->Summary("icdf->lookupCDF(1e6)  *1e3", 1, 1e3);
 
-    isample->save("/tmp/isample.npy");
+    isample->save("$TMP/isample.npy");
 }
 
 

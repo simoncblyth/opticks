@@ -12,7 +12,6 @@ set(TEST_SOURCES
     AnimatorTest.cc
     TrackballTest.cc
     OpticksFlagsTest.cc
-    fooTest.cc
     OpticksCfgTest.cc
     OpticksTest.cc
     OpticksResourceTest.cc

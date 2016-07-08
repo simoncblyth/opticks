@@ -114,8 +114,8 @@ GMesh* MTool::joinSplitUnion(GMesh* gmesh, Opticks* opticks)
     wa.dump("wa",0);
     wb.dump("wb",0);
 
-    wa.write("/tmp/comp%d.off", 0 );
-    wb.write("/tmp/comp%d.off", 1 );
+    wa.write("$TMP/comp%d.off", 0 );
+    wb.write("$TMP/comp%d.off", 1 );
 //#endif
 
     wa.calcFaceCentroids("centroid"); 

@@ -8,6 +8,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include "BFile.hh"
 #include "BStr.hh"
 
 
@@ -1575,19 +1576,23 @@ std::string GMesh::getVersionedBufferName(std::string& name)
 
 GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir)
 {
-    fs::path cachedir(dir);
-    if(typedir)     cachedir /= typedir ;
-    if(instancedir) cachedir /= instancedir ;
+    std::string cachedir = BFile::FormPath(dir, typedir, instancedir);
+    bool exists = BFile::ExistsDir(dir, typedir, instancedir);
 
     GMesh* mesh(NULL);
-    if(!fs::exists(cachedir))
+    if(!exists)
     {
-        printf("GMesh::load directory %s DOES NOT EXIST \n", dir);
+        LOG(error)  << "GMesh::load FAILED : NO DIRECTORY "
+                    << " dir " << dir
+                    << " typedir " << typedir
+                    << " instancedir " << instancedir
+                    << " -> cachedir " << cachedir
+                    ;
     }
     else
     {
         mesh = new GMesh(0, NULL, 0, NULL, 0, NULL, NULL );
-        mesh->loadBuffers(cachedir.string().c_str());
+        mesh->loadBuffers(cachedir.c_str());
     }
     return mesh ; 
 }
@@ -1595,25 +1600,20 @@ GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir
 
 void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
 {
-    fs::path cachedir(dir);
-    if(typedir)     cachedir /= typedir ;
-    if(instancedir) cachedir /= instancedir ;
+    std::string cachedir = BFile::CreateDir(dir, typedir, instancedir);
 
-    if(!fs::exists(cachedir))
+    if(!cachedir.empty())
     {
-        if (fs::create_directories(cachedir))
-        {
-            printf("GMesh::save created directory %s \n", cachedir.string().c_str() );
-        }
+        saveBuffers(cachedir.c_str());
     }
-
-    if(fs::exists(cachedir) && fs::is_directory(cachedir))
+    else 
     {
-        saveBuffers(cachedir.string().c_str());
-    }
-    else
-    {
-        printf("GMesh::save directory %s DOES NOT EXIST \n", dir);
+        LOG(error)  << "GMesh::save FAILED : NO DIRECTORY "
+                    << " dir " << dir
+                    << " typedir " << typedir
+                    << " instancedir " << instancedir
+                    << " -> cachedir " << cachedir 
+                    ;
     }
 }
 

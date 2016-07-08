@@ -4,10 +4,12 @@
 #include <iostream>
 #include <cassert>
 
+// brap-
+#include "BOpticksEvent.hh"
+
 // npy-
 #include "Types.hpp"
 #include "Index.hpp"
-#include "NPYBase.hpp"
 
 // ggeo-
 #include "GItemIndex.hh"
@@ -41,7 +43,7 @@ int main(int argc, char** argv)
     //const char* m_tag = "-1" ;
     //const char* m_udet = "G4Gun" ; 
 
-    std::string ixdir = NPYBase::directory( "ix", m_typ, m_udet );  
+    std::string ixdir = BOpticksEvent::directory( "ix", m_typ, m_udet );  
 
     std::cout << argv[0] << " ixdir " << ixdir << std::endl ;  
 

@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     GGEO_LOG_ ;  
 
-    GMesh* mesh = GMesh::load("/tmp/mm");
+    GMesh* mesh = GMesh::load("$TMP/mm");
     if(!mesh) return 0 ;
 
     assert(mesh);

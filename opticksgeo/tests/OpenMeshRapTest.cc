@@ -63,8 +63,8 @@ int fixmesh(Opticks* ok, GMesh* gm)
     wa.dumpBounds("wa.dumpBounds");
 
 
-    wa.write("/tmp/comp%d.off", 0 );
-    wb.write("/tmp/comp%d.off", 1 );
+    wa.write("$TMP/comp%d.off", 0 );
+    wb.write("$TMP/comp%d.off", 1 );
 
     wa.calcFaceCentroids("centroid"); 
     wb.calcFaceCentroids("centroid"); 
@@ -91,7 +91,7 @@ int fixmesh(Opticks* ok, GMesh* gm)
 
     GMesh* result = wdst.createGMesh(); 
     result->setVersion("_v0");
-    result->save( "/tmp", "OpenMeshRapTest/0" );
+    result->save( "$TMP", "OpenMeshRapTest/0" );
 
 
     return 0 ; 

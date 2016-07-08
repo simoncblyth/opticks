@@ -56,7 +56,7 @@ Out[3]: (2, 4096, 1)
 
 
 
-In [4]: b = np.load("/tmp/GScintillatorLib.npy")
+In [4]: b = np.load("$TMP/GScintillatorLib.npy")
 
 In [5]: b.shape
 Out[5]: (2, 4096, 1)
@@ -80,7 +80,7 @@ array([[[ 800.   ],
         [ 180.   ]]], dtype=float32)
 
 
-In [7]: c = np.load("/tmp/GScintillatorLib0.npy")
+In [7]: c = np.load("$TMP/GScintillatorLib0.npy")
 
 In [8]: c
 Out[8]: 
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 
     NPY<float>* buf = slib->getBuffer();
     buf->Summary();
-    const char* path = "/tmp/GScintillatorLib.npy" ;
+    const char* path = "$TMP/GScintillatorLib.npy" ;
 
     LOG(info) << " save GScintillatorLib buf  "
               << " to path " << path
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 
 
     NPY<float>* buf0 = buf->make_slice("0:1") ;
-    const char* path0 = "/tmp/GScintillatorLib0.npy" ;
+    const char* path0 = "$TMP/GScintillatorLib0.npy" ;
 
     LOG(info) << " save GScintillatorLib buf0  "
               << " to path " << path0

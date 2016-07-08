@@ -195,7 +195,7 @@ void OpticksGeometry::loadGeometryBase()
         if(mesh1)
         {
             mesh1->dumpSolids("OpticksGeometry::loadGeometryBase mesh1");
-            mesh1->save("/tmp", "GMergedMesh", "baseGeometry") ;
+            mesh1->save("$TMP", "GMergedMesh", "baseGeometry") ;
         }
     }
 
@@ -217,7 +217,7 @@ void OpticksGeometry::modifyGeometry()
         if(mesh0)
         { 
             mesh0->dumpSolids("OpticksGeometry::modifyGeometry mesh0");
-            mesh0->save("/tmp", "GMergedMesh", "modifyGeometry") ;
+            mesh0->save("$TMP", "GMergedMesh", "modifyGeometry") ;
         }
     }
 

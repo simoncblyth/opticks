@@ -9,7 +9,7 @@ int main()
     t->add();
     t->add();
 
-    t->save("/tmp/transforms.npy");
+    t->save("$TMP/transforms.npy");
 
     return 0 ; 
 }

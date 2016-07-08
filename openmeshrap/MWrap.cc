@@ -2,6 +2,10 @@
 #include <iostream>
 #include <iomanip>
 
+//brap-
+#include "BFile.hh"
+
+
 // npy-
 #include "NGLM.hpp"
 #include "NCache.hpp"
@@ -961,10 +965,12 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
 {
     MeshT* mesh = m_mesh ; 
 
-    char path[128] ;
-    snprintf( path, 128, tmpl, index );
+    char path_[128] ;
+    snprintf( path_, 128, tmpl, index );
 
-    LOG(info) << "write " << path ; 
+    std::string path = BFile::preparePath(path_, true );
+
+    LOG(info) << "write " << path.c_str() ; 
     try
     {
        if ( !OpenMesh::IO::write_mesh(*mesh, path) )

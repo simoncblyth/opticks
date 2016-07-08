@@ -1038,4 +1038,7 @@ oks-filemap-body(){
 }
 
 
-
+oks-tmpify()
+{
+   perl -pi -e 's,\"/tmp,\"\$TMP,g' *.cc
+}
