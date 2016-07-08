@@ -33,9 +33,13 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
 
+    LOG(info) << argv[0] ; 
+
     // canonically App::indexEvtOld , contrast with npy-/ana.py
 
-    Opticks* ok = new Opticks(argc, argv, "recs.log");
+    Opticks* ok = new Opticks(argc, argv);
+
+    LOG(info) << " after ok " ; 
 
     Types* types = ok->getTypes();
 

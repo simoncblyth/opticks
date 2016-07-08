@@ -126,9 +126,14 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
 
     NPY<float>* gensteps =  m_evt->getGenstepData() ;
 
-    unsigned int num_values = gensteps->getNumValues(0) ; 
+    unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
 
-    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, num_values );  // adding photon counts for each genstep 
+    LOG(trace) << "OpSeeder::seedPhotonsFromGenstepsImp"
+               << " gensteps " << gensteps->getShapeString() 
+               << " num_genstep_values " << num_genstep_values
+               ;
+
+    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, num_genstep_values );  // adding photon counts for each genstep 
 
     unsigned int x_num_photons = m_evt->getNumPhotons() ;
 
@@ -141,7 +146,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
 
     assert(num_photons == x_num_photons && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
 
-    CBufSlice src = tgs.slice(6*4,3,num_values) ;
+    CBufSlice src = tgs.slice(6*4,3,num_genstep_values) ;
     CBufSlice dst = tox.slice(4*4,0,num_photons*4*4) ;
 
     TBufPair<unsigned int> tgp(src, dst);

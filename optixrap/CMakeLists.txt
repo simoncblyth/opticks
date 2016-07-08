@@ -210,7 +210,6 @@ else(APPLE)
    set(NOPT)
 endif(APPLE)
 
-
 optixthrust_add_library( ${name} ${SOURCES} OPTIONS ${NOPT} ${XOPT}) 
 target_link_libraries( ${name} ${LIBRARIES} )
 

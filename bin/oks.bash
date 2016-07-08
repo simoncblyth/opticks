@@ -235,18 +235,217 @@ After fix that get further::
     [simonblyth@optix optixrap]$ 
 
 
-Maybe lack gensteps::
-   
+Avoid NVCC FLag Duplication ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    [simonblyth@optix opticks]$ find . -name CMakeLists.txt  -exec grep -li CUDA {} \;
+    ./CMakeLists.txt
+
+    ./cudarap/CMakeLists.txt
+
+         70 set(XOPT --disable-warnings) # TODO: find way to selectively disable warnings
+         71 CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT}  )
+
+    ./cudarap/tests/CMakeLists.txt
+
+         29 set(XOPT --disable-warnings)
+         30 foreach(CU ${TEST_SOURCES_CU})
+         31     get_filename_component(TGT ${CU} NAME_WE)
+         32     cuda_add_executable(${TGT} ${CU} OPTIONS ${XOPT})
+
+    ./thrustrap/CMakeLists.txt   ## detects the GPU architecture and compiles for that 
+
+         27 set(ARCH_FLAG "-arch=sm_${SM}")
+         28 list(APPEND CUDA_NVCC_FLAGS "${ARCH_FLAG};-std=c++11;-O2;-DVERBOSE")
+         29 #list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+         30 
+         31 message("${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS}")
+
+    ./thrustrap/tests/CMakeLists.txt
+
+         28 set(XOPT --disable-warnings)
+         29 foreach(TEST_CU_SRC ${TEST_CU_SRCS})
+         30     get_filename_component(TGT ${TEST_CU_SRC} NAME_WE)
+         31     cuda_add_executable(${TGT} ${TEST_CU_SRC} OPTIONS ${XOPT})
+
+    ./optixrap/CMakeLists.txt
+
+         24 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
+         25 #list(APPEND CUDA_NVCC_FLAGS "-arch=sm_30;-std=c++11;-O2;-DVERBOSE")
+         26 #list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+         27 #list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
+         28 #SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+         29 include(OptiXThrustMacros)      # for optixthrust_add_executable handling .cu partitioning
+         30 
+         31 include(EnvCompilationFlags)
+
+        203 # OptiX prog within "cu/"  Thrust/CUDA not in "cu/"
+        204 set(XOPT --disable-warnings)
+        205 if(APPLE)
+        206    set(NOPT -gencode=arch=compute_30,code=sm_30)
+        207 else(APPLE)
+        208    set(NOPT)
+        209 endif(APPLE)
+        210 
+        211 optixthrust_add_library( ${name} ${SOURCES} OPTIONS ${NOPT} ${XOPT})
+        212 target_link_libraries( ${name} ${LIBRARIES} )
+
+
+    ./opticksop/CMakeLists.txt
+
+        115 set(XOPT --disable-warnings)
+        116 
+        117 if(APPLE)
+        118   set(NOPT -gencode=arch=compute_30,code=sm_30)
+        119 else(APPLE)
+        120   set(NOPT)
+        121 endif(APPLE)
+        122 
+        123 CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS ${NOPT} ${XOPT})
+        124 target_link_libraries( ${name} ${LIBRARIES} )
+
+
+    ./opticksgl/CMakeLists.txt
+    ./ggeoview/CMakeLists.txt
+
+
+::
+
+    [simonblyth@optix opticks]$ find . -name '*.cu'
+    ./cudarap/tests/cudaGetDevicePropertiesTest.cu
+
+    ./cudarap/CResource_.cu
+    ./cudarap/cuRANDWrapper_kernel.cu
+
+    ./opticksop/OpIndexer_.cu
+
+    ./optixrap/cu/pinhole_camera.cu
+    ./optixrap/cu/sphere.cu
+    ./optixrap/cu/TriangleMesh.cu
+    ./optixrap/cu/material1_radiance.cu
+    ./optixrap/cu/generate.cu
+    ./optixrap/cu/constantbg.cu
+    ./optixrap/cu/hemi-pmt.cu
+    ./optixrap/cu/material1_propagate.cu
+    ./optixrap/cu/textureTest.cu
+    ./optixrap/OBuf_.cu
+    ./optixrap/OBufBase_.cu
+    ./optixrap/OBufPair_.cu
+
+    ./thrustrap/tests/iexpandTest.cu
+    ./thrustrap/tests/CBufSpecTest.cu
+    ./thrustrap/tests/expandTest.cu
+    ./thrustrap/tests/repeated_rangeTest.cu
+    ./thrustrap/tests/printfTest.cu
+    ./thrustrap/tests/strided_repeated_rangeTest.cu
+    ./thrustrap/tests/strided_rangeTest.cu
+    ./thrustrap/tests/issue628Test.cu
+    ./thrustrap/tests/TBufTest.cu
+
+    ./thrustrap/TBuf_.cu
+    ./thrustrap/TBufPair_.cu
+    ./thrustrap/TUtil_.cu
+    ./thrustrap/TSparse_.cu
+
+
+
+
+  
+X(SDU) : invalid device function : RESOLVED BY SETTING NVCC FLAGS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Maybe lack gensteps, nope default torch source is generated without need for a gensteps file.
+* See some background on nvcc gencode flags over in env-;nvcc-
+
+
+When no arch is specified to nvcc with recent CUDA the default 
+action is equivalent to : --arch=sm_20.
+
+This resulted in : "invalid device function" when using some thrust constructs.
+
+Changing to sm_30 succeeds to run, but it is notable there
+in a JIT delay on first run of the code with the SDU sm_52 Quadro M5000
+
+::
+
+        [simonblyth@optix ggeo]$ gdb --args GGeoViewTest --compute 
+        [simonblyth@optix ggeo]$ gdb --args GGeoViewTest --compute --okop trace --thrap trace
+
+        2016-07-08 17:24:33.529 VERB  [29152] [OpSeeder::seedPhotonsFromGenstepsImp@131] OpSeeder::seedPhotonsFromGenstepsImp gensteps 1,6,4 num_genstep_values 24
+
     /// template snow storm /// 
-    #24 0x00007ffff17c98bc in unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const () from /home/simonblyth/local/opticks/lib/libThrustRap.so
-    #25 0x00007ffff1260c20 in OpSeeder::seedPhotonsFromGenstepsImp (this=0x3fa35f0, s_gs=..., s_ox=...) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:131
-    #26 0x00007ffff1260b31 in OpSeeder::seedPhotonsFromGenstepsViaOptiX (this=0x3fa35f0) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:114
-    #27 0x00007ffff1260825 in OpSeeder::seedPhotonsFromGensteps (this=0x3fa35f0) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:72
-    #28 0x00007ffff12680c7 in OpEngine::seedPhotonsFromGensteps (this=0x18932e0) at /home/simonblyth/opticks/opticksop/OpEngine.cc:121
-    #29 0x00007ffff07c277d in App::seedPhotonsFromGensteps (this=0x7fffffffd960) at /home/simonblyth/opticks/ggeoview/App.cc:987
-    #30 0x0000000000403daf in main (argc=2, argv=0x7fffffffdb98) at /home/simonblyth/opticks/ggeoview/tests/GGeoViewTest.cc:110
-        (gdb) 
-    
+    #24 0x00007ffff17c88bc in unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const () from /home/simonblyth/local/opticks/lib/libThrustRap.so
+    ---Type <return> to continue, or q <return> to quit---
+    #25 0x00007ffff125fc20 in OpSeeder::seedPhotonsFromGenstepsImp (this=0x3fa3110, s_gs=..., s_ox=...) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:131
+    #26 0x00007ffff125fb31 in OpSeeder::seedPhotonsFromGenstepsViaOptiX (this=0x3fa3110) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:114
+    #27 0x00007ffff125f825 in OpSeeder::seedPhotonsFromGensteps (this=0x3fa3110) at /home/simonblyth/opticks/opticksop/OpSeeder.cc:72
+    #28 0x00007ffff12670c7 in OpEngine::seedPhotonsFromGensteps (this=0x18932e0) at /home/simonblyth/opticks/opticksop/OpEngine.cc:121
+    #29 0x00007ffff07c177d in App::seedPhotonsFromGensteps (this=0x7fffffffdbf0) at /home/simonblyth/opticks/ggeoview/App.cc:987
+    #30 0x0000000000403daf in main (argc=2, argv=0x7fffffffde28) at /home/simonblyth/opticks/ggeoview/tests/GGeoViewTest.cc:110
+    (gdb) 
+
+::
+
+    120 void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& s_ox)
+    121 {
+    122     TBuf tgs("tgs", s_gs );
+    123     TBuf tox("tox", s_ox );
+    124 
+    125     //tgs.dump<unsigned int>("App::seedPhotonsFromGenstepsImp tgs", 6*4, 3, nv0 ); // stride, begin, end 
+    126 
+    127     NPY<float>* gensteps =  m_evt->getGenstepData() ;
+    128 
+    129     unsigned int num_values = gensteps->getNumValues(0) ;
+    130 
+    131     unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, num_values );  // adding photon counts for each genstep 
+        ///
+        ///    stride : 6*4  (6 quads [float4] per genstep)
+        ///    begin  : 3    (offset into genstep to find the photon count)
+        ///    end    : num_values, number genstep values (ie total number of floats)                
+        ///
+    132   
+    133     unsigned int x_num_photons = m_evt->getNumPhotons() ;
+    134 
+    135     if(num_photons != x_num_photons)
+    136           LOG(fatal)
+    137           << "OpSeeder::seedPhotonsFromGenstepsImp"
+    138           << " num_photons " << num_photons
+    139           << " x_num_photons " << x_num_photons
+    140           ;
+    141 
+    142     assert(num_photons == x_num_photons && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;
+    143 
+    144     CBufSlice src = tgs.slice(6*4,3,num_values) ;
+    145     CBufSlice dst = tox.slice(4*4,0,num_photons*4*4) ;
+    146 
+    147     TBufPair<unsigned int> tgp(src, dst);
+    148     tgp.seedDestination();
+    149 }
+
+
+::
+
+    129 template <typename T>
+    130 T TBuf::reduce(unsigned int stride, unsigned int begin, unsigned int end ) const
+    131 {
+    132     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
+    133 
+    134     T result ;
+    135     if( stride == 0 )
+    136     {
+    137         result = thrust::reduce( p + begin, p + end );
+    138     }
+    139     else
+    140     {
+    141         typedef typename thrust::device_vector<T>::iterator Iterator;
+    142         strided_range<Iterator> sri( p + begin, p + end, stride );
+    143         result = thrust::reduce( sri.begin(), sri.end() );
+    144     }
+    145     return result ;
+    146 }
+
     
     
     
@@ -299,110 +498,110 @@ X(SDU) test fails
 
 ::
 
-	The following tests FAILED:
-		 50 - ThrustRapTest.TBufTest (Failed)                    ## missing evt 
-		 59 - OptiXRapTest.OScintillatorLibTest (OTHER_FAULT)    ## missing buffer, due to no geocache
-		 60 - OpticksOpTest.OpIndexerTest (OTHER_FAULT)          ## missing evt  
-		 62 - GGeoViewTest.OTracerTest (Failed)
-		 63 - GGeoViewTest.GGeoViewTest (Failed)
-		 65 - GGeoViewTest.OpEngineTest (OTHER_FAULT)
-		 67 - cfg4Test.CTestDetectorTest (SEGFAULT)
-		 68 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)
-		 69 - cfg4Test.CG4Test (OTHER_FAULT)
+    The following tests FAILED:
+         50 - ThrustRapTest.TBufTest (Failed)                    ## missing evt 
+         59 - OptiXRapTest.OScintillatorLibTest (OTHER_FAULT)    ## missing buffer, due to no geocache
+         60 - OpticksOpTest.OpIndexerTest (OTHER_FAULT)          ## missing evt  
+         62 - GGeoViewTest.OTracerTest (Failed)
+         63 - GGeoViewTest.GGeoViewTest (Failed)
+         65 - GGeoViewTest.OpEngineTest (OTHER_FAULT)
+         67 - cfg4Test.CTestDetectorTest (SEGFAULT)
+         68 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)
+         69 - cfg4Test.CG4Test (OTHER_FAULT)
 
 
 OTracerTest and GGeoViewTest, cannot create OpenGL context remotely::
 
-	2016-07-07 13:35:13.836 INFO  [20533] [App::prepareViz@354] App::prepareViz size 2880,1704,2,0 position 200,200,0,0
-	2016-07-07 13:35:13.836 INFO  [20533] [DynamicDefine::write@21] DynamicDefine::write dir /home/simonblyth/local/opticks/gl name dynamic.h
-	X11: RandR gamma ramp support seems broken
-	GLX: Failed to create context: GLXBadFBConfig[simonblyth@optix ~]$ 
+    2016-07-07 13:35:13.836 INFO  [20533] [App::prepareViz@354] App::prepareViz size 2880,1704,2,0 position 200,200,0,0
+    2016-07-07 13:35:13.836 INFO  [20533] [DynamicDefine::write@21] DynamicDefine::write dir /home/simonblyth/local/opticks/gl name dynamic.h
+    X11: RandR gamma ramp support seems broken
+    GLX: Failed to create context: GLXBadFBConfig[simonblyth@optix ~]$ 
 
-	2016-07-07 13:37:06.814 INFO  [20554] [App::configureViz@340] App::configureViz m_setup bookmarks DONE
-	2016-07-07 13:37:06.815 INFO  [20554] [App::prepareViz@354] App::prepareViz size 2880,1704,2,0 position 200,200,0,0
-	2016-07-07 13:37:06.815 INFO  [20554] [DynamicDefine::write@21] DynamicDefine::write dir /home/simonblyth/local/opticks/gl name dynamic.h
-	X11: RandR gamma ramp support seems broken
-	GLX: Failed to create context: GLXBadFBConfig[simonblyth@optix ~]$ 
+    2016-07-07 13:37:06.814 INFO  [20554] [App::configureViz@340] App::configureViz m_setup bookmarks DONE
+    2016-07-07 13:37:06.815 INFO  [20554] [App::prepareViz@354] App::prepareViz size 2880,1704,2,0 position 200,200,0,0
+    2016-07-07 13:37:06.815 INFO  [20554] [DynamicDefine::write@21] DynamicDefine::write dir /home/simonblyth/local/opticks/gl name dynamic.h
+    X11: RandR gamma ramp support seems broken
+    GLX: Failed to create context: GLXBadFBConfig[simonblyth@optix ~]$ 
 
 OpEngineTest::
 
-	2016-07-07 13:38:33.237 INFO  [20567] [OContext::init@126] OContext::init  mode INTEROP num_ray_type 3
-	2016-07-07 13:38:33.237 INFO  [20567] [OpEngine::prepareOptiX@112] OpEngine::prepareOptiX (OColors)
-	2016-07-07 13:38:33.238 INFO  [20567] [OpEngine::prepareOptiX@118] OpEngine::prepareOptiX (OSourceLib)
-	OpEngineTest: /home/simonblyth/opticks/optixrap/OSourceLib.cc:25: void OSourceLib::makeSourceTexture(NPY<float>*): 
+    2016-07-07 13:38:33.237 INFO  [20567] [OContext::init@126] OContext::init  mode INTEROP num_ray_type 3
+    2016-07-07 13:38:33.237 INFO  [20567] [OpEngine::prepareOptiX@112] OpEngine::prepareOptiX (OColors)
+    2016-07-07 13:38:33.238 INFO  [20567] [OpEngine::prepareOptiX@118] OpEngine::prepareOptiX (OSourceLib)
+    OpEngineTest: /home/simonblyth/opticks/optixrap/OSourceLib.cc:25: void OSourceLib::makeSourceTexture(NPY<float>*): 
         Assertion buf && "OSourceLib::makeSourceTexture NULL buffer, try updating geocache first: ggv -G  ? " failed.
-	Aborted (core dumped)
+    Aborted (core dumped)
 
 
 CTestDetectorTest::
 
-	2016-07-07 13:39:50.622 ERROR [20676] [GSurfaceLib::createBufferForTex2d@426] GSurfaceLib::createBufferForTex2d zeros  ni 0 nj 2
-	2016-07-07 13:39:50.622 INFO  [20676] [GPropertyLib::close@285] GPropertyLib::close type GSurfaceLib buf NULL
+    2016-07-07 13:39:50.622 ERROR [20676] [GSurfaceLib::createBufferForTex2d@426] GSurfaceLib::createBufferForTex2d zeros  ni 0 nj 2
+    2016-07-07 13:39:50.622 INFO  [20676] [GPropertyLib::close@285] GPropertyLib::close type GSurfaceLib buf NULL
 
-	Program received signal SIGSEGV, Segmentation fault.
-	0x00007ffff6908d38 in GPropertyMap<float>::getShortName (this=0x0) at /home/simonblyth/opticks/ggeo/GPropertyMap.cc:237
-	237	    return m_shortname ; 
-	(gdb) bt
-	#0  0x00007ffff6908d38 in GPropertyMap<float>::getShortName() const (this=0x0) at /home/simonblyth/opticks/ggeo/GPropertyMap.cc:237
-	#1  0x00007ffff5cf2fa9 in CPropLib::convertMaterial(GMaterial const*) (this=0x68dd80, kmat=0x0) at /home/simonblyth/opticks/cfg4/CPropLib.cc:516
-	#2  0x00007ffff5cf0c45 in CPropLib::makeInnerMaterial(char const*) (this=0x68dd80, spec=0x68f638 "Rock/NONE/perfectAbsorbSurface/MineralOil")
-	    at /home/simonblyth/opticks/cfg4/CPropLib.cc:205
-	#3  0x00007ffff5d1dfc9 in CTestDetector::makeDetector() (this=0x68dcd0) at /home/simonblyth/opticks/cfg4/CTestDetector.cc:125
-	#4  0x00007ffff5d1dc34 in CTestDetector::init() (this=0x68dcd0) at /home/simonblyth/opticks/cfg4/CTestDetector.cc:74
-	#5  0x00007ffff5d1da6c in CTestDetector::CTestDetector(Opticks*, GGeoTestConfig*, OpticksQuery*) (this=0x68dcd0, cache=0x680920, config=0x68d2b0, query=0x0)
-	    at /home/simonblyth/opticks/cfg4/CTestDetector.cc:59
-	#6  0x00000000004033bf in main(int, char**) (argc=1, argv=0x7fffffffdda8) at /home/simonblyth/opticks/cfg4/tests/CTestDetectorTest.cc:55
-	(gdb) f 1
-	#1  0x00007ffff5cf2fa9 in CPropLib::convertMaterial (this=0x68dd80, kmat=0x0) at /home/simonblyth/opticks/cfg4/CPropLib.cc:516
-	516	    const char* name = kmat->getShortName();
-	(gdb) p kmat
-	$1 = (const GMaterial *) 0x0
-	(gdb) 
+    Program received signal SIGSEGV, Segmentation fault.
+    0x00007ffff6908d38 in GPropertyMap<float>::getShortName (this=0x0) at /home/simonblyth/opticks/ggeo/GPropertyMap.cc:237
+    237        return m_shortname ; 
+    (gdb) bt
+    #0  0x00007ffff6908d38 in GPropertyMap<float>::getShortName() const (this=0x0) at /home/simonblyth/opticks/ggeo/GPropertyMap.cc:237
+    #1  0x00007ffff5cf2fa9 in CPropLib::convertMaterial(GMaterial const*) (this=0x68dd80, kmat=0x0) at /home/simonblyth/opticks/cfg4/CPropLib.cc:516
+    #2  0x00007ffff5cf0c45 in CPropLib::makeInnerMaterial(char const*) (this=0x68dd80, spec=0x68f638 "Rock/NONE/perfectAbsorbSurface/MineralOil")
+        at /home/simonblyth/opticks/cfg4/CPropLib.cc:205
+    #3  0x00007ffff5d1dfc9 in CTestDetector::makeDetector() (this=0x68dcd0) at /home/simonblyth/opticks/cfg4/CTestDetector.cc:125
+    #4  0x00007ffff5d1dc34 in CTestDetector::init() (this=0x68dcd0) at /home/simonblyth/opticks/cfg4/CTestDetector.cc:74
+    #5  0x00007ffff5d1da6c in CTestDetector::CTestDetector(Opticks*, GGeoTestConfig*, OpticksQuery*) (this=0x68dcd0, cache=0x680920, config=0x68d2b0, query=0x0)
+        at /home/simonblyth/opticks/cfg4/CTestDetector.cc:59
+    #6  0x00000000004033bf in main(int, char**) (argc=1, argv=0x7fffffffdda8) at /home/simonblyth/opticks/cfg4/tests/CTestDetectorTest.cc:55
+    (gdb) f 1
+    #1  0x00007ffff5cf2fa9 in CPropLib::convertMaterial (this=0x68dd80, kmat=0x0) at /home/simonblyth/opticks/cfg4/CPropLib.cc:516
+    516        const char* name = kmat->getShortName();
+    (gdb) p kmat
+    $1 = (const GMaterial *) 0x0
+    (gdb) 
 
 CGDMLDetectorTest::
 
-	2016-07-07 13:47:44.785 INFO  [21100] [CTraverser::Summary@102] CDetector::traverse numMaterials 36 numMaterialsWithoutMPT 36
-	2016-07-07 13:47:44.787 WARN  [21100] [CGDMLDetector::addMPT@101] CGDMLDetector::addMPT ALL G4 MATERIALS LACK MPT  FIXING USING G4DAE MATERIALS 
-	CGDMLDetectorTest: /home/simonblyth/opticks/cfg4/CGDMLDetector.cc:128: void CGDMLDetector::addMPT(): Assertion `ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material"' failed.
-	Aborted (core dumped)
+    2016-07-07 13:47:44.785 INFO  [21100] [CTraverser::Summary@102] CDetector::traverse numMaterials 36 numMaterialsWithoutMPT 36
+    2016-07-07 13:47:44.787 WARN  [21100] [CGDMLDetector::addMPT@101] CGDMLDetector::addMPT ALL G4 MATERIALS LACK MPT  FIXING USING G4DAE MATERIALS 
+    CGDMLDetectorTest: /home/simonblyth/opticks/cfg4/CGDMLDetector.cc:128: void CGDMLDetector::addMPT(): Assertion `ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material"' failed.
+    Aborted (core dumped)
 
 
 
 CG4Test, missing G4 env file::
 
-	[simonblyth@optix cfg4]$ CG4Test 
-	2016-07-07 13:48:50.186 INFO  [21116] [main@24] CG4Test
-	2016-07-07 13:48:50.187 INFO  [21116] [Timer::operator@38] Opticks:: START
-	2016-07-07 13:48:50.187 WARN  [21116] [OpticksResource::readG4Environment@321] OpticksResource::readG4Environment MISSING FILE externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini ) 
+    [simonblyth@optix cfg4]$ CG4Test 
+    2016-07-07 13:48:50.186 INFO  [21116] [main@24] CG4Test
+    2016-07-07 13:48:50.187 INFO  [21116] [Timer::operator@38] Opticks:: START
+    2016-07-07 13:48:50.187 WARN  [21116] [OpticksResource::readG4Environment@321] OpticksResource::readG4Environment MISSING FILE externals/config/geant4.ini (create it with bash functions: g4-;g4-export-ini ) 
 
 
 ::
 
-	[simonblyth@optix cfg4]$ g4-ini
-	/home/simonblyth/local/opticks/externals/config/geant4.ini
-	[simonblyth@optix cfg4]$ g4-export-ini
-	=== g4-export-ini : writing G4 environment to /home/simonblyth/local/opticks/externals/config/geant4.ini
-	G4LEVELGAMMADATA=/opt/geant4/share/Geant4-10.2.2/data/PhotonEvaporation3.2
-	G4NEUTRONXSDATA=/opt/geant4/share/Geant4-10.2.2/data/G4NEUTRONXS1.4
-	G4LEDATA=/opt/geant4/share/Geant4-10.2.2/data/G4EMLOW6.48
-	G4NEUTRONHPDATA=/opt/geant4/share/Geant4-10.2.2/data/G4NDL4.5
-	G4ENSDFSTATEDATA=/opt/geant4/share/Geant4-10.2.2/data/G4ENSDFSTATE1.2.3
-	G4RADIOACTIVEDATA=/opt/geant4/share/Geant4-10.2.2/data/RadioactiveDecay4.3.2
-	G4ABLADATA=/opt/geant4/share/Geant4-10.2.2/data/G4ABLA3.0
-	G4PIIDATA=/opt/geant4/share/Geant4-10.2.2/data/G4PII1.3
-	G4SAIDXSDATA=/opt/geant4/share/Geant4-10.2.2/data/G4SAIDDATA1.1
-	G4REALSURFACEDATA=/opt/geant4/share/Geant4-10.2.2/data/RealSurface1.0
-	[simonblyth@optix cfg4]$ 
+    [simonblyth@optix cfg4]$ g4-ini
+    /home/simonblyth/local/opticks/externals/config/geant4.ini
+    [simonblyth@optix cfg4]$ g4-export-ini
+    === g4-export-ini : writing G4 environment to /home/simonblyth/local/opticks/externals/config/geant4.ini
+    G4LEVELGAMMADATA=/opt/geant4/share/Geant4-10.2.2/data/PhotonEvaporation3.2
+    G4NEUTRONXSDATA=/opt/geant4/share/Geant4-10.2.2/data/G4NEUTRONXS1.4
+    G4LEDATA=/opt/geant4/share/Geant4-10.2.2/data/G4EMLOW6.48
+    G4NEUTRONHPDATA=/opt/geant4/share/Geant4-10.2.2/data/G4NDL4.5
+    G4ENSDFSTATEDATA=/opt/geant4/share/Geant4-10.2.2/data/G4ENSDFSTATE1.2.3
+    G4RADIOACTIVEDATA=/opt/geant4/share/Geant4-10.2.2/data/RadioactiveDecay4.3.2
+    G4ABLADATA=/opt/geant4/share/Geant4-10.2.2/data/G4ABLA3.0
+    G4PIIDATA=/opt/geant4/share/Geant4-10.2.2/data/G4PII1.3
+    G4SAIDXSDATA=/opt/geant4/share/Geant4-10.2.2/data/G4SAIDDATA1.1
+    G4REALSURFACEDATA=/opt/geant4/share/Geant4-10.2.2/data/RealSurface1.0
+    [simonblyth@optix cfg4]$ 
 
 
 After g4-export-ini get to missing material::
 
-	2016-07-07 13:51:44.200 WARN  [21617] [CGDMLDetector::addMPT@101] CGDMLDetector::addMPT ALL G4 MATERIALS LACK MPT  FIXING USING G4DAE MATERIALS 
-	2016-07-07 13:51:44.200 INFO  [21617] [GPropertyLib::getIndex@239] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [PPE]
-	2016-07-07 13:51:44.200 ERROR [21617] [GMaterialLib::createBufferForTex2d@218] GMaterialLib::createBufferForTex2d NO MATERIALS ?  ni 0 nj 2
-	2016-07-07 13:51:44.200 INFO  [21617] [GPropertyLib::close@285] GPropertyLib::close type GMaterialLib buf NULL
-	CG4Test: /home/simonblyth/opticks/cfg4/CGDMLDetector.cc:128: void CGDMLDetector::addMPT(): Assertion `ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material"' failed.
-	Aborted (core dumped)
+    2016-07-07 13:51:44.200 WARN  [21617] [CGDMLDetector::addMPT@101] CGDMLDetector::addMPT ALL G4 MATERIALS LACK MPT  FIXING USING G4DAE MATERIALS 
+    2016-07-07 13:51:44.200 INFO  [21617] [GPropertyLib::getIndex@239] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [PPE]
+    2016-07-07 13:51:44.200 ERROR [21617] [GMaterialLib::createBufferForTex2d@218] GMaterialLib::createBufferForTex2d NO MATERIALS ?  ni 0 nj 2
+    2016-07-07 13:51:44.200 INFO  [21617] [GPropertyLib::close@285] GPropertyLib::close type GMaterialLib buf NULL
+    CG4Test: /home/simonblyth/opticks/cfg4/CGDMLDetector.cc:128: void CGDMLDetector::addMPT(): Assertion `ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material"' failed.
+    Aborted (core dumped)
 
 
 
@@ -432,12 +631,12 @@ Where are the headers ?
 
 ::
 
-	[simonblyth@optix opticks]$ ldd /opt/geant4/lib64/libG4persistency.so  | grep xerces
-		libxerces-c-3.1.so => /lib64/libxerces-c-3.1.so (0x00007f8f5cd55000)
-	[simonblyth@optix opticks]$ 
-	[simonblyth@optix opticks]$ l /lib64/libxerces-c-3.1.so
-	-rwxr-xr-x. 1 root root 3853352 Mar 10 23:03 /lib64/libxerces-c-3.1.so
-	[simonblyth@optix opticks]$ 
+    [simonblyth@optix opticks]$ ldd /opt/geant4/lib64/libG4persistency.so  | grep xerces
+        libxerces-c-3.1.so => /lib64/libxerces-c-3.1.so (0x00007f8f5cd55000)
+    [simonblyth@optix opticks]$ 
+    [simonblyth@optix opticks]$ l /lib64/libxerces-c-3.1.so
+    -rwxr-xr-x. 1 root root 3853352 Mar 10 23:03 /lib64/libxerces-c-3.1.so
+    [simonblyth@optix opticks]$ 
 
 
 X (SDU) ImGui.so X11 ?
@@ -450,41 +649,41 @@ Investigated this with env-;cmak-;cmak-find-GLFW
 
 ::
 
-	[ 67%] Built target OGLRap
-	Scanning dependencies of target DynamicDefineTest
-	[ 67%] Building CXX object oglrap/tests/CMakeFiles/DynamicDefineTest.dir/DynamicDefineTest.cc.o
-	[ 67%] Linking CXX executable DynamicDefineTest
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XcursorImageLoadCursor'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XineramaQueryExtension'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeQueryExtension'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetCrtcInfo'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetCrtcGamma'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XineramaQueryScreens'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XineramaIsActive'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRSelectInput'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeGetGammaRampSize'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XcursorImageDestroy'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XISelectEvents'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetOutputPrimary'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XIQueryVersion'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetScreenResources'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeGetGammaRamp'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetOutputInfo'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRAllocGamma'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRQueryExtension'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRUpdateConfiguration'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetScreenResourcesCurrent'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRSetCrtcConfig'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetCrtcGammaSize'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeSetGammaRamp'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRSetCrtcGamma'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeOutputInfo'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XcursorImageCreate'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRQueryVersion'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeScreenResources'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeGamma'
-	/home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeCrtcInfo'
-	collect2: error: ld returned 1 exit status
+    [ 67%] Built target OGLRap
+    Scanning dependencies of target DynamicDefineTest
+    [ 67%] Building CXX object oglrap/tests/CMakeFiles/DynamicDefineTest.dir/DynamicDefineTest.cc.o
+    [ 67%] Linking CXX executable DynamicDefineTest
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XcursorImageLoadCursor'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XineramaQueryExtension'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeQueryExtension'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetCrtcInfo'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetCrtcGamma'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XineramaQueryScreens'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XineramaIsActive'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRSelectInput'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeGetGammaRampSize'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XcursorImageDestroy'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XISelectEvents'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetOutputPrimary'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XIQueryVersion'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetScreenResources'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeGetGammaRamp'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetOutputInfo'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRAllocGamma'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRQueryExtension'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRUpdateConfiguration'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetScreenResourcesCurrent'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRSetCrtcConfig'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRGetCrtcGammaSize'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XF86VidModeSetGammaRamp'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRSetCrtcGamma'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeOutputInfo'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XcursorImageCreate'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRQueryVersion'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeScreenResources'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeGamma'
+    /home/simonblyth/local/opticks/externals/lib/libImGui.so: undefined reference to `XRRFreeCrtcInfo'
+    collect2: error: ld returned 1 exit status
 
 
 

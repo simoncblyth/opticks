@@ -26,10 +26,8 @@ file(GLOB TEST_CU_SRCS "*Test.cu")
 
 
 set(XOPT --disable-warnings)
-
 foreach(TEST_CU_SRC ${TEST_CU_SRCS})
     get_filename_component(TGT ${TEST_CU_SRC} NAME_WE)
-
     cuda_add_executable(${TGT} ${TEST_CU_SRC} OPTIONS ${XOPT})
 
     add_test(${name}.${TGT} ${TGT})
