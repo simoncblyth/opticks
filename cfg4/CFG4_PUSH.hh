@@ -1,19 +1,21 @@
+#ifdef __clang__
 
-#ifdef _MSC_VER
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+
+#elif defined(_MSC_VER)
+
 #pragma warning(push)
-// warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-// from CLHEP/Random headers
+
+// warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data // from CLHEP/Random headers
 #pragma warning( disable : 4244 )
 
-// boost::split warnings 
-// http://stackoverflow.com/questions/14141476/warning-with-boostsplit-when-compiling
-// https://msdn.microsoft.com/en-us/library/aa985974.aspx
-// needed include before the boost algorithm string include, not just before the boost::split usage
-//
-//  done via CMAKE_CXX_FLAGS
-//#define _SCL_SECURE_NO_WARNINGS  
-
-
 #endif
-
 

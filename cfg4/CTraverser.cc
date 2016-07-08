@@ -2,12 +2,14 @@
 #include <algorithm>
 #include <sstream>
 
+#include "CFG4_PUSH.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
 #include "G4VSolid.hh"
 #include "G4Material.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+#include "CFG4_POP.hh"
 
 // okc-
 #include "OpticksQuery.hh"
@@ -486,7 +488,7 @@ void CTraverser::dumpMaterial(const G4Material* material)
     if(!mpt) return ;
 
     typedef std::map<G4String,G4MaterialPropertyVector*,std::less<G4String> >  PMAP ;
-    typedef std::map< G4String, G4double,std::less<G4String> > CMAP ; 
+    //typedef std::map< G4String, G4double,std::less<G4String> > CMAP ; 
 
     const PMAP* pm = mpt->GetPropertiesMap();
     //const CMAP* cm = mpt->GetPropertiesCMap(); 

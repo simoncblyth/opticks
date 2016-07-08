@@ -3,6 +3,7 @@
 
 
 #include "CFG4_PUSH.hh"
+
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
@@ -12,6 +13,7 @@
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+
 #include "CFG4_POP.hh"
 
 
@@ -83,10 +85,10 @@ std::string Format(const G4Track* track, const G4ThreeVector& origin, const char
     return ss.str();
 }
 
-std::string Tail(const G4String& _s, unsigned int n )
+std::string Tail(const G4String& _str, unsigned int n )
 {
-    std::string s = _s ; 
-    std::string ss = s.size() < n ? s : s.substr(s.size() - n );
+    std::string str = _str ; 
+    std::string ss = str.size() < n ? str : str.substr(str.size() - n );
     return ss ; 
 }
 

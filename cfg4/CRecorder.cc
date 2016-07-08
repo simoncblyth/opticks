@@ -512,11 +512,11 @@ void CRecorder::RecordQuadrant(const G4Step* step)
 
     // initial quadrant 
     m_c4.uchar_.x = 
-                  (  pos.x() > 0.f ? QX : 0u ) 
+                  (  pos.x() > 0.f ? unsigned(QX) : 0u ) 
                    |   
-                  (  pos.y() > 0.f ? QY : 0u ) 
+                  (  pos.y() > 0.f ? unsigned(QY) : 0u ) 
                    |   
-                  (  pos.z() > 0.f ? QZ : 0u )
+                  (  pos.z() > 0.f ? unsigned(QZ) : 0u )
                   ;   
 
     m_c4.uchar_.y = 2u ; 

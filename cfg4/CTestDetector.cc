@@ -107,7 +107,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
                << " BoxInBox " << is_bib
               ;
 
-    assert( is_pib || is_bib && "CTestDetector::Construct mode not recognized");
+    assert( ( is_pib || is_bib ) && "CTestDetector::Construct mode not recognized");
 
     if(m_verbosity > 0)
     m_config->dump("CTestDetector::Construct");
