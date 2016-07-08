@@ -57,7 +57,7 @@ void dump(boost::cmatch& m)
 
 
 
-std::string usertmpdir(const char* base="/tmp/opticks")
+std::string usertmpdir(const char* base="/tmp", const char* sub="opticks")
 {
     fs::path p(base) ; 
 
@@ -68,6 +68,8 @@ std::string usertmpdir(const char* base="/tmp/opticks")
 #endif
 
     if(user) p /= user ;
+    if(sub) p /= sub ; 
+
     std::string x = p.string() ; 
     return x ; 
 }
