@@ -466,6 +466,16 @@ cudarap-test()
    cd $iwd
 }
 
+
+cudarap-rngmax(){ echo $(( 3*1000*1000 )) ; } # maximal number of photons that can be handled
+cudarap-rngdir(){ echo $(opticks-prefix)/cache/rng  ; }
+cudarap-prepare-cache()
+{
+   CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
+}
+
+
+
 cudarap-test-full()
 {
    local iwd=$PWD

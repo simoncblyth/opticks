@@ -1209,18 +1209,6 @@ ggeoview-accelcache-rm()
     rm ${DAE_NAME_DYB/.dae}.*.accelcache
 }
 
-ggeoview-rng-max()
-{
-   # maximal number of photons that can be handled : move to cudawrap- ?
-    echo $(( 1000*1000*3 ))
-    #echo $(( 1000*1000*1 ))
-}
-
-ggeoview-rng-prep()
-{
-   cudarap-
-   CUDARAP_RNG_DIR=$(ggeoview-rng-dir) CUDARAP_RNG_MAX=$(ggeoview-rng-max) $(cudarap-ibin)
-}
 
 
 

@@ -325,7 +325,8 @@ int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int
         }
         else
         {
-            printf("cuRANDWrapper::LoadIntoHostBuffer : no cache %s, initing and saving \n", path);
+            printf("cuRANDWrapper::LoadIntoHostBuffer MISSING RNG CACHE AT : %s \n", path);
+            printf("cuRANDWrapper::LoadIntoHostBuffer : CREATE CACHE WITH bash functions : cudarap-;cudarap-prepare-cache \n");
             assert(0);
         }
     }
