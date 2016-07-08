@@ -1137,6 +1137,10 @@ ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
 ggeoview-name(){ echo GGeoView ; }
 ggeoview-tag(){  echo GGV ; }
 
+ggeoview-apihh(){  echo $(ggeoview-sdir)/$(ggeoview-tag)_API_EXPORT.hh ; }
+ggeoview---(){     touch $(ggeoview-apihh) ; ggeoview--  ; }
+
+
 ggeoview-edit(){     vi $(ggeoview-sdir)/ggv.sh ; }
 
 ggeoview-wipe(){

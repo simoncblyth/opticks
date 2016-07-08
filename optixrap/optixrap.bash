@@ -21,6 +21,24 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+Remaining Warnings from nvcc
+-----------------------------
+
+TODO: dump the flags that nvcc is seeing.
+
+* http://stackoverflow.com/questions/26867352/cant-get-rid-of-warning-command-line-option-std-c11-using-nvcc-cuda-cma
+* https://cmake.org/Bug/view.php?id=15240
+
+::
+
+	[ 14%] Building NVCC (Device) object optixrap/CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBufPair_.cu.o
+	cc1: warning: command line option ‘-Wno-non-virtual-dtor’ is valid for C++/ObjC++ but not for C [enabled by default]
+	cc1: warning: command line option ‘-Woverloaded-virtual’ is valid for C++/ObjC++ but not for C [enabled by default]
+	cc1: warning: command line option ‘-Wno-non-virtual-dtor’ is valid for C++/ObjC++ but not for C [enabled by default]
+	cc1: warning: command line option ‘-Woverloaded-virtual’ is valid for C++/ObjC++ but not for C [enabled by default]
+
+
+
 
 first run crashes in OTracerTest and GGeoViewTest
 ---------------------------------------------------

@@ -65,6 +65,9 @@ SET(HEADERS
     THRAP_HEAD.hh
     THRAP_TAIL.hh
 
+    THRAP_PUSH.hh
+    THRAP_POP.hh
+
     TBuf.hh
     TBufPair.hh
     TSparse.hh

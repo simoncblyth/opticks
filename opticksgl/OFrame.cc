@@ -352,7 +352,7 @@ unsigned int OFrame::touch(int ix_, int iy_)
     m_context["touch_mode"]->setUint(0u);
 
     uint4* touchBuffer_Host = static_cast<uint4*>( touchBuffer->map() );
-    uint4 touch = touchBuffer_Host[0] ;
+    uint4 touch_ = touchBuffer_Host[0] ;
     touchBuffer->unmap();
 
     LOG(info) << "OFrame::touch "
@@ -362,13 +362,13 @@ unsigned int OFrame::touch(int ix_, int iy_)
               << " iy " << iy   
               << " width " << width   
               << " height " << height 
-              << " touch.x nodeIndex " << touch.x 
-              << " touch.y " << touch.y 
-              << " touch.z " << touch.z   
-              << " touch.w " << touch.w 
+              << " touch_.x nodeIndex " << touch_.x 
+              << " touch_.y " << touch_.y 
+              << " touch_.z " << touch_.z   
+              << " touch_.w " << touch_.w 
               ;  
 
-     unsigned int target = touch.x ; 
+     unsigned int target = touch_.x ; 
 
     return target ; 
 }

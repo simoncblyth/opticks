@@ -286,6 +286,9 @@ assimprap-wipe(){
 assimprap-name(){ echo AssimpRap ; }
 assimprap-tag(){  echo ASIRAP ; }
 
+assimprap-apihh(){  echo $(assimprap-sdir)/$(assimprap-tag)_API_EXPORT.hh ; }
+assimprap---(){     touch $(assimprap-apihh) ; assimprap--  ; }
+
 
 assimprap--(){        opticks--     $(assimprap-bdir) ; }
 assimprap-ctest(){    opticks-ctest $(assimprap-bdir) $* ; }

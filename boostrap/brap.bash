@@ -145,6 +145,10 @@ brap-wipe(){
    rm -rf $bdir
 }
 
+brap-apihh(){  echo $(brap-sdir)/$(brap-tag)_API_EXPORT.hh ; }
+brap---(){     touch $(brap-apihh) ; brap--  ; }
+
+
 brap--(){       opticks-- $(brap-bdir) ; }
 brap-ctest(){   opticks-ctest $(brap-bdir) $* ; }
 brap-genproj(){ brap-scd ; opticks-genproj $(brap-name) $(brap-tag) ; }

@@ -27,6 +27,10 @@ opticksgeo-wipe(){ local bdir=$(opticksgeo-bdir) ; rm -rf $bdir ; }
 opticksgeo-name(){ echo OpticksGeometry ; }
 opticksgeo-tag(){  echo OKGEO ; }
 
+opticksgeo-apihh(){  echo $(opticksgeo-sdir)/$(opticksgeo-tag)_API_EXPORT.hh ; }
+opticksgeo---(){     touch $(opticksgeo-apihh) ; opticksgeo--  ; }
+
+
 opticksgeo--(){        opticks--     $(opticksgeo-bdir) ; }
 opticksgeo-ctest(){    opticks-ctest $(opticksgeo-bdir) $* ; }
 opticksgeo-genproj(){  opticksgeo-scd ; opticks-genproj $(opticksgeo-name) $(opticksgeo-tag) ; }

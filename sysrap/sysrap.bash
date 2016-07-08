@@ -33,6 +33,10 @@ sysrap-bcd(){  cd $(sysrap-bdir); }
 sysrap-name(){ echo SysRap ; }
 sysrap-tag(){  echo SYSRAP ; }
 
+sysrap-apihh(){  echo $(sysrap-sdir)/$(sysrap-tag)_API_EXPORT.hh ; }
+sysrap---(){     touch $(sysrap-apihh) ; sysrap--  ; }
+
+
 sysrap-wipe(){    local bdir=$(sysrap-bdir) ; rm -rf $bdir ; }
 
 sysrap--(){       opticks-- $(sysrap-bdir) ; } 

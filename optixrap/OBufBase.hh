@@ -1,7 +1,11 @@
 #pragma once
 // NB implementation in OBufBase_.cu as requires nvcc compilation
+
+#include "OXRAP_PUSH.hh"
 #include <optix_world.h>
-#include "OXPPNS.hh"
+#include <optixu/optixpp_namespace.h>
+#include "OXRAP_POP.hh"
+
 
 // cudawrap- struct 
 #include "CBufSlice.hh"

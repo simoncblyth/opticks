@@ -326,6 +326,11 @@ cfg4-cd(){   cd $(cfg4-dir); }
 cfg4-name(){ echo cfg4 ; }
 cfg4-tag(){  echo CFG4 ; }
 
+cfg4-apihh(){  echo $(cfg4-sdir)/$(cfg4-tag)_API_EXPORT.hh ; }
+cfg4---(){     touch $(cfg4-apihh) ; cfg4--  ; }
+
+
+
 cfg4-wipe(){    local bdir=$(cfg4-bdir) ; rm -rf $bdir ; } 
 
 cfg4--(){       opticks-- $(cfg4-bdir) ; } 

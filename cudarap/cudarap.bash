@@ -387,7 +387,6 @@ cudarap-env(){
   opticks-
 }
 
-cudarap-name(){ echo CUDARap ; }
 
 cudarap-idir(){ echo $(opticks-idir); }
 cudarap-bdir(){ echo $(opticks-bdir)/$(cudarap-rel) ; }
@@ -408,6 +407,10 @@ cudarap-wipe(){ local bdir=$(cudarap-bdir) ;  rm -rf $bdir ; }
 
 cudarap-name(){ echo CUDARap ; }
 cudarap-tag(){  echo CUDARAP ; }
+
+cudarap-apihh(){  echo $(cudarap-sdir)/$(cudarap-tag)_API_EXPORT.hh ; }
+cudarap---(){     touch $(cudarap-apihh) ; cudarap--  ; }
+
 
 cudarap--(){                   opticks-- $(cudarap-bdir) ; } 
 cudarap-ctest(){               opticks-ctest $(cudarap-bdir) $* ; } 

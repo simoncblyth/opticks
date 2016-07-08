@@ -58,6 +58,11 @@ opticksgl-tag(){ echo OKGL ; }
 
 opticksgl-wipe(){ local bdir=$(opticksgl-bdir) ; rm -rf $bdir ; } 
 
+opticksgl-apihh(){  echo $(opticksgl-sdir)/$(opticksgl-tag)_API_EXPORT.hh ; }
+opticksgl---(){     touch $(opticksgl-apihh) ; opticksgl--  ; } 
+
+
+
 opticksgl--(){                   opticks-- $(opticksgl-bdir) ; } 
 opticksgl-ctest(){               opticks-ctest $(opticksgl-bdir) $* ; } 
 opticksgl-genproj() { opticksgl-scd ; opticks-genproj $(opticksgl-name) $(opticksgl-tag) ; } 

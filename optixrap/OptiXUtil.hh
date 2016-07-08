@@ -1,16 +1,12 @@
 #pragma once
 
+// usually thrus/device_vector only seen in .cu and 
+// compiled by nvcc ... so this is unusual 
+// standard compilers
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#endif
-
+#include "THRAP_PUSH.hh"
 #include <thrust/device_vector.h>
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+#include "THRAP_POP.hh"
 
 
 #include "OXPPNS.hh"

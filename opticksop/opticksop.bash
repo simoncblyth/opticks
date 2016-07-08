@@ -162,6 +162,12 @@ opticksop-bcd(){  cd $(opticksop-bdir); }
 opticksop-name(){ echo OpticksOp ; }
 opticksop-tag(){  echo OKOP ; }
 
+
+opticksop-apihh(){  echo $(opticksop-sdir)/$(opticksop-tag)_API_EXPORT.hh ; }
+opticksop---(){     touch $(opticksop-apihh) ; opticksop--  ; } 
+
+
+
 opticksop-wipe(){ local bdir=$(opticksop-bdir) ; rm -rf $bdir ; } 
 opticksop--(){                   opticks-- $(opticksop-bdir) ; } 
 opticksop-ctest(){               opticks-ctest $(opticksop-bdir) $* ; } 

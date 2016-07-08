@@ -290,6 +290,10 @@ thrustrap-bcd(){  cd $(thrustrap-bdir); }
 thrustrap-name(){ echo ThrustRap ; }
 thrustrap-tag(){  echo THRAP ; }
 
+thrustrap-apihh(){  echo $(thrustrap-sdir)/$(thrustrap-tag)_API_EXPORT.hh ; }
+thrustrap---(){     touch $(thrustrap-apihh) ; thrustrap--  ; }
+
+
 thrustrap-wipe(){ local bdir=$(thrustrap-bdir) ;  rm -rf $bdir ; }
 
 thrustrap--(){                   opticks-- $(thrustrap-bdir) ; } 

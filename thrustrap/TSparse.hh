@@ -5,17 +5,10 @@
 #include "CBufSlice.hh"
 
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#endif
 
+#include "THRAP_PUSH.hh"
 #include <thrust/device_vector.h>
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
+#include "THRAP_POP.hh"
 
 
 class Index ; 

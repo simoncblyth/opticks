@@ -655,62 +655,46 @@ opticks-unset()
 
 
 
+opticks-projs-(){ cat << EOP
+sysrap
+brap
+npy
+okc
+ggeo
+assimprap
+openmeshrap
+opticksgeo
+oglrap
+cudarap
+thrustrap
+optixrap
+opticksop
+opticksgl
+ggeoview
+cfg4
+EOP
+}
+
+
 opticks---(){ 
-
-  sysrap-
-  sysrap--
-
-  brap-
-  brap--
-
-  npy-
-  npy--
-
-  okc-
-  okc--
-
-  ggeo-
-  ggeo--
-
-  assimprap-
-  assimprap--
-
-  openmeshrap-
-  openmeshrap--
-
-  opticksgeo-
-  opticksgeo--
-
-  oglrap-
-  oglrap--
-
-  ############ CUDA NEEDED 
-
-  cudarap-
-  cudarap--
-
-  thrustrap- 
-  thrustrap--
-
-  optixrap-
-  optixrap--
-
-  opticksop-
-  opticksop--
-
-  opticksgl-
-  opticksgl--
-
-  ####################### 
- 
-  ggeoview-
-  ggeoview--
-
-  cfg4-
-  cfg4--
-
-
+   local proj
+   opticks-projs- | while read proj ; do
+      $proj-
+      $proj--
+   done
 } 
+
+opticks----(){ 
+   ## proj--- touches the API header and then does $proj-- : this forcing recompilation of everything 
+   local proj
+   opticks-projs- | while read proj ; do
+      $proj-
+      echo proj $proj
+      $proj---
+   done
+} 
+
+
 
 
 opticks-nuclear(){   rm -rf $LOCAL_BASE/opticks/* ; }

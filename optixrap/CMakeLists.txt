@@ -165,6 +165,10 @@ set(HEADERS
     OXRAP_HEAD.hh
     OXRAP_TAIL.hh
 
+    OXRAP_PUSH.hh
+    OXRAP_POP.hh
+
+
     OptiXUtil.hh
     OContext.hh
     OConfig.hh
