@@ -121,6 +121,26 @@ void test_FormPath()
 }
 
 
+
+
+void test_Name_ParentDir()
+{
+    const char* path = "/tmp/opticks/blyth/somefile.txt" ; 
+
+    std::string name = BFile::Name(path) ;
+    std::string dir = BFile::ParentDir(path) ;
+
+
+    LOG(info) << " path " << path
+              << " name " << name
+              << " dir " << dir
+              ;
+ 
+}
+
+
+
+
 int main(int argc, char** argv)
 {
    PLOG_(argc, argv);
@@ -134,7 +154,8 @@ int main(int argc, char** argv)
    //test_ExistsDir();
    //test_CreateDir();
    //test_ParentDir();
-   test_FormPath();
+   //test_FormPath();
+   test_Name_ParentDir();
 
 
 
