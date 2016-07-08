@@ -1,10 +1,14 @@
 #include <string>
+
 #include "BMap.hh"
 
-const char* pathSU = "/tmp/BMapTestSU.json" ; 
-const char* pathUS = "/tmp/BMapTestUS.json" ;
-const char* pathSUi = "/tmp/BMapTestSU.ini" ; 
-const char* pathSSi = "/tmp/BMapTestSS.ini" ; 
+#include "BRAP_LOG.hh"
+#include "PLOG.hh"
+
+const char* pathSU = "$TMP/BMapTestSU.json" ; 
+const char* pathUS = "$TMP/BMapTestUS.json" ;
+const char* pathSUi = "$TMP/BMapTestSU.ini" ; 
+const char* pathSSi = "$TMP/BMapTestSS.ini" ; 
 
 
 void test_saveMapSU()
@@ -63,8 +67,14 @@ void test_loadIni()
 
 
 
-int main()
+int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+
+    BRAP_LOG__ ;
+
+    LOG(info) << argv[0] ;
+  
     test_saveMapSU();
     test_loadMapSU();
 
