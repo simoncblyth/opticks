@@ -16,7 +16,8 @@
 
 using namespace std ; 
 
-const char* OpticksColors::NAME = "GColors.json" ;
+//const char* OpticksColors::NAME = "GColors.json" ;
+const char* OpticksColors::NAME = "OpticksColors.json" ;
 
 
 

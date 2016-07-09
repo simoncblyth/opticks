@@ -73,6 +73,7 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
 
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
+
    if(CUDA_FOUND AND OptiX_FOUND)
        set(WITH_OPTIX ON)
        add_subdirectory(cudarap)        
@@ -91,7 +92,7 @@ else(NOT (COMPUTE_CAPABILITY LESS 30))
 endif()
 
 
-set(REST ON CACHE BOOL "Build Geant4")
+set(REST ON CACHE BOOL "Build GGeoView and CFG4 packages")
 if(REST)
    add_subdirectory(ggeoview)
 
@@ -104,6 +105,5 @@ if(REST)
    endif(Geant4_FOUND)
 
 endif(REST)
-
 
 

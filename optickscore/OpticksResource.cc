@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <cassert>
+#include <algorithm>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -235,6 +236,9 @@ void OpticksResource::init()
 {
    LOG(trace) << "OpticksResource::init" ; 
 
+   BStr::split(m_detector_types, "GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib", ',' ); 
+   BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
+
    readG4Environment();
    readOpticksEnvironment();
    //BEnv::dumpEnvironment();
@@ -246,6 +250,17 @@ void OpticksResource::init()
 
    LOG(trace) << "OpticksResource::init DONE" ; 
 }
+
+
+bool OpticksResource::isDetectorType(const char* type_)
+{
+    return std::find(m_detector_types.begin(),m_detector_types.end(), type_) != m_detector_types.end()  ; 
+}
+bool OpticksResource::isResourceType(const char* type_)
+{
+    return std::find(m_resource_types.begin(),m_resource_types.end(), type_) != m_resource_types.end()  ; 
+}
+
 
 
 
@@ -517,9 +532,10 @@ void OpticksResource::Dump(const char* msg)
 void OpticksResource::Summary(const char* msg)
 {
     std::cerr << msg << std::endl ; 
-    const char* prefix = m_install_prefix ; 
 
-    std::cerr << "prefix   : " <<  (prefix ? prefix : "NULL" ) << std::endl ; 
+    std::cerr << "install_prefix    : " <<  (m_install_prefix ? m_install_prefix : "NULL" ) << std::endl ; 
+    std::cerr << "opticksdata_dir   : " <<  (m_opticksdata_dir ? m_opticksdata_dir : "NULL" ) << std::endl ; 
+    std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "NULL" ) << std::endl ; 
     std::cerr << "valid    : " <<  (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
     std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
     std::cerr << "geokey   : " <<  (m_geokey?m_geokey:"NULL") << std::endl; 
@@ -618,23 +634,88 @@ std::string OpticksResource::getPropertyLibDir(const char* name)
     return pld.string() ;
 }
 
+
+
+
 std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
 {
-    fs::path prefdir(PREFERENCE_BASE) ;
+    bool detector_type = isDetectorType(type) ; 
+    bool resource_type = isResourceType(type) ; 
+
+    const char* prefbase = PREFERENCE_BASE ;
+    if(detector_type) prefbase = m_detector_base ; 
+    if(resource_type) prefbase = m_resource_dir ;   // one of the top down dirs, set in base BOpticksResource
+
+    if(detector_type)
+    {
+        assert(udet == NULL); // detector types dont need another detector subdir
+    }
+
+
+    fs::path prefdir(prefbase) ;
     if(udet) prefdir /= udet ;
     prefdir /= type ; 
     if(subtype) prefdir /= subtype ; 
-    return prefdir.string() ;
+    std::string pdir = prefdir.string() ;
+
+    LOG(trace) << "OpticksResource::getPreferenceDir"
+              << " type " << type 
+              << " detector_type " << detector_type
+              << " resource_type " << resource_type
+              << " udet " << udet
+              << " subtype " << subtype 
+              << " pdir " << pdir 
+              ;
+
+    return pdir ; 
 }
 
 
+/*
 
+GPropLib/GAttrSeq prefs such as materials, surfaces, boundaries and flags 
+come in threes (abbrev.json, color.json and order.json)
+these provided attributes for named items in sequences. 
+
+::
+
+    delta:GMaterialLib blyth$ cat ~/.opticks/GMaterialLib/abbrev.json 
+    {
+        "ADTableStainlessSteel": "AS",
+        "Acrylic": "Ac",
+        "Air": "Ai",
+        "Aluminium": "Al",
+
+
+Some such triplets like GMaterialLib, GSurfaceLib belong within "Detector scope" 
+as they depend on names used within a particular detector. 
+
+* not within IDPATH as changing geo selection doesnt change names
+* not within user scope, as makes sense to standardize 
+
+Moved from ~/.opticks into opticksdata/export/<detname>  m_detector_base
+by env-;export-;export-copy-detector-prefs-
+
+::
+
+    delta:GMaterialLib blyth$ l /usr/local/opticks/opticksdata/export/DayaBay/
+    drwxr-xr-x  3 blyth  staff  102 Jul  5 10:58 GPmt
+
+
+
+*/
 
 
 
 bool OpticksResource::loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name)
 {
     std::string prefdir = getPreferenceDir(type);
+
+    LOG(trace) << "OpticksResource::loadPreference(MSS)" 
+              << " prefdir " << prefdir
+              << " name " << name
+              ; 
+
     typedef Map<std::string, std::string> MSS ;  
     MSS* pref = MSS::load(prefdir.c_str(), name ) ; 
     if(pref)
@@ -645,6 +726,12 @@ bool OpticksResource::loadPreference(std::map<std::string, std::string>& mss, co
 bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name)
 {
     std::string prefdir = getPreferenceDir(type);
+
+    LOG(trace) << "OpticksResource::loadPreference(MSU)" 
+              << " prefdir " << prefdir
+              << " name " << name
+              ; 
+
     typedef Map<std::string, unsigned int> MSU ;  
     MSU* pref = MSU::load(prefdir.c_str(), name ) ; 
     if(pref)
@@ -738,8 +825,14 @@ OpticksColors* OpticksResource::getColors()
     if(!m_colors)
     {
         // deferred to avoid output prior to logging setup
-        std::string prefdir = getPreferenceDir("GCache");
-        m_colors = OpticksColors::load(prefdir.c_str(),"GColors.json");   // colorname => hexcode
+        //
+        // The formerly named GCache is exceptionally is not an attribution triplet,
+        // to reflect this manually changed name to OpticksColors
+        //
+        //std::string prefdir = getPreferenceDir("GCache"); 
+        std::string prefdir = getPreferenceDir("OpticksColors"); 
+
+        m_colors = OpticksColors::load(prefdir.c_str(),"OpticksColors.json");   // colorname => hexcode
     }
     return m_colors ;
 }

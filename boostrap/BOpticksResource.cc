@@ -2,6 +2,10 @@
 #include <cstring>
 #include <iostream>
 
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+
 #include "SSys.hh"
 #include "BOpticksResource.hh"
 
@@ -14,7 +18,9 @@
 BOpticksResource::BOpticksResource(const char* envprefix)
    :
      m_envprefix(strdup(envprefix)),
-     m_install_prefix(NULL)
+     m_install_prefix(NULL),
+     m_opticksdata_dir(NULL),
+     m_resource_dir(NULL)
 {
     init();
 }
@@ -26,12 +32,13 @@ BOpticksResource::~BOpticksResource()
 void BOpticksResource::init()
 {
     adoptInstallPrefix() ;
+    setTopDownDirs();
 }
 
 void BOpticksResource::adoptInstallPrefix()
 {
    m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ; 
-   
+
    const char* key = "INSTALL_PREFIX" ; 
 
    int rc = SSys::setenvvar(m_envprefix, key, m_install_prefix, true );  
@@ -53,6 +60,22 @@ void BOpticksResource::adoptInstallPrefix()
    //  
    // Canonically it is :  /usr/local/opticks 
 }
+
+void BOpticksResource::setTopDownDirs()
+{
+    std::string dir ; 
+    fs::path p(m_install_prefix);
+
+    p /= "opticksdata" ;
+    dir.assign(p.string());
+    m_opticksdata_dir = strdup(dir.c_str());
+
+    p /= "resource" ;
+    dir.assign(p.string());
+    m_resource_dir = strdup(dir.c_str());
+}
+
+
 
 void BOpticksResource::Summary(const char* msg)
 {

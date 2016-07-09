@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <string>
 
 class Opticks ; 
@@ -90,6 +91,9 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        OpticksAttrSeq* getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
    public:
+       bool isDetectorType(const char* type_);
+       bool isResourceType(const char* type_);
+
        Types*         getTypes();
        Typ*           getTyp();
     private:
@@ -144,9 +148,12 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_detector ;
        const char* m_detector_name ;
        const char* m_detector_base ;
+       const char* m_resource_base ;
        
    private:
-      std::map<std::string, std::string> m_metadata ;  
+       std::map<std::string, std::string> m_metadata ;  
+       std::vector<std::string> m_detector_types ; 
+       std::vector<std::string> m_resource_types ; 
 };
 
 
