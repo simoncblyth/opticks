@@ -74,7 +74,7 @@ if(WIN32)
    set( LIBRARIES ${LIBRARIES} opengl32.lib )
 endif(WIN32)
 
-message("${name}.LIBRARIES : ${LIBRARIES} " )
+#message("${name}.LIBRARIES : ${LIBRARIES} " )
 
 
 include_directories(${INCLUDE_DIRS})

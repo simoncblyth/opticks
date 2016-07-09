@@ -12,31 +12,20 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
 
-
-    target_link_libraries(${TGT} 
-            ${LIBRARIES} 
-            ThrustRap
-    )
+    target_link_libraries(${TGT} ${LIBRARIES} ThrustRap) 
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
 
-
 file(GLOB TEST_CU_SRCS "*Test.cu")
 
-
-set(XOPT --disable-warnings)
 foreach(TEST_CU_SRC ${TEST_CU_SRCS})
     get_filename_component(TGT ${TEST_CU_SRC} NAME_WE)
-    cuda_add_executable(${TGT} ${TEST_CU_SRC} OPTIONS ${XOPT})
+    cuda_add_executable(${TGT} ${TEST_CU_SRC} OPTIONS )
 
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
-
-    target_link_libraries(${TGT} 
-            ${LIBRARIES} 
-            ThrustRap
-    )
+    target_link_libraries(${TGT} ${LIBRARIES} ThrustRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

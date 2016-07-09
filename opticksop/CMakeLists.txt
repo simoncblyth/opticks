@@ -112,15 +112,7 @@ set(HEADERS
     OpEngine.hh
 )
 
-set(XOPT --disable-warnings)
-
-if(APPLE)
-  set(NOPT -gencode=arch=compute_30,code=sm_30)
-else(APPLE)
-  set(NOPT)
-endif(APPLE)
-
-CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS ${NOPT} ${XOPT})
+CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS)
 target_link_libraries( ${name} ${LIBRARIES} )
 
 install(TARGETS ${name}  DESTINATION lib)

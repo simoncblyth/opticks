@@ -8,29 +8,8 @@ include(EnvCompilationFlags)
 # see cuda-/FindCuda.cmake
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
-
-# Detect compute capability using cudarap- executable 
-# (doesnt handle multi-GPU)
-if(NOT DEFINED SM)
-    find_program(_exe "cudaGetDevicePropertiesTest")
-    if (_exe)
-        exec_program(${_exe} ARGS q OUTPUT_VARIABLE _out RETURN_VALUE _rc)
-        message("${name}.${_exe} : ${_out}")
-        if (_rc EQUAL 0)
-           if (_out MATCHES "^[0-9]+")
-              set(SM ${_out})
-           endif()
-        endif()
-    endif()
-endif()
-
-set(ARCH_FLAG "-arch=sm_${SM}")
-list(APPEND CUDA_NVCC_FLAGS "${ARCH_FLAG};-std=c++11;-O2;-DVERBOSE")
-#list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
-
 message("${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS}")
 
-SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
 
@@ -98,8 +77,8 @@ SET(HEADERS
     iexpand.h 
 )
 
-set(XOPT --disable-warnings)
-CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS -gencode=arch=compute_30,code=sm_30 ${XOPT})
+CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS )
+
 target_link_libraries( ${name} ${LIBRARIES})
 
 install(TARGETS ${name} DESTINATION lib)

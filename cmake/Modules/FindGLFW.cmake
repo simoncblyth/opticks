@@ -1,5 +1,4 @@
 
-#set(name "opticks-cmake-Modules-FindGLFW.cmake")
 
 set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals")
 
@@ -29,7 +28,7 @@ endif(APPLE)
 set(GLFW_INCLUDE_DIRS "${GLFW_PREFIX}/include")
 set(GLFW_DEFINITIONS "")
 
-message("${name}.GLFW_PREFIX    : ${GLFW_PREFIX} ")
-message("${name}.GLFW_LIBRARIES : ${GLFW_LIBRARIES} ")
+#message("${name}.GLFW_PREFIX    : ${GLFW_PREFIX} ")
+#message("${name}.GLFW_LIBRARIES : ${GLFW_LIBRARIES} ")
 
 

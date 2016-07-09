@@ -10,7 +10,8 @@ set(name Opticks)
 project(${name})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules") 
-set(OptiX_INSTALL_DIR "/Developer/OptiX" CACHE PATH "Path to OptiX installed location.")
+set(OptiX_INSTALL_DIR "/Developer/OptiX" CACHE PATH   "Path to OptiX installed location.")
+set(COMPUTE_CAPABILITY "0"               CACHE STRING "GPU Compute Capability eg one of 0,30,50,52 " )
 
 set(SUPERBUILD ON)
 
@@ -19,6 +20,7 @@ include(CPack)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
+
 
 set(DUMP ON)
 if(DUMP)
@@ -42,44 +44,32 @@ add_subdirectory(openmeshrap)
 add_subdirectory(opticksgeo)  
 add_subdirectory(oglrap)       
 
-if(APPLE)
-    set(GPU ON)
-endif(APPLE)
 
-# Try to detect GPU available
-# * https://github.com/visore/Visore/blob/master/code/cmake/DetectGPU.cmake
-# 
-# Just use "nvidia-smi -L" to detect
-if(NOT DEFINED GPU)
-    find_program(_nvidia_smi "nvidia-smi")
-    # message(${_nvidia_smi})
-    if (_nvidia_smi)
-        exec_program(${_nvidia_smi} ARGS -L
-                    OUTPUT_VARIABLE _nvidia_smi_out
-                    RETURN_VALUE _nvidia_smi_ret)
-        message(${_nvidia_smi_out})
-        # message(${_nvidia_smi_ret})
-        if (_nvidia_smi_ret EQUAL 0)
-            # convert string with newlines to list of strings
-            string(REGEX REPLACE "\n" ";" _nvidia_smi_out "${_nvidia_smi_out}")
-            foreach(_line ${_nvidia_smi_out})
-                if (_line MATCHES "^GPU [0-9]+:")
-                    #math(EXPR DETECT_GPU_COUNT_NVIDIA_SMI "${DETECT_GPU_COUNT_NVIDIA_SMI}+1")
-                    # the UUID is not very useful for the user, remove it
-                    string(REGEX REPLACE " \\(UUID:.*\\)" "" _gpu_info "${_line}")
-                    # message(${_gpu_info})
-                    if (NOT _gpu_info STREQUAL "")
-                        #list(APPEND DETECT_GPU_INFO "${_gpu_info}")
-                        set(GPU ON)
-                        message("Find GPU.")
-                    endif()
-                endif()
-            endforeach()
-        endif()
-    endif()
-endif()
+if(NOT (COMPUTE_CAPABILITY LESS 30))
 
-if(GPU)
+   #list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${COMPUTE_CAPABILITY}")
+   list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
+
+   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+   list(APPEND CUDA_NVCC_FLAGS "-O2")
+   list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
+   list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
+   # see env-/nvcc- for background on flags  
+
+   #list(APPEND CUDA_NVCC_FLAGS "-m64")
+   #list(APPEND CUDA_NVCC_FLAGS "--disable-warnings")
+
+   # CUDA headers yield many:
+   # /usr/local/cuda/include/device_functions.hpp:283:3:   warning: extension used [-Wlanguage-extension-token]
+   # TODO: find way to selectively disable warnings
+
+   # https://cmake.org/cmake/help/v3.0/module/FindCUDA.html
+   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+   set(CUDA_VERBOSE_BUILD ON)
+
+   message(STATUS "${name}.COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
+   message(STATUS "${name}.CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
+
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
    if(CUDA_FOUND AND OptiX_FOUND)
@@ -94,7 +84,10 @@ if(GPU)
        message("${name}.Failed to find at least CUDA ${OPTICKS_CUDA_VERSION} and OptiX ${OPTICKS_OPTIX_VERSION} ")
        message("${name}.proceeding with viz only configure.") 
    endif()
-endif(GPU)
+
+else(NOT (COMPUTE_CAPABILITY LESS 30))
+   message(STATUS "${name}.COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY} : at least 30 is required for Opticks, proceeding GPU-less")
+endif()
 
 
 set(REST ON CACHE BOOL "Build Geant4")

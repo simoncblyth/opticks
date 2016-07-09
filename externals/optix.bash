@@ -21,10 +21,37 @@ Fora Posts
 * https://devtalk.nvidia.com/default/topic/817572/optix/graph-nodes-in-optix/
 * https://devtalk.nvidia.com/default/topic/771998/optix/optix-acceleration-structure/
 
+Downloading OptiX
+-------------------
+
+Login as NVIDIA registered developer, then 
+
+* https://developer.nvidia.com/designworks
+* https://developer.nvidia.com/designworks/optix/
+* https://developer.nvidia.com/designworks/optix/downloads/legacy
+
+
 OptiX 4.0 Beta 
 ----------------
 
 * does not support Mac
+* drops Fermi
+* https://devtalk.nvidia.com/default/topic/939598/optix/running-optix-4-0beta-with-cuda-8-0rc-not-supported-/
+
+Just use CUDA 7.5 for now.
+The generated PTX code is rewritten by OptiX internally and sent to the CUDA driver for assembly. 
+That CUDA driver comes with the display driver and will support the Pascal architecture.
+Your original PTX input doesn't need to be compiled for the newest Streaming Multiprocessor version.
+Anything from SM 2.0 to SM 5.2 will do with CUDA 7.5.
+
+OptiX 3.9.1 (June 2016)
+---------------------------
+
+* https://developer.nvidia.com/designworks/optix/download
+
+* Added support for Pascal GPU architectures.
+* Improved performance with large node graphs.
+* Improved compile times.
 
 
 OptiX 3.9 (December 2015)
@@ -40,13 +67,6 @@ need to use the FTP site to download OptiX.
 * https://devtalk.nvidia.com/default/topic/939304/optix/running-optix-on-cpu/
 
   * updating to 3.9 is advised
-
-Login as NVIDIA registered developer, then 
-
-* https://developer.nvidia.com/designworks
-* https://developer.nvidia.com/designworks/optix/
-* https://developer.nvidia.com/designworks/optix/downloads/legacy
-
 Release Notes
 ~~~~~~~~~~~~~~~~
 

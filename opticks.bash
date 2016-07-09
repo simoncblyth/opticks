@@ -170,11 +170,32 @@ For a full build with CUDA and OptiX configure with::
 
     opticks-configure -DCUDA_TOOLKIT_ROOT_DIR=/Developer/NVIDIA/CUDA-7.0 \
                       -DOptiX_INSTALL_DIR=/Developer/OptiX \
+                      -DCOMPUTE_CAPABILITY=52 \
                       -DBOOST_ROOT=$(boost-prefix) 
 
-CMake will detect NVIDIA GPU automatically. However, if you want to build the software without GPU::
-    
-    opticks-configure -DGPU=OFF
+
+The argument `-DCOMPUTE_CAPABILITY=52` specifies to compile for compute capability 5.2 architectures 
+corresponding to Maxwell 2nd generation GPUs. 
+Lookup the appropriate capability for your GPU in the below short table.
+
+====================  =========================  =================== 
+Compute Capability    Architecture               GPU Examples
+====================  =========================  ===================
+2.1                   Fermi                      **NOT SUPPORTED BY OPTICKS**
+3.0                   Kepler                     GeForce GT 750M
+5.0                   Maxwell 1st generation     Quadro M2000M
+5.2                   Maxwell 2nd generation     Quadro M5000
+6.1                   Pascal                     GeForce GTX 1080
+====================  =========================  ===================
+
+For more complete tables see
+
+* https://en.wikipedia.org/wiki/CUDA
+* https://developer.nvidia.com/cuda-gpus.
+
+Opticks requires a compute capability of at least 3.0, if you have no suitable GPU 
+or would like to test without GPU acceleration use `-DCOMPUTE_CAPABILITY=0`.
+
 
 These configuration values are cached in the CMakeCache.txt file
 in the build directory. These values are not overridden by rebuilding 
@@ -364,13 +385,24 @@ opticks-xcd(){  cd $(opticks-xdir); }
 opticks-optix-install-dir(){ 
     local t=$NODE_TAG
     case $t in 
-    H5H2) echo ${MYENVTOP}/OptiX ;;
+       D) echo /Developer/OptiX ;;
      GTL) echo ${MYENVTOP}/OptiX ;;
+    H5H2) echo ${MYENVTOP}/OptiX ;;
        X) echo /usr/local/optix-3.8.0/NVIDIA-OptiX-SDK-3.8.0-linux64 ;;
-       *) echo /Developer/OptiX ;;
+       *) echo /tmp ;;
     esac
 }
 
+opticks-compute-capability(){
+    local t=$NODE_TAG
+    case $t in 
+       D) echo 30 ;;
+     GTL) echo 30 ;;
+    H5H2) echo 50 ;;
+       X) echo 52 ;; 
+       *) echo  0 ;;
+    esac
+}
 
 opticks-externals(){ cat << EOL
 glm
@@ -480,6 +512,7 @@ opticks-cmake(){
    cmake \
         -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
+       -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        -DGeant4_DIR=$(g4-cmake-dir) \
@@ -655,7 +688,7 @@ opticks-unset()
 
 
 
-opticks-projs-(){ cat << EOP
+opticks-all-projs-(){ cat << EOP
 sysrap
 brap
 npy
@@ -665,20 +698,34 @@ assimprap
 openmeshrap
 opticksgeo
 oglrap
+
 cudarap
 thrustrap
 optixrap
 opticksop
 opticksgl
+
 ggeoview
 cfg4
 EOP
 }
 
 
+opticks-cuda-projs-(){ cat << EOP
+cudarap
+thrustrap
+optixrap
+opticksop
+opticksgl
+EOP
+}
+
+
 opticks---(){ 
+   local arg=${1:-all}
    local proj
-   opticks-projs- | while read proj ; do
+   opticks-${arg}-projs- | while read proj ; do
+      [ -z "$proj" ] && continue  
       $proj-
       $proj--
    done
@@ -686,13 +733,25 @@ opticks---(){
 
 opticks----(){ 
    ## proj--- touches the API header and then does $proj-- : this forcing recompilation of everything 
+   local arg=${1:-all}
    local proj
-   opticks-projs- | while read proj ; do
+   opticks-${arg}-projs- | while read proj ; do
+      [ -z "$proj" ] && continue  
       $proj-
       echo proj $proj
       $proj---
    done
 } 
+
+opticks-list()
+{
+   local arg=${1:-all}
+   local proj
+   opticks-${arg}-projs- | while read proj ; do
+      [ -z "$proj" ] && continue  
+      echo proj $proj
+   done
+}
 
 
 

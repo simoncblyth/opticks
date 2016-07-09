@@ -26,10 +26,9 @@ set(TEST_SOURCES_CU
    cudaGetDevicePropertiesTest.cu
 )
 
-set(XOPT --disable-warnings)
 foreach(CU ${TEST_SOURCES_CU})
     get_filename_component(TGT ${CU} NAME_WE)
-    cuda_add_executable(${TGT} ${CU} OPTIONS ${XOPT})
+    cuda_add_executable(${TGT} ${CU} OPTIONS)
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
 
