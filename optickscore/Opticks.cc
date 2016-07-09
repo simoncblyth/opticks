@@ -141,14 +141,27 @@ bool Opticks::isRemoteSession()
 {
     return SSys::IsRemoteSession();
 }
-bool Opticks::isCompute()
+bool Opticks::isComputeRequested()
 {
     return (m_mode & COMPUTE_MODE) != 0  ; 
 }
-bool Opticks::isInterop()
+bool Opticks::isInteropRequested()
 {
     return (m_mode & INTEROP_MODE) != 0  ; 
 }
+
+bool Opticks::isCompute()
+{
+    return isComputeRequested() || isRemoteSession() ;
+}
+bool Opticks::isInterop()
+{
+    return !isCompute();
+}
+
+
+
+
 bool Opticks::isCfG4()
 {
     return (m_mode & CFG4_MODE) != 0  ; 

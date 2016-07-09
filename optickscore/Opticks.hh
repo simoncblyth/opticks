@@ -155,8 +155,14 @@ class OKCORE_API Opticks {
        bool hasArg(const char* arg);
        bool isExit();
        bool isRemoteSession();
+   public:
+       // attempt to follow request,  but constrain to compute when remote session
        bool isCompute();
        bool isInterop();
+   public:
+       // the mode setting
+       bool isComputeRequested();
+       bool isInteropRequested();
        bool isCfG4();
    public:
        // methods required by BCfg listener classes
