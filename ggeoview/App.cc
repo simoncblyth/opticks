@@ -192,9 +192,14 @@ void App::init(int argc, char** argv)
     TIMER("init");
 }
 
+bool App::isCompute()
+{
+    return m_opticks->isCompute() || m_opticks->isRemoteSession() ;
+}
+
 void App::initViz()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     // perhaps a VizManager to contain this lot 
 
@@ -300,7 +305,7 @@ bool App::isExit()
 
 void App::configureViz()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     m_state = m_opticks->getState();
     m_state->setVerbose(false);
@@ -346,7 +351,7 @@ void App::configureViz()
 
 void App::prepareViz()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     m_size = m_opticks->getSize();
     glm::uvec4 position = m_opticks->getPosition() ;
@@ -434,7 +439,7 @@ void App::loadGeometry()
 
 void App::uploadGeometryViz()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
 
     OpticksColors* colors = m_opticks->getColors();
@@ -534,7 +539,7 @@ void App::loadGenstep()
 
 void App::targetViz()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     glm::vec4 mmce = m_geometry->getCenterExtent();
     glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
@@ -580,7 +585,7 @@ void App::loadEvtFromFile()
 
 void App::uploadEvtViz()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     if(hasOpt("nooptix|noevent")) 
     {
@@ -795,7 +800,7 @@ void App::indexEvtOld()
 
 void App::prepareGUI()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     m_bookmarks->create(0);
 
@@ -872,7 +877,7 @@ void App::renderGUI()
 
 void App::render()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     m_frame->viewport();
     m_frame->clear();
@@ -890,7 +895,7 @@ void App::render()
 
 void App::renderLoop()
 {
-    if(m_opticks->isCompute()) return ; 
+    if(isCompute()) return ; 
 
     if(hasOpt("noviz"))
     {
@@ -1007,7 +1012,7 @@ void App::propagate()
 void App::saveEvt()
 {
     if(!m_ope) return ; 
-    if(!m_opticks->isCompute()) 
+    if(!isCompute()) 
     {
         Rdr::download(m_evt);
     }

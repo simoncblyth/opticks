@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from collections import OrderedDict 
-from env.python.utils import *
+
+from opticks.ana.utils import count_unique
 from opticks.ana.types import SeqHis, seqhis_int
 from opticks.ana.nload import A, I, II
 from opticks.ana.seq import SeqAna

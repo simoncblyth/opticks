@@ -6,6 +6,7 @@
 #include <cassert>
 
 
+#include "BOpticksEvent.hh"
 #include "BBufSpec.hh"
 
 // npy-
@@ -204,7 +205,7 @@ void test_ctor_segfaults()
 void test_path()
 {
     LOG(info) << "test_path" ; 
-    std::string path = NPY<float>::path("cerenkov", "1", "dayabay");
+    std::string path = BOpticksEvent::path("cerenkov", "1", "dayabay");
     LOG(info) << "test_path path:" << path ;
     LOG(info) << "test_path DONE" ; 
 }

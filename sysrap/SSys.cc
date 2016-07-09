@@ -8,6 +8,23 @@
 #include "PLOG.hh"
 
 
+bool SSys::IsRemoteSession()
+{
+    char* ssh_client = getenv("SSH_CLIENT");
+    char* ssh_tty = getenv("SSH_TTY");
+
+    bool is_remote = ssh_client != NULL || ssh_tty != NULL ; 
+
+    LOG(trace) << "SSys::IsRemoteSession"
+               << " ssh_client " << ssh_client 
+               << " ssh_tty " << ssh_tty
+               << " is_remote " << is_remote
+               ; 
+
+    return is_remote ; 
+}
+
+
 void SSys::WaitForInput(const char* msg)
 {
     LOG(info) << "SSys::WaitForInput " << msg  ; 

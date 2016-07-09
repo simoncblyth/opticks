@@ -137,6 +137,10 @@ void Opticks::setMode(unsigned int mode)
 {
     m_mode = mode ; 
 }
+bool Opticks::isRemoteSession()
+{
+    return SSys::IsRemoteSession();
+}
 bool Opticks::isCompute()
 {
     return (m_mode & COMPUTE_MODE) != 0  ; 

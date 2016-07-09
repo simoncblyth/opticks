@@ -2,8 +2,18 @@
 
 runner-usage(){ cat << \EOU
 
-CTest Runner
-=============
+CTest Runner [NOT USED]
+==========================
+
+**Unfortunately find inconsistency between CMake versions regarding TARGET_FILE 
+so have stopped using this test runner approach.**
+
+Instead remote session detection is done in SSys::IsRemoteSession
+and ggeoview-/App::isCompute flips to ON even without "--compute" option when
+a remote session is detected.
+
+
+
 
 Currently only the GGeoView tests are run using this
 test runner as they need the "--compute" option to be 
@@ -18,6 +28,10 @@ of this runner::
 An example invokation::
 
    /home/simonblyth/opticks/bin/OpticksCTestRunner.sh "--config" "Debug" "--exe" "/home/simonblyth/local/opticks/build/ggeoview/tests/OTracerTest"
+
+
+
+
 
 EOU
 }

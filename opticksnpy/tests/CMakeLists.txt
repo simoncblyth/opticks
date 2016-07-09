@@ -5,10 +5,11 @@ project(${name})
 
 
 #file(GLOB TEST_SOURCES "*Test.cc")
+#LogTest.cc
+#LookupTest.cc
 
-set(ALL_TEST_SOURCES
+set(TEST_SOURCES
 
-LogTest.cc
 EnvTest.cc
 NPYBaseTest.cc
 NSliceTest.cc
@@ -22,7 +23,6 @@ MultiViewNPYTest.cc
 NStateTest.cc
 ParametersTest.cc
 ReportTest.cc
-LookupTest.cc
 IndexTest.cc
 NPropNamesTest.cc
 CountsTest.cc
@@ -56,9 +56,10 @@ PhotonsNPYTest.cc
 
 NCIETest.cc
 NPYTest.cc
+
 )
 
-set(TEST_SOURCES
+set(_TEST_SOURCES
 
 
 )
@@ -86,11 +87,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
     endif(WIN32)
 
     add_dependencies(check ${TGT})
-
-    target_link_libraries(${TGT} 
-               ${LIBRARIES} 
-               NPY
-    )
+    target_link_libraries(${TGT} ${LIBRARIES} NPY) 
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

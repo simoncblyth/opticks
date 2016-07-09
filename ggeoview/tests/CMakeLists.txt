@@ -18,8 +18,11 @@ foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
 
-    #add_test(${name}.${TGT} ${TGT})
-    add_test(NAME ${name}.${TGT} COMMAND OpticksCTestRunner.sh --config $<CONFIGURATION> --exe $<TARGET_FILE:${TGT}> --remote-args --compute)
+    add_test(${name}.${TGT} ${TGT})
+  
+    #add_test(NAME ${name}.${TGT} COMMAND OpticksCTestRunner.sh --config $<CONFIGURATION> --exe $<TARGET_FILE:${TGT}> --remote-args --compute)
+    # cmake version 3.4.1 doesnt set the appropriate exe path but cmake version 3.5.2 does  
+    # (avoid the complication by moving the smarts into the executable)
 
     add_dependencies(check ${TGT})
 

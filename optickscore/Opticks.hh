@@ -154,6 +154,7 @@ class OKCORE_API Opticks {
    public:
        bool hasArg(const char* arg);
        bool isExit();
+       bool isRemoteSession();
        bool isCompute();
        bool isInterop();
        bool isCfG4();

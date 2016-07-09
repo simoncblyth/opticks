@@ -12,20 +12,17 @@ template <typename T> class NPY ;
 
 *OpticksColors* associates color names to RGB hexcodes
 
-Usage from GLoader::
+::
 
-    m_colors = OpticksColors::load("$HOME/.opticks","GColors.json");
-
-simon:.opticks blyth$ cat GColors.json | tr "," "\n"
-{"indigo": "#4B0082"
- "gold": "#FFD700"
- "hotpink": "#FF69B4"
- "firebrick": "#B22222"
- "indianred": "#CD5C5C"
- "yellow": "#FFFF00"
- "mistyrose": "#FFE4E1"
- "darkolivegreen": "#556B2F"
- "olive": "#808000"
+    delta:~ blyth$ cat ~/.opticks/GCache/GColors.json | tr "," "\n"
+    {"indigo": "#4B0082"
+     "gold": "#FFD700"
+     "hotpink": "#FF69B4"
+     "firebrick": "#B22222"
+     "indianred": "#CD5C5C"
+     "yellow": "#FFFF00"
+     "mistyrose": "#FFE4E1"
+     "darkolivegreen": "#556B2F"
 
 
 The codes are obtained from matplotlib::
@@ -33,10 +30,8 @@ The codes are obtained from matplotlib::
     import json, matplotlib.colors  
     json.dump(matplotlib.colors.cnames, open("/tmp/colors.json", "w"))
 
-
 The composite color buffer is avaiable as a texture sampler on the GPU
 this is put togther in GLoader::load
-
 
 */
 

@@ -75,6 +75,7 @@ class GGV_API App {
        void prepareViz();   // creates OpenGL context window and OpenGL renderers loading shaders
        void loadGeometry();
        bool isExit();
+       bool isCompute();
   private: 
        void configureViz(); 
   public:

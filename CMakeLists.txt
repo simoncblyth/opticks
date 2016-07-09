@@ -66,7 +66,7 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
 
    # https://cmake.org/cmake/help/v3.0/module/FindCUDA.html
    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-   set(CUDA_VERBOSE_BUILD ON)
+   set(CUDA_VERBOSE_BUILD OFF)
 
    message(STATUS "${name}.COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
    message(STATUS "${name}.CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
