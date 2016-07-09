@@ -21,6 +21,24 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+
+
+Link error
+------------
+
+::
+
+    [ 85%] Linking CXX shared library libOptiXRap.so
+    /usr/bin/ld: CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBuf_.cu.o: relocation R_X86_64_32S against `.bss' can not be used when making a shared object; recompile with -fPIC
+    CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBuf_.cu.o: could not read symbols: Bad value
+    collect2: error: ld returned 1 exit status
+    gmake[2]: *** [optixrap/libOptiXRap.so] Error 1
+    gmake[1]: *** [optixrap/CMakeFiles/OptiXRap.dir/all] Error 2
+    gmake: *** [all] Error 2
+    [simonblyth@optix opticks]$ 
+
+
+
 Remaining Warnings from nvcc
 -----------------------------
 
