@@ -43,6 +43,10 @@ int main(int argc, char** argv)
     CGDMLDetector* m_detector  = new CGDMLDetector(m_opticks, query) ; 
 
 
+    m_opticks->setIdPathOverride("$TMP");
+    m_detector->saveBuffers();
+    m_opticks->setIdPathOverride(NULL);
+
     bool valid = m_detector->isValid();
     if(!valid)
     {

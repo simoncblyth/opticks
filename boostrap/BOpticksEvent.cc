@@ -31,10 +31,7 @@ void BOpticksEvent::Summary(const char* msg)
 
 }
 
-
-
-const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE = "$LOCAL_BASE/env/opticks/$1/$2" ; 
-
+const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE = "$OPTICKS_EVENT_BASE/evt/$1/$2" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
 
 std::string BOpticksEvent::path(const char* pfx, const char* gen, const char* tag, const char* det)
 {

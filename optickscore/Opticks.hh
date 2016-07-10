@@ -88,6 +88,8 @@ class OKCORE_API Opticks {
        const char* getLastArg();
        int         getLastArgInt();
    public:
+       void setIdPathOverride(const char* idpath_tmp=NULL); // used for saves into non-standard locations whilst testing
+   public:
        void setGeocache(bool geocache=true);
        bool isGeocache();
        void setInstanced(bool instanced=true);

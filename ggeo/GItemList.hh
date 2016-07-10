@@ -44,6 +44,7 @@ class GGEO_API GItemList : public NSequence {
        void sort();
 
    private:
+       void save_(const char* txtpath);
        void read_(const char* txtpath);
        void load_(const char* idpath);
    private:

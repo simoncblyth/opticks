@@ -97,11 +97,17 @@ std::string expandvar(const char* s)
 
            std::string evalue = evalue_ ? evalue_ : key ; 
 
-           if(evalue.compare("TMP")==0)
+           if(evalue.compare("TMP")==0) //  TMP envvar not defined
            {
                evalue = usertmpdir();
                LOG(trace) << "expandvar replacing TMP with " << evalue ; 
            }
+           else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
+           {
+               evalue = usertmpdir();
+               LOG(trace) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
+           }
+
 
            p /= evalue ;
 

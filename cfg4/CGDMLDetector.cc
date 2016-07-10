@@ -82,9 +82,15 @@ void CGDMLDetector::init()
     parser.Read(gpath, validate);
 
     setTop(parser.GetWorldVolume());   // invokes *CDetector::traverse*
-    saveBuffers("CGDMLDetector", 0);    
 
     addMPT();
+}
+
+
+void CGDMLDetector::saveBuffers()
+{
+    // split off to allow setting idpath override whilst testing
+    CDetector::saveBuffers("CGDMLDetector", 0);    
 }
 
 

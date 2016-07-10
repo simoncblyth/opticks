@@ -669,6 +669,12 @@ const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAE
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
 
 
+void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into non-standard locations whilst testing
+{
+    m_resource->setIdPathOverride(idpath_tmp);
+}
+
+
 void Opticks::cleanup()
 {
     LOG(info) << "Opticks::cleanup" ;

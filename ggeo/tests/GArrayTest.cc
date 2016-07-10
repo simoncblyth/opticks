@@ -12,6 +12,8 @@ int main(int argc, char** argv)
     GGEO_LOG_ ;
 
 
+    LOG(info) << argv[0] ;
+
     float v[3] ;
     v[0] = 1.f ; 
     v[1] = 1.f ; 
@@ -20,7 +22,11 @@ int main(int argc, char** argv)
     GArray<float>* a = new GArray<float>(3, v );
     assert( a->getLength() == 3 );
 
-    a->save<float>("$TMP/GArrayTest.npy");
+
+    const char* path = "$TMP/GArrayTest.npy" ;
+    LOG(info) << "saving to " << path ; 
+
+    a->save<float>(path);
 
 
 

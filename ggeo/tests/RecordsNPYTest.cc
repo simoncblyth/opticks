@@ -16,6 +16,8 @@
 #include "GSurfaceLib.hh"
 
 #include "GGEO_BODY.hh"
+
+#include "OKCORE_LOG.hh"
 #include "PLOG.hh"
 
 
@@ -32,6 +34,9 @@ int main(int argc, char** argv)
 
     PLOG_(argc, argv);
 
+    OKCORE_LOG__ ; 
+
+
 
     LOG(info) << argv[0] ; 
 
@@ -42,6 +47,9 @@ int main(int argc, char** argv)
     LOG(info) << " after ok " ; 
 
     Types* types = ok->getTypes();
+
+    LOG(info) << " after types  " ; 
+
 
     GBndLib* blib = GBndLib::load(ok, true); 
     GMaterialLib* mlib = blib->getMaterialLib();

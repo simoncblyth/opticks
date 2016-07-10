@@ -58,6 +58,8 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getIdBase();  // parent directory of idfold, typically the "export" folder
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
     public:
+       void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
+    public:
        std::string getRelativePath(const char* path); 
        std::string getRelativePath(const char* name, unsigned int ridx);
        std::string getObjectPath(const char* name, unsigned int ridx);
@@ -85,10 +87,13 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getQueryString();
        const char* getCtrl();
     public:
+       // split these off as cannot assume users can write into geocache
+       void saveFlags();
+       void saveTypes();
+    public:
        OpticksQuery* getQuery();
        OpticksColors* getColors();
        OpticksFlags*  getFlags();
-       void saveFlags();
        OpticksAttrSeq* getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
    public:
@@ -126,6 +131,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_meshfix ;
        const char* m_meshfixcfg ;
        const char* m_idpath ;
+       const char* m_idpath_tmp ;
        const char* m_idfold ;
        const char* m_idname ;
        const char* m_idbase ;

@@ -48,11 +48,21 @@ int main(int argc, char** argv)
     blib->setSurfaceLib(slib);
     blib->dump();
 
+
+    // writing to geocache in tests not allowed
+    // as needs to work from shared install
+
+    ok.setIdPathOverride("$TMP");
+
     blib->save();             // only saves the guint4 bnd index
     blib->saveToCache();      // save float buffer too for comparison with wavelength.npy from GBoundaryLib with GBndLibTest.npy 
     LOG(info) << " after blib saveToCache " ; 
     blib->saveOpticalBuffer();
     LOG(info) << " after blib saveOpticalBuffer " ; 
+
+    ok.setIdPathOverride(NULL);
+    
+
 
 
 /*

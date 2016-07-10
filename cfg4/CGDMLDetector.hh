@@ -23,6 +23,7 @@ class CFG4_API CGDMLDetector : public CDetector
 {
   public:
     CGDMLDetector(Opticks* cache, OpticksQuery* query);
+    void saveBuffers();
     virtual ~CGDMLDetector();
   private:
     void init();

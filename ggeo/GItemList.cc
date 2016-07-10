@@ -105,6 +105,25 @@ void GItemList::read_(const char* txtpath)
 }
 
 
+
+
+void GItemList::save(const char* idpath)
+{
+    std::string txtname = m_itemtype + ".txt" ; 
+    std::string txtpath = BFile::preparePath(idpath, m_reldir.c_str(), txtname.c_str() ); 
+    LOG(info) << "GItemList::save writing to " << txtpath ;       
+    save_(txtpath.c_str());
+}
+
+void GItemList::save_(const char* txtpath)
+{
+    std::ofstream ofs(txtpath);
+    std::copy(m_list.begin(),m_list.end(),std::ostream_iterator<std::string>( ofs,"\n"));
+    ofs.close();
+}
+
+
+/*
 void GItemList::save(const char* idpath)
 {
    fs::path cachedir(idpath);
@@ -123,14 +142,13 @@ void GItemList::save(const char* idpath)
        fs::path txtpath(typedir);
        txtpath /= m_itemtype + ".txt" ; 
 
-       LOG(info) << "GItemList::save writing to " << txtpath.string() ;       
+       std::string path = txtpath.string();
+       LOG(info) << "GItemList::save writing to " << path ;       
+       save_(path.c_str());
 
-       std::ofstream ofs(txtpath.string().c_str());
-       std::copy(m_list.begin(),m_list.end(),std::ostream_iterator<std::string>( ofs,"\n"));
-       ofs.close();
    }
 }
-
+*/
 
 
 

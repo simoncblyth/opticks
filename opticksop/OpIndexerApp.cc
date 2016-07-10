@@ -67,6 +67,12 @@ void OpIndexerApp::makeIndex()
         LOG(info) << "OpIndexerApp::makeIndex evt is indexed already, SKIPPING " ;
         return  ;
     }
+    if(m_evt->isNoLoad())
+    {
+        LOG(info) << "OpIndexerApp::makeIndex evt failed to load, SKIPPING " ;
+        return  ;
+    }
+
 
     m_evt->Summary("OpIndexerApp::makeIndex");
 

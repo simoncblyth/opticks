@@ -64,6 +64,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_meshfix(NULL),
        m_meshfixcfg(NULL),
        m_idpath(NULL),
+       m_idpath_tmp(NULL),
        m_idfold(NULL),
        m_idname(NULL),
        m_idbase(NULL),
@@ -105,9 +106,15 @@ bool OpticksResource::isValid()
 {
    return m_valid ; 
 }
+
+void OpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for test saves into non-standard locations
+{
+   m_idpath_tmp = idpath_tmp ? strdup(idpath_tmp) : NULL ;  
+} 
+
 const char* OpticksResource::getIdPath()
 {
-    return m_idpath ;
+    return m_idpath_tmp ? m_idpath_tmp : m_idpath  ;
 }
 const char* OpticksResource::getIdFold()
 {
@@ -217,9 +224,11 @@ bool OpticksResource::idNameContains(const char* s)
 
 std::string OpticksResource::getRelativePath(const char* path)
 {
-    if(strncmp(m_idpath, path, strlen(m_idpath)) == 0)
+    const char* idpath = getIdPath();
+
+    if(strncmp(idpath, path, strlen(idpath)) == 0)
     {
-        return path + strlen(m_idpath) + 1 ; 
+        return path + strlen(idpath) + 1 ; 
     }
     else
     {
@@ -546,6 +555,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
     std::cerr << "digest   : " <<  (m_digest?m_digest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
+    std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 
     std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
     std::cerr << "idname   : " <<  (m_idname?m_idname:"NULL") << std::endl; 
     std::cerr << "idbase   : " <<  (m_idbase?m_idbase:"NULL") << std::endl; 
@@ -598,8 +608,9 @@ std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
 
 std::string OpticksResource::getObjectPath(const char* name, unsigned int index)
 {
-    assert(m_idpath && "OpticksResource::getObjectPath idpath not set");
-    fs::path dir(m_idpath);
+    const char* idpath = getIdPath();
+    assert(idpath && "OpticksResource::getObjectPath idpath not set");
+    fs::path dir(idpath);
     dir /= name ;
     dir /= boost::lexical_cast<std::string>(index) ;
     return dir.string() ;
@@ -626,10 +637,14 @@ std::string OpticksResource::getDetectorPath(const char* name, unsigned int inde
 
 
 
+
+
+
 std::string OpticksResource::getPropertyLibDir(const char* name)
 {
-    assert(m_idpath && "OpticksResource::getPropertyLibDir idpath not set");
-    fs::path cachedir(m_idpath);
+    const char* idpath = getIdPath();
+    assert(idpath && "OpticksResource::getPropertyLibDir idpath not set");
+    fs::path cachedir(idpath);
     fs::path pld(cachedir/name );
     return pld.string() ;
 }
@@ -904,9 +919,17 @@ Types* OpticksResource::getTypes()
     {   
         // deferred because idpath not known at init ?
         m_types = new Types ;   
-        m_types->saveFlags(getIdPath(), ".ini");
     }   
     return m_types ;
 }
+
+
+void OpticksResource::saveTypes()
+{
+    Types* types = getTypes(); 
+    types->saveFlags(getIdPath(), ".ini");
+}
+
+
 
 

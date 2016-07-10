@@ -174,10 +174,12 @@ float GBuffer::fractionDifferent(GBuffer* other)
 
 
 template<typename T>
-void GBuffer::save(const char* path)
+void GBuffer::save(const char* path_)
 {
     //printf("GBuffer::save path %s \n", path );
     //Summary("GBuffer::save");
+
+    std::string path = BFile::FormPath(path_);
 
     void* data = getPointer();
     unsigned int numBytes    = getNumBytes();
@@ -197,7 +199,7 @@ void GBuffer::save(const char* path)
     }
     assert(numElements*numItems*sizeof(T) == numBytes ); 
 
-    aoba::SaveArrayAsNumpy<T>( path, numItems, numElements, (T*)data );  
+    aoba::SaveArrayAsNumpy<T>( path.c_str() , numItems, numElements, (T*)data );  
 }
 
 
