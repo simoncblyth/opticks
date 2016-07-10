@@ -26,6 +26,34 @@ oks-txt
 issues
 ---------
 
+Huiling
+~~~~~~~~~~
+
+::
+
+    And GGeoViewTest shows the info as: 
+
+    terminate called after throwing an instance of 'optix::Exception' 
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)”
+    caught exception: Encountered a CUDA error: result returned (700): Unknown, [6619204]) 
+    Aborted (core dumped) 
+
+
+* :google:`Encountered a CUDA error: result returned (700): Unknown, [6619204]`
+
+  * https://devtalk.nvidia.com/default/topic/770325/optix/curand_init-within-optix/        Suggestion of insufficent stack 
+  * https://devtalk.nvidia.com/default/topic/837781/optix/exceptions-cause-cuda-7-error/   Suggestion of compiler bug in older driver version
+
+
+::
+
+    [simonblyth@optix env]$ nvidia-smi
+    Sun Jul 10 18:54:53 2016       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 367.27                 Driver Version: 367.27                    |
+
+
+
 
 
 Y : shared install running : user blyth with only PATH envvar setup using installation from simonblyth 
