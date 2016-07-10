@@ -26,6 +26,39 @@ oks-txt
 issues
 ---------
 
+
+D : shared install Opticks usage 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    osx_simon () { sudo su - simon ; }
+
+
+GLFW missing something::
+
+    delta:~ simon$ GGeoViewTest    
+    ...
+    2016-07-10 12:15:26.229 INFO  [15358243] [DynamicDefine::write@21] DynamicDefine::write dir /usr/local/opticks/gl name dynamic.h
+    No monitors found
+
+
+CUDA/OptiX missing something::
+
+    delta:~ simon$ GGeoViewTest --compute 
+    2016-07-10 12:24:39.049 INFO  [15365669] [OEngineImp::prepareOptiX@90] OEngineImp::prepareOptiX START
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: A supported NVIDIA GPU could not be found
+    Abort trap: 6
+    delta:~ simon$ 
+
+    delta:~ simon$ cudaGetDevicePropertiesTest 
+    CUDA Device Query...target -1 
+    There are 0 CUDA devices.
+    0
+
+
+
+
 D : cold GPU flakey fail
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

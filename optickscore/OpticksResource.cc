@@ -841,11 +841,21 @@ OpticksFlags* OpticksResource::getFlags()
 {
     if(!m_flags)
     {
-        //m_flags = new OpticksFlags(m_opticks); 
         m_flags = new OpticksFlags(); 
-        m_flags->save(getIdPath());
     }
     return m_flags ;
+}
+
+void OpticksResource::saveFlags()
+{
+    OpticksFlags* flags = getFlags();
+    const char* idpath = getIdPath();
+
+    LOG(info) << "OpticksResource::saveFlags"
+              << " idpath " << idpath
+              ;
+
+    flags->save(idpath);
 }
 
 
