@@ -4,6 +4,7 @@
 #include <optixu/optixpp_namespace.h>
 #include "OXRAP_POP.hh"
 
+#include "BOpticksResource.hh"
 #include "NPY.hpp"
 
 #include <iostream>
@@ -14,13 +15,19 @@
 #include <cstring>
 
 
-std::string ptxpath_( const char* target, const char* name)
+std::string ptxname_( const char* target, const char* name)
 {
    std::stringstream ss ; 
-   ss << getenv("HOME") << "/local/opticks/build/optixrap/" << target << "_generated_" << name << ".ptx" ; 
+   ss << target << "_generated_" << name << ".ptx" ; 
    return ss.str();
 }
 
+std::string ptxpath_( const char* proj, const char* target, const char* name)
+{
+   std::string ptxname = ptxname_(target, name) ; 
+   std::string ptxpath = BOpticksResource::BuildProduct(proj, ptxname.c_str());
+   return ptxpath ; 
+}
 
 int main( int , char** argv ) {
 
@@ -37,7 +44,7 @@ int main( int , char** argv ) {
     optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
     context["output_buffer"]->set(buffer);
 
-    std::string ptxpath = ptxpath_("OptiXRap", "minimalTest.cu" ) ;
+    std::string ptxpath = ptxpath_("optixrap", "OptiXRap", "minimalTest.cu" ) ;
     std::cerr << " ptxpath " << ptxpath << std::endl ; 
 
     optix::Program raygenProg    = context->createProgramFromPTXFile(ptxpath.c_str(), "minimal");
@@ -58,7 +65,10 @@ int main( int , char** argv ) {
     npy->read( ptr );
     buffer->unmap(); 
 
-    npy->save("$TMP/OOMinimalTest.npy");
+    const char* path = "$TMP/OOMinimalTest.npy";
+    std::cerr << "save result npy to " << path << std::endl ; 
+ 
+    npy->save(path);
 
 
   } 

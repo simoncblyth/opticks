@@ -482,6 +482,9 @@ void OpticksResource::readEnvironment()
         //    Mainly by NPY tests as a resource access workaround as NPY 
         //    is lower level than optickscore- so lacks its resource access machinery.
         //
+        // To avoid this kludge, need to 
+        // to move much of this method down into BOpticksResource 
+        //
 
     }
     else

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
@@ -8,6 +10,8 @@ class BRAP_API  BOpticksResource {
         BOpticksResource(const char* envprefix="OPTICKS_");
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
+        static std::string BuildDir(const char* proj);
+        static std::string BuildProduct(const char* proj, const char* name);
    private:
         void init();
         void adoptInstallPrefix();

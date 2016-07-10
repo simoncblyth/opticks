@@ -27,6 +27,31 @@ issues
 ---------
 
 
+
+Y : shared install running : user blyth with only PATH envvar setup using installation from simonblyth 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    The following tests FAILED:
+    CMake Error: Cannot open file for write: /home/simonblyth/local/opticks/build/Testing/Temporary/LastTestsFailed.log.tmp
+    CMake Error: : System Error: Permission denied
+    Problem opening file: /home/simonblyth/local/opticks/build/Testing/Temporary/LastTestsFailed.log
+    Cannot create log file: LastTestsFailed.log
+         83 - GGeoTest.GBndLibTest (OTHER_FAULT)         ## GItemList writes 
+         88 - GGeoTest.GArrayTest (OTHER_FAULT)          ## was using GBuffer which directly uses aoba without FormPath
+        114 - GGeoTest.RecordsNPYTest (OTHER_FAULT)      ## was writing types into geocache 
+
+        142 - OpticksOpTest.OpIndexerTest (OTHER_FAULT)  ## was not checking for loaded event before indexing
+                                                         ## also needs LOCAL_BASE to find the event: 
+                                                         ## LOCAL_BASE/env/opticks/dayabay/idomtorch
+
+        150 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)   ## saveBuffers was writing into geocache, split it off
+        151 - cfg4Test.CG4Test (OTHER_FAULT)             ## OpticksEvent::save trying to write into LOCAL_BASE 
+
+
+
+
 D : shared install Opticks usage 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -56,6 +81,8 @@ CUDA/OptiX missing something::
     There are 0 CUDA devices.
     0
 
+
+   * https://devtalk.nvidia.com/default/topic/417039/no-cuda-device-after-rebooting-/
 
 
 

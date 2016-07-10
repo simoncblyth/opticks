@@ -8,15 +8,22 @@
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 
-
+#include "PLOG.hh"
 // see ggv-/tests/BoundariesNPYTest.cc
 
-int main(int, char** argv)
+int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+
+
+    // npy is lower level than okc- so cannot 
+    // bring in Opticks here
+    // nevertheless we here need path to geocache 
+
     const char* idpath = getenv("IDPATH");
     if(idpath == NULL)
     {
-       std::cout << argv[0] << " missing envvat IDPATH " << std::endl ; 
+       std::cout << argv[0] << " missing envvar IDPATH " << std::endl ; 
        return 0 ;    
     }
 
@@ -25,15 +32,16 @@ int main(int, char** argv)
 
     NPY<float>* dpho = NPY<float>::load("oxcerenkov", tag, det);
 
-    if(dpho == NULL)
-    {
-       std::cout << argv[0] << " failed to load evt  " << std::endl ; 
-    } 
-
     Types types ; 
     types.dumpFlags();
     types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
+
+    if(dpho == NULL)
+    {
+        LOG(warning) << "failed to load evt " ;
+        return 0 ; 
+    } 
 
     BoundariesNPY b(dpho);
     b.setTypes(&types);

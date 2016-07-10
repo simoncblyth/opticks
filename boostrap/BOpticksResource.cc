@@ -7,6 +7,8 @@ namespace fs = boost::filesystem;
 
 
 #include "SSys.hh"
+
+#include "BFile.hh"
 #include "BOpticksResource.hh"
 
 // CMake generated defines from binary_dir/inc
@@ -75,6 +77,16 @@ void BOpticksResource::setTopDownDirs()
     m_resource_dir = strdup(dir.c_str());
 }
 
+
+std::string BOpticksResource::BuildDir(const char* proj)
+{
+    return BFile::FormPath(OPTICKS_INSTALL_PREFIX, "build", proj );
+}
+std::string BOpticksResource::BuildProduct(const char* proj, const char* name)
+{
+    std::string builddir = BOpticksResource::BuildDir(proj);
+    return BFile::FormPath(builddir.c_str(), name);
+}
 
 
 void BOpticksResource::Summary(const char* msg)
