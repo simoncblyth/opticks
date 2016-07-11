@@ -46,6 +46,13 @@ optix::Context OContext::getContext()
 {
      return m_context ; 
 }
+
+optix::Context& OContext::getContextRef()
+{
+     return m_context ; 
+}
+
+
 optix::Group OContext::getTop()
 {
      return m_top ; 

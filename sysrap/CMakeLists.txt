@@ -35,6 +35,7 @@ set(SOURCES
     SSys.cc
     SDigest.cc
     SArrayDigest.cc
+    SLauncher.cc
     md5.cc
 ) 
 
@@ -48,6 +49,7 @@ set(HEADERS
     SSys.hh
     SDigest.hh
     SArrayDigest.hh
+    SLauncher.hh
 )
 
 add_library( ${name}  SHARED ${SOURCES})

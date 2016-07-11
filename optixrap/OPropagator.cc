@@ -15,6 +15,7 @@
 // optix-
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>
+using namespace optix ; 
 
 // brap-
 #include "timeutil.hh"
@@ -23,7 +24,6 @@
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 
-using namespace optix ; 
 
 // cudawrap-  NB needs to be after namespace optix
 #include "cuRANDWrapper.hh"

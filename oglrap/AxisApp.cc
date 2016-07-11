@@ -1,4 +1,5 @@
-#include "AxisApp.hh"
+// sysrap-
+#include "SLauncher.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -14,6 +15,7 @@
 #include "Frame.hh"
 #include "Rdr.hh"
 #include "Scene.hh"
+#include "AxisApp.hh"
 
 #include "PLOG.hh"
 
@@ -27,8 +29,9 @@ AxisApp::AxisApp(int argc, char** argv)
          m_interactor(NULL),
          m_window(NULL),
          m_axis_renderer(NULL),
-         m_axis_attr(NULL)
-
+         m_axis_attr(NULL),
+         m_axis_data(NULL),
+         m_launcher(NULL)
 {
    init(argc, argv);
 }
@@ -37,6 +40,16 @@ AxisApp::AxisApp(int argc, char** argv)
 MultiViewNPY* AxisApp::getAxisAttr()
 {
    return m_axis_attr ; 
+}
+
+NPY<float>* AxisApp::getAxisData()
+{
+   return m_axis_data ; 
+}
+
+void AxisApp::setLauncher(SLauncher* launcher)
+{
+    m_launcher = launcher ; 
 }
 
 void AxisApp::init(int argc, char** argv)
@@ -102,6 +115,7 @@ void AxisApp::upload()
     m_axis_renderer = m_scene->getAxisRenderer();
 
     m_axis_attr = m_composition->getAxisAttr(); 
+    m_axis_data = m_composition->getAxisData(); 
 
     bool debug = true ; 
     m_axis_renderer->upload(m_axis_attr, debug ); 
@@ -132,6 +146,11 @@ void AxisApp::renderLoop()
 
         count = m_composition->tick();
 
+        if(m_launcher)
+        {
+            m_launcher->launch(count);
+        }
+
         if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)   
         {    
             render();
@@ -143,6 +162,5 @@ void AxisApp::renderLoop()
         }    
     }    
 }
-
 
 

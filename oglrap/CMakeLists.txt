@@ -116,7 +116,7 @@ set(SOURCES
     AxisApp.cc
 )
 
-SET(_HEADERS
+SET(HEADERS
 
     OGLRAP_LOG.hh
     OGLRAP_API_EXPORT.hh

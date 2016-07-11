@@ -56,6 +56,7 @@ class OXRAP_API OContext {
      public:
             unsigned int      getNumEntryPoint();
             unsigned int      getNumRayType();
+            optix::Context&   getContextRef();
             optix::Context    getContext();
             optix::Group      getTop();
      public:

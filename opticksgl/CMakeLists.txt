@@ -146,6 +146,7 @@ set(SOURCES
     OFrame.cc
     ORenderer.cc
     OpViz.cc
+    OAxisTest.cc
 
 )
 set(HEADERS
@@ -158,6 +159,7 @@ set(HEADERS
     OFrame.hh
     ORenderer.hh
     OpViz.hh
+    OAxisTest.hh
 )
 
 add_library( ${name}  SHARED  ${SOURCES} )
@@ -167,6 +169,7 @@ install(TARGETS ${name} DESTINATION lib)
 install(FILES ${HEADERS}   DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(tests)
 
 
 
