@@ -36,11 +36,7 @@ int main( int argc, char** argv )
 
     optix::Buffer buffer = m_ocontext->createIOBuffer<float>( npy, "demo");
 
-
-    //optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
-
     context["output_buffer"]->set(buffer);
-
 
     unsigned entry = 0 ; 
     m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);
@@ -52,8 +48,7 @@ int main( int argc, char** argv )
 
     OContext::download( buffer, npy );
 
-
-    NPYBase::setVerbose();
+    NPYBase::setGlobalVerbose();
 
     npy->dump();
     npy->save("$TMP/OOContextTest.npy");
