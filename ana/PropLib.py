@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 import os
 import numpy as np
+from opticks.ana.opticks_env import OpticksEnv
+OpticksEnv.Set()
 
 idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 
+
+# 1st set of 4 [0] 
 M_REFRACTIVE_INDEX = 0
 M_ABSORPTION_LENGTH = 1
 M_SCATTERING_LENGTH = 2
 M_REEMISSION_PROB = 3
+
+# 2nd set of 4 [0] startswith GROUPVEL, currently not used
+
 
 S_DETECT = 0 
 S_ABSORB = 1 
@@ -37,7 +44,7 @@ class PropLib(object):
 
     def interp(self, name, wavelengths, k=0):
         idx = self.names.index(name)
-        return np.interp( wavelengths, self.domain, self.data[idx][:,k] ) 
+        return np.interp( wavelengths, self.domain, self.data[idx][0][:,k] ) 
  
     def __call__(self, name):
         idx = self.names.index(name)

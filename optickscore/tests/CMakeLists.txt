@@ -15,7 +15,7 @@ set(TEST_SOURCES
     OpticksCfgTest.cc
     OpticksTest.cc
     OpticksResourceTest.cc
-
+    OpticksIDPATH.cc
 )
 
 
