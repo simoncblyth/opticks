@@ -341,14 +341,6 @@ oglrap-frametest()
 }
 
 
-oglrap-loadtest(){
-   local bin=$(oglrap-bindir)/GLoaderTest
-   ggeoview-
-   ggeoview-export
-   $LLDB $bin $*  
-}
-
-
 oglrap-frametest-lldb()
 {
    LLDB=lldb oglrap-frametest $*

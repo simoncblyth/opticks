@@ -513,6 +513,62 @@ void Scene::setComposition(Composition* composition)
 }
 
 
+
+void Scene::uploadGeometryGlobal(GMergedMesh* mm)
+{
+    bool skip = mm->isSkip() ;
+
+    assert(m_mesh0 == NULL); // not expected to Scene::uploadGeometryGlobal more than once 
+    m_mesh0 = mm ; 
+    static unsigned int n_global(0);
+
+    if(!skip)
+    {
+        m_global_renderer->upload(mm);  
+        m_globalvec_renderer->upload(mm);   // buffers are not re-uploaded, but binding must be done for each renderer 
+        n_global++ ; 
+        assert(n_global == 1);
+        m_global_mode = true ;
+    }
+    else
+    {
+         LOG(warning) << "Scene::uploadGeometryGlobal SKIPPING GLOBAL " ; 
+    }
+}
+
+
+void Scene::uploadGeometryInstanced(GMergedMesh* mm)
+{
+    bool skip = mm->isSkip() ;
+
+    if(!skip)
+    { 
+
+        assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
+        LOG(info)<< "Scene::uploadGeometryInstanced for m_num_instance_renderer " << m_num_instance_renderer  ;
+
+        NPY<float>* ibuf = mm->getITransformsBuffer();
+        assert(ibuf);
+
+        m_instance_renderer[m_num_instance_renderer]->upload(mm);
+        m_instance_mode[m_num_instance_renderer] = true ; 
+
+        LOG(debug)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
+        GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
+
+        m_bbox_mode[m_num_instance_renderer] = true ; 
+        m_bbox_renderer[m_num_instance_renderer]->upload(bb);
+
+        m_num_instance_renderer++ ; 
+
+    }
+    else
+    {
+         LOG(warning) << "Scene::uploadGeometry SKIPPING " ; 
+    }
+}
+
+
 void Scene::uploadGeometry()
 {
     // currently invoked from ggeoview main
@@ -523,68 +579,25 @@ void Scene::uploadGeometry()
               << " nmm " << nmm
               ;
 
-    unsigned int n_global(0);
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        bool skip = mm->isSkip() ;
         LOG(debug) << "Scene::uploadGeometry " 
                   << i 
                   << " geoCode " << mm->getGeoCode() ; 
 
         if( i == 0 )  // first mesh assumed to be **the one and only** non-instanced global mesh
         {
-            assert(m_mesh0 == NULL); // not expected to Scene::uploadGeomety more than once 
-            m_mesh0 = mm ; 
-
-            if(!skip)
-            {
-                m_global_renderer->upload(mm);  
-                m_globalvec_renderer->upload(mm);   // buffers are not re-uploaded, but binding must be done for each renderer 
-                n_global++ ; 
-                assert(n_global == 1);
-                m_global_mode = true ;
-            }
-            else
-            {
-                 LOG(warning) << "Scene::uploadGeometry SKIPPING GLOBAL " << i ; 
-            }
+           uploadGeometryGlobal(mm);
         }
         else
         {
-            if(!skip)
-            { 
-
-                assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
-                LOG(info)<< "Scene::uploadGeometry instance renderer " << m_num_instance_renderer  ;
-
-                NPY<float>* ibuf = mm->getITransformsBuffer();
-                assert(ibuf);
-
-                m_instance_renderer[m_num_instance_renderer]->upload(mm);
-                m_instance_mode[m_num_instance_renderer] = true ; 
-
-                LOG(debug)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
-                GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
-
-                m_bbox_mode[m_num_instance_renderer] = true ; 
-                m_bbox_renderer[m_num_instance_renderer]->upload(bb);
-
-                m_num_instance_renderer++ ; 
-
-            }
-            else
-            {
-                 LOG(warning) << "Scene::uploadGeometry SKIPPING " << i ; 
-            }
-
+           uploadGeometryInstanced(mm);
         }
     }
 
-
     LOG(debug)<<"Scene::uploadGeometry" 
-             << " n_global "   << n_global
              << " m_num_instance_renderer " << m_num_instance_renderer
              ; 
 

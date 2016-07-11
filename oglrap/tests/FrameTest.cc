@@ -1,3 +1,9 @@
+/*
+Search for a .ppm image file on your system and pass to FrameTest 
+
+  SHADER_DIR=$(oglrap-sdir)/gl FrameTest /opt/local/lib/tk8.6/demos/images/teapot.ppm
+
+*/
 
 #include "NGLM.hpp"
 
@@ -7,14 +13,24 @@
 #include "Interactor.hh"
 #include "Texture.hh"
 
+#include "OGLRAP_LOG.hh"
+#include "PLOG.hh"
+
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+
+    OGLRAP_LOG__ ; 
+
     if(argc < 2)  
     {   
         printf("%s : expecting argument with path to ppm file\n", argv[0]);
         return 0 ;  
     }   
     char* ppmpath = argv[1] ;
+
+    LOG(info) << argv[0] << " ppmpath " << ppmpath ; 
+
 
     Frame frame ; 
     Composition composition ; 
@@ -24,7 +40,6 @@ int main(int argc, char** argv)
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
     interactor.setComposition(&composition); // interactor changes camera, view, trackball 
     renderer.setComposition(&composition);  // composition provides matrices to renderer 
-
 
 
     Texture texture ;

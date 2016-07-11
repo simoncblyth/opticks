@@ -132,8 +132,10 @@ class OGLRAP_API Scene : public NConfigurable {
    public:
         void setGeometry(GGeo* gg);
         GGeo* getGeometry();
-
         void uploadGeometry(); 
+   private:
+        void uploadGeometryGlobal(GMergedMesh* mm);
+        void uploadGeometryInstanced(GMergedMesh* mm);
    public:
         void uploadColorBuffer(NPY<unsigned char>* colorbuffer);
    public:
