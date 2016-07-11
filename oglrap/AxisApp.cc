@@ -1,3 +1,5 @@
+#include "AxisApp.hh"
+
 // npy-
 #include "NPY.hpp"
 #include "MultiViewNPY.hpp"
@@ -13,13 +15,10 @@
 #include "Rdr.hh"
 #include "Scene.hh"
 
-#include "OGLRAP_LOG.hh"
 #include "PLOG.hh"
 
 
-class AxisTest {
-  public:
-      AxisTest(int argc, char** argv)
+AxisApp::AxisApp(int argc, char** argv)
         :
          m_opticks(NULL),
          m_composition(NULL),
@@ -27,31 +26,20 @@ class AxisTest {
          m_frame(NULL),
          m_interactor(NULL),
          m_window(NULL),
-         m_axis_renderer(NULL)
-      {
-         init(argc, argv);
-      }
+         m_axis_renderer(NULL),
+         m_axis_attr(NULL)
 
-  private:
-      void init(int argc, char** argv); 
-      void initViz();
-      void prepareViz();
-      void upload();
-      void render(); 
-  public:
-      void renderLoop();
-  private:
-      Opticks*     m_opticks ;
-      Composition* m_composition ;
-      Scene*       m_scene ;
-      Frame*       m_frame ;
-      Interactor*  m_interactor ;
-      GLFWwindow*  m_window ;
-      Rdr*         m_axis_renderer ; 
-};
+{
+   init(argc, argv);
+}
 
 
-void AxisTest::init(int argc, char** argv)
+MultiViewNPY* AxisApp::getAxisAttr()
+{
+   return m_axis_attr ; 
+}
+
+void AxisApp::init(int argc, char** argv)
 {
     m_opticks = new Opticks(argc, argv);
     m_opticks->configure();
@@ -61,7 +49,7 @@ void AxisTest::init(int argc, char** argv)
     upload();
 }
 
-void AxisTest::initViz()
+void AxisApp::initViz()
 {
     m_composition = new Composition ; 
     m_scene = new Scene ; 
@@ -78,10 +66,10 @@ void AxisTest::initViz()
     m_frame->setComposition(m_composition);
     m_frame->setScene(m_scene);
 
-    m_frame->setTitle("AxisTest");
+    m_frame->setTitle("AxisApp");
 }
 
-void AxisTest::prepareViz()
+void AxisApp::prepareViz()
 {
     glm::uvec4 size = m_opticks->getSize();
     glm::uvec4 position = m_opticks->getPosition() ;
@@ -91,37 +79,38 @@ void AxisTest::prepareViz()
 
     m_scene->setRenderMode("+axis"); 
 
-    LOG(info) << "AxisTest::prepareViz initRenderers " ; 
+    LOG(info) << "AxisApp::prepareViz initRenderers " ; 
 
     m_scene->initRenderers(); 
 
    // defer until renderers are setup, as distributes to them 
     m_scene->setComposition(m_composition);     
-    LOG(info) << "AxisTest::prepareViz initRenderers DONE " ; 
+    LOG(info) << "AxisApp::prepareViz initRenderers DONE " ; 
     m_frame->init();  
-    LOG(info) << "AxisTest::prepareViz frame init DONE " ; 
+    LOG(info) << "AxisApp::prepareViz frame init DONE " ; 
     m_window = m_frame->getWindow();
 
-    LOG(info) << "AxisTest::prepareViz DONE " ; 
+    LOG(info) << "AxisApp::prepareViz DONE " ; 
 }
 
 
-void AxisTest::upload()
+void AxisApp::upload()
 {
-    LOG(info) << "AxisTest::upload " ; 
+    LOG(info) << "AxisApp::upload " ; 
 
     m_composition->update();
     m_axis_renderer = m_scene->getAxisRenderer();
 
-    MultiViewNPY* axis_attr = m_composition->getAxisAttr(); 
+    m_axis_attr = m_composition->getAxisAttr(); 
+
     bool debug = true ; 
-    m_axis_renderer->upload(axis_attr, debug ); 
+    m_axis_renderer->upload(m_axis_attr, debug ); 
 
     m_scene->setTarget(0, true);
-    LOG(info) << "AxisTest::upload DONE " ; 
+    LOG(info) << "AxisApp::upload DONE " ; 
 }
 
-void AxisTest::render()
+void AxisApp::render()
 {
     m_frame->viewport();
     m_frame->clear();
@@ -129,7 +118,7 @@ void AxisTest::render()
     m_scene->render();
 }
 
-void AxisTest::renderLoop()
+void AxisApp::renderLoop()
 {
     m_frame->hintVisible(true);
     m_frame->show();
@@ -156,15 +145,4 @@ void AxisTest::renderLoop()
 }
 
 
-int main(int argc, char** argv)
-{
-    PLOG_(argc, argv);
-    OGLRAP_LOG__ ; 
-    LOG(info) << argv[0] ; 
-
-    AxisTest ax(argc, argv); 
-    ax.renderLoop();
-
-    return 0 ; 
-}
 

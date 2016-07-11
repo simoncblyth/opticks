@@ -113,6 +113,7 @@ set(SOURCES
 
     Renderer.cc
     RendererCfg.cc
+    AxisApp.cc
 )
 
 SET(_HEADERS
@@ -133,6 +134,7 @@ SET(_HEADERS
     RendererCfg.hh
     Rdr.hh
     Device.hh
+    AxisApp.hh
 
     StateGUI.hh
     Demo.hh

@@ -30,7 +30,7 @@ class OXRAP_API OContext {
         static const char* INTEROP_ ; 
 
      public:
-            OContext(optix::Context context, Mode_t mode);
+            OContext(optix::Context context, Mode_t mode, bool with_top=true);
             void cleanUp();
      public:
             const char* getModeName();
@@ -68,7 +68,7 @@ class OXRAP_API OContext {
             static void           download(optix::Buffer& buffer, NPY<T>* npy);
 
             template<typename T>
-            optix::Buffer  createIOBuffer(NPY<T>* npy, const char* name);   // crucial INTEROP/COMPUTE branch happens here
+            optix::Buffer  createIOBuffer(NPY<T>* npy, const char* name, bool set_size=true);   // crucial INTEROP/COMPUTE branch happens here
 
      private:
             void init();
@@ -80,6 +80,7 @@ class OXRAP_API OContext {
             int               m_debug_photon ; 
             unsigned int      m_entry ; 
             bool              m_closed ; 
+            bool              m_with_top ; 
 };
 
 

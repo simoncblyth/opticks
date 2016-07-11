@@ -30,13 +30,14 @@ const char* OContext::getModeName()
 }
 
 
-OContext::OContext(optix::Context context, Mode_t mode) 
+OContext::OContext(optix::Context context, Mode_t mode, bool with_top) 
     : 
     m_context(context),
     m_mode(mode),
     m_debug_photon(-1),
     m_entry(0),
-    m_closed(false)
+    m_closed(false),
+    m_with_top(with_top)
 {
     init();
 }
@@ -119,9 +120,12 @@ void OContext::init()
 
     m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
 
-    m_top = m_context->createGroup();
 
-    m_context[ "top_object" ]->set( m_top );
+    if(m_with_top)
+    {
+        m_top = m_context->createGroup();
+        m_context[ "top_object" ]->set( m_top );
+    }
 
     LOG(info) << "OContext::init " 
               << " mode " << getModeName()
@@ -292,7 +296,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 
 
 template <typename T>
-optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
+optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_size)
 {
     assert(npy);
     unsigned int ni = std::max(1u,npy->getShape(0));
@@ -301,9 +305,10 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
     unsigned int nl = std::max(1u,npy->getShape(3));  
 
     bool compute = isCompute();
+    bool interop = !compute ; 
 
     Buffer buffer;
-    if(!compute)
+    if(interop)
     {
         int buffer_id = npy ? npy->getBufferId() : -1 ;
         if(buffer_id > -1 )
@@ -364,7 +369,14 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name)
 
     }
 
-    buffer->setSize(size); // TODO: check without thus, maybe unwise when already referencing OpenGL buffer of defined size
+
+    if(set_size)
+    {
+        buffer->setSize(size); 
+        // TODO: check without thus, maybe unwise when already referencing OpenGL buffer of defined size
+    }
+
+
     return buffer ; 
 }
 
@@ -401,8 +413,8 @@ template OXRAP_API void OContext::upload<unsigned long long>(optix::Buffer&, NPY
 template OXRAP_API void OContext::download<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
 
 
-template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*);
-template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*);
-template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*);
+template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*, bool);
+template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*, bool);
+template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*, bool);
 
 

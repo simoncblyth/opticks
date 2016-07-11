@@ -8,6 +8,7 @@ set(TEST_SOURCES
     OScintillatorLibTest.cc
     OOTextureTest.cc
     OOMinimalTest.cc
+    OOContextTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

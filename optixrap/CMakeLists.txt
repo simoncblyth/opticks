@@ -108,6 +108,7 @@ set(SOURCES
     OXRAP_LOG.cc
 
     OptiXUtil.cc
+    OptiXTest.cc
     OAccel.cc
     OProg.cc
     OTimes.cc
@@ -170,6 +171,7 @@ set(HEADERS
 
 
     OptiXUtil.hh
+    OptiXTest.hh
     OContext.hh
     OConfig.hh
     OProg.hh
