@@ -171,6 +171,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
     // need to compile and link shader for access to attribute locations
     if(m_first_upload)
     {
+        prepare_vao(); // seems needed by oglrap-/tests/AxisTest 
         make_shader();  
         glUseProgram(m_program);
         check_uniforms();

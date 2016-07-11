@@ -68,7 +68,7 @@ class OXRAP_API OContext {
             static void           download(optix::Buffer& buffer, NPY<T>* npy);
 
             template<typename T>
-            optix::Buffer  createIOBuffer(NPY<T>* npy, const char* name);
+            optix::Buffer  createIOBuffer(NPY<T>* npy, const char* name);   // crucial INTEROP/COMPUTE branch happens here
 
      private:
             void init();

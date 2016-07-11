@@ -485,11 +485,6 @@ void App::uploadGeometryViz()
 
 
 
-
-
-
-
-
 void App::loadGenstep()
 {
     if(hasOpt("nooptix|noevent")) 
@@ -618,8 +613,6 @@ void App::uploadEvtViz()
 
     TIMER("uploadEvtViz"); 
 }
-
-
 
 
 

@@ -12,6 +12,7 @@ set(TEST_SOURCES
     ModelToWorldTest.cc
     ProgTest.cc
     SceneTest.cc
+    AxisTest.cc
 
 )
 
