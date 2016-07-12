@@ -13,6 +13,7 @@ set(TEST_SOURCES
     ProgTest.cc
     SceneTest.cc
     AxisAppTest.cc
+    InteractorKeys.cc
 
 )
 

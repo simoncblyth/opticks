@@ -7,42 +7,84 @@ fi
 
 cmdline="$*"
 
-op-usage(){ cat << EOU
-op : Opticks Operations
-===========================
+op-usage(){ cat << \EOU
 
-This script pre-parses arguments at bash level, determining:
+op.sh : Opticks Launching Script
+===================================
 
-* binary to launch 
-* geometry envvars to define
+The **op.sh** script launches different Opticks executables
+or scripts depending on the arguments provided. It also 
+sets environment variables picking a detector geometry
+and selecting volumes within the geometry.
 
-op.sh is intended to replace ggv.sh using 
-simplifications possible following the
-move to the superbuild approach.
+Most usage of Opticks should use this script.
 
-TODO
------
-
-* consider moving geometry envvar config into C++ OpticksResource(?)
-  as users tend to trip over envvars
+To see the options specific to particular scripts or
+executables use "-h" rather than the "--help" 
+that provides this text.
 
 
+Profile Setup 
+---------------
 
-* size and point to pixel defaults ?  
+To save typing add the below bash function to your .bash_profile::
+
+   op(){ op.sh $* ; }
+
+
+Visualizing Geometry
+----------------------
+
+When visualizing geometry that is new to you it is 
+best to start with "--tracer" mode as it is the fastest::
+
+    op --dpib --tracer 
+    op --dyb  --tracer 
+    op --dfar --tracer 
+    op --dlin --tracer 
+    op --jpmt --tracer 
+    op --lxe --tracer 
+
+Sometimes this will result in a black screen, for example
+when the viewpoint is within a volume and the "light" is outside 
+that volume.  Use the below key controls to make the geometry visible.
 
 ::
 
-    op  --size 1920,1080,1 --fullscreen --geocenter
+    V: View::nextMode                  rotate view, with shift modifier rotates in opposite direction 
+    L: Composition::nextNormalStyle    flip normal in shaders 
+    B: Scene::nextGeometryStyle        bbox/norm/wire 
+    C: Clipper::next                   toggle geometry clipping 
+    E: Composition::nextGeometryStyle  lightshader/normalshader/flatvertex/facecolor 
+    D: Camera::nextStyle               perspective/orthographic 
+    O: OptiX render mode               raytrace/hybrid/OpenGL
+    R: rotate mode                     drag around rotate around viewpoint 
+    Y: yfov mode                       drag up/down to change field of view
+    G: gui mode                        toggle GUI 
 
+
+Particularly useful commands for making geometry visible are:
+
+**L**
+     flips normals so light from outside a volume can light inside it 
+**E** 
+     changes the coloring style
+
+
+For a full list of keys::
+
+    op --keys  
 
 
 EOU
 }
 
 op-binary-name-default(){ echo GGeoViewTest ; }
+op-binary-names(){ type op-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; } 
 op-binary-name()
 {
    case $1 in 
+           --keys) echo InteractorKeys ;;
           --tcfg4) echo CG4Test ;;
          --tracer) echo OTracerTest ;;
             --mat) echo GMaterialLibTest ;;
@@ -96,6 +138,7 @@ op-binary-name()
 op-binary-desc()
 {
    case $1 in 
+           --keys) echo "List key controls available in GGeoViewTest " ;;
            -tcfg4) echo "Geant4 comparison simulation of simple test geometries. Requires g4-export environment. " ;; 
          --tracer) echo "Fast OpenGL viz and OptiX tracing, NO propagation. From ggeoview-/tests. Used for simple geometry/machinery checking"  ;;
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
@@ -116,86 +159,11 @@ op-binary-desc()
    esac 
 }
 
-op-geometry-name()
-{
-   case $1 in 
-       --dyb)  echo DYB ;; 
-       --idyb) echo IDYB ;; 
-       --jdyb) echo JDYB ;; 
-       --kdyb) echo KDYB ;; 
-       --ldyb) echo LDYB ;; 
-       --mdyb) echo MDYB ;; 
-       --juno) echo JUNO ;; 
-       --jpmt) echo JPMT ;; 
-       --jtst) echo JTST ;; 
-       --dpib) echo DPIB ;; 
-       --dpmt) echo DPMT ;; 
-   esac
-}
 
-op-geometry-setup()
-{
-    local geo=${OPTICKS_GEO:-DYB}
-    op-geometry-unset 
-    case $geo in 
-       DYB|IDYB|JDYB|KDYB|LDYB|MDYB) op-geometry-setup-dyb  $geo  ;;
-                     JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
-                          DPIB|DPMT) op-geometry-setup-dpib $geo  ;;
-    esac
-}
 
-op-geometry-query-dyb()
-{
-    case $1 in 
-        DYB)  echo "range:3153:12221"  ;;
-       IDYB)  echo "range:3158:3160" ;;  # 2 volumes : pvIAV and pvGDS
-       JDYB)  echo "range:3158:3159" ;;  # 1 volume : pvIAV
-       KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
-       LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
-       MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
-    esac
-    # range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere
-}
 
-op-geometry-setup-dyb()
-{
-    local geo=${1:-DYB}
-    export OPTICKS_GEOKEY=DAE_NAME_DYB
-    export OPTICKS_QUERY=$(op-geometry-query-dyb $geo) 
-    export OPTICKS_CTRL="volnames"
-    export OPTICKS_MESHFIX="iav,oav"
-    export OPTICKS_MESHFIX_CFG="100,100,10,-0.999"   # face barycenter xyz alignment and dot face normal cuts for faces to be removed 
-}
-op-geometry-setup-juno()
-{
-   local geo=${1:-JPMT}
-   if [ "$geo" == "JUNO" ]; then 
-       export OPTICKS_GEOKEY=DAE_NAME_JUNO
-       export OPTICKS_QUERY="range:1:50000"
-       export OPTICKS_CTRL=""
-   elif [ "$geo" == "JPMT" ]; then
-       export OPTICKS_GEOKEY=DAE_NAME_JPMT
-       export OPTICKS_QUERY="range:1:289734"  # 289733+1 all test3.dae volumes
-       export OPTICKS_CTRL=""
-   elif [ "$geo" == "JTST" ]; then
-       export OPTICKS_GEOKEY=DAE_NAME_JTST
-       export OPTICKS_QUERY="range:1:50000" 
-       export OPTICKS_CTRL=""
-   fi
-}
-op-geometry-setup-dpib()
-{
-   local geo=${1:-DPIB}
-   if [ "$geo" == "DPIB" ]; then
-       export OPTICKS_GEOKEY=DAE_NAME_DPIB
-       export OPTICKS_QUERY="" 
-       export OPTICKS_CTRL=""
-    elif [ "$geo" == "DPMT" ]; then
-       export OPTICKS_GEOKEY=DAE_NAME_DPIB
-       export OPTICKS_QUERY="range:1:6"   # exclude the box at first slot   
-       export OPTICKS_CTRL=""
-   fi 
-}
+
+
 op-geometry-unset()
 {
     unset OPTICKS_GEOKEY
@@ -205,16 +173,232 @@ op-geometry-unset()
     unset OPTICKS_MESHFIX_CFG
 }
 
+op-geometry-setup-notes(){ cat << EON
 
-op-binary-names(){ type op-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; } 
+FUNCTIONS
+~~~~~~~~~~
+
+*op-geometry-unset*
+
+    unset the output envvars 
+
+*op-geometry-name arg*
+
+    checks arg to see if it is a geometry selection arg, if so emits 
+    the corresponding tag eg DYB for argument --dyb or JPMT for argument --jpmt
+
+*op-cmdline-geometry-match*
+
+    loops over commandline arguments checking for geometry selection
+    args, the first tag found eg DYB or JPMT is set as the 
+    value of the OPTICKS_GEO envvar  
+
+    Multiple similar tags typically correspond to different geometry selections 
+    within a single detector geometry .dae file.
+
+    * DYB,IDYB,JDYB,KDYB,..  
+    * JUNO,JPMT,JTST
+
+*op-geometry-setup tag*
+
+    OPTICKS_GEO envvar (or tag argument) is a high level tag 
+    that identifies a detector and potentially a selection of that detectors 
+    geometrical volumes.
+
+    The value of the tag leads to the setting of envvars which are 
+    specific to the particular geometry.
+
+ENVVARS
+~~~~~~~~~
+
+OPTICKS_GEO
+
+    mainly for internal use of op.sh, set based on commandline arguments
+    its value results in the setting of the other envvars listed below
+
+OPTICKS_GEOKEY
+
+    names another envvar that contains the path to the .dae
+    eg OPTICKSDATA_DAEPATH_DYB
+
+    The OPTICKSDATA_ envvars are internally set via an ini file
+    \$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini
+    The indirection is used to isolate paths which may be different
+    for every installation from general handling.
+
+OPTICKS_QUERY
+
+    volume selection, eg range:3153:12221
+
+OPTICKS_CONTROL
+
+    influnces the geometry import, currently
+
+OPTICKS_MESHFIX
+
+    names of meshes to be fixed eg iav, oav
+  
+OPTICKS_MESHFIX_CFG
+
+     configuration of meshfixing 
+
+
+EON
+}
+
+op-geometry-names(){ type op-geometry-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; } 
+op-geometry-name()
+{
+   case $1 in 
+       --dyb)  echo DYB ;; 
+       --dlin) echo DLIN ;; 
+       --dfar) echo DFAR ;; 
+       --dpib) echo DPIB ;; 
+       --jpmt) echo JPMT ;; 
+       --lxe)  echo LXE ;; 
+
+       --idyb) echo IDYB ;; 
+       --jdyb) echo JDYB ;; 
+       --kdyb) echo KDYB ;; 
+       --ldyb) echo LDYB ;; 
+       --mdyb) echo MDYB ;; 
+       --juno) echo JUNO ;; 
+       --jtst) echo JTST ;; 
+       --dpmt) echo DPMT ;; 
+   esac
+}
+
+op-geometry-desc()
+{
+   case $1 in 
+      --dyb)  echo "DayaBay Near Site" ;; 
+      --dlin) echo "DayaBay LingAo Site" ;; 
+      --dfar) echo "DayaBay Far Site" ;; 
+      --dpib) echo "DayaBay PMT in Box of Mineral Oil Test Geometry" ;;
+      --jpmt) echo "JUNO with PMTs" ;;
+      --lxe)  echo "Geant4 LXe Liquid Xenon example" ;; 
+   esac
+}
+         
+
+op-cmdline-geometry-match()
+{
+    local msg="=== $FUNCNAME : finds 1st argument with associated geometry :"
+    local arg
+    local geo
+    unset OPTICKS_GEO
+    for arg in $cmdline 
+    do
+       geo=$(op-geometry-name $arg)
+       #echo arg $arg geo $geo 
+       if [ "$geo" != "" ]; then 
+           export OPTICKS_GEO=$geo
+           return 
+       fi
+    done
+}
+
+
+
+op-geometry-setup()
+{
+    local geo=${OPTICKS_GEO:-DYB}
+    op-geometry-unset 
+    case $geo in 
+     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR) op-geometry-setup-dyb  $geo  ;;
+                             JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
+                              DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
+    esac
+}
+op-geometry-query-dyb()
+{
+    case $1 in 
+   DYB|DLIN)  echo "range:3153:12221"  ;;
+       DFAR)  echo "range:4686:18894"   ;;  #  
+       IDYB)  echo "range:3158:3160" ;;  # 2 volumes : pvIAV and pvGDS
+       JDYB)  echo "range:3158:3159" ;;  # 1 volume : pvIAV
+       KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
+       LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
+       MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
+    esac
+    # range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere
+}
+op-geometry-setup-dyb()
+{
+    local geo=${1:-DYB}
+    local geokey
+    case $geo in 
+         DYB) geokey=OPTICKSDATA_DAEPATH_DYB ;;
+        DLIN) geokey=OPTICKSDATA_DAEPATH_DLIN ;;
+        DFAR) geokey=OPTICKSDATA_DAEPATH_DFAR ;;
+           *) geokey=OPTICKSDATA_DAEPATH_DYB ;;
+    esac
+
+    export OPTICKS_GEOKEY=$geokey
+    export OPTICKS_QUERY=$(op-geometry-query-dyb $geo) 
+    export OPTICKS_CTRL="volnames"
+    export OPTICKS_MESHFIX="iav,oav"
+    export OPTICKS_MESHFIX_CFG="100,100,10,-0.999"   # face barycenter xyz alignment and dot face normal cuts for faces to be removed 
+}
+op-geometry-setup-juno()
+{
+   local geo=${1:-JPMT}
+   if [ "$geo" == "JUNO" ]; then 
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JUNO
+       export OPTICKS_QUERY="range:1:50000"
+       export OPTICKS_CTRL=""
+   elif [ "$geo" == "JPMT" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JPMT
+       export OPTICKS_QUERY="range:1:289734"  # 289733+1 all test3.dae volumes
+       export OPTICKS_CTRL=""
+   elif [ "$geo" == "JTST" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JTST
+       export OPTICKS_QUERY="range:1:50000" 
+       export OPTICKS_CTRL=""
+   fi
+}
+op-geometry-setup-misc()
+{
+   local geo=${1:-DPIB}
+   if [ "$geo" == "DPIB" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_DPIB
+       export OPTICKS_QUERY="" 
+       export OPTICKS_CTRL=""
+    elif [ "$geo" == "DPMT" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_DPIB
+       export OPTICKS_QUERY="range:1:6"   # exclude the box at first slot   
+       export OPTICKS_CTRL=""
+    elif [ "$geo" == "LXE" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_LXE
+       export OPTICKS_QUERY="" 
+       export OPTICKS_CTRL=""
+    fi 
+}
+
+
+
+
 op-help(){
    local cmd
    local bin
    local hlp
+
+   op-usage
+
+   printf "\nGEOMETRY SELECTION ARGUMENTS \n\n" ;
+   op-geometry-names | while read cmd ; do
+      bin=$(op-geometry-name "--$cmd")
+      desc=$(op-geometry-desc "--$cmd")
+      [ -z "$desc" ] && continue ; 
+      printf " %20s : %25s : %s \n" "--$cmd"  $bin  "$desc"
+   done
+
+   printf "\nBINARY SELECTION ARGUMENTS \n\n" ;
    op-binary-names | while read cmd ; do
       bin=$(op-binary-name "--$cmd")
       desc=$(op-binary-desc "--$cmd")
-      printf " %20s : %25s : %s \n" $cmd  $bin  "$desc"
+   #   [ -z "$desc" ] && continue ; 
+      printf " %20s : %25s : %s \n" "--$cmd"  $bin  "$desc"
    done
 }
 
@@ -320,24 +504,6 @@ op-binary-setup()
 }
 
 
-op-cmdline-geometry-match()
-{
-    local msg="=== $FUNCNAME : finds 1st argument with associated geometry :"
-    local arg
-    local geo
-    unset OPTICKS_GEO
-    for arg in $cmdline 
-    do
-       geo=$(op-geometry-name $arg)
-       #echo arg $arg geo $geo 
-       if [ "$geo" != "" ]; then 
-           export OPTICKS_GEO=$geo
-           return 
-       fi
-    done
-}
-
-
 op-cmdline-parse()
 {
     #op-cmdline-dump
@@ -353,12 +519,11 @@ op-cmdline-parse()
 
 op-export()
 {
-   #export-
-   #export-export
+   echo -n
 
    # TODO: avoid need for any envvars (other than PATH) 
-   opticksdata-
-   opticksdata-export
+   #opticksdata-
+   #opticksdata-export
 }
 
 
@@ -410,11 +575,13 @@ op-export
 if [ "$sauce" == "1" ]; then
    #echo sauce detected : assume are debugging this script
    echo -n
-elif [ "${cmdline/--ophelp}" != "${cmdline}" ]; then
+elif [ "${cmdline/--help}" != "${cmdline}" ]; then
    op-help
 else
    >&2 ls -alst ${OPTICKS_BINARY}
-   env | >&2 grep OPTICKS
+
+  # env | >&2 grep OPTICKS_ | sort  
+
    >&2 echo proceeding : $runline
    eval $runline
 fi 

@@ -331,7 +331,7 @@ const char* Interactor::keys =
 "\n L: Composition::nextNormalStyle     flip normal in shaders "
 "\n M: Composition::nextColorStyle      m1/m2/f1/f2/p1/p2      "
 "\n N: near mode toggle : swipe up/down to change frustum near "  
-"\n O: OptiX render mode  toggle "
+"\n O: OptiX render mode           raytrace/hybrid/OpenGL "
 "\n P: Scene::nextPhotonStyle       dot/longline/shortline  "
 "\n Q: Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
 "\n R: rotate mode toggle  drag around rotate around viewpoint " 

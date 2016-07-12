@@ -292,7 +292,7 @@ void Opticks::dumpArgs(const char* msg)
 {
     LOG(info) << msg << " argc " << m_argc ;
     for(int i=0 ; i < m_argc ; i++) 
-          std::cout << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
+          std::cerr << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
 
 }
 

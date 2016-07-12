@@ -15,10 +15,15 @@ OScintillatorLib::OScintillatorLib(optix::Context& ctx, GScintillatorLib* lib)
 
 void OScintillatorLib::convert(const char* slice)
 {
-    LOG(trace) << "OScintillatorLib::convert" ;
     NPY<float>* buf = m_lib->getBuffer();
+    unsigned ni = buf->getShape(0) ; 
+    LOG(trace) << "OScintillatorLib::convert" 
+               << " from " << buf->getShapeString() 
+               << " ni " << ni 
+               ;
 
-    if(slice)
+
+    if( ni > 1 && slice )
     { 
         NPY<float>* slice_buf = buf->make_slice(slice) ;
 

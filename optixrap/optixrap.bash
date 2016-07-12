@@ -23,6 +23,66 @@ Python prototype:
 
 
 
+JPMT memory issue
+-------------------
+
+::
+
+    op --jpmt --dbg 
+    ...
+    2016-07-12 14:00:17.002 INFO  [162808] [OEngineImp::preparePropagator@170] OEngineImp::preparePropagator DONE 
+    2016-07-12 14:00:17.002 INFO  [162808] [OpEngine::preparePropagator@102] OpEngine::preparePropagator DONE 
+    2016-07-12 14:00:17.003 INFO  [162808] [OpSeeder::seedPhotonsFromGensteps@65] OpSeeder::seedPhotonsFromGensteps
+    2016-07-12 14:00:17.003 INFO  [162808] [OpSeeder::seedPhotonsFromGenstepsViaOpenGL@79] OpSeeder::seedPhotonsFromGenstepsViaOpenGL
+    seedDestination src : dev_ptr 0xa00bbbe00 size 24 num_bytes 96 stride 24 begin 3 end 24 
+    seedDestination dst : dev_ptr 0xa00da0000 size 1600000 num_bytes 6400000 stride 16 begin 0 end 1600000 
+    iexpand  counts_size 1 output_size 100000
+    2016-07-12 14:00:17.099 INFO  [162808] [OpZeroer::zeroRecords@61] OpZeroer::zeroRecords
+    2016-07-12 14:00:17.118 INFO  [162808] [OEngineImp::propagate@176] OEngineImp::propagate
+    2016-07-12 14:00:17.118 INFO  [162808] [OPropagator::prelaunch@290] OPropagator::prelaunch count 0 size(100000,1)
+    2016-07-12 14:00:17.118 INFO  [162808] [OConfig::getNumEntryPoint@102] OConfig::getNumEntryPoint m_raygen_index 2 m_exception_index 2
+    2016-07-12 14:00:17.118 INFO  [162808] [OContext::close@185] OContext::close numEntryPoint 2
+    2016-07-12 14:00:17.118 INFO  [162808] [OConfig::dump@141] OContext::close m_raygen_index 2 m_exception_index 2
+    OProg R 0 pinhole_camera.cu.ptx pinhole_camera 
+    OProg E 0 pinhole_camera.cu.ptx exception 
+    OProg M 1 constantbg.cu.ptx miss 
+    OProg R 1 generate.cu.ptx generate 
+    OProg E 1 generate.cu.ptx exception 
+    2016-07-12 14:00:17.317 INFO  [162808] [OContext::launch@211] OContext::launch entry 1 width 100000 height 1
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Insufficient device memory. GPU does not support paging., [16515528])
+    Process 27816 stopped
+    * thread #1: tid = 0x27bf8, 0x00007fff94cdb866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff94cdb866 libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill + 10:
+    -> 0x7fff94cdb866:  jae    0x7fff94cdb870            ; __pthread_kill + 20
+       0x7fff94cdb868:  movq   %rax, %rdi
+       0x7fff94cdb86b:  jmp    0x7fff94cd8175            ; cerror_nocancel
+       0x7fff94cdb870:  retq   
+    (lldb) bt
+    * thread #1: tid = 0x27bf8, 0x00007fff94cdb866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff94cdb866 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff8c37835c libsystem_pthread.dylib`pthread_kill + 92
+        frame #2: 0x00007fff930c8b1a libsystem_c.dylib`abort + 125
+        frame #3: 0x00007fff92988f31 libc++abi.dylib`abort_message + 257
+        frame #4: 0x00007fff929ae93a libc++abi.dylib`default_terminate_handler() + 240
+        frame #5: 0x00007fff92ce6322 libobjc.A.dylib`_objc_terminate() + 124
+        frame #6: 0x00007fff929ac1d1 libc++abi.dylib`std::__terminate(void (*)()) + 8
+        frame #7: 0x00007fff929abc5b libc++abi.dylib`__cxa_throw + 124
+        frame #8: 0x00000001030547a9 libOptiXRap.dylib`optix::ContextObj::checkError(this=0x00000004e1873430, code=RT_ERROR_UNKNOWN) const + 121 at optixpp_namespace.h:1840
+        frame #9: 0x00000001030666d7 libOptiXRap.dylib`optix::ContextObj::compile(this=0x00000004e1873430) + 55 at optixpp_namespace.h:2376
+        frame #10: 0x0000000103065ed4 libOptiXRap.dylib`OContext::launch(this=0x00000004e1873450, lmode=14, entry=1, width=100000, height=1, times=0x0000000c96332e70) + 660 at OContext.cc:237
+        frame #11: 0x0000000103076fdc libOptiXRap.dylib`OPropagator::prelaunch(this=0x0000000c990b9b20) + 1388 at OPropagator.cc:301
+        frame #12: 0x0000000103074467 libOptiXRap.dylib`OEngineImp::propagate(this=0x00000004dbd53c40) + 247 at OEngineImp.cc:178
+        frame #13: 0x0000000103553ef9 libOpticksOp.dylib`OpEngine::propagate(this=0x00000004db9efc30) + 25 at OpEngine.cc:151
+        frame #14: 0x00000001036449d5 libGGeoView.dylib`App::propagate(this=0x00007fff5fbfe958) + 309 at App.cc:1014
+        frame #15: 0x000000010000af3e GGeoViewTest`main(argc=3, argv=0x00007fff5fbfeae8) + 1710 at GGeoViewTest.cc:114
+        frame #16: 0x00007fff9014e5fd libdyld.dylib`start + 1
+        frame #17: 0x00007fff9014e5fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
 Link error
 ------------
 

@@ -22,6 +22,7 @@ class CGDMLDetector(object):
 
 if __name__ == '__main__':
 
+    logging.basicConfig(level=logging.INFO)
     frame = 3153
 
     det = CGDMLDetector()

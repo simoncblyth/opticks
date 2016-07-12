@@ -42,7 +42,7 @@ const char* OpticksResource::OTHER   = "other" ;
 
 const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
-const char* OpticksResource::DEFAULT_GEOKEY = "DAE_NAME_DYB" ; 
+const char* OpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
 const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
 const char* OpticksResource::DEFAULT_CTRL = "volnames" ; 
 const char* OpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
@@ -277,7 +277,6 @@ void OpticksResource::identifyGeometry()
 {
    // TODO: somehow extract detector name from the exported file metadata or sidecar
 
-
    m_juno     = idNameContains("juno") ;
    m_dayabay  = idNameContains("DayaBay") ;
    m_dpib     = idNameContains("dpib") ;
@@ -310,22 +309,46 @@ void OpticksResource::identifyGeometry()
    if(m_dpib)    m_detector = DPIB ; 
    if(m_other)   m_detector = OTHER ; 
 
+   if(m_detector == NULL)
+       LOG(fatal) << "FAILED TO ASSIGN m_detector " ; 
+
+   assert(m_detector);
+
+   LOG(trace) << "OpticksResource::identifyGeometry"
+              << " m_detector " << m_detector
+              ;
+
 }
 
 void OpticksResource::assignDetectorName()
 {
    std::map<std::string, std::string> detname ; 
-   detname["juno"]    = "juno" ;
-   detname["dayabay"] = "DayaBay" ;
-   detname["dpib"]    = "dpib" ;
 
-   if(m_detector && detname.count(m_detector) == 1) m_detector_name =  strdup(detname[m_detector].c_str()) ; 
+   detname[JUNO]    = "juno" ;
+   detname[DAYABAY] = "DayaBay" ;
+   detname[DPIB]    = "dpib" ;
+   detname[OTHER]   = "other" ;
 
-   if(m_detector_name && m_idbase )
+   assert(m_detector);
+
+   if(detname.count(m_detector) == 1) m_detector_name =  strdup(detname[m_detector].c_str()) ; 
+
+   if(m_detector_name == NULL)
+       LOG(fatal) << "FAILED TO ASSIGN m_detector_name " ; 
+
+   assert(m_detector_name);
+
+   if(m_idbase )
    {
         std::string detbase = BFile::FormPath(m_idbase, m_detector_name);
         m_detector_base = strdup(detbase.c_str());
    }
+
+   if(m_detector_base == NULL)
+       LOG(fatal) << "FAILED TO ASSIGN m_detector_base " ; 
+
+   assert(m_detector_base);
+
 }
 
 void OpticksResource::readG4Environment()
@@ -512,12 +535,8 @@ void OpticksResource::readEnvironment()
         m_idname = strdup(name.c_str()); 
 
         // idname is name of the idfold eg DayaBay_VGDX_20140414-1300
-
-
-
     } 
 
-    // DO NOT PRINT ANYTHING FROM HERE TO AVOID IDP CAPTURE PROBLEMS
 }
 
 
@@ -663,6 +682,9 @@ std::string OpticksResource::getPreferenceDir(const char* type, const char* udet
     const char* prefbase = PREFERENCE_BASE ;
     if(detector_type) prefbase = m_detector_base ; 
     if(resource_type) prefbase = m_resource_dir ;   // one of the top down dirs, set in base BOpticksResource
+
+    
+
 
     if(detector_type)
     {
@@ -932,7 +954,6 @@ void OpticksResource::saveTypes()
     Types* types = getTypes(); 
     types->saveFlags(getIdPath(), ".ini");
 }
-
 
 
 

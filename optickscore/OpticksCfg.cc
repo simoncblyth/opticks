@@ -166,6 +166,10 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("torchdbg",  "dump details of torch config") ;
 
+   m_desc.add_options()
+       ("useenv",  "read environment variables selecting a detector geometry and volumes within that geometry.") ;
+
+
 
 
    m_desc.add_options()

@@ -85,8 +85,13 @@ guint4 GOpticalSurface::getOptical()
    optical.y = boost::lexical_cast<unsigned int>(getType()); 
    optical.z = boost::lexical_cast<unsigned int>(getFinish()); 
 
-   float percent = boost::lexical_cast<float>(getValue())*100.f ;   // express as integer percentage 
-   optical.w = boost::lexical_cast<unsigned int>(percent) ;
+   char* value = getValue();
+   float percent = boost::lexical_cast<float>(value)*100.f ;   // express as integer percentage 
+
+   unsigned upercent = unsigned(percent) ;   // rounds down 
+  // unsigned upercent = boost::lexical_cast<unsigned int>(percent) ;
+
+   optical.w = upercent ;
 
    return optical ; 
 }

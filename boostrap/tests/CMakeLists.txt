@@ -21,6 +21,7 @@ set(TEST_SOURCES
    BEnvTest.cc
    BOpticksResourceTest.cc
    BOpticksEventTest.cc
+   LexicalCastTest.cc
 
 )
 
