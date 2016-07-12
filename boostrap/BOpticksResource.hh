@@ -12,6 +12,9 @@ class BRAP_API  BOpticksResource {
         virtual void Summary(const char* msg="BOpticksResource::Summary");
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
+       
+        const char* getResourceDir();
+        const char* getOpticksDataDir();
    private:
         void init();
         void adoptInstallPrefix();

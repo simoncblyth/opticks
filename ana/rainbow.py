@@ -85,7 +85,7 @@ from matplotlib.colors import LogNorm
 from matplotlib.patches import Rectangle
 
 from opticks.ana.ana import Evt, Selection, costheta_, cross_
-from opticks.ana.geometry import Boundary   
+from opticks.ana.proplib import Boundary   
 from opticks.ana.fresnel import fresnel_factor
 from opticks.ana.cie  import CIE
 from opticks.ana.droplet  import Droplet

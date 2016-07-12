@@ -2,27 +2,39 @@ ana-rel(){      echo ana ; }
 ana-src(){      echo ana/ana.bash ; }
 ana-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ana-src)} ; }
 ana-vi(){       vi $(ana-source) ; }
-ana-usage(){ cat << EOU
+ana-usage(){ cat << \EOU
 
-Opticks Analysis
-====================
+Opticks Analysis Scripts
+=========================
 
-
-
+:doc:`proplib`
+     Access to geocache via PropLib, Material and Boundary classes
+ 
 
 EOU
 }
 
 ana-notes(){ cat << EON
 
+evt.py
+    loads event data
+
+base.py 
+    internal envvar setup of OPTICKS_DATA and OPTICKS_DETECTOR based on input envvar IDPATH 
+    json and ini loading 
+
+    Abbrev
+    ListFlags 
+
+
+material.py
+     testing material mechanics
+
 CGDMLDetector.py
 
 
-
 IndexerTest.py
-PropLib.py
 __init__.py
-ana.py
 analytic_cf_triangulated.py
 base.py
 box_test.py
@@ -31,7 +43,6 @@ cfplot.py
 cie.py
 dae.py
 droplet.py
-evt.py
 fresnel.py
 g4gun.py
 genstep.py
@@ -39,7 +50,6 @@ genstep_sequence_material_mismatch.py
 geometry.py
 groupvel.py
 history.py
-material.py
 mesh.py
 metadata.py
 nbase.py

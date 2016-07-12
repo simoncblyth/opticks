@@ -77,6 +77,16 @@ void BOpticksResource::setTopDownDirs()
     m_resource_dir = strdup(dir.c_str());
 }
 
+const char* BOpticksResource::getResourceDir()
+{
+   return m_resource_dir ; 
+}
+const char* BOpticksResource::getOpticksDataDir()
+{
+   return m_opticksdata_dir ; 
+}   
+
+
 
 std::string BOpticksResource::BuildDir(const char* proj)
 {

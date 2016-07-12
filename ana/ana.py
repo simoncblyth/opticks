@@ -5,11 +5,9 @@ import numpy as np
 from env.python.utils import *
 
 from opticks.ana.types import *  # TODO: spell out imports
-
 from opticks.ana.evt import Evt, costheta_
 
 
-import opticks.ana.PropLib as PropLib 
 import ciexyz.ciexyz as _cie
 deg = np.pi/180.
 

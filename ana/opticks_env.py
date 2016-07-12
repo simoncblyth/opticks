@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+
+assert 0, "NOT IN USE"
 import os, logging, subprocess
 log = logging.getLogger(__name__)
 
@@ -11,20 +13,23 @@ class OpticksEnv(object):
     """
     Hmm maybe an opticks exe to dump some JSON ? 
     Hmm but its default args ?
+
+    Cannot do this at OpticksIDPATH level 
+    alone as geo selection relies on op.sh envvar setup.
     """
     @classmethod
     def IDPATH(cls):
         exe = "OpticksIDPATH"  ## from okc-/tests
-        out, err = subprocess_output([exe])
-        out = out.strip()
+        stdout, stderr = subprocess_output([exe])
+        msg = stderr.strip()
 
-        log.debug("[%s]" % out )
-        if os.path.isdir(out):
-            idpath = out 
+        log.debug("[%s]" % msg )
+        if os.path.isdir(msg):
+            idpath = msg 
             log.debug("found idpath dir %s " % idpath )
         else:
             idpath = None
-            log.error("response from %s did not provide existing directory : out  %s err %s " % (cmd, out, err))
+            log.error("response from %s did not provide existing directory : out  %s err %s " % (exe, stdout, stderr))
         pass      
         return idpath ; 
 

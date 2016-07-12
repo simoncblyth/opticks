@@ -88,8 +88,8 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getCtrl();
     public:
        // split these off as cannot assume users can write into geocache
-       void saveFlags();
-       void saveTypes();
+       void saveFlags(const char* dir);
+       void saveTypes(const char* dir);
     public:
        OpticksQuery* getQuery();
        OpticksColors* getColors();

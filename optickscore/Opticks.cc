@@ -292,13 +292,16 @@ void Opticks::dumpArgs(const char* msg)
 {
     LOG(info) << msg << " argc " << m_argc ;
     for(int i=0 ; i < m_argc ; i++) 
-          std::cerr << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
+          std::cout << std::setw(3) << i << " : " << m_argv[i] << std::endl ;
+
+   // PLOG by default writes to stdout so for easy splitting write 
+   // mostly to stdout and just messages to stderr
 
 }
 
 void Opticks::configure()
 {
-    dumpArgs("Opticks::configure");
+    dumpArgs("Opticks::configure");  
 
     m_cfg->commandline(m_argc, m_argv);
 
@@ -667,6 +670,27 @@ const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdF
 const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
+
+void Opticks::saveResources(const char* dir)
+{
+    // Moved save directory from IdPath to ResourceDir as
+    // the IdPath is not really appropriate  
+    // for things such as the flags that are a feature of an 
+    // Opticks installation, not a feature of the geometry.
+    // 
+    //  TODO:
+    //     incorporate resources saving into 
+    //     the build process 
+    //     ... currently this is done manually by 
+    //
+    //         OpticksSaveResources 
+    //
+
+    if(dir == NULL) dir = m_resource->getResourceDir() ;
+    LOG(info) << "Opticks::saveResources " << ( dir ? dir : "NULL" )  ; 
+    m_resource->saveFlags(dir);
+    m_resource->saveTypes(dir);
+}
 
 
 void Opticks::setIdPathOverride(const char* idpath_tmp) // used for saves into non-standard locations whilst testing

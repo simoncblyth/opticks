@@ -3,10 +3,12 @@
 #include <iostream>
 #include "Opticks.hh"
 
+#ifdef DO_LOG
 #include "SYSRAP_LOG.hh"
 #include "BRAP_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "PLOG.hh"
+#endif
 
 /**
 OpticksIDPATH 
@@ -20,7 +22,8 @@ DAE file and also select subsets of the geometry.
 After setting PATH use::
 
    args="" # potentially select 
-   export IDPATH=$(OpticksIDPATH $args 1>/dev/null)  # ignore stdout logging 
+
+   IDPATH="$(op --idpath 2>&1 > /dev/null)"  # capture only stderr
 
 
 **/
@@ -28,11 +31,12 @@ After setting PATH use::
 
 int main(int argc, char** argv)
 {
+#ifdef DO_LOG
     PLOG_(argc, argv);
-
     SYSRAP_LOG__ ;
     BRAP_LOG__ ;
     OKCORE_LOG__ ;
+#endif
 
     Opticks ok(argc, argv) ;
     ok.configure();

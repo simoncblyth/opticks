@@ -3,7 +3,10 @@
 import os, logging
 import numpy as np
 
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
 
 from collections import OrderedDict 
 
@@ -598,7 +601,10 @@ def check_wavelength(evt):
 
 if __name__ == '__main__':
 
+    #logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     rec = True  
+
 
     #cat, src, tag = "rainbow", "torch", "-5"
     #cat, src, tag = "juno", "cerenkov", "1"
@@ -610,12 +616,13 @@ if __name__ == '__main__':
 
     dv = evt.a_deviation_angle(axis=X)
 
-    plt.close()
-    plt.ion()
+    if plt:
+        plt.close()
+        plt.ion()
 
-    plt.hist(dv/deg, bins=360, log=True, histtype="step") 
+        plt.hist(dv/deg, bins=360, log=True, histtype="step") 
 
-    plt.show()
+        plt.show()
 
 
   

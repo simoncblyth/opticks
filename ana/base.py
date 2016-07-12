@@ -7,7 +7,31 @@ log = logging.getLogger(__name__)
 
 cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
 ffs_ = lambda _:cpp.ffs(_)
-idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
+
+IDPATH = os.path.expandvars("$IDPATH")
+idp_ = lambda _:"%s/%s" % (IDPATH,_) 
+
+
+def _opticks_data(idpath):
+    datadir = os.path.dirname(os.path.dirname(os.path.dirname(idpath)))
+    log.info("_opticks_datadir idpath %s -> datadir %s " % (idpath, datadir))
+    return datadir 
+
+def _opticks_detector(idpath):
+    ddir = idpath.split("/")[-2]
+    dbeg = ddir.split("_")[0]
+    if dbeg in ["DayaBay","LingAo","Far"]:
+        detector =  "DayaBay"
+    else:
+        detector = dbeg 
+    pass
+    log.info("_opticks_detector idpath %s -> detector %s " % (idpath, detector))
+    return detector 
+
+    
+os.environ.setdefault("OPTICKS_DATA",     _opticks_data(IDPATH))
+os.environ.setdefault("OPTICKS_DETECTOR", _opticks_detector(IDPATH))
+
 
 
 def ihex_(i):
@@ -54,7 +78,7 @@ def json_(path):
 
 
 class Abbrev(object):
-    def __init__(self, path="~/.opticks/GFlags/abbrev.json"):
+    def __init__(self, path="$OPTICKS_DATA/resource/GFlags/abbrev.json"):
         js = json_(path)
 
         names = map(str,js.keys())
@@ -96,10 +120,16 @@ class IniFlags(object):
 
 
 
-
-
 if __name__ == '__main__':
-    i = ini_("$IDPATH/GFlagsLocal.ini")
-    j = json_("~/.opticks/GFlags/abbrev.json")
-    n = ffs_(0x1000)
+    #i = ini_("$IDPATH/GFlagsLocal.ini")
+    #j = json_("~/.opticks/GFlags/abbrev.json")
+    #n = ffs_(0x1000)
+
+
+    lf = ListFlags()
+
+
+
+
+
 

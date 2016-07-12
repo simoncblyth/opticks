@@ -4,7 +4,7 @@
 #include "OpticksResource.hh"
 
 
-
+#include "PLOG.hh"
 
 void dumpenv_0(char** envp)
 {
@@ -27,6 +27,8 @@ void dumpenv_1(char** envp)
 
 int main(int argc, char** argv, char** /*envp*/)
 {
+    PLOG_(argc, argv);
+
     Opticks op(argc, argv) ;
     OpticksResource res(&op) ;  // TODO: remove duplication of envprefix beween both these
     res.Dump();

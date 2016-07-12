@@ -886,16 +886,15 @@ OpticksFlags* OpticksResource::getFlags()
     return m_flags ;
 }
 
-void OpticksResource::saveFlags()
+void OpticksResource::saveFlags(const char* dir)
 {
     OpticksFlags* flags = getFlags();
-    const char* idpath = getIdPath();
 
     LOG(info) << "OpticksResource::saveFlags"
-              << " idpath " << idpath
+              << " dir " << dir
               ;
 
-    flags->save(idpath);
+    flags->save(dir);
 }
 
 
@@ -949,10 +948,12 @@ Types* OpticksResource::getTypes()
 }
 
 
-void OpticksResource::saveTypes()
+void OpticksResource::saveTypes(const char* dir)
 {
+    LOG(info) << "OpticksResource::saveTypes " << dir ; 
+
     Types* types = getTypes(); 
-    types->saveFlags(getIdPath(), ".ini");
+    types->saveFlags(dir, ".ini");
 }
 
 
