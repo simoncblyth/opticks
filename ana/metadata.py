@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 """
+Metadata
+~~~~~~~~~~
+
+Access the metadata json files written by Opticks runs, 
+allowing evt digests and run times to be compared. 
+
 
 """
 
 import os, re, logging
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime
 from base import ini_, json_
 
@@ -170,8 +175,6 @@ if __name__ == '__main__':
 
     catd = Catdir(cat)
 
-    plt.close()
-    plt.ion()
 
     a = catd.times(tag)
 

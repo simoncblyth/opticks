@@ -2,7 +2,7 @@
 """
 Non-numpy basics
 """
-import os, logging, json, ctypes
+import os, logging, json, ctypes, subprocess
 log = logging.getLogger(__name__) 
 
 cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
@@ -16,23 +16,39 @@ def _dirname(path, n):
         path = os.path.dirname(path)
     return path
 
+def _opticks_idfold(idpath):
+    idfold = _dirname(idpath,1)
+    log.debug("_opticks_idfold idpath %s -> idfold %s " % (idpath, idfold))
+    return idfold
+
+def _opticks_idfilename(idpath):
+    name = os.path.basename(idpath)
+    elem = name.split(".")
+    assert len(elem) == 3
+    idfilename = "%s.%s" % (elem[0],elem[2])
+    log.debug("_opticks_idfilename idpath %s -> idfilename %s " % (idpath, idfilename))
+    return idfilename
+
+def _opticks_daepath(idpath):
+    idfilename = _opticks_idfilename(idpath)
+    idfold = _opticks_idfold(idpath)
+    return os.path.join(idfold, idfilename)
+
 def _opticks_install_prefix(idpath):
     prefix = _dirname(idpath,4)
-    log.info("_opticks_install_prefix idpath %s -> prefix %s " % (idpath, prefix))
+    log.debug("_opticks_install_prefix idpath %s -> prefix %s " % (idpath, prefix))
     return prefix 
 
 def _opticks_data(idpath):
     datadir = _dirname(idpath,3)
-    log.info("_opticks_datadir idpath %s -> datadir %s " % (idpath, datadir))
+    log.debug("_opticks_datadir idpath %s -> datadir %s " % (idpath, datadir))
     return datadir 
 
 def _opticks_install_cache(idpath):
     prefix = _opticks_install_prefix(idpath) 
     path = os.path.join(prefix, "installcache") 
-    log.info("_opticks_install_cache idpath %s -> datadir %s " % (idpath, path))
+    log.debug("_opticks_install_cache idpath %s -> datadir %s " % (idpath, path))
     return path 
-
-
 
 
 def _opticks_detector(idpath):
@@ -43,24 +59,66 @@ def _opticks_detector(idpath):
     else:
         detector = dbeg 
     pass
-    log.info("_opticks_detector idpath %s -> detector %s " % (idpath, detector))
+    log.debug("_opticks_detector idpath %s -> detector %s " % (idpath, detector))
     return detector 
 
 
+def _subprocess_output(args):
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return p.communicate()
 
-
-
-
-
-def _opticks_dump():
-    for k,v in os.environ.items():
-        if k.startswith("OPTICKS_"):
-            log.info(" %30s : %s " % (k,v))
+def _opticks_default_idpath_from_exe(exe="OpticksIDPATH"):
+    """
+    This provides a way to discern the IDPATH by running an 
+    Opticks executable.  This works fine for the default geometry with 
+    no arguments picking alternate geometries.  
     
-os.environ.setdefault("OPTICKS_DATA",            _opticks_data(IDPATH))
-os.environ.setdefault("OPTICKS_INSTALL_PREFIX",  _opticks_install_prefix(IDPATH))
-os.environ.setdefault("OPTICKS_INSTALL_CACHE",   _opticks_install_cache(IDPATH))
-os.environ.setdefault("OPTICKS_DETECTOR",        _opticks_detector(IDPATH))
+    To make this work for non default geometries would have to 
+    somehow save the opticks geometry selection arguments, given 
+    this might as way stay simple and require the IDPATH envvar 
+    as an input to analysis.
+    """ 
+    stdout, stderr = _subprocess_output([exe]) 
+    idpath = stderr.strip()
+    return idpath  
+
+def _opticks_event_base():
+    return os.path.expandvars("/tmp/$USER/opticks") 
+
+
+class OpticksEnv(object):
+    def __init__(self):
+        self.ext = {}
+        self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
+        self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
+        self.setdefault("OPTICKS_DAEPATH",         _opticks_daepath(IDPATH))
+        self.setdefault("OPTICKS_DATA",            _opticks_data(IDPATH))
+        self.setdefault("OPTICKS_INSTALL_PREFIX",  _opticks_install_prefix(IDPATH))
+        self.setdefault("OPTICKS_INSTALL_CACHE",   _opticks_install_cache(IDPATH))
+        self.setdefault("OPTICKS_DETECTOR",        _opticks_detector(IDPATH))
+        self.setdefault("OPTICKS_EVENT_BASE",      _opticks_event_base())
+
+    def setdefault(self, k, v):
+        if k in os.environ:
+            self.ext[k] = os.environ[k]
+        else: 
+            os.environ[k] = v 
+
+    def dump(self, st=("OPTICKS","IDPATH")):
+        for k,v in os.environ.items():
+            if k.startswith(st):
+                if k in self.ext:
+                     msg = "(ext)"
+                else:
+                     msg = "    "
+                pass
+                log.info(" %5s%30s : %s " % (msg,k,v))
+
+
+def opticks_environment(dump=False):
+   env = OpticksEnv()
+   if dump:
+       env.dump()
 
 
 def ihex_(i):
@@ -151,9 +209,7 @@ class IniFlags(object):
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
-
-    _opticks_dump()
-
+    opticks_environment(dump=True)
 
     lf = ItemList("GMaterialLib")
     print "ItemList(GMaterialLib).name2code", lf.name2code

@@ -134,7 +134,8 @@ import os, logging
 import numpy as np
 rad = np.pi/180.
 deg = 1./rad
-from env.python.utils import *
+
+from opticks.ana.nbase import count_unique
 from opticks.ana.types import *
 
 log = logging.getLogger(__name__)
@@ -143,7 +144,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import curve_fit
 
-from opticks.ana.ana import Evt, Selection, Rat, theta, costheta_
+from opticks.ana.evt import Evt, costheta_
+from opticks.ana.ana import Selection, Rat, theta
+
 from opticks.ana.geometry import Shape, Plane, Boundary, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
 import ciexyz.ciexyz as cie
 

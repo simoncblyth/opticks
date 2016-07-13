@@ -59,17 +59,20 @@ Focus [10,0,300] avoids the crack, visualizations more physical: no missers, cle
 """
 import os, logging
 import numpy as np
-from env.python.utils import *
+
+from opticks.ana.base import opticks_environment
+from opticks.ana.nbase import count_unique
 from opticks.ana.types import *
-import opticks.ana.PropLib as PropLib 
 
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 
-from opticks.ana.ana import Evt, Selection, Rat, theta, costheta_, recpos_plot, angle_plot
+from opticks.ana.evt import Evt, costheta_
+from opticks.ana.ana import Rat, theta, recpos_plot, angle_plot
 from opticks.ana.geometry import Boundary
 from opticks.ana.fresnel import Fresnel
+
 deg = np.pi/180.
 
 np.set_printoptions(suppress=True, precision=3)
@@ -98,11 +101,11 @@ class Reflect(object):
 
         """
 
-        al = Selection(evt)  
+        al = evt  
         p0a = al.rpost_(0)[:,:W] - focus
         tha = self.theta( p0a, normal ) 
 
-        br = Selection(evt,["BR SA","BR AB"])
+        br = Evt.selection(evt, seqs=["TO BR SA","TO BR AB"], label="TO BR ..")
 
         p0 = br.rpost_(0)[:,:W] - focus   # start
         p1 = br.rpost_(1)[:,:W] - focus   # refl point
@@ -259,6 +262,7 @@ def attic():
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     es = Evt(tag="1", label="S", det="reflect")
     ep = Evt(tag="2", label="P", det="reflect")
@@ -266,13 +270,11 @@ if __name__ == '__main__':
     normal = [0,0,-1]
     source = [0,0,-200] 
 
-
     #fig = plt.figure()
     #recpos_plot(fig, [es,ep], origin=source)
 
     #fig = plt.figure()
     #angle_plot(fig, [es,ep], axis=normal, origin=source)
-
 
     swl = es.unique_wavelength()
     pwl = ep.unique_wavelength()
@@ -285,10 +287,8 @@ if __name__ == '__main__':
     n1 = boundary.omat.refractive_index(wl)  
     n2 = boundary.imat.refractive_index(wl)  
 
-
     dom = np.linspace(0,90,250)
     fr = Fresnel(n1, n2, dom=dom) 
-
 
     s = Reflect(es, focus=source, normal=normal)
     p = Reflect(ep, focus=source, normal=normal)

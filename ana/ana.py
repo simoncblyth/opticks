@@ -2,8 +2,8 @@
 
 import os, logging
 import numpy as np
-from env.python.utils import *
 
+from opticks.ana.nbase import count_unique  
 from opticks.ana.types import *  # TODO: spell out imports
 from opticks.ana.evt import Evt, costheta_
 

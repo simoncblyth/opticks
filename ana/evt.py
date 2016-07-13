@@ -10,7 +10,8 @@ except ImportError:
 
 from collections import OrderedDict 
 
-from opticks.ana.utils import count_unique
+from opticks.ana.base import opticks_environment
+from opticks.ana.nbase import count_unique
 from opticks.ana.types import SeqHis, seqhis_int
 from opticks.ana.nload import A, I, II
 from opticks.ana.seq import SeqAna
@@ -35,6 +36,15 @@ class Evt(object):
     RPOL = {"A":X,"B":Y,"C":Z} 
 
     RQWN_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"R":100, "T":10,"A":1,"B":1,"C":1} 
+
+    @classmethod
+    def selection(cls, evt, seqs=[], not_=False, label=None, dbg=False):
+        if label is None:
+            label = evt.label + " sel %s " % (repr(seqs)) 
+        pass
+        sel = cls(tag=evt.tag, src=evt.src, det=evt.det, seqs=seqs, not_=not_ , label=label, nrec=evt.nrec, rec=evt.rec, dbg=dbg )
+        return sel 
+
 
     def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
 
@@ -67,7 +77,11 @@ class Evt(object):
 
         fdom = A.load_("fdom"+src,tag,det, dbg=dbg) 
         idom = A.load_("idom"+src,tag,det, dbg=dbg) 
-        assert idom[0,0,3] == self.nrec
+
+        if idom[0,0,3] != self.nrec:
+            log.fatal(" unexpected idom %s nrec %s " % (repr(idom), self.nrec ))  
+
+        #assert idom[0,0,3] == self.nrec
 
         td = I.load_("md"+src,tag,det, name="t_delta.ini", dbg=dbg)
         tdii = II.load_("md"+src,tag,det, name="t_delta.ini", dbg=dbg)
@@ -151,29 +165,51 @@ class Evt(object):
 
     def init_index(self, tag, src, det, dbg):
         ps = A.load_("ps"+src,tag,det,dbg)
+        if not ps is None:
+            ups = len(np.unique(ps))
+        else:
+            ups = -1 
+
         rs = A.load_("rs"+src,tag,det,dbg)
-        rsr = rs.reshape(-1, self.nrec, 1, 4)        
- 
-        ups = len(np.unique(ps))
-        urs = len(np.unique(rs))
-        ursr = len(np.unique(rsr))
+        if not rs is None:
+            urs = len(np.unique(rs))
+        else: 
+            urs = -1
+
+        if not rs is None:
+            rsr = rs.reshape(-1, self.nrec, 1, 4)        
+        else: 
+            rsr = None
+
+        if not rsr is None:
+            ursr = len(np.unique(rsr))
+        else:
+            ursr = -1
+
 
         if ups <= 1:
-            log.warning("init_index finds too few (ps)phosel uniques : %s" % ups ) 
+            log.warning("init_index %s finds too few (ps)phosel uniques : %s" % (self.label,ups) ) 
         if urs <= 1:
-            log.warning("init_index finds too few (rs)recsel uniques : %s" % urs ) 
+            log.warning("init_index %s finds too few (rs)recsel uniques : %s" % (self.label,urs) ) 
         if ursr <= 1:
-            log.warning("init_index finds too few (rsr)reshaped-recsel uniques : %s" % ursr ) 
+            log.warning("init_index %s finds too few (rsr)reshaped-recsel uniques : %s" % (self.label,ursr) ) 
 
-        ps.desc = "(photons) phosel sequence frequency index lookups (uniques %d)"  % ups
-        rs.desc = "(records) RAW recsel sequence frequency index lookups (uniques %d)"  % urs 
-        rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
+
         self.ps = ps
         self.rs = rs 
         self.rsr = rsr 
-        self.desc['ps'] = ps.desc
-        self.desc['rs'] = rs.desc
-        self.desc['rsr'] = rsr.desc
+
+        if not ps is None:
+            ps.desc = "(photons) phosel sequence frequency index lookups (uniques %d)"  % ups
+            self.desc['ps'] = ps.desc
+
+        if not rs is None:
+            rs.desc = "(records) RAW recsel sequence frequency index lookups (uniques %d)"  % urs 
+            self.desc['rs'] = rs.desc
+
+        if not rsr is None:
+            rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
+            self.desc['rsr'] = rsr.desc
 
 
     def init_selection(self, seqs, not_):
@@ -181,6 +217,13 @@ class Evt(object):
 
         log.debug("Evt seqs %s " % repr(seqs))
         psel = self.all_history.seq_or(seqs, not_=not_)
+
+        nsel = len(psel[psel == True])
+        if nsel == 0:
+            log.warning("empty selection seqs %s " % repr(seqs))
+
+        self.nsel = nsel 
+        self.psel = psel 
 
         self.ox = self.ox[psel]
         self.c4 = self.c4[psel]
@@ -603,6 +646,8 @@ if __name__ == '__main__':
 
     #logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
+    opticks_environment(dump=True)
+
     rec = True  
 
 

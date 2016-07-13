@@ -3,7 +3,6 @@ import numpy as np
 import os, logging
 log = logging.getLogger(__name__) 
 
-
 def count_unique(vals):
     """  
     http://stackoverflow.com/questions/10741346/numpy-frequency-counts-for-unique-values-in-an-array

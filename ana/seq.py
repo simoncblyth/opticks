@@ -17,11 +17,15 @@ class SeqType(object):
         self.abbrev = abbrev
 
     def code(self, s):
+        """
+        :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
+        :return: integer code eg 0x8cbbbcd
+        """
         f = self.abbr2code
         bad = 0 
-        for n in s.split(" "):
+        for n in s.strip().split(" "):
             if f.get(n,0) == 0:
-               log.warn("code bad abbr [%s] " % n ) 
+               log.warn("code bad abbr [%s] s [%s] " % (n, s) ) 
                bad += 1
 
         if bad>0:
@@ -34,6 +38,10 @@ class SeqType(object):
             return self.code(a) 
 
     def label(self, i):
+        """
+        :param i: integer code
+        :return: abbreviation sequence string 
+        """
         xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
         seq = map(lambda _:int(_,16), xs ) 
         log.debug("label xs %s seq %s " % (xs, repr(seq)) )
@@ -44,6 +52,11 @@ class SeqType(object):
  
 class SeqTable(object):
     def __init__(self, cu, af, cnames=[]): 
+        """
+        :param cu: count unique array, typically shaped (n, 2) 
+        :param af: instance of SeqType subclass such as HisType
+        :param cnames: column names 
+        """
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
 
         ncol = cu.shape[1] - 1 
@@ -155,7 +168,8 @@ class SeqTable(object):
 
 
 class SeqAna(object):
-
+    """
+    """
     @classmethod 
     def for_evt(cls, af, tag="1", src="torch", det="dayabay", offset=0):
         ph = A.load_("ph"+src,tag,det)
@@ -163,6 +177,10 @@ class SeqAna(object):
         return cls(aseq, af, cnames=[tag])
     
     def __init__(self, aseq, af, cnames=["noname"]):
+        """
+        :param aseq: photon length sequence array 
+        :param af: instance of SeqType subclass 
+        """
         cu = count_unique_sorted(aseq)
         self.af = af
         self.table = SeqTable(cu, af, cnames=cnames)
@@ -190,7 +208,7 @@ class SeqAna(object):
 
 if __name__ == '__main__':
     pass 
-
+    ## see history.py for testing this
     
 
 

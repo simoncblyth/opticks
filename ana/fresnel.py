@@ -6,9 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from env.python.utils import *
+from opticks.ana.nbase import count_unique
 from opticks.ana.types import *
-import opticks.ana.PropLib as PropLib 
 
 np.set_printoptions(suppress=True, precision=3)
 

@@ -1,5 +1,12 @@
 #!/usr/bin/env python
+"""
+Droplet
+~~~~~~~~~
 
+Geometrical calculation of deviation, incident and refracted angles
+at minimum deviation for k orders of rainbows.
+
+"""
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
@@ -81,6 +88,8 @@ class Droplet(object):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     boundary = Boundary("Vacuum///MainH2OHale")
     droplet = Droplet(boundary)
 

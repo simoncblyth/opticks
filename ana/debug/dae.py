@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """
+DAE
+=====
 
+Simple XML parsing of COLLADA, for debug access to XML elements.  
 
 
 """
@@ -9,7 +12,7 @@ import numpy as np
 from StringIO import StringIO
 import lxml.etree as ET
 
-import matplotlib.pyplot as plt
+import opticks.ana.base
  
 log = logging.getLogger(__name__)
 
@@ -18,7 +21,6 @@ tag_ = lambda _:str(ET.QName(COLLADA_NS,_))
 xmlparse_ = lambda _:ET.parse(os.path.expandvars(_)).getroot()
 tostring_ = lambda _:ET.tostring(_)
 array_ = lambda e:np.loadtxt(StringIO(e.text))
-
 
 
 class DAE(object):
@@ -45,7 +47,6 @@ class DAE(object):
         ox = id_.find('0x')
         return id_[0:ox] if ox > -1 else id_
 
-
     def __init__(self, path):
         self.x = xmlparse_(path)
 
@@ -65,14 +66,16 @@ class DAE(object):
         a = np.loadtxt(s) 
         return a
 
-
-
-
     def material(self, id_):
         e = self.elem_("material", id_ )
         return e
 
 
+if __name__ == '__main__':
+    pass
+    logging.basicConfig(level=logging.INFO)
+
+    
 
 
 

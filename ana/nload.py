@@ -2,12 +2,12 @@
 import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
-from base import ini_
+from opticks.ana.base import opticks_environment, ini_
 
 #DEFAULT_BASE = "$LOCAL_BASE/env/opticks"
 DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
 
-DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2"  ## cf C++ NPYBase::
+DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2"  ## cf C++  brap- BOpticksEvent
 
 def path_(typ, tag, det="dayabay", name=None):
     tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ)) 
@@ -23,13 +23,17 @@ def tpaths_(typ, tag, det="dayabay", name=None):
     assert name is not None 
     tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ)) 
     tagdir = os.path.join(tmpl, "%s") % str(tag) 
-    names = os.listdir(tagdir)
+   
+    if os.path.isdir(tagdir): 
+        names = os.listdir(tagdir)
+    else:
+        log.warning("tpaths_ tagdir %s does not exist" % tagdir)
+        names = []
+
     tdirs = filter( os.path.isdir, map(lambda name:os.path.join(tagdir, name), names))
     tdirs = sorted(tdirs, reverse=True)
     tnams = filter( os.path.exists, map(lambda tdir:os.path.join(tdir, name), tdirs))
     return tnams
-
- 
 
 
 
@@ -84,7 +88,7 @@ class I(dict):
             d = ini_(path)
         else:
             log.warning("cannot load %s " % path)
-            d = None
+            d = {}
         return d  
 
     @classmethod
@@ -135,6 +139,8 @@ class II(list):
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
+    opticks_environment()
+
     a = A.load_("phtorch","5", "rainbow")
     i = I.load_("mdtorch","5", "rainbow", name="t_delta.ini")
 

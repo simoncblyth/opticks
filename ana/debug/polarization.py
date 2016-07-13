@@ -4,16 +4,16 @@
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
+from opticks.ana.base import opticks_environment
+from opticks.ana.evt import Evt
 
-from opticks.ana.ana import Evt, Selection, costheta_, cross_
-from opticks.ana.geometry import Boundary   
 deg = np.pi/180.
 
 
 if __name__ == '__main__':
     pass
+    logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     spol, ppol = "5", "6"
     g = Evt(tag="-"+spol, det="rainbow", label="S G4")

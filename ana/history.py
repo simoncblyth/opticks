@@ -35,7 +35,7 @@ class HisType(SeqType):
 
 
 if __name__ == '__main__':
-
+     logging.basicConfig(level=logging.INFO)
 
      af = HisType()
 
@@ -43,15 +43,16 @@ if __name__ == '__main__':
      #src, tag, det = "cerenkov", "1", "juno"
      src, tag, det = "torch", "4", "PmtInBox"
 
-
      ph = A.load_("ph"+src,tag,det)
+
      seqhis = ph[:,0,0]
 
      cu = count_unique_sorted(seqhis)
 
      ht = SeqTable(cu, af)
      
-     #test_HistoryTable(ht, seqhis)
+     test_HistoryTable(ht, seqhis)
 
+     test_roundtrip(af)
 
 
