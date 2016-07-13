@@ -58,7 +58,7 @@ public:
 
 
 public:
-   static const char* RngDir();
+  // static const char* RngDir();
 
    static void Print(const char* msg="OConfig::Print");
    static optix::float3 make_contrast_color(int tag);

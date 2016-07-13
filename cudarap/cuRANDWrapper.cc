@@ -326,7 +326,9 @@ int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int
         else
         {
             printf("cuRANDWrapper::LoadIntoHostBuffer MISSING RNG CACHE AT : %s \n", path);
-            printf("cuRANDWrapper::LoadIntoHostBuffer : CREATE CACHE WITH bash functions : cudarap-;cudarap-prepare-cache \n");
+            printf("cuRANDWrapper::LoadIntoHostBuffer : CREATE CACHE WITH bash functions : cudarap-;cudarap-prepare-installcache \n");
+            printf("cuRANDWrapper::LoadIntoHostBuffer : NB cudarap-prepare-installcache SHOULD HAVE BEEN INVOKED BY opticks-prepare-installcache  \n");
+
             assert(0);
         }
     }

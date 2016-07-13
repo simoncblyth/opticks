@@ -47,7 +47,6 @@ NTesselateTest.cc
 G4StepNPYTest.cc
 _TorchStepNPYTest.cc
 
-SequenceNPYTest.cc
 HitsNPYTest.cc
 _BoundariesNPYTest.cc
 _RecordsNPYTest.cc
@@ -61,6 +60,7 @@ NPYTest.cc
 
 set(_TEST_SOURCES
 
+SequenceNPYTest.cc
 
 )
 

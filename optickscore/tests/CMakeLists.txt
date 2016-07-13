@@ -17,7 +17,7 @@ set(TEST_SOURCES
     OpticksResourceTest.cc
 
     OpticksIDPATH.cc
-    OpticksSaveResources.cc
+    OpticksPrepareInstallCache.cc
 )
 
 
@@ -36,14 +36,15 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
     get_filename_component(TGT ${TEST_SOURCE} NAME_WE)
     add_executable(${TGT} ${TEST_SOURCE})
 
-    set(testname ${name}.${TGT})
+    if (${TGT} MATCHES ".*Test$")  
+       set(testname ${name}.${TGT})
+       add_test(${testname} ${TGT})
+       add_dependencies(check ${TGT})
+    else()
+       #message(" skip non-test ${TGT} ")
+    endif()
 
-    add_test(${testname} ${TGT})
-    add_dependencies(check ${TGT})
-
-    target_link_libraries(${TGT} 
-               ${LIBRARIES} OpticksCore
-    )
+    target_link_libraries(${TGT} ${LIBRARIES} OpticksCore)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

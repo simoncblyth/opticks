@@ -102,9 +102,8 @@ class ListFlags(object):
 
 class IniFlags(object):
     """
-    $IDPATH/GFlagsLocal.ini
     """
-    def __init__(self, path="$IDPATH/GFlagIndexLocal.ini"):
+    def __init__(self, path="$OPTICKS_DATA/resource/GFlagIndexLocal.ini"):
         ini = ini_(path)
         assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
 

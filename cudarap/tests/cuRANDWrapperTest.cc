@@ -10,6 +10,16 @@
 //#define WORK 1024*768
 #define WORK 1024*1
 
+/*
+TODO: move to BOpticksResource, not envvars 
+
+Improving this is stymied, as need access to BOpticksResource 
+to avoid envvar crutch, but have prejudice against use of boost 
+in cudarap- (is that prejudice still justified, now that I know 
+better how to split things between host compiler and nvcc ?).
+
+*/
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);

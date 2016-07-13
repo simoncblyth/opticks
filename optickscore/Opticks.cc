@@ -636,6 +636,8 @@ bool Opticks::isPmtInBox(){ return m_resource->isPmtInBox(); }
 bool Opticks::isOther() {   return m_resource->isOther(); }
 bool Opticks::isValid() {   return m_resource->isValid(); }
 
+const char* Opticks::getRNGInstallCacheDir() { return m_resource->getRNGInstallCacheDir(); } 
+
 std::string Opticks::getPreferenceDir(const char* type, const char* subtype)
 {
     const char* udet = getUDet();
@@ -671,12 +673,17 @@ const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDM
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
 
-void Opticks::saveResources(const char* dir)
+void Opticks::prepareInstallCache(const char* dir)
 {
     // Moved save directory from IdPath to ResourceDir as
     // the IdPath is not really appropriate  
     // for things such as the flags that are a feature of an 
     // Opticks installation, not a feature of the geometry.
+    // 
+    // But ResourceDir is not appropriate either as that requires 
+    // manual management via opticksdata repo.
+    //
+    //  So 
     // 
     //  TODO:
     //     incorporate resources saving into 
@@ -686,7 +693,7 @@ void Opticks::saveResources(const char* dir)
     //         OpticksSaveResources 
     //
 
-    if(dir == NULL) dir = m_resource->getResourceDir() ;
+    if(dir == NULL) dir = m_resource->getOKCInstallCacheDir() ;
     LOG(info) << "Opticks::saveResources " << ( dir ? dir : "NULL" )  ; 
     m_resource->saveFlags(dir);
     m_resource->saveTypes(dir);

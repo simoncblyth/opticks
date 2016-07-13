@@ -2,12 +2,14 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "BOpticksResource.hh"
+
 #include "OProg.hh"
 #include "OConfig.hh"
 
 #include "PLOG.hh"
 
-#include "Config.hh"  // ptxpath, RNGDIR
+// #include "Config.hh"  // ptxpath, RNGDIR
 
 
 OConfig::OConfig(optix::Context context )
@@ -17,12 +19,13 @@ OConfig::OConfig(optix::Context context )
         m_raygen_index(0),
         m_exception_index(0)
 {
+    
 }
 
-const char* OConfig::RngDir()
-{
-    return RNGDIR ; 
-} 
+//const char* OConfig::RngDir()
+//{
+//    return RNGDIR ; 
+//} 
 
 void OConfig::Print(const char* msg)
 {
@@ -31,7 +34,7 @@ void OConfig::Print(const char* msg)
 
 optix::Program OConfig::createProgram(const char* filename, const char* progname )
 {
-  std::string path = ptxpath(filename); 
+  std::string path = BOpticksResource::PTXPath(filename); 
   std::string key = path + ":" + progname ; 
 
   if(m_programs.find(key) == m_programs.end())

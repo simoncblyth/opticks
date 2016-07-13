@@ -471,8 +471,10 @@ cudarap-test()
 
 
 cudarap-rngmax(){ echo $(( 3*1000*1000 )) ; } # maximal number of photons that can be handled
-cudarap-rngdir(){ echo $(opticks-prefix)/cache/rng  ; }
-cudarap-prepare-cache()
+#cudarap-rngdir(){ echo $(opticks-prefix)/cache/rng  ; }
+
+cudarap-rngdir(){ echo $(opticks-prefix)/installcache/RNG  ; }
+cudarap-prepare-installcache()
 {
    CUDARAP_RNG_DIR=$(cudarap-rngdir) CUDARAP_RNG_MAX=$(cudarap-rngmax) $(cudarap-ibin)
 }

@@ -43,10 +43,10 @@ find_package(GGeo REQUIRED)
 find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
+#    ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/inc   # for cmake configure_file Config.hh 
 
     ${PLog_INCLUDE_DIRS} 
     ${OpticksBoost_INCLUDE_DIRS} 
@@ -210,13 +210,15 @@ optixthrust_add_library( ${name} ${SOURCES} OPTIONS )
 target_link_libraries( ${name} ${LIBRARIES} )
 
 set(TARGET    "${name}")
-set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/ptx")
-set(RNGDIR    "$ENV{LOCAL_BASE}/opticks/cache/rng")  # TODO: move into optixrap- OR cudawrap- fiefdom
-configure_file(Config.hh.in inc/Config.hh)
 
+#set(PTXDIR    "${CMAKE_INSTALL_PREFIX}/installcache/ptx")
+#set(RNGDIR    "${CMAKE_INSTALL_PREFIX}/installcache/RNG")  ## duplicates cudarap- envvar and BOpticksResource value
+#configure_file(Config.hh.in inc/Config.hh)
+
+## need to match paths in brap-/BOpticksResource
 
 install(TARGETS ${name}     DESTINATION lib)
-install(FILES ${OX_PTXS}    DESTINATION ptx)
+install(FILES ${OX_PTXS}    DESTINATION installcache/PTX)
 install(FILES ${OX_HEADERS} DESTINATION include/${name}/cu)
 install(FILES ${HEADERS}    DESTINATION include/${name})
 

@@ -156,7 +156,9 @@ void OPropagator::initRng()
     }
 
     unsigned int num_photons = m_evt->getNumPhotons();
-    const char* rngCacheDir = OConfig::RngDir() ;
+
+    //const char* rngCacheDir = OConfig::RngDir() ;
+    const char* rngCacheDir = m_opticks->getRNGInstallCacheDir();
 
     LOG(info) << "OPropagator::initRng"
                << " rng_max " << rng_max

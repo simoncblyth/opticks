@@ -79,8 +79,9 @@ class OKCORE_API Opticks {
        bool isOther();
        bool isValid();
    public:
-       void saveResources(const char* dir=NULL);
+       void prepareInstallCache(const char* dir=NULL);
    public:
+       const char* getRNGInstallCacheDir();
        const char* getInstallPrefix();
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
        const char* getDAEPath();

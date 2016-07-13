@@ -657,6 +657,15 @@ opticks--(){
 }
 
 
+opticks-prepare-installcache()
+{
+    cudarap-
+    cudarap-prepare-installcache
+
+    OpticksPrepareInstallCache  
+}
+
+
 opticks-ctest-()
 {
    [ "$(which ctest 2>/dev/null)" == "" ] && ctest3 $* || ctest $* 
