@@ -10,6 +10,9 @@ Opticks Analysis Scripts
 :doc:`proplib`
      Access to geocache via PropLib, Material and Boundary classes
  
+:doc:`mergedmesh`
+     Access geometrical data such as positions, transforms of volumes of the geometry.
+
 
 EOU
 }
@@ -24,14 +27,21 @@ base.py
     json and ini loading 
 
     Abbrev
-    ListFlags 
 
+    *ItemList*
+         access to GItemList .txt item names 
+        
+instancedmergedmesh.py
+     debugging of instanced mesh info such as PMT meshes  
 
 material.py
      testing material mechanics
 
 CGDMLDetector.py
+     access to global transforms obtained from GDMLDetector  
 
+mesh.py
+     env dependency 
 
 IndexerTest.py
 __init__.py
@@ -50,7 +60,6 @@ genstep_sequence_material_mismatch.py
 geometry.py
 groupvel.py
 history.py
-mesh.py
 metadata.py
 nbase.py
 ncensus.py

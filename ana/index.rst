@@ -5,7 +5,9 @@ ana : Analysis of Opticks Data
 .. toctree::
 
    ana
-   PropLib
+   mergedmesh  
+   proplib
+
 
 
 

@@ -11,11 +11,29 @@ ffs_ = lambda _:cpp.ffs(_)
 IDPATH = os.path.expandvars("$IDPATH")
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
 
+def _dirname(path, n):
+    for _ in range(n):
+        path = os.path.dirname(path)
+    return path
+
+def _opticks_install_prefix(idpath):
+    prefix = _dirname(idpath,4)
+    log.info("_opticks_install_prefix idpath %s -> prefix %s " % (idpath, prefix))
+    return prefix 
 
 def _opticks_data(idpath):
-    datadir = os.path.dirname(os.path.dirname(os.path.dirname(idpath)))
+    datadir = _dirname(idpath,3)
     log.info("_opticks_datadir idpath %s -> datadir %s " % (idpath, datadir))
     return datadir 
+
+def _opticks_install_cache(idpath):
+    prefix = _opticks_install_prefix(idpath) 
+    path = os.path.join(prefix, "installcache") 
+    log.info("_opticks_install_cache idpath %s -> datadir %s " % (idpath, path))
+    return path 
+
+
+
 
 def _opticks_detector(idpath):
     ddir = idpath.split("/")[-2]
@@ -28,10 +46,21 @@ def _opticks_detector(idpath):
     log.info("_opticks_detector idpath %s -> detector %s " % (idpath, detector))
     return detector 
 
-    
-os.environ.setdefault("OPTICKS_DATA",     _opticks_data(IDPATH))
-os.environ.setdefault("OPTICKS_DETECTOR", _opticks_detector(IDPATH))
 
+
+
+
+
+
+def _opticks_dump():
+    for k,v in os.environ.items():
+        if k.startswith("OPTICKS_"):
+            log.info(" %30s : %s " % (k,v))
+    
+os.environ.setdefault("OPTICKS_DATA",            _opticks_data(IDPATH))
+os.environ.setdefault("OPTICKS_INSTALL_PREFIX",  _opticks_install_prefix(IDPATH))
+os.environ.setdefault("OPTICKS_INSTALL_CACHE",   _opticks_install_cache(IDPATH))
+os.environ.setdefault("OPTICKS_DETECTOR",        _opticks_detector(IDPATH))
 
 
 def ihex_(i):
@@ -90,11 +119,11 @@ class Abbrev(object):
         self.abbr2name = dict(zip(abbrs, names))
 
 
-class ListFlags(object):
-   def __init__(self, kls="GMaterialLib" ):
-        npath=idp_("GItemList/%(kls)s.txt" % locals())
+class ItemList(object): # formerly ListFlags
+   def __init__(self, txt="GMaterialLib", offset=1 ):
+        npath=idp_("GItemList/%(txt)s.txt" % locals())
         names = map(lambda _:_[:-1],file(npath).readlines())
-        codes = map(lambda _:_ + 1, range(len(names)))
+        codes = map(lambda _:_ + offset, range(len(names)))
         self.names = names
         self.codes = codes
         self.name2code = dict(zip(names, codes)) 
@@ -103,7 +132,7 @@ class ListFlags(object):
 class IniFlags(object):
     """
     """
-    def __init__(self, path="$OPTICKS_DATA/resource/GFlagIndexLocal.ini"):
+    def __init__(self, path="$OPTICKS_INSTALL_CACHE/OKC/GFlagIndexLocal.ini"):
         ini = ini_(path)
         assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
 
@@ -120,15 +149,17 @@ class IniFlags(object):
 
 
 if __name__ == '__main__':
-    #i = ini_("$IDPATH/GFlagsLocal.ini")
-    #j = json_("~/.opticks/GFlags/abbrev.json")
-    #n = ffs_(0x1000)
+
+    logging.basicConfig(level=logging.INFO)
+
+    _opticks_dump()
 
 
-    lf = ListFlags()
+    lf = ItemList("GMaterialLib")
+    print "ItemList(GMaterialLib).name2code", lf.name2code
 
-
-
+    inif = IniFlags()
+    print "IniFlags(photon flags)", inif.name2code
 
 
 

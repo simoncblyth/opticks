@@ -44,7 +44,7 @@ import os, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
-from opticks.ana.base import Abbrev, ListFlags
+from opticks.ana.base import Abbrev, ItemList 
 from opticks.ana.seq import SeqType, SeqAna
 from opticks.ana.proplib import PropLib
 from opticks.ana.nload import A
@@ -90,9 +90,9 @@ class MatType(SeqType):
 
     """
     def __init__(self):
-        flags = ListFlags("GMaterialLib")
-        abbrev = Abbrev("$OPTICKS_DATA/export/$OPTICKS_DETECTOR/GMaterialLib/abbrev.json")
-        SeqType.__init__(self, flags, abbrev)
+        material_names = ItemList("GMaterialLib")
+        material_abbrev = Abbrev("$OPTICKS_DATA/export/$OPTICKS_DETECTOR/GMaterialLib/abbrev.json")
+        SeqType.__init__(self, material_names, material_abbrev)
 
 
 if __name__ == '__main__':

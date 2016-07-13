@@ -17,6 +17,7 @@ int main(int argc, char** argv, char** /*envp*/)
 
     if(argc > 1 && strlen(argv[1]) > 0)
     {
+        LOG(warning) << "WRITING TO MANUAL PATH IS JUST FOR TESTING" ; 
         ok.prepareInstallCache(argv[1]);
     }
     else
@@ -51,25 +52,18 @@ Test run with argument /tmp/ores writes 4 identical flag files::
     BULK_REEMIT=5
     BULK_SCATTER=6
 
-Canonical run without argument writes into resource dir::
 
-    simon:optickscore blyth$ ll /usr/local/opticks/opticksdata/resource/
-    total 32
-    drwxr-xr-x  3 blyth  staff  102 Jul  9 18:40 OpticksColors
-    drwxr-xr-x  4 blyth  staff  136 Jul  9 18:40 GFlags
-    drwxr-xr-x  8 blyth  staff  272 Jul 12 13:02 ..
-    -rw-r--r--  1 blyth  staff  222 Jul 13 10:53 GFlagsSource.ini
-    -rw-r--r--  1 blyth  staff  222 Jul 13 10:53 GFlagsLocal.ini
-    -rw-r--r--  1 blyth  staff  222 Jul 13 10:53 GFlagIndexSource.ini
-    -rw-r--r--  1 blyth  staff  222 Jul 13 10:53 GFlagIndexLocal.ini
-    drwxr-xr-x  8 blyth  staff  272 Jul 13 10:53 .
-    simon:optickscore blyth$ 
+Formerly wrote into IDPATH and then /usr/local/opticks/opticksdata/resource/
+but they are not the right places, as not geometry related and no need 
+to require manual management via opticksdata.
 
+OKC flags Ended up in a more appropriate place as
+siblings to PTX and RNG which have same lifecycle, 
+ie born at or just after installation
 
-That is not really the right place either, as entails manual management via 
-opticksdata.
-
-A better place would be /usr/local/opticks/cache/ beside the rng 
+   /usr/local/opticks/installcache/OKC
+   /usr/local/opticks/installcache/PTX
+   /usr/local/opticks/installcache/RNG
 
 
 */
