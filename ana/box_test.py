@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 """
-BoxInBox Opticks vs cfg4
-==================================
+box_test.py : BoxInBox Opticks vs Geant4 comparisons
+=======================================================
 
 Without and with cfg4 runs::
 
    ggv-;ggv-box-test 
-   ggv-;ggv-box-test --cfg4 
+   ggv-;ggv-box-test --tcfg4 
 
 Visualize the cfg4 created evt in interop mode viewer::
 
-   ggv-;ggv-box-test --cfg4 --load
+   ggv-;ggv-box-test --tcfg4 --load
 
 
-::
+.. code-block:: py 
 
        0.000 100.004  0.129 100.002
                       1:BoxInBox   -1:BoxInBox           c2 
@@ -221,6 +221,8 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
+
+from opticks.ana.base import opticks_environment
 from opticks.ana.evt import Evt
 
 X,Y,Z,W = 0,1,2,3
@@ -228,6 +230,7 @@ X,Y,Z,W = 0,1,2,3
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     np.set_printoptions(precision=4, linewidth=200)
 

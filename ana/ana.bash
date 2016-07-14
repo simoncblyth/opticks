@@ -51,12 +51,14 @@ G4Gun Tests
     Load single G4Gun event
 
 
-
 Geometry Infrastructure 
 -------------------------
 
+:doc:`boundary`
+    Access to geocache material properties and boundary holder class
+
 :doc:`proplib`
-    Access to geocache via PropLib, Material and Boundary classes
+    Access to geocache via PropLib
  
 :doc:`mergedmesh`
     Access geometrical data such as positions, transforms of volumes of the geometry
@@ -103,6 +105,14 @@ Event Infrastructure
     used to create videos, see `vids-`
 
 
+Color Infrastructure
+----------------------
+
+**cie.py**
+    converts wavelength spectra into XYZ and RGB colorspace (depends on **env** repo)
+
+
+
 
 EOU
 }
@@ -115,12 +125,6 @@ cfg4_speedplot.py
 
 cfplot.py
 
-cie.py
-
-nopstep_viz_debug.py
-
-
-types.py
 
 
 REFLECTION CHECKS
@@ -157,6 +161,10 @@ rainbow_scatter.py
 
 
 DEBUGGING
+
+
+types.py
+     MOSTLY DEPRECATED FUNCTIONS
 
 analytic_cf_triangulated.py
      plotting analytic PMT and mesh points together

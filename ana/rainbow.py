@@ -15,7 +15,7 @@ from opticks.ana.base import opticks_environment
 from opticks.ana.evt import Evt, costheta_, cross_
 #from opticks.ana.ana import Selection, cross_
 #from opticks.ana.ana import cross_
-from opticks.ana.proplib import Boundary   
+from opticks.ana.boundary import Boundary   
 from opticks.ana.fresnel import fresnel_factor
 from opticks.ana.cie  import CIE
 from opticks.ana.xrainbow import XRainbow

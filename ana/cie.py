@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """
+cie.py: converts wavelength spectra into XYZ and RGB colorspaces
+===================================================================
+
 Conversion of the binned wavelength spectra into XYZ (using 
 CIE weighting functions) and then RGB produces a spectrum
 

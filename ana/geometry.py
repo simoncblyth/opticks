@@ -10,7 +10,7 @@ Simple geometry intersection calculations.
 """
 import os, logging
 import numpy as np
-from opticks.ana.proplib import Boundary
+from opticks.ana.boundary import Boundary
 from StringIO import StringIO
 
 log = logging.getLogger(__name__)

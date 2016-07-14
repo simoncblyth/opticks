@@ -249,7 +249,7 @@ class XFrac(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    from opticks.ana.proplib import Boundary   
+    from opticks.ana.boundary import Boundary   
 
     boundary = Boundary("Vacuum///MainH2OHale") 
 

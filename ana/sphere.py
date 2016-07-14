@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.evt import Evt, costheta_, cross_, norm_
-from opticks.ana.proplib import Boundary   
+from opticks.ana.boundary import Boundary   
 
 deg = np.pi/180.
 

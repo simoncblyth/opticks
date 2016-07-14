@@ -1,4 +1,10 @@
 #!/bin/env python
+"""
+types.py : MOSTLY REPLACED BY OTHER MODULES
+==============================================
+
+
+"""
 import os, datetime, logging, json
 log = logging.getLogger(__name__)
 import numpy as np
