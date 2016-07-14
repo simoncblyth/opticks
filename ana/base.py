@@ -39,17 +39,21 @@ def _opticks_install_prefix(idpath):
     log.debug("_opticks_install_prefix idpath %s -> prefix %s " % (idpath, prefix))
     return prefix 
 
-def _opticks_data(idpath):
+def _opticks_data_dir(idpath):
     datadir = _dirname(idpath,3)
-    log.debug("_opticks_datadir idpath %s -> datadir %s " % (idpath, datadir))
+    log.debug("_opticks_datadir_dir idpath %s -> datadir %s " % (idpath, datadir))
     return datadir 
+
+def _opticks_export_dir(idpath):
+    xdir = _dirname(idpath,2)
+    log.debug("_opticks_exportdir_dir idpath %s -> xdir %s " % (idpath, xdir))
+    return xdir 
 
 def _opticks_install_cache(idpath):
     prefix = _opticks_install_prefix(idpath) 
     path = os.path.join(prefix, "installcache") 
     log.debug("_opticks_install_cache idpath %s -> datadir %s " % (idpath, path))
     return path 
-
 
 def _opticks_detector(idpath):
     ddir = idpath.split("/")[-2]
@@ -61,6 +65,11 @@ def _opticks_detector(idpath):
     pass
     log.debug("_opticks_detector idpath %s -> detector %s " % (idpath, detector))
     return detector 
+
+def _opticks_detector_dir(idpath):
+    detector = _opticks_detector(idpath)
+    xdir = _opticks_export_dir(idpath)
+    return os.path.join(xdir, detector)
 
 
 def _subprocess_output(args):
@@ -84,7 +93,11 @@ def _opticks_default_idpath_from_exe(exe="OpticksIDPATH"):
 
 def _opticks_event_base():
     return os.path.expandvars("/tmp/$USER/opticks") 
+def _opticks_tmp():
+    return os.path.expandvars("/tmp/$USER/opticks") 
 
+def _opticks_env(st="OPTICKS_ IDPATH"):
+    return filter(lambda _:_[0].startswith(st.split()), os.environ.items())
 
 class OpticksEnv(object):
     def __init__(self):
@@ -92,11 +105,14 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
         self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
         self.setdefault("OPTICKS_DAEPATH",         _opticks_daepath(IDPATH))
-        self.setdefault("OPTICKS_DATA",            _opticks_data(IDPATH))
+        self.setdefault("OPTICKS_DATA_DIR",        _opticks_data_dir(IDPATH))
+        self.setdefault("OPTICKS_EXPORT_DIR",      _opticks_export_dir(IDPATH))
         self.setdefault("OPTICKS_INSTALL_PREFIX",  _opticks_install_prefix(IDPATH))
         self.setdefault("OPTICKS_INSTALL_CACHE",   _opticks_install_cache(IDPATH))
         self.setdefault("OPTICKS_DETECTOR",        _opticks_detector(IDPATH))
+        self.setdefault("OPTICKS_DETECTOR_DIR",    _opticks_detector_dir(IDPATH))
         self.setdefault("OPTICKS_EVENT_BASE",      _opticks_event_base())
+        self.setdefault("TMP",                     _opticks_tmp())
 
     def setdefault(self, k, v):
         if k in os.environ:

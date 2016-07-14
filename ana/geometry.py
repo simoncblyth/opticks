@@ -1,5 +1,13 @@
 #!/usr/bin/env python
+"""
+geometry.py : Shape, Ray, Plane, Intersect, IntersectFrame  
+============================================================
 
+Simple geometry intersection calculations.
+
+
+
+"""
 import os, logging
 import numpy as np
 from opticks.ana.proplib import Boundary
@@ -19,7 +27,6 @@ def mat4_fromstring(s):
     m = np.fromstring(s,sep=",").reshape(4,4)
     return m 
 
-
 class Shape(object):
     def __init__(self, parameters, boundary):
          self.parameters = np.fromstring(parameters, sep=",")
@@ -28,7 +35,6 @@ class Shape(object):
          else:
              self.boundary = boundary
          pass
- 
 
     def refractive_index(self, wavelength):
          return self.boundary.imat.refractive_index(wavelength)
@@ -69,11 +75,6 @@ class Plane(object):
         return denom_, -(self.d + np.dot(self.n, ray.origin))/denom_
 
 
-
-
-
-
-
 class Intersect(object):
     def __init__(self, i, t, n, p):
         self.i = i
@@ -84,8 +85,6 @@ class Intersect(object):
     def __repr__(self):
         return "i %2d t %10.4f n %25s p %25s  " % (self.i, self.t, self.n,self.p)
  
-
-
 
 class IntersectFrame(object):
     """

@@ -7,69 +7,114 @@ ana-usage(){ cat << \EOU
 Opticks Analysis Scripts
 =========================
 
+PMT Tests
+------------
+
+:doc:`pmt_test_evt`
+    Loads single PMT test event.
+
+:doc:`pmt_test`
+    Compare Opticks and Geant4 photon bounce histories for simple PMT in box of mineral oil geometry 
+
+:doc:`pmt_test_distrib`
+    Compare Opticks and Geant4 photon distributions for simple PMT in box of mineral oil geometry 
+
+:doc:`pmt_skimmer`
+    Plotting mean step by step positions of all photons with specific step histories 
+
+**pmt_edge.py**
+    tabulates and plots and min,max,mid positions at each step for photons that 
+    follow a specific sequence such as "TO BT BT SA" 
+
+Rainbow Tests
+---------------
+
+:doc:`source`
+    Compare wavelength spectrum from ggv-rainbow against analytic Planck distribution
+
+**planck.py**
+    Planck black body formula
+
+**droplet.py**
+    geometry calculation of spherical drop incident, refracted, 
+    deviation angles for k orders of rainbow corresponding to different numbers
+    of internal reflections
+
+**sphere.py**
+    SphereReflect intersection, polarization calculation and spatial plot
+
+
+
+Geometry Infrastructure 
+-------------------------
+
 :doc:`proplib`
-     Access to geocache via PropLib, Material and Boundary classes
+    Access to geocache via PropLib, Material and Boundary classes
  
 :doc:`mergedmesh`
-     Access geometrical data such as positions, transforms of volumes of the geometry.
+    Access geometrical data such as positions, transforms of volumes of the geometry
+
+**geometry.py**
+    Shape, Ray, Plane, Intersect, IntersectFrame : simple intersect calulations
+
+
+Event Infrastructure
+-----------------------
+
+**evt.py**
+    loads event data
+
+**base.py** 
+    internal envvar setup based on input envvar IDPATH 
+    json and ini loading with Abbrev and ItemList classes 
+
+**nload.py**
+    numpy array and .ini metadata loading with clases A, I, II
+
+**ncensus.py**
+    event census with array shape dumping 
+
+**nbase.py**
+    pure numpy utility functions: count_unique, count_unique_sorted, chi2, decompression_bins 
+
+**seq.py**
+    SeqType conversions of long integer sequence codes to abbreviation string sequences like  "TO BT BR BR BT SA"
+    SeqTable presenting frequencies of different sequences 
+
+**history.py**
+    HisType (SeqType subclass) and tests
+        
+**material.py**
+    MatType (SeqType subclass) and tests
+
+**metadata.py** 
+    access metadata .json written by Opticks allowing 
+    comparisons of evt digests and simulation times 
+
+
 
 EOU
 }
 
 ana-notes(){ cat << EON
 
-evt.py
-    loads event data
-
-base.py 
-    internal envvar setup based on input envvar IDPATH 
-    json and ini loading with Abbrev and ItemList classes 
-
-nload.py
-    numpy array and .ini metadata loading with clases A, I, II
-
-nbase.py
-    pure numpy utility functions: count_unique, count_unique_sorted, chi2, decompression_bins 
-
-
-droplet.py
-     geometry calculation of spherical drop incident, refracted, 
-     deviation angles for k orders of rainbow corresponding to different numbers
-     of internal reflections
-
-
-seq.py
-    SeqType conversions of long integer sequence codes to abbreviation string sequences like  "TO BT BR BR BT SA"
-    SeqTable presenting frequencies of different sequences 
-
-history.py
-     HisType (SeqType subclass) and tests
-        
-material.py
-     MatType (SeqType subclass) and tests
-
-
-
-
-metadata.py 
-     access metadata .json written by Opticks allowing 
-     comparisons of evt digests and simulation times 
-
-mesh.py
-     env dependency 
-
-
-analytic_cf_triangulated.py
 box_test.py
-cfg4_speedplot.py
-cfplot.py
-cie.py
-g4gun.py
-genstep.py
-geometry.py
 
-ncensus.py
+cfg4_speedplot.py
+
+cfplot.py
+
+cie.py
+
+g4gun.py
+
+genstep.py
+
 nopstep_viz_debug.py
+
+torchevt.py
+
+types.py
 
 
 REFLECTION CHECKS
@@ -85,16 +130,6 @@ reflection.py
 
       NEEDS DEBUG : NOT MATCHING ANALYTIC ANYMORE   
         
-
-
-PMT CHECKS
-
-pmt_edge.py
-pmt_skimmer.py
-pmt_test.py
-pmt_test_distrib.py
-pmt_test_evt.py
-
 
 PRISM CHECKS
 
@@ -114,13 +149,14 @@ rainbow_check.py
 rainbow_scatter.py
 
 
-source.py
-sphere.py
-torchevt.py
-types.py
-
 
 DEBUGGING
+
+analytic_cf_triangulated.py
+     plotting analytic PMT and mesh points together
+
+mesh.py
+     debugging mesh structure, comparing multiple meshes
 
 dae.py
      simple XML COLLADA parsing of .dae for debugging 

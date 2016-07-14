@@ -580,6 +580,20 @@ class Evt(object):
 
 
     def zrt_profile(self, n, pol=True):
+        """
+        :param n: number of bounce steps 
+        :return: min, max, mid triplets for z, r and t  at n bounce steps
+
+        ::
+
+            In [7]: a_zrt
+            Out[7]: 
+            array([[ 300.    ,  300.    ,  300.    ,    1.1748,   97.0913,   49.133 ,    0.1001,    0.1001,    0.1001],
+                   [  74.2698,  130.9977,  102.6337,    1.1748,   97.0913,   49.133 ,    0.9357,    1.2165,    1.0761],
+                   [  56.0045,  127.9946,   91.9996,    1.1748,   98.1444,   49.6596,    0.9503,    1.3053,    1.1278]])
+
+
+        """
         slab = "z r t"
         if pol:
             slab += " lx ly lz"
@@ -623,6 +637,10 @@ class Evt(object):
 
 
 def mmm(a):
+    """
+    :param a: numpy array
+    :return: min,max,mid
+    """
     amin = a.min()
     amax = a.max()
     amid = (amin+amax)/2.

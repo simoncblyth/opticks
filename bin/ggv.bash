@@ -214,11 +214,7 @@ ggv-pmt-test(){
                )
 
 
-
     local groupvelkludge=0
-
-    ## pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0
-
     local test_config=(
                  mode=PmtInBox
                  pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0
@@ -233,9 +229,6 @@ ggv-pmt-test(){
     if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
-
-    ## hmm some common pre-launch environment setup should happen inside op.sh 
-    ## to avoid duplication : or move into okc-/OpticksResource ?
 
 
    op.sh \
@@ -661,6 +654,8 @@ ggv-rainbow()
 
     local cmdline=$*
     local pol
+
+
     if [ "${cmdline/--spol}" != "${cmdline}" ]; then
          pol=s
          cmdline=${cmdline/--spol}
@@ -671,12 +666,22 @@ ggv-rainbow()
          pol=s
     fi  
 
-    local tag
 
-    case $pol in 
-       s) tag=5 ;;   
-       p) tag=6 ;;   
-    esac
+    local tag
+    local wavelength=500
+    if [ "${cmdline/--white}" != "${cmdline}" ]; then
+         cmdline=${cmdline/--white}
+         wavelength=0
+         case $pol in 
+           s) tag=15 ;;   
+           p) tag=16 ;;   
+         esac
+    else
+        case $pol in 
+           s) tag=5 ;;   
+           p) tag=6 ;;   
+        esac
+    fi  
 
     if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
@@ -688,8 +693,6 @@ ggv-rainbow()
     local surfaceNormal=0,1,0
     #local azimuth=-0.25,0.25
     local azimuth=0,1
-    #local wavelength=0
-    local wavelength=500
     local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
 
     local photons=1000000

@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 """
+
+Mesh Structural Comparisons
+=============================
+
+
 ::
 
     In [4]: run mesh.py
@@ -39,51 +44,22 @@
 
 import os, logging
 import numpy as np
-from env.nuwa.detdesc.pmt.plot import Pmt, PmtPlot, one_plot
-from opticks.ana.dae import DAE
+
+from opticks.ana.base import opticks_environment
+from opticks.ana.mergedmesh import MergedMesh
 import matplotlib.pyplot as plt
 
 log = logging.getLogger(__name__)
 
-X = 0
-Y = 1
-Z = 2
-
-ZX = [Z,X]
-ZY = [Z,Y]
-XY = [X,Y]
-
-NAMES = """
-aiidentity
-bbox
-boundaries
-center_extent
-colors
-identity
-iidentity
-indices
-itransforms
-meshes
-nodeinfo
-nodes
-normals
-sensors
-transforms
-vertices
-""".split()
-
-
-
 if __name__ == '__main__':
 
-
     logging.basicConfig(level=logging.INFO)
-
+    opticks_environment()
 
     DPIB_ALL = os.path.expandvars("$IDPATH_DPIB_ALL");
     DPIB_PMT = os.path.expandvars("$IDPATH_DPIB_PMT");
 
-    bases = [os.path.expandvars("$IDPATH/GMergedMesh/1"),
+    bases = ["$IDPATH/GMergedMesh/1",
              "/tmp/GMergedMesh/baseGeometry",
              "/tmp/GMergedMesh/modifyGeometry",
              os.path.join(DPIB_ALL,"GMergedMesh/0"),
@@ -91,6 +67,7 @@ if __name__ == '__main__':
            ]
 
     for base in bases:
+        base = os.path.expandvars(base) 
         if not os.path.exists(base):continue
 
         mm = MergedMesh(base=base)

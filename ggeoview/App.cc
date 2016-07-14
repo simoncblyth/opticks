@@ -528,10 +528,16 @@ void App::loadGenstep()
                   << " matline " << matline
                   ;
 
-        bool verbose = hasOpt("torchdbg");
-        m_torchstep->addStep(verbose);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
+        bool torchdbg = hasOpt("torchdbg");
+        m_torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
-        npy = m_torchstep->getNPY(); 
+        npy = m_torchstep->getNPY();
+
+        if(torchdbg)
+        {
+             npy->save("$TMP/torchdbg.npy");
+        }
+ 
     }
     
 

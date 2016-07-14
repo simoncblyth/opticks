@@ -117,14 +117,19 @@ class Reflect(object):
         # ...get **ZERO** missers when avoid cracks ...
 
 
-        miss = np.tile(False, len(p1))
+        if 0:
+            miss = np.tile(False, len(p1))
+            self.miss = miss
+            msk = ~miss
+            p0u = p0[msk]
+            p2u = p2[msk]
+        else:
+            p0u = p0
+            p2u = p2
 
-        msk = ~miss
-        p0m = p0[msk]
-        p2m = p2[msk]
 
-        th0 = self.theta(p0m, normal)
-        th2 = self.theta(p2m, normal)
+        th0 = self.theta(p0u, normal)
+        th2 = self.theta(p2u, normal)
         th = th0
 
         missrat = Rat(th0,p0,"th0/p0")
@@ -151,7 +156,6 @@ class Reflect(object):
         self.p0 = p0
         self.p1 = p1
         self.p2 = p2
-        self.miss = miss
         self.th0 = th0
         self.th2 = th2
         self.th = th
@@ -212,6 +216,8 @@ class ReflectionPlot(object):
 
     def theory(self):
         fr = self.fr
+        if fr is None:
+            return  
         fr.pl()
         fr.angles()
 
@@ -295,10 +301,97 @@ if __name__ == '__main__':
 
     rp = ReflectionPlot(s, p, fr)
 
-    #oneplot(fr,rp,log_=False)
-    oneplot(fr,rp,log_=True)
+    oneplot(fr,rp,log_=False)
+    #oneplot(fr,rp,log_=True)
     #twoplot(fr,rp)
 
 
 
+"""
 
+Check starting position and polarization::
+
+    pos = es.rpost_(0)[:,:3]
+    pol = es.rpol_(0)
+
+    In [9]:  pos[:,0].min()  A(-99.9786370433668)
+    In [10]: pos[:,0].max()  A(100.0091555528428)
+    In [12]: pos[:,1].min()  A(-99.9786370433668)
+    In [11]: pos[:,1].max()  A(99.9786370433668)
+    In [13]: pos[:,2].min()  A(-299.9969481490524)
+    In [14]: pos[:,2].max()  A(-200.0183111056856)
+
+    ## sphere radius 100 is hemi-sphered thru center at (0,0,-200) 
+    
+
+    Hmm nothing in z 
+
+    In [16]: pol
+    Out[16]: 
+    array([[ 0.15 ,  0.37 ,  0.   ],
+           [ 0.031,  0.118,  0.   ],
+           [ 1.   ,  0.   ,  0.   ],
+           ..., 
+           [-0.646, -0.63 ,  0.   ],
+           [-0.276,  0.756,  0.   ],
+           [ 0.094,  0.055,  0.   ]])
+
+::
+
+    In [27]: pos[:5]
+    Out[27]: 
+    A()sliced
+    A([[ -36.744,   14.954, -291.787],
+           [ -11.994,    3.052, -299.234],
+           [  -0.122,   99.826, -206.122],
+           [  -4.883,    0.153, -299.875],
+           [  11.078,    3.845, -299.295]])
+
+    In [28]: pol[:5]
+    Out[28]: 
+    array([[ 0.15 ,  0.37 ,  0.   ],     ## spherePosition.y, -spherePosition.x, 0 
+           [ 0.031,  0.118,  0.   ],
+           [ 1.   ,  0.   ,  0.   ],
+           [ 0.   ,  0.047,  0.   ],
+           [ 0.039, -0.11 ,  0.   ]])
+
+    In [29]: pos[:5]/100.  ## divide by radius to match normalized spherePosition 
+    Out[29]: 
+    A()sliced
+    A([[-0.367,  0.15 , -2.918],
+           [-0.12 ,  0.031, -2.992],
+           [-0.001,  0.998, -2.061],
+           [-0.049,  0.002, -2.999],
+           [ 0.111,  0.038, -2.993]])
+
+
+
+::
+
+    464           float sinTheta, cosTheta;
+    465           if(ts.mode & M_FLAT_COSTHETA )
+    466           {
+    467               cosTheta = 1.f - 2.0f*u1 ;
+    468               sinTheta = sqrtf( 1.0f - cosTheta*cosTheta );
+    469           }
+    470           else if( ts.mode & M_FLAT_THETA )
+    471           {
+    472               sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
+    473           }
+    474 
+    475           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta );
+    476 
+    477           p.position = ts.x0 + radius*spherePosition ;
+    478 
+    479           p.direction = -spherePosition  ;
+    480 
+    481           p.polarization = ts.mode & M_SPOL ?
+    482                                                make_float3(spherePosition.y, -spherePosition.x , 0.f )
+    483                                             :
+    484                                                make_float3(-spherePosition.x, -spherePosition.y , 0.f )
+    485                                             ;
+
+
+
+
+"""

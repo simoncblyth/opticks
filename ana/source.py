@@ -1,48 +1,49 @@
 #!/usr/bin/env python
 """
-Wavelength Distribution Debugging
-====================================
+source.py: Wavelength Distribution Check
+============================================
 
-Compare simulated photon wavelengths against blackbody expectation
+Creates plot comparing simulated photon wavelength spectrum 
+from *ggv-rainbow* against blackbody expectation.
 
-* still a hint of "ringing steps" from 200:400nm, but seems acceptable 
-  (TODO: try increasing icdf bins from 1024 to identify) 
+This is checking the *source_lookup* implementation and 
+the inverse CDF *source_texture* that it uses.  
+
+.. code-block:: cpp
+
+    ## optixrap/cu/wavelength_lookup.h
+
+    014 rtTextureSampler<float, 2>  source_texture ;
+     15 rtDeclareVariable(float4, source_domain, , );
+     ..
+     41 static __device__ __inline__ float source_lookup(float u)
+     42 {
+     43     float ui = u/source_domain.z + 0.5f ;
+     44     return tex2D(source_texture, ui, 0.5f );  // line 0
+     45 }
+     46 
+     47 static __device__ __inline__ void source_check()
+     48 {
+     49     float nm_a = source_lookup(0.0f);
+     50     float nm_b = source_lookup(0.5f);
+     51     float nm_c = source_lookup(1.0f);
+     52     rtPrintf("source_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+     53 }
+
+    ## optixrap/cu/torchstep.h
+
+    241 __device__ void
+    242 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
+    243 {
+    244       p.wavelength = ts.wavelength > 50.f ? ts.wavelength : source_lookup(curand_uniform(&rng));  // Planck black body source 6500K standard illuminant 
+    245 
 
 
-[ISSUE] wp last bin elevated
------------------------------ 
+See Also
+----------
 
-::
+* :doc:`source_debug`
 
-    In [69]: plt.close();plt.hist(wp, bins=200)
-
-    ,  2215.,  2158.,  2046.,  2017.,  2052.,  2111.,  2565.]),
-
-
-
-[FIXED] Bug with w0 sel.recwavelength(0)  
------------------------------------------
-
-Without selection sel.recwavelength(0) from ggv-newton:
-
-* length of 500000
-
-* three bin spike at lower bound around 60nm, comprising about 7000 photons
-  (not present in the uncompressed wp)
-
-  **FIXED WHEN AVOID WAVELENGTH DOMAIN DISCREPANCY BETWEEN SOURCES AND COMPRESSION**  
-
-* plateau from 60~190 nm
-
-  **MADE MUCH LESS OBJECTIONABLE BY INCREASING ICDF BINS FROM 256 TO 1024** 
-
-* normal service resumes above 190nm with good
-  match to Planck black body curve
-
-* 256 unique linspaced values, a result of the compression:: 
-
-    In [36]: np.allclose(np.linspace(60,820,256),np.unique(w))  # upper changed 810 to 820 by the fix
-    Out[36]: True
 
 """
 
@@ -52,8 +53,9 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
 
-from opticks.ana.ana import Evt, Selection
-from env.graphics.ciexyz.planck import planck
+from opticks.ana.base import opticks_environment
+from opticks.ana.evt import Evt
+from opticks.ana.planck import planck
 
 np.set_printoptions(suppress=True, precision=3)
 
@@ -61,15 +63,17 @@ np.set_printoptions(suppress=True, precision=3)
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     plt.ion()
+    opticks_environment()
 
-    evt = Evt(tag="1", det="rainbow")
+    ## tag = "1"   ## dont have any tag 1 anymore 
+    tag = "15"     ## so added tag 15,16 to ggv-rainbow with wavelength=0 which is default black body 
 
-    sel = Selection(evt)
+    evt = Evt(tag=tag, det="rainbow")
 
-    wp = evt.wavelength
-    w0 = sel.recwavelength(0)  
+    wl = evt.wl
+    w0 = evt.recwavelength(0)  
 
-    w = wp
+    w = wl
     #w = w0
 
     wd = np.linspace(60,820,256) - 1.  
@@ -93,8 +97,6 @@ if __name__ == '__main__':
     
     plt.axis( [w.min() - 100, w.max() + 100, 0, fcounts.max()*1.1 ]) 
 
-
     #plt.hist(w, bins=256)   # 256 is number of unique wavelengths (from record compression)
-
 
 

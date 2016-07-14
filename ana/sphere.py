@@ -1,32 +1,36 @@
 #!/usr/bin/env python
+"""
+sphere.py : SphereReflect intersection, polarization calculation and spatial plot
+=====================================================================================
 
+
+"""
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-from opticks.ana.ana import Evt, Selection, costheta_, cross_, norm_
-from opticks.ana.geometry import Boundary   
-from opticks.ana.cie  import CIE
+from opticks.ana.base import opticks_environment
+from opticks.ana.evt import Evt, costheta_, cross_, norm_
+from opticks.ana.proplib import Boundary   
+
 deg = np.pi/180.
 
 
-
 class SphereReflect(object):
-    def __init__(self, evt):
-        sel = Selection(evt, ["BR SA"]) 
+    def __init__(self, sel):
     
-        p0 = sel.recpost(0)[:,:3]
-        p1 = sel.recpost(1)[:,:3]
+        p0 = sel.rpost_(0)[:,:3]
+        p1 = sel.rpost_(1)[:,:3]
         p_in = p1 - p0  
 
-        pp = sel.recpost(1)[:,:3]
-        pl = sel.recpost(2)[:,:3]
+        pp = sel.rpost_(1)[:,:3]
+        pl = sel.rpost_(2)[:,:3]
         p_out = pl - pp
 
-        e0 = sel.recpolarization(0)
-        e1 = sel.recpolarization(1)
+        e0 = sel.rpol_(0)
+        e1 = sel.rpol_(1)
 
         self.p0 = p0
         self.p1 = p1
@@ -340,22 +344,28 @@ class SphereReflect(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
+    opticks_environment()
+
+
     plt.ion()
     plt.close()
 
     boundary = Boundary("Vacuum///MainH2OHale")
 
 
-    #evt = Evt(tag="-6", det="rainbow", label="P G4")
-    evt = Evt(tag="-5", det="rainbow", label="S G4")
+    seqs = ["TO BR SA"]
+
+    #evt = Evt(tag="-6", det="rainbow", seqs=seqs, label="P G4")
+    evt = Evt(tag="-5", det="rainbow", seqs=seqs, label="S G4")
+
 
     sr = SphereReflect(evt)
 
     p1 = sr.p1
 
-    #sr.spatial()
+    sr.spatial()
 
-    sr.check_intersection()
+    #sr.check_intersection()
 
 
 

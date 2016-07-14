@@ -383,28 +383,6 @@ bool TorchStepNPY::isFixPolarized()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void TorchStepNPY::configure(const char* config_)
 {
     m_config = strdup(config_); 

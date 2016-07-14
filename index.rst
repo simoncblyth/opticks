@@ -21,6 +21,7 @@ Contents:
    ggeo/index
    ggeoview/index
    cfg4/index
+
    ana/index
 
    bin/index

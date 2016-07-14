@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-analytic_cf_triangulated
---------------------------
+analytic_cf_triangulated.py
+------------------------------
 
 Plot analytic shapes and mesh vertices together.
 Making the problem of vacumm volume vertices very plain.
@@ -12,12 +12,15 @@ Making the problem of vacumm volume vertices very plain.
 import os, logging
 import numpy as np
 
-from env.nuwa.detdesc.pmt.plot import Pmt, PmtPlot, one_plot
-from opticks.ana.mesh import MergedMesh
-from opticks.ana.dae import DAE
 import matplotlib.pyplot as plt
 
+from opticks.ana.base import opticks_environment
+from opticks.ana.pmt.plot import Pmt, PmtPlot, one_plot
+from opticks.ana.mergedmesh import MergedMesh
+from opticks.ana.debug.dae import DAE
+
 log = logging.getLogger(__name__)
+
 
 X = 0
 Y = 1
@@ -67,14 +70,15 @@ def solids_plot(fig, pmt, mm, solids=range(5)):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
+
+    opticks_environment() 
+
     plt.ion()
     plt.close()
 
     idfold = os.path.dirname(os.path.dirname(os.path.expandvars("$IDPATH")))
 
     base = os.path.expandvars("$IDPATH/GMergedMesh/1")
-    #base = "/tmp/GMergedMesh/baseGeometry"
-    #base = "/tmp/GMergedMesh/modifyGeometry"
     #base = os.path.expandvars("$IDPATH_DPIB_ALL/GMergedMesh/0")
     #base = os.path.expandvars("$IDPATH_DPIB_PMT/GMergedMesh/0")
 
@@ -99,9 +103,9 @@ if __name__ == '__main__':
     fig = plt.figure() 
     fig.suptitle("analytic vs triangulated : %s " % name )
 
-    #one_plot(fig, pmt, pts, axes=ZX, clip=True)
+    one_plot(fig, pmt, pts, axes=ZX, clip=True)
 
-    solids_plot(fig, pmt, mm, solids=range(5))
+    #solids_plot(fig, pmt, mm, solids=range(5))
 
     #plot_vertices(fig, mm)
 

@@ -1,21 +1,7 @@
 #!/usr/bin/env python
 """
-PmtInBox Opticks vs cfg4 distributions
-==========================================
-
-Without and with cfg4 runs::
-
-   ggv-;ggv-pmt-test 
-   ggv-;ggv-pmt-test --cfg4 
-
-Visualize the cfg4 created evt in interop mode viewer::
-
-   ggv-;ggv-pmt-test --cfg4 --load
-
-Issues
--------
-
-See pmt_test.py for the history of getting flags and materials into agreement.
+pmt_test_distrib.py : PmtInBox Opticks vs Geant4 distributions
+================================================================
 
 Usage
 -------
@@ -28,16 +14,14 @@ small and then repeatedly run::
 
 To close each window in turn.
 
+See Also
+----------
 
-TODO
------
+:doc:`pmt_test` 
+       history comparison and how to create the events
 
-* wavelength  
-
-* push out to more sequences
-* auto-handling records for the sequence
-* creating multiple pages...
-
+:doc:`pmt_test_debug` 
+       development notes debugging simulation to achieve *pmt_test.py* matching
 
 """
 import os, logging, numpy as np
@@ -48,6 +32,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize'] = 18,10.2   # plt.gcf().get_size_inches()   after maximize
 import matplotlib.gridspec as gridspec
 
+from opticks.ana.base import opticks_environment
 from opticks.ana.evt import Evt
 from opticks.ana.nbase import chi2, decompression_bins
 from opticks.ana.cfplot import cfplot
@@ -304,7 +289,7 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
         pass
     pass
 
-    np.save("/tmp/stat.npy",stat)
+    np.save(os.path.expandvars("$TMP/stat.npy"),stat)
 
     rst = recarray_as_rst(stat)
     print rst 
@@ -314,12 +299,12 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-
     np.set_printoptions(precision=4, linewidth=200)
+
+    opticks_environment()
 
     plt.ion()
     plt.close()
-
 
     select = slice(1,2)
     #select = slice(0,8)
