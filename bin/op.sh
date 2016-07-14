@@ -18,6 +18,10 @@ sets environment variables picking a detector geometry
 and selecting volumes within the geometry.
 
 Most usage of Opticks should use this script.
+The *ggv-* bash functions are based on **op.sh** 
+providing simulation launching scripts for 
+various geometries and photon sources. 
+See :doc:`ggv`.
 
 To see the options specific to particular scripts or
 executables use "-h" rather than the "--help" 

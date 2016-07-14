@@ -8,9 +8,6 @@ Opticks Analysis Scripts
 =========================
 
 
-
-
-
 PMT Tests
 ------------
 

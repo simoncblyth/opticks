@@ -2,23 +2,10 @@
 ggv-src(){      echo bin/ggv.bash ; }
 ggv-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggv-src)} ; }
 ggv-vi(){       vi $(ggv-source) ; }
-ggv-usage(){ cat << EOU
+ggv-usage(){ cat << \EOU
 
-GGV : GGeoView invokations
-=============================
-
-See Also
----------
-
-* ggeoview- building GGeoView
-
-
-
-FUNCTIONS
------------
-
-ggv-jpmt-cd
-      cd into jpmt cache directory 
+GGV : Opticks Simulation Launch Bash Functions
+================================================
 
 ggv-pmt
       single uncorrected tesselated DYB PMT in tracer mode (no propagation) 
@@ -46,6 +33,11 @@ ggv-pmt-test
 
          ggv-pmt-test --cdetector    # 
 
+
+ggv-g4gun
+      Geant4 only launch, requiring GDML geometry file.
+
+
 ggv-dpib-test
       DYB Pmt In Box, note the OptiX geometry is tesselated::
 
@@ -55,10 +47,36 @@ ggv-box-test
       Box in Box, disc beam 
 
 
+ggv-jpmt-propagate-cerenkov
+      Compute mode JUNO propagation
+
+ggv-jpmt-propagate-scintillation
+      Compute mode JUNO propagation
+
+
+ggv-rainbow
+      disc beam incident on spherical droplet of water  
+
+ggv-newton
+      pencil beam of white light (6500K black body) incident on GlassSchottF2 prism  
+
+ggv-prism 
+       white light incident on glass prism from all incidence angles
+
+ggv-reflect 
+      hemi-spherical light source focused at point on water boundary 
+      with flat sphere theta distribution 
+
+ggv-lens
+      disc beam axially incident on convex lens
+
+
+
+
+
+
+
 many more undocumented
-
-
-
 
 EOU
 }
@@ -248,7 +266,6 @@ ggv-pmt-test(){
 
 
 
-ggv-phycache(){ echo /tmp/$FUNCNAME ; }
 
 
 ggv-g4gun-notes(){ cat <<EON
@@ -273,33 +290,6 @@ EON
 }
 
 
-ggv-g4gun-phycache-attempt()
-{
-
-
-   local phycache=$(ggv-phycache)
-   if [ ! -d "$phycache" ]; then 
-      mkdir -p $phycache
-   fi
-
-
-   cat << COM > /dev/null
-/run/particle/retrievePhysicsTable $phycache
-/run/particle/storePhysicsTable $phycache
-COM
-
-   local finmac
-   if [ -f "$phycache/material.dat" ]; then 
-       finmac="-"
-   else
-       finmac=/tmp/g4fin.mac
-       cat << EOI > $finmac
-EOI
-   fi
-
-
-}
-
 
 ggv-g4gun()
 {
@@ -323,7 +313,9 @@ ggv-g4gun()
           # mm, ns, MeV
 
 
-   local inimac=/tmp/g4ini.mac
+  
+   local inimac=/tmp/$USER/opticks/g4ini.mac
+   mkdir -p $(dirname $inimac)
    cat << EOI > $inimac
 /OpNovice/phys/verbose 0
 /run/particle/verbose 1
@@ -337,8 +329,6 @@ EOI
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 
-
-   #   --g4finmac "$finmac" \
 
 }
 
@@ -1022,7 +1012,6 @@ ggv-lens()
             --torchdbg \
             --save --tag $tag --cat lens
 }
-
 
 
 
