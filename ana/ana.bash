@@ -26,6 +26,7 @@ PMT Tests
     tabulates and plots and min,max,mid positions at each step for photons that 
     follow a specific sequence such as "TO BT BT SA" 
 
+
 Rainbow Tests
 ---------------
 
@@ -42,6 +43,12 @@ Rainbow Tests
 
 **sphere.py**
     SphereReflect intersection, polarization calculation and spatial plot
+
+G4Gun Tests
+--------------
+
+:doc:`g4gun`
+    Load single G4Gun event
 
 
 
@@ -91,6 +98,10 @@ Event Infrastructure
     access metadata .json written by Opticks allowing 
     comparisons of evt digests and simulation times 
 
+**genstep.py** 
+    fit genstep xyz vs time, to obtain parametric eqn for the viewpoint tracking 
+    used to create videos, see `vids-`
+
 
 
 EOU
@@ -106,13 +117,8 @@ cfplot.py
 
 cie.py
 
-g4gun.py
-
-genstep.py
-
 nopstep_viz_debug.py
 
-torchevt.py
 
 types.py
 
@@ -154,6 +160,9 @@ DEBUGGING
 
 analytic_cf_triangulated.py
      plotting analytic PMT and mesh points together
+
+nopstep_viz_debug.py
+     creates fake nopstep (non-photon step) for visualization debugging
 
 mesh.py
      debugging mesh structure, comparing multiple meshes

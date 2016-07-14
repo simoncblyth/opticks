@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 """
+genstep.py: Fit genstep xyz vs time, used for viewpoint tracking 
+=================================================================
+
 Fit the genstep xyz vs time to obtain parametric eqn of genstep position 
 with time parameter.::
 
@@ -34,6 +37,8 @@ with time parameter.::
 import os, logging
 import numpy as np
 import matplotlib.pyplot as plt
+
+from opticks.ana.base import opticks_environment
 from opticks.ana.nload import A, I, II, path_
 
 log = logging.getLogger(__name__)
@@ -42,6 +47,9 @@ X,Y,Z,W,T = 0,1,2,3,3
 
 
 if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     #a = A.load_("cerenkov","1","dayabay")
     a = A.load_("cerenkov","1","juno")

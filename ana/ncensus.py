@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 """
 ncensus.py : Event Census wih array shape dumping 
 =====================================================

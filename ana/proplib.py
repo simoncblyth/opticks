@@ -35,29 +35,32 @@ Example data shapes::
 
 """
 import os, logging, numpy as np
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_environment
 
 idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 
-# 1st set of 4 [0] 
-M_REFRACTIVE_INDEX = 0
-M_ABSORPTION_LENGTH = 1
-M_SCATTERING_LENGTH = 2
-M_REEMISSION_PROB = 3
-
-# 2nd set of 4 [0] startswith GROUPVEL, currently not used
-
-S_DETECT = 0 
-S_ABSORB = 1 
-S_REFLECT_SPECULAR = 2 
-S_REFLECT_DIFFUSE = 3 
-
-B_OMAT = 0
-B_OSUR = 1
-B_ISUR = 2
-B_IMAT = 3
-
 
 class PropLib(object):
+
+    # 1st set of 4 [0] 
+    M_REFRACTIVE_INDEX = 0
+    M_ABSORPTION_LENGTH = 1
+    M_SCATTERING_LENGTH = 2
+    M_REEMISSION_PROB = 3
+
+    # 2nd set of 4 [0] startswith GROUPVEL, currently not used
+
+    S_DETECT = 0 
+    S_ABSORB = 1 
+    S_REFLECT_SPECULAR = 2 
+    S_REFLECT_DIFFUSE = 3 
+
+    B_OMAT = 0
+    B_OSUR = 1
+    B_ISUR = 2
+    B_IMAT = 3
+
     def __init__(self, kls="GMaterialLib"):
         fpath=idp_("%(kls)s/%(kls)s.npy" % locals())
         npath=idp_("GItemList/%(kls)s.txt" % locals())
@@ -81,44 +84,11 @@ class PropLib(object):
         return self.data[idx]
    
 
-class Material(object):
-    def __init__(self, name):
-        self.name = name
-        self.mlib = None
-
-    def lookup(self, prop, wavelength):
-        if self.mlib is None:
-            self.mlib = PropLib("GMaterialLib")
-        pass
-        return self.mlib.interp(self.name,wavelength,prop)
- 
-    def refractive_index(self, wavelength):
-        return self.lookup(M_REFRACTIVE_INDEX, wavelength)
-
-
-class Boundary(object):
-    def __init__(self, spec):
-        elem = spec.split("/")
-        assert len(elem) == 4
-        omat, osur, isur, imat = elem
-
-        self.omat = Material(omat)
-        self.osur = osur
-        self.isur = isur
-        self.imat = Material(imat)
-        self.spec = spec
-
-    def title(self):
-        return self.spec
-
-    def __repr__(self):
-        return "%s %s " % (  self.__class__.__name__ , self.spec )
-
-
 
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     mlib = PropLib("GMaterialLib") 
     slib = PropLib("GSurfaceLib") 
@@ -128,10 +98,9 @@ if __name__ == '__main__':
 
     m1 = "Water"
     wavelength = 442  
-    ri = mlib.interp(m1, wavelength, M_REFRACTIVE_INDEX) 
+    ri = mlib.interp(m1, wavelength, mlib.M_REFRACTIVE_INDEX) 
 
     print "m1 %s wl %s ri %s " % (m1, wavelength, ri)
-
 
 
     mat = Material("GlassSchottF2")
@@ -140,4 +109,5 @@ if __name__ == '__main__':
     print wl,"\n", ri
 
 
+    boundary = Boundary("Vacuum///GlassSchottF2")
 

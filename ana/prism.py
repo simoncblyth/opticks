@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 """
+prism.py : Comparison of simulation with analytic expectation 
+================================================================
+
+Analysis of "prism" and "newton" event categories
+
+* "prism" uses all incident angles, see `ggv-prism`
+* "newton" uses one incident angle, see `ggv-newton`
+
+
 TODO:
 
 * handle multiple wavelengths
@@ -130,28 +139,32 @@ Where to shoot from to get minimum deviation ?
 
 """
 
-import os, logging
-import numpy as np
-rad = np.pi/180.
-deg = 1./rad
-
-from opticks.ana.nbase import count_unique
-from opticks.ana.types import *
-
+import os, logging, numpy as np
 log = logging.getLogger(__name__)
+
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from scipy.optimize import curve_fit
+
+#from scipy.optimize import curve_fit
+#import ciexyz.ciexyz as cie
+
+
+from opticks.ana.base import opticks_environment
+from opticks.ana.nbase import count_unique
+#from opticks.ana.types import *
 
 from opticks.ana.evt import Evt, costheta_
-from opticks.ana.ana import Selection, Rat, theta
+from opticks.ana.ana import Rat, theta
 
 from opticks.ana.geometry import Shape, Plane, Boundary, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
-import ciexyz.ciexyz as cie
+
+
+
+rad = np.pi/180.
+deg = 1./rad
 
 deg = np.pi/180.
-
 
 np.set_printoptions(suppress=True, precision=3)
 np.seterr(divide="ignore", invalid="ignore")
@@ -569,15 +582,16 @@ def spatial(pc):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    opticks_environment() 
 
     plt.ion()
 
     #wl = np.arange(10, dtype=np.float32)*70. + 100.  
     # low range is off edge of the refractive index values 
 
-    evt = Evt(tag="1", det="newton") # "prism" uses all incident angles, "newton" uses one
+    seqs = ["TO BT BT SA"]
 
-    sel = Selection(evt,"BT BT SA")  
+    sel = Evt(tag="1", det="newton", seqs=seqs) 
 
     boundary = Boundary("Vacuum///GlassSchottF2")
 
@@ -587,19 +601,15 @@ if __name__ == '__main__':
 
     xprism = PrismExpected(prism.a, n)
 
-
     pc = PrismCheck(prism, xprism, sel )
-
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
 
-
     oneplot(pc, log_=False)
     #spatial(pc)
 
-  
 
     plt.show()
 

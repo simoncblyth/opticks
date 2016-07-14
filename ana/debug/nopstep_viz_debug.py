@@ -1,11 +1,19 @@
 #!/usr/bin/env python
+"""
+nopstep_viz_debug.py: Creates fake nopstep (non-photon step) for visualization debugging
+============================================================================================
 
+
+
+"""
 import os, logging
 import numpy as np
 
 import matplotlib.pyplot as plt
+
+from opticks.ana.base import opticks_environment
 from opticks.ana.nload import A
-from opticks.ana.CGDMLDetector import CGDMLDetector
+from opticks.ana.debug.CGDMLDetector import CGDMLDetector
 
 def make_fake_nopstep(tk):
     """
@@ -58,6 +66,8 @@ def make_fake_nopstep(tk):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     frame = 3153
 
@@ -76,9 +86,9 @@ if __name__ == '__main__':
 
     nop = make_fake_nopstep(tk)
 
-    path = "/tmp/nopstep.npy"
-    np.save(path, nop)
+    path = "$TMP/fake_nopstep.npy"
+    np.save(os.path.expandvars(path), nop)
  
-    a = np.load(path)
+    a = np.load(os.path.expandvars(path))
 
 
