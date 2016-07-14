@@ -68,6 +68,8 @@ def decompression_bins(cbins, *vals):
 
 if __name__ == '__main__':
 
+    logging.basicConfig(level=logging.INFO)
+
     cbins = np.linspace(-300,300,10)
     avals = np.repeat(300,1000)
     bvals = np.repeat(300,1000)

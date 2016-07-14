@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 """
-
 env/graphics/ciexyz/planck.py
 ==================================
 

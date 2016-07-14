@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 """
+reflection.py
+=======================
+
+
 Reflection distrib following BoxInBox::
 
     ggv-
@@ -59,18 +63,16 @@ Focus [10,0,300] avoids the crack, visualizations more physical: no missers, cle
 """
 import os, logging
 import numpy as np
+import matplotlib.pyplot as plt
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.nbase import count_unique
-from opticks.ana.types import *
 
 log = logging.getLogger(__name__)
 
-import matplotlib.pyplot as plt
-
 from opticks.ana.evt import Evt, costheta_
 from opticks.ana.ana import Rat, theta, recpos_plot, angle_plot
-from opticks.ana.geometry import Boundary
+from opticks.ana.boundary import Boundary
 from opticks.ana.fresnel import Fresnel
 
 deg = np.pi/180.

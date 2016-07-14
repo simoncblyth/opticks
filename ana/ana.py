@@ -1,14 +1,18 @@
 #!/usr/bin/env python
+"""
+ana.py geometrical and plotting utils
+========================================
 
+TODO: reposition these into more appropriate locations
+
+"""
 import os, logging
 import numpy as np
 
+from opticks.ana.base import opticks_environment 
 from opticks.ana.nbase import count_unique  
-from opticks.ana.types import *  # TODO: spell out imports
 from opticks.ana.evt import Evt, costheta_
 
-
-import ciexyz.ciexyz as _cie
 deg = np.pi/180.
 
 log = logging.getLogger(__name__)
@@ -110,6 +114,8 @@ def angle_plot(fig, evts, irec=0, axis=[0,0,1], origin=[0,0,-200], nb=100):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     evt = Evt(tag="1", det="rainbow")
 

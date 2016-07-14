@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+prism_spectrum.py : compare ggv-newton evts with PrismExpected
+==================================================================
 
 Scatter plot of wavelength against the appropriate prism coordinate
 shows expected behaviour, except at the endpoints with outlier at high wavelength 
@@ -18,8 +20,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D
 
-from opticks.ana.ana import Evt, Selection
-from opticks.ana.geometry import Boundary   
+from opticks.ana.base import opticks_environment
+from opticks.ana.evt import Evt
+from opticks.ana.boundary import Boundary   
 from opticks.ana.prism import Prism, PrismCheck, PrismExpected
 from opticks.ana.cie  import cie_hist1d, cie_hist2d
 
@@ -81,12 +84,11 @@ def uv_deviation_spike(d):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     plt.ion()
 
-    evt = Evt(tag="1", det="newton")  # newton, uses single incident angle
-
-    sel = Selection(evt,"BT BT SA")  
+    sel = Evt(tag="1", det="newton", seqs=["TO BT BT SA"])  # newton, uses single incident angle
 
     boundary = Boundary("Vacuum///GlassSchottF2")
 

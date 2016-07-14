@@ -3,6 +3,14 @@
 types.py : MOSTLY REPLACED BY OTHER MODULES
 ==============================================
 
+::
+
+    simon:ana blyth$ grep ana.types *.py 
+
+    fresnel.py:from opticks.ana.types import *
+    reflection.py:from opticks.ana.types import *
+
+
 
 """
 import os, datetime, logging, json

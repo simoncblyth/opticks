@@ -1,17 +1,21 @@
 #!/usr/bin/env python
+"""
+fresnel.py : analytic reflection expectations
+==================================================
 
+
+"""
 import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+from opticks.ana.base import opticks_environment 
 from opticks.ana.nbase import count_unique
-from opticks.ana.types import *
 
 np.set_printoptions(suppress=True, precision=3)
 
-logging.basicConfig(level=logging.INFO)
 
 
 def fresnel(x, n1, n2, spol=True):
@@ -197,8 +201,10 @@ class Fresnel(object):
         a = self.critical
         plt.plot([a, a], [1e-6, 1], 'k-', c="r", lw=2, label="Critical")
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     n1 = np.array([1.])
     n2 = np.array([1.458])

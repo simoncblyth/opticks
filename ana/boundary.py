@@ -48,31 +48,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.proplib import PropLib
-
-
-class Material(object):
-    def __init__(self, name):
-        self.name = name
-        self.mlib = None
-
-    def lookup(self, prop, wavelength):
-        if self.mlib is None:
-            self.mlib = PropLib("GMaterialLib")
-        pass
-        return self.mlib.interp(self.name,wavelength,prop)
- 
-    def refractive_index(self, wavelength):
-        return self.lookup(PropLib.M_REFRACTIVE_INDEX, wavelength)
-
-    def absorption_length(self, wavelength):
-        return self.lookup(PropLib.M_ABSORPTION_LENGTH, wavelength)
-
-    def scattering_length(self, wavelength):
-        return self.lookup(PropLib.M_SCATTERING_LENGTH, wavelength)
- 
-    def reemission_prob(self, wavelength):
-        return self.lookup(PropLib.M_REEMISSION_PROB, wavelength)
-
+from opticks.ana.material import Material
 
 
 class Boundary(object):
@@ -97,24 +73,19 @@ class Boundary(object):
 
 
 
-
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
     opticks_environment()
 
 
-    mat = Material("GlassSchottF2")
-
     wl = np.linspace(100.,730.,10, dtype=np.float32)
-
-    ri = mat.refractive_index(wl)
-    print wl,"\n", ri
 
     boundary = Boundary("Vacuum///GlassSchottF2")
 
     print "imat",boundary.imat.refractive_index(wl)
     print "omat",boundary.omat.refractive_index(wl)
+
 
 
 

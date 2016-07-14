@@ -12,11 +12,10 @@ from collections import OrderedDict
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.nbase import count_unique
-from opticks.ana.types import SeqHis, seqhis_int
 from opticks.ana.nload import A, I, II
 from opticks.ana.seq import SeqAna
-from opticks.ana.history import HisType 
-from opticks.ana.material import MatType 
+from opticks.ana.histype import HisType 
+from opticks.ana.mattype import MatType 
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
@@ -28,6 +27,9 @@ deg = np.pi/180.
 log = logging.getLogger(__name__)
 
 X,Y,Z,W,T = 0,1,2,3,3
+
+  
+
 
 
 class Evt(object):
@@ -58,7 +60,12 @@ class Evt(object):
         self.rec = rec
         self.desc = OrderedDict()
 
-        self.init_metadata(tag, src, det, dbg)
+        ok = self.init_metadata(tag, src, det, dbg)
+
+        if not ok:
+           log.warning("FAILED TO LOAD EVT %s " % label )
+           return   
+
         self.init_photons(tag, src, det, dbg)
 
         if rec:
@@ -78,6 +85,10 @@ class Evt(object):
         fdom = A.load_("fdom"+src,tag,det, dbg=dbg) 
         idom = A.load_("idom"+src,tag,det, dbg=dbg) 
 
+        if idom is None and fdom is None:
+            log.warning("failed to load idom and fdom")
+            return False
+
         if idom[0,0,3] != self.nrec:
             log.fatal(" unexpected idom %s nrec %s " % (repr(idom), self.nrec ))  
 
@@ -95,7 +106,8 @@ class Evt(object):
         fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
         self.desc['fdom'] = fdom.desc
         self.desc['idom'] = "(metadata) int domain"
-         
+
+        return True         
 
     def init_photons(self, tag, src, det, dbg):
         """

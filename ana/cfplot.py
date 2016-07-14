@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 """
+cfplot.py : Comparison Plotter with Chi2 Underplot 
+======================================================
+
+
 """
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+
 from opticks.ana.nbase import chi2
 
 def _cf_plot(ax, aval, bval,  bins, labels,  log_=False):

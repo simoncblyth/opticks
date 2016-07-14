@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 import os, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
@@ -208,7 +208,7 @@ class SeqAna(object):
 
 if __name__ == '__main__':
     pass 
-    ## see history.py for testing this
+    ## see histype.py and mattype.py for testing this
     
 
 

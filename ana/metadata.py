@@ -9,12 +9,15 @@ allowing evt digests and run times to be compared.
 
 """
 
+from datetime import datetime
 import os, re, logging
 import numpy as np
-from datetime import datetime
-from base import ini_, json_
-
 log = logging.getLogger(__name__)
+
+from opticks.ana.base import opticks_environment
+from opticks.ana.base import ini_, json_
+
+
 
 class DateParser(object):
     ptn = re.compile("(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})")
@@ -144,13 +147,33 @@ class Catdir(object):
         log.info("times metadata for tag %s " % tag + "\n".join(map(str,mds)))
 
         n = len(mds)
-        a = np.recarray((n,), dtype=[("index", np.int32), ("time", "|O8"), ("propagate", np.float32), ("flgs", np.uint32 ), ("numphotons",np.uint32)])
+        numpho0 = mds[0].numPhotons
 
+        ## collect indices with consistent photon counts
+        consistent = []
+        for i in range(n):
+            md = mds[i]
+            if md.numPhotons == numpho0:
+                consistent.append(i)
+            
+        nc = len(consistent)
+        if nc != n:
+            log.warning("skipped metadata with inconsistent photon count n %s nc %s " % (n, nc)) 
+
+
+        a = np.recarray((nc,), dtype=[("index", np.int32), ("time", "|O8"), ("propagate", np.float32), ("flgs", np.uint32 ), ("numPhotons",np.uint32)])
+
+        j = 0 
         for i in range(n):
             md = mds[i]
             dat = (i, md.timestamp, md.propagate, md.flags, md.numPhotons )
-            print dat 
-            a[i] = dat
+            if i in consistent:
+                a[j] = dat
+                j += 1 
+                print dat 
+            else:
+                log.warning("skipped inconsistent %s " % repr(dat))
+            pass
         pass
 
         return a 
@@ -174,7 +197,6 @@ if __name__ == '__main__':
     cat, tag= "PmtInBox", "4"
 
     catd = Catdir(cat)
-
 
     a = catd.times(tag)
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 """
+mattype.py : 
+===============================
+
+
 Testing material mechanics
 
 * round tripping codes 
@@ -44,6 +48,7 @@ import os, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
+from opticks.ana.base import opticks_environment
 from opticks.ana.base import Abbrev, ItemList 
 from opticks.ana.seq import SeqType, SeqAna
 from opticks.ana.proplib import PropLib
@@ -97,6 +102,7 @@ class MatType(SeqType):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
+    opticks_environment()
 
     mt = MatType()
     test_roundtrip(mt)

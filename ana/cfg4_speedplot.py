@@ -4,20 +4,27 @@ cfg4_speedplot.py
 ======================
 
 
-
 """
-import os, logging
-import numpy as np
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
+
 import matplotlib.pyplot as plt
 
+from opticks.ana.base import opticks_environment
 from opticks.ana.metadata import Metadata, Catdir
 
 
 def speedplot(cat, tag, a, landscape=False, ylim=None, log_=False):
-    nnp = len(np.unique(a.numphotons))
+    nnp = len(np.unique(a.numPhotons))
+
+    if nnp != 1:
+        log.fatal("numPhotons not unique, cannot compare : nnp %s " % nnp)
+        log.fatal("Tags and negated counterparts should always have the same photon statistics")
+        log.fatal(" TO AVOID THIS PROBLEM ADOPT A NEW TAG WHEN CHANGING PHOTON STATS ")
+
     assert nnp == 1, "Tags and negated counterparts should always have the same photon statistics" 
 
-    mega = float(a.numphotons[0])/1e6
+    mega = float(a.numPhotons[0])/1e6
     title = "Propagate times (s) for %3.1fM Photons with %s geometry, tag %s, [max/avg/min]" % (mega, cat, tag)  
 
     plt.close()
@@ -79,6 +86,7 @@ def speedplot(cat, tag, a, landscape=False, ylim=None, log_=False):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)    
+    opticks_environment()
 
     #cat, tag = "rainbow", "6"
     cat, tag = "PmtInBox", "4"

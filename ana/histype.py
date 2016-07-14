@@ -1,8 +1,15 @@
-#!/bin/env python
+#!/usr/bin/env python
+"""
+histype.py: HisType
+========================
+
+
+"""
 import os, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
+from opticks.ana.base import opticks_environment
 from opticks.ana.base import Abbrev, IniFlags
 from opticks.ana.seq import SeqType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
@@ -36,6 +43,7 @@ class HisType(SeqType):
 
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)
+     opticks_environment()
 
      af = HisType()
 

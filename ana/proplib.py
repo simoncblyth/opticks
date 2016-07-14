@@ -103,11 +103,4 @@ if __name__ == '__main__':
     print "m1 %s wl %s ri %s " % (m1, wavelength, ri)
 
 
-    mat = Material("GlassSchottF2")
-    wl = np.arange(10, dtype=np.float32)*70. + 100.
-    ri = mat.refractive_index(wl)
-    print wl,"\n", ri
-
-
-    boundary = Boundary("Vacuum///GlassSchottF2")
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Droplet
-~~~~~~~~~
+droplet.py : Analytic All Order Rainbow angle calculations 
+=============================================================
 
 Geometrical calculation of deviation, incident and refracted angles
 at minimum deviation for k orders of rainbows.
@@ -13,7 +13,8 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-from opticks.ana.geometry import Boundary   
+from opticks.ana.base import opticks_environment
+from opticks.ana.boundary import Boundary   
 deg = np.pi/180.
 
 
@@ -89,6 +90,7 @@ class Droplet(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     boundary = Boundary("Vacuum///MainH2OHale")
     droplet = Droplet(boundary)

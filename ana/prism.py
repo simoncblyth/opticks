@@ -146,13 +146,9 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-#from scipy.optimize import curve_fit
-#import ciexyz.ciexyz as cie
-
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.nbase import count_unique
-#from opticks.ana.types import *
 
 from opticks.ana.evt import Evt, costheta_
 from opticks.ana.ana import Rat, theta
@@ -381,10 +377,11 @@ class PrismCheck(object):
         self.xprism = xprism 
         self.sel = sel
 
-        p0 = sel.recpost(0)[:,:3]  # light source position  
-        p1 = sel.recpost(1)[:,:3]  # 1st refraction point
-        p2 = sel.recpost(2)[:,:3]  # 2nd refraction point
-        p3 = sel.recpost(3)[:,:3]  # light absorption point
+        p0 = sel.rpost_(0)[:,:3]  # light source position  
+        p1 = sel.rpost_(1)[:,:3]  # 1st refraction point
+        p2 = sel.rpost_(2)[:,:3]  # 2nd refraction point
+        p3 = sel.rpost_(3)[:,:3]  # light absorption point
+
         assert len(p0) == len(p1) == len(p2) == len(p3) 
         N = len(p0)
 
@@ -392,6 +389,7 @@ class PrismCheck(object):
         w1 = sel.recwavelength(1)
         w2 = sel.recwavelength(2)
         w3 = sel.recwavelength(3)
+
         assert len(w0) == len(w1) == len(w2) == len(w3) 
         assert len(w0) == len(p0)
         assert np.all(w0 == w1)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Rainbow Expectations
-======================
+xrainbow.py : Rainbow Expectations
+====================================
 
 Using derivations from: Jearl D. Walker
 "Multiple rainbows from single drops of water and other liquids",  
@@ -10,6 +10,13 @@ Using derivations from: Jearl D. Walker
 
 Alexanders dark band, between the 1st and 2nd bows 
 (due to no rays below min deviation for each bow)
+
+
+See Also
+----------
+
+Abandoned approach to analytic rainbows in env/opticksnpy/rainbow*.py 
+
 
 Polarization Check
 -------------------
@@ -77,12 +84,12 @@ state is in fact a valid one ?
 
 
 
-
 """
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
+from opticks.ana.base import opticks_environment
 from opticks.ana.droplet  import Droplet
 
 
@@ -248,6 +255,7 @@ class XFrac(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    opticks_environment()
 
     from opticks.ana.boundary import Boundary   
 

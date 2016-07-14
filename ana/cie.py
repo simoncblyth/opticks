@@ -333,6 +333,7 @@ def compare_norms(wdom):
 
 if __name__ == '__main__':
     pass
+    logging.basicConfig(level=logging.INFO)
 
     plt.close()
     plt.ion()

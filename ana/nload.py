@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
@@ -138,7 +138,7 @@ class II(list):
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     opticks_environment()
 
     a = A.load_("phtorch","5", "rainbow")

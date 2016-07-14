@@ -7,6 +7,10 @@ ana-usage(){ cat << \EOU
 Opticks Analysis Scripts
 =========================
 
+
+
+
+
 PMT Tests
 ------------
 
@@ -27,14 +31,20 @@ PMT Tests
     follow a specific sequence such as "TO BT BT SA" 
 
 
+BoxInBox tests
+------------------
+
+**box_test.py**
+    BoxInBox Opticks vs Geant4 history sequence comparisons analogous to *pmt_test.py*
+
 Rainbow Tests
 ---------------
 
-:doc:`source`
-    Compare wavelength spectrum from ggv-rainbow against analytic Planck distribution
+:doc:`rainbow_cfg4`
+    Rainbow scattering angle comparison between Opticks and Geant4 
 
-**planck.py**
-    Planck black body formula
+**xrainbow.py**
+    Rainbow expectations with classes XRainbow and XFrac
 
 **droplet.py**
     geometry calculation of spherical drop incident, refracted, 
@@ -43,6 +53,42 @@ Rainbow Tests
 
 **sphere.py**
     SphereReflect intersection, polarization calculation and spatial plot
+
+
+Source Tests
+--------------
+
+:doc:`source`
+    Compare wavelength spectrum from ggv-rainbow against analytic Planck distribution
+
+**planck.py**
+    Planck black body formula
+
+
+Prism Tests
+-------------
+
+**prism.py**
+    Comparison of simulation with analytic expectation 
+
+**prism_spectrum.py**
+    Compare ggv-newton evts with PrismExpected
+
+
+Reflection Tests
+-------------------
+
+**fresnel.py**
+    analytic reflection expectations from Fresnel formula
+
+
+**reflection.py**
+    comparison of simulated S and P absolute reflection with Fresnel formula 
+    produced by::
+
+         ggv-reflect --spol
+         ggv-reflect --ppol
+
 
 G4Gun Tests
 --------------
@@ -54,8 +100,11 @@ G4Gun Tests
 Geometry Infrastructure 
 -------------------------
 
+:doc:`material`
+    Material class gives access to geocache material properties 
+
 :doc:`boundary`
-    Access to geocache material properties and boundary holder class
+    Boundary class acts as holder of inner/outer materials and surfaces
 
 :doc:`proplib`
     Access to geocache via PropLib
@@ -80,9 +129,6 @@ Event Infrastructure
 **nload.py**
     numpy array and .ini metadata loading with clases A, I, II
 
-**ncensus.py**
-    event census with array shape dumping 
-
 **nbase.py**
     pure numpy utility functions: count_unique, count_unique_sorted, chi2, decompression_bins 
 
@@ -90,19 +136,39 @@ Event Infrastructure
     SeqType conversions of long integer sequence codes to abbreviation string sequences like  "TO BT BR BR BT SA"
     SeqTable presenting frequencies of different sequences 
 
-**history.py**
+**histype.py**
     HisType (SeqType subclass) and tests
         
-**material.py**
+**mattype.py**
     MatType (SeqType subclass) and tests
+
+**genstep.py** 
+    fit genstep xyz vs time, to obtain parametric eqn for the viewpoint tracking 
+    used to create videos, see `vids-`
+
+**ana.py**
+    geometrical and plotting utils
+
+
+Plotting Infrastructure
+--------------------------
+
+**cfplot.py**
+    Comparison Plotter with Chi2 Underplot 
+
+
+Metadata Infrastructure
+--------------------------
+
+**cfg4_speedplot.py**
+    compare simulation times using json metadata written by Opticks simulation invokations
 
 **metadata.py** 
     access metadata .json written by Opticks allowing 
     comparisons of evt digests and simulation times 
 
-**genstep.py** 
-    fit genstep xyz vs time, to obtain parametric eqn for the viewpoint tracking 
-    used to create videos, see `vids-`
+**ncensus.py**
+    event census with array shape dumping 
 
 
 Color Infrastructure
@@ -113,58 +179,18 @@ Color Infrastructure
 
 
 
-
 EOU
 }
 
 ana-notes(){ cat << EON
 
-box_test.py
-
-cfg4_speedplot.py
-
-cfplot.py
 
 
-
-REFLECTION CHECKS
-
-fresnel.py
-      analytic reflection expectations from Fresnel formula
-reflection.py
-      comparison of simulated S and P absolute reflection with fresnel formula 
-      produced by::
-
-           ggv-reflect --spol
-           ggv-reflect --ppol
-
-      NEEDS DEBUG : NOT MATCHING ANALYTIC ANYMORE   
-        
-
-PRISM CHECKS
-
-prism.py
-prism_spectrum.py
-
-
-RAINBOW CHECKS
-
-xrainbow.py
-     XRainbow expectations 
-rainbow.py
-rainbowplot.py
-
-rainbow_cfg4.py
-rainbow_check.py
-rainbow_scatter.py
-
-
-
-DEBUGGING
+DEBUGGING : NOT SURFACING THESE IN THE DOCS
 
 
 types.py
-     MOSTLY DEPRECATED FUNCTIONS
+     MOSTLY DEPRECATED : INSTEAD USE histype mattype ETC
 
 analytic_cf_triangulated.py
      plotting analytic PMT and mesh points together
@@ -229,6 +255,57 @@ ana-name(){ echo Ana ; }
 ana-tag(){  echo ANA ; }
 
 
+ana-py-(){
+   ana-cd
+   ls -1 *.py 
+}
 
+ana-skips-note(){ cat << EON
+*ana-skips* 
+    list .py scripts without executable bit set.
+
+    Known fails, for example due to *env* repo dependency  
+    can be skipped from ana-test simply by removing
+    the executable bit::
+
+        chmod ugo-x cie.py  
+
+EON
+}
+ana-skips(){
+   local py
+   ana-py- | while read py ; do
+      [ ! -x $py ] && echo $msg SKIP $py 
+   done
+}
+
+ana-test-note(){ cat << EON
+*ana-test*
+     runs all executable .py in ana directory, 
+     stopping at any script that yields a non-zero return code 
+
+     Use to check for simple python breakages from moving 
+     things around for example. 
+
+     Intended to just test mechanics, not meaning.
+     Failure to load events should not cause failures, just warnings.
+EON
+}
+ana-test(){
+   local py
+   local rc
+   ana-py- | while read py ; do
+       [ ! -x $py ] && echo $msg SKIP $py && continue
+       echo $msg $py
+
+       ./$py
+       rc=$?
+
+       if [ "$rc" != "0" ]; then 
+           echo $msg WARNING : PY FAILURE OF $py : RC $rc
+           break 
+       fi
+   done   
+}
 
 
