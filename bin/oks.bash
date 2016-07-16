@@ -1253,6 +1253,10 @@ oks-tgen()
 {
     local msg=" === $FUNCNAME : "
     local tname=${1:-tname}
+    case $tname in
+       t*) echo $msg proceeding with $tname ;;
+        *) echo $msg test names must begin with prefix t && return ;;
+    esac
 
     local rpath=$(oks-tpath $tname rst)
     [ -f "$rpath" ] && echo $msg : rst FILE EXISTS ALREADY $rpath && return 
@@ -1260,7 +1264,7 @@ oks-tgen()
     echo $msg writing ${tname}.rst to $rpath 
     cp $rtmpl $rpath 
     perl -pi -e "s,ttemplate,${tname},g" $rpath 
-    printf "    %s\n" $tname  >> $(opticks-home)/tests/index.rst
+    printf "  REMEMBER TO ADD TOCTREE ENTRY TO tests-vi  for $tname \n" $tname 
 
 
     local bpath=$(oks-tpath $tname bash)

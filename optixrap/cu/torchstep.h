@@ -497,10 +497,14 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
           p.direction = -spherePosition  ;
 
           p.polarization = ts.mode & M_SPOL ? 
-                                               make_float3(spherePosition.y, -spherePosition.x , 0.f ) 
+                                               normalize(make_float3(spherePosition.y, -spherePosition.x , 0.f )) 
                                             :  
-                                               make_float3(-spherePosition.x, -spherePosition.y , 0.f ) 
+                                               normalize(make_float3(-spherePosition.x, -spherePosition.y , 0.f )) 
                                             ;  
+
+          //  Prior to July 16, 2016 the normalization above was omitted, 
+          //  resulting in treflect- mismatch to Fresnel eqn.  It seems that the bug
+          //  did not manifest until the move to **propagate_at_boundary_geant4_style** 
 
       }
       else if( ts.type == T_INVCYLINDER )

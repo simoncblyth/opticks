@@ -919,6 +919,7 @@ opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env 
 ggeoview-(){        . $(opticks-home)/ggeoview/ggeoview.bash && ggeoview-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }
+tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
 
 ### opticks launchers ########
 
@@ -937,3 +938,4 @@ tprism-(){     . $(opticks-home)/tests/tprism.bash && tprism-env $* ; }
 
 
 tbox-(){ . $(opticks-home)/tests/tbox.bash && tbox-env $* ; }
+treflect-(){ . $(opticks-home)/tests/treflect.bash && treflect-env $* ; }

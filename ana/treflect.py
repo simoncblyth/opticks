@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 """
-reflection.py
+treflect.py
 =======================
-
 
 Reflection distrib following BoxInBox::
 
-    ggv-
-    ggv-reflect s
-    ggv-reflect p
+    treflect-
 
 ::
 
@@ -60,16 +57,20 @@ Focus [10,0,300] avoids the crack, visualizations more physical: no missers, cle
 
 * http://www.ece.rice.edu/~daniel/262/pdf/lecture13.pdf
 
+Following the move to **propagate_at_boundary_geant4_style** 
+the reflection agreement was broken: with far too much reflection at small angles.
+The bug was found to be an omitted normalization on the polarization.
+
+
 """
-import os, logging
+import os, sys, logging
 import numpy as np
-import matplotlib.pyplot as plt
-
-from opticks.ana.base import opticks_environment
-from opticks.ana.nbase import count_unique
-
 log = logging.getLogger(__name__)
 
+import matplotlib.pyplot as plt
+
+from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.nbase import count_unique
 from opticks.ana.evt import Evt, costheta_
 from opticks.ana.ana import Rat, theta, recpos_plot, angle_plot
 from opticks.ana.boundary import Boundary
@@ -271,9 +272,19 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
     opticks_environment()
+    args = opticks_args(det="reflect",stag="1", ptag="2")
 
-    es = Evt(tag="1", label="S", det="reflect")
-    ep = Evt(tag="2", label="P", det="reflect")
+    es = Evt(tag=args.stag, label="S", det=args.det)
+    ep = Evt(tag=args.ptag, label="P", det=args.det)
+
+    log.info(" es : %s " % es.brief )
+    log.info(" ep : %s " % ep.brief )
+
+    if not (es.valid and ep.valid):
+        log.fatal("both es and ep must be valid")
+        sys.exit(1)
+    pass
+
 
     normal = [0,0,-1]
     source = [0,0,-200] 
@@ -303,8 +314,8 @@ if __name__ == '__main__':
 
     rp = ReflectionPlot(s, p, fr)
 
-    oneplot(fr,rp,log_=False)
-    #oneplot(fr,rp,log_=True)
+    #oneplot(fr,rp,log_=False)
+    oneplot(fr,rp,log_=True)
     #twoplot(fr,rp)
 
 
