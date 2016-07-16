@@ -927,3 +927,10 @@ ggv-(){             . $(opticks-home)/bin/ggv.bash && ggv-env $* ; }
 vids-(){            . $(opticks-home)/bin/vids.bash && vids-env $* ; }
 op-(){              . $(opticks-home)/bin/op.sh ; }
 
+#### opticks top level tests ########
+
+tpmt-(){             . $(opticks-home)/tests/tpmt.bash && tpmt-env $* ; }
+
+
+
+

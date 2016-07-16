@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, logging
+import os, logging, stat, datetime
 import numpy as np
 
 try:
@@ -21,6 +21,13 @@ costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linal
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(np.linalg.norm(a, 2, 1),3).reshape(-1,3)/np.repeat(np.linalg.norm(b, 2, 1),3).reshape(-1,3)
 norm_ = lambda a:a/np.repeat(np.linalg.norm(a, 2,1 ), 3).reshape(-1,3)
+
+def stamp_(path, fmt="%Y%m%d-%H%M"): 
+   if path is None:
+       return None
+   else:
+       return datetime.datetime.fromtimestamp(os.stat(path).st_ctime).strftime(fmt)
+   pass
 
 deg = np.pi/180.
 
@@ -50,11 +57,12 @@ class Evt(object):
 
     def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
 
+        self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
         self.seqs = seqs
-
+ 
         if label is None:
-            label = "%s/%s/%s : %s" % (det, src, tag, ",".join(seqs)) 
+            label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(seqs)) 
 
         self.label = label
         self.rec = rec
@@ -87,6 +95,9 @@ class Evt(object):
 
         if idom is None and fdom is None:
             log.warning("failed to load idom and fdom")
+            self.fdom = None
+            self.idom = None
+            self.valid = False
             return False
 
         if idom[0,0,3] != self.nrec:
@@ -255,8 +266,26 @@ class Evt(object):
     description = property(lambda self:"\n".join(["%5s : %20s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
     paths = property(lambda self:"\n".join(["%5s : %s " % (k, repr(getattr(getattr(self,k),'path','-'))) for k,label in self.desc.items()]))
 
+    def _path(self):
+        if self.fdom is None:
+             return None
+        else:
+             return self.fdom.path
+    path = property(_path)
+    stamp = property(lambda self:stamp_(self.path))
+
+
+    def _brief(self):
+        if self.valid:
+             return "%s %s %s" % (self.label, self.stamp, self.path)
+        else:
+             return "%s %s" % (self.label, "EVT LOAD FAILED")
+
+    brief = property(_brief)
+    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",\"%s\", seqs=\"%s\") %s %s" % (self.tag, self.src, self.det,self.label, repr(self.seqs), self.stamp, self.path))
+
     def __repr__(self):
-        return "Evt(%s,\"%s\",\"%s\",\"%s\", seqs=\"%s\")\n%s" % (self.tag, self.src, self.det,self.label, repr(self.seqs), self.description)
+        return "\n".join([self.summary, self.description])
 
     def msize(self):
         return float(self.ox.shape[0])/1e6

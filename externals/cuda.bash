@@ -37,6 +37,66 @@ CUDA 5.5 corresponds to OptiX 3.5 setting these as Opticks minimum requirements.
 Should roughly correspond to era of compute capability 3.0 GPUs.
 
 
+OSX Commandline User Switching and CUDA 
+------------------------------------------
+
+With "SystemPreferences>EnergySaver[Automatic graphics switching" enabled
+(usual approach, as otherwise tend to get out of GPU memory often)
+no CUDA devices are seen.::
+
+    delta:build simon$ cudaGetDevicePropertiesTest 
+    CUDA Device Query...target -1 
+    There are 0 CUDA devices.
+    0
+
+
+With automatic graphics switching disabled (ie with the discrete GPU in use all the time)
+CUDA sees the device::
+
+    delta:build simon$ cudaGetDevicePropertiesTest 
+    CUDA Device Query...target -1 
+    There are 1 CUDA devices.
+
+    CUDA Device #0
+    Major revision number:         3
+    Minor revision number:         0
+    Name:                          GeForce GT 750M
+    Total global memory:           2147024896
+    Total shared memory per block: 49152
+    Total registers per block:     65536
+    Warp size:                     32
+    Maximum memory pitch:          2147483647
+    Maximum threads per block:     1024
+    Maximum dimension 0 of block:  1024
+    Maximum dimension 1 of block:  1024
+    Maximum dimension 2 of block:  64
+    Maximum dimension 0 of grid:   2147483647
+    Maximum dimension 1 of grid:   65535
+    Maximum dimension 2 of grid:   65535
+    Clock rate:                    925500
+    Total constant memory:         65536
+    Texture alignment:             512
+    Concurrent copy and execution: Yes
+    Number of multiprocessors:     2
+    Kernel execution timeout:      Yes
+    30
+    delta:build simon$ 
+    delta:build simon$ vip
+
+
+CUDA from console mode : is kinda similar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-mac-os-x/index.html#axzz4EUM2eoYO
+
+Note: To run CUDA applications in console mode on MacBook Pro with both an integrated GPU and a discrete GPU, 
+use the following settings before dropping to console mode:
+
+* Uncheck System Preferences > Energy Saver > Automatic Graphic Switch
+* Drag the Computer sleep bar to Never in System Preferences > Energy Saver
+
+
+
 CUDA 7.5 Release Notes
 ------------------------
 

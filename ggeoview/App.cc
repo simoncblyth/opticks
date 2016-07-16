@@ -794,9 +794,10 @@ void App::indexEvtOld()
             m_pho->setRecs(m_rec);
             //if(m_torchstep) m_torchstep->dump("App::indexEvtOld TorchStepNPY");
 
-            m_pho->dump(0  ,  "App::indexEvtOld dpho 0");
-            m_pho->dump(100,  "App::indexEvtOld dpho 100" );
-            m_pho->dump(1000, "App::indexEvtOld dpho 1000" );
+            // BELOW NEEDS REVISITING POST ADOPTION OF STRUCTURED RECORDS
+            //m_pho->dump(0  ,  "App::indexEvtOld dpho 0");
+            //m_pho->dump(100,  "App::indexEvtOld dpho 100" );
+            //m_pho->dump(1000, "App::indexEvtOld dpho 1000" );
 
         }
         m_evt->setRecordsNPY(m_rec);

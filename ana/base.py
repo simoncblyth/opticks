@@ -2,7 +2,7 @@
 """
 Non-numpy basics
 """
-import os, logging, json, ctypes, subprocess
+import os, logging, json, ctypes, subprocess, argparse, sys
 log = logging.getLogger(__name__) 
 
 cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
@@ -135,6 +135,35 @@ def opticks_environment(dump=False):
    env = OpticksEnv()
    if dump:
        env.dump()
+
+def opticks_args(**kwa):
+
+    llv = kwa.get("loglevel", "info")
+    doc = kwa.get("doc", None)
+    tag = kwa.get("tag", None)
+    src = kwa.get("src", None)
+    det = kwa.get("det", None)
+    show = kwa.get("show", True)
+
+    parser = argparse.ArgumentParser(doc)
+
+    parser.add_argument(     "--noshow",  dest="show", default=show, action="store_false", help="switch off dumping commandline "  )
+    parser.add_argument(     "--show",  default=show, action="store_true", help="dump invoking commandline "  )
+    parser.add_argument(     "--loglevel", default=llv, help=" set logging level : DEBUG/INFO/WARNING/ERROR/CRITICAL " )
+
+    parser.add_argument(     "--tag",  default=tag, help="tag identifies a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
+    parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov " )
+    parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay "  )
+    args = parser.parse_args()
+    logging.basicConfig(level=getattr(logging,args.loglevel.upper()))
+
+    if args.show:
+         print " ".join(sys.argv)
+
+    return args 
+
+    
+ 
 
 
 def ihex_(i):

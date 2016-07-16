@@ -1,19 +1,12 @@
 #!/usr/bin/env python
 """
-pmt_test.py : PmtInBox Opticks vs G4 History comparisons
+tpmt.py : PmtInBox Opticks vs G4 History comparisons
 ==========================================================
 
 Loads test events from Opticks and Geant4 and 
 compares their bounce histories.
 
-Create the events by running bash functions::
-
-   ggv-pmt-test 
-   ggv-pmt-test --tcfg4 
-
-Visualize the cfg4 created evt in interop mode viewer::
-
-   ggv-;ggv-pmt-test --cfg4 --load
+Create the events by running tpmt- bash functions.
 
 The convention is adopted of using positive tags for Opticks 
 and negative ones of the same magnitude for the corresponding 
@@ -23,10 +16,10 @@ Geant4 simulated event.
 See Also
 -----------
 
-:doc:`pmt_test_debug`
+:doc:`tpmt_debug`
       simulation debugging notes to acheive Opticks Geant4 match
 
-:doc:`pmt_test_distrib`
+:doc:`tpmt_distrib`
       comparison of distributions  
 
 
@@ -120,24 +113,21 @@ Material abbreviations:
 
 
 """
-import os, logging, numpy as np
+import os, sys, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt  import Evt
 
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
 
     opticks_environment()
+    args = opticks_args(doc=__doc__, tag="10")
 
-    #tag = "1"
-    #tag = "2"
-    tag = "4"
-    #tag = "5"
+    tag = args.tag
 
     #seqs = ["TO BT BR BT BT BT BT SA"] 
     #seqs = ["TO BT BR BR BT SA"]
@@ -146,17 +136,25 @@ if __name__ == '__main__':
     a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=seqs)
     b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
 
+    log.info( " a : %s " % a.brief)
+    log.info( " b : %s " % b.brief )
+
+    if a.valid:
+        a0 = a.rpost_(0)
+        a0r = np.linalg.norm(a0[:,:2],2,1)
+        if len(a0r)>0:
+            print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
+
+    if b.valid:
+        b0 = b.rpost_(0)
+        b0r = np.linalg.norm(b0[:,:2],2,1)
+        if len(b0r)>0:
+            print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
 
-    a0 = a.rpost_(0)
-    a0r = np.linalg.norm(a0[:,:2],2,1)
-    if len(a0r)>0:
-        print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
-
-    b0 = b.rpost_(0)
-    b0r = np.linalg.norm(b0[:,:2],2,1)
-    if len(b0r)>0:
-        print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
+    if not (a.valid and b.valid):
+        log.fatal("need two valid events to compare ")
+        sys.exit(1)
 
     lmx = 20 
     hcf = a.history.table.compare(b.history.table)
@@ -167,6 +165,5 @@ if __name__ == '__main__':
     mcf = a.material.table.compare(b.material.table)
     if len(mcf.lines) > lmx:
         mcf.sli = slice(0,lmx)
- 
     print mcf
 

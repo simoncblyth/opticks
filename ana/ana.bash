@@ -4,20 +4,22 @@ ana-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ana-src)} ; }
 ana-vi(){       vi $(ana-source) ; }
 ana-usage(){ cat << \EOU
 
-Opticks Analysis Scripts
-=========================
+ana : Opticks Analysis Scripts
+=================================
 
+General Tests
+---------------
+
+:doc:`tevt`
+    Loads single event and dumps constituent array dimensions and photon history tables
 
 PMT Tests
 ------------
 
-:doc:`pmt_test_evt`
-    Loads single PMT test event.
-
-:doc:`pmt_test`
+:doc:`tpmt`
     Compare Opticks and Geant4 photon bounce histories for simple PMT in box of mineral oil geometry 
 
-:doc:`pmt_test_distrib`
+:doc:`tpmt_distrib`
     Compare Opticks and Geant4 photon distributions for simple PMT in box of mineral oil geometry 
 
 :doc:`pmt_skimmer`

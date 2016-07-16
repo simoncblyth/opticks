@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-pmt_test_evt.py : Loads a single PmtInBox event
+tevt.py : Loads a single event
 ===================================================
 
 Expected output below shows the dimensions of the constitent numpy arrays that comprise the event::
@@ -27,18 +27,17 @@ Expected output below shows the dimensions of the constitent numpy arrays that c
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    args = opticks_args(tag="-4",src="torch", det="PmtInBox", doc=__doc__)
     opticks_environment() 
 
-    evt = Evt(tag="-4", src="torch", det="PmtInBox", seqs=[])
+    evt = Evt(tag=args.tag, src=args.src, det=args.det, seqs=[])
+
     print evt
-
-
-
-
+    print evt.history.table
+    print evt.material.table
    
 

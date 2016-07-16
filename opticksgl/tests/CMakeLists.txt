@@ -3,15 +3,17 @@ set(name OpticksGLTest)
 project(${name})
 
 set(TEST_SOURCES
-    OOAxisAppTest.cc
+    OOAxisAppCheck.cc
 )
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
 
-    add_test(${name}.${TGT} ${TGT})
-    add_dependencies(check ${TGT})
+    if (${TGT} MATCHES ".*Test$")  
+       add_test(${name}.${TGT} ${TGT})
+       add_dependencies(check ${TGT})
+    endif()
 
     target_link_libraries(${TGT} ${LIBRARIES} OpticksGL )
     install(TARGETS ${TGT} DESTINATION lib)

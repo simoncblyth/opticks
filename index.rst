@@ -17,15 +17,14 @@ Contents:
    opticks 
    overview
 
+   tests/index
+   bin/index
+   ana/index
+
    sysrap/index
    ggeo/index
    ggeoview/index
    cfg4/index
-
-   ana/index
-
-   bin/index
-
 
    
 

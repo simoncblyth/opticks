@@ -1,5 +1,5 @@
 
-.. include:: pmt_test_distrib.py 
+.. include:: tpmt.py 
    :start-after: """
    :end-before: """
 

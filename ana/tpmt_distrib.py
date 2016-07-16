@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-pmt_test_distrib.py : PmtInBox Opticks vs Geant4 distributions
+tpmt_distrib.py : PmtInBox Opticks vs Geant4 distributions
 ================================================================
 
 Usage
@@ -17,10 +17,10 @@ To close each window in turn.
 See Also
 ----------
 
-:doc:`pmt_test` 
+:doc:`tpmt` 
        history comparison and how to create the events
 
-:doc:`pmt_test_debug` 
+:doc:`tpmt_debug` 
        development notes debugging simulation to achieve *pmt_test.py* matching
 
 """
@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize'] = 18,10.2   # plt.gcf().get_size_inches()   after maximize
 import matplotlib.gridspec as gridspec
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
 from opticks.ana.nbase import chi2, decompression_bins
 from opticks.ana.cfplot import cfplot
@@ -51,7 +51,8 @@ class CF(object):
         a = Evt(tag="%s" % tag, src=src, det=det, seqs=seqs)
         b = Evt(tag="-%s" % tag , src=src, det=det, seqs=seqs)
 
-        log.info("CF a %s b %s " % (a.label, b.label )) 
+        log.info("CF a %s " % (a.brief )) 
+        log.info("CF b %s " % (b.brief )) 
 
         his = a.history.table.compare(b.history.table)
         mat = a.material.table.compare(b.material.table)
@@ -298,10 +299,9 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
-
     opticks_environment()
+    args = opticks_args(tag="4", src="torch", det="PmtInBox")
 
     plt.ion()
     plt.close()
@@ -309,7 +309,7 @@ if __name__ == '__main__':
     select = slice(1,2)
     #select = slice(0,8)
 
-    cf = CF(tag="4", src="torch", det="PmtInBox", select=select )
+    cf = CF(tag=args.tag, src=args.src, det=args.det, select=select )
     cf.dump()
     
     multiplot(cf, pages=["XYZT","ABCR"])
@@ -319,8 +319,6 @@ if __name__ == '__main__':
     #qwn_plot( scf, "R", irec)
     #qwns_plot( scf, "XYZT", irec)
     #qwns_plot( scf, "ABCR", irec)
-
-
 
 
 

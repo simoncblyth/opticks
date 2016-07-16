@@ -106,14 +106,14 @@ class OKCORE_API Composition : public NConfigurable {
        Composition::ColorStyle_t getColorStyle();
    public:
        typedef enum { DEF_NORMAL, FLIP_NORMAL, NUM_NORMAL_STYLE } NormalStyle_t ;
-       void nextNormalStyle();
+       void nextNormalStyle();   // changes m_nrmparam.x
        void setNormalStyle(Composition::NormalStyle_t style);
        Composition::NormalStyle_t getNormalStyle();
    public:
        typedef enum { DEF_GEOMETRY, NRMCOL_GEOMETRY, VTXCOL_GEOMETRY, FACECOL_GEOMETRY, NUM_GEOMETRY_STYLE } GeometryStyle_t ;
        static const char* getGeometryStyleName(Composition::GeometryStyle_t style);
        const char* getGeometryStyleName();
-       void nextGeometryStyle();   // changes m_nrmparam
+       void nextGeometryStyle();   // changes m_nrmparam.y
        void setGeometryStyle(Composition::GeometryStyle_t style);
        Composition::GeometryStyle_t getGeometryStyle();
    public:
