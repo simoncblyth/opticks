@@ -1246,6 +1246,42 @@ EOT
 
 }
 
+
+oks-ttmpl(){ vi $(oks-tpath) ; }
+oks-tpath(){ echo $(opticks-home)/tests/${1:-ttemplate}.${2:-bash} ; } 
+oks-tgen()
+{
+    local msg=" === $FUNCNAME : "
+    local tname=${1:-tname}
+
+    local rpath=$(oks-tpath $tname rst)
+    [ -f "$rpath" ] && echo $msg : rst FILE EXISTS ALREADY $rpath && return 
+    local rtmpl=$(oks-tpath ttemplate rst)
+    echo $msg writing ${tname}.rst to $rpath 
+    cp $rtmpl $rpath 
+    perl -pi -e "s,ttemplate,${tname},g" $rpath 
+    printf "    %s\n" $tname  >> $(opticks-home)/tests/index.rst
+
+
+    local bpath=$(oks-tpath $tname bash)
+    [ -f "$bpath" ] && echo $msg : bash FILE EXISTS ALREADY $bpath && return 
+    local btmpl=$(oks-tpath ttemplate bash)
+    echo $msg writing ${tname}.bash to $tpath and appending precursor function ${tname}- to $(opticks-home)/opticks.bash
+    cp $btmpl $bpath 
+    perl -pi -e "s,ttemplate,${tname},g" $bpath 
+
+    cat << EOL >> $(opticks-home)/opticks.bash
+${tname}-(){ . \$(opticks-home)/tests/${tname}.bash && ${tname}-env \$* ; }
+EOL
+    source $bpath
+
+    ggv-
+    vi $bpath $(ggv-source)
+
+}
+
+
+
 oks-xcollect-notes(){ cat << EON
 
 *oks-xcollect*
@@ -1329,7 +1365,6 @@ oks-tmpify()
 {
    perl -pi -e 's,\"/tmp,\"\$TMP,g' *.cc
 }
-
 
 
 

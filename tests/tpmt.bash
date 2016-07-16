@@ -2,10 +2,8 @@ tpmt-source(){   echo $(opticks-home)/tests/tpmt.bash ; }
 tpmt-vi(){       vi $(tpmt-source) ; }
 tpmt-usage(){ cat << \EOU
 
-TPMT : Opticks Simulation PMT Tests 
+tpmt- : Opticks Simulation PMT Tests 
 ================================================
-
-
 
 `tpmt-vi`
     edit the bash functions 
@@ -36,6 +34,32 @@ TPMT : Opticks Simulation PMT Tests
 `tpmt-alt`
     visualize alternate geometry with the PMT inside a sphere of Mineral Oil 
     
+
+
+`tpmt-skimmer`
+
+::
+
+    In [1]: run tpmt_skimmer.py --tag 10
+    tpmt_skimmer.py --tag 10
+    A(Op) PmtInBox/torch/ 10 : TO BT BR BR BT SA 
+      0 z:    300.000    300.000    300.000   r:     97.134     99.863     98.499   t:      0.100      0.100      0.100   smry m1/m2   4/ 14 MO/Py  -28 ( 27)  13:TO  
+      1 z:     63.787     74.133     68.960   r:     97.134     99.863     98.499   t:      1.217      1.268      1.243   smry m1/m2  14/  4 Py/MO   28 ( 27)  12:BT  
+      2 z:     43.983     54.228     49.106   r:     98.888    100.928     99.908   t:      1.315      1.364      1.339   smry m1/m2  14/ 11 Py/OV -125 (124)  11:BR  
+      3 z:     33.546     37.886     35.716   r:     92.439     93.983     93.211   t:      1.401      1.424      1.413   smry m1/m2  14/  4 Py/MO   28 ( 27)  11:BR  
+      4 z:     18.641     21.470     20.055   r:     88.695     90.252     89.473   t:      1.483      1.498      1.491   smry m1/m2   4/ 12 MO/Rk  124 (123)  12:BT  
+      5 z:   -300.000   -300.000   -300.000   r:     23.101     48.215     35.658   t:      3.087      3.107      3.097   smry m1/m2   4/ 12 MO/Rk  124 (123)   8:SA  
+    B(G4) PmtInBox/torch/-10 : TO BT BR BR BT SA 
+      0 z:    300.000    300.000    300.000   r:     97.103     99.947     98.525   t:      0.100      0.100      0.100   smry m1/m2   4/  0 MO/?0?    0 ( -1)  13:TO  
+      1 z:     63.366     74.224     68.795   r:     97.103     99.947     98.525   t:      1.291      1.349      1.320   smry m1/m2  14/  0 Py/?0?    0 ( -1)  12:BT  
+      2 z:     43.873     54.576     49.225   r:     98.857    100.971     99.914   t:      1.392      1.439      1.415   smry m1/m2  14/  0 Py/?0?    0 ( -1)  11:BR  
+      3 z:     33.500     38.609     36.055   r:     92.415     94.219     93.317   t:      1.476      1.498      1.487   smry m1/m2  14/  0 Py/?0?    0 ( -1)  11:BR  
+      4 z:     18.595     21.708     20.151   r:     88.671     90.372     89.522   t:      1.558      1.576      1.567   smry m1/m2   4/  0 MO/?0?    0 ( -1)  12:BT  
+      5 z:   -300.000   -300.000   -300.000   r:     22.626     48.456     35.541   t:      3.268      3.293      3.280   smry m1/m2   4/  0 MO/?0?    0 ( -1)   8:SA  
+
+
+
+
 
 
 EOU
@@ -123,6 +147,14 @@ tpmt--(){
 tpmt-args() {        echo  --tag $(tpmt-tag) --det $(tpmt-det) --src $(tpmt-src) ; }
 tpmt-cf() {         tpmt.py          $(tpmt-args) ; } 
 tpmt-cf-distrib() { tpmt_distrib.py  $(tpmt-args) ; } 
+tpmt-skimmer() {    tpmt_skimmer.py  $(tpmt-args) ; } 
+
+
+tpmt-gen()
+{
+    tpmt--  --compute 
+    tpmt--  --tcfg4
+}
 
 tpmt-ana()
 {
@@ -130,12 +162,11 @@ tpmt-ana()
     tpmt-cf-distrib
 }
 
+
 tpmt-test()
 {
-    tpmt--  --compute 
-    tpmt--  --tcfg4
-    tpmt-cf
-    tpmt-cf-distrib
+    tpmt-gen
+    tpmt-ana
 }
 
 tpmt-viz-g4() { tpmt-- --load --tcfg4 ; } 

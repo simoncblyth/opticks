@@ -133,6 +133,8 @@ const char* TorchStepNPY::M_PPOL_ = "ppol" ;
 const char* TorchStepNPY::M_FIXPOL_ = "fixpol" ; 
 const char* TorchStepNPY::M_FLAT_THETA_ = "flatTheta" ; 
 const char* TorchStepNPY::M_FLAT_COSTHETA_ = "flatCosTheta" ; 
+const char* TorchStepNPY::M_WAVELENGTH_SOURCE_ = "wavelengthSource" ; 
+const char* TorchStepNPY::M_WAVELENGTH_COMB_ = "wavelengthComb" ; 
 
 Mode_t TorchStepNPY::parseMode(const char* k)
 {
@@ -142,6 +144,8 @@ Mode_t TorchStepNPY::parseMode(const char* k)
     else if(  strcmp(k,M_FLAT_THETA_)==0)      mode = M_FLAT_THETA ; 
     else if(  strcmp(k,M_FLAT_COSTHETA_)==0)   mode = M_FLAT_COSTHETA ; 
     else if(  strcmp(k,M_FIXPOL_)==0)          mode = M_FIXPOL ; 
+    else if(  strcmp(k,M_WAVELENGTH_SOURCE_)==0)  mode = M_WAVELENGTH_SOURCE ; 
+    else if(  strcmp(k,M_WAVELENGTH_COMB_)==0)  mode = M_WAVELENGTH_COMB ; 
     return mode ;   
 }
 
@@ -165,6 +169,8 @@ std::string TorchStepNPY::getModeString()
     if(mode & M_FLAT_THETA) ss << M_FLAT_THETA_ << " " ; 
     if(mode & M_FLAT_COSTHETA) ss << M_FLAT_COSTHETA_ << " " ; 
     if(mode & M_FIXPOL) ss << M_FIXPOL_ << " " ; 
+    if(mode & M_WAVELENGTH_SOURCE) ss << M_WAVELENGTH_SOURCE_ << " " ; 
+    if(mode & M_WAVELENGTH_COMB) ss << M_WAVELENGTH_COMB_ << " " ; 
 
     return ss.str();
 } 
@@ -209,6 +215,7 @@ TorchStepNPY::Param_t TorchStepNPY::parseParam(const char* k)
 
 void TorchStepNPY::set(Param_t p, const char* s)
 {
+    bool ignore = false ; 
     switch(p)
     {
         case TYPE           : setType(s)           ;break;
@@ -226,8 +233,13 @@ void TorchStepNPY::set(Param_t p, const char* s)
         case TIME           : setTime(s)           ;break;
         case RADIUS         : setRadius(s)         ;break;
         case DISTANCE       : setDistance(s)       ;break;
-        case UNRECOGNIZED   : 
-                    LOG(warning) << "TorchStepNPY::set WARNING ignoring unrecognized parameter " ; 
+        case UNRECOGNIZED   : ignore=true ;  
+    }
+
+    if(ignore)
+    {
+        LOG(fatal) << "TorchStepNPY::set WARNING ignoring unrecognized parameter [" << s << "]"  ; 
+        assert(0);
     }
 }
 
@@ -398,6 +410,16 @@ void TorchStepNPY::configure(const char* config_)
         const char* v = it->second.c_str() ;  
         Param_t p = parseParam(k) ;
         LOG(debug) << std::setw(20) << k << ":" << v  ; 
+
+        if(p == UNRECOGNIZED)
+        {
+            LOG(fatal) << "TorchStepNPY::configure"
+                       << " UNRECOGNIZED parameter "
+                       << " [" << k << "] = [" << v << "]"
+                       ;
+            assert(0);
+        }
+
 
         if(strlen(v)==0)
         {

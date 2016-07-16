@@ -22,24 +22,21 @@ PMT Tests
 :doc:`tpmt_distrib`
     Compare Opticks and Geant4 photon distributions for simple PMT in box of mineral oil geometry 
 
-:doc:`pmt_skimmer`
-    Plotting mean step by step positions of all photons with specific step histories 
-
-**pmt_edge.py**
-    tabulates and plots and min,max,mid positions at each step for photons that 
-    follow a specific sequence such as "TO BT BT SA" 
+:doc:`tpmt_skimmer`
+    Plotting and tabulating mean step by step positions of all photons with specific step histories 
+    such as "TO BT BT SA" 
 
 
 BoxInBox tests
 ------------------
 
-**box_test.py**
+:doc:`tbox`
     BoxInBox Opticks vs Geant4 history sequence comparisons analogous to *pmt_test.py*
 
 Rainbow Tests
 ---------------
 
-:doc:`rainbow_cfg4`
+:doc:`trainbow`
     Rainbow scattering angle comparison between Opticks and Geant4 
 
 **xrainbow.py**
@@ -306,5 +303,30 @@ ana-test(){
        fi
    done   
 }
+
+
+ana-shim(){
+  ana-cd 
+  local py
+  local rst
+  local name
+  ls -1  t*.py | while read py ; do
+      rst=${py/.py}.rst
+      if [ ! -f "$rst" ];  then
+          echo $msg writing rst shim $rst shim 
+          ana-shim- $py > $rst 
+      fi
+  done 
+}
+
+ana-shim-(){ cat << EOR 
+
+.. include:: ${1:-dummy} 
+   :start-after: """
+   :end-before: """
+
+EOR
+}
+
 
 

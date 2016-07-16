@@ -929,8 +929,11 @@ op-(){              . $(opticks-home)/bin/op.sh ; }
 
 #### opticks top level tests ########
 
-tpmt-(){             . $(opticks-home)/tests/tpmt.bash && tpmt-env $* ; }
+tpmt-(){       . $(opticks-home)/tests/tpmt.bash && tpmt-env $* ; }
+trainbow-(){   . $(opticks-home)/tests/trainbow.bash && trainbow-env $* ; }
+tnewton-(){    . $(opticks-home)/tests/tnewton.bash && tnewton-env $* ; }
+tprism-(){     . $(opticks-home)/tests/tprism.bash && tprism-env $* ; }
 
 
 
-
+tbox-(){ . $(opticks-home)/tests/tbox.bash && tbox-env $* ; }

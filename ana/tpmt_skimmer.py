@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-pmt_skimmer.py: Following positions of PMT skimmers
+tpmt_skimmer.py: Following positions of PMT skimmers
 ======================================================
 
 Creates plot showing step by step average positions of 
@@ -12,7 +12,7 @@ Expected Output
 
 .. code-block:: py
 
-    In [1]: run pmt_skimmer.py
+    In [1]: run tpmt_skimmer.py
     WARNING:opticks.ana.evt:init_index PmtInBox/torch/-5 : TO BT BR BR BT SA finds too few (ps)phosel uniques : 1
     WARNING:opticks.ana.evt:init_index PmtInBox/torch/-5 : TO BT BR BR BT SA finds too few (rs)recsel uniques : 1
     WARNING:opticks.ana.evt:init_index PmtInBox/torch/-5 : TO BT BR BR BT SA finds too few (rsr)reshaped-recsel uniques : 1
@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
 from opticks.ana.pmt.plot import Pmt, one_plot
 
@@ -73,9 +73,10 @@ def zr_plot(data, neg=False):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     np.set_printoptions(precision=4, linewidth=200)
     opticks_environment()
+    args = opticks_args(tag="10", src="torch", det="PmtInBox")
+
 
     plt.ion()
     plt.close()
@@ -87,27 +88,34 @@ if __name__ == '__main__':
     pts = pmt.parts(ALL)
     one_plot(fig, pmt, pts, axes=ZX, clip=True)
 
-    tag = "5"
     pol = False
   
     # aseqs=["TO BT BR BT BT BT BT BT BT SA"]   before fixing the TIR bug this was what was happening
     aseqs=["TO BT BR BR BT SA"]
     na = len(aseqs[0].split())
-    a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=aseqs)
+    a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=aseqs)
 
     bseqs=["TO BT BR BR BT SA"]
     nb = len(bseqs[0].split())
-    b = Evt(tag="-%s" % tag, src="torch", det="PmtInBox", seqs=bseqs)
+    b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=bseqs)
 
-    print "A(Op) %s " % a.label
-    a_zrt = a.zrt_profile(na, pol=pol)
-    zr_plot(a_zrt)
+    if a.valid:
+        log.info("A : plot zrt_profile %s " % a.label)
+        print "A(Op) %s " % a.label
+        a_zrt = a.zrt_profile(na, pol=pol)
+        zr_plot(a_zrt)
+    else:
+        log.warning("failed to load A")
 
-    print "B(G4) %s " % b.label
-    b_zrt = b.zrt_profile(nb, pol=pol)
-    zr_plot(b_zrt, neg=True)
+    if b.valid:
+        log.info("B : plot zrt_profile %s " % b.label)
+        print "B(G4) %s " % b.label
+        b_zrt = b.zrt_profile(nb, pol=pol)
+        zr_plot(b_zrt, neg=True)
+    else:
+        log.warning("failed to load B")
 
 
-
+    
 
 

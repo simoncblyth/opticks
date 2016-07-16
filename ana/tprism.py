@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-prism.py : Comparison of simulation with analytic expectation 
+tprism.py : Comparison of simulation with analytic expectation 
 ================================================================
 
 Analysis of "prism" and "newton" event categories
 
-* "prism" uses all incident angles, see `ggv-prism`
-* "newton" uses one incident angle, see `ggv-newton`
+* "prism" uses all incident angles, see `tprism-`
+* "newton" uses one incident angle, see `tnewton-`
 
 
 TODO:
@@ -17,11 +17,9 @@ TODO:
 * http://docs.scipy.org/doc/numpy-1.10.1/reference/generated/numpy.histogram2d.html
 
 
-See *ggv-prism*
-
 
 Prism Deviation Angle Calculation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Hecht p163, two refractions thru a prism, CB and CD are normal to surface planes::
 
@@ -134,33 +132,28 @@ At minimum deviation delta, ray are parallel to base and have symmetric ray
 
 
 Where to shoot from to get minimum deviation ? 
+
 * Use intersect frame coordinate with the transform explicitly specifified
 
 
 """
 
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
-
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.nbase import count_unique
-
 from opticks.ana.evt import Evt, costheta_
 from opticks.ana.ana import Rat, theta
-
 from opticks.ana.geometry import Shape, Plane, Boundary, Ray, Intersect, IntersectFrame, mat4_tostring, mat4_fromstring
 
 
-
 rad = np.pi/180.
-deg = 1./rad
+deg = 180./np.pi
 
-deg = np.pi/180.
 
 np.set_printoptions(suppress=True, precision=3)
 np.seterr(divide="ignore", invalid="ignore")
@@ -183,7 +176,7 @@ class Prism(Shape):
         height = self.parameters[1]
         depth = self.parameters[2]
 
-        a  = alpha*rad
+        a  = alpha*np.pi/180.
         pass
         self.a = a 
         self.sa = np.sin(a)
@@ -215,6 +208,10 @@ class Prism(Shape):
         self.height = height
         self.depth = depth
         self.apex = np.array(apex)
+
+
+    def __repr__(self):
+        return "Prism(%s,%s) alpha %s " % (repr(self.parameters), repr(self.boundary), self.alpha) 
 
 
     def intersectframe(self, ray):
@@ -304,6 +301,10 @@ class Prism(Shape):
 
 class PrismExpected(object):
     def __init__(self, a, n):
+        """
+        :param a: apex angle of prism 
+        :param n: refractive index of prism
+        """
         self.a = a
         self.sa = np.sin(a)
         self.ca = np.cos(a)
@@ -318,9 +319,15 @@ class PrismExpected(object):
         self.i1c = self.i1c_()
 
     def i2c_(self):
+        """
+        Critical angle
+        """
         return np.arcsin(1./self.n)
 
     def i1c_(self):
+        """
+        Other Critical angle
+        """
         return np.arcsin( self.n*np.sin(self.a - np.arcsin(self.ni)))
 
     def st2_(self, i1):
@@ -449,7 +456,7 @@ class PrismCheck(object):
         self.n2 = n2
 
         self.expected_deviation()
-        #self.compare_expected_with_simulated()
+        self.compare_expected_with_simulated()
 
     def expected_deviation(self):
         """  
@@ -479,17 +486,17 @@ class PrismCheck(object):
         i1c = self.xprism.i1c_()
 
         log.info("ina: %s " % self.ina)
-        log.info("i1[ina]*deg: %s " % (i1[self.ina]*deg) )
-        log.info("i1c*deg : %s " % (i1c*deg) )
+        log.info("i1[ina]/rad: %s " % (i1[self.ina]/rad) )
+        log.info("i1c/rad : %s " % (i1c/rad) )
 
     def compare_expected_with_simulated(self):
         """
         """
         msk = self.msk
         mdf = self.dv[msk] - self.xdv[msk]
-        log.info("  dv[msk]*deg %s " % (self.dv[msk]*deg) )
-        log.info(" xdv[msk]*deg %s " % (self.xdv[msk]*deg) )
-        log.info("mdf*deg:%s max:%s min:%s " % (mdf*deg, mdf.min()*deg, mdf.max()*deg ))
+        log.info("  dv[msk]/rad %s " % (self.dv[msk]/rad) )
+        log.info(" xdv[msk]/rad %s " % (self.xdv[msk]/rad) )
+        log.info("mdf/rad:%s max:%s min:%s " % (mdf/rad, mdf.min()/rad, mdf.max()/rad ))
 
         self.mdf = mdf
         self.mdv = self.dv[msk]
@@ -516,13 +523,13 @@ def test_intersectframe(prism):
 
 def scatter_plot(xq, yq, sl):
     if sl is not None:
-        x = xq[sl]*deg  
-        y = yq[sl]*deg  
+        x = xq[sl]
+        y = yq[sl]  
     else:
-        x = xq*deg  
-        y = yq*deg  
+        x = xq  
+        y = yq  
     pass
-    plt.scatter(x, y)
+    plt.scatter(x*deg, y*deg)
 
 
 def vanity_plot(pc, sl=None):
@@ -579,8 +586,10 @@ def spatial(pc):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    
     opticks_environment() 
+    args = opticks_args(tag="1", det="prism") 
+
 
     plt.ion()
 
@@ -589,11 +598,21 @@ if __name__ == '__main__':
 
     seqs = ["TO BT BT SA"]
 
-    sel = Evt(tag="1", det="newton", seqs=seqs) 
+    sel = Evt(tag=args.tag, det=args.det, seqs=seqs) 
+
+    log.info("sel %s " % sel.brief)
+
+
+    if not sel.valid:
+        log.fatal("failed to load tag %s det %s " % (args.tag, args.det))
+        sys.exit(1)  
 
     boundary = Boundary("Vacuum///GlassSchottF2")
 
     prism = Prism("60.,300,300,0", boundary)
+
+    log.info("prism %s " % repr(prism))
+
 
     n = boundary.imat.refractive_index(sel.wl)  
 

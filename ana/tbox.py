@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-box_test.py : BoxInBox Opticks vs Geant4 comparisons
+tbox.py : BoxInBox Opticks vs Geant4 comparisons
 =======================================================
 
 Without and with cfg4 runs::
@@ -222,7 +222,7 @@ log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
 
 X,Y,Z,W = 0,1,2,3
@@ -231,50 +231,62 @@ X,Y,Z,W = 0,1,2,3
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     opticks_environment()
+    args = opticks_args(tag="1",src="torch",det="BoxInBox")
 
     np.set_printoptions(precision=4, linewidth=200)
 
     plt.ion()
     plt.close()
 
-    tag = "1"
-    a = Evt(tag="%s" % tag, src="torch", det="BoxInBox")
-    b = Evt(tag="-%s" % tag , src="torch", det="BoxInBox")
+    a = Evt(tag="%s" % args.tag, src=args.src, det=args.det)
+    b = Evt(tag="-%s" % args.tag , src=args.src, det=args.det)
 
-    a0 = a.rpost_(0)
-    a0r = np.linalg.norm(a0[:,:2],2,1)
+    log.info(" A : %s " % a.brief )
+    log.info(" B : %s " % b.brief )
 
-    b0 = b.rpost_(0)
-    b0r = np.linalg.norm(b0[:,:2],2,1)
 
-    print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max(),b0r.min(),b0r.max())))
+    if a.valid:
+        a0 = a.rpost_(0)
+        a0r = np.linalg.norm(a0[:,:2],2,1)
+        print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
 
-    hcf = a.history.table.compare(b.history.table)
-    print hcf
+    if b.valid:
+        b0 = b.rpost_(0)
+        b0r = np.linalg.norm(b0[:,:2],2,1)
+        print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
-    mcf = a.material.table.compare(b.material.table)
-    print mcf
 
+    if a.valid and b.valid:
+        hcf = a.history.table.compare(b.history.table)
+        print hcf
+
+        mcf = a.material.table.compare(b.material.table)
+        print mcf
 
     np.set_printoptions(formatter={'int':hex})
-    ahm = np.dstack([a.seqhis,a.seqmat])[0]
-    bhm = np.dstack([b.seqhis,b.seqmat])[0]
 
-    print "ahm (Op)\n", ahm
-    print "bhm (G4)\n", bhm
+    if a.valid:
+        ahm = np.dstack([a.seqhis,a.seqmat])[0]
+        print "ahm (Op)\n", ahm
+
+    if b.valid:
+        bhm = np.dstack([b.seqhis,b.seqmat])[0]
+        print "bhm (G4)\n", bhm
 
 
     sel = "TO BT BT SA" 
     nst = len(sel.split())
 
-    sa = Evt(tag="%s" % tag, src="torch", det="BoxInBox", seqs=[sel])
-    sb = Evt(tag="-%s" % tag, src="torch", det="BoxInBox", seqs=[sel])
+    sa = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=[sel])
+    sb = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=[sel])
 
-    print "sa(Op)"
-    sa_zrt = sa.zrt_profile(nst)
-  
-    print "sb(G4)"
-    sb_zrt = sb.zrt_profile(nst)
+    if sa.valid:
+        print "sa(Op)"
+        sa_zrt = sa.zrt_profile(nst)
+      
+    if sb.valid:
+        print "sb(G4)"
+        sb_zrt = sb.zrt_profile(nst)
 
 
 

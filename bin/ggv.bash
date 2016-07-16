@@ -608,124 +608,6 @@ ggv-param(){
 }
 
 
-
-ggv-rainbow-usage(){ cat << EOU
-
-ggv-;ggv-rainbow 
-ggv-;ggv-rainbow --ppol
-ggv-;ggv-rainbow --spol
-ggv-;ggv-rainbow --tcfg4 --spol
-ggv-;ggv-rainbow --tcfg4 --ppol
-ggv-;ggv-rainbow --tcfg4 --ppol --dbg
-
-
-ggv-;ggv-rainbow --load
-    # load and visualized photons persisted from Opticks
-    # checked 
-
-ggv-;ggv-rainbow --tcfg4 --load
-    # load and visualize photons persisted from Geant4 (cfg4) simulation
-    #
-    # Option --tcfg4 normally causes the CG4Test binary with Geant4 simulation capability 
-    # to be used but when --load is present the default GGeoView binary is picked
-    # via an override in op.sh
-    #
-    # IN FUTURE: Increased G4 integration means that will eventually be able to 
-    # merge the roles of the CG4Test and GGeoView binaries.
-    #
-
-
-EOU
-}
-
-ggv-rainbow()
-{
-    local msg="=== $FUNCNAME :"
-
-    local cmdline=$*
-    local pol
-
-
-    if [ "${cmdline/--spol}" != "${cmdline}" ]; then
-         pol=s
-         cmdline=${cmdline/--spol}
-    elif [ "${cmdline/--ppol}" != "${cmdline}" ]; then
-         pol=p
-         cmdline=${cmdline/--ppol}
-    else
-         pol=s
-    fi  
-
-
-    local tag
-    local wavelength=500
-    if [ "${cmdline/--white}" != "${cmdline}" ]; then
-         cmdline=${cmdline/--white}
-         wavelength=0
-         case $pol in 
-           s) tag=15 ;;   
-           p) tag=16 ;;   
-         esac
-    else
-        case $pol in 
-           s) tag=5 ;;   
-           p) tag=6 ;;   
-        esac
-    fi  
-
-    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-        tag=-$tag  
-    fi 
-
-
-    #local material=GlassSchottF2
-    local material=MainH2OHale
-    local surfaceNormal=0,1,0
-    #local azimuth=-0.25,0.25
-    local azimuth=0,1
-    local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
-
-    local photons=1000000
-    #local photons=10000
-
-    local torch_config=(
-                 type=discIntersectSphere
-                 photons=$photons
-                 mode=${pol}pol
-                 polarization=$surfaceNormal
-                 frame=-1
-                 transform=$identity
-                 source=0,0,600
-                 target=0,0,0
-                 radius=100
-                 distance=25
-                 zenithazimuth=0,1,$azimuth
-                 material=Vacuum
-                 wavelength=$wavelength 
-               )
- 
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
-                 shape=box    parameters=0,0,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
-               )
-
-    #args.sh  \
-    op.sh  \
-            $cmdline \
-            --animtimemax 10 \
-            --timemax 10 \
-            --geocenter \
-            --eye 0,0,1 \
-            --test --testconfig "$(join _ ${test_config[@]})" \
-            --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --tag $tag --cat rainbow \
-            --save
-
-        #    --torchdbg \
-}
-
 ggv-newton()
 {
     type $FUNCNAME
@@ -733,6 +615,7 @@ ggv-newton()
 
 
     local cmdline=$*
+
     local pol
     if [ "${cmdline/--spol}" != "${cmdline}" ]; then
          pol=s

@@ -18,12 +18,14 @@ typedef enum {
 }               Torch_t ;
 
 typedef enum {
-   M_UNDEF         = 0x0 ,
-   M_SPOL          = 0x1 << 0,
-   M_PPOL          = 0x1 << 1,
-   M_FLAT_THETA    = 0x1 << 2, 
-   M_FLAT_COSTHETA = 0x1 << 3,
-   M_FIXPOL        = 0x1 << 4
+   M_UNDEF             = 0x0 ,
+   M_SPOL              = 0x1 << 0,
+   M_PPOL              = 0x1 << 1,
+   M_FLAT_THETA        = 0x1 << 2, 
+   M_FLAT_COSTHETA     = 0x1 << 3,
+   M_FIXPOL            = 0x1 << 4,
+   M_WAVELENGTH_SOURCE = 0x1 << 5,
+   M_WAVELENGTH_COMB   = 0x1 << 6
 }              Mode_t ; 
 
 
@@ -93,6 +95,8 @@ class NPY_API TorchStepNPY {
        static const char* M_FLAT_THETA_ ; 
        static const char* M_FLAT_COSTHETA_ ; 
        static const char* M_FIXPOL_ ; 
+       static const char* M_WAVELENGTH_SOURCE_ ; 
+       static const char* M_WAVELENGTH_COMB_ ; 
 
    public:  
        TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 

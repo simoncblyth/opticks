@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 """
-rainbow_cfg4.py : Rainbow deviation angle comparison between Opticks and Geant4 
+trainbow.py : Rainbow deviation angle comparison between Opticks and Geant4 
 ====================================================================================
 
 To simulate the rainbow events::
 
-   ggv-;ggv-rainbow 
-   ggv-;ggv-rainbow --tcfg4 
+   trainbow-
+
+   trainbow-- --spol
+   trainbow-- --ppol
+
+   trainbow-- --spol --tcfg4
+   trainbow-- --ppol --tcfg4
+
+ 
 
 Expected output, is a scattering angle plot and history comparison table:
 
@@ -46,7 +53,7 @@ Expected output, is a scattering angle plot and history comparison table:
 
 
 """
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
@@ -55,7 +62,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt, costheta_, cross_
 from opticks.ana.boundary import Boundary   
 from opticks.ana.droplet import Droplet
@@ -114,7 +121,9 @@ def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10], sli=
     tim_b = " ".join(map(lambda f:"%5.2f" % f, map(float, filter(None, evt_b.tdii['propagate']) )[sli]))
 
     fig = plt.figure()
-    fig.suptitle("Rainbow cfg4 " + label + "[" + tim_a + "] [" + tim_b + "]"  )
+    suptitle = "Rainbow cfg4 " + label + "[" + tim_a + "] [" + tim_b + "]"  
+    log.info("plotting %s " % suptitle)
+    fig.suptitle(suptitle  )
 
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
 
@@ -146,8 +155,8 @@ def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10], sli=
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     opticks_environment()
+    args = opticks_args(tag="5",src="torch",det="rainbow",doc=__doc__)
 
     np.set_printoptions(precision=4, linewidth=200)
 
@@ -157,10 +166,10 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
+    tag = args.tag
+    src = args.src
+    det = args.det
     rec = True
-    tag = "5"
-    src = "torch"
-    det = "rainbow"
     log_ = True
     not_ = False
 
@@ -176,6 +185,14 @@ if __name__ == '__main__':
     seqs = []
     a = Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec)
     b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec)
+
+    print a.brief
+    print b.brief
+
+    if not (a.valid and b.valid):
+        log.fatal("need two valid events to compare ")
+        sys.exit(1)
+
 
     lmx = 20  
     hcf = a.history.table.compare(b.history.table)

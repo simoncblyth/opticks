@@ -35,7 +35,18 @@ static __device__ __inline__ void reemission_check()
     rtPrintf("reemission_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
 }
 
+static __device__ __inline__ float comb_lookup(float u)
+{
+     float nm(400.0f) ; 
 
+     if(     u < 0.20f) nm = 400.0f ;
+     else if(u < 0.40f) nm = 500.0f ; 
+     else if(u < 0.60f) nm = 600.0f ; 
+     else if(u < 0.80f) nm = 700.0f ; 
+     else               nm = 800.0f ; 
+
+     return nm ; 
+}
 
 
 static __device__ __inline__ float source_lookup(float u)
