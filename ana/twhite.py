@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-source.py: Wavelength Distribution Check
+twhite.py: Wavelength Distribution Check
 ============================================
 
 Creates plot comparing simulated photon wavelength spectrum 
-from *ggv-rainbow* against blackbody expectation.
+from :doc:`../tests/twhite` against blackbody expectation.
 
 This is checking the *source_lookup* implementation and 
 the inverse CDF *source_texture* that it uses.  
@@ -47,13 +47,13 @@ See Also
 
 """
 
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
 from opticks.ana.planck import planck
 
@@ -64,11 +64,17 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     plt.ion()
     opticks_environment()
+    args = opticks_args(tag="1", det="white", src="torch")
 
     ## tag = "1"   ## dont have any tag 1 anymore 
-    tag = "15"     ## so added tag 15,16 to ggv-rainbow with wavelength=0 which is default black body 
+    ## tag = "15"     ## so added tag 15,16 to ggv-rainbow with wavelength=0 which is default black body 
 
-    evt = Evt(tag=tag, det="rainbow")
+    evt = Evt(tag=args.tag, det=args.det, src=args.src)
+
+    if not evt.valid:
+       log.fatal("failed to load evt %s " % repr(args))
+       sys.exit(1) 
+
 
     wl = evt.wl
     w0 = evt.recwavelength(0)  

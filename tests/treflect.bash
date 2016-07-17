@@ -2,8 +2,12 @@ treflect-source(){   echo $(opticks-home)/tests/treflect.bash ; }
 treflect-vi(){       vi $(treflect-source) ; }
 treflect-usage(){ cat << \EOU
 
-treflect- : Integration Tests Template
-================================================
+treflect- : Fresnel reflection vs incident angle check  
+==========================================================
+
+A hemi-spherical S/P polarized light source focussed on cube face
+is used to check the amount of reflection as a function of incident
+angle matches expectation of the Fresnel formula. 
 
 
 `treflect-vi`

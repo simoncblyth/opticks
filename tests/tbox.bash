@@ -2,8 +2,8 @@ tbox-source(){   echo $(opticks-home)/tests/tbox.bash ; }
 tbox-vi(){       vi $(tbox-source) ; }
 tbox-usage(){ cat << \EOU
 
-tbox- : Integration Tests Template
-================================================
+tbox- : Pyrex Cube inside Mineral Oil Cube Test 
+==================================================
 
 
 `tbox-vi`

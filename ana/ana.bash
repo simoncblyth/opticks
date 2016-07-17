@@ -7,17 +7,12 @@ ana-usage(){ cat << \EOU
 ana : Opticks Analysis Scripts
 =================================
 
-General Tests
----------------
-
-:doc:`tevt`
-    Loads single event and dumps constituent array dimensions and photon history tables
-
 PMT Tests
 ------------
 
 :doc:`tpmt`
-    Compare Opticks and Geant4 photon bounce histories for simple PMT in box of mineral oil geometry 
+    Compare Opticks and Geant4 photon bounce histories for simple PMT in box of mineral oil geometry,
+    see :doc:`../tests/tpmt`
 
 :doc:`tpmt_distrib`
     Compare Opticks and Geant4 photon distributions for simple PMT in box of mineral oil geometry 
@@ -31,13 +26,15 @@ BoxInBox tests
 ------------------
 
 :doc:`tbox`
-    BoxInBox Opticks vs Geant4 history sequence comparisons analogous to *pmt_test.py*
+    BoxInBox Opticks vs Geant4 history sequence comparisons analogous to **tpmt.py**
+    see :doc:`../tests/tbox`
 
 Rainbow Tests
 ---------------
 
 :doc:`trainbow`
-    Rainbow scattering angle comparison between Opticks and Geant4 
+    Rainbow scattering angle comparison between Opticks and Geant4,
+    see :doc:`../tests/trainbow`
 
 **xrainbow.py**
     Rainbow expectations with classes XRainbow and XFrac
@@ -50,40 +47,34 @@ Rainbow Tests
 **sphere.py**
     SphereReflect intersection, polarization calculation and spatial plot
 
-
 Source Tests
 --------------
 
-:doc:`source`
-    Compare wavelength spectrum from ggv-rainbow against analytic Planck distribution
+:doc:`twhite`
+    Compare wavelength spectrum from :doc:`../tests/twhite` against analytic Planck distribution
 
 **planck.py**
     Planck black body formula
 
-
 Prism Tests
 -------------
 
-**prism.py**
-    Comparison of simulation with analytic expectation 
+**tprism.py**
+    Comparison of simulation with analytic expectations for deviation angle vs incident angle,
+    see :doc:`../tests/tprism`
 
 **prism_spectrum.py**
     Compare ggv-newton evts with PrismExpected
 
-
 Reflection Tests
--------------------
+------------------- 
+
+**treflect.py**
+    comparison of simulated S and P absolute reflection with Fresnel formula 
+    see :doc:`../tests/treflect`
 
 **fresnel.py**
     analytic reflection expectations from Fresnel formula
-
-
-**reflection.py**
-    comparison of simulated S and P absolute reflection with Fresnel formula 
-    produced by::
-
-         ggv-reflect --spol
-         ggv-reflect --ppol
 
 
 G4Gun Tests
@@ -114,6 +105,9 @@ Geometry Infrastructure
 
 Event Infrastructure
 -----------------------
+
+:doc:`tevt`
+    Loads single event and dumps constituent array dimensions and photon history tables
 
 **evt.py**
     loads event data
@@ -180,10 +174,8 @@ EOU
 
 ana-notes(){ cat << EON
 
-
-
-DEBUGGING : NOT SURFACING THESE IN THE DOCS
-
+DEBUGGING SCRIPTS : NOT SURFACING THESE IN THE DOCS
+------------------------------------------------------
 
 types.py
      MOSTLY DEPRECATED : INSTEAD USE histype mattype ETC
@@ -227,29 +219,12 @@ polarization.py
 
 EON
 }
-
-
-
-
 ana-env(){
     olocal-
     opticks-
 }
-
 ana-sdir(){ echo $(opticks-home)/ana ; }
-ana-tdir(){ echo $(opticks-home)/ana/tests ; }
-ana-idir(){ echo $(opticks-idir); }
-ana-bdir(){ echo $(opticks-bdir)/$(ana-rel) ; }
-
 ana-cd(){   cd $(ana-sdir); }
-ana-scd(){  cd $(ana-sdir); }
-ana-tcd(){  cd $(ana-tdir); }
-ana-icd(){  cd $(ana-idir); }
-ana-bcd(){  cd $(ana-bdir); }
-
-ana-name(){ echo Ana ; }
-ana-tag(){  echo ANA ; }
-
 
 ana-py-(){
    ana-cd
@@ -326,6 +301,53 @@ ana-shim-(){ cat << EOR
    :end-before: """
 
 EOR
+}
+
+
+ana-pyref-(){ ana-usage | perl -n -e "m,(\w*\.py), && print \"\$1\n\"" | uniq ; }
+ana-pyref(){
+   ana-cd
+   local py
+   ana-pyref- | while read py ; do
+       [ ! -f "$py" ] && echo $msg bad pyref $py 
+       printf " py %30s \n" $py  
+   done 
+}
+
+ana-docref-(){ ana-usage | perl -n -e "m,:doc:\`(.*)\`, && print \"\$1\n\"" | uniq ; }
+ana-docref(){
+   ana-cd
+   local doc
+   local rst
+   ana-docref- | while read doc ; do
+       rst=$doc.rst
+       [ ! -f "$rst" ] && echo $msg BAD DOC REF $rst 
+       printf " doc %30s rst %30s \n" $doc $rst  
+   done 
+}
+
+ana-usage-refcheck-note(){ cat << EON
+**ana-usage-refcheck**
+    check **ana-usage** for broken py and doc references 
+EON
+}
+ana-usage-refcheck()
+{
+   ana-pyref
+   ana-docref
+}
+
+
+ana-rstcheck()
+{
+   ana-cd
+   local rst
+   local py
+   grep  -l include:: *.rst | grep -v index.rst | while read rst ; do
+       py=${rst/.rst}.py
+       [ ! -f "$py" ] && echo $msg dud include $rst   
+   done
+
 }
 
 
