@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     LOG(info) << " after load " ; 
     test_addTestMaterial(mlib);
 
-    mlib->dump();
+    mlib->dump("dump");
     LOG(info) << " after dump " ; 
 
     return 0 ;

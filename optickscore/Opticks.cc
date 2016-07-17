@@ -669,6 +669,7 @@ Types*          Opticks::getTypes() {     return m_resource->getTypes(); }
 Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdPath() : NULL ; }
 const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdFold() : NULL ; }
+const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
 const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }

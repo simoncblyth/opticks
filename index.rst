@@ -19,7 +19,9 @@ Contents:
 
    tests/index
    bin/index
+
    ana/index
+   ana/tools
 
    sysrap/index
    ggeo/index

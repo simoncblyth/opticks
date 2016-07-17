@@ -16,6 +16,7 @@
 // brap-
 #include "BStr.hh"
 #include "BTime.hh"
+#include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
 
 // npy-
@@ -1200,7 +1201,13 @@ NPY<float>* OpticksEvent::loadGenstepFromFile(int modulo)
               << " det " << m_det
               ;
 
-    NPY<float>* npy = NPY<float>::load(m_typ, m_tag, m_det ) ;
+    const char* gensteps_dir = BOpticksResource::GenstepsDir();  // eg /usr/local/opticks/opticksdata/gensteps
+    NPY<float>* npy = NULL ; 
+    {
+        BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
+        npy = NPY<float>::load(m_typ, m_tag, m_det ) ;
+        BOpticksEvent::SetOverrideEventBase(NULL) ;
+    }
 
     m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
 

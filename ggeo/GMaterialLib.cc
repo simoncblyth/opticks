@@ -489,10 +489,10 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
                             _group_velocity, "group_velocity"
                             );
     
-    LOG(info) << msg << " " 
-              << mat->getName()  
-              << "\n" << table 
-              ; 
+    LOG(warning) << msg << " " << mat->getName()  
+                 ;
+    LOG(info)   << table 
+                 ; 
 }
 
 const char* GMaterialLib::getNameCheck(unsigned int i)

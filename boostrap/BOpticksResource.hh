@@ -15,6 +15,10 @@ class BRAP_API  BOpticksResource {
         static std::string BuildProduct(const char* proj, const char* name);
         static std::string PTXPath(const char* name, const char* target="OptiXRap");
 
+        static const char* OpticksDataDir();
+        static const char* ResourceDir();
+        static const char* GenstepsDir();
+        static const char* InstallCacheDir();
         static const char* PTXInstallPath();
         static const char* RNGInstallPath();
         static const char* OKCInstallPath();
@@ -27,8 +31,8 @@ class BRAP_API  BOpticksResource {
 
         const char* getOpticksDataDir();
         const char* getInstallCacheDir();
-
         const char* getResourceDir();
+        const char* getGenstepsDir();
 
         const char* getRNGInstallCacheDir();
         const char* getOKCInstallCacheDir();
@@ -47,6 +51,7 @@ class BRAP_API  BOpticksResource {
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
         const char* m_opticksdata_dir ; 
         const char* m_resource_dir ; 
+        const char* m_gensteps_dir ; 
         const char* m_installcache_dir ; 
         const char* m_rng_installcache_dir ; 
         const char* m_okc_installcache_dir ; 

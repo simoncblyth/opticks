@@ -622,7 +622,10 @@ void GGeo::setupLookup()
     // see ggeo-/tests/LookupTest.cc
     m_lookup = new Lookup() ; 
 
-    m_lookup->loadA( m_opticks->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
+    //const char* cmm_dir = m_opticks->getIdFold() ;
+    const char* cmm_dir = m_opticks->getDetectorBase() ;
+
+    m_lookup->loadA( cmm_dir, "ChromaMaterialMap.json", "/dd/Materials/") ;
 
     m_bndlib->fillMaterialLineMap( m_lookup->getB() ) ;    
 

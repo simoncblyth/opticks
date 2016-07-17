@@ -22,6 +22,7 @@ BOpticksResource::BOpticksResource(const char* envprefix)
      m_install_prefix(NULL),
      m_opticksdata_dir(NULL),
      m_resource_dir(NULL),
+     m_gensteps_dir(NULL),
      m_installcache_dir(NULL),
      m_rng_installcache_dir(NULL),
      m_okc_installcache_dir(NULL),
@@ -70,15 +71,21 @@ void BOpticksResource::adoptInstallPrefix()
 
 void BOpticksResource::setTopDownDirs()
 { 
-    m_opticksdata_dir      = makeInstallPath(m_install_prefix, "opticksdata", NULL );      // eg /usr/local/opticks/opticksdata
-    m_resource_dir         = makeInstallPath(m_install_prefix, "opticksdata", "resource"); // eg /usr/local/opticks/opticksdata/resource
-
-    m_installcache_dir     = makeInstallPath(m_install_prefix, "installcache",NULL) ;      // eg  /usr/local/opticks/installcache
+    m_opticksdata_dir      = OpticksDataDir() ;      // eg /usr/local/opticks/opticksdata
+    m_resource_dir         = ResourceDir() ;  // eg /usr/local/opticks/opticksdata/resource
+    m_gensteps_dir         = GenstepsDir() ;  // eg /usr/local/opticks/opticksdata/gensteps
+    m_installcache_dir     = InstallCacheDir() ;      // eg  /usr/local/opticks/installcache
 
     m_rng_installcache_dir = RNGInstallPath() ;  // eg  /usr/local/opticks/installcache/RNG
     m_okc_installcache_dir = OKCInstallPath() ;  // eg  /usr/local/opticks/installcache/OKC
     m_ptx_installcache_dir = PTXInstallPath() ;  // eg  /usr/local/opticks/installcache/PTX
 }
+
+
+const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
+const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
+const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
+const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
 
 const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
 const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }

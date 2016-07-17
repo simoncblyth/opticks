@@ -88,6 +88,7 @@ class OKCORE_API Opticks {
        const char* getGDMLPath();
        const char* getIdPath();
        const char* getIdFold();
+       const char* getDetectorBase();
        const char* getLastArg();
        int         getLastArgInt();
    public:
