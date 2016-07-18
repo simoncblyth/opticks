@@ -2,11 +2,16 @@
 """
 Non-numpy basics
 """
+
 import os, logging, json, ctypes, subprocess, argparse, sys
 log = logging.getLogger(__name__) 
 
-cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
-ffs_ = lambda _:cpp.ffs(_)
+
+try:
+    cpp = ctypes.cdll.LoadLibrary('libc++.1.dylib')
+    ffs_ = lambda _:cpp.ffs(_)
+except OSError:
+    pass
 
 IDPATH = os.path.expandvars("$IDPATH")
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
@@ -102,6 +107,7 @@ def _opticks_env(st="OPTICKS_ IDPATH"):
 class OpticksEnv(object):
     def __init__(self):
         self.ext = {}
+        self.env = {} 
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
         self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
         self.setdefault("OPTICKS_DAEPATH",         _opticks_daepath(IDPATH))
@@ -114,7 +120,19 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_EVENT_BASE",      _opticks_event_base())
         self.setdefault("TMP",                     _opticks_tmp())
 
+    def bash_export(self, path="$TMP/opticks_env.bash"):
+        lines = []
+        for k,v in self.env.items():
+            line = "export %s=%s " % (k,v)
+            lines.append(line)    
+
+        path = os.path.expandvars(path) 
+        log.info("writing opticks environment to %s " % path) 
+        open(path,"w").write("\n".join(lines)) 
+
+
     def setdefault(self, k, v):
+        self.env[k] = v
         if k in os.environ:
             self.ext[k] = os.environ[k]
         else: 
@@ -135,6 +153,7 @@ def opticks_environment(dump=False):
    env = OpticksEnv()
    if dump:
        env.dump()
+   env.bash_export() 
 
 def opticks_args(**kwa):
 
@@ -214,7 +233,7 @@ def json_(path):
 
 
 class Abbrev(object):
-    def __init__(self, path="$OPTICKS_DATA/resource/GFlags/abbrev.json"):
+    def __init__(self, path="$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json"):
         js = json_(path)
 
         names = map(str,js.keys())

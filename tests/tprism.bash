@@ -77,8 +77,15 @@ tprism--(){
     local msg="=== $FUNCNAME :"
 
     local cmdline=$*
-    local pol=${1:-s}
-    shift 
+    local pol
+    if [ "${cmdline/--spol}" != "${cmdline}" ]; then
+        pol=s
+    elif [ "${cmdline/--ppol}" != "${cmdline}" ]; then
+        pol=p
+    else
+        pol=s
+    fi
+    
     local tag=$(tprism-tag $pol)
 
     echo  $msg pol $pol tag $tag

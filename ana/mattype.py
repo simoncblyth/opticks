@@ -96,19 +96,19 @@ class MatType(SeqType):
     """
     def __init__(self):
         material_names = ItemList("GMaterialLib")
-        material_abbrev = Abbrev("$OPTICKS_DATA/export/$OPTICKS_DETECTOR/GMaterialLib/abbrev.json")
+        material_abbrev = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
         SeqType.__init__(self, material_names, material_abbrev)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     opticks_environment()
 
     mt = MatType()
     test_roundtrip(mt)
 
     src = "torch"
-    tag = "-1"
+    tag = "10"
     det = "PmtInBox"  
 
     ph = A.load_("ph"+src,tag,det)

@@ -157,8 +157,11 @@ class Evt(object):
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
 
+
+        log.debug("init_records create types")
         histype = HisType()
         mattype = MatType()
+        log.debug("init_records create types DONE")
 
         cn = "%s:%s" % (str(tag), det)
         # full history without selection

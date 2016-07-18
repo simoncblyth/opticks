@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     mat = Material("GlassSchottF2")
 
-    wl = np.linspace(100.,730.,10, dtype=np.float32)
+    wl = np.linspace(100.,730.,10)
 
     ri = mat.refractive_index(wl)
 

@@ -125,7 +125,9 @@ if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
     opticks_environment()
-    args = opticks_args(doc=__doc__, tag="10")
+    args = opticks_args(doc=__doc__, tag="10", src="torch", det="PmtInBox")
+
+    log.info("tag %s src %s det %s " % (args.tag,args.src,args.det))
 
     tag = args.tag
 
@@ -133,8 +135,11 @@ if __name__ == '__main__':
     #seqs = ["TO BT BR BR BT SA"]
     seqs=[]
 
-    a = Evt(tag="%s" % tag, src="torch", det="PmtInBox", seqs=seqs)
-    b = Evt(tag="-%s" % tag , src="torch", det="PmtInBox", seqs=seqs)
+    a = Evt(tag="%s" % tag, src=args.src, det=args.det, seqs=seqs)
+    log.info( " a done ") 
+
+    b = Evt(tag="-%s" % tag , src=args.src, det=args.det, seqs=seqs)
+    log.info( " b done ") 
 
     log.info( " a : %s " % a.brief)
     log.info( " b : %s " % b.brief )

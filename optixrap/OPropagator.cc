@@ -32,7 +32,7 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
-OPropagator::OPropagator(OContext* ocontext, Opticks* opticks) 
+OPropagator::OPropagator(OContext* ocontext, Opticks* opticks, bool trivial, int override_) 
    :
     m_ocontext(ocontext),
     m_opticks(opticks),
@@ -46,13 +46,13 @@ OPropagator::OPropagator(OContext* ocontext, Opticks* opticks)
     m_genstep_buf(NULL),
     m_record_buf(NULL),
     m_rng_wrapper(NULL),
-    m_trivial(false),
+    m_trivial(trivial),
     m_count(0),
     m_width(0),
     m_height(0),
     m_prep(0),
     m_time(0),
-    m_override(0)
+    m_override(override_)
 {
     init();
 }
@@ -61,9 +61,9 @@ void OPropagator::setTrivial(bool trivial)
 {
     m_trivial = trivial ; 
 }
-void OPropagator::setOverride(unsigned int override)
+void OPropagator::setOverride(unsigned int override_)
 {
-    m_override = override ; 
+    m_override = override_ ; 
 }
 
 

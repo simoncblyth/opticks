@@ -151,18 +151,24 @@ void OEngineImp::preparePropagator()
 {
     bool noevent    = m_fcfg->hasOpt("noevent");
     bool trivial    = m_fcfg->hasOpt("trivial");
-    int  override   = m_fcfg->getOverride();
+    int  override_   = m_fcfg->getOverride();
 
     if(!m_evt) return ;
 
     assert(!noevent);
 
-    m_opropagator = new OPropagator(m_ocontext, m_opticks);
+    LOG(info) << "OEngineImp::preparePropagator" 
+              << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
+              << " override_ " << override_
+              ;  
+
+    m_opropagator = new OPropagator(m_ocontext, m_opticks, trivial, override_);
 
     m_opropagator->setEvent(m_evt);
 
-    m_opropagator->setTrivial(trivial);
-    m_opropagator->setOverride(override);
+    // too late these need to be set prior to init
+    //m_opropagator->setTrivial(trivial);
+    //m_opropagator->setOverride(override);
 
     m_opropagator->initRng();
     m_opropagator->initEvent();

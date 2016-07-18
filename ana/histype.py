@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
      #src, tag, det = "torch", "5", "rainbow"
      #src, tag, det = "cerenkov", "1", "juno"
-     src, tag, det = "torch", "4", "PmtInBox"
+     src, tag, det = "torch", "10", "PmtInBox"
 
      ph = A.load_("ph"+src,tag,det)
 

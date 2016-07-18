@@ -115,6 +115,9 @@ tpmt--(){
 
     local groupvelkludge=0
     local testverbosity=1
+
+    [ -z "$OPTICKS_INSTALL_PREFIX" ] && echo missing envvar OPTICKS_INSTALL_PREFIX && return 
+
     local test_config=(
                  mode=PmtInBox
                  pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0
