@@ -10,7 +10,7 @@ import os, logging
 import numpy as np
 
 from opticks.ana.base import opticks_environment 
-from opticks.ana.nbase import count_unique  
+from opticks.ana.nbase import count_unique, vnorm  
 from opticks.ana.evt import Evt, costheta_
 
 deg = np.pi/180.
@@ -40,7 +40,8 @@ def theta(xyz):
      atan( sqrt(x*x+y*y) / z ) = th 
 
     """
-    r = np.linalg.norm(xyz, ord=2, axis=1)
+    #r = np.linalg.norm(xyz, ord=2, axis=1)
+    r = vnorm(xyz)
     z = xyz[:,2]
     th = np.arccos(z/r)*180./np.pi
     return th

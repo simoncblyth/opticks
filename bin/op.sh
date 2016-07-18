@@ -97,7 +97,7 @@ to access geometry data.
 Copy/paste the export lines into your .bash_profile prior to using python 
 analysis scripts. 
 
-:doc:`../ana/PropLib` is a simple example of a python script accessing the geocache.
+:doc:`../ana/proplib` is a simple example of a python script accessing the geocache.
 
 
 Structure of the geocache
@@ -594,7 +594,7 @@ op-binary-setup()
            *) presentation="" ;;
     esac
 
-    OPTICKS_ARGS="${OPTICKS_ARGS} $presentation" 
+    OPTICKS_ARGS="$presentation ${OPTICKS_ARGS} " 
 
 }
 

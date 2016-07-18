@@ -11,16 +11,16 @@ except ImportError:
 from collections import OrderedDict 
 
 from opticks.ana.base import opticks_environment
-from opticks.ana.nbase import count_unique
+from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II
 from opticks.ana.seq import SeqAna
 from opticks.ana.histype import HisType 
 from opticks.ana.mattype import MatType 
 
-costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(np.linalg.norm(a, 2, 1)*np.linalg.norm(b, 2, 1)) 
+costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
-cross_ = lambda a,b:np.cross(a,b)/np.repeat(np.linalg.norm(a, 2, 1),3).reshape(-1,3)/np.repeat(np.linalg.norm(b, 2, 1),3).reshape(-1,3)
-norm_ = lambda a:a/np.repeat(np.linalg.norm(a, 2,1 ), 3).reshape(-1,3)
+cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(vnorm(b),3).reshape(-1,3)
+norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
 
 def stamp_(path, fmt="%Y%m%d-%H%M"): 
    if path is None:
@@ -655,7 +655,8 @@ class Evt(object):
             ly = l[:,1]
             lz = l[:,2]
 
-            r = np.linalg.norm(p[:,:2],2,1)
+            #r = np.linalg.norm(p[:,:2],2,1)
+            r = vnorm(p[:,:2])
             z = p[:,2]
             t = p[:,3]
 

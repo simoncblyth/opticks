@@ -620,9 +620,6 @@ if __name__ == '__main__':
 
     pc = PrismCheck(prism, xprism, sel )
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
 
     oneplot(pc, log_=False)
     #spatial(pc)

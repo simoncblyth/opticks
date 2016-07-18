@@ -104,6 +104,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     opticks_environment()
 
+    #mn = ItemList("GMaterialLib")
+    #ab = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
+
     mt = MatType()
     test_roundtrip(mt)
 

@@ -107,7 +107,13 @@ def _opticks_env(st="OPTICKS_ IDPATH"):
 class OpticksEnv(object):
     def __init__(self):
         self.ext = {}
-        self.env = {} 
+        self.env = {}
+
+
+        if not os.path.isdir(IDPATH): 
+            log.fatal("Invalid/missing IDPATH envvar %s " % IDPATH)
+            sys.exit(1)  
+ 
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
         self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
         self.setdefault("OPTICKS_DAEPATH",         _opticks_daepath(IDPATH))

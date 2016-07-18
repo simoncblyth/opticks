@@ -92,7 +92,7 @@ tbox-args(){  echo  --tag $(tbox-tag) --det $(tbox-det) --src $(tbox-src) ; }
 tbox-py(){    tbox.py  $(tbox-args) $* ; } 
 tbox-test()
 {
-    tbox--
+    tbox-- --compute
     tbox-- --tcfg4
     tbox-py 
 }

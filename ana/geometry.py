@@ -60,7 +60,7 @@ class Plane(object):
         """
         n = np.array(n)
         p = np.array(p)
-        n = n/np.linalg.norm(n,2,0)
+        n = n/np.linalg.norm(n,2)
         d = -np.dot(n,p)
         pass
         self.n = n

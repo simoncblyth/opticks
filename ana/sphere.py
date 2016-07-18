@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 from opticks.ana.base import opticks_environment
+from opticks.ana.nbase import vnorm
 from opticks.ana.evt import Evt, costheta_, cross_, norm_
 from opticks.ana.boundary import Boundary   
 
@@ -60,7 +61,8 @@ class SphereReflect(object):
 
 
         """
-        r = np.linalg.norm(self.p1, 2, 1)
+        #r = np.linalg.norm(self.p1, 2, 1)
+        r = vnorm(self.p1)
         log.info("r min/max %s %s " % (r.min(), r,max() )) 
 
         plt.hist(r, bins=100)
@@ -115,7 +117,8 @@ class SphereReflect(object):
         """
         sr = self
         p1c, nrm, msk = sr.intersection()
-        nnrm = np.linalg.norm(nrm, 2, 1)
+        #nnrm = np.linalg.norm(nrm, 2, 1)
+        nnrm = vnorm(nrm)
  
 
     def check_intersection(self):

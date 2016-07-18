@@ -17,6 +17,18 @@ def count_unique_sorted(vals):
     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
     return cu.astype(np.uint64)
 
+def vnorm(a):
+    """
+    Older numpy lacks the third axis argument form of np.linalg.norm 
+    so this replaces it::
+
+        #r = np.linalg.norm(xyz[:,:2], 2, 1)  
+        r = vnorm(xyz[:,:2]) 
+
+    """
+    return np.sqrt(np.sum(a*a,1))
+
+
 def chi2(a, b, cut=30):
     """
     ::

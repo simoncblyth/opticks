@@ -41,6 +41,7 @@ Exercise:
 """
 import os, logging, numpy as np
 from opticks.ana.base import ItemList 
+from opticks.ana.nbase import vnorm
 
 log = logging.getLogger(__name__)
 
@@ -89,7 +90,8 @@ class MergedMesh(object):
 
     def rz_(self, i):
         v = self.vertices_(i)
-        r = np.linalg.norm(v[:,:2], 2, 1)
+        #r = np.linalg.norm(v[:,:2], 2, 1)
+        r = vnorm(v[:,:2])
 
         rz = np.zeros((len(v),2), dtype=np.float32)
         rz[:,0] = r*np.sign(v[:,0])

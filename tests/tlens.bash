@@ -13,32 +13,18 @@ tlens- : Disc shaped beam of white light incident on convex lens
     create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
 
 
-Relevant classes:
-
-* :oktip:`ggeo/GMaker.cc`
-
-
 EXERCISES
 -----------
 
-* Change the lens material and interpret what you get.
-
-For a list of available materials::
-
-    op --mat --ggeo warn  ## dumps titles
-    op --mat              ## dumps the wavelength dependent properties
-    op --mat 0            ## dumps properties of just material with index 0
-
+* Change the lens material and interpret what you get, 
+  see :doc:`overview` regarding materials.
 
 * Try adding one or more lens, for example with line::
 
      shape=lens  parameters=641.2,641.2,-400,800 boundary=Vacuum///$material
 
-* To understand what the parameters mean study the source code starting from **GMaker**
-
-* Try adding a different shape, examine the **GMaker** source code
+* Try adding a different shape, examine the **GMaker** source code :oktip:`ggeo/GMaker.cc`
   to see what shapes are available
-
 
 
 EOU

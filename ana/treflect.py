@@ -3,63 +3,17 @@
 treflect.py
 =======================
 
-Reflection distrib following BoxInBox::
+See :doc:`../tests/treflect`
 
-    treflect-
+Loads S and P polarized events, selects photons that 
+have histories : "TO BR SA" or "TO BR AB", 
+ie photons that reflect at the first interface and 
+are either bulk absorbed (AB) or surface absorbed (SA). 
 
-::
-
-    ggv-reflect() 
-    { 
-        local pol=${1:-s};
-        case $pol in 
-            s)
-                tag=1
-            ;;
-            p)
-                tag=2
-            ;;
-        esac;
-        ggv.sh --test 
-               --save 
-               --tag $tag 
-               --eye 0.5,0.5,0.0 
-               --animtimemax 7 
-               --testconfig "mode=BoxInBox_dimensions=500,300,0,0_boundary=Rock//perfectAbsorbSurface/Vacuum_boundary=Vacuum///Pyrex_" 
-               --torchconfig "polz=${pol}pol_frame=1_type=refltest_source=10,10,300_target=0,0,0_radius=102_zenithazimuth=0,0.5,0,1_material=Vacuum" $*;
-    }
-
-
-
-                    + [x,y,z-300]
-                   /|
-                  / |
-                 /  | 
-                /   |
-    -----------+----+--------
-        [0,0,300] r 
-
-
-Focus [0,0,300] in on triangulation crack::
-
-    INFO:__main__:Evt(1,"torch","S") : Rat p0/tha 82600/500000 0.165  Rat th0/tha 77872/500000 0.156  Rat th0/p0 77872/82600 0.943  
-    INFO:__main__:Evt(2,"torch","P") : Rat p0/tha 42066/500000 0.084  Rat th0/tha 37998/500000 0.076  Rat th0/p0 37998/42066 0.903  
-
-Focus [10,10,300] still on the (y=x) line crack::
-
-    INFO:__main__:Evt(1,"torch","S") : Rat p0/tha 86783/500000 0.174  Rat th0/tha 83698/500000 0.167  Rat th0/p0 83698/86783 0.964  
-    INFO:__main__:Evt(2,"torch","P") : Rat p0/tha 42500/500000 0.085  Rat th0/tha 39846/500000 0.080  Rat th0/p0 39846/42500 0.938  
-
-Focus [10,0,300] avoids the crack, visualizations more physical: no missers, clean cones, near perfect Fresnel match::
-
-    INFO:__main__:Evt(1,"torch","S") : Rat p0/tha 95235/500000 0.190  Rat th0/tha 95235/500000 0.190  Rat th0/p0 95235/95235 1.000  
-    INFO:__main__:Evt(2,"torch","P") : Rat p0/tha 43537/500000 0.087  Rat th0/tha 43537/500000 0.087  Rat th0/p0 43537/43537 1.000  
-
-* http://www.ece.rice.edu/~daniel/262/pdf/lecture13.pdf
-
-Following the move to **propagate_at_boundary_geant4_style** 
-the reflection agreement was broken: with far too much reflection at small angles.
-The bug was found to be an omitted normalization on the polarization.
+A ratio of histograms of the angle of incidence (theta) 
+for all photons with reflecting photons is compared 
+against expectations of the Fresnel formula. 
+ 
 
 
 """
@@ -266,9 +220,8 @@ def attic():
 
 
 
-
-
 if __name__ == '__main__':
+
 
     logging.basicConfig(level=logging.INFO)
     opticks_environment()
@@ -280,6 +233,7 @@ if __name__ == '__main__':
     log.info(" es : %s " % es.brief )
     log.info(" ep : %s " % ep.brief )
 
+
     if not (es.valid and ep.valid):
         log.fatal("both es and ep must be valid")
         sys.exit(1)
@@ -289,11 +243,14 @@ if __name__ == '__main__':
     normal = [0,0,-1]
     source = [0,0,-200] 
 
-    #fig = plt.figure()
-    #recpos_plot(fig, [es,ep], origin=source)
+    plt.ion()
+    fig = plt.figure()
+    recpos_plot(fig, [es,ep], origin=source)
 
-    #fig = plt.figure()
-    #angle_plot(fig, [es,ep], axis=normal, origin=source)
+
+
+    fig = plt.figure()
+    angle_plot(fig, [es,ep], axis=normal, origin=source)
 
     swl = es.unique_wavelength()
     pwl = ep.unique_wavelength()
@@ -320,91 +277,4 @@ if __name__ == '__main__':
 
 
 
-"""
 
-Check starting position and polarization::
-
-    pos = es.rpost_(0)[:,:3]
-    pol = es.rpol_(0)
-
-    In [9]:  pos[:,0].min()  A(-99.9786370433668)
-    In [10]: pos[:,0].max()  A(100.0091555528428)
-    In [12]: pos[:,1].min()  A(-99.9786370433668)
-    In [11]: pos[:,1].max()  A(99.9786370433668)
-    In [13]: pos[:,2].min()  A(-299.9969481490524)
-    In [14]: pos[:,2].max()  A(-200.0183111056856)
-
-    ## sphere radius 100 is hemi-sphered thru center at (0,0,-200) 
-    
-
-    Hmm nothing in z 
-
-    In [16]: pol
-    Out[16]: 
-    array([[ 0.15 ,  0.37 ,  0.   ],
-           [ 0.031,  0.118,  0.   ],
-           [ 1.   ,  0.   ,  0.   ],
-           ..., 
-           [-0.646, -0.63 ,  0.   ],
-           [-0.276,  0.756,  0.   ],
-           [ 0.094,  0.055,  0.   ]])
-
-::
-
-    In [27]: pos[:5]
-    Out[27]: 
-    A()sliced
-    A([[ -36.744,   14.954, -291.787],
-           [ -11.994,    3.052, -299.234],
-           [  -0.122,   99.826, -206.122],
-           [  -4.883,    0.153, -299.875],
-           [  11.078,    3.845, -299.295]])
-
-    In [28]: pol[:5]
-    Out[28]: 
-    array([[ 0.15 ,  0.37 ,  0.   ],     ## spherePosition.y, -spherePosition.x, 0 
-           [ 0.031,  0.118,  0.   ],
-           [ 1.   ,  0.   ,  0.   ],
-           [ 0.   ,  0.047,  0.   ],
-           [ 0.039, -0.11 ,  0.   ]])
-
-    In [29]: pos[:5]/100.  ## divide by radius to match normalized spherePosition 
-    Out[29]: 
-    A()sliced
-    A([[-0.367,  0.15 , -2.918],
-           [-0.12 ,  0.031, -2.992],
-           [-0.001,  0.998, -2.061],
-           [-0.049,  0.002, -2.999],
-           [ 0.111,  0.038, -2.993]])
-
-
-
-::
-
-    464           float sinTheta, cosTheta;
-    465           if(ts.mode & M_FLAT_COSTHETA )
-    466           {
-    467               cosTheta = 1.f - 2.0f*u1 ;
-    468               sinTheta = sqrtf( 1.0f - cosTheta*cosTheta );
-    469           }
-    470           else if( ts.mode & M_FLAT_THETA )
-    471           {
-    472               sincosf(1.f*M_PIf*u1,&sinTheta,&cosTheta);
-    473           }
-    474 
-    475           float3 spherePosition = make_float3( sinTheta*cosPhi, sinTheta*sinPhi, cosTheta );
-    476 
-    477           p.position = ts.x0 + radius*spherePosition ;
-    478 
-    479           p.direction = -spherePosition  ;
-    480 
-    481           p.polarization = ts.mode & M_SPOL ?
-    482                                                make_float3(spherePosition.y, -spherePosition.x , 0.f )
-    483                                             :
-    484                                                make_float3(-spherePosition.x, -spherePosition.y , 0.f )
-    485                                             ;
-
-
-
-
-"""

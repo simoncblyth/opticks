@@ -10,17 +10,22 @@ is used to check the amount of reflection as a function of incident
 angle matches expectation of the Fresnel formula. 
 
 
-`treflect-vi`
-    edit the bash functions 
-
 `treflect--`
-    create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
+    create Opticks geometry, simulates photons in interop mode, saves evt file 
 
 
-TODO:
+EXERCISE
+-----------
 
-* calc chi2 against analytic S and P : so can check agreement automatically 
-  
+* run python analysis :doc:`../ana/treflect` using ipython,
+  interpret the plot obtained, adjust parameters of the 
+  simulation and repeat
+
+* calculate a chi2 comparing analytic Fresnel formula expectations 
+  with simulation results for S and P polarization, 
+  use this to implement a python test that fails when they disagree
+ 
+For background on analysis tools see :doc:`../ana/tools` 
 
 
 EOU
@@ -114,29 +119,18 @@ run treflect.py $(treflect-args)
 EOI
 }
 
-treflect-sp()
-{
-    treflect--  --spol $*
-    treflect--  --ppol $*
-
-}
-treflect-s()
-{
-    treflect--  --spol $*
-    treflect--  --spol --tcfg4
-}
-treflect-p()
-{
-    treflect--  --ppol $*
-    treflect--  --ppol --tcfg4
-}
 treflect-test()
 {
-    treflect-s --compute
-    treflect-p --compute
+    treflect--  --spol --compute
+    treflect--  --ppol --compute
+    treflect-py 
 }
 
 
+treflect-viz()
+{
+    treflect-- --load $* --fullscreen
+}
 
 
 

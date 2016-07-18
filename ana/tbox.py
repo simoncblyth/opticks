@@ -223,6 +223,7 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 
 from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.nbase import vnorm
 from opticks.ana.evt import Evt
 
 X,Y,Z,W = 0,1,2,3
@@ -247,12 +248,14 @@ if __name__ == '__main__':
 
     if a.valid:
         a0 = a.rpost_(0)
-        a0r = np.linalg.norm(a0[:,:2],2,1)
+        #a0r = np.linalg.norm(a0[:,:2],2,1)
+        a0r = vnorm(a0[:,:2])
         print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
 
     if b.valid:
         b0 = b.rpost_(0)
-        b0r = np.linalg.norm(b0[:,:2],2,1)
+        #b0r = np.linalg.norm(b0[:,:2],2,1)
+        b0r = vnorm(b0[:,:2])
         print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
 

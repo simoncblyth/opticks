@@ -28,15 +28,24 @@ import os, logging, numpy as np
 from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
-import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize'] = 18,10.2   # plt.gcf().get_size_inches()   after maximize
-import matplotlib.gridspec as gridspec
+try:
+    import matplotlib.pyplot as plt
+    plt.rcParams['figure.figsize'] = 18,10.2   # plt.gcf().get_size_inches()   after maximize
+    import matplotlib.gridspec as gridspec
+except ImportError:
+    print "matplotlib missing : you need this to make plots"
+    plt = None 
+
 
 from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
-from opticks.ana.nbase import chi2, decompression_bins
+from opticks.ana.nbase import chi2, vnorm, decompression_bins
 from opticks.ana.cfplot import cfplot
 from env.doc.make_rst_table import recarray_as_rst
+
+
+
+
 
 
 class CF(object):
@@ -137,12 +146,14 @@ class CF(object):
         b = self.b
 
         ap = a.rpost_(i)
-        ar = np.linalg.norm(ap[:,:2],2,1)
+        #ar = np.linalg.norm(ap[:,:2],2,1)
+        ar = vnorm(ap[:,:2])
         if len(ar)>0:
             print " ".join(map(lambda _:"%6.3f" % _, (ar.min(),ar.max())))
 
         bp = b.rpost_(0)
-        br = np.linalg.norm(bp[:,:2],2,1)
+        #br = np.linalg.norm(bp[:,:2],2,1)
+        br = vnorm(bp[:,:2])
         if len(br)>0:
             print " ".join(map(lambda _:"%6.3f" % _, (br.min(),br.max())))
 
@@ -168,8 +179,10 @@ class CF(object):
         if qwn == "R":
             apost = a.rpost_(irec)
             bpost = b.rpost_(irec)
-            aval = np.linalg.norm(apost[:,:2],2,1)
-            bval = np.linalg.norm(bpost[:,:2],2,1)
+            #aval = np.linalg.norm(apost[:,:2],2,1)
+            #bval = np.linalg.norm(bpost[:,:2],2,1)
+            aval = vnorm(apost[:,:2])
+            bval = vnorm(bpost[:,:2])
             cbins = a.pbins()
         elif qwn in Evt.RPOST:
             q = Evt.RPOST[qwn]
@@ -301,7 +314,9 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
     opticks_environment()
-    args = opticks_args(tag="4", src="torch", det="PmtInBox")
+    args = opticks_args(tag="10", src="torch", det="PmtInBox")
+
+    log.info(" args %s " % repr(args))
 
     plt.ion()
     plt.close()

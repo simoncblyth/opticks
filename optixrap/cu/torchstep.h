@@ -100,16 +100,9 @@ __device__ void tsdebug( TorchStep& ts )
 }
 
 
-/*
-http://mathworld.wolfram.com/SpherePointPicking.html
-
-To obtain points such that any small area on the sphere is expected to contain
-the same number of points (right figure above), choose U and V to be random
-variates on (0,1). Then
-
-theta   =   2 pi U    
-phi     =   acos( 2V-1 )
-
+/**
+torchstep.h : Torch modes 
+===========================================
 
 *disc*
     Photons start from a point on the disc
@@ -176,7 +169,19 @@ phi     =   acos( 2V-1 )
     needing to calculate the intersect.
 
 
-*/
+
+
+http://mathworld.wolfram.com/SpherePointPicking.html
+
+To obtain points such that any small area on the sphere is expected to contain
+the same number of points (right figure above), choose U and V to be random
+variates on (0,1). Then
+
+theta   =   2 pi U    
+phi     =   acos( 2V-1 )
+
+
+**/
 
 
 __device__ float3 get_direction_4(unsigned int idir, float delta)

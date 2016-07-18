@@ -20,6 +20,7 @@ See :doc:`../ana/tools`.
 .. toctree::
 
     overview
+
     tpmt 
     trainbow
     tnewton
@@ -28,11 +29,7 @@ See :doc:`../ana/tools`.
     treflect
     twhite
     tlens
-
-TODO:
-
-* tg4gun
-
+    tg4gun
 
 
 EOU
@@ -49,14 +46,19 @@ tests-cd(){   cd $(tests-dir); }
 
 tests-bash-(){
    tests-cd
-   ls -1 *.bash 
+   ls -1 *.bash | grep -v ttemplate.bash | grep -v tests.bash 
 }
-tests-enabled-(){
-   local bash
-   tests-bash- | while read bash ; do
-      [ ! -x $bash ] && continue
-      echo $bash
-   done
+tests-enabled-(){ cat << EOT
+treflect
+tbox
+tprism
+tnewton
+twhite
+tpmt
+trainbow
+tlens
+tg4gun
+EOT
 }
 
 tests-test-note(){ cat << EON
@@ -71,13 +73,14 @@ tests-test-note(){ cat << EON
      Tests should fail when expectations not fulfilled.
 EON
 }
+
+
 tests-test(){
    local bash
-   local stem
    local rc
-   tests-enabled- | while read bash ; do
+   tests-enabled- | while read stem ; do
 
-       stem=${bash/.bash}
+       bash=${stem}.bash
        echo $msg $bash $stem
 
        source $bash

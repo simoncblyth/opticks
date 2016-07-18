@@ -21,11 +21,10 @@ Pencil beam of five wavelengths incident on GlassSchottF2 prism.
     does both s and p simulation in compute mode and runs the py check 
 
 
-Issues 
----------
 
-Running with `--tcfg4` option to use geant4 simulation needs debugging, 
-getting missing solids and segv.
+Running with `--tcfg4` option to use geant4 simulation runs into 
+missing prism implementation for geant4, causing missing solid warning
+and segv. 
 
 
 
@@ -108,6 +107,10 @@ tnewton--(){
 }
 
 tnewton-py() { tprism.py --tag $(tnewton-tag ${1:-s}) --det newton --src torch ;  }
+tnewton-ipy() { cat << EOC
+run tprism.py --tag $(tnewton-tag ${1:-s}) --det newton --src torch 
+EOC
+}
 
 tnewton-test()
 {

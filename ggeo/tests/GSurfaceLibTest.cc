@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 
 
     // cf CPropLib::init
-
+/*
     GPropertyMap<float>* m_sensor_surface = NULL ; 
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
         m_sensor_surface->Summary("cathode_surface");
     }   
 
-
+*/
 
 
     return 0 ;

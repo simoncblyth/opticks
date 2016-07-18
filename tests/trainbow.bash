@@ -115,7 +115,6 @@ trainbow--(){
 }
 
 
-
 trainbow-cf() 
 {       
    local pol=${1:-s}
@@ -129,7 +128,7 @@ trainbow-pol()
    local pol=${1:-s}
    shift 
 
-   trainbow-- --${pol}pol $*
+   trainbow-- --${pol}pol --compute
    trainbow-- --${pol}pol --tcfg4
 
    trainbow-cf $pol

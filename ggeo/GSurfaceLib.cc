@@ -655,7 +655,7 @@ void GSurfaceLib::dump(const char* msg)
         guint4 optical = getOpticalSurface(i);
         GPropertyMap<float>* surf = getSurface(i);
 
-        LOG(info) << std::setw(30) << surf->getName() 
+        LOG(warning) << std::setw(30) << surf->getName() 
                   << optical.description() 
                   ;
     } 

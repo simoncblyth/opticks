@@ -8,8 +8,14 @@ cfplot.py : Comparison Plotter with Chi2 Underplot
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+except ImportError:
+    print "matplotlib missing : you need this to make plots"
+    plt = None
+
 
 from opticks.ana.nbase import chi2
 

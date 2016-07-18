@@ -117,6 +117,7 @@ import os, sys, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.nbase import vnorm
 from opticks.ana.evt  import Evt
 
 
@@ -124,8 +125,8 @@ from opticks.ana.evt  import Evt
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
-    opticks_environment()
     args = opticks_args(doc=__doc__, tag="10", src="torch", det="PmtInBox")
+    opticks_environment()
 
     log.info("tag %s src %s det %s " % (args.tag,args.src,args.det))
 
@@ -136,27 +137,27 @@ if __name__ == '__main__':
     seqs=[]
 
     a = Evt(tag="%s" % tag, src=args.src, det=args.det, seqs=seqs)
-    log.info( " a done ") 
-
     b = Evt(tag="-%s" % tag , src=args.src, det=args.det, seqs=seqs)
-    log.info( " b done ") 
 
     log.info( " a : %s " % a.brief)
     log.info( " b : %s " % b.brief )
 
+if 0:
     if a.valid:
         a0 = a.rpost_(0)
-        a0r = np.linalg.norm(a0[:,:2],2,1)
+        #a0r = np.linalg.norm(a0[:,:2],2,1)
+        a0r = vnorm(a0[:,:2])
         if len(a0r)>0:
             print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
 
     if b.valid:
         b0 = b.rpost_(0)
-        b0r = np.linalg.norm(b0[:,:2],2,1)
+        #b0r = np.linalg.norm(b0[:,:2],2,1)
+        b0r = vnorm(b0[:,:2])
         if len(b0r)>0:
             print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
-
+if 1:
     if not (a.valid and b.valid):
         log.fatal("need two valid events to compare ")
         sys.exit(1)

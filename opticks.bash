@@ -897,6 +897,34 @@ opticks-export-mingw()
 }
 
 
+opticks-htmldir(){   echo $(opticks-prefix)/html ; }
+opticks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
+opticks-docs-make()
+{
+   local iwd=$PWD
+   opticks-scd
+   local htmldir=$(opticks-htmldir)
+   local htmldirbb=$(opticks-htmldirbb)
+
+   [ -d "$htmldirbb" ] && htmldir=$htmldirbb
+
+   sphinx-build -b html  . $htmldir
+   cd $iwd 
+
+   opticks-docs
+}
+
+opticks-open()
+{
+  local url=$1
+  case $(uname) in
+      Linux) firefox $url ;;
+     Darwin) open $url ;;
+      MING*) chrome $url ;;
+  esac  
+}
+opticks-docs(){ opticks-open  $(opticks-htmldir)/index.html ; } 
+
 ### opticks projs ###  **moved** all projs into top level folders
 
 sysrap-(){          . $(opticks-home)/sysrap/sysrap.bash && sysrap-env $* ; }
@@ -938,6 +966,6 @@ tbox-(){       . $(opticks-home)/tests/tbox.bash     && tbox-env $* ; }
 treflect-(){   . $(opticks-home)/tests/treflect.bash && treflect-env $* ; }
 twhite-(){     . $(opticks-home)/tests/twhite.bash   && twhite-env $* ; }
 tlens-(){      . $(opticks-home)/tests/tlens.bash    && tlens-env $* ; }
-
+tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash   && tg4gun-env $* ; }
 
 
