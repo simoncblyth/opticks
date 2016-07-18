@@ -542,6 +542,15 @@ unsigned long long RecordsNPY::getSequence(unsigned int photon_id, Types::Item_t
             case  Types::MATERIALSEQ: assert(0)        ;break; 
             case   Types::HISTORYSEQ: assert(0)        ;break; 
         }  
+
+
+        if(bitpos >= 16)
+        {
+            LOG(fatal) << "RecordsNPY::getSequence"
+                       << " UNEXPECTED bitpos " << bitpos
+                        ; 
+        }
+
         assert(bitpos < 16);
         seq |= bitpos << (r*4) ; 
     }

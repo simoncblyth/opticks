@@ -7,25 +7,50 @@
 #include "RecordsNPY.hpp"
 #include "RecordsNPY.hpp"
 
+#include "NPY_LOG.hh"
+#include "PLOG.hh"
 
-int main(int , char** )
+
+int main(int argc , char** argv )
 {
+    PLOG_(argc, argv);
+    NPY_LOG__ ; 
+
     Types types ; 
     types.dumpFlags();
 
-    const char* idpath = getenv("IDPATH");
+    const char* typ = "cerenkov" ;
     const char* tag = "1" ;
+    const char* det = "dayabay" ;
 
-    NPY<short>* records = NPY<short>::load("rxcerenkov", tag, "dayabay");
+    NPY<float>* photons = NPY<float>::load("ox%s", typ, tag, det);
+    if(!photons) return 0 ;   
+
+    NPY<short>* records = NPY<short>::load("rx%s",   typ, tag, det);
     if(!records) return 0 ; 
 
+    NPY<float>* fdom  = NPY<float>::load("fdom%s", typ, tag, det);
+    if(!fdom) return 0 ; 
 
-    NPY<float>* domains = NPY<float>::load("domain","1","dayabay");
-    NPY<int>*   idom = NPY<int>::load("idomain","1","dayabay");
+    NPY<int>*   idom  = NPY<int>::load("idom%s", typ, tag, det);
 
-    unsigned int maxrec = idom ? idom->getValue(0,0,3) : 0  ; // TODO: enumerate the k indices 
+    if(idom == NULL)
+    {  
+       LOG(warning) << "FAILED TO LOAD idom " ;
+    }
+
+    unsigned int maxrec = idom ? idom->getValue(0,0,3) : 0 ;  // TODO: enumerate the k indices 
+    
+    if(maxrec != 10)
+    {
+       LOG(fatal) << "UNEXPECTED maxrec " << maxrec ;   
+    }
     assert(maxrec == 10);
 
+
+   
+/*
+    const char* idpath = getenv("IDPATH");
     types.readMaterials(idpath, "GMaterialLib");
     types.dumpMaterials();
 
@@ -37,6 +62,10 @@ int main(int , char** )
 
     NPY<unsigned long long>* seqn = r.makeSequenceArray(Types::HISTORY);
     seqn->save("$TMP/seqn.npy");
+
+
+     
+    LOG(info) << "photon loop " ; 
 
     for(unsigned int i=0 ; i < 100 ; i++)
     { 
@@ -54,7 +83,7 @@ int main(int , char** )
         //std::string dseqmat = r.decodeSequenceString(seqmat, Types::MATERIAL);
         //printf(" photon_id %8d seqmat [%s] dseqmat [%s] \n", photon_id, seqmat.c_str(), dseqmat.c_str() );
     }
-
+*/
 
     return 0 ;
 }

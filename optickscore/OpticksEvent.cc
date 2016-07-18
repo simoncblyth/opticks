@@ -1029,6 +1029,15 @@ OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* d
 }
 
 
+/*
+NPY<int>* OpticksEvent::loadIDomain(const char* typ, const char* tag, const char* det)
+{
+    bool qload = true ; 
+    NPY<int>*   idom = NPY<int>::load(idom_tfmt, typ,  tag, det, qload);
+    return idom ; 
+}
+*/
+
 void OpticksEvent::loadBuffers(bool verbose)
 {
     TIMER("_load");
@@ -1043,7 +1052,6 @@ void OpticksEvent::loadBuffers(bool verbose)
     if(!idom)
     {
         std::string dir = BOpticksEvent::directory(idom_tfmt, m_typ, udet );
-
 
         m_noload = true ; 
         LOG(warning) << "OpticksEvent::load NO SUCH EVENT : RUN WITHOUT --load OPTION TO CREATE IT " 
