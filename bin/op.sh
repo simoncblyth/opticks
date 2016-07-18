@@ -649,7 +649,7 @@ op-runline()
       case $(uname) in
           Darwin) runline="lldb ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;;
            MING*) runline="     ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;; 
-               *) runline="gdb  ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;;
+               *) runline="gdb  --args ${OPTICKS_BINARY} ${OPTICKS_ARGS} " ;;
       esac
    else
       runline="${OPTICKS_BINARY} ${OPTICKS_ARGS}" 
