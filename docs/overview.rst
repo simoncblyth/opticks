@@ -36,15 +36,15 @@ cfg4                   cfg4-            CfG4              BASE GGeo Geant4 EnvXe
 Roles of the Opticks projects
 ---------------------------------
 
-:doc:`sysrap/index`
+sysrap
     logging, string handling, envvar handling 
 boostrap
     filesystem utils, regular expression matching, commandline parsing 
-:doc:`opticksnpy/index`
+opticksnpy
     array handling 
 optickscore
     definitions, loosely the model of the app 
-:doc:`ggeo/index`
+ggeo
     geometry representation appropriate for uploading to the GPU
 assimprap
     parsing G4DAE geometry file into the GGeo representation  
@@ -64,9 +64,9 @@ opticksop
     high level OptiX control 
 opticksgl 
     combination of oglrap- OpenGL and OptiX raytracing 
-:doc:`ggeoview/index`
+ggeoview
     putting together all the above
-:doc:`cfg4/index`
+cfg4
     contained geant4, comparison of Geant4 and Opticks simulatons
 
 

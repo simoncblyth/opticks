@@ -15,18 +15,14 @@ Contents:
    :maxdepth: 2
 
    opticks 
-   overview
+   docs/overview
+   docs/geocache
 
-   tests/index
-   bin/index
-
-   ana/index
    ana/tools
-
-   sysrap/index
-   ggeo/index
-   ggeoview/index
-   cfg4/index
+   bin/index
+   docs/visualization
+   tests/index
+   ana/index
 
    
 

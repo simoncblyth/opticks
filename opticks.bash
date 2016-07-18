@@ -32,7 +32,7 @@ to easily find the Opticks executables and scripts.
     ok-opticks(){  echo /home/simonblyth/opticks ; }
     ok-ctest(){    ( cd $(ok-local)/opticks/build ; ctest3 $* ; ) }
 
-    export PATH=$(ok-opticks)/bin:$(ok-local)/opticks/lib:$PATH
+    export PATH=$(ok-opticks)/ana:$(ok-opticks)/bin:$(ok-local)/opticks/lib:$PATH
 
 
 You can test the installation using the `ok-ctest` function defined in 
@@ -60,6 +60,45 @@ The permission denied error is not a problem.
 
     Total Test time (real) =  48.30 sec
 
+
+
+Opticks Installation Requirements
+----------------------------------
+
+Much of Opticks functionality can still be used on machines
+without an NVIDIA GPU by using Geant4 for simulation
+and OpenGL for visualization.
+
+However to benefit from huge speedup factors 
+requires an NVIDIA GPU with compute capability of 3.0 or better
+(Kepler, Maxwell or Pascal architectures).
+
+macOS : Xcode/clang toolchain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Primary development platfom : Mavericks 10.9.4 
+* NVIDIA Geforce GT 750M (mobile GPU) 
+
+Linux : GCC toolchain
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Opticks has been ported to a DELL Precision Workstation, running Ubuntu 
+* NVIDIA Quadro M5000 
+
+Windows : Microsoft Visual Studio 2015, Community edition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Ported to Windows 7 SP1 machine 
+* non-CUDA capable GPU
+
+Opticks installation uses the bash shell. 
+The Windows bash shell that comes with 
+the git-for-windows project was used for this purpose
+
+* https://github.com/git-for-windows
+ 
+Despite lack of an CUDA capable GPU, the OpenGL Opticks
+visualization was found to operate successfully.
 
 
 Get Opticks 
@@ -371,11 +410,6 @@ to is provided below:
     if [ -f ~/.bashrc ]; then                 ## typical setup 
             . ~/.bashrc
     fi
-
-    export NODE_TAG_OVERRIDE=X                ## env hookup only needed by Opticks developers
-    export ENV_HOME=$HOME/env
-    env-(){  [ -r $ENV_HOME/env.bash ] && . $ENV_HOME/env.bash && env-env $* ; }
-    env-
 
     export LOCAL_BASE=$HOME/local             ## opticks hookup is needed by all Opticks users 
     export OPTICKS_HOME=$HOME/opticks
@@ -897,23 +931,26 @@ opticks-export-mingw()
 }
 
 
-opticks-htmldir(){   echo $(opticks-prefix)/html ; }
-opticks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
+opticks-htmldir(){ 
+   local htmldirbb=$HOME/simoncblyth.bitbucket.org/opticks 
+   if [ -d "$htmldirbb" ]; then 
+       echo $htmldirbb
+   else
+       echo $(opticks-prefix)/html ;
+   fi 
+}
 opticks-docs-make()
 {
    local iwd=$PWD
    opticks-scd
    local htmldir=$(opticks-htmldir)
-   local htmldirbb=$(opticks-htmldirbb)
-
-   [ -d "$htmldirbb" ] && htmldir=$htmldirbb
-
    sphinx-build -b html  . $htmldir
    cd $iwd 
 
    opticks-docs
 }
 
+opticks-docs(){ opticks-open  $(opticks-htmldir)/index.html ; } 
 opticks-open()
 {
   local url=$1
@@ -923,7 +960,6 @@ opticks-open()
       MING*) chrome $url ;;
   esac  
 }
-opticks-docs(){ opticks-open  $(opticks-htmldir)/index.html ; } 
 
 ### opticks projs ###  **moved** all projs into top level folders
 
