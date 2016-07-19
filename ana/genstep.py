@@ -54,6 +54,11 @@ if __name__ == '__main__':
     #a = A.load_("cerenkov","1","dayabay")
     a = A.load_("cerenkov","1","juno")
 
+    path = os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps/dayabay/cerenkov/1.npy")
+    #path = os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps/juno/cerenkov/1.npy")
+    a = np.load(path)
+
+
     xyzt = a[:,1]
     #print xyzt
     x,y,z,t = xyzt[:,X], xyzt[:,Y], xyzt[:,Z], xyzt[:,T]
@@ -101,7 +106,7 @@ if __name__ == '__main__':
     print track
 
 
-    a.derivative_save(track, "track")
+    #a.derivative_save(track, "track")
 
 
 

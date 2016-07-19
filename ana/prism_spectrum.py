@@ -23,7 +23,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from opticks.ana.base import opticks_environment
 from opticks.ana.evt import Evt
 from opticks.ana.boundary import Boundary   
-from opticks.ana.prism import Prism, PrismCheck, PrismExpected
+from opticks.ana.tprism import Prism, PrismCheck, PrismExpected
 from opticks.ana.cie  import cie_hist1d, cie_hist2d
 
 deg = np.pi/180.
