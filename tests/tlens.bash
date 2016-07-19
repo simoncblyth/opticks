@@ -88,4 +88,9 @@ tlens--()
             --save --tag $tag --cat $(tlens-det)
 }
 
+tlens-test()
+{
+    tlens-- --compute
+}
+
 

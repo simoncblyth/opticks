@@ -950,19 +950,38 @@ opticks-docs-make()
    opticks-docs
 }
 
-opticks-evt-cp(){
-   local user=${1:-$USER}
-   local subd="reflect"
-   local host=192.168.1.101
-   local src=/tmp/simonblyth/opticks/evt/$subd
-   local dst=/tmp/$USER/opticks/evt/$subd
+
+opticks-host(){ echo 192.168.1.101 ; }
+
+opticks-scp(){
+   local host=$(opticks-host)
+   local src=$1
+   local dst=$2
+   local user=${3:-$USER}
    mkdir -p $(dirname $dst) 
 
-   scp -r $user@$host:$src $(dirname $dst)
+   local cmd="scp -r $user@$host:$src $(dirname $dst)"
+   echo $cmd
+   eval $cmd
+}
+
+opticks-evt-cp()
+{
+   local user=${1:-$USER}
+   local subd="reflect"
+   opticks-scp /tmp/simonblyth/opticks/evt/$subd /tmp/$USER/opticks/evt/$subd $user
 }
 
 
+opticks-ref-geopath(){ echo DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae ; }
+opticks-ref-idpath(){   echo /home/simonblyth/local/opticks/opticksdata/export/$(opticks-ref-geopath) ;  }
+opticks-local-idpath(){ echo            $HOME/local/opticks/opticksdata/export/$(opticks-ref-geopath) ; }
+#opticks-local-idpath(){ echo            /tmp/export/$(opticks-ref-geopath) ; }
 
+opticks-geo-cp(){
+   local user=${1:-$USER}
+   opticks-scp $(opticks-ref-idpath) $(opticks-local-idpath) $USER
+}
 
 
 opticks-docs(){ opticks-open  $(opticks-htmldir)/index.html ; } 

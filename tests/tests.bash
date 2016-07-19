@@ -78,6 +78,7 @@ EON
 tests-test(){
    local bash
    local rc
+   tests-cd
    tests-enabled- | while read stem ; do
 
        bash=${stem}.bash

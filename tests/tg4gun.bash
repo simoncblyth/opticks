@@ -90,6 +90,10 @@ EOI
 
 }
 
+tg4gun-test()
+{
+    tg4gun-- 
+}
 
 tg4gun-viz()
 {

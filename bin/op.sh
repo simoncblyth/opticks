@@ -564,6 +564,9 @@ else
        >&2 echo proceeding : $runline
    fi 
    eval $runline
+   RC=$?
+   echo $0 RC $RC
+   exit $RC
 
    cat << EOC
 # geocache directory corresponding to OPTICKS_ARGS ${OPTICKS_ARGS} 

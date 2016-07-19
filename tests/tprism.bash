@@ -141,6 +141,9 @@ tprism--(){
             --torchdbg \
             --save --tag $tag --cat $(tprism-det)
 
+    local RC=$?
+    echo $FUNCNAME RC $RC
+    return $RC
 }
 
 
@@ -162,7 +165,7 @@ tprism-pol()
     local tag=$(tprism-tag $pol)
     echo  $msg pol $pol tag $tag
 
-    tprism-- $pol   
+    tprism-- --${pol}pol --compute   
 }
 
 tprism-test()
