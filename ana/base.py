@@ -286,10 +286,12 @@ if __name__ == '__main__':
     opticks_environment(dump=True)
 
     lf = ItemList("GMaterialLib")
-    print "ItemList(GMaterialLib).name2code", lf.name2code
+    print "ItemList(GMaterialLib).name2code"
+    print "\n".join([" %s : %s " % (k,v) for k,v in lf.name2code.items()])
 
     inif = IniFlags()
-    print "IniFlags(photon flags)", inif.name2code
+    print "IniFlags(photon flags)"
+    print "\n".join([" %s : %s " % (k,v) for k,v in inif.name2code.items()])
 
 
 

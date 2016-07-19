@@ -951,45 +951,6 @@ opticks-docs-make()
 }
 
 
-opticks-host(){ echo 192.168.1.101 ; }
-
-opticks-scp(){
-   local msg="=== $FUNCNAME : "
-   local host=$(opticks-host)
-   local src=$1
-   local dst=$2
-   local user=${3:-$USER}
-   mkdir -p $(dirname $dst) 
-
-   [ -d "$dst" ] && echo $msg dst $dst exists already && return 
-
-   local cmd="scp -r $user@$host:$src $(dirname $dst)"
-   echo $cmd
-   eval $cmd
-}
-
-opticks-evt-get()
-{
-    local subd=${1:-reflect}
-    local user=${2:-$USER}
-    opticks-scp /tmp/simonblyth/opticks/evt/$subd /tmp/$USER/opticks/evt/$subd $user
-}
-opticks-ref-prefix(){ echo /home/simonblyth/local/opticks ; }
-opticks-loc-prefix(){ echo  $HOME/local/opticks ; }
-opticks-ref-okc(){    echo $(opticks-ref-prefix)/installcache/OKC ; }
-opticks-loc-okc(){    echo $(opticks-loc-prefix)/installcache/OKC ; }
-opticks-ref-idpath(){ echo $(opticks-ref-prefix)/opticksdata/export/$(opticks-ref-geopath) ; }
-opticks-loc-idpath(){ echo $(opticks-loc-prefix)/opticksdata/export/$(opticks-ref-geopath) ; }
-opticks-ref-geopath(){ echo DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae ; }
-
-opticks-geo-get(){
-   local user=${1:-$USER}
-   [ ! -d "$(opticks-loc-prefix)/opticksdata" ] && echo YOU NEED TO optickdata-get FIRST && return
-
-   opticks-scp $(opticks-ref-idpath) $(opticks-loc-idpath) $USER
-   opticks-scp $(opticks-ref-okc)    $(opticks-loc-okc)    $USER
-}
-
 
 opticks-docs(){ opticks-open  $(opticks-htmldir)/index.html ; } 
 opticks-open()
@@ -1044,5 +1005,105 @@ treflect-(){   . $(opticks-home)/tests/treflect.bash && treflect-env $* ; }
 twhite-(){     . $(opticks-home)/tests/twhite.bash   && twhite-env $* ; }
 tlens-(){      . $(opticks-home)/tests/tlens.bash    && tlens-env $* ; }
 tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash   && tg4gun-env $* ; }
+
+
+
+####### below functions support analysis on machines without a full opticks install
+####### by copying some parts of an opticks install to corresponding local locations 
+
+opticks-host(){ echo ${OPTICKS_HOST:-192.168.1.101} ; }
+opticks-user(){ echo ${OPTICKS_USER:-$USER} ; }
+
+opticks-scp(){
+   local msg="=== $FUNCNAME : "
+   local host=$(opticks-host)
+   local user=$(opticks-user)
+   local src=$1
+   local dst=$2
+   mkdir -p $(dirname $dst) 
+
+   [ -d "$dst" ] && echo $msg dst $dst exists already && return 
+
+   local cmd="scp -r $user@$host:$src $(dirname $dst)"
+   echo $msg \"$cmd\"
+   
+   local ans
+   read -p "$msg Proceed with the above command ? [Yy] "  ans
+   if [ "$ans" == "Y" -o "$ans" == "y" ]; then
+       echo $msg OK PROCEEDING
+       eval $cmd
+   else
+       echo $msg OK SKIP
+   fi
+}
+
+
+opticks-prefix-ref(){ echo ${OPTICKS_PREFIX_REF:-/home/simonblyth/local/opticks} ; }
+opticks-prefix-loc(){ echo  $HOME/local/opticks ; }
+
+opticks-okc-ref(){    echo $(opticks-prefix-ref)/installcache/OKC ; }
+opticks-okc-loc(){    echo $(opticks-prefix-loc)/installcache/OKC ; }
+
+opticks-geo-ref(){ echo $(opticks-prefix-ref)/opticksdata/export/$(opticks-geopath-ref) ; }
+opticks-geo-loc(){ echo $(opticks-prefix-loc)/opticksdata/export/$(opticks-geopath-ref) ; }
+
+opticks-geopath-ref(){ echo DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae ; }
+
+
+opticks-geo-get(){
+   local user=${1:-$USER}
+   [ ! -d "$(opticks-prefix-loc)/opticksdata" ] && echo YOU NEED TO optickdata-get FIRST && return 1
+
+   opticks-scp $(opticks-geo-ref) $(opticks-geo-loc) 
+   opticks-scp $(opticks-okc-ref) $(opticks-okc-loc)    
+}
+
+opticks-evt-ref(){ echo ${OPTICKS_EVT_REF:-/tmp/simonblyth/opticks/evt} ; }
+opticks-evt-loc(){ echo /tmp/$USER/opticks/evt ; }
+opticks-evt-get()
+{
+    local subd=${1:-reflect}
+    opticks-scp $(opticks-evt-ref)/$subd $(opticks-evt-loc)/$subd 
+}
+
+
+opticks-analysis-only-setup()
+{
+   opticksdata-
+   opticksdata-get
+
+   opticks-geo-get
+
+   opticks-evt-get reflect 
+}
+
+opticks-analysis-only-check()
+{
+   cat << EOC
+
+   PATH : $PATH 
+ 
+       This needs to include directories where the tools are installed, eg 
+
+           hg (Mercurial)
+           python
+           ipython
+
+   LOCAL_BASE : $LOCAL_BASE   
+
+       Should be \$HOME/local ie $HOME/local 
+       This is used by opticksdata- functions to 
+       identify the location for the opticksdata repository clone
+
+   PYTHONPATH : $PYTHONPATH   
+
+       Should be same as \$HOME ie $HOME
+       This allows you to : 
+           python -c "import opticks" 
+
+EOC
+
+}
+
 
 
