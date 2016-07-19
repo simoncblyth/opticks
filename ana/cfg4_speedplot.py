@@ -15,6 +15,11 @@ from opticks.ana.metadata import Metadata, Catdir
 
 
 def speedplot(cat, tag, a, landscape=False, ylim=None, log_=False):
+
+    if a is None:
+        log.warning("no metadata skipping")
+        return   
+
     nnp = len(np.unique(a.numPhotons))
 
     if nnp != 1:

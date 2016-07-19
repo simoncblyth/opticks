@@ -968,15 +968,12 @@ opticks-scp(){
    eval $cmd
 }
 
-opticks-evt-cp()
+opticks-evt-get()
 {
-   local user=${1:-$USER}
-   local subd="reflect"
-   opticks-scp /tmp/simonblyth/opticks/evt/$subd /tmp/$USER/opticks/evt/$subd $user
+    local subd=${1:-reflect}
+    local user=${2:-$USER}
+    opticks-scp /tmp/simonblyth/opticks/evt/$subd /tmp/$USER/opticks/evt/$subd $user
 }
-
-
-
 opticks-ref-prefix(){ echo /home/simonblyth/local/opticks ; }
 opticks-loc-prefix(){ echo  $HOME/local/opticks ; }
 opticks-ref-okc(){    echo $(opticks-ref-prefix)/installcache/OKC ; }
@@ -985,8 +982,10 @@ opticks-ref-idpath(){ echo $(opticks-ref-prefix)/opticksdata/export/$(opticks-re
 opticks-loc-idpath(){ echo $(opticks-loc-prefix)/opticksdata/export/$(opticks-ref-geopath) ; }
 opticks-ref-geopath(){ echo DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae ; }
 
-opticks-geo-cp(){
+opticks-geo-get(){
    local user=${1:-$USER}
+   [ ! -d "$(opticks-loc-prefix)/opticksdata" ] && echo YOU NEED TO optickdata-get FIRST && return
+
    opticks-scp $(opticks-ref-idpath) $(opticks-loc-idpath) $USER
    opticks-scp $(opticks-ref-okc)    $(opticks-loc-okc)    $USER
 }

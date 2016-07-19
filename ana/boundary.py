@@ -79,7 +79,7 @@ if __name__ == '__main__':
     opticks_environment()
 
 
-    wl = np.linspace(100.,730.,10, dtype=np.float32)
+    wl = np.linspace(100.,730.,10)
 
     boundary = Boundary("Vacuum///GlassSchottF2")
 

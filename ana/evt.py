@@ -716,7 +716,7 @@ if __name__ == '__main__':
 
     #cat, src, tag = "rainbow", "torch", "-5"
     #cat, src, tag = "juno", "cerenkov", "1"
-    cat, src, tag = "PmtInBox", "torch", "-4"
+    cat, src, tag = "PmtInBox", "torch", "10"
 
     evt = Evt(tag, src, cat, label="tag %s" % tag, rec=rec)
 

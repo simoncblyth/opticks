@@ -147,6 +147,10 @@ class Catdir(object):
         log.info("times metadata for tag %s " % tag + "\n".join(map(str,mds)))
 
         n = len(mds)
+        if n == 0:
+            log.warning("no metadata found")
+            return None  
+
         numpho0 = mds[0].numPhotons
 
         ## collect indices with consistent photon counts

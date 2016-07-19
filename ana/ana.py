@@ -118,7 +118,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     opticks_environment()
 
-    evt = Evt(tag="1", det="rainbow")
+    evt = Evt(tag="5", det="rainbow")
 
 
 

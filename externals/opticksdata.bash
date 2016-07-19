@@ -75,7 +75,7 @@ opticksdata-get(){
 
    local url=$(opticksdata-url)
    local nam=$(basename $url)
-   if [ ! -d "$nam" ]; then
+   if [ ! -d "$nam/.hg" ]; then
         hg clone $url 
    else
         echo $msg ALREADY CLONED from $url to $(opticksdata-dir) 
