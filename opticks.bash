@@ -954,10 +954,11 @@ opticks-evt-cp(){
    local user=${1:-$USER}
    local subd="reflect"
    local host=192.168.1.101
-   local src=/tmp/simonblyth/opticks/evt/$proj
-   local dst=/tmp/$USER/opticks/evt/$proj
+   local src=/tmp/simonblyth/opticks/evt/$subd
+   local dst=/tmp/$USER/opticks/evt/$subd
+   mkdir -p $(dirname $dst) 
 
-   scp -r $user@$host:$src/ $dst/ 
+   scp -r $user@$host:$src $(dirname $dst)
 }
 
 
