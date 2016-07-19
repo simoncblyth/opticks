@@ -10,6 +10,74 @@ analysis and debugging relies on:
 * MatPlotLib
 
 
+In general the best way to install common software such as
+these tools is with your systems package manager. For example:
+
+* Linux: yum, apt-get
+* macOS: https://www.macports.org or homebrew
+* Windows: https://chocolatey.org 
+
+However there are other ways to install packages such as
+using **pip** for python packages.
+
+
+IPython Install on a mac with pip
+----------------------------------
+
+Installing ipython on a mac if you do not use macports.
+
+::
+
+    delta:tests blyth$ sudo pip install ipython==1.2.1
+    Password:
+    Downloading/unpacking ipython==1.2.1
+      Downloading ipython-1.2.1.tar.gz (8.7MB): 8.7MB downloaded
+      Running setup.py (path:/private/tmp/pip_build_root/ipython/setup.py) egg_info for package ipython
+        running egg_info
+        
+    Installing collected packages: ipython
+      Running setup.py install for ipython
+        running install
+        
+        Installing iplogger script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing iptest script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing ipcluster script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing ipython script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing pycolor script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing ipcontroller script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing irunner script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+        Installing ipengine script to /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin
+    Successfully installed ipython
+    Cleaning up...
+    delta:tests blyth$ 
+    delta:tests blyth$ which ipython
+    /opt/local/bin/ipython
+    delta:tests blyth$ ipython
+    Python 2.7.11 (default, Dec  5 2015, 23:51:51) 
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 1.2.1 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+
+    In [1]: import numpy as np
+
+    In [2]: np.__version__
+    Out[2]: '1.9.2'
+
+    In [3]: import matplotlib
+
+    In [4]: import matplotlib.pyplot as plt 
+
+    In [5]: matplotlib.__version__
+    Out[5]: '1.3.1'
+
+
+
+
+
 Working with bash functions
 -----------------------------
 
@@ -293,6 +361,8 @@ Do that more sedately with ipython:
 
 
 See :doc:`../ana/evt` for a higher level way of loading event buffers.
+
+
 
 
 

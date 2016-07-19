@@ -1,5 +1,5 @@
 trainbow-source(){   echo $(opticks-home)/tests/trainbow.bash ; }
-trainbow-vi(){       vi $(trainbow-source) $(ggv-source) ; }
+trainbow-vi(){       vi $(trainbow-source) ; }
 trainbow-usage(){ cat << \EOU
 
 trainbow- : Rainbow geometry with torch source
