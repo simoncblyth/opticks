@@ -950,6 +950,20 @@ opticks-docs-make()
    opticks-docs
 }
 
+opticks-evt-cp(){
+   local user=${1:-$USER}
+   local subd="reflect"
+   local host=192.168.1.101
+   local src=/tmp/simonblyth/opticks/evt/$proj
+   local dst=/tmp/$USER/opticks/evt/$proj
+
+   scp -r $user@$host:$src/ $dst/ 
+}
+
+
+
+
+
 opticks-docs(){ opticks-open  $(opticks-htmldir)/index.html ; } 
 opticks-open()
 {
