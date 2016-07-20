@@ -1075,7 +1075,7 @@ opticks-analysis-only-setup()
 
    opticks-geo-get
 
-   opticks-evt-get reflect 
+   opticks-evt-get rainbow
 }
 
 opticks-analysis-only-check()

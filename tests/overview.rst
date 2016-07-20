@@ -185,3 +185,68 @@ Example torch config used by :doc:`treflect`
 
 
 
+Updating Opticks Bash Functions
+---------------------------------
+
+If you have not yet cloned Opticks to your machine, do so with::
+
+     cd
+     hg clone http://bitbucket.org/simoncblyth/opticks  
+
+If you have already done the above, make sure to update to the latest version with::
+
+     cd ~/opticks    
+     hg pull
+     hg update
+
+Then update your bash enviroment by running::
+
+     opticks-
+
+
+
+Analysis Only Exercises
+-------------------------
+
+Sections labelled **ANALYSIS EXERCISE** can be done without a full Opticks installation.
+You will however need to copy some files to your machine, using  **opticks-** bash functions.
+
+First update you Opticks bash functions as described above
+and then run the below function to copy files to your machine::
+
+     opticks-analysis-only-setup 
+
+To see what the function does use the **t** alias that 
+you should have in your `~/.bash_profile` ::
+
+    [simonblyth@optix ~]$ t opticks-analysis-only-setup  # alias t="typeset -f"
+    opticks-analysis-only-setup () 
+    { 
+        opticksdata-;
+        opticksdata-get;
+        opticks-geo-get;
+        opticks-evt-get rainbow
+    }
+
+This will **scp** files from the workstation installation, you will
+be prompted for your workstation password several times.  
+
+
+Note this only copies **rainbow** files, to do other exercises you will
+need to run for example::
+
+    opticks-evt-get reflect
+
+
+
+ 
+
+    
+
+
+ 
+
+
+
+
+

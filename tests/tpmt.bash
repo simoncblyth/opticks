@@ -59,6 +59,12 @@ tpmt- : Opticks Simulation PMT Tests
 
 
 
+ANALYSIS EXERCISE
+--------------------
+
+* run *tpmt.py* 
+
+
 
 
 

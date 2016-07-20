@@ -23,6 +23,28 @@ trainbow- : Rainbow geometry with torch source
     invokes `trainbow-pol` for both s and p  
 
 
+ANALYSIS EXERCISE 
+--------------------------
+
+* start ipython from the `~/opticks/ana` directory::
+
+       cd ~/opticks/ana
+       ipython 
+
+* run trainbow.py from within ipython, as described above,
+  a plot should appear 
+
+* modify the *trainbow.py* script to add extra plots
+
+* interpret the meaning of the extra plots 
+
+* if you have an full Opticks install, try modifying
+  details of the simulation, run the simulation and
+  check for changes in the plot
+
+
+
+
 EOU
 }
 
