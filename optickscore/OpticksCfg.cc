@@ -98,7 +98,13 @@ void OpticksCfg<Listener>::init()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()
-       ("nonet,N",  "inhibit use of network") ;
+       ("nonet,n",  "inhibit use of network") ;
+
+
+   m_desc.add_options()
+       ("jwire",  "enable wire frame view, use only with workstation GPUs") ;
+
+
 
 
    m_desc.add_options()

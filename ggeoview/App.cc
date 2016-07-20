@@ -378,7 +378,11 @@ void App::prepareViz()
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
 
-        m_scene->setNumGeometryStyle(Scene::WIRE); 
+        if(!hasOpt("jwire"))
+        { 
+            m_scene->setNumGeometryStyle(Scene::WIRE); 
+        }
+
         m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
 
         m_scene->setRenderMode("bb0,bb1,-global");

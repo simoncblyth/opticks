@@ -1105,9 +1105,9 @@ EOU
 
 ggeoview-env(){     
     olocal- 
-    optix-
-    optix-export
-    opticks-
+    #optix-
+    #optix-export
+    #opticks-
 }
 
 

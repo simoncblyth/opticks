@@ -21,6 +21,7 @@ See :doc:`../ana/tools`.
 
     overview
 
+    tviz
     tpmt 
     trainbow
     tnewton

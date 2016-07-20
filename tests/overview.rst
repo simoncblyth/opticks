@@ -8,6 +8,7 @@ precursor bash functions.
 
     #### opticks top level tests ########
     
+    tviz-(){       . $(opticks-home)/tests/tviz.bash     && tviz-env $* ; }
     tpmt-(){       . $(opticks-home)/tests/tpmt.bash     && tpmt-env $* ; }
     trainbow-(){   . $(opticks-home)/tests/trainbow.bash && trainbow-env $* ; }
     tnewton-(){    . $(opticks-home)/tests/tnewton.bash  && tnewton-env $* ; }

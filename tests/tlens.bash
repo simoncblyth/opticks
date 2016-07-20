@@ -13,7 +13,7 @@ tlens- : Disc shaped beam of white light incident on convex lens
     create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
 
 
-EXERCISES
+EXERCISE
 -----------
 
 * Change the lens material and interpret what you get, 
@@ -25,6 +25,16 @@ EXERCISES
 
 * Try adding a different shape, examine the **GMaker** source code :oktip:`ggeo/GMaker.cc`
   to see what shapes are available
+
+* Write a python analysis script **tlens.py** that 
+  
+    * loads an event from `tlens-`
+    * prints the photon history table
+    * select a subset of the photons (using **seqs** argument to Evt class)
+    * plot distributions for the subset using **matplotlib**  
+    * interpret the plot
+
+   
 
 
 EOU
