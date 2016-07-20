@@ -62,7 +62,12 @@ tpmt- : Opticks Simulation PMT Tests
 ANALYSIS EXERCISE
 --------------------
 
-* run *tpmt.py* 
+* run *tpmt.py* from ipython
+
+* run *tpmt_distrib.py* from ipython
+
+* use the Evt class to select a class of photons and make plots of 
+  quantities such as position and time 
 
 
 

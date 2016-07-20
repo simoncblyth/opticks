@@ -41,7 +41,7 @@ from opticks.ana.base import opticks_environment, opticks_args
 from opticks.ana.evt import Evt
 from opticks.ana.nbase import chi2, vnorm, decompression_bins
 from opticks.ana.cfplot import cfplot
-from env.doc.make_rst_table import recarray_as_rst
+#from env.doc.make_rst_table import recarray_as_rst
 
 
 
@@ -305,8 +305,8 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
 
     np.save(os.path.expandvars("$TMP/stat.npy"),stat)
 
-    rst = recarray_as_rst(stat)
-    print rst 
+    #rst = recarray_as_rst(stat)
+    #print rst 
 
 
 
