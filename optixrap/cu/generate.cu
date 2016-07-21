@@ -140,10 +140,76 @@ rtDeclareVariable(rtObject,      top_object, , );
 
 RT_PROGRAM void trivial()
 {
-   wavelength_dump(24, 10);    
-   wavelength_dump(42, 10);    
-   wavelength_dump(48, 10);    
-   wavelength_dump(1048, 10);    
+   //wavelength_dump(24, 10);    
+   //wavelength_dump(42, 10);    
+   //wavelength_dump(48, 10);    
+   //wavelength_dump(1048, 10);    
+
+    unsigned long long photon_id = launch_index.x ;  
+    unsigned int photon_offset = photon_id*PNUMQUAD ; 
+
+    // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
+    // this seeding is done by App::seedPhotonsFromGensteps
+
+    union quad phead ;
+    phead.f = photon_buffer[photon_offset+0] ;
+    unsigned int genstep_id = phead.u.x ; 
+    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+
+    union quad ghead ; 
+    ghead.f = genstep_buffer[genstep_offset+0]; 
+    rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
+    //rtPrintf("ghead.i.x %d \n", ghead.i.x );
+
+    //
+    // in interop mode ( GGeoViewTest --trivial ) on SDU Dell Precision Workstation getting genstep_id -1 
+    // this causes an attempted read beyond the genstep buffer resuling on crash when accessing ghead.i.x
+    //     (trivial) photon_id 4160 photon_offset 16640 genstep_id -1 GNUMQUAD 6 genstep_offset -6 
+    //
+    // in compute mode ( GGeoViewTest --trivial --compute ) get sensible genstep_id
+    //     (trivial) photon_id 1057 photon_offset 4228 genstep_id 0 GNUMQUAD 6 genstep_offset 0 
+    //
+    //
+
+/*
+From compute mode run::
+
+    2016-07-21 09:51:06.804 INFO  [31303] [OpEngine::preparePropagator@102] OpEngine::preparePropagator DONE 
+    2016-07-21 09:51:06.804 INFO  [31303] [OpSeeder::seedPhotonsFromGensteps@65] OpSeeder::seedPhotonsFromGensteps
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs : dev_ptr 0xb07200000 size 6 num_bytes 96 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox : dev_ptr 0xb07300000 size 400000 num_bytes 6400000 
+    2016-07-21 09:51:06.806 INFO  [31303] [OpSeeder::seedPhotonsFromGenstepsImp@134] OpSeeder::seedPhotonsFromGenstepsImp gensteps 1,6,4 num_genstep_values 24
+    TBufPair<T>::seedDestination (CBufSlice)src : dev_ptr 0xb07200000 size 6 num_bytes 96 stride 24 begin 3 end 24 
+    TBufPair<T>::seedDestination (CBufSlice)dst : dev_ptr 0xb07300000 size 400000 num_bytes 6400000 stride 16 begin 0 end 1600000 
+    iexpand  counts_size 1 output_size 100000
+    2016-07-21 09:51:06.810 INFO  [31303] [OpZeroer::zeroRecords@61] OpZeroer::zeroRecords
+
+From interop mode run (OpSeeder buffer sizes are x4 ???)::
+
+    2016-07-21 10:00:50.232 INFO  [881] [OpSeeder::seedPhotonsFromGenstepsViaOpenGL@79] OpSeeder::seedPhotonsFromGenstepsViaOpenGL
+    CResource::mapGLToCUDA buffer_id 16 imp.bufsize 96      sizeof(T) 4 size 24 
+    CResource::mapGLToCUDA buffer_id 18 imp.bufsize 6400000 sizeof(T) 4 size 1600000 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs : dev_ptr 0x20491ae00 size 24 num_bytes 96 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox : dev_ptr 0x20492f800 size 1600000 num_bytes 6400000 
+    2016-07-21 10:00:50.239 INFO  [881] [OpSeeder::seedPhotonsFromGenstepsImp@134] OpSeeder::seedPhotonsFromGenstepsImp gensteps 1,6,4 num_genstep_values 24
+    TBufPair<T>::seedDestination (CBufSlice)src : dev_ptr 0x20491ae00 size 24 num_bytes 96 stride 24 begin 3 end 24 
+    TBufPair<T>::seedDestination (CBufSlice)dst : dev_ptr 0x20492f800 size 1600000 num_bytes 6400000 stride 16 begin 0 end 1600000 
+    iexpand  counts_size 1 output_size 100000
+    2016-07-21 10:00:50.263 INFO  [881] [OpZeroer::zeroRecords@61] OpZeroer::zeroRecords
+
+Source of the unexpected x4 bufsize is CResource::mapGLToCUDA
+
+     53    void* mapGLToCUDA()
+     54    {
+     55        checkCudaErrors( cudaGraphicsMapResources(1, &resource, stream) );
+     56        checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&dev_ptr, &bufsize, resource) );
+     57        //printf("Resource::mapGLToCUDA bufsize %lu dev_ptr %p \n", bufsize, dev_ptr );
+     58        return dev_ptr ;
+     59    }
+
+
+*/
+
 }
 
 

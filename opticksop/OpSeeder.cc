@@ -119,6 +119,9 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 
 void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& s_ox)
 {
+    s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs");
+    s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox");
+
     TBuf tgs("tgs", s_gs );
     TBuf tox("tox", s_ox );
     
@@ -128,7 +131,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
 
     unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
 
-    LOG(trace) << "OpSeeder::seedPhotonsFromGenstepsImp"
+    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsImp"
                << " gensteps " << gensteps->getShapeString() 
                << " num_genstep_values " << num_genstep_values
                ;
@@ -146,7 +149,10 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
 
     assert(num_photons == x_num_photons && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
 
-    CBufSlice src = tgs.slice(6*4,3,num_genstep_values) ;
+    // src slice is plucking photon counts from each genstep
+    // dst slice points at the first value of each item in photon buffer
+    // buffer size and num_bytes comes directly from CBufSpec
+    CBufSlice src = tgs.slice(6*4,3,num_genstep_values) ;  // stride, begin, end 
     CBufSlice dst = tox.slice(4*4,0,num_photons*4*4) ;
 
     TBufPair<unsigned int> tgp(src, dst);

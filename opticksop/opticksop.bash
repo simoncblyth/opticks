@@ -141,9 +141,9 @@ EOU
 
 opticksop-env(){
     olocal-
-    optix-
-    optix-export
-    opticks-
+   # optix-
+   # optix-export
+   # opticks-
 }
 
 opticksop-sdir(){ echo $(opticks-home)/opticksop ; }

@@ -45,11 +45,6 @@ opticksgl-bcd(){  cd $(opticksgl-bdir); }
 opticksgl-env(){  
    olocal- 
    opticks-
-
-   optix-
-   optix-export 
-   optixrap-
-   optixrap-export 
 }
 
 
@@ -71,26 +66,6 @@ opticksgl-txt(){ vi $(opticksgl-sdir)/CMakeLists.txt $(opticksgl-tdir)/CMakeList
 
 
 
-
-
-
-
-opticksgl-cmake-deprecated(){
-   local iwd=$PWD
-
-   local bdir=$(opticksgl-bdir)
-   mkdir -p $bdir
-  
-   opticksgl-bcd 
-   cmake \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(opticksgl-idir) \
-       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
-       -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
-       $(opticksgl-sdir)
-
-   cd $iwd
-}
 
 
 

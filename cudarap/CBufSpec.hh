@@ -16,7 +16,7 @@ struct CUDARAP_API CBufSpec
        num_bytes(num_bytes_)
    {
    }
-   void Summary(const char* msg)
+   void Summary(const char* msg) const
    {
        printf("%s : dev_ptr %p size %u num_bytes %u \n", msg, dev_ptr, size, num_bytes ); 
    }

@@ -380,8 +380,8 @@ EOU
 
 optixrap-env(){  
    olocal- 
-   optix-
-   optix-export 
+   #optix-
+   #optix-export 
    opticks-
 }
 

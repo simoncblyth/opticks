@@ -14,8 +14,8 @@ TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst )
 template <typename T>
 void TBufPair<T>::seedDestination()
 {  
-    m_src.Summary("seedDestination src");
-    m_dst.Summary("seedDestination dst");
+    m_src.Summary("TBufPair<T>::seedDestination (CBufSlice)src");
+    m_dst.Summary("TBufPair<T>::seedDestination (CBufSlice)dst");
 
     typedef typename thrust::device_vector<T>::iterator Iterator;
       
