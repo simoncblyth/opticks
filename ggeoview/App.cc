@@ -1021,7 +1021,7 @@ void App::dbgSeed()
     if(!isCompute()) 
     { 
         LOG(info) << "App::debugSeed (interop) download photon seeds " ;
-        Rdr::download(ox);
+        Rdr::download<float>(ox);
         ox->save("$TMP/dbgseed_interop.npy");
     }
     else

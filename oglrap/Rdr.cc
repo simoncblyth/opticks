@@ -602,3 +602,6 @@ void Rdr::download( OpticksEvent* evt )
 
 }
 
+
+template OGLRAP_API void Rdr::download<float>(NPY<float>*);
+
