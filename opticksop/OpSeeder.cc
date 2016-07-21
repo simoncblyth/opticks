@@ -111,6 +111,13 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     CBufSpec s_gs = genstep->bufspec();
     CBufSpec s_ox = photon->bufspec();
 
+    genstep->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)genstep");
+    s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
+
+    photon->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)photon ");
+    s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_ox");
+
+
     seedPhotonsFromGenstepsImp(s_gs, s_ox);
 
     TIMER("seedPhotonsFromGenstepsViaOptiX"); 

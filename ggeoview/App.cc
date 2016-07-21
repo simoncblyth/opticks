@@ -378,7 +378,7 @@ void App::prepareViz()
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
 
-        if(!hasOpt("jwire"))
+        if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
         { 
             m_scene->setNumGeometryStyle(Scene::WIRE); 
         }

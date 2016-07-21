@@ -19,19 +19,6 @@
 
 // optixrap-
 #include "OEngineImp.hh"
-/*
-#include "OContext.hh"
-#include "OColors.hh"
-#include "OGeo.hh"
-#include "OBndLib.hh"
-#include "OScintillatorLib.hh"
-#include "OSourceLib.hh"
-#include "OBuf.hh"
-#include "OConfig.hh"
-#include "OTracer.hh"
-#include "OPropagator.hh"
-*/
-
 
 #include "PLOG.hh"
 

@@ -1371,4 +1371,8 @@ oks-tmpify()
 }
 
 
-
+oks-cuda-find()
+{
+   local q=${1:-cudaGraphicsResourceGetMappedPointer}
+   find /usr/local/cuda/ -type f -exec grep -l $q {} \;
+}
