@@ -38,10 +38,17 @@ void OBufBase::setHexDump(bool hexdump)
 }
 
 /*
-   *getSize()* Excludes multiplicity of the type of the OptiX buffer
+   *getSize()*  Excludes multiplicity of the type of the OptiX buffer, ie the size
+                is the number of float4 
 
-        e.g a Cerenkov genstep NPY<float> buffer with dimensions (7836,6,4)
-        is canonically represented as an OptiX float4 buffer of size 7836*6 = 47016 
+         Examples:
+
+          1) Cerenkov genstep NPY<float> buffer with dimensions (7836,6,4)
+             is canonically represented as an OptiX float4 buffer of size 7836*6 = 47016 
+
+          2) Torch genstep NPY<float> buffer with dimensions (1,6,4)
+             is canonically represented as an OptiX float4 buffer of size 1*6 = 6 
+
 */
 
 unsigned int OBufBase::getSize()  

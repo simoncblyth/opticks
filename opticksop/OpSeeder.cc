@@ -93,6 +93,12 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
     CBufSpec s_gs = r_gs.mapGLToCUDA<unsigned int>() ;
     CBufSpec s_ox = r_ox.mapGLToCUDA<unsigned int>() ;
 
+    // for matching with compute mode which gets the 
+    // 4 from the multiplity of float4 optix buffer in OBuf
+    s_gs.size = s_gs.size/4 ; 
+    s_ox.size = s_ox.size/4 ; 
+
+
     seedPhotonsFromGenstepsImp(s_gs, s_ox);
 
     r_gs.unmapGLToCUDA(); 

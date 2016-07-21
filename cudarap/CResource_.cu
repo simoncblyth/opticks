@@ -99,7 +99,7 @@ CBufSpec CResource::mapGLToCUDA()
     m_imp->registerBuffer();
     m_imp->mapGLToCUDA();
     unsigned int size = m_imp->bufsize/sizeof(T) ;
-    printf("CResource::mapGLToCUDA buffer_id %d imp.bufsize %lu sizeof(T) %d size %d \n", m_buffer_id, m_imp->bufsize, sizeof(T), size );
+    printf("CResource::mapGLToCUDA buffer_id %d imp.bufsize %lu sizeof(T) %lu size %d \n", m_buffer_id, m_imp->bufsize, sizeof(T), size );
     return CBufSpec( m_imp->dev_ptr, size, m_imp->bufsize );  // number of items only defined when decide on item size
 }
 void CResource::unmapGLToCUDA()
