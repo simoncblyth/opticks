@@ -80,7 +80,7 @@ void OConfig::addProg(OProg* prog, bool defer)
 {
     int index = prog->index ; 
 
-    LOG(info) << "OConfig::addProg"
+    LOG(trace) << "OConfig::addProg"
               << " desc " << prog->description()
               << " index/raytype " << index 
               ;
@@ -102,7 +102,7 @@ unsigned int OConfig::getNumEntryPoint()
     } 
     assert(m_raygen_index == m_exception_index);
 
-    LOG(info) << "OConfig::getNumEntryPoint" 
+    LOG(trace) << "OConfig::getNumEntryPoint" 
               << " m_raygen_index " << m_raygen_index
               << " m_exception_index " << m_exception_index
               ;

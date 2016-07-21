@@ -109,6 +109,13 @@ int main(int argc, char** argv)
 
             app.seedPhotonsFromGensteps(); // distributes genstep indices into the photons buffer
 
+            if(app.hasOpt("onlyseed"))
+            {
+                 std::cerr << "onlyseed exit" << std::endl ;   
+                 exit(EXIT_SUCCESS);
+            }   
+
+
             app.initRecords();             // zero records buffer
 
             app.propagate();

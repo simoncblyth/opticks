@@ -79,6 +79,8 @@ void OpZeroer::zeroRecordsViaOpenGL()
 
     CBufSpec s_rec = r_rec.mapGLToCUDA<short>() ;
 
+    s_rec.Summary("OpZeroer::zeroRecordsViaOpenGL(CBufSpec)s_rec");
+
     TBuf trec("trec", s_rec );
 
     trec.zero();
@@ -96,6 +98,8 @@ void OpZeroer::zeroRecordsViaOptiX()
     OBuf* record = m_propagator->getRecordBuf() ;
 
     CBufSpec s_rec = record->bufspec();
+
+    s_rec.Summary("OpZeroer::zeroRecordsViaOptiX(CBufSpec)s_rec");
 
     TBuf trec("trec", s_rec );
 

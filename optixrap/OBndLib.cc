@@ -75,7 +75,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     }
 
    
-    LOG(info) << "OBndLib::makeBoundaryTexture buf " 
+    LOG(trace) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
               << " ---> "  
               << " nx " << nx
@@ -100,7 +100,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 
     // huh factor of 2 somewhere ???  nope payload details are beneath texture line level
 
-    LOG(info) << "OBndLib::makeBoundaryTexture"
+    LOG(trace) << "OBndLib::makeBoundaryTexture"
               << " lmin " << lmin 
               << " lmax " << lmax
               << " ni " << ni
@@ -115,7 +115,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 
     optix::uint4 bounds = optix::make_uint4(wmin, wmax, lmin, lmax );
 
-    LOG(info) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
+    LOG(trace) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
               << " x " << bounds.x 
               << " y " << bounds.y
               << " z " << bounds.z 
@@ -138,7 +138,7 @@ void OBndLib::makeBoundaryOptical(NPY<unsigned int>* obuf)
     unsigned int numBnd = numBytes/(GPropertyLib::NUM_MATSUR*4*sizeof(unsigned int)) ;  // this 4 is not NUM_PROP
     unsigned int nx = numBnd*GPropertyLib::NUM_MATSUR ;
 
-    LOG(info) << "OBndLib::makeBoundaryOptical obuf " 
+    LOG(trace) << "OBndLib::makeBoundaryOptical obuf " 
               << obuf->getShapeString() 
               << " numBnd " << numBnd 
               << " numBytes " << numBytes 

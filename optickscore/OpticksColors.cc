@@ -355,7 +355,7 @@ void OpticksColors::addColors(std::vector<unsigned int>& codes, unsigned int sta
     unsigned char alpha = 0xFF ; 
     typedef std::vector<unsigned int> VU ; 
 
-    LOG(info) << "OpticksColors::addColors " 
+    LOG(trace) << "OpticksColors::addColors " 
               << " codes.size " << codes.size()
               << " start " << start 
               << " max_colors " << max_colors 
@@ -422,7 +422,7 @@ void OpticksColors::setupCompositeColorBuffer(std::vector<unsigned int>&  materi
     unsigned int spectral_color_offset = SPECTRAL_COLOR_OFFSET ; 
 
 
-    LOG(info) << "OpticksColors::setupCompositeColorBuffer"
+    LOG(trace) << "OpticksColors::setupCompositeColorBuffer"
               << " material_codes " << material_codes.size()
               << " flag_codes " << flag_codes.size()
               << " psychedelic_codes " << psychedelic_codes.size()

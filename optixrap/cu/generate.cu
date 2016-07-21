@@ -147,22 +147,24 @@ RT_PROGRAM void trivial()
 
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
+    rtPrintf("(trivial) photon_id %d photon_offset %d \n", photon_id, photon_offset );
 
     // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
     // this seeding is done by App::seedPhotonsFromGensteps
-
+/*
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;
-    unsigned int genstep_id = phead.u.x ; // getting crazy values for this in interop 
+    unsigned int genstep_id = phead.u.x ; 
+    // getting crazy values for this in interop, photon_buffer being overwritten ?? 
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
 
-    if(genstep_id > 0)
     rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
-    //rtPrintf("ghead.i.x %d \n", ghead.i.x );
 
+*/
+    //rtPrintf("ghead.i.x %d \n", ghead.i.x );
     //
     // in interop mode ( GGeoViewTest --trivial ) on SDU Dell Precision Workstation getting genstep_id -1 
     // this causes an attempted read beyond the genstep buffer resuling on crash when accessing ghead.i.x

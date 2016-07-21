@@ -169,6 +169,7 @@ def opticks_args(**kwa):
     ptag = kwa.get("ptag", None)
     src = kwa.get("src", None)
     det = kwa.get("det", None)
+    typ = kwa.get("typ", None)
     show = kwa.get("show", True)
 
     parser = argparse.ArgumentParser(doc)
@@ -182,6 +183,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--ptag",  default=ptag, help="P-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
     parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov " )
     parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay "  )
+    parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation "  )
     args = parser.parse_args()
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()))
 

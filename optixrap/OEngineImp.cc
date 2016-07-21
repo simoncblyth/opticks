@@ -105,39 +105,39 @@ void OEngineImp::prepareOptiX()
 
     optix::Context context = optix::Context::create();
 
-    LOG(info) << "OEngineImp::prepareOptiX (OContext)" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OContext)" ;
     m_ocontext = new OContext(context, mode);
     m_ocontext->setStackSize(m_fcfg->getStack());
     m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
     m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
 
-    LOG(info) << "OEngineImp::prepareOptiX (OColors)" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OColors)" ;
     m_ocolors = new OColors(context, m_opticks->getColors() );
     m_ocolors->convert();
 
     // formerly did OBndLib here, too soon
 
-    LOG(info) << "OEngineImp::prepareOptiX (OSourceLib)" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OSourceLib)" ;
     m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
     m_osrc->convert();
 
 
     const char* slice = "0:1" ;
-    LOG(info) << "OEngineImp::prepareOptiX (OScintillatorLib) slice " << slice  ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OScintillatorLib) slice " << slice  ;
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
     m_oscin->convert(slice);
 
 
-    LOG(info) << "OEngineImp::prepareOptiX (OGeo)" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
-    LOG(info) << "OEngineImp::prepareOptiX (OGeo) -> setTop" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
-    LOG(info) << "OEngineImp::prepareOptiX (OGeo) -> convert" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OGeo) -> convert" ;
     m_ogeo->convert();
-    LOG(info) << "OEngineImp::prepareOptiX (OGeo) done" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OGeo) done" ;
 
 
-    LOG(info) << "OEngineImp::prepareOptiX (OBndLib)" ;
+    LOG(debug) << "OEngineImp::prepareOptiX (OBndLib)" ;
     m_olib = new OBndLib(context,m_ggeo->getBndLib());
     m_olib->convert();
     // this creates the BndLib dynamic buffers, which needs to be after OGeo

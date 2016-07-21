@@ -174,6 +174,9 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("dbgseed",  "save empty interop mode photons buffer after seeding to $TMP/dbgseed.npy "); 
+   m_desc.add_options()
+       ("onlyseed", "exit App after seeding "); 
+
 
 
 

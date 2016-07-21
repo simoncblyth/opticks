@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <sstream>
 
 // brap-
 #include "BTimer.hh"
@@ -313,41 +314,38 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_s
 
     bool compute = isCompute();
     bool interop = !compute ; 
+    int buffer_id = npy ? npy->getBufferId() : -1 ;
+    RTformat format = getFormat(npy->getType());
 
-    Buffer buffer;
+    std::stringstream ss ; 
+    ss 
+       << std::setw(10) << name
+       << std::setw(20) << npy->getShapeString()
+       << ( interop ? " INTEROP " : " COMPUTE " ) 
+       << " id " << std::setw(4) << buffer_id
+       << ( format == RT_FORMAT_USER ? " USER" : " QUAD"  )   
+       ;
+
+    std::string hdr = ss.str();
+
     if(interop)
     {
-        int buffer_id = npy ? npy->getBufferId() : -1 ;
-        if(buffer_id > -1 )
-        {
-            buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
-            LOG(info) << "OContext::createIOBuffer (INTEROP) createBufferFromGLBO " 
-                      << " name " << std::setw(20) << name
-                      << " buffer_id " << buffer_id 
-                      ;
-        } 
-        else
-        {
-            LOG(warning) << "OContext::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
+        if(!(buffer_id > -1))
+            LOG(fatal) << "OContext::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
                          << " name " << std::setw(20) << name
                          << " buffer_id " << buffer_id 
                          ; 
-
-            assert(0);  // only recsel buffer is not uploaded, as kludge interop workaround 
-            //return buffer ; 
-        }
-    } 
-    else
-    {
-        LOG(info) << "OContext::createIOBuffer" 
-                  << " name " << name
-                  << " desc " << npy->description("[COMPUTE]")
-                  ;
-        buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+        assert(buffer_id > -1 );
     }
 
 
-    RTformat format = getFormat(npy->getType());
+    Buffer buffer;
+    if(interop)
+        buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
+    else
+        buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+
+
     buffer->setFormat(format);  // must set format, before can set ElementSize
 
     unsigned int size ; 
@@ -355,11 +353,8 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_s
     {
         buffer->setElementSize(sizeof(T));
         size = ni*nj*nk ; 
-        LOG(info) << "OContext::createIOBuffer "
-                  << " (USER) " 
-                  << " name " << std::setw(20) << name
-                  << " size (ijk) " << size 
-                  << " ( " << ni << "," << nj << "," << nk << "," << nl << ")"
+        LOG(info) << hdr
+                  << " size (ijk) " << std::setw(10) << size 
                   << " elementsize " << sizeof(T)
                   ;
     }
@@ -367,17 +362,14 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_s
     {
         //size = ni*nj ;
         size = npy->getNumQuads() ;  
-        LOG(info) << "OContext::createIOBuffer "
-                  << " (quad) " 
-                  << " name " << std::setw(20) << name
-                  << " size (getNumQuads) " << size 
-                  << " ( " << ni << "," << nj << "," << nk << "," << nl << ")"
+        LOG(info) << hdr 
+                  << " size (gnq) " << std::setw(10) << size 
                   ;
 
     }
 
 
-    if(set_size)
+    if(set_size && compute)
     {
         buffer->setSize(size); 
         // TODO: check without thus, maybe unwise when already referencing OpenGL buffer of defined size

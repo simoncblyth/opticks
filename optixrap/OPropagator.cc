@@ -206,6 +206,8 @@ void OPropagator::initEvent(OpticksEvent* evt)
     // to the OpenGL buffers created with createBufferFromGLBO
     // by Scene::uploadEvt Scene::uploadSelection
 
+    LOG(info) << "OPropagator::initEvent" ; 
+
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
     m_genstep_buffer = m_ocontext->createIOBuffer<float>( gensteps, "gensteps");
@@ -214,9 +216,7 @@ void OPropagator::initEvent(OpticksEvent* evt)
 
     if(m_ocontext->isCompute()) 
     {
-        LOG(info) << "OPropagator::initGenerate (COMPUTE)" 
-                  << " uploading gensteps "
-                  ;
+        LOG(info) << "OPropagator::initGenerate (COMPUTE)" << " uploading gensteps " ;
         OContext::upload<float>(m_genstep_buffer, gensteps);
     }
     else if(m_ocontext->isInterop())
@@ -254,6 +254,10 @@ void OPropagator::initEvent(OpticksEvent* evt)
     {
         LOG(info) << "OPropagator::initEvent skipping record/sequence buffer creation as nonStep " ;
     }
+
+
+
+    LOG(info) << "OPropagator::initEvent DONE" ; 
 
 
 /*

@@ -1376,3 +1376,92 @@ oks-cuda-find()
    local q=${1:-cudaGraphicsResourceGetMappedPointer}
    find /usr/local/cuda/ -type f -exec grep -l $q {} \;
 }
+
+oks-dbgseed()
+{
+    local typ=${1:-cerenkov}
+
+    echo $msg typ $typ
+
+    if [ "$typ" == "cerenkov" ]; then
+
+        GGeoViewTest --dbgseed --trivial --cerenkov --compute --onlyseed
+        GGeoViewTest --dbgseed --trivial --cerenkov --onlyseed
+        dbgseed.py --typ cerenkov --tag 1 --det dayabay
+
+    elif [ "$typ" == "torch" ]; then
+
+        GGeoViewTest --dbgseed --torchdbg --trivial --torch --compute --onlyseed
+        GGeoViewTest --dbgseed --trivial --torch --onlyseed
+        dbgseed.py --typ torch --tag 1 --det dayabay
+
+    else
+ 
+         echo typ ? $typ
+    fi
+}
+
+oks-dbgseed-i(){
+
+   cd ~/opticks/ana
+   ipython -i -- dbgseed.py --typ torch
+}
+
+
+oks-dbgseed-notes(){ cat << EON
+
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@342] OContext::createIOBuffer name gensteps desc [COMPUTE] (1,6,4)  NumBytes(0) 96 NumBytes(1) 96 NumValues(0) 24 NumValues(1) 24{}
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@370] OContext::createIOBuffer  (quad)  name             gensteps size (getNumQuads) 6 ( 1,6,4,1)
+2016-07-21 16:35:21.347 INFO  [9521] [OPropagator::initEvent@217] OPropagator::initGenerate (COMPUTE) uploading gensteps 
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::upload@278] OContext::upload numBytes 96upload (1,6,4)  NumBytes(0) 96 NumBytes(1) 96 NumValues(0) 24 NumValues(1) 24{}
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@342] OContext::createIOBuffer name photon desc [COMPUTE] (100000,4,4)  NumBytes(0) 6400000 NumBytes(1) 64 NumValues(0) 1600000 NumValues(1) 16{}
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@370] OContext::createIOBuffer  (quad)  name               photon size (getNumQuads) 400000 ( 100000,4,4,1)
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@342] OContext::createIOBuffer name record desc [COMPUTE] (100000,10,2,4)  NumBytes(0) 16000000 NumBytes(1) 160 NumValues(0) 8000000 NumValues(1) 80{}
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@370] OContext::createIOBuffer  (quad)  name               record size (getNumQuads) 2000000 ( 100000,10,2,4)
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@342] OContext::createIOBuffer name sequence desc [COMPUTE] (100000,1,2)  NumBytes(0) 1600000 NumBytes(1) 16 NumValues(0) 200000 NumValues(1) 2{}
+2016-07-21 16:35:21.347 INFO  [9521] [OContext::createIOBuffer@358] OContext::createIOBuffer  (USER)  name             sequence size (ijk) 200000 ( 100000,1,2,1) elementsize 8
+OBufBase::getNumBytes RT_FORMAT_USER element_size 8 size 200000 
+
+
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@324] OContext::createIOBuffer (INTEROP) createBufferFromGLBO  name             gensteps buffer_id 16
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@370] OContext::createIOBuffer  (quad)  name             gensteps size (getNumQuads) 6 ( 1,6,4,1)
+2016-07-21 16:35:24.083 INFO  [9524] [OPropagator::initEvent@225] OPropagator::initGenerate (INTEROP) gensteps handed to OptiX by referencing OpenGL buffer id  
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@324] OContext::createIOBuffer (INTEROP) createBufferFromGLBO  name               photon buffer_id 18
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@370] OContext::createIOBuffer  (quad)  name               photon size (getNumQuads) 400000 ( 100000,4,4,1)
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@324] OContext::createIOBuffer (INTEROP) createBufferFromGLBO  name               record buffer_id 19
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@370] OContext::createIOBuffer  (quad)  name               record size (getNumQuads) 2000000 ( 100000,10,2,4)
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@324] OContext::createIOBuffer (INTEROP) createBufferFromGLBO  name             sequence buffer_id 20
+2016-07-21 16:35:24.083 INFO  [9524] [OContext::createIOBuffer@358] OContext::createIOBuffer  (USER)  name             sequence size (ijk) 200000 ( 100000,1,2,1) elementsize 8
+OBufBase::getNumBytes RT_FORMAT_USER element_size 8 size 200000 
+
+
+Huh doin a torch run it looks like interop stuck at cerenkov seeds ?
+
+
+In [4]: cj
+Out[4]: array([0, 0, 0, ..., 0, 0, 0], dtype=int32)
+
+In [5]: ij
+Out[5]: array([   0, 5898, 5898, ..., 7401, 7401, 7401], dtype=int32)
+
+In [6]: count_unique(ij)
+Out[6]: 
+array([[   0,    1],
+       [5898,   87],
+       [5899,   95],
+       ..., 
+       [7399,   19],
+       [7400,   85],
+       [7401,    8]])
+
+
+
+
+
+
+EON
+
+}
+
+
+
