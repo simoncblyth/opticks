@@ -173,7 +173,7 @@ void OpticksCfg<Listener>::init()
        ("torchdbg",  "dump details of torch config") ;
 
    m_desc.add_options()
-       ("useenv",  "read environment variables selecting a detector geometry and volumes within that geometry.") ;
+       ("dbgseed",  "save empty interop mode photons buffer after seeding to $TMP/dbgseed.npy "); 
 
 
 

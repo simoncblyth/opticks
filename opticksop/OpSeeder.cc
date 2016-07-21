@@ -98,7 +98,6 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
     s_gs.size = s_gs.size/4 ; 
     s_ox.size = s_ox.size/4 ; 
 
-
     seedPhotonsFromGenstepsImp(s_gs, s_ox);
 
     r_gs.unmapGLToCUDA(); 

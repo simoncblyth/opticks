@@ -32,6 +32,7 @@ class OXRAP_API OPropagator {
         void prelaunch();
         void launch();
         void downloadEvent();
+        void downloadPhotonData();
     public:
         void setEvent(OpticksEvent* evt);
         OpticksEvent*    getEvent();
@@ -59,7 +60,7 @@ class OXRAP_API OPropagator {
         OContext*        m_ocontext ; 
         Opticks*         m_opticks ; 
         optix::Context   m_context ;
-        OpticksEvent*        m_evt ; 
+        OpticksEvent*    m_evt ; 
         OTimes*          m_prelaunch_times ; 
         OTimes*          m_launch_times ; 
         bool             m_prelaunch ;

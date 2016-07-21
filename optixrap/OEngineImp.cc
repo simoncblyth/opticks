@@ -64,6 +64,12 @@ void OEngineImp::setEvent(OpticksEvent* evt)
     m_evt = evt ;
 }
 
+OpticksEvent* OEngineImp::getEvent()
+{
+    return m_evt ; 
+}
+
+
 
 OContext* OEngineImp::getOContext()
 {
@@ -191,7 +197,15 @@ void OEngineImp::propagate()
 }
 
 
+void OEngineImp::downloadPhotonData()
+{
+    if(!m_evt) return ;
 
+    if(m_opticks->isCompute())
+    {
+        m_opropagator->downloadPhotonData();
+    }
+}
 
 void OEngineImp::saveEvt()
 {
@@ -203,7 +217,9 @@ void OEngineImp::saveEvt()
     }
     else
     {
-        //Rdr::download(m_evt);   now done from App::saveEvt
+        //Rdr::download(m_evt);   
+        //     interop download now done from App::saveEvt 
+        //     just prior to this being called
     }
 
     TIMER("downloadEvt");

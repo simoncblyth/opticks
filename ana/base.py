@@ -109,9 +109,8 @@ class OpticksEnv(object):
         self.ext = {}
         self.env = {}
 
-
         if not os.path.isdir(IDPATH): 
-            log.fatal("Invalid/missing IDPATH envvar %s " % IDPATH)
+            print "Invalid/missing IDPATH envvar %s " % IDPATH
             sys.exit(1)  
  
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
@@ -133,7 +132,7 @@ class OpticksEnv(object):
             lines.append(line)    
 
         path = os.path.expandvars(path) 
-        log.info("writing opticks environment to %s " % path) 
+        print "writing opticks environment to %s " % path 
         open(path,"w").write("\n".join(lines)) 
 
 

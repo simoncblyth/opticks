@@ -327,6 +327,16 @@ void OPropagator::dumpTimes(const char* msg)
 
 
 
+void OPropagator::downloadPhotonData()
+{
+    if(!m_evt) return ;
+    LOG(info)<<"OPropagator::downloadPhotonData" ;
+ 
+    NPY<float>* dpho = m_evt->getPhotonData();
+    OContext::download<float>( m_photon_buffer, dpho );
+}
+
+
 void OPropagator::downloadEvent()
 {
     if(!m_evt) return ;

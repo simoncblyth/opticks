@@ -76,6 +76,7 @@ class GGV_API App {
        void loadGeometry();
        bool isExit();
        bool isCompute();
+       void dbgSeed();
   private: 
        void configureViz(); 
   public:

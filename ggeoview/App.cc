@@ -1006,7 +1006,32 @@ void App::seedPhotonsFromGensteps()
 {
     if(!m_ope) return ; 
     m_ope->seedPhotonsFromGensteps();
+    if(hasOpt("dbgseed"))
+    {
+        dbgSeed();
+    }
 }
+
+void App::dbgSeed()
+{
+    OpticksEvent* evt = m_ope->getEvent();    
+    NPY<float>* ox = evt->getPhotonData();
+    assert(ox);
+
+    if(!isCompute()) 
+    { 
+        LOG(info) << "App::debugSeed (interop) download photon seeds " ;
+        Rdr::download(ox);
+        ox->save("$TMP/dbgseed_interop.npy");
+    }
+    else
+    {
+        LOG(info) << "App::debugSeed (compute) download photon seeds " ;
+        m_ope->downloadPhotonData();  
+        ox->save("$TMP/dbgseed_compute.npy");
+    }  
+}
+
 
 void App::initRecords()
 {

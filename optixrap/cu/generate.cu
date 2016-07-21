@@ -153,11 +153,13 @@ RT_PROGRAM void trivial()
 
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;
-    unsigned int genstep_id = phead.u.x ; 
+    unsigned int genstep_id = phead.u.x ; // getting crazy values for this in interop 
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
+
+    if(genstep_id > 0)
     rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
     //rtPrintf("ghead.i.x %d \n", ghead.i.x );
 

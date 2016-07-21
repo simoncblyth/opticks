@@ -61,6 +61,11 @@ void OpEngine::setEvent(OpticksEvent* evt)
     m_evt = evt ;
     m_imp->setEvent(evt); 
 }
+OpticksEvent* OpEngine::getEvent()
+{
+    return m_imp->getEvent();
+}
+
 
 
 void OpEngine::init()
@@ -107,6 +112,13 @@ void OpEngine::seedPhotonsFromGensteps()
 
     seeder->seedPhotonsFromGensteps();
 }
+
+void OpEngine::downloadPhotonData()
+{
+    if(!m_evt) return ; 
+    m_imp->downloadPhotonData();
+}
+
 
 
 void OpEngine::initRecords()
