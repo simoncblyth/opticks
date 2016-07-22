@@ -130,6 +130,12 @@ GLuint Renderer::upload_GBuffer(GLenum target, GLenum usage, GBuffer* buf, const
     buf->setBufferId(id);
     buf->setBufferTarget(target);
 
+    LOG(info) << "Renderer::upload_GBuffer" 
+              << std::setw(20) << name 
+              << " id " << std::setw(4) << id
+              << " bytes " << std::setw(10) << spec->num_bytes
+              ; 
+
     return id ;
 }
 
@@ -142,6 +148,12 @@ GLuint Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const 
 
     buf->setBufferId(id);
     buf->setBufferTarget(target);
+
+    LOG(info) << "Renderer::upload_NPY    " 
+              << std::setw(20) << name 
+              << " id " << std::setw(4) << id
+              << " bytes " << std::setw(10) << spec->num_bytes
+              ; 
 
     return id ;
 }

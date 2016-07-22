@@ -124,7 +124,7 @@ void GBndLib::createDynamicBuffers()
     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
     setOpticalBuffer(optical_buffer);
 
-    LOG(info) << "GBndLib::createDynamicBuffers" 
+    LOG(debug) << "GBndLib::createDynamicBuffers" 
               << " buf " << buf->getShapeString()
               << " optical_buffer  " << optical_buffer->getShapeString()
                ;
@@ -631,7 +631,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
     NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 
 
-    LOG(info) << "GBndLib::createBufferForTex2d"
+    LOG(debug) << "GBndLib::createBufferForTex2d"
                << " mat " << mat->getShapeString()
                << " sur " << sur->getShapeString()
                << " wav " << wav->getShapeString()

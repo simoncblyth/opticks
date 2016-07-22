@@ -339,7 +339,7 @@ void Opticks::configure()
 
     std::string prefdir = getPreferenceDir(type, subtype);  
 
-    LOG(info) << "Opticks::configure " 
+    LOG(debug) << "Opticks::configure " 
                << " m_size " << gformat(m_size)
                << " m_position " << gformat(m_position)
                << " prefdir " << prefdir
@@ -351,7 +351,7 @@ void Opticks::configure()
 
     m_state = new NState(prefdir.c_str(), "state")  ;
 
-    LOG(info) << "Opticks::configure DONE " ;
+    LOG(debug) << "Opticks::configure DONE " ;
 }
 
 
@@ -521,7 +521,7 @@ OpticksEvent* Opticks::makeEvent()
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
-   LOG(info) << "Opticks::makeEvent"
+   LOG(debug) << "Opticks::makeEvent"
               << " typ " << typ
               << " tag " << tag
               << " det " << det

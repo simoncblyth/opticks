@@ -521,6 +521,7 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
     assert(m_mesh0 == NULL); // not expected to Scene::uploadGeometryGlobal more than once 
     m_mesh0 = mm ; 
     static unsigned int n_global(0);
+    LOG(info)<< "Scene::uploadGeometryGlobal " ;
 
     if(!skip)
     {
@@ -545,7 +546,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     { 
 
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
-        LOG(info)<< "Scene::uploadGeometryInstanced for m_num_instance_renderer " << m_num_instance_renderer  ;
+        LOG(info)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer  ;
 
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);
@@ -553,7 +554,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
         m_instance_renderer[m_num_instance_renderer]->upload(mm);
         m_instance_mode[m_num_instance_renderer] = true ; 
 
-        LOG(debug)<< "Scene::uploadGeometry bbox renderer " << m_num_instance_renderer  ;
+        LOG(info)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
 
         m_bbox_mode[m_num_instance_renderer] = true ; 

@@ -28,7 +28,7 @@ Map<K,V>* Map<K,V>::load(const char* dir, const char* name)
 {
     if(!BFile::ExistsFile(dir, name))   
     {
-       LOG(warning) << " no such path : dir " << dir << " name " << name  ;
+       LOG(debug) << "Map<K,V>::load no such path : dir " << dir << " name " << name  ;
        return NULL ;  
     }
     Map* m = new Map<K,V>() ; 

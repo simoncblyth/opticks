@@ -1371,11 +1371,41 @@ oks-tmpify()
 }
 
 
+oks-cuda-base()
+{
+   case $(uname) in 
+      Darwin) echo /Developer/NVIDIA/CUDA-7.0 ;;
+      Linux) echo /usr/local/cuda ;;
+   esac   
+}
 oks-cuda-find()
 {
    local q=${1:-cudaGraphicsResourceGetMappedPointer}
-   find /usr/local/cuda/ -type f -exec grep -l $q {} \;
+   local base=$(oks-cuda-base)
+   find $base/ -type f -exec grep -l $q {} \;
 }
+
+oks-cuda-notes(){ cat << EON
+
+CUDA-GDB can be used to debug CUDA applications on the same GPU that is running the desktop GUI.
+
+Note: This is a BETA feature available on Linux and supports devices with SM3.5
+compute capability. There are two ways to enable this functionality:
+
+Use the following command: set cuda software_preemption on Export the following
+environment variable: CUDA_DEBUGGER_SOFTWARE_PREEMPTION=1 Either of the options
+above will activate software preemption. These options must be set prior to
+running the application. When the GPU hits a breakpoint or any other event that
+would normally cause the GPU to freeze, CUDA-GDB releases the GPU for use by
+the desktop or other applications. This enables CUDA-GDB to debug a CUDA
+application on the same GPU that is running the desktop GUI, and also enables
+debugging of multiple CUDA applications context-switching on the same GPU.
+
+*  http://docs.nvidia.com/cuda/cuda-gdb/index.html#single-gpu-debugging-with-desktop-manager-running
+
+EON
+}
+
 
 oks-dbgseed()
 {

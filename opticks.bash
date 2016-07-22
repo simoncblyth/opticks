@@ -100,6 +100,16 @@ the git-for-windows project was used for this purpose
 Despite lack of an CUDA capable GPU, the OpenGL Opticks
 visualization was found to operate successfully.
 
+OpenGL Version Requirements
+------------------------------
+
+Opticks uses GLSL shaders with version 400, 
+corresponding to at least OpenGL 4.0
+
+OpenGL versions supported by various systems are listed at the below links.
+
+* macOS : https://support.apple.com/en-us/HT202823  (approx all macOS systems from 2010 onwards)
+
 
 Get Opticks 
 ------------

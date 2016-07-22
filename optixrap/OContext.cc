@@ -369,15 +369,24 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_s
     }
 
 
-    if(set_size && compute)
+    if(set_size)
     {
         buffer->setSize(size); 
-        // TODO: check without thus, maybe unwise when already referencing OpenGL buffer of defined size
     }
 
 
     return buffer ; 
 }
+
+/*
+
+2016-07-21 20:23:13.813 INFO  [1868636] [OContext::launch@212] OContext::launch entry 1 width 100000 height 1
+libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid context (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Validation error: Buffer validation failed for 'genstep_buffer':
+Validation error: Buffer dimensionality is not set, [4915247], [4915291])
+
+
+*/
+
 
 
 

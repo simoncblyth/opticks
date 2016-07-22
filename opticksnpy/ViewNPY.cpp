@@ -175,11 +175,11 @@ unsigned int ViewNPY::getCount()
 
     if(count == 0)
     {
-        LOG(fatal) << "ViewNPY::getCount UNEXPECTED"
-                   << " desc " << description()
-                   << " count " << count 
-                   << getShapeString() 
-                   ;
+        LOG(warning) << "ViewNPY::getCount UNEXPECTED"
+                     << " desc " << description()
+                     << " count " << count 
+                     << " shape " <<  getShapeString() 
+                     ;
     }
 
     return count ; 
