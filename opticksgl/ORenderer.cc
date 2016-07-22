@@ -41,7 +41,8 @@ void ORenderer::init(const char* /*dir*/, const char* /*incl_path*/)
     // TODO: move elsewhere ... diddling with another objects constituent
 
     Texture* texture = m_frame->getTexture();
-    m_renderer->upload(texture);
+    if(m_renderer)
+        m_renderer->upload(texture);
 }
 
 
@@ -64,7 +65,8 @@ void ORenderer::render()
 
     double t1 = BTimer::RealTime();
 
-    m_renderer->render();
+    if(m_renderer)
+        m_renderer->render();
 
     double t2 = BTimer::RealTime();
 

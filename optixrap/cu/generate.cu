@@ -147,11 +147,10 @@ RT_PROGRAM void trivial()
 
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
-    rtPrintf("(trivial) photon_id %d photon_offset %d \n", photon_id, photon_offset );
+    //rtPrintf("(trivial) photon_id %d photon_offset %d \n", photon_id, photon_offset );
 
     // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
     // this seeding is done by App::seedPhotonsFromGensteps
-/*
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;
     unsigned int genstep_id = phead.u.x ; 
@@ -163,7 +162,6 @@ RT_PROGRAM void trivial()
 
     rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
 
-*/
     //rtPrintf("ghead.i.x %d \n", ghead.i.x );
     //
     // in interop mode ( GGeoViewTest --trivial ) on SDU Dell Precision Workstation getting genstep_id -1 

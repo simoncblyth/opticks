@@ -392,7 +392,7 @@ op-cmdline-specials()
    unset OPTICKS_LOAD
    unset OPTIX_API_CAPTURE
 
-   if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
+   if [ "${cmdline/--debugger}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
    fi
    if [ "${cmdline/--load}" != "${cmdline}" ]; then

@@ -414,7 +414,14 @@ void App::prepareViz()
 
     m_scene->write(m_dd);
 
-    m_scene->initRenderers();  // reading shader source and creating renderers
+    if(hasOpt("dbginterop"))
+    {
+        m_scene->initRenderersDebug();  // reading shader source and creating subset of renderers
+    }
+    else
+    {
+        m_scene->initRenderers();  // reading shader source and creating renderers
+    }
 
     m_frame->init();           // creates OpenGL context
 

@@ -133,7 +133,7 @@ void Rdr::dump_uploads_table(const char* msg)
            ViewNPY* vnpy = (*mvn)[i] ;
            NPYBase*  npy = vnpy->getNPY();
 
-           LOG(trace)
+           LOG(info)
               << std::setw(15) << name 
               << std::setw(2) << i << "/" 
               << std::setw(2) << nvec
@@ -292,7 +292,7 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-        LOG(info) << "Rdr::upload glBufferData " 
+        LOG(info) << " up "
                   << std::setw(15) << parent->getName() 
                   << std::setw(5)  << vnpy->getName()
                   << " count " << std::setw(8) << vnpy->getCount()

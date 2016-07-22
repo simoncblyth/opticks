@@ -1,12 +1,15 @@
 #include "GGeo.hh"
 #include "Opticks.hh"
 #include "OpticksGeometry.hh"
-#include "OpEngine.hh"
 
 #include "GGEO_LOG.hh"
 #include "OKCORE_LOG.hh"
+
+#ifdef WITH_OPTIX
+#include "OpEngine.hh"
 #include "OXRAP_LOG.hh"
 #include "OKOP_LOG.hh"
+#endif
 
 #include "PLOG.hh"
 
@@ -32,10 +35,11 @@ int main(int argc, char** argv)
     GGeo* m_ggeo(NULL) ; 
     m_ggeo = m_geometry->getGGeo();
 
+#ifdef WITH_OPTIX
     OpEngine* m_ope(NULL) ; 
     m_ope = new OpEngine(m_opticks, m_ggeo);
     m_ope->prepareOptiX();
-
+#endif
 
 
     return 0 ; 

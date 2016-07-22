@@ -113,6 +113,7 @@ class OGLRAP_API Scene : public NConfigurable {
         void write(DynamicDefine* dd);
         void gui();
         void initRenderers();
+        void initRenderersDebug(); // debugging interop buffer overwrite issue with subset of renderers
    public:
         // Configurable
         std::vector<std::string> getTags();

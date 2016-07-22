@@ -314,10 +314,10 @@ void Scene::gui()
      ImGui::Checkbox(RECORD,   &m_record_mode);
      ImGui::Text(" target: %u ", m_target );
      ImGui::Text(" genstep %d nopstep %d photon %d record %d \n", 
-             m_genstep_renderer->getCountDefault(),
-             m_nopstep_renderer->getCountDefault(),
-             m_photon_renderer->getCountDefault(),
-             m_record_renderer->getCountDefault()
+             ( m_genstep_renderer ? m_genstep_renderer->getCountDefault() : -1 ),
+             ( m_nopstep_renderer ? m_nopstep_renderer->getCountDefault() : -1 ),
+             ( m_photon_renderer ? m_photon_renderer->getCountDefault() : -1 ),
+             ( m_record_renderer ? m_record_renderer->getCountDefault() : -1 )
      );
 
 
@@ -398,19 +398,47 @@ void Scene::configure(const char* name, int value)
 
 void Scene::setWireframe(bool wire)
 {
-    m_global_renderer->setWireframe(wire);
+    if(m_global_renderer)
+        m_global_renderer->setWireframe(wire);
 
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
     {
-        m_instance_renderer[i]->setWireframe(wire);
+        if(m_instance_renderer[i])
+            m_instance_renderer[i]->setWireframe(wire);
 
-        m_bbox_renderer[i]->setWireframe(false);  
+        if(m_bbox_renderer[i])
+            m_bbox_renderer[i]->setWireframe(false);  
 
         // wireframe is much slower than filled, 
         // also bbox winding order is not correct
         // so keeping the bbox as filled
     }
 }
+
+
+
+void Scene::initRenderersDebug()
+{
+    m_device = new Device();
+
+    m_colors = new Colors(m_device);
+
+    m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
+
+    m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
+
+    for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
+    {
+        m_instance_mode[i] = false ; 
+        m_instance_renderer[i] = NULL ; 
+
+        m_bbox_mode[i] = false ; 
+        m_bbox_renderer[i] = NULL ;
+    }
+
+    m_initialized = true ; 
+}
+
 
 void Scene::initRenderers()
 {
@@ -448,20 +476,10 @@ void Scene::initRenderers()
 
     m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
 
-    bool nopdbg = false ; 
-    if(nopdbg)
-    {
-        m_nopstep_renderer = new Rdr(m_device, "dbg", m_shader_dir, m_shader_incl_path);
-    }
-    else
-    {
-        m_nopstep_renderer = new Rdr(m_device, "nop", m_shader_dir, m_shader_incl_path);
-        m_nopstep_renderer->setPrimitive(Rdr::LINE_STRIP);
-    }
-
+    m_nopstep_renderer = new Rdr(m_device, "nop", m_shader_dir, m_shader_incl_path);
+    m_nopstep_renderer->setPrimitive(Rdr::LINE_STRIP);
 
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
-
 
     //
     // RECORD RENDERING USES AN UNPARTIONED BUFFER OF ALL RECORDS
@@ -491,25 +509,46 @@ void Scene::setComposition(Composition* composition)
 {
     m_composition = composition ; 
 
-    m_global_renderer->setComposition(composition);
-    m_globalvec_renderer->setComposition(composition);
-    m_raytrace_renderer->setComposition(composition);
+    if(m_global_renderer)
+        m_global_renderer->setComposition(composition);
+
+    if(m_globalvec_renderer)
+        m_globalvec_renderer->setComposition(composition);
+
+    if(m_raytrace_renderer)
+        m_raytrace_renderer->setComposition(composition);
 
     // set for all instance slots, otherwise requires setComposition after uploadGeometry
     // as only then is m_num_instance_renderer set
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)    
     {
-        m_instance_renderer[i]->setComposition(composition);
-        m_bbox_renderer[i]->setComposition(composition);
+        if(m_instance_renderer[i])
+            m_instance_renderer[i]->setComposition(composition);
+
+        if(m_bbox_renderer[i])
+            m_bbox_renderer[i]->setComposition(composition);
     }
 
-    m_axis_renderer->setComposition(composition);
-    m_genstep_renderer->setComposition(composition);
-    m_nopstep_renderer->setComposition(composition);
-    m_photon_renderer->setComposition(composition);
-    m_record_renderer->setComposition(composition);
-    m_altrecord_renderer->setComposition(composition);
-    m_devrecord_renderer->setComposition(composition);
+    if(m_axis_renderer)
+        m_axis_renderer->setComposition(composition);
+
+    if(m_genstep_renderer)
+        m_genstep_renderer->setComposition(composition);
+
+    if(m_nopstep_renderer)
+         m_nopstep_renderer->setComposition(composition);
+
+    if(m_photon_renderer)
+        m_photon_renderer->setComposition(composition);
+
+    if(m_record_renderer)
+        m_record_renderer->setComposition(composition);
+
+    if(m_altrecord_renderer)
+        m_altrecord_renderer->setComposition(composition);
+
+    if(m_devrecord_renderer)
+        m_devrecord_renderer->setComposition(composition);
 }
 
 
@@ -525,8 +564,11 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 
     if(!skip)
     {
-        m_global_renderer->upload(mm);  
-        m_globalvec_renderer->upload(mm);   // buffers are not re-uploaded, but binding must be done for each renderer 
+        if(m_global_renderer)
+            m_global_renderer->upload(mm);  
+        if(m_globalvec_renderer)
+            m_globalvec_renderer->upload(mm);   // buffers are not re-uploaded, but binding must be done for each renderer 
+
         n_global++ ; 
         assert(n_global == 1);
         m_global_mode = true ;
@@ -551,14 +593,20 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);
 
-        m_instance_renderer[m_num_instance_renderer]->upload(mm);
-        m_instance_mode[m_num_instance_renderer] = true ; 
+        if(m_instance_renderer[m_num_instance_renderer])
+        {
+            m_instance_renderer[m_num_instance_renderer]->upload(mm);
+            m_instance_mode[m_num_instance_renderer] = true ; 
+        }
 
         LOG(info)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
 
-        m_bbox_mode[m_num_instance_renderer] = true ; 
-        m_bbox_renderer[m_num_instance_renderer]->upload(bb);
+        if(m_bbox_renderer[m_num_instance_renderer])
+        {
+            m_bbox_renderer[m_num_instance_renderer]->upload(bb);
+            m_bbox_mode[m_num_instance_renderer] = true ; 
+        }
 
         m_num_instance_renderer++ ; 
 
@@ -655,7 +703,8 @@ void Scene::upload()
 
 void Scene::uploadAxis()
 {
-    m_axis_renderer->upload(m_composition->getAxisAttr());
+    if(m_axis_renderer)
+        m_axis_renderer->upload(m_composition->getAxisAttr());
 }
 
 void Scene::uploadEvt()
@@ -670,11 +719,14 @@ void Scene::uploadEvt()
     // the bytes used is NULL when npy->hasData() == false
     // corresponding to device side only OpenGL allocation
 
-    m_genstep_renderer->upload(m_evt->getGenstepAttr());
+    if(m_genstep_renderer)
+        m_genstep_renderer->upload(m_evt->getGenstepAttr());
 
-    m_nopstep_renderer->upload(m_evt->getNopstepAttr(), false);
+    if(m_nopstep_renderer) 
+         m_nopstep_renderer->upload(m_evt->getNopstepAttr(), false);
 
-    m_photon_renderer->upload(m_evt->getPhotonAttr());
+    if(m_photon_renderer)
+         m_photon_renderer->upload(m_evt->getPhotonAttr());
 
 
     uploadRecordAttr(m_evt->getRecordAttr());
@@ -696,8 +748,11 @@ void Scene::uploadSelection()
 {
     assert(m_evt);
 
-    m_photon_renderer->upload(m_evt->getSequenceAttr());
-    m_photon_renderer->upload(m_evt->getPhoselAttr());
+    if(m_photon_renderer)
+        m_photon_renderer->upload(m_evt->getSequenceAttr());
+
+    if(m_photon_renderer)
+        m_photon_renderer->upload(m_evt->getPhoselAttr());
 
     uploadRecordAttr(m_evt->getRecselAttr()); 
 }
@@ -708,45 +763,56 @@ void Scene::uploadRecordAttr(MultiViewNPY* attr, bool debug)
     if(!attr) return ;  
     //assert(attr);
 
-    m_record_renderer->upload(attr, debug);
-    m_altrecord_renderer->upload(attr, debug);
-    m_devrecord_renderer->upload(attr, debug);
+    if(m_record_renderer)
+        m_record_renderer->upload(attr, debug);
+    if(m_altrecord_renderer)
+        m_altrecord_renderer->upload(attr, debug);
+    if(m_devrecord_renderer)
+        m_devrecord_renderer->upload(attr, debug);
 }
 
 void Scene::dump_uploads_table(const char* msg)
 {
     LOG(info) << msg ; 
-    m_photon_renderer->dump_uploads_table("photon");
-    m_record_renderer->dump_uploads_table("record");
-    m_altrecord_renderer->dump_uploads_table("altrecord");
-    m_devrecord_renderer->dump_uploads_table("devrecord");
+
+    if(m_photon_renderer)
+        m_photon_renderer->dump_uploads_table("photon");
+
+    if(m_record_renderer)
+        m_record_renderer->dump_uploads_table("record");
+
+    if(m_altrecord_renderer)
+        m_altrecord_renderer->dump_uploads_table("altrecord");
+
+    if(m_devrecord_renderer)
+        m_devrecord_renderer->dump_uploads_table("devrecord");
 }
 
 
 void Scene::renderGeometry()
 {
-    if(m_global_mode)    m_global_renderer->render();
-    if(m_globalvec_mode) m_globalvec_renderer->render();
+    if(m_global_mode && m_global_renderer)       m_global_renderer->render();
+    if(m_globalvec_mode && m_globalvec_renderer) m_globalvec_renderer->render();
 
     for(unsigned int i=0; i<m_num_instance_renderer; i++)
     {
-        if(m_instance_mode[i]) m_instance_renderer[i]->render();
-        if(m_bbox_mode[i])     m_bbox_renderer[i]->render();
+        if(m_instance_mode[i] && m_instance_renderer[i]) m_instance_renderer[i]->render();
+        if(m_bbox_mode[i] && m_bbox_renderer[i])         m_bbox_renderer[i]->render();
     }
-    if(m_axis_mode)     m_axis_renderer->render();
+    if(m_axis_mode && m_axis_renderer)     m_axis_renderer->render();
 }
 
 
 void Scene::renderEvent()
 {
-    if(m_genstep_mode)  m_genstep_renderer->render();  
-    if(m_nopstep_mode)  m_nopstep_renderer->render();  
-    if(m_photon_mode)   m_photon_renderer->render();
+    if(m_genstep_mode && m_genstep_renderer)  m_genstep_renderer->render();  
+    if(m_nopstep_mode && m_nopstep_renderer)  m_nopstep_renderer->render();  
+    if(m_photon_mode  && m_photon_renderer)   m_photon_renderer->render();
     if(m_record_mode)
     {
         Rdr* rdr = getRecordRenderer();
-        assert(rdr);
-        rdr->render();
+        if(rdr)
+            rdr->render();
     }
 }
 
@@ -757,7 +823,8 @@ void Scene::render()
 
     if(raytraced || composite)
     {
-        m_raytrace_renderer->render() ;
+        if(m_raytrace_renderer)
+            m_raytrace_renderer->render() ;
         if(raytraced) return ; 
     }
 

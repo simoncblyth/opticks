@@ -164,13 +164,16 @@ if __name__ == '__main__':
     else:
         assert 0, args.typ 
 
+    if args.typ == "torch":
+        print "cj", cj[99500:]
+        print "ij", ij[99500:]
+    pass
 
     check_dbgseed(c,g)
     check_dbgseed(i,g)
 
     ii = count_unique(i[:,0,0].view(np.int32))
     cc = count_unique(c[:,0,0].view(np.int32))
-
 
   
 

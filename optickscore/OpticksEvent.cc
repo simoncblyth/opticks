@@ -1392,7 +1392,3 @@ Index* OpticksEvent::loadBoundaryIndex( const char* typ, const char* tag, const 
 
 
 
-
-
-
-
