@@ -1407,28 +1407,26 @@ EON
 }
 
 
+
+oks-dbgseed-()
+{
+    #gdb --args GGeoViewTest --dbgseed --trivial --onlyseed --nogeometry $*
+                GGeoViewTest --dbgseed --trivial --onlyseed --nogeometry $*
+}
+
 oks-dbgseed()
 {
-    local typ=${1:-cerenkov}
+    local typ=${1:-torch}
+    case $typ in
+            cerenkov) ;;
+       scintillation) ;;
+               torch) ;;
+                   *) echo $msg typ $typ ? && return 0  ;;
+    esac
 
-    echo $msg typ $typ
-
-    if [ "$typ" == "cerenkov" ]; then
-
-        GGeoViewTest --dbgseed --trivial --cerenkov --compute --onlyseed
-        GGeoViewTest --dbgseed --trivial --cerenkov --onlyseed
-        dbgseed.py --typ cerenkov --tag 1 --det dayabay
-
-    elif [ "$typ" == "torch" ]; then
-
-        GGeoViewTest --dbgseed --torchdbg --trivial --torch --compute --onlyseed
-        GGeoViewTest --dbgseed --trivial --torch --onlyseed
-        dbgseed.py --typ torch --tag 1 --det dayabay
-
-    else
- 
-         echo typ ? $typ
-    fi
+    oks-dbgseed- --$typ --compute
+    oks-dbgseed- --$typ 
+    dbgseed.py   --typ $typ --tag 1 --det dayabay 
 }
 
 oks-dbgseed-i(){

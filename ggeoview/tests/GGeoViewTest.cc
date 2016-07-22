@@ -76,10 +76,18 @@ int main(int argc, char** argv)
 
     app.prepareViz();      // setup OpenGL shaders and creates OpenGL context (the window)
 
-    app.loadGeometry();    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
-    if(app.isExit()) exit(EXIT_SUCCESS);
 
-    app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+    if(app.hasOpt("nogeometry"))
+    { 
+        std::cerr << "skip geometry" << std::endl ; 
+    }
+    else
+    {       
+        app.loadGeometry();    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+        if(app.isExit()) exit(EXIT_SUCCESS);
+
+        app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+    }
 
 
 

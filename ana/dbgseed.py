@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 
-Create these arrays with::
+This script is invoked from oks-dbgseed, which 
+first creates the seeds with commands like::
 
    GGeoViewTest --dbgseed --trivial --cerenkov --compute
    GGeoViewTest --dbgseed --trivial --cerenkov 
@@ -109,16 +110,22 @@ Things go wrong from item 11883::
 
 """
 
-import os, sys, logging, numpy as np
+import os, sys, datetime, logging, numpy as np
 from opticks.ana.base import opticks_environment
 from opticks.ana.base import opticks_args
 from opticks.ana.nbase import count_unique
 
 log = logging.getLogger(__name__)
 
+
+
+def stamp_(path, fmt="%Y%m%d-%H%M"): 
+    return datetime.datetime.fromtimestamp(os.stat(path).st_ctime).strftime(fmt)
+
 def x_(_):
     p = os.path.expandvars(_)
-    log.info( " %s -> %s " % (_, p))
+    st = stamp_(p)
+    log.info( " %s -> %s (%s) " % (_, p, st))
     return p  
 
 def check_dbgseed(a,g):
@@ -136,12 +143,15 @@ def check_dbgseed(a,g):
 
 if __name__ == '__main__':
     opticks_environment()
-    args = opticks_args(typ="cerenkov", tag="1", det="dayabay")
+    args = opticks_args(typ="torch", tag="1", det="dayabay")
 
     np.set_printoptions(suppress=True, precision=3)
 
     c = np.load(x_("$TMP/dbgseed_compute.npy"))
     i = np.load(x_("$TMP/dbgseed_interop.npy"))
+
+    log.info(" c : %s " % repr(c.shape) )
+    log.info(" i : %s " % repr(i.shape) )
 
     cj = c[:,0,0].view(np.int32)
     ij = i[:,0,0].view(np.int32)

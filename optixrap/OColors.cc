@@ -17,6 +17,14 @@ OColors::OColors(optix::Context& ctx, OpticksColors* colors)
 void OColors::convert()
 {
     NPY<unsigned char>* buffer = m_colors->getCompositeBuffer();
+
+    if(buffer == NULL)
+    {
+        LOG(warning) << "OColors::convert SKIP no composite color buffer " ; 
+        return ;  
+    }
+
+
     nuvec4 cd = m_colors->getCompositeDomain();
 
     optix::TextureSampler tex = makeColorSampler(buffer);

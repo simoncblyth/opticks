@@ -177,6 +177,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("onlyseed", "exit App after seeding "); 
 
+   m_desc.add_options()
+       ("nogeometry", "skip loading of geometry, for debugging only "); 
+
 
 
 

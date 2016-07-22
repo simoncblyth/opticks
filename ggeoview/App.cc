@@ -498,7 +498,6 @@ void App::loadGenstep()
     }
 
     unsigned int code = m_opticks->getSourceCode();
-    Lookup* lookup = m_ggeo->getLookup();
 
 
     NPY<float>* npy = NULL ; 
@@ -512,31 +511,43 @@ void App::loadGenstep()
 
         if(m_opticks->isDayabay())
         {   
-            m_g4step->setLookup(lookup);   
-            m_g4step->applyLookup(0, 2);      
+            Lookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
+            if(lookup)
+            {  
+                m_g4step->setLookup(lookup);   
+                m_g4step->applyLookup(0, 2);      
+            }
+            else
+            {
+                LOG(warning) << "App::loadGenstep not applying lookup" ;
+            } 
         }
     }
     else if(code == TORCH)
     {
         m_torchstep = m_opticks->makeSimpleTorchStep();
-
-        m_ggeo->targetTorchStep(m_torchstep);
-
         const char* material = m_torchstep->getMaterial() ;
-        unsigned int matline = m_ggeo->getMaterialLine(material);
-        m_torchstep->setMaterialLine(matline);  
 
-        LOG(debug) << "App::makeSimpleTorchStep"
-                  << " config " << m_torchstep->getConfig() 
-                  << " material " << material 
-                  << " matline " << matline
-                  ;
+        if(m_ggeo)
+        {
+            m_ggeo->targetTorchStep(m_torchstep);
+            unsigned int matline = m_ggeo->getMaterialLine(material);
+            m_torchstep->setMaterialLine(matline);  
+
+            LOG(debug) << "App::loadGenstep"
+                       << " config " << m_torchstep->getConfig() 
+                       << " material " << material 
+                       << " matline " << matline
+                         ;
+        }
+        else
+        {
+            LOG(warning) << "App::loadGenstep no ggeo, skip setting torchstep material line " ;
+        } 
 
         bool torchdbg = hasOpt("torchdbg");
         m_torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-
         npy = m_torchstep->getNPY();
-
         if(torchdbg)
         {
              npy->save("$TMP/torchdbg.npy");
@@ -558,26 +569,25 @@ void App::targetViz()
 {
     if(isCompute()) return ; 
 
-    glm::vec4 mmce = m_geometry->getCenterExtent();
-    glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
     bool geocenter  = m_fcfg->hasOpt("geocenter");
-    glm::vec4 uuce = geocenter ? mmce : gsce ;
-
     unsigned int target = m_scene->getTarget() ;
+    bool autocam = true ; 
 
-    LOG(info) << "App::targetViz"
-              << " target " << target      
-              << " geocenter " << geocenter      
-              << " mmce " << gformat(mmce)
-              << " gsce " << gformat(gsce)
-              << " uuce " << gformat(uuce)
-              ;
-
+    // only pointing based on genstep if not already targetted
     if(target == 0)
     {
-        // only pointing based in genstep if not already targetted
-        bool autocam = true ; 
-        m_composition->setCenterExtent( uuce , autocam );
+        if(geocenter && m_geometry != NULL )
+        {
+            glm::vec4 mmce = m_geometry->getCenterExtent();
+            m_composition->setCenterExtent( mmce , autocam );
+            LOG(info) << "App::targetViz (geocenter) mmce " << gformat(mmce) ; 
+        }
+        else if(m_evt)
+        {
+            glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
+            m_composition->setCenterExtent( gsce , autocam );
+            LOG(info) << "App::targetViz (!geocenter) gsce " << gformat(gsce) ; 
+        }
     }
 
     m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    

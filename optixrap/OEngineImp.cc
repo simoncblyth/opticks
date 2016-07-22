@@ -111,6 +111,14 @@ void OEngineImp::prepareOptiX()
     m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
     m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
 
+
+    if(m_ggeo == NULL)
+    {
+        LOG(warning) << "OEngineImp::prepareOptiX EARLY EXIT AS no geometry " ; 
+        return ; 
+    }
+
+
     LOG(debug) << "OEngineImp::prepareOptiX (OColors)" ;
     m_ocolors = new OColors(context, m_opticks->getColors() );
     m_ocolors->convert();
