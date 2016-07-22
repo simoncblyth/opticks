@@ -140,8 +140,16 @@ void OpEngine::initRecords()
     zeroer->setEvent(m_evt);
     zeroer->setPropagator(opropagator);  // only used in compute mode
 
-    zeroer->zeroRecords();   
-    // zeros on GPU record buffer via OptiX or OpenGL
+
+    if(m_opticks->hasOpt("dbginterop"))
+    {
+        LOG(info) << "OpEngine::initRecords skip OpZeroer::zeroRecords as dbginterop " ; 
+    }
+    else
+    {
+        zeroer->zeroRecords();   
+        // zeros on GPU record buffer via OptiX or OpenGL
+    }
 }
 
 

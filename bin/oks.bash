@@ -1411,7 +1411,10 @@ EON
 oks-dbgseed-()
 {
     #gdb --args GGeoViewTest --dbgseed --trivial --onlyseed --nogeometry $*
-                GGeoViewTest --dbgseed --trivial --onlyseed --nogeometry $*
+    #           GGeoViewTest --dbgseed --trivial --onlyseed --nogeometry $*
+                GGeoViewTest --dbgseed --trivial --onlyseed --nogeometry --dbginterop $*
+    
+
 }
 
 oks-dbgseed()
@@ -1484,7 +1487,7 @@ array([[   0,    1],
 
 
 
-
+op --dbgseed --dbginterop --debugger --trivial --noindex
 
 
 EON

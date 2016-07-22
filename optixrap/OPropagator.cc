@@ -232,7 +232,12 @@ void OPropagator::initEvent(OpticksEvent* evt)
     m_photon_buf = new OBuf("photon", m_photon_buffer );
 
     //if(evt->isStep())
-    if(true)
+
+    if(m_opticks->hasOpt("dbginterop"))
+    {
+        LOG(info) << "OPropagator::initEvent skipping record/sequence buffer creation as dbginterop  " ;
+    }
+    else
     {
         NPY<short>* rx = evt->getRecordData() ;
         assert(rx);
@@ -249,10 +254,6 @@ void OPropagator::initEvent(OpticksEvent* evt)
         m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
         m_sequence_buf->setMultiplicity(1u);
         m_sequence_buf->setHexDump(true);
-    }
-    else
-    {
-        LOG(info) << "OPropagator::initEvent skipping record/sequence buffer creation as nonStep " ;
     }
 
 
