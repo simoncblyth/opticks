@@ -50,9 +50,11 @@ class OXRAP_API OContext {
             void dump(const char* msg="OContext::dump");
             void close();
      public:
-            unsigned int addRayGenerationProgram( const char* filename, const char* progname );
-            unsigned int addExceptionProgram( const char* filename, const char* progname );
-            void setMissProgram( unsigned int index, const char* filename, const char* progname );
+            unsigned int addEntry(const char* filename="generate.cu.ptx", const char* raygen="generate", const char* exception="exception", bool defer=true);
+            void setMissProgram( unsigned int index, const char* filename, const char* progname, bool defer=true);
+     private:
+            unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=true);
+            unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=true);
      public:
             unsigned int      getNumEntryPoint();
             unsigned int      getNumRayType();

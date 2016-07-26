@@ -71,6 +71,7 @@ public:
 
     optix::Program createProgram(const char* filename, const char* progname );
 
+    unsigned int addEntry(const char* filename, const char* raygen, const char* exception, bool defer=false);
     unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=false);
     unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=false);
 

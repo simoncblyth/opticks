@@ -32,7 +32,7 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
-OPropagator::OPropagator(OContext* ocontext, Opticks* opticks, bool trivial, int override_) 
+OPropagator::OPropagator(OContext* ocontext, Opticks* opticks, int override_) 
    :
     m_ocontext(ocontext),
     m_opticks(opticks),
@@ -46,7 +46,6 @@ OPropagator::OPropagator(OContext* ocontext, Opticks* opticks, bool trivial, int
     m_genstep_buf(NULL),
     m_record_buf(NULL),
     m_rng_wrapper(NULL),
-    m_trivial(trivial),
     m_count(0),
     m_width(0),
     m_height(0),
@@ -57,10 +56,6 @@ OPropagator::OPropagator(OContext* ocontext, Opticks* opticks, bool trivial, int
     init();
 }
 
-void OPropagator::setTrivial(bool trivial)
-{
-    m_trivial = trivial ; 
-}
 void OPropagator::setOverride(unsigned int override_)
 {
     m_override = override_ ; 
@@ -76,6 +71,13 @@ OpticksEvent* OPropagator::getEvent()
 {
     return m_evt ;
 }
+
+void OPropagator::setEntry(unsigned int entry_index)
+{
+    m_entry_index = entry_index;
+}
+
+
 
 OBuf* OPropagator::getSequenceBuf()
 {
@@ -123,14 +125,11 @@ void OPropagator::init()
 
     m_context["debug_control"]->setUint(debugControl); 
  
-    const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
-    LOG(debug) << "OPropagtor::init " << raygenprg ; 
+  //  const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
+  //  LOG(debug) << "OPropagtor::init " << raygenprg ; 
 
     // OContext::e_generate_entry
-
-    m_entry_index = m_ocontext->addRayGenerationProgram( "generate.cu.ptx", raygenprg );
-    int exception_index = m_ocontext->addExceptionProgram( "generate.cu.ptx", "exception");
-    assert(m_entry_index == exception_index);
+  //  m_entry_index = m_ocontext->setupProgram("generate.cu.ptx", raygenprg, "exception" );
 
     m_launch_times = new OTimes ; 
     m_prelaunch_times = new OTimes ; 
@@ -291,8 +290,22 @@ void OPropagator::prelaunch()
 
     assert( enoughRng  && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
 
+
+    bool entrySet = m_entry_index > -1 ; 
+    if(!entrySet)
+    {
+        LOG(fatal) << "OPropagator::prelaunch"
+                   << " must setEntry before prelaunch/launch  "
+                  ;  
+ 
+    }
+    assert(entrySet);
+    
+
     m_width  = numPhotons ;
     m_height = 1 ;
+  
+    
 
     LOG(info) << "OPropagator::prelaunch count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
 

@@ -165,6 +165,7 @@ void OEngineImp::preparePropagator()
 {
     bool noevent    = m_fcfg->hasOpt("noevent");
     bool trivial    = m_fcfg->hasOpt("trivial");
+    bool seedtest   = m_fcfg->hasOpt("seedtest");
     int  override_   = m_fcfg->getOverride();
 
     if(!m_evt) return ;
@@ -176,13 +177,30 @@ void OEngineImp::preparePropagator()
               << " override_ " << override_
               ;  
 
-    m_opropagator = new OPropagator(m_ocontext, m_opticks, trivial, override_);
+    unsigned int entry ;
+
+    bool defer = true ; 
+
+    if(trivial)
+    {
+        entry = m_ocontext->addEntry("generate.cu.ptx", "trivial", "exception", defer);
+    }
+    else if(seedtest)
+    {
+        entry = m_ocontext->addEntry("seedTest.cu.ptx", "seedTest", "exception", defer);
+    }
+    else
+    {
+        entry = m_ocontext->addEntry("generate.cu.ptx", "generate", "exception", defer);
+    }
+
+
+
+    m_opropagator = new OPropagator(m_ocontext, m_opticks, override_);
 
     m_opropagator->setEvent(m_evt);
+    m_opropagator->setEntry(entry);
 
-    // too late these need to be set prior to init
-    //m_opropagator->setTrivial(trivial);
-    //m_opropagator->setOverride(override);
 
     m_opropagator->initRng();
     m_opropagator->initEvent();

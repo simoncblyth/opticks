@@ -157,20 +157,22 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
 }
 
 
-unsigned int OContext::addRayGenerationProgram( const char* filename, const char* progname )
+unsigned int OContext::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
 {
-    return m_cfg->addRayGenerationProgram(filename, progname, true);
+    return m_cfg->addEntry(filename, raygen, exception, defer ); 
 }
-unsigned int OContext::addExceptionProgram( const char* filename, const char* progname )
+unsigned int OContext::addRayGenerationProgram( const char* filename, const char* progname, bool defer)
 {
-    return m_cfg->addExceptionProgram(filename, progname, true);
+    return m_cfg->addRayGenerationProgram(filename, progname, defer);
+}
+unsigned int OContext::addExceptionProgram( const char* filename, const char* progname, bool defer)
+{
+    return m_cfg->addExceptionProgram(filename, progname, defer);
 }
 
-
-
-void OContext::setMissProgram( unsigned int index, const char* filename, const char* progname )
+void OContext::setMissProgram( unsigned int index, const char* filename, const char* progname, bool defer )
 {
-    m_cfg->setMissProgram(index, filename, progname, true);
+    m_cfg->setMissProgram(index, filename, progname, defer);
 }
 
 

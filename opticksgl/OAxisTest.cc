@@ -28,9 +28,7 @@ OAxisTest::OAxisTest(OContext* ocontext, NPY<float>* axis_data)
 
 void OAxisTest::init()
 {
-    m_ocontext->addRayGenerationProgram(   "axisTest.cu.ptx", "axisModify" ); // from optixrap
-    m_ocontext->addExceptionProgram(       "axisTest.cu.ptx", "exception");
-    m_entry = 0 ; 
+    m_entry = m_ocontext->addEntry( "axisTest.cu.ptx", "axisModify", "exception");
 
     m_buffer = m_ocontext->createIOBuffer<float>( m_axis_data, "axis");
     m_ni = m_axis_data->getShape(0);

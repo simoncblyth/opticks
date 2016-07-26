@@ -29,9 +29,7 @@ OTextureTest::OTextureTest(OContext* ocontext, Opticks* opticks)
 void OTextureTest::init()
 {
     m_context = m_ocontext->getContext();
-    m_entry_index = m_ocontext->addRayGenerationProgram(   "textureTest.cu.ptx", "textureTest" );
-    int exception_index = m_ocontext->addExceptionProgram( "textureTest.cu.ptx", "exception");
-    assert(m_entry_index == exception_index);
+    m_entry_index = m_ocontext->addEntry(   "textureTest.cu.ptx", "textureTest", "exception");
 }
 
 void OTextureTest::launch()

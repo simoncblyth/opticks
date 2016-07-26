@@ -25,8 +25,7 @@ int main( int argc, char** argv )
 
     OContext* m_ocontext = new OContext(context, mode, false );
 
-    m_ocontext->addRayGenerationProgram(   "minimalTest.cu.ptx", "minimal" );
-    m_ocontext->addExceptionProgram(       "minimalTest.cu.ptx", "exception");
+    unsigned entry = m_ocontext->addEntry("minimalTest.cu.ptx", "minimal", "exception");
 
     unsigned ni = 100 ; 
     unsigned nj = 4 ; 
@@ -38,7 +37,6 @@ int main( int argc, char** argv )
 
     context["output_buffer"]->set(buffer);
 
-    unsigned entry = 0 ; 
     m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);
     m_ocontext->launch( OContext::COMPILE,   entry, ni, 1);
     m_ocontext->launch( OContext::PRELAUNCH, entry, ni, 1);

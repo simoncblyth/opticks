@@ -51,6 +51,16 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
 }
 
 
+
+unsigned int OConfig::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
+{
+    int raygen_index = addRayGenerationProgram( filename, raygen, defer );
+    int exception_index = addExceptionProgram( filename, exception, defer );
+    assert(raygen_index == exception_index && raygen_index > -1);
+    return raygen_index ; 
+}
+
+
 unsigned int OConfig::addRayGenerationProgram( const char* filename, const char* progname, bool defer)
 {
     OProg* prog = new OProg('R', m_raygen_index, filename, progname);

@@ -25,7 +25,7 @@ class OXRAP_API OPropagator {
                 e_number_domain
              } ;
     public:
-        OPropagator(OContext* ocontext, Opticks* opticks, bool trivial=false, int override_=0); 
+        OPropagator(OContext* ocontext, Opticks* opticks, int override_=0); 
         void initRng();
     public:
         void initEvent();      // creates GPU buffers: genstep, photon, record, sequence
@@ -34,11 +34,10 @@ class OXRAP_API OPropagator {
         void downloadEvent();
         void downloadPhotonData();
     public:
+        void setEntry(unsigned int entry);
         void setEvent(OpticksEvent* evt);
         OpticksEvent*    getEvent();
-
     public:
-        void setTrivial(bool trivial=true);
         void setOverride(unsigned int override);
     public:
         OBuf* getSequenceBuf();

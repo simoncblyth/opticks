@@ -61,11 +61,9 @@ void OTracer::init()
     m_context = m_ocontext->getContext();
 
     // OContext::e_pinhole_camera_entry
-    m_entry_index = m_ocontext->addRayGenerationProgram(  "pinhole_camera.cu.ptx", "pinhole_camera" );
-    int exception_index = m_ocontext->addExceptionProgram( "pinhole_camera.cu.ptx", "exception");
-    assert(m_entry_index == exception_index);
-
-    m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu.ptx", "miss" );
+    bool defer = true ; 
+    m_entry_index = m_ocontext->addEntry("pinhole_camera.cu.ptx", "pinhole_camera" , "exception", defer);
+    m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu.ptx", "miss", defer );
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
 

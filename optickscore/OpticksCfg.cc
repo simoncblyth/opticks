@@ -128,6 +128,11 @@ void OpticksCfg<Listener>::init()
        ("trivial",  "swap OptiX generate program with trivial standin for debugging") ;
 
    m_desc.add_options()
+       ("seedtest",  "interop buffer overwrite debugging") ;
+
+
+
+   m_desc.add_options()
        ("simplify",  "simplify OptiX geometry for debugging") ;
 
    m_desc.add_options()
