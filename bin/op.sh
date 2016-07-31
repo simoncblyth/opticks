@@ -98,7 +98,7 @@ op-binary-desc()
    case $1 in 
          --idpath) echo "Emit to stdout the path of the geocache directory for the geometry selected by arguments" ;;
            --keys) echo "List key controls available in GGeoViewTest " ;;
-           -tcfg4) echo "Geant4 comparison simulation of simple test geometries. Requires g4-export environment. " ;; 
+          --tcfg4) echo "Geant4 comparison simulation of simple test geometries. Requires g4-export environment. " ;; 
          --tracer) echo "Fast OpenGL viz and OptiX tracing, NO propagation. From ggeoview-/tests. Used for simple geometry/machinery checking"  ;;
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;
