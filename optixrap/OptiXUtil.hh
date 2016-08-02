@@ -5,6 +5,7 @@
 // standard compilers
 
 #include "THRAP_PUSH.hh"
+#include <cuda.h>
 #include <thrust/device_vector.h>
 #include "THRAP_POP.hh"
 
@@ -27,7 +28,7 @@ class OXRAP_API OptiXUtil {
     static T* getDevicePtr(optix::Buffer & buffer, int deviceNumber)
     {
         CUdeviceptr d;
-        buffer->getDevicePointer(deviceNumber, &d);
+        buffer->getDevicePointer(deviceNumber, (void**)&d);
         return (T*)d;
     }
 
