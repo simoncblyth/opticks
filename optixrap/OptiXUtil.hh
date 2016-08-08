@@ -27,9 +27,7 @@ class OXRAP_API OptiXUtil {
     template<typename T>
     static T* getDevicePtr(optix::Buffer & buffer, int deviceNumber)
     {
-        CUdeviceptr d;
-        buffer->getDevicePointer(deviceNumber, (void**)&d);
-        return (T*)d;
+        return (T*)buffer->getDevicePointer(deviceNumber);;
     }
 
     template<typename T>
