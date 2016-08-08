@@ -159,8 +159,7 @@ unsigned int OBufBase::getElementSizeInBytes(RTformat format)
 
 void* OBufBase::getDevicePtr()
 {
-    CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;
-    return (void*)cu_ptr ; 
+    return (void*) m_buffer->getDevicePointer(m_device); 
 }
 
 unsigned int OBufBase::getSize(const optix::Buffer& buffer)
