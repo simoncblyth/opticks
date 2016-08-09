@@ -53,7 +53,7 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
 
    list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
    list(APPEND CUDA_NVCC_FLAGS "-O2")
-   list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
+   #list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
    list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
    # see env-/nvcc- for background on flags  
 

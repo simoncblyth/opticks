@@ -7,6 +7,23 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
+
+Migration to 10 (Multithreaded)
+--------------------------------
+
+Quick migration guide for Geant4 version 10.x series
+
+* https://twiki.cern.ch/twiki/bin/view/Geant4/QuickMigrationGuideForGeant4V10
+
+
+G4 Version Macro
+-----------------
+
+::
+
+   find . -name '*.*' -exec grep -H G4VERSION_NUMBER {} \;
+
+
 Geant4 10.2, December 4th, 2015
 ----------------------------------
 
