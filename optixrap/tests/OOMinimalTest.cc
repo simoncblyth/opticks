@@ -19,7 +19,8 @@ int main( int argc, char** argv )
     unsigned width = 512 ; 
     unsigned height = 512 ; 
 
-    optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
+    // optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
+    optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width*height );
     context["output_buffer"]->set(buffer);
 
     context->validate();
