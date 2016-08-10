@@ -61,9 +61,13 @@ int main( int argc, char** argv )
 
     unsigned ni = 10 ; 
     m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);
+    genstep_buf->dump<unsigned int>("LT::OBuf test after VALIDATE: ", 6*4, 3, 6*4*10);
     m_ocontext->launch( OContext::COMPILE,   entry, ni, 1);
+    genstep_buf->dump<unsigned int>("LT::OBuf test after COMPILE: ", 6*4, 3, 6*4*10);
     m_ocontext->launch( OContext::PRELAUNCH, entry, ni, 1);
+    genstep_buf->dump<unsigned int>("LT::OBuf test after PRELAUNCH: ", 6*4, 3, 6*4*10);
     m_ocontext->launch( OContext::LAUNCH,    entry, ni, 1);
+    genstep_buf->dump<unsigned int>("LT::OBuf test after LAUNCH: ", 6*4, 3, 6*4*10);
 
     npy->zero();
 
