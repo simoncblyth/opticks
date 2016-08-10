@@ -51,6 +51,7 @@ int main( int argc, char** argv )
     OBuf* genstep_buf = new OBuf("genstep", buffer );
 
     OContext::upload(buffer, npy);
+
     genstep_buf->dump<unsigned int>("LT::OBuf test: ", 6*4, 3, 6*4*10);
     LOG(info) << "check OBuf begin.";
     // LT: check OBuf

@@ -17,7 +17,7 @@ RT_PROGRAM void minimal()
     union quad ipmn;
     ipmn.f = output_buffer[photon_offset+0];
 
-    rtPrintf("%d\n", ipmn.i.w);
+    rtPrintf("RT %d\n", ipmn.i.w);
 
 }
 

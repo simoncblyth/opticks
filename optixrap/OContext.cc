@@ -1,6 +1,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 // brap-
 #include "BTimer.hh"
 
@@ -283,8 +285,12 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
              << npy->description("upload")
              ;
 
-    memcpy( buffer->map(), npy->getBytes(), numBytes );
-    buffer->unmap(); 
+    // memcpy( buffer->map(), npy->getBytes(), numBytes );
+    // buffer->unmap(); 
+    void* d_ptr = NULL;
+    rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
+    cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
+    buffer->markDirty();
 }
 
 
@@ -345,7 +351,7 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_s
     if(interop)
         buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
     else
-        buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+        buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_COPY_ON_DIRTY);
 
 
     buffer->setFormat(format);  // must set format, before can set ElementSize
