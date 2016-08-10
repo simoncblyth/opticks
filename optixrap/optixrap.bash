@@ -22,6 +22,17 @@ Python prototype:
 
 
 
+OptiX 400
+-----------
+
+::
+
+    [ 86%] Building CXX object optixrap/CMakeFiles/OptiXRap.dir/OConfig.cc.o
+    /Users/blyth/opticks/optixrap/OConfig.cc:204:11: warning: 4 enumeration values not handled in switch: 'RT_FORMAT_HALF', 'RT_FORMAT_HALF2', 'RT_FORMAT_HALF3'... [-Wswitch]
+       switch(format)
+              ^
+
+
 
 JPMT memory issue
 -------------------

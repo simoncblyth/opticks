@@ -60,6 +60,8 @@ optix::TextureSampler OColors::makeColorSampler(NPY<unsigned char>* buffer)
 
 optix::TextureSampler OColors::makeSampler(NPY<unsigned char>* buffer, RTformat format, unsigned int nx, unsigned int ny)
 {
+    // TODO: avoid duplication between this and OPropertyLib
+
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, format, nx, ny );
     memcpy( optixBuffer->map(), buffer->getPointer(), buffer->getNumBytes() );
     optixBuffer->unmap(); 
@@ -74,7 +76,11 @@ optix::TextureSampler OColors::makeSampler(NPY<unsigned char>* buffer, RTformat 
     sampler->setFilteringModes(minification, magnification, mipmapping);
 
     sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+
+    //RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // by inspection : zero based array index offset by 0.5
+    RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ; // needed by OptiX 400 ? see OptiX_400 pdf p17 
+    sampler->setIndexingMode(indexingmode);  
+
     sampler->setMaxAnisotropy(1.0f);  
     sampler->setMipLevelCount(1u);     
     sampler->setArraySize(1u);        

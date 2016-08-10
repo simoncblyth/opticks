@@ -14,6 +14,18 @@ See Also
 * cudatoolkit-
 
 
+OSX CUDA Driver
+-----------------
+
+August 2016
+~~~~~~~~~~~~~
+
+CUDA 7.5.30 Driver update is available
+
+CUDA Driver Version 7.0.29
+GPU Driver Version 8.26.26 310.40.45f01
+
+
 Release History
 -----------------
 

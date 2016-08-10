@@ -36,8 +36,14 @@ void OPropertyLib::configureSampler(optix::TextureSampler& sampler, optix::Buffe
 
     sampler->setFilteringModes(minification, magnification, mipmapping);
 
-    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
-    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ;
+    sampler->setReadMode(readmode);  
+
+    //RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // by inspection : zero based array index offset by 0.5
+    RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ; // needed by OptiX 400 ? see OptiX_400 pdf p17 
+    sampler->setIndexingMode(indexingmode);  
+
+
     sampler->setMaxAnisotropy(1.0f);  
     sampler->setMipLevelCount(1u);     
     sampler->setArraySize(1u);        
@@ -48,6 +54,24 @@ void OPropertyLib::configureSampler(optix::TextureSampler& sampler, optix::Buffe
 
     sampler->setBuffer(texture_array_idx, mip_level, buffer);
 }
+
+/*
+
+OptiX 400
+
+2016-08-10 15:05:35.709 INFO  [1903430] [OContext::launch@214] OContext::launch
+entry 0 width 1 height 1 libc++abi.dylib: terminating with uncaught exception
+of type optix::Exception: Invalid value (Details: Function "RTresult
+_rtContextValidate(RTcontext)" caught exception: Unsupported combination of
+texture index, wrap and filter modes:  RT_TEXTURE_INDEX_ARRAY_INDEX,
+RT_WRAP_REPEAT, RT_FILTER_LINEAR,
+file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp,
+line: 138) Abort trap: 6
+
+*/
+
+
+
 
 
 

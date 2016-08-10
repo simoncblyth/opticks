@@ -31,6 +31,55 @@ Login as NVIDIA registered developer, then
 * https://developer.nvidia.com/designworks/optix/downloads/legacy
 
 
+Delete the symbolic link before exploding the downloaded package installer::
+
+    simon:opticks blyth$ l /Developer/
+    total 8
+    lrwxr-xr-x  1 root  wheel    9 Jun 29  2015 OptiX -> OptiX_380
+    drwxr-xr-x  4 root  wheel  136 Jun 29  2015 NVIDIA
+    drwxr-xr-x  7 root  admin  238 May 29  2015 OptiX_380
+    drwxr-xr-x  7 root  admin  238 Jan 22  2015 OptiX_301
+    drwxr-xr-x  7 root  admin  238 Dec 18  2014 OptiX_370b2
+
+    simon:Developer blyth$ sudo rm OptiX
+
+
+Replace the symbolic link afterwards::
+
+    simon:Developer blyth$ sudo mv OptiX OptiX_400
+    simon:Developer blyth$ sudo ln -s OptiX_400 OptiX
+    simon:Developer blyth$ l
+    total 8
+    lrwxr-xr-x  1 root  wheel    9 Aug 10 14:42 OptiX -> OptiX_400
+    drwxr-xr-x  8 root  admin  272 Jul 22 05:17 OptiX_400
+    drwxr-xr-x  4 root  wheel  136 Jun 29  2015 NVIDIA
+    drwxr-xr-x  7 root  admin  238 May 29  2015 OptiX_380
+    drwxr-xr-x  7 root  admin  238 Jan 22  2015 OptiX_301
+    drwxr-xr-x  7 root  admin  238 Dec 18  2014 OptiX_370b2
+
+
+Try samples
+-------------
+
+::
+
+    simon:SDK-precompiled-samples blyth$ open optixDynamicGeometry.app
+    LSOpenURLsWithRole() failed with error -10810 for the file /Developer/OptiX_400/SDK-precompiled-samples/optixDynamicGeometry.app.
+    simon:SDK-precompiled-samples blyth$ open .
+    simon:SDK-precompiled-samples blyth$ open optixTutorial.app
+    LSOpenURLsWithRole() failed with error -10810 for the file /Developer/OptiX_400/SDK-precompiled-samples/optixTutorial.app.
+    simon:SDK-precompiled-samples blyth$ 
+
+
+
+
+
+OptiX 4 Issues
+----------------
+
+* https://devtalk.nvidia.com/default/topic/946870/optix/optix-4-and-cuda-interop-new-limitation-with-input-output-buffers/
+
+
 OptiX 4.0 Beta 
 ----------------
 
@@ -43,6 +92,7 @@ The generated PTX code is rewritten by OptiX internally and sent to the CUDA dri
 That CUDA driver comes with the display driver and will support the Pascal architecture.
 Your original PTX input doesn't need to be compiled for the newest Streaming Multiprocessor version.
 Anything from SM 2.0 to SM 5.2 will do with CUDA 7.5.
+
 
 OptiX 3.9.1 (June 2016)
 ---------------------------
@@ -2673,11 +2723,23 @@ optix-linux-name(){
 
 optix-version(){
    case $(optix-name) in 
+     OptiX_400)   echo 4.0.0 ;;
      OptiX_380)   echo 3.8.0 ;;
      OptiX_301)   echo 3.0.2 ;;
      OptiX_370b2) echo 3.7.0 ;;
   esac
 }
+
+optix-vernum(){
+   case $(optix-name) in 
+     OptiX_400)   echo 400 ;;
+     OptiX_380)   echo 380 ;;
+     OptiX_301)   echo 302 ;;
+     OptiX_370b2) echo 370 ;;
+  esac
+}
+
+
 
 
 optix-linux-jump(){

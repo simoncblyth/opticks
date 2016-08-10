@@ -76,6 +76,18 @@ Without the slicing::
     Abort trap: 6
     simon:optixrap blyth$ 
 
+
+With OptiX 4.0.0::
+
+    2016-08-10 15:05:35.709 INFO  [1903430] [OContext::launch@214] OContext::launch entry 0 width 1 height 1
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Unsupported combination of texture index, wrap and filter modes:  RT_TEXTURE_INDEX_ARRAY_INDEX, RT_WRAP_REPEAT, RT_FILTER_LINEAR, file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp, line: 138)
+    Abort trap: 6
+    simon:~ blyth$ 
+
+
+
+
+
 */
 
 

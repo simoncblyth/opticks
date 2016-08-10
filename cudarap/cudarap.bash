@@ -8,8 +8,6 @@ cudarap-usage(){ cat << EOU
 CUDAWrap
 ==========
 
-
-
 Warnings
 ---------
 

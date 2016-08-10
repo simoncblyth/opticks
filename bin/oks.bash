@@ -26,6 +26,172 @@ oks-txt
 issues
 ---------
 
+OptiX 4.0.0 CUDA interop changes 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:: 
+
+    GGeoViewTest 
+
+    2016-08-10 15:45:11.637 INFO  [1929041] [Timer::operator@38] OEngineImp:: propagate
+    2016-08-10 15:45:11.637 INFO  [1929041] [OPropagator::dumpTimes@341] OEngineImp::propagate
+    2016-08-10 15:45:11.637 INFO  [1929041] [OPropagator::dumpTimes@342] prelaunch_times 
+     count     1 
+     validate      0.0007     0.0007 
+     compile       0.0000     0.0000 
+     prelaunch     4.4384     4.4384 
+     launch        0.0000     0.0000 
+
+    2016-08-10 15:45:11.637 INFO  [1929041] [OPropagator::dumpTimes@343] launch_times 
+     count     1 
+     validate      0.0000     0.0000 
+     compile       0.0000     0.0000 
+     prelaunch     0.0000     0.0000 
+     launch        0.3418     0.3418 
+
+    2016-08-10 15:45:11.637 INFO  [1929041] [App::indexEvt@769] App::indexEvt WITH_OPTIX
+    2016-08-10 15:45:11.637 INFO  [1929041] [App::indexSequence@1089] App::indexSequence evt shape  genstep 1,6,4 nopstep 0,4,4 photon 100000,4,4 record 100000,10,2,4 phosel 100000,1,4 recsel 100000,10,1,4 sequence 100000,1,2
+    2016-08-10 15:45:11.637 INFO  [1929041] [OpEngine::indexSequence@181] OpEngine::indexSequence proceeding  
+    2016-08-10 15:45:11.637 INFO  [1929041] [OpIndexer::indexSequenceInterop@228] OpIndexer::indexSequenceInterop
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: Cannot get device pointers from non-CUDA interop buffers., file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/c-api/rtapi.cpp, line: 5654)
+    Abort trap: 6
+
+
+    GGeoViewTest --noindex  ## this avoids the above, but do not see the propagation 
+
+
+::
+
+    GGeoViewTest --compute --save
+
+    2016-08-10 15:41:33.503 INFO  [1927521] [OpEngine::preparePropagator@94] OpEngine::preparePropagator DONE 
+    2016-08-10 15:41:33.503 INFO  [1927521] [OpSeeder::seedPhotonsFromGensteps@65] OpSeeder::seedPhotonsFromGensteps
+    OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)genstep name genstep size 6 multiplicity 4 sizeofatom 4 NumAtoms 24 NumBytes 96 
+    OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs : dev_ptr 0x700ba0000 size 6 num_bytes 96 
+    OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)photon  name photon size 400000 multiplicity 4 sizeofatom 4 NumAtoms 1600000 NumBytes 6400000 
+    OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_ox : dev_ptr 0x700ca0000 size 400000 num_bytes 6400000 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs : dev_ptr 0x700ba0000 size 6 num_bytes 96 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox : dev_ptr 0x700ca0000 size 400000 num_bytes 6400000 
+    2016-08-10 15:41:33.503 INFO  [1927521] [OpSeeder::seedPhotonsFromGenstepsImp@146] OpSeeder::seedPhotonsFromGenstepsImp gensteps 1,6,4 num_genstep_values 24
+    2016-08-10 15:41:33.512 FATAL [1927521] [OpSeeder::seedPhotonsFromGenstepsImp@156] OpSeeder::seedPhotonsFromGenstepsImp num_photons 0 x_num_photons 100000
+    Assertion failed: (num_photons == x_num_photons && "FATAL : mismatch between CPU and GPU photon counts from the gensteps"), function seedPhotonsFromGenstepsImp, file /Users/blyth/opticks/opticksop/OpSeeder.cc, line 162.
+    Abort trap: 6
+    simon:optixrap blyth$ 
+
+
+
+OptiX 4.0.0 texture changes ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two test fails with same cause::
+
+    Total Test time (real) =  89.16 sec
+
+    The following tests FAILED:
+        140 - OptiXRapTest.OOTextureTest (OTHER_FAULT)
+        148 - GGeoViewTest.GGeoViewTest (OTHER_FAULT)
+
+
+OOTextureTest::
+
+    2016-08-10 15:05:35.688 INFO  [1903430] [OConfig::dump@154] OContext::close m_raygen_index 1 m_exception_index 1
+    OProg R 0 textureTest.cu.ptx textureTest 
+    OProg E 0 textureTest.cu.ptx exception 
+    2016-08-10 15:05:35.709 INFO  [1903430] [OContext::launch@214] OContext::launch entry 0 width 1 height 1
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: 
+         Unsupported combination of texture index, wrap and filter modes: 
+               RT_TEXTURE_INDEX_ARRAY_INDEX, 
+               RT_WRAP_REPEAT, 
+               RT_FILTER_LINEAR, 
+     file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp, line: 138)
+    Abort trap: 6
+
+
+GGeoViewTest::
+
+    Exception Type:  EXC_CRASH (SIGABRT)
+    Exception Codes: 0x0000000000000000, 0x0000000000000000
+
+    Application Specific Information:
+    terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: 
+         Unsupported combination of texture index, wrap and filter modes:  
+                RT_TEXTURE_INDEX_ARRAY_INDEX, 
+                RT_WRAP_REPEAT, 
+                RT_FILTER_LINEAR,
+         file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp, line: 138)
+    abort() called
+    ...
+    8   libOptiXRap.dylib               0x0000000112c575a9 optix::ContextObj::checkError(RTresult) const + 121 (optixpp_namespace.h:1832)
+    9   libOptiXRap.dylib               0x0000000112c57607 optix::ContextObj::validate() + 55 (optixpp_namespace.h:1877)
+    10  libOptiXRap.dylib               0x0000000112c68c0e OContext::launch(unsigned int, unsigned int, unsigned int, unsigned int, OTimes*) + 542 (OContext.cc:231)
+
+
+
+
+
+Changing OPropertyLib indexing mode gets OOTextureTest to pass but not the other one::
+
+    simon:opticks blyth$ hg diff optixrap/OPropertyLib.cc
+    diff -r 7bf3aa677ee8 optixrap/OPropertyLib.cc
+    --- a/optixrap/OPropertyLib.cc  Wed Aug 10 14:43:36 2016 +0800
+    +++ b/optixrap/OPropertyLib.cc  Wed Aug 10 15:34:10 2016 +0800
+    @@ -36,8 +36,14 @@
+     
+         sampler->setFilteringModes(minification, magnification, mipmapping);
+     
+    -    sampler->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+    -    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    +    RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ;
+    +    sampler->setReadMode(readmode);  
+    +
+    +    //RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // by inspection : zero based array index offset by 0.5
+    +    RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ; // needed by OptiX 400 ? see OptiX_400 pdf p17 
+    +    sampler->setIndexingMode(indexingmode);  
+    +
+    +
+         sampler->setMaxAnisotropy(1.0f);  
+         sampler->setMipLevelCount(1u);     
+         sampler->setArraySize(1u);        
+    @@ -49,6 +55,24 @@
+         sampler->setBuffer(texture_array_idx, mip_level, buffer);
+     }
+
+::
+
+    simon:cu blyth$ grep rtTextureSampler *.*
+    color_lookup.h:rtTextureSampler<uchar4,2>  color_texture  ;
+    textureTest.cu:rtTextureSampler<float, 2>  reemission_texture ;
+    wavelength_lookup.h:rtTextureSampler<float, 2>  reemission_texture ;
+    wavelength_lookup.h:rtTextureSampler<float, 2>  source_texture ;
+    wavelength_lookup.h:rtTextureSampler<float4, 2>  boundary_texture ;
+
+::
+
+    simon:opticks blyth$ opticks-find setIndexingMode
+    ./optixrap/OColors.cc:    sampler->setIndexingMode(RT_TEXTURE_INDEX_ARRAY_INDEX);  // by inspection : zero based array index offset by 0.5
+    ./optixrap/OPropertyLib.cc:    sampler->setIndexingMode(indexingmode);  
+
+
+
+OptiX 4.0.0 buffer changes ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2016-08-10 15:40:00.165 INFO  [1926617] [OpEngine::indexSequence@181]
+    OpEngine::indexSequence proceeding  2016-08-10 15:40:00.165 INFO  [1926617]
+    [OpIndexer::indexSequenceInterop@228] OpIndexer::indexSequenceInterop
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception:
+    Invalid value (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer,
+    int, void **)" caught exception: Cannot get device pointers from non-CUDA
+    interop buffers.,
+    file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/c-api/rtapi.cpp,
+    line: 5654) Abort trap: 6
+
+
+
+
+
 Huiling
 ~~~~~~~~~~
 

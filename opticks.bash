@@ -448,7 +448,6 @@ olocal-()
 }
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
-opticks-dir(){    echo $(opticks-prefix) ; }
 
 opticks-suffix(){
    case $(uname) in
@@ -457,7 +456,7 @@ opticks-suffix(){
    esac
 }
 
-opticks-prefix(){ 
+opticks-fold(){ 
    # when LOCAL_BASE unset rely instead on finding an installed binary from PATH  
    if [ -z "$LOCAL_BASE" ]; then 
       echo $(dirname $(dirname $(which OpticksTest$(opticks-suffix))))
@@ -466,15 +465,21 @@ opticks-prefix(){
    fi
 }
 
-
 opticks-sdir(){   echo $(opticks-home) ; }
+opticks-scd(){  cd $(opticks-sdir)/$1 ; }
+
+#opticks-bid(){    echo $(optix-vernum) ; }    ## build identity 
+#opticks-prefix(){ echo $(opticks-fold)/$(opticks-bid) ; }
+opticks-prefix(){ echo $(opticks-fold)  ; }
+
+opticks-dir(){    echo $(opticks-prefix) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
 opticks-bdir(){   echo $(opticks-prefix)/build ; }
-opticks-bindir(){ echo $(opticks-prefix)/lib ; }   # use lib for executables for simplicity on windows
-opticks-xdir(){   echo $(opticks-prefix)/externals ; }
+opticks-bindir(){ echo $(opticks-prefix)/lib ; }   ## use lib for executables for simplicity on windows
+
+opticks-xdir(){   echo $(opticks-fold)/externals ; }  ## try putting externals above the build identity 
 
 opticks-cd(){   cd $(opticks-dir) ; }
-opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
 opticks-xcd(){  cd $(opticks-xdir); }
@@ -612,7 +617,7 @@ opticks-cmake(){
         -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
-       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-install-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        -DGeant4_DIR=$(g4-cmake-dir) \
        -DXERCESC_LIBRARY=$(xercesc-library) \
@@ -710,12 +715,12 @@ opticks-prepare-installcache()
 }
 
 
-opticks-ctest-()
+opticks-t-()
 {
    [ "$(which ctest 2>/dev/null)" == "" ] && ctest3 $* || ctest $* 
 }
 
-opticks-ctest()
+opticks-t()
 {
    # 
    # Basic environment (PATH and envvars to find data) 
@@ -740,7 +745,7 @@ opticks-ctest()
 
    cd $bdir
 
-   opticks-ctest- $*
+   opticks-t- $*
 
    cd $iwd
    echo $msg use -V to show output 
