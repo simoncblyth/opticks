@@ -140,6 +140,7 @@ set(SOURCES
     cu/generate.cu
     cu/textureTest.cu
     cu/minimalTest.cu
+    cu/LTminimalTest.cu
     cu/axisTest.cu
     cu/seedTest.cu
 )
@@ -156,6 +157,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_textureTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_minimalTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_LTminimalTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_axisTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_seedTest.cu.ptx
 )

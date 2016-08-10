@@ -10,6 +10,7 @@ set(TEST_SOURCES
     OOMinimalTest.cc
     OOContextTest.cc
     OOContextUploadDownloadTest.cc
+    LTOOContextUploadDownloadTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})
