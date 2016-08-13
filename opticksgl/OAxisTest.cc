@@ -3,6 +3,9 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 
+// okc-
+#include "OpticksBufferControl.hh"
+
 // optixrap-
 #include "OContext.hh"
 #include <optixu/optixu.h>
@@ -30,7 +33,9 @@ void OAxisTest::init()
 {
     m_entry = m_ocontext->addEntry( "axisTest.cu.ptx", "axisModify", "exception");
 
-    m_buffer = m_ocontext->createBuffer<float>( m_axis_data, "axis", OContext::BUFOPT_INPUT_ONLY | OContext::BUFOPT_SETSIZE );
+    m_axis_data->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_ONLY"));
+
+    m_buffer = m_ocontext->createBuffer<float>( m_axis_data, "axis");
     m_ni = m_axis_data->getShape(0);
 
     optix::Context& context = m_ocontext->getContextRef() ;

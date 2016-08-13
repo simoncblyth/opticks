@@ -68,6 +68,8 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
          m_type(type),
          m_buffer_id(-1),
          m_buffer_target(-1),
+         m_buffer_control(0),
+         m_buffer_name(NULL),
          m_aux(NULL),
          m_verbose(false),
          m_allow_prealloc(false),
@@ -178,6 +180,29 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
 }
 
 
+void NPYBase::setBufferControl(unsigned long long control)
+{
+    m_buffer_control = control ;  
+}
+unsigned long long NPYBase::getBufferControl()
+{
+    return m_buffer_control ;  
+}
+
+
+void NPYBase::setBufferName(const char* name )
+{
+    m_buffer_name = name ? strdup(name) : NULL  ;  
+}
+const char* NPYBase::getBufferName()
+{
+    return m_buffer_name ;  
+}
+
+
+
+
+
 
 
 
@@ -278,8 +303,8 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
 void NPYBase::init()
 {
    updateDimensions(); 
-   m_shape_spec = new NPYSpec(m_ni, m_nj, m_nk, m_nl, m_type ); 
-   m_item_spec = new NPYSpec(0, m_nj, m_nk, m_nl, m_type ); 
+   m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_type ); 
+   m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_type ); 
 }
 
 

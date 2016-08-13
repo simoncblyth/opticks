@@ -7,8 +7,9 @@
 
 #include "PLOG.hh"
 
-NPYSpec::NPYSpec(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type)
+NPYSpec::NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type)
   :
+    m_name(name ? strdup(name) : NULL),
     m_ni(ni),
     m_nj(nj),
     m_nk(nk),
@@ -23,11 +24,16 @@ NPYBase::Type_t NPYSpec::getType()
     return m_type ;
 }
 
+const char* NPYSpec::getName()
+{
+    return m_name ; 
+}
+
 
 
 void NPYSpec::Summary(const char* msg) 
 {
-        printf("%s : %10u %10u %10u %10u \n", msg, m_ni, m_nj, m_nk, m_nl);
+        printf("%s : %20s %10u %10u %10u %10u \n", msg, (m_name ? m_name : ""), m_ni, m_nj, m_nk, m_nl);
 }
 
 std::string NPYSpec::description() 

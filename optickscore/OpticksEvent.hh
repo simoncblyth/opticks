@@ -111,6 +111,8 @@ class OKCORE_API OpticksEvent {
        void init();
        void indexPhotonsCPU();
    public:
+       static const char* idom_ ;
+       static const char* fdom_ ;
        static const char* genstep_ ;
        static const char* nopstep_ ;
        static const char* photon_ ;

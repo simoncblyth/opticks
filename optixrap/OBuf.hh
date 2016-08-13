@@ -25,9 +25,10 @@
 
 #include "OXRAP_API_EXPORT.hh"
 
+
 class OXRAP_API OBuf : public OBufBase {
    public:
-      OBuf( const char* name, optix::Buffer& buffer, unsigned int bufopt );
+      OBuf( const char* name, optix::Buffer& buffer, NPYBase* npy ); // TODO: get rid of bufopt ?
 
    public:
       template <typename T>

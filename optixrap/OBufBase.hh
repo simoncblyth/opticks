@@ -19,12 +19,12 @@ class NPYBase ;
 
 class OXRAP_API OBufBase {
    public:
-      OBufBase( const char* name, optix::Buffer& buffer, unsigned int bufopt );
+      OBufBase( const char* name, optix::Buffer& buffer, NPYBase* npy );
    public:
       void upload(NPYBase* npy);
       void download(NPYBase* npy);
       void setHexDump(bool hexdump);
-      unsigned int getBufOpt();
+      NPYBase* getNPY();
    private:
       void init();
       void examineBufferFormat(RTformat format);
@@ -51,7 +51,7 @@ class OXRAP_API OBufBase {
    protected:
       optix::Buffer  m_buffer  ;
       const char*    m_name ; 
-      unsigned int   m_bufopt ; 
+      NPYBase*       m_npy ; 
       unsigned int   m_size ; 
       unsigned int   m_multiplicity ; 
       unsigned int   m_sizeofatom ; 

@@ -41,6 +41,7 @@
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
 #include "OpticksEvent.hh"
+#include "OpticksBufferControl.hh"
 #include "Indexer.hh"
 
 #include "PLOG.hh"
@@ -69,6 +70,8 @@ std::string OpticksEvent::timestamp()
     return timestamp ; 
 }
 
+const char* OpticksEvent::fdom_    = "fdom" ; 
+const char* OpticksEvent::idom_    = "idom" ; 
 const char* OpticksEvent::genstep_ = "genstep" ; 
 const char* OpticksEvent::nopstep_ = "nopstep" ; 
 const char* OpticksEvent::photon_  = "photon" ; 
@@ -460,16 +463,16 @@ void OpticksEvent::createSpec()
     // invoked by Opticks::makeEvent   or OpticksEvent::load
     unsigned int maxrec = getMaxRec();
 
-    m_genstep_spec = new NPYSpec(0,6,4,0, NPYBase::FLOAT) ;
-    m_fdom_spec = new NPYSpec(3,1,4,0, NPYBase::FLOAT) ;
-    m_idom_spec = new NPYSpec(1,1,4,0, NPYBase::INT) ;
+    m_genstep_spec = new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT) ;
+    m_fdom_spec    = new NPYSpec(fdom_      ,  3,1,4,0,      NPYBase::FLOAT) ;
+    m_idom_spec    = new NPYSpec(idom_      ,  1,1,4,0,      NPYBase::INT) ;
 
-    m_nopstep_spec = new NPYSpec(0,4,4,0, NPYBase::FLOAT) ;
-    m_photon_spec = new NPYSpec(0,4,4,0, NPYBase::FLOAT) ;
-    m_sequence_spec = new NPYSpec(0,1,2,0, NPYBase::ULONGLONG) ;
-    m_phosel_spec = new NPYSpec(0,1,4,0, NPYBase::UCHAR) ;
-    m_record_spec = new NPYSpec(0,maxrec,2,4, NPYBase::SHORT) ;
-    m_recsel_spec = new NPYSpec(0,maxrec,1,4, NPYBase::UCHAR) ;
+    m_nopstep_spec  = new NPYSpec(nopstep_  ,  0,4,4,0,      NPYBase::FLOAT) ;
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT) ;
+    m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG) ;
+    m_phosel_spec   = new NPYSpec(phosel_   ,  0,1,4,0,      NPYBase::UCHAR) ;
+    m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4, NPYBase::SHORT) ;
+    m_recsel_spec   = new NPYSpec(recsel_   ,  0,maxrec,1,4, NPYBase::UCHAR) ;
 }
 
 
@@ -480,24 +483,29 @@ void OpticksEvent::createBuffers()
     // NB allocation is deferred until zeroing and they start at 0 items anyhow
     // NB no gensteps yet, those come externally 
 
+
     NPY<float>* nop = NPY<float>::make(m_nopstep_spec); 
     setNopstepData(nop);   
 
     NPY<float>* pho = NPY<float>::make(m_photon_spec); // must match GPU side photon.h:PNUMQUAD
+    pho->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT"));
     setPhotonData(pho);   
 
-    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec);  
+    NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec); 
+    seq->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY"));
     setSequenceData(seq);   
 
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_phosel_spec); 
+    phosel->setBufferControl(OpticksBufferControl::Parse(""));
     setPhoselData(phosel);   
 
     NPY<unsigned char>* recsel = NPY<unsigned char>::make(m_recsel_spec); 
+    recsel->setBufferControl(OpticksBufferControl::Parse(""));
     setRecselData(recsel);   
 
     NPY<short>* rec = NPY<short>::make(m_record_spec); 
+    rec->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_OUTPUT_ONLY"));
     setRecordData(rec);   
-
 
     NPY<float>* fdom = NPY<float>::make(m_fdom_spec);
     setFDomain(fdom);

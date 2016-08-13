@@ -9,9 +9,10 @@
 
 class NPY_API NPYSpec {
    public:
-        NPYSpec(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type);
+        NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type);
 
         NPYBase::Type_t getType();
+        const char* getName();
         const char* getTypeName();
         unsigned int getDimension(unsigned int i) ;
         bool isEqualTo(NPYSpec* other) ;
@@ -19,6 +20,7 @@ class NPY_API NPYSpec {
         std::string description() ;
         void Summary(const char* msg="NPYSpec::Summary") ;
    private:
+        const char*  m_name ; 
         unsigned int m_ni ; 
         unsigned int m_nj ; 
         unsigned int m_nk ; 

@@ -1,4 +1,5 @@
 #include "Opticks.hh"
+#include "OpticksBufferControl.hh"
 
 #include "OptiXTest.hh"
 #include "OContext.hh"
@@ -32,8 +33,9 @@ int main( int argc, char** argv )
     unsigned nk = 4 ; 
 
     NPY<float>* npy = NPY<float>::make(ni, nj, nk) ;
+    npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT"));
 
-    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo", OContext::BUFOPT_SETSIZE | OContext::BUFOPT_INPUT_OUTPUT);
+    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
 
     context["output_buffer"]->set(buffer);
 

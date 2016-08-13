@@ -81,6 +81,13 @@ class NPY_API NPYBase {
        void         setBufferTarget(int buffer_target);
        int          getBufferTarget();  // -1 if unset
 
+       void         setBufferControl(unsigned long long  buffer_control);
+       unsigned long long getBufferControl();
+
+       void         setBufferName(const char* name);
+       const char*  getBufferName();
+
+
        void         setAux(void* aux);
        void*        getAux();
        void         setDynamic(bool dynamic=true);
@@ -128,6 +135,8 @@ class NPY_API NPYBase {
        Type_t             m_type ; 
        int                m_buffer_id ; 
        int                m_buffer_target ; 
+       unsigned long long m_buffer_control ; 
+       const char*        m_buffer_name ; 
        void*              m_aux ; 
        bool               m_verbose ; 
        bool               m_allow_prealloc ; 

@@ -1,10 +1,10 @@
 #include "NPYBase.hpp"
 #include "OBufBase.hh"
 
-OBufBase::OBufBase(const char* name, optix::Buffer& buffer, unsigned int bufopt) 
+OBufBase::OBufBase(const char* name, optix::Buffer& buffer, NPYBase* npy) 
    :
    m_buffer(buffer), 
-   m_bufopt(bufopt),
+   m_npy(npy),
    m_name(strdup(name)), 
    m_size(0u),
    m_multiplicity(0u), 
@@ -16,9 +16,9 @@ OBufBase::OBufBase(const char* name, optix::Buffer& buffer, unsigned int bufopt)
     init();
 }
 
-unsigned int OBufBase::getBufOpt()
+NPYBase* OBufBase::getNPY()
 {
-   return m_bufopt ; 
+   return m_npy ; 
 }
 
 CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
@@ -172,7 +172,7 @@ unsigned int OBufBase::getElementSizeInBytes(RTformat format)
 
 void* OBufBase::getDevicePtr()
 {
-    printf("OBufBase::getDevicePtr\n") ;
+    printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
     //return (void*) m_buffer->getDevicePointer(m_device); 
 
     CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;

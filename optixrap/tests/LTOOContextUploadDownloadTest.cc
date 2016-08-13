@@ -10,8 +10,8 @@
 #include "BOpticksEvent.hh"
 #include "BOpticksResource.hh"
 
-
 #include "OpticksEvent.hh"
+#include "OpticksBufferControl.hh"
 #include "BOpticksResource.hh"
 
 #include "OXRAP_LOG.hh"
@@ -44,12 +44,11 @@ int main( int argc, char** argv )
     npy = NPY<float>::load("cerenkov", "1", "juno") ;
     BOpticksEvent::SetOverrideEventBase(NULL);
     npy->dump("NPY::dump::before", 2);
+    npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_INPUT_OUTPUT,OPTIX_SETSIZE"));
 
-
-    unsigned int bufopt = OContext::BUFOPT_INPUT_OUTPUT | OContext::BUFOPT_SETSIZE ;
-    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo", bufopt  );
+    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
     context["output_buffer"]->set(buffer);
-    OBuf* genstep_buf = new OBuf("genstep", buffer, bufopt );
+    OBuf* genstep_buf = new OBuf("genstep", buffer, npy);
 
     OContext::upload(buffer, npy);
 

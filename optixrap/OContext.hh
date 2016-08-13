@@ -25,21 +25,6 @@ class OXRAP_API OContext {
                 LAUNCH    = 0x1 << 4
              };
 
-        enum {
-                BUFOPT_SETSIZE        = 0x1 << 1,
-                BUFOPT_NON_INTEROP    = 0x1 << 2,
-                BUFOPT_INPUT_OUTPUT   = 0x1 << 3,
-                BUFOPT_INPUT_ONLY     = 0x1 << 4,
-                BUFOPT_OUTPUT_ONLY    = 0x1 << 5
-             };
-
-        static std::string BufOptString(unsigned int bufopt);
-        static const char* BUFOPT_SETSIZE_ ; 
-        static const char* BUFOPT_NON_INTEROP_ ; 
-        static const char* BUFOPT_INPUT_OUTPUT_ ; 
-        static const char* BUFOPT_INPUT_ONLY_ ; 
-        static const char* BUFOPT_OUTPUT_ONLY_ ; 
-
         typedef enum { COMPUTE, INTEROP } Mode_t ;   
         static const char* COMPUTE_ ; 
         static const char* INTEROP_ ; 
@@ -87,10 +72,10 @@ class OXRAP_API OContext {
 
      public:
             template<typename T>
-            optix::Buffer  createBuffer(NPY<T>* npy, const char* name, unsigned int bufopt=BUFOPT_SETSIZE | BUFOPT_INPUT_OUTPUT );  
+            optix::Buffer  createBuffer(NPY<T>* npy, const char* name);  
      private:
             template<typename T>
-            void configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name, unsigned int bufopt);  
+            void configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
      private:
             void init();
      private:

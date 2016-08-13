@@ -3,6 +3,7 @@
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
+#include "OpticksBufferControl.hh"
 
 // optixrap-
 #include "OContext.hh"
@@ -208,11 +209,11 @@ void OPropagator::initEvent(OpticksEvent* evt)
     LOG(info) << "OPropagator::initEvent" ; 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
+    gensteps->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_ONLY"));
 
-    unsigned int genstep_bufopt = OContext::BUFOPT_INPUT_ONLY | OContext::BUFOPT_SETSIZE ;
-    m_genstep_buffer = m_ocontext->createBuffer<float>( gensteps, "gensteps", genstep_bufopt  );
+    m_genstep_buffer = m_ocontext->createBuffer<float>( gensteps, "gensteps");
     m_context["genstep_buffer"]->set( m_genstep_buffer );
-    m_genstep_buf = new OBuf("genstep", m_genstep_buffer, genstep_bufopt );
+    m_genstep_buf = new OBuf("genstep", m_genstep_buffer, gensteps);
 
     if(m_ocontext->isCompute()) 
     {
@@ -228,11 +229,14 @@ void OPropagator::initEvent(OpticksEvent* evt)
     }
 
 
-
-    unsigned int photon_bufopt = OContext::BUFOPT_INPUT_OUTPUT | OContext::BUFOPT_SETSIZE ;
-    m_photon_buffer = m_ocontext->createBuffer<float>( evt->getPhotonData(), "photon", photon_bufopt );
+    NPY<float>* photon = evt->getPhotonData() ; 
+    m_photon_buffer = m_ocontext->createBuffer<float>( photon, "photon");
     m_context["photon_buffer"]->set( m_photon_buffer );
-    m_photon_buf = new OBuf("photon", m_photon_buffer, photon_bufopt );
+    m_photon_buf = new OBuf("photon", m_photon_buffer, photon);
+
+    // photon buffer is OPTIX_INPUT_OUTPUT (INPUT for genstep seeds) 
+    // but the seeding is done GPU side via thrust  
+
 
     //if(evt->isStep())
 
@@ -244,22 +248,18 @@ void OPropagator::initEvent(OpticksEvent* evt)
     {
         NPY<short>* rx = evt->getRecordData() ;
         assert(rx);
-
-        unsigned int record_bufopt = OContext::BUFOPT_OUTPUT_ONLY | OContext::BUFOPT_SETSIZE ;
-        m_record_buffer = m_ocontext->createBuffer<short>( rx, "record", record_bufopt );
+        m_record_buffer = m_ocontext->createBuffer<short>( rx, "record");
         m_context["record_buffer"]->set( m_record_buffer );
-        m_record_buf = new OBuf("record", m_record_buffer, record_bufopt );
+        m_record_buf = new OBuf("record", m_record_buffer, rx);
 
 
 
         NPY<unsigned long long>* sq = evt->getSequenceData() ;
         assert(sq);
 
-        unsigned int sequence_bufopt = OContext::BUFOPT_OUTPUT_ONLY | OContext::BUFOPT_SETSIZE | OContext::BUFOPT_NON_INTEROP ; 
-        m_sequence_buffer = m_ocontext->createBuffer<unsigned long long>( sq, "sequence", sequence_bufopt  ); 
+        m_sequence_buffer = m_ocontext->createBuffer<unsigned long long>( sq, "sequence"); 
         m_context["sequence_buffer"]->set( m_sequence_buffer );
-
-        m_sequence_buf = new OBuf("sequence", m_sequence_buffer, sequence_bufopt );
+        m_sequence_buf = new OBuf("sequence", m_sequence_buffer, sq);
         m_sequence_buf->setMultiplicity(1u);
         m_sequence_buf->setHexDump(true);
 
