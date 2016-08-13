@@ -141,7 +141,7 @@ opticksdata-export(){
       ltag=$(echo $utag | tr "A-Z" "a-z")
       path=$(opticksdata-path $ltag) 
       [ ! -f "$path" ] && echo $msg SKIP MISSING PATH for $utag && continue 
-      printf "%5s %5s %s \n"  $utag $ltag $path
+      #printf "%5s %5s %s \n"  $utag $ltag $path
       export OPTICKSDATA_DAEPATH_$utag=$path
    done
 }

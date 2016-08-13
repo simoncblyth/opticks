@@ -2697,7 +2697,8 @@ optix-samples-cppfind(){ find $(optix-samples-src-dir) -name '*.cpp' -exec grep 
 optix-find(){            find $(optix-idir)            -name '*.h'   -exec grep ${2:--H} ${1:-setMiss} {} \; ; }
 optix-ifind(){           find $(optix-idir)            -name '*.h'   -exec grep ${2:--H} ${1:-setMiss} {} \; ; }
 
-optix-pdf(){ open $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
+optix-pdf-(){ echo $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
+optix-pdf(){ open $(optix-pdf-) ; }
 
 
 

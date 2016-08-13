@@ -45,10 +45,11 @@ int main( int argc, char** argv )
     BOpticksEvent::SetOverrideEventBase(NULL);
     npy->dump("NPY::dump::before", 2);
 
-    optix::Buffer buffer = m_ocontext->createIOBuffer<float>( npy, "demo");
-    context["output_buffer"]->set(buffer);
 
-    OBuf* genstep_buf = new OBuf("genstep", buffer );
+    unsigned int bufopt = OContext::BUFOPT_INPUT_OUTPUT | OContext::BUFOPT_SETSIZE ;
+    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo", bufopt  );
+    context["output_buffer"]->set(buffer);
+    OBuf* genstep_buf = new OBuf("genstep", buffer, bufopt );
 
     OContext::upload(buffer, npy);
 

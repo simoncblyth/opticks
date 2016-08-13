@@ -33,7 +33,7 @@ int main( int argc, char** argv )
     npy->fill(42.);
     npy->save("$TMP/OOContextUploadDownloadTest_0.npy");
 
-    optix::Buffer buffer = m_ocontext->createIOBuffer<float>( npy, "demo");
+    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo", OContext::BUFOPT_INPUT_OUTPUT | OContext::BUFOPT_SETSIZE );
     context["output_buffer"]->set(buffer);
 
     m_ocontext->launch( OContext::VALIDATE,  entry, ni, 1);

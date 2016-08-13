@@ -1,9 +1,10 @@
 #include "NPYBase.hpp"
 #include "OBufBase.hh"
 
-OBufBase::OBufBase(const char* name, optix::Buffer& buffer) 
+OBufBase::OBufBase(const char* name, optix::Buffer& buffer, unsigned int bufopt) 
    :
    m_buffer(buffer), 
+   m_bufopt(bufopt),
    m_name(strdup(name)), 
    m_size(0u),
    m_multiplicity(0u), 
@@ -15,6 +16,10 @@ OBufBase::OBufBase(const char* name, optix::Buffer& buffer)
     init();
 }
 
+unsigned int OBufBase::getBufOpt()
+{
+   return m_bufopt ; 
+}
 
 CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
 {
@@ -130,6 +135,14 @@ void OBufBase::examineBufferFormat(RTformat format)
       case RT_FORMAT_USER:       mul=0 ; soa=0 ; break ;
       case RT_FORMAT_BUFFER_ID:  mul=0 ; soa=0 ; break ;
       case RT_FORMAT_PROGRAM_ID: mul=0 ; soa=0 ; break ; 
+
+#if OPTIX_VERSION >= 4000
+      case RT_FORMAT_HALF  : mul=1 ; soa=sizeof(float)/2 ; break ; 
+      case RT_FORMAT_HALF2 : mul=2 ; soa=sizeof(float)/2 ; break ; 
+      case RT_FORMAT_HALF3 : mul=3 ; soa=sizeof(float)/2 ; break ; 
+      case RT_FORMAT_HALF4 : mul=4 ; soa=sizeof(float)/2 ; break ; 
+#endif
+
    }   
 
     unsigned int element_size_bytes = getElementSizeInBytes(format);
@@ -159,7 +172,11 @@ unsigned int OBufBase::getElementSizeInBytes(RTformat format)
 
 void* OBufBase::getDevicePtr()
 {
-    return (void*) m_buffer->getDevicePointer(m_device); 
+    printf("OBufBase::getDevicePtr\n") ;
+    //return (void*) m_buffer->getDevicePointer(m_device); 
+
+    CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;
+    return (void*)cu_ptr ; 
 }
 
 unsigned int OBufBase::getSize(const optix::Buffer& buffer)

@@ -183,7 +183,7 @@ void OpEngine::indexSequence()
     OContext* ocontext = m_imp->getOContext();
     OPropagator* opropagator = m_imp->getOPropagator();
 
-    OpIndexer* indexer = new OpIndexer(ocontext);
+    OpIndexer* indexer = new OpIndexer(m_opticks, ocontext);
     //indexer->setVerbose(hasOpt("indexdbg"));
     indexer->setEvent(m_evt);
     indexer->setPropagator(opropagator);

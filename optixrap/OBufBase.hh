@@ -15,13 +15,16 @@ class NPYBase ;
 // non-view-type specifics
 #include "OXRAP_API_EXPORT.hh"
 
+// TODO: move optix::Buffer inside OBufBase to avoid some duplication
+
 class OXRAP_API OBufBase {
    public:
-      OBufBase( const char* name, optix::Buffer& buffer );
+      OBufBase( const char* name, optix::Buffer& buffer, unsigned int bufopt );
    public:
       void upload(NPYBase* npy);
       void download(NPYBase* npy);
       void setHexDump(bool hexdump);
+      unsigned int getBufOpt();
    private:
       void init();
       void examineBufferFormat(RTformat format);
@@ -48,6 +51,7 @@ class OXRAP_API OBufBase {
    protected:
       optix::Buffer  m_buffer  ;
       const char*    m_name ; 
+      unsigned int   m_bufopt ; 
       unsigned int   m_size ; 
       unsigned int   m_multiplicity ; 
       unsigned int   m_sizeofatom ; 

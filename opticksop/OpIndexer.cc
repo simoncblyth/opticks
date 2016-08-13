@@ -19,6 +19,9 @@
 #include "TSparse.hh"
 #include "TUtil.hh"
 
+// okc-
+#include "Opticks.hh"
+
 // optixrap-
 #include "OBuf.hh"
 #include "OContext.hh"
@@ -42,8 +45,9 @@
     }
 
 
-OpIndexer::OpIndexer(OContext* ocontext)  
+OpIndexer::OpIndexer(Opticks* opticks, OContext* ocontext)  
    :
+     m_opticks(opticks),
      m_ocontext(ocontext),
      m_propagator(NULL),
      m_seq(NULL),
@@ -155,7 +159,7 @@ void OpIndexer::indexBoundaries()
 
 void OpIndexer::indexSequence()
 {
-    if(m_evt->isIndexed())
+    if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex"))
     {
         LOG(info) << "OpIndexer::indexSequence"
                   << " already indexed SKIP "
@@ -225,7 +229,7 @@ void OpIndexer::indexSequenceInterop()
 
     assert(m_seq);
 
-    LOG(info) << "OpIndexer::indexSequenceInterop" ; 
+    LOG(info) << "OpIndexer::indexSequenceInterop slicing (OBufBase*)m_seq " ; 
     CBufSlice seqh = m_seq->slice(2,0) ;  // stride, begin
     CBufSlice seqm = m_seq->slice(2,1) ;
 
@@ -247,7 +251,7 @@ void OpIndexer::indexSequenceLoaded()
 
     LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
     update();
-    if(m_evt->isIndexed()) 
+    if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex")) 
     {
         LOG(info) << "OpIndexer::indexSequenceLoaded evt already indexed" ; 
         return ;  
@@ -259,15 +263,19 @@ void OpIndexer::indexSequenceLoaded()
 
     thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
     CBufSpec cph = make_bufspec<unsigned long long>(dph); 
+    cph.hexdump = true ; 
 
     TBuf tph("tph", cph);
-    tph.dump<unsigned long long>("OpIndexer::indexSequenceLoaded tph dump", 2, 0, 10 );  
+    tph.dump<unsigned long long>("OpIndexer::indexSequenceLoaded tph dump st/be/en 2/0/20", 2, 0, 20 );  
+    tph.dump<unsigned long long>("OpIndexer::indexSequenceLoaded tph dump st/be/en 2/1/20", 2, 1, 20 );  
     
     CBufSlice phh = tph.slice(2,0) ; // stride, begin  
     CBufSlice phm = tph.slice(2,1) ;
 
-    TSparse<unsigned long long> seqhis(OpticksConst::SEQHIS_NAME_,  phh );
+    TSparse<unsigned long long> seqhis(OpticksConst::SEQHIS_NAME_, phh );
     TSparse<unsigned long long> seqmat(OpticksConst::SEQMAT_NAME_, phm ); 
+
+
 
     m_evt->setHistoryIndex(seqhis.getIndex());
     m_evt->setMaterialIndex(seqmat.getIndex());  // the indices are populated by the make_lookup below

@@ -730,6 +730,15 @@ void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
     ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true, 1);
     m_phosel_attr = new MultiViewNPY("phosel_attr");
     m_phosel_attr->add(psel);
+
+
+/*
+psel is not currently used in shaders, as have not done much at photon level, only record level
+
+delta:gl blyth$ find . -type f -exec grep -H psel {} \;
+delta:gl blyth$ 
+*/
+
 }
 
 
@@ -744,6 +753,20 @@ void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
 
     m_recsel_attr = new MultiViewNPY("recsel_attr");
     m_recsel_attr->add(rsel);
+
+
+/*
+
+delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
+./altrec/vert.glsl:layout(location = 3) in ivec4 rsel;  
+./altrec/vert.glsl:    sel = rsel ; 
+./devrec/vert.glsl:layout(location = 3) in ivec4 rsel;  
+./devrec/vert.glsl:    sel = rsel ; 
+./rec/vert.glsl:layout(location = 3) in ivec4 rsel;  
+./rec/vert.glsl:    sel = rsel ; 
+
+*/
+
 }
 
 
@@ -767,11 +790,15 @@ void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
     m_sequence_attr->add(phis);
     m_sequence_attr->add(pmat);
 
+/*
+Looks like the raw photon level sequence data is not used in shaders, instead the rsel (popularity index) 
+that is derived from the sequence data by indexing is used::
+
+    delta:gl blyth$ find . -type f -exec grep -H phis {} \;
+    delta:gl blyth$ find . -type f -exec grep -H pmat {} \;
+
+*/
 }
-
-
-
-
 
 
 void OpticksEvent::dumpPhotonData()

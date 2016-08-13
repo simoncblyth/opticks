@@ -42,7 +42,7 @@ __host__ std::ostream& operator<< (std::ostream& os, const unsigned char& p)
 
 
 
-OBuf::OBuf(const char* name, optix::Buffer& buffer) : OBufBase(name, buffer)
+OBuf::OBuf(const char* name, optix::Buffer& buffer, unsigned int bufopt) : OBufBase(name, buffer, bufopt)
 {
 }
 

@@ -78,15 +78,18 @@ void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 
     thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
+    std::ostream& out = std::cout ; 
+    if(m_spec.hexdump) out << std::hex ; 
+
     if( stride == 0 )
     {
-        thrust::copy( p + begin, p + end, std::ostream_iterator<T>(std::cout, " \n") );
+        thrust::copy( p + begin, p + end, std::ostream_iterator<T>(out, " \n") );
     }
     else
     {
         typedef typename thrust::device_vector<T>::iterator Iterator;
         strided_range<Iterator> sri( p + begin, p + end, stride );
-        thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(std::cout, " \n") );
+        thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(out, " \n") );
     }
 }
 

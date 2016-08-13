@@ -31,7 +31,7 @@ void OpIndexerApp::init()
     m_opticks = new Opticks(m_argc, m_argv);
     m_cfg = m_opticks->getCfg();
 
-    m_indexer = new OpIndexer(NULL);
+    m_indexer = new OpIndexer(m_opticks, NULL);
 } 
 
 
@@ -64,8 +64,16 @@ void OpIndexerApp::makeIndex()
 {
     if(m_evt->isIndexed())
     {
-        LOG(info) << "OpIndexerApp::makeIndex evt is indexed already, SKIPPING " ;
-        return  ;
+        bool forceindex = m_opticks->hasOpt("forceindex");
+        if(forceindex)
+        {
+            LOG(info) << "OpIndexerApp::makeIndex evt is indexed already, but --forceindex option in use, so proceeding..." ;
+        }
+        else
+        {
+            LOG(info) << "OpIndexerApp::makeIndex evt is indexed already, SKIPPING " ;
+            return  ;
+        }
     }
     if(m_evt->isNoLoad())
     {

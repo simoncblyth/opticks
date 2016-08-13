@@ -30,7 +30,7 @@ void OAxisTest::init()
 {
     m_entry = m_ocontext->addEntry( "axisTest.cu.ptx", "axisModify", "exception");
 
-    m_buffer = m_ocontext->createIOBuffer<float>( m_axis_data, "axis");
+    m_buffer = m_ocontext->createBuffer<float>( m_axis_data, "axis", OContext::BUFOPT_INPUT_ONLY | OContext::BUFOPT_SETSIZE );
     m_ni = m_axis_data->getShape(0);
 
     optix::Context& context = m_ocontext->getContextRef() ;

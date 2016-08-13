@@ -918,19 +918,16 @@ opticks-path-add(){
 
 opticks-export()
 {
-   opticks-export-common
-
-   case $(uname -s) in
-      MINGW*) opticks-export-mingw ;;
-   esac
-}
-opticks-export-common()
-{
-   opticks-path-add $(opticks-prefix)/bin
+   opticks-path-add $(opticks-prefix)/lib
+   opticks-path-add $(opticks-home)/bin
+   opticks-path-add $(opticks-home)/ana
 
    opticksdata-
    opticksdata-export
 
+   case $(uname -s) in
+      MINGW*) opticks-export-mingw ;;
+   esac
 }
 opticks-export-mingw()
 {

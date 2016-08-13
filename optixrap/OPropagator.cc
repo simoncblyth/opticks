@@ -209,9 +209,10 @@ void OPropagator::initEvent(OpticksEvent* evt)
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
-    m_genstep_buffer = m_ocontext->createIOBuffer<float>( gensteps, "gensteps");
+    unsigned int genstep_bufopt = OContext::BUFOPT_INPUT_ONLY | OContext::BUFOPT_SETSIZE ;
+    m_genstep_buffer = m_ocontext->createBuffer<float>( gensteps, "gensteps", genstep_bufopt  );
     m_context["genstep_buffer"]->set( m_genstep_buffer );
-    m_genstep_buf = new OBuf("genstep", m_genstep_buffer );
+    m_genstep_buf = new OBuf("genstep", m_genstep_buffer, genstep_bufopt );
 
     if(m_ocontext->isCompute()) 
     {
@@ -226,9 +227,12 @@ void OPropagator::initEvent(OpticksEvent* evt)
                   ;
     }
 
-    m_photon_buffer = m_ocontext->createIOBuffer<float>( evt->getPhotonData(), "photon" );
+
+
+    unsigned int photon_bufopt = OContext::BUFOPT_INPUT_OUTPUT | OContext::BUFOPT_SETSIZE ;
+    m_photon_buffer = m_ocontext->createBuffer<float>( evt->getPhotonData(), "photon", photon_bufopt );
     m_context["photon_buffer"]->set( m_photon_buffer );
-    m_photon_buf = new OBuf("photon", m_photon_buffer );
+    m_photon_buf = new OBuf("photon", m_photon_buffer, photon_bufopt );
 
     //if(evt->isStep())
 
@@ -240,19 +244,32 @@ void OPropagator::initEvent(OpticksEvent* evt)
     {
         NPY<short>* rx = evt->getRecordData() ;
         assert(rx);
-        m_record_buffer = m_ocontext->createIOBuffer<short>( rx, "record");
+
+        unsigned int record_bufopt = OContext::BUFOPT_OUTPUT_ONLY | OContext::BUFOPT_SETSIZE ;
+        m_record_buffer = m_ocontext->createBuffer<short>( rx, "record", record_bufopt );
         m_context["record_buffer"]->set( m_record_buffer );
-        m_record_buf = new OBuf("record", m_record_buffer );
+        m_record_buf = new OBuf("record", m_record_buffer, record_bufopt );
+
 
 
         NPY<unsigned long long>* sq = evt->getSequenceData() ;
         assert(sq);
-        m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( sq, "sequence" );
+
+        unsigned int sequence_bufopt = OContext::BUFOPT_OUTPUT_ONLY | OContext::BUFOPT_SETSIZE | OContext::BUFOPT_NON_INTEROP ; 
+        m_sequence_buffer = m_ocontext->createBuffer<unsigned long long>( sq, "sequence", sequence_bufopt  ); 
         m_context["sequence_buffer"]->set( m_sequence_buffer );
 
-        m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
+        m_sequence_buf = new OBuf("sequence", m_sequence_buffer, sequence_bufopt );
         m_sequence_buf->setMultiplicity(1u);
         m_sequence_buf->setHexDump(true);
+
+        // sequence buffer requirements:
+        //
+        //     * written by OptiX
+        //     * read by CUDA/Thrust in order to create the index
+        //     * not-touched by OpenGL, OpenGL only needs access to the index buffer written by Thrust 
+        //
+
     }
 
 

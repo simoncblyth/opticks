@@ -23,11 +23,133 @@ oks-txt
     edit CMakeLists.txt for interal projects 
 
 
+
+Buffer Flow Review  (pseudo code)
+--------------------------------------
+
+
+OEngineImp::preparePropagator()::
+
+    ///  sets up the OptiX RTProgram entry that will be writing to the buffers
+    ///  creates the buffers and places in optix context 
+
+         m_opropagator = new OPropagator(m_ocontext, m_opticks, override_);
+         unsigned int entry = m_ocontext->addEntry("generate.cu.ptx", "generate", "exception", defer);
+         m_propagator->setEvent(m_evt);
+         m_opropagator->setEntry(entry);
+         m_opropagator->initRng();
+         m_opropagator->initEvent();   
+
+OPropagator.cc::
+
+    /// OPropagator::initEvent
+    ///     creates optix::Buffer eg m_sequence_buffer and paired OBuf* m_sequence_buf 
+
+    248         NPY<unsigned long long>* sq = evt->getSequenceData() ;
+    249         assert(sq);
+    250         m_sequence_buffer = m_ocontext->createIOBuffer<unsigned long long>( sq, "sequence" );
+    251         m_context["sequence_buffer"]->set( m_sequence_buffer );
+    252         
+    253         m_sequence_buf = new OBuf("sequence", m_sequence_buffer );
+    254         m_sequence_buf->setMultiplicity(1u);
+    255         m_sequence_buf->setHexDump(true);
+
+OContext.cc::
+
+    ///   NB in interop mode the optix Buffer is 
+    ///      actually a "reference" to an OpenGL buffer identified by buffer_id
+
+    314 template <typename T>
+    315 optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_size)
+    316 {
+    ...
+    350     Buffer buffer;
+    351     if(interop)
+    352         buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
+    353     else
+    354         buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_COPY_ON_DIRTY);
+    355 
+
+
+
+I/O/IO states of OptiX buffers::
+
+    delta:cu blyth$ grep ^rtBuffer generate.cu
+    rtBuffer<uint4>                optical_buffer;   // INPUT 
+    rtBuffer<float4>               genstep_buffer;   // INPUT 
+
+    rtBuffer<float4>               photon_buffer;    // INPUT+OUTPUT   
+          //
+          // INPUT is only 1st 4 bytes used to refer to the genstep_id for each photon
+          //       could easily turn photon_buffer into OUTPUT only by using separate INPUT only seed buffer
+ 
+    rtBuffer<short4>               record_buffer;    // OUTPUT 
+    rtBuffer<unsigned long long>   sequence_buffer;  // OUTPUT 
+    rtBuffer<short4>               aux_buffer ;      // OUTPUT   (debug only)
+
+    rtBuffer<curandState, 1>       rng_states ;      // INPUT+OUTPUT 
+
+         //  has to be INPUT+OUTPUT as holds the state of the RNG 
+
+
+sequence buffer::
+
+   * not actually needed in shaders, shaders only need the rsel that is derived from the sequence buffer by indexing  
+   * so use BUFOPT_NON_INTEROP which will adopt a pure optix buffer for the sequence 
+
+
+OBuf and OBufBase hold onto the optix::buffer
+and provide way to use it from CUDA.  So in interop mode
+the OpenGL buffer is referred by id to createBufferFromGLBO and
+then 
+    
+
+     18 class OXRAP_API OBufBase {
+     19    public:
+     20       OBufBase( const char* name, optix::Buffer& buffer );
+     ..
+     32       CBufSlice slice( unsigned int stride, unsigned int begin=0u , unsigned int end=0u );
+     33       void*        getDevicePtr();
+
+
+In order to provide access from CUDA, the optix::Buffer::getDevicePointer is used::
+
+    160 void* OBufBase::getDevicePtr()
+    161 {
+    162     printf("OBufBase::getDevicePtr\n") ;
+    163     //return (void*) m_buffer->getDevicePointer(m_device); 
+    164 
+    165     CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;
+    166     return (void*)cu_ptr ;
+    167 }
+
+
+In OptiX 4 this is not working::
+
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value 
+         (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: 
+          Cannot get device pointers from non-CUDA interop buffers., 
+          file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/c-api/rtapi.cpp, line: 5654)
+    Abort trap: 6
+
+
+    * https://devtalk.nvidia.com/default/topic/946870/optix/optix-4-and-cuda-interop-new-limitation-with-input-output-buffers/
+
+
+
+
 issues
 ---------
 
+
+
+
 OptiX 4.0.0 CUDA interop changes 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/946870/optix/optix-4-and-cuda-interop-new-limitation-with-input-output-buffers/
+
+
 
 :: 
 
@@ -35,26 +157,46 @@ OptiX 4.0.0 CUDA interop changes
 
     2016-08-10 15:45:11.637 INFO  [1929041] [Timer::operator@38] OEngineImp:: propagate
     2016-08-10 15:45:11.637 INFO  [1929041] [OPropagator::dumpTimes@341] OEngineImp::propagate
-    2016-08-10 15:45:11.637 INFO  [1929041] [OPropagator::dumpTimes@342] prelaunch_times 
-     count     1 
-     validate      0.0007     0.0007 
-     compile       0.0000     0.0000 
-     prelaunch     4.4384     4.4384 
-     launch        0.0000     0.0000 
-
-    2016-08-10 15:45:11.637 INFO  [1929041] [OPropagator::dumpTimes@343] launch_times 
-     count     1 
-     validate      0.0000     0.0000 
-     compile       0.0000     0.0000 
-     prelaunch     0.0000     0.0000 
-     launch        0.3418     0.3418 
-
+    ...
     2016-08-10 15:45:11.637 INFO  [1929041] [App::indexEvt@769] App::indexEvt WITH_OPTIX
     2016-08-10 15:45:11.637 INFO  [1929041] [App::indexSequence@1089] App::indexSequence evt shape  genstep 1,6,4 nopstep 0,4,4 photon 100000,4,4 record 100000,10,2,4 phosel 100000,1,4 recsel 100000,10,1,4 sequence 100000,1,2
     2016-08-10 15:45:11.637 INFO  [1929041] [OpEngine::indexSequence@181] OpEngine::indexSequence proceeding  
     2016-08-10 15:45:11.637 INFO  [1929041] [OpIndexer::indexSequenceInterop@228] OpIndexer::indexSequenceInterop
-    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: Cannot get device pointers from non-CUDA interop buffers., file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/c-api/rtapi.cpp, line: 5654)
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value 
+         (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: 
+          Cannot get device pointers from non-CUDA interop buffers., 
+          file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/c-api/rtapi.cpp, line: 5654)
     Abort trap: 6
+
+::
+
+    (lldb) bt
+        frame #7: 0x00007fff88d8cc5b libc++abi.dylib`__cxa_throw + 124
+      * frame #8: 0x0000000103b1ee08 libOptiXRap.dylib`optix::APIObj::checkError(this=0x0000000106854f90, code=RT_ERROR_INVALID_VALUE) const + 184 at optixpp_namespace.h:1804
+        frame #9: 0x0000000103b76564 libOptiXRap.dylib`OBufBase::slice(unsigned int, unsigned int, unsigned int) + 68
+        frame #10: 0x0000000104018a98 libOpticksOp.dylib`OpIndexer::indexSequenceInterop(this=0x000000013e8494b0) + 664 at OpIndexer.cc:229
+        frame #11: 0x0000000104017b7d libOpticksOp.dylib`OpIndexer::indexSequence(this=0x000000013e8494b0) + 461 at OpIndexer.cc:180
+        frame #12: 0x0000000104021e87 libOpticksOp.dylib`OpEngine::indexSequence(this=0x000000011293d330) + 855 at OpEngine.cc:191
+        frame #13: 0x0000000104111fa4 libGGeoView.dylib`App::indexSequence(this=0x00007fff5fbfecc8) + 580 at App.cc:1091
+        frame #14: 0x0000000104111be4 libGGeoView.dylib`App::indexEvt(this=0x00007fff5fbfecc8) + 532 at App.cc:771
+        frame #15: 0x000000010000af50 GGeoViewTest`main(argc=2, argv=0x00007fff5fbfee70) + 2048 at GGeoViewTest.cc:133
+        frame #16: 0x00007fff8652f5fd libdyld.dylib`start + 1
+
+    (lldb) f 10
+    frame #10: 0x0000000104018a98 libOpticksOp.dylib`OpIndexer::indexSequenceInterop(this=0x000000013e8494b0) + 664 at OpIndexer.cc:229
+       226      assert(m_seq);
+       227  
+       228      LOG(info) << "OpIndexer::indexSequenceInterop" ; 
+    -> 229      CBufSlice seqh = m_seq->slice(2,0) ;  // stride, begin
+       230      CBufSlice seqm = m_seq->slice(2,1) ;
+       231  
+
+
+* m_seq is an OBuf holding of the sequence long long 
+
+
+
+
 
 
     GGeoViewTest --noindex  ## this avoids the above, but do not see the propagation 

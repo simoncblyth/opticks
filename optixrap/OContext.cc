@@ -22,6 +22,26 @@ using namespace optix ;
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
 
+
+const char* OContext::BUFOPT_SETSIZE_ = "SETSIZE" ; 
+const char* OContext::BUFOPT_NON_INTEROP_ = "NON_INTEROP" ; 
+const char* OContext::BUFOPT_INPUT_OUTPUT_ = "INPUT_OUTPUT" ; 
+const char* OContext::BUFOPT_INPUT_ONLY_ = "INPUT_ONLY" ; 
+const char* OContext::BUFOPT_OUTPUT_ONLY_ = "OUTPUT_ONLY" ; 
+
+
+std::string OContext::BufOptString(unsigned int bufopt)
+{
+   std::stringstream ss ;
+   if( bufopt & BUFOPT_SETSIZE )       ss << BUFOPT_SETSIZE_ << " "; 
+   if( bufopt & BUFOPT_NON_INTEROP  )  ss << BUFOPT_NON_INTEROP_ << " "; 
+   if( bufopt & BUFOPT_INPUT_OUTPUT )  ss << BUFOPT_INPUT_OUTPUT_ << " "; 
+   if( bufopt & BUFOPT_INPUT_ONLY   )  ss << BUFOPT_INPUT_ONLY_ << " "; 
+   if( bufopt & BUFOPT_OUTPUT_ONLY   ) ss << BUFOPT_OUTPUT_ONLY_ << " "; 
+   return ss.str();
+}
+
+
 const char* OContext::getModeName()
 {
     switch(m_mode)
@@ -310,51 +330,66 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 
 
 
-
 template <typename T>
-optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_size)
+optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name, unsigned int bufopt)
 {
     assert(npy);
+    bool compute = isCompute()  ; 
+    LOG(info) << "OContext::createBuffer "
+              << std::setw(20) << name 
+              << std::setw(20) << npy->getShapeString()
+              << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )
+              << " bufopt : " << BufOptString(bufopt)
+              ;
+
+
+    unsigned int type(0);
+    if(      bufopt & BUFOPT_INPUT_OUTPUT )  type = RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_COPY_ON_DIRTY ;
+    else if( bufopt & BUFOPT_OUTPUT_ONLY  )  type = RT_BUFFER_OUTPUT  ;
+    else if( bufopt & BUFOPT_INPUT_ONLY   )  type = RT_BUFFER_INPUT  ;
+    else  assert(0 && "ERR no bufopt") ;
+    
+    optix::Buffer buffer ; 
+    if( (bufopt & BUFOPT_NON_INTEROP) || compute )
+    {
+        buffer = m_context->createBuffer(type);
+    }
+    else
+    {
+         int buffer_id = npy ? npy->getBufferId() : -1 ;
+         if(!(buffer_id > -1))
+             LOG(fatal) << "OContext::createBuffer CANNOT createBufferFromGLBO as not uploaded  "
+                        << " name " << std::setw(20) << name
+                        << " buffer_id " << buffer_id 
+                         ; 
+         assert(buffer_id > -1 );
+         buffer = m_context->createBufferFromGLBO(type, buffer_id);
+    } 
+
+    configureBuffer<T>(buffer, npy, name, bufopt);
+    return buffer ; 
+}
+
+template <typename T>
+void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name, unsigned int bufopt)
+{
     unsigned int ni = std::max(1u,npy->getShape(0));
     unsigned int nj = std::max(1u,npy->getShape(1));  
     unsigned int nk = std::max(1u,npy->getShape(2));  
     unsigned int nl = std::max(1u,npy->getShape(3));  
 
-    bool compute = isCompute();
-    bool interop = !compute ; 
-    int buffer_id = npy ? npy->getBufferId() : -1 ;
+
     RTformat format = getFormat(npy->getType());
+    buffer->setFormat(format);  // must set format, before can set ElementSize
 
     std::stringstream ss ; 
     ss 
        << std::setw(10) << name
        << std::setw(20) << npy->getShapeString()
-       << ( interop ? " INTEROP " : " COMPUTE " ) 
-       << " id " << std::setw(4) << buffer_id
        << ( format == RT_FORMAT_USER ? " USER" : " QUAD"  )   
        ;
 
     std::string hdr = ss.str();
-
-    if(interop)
-    {
-        if(!(buffer_id > -1))
-            LOG(fatal) << "OContext::createIOBuffer CANNOT createBufferFromGLBO as not uploaded  "
-                         << " name " << std::setw(20) << name
-                         << " buffer_id " << buffer_id 
-                         ; 
-        assert(buffer_id > -1 );
-    }
-
-
-    Buffer buffer;
-    if(interop)
-        buffer = m_context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, buffer_id);
-    else
-        buffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_COPY_ON_DIRTY);
-
-
-    buffer->setFormat(format);  // must set format, before can set ElementSize
 
     unsigned int size ; 
     if(format == RT_FORMAT_USER)
@@ -373,18 +408,16 @@ optix::Buffer OContext::createIOBuffer(NPY<T>* npy, const char* name, bool set_s
         LOG(info) << hdr 
                   << " size (gnq) " << std::setw(10) << size 
                   ;
-
     }
 
-
-    if(set_size)
+    if(bufopt & BUFOPT_SETSIZE)
     {
         buffer->setSize(size); 
     }
-
-
-    return buffer ; 
 }
+
+
+
 
 /*
 
@@ -429,8 +462,8 @@ template OXRAP_API void OContext::upload<unsigned long long>(optix::Buffer&, NPY
 template OXRAP_API void OContext::download<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
 
 
-template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<float>*, const char*, bool);
-template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<short>*, const char*, bool);
-template OXRAP_API optix::Buffer OContext::createIOBuffer(NPY<unsigned long long>*, const char*, bool);
+template OXRAP_API optix::Buffer OContext::createBuffer(NPY<float>*, const char*, unsigned int );
+template OXRAP_API optix::Buffer OContext::createBuffer(NPY<short>*, const char*, unsigned int );
+template OXRAP_API optix::Buffer OContext::createBuffer(NPY<unsigned long long>*, const char*, unsigned int );
 
 

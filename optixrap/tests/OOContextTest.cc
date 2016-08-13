@@ -33,7 +33,7 @@ int main( int argc, char** argv )
 
     NPY<float>* npy = NPY<float>::make(ni, nj, nk) ;
 
-    optix::Buffer buffer = m_ocontext->createIOBuffer<float>( npy, "demo");
+    optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo", OContext::BUFOPT_SETSIZE | OContext::BUFOPT_INPUT_OUTPUT);
 
     context["output_buffer"]->set(buffer);
 

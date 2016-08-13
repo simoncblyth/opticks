@@ -61,8 +61,12 @@ void OpIndexer::indexSequenceViaOpenGL(
     NPY<unsigned char>* phosel = m_evt->getPhoselData() ;
     NPY<unsigned char>* recsel = m_evt->getRecselData() ;
 
-    CResource rphosel( phosel->getBufferId(), CResource::W );
-    CResource rrecsel( recsel->getBufferId(), CResource::W );
+    unsigned int phosel_id = phosel->getBufferId() ;
+    unsigned int recsel_id = recsel->getBufferId() ;
+    printf("OpIndexer::indexSequenceViaOpenGL phosel_id %u recsel_id %u \n", phosel_id, recsel_id ); 
+
+    CResource rphosel( phosel_id, CResource::W );
+    CResource rrecsel( recsel_id, CResource::W );
 
     // grab refs to the OpenGL GPU buffers
     CBufSpec rps = rphosel.mapGLToCUDA<unsigned char>() ;

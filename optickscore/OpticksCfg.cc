@@ -223,6 +223,11 @@ void OpticksCfg<Listener>::init()
        ("indexdbg",  "dump details of indexing") ;
 
    m_desc.add_options()
+       ("forceindex",  "force indexing even when index exists already") ;
+
+
+
+   m_desc.add_options()
        ("meshfixdbg",  "dump details of meshfixing, only active when rebuilding geocache with -G option") ;
 
 
