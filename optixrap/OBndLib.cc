@@ -37,43 +37,36 @@ void OBndLib::convert()
 
 void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 {
-    //  eg (123, 4, 39, 4)   boundary, imat-omat-isur-osur, wavelength-samples, 4-props
+/*
+   b = np.load("/tmp/blyth/opticks/GBndLib/GBndLib.npy")
 
-    unsigned int ni = buf->getShape(0);  // number of boundaries
-    unsigned int nj = buf->getShape(1);  // number of species:4  omat/osur/isur/imat 
-    unsigned int nk = buf->getShape(2);  
-    unsigned int nl = buf->getShape(3); 
-    unsigned int nm = buf->getShape(4);  
+
+         #float4
+            |     ___ wavelength samples
+            |    /
+   (123, 4, 2, 39, 4)
+    |    |          \___ float4 props        
+  #bnd   | 
+         |
+    omat/osur/isur/imat  
+
+*/
+
+    unsigned int ni = buf->getShape(0);  // (~123) number of boundaries 
+    unsigned int nj = buf->getShape(1);  // (4)    number of species : omat/osur/isur/imat 
+    unsigned int nk = buf->getShape(2);  // (2)    number of float4 property groups per species 
+    unsigned int nl = buf->getShape(3);  // (39)   number of wavelength samples of the property
+    unsigned int nm = buf->getShape(4);  // (4)    number of prop within the float4
 
     assert(ni == m_lib->getNumBnd()) ;
     assert(nj == GPropertyLib::NUM_MATSUR);
 
-    unsigned int nx ;
-    unsigned int ny ;   
+    assert(nk == GPropertyLib::NUM_FLOAT4); 
+    assert(nl == Opticks::DOMAIN_LENGTH); 
+    assert(nm == 4); 
 
-    if(nm == 0)
-    {
-        assert(nk == Opticks::DOMAIN_LENGTH); 
-        assert(nl == GPropertyLib::NUM_PROP );
-        assert(nl == 4 || nl == 8);
-        unsigned int n_float4 = nl/4 ; 
-        assert( n_float4 == GPropertyLib::NUM_FLOAT4 );
-
-        ny = ni*nj*n_float4 ;   //
-        nx = nk ;               // wavelength samples
-
-        assert(0 && "old style buffer not supported");
-    }
-    else
-    {
-        assert(nk == GPropertyLib::NUM_FLOAT4); 
-        assert(nl == Opticks::DOMAIN_LENGTH); 
-        assert(nm == 4); 
-
-        ny = ni*nj*nk ;
-        nx = nl ;           // wavelength samples
-    }
-
+    unsigned int ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
+    unsigned int nx = nl ;           // wavelength samples
    
     LOG(trace) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
@@ -81,7 +74,6 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " nx " << nx
               << " ny " << ny  
               ;
-
 
     
     optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
@@ -91,29 +83,30 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     configureSampler(tex, optixBuffer);
 
 
-
-
-    unsigned int wmin = 0 ; 
-    unsigned int wmax = nx - 1 ; 
-    unsigned int lmin = m_lib->getLineMin() ;
-    unsigned int lmax = m_lib->getLineMax() ; 
+    unsigned int xmin = 0 ; 
+    unsigned int xmax = nx - 1 ; 
+    unsigned int ymin = 0 ;
+    unsigned int ymax = ny - 1 ; 
 
     // huh factor of 2 somewhere ???  nope payload details are beneath texture line level
 
     LOG(trace) << "OBndLib::makeBoundaryTexture"
-              << " lmin " << lmin 
-              << " lmax " << lmax
+              << " xmin " << xmin 
+              << " xmax " << xmax
+              << " nx " << nx 
+              << " ymin " << ymin 
+              << " ymax " << ymax
+              << " ny " << ny 
               << " ni " << ni
               << " nj " << nj
               << " nk " << nk
               << " nl " << nl
               << " nm " << nm
               << " ni*nj " << ni*nj
+              << " ni*nj*nk " << ni*nj*nk
              ;
  
-    assert(lmin == 0 && lmax == ni*nj - 1);
-
-    optix::uint4 bounds = optix::make_uint4(wmin, wmax, lmin, lmax );
+    optix::uint4 bounds = optix::make_uint4(xmin, xmax, ymin, ymax );
 
     LOG(trace) << "OBndLib::makeBoundaryTexture bounds (not including the num_float4) " 
               << " x " << bounds.x 

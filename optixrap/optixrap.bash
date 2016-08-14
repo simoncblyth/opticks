@@ -471,4 +471,15 @@ optixrap-run(){
 }
 
 
+optixrap-ptxs(){
+   local name=${1:-boundaryTest}
+   local ptx=OptiXRap_generated_${name}.cu.ptx
+   find $(optixrap-bdir) -name $ptx
+   find $(opticks-prefix)/installcache/PTX -name $ptx
+}
+
+optixrap-flush(){
+   rm $(optixrap-ptxs)
+}
+
 

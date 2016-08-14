@@ -37,6 +37,10 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
   std::string path = BOpticksResource::PTXPath(filename); 
   std::string key = path + ":" + progname ; 
 
+  LOG(info) << "OConfig::createProgram"
+            << " path " << path 
+             ;
+
   if(m_programs.find(key) == m_programs.end())
   { 
        LOG(debug) << "OConfig::createProgram " << key ;

@@ -19,10 +19,37 @@ static __device__ __inline__ float reemission_lookup(float u)
 
 static __device__ __inline__ void reemission_check()
 {
-    float nm_a = reemission_lookup(0.0f); 
-    float nm_b = reemission_lookup(0.5f); 
-    float nm_c = reemission_lookup(1.0f); 
-    rtPrintf("reemission_check nm_a %10.3f %10.3f %10.3f  \n",  nm_a, nm_b, nm_c );
+    float nm_0 = reemission_lookup(0.000f); 
+    float nm_1 = reemission_lookup(0.001f); 
+    float nm_2 = reemission_lookup(0.002f); 
+    float nm_3 = reemission_lookup(0.003f); 
+    float nm_4 = reemission_lookup(0.004f); 
+
+    float nm_5 = reemission_lookup(0.005f); 
+    float nm_6 = reemission_lookup(0.006f); 
+    float nm_7 = reemission_lookup(0.007f); 
+    float nm_8 = reemission_lookup(0.008f); 
+    float nm_9 = reemission_lookup(0.009f); 
+
+    
+
+    rtPrintf("reemission_check nm_0:9    %10.3f %10.3f %10.3f %10.3f %10.3f    %10.3f %10.3f %10.3f %10.3f %10.3f  \n", 
+           nm_0, nm_1, nm_2, nm_3, nm_4,
+           nm_5, nm_6, nm_7, nm_7, nm_9
+         );
+
+/*
+OptiX 400 : forced different texture params, access needs debug... getting crazy:
+
+     0. to 1. in 0.1 steps
+     0. to 0.1 in 0.01 steps
+     0. to 0.1 in 0.01 steps
+
+reemission_check nm_0:9       415.124    180.000    180.000    180.000    180.000       180.000    180.000    180.000    180.000    180.000  
+reemission_check nm_0:9       415.124    180.000    180.000    180.000    180.000       180.000    180.000    180.000    180.000    180.000  
+
+*/
+
 }
 
 

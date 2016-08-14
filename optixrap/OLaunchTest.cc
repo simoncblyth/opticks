@@ -1,4 +1,4 @@
-#include "OTextureTest.hh"
+#include "OLaunchTest.hh"
 
 // optickscore-
 #include "Opticks.hh"
@@ -14,10 +14,13 @@ using namespace optix ;
 
 #include "PLOG.hh"
 
-OTextureTest::OTextureTest(OContext* ocontext, Opticks* opticks) 
+OLaunchTest::OLaunchTest(OContext* ocontext, Opticks* opticks, const char* ptx, const char* prog, const char* exception) 
    :
     m_ocontext(ocontext),
     m_opticks(opticks),
+    m_ptx(strdup(ptx)),
+    m_prog(strdup(prog)),
+    m_exception(strdup(exception)),
 
     m_entry_index(-1),
     m_width(1),
@@ -26,13 +29,13 @@ OTextureTest::OTextureTest(OContext* ocontext, Opticks* opticks)
     init();
 }
 
-void OTextureTest::init()
+void OLaunchTest::init()
 {
     m_context = m_ocontext->getContext();
-    m_entry_index = m_ocontext->addEntry(   "textureTest.cu.ptx", "textureTest", "exception");
+    m_entry_index = m_ocontext->addEntry(m_ptx, m_prog, m_exception);
 }
 
-void OTextureTest::launch()
+void OLaunchTest::launch()
 {
     m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  m_width, m_height);
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height);

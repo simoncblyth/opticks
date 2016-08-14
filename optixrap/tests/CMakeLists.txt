@@ -7,6 +7,7 @@ set(TEST_SOURCES
     OPropertyLibTest.cc
     OScintillatorLibTest.cc
     OOTextureTest.cc
+    OOBoundaryTest.cc
     OOMinimalTest.cc
     OOContextTest.cc
     OOContextUploadDownloadTest.cc

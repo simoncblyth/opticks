@@ -607,8 +607,6 @@ cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
 cuda-download-dir(){ echo $(local-base)/env/cuda ; }
 
 
-
-
 cuda-dir()
 {       
    case $(uname) in 
@@ -692,6 +690,11 @@ cuda-osx-getting-started(){ open $(cuda-dir)/doc/html/cuda-getting-started-guide
 cuda-guide(){               open $(cuda-dir)/doc/html/cuda-c-programming-guide/index.html ; }
 cuda-doc(){                 open $(cuda-dir)/doc/html/index.html ; }
 cuda-osx-kextstat(){        kextstat | grep -i cuda ; }
+
+cuda-pdf-(){ echo $(cuda-dir)/doc/pdf/CUDA_C_Programming_Guide.pdf ; }
+cuda-pdf(){ open $(cuda-pdf-) ; }
+
+
 
 
 cuda-samples-install(){

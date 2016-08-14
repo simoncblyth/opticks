@@ -172,14 +172,6 @@ unsigned int OBufBase::getElementSizeInBytes(RTformat format)
 
 void* OBufBase::getDevicePtr()
 {
-   // cannot easily branche between getting the pointer via OptiX and OpenGL
-   // in here due to the OpenGL way requiring 
-   // 
-   //   CResource rphosel( phosel_id, CResource::W );
-   //   CBufSpec rps = rphosel.mapGLToCUDA<unsigned char>() ;
-   //   rphosel.unmapGLToCUDA(); 
-   // 
-
     printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
     //return (void*) m_buffer->getDevicePointer(m_device); 
 

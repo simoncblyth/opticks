@@ -126,7 +126,7 @@ set(SOURCES
     OBufBase_.cu     
     OBufPair_.cu     
     OPropagator.cc
-    OTextureTest.cc
+    OLaunchTest.cc
 
     OGeo.cc
 
@@ -143,6 +143,7 @@ set(SOURCES
     cu/LTminimalTest.cu
     cu/axisTest.cu
     cu/seedTest.cu
+    cu/boundaryTest.cu
 )
 
 
@@ -160,9 +161,8 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_LTminimalTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_axisTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_seedTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_boundaryTest.cu.ptx
 )
-
-#message(" ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_minimalTest.cu.ptx " )
 
 
 set(HEADERS

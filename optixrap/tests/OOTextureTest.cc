@@ -1,7 +1,7 @@
 #include "GScintillatorLib.hh"
 #include "OScintillatorLib.hh"
 
-#include "OTextureTest.hh"
+#include "OLaunchTest.hh"
 #include "OContext.hh"
 #include "Opticks.hh"
 
@@ -52,9 +52,8 @@ int main(int argc, char** argv)
     optix::Acceleration acceleration = context->createAcceleration(builder, traverser);
     top->setAcceleration(acceleration);
 
- 
-    OTextureTest* m_ott(NULL);
-    m_ott = new OTextureTest(m_ocontext, m_opticks);
+    OLaunchTest* m_ott(NULL);
+    m_ott = new OLaunchTest(m_ocontext, m_opticks, "textureTest.cu.ptx", "textureTest", "exception");
     m_ott->launch();
 
     LOG(info) << "DONE" ; 
@@ -83,8 +82,6 @@ With OptiX 4.0.0::
     libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Unsupported combination of texture index, wrap and filter modes:  RT_TEXTURE_INDEX_ARRAY_INDEX, RT_WRAP_REPEAT, RT_FILTER_LINEAR, file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp, line: 138)
     Abort trap: 6
     simon:~ blyth$ 
-
-
 
 
 
