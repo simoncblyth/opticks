@@ -134,6 +134,9 @@ class OKOP_API OpIndexer {
            bool verbose 
       );
    private:
+      void indexBoundariesFromOpenGL(unsigned int photon_buffer_id, unsigned int stride, unsigned int begin);
+      void indexBoundariesFromOptiX(OBuf* pho                     , unsigned int stride, unsigned int begin);
+   private:
 
       void dump(const TBuf& tphosel, const TBuf& trecsel);
       void dumpHis(const TBuf& tphosel, const TSparse<unsigned long long>& seqhis) ;

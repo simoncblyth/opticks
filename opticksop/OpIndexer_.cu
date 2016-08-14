@@ -3,15 +3,20 @@
 #include <cassert>
 
 // optickscore-
+#include "OpticksConst.hh"  
 #include "OpticksEvent.hh"  
 
 // npy-
 #include "Timer.hpp"  
 #include "NPY.hpp"  
 
+// optixrap-
+#include "OBuf.hh"
+
 // cudawrap-
 #include "CResource.hh"
 #include "CBufSpec.hh"
+#include "CBufSlice.hh"
 
 // thrustrap-
 #include "TBuf.hh"
@@ -45,7 +50,9 @@ void OpIndexer::indexSequenceViaThrust(
     thrust::device_vector<unsigned char> dps(phosel->getNumValues());
     thrust::device_vector<unsigned char> drs(recsel->getNumValues());
 
-    // refs to the buffers
+    // CUDA refs to the buffers obtained from Thrust 
+    //     thrustrap-/TUtil.make_bufspec 
+    //     does thrust::raw_pointer_cast to get raw CUDA pointer from Thrust 
     CBufSpec rps = make_bufspec<unsigned char>(dps); 
     CBufSpec rrs = make_bufspec<unsigned char>(drs) ;
 
@@ -78,6 +85,10 @@ void OpIndexer::indexSequenceViaOpenGL(
     rphosel.unmapGLToCUDA(); 
     rrecsel.unmapGLToCUDA(); 
 }
+
+
+
+
 
 void OpIndexer::indexSequenceImp(
    TSparse<unsigned long long>& seqhis, 
@@ -131,5 +142,51 @@ void OpIndexer::indexSequenceImp(
     tphosel.download<unsigned char>( phosel );  // cudaMemcpyDeviceToHost
     trecsel.download<unsigned char>( recsel );
 }
+
+
+
+
+
+
+
+void OpIndexer::indexBoundariesFromOptiX(OBuf* pho, unsigned int stride, unsigned int begin)
+{
+     CBufSlice cbnd = pho->slice(stride,begin) ;    // gets CUDA devPtr from OptiX
+
+     TSparse<int> boundaries(OpticksConst::BNDIDX_NAME_, cbnd, false); // hexkey effects Index and dumping only 
+    
+     m_evt->setBoundaryIndex(boundaries.getIndex());
+    
+     boundaries.make_lookup();
+
+     if(m_verbose)
+        boundaries.dump("OpIndexer::indexBoundariesFromOptiX PTR_FROM_OPTIX TSparse<int>::dump");
+}
+
+void OpIndexer::indexBoundariesFromOpenGL(unsigned int photon_id, unsigned int stride, unsigned int begin)
+{
+    // NB this is not using the OptiX buffer, 
+    //    OpenGL buffer is interop to CUDA accessed directly 
+
+    CResource rphoton( photon_id, CResource::R );
+
+    CBufSpec rph = rphoton.mapGLToCUDA<int>();    // gets CUDA devPtr from OpenGL
+    {
+        CBufSlice cbnd = rph.slice(stride,begin) ; // stride, begin  
+
+        TSparse<int> boundaries(OpticksConst::BNDIDX_NAME_, cbnd, false);
+    
+        m_evt->setBoundaryIndex(boundaries.getIndex());
+    
+        boundaries.make_lookup();
+
+        if(m_verbose)
+           boundaries.dump("OpIndexer::indexBoundariesFromOpenGL PTR_FROM_OPTIX TSparse<int>::dump");
+
+        rphoton.unmapGLToCUDA(); 
+    }
+}
+
+
 
 

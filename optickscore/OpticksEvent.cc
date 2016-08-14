@@ -488,7 +488,7 @@ void OpticksEvent::createBuffers()
     setNopstepData(nop);   
 
     NPY<float>* pho = NPY<float>::make(m_photon_spec); // must match GPU side photon.h:PNUMQUAD
-    pho->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT"));
+    pho->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT,PTR_FROM_OPENGL"));
     setPhotonData(pho);   
 
     NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec); 

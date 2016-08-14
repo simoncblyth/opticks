@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdio>
+#include "CBufSlice.hh"
 
 #include "CUDARAP_API_EXPORT.hh"
 
@@ -22,6 +23,13 @@ struct CUDARAP_API CBufSpec
    {
        printf("%s : dev_ptr %p size %u num_bytes %u hexdump %u \n", msg, dev_ptr, size, num_bytes, hexdump ); 
    }
+
+   CBufSlice slice( unsigned int stride, unsigned int begin, unsigned int end=0u ) const 
+   {
+        if(end == 0u) end = size ;   
+        return CBufSlice(dev_ptr, size, num_bytes, stride, begin, end);
+   }
+
 
 
 }; 

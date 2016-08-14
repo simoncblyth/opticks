@@ -124,7 +124,7 @@ In order to provide access from CUDA, the optix::Buffer::getDevicePointer is use
     167 }
 
 
-In OptiX 4 this is not working::
+In OptiX 4 this is not working for FromGLBO buffers::
 
     libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid value 
          (Details: Function "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: 
@@ -136,6 +136,14 @@ In OptiX 4 this is not working::
     * https://devtalk.nvidia.com/default/topic/946870/optix/optix-4-and-cuda-interop-new-limitation-with-input-output-buffers/
 
 
+For sequence buffer the workaround is to use buffer control OPTIX_NON_INTEROP to
+treat as a pure OptiX buffer, as sequence is not needed by OpenGL shaders.
+
+
+
+
+
+
 
 
 issues
@@ -143,12 +151,39 @@ issues
 
 
 
+OptiX 400 : photon buffer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-OptiX 4.0.0 CUDA interop changes 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+    OBufBase::getDevicePtr photon 
+    libc++abi.dylib: terminating with uncaught exception of type 
+         optix::Exception: Invalid value (Details: Function 
+             "RTresult _rtBufferGetDevicePointer(RTbuffer, int, void **)" caught exception: 
+               Cannot get device pointers from non-CUDA interop buffers., 
+           file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/c-api/rtapi.cpp, line: 5654)
+
+    (lldb) bt
+        ...
+        frame #8: 0x0000000103b20fa8 libOptiXRap.dylib`optix::APIObj::checkError(this=0x0000000117b5c210, code=RT_ERROR_INVALID_VALUE) const + 184 at optixpp_namespace.h:1804
+        frame #9: 0x0000000103b79014 libOptiXRap.dylib`OBufBase::slice(unsigned int, unsigned int, unsigned int) + 100
+        frame #10: 0x000000010401a499 libOpticksOp.dylib`OpIndexer::indexBoundaries(this=0x000000014047a9a0) + 329 at OpIndexer.cc:145
+        frame #11: 0x0000000104024cb1 libOpticksOp.dylib`OpEngine::indexSequence(this=0x0000000111fafbb0) + 881 at OpEngine.cc:192
+        frame #12: 0x0000000104114fa4 libGGeoView.dylib`App::indexSequence(this=0x00007fff5fbfecb8) + 580 at App.cc:1091
+        frame #13: 0x0000000104114be4 libGGeoView.dylib`App::indexEvt(this=0x00007fff5fbfecb8) + 532 at App.cc:771
+        frame #14: 0x000000010000af50 GGeoViewTest`main(argc=1, argv=0x00007fff5fbfee60) + 2048 at GGeoViewTest.cc:133
+
+
+
+
+
+
+OptiX 400 : sequence buffer [WORKAROUND: adopt pure OptiX sequence buffer]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* OpenGL/OptiX/CUDA interop has changed : can no longer get a CUDA pointer in from a FromGLBO OptiX buffer 
 
 * https://devtalk.nvidia.com/default/topic/946870/optix/optix-4-and-cuda-interop-new-limitation-with-input-output-buffers/
-
 
 
 :: 

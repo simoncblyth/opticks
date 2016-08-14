@@ -8,6 +8,7 @@
 // optickscore-
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
+#include "OpticksBufferControl.hh"
 
 // npy-
 #include "PLOG.hh"
@@ -134,22 +135,32 @@ void OpIndexer::indexBoundaries()
 {
     update();
 
-    bool hexkey = false ; 
-
     if(!m_pho)
     {
         LOG(warning) << "OpIndexer::indexBoundaries OBuf m_pho is NULL : SKIPPING " ; 
         return ;  
     }
 
-    TSparse<int> boundaries(OpticksConst::BNDIDX_NAME_, m_pho->slice(4*4,4*3+0), hexkey); // stride,begin  hexkey effects Index and dumping only 
+    NPYBase* npho = m_pho->getNPY();
+    unsigned int buffer_id = npho->getBufferId();
+    unsigned long long ctrl = npho->getBufferControl();
 
-    m_evt->setBoundaryIndex(boundaries.getIndex());
+    unsigned int stride = 4*4 ; 
+    unsigned int begin  = 4*3+0 ;  
 
-    boundaries.make_lookup();
-
-    if(m_verbose)
-    boundaries.dump("OpIndexer::indexBoundaries TSparse<int>::dump");
+    if(ctrl & OpticksBufferControl::PTR_FROM_OPTIX )
+    {
+         indexBoundariesFromOptiX(m_pho, stride, begin);
+    } 
+    else if(ctrl & OpticksBufferControl::PTR_FROM_OPENGL)
+    {
+         assert(buffer_id > 0);
+         indexBoundariesFromOpenGL(buffer_id, stride, begin);
+    }
+    else
+    {
+         assert(0 && "NO BUFFER CONTROL");
+    }
 
     TIMER("indexBoundaries"); 
 }

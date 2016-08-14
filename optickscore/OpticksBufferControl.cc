@@ -7,7 +7,8 @@ const char* OpticksBufferControl::OPTIX_NON_INTEROP_ = "OPTIX_NON_INTEROP" ;
 const char* OpticksBufferControl::OPTIX_INPUT_OUTPUT_ = "OPTIX_INPUT_OUTPUT" ; 
 const char* OpticksBufferControl::OPTIX_INPUT_ONLY_ = "OPTIX_INPUT_ONLY" ; 
 const char* OpticksBufferControl::OPTIX_OUTPUT_ONLY_ = "OPTIX_OUTPUT_ONLY" ; 
-
+const char* OpticksBufferControl::PTR_FROM_OPTIX_ = "PTR_FROM_OPTIX" ; 
+const char* OpticksBufferControl::PTR_FROM_OPENGL_ = "PTR_FROM_OPENGL" ; 
 
 std::string OpticksBufferControl::Description(unsigned long long ctrl)
 {
@@ -17,6 +18,8 @@ std::string OpticksBufferControl::Description(unsigned long long ctrl)
    if( ctrl & OPTIX_INPUT_OUTPUT )  ss << OPTIX_INPUT_OUTPUT_ << " "; 
    if( ctrl & OPTIX_INPUT_ONLY   )  ss << OPTIX_INPUT_ONLY_ << " "; 
    if( ctrl & OPTIX_OUTPUT_ONLY   ) ss << OPTIX_OUTPUT_ONLY_ << " "; 
+   if( ctrl & PTR_FROM_OPTIX      ) ss << PTR_FROM_OPTIX_ << " "; 
+   if( ctrl & PTR_FROM_OPENGL     ) ss << PTR_FROM_OPENGL_ << " "; 
    return ss.str();
 }
 
@@ -28,20 +31,17 @@ unsigned long long OpticksBufferControl::ParseTag(const char* k)
     else if(strcmp(k,OPTIX_INPUT_OUTPUT_)==0) tag = OPTIX_INPUT_OUTPUT ;
     else if(strcmp(k,OPTIX_INPUT_ONLY_)==0)   tag = OPTIX_INPUT_ONLY ;
     else if(strcmp(k,OPTIX_OUTPUT_ONLY_)==0)  tag = OPTIX_OUTPUT_ONLY ;
+    else if(strcmp(k,PTR_FROM_OPTIX_)==0)     tag = PTR_FROM_OPTIX ;
+    else if(strcmp(k,PTR_FROM_OPENGL_)==0)    tag = PTR_FROM_OPENGL ;
     return tag ;
 }
 
-
 unsigned long long OpticksBufferControl::Parse(const char* ctrl_, char delim)
 {
+    unsigned long long ctrl(0) ; 
     std::vector<std::string> elems ; 
     BStr::split(elems,ctrl_,delim);
-
-    unsigned long long ctrl = 0 ; 
-    for(unsigned i=0 ; i < elems.size() ; i++)
-    {
-        ctrl |= ParseTag(elems[i].c_str()) ;
-    }    
+    for(unsigned i=0 ; i < elems.size() ; i++) ctrl |= ParseTag(elems[i].c_str()) ;
     return ctrl ; 
 }
 

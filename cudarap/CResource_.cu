@@ -116,6 +116,7 @@ template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned char>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned int>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<unsigned long long>();
 template CUDARAP_API CBufSpec CResource::mapGLToCUDA<short>();
+template CUDARAP_API CBufSpec CResource::mapGLToCUDA<int>();
 
 
 
