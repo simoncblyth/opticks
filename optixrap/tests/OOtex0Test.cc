@@ -35,6 +35,9 @@ int main(int argc, char** argv)
 
     optix::TextureSampler tex = context->createTextureSampler();
 
+#ifdef TEX_TEST_MANUAL
+
+     LOG(info) << "TEX_TEST_MANUAL" ; 
     // RT_WRAP_CLAMP_TO_BORDER: giving zero when out of range makes 
     // most sense, but seems not supported... but actually not 
     // a big issue as tex coords are highly controlled anyhow
@@ -65,6 +68,10 @@ int main(int argc, char** argv)
     tex->setArraySize(1);
     tex->setBuffer(0, 0, texBuffer);
 
+#else
+    LOG(info) << "Using OConfig::configureSampler" ; 
+    OConfig::configureSampler(tex, texBuffer);
+#endif
 
     context["some_texture"]->setTextureSampler(tex);
     context["out_buffer"]->setBuffer(outBuffer);   

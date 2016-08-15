@@ -8,16 +8,13 @@ using namespace optix;
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
-//rtTextureSampler<float, 2>  some_texture ;
 rtDeclareVariable(int4,  tex_param, , );
 
-
-rtBuffer<float,2>           out_buffer;
+rtBuffer<float4,2>           out_buffer;
 
 
 RT_PROGRAM void texTest()
 {
-
     // texture indexing for (nx, ny)
     //      array type indexing:   0:nx-1 , 0:ny-1
     //      norm float indexing:   0:1-1/nx  , 0:1-1/ny
@@ -31,9 +28,9 @@ RT_PROGRAM void texTest()
  //   float val = tex2D(some_texture, x, y );
 
     int tex_id = tex_param.x ; 
-    float val = rtTex2D<float>( tex_id, x, y ); 
+    float4 val = rtTex2D<float4>( tex_id, x, y ); 
 
-    rtPrintf("texTest (%d,%d) (%10.4f,%10.4f) -> %10.4f  \n", ix, iy, x, y, val);
+    rtPrintf("texTest (%d,%d) (%10.4f,%10.4f) -> (%10.4f,%10.4f,%10.4f,%10.4f)  \n", ix, iy, x, y, val.x, val.y, val.z, val.w);
 
     out_buffer[launch_index] = val ; 
 

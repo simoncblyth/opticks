@@ -56,6 +56,7 @@
 using namespace optix;
 
 #include "quad.h"
+#include "boundary_lookup.h"
 #include "wavelength_lookup.h"
 
 rtBuffer<uint4>                optical_buffer; 

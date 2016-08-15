@@ -198,7 +198,7 @@ void NPY<T>::add(T x, T y, T z, T w)
 
 
 template <typename T>
-T NPY<T>::maxdiff(NPY<T>* other)
+T NPY<T>::maxdiff(NPY<T>* other, bool dump)
 {
     unsigned int nv = getNumValues(0);
     unsigned int no = getNumValues(0);
@@ -213,6 +213,17 @@ T NPY<T>::maxdiff(NPY<T>* other)
         T o = *(o_+i) ; 
 
         T df = std::fabs(v - o);
+
+        if(dump && df > 1e-5)
+             std::cout 
+                 << "( " << std::setw(10) << i << "/" 
+                 << std::setw(10) << nv << ")   "
+                 << "v " << std::setw(10) << v 
+                 << "o " << std::setw(10) << o 
+                 << "d " << std::setw(10) << df
+                 << "m " << std::setw(10) << mx
+                 << std::endl ; 
+
         mx = std::max(mx, df );
     }  
     return mx ;  

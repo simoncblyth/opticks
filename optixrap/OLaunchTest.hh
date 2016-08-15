@@ -11,6 +11,8 @@ class OXRAP_API OLaunchTest {
     public:
         OLaunchTest(OContext* ocontext, Opticks* opticks, const char* ptx="textureTest.cu.ptx", const char* prog="textureTest", const char* exception="exception"); 
     public:
+        void setWidth(unsigned int width);
+        void setHeight(unsigned int height);
         void launch();
     private:
         void init();

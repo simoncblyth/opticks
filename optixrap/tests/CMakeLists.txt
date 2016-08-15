@@ -12,6 +12,7 @@ set(TEST_SOURCES
     LTOOContextUploadDownloadTest.cc
 
     OOboundaryTest.cc
+    OOboundaryLookupTest.cc
     OOtex0Test.cc
     OOtexTest.cc
 )

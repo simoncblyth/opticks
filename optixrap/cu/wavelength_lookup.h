@@ -1,8 +1,6 @@
 #pragma once
 
 #include "define.h"
-#include "GPropertyLib.hh"
-
 
 #define NM_BLUE   475.f
 #define NM_GREEN  510.f
@@ -15,11 +13,13 @@ rtTextureSampler<float, 2>  source_texture ;
 rtDeclareVariable(float4, source_domain, , );
 
 
+/*
+#include "GPropertyLib.hh"
 rtTextureSampler<float4, 2>  boundary_texture ;
 rtDeclareVariable(float4, boundary_domain, , );
 rtDeclareVariable(float4, boundary_domain_reciprocal, , );
 rtDeclareVariable(uint4, boundary_bounds, , );
-
+*/
 
 static __device__ __inline__ float reemission_lookup(float u)
 {
@@ -70,6 +70,9 @@ source_check nm_a     60.000    506.041    820.000
 
 
 
+
+/*
+
 static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int line, unsigned int offset )
 {
     // x:low y:high z:step w:mid   tex coords are offset by 0.5 
@@ -101,18 +104,6 @@ static __device__ __inline__ float4 wavelength_lookup(float nm, unsigned int lin
     // DEBUG KLUDGE
 }
 
-static __device__ __inline__ float sample_reciprocal_domain(const float& u)
-{
-    // return wavelength, from uniform sampling of 1/wavelength[::-1] domain
-    float iw = lerp( boundary_domain_reciprocal.x , boundary_domain_reciprocal.y, u ) ;
-    return 1.f/iw ;  
-}
-
-static __device__ __inline__ float sample_domain(const float& u)
-{
-    // return wavelength, from uniform sampling of wavelength domain
-    return lerp( boundary_domain.x , boundary_domain.y, u ) ;
-}
 
 
 
@@ -166,4 +157,4 @@ static __device__ __inline__ void wavelength_check()
      ); 
   }
 }
-
+*/

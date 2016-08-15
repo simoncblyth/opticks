@@ -48,9 +48,9 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
     //
     //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
 
-    s.material1 = wavelength_lookup( wavelength, m1_line, 0);  
-    s.material2 = wavelength_lookup( wavelength, m2_line, 0);
-    s.surface   = wavelength_lookup( wavelength, su_line, 0);                 
+    s.material1 = boundary_lookup( wavelength, m1_line, 0);  
+    s.material2 = boundary_lookup( wavelength, m2_line, 0);
+    s.surface   = boundary_lookup( wavelength, su_line, 0);                 
 
     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
 

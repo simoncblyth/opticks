@@ -1163,7 +1163,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   if(primIdx == -1)
   { 
       source_check(); 
-      wavelength_check(); 
+      //wavelength_check(); 
   }
 
   const uint4& solid    = solidBuffer[primIdx]; 

@@ -1,5 +1,6 @@
 #include "NPY.hpp"
 #include "GScintillatorLib.hh"
+#include "OConfig.hh"
 #include "OScintillatorLib.hh"
 
 #include "PLOG.hh"
@@ -86,7 +87,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     upload(optixBuffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
-    configureSampler(tex, optixBuffer);
+    OConfig::configureSampler(tex, optixBuffer);
 
     m_context["reemission_texture"]->setTextureSampler(tex);
     m_context["reemission_domain"]->setFloat(domain);

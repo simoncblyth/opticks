@@ -133,7 +133,7 @@ class NPY_API NPY : public NPYBase {
        NPY<T>* transform(glm::mat4& tr);
        NPY<T>* scale(float factor);
    public:
-       T maxdiff(NPY<T>* other);
+       T maxdiff(NPY<T>* other, bool dump=false);
    public:
        T* getValues();
        //unsigned int getNumValues(); tis in base class

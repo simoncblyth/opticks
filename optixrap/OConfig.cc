@@ -229,6 +229,13 @@ unsigned int OConfig::getMultiplicity(RTformat format)
       case RT_FORMAT_SHORT3: mul=3 ; break ;
       case RT_FORMAT_SHORT4: mul=4 ; break ;
 
+#if OPTIX_VERSION >= 400
+      case RT_FORMAT_HALF:  mul=1 ; break ;
+      case RT_FORMAT_HALF2: mul=2 ; break ;
+      case RT_FORMAT_HALF3: mul=3 ; break ;
+      case RT_FORMAT_HALF4: mul=4 ; break ;
+#endif
+
       case RT_FORMAT_UNSIGNED_SHORT:  mul=1 ; break ;
       case RT_FORMAT_UNSIGNED_SHORT2: mul=2 ; break ;
       case RT_FORMAT_UNSIGNED_SHORT3: mul=3 ; break ;
@@ -281,6 +288,13 @@ const char* OConfig::getFormatName(RTformat format)
       case RT_FORMAT_SHORT3: name=_RT_FORMAT_SHORT3 ; break ;
       case RT_FORMAT_SHORT4: name=_RT_FORMAT_SHORT4 ; break ;
 
+#if OPTIX_VERSION >= 400
+      case RT_FORMAT_HALF:  name=_RT_FORMAT_HALF ; break ;
+      case RT_FORMAT_HALF2: name=_RT_FORMAT_HALF2 ; break ;
+      case RT_FORMAT_HALF3: name=_RT_FORMAT_HALF3 ; break ;
+      case RT_FORMAT_HALF4: name=_RT_FORMAT_HALF4 ; break ;
+#endif
+
       case RT_FORMAT_UNSIGNED_SHORT:  name=_RT_FORMAT_UNSIGNED_SHORT ; break ;
       case RT_FORMAT_UNSIGNED_SHORT2: name=_RT_FORMAT_UNSIGNED_SHORT2 ; break ;
       case RT_FORMAT_UNSIGNED_SHORT3: name=_RT_FORMAT_UNSIGNED_SHORT3 ; break ;
@@ -328,6 +342,13 @@ const char* OConfig::getFormatName(RTformat format)
    const char* OConfig::_RT_FORMAT_SHORT3 = "SHORT3" ;
    const char* OConfig::_RT_FORMAT_SHORT4 = "SHORT4" ;
 
+#if OPTIX_VERSION >= 400
+   const char* OConfig::_RT_FORMAT_HALF = "HALF" ;
+   const char* OConfig::_RT_FORMAT_HALF2 = "HALF2" ;
+   const char* OConfig::_RT_FORMAT_HALF3 = "HALF3" ;
+   const char* OConfig::_RT_FORMAT_HALF4 = "HALF4" ;
+#endif
+
    const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT = "UNSIGNED_SHORT" ;
    const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT2 = "UNSIGNED_SHORT2" ;
    const char* OConfig::_RT_FORMAT_UNSIGNED_SHORT3 = "UNSIGNED_SHORT3";
@@ -346,5 +367,156 @@ const char* OConfig::getFormatName(RTformat format)
    const char* OConfig::_RT_FORMAT_USER = "USER" ;
    const char* OConfig::_RT_FORMAT_BUFFER_ID = "BUFFER_ID" ;
    const char* OConfig::_RT_FORMAT_PROGRAM_ID = "PROGRAM_ID" ;
+
+
+
+
+
+void OConfig::configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer)
+{
+    LOG(info) << "OPropertyLib::configureSampler" ; 
+
+    // cuda-pdf p43 // default is to clamp to the range
+    RTwrapmode wrapmode = RT_WRAP_REPEAT ;
+    //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_EDGE ;  // <--- seems not supported 
+    //RTwrapmode wrapmode = RT_WRAP_MIRROR ;
+    //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_BORDER ;  // return zero when out of range
+    sampler->setWrapMode(0, wrapmode); 
+    sampler->setWrapMode(1, wrapmode);
+
+    //RTfiltermode filtermode = RT_FILTER_NEAREST ; 
+    RTfiltermode filtermode = RT_FILTER_LINEAR ; 
+    RTfiltermode minification = filtermode ; 
+    RTfiltermode magnification = filtermode ; 
+    RTfiltermode mipmapping = RT_FILTER_NONE ;
+
+    sampler->setFilteringModes(minification, magnification, mipmapping);
+
+    //RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ;
+    RTtexturereadmode readmode = RT_TEXTURE_READ_ELEMENT_TYPE ;    // No conversion
+    sampler->setReadMode(readmode);  
+
+    //RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // by inspection : zero based array index offset by 0.5 (fails to validate in OptiX 400)
+    RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ; 
+    sampler->setIndexingMode(indexingmode);  
+
+
+    sampler->setMaxAnisotropy(1.0f);  
+    sampler->setMipLevelCount(1u);     
+    sampler->setArraySize(1u);        
+    //   from 3.8 pdf: OptiX currently supports only a single MIP level and a single element texture array.
+
+    unsigned int texture_array_idx = 0u ;
+    unsigned int mip_level = 0u ; 
+    sampler->setBuffer(texture_array_idx, mip_level, buffer);  // deprecated in OptiX 4
+
+}
+
+
+/*
+(Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Unsupported combination of texture index, wrap and filter modes:  RT_TEXTURE_INDEX_ARRAY_INDEX, RT_WRAP_REPEAT, RT_FILTER_LINEAR, file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp, line: 138)
+
+
+*/
+
+
+
+/*
+
+
+  * @ingroup TextureSampler
+  *
+  * <B>Description</B>
+  *
+  * @ref rtTextureSamplerSetWrapMode sets the wrapping mode of
+  * \a texturesampler to \a wrapmode for the texture dimension specified
+  * by \a dimension.  \a wrapmode can take one of the following values:
+  *
+  *  - @ref RT_WRAP_REPEAT
+  *  - @ref RT_WRAP_CLAMP_TO_EDGE
+  *  - @ref RT_WRAP_MIRROR
+  *  - @ref RT_WRAP_CLAMP_TO_BORDER
+  *
+  * The wrapping mode controls the behavior of the texture sampler as
+  * texture coordinates wrap around the range specified by the indexing
+  * mode.  These values mirror the CUDA behavior of textures.
+  * See CUDA programming guide for details.
+  *
+  * @param[in]   texturesampler   The texture sampler object to be changed
+  * @param[in]   dimension        Dimension of the texture
+  * @param[in]   wrapmode         The new wrap mode of the texture sampler
+
+
+
+ * @ref rtTextureSamplerSetFilteringModes sets the minification, magnification and MIP mapping filter modes for \a texturesampler.
+  * RTfiltermode must be one of the following values:
+  *
+  *  - @ref RT_FILTER_NEAREST
+  *  - @ref RT_FILTER_LINEAR
+  *  - @ref RT_FILTER_NONE
+  *
+  * These filter modes specify how the texture sampler will interpolate
+  * buffer data that has been attached to it.  \a minification and
+  * \a magnification must be one of @ref RT_FILTER_NEAREST or
+  * @ref RT_FILTER_LINEAR.  \a mipmapping may be any of the three values but
+  * must be @ref RT_FILTER_NONE if the texture sampler contains only a
+  * single MIP level or one of @ref RT_FILTER_NEAREST or @ref RT_FILTER_LINEAR
+  * if the texture sampler contains more than one MIP level.
+  *
+  * @param[in]   texturesampler   The texture sampler object to be changed
+  * @param[in]   minification     The new minification filter mode of the texture sampler
+  * @param[in]   magnification    The new magnification filter mode of the texture sampler
+  * @param[in]   mipmapping       The new MIP mapping filter mode of the texture sampler
+  *
+
+
+
+
+ * @ingroup TextureSampler
+  *
+  * <B>Description</B>
+  *
+  * @ref rtTextureSamplerSetIndexingMode sets the indexing mode of \a texturesampler to \a indexmode.  \a indexmode
+  * can take on one of the following values:
+  *
+  *  - @ref RT_TEXTURE_INDEX_NORMALIZED_COORDINATES,
+  *  - @ref RT_TEXTURE_INDEX_ARRAY_INDEX
+  *
+  * These values are used to control the interpretation of texture coordinates.  If the index mode is set to
+  * @ref RT_TEXTURE_INDEX_NORMALIZED_COORDINATES, the texture is parameterized over [0,1].  If the index
+  * mode is set to @ref RT_TEXTURE_INDEX_ARRAY_INDEX then texture coordinates are interpreted as array indices
+  * into the contents of the underlying buffer objects.
+  *
+  * @param[in]   texturesampler   The texture sampler object to be changed
+  * @param[in]   indexmode        The new indexing mode of the texture sampler
+  *
+
+
+
+
+*/
+
+
+
+
+/*
+
+OptiX 400
+
+2016-08-10 15:05:35.709 INFO  [1903430] [OContext::launch@214] OContext::launch
+entry 0 width 1 height 1 libc++abi.dylib: terminating with uncaught exception
+of type optix::Exception: Invalid value (Details: Function "RTresult
+_rtContextValidate(RTcontext)" caught exception: Unsupported combination of
+texture index, wrap and filter modes:  RT_TEXTURE_INDEX_ARRAY_INDEX,
+RT_WRAP_REPEAT, RT_FILTER_LINEAR,
+file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Util/TextureDescriptor.cpp,
+line: 138) Abort trap: 6
+
+*/
+
+
+
+
+
 
 

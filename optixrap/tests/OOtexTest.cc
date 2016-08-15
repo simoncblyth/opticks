@@ -10,33 +10,35 @@ int main(int argc, char** argv)
 
     LOG(info) << " ok " ; 
 
-
-    optix::Context context = optix::Context::create();
-
     int nx = 16 ; 
     int ny = 16 ; 
-    int nz = 1 ; 
+    int nz = 4 ; 
 
-    optix::Buffer texBuffer = context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT, nx, ny);
-    optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT, nx, ny);
-
-    float* data = (float *) texBuffer->map();
-
+    NPY<float>* inp = NPY<float>::make(nx, ny, nz);
+    inp->zero();
+    float* values = inp->getValues();
     for(int i=0 ; i < nx ; i++){
     for(int j=0 ; j < ny ; j++){
     for(int k=0 ; k < nz ; k++)
     {
        int index = i*ny*nz + j*nz + k ;
-       *(data + index) = float(index) ;
+       *(values + index) = float(index) ;
     }
     }
     }
+    //inp->dump();
+    inp->save("$TMP/OOtexTest_inp.npy");
 
+    optix::Context context = optix::Context::create();
+    optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, nx, ny);
+    optix::Buffer texBuffer = context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny);
+
+    memcpy( texBuffer->map(), inp->getBytes(), inp->getNumBytes(0) );
     texBuffer->unmap(); 
-
 
     optix::TextureSampler tex = context->createTextureSampler();
 
+#ifdef TEXT_TEST_MANUAL
     tex->setWrapMode(0, RT_WRAP_REPEAT);
     tex->setWrapMode(1, RT_WRAP_REPEAT);
     tex->setFilteringModes(RT_FILTER_LINEAR, RT_FILTER_LINEAR, RT_FILTER_NONE);
@@ -53,13 +55,12 @@ int main(int argc, char** argv)
     tex->setMipLevelCount(1);
     tex->setArraySize(1);
     tex->setBuffer(0, 0, texBuffer);
-
-    context["some_texture"]->setTextureSampler(tex);
+#else
+    OConfig::configureSampler(tex, texBuffer);
+#endif
+    //context["some_texture"]->setTextureSampler(tex);
     context["out_buffer"]->setBuffer(outBuffer);   
-
-    int tex_id = tex->getId();
-    context["tex_param"]->setInt(optix::make_int4(tex_id, 0, 0, 0 ));
-
+    context["tex_param"]->setInt(optix::make_int4(tex->getId(), 0, 0, 0 ));
 
     OConfig* cfg = new OConfig(context); 
 
@@ -81,14 +82,17 @@ int main(int argc, char** argv)
     context->launch(entry, nx, ny);
 
 
-    NPY<float>* npy = NPY<float>::make(nx, ny);
-    npy->read( outBuffer->map() );
+    NPY<float>* out = NPY<float>::make(nx, ny, nz);
+    out->read( outBuffer->map() );
     outBuffer->unmap(); 
 
-    npy->dump();
-    npy->save("$TMP/texTest.npy");
+    //out->dump();
+    out->save("$TMP/OOtexTest_out.npy");
 
-    LOG(info) << "DONE" ; 
+    float maxdiff = inp->maxdiff(out);
+    LOG(info) << "maxdiff " << maxdiff  ; 
+
+    assert(maxdiff < 1e-6 );
 
     return 0 ;     
 }

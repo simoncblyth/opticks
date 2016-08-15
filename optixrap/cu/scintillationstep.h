@@ -138,9 +138,9 @@ __device__ void ssdump( ScintillationStep& ss )
 __device__ void sscheck(ScintillationStep& ss)
 {
 
-    float nmlo = sample_domain(0.f);
-    float nmmi = sample_domain(0.5f);   
-    float nmhi = sample_domain(1.0f);
+    float nmlo = boundary_sample_domain(0.f);
+    float nmmi = boundary_sample_domain(0.5f);   
+    float nmhi = boundary_sample_domain(1.0f);
 
     rtPrintf("sscheck sample wavelength lo/mi/hi   %f %f %f \n", nmlo,nmmi,nmhi);   
 }

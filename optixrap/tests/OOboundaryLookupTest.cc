@@ -58,16 +58,15 @@ int main(int argc, char** argv)
 
     blib->createDynamicBuffers();
 
-
     NPY<float>* ori = blib->getBuffer() ; 
-    ori->save("$TMP/OOboundaryTest/ori.npy");
+    ori->save("$TMP/OOboundaryLookupTest/ori.npy");
 
     //bool use_debug_buffer = true ;  
     bool use_debug_buffer = false ; 
 
     NPY<float>* inp = use_debug_buffer ? NPY<float>::make_dbg_like(ori, 0) : ori ; 
     //inp->dump();
-    inp->save("$TMP/OOboundaryTest/inp.npy");
+    inp->save("$TMP/OOboundaryLookupTest/inp.npy");
 
 
     OBndLib obnd(context, blib );
@@ -78,8 +77,11 @@ int main(int argc, char** argv)
     }
     obnd.convert();     // places boundary_texture, boundary_domain  into OptiX context 
 
+
     unsigned int nx = obnd.getWidth();  // number of wavelength samples
     unsigned int ny = obnd.getHeight(); // number of float4 props
+    NPY<float>* out = NPY<float>::make(nx, ny, 4);
+
 
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, nx, ny);
     context["out_buffer"]->setBuffer(outBuffer);   
@@ -96,21 +98,22 @@ int main(int argc, char** argv)
     optix::Acceleration acceleration = context->createAcceleration(builder, traverser);
     top->setAcceleration(acceleration);
 
-    OLaunchTest ott(m_ocontext, &ok, "boundaryTest.cu.ptx", "boundaryTest", "exception");
-    ott.setWidth( nx);
-    ott.setHeight(ny);
+    unsigned eight = BOUNDARY_NUM_MATSUR*BOUNDARY_NUM_FLOAT4 ; 
+    assert(ny % eight == 0 );
 
+    OLaunchTest ott(m_ocontext, &ok, "boundaryLookupTest.cu.ptx", "boundaryLookupTest", "exception");
+    ott.setWidth( nx);
+    ott.setHeight(ny / 8);
     ott.launch();
 
-
-    NPY<float>* out = NPY<float>::make(nx, ny, 4);
     out->read( outBuffer->map() );
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/OOboundaryTest/out.npy");
+    out->save("$TMP/OOboundaryLookupTest/out.npy");
 
-    bool dump = true ;  
+    //bool dump = true ;  
+    bool dump = false ;  
     float maxdiff = inp->maxdiff(out, dump);
     LOG(info) << "maxdiff " << maxdiff  ;
     assert(maxdiff < 1e-6 ); 

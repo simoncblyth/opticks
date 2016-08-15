@@ -141,15 +141,15 @@ __device__ void csdump( CerenkovStep& cs )
 
 __device__ void cscheck(CerenkovStep& cs)
 {
-    float nmlo = sample_reciprocal_domain(0.f);
-    float nmmi = sample_reciprocal_domain(0.5f);   
-    float nmhi = sample_reciprocal_domain(1.0f);
+    float nmlo = boundary_sample_reciprocal_domain(0.f);
+    float nmmi = boundary_sample_reciprocal_domain(0.5f);   
+    float nmhi = boundary_sample_reciprocal_domain(1.0f);
 
     rtPrintf("cscheck sample wavelength lo/mi/hi   %f %f %f \n", nmlo,nmmi,nmhi);   
 
-    float4 prlo = wavelength_lookup(nmlo, cs.MaterialIndex, 0);
-    float4 prmi = wavelength_lookup(nmmi, cs.MaterialIndex, 0);
-    float4 prhi = wavelength_lookup(nmhi, cs.MaterialIndex, 0);
+    float4 prlo = boundary_lookup(nmlo, cs.MaterialIndex, 0);
+    float4 prmi = boundary_lookup(nmmi, cs.MaterialIndex, 0);
+    float4 prhi = boundary_lookup(nmhi, cs.MaterialIndex, 0);
 
     rtPrintf("cscheck sample rindex lo/mi/hi   %f %f %f \n", prlo.x,prmi.x,prhi.x);   
     rtPrintf("cscheck sample abslen lo/mi/hi   %f %f %f \n", prlo.y,prmi.y,prhi.y);   
@@ -221,9 +221,9 @@ generate_cerenkov_photon(Photon& p, CerenkovStep& cs, curandState &rng)
 
      do {
 
-        wavelength = sample_reciprocal_domain(curand_uniform(&rng));   
+        wavelength = boundary_sample_reciprocal_domain(curand_uniform(&rng));   
 
-        float4 props = wavelength_lookup(wavelength, cs.MaterialIndex, 0);
+        float4 props = boundary_lookup(wavelength, cs.MaterialIndex, 0);
 
         sampledRI = props.x ; 
 

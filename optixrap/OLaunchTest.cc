@@ -29,6 +29,16 @@ OLaunchTest::OLaunchTest(OContext* ocontext, Opticks* opticks, const char* ptx, 
     init();
 }
 
+void OLaunchTest::setWidth(unsigned int width)
+{
+    m_width = width ; 
+}
+void OLaunchTest::setHeight(unsigned int height)
+{
+    m_height = height ; 
+}
+
+
 void OLaunchTest::init()
 {
     m_context = m_ocontext->getContext();

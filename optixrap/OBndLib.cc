@@ -4,6 +4,7 @@
 #include "GPropertyLib.hh"
 #include "GBndLib.hh"
 #include "OBndLib.hh"
+#include "OConfig.hh"
 #include "PLOG.hh"
 
 
@@ -11,14 +12,36 @@ OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
     : 
     OPropertyLib(ctx),
     m_lib(lib),
-    m_texture_debug(false)
+    m_debug_buffer(NULL),  
+    m_width(0),
+    m_height(0)
 {
 }
 
-void OBndLib::setTextureDebug(bool dbg)
+void OBndLib::setDebugBuffer(NPY<float>* buf)
 {
-    m_texture_debug = dbg ; 
+    m_debug_buffer = buf ; 
 }
+void OBndLib::setWidth(unsigned int width)
+{
+    m_width = width ; 
+}
+void OBndLib::setHeight(unsigned int height)
+{
+    m_height = height ; 
+}
+
+unsigned int OBndLib::getWidth()
+{
+    return m_width ; 
+}
+unsigned int OBndLib::getHeight()
+{
+    return m_height ; 
+}
+
+
+
 
 
 void OBndLib::convert()
@@ -29,7 +52,7 @@ void OBndLib::convert()
 
     NPY<float>* orig = m_lib->getBuffer() ;  // (123, 4, 2, 39, 4)
 
-    NPY<float>* buf = m_texture_debug ? NPY<float>::make_dbg_like(orig, -3) : orig ; 
+    NPY<float>* buf = m_debug_buffer ? m_debug_buffer : orig ; 
 
     assert(buf->hasSameShape(orig));
 
@@ -58,10 +81,6 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
 
 */
 
-    if(m_texture_debug)
-    {
-        buf->save("$TMP/OBndLib_makeBoundaryTexture_dbg.npy");
-    }
 
     unsigned int ni = buf->getShape(0);  // (~123) number of boundaries 
     unsigned int nj = buf->getShape(1);  // (4)    number of species : omat/osur/isur/imat 
@@ -76,8 +95,8 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     assert(nl == Opticks::DOMAIN_LENGTH); 
     assert(nm == 4); 
 
-    unsigned int ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
     unsigned int nx = nl ;           // wavelength samples
+    unsigned int ny = ni*nj*nk ;     // total number of properties from all (two) float4 property groups of all (4) species in all (~123) boundaries 
    
     LOG(trace) << "OBndLib::makeBoundaryTexture buf " 
               << buf->getShapeString() 
@@ -85,13 +104,16 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " nx " << nx
               << " ny " << ny  
               ;
-
-    
-    optix::Buffer optixBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
-    upload(optixBuffer, buf);
+   
+    setWidth(nx);
+    setHeight(ny);
+ 
+    optix::uint4  texDim    = optix::make_uint4(nx,ny,ni,0 );
+    optix::Buffer texBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, nx, ny );
+    upload(texBuffer, buf);
 
     optix::TextureSampler tex = m_context->createTextureSampler();
-    configureSampler(tex, optixBuffer);
+    OConfig::configureSampler(tex, texBuffer);
 
     unsigned int xmin = 0 ; 
     unsigned int xmax = nx - 1 ; 
@@ -127,6 +149,8 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     glm::vec4 rdom( 1.f/dom.x, 1.f/dom.y , 0.f, 0.f ); // not flipping order, only endpoints used for sampling, not the step 
 
     m_context["boundary_texture"]->setTextureSampler(tex);
+    m_context["boundary_texture_dim"]->setUint(texDim);
+
     m_context["boundary_domain"]->setFloat(dom.x, dom.y, dom.z, dom.w); 
     m_context["boundary_domain_reciprocal"]->setFloat(rdom.x, rdom.y, rdom.z, rdom.w); 
     m_context["boundary_bounds"]->setUint(bounds); 

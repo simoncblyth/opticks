@@ -2,6 +2,13 @@
 #include "OpticksColors.hh"
 #include "OColors.hh"
 
+#ifdef OLD_WAY
+#else
+#include "OConfig.hh"
+#endif
+
+
+
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
@@ -16,18 +23,37 @@ OColors::OColors(optix::Context& ctx, OpticksColors* colors)
 
 void OColors::convert()
 {
-    NPY<unsigned char>* buffer = m_colors->getCompositeBuffer();
+    NPY<unsigned char>* npy = m_colors->getCompositeBuffer();
 
-    if(buffer == NULL)
+    if(npy == NULL)
     {
         LOG(warning) << "OColors::convert SKIP no composite color buffer " ; 
         return ;  
     }
 
-
     nuvec4 cd = m_colors->getCompositeDomain();
 
-    optix::TextureSampler tex = makeColorSampler(buffer);
+
+#ifdef OLD_WAY
+    optix::TextureSampler tex = makeColorSampler(npy);
+#else
+
+    unsigned int n = npy->getNumItems();
+    assert(npy->hasShape(n,4));
+
+    unsigned int nx = n ;  
+    unsigned int ny = 1 ;
+
+    optix::Buffer colorBuffer = m_context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_BYTE4, nx, ny );
+    memcpy( colorBuffer->map(), npy->getBytes(), npy->getNumBytes(0) );
+    colorBuffer->unmap(); 
+
+    optix::TextureSampler tex = m_context->createTextureSampler();
+    OConfig::configureSampler(tex, colorBuffer);
+
+    tex->setReadMode(RT_TEXTURE_READ_NORMALIZED_FLOAT);  
+
+#endif
     m_context["color_texture"]->setTextureSampler(tex);
     m_context["color_domain"]->setUint(optix::make_uint4(cd.x, cd.y, cd.z, cd.w));
 
@@ -37,6 +63,11 @@ void OColors::convert()
 
 
 
+
+
+
+
+#ifdef OLD_WAY
 optix::TextureSampler OColors::makeColorSampler(NPY<unsigned char>* buffer)
 {
     unsigned int n = buffer->getNumItems();
@@ -56,8 +87,6 @@ optix::TextureSampler OColors::makeColorSampler(NPY<unsigned char>* buffer)
     return sampler ; 
 }
 
-
-
 optix::TextureSampler OColors::makeSampler(NPY<unsigned char>* buffer, RTformat format, unsigned int nx, unsigned int ny)
 {
     // TODO: avoid duplication between this and OPropertyLib
@@ -67,6 +96,7 @@ optix::TextureSampler OColors::makeSampler(NPY<unsigned char>* buffer, RTformat 
     optixBuffer->unmap(); 
 
     optix::TextureSampler sampler = m_context->createTextureSampler();
+
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE ); 
     sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE );
 
@@ -92,5 +122,5 @@ optix::TextureSampler OColors::makeSampler(NPY<unsigned char>* buffer, RTformat 
     return sampler ; 
 }
 
-
+#endif
 

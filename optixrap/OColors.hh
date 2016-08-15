@@ -6,7 +6,6 @@
 class OpticksColors ; 
 template <typename T> class NPY ; 
 
-// TODO: avoid duplication of makeSampler with OPropertyLib by moving it to OContext and using that
 
 #include "OXRAP_API_EXPORT.hh"
 
@@ -17,8 +16,10 @@ public:
 public:
     void convert();
 private:
+#ifdef OLD_WAY
     optix::TextureSampler makeColorSampler(NPY<unsigned char>* colorBuffer);
     optix::TextureSampler makeSampler(NPY<unsigned char>* buffer, RTformat format, unsigned int nx, unsigned int ny);
+#endif
 private:
     optix::Context       m_context ; 
     OpticksColors*       m_colors ; 

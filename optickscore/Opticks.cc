@@ -51,6 +51,34 @@ float        Opticks::DOMAIN_HIGH = 820.f ;  // has been 810.f for a long time
 float        Opticks::DOMAIN_STEP = 20.f ; 
 unsigned int Opticks::DOMAIN_LENGTH = 39  ;
 
+/*
+
+In [12]: np.linspace(60,820,39)
+Out[12]: 
+array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
+        240.,  260.,  280.,  300.,  320.,  340.,  360.,  380.,  400.,
+        420.,  440.,  460.,  480.,  500.,  520.,  540.,  560.,  580.,
+        600.,  620.,  640.,  660.,  680.,  700.,  720.,  740.,  760.,
+        780.,  800.,  820.])
+
+In [13]: np.linspace(60,820,39).shape
+Out[13]: (39,)
+
+
+     60 - 60 -> 0 
+
+     820 - 60 -> 760
+
+                         60 -> 0
+                         80 -> 1
+                        820 ->                            
+
+
+      (nm - 60)/20
+
+
+
+*/
 
 glm::vec4 Opticks::getDefaultDomainSpec()
 {

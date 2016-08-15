@@ -37,6 +37,13 @@ public:
   static const char* _RT_FORMAT_SHORT3;
   static const char* _RT_FORMAT_SHORT4;
 
+#if OPTIX_VERSION >= 400
+  static const char* _RT_FORMAT_HALF;
+  static const char* _RT_FORMAT_HALF2;
+  static const char* _RT_FORMAT_HALF3;
+  static const char* _RT_FORMAT_HALF4;
+#endif
+
   static const char* _RT_FORMAT_UNSIGNED_SHORT;
   static const char* _RT_FORMAT_UNSIGNED_SHORT2;
   static const char* _RT_FORMAT_UNSIGNED_SHORT3;
@@ -64,7 +71,7 @@ public:
    static optix::float3 make_contrast_color(int tag);
    static unsigned int getMultiplicity(RTformat format);
    static const char* getFormatName(RTformat format);
-
+   static void configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
 public:
     OConfig(optix::Context context);
     void dump(const char* msg="OConfig::dump");
