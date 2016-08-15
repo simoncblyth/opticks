@@ -617,7 +617,7 @@ opticks-cmake(){
         -G "$(opticks-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
-       -DCMAKE_INSTALL_PREFIX=$(opticks-install-prefix) \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
        -DGeant4_DIR=$(g4-cmake-dir) \
        -DXERCESC_LIBRARY=$(xercesc-library) \

@@ -144,6 +144,8 @@ set(SOURCES
     cu/axisTest.cu
     cu/seedTest.cu
     cu/boundaryTest.cu
+    cu/tex0Test.cu
+    cu/texTest.cu
 )
 
 
@@ -162,6 +164,8 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_axisTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_seedTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_boundaryTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_tex0Test.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_texTest.cu.ptx
 )
 
 

@@ -560,6 +560,68 @@ NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
     return dst ; 
 }
 
+template <typename T>
+NPY<T>* NPY<T>::make_like(NPY<T>* src)
+{
+     NPY<T>* dst = NPY<T>::make(src->getShapeVector());
+     dst->zero();
+     return dst ; 
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make_dbg_like(NPY<T>* src, int label_)
+{
+    NPY<T>* dst = NPY<T>::make(src->getShapeVector());
+    dst->zero();
+
+    assert(dst->hasSameShape(src));
+
+    unsigned int ndim = dst->getDimensions();
+    assert(ndim <= 5); 
+
+    unsigned int ni = std::max(1u,dst->getShape(0)); 
+    unsigned int nj = std::max(1u,dst->getShape(1)); 
+    unsigned int nk = std::max(1u,dst->getShape(2)); 
+    unsigned int nl = std::max(1u,dst->getShape(3)); 
+    unsigned int nm = std::max(1u,dst->getShape(4));
+
+    T* values = dst->getValues();
+
+    for(unsigned int i=0 ; i < ni ; i++){
+    for(unsigned int j=0 ; j < nj ; j++){
+    for(unsigned int k=0 ; k < nk ; k++){
+    for(unsigned int l=0 ; l < nl ; l++){
+    for(unsigned int m=0 ; m < nm ; m++)
+    {   
+         unsigned int index = i*nj*nk*nl*nm + j*nk*nl*nm + k*nl*nm + l*nm + m  ;
+
+         int label = 0 ; 
+
+         if(      label_ == 0  ) label = index ;
+
+         else if( label_ == 1  ) label = i ;  
+         else if( label_ == 2  ) label = j ;  
+         else if( label_ == 3  ) label = k ;  
+         else if( label_ == 4  ) label = l ;  
+         else if( label_ == 5  ) label = m ;  
+         
+         else if( label_ == -1 ) label = i ;  
+         else if( label_ == -2 ) label = i*nj + j ;  
+         else if( label_ == -3 ) label = i*nj*nk + j*nk + k  ;  
+         else if( label_ == -4 ) label = i*nj*nk*nl + j*nk*nl + k*nl + l  ;  
+         else if( label_ == -5 ) label = i*nj*nk*nl*nm + j*nk*nl*nm + k*nl*nm + l*nm + m  ;  
+
+         *(values + index) = T(label) ;
+    }   
+    }   
+    }   
+    }   
+    }   
+
+    return dst ; 
+}
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::make_modulo(NPY<T>* src, unsigned int scaledown)

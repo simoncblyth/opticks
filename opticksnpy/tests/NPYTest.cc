@@ -355,6 +355,18 @@ void test_getBufSpec()
 
 }
 
+void test_dbg_like()
+{
+   NPY<float>* buf = NPY<float>::make(16,8,4) ;
+   buf->fill(42.);
+   buf->dump();
+
+   NPY<float>* dbg = NPY<float>::make_dbg_like(buf);
+   dbg->dump();
+
+
+
+}
 
 
 
@@ -392,6 +404,8 @@ int main(int argc, char** argv )
     test_string();
 
     test_getBufSpec();
+
+    test_dbg_like();
 
     return 0 ;
 }

@@ -2,16 +2,18 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OptiXRapTest)
 project(${name})
 
-#file(GLOB TEST_CC_SRCS "*Test.cc")
 set(TEST_SOURCES
     OPropertyLibTest.cc
     OScintillatorLibTest.cc
     OOTextureTest.cc
-    OOBoundaryTest.cc
     OOMinimalTest.cc
     OOContextTest.cc
     OOContextUploadDownloadTest.cc
     LTOOContextUploadDownloadTest.cc
+
+    OOboundaryTest.cc
+    OOtex0Test.cc
+    OOtexTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

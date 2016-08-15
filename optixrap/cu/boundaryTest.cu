@@ -77,7 +77,8 @@ static __device__ __inline__ void boundary_dump()
    int nj = 4 ; 
    int nk = 2 ; 
 
-   int nijk = ni*nj*nk ; 
+   int nx = 39 ; 
+   int ny = ni*nj*nk ; 
 
    for(int i=0 ; i < ni ; i++)
    {
@@ -85,9 +86,12 @@ static __device__ __inline__ void boundary_dump()
    {
    for(int k=0 ; k < nk ; k++)
    {
-       unsigned int index = i*nj*nk + j*nk + k ; 
-       float x = 0.f ; 
-       float y = float(index)/float(nijk) ;
+       unsigned int ix = 0u ; // 0.. nx-1
+       unsigned int iy = i*nj*nk + j*nk + k ;  // 0.. ny-1   ie 0..ni*nj*nk-1  
+
+       float x = (float(ix)+0.5f)/float(nx) ; 
+       float y = (float(iy)+0.5f)/float(ny) ; 
+
        float4 pr = tex2D(boundary_texture, x, y );
        rtPrintf(" i:%d j:%d k:%d x:%10.3f y:%10.3f pr  %13.4f %13.4f %13.4f %13.4f  \n",i,j,k,x,y,pr.x,pr.y,pr.z,pr.w);
    }

@@ -14,12 +14,14 @@ class OXRAP_API OBndLib  : public OPropertyLib
 public:
     OBndLib(optix::Context& ctx, GBndLib* lib);
 public:
+    void setTextureDebug(bool dbg);
     void convert();
 private:
     void makeBoundaryTexture(NPY<float>* buf);
     void makeBoundaryOptical(NPY<unsigned int>* obuf);
 private:
     GBndLib*             m_lib ; 
+    bool                 m_texture_debug ;  
 
 };
 

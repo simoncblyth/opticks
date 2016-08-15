@@ -478,8 +478,34 @@ optixrap-ptxs(){
    find $(opticks-prefix)/installcache/PTX -name $ptx
 }
 
-optixrap-flush(){
-   rm $(optixrap-ptxs)
+
+optixrap-cu()
+{
+   ## workaround for suspected lack of dependency setup for OptiX ptx 
+   ## by touching the cu and cc of the test to force rebuilding 
+
+   local name=${1:-boundaryTest} 
+   local cu=cu/$name.cu
+   local cc=tests/OO$name.cc
+
+   optixrap-cd
+
+   [ ! -f $cc ] && echo no such cc $cc && return 
+   [ ! -f $cu ] && echo no such cu $cu && return 
+  
+   #rm $ptxs
+
+   touch $cu $cc
+   optixrap--
+
+   local ptxs=$(optixrap-ptxs $name)
+   ls -l $ptxs
+
+   local tst=OO$name
+   echo running tst $tst
+
+   $tst
 }
+
 
 

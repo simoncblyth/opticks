@@ -10,8 +10,14 @@
 OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
     : 
     OPropertyLib(ctx),
-    m_lib(lib)
+    m_lib(lib),
+    m_texture_debug(false)
 {
+}
+
+void OBndLib::setTextureDebug(bool dbg)
+{
+    m_texture_debug = dbg ; 
 }
 
 
@@ -21,15 +27,15 @@ void OBndLib::convert()
 
     m_lib->createDynamicBuffers();
 
-    NPY<float>* buf = m_lib->getBuffer() ;
-    //buf->save("$TMP/OBndLib_convert_bndbuf.npy");
-    //  (128, 4, 2, 39, 4)
+    NPY<float>* orig = m_lib->getBuffer() ;  // (123, 4, 2, 39, 4)
+
+    NPY<float>* buf = m_texture_debug ? NPY<float>::make_dbg_like(orig, -3) : orig ; 
+
+    assert(buf->hasSameShape(orig));
+
     makeBoundaryTexture( buf );
 
-
-    NPY<unsigned int>* obuf = m_lib->getOpticalBuffer() ;
-    //obuf->save("$TMP/OBndLib_convert_obuf.npy");
-    // (128, 4, 4)
+    NPY<unsigned int>* obuf = m_lib->getOpticalBuffer() ;  // (123, 4, 4)
 
     makeBoundaryOptical(obuf);
 }
@@ -51,6 +57,11 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     omat/osur/isur/imat  
 
 */
+
+    if(m_texture_debug)
+    {
+        buf->save("$TMP/OBndLib_makeBoundaryTexture_dbg.npy");
+    }
 
     unsigned int ni = buf->getShape(0);  // (~123) number of boundaries 
     unsigned int nj = buf->getShape(1);  // (4)    number of species : omat/osur/isur/imat 
@@ -82,13 +93,10 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     optix::TextureSampler tex = m_context->createTextureSampler();
     configureSampler(tex, optixBuffer);
 
-
     unsigned int xmin = 0 ; 
     unsigned int xmax = nx - 1 ; 
     unsigned int ymin = 0 ;
     unsigned int ymax = ny - 1 ; 
-
-    // huh factor of 2 somewhere ???  nope payload details are beneath texture line level
 
     LOG(trace) << "OBndLib::makeBoundaryTexture"
               << " xmin " << xmin 

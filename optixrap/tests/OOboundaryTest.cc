@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 
 
     OBndLib obnd(context, blib );
+    obnd.setTextureDebug(true);
     obnd.convert();     // places boundary_texture, boundary_domain  into OptiX context 
 
 

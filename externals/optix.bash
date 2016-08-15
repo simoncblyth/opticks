@@ -72,6 +72,17 @@ Try samples
 
 
 
+OptiX 4 Issues : Textures
+-----------------------------
+
+OptiX 4 not working with old OPropertyLib texture configuration, suspect it is being more strict.
+To understand OptiX textures need to know the background from OpenGL and CUDA.
+
+* https://www.opengl.org/wiki/Sampler_Object
+* https://www.opengl.org/wiki/Texture_Storage
+* https://open.gl/textures
+* https://devblogs.nvidia.com/parallelforall/cuda-pro-tip-kepler-texture-objects-improve-performance-and-flexibility/
+* http://on-demand.gputechconf.com/gtc-express/2011/presentations/texture_webinar_aug_2011.pdf
 
 
 OptiX 4 Issues
@@ -2697,7 +2708,24 @@ optix-samples-cppfind(){ find $(optix-samples-src-dir) -name '*.cpp' -exec grep 
 optix-find(){            find $(optix-idir)            -name '*.h'   -exec grep ${2:--H} ${1:-setMiss} {} \; ; }
 optix-ifind(){           find $(optix-idir)            -name '*.h'   -exec grep ${2:--H} ${1:-setMiss} {} \; ; }
 
+optix-x(){ find $(optix-dir) -name "*.${1}" -exec grep ${3:--H} ${2:-Sampler} {} \; ; }
+optix-cu(){  optix-x cu  $* ; }
+optix-cpp(){ optix-x cpp $* ; }
+optix-h(){   optix-x h   $* ; }
+
+optix-find(){
+   optix-cu  $*
+   optix-cpp $*
+   optix-h  $*
+}
+
+
+
+
+
+optix-api-(){ echo $(optix-fold)/OptiX/doc/OptiX_API_Reference_$(optix-version).pdf ; }
 optix-pdf-(){ echo $(optix-fold)/OptiX/doc/OptiX_Programming_Guide_$(optix-version).pdf ; }
+optix-api(){ open $(optix-api-) ; }
 optix-pdf(){ open $(optix-pdf-) ; }
 
 

@@ -30,17 +30,15 @@ void OPropertyLib::configureSampler(optix::TextureSampler& sampler, optix::Buffe
     LOG(info) << "OPropertyLib::configureSampler" ; 
 
     // cuda-pdf p43 // default is to clamp to the range
-    //RTwrapmode wrapmode = RT_WRAP_REPEAT ;
-    //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_EDGE ;
+    RTwrapmode wrapmode = RT_WRAP_REPEAT ;
+    //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_EDGE ;  // <--- seems not supported 
     //RTwrapmode wrapmode = RT_WRAP_MIRROR ;
-    RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_BORDER ;  // return zero when out of range
+    //RTwrapmode wrapmode = RT_WRAP_CLAMP_TO_BORDER ;  // return zero when out of range
     sampler->setWrapMode(0, wrapmode); 
     sampler->setWrapMode(1, wrapmode);
 
-
     //RTfiltermode filtermode = RT_FILTER_NEAREST ; 
     RTfiltermode filtermode = RT_FILTER_LINEAR ; 
-
     RTfiltermode minification = filtermode ; 
     RTfiltermode magnification = filtermode ; 
     RTfiltermode mipmapping = RT_FILTER_NONE ;
@@ -48,24 +46,24 @@ void OPropertyLib::configureSampler(optix::TextureSampler& sampler, optix::Buffe
     sampler->setFilteringModes(minification, magnification, mipmapping);
 
     //RTtexturereadmode readmode = RT_TEXTURE_READ_NORMALIZED_FLOAT ;
-    RTtexturereadmode readmode = RT_TEXTURE_READ_ELEMENT_TYPE ; 
+    RTtexturereadmode readmode = RT_TEXTURE_READ_ELEMENT_TYPE ;    // No conversion
     sampler->setReadMode(readmode);  
 
-    RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // by inspection : zero based array index offset by 0.5
-    //RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ; // needed by OptiX 400 ? see OptiX_400 pdf p17 
+    //RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_ARRAY_INDEX ;  // by inspection : zero based array index offset by 0.5 (fails to validate in OptiX 400)
+    RTtextureindexmode indexingmode = RT_TEXTURE_INDEX_NORMALIZED_COORDINATES ; 
     sampler->setIndexingMode(indexingmode);  
 
-   // with OptiX 400 cannot get any RT_TEXTURE_INDEX_ARRAY_INDEX to work ???
 
     sampler->setMaxAnisotropy(1.0f);  
     sampler->setMipLevelCount(1u);     
     sampler->setArraySize(1u);        
-    // from pdf: OptiX currently supports only a single MIP level and a single element texture array.
+    //   from 3.8 pdf: OptiX currently supports only a single MIP level and a single element texture array.
 
     unsigned int texture_array_idx = 0u ;
     unsigned int mip_level = 0u ; 
+    sampler->setBuffer(texture_array_idx, mip_level, buffer);  // deprecated in OptiX 4
 
-    sampler->setBuffer(texture_array_idx, mip_level, buffer);
+    //sampler->setBuffer(buffer);
 }
 
 
