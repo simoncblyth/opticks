@@ -4,7 +4,20 @@ opticks-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticks-src)} ; }
 opticks-vi(){       vi $(opticks-source) ; }
 opticks-usage(){   cat << \EOU
 
+OPTICKS BASH FUNCTIONS
+========================
 
+*opticks-docs*
+     open browser on the local html documentation
+
+*opticks-docs-make*
+     sphinx-build the docs
+
+*opticks-notes*
+     open browser on the local html development notes 
+
+*opticks-notes-make*
+     sphinx-build the notes
 
 
 EOU

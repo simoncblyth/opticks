@@ -284,17 +284,28 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
 
+    OpticksBufferControl ctrl(npy->getBufferControl());
+
     LOG(info)<<"OContext::upload" 
              << " numBytes " << numBytes 
              << npy->description("upload")
              ;
 
-    // memcpy( buffer->map(), npy->getBytes(), numBytes );
-    // buffer->unmap(); 
-    void* d_ptr = NULL;
-    rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
-    cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
-    buffer->markDirty();
+    if(ctrl.isSet("UPLOAD_WITH_CUDA"))
+    {
+        void* d_ptr = NULL;
+        rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
+        cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
+        buffer->markDirty();
+    }
+    else
+    {
+        memcpy( buffer->map(), npy->getBytes(), numBytes );
+        buffer->unmap(); 
+    }
+
+
+
 }
 
 

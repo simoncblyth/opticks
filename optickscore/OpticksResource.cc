@@ -442,7 +442,7 @@ void OpticksResource::readEnvironment()
 */
 
     m_geokey = SSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
-    m_daepath = getenv(m_geokey);
+    m_daepath = SSys::getenvvar(m_geokey);
 
     if(m_daepath == NULL)
     {

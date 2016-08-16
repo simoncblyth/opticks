@@ -10,6 +10,7 @@ class SYSRAP_API SSys {
      static int getenvint( const char* envkey, int fallback=-1 );
      static int atoi_( const char* a );
      static const char* getenvvar( const char* envprefix, const char* envkey, const char* fallback=NULL );
+     static const char* getenvvar( const char* envkey );
      static int setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite=true );
      static bool IsRemoteSession();
 

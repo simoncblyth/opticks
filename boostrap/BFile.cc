@@ -1,8 +1,9 @@
 
+#include "SSys.hh"
 #include "BFile.hh"
 
 #include <cstring>
-#include <cstdlib>
+//#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -31,7 +32,7 @@ void BFile::dumpOpticksPathPrefix(const char* msg)
 
 void BFile::setOpticksPathPrefixFromEnv(const char* envvar)
 {
-    char* prefix = getenv(envvar);
+    const char* prefix = SSys::getenvvar(envvar);
     if(prefix)
     {
         setOpticksPathPrefix(prefix);
@@ -62,9 +63,9 @@ std::string usertmpdir(const char* base="/tmp", const char* sub="opticks")
     fs::path p(base) ; 
 
 #ifdef _MSC_VER
-    char* user = getenv("USERNAME") ;
+    const char* user = SSys::getenvvar("USERNAME") ;
 #else
-    char* user = getenv("USER") ;
+    const char* user = SSys::getenvvar("USER") ;
 #endif
 
     if(user) p /= user ;
@@ -93,7 +94,7 @@ std::string expandvar(const char* s)
         {
            std::string key = m[2] ;  
 
-           char* evalue_ = getenv(key.c_str()) ;
+           const char* evalue_ = SSys::getenvvar(key.c_str()) ;
 
            std::string evalue = evalue_ ? evalue_ : key ; 
 

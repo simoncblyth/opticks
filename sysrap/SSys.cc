@@ -55,11 +55,22 @@ int SSys::atoi_( const char* a )
 }
 
 
+const char* SSys::getenvvar( const char* envvar )
+{
+    const char* evalue = getenv(envvar);
+    LOG(info) << "SSys::getenvvar"
+              << " envvar " << envvar
+              << " evalue " << evalue
+              ;
+    return evalue ; 
+}
+
+
 const char* SSys::getenvvar( const char* envprefix, const char* envkey, const char* fallback )
 {
     char envvar[128];
     snprintf(envvar, 128, "%s%s", envprefix, envkey );
-    const char* evalue = getenv(envvar);
+    const char* evalue = getenvvar(envvar) ; 
     return evalue ? evalue : fallback ; 
 }
 

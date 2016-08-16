@@ -121,6 +121,7 @@ class OKCORE_API OpticksEvent {
        static const char* recsel_  ;
        static const char* sequence_  ;
    public:
+       void checkData(const char* name);
        NPY<float>* loadGenstepFromFile(int modulo=0);
        NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
        void setGenstepData(NPY<float>* genstep_data);
@@ -198,6 +199,7 @@ class OKCORE_API OpticksEvent {
        NPY<unsigned long long>*  getSequenceData();
    public:
        NPYBase*             getData(const char* name);
+       NPYSpec*             getSpec(const char* name);
        std::string          getShapeString(); 
    public:
        // optionals lodged here for debug dumping single photons/records  

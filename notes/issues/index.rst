@@ -26,7 +26,7 @@ issues
    scintillation_photons
    geant4_opticks_integration/index
    gui_broken_photon_record_colors
-
+   optix_400_shakedown
 
 
 

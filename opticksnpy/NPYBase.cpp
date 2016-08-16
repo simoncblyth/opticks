@@ -303,8 +303,8 @@ const char* NPYBase::getBufferName()
 void NPYBase::init()
 {
    updateDimensions(); 
-   m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_type ); 
-   m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_type ); 
+   m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_type, "" ); 
+   m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_type, "" ); 
 }
 
 

@@ -7,7 +7,7 @@
 
 #include "PLOG.hh"
 
-NPYSpec::NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type)
+NPYSpec::NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type, const char* ctrl)
   :
     m_name(name ? strdup(name) : NULL),
     m_ni(ni),
@@ -15,13 +15,19 @@ NPYSpec::NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned in
     m_nk(nk),
     m_nl(nl),
     m_bad_index(UINT_MAX), 
-    m_type(type)
+    m_type(type),
+    m_ctrl(ctrl ? strdup(ctrl) : NULL)
 {
 }
 
 NPYBase::Type_t NPYSpec::getType()
 { 
     return m_type ;
+}
+
+const char* NPYSpec::getCtrl()
+{
+    return m_ctrl ; 
 }
 
 const char* NPYSpec::getName()

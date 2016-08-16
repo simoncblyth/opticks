@@ -209,7 +209,6 @@ void OPropagator::initEvent(OpticksEvent* evt)
     LOG(info) << "OPropagator::initEvent" ; 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
-    gensteps->setBufferControl(OpticksBufferControl::Parse("OPTIX_SETSIZE,OPTIX_INPUT_ONLY"));
 
     m_genstep_buffer = m_ocontext->createBuffer<float>( gensteps, "gensteps");
     m_context["genstep_buffer"]->set( m_genstep_buffer );
