@@ -1449,30 +1449,6 @@ oks-docsrc()
 
 oks-docvi(){ vi $(oks-docsrc) ; }
 
-########## building sphinx docs
-
-oks-htmldir(){   echo $(opticks-prefix)/html ; }
-oks-htmldirbb(){ echo $HOME/simoncblyth.bitbucket.org/opticks ; }
-oks-docs()
-{
-   local iwd=$PWD
-   opticks-scd
-   local htmldir=$(oks-htmldir)
-   local htmldirbb=$(oks-htmldirbb)
-
-   [ -d "$htmldirbb" ] && htmldir=$htmldirbb
-
-   sphinx-build -b html  . $htmldir
-   cd $iwd
-
-   open $htmldir/index.html
-}
-
-oks-html(){   open $(oks-htmldir)/index.html ; } 
-oks-htmlbb(){ open $(oks-htmldirbb)/index.html ; } 
-
-
-
 
 
 

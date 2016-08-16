@@ -50,7 +50,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Opticks'
+project = u'OpticksDevNotes'
 copyright = u'2016, Simon C Blyth'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -74,7 +74,7 @@ release = '0.0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'notes/*']
+exclude_patterns = ['_build']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -204,7 +204,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'Opticks.tex', u'Opticks Documentation',
+  ('index', 'OpticksDevNotes.tex', u'Opticks Development Notes',
    u'Simon C Blyth', 'manual'),
 ]
 
@@ -234,7 +234,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'opticks', u'Opticks Documentation',
+    ('index', 'opticksdev', u'Opticks Development Notes',
      [u'Simon C Blyth'], 1)
 ]
 
@@ -248,7 +248,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Opticks', u'Opticks Documentation',
+  ('index', 'OpticksDevNotes', u'Opticks Development Notes',
    u'Simon C Blyth', 'Opticks', 'One line description of project.',
    'Miscellaneous'),
 ]

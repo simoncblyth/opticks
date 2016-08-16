@@ -419,7 +419,7 @@ optixrap---(){     touch $(optixrap-apihh) ; optixrap--  ; }
 optixrap-wipe(){ local bdir=$(optixrap-bdir) ; rm -rf $bdir ; } 
 
 optixrap--(){                   opticks-- $(optixrap-bdir) ; } 
-optixrap-ctest(){               opticks-ctest $(optixrap-bdir) $* ; } 
+optixrap-t(){                   opticks-t $(optixrap-bdir) $* ; } 
 optixrap-genproj() { optixrap-scd ; opticks-genproj $(optixrap-name) $(optixrap-tag) ; } 
 optixrap-gentest() { optixrap-tcd ; opticks-gentest ${1:-OExample} $(optixrap-tag) ; } 
 optixrap-txt(){ vi $(optixrap-sdir)/CMakeLists.txt $(optixrap-tdir)/CMakeLists.txt ; } 

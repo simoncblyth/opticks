@@ -1,8 +1,11 @@
-GGeoView : Visualizing Geometry and Simulations
+Opticks Development Notes
 ===================================================
+
 
 .. toctree::
 
-    tests/GGeoViewTest
+    issues/index
+
+
 
       

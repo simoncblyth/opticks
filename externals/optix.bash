@@ -13,6 +13,24 @@ Resources
 * https://devtalk.nvidia.com/default/board/90/optix/
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
+Alternatives to OptiX
+-----------------------
+
+* http://raytracey.blogspot.tw/2016/05/start-your-engines-source-code-for.html
+
+AMD : RadeonRays, FireRays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://gpuopen.com/firerays-2-0-open-sourcing-and-customizing-ray-tracing/
+* https://github.com/GPUOpen-LibrariesAndSDKs/RadeonRays_SDK
+* https://m.reddit.com/r/Amd/comments/4p4t9y/gpuopen_firerays/
+
+PowerVR Wizard GPUs : raycast specialized hardware
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://imgtec.com/blog/gdc-2016-ray-tracing-graphics-mobile/
+* https://imgtec.com/blog/real-time-ray-tracing-on-powervr-gr6500-ces-2016/
+
 
 Fora Posts
 ------------

@@ -77,7 +77,6 @@ Out[13]: (39,)
       (nm - 60)/20
 
 
-
 */
 
 glm::vec4 Opticks::getDefaultDomainSpec()

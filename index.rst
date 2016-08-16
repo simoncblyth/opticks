@@ -14,7 +14,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   opticks 
+   docs/opticks 
    docs/overview
    docs/geocache
 
