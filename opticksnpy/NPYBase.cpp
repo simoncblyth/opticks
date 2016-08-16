@@ -326,7 +326,7 @@ unsigned int NPYBase::getNumQuads()
 
    if(last_dimension != 4 )
    {
-       LOG(warning) << "NPYBase::getNumQuads last dim expected to be 4  " << getShapeString()  ;
+       LOG(fatal) << "NPYBase::getNumQuads last dim expected to be 4  " << getShapeString()  ;
        num_quad = 0 ; 
    } 
    else

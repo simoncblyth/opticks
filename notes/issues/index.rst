@@ -6,6 +6,7 @@ issues
 
    composition_not_targetted_with_loaded_event
    optix_400_shakedown
+   linux_interop_buffer_overwrite
    geocache_versioning
    pmt_distrib
    offset_bottom/index

@@ -4,8 +4,7 @@ FIXED : Composition Not Targetted with Loaded Event
 The Fix
 ---------
 
-
-
+* https://bitbucket.org/simoncblyth/opticks/commits/eecbf120e8be
 
 
 Former Problem

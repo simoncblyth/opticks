@@ -2,6 +2,57 @@
 optix 400 : seedPhotonsFromGenstepsImp FATAL : mismatch between CPU and GPU photon counts
 =============================================================================================
 
+
+Focussed workaround on gensteps using OpticksBufferControl
+-----------------------------------------------------------------
+
+BufferControl sets tags associated with the buffer, stored in NPY
+that are acted upon wherever buffer operations happen.
+
+::
+
+     537 void OpticksEvent::createSpec()
+     538 {
+     ... 
+     547     m_genstep_spec = new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_SETSIZE,OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
+     548 
+
+::
+
+    282 template <typename T>
+    283 void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
+    284 {
+    285     unsigned int numBytes = npy->getNumBytes(0) ;
+    286 
+    287     OpticksBufferControl ctrl(npy->getBufferControl());
+    288 
+    289     LOG(info)<<"OContext::upload"
+    290              << " numBytes " << numBytes
+    291              << npy->description("upload")
+    292              ;
+    293 
+    294     if(ctrl.isSet("UPLOAD_WITH_CUDA"))
+    295     {
+    296         void* d_ptr = NULL;
+    297         rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
+    298         cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
+    299         buffer->markDirty();
+    300     }
+    301     else
+    302     {
+    303         memcpy( buffer->map(), npy->getBytes(), numBytes );
+    304         buffer->unmap();
+    305     }
+    306 }
+
+
+
+
+Issue
+--------
+
+
+
 Tao encountered crazy photon counts from the Thrust reduction of the gensteps::
 
 

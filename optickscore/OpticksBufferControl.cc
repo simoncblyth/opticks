@@ -1,6 +1,7 @@
 #include "OpticksBufferControl.hh"
 #include <sstream>
 #include "BStr.hh"
+#include "PLOG.hh"
 
 const char* OpticksBufferControl::OPTIX_SETSIZE_ = "OPTIX_SETSIZE" ; 
 const char* OpticksBufferControl::OPTIX_NON_INTEROP_ = "OPTIX_NON_INTEROP" ;   // use optix buffer even in in interop mode
@@ -70,7 +71,15 @@ unsigned long long OpticksBufferControl::Parse(const char* ctrl_, char delim)
     {
         std::vector<std::string> elems ; 
         BStr::split(elems,ctrl_,delim);
-        for(unsigned i=0 ; i < elems.size() ; i++) ctrl |= ParseTag(elems[i].c_str()) ;
+        for(unsigned i=0 ; i < elems.size() ; i++)
+        {
+            const char* tag_ = elems[i].c_str() ;
+            unsigned long long tag = ParseTag(tag_) ;
+            if(tag == 0)
+                 LOG(fatal) << "OpticksBufferControl::Parse BAD TAG " << tag_ ;
+            assert(tag);
+            ctrl |= tag ;
+        }
     }
     return ctrl ; 
 }
@@ -96,5 +105,13 @@ bool OpticksBufferControl::isSet(const char* mask) const
 {
     return isSet(m_ctrl, mask );
 }
+std::string OpticksBufferControl::description(const char* msg) const
+{
+   std::stringstream ss ;
+   ss << msg << " : " ;
+   ss << Description(m_ctrl) ;
+   return ss.str();
+}
+
  
 

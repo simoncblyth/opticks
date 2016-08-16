@@ -30,7 +30,8 @@ class OGLRAP_API AxisApp {
       void renderLoop();
       MultiViewNPY* getAxisAttr();
       NPY<float>*   getAxisData();
-      void setLauncher(SLauncher* launcher);
+      void setLauncher(SLauncher* launcher);  
+     // SLauncher is a pure virtual protocol:  void launch(unsigned count)
   private:
       void init(int argc, char** argv); 
       void initViz();

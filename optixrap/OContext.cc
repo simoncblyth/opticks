@@ -303,9 +303,6 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
         memcpy( buffer->map(), npy->getBytes(), numBytes );
         buffer->unmap(); 
     }
-
-
-
 }
 
 
@@ -329,27 +326,24 @@ template <typename T>
 optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
-
-    unsigned long long ctrl = npy->getBufferControl();
+    OpticksBufferControl ctrl(npy->getBufferControl());
 
     bool compute = isCompute()  ; 
     LOG(info) << "OContext::createBuffer "
               << std::setw(20) << name 
               << std::setw(20) << npy->getShapeString()
               << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )
-              << " BufferControl : " << OpticksBufferControl::Description(ctrl)
+              << " BufferControl : " << ctrl.description(name)
               ;
 
-
     unsigned int type(0);
-
     
-    if(      ctrl & OpticksBufferControl::OPTIX_INPUT_OUTPUT )  type = RT_BUFFER_INPUT_OUTPUT ;
-    else if( ctrl & OpticksBufferControl::OPTIX_OUTPUT_ONLY  )  type = RT_BUFFER_OUTPUT  ;
-    else if( ctrl & OpticksBufferControl::OPTIX_INPUT_ONLY   )  type = RT_BUFFER_INPUT  ;
+    if(      ctrl.isSet("OPTIX_INPUT_OUTPUT") )  type = RT_BUFFER_INPUT_OUTPUT ;
+    else if( ctrl.isSet("OPTIX_OUTPUT_ONLY")  )  type = RT_BUFFER_OUTPUT  ;
+    else if( ctrl.isSet("OPTIX_INPUT_ONLY")   )  type = RT_BUFFER_INPUT  ;
     else  assert(0 && "ERR no buffer control ") ;
     
-    if( ctrl & OpticksBufferControl::BUFFER_COPY_ON_DIRTY ) type |= RT_BUFFER_COPY_ON_DIRTY ;
+    if( ctrl.isSet("BUFFER_COPY_ON_DIRTY") ) type |= RT_BUFFER_COPY_ON_DIRTY ;
 
 
     optix::Buffer buffer ; 
@@ -358,7 +352,7 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
     {
         buffer = m_context->createBuffer(type);
     }
-    else if( ctrl & OpticksBufferControl::OPTIX_NON_INTEROP )
+    else if( ctrl.isSet("OPTIX_NON_INTEROP") )
     {
         buffer = m_context->createBuffer(type);
     }
@@ -384,9 +378,8 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
     unsigned int ni = std::max(1u,npy->getShape(0));
     unsigned int nj = std::max(1u,npy->getShape(1));  
     unsigned int nk = std::max(1u,npy->getShape(2));  
-    unsigned int nl = std::max(1u,npy->getShape(3));  
-
-    unsigned long long ctrl = npy->getBufferControl();
+    //unsigned int nl = std::max(1u,npy->getShape(3));  
+    //unsigned long long ctrl = npy->getBufferControl();
 
     RTformat format = getFormat(npy->getType());
     buffer->setFormat(format);  // must set format, before can set ElementSize
@@ -412,33 +405,27 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
     }
     else
     {
-        //size = ni*nj ;
         size = npy->getNumQuads() ;  
         LOG(info) << hdr 
                   << " size (gnq) " << std::setw(10) << size 
                   ;
     }
 
-    if(ctrl & OpticksBufferControl::OPTIX_SETSIZE)
-    {
-        buffer->setSize(size); 
-    }
+    buffer->setSize(size); 
+
+    //
+    // NB in interop mode, the OptiX buffer is just a reference to the 
+    // OpenGL buffer object, however despite this the size
+    // and format of the OptiX buffer still needs to be set as they control
+    // the addressing of the buffer in the OptiX programs 
+    //
+    //         79 rtBuffer<float4>               genstep_buffer;
+    //         80 rtBuffer<float4>               photon_buffer;
+    //         ..
+    //         85 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
+    //         86 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
+    //
 }
-
-
-
-
-/*
-
-2016-07-21 20:23:13.813 INFO  [1868636] [OContext::launch@212] OContext::launch entry 1 width 100000 height 1
-libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid context (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Validation error: Buffer validation failed for 'genstep_buffer':
-Validation error: Buffer dimensionality is not set, [4915247], [4915291])
-
-
-*/
-
-
-
 
 
 RTformat OContext::getFormat(NPYBase::Type_t type)

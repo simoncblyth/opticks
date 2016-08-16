@@ -569,8 +569,8 @@ void Interactor::number_key_released(unsigned int number)
 void Interactor::updateStatus()
 {
     snprintf(m_status, STATUS_SIZE , "%s (%u) %s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
-           m_bookmarks->getTitle(),
-           m_bookmarks->getCurrent(),
+           m_bookmarks ? m_bookmarks->getTitle() : "-",
+           m_bookmarks ? m_bookmarks->getCurrent() : 999,
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
            m_far_mode  ? "f" : "-",

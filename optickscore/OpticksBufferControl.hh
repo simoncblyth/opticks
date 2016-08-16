@@ -42,6 +42,7 @@ class OKCORE_API OpticksBufferControl {
         OpticksBufferControl(const char* ctrl); 
         OpticksBufferControl(unsigned long long ctrl); 
         bool isSet(const char* mask) const;
+        std::string description(const char* msg="OpticksBufferControl::description") const;
     private:
          unsigned long long m_ctrl ; 
 
