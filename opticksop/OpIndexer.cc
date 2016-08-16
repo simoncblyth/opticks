@@ -141,6 +141,8 @@ void OpIndexer::indexBoundaries()
         return ;  
     }
 
+
+    bool compute = m_ocontext->isCompute() ;
     NPYBase* npho = m_pho->getNPY();
     unsigned int buffer_id = npho->getBufferId();
     unsigned long long ctrl = npho->getBufferControl();
@@ -148,7 +150,11 @@ void OpIndexer::indexBoundaries()
     unsigned int stride = 4*4 ; 
     unsigned int begin  = 4*3+0 ;  
 
-    if(ctrl & OpticksBufferControl::PTR_FROM_OPTIX )
+    if(compute)
+    {
+         indexBoundariesFromOptiX(m_pho, stride, begin);
+    }
+    else if(ctrl & OpticksBufferControl::PTR_FROM_OPTIX )
     {
          indexBoundariesFromOptiX(m_pho, stride, begin);
     } 

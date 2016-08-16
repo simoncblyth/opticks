@@ -350,7 +350,7 @@ opticks-find(){
    find . -name '*.hpp' -exec grep -H $str {} \;
    find . -name '*.h' -exec grep -H $str {} \;
 
-   cd $iwd
+   #cd $iwd
 }
 
 

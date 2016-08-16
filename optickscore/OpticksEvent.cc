@@ -107,6 +107,7 @@ OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, co
 
           m_domain(NULL),
 
+          m_genstep_vpos(NULL),
           m_genstep_attr(NULL),
           m_nopstep_attr(NULL),
           m_photon_attr(NULL),
@@ -169,10 +170,18 @@ unsigned int OpticksEvent::getNumNopsteps()
     return m_num_nopsteps ; 
 }
 
-void OpticksEvent::setNumPhotons(unsigned int num_photons)
+void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)
 {
     m_num_photons = num_photons ; 
-    resize();
+    if(resize_)
+    {
+        LOG(trace) << "OpticksEvent::setNumPhotons RESIZING " << num_photons ;  
+        resize();
+    }
+    else
+    {
+        LOG(trace) << "OpticksEvent::setNumPhotons NOT RESIZING " << num_photons ;  
+    }
 }
 unsigned int OpticksEvent::getNumPhotons()
 {
@@ -417,7 +426,7 @@ void OpticksEvent::init()
     m_data_names.push_back(recsel_);
     m_data_names.push_back(sequence_);
 
-    m_abbrev[genstep_] = "" ;      // no-prefix : cerenkov or scintillation
+    m_abbrev[genstep_] = "gs" ;    // input gs are named: cerenkov, scintillation but for posterity need common output tag
     m_abbrev[nopstep_] = "no" ;    // non optical particle steps obtained from G4 eg with g4gun
     m_abbrev[photon_] = "ox" ;     // photon final step uncompressed 
     m_abbrev[record_] = "rx" ;     // photon step compressed record
@@ -503,19 +512,58 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     return (*mvn)[elem[1].c_str()] ;
 }
 
+/*
+
+
+   INTEROP mode GPU buffer access C:create R:read W:write
+   ----------------------------------------------------------
+
+                 OpenGL     OptiX              Thrust 
+
+   gensteps       CR       R (gen/prop)       R (seeding)
+
+   photons        CR       W (gen/prop)       W (seeding)
+   sequence                W (gen/prop)
+   phosel         CR                          W (indexing) 
+
+   records        CR       W  
+   recsel         CR                          W (indexing)
+
+
+   OptiX has no business with phosel and recsel 
+
+*/
+
 void OpticksEvent::createSpec()
 {
     // invoked by Opticks::makeEvent   or OpticksEvent::load
     unsigned int maxrec = getMaxRec();
 
-    m_genstep_spec = new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_SETSIZE,OPTIX_INPUT_ONLY")  ;
+    // maybe should split into INTEROP and COMPUTE ??? or prefix tags 
+    //
+    // as buffer setup are very different in these two modes
+    // better for the tags to be easy to find, ie not the same a underlying OptiX tags
+
+    m_genstep_spec = new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_SETSIZE,OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
 
     m_nopstep_spec = new NPYSpec(nopstep_   ,  0,4,4,0,      NPYBase::FLOAT     , "" ) ;
     m_fdom_spec    = new NPYSpec(fdom_      ,  3,1,4,0,      NPYBase::FLOAT     , "" ) ;
     m_idom_spec    = new NPYSpec(idom_      ,  1,1,4,0,      NPYBase::INT       , "" ) ;
 
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_SETSIZE,OPTIX_INPUT_OUTPUT,PTR_FROM_OPENGL") ;
+
+          //   OPTIX_INPUT_OUTPUT : INPUT needed as seeding writes genstep identifiers into photon buffer
+          //     PTR_FROM_OPENGL  : needed with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop no longer working 
+          //                        instead move to 
+          //                                 OpenGL/OptiX : to write the photon data
+          //                                 OpenGL/CUDA  : to index the photons  
+          //
+
     m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG , "OPTIX_SETSIZE,OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY") ;
+
+          // OPTIX_NON_INTEROP  : creates OptiX buffer even in INTEROP mode, this is possible for sequence as 
+          //                      it is not used by OpenGL shaders so no need to INTEROP
+
     m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4, NPYBase::SHORT     , "OPTIX_SETSIZE,OPTIX_OUTPUT_ONLY") ;
 
     m_phosel_spec   = new NPYSpec(phosel_   ,  0,1,4,0,      NPYBase::UCHAR     , "" ) ;
@@ -653,7 +701,7 @@ void OpticksEvent::importDomainsBuffer()
 
 
 
-void OpticksEvent::setGenstepData(NPY<float>* genstep)
+void OpticksEvent::setGenstepData(NPY<float>* genstep, bool progenitor)
 {
     m_genstep_data = genstep  ;
     m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
@@ -662,6 +710,8 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep)
     ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false, 1);    // (x0, t0)                     2nd GenStep quad 
     ViewNPY* vdir = new ViewNPY("vdir",m_genstep_data,2,0,0,4,ViewNPY::FLOAT,false,false, 1);    // (DeltaPosition, step_length) 3rd GenStep quad
 
+    m_genstep_vpos = vpos ; 
+
     m_genstep_attr = new MultiViewNPY("genstep_attr");
     m_genstep_attr->add(vpos);
     m_genstep_attr->add(vdir);
@@ -669,9 +719,17 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep)
     {
         m_num_gensteps = m_genstep_data->getShape(0) ;
         unsigned int num_photons = m_genstep_data->getUSum(0,3);
-        setNumPhotons(num_photons); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
+        bool resize = progenitor ; 
+        setNumPhotons(num_photons, resize); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
     }
 }
+
+const glm::vec4& OpticksEvent::getGenstepCenterExtent()
+{
+    assert(m_genstep_vpos && "must setGenstepData before getGenstepCenterExtent"); 
+    return m_genstep_vpos->getCenterExtent() ; 
+}
+
 
 void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 {
@@ -962,34 +1020,40 @@ void OpticksEvent::save(bool verbose)
 
     LOG(info) << "OpticksEvent::save " << getShapeString() ; 
 
-   // genstep normally not saved as it exists already coming from elsewhere,
-   // but for TorchStep that insnt the case
+
+
+
 
 
     NPY<float>* no = getNopstepData();
-    //if(no)
     {
         no->setVerbose(verbose);
         no->save("no%s", m_typ,  m_tag, udet);
         no->dump("OpticksEvent::save (nopstep)");
     }
 
+
+   // genstep were formally not saved as they exist already elsewhere,
+   // however recording the gs in use for posterity makes sense
+    NPY<float>* gs = getGenstepData();
+    {
+        gs->setVerbose(verbose);
+        gs->save("gs%s", m_typ,  m_tag, udet);
+    }
+
     NPY<float>* ox = getPhotonData();
-    //if(ox)
     {
         ox->setVerbose(verbose);
         ox->save("ox%s", m_typ,  m_tag, udet);
     } 
 
     NPY<short>* rx = getRecordData();    
-    //if(rx)
     {
         rx->setVerbose(verbose);
         rx->save("rx%s", m_typ,  m_tag, udet);
     }
 
     NPY<unsigned long long>* ph = getSequenceData();
-    //if(ph)
     {
         ph->setVerbose(verbose);
         ph->save("ph%s", m_typ,  m_tag, udet);
@@ -1189,8 +1253,6 @@ void OpticksEvent::loadBuffers(bool verbose)
     assert(idom->hasShapeSpec(m_idom_spec));
     assert(fdom->hasShapeSpec(m_fdom_spec));
  
-
-
     NPY<float>* no = NULL ; 
     if(m_fake_nopstep_path)
     {
@@ -1203,19 +1265,21 @@ void OpticksEvent::loadBuffers(bool verbose)
     }
     if(no) assert(no->hasItemSpec(m_nopstep_spec) );
 
+    NPY<float>*              gs = NPY<float>::load("gs%s", m_typ,  m_tag, udet, qload);
     NPY<float>*              ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet, qload);
     NPY<short>*              rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet, qload);
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet, qload );
 
+    if(gs) assert(gs->hasItemSpec(m_genstep_spec) );
     if(ox) assert(ox->hasItemSpec(m_photon_spec) );
     if(rx) assert(rx->hasItemSpec(m_record_spec) );
     if(ph) assert(ph->hasItemSpec(m_sequence_spec) );
     if(ps) assert(ps->hasItemSpec(m_phosel_spec) );
     if(rs) assert(rs->hasItemSpec(m_recsel_spec) );
 
-
+    unsigned int num_genstep = gs ? gs->getShape(0) : 0 ;
     unsigned int num_nopstep = no ? no->getShape(0) : 0 ;
     unsigned int num_photons = ox ? ox->getShape(0) : 0 ;
     unsigned int num_history = ph ? ph->getShape(0) : 0 ;
@@ -1232,6 +1296,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
 
     LOG(info) << "OpticksEvent::load shape(0) before reshaping "
+              << " num_genstep " << num_genstep
               << " num_nopstep " << num_nopstep
               << " [ "
               << " num_photons " << num_photons
@@ -1245,6 +1310,11 @@ void OpticksEvent::loadBuffers(bool verbose)
               ; 
 
 
+    // treat "persisted for posterity" gensteps just like all other buffers
+    // progenitor input gensteps need different treatment
+
+    bool progenitor = false; 
+    setGenstepData(gs, progenitor);
     setNopstepData(no);
     setPhotonData(ox);
     setSequenceData(ph);

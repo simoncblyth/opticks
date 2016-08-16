@@ -342,13 +342,23 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 
 
     unsigned int type(0);
-    if(      ctrl & OpticksBufferControl::OPTIX_INPUT_OUTPUT )  type = RT_BUFFER_INPUT_OUTPUT | RT_BUFFER_COPY_ON_DIRTY ;
+
+    
+    if(      ctrl & OpticksBufferControl::OPTIX_INPUT_OUTPUT )  type = RT_BUFFER_INPUT_OUTPUT ;
     else if( ctrl & OpticksBufferControl::OPTIX_OUTPUT_ONLY  )  type = RT_BUFFER_OUTPUT  ;
     else if( ctrl & OpticksBufferControl::OPTIX_INPUT_ONLY   )  type = RT_BUFFER_INPUT  ;
     else  assert(0 && "ERR no buffer control ") ;
     
+    if( ctrl & OpticksBufferControl::BUFFER_COPY_ON_DIRTY ) type |= RT_BUFFER_COPY_ON_DIRTY ;
+
+
     optix::Buffer buffer ; 
-    if( (ctrl & OpticksBufferControl::OPTIX_NON_INTEROP) || compute )
+
+    if( compute )
+    {
+        buffer = m_context->createBuffer(type);
+    }
+    else if( ctrl & OpticksBufferControl::OPTIX_NON_INTEROP )
     {
         buffer = m_context->createBuffer(type);
     }

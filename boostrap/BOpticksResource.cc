@@ -123,6 +123,7 @@ void BOpticksResource::Summary(const char* msg)
 
     std::cerr << "opticksdata_dir      " << m_opticksdata_dir     << std::endl ; 
     std::cerr << "resource_dir         " << m_resource_dir     << std::endl ; 
+    std::cerr << "gensteps_dir         " << m_gensteps_dir     << std::endl ; 
     std::cerr << "installcache_dir     " << m_installcache_dir << std::endl ; 
     std::cerr << "rng_installcache_dir " << m_rng_installcache_dir << std::endl ; 
     std::cerr << "okc_installcache_dir " << m_okc_installcache_dir << std::endl ; 

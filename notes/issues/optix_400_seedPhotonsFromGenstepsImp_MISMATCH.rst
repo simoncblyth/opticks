@@ -50,7 +50,7 @@ Suggests the gensteps failed to be properly uploaded::
 
 
 
-Taos fix for the issue (in compute mode)
+Taos fix for the compute mode issue 
 
 * https://bitbucket.org/simoncblyth/opticks/commits/2fd2a8fb3b2615a85d7bf0126d2ffe999ab7b609
 * use RT_BUFFER_COPY_ON_DIRTY for OptiX buffers in compute mode

@@ -161,6 +161,8 @@ int main(int argc, char** argv)
 
         app.loadEvtFromFile();
 
+        app.targetViz();               // point Camera at gensteps 
+
         // huh maybe need to indexEvt if the indices are not loaded, 
         // eg when running with cfg4- no indices are persisted by the save as 
         // do that without assuming OptiX available

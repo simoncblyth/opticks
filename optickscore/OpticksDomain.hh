@@ -29,6 +29,7 @@ class OKCORE_API OpticksDomain {
        const glm::vec4& getSpaceDomain();
        const glm::vec4& getTimeDomain();
        const glm::vec4& getWavelengthDomain();
+
      private:
         void init();
 

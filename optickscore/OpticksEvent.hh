@@ -124,7 +124,7 @@ class OKCORE_API OpticksEvent {
        void checkData(const char* name);
        NPY<float>* loadGenstepFromFile(int modulo=0);
        NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
-       void setGenstepData(NPY<float>* genstep_data);
+       void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
@@ -190,6 +190,8 @@ class OKCORE_API OpticksEvent {
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
    public:
+       const glm::vec4&     getGenstepCenterExtent();
+   public:
        NPY<float>*          getGenstepData();
        NPY<float>*          getNopstepData();
        NPY<float>*          getPhotonData();
@@ -230,7 +232,7 @@ class OKCORE_API OpticksEvent {
        unsigned int getMaxRec();  // per-photon
    private:
        // set by setGenstepData based on summation over Cerenkov/Scintillation photons to generate
-       void setNumPhotons(unsigned int num_photons);
+       void setNumPhotons(unsigned int num_photons, bool resize=true);
        void resize();
    public:
        void Summary(const char* msg="OpticksEvent::Summary");
@@ -268,6 +270,8 @@ class OKCORE_API OpticksEvent {
 
        OpticksDomain*        m_domain ; 
 
+       ViewNPY*        m_genstep_vpos ;
+
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_nopstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
@@ -301,6 +305,7 @@ class OKCORE_API OpticksEvent {
        NPYSpec* m_phosel_spec ;  
        NPYSpec* m_recsel_spec ;  
        NPYSpec* m_sequence_spec ;  
+
 
 };
 

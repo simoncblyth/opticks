@@ -591,7 +591,8 @@ void App::targetViz()
         }
         else if(m_evt)
         {
-            glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
+            //glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
+            glm::vec4 gsce = m_evt->getGenstepCenterExtent();
             m_composition->setCenterExtent( gsce , autocam );
             LOG(info) << "App::targetViz (!geocenter) gsce " << gformat(gsce) ; 
         }
@@ -635,7 +636,8 @@ void App::uploadEvtViz()
 
     m_scene->uploadSelection();
 
-    m_scene->dump_uploads_table("App::uploadEvtViz");
+    if(hasOpt("dbguploads"))
+        m_scene->dump_uploads_table("App::uploadEvtViz");
 
 
     TIMER("uploadEvtViz"); 
@@ -734,26 +736,6 @@ void App::indexBoundariesHost()
 
 void App::indexEvt()
 {
-   /*
-
-       INTEROP mode GPU buffer access C:create R:read W:write
-       ----------------------------------------------------------
-
-                     OpenGL     OptiX              Thrust 
-
-       gensteps       CR       R (gen/prop)       R (seeding)
-
-       photons        CR       W (gen/prop)       W (seeding)
-       sequence                W (gen/prop)
-       phosel         CR                          W (indexing) 
-
-       records        CR       W  
-       recsel         CR                          W (indexing)
-
-
-       OptiX has no business with phosel and recsel 
-   */
-
     if(!m_evt) return ; 
 
     if(m_evt->isIndexed())

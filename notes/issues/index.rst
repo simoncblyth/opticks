@@ -4,6 +4,8 @@ issues
 
 .. toctree::
 
+   composition_not_targetted_with_loaded_event
+   optix_400_shakedown
    geocache_versioning
    pmt_distrib
    offset_bottom/index
@@ -26,7 +28,6 @@ issues
    scintillation_photons
    geant4_opticks_integration/index
    gui_broken_photon_record_colors
-   optix_400_shakedown
 
 
 

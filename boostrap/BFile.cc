@@ -273,8 +273,14 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 
 
 
+#ifdef MSC_VER_
+    // hmm this is getting called on every path, so restrict to windows where its needed
    if(!OPTICKS_PATH_PREFIX)
-       setOpticksPathPrefixFromEnv();
+   { 
+      setOpticksPathPrefixFromEnv();
+   } 
+#endif
+
 
    fs::path p ; 
 
