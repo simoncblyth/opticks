@@ -90,6 +90,30 @@ Try samples
 
 
 
+OptiX 4 Forum
+---------------
+
+* https://devtalk.nvidia.com/default/topic/950165/optix/looking-for-optix-4-adopters/
+
+OptiX 4 Exceptions
+--------------------
+
+* https://devtalk.nvidia.com/default/topic/952532/optix/optix-4-0-runs-slow/
+
+Mentions exceptions are very costly in 400.
+
+From pdf p45:
+
+By default, only RT_EXCEPTION_STACK_OVERFLOW is enabled. During debugging, it
+is often useful to turn on all available exceptions. This can be achieved with
+a single call:
+
+::
+
+    rtContextSetExceptionEnabled(context, RT_EXCEPTION_ALL, 1);
+
+
+
 OptiX 4 Issues : Textures
 -----------------------------
 

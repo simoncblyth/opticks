@@ -117,6 +117,8 @@ rtDeclareVariable(rtObject,      top_object, , );
 }   \
 
 
+
+
 // stomps on su (surface index) for 1st slot : inserting the genstep m1 
 #define ASAVE(p, s, slot, slot_offset, MaterialIndex) \
 {   \
@@ -271,6 +273,18 @@ RT_PROGRAM void generate()
     int slot_min = photon_id*MAXREC ; 
     int slot_max = slot_min + MAXREC - 1 ; 
     int slot_offset = 0 ; 
+
+
+    // zeroing record buffer
+    int record_offset = 0 ; 
+    for(slot=0 ; slot < MAXREC ; slot++)
+    {
+         record_offset = (slot_min + slot)*RNUMQUAD ;
+         record_buffer[record_offset+0] = make_short4(0,0,0,0) ;    // 4*int16 = 64 bits
+         record_buffer[record_offset+1] = make_short4(0,0,0,0) ;    
+    }  
+    slot = 0 ; 
+    record_offset = 0 ; 
 #endif
 
     PerRayData_propagate prd ;
@@ -327,6 +341,9 @@ RT_PROGRAM void generate()
         ASAVE(p, s, slot, slot_offset, MaterialIndex );
 #endif
         slot++ ; 
+
+
+
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER

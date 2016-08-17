@@ -9,6 +9,51 @@ TODO
   photon comparison
 
 
+
+WORKAROUND : OptiX zeroing record buffer in generate.cu
+-----------------------------------------------------------
+
+* simply filling the record buffer with zeros
+  at the start of the OptiX program, avoids the wierdness (swarming photons etc..)
+
+  * so it seems that the OpZeroer is not working in interop
+  * actually it is preferable to avoid the separate record zeroing step anyhow 
+
+::
+
+    124 void OpEngine::initRecords()
+    125 {
+    126     if(!m_evt) return ;
+    127 
+    128     if(!m_evt->isStep())
+    129     {
+    130         LOG(info) << "OpEngine::initRecords --nostep mode skipping " ;
+    131         return ;
+    132     }
+    133 
+    134 
+    135     OContext* ocontext = m_imp->getOContext();
+    136     OPropagator* opropagator = m_imp->getOPropagator();
+    137 
+    138     OpZeroer* zeroer = new OpZeroer(ocontext) ;
+    139 
+    140     zeroer->setEvent(m_evt);
+    141     zeroer->setPropagator(opropagator);  // only used in compute mode
+    142 
+    143 
+    144     if(m_opticks->hasOpt("dbginterop"))
+    145     {
+    146         LOG(info) << "OpEngine::initRecords skip OpZeroer::zeroRecords as dbginterop " ;
+    147     }
+    148     else
+    149     {
+    150         zeroer->zeroRecords();
+    151         // zeros on GPU record buffer via OptiX or OpenGL
+    152     }
+    153 }
+
+
+
 Debug Approaches
 ------------------
 
@@ -147,6 +192,67 @@ compute mode still matching g4
                  44ee444             1            0             0.00  [7 ] MO MO MO Py Py MO MO
                               100000       100000         0.78 
 
+
+
+interop : fail to pullback/persist sequence buffer ?
+-----------------------------------------------------
+
+After zeroing workaround the index seems operational and normal in GUI, 
+but in analysis its empty::
+
+    simon:ana blyth$ ipython -i tevt.py -- --tag 10 --det PmtInBox
+    Python 2.7.11 (default, Dec  5 2015, 23:51:51) 
+    Type "copyright", "credits" or "license" for more information.
+
+    IPython 1.2.1 -- An enhanced Interactive Python.
+    ?         -> Introduction and overview of IPython's features.
+    %quickref -> Quick reference.
+    help      -> Python's own help system.
+    object?   -> Details about 'object', use 'object??' for extra details.
+    /Users/blyth/opticks/ana/tevt.py --tag 10 --det PmtInBox
+    writing opticks environment to /tmp/blyth/opticks/opticks_env.bash 
+    Evt( 10,"torch","PmtInBox","PmtInBox/torch/ 10 : ", seqs="[]") 20160817-1105 /tmp/blyth/opticks/evt/PmtInBox/fdomtorch/10.npy
+     fdom :            (3, 1, 4) : (metadata) 3*float4 domains of position, time, wavelength (used for compression) 
+     idom :            (1, 1, 4) : (metadata) int domain 
+       ox :       (100000, 4, 4) : (photons) final photon step 
+       wl :            (100000,) : (photons) wavelength 
+     post :          (100000, 4) : (photons) final photon step: position, time 
+     dirw :          (100000, 4) : (photons) final photon step: direction, weight  
+     polw :          (100000, 4) : (photons) final photon step: polarization, wavelength  
+    flags :            (100000,) : (photons) final photon step: flags  
+       c4 :            (100000,) : (photons) final photon step: dtype split uint8 view of ox flags 
+    rx_raw :   (100000, 10, 2, 4) : (records) photon step records RAW:before reshaping 
+       rx :   (100000, 10, 2, 4) : (records) photon step records 
+       ph :       (100000, 1, 2) : (records) photon history flag/material sequence 
+       ps :       (100000, 1, 4) : (photons) phosel sequence frequency index lookups (uniques 34) 
+       rs :   (100000, 10, 1, 4) : (records) RAW recsel sequence frequency index lookups (uniques 34) 
+      rsr :   (100000, 10, 1, 4) : (records) RESHAPED recsel sequence frequency index lookups (uniques 34) 
+                          10:PmtInBox 
+                       0        1.000         100000       [1 ] ?0?
+                              100000         1.00 
+                          10:PmtInBox 
+                       0        1.000         100000       [1 ] ?0?
+                              100000         1.00 
+
+    In [48]: evt.ph[:,0,0]
+    Out[48]: 
+    A()sliced
+    A([0, 0, 0, ..., 0, 0, 0], dtype=uint64)
+
+    In [49]: evt.ph[:,0,1]
+    Out[49]: 
+    A()sliced
+    A([0, 0, 0, ..., 0, 0, 0], dtype=uint64)
+
+    In [50]: np.unique(evt.ph[:,0,0])
+    Out[50]: 
+    A()sliced
+    A([0], dtype=uint64)
+
+    In [51]: np.unique(evt.ph[:,0,1])
+    Out[51]: 
+    A()sliced
+    A([0], dtype=uint64)
 
 
 

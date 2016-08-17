@@ -175,6 +175,15 @@ class Evt(object):
         self.seqhis = seqhis
         self.seqmat = seqmat
 
+        useqhis = len(np.unique(seqhis))
+        useqmat = len(np.unique(seqmat))
+
+        if useqhis <= 1:
+            log.warning("init_records %s finds too few (ph)seqhis uniques : %s : EMPTY HISTORY" % (self.label,useqhis) ) 
+        if useqmat <= 1:
+            log.warning("init_records %s finds too few (ph)seqmat uniques : %s : EMPTY HISTORY" % (self.label,useqmat) ) 
+
+
         self.all_history = all_history
         self.history = all_history
 

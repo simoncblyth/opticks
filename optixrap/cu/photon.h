@@ -60,6 +60,13 @@ __device__ short shortnorm( float v, float center, float extent )
 } 
 
 
+
+__device__ void rsave_zero( optix::buffer<short4>& rbuffer, unsigned int record_offset )
+{
+    rbuffer[record_offset+0] = make_short4(0,0,0,0) ;    // 4*int16 = 64 bits
+    rbuffer[record_offset+1] = make_short4(0,0,0,0) ;    
+}
+
 __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsigned int record_offset, float4& center_extent, float4& time_domain )
 {
     //  pack position and time into normalized shorts (4*16 = 64 bits)
