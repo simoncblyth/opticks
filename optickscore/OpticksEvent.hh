@@ -19,6 +19,7 @@ class RecordsNPY ;
 class PhotonsNPY ; 
 class NPYSpec ; 
 
+class OpticksMode ; 
 class OpticksDomain ; 
 
 /*
@@ -154,10 +155,13 @@ class OKCORE_API OpticksEvent {
        Index* getHistoryIndex();
        Index* getMaterialIndex();
    public:
+       // below are set in Opticks::makeEvent   
+       void setMode(OpticksMode* mode); 
        // domains used for record compression
        void setSpaceDomain(const glm::vec4& space_domain);
        void setTimeDomain(const glm::vec4& time_domain);
        void setWavelengthDomain(const glm::vec4& wavelength_domain);
+   public:
        const glm::vec4& getSpaceDomain();
        const glm::vec4& getTimeDomain();
        const glm::vec4& getWavelengthDomain();
@@ -240,12 +244,16 @@ class OKCORE_API OpticksEvent {
        void         dumpPhotonData();
        static void  dumpPhotonData(NPY<float>* photon_data);
 
+       bool         isInterop();
+       bool         isCompute();
+
        const char*  getTyp();
        const char*  getTag();
        const char*  getDet();
        const char*  getCat();
        const char*  getUDet();
    private:
+       OpticksMode*          m_mode ; 
        const char*           m_typ ; 
        const char*           m_tag ; 
        const char*           m_det ; 

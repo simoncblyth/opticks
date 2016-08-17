@@ -17,6 +17,7 @@
 // optickscore-
 #include "Composition.hh"
 #include "OpticksEvent.hh"
+#include "OpticksBufferControl.hh"
 
 
 #include <GL/glew.h>
@@ -65,6 +66,13 @@ Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path
 template <typename T>
 void Rdr::download( NPY<T>* npy )
 {
+    OpticksBufferControl ctrl(npy->getBufferControl());
+    if(ctrl.isSet(OpticksBufferControl::OPTIX_NON_INTEROP_))
+    {
+        LOG(info) << "Rdr::download SKIP for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
+        return ; 
+    }
+
     GLenum target = GL_ARRAY_BUFFER ;
     void* ptr = mapbuffer( npy->getBufferId(), target );
     if(ptr)

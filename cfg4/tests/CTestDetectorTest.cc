@@ -5,6 +5,7 @@
 #include "CFG4_BODY.hh"
 
 #include "Opticks.hh"
+#include "OpticksMode.hh"
 #include "OpticksCfg.hh"
 
 #include "GGeoTestConfig.hh"
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
 
 
     Opticks* m_opticks = new Opticks(argc, argv);
-    m_opticks->setMode( Opticks::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+    m_opticks->setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
     OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
     m_cfg->commandline(argc, argv);  

@@ -33,6 +33,7 @@ from opticks.ana.evt import Evt
 if __name__ == '__main__':
     args = opticks_args(tag="-4",src="torch", det="PmtInBox", doc=__doc__)
     opticks_environment() 
+    np.set_printoptions(suppress=True, precision=3)
 
     evt = Evt(tag=args.tag, src=args.src, det=args.det, seqs=[])
 

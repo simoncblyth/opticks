@@ -237,16 +237,12 @@ void OEngineImp::saveEvt()
 {
     if(!m_evt) return ;
 
-    if(m_opticks->isCompute())
-    {
-        m_opropagator->downloadEvent();
-    }
-    else
-    {
-        //Rdr::download(m_evt);   
-        //     interop download now done from App::saveEvt 
-        //     just prior to this being called
-    }
+    // note that "interop" download with Rdr::download(m_evt);   
+    // is now done from App::saveEvt just prior to this being called
+
+    m_opropagator->downloadEvent();  
+    // formerly did OPropagator::downloadEvt only in compute mode
+    // but now that interop/compute are blurring have to check each buffer
 
     TIMER("downloadEvt");
 

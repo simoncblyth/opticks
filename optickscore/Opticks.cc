@@ -8,7 +8,6 @@
 #endif
 
 
-
 #include "SSys.hh"
 // brap-
 #include "BStr.hh"
@@ -30,8 +29,7 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 #include "OpticksEvent.hh"
-
-
+#include "OpticksMode.hh"
 
 
 #include "OpticksCfg.hh"
@@ -40,10 +38,8 @@
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
-const char* Opticks::COMPUTE = "--compute" ; 
-const char* Opticks::COMPUTE_MODE_  = "Compute" ;
-const char* Opticks::INTEROP_MODE_  = "Interop" ;
-const char* Opticks::CFG4_MODE_  = "CfG4" ;
+
+const char* Opticks::COMPUTE_ARG_ = "--compute" ; 
 
 // formerly of GPropertyLib, now booted upstairs
 float        Opticks::DOMAIN_LOW  = 60.f ;
@@ -64,20 +60,8 @@ array([  60.,   80.,  100.,  120.,  140.,  160.,  180.,  200.,  220.,
 In [13]: np.linspace(60,820,39).shape
 Out[13]: (39,)
 
-
-     60 - 60 -> 0 
-
-     820 - 60 -> 760
-
-                         60 -> 0
-                         80 -> 1
-                        820 ->                            
-
-
-      (nm - 60)/20
-
-
 */
+
 
 glm::vec4 Opticks::getDefaultDomainSpec()
 {
@@ -114,7 +98,7 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_detector(NULL),
        m_tag(NULL),
        m_cat(NULL),
-       m_mode(0u)
+       m_mode(NULL)
 {
        init();
 }
@@ -160,38 +144,25 @@ const char* Opticks::getLastArg()
 }
 
 
-void Opticks::setMode(unsigned int mode)
+void Opticks::setModeOverride(unsigned int mode)
 {
-    m_mode = mode ; 
+    m_mode->setOverride(mode) ; 
 }
 bool Opticks::isRemoteSession()
 {
     return SSys::IsRemoteSession();
 }
-bool Opticks::isComputeRequested()
-{
-    return (m_mode & COMPUTE_MODE) != 0  ; 
-}
-bool Opticks::isInteropRequested()
-{
-    return (m_mode & INTEROP_MODE) != 0  ; 
-}
-
 bool Opticks::isCompute()
 {
-    return isComputeRequested() || isRemoteSession() ;
+    return m_mode->isCompute() ;
 }
 bool Opticks::isInterop()
 {
-    return !isCompute();
+    return m_mode->isInterop() ;
 }
-
-
-
-
 bool Opticks::isCfG4()
 {
-    return (m_mode & CFG4_MODE) != 0  ; 
+    return m_mode->isCfG4(); 
 }
 
 
@@ -279,16 +250,9 @@ void Opticks::setExit(bool exit)
 
 
 
-
-
-
-
-
 void Opticks::init()
 {
-
-    setMode( hasArg(COMPUTE) ? COMPUTE_MODE : INTEROP_MODE );
-
+    m_mode = new OpticksMode(hasArg(COMPUTE_ARG_)) ; 
 
     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
 
@@ -460,13 +424,7 @@ std::string Opticks::description()
 
 std::string Opticks::getModeString()
 {
-    std::stringstream ss ; 
-
-    if(isCompute()) ss << COMPUTE_MODE_ ; 
-    if(isInterop()) ss << INTEROP_MODE_ ; 
-    if(isCfG4())    ss << CFG4_MODE_ ; 
-
-    return ss.str();
+    return m_mode->description();
 }
 
 const char* Opticks::getUDet()
@@ -557,7 +515,7 @@ OpticksEvent* Opticks::makeEvent()
 
     OpticksEvent* evt = new OpticksEvent(typ, tag, det.c_str(), cat.c_str() );
     assert(strcmp(evt->getUDet(), getUDet()) == 0);
-
+    evt->setMode(m_mode);
     configureDomains();
 
     evt->setTimeDomain(getTimeDomain());

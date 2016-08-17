@@ -194,14 +194,12 @@ void App::init(int argc, char** argv)
 
 bool App::isCompute()
 {
-    //return m_opticks->isCompute() || m_opticks->isRemoteSession() ;
     return m_opticks->isCompute() ;
-    // hmm : this info is needed elsewhere, so better to make the decision inside Opticks
 }
 
 void App::initViz()
 {
-    if(isCompute()) return ; 
+    if(m_opticks->isCompute()) return ; 
 
     // perhaps a VizManager to contain this lot 
 
@@ -253,14 +251,8 @@ void App::configure(int argc, char** argv)
 
 
     bool compute = m_opticks->isCompute();
-    bool interop = m_opticks->isInterop();
-    bool compute_requested = m_opticks->isComputeRequested();
     bool compute_opt = hasOpt("compute") ;
-
-    assert(compute_opt == compute_requested && "App::configure compute_requested mismatch between pre-configure and configure"  ); 
-    assert(compute != interop);
-
-    if(compute && !compute_requested)
+    if(compute && !compute_opt)
         LOG(warning) << "App::configure FORCED COMPUTE MODE : as remote session detected " ;  
 
 

@@ -1,6 +1,7 @@
 #include "CFG4_BODY.hh"
 
 #include "Opticks.hh"
+#include "OpticksMode.hh"
 #include "OpticksEvent.hh"
 #include "CG4.hh"
 
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
 
     Opticks* m_opticks = new Opticks(argc, argv);
 
-    m_opticks->setMode( Opticks::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
+    m_opticks->setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
     m_opticks->configure();
 

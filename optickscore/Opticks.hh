@@ -19,6 +19,7 @@ class Typ ;
 class Index ; 
 
 class OpticksEvent ;
+class OpticksMode ;
 class OpticksResource ; 
 class OpticksColors ; 
 class OpticksQuery; 
@@ -34,20 +35,11 @@ class OpticksAttrSeq ;
 class OKCORE_API Opticks {
        friend class OpticksCfg<Opticks> ; 
    public:
-       static const char* COMPUTE ; 
-   public:
-   public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
+   public:
+       // TODO: move into OpticksMode
+       static const char* COMPUTE_ARG_ ; 
 
-       static const char* COMPUTE_MODE_ ;
-       static const char* INTEROP_MODE_ ;
-       static const char* CFG4_MODE_ ;
-       enum {
-                COMPUTE_MODE = 0x1 << 1, 
-                INTEROP_MODE = 0x1 << 2, 
-                CFG4_MODE = 0x1 << 3
-            }; 
-         
    public:
        static NPropNames* G_MATERIAL_NAMES ;
        static const char* Material(const unsigned int mat);
@@ -101,9 +93,8 @@ class OKCORE_API Opticks {
    public:
        std::string getRelativePath(const char* path); 
    public:
-       void setMode(unsigned int mode);
+       void setModeOverride(unsigned int mode);
        void setDetector(const char* detector); 
-
    public:
        OpticksCfg<Opticks>* getCfg();
        OpticksResource*     getResource(); 
@@ -165,11 +156,11 @@ class OKCORE_API Opticks {
        // attempt to follow request,  but constrain to compute when remote session
        bool isCompute();
        bool isInterop();
+       bool isCfG4();   // needs manual override to set to CFG4_MODE
    public:
        // the mode setting
-       bool isComputeRequested();
-       bool isInteropRequested();
-       bool isCfG4();
+       //bool isComputeRequested();
+       //bool isInteropRequested();
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);
@@ -209,7 +200,7 @@ class OKCORE_API Opticks {
        glm::ivec4       m_settings ; 
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
-       unsigned int         m_mode ; 
+       OpticksMode*         m_mode ; 
    private:
        glm::uvec4           m_size ; 
        glm::uvec4           m_position ; 

@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name OpticksCore)
 project(${name})
 
@@ -76,6 +75,7 @@ set(SOURCES
     OpticksFlags.cc
     OpticksAttrSeq.cc
     Opticks.cc
+    OpticksMode.cc
     OpticksCfg.cc
     OpticksResource.cc
 
@@ -128,6 +128,7 @@ set(HEADERS
     OpticksFlags.hh
     OpticksAttrSeq.hh
     Opticks.hh
+    OpticksMode.hh
     OpticksCfg.hh
     OpticksResource.hh
 

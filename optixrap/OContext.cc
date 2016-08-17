@@ -277,8 +277,6 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
 
 
 
-
-
 template <typename T>
 void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 {
@@ -309,15 +307,36 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 template <typename T>
 void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 {
-    unsigned int numBytes = npy->getNumBytes(0) ;
-    LOG(info)<<"OContext::download" 
-             << " numBytes " << numBytes 
-             << npy->description("download")
-             ;
+    assert(npy);
+    OpticksBufferControl ctrl(npy->getBufferControl());
 
-    void* ptr = buffer->map() ; 
-    npy->read( ptr );
-    buffer->unmap(); 
+    bool proceed = false ; 
+    if(ctrl.isSet(OpticksBufferControl::COMPUTE_MODE_))
+    {
+         proceed = true ; 
+    }
+    else if(ctrl.isSet(OpticksBufferControl::OPTIX_NON_INTEROP_))
+    {   
+         proceed = true ;
+         LOG(info) << "OContext::download PROCEED for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
+    }   
+    
+    if(proceed)
+    {
+        unsigned int numBytes = npy->getNumBytes(0) ;
+        LOG(info)<<"OContext::download" 
+                 << " numBytes " << numBytes 
+                 << npy->description("download")
+                 ;
+
+        void* ptr = buffer->map() ; 
+        npy->read( ptr );
+        buffer->unmap(); 
+    }
+    else
+    {
+        LOG(info)<<"OContext::download SKIPPED for " << npy->getBufferName() ; 
+    }
 }
 
 

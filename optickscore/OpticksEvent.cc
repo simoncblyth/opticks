@@ -41,6 +41,7 @@
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
 #include "OpticksEvent.hh"
+#include "OpticksMode.hh"
 #include "OpticksBufferControl.hh"
 #include "Indexer.hh"
 
@@ -319,6 +320,13 @@ NPY<int>* OpticksEvent::getIDomain()
     return m_domain->getIDomain() ; 
 }
 
+
+// below set by Opticks::makeEvent
+
+void OpticksEvent::setMode(OpticksMode* mode)
+{ 
+    m_mode = mode ; 
+}
 void OpticksEvent::setSpaceDomain(const glm::vec4& space_domain)
 {
     m_domain->setSpaceDomain(space_domain) ; 
@@ -332,6 +340,15 @@ void OpticksEvent::setWavelengthDomain(const glm::vec4& wavelength_domain)
     m_domain->setWavelengthDomain(wavelength_domain)  ; 
 }
 
+
+bool OpticksEvent::isInterop()
+{
+    return m_mode->isInterop();
+}
+bool OpticksEvent::isCompute()
+{
+    return m_mode->isCompute();
+}
 
 const glm::vec4& OpticksEvent::getSpaceDomain()
 {
@@ -539,10 +556,12 @@ void OpticksEvent::createSpec()
     // invoked by Opticks::makeEvent   or OpticksEvent::load
     unsigned int maxrec = getMaxRec();
 
-    // maybe should split into INTEROP and COMPUTE ??? or prefix tags 
+    // Maybe should split controls into INTEROP and COMPUTE ???
+    //     actually the simple modal split is now becoming bit blurred, need to 
+    //     control/act at buffer level not global mode level
     //
-    // as buffer setup are very different in these two modes
-    // better for the tags to be easy to find, ie not the same a underlying OptiX tags
+    // Better for the tags to be easy to find, ie not the same as OptiX RT_ tags
+    //
 
     m_genstep_spec = new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
 
@@ -591,6 +610,7 @@ void OpticksEvent::checkData(const char* name)
     unsigned long long sctrl = OpticksBufferControl::Parse(sctrl_); 
     unsigned long long dctrl = data->getBufferControl();
 
+
     if(dctrl == 0 && sctrl != 0)
     {
         LOG(info) << " setting buffer ctrl "
@@ -601,10 +621,13 @@ void OpticksEvent::checkData(const char* name)
                   << " : " << OpticksBufferControl::Description(sctrl)
                   ;
 
+        // plant the mode in each buffer control : for unification 
+        if(m_mode->isCompute()) sctrl |= OpticksBufferControl::COMPUTE_MODE ; 
+        if(m_mode->isInterop()) sctrl |= OpticksBufferControl::INTEROP_MODE ; 
+
         data->setBufferControl(sctrl);
     }
 }
-
 
 
 

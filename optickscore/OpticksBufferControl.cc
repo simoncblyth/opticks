@@ -13,6 +13,8 @@ const char* OpticksBufferControl::PTR_FROM_OPENGL_ = "PTR_FROM_OPENGL" ;
 const char* OpticksBufferControl::UPLOAD_WITH_CUDA_ = "UPLOAD_WITH_CUDA" ; 
 const char* OpticksBufferControl::BUFFER_COPY_ON_DIRTY_ = "BUFFER_COPY_ON_DIRTY" ; 
 const char* OpticksBufferControl::BUFFER_GPU_LOCAL_ = "BUFFER_GPU_LOCAL" ; 
+const char* OpticksBufferControl::INTEROP_MODE_ = "INTEROP_MODE" ; 
+const char* OpticksBufferControl::COMPUTE_MODE_ = "COMPUTE_MODE" ; 
 
 std::vector<const char*> OpticksBufferControl::Tags()
 {
@@ -27,6 +29,8 @@ std::vector<const char*> OpticksBufferControl::Tags()
     tags.push_back(UPLOAD_WITH_CUDA_);
     tags.push_back(BUFFER_COPY_ON_DIRTY_);
     tags.push_back(BUFFER_GPU_LOCAL_);
+    tags.push_back(INTEROP_MODE_);
+    tags.push_back(COMPUTE_MODE_);
     return tags  ;
 }
 
@@ -43,6 +47,8 @@ std::string OpticksBufferControl::Description(unsigned long long ctrl)
    if( ctrl & UPLOAD_WITH_CUDA    ) ss << UPLOAD_WITH_CUDA_ << " "; 
    if( ctrl & BUFFER_COPY_ON_DIRTY ) ss << BUFFER_COPY_ON_DIRTY_ << " "; 
    if( ctrl & BUFFER_GPU_LOCAL ) ss << BUFFER_GPU_LOCAL_ << " "; 
+   if( ctrl & INTEROP_MODE )     ss << INTEROP_MODE_ << " "; 
+   if( ctrl & COMPUTE_MODE )     ss << COMPUTE_MODE_ << " "; 
    return ss.str();
 }
 
@@ -59,6 +65,8 @@ unsigned long long OpticksBufferControl::ParseTag(const char* k)
     else if(strcmp(k,UPLOAD_WITH_CUDA_)==0)   tag = UPLOAD_WITH_CUDA ;
     else if(strcmp(k,BUFFER_COPY_ON_DIRTY_)==0) tag = BUFFER_COPY_ON_DIRTY ;
     else if(strcmp(k,BUFFER_GPU_LOCAL_)==0)     tag = BUFFER_GPU_LOCAL ;
+    else if(strcmp(k,INTEROP_MODE_)==0)         tag = INTEROP_MODE ;
+    else if(strcmp(k,COMPUTE_MODE_)==0)         tag = COMPUTE_MODE ;
     return tag ;
 }
 
@@ -99,6 +107,11 @@ OpticksBufferControl::OpticksBufferControl(const char* ctrl)
     :
     m_ctrl(Parse(ctrl))
 {
+}
+
+void OpticksBufferControl::add(const char* ctrl)
+{
+    m_ctrl |= Parse(ctrl) ;
 }
 
 bool OpticksBufferControl::isSet(const char* mask) const 

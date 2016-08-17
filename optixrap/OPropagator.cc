@@ -376,18 +376,17 @@ void OPropagator::downloadEvent()
     if(!m_evt) return ;
     LOG(info)<<"OPropagator::downloadEvent" ;
  
+
     NPY<float>* dpho = m_evt->getPhotonData();
     OContext::download<float>( m_photon_buffer, dpho );
 
-    //if(m_evt->isStep())
-    if(true)
-    {
-        NPY<short>* drec = m_evt->getRecordData();
-        OContext::download<short>( m_record_buffer, drec );
+    NPY<short>* drec = m_evt->getRecordData();
+    OContext::download<short>( m_record_buffer, drec );
 
-        NPY<unsigned long long>* dhis = m_evt->getSequenceData();
-        OContext::download<unsigned long long>( m_sequence_buffer, dhis );
-    }
+    NPY<unsigned long long>* dhis = m_evt->getSequenceData();
+    OContext::download<unsigned long long>( m_sequence_buffer, dhis );
+
+
 
     LOG(info)<<"OPropagator::downloadEvent DONE" ;
 }
