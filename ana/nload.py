@@ -9,20 +9,25 @@ DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
 
 DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2"  ## cf C++  brap- BOpticksEvent
 
-def path_(typ, tag, det="dayabay", name=None):
+def adir_(typ, tag, det="dayabay", name=None):
     tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ)) 
+    return tmpl
+
+def path_(typ, tag, det="dayabay", name=None):
+    adir = adir_(typ, tag, det, name)
     if name is None:
-        tmpl = os.path.join(tmpl, "%s.npy") 
+        tmpl = os.path.join(adir, "%s.npy") 
     else:
-        tmpl = os.path.join(tmpl, "%s", name) 
+        tmpl = os.path.join(adir, "%s", name) 
     pass
     return tmpl % str(tag)
 
 
 def tpaths_(typ, tag, det="dayabay", name=None):
     assert name is not None 
-    tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ)) 
-    tagdir = os.path.join(tmpl, "%s") % str(tag) 
+
+    adir = adir_(typ, tag, det, name)
+    tagdir = os.path.join(adir, "%s") % str(tag) 
    
     if os.path.isdir(tagdir): 
         names = os.listdir(tagdir)

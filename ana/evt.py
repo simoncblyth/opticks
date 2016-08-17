@@ -12,10 +12,11 @@ from collections import OrderedDict
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.nbase import count_unique, vnorm
-from opticks.ana.nload import A, I, II
+from opticks.ana.nload import A, I, II, adir_
 from opticks.ana.seq import SeqAna
 from opticks.ana.histype import HisType 
 from opticks.ana.mattype import MatType 
+from opticks.ana.metadata import Metadata
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
@@ -90,6 +91,12 @@ class Evt(object):
         self.src = src
         self.det = det  
 
+        adir = adir_("md"+src, tag, det)
+        mdir = os.path.join(adir, tag)   ## md dir has different layout from array dirs 
+        metadata = Metadata(mdir)
+        log.info("loaded metadata from %s : %s " % (mdir, repr(metadata)))
+        self.metadata = metadata  
+
         fdom = A.load_("fdom"+src,tag,det, dbg=dbg) 
         idom = A.load_("idom"+src,tag,det, dbg=dbg) 
 
@@ -117,6 +124,8 @@ class Evt(object):
         fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
         self.desc['fdom'] = fdom.desc
         self.desc['idom'] = "(metadata) int domain"
+
+
 
         return True         
 

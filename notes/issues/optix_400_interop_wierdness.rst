@@ -1,12 +1,58 @@
 
-OptiX 400 : Interop Wierdness
-=================================
+FIXED : OptiX 400 Interop Wierdness
+========================================
 
 TODO
 ----
 
-* change persisting location for interop and compute for 
-  photon comparison
+check performance implications of OptiX zeroing ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Is OptiX zeroing significant to performance ? As is done in COMPUTE mode where not actually needed.
+Can remove the OpZeroer call. 
+
+TODO: formalize performance measurement into a test
+
+
+FIXED : missing creation mode metadata
+---------------------------------------------
+
+RecordsNPYTest failing due to unset OpticksMode on loading an OpticksEvent, 
+need to get **creation_mode** persisted and loaded::
+
+    simon:optickscore blyth$ ls -l /tmp/blyth/opticks/evt/#/#/#/parameters.json
+    -rw-r--r--  1 blyth  wheel   980 Aug 16 13:11 /tmp/blyth/opticks/evt/BoxInBox/mdtorch/1/parameters.json
+    -rw-r--r--  1 blyth  wheel  1129 Aug 16 18:55 /tmp/blyth/opticks/evt/PmtInBox/mdtorch/-10/parameters.json
+    -rw-r--r--  1 blyth  wheel  1059 Aug 17 14:17 /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/parameters.json
+    -rw-r--r--  1 blyth  wheel   668 Aug 16 18:42 /tmp/blyth/opticks/evt/dayabay/mdcerenkov/1/parameters.json
+    -rw-r--r--  1 blyth  wheel   618 Aug 17 14:42 /tmp/blyth/opticks/evt/dayabay/mdtorch/1/parameters.json
+    -rw-r--r--  1 blyth  wheel  1173 Aug 16 13:03 /tmp/blyth/opticks/evt/prism/mdtorch/1/parameters.json
+    -rw-r--r--  1 blyth  wheel  1144 Aug 16 21:07 /tmp/blyth/opticks/evt/reflect/mdtorch/1/parameters.json
+
+There is already a **mode** entry::
+
+    simon:optickscore blyth$ cat /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/parameters.json
+    {
+        "TimeStamp": "20160817_141731",
+        "Type": "torch",
+        "Tag": "10",
+        "Detector": "dayabay",
+        "Cat": "PmtInBox",
+        "UDet": "PmtInBox",
+        "RngMax": "3000000",
+        "BounceMax": "9",
+        "RecordMax": "10",
+        "mode": "INTEROP_MODE",
+        "cmdline": "--test --testconfig mode=PmtInBox_pmtpath=\/usr\/local\/opticks\/opticksdata\/export\/dpib\/GMergedMesh\/0_control=1,0,0,0_analytic=1_groupvel=0_shape=box_boundary=Rock\/NONE\/perfectAbsorbSurface\/MineralOil_parameters=0,0,0,300 --torch --torchconfig type=disc_photons=100000_wavelength=380_frame=1_source=0,0,300_target=0,0,0_radius=100_zenithazimuth=0,1,0,1_material=Vacuum_mode=_polarization= --timemax 10 --animtimemax 10 --cat PmtInBox --tag 10 --save --eye 0.0,-0.5,0.0 --geocenter ",
+        "genstepDigest": "dca680dac412a91174a72ec35159800f",
+        "NumGensteps": "1",
+        "NumPhotons": "100000",
+        "NumRecords": "1000000",
+        "photonData": "012d3aab69d6d51fd68db4c4926df1a4",
+        "recordData": "0b3e7ebd119fcbad77c79d3866fa1d9d",
+        "sequenceData": "902d018daa9d9848921d538ef77a5b23"
+    }
+
 
 
 
@@ -114,6 +160,15 @@ interop
 Notice some rafts of parallel slowly propagating photons.
 Looking at photons in different history sequences suggests 
 those ending in AB (bulk absorb) are primary mis-behavers.
+
+This is suggestive of noise in the buffer.  Normally one would 
+expect visualization of a buffer containing random noise bits to 
+show little.
+
+BUT for the domain compressed record buffer
+practically any set of bits will produce something that will
+be visible.
+
 
 
 tpmt-- : origin attraction and swarming
@@ -332,9 +387,6 @@ Fixed::
                  44ee444             1            0             0.00  [7 ] MO MO MO Py Py MO MO
                               100000       100000         0.78 
     simon:cfg4 blyth$ 
-
-
-
 
 
 

@@ -354,7 +354,7 @@ void Opticks::Summary(const char* msg)
     LOG(info) << msg 
               << " sourceCode " << getSourceCode() 
               << " sourceType " << getSourceType() 
-              << " mode " << getModeString()
+              << " mode " << m_mode->description()
               ; 
 
     m_resource->Summary(msg);
@@ -422,10 +422,6 @@ std::string Opticks::description()
     return ss.str();
 }
 
-std::string Opticks::getModeString()
-{
-    return m_mode->description();
-}
 
 const char* Opticks::getUDet()
 {
@@ -540,7 +536,7 @@ OpticksEvent* Opticks::makeEvent()
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );
 
-    parameters->add<std::string>("mode", getModeString() ); 
+    parameters->add<std::string>("mode", m_mode->description());
     parameters->add<std::string>("cmdline", m_cfg->getCommandLine() );
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );

@@ -11,6 +11,10 @@ class OContext ;
 class OBuf ; 
 struct OTimes ; 
 
+// TODO: maybe split OptiX buffer management into an OEvent ?
+//       need experience with multi-event running to see 
+//       right way to structure 
+
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
     public:

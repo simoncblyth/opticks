@@ -90,13 +90,28 @@ Try samples
 
 
 
-OptiX 4 Forum
----------------
+OptiX 4 Released : 07/26/2016
+-------------------------------
 
+* https://devtalk.nvidia.com/default/topic/952430/optix/optix-4-0-is-released-/
 * https://devtalk.nvidia.com/default/topic/950165/optix/looking-for-optix-4-adopters/
 
-OptiX 4 Exceptions
---------------------
+Today we are happy to announce the release of OptiX 4.0.
+
+This version is an important milestone in the evolution of OptiX, featuring a
+complete re-implementation of many core components, including an all-new
+LLVM-based compilation pipeline. The internal redesign has been in the works
+for several years, and lays the groundwork for better overall performance,
+better multi-GPU scaling, better debugging and profiling, and many other
+exciting features. Version 4.0 maintains compatibility with your existing
+applications and provides the same easy to use API for which OptiX is known.
+
+You can find the download and release notes at:
+http://developer.nvidia.com/optix
+
+
+OptiX 4 Enabled Exceptions Are Expensive
+-------------------------------------------
 
 * https://devtalk.nvidia.com/default/topic/952532/optix/optix-4-0-runs-slow/
 
@@ -114,8 +129,8 @@ a single call:
 
 
 
-OptiX 4 Issues : Textures
------------------------------
+FIXED : OptiX 4 Issues : Textures
+------------------------------------
 
 OptiX 4 not working with old OPropertyLib texture configuration, suspect it is being more strict.
 To understand OptiX textures need to know the background from OpenGL and CUDA.
@@ -127,8 +142,11 @@ To understand OptiX textures need to know the background from OpenGL and CUDA.
 * http://on-demand.gputechconf.com/gtc-express/2011/presentations/texture_webinar_aug_2011.pdf
 
 
-OptiX 4 Issues
-----------------
+Fixed by moving to normalized float addressing of textures.
+
+
+OptiX 4 Buffer Issues
+-------------------------
 
 * https://devtalk.nvidia.com/default/topic/946870/optix/optix-4-and-cuda-interop-new-limitation-with-input-output-buffers/
 
@@ -145,6 +163,8 @@ The generated PTX code is rewritten by OptiX internally and sent to the CUDA dri
 That CUDA driver comes with the display driver and will support the Pascal architecture.
 Your original PTX input doesn't need to be compiled for the newest Streaming Multiprocessor version.
 Anything from SM 2.0 to SM 5.2 will do with CUDA 7.5.
+
+
 
 
 OptiX 3.9.1 (June 2016)

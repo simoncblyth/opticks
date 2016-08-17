@@ -495,6 +495,9 @@ std::string OpticksEvent::getShapeString()
     return ss.str();
 }
 
+
+
+
 std::string OpticksEvent::getTimeStamp()
 {
     return m_parameters->get<std::string>("TimeStamp");
@@ -1159,10 +1162,10 @@ std::string OpticksEvent::getTagDir(const char* species, bool tstamp)
 
 void OpticksEvent::saveParameters()
 {
-    std::string mddir = getTagDir("md", false);
+    std::string mddir = getTagDir("md", false);    // without timestamp
     m_parameters->save(mddir.c_str(), PARAMETERS_NAME);
 
-    std::string mddir_ts = getTagDir("md", true);
+    std::string mddir_ts = getTagDir("md", true);  // with timestamp
     m_parameters->save(mddir_ts.c_str(), PARAMETERS_NAME);
 }
 
@@ -1170,8 +1173,20 @@ void OpticksEvent::saveParameters()
 void OpticksEvent::loadParameters()
 {
     std::string pmdir = getTagDir("md", false);
+    LOG(info) << "OpticksEvent::loadParameters from " << pmdir ; 
     m_parameters->load_(pmdir.c_str(), PARAMETERS_NAME );
 }
+
+void OpticksEvent::importParameters()
+{
+    std::string mode_ = m_parameters->get<std::string>("mode"); 
+    OpticksMode* mode = new OpticksMode(mode_.c_str());
+    LOG(info) << "OpticksEvent::importParameters "
+              << " mode_ " << mode_ 
+              << " --> " << mode->description() ; 
+    setMode(mode);
+}
+
 
 void OpticksEvent::saveReport()
 {
@@ -1276,6 +1291,8 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     loadReport();
     loadParameters();
+
+    importParameters();
     loadIndex();
 
     importDomainsBuffer();

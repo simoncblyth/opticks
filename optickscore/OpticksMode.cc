@@ -33,6 +33,21 @@ std::string OpticksMode::description()
     return ss.str();
 }
 
+unsigned int OpticksMode::Parse(const char* tag)
+{
+    unsigned int mode = UNSET_MODE  ; 
+    if(     strcmp(tag, INTEROP_MODE_)==0)  mode = INTEROP_MODE ; 
+    else if(strcmp(tag, COMPUTE_MODE_)==0)  mode = COMPUTE_MODE ; 
+    else if(strcmp(tag, CFG4_MODE_)==0)     mode = CFG4_MODE ; 
+    return mode ; 
+}
+
+OpticksMode::OpticksMode(const char* tag)
+  :
+    m_mode(Parse(tag))
+{
+}
+
 OpticksMode::OpticksMode(bool compute_requested) 
    : 
    m_mode(UNSET_MODE)

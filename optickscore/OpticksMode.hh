@@ -5,6 +5,7 @@
 
 class OKCORE_API OpticksMode {
     public:
+       static unsigned int Parse(const char* tag);
        static const char* UNSET_MODE_ ;
        static const char* COMPUTE_MODE_ ;
        static const char* INTEROP_MODE_ ;
@@ -16,9 +17,10 @@ class OKCORE_API OpticksMode {
                 CFG4_MODE    = 0x1 << 3
             }; 
     public:
+        OpticksMode(const char* tag);
         OpticksMode(bool compute_requested);
-        void setOverride(unsigned int mode);
     public:
+        void setOverride(unsigned int mode);
         std::string description();
         bool isCompute();
         bool isInterop();

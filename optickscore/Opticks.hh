@@ -111,7 +111,6 @@ class OKCORE_API Opticks {
        Timer*               getTimer();
        Parameters*          getParameters();
        NState*              getState();
-       std::string          getModeString();
    public:
        unsigned int         getSourceCode();
        const char*          getSourceType();

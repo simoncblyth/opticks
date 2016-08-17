@@ -44,18 +44,64 @@ class DatedFolder(object):
         name = os.path.basename(path) 
         return dateparser(name)
 
+
+
 class Metadata(object):
+    """
+    ::
+        simon:ana blyth$ l /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/20160817_141731/
+        total 32
+        -rw-r--r--  1 blyth  wheel  1059 Aug 17 14:17 parameters.json
+        -rw-r--r--  1 blyth  wheel  2441 Aug 17 14:17 report.txt
+        -rw-r--r--  1 blyth  wheel   926 Aug 17 14:17 t_absolute.ini
+        -rw-r--r--  1 blyth  wheel   991 Aug 17 14:17 t_delta.ini
+
+        simon:ana blyth$ l /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/
+        total 32
+        drwxr-xr-x  6 blyth  wheel   204 Aug 17 14:17 20160817_141731
+        -rw-r--r--  1 blyth  wheel  1059 Aug 17 14:17 parameters.json
+        -rw-r--r--  1 blyth  wheel  2441 Aug 17 14:17 report.txt
+        -rw-r--r--  1 blyth  wheel   926 Aug 17 14:17 t_absolute.ini
+        -rw-r--r--  1 blyth  wheel   991 Aug 17 14:17 t_delta.ini
+        drwxr-xr-x  6 blyth  wheel   204 Aug 17 11:55 20160817_115547
+        drwxr-xr-x  6 blyth  wheel   204 Aug 17 11:49 20160817_114935
+
+    """
 
     COMPUTE = 0x1 << 1
     INTEROP = 0x1 << 2 
     CFG4    = 0x1 << 3 
 
+    date_ptn = re.compile("\d{8}_\d{6}")  # eg 20160817_141731
+
     def __init__(self, path):
+        """
+        Path assumed to be a directory with one of two forms::
+
+              /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10                   ## ending with tag
+              /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/20160817_141731   ## ending with datefold
+            
+        In both cases the directory must contain::
+
+              parameters.json
+              t_delta.ini 
+ 
+        """
         self.path = path
-        self.datefold = os.path.basename(path)
-        tag = os.path.basename(os.path.dirname(path))        
+        basename = os.path.basename(path)
+        if self.date_ptn.match(basename):
+             datefold = basename
+             timestamp = dateparser(datefold)
+             tag = os.path.basename(os.path.dirname(path))        
+        else:
+             datefold = None
+             timestamp = None
+             tag = basename 
+        pass
+        self.datefold = datefold
         self.tag = tag 
-        self.timestamp = dateparser(self.datefold) 
+        self.timestamp = timestamp 
+
         self.parameters = json_(os.path.join(self.path, "parameters.json"))
         self.times = ini_(os.path.join(self.path, "t_delta.ini"))
 
@@ -70,11 +116,11 @@ class Metadata(object):
 
     def _flags(self):
         flgs = 0 
-        if self.mode.lower() == "compute":
+        if self.mode.lower().startswith("compute"):
             flgs |= self.COMPUTE 
-        elif self.mode.lower() == "interop":
+        elif self.mode.lower().startswith("interop"):
             flgs |= self.INTEROP 
-        elif self.mode.lower() == "cfg4":
+        elif self.mode.lower().startswith("cfg4"):
             flgs |= self.CFG4 
 
         return flgs 
@@ -206,3 +252,4 @@ if __name__ == '__main__':
 
 
 
+  

@@ -190,6 +190,7 @@ class OKCORE_API OpticksEvent {
        std::string getTagDir(const char* species, bool tstamp);     // tag in the dir 
        void saveParameters();
        void loadParameters();
+       void importParameters();
    public:
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
