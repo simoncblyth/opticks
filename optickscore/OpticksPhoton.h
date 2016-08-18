@@ -16,7 +16,8 @@ enum
     BOUNDARY_TRANSMIT = 0x1 << 11,
     TORCH             = 0x1 << 12,
     NAN_ABORT         = 0x1 << 13,
-    G4GUN             = 0x1 << 14
+    G4GUN             = 0x1 << 14,
+    NATURAL           = 0x1 << 15
 }; 
 
 //  only ffs 0-15 make it into the record so debug flags only beyond 15 

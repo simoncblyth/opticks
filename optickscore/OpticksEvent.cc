@@ -1100,10 +1100,10 @@ void OpticksEvent::save(bool verbose)
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
-    if(fdom) fdom->save("fdom%s", m_typ,  m_tag, udet);
+    if(fdom) fdom->save(fdom_, m_typ,  m_tag, udet);
 
     NPY<int>* idom = getIDomain();
-    if(idom) idom->save("idom%s", m_typ,  m_tag, udet);
+    if(idom) idom->save(idom_, m_typ,  m_tag, udet);
 
     if(no)
     {
@@ -1263,12 +1263,11 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     bool qload = true ; 
 
-    const char* idom_tfmt = "idom%s" ;
+    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet, qload);
 
-    NPY<int>*   idom = NPY<int>::load(idom_tfmt, m_typ,  m_tag, udet, qload);
     if(!idom)
     {
-        std::string dir = BOpticksEvent::directory(idom_tfmt, m_typ, udet );
+        std::string dir = BOpticksEvent::directory("idom%s", m_typ, udet );
 
         m_noload = true ; 
         LOG(warning) << "OpticksEvent::load NO SUCH EVENT : RUN WITHOUT --load OPTION TO CREATE IT " 
@@ -1398,21 +1397,42 @@ bool OpticksEvent::isIndexed()
 }
 
 
-
 NPY<float>* OpticksEvent::loadGenstepDerivativeFromFile(const char* postfix, bool quietly)
 {
-    char tag[128];
-    snprintf(tag, 128, "%s_%s", m_tag, postfix );
 
+    char stem[128];
+    snprintf(stem, 128, "%s_%s", m_tag, postfix );
+
+    std::string path = BOpticksEvent::path(m_det, m_typ, m_tag, stem, ".npy" ); // top/sub/tag/stem/ext
+
+/*
+simon:optickscore blyth$ mdfind -name 1_track.npy
+/usr/local/env/opticks/dayabay/cerenkov/1_track.npy
+/usr/local/env/opticks/juno/cerenkov/1_track.npy
+
+    ## note the gensteps were special in that they had no prefix 
+    ## on the directory 
+
+In new layout that would be 
+     dayabay/cerenkov/1/track.npy 
+
+alongside standard constituents
+     dayabay/cerenkov/1/phosel.npy 
+     dayabay/cerenkov/1/gensteps.npy 
+
+*/
 
     if(!quietly)
     LOG(info) << "OpticksEvent::loadGenstepDerivativeFromFile  "
-              << " typ " << m_typ
-              << " tag " << tag
-              << " det " << m_det
+              << " m_det " << m_det
+              << " m_typ " << m_typ
+              << " m_tag " << m_tag
+              << " stem " << stem
+              << " --> " << path 
               ;
+   
 
-    NPY<float>* npy = NPY<float>::load(m_typ, tag, m_det, quietly) ;
+    NPY<float>* npy = NPY<float>::load(path.c_str()) ;
     if(npy)
     {
         npy->dump("OpticksEvent::loadGenstepDerivativeFromFile");
@@ -1438,7 +1458,10 @@ NPY<float>* OpticksEvent::loadGenstepFromFile(int modulo)
     NPY<float>* npy = NULL ; 
     {
         BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
-        npy = NPY<float>::load(m_typ, m_tag, m_det ) ;
+        const char* stem = "" ; // backward compat stem of gensteps
+        std::string path = BOpticksEvent::path(m_det, m_typ, m_tag, stem, ".npy");
+        //npy = NPY<float>::load(m_typ, m_tag, m_det ) ;
+        npy = NPY<float>::load(path.c_str()) ;
         BOpticksEvent::SetOverrideEventBase(NULL) ;
     }
 

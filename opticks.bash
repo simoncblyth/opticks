@@ -434,12 +434,14 @@ opticks----(){
    ## proj--- touches the API header and then does $proj-- : this forcing recompilation of everything 
    local arg=${1:-all}
    local proj
+   
    opticks-${arg}-projs- | while read proj ; do
       [ -z "$proj" ] && continue  
       $proj-
       echo proj $proj
       $proj---
    done
+
 } 
 
 opticks-list()

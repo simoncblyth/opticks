@@ -205,7 +205,9 @@ void test_ctor_segfaults()
 void test_path()
 {
     LOG(info) << "test_path" ; 
-    std::string path = BOpticksEvent::path("cerenkov", "1", "dayabay");
+
+    std::string path = BOpticksEvent::path("dayabay","cerenkov", "1", "ox");
+
     LOG(info) << "test_path path:" << path ;
     LOG(info) << "test_path DONE" ; 
 }
@@ -213,14 +215,14 @@ void test_path()
 void test_load()
 {
     LOG(info) << "test_load" ; 
-    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
+    NPY<float>* npy = NPY<float>::load("ox","cerenkov","1", "dayabay");
     if(npy) std::cout << npy->description("npy") << std::endl ; 
 }
 
 void test_save_path()
 {
     LOG(info) << "test_save_path" ; 
-    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
+    NPY<float>* npy = NPY<float>::load("ox","cerenkov","1", "dayabay");
     if(npy)
     { 
        std::cout << npy->description("npy") << std::endl ; 
@@ -243,7 +245,7 @@ void test_load_path_throws()
 void test_load_missing()
 {
     LOG(info) << "test_load_missing" ; 
-    NPY<float>* npy = NPY<float>::load("cerenkov","missing", "dayabay");
+    NPY<float>* npy = NPY<float>::load("ox","cerenkov","missing", "dayabay");
     if(npy) std::cout << npy->description("npy") << std::endl ; 
 }
 
@@ -253,8 +255,8 @@ void test_load_missing()
 void test_getData()
 {
     LOG(info) << "test_getData" ; 
-    NPY<float>* npy = NPY<float>::load("cerenkov","1", "dayabay");
-    if(!npy) return ; 
+    NPY<float>* npy = NPY<float>::load("ox","cerenkov","1", "dayabay");
+    assert(npy);
 
     float* data = npy->getValues();
 
@@ -277,8 +279,8 @@ void test_getData()
 void test_getUSum()
 {
     LOG(info) << "test_getUSum" ; 
-    NPY<float>* c1 = NPY<float>::load("cerenkov","1", "dayabay");
-    NPY<float>* s1 = NPY<float>::load("scintillation","1", "dayabay");
+    NPY<float>* c1 = NPY<float>::load("","cerenkov","1", "dayabay");
+    NPY<float>* s1 = NPY<float>::load("","scintillation","1", "dayabay");
     unsigned int n_c1 = c1 ? c1->getUSum(0, 3) : 0 ;
     unsigned int n_s1 = s1 ? s1->getUSum(0, 3) : 0 ;
     printf("test_getUSum n_c1:%u n_c1:%u tot:%u \n", n_c1, n_s1, n_c1+n_s1);
@@ -380,6 +382,7 @@ int main(int argc, char** argv )
 
     NPYBase::setGlobalVerbose(true);
 
+   /*
     test_repeat();
     test_reshape();
     test_transform();
@@ -390,6 +393,7 @@ int main(int argc, char** argv )
     test_setQuad();
 
     test_ctor_segfaults();
+  */
 
     test_path();
     test_load();
@@ -397,15 +401,17 @@ int main(int argc, char** argv )
 
     //test_load_path_throws();
 
-    test_load_missing();
+   test_load_missing();
 
     test_getData();
     test_getUSum();
     test_string();
 
+   /* 
     test_getBufSpec();
 
     test_dbg_like();
+   */
 
     return 0 ;
 }

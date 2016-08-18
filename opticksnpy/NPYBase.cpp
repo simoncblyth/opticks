@@ -282,24 +282,6 @@ const char* NPYBase::getBufferName()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void NPYBase::init()
 {
    updateDimensions(); 

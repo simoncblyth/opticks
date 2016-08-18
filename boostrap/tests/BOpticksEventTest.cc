@@ -5,6 +5,59 @@
 #include "BRAP_LOG.hh"
 #include "PLOG.hh"
 
+class BOpticksEventTest {
+    public:
+        void check_base_override(const char* det, const char* source, const char* tag, const char* stem, const char* ext );
+        void check_layout_version(const char* det, const char* source, const char* tag, const char* stem, const char* ext );
+};
+
+
+void BOpticksEventTest::check_base_override(const char* det, const char* source, const char* tag, const char* stem, const char* ext )
+{
+    std::string p0, p1, p2  ; 
+
+    p0 = BOpticksEvent::path(det,source,tag,stem, ext) ; 
+    
+    const char* gensteps_dir = BOpticksResource::GenstepsDir(); 
+    BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
+    p1 = BOpticksEvent::path(det,source,tag,stem, ext) ; 
+    BOpticksEvent::SetOverrideEventBase(NULL) ;
+
+    p2 = BOpticksEvent::path(det,source,tag,stem, ext) ; 
+
+    LOG(info) << "p0 " <<  p0 ;
+    LOG(info) << "p1 " <<  p1 ;
+    LOG(info) << "p2 " <<  p2 ;
+
+    assert(strcmp(p0.c_str(), p2.c_str())==0);
+}
+
+void BOpticksEventTest::check_layout_version(const char* det, const char* source, const char* tag, const char* stem, const char* ext )
+{
+    std::string p0, p1, p2, p3 ; 
+
+    p0 = BOpticksEvent::path(det,source,tag,stem,ext) ;
+
+    BOpticksEvent::SetLayoutVersion(1) ;
+    p1 = BOpticksEvent::path(det,source,tag,stem,ext) ;
+
+    BOpticksEvent::SetLayoutVersion(2) ;
+    p2 = BOpticksEvent::path(det,source,tag,stem,ext) ;
+
+    BOpticksEvent::SetLayoutVersionDefault() ;
+    p3 = BOpticksEvent::path(det,source,tag,stem,ext) ;
+
+    LOG(info) << "p0 " << p0 ; 
+    LOG(info) << "p1 " << p1 ; 
+    LOG(info) << "p2 " << p2 ; 
+    LOG(info) << "p3 " << p3 ; 
+
+    assert(strcmp(p0.c_str(), p3.c_str())==0);
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -12,28 +65,14 @@ int main(int argc, char** argv)
     BRAP_LOG__ ; 
 
     BOpticksResource res ; 
-
     res.Summary();
 
-    BOpticksEvent evt ; 
+    BOpticksEventTest oet ; 
+    oet.check_base_override( "det",   "source","tag", "stem", "ext") ;
+    oet.check_base_override( "dayabay", "cerenkov","1", "", ".npy") ;
 
-
-    std::string path_1 = BOpticksEvent::path("typ","tag", "det") ; 
-
-    const char* gensteps_dir = BOpticksResource::GenstepsDir(); 
-    BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
-    std::string path_2 = BOpticksEvent::path("typ","tag", "det") ; 
-    BOpticksEvent::SetOverrideEventBase(NULL) ;
-
-
-    std::string path_3 = BOpticksEvent::path("typ","tag", "det") ; 
-
-
-    LOG(info) << "(1) BOpticksEvent::path(\"typ\",\"tag\",\"det\") = " <<  path_1 ;
-    LOG(info) << "(2) BOpticksEvent::path(\"typ\",\"tag\",\"det\") = " <<  path_2 ;
-    LOG(info) << "(3) BOpticksEvent::path(\"typ\",\"tag\",\"det\") = " <<  path_3 ;
-
-    assert(strcmp(path_1.c_str(), path_3.c_str())==0);
+    oet.check_layout_version("PmtInBox","torch","10", "ox", ".npy") ;
+    oet.check_layout_version("det",   "source","tag", "stem", "ext") ;
 
     return 0 ; 
 }

@@ -4,7 +4,6 @@ Event Layout Awkward
 Persisted evts are too spread out and mixed up with others.
 Need better locality.
 
-
 New Layout Idea
 ----------------
 
@@ -18,7 +17,6 @@ New Layout Idea
       
       BoxInBox/torch/1/20160813_111151/parameters.json 
 
-
 Directory Levels det/src/tag/:
 
 * det : BoxInBox,PmtInBox,dayabay,prism,reflect  (corresponds to a geometry)
@@ -27,6 +25,16 @@ Directory Levels det/src/tag/:
 
 * constituent arrays: ox.npy gs.npy ... parameters.json
 * dated folders : for metadata saved from prior runs
+
+
+All NPY evt paths coming via::
+
+     BOpticksEvent::path(typ, tag, det)
+
+Questions
+-----------
+
+* compute and interop co-located ?
 
 
 Current Layout

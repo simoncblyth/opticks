@@ -113,7 +113,7 @@ class NPY_API NPYBase {
 
        virtual void save(const char* path) = 0;
        virtual void save(const char* dir, const char* name) = 0;
-       virtual void save(const char* typ, const char* tag, const char* det) = 0;
+       //virtual void save(const char* typ, const char* tag, const char* det) = 0;
        virtual void save(const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
  
     public:

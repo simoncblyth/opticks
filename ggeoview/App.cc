@@ -500,7 +500,7 @@ void App::loadGenstep()
 
 
     NPY<float>* npy = NULL ; 
-    if( code == CERENKOV || code == SCINTILLATION )
+    if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
         int modulo = m_fcfg->getModulo();
         npy = m_evt->loadGenstepFromFile(modulo);

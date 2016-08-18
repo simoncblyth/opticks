@@ -36,13 +36,13 @@ int main( int argc, char** argv )
 
     // LT: Try to load some events
     NPY<float>* npy = NULL;
-    // const char* gensteps_file = "/home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/opticksdata/gensteps/juno/cerenkov/1.npy";
-    // npy = NPY<float>::load(gensteps_file) ;
     
     const char* gensteps_dir = BOpticksResource::GenstepsDir();
     BOpticksEvent::SetOverrideEventBase(gensteps_dir);
-    npy = NPY<float>::load("cerenkov", "1", "juno") ;
+    std::string path = BOpticksEvent::path("juno","cerenkov","1","",".npy"); 
     BOpticksEvent::SetOverrideEventBase(NULL);
+
+    npy = NPY<float>::load(path.c_str()) ;
     npy->dump("NPY::dump::before", 2);
     npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_INPUT_OUTPUT,OPTIX_SETSIZE"));
 

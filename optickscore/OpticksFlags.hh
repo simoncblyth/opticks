@@ -12,10 +12,21 @@ class OKCORE_API OpticksFlags {
     public:
        static const char* ENUM_HEADER_PATH ;  
     public:
-       static const char* ZERO_ ;
        static const char* CERENKOV_ ;
        static const char* SCINTILLATION_ ;
-
+       static const char* NATURAL_ ;
+       static const char* TORCH_ ;
+       static const char* G4GUN_ ;   
+       static const char* OTHER_ ;
+    public:
+       static const char* cerenkov_ ;
+       static const char* scintillation_ ;
+       static const char* natural_ ;
+       static const char* torch_ ;
+       static const char* g4gun_ ;
+       static const char* other_ ;
+    public:
+       static const char* ZERO_ ;
        static const char* MISS_ ;
        static const char* BULK_ABSORB_ ;
        static const char* BULK_REEMIT_ ;
@@ -26,18 +37,8 @@ class OKCORE_API OpticksFlags {
        static const char* SURFACE_SREFLECT_ ;
        static const char* BOUNDARY_REFLECT_ ;
        static const char* BOUNDARY_TRANSMIT_ ;
-       static const char* TORCH_ ;
-       static const char* G4GUN_ ;   
-
        static const char* NAN_ABORT_ ;
        static const char* BAD_FLAG_ ;
-       static const char* OTHER_ ;
-
-       static const char* cerenkov_ ;
-       static const char* scintillation_ ;
-       static const char* torch_ ;
-       static const char* g4gun_ ;
-       static const char* other_ ;
     public:
        static const char* SourceType(int code);
        static const char* SourceTypeLowercase(int code);

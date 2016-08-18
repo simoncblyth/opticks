@@ -435,7 +435,8 @@ const char* Opticks::getUDet()
 unsigned int Opticks::getSourceCode()
 {
     unsigned int code ;
-    if(     m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
+    if(     m_cfg->hasOpt("natural"))       code = NATURAL ;     // doing (CERENKOV | SCINTILLATION) would entail too many changes 
+    else if(m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
     else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
     else if(m_cfg->hasOpt("torch"))         code = TORCH ;
     else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;

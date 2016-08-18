@@ -531,10 +531,12 @@ void Types::readFlags(const char* path)
 
 void Types::makeFlagAbbrev()
 {
+   // HUH: is this still used ?
     typedef std::map<std::string,std::string> MSS ; 
     MSS s ; 
     s["CERENKOV"]          = "CK" ;
     s["SCINTILLATION"]     = "SC" ;
+    s["NATURAL"]           = "NT" ;
     s["MISS"]              = "MI" ;
     s["BULK_ABSORB"]       = "AB" ;
     s["BULK_REEMIT"]       = "RE" ;

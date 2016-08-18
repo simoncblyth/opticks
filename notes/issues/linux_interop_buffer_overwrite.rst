@@ -1,6 +1,60 @@
 Linux Interop Buffer Overwrite
 ================================
 
+Following changes for OptiX 400 Assumed Similar Issue Still Manifest
+------------------------------------------------------------------------
+
+Report from Tao::
+
+    ihep@linux-h5h2:~/simon-dev-env/env-dev-2016aug1> op-taov2.sh --jpmt -c --tag 2
+    300 -rwxr-xr-x 1 ihep users 304480 8月  17 18:26 /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/lib/GGeoViewTest
+    proceeding : /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/lib/GGeoViewTest --size 1920,1080,1 --jpmt -c --tag 2
+    2016-08-17 21:02:39.313 INFO  [31001] [Timer::operator@38] Opticks:: START
+    ...
+    ...
+    2016-08-17 21:02:52.836 INFO  [31001] [OPropagator::initEvent@276] OPropagator::initEvent DONE
+    2016-08-17 21:02:52.836 INFO  [31001] [OEngineImp::preparePropagator@208] OEngineImp::preparePropagator DONE 
+    2016-08-17 21:02:52.836 INFO  [31001] [OpEngine::preparePropagator@94] OpEngine::preparePropagator DONE 
+    2016-08-17 21:02:52.836 INFO  [31001] [OpSeeder::seedPhotonsFromGensteps@65] OpSeeder::seedPhotonsFromGensteps
+    2016-08-17 21:02:52.836 INFO  [31001] [OpSeeder::seedPhotonsFromGenstepsViaOpenGL@79] OpSeeder::seedPhotonsFromGenstepsViaOpenGL
+    CResource::mapGLToCUDA buffer_id 43 imp.bufsize 368640 sizeof(T) 4 size 92160 
+    CResource::mapGLToCUDA buffer_id 45 imp.bufsize 62800512 sizeof(T) 4 size 15700128 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs : dev_ptr 0x203891000 size 23040 num_bytes 368640 hexdump 0 
+    OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox : dev_ptr 0x203914c00 size 3925032 num_bytes 62800512 hexdump 0 
+    2016-08-17 21:02:52.841 INFO  [31001] [OpSeeder::seedPhotonsFromGenstepsImp@146] OpSeeder::seedPhotonsFromGenstepsImp gensteps 3840,6,4 num_genstep_values 92160
+    TBufPair<T>::seedDestination (CBufSlice)src : dev_ptr 0x203891000 size 23040 num_bytes 368640 stride 24 begin 3 end 92160 hexdump 0 
+    TBufPair<T>::seedDestination (CBufSlice)dst : dev_ptr 0x203914c00 size 3925032 num_bytes 62800512 stride 16 begin 0 end 15700128 hexdump 0 
+    iexpand  counts_size 3840 output_size 981258
+    2016-08-17 21:02:52.891 INFO  [31001] [OpZeroer::zeroRecords@61] OpZeroer::zeroRecords
+    CResource::mapGLToCUDA buffer_id 46 imp.bufsize 157001280 sizeof(T) 2 size 78500640 
+    OpZeroer::zeroRecordsViaOpenGL(CBufSpec)s_rec : dev_ptr 0x203899800 size 78500640 num_bytes 157001280 hexdump 0 
+    2016-08-17 21:02:52.900 INFO  [31001] [OEngineImp::propagate@214] OEngineImp::propagate
+    2016-08-17 21:02:52.900 INFO  [31001] [OPropagator::prelaunch@326] OPropagator::prelaunch count 0 size(981258,1)
+    2016-08-17 21:02:52.900 INFO  [31001] [OContext::close@194] OContext::close numEntryPoint 2
+    2016-08-17 21:02:53.090 INFO  [31001] [OConfig::dump@158] OContext::close m_raygen_index 2 m_exception_index 2
+    OProg R 0 pinhole_camera.cu.ptx pinhole_camera 
+    OProg E 0 pinhole_camera.cu.ptx exception 
+    OProg M 1 constantbg.cu.ptx miss 
+    OProg R 1 generate.cu.ptx generate 
+    OProg E 1 generate.cu.ptx exception 
+    2016-08-17 21:02:53.090 INFO  [31001] [OConfig::createProgram@40] OConfig::createProgram path /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/installcache/PTX/OptiXRap_generated_pinhole_camera.cu.ptx
+    2016-08-17 21:02:54.230 INFO  [31001] [OConfig::createProgram@40] OConfig::createProgram path /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/installcache/PTX/OptiXRap_generated_pinhole_camera.cu.ptx
+    2016-08-17 21:02:54.232 INFO  [31001] [OConfig::createProgram@40] OConfig::createProgram path /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/installcache/PTX/OptiXRap_generated_constantbg.cu.ptx
+    2016-08-17 21:02:54.236 INFO  [31001] [OConfig::createProgram@40] OConfig::createProgram path /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+    2016-08-17 21:02:54.668 INFO  [31001] [OConfig::createProgram@40] OConfig::createProgram path /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+    2016-08-17 21:02:54.689 INFO  [31001] [OContext::launch@220] OContext::launch entry 1 width 981258 height 1
+    2016-08-17 21:05:59.941 INFO  [31001] [Timer::operator@38] OEngineImp:: prelaunch
+    2016-08-17 21:05:59.941 INFO  [31001] [OContext::launch@220] OContext::launch entry 1 width 981258 height 1
+    terminate called after throwing an instance of 'optix::Exception'
+      what():  Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: driver().cuMemcpyDtoHAsync( dstHost, srcDevice, byteCount, hStream.get() ) returned (700): Illegal address, file:/root/sw/wsapps/raytracing/rtsdk/rel4.0/src/CUDA/Memory.cpp, line: 134)
+    /home/ihep/simon-dev-env/env-dev-2016aug1/opticks/bin/op-taov2.sh: 行 567: 31001 已放弃               /home/ihep/simon-dev-env/env-dev-2016aug1/local/opticks/lib/GGeoViewTest --size 1920,1080,1 --jpmt -c --tag 2
+    /home/ihep/simon-dev-env/env-dev-2016aug1/opticks/bin/op-taov2.sh RC 134
+
+
+
+
+Weihai Investigations
+-----------------------
 
 From compute mode run::
 

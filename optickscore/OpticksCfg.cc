@@ -98,7 +98,7 @@ void OpticksCfg<Listener>::init()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()
-       ("nonet,n",  "inhibit use of network") ;
+       ("nonet,N",  "inhibit use of network") ;
 
 
    m_desc.add_options()
@@ -161,6 +161,10 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("cerenkov,c",  "load cerenkov gensteps") ;
+
+   m_desc.add_options()
+       ("natural,n",  "load natural gensteps containing a mixture of scintillation and cerenkov steps") ;
+
 
    m_desc.add_options()
        ("save",  "download generated/propagated event data from GPU and save to file") ;
