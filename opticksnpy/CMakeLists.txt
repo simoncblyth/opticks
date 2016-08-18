@@ -53,6 +53,7 @@ set(SOURCES
     NPYSpec.cpp
     NSlice.cpp
     NPY.cpp
+    NLoad.cpp
 
     GLMPrint.cpp
     GLMFormat.cpp
@@ -134,6 +135,7 @@ GLMPrint.hpp
 GLMFormat.hpp
 NPYBase.hpp
 NPY.hpp
+NLoad.hpp
 ViewNPY.hpp
 NPYSpec.hpp
 MultiViewNPY.hpp

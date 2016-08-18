@@ -556,7 +556,7 @@ okc-apihh(){  echo $(okc-sdir)/$(okc-tag)_API_EXPORT.hh ; }
 okc---(){     touch $(okc-apihh) ; okc--  ; }
 
 okc--(){        opticks--     $(okc-bdir) ; }
-okc-ctest(){    opticks-ctest $(okc-bdir) $* ; }
+okc-t(){        opticks-t $(okc-bdir) $* ; }
 okc-genproj(){  okc-scd ; opticks-genproj $(okc-name) $(okc-tag) ; }
 okc-gentest(){  okc-tcd ; opticks-gentest ${1:-OpticksGeometry} $(okc-tag) ; }
 okc-txt(){ vi $(okc-sdir)/CMakeLists.txt $(okc-tdir)/CMakeLists.txt ; }

@@ -156,7 +156,7 @@ npy---(){     touch $(npy-apihh) ; npy--  ; }
 
 
 npy--(){      opticks--     $(npy-bdir) $* ; }
-npy-ctest() { opticks-ctest $(npy-bdir) $* ; }
+npy-t() {     opticks-t $(npy-bdir) $* ; }
 npy-genproj(){ npy-scd ; opticks-genproj $(npy-name) $(npy-tag) ; }
 npy-gentest(){ npy-tcd ; opticks-gentest ${1:-NExample} $(npy-tag) ; }
 npy-txt(){     vi $(npy-sdir)/CMakeLists.txt $(npy-tdir)/CMakeLists.txt ; }

@@ -278,6 +278,11 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 {
     std::string path = BFile::FormPath( path_ ); 
 
+    if(GLOBAL_VERBOSE)
+    {
+        LOG(info) << "NPY<T>::load " << path ; 
+    }
+
     std::vector<int> shape ;
     std::vector<T> data ;
     std::string metadata = "{}";

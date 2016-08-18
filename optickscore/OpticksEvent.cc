@@ -23,6 +23,7 @@
 #include "uif.h"
 #include "NGLM.hpp"
 #include "NPY.hpp"
+#include "NLoad.hpp"
 #include "NPYSpec.hpp"
 
 #include "G4StepNPY.hpp"
@@ -63,6 +64,8 @@
 
 const char* OpticksEvent::TIMEFORMAT = "%Y%m%d_%H%M%S" ;
 const char* OpticksEvent::PARAMETERS_NAME = "parameters.json" ;
+const char* OpticksEvent::PARAMETERS_STEM = "parameters" ;
+const char* OpticksEvent::PARAMETERS_EXT = ".json" ;
 
 
 std::string OpticksEvent::timestamp()
@@ -1056,10 +1059,6 @@ void OpticksEvent::save(bool verbose)
     LOG(info) << "OpticksEvent::save " << getShapeString() ; 
 
 
-
-
-
-
     NPY<float>* no = getNopstepData();
     {
         no->setVerbose(verbose);
@@ -1093,8 +1092,6 @@ void OpticksEvent::save(bool verbose)
         ph->setVerbose(verbose);
         ph->save("ph", m_typ,  m_tag, udet);
     }
-
-
 
 
     updateDomainsBuffer();
@@ -1138,19 +1135,18 @@ void OpticksEvent::makeReport()
 }
 
 
+/*
 std::string OpticksEvent::speciesDir(const char* species, const char* udet, const char* typ)
 {
     std::string dir = BOpticksEvent::directory(species, typ, udet );
     return dir ; 
 }
-
 std::string OpticksEvent::getSpeciesDir(const char* species)
 {
    // eg species  "ix" for indices
     const char* udet = getUDet();
     return speciesDir(species, udet, m_typ );
 }
-
 std::string OpticksEvent::getTagDir(const char* species, bool tstamp)
 {
     std::stringstream ss ;
@@ -1158,23 +1154,38 @@ std::string OpticksEvent::getTagDir(const char* species, bool tstamp)
     if(tstamp) ss << "/" << getTimeStamp() ;
     return ss.str();
 }
+*/
+
+
+std::string OpticksEvent::TagDir(const char* det, const char* typ, const char* tag, const char* anno)
+{
+    std::string tagdir = BOpticksEvent::directory(det, typ, tag, anno ? anno : NULL );
+    return tagdir ; 
+
+}
+std::string OpticksEvent::getTagDir(const char* anno)
+{
+    const char* udet = getUDet();
+    std::string tagdir = TagDir(udet, m_typ, m_tag, anno ? anno : NULL );
+    return tagdir ;
+}
 
 
 void OpticksEvent::saveParameters()
 {
-    std::string mddir = getTagDir("md", false);    // without timestamp
-    m_parameters->save(mddir.c_str(), PARAMETERS_NAME);
+    std::string tagdir = getTagDir();
+    m_parameters->save(tagdir.c_str(), PARAMETERS_NAME);
 
-    std::string mddir_ts = getTagDir("md", true);  // with timestamp
-    m_parameters->save(mddir_ts.c_str(), PARAMETERS_NAME);
+    std::string anno = getTimeStamp() ;
+    std::string tagdir_ts = getTagDir(anno.c_str());
+    m_parameters->save(tagdir_ts.c_str(), PARAMETERS_NAME);
 }
 
 
 void OpticksEvent::loadParameters()
 {
-    std::string pmdir = getTagDir("md", false);
-    LOG(info) << "OpticksEvent::loadParameters from " << pmdir ; 
-    m_parameters->load_(pmdir.c_str(), PARAMETERS_NAME );
+    std::string tagdir = getTagDir();
+    m_parameters->load_(tagdir.c_str(), PARAMETERS_NAME );
 }
 
 void OpticksEvent::importParameters()
@@ -1190,13 +1201,13 @@ void OpticksEvent::importParameters()
 
 void OpticksEvent::saveReport()
 {
-    std::string mdd = getTagDir("md", false);  
-    saveReport(mdd.c_str());
+    std::string tagdir = getTagDir();
+    saveReport(tagdir.c_str());
 
-    std::string mdd_ts = getTagDir("md", true);  
-    saveReport(mdd_ts.c_str());
+    std::string anno = getTimeStamp() ;
+    std::string tagdir_ts = getTagDir(anno.c_str());
+    saveReport(tagdir_ts.c_str());
 }
-
 
 
 void OpticksEvent::saveReport(const char* dir)
@@ -1210,9 +1221,9 @@ void OpticksEvent::saveReport(const char* dir)
 
 void OpticksEvent::loadReport()
 {
-    std::string mdd = getTagDir("md", false);  
-    m_ttable = Timer::loadTable(mdd.c_str());
-    m_report = Report::load(mdd.c_str());
+    std::string tagdir = getTagDir();
+    m_ttable = Timer::loadTable(tagdir.c_str());
+    m_report = Report::load(tagdir.c_str());
 }
 
 void OpticksEvent::setFakeNopstepPath(const char* path)
@@ -1267,7 +1278,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     if(!idom)
     {
-        std::string dir = BOpticksEvent::directory("idom%s", m_typ, udet );
+        std::string tagdir = getTagDir();
 
         m_noload = true ; 
         LOG(warning) << "OpticksEvent::load NO SUCH EVENT : RUN WITHOUT --load OPTION TO CREATE IT " 
@@ -1276,7 +1287,7 @@ void OpticksEvent::loadBuffers(bool verbose)
                      << " det: " << m_det
                      << " cat: " << ( m_cat ? m_cat : "NULL" )
                      << " udet: " << udet 
-                     << " dir " << dir    
+                     << " tagdir " << tagdir    
                     ;     
         return ; 
     }
@@ -1454,30 +1465,20 @@ NPY<float>* OpticksEvent::loadGenstepFromFile(int modulo)
               << " det " << m_det
               ;
 
-    const char* gensteps_dir = BOpticksResource::GenstepsDir();  // eg /usr/local/opticks/opticksdata/gensteps
-    NPY<float>* npy = NULL ; 
-    {
-        BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
-        const char* stem = "" ; // backward compat stem of gensteps
-        std::string path = BOpticksEvent::path(m_det, m_typ, m_tag, stem, ".npy");
-        //npy = NPY<float>::load(m_typ, m_tag, m_det ) ;
-        npy = NPY<float>::load(path.c_str()) ;
-        BOpticksEvent::SetOverrideEventBase(NULL) ;
-    }
+    NPY<float>* gs = NLoad::Gensteps(m_det, m_typ, m_tag);
 
-    m_parameters->add<std::string>("genstepAsLoaded",   npy->getDigestString()  );
+    m_parameters->add<std::string>("genstepAsLoaded",   gs->getDigestString()  );
 
     m_parameters->add<int>("Modulo", modulo );
 
     if(modulo > 0)
     {
         LOG(warning) << "App::loadGenstepFromFile applying modulo scaledown " << modulo ;
-        npy = NPY<float>::make_modulo(npy, modulo);
-        m_parameters->add<std::string>("genstepModulo",   npy->getDigestString()  );
+        gs = NPY<float>::make_modulo(gs, modulo);
+        m_parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
     }
-    return npy ;
+    return gs ;
 }
-
 
 
 
@@ -1583,44 +1584,52 @@ void OpticksEvent::saveIndex(bool verbose_)
 
     NPYBase::setGlobalVerbose(false);
 
-    std::string ixdir = getSpeciesDir("ix");
+    std::string tagdir = getTagDir();
     LOG(info) << "OpticksEvent::saveIndex"
-              << " ixdir " << ixdir
+              << " tagdir " << tagdir
               << " seqhis " << m_seqhis
               << " seqmat " << m_seqmat
               << " bndidx " << m_bndidx
               ; 
 
     if(m_seqhis)
-        m_seqhis->save(ixdir.c_str(), m_tag);        
+        m_seqhis->save(tagdir.c_str());        
     else
         LOG(warning) << "OpticksEvent::saveIndex no seqhis to save " ;
 
     if(m_seqmat)
-        m_seqmat->save(ixdir.c_str(), m_tag);        
+        m_seqmat->save(tagdir.c_str());        
     else
         LOG(warning) << "OpticksEvent::saveIndex no seqmat to save " ;
 
     if(m_bndidx)
-        m_bndidx->save(ixdir.c_str(), m_tag);        
+        m_bndidx->save(tagdir.c_str());        
     else
         LOG(warning) << "OpticksEvent::saveIndex no bndidx to save " ;
 }
 
 void OpticksEvent::loadIndex()
 {
-    std::string ixdir = getSpeciesDir("ix");
-    m_seqhis = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQHIS_NAME_ );
-    m_seqmat = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQMAT_NAME_ );  
-    m_bndidx = Index::load(ixdir.c_str(), m_tag, OpticksConst::BNDIDX_NAME_ );
+    std::string tagdir = getTagDir();
+    m_seqhis = Index::load(tagdir.c_str(), OpticksConst::SEQHIS_NAME_ );
+    m_seqmat = Index::load(tagdir.c_str(), OpticksConst::SEQMAT_NAME_ );  
+    m_bndidx = Index::load(tagdir.c_str(), OpticksConst::BNDIDX_NAME_ );
+
+    //std::string ixdir = getSpeciesDir("ix");
+    //m_seqhis = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQHIS_NAME_ );
+    //m_seqmat = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQMAT_NAME_ );  
+    //m_bndidx = Index::load(ixdir.c_str(), m_tag, OpticksConst::BNDIDX_NAME_ );
 }
+
+
 
 
 Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const char* udet, const char* name)
 {
-    const char* species = "ix" ; 
-    std::string ixdir = speciesDir(species, udet, typ);
-    Index* seqhis = Index::load(ixdir.c_str(), tag, name );
+    //const char* species = "ix" ; 
+    //std::string ixdir = speciesDir(species, udet, typ);
+    std::string tagdir = TagDir(udet, typ, tag);
+    Index* seqhis = Index::load(tagdir.c_str(), name );
     return seqhis ; 
 }
 

@@ -26,12 +26,12 @@ class BRAP_API  BOpticksEvent {
        //static std::string path(const char* typ, const char* tag, const char* det );
 
    public:
-       static std::string directory(const char* top, const char* sub, const char* tag);
+       static std::string directory(const char* top, const char* sub, const char* tag, const char* anno=NULL  );
        static std::string path(     const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
        static std::string path(const char* dir, const char* name);
    private:
        static std::string directory_template();
-       static std::string directory_(const char* top, const char* sub, const char* tag=".");
+       static std::string directory_(const char* top, const char* sub, const char* tag, const char* anno=NULL );
        static std::string path_(const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
 
 };

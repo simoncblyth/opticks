@@ -4,6 +4,7 @@
 #include "OContext.hh"
 
 #include "NPY.hpp"
+#include "NLoad.hpp"
 
 #include "OBuf.hh"
 
@@ -26,6 +27,14 @@ int main( int argc, char** argv )
     Opticks* m_opticks = new Opticks(argc, argv);
     m_opticks->configure();
 
+
+    NPY<float>* npy = NLoad::Gensteps("juno", "cerenkov", "1") ; 
+    assert(npy);
+    npy->dump("NPY::dump::before", 2);
+
+    // manual buffer control, normally done via spec in okc-/OpticksEvent 
+    npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_INPUT_OUTPUT"));
+
     optix::Context context = optix::Context::create();
 
     OContext::Mode_t mode = OContext::COMPUTE ;
@@ -34,17 +43,6 @@ int main( int argc, char** argv )
 
     unsigned entry = m_ocontext->addEntry("LTminimalTest.cu.ptx", "minimal", "exception");
 
-    // LT: Try to load some events
-    NPY<float>* npy = NULL;
-    
-    const char* gensteps_dir = BOpticksResource::GenstepsDir();
-    BOpticksEvent::SetOverrideEventBase(gensteps_dir);
-    std::string path = BOpticksEvent::path("juno","cerenkov","1","",".npy"); 
-    BOpticksEvent::SetOverrideEventBase(NULL);
-
-    npy = NPY<float>::load(path.c_str()) ;
-    npy->dump("NPY::dump::before", 2);
-    npy->setBufferControl(OpticksBufferControl::Parse("OPTIX_INPUT_OUTPUT,OPTIX_SETSIZE"));
 
     optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
     context["output_buffer"]->set(buffer);

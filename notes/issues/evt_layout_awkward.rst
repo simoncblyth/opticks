@@ -4,6 +4,48 @@ Event Layout Awkward
 Persisted evts are too spread out and mixed up with others.
 Need better locality.
 
+
+First Stage of Migration Done
+-------------------------------
+
+::
+
+    simon:optickscore blyth$ cd $TMP/evt
+    simon:evt blyth$ find .
+    .
+    ./dayabay
+    ./dayabay/torch
+    ./dayabay/torch/1
+    ./dayabay/torch/1/20160818_195556
+    ./dayabay/torch/1/20160818_195556/parameters.json
+    ./dayabay/torch/1/20160818_195556/report.txt
+    ./dayabay/torch/1/20160818_195556/t_absolute.ini
+    ./dayabay/torch/1/20160818_195556/t_delta.ini
+    ./dayabay/torch/1/20160818_203917
+    ./dayabay/torch/1/20160818_203917/parameters.json
+    ./dayabay/torch/1/20160818_203917/report.txt
+    ./dayabay/torch/1/20160818_203917/t_absolute.ini
+    ./dayabay/torch/1/20160818_203917/t_delta.ini
+    ./dayabay/torch/1/fdom.npy
+    ./dayabay/torch/1/gs.npy
+    ./dayabay/torch/1/History_SequenceLocal.json
+    ./dayabay/torch/1/History_SequenceSource.json
+    ./dayabay/torch/1/idom.npy
+    ./dayabay/torch/1/Material_SequenceLocal.json
+    ./dayabay/torch/1/Material_SequenceSource.json
+    ./dayabay/torch/1/no.npy
+    ./dayabay/torch/1/ox.npy
+    ./dayabay/torch/1/parameters.json
+    ./dayabay/torch/1/ph.npy
+    ./dayabay/torch/1/ps.npy
+    ./dayabay/torch/1/report.txt
+    ./dayabay/torch/1/rs.npy
+    ./dayabay/torch/1/rx.npy
+    ./dayabay/torch/1/t_absolute.ini
+    ./dayabay/torch/1/t_delta.ini
+
+
+
 New Layout Idea
 ----------------
 

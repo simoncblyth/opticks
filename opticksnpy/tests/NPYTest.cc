@@ -11,6 +11,7 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NLoad.hpp"
 #include "NPY.hpp"
 
 #include "BRAP_LOG.hh"
@@ -236,7 +237,6 @@ void test_load_path_throws()
     LOG(info) << "test_load_path (throws std::runtime_error causing abort as not caught)" ; 
 
     const char* path = "$TMP/slowcomponent.npy" ;
-    //const char* path = "/usr/local/env/cerenkov/1.npy" ;
     NPY<float>* npy = NPY<float>::debugload(path);
     if(npy) npy->Summary(path);
 }
@@ -255,7 +255,8 @@ void test_load_missing()
 void test_getData()
 {
     LOG(info) << "test_getData" ; 
-    NPY<float>* npy = NPY<float>::load("ox","cerenkov","1", "dayabay");
+
+    NPY<float>* npy = NLoad::Gensteps("dayabay","cerenkov","1");
     assert(npy);
 
     float* data = npy->getValues();
@@ -279,8 +280,8 @@ void test_getData()
 void test_getUSum()
 {
     LOG(info) << "test_getUSum" ; 
-    NPY<float>* c1 = NPY<float>::load("","cerenkov","1", "dayabay");
-    NPY<float>* s1 = NPY<float>::load("","scintillation","1", "dayabay");
+    NPY<float>* c1 = NLoad::Gensteps("dayabay","cerenkov","1");
+    NPY<float>* s1 = NLoad::Gensteps("dayabay","scintillation","1");
     unsigned int n_c1 = c1 ? c1->getUSum(0, 3) : 0 ;
     unsigned int n_s1 = s1 ? s1->getUSum(0, 3) : 0 ;
     printf("test_getUSum n_c1:%u n_c1:%u tot:%u \n", n_c1, n_s1, n_c1+n_s1);

@@ -14,8 +14,8 @@
 const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE = "$OPTICKS_EVENT_BASE/evt/$1/$2/$3" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
 const char* BOpticksEvent::OVERRIDE_EVENT_BASE = NULL ; 
 
-const int BOpticksEvent::DEFAULT_LAYOUT_VERSION = 1 ; 
-int BOpticksEvent::LAYOUT_VERSION = 1 ; 
+const int BOpticksEvent::DEFAULT_LAYOUT_VERSION = 2 ; 
+int BOpticksEvent::LAYOUT_VERSION = 2 ; 
 
 
 void BOpticksEvent::SetOverrideEventBase(const char* override_event_base)
@@ -49,7 +49,7 @@ std::string BOpticksEvent::directory_template()
     return deftmpl ; 
 }
 
-std::string BOpticksEvent::directory_(const char* top, const char* sub, const char* tag)
+std::string BOpticksEvent::directory_(const char* top, const char* sub, const char* tag, const char* anno)
 {
     // top (geometry)
     //     old and new: BoxInBox,PmtInBox,dayabay,prism,reflect,juno,... 
@@ -60,18 +60,28 @@ std::string BOpticksEvent::directory_(const char* top, const char* sub, const ch
     //
     // tag
     //     old: tag did not contribute to directory 
+    //
+    // anno
+    //     normally NULL, used for example with metadata for a timestamp folder
+    //     within the tag folder
     //  
 
     std::string base = directory_template();
     boost::replace_first(base, "$1", top ); 
     boost::replace_first(base, "$2", sub ); 
     boost::replace_first(base, "$3", tag ); 
-    std::string dir = BFile::FormPath( base.c_str() ); 
+
+    std::stringstream ss ; 
+    ss << base ;
+    if(anno) ss << "/" << anno ; 
+    std::string ubase = ss.str();
+
+    std::string dir = BFile::FormPath( ubase.c_str() ); 
     return dir ; 
 }
-std::string BOpticksEvent::directory(const char* top, const char* sub, const char* tag)
+std::string BOpticksEvent::directory(const char* top, const char* sub, const char* tag, const char* anno)
 {
-    std::string dir_ = directory_(top, sub, tag);
+    std::string dir_ = directory_(top, sub, tag, anno);
     std::string dir = BFile::FormPath( dir_.c_str() ); 
     return dir ; 
 }
@@ -96,7 +106,7 @@ std::string BOpticksEvent::path(const char* top, const char* sub, const char* ta
         // to work with 3-arg form for gensteps:  ("cerenkov","1","dayabay" )  top=dayabay sub=cerenkov tag=1 stem="" 
 
         char stem_source[64];
-        snprintf(stem_source, 64, "%s%s", stem, sub ); 
+        snprintf(stem_source, 64, "%s%s", stem, sub );  // stem="" for input "progenitor" gensteps
         p_ = path_(top, stem_source, ".", tag, ext );   
     }  
     else if(LAYOUT_VERSION == 2)

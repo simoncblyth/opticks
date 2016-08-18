@@ -150,7 +150,7 @@ brap---(){     touch $(brap-apihh) ; brap--  ; }
 
 
 brap--(){       opticks-- $(brap-bdir) ; }
-brap-ctest(){   opticks-ctest $(brap-bdir) $* ; }
+brap-t(){       opticks-t $(brap-bdir) $* ; }
 brap-genproj(){ brap-scd ; opticks-genproj $(brap-name) $(brap-tag) ; }
 brap-gentest(){ brap-tcd ; opticks-gentest ${1:-BBufSpec} $(brap-tag) ; }
 brap-txt(){     vi $(brap-sdir)/CMakeLists.txt $(brap-tdir)/CMakeLists.txt ; }

@@ -24,7 +24,7 @@ int main(int argc , char** argv )
     const char* det = "dayabay" ;
 
     NPY<float>* photons = NPY<float>::load("ox", typ, tag, det);
-    if(!photons) return 1 ;   
+    if(!photons) return 0 ;   
 
     NPY<short>* records = NPY<short>::load("rx", typ, tag, det);
     if(!records) return 1 ; 

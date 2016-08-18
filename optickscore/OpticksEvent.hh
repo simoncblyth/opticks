@@ -77,6 +77,8 @@ class OKCORE_API OpticksEvent {
       //friend class Opticks ; 
    public:
       static const char* PARAMETERS_NAME ;  
+      static const char* PARAMETERS_STEM ;  
+      static const char* PARAMETERS_EXT ;  
       static const char* TIMEFORMAT ;  
       static std::string timestamp();
    public:
@@ -183,11 +185,15 @@ class OKCORE_API OpticksEvent {
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
    public:
-       static std::string speciesDir(const char* species, const char* udet, const char* typ);
+       //static std::string speciesDir(const char* species, const char* udet, const char* typ);
    private:
        void recordDigests();
-       std::string getSpeciesDir(const char* species); // tag in the name
-       std::string getTagDir(const char* species, bool tstamp);     // tag in the dir 
+   private:
+       //std::string getSpeciesDir(const char* species); // tag in the name
+       //std::string getTagDir(const char* species, bool tstamp);     // tag in the dir 
+       static std::string TagDir(const char* det, const char* typ, const char* tag, const char* anno=NULL);
+       std::string getTagDir(const char* anno=NULL); // anno usually NULL, sometimes the timestamp
+   private:
        void saveParameters();
        void loadParameters();
        void importParameters();
