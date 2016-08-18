@@ -23,16 +23,16 @@ int main(int argc , char** argv )
     const char* tag = "1" ;
     const char* det = "dayabay" ;
 
-    NPY<float>* photons = NPY<float>::load("ox%s", typ, tag, det);
-    if(!photons) return 0 ;   
+    NPY<float>* photons = NPY<float>::load("ox", typ, tag, det);
+    if(!photons) return 1 ;   
 
-    NPY<short>* records = NPY<short>::load("rx%s",   typ, tag, det);
-    if(!records) return 0 ; 
+    NPY<short>* records = NPY<short>::load("rx", typ, tag, det);
+    if(!records) return 1 ; 
 
-    NPY<float>* fdom  = NPY<float>::load("fdom%s", typ, tag, det);
-    if(!fdom) return 0 ; 
+    NPY<float>* fdom  = NPY<float>::load("fdom", typ, tag, det);
+    if(!fdom) return 1 ; 
 
-    NPY<int>*   idom  = NPY<int>::load("idom%s", typ, tag, det);
+    NPY<int>*   idom  = NPY<int>::load("idom", typ, tag, det);
 
     if(idom == NULL)
     {  

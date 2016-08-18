@@ -1063,7 +1063,7 @@ void OpticksEvent::save(bool verbose)
     NPY<float>* no = getNopstepData();
     {
         no->setVerbose(verbose);
-        no->save("no%s", m_typ,  m_tag, udet);
+        no->save("no", m_typ,  m_tag, udet);
         no->dump("OpticksEvent::save (nopstep)");
     }
 
@@ -1073,25 +1073,25 @@ void OpticksEvent::save(bool verbose)
     NPY<float>* gs = getGenstepData();
     {
         gs->setVerbose(verbose);
-        gs->save("gs%s", m_typ,  m_tag, udet);
+        gs->save("gs", m_typ,  m_tag, udet);
     }
 
     NPY<float>* ox = getPhotonData();
     {
         ox->setVerbose(verbose);
-        ox->save("ox%s", m_typ,  m_tag, udet);
+        ox->save("ox", m_typ,  m_tag, udet);
     } 
 
     NPY<short>* rx = getRecordData();    
     {
         rx->setVerbose(verbose);
-        rx->save("rx%s", m_typ,  m_tag, udet);
+        rx->save("rx", m_typ,  m_tag, udet);
     }
 
     NPY<unsigned long long>* ph = getSequenceData();
     {
         ph->setVerbose(verbose);
-        ph->save("ph%s", m_typ,  m_tag, udet);
+        ph->save("ph", m_typ,  m_tag, udet);
     }
 
 
@@ -1263,7 +1263,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     bool qload = true ; 
 
-    NPY<int>*   idom = NPY<int>::load("idom%s", m_typ,  m_tag, udet, qload);
+    NPY<int>*   idom = NPY<int>::load(idom_, m_typ,  m_tag, udet, qload);
 
     if(!idom)
     {
@@ -1283,7 +1283,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     m_loaded = true ; 
 
-    NPY<float>* fdom = NPY<float>::load("fdom%s", m_typ,  m_tag, udet, qload );
+    NPY<float>* fdom = NPY<float>::load(fdom_, m_typ,  m_tag, udet, qload );
 
     setIDomain(idom);
     setFDomain(fdom);
@@ -1309,16 +1309,16 @@ void OpticksEvent::loadBuffers(bool verbose)
     }
     else
     {  
-        no = NPY<float>::load("no%s", m_typ,  m_tag, udet, qload);
+        no = NPY<float>::load("no", m_typ,  m_tag, udet, qload);
     }
     if(no) assert(no->hasItemSpec(m_nopstep_spec) );
 
-    NPY<float>*              gs = NPY<float>::load("gs%s", m_typ,  m_tag, udet, qload);
-    NPY<float>*              ox = NPY<float>::load("ox%s", m_typ,  m_tag, udet, qload);
-    NPY<short>*              rx = NPY<short>::load("rx%s", m_typ,  m_tag, udet, qload);
-    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph%s", m_typ,  m_tag, udet, qload );
-    NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps%s", m_typ,  m_tag, udet, qload );
-    NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs%s", m_typ,  m_tag, udet, qload );
+    NPY<float>*              gs = NPY<float>::load("gs", m_typ,  m_tag, udet, qload);
+    NPY<float>*              ox = NPY<float>::load("ox", m_typ,  m_tag, udet, qload);
+    NPY<short>*              rx = NPY<short>::load("rx", m_typ,  m_tag, udet, qload);
+    NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph", m_typ,  m_tag, udet, qload );
+    NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps", m_typ,  m_tag, udet, qload );
+    NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs", m_typ,  m_tag, udet, qload );
 
     if(gs) assert(gs->hasItemSpec(m_genstep_spec) );
     if(ox) assert(ox->hasItemSpec(m_photon_spec) );
@@ -1578,8 +1578,8 @@ void OpticksEvent::saveIndex(bool verbose_)
     assert(ps);
     assert(rs);
 
-    ps->save("ps%s", m_typ,  m_tag, udet);
-    rs->save("rs%s", m_typ,  m_tag, udet);
+    ps->save("ps", m_typ,  m_tag, udet);
+    rs->save("rs", m_typ,  m_tag, udet);
 
     NPYBase::setGlobalVerbose(false);
 
