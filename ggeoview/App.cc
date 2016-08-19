@@ -1,4 +1,9 @@
 #include <cstring>
+
+// sysrap-
+#include "SSys.hh"
+
+// brap-
 #include "BStr.hh"
 
 // npy-
@@ -903,10 +908,12 @@ void App::render()
 void App::renderLoop()
 {
     if(isCompute()) return ; 
-
-    if(hasOpt("noviz"))
+    
+    bool noviz = hasOpt("noviz") ;
+    bool CTEST_INTERACTIVE_DEBUG_MODE_0 = SSys::IsCTestInteractiveDebugMode() == false ;
+    if(noviz || CTEST_INTERACTIVE_DEBUG_MODE_0 )
     {
-        LOG(info) << "App::renderLoop early exit due to --noviz/-V option " ; 
+        LOG(info) << "App::renderLoop early exit due to --noviz/-V option OR ctest --interactive-debug-mode 0  " ; 
         return ;
     }
     LOG(info) << "enter runloop "; 

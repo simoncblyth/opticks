@@ -7,6 +7,12 @@
 #include "SSys.hh"
 #include "PLOG.hh"
 
+bool SSys::IsCTestInteractiveDebugMode()
+{
+    // see opticks/notes/issues/automated_interop_tests.rst
+    char* value = getenv("CTEST_INTERACTIVE_DEBUG_MODE");
+    return value != NULL ; 
+}
 
 bool SSys::IsRemoteSession()
 {

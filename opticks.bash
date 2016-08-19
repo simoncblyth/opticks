@@ -301,12 +301,10 @@ opticks-prepare-installcache()
 }
 
 
-opticks-t-()
-{
-   [ "$(which ctest 2>/dev/null)" == "" ] && ctest3 $* || ctest $* 
-}
+opticks-ti(){ opticks-t- $* --interactive-debug-mode 1 ; }
+opticks-t(){  opticks-t- $* --interactive-debug-mode 0 ; }
 
-opticks-t()
+opticks-t-()
 {
    # 
    # Basic environment (PATH and envvars to find data) 
@@ -322,8 +320,11 @@ opticks-t()
    local msg="$FUNCNAME : "
    local iwd=$PWD
 
-   local bdir=$1
-   if [ -d "$bdir" ]; then
+   ## if 1st arg is a directory, cd there to run ctest     
+   ## otherwise run from the top level bdir
+   local arg=$1
+   if [ "${arg:0:1}" == "/" -a -d "$arg" ]; then
+       bdir=$arg
        shift
    else
        bdir=$(opticks-bdir) 
@@ -331,11 +332,17 @@ opticks-t()
 
    cd $bdir
 
-   opticks-t- $*
+   opticks-t-- $*
 
    cd $iwd
    echo $msg use -V to show output 
 }
+
+opticks-t--()
+{
+   [ "$(which ctest 2>/dev/null)" == "" ] && ctest3 $* || ctest $*
+}
+
 
 
 opticks-find(){

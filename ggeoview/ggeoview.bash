@@ -1150,56 +1150,13 @@ ggeoview-wipe(){
 
 
 ggeoview--(){        opticks--     $(ggeoview-bdir) ; }
-ggeoview-ctest(){    opticks-ctest $(ggeoview-bdir) $* ; }
+ggeoview-t(){        opticks-t   $(ggeoview-bdir) $* ; }
+ggeoview-ti(){       opticks-ti  $(ggeoview-bdir) $* ; }
 ggeoview-genproj(){  ggeoview-scd ; opticks-genproj $(ggeoview-name) $(ggeoview-tag) ; }
 ggeoview-gentest(){  ggeoview-tcd ; opticks-gentest ${1:-Scene} $(ggeoview-tag) ; }
 ggeoview-txt(){      vi $(ggeoview-sdir)/CMakeLists.txt $(ggeoview-tdir)/CMakeLists.txt ; }
 
 
-
-
-################### BELOW FUNCS FROM WHEN GGEOVOEW WAS TOP DOG ######################
-
-ggeoview-cmake-deprecated(){
-   local iwd=$PWD
-   local bdir=$(ggeoview-bdir)
-   mkdir -p $bdir
-   ggeoview-bcd 
-
-   cmake \
-       -DWITH_OPTIX:BOOL=ON \
-       -DWITH_NPYSERVER:BOOL=OFF \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
-       -DOptiX_INSTALL_DIR=$(optix-install-dir) \
-       -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
-       $(ggeoview-options) \
-       $(ggeoview-sdir)
-
-   cd $iwd
-}
-
-ggeoview-cmake-deprecated-nooptix(){
-
-   local bdir=$(ggeoview-bdir)
-   mkdir -p $bdir
-   ggeoview-bcd 
-   cmake \
-       -DWITH_OPTIX:BOOL=OFF \
-       -DWITH_NPYSERVER:BOOL=OFF \
-       -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(ggeoview-idir) \
-       $(ggeoview-options) \
-       $(ggeoview-sdir)
-
-}
-
-ggeoview-options()
-{
-    case $NODE_TAG in 
-      NONE) echo -DWITH_NPYSERVER:BOOL=OFF ;;
-    esac
-}
 
 
 ggeoview-accelcache()
