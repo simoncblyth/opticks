@@ -44,11 +44,11 @@ Testing material mechanics
 
 
 """
-import os, datetime, logging
+import os, sys, datetime, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_main
 from opticks.ana.base import Abbrev, ItemList 
 from opticks.ana.seq import SeqType, SeqAna
 from opticks.ana.proplib import PropLib
@@ -101,8 +101,7 @@ class MatType(SeqType):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment()
+    args = opticks_main(det="PmtInBox", src="torch", tag="10")
 
     #mn = ItemList("GMaterialLib")
     #ab = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
@@ -110,15 +109,16 @@ if __name__ == '__main__':
     mt = MatType()
     test_roundtrip(mt)
 
-    src = "torch"
-    tag = "10"
-    det = "PmtInBox"  
+    try:
+        ph = A.load_("ph",args.src,args.tag,args.det)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(1) 
 
-    ph = A.load_("ph"+src,tag,det)
+    log.info("loaded ph %s %s %s " % ( ph.path, ph.stamp, repr(ph.shape)))
+
     seqmat = ph[:,0,1]
-
-
-    ma = SeqAna.for_evt(mt, tag, src, det, offset=SEQMAT)
+    ma = SeqAna.for_evt(mt, args.tag, args.src, args.det, offset=SEQMAT)
     print ma.table
 
 

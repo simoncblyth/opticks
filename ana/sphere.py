@@ -5,13 +5,13 @@ sphere.py : SphereReflect intersection, polarization calculation and spatial plo
 
 
 """
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_main
 from opticks.ana.nbase import vnorm
 from opticks.ana.evt import Evt, costheta_, cross_, norm_
 from opticks.ana.boundary import Boundary   
@@ -345,9 +345,8 @@ class SphereReflect(object):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
 
-    opticks_environment()
+    args = opticks_main(tag="-5", det="rainbow", src="torch")
 
 
     plt.ion()
@@ -359,8 +358,27 @@ if __name__ == '__main__':
     seqs = ["TO BR SA"]
 
     #evt = Evt(tag="-6", det="rainbow", seqs=seqs, label="P G4")
-    evt = Evt(tag="-5", det="rainbow", seqs=seqs, label="S G4")
 
+    tag = args.tag
+    if tag == "-6":
+        label = "P G4"
+    elif tag == "-5":
+        label = "S G4"
+    elif tag == "5":
+        label = "S Op"
+    elif tag == "6":
+        label = "P Op"
+    else:
+        label = "label?"
+
+
+    try:
+        evt = Evt(tag=tag, det=args.det, src=args.src, seqs=seqs, label=label)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
+
+    log.info("loaded %s " % repr(evt))
 
     sr = SphereReflect(evt)
 

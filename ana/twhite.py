@@ -53,23 +53,25 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 from opticks.ana.planck import planck
 
-np.set_printoptions(suppress=True, precision=3)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     plt.ion()
-    opticks_environment()
-    args = opticks_args(tag="1", det="white", src="torch")
+    args = opticks_main(tag="1", det="white", src="torch")
 
     ## tag = "1"   ## dont have any tag 1 anymore 
     ## tag = "15"     ## so added tag 15,16 to ggv-rainbow with wavelength=0 which is default black body 
 
-    evt = Evt(tag=args.tag, det=args.det, src=args.src)
+    try:
+        evt = Evt(tag=args.tag, det=args.det, src=args.src)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
+
 
     if not evt.valid:
        log.fatal("failed to load evt %s " % repr(args))

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """
-Non-numpy basics
+Mostly Non-numpy basics, just numpy configuration
 """
 
+import numpy as np
 import os, logging, json, ctypes, subprocess, argparse, sys
 log = logging.getLogger(__name__) 
 
@@ -132,7 +133,7 @@ class OpticksEnv(object):
             lines.append(line)    
 
         path = os.path.expandvars(path) 
-        print "writing opticks environment to %s " % path 
+        #print "writing opticks environment to %s " % path 
         open(path,"w").write("\n".join(lines)) 
 
 
@@ -160,9 +161,18 @@ def opticks_environment(dump=False):
        env.dump()
    env.bash_export() 
 
+
+def opticks_main(**kwa):
+    args = opticks_args(**kwa)
+    opticks_environment()
+    np.set_printoptions(suppress=True, precision=4, linewidth=200)
+    return args
+
+
 def opticks_args(**kwa):
 
     llv = kwa.get("loglevel", "info")
+    mrc = kwa.get("mrc", 101)
     doc = kwa.get("doc", None)
     tag = kwa.get("tag", None)
     stag = kwa.get("stag", None)
@@ -184,6 +194,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov " )
     parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay "  )
     parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation "  )
+    parser.add_argument(     "--mrc",  default=mrc, type=int, help="script return code resulting from missing event files "  )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)

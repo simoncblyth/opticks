@@ -41,12 +41,12 @@ See Also
 
 """
 
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 from opticks.ana.pmt.plot import Pmt, one_plot
 
@@ -73,10 +73,8 @@ def zr_plot(data, neg=False):
 
 
 if __name__ == '__main__':
+    args = opticks_main(tag="10", src="torch", det="PmtInBox")
     np.set_printoptions(precision=4, linewidth=200)
-    opticks_environment()
-    args = opticks_args(tag="10", src="torch", det="PmtInBox")
-
 
     plt.ion()
     plt.close()
@@ -92,12 +90,16 @@ if __name__ == '__main__':
   
     # aseqs=["TO BT BR BT BT BT BT BT BT SA"]   before fixing the TIR bug this was what was happening
     aseqs=["TO BT BR BR BT SA"]
-    na = len(aseqs[0].split())
-    a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=aseqs)
-
     bseqs=["TO BT BR BR BT SA"]
+    na = len(aseqs[0].split())
     nb = len(bseqs[0].split())
-    b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=bseqs)
+
+    try:
+        a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=aseqs)
+        b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=bseqs)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
 
     if a.valid:
         log.info("A : plot zrt_profile %s " % a.label)

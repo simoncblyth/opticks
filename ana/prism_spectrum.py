@@ -13,14 +13,14 @@ TODO: check undispersed spot, extend refractive index values
 
 """
 
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d import Axes3D
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 from opticks.ana.boundary import Boundary   
 from opticks.ana.tprism import Prism, PrismCheck, PrismExpected
@@ -84,11 +84,17 @@ def uv_deviation_spike(d):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    opticks_environment()
+    args = opticks_main(det="newton", tag="1", src="torch")
 
     plt.ion()
 
-    sel = Evt(tag="1", det="newton", seqs=["TO BT BT SA"])  # newton, uses single incident angle
+    try:
+        sel = Evt(tag=args.tag, det=args.det, src=args.src, seqs=["TO BT BT SA"])  # newton, uses single incident angle
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
+
+    log.info("loaded %s " % repr(sel))
 
     boundary = Boundary("Vacuum///GlassSchottF2")
 

@@ -7,6 +7,54 @@ ana-usage(){ cat << \EOU
 ana : Opticks Analysis Scripts
 =================================
 
+FUNCTION `ana-t`
+------------------
+
+::
+
+    simon:ana blyth$ ana-;ana-t
+    ==                    __init__.py ==  ->    0 OK  
+    ==                         ana.py ==  ->  101 MISSING EVT  
+    ==                        base.py ==  ->    0 OK  
+    ==                    boundary.py ==  ->    0 OK  
+    ==              cfg4_speedplot.py ==  ->    0 OK  
+    ==                      cfplot.py ==  ->    0 OK  
+    ==                         cie.py ==  SKIP
+    ==                     dbgseed.py ==  ->  101 MISSING EVT  
+    ==                     droplet.py ==  ->    0 OK  
+    ==                         evt.py ==  ->    0 OK  
+    ==                     fresnel.py ==  ->    0 OK  
+    ==                       g4gun.py ==  ->  101 MISSING EVT  
+    ==                     genstep.py ==  ->    0 OK  
+    ==                    geometry.py ==  ->    0 OK  
+    ==                     histype.py ==  ->    0 OK  
+    ==                    material.py ==  ->    0 OK  
+    ==                     mattype.py ==  ->    0 OK  
+    ==                  mergedmesh.py ==  ->    0 OK  
+    ==                    metadata.py ==  ->    0 OK  
+    ==                       nbase.py ==  ->    0 OK  
+    ==                     ncensus.py ==  ->    0 OK  
+    ==                       nload.py ==  ->    0 OK  
+    ==                          ox.py ==  ->    0 OK  
+    ==                      planck.py ==  ->    0 OK  
+    ==              prism_spectrum.py ==  ->  101 MISSING EVT  
+    ==                     proplib.py ==  ->    0 OK  
+    ==                         seq.py ==  ->    0 OK  
+    ==                      sphere.py ==  ->  101 MISSING EVT  
+    ==                        tbox.py ==  ->  101 MISSING EVT  
+    ==                        tevt.py ==  ->  101 MISSING EVT  
+    ==                       tmeta.py ==  ->    0 OK  
+    ==                        tpmt.py ==  ->  101 MISSING EVT  
+    ==                tpmt_distrib.py ==  ->  101 MISSING EVT  
+    ==                tpmt_skimmer.py ==  ->  101 MISSING EVT  
+    ==                      tprism.py ==  ->  101 MISSING EVT  
+    ==                    trainbow.py ==  ->  101 MISSING EVT  
+    ==                    treflect.py ==  ->  101 MISSING EVT  
+    ==                      twhite.py ==  ->  101 MISSING EVT  
+    ==                    xrainbow.py ==  ->    0 OK  
+
+
+
 PMT Tests
 ------------
 
@@ -250,8 +298,8 @@ ana-skips(){
    done
 }
 
-ana-test-note(){ cat << EON
-*ana-test*
+ana-t-note(){ cat << EON
+*ana-t*
      runs all executable .py in ana directory, 
      stopping at any script that yields a non-zero return code 
 
@@ -262,17 +310,35 @@ ana-test-note(){ cat << EON
      Failure to load events should not cause failures, just warnings.
 EON
 }
-ana-test(){
+
+ana-t-rcm()
+{
+   case $1 in 
+     0)  echo OK ;;
+   101)  echo MISSING EVT ;;  
+     *)  echo PY FAIL ;;
+   esac
+}
+
+ana-t(){
    local py
    local rc
+   local rcm
+   ana-cd
    ana-py- | while read py ; do
-       [ ! -x $py ] && echo $msg SKIP $py && continue
-       echo $msg $py
 
-       ./$py
+       printf "== %30s == " $msg $py
+
+       [ ! -x $py ] && printf " SKIP\n" && continue
+
+       ./$py > /dev/null 2>&1
        rc=$?
+       rcm="$(ana-t-rcm $rc)"
+       printf " -> %4s %s  \n" $rc "$rcm"
 
-       if [ "$rc" != "0" ]; then 
+       if [ "$rc" == "0" -o "$rc" == "101" ]; then 
+           echo -n
+       else
            echo $msg WARNING : PY FAILURE OF $py : RC $rc
            break 
        fi

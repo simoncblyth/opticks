@@ -24,18 +24,23 @@ Expected output below shows the dimensions of the constitent numpy arrays that c
 
 
 """
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
-    args = opticks_args(tag="-4",src="torch", det="PmtInBox", doc=__doc__)
-    opticks_environment() 
+    args = opticks_main(tag="-4",src="torch", det="PmtInBox", doc=__doc__)
     np.set_printoptions(suppress=True, precision=3)
 
-    evt = Evt(tag=args.tag, src=args.src, det=args.det, seqs=[])
+    try:
+        evt = Evt(tag=args.tag, src=args.src, det=args.det, seqs=[])
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
+
+    log.info("loaded evt %s " % repr(evt))
 
     print evt
     print evt.history.table

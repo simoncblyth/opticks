@@ -62,7 +62,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Rectangle
 
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt, costheta_, cross_
 from opticks.ana.boundary import Boundary   
 from opticks.ana.droplet import Droplet
@@ -155,10 +155,8 @@ def cf_plot(evt_a, evt_b, label="", log_=False, ylim=[1,1e5], ylim2=[0,10], sli=
 
 
 if __name__ == '__main__':
-    opticks_environment()
-    args = opticks_args(tag="5",src="torch",det="rainbow",doc=__doc__)
+    args = opticks_main(tag="5",src="torch",det="rainbow",doc=__doc__)
 
-    np.set_printoptions(precision=4, linewidth=200)
 
     boundary = Boundary("Vacuum///MainH2OHale")
     droplet = Droplet(boundary)
@@ -183,8 +181,13 @@ if __name__ == '__main__':
 
 
     seqs = []
-    a = Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec)
-    b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec)
+
+    try:
+        a = Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec)
+        b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)    
 
     print a.brief
     print b.brief

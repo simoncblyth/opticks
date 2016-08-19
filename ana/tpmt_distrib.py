@@ -24,7 +24,7 @@ See Also
        development notes debugging simulation to achieve *pmt_test.py* matching
 
 """
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
 from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ except ImportError:
     plt = None 
 
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 from opticks.ana.nbase import chi2, vnorm, decompression_bins
 from opticks.ana.cfplot import cfplot
@@ -313,8 +313,7 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
 
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
-    opticks_environment()
-    args = opticks_args(tag="10", src="torch", det="PmtInBox")
+    args = opticks_main(tag="10", src="torch", det="PmtInBox")
 
     log.info(" args %s " % repr(args))
 
@@ -324,7 +323,13 @@ if __name__ == '__main__':
     select = slice(1,2)
     #select = slice(0,8)
 
-    cf = CF(tag=args.tag, src=args.src, det=args.det, select=select )
+    try:
+        cf = CF(tag=args.tag, src=args.src, det=args.det, select=select )
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
+
+
     cf.dump()
     
     multiplot(cf, pages=["XYZT","ABCR"])

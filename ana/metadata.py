@@ -48,23 +48,34 @@ class DatedFolder(object):
 
 class Metadata(object):
     """
-    ::
-        simon:ana blyth$ l /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/20160817_141731/
-        total 32
-        -rw-r--r--  1 blyth  wheel  1059 Aug 17 14:17 parameters.json
-        -rw-r--r--  1 blyth  wheel  2441 Aug 17 14:17 report.txt
-        -rw-r--r--  1 blyth  wheel   926 Aug 17 14:17 t_absolute.ini
-        -rw-r--r--  1 blyth  wheel   991 Aug 17 14:17 t_delta.ini
+    v2 layout::
 
-        simon:ana blyth$ l /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/
+        simon:ana blyth$ l $TMP/evt/PmtInBox/torch/10/
+        total 55600
+        drwxr-xr-x  6 blyth  wheel       204 Aug 19 15:32 20160819_153245
+        -rw-r--r--  1 blyth  wheel       100 Aug 19 15:32 Boundary_IndexLocal.json
+        -rw-r--r--  1 blyth  wheel       111 Aug 19 15:32 Boundary_IndexSource.json
+        ...
+        -rw-r--r--  1 blyth  wheel   6400080 Aug 19 15:32 ox.npy
+        -rw-r--r--  1 blyth  wheel      1069 Aug 19 15:32 parameters.json
+        -rw-r--r--  1 blyth  wheel   1600080 Aug 19 15:32 ph.npy
+        -rw-r--r--  1 blyth  wheel    400080 Aug 19 15:32 ps.npy
+        -rw-r--r--  1 blyth  wheel      2219 Aug 19 15:32 report.txt
+        -rw-r--r--  1 blyth  wheel   4000096 Aug 19 15:32 rs.npy
+        -rw-r--r--  1 blyth  wheel  16000096 Aug 19 15:32 rx.npy
+        -rw-r--r--  1 blyth  wheel       763 Aug 19 15:32 t_absolute.ini
+        -rw-r--r--  1 blyth  wheel       817 Aug 19 15:32 t_delta.ini
+        drwxr-xr-x  6 blyth  wheel       204 Aug 18 20:53 20160818_205342
+
+    timestamp folders contain just metadata for prior runs not full evt::
+
+        simon:ana blyth$ l /tmp/blyth/opticks/evt/PmtInBox/torch/10/20160819_153245/
         total 32
-        drwxr-xr-x  6 blyth  wheel   204 Aug 17 14:17 20160817_141731
-        -rw-r--r--  1 blyth  wheel  1059 Aug 17 14:17 parameters.json
-        -rw-r--r--  1 blyth  wheel  2441 Aug 17 14:17 report.txt
-        -rw-r--r--  1 blyth  wheel   926 Aug 17 14:17 t_absolute.ini
-        -rw-r--r--  1 blyth  wheel   991 Aug 17 14:17 t_delta.ini
-        drwxr-xr-x  6 blyth  wheel   204 Aug 17 11:55 20160817_115547
-        drwxr-xr-x  6 blyth  wheel   204 Aug 17 11:49 20160817_114935
+        -rw-r--r--  1 blyth  wheel  1069 Aug 19 15:32 parameters.json
+        -rw-r--r--  1 blyth  wheel  2219 Aug 19 15:32 report.txt
+        -rw-r--r--  1 blyth  wheel   763 Aug 19 15:32 t_absolute.ini
+        -rw-r--r--  1 blyth  wheel   817 Aug 19 15:32 t_delta.ini
+
 
     """
 
@@ -78,8 +89,8 @@ class Metadata(object):
         """
         Path assumed to be a directory with one of two forms::
 
-              /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10                   ## ending with tag
-              /tmp/blyth/opticks/evt/PmtInBox/mdtorch/10/20160817_141731   ## ending with datefold
+              $TMP/evt/PmtInBox/torch/10/                ## ending with tag
+              $TMP/evt/PmtInBox/torch/10/20160817_141731 ## ending with datefold
             
         In both cases the directory must contain::
 
@@ -129,6 +140,13 @@ class Metadata(object):
     def __repr__(self):
         return "%60s %32s %32s %7d %10.4f %s " % (self.path, self.photonData, self.recordData, self.numPhotons, self.propagate, self.mode )
 
+    def dump(self):
+        for k,v in self.parameters.items():
+            print "%20s : %s " % (k, v)
+        for k,v in self.times.items():
+            print "%20s : %s " % (k, v)
+     
+
 
 class Catdir(object):
     """
@@ -154,31 +172,37 @@ class Catdir(object):
         INFO:__main__:/usr/local/env/opticks/rainbow/mdtorch/5/20160104_111515
 
     """
-    def __init__(self, cat):
-        path = os.path.expandvars("$LOCAL_BASE/env/opticks/%s" % cat )
+    def __init__(self, path):
+        """
+        Path should be the folder above the tagdir in order
+        to allow comparisons between equivalent (ie G4 negated) tags 
+        """
         df = DatedFolder()
 
         log.info("Catdir searching for date stamped folders beneath : %s " % path)
-        metadata = {}
+        metamap = {}
         for p in finddir(path, df):
              
             log.debug("%s", p)
             md = Metadata(p)
             tag = md.tag
-            if tag not in metadata:
-                metadata[tag] = []
-            metadata[tag].append(md)
+            if tag not in metamap:
+                metamap[tag] = []
+            metamap[tag].append(md)
 
-        self.metadata = metadata
+        self.metamap = metamap
         self.path = path
 
         self.dump()
 
 
     def dump(self):
-        log.info("Catdir %s tags: %s beneath %s " % ( len(self.metadata), repr(self.metadata.keys()), self.path))
-        for tag, mds in self.metadata.items():
+        log.info("Catdir %s tags: %s beneath %s " % ( len(self.metamap), repr(self.metamap.keys()), self.path))
+        for tag, mds in self.metamap.items():
             print "%5s : %d " % (tag, len(mds)) 
+
+    def tags(self): 
+        return self.metamap.keys()
 
     def times(self, tag):
         """
@@ -188,7 +212,7 @@ class Catdir(object):
         tags = [tag, "-%s" % tag]   # convention, negate to get equivalent cfg4 tag
         mds = []
         for tag in tags:
-            mds.extend(self.metadata.get(tag, [])) 
+            mds.extend(self.metamap.get(tag, [])) 
 
         log.info("times metadata for tag %s " % tag + "\n".join(map(str,mds)))
 
@@ -229,7 +253,7 @@ class Catdir(object):
         return a 
 
     def __repr__(self):
-         return "%s tags %s " % (self.path, repr(self.metadata.keys()))
+         return "%s tags %s " % (self.path, repr(self.tags()))
 
 
 
@@ -242,6 +266,11 @@ def test_catdir():
     a = catd.times(tag)
 
 
+def test_metadata():
+    from opticks.ana.nload import tagdir_
+    td = tagdir_("PmtInBox", "torch", "10")
+    md = Metadata(td)
+
 
 
 
@@ -251,13 +280,11 @@ if __name__ == '__main__':
     #test_catdir()
     #test_metadata()
 
-    from opticks.ana.nload import tagdir_
-
-    td = tagdir_("PmtInBox", "torch", "10")
-    md = Metadata(td)
-
-
-
+    cat = Catdir(os.path.expandvars("/tmp/$USER/opticks/evt/PmtInBox/torch"))
+    tags = cat.tags()
+    for tag in tags:
+        a = cat.times(tag)
+        #print a
 
 
   

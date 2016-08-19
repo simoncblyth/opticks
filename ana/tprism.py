@@ -144,7 +144,7 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique
 from opticks.ana.evt import Evt, costheta_
 from opticks.ana.ana import Rat, theta
@@ -587,8 +587,7 @@ def spatial(pc):
 
 if __name__ == '__main__':
     
-    opticks_environment() 
-    args = opticks_args(tag="1", det="prism") 
+    args = opticks_main(tag="1", det="prism") 
 
 
     plt.ion()
@@ -598,7 +597,11 @@ if __name__ == '__main__':
 
     seqs = ["TO BT BT SA"]
 
-    sel = Evt(tag=args.tag, det=args.det, seqs=seqs) 
+    try:
+        sel = Evt(tag=args.tag, det=args.det, seqs=seqs) 
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
 
     log.info("sel %s " % sel.brief)
 

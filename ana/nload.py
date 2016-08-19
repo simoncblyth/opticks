@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import os, logging
+import os, sys, logging, datetime
 log = logging.getLogger(__name__)
 import numpy as np
-from opticks.ana.base import opticks_environment, ini_
+from opticks.ana.base import opticks_main, ini_
 
 #DEFAULT_BASE = "$LOCAL_BASE/env/opticks"
 DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
@@ -10,9 +10,28 @@ DEFAULT_BASE = "$OPTICKS_EVENT_BASE/evt"
 DEFAULT_DIR_TEMPLATE = DEFAULT_BASE + "/$1/$2/$3"  ## cf C++  brap- BOpticksEvent
 
 
-def adir_(typ, tag, det="dayabay", name=None):
-    tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag)) 
-    return tmpl
+
+
+def stmp_(st, fmt="%Y%m%d-%H%M"): 
+    return datetime.datetime.fromtimestamp(st.st_ctime).strftime(fmt)
+
+def stamp_(path, fmt="%Y%m%d-%H%M"):
+    try:
+        st = os.stat(path)
+    except OSError:
+        return "FILE-DOES-NOT-EXIST"
+    return stmp_(st, fmt=fmt)
+
+def x_(_):
+    p = os.path.expandvars(_)
+    st = stamp_(p)
+    log.info( " %s -> %s (%s) " % (_, p, st))
+    return p  
+
+
+#def adir_(typ, tag, det="dayabay", name=None):
+#    tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag)) 
+#    return tmpl
 
 def tagdir_(det, typ, tag, layout=2):
     """
@@ -28,6 +47,27 @@ def tagdir_(det, typ, tag, layout=2):
         assert 0, "bad layout"
 
     return tmpl
+
+
+def typdirs_(evtdir=None):
+    """
+    :return typdirs: list of absolute paths to type dirs 
+    """
+    if evtdir is None: 
+        evtdir = os.path.expandvars("/tmp/$USER/opticks/evt")
+    pass
+    dets = os.listdir(evtdir)
+    typdirs = []
+    for det in filter(lambda det:os.path.isdir(os.path.join(evtdir,det)),os.listdir(evtdir)):
+        detdir = os.path.join(evtdir, det)
+        for typ in os.listdir(detdir): 
+            typdir = os.path.join(detdir, typ)
+            print "typdir : ", typdir
+            typdirs.append(typdir)
+        pass
+    pass
+    return typdirs
+
 
 
 def path_(typ, tag, det="dayabay", name=None):
@@ -67,6 +107,9 @@ def path_(typ, tag, det="dayabay", name=None):
     return tmpl 
 
 
+
+
+
 def tpaths_(typ, tag, det="dayabay", name=None):
     """
     :return tnams: paths of files named *name* that are contained in directories within the tagdir 
@@ -89,13 +132,21 @@ def tpaths_(typ, tag, det="dayabay", name=None):
     return tnams
 
 
+def gspath_(typ, tag, det):
+    gsbase= os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps")
+    gspath = os.path.join(gsbase, det, typ, "%s.npy" % tag)
+    return gspath 
 
 class A(np.ndarray):
     @classmethod
     def load_(cls, stem, typ, tag, det="dayabay", dbg=False):
         """ 
         """
-        path = path_(typ,tag, det, name="%s.npy" % stem)
+        if stem == "gensteps":
+            path = gspath_(typ, tag, det)
+        else:
+            path = path_(typ,tag, det, name="%s.npy" % stem)
+        pass
         a = None
         if os.path.exists(path):
             log.debug("loading %s " % path )
@@ -107,8 +158,10 @@ class A(np.ndarray):
             a.typ = typ
             a.tag = tag
             a.det = det 
+            a.stamp = stamp_(path)
         else:
-            log.warning("cannot load %s " % path)
+            #log.warning("cannot load %s " % path)
+            raise IOError("cannot load %s " % path)
         pass
         return a
 
@@ -142,7 +195,8 @@ class I(dict):
             pass
             d = ini_(path)
         else:
-            log.warning("cannot load %s " % path)
+            #log.warning("cannot load %s " % path)
+            raise IOError("cannot load %s " % path)
             d = {}
         return d  
 
@@ -156,6 +210,7 @@ class I(dict):
         d = self.loadpath_(path,dbg=dbg)
         dict.__init__(self, d)
         self.path = path
+        self.stamp = stamp_(path)
         self.fold = os.path.basename(os.path.dirname(path))
         self.typ = typ
         self.tag = tag
@@ -193,17 +248,26 @@ class II(list):
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment()
+    args = opticks_main(src="torch", tag="10", det="PmtInBox")
 
-    a = A.load_("phtorch","5", "rainbow")
-    i = I.load_("mdtorch","5", "rainbow", name="t_delta.ini")
+    try:
+        i = I.load_(typ=args.src, tag=args.tag, det=args.det, name="t_delta.ini")
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
 
-    ii = II.load_("mdtorch","5", "rainbow", name="t_delta.ini")
-    iprp = map(float, filter(None,ii['propagate']) )
+    log.info(" loaded i %s %s " % (i.path, i.stamp))
+    print "\n".join([" %20s : %s " % (k,v) for k,v in i.items()])
 
-    jj = II.load_("mdtorch","-5", "rainbow", name="t_delta.ini")
-    jprp = map(float, filter(None,jj['propagate']) )
+
+    #a = A.load_("ph", "torch","5", "rainbow")
+    #i = I.load_("torch","5", "rainbow", name="t_delta.ini")
+
+    #ii = II.load_("torch","5", "rainbow", name="t_delta.ini")
+    #iprp = map(float, filter(None,ii['propagate']) )
+
+    #jj = II.load_("torch","-5", "rainbow", name="t_delta.ini")
+    #jprp = map(float, filter(None,jj['propagate']) )
 
 
  

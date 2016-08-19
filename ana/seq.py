@@ -172,7 +172,7 @@ class SeqAna(object):
     """
     @classmethod 
     def for_evt(cls, af, tag="1", src="torch", det="dayabay", offset=0):
-        ph = A.load_("ph"+src,tag,det)
+        ph = A.load_("ph",src,tag,det)
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     

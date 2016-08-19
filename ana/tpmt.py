@@ -116,7 +116,7 @@ Material abbreviations:
 import os, sys, logging, argparse, numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.nbase import vnorm
 from opticks.ana.evt  import Evt
 
@@ -125,8 +125,7 @@ from opticks.ana.evt  import Evt
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
-    args = opticks_args(doc=__doc__, tag="10", src="torch", det="PmtInBox")
-    opticks_environment()
+    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox")
 
     log.info("tag %s src %s det %s " % (args.tag,args.src,args.det))
 
@@ -136,8 +135,14 @@ if __name__ == '__main__':
     #seqs = ["TO BT BR BR BT SA"]
     seqs=[]
 
-    a = Evt(tag="%s" % tag, src=args.src, det=args.det, seqs=seqs)
-    b = Evt(tag="-%s" % tag , src=args.src, det=args.det, seqs=seqs)
+    try:
+        a = Evt(tag="%s" % tag, src=args.src, det=args.det, seqs=seqs)
+        b = Evt(tag="-%s" % tag , src=args.src, det=args.det, seqs=seqs)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
+
+  
 
     log.info( " a : %s " % a.brief)
     log.info( " b : %s " % b.brief )

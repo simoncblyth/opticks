@@ -38,7 +38,7 @@ import os, logging
 import numpy as np
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_main
 from opticks.ana.nload import A, I, II, path_
 
 log = logging.getLogger(__name__)
@@ -48,15 +48,20 @@ X,Y,Z,W,T = 0,1,2,3,3
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment()
+    args = opticks_main(det="juno", typ="cerenkov", tag="1")
 
-    #a = A.load_("cerenkov","1","dayabay")
-    a = A.load_("cerenkov","1","juno")
+    try:    
+        a = A.load_("gensteps",args.typ,args.tag,args.det)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc)
 
-    path = os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps/dayabay/cerenkov/1.npy")
+
+    log.info("loaded gensteps %s %s %s " % (a.path, a.stamp, repr(a.shape)))
+
+    #path = os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps/dayabay/cerenkov/1.npy")
     #path = os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps/juno/cerenkov/1.npy")
-    a = np.load(path)
+    #a = np.load(path)
 
 
     xyzt = a[:,1]

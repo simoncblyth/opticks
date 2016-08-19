@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt
 
-from opticks.ana.base import opticks_environment, opticks_args
+from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique
 from opticks.ana.evt import Evt, costheta_
 from opticks.ana.ana import Rat, theta, recpos_plot, angle_plot
@@ -222,13 +222,14 @@ def attic():
 
 if __name__ == '__main__':
 
+    args = opticks_main(det="reflect",stag="1", ptag="2")
 
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment()
-    args = opticks_args(det="reflect",stag="1", ptag="2")
-
-    es = Evt(tag=args.stag, label="S", det=args.det)
-    ep = Evt(tag=args.ptag, label="P", det=args.det)
+    try:
+        es = Evt(tag=args.stag, label="S", det=args.det)
+        ep = Evt(tag=args.ptag, label="P", det=args.det)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc) 
 
     log.info(" es : %s " % es.brief )
     log.info(" ep : %s " % ep.brief )

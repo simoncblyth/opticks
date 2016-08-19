@@ -6,10 +6,10 @@ ana.py geometrical and plotting utils
 TODO: reposition these into more appropriate locations
 
 """
-import os, logging
+import os, logging, sys
 import numpy as np
 
-from opticks.ana.base import opticks_environment 
+from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique, vnorm  
 from opticks.ana.evt import Evt, costheta_
 
@@ -115,10 +115,12 @@ def angle_plot(fig, evts, irec=0, axis=[0,0,1], origin=[0,0,-200], nb=100):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment()
-
-    evt = Evt(tag="5", det="rainbow")
+    args = opticks_main(tag="5", det="rainbow", src="torch")
+    try:
+        evt = Evt(tag=args.tag, det=args.det, src=args.src)
+    except IOError as err:
+        log.fatal(err)
+        sys.exit(args.mrc) 
 
 
 

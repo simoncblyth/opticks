@@ -3,13 +3,17 @@
 histype.py: HisType
 ========================
 
+::
+
+    histype.py --det PmtInBox --tag 10 --src torch 
+    histype.py --det dayabay  --tag 1  --src torch 
 
 """
-import os, datetime, logging
+import os, datetime, logging, sys
 log = logging.getLogger(__name__)
 import numpy as np
 
-from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_main
 from opticks.ana.base import Abbrev, IniFlags
 from opticks.ana.seq import SeqType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
@@ -42,16 +46,17 @@ class HisType(SeqType):
 
 
 if __name__ == '__main__':
-     logging.basicConfig(level=logging.INFO)
-     opticks_environment()
+     args = opticks_main(src="torch", tag="10", det="PmtInBox")
 
      af = HisType()
 
-     #src, tag, det = "torch", "5", "rainbow"
-     #src, tag, det = "cerenkov", "1", "juno"
-     src, tag, det = "torch", "10", "PmtInBox"
+     try:
+         ph = A.load_("ph",args.src,args.tag,args.det)
+     except IOError as err:
+         log.fatal(err) 
+         sys.exit(args.mrc)
 
-     ph = A.load_("ph"+src,tag,det)
+     log.info("loaded ph %s %s shape %s " %  (ph.path, ph.stamp, repr(ph.shape)))
 
      seqhis = ph[:,0,0]
 
@@ -61,6 +66,6 @@ if __name__ == '__main__':
      
      test_HistoryTable(ht, seqhis)
 
-     test_roundtrip(af)
+     #test_roundtrip(af)
 
 
