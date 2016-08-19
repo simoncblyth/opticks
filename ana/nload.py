@@ -14,26 +14,67 @@ def adir_(typ, tag, det="dayabay", name=None):
     tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag)) 
     return tmpl
 
-def tagdir_(det, typ, tag):
-    tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag))
+def tagdir_(det, typ, tag, layout=2):
+    """
+    layout version 1 (which is still used for source gensteps) does
+    not have the tag in the directory 
+    """
+    if layout == 1: 
+        utag = "."
+        tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",utag))
+    elif layout == 2:
+        tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag))
+    else:
+        assert 0, "bad layout"
+
     return tmpl
 
 
 def path_(typ, tag, det="dayabay", name=None):
-    tagdir = tagdir_(det, typ, tag, name)
+    """
+    :param typ:
+    :param tag:
+    :param det:
+    :param name:
+    :param layout:
+
+    *layout 1*
+         typ is of form oxtorch with the 
+         constituent and source combined and the tag is in the
+         filename stem.
+
+    *layout 2*
+         tag is in the directory and the filename stem 
+         is the constituent eg ox  
+
+
+    Signal use of layout 2 by specifying the "ox" "rx" "idom" etc
+    in the name rather than on the "typ"
+    """
     if name is None:
-        tmpl = os.path.join(tagdir, "%s.npy") 
+        layout = 1
     else:
-        tmpl = os.path.join(tagdir, "%s", name) 
+        layout = 2
+    pass
+    tagdir = tagdir_(det, typ, tag, layout=layout)
+    if layout == 1:
+        tmpl = os.path.join(tagdir, "%s.npy" % tag) 
+    elif layout == 2:
+        tmpl = os.path.join(tagdir, name) 
+    else:
+        assert 0, "bad layout"
     pass
     return tmpl 
 
 
 def tpaths_(typ, tag, det="dayabay", name=None):
+    """
+    :return tnams: paths of files named *name* that are contained in directories within the tagdir 
+                   typically these are time stamped dirs 
+    """
     assert name is not None 
 
-    adir = adir_(typ, tag, det, name)
-    tagdir = os.path.join(adir, "%s") % str(tag) 
+    tagdir = tagdir_(det, typ, tag)
    
     if os.path.isdir(tagdir): 
         names = os.listdir(tagdir)
@@ -42,16 +83,19 @@ def tpaths_(typ, tag, det="dayabay", name=None):
         names = []
 
     tdirs = filter( os.path.isdir, map(lambda name:os.path.join(tagdir, name), names))
-    tdirs = sorted(tdirs, reverse=True)
-    tnams = filter( os.path.exists, map(lambda tdir:os.path.join(tdir, name), tdirs))
+    tdirs = sorted(tdirs, reverse=True)  # paths of dirs within tagdir
+    tnams = filter( os.path.exists, map(lambda tdir:os.path.join(tdir, name), tdirs)) 
+    # paths of named files 
     return tnams
 
 
 
 class A(np.ndarray):
     @classmethod
-    def load_(cls, typ, tag, det="dayabay", dbg=False):
-        path = path_(typ,tag, det)
+    def load_(cls, stem, typ, tag, det="dayabay", dbg=False):
+        """ 
+        """
+        path = path_(typ,tag, det, name="%s.npy" % stem)
         a = None
         if os.path.exists(path):
             log.debug("loading %s " % path )

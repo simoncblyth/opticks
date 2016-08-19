@@ -185,7 +185,8 @@ def opticks_args(**kwa):
     parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay "  )
     parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation "  )
     args = parser.parse_args()
-    logging.basicConfig(level=getattr(logging,args.loglevel.upper()))
+    fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)
 
     if args.show:
          print " ".join(sys.argv)

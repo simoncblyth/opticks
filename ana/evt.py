@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.nbase import count_unique, vnorm
-from opticks.ana.nload import A, I, II, adir_
+from opticks.ana.nload import A, I, II, tagdir_
 from opticks.ana.seq import SeqAna
 from opticks.ana.histype import HisType 
 from opticks.ana.mattype import MatType 
@@ -91,14 +91,16 @@ class Evt(object):
         self.src = src
         self.det = det  
 
-        adir = adir_("md"+src, tag, det)
-        mdir = os.path.join(adir, tag)   ## md dir has different layout from array dirs 
+        #adir = adir_("md"+src, tag, det)
+        #mdir = os.path.join(adir, tag)   ## md dir has different layout from array dirs 
+        mdir = tagdir_(det, src, tag)
+
         metadata = Metadata(mdir)
         log.info("loaded metadata from %s : %s " % (mdir, repr(metadata)))
         self.metadata = metadata  
 
-        fdom = A.load_("fdom"+src,tag,det, dbg=dbg) 
-        idom = A.load_("idom"+src,tag,det, dbg=dbg) 
+        fdom = A.load_("fdom",src,tag,det, dbg=dbg) 
+        idom = A.load_("idom",src,tag,det, dbg=dbg) 
 
         if idom is None and fdom is None:
             log.warning("failed to load idom and fdom")
@@ -112,8 +114,9 @@ class Evt(object):
 
         #assert idom[0,0,3] == self.nrec
 
-        td = I.load_("md"+src,tag,det, name="t_delta.ini", dbg=dbg)
-        tdii = II.load_("md"+src,tag,det, name="t_delta.ini", dbg=dbg)
+        td = I.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
+        #log.info("loaded td %s " % str(td.keys()))
+        tdii = II.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
 
         self.td = td
         self.tdii = tdii
@@ -133,7 +136,7 @@ class Evt(object):
         """
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
         """
-        ox = A.load_("ox"+src,tag,det) 
+        ox = A.load_("ox",src,tag,det) 
         wl = ox[:,2,W] 
         c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
 
@@ -157,9 +160,9 @@ class Evt(object):
 
     def init_records(self, tag, src, det, dbg):
 
-        rx_raw = A.load_("rx"+src,tag,det,dbg)
+        rx_raw = A.load_("rx",src,tag,det,dbg)
         rx = rx_raw.reshape(-1, self.nrec, 2, 4)
-        ph = A.load_("ph"+src,tag,det,dbg)
+        ph = A.load_("ph",src,tag,det,dbg)
 
         log.debug("rx shape %s " % str(rx.shape))
 
@@ -208,13 +211,13 @@ class Evt(object):
 
 
     def init_index(self, tag, src, det, dbg):
-        ps = A.load_("ps"+src,tag,det,dbg)
+        ps = A.load_("ps",src,tag,det,dbg)
         if not ps is None:
             ups = len(np.unique(ps))
         else:
             ups = -1 
 
-        rs = A.load_("rs"+src,tag,det,dbg)
+        rs = A.load_("rs",src,tag,det,dbg)
         if not rs is None:
             urs = len(np.unique(rs))
         else: 

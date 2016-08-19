@@ -235,6 +235,11 @@ class Catdir(object):
 
 
 
+def test_catdir():
+    #cat, tag= "rainbow", "6"
+    cat, tag= "PmtInBox", "4"
+    catd = Catdir(cat)
+    a = catd.times(tag)
 
 
 
@@ -243,12 +248,15 @@ class Catdir(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)    
 
-    #cat, tag= "rainbow", "6"
-    cat, tag= "PmtInBox", "4"
+    #test_catdir()
+    #test_metadata()
 
-    catd = Catdir(cat)
+    from opticks.ana.nload import tagdir_
 
-    a = catd.times(tag)
+    td = tagdir_("PmtInBox", "torch", "10")
+    md = Metadata(td)
+
+
 
 
 
