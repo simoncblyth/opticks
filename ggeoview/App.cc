@@ -910,10 +910,10 @@ void App::renderLoop()
     if(isCompute()) return ; 
     
     bool noviz = hasOpt("noviz") ;
-    bool CTEST_INTERACTIVE_DEBUG_MODE_0 = SSys::IsCTestInteractiveDebugMode() == false ;
-    if(noviz || CTEST_INTERACTIVE_DEBUG_MODE_0 )
+    int interactivity = SSys::GetInteractivityLevel() ;
+    if(noviz || interactivity == 0 )
     {
-        LOG(info) << "App::renderLoop early exit due to --noviz/-V option OR ctest --interactive-debug-mode 0  " ; 
+        LOG(info) << "App::renderLoop early exit due to --noviz/-V option OR SSys::GetInteractivityLevel 0  " ; 
         return ;
     }
     LOG(info) << "enter runloop "; 

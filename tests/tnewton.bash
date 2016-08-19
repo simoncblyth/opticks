@@ -105,14 +105,12 @@ tnewton--(){
 
 
 }
+ 
+tnewton-args(){ echo --tag $(tnewton-tag ${1:-s}) --det newton --src torch ; } 
+tnewton-py() { tprism.py $(tnewton-args $1) ;  }
+tnewton-ipy(){ ipython -i $(which tprism.py) -- $(tnewton-args) ; }
 
-tnewton-py() { tprism.py --tag $(tnewton-tag ${1:-s}) --det newton --src torch ;  }
-tnewton-ipy() { cat << EOC
-run tprism.py --tag $(tnewton-tag ${1:-s}) --det newton --src torch 
-EOC
-}
-
-tnewton-test()
+tnewton-t()
 {
     tnewton-- --spol --compute
     tnewton-- --ppol --compute

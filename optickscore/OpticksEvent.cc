@@ -1070,9 +1070,14 @@ void OpticksEvent::save(bool verbose)
    // genstep were formally not saved as they exist already elsewhere,
    // however recording the gs in use for posterity makes sense
     NPY<float>* gs = getGenstepData();
+    if(gs)
     {
         gs->setVerbose(verbose);
         gs->save("gs", m_typ,  m_tag, udet);
+    }
+    else
+    {
+        LOG(warning) << "failed to getGenstepData" ; 
     }
 
     NPY<float>* ox = getPhotonData();

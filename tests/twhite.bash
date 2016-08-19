@@ -97,12 +97,11 @@ twhite--(){
             --save --tag $tag --cat $det
 }
 
-twhite-ipy(){ cat << EOC
-run twhite.py --tag $(twhite-tag ${1:-s}) --det $(twhite-det) --src $(twhite-src) ;  }
-EOC
-}
+twhite-args(){ echo --tag $(twhite-tag ${1:-s}) --det $(twhite-det) --src $(twhite-src) ;  }
+twhite-ipy(){  ipython -i $(which twhite.py) -- $(twhite-args $1) ; }
+twhite-py(){   twhite.py $(twhite-args $1) ; }
 
-twhite-test()
+twhite-t()
 {
     twhite-- --spol --compute
     twhite-- --ppol --compute

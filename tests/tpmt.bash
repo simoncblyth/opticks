@@ -177,14 +177,14 @@ tpmt-ana()
 }
 
 
-tpmt-test()
+tpmt-t()
 {
     tpmt-gen
     tpmt-ana
 }
 
-tpmt-viz-g4() { tpmt-- --load --tcfg4 ; } 
-tpmt-viz() {    tpmt-- --load ; } 
+tpmt-v-g4() { tpmt-- --load --tcfg4 ; } 
+tpmt-v() {    tpmt-- --load ; } 
 
 
 

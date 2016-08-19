@@ -16,6 +16,22 @@ Note to see the plots produced by the tests during development you will
 need to use ipython and invoke them with **run** as shown below.  
 See :doc:`../ana/tools`.
 
+All the tests can be invoked via the `tests-t` function::
+
+    simon:ana blyth$ tests-t
+    ==                     treflect-t ==  ->    0 
+    ==                         tbox-t ==  ->    0 
+    ==                       tprism-t ==  ->    0 
+    ==                      tnewton-t ==  ->    0 
+    ==                       twhite-t ==  ->    0 
+    ==                         tpmt-t ==  ->    0 
+    ==                     trainbow-t ==  ->    0 
+    ==                        tlens-t ==  ->    0 
+    ==                       tg4gun-t ==  ->    0 
+
+
+
+
 
 .. toctree::
 
@@ -62,8 +78,8 @@ tg4gun
 EOT
 }
 
-tests-test-note(){ cat << EON
-*tests-test*
+tests-t-note(){ cat << EON
+*tests-t*
      runs all enabled .bash in tests directory, 
      stopping at any script that yields a non-zero return code 
 
@@ -76,18 +92,21 @@ EON
 }
 
 
-tests-test(){
+tests-t(){
    local bash
    local rc
    tests-cd
    tests-enabled- | while read stem ; do
 
        bash=${stem}.bash
-       echo $msg $bash $stem
 
+       printf "== %30s == " ${stem}-t
        source $bash
-       ${stem}-test
+
+       ${stem}-t > /dev/null 2>&1
        rc=$?
+
+       printf " -> %4s \n" $rc 
 
        if [ "$rc" != "0" ]; then 
            echo $msg WARNING : FAILURE OF $bash : RC $rc

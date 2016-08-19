@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
     if not(os.path.exists(cpath) and os.path.exists(ipath)):
         log.warning("SKIP due to missing path")
-        sys.exit(args.mrc) 
+        sys.exit(0)  ## very particular test, not a standardized test yet so dont treat as a fail 
 
     c = np.load(cpath)
     i = np.load(ipath)

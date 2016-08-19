@@ -113,13 +113,9 @@ treflect--()
 
 treflect-args(){ echo --stag $(treflect-stag) --ptag $(treflect-ptag) --det $(treflect-det) --src $(treflect-src) ; }
 treflect-py(){   treflect.py $(treflect-args) $* ; } 
-treflect-ipy(){  cat << EOI
-# copy/paste below into ipython from ana directory
-run treflect.py $(treflect-args)  
-EOI
-}
+treflect-ipy(){  ipython -i $(which treflect.py) -- $(treflect-args) $* ; }
 
-treflect-test()
+treflect-t()
 {
     treflect--  --spol --compute
     treflect--  --ppol --compute
@@ -127,7 +123,8 @@ treflect-test()
 }
 
 
-treflect-viz()
+
+treflect-v()
 {
     treflect-- --load $* --fullscreen
 }

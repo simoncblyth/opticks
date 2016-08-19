@@ -154,9 +154,14 @@ tprism-py() {
     shift 
     local tag=$(tprism-tag $pol)
     echo  $msg pol $pol tag $tag
-
     tprism.py $(tprism-args) --tag $tag $*
 } 
+
+tprism-ipy(){
+    local pol=${1:-s}
+    shift 
+    ipython -i $(which tprism.py) -- $(tprism-args) --tag $(tprism-tag $pol)
+}
 
 tprism-pol()
 {
@@ -168,7 +173,7 @@ tprism-pol()
     tprism-- --${pol}pol --compute   
 }
 
-tprism-test()
+tprism-t()
 {
     tprism-pol s 
     tprism-pol p
@@ -176,7 +181,6 @@ tprism-test()
     tprism-py s
     tprism-py p
 }
-
 
 
 

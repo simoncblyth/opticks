@@ -10,9 +10,9 @@ ana : Opticks Analysis Scripts
 FUNCTION `ana-t`
 ------------------
 
-::
+After running `tests-t` all the below "MISSING EVT" should become "OK"::
 
-    simon:ana blyth$ ana-;ana-t
+    simon:ana blyth$ ana-t
     ==                    __init__.py ==  ->    0 OK  
     ==                         ana.py ==  ->  101 MISSING EVT  
     ==                        base.py ==  ->    0 OK  
@@ -301,7 +301,10 @@ ana-skips(){
 ana-t-note(){ cat << EON
 *ana-t*
      runs all executable .py in ana directory, 
-     stopping at any script that yields a non-zero return code 
+     stopping at any script that yields a return code 
+     that is not zero or 101
+
+     Return code 101 is used to signal missing simulated evts 
 
      Use to check for simple python breakages from moving 
      things around for example. 

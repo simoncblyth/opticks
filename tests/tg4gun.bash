@@ -8,7 +8,7 @@ tg4gun- : Geant4 Particle Gun Within Dayabay Geometry
 `tg4gun--`
      geant4 particle gun simulation within default DYB geometry, loaded from GDML
 
-`tg4gun-viz`
+`tg4gun-v`
      visualize the geant4 propagation
 
 EXERCISE
@@ -90,12 +90,12 @@ EOI
 
 }
 
-tg4gun-test()
+tg4gun-t()
 {
     tg4gun-- 
 }
 
-tg4gun-viz()
+tg4gun-v()
 {
    tg4gun-- --load --optixviz --target 3153
 }

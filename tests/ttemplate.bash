@@ -129,8 +129,8 @@ ttemplate-test()
     ttemplate-cf-distrib
 }
 
-ttemplate-viz-g4() { ttemplate-- --load --tcfg4 ; } 
-ttemplate-viz() {    ttemplate-- --load ; } 
+ttemplate-v-g4() { ttemplate-- --load --tcfg4 ; } 
+ttemplate-v() {    ttemplate-- --load ; } 
 
 
 

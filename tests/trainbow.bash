@@ -157,14 +157,14 @@ trainbow-pol()
 }
 
 
-trainbow-test()
+trainbow-t()
 {
    trainbow-pol s
    trainbow-pol p
 }
 
-trainbow-load-g4(){  trainbow-- $* --load --tcfg4 ; } 
-trainbow-load() {    trainbow-- $* --load ; } 
+trainbow-v-g4(){  trainbow-- $* --load --tcfg4 ; } 
+trainbow-v() {    trainbow-- $* --load ; } 
 
 
 

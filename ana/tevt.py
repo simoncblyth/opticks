@@ -31,7 +31,7 @@ from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
-    args = opticks_main(tag="-4",src="torch", det="PmtInBox", doc=__doc__)
+    args = opticks_main(tag="-10",src="torch", det="PmtInBox", doc=__doc__)
     np.set_printoptions(suppress=True, precision=3)
 
     try:

@@ -7,11 +7,33 @@
 #include "SSys.hh"
 #include "PLOG.hh"
 
-bool SSys::IsCTestInteractiveDebugMode()
+
+
+
+int SSys::GetInteractivityLevel()
 {
     // see opticks/notes/issues/automated_interop_tests.rst
-    char* value = getenv("CTEST_INTERACTIVE_DEBUG_MODE");
-    return value != NULL ; 
+    char* dtmd = getenv("DART_TEST_FROM_DART");           //  ctest run with --interactive-debug-mode 0
+    char* cidm = getenv("CTEST_INTERACTIVE_DEBUG_MODE");  //  ctest run with --interactive-debug-mode 1  (the default)
+
+    int level = 0 ;   
+    if(dtmd && dtmd[0] == '1') 
+    {
+        level = 0 ;  // running under CTest with --interactive-debug-mode 0 meaning no-interactivity 
+    }
+    else if(IsRemoteSession())
+    {
+        level = 0 ;   // remote SSH running 
+    }
+    else if(cidm && cidm[0] == '1') 
+    {
+        level = 1 ;  // running under CTest with --interactive-debug-mode 1  
+    }
+    else
+    {
+        level = 2 ;  // not-running under CTest 
+    }
+    return level ;
 }
 
 bool SSys::IsRemoteSession()
