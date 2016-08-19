@@ -275,7 +275,7 @@ RT_PROGRAM void generate()
     int slot_offset = 0 ; 
 
 
-    // zeroing record buffer
+    // zeroing record buffer, needed as OpZeroer not working in interop mode with OptiX 400
     int record_offset = 0 ; 
     for(slot=0 ; slot < MAXREC ; slot++)
     {

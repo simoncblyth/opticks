@@ -100,7 +100,11 @@ tlens--()
 
 tlens-t()
 {
-    tlens-- --compute
+    tlens-- s --compute
+    tlens-- p --compute
 }
 
-
+tlens-v()
+{
+    tlens-- ${1:-s} --load
+}

@@ -1,10 +1,49 @@
 Odd Photon Flag History ?
 ===========================
 
+
+* dayabay torch run has no reemission ? but running cerenkov does ... why ?
+
+::
+
+   histype.py --det dayabay --tag 1 --src torch 
+
+
+
+TODO: migrate dscale
+----------------------
+
+* move cfg4/CPropLib.cc dscale machinery where it can be used for all property dumping 
+
+::
+
+    simon:cu blyth$ op --mat 0
+    200 -rwxr-xr-x  1 blyth  staff  101856 Aug 19 14:09 /usr/local/opticks/lib/GMaterialLibTest
+    proceeding : /usr/local/opticks/lib/GMaterialLibTest --mat 0
+    2016-08-19 20:40:37.129 INFO  [225834] [main@88]  ok 
+    2016-08-19 20:40:37.132 INFO  [225834] [main@92]  after load 
+    F2 ri : b0ad5d685c9b6bfb9cbcb3d68e3a3024 : 101 
+    d     320.000   2500.000
+    v       1.696      1.582
+    2016-08-19 20:40:37.132 INFO  [225834] [GMaterialLib::Summary@108] dump NumMaterials 39 NumFloat4 2
+    2016-08-19 20:40:37.133 WARN  [225834] [GMaterialLib::dump@492] GPropertyMap<T>::  0       material m:GdDopedLS k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w GdDopedLS
+    2016-08-19 20:40:37.133 INFO  [225834] [GMaterialLib::dump@494]               domain    refractive_index   absorption_length   scattering_length     reemission_prob      group_velocity
+               0.0166667              1.4536               0.001                 850                 0.4                 300
+                  0.0125              1.4536               0.001                 850                 0.4                 300
+                    0.01              1.4536               0.001                 850                 0.4                 300
+              0.00833333              1.4536               0.001                 850                 0.4                 300
+              0.00714286             1.66438               0.001                 850                 0.4                 300
+                 0.00625             1.79252               0.001                 850             0.40001                 300
+              0.00555556             1.52723               0.001                 850            0.410011                 300
+
+
+Issue Where is the Reemission ?
+--------------------------------
+
 So much SC no RE looks very wrong::
 
-    simon:ana blyth$ ./histype.py --det dayabay --tag 1 --src torch 
-    ./histype.py --det dayabay --tag 1 --src torch
+    simon:ana blyth$ histype.py --det dayabay --tag 1 --src torch 
+    histype.py --det dayabay --tag 1 --src torch
     [2016-08-19 16:56:02,581] p24445 {./histype.py:55} INFO - loaded ph from /tmp/blyth/opticks/evt/dayabay/torch/1/ph.npy shape (100000, 1, 2) 
          14076 TO SC SC SC SC SC SC SC SC SC 
           8432 TO AB 
@@ -63,7 +102,6 @@ So much SC no RE looks very wrong::
              1 TO SC SC BT BT BT BT AB 
              1 TO SC BT BT BT BT BT AB 
              1 TO SC BT BT BT BT SA 
-    8cbbbcd TO BT BR BR BR BT SA 8cbbbcd 
 
 
 

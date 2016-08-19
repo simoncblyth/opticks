@@ -53,6 +53,7 @@ opticks-fold(){
 
 opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
+opticks-ncd(){  opticks-scd notes/issues ;  }
 
 #opticks-bid(){    echo $(optix-vernum) ; }    ## build identity 
 #opticks-prefix(){ echo $(opticks-fold)/$(opticks-bid) ; }

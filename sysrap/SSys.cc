@@ -8,15 +8,18 @@
 #include "PLOG.hh"
 
 
-
-
 int SSys::GetInteractivityLevel()
 {
     // see opticks/notes/issues/automated_interop_tests.rst
+    // hmm these envvars are potentially dependant on CMake/CTest version 
+    // if that turns out to be the case will have to define an OPTICKS_INTERACTIVITY 
+    // envvar for this purpose
+
     char* dtmd = getenv("DART_TEST_FROM_DART");           //  ctest run with --interactive-debug-mode 0
     char* cidm = getenv("CTEST_INTERACTIVE_DEBUG_MODE");  //  ctest run with --interactive-debug-mode 1  (the default)
 
-    int level = 0 ;   
+
+    int level = 2 ;   
     if(dtmd && dtmd[0] == '1') 
     {
         level = 0 ;  // running under CTest with --interactive-debug-mode 0 meaning no-interactivity 
