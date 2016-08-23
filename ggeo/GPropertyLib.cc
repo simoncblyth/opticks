@@ -28,6 +28,7 @@
 #include "GProperty.hh"
 #include "GPropertyMap.hh"
 #include "GPropertyLib.hh"
+#include "GConstant.hh"
 
 #include "PLOG.hh"
 
@@ -70,8 +71,6 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 
 
 
-
-
 GPropertyLib::GPropertyLib(Opticks* cache, const char* type) 
      :
      m_cache(cache),
@@ -107,6 +106,38 @@ GDomain<float>* GPropertyLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
+
+
+
+void  GPropertyLib::dumpDomain(const char* msg)
+{
+    GDomain<float>* dom = getStandardDomain() ;    
+
+    float low = dom->getLow() ;
+    float high = dom->getHigh() ;
+    float step = dom->getStep() ;
+    float dscale = float(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
+ 
+    LOG(info) << msg  ;
+
+    LOG(info) << " low/high/step " 
+              << " low  " << low
+              << " high " << high
+              << " step " << step
+              << " dscale " << dscale 
+              << " dscale/low " << dscale/low 
+              << " dscale/high " << dscale/high
+              ; 
+
+    LOG(info) << "GPropertyLib::dumpDomain" 
+               << " GC::nanometer " << GConstant::nanometer
+               << " GC::h_Planck " << GConstant::h_Planck
+               << " GC::c_light (mm/ns ~299.792) " << GConstant::c_light
+               << " dscale " << dscale 
+               ;   
+ 
+}
+
 
 /*
 inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)

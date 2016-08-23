@@ -70,7 +70,8 @@ class PropLib(object):
         pass
         self.data = data
         self.names = names
-        self.domain = np.linspace(60.,810., 39)
+        #self.domain = np.linspace(60.,810., 39)
+        self.domain = np.linspace(60.,820., 39)
 
     def index(self, name):
         return self.names.index(name)

@@ -7,6 +7,7 @@
 #include "GMaterialLib.hh"
 #include "GMaterial.hh"
 #include "GItemList.hh"
+#include "GConstant.hh"
 
 #include "PLOG.hh"
 
@@ -477,23 +478,33 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
     GProperty<float>* _reemission_prob = mat->getProperty(reemission_prob);
     GProperty<float>* _group_velocity = mat->getProperty(group_velocity);
 
-    float dscale = 1.f ;  
-    bool dreciprocal = true ; 
+
+    unsigned int fw = 20 ;
+    float dscale = 1.0f ;
+    bool dreciprocal = false  ; 
+
+    //f loat(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
+    // no need for scaling or taking reciprocal, as GMaterial domains 
+    // are already  in nm
 
     std::string table = GProperty<float>::make_table( 
-                            20,  dscale, dreciprocal,  
+                            fw,  dscale, dreciprocal,  
                             _refractive_index, "refractive_index", 
                             _absorption_length, "absorption_length",  
                             _scattering_length, "scattering_length",  
                             _reemission_prob, "reemission_prob", 
                             _group_velocity, "group_velocity"
                             );
-    
+
+    std::cout << table << std::endl ; 
+
     LOG(warning) << msg << " " << mat->getName()  
                  ;
-    LOG(info)   << table 
-                 ; 
 }
+
+
+
+
 
 const char* GMaterialLib::getNameCheck(unsigned int i)
 {

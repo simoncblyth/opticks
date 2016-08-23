@@ -89,6 +89,7 @@ class GGEO_API GPropertyLib {
     public:
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
+        void                 dumpDomain(const char* msg="GPropertyLib::dumpDomain");
     public:
         GPropertyMap<float>* getDefaults();
         GProperty<float>*    getDefaultProperty(const char* name);

@@ -26,12 +26,15 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
     "target=0,0,1_"
     "photons=100000_"
     "material=GdDopedLS_"   
-    "wavelength=380_"
+    "wavelength=430_"
     "weight=1.0_"
     "time=0.1_"
     "zenithazimuth=0,1,0,1_"
     "radius=0_" ;
 
+//  Aug 2016: change default torch wavelength from 380nm to 430nm
+//
+//
 // NB time 0.f causes 1st step record rendering to be omitted, as zero is special
 // NB the material string needs to be externally translated into a material line
 //

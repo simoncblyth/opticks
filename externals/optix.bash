@@ -109,6 +109,21 @@ applications and provides the same easy to use API for which OptiX is known.
 You can find the download and release notes at:
 http://developer.nvidia.com/optix
 
+OptiX 4 Release Notes
+-----------------------
+
+* https://developer.nvidia.com/designworks/optix/download
+
+CUDA Toolkit 6.5, 7.0, or 7.5: 
+
+OptiX 4.0 has been built with CUDA 7.5, but any
+specified toolkit should work when compiling PTX for OptiX. If an application
+links against both the OptiX library and the CUDA runtime on Linux, it is
+recommended to use the same version of CUDA that was used to build OptiX. OptiX
+supports running with NVIDIA Parallel Nsight but does not currently support
+kernel debugging. In addition, it is not recommended to compile PTX code using
+any -G (debug) flags to nvcc.
+
 
 OptiX 4 Enabled Exceptions Are Expensive
 -------------------------------------------

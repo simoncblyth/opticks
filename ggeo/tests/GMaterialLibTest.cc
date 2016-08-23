@@ -89,6 +89,8 @@ int main(int argc, char** argv)
 
     GMaterialLib* mlib = GMaterialLib::load(&ok);
 
+    mlib->dumpDomain();  
+
     LOG(info) << " after load " ; 
     test_addTestMaterial(mlib);
 

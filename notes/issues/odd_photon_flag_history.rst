@@ -1,12 +1,22 @@
 Odd Photon Flag History ?
 ===========================
 
+Issue
+-------
 
 * dayabay torch run has no reemission ? but running cerenkov does ... why ?
 
 ::
 
    histype.py --det dayabay --tag 1 --src torch 
+
+
+DEFERRED
+----------
+
+Defer investigating this until can pose a more definite question: 
+eg difference between G4 and Opticks flag histories.
+
 
 
 
@@ -35,6 +45,76 @@ TODO: migrate dscale
               0.00714286             1.66438               0.001                 850                 0.4                 300
                  0.00625             1.79252               0.001                 850             0.40001                 300
               0.00555556             1.52723               0.001                 850            0.410011                 300
+
+
+
+cu/propagate.h
+---------------
+
+Validations of absorb/reemit/scatter splits against G4 in presense of scintillators not yet done...
+
+::
+
+    057 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
+     58 {
+     59     float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index
+     60     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
+     61     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
+     //
+     //    Role the die twice to pick distances according to exponential probability distributions
+     //    of absorbing or scattering, process with smaller distance wins
+     //    so long as the geometry distance to boundary doesnt trump that.
+     // 
+     //    Role again within the absorption branch to decide based on reemission probability
+     //    whether to reemit.    
+     //
+     62 
+     63     if (absorption_distance <= scattering_distance)
+     64     {
+     65         if (absorption_distance <= s.distance_to_boundary)
+     66         {
+     67             p.time += absorption_distance/speed ;
+     68             p.position += absorption_distance*p.direction;
+     69 
+     70             float uniform_sample_reemit = curand_uniform(&rng);
+     71             if (uniform_sample_reemit < s.material1.w)                       // .w:reemission_prob
+     72             {
+     73                 // no materialIndex input to reemission_lookup as both scintillators share same CDF 
+     74                 // non-scintillators have zero reemission_prob
+     75                 p.wavelength = reemission_lookup(curand_uniform(&rng));
+     76                 p.direction = uniform_sphere(&rng);
+     77                 p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));
+     78                 p.flags.i.x = 0 ;   // no-boundary-yet for new direction
+     79                 //p.flags.i.w |= BULK_REEMIT;
+     80                 s.flag = BULK_REEMIT ;
+     81                 return CONTINUE;
+     82             }
+     83             else
+     84             {
+     85                 //p.flags.i.w |= BULK_ABSORB;
+     86                 s.flag = BULK_ABSORB ;
+     87                 return BREAK;
+     88             }
+     89         }
+     90         //  otherwise sail to boundary  
+     91     }
+     92     else
+     93     {
+     94         if (scattering_distance <= s.distance_to_boundary)
+     95         {
+     96             p.time += scattering_distance/speed ;
+     97             p.position += scattering_distance*p.direction;
+     98 
+     99             rayleigh_scatter(p, rng);
+    100 
+    101             //p.flags.i.w |= RAYLEIGH_SCATTER;
+    102             s.flag = BULK_SCATTER;
+    103             p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+    104 
+    105             return CONTINUE;
+    106         }
+    107         //  otherwise sail to boundary 
+
 
 
 Issue Where is the Reemission ?
