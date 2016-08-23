@@ -4,7 +4,7 @@ Natural Gensteps Shakedown
 FIXED : by getting G4StepNPY.cc to handle mixed gensteps
 ----------------------------------------------------------
 
-
+* https://bitbucket.org/simoncblyth/opticks/commits/28d7ea00e02a
 
 
 Issue : no visible prop, all photons missing geometry
