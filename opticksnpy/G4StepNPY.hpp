@@ -29,7 +29,7 @@ class NPY_API G4StepNPY {
        NPY<float>* getNPY();
 
    public:  
-       void relabel(int label);
+       void relabel(int cerenkov_label, int scintillation_label);
    public:  
        void setLookup(Lookup* lookup);
        Lookup* getLookup();

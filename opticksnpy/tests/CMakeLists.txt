@@ -56,6 +56,7 @@ PhotonsNPYTest.cc
 NCIETest.cc
 NPYTest.cc
 NLoadTest.cc
+NLoadCheck.cc
 
 )
 

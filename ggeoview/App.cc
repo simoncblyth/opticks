@@ -515,7 +515,9 @@ void App::loadGenstep()
 
 
         m_g4step = new G4StepNPY(gs);    
-        m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
+        m_g4step->relabel(CERENKOV, SCINTILLATION); 
+        // which code is used depends in the sign of the pre-label 
+        // becomes the ghead.i.x used in cu/generate.cu
 
         if(m_opticks->isDayabay())
         {   

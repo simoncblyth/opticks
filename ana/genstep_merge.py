@@ -61,7 +61,7 @@ if __name__ == '__main__':
     log.info("sliced bb : %s " % (repr(bb.shape)))
 
 
-    cc = np.empty((len(aa)+len(bb),6,4))
+    cc = np.empty((len(aa)+len(bb),6,4), dtype=np.float32)
     cc[0:len(aa)] = aa
     cc[len(aa):len(aa)+len(bb)] = bb
 

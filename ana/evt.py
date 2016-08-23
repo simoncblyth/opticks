@@ -75,6 +75,7 @@ class Evt(object):
            log.warning("FAILED TO LOAD EVT %s " % label )
            return   
 
+        self.init_gensteps(tag, src, det, dbg)
         self.init_photons(tag, src, det, dbg)
 
         if rec:
@@ -131,6 +132,14 @@ class Evt(object):
 
 
         return True         
+
+    def init_gensteps(self, tag, src, det, dbg):
+        """
+        """
+        gs = A.load_("gs",src,tag,det) 
+        self.gs = gs
+        self.desc['gs'] = "(gensteps)"
+
 
     def init_photons(self, tag, src, det, dbg):
         """

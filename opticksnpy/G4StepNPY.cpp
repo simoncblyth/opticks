@@ -82,18 +82,21 @@ void G4StepNPY::dump(const char* msg)
 
 
 
-void G4StepNPY::relabel(int label)
+void G4StepNPY::relabel(int cerenkov_label, int scintillation_label)
 {
 
 /*
 Scintillation and Cerenkov genstep files contain a pre-label of
-a signed integer.::   
+a signed 1-based integer index ::   
 
-    In [7]: sts_(1).view(np.int32)[:,0,0]
-    Out[7]: array([    1,     2,     3, ..., 13896, 13897, 13898], dtype=int32)
-
-    In [8]: stc_(1).view(np.int32)[:,0,0]
+    In [5]: a = np.load(os.path.expanduser("/Users/blyth/opticksdata/gensteps/dayabay/cerenkov/1.npy"))
+    In [8]: a[:,0,0].view(np.int32)
     Out[8]: array([   -1,    -2,    -3, ..., -7834, -7835, -7836], dtype=int32)
+
+    In [9]: b = np.load(os.path.expanduser("/Users/blyth/opticksdata/gensteps/dayabay/scintillation/1.npy"))
+    In [11]: b[:,0,0].view(np.int32)
+    Out[11]: array([    1,     2,     3, ..., 13896, 13897, 13898], dtype=int32)
+
 
 Having only 2 types of gensteps is too limiting for example 
 when generating test photons corresponding to a light source. 
@@ -106,6 +109,9 @@ written into the *Id* of GPU structs.
     for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
     {
         int code = m_npy->getInt(i,0u,0u);
+
+        int label = code < 0 ? cerenkov_label : scintillation_label ; 
+
         if(i % 1000 == 0) printf("G4StepNPY::relabel (%u) %d -> %d \n", i, code, label );
         m_npy->setInt(i,0u,0u,0u, label);
     }
