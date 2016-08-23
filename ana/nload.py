@@ -132,8 +132,9 @@ def tpaths_(typ, tag, det="dayabay", name=None):
     return tnams
 
 
-def gspath_(typ, tag, det):
-    gsbase= os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps")
+def gspath_(typ, tag, det, gsbase=None):
+    if gsbase is None:
+        gsbase= os.path.expandvars("$LOCAL_BASE/opticks/opticksdata/gensteps")
     gspath = os.path.join(gsbase, det, typ, "%s.npy" % tag)
     return gspath 
 
@@ -147,6 +148,7 @@ class A(np.ndarray):
         else:
             path = path_(typ,tag, det, name="%s.npy" % stem)
         pass
+
         a = None
         if os.path.exists(path):
             log.debug("loading %s " % path )

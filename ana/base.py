@@ -182,6 +182,7 @@ def opticks_args(**kwa):
     typ = kwa.get("typ", None)
     show = kwa.get("show", True)
     mat = kwa.get("mat", "GdDopedLS")
+    sli = kwa.get("sli", "::1")
 
     parser = argparse.ArgumentParser(doc)
 
@@ -197,6 +198,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation "  )
     parser.add_argument(     "--mrc",  default=mrc, type=int, help="script return code resulting from missing event files "  )
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting"  )
+    parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)

@@ -1470,7 +1470,20 @@ NPY<float>* OpticksEvent::loadGenstepFromFile(int modulo)
               << " det " << m_det
               ;
 
-    NPY<float>* gs = NLoad::Gensteps(m_det, m_typ, m_tag);
+    std::string path = NLoad::GenstepsPath(m_det, m_typ, m_tag);
+    NPY<float>* gs = NPY<float>::load(path.c_str());
+    if(!gs)
+    {
+        LOG(warning) << "OpticksEvent::loadGenstepFromFile"
+                     << " FAILED TO LOAD GENSTEPS FROM "
+                     << " path " << path 
+                     << " typ " << m_typ
+                     << " tag " << m_tag
+                     << " det " << m_det
+                     ; 
+        return NULL ;
+    }
+
 
     m_parameters->add<std::string>("genstepAsLoaded",   gs->getDigestString()  );
 

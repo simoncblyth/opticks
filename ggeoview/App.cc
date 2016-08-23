@@ -504,13 +504,17 @@ void App::loadGenstep()
     unsigned int code = m_opticks->getSourceCode();
 
 
-    NPY<float>* npy = NULL ; 
+    NPY<float>* gs = NULL ; 
     if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
         int modulo = m_fcfg->getModulo();
-        npy = m_evt->loadGenstepFromFile(modulo);
+        gs = m_evt->loadGenstepFromFile(modulo);
 
-        m_g4step = new G4StepNPY(npy);    
+        if(gs == NULL) LOG(fatal) << "App::loadGenstep FAILED" ;
+        assert(gs);
+
+
+        m_g4step = new G4StepNPY(gs);    
         m_g4step->relabel(code); // becomes the ghead.i.x used in cu/generate.cu
 
         if(m_opticks->isDayabay())
@@ -551,10 +555,10 @@ void App::loadGenstep()
 
         bool torchdbg = hasOpt("torchdbg");
         m_torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-        npy = m_torchstep->getNPY();
+        gs = m_torchstep->getNPY();
         if(torchdbg)
         {
-             npy->save("$TMP/torchdbg.npy");
+             gs->save("$TMP/torchdbg.npy");
         }
  
     }
@@ -562,7 +566,7 @@ void App::loadGenstep()
 
     TIMER("loadGenstep"); 
 
-    m_evt->setGenstepData(npy); 
+    m_evt->setGenstepData(gs); 
 
     TIMER("setGenstepData"); 
 }
