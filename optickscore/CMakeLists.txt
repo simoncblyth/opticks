@@ -86,6 +86,7 @@ set(SOURCES
     CompositionCfg.cc
 
     OpticksEngine.cc
+    OpticksApp.cc
     Bookmarks.cc
     Composition.cc
 
@@ -139,6 +140,7 @@ set(HEADERS
     CompositionCfg.hh
 
     OpticksEngine.hh
+    OpticksApp.hh
     Bookmarks.hh
     Composition.hh
 

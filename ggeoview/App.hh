@@ -33,14 +33,13 @@ class Frame ;
 class Interactor ; 
 class GUI ; 
 class Photons ; 
-class DynamicDefine ; 
+//class DynamicDefine ; 
 
 // glfw-
 struct GLFWwindow ; 
 
 // ggeo-
 class GGeo ;
-class GCache ;
 class GItemIndex ; 
 
 class OpticksGeometry ; 
@@ -110,7 +109,6 @@ class GGV_API App {
        void cleanup();
 
   public:
-       GCache* getCache(); 
        OpticksCfg<Opticks>* getOpticksCfg();
        bool hasOpt(const char* name);
 
@@ -119,8 +117,7 @@ class GGV_API App {
        const char*       m_prefix ; 
        Parameters*       m_parameters ; 
        Timer*            m_timer ; 
-       GCache*           m_cache ; 
-       DynamicDefine*    m_dd ; 
+    //   DynamicDefine*    m_dd ; 
        NState*           m_state ; 
        Scene*            m_scene ; 
        Composition*      m_composition ;

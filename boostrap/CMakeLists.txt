@@ -78,6 +78,7 @@ set(SOURCES
   BTree.cc
   BEnv.cc
   BOpticksResource.cc
+  BDynamicDefine.cc
   BOpticksEvent.cc
 
 ) 
@@ -107,6 +108,7 @@ set(HEADERS
   BRegex.hh
   BEnv.hh
   BOpticksResource.hh
+  BDynamicDefine.hh
   BOpticksEvent.hh
 
 )

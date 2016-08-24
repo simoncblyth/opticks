@@ -24,6 +24,8 @@ set(TEST_SOURCES
 
 set(TEST_SOURCES_NOK 
 
+    OpticksAppTest.cc
+
     EvtLoadTest.cc
     NGunConfigTest.cc
     OpticksEventTest.cc

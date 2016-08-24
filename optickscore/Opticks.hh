@@ -9,6 +9,7 @@
 
 template <typename> class OpticksCfg ;
 
+class BDynamicDefine ; 
 class TorchStepNPY ; 
 class NState ;
 class Parameters ; 
@@ -121,8 +122,8 @@ class OKCORE_API Opticks {
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
        TorchStepNPY*        makeSimpleTorchStep();
-   public:
        OpticksEvent*        makeEvent(); 
+       BDynamicDefine*      makeDynamicDefine();
    public:
        // load precooked indices
        Index*               loadHistoryIndex();

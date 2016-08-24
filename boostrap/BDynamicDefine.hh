@@ -4,12 +4,12 @@
 #include <map>
 #include <vector>
 
-#include "OGLRAP_API_EXPORT.hh"
-#include "OGLRAP_HEAD.hh"
+#include "BRAP_API_EXPORT.hh"
+#include "BRAP_HEAD.hh"
 
-class OGLRAP_API DynamicDefine {
+class BRAP_API BDynamicDefine {
     public:
-       DynamicDefine();  
+       BDynamicDefine();  
     public:
        template<typename T>
        void add(const char* name, T value);
@@ -20,5 +20,5 @@ class OGLRAP_API DynamicDefine {
 
 };
 
-#include "OGLRAP_TAIL.hh"
+#include "BRAP_TAIL.hh"
 

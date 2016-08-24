@@ -10,6 +10,7 @@
 
 #include "SSys.hh"
 // brap-
+#include "BDynamicDefine.hh"
 #include "BStr.hh"
 #include "PLOG.hh"
 #include "Map.hh"
@@ -28,6 +29,7 @@
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "OpticksColors.hh"
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
 
@@ -493,6 +495,21 @@ Index* Opticks::loadBoundaryIndex()
     return OpticksEvent::loadBoundaryIndex(typ, tag, udet ) ;
 }
 
+
+BDynamicDefine* Opticks::makeDynamicDefine()
+{
+    BDynamicDefine* dd = new BDynamicDefine();   // configuration used in oglrap- shaders
+    dd->add("MAXREC",m_cfg->getRecordMax());    
+    dd->add("MAXTIME",m_cfg->getTimeMax());    
+    dd->add("PNUMQUAD", 4);  // quads per photon
+    dd->add("RNUMQUAD", 2);  // quads per record 
+    dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)OpticksColors::MATERIAL_COLOR_OFFSET );
+    dd->add("FLAG_COLOR_OFFSET", (unsigned int)OpticksColors::FLAG_COLOR_OFFSET );
+    dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)OpticksColors::PSYCHEDELIC_COLOR_OFFSET );
+    dd->add("SPECTRAL_COLOR_OFFSET", (unsigned int)OpticksColors::SPECTRAL_COLOR_OFFSET );
+
+    return dd ; 
+}
 
 
 OpticksEvent* Opticks::makeEvent()

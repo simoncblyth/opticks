@@ -10,7 +10,6 @@ set(FRAGILE_TEST_SOURCES
 
 set(TEST_SOURCES
 
-    DynamicDefineTest.cc
     FrameTest.cc
     ModelToWorldTest.cc
     ProgTest.cc

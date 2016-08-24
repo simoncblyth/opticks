@@ -12,6 +12,9 @@
 #include <GL/glew.h>
 
 
+// brap-
+#include "BDynamicDefine.hh"
+
 // npy-
 #include "NGLM.hpp"
 #include "GLMPrint.hpp"
@@ -32,7 +35,6 @@
 
 // oglrap-
 #include "Config.hh"      // cmake generated header
-#include "DynamicDefine.hh"
 
 #include "Composition.hh"
 #include "Renderer.hh"
@@ -218,7 +220,7 @@ void Scene::init()
     }
 }
 
-void Scene::write(DynamicDefine* dd)
+void Scene::write(BDynamicDefine* dd)
 {
     dd->write( m_shader_dynamic_dir, "dynamic.h" );
 }

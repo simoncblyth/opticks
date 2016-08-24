@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "DynamicDefine.hh"
+#include "BDynamicDefine.hh"
 #include "PLOG.hh"
 
 int main(int argc, char** argv)
@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 
     printf("%s\n", argv[0]);
 
-    DynamicDefine dd ;
+    BDynamicDefine dd ;
     dd.add<unsigned int>("MAXREC", 10);
     dd.add<float>("OTHER", 20.0);
 

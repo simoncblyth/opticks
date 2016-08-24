@@ -6,19 +6,19 @@
 #include "BFile.hh"
 #include "PLOG.hh"
 
-#include "DynamicDefine.hh"
+#include "BDynamicDefine.hh"
 
 
 
-DynamicDefine::DynamicDefine() 
+BDynamicDefine::BDynamicDefine() 
 {
 }    
 
 
-void DynamicDefine::write(const char* dir, const char* name)
+void BDynamicDefine::write(const char* dir, const char* name)
 {
 
-    LOG(info) << "DynamicDefine::write"
+    LOG(info) << "BDynamicDefine::write"
               << " dir " << dir
               << " name " << name
               ;
@@ -29,14 +29,14 @@ void DynamicDefine::write(const char* dir, const char* name)
 
      if(path.empty())
      {
-         LOG(warning) << "DynamicDefine::write failed to preparePath " << dir << " " << name ; 
+         LOG(warning) << "BDynamicDefine::write failed to preparePath " << dir << " " << name ; 
          return ; 
      }
 
      typedef std::vector<std::pair<std::string, std::string> >::const_iterator  VSSI ;
 
      std::stringstream ss ; 
-     ss << "// see oglrap-/DynamicDefine::write invoked by Scene::write App::prepareScene " << std::endl ; 
+     ss << "// see boostrap-/BDynamicDefine::write invoked by Scene::write App::prepareScene " << std::endl ; 
      for(VSSI it=m_defines.begin() ; it != m_defines.end() ; it++)
      {
          ss << "#define " << it->first << " " << it->second << std::endl ; 
@@ -44,7 +44,7 @@ void DynamicDefine::write(const char* dir, const char* name)
 
      std::string txt = ss.str() ;
 
-     LOG(debug) << "DynamicDefine::write " << path ;
+     LOG(debug) << "BDynamicDefine::write " << path ;
      LOG(debug) << txt ; 
 
      std::ofstream out(path.c_str(), std::ofstream::binary);
@@ -53,9 +53,9 @@ void DynamicDefine::write(const char* dir, const char* name)
 
 
 template <typename T>
-void DynamicDefine::add(const char* name, T value)
+void BDynamicDefine::add(const char* name, T value)
 {
-    LOG(trace) << "DynamicDefine::add"
+    LOG(trace) << "BDynamicDefine::add"
               << " name " << name
               << " value " << value
               ; 
@@ -66,6 +66,6 @@ void DynamicDefine::add(const char* name, T value)
 
 
 // explicit instanciation
-template OGLRAP_API void DynamicDefine::add<int>(const char* name, int value);
-template OGLRAP_API void DynamicDefine::add<unsigned int>(const char* name, unsigned int value);
-template OGLRAP_API void DynamicDefine::add<float>(const char* name, float value);
+template BRAP_API void BDynamicDefine::add<int>(const char* name, int value);
+template BRAP_API void BDynamicDefine::add<unsigned int>(const char* name, unsigned int value);
+template BRAP_API void BDynamicDefine::add<float>(const char* name, float value);

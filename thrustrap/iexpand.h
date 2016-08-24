@@ -2,16 +2,32 @@
 //
 // adapted from  /usr/local/env/numerics/thrust/examples/expand.cu 
 //
-// Expand an input sequence by replicating indices of each element the number
-// of times specified by the sequence values. 
+// Expand an input sequence of counts by replicating indices of each element the number
+// of times specified by the count values. 
+//
+// The element counts are assumed to be non-negative integers.
+//
+// Note that the length of the output is equal 
+// to the sum of the input counts.
 //
 // For example:
 //
-//   iexpand([2,2,2]) -> [0,0,1,1,2,2]
-//   iexpand([3,0,1]) -> [0,0,0,2]
-//   iexpand([1,3,2]) -> [0,1,1,1,2,2]
+//   iexpand([2,2,2]) -> [0,0,1,1,2,2]  2*0, 2*1, 2*2
+//   iexpand([3,0,1]) -> [0,0,0,2]      3*0, 0*1, 1*2
+//   iexpand([1,3,2]) -> [0,1,1,1,2,2]  1*0, 3*1, 2*2 
 //
-// The element counts are assumed to be non-negative integers
+//
+// A more specific example:
+//
+// Every optical photon generating genstep (Cerenkov or scintillation) 
+// specifies the number of photons it will generate.
+// Applying iexpand to the genstep photon counts produces
+// an array of genstep indices that is stored into the photon buffer
+// and provides a reference back to the genstep that produced it.
+// This reference index is used within the per-photon OptiX 
+// generate.cu program to access the corresponding genstep 
+// from the genstep buffer.
+//
 //
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>

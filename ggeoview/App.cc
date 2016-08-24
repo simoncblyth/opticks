@@ -82,7 +82,7 @@
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
-#include "DynamicDefine.hh"
+//#include "BDynamicDefine.hh"
 
 
 
@@ -120,8 +120,7 @@ App::App(const char* prefix, int argc, char** argv )
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
-      m_cache(NULL),
-      m_dd(NULL),
+   //   m_dd(NULL),
       m_state(NULL),
       m_scene(NULL),
       m_composition(NULL),
@@ -160,10 +159,6 @@ App::App(const char* prefix, int argc, char** argv )
     init(argc, argv);
 }
 
-GCache* App::getCache()
-{
-    return m_cache ; 
-}
 
 OpticksCfg<Opticks>* App::getOpticksCfg()
 {
@@ -398,7 +393,8 @@ void App::prepareViz()
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));
 
-    m_dd = new DynamicDefine();   // configuration used in oglrap- shaders
+/*
+    m_dd = new BDynamicDefine();   // configuration used in oglrap- shaders
     m_dd->add("MAXREC",m_fcfg->getRecordMax());    
     m_dd->add("MAXTIME",m_fcfg->getTimeMax());    
     m_dd->add("PNUMQUAD", 4);  // quads per photon
@@ -407,9 +403,10 @@ void App::prepareViz()
     m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)OpticksColors::FLAG_COLOR_OFFSET );
     m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)OpticksColors::PSYCHEDELIC_COLOR_OFFSET );
     m_dd->add("SPECTRAL_COLOR_OFFSET", (unsigned int)OpticksColors::SPECTRAL_COLOR_OFFSET );
+*/
 
-
-    m_scene->write(m_dd);
+    BDynamicDefine* dd = m_opticks->makeDynamicDefine(); 
+    m_scene->write(dd);
 
     if(hasOpt("dbginterop"))
     {

@@ -94,7 +94,6 @@ set(SOURCES
     Device.cc
     Shdr.cc
     Prog.cc
-    DynamicDefine.cc
     Colors.cc
     Demo.cc
     Touchable.cc
@@ -144,7 +143,6 @@ SET(HEADERS
     GUI.hh
     Photons.hh
     Colors.hh
-    DynamicDefine.hh
 
     gleq.h
     loadPPM.h

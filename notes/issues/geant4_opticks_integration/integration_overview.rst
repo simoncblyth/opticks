@@ -31,6 +31,59 @@ current standard::
 
   /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/
 
+
+ggeoview-/App
+~~~~~~~~~~~~~~~
+
+Far to much stuff in "global" app scope.  Need to partition 
+off functionality into other classes, with eye to G4 integration.
+
+
+OpticksEngine base class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    class CFG4_API CG4 : public OpticksEngine
+
+Currently *OpticksEngine* is a rather minimal base class of *CG4* 
+but its intended to mop up common aspects between Opticks and Geant4
+simulators.  Stuff in ggeoview-/App that is common ?
+
+::
+
+    simon:opticks blyth$ opticks-lfind OpticksEngine
+    ./cfg4/CG4.cc
+    ./cfg4/CG4.hh
+    ./optickscore/OpticksEngine.cc
+    ./optickscore/OpticksEngine.hh
+
+
+* cfg4-/tests/CG4Test.cc is very simple (high level steering only)
+* ggv-/tests/GGeoViewTest.cc can that be similarly simplified ?
+
+
+* Op and G4 are not really peers, Op can only do a subset of what G4 does
+
+
+OpticksApp 
+~~~~~~~~~~~~~~~
+
+Dont like the name, too generic. OpticksSim ?
+
+* What are the responsibilities of an OpticksApp ? 
+* How does that fit in with CG4, OpticksEngine, OpEngine ?
+* where does it belong ? OpenGL dependencies ? Or keep it abstract ?
+
+
+How does Opticks and G4 need to interface ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* G4 geometry needs to be used by Op
+* G4 produced gensteps need to be provided to Op
+* Op produced hits need to be given back for G4 collection
+
+
 DONE
 -----
 
@@ -48,6 +101,8 @@ DONE
 
 * pmt test broken by g4gun generalizations, fixed up to the groupvel issue
 * CPU indexing, to support non-CUDA capable nodes 
+
+
 
 
 DEBUGGING

@@ -2,6 +2,8 @@
 
 #include <glm/fwd.hpp>
 
+// brap-
+class BDynamicDefine ; 
 
 template <typename T> class NPY ; 
 
@@ -15,7 +17,6 @@ class GGeo ;
 class GBoundaryLibMetadata ;
 
 // oglrap-
-class DynamicDefine ; 
 class Renderer ; 
 class Rdr ;
 class Device ; 
@@ -110,7 +111,7 @@ class OGLRAP_API Scene : public NConfigurable {
    private:
         void init();
    public:
-        void write(DynamicDefine* dd);
+        void write(BDynamicDefine* dd);
         void gui();
         void initRenderers();
         void initRenderersDebug(); // debugging interop buffer overwrite issue with subset of renderers

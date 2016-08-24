@@ -98,9 +98,9 @@ a signed 1-based integer index ::
     Out[11]: array([    1,     2,     3, ..., 13896, 13897, 13898], dtype=int32)
 
 
-Having only 2 types of gensteps is too limiting for example 
-when generating test photons corresponding to a light source. 
-So *G4StepNPY::relabel* rejigs the markers to a enumerated code.  
+Having only 2 types of gensteps, indicated by +ve and -ve indices, 
+is too limiting for example when generating test photons corresponding to a light source. 
+So *G4StepNPY::relabel* rejigs the markers to the OpticksPhoton.h enumerated code of the source.  
 The genstep index is still available from the photon buffer, and this is 
 written into the *Id* of GPU structs.
 

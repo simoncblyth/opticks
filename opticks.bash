@@ -345,18 +345,19 @@ opticks-t--()
 }
 
 
-
+opticks-lfind(){ opticks-find $1 -l ; }
 opticks-find(){
    local str=${1:-ENV_HOME}
+   local opt=${2:--H}
 
    local iwd=$PWD
    opticks-scd
 
-   find . -name '*.cc' -exec grep -H $str {} \;
-   find . -name '*.hh' -exec grep -H $str {} \;
-   find . -name '*.cpp' -exec grep -H $str {} \;
-   find . -name '*.hpp' -exec grep -H $str {} \;
-   find . -name '*.h' -exec grep -H $str {} \;
+   find . -name '*.cc' -exec grep $opt $str {} \;
+   find . -name '*.hh' -exec grep $opt $str {} \;
+   find . -name '*.cpp' -exec grep $opt $str {} \;
+   find . -name '*.hpp' -exec grep $opt $str {} \;
+   find . -name '*.h' -exec grep $opt $str {} \;
 
    #cd $iwd
 }

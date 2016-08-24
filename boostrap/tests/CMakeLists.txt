@@ -20,6 +20,7 @@ set(TEST_SOURCES
    BBufSpecTest.cc
    BEnvTest.cc
    BOpticksResourceTest.cc
+   BDynamicDefineTest.cc
    BOpticksEventTest.cc
    LexicalCastTest.cc
 
