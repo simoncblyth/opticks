@@ -19,7 +19,7 @@ namespace fs = boost::filesystem;
 #include "TorchStepNPY.hpp"
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
-#include "Lookup.hpp"
+#include "NLookup.hpp"
 #include "Typ.hpp"
 
 
@@ -263,7 +263,7 @@ GPmt* GGeo::getPmt()
 {
     return m_pmt ; 
 }
-Lookup* GGeo::getLookup()
+NLookup* GGeo::getLookup()
 {
     return m_lookup ; 
 }
@@ -619,15 +619,18 @@ void GGeo::loadFromCache()
 
 void GGeo::setupLookup()
 {
-    // see ggeo-/tests/LookupTest.cc
-    m_lookup = new Lookup() ; 
+    //  maybe this belongs in GBndLib ?
+    //
+    m_lookup = new NLookup() ; 
 
     //const char* cmm_dir = m_opticks->getIdFold() ;
     const char* cmm_dir = m_opticks->getDetectorBase() ;
 
     m_lookup->loadA( cmm_dir, "ChromaMaterialMap.json", "/dd/Materials/") ;
 
-    m_bndlib->fillMaterialLineMap( m_lookup->getB() ) ;    
+    std::map<std::string, unsigned int>& msu  = m_lookup->getB() ;
+
+    m_bndlib->fillMaterialLineMap( msu ) ;    
 
     m_lookup->crossReference();
 

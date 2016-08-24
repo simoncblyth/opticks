@@ -7,6 +7,9 @@
 #include "BStr.hh"
 
 // npy-
+
+class NLookup ; 
+
 #include "NGLM.hpp"
 #include "NState.hpp"
 #include "NPY.hpp"
@@ -14,7 +17,6 @@
 #include "GLMFormat.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
-#include "Lookup.hpp"
 #include "G4StepNPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "PhotonsNPY.hpp"
@@ -82,7 +84,6 @@
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
-//#include "BDynamicDefine.hh"
 
 
 
@@ -120,7 +121,6 @@ App::App(const char* prefix, int argc, char** argv )
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
-   //   m_dd(NULL),
       m_state(NULL),
       m_scene(NULL),
       m_composition(NULL),
@@ -393,18 +393,6 @@ void App::prepareViz()
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));
 
-/*
-    m_dd = new BDynamicDefine();   // configuration used in oglrap- shaders
-    m_dd->add("MAXREC",m_fcfg->getRecordMax());    
-    m_dd->add("MAXTIME",m_fcfg->getTimeMax());    
-    m_dd->add("PNUMQUAD", 4);  // quads per photon
-    m_dd->add("RNUMQUAD", 2);  // quads per record 
-    m_dd->add("MATERIAL_COLOR_OFFSET", (unsigned int)OpticksColors::MATERIAL_COLOR_OFFSET );
-    m_dd->add("FLAG_COLOR_OFFSET", (unsigned int)OpticksColors::FLAG_COLOR_OFFSET );
-    m_dd->add("PSYCHEDELIC_COLOR_OFFSET", (unsigned int)OpticksColors::PSYCHEDELIC_COLOR_OFFSET );
-    m_dd->add("SPECTRAL_COLOR_OFFSET", (unsigned int)OpticksColors::SPECTRAL_COLOR_OFFSET );
-*/
-
     BDynamicDefine* dd = m_opticks->makeDynamicDefine(); 
     m_scene->write(dd);
 
@@ -492,6 +480,15 @@ void App::uploadGeometryViz()
 
 void App::loadGenstep()
 {
+    // ... this belongs elsewhere, non-viz, entirely hostside, requiring access to: 
+    //
+    //     Opticks 
+    //     GGeo 
+    //     OpticksEvent
+    //
+    //  maybe OpticksHub ?
+    //
+
     if(hasOpt("nooptix|noevent")) 
     {
         LOG(warning) << "App::loadGenstep skip due to --nooptix/--noevent " ;
@@ -510,7 +507,6 @@ void App::loadGenstep()
         if(gs == NULL) LOG(fatal) << "App::loadGenstep FAILED" ;
         assert(gs);
 
-
         m_g4step = new G4StepNPY(gs);    
         m_g4step->relabel(CERENKOV, SCINTILLATION); 
         // which code is used depends in the sign of the pre-label 
@@ -518,11 +514,16 @@ void App::loadGenstep()
 
         if(m_opticks->isDayabay())
         {   
-            Lookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
+            // within GGeo this depends on GBndLib
+            NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
             if(lookup)
             {  
                 m_g4step->setLookup(lookup);   
-                m_g4step->applyLookup(0, 2);      
+                m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+                //
+                // replaces original material indices with material lines
+                // for easy access to properties using boundary_lookup GPU side
+                //
             }
             else
             {

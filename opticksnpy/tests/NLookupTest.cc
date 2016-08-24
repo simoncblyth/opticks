@@ -1,16 +1,16 @@
-#include "Lookup.hpp"
+#include "NLookup.hpp"
 
 // canonical use in GGeo::setupLookup
 
 int main(int, char**)
 {
-    Lookup::mockup("$TMP", "mockA.json", "mockB.json");
+    NLookup::mockup("$TMP", "mockA.json", "mockB.json");
 
-    Lookup lookup;
+    NLookup lookup;
     lookup.loadA("$TMP", "mockA.json");
     lookup.loadB("$TMP", "mockB.json");
     lookup.crossReference();
-    lookup.dump("LookupTest");
+    lookup.dump("NLookupTest");
 
 
 

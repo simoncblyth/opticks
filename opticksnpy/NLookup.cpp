@@ -6,31 +6,31 @@
 
 #include "BMap.hh"
 
-#include "Lookup.hpp"
+#include "NLookup.hpp"
 #include "PLOG.hh"
 
 namespace fs = boost::filesystem;
 
-Lookup::Lookup()
+NLookup::NLookup()
 {
 }
 
-std::map<std::string, unsigned int>& Lookup::getA()
+std::map<std::string, unsigned int>& NLookup::getA()
 {
     return m_A ; 
 }
-std::map<std::string, unsigned int>& Lookup::getB()
+std::map<std::string, unsigned int>& NLookup::getB()
 {
     return m_B ; 
 }
 
 
-void Lookup::mockup(const char* dir, const char* aname, const char* bname)
+void NLookup::mockup(const char* dir, const char* aname, const char* bname)
 {
     mockA(dir, aname);
     mockB(dir, bname);
 }
-void Lookup::mockA(const char* adir, const char* aname)
+void NLookup::mockA(const char* adir, const char* aname)
 {
     Map_t mp ; 
     mp["/dd/Materials/red"] = 10 ; 
@@ -38,7 +38,7 @@ void Lookup::mockA(const char* adir, const char* aname)
     mp["/dd/Materials/blue"] = 30 ; 
     BMap<std::string, unsigned int>::save(&mp, adir, aname );
 }
-void Lookup::mockB(const char* bdir, const char* bname)
+void NLookup::mockB(const char* bdir, const char* bname)
 {
     Map_t mp; 
     mp["red"] = 1 ; 
@@ -50,7 +50,7 @@ void Lookup::mockB(const char* bdir, const char* bname)
 
 
 
-void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
+void NLookup::loadA(const char* adir, const char* aname, const char* aprefix)
 {
     //typedef std::map<std::string, unsigned int> SU_t ; 
 
@@ -68,30 +68,30 @@ void Lookup::loadA(const char* adir, const char* aname, const char* aprefix)
     }
 }
 
-void Lookup::loadB(const char* bdir, const char* bname, const char* /*bprefix*/)
+void NLookup::loadB(const char* bdir, const char* bname, const char* /*bprefix*/)
 {
     BMap<std::string, unsigned int>::load(&m_B, bdir, bname);
 }
 
 
-void Lookup::crossReference()
+void NLookup::crossReference()
 {
     m_A2B = create(m_A, m_B);
     m_B2A = create(m_B, m_A);
 }
 
 
-std::string Lookup::acode2name(unsigned int acode)
+std::string NLookup::acode2name(unsigned int acode)
 {
     return find(m_A, acode);
 }
-std::string Lookup::bcode2name(unsigned int bcode)
+std::string NLookup::bcode2name(unsigned int bcode)
 {
     return find(m_B, bcode);
 }
 
 
-void Lookup::dump(const char* msg)
+void NLookup::dump(const char* msg)
 {
     std::cout << msg
               << " A entries " <<  m_A.size() 
@@ -101,7 +101,7 @@ void Lookup::dump(const char* msg)
               ;
 
 
-    for(Lookup_t::iterator it=m_A2B.begin() ; it != m_A2B.end() ; it++)
+    for(NLookup_t::iterator it=m_A2B.begin() ; it != m_A2B.end() ; it++)
     {
         unsigned int acode = it->first ;  
         unsigned int bcode = it->second ;
@@ -112,9 +112,9 @@ void Lookup::dump(const char* msg)
 }
 
 
-std::map<unsigned int, unsigned int> Lookup::create(Map_t& a, Map_t&b)
+std::map<unsigned int, unsigned int> NLookup::create(Map_t& a, Map_t&b)
 {
-    Lookup_t a2b_ ;
+    NLookup_t a2b_ ;
     for(Map_t::iterator ia=a.begin() ; ia != a.end() ; ia++)
     {
         std::string aname = ia->first ;
@@ -128,9 +128,9 @@ std::map<unsigned int, unsigned int> Lookup::create(Map_t& a, Map_t&b)
     return a2b_ ; 
 }
 
-void Lookup::dumpMap(const char* msg, Map_t& map)
+void NLookup::dumpMap(const char* msg, Map_t& map)
 {
-    printf("Lookup::dumpMap %s \n", msg);
+    printf("NLookup::dumpMap %s \n", msg);
     for(Map_t::iterator it=map.begin() ; it != map.end() ; it++)
     {
         std::string name = it->first ;
@@ -139,7 +139,7 @@ void Lookup::dumpMap(const char* msg, Map_t& map)
     }
 }
 
-std::string Lookup::find(Map_t& m, unsigned int code)
+std::string NLookup::find(Map_t& m, unsigned int code)
 {
     std::string name ; 
     for(Map_t::iterator im=m.begin() ; im != m.end() ; im++)
@@ -155,15 +155,15 @@ std::string Lookup::find(Map_t& m, unsigned int code)
 }
 
 
-int Lookup::a2b(unsigned int a)
+int NLookup::a2b(unsigned int a)
 {
     return lookup(m_A2B, a );
 }
-int Lookup::b2a(unsigned int b)
+int NLookup::b2a(unsigned int b)
 {
     return lookup(m_B2A, b );
 }
-int Lookup::lookup(Lookup_t& lkup, unsigned int x)
+int NLookup::lookup(NLookup_t& lkup, unsigned int x)
 {
     return lkup.find(x) == lkup.end() ? -1 : lkup[x] ;
 }

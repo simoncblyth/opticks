@@ -550,7 +550,7 @@ unsigned int GBndLib::getMaterialLine(const char* shortname_)
 }
 unsigned int GBndLib::getLine(unsigned int ibnd, unsigned int imatsur)
 {
-    assert(imatsur < NUM_MATSUR);
+    assert(imatsur < NUM_MATSUR);  // NUM_MATSUR canonically 4
     return ibnd*NUM_MATSUR + imatsur ;   
 }
 unsigned int GBndLib::getLineMin()

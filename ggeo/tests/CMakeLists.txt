@@ -62,7 +62,7 @@ set(TEST_SOURCES
     GSurfaceLibTest.cc
     GTestBoxTest.cc
 
-    LookupTest.cc
+    NLookupTest.cc
     RecordsNPYTest.cc
     TorchStepNPYTest.cc
 

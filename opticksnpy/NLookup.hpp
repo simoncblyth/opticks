@@ -3,14 +3,14 @@
 #include <map>
 #include <string>
 
-// see ggeo-/tests/LookupTest.cc for usage
+// see ggeo-/tests/NLookupTest.cc for usage
 
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
-class NPY_API Lookup {
+class NPY_API NLookup {
    public:  
-       typedef std::map<unsigned int, unsigned int> Lookup_t ;
+       typedef std::map<unsigned int, unsigned int> NLookup_t ;
        typedef std::map<std::string, unsigned int> Map_t ;
    public:  
        static void mockup(const char* dir="/tmp", const char* aname="mockA.json", const char* bname="mockB.json");
@@ -18,7 +18,7 @@ class NPY_API Lookup {
        static void mockA(const char* adir, const char* aname);
        static void mockB(const char* bdir, const char* bname);
    public:  
-       Lookup();
+       NLookup();
        void crossReference();
        std::map<std::string, unsigned int>& getA();
        std::map<std::string, unsigned int>& getB();
@@ -36,7 +36,7 @@ class NPY_API Lookup {
        void dumpMap(const char* msg, Map_t& map);
        std::map<unsigned int, unsigned int>  create(Map_t& a, Map_t&b);
        std::string find(Map_t& m, unsigned int code);
-       int lookup(Lookup_t& lkup, unsigned int x); 
+       int lookup(NLookup_t& lkup, unsigned int x); 
    private:
        std::map<std::string, unsigned int>  m_A ; 
        std::map<std::string, unsigned int>  m_B ; 

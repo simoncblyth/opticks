@@ -5,7 +5,7 @@
 
 #include "uif.h"
 #include "NPY.hpp"
-#include "Lookup.hpp"
+#include "NLookup.hpp"
 #include "G4StepNPY.hpp"
 #include "NPY.hpp"
 
@@ -23,11 +23,11 @@ NPY<float>* G4StepNPY::getNPY()
 {
     return m_npy ; 
 }
-void G4StepNPY::setLookup(Lookup* lookup)
+void G4StepNPY::setLookup(NLookup* lookup)
 {
     m_lookup = lookup ;
 } 
-Lookup* G4StepNPY::getLookup()
+NLookup* G4StepNPY::getLookup()
 {
     return m_lookup ;
 } 

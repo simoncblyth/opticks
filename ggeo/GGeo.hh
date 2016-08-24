@@ -14,7 +14,7 @@
 // npy-
 #include "NConfigurable.hpp"
 class NSensorList ; 
-class Lookup ; 
+class NLookup ; 
 class TorchStepNPY ; 
 
 // okc-
@@ -221,7 +221,7 @@ class GGEO_API GGeo : public NConfigurable {
         GScintillatorLib*  getScintillatorLib();
         GSourceLib*        getSourceLib();
         GPmt*              getPmt(); 
-        Lookup*            getLookup(); 
+        NLookup*           getLookup(); 
     public:
         GColorizer*        getColorizer();
         OpticksColors*     getColors();
@@ -322,7 +322,7 @@ class GGEO_API GGeo : public NConfigurable {
         std::vector<GMaterial*>       m_scintillators_raw ; 
         std::vector<GMaterial*>       m_cathodes_raw ; 
 
-        Lookup*                       m_lookup ; 
+        NLookup*                      m_lookup ; 
 
         GGeoLib*                      m_geolib ; 
         GBndLib*                      m_bndlib ; 

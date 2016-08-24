@@ -67,7 +67,7 @@ set(SOURCES
     Parameters.cpp
     Report.cpp
 
-    Lookup.cpp
+    NLookup.cpp
 
 
     NSequence.cpp
@@ -153,7 +153,7 @@ Counts.hpp
 numpy.hpp
 
 
-Lookup.hpp
+NLookup.hpp
 Types.hpp
 Typ.hpp
 Index.hpp

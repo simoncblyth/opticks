@@ -2,7 +2,7 @@
 
 #include <set>
 template <typename T> class NPY ; 
-class Lookup ; 
+class NLookup ; 
 
 //
 // hmm CerenkovStep and ScintillationStep have same shapes but different meanings see
@@ -31,8 +31,8 @@ class NPY_API G4StepNPY {
    public:  
        void relabel(int cerenkov_label, int scintillation_label);
    public:  
-       void setLookup(Lookup* lookup);
-       Lookup* getLookup();
+       void setLookup(NLookup* lookup);
+       NLookup* getLookup();
        void applyLookup(unsigned int jj, unsigned int kk);
        void dump(const char* msg);
        void dumpLines(const char* msg);
@@ -48,7 +48,7 @@ class NPY_API G4StepNPY {
 
   private:
         NPY<float>*  m_npy ; 
-        Lookup*  m_lookup ; 
+        NLookup*  m_lookup ; 
         Set_t    m_lines ;
  
 };

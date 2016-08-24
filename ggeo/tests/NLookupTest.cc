@@ -2,14 +2,13 @@
 // ggv --jpmt --lookup
 
 
+#include "NLookup.hpp"
 #include "Opticks.hh"
-
 #include "GBndLib.hh"
-#include "Lookup.hpp"
+
 
 #include "GGEO_BODY.hh"
 #include "PLOG.hh"
-
 
 
 int main(int argc, char** argv)
@@ -24,15 +23,17 @@ int main(int argc, char** argv)
 
 
 
-    Lookup* m_lookup = new Lookup();
+    NLookup* m_lookup = new NLookup();
 
     m_lookup->loadA( opticks->getIdFold(), "ChromaMaterialMap.json", "/dd/Materials/") ;
 
-    blib->fillMaterialLineMap( m_lookup->getB() ) ;    
+    std::map<std::string, unsigned int>& msu = m_lookup->getB() ;
+
+    blib->fillMaterialLineMap( msu ) ;    
 
     m_lookup->crossReference();
 
-    m_lookup->dump("ggeo-/LookupTest");
+    m_lookup->dump("ggeo-/NLookupTest");
 
 
 

@@ -67,9 +67,13 @@ simulators.  Stuff in ggeoview-/App that is common ?
 
 
 OpticksApp 
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Dont like the name, too generic. OpticksSim ?
+Bad name, too generic. 
+
+* OpticksCtx ?
+* OpticksSim ?
+* OpticksGUI/Viz ?  manage frame, window etc.. 
 
 * What are the responsibilities of an OpticksApp ? 
 * How does that fit in with CG4, OpticksEngine, OpEngine ?

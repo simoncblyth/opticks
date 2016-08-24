@@ -158,10 +158,6 @@ class OKCORE_API Opticks {
        bool isInterop();
        bool isCfG4();   // needs manual override to set to CFG4_MODE
    public:
-       // the mode setting
-       //bool isComputeRequested();
-       //bool isInteropRequested();
-   public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);
        void configureI(const char* name, std::vector<int> values);
