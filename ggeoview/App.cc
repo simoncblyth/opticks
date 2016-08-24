@@ -11,13 +11,12 @@
 class NLookup ; 
 
 #include "NGLM.hpp"
-#include "NState.hpp"
+//#include "NState.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "ViewNPY.hpp"
-#include "MultiViewNPY.hpp"
-
+//#include "ViewNPY.hpp"
+//#include "MultiViewNPY.hpp"
 
 
 #include "PhotonsNPY.hpp"
@@ -26,7 +25,9 @@ class NLookup ;
 #include "BoundariesNPY.hpp"
 #include "SequenceNPY.hpp"
 #include "Types.hpp"
+
 #include "Index.hpp"
+
 #include "Timer.hpp"
 #include "Times.hpp"
 #include "TimesTable.hpp"
@@ -39,7 +40,6 @@ class NLookup ;
 // okc-
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
-#include "OpticksColors.hh"
 #include "OpticksAttrSeq.hh"
 #include "OpticksCfg.hh"
 #include "OpticksEvent.hh"
@@ -47,16 +47,13 @@ class NLookup ;
 #include "OpticksResource.hh"
 #include "Bookmarks.hh"
 #include "Composition.hh"
-#include "InterpolatedView.hh"
 
 // ggeo-
 #include "GGeo.hh"
 #include "GItemIndex.hh"
 
 // opticksgeo-
-#include "OpticksGeometry.hh"
 #include "OpticksHub.hh"
-
 
 // windows headers from PLOG need to be before glfw 
 // http://stackoverflow.com/questions/3927810/how-to-prevent-macro-redefinition
@@ -71,12 +68,14 @@ class NLookup ;
 #endif
 
 #include "StateGUI.hh"
+
 #include "Scene.hh"
 #include "SceneCfg.hh"
 #include "Renderer.hh"
 #include "RendererCfg.hh"
 #include "Interactor.hh"
 #include "InteractorCfg.hh"
+
 #include "Rdr.hh"
 #include "Texture.hh"
 #include "Photons.hh"
@@ -90,9 +89,12 @@ class NLookup ;
 #include "OpEngine.hh"
 #endif
 
-#include "App.hh"
-#include "GGV_BODY.hh"
 
+// ggeoview-
+#include "App.hh"
+#include "OpticksViz.hh"
+
+#include "GGV_BODY.hh"
 
 #define TIMER(s) \
     { \
@@ -115,6 +117,7 @@ App::App(const char* prefix, int argc, char** argv )
    : 
       m_opticks(NULL),
       m_hub(NULL),
+      m_viz(NULL),
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
@@ -124,9 +127,7 @@ App::App(const char* prefix, int argc, char** argv )
       m_window(NULL),
       m_interactor(NULL),
 
-      m_evt(NULL), 
       m_types(NULL),
-      m_geometry(NULL),
       m_ggeo(NULL),
 
 #ifdef WITH_OPTIX
@@ -135,9 +136,6 @@ App::App(const char* prefix, int argc, char** argv )
 #endif
 
       m_bnd(NULL),
-      m_pho(NULL),
-      m_hit(NULL),
-      m_rec(NULL),
       m_seqhis(NULL),
       m_seqmat(NULL),
       m_boundaries(NULL),
@@ -180,30 +178,7 @@ void App::initViz()
 {
     if(m_opticks->isCompute()) return ; 
 
-    // perhaps a VizManager to contain this lot 
-
-    // envvars normally not defined, using cmake configure_file values instead
-    const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
-    const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
-    const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
-
-    m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
-    m_frame       = new Frame ; 
-    m_interactor  = new Interactor ; 
-
-    m_interactor->setFrame(m_frame);
-    m_interactor->setScene(m_scene);
-    m_interactor->setComposition(m_hub->getComposition());
-
-    m_scene->setInteractor(m_interactor);      
-
-    m_frame->setInteractor(m_interactor);      
-    m_frame->setComposition(m_hub->getComposition());
-    m_frame->setScene(m_scene);
-
-    m_hub->add(new SceneCfg<Scene>(           "scene",       m_scene,                      true));
-    m_hub->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
-    m_hub->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
+    m_viz = new OpticksViz(m_hub) ; 
 
     TIMER("initViz");
 }
@@ -237,74 +212,16 @@ void App::configureViz()
 }
 
 
-
 void App::prepareViz()
 {
     if(isCompute()) return ; 
 
-    m_size = m_opticks->getSize();
-    glm::uvec4 position = m_opticks->getPosition() ;
+    m_hub->prepareViz();
 
-    LOG(info) << "App::prepareViz"
-              << " size " << gformat(m_size)
-              << " position " << gformat(position)
-              ;
-
-    m_scene->setEvent(m_hub->getEvent());
-    if(m_opticks->isJuno())
-    {
-        LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
-
-        if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
-        { 
-            m_scene->setNumGeometryStyle(Scene::WIRE); 
-        }
-
-        m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
-
-        m_scene->setRenderMode("bb0,bb1,-global");
-        std::string rmode = m_scene->getRenderMode();
-        LOG(info) << "App::prepareViz " << rmode ; 
-    }
-    else if(m_opticks->isDayabay())
-    {
-        m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
-    }
-
-
-    // hmm these shoud be inside hub
-    Composition* composition = m_hub->getComposition();
-    composition->setSize( m_size );
-    composition->setFramePosition( position );
-
-    m_frame->setTitle("GGeoView");
-    m_frame->setFullscreen(hasOpt("fullscreen"));
-
-    BDynamicDefine* dd = m_opticks->makeDynamicDefine(); 
-    m_scene->write(dd);
-
-    if(hasOpt("dbginterop"))
-    {
-        m_scene->initRenderersDebug();  // reading shader source and creating subset of renderers
-    }
-    else
-    {
-        m_scene->initRenderers();  // reading shader source and creating renderers
-    }
-
-    m_frame->init();           // creates OpenGL context
-
-    m_window = m_frame->getWindow();
-
-    m_scene->setComposition(composition);     // defer until renderers are setup 
-
-    // defer creation of the altview to Interactor KEY_U so newly created bookmarks are included
-    // m_composition->setBookmarks(m_bookmarks);
-
+    m_viz->prepareScene();
 
     TIMER("prepareViz");
 } 
-
 
 
 void App::loadGeometry()
@@ -322,54 +239,17 @@ void App::uploadGeometryViz()
 {
     if(isCompute()) return ; 
 
+    m_viz->uploadGeometry();
 
-    OpticksColors* colors = m_opticks->getColors();
-
-    nuvec4 cd = colors->getCompositeDomain() ; 
-    glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
-  
-    m_composition->setColorDomain(cd_); 
-
-    m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
-
-
-    // where does this info come from, where is most appropriate to set it ?
-    m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
-    m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
-
-    m_scene->setGeometry(m_hub->getGGeo());
-
-    m_scene->uploadGeometry();
-
-    bool autocam = true ; 
-
-    // handle commandline --target option that needs loaded geometry 
-    unsigned int target = m_scene->getTargetDeferred();   // default to 0 
-    LOG(debug) << "App::uploadGeometryViz setting target " << target ; 
-
-    m_scene->setTarget(target, autocam);
- 
     TIMER("uploadGeometryViz"); 
 }
-
-
-
-
 
 
 void App::targetViz()
 {
     if(isCompute()) return ; 
 
-    unsigned int target = m_scene->getTarget() ;
-
-    // only pointing based on genstep if not already targetted
-    if(target == 0)
-    {
-        m_hub->targetGenstep();
-    }
-
-    m_scene->setRecordStyle( m_hub->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
+    m_viz->targetGenstep();
 
     TIMER("targetViz"); 
 }
@@ -385,84 +265,19 @@ void App::uploadEvtViz()
 {
     if(isCompute()) return ; 
 
-    if(hasOpt("nooptix|noevent")) 
-    {
-        LOG(warning) << "App::uploadEvtViz skip due to --nooptix/--noevent " ;
-        return ;
-    }
- 
-    LOG(info) << "App::uploadEvtViz START " ;
-
-    m_composition->update();
-
-    m_scene->upload();
-
-    m_scene->uploadSelection();
-
-    if(hasOpt("dbguploads"))
-        m_scene->dump_uploads_table("App::uploadEvtViz");
-
+    m_viz->uploadEvent();
 
     TIMER("uploadEvtViz"); 
 }
-
 
 
 void App::indexPresentationPrep()
 {
     LOG(info) << "App::indexPresentationPrep" ; 
 
-    if(!m_evt) return ; 
-
-    Index* seqhis = m_evt->getHistoryIndex() ;
-    Index* seqmat = m_evt->getMaterialIndex();
-    Index* bndidx = m_evt->getBoundaryIndex();
-
-    if(!seqhis)
-    {
-         LOG(warning) << "App::indexPresentationPrep NULL seqhis" ;
-    }
-    else
-    {
-        OpticksAttrSeq* qflg = m_opticks->getFlagNames();
-        //qflg->dumpTable(seqhis, "App::indexPresentationPrep seqhis"); 
-
-        m_seqhis = new GItemIndex(seqhis) ;  
-        m_seqhis->setTitle("Photon Flag Sequence Selection");
-        m_seqhis->setHandler(qflg);
-        m_seqhis->formTable();
-    }
-
-    if(!seqmat)
-    {
-         LOG(warning) << "App::indexPresentationPrep NULL seqmat" ;
-    }
-    else
-    {
-        OpticksAttrSeq* qmat = m_geometry->getMaterialNames();
-        //qmat->dumpTable(seqmat, "App::indexPresentationPrep seqmat"); 
-        m_seqmat = new GItemIndex(seqmat) ;  
-        m_seqmat->setTitle("Photon Material Sequence Selection");
-        m_seqmat->setHandler(qmat);
-        m_seqmat->formTable();
-    }
-
-
-    if(!bndidx)
-    {
-         LOG(warning) << "App::indexPresentationPrep NULL bndidx" ;
-    }
-    else
-    {
-        OpticksAttrSeq* qbnd = m_geometry->getBoundaryNames();
-        //qbnd->dumpTable(bndidx, "App::indexPresentationPrep bndidx"); 
-
-        m_boundaries = new GItemIndex(bndidx) ;  
-        m_boundaries->setTitle("Photon Termination Boundaries");
-        m_boundaries->setHandler(qbnd);
-        m_boundaries->formTable();
-    } 
-
+    m_seqhis = m_hub->makeHistoryItemIndex();
+    m_seqmat = m_hub->makeMaterialItemIndex();
+    m_boundaries = m_hub->makeBoundaryItemIndex();
 
     TIMER("indexPresentationPrep"); 
 }
@@ -474,15 +289,15 @@ void App::indexBoundariesHost()
     // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
     // also see optickscore-/Indexer for another CPU version 
 
-    if(!m_evt) return ; 
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ; 
 
-    std::map<unsigned int, std::string> boundary_names = m_geometry->getBoundaryNamesMap();
-
-    NPY<float>* dpho = m_evt->getPhotonData();
+    NPY<float>* dpho = evt->getPhotonData();
     if(dpho && dpho->hasData())
     {
         // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
         LOG(info) << "App::indexBoundaries host based " ;
+        std::map<unsigned int, std::string> boundary_names = m_hub->getBoundaryNamesMap();
         m_bnd = new BoundariesNPY(dpho); 
         m_bnd->setBoundaryNames(boundary_names); 
         m_bnd->indexBoundaries();     
@@ -499,9 +314,11 @@ void App::indexBoundariesHost()
 
 void App::indexEvt()
 {
-    if(!m_evt) return ; 
+    OpticksEvent* evt = m_hub->getEvent();
+  
+    if(!evt) return ; 
 
-    if(m_evt->isIndexed())
+    if(evt->isIndexed())
     {
         LOG(info) << "App::indexEvt" 
                   << " skip as already indexed "
@@ -526,49 +343,45 @@ void App::indexEvt()
 
 void App::indexEvtOld()
 {
-    if(!m_evt) return ; 
+    // TODO: migrate this into an OpticksIndexer, not OpticksHub as this is 
+    //       near dead code
+
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ; 
 
     // TODO: wean this off use of Types, for the new way (GFlags..)
     Types* types = m_opticks->getTypes();
     Typ* typ = m_opticks->getTyp();
 
-    NPY<float>* ox = m_evt->getPhotonData();
-
+    NPY<float>* ox = evt->getPhotonData();
 
     if(ox && ox->hasData())
     {
-        m_pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
-        m_pho->setTypes(types);
-        m_pho->setTyp(typ);
+        PhotonsNPY* pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
+        pho->setTypes(types);
+        pho->setTyp(typ);
+        evt->setPhotonsNPY(pho);
 
         GGeo* ggeo = m_hub->getGGeo();
-
-        m_hit = new HitsNPY(ox, ggeo->getSensorList());
-        //m_hit->debugdump();
+        HitsNPY* hit = new HitsNPY(ox, ggeo->getSensorList());
+        evt->setHitsNPY(hit);
     }
 
-    // hmm thus belongs in NumpyEvt rather than here
-    NPY<short>* rx = m_evt->getRecordData();
+    NPY<short>* rx = evt->getRecordData();
 
     if(rx && rx->hasData())
     {
-        m_rec = new RecordsNPY(rx, m_evt->getMaxRec(), m_evt->isFlat());
-        m_rec->setTypes(types);
-        m_rec->setTyp(typ);
-        m_rec->setDomains(m_evt->getFDomain()) ;
+        RecordsNPY* rec = new RecordsNPY(rx, evt->getMaxRec(), evt->isFlat());
+        rec->setTypes(types);
+        rec->setTyp(typ);
+        rec->setDomains(evt->getFDomain()) ;
 
-        if(m_pho)
+        PhotonsNPY* pho = evt->getPhotonsNPY();
+        if(pho)
         {
-            m_pho->setRecs(m_rec);
-
-            // BELOW NEEDS REVISITING POST ADOPTION OF STRUCTURED RECORDS
-            //m_pho->dump(0  ,  "App::indexEvtOld dpho 0");
-            //m_pho->dump(100,  "App::indexEvtOld dpho 100" );
-            //m_pho->dump(1000, "App::indexEvtOld dpho 1000" );
-
+            pho->setRecs(rec);
         }
-        m_evt->setRecordsNPY(m_rec);
-        m_evt->setPhotonsNPY(m_pho);
+        evt->setRecordsNPY(rec);
     }
 
     TIMER("indexEvtOld"); 
@@ -681,11 +494,10 @@ void App::renderLoop()
 {
     if(isCompute()) return ; 
     
-    bool noviz = hasOpt("noviz") ;
-    int interactivity = SSys::GetInteractivityLevel() ;
-    if(noviz || interactivity == 0 )
+    int interactivity = m_opticks->getInteractivityLevel() ;
+    if(interactivity == 0 )
     {
-        LOG(info) << "App::renderLoop early exit due to --noviz/-V option OR SSys::GetInteractivityLevel 0  " ; 
+        LOG(info) << "App::renderLoop early exit due to InteractivityLevel 0  " ; 
         return ;
     }
     LOG(info) << "enter runloop "; 
@@ -839,8 +651,6 @@ void App::indexSequence()
         return ; 
     }
 
-    //m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers, causes CUDA error with Op indexing, but needed for G4 indexing  
-
     OpticksEvent* evt = m_hub->getEvent(); 
     LOG(info) << "App::indexSequence evt shape " << evt->getShapeString() ;
 
@@ -849,7 +659,4 @@ void App::indexSequence()
 }
 
 #endif
-
-
-
 

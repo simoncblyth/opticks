@@ -146,6 +146,9 @@ const char* Opticks::getLastArg()
 }
 
 
+
+
+
 void Opticks::setModeOverride(unsigned int mode)
 {
     m_mode->setOverride(mode) ; 
@@ -382,7 +385,12 @@ int Opticks::getLastArgInt()
     return index;
 }
 
-
+int Opticks::getInteractivityLevel()
+{
+    int interactivity = SSys::GetInteractivityLevel() ;
+    if(hasOpt("noviz|compute")) interactivity = 0 ; 
+    return interactivity  ;
+}
 
 void Opticks::configureDomains()
 {

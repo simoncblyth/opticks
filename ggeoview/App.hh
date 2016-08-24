@@ -42,8 +42,10 @@ class GItemIndex ;
 
 
 // opticksgeo-
-class OpticksGeometry ; 
 class OpticksHub ; 
+
+
+
 
 
 #ifdef WITH_NPYSERVER
@@ -61,6 +63,11 @@ class OpEngine ;
 // optixgl-
 class OpViz ; 
 #endif
+
+
+// ggeoview-
+class OpticksViz ; 
+
 
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
@@ -80,6 +87,7 @@ class GGV_API App {
        void dbgSeed();
   private: 
        void configureViz(); 
+       void prepareVizScene(); 
   public:
        void uploadGeometryViz();
   public:
@@ -116,18 +124,22 @@ class GGV_API App {
   private:
        Opticks*          m_opticks ; 
        OpticksHub*       m_hub ; 
+       OpticksViz*       m_viz ; 
        const char*       m_prefix ; 
        Parameters*       m_parameters ; 
        Timer*            m_timer ; 
+
+//-----
        Scene*            m_scene ; 
        Composition*      m_composition ;
        Frame*            m_frame ;
        GLFWwindow*       m_window ; 
        Interactor*       m_interactor ;
+//-----
+
        OpticksEvent*    m_evt ;
        Types*           m_types ; 
 
-       OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ; 
 #ifdef WITH_OPTIX
        OpEngine*        m_ope ; 
@@ -138,15 +150,17 @@ class GGV_API App {
        HitsNPY*         m_hit ; 
        RecordsNPY*      m_rec ; 
 
+//-----
        GItemIndex*      m_seqhis ; 
        GItemIndex*      m_seqmat ; 
        GItemIndex*      m_boundaries ; 
 
        Photons*         m_photons ; 
        GUI*             m_gui ; 
+//-----
+
        G4StepNPY*       m_g4step ; 
    private:
-       glm::uvec4       m_size ;
 
 };
 

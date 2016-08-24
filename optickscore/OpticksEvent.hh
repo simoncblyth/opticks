@@ -17,6 +17,7 @@ class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
+class HitsNPY ; 
 class NPYSpec ; 
 
 class OpticksMode ; 
@@ -218,8 +219,10 @@ class OKCORE_API OpticksEvent {
        // optionals lodged here for debug dumping single photons/records  
        void setRecordsNPY(RecordsNPY* recs);
        void setPhotonsNPY(PhotonsNPY* pho);
+       void setHitsNPY(HitsNPY* hit);
        RecordsNPY*          getRecordsNPY();
        PhotonsNPY*          getPhotonsNPY();
+       HitsNPY*             getHitsNPY();
        NPY<float>*          getFDomain();
        NPY<int>*            getIDomain();
    public:
@@ -297,6 +300,7 @@ class OKCORE_API OpticksEvent {
 
        RecordsNPY*     m_records ; 
        PhotonsNPY*     m_photons ; 
+       HitsNPY*        m_hits ; 
 
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_nopsteps ; 

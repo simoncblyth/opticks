@@ -84,6 +84,7 @@ class OKCORE_API Opticks {
        const char* getDetectorBase();
        const char* getLastArg();
        int         getLastArgInt();
+       int         getInteractivityLevel();
    public:
        void setIdPathOverride(const char* idpath_tmp=NULL); // used for saves into non-standard locations whilst testing
    public:

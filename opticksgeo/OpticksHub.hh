@@ -1,13 +1,19 @@
 #pragma once
 
+#include <string>
+#include <map>
+
 class BCfg ; 
 
 class Opticks ; 
 class OpticksGeometry ; 
+class OpticksAttrSeq ; 
 class OpticksEvent ; 
 class GGeo ; 
 class Composition ; 
 class Bookmarks ; 
+
+class GItemIndex ; 
 
 class NState ; 
 class NConfigurable ; 
@@ -36,17 +42,30 @@ class OKGEO_API OpticksHub {
        Composition*         getComposition();
        GGeo*                getGGeo();
        OpticksEvent*        getEvent();
+       Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
        std::string          getCfgString();
        NState*              getState();
        Bookmarks*           getBookmarks();
+
+       OpticksAttrSeq*      getFlagNames();
+       OpticksAttrSeq*      getMaterialNames();
+       OpticksAttrSeq*      getBoundaryNames();
+       std::map<unsigned int, std::string> getBoundaryNamesMap();
+
+       GItemIndex* makeHistoryItemIndex();
+       GItemIndex* makeMaterialItemIndex();
+       GItemIndex* makeBoundaryItemIndex();
+
    public:
        void loadGeometry();
        void loadGenstep();
        void loadEvent();
        void targetGenstep();
        void configureViz(NConfigurable* scene);
+       void prepareViz();
        void cleanup();
+       NPY<unsigned char>* getColorBuffer();
    private:
        void init();
    private:

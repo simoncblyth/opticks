@@ -122,6 +122,8 @@ OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, co
 
           m_records(NULL),
           m_photons(NULL),
+          m_hits(NULL),
+
           m_num_gensteps(0),
           m_num_nopsteps(0),
           m_num_photons(0),
@@ -274,6 +276,19 @@ PhotonsNPY* OpticksEvent::getPhotonsNPY()
 {
     return m_photons ;
 }
+
+
+void OpticksEvent::setHitsNPY(HitsNPY* hits)
+{
+    m_hits = hits ; 
+}
+HitsNPY* OpticksEvent::getHitsNPY()
+{
+    return m_hits ;
+}
+
+
+
 
 
 const char* OpticksEvent::getTyp()

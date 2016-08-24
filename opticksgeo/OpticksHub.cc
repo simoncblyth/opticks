@@ -12,6 +12,8 @@
 #include "Timer.hpp"
 #include "TorchStepNPY.hpp"
 #include "G4StepNPY.hpp"
+#include "Index.hpp"
+
 
 // numpyserver-
 #ifdef WITH_NPYSERVER
@@ -21,6 +23,7 @@
 #endif
 
 // ggeo-
+#include "GItemIndex.hh"
 #include "GGeo.hh"
 
 // okc-
@@ -29,6 +32,7 @@
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 #include "OpticksEvent.hh"
+#include "OpticksColors.hh"
 #include "Composition.hh"
 
 // opticksgeo-
@@ -121,6 +125,10 @@ NState* OpticksHub::getState()
 OpticksEvent* OpticksHub::getEvent()
 {
     return m_evt ; 
+}
+Opticks* OpticksHub::getOpticks()
+{
+    return m_opticks ; 
 }
 Composition* OpticksHub::getComposition()
 {
@@ -399,6 +407,35 @@ void OpticksHub::configureViz(NConfigurable* scene)
 }
 
 
+void OpticksHub::prepareViz()
+{
+    glm::uvec4 size = m_opticks->getSize();
+    glm::uvec4 position = m_opticks->getPosition() ;
+
+    LOG(info) << "OpticksHub::prepareViz"
+              << " size " << gformat(size)
+              << " position " << gformat(position)
+              ;
+
+    m_composition->setSize( size );
+    m_composition->setFramePosition( position );
+}
+
+
+NPY<unsigned char>* OpticksHub::getColorBuffer()
+{
+    OpticksColors* colors = m_opticks->getColors();
+
+    nuvec4 cd = colors->getCompositeDomain() ; 
+    glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
+  
+    m_composition->setColorDomain(cd_); 
+
+    return colors->getCompositeBuffer() ;
+}
+
+
+
 
 void OpticksHub::cleanup()
 {
@@ -406,6 +443,88 @@ void OpticksHub::cleanup()
     if(m_server) m_server->stop();
 #endif
 }
+
+
+OpticksAttrSeq* OpticksHub::getFlagNames()
+{
+    return m_opticks->getFlagNames();
+}
+OpticksAttrSeq* OpticksHub::getMaterialNames()
+{
+    return m_geometry->getMaterialNames();
+}
+OpticksAttrSeq* OpticksHub::getBoundaryNames()
+{
+    return m_geometry->getBoundaryNames();
+}
+std::map<unsigned int, std::string> OpticksHub::getBoundaryNamesMap()
+{
+    return m_geometry->getBoundaryNamesMap();
+}
+
+
+
+GItemIndex* OpticksHub::makeHistoryItemIndex()
+{
+    Index* seqhis_ = m_evt->getHistoryIndex() ;
+    if(!seqhis_)
+    {
+         LOG(warning) << "OpticksHub::makeHistoryItemIndex NULL seqhis" ;
+         return NULL ; 
+    }
+ 
+    OpticksAttrSeq* qflg = getFlagNames();
+    //qflg->dumpTable(seqhis, "OpticksHub::makeHistoryItemIndex seqhis"); 
+
+    GItemIndex* seqhis = new GItemIndex(seqhis_) ;  
+    seqhis->setTitle("Photon Flag Sequence Selection");
+    seqhis->setHandler(qflg);
+    seqhis->formTable();
+
+    return seqhis ; 
+}
+
+GItemIndex* OpticksHub::makeMaterialItemIndex()
+{
+    Index* seqmat_ = m_evt->getMaterialIndex() ;
+    if(!seqmat_)
+    {
+         LOG(warning) << "OpticksHub::makeMaterialItemIndex NULL seqmat" ;
+         return NULL ; 
+    }
+ 
+    OpticksAttrSeq* qmat = getMaterialNames();
+
+    GItemIndex* seqmat = new GItemIndex(seqmat_) ;  
+    seqmat->setTitle("Photon Material Sequence Selection");
+    seqmat->setHandler(qmat);
+    seqmat->formTable();
+
+    return seqmat ; 
+}
+
+GItemIndex* OpticksHub::makeBoundaryItemIndex()
+{
+    Index* bndidx_ = m_evt->getBoundaryIndex();
+    if(!bndidx_)
+    {
+         LOG(warning) << "OpticksHub::makeBoundaryItemIndex NULL bndidx" ;
+         return NULL ; 
+    }
+ 
+    OpticksAttrSeq* qbnd = getBoundaryNames();
+    //qbnd->dumpTable(bndidx, "OpticksHub::makeBoundariesItemIndex bndidx"); 
+
+    GItemIndex* boundaries = new GItemIndex(bndidx_) ;  
+    boundaries->setTitle("Photon Termination Boundaries");
+    boundaries->setHandler(qbnd);
+    boundaries->formTable();
+
+    return boundaries ; 
+}
+ 
+
+
 
 
 
