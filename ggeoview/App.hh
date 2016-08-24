@@ -10,7 +10,6 @@ class BCfg ;
 // npy-
 template <typename> class NPY ;
 class G4StepNPY ; 
-class TorchStepNPY ; 
 class BoundariesNPY ; 
 class PhotonsNPY ; 
 class RecordsNPY ; 
@@ -41,7 +40,10 @@ struct GLFWwindow ;
 class GGeo ;
 class GItemIndex ; 
 
+
+// opticksgeo-
 class OpticksGeometry ; 
+class OpticksHub ; 
 
 
 #ifdef WITH_NPYSERVER
@@ -109,29 +111,20 @@ class GGV_API App {
        void cleanup();
 
   public:
-       OpticksCfg<Opticks>* getOpticksCfg();
        bool hasOpt(const char* name);
 
   private:
        Opticks*          m_opticks ; 
+       OpticksHub*       m_hub ; 
        const char*       m_prefix ; 
        Parameters*       m_parameters ; 
        Timer*            m_timer ; 
-       NState*           m_state ; 
        Scene*            m_scene ; 
        Composition*      m_composition ;
        Frame*            m_frame ;
        GLFWwindow*       m_window ; 
-       Bookmarks*        m_bookmarks ;
        Interactor*       m_interactor ;
-#ifdef WITH_NPYSERVER
-       numpydelegate* m_delegate ; 
-       numpyserver<numpydelegate>* m_server ;
-#endif
        OpticksEvent*    m_evt ;
-       BCfg*             m_cfg ;
-
-       OpticksCfg<Opticks>* m_fcfg ;   
        Types*           m_types ; 
 
        OpticksGeometry* m_geometry ; 
@@ -152,7 +145,6 @@ class GGV_API App {
        Photons*         m_photons ; 
        GUI*             m_gui ; 
        G4StepNPY*       m_g4step ; 
-       TorchStepNPY*    m_torchstep ; 
    private:
        glm::uvec4       m_size ;
 

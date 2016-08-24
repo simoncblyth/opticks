@@ -98,6 +98,7 @@ set(SOURCES
 
     OKGEO_LOG.cc
     OpticksGeometry.cc
+    OpticksHub.cc
 
 )
 set(HEADERS
@@ -108,6 +109,7 @@ set(HEADERS
     OKGEO_TAIL.hh
 
     OpticksGeometry.hh
+    OpticksHub.hh
 )
 
 

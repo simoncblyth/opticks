@@ -17,8 +17,9 @@ class NLookup ;
 #include "GLMFormat.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
-#include "G4StepNPY.hpp"
-#include "TorchStepNPY.hpp"
+
+
+
 #include "PhotonsNPY.hpp"
 #include "HitsNPY.hpp"
 #include "RecordsNPY.hpp"
@@ -34,12 +35,6 @@ class NLookup ;
 #include "NSlice.hpp"
 #include "NQuad.hpp"
 
-// numpyserver-
-#ifdef WITH_NPYSERVER
-#include "numpydelegate.hpp"
-#include "numpydelegateCfg.hpp"
-#include "numpyserver.hpp"
-#endif
 
 // okc-
 #include "Opticks.hh"
@@ -60,6 +55,7 @@ class NLookup ;
 
 // opticksgeo-
 #include "OpticksGeometry.hh"
+#include "OpticksHub.hh"
 
 
 // windows headers from PLOG need to be before glfw 
@@ -118,23 +114,17 @@ class NLookup ;
 App::App(const char* prefix, int argc, char** argv )
    : 
       m_opticks(NULL),
+      m_hub(NULL),
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
-      m_state(NULL),
       m_scene(NULL),
       m_composition(NULL),
       m_frame(NULL),
       m_window(NULL),
-      m_bookmarks(NULL),
       m_interactor(NULL),
-#ifdef WITH_NPYSERVER
-      m_delegate(NULL),
-      m_server(NULL),
-#endif
+
       m_evt(NULL), 
-      m_cfg(NULL),
-      m_fcfg(NULL),
       m_types(NULL),
       m_geometry(NULL),
       m_ggeo(NULL),
@@ -152,18 +142,11 @@ App::App(const char* prefix, int argc, char** argv )
       m_seqmat(NULL),
       m_boundaries(NULL),
       m_photons(NULL),
-      m_gui(NULL),
-      m_g4step(NULL),
-      m_torchstep(NULL)
+      m_gui(NULL)
 {
     init(argc, argv);
 }
 
-
-OpticksCfg<Opticks>* App::getOpticksCfg()
-{
-    return m_fcfg ; 
-}
 
 
 
@@ -173,21 +156,12 @@ void App::init(int argc, char** argv)
     m_opticks->Summary("App::init OpticksResource::Summary");
 
 
-    m_composition = new Composition ;   // Composition no longer Viz only
+    m_hub = new OpticksHub(m_opticks) ;
 
-    // TODO: review BCfg machinery and relocate into Opticks
-    //       .. nope it needs to live mostly at App level
-    //       .. due to templated tree of BCfg objects approach 
+    // TRANSITIONAL
+    m_composition = m_hub->getComposition(); 
+    m_evt = m_hub->getEvent(); 
 
-    m_cfg  = new BCfg("umbrella", false) ; 
-    m_fcfg = m_opticks->getCfg();
-
-    m_cfg->add(m_fcfg);
-
-#ifdef WITH_NPYSERVER
-    m_delegate    = new numpydelegate ; 
-    m_cfg->add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
-#endif
 
     TIMER("init");
 }
@@ -195,6 +169,11 @@ void App::init(int argc, char** argv)
 bool App::isCompute()
 {
     return m_opticks->isCompute() ;
+}
+
+bool App::isExit()
+{
+    return m_opticks->isExit() ; 
 }
 
 void App::initViz()
@@ -214,17 +193,17 @@ void App::initViz()
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
-    m_interactor->setComposition(m_composition);
+    m_interactor->setComposition(m_hub->getComposition());
 
     m_scene->setInteractor(m_interactor);      
 
     m_frame->setInteractor(m_interactor);      
-    m_frame->setComposition(m_composition);
+    m_frame->setComposition(m_hub->getComposition());
     m_frame->setScene(m_scene);
 
-    m_cfg->add(new SceneCfg<Scene>(           "scene",       m_scene,                      true));
-    m_cfg->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
-    m_cfg->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
+    m_hub->add(new SceneCfg<Scene>(           "scene",       m_scene,                      true));
+    m_hub->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
+    m_hub->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
     TIMER("initViz");
 }
@@ -234,66 +213,7 @@ void App::configure(int argc, char** argv)
 {
     LOG(debug) << "App:configure " << argv[0] ; 
 
-    m_composition->addConfig(m_cfg); 
-    //m_cfg->dumpTree();
-
-    m_cfg->commandline(argc, argv);
-    m_opticks->configure();        // hmm: m_cfg should live inside Opticks
-
-
-    if(m_fcfg->hasError())
-    {
-        LOG(fatal) << "App::config parse error " << m_fcfg->getErrorMessage() ; 
-        m_fcfg->dump("App::config m_fcfg");
-        m_opticks->setExit(true);
-        return ; 
-    }
-
-
-    bool compute = m_opticks->isCompute();
-    bool compute_opt = hasOpt("compute") ;
-    if(compute && !compute_opt)
-        LOG(warning) << "App::configure FORCED COMPUTE MODE : as remote session detected " ;  
-
-
-    if(hasOpt("idpath")) std::cout << m_opticks->getIdPath() << std::endl ;
-    if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
-    if(hasOpt("help|version|idpath"))
-    {
-        m_opticks->setExit(true);
-        return ; 
-    }
-
-    if(!m_opticks->isValid())
-    {
-        // defer death til after getting help
-        LOG(fatal) << "App::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
-        assert(0);
-    }
-
-    if(!hasOpt("noevent"))
-    {
-        // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
-        // TODO: organize wrt event loading, currently loading happens latter and trumps this evt ?
-        m_evt = m_opticks->makeEvent() ; 
-    } 
-
-#ifdef WITH_NPYSERVER
-    if(!hasOpt("nonet"))
-    {
-        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
-        m_delegate->setEvent(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
-
-        try { 
-            m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
-        } 
-        catch( const std::exception& e)
-        {
-            LOG(fatal) << "App::config EXCEPTION " << e.what() ; 
-            LOG(fatal) << "App::config FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
-        }
-    }
-#endif
+    m_hub->configure(argc, argv); 
 
     configureViz();
 
@@ -301,52 +221,17 @@ void App::configure(int argc, char** argv)
 }
 
 
-bool App::isExit()
-{
-    return m_opticks->isExit() ; 
-}
-
 
 void App::configureViz()
 {
     if(isCompute()) return ; 
 
-    m_state = m_opticks->getState();
-    m_state->setVerbose(false);
-
-    LOG(info) << "App::configureViz " << m_state->description();
-
-    assert(m_composition);
-
-    m_state->addConfigurable(m_scene);
-    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
-
-    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
-    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
-
-    if(m_evt)
-    { 
-        m_composition->setEvt(m_evt);
-        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
-
-        bool quietly = true ; 
-        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track", quietly);
-        m_composition->setTrack(track);
-    }
-
-    LOG(info) << "App::configureViz m_setup bookmarks" ;  
-
-    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
-    m_bookmarks->setState(m_state);
-    m_bookmarks->setVerbose();
-    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
+    m_hub->configureViz(m_scene) ;
 
     if(m_interactor)
     {
-        m_interactor->setBookmarks(m_bookmarks);
+        m_interactor->setBookmarks(m_hub->getBookmarks());
     }
-
-    LOG(info) << "App::configureViz m_setup bookmarks DONE" ;  
 
     TIMER("configureViz");
 }
@@ -365,7 +250,7 @@ void App::prepareViz()
               << " position " << gformat(position)
               ;
 
-    m_scene->setEvent(m_evt);
+    m_scene->setEvent(m_hub->getEvent());
     if(m_opticks->isJuno())
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
@@ -387,8 +272,10 @@ void App::prepareViz()
     }
 
 
-    m_composition->setSize( m_size );
-    m_composition->setFramePosition( position );
+    // hmm these shoud be inside hub
+    Composition* composition = m_hub->getComposition();
+    composition->setSize( m_size );
+    composition->setFramePosition( position );
 
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));
@@ -409,10 +296,10 @@ void App::prepareViz()
 
     m_window = m_frame->getWindow();
 
-    m_scene->setComposition(m_composition);     // defer until renderers are setup 
+    m_scene->setComposition(composition);     // defer until renderers are setup 
 
     // defer creation of the altview to Interactor KEY_U so newly created bookmarks are included
-    m_composition->setBookmarks(m_bookmarks);
+    // m_composition->setBookmarks(m_bookmarks);
 
 
     TIMER("prepareViz");
@@ -422,23 +309,12 @@ void App::prepareViz()
 
 void App::loadGeometry()
 {
-    m_geometry = new OpticksGeometry(m_opticks);
+    m_hub->loadGeometry();
+}
 
-    m_geometry->loadGeometry();
-
-    m_ggeo = m_geometry->getGGeo();
-
-
-    //// hmm placement ? these are refugees from the OpticksGeometry::registerGeometry
-
-    m_ggeo->setComposition(m_composition);
-
-    if(m_evt)
-    {   
-       // TODO: profit from migrated OpticksEvent 
-        LOG(info) << "OpticksGeometry::registerGeometry " << m_opticks->description() ;
-        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-    }   
+void App::loadGenstep()
+{
+    m_hub->loadGenstep();
 }
 
 
@@ -456,11 +332,12 @@ void App::uploadGeometryViz()
 
     m_scene->uploadColorBuffer( colors->getCompositeBuffer() );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    m_composition->setTimeDomain( m_opticks->getTimeDomain() );
+
+    // where does this info come from, where is most appropriate to set it ?
+    m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
 
-
-    m_scene->setGeometry(m_ggeo);
+    m_scene->setGeometry(m_hub->getGGeo());
 
     m_scene->uploadGeometry();
 
@@ -478,128 +355,21 @@ void App::uploadGeometryViz()
 
 
 
-void App::loadGenstep()
-{
-    // ... this belongs elsewhere, non-viz, entirely hostside, requiring access to: 
-    //
-    //     Opticks 
-    //     GGeo 
-    //     OpticksEvent
-    //
-    //  maybe OpticksHub ?
-    //
-
-    if(hasOpt("nooptix|noevent")) 
-    {
-        LOG(warning) << "App::loadGenstep skip due to --nooptix/--noevent " ;
-        return ;
-    }
-
-    unsigned int code = m_opticks->getSourceCode();
-
-
-    NPY<float>* gs = NULL ; 
-    if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
-    {
-        int modulo = m_fcfg->getModulo();
-        gs = m_evt->loadGenstepFromFile(modulo);
-
-        if(gs == NULL) LOG(fatal) << "App::loadGenstep FAILED" ;
-        assert(gs);
-
-        m_g4step = new G4StepNPY(gs);    
-        m_g4step->relabel(CERENKOV, SCINTILLATION); 
-        // which code is used depends in the sign of the pre-label 
-        // becomes the ghead.i.x used in cu/generate.cu
-
-        if(m_opticks->isDayabay())
-        {   
-            // within GGeo this depends on GBndLib
-            NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
-            if(lookup)
-            {  
-                m_g4step->setLookup(lookup);   
-                m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
-                //
-                // replaces original material indices with material lines
-                // for easy access to properties using boundary_lookup GPU side
-                //
-            }
-            else
-            {
-                LOG(warning) << "App::loadGenstep not applying lookup" ;
-            } 
-        }
-    }
-    else if(code == TORCH)
-    {
-        m_torchstep = m_opticks->makeSimpleTorchStep();
-        const char* material = m_torchstep->getMaterial() ;
-
-        if(m_ggeo)
-        {
-            m_ggeo->targetTorchStep(m_torchstep);
-            unsigned int matline = m_ggeo->getMaterialLine(material);
-            m_torchstep->setMaterialLine(matline);  
-
-            LOG(debug) << "App::loadGenstep"
-                       << " config " << m_torchstep->getConfig() 
-                       << " material " << material 
-                       << " matline " << matline
-                         ;
-        }
-        else
-        {
-            LOG(warning) << "App::loadGenstep no ggeo, skip setting torchstep material line " ;
-        } 
-
-        bool torchdbg = hasOpt("torchdbg");
-        m_torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-        gs = m_torchstep->getNPY();
-        if(torchdbg)
-        {
-             gs->save("$TMP/torchdbg.npy");
-        }
- 
-    }
-    
-
-    TIMER("loadGenstep"); 
-
-    m_evt->setGenstepData(gs); 
-
-    TIMER("setGenstepData"); 
-}
-
 
 
 void App::targetViz()
 {
     if(isCompute()) return ; 
 
-    bool geocenter  = m_fcfg->hasOpt("geocenter");
     unsigned int target = m_scene->getTarget() ;
-    bool autocam = true ; 
 
     // only pointing based on genstep if not already targetted
     if(target == 0)
     {
-        if(geocenter && m_geometry != NULL )
-        {
-            glm::vec4 mmce = m_geometry->getCenterExtent();
-            m_composition->setCenterExtent( mmce , autocam );
-            LOG(info) << "App::targetViz (geocenter) mmce " << gformat(mmce) ; 
-        }
-        else if(m_evt)
-        {
-            //glm::vec4 gsce = (*m_evt)["genstep.vpos"]->getCenterExtent();
-            glm::vec4 gsce = m_evt->getGenstepCenterExtent();
-            m_composition->setCenterExtent( gsce , autocam );
-            LOG(info) << "App::targetViz (!geocenter) gsce " << gformat(gsce) ; 
-        }
+        m_hub->targetGenstep();
     }
 
-    m_scene->setRecordStyle( m_fcfg->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
+    m_scene->setRecordStyle( m_hub->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
     TIMER("targetViz"); 
 }
@@ -607,15 +377,7 @@ void App::targetViz()
 
 void App::loadEvtFromFile()
 {
-    LOG(info) << "App::loadEvtFromFile START" ;
-   
-    bool verbose ; 
-    m_evt->loadBuffers(verbose=false);
-
-    if(m_evt->isNoLoad())
-        LOG(warning) << "App::loadEvtFromFile LOAD FAILED " ;
-
-    TIMER("loadEvtFromFile"); 
+    m_hub->loadEvent();
 }
 
 
@@ -779,7 +541,9 @@ void App::indexEvtOld()
         m_pho->setTypes(types);
         m_pho->setTyp(typ);
 
-        m_hit = new HitsNPY(ox, m_ggeo->getSensorList());
+        GGeo* ggeo = m_hub->getGGeo();
+
+        m_hit = new HitsNPY(ox, ggeo->getSensorList());
         //m_hit->debugdump();
     }
 
@@ -796,7 +560,6 @@ void App::indexEvtOld()
         if(m_pho)
         {
             m_pho->setRecs(m_rec);
-            //if(m_torchstep) m_torchstep->dump("App::indexEvtOld TorchStepNPY");
 
             // BELOW NEEDS REVISITING POST ADOPTION OF STRUCTURED RECORDS
             //m_pho->dump(0  ,  "App::indexEvtOld dpho 0");
@@ -818,7 +581,9 @@ void App::prepareGUI()
 {
     if(isCompute()) return ; 
 
-    m_bookmarks->create(0);
+    Bookmarks* bookmarks=m_hub->getBookmarks();
+
+    bookmarks->create(0);
 
 #ifdef GUI_
 
@@ -826,18 +591,20 @@ void App::prepareGUI()
     m_photons = new Photons(m_types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
     m_scene->setPhotons(m_photons);
 
-    m_gui = new GUI(m_ggeo) ;
+    m_gui = new GUI(m_hub->getGGeo()) ;
     m_gui->setScene(m_scene);
     m_gui->setPhotons(m_photons);
-    m_gui->setComposition(m_composition);
-    m_gui->setBookmarks(m_bookmarks);
-    m_gui->setStateGUI(new StateGUI(m_state));
+    m_gui->setComposition(m_hub->getComposition());
+    m_gui->setBookmarks(bookmarks);
+    m_gui->setStateGUI(new StateGUI(m_hub->getState()));
     m_gui->setInteractor(m_interactor);   // status line
     
     m_gui->init(m_window);
-    m_gui->setupHelpText( m_cfg->getDescString() );
+    m_gui->setupHelpText( m_hub->getCfgString() );
 
-    TimesTable* tt = m_evt ? m_evt->getTimesTable() : NULL ; 
+    OpticksEvent* evt = m_hub->getEvent();
+
+    TimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
     if(tt)
     {
         m_gui->setupStats(tt->getLines());
@@ -847,7 +614,7 @@ void App::prepareGUI()
         LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
     }  
 
-    Parameters* parameters = m_evt ? m_evt->getParameters() : m_parameters ; 
+    Parameters* parameters = evt ? evt->getParameters() : m_parameters ; 
 
     m_gui->setupParams(parameters->getLines());
 
@@ -862,6 +629,7 @@ void App::renderGUI()
 #ifdef GUI_
     m_gui->newframe();
     bool* show_gui_window = m_interactor->getGUIModeAddress();
+    Composition* composition = m_hub->getComposition();
     if(*show_gui_window)
     {
         m_gui->show(show_gui_window);
@@ -871,10 +639,10 @@ void App::renderGUI()
             {
                 m_composition->getPick().y = m_boundaries->getSelected() ;   //  1st boundary 
             }
-            glm::ivec4& recsel = m_composition->getRecSelect();
+            glm::ivec4& recsel = composition->getRecSelect();
             recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 
             recsel.y = m_seqmat ? m_seqmat->getSelected() : 0 ; 
-            m_composition->setFlags(m_types->getFlags()); 
+            composition->setFlags(m_types->getFlags()); 
         }
         // maybe imgui edit selection within the composition imgui, rather than shovelling ?
         // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
@@ -958,22 +726,20 @@ void App::cleanup()
     if(m_ope) m_ope->cleanup();
 #endif
 
-#ifdef WITH_NPYSERVER
-    if(m_server) m_server->stop();
-#endif
+
 #ifdef GUI_
     if(m_gui) m_gui->shutdown();
 #endif
     if(m_frame) m_frame->exit();
 
-
+    m_hub->cleanup();
     m_opticks->cleanup(); 
 }
 
 
 bool App::hasOpt(const char* name)
 {
-    return m_fcfg->hasOpt(name);
+    return m_hub->hasOpt(name);
 }
 
 
@@ -982,7 +748,8 @@ bool App::hasOpt(const char* name)
 void App::prepareOptiX()
 {
     LOG(info) << "App::prepareOptiX create OpEngine " ; 
-    m_ope = new OpEngine(m_opticks, m_ggeo);
+    GGeo* ggeo = m_hub->getGGeo();
+    m_ope = new OpEngine(m_opticks, ggeo);
     m_ope->prepareOptiX();
 }
 
@@ -995,7 +762,8 @@ void App::prepareOptiXViz()
 void App::setupEventInEngine()
 {
     if(!m_ope) return ; 
-    m_ope->setEvent(m_evt);  // without this cannot index
+    OpticksEvent* evt = m_hub->getEvent();
+    m_ope->setEvent(evt);  // without this cannot index
 }
 
 void App::preparePropagator()
@@ -1057,7 +825,8 @@ void App::saveEvt()
     if(!m_ope) return ; 
     if(!isCompute()) 
     {
-        Rdr::download(m_evt);
+        OpticksEvent* evt = m_hub->getEvent();
+        Rdr::download(evt);
     }
     m_ope->saveEvt();
 }
@@ -1071,7 +840,9 @@ void App::indexSequence()
     }
 
     //m_evt->prepareForIndexing();  // stomps on prior recsel phosel buffers, causes CUDA error with Op indexing, but needed for G4 indexing  
-    LOG(info) << "App::indexSequence evt shape " << m_evt->getShapeString() ;
+
+    OpticksEvent* evt = m_hub->getEvent(); 
+    LOG(info) << "App::indexSequence evt shape " << evt->getShapeString() ;
 
     m_ope->indexSequence();
     LOG(info) << "App::indexSequence DONE" ;
