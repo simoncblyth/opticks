@@ -22,13 +22,16 @@ class Interactor ;
 
 #include "OKGL_API_EXPORT.hh"
 
-class OKGL_API OpViz {
+#include "SRenderer.hh"
+
+class OKGL_API OpViz : public SRenderer {
     public:
        OpViz(OpEngine* ope, Scene* scene);
     private:
        void init();
        void prepareOptiXViz();
     public:
+       // fulfils SRenderer protocol
        void render();
 
     private:

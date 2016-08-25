@@ -30,7 +30,6 @@ class NLookup ;
 
 #include "Timer.hpp"
 #include "Times.hpp"
-#include "TimesTable.hpp"
 #include "Parameters.hpp"
 #include "Report.hpp"
 #include "NSlice.hpp"
@@ -78,7 +77,6 @@ class NLookup ;
 
 #include "Rdr.hh"
 #include "Texture.hh"
-#include "Photons.hh"
 
 
 
@@ -121,12 +119,8 @@ App::App(const char* prefix, int argc, char** argv )
       m_prefix(strdup(prefix)),
       m_parameters(NULL),
       m_timer(NULL),
-      m_scene(NULL),
-      m_composition(NULL),
-      m_frame(NULL),
-      m_window(NULL),
-      m_interactor(NULL),
 
+      m_composition(NULL),
       m_types(NULL),
       m_ggeo(NULL),
 
@@ -134,13 +128,7 @@ App::App(const char* prefix, int argc, char** argv )
       m_ope(NULL),
       m_opv(NULL),
 #endif
-
-      m_bnd(NULL),
-      m_seqhis(NULL),
-      m_seqmat(NULL),
-      m_boundaries(NULL),
-      m_photons(NULL),
-      m_gui(NULL)
+      m_bnd(NULL)
 {
     init(argc, argv);
 }
@@ -190,25 +178,9 @@ void App::configure(int argc, char** argv)
 
     m_hub->configure(argc, argv); 
 
-    configureViz();
+    if(m_viz) m_viz->configure();
 
     TIMER("configure");
-}
-
-
-
-void App::configureViz()
-{
-    if(isCompute()) return ; 
-
-    m_hub->configureViz(m_scene) ;
-
-    if(m_interactor)
-    {
-        m_interactor->setBookmarks(m_hub->getBookmarks());
-    }
-
-    TIMER("configureViz");
 }
 
 
@@ -275,9 +247,7 @@ void App::indexPresentationPrep()
 {
     LOG(info) << "App::indexPresentationPrep" ; 
 
-    m_seqhis = m_hub->makeHistoryItemIndex();
-    m_seqmat = m_hub->makeMaterialItemIndex();
-    m_boundaries = m_hub->makeBoundaryItemIndex();
+    if(m_viz) m_viz->indexPresentationPrep();
 
     TIMER("indexPresentationPrep"); 
 }
@@ -392,144 +362,15 @@ void App::indexEvtOld()
 
 void App::prepareGUI()
 {
-    if(isCompute()) return ; 
-
-    Bookmarks* bookmarks=m_hub->getBookmarks();
-
-    bookmarks->create(0);
-
-#ifdef GUI_
-
-    m_types = m_opticks->getTypes();  // needed for each render
-    m_photons = new Photons(m_types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
-    m_scene->setPhotons(m_photons);
-
-    m_gui = new GUI(m_hub->getGGeo()) ;
-    m_gui->setScene(m_scene);
-    m_gui->setPhotons(m_photons);
-    m_gui->setComposition(m_hub->getComposition());
-    m_gui->setBookmarks(bookmarks);
-    m_gui->setStateGUI(new StateGUI(m_hub->getState()));
-    m_gui->setInteractor(m_interactor);   // status line
-    
-    m_gui->init(m_window);
-    m_gui->setupHelpText( m_hub->getCfgString() );
-
-    OpticksEvent* evt = m_hub->getEvent();
-
-    TimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
-    if(tt)
-    {
-        m_gui->setupStats(tt->getLines());
-    }
-    else
-    {
-        LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
-    }  
-
-    Parameters* parameters = evt ? evt->getParameters() : m_parameters ; 
-
-    m_gui->setupParams(parameters->getLines());
-
-#endif
-
-    TIMER("prepareGUI"); 
+    if(m_viz) m_viz->prepareGUI();
 }
-
-
-void App::renderGUI()
-{
-#ifdef GUI_
-    m_gui->newframe();
-    bool* show_gui_window = m_interactor->getGUIModeAddress();
-    Composition* composition = m_hub->getComposition();
-    if(*show_gui_window)
-    {
-        m_gui->show(show_gui_window);
-        if(m_photons)
-        {
-            if(m_boundaries)
-            {
-                m_composition->getPick().y = m_boundaries->getSelected() ;   //  1st boundary 
-            }
-            glm::ivec4& recsel = composition->getRecSelect();
-            recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 
-            recsel.y = m_seqmat ? m_seqmat->getSelected() : 0 ; 
-            composition->setFlags(m_types->getFlags()); 
-        }
-        // maybe imgui edit selection within the composition imgui, rather than shovelling ?
-        // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
-    }
-
-    bool* show_scrub_window = m_interactor->getScrubModeAddress();
-    if(*show_scrub_window)
-        m_gui->show_scrubber(show_scrub_window);
-
-    m_gui->render();
-#endif
-}
-
-
-
-
-void App::render()
-{
-    if(isCompute()) return ; 
-
-    m_frame->viewport();
-    m_frame->clear();
-
-#ifdef WITH_OPTIX
-    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
-    {
-        if(m_opv) m_opv->render();
-    }
-#endif
-    m_scene->render();
-}
-
 
 
 void App::renderLoop()
 {
     if(isCompute()) return ; 
-    
-    int interactivity = m_opticks->getInteractivityLevel() ;
-    if(interactivity == 0 )
-    {
-        LOG(info) << "App::renderLoop early exit due to InteractivityLevel 0  " ; 
-        return ;
-    }
-    LOG(info) << "enter runloop "; 
-
-    //m_frame->toggleFullscreen(true); causing blankscreen then segv
-    m_frame->hintVisible(true);
-    m_frame->show();
-    LOG(info) << "after frame.show() "; 
-
-    unsigned int count ; 
-
-    while (!glfwWindowShouldClose(m_window))
-    {
-        m_frame->listen(); 
-#ifdef WITH_NPYSERVER
-        if(m_server) m_server->poll_one();  
-#endif
-        count = m_composition->tick();
-
-        if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)  
-        {
-            render();
-            renderGUI();
-
-            glfwSwapBuffers(m_window);
-
-            m_interactor->setChanged(false);  
-            m_composition->setChanged(false);   // sets camera, view, trackball dirty status 
-        }
-    }
+    m_viz->renderLoop();    
 }
-
 
 
 void App::cleanup()
@@ -538,13 +379,9 @@ void App::cleanup()
     if(m_ope) m_ope->cleanup();
 #endif
 
-
-#ifdef GUI_
-    if(m_gui) m_gui->shutdown();
-#endif
-    if(m_frame) m_frame->exit();
-
     m_hub->cleanup();
+    m_viz->cleanup();
+
     m_opticks->cleanup(); 
 }
 
@@ -568,7 +405,11 @@ void App::prepareOptiX()
 void App::prepareOptiXViz()
 {
     if(!m_ope) return ; 
-    m_opv = new OpViz(m_ope, m_scene); 
+    if(!m_viz) return ; 
+
+    Scene* scene = m_viz->getScene(); 
+    m_opv = new OpViz(m_ope, scene); 
+    m_viz->setExternalRenderer(m_opv);
 }
 
 void App::setupEventInEngine()

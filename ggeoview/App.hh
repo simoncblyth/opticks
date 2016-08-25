@@ -26,16 +26,6 @@ template <typename> class OpticksCfg ;
 class Composition ; 
 class Bookmarks ; 
 
-// oglrap-
-class Scene ; 
-class Frame ; 
-class Interactor ; 
-class GUI ; 
-class Photons ; 
-
-// glfw-
-struct GLFWwindow ; 
-
 // ggeo-
 class GGeo ;
 class GItemIndex ; 
@@ -86,7 +76,6 @@ class GGV_API App {
        bool isCompute();
        void dbgSeed();
   private: 
-       void configureViz(); 
        void prepareVizScene(); 
   public:
        void uploadGeometryViz();
@@ -95,6 +84,7 @@ class GGV_API App {
        void targetViz();
        void loadEvtFromFile();
        void uploadEvtViz();
+
 #ifdef WITH_OPTIX
   public:
        void prepareOptiX();
@@ -107,6 +97,9 @@ class GGV_API App {
        void saveEvt();
        void indexSequence();
 #endif
+
+
+  public:
        void indexEvt();
        void indexPresentationPrep();
        void indexBoundariesHost();
@@ -114,8 +107,6 @@ class GGV_API App {
   public:
        void prepareGUI();
        void renderLoop();
-       void renderGUI();
-       void render();
        void cleanup();
 
   public:
@@ -129,13 +120,7 @@ class GGV_API App {
        Parameters*       m_parameters ; 
        Timer*            m_timer ; 
 
-//-----
-       Scene*            m_scene ; 
        Composition*      m_composition ;
-       Frame*            m_frame ;
-       GLFWwindow*       m_window ; 
-       Interactor*       m_interactor ;
-//-----
 
        OpticksEvent*    m_evt ;
        Types*           m_types ; 
@@ -146,20 +131,7 @@ class GGV_API App {
        OpViz*           m_opv ; 
 #endif
        BoundariesNPY*   m_bnd ; 
-       PhotonsNPY*      m_pho ; 
-       HitsNPY*         m_hit ; 
-       RecordsNPY*      m_rec ; 
 
-//-----
-       GItemIndex*      m_seqhis ; 
-       GItemIndex*      m_seqmat ; 
-       GItemIndex*      m_boundaries ; 
-
-       Photons*         m_photons ; 
-       GUI*             m_gui ; 
-//-----
-
-       G4StepNPY*       m_g4step ; 
    private:
 
 };

@@ -1,9 +1,30 @@
+
+// sysrap-
+#include "SRenderer.hh"
+
+// npy-
+#include "Types.hpp"
+#include "Parameters.hpp"
+#include "Timer.hpp"
+#include "TimesTable.hpp"
+#include "NGLM.hpp"
+
+// okc-
+#include "Opticks.hh"
+#include "OpticksEvent.hh"
 #include "Composition.hh"
-#include "OpticksHub.hh"
-#include "OpticksViz.hh"
+#include "Bookmarks.hh"
+
+#include "GItemIndex.hh"
+
 
 // opticksgeo-
 #include "OpticksHub.hh"
+
+// ggeoview-
+#include "Photons.hh"
+#include "OpticksViz.hh"
+
 
 // windows headers from PLOG need to be before glfw 
 // http://stackoverflow.com/questions/3927810/how-to-prevent-macro-redefinition
@@ -27,21 +48,50 @@
 #include "InteractorCfg.hh"
 
 
+#define TIMER(s) \
+    { \
+       if(m_evt)\
+       {\
+          Timer& t = *(m_evt->getTimer()) ;\
+          t((s)) ;\
+       }\
+       else if(m_opticks) \
+       {\
+          Timer& t = *(m_opticks->getTimer()) ;\
+          t((s)) ;\
+       }\
+    }
+
+
+
+
+
+
 OpticksViz::OpticksViz(OpticksHub* hub)
     :
-    m_opticks(hub->getOpticks()),
     m_hub(hub),
-    m_scene(NULL),
+    m_opticks(hub->getOpticks()),
+    m_interactivity(m_opticks->getInteractivityLevel()),
     m_composition(hub->getComposition()),
+    m_evt(hub->getEvent()),
+    m_types(m_opticks->getTypes()),
+    m_scene(NULL),
     m_frame(NULL),
     m_window(NULL),
-    m_interactor(NULL)
+    m_interactor(NULL),
+    m_seqhis(NULL),
+    m_seqmat(NULL),
+    m_boundaries(NULL),
+    m_photons(NULL),
+    m_gui(NULL),
+    m_external_renderer(NULL)
 {
     init();
 }
 
 void OpticksViz::init()
 {
+
     const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
     const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
     const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
@@ -65,6 +115,25 @@ void OpticksViz::init()
     m_hub->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_hub->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
+}
+
+
+Scene* OpticksViz::getScene()
+{
+    return m_scene ; 
+}
+
+
+bool OpticksViz::hasOpt(const char* name)
+{
+    return m_hub->hasOpt(name);
+}
+
+
+void OpticksViz::configure()
+{
+    m_hub->configureViz(m_scene) ;
+    m_interactor->setBookmarks(m_hub->getBookmarks());
 }
 
 
@@ -147,7 +216,6 @@ void OpticksViz::uploadGeometry()
 
 }
 
-
 void OpticksViz::targetGenstep()
 {
     if(m_scene->getTarget() == 0) // only target based on genstep if not already targetted
@@ -177,4 +245,166 @@ void OpticksViz::uploadEvent()
 
 }
 
-  
+void OpticksViz::indexPresentationPrep()
+{
+    LOG(info) << "OpticksViz::indexPresentationPrep" ; 
+
+    m_seqhis = m_hub->makeHistoryItemIndex();
+    m_seqmat = m_hub->makeMaterialItemIndex();
+    m_boundaries = m_hub->makeBoundaryItemIndex();
+
+    TIMER("indexPresentationPrep"); 
+}
+
+void OpticksViz::prepareGUI()
+{
+    Bookmarks* bookmarks=m_hub->getBookmarks();
+
+    bookmarks->create(0);
+
+#ifdef GUI_
+
+    Types* types = m_opticks->getTypes();  // needed for each render
+    m_photons = new Photons(types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
+    m_scene->setPhotons(m_photons);
+
+    m_gui = new GUI(m_hub->getGGeo()) ;
+    m_gui->setScene(m_scene);
+    m_gui->setPhotons(m_photons);
+    m_gui->setComposition(m_hub->getComposition());
+    m_gui->setBookmarks(bookmarks);
+    m_gui->setStateGUI(new StateGUI(m_hub->getState()));
+    m_gui->setInteractor(m_interactor);   // status line
+    
+    m_gui->init(m_window);
+    m_gui->setupHelpText( m_hub->getCfgString() );
+
+    OpticksEvent* evt = m_hub->getEvent();
+
+    TimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
+    if(tt)
+    {
+        m_gui->setupStats(tt->getLines());
+    }
+    else
+    {
+        LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
+    }  
+
+    Parameters* parameters = evt ? evt->getParameters() : m_opticks->getParameters() ; 
+
+    m_gui->setupParams(parameters->getLines());
+
+#endif
+
+    TIMER("prepareGUI"); 
+}
+
+
+
+void OpticksViz::renderGUI()
+{
+#ifdef GUI_
+    m_gui->newframe();
+    bool* show_gui_window = m_interactor->getGUIModeAddress();
+    if(*show_gui_window)
+    {
+        m_gui->show(show_gui_window);
+        if(m_photons)
+        {
+            if(m_boundaries)
+            {
+                m_composition->getPick().y = m_boundaries->getSelected() ;   //  1st boundary 
+            }
+            glm::ivec4& recsel = m_composition->getRecSelect();
+            recsel.x = m_seqhis ? m_seqhis->getSelected() : 0 ; 
+            recsel.y = m_seqmat ? m_seqmat->getSelected() : 0 ; 
+            m_composition->setFlags(m_types->getFlags());      // TODO: check why this is here ?
+        }
+        // maybe imgui edit selection within the composition imgui, rather than shovelling ?
+        // BUT: composition feeds into shader uniforms which could be reused by multiple classes ?
+    }
+
+    bool* show_scrub_window = m_interactor->getScrubModeAddress();
+    if(*show_scrub_window)
+        m_gui->show_scrubber(show_scrub_window);
+
+    m_gui->render();
+#endif
+}
+
+
+void OpticksViz::setExternalRenderer(SRenderer* external_renderer)
+{
+    m_external_renderer = external_renderer ; 
+}
+
+void OpticksViz::render()
+{
+    m_frame->viewport();
+    m_frame->clear();
+
+    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender()) 
+    {
+        if(m_external_renderer) m_external_renderer->render();
+    }
+
+    m_scene->render();
+}
+
+
+
+void OpticksViz::renderLoop()
+{
+    if(m_interactivity == 0 )
+    {
+        LOG(info) << "OpticksViz::renderLoop early exit due to InteractivityLevel 0  " ; 
+        return ;
+    }
+    LOG(info) << "enter runloop "; 
+
+    //m_frame->toggleFullscreen(true); causing blankscreen then segv
+    m_frame->hintVisible(true);
+    m_frame->show();
+    LOG(info) << "after frame.show() "; 
+
+    unsigned int count ; 
+
+    while (!glfwWindowShouldClose(m_window))
+    {
+        m_frame->listen(); 
+
+#ifdef WITH_NPYSERVER
+        if(m_server) m_server->poll_one();  
+#endif
+        count = m_composition->tick();
+
+        if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)  
+        {
+            render();
+            renderGUI();
+
+            glfwSwapBuffers(m_window);
+
+            m_interactor->setChanged(false);  
+            m_composition->setChanged(false);   // sets camera, view, trackball dirty status 
+        }
+    }
+}
+
+
+void OpticksViz::cleanup()
+{
+#ifdef GUI_
+    if(m_gui) m_gui->shutdown();
+#endif
+    if(m_frame) m_frame->exit();
+
+}
+
+
+
+
+
+
+ 
