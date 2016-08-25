@@ -16,11 +16,16 @@ template <typename T> class NPY ;
 
 class SRenderer ; 
 
-class OpticksViz {
+
+#include "GGV_API_EXPORT.hh"
+#include "GGV_HEAD.hh"
+
+class GGV_API OpticksViz {
     public:
          OpticksViz(OpticksHub* hub);
          void setExternalRenderer(SRenderer* external_renderer);
          void setEvent(OpticksEvent* evt);
+         OpticksEvent* getEvent();
     public:
          bool hasOpt(const char* name);
          void configure();
@@ -46,7 +51,6 @@ class OpticksViz {
          Opticks*      m_opticks ; 
          int           m_interactivity ; 
          Composition*  m_composition ;
-         OpticksEvent* m_evt ; 
          Types*        m_types ; 
 
          Scene*       m_scene ; 
@@ -64,3 +68,8 @@ class OpticksViz {
          SRenderer*   m_external_renderer ; 
 
 };
+
+#include "GGV_TAIL.hh"
+
+
+

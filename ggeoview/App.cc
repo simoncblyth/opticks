@@ -62,10 +62,11 @@ void App::init(int argc, char** argv)
     TIMER("initViz");
 }
 
-void App::configure(int argc, char** argv)
+void App::configure()
 {
-    LOG(debug) << "App:configure " << argv[0] ; 
-    m_hub->configure(argc, argv); 
+    m_hub->configure(); 
+
+
     if(m_viz) m_viz->configure();
     TIMER("configure");
 }
@@ -80,12 +81,26 @@ void App::prepareViz()
 
 void App::loadGeometry()
 {
+    if(hasOpt("nogeometry"))
+    { 
+        LOG(warning) << "--nogeometry SKIP geometry" ; 
+        return ; 
+    }
     m_hub->loadGeometry();
 }
+
 void App::loadGenstep()
 {
-    m_hub->loadGenstep();
+    NPY<float>* gs = m_hub->loadGenstep();
+
+    OpticksEvent* evt = m_hub->createEvent();  
+
+    evt->setGenstepData(gs);  // must do this before can targetGenstep
+
+    if(m_viz) m_viz->setEvent(evt);
+
 }
+
 void App::loadEvtFromFile()
 {
     m_hub->loadEvent();
@@ -95,6 +110,13 @@ void App::loadEvtFromFile()
 void App::uploadGeometryViz()
 {
     if(!m_viz) return ; 
+
+    if(hasOpt("nogeometry"))
+    { 
+        LOG(warning) << "--nogeometry SKIP geometry" ; 
+        return ; 
+    }
+
     m_viz->uploadGeometry();
     TIMER("uploadGeometryViz"); 
 }
@@ -173,20 +195,14 @@ void App::cleanup()
 #ifdef WITH_OPTIX
 void App::prepareOptiX()
 {
-    GGeo* ggeo = m_hub->getGGeo();
-    m_ope = new OpEngine(m_opticks, ggeo);
+    m_ope = new OpEngine(m_opticks, m_hub->getGGeo());   // places geometry into OptiX context with OGeo 
     m_ope->prepareOptiX();
-}
 
-void App::prepareOptiXViz()
-{
-    if(!m_ope) return ; 
     if(!m_viz) return ; 
-
-    Scene* scene = m_viz->getScene(); 
-    m_opv = new OpViz(m_ope, scene); 
+    m_opv = new OpViz(m_ope, m_viz->getScene() );         // creates ORenderer, OTracer
     m_viz->setExternalRenderer(m_opv);
 }
+
 
 void App::setupEventInEngine()
 {
@@ -241,6 +257,11 @@ void App::dbgSeed()
     OpticksEvent* evt = m_ope->getEvent();    
     NPY<float>* ox = evt->getPhotonData();
     assert(ox);
+
+    // this split between interop and compute mode
+    // is annoying, maybe having a shared base protocol
+    // for OpEngine and OpticksViz
+    // could avoid all the branching 
 
     if(m_viz) 
     { 

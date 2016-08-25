@@ -23,6 +23,7 @@
 #include "GLMFormat.hpp"
 #include "NState.hpp"
 #include "NPropNames.hpp"
+#include "NLoad.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -103,6 +104,15 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_mode(NULL)
 {
        init();
+}
+
+int Opticks::getArgc()
+{
+    return m_argc ; 
+}
+char** Opticks::getArgv()
+{
+    return m_argv ; 
 }
 
 
@@ -278,9 +288,16 @@ void Opticks::init()
     setDetector( m_resource->getDetector() );
 
 
+    const char* typ = getSourceType(); 
+    const char* tag = getEventTag();
+    std::string det = m_detector ? m_detector : "" ;
+    std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
+
+    m_spec = new OpticksEventSpec(typ, tag, det.c_str(), cat.c_str() );
 
     LOG(trace) << "Opticks::init DONE " ;
 }
+
 
 
 
@@ -520,23 +537,17 @@ BDynamicDefine* Opticks::makeDynamicDefine()
 }
 
 
+OpticksEventSpec* Opticks::getEventSpec()
+{
+    return m_spec ; 
+}
+
+
 OpticksEvent* Opticks::makeEvent()
 {
-    const char* typ = getSourceType(); 
-    const char* tag = getEventTag();
-
-    std::string det = m_detector ? m_detector : "" ;
-    std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
-
-   LOG(debug) << "Opticks::makeEvent"
-              << " typ " << typ
-              << " tag " << tag
-              << " det " << det
-              << " cat " << cat
-              ;
-
-    OpticksEvent* evt = new OpticksEvent(typ, tag, det.c_str(), cat.c_str() );
+    OpticksEvent* evt = new OpticksEvent(m_spec);
     assert(strcmp(evt->getUDet(), getUDet()) == 0);
+
     evt->setMode(m_mode);
     configureDomains();
 
@@ -578,6 +589,34 @@ OpticksEvent* Opticks::makeEvent()
 
     return evt ; 
 }
+
+
+NPY<float>* Opticks::loadGenstep()
+{
+    const char* det = m_spec->getDet();
+    const char* typ = m_spec->getTyp();
+    const char* tag = m_spec->getTag();
+
+    std::string path = NLoad::GenstepsPath(det, typ, tag);
+    NPY<float>* gs = NPY<float>::load(path.c_str());
+    if(!gs)
+    {
+        LOG(warning) << "Opticks::loadGenstep"
+                     << " FAILED TO LOAD GENSTEPS FROM "
+                     << " path " << path 
+                     << " typ " << typ
+                     << " tag " << tag
+                     << " det " << det
+                     ; 
+        return NULL ;
+    }
+    return gs ; 
+}
+
+
+
+
+
 
 
 

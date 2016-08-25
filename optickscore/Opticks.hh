@@ -7,6 +7,7 @@
 
 #include "NGLM.hpp"
 
+template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
 class BDynamicDefine ; 
@@ -19,6 +20,7 @@ class Types ;
 class Typ ;
 class Index ; 
 
+class OpticksEventSpec ;
 class OpticksEvent ;
 class OpticksMode ;
 class OpticksResource ; 
@@ -122,7 +124,9 @@ class OKCORE_API Opticks {
    public:
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
+       NPY<float>*          loadGenstep();
        TorchStepNPY*        makeSimpleTorchStep();
+       OpticksEventSpec*    getEventSpec();
        OpticksEvent*        makeEvent(); 
        BDynamicDefine*      makeDynamicDefine();
    public:
@@ -154,6 +158,9 @@ class OKCORE_API Opticks {
        bool isExit();
        bool isRemoteSession();
    public:
+       int    getArgc();
+       char** getArgv();
+   public:
        // attempt to follow request,  but constrain to compute when remote session
        bool isCompute();
        bool isInterop();
@@ -171,6 +178,7 @@ class OKCORE_API Opticks {
        char**               m_argv ; 
        const char*          m_envprefix ;
    private:
+       OpticksEventSpec*    m_spec ; 
        OpticksResource*     m_resource ; 
        NState*              m_state ; 
    private:

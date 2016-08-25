@@ -238,6 +238,7 @@ set(SOURCES
     GGV_LOG.cc
     App.cc 
     OpticksViz.cc 
+    OpticksApp.cc 
 )
 set(HEADERS
 
@@ -248,6 +249,7 @@ set(HEADERS
 
     App.hh
     OpticksViz.hh
+    OpticksApp.hh
 )
 
 

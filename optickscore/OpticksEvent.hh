@@ -75,8 +75,9 @@ primary
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
-class OKCORE_API OpticksEvent {
-      //friend class Opticks ; 
+#include "OpticksEventSpec.hh"
+
+class OKCORE_API OpticksEvent : public OpticksEventSpec {
    public:
       static const char* PARAMETERS_NAME ;  
       static const char* PARAMETERS_STEM ;  
@@ -95,10 +96,9 @@ class OKCORE_API OpticksEvent {
       static Index* loadMaterialIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
+
    public:
-       OpticksEvent(const char* typ, const char* tag, const char* det, const char* cat=NULL);
-       // CAUTION: typically created via Opticks::makeEvent 
-       //          which sets maxrec before creating buffers
+       OpticksEvent(OpticksEventSpec* spec);
    public:
        bool isNoLoad();
        bool isLoaded();
@@ -127,7 +127,6 @@ class OKCORE_API OpticksEvent {
        static const char* sequence_  ;
    public:
        void checkData(const char* name);
-       NPY<float>* loadGenstepFromFile(int modulo=0);
        NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
@@ -262,17 +261,9 @@ class OKCORE_API OpticksEvent {
        bool         isInterop();
        bool         isCompute();
 
-       const char*  getTyp();
-       const char*  getTag();
-       const char*  getDet();
-       const char*  getCat();
-       const char*  getUDet();
    private:
+       OpticksEventSpec*     m_event_spec ; 
        OpticksMode*          m_mode ; 
-       const char*           m_typ ; 
-       const char*           m_tag ; 
-       const char*           m_det ; 
-       const char*           m_cat ; 
 
        bool                  m_noload ; 
        bool                  m_loaded ; 

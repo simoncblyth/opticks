@@ -1081,12 +1081,10 @@ Composition* Scene::getComposition()
 {
     return m_composition ; 
 }
-
-OpticksEvent* Scene::getEvt()
+OpticksEvent* Scene::getEvent()
 {
     return m_evt ; 
 }
-
 Photons* Scene::getPhotons()
 {
     return m_photons ; 

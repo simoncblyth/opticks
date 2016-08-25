@@ -185,7 +185,7 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*          getRecordRenderer(RecordStyle_t style);
         //GMergedMesh*  getGeometry();
         Composition*  getComposition();
-        OpticksEvent* getEvt();
+        OpticksEvent* getEvent();
         Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
         const char*   getRecordTag();

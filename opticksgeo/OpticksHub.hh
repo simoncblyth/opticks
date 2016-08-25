@@ -34,10 +34,10 @@ template <typename> class numpyserver ;
 class OKGEO_API OpticksHub {
    public:
        OpticksHub(Opticks* opticks);
-       //void setEvent(OpticksEvent* evt);
+       OpticksEvent* createEvent();
        void add(BCfg* cfg);
    public:
-       void         configure(int argc, char** argv);
+       void         configure();
        bool         hasOpt(const char* name);
    public:
        Composition*         getComposition();
@@ -63,7 +63,7 @@ class OKGEO_API OpticksHub {
        void indexBoundariesHost();
    public:
        void loadGeometry();
-       void loadGenstep();
+       NPY<float>* loadGenstep();
        void loadEvent();
        void targetGenstep();
        void configureViz(NConfigurable* scene);

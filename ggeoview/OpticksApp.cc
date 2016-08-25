@@ -1,0 +1,187 @@
+#include "OpticksApp.hh"
+
+class Scene ; 
+
+#include "Timer.hpp"
+#include "Opticks.hh"       // okc-
+#include "OpticksEvent.hh"
+#include "OpticksHub.hh"    // opticksgeo-
+
+#ifdef WITH_OPTIX
+#include "OpViz.hh"     // optixgl-
+#include "OpEngine.hh"  // opticksop-
+#endif
+
+#define GUI_ 1
+#include "OpticksViz.hh"
+
+#include "GGV_BODY.hh"
+
+#define TIMER(s) \
+    { \
+       if(m_hub)\
+       {\
+          Timer& t = *(m_hub->getTimer()) ;\
+          t((s)) ;\
+       }\
+    }
+
+
+OpticksApp::OpticksApp(int argc, char** argv) 
+    :
+    m_opticks(new Opticks(argc, argv)),
+    m_hub(new OpticksHub(m_opticks)),
+    m_evt(NULL),
+#ifdef WITH_OPTIX
+    m_ope(NULL),
+    m_opv(NULL),
+#endif
+    m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub))
+{
+    init();
+    initGeometry();
+}
+void OpticksApp::init()
+{
+    m_opticks->Summary("OpticksApp::init OpticksResource::Summary");
+
+    m_hub->configure();  // OpticksEvent formerly created here...  now moved to OpticksApp::createEvent 
+
+    if(m_opticks->isExit()) exit(EXIT_SUCCESS) ; 
+
+    if(m_viz) m_viz->configure();
+}
+
+void OpticksApp::initGeometry()
+{
+    if(m_viz) 
+    {
+        m_hub->prepareViz();
+        m_viz->prepareScene();   // setup OpenGL shaders and creates OpenGL context (the window)
+    }
+ 
+    m_hub->loadGeometry();       // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    if(m_opticks->isExit()) exit(EXIT_SUCCESS);
+
+    if(m_viz) m_viz->uploadGeometry();   // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+
+#ifdef WITH_OPTIX
+    m_ope = new OpEngine(m_opticks, m_hub->getGGeo());   // places geometry into OptiX context with OGeo 
+    m_ope->prepareOptiX();
+
+    if(m_viz)
+    {
+        m_opv = new OpViz(m_ope, m_viz->getScene() );         // creates ORenderer, OTracer
+        m_viz->setExternalRenderer(m_opv);
+    }
+#endif
+}
+
+
+bool OpticksApp::isExit()
+{
+    return m_opticks->isExit(); 
+}
+bool OpticksApp::hasOpt(const char* name)
+{
+    return m_opticks->hasOpt(name); 
+}
+
+
+NPY<float>* OpticksApp::loadGenstep()
+{
+    return m_hub->loadGenstep();
+}
+
+void OpticksApp::createEvent()
+{
+    m_evt = m_hub->createEvent();
+    assert(m_evt == m_hub->getEvent()) ; 
+
+    if(m_viz) m_viz->setEvent(m_evt);
+
+#ifdef WITH_OPTIX
+    m_ope->setEvent(m_evt);                  // needed for indexing
+#endif
+}
+
+void OpticksApp::propagate(NPY<float>* genstep)
+{
+    createEvent();
+    m_evt->setGenstepData(genstep);
+
+    if(m_viz)
+    { 
+        m_viz->targetGenstep();       // point Camera at gensteps 
+        m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
+    }
+
+#ifdef WITH_OPTIX
+    m_ope->setEvent(m_evt);                  // needed for indexing
+    m_ope->preparePropagator();              // creates OptiX buffers and OBuf wrappers as members of OPropagator
+    m_ope->seedPhotonsFromGensteps();        // distributes genstep indices into the photons buffer
+    if(hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+    m_ope->initRecords();                   // zero records buffer, not working in OptiX 4 in interop 
+    if(!hasOpt("nooptix|noevent|nopropagate")) m_ope->propagate();
+
+    indexPropagation();
+
+    if(hasOpt("save"))
+    {
+        if(m_viz) m_viz->downloadEvent();
+        m_ope->saveEvt();
+        m_hub->indexEvtOld();
+    }
+#endif
+}
+
+
+void OpticksApp::indexPropagation()
+{
+    if(!m_evt->isIndexed())
+    {
+#ifdef WITH_OPTIX 
+        m_ope->indexSequence();
+#endif
+        m_hub->indexBoundariesHost();
+    }
+    if(m_viz) m_viz->indexPresentationPrep();
+}
+
+
+void OpticksApp::loadPropagation()
+{
+    createEvent(); 
+    m_hub->loadEvent();                    // actually loads buffers into the above created OpticksEvent
+
+    indexPropagation();
+    if(m_viz)
+    {
+        m_viz->targetGenstep();
+        m_viz->uploadEvent();  
+    }
+}
+
+
+void OpticksApp::visualize()
+{
+    if(m_viz) 
+    {
+        m_viz->prepareGUI();
+        m_viz->renderLoop();    
+    }
+}
+
+
+void OpticksApp::cleanup()
+{
+#ifdef WITH_OPTIX
+    if(m_ope) m_ope->cleanup();
+#endif
+    m_hub->cleanup();
+    if(m_viz) m_viz->cleanup();
+    m_opticks->cleanup(); 
+}
+
+
+

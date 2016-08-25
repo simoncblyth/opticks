@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     App app(argc, argv); 
 
 
-    app.configure(argc, argv);
+    app.configure();
     if(app.isExit()) exit(EXIT_SUCCESS);
 
     app.prepareViz();
@@ -45,11 +45,8 @@ int main(int argc, char** argv)
 
     app.uploadGeometryViz();
 
-
 #ifdef WITH_OPTIX
     app.prepareOptiX();
-
-    app.prepareOptiXViz();
 #endif
 
 

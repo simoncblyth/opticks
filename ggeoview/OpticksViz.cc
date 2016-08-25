@@ -52,21 +52,12 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
-          t((s)) ;\
-       }\
-       else if(m_opticks) \
-       {\
-          Timer& t = *(m_opticks->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
-
-
-
-
 
 
 OpticksViz::OpticksViz(OpticksHub* hub)
@@ -75,7 +66,6 @@ OpticksViz::OpticksViz(OpticksHub* hub)
     m_opticks(hub->getOpticks()),
     m_interactivity(m_opticks->getInteractivityLevel()),
     m_composition(hub->getComposition()),
-    m_evt(hub->getEvent()),   // usually hub not yet configured, so m_evt starts NULL
     m_types(m_opticks->getTypes()),
     m_scene(NULL),
     m_frame(NULL),
@@ -92,10 +82,6 @@ OpticksViz::OpticksViz(OpticksHub* hub)
 }
 
 
-void OpticksViz::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ;  
-}
 
 void OpticksViz::init()
 {
@@ -125,22 +111,29 @@ void OpticksViz::init()
 
 }
 
+void OpticksViz::setEvent(OpticksEvent* evt)
+{
+    m_scene->setEvent(evt);
+}
+OpticksEvent* OpticksViz::getEvent()
+{
+    return m_scene->getEvent();
+}
+
+
 
 Scene* OpticksViz::getScene()
 {
     return m_scene ; 
 }
 
-
 bool OpticksViz::hasOpt(const char* name)
 {
     return m_hub->hasOpt(name);
 }
 
-
 void OpticksViz::configure()
 {
-    setEvent(m_hub->getEvent());
     m_hub->configureViz(m_scene) ;
     m_interactor->setBookmarks(m_hub->getBookmarks());
 }
@@ -148,8 +141,6 @@ void OpticksViz::configure()
 
 void OpticksViz::prepareScene()
 {
-    m_scene->setEvent(m_hub->getEvent());
-
     if(m_opticks->isJuno())
     {
         LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
@@ -265,9 +256,11 @@ void OpticksViz::downloadData(NPY<float>* data)
 
 void OpticksViz::downloadEvent()
 {
-    assert(m_evt);
+    OpticksEvent* evt = getEvent(); 
+    assert(evt);
+
     LOG(info) << "OpticksViz::downloadEvent" ;
-    Rdr::download(m_evt);
+    Rdr::download(evt);
 }
 
 

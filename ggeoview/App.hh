@@ -17,7 +17,7 @@ class OpticksViz ; // ggeoview-
 class GGV_API App {
   public:
        App(int argc, char** argv );
-       void configure(int argc, char** argv);
+       void configure();
   private:
        void init(int argc, char** argv);
   public:
@@ -39,7 +39,6 @@ class GGV_API App {
 #ifdef WITH_OPTIX
   public:
        void prepareOptiX();
-       void prepareOptiXViz();
        void setupEventInEngine();
        void preparePropagator();
        void seedPhotonsFromGensteps();

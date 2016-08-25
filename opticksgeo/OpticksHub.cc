@@ -157,16 +157,18 @@ void OpticksHub::add(BCfg* cfg)
 }
 
 
-void OpticksHub::configure(int argc, char** argv)
+void OpticksHub::configure()
 {
-    LOG(debug) << "OpticksHub::configure " << argv[0] ; 
-
     m_composition->addConfig(m_cfg); 
     //m_cfg->dumpTree();
 
+    int argc    = m_opticks->getArgc();
+    char** argv = m_opticks->getArgv();
+
+    LOG(debug) << "OpticksHub::configure " << argv[0] ; 
+
     m_cfg->commandline(argc, argv);
     m_opticks->configure();      
-
 
     if(m_fcfg->hasError())
     {
@@ -198,6 +200,12 @@ void OpticksHub::configure(int argc, char** argv)
         assert(0);
     }
 
+    TIMER("configure");
+}
+
+
+OpticksEvent* OpticksHub::createEvent()
+{
     if(!hasOpt("noevent"))
     {
         // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
@@ -222,10 +230,18 @@ void OpticksHub::configure(int argc, char** argv)
     }
 #endif
 
-    TIMER("configure");
+    if(m_evt)
+    { 
+        m_composition->setEvt(m_evt);
+        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
+
+        bool quietly = true ; 
+        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track", quietly);
+        m_composition->setTrack(track);
+    }
+
+    return m_evt ; 
 }
-
-
 
 
 void OpticksHub::loadGeometry()
@@ -246,12 +262,14 @@ void OpticksHub::loadGeometry()
     }    
 }
 
-void OpticksHub::loadGenstep()
+
+
+NPY<float>* OpticksHub::loadGenstep()
 {
     if(hasOpt("nooptix|noevent")) 
     {
         LOG(warning) << "OpticksHub::loadGenstep skip due to --nooptix/--noevent " ;
-        return ;
+        return NULL ;
     }
 
     unsigned int code = m_opticks->getSourceCode();
@@ -265,24 +283,38 @@ void OpticksHub::loadGenstep()
     {
         gs = loadGenstepTorch(); 
     }
-    
 
     TIMER("loadGenstep"); 
 
-    m_evt->setGenstepData(gs); 
+    return gs ; 
 
-    TIMER("setGenstepData"); 
+
+    // trying to defer evt creation for easier multi-event
+    //m_evt->setGenstepData(gs); 
+    //
+    //TIMER("setGenstepData"); 
 }
 
 
 
 NPY<float>* OpticksHub::loadGenstepFile()
 {
-    int modulo = m_fcfg->getModulo();
-    NPY<float>* gs = m_evt->loadGenstepFromFile(modulo);
-
+    NPY<float>* gs = m_opticks->loadGenstep();
     if(gs == NULL) LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
     assert(gs);
+
+    int modulo = m_fcfg->getModulo();
+
+    //m_parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
+    //m_parameters->add<int>("Modulo", modulo );
+
+    if(modulo > 0) 
+    {    
+        LOG(warning) << "OptickHub::loadGenstepFile applying modulo scaledown " << modulo ;
+        gs = NPY<float>::make_modulo(gs, modulo);
+        //m_parameters->add<std::string>("genstepModulo",   genstep->getDigestString()  );
+    }    
+
 
     G4StepNPY* g4step = new G4StepNPY(gs);    
     g4step->relabel(CERENKOV, SCINTILLATION); 
@@ -309,7 +341,6 @@ NPY<float>* OpticksHub::loadGenstepFile()
     }
     return gs ; 
 }
-
 
 
 NPY<float>* OpticksHub::loadGenstepTorch()
@@ -358,7 +389,7 @@ void OpticksHub::targetGenstep()
     }
     else if(m_evt)
     {
-        glm::vec4 gsce = m_evt->getGenstepCenterExtent();
+        glm::vec4 gsce = m_evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
         m_composition->setCenterExtent( gsce , autocam );
         LOG(info) << "OpticksHub::targetGenstep (!geocenter) gsce " << gformat(gsce) ; 
     }
@@ -402,15 +433,6 @@ void OpticksHub::configureViz(NConfigurable* scene)
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 
-    if(m_evt)
-    { 
-        m_composition->setEvt(m_evt);
-        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
-
-        bool quietly = true ; 
-        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track", quietly);
-        m_composition->setTrack(track);
-    }
 }
 
 

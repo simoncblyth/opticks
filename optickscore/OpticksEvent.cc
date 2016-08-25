@@ -85,12 +85,10 @@ const char* OpticksEvent::recsel_  = "recsel" ;
 const char* OpticksEvent::sequence_  = "sequence" ; 
 
 
-OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, const char* cat) 
+OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
           :
-          m_typ(strdup(typ)),
-          m_tag(strdup(tag)),
-          m_det(strdup(det)),
-          m_cat(cat ? strdup(cat) : NULL),
+          OpticksEventSpec(spec),
+          m_event_spec(spec),
 
           m_noload(false),
           m_loaded(false),
@@ -296,32 +294,6 @@ void OpticksEvent::setBoundariesNPY(BoundariesNPY* bnd)
 BoundariesNPY* OpticksEvent::getBoundariesNPY()
 {
     return m_bnd ;
-}
-
-
-
-
-
-
-const char* OpticksEvent::getTyp()
-{
-    return m_typ ; 
-}
-const char* OpticksEvent::getTag()
-{
-    return m_tag ; 
-}
-const char* OpticksEvent::getDet()
-{
-    return m_det ; 
-}
-const char* OpticksEvent::getCat()
-{
-    return m_cat ; 
-}
-const char* OpticksEvent::getUDet()
-{
-    return m_cat && strlen(m_cat) > 0 ? m_cat : m_det ; 
 }
 
 
@@ -766,8 +738,10 @@ void OpticksEvent::importDomainsBuffer()
 
 
 
+
 void OpticksEvent::setGenstepData(NPY<float>* genstep, bool progenitor)
 {
+
     m_genstep_data = genstep  ;
     m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
 
@@ -1254,7 +1228,9 @@ OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* d
               << " cat " << ( cat ? cat : "NULL" )
               ;
 
-    OpticksEvent* evt = new OpticksEvent(typ, tag, det, cat);
+
+    OpticksEventSpec* spec = new OpticksEventSpec(typ, tag, det, cat);
+    OpticksEvent* evt = new OpticksEvent(spec);
 
     evt->loadBuffers(verbose);
     if(evt->isNoLoad())
@@ -1466,42 +1442,6 @@ alongside standard constituents
     return npy ; 
 }
 
-
-NPY<float>* OpticksEvent::loadGenstepFromFile(int modulo)
-{
-    LOG(info) << "OpticksEvent::loadGenstepFromFile  "
-              << " typ " << m_typ
-              << " tag " << m_tag
-              << " det " << m_det
-              ;
-
-    std::string path = NLoad::GenstepsPath(m_det, m_typ, m_tag);
-    NPY<float>* gs = NPY<float>::load(path.c_str());
-    if(!gs)
-    {
-        LOG(warning) << "OpticksEvent::loadGenstepFromFile"
-                     << " FAILED TO LOAD GENSTEPS FROM "
-                     << " path " << path 
-                     << " typ " << m_typ
-                     << " tag " << m_tag
-                     << " det " << m_det
-                     ; 
-        return NULL ;
-    }
-
-
-    m_parameters->add<std::string>("genstepAsLoaded",   gs->getDigestString()  );
-
-    m_parameters->add<int>("Modulo", modulo );
-
-    if(modulo > 0)
-    {
-        LOG(warning) << "App::loadGenstepFromFile applying modulo scaledown " << modulo ;
-        gs = NPY<float>::make_modulo(gs, modulo);
-        m_parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
-    }
-    return gs ;
-}
 
 
 

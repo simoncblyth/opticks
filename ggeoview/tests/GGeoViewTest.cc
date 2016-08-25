@@ -1,9 +1,5 @@
-#include <cstdio>
-#include <iostream>
 
-#include "NGLM.hpp"
 #include "App.hh"
-
 #include "PLOG.hh"
 
 #include "SYSRAP_LOG.hh"
@@ -33,9 +29,7 @@ GGeoViewTest
 
 Executable providing geometry and event propagation visualizations.
 
-
 **/
-
 
 int main(int argc, char** argv)
 {
@@ -65,33 +59,23 @@ int main(int argc, char** argv)
 
     App app(argc, argv);     
 
-    app.configure(argc, argv);    // NumpyEvt created in App::config, 
-    if(app.isExit()) 
-    {
-        std::cerr << "app exit after configure" << std::endl ;        
-        exit(EXIT_SUCCESS);
-    }
-
-    app.prepareViz();      // setup OpenGL shaders and creates OpenGL context (the window)
-
-
-    if(app.hasOpt("nogeometry"))
-    { 
-        std::cerr << "skip geometry" << std::endl ; 
-    }
-    else
-    {       
-        app.loadGeometry();    // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
-        if(app.isExit()) exit(EXIT_SUCCESS);
-
-        app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
-    }
-
-
+    app.configure();    // OpticksEvent created in App::config, 
+    if(app.isExit()) exit(EXIT_SUCCESS);
 
     bool load = app.hasOpt("load");
-
     bool nooptix = app.hasOpt("nooptix");
+
+    app.prepareViz();              // setup OpenGL shaders and creates OpenGL context (the window)
+
+    app.loadGeometry();           // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    if(app.isExit()) exit(EXIT_SUCCESS);
+
+    app.uploadGeometryViz();      // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+
+#ifdef WITH_OPTIX
+    if(!nooptix) app.prepareOptiX();    // places geometry into OptiX context with OGeo  and prepares OTracer, ORenderer
+#endif
+
 
     if(!nooptix && !load)
     {
@@ -101,12 +85,7 @@ int main(int argc, char** argv)
 
         app.uploadEvtViz();            // allocates GPU buffers with OpenGL glBufferData
 
-
 #ifdef WITH_OPTIX
-        app.prepareOptiX();            // places geometry into OptiX context with OGeo 
-
-        app.prepareOptiXViz();         // creates ORenderer, OTracer
-
         if(!app.hasOpt("noevent"))
         {
             app.setupEventInEngine();
@@ -117,10 +96,9 @@ int main(int argc, char** argv)
 
             if(app.hasOpt("onlyseed"))
             {
-                 std::cerr << "onlyseed exit" << std::endl ;   
+                 LOG(info) << "onlyseed exit" ;   
                  exit(EXIT_SUCCESS);
             }   
-
 
             app.initRecords();             // zero records buffer
 
@@ -147,30 +125,19 @@ int main(int argc, char** argv)
     {
 
 #ifdef WITH_OPTIX
-        if(app.hasOpt("optixviz"))
-        {
-            app.prepareOptiX();            // places geometry into OptiX context with OGeo 
-
-            app.prepareOptiXViz();         // creates ORenderer, OTracer
-
-            app.setupEventInEngine();   // for indexing 
-        } 
+        app.setupEventInEngine();      // for indexing, huh before loading 
 #endif
-
         app.loadEvtFromFile();
 
-        app.targetViz();               // point Camera at gensteps 
+        app.targetViz();                  // point Camera at gensteps 
 
-        // huh maybe need to indexEvt if the indices are not loaded, 
-        // eg when running with cfg4- no indices are persisted by the save as 
-        // do that without assuming OptiX available
-
-        app.indexEvt() ; // this skips if already indexed, and it handles loaded evt 
+        app.indexEvt() ;                 // this skips if already indexed, and it handles loaded evt 
 
         app.indexPresentationPrep();
 
         app.uploadEvtViz();               // allocates GPU buffers with OpenGL glBufferData
     }
+
 
     app.prepareGUI();
 

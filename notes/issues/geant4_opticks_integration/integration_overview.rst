@@ -17,6 +17,28 @@ See Also
 * cfg4- partial integration for small test geometries only
 * export- geometry exporter
 
+DONE
+------
+
+* Pared down App divying up into OpticksHub and OpticksViz
+
+NEXT
+-----
+
+Consider multi-event restructuring main
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* some consolidation of App methods that always need to go together anyhow
+  for a shorter main
+
+* need clearer distinction between once-only geometry initialization 
+  within OptiX and otherwise and per-event actions (in response to input gensteps) 
+
+* thinking of how gensteps (eg G4gun derived or from multi-event file or over network ZMQ) 
+  need to be repeatedly passed to OpEngine and the OpticksHub, 
+  OpticksViz etc.. 
+   
+
 Approach
 ---------
 
