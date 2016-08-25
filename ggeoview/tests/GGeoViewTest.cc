@@ -63,9 +63,7 @@ int main(int argc, char** argv)
     GGV_LOG__ ;
  
 
-    App app("OPTICKS_", argc, argv);     
-
-    app.initViz();
+    App app(argc, argv);     
 
     app.configure(argc, argv);    // NumpyEvt created in App::config, 
     if(app.isExit()) 

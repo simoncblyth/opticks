@@ -14,6 +14,13 @@
 #include "G4StepNPY.hpp"
 #include "Index.hpp"
 
+#include "PhotonsNPY.hpp"
+#include "HitsNPY.hpp"
+#include "RecordsNPY.hpp"
+#include "BoundariesNPY.hpp"
+#include "SequenceNPY.hpp"
+#include "Types.hpp"
+
 
 // numpyserver-
 #ifdef WITH_NPYSERVER
@@ -91,9 +98,7 @@ void OpticksHub::init()
 
     m_cfg  = new BCfg("umbrella", false) ; 
     m_fcfg = m_opticks->getCfg();
-
     add(m_fcfg);
-
 
 #ifdef WITH_NPYSERVER
     m_delegate    = new numpydelegate ; 
@@ -138,8 +143,10 @@ Bookmarks* OpticksHub::getBookmarks()
 {
     return m_bookmarks ; 
 }
-
-
+Timer* OpticksHub::getTimer()
+{
+    return m_evt ? m_evt->getTimer() : m_opticks->getTimer() ; 
+}
 
 
 
@@ -523,6 +530,78 @@ GItemIndex* OpticksHub::makeBoundaryItemIndex()
     return boundaries ; 
 }
  
+
+
+void OpticksHub::indexEvtOld()
+{
+    if(!m_evt) return ; 
+
+    // TODO: wean this off use of Types, for the new way (GFlags..)
+    Types* types = m_opticks->getTypes();
+    Typ* typ = m_opticks->getTyp();
+
+    NPY<float>* ox = m_evt->getPhotonData();
+
+    if(ox && ox->hasData())
+    {
+        PhotonsNPY* pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
+        pho->setTypes(types);
+        pho->setTyp(typ);
+        m_evt->setPhotonsNPY(pho);
+
+        HitsNPY* hit = new HitsNPY(ox, m_ggeo->getSensorList());
+        m_evt->setHitsNPY(hit);
+    }
+
+    NPY<short>* rx = m_evt->getRecordData();
+
+    if(rx && rx->hasData())
+    {
+        RecordsNPY* rec = new RecordsNPY(rx, m_evt->getMaxRec(), m_evt->isFlat());
+        rec->setTypes(types);
+        rec->setTyp(typ);
+        rec->setDomains(m_evt->getFDomain()) ;
+
+        PhotonsNPY* pho = m_evt->getPhotonsNPY();
+        if(pho)
+        {
+            pho->setRecs(rec);
+        }
+        m_evt->setRecordsNPY(rec);
+    }
+
+    TIMER("indexEvtOld"); 
+}
+
+
+
+void OpticksHub::indexBoundariesHost()
+{
+    // Indexing the final signed integer boundary code (p.flags.i.x = prd.boundary) from optixrap-/cu/generate.cu
+    // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
+    // also see optickscore-/Indexer for another CPU version 
+
+    if(!m_evt) return ;
+
+    NPY<float>* dpho = m_evt->getPhotonData();
+    if(dpho && dpho->hasData())
+    {
+        // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
+        LOG(info) << "OpticksHub::indexBoundaries host based " ;
+        std::map<unsigned int, std::string> boundary_names = getBoundaryNamesMap();
+        BoundariesNPY* bnd = new BoundariesNPY(dpho);
+        bnd->setBoundaryNames(boundary_names);
+        bnd->indexBoundaries();
+        m_evt->setBoundariesNPY(bnd);
+    }
+    else
+    {
+        LOG(warning) << "OpticksHub::indexBoundariesHost dpho NULL or no data " ;
+    }
+
+    TIMER("indexBoundariesHost");
+}
+
 
 
 

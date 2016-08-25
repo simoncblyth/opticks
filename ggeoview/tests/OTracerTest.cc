@@ -31,9 +31,8 @@ int main(int argc, char** argv)
     GGV_LOG__ ;
  
 
-    App app("OPTICKS_", argc, argv); 
+    App app(argc, argv); 
 
-    app.initViz();
 
     app.configure(argc, argv);
     if(app.isExit()) exit(EXIT_SUCCESS);

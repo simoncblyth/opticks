@@ -12,6 +12,7 @@ class Interactor ;
 class GItemIndex ; 
 class Photons ; 
 class GUI ; 
+template <typename T> class NPY ; 
 
 class SRenderer ; 
 
@@ -19,6 +20,7 @@ class OpticksViz {
     public:
          OpticksViz(OpticksHub* hub);
          void setExternalRenderer(SRenderer* external_renderer);
+         void setEvent(OpticksEvent* evt);
     public:
          bool hasOpt(const char* name);
          void configure();
@@ -35,6 +37,8 @@ class OpticksViz {
          void renderGUI();
     public:
          Scene* getScene(); 
+         void downloadData(NPY<float>* data);
+         void downloadEvent();
     private:
          void init();
     private:

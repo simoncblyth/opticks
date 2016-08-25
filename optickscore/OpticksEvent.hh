@@ -17,6 +17,7 @@ class ViewNPY ;
 class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
+class BoundariesNPY ; 
 class HitsNPY ; 
 class NPYSpec ; 
 
@@ -220,9 +221,13 @@ class OKCORE_API OpticksEvent {
        void setRecordsNPY(RecordsNPY* recs);
        void setPhotonsNPY(PhotonsNPY* pho);
        void setHitsNPY(HitsNPY* hit);
+       void setBoundariesNPY(BoundariesNPY* bnd);
+
        RecordsNPY*          getRecordsNPY();
        PhotonsNPY*          getPhotonsNPY();
        HitsNPY*             getHitsNPY();
+       BoundariesNPY*       getBoundariesNPY();
+   public:
        NPY<float>*          getFDomain();
        NPY<int>*            getIDomain();
    public:
@@ -301,6 +306,7 @@ class OKCORE_API OpticksEvent {
        RecordsNPY*     m_records ; 
        PhotonsNPY*     m_photons ; 
        HitsNPY*        m_hits ; 
+       BoundariesNPY*  m_bnd ; 
 
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_nopsteps ; 

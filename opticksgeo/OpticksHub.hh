@@ -4,6 +4,7 @@
 #include <map>
 
 class BCfg ; 
+class Timer ; 
 
 class Opticks ; 
 class OpticksGeometry ; 
@@ -56,7 +57,10 @@ class OKGEO_API OpticksHub {
        GItemIndex* makeHistoryItemIndex();
        GItemIndex* makeMaterialItemIndex();
        GItemIndex* makeBoundaryItemIndex();
-
+   public:
+       // hostside indexing 
+       void indexEvtOld();
+       void indexBoundariesHost();
    public:
        void loadGeometry();
        void loadGenstep();
@@ -66,6 +70,7 @@ class OKGEO_API OpticksHub {
        void prepareViz();
        void cleanup();
        NPY<unsigned char>* getColorBuffer();
+       Timer*              getTimer(); 
    private:
        void init();
    private:

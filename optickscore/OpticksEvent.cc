@@ -123,6 +123,7 @@ OpticksEvent::OpticksEvent(const char* typ, const char* tag, const char* det, co
           m_records(NULL),
           m_photons(NULL),
           m_hits(NULL),
+          m_bnd(NULL),
 
           m_num_gensteps(0),
           m_num_nopsteps(0),
@@ -286,6 +287,17 @@ HitsNPY* OpticksEvent::getHitsNPY()
 {
     return m_hits ;
 }
+
+
+void OpticksEvent::setBoundariesNPY(BoundariesNPY* bnd)
+{
+    m_bnd = bnd ; 
+}
+BoundariesNPY* OpticksEvent::getBoundariesNPY()
+{
+    return m_bnd ;
+}
+
 
 
 
@@ -1153,28 +1165,6 @@ void OpticksEvent::makeReport()
     m_report->add(m_parameters->getLines());
     m_report->add(m_ttable->getLines());
 }
-
-
-/*
-std::string OpticksEvent::speciesDir(const char* species, const char* udet, const char* typ)
-{
-    std::string dir = BOpticksEvent::directory(species, typ, udet );
-    return dir ; 
-}
-std::string OpticksEvent::getSpeciesDir(const char* species)
-{
-   // eg species  "ix" for indices
-    const char* udet = getUDet();
-    return speciesDir(species, udet, m_typ );
-}
-std::string OpticksEvent::getTagDir(const char* species, bool tstamp)
-{
-    std::stringstream ss ;
-    ss << getSpeciesDir(species) << "/" << m_tag  ;
-    if(tstamp) ss << "/" << getTimeStamp() ;
-    return ss.str();
-}
-*/
 
 
 std::string OpticksEvent::TagDir(const char* det, const char* typ, const char* tag, const char* anno)

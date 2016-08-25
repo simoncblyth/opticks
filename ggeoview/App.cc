@@ -1,311 +1,152 @@
 #include <cstring>
 
-// sysrap-
-#include "SSys.hh"
-
-// brap-
-#include "BStr.hh"
-
-// npy-
-
-class NLookup ; 
-
-#include "NGLM.hpp"
-//#include "NState.hpp"
-#include "NPY.hpp"
-#include "GLMPrint.hpp"
-#include "GLMFormat.hpp"
-//#include "ViewNPY.hpp"
-//#include "MultiViewNPY.hpp"
-
-
-#include "PhotonsNPY.hpp"
-#include "HitsNPY.hpp"
-#include "RecordsNPY.hpp"
-#include "BoundariesNPY.hpp"
-#include "SequenceNPY.hpp"
-#include "Types.hpp"
-
-#include "Index.hpp"
+template <typename T> class NPY ;
+class Scene ; 
 
 #include "Timer.hpp"
-#include "Times.hpp"
-#include "Parameters.hpp"
-#include "Report.hpp"
-#include "NSlice.hpp"
-#include "NQuad.hpp"
 
-
-// okc-
-#include "Opticks.hh"
-#include "OpticksFlags.hh"
-#include "OpticksAttrSeq.hh"
-#include "OpticksCfg.hh"
+#include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
-#include "OpticksPhoton.h"
-#include "OpticksResource.hh"
-#include "Bookmarks.hh"
-#include "Composition.hh"
+#include "OpticksHub.hh"    // opticksgeo-
 
-// ggeo-
-#include "GGeo.hh"
-#include "GItemIndex.hh"
-
-// opticksgeo-
-#include "OpticksHub.hh"
-
-// windows headers from PLOG need to be before glfw 
-// http://stackoverflow.com/questions/3927810/how-to-prevent-macro-redefinition
 #include "PLOG.hh"
 
-// oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
-#include "Frame.hh"
-
-#define GUI_ 1
-#ifdef GUI_
-#include "GUI.hh"
-#endif
-
-#include "StateGUI.hh"
-
-#include "Scene.hh"
-#include "SceneCfg.hh"
-#include "Renderer.hh"
-#include "RendererCfg.hh"
-#include "Interactor.hh"
-#include "InteractorCfg.hh"
-
-#include "Rdr.hh"
-#include "Texture.hh"
-
-
-
 #ifdef WITH_OPTIX
-// optixgl-
-#include "OpViz.hh"
-// opticksop-
-#include "OpEngine.hh"
+#include "OpViz.hh"     // optixgl-
+#include "OpEngine.hh"  // opticksop-
 #endif
-
 
 // ggeoview-
 #include "App.hh"
+
+#define GUI_ 1
 #include "OpticksViz.hh"
 
 #include "GGV_BODY.hh"
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
-          t((s)) ;\
-       }\
-       else if(m_opticks) \
-       {\
-          Timer& t = *(m_opticks->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
 
-
-
-
-App::App(const char* prefix, int argc, char** argv )
+App::App(int argc, char** argv )
    : 
       m_opticks(NULL),
       m_hub(NULL),
-      m_viz(NULL),
-      m_prefix(strdup(prefix)),
-      m_parameters(NULL),
-      m_timer(NULL),
-
-      m_composition(NULL),
-      m_types(NULL),
-      m_ggeo(NULL),
-
 #ifdef WITH_OPTIX
       m_ope(NULL),
       m_opv(NULL),
 #endif
-      m_bnd(NULL)
+      m_viz(NULL)
 {
     init(argc, argv);
 }
 
-
-
+bool App::isCompute(){ return m_opticks->isCompute() ; }
+bool App::isExit(){    return m_opticks->isExit() ;  }
+bool App::hasOpt(const char* name){ return m_hub->hasOpt(name); }
 
 void App::init(int argc, char** argv)
 {
     m_opticks = new Opticks(argc, argv);
     m_opticks->Summary("App::init OpticksResource::Summary");
-
-
     m_hub = new OpticksHub(m_opticks) ;
-
-    // TRANSITIONAL
-    m_composition = m_hub->getComposition(); 
-    m_evt = m_hub->getEvent(); 
-
-
     TIMER("init");
-}
 
-bool App::isCompute()
-{
-    return m_opticks->isCompute() ;
-}
-
-bool App::isExit()
-{
-    return m_opticks->isExit() ; 
-}
-
-void App::initViz()
-{
     if(m_opticks->isCompute()) return ; 
-
     m_viz = new OpticksViz(m_hub) ; 
-
     TIMER("initViz");
 }
-
 
 void App::configure(int argc, char** argv)
 {
     LOG(debug) << "App:configure " << argv[0] ; 
-
     m_hub->configure(argc, argv); 
-
     if(m_viz) m_viz->configure();
-
     TIMER("configure");
 }
 
-
 void App::prepareViz()
 {
-    if(isCompute()) return ; 
-
+    if(!m_viz) return ; 
     m_hub->prepareViz();
-
     m_viz->prepareScene();
-
     TIMER("prepareViz");
 } 
-
 
 void App::loadGeometry()
 {
     m_hub->loadGeometry();
 }
-
 void App::loadGenstep()
 {
     m_hub->loadGenstep();
 }
-
-
-void App::uploadGeometryViz()
-{
-    if(isCompute()) return ; 
-
-    m_viz->uploadGeometry();
-
-    TIMER("uploadGeometryViz"); 
-}
-
-
-void App::targetViz()
-{
-    if(isCompute()) return ; 
-
-    m_viz->targetGenstep();
-
-    TIMER("targetViz"); 
-}
-
-
 void App::loadEvtFromFile()
 {
     m_hub->loadEvent();
 }
 
 
+void App::uploadGeometryViz()
+{
+    if(!m_viz) return ; 
+    m_viz->uploadGeometry();
+    TIMER("uploadGeometryViz"); 
+}
+void App::targetViz()
+{
+    if(!m_viz) return ; 
+    m_viz->targetGenstep();
+    TIMER("targetViz"); 
+}
 void App::uploadEvtViz()
 {
-    if(isCompute()) return ; 
-
+    if(!m_viz) return ; 
     m_viz->uploadEvent();
-
     TIMER("uploadEvtViz"); 
 }
-
-
 void App::indexPresentationPrep()
 {
-    LOG(info) << "App::indexPresentationPrep" ; 
-
-    if(m_viz) m_viz->indexPresentationPrep();
-
+    if(!m_viz) return ; 
+    m_viz->indexPresentationPrep();
     TIMER("indexPresentationPrep"); 
 }
 
-
-void App::indexBoundariesHost()
+void App::prepareGUI()
 {
-    // Indexing the final signed integer boundary code (p.flags.i.x = prd.boundary) from optixrap-/cu/generate.cu
-    // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
-    // also see optickscore-/Indexer for another CPU version 
-
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ; 
-
-    NPY<float>* dpho = evt->getPhotonData();
-    if(dpho && dpho->hasData())
-    {
-        // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
-        LOG(info) << "App::indexBoundaries host based " ;
-        std::map<unsigned int, std::string> boundary_names = m_hub->getBoundaryNamesMap();
-        m_bnd = new BoundariesNPY(dpho); 
-        m_bnd->setBoundaryNames(boundary_names); 
-        m_bnd->indexBoundaries();     
-    } 
-    else
-    {
-        LOG(warning) << "App::indexBoundaries dpho NULL or no data " ;
-    }
-
-
-    TIMER("indexBoundariesHost"); 
+    if(m_viz) m_viz->prepareGUI();
 }
+void App::renderLoop()
+{
+    if(!m_viz) return ; 
+    m_viz->renderLoop();    
+}
+
 
 
 void App::indexEvt()
 {
     OpticksEvent* evt = m_hub->getEvent();
-  
     if(!evt) return ; 
 
     if(evt->isIndexed())
     {
-        LOG(info) << "App::indexEvt" 
-                  << " skip as already indexed "
-                  ;
+        LOG(info) << "App::indexEvt skip as already indexed " ;
         return ; 
     }
 
-
 #ifdef WITH_OPTIX 
     LOG(info) << "App::indexEvt WITH_OPTIX" ; 
-
     indexSequence();
-
     LOG(info) << "App::indexEvt WITH_OPTIX DONE" ; 
 #endif
 
-    indexBoundariesHost();
+    m_hub->indexBoundariesHost();
 
     TIMER("indexEvt"); 
 }
@@ -313,64 +154,9 @@ void App::indexEvt()
 
 void App::indexEvtOld()
 {
-    // TODO: migrate this into an OpticksIndexer, not OpticksHub as this is 
-    //       near dead code
-
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ; 
-
-    // TODO: wean this off use of Types, for the new way (GFlags..)
-    Types* types = m_opticks->getTypes();
-    Typ* typ = m_opticks->getTyp();
-
-    NPY<float>* ox = evt->getPhotonData();
-
-    if(ox && ox->hasData())
-    {
-        PhotonsNPY* pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
-        pho->setTypes(types);
-        pho->setTyp(typ);
-        evt->setPhotonsNPY(pho);
-
-        GGeo* ggeo = m_hub->getGGeo();
-        HitsNPY* hit = new HitsNPY(ox, ggeo->getSensorList());
-        evt->setHitsNPY(hit);
-    }
-
-    NPY<short>* rx = evt->getRecordData();
-
-    if(rx && rx->hasData())
-    {
-        RecordsNPY* rec = new RecordsNPY(rx, evt->getMaxRec(), evt->isFlat());
-        rec->setTypes(types);
-        rec->setTyp(typ);
-        rec->setDomains(evt->getFDomain()) ;
-
-        PhotonsNPY* pho = evt->getPhotonsNPY();
-        if(pho)
-        {
-            pho->setRecs(rec);
-        }
-        evt->setRecordsNPY(rec);
-    }
-
-    TIMER("indexEvtOld"); 
+    m_hub->indexEvtOld();
 }
 
-
-
-
-void App::prepareGUI()
-{
-    if(m_viz) m_viz->prepareGUI();
-}
-
-
-void App::renderLoop()
-{
-    if(isCompute()) return ; 
-    m_viz->renderLoop();    
-}
 
 
 void App::cleanup()
@@ -378,25 +164,15 @@ void App::cleanup()
 #ifdef WITH_OPTIX
     if(m_ope) m_ope->cleanup();
 #endif
-
     m_hub->cleanup();
-    m_viz->cleanup();
-
+    if(m_viz) m_viz->cleanup();
     m_opticks->cleanup(); 
 }
-
-
-bool App::hasOpt(const char* name)
-{
-    return m_hub->hasOpt(name);
-}
-
 
 
 #ifdef WITH_OPTIX
 void App::prepareOptiX()
 {
-    LOG(info) << "App::prepareOptiX create OpEngine " ; 
     GGeo* ggeo = m_hub->getGGeo();
     m_ope = new OpEngine(m_opticks, ggeo);
     m_ope->prepareOptiX();
@@ -416,7 +192,7 @@ void App::setupEventInEngine()
 {
     if(!m_ope) return ; 
     OpticksEvent* evt = m_hub->getEvent();
-    m_ope->setEvent(evt);  // without this cannot index
+    m_ope->setEvent(evt);     // needed for indexing
 }
 
 void App::preparePropagator()
@@ -429,32 +205,8 @@ void App::seedPhotonsFromGensteps()
 {
     if(!m_ope) return ; 
     m_ope->seedPhotonsFromGensteps();
-    if(hasOpt("dbgseed"))
-    {
-        dbgSeed();
-    }
+    if(hasOpt("dbgseed")) dbgSeed();
 }
-
-void App::dbgSeed()
-{
-    OpticksEvent* evt = m_ope->getEvent();    
-    NPY<float>* ox = evt->getPhotonData();
-    assert(ox);
-
-    if(!isCompute()) 
-    { 
-        LOG(info) << "App::debugSeed (interop) download photon seeds " ;
-        Rdr::download<float>(ox);
-        ox->save("$TMP/dbgseed_interop.npy");
-    }
-    else
-    {
-        LOG(info) << "App::debugSeed (compute) download photon seeds " ;
-        m_ope->downloadPhotonData();  
-        ox->save("$TMP/dbgseed_compute.npy");
-    }  
-}
-
 
 void App::initRecords()
 {
@@ -464,39 +216,44 @@ void App::initRecords()
 
 void App::propagate()
 {
-    if(hasOpt("nooptix|noevent|nopropagate")) 
-    {
-        LOG(warning) << "App::propagate skip due to --nooptix/--noevent/--nopropagate " ;
-        return ;
-    }
     if(!m_ope) return ; 
+    if(hasOpt("nooptix|noevent|nopropagate")) return ; 
     m_ope->propagate();
 }
 
 void App::saveEvt()
 {
     if(!m_ope) return ; 
-    if(!isCompute()) 
-    {
-        OpticksEvent* evt = m_hub->getEvent();
-        Rdr::download(evt);
-    }
+    if(m_viz) m_viz->downloadEvent();
     m_ope->saveEvt();
 }
 
 void App::indexSequence()
 {
-    if(!m_ope)
-    {
-        LOG(warning) << "App::indexSequence NULL OpEngine " ;
-        return ; 
-    }
-
-    OpticksEvent* evt = m_hub->getEvent(); 
-    LOG(info) << "App::indexSequence evt shape " << evt->getShapeString() ;
-
+    if(!m_ope) return ; 
     m_ope->indexSequence();
     LOG(info) << "App::indexSequence DONE" ;
+}
+
+void App::dbgSeed()
+{
+    if(!m_ope) return ; 
+    OpticksEvent* evt = m_ope->getEvent();    
+    NPY<float>* ox = evt->getPhotonData();
+    assert(ox);
+
+    if(m_viz) 
+    { 
+        LOG(info) << "App::debugSeed (interop) download photon seeds " ;
+        m_viz->downloadData(ox) ; 
+        ox->save("$TMP/dbgseed_interop.npy");
+    }
+    else
+    {
+        LOG(info) << "App::debugSeed (compute) download photon seeds " ;
+        m_ope->downloadPhotonData();  
+        ox->save("$TMP/dbgseed_compute.npy");
+    }  
 }
 
 #endif

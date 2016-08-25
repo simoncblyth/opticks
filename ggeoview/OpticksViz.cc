@@ -8,6 +8,7 @@
 #include "Timer.hpp"
 #include "TimesTable.hpp"
 #include "NGLM.hpp"
+#include "NPY.hpp"
 
 // okc-
 #include "Opticks.hh"
@@ -32,6 +33,7 @@
 
 // oglrap-  Frame brings in GL/glew.h GLFW/glfw3.h gleq.h
 #include "Frame.hh"
+#include "Rdr.hh"
 
 #define GUI_ 1
 #ifdef GUI_
@@ -73,7 +75,7 @@ OpticksViz::OpticksViz(OpticksHub* hub)
     m_opticks(hub->getOpticks()),
     m_interactivity(m_opticks->getInteractivityLevel()),
     m_composition(hub->getComposition()),
-    m_evt(hub->getEvent()),
+    m_evt(hub->getEvent()),   // usually hub not yet configured, so m_evt starts NULL
     m_types(m_opticks->getTypes()),
     m_scene(NULL),
     m_frame(NULL),
@@ -87,6 +89,12 @@ OpticksViz::OpticksViz(OpticksHub* hub)
     m_external_renderer(NULL)
 {
     init();
+}
+
+
+void OpticksViz::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ;  
 }
 
 void OpticksViz::init()
@@ -132,6 +140,7 @@ bool OpticksViz::hasOpt(const char* name)
 
 void OpticksViz::configure()
 {
+    setEvent(m_hub->getEvent());
     m_hub->configureViz(m_scene) ;
     m_interactor->setBookmarks(m_hub->getBookmarks());
 }
@@ -244,6 +253,23 @@ void OpticksViz::uploadEvent()
         m_scene->dump_uploads_table("OpticksViz::uploadEvent");
 
 }
+
+
+
+void OpticksViz::downloadData(NPY<float>* data)
+{
+    assert(data);
+    LOG(info) << "OpticksViz::downloadData" ;
+    Rdr::download<float>(data);
+}
+
+void OpticksViz::downloadEvent()
+{
+    assert(m_evt);
+    LOG(info) << "OpticksViz::downloadEvent" ;
+    Rdr::download(m_evt);
+}
+
 
 void OpticksViz::indexPresentationPrep()
 {
