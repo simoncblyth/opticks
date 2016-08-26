@@ -1,4 +1,4 @@
-#include "OpticksApp.hh"
+#include "OpticksMgr.hh"
 
 #include "PLOG.hh"
 
@@ -24,7 +24,7 @@
 
 /**
 
-OpticksAppTest
+OpticksMgrTest
 ================
 
 **/
@@ -55,13 +55,13 @@ int main(int argc, char** argv)
 
     GGV_LOG__ ;
  
-    OpticksApp app(argc, argv);
+    OpticksMgr mgr(argc, argv);
 
-    NPY<float>* gs = app.loadGenstep();  
+    NPY<float>* gs = mgr.loadGenstep();  
     
-    app.propagate(gs);
+    mgr.propagate(gs);
 
-    app.visualize();
+    mgr.visualize();
 
     exit(EXIT_SUCCESS);
 }

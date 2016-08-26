@@ -9,7 +9,7 @@ set(TEST_SOURCES
     flagsTest.cc
     OTracerTest.cc
     GGeoViewTest.cc
-    OpticksAppTest.cc
+    OpticksMgrTest.cc
     LogTest.cc
     OpEngineTest.cc
 )

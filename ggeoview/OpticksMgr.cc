@@ -1,4 +1,4 @@
-#include "OpticksApp.hh"
+#include "OpticksMgr.hh"
 
 class Scene ; 
 
@@ -27,7 +27,7 @@ class Scene ;
     }
 
 
-OpticksApp::OpticksApp(int argc, char** argv) 
+OpticksMgr::OpticksMgr(int argc, char** argv) 
     :
     m_opticks(new Opticks(argc, argv)),
     m_hub(new OpticksHub(m_opticks)),
@@ -42,18 +42,18 @@ OpticksApp::OpticksApp(int argc, char** argv)
     initGeometry();
 }
 
-void OpticksApp::init()
+void OpticksMgr::init()
 {
-    m_opticks->Summary("OpticksApp::init OpticksResource::Summary");
+    m_opticks->Summary("OpticksMgr::init OpticksResource::Summary");
 
-    m_hub->configure();  // OpticksEvent formerly created here...  now moved to OpticksApp::createEvent 
+    m_hub->configure();  // OpticksEvent formerly created here...  now moved to OpticksMgr::createEvent 
 
     if(m_opticks->isExit()) exit(EXIT_SUCCESS) ; 
 
     if(m_viz) m_viz->configure();
 }
 
-void OpticksApp::initGeometry()
+void OpticksMgr::initGeometry()
 {
     if(m_viz) 
     {
@@ -79,22 +79,22 @@ void OpticksApp::initGeometry()
 }
 
 
-bool OpticksApp::isExit()
+bool OpticksMgr::isExit()
 {
     return m_opticks->isExit(); 
 }
-bool OpticksApp::hasOpt(const char* name)
+bool OpticksMgr::hasOpt(const char* name)
 {
     return m_opticks->hasOpt(name); 
 }
 
 
-NPY<float>* OpticksApp::loadGenstep()
+NPY<float>* OpticksMgr::loadGenstep()
 {
     return m_hub->loadGenstep();
 }
 
-void OpticksApp::createEvent()
+void OpticksMgr::createEvent()
 {
     m_evt = m_hub->createEvent();
     assert(m_evt == m_hub->getEvent()) ; 
@@ -106,7 +106,7 @@ void OpticksApp::createEvent()
 #endif
 }
 
-void OpticksApp::propagate(NPY<float>* genstep)
+void OpticksMgr::propagate(NPY<float>* genstep)
 {
     createEvent();
     m_evt->setGenstepData(genstep);
@@ -137,7 +137,7 @@ void OpticksApp::propagate(NPY<float>* genstep)
 }
 
 
-void OpticksApp::indexPropagation()
+void OpticksMgr::indexPropagation()
 {
     if(!m_evt->isIndexed())
     {
@@ -150,7 +150,7 @@ void OpticksApp::indexPropagation()
 }
 
 
-void OpticksApp::loadPropagation()
+void OpticksMgr::loadPropagation()
 {
     createEvent(); 
     m_hub->loadEvent();                    // actually loads buffers into the above created OpticksEvent
@@ -164,7 +164,7 @@ void OpticksApp::loadPropagation()
 }
 
 
-void OpticksApp::visualize()
+void OpticksMgr::visualize()
 {
     if(m_viz) 
     {
@@ -174,7 +174,7 @@ void OpticksApp::visualize()
 }
 
 
-void OpticksApp::cleanup()
+void OpticksMgr::cleanup()
 {
 #ifdef WITH_OPTIX
     if(m_ope) m_ope->cleanup();

@@ -14,9 +14,9 @@ class OpViz ;
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
 
-class GGV_API OpticksApp {
+class GGV_API OpticksMgr {
    public:
-       OpticksApp(int argc, char** argv);
+       OpticksMgr(int argc, char** argv);
    public:
        bool isExit();
        bool hasOpt(const char* name);

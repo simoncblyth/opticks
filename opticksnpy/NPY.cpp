@@ -352,19 +352,6 @@ void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const c
 }
 
 
-template <typename T>
-std::string NPY<T>::directory(const char* tfmt, const char* source, const char* tag, const char* det)
-{
-    std::string raw = BOpticksEvent::path(det, source, tag, tfmt );
-    std::string native = BFile::FormPath(raw.c_str());   // potentially with prefixing/windozing 
-    fs::path path(native);
-    fs::path dir = path.parent_path();
-
-    std::string dir_ = dir.string();
-    return dir_ ; 
-}
-
-
 
 template <typename T>
 bool NPY<T>::exists(const char* tfmt, const char* source, const char* tag, const char* det)
