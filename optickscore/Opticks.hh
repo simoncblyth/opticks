@@ -144,7 +144,8 @@ class OKCORE_API Opticks {
        const glm::uvec4& getSize();
        const glm::uvec4& getPosition();
    public:
-       void setSpaceDomain(const glm::vec4& pd);  // triggers configureDomains setting time and wavelength domains too
+       void setSpaceDomain(float x, float y, float z, float w);  // triggers configureDomains setting time and wavelength domains too
+       void setSpaceDomain(const glm::vec4& pd); 
        std::string description();
    private:
        void configureDomains();

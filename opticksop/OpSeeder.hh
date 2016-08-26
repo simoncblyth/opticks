@@ -24,7 +24,7 @@
 //
 
 
-class OpticksEvent ; 
+class OpticksHub ; 
 class OPropagator ; 
 class OContext ; 
 
@@ -34,9 +34,8 @@ struct CBufSpec ;
 
 class OKOP_API OpSeeder {
    public:
-      OpSeeder(OContext* ocontext);
+      OpSeeder(OpticksHub* hub, OContext* ocontext);
    public:
-      void setEvent(OpticksEvent* evt);
       void setPropagator(OPropagator* propagator);
    public:
       void seedPhotonsFromGensteps();
@@ -47,8 +46,8 @@ class OKOP_API OpSeeder {
    private:
       void init();
    private:
+      OpticksHub*              m_hub ;
       OContext*                m_ocontext ;
-      OpticksEvent*                m_evt ;
       OPropagator*             m_propagator ;
 };
 

@@ -1,35 +1,26 @@
 #include <cstddef>
 
 #include "OpticksEngine.hh"
+#include "OpticksHub.hh"
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 
 #include "PLOG.hh"
 
 
-OpticksEngine::OpticksEngine(Opticks* opticks) 
+OpticksEngine::OpticksEngine(OpticksHub* hub) 
     :
-      m_opticks(opticks),
-      m_cfg(NULL),
-      m_evt(NULL)
+      m_hub(hub),
+      m_opticks(hub->getOpticks()),
+      m_cfg(NULL)
 {
      init();
 }
 
-void OpticksEngine::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}
 Opticks* OpticksEngine::getOpticks()
 {
     return m_opticks ; 
 }
-OpticksEvent* OpticksEngine::getEvent()
-{
-    return m_evt ; 
-}
-
-
 
 
 void OpticksEngine::init()

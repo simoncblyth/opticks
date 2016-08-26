@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 #ifdef WITH_OPTIX
         if(!app.hasOpt("noevent"))
         {
-            app.setupEventInEngine();
+            //app.setupEventInEngine();
  
             app.preparePropagator();       // creates OptiX buffers and OBuf wrappers as members of OPropagator
 
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     {
 
 #ifdef WITH_OPTIX
-        app.setupEventInEngine();      // for indexing, huh before loading 
+        //app.setupEventInEngine();      // for indexing, huh before loading 
 #endif
         app.loadEvtFromFile();
 

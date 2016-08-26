@@ -114,16 +114,6 @@ void OpticksViz::init()
 
 }
 
-void OpticksViz::setEvent(OpticksEvent* evt)
-{
-    m_scene->setEvent(evt);
-}
-OpticksEvent* OpticksViz::getEvent()
-{
-    return m_scene->getEvent();
-}
-
-
 
 Scene* OpticksViz::getScene()
 {
@@ -247,9 +237,9 @@ void OpticksViz::uploadEvent()
 
     m_composition->update();
 
-    m_scene->upload();
+    OpticksEvent* evt = m_hub->getEvent();
 
-    m_scene->uploadSelection();
+    m_scene->upload(evt);
 
     if(m_hub->hasOpt("dbguploads"))
         m_scene->dump_uploads_table("OpticksViz::uploadEvent");
@@ -267,9 +257,8 @@ void OpticksViz::downloadData(NPY<float>* data)
 
 void OpticksViz::downloadEvent()
 {
-    OpticksEvent* evt = getEvent(); 
+    OpticksEvent* evt = m_hub->getEvent(); 
     assert(evt);
-
     LOG(info) << "OpticksViz::downloadEvent" ;
     Rdr::download(evt);
 }

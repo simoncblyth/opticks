@@ -9,6 +9,10 @@ class G4StepPoint ;
 // okc-
 class OpticksEvent ; 
 
+// opticksgeo-
+class OpticksHub ; 
+
+
 // cg4-
 class CStep ;
 
@@ -21,7 +25,7 @@ template <typename T> class NPY ;
 
 class CFG4_API CStepRec {
    public:
-       CStepRec(OpticksEvent* evt);
+       CStepRec(OpticksHub* hub);
    private:
        void init();    
    public:
@@ -31,6 +35,7 @@ class CFG4_API CStepRec {
    private:
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
+       OpticksHub*                 m_hub ; 
        OpticksEvent*               m_evt ; 
        NPY<float>*                 m_nopstep ; 
        std::vector<const CStep*>   m_steps ; 

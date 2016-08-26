@@ -19,6 +19,8 @@ class CRecorder ;
 class Rec ; 
 class CStepRec ; 
 
+class OpticksHub ; 
+
 //#define OLDPHYS 1
 #ifdef OLDPHYS
 class PhysicsList ; 
@@ -32,7 +34,7 @@ class OpNovicePhysicsList ;
 class CFG4_API CG4 : public OpticksEngine
 {
    public:
-        CG4(Opticks* opticks);
+        CG4(OpticksHub* hub);
         void configure();
         void interactive(int argc, char** argv);
         void cleanup();
@@ -48,7 +50,6 @@ class CFG4_API CG4 : public OpticksEngine
    private:
         void postinitialize();
         void postpropagate();
-        void setupCompressionDomains();
    private:
         void execute(const char* path);
    public:

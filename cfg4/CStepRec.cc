@@ -2,6 +2,9 @@
 // okc-
 #include "OpticksEvent.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
 // npy-
 #include "NPY.hpp"
 #include "uif.h"
@@ -20,9 +23,9 @@
 #include "PLOG.hh"
 
 
-CStepRec::CStepRec( OpticksEvent* evt )
+CStepRec::CStepRec( OpticksHub* hub )
    :
-   m_evt(evt),
+   m_hub(hub),
    m_nopstep(NULL),
    m_store_count(0)
 {
@@ -35,10 +38,8 @@ unsigned int CStepRec::getStoreCount()
 }
 
 
-
 void CStepRec::init()
 {
-    m_nopstep = m_evt->getNopstepData();
 }
 
 void CStepRec::collectStep(const G4Step* step, unsigned int step_id)
@@ -80,6 +81,14 @@ void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id,
 
 void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point)
 {
+    if(m_nopstep == NULL)
+    {
+        OpticksEvent* evt = m_hub->getEvent();
+        assert(evt); 
+        m_nopstep = evt->getNopstepData();
+        assert(m_nopstep); 
+    }
+
     const G4ThreeVector& pos = point->GetPosition();
     G4double time = point->GetGlobalTime();
 
@@ -123,9 +132,7 @@ void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int part
     // dynamically adding is efficient, but cannot handle on GPU
 
     delete vals ; 
-
 }
-
 
 
 

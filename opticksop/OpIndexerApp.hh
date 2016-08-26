@@ -5,6 +5,9 @@ class Opticks ;
 class OpticksEvent ; 
 template <typename T> class OpticksCfg ;
 
+// opticksgeo-
+class OpticksHub ; 
+
 // opticksop-
 class OpIndexer ; 
 
@@ -13,16 +16,14 @@ class OKOP_API OpIndexerApp {
    public:
       OpIndexerApp(int argc, char** argv);
       void configure();
-      void loadEvtFromFile(bool verbose=false);
+      void loadEvtFromFile();
       void makeIndex();
    private:
       void init();
    private:
-      int                   m_argc ; 
-      char**                m_argv ; 
       Opticks*              m_opticks ;   
+      OpticksHub*           m_hub ;   
       OpticksCfg<Opticks>*  m_cfg ;
-      OpticksEvent*         m_evt ;
       OpIndexer*            m_indexer ; 
 
 };

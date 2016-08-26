@@ -4,6 +4,9 @@
 // optickscore-
 #include "OpticksEvent.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
 // npy-
 #include "Timer.hpp"
 #include "NPY.hpp"
@@ -25,19 +28,19 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
 
 
 
-OpSeeder::OpSeeder(OContext* ocontext)  
+OpSeeder::OpSeeder(OpticksHub* hub, OContext* ocontext)  
    :
+     m_hub(hub),
      m_ocontext(ocontext),
-     m_evt(NULL),
      m_propagator(NULL)
 {
    init(); 
@@ -47,10 +50,6 @@ void OpSeeder::init()
 {
 }
 
-void OpSeeder::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}  
 void OpSeeder::setPropagator(OPropagator* propagator)
 {
     m_propagator = propagator ; 
@@ -78,8 +77,10 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 {
     LOG(info)<<"OpSeeder::seedPhotonsFromGenstepsViaOpenGL" ;
 
-    NPY<float>* gensteps =  m_evt->getGenstepData() ;
-    NPY<float>* photons  =  m_evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt); 
+    NPY<float>* gensteps =  evt->getGenstepData() ;
+    NPY<float>* photons  =  evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
 
     int gensteps_id = gensteps->getBufferId() ;
     int photons_id = photons->getBufferId() ; 
@@ -139,7 +140,10 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     
     //tgs.dump<unsigned int>("App::seedPhotonsFromGenstepsImp tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
-    NPY<float>* gensteps =  m_evt->getGenstepData() ;
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt); 
+
+    NPY<float>* gensteps =  evt->getGenstepData() ;
 
     unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
 
@@ -150,7 +154,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
 
     unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, num_genstep_values );  // adding photon counts for each genstep 
 
-    unsigned int x_num_photons = m_evt->getNumPhotons() ;
+    unsigned int x_num_photons = evt->getNumPhotons() ;
 
     if(num_photons != x_num_photons)
           LOG(fatal)

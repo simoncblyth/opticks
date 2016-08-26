@@ -72,8 +72,8 @@ void OpticksMgr::initGeometry()
     if(m_viz) m_viz->uploadGeometry();   // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 #ifdef WITH_OPTIX
-    m_ope = new OpEngine(m_opticks, m_hub->getGGeo());   // places geometry into OptiX context with OGeo 
-    m_ope->prepareOptiX();
+    m_ope = new OpEngine(m_hub);   
+    m_ope->prepareOptiX();               // places geometry into OptiX context with OGeo 
 
     if(m_viz)
     {
@@ -105,11 +105,9 @@ void OpticksMgr::createEvent()
     m_evt = m_hub->createEvent();
     assert(m_evt == m_hub->getEvent()) ; 
 
-    if(m_viz) m_viz->setEvent(m_evt);
-
-#ifdef WITH_OPTIX
-    m_ope->setEvent(m_evt);                  // needed for indexing
-#endif
+//#ifdef WITH_OPTIX
+//    m_ope->setEvent(m_evt);                  // needed for indexing
+//#endif
 }
 
 
@@ -125,10 +123,13 @@ void OpticksMgr::propagate(NPY<float>* genstep)
     }
 
 #ifdef WITH_OPTIX
-    m_ope->setEvent(m_evt);                  // needed for indexing
+//    m_ope->setEvent(m_evt);                // needed for indexing
     m_ope->preparePropagator();              // creates OptiX buffers and OBuf wrappers as members of OPropagator
+
     m_ope->seedPhotonsFromGensteps();        // distributes genstep indices into the photons buffer
+    if(hasOpt("dbgseed")) dbgSeed();
     if(hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+
     m_ope->initRecords();                   // zero records buffer, not working in OptiX 4 in interop 
     if(!hasOpt("nooptix|noevent|nopropagate")) m_ope->propagate();
 
@@ -190,5 +191,41 @@ void OpticksMgr::cleanup()
     if(m_viz) m_viz->cleanup();
     m_opticks->cleanup(); 
 }
+
+
+
+
+
+void OpticksMgr::dbgSeed()
+{
+#ifdef WITH_OPTIX
+    if(!m_ope) return ; 
+    OpticksEvent* evt = m_hub->getEvent();    
+    NPY<float>* ox = evt->getPhotonData();
+    assert(ox);
+
+    // this split between interop and compute mode
+    // is annoying, maybe having a shared base protocol
+    // for OpEngine and OpticksViz
+    // could avoid all the branching 
+
+    if(m_viz) 
+    { 
+        LOG(info) << "OpticksMgr::debugSeed (interop) download photon seeds " ;
+        m_viz->downloadData(ox) ; 
+        ox->save("$TMP/dbgseed_interop.npy");
+    }
+    else
+    {
+        LOG(info) << "OpticksMgr::debugSeed (compute) download photon seeds " ;
+        m_ope->downloadPhotonData();  
+        ox->save("$TMP/dbgseed_compute.npy");
+    }  
+#endif
+}
+
+
+
+
 
 

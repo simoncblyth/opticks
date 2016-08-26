@@ -95,9 +95,7 @@ void App::loadGenstep()
 
 void App::createEvent()
 {
-    OpticksEvent* evt = m_hub->createEvent();  
-
-    if(m_viz) m_viz->setEvent(evt);
+    m_hub->createEvent();  
 }
 
 
@@ -195,7 +193,7 @@ void App::cleanup()
 #ifdef WITH_OPTIX
 void App::prepareOptiX()
 {
-    m_ope = new OpEngine(m_opticks, m_hub->getGGeo());   // places geometry into OptiX context with OGeo 
+    m_ope = new OpEngine(m_hub);   // places geometry into OptiX context with OGeo 
     m_ope->prepareOptiX();
 
     if(!m_viz) return ; 
@@ -204,12 +202,12 @@ void App::prepareOptiX()
 }
 
 
-void App::setupEventInEngine()
-{
-    if(!m_ope) return ; 
-    OpticksEvent* evt = m_hub->getEvent();
-    m_ope->setEvent(evt);     // needed for indexing
-}
+//void App::setupEventInEngine()
+//{
+//    if(!m_ope) return ; 
+//    OpticksEvent* evt = m_hub->getEvent();
+//    m_ope->setEvent(evt);     // needed for indexing
+//}
 
 void App::preparePropagator()
 {
@@ -221,7 +219,6 @@ void App::seedPhotonsFromGensteps()
 {
     if(!m_ope) return ; 
     m_ope->seedPhotonsFromGensteps();
-    if(hasOpt("dbgseed")) dbgSeed();
 }
 
 void App::initRecords()
@@ -249,32 +246,6 @@ void App::indexSequence()
     if(!m_ope) return ; 
     m_ope->indexSequence();
     LOG(info) << "App::indexSequence DONE" ;
-}
-
-void App::dbgSeed()
-{
-    if(!m_ope) return ; 
-    OpticksEvent* evt = m_ope->getEvent();    
-    NPY<float>* ox = evt->getPhotonData();
-    assert(ox);
-
-    // this split between interop and compute mode
-    // is annoying, maybe having a shared base protocol
-    // for OpEngine and OpticksViz
-    // could avoid all the branching 
-
-    if(m_viz) 
-    { 
-        LOG(info) << "App::debugSeed (interop) download photon seeds " ;
-        m_viz->downloadData(ox) ; 
-        ox->save("$TMP/dbgseed_interop.npy");
-    }
-    else
-    {
-        LOG(info) << "App::debugSeed (compute) download photon seeds " ;
-        m_ope->downloadPhotonData();  
-        ox->save("$TMP/dbgseed_compute.npy");
-    }  
 }
 
 #endif

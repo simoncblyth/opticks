@@ -13,26 +13,25 @@
 
 // okc-
 class Opticks ;
-class OpticksEvent ;
 template <typename T> class OpticksCfg ;
 
+// opticksgeo-
+class OpticksHub ;
 
-#include "OKCORE_API_EXPORT.hh"
 
-class OKCORE_API OpticksEngine {
+#include "OKGEO_API_EXPORT.hh"
+
+class OKGEO_API OpticksEngine {
    public:
-       OpticksEngine(Opticks* opticks);
-   public:
-       void setEvent(OpticksEvent* evt);
+        OpticksEngine(OpticksHub* hub);
    public:
         Opticks*      getOpticks();
-        OpticksEvent* getEvent();
    private:
         void init();
    protected:
+       OpticksHub*           m_hub ; 
        Opticks*              m_opticks ; 
        OpticksCfg<Opticks>*  m_cfg ;
-       OpticksEvent*         m_evt ; 
 
 };
 

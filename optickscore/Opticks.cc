@@ -406,13 +406,19 @@ int Opticks::getInteractivityLevel()
 
 void Opticks::setSpaceDomain(const glm::vec4& sd)
 {
-    m_space_domain.x = sd.x  ; 
-    m_space_domain.y = sd.y  ; 
-    m_space_domain.z = sd.z  ; 
-    m_space_domain.w = sd.w  ; 
+    setSpaceDomain(sd.x, sd.y, sd.z, sd.w )  ; 
+}
+
+void Opticks::setSpaceDomain(float x, float y, float z, float w)
+{
+    m_space_domain.x = x  ; 
+    m_space_domain.y = y  ; 
+    m_space_domain.z = z  ; 
+    m_space_domain.w = w  ; 
 
     configureDomains();
 }
+
 
 void Opticks::configureDomains()
 {

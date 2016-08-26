@@ -30,7 +30,6 @@ class GGV_API App {
        void loadGeometry();
        bool isExit();
        bool isCompute();
-       void dbgSeed();
   private: 
        void prepareVizScene(); 
   public:
@@ -44,7 +43,7 @@ class GGV_API App {
 #ifdef WITH_OPTIX
   public:
        void prepareOptiX();
-       void setupEventInEngine();
+       //void setupEventInEngine();
        void preparePropagator();
        void seedPhotonsFromGensteps();
        void initRecords();

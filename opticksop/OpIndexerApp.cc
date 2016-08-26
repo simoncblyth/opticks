@@ -1,12 +1,18 @@
 #include <cstddef>
+
 // opop-
 #include "OpIndexerApp.hh"
 #include "OpIndexer.hh"
+
 
 // opticks-
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 #include "OpticksEvent.hh"
+
+// opticksgeo-
+#include "OpticksHub.hh"
+
 
 // npy-
 #include "PLOG.hh"
@@ -15,12 +21,10 @@
 
 OpIndexerApp::OpIndexerApp(int argc, char** argv) 
    :   
-     m_argc(argc),
-     m_argv(argv),
-     m_opticks(NULL),
-     m_cfg(NULL),
-     m_evt(NULL),
-     m_indexer(NULL)
+     m_opticks(new Opticks(argc, argv)),
+     m_hub(new OpticksHub(m_opticks)),
+     m_cfg(m_opticks->getCfg()),
+     m_indexer(new OpIndexer(m_hub, NULL))
 {
     init();
 }
@@ -28,31 +32,28 @@ OpIndexerApp::OpIndexerApp(int argc, char** argv)
 
 void OpIndexerApp::init()
 {
-    m_opticks = new Opticks(m_argc, m_argv);
-    m_cfg = m_opticks->getCfg();
-
-    m_indexer = new OpIndexer(m_opticks, NULL);
 } 
 
 
 void OpIndexerApp::configure()
 {
-    m_cfg->commandline(m_argc, m_argv); 
+    m_hub->configure();
 
     LOG(debug) << "OpIndexerApp::configure" ; 
-
-    m_evt = m_opticks->makeEvent();
-    m_evt->Summary("OpIndexerApp::configure");
-
-    m_indexer->setEvent(m_evt);
 }
 
 
-void OpIndexerApp::loadEvtFromFile(bool verbose)
+void OpIndexerApp::loadEvtFromFile()
 {
-    m_evt->loadBuffers(verbose);
+    m_opticks->setSpaceDomain(0.f,0.f,0.f,1000.f);  // this is required before can create an evt 
 
-    if(m_evt->isNoLoad())
+    m_hub->createEvent();
+    m_hub->loadEvent();
+
+    OpticksEvent* evt = m_hub->getEvent();
+    evt->Summary("OpIndexerApp::configure");
+ 
+    if(evt->isNoLoad())
     {    
         LOG(info) << "App::loadEvtFromFile LOAD FAILED " ;
         return ; 
@@ -62,7 +63,8 @@ void OpIndexerApp::loadEvtFromFile(bool verbose)
 
 void OpIndexerApp::makeIndex()
 {
-    if(m_evt->isIndexed())
+    OpticksEvent* evt = m_hub->getEvent();
+    if(evt->isIndexed())
     {
         bool forceindex = m_opticks->hasOpt("forceindex");
         if(forceindex)
@@ -75,20 +77,20 @@ void OpIndexerApp::makeIndex()
             return  ;
         }
     }
-    if(m_evt->isNoLoad())
+    if(evt->isNoLoad())
     {
         LOG(info) << "OpIndexerApp::makeIndex evt failed to load, SKIPPING " ;
         return  ;
     }
 
 
-    m_evt->Summary("OpIndexerApp::makeIndex");
+    evt->Summary("OpIndexerApp::makeIndex");
 
-    //m_evt->prepareForIndexing();
+    //evt->prepareForIndexing();
 
     m_indexer->indexSequence();
 
-    m_evt->saveIndex(true);
+    evt->saveIndex(true);
 }
 
 

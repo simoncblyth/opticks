@@ -5,6 +5,9 @@
 // optickscore-
 #include "OpticksEvent.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
 // npy-
 #include "Timer.hpp"
 #include "PLOG.hh"
@@ -25,9 +28,9 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -35,25 +38,18 @@
 
 
 
-OpZeroer::OpZeroer(OContext* ocontext)  
+OpZeroer::OpZeroer(OpticksHub* hub, OContext* ocontext)  
    :
+     m_hub(hub),
      m_ocontext(ocontext),
-     m_evt(NULL),
      m_propagator(NULL)
 {
 }
 
-void OpZeroer::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}  
 void OpZeroer::setPropagator(OPropagator* propagator)
 {
     m_propagator = propagator ; 
 }  
-
-
-
 
 
 void OpZeroer::zeroRecords()
@@ -73,7 +69,9 @@ void OpZeroer::zeroRecords()
 
 void OpZeroer::zeroRecordsViaOpenGL()
 {
-    NPY<short>* record = m_evt->getRecordData(); 
+    OpticksEvent* evt = m_hub->getEvent();
+
+    NPY<short>* record = evt->getRecordData(); 
 
     CResource r_rec( record->getBufferId(), CResource::W );
 

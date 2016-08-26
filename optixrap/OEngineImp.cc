@@ -9,6 +9,10 @@
 
 #include "GGeo.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
+
 // optixrap-
 #include "OContext.hh"
 #include "OColors.hh"
@@ -30,21 +34,22 @@
 #define TIMER(s) \
     { \
        (*m_timer)((s)); \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
 
 
 
-OEngineImp::OEngineImp(Opticks* opticks, GGeo* ggeo) 
+OEngineImp::OEngineImp(OpticksHub* hub) 
      :   
-      m_opticks(opticks),
+      m_timer(NULL),
+      m_hub(hub),
+      m_opticks(hub->getOpticks()),
       m_fcfg(NULL),
-      m_ggeo(ggeo),
-      m_evt(NULL),
+      m_ggeo(hub->getGGeo()),
 
       m_ocontext(NULL),
       m_ocolors(NULL),
@@ -58,17 +63,14 @@ OEngineImp::OEngineImp(Opticks* opticks, GGeo* ggeo)
       init();
 }
 
-
-void OEngineImp::setEvent(OpticksEvent* evt)
+void OEngineImp::init()
 {
-    m_evt = evt ;
-}
+    m_fcfg = m_opticks->getCfg();
 
-OpticksEvent* OEngineImp::getEvent()
-{
-    return m_evt ; 
+    m_timer      = new Timer("OEngineImp::");
+    m_timer->setVerbose(true);
+    m_timer->start();
 }
-
 
 
 OContext* OEngineImp::getOContext()
@@ -81,14 +83,7 @@ OPropagator* OEngineImp::getOPropagator()
 }
 
 
-void OEngineImp::init()
-{
-    m_fcfg = m_opticks->getCfg();
 
-    m_timer      = new Timer("OEngineImp::");
-    m_timer->setVerbose(true);
-    m_timer->start();
-}
 
 
 void OEngineImp::prepareOptiX()
@@ -168,7 +163,8 @@ void OEngineImp::preparePropagator()
     bool seedtest   = m_fcfg->hasOpt("seedtest");
     int  override_   = m_fcfg->getOverride();
 
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent(); 
+    if(!evt) return ;
 
     assert(!noevent);
 
@@ -195,13 +191,9 @@ void OEngineImp::preparePropagator()
     }
 
 
+    m_opropagator = new OPropagator(m_ocontext, m_hub, override_);
 
-    m_opropagator = new OPropagator(m_ocontext, m_opticks, override_);
-
-    m_opropagator->setEvent(m_evt);
     m_opropagator->setEntry(entry);
-
-
     m_opropagator->initRng();
     m_opropagator->initEvent();
 
@@ -225,7 +217,8 @@ void OEngineImp::propagate()
 
 void OEngineImp::downloadPhotonData()
 {
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent(); 
+    if(!evt) return ;
 
     if(m_opticks->isCompute())
     {
@@ -235,19 +228,21 @@ void OEngineImp::downloadPhotonData()
 
 void OEngineImp::saveEvt()
 {
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent(); 
+    if(!evt) return ;
 
-    // note that "interop" download with Rdr::download(m_evt);   
+    // note that "interop" download with Rdr::download(evt);   
     // is now done from App::saveEvt just prior to this being called
 
     m_opropagator->downloadEvent();  
     // formerly did OPropagator::downloadEvt only in compute mode
     // but now that interop/compute are blurring have to check each buffer
+    // as some may be compute mode even whilst running interop
 
     TIMER("downloadEvt");
 
-    m_evt->dumpDomains("OEngineImp::saveEvt dumpDomains");
-    m_evt->save();  // TODO: this should happen at higher level, not buried here ?
+    evt->dumpDomains("OEngineImp::saveEvt dumpDomains");
+    evt->save();  // TODO: this should happen at higher level, not buried here ?
 
     TIMER("saveEvt");
 }

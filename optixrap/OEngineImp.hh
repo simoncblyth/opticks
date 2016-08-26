@@ -2,6 +2,7 @@
 
 class Timer ; 
 class Opticks ;
+class OpticksHub ;
 template <typename> class OpticksCfg ;
 class GGeo ; 
 
@@ -17,14 +18,12 @@ class OPropagator ;
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OEngineImp {
     public:
-       OEngineImp(Opticks* opticks, GGeo* ggeo);
+       OEngineImp(OpticksHub* hub);
     private:
        void init();
     public:
        OContext*    getOContext();
        OPropagator* getOPropagator();
-       void setEvent(OpticksEvent* evt);
-       OpticksEvent* getEvent();
 
        void prepareOptiX();             // creates OptiX context and populates with geometry info
        void preparePropagator();        // OPropagator : initEvent creates GPU buffers: genstep, photon, record, sequence
@@ -34,12 +33,11 @@ class OXRAP_API OEngineImp {
        void cleanup();
 
     private:
-       Timer*            m_timer ;
-       Opticks*          m_opticks ; 
+       Timer*               m_timer ;
+       OpticksHub*          m_hub ; 
+       Opticks*             m_opticks ; 
        OpticksCfg<Opticks>* m_fcfg ;   
-       GGeo*             m_ggeo ; 
-       OpticksEvent*     m_evt ; 
-    
+       GGeo*                m_ggeo ; 
 
        OContext*         m_ocontext ; 
        OColors*          m_ocolors ; 

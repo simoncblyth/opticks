@@ -129,7 +129,6 @@ class OGLRAP_API Scene : public NConfigurable {
    public:
         void configureI(const char* name, std::vector<int> values);
         void setComposition(Composition* composition);
-        void setEvent(OpticksEvent* evt);
         void setPhotons(Photons* photons);
    public:
         void setGeometry(GGeo* gg);
@@ -154,10 +153,10 @@ class OGLRAP_API Scene : public NConfigurable {
         void jump(); 
 
    public:
-        void upload();
-        void uploadSelection();
+        void upload(OpticksEvent* evt);
    private:
-        void uploadEvt();
+        void uploadEvent(OpticksEvent* evt);
+        void uploadEventSelection(OpticksEvent* evt);
         void uploadAxis();
    private:
         void uploadRecordAttr(MultiViewNPY* attr, bool debug=false);
@@ -185,7 +184,6 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*          getRecordRenderer(RecordStyle_t style);
         //GMergedMesh*  getGeometry();
         Composition*  getComposition();
-        OpticksEvent* getEvent();
         Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
         const char*   getRecordTag();
@@ -215,7 +213,6 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*         m_altrecord_renderer ; 
         Rdr*         m_devrecord_renderer ; 
    private:
-        OpticksEvent*    m_evt ;
         Photons*     m_photons ; 
         GGeo*        m_ggeo ;
         GMergedMesh* m_mesh0 ; 

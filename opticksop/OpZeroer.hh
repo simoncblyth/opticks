@@ -1,6 +1,6 @@
 #pragma once
 
-class OpticksEvent ; 
+class OpticksHub ; 
 class OPropagator ; 
 class OContext ; 
 
@@ -10,9 +10,8 @@ class OContext ;
 
 class OKOP_API OpZeroer {
    public:
-      OpZeroer(OContext* ocontext);
+      OpZeroer(OpticksHub* hub, OContext* ocontext);
    public:
-      void setEvent(OpticksEvent* evt);
       void setPropagator(OPropagator* propagator);
    public:
       void zeroRecords();
@@ -20,8 +19,8 @@ class OKOP_API OpZeroer {
       void zeroRecordsViaOpenGL();
       void zeroRecordsViaOptiX();
    private:
+      OpticksHub*              m_hub ;
       OContext*                m_ocontext ;
-      OpticksEvent*                m_evt ;
       OPropagator*             m_propagator ;
 };
 

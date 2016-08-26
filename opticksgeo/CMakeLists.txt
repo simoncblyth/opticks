@@ -100,6 +100,7 @@ set(SOURCES
     OpticksGeometry.cc
     OpticksHub.cc
     OpticksIdx.cc
+    OpticksEngine.cc
 
 )
 set(HEADERS
@@ -112,6 +113,7 @@ set(HEADERS
     OpticksGeometry.hh
     OpticksHub.hh
     OpticksIdx.hh
+    OpticksEngine.hh
 )
 
 

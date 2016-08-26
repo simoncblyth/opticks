@@ -6,6 +6,8 @@
 #include "OpticksConst.hh"  
 #include "OpticksEvent.hh"  
 
+#include "OpticksHub.hh"  
+
 // npy-
 #include "Timer.hpp"  
 #include "NPY.hpp"  
@@ -29,9 +31,9 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }

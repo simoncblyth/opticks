@@ -35,6 +35,7 @@ class GGV_API OpticksMgr {
        void createEvent();
        void init();
        void initGeometry();
+       void dbgSeed();
    private:
        Opticks*       m_opticks ; 
        OpticksHub*    m_hub ; 

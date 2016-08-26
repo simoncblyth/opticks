@@ -3,6 +3,7 @@
 #include "Opticks.hh"
 #include "OpticksMode.hh"
 #include "OpticksEvent.hh"
+#include "OpticksHub.hh"
 #include "CG4.hh"
 
 #include "PLOG.hh"
@@ -28,17 +29,14 @@ int main(int argc, char** argv)
 
     m_opticks->setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
-    m_opticks->configure();
+    OpticksHub* m_hub = new OpticksHub(m_opticks) ; 
 
+    m_hub->configure();
+    
 
-    OpticksEvent* m_evt = m_opticks->makeEvent();     // has to be after configure
-
-
-    CG4* g4 = new CG4(m_opticks) ; 
+    CG4* g4 = new CG4(m_hub) ; 
 
     LOG(info) << "  CG4 ctor DONE "  ;
-
-    g4->setEvent(m_evt);
 
     g4->configure();
 
@@ -57,7 +55,8 @@ int main(int argc, char** argv)
 
     LOG(info) << "  CG4 propagate DONE "  ;
 
-    m_evt->save();
+    OpticksEvent* evt = m_hub->getEvent();
+    evt->save();
 
     LOG(info) << "  evt save DONE "  ;
 

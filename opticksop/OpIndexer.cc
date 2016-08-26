@@ -10,6 +10,9 @@
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
 // npy-
 #include "PLOG.hh"
 #include "Timer.hpp"
@@ -46,14 +49,14 @@
     }
 
 
-OpIndexer::OpIndexer(Opticks* opticks, OContext* ocontext)  
+OpIndexer::OpIndexer(OpticksHub* hub, OContext* ocontext)  
    :
-     m_opticks(opticks),
+     m_hub(hub),
+     m_opticks(hub->getOpticks()),
      m_ocontext(ocontext),
      m_propagator(NULL),
      m_seq(NULL),
      m_pho(NULL),
-     m_evt(NULL),
      m_verbose(false),
      m_maxrec(0),
      m_num_photons(0)
@@ -73,18 +76,10 @@ void OpIndexer::setVerbose(bool verbose)
     m_verbose = verbose ; 
 }
 
-
-
-
 void OpIndexer::setPropagator(OPropagator* propagator)
 {
     m_propagator = propagator ; 
 }
-void OpIndexer::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}
-
 
 
 
@@ -92,6 +87,7 @@ void OpIndexer::setEvent(OpticksEvent* evt)
 
 void OpIndexer::update()
 {
+    m_evt = m_hub->getEvent();
     assert(m_evt) ;
 
     m_maxrec = m_evt->getMaxRec(); 
@@ -106,10 +102,9 @@ void OpIndexer::update()
 
 }
 
-
-
 void OpIndexer::setNumPhotons(unsigned int num_photons)
 {
+
     NPY<unsigned long long>* seq = m_evt->getSequenceData() ;
     unsigned int x_num_photons = seq ? seq->getShape(0) : 0 ; 
     bool expected = num_photons == x_num_photons ;
@@ -174,8 +169,18 @@ void OpIndexer::indexBoundaries()
 
 
 
+
+
+
+
+
+
+
+
 void OpIndexer::indexSequence()
 {
+    update();
+
     if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex"))
     {
         LOG(info) << "OpIndexer::indexSequence"
@@ -186,7 +191,6 @@ void OpIndexer::indexSequence()
 
     bool loaded = m_evt->isLoaded();
     bool compute = m_ocontext ? m_ocontext->isCompute() : false ;
-   
 
     if(loaded)
     {
@@ -200,13 +204,10 @@ void OpIndexer::indexSequence()
     {
         indexSequenceInterop();
     }
-
 }
 
 void OpIndexer::indexSequenceCompute()
 {
-    update();
-
     if(!m_seq)
         LOG(fatal) << "OpIndexer::indexSequenceCompute"
                    << " m_seq NULL " ; 
@@ -237,8 +238,6 @@ void OpIndexer::indexSequenceInterop()
     // and OpenGL mapping to CUDA gives access to the output recsel/phosel
     // as these are used by OpenGL
 
-    update();
-    if(m_evt->isIndexed()) return ;  
 
     if(!m_seq)
         LOG(fatal) << "OpIndexer::indexSequenceInterop"
@@ -267,7 +266,6 @@ void OpIndexer::indexSequenceLoaded()
     // starts from host based index
 
     LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
-    update();
     if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex")) 
     {
         LOG(info) << "OpIndexer::indexSequenceLoaded evt already indexed" ; 

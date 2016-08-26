@@ -10,7 +10,8 @@
 #include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
 
-
+// opticksgeo-
+#include "OpticksHub.hh"
 
 // npy-
 #include "Timer.hpp"
@@ -67,18 +68,18 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
 
 
 
-CG4::CG4(Opticks* opticks) 
+CG4::CG4(OpticksHub* hub) 
    :
-     OpticksEngine(opticks),
+     OpticksEngine(hub),
      m_torch(NULL),
      m_detector(NULL),
      m_lib(NULL),
@@ -134,6 +135,16 @@ void CG4::configure()
 
     configurePhysics();
     configureDetector();
+
+    glm::vec4 ce = m_detector->getCenterExtent();
+    LOG(info) << "CG4::configure"
+              << " center_extent " << gformat(ce) 
+              ;    
+
+    m_opticks->setSpaceDomain(ce); // triggers Opticks::configureDomains
+    OpticksEvent* evt = m_hub->createEvent();   // HMM: feels too soon, when thinking multi-event, remember not 1-to-1 between Opticks events and G4  
+    evt->dumpDomains("CG4::configure");
+
     configureGenerator();
     configureStepping();
 
@@ -175,9 +186,6 @@ void CG4::initialize()
 
 void CG4::postinitialize()
 {
-    setupCompressionDomains(); // should this be at end of configureDetector after the traverse has established domains ?
-
-
     m_uiManager = G4UImanager::GetUIpointer();
 
     assert(m_cfg);    
@@ -204,10 +212,12 @@ void CG4::interactive(int argc, char** argv)
 
 void CG4::propagate()
 {
-    unsigned int num_g4event = m_evt->getNumG4Event();
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt);
+    unsigned int num_g4event = evt->getNumG4Event();
  
     LOG(info) << "CG4::propagate"
-              << " num_g4event " << m_evt->getNumG4Event()
+              << " num_g4event " << evt->getNumG4Event()
               ; 
     TIMER("_propagate");
 
@@ -229,7 +239,10 @@ void CG4::postpropagate()
     if(!finmac.empty()) execute(finmac.c_str());
 
     // G4 specific, so it belongs here
-    m_evt->postPropagateGeant4();
+
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt);
+    evt->postPropagateGeant4();
 
 }
 
@@ -281,8 +294,11 @@ void CG4::configureGenerator()
     CSource* source = NULL ; 
 
     // THIS IS AN EVENT LEVEL THING : RENAME initEvent ?
-
     // HMM THIS CODE LOOKS TO BE DUPLICITOUS AND OUT OF PLACE : NEEDS MOVING 
+
+
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt);
 
     if(m_opticks->getSourceCode() == TORCH)
     {
@@ -291,11 +307,11 @@ void CG4::configureGenerator()
         m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
         m_torch->Summary("CG4::configure TorchStepNPY::Summary");
 
-        m_evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
-        m_evt->setNumG4Event(m_torch->getNumG4Event()); 
-        m_evt->setNumPhotonsPerG4Event(m_torch->getNumPhotonsPerG4Event()); 
+        evt->setGenstepData( m_torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
+        evt->setNumG4Event(m_torch->getNumG4Event()); 
+        evt->setNumPhotonsPerG4Event(m_torch->getNumPhotonsPerG4Event()); 
 
-        m_evt->zero();  
+        evt->zero();  
         // IS THIS ALWAYS NEEDED WITH setGenstepData
         // OPERATING FROM GENSTEP : YOU KNOW THE TOTAL NUMBER OF PHOTONS AHEAD OF TIME
 
@@ -335,8 +351,8 @@ void CG4::configureGenerator()
                           ;
         }  
 
-        m_evt->setNumG4Event(gc->getNumber()); 
-        m_evt->setNumPhotonsPerG4Event(0); 
+        evt->setNumG4Event(gc->getNumber()); 
+        evt->setNumPhotonsPerG4Event(0); 
 
         int g4gun_verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
         CGunSource* gun = new CGunSource(g4gun_verbosity) ;
@@ -355,8 +371,9 @@ void CG4::configureGenerator()
 
     int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
     // recorder is back here in order to pass to source for primary recording (unused?)
-    m_recorder = new CRecorder(m_lib, m_evt, stepping_verbosity ); 
-    m_rec = new Rec(m_lib, m_evt) ; 
+    m_recorder = new CRecorder(m_lib, evt, stepping_verbosity ); 
+
+    m_rec = new Rec(m_lib, evt) ; 
 
     //if(m_cfg->hasOpt("primary"))
     //     m_recorder->setupPrimaryRecording();
@@ -371,29 +388,9 @@ void CG4::configureGenerator()
 
 void CG4::configureStepping()
 {
-    m_steprec = new CStepRec(m_evt) ;  
+    m_steprec = new CStepRec(m_hub) ;  
     m_sa = new CSteppingAction(this) ;
     TIMER("configureStepping");
-}
-
-void CG4::setupCompressionDomains()
-{
-    m_detector->dumpPV("CG4::setupCompressionDomains dumpPV");
-
-    glm::vec4 ce = m_detector->getCenterExtent();
-
-    LOG(info) << "CG4::setupCompressionDomains"
-              << " center_extent " << gformat(ce) 
-              ;    
-
-
-    m_opticks->setSpaceDomain(ce);
-
-    m_evt->setTimeDomain(m_opticks->getTimeDomain());  
-    m_evt->setWavelengthDomain(m_opticks->getWavelengthDomain()) ; 
-    m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-
-    m_evt->dumpDomains("CG4::setupCompressionDomains");
 }
 
 

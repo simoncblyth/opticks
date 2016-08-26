@@ -5,6 +5,10 @@
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
+
 // optixrap-
 #include "OContext.hh"
 #include "OConfig.hh"
@@ -33,11 +37,11 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
-OPropagator::OPropagator(OContext* ocontext, Opticks* opticks, int override_) 
+OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, int override_) 
    :
     m_ocontext(ocontext),
-    m_opticks(opticks),
-    m_evt(NULL),
+    m_hub(hub),
+    m_opticks(hub->getOpticks()),
     m_prelaunch_times(NULL),
     m_launch_times(NULL),
     m_prelaunch(false),
@@ -62,16 +66,6 @@ void OPropagator::setOverride(unsigned int override_)
     m_override = override_ ; 
 }
 
-
-
-void OPropagator::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ;
-}
-OpticksEvent* OPropagator::getEvent()
-{
-    return m_evt ;
-}
 
 void OPropagator::setEntry(unsigned int entry_index)
 {
@@ -155,7 +149,8 @@ void OPropagator::initRng()
         return ;
     }
 
-    unsigned int num_photons = m_evt->getNumPhotons();
+    OpticksEvent* evt = m_hub->getEvent();
+    unsigned int num_photons = evt->getNumPhotons();
 
     //const char* rngCacheDir = OConfig::RngDir() ;
     const char* rngCacheDir = m_opticks->getRNGInstallCacheDir();
@@ -195,8 +190,9 @@ void OPropagator::initRng()
 
 void OPropagator::initEvent()
 {
-    if(!m_evt) return ;
-    initEvent(m_evt);
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ;
+    initEvent(evt);
 }
 
 void OPropagator::initEvent(OpticksEvent* evt)  
@@ -289,9 +285,10 @@ void OPropagator::initEvent(OpticksEvent* evt)
 
 void OPropagator::prelaunch()
 {
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ;
 
-    unsigned int numPhotons = m_evt->getNumPhotons();
+    unsigned int numPhotons = evt->getNumPhotons();
 
     bool enoughRng = numPhotons <= m_opticks->getRngMax() ;
 
@@ -363,29 +360,30 @@ void OPropagator::dumpTimes(const char* msg)
 
 void OPropagator::downloadPhotonData()
 {
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ;
     LOG(info)<<"OPropagator::downloadPhotonData" ;
  
-    NPY<float>* dpho = m_evt->getPhotonData();
+    NPY<float>* dpho = evt->getPhotonData();
     OContext::download<float>( m_photon_buffer, dpho );
 }
 
 
 void OPropagator::downloadEvent()
 {
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ;
     LOG(info)<<"OPropagator::downloadEvent" ;
  
 
-    NPY<float>* dpho = m_evt->getPhotonData();
+    NPY<float>* dpho = evt->getPhotonData();
     OContext::download<float>( m_photon_buffer, dpho );
 
-    NPY<short>* drec = m_evt->getRecordData();
+    NPY<short>* drec = evt->getRecordData();
     OContext::download<short>( m_record_buffer, drec );
 
-    NPY<unsigned long long>* dhis = m_evt->getSequenceData();
+    NPY<unsigned long long>* dhis = evt->getSequenceData();
     OContext::download<unsigned long long>( m_sequence_buffer, dhis );
-
 
 
     LOG(info)<<"OPropagator::downloadEvent DONE" ;

@@ -682,7 +682,7 @@ Rdr* Scene::getRecordRenderer(RecordStyle_t style)
 
 
 
-void Scene::upload()
+void Scene::upload(OpticksEvent* evt)
 {
     LOG(debug) << "Scene::upload START  " ;
         
@@ -690,11 +690,11 @@ void Scene::upload()
 
     LOG(debug) << "Scene::upload uploadAxis  DONE " ;
 
-    uploadEvt();  // Scene, Rdr uploads orchestrated by OpticksEvent/MultiViewNPY
+    uploadEvent(evt);  // Scene, Rdr uploads orchestrated by OpticksEvent/MultiViewNPY
 
     LOG(debug) << "Scene::upload uploadEvt  DONE " ;
 
-    uploadSelection();   // recsel upload
+    uploadEventSelection(evt);   // recsel upload
 
     LOG(debug) << "Scene::upload uploadSelection  DONE " ;
 
@@ -709,12 +709,12 @@ void Scene::uploadAxis()
         m_axis_renderer->upload(m_composition->getAxisAttr());
 }
 
-void Scene::uploadEvt()
+void Scene::uploadEvent(OpticksEvent* evt)
 {
-    if(!m_evt) 
+    if(!evt) 
     {
        LOG(fatal) << "Scene::uploadEvt no evt " ;
-       assert(m_evt);
+       assert(evt);
     }
 
     // The Rdr call glBufferData using bytes and size from the associated NPY 
@@ -722,18 +722,18 @@ void Scene::uploadEvt()
     // corresponding to device side only OpenGL allocation
 
     if(m_genstep_renderer)
-        m_genstep_renderer->upload(m_evt->getGenstepAttr());
+        m_genstep_renderer->upload(evt->getGenstepAttr());
 
     if(m_nopstep_renderer) 
-         m_nopstep_renderer->upload(m_evt->getNopstepAttr(), false);
+         m_nopstep_renderer->upload(evt->getNopstepAttr(), false);
 
     if(m_photon_renderer)
-         m_photon_renderer->upload(m_evt->getPhotonAttr());
+         m_photon_renderer->upload(evt->getPhotonAttr());
 
 
-    uploadRecordAttr(m_evt->getRecordAttr());
+    uploadRecordAttr(evt->getRecordAttr());
 
-    //uploadRecordAttr(m_evt->getAuxAttr());
+    //uploadRecordAttr(evt->getAuxAttr());
 
     // Note that the above means that the same record renderers are 
     // uploading mutiple things from different NPY.
@@ -746,17 +746,17 @@ void Scene::uploadEvt()
 }
 
 
-void Scene::uploadSelection()
+void Scene::uploadEventSelection(OpticksEvent* evt)
 {
-    assert(m_evt);
+    assert(evt);
 
     if(m_photon_renderer)
-        m_photon_renderer->upload(m_evt->getSequenceAttr());
+        m_photon_renderer->upload(evt->getSequenceAttr());
 
     if(m_photon_renderer)
-        m_photon_renderer->upload(m_evt->getPhoselAttr());
+        m_photon_renderer->upload(evt->getPhoselAttr());
 
-    uploadRecordAttr(m_evt->getRecselAttr()); 
+    uploadRecordAttr(evt->getRecselAttr()); 
 }
 
 
@@ -946,7 +946,6 @@ Scene::Scene(const char* shader_dir, const char* shader_incl_path, const char* s
             m_record_renderer(NULL),
             m_altrecord_renderer(NULL),
             m_devrecord_renderer(NULL),
-            m_evt(NULL),
             m_photons(NULL),
             m_ggeo(NULL),
             m_mesh0(NULL),
@@ -1081,21 +1080,12 @@ Composition* Scene::getComposition()
 {
     return m_composition ; 
 }
-OpticksEvent* Scene::getEvent()
-{
-    return m_evt ; 
-}
 Photons* Scene::getPhotons()
 {
     return m_photons ; 
 }
 
 
-
-void Scene::setEvent(OpticksEvent* evt)
-{
-    m_evt = evt ; 
-}
 void Scene::setPhotons(Photons* photons)
 {
     m_photons = photons ; 

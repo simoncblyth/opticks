@@ -25,8 +25,6 @@ class GGV_API OpticksViz {
     public:
          OpticksViz(OpticksHub* hub, OpticksIdx* idx);
          void setExternalRenderer(SRenderer* external_renderer);
-         void setEvent(OpticksEvent* evt);
-         OpticksEvent* getEvent();
     public:
          bool hasOpt(const char* name);
          void configure();

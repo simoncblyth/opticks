@@ -52,6 +52,7 @@ class OPropagator ;
 class TBuf ; 
 
 class Opticks ; 
+class OpticksHub ; 
 class OpticksEvent ; 
 struct CBufSlice ; 
 struct CBufSpec ; 
@@ -87,9 +88,8 @@ Sequence Indexing histograms the per-photon sequ
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpIndexer {
    public:
-      OpIndexer(Opticks* opticks, OContext* ocontext);
+      OpIndexer(OpticksHub* hub, OContext* ocontext);
       void setVerbose(bool verbose=true);
-      void setEvent(OpticksEvent* evt);
       void setNumPhotons(unsigned int num_photons);
       void setSeq(OBuf* seq);
       void setPho(OBuf* pho);
@@ -144,14 +144,15 @@ class OKOP_API OpIndexer {
       void saveSel();
    private:
       // resident
+      OpticksHub*              m_hub ; 
       Opticks*                 m_opticks ; 
+      OpticksEvent*            m_evt ; 
       OContext*                m_ocontext ;
    private:
       // externally set 
       OPropagator*             m_propagator ; 
       OBuf*                    m_seq ; 
       OBuf*                    m_pho ; 
-      OpticksEvent*            m_evt ;
       bool                     m_verbose ; 
    private:
       // transients updated by updateEvt at indexSequence

@@ -24,6 +24,7 @@ find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(OpticksCore REQUIRED)
+find_package(OpticksGeometry REQUIRED)
 
 find_package(Geant4 REQUIRED) ## invoke cmake with -DGeant4_DIR=$(g4-cmake-dir) 
 
@@ -43,6 +44,7 @@ set(INCLUDE_DIRS
    ${NPY_INCLUDE_DIRS}
    ${GGeo_INCLUDE_DIRS}
    ${OpticksCore_INCLUDE_DIRS}
+   ${OpticksGeometry_INCLUDE_DIRS}
    ${Geant4_INCLUDE_DIRS}
    ${XERCESC_INCLUDE_DIR}
  #  ${G4DAE_INCLUDE_DIRS}
@@ -56,6 +58,7 @@ set(LIBRARIES
    ${NPY_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${OpticksCore_LIBRARIES}
+   ${OpticksGeometry_LIBRARIES}
    ${Geant4_LIBRARIES}
    ${XERCESC_LIBRARIES}
   # ${G4DAE_LIBRARIES}
@@ -69,6 +72,7 @@ set(DEFINITIONS
    ${NPY_DEFINITIONS} 
    ${GGeo_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS}
+   ${OpticksGeometry_DEFINITIONS}
    ${Geant4_DEFINITIONS}
    ${XERCESC_DEFINITIONS}
   #${G4DAE_DEFINITIONS}
