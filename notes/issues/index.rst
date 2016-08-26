@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+   invisible_propagation
    automated_interop_tests
    evt_layout_awkward
    composition_not_targetted_with_loaded_event

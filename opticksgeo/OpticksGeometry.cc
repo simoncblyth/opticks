@@ -325,23 +325,11 @@ void OpticksGeometry::registerGeometry()
 
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
+
     m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
 
 
-    /*
-    // below moved to App::loadGeometry
-
-     m_ggeo->setComposition(m_composition); 
-    if(m_evt)
-    {
-        LOG(info) << "OpticksGeometry::registerGeometry " << m_opticks->description() ;
-        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-    }
-
-    */
-
-
-    LOG(debug) << "OpticksGeometry::registerGeometry ce0: " 
+    LOG(fatal) << "OpticksGeometry::registerGeometry setting opticks SpaceDomain : " 
                       << " x " << ce0.x
                       << " y " << ce0.y
                       << " z " << ce0.z

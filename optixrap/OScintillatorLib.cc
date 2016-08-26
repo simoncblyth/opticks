@@ -28,7 +28,7 @@ void OScintillatorLib::convert(const char* slice)
     { 
         NPY<float>* slice_buf = buf->make_slice(slice) ;
 
-        LOG(info) << "OScintillatorLib::convert" 
+        LOG(trace) << "OScintillatorLib::convert" 
                   << " sliced buffer with " << slice
                   << " from " << buf->getShapeString()
                   << " to " << slice_buf->getShapeString()
@@ -66,7 +66,7 @@ void OScintillatorLib::makeReemissionTexture(NPY<float>* buf)
     float step = 1.f/float(nx) ;
     optix::float4 domain = optix::make_float4(0.f , 1.f, step, 0.f );
 
-    LOG(info) << "OScintillatorLib::makeReemissionTexture "
+    LOG(trace) << "OScintillatorLib::makeReemissionTexture "
               << " nx " << nx
               << " ny " << ny  
               << " ni " << ni  

@@ -590,7 +590,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     { 
 
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
-        LOG(info)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer  ;
+        LOG(trace)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer  ;
 
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);
@@ -601,7 +601,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
             m_instance_mode[m_num_instance_renderer] = true ; 
         }
 
-        LOG(info)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
+        LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
 
         if(m_bbox_renderer[m_num_instance_renderer])

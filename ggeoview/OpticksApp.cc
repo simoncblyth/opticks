@@ -41,6 +41,7 @@ OpticksApp::OpticksApp(int argc, char** argv)
     init();
     initGeometry();
 }
+
 void OpticksApp::init()
 {
     m_opticks->Summary("OpticksApp::init OpticksResource::Summary");

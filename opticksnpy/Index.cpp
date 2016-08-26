@@ -306,7 +306,7 @@ void Index::save(const char* idpath)
     std::string sname = getPrefixedString("Source") ;
     std::string lname = getPrefixedString("Local") ;
 
-    LOG(info) << "Index::save"
+    LOG(trace) << "Index::save"
               << " sname " << sname 
               << " lname " << lname 
               << " itemtype " << m_itemtype
@@ -316,7 +316,7 @@ void Index::save(const char* idpath)
     BMap<std::string, unsigned int>::save( &m_source, idpath, sname.c_str() );  
     BMap<std::string, unsigned int>::save( &m_local , idpath, lname.c_str() );  
 
-    LOG(info) << "Index::save DONE" ;
+    LOG(trace) << "Index::save DONE" ;
 
 }
 std::string Index::getPrefixedString(const char* tail)

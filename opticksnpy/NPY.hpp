@@ -120,6 +120,8 @@ class NPY_API NPY : public NPYBase {
        //void save(const char* typ, const char* tag, const char* det );
        void save(const char* tfmt, const char* targ, const char* tag, const char* det);
 
+       std::string directory(const char* tfmt, const char* source, const char* tag, const char* det);
+
        bool exists(const char* path);
        bool exists(const char* dir, const char* name);
        //bool exists(const char* typ, const char* tag, const char* det);

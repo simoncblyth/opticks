@@ -18,7 +18,7 @@ BDynamicDefine::BDynamicDefine()
 void BDynamicDefine::write(const char* dir, const char* name)
 {
 
-    LOG(info) << "BDynamicDefine::write"
+    LOG(trace) << "BDynamicDefine::write"
               << " dir " << dir
               << " name " << name
               ;

@@ -93,7 +93,7 @@ void OEngineImp::init()
 
 void OEngineImp::prepareOptiX()
 {
-    LOG(info) << "OEngineImp::prepareOptiX START" ; 
+    LOG(trace) << "OEngineImp::prepareOptiX START" ; 
 
     std::string builder_   = m_fcfg->getBuilder();
     std::string traverser_ = m_fcfg->getTraverser();
@@ -153,7 +153,7 @@ void OEngineImp::prepareOptiX()
 
 
     LOG(debug) << m_ogeo->description("OEngineImp::prepareOptiX ogeo");
-    LOG(info) << "OEngineImp::prepareOptiX DONE" ;
+    LOG(trace) << "OEngineImp::prepareOptiX DONE" ;
 
 
 }
@@ -172,7 +172,7 @@ void OEngineImp::preparePropagator()
 
     assert(!noevent);
 
-    LOG(info) << "OEngineImp::preparePropagator" 
+    LOG(trace) << "OEngineImp::preparePropagator" 
               << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
               << " override_ " << override_
               ;  
@@ -205,13 +205,13 @@ void OEngineImp::preparePropagator()
     m_opropagator->initRng();
     m_opropagator->initEvent();
 
-    LOG(info) << "OEngineImp::preparePropagator DONE ";
+    LOG(trace) << "OEngineImp::preparePropagator DONE ";
 }
 
 
 void OEngineImp::propagate()
 {
-    LOG(info)<< "OEngineImp::propagate" ;
+    LOG(trace)<< "OEngineImp::propagate" ;
 
     m_opropagator->prelaunch();
     TIMER("prelaunch");
@@ -247,7 +247,7 @@ void OEngineImp::saveEvt()
     TIMER("downloadEvt");
 
     m_evt->dumpDomains("OEngineImp::saveEvt dumpDomains");
-    m_evt->save(true);
+    m_evt->save();  // TODO: this should happen at higher level, not buried here ?
 
     TIMER("saveEvt");
 }

@@ -163,7 +163,7 @@ void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(info) << "OGeo::convert" << " nmm " << nmm ;
+    LOG(trace) << "OGeo::convert" << " nmm " << nmm ;
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
@@ -200,7 +200,7 @@ void OGeo::convert()
     unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
    
-    LOG(info) << "OGeo::convert"
+    LOG(trace) << "OGeo::convert"
               << " geometryGroupCount " << geometryGroupCount
               << " repeatedGroupCount " << repeatedGroupCount
               ;
@@ -239,7 +239,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
     assert(numIdentity % numTransforms == 0 && "expecting numIdentity to be integer multiple of numTransforms"); 
     unsigned int numSolids = numIdentity/numTransforms ;
 
-    LOG(info) << "OGeo::makeRepeatedGroup"
+    LOG(trace) << "OGeo::makeRepeatedGroup"
               << " numTransforms " << numTransforms 
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
@@ -398,7 +398,7 @@ optix::Acceleration OGeo::makeAcceleration(const char* builder, const char* trav
 
 optix::Material OGeo::makeMaterial()
 {
-    LOG(info) << "OGeo::makeMaterial " 
+    LOG(trace) << "OGeo::makeMaterial " 
                << " radiance_ray " << OContext::e_radiance_ray  
                << " propagate_ray " << OContext::e_propagate_ray  
                ; 
@@ -546,7 +546,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     assert(geometry->getPrimitiveCount() == numFaces);
     geometry["primitive_count"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
 
-    LOG(info) << "OGeo::makeTriangulatedGeometry " 
+    LOG(trace) << "OGeo::makeTriangulatedGeometry " 
               << " mmIndex " << mm->getIndex() 
               << " numFaces (PrimitiveCount) " << numFaces
               << " numSolids " << numSolids
@@ -559,7 +559,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     {
         id = mm->getFaceRepeatedInstancedIdentityBuffer();
         assert(id);
-        LOG(info) << "OGeo::makeTriangulatedGeometry using FaceRepeatedInstancedIdentityBuffer"
+        LOG(trace) << "OGeo::makeTriangulatedGeometry using FaceRepeatedInstancedIdentityBuffer"
                   << " friid items " << id->getNumItems() 
                   << " numITransforms*numFaces " << numITransforms*numFaces
                   ;
@@ -570,7 +570,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
    {
         id = mm->getFaceRepeatedIdentityBuffer();
         assert(id);
-        LOG(info) << "OGeo::makeTriangulatedGeometry using FaceRepeatedIdentityBuffer"
+        LOG(trace) << "OGeo::makeTriangulatedGeometry using FaceRepeatedIdentityBuffer"
                   << " frid items " << id->getNumItems() 
                   << " numFaces " << numFaces
                   ;

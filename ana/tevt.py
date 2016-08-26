@@ -31,7 +31,7 @@ from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
-    args = opticks_main(tag="-10",src="torch", det="PmtInBox", doc=__doc__)
+    args = opticks_main(tag="1",src="torch", det="dayabay", doc=__doc__)
     np.set_printoptions(suppress=True, precision=3)
 
     try:
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     log.info("loaded evt %s " % repr(evt))
 
     print evt
-    print evt.history.table
-    print evt.material.table
+    print evt.history_table(slice(0,20))
+    #print evt.material_table(slice(0,20))
    
 

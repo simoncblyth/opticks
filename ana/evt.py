@@ -329,8 +329,11 @@ class Evt(object):
         return uwl[0]
 
     def history_table(self, sli=slice(None)):
+        """
+        TODO: make the table directly sliceable
+        """
         if not self.history:return 
-        print self
+        #print self
         self.history.table.sli = sli 
         print self.history.table
 

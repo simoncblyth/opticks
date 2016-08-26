@@ -37,8 +37,8 @@ optix::Program OConfig::createProgram(const char* filename, const char* progname
   std::string path = BOpticksResource::PTXPath(filename); 
   std::string key = path + ":" + progname ; 
 
-  LOG(info) << "OConfig::createProgram"
-            << " path " << path 
+  LOG(trace) << "OConfig::createProgram"
+             << " path " << path 
              ;
 
   if(m_programs.find(key) == m_programs.end())
@@ -374,7 +374,7 @@ const char* OConfig::getFormatName(RTformat format)
 
 void OConfig::configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer)
 {
-    LOG(info) << "OPropertyLib::configureSampler" ; 
+    LOG(trace) << "OPropertyLib::configureSampler" ; 
 
     // cuda-pdf p43 // default is to clamp to the range
     RTwrapmode wrapmode = RT_WRAP_REPEAT ;

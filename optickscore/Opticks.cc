@@ -101,6 +101,7 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_detector(NULL),
        m_tag(NULL),
        m_cat(NULL),
+       m_domains_configured(false),
        m_mode(NULL)
 {
        init();
@@ -234,13 +235,6 @@ const glm::uvec4& Opticks::getPosition()
 void Opticks::setDetector(const char* detector)
 {
     m_detector = detector ? strdup(detector) : NULL ; 
-}
-void Opticks::setSpaceDomain(const glm::vec4& sd)
-{
-    m_space_domain.x = sd.x  ; 
-    m_space_domain.y = sd.y  ; 
-    m_space_domain.z = sd.z  ; 
-    m_space_domain.w = sd.w  ; 
 }
 
 
@@ -409,19 +403,27 @@ int Opticks::getInteractivityLevel()
     return interactivity  ;
 }
 
+
+void Opticks::setSpaceDomain(const glm::vec4& sd)
+{
+    m_space_domain.x = sd.x  ; 
+    m_space_domain.y = sd.y  ; 
+    m_space_domain.z = sd.z  ; 
+    m_space_domain.w = sd.w  ; 
+
+    configureDomains();
+}
+
 void Opticks::configureDomains()
 {
+   // this is triggered by setSpaceDomain which is 
+   // invoked when geometry is loaded 
+   m_domains_configured = true ; 
+
    m_time_domain.x = 0.f  ;
    m_time_domain.y = m_cfg->getTimeMax() ;
    m_time_domain.z = m_cfg->getAnimTimeMax() ;
    m_time_domain.w = 0.f  ;
-
-
-   // space domain is updated once geometry is loaded
-   m_space_domain.x = 0.f ; 
-   m_space_domain.y = 0.f ; 
-   m_space_domain.z = 0.f ; 
-   m_space_domain.w = 1000.f ; 
 
    m_wavelength_domain = getDefaultDomainSpec() ;  
 
@@ -549,10 +551,20 @@ OpticksEvent* Opticks::makeEvent()
     assert(strcmp(evt->getUDet(), getUDet()) == 0);
 
     evt->setMode(m_mode);
-    configureDomains();
+
+    // formerly did configureDomains here, but thats confusing 
+    // configureDomains now invoked when setSpaceDomain is called
+    if(!m_domains_configured)
+         LOG(fatal) << "Opticks::makeEvent"
+                    << " domains MUST be configured by calling setSpaceDomain "
+                    << " prior to makeEvent being possible "
+                    << " description " << description()
+                    ;
+
+    assert(m_domains_configured);
 
     evt->setTimeDomain(getTimeDomain());
-    evt->setSpaceDomain(getSpaceDomain());   // default, will be updated in App:registerGeometry following geometry loading
+    evt->setSpaceDomain(getSpaceDomain());  
     evt->setWavelengthDomain(getWavelengthDomain());
 
     evt->setMaxRec(m_cfg->getRecordMax());

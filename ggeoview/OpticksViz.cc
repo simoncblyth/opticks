@@ -199,6 +199,9 @@ void OpticksViz::uploadGeometry()
     // domains are set on running Opticks::makeEvent 
     //  BUT the space domain has to be updated after geometry loaded 
 
+    
+    LOG(fatal) << "OpticksViz::uploadGeometry opticks domains " << m_opticks->description();
+
     m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
 

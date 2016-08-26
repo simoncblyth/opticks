@@ -89,7 +89,7 @@ int SSys::atoi_( const char* a )
 const char* SSys::getenvvar( const char* envvar )
 {
     const char* evalue = getenv(envvar);
-    LOG(info) << "SSys::getenvvar"
+    LOG(debug) << "SSys::getenvvar"
               << " envvar " << envvar
               << " evalue " << evalue
               ;

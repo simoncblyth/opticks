@@ -144,8 +144,10 @@ class OKCORE_API Opticks {
        const glm::uvec4& getSize();
        const glm::uvec4& getPosition();
    public:
-       void setSpaceDomain(const glm::vec4& pd);
+       void setSpaceDomain(const glm::vec4& pd);  // triggers configureDomains setting time and wavelength domains too
        std::string description();
+   private:
+       void configureDomains();
    public:
        unsigned int getRngMax();
        unsigned int getBounceMax();
@@ -171,7 +173,6 @@ class OKCORE_API Opticks {
        void configureI(const char* name, std::vector<int> values);
        void configureS(const char* name, std::vector<std::string> values);
    private:
-       void configureDomains();
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
        int                  m_argc ; 
@@ -197,6 +198,7 @@ class OKCORE_API Opticks {
        const char*          m_tag ; 
        const char*          m_cat ; 
    private:
+       bool                 m_domains_configured ;  
        glm::vec4            m_time_domain ; 
        glm::vec4            m_space_domain ; 
        glm::vec4            m_wavelength_domain ; 
@@ -209,6 +211,7 @@ class OKCORE_API Opticks {
    private:
        glm::uvec4           m_size ; 
        glm::uvec4           m_position ; 
+
 
 };
 

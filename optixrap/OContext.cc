@@ -335,7 +335,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     }
     else
     {
-        LOG(info)<<"OContext::download SKIPPED for " << npy->getBufferName() ; 
+        LOG(info)<<"OContext::download SKIPPED for INTEROP buffer  " << npy->getBufferName() ; 
     }
 }
 

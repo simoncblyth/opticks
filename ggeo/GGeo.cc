@@ -365,12 +365,12 @@ Opticks* GGeo::getOpticks()
 
 void GGeo::init()
 {
-   LOG(info) << "GGeo::init" ; 
+   LOG(trace) << "GGeo::init" ; 
 
    OpticksResource* resource = m_opticks->getResource(); 
    const char* idpath = m_opticks->getIdPath() ;
 
-   LOG(info) << "GGeo::init" 
+   LOG(trace) << "GGeo::init" 
              << " idpath " << ( idpath ? idpath : "NULL" )
              ; 
 
@@ -383,7 +383,7 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(info) << "GGeo::init"
+   LOG(trace) << "GGeo::init"
              << " idpath " << idpath
              << " cache_exists " << cache_exists 
              << " cache_requested " << cache_requested
@@ -437,7 +437,7 @@ void GGeo::init()
        m_lvlist = new GItemList("LVNames") ; 
    }
 
-   LOG(info) << "GGeo::init DONE" ; 
+   LOG(trace) << "GGeo::init DONE" ; 
 }
 
 
@@ -531,7 +531,7 @@ unsigned int GGeo::getMaterialLine(const char* shortname)
 void GGeo::loadGeometry()
 {
     bool loaded = isLoaded() ;
-    LOG(info) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
+    LOG(trace) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
     const char* idpath = getIdPath() ;
 
     if(!loaded)
@@ -549,12 +549,12 @@ void GGeo::loadGeometry()
     setupLookup();
     setupColors();
     setupTyp();
-    LOG(debug) << "GGeo::loadGeometry DONE" ; 
+    LOG(trace) << "GGeo::loadGeometry DONE" ; 
 }
 
 void GGeo::loadFromG4DAE()
 {
-    LOG(info) << "GGeo::loadFromG4DAE START" ; 
+    LOG(trace) << "GGeo::loadFromG4DAE START" ; 
 
     int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
@@ -566,7 +566,7 @@ void GGeo::loadFromG4DAE()
 
     prepareVertexColors();
 
-    LOG(info) << "GGeo::loadFromG4DAE DONE" ; 
+    LOG(trace) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
 void GGeo::afterConvertMaterials()
@@ -585,7 +585,7 @@ bool GGeo::isValid()
 
 void GGeo::loadFromCache()
 {   
-    LOG(info) << "GGeo::loadFromCache START" ; 
+    LOG(trace) << "GGeo::loadFromCache START" ; 
 
     m_geolib = GGeoLib::load(m_opticks);
         
@@ -612,7 +612,7 @@ void GGeo::loadFromCache()
     m_sourcelib  = GSourceLib::load(m_opticks);
 
 
-    LOG(info) << "GGeo::loadFromCache DONE" ; 
+    LOG(trace) << "GGeo::loadFromCache DONE" ; 
 }
 
 
@@ -647,7 +647,7 @@ void GGeo::setupTyp()
 
 void GGeo::setupColors()
 {
-    LOG(info) << "GGeo::setupColors" ; 
+    LOG(trace) << "GGeo::setupColors" ; 
 
     //OpticksFlags* flags = m_opticks->getFlags();
 
@@ -658,7 +658,7 @@ void GGeo::setupColors()
 
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 
-    LOG(info) << "GGeo::setupColors DONE" ; 
+    LOG(trace) << "GGeo::setupColors DONE" ; 
 }
 
 void GGeo::save(const char* idpath)
@@ -706,7 +706,7 @@ void GGeo::modifyGeometry(const char* config)
     // NB only invoked with test option : "ggv --test" 
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
 
-    LOG(info) << "GGeo::modifyGeometry" 
+    LOG(trace) << "GGeo::modifyGeometry" 
               << " config [" << ( config ? config : "" ) << "]" ; 
 
     assert(m_geotest == NULL);
@@ -1127,7 +1127,7 @@ void GGeo::dumpRawMaterialProperties(const char* msg)
 
 void GGeo::prepareMaterialLib()
 {
-    LOG(info) << "GGeo::prepareMaterialLib " ; 
+    LOG(trace) << "GGeo::prepareMaterialLib " ; 
 
     GMaterialLib* mlib = getMaterialLib() ;
    
@@ -1136,7 +1136,7 @@ void GGeo::prepareMaterialLib()
 
 void GGeo::prepareSurfaceLib()
 {
-    LOG(info) << "GGeo::prepareSurfaceLib " ; 
+    LOG(trace) << "GGeo::prepareSurfaceLib " ; 
 
     GSurfaceLib* slib = getSurfaceLib() ;
    
@@ -1147,7 +1147,7 @@ void GGeo::prepareSurfaceLib()
 
 void GGeo::prepareScintillatorLib()
 {
-    LOG(info) << "GGeo::prepareScintillatorLib " ; 
+    LOG(trace) << "GGeo::prepareScintillatorLib " ; 
 
     findScintillatorMaterials("SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB"); 
 
@@ -1208,7 +1208,7 @@ void GGeo::prepareMeshes()
 {
     bool instanced = m_opticks->isInstanced();
 
-    LOG(info) << "GGeo::prepareMeshes START" 
+    LOG(trace) << "GGeo::prepareMeshes START" 
               << " instanced " << instanced 
               ;
 
@@ -1222,7 +1222,7 @@ void GGeo::prepareMeshes()
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
         makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
     }
-    LOG(info) << "GGeo::prepareMeshes DONE" ;
+    LOG(trace) << "GGeo::prepareMeshes DONE" ;
 }
 
 

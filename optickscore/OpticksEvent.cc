@@ -1055,9 +1055,9 @@ void OpticksEvent::save(bool verbose)
               << " det: " << m_det
               << " cat: " << ( m_cat ? m_cat : "NULL" )
               << " udet: " << udet 
+              << getShapeString()
+              << " dir " << m_event_spec->getDir() 
               ;    
-
-    LOG(info) << "OpticksEvent::save " << getShapeString() ; 
 
 
     NPY<float>* no = getNopstepData();
@@ -1066,8 +1066,7 @@ void OpticksEvent::save(bool verbose)
         no->save("no", m_typ,  m_tag, udet);
         no->dump("OpticksEvent::save (nopstep)");
     }
-
-
+    
    // genstep were formally not saved as they exist already elsewhere,
    // however recording the gs in use for posterity makes sense
     NPY<float>* gs = getGenstepData();

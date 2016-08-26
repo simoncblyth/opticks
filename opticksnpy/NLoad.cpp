@@ -28,3 +28,10 @@ NPY<float>* NLoad::Gensteps(const char* det, const char* typ, const char* tag)
 }
 
 
+std::string NLoad::directory(const char* det, const char* typ, const char* tag, const char* anno)
+{
+   std::string tagdir = BOpticksEvent::directory(det, typ, tag, anno ? anno : NULL );  
+   return tagdir ; 
+}
+
+
