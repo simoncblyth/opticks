@@ -48,6 +48,15 @@ int PLOG::_parse(int argc, char** argv, const char* fallback)
 }
 
 
+
+const char* PLOG::_logpath_parse(int argc, char** argv)
+{
+    std::string lp(argc > 0 ? argv[0] : "default") ; 
+    lp += ".log" ; 
+    return strdup(lp.c_str());
+}
+
+
 int PLOG::_prefix_parse(int argc, char** argv, const char* fallback, const char* prefix)
 {
     // Parse commandline to find project logging level  
@@ -156,7 +165,9 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
       argc(argc_),
       argv(argv_),
-      level(info)
+      level(info),
+      logpath(_logpath_parse(argc_, argv_)),
+      logmax(3)
 {
    level = prefix == NULL ?  parse(fallback) : prefix_parse(fallback, prefix ) ;    
    instance = this ; 

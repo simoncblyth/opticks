@@ -109,6 +109,8 @@ struct SYSRAP_API PLOG
     int    argc ; 
     char** argv ;
     int   level ; 
+    const char* logpath ; 
+    int   logmax ; 
 
     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
 
@@ -123,6 +125,7 @@ struct SYSRAP_API PLOG
     static void _dump(const char* msg, int argc, char** argv);
     static const char* _name(plog::Severity severity);
     static const char* _name(int level);
+    static const char* _logpath_parse(int argc, char** argv);
 
     static PLOG* instance ; 
 };
