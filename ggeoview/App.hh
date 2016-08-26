@@ -2,6 +2,7 @@
 
 class Opticks ;    // okc-
 class OpticksHub ; // opticksgeo-
+class OpticksIdx ; // opticksgeo-
 
 #ifdef WITH_OPTIX
 class OpEngine ;   // opop-
@@ -13,6 +14,9 @@ class OpticksViz ; // ggeoview-
 
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
+
+
+// NB ####### THIS IS BEING REPLACED WITH OpticksMgr  ##########
 
 class GGV_API App {
   public:
@@ -63,6 +67,7 @@ class GGV_API App {
   private:
        Opticks*         m_opticks ; 
        OpticksHub*      m_hub ; 
+       OpticksIdx*      m_idx ; 
 #ifdef WITH_OPTIX
        OpEngine*        m_ope ; 
        OpViz*           m_opv ; 

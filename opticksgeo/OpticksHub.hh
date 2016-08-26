@@ -54,13 +54,6 @@ class OKGEO_API OpticksHub {
        OpticksAttrSeq*      getBoundaryNames();
        std::map<unsigned int, std::string> getBoundaryNamesMap();
 
-       GItemIndex* makeHistoryItemIndex();
-       GItemIndex* makeMaterialItemIndex();
-       GItemIndex* makeBoundaryItemIndex();
-   public:
-       // hostside indexing 
-       void indexEvtOld();
-       void indexBoundariesHost();
    public:
        void loadGeometry();
        NPY<float>* loadGenstep();

@@ -2,14 +2,18 @@
 
 template <typename T> class NPY ; 
 class Opticks ; 
-class OpticksEvent ; 
 class OpticksHub ; 
-class OpticksViz ; 
+class OpticksIdx; 
+
+class OpticksEvent ; 
 
 #ifdef WITH_OPTIX
 class OpEngine ; 
 class OpViz ; 
 #endif
+
+class OpticksViz ; 
+
 
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
@@ -34,6 +38,7 @@ class GGV_API OpticksMgr {
    private:
        Opticks*       m_opticks ; 
        OpticksHub*    m_hub ; 
+       OpticksIdx*    m_idx ; 
        OpticksEvent*  m_evt ; 
 #ifdef WITH_OPTIX
        OpEngine*      m_ope ; 

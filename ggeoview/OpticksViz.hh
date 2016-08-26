@@ -2,6 +2,7 @@
 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksIdx ; 
 class Composition ; 
 class OpticksEvent ; 
 class Types ; 
@@ -22,7 +23,7 @@ class SRenderer ;
 
 class GGV_API OpticksViz {
     public:
-         OpticksViz(OpticksHub* hub);
+         OpticksViz(OpticksHub* hub, OpticksIdx* idx);
          void setExternalRenderer(SRenderer* external_renderer);
          void setEvent(OpticksEvent* evt);
          OpticksEvent* getEvent();
@@ -48,6 +49,7 @@ class GGV_API OpticksViz {
          void init();
     private:
          OpticksHub*   m_hub ; 
+         OpticksIdx*   m_idx ; 
          Opticks*      m_opticks ; 
          int           m_interactivity ; 
          Composition*  m_composition ;

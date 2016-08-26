@@ -8,6 +8,7 @@ class Scene ;
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
 #include "OpticksHub.hh"    // opticksgeo-
+#include "OpticksIdx.hh"    // opticksgeo-
 
 #include "PLOG.hh"
 
@@ -37,6 +38,7 @@ App::App(int argc, char** argv )
    : 
       m_opticks(NULL),
       m_hub(NULL),
+      m_idx(NULL),
 #ifdef WITH_OPTIX
       m_ope(NULL),
       m_opv(NULL),
@@ -55,18 +57,17 @@ void App::init(int argc, char** argv)
     m_opticks = new Opticks(argc, argv);
     m_opticks->Summary("App::init OpticksResource::Summary");
     m_hub = new OpticksHub(m_opticks) ;
+    m_idx = new OpticksIdx(m_hub) ;
     TIMER("init");
 
     if(m_opticks->isCompute()) return ; 
-    m_viz = new OpticksViz(m_hub) ; 
+    m_viz = new OpticksViz(m_hub, m_idx) ;
     TIMER("initViz");
 }
 
 void App::configure()
 {
     m_hub->configure(); 
-
-
     if(m_viz) m_viz->configure();
     TIMER("configure");
 }
@@ -168,7 +169,7 @@ void App::indexEvt()
     LOG(info) << "App::indexEvt WITH_OPTIX DONE" ; 
 #endif
 
-    m_hub->indexBoundariesHost();
+    m_idx->indexBoundariesHost();
 
     TIMER("indexEvt"); 
 }
@@ -176,7 +177,7 @@ void App::indexEvt()
 
 void App::indexEvtOld()
 {
-    m_hub->indexEvtOld();
+    m_idx->indexEvtOld();
 }
 
 

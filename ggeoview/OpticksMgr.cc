@@ -6,6 +6,7 @@ class Scene ;
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
 #include "OpticksHub.hh"    // opticksgeo-
+#include "OpticksIdx.hh"    // opticksgeo-
 
 #ifdef WITH_OPTIX
 #include "OpViz.hh"     // optixgl-
@@ -31,12 +32,13 @@ OpticksMgr::OpticksMgr(int argc, char** argv)
     :
     m_opticks(new Opticks(argc, argv)),
     m_hub(new OpticksHub(m_opticks)),
+    m_idx(new OpticksIdx(m_hub)),
     m_evt(NULL),
 #ifdef WITH_OPTIX
     m_ope(NULL),
     m_opv(NULL),
 #endif
-    m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub))
+    m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub, m_idx))
 {
     init();
     initGeometry();
@@ -99,6 +101,8 @@ void OpticksMgr::createEvent()
     m_evt = m_hub->createEvent();
     assert(m_evt == m_hub->getEvent()) ; 
 
+    m_idx->setEvent(m_evt);
+
     if(m_viz) m_viz->setEvent(m_evt);
 
 #ifdef WITH_OPTIX
@@ -131,7 +135,7 @@ void OpticksMgr::propagate(NPY<float>* genstep)
     {
         if(m_viz) m_viz->downloadEvent();
         m_ope->saveEvt();
-        m_hub->indexEvtOld();
+        m_idx->indexEvtOld();
     }
 #endif
 }
@@ -144,7 +148,7 @@ void OpticksMgr::indexPropagation()
 #ifdef WITH_OPTIX 
         m_ope->indexSequence();
 #endif
-        m_hub->indexBoundariesHost();
+        m_idx->indexBoundariesHost();
     }
     if(m_viz) m_viz->indexPresentationPrep();
 }

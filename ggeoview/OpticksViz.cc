@@ -21,6 +21,7 @@
 
 // opticksgeo-
 #include "OpticksHub.hh"
+#include "OpticksIdx.hh"
 
 // ggeoview-
 #include "Photons.hh"
@@ -60,9 +61,10 @@
     }
 
 
-OpticksViz::OpticksViz(OpticksHub* hub)
+OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx)
     :
     m_hub(hub),
+    m_idx(idx),
     m_opticks(hub->getOpticks()),
     m_interactivity(m_opticks->getInteractivityLevel()),
     m_composition(hub->getComposition()),
@@ -134,6 +136,7 @@ bool OpticksViz::hasOpt(const char* name)
 
 void OpticksViz::configure()
 {
+   // TODO: can this go in init ?
     m_hub->configureViz(m_scene) ;
     m_interactor->setBookmarks(m_hub->getBookmarks());
 }
@@ -271,9 +274,9 @@ void OpticksViz::indexPresentationPrep()
 {
     LOG(info) << "OpticksViz::indexPresentationPrep" ; 
 
-    m_seqhis = m_hub->makeHistoryItemIndex();
-    m_seqmat = m_hub->makeMaterialItemIndex();
-    m_boundaries = m_hub->makeBoundaryItemIndex();
+    m_seqhis = m_idx->makeHistoryItemIndex();
+    m_seqmat = m_idx->makeMaterialItemIndex();
+    m_boundaries = m_idx->makeBoundaryItemIndex();
 
     TIMER("indexPresentationPrep"); 
 }
@@ -423,10 +426,6 @@ void OpticksViz::cleanup()
     if(m_frame) m_frame->exit();
 
 }
-
-
-
-
 
 
  

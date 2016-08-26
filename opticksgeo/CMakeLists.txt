@@ -99,6 +99,7 @@ set(SOURCES
     OKGEO_LOG.cc
     OpticksGeometry.cc
     OpticksHub.cc
+    OpticksIdx.cc
 
 )
 set(HEADERS
@@ -110,6 +111,7 @@ set(HEADERS
 
     OpticksGeometry.hh
     OpticksHub.hh
+    OpticksIdx.hh
 )
 
 
