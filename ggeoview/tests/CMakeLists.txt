@@ -4,18 +4,21 @@ project(${name})
 
 #file(GLOB TEST_CC_SRCS "*Test.cc")
 
-set(TEST_SOURCES
+
+set(_TESTS
+)
+
+set(TESTS
 
     flagsTest.cc
-    OTracerTest.cc
-    GGeoViewTest.cc
     OpticksMgrTest.cc
+    OTracerTest.cc
     LogTest.cc
     OpEngineTest.cc
 )
 
 
-foreach(SRC ${TEST_SOURCES})
+foreach(SRC ${TESTS})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
 

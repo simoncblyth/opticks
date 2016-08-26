@@ -63,8 +63,12 @@ int main(int argc, char** argv)
     {
         ok.loadPropagation();
     }
-    else
+    else if(ok.hasOpt("nopropagate"))
     {
+        LOG(info) << "--nopropagate/-P" ;
+    }
+    else
+    { 
         NPY<float>* gs = ok.loadGenstep();  
         ok.propagate(gs);
     }

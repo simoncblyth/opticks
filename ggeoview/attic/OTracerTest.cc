@@ -16,6 +16,7 @@
 
 #include "App.hh"
 
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -31,7 +32,7 @@ int main(int argc, char** argv)
     GGV_LOG__ ;
  
 
-    App app(argc, argv); 
+    OpticksMgr ok(argc, argv);
 
 
     app.configure();

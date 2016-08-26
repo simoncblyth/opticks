@@ -232,11 +232,9 @@ include_directories(${INCLUDES})
 add_definitions(${DEFINITIONS})
 
 
-
 set(SOURCES
 
     GGV_LOG.cc
-    App.cc 
     OpticksViz.cc 
     OpticksMgr.cc 
 )
@@ -247,7 +245,6 @@ set(HEADERS
     GGV_HEAD.hh
     GGV_TAIL.hh
 
-    App.hh
     OpticksViz.hh
     OpticksMgr.hh
 )

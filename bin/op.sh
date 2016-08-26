@@ -36,7 +36,8 @@ To save typing add the below bash function to your .bash_profile::
 EOU
 }
 
-op-binary-name-default(){ echo GGeoViewTest ; }
+#op-binary-name-default(){ echo GGeoViewTest ; }
+op-binary-name-default(){ echo OpticksMgrTest ; }
 op-binary-names(){ type op-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; } 
 op-binary-name()
 {
