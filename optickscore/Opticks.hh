@@ -148,6 +148,7 @@ class OKCORE_API Opticks {
        void setSpaceDomain(const glm::vec4& pd); 
        std::string description();
    private:
+       void defineEventSpec();
        void configureDomains();
    public:
        unsigned int getRngMax();

@@ -183,6 +183,7 @@ def opticks_args(**kwa):
     show = kwa.get("show", True)
     mat = kwa.get("mat", "GdDopedLS")
     sli = kwa.get("sli", "::1")
+    c2max = kwa.get("c2max", 2.0)
 
     parser = argparse.ArgumentParser(doc)
 
@@ -199,6 +200,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--mrc",  default=mrc, type=int, help="script return code resulting from missing event files. Default %(default)s "  )
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting. Default %(default)s"  )
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
+    parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)

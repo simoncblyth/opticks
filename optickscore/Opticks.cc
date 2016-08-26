@@ -271,29 +271,27 @@ void Opticks::init()
 
     m_timer->start();
 
-
     m_parameters = new Parameters ;  
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
-
 
     m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
 
     setDetector( m_resource->getDetector() );
 
+    LOG(trace) << "Opticks::init DONE " ;
+}
 
+
+void Opticks::defineEventSpec()
+{
     const char* typ = getSourceType(); 
     const char* tag = getEventTag();
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
     m_spec = new OpticksEventSpec(typ, tag, det.c_str(), cat.c_str() );
-
-    LOG(trace) << "Opticks::init DONE " ;
 }
-
-
-
 
 void Opticks::dumpArgs(const char* msg)
 {
@@ -311,6 +309,8 @@ void Opticks::configure()
     dumpArgs("Opticks::configure");  
 
     m_cfg->commandline(m_argc, m_argv);
+
+    defineEventSpec();
 
     const std::string& ssize = m_cfg->getSize();
 
@@ -554,7 +554,21 @@ OpticksEventSpec* Opticks::getEventSpec()
 OpticksEvent* Opticks::makeEvent()
 {
     OpticksEvent* evt = new OpticksEvent(m_spec);
-    assert(strcmp(evt->getUDet(), getUDet()) == 0);
+
+    const char* x_udet = getUDet();
+    const char* e_udet = evt->getUDet();
+
+    bool match = strcmp(e_udet, x_udet) == 0 ;
+    if(!match)
+    {
+        LOG(fatal) << "Opticks::makeEvent"
+                   << " MISMATCH "
+                   << " x_udet " << x_udet 
+                   << " e_udet " << e_udet 
+                   ;
+    }
+    assert(match);
+
 
     evt->setMode(m_mode);
 

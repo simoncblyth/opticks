@@ -125,9 +125,9 @@ from opticks.ana.evt  import Evt
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
-    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox")
+    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox", c2max=2.0)
 
-    log.info("tag %s src %s det %s " % (args.tag,args.src,args.det))
+    log.info("tag %s src %s det %s c2max %s  " % (args.tag,args.src,args.det, args.c2max))
 
     tag = args.tag
 
@@ -172,9 +172,12 @@ if 1:
     if len(hcf.lines) > lmx:
         hcf.sli = slice(0,lmx)
     print hcf
+    assert hcf.c2p < args.c2max, "c2p deviation for history table hcf.c2p %s >= args.c2max %s " % ( hcf.c2p, args.c2max )
+
 
     mcf = a.material.table.compare(b.material.table)
     if len(mcf.lines) > lmx:
         mcf.sli = slice(0,lmx)
     print mcf
+    assert mcf.c2p < args.c2max, "c2p deviation for material table mcf.c2p %s >= args.c2max %s  " % ( mcf.c2p, args.c2max )
 
