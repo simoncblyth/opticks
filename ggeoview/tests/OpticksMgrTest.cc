@@ -55,13 +55,21 @@ int main(int argc, char** argv)
 
     GGV_LOG__ ;
  
-    OpticksMgr mgr(argc, argv);
+    OpticksMgr ok(argc, argv);
 
-    NPY<float>* gs = mgr.loadGenstep();  
-    
-    mgr.propagate(gs);
+    LOG(info) << "ok" ; 
 
-    mgr.visualize();
+    if(ok.hasOpt("load"))
+    {
+        ok.loadPropagation();
+    }
+    else
+    {
+        NPY<float>* gs = ok.loadGenstep();  
+        ok.propagate(gs);
+    }
+
+    ok.visualize();
 
     exit(EXIT_SUCCESS);
 }

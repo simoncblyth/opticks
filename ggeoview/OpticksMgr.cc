@@ -16,6 +16,9 @@ class Scene ;
 #define GUI_ 1
 #include "OpticksViz.hh"
 
+
+#include "PLOG.hh"
+
 #include "GGV_BODY.hh"
 
 #define TIMER(s) \
@@ -48,7 +51,7 @@ void OpticksMgr::init()
 {
     m_opticks->Summary("OpticksMgr::init OpticksResource::Summary");
 
-    m_hub->configure();  // OpticksEvent formerly created here...  now moved to OpticksMgr::createEvent 
+    m_hub->configure();
 
     if(m_opticks->isExit()) exit(EXIT_SUCCESS) ; 
 
@@ -80,6 +83,7 @@ void OpticksMgr::initGeometry()
 #endif
 }
 
+/////////
 
 bool OpticksMgr::isExit()
 {
@@ -109,6 +113,7 @@ void OpticksMgr::createEvent()
     m_ope->setEvent(m_evt);                  // needed for indexing
 #endif
 }
+
 
 void OpticksMgr::propagate(NPY<float>* genstep)
 {
@@ -156,25 +161,25 @@ void OpticksMgr::indexPropagation()
 
 void OpticksMgr::loadPropagation()
 {
+    LOG(fatal) << "OpticksMgr::loadPropagation" ; 
     createEvent(); 
     m_hub->loadEvent();                    // actually loads buffers into the above created OpticksEvent
 
     indexPropagation();
-    if(m_viz)
-    {
-        m_viz->targetGenstep();
-        m_viz->uploadEvent();  
-    }
+
+    if(!m_viz) return  ;
+    m_viz->targetGenstep();
+    m_viz->uploadEvent();  
+
+    LOG(fatal) << "OpticksMgr::loadPropagation DONE" ; 
 }
 
 
 void OpticksMgr::visualize()
 {
-    if(m_viz) 
-    {
-        m_viz->prepareGUI();
-        m_viz->renderLoop();    
-    }
+    if(!m_viz) return ; 
+    m_viz->prepareGUI();
+    m_viz->renderLoop();    
 }
 
 
@@ -187,6 +192,5 @@ void OpticksMgr::cleanup()
     if(m_viz) m_viz->cleanup();
     m_opticks->cleanup(); 
 }
-
 
 

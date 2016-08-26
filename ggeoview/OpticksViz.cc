@@ -87,6 +87,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx)
 
 void OpticksViz::init()
 {
+    LOG(trace) << "OpticksViz::init" ; 
 
     const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
     const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
@@ -146,7 +147,7 @@ void OpticksViz::prepareScene()
 {
     if(m_opticks->isJuno())
     {
-        LOG(warning) << "App::prepareViz disable GeometryStyle  WIRE for JUNO as too slow " ;
+        LOG(warning) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
 
         if(!hasOpt("jwire")) // use --jwire to enable wireframe with JUNO, do this only on workstations with very recent GPUs
         { 
@@ -164,7 +165,6 @@ void OpticksViz::prepareScene()
         m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }
 
-
     BDynamicDefine* dd = m_opticks->makeDynamicDefine(); 
     m_scene->write(dd);
 
@@ -178,7 +178,6 @@ void OpticksViz::prepareScene()
     }
 
     m_scene->setRecordStyle( m_hub->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
-
 
     m_frame->setTitle("GGeoView");
     m_frame->setFullscreen(hasOpt("fullscreen"));
@@ -224,7 +223,13 @@ void OpticksViz::uploadGeometry()
 
 void OpticksViz::targetGenstep()
 {
-    if(m_scene->getTarget() == 0) // only target based on genstep if not already targetted
+    int target = m_scene->getTarget() ;
+    
+    LOG(fatal) << "OpticksViz::targetGenstep" 
+               << " target " << target 
+               ;
+
+    if(target == 0) // only target based on genstep if not already targetted
     {
         m_hub->targetGenstep();
     }

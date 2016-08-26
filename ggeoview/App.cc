@@ -36,33 +36,25 @@ class Scene ;
 
 App::App(int argc, char** argv )
    : 
-      m_opticks(NULL),
-      m_hub(NULL),
-      m_idx(NULL),
+      m_opticks(new Opticks(argc, argv)),
+      m_hub(new OpticksHub(m_opticks)),
+      m_idx(new OpticksIdx(m_hub)),
 #ifdef WITH_OPTIX
       m_ope(NULL),
       m_opv(NULL),
 #endif
-      m_viz(NULL)
+      m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub, m_idx))
 {
-    init(argc, argv);
+     init();
 }
 
 bool App::isCompute(){ return m_opticks->isCompute() ; }
 bool App::isExit(){    return m_opticks->isExit() ;  }
 bool App::hasOpt(const char* name){ return m_hub->hasOpt(name); }
 
-void App::init(int argc, char** argv)
+void App::init()
 {
-    m_opticks = new Opticks(argc, argv);
     m_opticks->Summary("App::init OpticksResource::Summary");
-    m_hub = new OpticksHub(m_opticks) ;
-    m_idx = new OpticksIdx(m_hub) ;
-    TIMER("init");
-
-    if(m_opticks->isCompute()) return ; 
-    m_viz = new OpticksViz(m_hub, m_idx) ;
-    TIMER("initViz");
 }
 
 void App::configure()
@@ -94,19 +86,27 @@ void App::loadGenstep()
 {
     NPY<float>* gs = m_hub->loadGenstep();
 
-    OpticksEvent* evt = m_hub->createEvent();  
+    createEvent();
+    OpticksEvent* evt = m_hub->getEvent();  
 
     evt->setGenstepData(gs);  // must do this before can targetGenstep
 
-    if(m_viz) m_viz->setEvent(evt);
-
 }
+
+void App::createEvent()
+{
+    OpticksEvent* evt = m_hub->createEvent();  
+
+    m_idx->setEvent(evt);
+    if(m_viz) m_viz->setEvent(evt);
+}
+
 
 void App::loadEvtFromFile()
 {
+    createEvent();
     m_hub->loadEvent();
 }
-
 
 void App::uploadGeometryViz()
 {

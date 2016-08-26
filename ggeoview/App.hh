@@ -23,8 +23,9 @@ class GGV_API App {
        App(int argc, char** argv );
        void configure();
   private:
-       void init(int argc, char** argv);
+       void init();
   public:
+       void createEvent();
        void prepareViz();   // creates OpenGL context window and OpenGL renderers loading shaders
        void loadGeometry();
        bool isExit();

@@ -201,8 +201,6 @@ OpticksEvent* OpticksHub::createEvent()
 {
     if(!hasOpt("noevent"))
     {
-        // TODO: try moving event creation after geometry is loaded, to avoid need to update domains 
-        // TODO: organize wrt event loading, currently loading happens latter and trumps this evt ?
         m_evt = m_opticks->makeEvent() ; 
     } 
 
@@ -246,15 +244,7 @@ void OpticksHub::loadGeometry()
     m_ggeo = m_geometry->getGGeo();
 
     m_ggeo->setComposition(m_composition);
-
-    if(m_evt)
-    {    
-       // TODO: profit from migrated OpticksEvent 
-        LOG(info) << "OpticksGeometry::registerGeometry " << m_opticks->description() ;
-        m_evt->setSpaceDomain(m_opticks->getSpaceDomain());
-    }    
 }
-
 
 
 NPY<float>* OpticksHub::loadGenstep()
@@ -366,6 +356,10 @@ NPY<float>* OpticksHub::loadGenstepTorch()
 
 void OpticksHub::targetGenstep()
 {
+    LOG(fatal) << "OpticksHub::targetGenstep"
+               << " m_evt " << m_evt 
+               ; 
+
     bool geocenter  = hasOpt("geocenter");
     bool autocam = true ; 
     if(geocenter && m_geometry != NULL )
