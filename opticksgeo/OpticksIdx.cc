@@ -24,38 +24,27 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
-          t((s)) ;\
-       }\
-       else if(m_opticks) \
-       {\
-          Timer& t = *(m_opticks->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
 
 
 
-
 OpticksIdx::OpticksIdx(OpticksHub* hub)
    :
    m_hub(hub), 
-   m_opticks(hub->getOpticks()),
-   m_evt(hub->getEvent())           // usually starts NULL
+   m_opticks(hub->getOpticks())
 {
-}
-
-void OpticksIdx::setEvent(OpticksEvent* evt)
-{
-   m_evt = evt ; 
 }
 
 
 GItemIndex* OpticksIdx::makeHistoryItemIndex()
 {
-    Index* seqhis_ = m_evt->getHistoryIndex() ;
+    OpticksEvent* evt = m_hub->getEvent();
+    Index* seqhis_ = evt->getHistoryIndex() ;
     if(!seqhis_)
     {
          LOG(warning) << "OpticksIdx::makeHistoryItemIndex NULL seqhis" ;
@@ -75,7 +64,8 @@ GItemIndex* OpticksIdx::makeHistoryItemIndex()
 
 GItemIndex* OpticksIdx::makeMaterialItemIndex()
 {
-    Index* seqmat_ = m_evt->getMaterialIndex() ;
+    OpticksEvent* evt = m_hub->getEvent();
+    Index* seqmat_ = evt->getMaterialIndex() ;
     if(!seqmat_)
     {
          LOG(warning) << "OpticksIdx::makeMaterialItemIndex NULL seqmat" ;
@@ -94,7 +84,8 @@ GItemIndex* OpticksIdx::makeMaterialItemIndex()
 
 GItemIndex* OpticksIdx::makeBoundaryItemIndex()
 {
-    Index* bndidx_ = m_evt->getBoundaryIndex();
+    OpticksEvent* evt = m_hub->getEvent();
+    Index* bndidx_ = evt->getBoundaryIndex();
     if(!bndidx_)
     {
          LOG(warning) << "OpticksIdx::makeBoundaryItemIndex NULL bndidx" ;
@@ -116,20 +107,21 @@ GItemIndex* OpticksIdx::makeBoundaryItemIndex()
 
 void OpticksIdx::indexEvtOld()
 {
-    if(!m_evt) return ; 
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ; 
 
     // TODO: wean this off use of Types, for the new way (GFlags..)
     Types* types = m_opticks->getTypes();
     Typ* typ = m_opticks->getTyp();
 
-    NPY<float>* ox = m_evt->getPhotonData();
+    NPY<float>* ox = evt->getPhotonData();
 
     if(ox && ox->hasData())
     {
         PhotonsNPY* pho = new PhotonsNPY(ox);   // a detailed photon/record dumper : looks good for photon level debug 
         pho->setTypes(types);
         pho->setTyp(typ);
-        m_evt->setPhotonsNPY(pho);
+        evt->setPhotonsNPY(pho);
 
         GGeo* ggeo = m_hub->getGGeo();
 
@@ -139,24 +131,24 @@ void OpticksIdx::indexEvtOld()
 
         assert(ggeo);
         HitsNPY* hit = new HitsNPY(ox, ggeo->getSensorList());
-        m_evt->setHitsNPY(hit);
+        evt->setHitsNPY(hit);
     }
 
-    NPY<short>* rx = m_evt->getRecordData();
+    NPY<short>* rx = evt->getRecordData();
 
     if(rx && rx->hasData())
     {
-        RecordsNPY* rec = new RecordsNPY(rx, m_evt->getMaxRec(), m_evt->isFlat());
+        RecordsNPY* rec = new RecordsNPY(rx, evt->getMaxRec(), evt->isFlat());
         rec->setTypes(types);
         rec->setTyp(typ);
-        rec->setDomains(m_evt->getFDomain()) ;
+        rec->setDomains(evt->getFDomain()) ;
 
-        PhotonsNPY* pho = m_evt->getPhotonsNPY();
+        PhotonsNPY* pho = evt->getPhotonsNPY();
         if(pho)
         {
             pho->setRecs(rec);
         }
-        m_evt->setRecordsNPY(rec);
+        evt->setRecordsNPY(rec);
     }
 
     TIMER("indexEvtOld"); 
@@ -170,9 +162,10 @@ void OpticksIdx::indexBoundariesHost()
     // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
     // also see optickscore-/Indexer for another CPU version 
 
-    if(!m_evt) return ;
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ; 
 
-    NPY<float>* dpho = m_evt->getPhotonData();
+    NPY<float>* dpho = evt->getPhotonData();
     if(dpho && dpho->hasData())
     {
         // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
@@ -181,7 +174,7 @@ void OpticksIdx::indexBoundariesHost()
         BoundariesNPY* bnd = new BoundariesNPY(dpho);
         bnd->setBoundaryNames(boundary_names);
         bnd->indexBoundaries();
-        m_evt->setBoundariesNPY(bnd);
+        evt->setBoundariesNPY(bnd);
     }
     else
     {

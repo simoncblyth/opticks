@@ -105,8 +105,6 @@ void OpticksMgr::createEvent()
     m_evt = m_hub->createEvent();
     assert(m_evt == m_hub->getEvent()) ; 
 
-    m_idx->setEvent(m_evt);
-
     if(m_viz) m_viz->setEvent(m_evt);
 
 #ifdef WITH_OPTIX

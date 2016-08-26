@@ -97,7 +97,6 @@ void App::createEvent()
 {
     OpticksEvent* evt = m_hub->createEvent();  
 
-    m_idx->setEvent(evt);
     if(m_viz) m_viz->setEvent(evt);
 }
 
