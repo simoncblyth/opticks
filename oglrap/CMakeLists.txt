@@ -15,6 +15,7 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(OpticksCore REQUIRED)
 find_package(GGeo REQUIRED)  
+find_package(OpticksGeometry REQUIRED)
 find_package(NPY REQUIRED) 
 find_package(ImGui REQUIRED)
 
@@ -30,6 +31,7 @@ set(INCLUDE_DIRS
    ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 
    ${OpticksCore_INCLUDE_DIRS}
+   ${OpticksGeometry_INCLUDE_DIRS}
    ${NPY_INCLUDE_DIRS}
    ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
@@ -49,6 +51,7 @@ set(DEFINITIONS
    ${GLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
+   ${OpticksGeometry_DEFINITIONS}
    ${PLog_DEFINITIONS}
    ${OpticksBoost_DEFINITIONS}
    ${SysRap_DEFINITIONS} 
@@ -64,6 +67,7 @@ set(LIBRARIES
    ${GGeo_LIBRARIES}
    ${PLog_LIBRARIES}
    ${OpticksBoost_LIBRARIES}
+   ${OpticksGeometry_LIBRARIES}
    ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${NPY_LIBRARIES}

@@ -48,7 +48,7 @@ void OpIndexerApp::loadEvtFromFile()
     m_opticks->setSpaceDomain(0.f,0.f,0.f,1000.f);  // this is required before can create an evt 
 
     m_hub->createEvent();
-    m_hub->loadEvent();
+    m_hub->loadEventBuffers();
 
     OpticksEvent* evt = m_hub->getEvent();
     evt->Summary("OpIndexerApp::configure");

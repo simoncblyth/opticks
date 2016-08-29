@@ -192,9 +192,34 @@ void OpticksHub::configure()
         LOG(fatal) << "OpticksHub::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
         assert(0);
     }
+#ifdef WITH_NPYSERVER
+    configureServer();
+#endif
 
     TIMER("configure");
 }
+
+
+#ifdef WITH_NPYSERVER
+void OpticksHub::configureServer()
+{
+    if(!hasOpt("nonet"))
+    {
+      // MAYBE liveConnect should happen in initialization, not here now that event creation happens latter 
+        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
+
+        try { 
+            m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
+        } 
+        catch( const std::exception& e)
+        {
+            LOG(fatal) << "OpticksHub::configureServer EXCEPTION " << e.what() ; 
+            LOG(fatal) << "OpticksHub::configureServer FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
+        }
+    }
+}
+#endif
+
 
 
 OpticksEvent* OpticksHub::createEvent()
@@ -204,25 +229,16 @@ OpticksEvent* OpticksHub::createEvent()
         m_evt = m_opticks->makeEvent() ; 
     } 
 
-#ifdef WITH_NPYSERVER
-    if(!hasOpt("nonet"))
-    {
-        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
-        m_delegate->setEvent(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
-
-        try { 
-            m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
-        } 
-        catch( const std::exception& e)
-        {
-            LOG(fatal) << "OpticksHub::config EXCEPTION " << e.what() ; 
-            LOG(fatal) << "OpticksHub::config FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
-        }
-    }
-#endif
-
     if(m_evt)
     { 
+
+#ifdef WITH_NPYSERVER
+        if(m_delegate)
+        {
+            m_delegate->setEvent(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
+        }
+#endif
+
         m_composition->setEvt(m_evt);
         m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
 
@@ -378,31 +394,32 @@ void OpticksHub::targetGenstep()
 
 
 
-void OpticksHub::loadEvent()
+void OpticksHub::loadEventBuffers()
 {
-    LOG(info) << "OpticksHub::loadEvent START" ;
+    LOG(info) << "OpticksHub::loadEventBuffers START" ;
    
     bool verbose ; 
     m_evt->loadBuffers(verbose=false);
 
     if(m_evt->isNoLoad())
-        LOG(warning) << "OpticksHub::loadEvent LOAD FAILED " ;
+        LOG(warning) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
 
     TIMER("loadEvent"); 
 }
 
 
 
-void OpticksHub::configureViz(NConfigurable* scene)
+void OpticksHub::configureState(NConfigurable* scene)
 {
-    m_state = m_opticks->getState();
+    // NState manages the state (in the form of strings) of a collection of NConfigurable objects
+
+    m_state = m_opticks->getState();  
     m_state->setVerbose(false);
 
     LOG(info) << "OpticksHub::configureViz " << m_state->description();
 
     m_state->addConfigurable(scene);
     m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
-
 
     m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
     m_bookmarks->setState(m_state);
@@ -413,7 +430,6 @@ void OpticksHub::configureViz(NConfigurable* scene)
 
     m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
-
 }
 
 

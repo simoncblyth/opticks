@@ -27,7 +27,7 @@ class GGV_API OpticksViz {
          void setExternalRenderer(SRenderer* external_renderer);
     public:
          bool hasOpt(const char* name);
-         void configure();
+         void configureBookmarks();
          void prepareScene();
          void uploadGeometry();
          void targetGenstep();

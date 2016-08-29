@@ -5,6 +5,7 @@
 
 
 class Opticks ; 
+class OpticksHub ; 
 
 class Composition ;
 class Bookmarks ; 
@@ -29,7 +30,7 @@ class OGLRAP_API Interactor {
        static const char* DRAGFACTOR ; 
        static const char* OPTIXMODE ; 
 
-       Interactor(); 
+       Interactor(OpticksHub* hub); 
 
        void gui();
        void setComposition(Composition* composition);
@@ -81,6 +82,7 @@ class OGLRAP_API Interactor {
        const char* getStatus();  // this feeds into Frame title, visible on window surround 
 
   private:
+       OpticksHub*  m_hub ; 
        Composition* m_composition ; 
        Bookmarks*   m_bookmarks ; 
        Camera*      m_camera ; 

@@ -7,6 +7,9 @@ Search for a .ppm image file on your system and pass to FrameTest
 
 #include "NGLM.hpp"
 
+#include "Opticks.hh"
+#include "OpticksHub.hh"
+
 #include "Frame.hh"
 #include "Composition.hh"
 #include "Renderer.hh"
@@ -32,9 +35,15 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " ppmpath " << ppmpath ; 
 
 
+
+    Opticks ok(argc, argv);
+    OpticksHub hub(&ok);
+    hub.configure();
+
+
     Frame frame ; 
     Composition composition ; 
-    Interactor interactor ;
+    Interactor interactor(&hub) ;
     Renderer renderer("tex") ; 
 
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor

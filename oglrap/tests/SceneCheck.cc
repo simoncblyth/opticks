@@ -4,6 +4,9 @@
 // okc-
 #include "Opticks.hh"
 
+// okg-
+#include "OpticksHub.hh"
+
 // ggeo-
 #include "GGeo.hh"
 
@@ -41,7 +44,8 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ; 
 
     Opticks* m_opticks = new Opticks(argc, argv);
-    m_opticks->configure();
+    OpticksHub* m_hub = new OpticksHub(m_opticks);
+    m_hub->configure();
 
     // 
     m_ggeo = new GGeo(m_opticks);
@@ -54,7 +58,7 @@ int main(int argc, char** argv)
 
     m_scene = new Scene ; 
     m_frame = new Frame ; 
-    m_interactor = new Interactor ; 
+    m_interactor = new Interactor(m_hub) ; 
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);

@@ -55,7 +55,10 @@ void OpticksMgr::init()
 
     if(m_opticks->isExit()) exit(EXIT_SUCCESS) ; 
 
-    if(m_viz) m_viz->configure();
+    if(m_viz) 
+    {
+        m_viz->configureBookmarks();
+    }
 }
 
 void OpticksMgr::initGeometry()
@@ -162,7 +165,7 @@ void OpticksMgr::loadPropagation()
 {
     LOG(fatal) << "OpticksMgr::loadPropagation" ; 
     createEvent(); 
-    m_hub->loadEvent();                    // actually loads buffers into the above created OpticksEvent
+    m_hub->loadEventBuffers(); // into the above created OpticksEvent
 
     indexPropagation();
 

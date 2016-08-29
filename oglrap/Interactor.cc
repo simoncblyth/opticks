@@ -37,8 +37,9 @@ const char* Interactor::DRAGFACTOR = "dragfactor" ;
 const char* Interactor::OPTIXMODE  = "optixmode" ; 
 
 
-Interactor::Interactor() 
+Interactor::Interactor(OpticksHub* hub) 
    :
+   m_hub(hub),
    m_composition(NULL),
    m_bookmarks(NULL),
    m_camera(NULL),

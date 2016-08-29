@@ -39,6 +39,10 @@ class OKGEO_API OpticksHub {
    public:
        void         configure();
        bool         hasOpt(const char* name);
+#ifdef WITH_NPYSERVER
+    private:
+       void         configureServer();
+#endif
    public:
        Composition*         getComposition();
        GGeo*                getGGeo();
@@ -48,6 +52,8 @@ class OKGEO_API OpticksHub {
        std::string          getCfgString();
        NState*              getState();
        Bookmarks*           getBookmarks();
+       NPY<unsigned char>*  getColorBuffer();
+       Timer*               getTimer(); 
 
        OpticksAttrSeq*      getFlagNames();
        OpticksAttrSeq*      getMaterialNames();
@@ -56,14 +62,13 @@ class OKGEO_API OpticksHub {
 
    public:
        void loadGeometry();
+   public:
        NPY<float>* loadGenstep();
-       void loadEvent();
+       void loadEventBuffers();
        void targetGenstep();
-       void configureViz(NConfigurable* scene);
+       void configureState(NConfigurable* scene);
        void prepareViz();
        void cleanup();
-       NPY<unsigned char>* getColorBuffer();
-       Timer*              getTimer(); 
    private:
        void init();
    private:

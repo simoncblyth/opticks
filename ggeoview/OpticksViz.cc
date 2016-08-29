@@ -96,7 +96,7 @@ void OpticksViz::init()
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
     m_frame       = new Frame ; 
-    m_interactor  = new Interactor ; 
+    m_interactor  = new Interactor(m_hub) ; 
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
@@ -125,10 +125,10 @@ bool OpticksViz::hasOpt(const char* name)
     return m_hub->hasOpt(name);
 }
 
-void OpticksViz::configure()
+void OpticksViz::configureBookmarks()
 {
    // TODO: can this go in init ?
-    m_hub->configureViz(m_scene) ;
+    m_hub->configureState(m_scene) ;
     m_interactor->setBookmarks(m_hub->getBookmarks());
 }
 

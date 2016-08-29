@@ -10,6 +10,9 @@
 #include "Composition.hh"
 #include "Opticks.hh"
 
+// opticksgeo-
+#include "OpticksHub.hh"
+
 // oglrap-
 #include "Interactor.hh"
 #include "Frame.hh"
@@ -22,7 +25,8 @@
 
 AxisApp::AxisApp(int argc, char** argv)
         :
-         m_opticks(NULL),
+         m_opticks(new Opticks(argc, argv)),
+         m_hub(new OpticksHub(m_opticks)),
          m_composition(NULL),
          m_scene(NULL), 
          m_frame(NULL),
@@ -33,7 +37,7 @@ AxisApp::AxisApp(int argc, char** argv)
          m_axis_data(NULL),
          m_launcher(NULL)
 {
-   init(argc, argv);
+   init();
 }
 
 
@@ -52,11 +56,9 @@ void AxisApp::setLauncher(SLauncher* launcher)
     m_launcher = launcher ; 
 }
 
-void AxisApp::init(int argc, char** argv)
+void AxisApp::init()
 {
-    m_opticks = new Opticks(argc, argv);
-    m_opticks->configure();
-
+    m_hub->configure();
     initViz();
     prepareViz();
     upload();
@@ -64,10 +66,13 @@ void AxisApp::init(int argc, char** argv)
 
 void AxisApp::initViz()
 {
+   // hmm maybe OpticksViz should be at lower level, so can use here ?
+
     m_composition = new Composition ; 
     m_scene = new Scene ; 
     m_frame = new Frame ; 
-    m_interactor = new Interactor ; 
+
+    m_interactor = new Interactor(m_hub) ; 
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
