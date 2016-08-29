@@ -57,7 +57,7 @@ const char* PLOG::_logpath_parse(int argc, char** argv)
 }
 
 
-int PLOG::_prefix_parse(int argc, char** argv, const char* fallback, const char* prefix)
+int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const char* prefix)
 {
     // Parse commandline to find project logging level  
     // looking for a single project prefix, eg 
@@ -121,17 +121,17 @@ int PLOG::parse(const char* fallback)
 }
 
 
-int PLOG::prefix_parse(plog::Severity _fallback, const char* prefix)
+int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
 {
     const char* fallback = _name(_fallback);
-    return prefix_parse(fallback, prefix) ; 
+    return prefixlevel_parse(fallback, prefix) ; 
 }
-int PLOG::prefix_parse(const char* fallback, const char* prefix)
+int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 {
-    int ll =  _prefix_parse(argc, argv, fallback, prefix);
+    int ll =  _prefixlevel_parse(argc, argv, fallback, prefix);
 
 #ifdef DBG
-    std::cerr << "PLOG::prefix_parse"
+    std::cerr << "PLOG::prefixlevel_parse"
               << " fallback " << fallback
               << " prefix " << prefix 
               << " level " << ll 
@@ -169,7 +169,7 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
       logpath(_logpath_parse(argc_, argv_)),
       logmax(3)
 {
-   level = prefix == NULL ?  parse(fallback) : prefix_parse(fallback, prefix ) ;    
+   level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
    instance = this ; 
 }
 

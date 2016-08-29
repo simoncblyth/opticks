@@ -10,6 +10,7 @@ set(TEST_SOURCES
    PLogTest.cc 
    PLOG_Test.cc 
    SYSRAP_LOG_Test.cc 
+   SYSRAP_LOG_FileAppenderTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

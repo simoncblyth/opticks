@@ -1156,7 +1156,13 @@ EOU
 }
 
 
-oks-dirs(){  cat << EOL
+
+
+oks-dirs(){
+   find $(opticks-home) -name CMakeLists.txt -depth +1 -exec dirname {} \;  | grep -v tests | grep -v imgui 
+}
+
+oks-dirs-manual(){  cat << EOL
 sysrap
 boostrap
 opticksnpy
@@ -1480,15 +1486,14 @@ oks-genproj()
 
 oks-genlog()
 {
-    opticks-scd 
     local dir
     plog-
     oks-dirs | while read dir 
     do
-        opticks-scd $dir
+        cd $dir
 
         local name=$(ls -1 *_API_EXPORT.hh 2>/dev/null) 
-        [ -z "$name" ] && echo MISSING API_EXPORT in $PWD && return 
+        [ -z "$name" ] && echo MISSING API_EXPORT in $PWD : SKIPPING && continue 
         [ ! -z "$name" ] && echo $name
 
         echo $PWD

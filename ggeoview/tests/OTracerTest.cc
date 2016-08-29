@@ -35,7 +35,6 @@ Expedient separate executable. Equivalent to running::
 
 **/
 
-
 int main(int argc, char** argv)
 {
     //PLOG_(argc, argv);

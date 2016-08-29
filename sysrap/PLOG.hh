@@ -94,10 +94,10 @@ The tags for each project are listed below.
 =======================  ============================
 
 
-
-
-
-
+The somewhat bizarre usage implementation based on preprocessor
+macros allows the static logger symbols to be planted within 
+each of the shared objects in a manner that works on Mac, Linux 
+and Windows.
 
 
 **/
@@ -117,11 +117,11 @@ struct SYSRAP_API PLOG
     const char* name(); 
     int parse( const char* fallback);
     int parse( plog::Severity _fallback);
-    int prefix_parse( const char* fallback, const char* prefix);
-    int prefix_parse( plog::Severity _fallback, const char* prefix);
+    int prefixlevel_parse( const char* fallback, const char* prefix);
+    int prefixlevel_parse( plog::Severity _fallback, const char* prefix);
 
     static int  _parse(int argc, char** argv, const char* fallback);
-    static int  _prefix_parse(int argc, char** argv, const char* fallback, const char* prefix);
+    static int  _prefixlevel_parse(int argc, char** argv, const char* fallback, const char* prefix);
     static void _dump(const char* msg, int argc, char** argv);
     static const char* _name(plog::Severity severity);
     static const char* _name(int level);

@@ -59,7 +59,7 @@ plog--()
 plog-edit(){  vi $(opticks-home)/cmake/Modules/FindPLog.cmake ; }
 
 
-plog-genlog-cc(){ 
+plog-old-genlog-cc(){ 
 
    local tag=${1:-NPY}
    cat << EOL
@@ -82,7 +82,7 @@ void ${tag}_LOG::Check(const char* msg)
 EOL
 }
 
-plog-genlog-hh(){ 
+plog-old-genlog-hh(){ 
    local tag=${1:-NPY}
    cat << EOL
 
@@ -109,6 +109,67 @@ class ${tag}_API ${tag}_LOG {
 
 EOL
 }
+
+
+
+
+
+
+
+
+
+plog-genlog-hh(){ 
+   local tag=${1:-NPY}
+   cat << EOL
+
+#pragma once
+#include "${tag}_API_EXPORT.hh"
+
+#define ${tag}_LOG__ \
+ { \
+    ${tag}_LOG::Initialize(PLOG::instance->prefixlevel_parse( info, "${tag}"), plog::get(), NULL ); \
+ } \
+
+
+#define ${tag}_LOG_ \
+{ \
+    ${tag}_LOG::Initialize(plog::get()->getMaxSeverity(), plog::get(), NULL ); \
+} \
+
+class ${tag}_API ${tag}_LOG {
+   public:
+       static void Initialize(int level, void* app1, void* app2 );
+       static void Check(const char* msg);
+};
+
+EOL
+}
+
+
+
+plog-genlog-cc(){ 
+
+   local tag=${1:-NPY}
+   cat << EOL
+
+#include <plog/Log.h>
+
+#include "${tag}_LOG.hh"
+#include "PLOG_INIT.hh"
+#include "PLOG.hh"
+       
+void ${tag}_LOG::Initialize(int level, void* app1, void* app2 )
+{
+    PLOG_INIT(level, app1, app2);
+}
+void ${tag}_LOG::Check(const char* msg)
+{
+    PLOG_CHECK(msg);
+}
+
+EOL
+}
+
 
 plog-genlog(){
   local cmd=$1 

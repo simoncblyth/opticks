@@ -5,9 +5,9 @@
 #include "PLOG_INIT.hh"
 #include "PLOG.hh"
        
-void OXRAP_LOG::Initialize(void* whatever, int level )
+void OXRAP_LOG::Initialize(int level, void* app1, void* app2 )
 {
-    PLOG_INIT(whatever, level);
+    PLOG_INIT(level, app1, app2);
 }
 void OXRAP_LOG::Check(const char* msg)
 {
