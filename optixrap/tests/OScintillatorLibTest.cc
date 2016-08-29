@@ -1,3 +1,4 @@
+
 #include "OScintillatorLib.hh"
 #include "Opticks.hh"
 #include "GScintillatorLib.hh"
@@ -26,8 +27,19 @@ int main(int argc, char** argv)
     OScintillatorLib* oscin ;  
     oscin = new OScintillatorLib(context, slib );
 
-    oscin->convert();
+    const char* slice = "0:1" ; 
+    oscin->convert(slice);
 
+
+    // Initially suspected below flaky FAIL may be due to executable termination 
+    // whilst GPU still active (see thrustrap-/tests/TBufTest.cu ).
+    //
+    // But now think this the error was almost certainly this due to two scintillators being 
+    // squeezed into a buffer for one, this caused a Linux porting issue
+    // previously that was fixed with the slicing to pick the first. 
+    //
+
+    LOG(info) << "DONE"  ;
 
     return 0 ; 
 }
@@ -42,9 +54,8 @@ but on rerunning it does not fail...::
         142 - OptiXRapTest.OScintillatorLibTest (OTHER_FAULT)
     Errors while running CTest
 
-TODO:
+Recording the logs of test running, does not reveal
+the cause.
 
-Record logs of test running, in order to be able 
-to investigate such problems.
 
 */

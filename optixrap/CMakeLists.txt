@@ -42,6 +42,7 @@ find_package(AssimpRap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(OpticksGeometry REQUIRED)
 
+find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
@@ -87,6 +88,7 @@ set(LIBRARIES
 
       ${OptiX_LIBRARIES}
 
+      ${CUDA_LIBRARIES}
       ${CUDARap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
 )

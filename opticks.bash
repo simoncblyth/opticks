@@ -353,6 +353,7 @@ opticks-find(){
    local iwd=$PWD
    opticks-scd
 
+   find . -name '*.cu' -exec grep $opt $str {} \;
    find . -name '*.cc' -exec grep $opt $str {} \;
    find . -name '*.hh' -exec grep $opt $str {} \;
    find . -name '*.cpp' -exec grep $opt $str {} \;
