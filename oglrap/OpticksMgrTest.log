@@ -1,0 +1,216 @@
+﻿2016-08-29 19:46:14.185 INFO  [1601774] [*OpticksResource::readIniEnvironment@404] OpticksResource::readIniEnvironment from /usr/local/opticks/externals/config/geant4.ini
+2016-08-29 19:46:14.186 INFO  [1601774] [*OpticksResource::readIniEnvironment@404] OpticksResource::readIniEnvironment from /usr/local/opticks/opticksdata/config/opticksdata.ini
+2016-08-29 19:46:14.187 WARN  [1601774] [>::load@45]  no path /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini
+2016-08-29 19:46:14.187 INFO  [1601774] [Types::readFlags@486] Types::readFlags path[$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h]
+2016-08-29 19:46:14.187 INFO  [1601774] [Types::readFlags@496] Types::readFlags pair count 16
+2016-08-29 19:46:14.188 INFO  [1601774] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 19:46:14.188 INFO  [1601774] [Opticks::Summary@370] OpticksMgr::init OpticksResource::Summary sourceCode 4096 sourceType torch mode INTEROP_MODE
+2016-08-29 19:46:14.189 INFO  [1601774] [Opticks::Summary@378] OpticksMgr::init OpticksResource::SummaryDONE
+2016-08-29 19:46:14.189 INFO  [1601774] [Opticks::dumpArgs@298] Opticks::configure argc 1
+2016-08-29 19:46:14.189 INFO  [1601774] [OpticksHub::configureState@419] OpticksHub::configureViz NState::description /Users/blyth/.opticks/dayabay/State state
+2016-08-29 19:46:14.190 INFO  [1601774] [OpticksHub::prepareViz@441] OpticksHub::prepareViz size 2880,1704,2,0 position 200,200,0,0
+2016-08-29 19:46:14.730 INFO  [1601774] [OpticksGeometry::init@76] OpticksGeometry::init geocache 1 instanced 1
+2016-08-29 19:46:15.006 INFO  [1601774] [OpticksGeometry::loadGeometry@137] OpticksGeometry::loadGeometry START, modifyGeometry? 0
+2016-08-29 19:46:15.205 INFO  [1601774] [OpticksFlags::init@157] OpticksFlags::init path $OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h num_flags 16 Index itemtype GFlags title GFlags numItems 16
+2016-08-29 19:46:15.210 INFO  [1601774] [OpticksColors::setupCompositeColorBuffer@471] OpticksColors::setupCompositeColorBuffer DONE 
+2016-08-29 19:46:15.210 INFO  [1601774] [OpticksGeometry::registerGeometry@312] OpticksGeometry::registerGeometry
+2016-08-29 19:46:15.210 FATAL [1601774] [Opticks::configureDomains@441] Opticks::configureDomains CUDAWRAP_RNG_MAX -1 x_rng_max 3000000
+2016-08-29 19:46:15.210 FATAL [1601774] [OpticksGeometry::registerGeometry@332] OpticksGeometry::registerGeometry setting opticks SpaceDomain :  x -16520 y -802110 z -7125 w 7710.56
+2016-08-29 19:46:15.210 INFO  [1601774] [OpticksGeometry::configureGeometry@264] OpticksGeometry::configureGeometry restrict_mesh -1 analytic_mesh -1 nmm 2
+2016-08-29 19:46:15.210 FATAL [1601774] [OpticksViz::uploadGeometry@195] OpticksViz::uploadGeometry opticks domains Opticks time 0.0000,200.0000,50.0000,0.0000 space -16520.0000,-802110.0000,-7125.0000,7710.5625 wavelength 60.0000,820.0000,20.0000,760.0000
+2016-08-29 19:46:15.210 INFO  [1601774] [Scene::uploadGeometryGlobal@565] Scene::uploadGeometryGlobal 
+2016-08-29 19:46:15.266 INFO  [1601774] [Scene::setTarget@893] Scene::setTarget  target 0 aim 1 ce  -16520 -802110 -7125 7710.56
+2016-08-29 19:46:15.266 INFO  [1601774] [Composition::setCenterExtent@991] Composition::setCenterExtent ce -16520.0000,-802110.0000,-7125.0000,7710.5625
+2016-08-29 19:46:15.267 INFO  [1601774] [OpEngine::prepareOptiX@91] OpEngine::prepareOptiX START
+2016-08-29 19:46:15.349 INFO  [1601774] [OContext::init@144] OContext::init  mode INTEROP num_ray_type 3
+2016-08-29 19:46:15.371 INFO  [1601774] [*NPY<float>::make_slice@669] NPY::make_slice from 2 -> 1 slice NSlice      0 :     1 :     1 
+2016-08-29 19:46:15.385 INFO  [1601774] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1726] GMesh::makeFaceRepeatedInstancedIdentityBuffer numSolids 12230 numFaces (sum of faces in numSolids)434816 numITransforms 1 numRepeatedIdentity 434816
+2016-08-29 19:46:15.408 INFO  [1601774] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1726] GMesh::makeFaceRepeatedInstancedIdentityBuffer numSolids 5 numFaces (sum of faces in numSolids)2928 numITransforms 672 numRepeatedIdentity 1967616
+2016-08-29 19:46:15.479 INFO  [1601774] [OpEngine::prepareOptiX@93] OpEngine::prepareOptiX DONE
+2016-08-29 19:46:15.479 INFO  [1601774] [OFrame::createOutputBuffer_PBO@113] OFrame::createOutputBuffer_PBO element_size 4
+2016-08-29 19:46:15.518 INFO  [1601774] [OpViz::prepareOptiXViz@81] OpViz::prepareOptiXViz DONE 
+2016-08-29 19:46:15.518 INFO  [1601774] [OConfig::dump@158] OpViz::prepareOptiXVix m_raygen_index 1 m_exception_index 1
+2016-08-29 19:46:15.518 INFO  [1601774] [main@60] ok
+2016-08-29 19:46:15.518 INFO  [1601774] [GBndLib::getMaterialLine@544] GBndLib::getMaterialLine shortname_ GdDopedLS line 95
+2016-08-29 19:46:15.518 WARN  [1601774] [*NPY<float>::load@307] NPY<T>::load failed for path [/tmp/blyth/opticks/evt/dayabay/torch/1/1_track.npy] use debugload to see why
+2016-08-29 19:46:15.519 INFO  [1601774] [OpticksEvent::resize@694] OpticksEvent::resize  num_photons 100000 num_records 1000000 maxrec 10
+2016-08-29 19:46:15.519 FATAL [1601774] [OpticksViz::targetGenstep@218] OpticksViz::targetGenstep target 0
+2016-08-29 19:46:15.519 FATAL [1601774] [OpticksHub::targetGenstep@375] OpticksHub::targetGenstep m_evt 0x7fc95ffbea00
+2016-08-29 19:46:15.519 INFO  [1601774] [Composition::setCenterExtent@991] Composition::setCenterExtent ce -18079.4531,-799699.4375,-6605.0000,1000.0000
+2016-08-29 19:46:15.519 INFO  [1601774] [OpticksHub::targetGenstep@391] OpticksHub::targetGenstep (!geocenter) gsce -18079.4531,-799699.4375,-6605.0000,1000.0000
+2016-08-29 19:46:15.519 INFO  [1601774] [OpticksViz::uploadEvent@236] OpticksViz::uploadEvent START 
+2016-08-29 19:46:15.521 INFO  [1601774] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id    21 data   0x7fc95ad02410 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 19:46:15.522 INFO  [1601774] [Rdr::upload@303]  up    genstep_attr vpos count        1 shape                1,6,4 buffer_id    22 data   0x7fc95ffbe800 hasData     Y nbytes         96 GL_STATIC_DRAW
+2016-08-29 19:46:15.526 WARN  [1601774] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vpos count 0 shape 0,4,4
+2016-08-29 19:46:15.526 WARN  [1601774] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vpos count 0 shape 0,4,4
+2016-08-29 19:46:15.526 INFO  [1601774] [Rdr::upload@303]  up    nopstep_attr vpos count        0 shape                0,4,4 buffer_id    23 data              0x0 hasData     N nbytes          0 GL_STATIC_DRAW
+2016-08-29 19:46:15.526 WARN  [1601774] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vdir count 0 shape 0,4,4
+2016-08-29 19:46:15.526 WARN  [1601774] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vpol count 0 shape 0,4,4
+2016-08-29 19:46:15.527 INFO  [1601774] [Rdr::upload@303]  up     photon_attr vpos count   100000 shape           100000,4,4 buffer_id    24 data              0x0 hasData     N nbytes    6400000 GL_DYNAMIC_DRAW
+2016-08-29 19:46:15.538 INFO  [1601774] [Rdr::upload@303]  up     record_attr rpos count  1000000 shape        100000,10,2,4 buffer_id    25 data              0x0 hasData     N nbytes   16000000 GL_STATIC_DRAW
+2016-08-29 19:46:15.563 INFO  [1601774] [Rdr::upload@303]  up   sequence_attr phis count   100000 shape           100000,1,2 buffer_id    26 data              0x0 hasData     N nbytes    1600000 GL_STATIC_DRAW
+2016-08-29 19:46:15.563 INFO  [1601774] [Rdr::upload@303]  up     phosel_attr psel count   100000 shape           100000,1,4 buffer_id    27 data              0x0 hasData     N nbytes     400000 GL_STATIC_DRAW
+2016-08-29 19:46:15.563 INFO  [1601774] [Rdr::upload@303]  up     recsel_attr rsel count  1000000 shape        100000,10,1,4 buffer_id    28 data              0x0 hasData     N nbytes    4000000 GL_STATIC_DRAW
+2016-08-29 19:46:15.564 INFO  [1601774] [OpEngine::preparePropagator@98] OpEngine::preparePropagator START 
+2016-08-29 19:46:15.577 INFO  [1601774] [OPropagator::initRng@158] OPropagator::initRng rng_max 3000000 num_photons 100000 rngCacheDir /usr/local/opticks/installcache/RNG
+2016-08-29 19:46:16.879 INFO  [1601774] [OPropagator::initEvent@205] OPropagator::initEvent
+2016-08-29 19:46:16.879 INFO  [1601774] [OpticksEvent::checkData@621]  setting buffer ctrl  name genstep dctrl 0 :  sctrl 784 : OPTIX_INPUT_ONLY UPLOAD_WITH_CUDA BUFFER_COPY_ON_DIRTY 
+2016-08-29 19:46:16.879 INFO  [1601774] [OContext::createBuffer@351] OContext::createBuffer             gensteps               1,6,4 mode : INTEROP  BufferControl : gensteps : OPTIX_INPUT_ONLY UPLOAD_WITH_CUDA BUFFER_COPY_ON_DIRTY INTEROP_MODE 
+2016-08-29 19:46:16.880 INFO  [1601774] [OContext::configureBuffer@428]   gensteps               1,6,4 QUAD size (gnq)          6
+2016-08-29 19:46:16.882 INFO  [1601774] [OPropagator::initEvent@221] OPropagator::initGenerate (INTEROP) gensteps handed to OptiX by referencing OpenGL buffer id  
+2016-08-29 19:46:16.883 INFO  [1601774] [OpticksEvent::checkData@621]  setting buffer ctrl  name photon dctrl 0 :  sctrl 136 : OPTIX_INPUT_OUTPUT PTR_FROM_OPENGL 
+2016-08-29 19:46:16.883 INFO  [1601774] [OContext::createBuffer@351] OContext::createBuffer               photon          100000,4,4 mode : INTEROP  BufferControl : photon : OPTIX_INPUT_OUTPUT PTR_FROM_OPENGL INTEROP_MODE 
+2016-08-29 19:46:16.883 INFO  [1601774] [OContext::configureBuffer@428]     photon          100000,4,4 QUAD size (gnq)     400000
+2016-08-29 19:46:16.885 INFO  [1601774] [OpticksEvent::checkData@621]  setting buffer ctrl  name record dctrl 0 :  sctrl 32 : OPTIX_OUTPUT_ONLY 
+2016-08-29 19:46:16.885 INFO  [1601774] [OContext::createBuffer@351] OContext::createBuffer               record       100000,10,2,4 mode : INTEROP  BufferControl : record : OPTIX_OUTPUT_ONLY INTEROP_MODE 
+2016-08-29 19:46:16.885 INFO  [1601774] [OContext::configureBuffer@428]     record       100000,10,2,4 QUAD size (gnq)    2000000
+2016-08-29 19:46:16.887 INFO  [1601774] [OpticksEvent::checkData@621]  setting buffer ctrl  name sequence dctrl 0 :  sctrl 36 : OPTIX_NON_INTEROP OPTIX_OUTPUT_ONLY 
+2016-08-29 19:46:16.887 INFO  [1601774] [OContext::createBuffer@351] OContext::createBuffer             sequence          100000,1,2 mode : INTEROP  BufferControl : sequence : OPTIX_NON_INTEROP OPTIX_OUTPUT_ONLY INTEROP_MODE 
+2016-08-29 19:46:16.887 INFO  [1601774] [OContext::configureBuffer@420]   sequence          100000,1,2 USER size (ijk)     200000 elementsize 8
+2016-08-29 19:46:16.889 INFO  [1601774] [OPropagator::initEvent@272] OPropagator::initEvent DONE
+2016-08-29 19:46:16.889 INFO  [1601774] [OpEngine::preparePropagator@100] OpEngine::preparePropagator DONE 
+2016-08-29 19:46:16.889 INFO  [1601774] [OpSeeder::seedPhotonsFromGensteps@64] OpSeeder::seedPhotonsFromGensteps
+2016-08-29 19:46:16.889 INFO  [1601774] [OpSeeder::seedPhotonsFromGenstepsViaOpenGL@78] OpSeeder::seedPhotonsFromGenstepsViaOpenGL
+2016-08-29 19:46:16.922 INFO  [1601774] [OpSeeder::seedPhotonsFromGenstepsImp@150] OpSeeder::seedPhotonsFromGenstepsImp gensteps 1,6,4 num_genstep_values 24
+2016-08-29 19:46:16.946 INFO  [1601774] [OpZeroer::zeroRecords@57] OpZeroer::zeroRecords
+2016-08-29 19:46:16.964 INFO  [1601774] [OPropagator::prelaunch@323] OPropagator::prelaunch count 0 size(100000,1)
+2016-08-29 19:46:16.964 INFO  [1601774] [OContext::close@194] OContext::close numEntryPoint 2
+2016-08-29 19:46:16.966 INFO  [1601774] [OConfig::dump@158] OContext::close m_raygen_index 2 m_exception_index 2
+2016-08-29 19:46:17.246 INFO  [1601774] [OContext::launch@220] OContext::launch entry 1 width 100000 height 1
+2016-08-29 19:46:21.465 INFO  [1601774] [OContext::launch@220] OContext::launch entry 1 width 100000 height 1
+2016-08-29 19:46:22.714 INFO  [1601774] [OPropagator::dumpTimes@354] OEngineImp::propagate
+2016-08-29 19:46:22.714 INFO  [1601774] [OPropagator::dumpTimes@355] prelaunch_times 
+ count     1 
+ validate      0.0007     0.0007 
+ compile       0.0000     0.0000 
+ prelaunch     4.2179     4.2179 
+ launch        0.0000     0.0000 
+
+2016-08-29 19:46:22.714 INFO  [1601774] [OPropagator::dumpTimes@356] launch_times 
+ count     1 
+ validate      0.0000     0.0000 
+ compile       0.0000     0.0000 
+ prelaunch     0.0000     0.0000 
+ launch        1.2494     1.2494 
+
+2016-08-29 19:46:22.714 INFO  [1601774] [OpEngine::indexSequence@156] OpEngine::indexSequence proceeding  
+2016-08-29 19:46:22.715 INFO  [1601774] [OpIndexer::indexSequenceInterop@248] OpIndexer::indexSequenceInterop slicing (OBufBase*)m_seq 
+2016-08-29 19:46:22.796 WARN  [1601774] [OpticksIdx::indexBoundariesHost@181] OpticksIdx::indexBoundariesHost dpho NULL or no data 
+2016-08-29 19:46:22.796 INFO  [1601774] [OpticksViz::indexPresentationPrep@271] OpticksViz::indexPresentationPrep
+2016-08-29 19:46:22.799 INFO  [1601774] [GPropertyLib::close@316] GPropertyLib::close type GBndLib buf 123,4,2,39,4
+2016-08-29 19:46:22.799 INFO  [1601774] [Bookmarks::create@249] Bookmarks::create : persisting state to slot 0
+2016-08-29 19:46:22.799 INFO  [1601774] [Bookmarks::collect@273] Bookmarks::collect 0
+2016-08-29 19:46:22.802 WARN  [1601774] [OpticksViz::prepareGUI@315] App::prepareGUI NULL TimesTable 
+2016-08-29 19:46:22.802 INFO  [1601774] [OpticksViz::renderLoop@388] enter runloop 
+2016-08-29 19:46:22.999 INFO  [1601774] [OpticksViz::renderLoop@393] after frame.show() 
+2016-08-29 19:46:23.061 INFO  [1601774] [Animator::Summary@306] Composition::gui setup Animation   OFF 0/0/    0.0000
+2016-08-29 19:46:23.061 INFO  [1601774] [Animator::Summary@306] Composition::initRotator   OFF 0/0/    0.0000
+2016-08-29 19:46:31.695 INFO  [1601774] [Frame::key_pressed@569] Frame::key_pressed escape
+2016-08-29 20:56:01.530 INFO  [1628530] [*OpticksResource::readIniEnvironment@404] OpticksResource::readIniEnvironment from /usr/local/opticks/externals/config/geant4.ini
+2016-08-29 20:56:01.531 INFO  [1628530] [*OpticksResource::readIniEnvironment@404] OpticksResource::readIniEnvironment from /usr/local/opticks/opticksdata/config/opticksdata.ini
+2016-08-29 20:56:01.531 WARN  [1628530] [>::load@45]  no path /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini
+2016-08-29 20:56:01.531 INFO  [1628530] [Types::readFlags@486] Types::readFlags path[$OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h]
+2016-08-29 20:56:01.532 INFO  [1628530] [Types::readFlags@496] Types::readFlags pair count 16
+2016-08-29 20:56:01.533 INFO  [1628530] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 20:56:01.533 INFO  [1628530] [Opticks::Summary@370] OpticksMgr::init OpticksResource::Summary sourceCode 4096 sourceType torch mode INTEROP_MODE
+2016-08-29 20:56:01.534 INFO  [1628530] [Opticks::Summary@378] OpticksMgr::init OpticksResource::SummaryDONE
+2016-08-29 20:56:01.534 INFO  [1628530] [Opticks::dumpArgs@298] Opticks::configure argc 1
+2016-08-29 20:56:01.534 INFO  [1628530] [OpticksHub::configureState@417] OpticksHub::configureViz NState::description /Users/blyth/.opticks/dayabay/State state
+2016-08-29 20:56:01.535 INFO  [1628530] [OpticksHub::prepareCompositionSize@439] OpticksHub::prepareCompositionSize size 2880,1704,2,0 position 200,200,0,0
+2016-08-29 20:56:02.098 INFO  [1628530] [OpticksGeometry::init@76] OpticksGeometry::init geocache 1 instanced 1
+2016-08-29 20:56:02.375 INFO  [1628530] [OpticksGeometry::loadGeometry@137] OpticksGeometry::loadGeometry START, modifyGeometry? 0
+2016-08-29 20:56:02.579 INFO  [1628530] [OpticksFlags::init@157] OpticksFlags::init path $OPTICKS_INSTALL_PREFIX/include/OpticksCore/OpticksPhoton.h num_flags 16 Index itemtype GFlags title GFlags numItems 16
+2016-08-29 20:56:02.584 INFO  [1628530] [OpticksColors::setupCompositeColorBuffer@471] OpticksColors::setupCompositeColorBuffer DONE 
+2016-08-29 20:56:02.584 INFO  [1628530] [OpticksGeometry::registerGeometry@312] OpticksGeometry::registerGeometry
+2016-08-29 20:56:02.584 FATAL [1628530] [Opticks::configureDomains@441] Opticks::configureDomains CUDAWRAP_RNG_MAX -1 x_rng_max 3000000
+2016-08-29 20:56:02.584 FATAL [1628530] [OpticksGeometry::registerGeometry@332] OpticksGeometry::registerGeometry setting opticks SpaceDomain :  x -16520 y -802110 z -7125 w 7710.56
+2016-08-29 20:56:02.584 INFO  [1628530] [OpticksGeometry::configureGeometry@264] OpticksGeometry::configureGeometry restrict_mesh -1 analytic_mesh -1 nmm 2
+2016-08-29 20:56:02.584 FATAL [1628530] [OpticksViz::uploadGeometry@207] OpticksViz::uploadGeometry opticks domains Opticks time 0.0000,200.0000,50.0000,0.0000 space -16520.0000,-802110.0000,-7125.0000,7710.5625 wavelength 60.0000,820.0000,20.0000,760.0000
+2016-08-29 20:56:02.585 INFO  [1628530] [Scene::uploadGeometryGlobal@565] Scene::uploadGeometryGlobal 
+2016-08-29 20:56:02.640 INFO  [1628530] [Scene::setTarget@893] Scene::setTarget  target 0 aim 1 ce  -16520 -802110 -7125 7710.56
+2016-08-29 20:56:02.640 INFO  [1628530] [Composition::setCenterExtent@991] Composition::setCenterExtent ce -16520.0000,-802110.0000,-7125.0000,7710.5625
+2016-08-29 20:56:02.640 INFO  [1628530] [OpEngine::prepareOptiX@91] OpEngine::prepareOptiX START
+2016-08-29 20:56:02.721 INFO  [1628530] [OContext::init@144] OContext::init  mode INTEROP num_ray_type 3
+2016-08-29 20:56:02.740 INFO  [1628530] [*NPY<float>::make_slice@669] NPY::make_slice from 2 -> 1 slice NSlice      0 :     1 :     1 
+2016-08-29 20:56:02.753 INFO  [1628530] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1726] GMesh::makeFaceRepeatedInstancedIdentityBuffer numSolids 12230 numFaces (sum of faces in numSolids)434816 numITransforms 1 numRepeatedIdentity 434816
+2016-08-29 20:56:02.777 INFO  [1628530] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1726] GMesh::makeFaceRepeatedInstancedIdentityBuffer numSolids 5 numFaces (sum of faces in numSolids)2928 numITransforms 672 numRepeatedIdentity 1967616
+2016-08-29 20:56:02.849 INFO  [1628530] [OpEngine::prepareOptiX@93] OpEngine::prepareOptiX DONE
+2016-08-29 20:56:02.849 INFO  [1628530] [OFrame::createOutputBuffer_PBO@113] OFrame::createOutputBuffer_PBO element_size 4
+2016-08-29 20:56:02.887 INFO  [1628530] [OpViz::prepareOptiXViz@81] OpViz::prepareOptiXViz DONE 
+2016-08-29 20:56:02.887 INFO  [1628530] [OConfig::dump@158] OpViz::prepareOptiXVix m_raygen_index 1 m_exception_index 1
+2016-08-29 20:56:02.887 INFO  [1628530] [main@60] ok
+2016-08-29 20:56:02.888 INFO  [1628530] [GBndLib::getMaterialLine@544] GBndLib::getMaterialLine shortname_ GdDopedLS line 95
+2016-08-29 20:56:02.888 WARN  [1628530] [*NPY<float>::load@307] NPY<T>::load failed for path [/tmp/blyth/opticks/evt/dayabay/torch/1/1_track.npy] use debugload to see why
+2016-08-29 20:56:02.888 INFO  [1628530] [OpticksEvent::resize@694] OpticksEvent::resize  num_photons 100000 num_records 1000000 maxrec 10
+2016-08-29 20:56:02.888 FATAL [1628530] [OpticksViz::targetGenstep@230] OpticksViz::targetGenstep target 0
+2016-08-29 20:56:02.888 FATAL [1628530] [OpticksHub::targetGenstep@373] OpticksHub::targetGenstep m_evt 0x7fd78ff94b20
+2016-08-29 20:56:02.888 INFO  [1628530] [Composition::setCenterExtent@991] Composition::setCenterExtent ce -18079.4531,-799699.4375,-6605.0000,1000.0000
+2016-08-29 20:56:02.888 INFO  [1628530] [OpticksHub::targetGenstep@389] OpticksHub::targetGenstep (!geocenter) gsce -18079.4531,-799699.4375,-6605.0000,1000.0000
+2016-08-29 20:56:02.888 INFO  [1628530] [OpticksViz::uploadEvent@248] OpticksViz::uploadEvent START 
+2016-08-29 20:56:02.890 INFO  [1628530] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id    21 data   0x7fd78a43f8c0 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 20:56:02.892 INFO  [1628530] [Rdr::upload@303]  up    genstep_attr vpos count        1 shape                1,6,4 buffer_id    22 data   0x7fd78ff94920 hasData     Y nbytes         96 GL_STATIC_DRAW
+2016-08-29 20:56:02.895 WARN  [1628530] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vpos count 0 shape 0,4,4
+2016-08-29 20:56:02.895 WARN  [1628530] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vpos count 0 shape 0,4,4
+2016-08-29 20:56:02.895 INFO  [1628530] [Rdr::upload@303]  up    nopstep_attr vpos count        0 shape                0,4,4 buffer_id    23 data              0x0 hasData     N nbytes          0 GL_STATIC_DRAW
+2016-08-29 20:56:02.895 WARN  [1628530] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vdir count 0 shape 0,4,4
+2016-08-29 20:56:02.895 WARN  [1628530] [ViewNPY::getCount@178] ViewNPY::getCount UNEXPECTED desc ViewNPY nopstep_attr       vpol count 0 shape 0,4,4
+2016-08-29 20:56:02.896 INFO  [1628530] [Rdr::upload@303]  up     photon_attr vpos count   100000 shape           100000,4,4 buffer_id    24 data              0x0 hasData     N nbytes    6400000 GL_DYNAMIC_DRAW
+2016-08-29 20:56:02.908 INFO  [1628530] [Rdr::upload@303]  up     record_attr rpos count  1000000 shape        100000,10,2,4 buffer_id    25 data              0x0 hasData     N nbytes   16000000 GL_STATIC_DRAW
+2016-08-29 20:56:02.933 INFO  [1628530] [Rdr::upload@303]  up   sequence_attr phis count   100000 shape           100000,1,2 buffer_id    26 data              0x0 hasData     N nbytes    1600000 GL_STATIC_DRAW
+2016-08-29 20:56:02.933 INFO  [1628530] [Rdr::upload@303]  up     phosel_attr psel count   100000 shape           100000,1,4 buffer_id    27 data              0x0 hasData     N nbytes     400000 GL_STATIC_DRAW
+2016-08-29 20:56:02.933 INFO  [1628530] [Rdr::upload@303]  up     recsel_attr rsel count  1000000 shape        100000,10,1,4 buffer_id    28 data              0x0 hasData     N nbytes    4000000 GL_STATIC_DRAW
+2016-08-29 20:56:02.933 INFO  [1628530] [OpEngine::preparePropagator@98] OpEngine::preparePropagator START 
+2016-08-29 20:56:02.946 INFO  [1628530] [OPropagator::initRng@158] OPropagator::initRng rng_max 3000000 num_photons 100000 rngCacheDir /usr/local/opticks/installcache/RNG
+2016-08-29 20:56:04.250 INFO  [1628530] [OPropagator::initEvent@205] OPropagator::initEvent
+2016-08-29 20:56:04.251 INFO  [1628530] [OpticksEvent::checkData@621]  setting buffer ctrl  name genstep dctrl 0 :  sctrl 784 : OPTIX_INPUT_ONLY UPLOAD_WITH_CUDA BUFFER_COPY_ON_DIRTY 
+2016-08-29 20:56:04.251 INFO  [1628530] [OContext::createBuffer@351] OContext::createBuffer             gensteps               1,6,4 mode : INTEROP  BufferControl : gensteps : OPTIX_INPUT_ONLY UPLOAD_WITH_CUDA BUFFER_COPY_ON_DIRTY INTEROP_MODE 
+2016-08-29 20:56:04.251 INFO  [1628530] [OContext::configureBuffer@428]   gensteps               1,6,4 QUAD size (gnq)          6
+2016-08-29 20:56:04.254 INFO  [1628530] [OPropagator::initEvent@221] OPropagator::initGenerate (INTEROP) gensteps handed to OptiX by referencing OpenGL buffer id  
+2016-08-29 20:56:04.254 INFO  [1628530] [OpticksEvent::checkData@621]  setting buffer ctrl  name photon dctrl 0 :  sctrl 136 : OPTIX_INPUT_OUTPUT PTR_FROM_OPENGL 
+2016-08-29 20:56:04.254 INFO  [1628530] [OContext::createBuffer@351] OContext::createBuffer               photon          100000,4,4 mode : INTEROP  BufferControl : photon : OPTIX_INPUT_OUTPUT PTR_FROM_OPENGL INTEROP_MODE 
+2016-08-29 20:56:04.255 INFO  [1628530] [OContext::configureBuffer@428]     photon          100000,4,4 QUAD size (gnq)     400000
+2016-08-29 20:56:04.257 INFO  [1628530] [OpticksEvent::checkData@621]  setting buffer ctrl  name record dctrl 0 :  sctrl 32 : OPTIX_OUTPUT_ONLY 
+2016-08-29 20:56:04.257 INFO  [1628530] [OContext::createBuffer@351] OContext::createBuffer               record       100000,10,2,4 mode : INTEROP  BufferControl : record : OPTIX_OUTPUT_ONLY INTEROP_MODE 
+2016-08-29 20:56:04.257 INFO  [1628530] [OContext::configureBuffer@428]     record       100000,10,2,4 QUAD size (gnq)    2000000
+2016-08-29 20:56:04.259 INFO  [1628530] [OpticksEvent::checkData@621]  setting buffer ctrl  name sequence dctrl 0 :  sctrl 36 : OPTIX_NON_INTEROP OPTIX_OUTPUT_ONLY 
+2016-08-29 20:56:04.259 INFO  [1628530] [OContext::createBuffer@351] OContext::createBuffer             sequence          100000,1,2 mode : INTEROP  BufferControl : sequence : OPTIX_NON_INTEROP OPTIX_OUTPUT_ONLY INTEROP_MODE 
+2016-08-29 20:56:04.259 INFO  [1628530] [OContext::configureBuffer@420]   sequence          100000,1,2 USER size (ijk)     200000 elementsize 8
+2016-08-29 20:56:04.261 INFO  [1628530] [OPropagator::initEvent@272] OPropagator::initEvent DONE
+2016-08-29 20:56:04.261 INFO  [1628530] [OpEngine::preparePropagator@100] OpEngine::preparePropagator DONE 
+2016-08-29 20:56:04.261 INFO  [1628530] [OpSeeder::seedPhotonsFromGensteps@64] OpSeeder::seedPhotonsFromGensteps
+2016-08-29 20:56:04.261 INFO  [1628530] [OpSeeder::seedPhotonsFromGenstepsViaOpenGL@78] OpSeeder::seedPhotonsFromGenstepsViaOpenGL
+2016-08-29 20:56:04.294 INFO  [1628530] [OpSeeder::seedPhotonsFromGenstepsImp@150] OpSeeder::seedPhotonsFromGenstepsImp gensteps 1,6,4 num_genstep_values 24
+2016-08-29 20:56:04.315 INFO  [1628530] [OpZeroer::zeroRecords@57] OpZeroer::zeroRecords
+2016-08-29 20:56:04.332 INFO  [1628530] [OPropagator::prelaunch@323] OPropagator::prelaunch count 0 size(100000,1)
+2016-08-29 20:56:04.332 INFO  [1628530] [OContext::close@194] OContext::close numEntryPoint 2
+2016-08-29 20:56:04.334 INFO  [1628530] [OConfig::dump@158] OContext::close m_raygen_index 2 m_exception_index 2
+2016-08-29 20:56:04.620 INFO  [1628530] [OContext::launch@220] OContext::launch entry 1 width 100000 height 1
+2016-08-29 20:56:08.801 INFO  [1628530] [OContext::launch@220] OContext::launch entry 1 width 100000 height 1
+2016-08-29 20:56:10.066 INFO  [1628530] [OPropagator::dumpTimes@354] OEngineImp::propagate
+2016-08-29 20:56:10.066 INFO  [1628530] [OPropagator::dumpTimes@355] prelaunch_times 
+ count     1 
+ validate      0.0007     0.0007 
+ compile       0.0000     0.0000 
+ prelaunch     4.1801     4.1801 
+ launch        0.0000     0.0000 
+
+2016-08-29 20:56:10.066 INFO  [1628530] [OPropagator::dumpTimes@356] launch_times 
+ count     1 
+ validate      0.0000     0.0000 
+ compile       0.0000     0.0000 
+ prelaunch     0.0000     0.0000 
+ launch        1.2649     1.2649 
+
+2016-08-29 20:56:10.066 INFO  [1628530] [OpEngine::indexSequence@156] OpEngine::indexSequence proceeding  
+2016-08-29 20:56:10.066 INFO  [1628530] [OpIndexer::indexSequenceInterop@248] OpIndexer::indexSequenceInterop slicing (OBufBase*)m_seq 
+2016-08-29 20:56:10.144 WARN  [1628530] [OpticksIdx::indexBoundariesHost@181] OpticksIdx::indexBoundariesHost dpho NULL or no data 
+2016-08-29 20:56:10.144 INFO  [1628530] [OpticksViz::indexPresentationPrep@283] OpticksViz::indexPresentationPrep
+2016-08-29 20:56:10.147 INFO  [1628530] [GPropertyLib::close@316] GPropertyLib::close type GBndLib buf 123,4,2,39,4
+2016-08-29 20:56:10.147 INFO  [1628530] [Bookmarks::create@249] Bookmarks::create : persisting state to slot 0
+2016-08-29 20:56:10.147 INFO  [1628530] [Bookmarks::collect@273] Bookmarks::collect 0
+2016-08-29 20:56:10.150 WARN  [1628530] [OpticksViz::prepareGUI@327] App::prepareGUI NULL TimesTable 
+2016-08-29 20:56:10.150 INFO  [1628530] [OpticksViz::renderLoop@401] enter runloop 
+2016-08-29 20:56:10.188 INFO  [1628530] [OpticksViz::renderLoop@406] after frame.show() 
+2016-08-29 20:56:10.239 INFO  [1628530] [Animator::Summary@306] Composition::gui setup Animation   OFF 0/0/    0.0000
+2016-08-29 20:56:10.239 INFO  [1628530] [Animator::Summary@306] Composition::initRotator   OFF 0/0/    0.0000
+2016-08-29 20:56:22.476 INFO  [1628530] [Frame::key_pressed@569] Frame::key_pressed escape

@@ -65,7 +65,7 @@ void OpticksMgr::initGeometry()
 {
     if(m_viz) 
     {
-        m_hub->prepareViz();
+        m_hub->prepareCompositionSize();
         m_viz->prepareScene();   // setup OpenGL shaders and creates OpenGL context (the window)
     }
  

@@ -509,6 +509,8 @@ void Scene::initRenderers()
 
 void Scene::setComposition(Composition* composition)
 {
+    // HMM better to use hub ? to avoid this lot ?
+
     m_composition = composition ; 
 
     if(m_global_renderer)
@@ -657,6 +659,7 @@ void Scene::uploadGeometry()
 
 void Scene::uploadColorBuffer(NPY<unsigned char>* colorbuffer)
 {
+   // invoked by OpticksViz::uploadGeometry
     m_colorbuffer = colorbuffer ; 
     m_colors->setColorBuffer(colorbuffer);
     m_colors->upload();

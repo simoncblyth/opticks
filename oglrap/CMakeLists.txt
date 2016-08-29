@@ -117,6 +117,7 @@ set(SOURCES
     Renderer.cc
     RendererCfg.cc
     AxisApp.cc
+    OpticksViz.cc
 )
 
 SET(HEADERS
@@ -138,6 +139,7 @@ SET(HEADERS
     Rdr.hh
     Device.hh
     AxisApp.hh
+    OpticksViz.hh
 
     StateGUI.hh
     Demo.hh

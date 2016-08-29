@@ -1,0 +1,169 @@
+﻿2016-08-29 20:19:38.464 INFO  [1612757] [main@11] AxisAppCheck
+2016-08-29 20:19:38.467 INFO  [1612757] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 20:19:38.468 WARN  [1612757] [OpticksViz::prepareScene@152] OpticksViz::prepareScene using non-standard rendermode +axis
+2016-08-29 20:19:39.079 INFO  [1612757] [AxisApp::prepareViz@129] AxisApp::prepareViz DONE 
+2016-08-29 20:19:39.079 INFO  [1612757] [AxisApp::upload@135] AxisApp::upload 
+2016-08-29 20:19:39.079 INFO  [1612757] [Rdr::upload@175] Rdr::upload tag [axis] mvn [axis_attr]
+2016-08-29 20:19:39.113 INFO  [1612757] [Rdr::upload@202] Rdr::upload mvn axis_attr (first)count 3
+2016-08-29 20:19:39.113 INFO  [1612757] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id     1 data   0x7fd3096022a0 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 20:19:39.113 INFO  [1612757] [Scene::setTarget@883] Scene::setTarget 0 deferring as geometry not loaded 
+2016-08-29 20:19:39.113 INFO  [1612757] [AxisApp::upload@151] AxisApp::upload DONE 
+2016-08-29 20:19:39.113 INFO  [1612757] [OpticksViz::renderLoop@405] enter runloop 
+2016-08-29 20:19:39.130 INFO  [1612757] [OpticksViz::renderLoop@410] after frame.show() 
+2016-08-29 20:19:39.193 FATAL [1612757] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:20:08.827 INFO  [1613422] [main@11] AxisAppCheck
+2016-08-29 20:20:08.830 INFO  [1613422] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 20:20:08.830 WARN  [1613422] [OpticksViz::prepareScene@152] OpticksViz::prepareScene using non-standard rendermode +axis
+2016-08-29 20:20:09.609 INFO  [1613422] [AxisApp::prepareViz@129] AxisApp::prepareViz DONE 
+2016-08-29 20:20:09.609 INFO  [1613422] [AxisApp::upload@135] AxisApp::upload 
+2016-08-29 20:20:09.609 INFO  [1613422] [Rdr::upload@175] Rdr::upload tag [axis] mvn [axis_attr]
+2016-08-29 20:20:09.629 INFO  [1613422] [Rdr::upload@202] Rdr::upload mvn axis_attr (first)count 3
+2016-08-29 20:20:09.629 INFO  [1613422] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id     1 data      0x103d0fc70 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 20:20:09.629 INFO  [1613422] [Scene::setTarget@883] Scene::setTarget 0 deferring as geometry not loaded 
+2016-08-29 20:20:09.629 INFO  [1613422] [AxisApp::upload@151] AxisApp::upload DONE 
+2016-08-29 20:20:09.629 INFO  [1613422] [OpticksViz::renderLoop@405] enter runloop 
+2016-08-29 20:20:09.676 INFO  [1613422] [OpticksViz::renderLoop@410] after frame.show() 
+2016-08-29 20:20:09.752 FATAL [1613422] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:32:15.169 INFO  [1616350] [main@11] AxisAppCheck
+2016-08-29 20:32:15.172 INFO  [1616350] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 20:32:15.172 WARN  [1616350] [OpticksViz::prepareScene@152] OpticksViz::prepareScene using non-standard rendermode +axis
+2016-08-29 20:32:15.735 INFO  [1616350] [AxisApp::upload@57] AxisApp::upload 
+2016-08-29 20:32:15.735 INFO  [1616350] [Rdr::upload@175] Rdr::upload tag [axis] mvn [axis_attr]
+2016-08-29 20:32:15.755 INFO  [1616350] [Rdr::upload@202] Rdr::upload mvn axis_attr (first)count 3
+2016-08-29 20:32:15.756 INFO  [1616350] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id     1 data   0x7f95c8d09cb0 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 20:32:15.756 INFO  [1616350] [Scene::setTarget@883] Scene::setTarget 0 deferring as geometry not loaded 
+2016-08-29 20:32:15.756 INFO  [1616350] [AxisApp::upload@69] AxisApp::upload DONE 
+2016-08-29 20:32:15.756 INFO  [1616350] [OpticksViz::renderLoop@400] enter runloop 
+2016-08-29 20:32:15.787 INFO  [1616350] [OpticksViz::renderLoop@405] after frame.show() 
+2016-08-29 20:32:15.894 FATAL [1616350] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:18.483 INFO  [1617621] [main@11] AxisAppCheck
+2016-08-29 20:34:18.486 INFO  [1617621] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 20:34:18.486 WARN  [1617621] [OpticksViz::prepareScene@152] OpticksViz::prepareScene using non-standard rendermode +axis
+2016-08-29 20:34:19.065 INFO  [1617621] [AxisApp::upload@57] AxisApp::upload 
+2016-08-29 20:34:19.066 INFO  [1617621] [Rdr::upload@175] Rdr::upload tag [axis] mvn [axis_attr]
+2016-08-29 20:34:19.086 INFO  [1617621] [Rdr::upload@202] Rdr::upload mvn axis_attr (first)count 3
+2016-08-29 20:34:19.086 INFO  [1617621] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id     1 data   0x7fa3d2702290 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 20:34:19.086 INFO  [1617621] [Scene::setTarget@883] Scene::setTarget 0 deferring as geometry not loaded 
+2016-08-29 20:34:19.086 INFO  [1617621] [AxisApp::upload@69] AxisApp::upload DONE 
+2016-08-29 20:34:19.086 INFO  [1617621] [OpticksViz::renderLoop@401] enter runloop 
+2016-08-29 20:34:19.112 INFO  [1617621] [OpticksViz::renderLoop@406] after frame.show() 
+2016-08-29 20:34:19.202 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.846 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.866 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.880 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.897 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.914 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.932 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.949 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.967 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:34.984 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.001 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.018 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.036 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.301 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.319 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.336 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.353 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.370 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.387 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.405 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.422 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.447 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.464 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.481 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.497 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.515 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.743 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.766 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.780 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.797 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.814 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.831 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.847 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.864 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.881 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.898 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:35.916 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.105 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.122 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.139 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.163 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.180 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.197 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.214 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.230 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.247 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.263 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.280 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.297 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.314 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.331 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.348 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.364 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.383 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.397 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:36.413 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:39.489 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:39.506 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.499 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.518 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.533 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.556 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.568 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.606 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.614 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.631 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.647 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.673 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.681 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.698 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.723 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.731 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.748 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.773 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.782 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.801 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.822 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.830 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.848 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.873 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.881 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:34:59.896 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:01.699 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:01.718 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:01.732 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:01.755 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:01.766 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:01.783 FATAL [1617621] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:35:03.576 INFO  [1617621] [Frame::key_pressed@569] Frame::key_pressed escape
+2016-08-29 20:42:47.407 INFO  [1624908] [main@11] AxisAppCheck
+2016-08-29 20:42:47.410 INFO  [1624908] [Scene::init@201] Scene::init (config from cmake) OGLRAP_INSTALL_PREFIX /usr/local/opticks OGLRAP_SHADER_DIR /usr/local/opticks/gl OGLRAP_SHADER_INCL_PATH /usr/local/opticks/gl OGLRAP_SHADER_DYNAMIC_DIR /usr/local/opticks/gl
+2016-08-29 20:42:47.410 WARN  [1624908] [OpticksViz::prepareScene@152] OpticksViz::prepareScene using non-standard rendermode +axis
+2016-08-29 20:42:47.995 INFO  [1624908] [AxisApp::upload@66] AxisApp::upload 
+2016-08-29 20:42:47.995 INFO  [1624908] [Rdr::upload@175] Rdr::upload tag [axis] mvn [axis_attr]
+2016-08-29 20:42:48.029 INFO  [1624908] [Rdr::upload@202] Rdr::upload mvn axis_attr (first)count 3
+2016-08-29 20:42:48.030 INFO  [1624908] [Rdr::upload@303]  up       axis_attr vpos count        3 shape                3,3,4 buffer_id     1 data   0x7f8c83509cb0 hasData     Y nbytes        144 GL_STATIC_DRAW
+2016-08-29 20:42:48.030 INFO  [1624908] [Scene::setTarget@883] Scene::setTarget 0 deferring as geometry not loaded 
+2016-08-29 20:42:48.030 INFO  [1624908] [AxisApp::upload@78] AxisApp::upload DONE 
+2016-08-29 20:42:48.030 INFO  [1624908] [OpticksViz::renderLoop@401] enter runloop 
+2016-08-29 20:42:48.044 INFO  [1624908] [OpticksViz::renderLoop@406] after frame.show() 
+2016-08-29 20:42:48.100 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.710 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.746 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.760 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.776 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.793 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.809 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.826 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:49.843 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:56.804 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:56.828 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:56.843 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:56.862 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:56.876 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:42:56.892 FATAL [1624908] [Scene::touch@846] Scene::touch mesh0 NULL 
+2016-08-29 20:43:08.237 INFO  [1624908] [Interactor::key_pressed@424] Interactor::key_pressed O nextRenderStyle 
+2016-08-29 20:43:09.381 INFO  [1624908] [Interactor::key_pressed@424] Interactor::key_pressed O nextRenderStyle 
+2016-08-29 20:43:10.405 INFO  [1624908] [Interactor::key_pressed@424] Interactor::key_pressed O nextRenderStyle 
+2016-08-29 20:43:10.573 INFO  [1624908] [Interactor::key_pressed@424] Interactor::key_pressed O nextRenderStyle 
+2016-08-29 20:43:12.853 INFO  [1624908] [Frame::key_pressed@569] Frame::key_pressed escape

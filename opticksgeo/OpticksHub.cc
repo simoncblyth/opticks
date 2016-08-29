@@ -69,7 +69,7 @@ OpticksHub::OpticksHub(Opticks* opticks)
    m_opticks(opticks),
    m_geometry(NULL),
    m_ggeo(NULL),
-   m_composition(NULL),
+   m_composition(new Composition),
    m_evt(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
@@ -87,8 +87,6 @@ OpticksHub::OpticksHub(Opticks* opticks)
 
 void OpticksHub::init()
 {
-    m_composition = new Composition ;   // Composition no longer Viz only 
-
     m_cfg  = new BCfg("umbrella", false) ; 
     m_fcfg = m_opticks->getCfg();
     add(m_fcfg);
@@ -433,12 +431,12 @@ void OpticksHub::configureState(NConfigurable* scene)
 }
 
 
-void OpticksHub::prepareViz()
+void OpticksHub::prepareCompositionSize()
 {
     glm::uvec4 size = m_opticks->getSize();
     glm::uvec4 position = m_opticks->getPosition() ;
 
-    LOG(info) << "OpticksHub::prepareViz"
+    LOG(info) << "OpticksHub::prepareCompositionSize"
               << " size " << gformat(size)
               << " position " << gformat(position)
               ;

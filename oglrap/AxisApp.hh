@@ -3,6 +3,8 @@
 class SLauncher ; 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksViz ; 
+
 class Composition ; 
 class Scene ; 
 class Frame ; 
@@ -35,26 +37,21 @@ class OGLRAP_API AxisApp {
       void renderLoop();
       MultiViewNPY* getAxisAttr();
       NPY<float>*   getAxisData();
-      void setLauncher(SLauncher* launcher);  
-     // SLauncher is a pure virtual protocol:  void launch(unsigned count)
+      void setLauncher(SLauncher* launcher);   // SLauncher instances provide: void launch(unsigned count)
   private:
       void init(); 
-      void initViz();
       void prepareViz();
       void upload();
-      void render(); 
   private:
       Opticks*     m_opticks ;
       OpticksHub*  m_hub ;
+      OpticksViz*  m_viz ;
       Composition* m_composition ;
       Scene*       m_scene ;
-      Frame*       m_frame ;
-      Interactor*  m_interactor ;
-      GLFWwindow*  m_window ;
+
       Rdr*         m_axis_renderer ; 
       MultiViewNPY* m_axis_attr ; 
       NPY<float>*   m_axis_data ; 
-      SLauncher*    m_launcher ; 
 
 };
 

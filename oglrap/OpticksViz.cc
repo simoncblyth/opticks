@@ -1,5 +1,7 @@
+#include <cstring>
 
 // sysrap-
+#include "SLauncher.hh"
 #include "SRenderer.hh"
 
 // npy-
@@ -69,6 +71,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx)
     m_interactivity(m_opticks->getInteractivityLevel()),
     m_composition(hub->getComposition()),
     m_types(m_opticks->getTypes()),
+    m_title(NULL),
     m_scene(NULL),
     m_frame(NULL),
     m_window(NULL),
@@ -78,12 +81,11 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx)
     m_boundaries(NULL),
     m_photons(NULL),
     m_gui(NULL),
+    m_launcher(NULL),
     m_external_renderer(NULL)
 {
     init();
 }
-
-
 
 void OpticksViz::init()
 {
@@ -114,6 +116,16 @@ void OpticksViz::init()
 
 }
 
+void OpticksViz::setTitle(const char* title)
+{
+    m_title = title ? strdup(title) : NULL ; 
+}
+void OpticksViz::setLauncher(SLauncher* launcher)
+{
+    m_launcher = launcher ; 
+}
+
+
 
 Scene* OpticksViz::getScene()
 {
@@ -133,9 +145,14 @@ void OpticksViz::configureBookmarks()
 }
 
 
-void OpticksViz::prepareScene()
+void OpticksViz::prepareScene(const char* rendermode)
 {
-    if(m_opticks->isJuno())
+    if(rendermode)
+    { 
+        LOG(warning) << "OpticksViz::prepareScene using non-standard rendermode " << rendermode ;
+        m_scene->setRenderMode(rendermode);
+    } 
+    else if(m_opticks->isJuno())
     {
         LOG(warning) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
 
@@ -169,7 +186,7 @@ void OpticksViz::prepareScene()
 
     m_scene->setRecordStyle( m_hub->hasOpt("alt") ? Scene::ALTREC : Scene::REC );    
 
-    m_frame->setTitle("GGeoView");
+    m_frame->setTitle(m_title ? m_title : "OpticksViz");
     m_frame->setFullscreen(hasOpt("fullscreen"));
     m_frame->init();           // creates OpenGL context
 
@@ -187,11 +204,6 @@ void OpticksViz::uploadGeometry()
 
     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    // where does this info come from, where is most appropriate to set it ?
-    // domains are set on running Opticks::makeEvent 
-    //  BUT the space domain has to be updated after geometry loaded 
-
-    
     LOG(fatal) << "OpticksViz::uploadGeometry opticks domains " << m_opticks->description();
 
     m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
@@ -266,6 +278,8 @@ void OpticksViz::downloadEvent()
 
 void OpticksViz::indexPresentationPrep()
 {
+    if(!m_idx) return ; 
+
     LOG(info) << "OpticksViz::indexPresentationPrep" ; 
 
     m_seqhis = m_idx->makeHistoryItemIndex();
@@ -283,9 +297,12 @@ void OpticksViz::prepareGUI()
 
 #ifdef GUI_
 
-    Types* types = m_opticks->getTypes();  // needed for each render
-    m_photons = new Photons(types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
-    m_scene->setPhotons(m_photons);
+    if(m_idx)
+    {
+        Types* types = m_opticks->getTypes();  // needed for each render
+        m_photons = new Photons(types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
+        m_scene->setPhotons(m_photons);
+    }
 
     m_gui = new GUI(m_hub->getGGeo()) ;
     m_gui->setScene(m_scene);
@@ -324,6 +341,7 @@ void OpticksViz::prepareGUI()
 void OpticksViz::renderGUI()
 {
 #ifdef GUI_
+    if(!m_gui) return ; 
     m_gui->newframe();
     bool* show_gui_window = m_interactor->getGUIModeAddress();
     if(*show_gui_window)
@@ -397,6 +415,11 @@ void OpticksViz::renderLoop()
         if(m_server) m_server->poll_one();  
 #endif
         count = m_composition->tick();
+
+        if(m_launcher)
+        {
+            m_launcher->launch(count);
+        }
 
         if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)  
         {

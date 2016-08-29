@@ -28,6 +28,7 @@ class Interactor ;
 
 #include "NConfigurable.hpp"
 #include "OGLRAP_API_EXPORT.hh"
+
 class OGLRAP_API Scene : public NConfigurable {
    public:
         static const char* PREFIX ;

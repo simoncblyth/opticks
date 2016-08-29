@@ -235,7 +235,6 @@ add_definitions(${DEFINITIONS})
 set(SOURCES
 
     GGV_LOG.cc
-    OpticksViz.cc 
     OpticksMgr.cc 
 )
 set(HEADERS
@@ -245,7 +244,6 @@ set(HEADERS
     GGV_HEAD.hh
     GGV_TAIL.hh
 
-    OpticksViz.hh
     OpticksMgr.hh
 )
 

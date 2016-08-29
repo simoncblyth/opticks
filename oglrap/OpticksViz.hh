@@ -16,19 +16,24 @@ class GUI ;
 template <typename T> class NPY ; 
 
 class SRenderer ; 
+class SLauncher ; 
 
 
-#include "GGV_API_EXPORT.hh"
-#include "GGV_HEAD.hh"
+#include "OGLRAP_API_EXPORT.hh"
 
-class GGV_API OpticksViz {
+class OGLRAP_API OpticksViz {
     public:
          OpticksViz(OpticksHub* hub, OpticksIdx* idx);
+    public:
          void setExternalRenderer(SRenderer* external_renderer);
+         void setLauncher(SLauncher* launcher);
+         void setTitle(const char* title);
     public:
          bool hasOpt(const char* name);
+         Scene* getScene(); 
+    public:
          void configureBookmarks();
-         void prepareScene();
+         void prepareScene(const char* rendermode=NULL);
          void uploadGeometry();
          void targetGenstep();
          void uploadEvent();
@@ -37,14 +42,12 @@ class GGV_API OpticksViz {
          void renderLoop();
          void cleanup();
     private: 
+         void init();
          void render();
          void renderGUI();
     public:
-         Scene* getScene(); 
          void downloadData(NPY<float>* data);
          void downloadEvent();
-    private:
-         void init();
     private:
          OpticksHub*   m_hub ; 
          OpticksIdx*   m_idx ; 
@@ -53,6 +56,7 @@ class GGV_API OpticksViz {
          Composition*  m_composition ;
          Types*        m_types ; 
 
+         const char*   m_title ; 
          Scene*       m_scene ; 
          Frame*       m_frame ;
          GLFWwindow*  m_window ; 
@@ -65,11 +69,11 @@ class GGV_API OpticksViz {
          Photons*     m_photons ; 
          GUI*         m_gui ; 
 
+         SLauncher*   m_launcher ; 
          SRenderer*   m_external_renderer ; 
 
 };
 
-#include "GGV_TAIL.hh"
 
 
 

@@ -67,7 +67,7 @@ class OKGEO_API OpticksHub {
        void loadEventBuffers();
        void targetGenstep();
        void configureState(NConfigurable* scene);
-       void prepareViz();
+       void prepareCompositionSize();
        void cleanup();
    private:
        void init();
