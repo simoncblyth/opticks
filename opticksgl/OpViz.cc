@@ -43,21 +43,16 @@ OpViz::OpViz(OpEngine* ope, OpticksViz* viz)
       m_orenderer(NULL),
       m_otracer(NULL)
 {
+}
+
+
+void OpViz::prepareTracer()
+{
     if(m_hub->isCompute()) return ;
     if(!m_scene) return ;
-    init();
 
     m_viz->setExternalRenderer(this);
-}
 
-
-void OpViz::init()
-{
-    prepareOptiXViz();
-}
-
-void OpViz::prepareOptiXViz()
-{
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
 

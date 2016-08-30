@@ -17,9 +17,7 @@ class NConfigurable ;
 #define GUI_ 1
 #include "OpticksViz.hh"
 
-
 #include "PLOG.hh"
-
 #include "GGV_BODY.hh"
 
 #define TIMER(s) \
@@ -31,18 +29,17 @@ class NConfigurable ;
        }\
     }
 
-
 OpticksMgr::OpticksMgr(int argc, char** argv) 
     :
     m_opticks(new Opticks(argc, argv)),
     m_hub(new OpticksHub(m_opticks)),
     m_idx(new OpticksIdx(m_hub)),
-    m_evt(NULL),
+    m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
 #ifdef WITH_OPTIX
     m_ope(new OpEngine(m_hub)),
-    m_opv(NULL),
+    m_opv(m_viz ? new OpViz(m_ope,m_viz) : NULL),
 #endif
-    m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub, m_idx))
+    m_evt(NULL)
 {
     m_opticks->Summary("OpticksMgr::OpticksMgr OpticksResource::Summary");
     init();
@@ -65,12 +62,11 @@ void OpticksMgr::initGeometry()
     if(m_viz) m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 #ifdef WITH_OPTIX
-    m_ope->prepareOptiX();                // creates OptiX context and populates withgeometry by OGeo, OScintillatorLib, ... convert methods 
+    m_ope->prepareOptiX();                // creates OptiX context and populates with geometry by OGeo, OScintillatorLib, ... convert methods 
 
-    if(m_viz) m_opv = new OpViz(m_ope, m_viz );   // creates ORenderer, OTracer
+    if(m_opv) m_opv->prepareTracer();     // creates ORenderer, OTracer
 #endif
 }
-
 
 bool OpticksMgr::hasOpt(const char* name)
 {
@@ -87,7 +83,6 @@ void OpticksMgr::createEvent()
     m_evt = m_hub->createEvent();
     assert(m_evt == m_hub->getEvent()) ; 
 }
-
 
 void OpticksMgr::propagate(NPY<float>* genstep)
 {
@@ -126,7 +121,6 @@ void OpticksMgr::propagate(NPY<float>* genstep)
 #endif
 }
 
-
 void OpticksMgr::indexPropagation()
 {
     if(!m_evt->isIndexed())
@@ -138,7 +132,6 @@ void OpticksMgr::indexPropagation()
     }
     if(m_viz) m_viz->indexPresentationPrep();
 }
-
 
 void OpticksMgr::loadPropagation()
 {
@@ -155,14 +148,12 @@ void OpticksMgr::loadPropagation()
     LOG(fatal) << "OpticksMgr::loadPropagation DONE" ; 
 }
 
-
 void OpticksMgr::visualize()
 {
     if(!m_viz) return ; 
     m_viz->prepareGUI();
     m_viz->renderLoop();    
 }
-
 
 void OpticksMgr::cleanup()
 {
@@ -173,10 +164,6 @@ void OpticksMgr::cleanup()
     if(m_viz) m_viz->cleanup();
     m_opticks->cleanup(); 
 }
-
-
-
-
 
 void OpticksMgr::dbgSeed()
 {
@@ -205,9 +192,6 @@ void OpticksMgr::dbgSeed()
     }  
 #endif
 }
-
-
-
 
 
 

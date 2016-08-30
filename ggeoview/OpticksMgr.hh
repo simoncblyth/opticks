@@ -39,12 +39,12 @@ class GGV_API OpticksMgr {
        Opticks*       m_opticks ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
-       OpticksEvent*  m_evt ; 
+       OpticksViz*    m_viz ; 
 #ifdef WITH_OPTIX
        OpEngine*      m_ope ; 
        OpViz*         m_opv ; 
 #endif
-       OpticksViz*    m_viz ; 
+       OpticksEvent*  m_evt ;  // convenience copy of the m_evt in Hub 
        
 };
 

@@ -30,12 +30,9 @@ class OpticksViz ;
 class OKGL_API OpViz : public SRenderer {
     public:
        OpViz(OpEngine* ope, OpticksViz* viz);
-    private:
-       void init();
-       void prepareOptiXViz();
     public:
+       void prepareTracer();
        void render();     // fulfils SRenderer protocol
-
     private:
        OpEngine*        m_ope ; 
        OpticksViz*      m_viz ; 
