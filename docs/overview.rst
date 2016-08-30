@@ -68,7 +68,17 @@ opticksgl
 ggeoview
     putting together all the above
 cfg4
-    contained geant4, comparison of Geant4 and Opticks simulatons
+    contained geant4, comparison of Geant4 and Opticks simulations
+okg4
+    full integration of Opticks and Geant4 including:
+
+    * Geant4 non-optical simulation (and optical too whilst testing)
+    * Geant4 GDML detector geometry loading 
+    * Opticks DAE geometry loading etc...
+    * optixrap: OptiX optical propagation
+    * oglrap: OpenGL visualization
+    * thrustrap: Thrust GPU indexing 
+
 
 
 
