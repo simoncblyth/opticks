@@ -353,6 +353,7 @@ opticks-find(){
    local iwd=$PWD
    opticks-scd
 
+   find . -name '*.bash' -exec grep $opt $str {} \;
    find . -name '*.cu' -exec grep $opt $str {} \;
    find . -name '*.cc' -exec grep $opt $str {} \;
    find . -name '*.hh' -exec grep $opt $str {} \;
@@ -624,6 +625,7 @@ opticksop-(){       . $(opticks-home)/opticksop/opticksop.bash && opticksop-env 
 opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env $* ; }
 ggeoview-(){        . $(opticks-home)/ggeoview/ggeoview.bash && ggeoview-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
+okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }
 tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
 

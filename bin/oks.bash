@@ -24,6 +24,25 @@ oks-txt
 
 
 
+Steps to create a new project
+---------------------------------
+
+* Create top level folder for the project eg named "okg4" 
+
+* Copy an existing project and use vim to change all cfg4- to okg4- for instance::
+
+    cp cfg4/cfg4.bash okg4/okg4.bash
+
+* Add the precursor line to opticks-vi 
+
+* okg4-vi : make sure name and tag are set appropriately/uniquely
+
+* run okg4-genproj and follow instructions to merge the generated sources into a CMakeLists.txt
+
+* make sure the CMakeLists.txt project name matches the bash name and folder name
+
+
+
 Buffer Flow Review  (pseudo code)
 --------------------------------------
 
