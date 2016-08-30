@@ -36,7 +36,7 @@ OpViz::OpViz(OpEngine* ope, OpticksViz* viz)
       m_hub(m_viz->getHub()),
       m_scene(m_viz->getScene()),
 
-      m_ocontext(m_ope->getOContext()),
+      m_ocontext(NULL),   // defer 
       m_composition(m_hub->getComposition()),
       m_interactor(m_viz->getInteractor()),
       m_oframe(NULL),
@@ -55,6 +55,8 @@ void OpViz::prepareTracer()
 
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
+
+    m_ocontext = m_ope->getOContext();
 
     optix::Context context = m_ocontext->getContext();
 
