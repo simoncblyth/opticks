@@ -30,6 +30,7 @@ opticksop              opticksop-       OpticksOp         BASE GGeo OptiX OptiXR
 opticksgl              opticksgl-       OpticksGL         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksOp Assimp AssimpRap GLEW GLFW OGLRap 
 ggeoview               ggeoview-        GGeoView          BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap 
 cfg4                   cfg4-            CfG4              BASE GGeo Geant4 EnvXercesC [G4DAE] 
+okg4                   okg4-            okg4              BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap Geant4 EnvXercesC
 =====================  ===============  ===============   ==============================================================================
 
 

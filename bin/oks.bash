@@ -41,6 +41,10 @@ Steps to create a new project
 
 * make sure the CMakeLists.txt project name matches the bash name and folder name
 
+* copy a tests/CMakeLists.txt from another project
+
+* hook up the CMakeLists.txt to the top level one
+
 
 
 Buffer Flow Review  (pseudo code)

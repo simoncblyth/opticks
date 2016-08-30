@@ -21,7 +21,6 @@ if(WITH_OPTIX)
       set(CUDA_HOST_COMPILER "clang" CACHE FILEPATH "Host side compiler used by NVCC")
     endif()
 
-
     add_definitions(-DWITH_OPTIX)
 
     find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
