@@ -49,7 +49,7 @@ OEngineImp::OEngineImp(OpticksHub* hub)
       m_hub(hub),
       m_opticks(hub->getOpticks()),
       m_fcfg(NULL),
-      m_ggeo(hub->getGGeo()),
+      m_ggeo(NULL),  // defer to avoid order brittleness
 
       m_ocontext(NULL),
       m_ocolors(NULL),
@@ -84,8 +84,6 @@ OPropagator* OEngineImp::getOPropagator()
 
 
 
-
-
 void OEngineImp::prepareOptiX()
 {
     LOG(trace) << "OEngineImp::prepareOptiX START" ; 
@@ -106,6 +104,7 @@ void OEngineImp::prepareOptiX()
     m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
     m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
 
+    m_ggeo = m_hub->getGGeo();
 
     if(m_ggeo == NULL)
     {

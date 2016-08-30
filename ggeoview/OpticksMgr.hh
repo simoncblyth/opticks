@@ -22,7 +22,6 @@ class GGV_API OpticksMgr {
    public:
        OpticksMgr(int argc, char** argv);
    public:
-       bool isExit();
        bool hasOpt(const char* name);
        NPY<float>* loadGenstep();
    public:

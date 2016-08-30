@@ -1,8 +1,10 @@
 #pragma once
 
-//opticks-
-class Opticks ; 
+// okc-
 class Composition ; 
+
+// okg-
+class OpticksHub ;
 
 // optixrap-
 class OContext ;
@@ -18,6 +20,7 @@ class ORenderer ;
 // oglrap-
 class Scene ; 
 class Interactor ; 
+class OpticksViz ; 
 
 
 #include "OKGL_API_EXPORT.hh"
@@ -26,20 +29,19 @@ class Interactor ;
 
 class OKGL_API OpViz : public SRenderer {
     public:
-       OpViz(OpEngine* ope, Scene* scene);
+       OpViz(OpEngine* ope, OpticksViz* viz);
     private:
        void init();
        void prepareOptiXViz();
     public:
-       // fulfils SRenderer protocol
-       void render();
+       void render();     // fulfils SRenderer protocol
 
     private:
        OpEngine*        m_ope ; 
+       OpticksViz*      m_viz ; 
+       OpticksHub*      m_hub ; 
        Scene*           m_scene ;
 
-    private:
-       Opticks*         m_opticks ; 
        OContext*        m_ocontext ; 
        Composition*     m_composition ; 
        Interactor*      m_interactor ;

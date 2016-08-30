@@ -1,17 +1,11 @@
 #pragma once
 
-// npy-
-class Timer ; 
-
-// opticks-
-class Opticks ; 
+// okc-
 class OpticksEvent ; 
-class OpticksHub ; 
-template <typename> class OpticksCfg ;
 class Composition ; 
 
-// ggeo-
-class GGeo ; 
+// okg-
+class OpticksHub ; 
 
 // optixrap-
 class OEngineImp ; 
@@ -22,11 +16,8 @@ class OContext ;
 class OKOP_API OpEngine {
     public:
        OpEngine(OpticksHub* hub);
-    private:
-       void init();
     public:
-       Opticks* getOpticks();
-       OContext* getOContext();  // needed by opticksgl-/OpViz
+       OContext* getOContext();         // needed by opticksgl-/OpViz
 
        void prepareOptiX();             // creates OptiX context and populates with geometry info
  
@@ -41,15 +32,7 @@ class OKOP_API OpEngine {
        void cleanup();
 
     private:
-       Timer*               m_timer ; 
        OpticksHub*          m_hub ; 
-       Opticks*             m_opticks ; 
-       OpticksCfg<Opticks>* m_fcfg ;   
-    private:
-       GGeo*                m_ggeo ; 
-    private:
-       Composition*         m_composition ; 
-    private:
        OEngineImp*          m_imp ; 
 };
 

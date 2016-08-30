@@ -102,6 +102,10 @@ bool OpticksHub::hasOpt(const char* name)
 {
     return m_fcfg->hasOpt(name);
 }
+bool OpticksHub::isCompute()
+{
+    return m_opticks->isCompute();
+}
 std::string OpticksHub::getCfgString()
 {
     return m_cfg->getDescString();
@@ -194,8 +198,15 @@ void OpticksHub::configure()
     configureServer();
 #endif
 
+    configureCompositionSize();
+
+
     TIMER("configure");
 }
+
+
+
+
 
 
 #ifdef WITH_NPYSERVER
@@ -217,6 +228,74 @@ void OpticksHub::configureServer()
     }
 }
 #endif
+
+
+void OpticksHub::configureCompositionSize()
+{
+    glm::uvec4 size = m_opticks->getSize();
+    glm::uvec4 position = m_opticks->getPosition() ;
+
+    LOG(info) << "OpticksHub::configureCompositionSize"
+              << " size " << gformat(size)
+              << " position " << gformat(position)
+              ;
+
+    m_composition->setSize( size );
+    m_composition->setFramePosition( position );
+}
+
+
+void OpticksHub::configureState(NConfigurable* scene)
+{
+    // NState manages the state (in the form of strings) of a collection of NConfigurable objects
+    // this needs to happen after configuration and the scene is created
+
+    m_state = m_opticks->getState();  
+    m_state->setVerbose(false);
+
+    LOG(info) << "OpticksHub::configureViz " << m_state->description();
+
+    m_state->addConfigurable(scene);
+    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
+
+    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
+    m_bookmarks->setState(m_state);
+    m_bookmarks->setVerbose();
+    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
+
+    m_composition->setBookmarks(m_bookmarks);
+
+    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
+    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
+}
+
+
+NPY<unsigned char>* OpticksHub::getColorBuffer()
+{
+    OpticksColors* colors = m_opticks->getColors();
+
+    nuvec4 cd = colors->getCompositeDomain() ; 
+    glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
+  
+    m_composition->setColorDomain(cd_); 
+
+    return colors->getCompositeBuffer() ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -403,59 +482,6 @@ void OpticksHub::loadEventBuffers()
         LOG(warning) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
 
     TIMER("loadEvent"); 
-}
-
-
-
-void OpticksHub::configureState(NConfigurable* scene)
-{
-    // NState manages the state (in the form of strings) of a collection of NConfigurable objects
-
-    m_state = m_opticks->getState();  
-    m_state->setVerbose(false);
-
-    LOG(info) << "OpticksHub::configureViz " << m_state->description();
-
-    m_state->addConfigurable(scene);
-    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
-
-    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
-    m_bookmarks->setState(m_state);
-    m_bookmarks->setVerbose();
-    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
-
-    m_composition->setBookmarks(m_bookmarks);
-
-    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
-    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
-}
-
-
-void OpticksHub::prepareCompositionSize()
-{
-    glm::uvec4 size = m_opticks->getSize();
-    glm::uvec4 position = m_opticks->getPosition() ;
-
-    LOG(info) << "OpticksHub::prepareCompositionSize"
-              << " size " << gformat(size)
-              << " position " << gformat(position)
-              ;
-
-    m_composition->setSize( size );
-    m_composition->setFramePosition( position );
-}
-
-
-NPY<unsigned char>* OpticksHub::getColorBuffer()
-{
-    OpticksColors* colors = m_opticks->getColors();
-
-    nuvec4 cd = colors->getCompositeDomain() ; 
-    glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
-  
-    m_composition->setColorDomain(cd_); 
-
-    return colors->getCompositeBuffer() ;
 }
 
 

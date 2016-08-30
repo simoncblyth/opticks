@@ -1,8 +1,9 @@
 #include "OpticksMgr.hh"
 
-class Scene ; 
+class NConfigurable ; 
 
 #include "Timer.hpp"
+
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
 #include "OpticksHub.hh"    // opticksgeo-
@@ -38,65 +39,43 @@ OpticksMgr::OpticksMgr(int argc, char** argv)
     m_idx(new OpticksIdx(m_hub)),
     m_evt(NULL),
 #ifdef WITH_OPTIX
-    m_ope(NULL),
+    m_ope(new OpEngine(m_hub)),
     m_opv(NULL),
 #endif
     m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub, m_idx))
 {
+    m_opticks->Summary("OpticksMgr::OpticksMgr OpticksResource::Summary");
     init();
     initGeometry();
 }
 
 void OpticksMgr::init()
 {
-    m_opticks->Summary("OpticksMgr::init OpticksResource::Summary");
-
     m_hub->configure();
 
-    if(m_opticks->isExit()) exit(EXIT_SUCCESS) ; 
-
-    if(m_viz) 
-    {
-        m_viz->configureBookmarks();
-    }
+    if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 }
 
 void OpticksMgr::initGeometry()
 {
-    if(m_viz) 
-    {
-        m_hub->prepareCompositionSize();
-        m_viz->prepareScene();   // setup OpenGL shaders and creates OpenGL context (the window)
-    }
+    if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
-    m_hub->loadGeometry();       // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
-    if(m_opticks->isExit()) exit(EXIT_SUCCESS);
+    m_hub->loadGeometry();                // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
 
-    if(m_viz) m_viz->uploadGeometry();   // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+    if(m_viz) m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 #ifdef WITH_OPTIX
-    m_ope = new OpEngine(m_hub);   
-    m_ope->prepareOptiX();               // places geometry into OptiX context with OGeo 
+    m_ope->prepareOptiX();                // creates OptiX context and populates withgeometry by OGeo, OScintillatorLib, ... convert methods 
 
-    if(m_viz)
-    {
-        m_opv = new OpViz(m_ope, m_viz->getScene() );         // creates ORenderer, OTracer
-        m_viz->setExternalRenderer(m_opv);
-    }
+    if(m_viz) m_opv = new OpViz(m_ope, m_viz );   // creates ORenderer, OTracer
 #endif
 }
 
-/////////
 
-bool OpticksMgr::isExit()
-{
-    return m_opticks->isExit(); 
-}
 bool OpticksMgr::hasOpt(const char* name)
 {
     return m_opticks->hasOpt(name); 
 }
-
 
 NPY<float>* OpticksMgr::loadGenstep()
 {
@@ -107,10 +86,6 @@ void OpticksMgr::createEvent()
 {
     m_evt = m_hub->createEvent();
     assert(m_evt == m_hub->getEvent()) ; 
-
-//#ifdef WITH_OPTIX
-//    m_ope->setEvent(m_evt);                  // needed for indexing
-//#endif
 }
 
 
@@ -126,15 +101,19 @@ void OpticksMgr::propagate(NPY<float>* genstep)
     }
 
 #ifdef WITH_OPTIX
-//    m_ope->setEvent(m_evt);                // needed for indexing
     m_ope->preparePropagator();              // creates OptiX buffers and OBuf wrappers as members of OPropagator
 
     m_ope->seedPhotonsFromGensteps();        // distributes genstep indices into the photons buffer
+
     if(hasOpt("dbgseed")) dbgSeed();
     if(hasOpt("onlyseed")) exit(EXIT_SUCCESS);
 
-    m_ope->initRecords();                   // zero records buffer, not working in OptiX 4 in interop 
-    if(!hasOpt("nooptix|noevent|nopropagate")) m_ope->propagate();
+    m_ope->initRecords();                    // zero records buffer, not working in OptiX 4 in interop 
+
+    if(!hasOpt("nooptix|noevent|nopropagate"))
+    {
+        m_ope->propagate();                  // perform OptiX GPU propagation 
+    }
 
     indexPropagation();
 

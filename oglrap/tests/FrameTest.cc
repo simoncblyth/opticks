@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     Renderer renderer("tex") ; 
 
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
-    interactor.setComposition(&composition); // interactor changes camera, view, trackball 
+    //interactor.setComposition(&composition); // interactor changes camera, view, trackball 
     renderer.setComposition(&composition);  // composition provides matrices to renderer 
 
 

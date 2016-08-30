@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
-    m_interactor->setComposition(m_composition);
+    //m_interactor->setComposition(m_composition);
     
     m_scene->setInteractor(m_interactor);
 

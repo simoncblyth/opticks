@@ -30,9 +30,12 @@ class OGLRAP_API OpticksViz {
          void setTitle(const char* title);
     public:
          bool hasOpt(const char* name);
-         Scene* getScene(); 
+         Scene*   getScene(); 
+         Opticks* getOpticks(); 
+         Interactor* getInteractor();
+         OpticksHub* getHub(); 
+         NConfigurable* getSceneConfigurable(); 
     public:
-         void configureBookmarks();
          void prepareScene(const char* rendermode=NULL);
          void uploadGeometry();
          void targetGenstep();

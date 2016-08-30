@@ -45,7 +45,6 @@ void AxisApp::init()
 
     m_viz->setTitle("AxisApp");
 
-    m_hub->prepareCompositionSize();
     m_viz->prepareScene("+axis");    // setup renderer
 
     upload();

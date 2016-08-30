@@ -39,6 +39,7 @@ class OKGEO_API OpticksHub {
    public:
        void         configure();
        bool         hasOpt(const char* name);
+       bool         isCompute();
 #ifdef WITH_NPYSERVER
     private:
        void         configureServer();
@@ -67,10 +68,10 @@ class OKGEO_API OpticksHub {
        void loadEventBuffers();
        void targetGenstep();
        void configureState(NConfigurable* scene);
-       void prepareCompositionSize();
        void cleanup();
    private:
        void init();
+       void configureCompositionSize();
    private:
        NPY<float>* loadGenstepFile();
        NPY<float>* loadGenstepTorch();

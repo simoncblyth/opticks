@@ -98,11 +98,11 @@ void OpticksViz::init()
 
     m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
     m_frame       = new Frame ; 
-    m_interactor  = new Interactor(m_hub) ; 
+    m_interactor  = new Interactor(m_hub) ;  // perhaps treat m_viz as the "hub" here ??
 
     m_interactor->setFrame(m_frame);
     m_interactor->setScene(m_scene);
-    m_interactor->setComposition(m_composition);
+    //m_interactor->setComposition(m_composition);
 
     m_scene->setInteractor(m_interactor);      
 
@@ -124,26 +124,32 @@ void OpticksViz::setLauncher(SLauncher* launcher)
 {
     m_launcher = launcher ; 
 }
-
-
-
 Scene* OpticksViz::getScene()
 {
     return m_scene ; 
 }
+Opticks* OpticksViz::getOpticks()
+{
+    return m_opticks ; 
+}
+Interactor* OpticksViz::getInteractor()
+{
+    return m_interactor ; 
+}
+OpticksHub* OpticksViz::getHub()
+{
+    return m_hub ; 
+}
+NConfigurable* OpticksViz::getSceneConfigurable()
+{
+    return dynamic_cast<NConfigurable*>(m_scene) ; 
+}
+
 
 bool OpticksViz::hasOpt(const char* name)
 {
     return m_hub->hasOpt(name);
 }
-
-void OpticksViz::configureBookmarks()
-{
-   // TODO: can this go in init ?
-    m_hub->configureState(m_scene) ;
-    m_interactor->setBookmarks(m_hub->getBookmarks());
-}
-
 
 void OpticksViz::prepareScene(const char* rendermode)
 {

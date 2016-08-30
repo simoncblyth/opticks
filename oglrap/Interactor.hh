@@ -33,13 +33,16 @@ class OGLRAP_API Interactor {
        Interactor(OpticksHub* hub); 
 
        void gui();
-       void setComposition(Composition* composition);
-       void setBookmarks(Bookmarks* bookmarks);
+
        void setTouchable(Touchable* touchable);
        void setScene(Scene* scene);
        void setFrame(Frame* frame);
        void setContainer(unsigned int container);
 
+  private:
+        //  Composition and Bookmarks now set internally  from hub 
+       void setComposition(Composition* composition);
+       void setBookmarks(Bookmarks* bookmarks);
   public:
        bool isOptiXMode();
        void setOptiXMode(int optix_mode);

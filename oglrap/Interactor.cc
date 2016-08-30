@@ -10,6 +10,9 @@
 
 #include "Opticks.hh"
 #include "OpticksConst.hh"
+
+#include "OpticksHub.hh"
+
 #include "Composition.hh"
 #include "Bookmarks.hh"
 #include "Camera.hh"
@@ -41,7 +44,7 @@ Interactor::Interactor(OpticksHub* hub)
    :
    m_hub(hub),
    m_composition(NULL),
-   m_bookmarks(NULL),
+   m_bookmarks(m_hub->getBookmarks()),
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
@@ -67,6 +70,8 @@ Interactor::Interactor(OpticksHub* hub)
    m_changed(true),
    m_gui_style(NONE)
 {
+   setComposition(m_hub->getComposition()) ; 
+
    for(unsigned int i=0 ; i < NUM_KEYS ; i++) m_keys_down[i] = false ; 
    m_status[0] = '\0' ;
 }
@@ -249,11 +254,10 @@ void Interactor::configureI(const char* /*name*/, std::vector<int> values)
 
 
 
-
-void Interactor::setBookmarks(Bookmarks* bookmarks)
-{
-    m_bookmarks = bookmarks ;
-}
+//void Interactor::setBookmarks(Bookmarks* bookmarks)
+//{
+//    m_bookmarks = bookmarks ;
+//}
 
 void Interactor::setComposition(Composition* composition)
 {

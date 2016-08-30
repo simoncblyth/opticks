@@ -250,14 +250,16 @@ bool Opticks::isExit()
 {
     return m_exit ; 
 }
-void Opticks::setExit(bool exit)
+void Opticks::setExit(bool exit_)
 {
-    m_exit = exit  ;   
+    m_exit = exit_  ;   
+    if(m_exit)
+    {
+        LOG(info) << "Opticks::setExit EXITING " ; 
+        exit(EXIT_SUCCESS) ;
+    }
 }
  
-
-
-
 
 void Opticks::init()
 {

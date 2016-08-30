@@ -3,8 +3,10 @@
 #include "NGLM.hpp"
 
 // okc-
-#include "Opticks.hh"
 #include "Composition.hh"
+
+// okg-
+#include "OpticksHub.hh"
 
 // optixrap-
 #include "OContext.hh"
@@ -19,6 +21,7 @@
 #include "Interactor.hh"
 #include "Renderer.hh"
 #include "Rdr.hh"
+#include "OpticksViz.hh"
 
 // opgl-
 #include "OpViz.hh"
@@ -26,38 +29,32 @@
 #include "ORenderer.hh"
 
 
-OpViz::OpViz(OpEngine* ope, Scene* scene) 
+OpViz::OpViz(OpEngine* ope, OpticksViz* viz) 
    :
       m_ope(ope),
-      m_scene(scene),
+      m_viz(viz),
+      m_hub(m_viz->getHub()),
+      m_scene(m_viz->getScene()),
 
-      m_opticks(NULL),
-      m_ocontext(NULL),
-      m_composition(NULL),
-      m_interactor(NULL),
+      m_ocontext(m_ope->getOContext()),
+      m_composition(m_hub->getComposition()),
+      m_interactor(m_viz->getInteractor()),
       m_oframe(NULL),
       m_orenderer(NULL),
       m_otracer(NULL)
 {
-   init();
+    if(m_hub->isCompute()) return ;
+    if(!m_scene) return ;
+    init();
+
+    m_viz->setExternalRenderer(this);
 }
 
 
 void OpViz::init()
 {
-    m_opticks = m_ope->getOpticks();
-    m_ocontext = m_ope->getOContext();
-
-    if(m_opticks->isCompute()) return ;
-    if(!m_scene) return ;
-
-    m_composition = m_scene->getComposition();
-    m_interactor = m_scene->getInteractor();
-
     prepareOptiXViz();
 }
-
-
 
 void OpViz::prepareOptiXViz()
 {
@@ -83,7 +80,6 @@ void OpViz::prepareOptiXViz()
     m_ocontext->dump("OpViz::prepareOptiXVix");
 }
 
-
 void OpViz::render()
 {     
     if(m_otracer && m_orenderer)
@@ -101,7 +97,6 @@ void OpViz::render()
         }
     }
 }   
-
 
 
 
