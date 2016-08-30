@@ -44,6 +44,9 @@
 #include "OpNovicePhysicsList.hh"
 #endif
 
+#include "OpticksG4Collector.hh"
+
+
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 #include "CPropLib.hh"
@@ -238,7 +241,14 @@ void CG4::postpropagate()
     LOG(info) << "CG4::postpropagate [" << finmac << "]"  ;
     if(!finmac.empty()) execute(finmac.c_str());
 
-    // G4 specific, so it belongs here
+    // G4 specific things belongs here
+
+    OpticksG4Collector* collector = OpticksG4Collector::Instance() ;
+    collector->Summary("CG4::postpropagate");
+
+    NPY<float>* genstep = collector->getGenstep();
+    genstep->save("$TMP/CG4Test_genstep.npy");
+
 
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt);

@@ -24,7 +24,6 @@ Review old collection with G4DAEChroma
 ------------------------------------------
 
 * http://simoncblyth.bitbucket.org/env/notes/chroma/G4DAEChroma/
-* 
 
 * *gdc-* developed in ~/env/chroma/G4DAEChroma 
 * some version was copied into Dayabay NuWa svn Utilities
@@ -72,16 +71,15 @@ Approach to reviving optical step collection
 -----------------------------------------------
 
 * raid G4DAEChroma for the minimum necessary amount of code to 
-  do optical step collection within a new class for this in opticks cfg4- 
+  do optical step collection within a new class for this **OpticksG4Collector** in opticks cfg4- 
 
-  * initially avoid all the bells and whistles, no ZMQ, no metadata, ...
+  * initially avoid all the bells and whistles, no ZMQ, no metadata, no database, ...
     that complexity can hopefully be totally avoided with the C++ opticks
 
 
 
-
-DONE : Near Standard G4 Scintillation Step Collection
-----------------------------------------------------------
+DONE : Near Standard G4 Scintillation/Cerenkov Step Collection
+------------------------------------------------------------------
 
 Test with::
 
@@ -89,5 +87,6 @@ Test with::
     CG4Test --g4gun       ## same as above 
 
 
-
+TODO: details of scintillation generation, compare Opticks vs G4 generated distrib
+-------------------------------------------------------------------------------------
 

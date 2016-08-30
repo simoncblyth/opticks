@@ -147,6 +147,7 @@ class NPY_API NPY : public NPYBase {
        BBufSpec* getBufSpec();
 
        void read(void* ptr);
+    private:
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:
        void add(NPY<T>* other);      // add another buffer, it must have same itemsize (ie size after 1st dimension)

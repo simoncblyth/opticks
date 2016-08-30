@@ -366,9 +366,6 @@ void test_dbg_like()
 
    NPY<float>* dbg = NPY<float>::make_dbg_like(buf);
    dbg->dump();
-
-
-
 }
 
 
@@ -413,6 +410,7 @@ int main(int argc, char** argv )
 
     test_dbg_like();
    */
+
 
     return 0 ;
 }

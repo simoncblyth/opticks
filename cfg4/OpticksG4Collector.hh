@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "G4Types.hh"
 template <typename T> class NPY ;
 
@@ -31,6 +32,10 @@ class OpticksG4Collector {
    public:
          OpticksG4Collector();
          NPY<float>*  getGenstep();
+         std::string description();
+         void Summary(const char* msg="OpticksG4Collector::Summary");
+   private:
+         void consistencyCheck();
    public:
          void collectScintillationStep(
             G4int                id, 
@@ -100,6 +105,8 @@ class OpticksG4Collector {
    private:
          static OpticksG4Collector* INSTANCE ;      
    private:
+         NPY<float>*  m_onestep ;
+         float*       m_values ;  
          NPY<float>*  m_genstep ;
          unsigned     m_scintillation_count ; 
          unsigned     m_cerenkov_count ; 

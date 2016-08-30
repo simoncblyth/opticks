@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "NPY.hpp"
 #include "OpticksG4Collector.hh"
 #include "PLOG.hh"
@@ -12,16 +14,52 @@ OpticksG4Collector* OpticksG4Collector::Instance()
 
 OpticksG4Collector::OpticksG4Collector()  
     :
+    m_onestep(NPY<float>::make(1,6,4)),
+    m_values(NULL),
     m_genstep(NPY<float>::make(0,6,4)),
     m_scintillation_count(0),
     m_cerenkov_count(0)
 {
+    m_onestep->zero();
+    m_values = m_onestep->getValues();
 }
 
 NPY<float>*  OpticksG4Collector::getGenstep()
 {
+    consistencyCheck() ;
     return m_genstep ; 
 }
+
+void OpticksG4Collector::consistencyCheck()
+{
+     unsigned numItems = m_genstep->getNumItems();
+     bool consistent = numItems == m_scintillation_count + m_cerenkov_count ;
+     if(!consistent)
+         LOG(fatal) << "OpticksG4Collector::consistencyCheck FAIL " 
+                    << description()
+                    ;
+     assert(consistent);
+}
+
+std::string OpticksG4Collector::description()
+{
+    std::stringstream ss ; 
+    ss << " OpticksG4Collector "
+       << " numItems " << m_genstep->getNumItems() 
+       << " scintillation_count " << m_scintillation_count
+       << " cerenkov_count " << m_cerenkov_count
+       << " step_count " << m_scintillation_count + m_cerenkov_count
+       ;
+    return ss.str();
+}
+
+void OpticksG4Collector::Summary(const char* msg)
+{ 
+    LOG(info) << msg 
+              << description()
+              ;
+}
+
 
 void OpticksG4Collector::collectScintillationStep
 (
@@ -73,7 +111,7 @@ void OpticksG4Collector::collectScintillationStep
 
      //////////// 6*4 floats for one step ///////////
 
-     float* ss = m_genstep->grow(1) ; 
+     float* ss = m_values ; 
 
      ss[0*4+0] = uifa[0].f ;
      ss[0*4+1] = uifa[1].f ;
@@ -104,6 +142,8 @@ void OpticksG4Collector::collectScintillationStep
      ss[5*4+1] = scintillationIntegralMax ;
      ss[5*4+2] = spare1 ;
      ss[5*4+3] = spare2 ;
+
+     m_genstep->add(m_onestep);
 }
 
 
@@ -158,7 +198,7 @@ void OpticksG4Collector::collectCerenkovStep
 
      //////////// 6*4 floats for one step ///////////
 
-     float* cs = m_genstep->grow(1) ; 
+     float* cs = m_values ; 
 
      cs[0*4+0] = uifa[0].f ;
      cs[0*4+1] = uifa[1].f ;
@@ -189,6 +229,8 @@ void OpticksG4Collector::collectCerenkovStep
      cs[5*4+1] = meanNumberOfPhotons1 ;
      cs[5*4+2] = meanNumberOfPhotons2 ;
      cs[5*4+3] = spare2 ;
+
+     m_genstep->add(m_onestep);
 }
 
  
