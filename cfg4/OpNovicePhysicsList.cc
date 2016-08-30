@@ -21,10 +21,7 @@
 
 #include "G4ProcessManager.hh"
 
-#include "G4Cerenkov.hh"
-//#include "G4Scintillation.hh"
 #include "G4OpAbsorption.hh"
-//#include "G4OpRayleigh.hh"
 #include "G4OpMieHG.hh"
 #include "G4OpBoundaryProcess.hh"
 
@@ -39,20 +36,18 @@
 #include "CMPT.hh"
 #include "OpRayleigh.hh"
 #include "Scintillation.hh"
-
+#include "Cerenkov.hh"
 
 
 
 G4ThreadLocal G4int OpNovicePhysicsList::fVerboseLevel = 1;
 G4ThreadLocal G4int OpNovicePhysicsList::fMaxNumPhotonStep = 20;
-G4ThreadLocal G4Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
+G4ThreadLocal Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
 
-//G4ThreadLocal G4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
 G4ThreadLocal Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
 
 G4ThreadLocal G4OpAbsorption* OpNovicePhysicsList::fAbsorptionProcess = 0;
 
-//G4ThreadLocal G4OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
 G4ThreadLocal OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
 
 G4ThreadLocal G4OpMieHG* OpNovicePhysicsList::fMieHGScatteringProcess = 0;
@@ -313,7 +308,7 @@ void OpNovicePhysicsList::ConstructEM()
 
 void OpNovicePhysicsList::ConstructOp()
 {
-  fCerenkovProcess = new G4Cerenkov("Cerenkov");
+  fCerenkovProcess = new Cerenkov("Cerenkov");
   fCerenkovProcess->SetMaxNumPhotonsPerStep(fMaxNumPhotonStep);
   fCerenkovProcess->SetMaxBetaChangePerStep(10.0);
   fCerenkovProcess->SetTrackSecondariesFirst(true);

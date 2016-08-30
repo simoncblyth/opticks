@@ -8,12 +8,10 @@
 
 class OpNovicePhysicsListMessenger;
 
-class G4Cerenkov;
-//class G4Scintillation;
+class Cerenkov;
 class Scintillation;
 class G4OpAbsorption;
 
-//class G4OpRayleigh;
 class OpRayleigh;
 
 class G4OpMieHG;
@@ -64,12 +62,10 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     static G4ThreadLocal G4int fVerboseLevel;
     static G4ThreadLocal G4int fMaxNumPhotonStep;
 
-    static G4ThreadLocal G4Cerenkov* fCerenkovProcess;
-    //static G4ThreadLocal G4Scintillation* fScintillationProcess;
+    static G4ThreadLocal Cerenkov* fCerenkovProcess;
     static G4ThreadLocal Scintillation* fScintillationProcess;
     static G4ThreadLocal G4OpAbsorption* fAbsorptionProcess;
 
-    //static G4ThreadLocal G4OpRayleigh* fRayleighScatteringProcess;
     static G4ThreadLocal OpRayleigh* fRayleighScatteringProcess;
 
     static G4ThreadLocal G4OpMieHG* fMieHGScatteringProcess;

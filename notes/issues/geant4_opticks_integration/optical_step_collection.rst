@@ -46,6 +46,19 @@ G4DAEChroma Observations
 * yuck : even some ROOT TObject serialization stuff in G4DAEChromaPhotonList
   which is totally obsolete
 
+* *gdc-* is half the story, see also *csa-* 
+
+
+*csa-* originally named after ChromaStackAction,  but now handles DetSimChroma 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Was intended to be renamed *dsc-* for DetSimChroma but that never happened.
+
+* sources in ~/env/nuwa/detsim/src
+* DsChromaG4Scintillation.cc 
+
+
+
 
 G4DAEChroma Things to plunder : looks like very little, NPY handles most of it  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,5 +76,18 @@ Approach to reviving optical step collection
 
   * initially avoid all the bells and whistles, no ZMQ, no metadata, ...
     that complexity can hopefully be totally avoided with the C++ opticks
+
+
+
+
+DONE : Near Standard G4 Scintillation Step Collection
+----------------------------------------------------------
+
+Test with::
+
+    op --tcfg4 --g4gun
+    CG4Test --g4gun       ## same as above 
+
+
 
 

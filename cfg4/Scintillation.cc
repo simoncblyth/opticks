@@ -73,6 +73,8 @@
 
 #include "CFG4_PUSH.hh"
 
+
+
 #include "G4ios.hh"
 #include "globals.hh"
 #include "G4PhysicalConstants.hh"
@@ -80,36 +82,10 @@
 #include "G4ParticleTypes.hh"
 #include "G4EmProcessSubType.hh"
 
+#include "OpticksG4Collector.hh"
 #include "Scintillation.hh"
+
 #include "CFG4_POP.hh"
-
-/////////////////////////
-// Class Implementation
-/////////////////////////
-
-        //////////////////////
-        // static data members
-        //////////////////////
-
-
-//G4bool Scintillation::fTrackSecondariesFirst = false;
-//G4bool Scintillation::fFiniteRiseTime = false;
-//G4double Scintillation::fYieldFactor = 1.0;
-//G4double Scintillation::fExcitationRatio = 1.0;
-//G4bool Scintillation::fScintillationByParticleType = false;
-//G4EmSaturation* Scintillation::fEmSaturation = NULL;
-
-
-
-
-
-
-
-
-
-////////////////////
-// Inline methods
-////////////////////
 
 
 G4bool Scintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
@@ -197,37 +173,6 @@ G4double Scintillation::bi_exp(G4double t, G4double tau1, G4double tau2)
 
 
 
-
-
-
-
-
-
-
-
-
-
-        //////////////
-        // Operators
-        //////////////
-
-// Scintillation::operator=(const Scintillation &right)
-// {
-// }
-
-        /////////////////
-        // Constructors
-        /////////////////
-
-
-
-
-
-
-
-
-
-
 Scintillation::Scintillation(const G4String& processName,
                                        G4ProcessType type)
                   : G4VRestDiscreteProcess(processName, type) ,
@@ -253,10 +198,6 @@ Scintillation::Scintillation(const G4String& processName,
         }
 }
 
-        ////////////////
-        // Destructors
-        ////////////////
-
 Scintillation::~Scintillation()
 {
 	if (fFastIntegralTable != NULL) {
@@ -268,10 +209,6 @@ Scintillation::~Scintillation()
            delete fSlowIntegralTable;
         }
 }
-
-        ////////////
-        // Methods
-        ////////////
 
 void Scintillation::BuildPhysicsTable(const G4ParticleDefinition&)
 {
@@ -497,6 +434,45 @@ Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             // Max Scintillation Integral
  
             G4double CIImax = ScintillationIntegral->GetMaxValue();
+
+
+            // OPTICKS STEP COLLECTION : STEALING THE STACK
+            {
+                const G4ParticleDefinition* definition = aParticle->GetDefinition();
+                G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+                OpticksG4Collector::Instance()->collectScintillationStep(
+
+                       0,                  // 0     id:zero means use scintillation step count 
+                       aTrack.GetTrackID(),
+                       materialIndex, 
+                       Num,
+
+                       x0.x(),                // 1
+                       x0.y(),
+                       x0.z(),
+                       t0,
+
+                       deltaPosition.x(),     // 2
+                       deltaPosition.y(),
+                       deltaPosition.z(),
+                       aStep.GetStepLength(),
+
+                       definition->GetPDGEncoding(),   // 3
+                       definition->GetPDGCharge(),
+                       aTrack.GetWeight(),
+                       ((pPreStepPoint->GetVelocity()+ pPostStepPoint->GetVelocity())/2.),
+                       
+                       scnt,       // 4     details of what must go here depends on below implementation details
+                       0,
+                       0,
+                       0,
+
+                       ScintillationTime,   // 5
+                       ScintillationIntegral->GetMaxValue(), 
+                       0,
+                       0
+                );
+            }
 
             for (G4int i = 0; i < Num; i++) {
 

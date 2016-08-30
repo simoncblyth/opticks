@@ -90,6 +90,7 @@ set(SOURCES
 
     PhysicsList.cc
     Scintillation.cc
+    Cerenkov.cc
     OpRayleigh.cc
 
     OpNovicePhysicsListMessenger.cc
@@ -124,6 +125,7 @@ set(SOURCES
 
     CSteppingAction.cc
     CG4.cc
+    OpticksG4Collector.cc
 )
 
 set(HEADERS
@@ -136,6 +138,7 @@ set(HEADERS
 
     PhysicsList.hh
     Scintillation.hh
+    Cerenkov.hh
     OpRayleigh.hh
 
     OpNovicePhysicsListMessenger.hh
@@ -170,6 +173,7 @@ set(HEADERS
 
     CSteppingAction.hh
     CG4.hh
+    OpticksG4Collector.hh
 )
 
 add_library(${name} SHARED ${SOURCES})
