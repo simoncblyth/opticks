@@ -17,27 +17,31 @@ See Also
 * cfg4- partial integration for small test geometries only
 * export- geometry exporter
 
-DONE
-------
 
-* Pared down App divying up into OpticksHub and OpticksViz
+DONE : High Level Cleanup/Refactor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-NEXT
------
+* main: migrate from App to ggeoview-/OpticksMgr
+* config/control/event: handling into okg-/OpticksHub 
+* visualization: into oglrap-/OpticksViz 
 
-Consider multi-event restructuring main
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TODO : Testing untested aspects of cleanup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* some consolidation of App methods that always need to go together anyhow
-  for a shorter main
+Aspects included in cleanup, but as yet un-tested 
 
-* need clearer distinction between once-only geometry initialization 
-  within OptiX and otherwise and per-event actions (in response to input gensteps) 
+* clearer distinction between once-only geometry initialization 
+  within OptiX and otherwise per-event actions (in response to input gensteps) 
 
-* thinking of how gensteps (eg G4gun derived or from multi-event file or over network ZMQ) 
+* multi-event handling ... gensteps (eg G4gun derived or from multi-event file or over network ZMQ) 
   need to be repeatedly passed to OpEngine and the OpticksHub, 
   OpticksViz etc.. 
    
+NEXT : Optical Step Collection
+--------------------------------
+
+* :doc:`optical_step_collection`
+
 
 Approach
 ---------
