@@ -36,17 +36,41 @@ Aspects included in cleanup, but as yet un-tested
 * multi-event handling ... gensteps (eg G4gun derived or from multi-event file or over network ZMQ) 
   need to be repeatedly passed to OpEngine and the OpticksHub, 
   OpticksViz etc.. 
-   
-WIP : Optical Step Collection
+  
+
+ 
+DONE : Optical Step Collection
 --------------------------------
 
 * :doc:`optical_step_collection`
 
 
-WIP : Material Code Mapping Generalization
+DONE : Material Code Mapping Generalization
 ----------------------------------------------
 
 * :doc:`material_code_mapping_generalization`
+
+
+WIP : Integration test 
+------------------------
+
+::
+
+    OKG4MgrTest --g4gun
+
+    OKG4MgrTest --g4gun --save    ##   /tmp/blyth/opticks/evt/dayabay/g4gun/100/
+
+
+NEXT : G4/Op Comparison of generation distribs
+-------------------------------------------------
+
+Integrated is special as are doing generation and propagation with both G4 and Op
+from the same single executable 
+
+::
+
+    ipython -i $(which tevt.py) --  --src g4gun --tag 100 
+
 
 
 Approach

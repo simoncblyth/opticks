@@ -11,6 +11,7 @@ class CFG4_API CMaterialTable {
          CMaterialTable(const char* prefix="/dd/Materials/");
          void dump(const char* msg="CMaterialMap::dump");
          void fillMaterialIndexMap( std::map<std::string, unsigned>&  mixm );
+         std::map<std::string, unsigned>& getMaterialMap();
     private:
          void init();
     private:

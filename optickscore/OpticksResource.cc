@@ -84,12 +84,15 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_other(false),
        m_detector(NULL),
        m_detector_name(NULL),
-       m_detector_base(NULL)
+       m_detector_base(NULL),
+       m_resource_base(NULL),
+       m_material_map(NULL)
+
 {
     init();
 }
 
-
+ 
 
 const char* OpticksResource::getInstallPrefix()
 {
@@ -128,6 +131,11 @@ const char* OpticksResource::getDetectorBase()
 {
     return m_detector_base ;
 }
+const char* OpticksResource::getMaterialMap()
+{
+    return m_material_map ;
+}
+
 
 
 
@@ -349,6 +357,8 @@ void OpticksResource::assignDetectorName()
 
    assert(m_detector_base);
 
+   std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
+   m_material_map = strdup(cmm.c_str());
 }
 
 void OpticksResource::readG4Environment()
@@ -584,6 +594,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "detector : " <<  (m_detector?m_detector:"NULL") << std::endl; 
     std::cerr << "detector_name : " <<  (m_detector_name?m_detector_name:"NULL") << std::endl; 
     std::cerr << "detector_base : " <<  (m_detector_base?m_detector_base:"NULL") << std::endl; 
+    std::cerr << "material_map  : " <<  (m_material_map?m_material_map:"NULL") << std::endl; 
     std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
     std::cerr << "------ from " << ( m_metapath ? m_metapath : "NULL" ) << " -------- " << std::endl ;  

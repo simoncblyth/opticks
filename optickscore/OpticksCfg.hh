@@ -18,6 +18,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getLogName();
      const std::string& getConfigPath();
      const std::string& getEventTag();
+     const std::string& getIntegratedEventTag();
      const std::string& getEventCat();
      const std::string& getLiveLine();
 
@@ -71,6 +72,7 @@ private:
      std::string m_logname ;
      std::string m_event_cat ;
      std::string m_event_tag ;
+     std::string m_integrated_event_tag ;
      std::string m_liveline ;
 
      std::string m_configpath ;

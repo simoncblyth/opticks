@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <map>
+
 // g4-
 class G4RunManager ; 
 class G4VisManager ; 
@@ -8,16 +11,21 @@ class G4UIExecutive ;
 class G4VUserDetectorConstruction ;
 class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
+class G4UserRunAction ;
+class G4UserEventAction ;
 
 // npy--
+template <typename T> class NPY ; 
 class TorchStepNPY ;
 
 // cfg4-
 class CPropLib ; 
 class CDetector ; 
+class CMaterialTable ; 
 class CRecorder ; 
 class Rec ; 
 class CStepRec ; 
+class OpticksG4Collector ; 
 
 class OpticksHub ; 
 
@@ -41,6 +49,8 @@ class CFG4_API CG4 : public OpticksEngine
    public:
         void initialize();
         void propagate();
+   public:
+        std::map<std::string, unsigned>& getMaterialMap();        
    private:
         void init();
         void configureDetector();
@@ -59,14 +69,17 @@ class CFG4_API CG4 : public OpticksEngine
         CStepRec* getStepRec();
         Rec*      getRec();
         CPropLib* getPropLib();
+        NPY<float>*   getGensteps();
    private:
         TorchStepNPY*         m_torch ; 
    private:
         CDetector*            m_detector ; 
+        CMaterialTable*       m_material_table ; 
         CPropLib*             m_lib ; 
         CRecorder*            m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
+        OpticksG4Collector*   m_collector ; 
    private:
 #ifdef OLDPHYS
         PhysicsList*          m_physics ; 
@@ -81,6 +94,8 @@ class CFG4_API CG4 : public OpticksEngine
    private:
         G4VUserPrimaryGeneratorAction* m_pga ; 
         G4UserSteppingAction*          m_sa ; 
+        G4UserRunAction*               m_ra ; 
+        G4UserEventAction*             m_ea ; 
         
 };
 

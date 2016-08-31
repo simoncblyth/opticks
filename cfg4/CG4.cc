@@ -14,6 +14,7 @@
 #include "OpticksHub.hh"
 
 // npy-
+#include "NPY.hpp"
 #include "Timer.hpp"
 #include "TorchStepNPY.hpp"
 #include "NGunConfig.hpp"
@@ -56,8 +57,12 @@
 
 #include "CPrimaryGeneratorAction.hh"
 #include "CSteppingAction.hh"
+#include "CRunAction.hh"
+#include "CEventAction.hh"
+
 #include "CTorchSource.hh"
 #include "CGunSource.hh"
+#include "CMaterialTable.hh"
 #include "CG4.hh"
 
 
@@ -85,10 +90,12 @@ CG4::CG4(OpticksHub* hub)
      OpticksEngine(hub),
      m_torch(NULL),
      m_detector(NULL),
+     m_material_table(NULL),
      m_lib(NULL),
      m_recorder(NULL),
      m_rec(NULL),
      m_steprec(NULL),
+     m_collector(NULL),
      m_physics(NULL),
      m_runManager(NULL),
      m_g4ui(false),
@@ -96,7 +103,9 @@ CG4::CG4(OpticksHub* hub)
      m_uiManager(NULL),
      m_ui(NULL),
      m_pga(NULL),
-     m_sa(NULL)
+     m_sa(NULL),
+     m_ra(NULL),
+     m_ea(NULL)
 {
      init();
 }
@@ -118,7 +127,6 @@ CPropLib* CG4::getPropLib()
 {
     return m_lib ; 
 }
-
 
 
 void CG4::init()
@@ -151,6 +159,9 @@ void CG4::configure()
     configureGenerator();
     configureStepping();
 
+    m_ra = new CRunAction ; 
+    m_ea = new CEventAction ;  
+
     TIMER("configure");
 }
 
@@ -174,7 +185,7 @@ void CG4::initialize()
 {
     LOG(info) << "CG4::initialize" ;
 
-    m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa)) ;
+    m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa, m_ra, m_ea)) ;
     m_runManager->Initialize();
 
 #ifdef OLDPHYS
@@ -196,8 +207,21 @@ void CG4::postinitialize()
     std::string inimac = m_cfg->getG4IniMac();
     if(!inimac.empty()) execute(inimac.c_str()) ;
 
+
+    // needs to be after the detector Construct creates the materials
+    m_material_table = new CMaterialTable(m_opticks->getMaterialPrefix());
+    m_material_table->dump("CG4::postinitialize");
+
+
     LOG(info) << "CG4::postinitialize DONE" ;
     TIMER("postinitialize");
+}
+
+
+std::map<std::string, unsigned>& CG4::getMaterialMap()
+{
+    assert(m_material_table);
+    return m_material_table->getMaterialMap();
 }
 
 void CG4::interactive(int argc, char** argv)
@@ -243,18 +267,25 @@ void CG4::postpropagate()
 
     // G4 specific things belongs here
 
-    OpticksG4Collector* collector = OpticksG4Collector::Instance() ;
-    collector->Summary("CG4::postpropagate");
+    m_collector = OpticksG4Collector::Instance() ;
+    m_collector->Summary("CG4::postpropagate");
 
-    NPY<float>* genstep = collector->getGenstep();
-    genstep->save("$TMP/CG4Test_genstep.npy");
-
+    //NPY<float>* gs = m_collector->getGensteps();
+    //gs->save("$TMP/CG4Test_genstep.npy");
 
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt);
     evt->postPropagateGeant4();
-
 }
+
+NPY<float>* CG4::getGensteps()
+{
+    m_collector = OpticksG4Collector::Instance();
+    NPY<float>* gs = m_collector->getGensteps();
+    // need some kind of reset ready for next event
+    return gs ; 
+}
+
 
 
 void CG4::configurePhysics()
@@ -294,7 +325,6 @@ void CG4::configureDetector()
     m_detector = detector ; 
     m_lib = detector->getPropLib();
     m_runManager->SetUserInitialization(detector);
-
     TIMER("configureDetector");
 }
 

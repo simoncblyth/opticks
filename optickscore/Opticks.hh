@@ -85,6 +85,7 @@ class OKCORE_API Opticks {
        const char* getIdPath();
        const char* getIdFold();
        const char* getDetectorBase();
+       const char* getMaterialMap();
        const char* getLastArg();
        int         getLastArgInt();
        int         getInteractivityLevel();
@@ -95,6 +96,8 @@ class OKCORE_API Opticks {
        bool isGeocache();
        void setInstanced(bool instanced=true);
        bool isInstanced();
+       void setIntegrated(bool integrated=true);  // used to distinguish OKG4 usage 
+       bool isIntegrated();
    public:
        std::string getRelativePath(const char* path); 
    public:
@@ -191,6 +194,7 @@ class OKCORE_API Opticks {
        bool             m_compute ; 
        bool             m_geocache ; 
        bool             m_instanced ; 
+       bool             m_integrated ; 
        const char*      m_lastarg ; 
 
    private:

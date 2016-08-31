@@ -83,4 +83,8 @@ void CMaterialTable::fillMaterialIndexMap( std::map<std::string, unsigned int>& 
     }
 }
 
+std::map<std::string, unsigned>& CMaterialTable::getMaterialMap()
+{
+   return m_name2index ;  
+}
 

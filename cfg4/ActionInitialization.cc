@@ -9,11 +9,18 @@
 #include "CFG4_POP.hh"
 
 
-ActionInitialization::ActionInitialization(G4VUserPrimaryGeneratorAction* pga, G4UserSteppingAction* sa)
+ActionInitialization::ActionInitialization(
+       G4VUserPrimaryGeneratorAction* pga, 
+       G4UserSteppingAction* sa,
+       G4UserRunAction* ra,
+       G4UserEventAction* ea
+)
     : 
     G4VUserActionInitialization(), 
     m_pga(pga),
-    m_sa(sa)
+    m_sa(sa),
+    m_ra(ra),
+    m_ea(ea)
 {}
 
 
@@ -24,6 +31,8 @@ void ActionInitialization::Build() const
 {
     SetUserAction(m_pga);
     SetUserAction(m_sa);
+    SetUserAction(m_ra);
+    SetUserAction(m_ea);
 }
 
 G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const

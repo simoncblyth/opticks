@@ -24,7 +24,7 @@ OpticksG4Collector::OpticksG4Collector()
     m_values = m_onestep->getValues();
 }
 
-NPY<float>*  OpticksG4Collector::getGenstep()
+NPY<float>*  OpticksG4Collector::getGensteps()
 {
     consistencyCheck() ;
     return m_genstep ; 

@@ -93,6 +93,7 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_compute(false),
        m_geocache(false),
        m_instanced(true),
+       m_integrated(false),
 
        m_lastarg(NULL),
 
@@ -201,6 +202,19 @@ bool Opticks::isInstanced()
 {
    return m_instanced ; 
 }
+
+
+void Opticks::setIntegrated(bool integrated)
+{
+   m_integrated = integrated ;
+}
+bool Opticks::isIntegrated()
+{
+   return m_integrated ; 
+}
+
+
+
 
 
 const glm::vec4& Opticks::getTimeDomain()
@@ -496,7 +510,7 @@ const char* Opticks::getEventTag()
 {
     if(!m_tag)
     {
-        std::string tag = m_cfg->getEventTag();
+        std::string tag = m_integrated ? m_cfg->getIntegratedEventTag() : m_cfg->getEventTag();
         m_tag = strdup(tag.c_str());
     }
     return m_tag ; 
@@ -757,6 +771,7 @@ Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
 const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdPath() : NULL ; }
 const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdFold() : NULL ; }
 const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }
+const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->getMaterialMap() : NULL ; }
 const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }

@@ -31,7 +31,7 @@ class OpticksG4Collector {
          static OpticksG4Collector* Instance();
    public:
          OpticksG4Collector();
-         NPY<float>*  getGenstep();
+         NPY<float>*  getGensteps();
          std::string description();
          void Summary(const char* msg="OpticksG4Collector::Summary");
    private:

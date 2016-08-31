@@ -214,20 +214,25 @@ void OpticksHub::configure()
 
 void OpticksHub::configureLookup()
 {
-    const char* name = "ChromaMaterialMap.json" ;
-    const char* dir = m_opticks->getDetectorBase() ;
+    const char* path = m_opticks->getMaterialMap(); 
+    const char* prefix = m_opticks->getMaterialPrefix(); 
 
     LOG(info) << "OpticksHub::configureLookup"
               << " loading genstep material index map "
-              << " name " << name
-              << " dir " << dir
+              << " path " << path
+              << " prefix " << prefix
               ;
 
     std::map<std::string, unsigned> A ; 
-    BMap<std::string, unsigned int>::load(&A, dir, name ); 
-    m_lookup->setA(A, m_opticks->getMaterialPrefix() ); 
+    BMap<std::string, unsigned int>::load(&A, path ); 
+    setMaterialMap(A, prefix);
 }
 
+void OpticksHub::setMaterialMap( std::map<std::string, unsigned>& materialMap, const char* prefix )
+{
+   // this must be done prior to loading geometry to take effect
+    m_lookup->setA(materialMap, prefix ); 
+}
 
 
 #ifdef WITH_NPYSERVER
@@ -373,6 +378,35 @@ NPY<float>* OpticksHub::loadGenstep()
 }
 
 
+void OpticksHub::translateGensteps(NPY<float>* gs)
+{
+    G4StepNPY* g4step = new G4StepNPY(gs);    
+    g4step->relabel(CERENKOV, SCINTILLATION); 
+
+    // which code is used depends in the sign of the pre-label 
+    // becomes the ghead.i.x used in cu/generate.cu
+
+    if(m_opticks->isDayabay())
+    {   
+        // within GGeo this depends on GBndLib
+        //NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
+
+        if(m_lookup)
+        {  
+            g4step->setLookup(m_lookup);   
+            g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+            //
+            // replaces original material indices with material lines
+            // for easy access to properties using boundary_lookup GPU side
+            //
+        }
+        else
+        {
+            LOG(warning) << "OpticksHub::translateGensteps not applying lookup" ;
+        } 
+    }
+}
+
 
 NPY<float>* OpticksHub::loadGenstepFile()
 {
@@ -392,30 +426,7 @@ NPY<float>* OpticksHub::loadGenstepFile()
         //m_parameters->add<std::string>("genstepModulo",   genstep->getDigestString()  );
     }    
 
-
-    G4StepNPY* g4step = new G4StepNPY(gs);    
-    g4step->relabel(CERENKOV, SCINTILLATION); 
-    // which code is used depends in the sign of the pre-label 
-    // becomes the ghead.i.x used in cu/generate.cu
-
-    if(m_opticks->isDayabay())
-    {   
-        // within GGeo this depends on GBndLib
-        NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
-        if(lookup)
-        {  
-            g4step->setLookup(lookup);   
-            g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
-            //
-            // replaces original material indices with material lines
-            // for easy access to properties using boundary_lookup GPU side
-            //
-        }
-        else
-        {
-            LOG(warning) << "OpticksHub::loadGenstepFile not applying lookup" ;
-        } 
-    }
+    translateGensteps(gs) ;
     return gs ; 
 }
 

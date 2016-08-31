@@ -185,15 +185,12 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void setRecordData(NPY<short>* record_data);
        void setRecselData(NPY<unsigned char>* recsel_data);
        void setPhoselData(NPY<unsigned char>* phosel_data);
-   public:
-       //static std::string speciesDir(const char* species, const char* udet, const char* typ);
    private:
        void recordDigests();
-   private:
-       //std::string getSpeciesDir(const char* species); // tag in the name
-       //std::string getTagDir(const char* species, bool tstamp);     // tag in the dir 
-       static std::string TagDir(const char* det, const char* typ, const char* tag, const char* anno=NULL);
+   public:
        std::string getTagDir(const char* anno=NULL); // anno usually NULL, sometimes the timestamp
+   private:
+       static std::string TagDir(const char* det, const char* typ, const char* tag, const char* anno=NULL);
    private:
        void saveParameters();
        void loadParameters();

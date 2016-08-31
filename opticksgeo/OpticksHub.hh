@@ -67,10 +67,12 @@ class OKGEO_API OpticksHub {
        void loadGeometry();
    public:
        NPY<float>* loadGenstep();
+       void translateGensteps(NPY<float>* gs);  // into Opticks lingo
        void loadEventBuffers();
        void targetGenstep();
        void configureState(NConfigurable* scene);
        void cleanup();
+       void setMaterialMap( std::map<std::string, unsigned>& materialMap, const char* prefix="" );
    private:
        void init();
        void configureCompositionSize();

@@ -127,6 +127,8 @@ set(SOURCES
     CSteppingAction.cc
     CG4.cc
     OpticksG4Collector.cc
+    CRunAction.cc
+    CEventAction.cc
 )
 
 set(HEADERS
@@ -176,6 +178,8 @@ set(HEADERS
     CSteppingAction.hh
     CG4.hh
     OpticksG4Collector.hh
+    CRunAction.hh
+    CEventAction.hh
 )
 
 add_library(${name} SHARED ${SOURCES})

@@ -306,7 +306,11 @@ void OpticksCfg<Listener>::init()
        ("fullscreen,f",  "start in fullscreen mode") ;
 
    m_desc.add_options()
-       ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load" );
+       ("tag",   boost::program_options::value<std::string>(&m_event_tag), "eventtag to load/save" );
+
+   m_desc.add_options()
+       ("itag",   boost::program_options::value<std::string>(&m_integrated_event_tag), "integrated eventtag to load/save, used from OPG4 package" );
+
 
    m_desc.add_options()
        ("cat",   boost::program_options::value<std::string>(&m_event_cat), "event category for organization of event files, typically used instead of detector for test geometries such as prism and lens" );
@@ -508,6 +512,17 @@ const std::string& OpticksCfg<Listener>::getEventTag()
     if(m_event_tag.empty()) m_event_tag = "1" ;
     return m_event_tag ;
 }
+
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getIntegratedEventTag()
+{
+    if(m_integrated_event_tag.empty()) m_integrated_event_tag = "100" ;
+    return m_integrated_event_tag ;
+}
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getEventCat()

@@ -57,6 +57,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getIdFold();  // parent directory of idpath containing g4_00.dae
        const char* getIdBase();  // parent directory of idfold, typically the "export" folder
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
+       const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
     public:
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
@@ -156,6 +157,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_detector_name ;
        const char* m_detector_base ;
        const char* m_resource_base ;
+       const char* m_material_map  ;
        
    private:
        std::map<std::string, std::string> m_metadata ;  

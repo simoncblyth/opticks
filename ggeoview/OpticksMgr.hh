@@ -50,5 +50,3 @@ class GGV_API OpticksMgr {
 
 #include "GGV_TAIL.hh"
 
-
-

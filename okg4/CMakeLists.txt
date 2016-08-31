@@ -284,9 +284,13 @@ add_definitions(${DEFINITIONS})
 
 
 set(SOURCES
+    OKG4Mgr.cc
+
     OKG4_LOG.cc
 )
 set(HEADERS
+    OKG4Mgr.hh
+
     OKG4_LOG.hh
     OKG4_API_EXPORT.hh
     OKG4_HEAD.hh

@@ -76,7 +76,6 @@ Lookups
 
 
 
-
 ggeo-/tests/NLookupTest.cc::
 
     GBndLib* blib = GBndLib::load(m_opticks, true );
@@ -118,7 +117,6 @@ defaults are used ?
      "/dd/Materials/Teflon": 24
      "/dd/Materials/ESR": 9
      "/dd/Materials/MineralOil": 14
-
 
 
 Changes
