@@ -28,6 +28,8 @@ class CStepRec ;
 class OpticksG4Collector ; 
 
 class OpticksHub ; 
+class Opticks ; 
+template <typename T> class OpticksCfg ;
 
 //#define OLDPHYS 1
 #ifdef OLDPHYS
@@ -36,10 +38,9 @@ class PhysicsList ;
 class OpNovicePhysicsList ; 
 #endif
 
-#include "OpticksEngine.hh"
 #include "CFG4_API_EXPORT.hh"
 
-class CFG4_API CG4 : public OpticksEngine
+class CFG4_API CG4 
 {
    public:
         CG4(OpticksHub* hub);
@@ -70,6 +71,10 @@ class CFG4_API CG4 : public OpticksEngine
         Rec*      getRec();
         CPropLib* getPropLib();
         NPY<float>*   getGensteps();
+   private:
+        OpticksHub*           m_hub ; 
+        Opticks*              m_opticks ; 
+        OpticksCfg<Opticks>*  m_cfg ; 
    private:
         TorchStepNPY*         m_torch ; 
    private:

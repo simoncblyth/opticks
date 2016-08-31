@@ -87,7 +87,9 @@
 
 CG4::CG4(OpticksHub* hub) 
    :
-     OpticksEngine(hub),
+     m_hub(hub),
+     m_opticks(m_hub->getOpticks()),
+     m_cfg(m_opticks->getCfg()),
      m_torch(NULL),
      m_detector(NULL),
      m_material_table(NULL),
@@ -153,7 +155,9 @@ void CG4::configure()
               ;    
 
     m_opticks->setSpaceDomain(ce); // triggers Opticks::configureDomains
-    OpticksEvent* evt = m_hub->createEvent();   // HMM: feels too soon, when thinking multi-event, remember not 1-to-1 between Opticks events and G4  
+
+    // HMM: feels too soon, when thinking multi-event, remember not 1-to-1 between Opticks events and G4  
+    OpticksEvent* evt = m_hub->createEvent();   
     evt->dumpDomains("CG4::configure");
 
     configureGenerator();
@@ -336,11 +340,10 @@ void CG4::configureGenerator()
     // THIS IS AN EVENT LEVEL THING : RENAME initEvent ?
     // HMM THIS CODE LOOKS TO BE DUPLICITOUS AND OUT OF PLACE : NEEDS MOVING 
 
-
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt);
 
-    if(m_opticks->getSourceCode() == TORCH)
+    if(m_opticks->getSourceCode() == TORCH)  // TORCH produces only optical photons
     {
         LOG(info) << "CG4::configureGenerator TORCH " ; 
         m_torch = m_opticks->makeSimpleTorchStep();

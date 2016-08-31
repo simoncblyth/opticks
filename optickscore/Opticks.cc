@@ -103,6 +103,7 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_detector(NULL),
        m_tag(NULL),
        m_cat(NULL),
+       m_event_count(0),
        m_domains_configured(false),
        m_mode(NULL)
 {
@@ -307,7 +308,12 @@ void Opticks::defineEventSpec()
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
-    m_spec = new OpticksEventSpec(typ, tag, det.c_str(), cat.c_str() );
+    int itag = BStr::atoi(tag) ; 
+    char ntag[10];
+    snprintf(ntag, 10, "%s", -itag );
+
+    m_spec  = new OpticksEventSpec(typ,  tag, det.c_str(), cat.c_str() );
+    m_nspec = new OpticksEventSpec(typ, ntag, det.c_str(), cat.c_str() );
 }
 
 void Opticks::dumpArgs(const char* msg)
@@ -402,19 +408,7 @@ void Opticks::Summary(const char* msg)
 
 int Opticks::getLastArgInt()
 {
-    int index(-1);
-    if(!m_lastarg) return index ;
- 
-    try{ 
-        index = boost::lexical_cast<int>(m_lastarg) ;
-    }
-    catch (const boost::bad_lexical_cast& e ) {
-        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
-    }
-    catch( ... ){
-        LOG(warning) << "Unknown exception caught!" ;
-    }
-    return index;
+    return BStr::atoi(m_lastarg, -1 );
 }
 
 int Opticks::getInteractivityLevel()
@@ -572,9 +566,13 @@ OpticksEventSpec* Opticks::getEventSpec()
 }
 
 
-OpticksEvent* Opticks::makeEvent()
+OpticksEvent* Opticks::makeEvent(bool ok)
 {
-    OpticksEvent* evt = new OpticksEvent(m_spec);
+    m_event_count += 1 ; 
+
+    OpticksEvent* evt = new OpticksEvent(ok ? m_spec : m_nspec);
+    evt->setId(m_event_count) ; 
+
 
     const char* x_udet = getUDet();
     const char* e_udet = evt->getUDet();

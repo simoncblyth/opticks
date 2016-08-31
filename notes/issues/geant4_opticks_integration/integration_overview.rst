@@ -72,6 +72,42 @@ from the same single executable
     ipython -i $(which tevt.py) --  --src g4gun --tag 100 
 
 
+NEXT : event handling in integrated mode
+-------------------------------------------
+
+Attempting to re-use the G4 created evt for the Opticks propagation
+in order to visualize the nopsteps results in a hard CUDA copy crash on launch, 
+requiring a reboot.  Maybe this is because are attempting to upload buffers
+which are normally produced GPU side like the records, photons and sequence
+which are all mimicked CPU side by CG4.
+
+In retrospect its the wrong thing to do anyhow, integrated mode
+is effectively producing two events.  Instead just copy the 
+G4 nopsteps (and of course the gensteps) into the Opticks evt.
+
+So do the negated tag for G4 trick previously did via 
+arguments in OKG4Mgr ? 
+
+::
+
+    084 void OKG4Mgr::propagate()
+     85 {
+     86     m_g4->propagate();
+     87 
+     88     NPY<float>* gs = m_g4->getGensteps();
+    ...
+    101     m_hub->translateGensteps(gs);     // relabel and apply lookup
+    102 
+    103     OpticksEvent* evt = m_hub->createEvent(); // make a new evt 
+    104     //OpticksEvent* evt = m_hub->getEvent();      // use the evt created by CG4 
+    105 
+    106     evt->setGenstepData(gs);
+
+
+NEXT : move CG4 event creation later for multi-event
+-------------------------------------------------------------
+
+
 
 Approach
 ---------

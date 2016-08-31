@@ -57,7 +57,7 @@ void OKG4Mgr::init()
 
     if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-    m_g4->configure();
+    m_g4->configure();   // OpticksEvent created here...  too soon ?  TODO: rejig CG4 for multi-evt
 
 }
 
@@ -100,7 +100,9 @@ void OKG4Mgr::propagate()
 
     m_hub->translateGensteps(gs);     // relabel and apply lookup
 
-    OpticksEvent* evt = m_hub->createEvent();
+    OpticksEvent* evt = m_hub->createEvent(); // make a new evt 
+    //OpticksEvent* evt = m_hub->getEvent();      // use the evt created by CG4 
+
     evt->setGenstepData(gs);
     LOG(info) << "OpticksEvent tagdir : " << evt->getTagDir() ;  
 

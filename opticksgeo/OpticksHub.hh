@@ -35,7 +35,6 @@ template <typename> class numpyserver ;
 class OKGEO_API OpticksHub {
    public:
        OpticksHub(Opticks* opticks);
-       OpticksEvent* createEvent();
        void add(BCfg* cfg);
    public:
        void         configure();
@@ -46,9 +45,16 @@ class OKGEO_API OpticksHub {
        void         configureServer();
 #endif
    public:
+       OpticksEvent* createG4Event();
+       OpticksEvent* createOKEvent();
+       OpticksEvent* getG4Event();
+       OpticksEvent* getOKEvent();
+   private:
+       OpticksEvent* createEvent(bool ok);
+       OpticksEvent* getEvent();
+   public:
        Composition*         getComposition();
        GGeo*                getGGeo();
-       OpticksEvent*        getEvent();
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
        std::string          getCfgString();
@@ -85,7 +91,10 @@ class OKGEO_API OpticksHub {
        OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ;  
        Composition*     m_composition ; 
-       OpticksEvent*    m_evt ; 
+   private:
+       OpticksEvent*    m_evt ;    // points to last evt created, which is either m_g4evt OR m_okevt 
+       OpticksEvent*    m_g4evt ; 
+       OpticksEvent*    m_okevt ; 
 
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 

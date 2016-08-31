@@ -8,7 +8,7 @@ include(EnvCompilationFlags)
 # see cuda-/FindCuda.cmake
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
-message("${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS}")
+message(STATUS "${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS}")
 
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)

@@ -72,6 +72,8 @@ OpticksHub::OpticksHub(Opticks* opticks)
    m_ggeo(NULL),
    m_composition(new Composition),
    m_evt(NULL),
+   m_g4evt(NULL),
+   m_okevt(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -128,10 +130,8 @@ NLookup* OpticksHub::getLookup()
 {
     return m_lookup ; 
 }
-OpticksEvent* OpticksHub::getEvent()
-{
-    return m_evt ; 
-}
+
+
 Opticks* OpticksHub::getOpticks()
 {
     return m_opticks ; 
@@ -309,34 +309,64 @@ NPY<unsigned char>* OpticksHub::getColorBuffer()
 }
 
 
-
-OpticksEvent* OpticksHub::createEvent()
+OpticksEvent* OpticksHub::createG4Event()
 {
-    if(!hasOpt("noevent"))
-    {
-        m_evt = m_opticks->makeEvent() ; 
-    } 
+    return createEvent(false);
+}
+OpticksEvent* OpticksHub::createOKEvent()
+{
+    return createEvent(true);
+}
 
-    if(m_evt)
-    { 
+OpticksEvent* OpticksHub::createEvent(bool ok)
+{
+    m_evt = m_opticks->makeEvent(ok) ; 
+    if(ok)
+        m_okevt = m_evt ; 
+    else
+        m_g4evt = m_evt ;
 
-#ifdef WITH_NPYSERVER
-        if(m_delegate)
-        {
-            m_delegate->setEvent(m_evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
-        }
-#endif
-
-        m_composition->setEvt(m_evt);
-        m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
-
-        bool quietly = true ; 
-        NPY<float>* track = m_evt->loadGenstepDerivativeFromFile("track", quietly);
-        m_composition->setTrack(track);
-    }
-
+    configureEvent(m_evt);
     return m_evt ; 
 }
+
+
+OpticksEvent* OpticksHub::getG4Event()
+{
+    return m_g4evt ; 
+}
+OpticksEvent* OpticksHub::getOKEvent()
+{
+    return m_okevt ; 
+}
+OpticksEvent* OpticksHub::getEvent()
+{
+    return m_evt ; 
+}
+
+
+
+
+
+void OpticksHub::configureEvent(OpticksEvent* evt)
+{
+    if(!evt) return 
+
+#ifdef WITH_NPYSERVER
+    if(m_delegate)
+    {
+        m_delegate->setEvent(evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
+    }
+#endif
+
+    m_composition->setEvt(evt);  // look like used only for Composition::setPickPhoton  TODO: reposition this 
+    m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
+
+    bool quietly = true ;       
+    NPY<float>* track = evt->loadGenstepDerivativeFromFile("track", quietly);
+    m_composition->setTrack(track);
+}
+
 
 
 void OpticksHub::loadGeometry()

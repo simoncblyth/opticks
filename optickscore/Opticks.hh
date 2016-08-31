@@ -131,7 +131,7 @@ class OKCORE_API Opticks {
        NPY<float>*          loadGenstep();
        TorchStepNPY*        makeSimpleTorchStep();
        OpticksEventSpec*    getEventSpec();
-       OpticksEvent*        makeEvent(); 
+       OpticksEvent*        makeEvent(bool ok=true); 
        BDynamicDefine*      makeDynamicDefine();
    public:
        // load precooked indices
@@ -187,6 +187,7 @@ class OKCORE_API Opticks {
        const char*          m_materialprefix ;
    private:
        OpticksEventSpec*    m_spec ; 
+       OpticksEventSpec*    m_nspec ; 
        OpticksResource*     m_resource ; 
        NState*              m_state ; 
    private:
@@ -205,6 +206,7 @@ class OKCORE_API Opticks {
        const char*          m_detector ; 
        const char*          m_tag ; 
        const char*          m_cat ; 
+       unsigned             m_event_count ; 
    private:
        bool                 m_domains_configured ;  
        glm::vec4            m_time_domain ; 

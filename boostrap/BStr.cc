@@ -11,6 +11,7 @@
 
 #include "BStr.hh"
 
+#include "PLOG.hh"
 
 
 bool BStr::listHasKey(const char* dlist, const char* key, const char* delim)
@@ -40,6 +41,25 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
     if(prefix) name += strlen(prefix) ;
     return name ;   
 }
+
+int BStr::atoi( const char* str, int fallback )
+{
+    int i(fallback) ;   
+    if(!str) return i ; 
+ 
+    try{ 
+        i = boost::lexical_cast<int>(str) ;
+    }   
+    catch (const boost::bad_lexical_cast& e ) { 
+        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+    }   
+    catch( ... ){
+        LOG(warning) << "Unknown exception caught!" ;
+    }   
+    return i ;
+}
+
+ 
 
 
 const char* BStr::uppercase( const char* str )

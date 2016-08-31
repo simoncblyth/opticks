@@ -224,9 +224,9 @@ find_package(EnvXercesC  REQUIRED)
 find_package(CFG4 REQUIRED) 
 
 
-message(STATUS "${name}.CFG4_LIBRARIES    ${CFG4_LIBRARIES} ")
-message(STATUS "${name}.CFG4_INCLUDE_DIRS ${CFG4_INCLUDE_DIRS} ")
-message(STATUS "${name}.CFG4_DEFINITIONS  ${CFG4_DEFINITIONS} ")
+#message(STATUS "${name}.CFG4_LIBRARIES    ${CFG4_LIBRARIES} ")
+#message(STATUS "${name}.CFG4_INCLUDE_DIRS ${CFG4_INCLUDE_DIRS} ")
+#message(STATUS "${name}.CFG4_DEFINITIONS  ${CFG4_DEFINITIONS} ")
 
 set(WITH_G4_INCLUDES
    ${Geant4_INCLUDE_DIRS}

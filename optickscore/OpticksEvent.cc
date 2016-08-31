@@ -499,6 +499,17 @@ std::string OpticksEvent::getShapeString()
 
 
 
+int OpticksEvent::getId()
+{
+    return m_parameters->get<int>("Id");
+}
+void OpticksEvent::setId(int id)
+{
+    m_parameters->add<int>("Id", id);
+}
+
+
+
 
 std::string OpticksEvent::getTimeStamp()
 {
@@ -1012,6 +1023,7 @@ std::string OpticksEvent::description(const char* msg)
 {
     std::stringstream ss ; 
     ss << msg << " " 
+       << " id: " << getId()
        << " typ: " << m_typ 
        << " tag: " << m_tag 
        << " det: " << m_det 
@@ -1049,12 +1061,7 @@ void OpticksEvent::save(bool verbose)
     recordDigests();
 
     const char* udet = getUDet();
-    LOG(info) << "OpticksEvent::save"
-              << " typ: " << m_typ
-              << " tag: " << m_tag
-              << " det: " << m_det
-              << " cat: " << ( m_cat ? m_cat : "NULL" )
-              << " udet: " << udet 
+    LOG(info) << description("OpticksEvent::save")
               << getShapeString()
               << " dir " << m_event_spec->getDir() 
               ;    
