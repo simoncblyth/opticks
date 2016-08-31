@@ -5,6 +5,7 @@ project(${name})
 set(TESTS
     OKG4_LOGTest.cc
     OKG4_OpticksMgrTest.cc
+    OKG4Test.cc
 )
 
 foreach(SRC ${TESTS})

@@ -78,6 +78,7 @@ class OKCORE_API Opticks {
    public:
        const char* getRNGInstallCacheDir();
        const char* getInstallPrefix();
+       const char* getMaterialPrefix();
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
        const char* getDAEPath();
        const char* getGDMLPath();
@@ -180,6 +181,7 @@ class OKCORE_API Opticks {
        int                  m_argc ; 
        char**               m_argv ; 
        const char*          m_envprefix ;
+       const char*          m_materialprefix ;
    private:
        OpticksEventSpec*    m_spec ; 
        OpticksResource*     m_resource ; 

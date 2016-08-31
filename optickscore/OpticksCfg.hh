@@ -31,6 +31,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getTestConfig();
      const std::string& getStateTag();
+     const std::string& getMaterialPrefix();
 
      const std::string& getZExplodeConfig();
      const std::string& getMeshVersion();
@@ -83,6 +84,7 @@ private:
 
      std::string m_testconfig ;
      std::string m_state_tag ;
+     std::string m_materialprefix ;
 
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;

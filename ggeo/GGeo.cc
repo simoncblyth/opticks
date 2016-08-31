@@ -623,10 +623,9 @@ void GGeo::setupLookup()
     //
     m_lookup = new NLookup() ; 
 
-    //const char* cmm_dir = m_opticks->getIdFold() ;
-    const char* cmm_dir = m_opticks->getDetectorBase() ;
+    const char* cmmd = m_opticks->getDetectorBase() ;
 
-    m_lookup->loadA( cmm_dir, "ChromaMaterialMap.json", "/dd/Materials/") ;
+    m_lookup->loadA( cmmd, "ChromaMaterialMap.json", "/dd/Materials/") ;
 
     std::map<std::string, unsigned int>& msu  = m_lookup->getB() ;
 

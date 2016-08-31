@@ -105,6 +105,7 @@ set(SOURCES
     CMath.cc
     CSolid.cc
     CMPT.cc
+    CMaterialTable.cc
     OpStatus.cc
     Format.cc
     CTraverser.cc
@@ -153,6 +154,7 @@ set(HEADERS
     CMath.hh
     CSolid.hh
     CMPT.hh
+    CMaterialTable.hh
     OpStatus.hh
     Format.hh
     CTraverser.hh

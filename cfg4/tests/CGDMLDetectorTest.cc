@@ -11,6 +11,7 @@
 // cfg4-
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
+#include "CMaterialTable.hh"
 
 // g4-
 #include "G4VPhysicalVolume.hh"
@@ -73,6 +74,10 @@ int main(int argc, char** argv)
 
     G4VPhysicalVolume* world_pv = m_detector->Construct();
     assert(world_pv);
+
+    CMaterialTable mt ; 
+    mt.dump("CGDMLDetectorTest CMaterialTable");
+
 
     return 0 ; 
 }

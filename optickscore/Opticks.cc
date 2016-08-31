@@ -84,6 +84,7 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_argc(argc),
        m_argv(argv),
        m_envprefix(strdup(envprefix)),
+       m_materialprefix(NULL),
 
        m_resource(NULL),
        m_state(NULL),
@@ -359,6 +360,10 @@ void Opticks::configure()
     // names like 001 002 are used for persisted states : ie the .ini files within the prefdir
 
     m_state = new NState(prefdir.c_str(), "state")  ;
+
+
+    const std::string& mpfx = m_cfg->getMaterialPrefix();
+    m_materialprefix = ( mpfx.empty() || isJuno()) ? NULL : strdup(mpfx.c_str()) ;
 
     LOG(debug) << "Opticks::configure DONE " ;
 }
@@ -651,8 +656,10 @@ NPY<float>* Opticks::loadGenstep()
 
 
 
-
-
+const char* Opticks::getMaterialPrefix()
+{
+    return m_materialprefix ; 
+}
 
 const char* Opticks::Material(const unsigned int mat)
 {

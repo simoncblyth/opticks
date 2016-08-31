@@ -33,6 +33,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_g4finmac(""),
        m_testconfig(""),
        m_state_tag(""),
+       m_materialprefix("/dd/Materials/"),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
        m_islice(""),
@@ -314,6 +315,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("state",   boost::program_options::value<std::string>(&m_state_tag), "Bookmarks state tag, allowing use of multiple collections of bookmarks." );
 
+   m_desc.add_options()
+       ("materialprefix",   boost::program_options::value<std::string>(&m_materialprefix), "Materials prefix string eg /dd/Materials/ " );
+
 
 
    m_desc.add_options()
@@ -517,6 +521,12 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getStateTag()
 {
     return m_state_tag ;
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getMaterialPrefix()
+{
+    return m_materialprefix ;
 }
 
 

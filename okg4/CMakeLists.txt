@@ -221,20 +221,28 @@ find_package(GGeoView REQUIRED)
 
 find_package(Geant4 REQUIRED) 
 find_package(EnvXercesC  REQUIRED)  
+find_package(CFG4 REQUIRED) 
+
+
+message(STATUS "${name}.CFG4_LIBRARIES    ${CFG4_LIBRARIES} ")
+message(STATUS "${name}.CFG4_INCLUDE_DIRS ${CFG4_INCLUDE_DIRS} ")
+message(STATUS "${name}.CFG4_DEFINITIONS  ${CFG4_DEFINITIONS} ")
 
 set(WITH_G4_INCLUDES
    ${Geant4_INCLUDE_DIRS}
    ${XERCESC_INCLUDE_DIR}
+   ${CFG4_INCLUDE_DIRS}
 )
 set(WITH_G4_LIBRARIES
    ${Geant4_LIBRARIES}
    ${XERCESC_LIBRARIES}
+   ${CFG4_LIBRARIES}
 )
 set(WITH_G4_DEFINITIONS
    ${Geant4_DEFINITIONS}
    ${XERCESC_DEFINITIONS}
+   ${CFG4_DEFINITIONS}
 )
-
 
 
 ########### ALL #####
