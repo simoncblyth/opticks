@@ -223,6 +223,8 @@ class GGEO_API GGeo : public NConfigurable {
         GPmt*              getPmt(); 
         NLookup*           getLookup(); 
     public:
+        void  setLookup(NLookup* lookup);
+    public:
         GColorizer*        getColorizer();
         OpticksColors*     getColors();
         OpticksFlags*      getFlags(); 

@@ -1,6 +1,7 @@
 // op --topticksgeometry
 
 #include "Opticks.hh"
+#include "OpticksHub.hh"
 #include "OpticksGeometry.hh"
 
 #include "PLOG.hh"
@@ -17,9 +18,11 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
 
-    ok.configure();
+    OpticksHub hub(&ok);
 
-    OpticksGeometry og(&ok);
+    hub.configure();
+
+    OpticksGeometry og(&hub);
 
     og.loadGeometry();
 

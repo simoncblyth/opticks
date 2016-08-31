@@ -37,10 +37,16 @@ Aspects included in cleanup, but as yet un-tested
   need to be repeatedly passed to OpEngine and the OpticksHub, 
   OpticksViz etc.. 
    
-NEXT : Optical Step Collection
+WIP : Optical Step Collection
 --------------------------------
 
 * :doc:`optical_step_collection`
+
+
+WIP : Material Code Mapping Generalization
+----------------------------------------------
+
+* :doc:`material_code_mapping_generalization`
 
 
 Approach

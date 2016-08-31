@@ -11,7 +11,7 @@
 class NPY_API NLookup {
    public:  
        typedef std::map<unsigned int, unsigned int> NLookup_t ;
-       typedef std::map<std::string, unsigned int> Map_t ;
+       typedef std::map<std::string, unsigned int> MSU ;
    public:  
        static void mockup(const char* dir="/tmp", const char* aname="mockA.json", const char* bname="mockB.json");
    private:
@@ -19,9 +19,13 @@ class NPY_API NLookup {
        static void mockB(const char* bdir, const char* bname);
    public:  
        NLookup();
-       void crossReference();
+       void crossReference(); // cross referencing A2B and B2A codes which correspond to the same names
        std::map<std::string, unsigned int>& getA();
        std::map<std::string, unsigned int>& getB();
+
+       void setA( const std::map<std::string, unsigned int>& A, const char* aprefix="/dd/Materials/");
+       void setB( const std::map<std::string, unsigned int>& B, const char* bprefix="");
+
        void loadA(const char* adir, const char* aname="ChromaMaterialMap.json",               const char* aprefix="/dd/Materials/");
        void loadB(const char* bdir, const char* bname="GBoundaryLibMetadataMaterialMap.json", const char* bprefix="");
    public:  
@@ -33,9 +37,9 @@ class NPY_API NLookup {
        std::string bcode2name(unsigned int bcode);
 
    private:  
-       void dumpMap(const char* msg, Map_t& map);
-       std::map<unsigned int, unsigned int>  create(Map_t& a, Map_t&b);
-       std::string find(Map_t& m, unsigned int code);
+       void dumpMap(const char* msg, MSU& map);
+       std::map<unsigned int, unsigned int>  create(MSU& a, MSU&b);
+       std::string find(MSU& m, unsigned int code);
        int lookup(NLookup_t& lkup, unsigned int x); 
    private:
        std::map<std::string, unsigned int>  m_A ; 

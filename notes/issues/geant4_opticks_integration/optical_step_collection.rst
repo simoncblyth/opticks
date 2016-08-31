@@ -15,9 +15,11 @@ Stages
 * Revisit optical step collection within cfg4-, add natural collection
   of both Cerenkov and Scintillation process steps into one buffer
 
-* The OpticksMgr integration  will need to happen in a new package, but 
-  the G4 level step collection can be developed first with cfg4- and
+* The OpticksMgr integration  will need to happen in new package **okg4-**
+  but the G4 level step collection can be developed first with cfg4- and
   tested on genstep file basis with OpticksMgrTest 
+
+* generalize genstep material code mapping/lookup
 
 
 Review old collection with G4DAEChroma

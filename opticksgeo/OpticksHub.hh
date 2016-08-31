@@ -17,6 +17,7 @@ class Bookmarks ;
 class GItemIndex ; 
 
 class NState ; 
+class NLookup ; 
 class NConfigurable ; 
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
@@ -52,6 +53,7 @@ class OKGEO_API OpticksHub {
        OpticksCfg<Opticks>* getCfg();
        std::string          getCfgString();
        NState*              getState();
+       NLookup*             getLookup();    // material code translation
        Bookmarks*           getBookmarks();
        NPY<unsigned char>*  getColorBuffer();
        Timer*               getTimer(); 
@@ -72,6 +74,7 @@ class OKGEO_API OpticksHub {
    private:
        void init();
        void configureCompositionSize();
+       void configureLookup();
    private:
        NPY<float>* loadGenstepFile();
        NPY<float>* loadGenstepTorch();
@@ -89,6 +92,7 @@ class OKGEO_API OpticksHub {
        BCfg*                m_cfg ;
        OpticksCfg<Opticks>* m_fcfg ;   
        NState*              m_state ; 
+       NLookup*             m_lookup ; 
        Bookmarks*           m_bookmarks ; 
  
 };

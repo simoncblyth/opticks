@@ -5,6 +5,7 @@
 #include <glm/fwd.hpp>
 
 class Opticks ; 
+class OpticksHub ; 
 class OpticksAttrSeq ;
 template <typename> class OpticksCfg ;
 class GGeo ; 
@@ -14,7 +15,7 @@ class GMergedMesh ;
 #include "OKGEO_API_EXPORT.hh"
 class OKGEO_API OpticksGeometry {
    public:
-       OpticksGeometry(Opticks* opticks);
+       OpticksGeometry(OpticksHub* hub);
   public:
        void loadGeometry();
   public:
@@ -32,6 +33,7 @@ class OKGEO_API OpticksGeometry {
    private:
        void init();
    private:
+       OpticksHub*          m_hub ; 
        Opticks*             m_opticks ; 
        OpticksCfg<Opticks>* m_fcfg ;
        GGeo*                m_ggeo ; 

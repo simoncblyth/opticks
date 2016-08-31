@@ -77,9 +77,9 @@ int main(int argc, char** argv)
 
     m_lookup->loadA( cmmd , "ChromaMaterialMap.json", "/dd/Materials/") ;
 
-    std::map<std::string, unsigned int>& msu = m_lookup->getB() ;
+    std::map<std::string, unsigned int>& B = m_lookup->getB() ;
 
-    blib->fillMaterialLineMap( msu ) ;     // shortname eg "GdDopedLS" to material line mapping 
+    blib->fillMaterialLineMap( B ) ;     // shortname eg "GdDopedLS" to material line mapping 
 
     m_lookup->crossReference();
 

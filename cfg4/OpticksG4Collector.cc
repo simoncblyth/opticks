@@ -100,7 +100,7 @@ void OpticksG4Collector::collectScintillationStep
      uif_t uifa[4] ;
      uifa[0].i = id == 0 ? m_scintillation_count : id  ;   // use the 1-based index when id zero 
      uifa[1].i = parentId ; 
-     uifa[2].i = materialId ; 
+     uifa[2].i = materialId ;   // raw G4 materialId, will need to be translated into GBndLib material line for GPU usage 
      uifa[3].i = numPhotons ; 
 
      uif_t uifb[4] ;

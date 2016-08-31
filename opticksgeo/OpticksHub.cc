@@ -1,5 +1,6 @@
 // brap-
 #include "BCfg.hh"
+#include "BMap.hh"
 
 #include "NState.hpp"
 #include "NLookup.hpp"
@@ -78,6 +79,7 @@ OpticksHub::OpticksHub(Opticks* opticks)
    m_cfg(NULL),
    m_fcfg(NULL),
    m_state(NULL),
+   m_lookup(new NLookup()),
    m_bookmarks(NULL)
 {
    init();
@@ -121,6 +123,10 @@ GGeo* OpticksHub::getGGeo()
 NState* OpticksHub::getState()
 {
     return m_state ; 
+}
+NLookup* OpticksHub::getLookup()
+{
+    return m_lookup ; 
 }
 OpticksEvent* OpticksHub::getEvent()
 {
@@ -200,12 +206,27 @@ void OpticksHub::configure()
 
     configureCompositionSize();
 
+    configureLookup();
 
     TIMER("configure");
 }
 
 
+void OpticksHub::configureLookup()
+{
+    const char* name = "ChromaMaterialMap.json" ;
+    const char* dir = m_opticks->getDetectorBase() ;
 
+    LOG(info) << "OpticksHub::configureLookup"
+              << " loading genstep material index map "
+              << " name " << name
+              << " dir " << dir
+              ;
+
+    std::map<std::string, unsigned> A ; 
+    BMap<std::string, unsigned int>::load(&A, dir, name ); 
+    m_lookup->setA(A, m_opticks->getMaterialPrefix() ); 
+}
 
 
 
@@ -284,21 +305,6 @@ NPY<unsigned char>* OpticksHub::getColorBuffer()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 OpticksEvent* OpticksHub::createEvent()
 {
     if(!hasOpt("noevent"))
@@ -330,13 +336,14 @@ OpticksEvent* OpticksHub::createEvent()
 
 void OpticksHub::loadGeometry()
 {
-    m_geometry = new OpticksGeometry(m_opticks);
+    m_geometry = new OpticksGeometry(this);
 
     m_geometry->loadGeometry();
 
     m_ggeo = m_geometry->getGGeo();
 
     m_ggeo->setComposition(m_composition);
+
 }
 
 

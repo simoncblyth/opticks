@@ -32,7 +32,7 @@ void NLookup::mockup(const char* dir, const char* aname, const char* bname)
 }
 void NLookup::mockA(const char* adir, const char* aname)
 {
-    Map_t mp ; 
+    MSU mp ; 
     mp["/dd/Materials/red"] = 10 ; 
     mp["/dd/Materials/green"] = 20 ; 
     mp["/dd/Materials/blue"] = 30 ; 
@@ -40,7 +40,7 @@ void NLookup::mockA(const char* adir, const char* aname)
 }
 void NLookup::mockB(const char* bdir, const char* bname)
 {
-    Map_t mp; 
+    MSU mp; 
     mp["red"] = 1 ; 
     mp["green"] = 2 ; 
     mp["blue"] = 3 ; 
@@ -48,16 +48,9 @@ void NLookup::mockB(const char* bdir, const char* bname)
 }
 
 
-
-
-void NLookup::loadA(const char* adir, const char* aname, const char* aprefix)
+void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* aprefix)
 {
-    //typedef std::map<std::string, unsigned int> SU_t ; 
-
-    Map_t raw ; 
-    BMap<std::string, unsigned int>::load(&raw, adir, aname );
-
-    for(Map_t::iterator it=raw.begin() ; it != raw.end() ; it++)
+    for(MSU::const_iterator it=A.begin() ; it != A.end() ; it++)
     {
         const char* name = it->first.c_str() ; 
         if(strncmp(name, aprefix, strlen(aprefix)) == 0)
@@ -68,9 +61,33 @@ void NLookup::loadA(const char* adir, const char* aname, const char* aprefix)
     }
 }
 
+void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bprefix)
+{
+    for(MSU::const_iterator it=B.begin() ; it != B.end() ; it++)
+    {
+        const char* name = it->first.c_str() ; 
+        if(strncmp(name, bprefix, strlen(bprefix)) == 0)
+        {
+            std::string shortname = name + strlen(bprefix) ;
+            m_B[shortname] = it->second ;  
+        }
+    }
+}
+
+
+
+void NLookup::loadA(const char* adir, const char* aname, const char* aprefix)
+{
+    MSU A ; 
+    BMap<std::string, unsigned int>::load(&A, adir, aname );
+    setA(A, aprefix);
+}
+
 void NLookup::loadB(const char* bdir, const char* bname, const char* /*bprefix*/)
 {
-    BMap<std::string, unsigned int>::load(&m_B, bdir, bname);
+    MSU B ; 
+    BMap<std::string, unsigned int>::load(&B, bdir, bname);
+    setB(B);
 }
 
 
@@ -112,10 +129,11 @@ void NLookup::dump(const char* msg)
 }
 
 
-std::map<unsigned int, unsigned int> NLookup::create(Map_t& a, Map_t&b)
+std::map<unsigned int, unsigned int> NLookup::create(MSU& a, MSU&b)
 {
+    // cross referencing codes which correspond to the same names
     NLookup_t a2b_ ;
-    for(Map_t::iterator ia=a.begin() ; ia != a.end() ; ia++)
+    for(MSU::iterator ia=a.begin() ; ia != a.end() ; ia++)
     {
         std::string aname = ia->first ;
         unsigned int acode = ia->second ; 
@@ -128,10 +146,10 @@ std::map<unsigned int, unsigned int> NLookup::create(Map_t& a, Map_t&b)
     return a2b_ ; 
 }
 
-void NLookup::dumpMap(const char* msg, Map_t& map)
+void NLookup::dumpMap(const char* msg, MSU& map)
 {
     printf("NLookup::dumpMap %s \n", msg);
-    for(Map_t::iterator it=map.begin() ; it != map.end() ; it++)
+    for(MSU::iterator it=map.begin() ; it != map.end() ; it++)
     {
         std::string name = it->first ;
         unsigned int code = it->second ; 
@@ -139,10 +157,10 @@ void NLookup::dumpMap(const char* msg, Map_t& map)
     }
 }
 
-std::string NLookup::find(Map_t& m, unsigned int code)
+std::string NLookup::find(MSU& m, unsigned int code)
 {
     std::string name ; 
-    for(Map_t::iterator im=m.begin() ; im != m.end() ; im++)
+    for(MSU::iterator im=m.begin() ; im != m.end() ; im++)
     {
         unsigned int mcode = im->second ; 
         if(mcode == code)

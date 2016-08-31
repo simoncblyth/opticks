@@ -13,6 +13,9 @@
 #include "OpticksAttrSeq.hh"
 #include "OpticksCfg.hh"
 
+// okg-
+#include "OpticksHub.hh"
+
 // ggeo-
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
@@ -50,10 +53,11 @@
     }
 
 
-OpticksGeometry::OpticksGeometry(Opticks* opticks)
+OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
-   m_opticks(opticks),
-   m_fcfg(NULL),
+   m_hub(hub),
+   m_opticks(m_hub->getOpticks()),
+   m_fcfg(m_opticks->getCfg()),
    m_ggeo(NULL),
    m_mesh0(NULL)
 {
@@ -68,8 +72,6 @@ GGeo* OpticksGeometry::getGGeo()
 
 void OpticksGeometry::init()
 {
-    m_fcfg = m_opticks->getCfg();
-
     bool geocache = !m_fcfg->hasOpt("nogeocache") ;
     bool instanced = !m_fcfg->hasOpt("noinstanced") ; // find repeated geometry 
 
@@ -82,6 +84,7 @@ void OpticksGeometry::init()
     m_opticks->setInstanced(instanced); // find repeated geometry 
 
     m_ggeo = new GGeo(m_opticks);
+    m_ggeo->setLookup(m_hub->getLookup());
 }
 
 glm::vec4 OpticksGeometry::getCenterExtent()

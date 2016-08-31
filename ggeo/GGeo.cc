@@ -9,6 +9,7 @@
 namespace fs = boost::filesystem;
 
 #include "BStr.hh"
+#include "BMap.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -81,7 +82,7 @@ GGeo::GGeo(Opticks* opticks)
    m_treecheck(NULL), 
    m_treepresent(NULL), 
    m_loaded(false), 
-   m_lookup(NULL),
+   m_lookup(NULL), 
    m_geolib(NULL),
    m_bndlib(NULL),
    m_materiallib(NULL),
@@ -263,6 +264,13 @@ GPmt* GGeo::getPmt()
 {
     return m_pmt ; 
 }
+
+void GGeo::setLookup(NLookup* lookup)
+{
+    m_lookup = lookup ; 
+}
+
+
 NLookup* GGeo::getLookup()
 {
     return m_lookup ; 
@@ -619,22 +627,27 @@ void GGeo::loadFromCache()
 
 void GGeo::setupLookup()
 {
-    //  maybe this belongs in GBndLib ?
-    //
-    m_lookup = new NLookup() ; 
+    assert(m_lookup && "must GGeo::setLookup before can load geometry" );
 
-    const char* cmmd = m_opticks->getDetectorBase() ;
 
-    m_lookup->loadA( cmmd, "ChromaMaterialMap.json", "/dd/Materials/") ;
+   /*
+    BELOW NOW MOVED TO HIGHER LEVEL FOR FLEXIBILITY IN OpticksHub::configureLookup
 
-    std::map<std::string, unsigned int>& msu  = m_lookup->getB() ;
+    std::map<std::string, unsigned> A ; 
+    BMap<std::string, unsigned int>::load(&A, m_opticks->getDetectorBase(), "ChromaMaterialMap.json" ); 
+    m_lookup->setA(A, m_opticks->getMaterialPrefix() ); 
+   */
 
-    m_bndlib->fillMaterialLineMap( msu ) ;    
+    std::map<std::string, unsigned int>& B  = m_lookup->getB() ;
+    m_bndlib->fillMaterialLineMap( B ) ;    
 
     m_lookup->crossReference();
 
-    //m_lookup->dump("GGeo::setupLookup");  
+    m_lookup->dump("GGeo::setupLookup");  
 }
+
+
+
 
 void GGeo::setupTyp()
 {

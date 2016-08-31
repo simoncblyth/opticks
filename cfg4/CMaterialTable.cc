@@ -72,4 +72,15 @@ void CMaterialTable::dump(const char* msg)
 
 }
 
+void CMaterialTable::fillMaterialIndexMap( std::map<std::string, unsigned int>&  mixm )
+{
+    typedef std::map<std::string, unsigned> MSU ; 
+    for(MSU::const_iterator it=m_name2index.begin() ; it != m_name2index.end() ; it++)
+    {
+         std::string name = it->first ; 
+         unsigned index = it->second ; 
+         mixm[name] = index ;  
+    }
+}
+
 
