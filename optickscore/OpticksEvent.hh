@@ -99,6 +99,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
 
    public:
        OpticksEvent(OpticksEventSpec* spec);
+       virtual ~OpticksEvent();
+
        void setId(int id);
        int  getId();
    public:

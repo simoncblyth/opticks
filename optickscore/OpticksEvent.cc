@@ -146,6 +146,12 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 }
 
 
+OpticksEvent::~OpticksEvent()
+{
+    LOG(info) << "OpticksEvent::~OpticksEvent PLACEHOLDER" ; 
+} 
+
+
 bool OpticksEvent::isNoLoad()
 {
     return m_noload ; 

@@ -113,9 +113,10 @@ void CSteppingAction::init()
     m_verbosity = m_recorder->getVerbosity(); 
     m_dynamic = m_recorder->isDynamic(); 
 
-    OpticksEvent* evt = m_recorder->getEvent();
+    //OpticksEvent* evt = m_recorder->getEvent();
+     // << " evt " << evt->description() 
+
     LOG(info) << "CSteppingAction::init " 
-              << " evt " << evt->description() 
               << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
               ;
 }

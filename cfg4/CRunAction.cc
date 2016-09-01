@@ -1,9 +1,10 @@
 #include "CRunAction.hh"
 #include "PLOG.hh"
 
-CRunAction::CRunAction() 
+CRunAction::CRunAction(OpticksHub* hub) 
    :
      G4UserRunAction(),
+     m_hub(hub),
      m_count(0)
 {
     LOG(info) << "CRunAction::CRunAction count " << m_count   ;

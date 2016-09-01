@@ -6,22 +6,25 @@
 class G4Step ; 
 class G4StepPoint ; 
 
-// okc-
-class OpticksEvent ; 
-
-// opticksgeo-
-class OpticksHub ; 
-
-
-// cg4-
-class CStep ;
-
-// npy-
-template <typename T> class NPY ;
+class OpticksHub ; // okg-
+class CStep ;     // cg4-
 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
+
+/** 
+CStepRec : Records non-optical particle steps 
+================================================
+
+Non-optical steps are serialized into the nopstep buffer of the 
+current G4 event.  As the nopstep pointer is updated by 
+OpticksHub as each G4 event is created this class needs
+to take no action on changing event. It just keeps
+recording into the nopstep provided by the hub.
+
+**/
+
 
 class CFG4_API CStepRec {
    public:
@@ -36,8 +39,6 @@ class CFG4_API CStepRec {
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
        OpticksHub*                 m_hub ; 
-       OpticksEvent*               m_evt ; 
-       NPY<float>*                 m_nopstep ; 
        std::vector<const CStep*>   m_steps ; 
        unsigned int                m_store_count ; 
 

@@ -26,7 +26,6 @@
 CStepRec::CStepRec( OpticksHub* hub )
    :
    m_hub(hub),
-   m_nopstep(NULL),
    m_store_count(0)
 {
     init();
@@ -81,13 +80,8 @@ void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id,
 
 void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point)
 {
-    if(m_nopstep == NULL)
-    {
-        OpticksEvent* evt = m_hub->getG4Event();
-        assert(evt); 
-        m_nopstep = evt->getNopstepData();
-        assert(m_nopstep); 
-    }
+    // nopstep updated when new G4 evt is created, so no action is required to handle change of event
+    NPY<float>* nopstep = m_hub->getNopsteps();  
 
     const G4ThreeVector& pos = point->GetPosition();
     G4double time = point->GetGlobalTime();
@@ -128,7 +122,7 @@ void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int part
     vals[14] =  uif[2].f ;
     vals[15] =  uif[3].f ;
 
-    m_nopstep->add(vals, nvals);
+    nopstep->add(vals, nvals);
     // dynamically adding is efficient, but cannot handle on GPU
 
     delete vals ; 

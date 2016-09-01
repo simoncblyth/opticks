@@ -8,6 +8,9 @@
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
 
+// okg-
+#include "OpticksHub.hh"
+
 // g4-
 #include "G4Step.hh"
 
@@ -21,10 +24,11 @@
 #include "PLOG.hh"
 
 
-Rec::Rec(CPropLib* clib, OpticksEvent* evt)  
+Rec::Rec(OpticksHub* hub, CPropLib* clib)  
    :
+    m_hub(hub), 
     m_clib(clib),
-    m_evt(evt), 
+    m_evt(NULL), 
     m_genflag(0),
     m_seqhis(0ull),
     m_seqmat(0ull),
@@ -53,10 +57,18 @@ unsigned long long Rec::getSeqMat()
 }
 
 
-
-
 void Rec::init()
 {
+}
+
+
+void Rec::initEvent()
+{
+   // hmm maybe better get them once from config rather than from each event
+
+    m_evt = m_hub->getG4Event();
+    assert(m_evt && m_evt->isG4());
+
     m_record_max = m_evt->getNumPhotons(); 
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    

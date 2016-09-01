@@ -74,6 +74,7 @@ OpticksHub::OpticksHub(Opticks* opticks)
    m_evt(NULL),
    m_g4evt(NULL),
    m_okevt(NULL),
+   m_nopsteps(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -364,18 +365,30 @@ OpticksEvent* OpticksHub::createEvent(bool ok)
     m_evt = m_opticks->makeEvent(ok) ; 
     if(ok)
     {
+        delete m_okevt ;
+        m_okevt = NULL ; 
+
         m_okevt = m_evt ; 
         assert(m_okevt->isOK());
     }
     else
     {
+        delete m_g4evt ;
+        m_g4evt = NULL ; 
+        m_nopsteps = NULL ; 
+
         m_g4evt = m_evt ;
+        m_nopsteps = m_g4evt->getNopstepData(); 
         assert(m_g4evt->isG4());
     }
     configureEvent(m_evt);
     return m_evt ; 
 }
 
+NPY<float>* OpticksHub::getNopsteps()
+{
+    return m_nopsteps ; 
+}
 
 OpticksEvent* OpticksHub::getG4Event()
 {
@@ -412,6 +425,11 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
     NPY<float>* track = evt->loadGenstepDerivativeFromFile("track", quietly);
     m_composition->setTrack(track);
 }
+
+
+
+
+
 
 
 

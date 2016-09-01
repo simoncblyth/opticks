@@ -398,6 +398,7 @@ opticks-unset()
 
 
 
+# below need to be precursor names
 opticks-all-projs-(){ cat << EOP
 sysrap
 brap
@@ -406,7 +407,7 @@ okc
 ggeo
 assimprap
 openmeshrap
-opticksgeo
+okg
 oglrap
 
 cudarap

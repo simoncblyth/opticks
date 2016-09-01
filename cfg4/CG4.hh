@@ -19,6 +19,8 @@ template <typename T> class NPY ;
 class TorchStepNPY ;
 
 // cfg4-
+class CPhysics ; 
+class CGeometry ; 
 class CPropLib ; 
 class CDetector ; 
 class CMaterialTable ; 
@@ -31,17 +33,12 @@ class OpticksHub ;
 class Opticks ; 
 template <typename T> class OpticksCfg ;
 
-//#define OLDPHYS 1
-#ifdef OLDPHYS
-class PhysicsList ; 
-#else
-class OpNovicePhysicsList ; 
-#endif
 
 #include "CFG4_API_EXPORT.hh"
 
 class CFG4_API CG4 
 {
+        friend class CGeometry ; 
    public:
         CG4(OpticksHub* hub);
         void configure();
@@ -54,10 +51,8 @@ class CFG4_API CG4
         std::map<std::string, unsigned>& getMaterialMap();        
    private:
         void init();
-        void configureDetector();
-        void configurePhysics();
         void configureGenerator();
-        void configureStepping();
+        void setUserInitialization(G4VUserDetectorConstruction* detector);
    private:
         void postinitialize();
         void postpropagate();
@@ -73,25 +68,24 @@ class CFG4_API CG4
         NPY<float>*   getGensteps();
    private:
         OpticksHub*           m_hub ; 
-        Opticks*              m_opticks ; 
+        Opticks*              m_ok ; 
         OpticksCfg<Opticks>*  m_cfg ; 
+        CPhysics*             m_physics ; 
+        G4RunManager*         m_runManager ; 
+        CGeometry*            m_geometry ; 
+        CPropLib*             m_lib ; 
+        CDetector*            m_detector ; 
    private:
         TorchStepNPY*         m_torch ; 
    private:
-        CDetector*            m_detector ; 
+
         CMaterialTable*       m_material_table ; 
-        CPropLib*             m_lib ; 
         CRecorder*            m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
         OpticksG4Collector*   m_collector ; 
    private:
-#ifdef OLDPHYS
-        PhysicsList*          m_physics ; 
-#else
-        OpNovicePhysicsList*  m_physics ; 
-#endif
-        G4RunManager*         m_runManager ;
+
         bool                  m_g4ui ; 
         G4VisManager*         m_visManager ; 
         G4UImanager*          m_uiManager ; 

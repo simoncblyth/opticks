@@ -1,9 +1,10 @@
 #include "CEventAction.hh"
 #include "PLOG.hh"
 
-CEventAction::CEventAction() 
+CEventAction::CEventAction(OpticksHub* hub) 
     :
     G4UserEventAction(),
+    m_hub(hub),
     m_count(0)
 {
     LOG(info) << "CEventAction::CEventAction count " << m_count  ;

@@ -12,6 +12,9 @@
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 
+// okg-
+#include "OpticksHub.hh"
+
 // g4-
 #include "G4Track.hh"
 #include "G4Step.hh"
@@ -58,10 +61,11 @@ const char* CRecorder::POST = "POST" ;
 
 
 
-CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity) 
+CRecorder::CRecorder(OpticksHub* hub, CPropLib* clib) 
    :
+   m_hub(hub),
+   m_evt(NULL),
    m_clib(clib),
-   m_evt(evt),
    m_gen(0),
 
    m_record_max(0),
@@ -70,8 +74,8 @@ CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity)
 
    m_photons_per_g4event(0),
 
-   m_verbosity(verbosity),
-   m_debug(verbosity > 0),
+   m_verbosity(m_hub->hasOpt("steppingdbg") ? 10 : 0),
+   m_debug(m_verbosity > 0),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
    m_step_id(UINT_MAX),
@@ -113,6 +117,11 @@ CRecorder::CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity)
    
 }
 
+void CRecorder::init()
+{
+}
+
+
 
 unsigned int CRecorder::getVerbosity()
 {
@@ -151,10 +160,11 @@ void CRecorder::setPropLib(CPropLib* clib)
 }
 
 
-OpticksEvent* CRecorder::getEvent()
-{
-    return m_evt ; 
-}
+//OpticksEvent* CRecorder::getEvent()
+//{
+//    return m_evt ; 
+//}
+
 unsigned int CRecorder::getRecordMax()
 {
     return m_record_max ; 
@@ -231,8 +241,10 @@ bool CRecorder::isDynamic()
 
 
 
-void CRecorder::init()
+void CRecorder::initEvent()
 {
+    m_evt = m_hub->getG4Event();
+
     m_c4.u = 0u ; 
 
     m_photons_per_g4event = m_evt->getNumPhotonsPerG4Event() ; 

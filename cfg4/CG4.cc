@@ -22,14 +22,13 @@
 
 //ggeo-
 #include "GBndLib.hh"
-#include "GGeoTestConfig.hh"
 
 
 #include "CFG4_PUSH.hh"
 //g4-
-#include "G4RunManager.hh"
 #include "G4String.hh"
 
+#include "G4RunManager.hh"
 #include "G4VisExecutive.hh"
 #include "G4UImanager.hh"
 #include "G4UIExecutive.hh"
@@ -39,18 +38,15 @@
 //cg4-
 #include "ActionInitialization.hh"
 
-#ifdef OLDPHYS
-#include "PhysicsList.hh"
-#else
-#include "OpNovicePhysicsList.hh"
-#endif
-
 #include "OpticksG4Collector.hh"
 
 
-#include "CTestDetector.hh"
-#include "CGDMLDetector.hh"
+#include "CPhysics.hh"
+#include "CGeometry.hh"
 #include "CPropLib.hh"
+#include "CDetector.hh"
+
+
 #include "CRecorder.hh"
 #include "Rec.hh"
 #include "CStepRec.hh"
@@ -69,9 +65,6 @@
 #include "CFG4_POP.hh"
 #include "CFG4_BODY.hh"
 
-
-
-
 #include "PLOG.hh"
 
 #define TIMER(s) \
@@ -82,35 +75,6 @@
           t((s)) ;\
        }\
     }
-
-
-
-CG4::CG4(OpticksHub* hub) 
-   :
-     m_hub(hub),
-     m_opticks(m_hub->getOpticks()),
-     m_cfg(m_opticks->getCfg()),
-     m_torch(NULL),
-     m_detector(NULL),
-     m_material_table(NULL),
-     m_lib(NULL),
-     m_recorder(NULL),
-     m_rec(NULL),
-     m_steprec(NULL),
-     m_collector(NULL),
-     m_physics(NULL),
-     m_runManager(NULL),
-     m_g4ui(false),
-     m_visManager(NULL),
-     m_uiManager(NULL),
-     m_ui(NULL),
-     m_pga(NULL),
-     m_sa(NULL),
-     m_ra(NULL),
-     m_ea(NULL)
-{
-     init();
-}
 
 
 CRecorder* CG4::getRecorder()
@@ -131,30 +95,61 @@ CPropLib* CG4::getPropLib()
 }
 
 
+
+CG4::CG4(OpticksHub* hub) 
+   :
+     m_hub(hub),
+     m_ok(m_hub->getOpticks()),
+     m_cfg(m_ok->getCfg()),
+     m_physics(new CPhysics(m_hub)),
+     m_runManager(m_physics->getRunManager()),
+     m_geometry(new CGeometry(m_hub, this)),
+     m_lib(m_geometry->getPropLib()),
+     m_detector(m_geometry->getDetector()),
+     m_torch(NULL),
+     m_material_table(NULL),
+     m_recorder(new CRecorder(m_hub, m_lib)), 
+     m_rec(new Rec(m_hub, m_lib)), 
+     m_steprec(new CStepRec(m_hub)),  
+     m_collector(NULL),
+     m_g4ui(false),
+     m_visManager(NULL),
+     m_uiManager(NULL),
+     m_ui(NULL),
+     m_pga(NULL),
+     m_sa(new CSteppingAction(this)),
+     m_ra(new CRunAction(m_hub)),
+     m_ea(new CEventAction(m_hub)) 
+{
+     init();
+}
+
 void CG4::init()
 {
-    m_opticks->Summary("CG4::init opticks summary");
+    m_ok->Summary("CG4::init opticks summary");
     TIMER("init");
 }
 
+void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)
+{
+    m_runManager->SetUserInitialization(detector);
+}
+ 
+
+
 void CG4::configure()
 {
-    m_g4ui = m_opticks->hasOpt("g4ui") ; 
+    m_g4ui = m_ok->hasOpt("g4ui") ; 
     LOG(info) << "CG4::configure"
               << " g4ui " << m_g4ui
               ; 
-
-    m_runManager = new G4RunManager;
-
-    configurePhysics();
-    configureDetector();
 
     glm::vec4 ce = m_detector->getCenterExtent();
     LOG(info) << "CG4::configure"
               << " center_extent " << gformat(ce) 
               ;    
 
-    m_opticks->setSpaceDomain(ce); // triggers Opticks::configureDomains
+    m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
 
     // HMM: feels too soon, when thinking multi-event, 
     //      remember not 1-to-1 between Opticks events and G4  
@@ -165,11 +160,9 @@ void CG4::configure()
     evt->dumpDomains("CG4::configure");
 
     configureGenerator();
-    configureStepping();
 
-    m_ra = new CRunAction ; 
-    m_ea = new CEventAction ;  
 
+    // actions canot be instanciated prior to physics setup 
     TIMER("configure");
 }
 
@@ -196,10 +189,7 @@ void CG4::initialize()
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa, m_ra, m_ea)) ;
     m_runManager->Initialize();
 
-#ifdef OLDPHYS
-#else
     m_physics->setProcessVerbosity(0); 
-#endif
 
     TIMER("initialize");
 
@@ -217,7 +207,7 @@ void CG4::postinitialize()
 
 
     // needs to be after the detector Construct creates the materials
-    m_material_table = new CMaterialTable(m_opticks->getMaterialPrefix());
+    m_material_table = new CMaterialTable(m_ok->getMaterialPrefix());
     m_material_table->dump("CG4::postinitialize");
 
 
@@ -295,48 +285,6 @@ NPY<float>* CG4::getGensteps()
 }
 
 
-
-void CG4::configurePhysics()
-{
-#ifdef OLDPHYS    
-    LOG(info) << "CG4::configurePhysics old PhysicsList" ; 
-    m_physics = new PhysicsList();
-#else
-    LOG(info) << "CG4::configurePhysics OpNovicePhysicsList" ; 
-    m_physics = new OpNovicePhysicsList();
-#endif
-    // processes instanciated only after PhysicsList Construct that happens at runInitialization 
-
-    m_runManager->SetUserInitialization(m_physics);
-    TIMER("configurePhysics");
-}
-
-void CG4::configureDetector()
-{
-    CDetector* detector = NULL ; 
-    if(m_opticks->hasOpt("test"))
-    {
-        LOG(info) << "CG4::configureDetector G4 simple test geometry " ; 
-        std::string testconfig = m_cfg->getTestConfig();
-        GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-        OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
-        detector  = static_cast<CDetector*>(new CTestDetector(m_opticks, ggtc, query)) ; 
-    }
-    else
-    {
-        // no options here: will load the .gdml sidecar of the geocache .dae 
-        LOG(info) << "CG4::configureDetector G4 GDML geometry " ; 
-        OpticksQuery* query = m_opticks->getQuery();
-        detector  = static_cast<CDetector*>(new CGDMLDetector(m_opticks, query)) ; 
-    }
-
-    m_detector = detector ; 
-    m_lib = detector->getPropLib();
-    m_runManager->SetUserInitialization(detector);
-    TIMER("configureDetector");
-}
-
-
 void CG4::configureGenerator()
 {
     CSource* source = NULL ; 
@@ -347,10 +295,10 @@ void CG4::configureGenerator()
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt);
 
-    if(m_opticks->getSourceCode() == TORCH)  // TORCH produces only optical photons
+    if(m_ok->getSourceCode() == TORCH)  // TORCH produces only optical photons
     {
         LOG(info) << "CG4::configureGenerator TORCH " ; 
-        m_torch = m_opticks->makeSimpleTorchStep();
+        m_torch = m_ok->makeSimpleTorchStep();
         m_torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
         m_torch->Summary("CG4::configure TorchStepNPY::Summary");
 
@@ -366,7 +314,7 @@ void CG4::configureGenerator()
         int torch_verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
         source  = static_cast<CSource*>(new CTorchSource(m_torch, torch_verbosity)); 
     }
-    else if(m_opticks->getSourceCode() == G4GUN)
+    else if(m_ok->getSourceCode() == G4GUN)
     {
         // hmm this is G4 only, so should it be arranged at this level  ?
         // without the setGenstepData the evt is not allocated 
@@ -398,6 +346,8 @@ void CG4::configureGenerator()
                           ;
         }  
 
+
+        // TODO: avoid needing the evt at this early stage
         evt->setNumG4Event(gc->getNumber()); 
         evt->setNumPhotonsPerG4Event(0); 
 
@@ -416,11 +366,8 @@ void CG4::configureGenerator()
     }
 
 
-    int stepping_verbosity = m_cfg->hasOpt("steppingdbg") ? 10 : 0 ; 
     // recorder is back here in order to pass to source for primary recording (unused?)
-    m_recorder = new CRecorder(m_lib, evt, stepping_verbosity ); 
 
-    m_rec = new Rec(m_lib, evt) ; 
 
     //if(m_cfg->hasOpt("primary"))
     //     m_recorder->setupPrimaryRecording();
@@ -433,12 +380,6 @@ void CG4::configureGenerator()
 
 
 
-void CG4::configureStepping()
-{
-    m_steprec = new CStepRec(m_hub) ;  
-    m_sa = new CSteppingAction(this) ;
-    TIMER("configureStepping");
-}
 
 
 void CG4::cleanup()
@@ -446,6 +387,5 @@ void CG4::cleanup()
     LOG(info) << "CG4::cleanup opening geometry" ; 
     G4GeometryManager::GetInstance()->OpenGeometry();
 }
-
 
 

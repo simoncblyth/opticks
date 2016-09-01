@@ -16,9 +16,8 @@ class G4Run ;
 class G4Step ; 
 class G4PrimaryVertex ; 
 
-// optickscore-
-//#include "OpticksEvent.hh"
-class OpticksEvent ;
+class OpticksEvent ; // okc-
+class OpticksHub ;   // okg-
 
 
 // cfg4-
@@ -91,7 +90,8 @@ class CFG4_API CRecorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        CRecorder(CPropLib* clib, OpticksEvent* evt, unsigned int verbosity);
+        CRecorder(OpticksHub* hub, CPropLib* clib);
+        void initEvent();  // needs to be called prior to recording 
    public:
         void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
@@ -108,7 +108,7 @@ class CFG4_API CRecorder {
         void DumpSteps(const char* msg="CRecorder::DumpSteps");
         void DumpStep(const G4Step* step);
    public:
-        OpticksEvent* getEvent();
+        //OpticksEvent* getEvent();
         unsigned int getVerbosity();
    public:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
@@ -148,8 +148,9 @@ class CFG4_API CRecorder {
    private:
         void init();
    private:
+        OpticksHub*    m_hub ; 
+        OpticksEvent*  m_evt ; 
         CPropLib*    m_clib ; 
-        OpticksEvent*    m_evt ; 
 
         unsigned int m_gen ; 
        

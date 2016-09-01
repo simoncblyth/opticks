@@ -57,7 +57,7 @@ class OKGEO_API OpticksHub {
        void         configureServer();
 #endif
    public:
-       OpticksEvent* initOKEvent(NPY<float>* gs);
+       OpticksEvent* initOKEvent(NPY<float>* gensteps);
        OpticksEvent* loadPersistedEvent();
    public:
        OpticksEvent* getG4Event();
@@ -69,6 +69,8 @@ class OKGEO_API OpticksHub {
        void configureEvent(OpticksEvent* evt);
        OpticksEvent* createEvent(bool ok);
        OpticksEvent* getEvent();   // gets the last created evt, either G4 or OK 
+   public:
+       NPY<float>*          getNopsteps();  // updated when new G4 event is created
    public:
        Composition*         getComposition();
        GGeo*                getGGeo();
@@ -112,6 +114,8 @@ class OKGEO_API OpticksHub {
        OpticksEvent*    m_evt ;    // points to last evt created, which is either m_g4evt OR m_okevt 
        OpticksEvent*    m_g4evt ; 
        OpticksEvent*    m_okevt ; 
+   private:
+       NPY<float>*      m_nopsteps ;
 
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 

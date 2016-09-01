@@ -4,6 +4,7 @@
 #include <vector>
 
 class CPropLib ; 
+class OpticksHub ; 
 class OpticksEvent ; 
 class State ; 
 
@@ -126,7 +127,8 @@ class CFG4_API Rec {
        typedef enum { OK, SKIP_STS } Rec_t ; 
        typedef enum { PRE, POST } Flag_t ; 
    public:
-       Rec(CPropLib* clib, OpticksEvent* evt);
+       Rec(OpticksHub* hub, CPropLib* clib);
+       void initEvent();
    private:
        void init();
    public:
@@ -148,6 +150,7 @@ class CFG4_API Rec {
 
        void setDebug(bool debug=true);
    private:
+       OpticksHub*                 m_hub ;  
        CPropLib*                   m_clib ; 
        OpticksEvent*               m_evt ;  
        unsigned int                m_genflag ;

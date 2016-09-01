@@ -99,6 +99,8 @@ set(SOURCES
     SteppingVerbose.cc
     ActionInitialization.cc
 
+    CPhysics.cc
+    CGeometry.cc
     CStep.cc
     CTrack.cc
     CPropLib.cc
@@ -150,6 +152,8 @@ set(HEADERS
     SteppingVerbose.hh
     ActionInitialization.hh
 
+    CPhysics.hh
+    CGeometry.hh
     CStep.hh
     CTrack.hh
     CPropLib.hh
