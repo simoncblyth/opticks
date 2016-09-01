@@ -28,7 +28,8 @@ class OXRAP_API OEngineImp {
        void prepareOptiX();             // creates OptiX context and populates with geometry info
        void preparePropagator();        // OPropagator : initEvent creates GPU buffers: genstep, photon, record, sequence
        void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
-       void saveEvt();
+
+       void downloadEvt();
        void downloadPhotonData();
        void cleanup();
 

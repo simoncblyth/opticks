@@ -79,11 +79,11 @@ glm::vec4 Opticks::getDefaultDomainSpec()
 }
 
 
-Opticks::Opticks(int argc, char** argv, const char* envprefix)
+Opticks::Opticks(int argc, char** argv, bool integrated )
      :
        m_argc(argc),
        m_argv(argv),
-       m_envprefix(strdup(envprefix)),
+       m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
 
        m_resource(NULL),
@@ -93,7 +93,7 @@ Opticks::Opticks(int argc, char** argv, const char* envprefix)
        m_compute(false),
        m_geocache(false),
        m_instanced(true),
-       m_integrated(false),
+       m_integrated(integrated),
 
        m_lastarg(NULL),
 

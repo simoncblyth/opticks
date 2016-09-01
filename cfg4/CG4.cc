@@ -118,7 +118,9 @@ CG4::CG4(OpticksHub* hub)
      m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
      m_ra(new CRunAction(m_hub)),
-     m_ea(new CEventAction(m_hub)) 
+     m_ea(new CEventAction(m_hub)),
+     m_gensteps_generated(NULL),
+     m_gensteps_recorded(NULL)
 {
      init();
 }
@@ -174,7 +176,6 @@ void CG4::postinitialize()
     std::string inimac = m_cfg->getG4IniMac();
     if(!inimac.empty()) execute(inimac.c_str()) ;
 
-
     m_physics->setProcessVerbosity(0); 
 
     // needs to be after the detector Construct creates the materials
@@ -216,6 +217,8 @@ OpticksEvent* CG4::initEvent()
     unsigned int numG4Evt = m_generator->getNumG4Event();
 
     NPY<float>* gs = m_generator->getGensteps(); 
+    setGenstepsGenerated(gs);
+
     if(gs)
     {
         // WHEN OPERATING FROM GENSTEP (EG WITH TORCH SOURCE) 
@@ -241,6 +244,8 @@ OpticksEvent* CG4::initEvent()
 
     return evt ; 
 }
+
+
 
 void CG4::propagate()
 {
@@ -272,18 +277,32 @@ void CG4::postpropagate()
     m_collector = OpticksG4Collector::Instance() ;
     m_collector->Summary("CG4::postpropagate");
 
+    setGenstepsRecorded(m_collector->getGensteps());
+
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt);
     evt->postPropagateGeant4();
 }
 
-NPY<float>* CG4::getGensteps()
+void CG4::setGenstepsGenerated(NPY<float>* gs)
 {
-    m_collector = OpticksG4Collector::Instance();
-    NPY<float>* gs = m_collector->getGensteps();
-    // need some kind of reset ready for next event
-    return gs ; 
+    m_gensteps_generated = gs ; 
 }
+NPY<float>* CG4::getGenstepsGenerated()
+{
+    return m_gensteps_generated ;
+}
+
+void CG4::setGenstepsRecorded(NPY<float>* gs)
+{
+    m_gensteps_recorded = gs ; 
+}
+NPY<float>* CG4::getGenstepsRecorded()
+{
+    return m_gensteps_recorded ; 
+}   
+
+
 
 void CG4::cleanup()
 {

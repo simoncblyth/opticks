@@ -51,14 +51,24 @@ DONE : Material Code Mapping Generalization
 * :doc:`material_code_mapping_generalization`
 
 
-WIP : Integration test 
-------------------------
+WIP : Integrated running
+---------------------------
 
 ::
 
-    OKG4MgrTest --g4gun
+    OKG4MgrTest              
+       # default torch step running, produces nothing visible in integrated running 
+       # after trying to hand off generated torch gensteps to opticks 
+       # just see axis and no geometry, and the index looks like all photons are missing
+       # (targetting issue) 
 
-    OKG4MgrTest --g4gun --save    ##   /tmp/blyth/opticks/evt/dayabay/g4gun/100/
+    OKG4MgrTest --g4gun      
+       # integrated g4gun running,  produces a visible propagation
+
+    OKG4MgrTest --g4gun --save   
+       #   now saves both g4 and ok evt with same parameter dir timestamp
+       #         /tmp/blyth/opticks/evt/dayabay/g4gun/100/
+       #         /tmp/blyth/opticks/evt/dayabay/g4gun/-100/
 
 
 NEXT : G4/Op Comparison of generation distribs

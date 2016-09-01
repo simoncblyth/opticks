@@ -25,7 +25,8 @@ class OKOP_API OpEngine {
        void seedPhotonsFromGensteps();  // OpSeeder : seeds GPU photon buffer with genstep indices
        void initRecords();              // OpZeroer : zeros GPU record buffer via OptiX or OpenGL
        void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
-       void saveEvt();
+
+       void downloadEvt();
        void downloadPhotonData();       // see App::dbgSeed
 
        void indexSequence();

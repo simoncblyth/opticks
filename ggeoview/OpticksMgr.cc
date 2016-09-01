@@ -109,8 +109,12 @@ void OpticksMgr::propagate(NPY<float>* genstep)
     if(m_ok->hasOpt("save"))
     {
         if(m_viz) m_viz->downloadEvent();
-        m_ope->saveEvt();
+        m_ope->downloadEvt();
         m_idx->indexEvtOld();
+
+        OpticksEvent* okevt = m_hub->getOKEvent();
+        okevt->dumpDomains("OpticksMgr::propagate okevt domains");
+        okevt->save();
     }
 #endif
 }

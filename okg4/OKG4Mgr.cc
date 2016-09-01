@@ -34,8 +34,8 @@ class NConfigurable ;
 
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
-    m_ok(new Opticks(argc, argv)),
-    m_hub(new OpticksHub(m_ok, true)),   // configure immediately 
+    m_ok(new Opticks(argc, argv, true)),  // true: integrated running 
+    m_hub(new OpticksHub(m_ok, true)),    // true: configure immediately, otherwise too late for CG4
     m_idx(new OpticksIdx(m_hub)),
     m_g4(new CG4(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
@@ -45,7 +45,6 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
 #endif
     m_placeholder(0)
 {
-    m_ok->setIntegrated(true);  // when integrated itag (default 100) is used by save/load to distinguish against priors 
     m_ok->Summary("OKG4Mgr::OKG4Mgr OpticksResource::Summary");
     init();
     initGeometry();
@@ -53,18 +52,16 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
 
 void OKG4Mgr::init()
 {
-    //m_hub->configure(); // too late to configure here : need to do above so CG4 cat use the commandline options 
-
     if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-    m_g4->configure(); 
+    m_g4->configure();                     // currently does nothing 
 }
 
 void OKG4Mgr::initGeometry()
 {
-    m_g4->initialize();
+    m_g4->initialize();                   // runManager initialize
 
-    m_hub->setMaterialMap(m_g4->getMaterialMap());
+    m_hub->setMaterialMap(m_g4->getMaterialMap());  // for translation of material indices into GPU texture lines
     
     if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
@@ -84,24 +81,51 @@ void OKG4Mgr::propagate()
 {
     m_g4->propagate();
 
-    NPY<float>* gs = m_g4->getGensteps();
+    NPY<float>* gsgen = m_g4->getGenstepsGenerated();
+    NPY<float>* gsrec = m_g4->getGenstepsRecorded();
 
-    unsigned ngs = gs->getNumItems();
-    if(ngs == 0)
+    int n_gsgen = gsgen ? gsgen->getNumItems() : -1 ; 
+    int n_gsrec = gsrec ? gsrec->getNumItems() : -1 ;
+
+    LOG(info) << "OKG4Mgr::propagate"
+               << " n_gsgen " <<  n_gsgen  
+               << " n_gsrec " <<  n_gsrec 
+               ;
+
+    NPY<float>* gs = NULL ; 
+    if( n_gsrec == 0 && n_gsgen > 0)
     {
-        LOG(warning) << "OKG4Mgr::propagate"
-                     << " SKIPPING as there are zero optical gensteps (ie Cerenkov or scintillation gensteps) "
-                     << " use --g4gun option to produce some "
+        LOG(fatal) << "no recorded gensteps from G4 but there are generated gs (probably torch running) " ; 
+        gs = gsgen ;
+    }
+    else if( n_gsrec > 0 && n_gsgen == -1)
+    {
+        LOG(fatal) << "recorded gensteps from G4 and no generated gs (probably g4gun running) " ; 
+        gs = gsrec ; 
+    } 
+    else
+    {
+        LOG(fatal) << "OKG4Mgr::propagate"
+                     << " SKIPPING as no collected optical gensteps (ie Cerenkov or scintillation gensteps) "
+                     << " or generated torch gensteps  "
                      ;
         return ;  
     }
 
-    m_hub->translateGensteps(gs);     // relabel and apply lookup
+    m_hub->translateGensteps(gs);     // relabel and apply lookup,  is this needed for both gs flavors ?
 
-    OpticksEvent* evt = m_hub->initOKEvent(gs);  // make a new evt 
-    assert(evt->isOK());
+    
+    OpticksEvent* g4evt = m_hub->getG4Event();
+    OpticksEvent* okevt = m_hub->initOKEvent(gs);  // make a new evt 
 
-    LOG(info) << "OpticksEvent tagdir : " << evt->getTagDir() ;  
+    assert(g4evt->isG4());
+    assert(okevt->isOK());
+
+    std::string tstamp = g4evt->getTimeStamp();
+    okevt->setTimeStamp( tstamp.c_str() );      // ensure same second for timestamp
+
+
+    LOG(info) << "OpticksEvent tagdir : " << okevt->getTagDir() ;  
 
     if(m_viz)
     { 
@@ -126,12 +150,18 @@ void OKG4Mgr::propagate()
     indexPropagation();
 
 
-
     if(m_ok->hasOpt("save"))
     {
         if(m_viz) m_viz->downloadEvent();
-        m_ope->saveEvt();
+        m_ope->downloadEvt();
         m_idx->indexEvtOld();
+
+        okevt->dumpDomains("OKG4Mgr::propagate okevt domains");
+        okevt->save();
+
+        g4evt->dumpDomains("OKG4Mgr::propagate g4evt domains");
+        g4evt->save();
+
     }
 #endif
 }

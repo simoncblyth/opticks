@@ -78,9 +78,9 @@ void OpEngine::propagate()
     m_imp->propagate();
 }
 
-void OpEngine::saveEvt()
+void OpEngine::downloadEvt()
 {
-    m_imp->saveEvt();
+    m_imp->downloadEvt();
 }
 
 void OpEngine::indexSequence()

@@ -469,7 +469,7 @@ opticks-list()
 
 
 
-opticks-rmlog(){ find $(opticks-dir) -name '*.log' -exec rm -f {} \; ; }
+opticks-rmlog(){ find $(opticks-home) -name '*.log' -exec rm -f {} \; ; }
 opticks-nuclear(){   rm -rf $LOCAL_BASE/opticks/* ; }
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
 opticks-fullclean(){ opticks-rmdirs- bin build gl include lib ptx externals  ; }

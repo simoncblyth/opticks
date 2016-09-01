@@ -99,11 +99,32 @@ void Parameters::prepLines()
 
 
 
+template <typename T>
+void Parameters::set(const char* name, T value)
+{
+    std::string svalue = boost::lexical_cast<std::string>(value) ;
+    bool found(false);
 
+    for(VSS::iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
+    {
+        std::string npar  = it->first ; 
+        if( strncmp(npar.c_str(), name, strlen(name))==0)
+        {
+            std::string prior = it->second ; 
+            LOG(info) << "Parameters::set changing "
+                      << name 
+                      << " from " << prior 
+                      << " to " << svalue 
+                      ;
+                  
+            it->second = svalue ; 
+            found = true ; 
+        }
+    }
 
-
-
-
+    if(!found) add<T>(name, value) ;
+ 
+}
 
 
 template <typename T>
@@ -147,6 +168,12 @@ template NPY_API void Parameters::add(const char* name, int value);
 template NPY_API void Parameters::add(const char* name, unsigned int value);
 template NPY_API void Parameters::add(const char* name, std::string value);
 template NPY_API void Parameters::add(const char* name, float value);
+
+
+template NPY_API void Parameters::set(const char* name, int value);
+template NPY_API void Parameters::set(const char* name, unsigned int value);
+template NPY_API void Parameters::set(const char* name, std::string value);
+template NPY_API void Parameters::set(const char* name, float value);
 
 
 template NPY_API int          Parameters::get(const char* name);

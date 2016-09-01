@@ -26,9 +26,24 @@ void test_save_load()
 }
 
 
+void test_set()
+{
+    Parameters p ;
+    p.add<std::string>("red", "g");
+    p.add<std::string>("green", "g");
+    p.add<std::string>("blue", "b");
+    p.dump();
+
+    p.set<std::string>("red","r");
+    p.set<std::string>("cyan","c");
+    p.dump();
+}
+
+
 int main()
 {
     test_basic();
     test_save_load();
+    test_set();
     return 0 ; 
 }

@@ -66,7 +66,12 @@ class CFG4_API CG4
         Rec*           getRec();
         CPropLib*      getPropLib();
         CDetector*     getDetector();
-        NPY<float>*    getGensteps();
+   public:
+        NPY<float>*    getGenstepsGenerated();  // eg fabricated torch gensteps used for testing photon only propagation
+        NPY<float>*    getGenstepsRecorded();   // eg G4GUN Cerenkov and Scintillation gensteps collected during G4 propagate
+   private:
+        void           setGenstepsGenerated(NPY<float>* gs);
+        void           setGenstepsRecorded( NPY<float>* gs);
    private:
         OpticksHub*           m_hub ; 
         Opticks*              m_ok ; 
@@ -92,6 +97,10 @@ class CFG4_API CG4
         G4UserSteppingAction*          m_sa ; 
         G4UserRunAction*               m_ra ; 
         G4UserEventAction*             m_ea ; 
+   private:
+        NPY<float>*           m_gensteps_generated ; 
+        NPY<float>*           m_gensteps_recorded ; 
+
         
 };
 

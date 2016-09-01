@@ -56,7 +56,7 @@ class OKCORE_API Opticks {
        static glm::vec4    getDefaultDomainSpec();
 
    public:
-       Opticks(int argc=0, char** argv=NULL, const char* envprefix="OPTICKS_");
+       Opticks(int argc=0, char** argv=NULL, bool integrated=false);
    private:
        void init();
    public:

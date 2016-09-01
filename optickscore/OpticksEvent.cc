@@ -422,10 +422,6 @@ TimesTable* OpticksEvent::getTimesTable()
 }
 
 
-
-
-
-
 void OpticksEvent::init()
 {
     m_timer = new Timer("OpticksEvent"); 
@@ -515,8 +511,10 @@ void OpticksEvent::setId(int id)
 }
 
 
-
-
+void OpticksEvent::setTimeStamp(const char* tstamp)
+{
+    m_parameters->set<std::string>("TimeStamp", tstamp);
+}
 std::string OpticksEvent::getTimeStamp()
 {
     return m_parameters->get<std::string>("TimeStamp");

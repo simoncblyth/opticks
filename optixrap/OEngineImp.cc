@@ -225,10 +225,12 @@ void OEngineImp::downloadPhotonData()
     }
 }
 
-void OEngineImp::saveEvt()
+void OEngineImp::downloadEvt()
 {
-    OpticksEvent* evt = m_hub->getEvent(); 
+    OpticksEvent* evt = m_hub->getOKEvent(); 
     if(!evt) return ;
+
+    assert(evt->isOK()); 
 
     // note that "interop" download with Rdr::download(evt);   
     // is now done from App::saveEvt just prior to this being called
@@ -240,8 +242,11 @@ void OEngineImp::saveEvt()
 
     TIMER("downloadEvt");
 
-    evt->dumpDomains("OEngineImp::saveEvt dumpDomains");
-    evt->save();  // TODO: this should happen at higher level, not buried here ?
+    // evt->dumpDomains("OEngineImp::saveEvt dumpDomains");
+    // evt->save();  // TODO: this should happen at higher level, not buried here ?
+
+    LOG(warning) << "OEngineImp::downloadEvt NO LONGER SAVES " ; 
+
 
     TIMER("saveEvt");
 }

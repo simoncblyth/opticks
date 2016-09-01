@@ -23,6 +23,9 @@ class NPY_API Parameters {
        void add(const char* name, T value);
 
        template <typename T> 
+       void set(const char* name, T value);
+
+       template <typename T> 
        T get(const char* name);
 
        template <typename T> 

@@ -116,6 +116,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        unsigned int getBounceMax();
        unsigned int getRngMax();
        std::string getTimeStamp();
+       void setTimeStamp(const char* tstamp);
    private:
        void init();
        void indexPhotonsCPU();
