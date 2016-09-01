@@ -24,10 +24,11 @@
 #include "PLOG.hh"
 
 
-Rec::Rec(OpticksHub* hub, CPropLib* clib)  
+Rec::Rec(OpticksHub* hub, CPropLib* clib, bool dynamic)  
    :
     m_hub(hub), 
     m_clib(clib),
+    m_dynamic(dynamic),
     m_evt(NULL), 
     m_genflag(0),
     m_seqhis(0ull),

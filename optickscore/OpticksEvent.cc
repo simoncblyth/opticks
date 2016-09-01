@@ -1478,12 +1478,12 @@ unsigned int OpticksEvent::getNumPhotonsPerG4Event()
 void OpticksEvent::postPropagateGeant4()
 {
     unsigned int num_photons = m_photon_data->getShape(0);
-
-    setNumPhotons(num_photons);  // triggers resize
-
-    LOG(info) << "OpticksEvent::postPropagateGeant4" 
+    LOG(info) << "OpticksEvent::postPropagateGeant4"
+              << " shape " << getShapeString()
               << " num_photons " << num_photons
               ;
+
+    setNumPhotons(num_photons);  // triggers resize
 
     indexPhotonsCPU();    
 }

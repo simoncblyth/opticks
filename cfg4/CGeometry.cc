@@ -6,6 +6,7 @@ class OpticksQuery ;
 #include "Opticks.hh"
 
 #include "NGLM.hpp"
+#include "GLMFormat.hpp"
 #include "GGeoTestConfig.hh"
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
@@ -62,5 +63,13 @@ void CGeometry::init()
     m_lib = detector->getPropLib();
 
     m_g4->setUserInitialization(detector);
+
+    glm::vec4 ce = m_detector->getCenterExtent();
+    LOG(info) << "CGeometry::init"
+              << " center_extent " << gformat(ce) 
+              ;    
+
+    m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
+
 }
 

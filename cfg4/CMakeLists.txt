@@ -101,6 +101,8 @@ set(SOURCES
 
     CPhysics.cc
     CGeometry.cc
+    CGenerator.cc
+
     CStep.cc
     CTrack.cc
     CPropLib.cc
@@ -154,6 +156,8 @@ set(HEADERS
 
     CPhysics.hh
     CGeometry.hh
+    CGenerator.hh
+
     CStep.hh
     CTrack.hh
     CPropLib.hh

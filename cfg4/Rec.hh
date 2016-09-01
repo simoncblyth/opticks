@@ -127,7 +127,7 @@ class CFG4_API Rec {
        typedef enum { OK, SKIP_STS } Rec_t ; 
        typedef enum { PRE, POST } Flag_t ; 
    public:
-       Rec(OpticksHub* hub, CPropLib* clib);
+       Rec(OpticksHub* hub, CPropLib* clib, bool dynamic);
        void initEvent();
    private:
        void init();
@@ -152,6 +152,8 @@ class CFG4_API Rec {
    private:
        OpticksHub*                 m_hub ;  
        CPropLib*                   m_clib ; 
+       bool                        m_dynamic ; 
+
        OpticksEvent*               m_evt ;  
        unsigned int                m_genflag ;
        std::vector<const State*>   m_states ; 

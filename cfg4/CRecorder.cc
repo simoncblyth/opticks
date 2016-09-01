@@ -61,11 +61,12 @@ const char* CRecorder::POST = "POST" ;
 
 
 
-CRecorder::CRecorder(OpticksHub* hub, CPropLib* clib) 
+CRecorder::CRecorder(OpticksHub* hub, CPropLib* clib, bool dynamic) 
    :
    m_hub(hub),
    m_evt(NULL),
    m_clib(clib),
+   m_dynamic(dynamic),
    m_gen(0),
 
    m_record_max(0),
@@ -106,7 +107,6 @@ CRecorder::CRecorder(OpticksHub* hub, CPropLib* clib)
    m_records(0),
    m_history(0),
 
-   m_dynamic(false),
 
    m_dynamic_primary(NULL),
    m_dynamic_records(NULL),
@@ -230,14 +230,11 @@ void CRecorder::RecordEndOfRun(const G4Run*)
 {
 }
 
-bool CRecorder::isDynamic()
-{
-    return m_dynamic ; 
-}
 
-
-
-
+//bool CRecorder::isDynamic()
+//{
+//    return m_dynamic ; 
+//}
 
 
 
@@ -253,9 +250,10 @@ void CRecorder::initEvent()
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
 
-    m_dynamic = m_record_max == 0 ; 
     if(m_dynamic)
     {
+        assert(m_record_max == 0 );
+
         // shapes must match OpticksEvent::createBuffers
         // TODO: avoid this duplicity 
 
@@ -272,11 +270,15 @@ void CRecorder::initEvent()
         m_dynamic_history->zero();
 
     } 
+    else
+    {
+        assert(m_record_max > 0 );
+    }
 
     //m_step = m_evt->isStep();
     m_step = true ;
 
-    LOG(info) << "CRecorder::init"
+    LOG(info) << "CRecorder::initEvent"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
@@ -310,7 +312,7 @@ void CRecorder::initEvent()
 
 void CRecorder::startPhoton()
 {
-    //LOG(info) << "CRecorder::startPhoton" ; 
+    //LOG(trace) << "CRecorder::startPhoton" ; 
 
     if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton(%10k)") ;
 
@@ -445,19 +447,18 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
 void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
 {
-    /*
-    LOG(info) << "CRecorder::RecordStepPoint" 
-              << " label " << label 
+
+/*
+    LOG(trace) << "CRecorder::RecordStepPoint" 
               << " m_record_id " << m_record_id 
               << " m_step_id " << m_step_id 
               << " m_slot " << m_slot 
               << " slot " << slot 
               << " flag " << flag
-              << " his " << his
-              << " shift " << shift 
               << " m_seqhis " << std::hex << m_seqhis << std::dec 
               ;
-    */
+
+*/
 
     const G4ThreeVector& pos = point->GetPosition();
     //const G4ThreeVector& dir = point->GetMomentumDirection();

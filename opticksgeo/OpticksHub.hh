@@ -46,7 +46,7 @@ class OKGEO_API OpticksHub {
        friend class OpticksViz ; 
        friend class OpticksIdx ; 
    public:
-       OpticksHub(Opticks* opticks);
+       OpticksHub(Opticks* opticks, bool config=false);
        void add(BCfg* cfg);
    public:
        void         configure();

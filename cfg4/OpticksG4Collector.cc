@@ -95,7 +95,7 @@ void OpticksG4Collector::collectScintillationStep
 ) 
 {
      m_scintillation_count += 1 ;   // 1-based index
-     LOG(info) << " scintillation_count " << m_scintillation_count ;
+     LOG(debug) << " scintillation_count " << m_scintillation_count ;
 
      uif_t uifa[4] ;
      uifa[0].i = id == 0 ? m_scintillation_count : id  ;   // use the 1-based index when id zero 
@@ -182,7 +182,7 @@ void OpticksG4Collector::collectCerenkovStep
 )
 {
      m_cerenkov_count += 1 ;   // 1-based index
-     LOG(info) << " cerenkov_count " << m_cerenkov_count ;
+     LOG(debug) << " cerenkov_count " << m_cerenkov_count ;
 
      uif_t uifa[4] ;
      uifa[0].i = id == 0 ? -m_cerenkov_count : id  ;   // use the negated 1-based index when id zero 

@@ -23,9 +23,10 @@
 #include "PLOG.hh"
 
 
-CStepRec::CStepRec( OpticksHub* hub )
+CStepRec::CStepRec( OpticksHub* hub, bool dynamic)
    :
    m_hub(hub),
+   m_dynamic(dynamic),
    m_store_count(0)
 {
     init();
@@ -51,7 +52,7 @@ void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id,
     m_store_count += 1 ; 
     unsigned int nsteps = m_steps.size();
 
-    LOG(info) << "CStepRec::storeStepsCollected" 
+    LOG(debug) << "CStepRec::storeStepsCollected" 
               << " store_count " << m_store_count 
               << " event_id " << event_id
               << " track_id " << track_id

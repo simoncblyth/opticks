@@ -35,7 +35,7 @@ class NConfigurable ;
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_ok(new Opticks(argc, argv)),
-    m_hub(new OpticksHub(m_ok)),
+    m_hub(new OpticksHub(m_ok, true)),   // configure immediately 
     m_idx(new OpticksIdx(m_hub)),
     m_g4(new CG4(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
@@ -53,12 +53,11 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
 
 void OKG4Mgr::init()
 {
-    m_hub->configure();
+    //m_hub->configure(); // too late to configure here : need to do above so CG4 cat use the commandline options 
 
     if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-    m_g4->configure();   // OpticksEvent created here...  too soon ?  TODO: rejig CG4 for multi-evt
-
+    m_g4->configure(); 
 }
 
 void OKG4Mgr::initGeometry()

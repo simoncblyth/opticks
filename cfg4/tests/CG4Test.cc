@@ -15,7 +15,7 @@
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    PLOG_COLOR(argc, argv);
 
     NPY_LOG__ ; 
     OKCORE_LOG__ ; 
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     LOG(info) << "  CG4 initialize DONE "  ;
 
 
-    g4->interactive(argc, argv);
+    g4->interactive();
 
     LOG(info) << "  CG4 interactive DONE "  ;
 

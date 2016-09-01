@@ -266,7 +266,7 @@ void OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
 
 void OpRayleigh::check(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh)
 {
-     LOG(info) << "OpRayleigh::check"
+     LOG(debug) << "OpRayleigh::check"
                << " mat " << material->GetName()
                << " min " << rayleigh->GetMinValue()
                << " max " << rayleigh->GetMaxValue()

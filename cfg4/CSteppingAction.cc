@@ -62,15 +62,15 @@ G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
 
 
 
-CSteppingAction::CSteppingAction(CG4* g4)
+CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 
    G4UserSteppingAction(),
    m_g4(g4),
+   m_dynamic(dynamic),
    m_clib(NULL),
    m_recorder(NULL),
    m_rec(NULL),
    m_steprec(NULL),
-   m_dynamic(false),
    m_verbosity(0),
    m_event_id(-1),
    m_track_id(-1),
@@ -100,23 +100,19 @@ void CSteppingAction::setEventId(unsigned int event_id)
 
 
 
-
-
-
 void CSteppingAction::init()
 {
-    m_clib = m_g4->getPropLib();
+    m_clib     = m_g4->getPropLib();
     m_recorder = m_g4->getRecorder();
-    m_rec = m_g4->getRec();
-    m_steprec = m_g4->getStepRec();
+    m_rec      = m_g4->getRec();
+    m_steprec  = m_g4->getStepRec();
 
     m_verbosity = m_recorder->getVerbosity(); 
-    m_dynamic = m_recorder->isDynamic(); 
 
     //OpticksEvent* evt = m_recorder->getEvent();
      // << " evt " << evt->description() 
 
-    LOG(info) << "CSteppingAction::init " 
+    LOG(fatal) << "CSteppingAction::init " 
               << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
               ;
 }
@@ -126,12 +122,17 @@ const unsigned long long CSteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // Minera
 
 void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
+
+    LOG(trace) << "CSteppingAction::UserSteppingAction" 
+               << " step_total " << m_step_total
+               ; 
+
     G4Track* track = step->GetTrack();
     G4TrackStatus status = track->GetTrackStatus();
 
     int event_id = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() ;
     int track_id = track->GetTrackID() ;
-    int parent_id = track->GetParentID() ;
+    //int parent_id = track->GetParentID() ;
     int step_id  = track->GetCurrentStepNumber() - 1 ;
 
     bool startEvent = m_event_id != event_id ; 
@@ -160,7 +161,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
        particle_name = type->GetParticleName();
        pdg_encoding = type->GetPDGEncoding();
 
-       LOG(debug) 
+/*
+       LOG(trace) 
                  << "CSA (trak)"
                  << " event_id " << event_id
                  << " track_id " << track_id
@@ -171,6 +173,7 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
                  << " particle_name " << particle_name 
                  << " steprec_store_count " << m_steprec_store_count
                  ; 
+*/
        m_event_track_count += 1 ; 
        m_track_step_count = 0 ; 
        m_track_total += 1 ; 
@@ -218,6 +221,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
 void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 {
+    //LOG(trace) << "CSA::UserSteppingActionOptical" ; 
+
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
     G4Track* track = step->GetTrack();
@@ -281,6 +286,14 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
             // stops tracking when reach truncation 
             // for absorption, this should already be set  ? TODO:check
         } 
+    }
+    else
+    {
+        LOG(info) << "CSA::UserSteppingActionOptical NOT RECORDING "
+                  << " record_id " << record_id 
+                  << " record_max " << record_max
+                  << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+                  ;
     }
 }
 

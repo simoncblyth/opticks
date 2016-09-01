@@ -55,6 +55,10 @@ template <typename T>
 void Sparse<T>::count_unique()
 {
     typedef std::vector<T> V ;  
+
+    assert(m_source->hasData());
+    assert(m_source->getNumItems() > 0);
+
     V data(m_source->data());
 
     std::sort(data.begin(), data.end());

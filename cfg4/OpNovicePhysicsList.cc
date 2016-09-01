@@ -427,7 +427,7 @@ void OpNovicePhysicsList::dumpMaterials(const char* msg)
         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
 
         CMPT cmpt(mpt);
-        LOG(info) << msg << cmpt.description(material->GetName().c_str()) ; 
+        LOG(debug) << msg << cmpt.description(material->GetName().c_str()) ; 
 
     }
 
@@ -443,7 +443,7 @@ void OpNovicePhysicsList::dumpRayleigh(const char* msg)
         if(ptab) 
             fRayleighScatteringProcess->DumpPhysicsTable() ;    
         else
-            LOG(info) << "OpNovicePhysicsList::dumpRayleigh no physics table"   ;
+            LOG(debug) << "OpNovicePhysicsList::dumpRayleigh no physics table"   ;
     }
 
 }

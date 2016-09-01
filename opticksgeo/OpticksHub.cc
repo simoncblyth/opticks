@@ -65,7 +65,7 @@
 //    this means is usable from anywhere, so can mop up config
 //
 
-OpticksHub::OpticksHub(Opticks* opticks) 
+OpticksHub::OpticksHub(Opticks* opticks, bool config) 
    :
    m_opticks(opticks),
    m_geometry(NULL),
@@ -79,21 +79,20 @@ OpticksHub::OpticksHub(Opticks* opticks)
    m_delegate(NULL),
    m_server(NULL)
 #endif
-   m_cfg(NULL),
-   m_fcfg(NULL),
+   m_cfg(new BCfg("umbrella", false)),
+   m_fcfg(m_opticks->getCfg()),
    m_state(NULL),
    m_lookup(new NLookup()),
    m_bookmarks(NULL)
 {
    init();
+   if(config) configure();
 }
 
 
 
 void OpticksHub::init()
 {
-    m_cfg  = new BCfg("umbrella", false) ; 
-    m_fcfg = m_opticks->getCfg();
     add(m_fcfg);
 
 #ifdef WITH_NPYSERVER

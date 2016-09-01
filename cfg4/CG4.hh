@@ -14,9 +14,8 @@ class G4UserSteppingAction ;
 class G4UserRunAction ;
 class G4UserEventAction ;
 
-// npy--
+// npy-
 template <typename T> class NPY ; 
-class TorchStepNPY ;
 
 // cfg4-
 class CPhysics ; 
@@ -24,12 +23,15 @@ class CGeometry ;
 class CPropLib ; 
 class CDetector ; 
 class CMaterialTable ; 
+class CGenerator ; 
+
 class CRecorder ; 
 class Rec ; 
 class CStepRec ; 
 class OpticksG4Collector ; 
 
 class OpticksHub ; 
+class OpticksEvent ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ;
 
@@ -42,30 +44,29 @@ class CFG4_API CG4
    public:
         CG4(OpticksHub* hub);
         void configure();
-        void interactive(int argc, char** argv);
+        void interactive();
         void cleanup();
+        bool isDynamic(); // true for G4GUN without gensteps ahead of time, false for TORCH with gensteps ahead of time
    public:
         void initialize();
         void propagate();
+   private:
+        void postinitialize();
+        void postpropagate();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        
    private:
         void init();
-        void configureGenerator();
         void setUserInitialization(G4VUserDetectorConstruction* detector);
-   private:
-        void postinitialize();
-        void postpropagate();
-   private:
         void execute(const char* path);
+        OpticksEvent* initEvent();
    public:
-        void BeamOn(unsigned int num);
-   public:
-        CRecorder* getRecorder();
-        CStepRec* getStepRec();
-        Rec*      getRec();
-        CPropLib* getPropLib();
-        NPY<float>*   getGensteps();
+        CRecorder*     getRecorder();
+        CStepRec*      getStepRec();
+        Rec*           getRec();
+        CPropLib*      getPropLib();
+        CDetector*     getDetector();
+        NPY<float>*    getGensteps();
    private:
         OpticksHub*           m_hub ; 
         Opticks*              m_ok ; 
@@ -75,18 +76,14 @@ class CFG4_API CG4
         CGeometry*            m_geometry ; 
         CPropLib*             m_lib ; 
         CDetector*            m_detector ; 
-   private:
-        TorchStepNPY*         m_torch ; 
-   private:
-
+        CGenerator*           m_generator ; 
         CMaterialTable*       m_material_table ; 
+   private:
         CRecorder*            m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
         OpticksG4Collector*   m_collector ; 
    private:
-
-        bool                  m_g4ui ; 
         G4VisManager*         m_visManager ; 
         G4UImanager*          m_uiManager ; 
         G4UIExecutive*        m_ui ; 

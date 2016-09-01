@@ -28,7 +28,7 @@ recording into the nopstep provided by the hub.
 
 class CFG4_API CStepRec {
    public:
-       CStepRec(OpticksHub* hub);
+       CStepRec(OpticksHub* hub, bool dynamic);
    private:
        void init();    
    public:
@@ -39,6 +39,7 @@ class CFG4_API CStepRec {
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
        OpticksHub*                 m_hub ; 
+       bool                        m_dynamic ; 
        std::vector<const CStep*>   m_steps ; 
        unsigned int                m_store_count ; 
 

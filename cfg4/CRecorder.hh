@@ -90,7 +90,7 @@ class CFG4_API CRecorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        CRecorder(OpticksHub* hub, CPropLib* clib);
+        CRecorder(OpticksHub* hub, CPropLib* clib, bool dynamic);
         void initEvent();  // needs to be called prior to recording 
    public:
         void setPropLib(CPropLib* lib);
@@ -119,7 +119,7 @@ class CFG4_API CRecorder {
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
         bool hasIssue();
    public:
-        bool isDynamic(); 
+    //    bool isDynamic(); 
         bool isSelected(); 
         bool isHistorySelected(); 
         bool isMaterialSelected(); 
@@ -150,7 +150,8 @@ class CFG4_API CRecorder {
    private:
         OpticksHub*    m_hub ; 
         OpticksEvent*  m_evt ; 
-        CPropLib*    m_clib ; 
+        CPropLib*      m_clib ; 
+        bool           m_dynamic ;
 
         unsigned int m_gen ; 
        
@@ -194,7 +195,6 @@ class CFG4_API CRecorder {
         NPY<short>*               m_records ; 
         NPY<unsigned long long>*  m_history ; 
 
-        bool                      m_dynamic ;
 
         NPY<float>*               m_dynamic_primary ; 
         NPY<short>*               m_dynamic_records ; 

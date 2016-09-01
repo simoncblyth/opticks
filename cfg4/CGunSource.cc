@@ -71,6 +71,8 @@ void CGunSource::configure(NGunConfig* gc)
 
 void CGunSource::GeneratePrimaryVertex(G4Event *evt) 
 {
+    LOG(fatal) << "CGunSource::GeneratePrimaryVertex" ;
+
     G4ThreeVector position = GetParticlePosition();
     G4double time = GetParticleTime() ; 
 
@@ -80,7 +82,6 @@ void CGunSource::GeneratePrimaryVertex(G4Event *evt)
 
     G4ParticleMomentum direction = GetParticleMomentumDirection();
     G4ThreeVector polarization = GetParticlePolarization();
-
 
     G4double mass = m_definition->GetPDGMass() ;
     G4double charge = m_definition->GetPDGCharge() ;
