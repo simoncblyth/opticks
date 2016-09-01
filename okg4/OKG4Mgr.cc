@@ -97,13 +97,11 @@ void OKG4Mgr::propagate()
         return ;  
     }
 
-
     m_hub->translateGensteps(gs);     // relabel and apply lookup
 
-    OpticksEvent* evt = m_hub->createEvent(); // make a new evt 
-    //OpticksEvent* evt = m_hub->getEvent();      // use the evt created by CG4 
+    OpticksEvent* evt = m_hub->initOKEvent(gs);  // make a new evt 
+    assert(evt->isOK());
 
-    evt->setGenstepData(gs);
     LOG(info) << "OpticksEvent tagdir : " << evt->getTagDir() ;  
 
     if(m_viz)
@@ -144,7 +142,8 @@ void OKG4Mgr::propagate()
 
 void OKG4Mgr::indexPropagation()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getOKEvent();
+    assert(evt->isOK()); // is this always so ?
     if(!evt->isIndexed())
     {
 #ifdef WITH_OPTIX 

@@ -55,7 +55,8 @@ int main(int argc, char** argv)
 
     LOG(info) << "  CG4 propagate DONE "  ;
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getG4Event();
+    assert(evt->isG4()); 
     evt->save();
 
     LOG(info) << "  evt save DONE "  ;

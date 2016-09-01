@@ -309,6 +309,46 @@ NPY<unsigned char>* OpticksHub::getColorBuffer()
 }
 
 
+OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
+{
+    // Opticks OK events are created with gensteps (Scintillation+Cerenkov) 
+    // from a G4 event (the G4 event can either be loaded from file 
+    // or directly obtained from live G4)
+    //
+    bool ok = true ; 
+    createEvent(ok); 
+    m_okevt->setGenstepData(gs);
+    assert(m_evt == m_okevt);
+    return m_okevt ; 
+}
+
+
+OpticksEvent* OpticksHub::loadPersistedEvent()
+{
+    // should this handle both G4 and OK evts ?
+
+    bool ok = true ; 
+    createEvent(ok);
+    loadEventBuffers();
+    assert(m_evt == m_okevt);
+    return m_okevt ; 
+}
+
+
+void OpticksHub::loadEventBuffers()
+{
+    LOG(info) << "OpticksHub::loadEventBuffers START" ;
+   
+    bool verbose ; 
+    m_evt->loadBuffers(verbose=false);
+
+    if(m_evt->isNoLoad())
+        LOG(warning) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
+
+    TIMER("loadEvent"); 
+}
+
+
 OpticksEvent* OpticksHub::createG4Event()
 {
     return createEvent(false);
@@ -318,14 +358,20 @@ OpticksEvent* OpticksHub::createOKEvent()
     return createEvent(true);
 }
 
+
 OpticksEvent* OpticksHub::createEvent(bool ok)
 {
     m_evt = m_opticks->makeEvent(ok) ; 
     if(ok)
+    {
         m_okevt = m_evt ; 
+        assert(m_okevt->isOK());
+    }
     else
+    {
         m_g4evt = m_evt ;
-
+        assert(m_g4evt->isG4());
+    }
     configureEvent(m_evt);
     return m_evt ; 
 }
@@ -517,20 +563,6 @@ void OpticksHub::targetGenstep()
     }
 }
 
-
-
-void OpticksHub::loadEventBuffers()
-{
-    LOG(info) << "OpticksHub::loadEventBuffers START" ;
-   
-    bool verbose ; 
-    m_evt->loadBuffers(verbose=false);
-
-    if(m_evt->isNoLoad())
-        LOG(warning) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
-
-    TIMER("loadEvent"); 
-}
 
 
 

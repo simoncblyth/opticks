@@ -1,11 +1,13 @@
 #include <cstring>
 #include <string>
 
+#include "BStr.hh"
+#include "BOpticksEvent.hh"
+
 #include "NLoad.hpp"
 #include "NPY.hpp"
 
 #include "OpticksEventSpec.hh"
-#include "BOpticksEvent.hh"
 
 #include "PLOG.hh"
 
@@ -15,7 +17,8 @@ OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec)
     m_tag(spec->getTag()),
     m_det(spec->getDet()),
     m_cat(spec->getCat()),
-    m_dir(NULL)
+    m_dir(NULL),
+    m_itag(spec->getITag())
 {
     init();
 }
@@ -26,10 +29,13 @@ OpticksEventSpec::OpticksEventSpec(const char* typ, const char* tag, const char*
     m_tag(strdup(tag)),
     m_det(strdup(det)),
     m_cat(cat ? strdup(cat) : NULL),
-    m_dir(NULL)
+    m_dir(NULL),
+    m_itag(BStr::atoi(m_tag, 0))
 {
     init();
 }
+
+
 
 
 void OpticksEventSpec::init()
@@ -37,6 +43,19 @@ void OpticksEventSpec::init()
     const char* udet = getUDet();    
     std::string tagdir = NLoad::directory(udet, m_typ, m_tag ) ; 
     m_dir = strdup(tagdir.c_str());
+}
+
+int OpticksEventSpec::getITag()
+{
+    return m_itag ; 
+}
+bool OpticksEventSpec::isG4()
+{
+    return m_itag < 0 ;     
+}
+bool OpticksEventSpec::isOK()
+{
+    return m_itag > 0 ;     
 }
 
 const char* OpticksEventSpec::getTyp()
@@ -65,11 +84,14 @@ const char* OpticksEventSpec::getDir()
 }
 
 
+
+
 void OpticksEventSpec::Summary(const char* msg)
 {
     LOG(info) << msg 
               << " typ " << m_typ
               << " tag " << m_tag
+              << " itag " << getITag()
               << " det " << m_det
               << " cat " << m_cat
               << " dir " << m_dir

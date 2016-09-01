@@ -41,9 +41,9 @@
 
 #define TIMER(s) \
     { \
-       if(m_evt)\
+       if(m_hub)\
        {\
-          Timer& t = *(m_evt->getTimer()) ;\
+          Timer& t = *(m_hub->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -53,6 +53,7 @@ OpIndexer::OpIndexer(OpticksHub* hub, OContext* ocontext)
    :
      m_hub(hub),
      m_opticks(hub->getOpticks()),
+     m_evt(NULL),
      m_ocontext(ocontext),
      m_propagator(NULL),
      m_seq(NULL),

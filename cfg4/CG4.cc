@@ -156,8 +156,12 @@ void CG4::configure()
 
     m_opticks->setSpaceDomain(ce); // triggers Opticks::configureDomains
 
-    // HMM: feels too soon, when thinking multi-event, remember not 1-to-1 between Opticks events and G4  
-    OpticksEvent* evt = m_hub->createEvent();   
+    // HMM: feels too soon, when thinking multi-event, 
+    //      remember not 1-to-1 between Opticks events and G4  
+    //      (non 1-to-1 is a kludge due to use of photons at top level of tree)
+    //  
+    OpticksEvent* evt = m_hub->createG4Event();   
+    assert(evt->isG4());
     evt->dumpDomains("CG4::configure");
 
     configureGenerator();

@@ -59,7 +59,14 @@ int BStr::atoi( const char* str, int fallback )
     return i ;
 }
 
- 
+const char* BStr::negate(const char* tag)
+{
+    int itag = BStr::atoi(tag) ;
+    std::stringstream ss ;
+    ss << -itag ; 
+    std::string stag = ss.str();
+    return strdup(stag.c_str());
+}
 
 
 const char* BStr::uppercase( const char* str )

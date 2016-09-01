@@ -4,16 +4,12 @@ template <typename T> class NPY ;
 class Opticks ; 
 class OpticksHub ; 
 class OpticksIdx; 
-
-class OpticksEvent ; 
+class OpticksViz ; 
 
 #ifdef WITH_OPTIX
 class OpEngine ; 
 class OpViz ; 
 #endif
-
-class OpticksViz ; 
-
 
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
@@ -21,8 +17,8 @@ class OpticksViz ;
 class GGV_API OpticksMgr {
    public:
        OpticksMgr(int argc, char** argv);
-   public:
        bool hasOpt(const char* name);
+   public:
        NPY<float>* loadGenstep();
    public:
        void propagate(NPY<float>* gs);
@@ -31,12 +27,11 @@ class GGV_API OpticksMgr {
        void visualize();
        void cleanup();
    private:
-       void createEvent();
        void init();
        void initGeometry();
        void dbgSeed();
    private:
-       Opticks*       m_opticks ; 
+       Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        OpticksViz*    m_viz ; 
@@ -44,7 +39,7 @@ class GGV_API OpticksMgr {
        OpEngine*      m_ope ; 
        OpViz*         m_opv ; 
 #endif
-       OpticksEvent*  m_evt ;  // convenience copy of the m_evt in Hub 
+       int            m_placeholder ;  
        
 };
 

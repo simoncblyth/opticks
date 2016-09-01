@@ -33,6 +33,18 @@ template <typename> class numpyserver ;
 // task: slurp up pieces of App that match the above tagline 
 
 class OKGEO_API OpticksHub {
+
+    // friends use getEvent
+       friend class CG4 ; 
+       friend class OpIndexerApp ; 
+       friend class OpIndexer ; 
+       friend class OpSeeder ; 
+       friend class OpZeroer ; 
+       friend class OpticksMgr ; 
+       friend class OPropagator ; 
+       friend class OEngineImp ; 
+       friend class OpticksViz ; 
+       friend class OpticksIdx ; 
    public:
        OpticksHub(Opticks* opticks);
        void add(BCfg* cfg);
@@ -45,13 +57,18 @@ class OKGEO_API OpticksHub {
        void         configureServer();
 #endif
    public:
-       OpticksEvent* createG4Event();
-       OpticksEvent* createOKEvent();
+       OpticksEvent* initOKEvent(NPY<float>* gs);
+       OpticksEvent* loadPersistedEvent();
+   public:
        OpticksEvent* getG4Event();
        OpticksEvent* getOKEvent();
    private:
+       OpticksEvent* createG4Event();
+       OpticksEvent* createOKEvent();
+   private:
+       void configureEvent(OpticksEvent* evt);
        OpticksEvent* createEvent(bool ok);
-       OpticksEvent* getEvent();
+       OpticksEvent* getEvent();   // gets the last created evt, either G4 or OK 
    public:
        Composition*         getComposition();
        GGeo*                getGGeo();

@@ -83,7 +83,7 @@ void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int part
 {
     if(m_nopstep == NULL)
     {
-        OpticksEvent* evt = m_hub->getEvent();
+        OpticksEvent* evt = m_hub->getG4Event();
         assert(evt); 
         m_nopstep = evt->getNopstepData();
         assert(m_nopstep); 

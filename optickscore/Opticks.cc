@@ -308,9 +308,7 @@ void Opticks::defineEventSpec()
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
 
-    int itag = BStr::atoi(tag) ; 
-    char ntag[10];
-    snprintf(ntag, 10, "%s", -itag );
+    const char* ntag = BStr::negate(tag) ; 
 
     m_spec  = new OpticksEventSpec(typ,  tag, det.c_str(), cat.c_str() );
     m_nspec = new OpticksEventSpec(typ, ntag, det.c_str(), cat.c_str() );

@@ -615,7 +615,7 @@ okc-(){             . $(opticks-home)/optickscore/okc.bash && okc-env $* ; }
 ggeo-(){            . $(opticks-home)/ggeo/ggeo.bash && ggeo-env $* ; }
 assimprap-(){       . $(opticks-home)/assimprap/assimprap.bash && assimprap-env $* ; }
 openmeshrap-(){     . $(opticks-home)/openmeshrap/openmeshrap.bash && openmeshrap-env $* ; }
-opticksgeo-(){      . $(opticks-home)/opticksgeo/opticksgeo.bash && opticksgeo-env $* ; }
+okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
 
 oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
 cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }

@@ -31,17 +31,17 @@ class NConfigurable ;
 
 OpticksMgr::OpticksMgr(int argc, char** argv) 
     :
-    m_opticks(new Opticks(argc, argv)),
-    m_hub(new OpticksHub(m_opticks)),
+    m_ok(new Opticks(argc, argv)),
+    m_hub(new OpticksHub(m_ok)),
     m_idx(new OpticksIdx(m_hub)),
-    m_viz(m_opticks->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
+    m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
 #ifdef WITH_OPTIX
     m_ope(new OpEngine(m_hub)),
     m_opv(m_viz ? new OpViz(m_ope,m_viz) : NULL),
 #endif
-    m_evt(NULL)
+    m_placeholder(0)
 {
-    m_opticks->Summary("OpticksMgr::OpticksMgr OpticksResource::Summary");
+    m_ok->Summary("OpticksMgr::OpticksMgr OpticksResource::Summary");
     init();
     initGeometry();
 }
@@ -70,24 +70,18 @@ void OpticksMgr::initGeometry()
 
 bool OpticksMgr::hasOpt(const char* name)
 {
-    return m_opticks->hasOpt(name); 
+   return m_ok->hasOpt(name);
 }
+
 
 NPY<float>* OpticksMgr::loadGenstep()
 {
     return m_hub->loadGenstep();
 }
 
-void OpticksMgr::createEvent()
-{
-    m_evt = m_hub->createEvent();
-    assert(m_evt == m_hub->getEvent()) ; 
-}
-
 void OpticksMgr::propagate(NPY<float>* genstep)
 {
-    createEvent();
-    m_evt->setGenstepData(genstep);
+    m_hub->initOKEvent(genstep);
 
     if(m_viz)
     { 
@@ -100,19 +94,19 @@ void OpticksMgr::propagate(NPY<float>* genstep)
 
     m_ope->seedPhotonsFromGensteps();        // distributes genstep indices into the photons buffer
 
-    if(hasOpt("dbgseed")) dbgSeed();
-    if(hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+    if(m_ok->hasOpt("dbgseed")) dbgSeed();
+    if(m_ok->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
 
     m_ope->initRecords();                    // zero records buffer, not working in OptiX 4 in interop 
 
-    if(!hasOpt("nooptix|noevent|nopropagate"))
+    if(!m_ok->hasOpt("nooptix|noevent|nopropagate"))
     {
         m_ope->propagate();                  // perform OptiX GPU propagation 
     }
 
     indexPropagation();
 
-    if(hasOpt("save"))
+    if(m_ok->hasOpt("save"))
     {
         if(m_viz) m_viz->downloadEvent();
         m_ope->saveEvt();
@@ -123,7 +117,8 @@ void OpticksMgr::propagate(NPY<float>* genstep)
 
 void OpticksMgr::indexPropagation()
 {
-    if(!m_evt->isIndexed())
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt->isIndexed())
     {
 #ifdef WITH_OPTIX 
         m_ope->indexSequence();
@@ -136,8 +131,7 @@ void OpticksMgr::indexPropagation()
 void OpticksMgr::loadPropagation()
 {
     LOG(fatal) << "OpticksMgr::loadPropagation" ; 
-    createEvent(); 
-    m_hub->loadEventBuffers(); // into the above created OpticksEvent
+    m_hub->loadPersistedEvent(); 
 
     indexPropagation();
 
@@ -162,7 +156,7 @@ void OpticksMgr::cleanup()
 #endif
     m_hub->cleanup();
     if(m_viz) m_viz->cleanup();
-    m_opticks->cleanup(); 
+    m_ok->cleanup(); 
 }
 
 void OpticksMgr::dbgSeed()
