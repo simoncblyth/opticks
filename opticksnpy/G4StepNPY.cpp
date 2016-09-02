@@ -81,6 +81,37 @@ void G4StepNPY::dump(const char* msg)
 }
 
 
+void G4StepNPY::checklabel(int xlabel)
+{
+    LOG(info)<<"G4StepNPY::checklabel " << xlabel  ;
+
+    unsigned mismatch = 0 ;  
+
+    for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
+    {
+        int label = m_npy->getInt(i,0u,0u);
+        if(xlabel == label) 
+        {
+             LOG(trace) << " expected label " ; 
+        }
+        else
+        {
+             LOG(warning) << " mismatch "  
+                          << " xlabel " << xlabel 
+                          << " label " << label 
+                           ; 
+
+             mismatch += 1 ; 
+        } 
+    }
+
+    if(mismatch > 0) 
+       LOG(fatal) << " mismatch " << mismatch ; 
+ 
+    assert(mismatch == 0);
+}
+
+
 
 void G4StepNPY::relabel(int cerenkov_label, int scintillation_label)
 {
@@ -194,6 +225,17 @@ void G4StepNPY::applyLookup(unsigned int jj, unsigned int kk)
     }
     }
     }
+
+    if(nfail > 0)
+    {
+       LOG(fatal) << "G4StepNPY::applyLookup"
+                  << " shape " << m_npy->getShapeString()
+                  << " nfail " << nfail 
+                  ;
+       NPYBase::setGlobalVerbose(true);
+       m_npy->save("$TMP/G4StepNPY_applyLookup_FAIL.npy");
+    }
+
     assert(nfail == 0);
 }
 

@@ -30,6 +30,7 @@ class NPY_API G4StepNPY {
 
    public:  
        void relabel(int cerenkov_label, int scintillation_label);
+       void checklabel(int xlabel);
    public:  
        void setLookup(NLookup* lookup);
        NLookup* getLookup();

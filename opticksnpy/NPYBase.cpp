@@ -70,6 +70,7 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
          m_buffer_target(-1),
          m_buffer_control(0),
          m_buffer_name(NULL),
+         m_action_control(0),
          m_aux(NULL),
          m_verbose(false),
          m_allow_prealloc(false),
@@ -188,6 +189,31 @@ unsigned long long NPYBase::getBufferControl()
 {
     return m_buffer_control ;  
 }
+
+
+
+void NPYBase::addActionControl(unsigned long long control)
+{
+    m_action_control |= control ;  
+}
+void NPYBase::setActionControl(unsigned long long control)
+{
+    m_action_control = control ;  
+}
+
+unsigned long long NPYBase::getActionControl()
+{
+    return m_action_control ;  
+}
+unsigned long long* NPYBase::getActionControlPtr()
+{
+    return &m_action_control ;  
+}
+
+
+
+
+
 
 
 void NPYBase::setBufferName(const char* name )

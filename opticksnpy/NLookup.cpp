@@ -1,5 +1,6 @@
 #include <cstring>
 #include <iostream>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -12,14 +13,18 @@
 namespace fs = boost::filesystem;
 
 NLookup::NLookup()
+   :
+   m_alabel(NULL),
+   m_blabel(NULL),
+   m_closed(false)
 {
 }
 
-std::map<std::string, unsigned int>& NLookup::getA()
+const std::map<std::string, unsigned int>& NLookup::getA()
 {
     return m_A ; 
 }
-std::map<std::string, unsigned int>& NLookup::getB()
+const std::map<std::string, unsigned int>& NLookup::getB()
 {
     return m_B ; 
 }
@@ -48,8 +53,13 @@ void NLookup::mockB(const char* bdir, const char* bname)
 }
 
 
-void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* aprefix)
+void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* aprefix, const char* alabel )
 {
+    assert(!m_closed);
+
+    m_alabel = strdup(alabel);
+    LOG(info) << "NLookup::setA " << alabel  ; 
+
     for(MSU::const_iterator it=A.begin() ; it != A.end() ; it++)
     {
         const char* name = it->first.c_str() ; 
@@ -61,8 +71,12 @@ void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* ap
     }
 }
 
-void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bprefix)
+void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bprefix, const char* blabel)
 {
+    assert(!m_closed);
+
+    m_blabel = strdup(blabel);
+    LOG(info) << "NLookup::setB " << blabel  ; 
     for(MSU::const_iterator it=B.begin() ; it != B.end() ; it++)
     {
         const char* name = it->first.c_str() ; 
@@ -74,25 +88,50 @@ void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bp
     }
 }
 
+std::string NLookup::brief()
+{
+    std::stringstream ss ; 
+
+    ss 
+        << " A " << ( m_alabel ? m_alabel : "NULL" ) << " " <<  m_A.size()
+        << " B " << ( m_blabel ? m_blabel : "NULL" ) << " " <<  m_B.size() 
+        ;
+ 
+    return ss.str();
+}
 
 
 void NLookup::loadA(const char* adir, const char* aname, const char* aprefix)
 {
     MSU A ; 
     BMap<std::string, unsigned int>::load(&A, adir, aname );
-    setA(A, aprefix);
+    setA(A, aprefix, "NLookup::loadA");
 }
 
 void NLookup::loadB(const char* bdir, const char* bname, const char* /*bprefix*/)
 {
     MSU B ; 
     BMap<std::string, unsigned int>::load(&B, bdir, bname);
-    setB(B);
+    setB(B, "", "NLookup::loadB");
 }
 
+void NLookup::close(const char* msg)
+{
+
+    LOG(info) << msg << brief() ;
+
+    assert(m_alabel && m_blabel) ; // have to setA and setB before close
+
+
+    crossReference();
+
+    dump(msg);
+}
 
 void NLookup::crossReference()
 {
+    assert(!m_closed);
+    m_closed = true ; 
     m_A2B = create(m_A, m_B);
     m_B2A = create(m_B, m_A);
 }
@@ -131,6 +170,7 @@ void NLookup::dump(const char* msg)
 
 std::map<unsigned int, unsigned int> NLookup::create(MSU& a, MSU&b)
 {
+    assert(m_closed);
     // cross referencing codes which correspond to the same names
     NLookup_t a2b_ ;
     for(MSU::iterator ia=a.begin() ; ia != a.end() ; ia++)
@@ -183,6 +223,7 @@ int NLookup::b2a(unsigned int b)
 }
 int NLookup::lookup(NLookup_t& lkup, unsigned int x)
 {
+    assert(m_closed);
     return lkup.find(x) == lkup.end() ? -1 : lkup[x] ;
 }
 

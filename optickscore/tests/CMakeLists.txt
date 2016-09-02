@@ -16,6 +16,7 @@ set(TEST_SOURCES
     OpticksTest.cc
     OpticksResourceTest.cc
     OpticksBufferControlTest.cc
+    OpticksActionControlTest.cc
 
     OpticksIDPATH.cc
     OpticksPrepareInstallCache.cc

@@ -35,7 +35,10 @@ template <typename> class numpyserver ;
 
 class OKGEO_API OpticksHub {
 
-    // friends use getEvent
+    // friends using overrideMaterialMapA
+       friend class OKG4Mgr ; 
+
+    // friends using getEvent
        friend class CG4 ; 
        friend class OpIndexerApp ; 
        friend class OpIndexer ; 
@@ -104,11 +107,11 @@ class OKGEO_API OpticksHub {
        void target();   // point composition at geocenter or the m_evt (last created)
        void configureState(NConfigurable* scene);
        void cleanup();
-       void setMaterialMap( std::map<std::string, unsigned>& materialMap, const char* prefix="" );
    private:
        void init();
        void configureCompositionSize();
-       void configureLookup();
+       void configureLookupA();
+       void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void postLoadGeometry();
    private:
        Opticks*         m_opticks ; 

@@ -59,8 +59,10 @@ void OKG4Mgr::init()
 
     m_g4->initialize();                   // runManager initialize
 
-    m_hub->setMaterialMap(m_g4->getMaterialMap());  // for translation of material indices into GPU texture lines
-    
+
+    m_hub->overrideMaterialMapA( m_g4->getMaterialMap(), "OKG4Mgr::init/g4mm") ;  // for translation of material indices into GPU texture lines
+ 
+ 
     if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
     // m_hub->loadGeometry();                // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
@@ -118,8 +120,6 @@ void OKG4Mgr::propagate()
     // m_hub->translateGensteps(gs);     
     // relabel and apply lookup,  is this needed for both gs flavors 
     // can it move inside m_hub ?
-
-
 
 
     m_hub->initOKEvent(gs);           // make a new evt 

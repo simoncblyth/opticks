@@ -85,9 +85,13 @@ class NPY_API NPYBase {
        void         setBufferControl(unsigned long long  buffer_control);
        unsigned long long getBufferControl();
 
+       void         setActionControl(unsigned long long  action_control);
+       void         addActionControl(unsigned long long  action_control);
+       unsigned long long  getActionControl();
+       unsigned long long* getActionControlPtr();
+
        void         setBufferName(const char* name);
        const char*  getBufferName();
-
 
        void         setAux(void* aux);
        void*        getAux();
@@ -138,6 +142,7 @@ class NPY_API NPYBase {
        int                m_buffer_target ; 
        unsigned long long m_buffer_control ; 
        const char*        m_buffer_name ; 
+       unsigned long long m_action_control ; 
        void*              m_aux ; 
        bool               m_verbose ; 
        bool               m_allow_prealloc ; 

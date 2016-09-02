@@ -102,6 +102,9 @@ class GGEO_API GBndLib : public GPropertyLib {
        void setIndexBuffer(NPY<unsigned int>* index_buffer);
        void setOpticalBuffer(NPY<unsigned int>* optical_buffer);
   public:
+       const std::map<std::string, unsigned int>& getMaterialLineMap();
+       void dumpMaterialLineMap(const char* msg="GBndLib::dumpMaterialLineMap"); 
+  private:
        void fillMaterialLineMap(std::map<std::string, unsigned int>& msu);
        void dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, const char* msg="GBndLib::dumpMaterialLineMap");
   public:
@@ -135,6 +138,8 @@ class GGEO_API GBndLib : public GPropertyLib {
        std::vector<guint4>  m_bnd ; 
        NPY<unsigned int>*   m_index_buffer ;  
        NPY<unsigned int>*   m_optical_buffer ;  
+       std::map<std::string, unsigned int> m_materialLineMap ;
+
 };
 
 #include "GGEO_TAIL.hh"

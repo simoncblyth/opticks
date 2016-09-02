@@ -19,17 +19,20 @@ class NPY_API NLookup {
        static void mockB(const char* bdir, const char* bname);
    public:  
        NLookup();
-       void crossReference(); // cross referencing A2B and B2A codes which correspond to the same names
-       std::map<std::string, unsigned int>& getA();
-       std::map<std::string, unsigned int>& getB();
+       void close(const char* msg="NLookup::close");
+    
+       const std::map<std::string, unsigned int>& getA();
+       const std::map<std::string, unsigned int>& getB();
 
-       void setA( const std::map<std::string, unsigned int>& A, const char* aprefix="/dd/Materials/");
-       void setB( const std::map<std::string, unsigned int>& B, const char* bprefix="");
+       void setA( const std::map<std::string, unsigned int>& A, const char* aprefix="/dd/Materials/", const char* alabel="-");
+       void setB( const std::map<std::string, unsigned int>& B, const char* bprefix=""              , const char* blabel="-" );
 
        void loadA(const char* adir, const char* aname="ChromaMaterialMap.json",               const char* aprefix="/dd/Materials/");
        void loadB(const char* bdir, const char* bname="GBoundaryLibMetadataMaterialMap.json", const char* bprefix="");
    public:  
        // use
+       std::string brief();
+
        int a2b(unsigned int a);
        int b2a(unsigned int b);
        void dump(const char* msg);
@@ -37,6 +40,7 @@ class NPY_API NLookup {
        std::string bcode2name(unsigned int bcode);
 
    private:  
+       void crossReference(); // cross referencing A2B and B2A codes which correspond to the same names
        void dumpMap(const char* msg, MSU& map);
        std::map<unsigned int, unsigned int>  create(MSU& a, MSU&b);
        std::string find(MSU& m, unsigned int code);
@@ -46,6 +50,11 @@ class NPY_API NLookup {
        std::map<std::string, unsigned int>  m_B ; 
        std::map<unsigned int, unsigned int> m_A2B ; 
        std::map<unsigned int, unsigned int> m_B2A ; 
+
+       const char* m_alabel ; 
+       const char* m_blabel ; 
+       bool  m_closed ; 
+
  
 };
 

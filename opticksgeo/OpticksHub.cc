@@ -34,6 +34,7 @@
 #include "OpticksCfg.hh"
 #include "OpticksEvent.hh"
 #include "OpticksColors.hh"
+#include "OpticksActionControl.hh"
 #include "Composition.hh"
 
 // opticksgeo-
@@ -104,7 +105,7 @@ void OpticksHub::init()
    if(m_immediate) 
    {
        configure();
-       loadGeometry();
+       loadGeometry() ;    
    }
 }
 
@@ -119,9 +120,15 @@ void OpticksHub::loadGeometry()
 
     LOG(fatal) << "OpticksHub::loadGeometry" ; 
 
-    m_geometry = new OpticksGeometry(this);
+    m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
 
-    m_geometry->loadGeometry();
+    m_geometry->loadGeometry();   
+
+    //   lookup A and B are now set ...
+    //
+    //   A : by OpticksHub::configureLookup (ChromaMaterialMap.json)
+    //   B : on GGeo loading in GGeo::setupLookup
+    //
 
     m_ggeo = m_geometry->getGGeo();
 
@@ -131,8 +138,6 @@ void OpticksHub::loadGeometry()
 
     postLoadGeometry();
 }
-
-
 
 
 void OpticksHub::postLoadGeometry()
@@ -146,6 +151,7 @@ void OpticksHub::postLoadGeometry()
     {
         m_torchstep = makeTorchstep() ;
         m_gensteps = m_torchstep->getNPY();
+        m_gensteps->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
@@ -182,36 +188,52 @@ NPY<float>* OpticksHub::loadGenstepFile()
         //m_parameters->add<std::string>("genstepModulo",   genstep->getDigestString()  );
     }    
 
-    translateGensteps(gs) ;
     return gs ; 
 }
 
 void OpticksHub::translateGensteps(NPY<float>* gs)
 {
+    // an appropriate juncture to translate is prior to 
+    // setting into the OpticksEvent
+
+    const char* label = "GS_TRANSLATED" ;
+
+    OpticksActionControl oac(gs->getActionControlPtr());
+    assert( !oac.isSet(label) );
+    oac.add(label);
+
+
     G4StepNPY* g4step = new G4StepNPY(gs);    
-    g4step->relabel(CERENKOV, SCINTILLATION); 
 
-    // which code is used depends in the sign of the pre-label 
-    // becomes the ghead.i.x used in cu/generate.cu
 
-    if(m_opticks->isDayabay())
-    {   
-        // within GGeo this depends on GBndLib
-        //NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
+    bool gs_torch = oac.isSet("GS_TORCH") ; 
+
+    if(gs_torch)
+    {
+        LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
+        g4step->checklabel(TORCH); 
+
+        // TORCH matline should already be texture lines
+    }
+    else
+    {
+        g4step->relabel(CERENKOV, SCINTILLATION); 
+
+        // CERENKOV or SCINTILLATION codes are used depending on 
+        // the sign of the pre-label 
+        // this becomes the ghead.i.x used in cu/generate.cu
+        // which dictates what to generate
 
         if(m_lookup)
         {  
+            m_lookup->close("OpticksHub::translateGensteps");
+
             g4step->setLookup(m_lookup);   
             g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
-            //
+
             // replaces original material indices with material lines
             // for easy access to properties using boundary_lookup GPU side
-            //
         }
-        else
-        {
-            LOG(warning) << "OpticksHub::translateGensteps not applying lookup" ;
-        } 
     }
 }
 
@@ -224,6 +246,10 @@ TorchStepNPY* OpticksHub::makeTorchstep()
     if(m_ggeo)
     {
         m_ggeo->targetTorchStep(torchstep);   // sets frame transform of the torchstep
+
+        // translation from a string name from config into a mat line
+        // only depends on the GBndLib being loaded, so no G4 complications
+        // just need to avoid trying to translate the matline later
 
         const char* material = torchstep->getMaterial() ;
         unsigned int matline = m_ggeo->getMaterialLine(material);
@@ -377,18 +403,18 @@ void OpticksHub::configure()
 
     configureCompositionSize();
 
-    configureLookup();
+    configureLookupA();
 
     TIMER("configure");
 }
 
 
-void OpticksHub::configureLookup()
+void OpticksHub::configureLookupA()
 {
     const char* path = m_opticks->getMaterialMap(); 
     const char* prefix = m_opticks->getMaterialPrefix(); 
 
-    LOG(info) << "OpticksHub::configureLookup"
+    LOG(info) << "OpticksHub::configureLookupA"
               << " loading genstep material index map "
               << " path " << path
               << " prefix " << prefix
@@ -396,14 +422,18 @@ void OpticksHub::configureLookup()
 
     std::map<std::string, unsigned> A ; 
     BMap<std::string, unsigned int>::load(&A, path ); 
-    setMaterialMap(A, prefix);
+
+    m_lookup->setA(A, prefix, path);
 }
 
-void OpticksHub::setMaterialMap( std::map<std::string, unsigned>& materialMap, const char* prefix )
+void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg)
 {
-   // this must be done prior to loading geometry to take effect
-    m_lookup->setA(materialMap, prefix ); 
+   // Used from OKG4Mgr to override the default mapping 
+   // when using G4 steps directly 
+
+    m_lookup->setA( A, "", msg);
 }
+
 
 
 #ifdef WITH_NPYSERVER

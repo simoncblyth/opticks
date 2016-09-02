@@ -6,10 +6,10 @@
 #include "Opticks.hh"
 #include "GBndLib.hh"
 
+#include "NPY_LOG.hh"
 
 #include "GGEO_BODY.hh"
 #include "PLOG.hh"
-
 
 /*
 
@@ -64,6 +64,8 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
+    NPY_LOG__ ; 
+
     Opticks* m_opticks = new Opticks(argc, argv);
 
     GBndLib* blib = GBndLib::load(m_opticks, true );
@@ -77,13 +79,14 @@ int main(int argc, char** argv)
 
     m_lookup->loadA( cmmd , "ChromaMaterialMap.json", "/dd/Materials/") ;
 
-    std::map<std::string, unsigned int>& B = m_lookup->getB() ;
 
-    blib->fillMaterialLineMap( B ) ;     // shortname eg "GdDopedLS" to material line mapping 
+    const std::map<std::string, unsigned int>& B = blib->getMaterialLineMap() ;
+  
+    m_lookup->setB(B,"","NLookupTest/blib");    // shortname eg "GdDopedLS" to material line mapping 
 
-    m_lookup->crossReference();
 
-    m_lookup->dump("ggeo-/NLookupTest");
+
+    m_lookup->close("ggeo-/NLookupTest");
 
 
     printf("  a => b \n");

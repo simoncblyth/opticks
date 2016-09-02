@@ -117,6 +117,41 @@ or process identity differences.
 Problem is that Torch gensteps are not ordinary things.
 
 
+OKG4 : Material Map chicken/egg problem
+---------------------------------------------
+
+Prior to genstep material index to texture line translation 
+need to get the A and B mappings and do lookup crossReference. 
+
+That doesnt fit in with current early gensteps creation in hub.
+
+
+Mapping A
+~~~~~~~~~~
+
+* G4 material name to geant4 materialIndex 
+* defaults to the json, which is valid for loaded from file gensteps
+  but not live created ones
+
+* available after geant4 run manager initializes and the materials
+  come into existance
+
+Mapping B
+~~~~~~~~~~~~
+
+* OK material name to GPU texLine
+* available after GBndLib is loaded
+
+Fix
+~~~~~
+
+* maybe, moving G4 geometry loading first ?
+
+
+
+
+
+
 
 NEXT : G4/Op Comparison of generation distribs
 -------------------------------------------------

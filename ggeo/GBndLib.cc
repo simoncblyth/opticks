@@ -517,6 +517,16 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
     dumpMaterialLineMap(msu, "GBndLib::fillMaterialLineMap");
 }
 
+const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMap()
+{
+    if(m_materialLineMap.size() == 0) fillMaterialLineMap(m_materialLineMap) ;
+    return m_materialLineMap ;
+}
+void GBndLib::dumpMaterialLineMap(const char* msg)
+{
+    dumpMaterialLineMap(m_materialLineMap, msg );
+}
+
 
 unsigned int GBndLib::getMaterialLine(const char* shortname_)
 {

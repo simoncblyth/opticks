@@ -3,7 +3,7 @@ set(name okg4Test)
 project(${name})
 
 set(TESTS
-    OKG4MgrTest.cc
+    OKG4Test.cc
 )
 
 foreach(SRC ${TESTS})

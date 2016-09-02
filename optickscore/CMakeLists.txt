@@ -71,6 +71,7 @@ set(SOURCES
     OpticksEventSpec.cc
     OpticksEvent.cc
     OpticksBufferControl.cc
+    OpticksActionControl.cc
     Indexer.cc
 
     OpticksFlags.cc

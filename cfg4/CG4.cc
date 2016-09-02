@@ -221,12 +221,9 @@ OpticksEvent* CG4::initEvent()
 
     if(gs)
     {
-        // WHEN OPERATING FROM GENSTEP (EG WITH TORCH SOURCE) 
-        // YOU KNOW THE TOTAL NUMBER OF PHOTONS AHEAD OF TIME
-        // WHICH ALLOWS STATIC RUNNING 
-
-        evt->setGenstepData(gs);   // <-- this will switch on static running 
-        evt->zero();               // no merit in deferring allocation CPU side
+        m_hub->translateGensteps(gs);
+        evt->setGenstepData(gs);   // <-- this will switch on static running as numPhotons is known 
+        evt->zero();               // static approach requires allocation ahead
     } 
     else
     {

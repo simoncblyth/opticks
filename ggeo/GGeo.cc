@@ -627,25 +627,16 @@ void GGeo::loadFromCache()
 
 void GGeo::setupLookup()
 {
-    assert(m_lookup && "must GGeo::setLookup before can load geometry" );
+    assert(m_lookup && "must GGeo::setLookup before can load geometry, normally done by OpticksGeometry::init " );
+
+    // setting of lookup A, now moved up to OpticksHub::configureLookup
+
+    const std::map<std::string, unsigned int>& B  = m_bndlib->getMaterialLineMap();
+
+    m_lookup->setB(B,"", "GGeo::setupLookup/m_bndlib") ;
 
 
-   /*
-    BELOW NOW MOVED TO HIGHER LEVEL FOR FLEXIBILITY IN OpticksHub::configureLookup
-
-    std::map<std::string, unsigned> A ; 
-    BMap<std::string, unsigned int>::load(&A, m_opticks->getDetectorBase(), "ChromaMaterialMap.json" ); 
-    m_lookup->setA(A, m_opticks->getMaterialPrefix() ); 
-   */
-
-    std::map<std::string, unsigned int>& B  = m_lookup->getB() ;
-    m_bndlib->fillMaterialLineMap( B ) ;    
-
-    m_lookup->crossReference();
-
-    m_lookup->dump("GGeo::setupLookup");  
 }
-
 
 
 
