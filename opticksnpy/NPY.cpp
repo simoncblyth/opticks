@@ -666,7 +666,7 @@ NPY<T>* NPY<T>::make_slice(NSlice* slice)
     }
     unsigned int count = slice->count();
 
-    LOG(info) << "NPY::make_slice from " 
+    LOG(trace) << "NPY::make_slice from " 
               << ni << " -> " << count 
               << " slice " << slice->description() ;
 

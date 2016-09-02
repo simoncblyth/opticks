@@ -35,7 +35,7 @@ class NConfigurable ;
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_ok(new Opticks(argc, argv, true)),  // true: integrated running 
-    m_hub(new OpticksHub(m_ok, true)),    // true: configure immediately, otherwise too late for CG4
+    m_hub(new OpticksHub(m_ok, true)),    // true: configure and loadGeometry immediately, otherwise too late for CG4
     m_idx(new OpticksIdx(m_hub)),
     m_g4(new CG4(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
@@ -45,27 +45,25 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
 #endif
     m_placeholder(0)
 {
-    m_ok->Summary("OKG4Mgr::OKG4Mgr OpticksResource::Summary");
     init();
-    initGeometry();
+    LOG(fatal) << "OKG4Mgr::OKG4Mgr DONE" ;  
 }
 
 void OKG4Mgr::init()
 {
+    LOG(fatal) << "OKG4Mgr::init" ;  
+
     if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
     m_g4->configure();                     // currently does nothing 
-}
 
-void OKG4Mgr::initGeometry()
-{
     m_g4->initialize();                   // runManager initialize
 
     m_hub->setMaterialMap(m_g4->getMaterialMap());  // for translation of material indices into GPU texture lines
     
     if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
-    m_hub->loadGeometry();                // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
+    // m_hub->loadGeometry();                // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
 
     if(m_viz) m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
@@ -74,11 +72,15 @@ void OKG4Mgr::initGeometry()
 
     if(m_opv) m_opv->prepareTracer();     // creates ORenderer, OTracer
 #endif
+
+    LOG(fatal) << "OKG4Mgr::initGeometry DONE" ;
 }
 
 
 void OKG4Mgr::propagate()
 {
+    LOG(fatal) << "OKG4Mgr::propagate" ;
+
     m_g4->propagate();
 
     NPY<float>* gsgen = m_g4->getGenstepsGenerated();
@@ -112,24 +114,23 @@ void OKG4Mgr::propagate()
         return ;  
     }
 
-    m_hub->translateGensteps(gs);     // relabel and apply lookup,  is this needed for both gs flavors ?
-
     
-    OpticksEvent* g4evt = m_hub->getG4Event();
-    OpticksEvent* okevt = m_hub->initOKEvent(gs);  // make a new evt 
-
-    assert(g4evt->isG4());
-    assert(okevt->isOK());
-
-    std::string tstamp = g4evt->getTimeStamp();
-    okevt->setTimeStamp( tstamp.c_str() );      // ensure same second for timestamp
+    // m_hub->translateGensteps(gs);     
+    // relabel and apply lookup,  is this needed for both gs flavors 
+    // can it move inside m_hub ?
 
 
-    LOG(info) << "OpticksEvent tagdir : " << okevt->getTagDir() ;  
+
+
+    m_hub->initOKEvent(gs);           // make a new evt 
 
     if(m_viz)
     { 
-        m_viz->targetGenstep();       // point Camera at gensteps 
+        // handling target option inside Scene is inconvenient  TODO: centralize
+        int target = m_viz->getTarget();  // hmm target could be non oglrap- specific 
+        if(target == 0) 
+            m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+
         m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
     }
 
@@ -156,14 +157,10 @@ void OKG4Mgr::propagate()
         m_ope->downloadEvt();
         m_idx->indexEvtOld();
 
-        okevt->dumpDomains("OKG4Mgr::propagate okevt domains");
-        okevt->save();
-
-        g4evt->dumpDomains("OKG4Mgr::propagate g4evt domains");
-        g4evt->save();
-
+        m_hub->save();
     }
 #endif
+    LOG(fatal) << "OKG4Mgr::propagate DONE" ;
 }
 
 

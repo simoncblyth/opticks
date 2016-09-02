@@ -327,7 +327,7 @@ void Opticks::dumpArgs(const char* msg)
 
 void Opticks::configure()
 {
-    dumpArgs("Opticks::configure");  
+    //dumpArgs("Opticks::configure");  
 
     m_cfg->commandline(m_argc, m_argv);
 

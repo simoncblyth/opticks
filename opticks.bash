@@ -469,6 +469,7 @@ opticks-list()
 
 
 
+opticks-log(){ find $(opticks-home) -name '*.log' ; }
 opticks-rmlog(){ find $(opticks-home) -name '*.log' -exec rm -f {} \; ; }
 opticks-nuclear(){   rm -rf $LOCAL_BASE/opticks/* ; }
 opticks-distclean(){ opticks-rmdirs- bin build gl include lib ptx  ; }
@@ -562,6 +563,9 @@ opticks-docs-make()
 }
 
 ########## building opticks dev notes
+
+
+opticks-notes-cd(){ cd $(opticks-home)/notes/issues/geant4_opticks_integration ; }
 
 opticks-notes-notes(){ cat << EON
 

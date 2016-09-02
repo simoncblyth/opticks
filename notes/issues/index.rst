@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+   boost_visibility_linker_warnings
    invisible_propagation
    automated_interop_tests
    evt_layout_awkward

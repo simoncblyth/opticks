@@ -1723,7 +1723,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned int numFaces = getNumFaces() ;
     unsigned int numRepeatedIdentity = numITransforms*numFaces ;
 
-    LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+    LOG(trace) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
               << " numSolids " << numSolids 
               << " numFaces (sum of faces in numSolids)" << numFaces 
               << " numITransforms " << numITransforms

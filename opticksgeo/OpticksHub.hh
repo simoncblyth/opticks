@@ -19,6 +19,7 @@ class GItemIndex ;
 class NState ; 
 class NLookup ; 
 class NConfigurable ; 
+class TorchStepNPY ; 
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
@@ -59,6 +60,7 @@ class OKGEO_API OpticksHub {
    public:
        OpticksEvent* initOKEvent(NPY<float>* gensteps);
        OpticksEvent* loadPersistedEvent();
+       void          save();  
    public:
        OpticksEvent* getG4Event();
        OpticksEvent* getOKEvent();
@@ -70,7 +72,14 @@ class OKGEO_API OpticksHub {
        OpticksEvent* createEvent(bool ok);
        OpticksEvent* getEvent();   // gets the last created evt, either G4 or OK 
    public:
+       NPY<float>*          getGensteps();  
        NPY<float>*          getNopsteps();  // updated when new G4 event is created
+   public:
+       TorchStepNPY*        getTorchstep(); // needs geometry for targetting 
+   private:
+       void                 translateGensteps(NPY<float>* gs);  // into Opticks lingo
+       NPY<float>*          loadGenstepFile();
+       TorchStepNPY*        makeTorchstep();
    public:
        Composition*         getComposition();
        GGeo*                getGGeo();
@@ -91,10 +100,8 @@ class OKGEO_API OpticksHub {
    public:
        void loadGeometry();
    public:
-       NPY<float>* loadGenstep();
-       void translateGensteps(NPY<float>* gs);  // into Opticks lingo
        void loadEventBuffers();
-       void targetGenstep();
+       void target();   // point composition at geocenter or the m_evt (last created)
        void configureState(NConfigurable* scene);
        void cleanup();
        void setMaterialMap( std::map<std::string, unsigned>& materialMap, const char* prefix="" );
@@ -102,11 +109,10 @@ class OKGEO_API OpticksHub {
        void init();
        void configureCompositionSize();
        void configureLookup();
-   private:
-       NPY<float>* loadGenstepFile();
-       NPY<float>* loadGenstepTorch();
+       void postLoadGeometry();
    private:
        Opticks*         m_opticks ; 
+       bool             m_immediate ; 
        OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ;  
        Composition*     m_composition ; 
@@ -116,6 +122,8 @@ class OKGEO_API OpticksHub {
        OpticksEvent*    m_okevt ; 
    private:
        NPY<float>*      m_nopsteps ;
+       NPY<float>*      m_gensteps ;
+       TorchStepNPY*    m_torchstep ; 
 
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 

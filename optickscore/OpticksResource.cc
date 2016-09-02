@@ -411,7 +411,7 @@ BEnv* OpticksResource::readIniEnvironment(const char* relpath)
     BEnv* env = NULL ; 
     if(BFile::ExistsFile(inipath.c_str()))
     {
-        LOG(info) << "OpticksResource::readIniEnvironment" 
+        LOG(trace) << "OpticksResource::readIniEnvironment" 
                   << " from " << inipath
                   ;
 
@@ -844,7 +844,15 @@ bool OpticksResource::loadMetadata(std::map<std::string, std::string>& mdd, cons
     typedef Map<std::string, std::string> MSS ;  
     MSS* meta = MSS::load(path) ; 
     if(meta)
+    {
         mdd = meta->getMap(); 
+    }
+    else
+    {
+        LOG(debug) << "OpticksResource::loadMetadata"
+                  << " no path " << path 
+                  ;
+    } 
     return meta != NULL ; 
 }
 

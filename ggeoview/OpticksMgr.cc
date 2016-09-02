@@ -29,10 +29,14 @@ class NConfigurable ;
        }\
     }
 
+
+bool OpticksMgr::hasOpt(const char* name){ return m_ok->hasOpt(name); }
+
+
 OpticksMgr::OpticksMgr(int argc, char** argv) 
     :
     m_ok(new Opticks(argc, argv)),
-    m_hub(new OpticksHub(m_ok)),
+    m_hub(new OpticksHub(m_ok, true)),   // true: immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
 #ifdef WITH_OPTIX
@@ -41,25 +45,20 @@ OpticksMgr::OpticksMgr(int argc, char** argv)
 #endif
     m_placeholder(0)
 {
-    m_ok->Summary("OpticksMgr::OpticksMgr OpticksResource::Summary");
     init();
-    initGeometry();
+    LOG(fatal) << "OpticksMgr::OpticksMgr DONE" ;
 }
 
 void OpticksMgr::init()
 {
-    m_hub->configure();
+    if(m_viz)
+    {  
+        m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-    if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
-}
+        m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
 
-void OpticksMgr::initGeometry()
-{
-    if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
- 
-    m_hub->loadGeometry();                // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
-
-    if(m_viz) m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+        m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+    }
 
 #ifdef WITH_OPTIX
     m_ope->prepareOptiX();                // creates OptiX context and populates with geometry by OGeo, OScintillatorLib, ... convert methods 
@@ -68,16 +67,26 @@ void OpticksMgr::initGeometry()
 #endif
 }
 
-bool OpticksMgr::hasOpt(const char* name)
+
+void OpticksMgr::action()
 {
-   return m_ok->hasOpt(name);
+    LOG(fatal) << "OpticksMgr::action" ; 
+    if(hasOpt("load"))
+    {
+        loadPropagation();
+    }
+    else if(hasOpt("nopropagate"))
+    {
+        LOG(info) << "--nopropagate/-P" ;
+    }
+    else
+    { 
+        NPY<float>* gs = m_hub->getGensteps();  
+        propagate(gs);
+    }
 }
 
 
-NPY<float>* OpticksMgr::loadGenstep()
-{
-    return m_hub->loadGenstep();
-}
 
 void OpticksMgr::propagate(NPY<float>* genstep)
 {
@@ -85,7 +94,11 @@ void OpticksMgr::propagate(NPY<float>* genstep)
 
     if(m_viz)
     { 
-        m_viz->targetGenstep();       // point Camera at gensteps 
+        // handling target option inside Scene is inconvenient  TODO: centralize
+        int target = m_viz->getTarget();  // hmm target could be non oglrap- specific 
+        if(target == 0) 
+            m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+
         m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
     }
 
@@ -112,9 +125,7 @@ void OpticksMgr::propagate(NPY<float>* genstep)
         m_ope->downloadEvt();
         m_idx->indexEvtOld();
 
-        OpticksEvent* okevt = m_hub->getOKEvent();
-        okevt->dumpDomains("OpticksMgr::propagate okevt domains");
-        okevt->save();
+        m_hub->save();
     }
 #endif
 }
@@ -140,7 +151,11 @@ void OpticksMgr::loadPropagation()
     indexPropagation();
 
     if(!m_viz) return  ;
-    m_viz->targetGenstep();
+
+    int target = m_viz->getTarget();  // hmm target could be non oglrap- specific 
+    if(target == 0) 
+         m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+
     m_viz->uploadEvent();  
 
     LOG(fatal) << "OpticksMgr::loadPropagation DONE" ; 

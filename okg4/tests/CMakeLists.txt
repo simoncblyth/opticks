@@ -3,8 +3,6 @@ set(name okg4Test)
 project(${name})
 
 set(TESTS
-    OKG4_LOGTest.cc
-    OKG4_OpticksMgrTest.cc
     OKG4MgrTest.cc
 )
 

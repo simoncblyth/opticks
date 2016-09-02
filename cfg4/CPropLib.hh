@@ -31,17 +31,23 @@ class G4LogicalBorderSurface ;
 class G4OpticalSurface ;
 class G4PhysicsVector ;
 
-// CPropLib is a constituent of CTestDetector that converts
-// GGeo materials and surfaces into G4 materials and surfaces
-//
-//  TODO: this need simplification
-//
-//     * far too much public API
-//     * moving to convert internally all at once approach 
-//       and provide simple accessors
-//
-//     * maybe split off conversion "reconstruction" into separate class
-//
+/**
+CPropLib
+==========
+
+CPropLib is a constituent of CDetector (eg CTestDector and CGDMLDetector)
+that converts GGeo (ie Opticks G4DAE) materials and surfaces into G4 materials and surfaces.
+The GGeo gets loaded on initializing CPropLib.
+
+TODO : this need simplification
+----------------------------------
+
+* far too much public API
+* moving to convert internally all at once approach 
+  and provide simple accessors
+* maybe split off conversion "reconstruction" into separate class
+
+**/
 
 
 #include "CFG4_API_EXPORT.hh"

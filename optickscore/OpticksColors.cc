@@ -468,6 +468,6 @@ void OpticksColors::setupCompositeColorBuffer(std::vector<unsigned int>&  materi
     //
     //     fcolor = texture(Colors, (float(flq[0].x) + MATERIAL_COLOR_OFFSET - 1.0 + 0.5)/ColorDomain.y ) 
     //
-    LOG(info) << "OpticksColors::setupCompositeColorBuffer DONE " ;
+    LOG(trace) << "OpticksColors::setupCompositeColorBuffer DONE " ;
 }
 

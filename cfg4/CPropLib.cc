@@ -66,7 +66,7 @@ void CPropLib::setGroupvelKludge(bool gvk)
 
 void CPropLib::init()
 {
-    LOG(trace) << "CPropLib::init" ; 
+    LOG(info) << "CPropLib::init loading GBndLib" ; 
 
     bool constituents ; 
 

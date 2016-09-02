@@ -97,11 +97,9 @@ bool CGenerator::isDynamic()
 CSource* CGenerator::makeTorchSource()
 {
     LOG(info) << "CGenerator::makeTorchSource " ; 
-    TorchStepNPY* torch = m_ok->makeSimpleTorchStep();
-    torch->addStep(true); // calls update setting pos,dir,pol using the frame transform and preps the NPY buffer
-    torch->Summary("CG4::configure TorchStepNPY::Summary");
-    
-    
+
+    TorchStepNPY* torch = m_hub->getTorchstep();
+
     setGensteps( torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
     setDynamic(false);
     setNumG4Event( torch->getNumG4Event()); 

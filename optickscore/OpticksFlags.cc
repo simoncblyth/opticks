@@ -154,7 +154,7 @@ void OpticksFlags::init(const char* path)
     m_index = parseFlags(path);
     unsigned int num_flags = m_index ? m_index->getNumItems() : 0 ;
 
-    LOG(info) << "OpticksFlags::init"
+    LOG(trace) << "OpticksFlags::init"
               << " path " << path 
               << " num_flags " << num_flags 
               << " " << ( m_index ? m_index->description() : "NULL index" )

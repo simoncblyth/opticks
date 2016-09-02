@@ -127,7 +127,7 @@ CG4::CG4(OpticksHub* hub)
 
 void CG4::init()
 {
-    m_ok->Summary("CG4::init opticks summary");
+    //m_ok->Summary("CG4::init opticks summary");
     TIMER("init");
 }
 

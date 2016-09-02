@@ -72,7 +72,7 @@ void OpIndexer::indexSequenceViaOpenGL(
 
     unsigned int phosel_id = phosel->getBufferId() ;
     unsigned int recsel_id = recsel->getBufferId() ;
-    printf("OpIndexer::indexSequenceViaOpenGL phosel_id %u recsel_id %u \n", phosel_id, recsel_id ); 
+    //printf("OpIndexer::indexSequenceViaOpenGL phosel_id %u recsel_id %u \n", phosel_id, recsel_id ); 
 
     CResource rphosel( phosel_id, CResource::W );
     CResource rrecsel( recsel_id, CResource::W );

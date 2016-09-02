@@ -172,7 +172,7 @@ unsigned int OBufBase::getElementSizeInBytes(RTformat format)
 
 void* OBufBase::getDevicePtr()
 {
-    printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
+    //printf("OBufBase::getDevicePtr %s \n", ( m_name ? m_name : "-") ) ;
     //return (void*) m_buffer->getDevicePointer(m_device); 
 
     CUdeviceptr cu_ptr = (CUdeviceptr)m_buffer->getDevicePointer(m_device) ;

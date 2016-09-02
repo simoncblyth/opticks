@@ -19,7 +19,6 @@ class OKG4_API OKG4Mgr {
        OKG4Mgr(int argc, char** argv);
    private:
        void init();
-       void initGeometry();
    public:
        void propagate();
        void indexPropagation();

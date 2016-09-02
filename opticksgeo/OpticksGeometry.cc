@@ -312,7 +312,7 @@ void OpticksGeometry::configureGeometry()
 
 void OpticksGeometry::registerGeometry()
 {
-    LOG(info) << "OpticksGeometry::registerGeometry" ; 
+    LOG(debug) << "OpticksGeometry::registerGeometry" ; 
 
     //for(unsigned int i=1 ; i < m_ggeo->getNumMergedMesh() ; i++) m_ggeo->dumpNodeInfo(i);
 

@@ -56,23 +56,7 @@ int main(int argc, char** argv)
     GGV_LOG__ ;
  
     OpticksMgr ok(argc, argv);
-
-    LOG(info) << "ok" ; 
-
-    if(ok.hasOpt("load"))
-    {
-        ok.loadPropagation();
-    }
-    else if(ok.hasOpt("nopropagate"))
-    {
-        LOG(info) << "--nopropagate/-P" ;
-    }
-    else
-    { 
-        NPY<float>* gs = ok.loadGenstep();  
-        ok.propagate(gs);
-    }
-
+    ok.action();
     ok.visualize();
 
     exit(EXIT_SUCCESS);

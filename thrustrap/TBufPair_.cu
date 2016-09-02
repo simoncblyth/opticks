@@ -4,18 +4,22 @@
 #include "iexpand.h"
 
 template <typename T>
-TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst )
+TBufPair<T>::TBufPair(CBufSlice src, CBufSlice dst, bool verbose )
    :
    m_src(src),
-   m_dst(dst)
+   m_dst(dst),
+   m_verbose(verbose)
 {
 }
 
 template <typename T>
 void TBufPair<T>::seedDestination()
 {  
-    m_src.Summary("TBufPair<T>::seedDestination (CBufSlice)src");
-    m_dst.Summary("TBufPair<T>::seedDestination (CBufSlice)dst");
+    if(m_verbose)
+    {
+        m_src.Summary("TBufPair<T>::seedDestination (CBufSlice)src");
+        m_dst.Summary("TBufPair<T>::seedDestination (CBufSlice)dst");
+    }
 
     typedef typename thrust::device_vector<T>::iterator Iterator;
       

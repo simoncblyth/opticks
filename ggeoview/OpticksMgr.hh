@@ -19,16 +19,14 @@ class GGV_API OpticksMgr {
        OpticksMgr(int argc, char** argv);
        bool hasOpt(const char* name);
    public:
-       NPY<float>* loadGenstep();
-   public:
        void propagate(NPY<float>* gs);
        void loadPropagation();
        void indexPropagation();
+       void action();
        void visualize();
        void cleanup();
    private:
        void init();
-       void initGeometry();
        void dbgSeed();
    private:
        Opticks*       m_ok ; 

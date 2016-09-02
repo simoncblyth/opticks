@@ -263,11 +263,11 @@ void CTorchSource::configure()
     SetParticlePolarization(pol); // reset later for the custom configs 
 
     bool incidentSphere = m_torch->isIncidentSphere() ;
-    bool disc = m_torch->isDisc() ;
-    bool discLin = m_torch->isDiscLinear() ;
-    bool ring = m_torch->isRing() ;
-    bool point = m_torch->isPoint() ;
-    bool reflTest = m_torch->isReflTest() ;
+    bool disc           = m_torch->isDisc() ;
+    bool discLin        = m_torch->isDiscLinear() ;
+    bool ring           = m_torch->isRing() ;
+    bool point          = m_torch->isPoint() ;
+    bool reflTest       = m_torch->isReflTest() ;
 
     // for sanity test geometries use standard X Y for 
 

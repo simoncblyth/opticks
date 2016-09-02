@@ -42,7 +42,7 @@ Map<K,V>* Map<K,V>::load(const char* path)
     LOG(trace) << " path " << path ; 
     if(!BFile::ExistsFile(path))
     {
-       LOG(warning) << " no path " << path ;
+       LOG(trace) << " no path " << path ;
        return NULL ;  
     }
     else

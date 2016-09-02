@@ -1,5 +1,6 @@
 #include <cstring>
 #include <string>
+#include <sstream>
 
 #include "BStr.hh"
 #include "BOpticksEvent.hh"
@@ -10,6 +11,11 @@
 #include "OpticksEventSpec.hh"
 
 #include "PLOG.hh"
+
+const char* OpticksEventSpec::G4_ = "G4" ; 
+const char* OpticksEventSpec::OK_ = "OK" ; 
+const char* OpticksEventSpec::NO_ = "NO" ; 
+
 
 OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec) 
     :
@@ -58,6 +64,15 @@ bool OpticksEventSpec::isOK()
     return m_itag > 0 ;     
 }
 
+const char* OpticksEventSpec::getEngine()
+{
+    const char* engine = NO_ ; 
+    if(     isOK())  engine = OK_ ; 
+    else if(isG4())  engine = G4_ ; 
+    return engine ; 
+}
+
+
 const char* OpticksEventSpec::getTyp()
 {
     return m_typ ; 
@@ -84,6 +99,21 @@ const char* OpticksEventSpec::getDir()
 }
 
 
+std::string OpticksEventSpec::brief()
+{
+    std::stringstream ss ; 
+    ss 
+       << " typ " << m_typ
+       << " tag " << m_tag
+       << " itag " << getITag()
+       << " det " << m_det
+       << " cat " << m_cat
+       << " dir " << m_dir
+       << " eng " << getEngine()
+       ;
+
+    return ss.str();
+}
 
 
 void OpticksEventSpec::Summary(const char* msg)

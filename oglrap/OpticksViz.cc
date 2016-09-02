@@ -229,19 +229,11 @@ void OpticksViz::uploadGeometry()
 
 }
 
-void OpticksViz::targetGenstep()
-{
-    int target = m_scene->getTarget() ;
-    
-    LOG(fatal) << "OpticksViz::targetGenstep" 
-               << " target " << target 
-               ;
-
-    if(target == 0) // only target based on genstep if not already targetted
-    {
-        m_hub->targetGenstep();
-    }
+int OpticksViz::getTarget()
+{   
+   return m_scene->getTarget() ; 
 }
+
 
 void OpticksViz::uploadEvent()
 {

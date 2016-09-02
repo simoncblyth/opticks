@@ -51,8 +51,23 @@ DONE : Material Code Mapping Generalization
 * :doc:`material_code_mapping_generalization`
 
 
-WIP : Integrated running
----------------------------
+WIP : Integrated G4GUN running
+---------------------------------
+
+::
+
+    OKG4MgrTest --g4gun      
+       # integrated g4gun running,  produces a visible propagation
+
+    OKG4MgrTest --g4gun --save   
+       #   now saves both g4 and ok evt with same parameter dir timestamp
+       #         /tmp/blyth/opticks/evt/dayabay/g4gun/100/
+       #         /tmp/blyth/opticks/evt/dayabay/g4gun/-100/
+
+
+
+WIP : Integrated Torch running debug
+---------------------------------------
 
 ::
 
@@ -62,13 +77,45 @@ WIP : Integrated running
        # just see axis and no geometry, and the index looks like all photons are missing
        # (targetting issue) 
 
-    OKG4MgrTest --g4gun      
-       # integrated g4gun running,  produces a visible propagation
+    OpticksMgrTest
+       # still operational 
 
-    OKG4MgrTest --g4gun --save   
-       #   now saves both g4 and ok evt with same parameter dir timestamp
-       #         /tmp/blyth/opticks/evt/dayabay/g4gun/100/
-       #         /tmp/blyth/opticks/evt/dayabay/g4gun/-100/
+
+These two should show exactly the same thing, only difference is the integrated
+one runs the G4 propagation in addition to the Opticks one.
+
+Arranged plogging to use simple formatter so can compare logs without times
+or process identity differences.
+
+
+::
+
+    555 NPY<float>* OpticksHub::loadGenstepTorch()
+    556 {
+    557     TorchStepNPY* torchstep = m_opticks->makeSimpleTorchStep();
+    558 
+    559     if(m_ggeo)
+    560     {
+    561         m_ggeo->targetTorchStep(torchstep);
+    562         const char* material = torchstep->getMaterial() ;
+    563         unsigned int matline = m_ggeo->getMaterialLine(material);
+    564         torchstep->setMaterialLine(matline);
+    565 
+    566         LOG(fatal) << "OpticksHub::loadGenstepTorch"
+    567                    << " config " << torchstep->getConfig()
+    568                    << " material " << material
+    569                    << " matline " << matline
+    570                          ;
+    571     }
+    572     else
+    573     {
+    574         LOG(warning) << "OpticksHub::loadGenstepTorch no ggeo, skip setting torchstep material line " ;
+    575     }
+    576 
+
+
+Problem is that Torch gensteps are not ordinary things.
+
 
 
 NEXT : G4/Op Comparison of generation distribs

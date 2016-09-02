@@ -197,8 +197,8 @@ const char* Scene::getRecordStyleName()
  
 void Scene::init()
 {
-
-    LOG(info) << "Scene::init (config from cmake)"
+    LOG(info) << "Scene::init" ; 
+    LOG(trace) << "Scene::init (config from cmake)"
               << " OGLRAP_INSTALL_PREFIX " << OGLRAP_INSTALL_PREFIX
               << " OGLRAP_SHADER_DIR " << OGLRAP_SHADER_DIR
               << " OGLRAP_SHADER_INCL_PATH " << OGLRAP_SHADER_INCL_PATH

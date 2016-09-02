@@ -141,7 +141,7 @@ void OContext::init()
         m_context[ "top_object" ]->set( m_top );
     }
 
-    LOG(info) << "OContext::init " 
+    LOG(debug) << "OContext::init " 
               << " mode " << getModeName()
               << " num_ray_type " << num_ray_type 
               ; 

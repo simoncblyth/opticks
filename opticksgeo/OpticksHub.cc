@@ -65,9 +65,10 @@
 //    this means is usable from anywhere, so can mop up config
 //
 
-OpticksHub::OpticksHub(Opticks* opticks, bool config) 
+OpticksHub::OpticksHub(Opticks* opticks, bool immediate) 
    :
    m_opticks(opticks),
+   m_immediate(immediate),
    m_geometry(NULL),
    m_ggeo(NULL),
    m_composition(new Composition),
@@ -75,6 +76,8 @@ OpticksHub::OpticksHub(Opticks* opticks, bool config)
    m_g4evt(NULL),
    m_okevt(NULL),
    m_nopsteps(NULL),
+   m_gensteps(NULL),
+   m_torchstep(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -86,9 +89,7 @@ OpticksHub::OpticksHub(Opticks* opticks, bool config)
    m_bookmarks(NULL)
 {
    init();
-   if(config) configure();
 }
-
 
 
 void OpticksHub::init()
@@ -100,7 +101,177 @@ void OpticksHub::init()
     add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
 #endif
 
+   if(m_immediate) 
+   {
+       configure();
+       loadGeometry();
+   }
 }
+
+
+void OpticksHub::loadGeometry()
+{
+    if(m_geometry) 
+    {
+        LOG(warning) << "OpticksHub::loadGeometry ALREADY LOADED "   ;
+        return ; 
+    }
+
+    LOG(fatal) << "OpticksHub::loadGeometry" ; 
+
+    m_geometry = new OpticksGeometry(this);
+
+    m_geometry->loadGeometry();
+
+    m_ggeo = m_geometry->getGGeo();
+
+    m_ggeo->setComposition(m_composition);
+
+    LOG(fatal) << "OpticksHub::loadGeometry DONE" ; 
+
+    postLoadGeometry();
+}
+
+
+
+
+void OpticksHub::postLoadGeometry()
+{
+    LOG(fatal) << "OpticksHub::postLoadGeometry" ; 
+
+
+    unsigned int code = m_opticks->getSourceCode();
+
+    if(code == TORCH)
+    {
+        m_torchstep = makeTorchstep() ;
+        m_gensteps = m_torchstep->getNPY();
+    }
+    else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
+    {
+        m_gensteps = loadGenstepFile();
+    }
+}
+
+NPY<float>* OpticksHub::getGensteps()
+{
+    return m_gensteps ; 
+}
+
+TorchStepNPY* OpticksHub::getTorchstep()
+{
+    return m_torchstep ; 
+}
+
+
+NPY<float>* OpticksHub::loadGenstepFile()
+{
+    NPY<float>* gs = m_opticks->loadGenstep();
+    if(gs == NULL) LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
+    assert(gs);
+
+    int modulo = m_fcfg->getModulo();
+
+    //m_parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
+    //m_parameters->add<int>("Modulo", modulo );
+
+    if(modulo > 0) 
+    {    
+        LOG(warning) << "OptickHub::loadGenstepFile applying modulo scaledown " << modulo ;
+        gs = NPY<float>::make_modulo(gs, modulo);
+        //m_parameters->add<std::string>("genstepModulo",   genstep->getDigestString()  );
+    }    
+
+    translateGensteps(gs) ;
+    return gs ; 
+}
+
+void OpticksHub::translateGensteps(NPY<float>* gs)
+{
+    G4StepNPY* g4step = new G4StepNPY(gs);    
+    g4step->relabel(CERENKOV, SCINTILLATION); 
+
+    // which code is used depends in the sign of the pre-label 
+    // becomes the ghead.i.x used in cu/generate.cu
+
+    if(m_opticks->isDayabay())
+    {   
+        // within GGeo this depends on GBndLib
+        //NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
+
+        if(m_lookup)
+        {  
+            g4step->setLookup(m_lookup);   
+            g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+            //
+            // replaces original material indices with material lines
+            // for easy access to properties using boundary_lookup GPU side
+            //
+        }
+        else
+        {
+            LOG(warning) << "OpticksHub::translateGensteps not applying lookup" ;
+        } 
+    }
+}
+
+
+
+TorchStepNPY* OpticksHub::makeTorchstep()
+{
+    TorchStepNPY* torchstep = m_opticks->makeSimpleTorchStep();
+
+    if(m_ggeo)
+    {
+        m_ggeo->targetTorchStep(torchstep);   // sets frame transform of the torchstep
+
+        const char* material = torchstep->getMaterial() ;
+        unsigned int matline = m_ggeo->getMaterialLine(material);
+        torchstep->setMaterialLine(matline);  
+
+        LOG(fatal) << "OpticksHub::makeGenstepTorch"
+                   << " config " << torchstep->getConfig() 
+                   << " material " << material 
+                   << " matline " << matline
+                         ;
+    }
+    else
+    {
+        LOG(warning) << "OpticksHub::makeTorchstep no ggeo, skip setting torchstep material line " ;
+    } 
+
+    bool torchdbg = hasOpt("torchdbg");
+    torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
+
+    if(torchdbg)
+    {
+        NPY<float>* gs = torchstep->getNPY();
+        gs->save("$TMP/torchdbg.npy");
+    }
+
+    return torchstep ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 bool OpticksHub::hasOpt(const char* name)
 {
@@ -261,7 +432,7 @@ void OpticksHub::configureCompositionSize()
     glm::uvec4 size = m_opticks->getSize();
     glm::uvec4 position = m_opticks->getPosition() ;
 
-    LOG(info) << "OpticksHub::configureCompositionSize"
+    LOG(debug) << "OpticksHub::configureCompositionSize"
               << " size " << gformat(size)
               << " position " << gformat(position)
               ;
@@ -279,7 +450,7 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_state = m_opticks->getState();  
     m_state->setVerbose(false);
 
-    LOG(info) << "OpticksHub::configureViz " << m_state->description();
+    LOG(trace) << "OpticksHub::configureState " << m_state->description();
 
     m_state->addConfigurable(scene);
     m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
@@ -319,6 +490,21 @@ OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
     createEvent(ok); 
     m_okevt->setGenstepData(gs);
     assert(m_evt == m_okevt);
+
+    if(m_g4evt)   // if there is a preexisting G4 event use the same timestamp for the OK event
+    {
+       assert(m_g4evt->isG4());
+       assert(m_okevt->isOK());
+
+       std::string tstamp = m_g4evt->getTimeStamp();
+       m_okevt->setTimeStamp( tstamp.c_str() );      
+    }
+
+    LOG(info) << "OpticksHub::initOKEvent "
+              << " gensteps " << gs->getShapeString()
+              << " tagdir " << m_okevt->getTagDir() 
+              ;
+
     return m_okevt ; 
 }
 
@@ -334,6 +520,19 @@ OpticksEvent* OpticksHub::loadPersistedEvent()
     return m_okevt ; 
 }
 
+void OpticksHub::save()
+{
+    if(m_g4evt)
+    {
+        m_g4evt->dumpDomains("OpticksHub::save g4evt domains");
+        m_g4evt->save();
+    } 
+    if(m_okevt)
+    {
+        m_okevt->dumpDomains("OpticksHub::save okevt domains");
+        m_okevt->save();
+    } 
+}
 
 void OpticksHub::loadEventBuffers()
 {
@@ -389,6 +588,8 @@ NPY<float>* OpticksHub::getNopsteps()
     return m_nopsteps ; 
 }
 
+
+
 OpticksEvent* OpticksHub::getG4Event()
 {
     return m_g4evt ; 
@@ -428,155 +629,24 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 
 
 
-
-
-
-
-void OpticksHub::loadGeometry()
+void OpticksHub::target()
 {
-    m_geometry = new OpticksGeometry(this);
-
-    m_geometry->loadGeometry();
-
-    m_ggeo = m_geometry->getGGeo();
-
-    m_ggeo->setComposition(m_composition);
-
-}
-
-
-NPY<float>* OpticksHub::loadGenstep()
-{
-    if(hasOpt("nooptix|noevent")) 
-    {
-        LOG(warning) << "OpticksHub::loadGenstep skip due to --nooptix/--noevent " ;
-        return NULL ;
-    }
-
-    unsigned int code = m_opticks->getSourceCode();
-
-    NPY<float>* gs = NULL ; 
-    if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
-    {
-        gs = loadGenstepFile(); 
-    }
-    else if(code == TORCH)
-    {
-        gs = loadGenstepTorch(); 
-    }
-
-    TIMER("loadGenstep"); 
-
-    return gs ; 
-}
-
-
-void OpticksHub::translateGensteps(NPY<float>* gs)
-{
-    G4StepNPY* g4step = new G4StepNPY(gs);    
-    g4step->relabel(CERENKOV, SCINTILLATION); 
-
-    // which code is used depends in the sign of the pre-label 
-    // becomes the ghead.i.x used in cu/generate.cu
-
-    if(m_opticks->isDayabay())
-    {   
-        // within GGeo this depends on GBndLib
-        //NLookup* lookup = m_ggeo ? m_ggeo->getLookup() : NULL ;
-
-        if(m_lookup)
-        {  
-            g4step->setLookup(m_lookup);   
-            g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
-            //
-            // replaces original material indices with material lines
-            // for easy access to properties using boundary_lookup GPU side
-            //
-        }
-        else
-        {
-            LOG(warning) << "OpticksHub::translateGensteps not applying lookup" ;
-        } 
-    }
-}
-
-
-NPY<float>* OpticksHub::loadGenstepFile()
-{
-    NPY<float>* gs = m_opticks->loadGenstep();
-    if(gs == NULL) LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
-    assert(gs);
-
-    int modulo = m_fcfg->getModulo();
-
-    //m_parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
-    //m_parameters->add<int>("Modulo", modulo );
-
-    if(modulo > 0) 
-    {    
-        LOG(warning) << "OptickHub::loadGenstepFile applying modulo scaledown " << modulo ;
-        gs = NPY<float>::make_modulo(gs, modulo);
-        //m_parameters->add<std::string>("genstepModulo",   genstep->getDigestString()  );
-    }    
-
-    translateGensteps(gs) ;
-    return gs ; 
-}
-
-
-NPY<float>* OpticksHub::loadGenstepTorch()
-{
-    TorchStepNPY* torchstep = m_opticks->makeSimpleTorchStep();
-
-    if(m_ggeo)
-    {
-        m_ggeo->targetTorchStep(torchstep);
-        const char* material = torchstep->getMaterial() ;
-        unsigned int matline = m_ggeo->getMaterialLine(material);
-        torchstep->setMaterialLine(matline);  
-
-        LOG(debug) << "OpticksHub::loadGenstepTorch"
-                   << " config " << torchstep->getConfig() 
-                   << " material " << material 
-                   << " matline " << matline
-                         ;
-    }
-    else
-    {
-        LOG(warning) << "OpticksHub::loadGenstepTorch no ggeo, skip setting torchstep material line " ;
-    } 
-
-    bool torchdbg = hasOpt("torchdbg");
-    torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-
-    NPY<float>* gs = torchstep->getNPY();
-    if(torchdbg)
-    {
-        gs->save("$TMP/torchdbg.npy");
-    }
-    return gs ; 
-}
-
-
-void OpticksHub::targetGenstep()
-{
-    LOG(fatal) << "OpticksHub::targetGenstep"
-               << " m_evt " << m_evt 
-               ; 
-
     bool geocenter  = hasOpt("geocenter");
     bool autocam = true ; 
     if(geocenter && m_geometry != NULL )
     {
         glm::vec4 mmce = m_geometry->getCenterExtent();
         m_composition->setCenterExtent( mmce , autocam );
-        LOG(info) << "OpticksHub::targetGenstep (geocenter) mmce " << gformat(mmce) ; 
+        LOG(info) << "OpticksHub::target (geocenter) mmce " << gformat(mmce) ; 
     }
     else if(m_evt)
     {
         glm::vec4 gsce = m_evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
         m_composition->setCenterExtent( gsce , autocam );
-        LOG(info) << "OpticksHub::targetGenstep (!geocenter) gsce " << gformat(gsce) ; 
+        LOG(info) << "OpticksHub::target"
+                  << " evt " << m_evt->brief()
+                  << " gsce " << gformat(gsce) 
+                  ; 
     }
 }
 

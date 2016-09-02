@@ -1515,7 +1515,7 @@ void GGeo::targetTorchStep( TorchStepNPY* torchstep )
     {
         glm::ivec4& iframe = torchstep->getFrame();
         glm::mat4 transform = getTransform( iframe.x );
-        LOG(debug) << "GGeo::targetTorchStep setting frame " << iframe.x << " " << gformat(transform) ;  
+        LOG(fatal) << "GGeo::targetTorchStep setting frame " << iframe.x << " " << gformat(transform) ;  
         torchstep->setFrameTransform(transform);
     }
 
