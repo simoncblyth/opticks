@@ -65,7 +65,6 @@ void OKG4Mgr::init()
  
     if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
-    // m_hub->loadGeometry();                // creates GGeo instance, loads, potentially modifies for (--test) and registers geometry
 
     if(m_viz) m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
@@ -106,6 +105,7 @@ void OKG4Mgr::propagate()
     {
         LOG(fatal) << "recorded gensteps from G4 and no generated gs (probably g4gun running) " ; 
         gs = gsrec ; 
+        m_hub->translateGensteps(gsrec);
     } 
     else
     {

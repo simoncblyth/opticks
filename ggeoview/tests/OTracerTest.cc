@@ -1,4 +1,4 @@
-#include "OpticksMgr.hh"
+#include "OKMgr.hh"
 
 #include "PLOG.hh"
 
@@ -29,8 +29,8 @@ OTracerTest
 
 Expedient separate executable. Equivalent to running::
 
-   OpticksMgrTest --nopropagate 
-   OpticksMgrTest -P
+   OKTest --nopropagate 
+   OKTest -P
 
 
 **/
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 
     GGV_LOG__ ;
  
-    OpticksMgr ok(argc, argv);
+    OKMgr ok(argc, argv);
 
     ok.visualize();
 

@@ -136,7 +136,10 @@ class Evt(object):
     def init_gensteps(self, tag, src, det, dbg):
         """
         """
-        gs = A.load_("gs",src,tag,det) 
+        optional = int(tag) < 0   # for G4 running like G4GUN misses gensteps
+
+        gs = A.load_("gs",src,tag,det, optional=optional) 
+
         self.gs = gs
         self.desc['gs'] = "(gensteps)"
 
@@ -295,6 +298,7 @@ class Evt(object):
     y = property(lambda self:self.ox[:,0,1])
     z = property(lambda self:self.ox[:,0,2])
     t = property(lambda self:self.ox[:,0,3])
+
 
     description = property(lambda self:"\n".join(["%5s : %20s : %s " % (k, repr(getattr(self,k).shape),  label) for k,label in self.desc.items()]))
     paths = property(lambda self:"\n".join(["%5s : %s " % (k, repr(getattr(getattr(self,k),'path','-'))) for k,label in self.desc.items()]))

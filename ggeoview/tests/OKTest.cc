@@ -1,4 +1,4 @@
-#include "OpticksMgr.hh"
+#include "OKMgr.hh"
 
 #include "PLOG.hh"
 
@@ -24,7 +24,7 @@
 
 /**
 
-OpticksMgrTest
+OKMgrTest
 ================
 
 **/
@@ -54,8 +54,10 @@ int main(int argc, char** argv)
 #endif
 
     GGV_LOG__ ;
+
+
  
-    OpticksMgr ok(argc, argv);
+    OKMgr ok(argc, argv);
     ok.action();
     ok.visualize();
 

@@ -140,7 +140,7 @@ def gspath_(typ, tag, det, gsbase=None):
 
 class A(np.ndarray):
     @classmethod
-    def load_(cls, stem, typ, tag, det="dayabay", dbg=False):
+    def load_(cls, stem, typ, tag, det="dayabay", dbg=False, optional=False):
         """ 
         """
         if stem == "gensteps":
@@ -155,16 +155,18 @@ class A(np.ndarray):
             if dbg: 
                 os.system("ls -l %s " % path)
             arr = np.load(path)
-            a = arr.view(cls)
-            a.path = path 
-            a.typ = typ
-            a.tag = tag
-            a.det = det 
-            a.stamp = stamp_(path)
         else:
-            #log.warning("cannot load %s " % path)
-            raise IOError("cannot load %s " % path)
-        pass
+            if not optional: 
+                raise IOError("cannot load %s " % path)
+            arr = np.zeros(())
+
+        a = arr.view(cls)
+        a.path = path 
+        a.typ = typ
+        a.tag = tag
+        a.det = det 
+        a.stamp = stamp_(path)
+
         return a
 
     def __repr__(self):

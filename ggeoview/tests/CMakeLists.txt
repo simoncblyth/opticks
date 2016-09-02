@@ -11,7 +11,7 @@ set(_TESTS
 set(TESTS
 
     flagsTest.cc
-    OpticksMgrTest.cc
+    OKTest.cc
     OTracerTest.cc
     LogTest.cc
     OpEngineTest.cc

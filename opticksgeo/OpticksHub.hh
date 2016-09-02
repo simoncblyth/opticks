@@ -114,7 +114,7 @@ class OKGEO_API OpticksHub {
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void postLoadGeometry();
    private:
-       Opticks*         m_opticks ; 
+       Opticks*         m_ok ; 
        bool             m_immediate ; 
        OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ;  

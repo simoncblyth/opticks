@@ -1,4 +1,4 @@
-#include "OpticksMgr.hh"
+#include "OKMgr.hh"
 
 class NConfigurable ; 
 
@@ -30,13 +30,13 @@ class NConfigurable ;
     }
 
 
-bool OpticksMgr::hasOpt(const char* name){ return m_ok->hasOpt(name); }
+bool OKMgr::hasOpt(const char* name){ return m_ok->hasOpt(name); }
 
 
-OpticksMgr::OpticksMgr(int argc, char** argv) 
+OKMgr::OKMgr(int argc, char** argv) 
     :
-    m_ok(new Opticks(argc, argv)),
-    m_hub(new OpticksHub(m_ok, true)),   // true: immediate configure and loadGeometry 
+    m_ok(new Opticks(argc, argv, false)),   // false: NOT integrated running
+    m_hub(new OpticksHub(m_ok, true)),      // true: immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
 #ifdef WITH_OPTIX
@@ -46,11 +46,15 @@ OpticksMgr::OpticksMgr(int argc, char** argv)
     m_placeholder(0)
 {
     init();
-    LOG(fatal) << "OpticksMgr::OpticksMgr DONE" ;
+    LOG(fatal) << "OKMgr::OKMgr DONE" ;
 }
 
-void OpticksMgr::init()
+void OKMgr::init()
 {
+    bool g4gun = m_ok->getSourceCode() == G4GUN ;
+    LOG(fatal) << "OKMgr doesnt support G4GUN, other that via loading  " ;
+    //assert(!g4gun);
+
     if(m_viz)
     {  
         m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
@@ -68,9 +72,9 @@ void OpticksMgr::init()
 }
 
 
-void OpticksMgr::action()
+void OKMgr::action()
 {
-    LOG(fatal) << "OpticksMgr::action" ; 
+    LOG(fatal) << "OKMgr::action" ; 
     if(hasOpt("load"))
     {
         loadPropagation();
@@ -88,7 +92,7 @@ void OpticksMgr::action()
 
 
 
-void OpticksMgr::propagate(NPY<float>* genstep)
+void OKMgr::propagate(NPY<float>* genstep)
 {
     m_hub->initOKEvent(genstep);
 
@@ -130,9 +134,9 @@ void OpticksMgr::propagate(NPY<float>* genstep)
 #endif
 }
 
-void OpticksMgr::indexPropagation()
+void OKMgr::indexPropagation()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getOKEvent();
     if(!evt->isIndexed())
     {
 #ifdef WITH_OPTIX 
@@ -143,9 +147,9 @@ void OpticksMgr::indexPropagation()
     if(m_viz) m_viz->indexPresentationPrep();
 }
 
-void OpticksMgr::loadPropagation()
+void OKMgr::loadPropagation()
 {
-    LOG(fatal) << "OpticksMgr::loadPropagation" ; 
+    LOG(fatal) << "OKMgr::loadPropagation" ; 
     m_hub->loadPersistedEvent(); 
 
     indexPropagation();
@@ -158,17 +162,17 @@ void OpticksMgr::loadPropagation()
 
     m_viz->uploadEvent();  
 
-    LOG(fatal) << "OpticksMgr::loadPropagation DONE" ; 
+    LOG(fatal) << "OKMgr::loadPropagation DONE" ; 
 }
 
-void OpticksMgr::visualize()
+void OKMgr::visualize()
 {
     if(!m_viz) return ; 
     m_viz->prepareGUI();
     m_viz->renderLoop();    
 }
 
-void OpticksMgr::cleanup()
+void OKMgr::cleanup()
 {
 #ifdef WITH_OPTIX
     if(m_ope) m_ope->cleanup();
@@ -178,11 +182,11 @@ void OpticksMgr::cleanup()
     m_ok->cleanup(); 
 }
 
-void OpticksMgr::dbgSeed()
+void OKMgr::dbgSeed()
 {
 #ifdef WITH_OPTIX
     if(!m_ope) return ; 
-    OpticksEvent* evt = m_hub->getEvent();    
+    OpticksEvent* evt = m_hub->getOKEvent();    
     NPY<float>* ox = evt->getPhotonData();
     assert(ox);
 
@@ -193,13 +197,13 @@ void OpticksMgr::dbgSeed()
 
     if(m_viz) 
     { 
-        LOG(info) << "OpticksMgr::debugSeed (interop) download photon seeds " ;
+        LOG(info) << "OKMgr::debugSeed (interop) download photon seeds " ;
         m_viz->downloadData(ox) ; 
         ox->save("$TMP/dbgseed_interop.npy");
     }
     else
     {
-        LOG(info) << "OpticksMgr::debugSeed (compute) download photon seeds " ;
+        LOG(info) << "OKMgr::debugSeed (compute) download photon seeds " ;
         m_ope->downloadPhotonData();  
         ox->save("$TMP/dbgseed_compute.npy");
     }  

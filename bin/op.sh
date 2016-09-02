@@ -37,7 +37,9 @@ EOU
 }
 
 #op-binary-name-default(){ echo GGeoViewTest ; }
-op-binary-name-default(){ echo OpticksMgrTest ; }
+#op-binary-name-default(){ echo OpticksMgrTest ; }
+op-binary-name-default(){ echo OKTest ; }
+
 op-binary-names(){ type op-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; } 
 op-binary-name()
 {

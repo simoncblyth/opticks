@@ -14,9 +14,9 @@ class OpViz ;
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
 
-class GGV_API OpticksMgr {
+class GGV_API OKMgr {
    public:
-       OpticksMgr(int argc, char** argv);
+       OKMgr(int argc, char** argv);
        bool hasOpt(const char* name);
    public:
        void propagate(NPY<float>* gs);

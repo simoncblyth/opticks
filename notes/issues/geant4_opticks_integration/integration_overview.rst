@@ -56,13 +56,132 @@ WIP : Integrated G4GUN running
 
 ::
 
-    OKG4MgrTest --g4gun      
-       # integrated g4gun running,  produces a visible propagation
+    OKG4Test --g4gun      
+       # Thu: integrated g4gun running,  produces a visible propagation
+       #
+       # Fri: NOT DOING SO WELL ANYMORE FOLLOWING CHANGES FOR TORCH
+       #
+       #      FIXED, HAD MISSED TRANSLATION OF THE G4 LIVE COLLECTED GENSTEPS
+       #
 
-    OKG4MgrTest --g4gun --save   
+    OKG4Test --g4gun --save   
        #   now saves both g4 and ok evt with same parameter dir timestamp
        #         /tmp/blyth/opticks/evt/dayabay/g4gun/100/
        #         /tmp/blyth/opticks/evt/dayabay/g4gun/-100/
+       #
+       #  Fri: still saving OK
+       #  
+
+
+Compare events in 2 ipython sessions::
+
+
+     ipython -i $(which tevt.py) --  --src g4gun --tag -100 
+
+     ipython -i $(which tevt.py) --  --src g4gun --tag  100 
+
+
+The G4 evt looks reasonable::
+
+     In [3]: evt.history_table()
+                      -100:dayabay 
+                  4f        0.921           1310       [2 ] G4GUN AB
+           4cccccccf        0.042             60       [9 ] G4GUN BT BT BT BT BT BT BT AB
+          cccbcccccf        0.011             15       [10] G4GUN BT BT BT BT BT BR BT BT BT
+                4ccf        0.005              7       [4 ] G4GUN BT BT AB
+          4cc00cc0cf        0.004              5       [10] G4GUN BT ?0? BT BT ?0? ?0? BT BT AB
+
+
+OK one looks wrong, maybe not labelled::
+
+    In [8]: evt.history_table()
+                          100:dayabay 
+                       3        0.999           1421       [1 ] MI
+                   45552        0.001              1       [5 ] SI RE RE RE AB
+                                1422         1.00 
+
+
+Raw pre-labels were not converted into CERENKOV, SCINTILLATION codes::
+
+    In [11]: evt.gs.shape
+    Out[11]: (100, 6, 4)
+
+
+    In [14]: evt.gs[:,0].view(np.int32)
+    Out[14]: 
+    A()sliced
+    A([[  -1,    1,    7,   23],        ##  sid/parentId/materialIndex/numPhotons
+           [  -2,    1,    7,   18],
+           [  -3,    1,    7,   22],
+           [  -4,    1,    7,   32],
+           [  -5,    1,    7,   27],
+           [   1,    1,    7,    0],
+           [   2,    1,    7,    1],
+           ...
+           [   3,    1,    7,    0],
+           [   4,    1,    7,    1],
+           [ -19,    1,    7,   18],
+           [ -20,    1,    7,   19],
+           [ -21,    1,    7,   21],
+           [ -22,    1,    7,   20],
+           [ -23,    1,    7,   18],
+           [ -24,    1,    7,   26],
+           ...
+           [ -64,    1,    7,    6],
+           [ -65,    1,    7,    7],
+           [  11,    1,    7,    1],
+           [  12,    1,    7,    1],
+           [  13, 1327,    7,    1],
+           [  14, 1327,    7,    1],
+           [  15, 1345,    7,    0],
+           [  16, 1345,    7,    1],
+           ...
+           [  25, 1328,    7,    0],
+           [  26, 1328,    7,    1],
+           [ -69, 1328,    7,   23],
+           [ -70, 1328,    7,   14],
+           [ -71, 1328,    7,   12],
+           [ -72, 1328,    7,   13],
+           [  27, 1328,    7,    1],
+           [  28, 1328,    7,    1]], dtype=int32)
+
+    In [16]: evt.gs[:,0,3].view(np.int32).sum()
+    Out[16]: 
+    A()sliced
+    A(1422)
+
+
+After apply the translation, the code and material lines are corrected::
+
+    In [1]: evt.gs[:,0].view(np.int32)
+    Out[1]: 
+    A()sliced
+    A([[   1,    1,   95,   23],
+           [   1,    1,   95,   18],
+           [   1,    1,   95,   22],
+           [   1,    1,   95,   32],
+           [   1,    1,   95,   27],
+           [   2,    1,   95,    0],
+           [   2,    1,   95,    1],
+           [   1,    1,   95,   14],
+           [   1,    1,   95,   19],
+
+
+And now history looks better, but scintillation is missing::
+
+     100:dayabay 
+                  41        0.526            748       [2 ] CK AB
+             8cccc51        0.074            105       [7 ] CK RE BT BT BT BT SA
+                 451        0.063             89       [3 ] CK RE AB
+            8cccc551        0.038             54       [8 ] CK RE RE BT BT BT BT SA
+                4551        0.030             43       [4 ] CK RE RE AB
+           8cccc5551        0.022             31       [9 ] CK RE RE RE BT BT BT BT SA
+              8cccc1        0.015             22       [6 ] CK BT BT BT BT SA
+               45551        0.014             20       [5 ] CK RE RE RE AB
+          ccacccccc1        0.013             18       [10] CK BT BT BT BT BT BT SR BT BT
+          cacccccc51        0.011             15       [10] CK RE BT BT BT BT BT BT SR BT
+          cbccccc551        0.009             13       [10] CK RE RE BT BT BT BT BT BR BT
+
 
 
 
@@ -71,50 +190,35 @@ WIP : Integrated Torch running debug
 
 ::
 
-    OKG4MgrTest              
-       # default torch step running, produces nothing visible in integrated running 
-       # after trying to hand off generated torch gensteps to opticks 
-       # just see axis and no geometry, and the index looks like all photons are missing
-       # (targetting issue) 
+    OKG4Test          
+       #
+       # Thu: default torch step running, produces nothing visible in integrated running 
+       #      after trying to hand off generated torch gensteps to opticks 
+       #      just see axis and no geometry, and the index looks like all photons are missing
+       #      (targetting issue) 
+       #
+       # Fri: THIS IS NOW WORKING, AFTER GENSTEP AND MATERIAL LOOKUP REJIG
 
-    OpticksMgrTest
+    OKTest
        # still operational 
+       #
+       # Fri: STILL OK
 
 
 These two should show exactly the same thing, only difference is the integrated
 one runs the G4 propagation in addition to the Opticks one.
 
+* Fri: now looking the same
+
+
 Arranged plogging to use simple formatter so can compare logs without times
-or process identity differences.
+or process identity differences. 
+
+Difference was with composition targetting, 
+due to failing to set the frame transform for the gensteps.
 
 
-::
 
-    555 NPY<float>* OpticksHub::loadGenstepTorch()
-    556 {
-    557     TorchStepNPY* torchstep = m_opticks->makeSimpleTorchStep();
-    558 
-    559     if(m_ggeo)
-    560     {
-    561         m_ggeo->targetTorchStep(torchstep);
-    562         const char* material = torchstep->getMaterial() ;
-    563         unsigned int matline = m_ggeo->getMaterialLine(material);
-    564         torchstep->setMaterialLine(matline);
-    565 
-    566         LOG(fatal) << "OpticksHub::loadGenstepTorch"
-    567                    << " config " << torchstep->getConfig()
-    568                    << " material " << material
-    569                    << " matline " << matline
-    570                          ;
-    571     }
-    572     else
-    573     {
-    574         LOG(warning) << "OpticksHub::loadGenstepTorch no ggeo, skip setting torchstep material line " ;
-    575     }
-    576 
-
-
-Problem is that Torch gensteps are not ordinary things.
 
 
 OKG4 : Material Map chicken/egg problem
@@ -146,6 +250,10 @@ Fix
 ~~~~~
 
 * maybe, moving G4 geometry loading first ?
+
+  * didnt do that, instead just deferred doing cross referencing/translation
+    until just before setting into OpticksEvent and allowing 
+    the A lookup to be overrided once the G4 materials are available
 
 
 

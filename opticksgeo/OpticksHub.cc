@@ -51,9 +51,9 @@
           Timer& t = *(m_evt->getTimer()) ;\
           t((s)) ;\
        }\
-       else if(m_opticks) \
+       else if(m_ok) \
        {\
-          Timer& t = *(m_opticks->getTimer()) ;\
+          Timer& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -68,7 +68,7 @@
 
 OpticksHub::OpticksHub(Opticks* opticks, bool immediate) 
    :
-   m_opticks(opticks),
+   m_ok(opticks),
    m_immediate(immediate),
    m_geometry(NULL),
    m_ggeo(NULL),
@@ -84,7 +84,7 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_server(NULL)
 #endif
    m_cfg(new BCfg("umbrella", false)),
-   m_fcfg(m_opticks->getCfg()),
+   m_fcfg(m_ok->getCfg()),
    m_state(NULL),
    m_lookup(new NLookup()),
    m_bookmarks(NULL)
@@ -145,7 +145,7 @@ void OpticksHub::postLoadGeometry()
     LOG(fatal) << "OpticksHub::postLoadGeometry" ; 
 
 
-    unsigned int code = m_opticks->getSourceCode();
+    unsigned int code = m_ok->getSourceCode();
 
     if(code == TORCH)
     {
@@ -156,6 +156,19 @@ void OpticksHub::postLoadGeometry()
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
         m_gensteps = loadGenstepFile();
+    }
+    else if( code == G4GUN  )
+    {
+        if(m_ok->isIntegrated())
+        {
+             LOG(info) << " integrated G4GUN running, try to simulate with G4 directly " ;  
+        }
+        else
+        {
+             LOG(info) << " non-integrated G4GUN running, attempt to load gensteps from file " ;  
+             m_gensteps = loadGenstepFile();
+             assert(m_gensteps && "failed to load");
+        }
     }
 }
 
@@ -172,7 +185,7 @@ TorchStepNPY* OpticksHub::getTorchstep()
 
 NPY<float>* OpticksHub::loadGenstepFile()
 {
-    NPY<float>* gs = m_opticks->loadGenstep();
+    NPY<float>* gs = m_ok->loadGenstep();
     if(gs == NULL) LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
     assert(gs);
 
@@ -241,7 +254,7 @@ void OpticksHub::translateGensteps(NPY<float>* gs)
 
 TorchStepNPY* OpticksHub::makeTorchstep()
 {
-    TorchStepNPY* torchstep = m_opticks->makeSimpleTorchStep();
+    TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep();
 
     if(m_ggeo)
     {
@@ -305,7 +318,7 @@ bool OpticksHub::hasOpt(const char* name)
 }
 bool OpticksHub::isCompute()
 {
-    return m_opticks->isCompute();
+    return m_ok->isCompute();
 }
 std::string OpticksHub::getCfgString()
 {
@@ -331,7 +344,7 @@ NLookup* OpticksHub::getLookup()
 
 Opticks* OpticksHub::getOpticks()
 {
-    return m_opticks ; 
+    return m_ok ; 
 }
 Composition* OpticksHub::getComposition()
 {
@@ -343,7 +356,7 @@ Bookmarks* OpticksHub::getBookmarks()
 }
 Timer* OpticksHub::getTimer()
 {
-    return m_evt ? m_evt->getTimer() : m_opticks->getTimer() ; 
+    return m_evt ? m_evt->getTimer() : m_ok->getTimer() ; 
 }
 
 
@@ -360,38 +373,38 @@ void OpticksHub::configure()
     m_composition->addConfig(m_cfg); 
     //m_cfg->dumpTree();
 
-    int argc    = m_opticks->getArgc();
-    char** argv = m_opticks->getArgv();
+    int argc    = m_ok->getArgc();
+    char** argv = m_ok->getArgv();
 
     LOG(debug) << "OpticksHub::configure " << argv[0] ; 
 
     m_cfg->commandline(argc, argv);
-    m_opticks->configure();      
+    m_ok->configure();      
 
     if(m_fcfg->hasError())
     {
         LOG(fatal) << "OpticksHub::config parse error " << m_fcfg->getErrorMessage() ; 
         m_fcfg->dump("OpticksHub::config m_fcfg");
-        m_opticks->setExit(true);
+        m_ok->setExit(true);
         return ; 
     }
 
 
-    bool compute = m_opticks->isCompute();
+    bool compute = m_ok->isCompute();
     bool compute_opt = hasOpt("compute") ;
     if(compute && !compute_opt)
         LOG(warning) << "OpticksHub::configure FORCED COMPUTE MODE : as remote session detected " ;  
 
 
-    if(hasOpt("idpath")) std::cout << m_opticks->getIdPath() << std::endl ;
+    if(hasOpt("idpath")) std::cout << m_ok->getIdPath() << std::endl ;
     if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
     if(hasOpt("help|version|idpath"))
     {
-        m_opticks->setExit(true);
+        m_ok->setExit(true);
         return ; 
     }
 
-    if(!m_opticks->isValid())
+    if(!m_ok->isValid())
     {
         // defer death til after getting help
         LOG(fatal) << "OpticksHub::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
@@ -411,8 +424,8 @@ void OpticksHub::configure()
 
 void OpticksHub::configureLookupA()
 {
-    const char* path = m_opticks->getMaterialMap(); 
-    const char* prefix = m_opticks->getMaterialPrefix(); 
+    const char* path = m_ok->getMaterialMap(); 
+    const char* prefix = m_ok->getMaterialPrefix(); 
 
     LOG(info) << "OpticksHub::configureLookupA"
               << " loading genstep material index map "
@@ -459,8 +472,8 @@ void OpticksHub::configureServer()
 
 void OpticksHub::configureCompositionSize()
 {
-    glm::uvec4 size = m_opticks->getSize();
-    glm::uvec4 position = m_opticks->getPosition() ;
+    glm::uvec4 size = m_ok->getSize();
+    glm::uvec4 position = m_ok->getPosition() ;
 
     LOG(debug) << "OpticksHub::configureCompositionSize"
               << " size " << gformat(size)
@@ -477,7 +490,7 @@ void OpticksHub::configureState(NConfigurable* scene)
     // NState manages the state (in the form of strings) of a collection of NConfigurable objects
     // this needs to happen after configuration and the scene is created
 
-    m_state = m_opticks->getState();  
+    m_state = m_ok->getState();  
     m_state->setVerbose(false);
 
     LOG(trace) << "OpticksHub::configureState " << m_state->description();
@@ -499,7 +512,7 @@ void OpticksHub::configureState(NConfigurable* scene)
 
 NPY<unsigned char>* OpticksHub::getColorBuffer()
 {
-    OpticksColors* colors = m_opticks->getColors();
+    OpticksColors* colors = m_ok->getColors();
 
     nuvec4 cd = colors->getCompositeDomain() ; 
     glm::uvec4 cd_(cd.x, cd.y, cd.z, cd.w );
@@ -515,7 +528,9 @@ OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
     // Opticks OK events are created with gensteps (Scintillation+Cerenkov) 
     // from a G4 event (the G4 event can either be loaded from file 
     // or directly obtained from live G4)
-    //
+
+    assert(gs && "OpticksHub::initOKEvent gs NULL");
+
     bool ok = true ; 
     createEvent(ok); 
     m_okevt->setGenstepData(gs);
@@ -590,7 +605,7 @@ OpticksEvent* OpticksHub::createOKEvent()
 
 OpticksEvent* OpticksHub::createEvent(bool ok)
 {
-    m_evt = m_opticks->makeEvent(ok) ; 
+    m_evt = m_ok->makeEvent(ok) ; 
     if(ok)
     {
         delete m_okevt ;
@@ -694,7 +709,7 @@ void OpticksHub::cleanup()
 
 OpticksAttrSeq* OpticksHub::getFlagNames()
 {
-    return m_opticks->getFlagNames();
+    return m_ok->getFlagNames();
 }
 OpticksAttrSeq* OpticksHub::getMaterialNames()
 {
