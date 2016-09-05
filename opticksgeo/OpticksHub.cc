@@ -79,6 +79,7 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_nopsteps(NULL),
    m_gensteps(NULL),
    m_torchstep(NULL),
+   m_g4step(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -204,6 +205,12 @@ NPY<float>* OpticksHub::loadGenstepFile()
     return gs ; 
 }
 
+
+G4StepNPY* OpticksHub::getG4Step()
+{
+    return m_g4step ;  
+}
+
 void OpticksHub::translateGensteps(NPY<float>* gs)
 {
     // an appropriate juncture to translate is prior to 
@@ -215,22 +222,20 @@ void OpticksHub::translateGensteps(NPY<float>* gs)
     assert( !oac.isSet(label) );
     oac.add(label);
 
-
-    G4StepNPY* g4step = new G4StepNPY(gs);    
-
+    m_g4step = new G4StepNPY(gs);    
 
     bool gs_torch = oac.isSet("GS_TORCH") ; 
 
     if(gs_torch)
     {
         LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
-        g4step->checklabel(TORCH); 
+        m_g4step->checklabel(TORCH); 
 
         // TORCH matline should already be texture lines
     }
     else
     {
-        g4step->relabel(CERENKOV, SCINTILLATION); 
+        m_g4step->relabel(CERENKOV, SCINTILLATION); 
 
         // CERENKOV or SCINTILLATION codes are used depending on 
         // the sign of the pre-label 
@@ -241,13 +246,28 @@ void OpticksHub::translateGensteps(NPY<float>* gs)
         {  
             m_lookup->close("OpticksHub::translateGensteps");
 
-            g4step->setLookup(m_lookup);   
-            g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+            m_g4step->setLookup(m_lookup);   
+            m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
 
             // replaces original material indices with material lines
             // for easy access to properties using boundary_lookup GPU side
         }
     }
+
+    m_g4step->countPhotons();
+
+
+    std::stringstream ss ; 
+    ss << "OpticksHub::translateGensteps " 
+       << " TORCH: " << TORCH 
+       << " CERENKOV: " << CERENKOV 
+       << " SCINTILLATION: " << SCINTILLATION  
+       << " G4GUN: " << G4GUN  
+       ;
+ 
+    std::string key = ss.str();
+    m_g4step->Summary(key.c_str());
+
 }
 
 

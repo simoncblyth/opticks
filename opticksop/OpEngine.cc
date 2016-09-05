@@ -85,6 +85,8 @@ void OpEngine::downloadEvt()
 
 void OpEngine::indexSequence()
 {
+   // TODO: reuse this object, for multi-event
+
     LOG(info) << "OpEngine::indexSequence proceeding  " ;
 
     OContext* ocontext = m_imp->getOContext();

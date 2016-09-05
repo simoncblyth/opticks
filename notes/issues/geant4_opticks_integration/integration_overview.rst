@@ -183,6 +183,31 @@ And now history looks better, but scintillation is missing::
           cbccccc551        0.009             13       [10] CK RE RE BT BT BT BT BT BR BT
 
 
+Checking consistency between input steps and output sequence, looks OK, there are a few SI (probably so few due to scintillator dial down)::
+
+    OKG4Test --g4gun --save  
+
+
+    2016-09-05 13:43:44.547 INFO  [591752] [G4StepNPY::checkCounts@100] OpticksIdx::indexSeqHost checkCounts compare *seqCounts* (actual photon counts from propagation sequence data SeqNPY )  with *stepCounts* (expected photon counts from input G4StepNPY )  
+     bpos(hex)          0 seqCounts          0 flagLabel          0 stepCounts          0
+     bpos(hex)          1 seqCounts       1405 flagLabel          1 stepCounts       1405
+     bpos(hex)          2 seqCounts         17 flagLabel          2 stepCounts         17
+     bpos(hex)          3 seqCounts          0 flagLabel          4 stepCounts          0
+     bpos(hex)          4 seqCounts          0 flagLabel          8 stepCounts          0
+     bpos(hex)          5 seqCounts          0 flagLabel         16 stepCounts          0
+     bpos(hex)          6 seqCounts          0 flagLabel         32 stepCounts          0
+     bpos(hex)          7 seqCounts          0 flagLabel         64 stepCounts          0
+     bpos(hex)          8 seqCounts          0 flagLabel        128 stepCounts          0
+     bpos(hex)          9 seqCounts          0 flagLabel        256 stepCounts          0
+     bpos(hex)          a seqCounts          0 flagLabel        512 stepCounts          0
+     bpos(hex)          b seqCounts          0 flagLabel       1024 stepCounts          0
+     bpos(hex)          c seqCounts          0 flagLabel       2048 stepCounts          0
+     bpos(hex)          d seqCounts          0 flagLabel       4096 stepCounts          0
+     bpos(hex)          e seqCounts          0 flagLabel       8192 stepCounts          0
+     bpos(hex)          f seqCounts          0 flagLabel      16384 stepCounts          0
+
+
+
 
 
 WIP : Integrated Torch running debug

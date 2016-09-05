@@ -20,6 +20,8 @@ class NState ;
 class NLookup ; 
 class NConfigurable ; 
 class TorchStepNPY ; 
+class G4StepNPY ; 
+
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
@@ -79,6 +81,7 @@ class OKGEO_API OpticksHub {
        NPY<float>*          getNopsteps();  // updated when new G4 event is created
    public:
        TorchStepNPY*        getTorchstep(); // needs geometry for targetting 
+       G4StepNPY*           getG4Step();    // created in translateGenstep
    private:
        void                 translateGensteps(NPY<float>* gs);  // into Opticks lingo
        NPY<float>*          loadGenstepFile();
@@ -127,7 +130,7 @@ class OKGEO_API OpticksHub {
        NPY<float>*      m_nopsteps ;
        NPY<float>*      m_gensteps ;
        TorchStepNPY*    m_torchstep ; 
-
+       G4StepNPY*       m_g4step ;
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 
        numpyserver<numpydelegate>* m_server ;

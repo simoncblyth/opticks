@@ -2,11 +2,13 @@
 #include <string>
 #include <map>
 
+#include "SeqNPY.hpp"
 #include "PhotonsNPY.hpp"
 #include "HitsNPY.hpp"
 #include "RecordsNPY.hpp"
 #include "BoundariesNPY.hpp"
 #include "SequenceNPY.hpp"
+#include "G4StepNPY.hpp"
 #include "Types.hpp"
 #include "Timer.hpp"
 
@@ -36,9 +38,12 @@
 OpticksIdx::OpticksIdx(OpticksHub* hub)
    :
    m_hub(hub), 
-   m_opticks(hub->getOpticks())
+   m_opticks(hub->getOpticks()),
+   m_seq(NULL)
 {
 }
+
+
 
 
 GItemIndex* OpticksIdx::makeHistoryItemIndex()
@@ -153,6 +158,36 @@ void OpticksIdx::indexEvtOld()
 
     TIMER("indexEvtOld"); 
 }
+
+
+
+
+void OpticksIdx::indexSeqHost()
+{
+    LOG(info) << "OpticksIdx::indexSeqHost" ; 
+
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ; 
+
+    NPY<unsigned long long>* ph = evt->getSequenceData();
+
+    if(ph && ph->hasData())
+    {
+        m_seq = new SeqNPY(ph);
+        m_seq->dump("OpticksIdx::indexSeqHost");
+        std::vector<int> counts = m_seq->getCounts();
+
+        G4StepNPY* g4step = m_hub->getG4Step();
+        assert(g4step && "OpticksIdx::indexSeqHost requires G4StepNPY, created in translate"); 
+        g4step->checkCounts(counts, "OpticksIdx::indexSeqHost checkCounts"); 
+
+    }
+    else
+    { 
+        LOG(warning) << "OpticksIdx::indexSeqHost requires sequence data hostside " ;      
+    }
+}
+
 
 
 

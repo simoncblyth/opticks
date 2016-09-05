@@ -148,6 +148,8 @@ void OKG4Mgr::propagate()
         m_ope->propagate();                  // perform OptiX GPU propagation 
     }
 
+
+
     indexPropagation();
 
 
@@ -155,7 +157,10 @@ void OKG4Mgr::propagate()
     {
         if(m_viz) m_viz->downloadEvent();
         m_ope->downloadEvt();
-        m_idx->indexEvtOld();
+
+        m_idx->indexEvtOld();  // hostside checks, when saving makes sense
+        m_idx->indexSeqHost();
+
 
         m_hub->save();
     }

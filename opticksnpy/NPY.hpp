@@ -74,6 +74,7 @@ with::
 template <class T>
 class NPY_API NPY : public NPYBase {
 
+   friend class SeqNPY ; 
    friend class AxisNPY ; 
    friend class SequenceNPY ; 
    friend class RecordsNPY ; 

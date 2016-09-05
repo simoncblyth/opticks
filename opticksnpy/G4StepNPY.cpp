@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 
 
 
@@ -15,7 +16,8 @@
 G4StepNPY::G4StepNPY(NPY<float>* npy) 
        :  
        m_npy(npy),
-       m_lookup(NULL)
+       m_lookup(NULL),
+       m_total_photons(0)
 {
 }
 
@@ -79,6 +81,91 @@ void G4StepNPY::dump(const char* msg)
     }
     }
 }
+
+void G4StepNPY::countPhotons()
+{
+    for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
+    {
+        int label      = m_npy->getInt(i,0u,0u);
+        int numPhotons = m_npy->getInt(i,0u,3u);
+        if(m_photons.count(label) == 0) m_photons[label] = 0 ;
+        m_photons[label] += numPhotons ; 
+        m_total_photons += numPhotons ; 
+    }
+}
+
+
+void G4StepNPY::checkCounts(std::vector<int>& counts, const char* msg)
+{
+    LOG(info) << msg 
+              << " compare *seqCounts* (actual photon counts from propagation sequence data SeqNPY ) "
+              << " with *stepCounts* (expected photon counts from input G4StepNPY )  "
+              ;
+    assert(counts.size() == 16);
+
+    int mismatch(0);
+    for(unsigned i=0 ; i < counts.size() ; i++)
+    {
+         int label = i == 0 ? 0 : 0x1 << (i - 1) ;  // layout of OpticksPhoton flags  
+
+         int count = counts[i] ;
+         int xpect = getNumPhotons(label) ; 
+         if(count != xpect) mismatch += 1 ; 
+
+         std::cout 
+              << " bpos(hex) " << std::setw(10) << std::hex << i  << std::dec
+              << " seqCounts " << std::setw(10) << count
+              << " flagLabel " <<  std::setw(10) << label
+              << " stepCounts " << std::setw(10) << xpect 
+              << std::endl ; 
+    }
+
+    if(mismatch > 0)
+          LOG(fatal) << "G4StepNPY::checkCounts MISMATCH between steps and propagation photon counts  "
+                     << " mismatch " << mismatch
+                     ; 
+
+    assert(mismatch==0);
+}
+
+
+
+
+void G4StepNPY::Summary(const char* msg)
+{
+    LOG(info) << msg ; 
+
+    int total(0) ; 
+
+    for(std::map<int,int>::const_iterator it=m_photons.begin() ; it != m_photons.end() ; it++)
+    {
+        int label = it->first ; 
+        int numPhotons = it->second ; 
+        total += numPhotons ; 
+        std::cout
+             << std::setw(10) << label 
+             << std::setw(10) << numPhotons
+             << std::endl ; 
+    }
+
+    assert(total == m_total_photons);
+    std::cout
+             << std::setw(10) << "total"
+             << std::setw(10) << m_total_photons
+             << std::endl ; 
+}
+
+int G4StepNPY::getNumPhotons(int label)
+{
+    return m_photons.count(label) == 0 ? 0 : m_photons[label] ; 
+}
+int G4StepNPY::getNumPhotons()
+{
+    return m_total_photons ; 
+}
+
+
+
 
 
 void G4StepNPY::checklabel(int xlabel)
@@ -193,7 +280,7 @@ int G4StepNPY::getStepId(unsigned int i)
 {
     return m_npy->getInt(i,0,0);
 }
-bool G4StepNPY::isCerenkovStep(unsigned int i)
+bool G4StepNPY::isCerenkovStep(unsigned int i)  // hmm these only work prior to relabeling
 {
     return getStepId(i) < 0 ; 
 }

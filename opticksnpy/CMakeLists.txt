@@ -106,6 +106,7 @@ set(SOURCES
     NSpectral.cpp
 
     G4StepNPY.cpp
+    SeqNPY.cpp
     TorchStepNPY.cpp
     AxisNPY.cpp
 
@@ -148,6 +149,7 @@ RecordsNPY.hpp
 BoundariesNPY.hpp
 MaterialLibNPY.hpp
 SequenceNPY.hpp
+SeqNPY.hpp
 AxisNPY.hpp
 Counts.hpp
 numpy.hpp
