@@ -208,6 +208,32 @@ Checking consistency between input steps and output sequence, looks OK, there ar
 
 
 
+NEXT : genstep handling rationalize
+------------------------------------
+
+* translateGensteps invoked from multiple places
+* genstep handoff from G4 to OK is messy 
+* avoid duplication between OKMgr and OKG4Mgr ?
+* targetting configuration in Scene (which is not always available) is messy, move to Composition ? 
+
+::
+
+    simon:opticks blyth$ opticks-find translateGen
+    ./cfg4/CG4.cc:        m_hub->translateGensteps(gs);
+    ./okg4/OKG4Mgr.cc:        m_hub->translateGensteps(gsrec);
+    ./okg4/OKG4Mgr.cc:    // m_hub->translateGensteps(gs);     
+    ./opticksgeo/OpticksHub.cc:void OpticksHub::translateGensteps(NPY<float>* gs)
+    ./opticksgeo/OpticksHub.cc:            m_lookup->close("OpticksHub::translateGensteps");
+    ./opticksgeo/OpticksHub.cc:    ss << "OpticksHub::translateGensteps " 
+    ./opticksgeo/OpticksHub.hh:       G4StepNPY*           getG4Step();    // created in translateGenstep
+    ./opticksgeo/OpticksHub.hh:       void                 translateGensteps(NPY<float>* gs);  // into Opticks lingo
+    simon:opticks blyth$ 
+
+
+Perhaps can avoid translation by applying the 
+lookup translation at collection.  
+
+
 
 
 WIP : Integrated Torch running debug

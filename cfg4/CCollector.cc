@@ -1,19 +1,24 @@
 #include <sstream>
 
+#include "NLookup.hpp"
 #include "NPY.hpp"
-#include "OpticksG4Collector.hh"
+#include "CCollector.hh"
+
+#include "OpticksPhoton.h"
+
 #include "PLOG.hh"
 
-OpticksG4Collector* OpticksG4Collector::INSTANCE = NULL ;
+CCollector* CCollector::INSTANCE = NULL ;
 
-OpticksG4Collector* OpticksG4Collector::Instance()
+CCollector* CCollector::Instance()
 {
-   if(!INSTANCE) INSTANCE = new OpticksG4Collector ;
+   assert(INSTANCE && "CCollector needs to be instanciated with NLookup instance first");
    return INSTANCE ;
 }
 
-OpticksG4Collector::OpticksG4Collector()  
+CCollector::CCollector(NLookup* lookup)  
     :
+    m_lookup(lookup),
     m_onestep(NPY<float>::make(1,6,4)),
     m_values(NULL),
     m_genstep(NPY<float>::make(0,6,4)),
@@ -22,29 +27,56 @@ OpticksG4Collector::OpticksG4Collector()
 {
     m_onestep->zero();
     m_values = m_onestep->getValues();
+
+    INSTANCE = this ; 
+
 }
 
-NPY<float>*  OpticksG4Collector::getGensteps()
+void CCollector::postinit()
+{ 
+    m_lookup->close("CCollector::postinit closing lookup");
+    //m_lookup->dump("Collector::postinit closing lookup");
+}
+
+int CCollector::translate(int acode)
+{
+    int bcode = m_lookup->a2b(acode) ;
+    return bcode ; 
+}
+
+NPY<float>*  CCollector::getGensteps()
 {
     consistencyCheck() ;
     return m_genstep ; 
 }
 
-void OpticksG4Collector::consistencyCheck()
+void CCollector::setGensteps(NPY<float>* gs)
+{
+    m_genstep = gs ; 
+}
+
+
+
+
+
+
+
+
+void CCollector::consistencyCheck()
 {
      unsigned numItems = m_genstep->getNumItems();
      bool consistent = numItems == m_scintillation_count + m_cerenkov_count ;
      if(!consistent)
-         LOG(fatal) << "OpticksG4Collector::consistencyCheck FAIL " 
+         LOG(fatal) << "CCollector::consistencyCheck FAIL " 
                     << description()
                     ;
      assert(consistent);
 }
 
-std::string OpticksG4Collector::description()
+std::string CCollector::description()
 {
     std::stringstream ss ; 
-    ss << " OpticksG4Collector "
+    ss << " CCollector "
        << " numItems " << m_genstep->getNumItems() 
        << " scintillation_count " << m_scintillation_count
        << " cerenkov_count " << m_cerenkov_count
@@ -53,7 +85,7 @@ std::string OpticksG4Collector::description()
     return ss.str();
 }
 
-void OpticksG4Collector::Summary(const char* msg)
+void CCollector::Summary(const char* msg)
 { 
     LOG(info) << msg 
               << description()
@@ -61,9 +93,9 @@ void OpticksG4Collector::Summary(const char* msg)
 }
 
 
-void OpticksG4Collector::collectScintillationStep
+void CCollector::collectScintillationStep
 (
-            G4int                id, 
+            G4int                /*id*/, 
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,
@@ -95,12 +127,15 @@ void OpticksG4Collector::collectScintillationStep
 ) 
 {
      m_scintillation_count += 1 ;   // 1-based index
-     LOG(debug) << " scintillation_count " << m_scintillation_count ;
+     LOG(debug) 
+          << " scintillation_count " << m_scintillation_count ;
 
      uif_t uifa[4] ;
-     uifa[0].i = id == 0 ? m_scintillation_count : id  ;   // use the 1-based index when id zero 
+     uifa[0].i = SCINTILLATION ; 
+
+    // id == 0 ? m_scintillation_count : id  ;   // use the 1-based index when id zero 
      uifa[1].i = parentId ; 
-     uifa[2].i = materialId ;   // raw G4 materialId, will need to be translated into GBndLib material line for GPU usage 
+     uifa[2].i = translate(materialId) ;   // raw G4 materialId translated into GBndLib material line for GPU usage 
      uifa[3].i = numPhotons ; 
 
      uif_t uifb[4] ;
@@ -148,9 +183,9 @@ void OpticksG4Collector::collectScintillationStep
 
 
 
-void OpticksG4Collector::collectCerenkovStep
+void CCollector::collectCerenkovStep
 (
-            G4int                id, 
+            G4int              /*id*/, 
             G4int                parentId,
             G4int                materialId,
             G4int                numPhotons,
@@ -182,12 +217,14 @@ void OpticksG4Collector::collectCerenkovStep
 )
 {
      m_cerenkov_count += 1 ;   // 1-based index
-     LOG(debug) << " cerenkov_count " << m_cerenkov_count ;
+     LOG(debug) 
+           << " cerenkov_count " << m_cerenkov_count ;
 
      uif_t uifa[4] ;
-     uifa[0].i = id == 0 ? -m_cerenkov_count : id  ;   // use the negated 1-based index when id zero 
+     uifa[0].i = CERENKOV ; 
+   // id == 0 ? -m_cerenkov_count : id  ;   // use the negated 1-based index when id zero 
      uifa[1].i = parentId ; 
-     uifa[2].i = materialId ; 
+     uifa[2].i = translate(materialId) ; 
      uifa[3].i = numPhotons ; 
 
      uif_t uifb[4] ;

@@ -130,7 +130,7 @@ set(SOURCES
 
     CSteppingAction.cc
     CG4.cc
-    OpticksG4Collector.cc
+    CCollector.cc
     CRunAction.cc
     CEventAction.cc
 )
@@ -185,7 +185,7 @@ set(HEADERS
 
     CSteppingAction.hh
     CG4.hh
-    OpticksG4Collector.hh
+    CCollector.hh
     CRunAction.hh
     CEventAction.hh
 )

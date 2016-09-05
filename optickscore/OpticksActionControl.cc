@@ -7,6 +7,7 @@ const char* OpticksActionControl::GS_LOADED_     = "GS_LOADED" ;
 const char* OpticksActionControl::GS_FABRICATED_ = "GS_FABRICATED" ; 
 const char* OpticksActionControl::GS_TRANSLATED_ = "GS_TRANSLATED" ; 
 const char* OpticksActionControl::GS_TORCH_      = "GS_TORCH" ; 
+const char* OpticksActionControl::GS_LEGACY_     = "GS_LEGACY" ; 
 
 std::vector<const char*> OpticksActionControl::Tags()
 {
@@ -15,6 +16,7 @@ std::vector<const char*> OpticksActionControl::Tags()
     tags.push_back(GS_FABRICATED_);
     tags.push_back(GS_TRANSLATED_);
     tags.push_back(GS_TORCH_);
+    tags.push_back(GS_LEGACY_);
     return tags  ;
 }
 
@@ -25,6 +27,7 @@ std::string OpticksActionControl::Description(unsigned long long ctrl)
    if( ctrl & GS_FABRICATED  ) ss << GS_FABRICATED_ << " "; 
    if( ctrl & GS_TRANSLATED )  ss << GS_TRANSLATED_ << " "; 
    if( ctrl & GS_TORCH)        ss << GS_TORCH_ << " "; 
+   if( ctrl & GS_LEGACY)       ss << GS_LEGACY_ << " "; 
    return ss.str();
 }
 
@@ -35,6 +38,7 @@ unsigned long long OpticksActionControl::ParseTag(const char* k)
     else if(strcmp(k,GS_FABRICATED_)==0)      tag = GS_FABRICATED ;
     else if(strcmp(k,GS_TRANSLATED_)==0)      tag = GS_TRANSLATED ;
     else if(strcmp(k,GS_TORCH_)==0)           tag = GS_TORCH ;
+    else if(strcmp(k,GS_LEGACY_)==0)          tag = GS_LEGACY ;
     return tag ;
 }
 

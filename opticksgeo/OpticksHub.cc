@@ -137,13 +137,13 @@ void OpticksHub::loadGeometry()
 
     LOG(fatal) << "OpticksHub::loadGeometry DONE" ; 
 
-    postLoadGeometry();
+    setupInputGensteps();
 }
 
 
-void OpticksHub::postLoadGeometry()
+void OpticksHub::setupInputGensteps()
 {
-    LOG(fatal) << "OpticksHub::postLoadGeometry" ; 
+    LOG(fatal) << "OpticksHub::setupInputGensteps" ; 
 
 
     unsigned int code = m_ok->getSourceCode();
@@ -151,37 +151,33 @@ void OpticksHub::postLoadGeometry()
     if(code == TORCH)
     {
         m_torchstep = makeTorchstep() ;
-        m_gensteps = m_torchstep->getNPY();
-        m_gensteps->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
+        NPY<float>* gs = m_torchstep->getNPY();
+        gs->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
+        setGensteps(gs);
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
-        m_gensteps = loadGenstepFile();
+        NPY<float>* gs = loadGenstepFile();
+        gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
+        setGensteps(gs);
     }
     else if( code == G4GUN  )
     {
         if(m_ok->isIntegrated())
         {
-             LOG(info) << " integrated G4GUN running, try to simulate with G4 directly " ;  
+             LOG(info) << " integrated G4GUN running, gensteps will be collected from G4 directly " ;  
+             
         }
         else
         {
              LOG(info) << " non-integrated G4GUN running, attempt to load gensteps from file " ;  
-             m_gensteps = loadGenstepFile();
-             assert(m_gensteps && "failed to load");
+             NPY<float>* gs = loadGenstepFile();
+             gs->addActionControl(OpticksActionControl::Parse("GS_LOADED"));
+             setGensteps(gs);
         }
     }
 }
 
-NPY<float>* OpticksHub::getGensteps()
-{
-    return m_gensteps ; 
-}
-
-TorchStepNPY* OpticksHub::getTorchstep()
-{
-    return m_torchstep ; 
-}
 
 
 NPY<float>* OpticksHub::loadGenstepFile()
@@ -206,59 +202,71 @@ NPY<float>* OpticksHub::loadGenstepFile()
 }
 
 
+
+
+NPY<float>* OpticksHub::getGensteps()
+{
+    return m_gensteps ; 
+}
+TorchStepNPY* OpticksHub::getTorchstep()
+{
+    return m_torchstep ; 
+}
 G4StepNPY* OpticksHub::getG4Step()
 {
     return m_g4step ;  
 }
 
-void OpticksHub::translateGensteps(NPY<float>* gs)
+
+
+void OpticksHub::setGensteps(NPY<float>* gs)
 {
-    // an appropriate juncture to translate is prior to 
-    // setting into the OpticksEvent
-
-    const char* label = "GS_TRANSLATED" ;
-
-    OpticksActionControl oac(gs->getActionControlPtr());
-    assert( !oac.isSet(label) );
-    oac.add(label);
-
+    m_gensteps = gs ; 
     m_g4step = new G4StepNPY(gs);    
 
+    OpticksActionControl oac(gs->getActionControlPtr());
     bool gs_torch = oac.isSet("GS_TORCH") ; 
+    bool gs_legacy = oac.isSet("GS_LEGACY") ; 
 
-    if(gs_torch)
-    {
-        LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
-        m_g4step->checklabel(TORCH); 
+    LOG(fatal) << "OpticksHub::setGensteps"
+               << " shape " << gs->getShapeString()
+               << " " << oac.description("oac")
+               ;
 
-        // TORCH matline should already be texture lines
-    }
-    else
+
+    if(gs_legacy)
     {
+        assert(!gs_torch); // there are no legacy torch files ?
+
         m_g4step->relabel(CERENKOV, SCINTILLATION); 
-
         // CERENKOV or SCINTILLATION codes are used depending on 
         // the sign of the pre-label 
         // this becomes the ghead.i.x used in cu/generate.cu
         // which dictates what to generate
 
-        if(m_lookup)
-        {  
-            m_lookup->close("OpticksHub::translateGensteps");
+        assert(m_lookup);
+        m_lookup->close("OpticksHub::setGensteps GS_LEGACY");
 
-            m_g4step->setLookup(m_lookup);   
-            m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+        m_g4step->setLookup(m_lookup);   
+        m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+        // replaces original material indices with material lines
+        // for easy access to properties using boundary_lookup GPU side
 
-            // replaces original material indices with material lines
-            // for easy access to properties using boundary_lookup GPU side
-        }
+    }
+    else if(gs_torch)
+    {
+        LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
+        m_g4step->checklabel(TORCH); 
+    }
+    else
+    {
+        m_g4step->checklabel(CERENKOV, SCINTILLATION);
     }
 
     m_g4step->countPhotons();
 
-
     std::stringstream ss ; 
-    ss << "OpticksHub::translateGensteps " 
+    ss << "OpticksHub::setGensteps " 
        << " TORCH: " << TORCH 
        << " CERENKOV: " << CERENKOV 
        << " SCINTILLATION: " << SCINTILLATION  
@@ -551,8 +559,15 @@ OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
 
     assert(gs && "OpticksHub::initOKEvent gs NULL");
 
+    LOG(info) << "OpticksHub::initOKEvent "
+              << " gs " << gs->getShapeString()
+              ;
+ 
+    setGensteps(gs);  
+
     bool ok = true ; 
     createEvent(ok); 
+
     m_okevt->setGenstepData(gs);
     assert(m_evt == m_okevt);
 

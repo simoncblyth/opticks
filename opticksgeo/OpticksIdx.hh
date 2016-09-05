@@ -4,7 +4,6 @@ class GItemIndex ;
 
 class Opticks ; 
 class OpticksHub ; 
-class SeqNPY ; 
 
 #include "OKGEO_API_EXPORT.hh"
 
@@ -23,7 +22,6 @@ class OKGEO_API OpticksIdx {
    private:
         OpticksHub*    m_hub ; 
         Opticks*       m_opticks ; 
-        SeqNPY*        m_seq ; 
 
 };
 

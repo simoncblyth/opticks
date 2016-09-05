@@ -165,37 +165,46 @@ int G4StepNPY::getNumPhotons()
 }
 
 
-
-
-
-void G4StepNPY::checklabel(int xlabel)
+void G4StepNPY::checklabel(int xlabel, int ylabel)
 {
-    LOG(info)<<"G4StepNPY::checklabel " << xlabel  ;
+    LOG(info)<<"G4StepNPY::checklabel" 
+             << " xlabel " << xlabel 
+             << " ylabel " << ylabel 
+             ;
 
     unsigned mismatch = 0 ;  
 
     for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
     {
         int label = m_npy->getInt(i,0u,0u);
-        if(xlabel == label) 
-        {
-             LOG(trace) << " expected label " ; 
-        }
-        else
-        {
-             LOG(warning) << " mismatch "  
-                          << " xlabel " << xlabel 
-                          << " label " << label 
-                           ; 
 
-             mismatch += 1 ; 
+        if(xlabel > -1 && ylabel > -1)
+        {
+            if(xlabel == label || ylabel == label )
+                 continue ;
+            else 
+                 mismatch += 1 ;  
+        }
+        else if(xlabel > -1 )
+        {
+            if(xlabel == label )
+                 continue ;
+            else 
+                 mismatch += 1 ;  
+        } 
+        else if(ylabel > -1 )
+        {
+            if(ylabel == label )
+                 continue ;
+            else 
+                 mismatch += 1 ;  
         } 
     }
 
     if(mismatch > 0) 
        LOG(fatal) << " mismatch " << mismatch ; 
- 
-    assert(mismatch == 0);
+  
+    assert(mismatch == 0 );
 }
 
 
@@ -280,7 +289,12 @@ int G4StepNPY::getStepId(unsigned int i)
 {
     return m_npy->getInt(i,0,0);
 }
-bool G4StepNPY::isCerenkovStep(unsigned int i)  // hmm these only work prior to relabeling
+
+/*
+
+no longer valid as using the enum codes on collection
+
+bool G4StepNPY::isCerenkovStep(unsigned int i)  
 {
     return getStepId(i) < 0 ; 
 }
@@ -288,6 +302,7 @@ bool G4StepNPY::isScintillationStep(unsigned int i)
 {
     return getStepId(i) > 0 ; 
 }
+*/
 
 
 

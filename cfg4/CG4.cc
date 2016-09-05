@@ -35,7 +35,7 @@
 
 //cg4-
 #include "ActionInitialization.hh"
-#include "OpticksG4Collector.hh"
+//#include "CCollector.hh"
 
 #include "CPhysics.hh"
 #include "CGeometry.hh"
@@ -96,9 +96,10 @@ CDetector* CG4::getDetector()
 
 
 
-CG4::CG4(OpticksHub* hub) 
+CG4::CG4(OpticksHub* hub, bool immediate) 
    :
      m_hub(hub),
+     m_immediate(immediate),
      m_ok(m_hub->getOpticks()),
      m_cfg(m_ok->getCfg()),
      m_physics(new CPhysics(m_hub)),
@@ -111,16 +112,13 @@ CG4::CG4(OpticksHub* hub)
      m_recorder(new CRecorder(m_hub, m_lib, m_generator->isDynamic())), 
      m_rec(new Rec(m_hub, m_lib, m_generator->isDynamic())), 
      m_steprec(new CStepRec(m_hub, m_generator->isDynamic())),  
-     m_collector(NULL),
      m_visManager(NULL),
      m_uiManager(NULL),
      m_ui(NULL),
      m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
      m_ra(new CRunAction(m_hub)),
-     m_ea(new CEventAction(m_hub)),
-     m_gensteps_generated(NULL),
-     m_gensteps_recorded(NULL)
+     m_ea(new CEventAction(m_hub))
 {
      init();
 }
@@ -128,6 +126,13 @@ CG4::CG4(OpticksHub* hub)
 void CG4::init()
 {
     //m_ok->Summary("CG4::init opticks summary");
+
+    if(m_immediate)
+    {
+        configure();
+        initialize();
+    }
+
     TIMER("init");
 }
 
@@ -141,20 +146,6 @@ void CG4::configure()
 void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)
 {
     m_runManager->SetUserInitialization(detector);
-}
-
-void CG4::execute(const char* path)
-{
-    if(path && strlen(path) < 3) 
-    {
-        LOG(info) << "CG4::execute skip short path [" << path << "]" ;
-        return ; 
-    } 
-
-    std::string cmd("/control/execute ");
-    cmd += path ; 
-    LOG(info) << "CG4::execute [" << cmd << "]" ; 
-    m_uiManager->ApplyCommand(cmd);
 }
 
 
@@ -182,9 +173,13 @@ void CG4::postinitialize()
     m_material_table = new CMaterialTable(m_ok->getMaterialPrefix());
     //m_material_table->dump("CG4::postinitialize");
 
+    m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ;  // for translation of material indices into GPU texture lines 
+
     LOG(info) << "CG4::postinitialize DONE" ;
     TIMER("postinitialize");
 }
+
+
 
 
 std::map<std::string, unsigned>& CG4::getMaterialMap()
@@ -192,6 +187,23 @@ std::map<std::string, unsigned>& CG4::getMaterialMap()
     assert(m_material_table);
     return m_material_table->getMaterialMap();
 }
+
+void CG4::execute(const char* path)
+{
+    if(path && strlen(path) < 3) 
+    {
+        LOG(info) << "CG4::execute skip short path [" << path << "]" ;
+        return ; 
+    } 
+
+    std::string cmd("/control/execute ");
+    cmd += path ; 
+    LOG(info) << "CG4::execute [" << cmd << "]" ; 
+    m_uiManager->ApplyCommand(cmd);
+}
+
+
+
 
 void CG4::interactive()
 {
@@ -217,11 +229,10 @@ OpticksEvent* CG4::initEvent()
     unsigned int numG4Evt = m_generator->getNumG4Event();
 
     NPY<float>* gs = m_generator->getGensteps(); 
-    setGenstepsGenerated(gs);
+    //setGenstepsGenerated(gs);
 
     if(gs)
     {
-        m_hub->translateGensteps(gs);
         evt->setGenstepData(gs);   // <-- this will switch on static running as numPhotons is known 
         evt->zero();               // static approach requires allocation ahead
     } 
@@ -271,35 +282,18 @@ void CG4::postpropagate()
 
     if(!finmac.empty()) execute(finmac.c_str());
 
-    m_collector = OpticksG4Collector::Instance() ;
+/*
+    m_collector = CCollector::Instance() ;
     m_collector->Summary("CG4::postpropagate");
 
     setGenstepsRecorded(m_collector->getGensteps());
+*/
 
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt);
     evt->postPropagateGeant4();
-}
 
-void CG4::setGenstepsGenerated(NPY<float>* gs)
-{
-    m_gensteps_generated = gs ; 
 }
-NPY<float>* CG4::getGenstepsGenerated()
-{
-    return m_gensteps_generated ;
-}
-
-void CG4::setGenstepsRecorded(NPY<float>* gs)
-{
-    m_gensteps_recorded = gs ; 
-}
-NPY<float>* CG4::getGenstepsRecorded()
-{
-    return m_gensteps_recorded ; 
-}   
-
-
 
 void CG4::cleanup()
 {

@@ -31,7 +31,7 @@ class NPY_API G4StepNPY {
        NPY<float>* getNPY();
    public:  
        void relabel(int cerenkov_label, int scintillation_label);
-       void checklabel(int xlabel);
+       void checklabel(int xlabel, int ylabel=-1);
        void checkCounts(std::vector<int>& counts, const char* msg="G4StepNPY::checkCounts");
    public:  
        void countPhotons();
@@ -46,8 +46,8 @@ class NPY_API G4StepNPY {
        void dumpLines(const char* msg);
    public:  
        int  getStepId(unsigned int i=0);
-       bool isCerenkovStep(unsigned int i=0);
-       bool isScintillationStep(unsigned int i=0);
+       //bool isCerenkovStep(unsigned int i=0);
+       //bool isScintillationStep(unsigned int i=0);
   private:
        // the heart of the lookup:  int bcode = m_lookup->a2b(acode) ;
        bool applyLookup(unsigned int index);

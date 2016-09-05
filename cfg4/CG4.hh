@@ -28,7 +28,6 @@ class CGenerator ;
 class CRecorder ; 
 class Rec ; 
 class CStepRec ; 
-class OpticksG4Collector ; 
 
 class OpticksHub ; 
 class OpticksEvent ; 
@@ -42,7 +41,7 @@ class CFG4_API CG4
 {
         friend class CGeometry ; 
    public:
-        CG4(OpticksHub* hub);
+        CG4(OpticksHub* hub, bool immediate=false);
         void configure();
         void interactive();
         void cleanup();
@@ -66,14 +65,10 @@ class CFG4_API CG4
         Rec*           getRec();
         CPropLib*      getPropLib();
         CDetector*     getDetector();
-   public:
-        NPY<float>*    getGenstepsGenerated();  // eg fabricated torch gensteps used for testing photon only propagation
-        NPY<float>*    getGenstepsRecorded();   // eg G4GUN Cerenkov and Scintillation gensteps collected during G4 propagate
-   private:
-        void           setGenstepsGenerated(NPY<float>* gs);
-        void           setGenstepsRecorded( NPY<float>* gs);
+
    private:
         OpticksHub*           m_hub ; 
+        bool                  m_immediate ; 
         Opticks*              m_ok ; 
         OpticksCfg<Opticks>*  m_cfg ; 
         CPhysics*             m_physics ; 
@@ -87,7 +82,6 @@ class CFG4_API CG4
         CRecorder*            m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
-        OpticksG4Collector*   m_collector ; 
    private:
         G4VisManager*         m_visManager ; 
         G4UImanager*          m_uiManager ; 
@@ -97,10 +91,6 @@ class CFG4_API CG4
         G4UserSteppingAction*          m_sa ; 
         G4UserRunAction*               m_ra ; 
         G4UserEventAction*             m_ea ; 
-   private:
-        NPY<float>*           m_gensteps_generated ; 
-        NPY<float>*           m_gensteps_recorded ; 
-
         
 };
 

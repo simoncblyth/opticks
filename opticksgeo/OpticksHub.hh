@@ -77,6 +77,7 @@ class OKGEO_API OpticksHub {
        OpticksEvent* createEvent(bool ok);
        OpticksEvent* getEvent();   // gets the last created evt, either G4 or OK 
    public:
+       void setGensteps(NPY<float>* gs);   // does checks and defines G4StepNPY 
        NPY<float>*          getGensteps();  
        NPY<float>*          getNopsteps();  // updated when new G4 event is created
    public:
@@ -115,7 +116,7 @@ class OKGEO_API OpticksHub {
        void configureCompositionSize();
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
-       void postLoadGeometry();
+       void setupInputGensteps();
    private:
        Opticks*         m_ok ; 
        bool             m_immediate ; 

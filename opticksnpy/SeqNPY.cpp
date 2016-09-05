@@ -17,16 +17,18 @@ SeqNPY::SeqNPY(NPY<unsigned long long>* sequence)
     init();
 }
 
+SeqNPY::~SeqNPY()
+{
+    delete [] m_counts ; 
+    m_counts = NULL ;  
+}
+
+
 void SeqNPY::init()
 {
     for(unsigned i=0 ; i < N ; i++) m_counts[i] = 0 ; 
     countPhotons();
 }
-
-
-// hmm : would be better to use the GPU derived
-//       indices rather than gpong back to the raw sequence
-//       BUT: this is handy as a check anyhow
 
 void SeqNPY::countPhotons()
 {

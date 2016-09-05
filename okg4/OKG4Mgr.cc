@@ -18,7 +18,7 @@ class NConfigurable ;
 #include "OpticksViz.hh"
 
 #include "CG4.hh"
-
+#include "CCollector.hh"
 
 #include "PLOG.hh"
 #include "OKG4_BODY.hh"
@@ -35,9 +35,10 @@ class NConfigurable ;
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_ok(new Opticks(argc, argv, true)),  // true: integrated running 
-    m_hub(new OpticksHub(m_ok, true)),    // true: configure and loadGeometry immediately, otherwise too late for CG4
+    m_hub(new OpticksHub(m_ok, true)),    // true: configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
-    m_g4(new CG4(m_hub)),
+    m_collector(new CCollector(m_hub->getLookup())),   // after CG4 loads geometry, for material code cross-referenceing in NLookup
+    m_g4(new CG4(m_hub, true)),   // true: configure and initialize immediately 
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
 #ifdef WITH_OPTIX
     m_ope(new OpEngine(m_hub)),
@@ -45,7 +46,10 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
 #endif
     m_placeholder(0)
 {
+    m_collector->postinit();   // closes Lookup only after CG4 has been able to override LookupA
+
     init();
+
     LOG(fatal) << "OKG4Mgr::OKG4Mgr DONE" ;  
 }
 
@@ -53,20 +57,14 @@ void OKG4Mgr::init()
 {
     LOG(fatal) << "OKG4Mgr::init" ;  
 
-    if(m_viz) m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
+    if(m_viz) 
+    {
+        m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-    m_g4->configure();                     // currently does nothing 
-
-    m_g4->initialize();                   // runManager initialize
-
-
-    m_hub->overrideMaterialMapA( m_g4->getMaterialMap(), "OKG4Mgr::init/g4mm") ;  // for translation of material indices into GPU texture lines
+        m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
- 
-    if(m_viz) m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
- 
-
-    if(m_viz) m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+        m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+    }
 
 #ifdef WITH_OPTIX
     m_ope->prepareOptiX();                // creates OptiX context and populates with geometry by OGeo, OScintillatorLib, ... convert methods 
@@ -74,53 +72,36 @@ void OKG4Mgr::init()
     if(m_opv) m_opv->prepareTracer();     // creates ORenderer, OTracer
 #endif
 
-    LOG(fatal) << "OKG4Mgr::initGeometry DONE" ;
+    LOG(fatal) << "OKG4Mgr::init DONE" ;
 }
+
+
+
 
 
 void OKG4Mgr::propagate()
 {
     LOG(fatal) << "OKG4Mgr::propagate" ;
 
+    unsigned code = m_ok->getSourceCode();
+
     m_g4->propagate();
 
-    NPY<float>* gsgen = m_g4->getGenstepsGenerated();
-    NPY<float>* gsrec = m_g4->getGenstepsRecorded();
+    NPY<float>* gs = code == G4GUN ? m_collector->getGensteps() : m_hub->getGensteps() ;  i
+     // collected from G4  OR input gensteps
 
-    int n_gsgen = gsgen ? gsgen->getNumItems() : -1 ; 
-    int n_gsrec = gsrec ? gsrec->getNumItems() : -1 ;
+    int n_gs  = gs ? gs->getNumItems() : -1 ; 
 
-    LOG(info) << "OKG4Mgr::propagate"
-               << " n_gsgen " <<  n_gsgen  
-               << " n_gsrec " <<  n_gsrec 
-               ;
+    LOG(fatal) << "OKG4Mgr::propagate n_gs " << n_gs ;  
 
-    NPY<float>* gs = NULL ; 
-    if( n_gsrec == 0 && n_gsgen > 0)
+    if( n_gs <= 0 )
     {
-        LOG(fatal) << "no recorded gensteps from G4 but there are generated gs (probably torch running) " ; 
-        gs = gsgen ;
-    }
-    else if( n_gsrec > 0 && n_gsgen == -1)
-    {
-        LOG(fatal) << "recorded gensteps from G4 and no generated gs (probably g4gun running) " ; 
-        gs = gsrec ; 
-        m_hub->translateGensteps(gsrec);
-    } 
-    else
-    {
-        LOG(fatal) << "OKG4Mgr::propagate"
+          LOG(fatal) << "OKG4Mgr::propagate"
                      << " SKIPPING as no collected optical gensteps (ie Cerenkov or scintillation gensteps) "
-                     << " or generated torch gensteps  "
+                     << " or fabricated torch gensteps  "
                      ;
-        return ;  
+         return ;  
     }
-
-    
-    // m_hub->translateGensteps(gs);     
-    // relabel and apply lookup,  is this needed for both gs flavors 
-    // can it move inside m_hub ?
-
 
     m_hub->initOKEvent(gs);           // make a new evt 
 

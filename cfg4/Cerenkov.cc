@@ -73,7 +73,7 @@
 #include "G4MaterialCutsCouple.hh"
 #include "G4ParticleDefinition.hh"
 
-#include "OpticksG4Collector.hh"
+#include "CCollector.hh"
 #include "Cerenkov.hh"
 
 #include "CFG4_POP.hh"
@@ -234,7 +234,7 @@ Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         const G4ParticleDefinition* definition = aParticle->GetDefinition();
         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
         G4int materialIndex = aMaterial->GetIndex();
-        OpticksG4Collector::Instance()->collectCerenkovStep(
+        CCollector::Instance()->collectCerenkovStep(
 
                0,                  // 0     id:zero means use cerenkov step count 
                aTrack.GetTrackID(),

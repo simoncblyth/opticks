@@ -38,8 +38,7 @@
 OpticksIdx::OpticksIdx(OpticksHub* hub)
    :
    m_hub(hub), 
-   m_opticks(hub->getOpticks()),
-   m_seq(NULL)
+   m_opticks(hub->getOpticks())
 {
 }
 
@@ -160,8 +159,6 @@ void OpticksIdx::indexEvtOld()
 }
 
 
-
-
 void OpticksIdx::indexSeqHost()
 {
     LOG(info) << "OpticksIdx::indexSeqHost" ; 
@@ -173,22 +170,20 @@ void OpticksIdx::indexSeqHost()
 
     if(ph && ph->hasData())
     {
-        m_seq = new SeqNPY(ph);
-        m_seq->dump("OpticksIdx::indexSeqHost");
-        std::vector<int> counts = m_seq->getCounts();
+        SeqNPY* seq = new SeqNPY(ph);
+        seq->dump("OpticksIdx::indexSeqHost");
+        std::vector<int> counts = seq->getCounts();
+        delete seq ; 
 
         G4StepNPY* g4step = m_hub->getG4Step();
         assert(g4step && "OpticksIdx::indexSeqHost requires G4StepNPY, created in translate"); 
         g4step->checkCounts(counts, "OpticksIdx::indexSeqHost checkCounts"); 
-
     }
     else
     { 
         LOG(warning) << "OpticksIdx::indexSeqHost requires sequence data hostside " ;      
     }
 }
-
-
 
 
 void OpticksIdx::indexBoundariesHost()
@@ -218,7 +213,6 @@ void OpticksIdx::indexBoundariesHost()
 
     TIMER("indexBoundariesHost");
 }
-
 
 
 

@@ -2,10 +2,12 @@
 
 #include <string>
 #include "G4Types.hh"
+
+class NLookup ; 
 template <typename T> class NPY ;
 
 /**
-OpticksG4Collector
+CCollector
 ==================== 
 
 Gensteps have an item shape of 6*4 (ie 6 quads) the 
@@ -26,16 +28,26 @@ prior to the photon loop.
  
 **/
 
-class OpticksG4Collector {
+#include "CFG4_API_EXPORT.hh"
+
+class CFG4_API CCollector 
+{
+         friend class OKG4Mgr ; 
+         friend class CG4 ; 
    public:
-         static OpticksG4Collector* Instance();
+         static CCollector* Instance();
    public:
-         OpticksG4Collector();
+         CCollector(NLookup* lookup);
+   public:
          NPY<float>*  getGensteps();
+   public:
          std::string description();
-         void Summary(const char* msg="OpticksG4Collector::Summary");
+         void Summary(const char* msg="CCollector::Summary");
+         int translate(int acode);
    private:
+         void setGensteps(NPY<float>* gs);
          void consistencyCheck();
+         void postinit();
    public:
          void collectScintillationStep(
             G4int                id, 
@@ -103,12 +115,14 @@ class OpticksG4Collector {
 
 
    private:
-         static OpticksG4Collector* INSTANCE ;      
+         static CCollector* INSTANCE ;      
    private:
+         NLookup*     m_lookup ; 
          NPY<float>*  m_onestep ;
          float*       m_values ;  
          NPY<float>*  m_genstep ;
          unsigned     m_scintillation_count ; 
          unsigned     m_cerenkov_count ; 
+
 
 };
