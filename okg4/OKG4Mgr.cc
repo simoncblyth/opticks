@@ -34,49 +34,25 @@ class NConfigurable ;
 
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
-    m_ok(new Opticks(argc, argv, true)),  // true: integrated running 
-    m_hub(new OpticksHub(m_ok, true)),    // true: configure, loadGeometry and setupInputGensteps immediately
+    m_ok(new Opticks(argc, argv, true)),               // true: integrated running 
+    m_hub(new OpticksHub(m_ok, true)),                 // true: configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
+    m_g4(new CG4(m_hub, true)),                        // true: configure and initialize immediately 
     m_collector(new CCollector(m_hub->getLookup())),   // after CG4 loads geometry, for material code cross-referenceing in NLookup
-    m_g4(new CG4(m_hub, true)),   // true: configure and initialize immediately 
-    m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
+    m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
 #ifdef WITH_OPTIX
-    m_ope(new OpEngine(m_hub)),
-    m_opv(m_viz ? new OpViz(m_ope,m_viz) : NULL),
+    m_ope(new OpEngine(m_hub, true)),
+    m_opv(m_viz ? new OpViz(m_ope,m_viz, true) : NULL),
 #endif
     m_placeholder(0)
 {
-    m_collector->postinit();   // closes Lookup only after CG4 has been able to override LookupA
-
     init();
-
     LOG(fatal) << "OKG4Mgr::OKG4Mgr DONE" ;  
 }
 
 void OKG4Mgr::init()
 {
-    LOG(fatal) << "OKG4Mgr::init" ;  
-
-    if(m_viz) 
-    {
-        m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
-
-        m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
- 
-        m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
-    }
-
-#ifdef WITH_OPTIX
-    m_ope->prepareOptiX();                // creates OptiX context and populates with geometry by OGeo, OScintillatorLib, ... convert methods 
-
-    if(m_opv) m_opv->prepareTracer();     // creates ORenderer, OTracer
-#endif
-
-    LOG(fatal) << "OKG4Mgr::init DONE" ;
 }
-
-
-
 
 
 void OKG4Mgr::propagate()
@@ -87,8 +63,8 @@ void OKG4Mgr::propagate()
 
     m_g4->propagate();
 
-    NPY<float>* gs = code == G4GUN ? m_collector->getGensteps() : m_hub->getGensteps() ;  i
-     // collected from G4  OR input gensteps
+    NPY<float>* gs = code == G4GUN ? m_collector->getGensteps() : m_hub->getGensteps() ;  
+     // collected from G4  OR input gensteps from torch or file
 
     int n_gs  = gs ? gs->getNumItems() : -1 ; 
 
@@ -103,14 +79,11 @@ void OKG4Mgr::propagate()
          return ;  
     }
 
-    m_hub->initOKEvent(gs);           // make a new evt 
+    m_hub->initOKEvent(gs);          // make an Opticks evt to hold the propagation 
 
     if(m_viz)
     { 
-        // handling target option inside Scene is inconvenient  TODO: centralize
-        int target = m_viz->getTarget();  // hmm target could be non oglrap- specific 
-        if(target == 0) 
-            m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+        m_hub->target();             // if not already targetted, point Camera at gensteps of last created evt
 
         m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
     }
@@ -128,7 +101,6 @@ void OKG4Mgr::propagate()
     {
         m_ope->propagate();                  // perform OptiX GPU propagation 
     }
-
 
 
     indexPropagation();
@@ -165,6 +137,9 @@ void OKG4Mgr::indexPropagation()
     }
     if(m_viz) m_viz->indexPresentationPrep();
 }
+
+
+
 
 void OKG4Mgr::visualize()
 {

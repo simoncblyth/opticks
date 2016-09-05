@@ -14,11 +14,21 @@
 
 
 
-OpEngine::OpEngine(OpticksHub* hub) 
+OpEngine::OpEngine(OpticksHub* hub, bool immediate) 
      : 
       m_hub(hub),
-      m_imp(new OEngineImp(m_hub))
+      m_imp(new OEngineImp(m_hub)),
+      m_immediate(immediate)
 {
+   init();
+}
+
+void OpEngine::init()
+{
+    if(m_immediate)
+    {
+        prepareOptiX();
+    }
 }
 
 OContext* OpEngine::getOContext()

@@ -29,11 +29,12 @@
 #include "ORenderer.hh"
 
 
-OpViz::OpViz(OpEngine* ope, OpticksViz* viz) 
+OpViz::OpViz(OpEngine* ope, OpticksViz* viz, bool immediate) 
    :
       m_ope(ope),
       m_viz(viz),
       m_hub(m_viz->getHub()),
+      m_immediate(immediate),
       m_scene(m_viz->getScene()),
 
       m_ocontext(NULL),   // defer 
@@ -43,6 +44,15 @@ OpViz::OpViz(OpEngine* ope, OpticksViz* viz)
       m_orenderer(NULL),
       m_otracer(NULL)
 {
+    init();
+}
+
+void OpViz::init()
+{
+    if(m_immediate)
+    {
+        prepareTracer();
+    }
 }
 
 

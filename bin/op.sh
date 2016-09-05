@@ -47,6 +47,7 @@ op-binary-name()
          --idpath) echo OpticksIDPATH ;;
            --keys) echo InteractorKeys ;;
           --tcfg4) echo CG4Test ;;
+           --okg4) echo OKG4Test ;;
          --tracer) echo OTracerTest ;;
             --mat) echo GMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;
@@ -101,7 +102,8 @@ op-binary-desc()
    case $1 in 
          --idpath) echo "Emit to stdout the path of the geocache directory for the geometry selected by arguments" ;;
            --keys) echo "List key controls available in GGeoViewTest " ;;
-          --tcfg4) echo "Geant4 comparison simulation of simple test geometries. Requires g4-export environment. " ;; 
+          --tcfg4) echo "Geant4 comparison simulation of simple test geometries " ;; 
+           --okg4) echo "Integrated Geant4/Opticks runing allowing G4GUN steps to be directly Opticks GPU propagated. " ;; 
          --tracer) echo "Fast OpenGL viz and OptiX tracing, NO propagation. From ggeoview-/tests. Used for simple geometry/machinery checking"  ;;
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;

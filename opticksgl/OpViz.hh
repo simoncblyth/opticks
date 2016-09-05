@@ -29,14 +29,17 @@ class OpticksViz ;
 
 class OKGL_API OpViz : public SRenderer {
     public:
-       OpViz(OpEngine* ope, OpticksViz* viz);
+       OpViz(OpEngine* ope, OpticksViz* viz, bool immediate);
     public:
        void prepareTracer();
        void render();     // fulfils SRenderer protocol
     private:
+       void init();
+    private:
        OpEngine*        m_ope ; 
        OpticksViz*      m_viz ; 
        OpticksHub*      m_hub ; 
+       bool             m_immediate ; 
        Scene*           m_scene ;
 
        OContext*        m_ocontext ; 

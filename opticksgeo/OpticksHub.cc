@@ -141,6 +141,7 @@ void OpticksHub::loadGeometry()
 }
 
 
+
 void OpticksHub::setupInputGensteps()
 {
     LOG(fatal) << "OpticksHub::setupInputGensteps" ; 
@@ -166,7 +167,6 @@ void OpticksHub::setupInputGensteps()
         if(m_ok->isIntegrated())
         {
              LOG(info) << " integrated G4GUN running, gensteps will be collected from G4 directly " ;  
-             
         }
         else
         {
@@ -178,6 +178,49 @@ void OpticksHub::setupInputGensteps()
     }
 }
 
+
+
+std::string OpticksHub::getG4GunConfig()
+{
+    std::string config ; 
+    int itag = m_ok->getEventITag();
+
+    if( itag == 1 )
+         config.assign(
+    "comment=default-config-comment-without-spaces-_"
+    "particle=mu-_"
+    "frame=3153_"
+    "position=0,0,-1_"
+    "direction=0,0,1_"
+    "polarization=1,0,0_"
+    "time=0.1_"
+    "energy=1000.0_"
+    "number=1_")
+    ;  // mm,ns,MeV 
+
+    else if(itag == 100)
+         config.assign(
+    "comment=default-config-comment-without-spaces-_"
+    "particle=mu-_"
+    "frame=3153_"
+    "position=0,0,-1_"
+    "direction=0,0,1_"
+    "polarization=1,0,0_"
+    "time=0.1_"
+    "energy=100000.0_"
+    "number=1_")
+    ;  // mm,ns,MeV 
+
+
+
+
+    LOG(info) << "OpticksHub::getG4GunConfig"
+              << " itag : " << itag 
+              << " config : " << config 
+              ; 
+
+    return config ; 
+}
 
 
 NPY<float>* OpticksHub::loadGenstepFile()
@@ -377,6 +420,10 @@ Opticks* OpticksHub::getOpticks()
 Composition* OpticksHub::getComposition()
 {
     return m_composition ;  
+}
+OpticksGeometry* OpticksHub::getGeometry()
+{
+    return m_geometry ;  
 }
 Bookmarks* OpticksHub::getBookmarks()
 {
@@ -709,11 +756,29 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 
 
 
+
+
+unsigned OpticksHub::getTarget()
+{
+   return m_geometry->getTarget();
+}
+void OpticksHub::setTarget(unsigned target, bool aim)
+{
+    m_geometry->setTarget(target, aim );
+}
+
+
 void OpticksHub::target()
 {
+    int target = m_geometry ? m_geometry->getTarget() : 0 ;
     bool geocenter  = hasOpt("geocenter");
     bool autocam = true ; 
-    if(geocenter && m_geometry != NULL )
+
+    if(target != 0)
+    {
+        LOG(info) << "OpticksHub::target SKIP as geometry target already set  " << target ; 
+    }
+    else if(geocenter && m_geometry != NULL )
     {
         glm::vec4 mmce = m_geometry->getCenterExtent();
         m_composition->setCenterExtent( mmce , autocam );

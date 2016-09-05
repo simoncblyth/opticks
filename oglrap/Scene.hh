@@ -7,6 +7,7 @@ class BDynamicDefine ;
 
 template <typename T> class NPY ; 
 
+class OpticksHub ; 
 class OpticksEvent ; 
 class MultiViewNPY ;
 
@@ -108,7 +109,7 @@ class OGLRAP_API Scene : public NConfigurable {
         void nextInstanceStyle();
         void applyInstanceStyle();
    public:
-        Scene(const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );
+        Scene(OpticksHub* hub, const char* shader_dir=NULL, const char* shader_incl_path=NULL, const char* shader_dynamic_dir=NULL );
    private:
         void init();
    public:
@@ -143,10 +144,14 @@ class OGLRAP_API Scene : public NConfigurable {
    public:
         // target cannot live in Composition, as needs geometry 
         // to convert solid index into CenterExtent to give to Composition
-        //
-        void setTarget(unsigned int index=0, bool aim=true); 
+       //
+      //   migrated targetting to OpticksHub/OpticksGeometry   
+      //
+      //  void setTarget(unsigned int index=0, bool aim=true); 
+      //  unsigned int getTargetDeferred();
+
         unsigned int getTarget(); 
-        unsigned int getTargetDeferred();
+        void setTarget(unsigned int index=0, bool aim=true); 
 
         unsigned int touch(int ix, int iy, float depth);
         void setTouch(unsigned int index); 
@@ -191,6 +196,7 @@ class OGLRAP_API Scene : public NConfigurable {
         float         getTimeFraction();
 
    private:
+        OpticksHub*  m_hub ; 
         char*        m_shader_dir ; 
         char*        m_shader_dynamic_dir ; 
         char*        m_shader_incl_path ; 
@@ -219,8 +225,8 @@ class OGLRAP_API Scene : public NConfigurable {
         GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
         NPY<unsigned char>*     m_colorbuffer ;
-        unsigned int m_target ;
-        unsigned int m_target_deferred ;
+//        unsigned int m_target ;
+//        unsigned int m_target_deferred ;
         unsigned int m_touch ;
 
    private:

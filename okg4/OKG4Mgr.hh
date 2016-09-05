@@ -29,8 +29,8 @@ class OKG4_API OKG4Mgr {
        Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
-       CCollector*    m_collector ; 
        CG4*           m_g4 ; 
+       CCollector*    m_collector ; 
        OpticksViz*    m_viz ; 
 #ifdef WITH_OPTIX
        OpEngine*      m_ope ; 

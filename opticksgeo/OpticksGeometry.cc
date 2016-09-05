@@ -8,6 +8,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "Composition.hh"
 #include "OpticksConst.hh"
 #include "OpticksResource.hh"
 #include "OpticksAttrSeq.hh"
@@ -57,9 +58,12 @@ OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),
    m_opticks(m_hub->getOpticks()),
+   m_composition(m_hub->getComposition()),
    m_fcfg(m_opticks->getCfg()),
    m_ggeo(NULL),
-   m_mesh0(NULL)
+   m_mesh0(NULL),
+   m_target(0),
+   m_target_deferred(0)
 {
     init();
 }
@@ -103,6 +107,50 @@ glm::vec4 OpticksGeometry::getCenterExtent()
     glm::vec4 mmce = GLMVEC4(m_mesh0->getCenterExtent(0)) ;
     return mmce ; 
 }
+
+
+
+void  OpticksGeometry::setTarget(unsigned target, bool aim)
+{
+    // formerly of oglrap-/Scene
+
+   if(m_mesh0 == NULL)
+    {    
+        LOG(info) << "OpticksGeometry::setTarget " << target << " deferring as geometry not loaded " ; 
+        m_target_deferred = target ; 
+        return ; 
+    }    
+    m_target = target ; 
+
+    gfloat4 ce_ = m_mesh0->getCenterExtent(target);
+
+    glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ); 
+
+    LOG(info)<<"OpticksGeometry::setTarget " 
+             << " target " << target 
+             << " aim " << aim
+             << " ce " 
+             << " " << ce.x 
+             << " " << ce.y 
+             << " " << ce.z 
+             << " " << ce.w 
+             ;    
+
+    m_composition->setCenterExtent(ce, aim); 
+}
+
+unsigned OpticksGeometry::getTargetDeferred()
+{
+    return m_target_deferred ;
+}
+unsigned OpticksGeometry::getTarget()
+{
+    return m_target ;
+}
+
+
+
+
 
 
 OpticksAttrSeq* OpticksGeometry::getMaterialNames()

@@ -113,8 +113,11 @@ CSource* CGenerator::makeTorchSource()
 CSource* CGenerator::makeG4GunSource()
 {
     LOG(info) << "CGenerator::makeG4GunSource " ; 
+
+    std::string gunconfig = m_hub->getG4GunConfig() ;
+
     NGunConfig* gc = new NGunConfig();
-    gc->parse(m_cfg->getG4GunConfig());
+    gc->parse(gunconfig);
 
     CDetector* detector = m_g4->getDetector();
 

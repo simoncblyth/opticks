@@ -17,6 +17,11 @@ tpmt- : Opticks Simulation PMT Tests
 `tpmt-- --tcfg4` 
     create Geant4 geometry, simulates photons, saves evt file
 
+`tpmt-- --okg4` 
+    creates Geant4 geometry, performs both Opticks and Geant4 torch photon propagations, 
+    saves both G4 and OK evt to file following negated G4 convention
+
+
 `tpmt-- --tcfg4 --load`
     visualize the Geant4 simulated photon propagation 
 

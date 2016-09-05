@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     m_hub->loadGeometry();
      
 #ifdef WITH_OPTIX
-    OpEngine* m_ope = new OpEngine(m_hub);
+    OpEngine* m_ope = new OpEngine(m_hub, false);
     m_ope->prepareOptiX();
 #endif
 

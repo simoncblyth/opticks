@@ -36,7 +36,6 @@ Aspects included in cleanup, but as yet un-tested
 * multi-event handling ... gensteps (eg G4gun derived or from multi-event file or over network ZMQ) 
   need to be repeatedly passed to OpEngine and the OpticksHub, 
   OpticksViz etc.. 
-  
 
  
 DONE : Optical Step Collection
@@ -208,7 +207,7 @@ Checking consistency between input steps and output sequence, looks OK, there ar
 
 
 
-NEXT : genstep handling rationalize
+DONE : genstep handling rationalize
 ------------------------------------
 
 * translateGensteps invoked from multiple places
@@ -234,6 +233,28 @@ Perhaps can avoid translation by applying the
 lookup translation at collection.  
 
 
+NEXT : OKG4Mgr propagation multi-event test
+----------------------------------------------
+
+Tidy up propagation. 
+
+Avoid duplication between OKMgr and OKG4Mgr, 
+probably using separate high level propagation class.
+
+Clearly split:
+
+* once-only setup, all the way to pre-launch 
+* per-event just final launch 
+
+Do multi-event propagations to test the split.
+
+
+NEXT : OKG4 genstep shakedown 
+------------------------------
+
+* compare distribs as implement standard G4 process GPU ports 
+  (suspect that Cerenkov is already almost there, Scintillation
+   needs some porting) 
 
 
 WIP : Integrated Torch running debug
@@ -272,8 +293,8 @@ due to failing to set the frame transform for the gensteps.
 
 
 
-OKG4 : Material Map chicken/egg problem
----------------------------------------------
+FIXED : OKG4 : Material Map chicken/egg problem
+----------------------------------------------------
 
 Prior to genstep material index to texture line translation 
 need to get the A and B mappings and do lookup crossReference. 
@@ -305,9 +326,6 @@ Fix
   * didnt do that, instead just deferred doing cross referencing/translation
     until just before setting into OpticksEvent and allowing 
     the A lookup to be overrided once the G4 materials are available
-
-
-
 
 
 

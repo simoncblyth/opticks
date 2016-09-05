@@ -27,6 +27,9 @@
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 
+// okg-
+#include "OpticksHub.hh"
+
 // ggeo-
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
@@ -314,7 +317,7 @@ void Scene::gui()
      ImGui::Checkbox(NOPSTEP,  &m_nopstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
      ImGui::Checkbox(RECORD,   &m_record_mode);
-     ImGui::Text(" target: %u ", m_target );
+    // ImGui::Text(" target: %u ", m_target );
      ImGui::Text(" genstep %d nopstep %d photon %d record %d \n", 
              ( m_genstep_renderer ? m_genstep_renderer->getCountDefault() : -1 ),
              ( m_nopstep_renderer ? m_nopstep_renderer->getCountDefault() : -1 ),
@@ -335,7 +338,7 @@ void Scene::gui()
 #endif    
 }
 
-const char* Scene::TARGET = "target" ; 
+const char* Scene::TARGET = "scenetarget" ; // trying to extracate targetting from Scene 
 
 bool Scene::accepts(const char* name)
 {
@@ -870,15 +873,25 @@ unsigned int Scene::touch(int ix, int iy, float depth)
 void Scene::jump()
 {
    // hmm what about instanced ?
-    if( m_touch > 0 && m_touch != m_target )
+    unsigned target = m_hub->getTarget();
+    if( m_touch > 0 && m_touch != target )
     {
-        LOG(info)<<"Scene::jump-ing from  m_target -> m_touch  " << m_target << " -> " << m_touch  ;  
-        setTarget(m_touch);
+        LOG(info)<<"Scene::jump-ing from  target -> m_touch  " << target << " -> " << m_touch  ;  
+        m_hub->setTarget(m_touch);
     }
 }
 
+void Scene::setTarget(unsigned int target, bool aim)
+{
+    m_hub->setTarget(target, aim);
+}
+unsigned int Scene::getTarget()
+{
+    return m_hub->getTarget() ;
+}
 
 
+/*
 void Scene::setTarget(unsigned int target, bool aim)
 {
     if(m_mesh0 == NULL)
@@ -907,6 +920,14 @@ void Scene::setTarget(unsigned int target, bool aim)
 }
 
 
+unsigned int Scene::getTargetDeferred()
+{
+    return m_target_deferred ; 
+}
+*/
+
+
+
 
 
 void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
@@ -929,8 +950,9 @@ void Scene::applyRenderStyle()
 }
 
 
-Scene::Scene(const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
+Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
             :
+            m_hub(hub),
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
             m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
@@ -954,8 +976,8 @@ Scene::Scene(const char* shader_dir, const char* shader_incl_path, const char* s
             m_mesh0(NULL),
             m_composition(NULL),
             m_colorbuffer(NULL),
-            m_target(0),
-            m_target_deferred(0),
+            //m_target(0),
+            //m_target_deferred(0),
             m_touch(0),
             m_global_mode(false),
             m_globalvec_mode(false),
@@ -1032,10 +1054,7 @@ float Scene::getTimeFraction()
     return m_time_fraction ; 
 }
 
-unsigned int Scene::getTarget()
-{
-    return m_target ;
-}
+
 unsigned int Scene::getTouch()
 {
     return m_touch ;
@@ -1261,11 +1280,5 @@ void Scene::applyInstanceStyle()  // I:key
 
 
 
-
-
-unsigned int Scene::getTargetDeferred()
-{
-    return m_target_deferred ; 
-}
 
 

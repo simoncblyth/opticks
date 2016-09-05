@@ -30,6 +30,8 @@ CCollector::CCollector(NLookup* lookup)
 
     INSTANCE = this ; 
 
+    postinit();   
+    // closes Lookup only after CG4 has been able to override LookupA
 }
 
 void CCollector::postinit()

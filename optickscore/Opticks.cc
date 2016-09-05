@@ -101,8 +101,6 @@ Opticks::Opticks(int argc, char** argv, bool integrated )
        m_timer(NULL),
        m_parameters(NULL),
        m_detector(NULL),
-       m_tag(NULL),
-       m_cat(NULL),
        m_event_count(0),
        m_domains_configured(false),
        m_mode(NULL)
@@ -304,11 +302,14 @@ void Opticks::init()
 void Opticks::defineEventSpec()
 {
     const char* typ = getSourceType(); 
-    const char* tag = getEventTag();
+
+    //std::string tag_ = m_integrated ? m_cfg->getIntegratedEventTag() : m_cfg->getEventTag();
+    std::string tag_ = m_cfg->getEventTag();
+    const char* tag = tag_.c_str();
+    const char* ntag = BStr::negate(tag) ; 
+
     std::string det = m_detector ? m_detector : "" ;
     std::string cat = m_cfg->getEventCat();   // overrides det for categorization of test events eg "rainbow" "reflect" "prism" "newton"
-
-    const char* ntag = BStr::negate(tag) ; 
 
     m_spec  = new OpticksEventSpec(typ,  tag, det.c_str(), cat.c_str() );
     m_nspec = new OpticksEventSpec(typ, ntag, det.c_str(), cat.c_str() );
@@ -500,22 +501,22 @@ const char* Opticks::getSourceType()
 
 const char* Opticks::getEventTag()
 {
+
     if(!m_tag)
     {
-        std::string tag = m_integrated ? m_cfg->getIntegratedEventTag() : m_cfg->getEventTag();
-        m_tag = strdup(tag.c_str());
-    }
-    return m_tag ; 
-}
+        m_tag = strdup(m_cfg->getEventTag().c_str());
 
+    }
+
+    return m_spec->getTag();
+}
+int Opticks::getEventITag()
+{
+    return m_spec->getITag() ; 
+}
 const char* Opticks::getEventCat()
 {
-    if(!m_cat)
-    {
-        std::string cat = m_cfg->getEventCat();
-        m_cat = strdup(cat.c_str());
-    }
-    return m_cat ; 
+    return m_spec->getCat();
 }
 
 

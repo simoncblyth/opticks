@@ -2,6 +2,7 @@
 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksGeometry ; 
 class OpticksIdx ; 
 class Composition ; 
 class OpticksEvent ; 
@@ -23,7 +24,7 @@ class SLauncher ;
 
 class OGLRAP_API OpticksViz {
     public:
-         OpticksViz(OpticksHub* hub, OpticksIdx* idx);
+         OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate=false);
     public:
          void setExternalRenderer(SRenderer* external_renderer);
          void setLauncher(SLauncher* launcher);
@@ -53,7 +54,9 @@ class OGLRAP_API OpticksViz {
          void downloadEvent();
     private:
          OpticksHub*   m_hub ; 
+         OpticksGeometry* m_geometry ; 
          OpticksIdx*   m_idx ; 
+         bool          m_immediate ; 
          Opticks*      m_opticks ; 
          int           m_interactivity ; 
          Composition*  m_composition ;

@@ -15,7 +15,7 @@ class OContext ;
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpEngine {
     public:
-       OpEngine(OpticksHub* hub);
+       OpEngine(OpticksHub* hub, bool immediate);
     public:
        OContext* getOContext();         // needed by opticksgl-/OpViz
 
@@ -33,8 +33,11 @@ class OKOP_API OpEngine {
        void cleanup();
 
     private:
+       void init();
+    private:
        OpticksHub*          m_hub ; 
        OEngineImp*          m_imp ; 
+       bool                 m_immediate ; 
 };
 
 

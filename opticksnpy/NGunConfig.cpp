@@ -114,8 +114,6 @@ glm::vec3 NGunConfig::getPolarization()
 }
 
 
-
-
 const char* NGunConfig::DEFAULT_CONFIG = 
     "comment=default-config-comment-without-spaces-_"
     "particle=e+_"

@@ -38,10 +38,10 @@ OKMgr::OKMgr(int argc, char** argv)
     m_ok(new Opticks(argc, argv, false)),   // false: NOT integrated running
     m_hub(new OpticksHub(m_ok, true)),      // true: immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
-    m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx)),
+    m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
 #ifdef WITH_OPTIX
-    m_ope(new OpEngine(m_hub)),
-    m_opv(m_viz ? new OpViz(m_ope,m_viz) : NULL),
+    m_ope(new OpEngine(m_hub, true)),
+    m_opv(m_viz ? new OpViz(m_ope,m_viz, true) : NULL),
 #endif
     m_placeholder(0)
 {
@@ -56,20 +56,7 @@ void OKMgr::init()
          LOG(fatal) << "OKMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
 
-    if(m_viz)
-    {  
-        m_hub->configureState(m_viz->getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-        m_viz->prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
-
-        m_viz->uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
-    }
-
-#ifdef WITH_OPTIX
-    m_ope->prepareOptiX();                // creates OptiX context and populates with geometry by OGeo, OScintillatorLib, ... convert methods 
-
-    if(m_opv) m_opv->prepareTracer();     // creates ORenderer, OTracer
-#endif
 }
 
 

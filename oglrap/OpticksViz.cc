@@ -22,6 +22,7 @@
 
 
 // opticksgeo-
+#include "OpticksGeometry.hh"
 #include "OpticksHub.hh"
 #include "OpticksIdx.hh"
 
@@ -63,10 +64,12 @@
     }
 
 
-OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx)
+OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
     m_hub(hub),
+    m_geometry(m_hub->getGeometry()),
     m_idx(idx),
+    m_immediate(immediate),
     m_opticks(hub->getOpticks()),
     m_interactivity(m_opticks->getInteractivityLevel()),
     m_composition(hub->getComposition()),
@@ -96,7 +99,7 @@ void OpticksViz::init()
     const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
     // envvars normally not defined, using cmake configure_file values instead
 
-    m_scene      = new Scene(shader_dir, shader_incl_path, shader_dynamic_dir ) ;
+    m_scene      = new Scene(m_hub, shader_dir, shader_incl_path, shader_dynamic_dir ) ;
     m_frame       = new Frame ; 
     m_interactor  = new Interactor(m_hub) ;  // perhaps treat m_viz as the "hub" here ??
 
@@ -114,6 +117,14 @@ void OpticksViz::init()
     m_hub->add(new RendererCfg<Renderer>(     "renderer",    m_scene->getGeometryRenderer(), true));
     m_hub->add(new InteractorCfg<Interactor>( "interactor",  m_interactor,                 true));
 
+    if(m_immediate)
+    {
+        m_hub->configureState(getSceneConfigurable()) ;    // loads/creates Bookmarks
+
+        prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
+ 
+        uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+    }
 }
 
 void OpticksViz::setTitle(const char* title)
@@ -222,16 +233,16 @@ void OpticksViz::uploadGeometry()
     bool autocam = true ; 
 
     // handle commandline --target option that needs loaded geometry 
-    unsigned int target = m_scene->getTargetDeferred();   // default to 0 
+    unsigned int target = m_geometry->getTargetDeferred();   // default to 0 
     LOG(debug) << "App::uploadGeometryViz setting target " << target ; 
 
-    m_scene->setTarget(target, autocam);
+    m_geometry->setTarget(target, autocam);
 
 }
 
 int OpticksViz::getTarget()
 {   
-   return m_scene->getTarget() ; 
+   return m_geometry->getTarget() ; 
 }
 
 

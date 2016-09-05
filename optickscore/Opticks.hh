@@ -123,6 +123,7 @@ class OKCORE_API Opticks {
        unsigned int         getSourceCode();
        const char*          getSourceType();
        const char*          getEventTag();
+       int                  getEventITag(); 
        const char*          getEventCat();
        const char*          getUDet();
    public:

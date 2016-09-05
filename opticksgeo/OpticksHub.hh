@@ -77,18 +77,23 @@ class OKGEO_API OpticksHub {
        OpticksEvent* createEvent(bool ok);
        OpticksEvent* getEvent();   // gets the last created evt, either G4 or OK 
    public:
+       void setTarget(unsigned target=0, bool aim=true);
+       unsigned getTarget();
+   public:
        void setGensteps(NPY<float>* gs);   // does checks and defines G4StepNPY 
        NPY<float>*          getGensteps();  
        NPY<float>*          getNopsteps();  // updated when new G4 event is created
    public:
+       std::string          getG4GunConfig();
        TorchStepNPY*        getTorchstep(); // needs geometry for targetting 
-       G4StepNPY*           getG4Step();    // created in translateGenstep
+       G4StepNPY*           getG4Step();    // created in setGensteps
    private:
        void                 translateGensteps(NPY<float>* gs);  // into Opticks lingo
        NPY<float>*          loadGenstepFile();
        TorchStepNPY*        makeTorchstep();
    public:
        Composition*         getComposition();
+       OpticksGeometry*     getGeometry();
        GGeo*                getGGeo();
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
