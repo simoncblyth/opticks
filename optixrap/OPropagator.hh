@@ -33,7 +33,7 @@ class OXRAP_API OPropagator {
         OPropagator(OContext* ocontext, OpticksHub* hub, int override_=0); 
         void initRng();
     public:
-        void initEvent();      // creates GPU buffers: genstep, photon, record, sequence
+        void initEvent();  // creates OBuf for genstep, photon, record, sequence + uploads gensteps in compute, already there in interop
         void prelaunch();
         void launch();
         void downloadEvent();
@@ -54,10 +54,8 @@ class OXRAP_API OPropagator {
 
     private:
         void init();
+        void initParameters();
         void initEvent(OpticksEvent* evt);
-        void makeDomains();
-        void recordDomains();
-
     private:
         OContext*        m_ocontext ; 
         OpticksHub*      m_hub ; 

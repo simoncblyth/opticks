@@ -37,42 +37,16 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
-OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, int override_) 
-   :
-    m_ocontext(ocontext),
-    m_hub(hub),
-    m_opticks(hub->getOpticks()),
-    m_prelaunch_times(NULL),
-    m_launch_times(NULL),
-    m_prelaunch(false),
-    m_entry_index(-1),
-    m_photon_buf(NULL),
-    m_sequence_buf(NULL),
-    m_genstep_buf(NULL),
-    m_record_buf(NULL),
-    m_rng_wrapper(NULL),
-    m_count(0),
-    m_width(0),
-    m_height(0),
-    m_prep(0),
-    m_time(0),
-    m_override(override_)
-{
-    init();
-}
+
 
 void OPropagator::setOverride(unsigned int override_)
 {
     m_override = override_ ; 
 }
-
-
 void OPropagator::setEntry(unsigned int entry_index)
 {
     m_entry_index = entry_index;
 }
-
-
 
 OBuf* OPropagator::getSequenceBuf()
 {
@@ -90,19 +64,53 @@ OBuf* OPropagator::getRecordBuf()
 {
     return m_record_buf ; 
 }
-
 OTimes* OPropagator::getPrelaunchTimes()
 {
     return m_prelaunch_times ; 
 }
-
 OTimes* OPropagator::getLaunchTimes()
 {
     return m_launch_times ; 
 }
 
 
+
+
+OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, int override_) 
+   :
+    m_ocontext(ocontext),
+    m_hub(hub),
+    m_opticks(hub->getOpticks()),
+    m_prelaunch_times(new OTimes),
+    m_launch_times(new OTimes),
+    m_prelaunch(false),
+    m_entry_index(-1),
+    m_photon_buf(NULL),
+    m_sequence_buf(NULL),
+    m_genstep_buf(NULL),
+    m_record_buf(NULL),
+    m_rng_wrapper(NULL),
+    m_count(0),
+    m_width(0),
+    m_height(0),
+    m_prep(0),
+    m_time(0),
+    m_override(override_)
+{
+    init();
+}
+
+
 void OPropagator::init()
+{
+    initParameters();
+
+}
+
+
+
+
+void OPropagator::initParameters()
 {
     m_context = m_ocontext->getContext();
 
@@ -120,21 +128,16 @@ void OPropagator::init()
 
     m_context["debug_control"]->setUint(debugControl); 
  
-  //  const char* raygenprg = m_trivial ? "trivial" : "generate" ;  // last ditch debug technique
-  //  LOG(debug) << "OPropagtor::init " << raygenprg ; 
-
-    // OContext::e_generate_entry
-  //  m_entry_index = m_ocontext->setupProgram("generate.cu.ptx", raygenprg, "exception" );
-
-    m_launch_times = new OTimes ; 
-    m_prelaunch_times = new OTimes ; 
-
     const glm::vec4& ce = m_opticks->getSpaceDomain();
     const glm::vec4& td = m_opticks->getTimeDomain();
 
     m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
     m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
 }
+
+
+
+
 
 
 void OPropagator::initRng()
@@ -149,13 +152,11 @@ void OPropagator::initRng()
         return ;
     }
 
-
     // hmm evt should not be needed at init stage, 
 
     //OpticksEvent* evt = m_hub->getEvent();
     //unsigned int num_photons = evt->getNumPhotons();
 
-    //const char* rngCacheDir = OConfig::RngDir() ;
     const char* rngCacheDir = m_opticks->getRNGInstallCacheDir();
 
     LOG(info) << "OPropagator::initRng"
@@ -193,11 +194,45 @@ void OPropagator::initRng()
 void OPropagator::initEvent()
 {
     OpticksEvent* evt = m_hub->getOKEvent();
+
     if(!evt) return ;
+
+    unsigned int numPhotons = evt->getNumPhotons();
+
+    bool enoughRng = numPhotons <= m_opticks->getRngMax() ;
+
+    if(!enoughRng)
+    {
+        LOG(info) << "OPropagator::initEvent"
+                  << " not enoughRng "
+                  << " numPhotons " << numPhotons 
+                  << " rngMax " << m_opticks->getRngMax()
+                  ;  
+    } 
+
+    assert( enoughRng  && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons to be generated per invokation " );
+
+
+    m_width  = numPhotons ;
+    m_height = 1 ;
+
+    LOG(info) << "OPropagator::initEvent count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
+
+    if(m_override > 0)
+    {
+        m_width = m_override ; 
+        LOG(warning) << "OPropagator::initEvent OVERRIDE photon count for debugging to " << m_width ; 
+    }
+
+
     initEvent(evt);
 }
 
-void OPropagator::initEvent(OpticksEvent* evt)  
+
+
+
+// creates OBuf for gensteps, photon, record, sequence and uploads gensteps in compute, already there in interop
+void OPropagator::initEvent(OpticksEvent* evt)   
 {
     // when isInterop() == true 
     // the OptiX buffers for the evt data are actually references 
@@ -240,8 +275,6 @@ void OPropagator::initEvent(OpticksEvent* evt)
     // but the seeding is done GPU side via thrust  
 
 
-    //if(evt->isStep())
-
     if(m_opticks->hasOpt("dbginterop"))
     {
         LOG(info) << "OPropagator::initEvent skipping record/sequence buffer creation as dbginterop  " ;
@@ -273,85 +306,32 @@ void OPropagator::initEvent(OpticksEvent* evt)
         //
 
     }
-
-
-
     LOG(info) << "OPropagator::initEvent DONE" ; 
-
-
-/*
-//    m_aux_buffer = m_ocontext->createIOBuffer<short>( evt->getAuxData(), "aux" );
-//    if(m_aux_buffer.get())
-//       m_context["aux_buffer"]->set( m_aux_buffer );
-*/
-
-
-    // need to have done scene.uploadSelection for the recsel to have a buffer_id
 }
 
 
 void OPropagator::prelaunch()
 {
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ;
-
-    unsigned int numPhotons = evt->getNumPhotons();
-
-    bool enoughRng = numPhotons <= m_opticks->getRngMax() ;
-
-    if(!enoughRng)
-    {
-        LOG(info) << "OPropagator::prelaunch"
-                  << " not enoughRng "
-                  << " numPhotons " << numPhotons 
-                  << " rngMax " << m_opticks->getRngMax()
-                  ;  
-    } 
-
-    assert( enoughRng  && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons generated " );
-
-
-    bool entrySet = m_entry_index > -1 ; 
-    if(!entrySet)
+    bool entry = m_entry_index > -1 ; 
+    if(!entry)
     {
         LOG(fatal) << "OPropagator::prelaunch"
                    << " must setEntry before prelaunch/launch  "
                   ;  
  
     }
-    assert(entrySet);
-    
+    assert(entry);
 
-    m_width  = numPhotons ;
-    m_height = 1 ;
-  
-    
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, m_prelaunch_times); 
 
-    LOG(info) << "OPropagator::prelaunch count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
-
-    if(m_override > 0)
-    {
-        m_width = m_override ; 
-        LOG(warning) << "OPropagator::generate OVERRIDE photon count for debugging to " << m_width ; 
-    }
-
-
-    // OContext::e_generate_entry
-
-    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  m_width, m_height, m_prelaunch_times);
-
+    // "prelaunch" by definition needs no dimensions, so it can be done prior to having an event 
     m_count += 1 ; 
-
     m_prelaunch = true ; 
 }
-
 
 void OPropagator::launch()
 {
     assert(m_prelaunch && "must prelaunch before launch");
-
-    // OContext::e_generate_entry
-
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, m_launch_times);
 }
 
