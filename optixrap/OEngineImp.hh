@@ -24,20 +24,21 @@ class OXRAP_API OEngineImp {
     public:
        OContext*    getOContext();
        OPropagator* getOPropagator();
-
-       void prepareOptiX();             // creates OptiX context and populates with geometry info
-       void preparePropagator();        // OPropagator : initEvent creates GPU buffers: genstep, photon, record, sequence
-       void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
-
+    public:
+       void initEvent(); // creates GPU buffers: genstep, photon, record, sequence 
+       void propagate(); // populates buffers via OptiX launch
        void downloadEvt();
        void downloadPhotonData();
        void cleanup();
+    private:
+       void prepareOptiXGeometry();     // creates OptiX context and populates with geometry info
+       void preparePropagator();        // create OPropagator does prelaunch
 
     private:
        Timer*               m_timer ;
        OpticksHub*          m_hub ; 
-       Opticks*             m_opticks ; 
-       OpticksCfg<Opticks>* m_fcfg ;   
+       Opticks*             m_ok ; 
+       OpticksCfg<Opticks>* m_cfg ;   
        GGeo*                m_ggeo ; 
 
        OContext*         m_ocontext ; 
@@ -48,6 +49,7 @@ class OXRAP_API OEngineImp {
        OSourceLib*       m_osrc ; 
        OTracer*          m_otracer ; 
        OPropagator*      m_opropagator ; 
+
 
 };
 

@@ -29,6 +29,7 @@
 // optixrap-
 #include "OBuf.hh"
 #include "OContext.hh"
+#include "OEngineImp.hh"
 #include "OPropagator.hh"
 
 // cudawrap-
@@ -49,13 +50,14 @@
     }
 
 
-OpIndexer::OpIndexer(OpticksHub* hub, OContext* ocontext)  
+OpIndexer::OpIndexer(OpticksHub* hub, OEngineImp* imp)  
    :
      m_hub(hub),
+     m_imp(imp),
      m_opticks(hub->getOpticks()),
      m_evt(NULL),
-     m_ocontext(ocontext),
-     m_propagator(NULL),
+     m_ocontext(imp->getOContext()),
+     m_propagator(imp->getOPropagator()),
      m_seq(NULL),
      m_pho(NULL),
      m_verbose(false),
@@ -77,18 +79,12 @@ void OpIndexer::setVerbose(bool verbose)
     m_verbose = verbose ; 
 }
 
-void OpIndexer::setPropagator(OPropagator* propagator)
-{
-    m_propagator = propagator ; 
-}
-
-
 
 
 
 void OpIndexer::update()
 {
-    m_evt = m_hub->getEvent();
+    m_evt = m_hub->getOKEvent();
     assert(m_evt) ;
 
     m_maxrec = m_evt->getMaxRec(); 

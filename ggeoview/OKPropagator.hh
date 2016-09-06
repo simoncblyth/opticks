@@ -19,7 +19,6 @@ class GGV_API OKPropagator {
    public:
        void propagate(NPY<float>* gs);
        void indexPropagation();
-       void dbgSeed();
        void cleanup();
    private:
        void init();

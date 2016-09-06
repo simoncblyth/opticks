@@ -1,5 +1,5 @@
-// opticksgeo-
-#include "OpticksHub.hh"
+#include "Opticks.hh"  // okc-
+#include "OpticksHub.hh" // okg-
 
 // opop-
 #include "OpEngine.hh"
@@ -12,104 +12,63 @@
 
 #include "PLOG.hh"
 
+OContext* OpEngine::getOContext()
+{
+    return m_imp->getOContext(); 
+}
 
-
-OpEngine::OpEngine(OpticksHub* hub, bool immediate) 
+OpEngine::OpEngine(OpticksHub* hub) 
      : 
       m_hub(hub),
+      m_ok(m_hub->getOpticks()),
       m_imp(new OEngineImp(m_hub)),
-      m_immediate(immediate)
+      m_seeder(new OpSeeder(m_hub, m_imp)),
+      m_zeroer(new OpZeroer(m_hub, m_imp)),
+      m_indexer(new OpIndexer(m_hub, m_imp))
 {
    init();
 }
 
 void OpEngine::init()
 {
-    if(m_immediate)
-    {
-        prepareOptiX();
-    }
 }
 
-OContext* OpEngine::getOContext()
-{
-    return m_imp->getOContext(); 
-}
-
-void OpEngine::prepareOptiX()
-{
-    LOG(info) << "OpEngine::prepareOptiX START" ;  
-    m_imp->prepareOptiX();
-    LOG(info) << "OpEngine::prepareOptiX DONE" ;  
-}
-
-void OpEngine::preparePropagator()
-{
-    LOG(info) << "OpEngine::preparePropagator START "; 
-    m_imp->preparePropagator();
-    LOG(info) << "OpEngine::preparePropagator DONE "; 
-}
-
-void OpEngine::seedPhotonsFromGensteps()
-{
-    OContext* ocontext = m_imp->getOContext();
-    OPropagator* opropagator = m_imp->getOPropagator();
-
-    OpSeeder* seeder = new OpSeeder(m_hub, ocontext) ; 
-    seeder->setPropagator(opropagator);  // only used in compute mode
-    seeder->seedPhotonsFromGensteps();
-}
-
-void OpEngine::downloadPhotonData()
-{
-    m_imp->downloadPhotonData();
-}
-
-void OpEngine::initRecords()
-{
-    OContext* ocontext = m_imp->getOContext();
-    OPropagator* opropagator = m_imp->getOPropagator();
-
-    OpZeroer* zeroer = new OpZeroer(m_hub, ocontext) ; 
-    zeroer->setPropagator(opropagator);  // only used in compute mode
-
-    if(m_hub->hasOpt("dbginterop"))
-    {
-        LOG(info) << "OpEngine::initRecords skip OpZeroer::zeroRecords as dbginterop " ; 
-    }
-    else
-    {
-        zeroer->zeroRecords();   // zeros on GPU record buffer via OptiX or OpenGL
-    }
-}
 
 void OpEngine::propagate()
 {
-    m_imp->propagate();
+    m_imp->initEvent();                   // creates OptiX buffers, uploads gensteps
+
+    m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer
+
+    m_zeroer->zeroRecords();              // zeros on GPU record buffer via OptiX or OpenGL  (not working OptiX 4 in interop)
+
+    m_imp->propagate();                   // perform OptiX GPU propagation 
+
+    m_indexer->indexSequence();
+
+    m_indexer->indexBoundaries();
 }
+
+
 
 void OpEngine::downloadEvt()
 {
     m_imp->downloadEvt();
 }
-
-void OpEngine::indexSequence()
+void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffer overwrite in interop mode on Linux)
 {
-   // TODO: reuse this object, for multi-event
-
-    LOG(info) << "OpEngine::indexSequence proceeding  " ;
-
-    OContext* ocontext = m_imp->getOContext();
-    OPropagator* opropagator = m_imp->getOPropagator();
-
-    OpIndexer* indexer = new OpIndexer(m_hub, ocontext);
-    indexer->setPropagator(opropagator);
-    indexer->indexSequence();
-    indexer->indexBoundaries();
+    m_imp->downloadPhotonData();
 }
-
 void OpEngine::cleanup()
 {
-     m_imp->cleanup();
+    m_imp->cleanup();
 }
+
+
+
+void OpEngine::Summary(const char* msg)
+{
+    LOG(info) << msg ; 
+}
+
 

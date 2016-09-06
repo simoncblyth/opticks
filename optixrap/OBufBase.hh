@@ -20,6 +20,7 @@ class NPYBase ;
 class OXRAP_API OBufBase {
    public:
       OBufBase( const char* name, optix::Buffer& buffer, NPYBase* npy );
+      virtual ~OBufBase();
    public:
       void upload(NPYBase* npy);
       void download(NPYBase* npy);

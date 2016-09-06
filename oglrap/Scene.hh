@@ -188,7 +188,6 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*          getPhotonRenderer();
         Rdr*          getRecordRenderer();
         Rdr*          getRecordRenderer(RecordStyle_t style);
-        //GMergedMesh*  getGeometry();
         Composition*  getComposition();
         Photons*      getPhotons();
         bool*         getModeAddress(const char* name);
@@ -225,8 +224,6 @@ class OGLRAP_API Scene : public NConfigurable {
         GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
         NPY<unsigned char>*     m_colorbuffer ;
-//        unsigned int m_target ;
-//        unsigned int m_target_deferred ;
         unsigned int m_touch ;
 
    private:

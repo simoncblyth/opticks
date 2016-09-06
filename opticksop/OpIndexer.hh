@@ -11,6 +11,11 @@
 //     The recsel buffer repeats the phosel values maxrec times to provide fast access to the
 //     selection at record level.
 //
+//      no-point in attempting to reuse or optimize OpIndexer 
+//      as indexing is a non-essential activity that 
+//      will not be done in production
+//      although for debugging/analysis it is highly useful 
+//
 //
 // optixwrap-/OBuf 
 //       optix buffer wrapper
@@ -48,6 +53,7 @@
 class OBuf ; 
 class OContext ; 
 class OPropagator ; 
+class OEngineImp ; 
 
 class TBuf ; 
 
@@ -88,12 +94,11 @@ Sequence Indexing histograms the per-photon sequ
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpIndexer {
    public:
-      OpIndexer(OpticksHub* hub, OContext* ocontext);
+      OpIndexer(OpticksHub* hub, OEngineImp* imp);
       void setVerbose(bool verbose=true);
       void setNumPhotons(unsigned int num_photons);
       void setSeq(OBuf* seq);
       void setPho(OBuf* pho);
-      void setPropagator(OPropagator* propagator);
    public:
       void indexSequence(); 
       void indexBoundaries(); 
@@ -145,12 +150,13 @@ class OKOP_API OpIndexer {
    private:
       // resident
       OpticksHub*              m_hub ; 
+      OEngineImp*              m_imp ; 
       Opticks*                 m_opticks ; 
       OpticksEvent*            m_evt ; 
       OContext*                m_ocontext ;
+      OPropagator*             m_propagator ; 
    private:
       // externally set 
-      OPropagator*             m_propagator ; 
       OBuf*                    m_seq ; 
       OBuf*                    m_pho ; 
       bool                     m_verbose ; 

@@ -23,6 +23,7 @@
 // optixrap-
 #include "OContext.hh"
 #include "OPropagator.hh"
+#include "OEngineImp.hh"
 #include "OBuf.hh"
 
 
@@ -38,18 +39,14 @@
 
 
 
-OpZeroer::OpZeroer(OpticksHub* hub, OContext* ocontext)  
+OpZeroer::OpZeroer(OpticksHub* hub, OEngineImp* imp)  
    :
      m_hub(hub),
-     m_ocontext(ocontext),
-     m_propagator(NULL)
+     m_imp(imp),
+     m_ocontext(imp->getOContext()),
+     m_propagator(imp->getOPropagator())
 {
 }
-
-void OpZeroer::setPropagator(OPropagator* propagator)
-{
-    m_propagator = propagator ; 
-}  
 
 
 void OpZeroer::zeroRecords()
@@ -69,7 +66,7 @@ void OpZeroer::zeroRecords()
 
 void OpZeroer::zeroRecordsViaOpenGL()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getOKEvent();
 
     NPY<short>* record = evt->getRecordData(); 
 

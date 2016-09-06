@@ -16,6 +16,13 @@ OBufBase::OBufBase(const char* name, optix::Buffer& buffer, NPYBase* npy)
     init();
 }
 
+OBufBase::~OBufBase()
+{
+   // no owned resources worth clearing up
+}
+
+
+
 NPYBase* OBufBase::getNPY()
 {
    return m_npy ; 

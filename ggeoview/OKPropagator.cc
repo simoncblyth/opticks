@@ -36,7 +36,7 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     m_idx(idx),
     m_viz(viz),    
     m_ok(m_hub->getOpticks()),
-    m_engine(new OpEngine(m_hub, true)),
+    m_engine(new OpEngine(m_hub)),
     m_tracer(m_viz ? new OKGLTracer(m_engine,m_viz, true) : NULL )
 {
     init();
@@ -73,21 +73,10 @@ void OKPropagator::propagate(NPY<float>* genstep)
         m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
     }
 
-    m_engine->preparePropagator();          // creates OptiX buffers and OBuf wrappers as members of OPropagator
-                                             // TODO: move some of this into initialization 
 
-    m_engine->seedPhotonsFromGensteps();    // distributes genstep indices into the photons buffer
-
-    if(m_ok->hasOpt("dbgseed")) dbgSeed();
-
-    if(m_ok->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+    m_engine->propagate();           // perform OptiX GPU propagation 
 
 
-    m_engine->initRecords();                // zero records buffer, not working in OptiX 4 in interop 
-
-    m_engine->propagate();                  // perform OptiX GPU propagation 
-
-    m_engine->indexSequence();
 
     m_idx->indexBoundariesHost();
 
@@ -113,35 +102,12 @@ void OKPropagator::propagate(NPY<float>* genstep)
 
 
 
-
-void OKPropagator::dbgSeed()
-{
-    if(!m_engine) return ; 
-    OpticksEvent* evt = m_hub->getOKEvent();    
-    NPY<float>* ox = evt->getPhotonData();
-    assert(ox);
-
-    // this split between interop and compute mode
-    // is annoying, maybe having a shared base protocol
-    // for OpEngine and OpticksViz
-    // could avoid all the branching 
-
-    if(m_viz) 
-    { 
-        LOG(info) << "OKPropagator::debugSeed (interop) download photon seeds " ;
-        m_viz->downloadData(ox) ; 
-        ox->save("$TMP/dbgseed_interop.npy");
-    }
-    else
-    {
-        LOG(info) << "OKPropagator::debugSeed (compute) download photon seeds " ;
-        m_engine->downloadPhotonData();  
-        ox->save("$TMP/dbgseed_compute.npy");
-    }  
-}
-
 void OKPropagator::cleanup()
 {
     m_engine->cleanup();
 }
+
+
+
+
 

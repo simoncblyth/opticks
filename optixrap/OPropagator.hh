@@ -30,16 +30,14 @@ class OXRAP_API OPropagator {
                 e_number_domain
              } ;
     public:
-        OPropagator(OContext* ocontext, OpticksHub* hub, int override_=0); 
-        void initRng();
+        OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_=0); 
     public:
-        void initEvent();  // creates OBuf for genstep, photon, record, sequence + uploads gensteps in compute, already there in interop
+        bool hasInitEvent();
+        void initEvent();  // creates OBuf (genstep, photon, record, sequence) + uploads gensteps in compute, already there in interop
         void prelaunch();
         void launch();
         void downloadEvent();
         void downloadPhotonData();
-    public:
-        void setEntry(unsigned int entry);
     public:
         void setOverride(unsigned int override);
     public:
@@ -54,8 +52,12 @@ class OXRAP_API OPropagator {
 
     private:
         void init();
+        void setEntry(unsigned int entry);
         void initParameters();
-        void initEvent(OpticksEvent* evt);
+        void initRng();
+    private:
+        void initEventBuffers(OpticksEvent* evt);
+        void updateEventBuffers(OpticksEvent* evt);  // compute mode only testing of buffer updating 
     private:
         OContext*        m_ocontext ; 
         OpticksHub*      m_hub ; 
@@ -93,6 +95,7 @@ class OXRAP_API OPropagator {
 
     private:
         int             m_override ; 
+        bool            m_init_event ; 
  
 };
 

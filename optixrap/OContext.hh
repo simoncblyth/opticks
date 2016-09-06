@@ -76,7 +76,10 @@ class OXRAP_API OContext {
      private:
             template<typename T>
             void configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
-     private:
+      public:
+            template<typename T>
+            void updateBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
+      private:
             void init();
      private:
             optix::Context    m_context ; 

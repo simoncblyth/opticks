@@ -246,12 +246,10 @@ probably using separate high level propagation class.
 NEXT : OKMgr/OKG4Mgr propagation multi-event test
 ---------------------------------------------------
 
-Clearly split:
+* :doc:`optix_changing_event_buffer`
 
-* once-only setup, all the way to pre-launch 
-* per-event just final launch 
 
-Do multi-event propagations to test the split.
+
 
 
 NEXT : check operation from loaded gensteps still operational

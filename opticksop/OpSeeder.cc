@@ -22,6 +22,7 @@
 // optixrap-
 #include "OContext.hh"
 #include "OPropagator.hh"
+#include "OEngineImp.hh"
 #include "OBuf.hh"
 
 #include "PLOG.hh"
@@ -37,25 +38,21 @@
 
 
 
-OpSeeder::OpSeeder(OpticksHub* hub, OContext* ocontext)  
+OpSeeder::OpSeeder(OpticksHub* hub, OEngineImp* imp)  
    :
      m_hub(hub),
-     m_ocontext(ocontext),
-     m_propagator(NULL)
+     m_imp(imp),
+     m_ocontext(imp->getOContext()),
+     m_propagator(imp->getOPropagator())
 {
    init(); 
 }
 
+
+
 void OpSeeder::init()
 {
 }
-
-void OpSeeder::setPropagator(OPropagator* propagator)
-{
-    m_propagator = propagator ; 
-}  
-
-
 
 
 
@@ -70,6 +67,7 @@ void OpSeeder::seedPhotonsFromGensteps()
     {    
         seedPhotonsFromGenstepsViaOptiX();
     }    
+    if(m_hub->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
 }
 
 
@@ -77,7 +75,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 {
     LOG(info)<<"OpSeeder::seedPhotonsFromGenstepsViaOpenGL" ;
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getOKEvent();
     assert(evt); 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     NPY<float>* photons  =  evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
@@ -140,7 +138,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     
     //tgs.dump<unsigned int>("App::seedPhotonsFromGenstepsImp tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getOKEvent();
     assert(evt); 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;

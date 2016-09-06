@@ -42,13 +42,22 @@
     }
 
 
+OContext* OEngineImp::getOContext()
+{
+    return m_ocontext ; 
+}
+OPropagator* OEngineImp::getOPropagator()
+{
+    return m_opropagator ; 
+}
+
 
 OEngineImp::OEngineImp(OpticksHub* hub) 
      :   
-      m_timer(NULL),
+      m_timer(new Timer("OEngineImp::")),
       m_hub(hub),
-      m_opticks(hub->getOpticks()),
-      m_fcfg(NULL),
+      m_ok(hub->getOpticks()),
+      m_cfg(m_ok->getCfg()),
       m_ggeo(NULL),  // defer to avoid order brittleness
 
       m_ocontext(NULL),
@@ -65,44 +74,33 @@ OEngineImp::OEngineImp(OpticksHub* hub)
 
 void OEngineImp::init()
 {
-    m_fcfg = m_opticks->getCfg();
-
-    m_timer      = new Timer("OEngineImp::");
     m_timer->setVerbose(true);
     m_timer->start();
+
+    prepareOptiXGeometry();
+    preparePropagator();
 }
 
 
-OContext* OEngineImp::getOContext()
-{
-    return m_ocontext ; 
-}
-OPropagator* OEngineImp::getOPropagator()
-{
-    return m_opropagator ; 
-}
-
-
-
-void OEngineImp::prepareOptiX()
+void OEngineImp::prepareOptiXGeometry()
 {
     LOG(trace) << "OEngineImp::prepareOptiX START" ; 
 
-    std::string builder_   = m_fcfg->getBuilder();
-    std::string traverser_ = m_fcfg->getTraverser();
+    std::string builder_   = m_cfg->getBuilder();
+    std::string traverser_ = m_cfg->getTraverser();
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
 
-    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
+    OContext::Mode_t mode = m_ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
 
     optix::Context context = optix::Context::create();
 
     LOG(debug) << "OEngineImp::prepareOptiX (OContext)" ;
     m_ocontext = new OContext(context, mode);
-    m_ocontext->setStackSize(m_fcfg->getStack());
-    m_ocontext->setPrintIndex(m_fcfg->getPrintIndex().c_str());
-    m_ocontext->setDebugPhoton(m_fcfg->getDebugIdx());
+    m_ocontext->setStackSize(m_cfg->getStack());
+    m_ocontext->setPrintIndex(m_cfg->getPrintIndex().c_str());
+    m_ocontext->setDebugPhoton(m_cfg->getDebugIdx());
 
     m_ggeo = m_hub->getGGeo();
 
@@ -114,7 +112,7 @@ void OEngineImp::prepareOptiX()
 
 
     LOG(debug) << "OEngineImp::prepareOptiX (OColors)" ;
-    m_ocolors = new OColors(context, m_opticks->getColors() );
+    m_ocolors = new OColors(context, m_ok->getColors() );
     m_ocolors->convert();
 
     // formerly did OBndLib here, too soon
@@ -147,23 +145,16 @@ void OEngineImp::prepareOptiX()
 
 
     LOG(debug) << m_ogeo->description("OEngineImp::prepareOptiX ogeo");
-    LOG(trace) << "OEngineImp::prepareOptiX DONE" ;
-
-
+    LOG(trace) << "OEngineImp::prepareOptiXGeometry DONE" ;
 }
 
 
 void OEngineImp::preparePropagator()
 {
-    bool noevent    = m_fcfg->hasOpt("noevent");
-    bool trivial    = m_fcfg->hasOpt("trivial");
-    bool seedtest   = m_fcfg->hasOpt("seedtest");
-    int  override_   = m_fcfg->getOverride();
+    bool trivial    = m_cfg->hasOpt("trivial");
+    bool seedtest   = m_cfg->hasOpt("seedtest");
+    int  override_   = m_cfg->getOverride();
 
-    OpticksEvent* evt = m_hub->getEvent(); 
-    if(!evt) return ;
-
-    assert(!noevent);
 
     LOG(trace) << "OEngineImp::preparePropagator" 
               << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
@@ -188,14 +179,32 @@ void OEngineImp::preparePropagator()
     }
 
 
-    m_opropagator = new OPropagator(m_ocontext, m_hub, override_);
-
-    m_opropagator->setEntry(entry);
-    m_opropagator->initRng();
-    m_opropagator->initEvent();
+    m_opropagator = new OPropagator(m_ocontext, m_hub, entry, override_);
 
     LOG(trace) << "OEngineImp::preparePropagator DONE ";
+    
+
+   // attempt to prelaunch here, fails for lack of evt buffers
+   // this suggests to create empty buffers up front and 
+   // change content event by event ?
 }
+
+
+
+
+
+void OEngineImp::initEvent()
+{
+    OpticksEvent* evt = m_hub->getOKEvent(); 
+    assert(evt);
+
+    TIMER("_initEvent");
+
+    m_opropagator->initEvent();
+
+    TIMER("initEvent");
+}
+
 
 
 void OEngineImp::propagate()
@@ -203,9 +212,11 @@ void OEngineImp::propagate()
     LOG(trace)<< "OEngineImp::propagate" ;
 
     m_opropagator->prelaunch();
+
     TIMER("prelaunch");
 
     m_opropagator->launch();
+
     TIMER("propagate");
 
     m_opropagator->dumpTimes("OEngineImp::propagate");
@@ -217,7 +228,7 @@ void OEngineImp::downloadPhotonData()
     OpticksEvent* evt = m_hub->getEvent(); 
     if(!evt) return ;
 
-    if(m_opticks->isCompute())
+    if(m_ok->isCompute())
     {
         m_opropagator->downloadPhotonData();
     }

@@ -315,7 +315,7 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
         glBufferData(GL_ARRAY_BUFFER, nbytes, data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW  );
 
         npy->setBufferId(buffer_id); 
-        m_device->add(npy);
+        m_device->add(npy);         //  (void*)npy used by Device::isUploaded to prevent re-uploads  
     }
 }
 
