@@ -40,15 +40,12 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     m_tracer(m_viz ? new OKGLTracer(m_engine,m_viz, true) : NULL )
 {
     init();
-    LOG(fatal) << "OKPropagator::OKPropagator DONE"
-               << " viz " << viz 
-                 ;
 }
 
 void OKPropagator::init()
 {
+    LOG(fatal) << "OKPropagator::OKPropagator DONE" ;
 }
-
 
 void OKPropagator::propagate(NPY<float>* genstep)
 {
@@ -56,13 +53,9 @@ void OKPropagator::propagate(NPY<float>* genstep)
 
     if( n_gs <= 0 )
     {  
-         LOG(fatal) << "OKPropagator::propagate"
-                     << " SKIPPING as no collected optical gensteps (ie Cerenkov or scintillation gensteps) "
-                     << " or fabricated torch gensteps  "
-                     ;   
+         LOG(fatal) << "OKPropagator::propagate SKIP AS NO GENSTEPS " ;   
          return ;   
     }
-
 
     m_hub->initOKEvent(genstep);
 
@@ -98,16 +91,9 @@ void OKPropagator::propagate(NPY<float>* genstep)
 }
 
 
-
-
-
-
 void OKPropagator::cleanup()
 {
     m_engine->cleanup();
 }
-
-
-
 
 

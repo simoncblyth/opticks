@@ -54,6 +54,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getTrackViewPeriod(); 
      int          getAnimatorPeriod(); 
      int          getRepeatIndex(); 
+     int          getMultiEvent(); 
      int          getRestrictMesh(); 
      int          getAnalyticMesh(); 
      int          getModulo(); 
@@ -108,6 +109,7 @@ private:
      int         m_ovperiod ; 
      int         m_tvperiod ; 
      int         m_repeatidx ; 
+     int         m_multievent ; 
      int         m_restrictmesh; 
      int         m_analyticmesh; 
      int         m_modulo ; 

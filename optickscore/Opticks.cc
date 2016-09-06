@@ -433,6 +433,10 @@ void Opticks::setSpaceDomain(float x, float y, float z, float w)
     configureDomains();
 }
 
+int Opticks::getMultiEvent()
+{    
+    return m_cfg->getMultiEvent();
+}
 
 void Opticks::configureDomains()
 {

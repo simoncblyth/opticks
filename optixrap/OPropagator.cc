@@ -219,6 +219,7 @@ void OPropagator::initEvent()
 
 
 
+/*
     bool compute = m_ocontext->isCompute() ;
 
     if( compute && hasInitEvent() )
@@ -229,6 +230,10 @@ void OPropagator::initEvent()
     {
         initEventBuffers(evt);  // creates fresh OptiX buffers for event 
     }
+*/
+
+    initEventBuffers(evt);  // creates fresh OptiX buffers for event 
+
 }
 
 

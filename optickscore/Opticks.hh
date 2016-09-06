@@ -120,6 +120,7 @@ class OKCORE_API Opticks {
        Parameters*          getParameters();
        NState*              getState();
    public:
+       int                  getMultiEvent();
        unsigned int         getSourceCode();
        bool                 isLiveGensteps();  // collected directly from CG4 propagation
        const char*          getSourceType();

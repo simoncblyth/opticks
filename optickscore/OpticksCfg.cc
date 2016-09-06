@@ -53,6 +53,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_ovperiod(180),
        m_tvperiod(100),
        m_repeatidx(-1),
+       m_multievent(1),
        m_restrictmesh(-1),
        m_analyticmesh(-1),
        m_modulo(-1),
@@ -413,6 +414,13 @@ void OpticksCfg<Listener>::init()
        ("repeatidx",  boost::program_options::value<int>(&m_repeatidx), repeatidx );
 
 
+   char multievent[128];
+   snprintf(multievent,128, "Multievent count used in development of multiple event propagation. Default %d ", m_multievent);
+   m_desc.add_options()
+       ("multievent",  boost::program_options::value<int>(&m_multievent), multievent);
+
+
+
    char restrictmesh[128];
    snprintf(restrictmesh,128, "Restrict meshes converted to OptiX geometry to the one identitied by index eg 0,1,2. Or -1 for no restriction. Default %d ", m_restrictmesh);
    m_desc.add_options()
@@ -711,6 +719,13 @@ int OpticksCfg<Listener>::getRepeatIndex()
 {
     return m_repeatidx ; 
 }
+template <class Listener>
+int OpticksCfg<Listener>::getMultiEvent()
+{
+    return m_multievent ; 
+}
+
+
 template <class Listener>
 int OpticksCfg<Listener>::getRestrictMesh()
 {

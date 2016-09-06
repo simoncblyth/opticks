@@ -38,7 +38,7 @@ OKMgr::OKMgr(int argc, char** argv)
 #ifdef WITH_OPTIX
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
 #endif
-    m_placeholder(0)
+    m_count(0)
 {
     init();
     LOG(fatal) << "OKMgr::OKMgr DONE" ;
@@ -65,18 +65,20 @@ void OKMgr::action()
     }
     else
     { 
-        propagate();
+        int multi = m_ok->getMultiEvent();
+        for(int i=0 ; i < multi ; i++) propagate();
     }
 }
 
 void OKMgr::propagate()
 {
-    LOG(fatal) << "OKMgr::propagate" ; 
+    m_count += 1 ; 
+    LOG(fatal) << "OKMgr::propagate " << m_count ; 
     NPY<float>* gs = m_hub->getGensteps();  
 #ifdef WITH_OPTIX
     m_propagator->propagate(gs);
 #endif
-    LOG(fatal) << "OKMgr::propagate DONE" ; 
+    LOG(fatal) << "OKMgr::propagate DONE " << m_count ; 
 }
 
 

@@ -33,7 +33,7 @@ class GGV_API OKMgr {
 #ifdef WITH_OPTIX
        OKPropagator*  m_propagator ; 
 #endif
-       int            m_placeholder ;  
+       int            m_count ;  
        
 };
 

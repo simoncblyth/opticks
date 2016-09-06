@@ -247,8 +247,7 @@ NEXT : OKMgr/OKG4Mgr propagation multi-event test
 ---------------------------------------------------
 
 * :doc:`optix_changing_event_buffer`
-
-
+* :doc:`multi_event`
 
 
 
