@@ -10,8 +10,7 @@ class NConfigurable ;
 #include "OpticksIdx.hh"    // opticksgeo-
 
 #ifdef WITH_OPTIX
-#include "OpViz.hh"     // optixgl-
-#include "OpEngine.hh"  // opticksop-
+#include "OKPropagator.hh"  // ggeoview-
 #endif
 
 #define GUI_ 1
@@ -30,9 +29,6 @@ class NConfigurable ;
     }
 
 
-bool OKMgr::hasOpt(const char* name){ return m_ok->hasOpt(name); }
-
-
 OKMgr::OKMgr(int argc, char** argv) 
     :
     m_ok(new Opticks(argc, argv, false)),   // false: NOT integrated running
@@ -40,8 +36,7 @@ OKMgr::OKMgr(int argc, char** argv)
     m_idx(new OpticksIdx(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
 #ifdef WITH_OPTIX
-    m_ope(new OpEngine(m_hub, true)),
-    m_opv(m_viz ? new OpViz(m_ope,m_viz, true) : NULL),
+    m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
 #endif
     m_placeholder(0)
 {
@@ -55,98 +50,50 @@ void OKMgr::init()
     if(g4gun)
          LOG(fatal) << "OKMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
-
-
 }
 
 
 void OKMgr::action()
 {
-    LOG(fatal) << "OKMgr::action" ; 
-    if(hasOpt("load"))
+    if(m_ok->hasOpt("load"))
     {
         loadPropagation();
     }
-    else if(hasOpt("nopropagate"))
+    else if(m_ok->hasOpt("nopropagate"))
     {
         LOG(info) << "--nopropagate/-P" ;
     }
     else
     { 
-        NPY<float>* gs = m_hub->getGensteps();  
-        propagate(gs);
+        propagate();
     }
 }
 
-
-
-void OKMgr::propagate(NPY<float>* genstep)
+void OKMgr::propagate()
 {
-    m_hub->initOKEvent(genstep);
-
-    if(m_viz)
-    { 
-        // handling target option inside Scene is inconvenient  TODO: centralize
-        int target = m_viz->getTarget();  // hmm target could be non oglrap- specific 
-        if(target == 0) 
-            m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
-
-        m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
-    }
-
+    LOG(fatal) << "OKMgr::propagate" ; 
+    NPY<float>* gs = m_hub->getGensteps();  
 #ifdef WITH_OPTIX
-    m_ope->preparePropagator();              // creates OptiX buffers and OBuf wrappers as members of OPropagator
-
-    m_ope->seedPhotonsFromGensteps();        // distributes genstep indices into the photons buffer
-
-    if(m_ok->hasOpt("dbgseed")) dbgSeed();
-    if(m_ok->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
-
-    m_ope->initRecords();                    // zero records buffer, not working in OptiX 4 in interop 
-
-    if(!m_ok->hasOpt("nooptix|noevent|nopropagate"))
-    {
-        m_ope->propagate();                  // perform OptiX GPU propagation 
-    }
-
-    indexPropagation();
-
-    if(m_ok->hasOpt("save"))
-    {
-        if(m_viz) m_viz->downloadEvent();
-        m_ope->downloadEvt();
-        m_idx->indexEvtOld();
-
-        m_hub->save();
-    }
+    m_propagator->propagate(gs);
 #endif
+    LOG(fatal) << "OKMgr::propagate DONE" ; 
 }
 
-void OKMgr::indexPropagation()
-{
-    OpticksEvent* evt = m_hub->getOKEvent();
-    if(!evt->isIndexed())
-    {
-#ifdef WITH_OPTIX 
-        m_ope->indexSequence();
-#endif
-        m_idx->indexBoundariesHost();
-    }
-    if(m_viz) m_viz->indexPresentationPrep();
-}
 
 void OKMgr::loadPropagation()
 {
     LOG(fatal) << "OKMgr::loadPropagation" ; 
+
     m_hub->loadPersistedEvent(); 
 
-    indexPropagation();
+    // formerly did indexing on load, 
+    // but that is kinda crazy and should not normally be needed 
+    // probably this was for G4 propagations prior to implementing
+    // CPU indexing over in cfg4-
 
     if(!m_viz) return  ;
 
-    int target = m_viz->getTarget();  // hmm target could be non oglrap- specific 
-    if(target == 0) 
-         m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+    m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
 
     m_viz->uploadEvent();  
 
@@ -155,48 +102,17 @@ void OKMgr::loadPropagation()
 
 void OKMgr::visualize()
 {
-    if(!m_viz) return ; 
-    m_viz->prepareGUI();
-    m_viz->renderLoop();    
+    if(m_viz) m_viz->visualize();
 }
 
 void OKMgr::cleanup()
 {
 #ifdef WITH_OPTIX
-    if(m_ope) m_ope->cleanup();
+    m_propagator->cleanup();
 #endif
     m_hub->cleanup();
     if(m_viz) m_viz->cleanup();
     m_ok->cleanup(); 
 }
-
-void OKMgr::dbgSeed()
-{
-#ifdef WITH_OPTIX
-    if(!m_ope) return ; 
-    OpticksEvent* evt = m_hub->getOKEvent();    
-    NPY<float>* ox = evt->getPhotonData();
-    assert(ox);
-
-    // this split between interop and compute mode
-    // is annoying, maybe having a shared base protocol
-    // for OpEngine and OpticksViz
-    // could avoid all the branching 
-
-    if(m_viz) 
-    { 
-        LOG(info) << "OKMgr::debugSeed (interop) download photon seeds " ;
-        m_viz->downloadData(ox) ; 
-        ox->save("$TMP/dbgseed_interop.npy");
-    }
-    else
-    {
-        LOG(info) << "OKMgr::debugSeed (compute) download photon seeds " ;
-        m_ope->downloadPhotonData();  
-        ox->save("$TMP/dbgseed_compute.npy");
-    }  
-#endif
-}
-
 
 

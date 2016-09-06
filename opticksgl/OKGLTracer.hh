@@ -1,5 +1,4 @@
 #pragma once
-
 // okc-
 class Composition ; 
 
@@ -27,9 +26,9 @@ class OpticksViz ;
 
 #include "SRenderer.hh"
 
-class OKGL_API OpViz : public SRenderer {
+class OKGL_API OKGLTracer : public SRenderer {
     public:
-       OpViz(OpEngine* ope, OpticksViz* viz, bool immediate);
+       OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate);
     public:
        void prepareTracer();
        void render();     // fulfils SRenderer protocol

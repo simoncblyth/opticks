@@ -235,6 +235,7 @@ set(SOURCES
 
     GGV_LOG.cc
     OKMgr.cc 
+    OKPropagator.cc 
 )
 set(HEADERS
 
@@ -244,6 +245,7 @@ set(HEADERS
     GGV_TAIL.hh
 
     OKMgr.hh
+    OKPropagator.hh
 )
 
 

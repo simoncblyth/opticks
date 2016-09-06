@@ -23,8 +23,11 @@ class SLauncher ;
 #include "OGLRAP_API_EXPORT.hh"
 
 class OGLRAP_API OpticksViz {
+         friend class AxisApp ; 
     public:
          OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate=false);
+    public:
+         void visualize();
     public:
          void setExternalRenderer(SRenderer* external_renderer);
          void setLauncher(SLauncher* launcher);
@@ -42,13 +45,13 @@ class OGLRAP_API OpticksViz {
          void uploadGeometry();
          void uploadEvent();
          void indexPresentationPrep();
-         void prepareGUI();
-         void renderLoop();
          void cleanup();
     private: 
          void init();
          void render();
          void renderGUI();
+         void prepareGUI();
+         void renderLoop();
     public:
          void downloadData(NPY<float>* data);
          void downloadEvent();

@@ -153,8 +153,6 @@ void OEngineImp::prepareOptiX()
 }
 
 
-
-
 void OEngineImp::preparePropagator()
 {
     bool noevent    = m_fcfg->hasOpt("noevent");

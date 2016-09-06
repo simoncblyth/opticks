@@ -24,12 +24,12 @@
 #include "OpticksViz.hh"
 
 // opgl-
-#include "OpViz.hh"
+#include "OKGLTracer.hh"
 #include "OFrame.hh"
 #include "ORenderer.hh"
 
 
-OpViz::OpViz(OpEngine* ope, OpticksViz* viz, bool immediate) 
+OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate) 
    :
       m_ope(ope),
       m_viz(viz),
@@ -44,10 +44,17 @@ OpViz::OpViz(OpEngine* ope, OpticksViz* viz, bool immediate)
       m_orenderer(NULL),
       m_otracer(NULL)
 {
+
+    LOG(info) << "OKGLTracer::OKGLTracer"
+              << " ope " << ope
+              << " viz " << viz
+              << " immediate " << immediate 
+              ;
+
     init();
 }
 
-void OpViz::init()
+void OKGLTracer::init()
 {
     if(m_immediate)
     {
@@ -56,15 +63,24 @@ void OpViz::init()
 }
 
 
-void OpViz::prepareTracer()
+void OKGLTracer::prepareTracer()
 {
     if(m_hub->isCompute()) return ;
-    if(!m_scene) return ;
+    if(!m_scene) 
+    {
+        LOG(fatal) << "OKGLTracer::prepareTracer NULL scene ?"  ;
+        return ;
+    }
+
 
     m_viz->setExternalRenderer(this);
 
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
+    LOG(fatal) << "OKGLTracer::prepareTracer plant external renderer into viz" 
+               << " width " << width 
+               << " height " << height 
+                ;
 
     m_ocontext = m_ope->getOContext();
 
@@ -82,12 +98,12 @@ void OpViz::prepareTracer()
 
     m_otracer = new OTracer(m_ocontext, m_composition);
 
-    LOG(info) << "OpViz::prepareOptiXViz DONE ";
+    LOG(info) << "OKGLTracer::prepareOptiXViz DONE ";
 
-    m_ocontext->dump("OpViz::prepareOptiXVix");
+    m_ocontext->dump("OKGLTracer::prepareOptiXVix");
 }
 
-void OpViz::render()
+void OKGLTracer::render()
 {     
     if(m_otracer && m_orenderer)
     { 

@@ -149,15 +149,17 @@ void OPropagator::initRng()
         return ;
     }
 
-    OpticksEvent* evt = m_hub->getEvent();
-    unsigned int num_photons = evt->getNumPhotons();
+
+    // hmm evt should not be needed at init stage, 
+
+    //OpticksEvent* evt = m_hub->getEvent();
+    //unsigned int num_photons = evt->getNumPhotons();
 
     //const char* rngCacheDir = OConfig::RngDir() ;
     const char* rngCacheDir = m_opticks->getRNGInstallCacheDir();
 
     LOG(info) << "OPropagator::initRng"
                << " rng_max " << rng_max
-               << " num_photons " << num_photons 
                << " rngCacheDir " << rngCacheDir
                ;
 
@@ -190,7 +192,7 @@ void OPropagator::initRng()
 
 void OPropagator::initEvent()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getOKEvent();
     if(!evt) return ;
     initEvent(evt);
 }
@@ -201,6 +203,11 @@ void OPropagator::initEvent(OpticksEvent* evt)
     // the OptiX buffers for the evt data are actually references 
     // to the OpenGL buffers created with createBufferFromGLBO
     // by Scene::uploadEvt Scene::uploadSelection
+    // 
+    //
+    // Hear are recreating buffer for each evt, 
+    // could try reusing OBuf ?
+
 
     LOG(info) << "OPropagator::initEvent" ; 
 

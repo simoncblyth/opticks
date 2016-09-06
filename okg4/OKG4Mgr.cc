@@ -10,8 +10,7 @@ class NConfigurable ;
 #include "OpticksIdx.hh"    // opticksgeo-
 
 #ifdef WITH_OPTIX
-#include "OpViz.hh"     // optixgl-
-#include "OpEngine.hh"  // opticksop-
+#include "OKPropagator.hh"  // ggeoview-
 #endif
 
 #define GUI_ 1
@@ -41,8 +40,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_collector(new CCollector(m_hub->getLookup())),   // after CG4 loads geometry, for material code cross-referenceing in NLookup
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
 #ifdef WITH_OPTIX
-    m_ope(new OpEngine(m_hub, true)),
-    m_opv(m_viz ? new OpViz(m_ope,m_viz, true) : NULL),
+    m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
 #endif
     m_placeholder(0)
 {
@@ -54,104 +52,30 @@ void OKG4Mgr::init()
 {
 }
 
-
 void OKG4Mgr::propagate()
 {
     LOG(fatal) << "OKG4Mgr::propagate" ;
 
-    unsigned code = m_ok->getSourceCode();
-
     m_g4->propagate();
 
-    NPY<float>* gs = code == G4GUN ? m_collector->getGensteps() : m_hub->getGensteps() ;  
-     // collected from G4  OR input gensteps from torch or file
+    NPY<float>* gs = m_ok->isLiveGensteps() ? m_collector->getGensteps() : m_hub->getGensteps() ;  
 
-    int n_gs  = gs ? gs->getNumItems() : -1 ; 
+    // collected from G4 directly OR input gensteps fabricated from config (eg torch) or loaded from file
 
-    LOG(fatal) << "OKG4Mgr::propagate n_gs " << n_gs ;  
+    m_propagator->propagate(gs);
 
-    if( n_gs <= 0 )
-    {
-          LOG(fatal) << "OKG4Mgr::propagate"
-                     << " SKIPPING as no collected optical gensteps (ie Cerenkov or scintillation gensteps) "
-                     << " or fabricated torch gensteps  "
-                     ;
-         return ;  
-    }
-
-    m_hub->initOKEvent(gs);          // make an Opticks evt to hold the propagation 
-
-    if(m_viz)
-    { 
-        m_hub->target();             // if not already targetted, point Camera at gensteps of last created evt
-
-        m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
-    }
-
-#ifdef WITH_OPTIX
-    m_ope->preparePropagator();              // creates OptiX buffers and OBuf wrappers as members of OPropagator
-
-    m_ope->seedPhotonsFromGensteps();        // distributes genstep indices into the photons buffer
-
-    if(m_ok->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
-
-    m_ope->initRecords();                    // zero records buffer, not working in OptiX 4 in interop 
-
-    if(!m_ok->hasOpt("nooptix|noevent|nopropagate"))
-    {
-        m_ope->propagate();                  // perform OptiX GPU propagation 
-    }
-
-
-    indexPropagation();
-
-
-    if(m_ok->hasOpt("save"))
-    {
-        if(m_viz) m_viz->downloadEvent();
-        m_ope->downloadEvt();
-
-        m_idx->indexEvtOld();  // hostside checks, when saving makes sense
-        m_idx->indexSeqHost();
-
-
-        m_hub->save();
-    }
-#endif
     LOG(fatal) << "OKG4Mgr::propagate DONE" ;
 }
 
-
-
-
-void OKG4Mgr::indexPropagation()
-{
-    OpticksEvent* evt = m_hub->getOKEvent();
-    assert(evt->isOK()); // is this always so ?
-    if(!evt->isIndexed())
-    {
-#ifdef WITH_OPTIX 
-        m_ope->indexSequence();
-#endif
-        m_idx->indexBoundariesHost();
-    }
-    if(m_viz) m_viz->indexPresentationPrep();
-}
-
-
-
-
 void OKG4Mgr::visualize()
 {
-    if(!m_viz) return ; 
-    m_viz->prepareGUI();
-    m_viz->renderLoop();    
+    if(m_viz) m_viz->visualize();
 }
 
 void OKG4Mgr::cleanup()
 {
 #ifdef WITH_OPTIX
-    if(m_ope) m_ope->cleanup();
+    m_propagator->cleanup();
 #endif
     m_hub->cleanup();
     if(m_viz) m_viz->cleanup();

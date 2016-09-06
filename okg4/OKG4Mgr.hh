@@ -8,8 +8,7 @@ class CG4 ;
 class OpticksViz ; 
 
 #ifdef WITH_OPTIX
-class OpEngine ; 
-class OpViz ; 
+class OKPropagator ; 
 #endif
 
 #include "OKG4_API_EXPORT.hh"
@@ -33,8 +32,7 @@ class OKG4_API OKG4Mgr {
        CCollector*    m_collector ; 
        OpticksViz*    m_viz ; 
 #ifdef WITH_OPTIX
-       OpEngine*      m_ope ; 
-       OpViz*         m_opv ; 
+       OKPropagator*  m_propagator ; 
 #endif
        int            m_placeholder ; 
     

@@ -7,8 +7,7 @@ class OpticksIdx;
 class OpticksViz ; 
 
 #ifdef WITH_OPTIX
-class OpEngine ; 
-class OpViz ; 
+class OKPropagator ; 
 #endif
 
 #include "GGV_API_EXPORT.hh"
@@ -17,25 +16,22 @@ class OpViz ;
 class GGV_API OKMgr {
    public:
        OKMgr(int argc, char** argv);
-       bool hasOpt(const char* name);
    public:
-       void propagate(NPY<float>* gs);
-       void loadPropagation();
-       void indexPropagation();
        void action();
+   public:
+       void propagate();
+       void loadPropagation();
        void visualize();
        void cleanup();
    private:
        void init();
-       void dbgSeed();
    private:
        Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        OpticksViz*    m_viz ; 
 #ifdef WITH_OPTIX
-       OpEngine*      m_ope ; 
-       OpViz*         m_opv ; 
+       OKPropagator*  m_propagator ; 
 #endif
        int            m_placeholder ;  
        

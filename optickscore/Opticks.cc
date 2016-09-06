@@ -493,6 +493,22 @@ unsigned int Opticks::getSourceCode()
     return code ;
 }
 
+bool Opticks::isLiveGensteps()
+{   
+    unsigned int code = getSourceCode();
+    return code == G4GUN ;
+    //
+    //  *live-gensteps* 
+    //        G4GUN: collected from a live CG4 instance  
+    //
+    //  *loaded-from-file*
+    //        CERENKOV SCINTILLATION NATURAL
+    //
+    //  *fabricated-from-config*
+    //        TORCH  
+}
+
+
 const char* Opticks::getSourceType()
 {
     unsigned int code = getSourceCode();

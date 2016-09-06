@@ -149,9 +149,9 @@ set(SOURCES
 
     OFrame.cc
     ORenderer.cc
-    OpViz.cc
     OAxisTest.cc
 
+    OKGLTracer.cc
 )
 set(HEADERS
 
@@ -162,9 +162,12 @@ set(HEADERS
 
     OFrame.hh
     ORenderer.hh
-    OpViz.hh
     OAxisTest.hh
+
+    OKGLTracer.hh
 )
+
+
 
 add_library( ${name}  SHARED  ${SOURCES} )
 target_link_libraries( ${name} ${LIBRARIES} )

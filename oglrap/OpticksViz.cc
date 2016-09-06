@@ -127,6 +127,15 @@ void OpticksViz::init()
     }
 }
 
+
+void OpticksViz::visualize()
+{
+    prepareGUI();
+    renderLoop();
+}
+
+
+
 void OpticksViz::setTitle(const char* title)
 {
     m_title = title ? strdup(title) : NULL ; 
@@ -397,6 +406,8 @@ void OpticksViz::render()
 
     m_scene->render();
 }
+
+
 
 
 

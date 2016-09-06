@@ -50,7 +50,7 @@ DONE : Material Code Mapping Generalization
 * :doc:`material_code_mapping_generalization`
 
 
-WIP : Integrated G4GUN running
+DONE : Integrated G4GUN running
 ---------------------------------
 
 ::
@@ -233,13 +233,18 @@ Perhaps can avoid translation by applying the
 lookup translation at collection.  
 
 
-NEXT : OKG4Mgr propagation multi-event test
-----------------------------------------------
+
+DONE : avoid duplication between OKMgr and OKG4Mgr
+-----------------------------------------------------
 
 Tidy up propagation. 
 
 Avoid duplication between OKMgr and OKG4Mgr, 
 probably using separate high level propagation class.
+
+
+NEXT : OKMgr/OKG4Mgr propagation multi-event test
+---------------------------------------------------
 
 Clearly split:
 
@@ -247,6 +252,10 @@ Clearly split:
 * per-event just final launch 
 
 Do multi-event propagations to test the split.
+
+
+NEXT : check operation from loaded gensteps still operational
+---------------------------------------------------------------
 
 
 NEXT : OKG4 genstep shakedown 

@@ -29,6 +29,7 @@ int main(int argc, char** argv)
     //PLOG_(argc, argv);
     PLOG_COLOR(argc, argv);
 
+
     SYSRAP_LOG__ ;
     BRAP_LOG__ ;
     NPY_LOG__ ;
@@ -53,9 +54,7 @@ int main(int argc, char** argv)
 
 
     OKG4Mgr okg4(argc, argv);
-
     okg4.propagate();
-
     okg4.visualize();   
 
     return 0 ;
