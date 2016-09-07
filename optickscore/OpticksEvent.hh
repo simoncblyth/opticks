@@ -182,7 +182,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void loadIndex();
        void loadBuffers(bool verbose=true);
    public: 
-       void createBuffers(); 
+       void createBuffers(bool gs=false); 
        void createSpec(); 
    private:
        void setPhotonData(NPY<float>* photon_data);

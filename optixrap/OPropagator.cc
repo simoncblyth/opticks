@@ -91,7 +91,7 @@ OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, in
     m_ocontext(ocontext),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_zero(m_ok->makeEvent(true)),
+    m_zero(m_ok->makeEvent(true, true)),     // ok=true, gs=true  including template gs buffers 
     m_oevt(new OEvent(m_ocontext, m_zero)),
     m_prelaunch_times(new OTimes),
     m_launch_times(new OTimes),

@@ -135,7 +135,8 @@ void OpIndexer::indexBoundaries()
 
 
     bool compute = m_ocontext->isCompute() ;
-    NPYBase* npho = m_pho->getNPY();
+    //NPYBase* npho = m_pho->getNPY();
+    NPYBase* npho = m_evt->getData(OpticksEvent::photon_);
     unsigned int buffer_id = npho->getBufferId();
     unsigned long long ctrl = npho->getBufferControl();
 

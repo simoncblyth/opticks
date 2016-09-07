@@ -652,13 +652,24 @@ void OpticksEvent::checkData(const char* name)
 
 
 
-void OpticksEvent::createBuffers()
+
+void OpticksEvent::createBuffers(bool gs)
 {
     // invoked by Opticks::makeEvent 
 
     // NB allocation is deferred until zeroing and they start at 0 items anyhow
-    // NB no gensteps yet, those come externally 
-
+    //
+    // NB by default gs = false and genstep buffer creation is excluded, 
+    //    those coming externally
+    //    however they are needed for "template" zero events 
+    //
+    
+    if(gs)   
+    {
+        NPY<float>* genstep = NPY<float>::make(m_genstep_spec); 
+        bool progenitor = false ;    
+        setGenstepData(genstep, progenitor);   
+    }
 
     NPY<float>* nop = NPY<float>::make(m_nopstep_spec); 
     setNopstepData(nop);   

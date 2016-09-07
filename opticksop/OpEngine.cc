@@ -21,7 +21,7 @@ OpEngine::OpEngine(OpticksHub* hub)
      : 
       m_hub(hub),
       m_ok(m_hub->getOpticks()),
-      m_imp(new OEngineImp(m_hub, m_zero)),
+      m_imp(new OEngineImp(m_hub)),
       m_seeder(new OpSeeder(m_hub, m_imp)),
       m_zeroer(new OpZeroer(m_hub, m_imp)),
       m_indexer(new OpIndexer(m_hub, m_imp))

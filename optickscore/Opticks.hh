@@ -134,7 +134,7 @@ class OKCORE_API Opticks {
        NPY<float>*          loadGenstep();
        TorchStepNPY*        makeSimpleTorchStep();
        OpticksEventSpec*    getEventSpec();
-       OpticksEvent*        makeEvent(bool ok=true); 
+       OpticksEvent*        makeEvent(bool ok=true, bool gs=false); 
        BDynamicDefine*      makeDynamicDefine();
    public:
        // load precooked indices
