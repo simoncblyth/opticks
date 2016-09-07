@@ -1,8 +1,6 @@
 #pragma once
 
 class Opticks ;       // okc-
-class OpticksEvent ;  
-
 class OpticksHub ;    // okg-
 
 class OEngineImp ;   // optixrap-
@@ -14,6 +12,15 @@ class OpIndexer ;
 
 
 #include "OKOP_API_EXPORT.hh"
+
+/**
+OpEngine
+=========
+
+Canonical m_engine instance resides in ggeoview-/OKPropagator
+
+**/
+
 class OKOP_API OpEngine {
     public:
        OpEngine(OpticksHub* hub);

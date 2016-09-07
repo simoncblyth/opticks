@@ -46,7 +46,7 @@ int main( int argc, char** argv )
 
     optix::Buffer buffer = m_ocontext->createBuffer<float>( npy, "demo");
     context["output_buffer"]->set(buffer);
-    OBuf* genstep_buf = new OBuf("genstep", buffer, npy);
+    OBuf* genstep_buf = new OBuf("genstep", buffer);
 
     OContext::upload(buffer, npy);
 

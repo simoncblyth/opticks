@@ -28,7 +28,7 @@
 
 class OXRAP_API OBuf : public OBufBase {
    public:
-      OBuf( const char* name, optix::Buffer& buffer, NPYBase* npy ); 
+      OBuf( const char* name, optix::Buffer& buffer); 
 
    public:
       template <typename T>

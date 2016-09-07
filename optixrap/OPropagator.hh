@@ -10,6 +10,7 @@ class Opticks ;
 
 class OContext ; 
 class OBuf ; 
+class OEvent ; 
 struct OTimes ; 
 
 // TODO: maybe split OptiX buffer management into an OEvent ?
@@ -32,7 +33,7 @@ class OXRAP_API OPropagator {
     public:
         OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_=0); 
     public:
-        bool hasInitEvent();
+        //bool hasInitEvent();
         void initEvent();  // creates OBuf (genstep, photon, record, sequence) + uploads gensteps in compute, already there in interop
         void prelaunch();
         void launch();
@@ -61,7 +62,9 @@ class OXRAP_API OPropagator {
     private:
         OContext*        m_ocontext ; 
         OpticksHub*      m_hub ; 
-        Opticks*         m_opticks ; 
+        Opticks*         m_ok ; 
+        OpticksEvent*    m_zero ; 
+        OEvent*          m_oevt ; 
         optix::Context   m_context ;
         OTimes*          m_prelaunch_times ; 
         OTimes*          m_launch_times ; 
@@ -69,17 +72,8 @@ class OXRAP_API OPropagator {
         int              m_entry_index ; 
 
     protected:
-        optix::Buffer   m_genstep_buffer ; 
-        optix::Buffer   m_photon_buffer ; 
-        optix::Buffer   m_record_buffer ; 
-        optix::Buffer   m_sequence_buffer ; 
         optix::Buffer   m_touch_buffer ; 
         optix::Buffer   m_aux_buffer ; 
-
-        OBuf*           m_photon_buf ;
-        OBuf*           m_sequence_buf ;
-        OBuf*           m_genstep_buf ;
-        OBuf*           m_record_buf ;
 
     protected:
         optix::Buffer   m_rng_states ;
@@ -95,7 +89,7 @@ class OXRAP_API OPropagator {
 
     private:
         int             m_override ; 
-        bool            m_init_event ; 
+        //bool            m_init_event ; 
  
 };
 

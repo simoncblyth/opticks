@@ -1,15 +1,12 @@
 #include "NPYBase.hpp"
 #include "OBufBase.hh"
 
-OBufBase::OBufBase(const char* name, optix::Buffer& buffer, NPYBase* npy) 
+OBufBase::OBufBase(const char* name, optix::Buffer& buffer) 
    :
    m_buffer(buffer), 
-   m_npy(npy),
    m_name(strdup(name)), 
-   m_size(0u),
    m_multiplicity(0u), 
    m_sizeofatom(0u), 
-   m_numbytes(0u), 
    m_device(0u),
    m_hexdump(false)
 {
@@ -21,12 +18,6 @@ OBufBase::~OBufBase()
    // no owned resources worth clearing up
 }
 
-
-
-NPYBase* OBufBase::getNPY()
-{
-   return m_npy ; 
-}
 
 CBufSlice OBufBase::slice( unsigned int stride, unsigned int begin, unsigned int end )
 {
@@ -41,7 +32,14 @@ CBufSpec OBufBase::bufspec()
 
 void OBufBase::Summary(const char* msg)
 {
-    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", msg, m_name, m_size, m_multiplicity, m_sizeofatom, getNumAtoms(), m_numbytes );
+    printf("%s name %s size %u multiplicity %u sizeofatom %u NumAtoms %u NumBytes %u \n", 
+         msg, 
+         m_name, 
+         getSize(), 
+         m_multiplicity, 
+         m_sizeofatom, 
+         getNumAtoms(), 
+         getNumBytes() );
 }
 
 void OBufBase::setHexDump(bool hexdump)
@@ -63,17 +61,20 @@ void OBufBase::setHexDump(bool hexdump)
 
 */
 
+
 unsigned int OBufBase::getSize()  
 {
-    return m_size ; 
+    return getSize(m_buffer) ; 
 }
+
+
 unsigned int OBufBase::getMultiplicity()
 {
     return m_multiplicity ; 
 }
 unsigned int OBufBase::getNumAtoms()
 {
-    return m_size*m_multiplicity ; 
+    return getSize()*m_multiplicity ; 
 }
 unsigned int OBufBase::getSizeOfAtom()
 {
@@ -81,19 +82,12 @@ unsigned int OBufBase::getSizeOfAtom()
 }
 unsigned int OBufBase::getNumBytes()
 {
-    return m_numbytes ; 
+    return getNumBytes(m_buffer) ; 
 }
-
-
-
-
-
 
 void OBufBase::init()
 {
     examineBufferFormat(m_buffer->getFormat());
-    m_size = getSize(m_buffer);
-    m_numbytes = getNumBytes(m_buffer);
 }
 
 void OBufBase::examineBufferFormat(RTformat format)
@@ -157,6 +151,7 @@ void OBufBase::examineBufferFormat(RTformat format)
 
     setMultiplicity(mul)  ;
     setSizeOfAtom(soa) ;
+    // these do not change when buffer size changes
 }
 
 
@@ -211,10 +206,11 @@ unsigned int OBufBase::getNumBytes(const optix::Buffer& buffer)
 void OBufBase::upload(NPYBase* npy)
 {
     void* data = npy->getBytes() ;
-
     assert(data);
 
     unsigned int numBytes = npy->getNumBytes(0);
+    unsigned int x_numBytes = getNumBytes();
+    assert(numBytes == x_numBytes);
 
     printf("OBufBase::upload nbytes %u \n", numBytes);
 
@@ -227,8 +223,8 @@ void OBufBase::upload(NPYBase* npy)
 void OBufBase::download(NPYBase* npy)
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
-
-    assert(numBytes == m_numbytes);
+    unsigned int x_numBytes = getNumBytes();
+    assert(numBytes == x_numBytes);
 
     void* ptr = m_buffer->map() ; 
 

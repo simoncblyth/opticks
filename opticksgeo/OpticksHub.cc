@@ -303,6 +303,9 @@ void OpticksHub::setGensteps(NPY<float>* gs)
     }
     else
     {
+        // non-legacy gensteps (ie collected direct from G4) already 
+        // have proper labelling and lookup applied during collection
+
         m_g4step->checklabel(CERENKOV, SCINTILLATION);
     }
 

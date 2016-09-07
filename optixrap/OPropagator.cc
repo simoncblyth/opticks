@@ -13,6 +13,7 @@
 #include "OContext.hh"
 #include "OConfig.hh"
 #include "OTimes.hh"
+#include "OEvent.hh"
 
 #include "OBuf.hh"
 #include "OBufPair.hh"
@@ -48,22 +49,27 @@ void OPropagator::setEntry(unsigned int entry_index)
     m_entry_index = entry_index;
 }
 
+
+
 OBuf* OPropagator::getSequenceBuf()
 {
-    return m_sequence_buf ; 
+    return m_oevt->getSequenceBuf() ;
 }
 OBuf* OPropagator::getPhotonBuf()
 {
-    return m_photon_buf ; 
+    return m_oevt->getPhotonBuf() ;
 }
 OBuf* OPropagator::getGenstepBuf()
 {
-    return m_genstep_buf ; 
+    return m_oevt->getGenstepBuf() ;
 }
 OBuf* OPropagator::getRecordBuf()
 {
-    return m_record_buf ; 
+    return m_oevt->getRecordBuf() ; 
 }
+
+
+
 OTimes* OPropagator::getPrelaunchTimes()
 {
     return m_prelaunch_times ; 
@@ -72,33 +78,34 @@ OTimes* OPropagator::getLaunchTimes()
 {
     return m_launch_times ; 
 }
-bool OPropagator::hasInitEvent()
-{
-    return m_init_event ; 
-}
+
+
+//bool OPropagator::hasInitEvent()
+//{
+//    return m_init_event ; 
+//}
 
 
 OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_) 
    :
     m_ocontext(ocontext),
     m_hub(hub),
-    m_opticks(hub->getOpticks()),
+    m_ok(hub->getOpticks()),
+    m_zero(m_ok->makeEvent(true)),
+    m_oevt(new OEvent(m_ocontext, m_zero)),
     m_prelaunch_times(new OTimes),
     m_launch_times(new OTimes),
     m_prelaunch(false),
     m_entry_index(entry),
-    m_photon_buf(NULL),
-    m_sequence_buf(NULL),
-    m_genstep_buf(NULL),
-    m_record_buf(NULL),
+
     m_rng_wrapper(NULL),
     m_count(0),
     m_width(0),
     m_height(0),
     m_prep(0),
     m_time(0),
-    m_override(override_),
-    m_init_event(false)
+    m_override(override_)
+  //  m_init_event(false)
 {
     init();
 }
@@ -108,18 +115,18 @@ void OPropagator::init()
 {
     initParameters();
     initRng();
+
+    prelaunch();
 }
-
-
 
 
 void OPropagator::initParameters()
 {
     m_context = m_ocontext->getContext();
 
-    m_context[ "propagate_epsilon"]->setFloat( m_opticks->getEpsilon() );  // TODO: check impact of changing propagate_epsilon
-    m_context[ "bounce_max" ]->setUint( m_opticks->getBounceMax() );
-    m_context[ "record_max" ]->setUint( m_opticks->getRecordMax() );
+    m_context[ "propagate_epsilon"]->setFloat( m_ok->getEpsilon() );  // TODO: check impact of changing propagate_epsilon
+    m_context[ "bounce_max" ]->setUint( m_ok->getBounceMax() );
+    m_context[ "record_max" ]->setUint( m_ok->getRecordMax() );
 
     optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0,0);
     LOG(debug) << "OPropagator::init debugControl " 
@@ -131,8 +138,8 @@ void OPropagator::initParameters()
 
     m_context["debug_control"]->setUint(debugControl); 
  
-    const glm::vec4& ce = m_opticks->getSpaceDomain();
-    const glm::vec4& td = m_opticks->getTimeDomain();
+    const glm::vec4& ce = m_ok->getSpaceDomain();
+    const glm::vec4& td = m_ok->getTimeDomain();
 
     m_context["center_extent"]->setFloat( make_float4( ce.x, ce.y, ce.z, ce.w ));
     m_context["time_domain"]->setFloat(   make_float4( td.x, td.y, td.z, td.w ));
@@ -141,7 +148,7 @@ void OPropagator::initParameters()
 
 void OPropagator::initRng()
 {
-    unsigned int rng_max = m_opticks->getRngMax();
+    unsigned int rng_max = m_ok->getRngMax();
     if(rng_max == 0 )
     {
         LOG(warning) << "OPropagator::initRng"   
@@ -150,7 +157,7 @@ void OPropagator::initRng()
                      ;
         return ;
     }
-    const char* rngCacheDir = m_opticks->getRNGInstallCacheDir();
+    const char* rngCacheDir = m_ok->getRNGInstallCacheDir();
 
     LOG(info) << "OPropagator::initRng"
                << " rng_max " << rng_max
@@ -184,6 +191,8 @@ void OPropagator::initRng()
 }
 
 
+
+
 void OPropagator::initEvent()
 {
     OpticksEvent* evt = m_hub->getOKEvent();
@@ -192,14 +201,14 @@ void OPropagator::initEvent()
 
     unsigned int numPhotons = evt->getNumPhotons();
 
-    bool enoughRng = numPhotons <= m_opticks->getRngMax() ;
+    bool enoughRng = numPhotons <= m_ok->getRngMax() ;
 
     if(!enoughRng)
     {
         LOG(info) << "OPropagator::initEvent"
                   << " not enoughRng "
                   << " numPhotons " << numPhotons 
-                  << " rngMax " << m_opticks->getRngMax()
+                  << " rngMax " << m_ok->getRngMax()
                   ;  
     } 
 
@@ -218,175 +227,24 @@ void OPropagator::initEvent()
     }
 
 
-
-/*
-    bool compute = m_ocontext->isCompute() ;
-
-    if( compute && hasInitEvent() )
+    if( m_ocontext->isCompute() )
     {
-        updateEventBuffers(evt);  // attempt reuse of OptiX buffers for event 
+        m_oevt->upload(evt);
     }
     else
     {
-        initEventBuffers(evt);  // creates fresh OptiX buffers for event 
+        m_oevt = new OEvent(m_ocontext, evt) ;  // leaking resources in interop
     }
-*/
-
-    initEventBuffers(evt);  // creates fresh OptiX buffers for event 
-
 }
 
 
 
 
-void OPropagator::updateEventBuffers(OpticksEvent* evt)
-{
-    LOG(info) << "OPropagator::updateEventBuffers  EXPERIMENT IN REUSE OF OPTIX BUFFERS " ; 
-
-
-    assert(m_ocontext->isCompute());
-
-    NPY<float>* gensteps =  evt->getGenstepData() ;
-    assert(gensteps);
-
-    optix::Buffer genstep_buffer = m_context["genstep_buffer"]->getBuffer();
-    assert(m_genstep_buffer == genstep_buffer );
-
-    m_ocontext->updateBuffer<float>( genstep_buffer, gensteps, "gensteps" );  // change size for new gensteps
-
-    delete m_genstep_buf ; 
-    m_genstep_buf = new OBuf("genstep", m_genstep_buffer, gensteps);
-
-    OContext::upload<float>(genstep_buffer, gensteps);
-
-
-
-
-    NPY<float>* photon = evt->getPhotonData() ; 
-    assert(photon);
-
-    optix::Buffer photon_buffer = m_context["photon_buffer"]->getBuffer();
-    assert(m_photon_buffer == photon_buffer );
-
-    m_ocontext->updateBuffer<float>( photon_buffer, photon, "photon");
-
-    delete m_photon_buf ; 
-    m_photon_buf = new OBuf("photon", m_photon_buffer, photon);
-
-    // nothing to upload here :  seeding uses the OBuf to give thrust the device pointer
-
-
-
-    NPY<short>* rx = evt->getRecordData() ;
-    assert(rx);
-
-    optix::Buffer record_buffer = m_context["record_buffer"]->getBuffer();
-    assert(m_record_buffer == record_buffer);
-
-    m_ocontext->updateBuffer<short>( record_buffer, rx, "rx");
-
-    delete m_record_buf ;
-    m_record_buf = new OBuf("record", m_record_buffer, rx);
-
-
-
-    NPY<unsigned long long>* sq = evt->getSequenceData() ;
-    assert(sq);
-
-    optix::Buffer sequence_buffer = m_context["sequence_buffer"]->getBuffer();
-    assert(m_sequence_buffer == sequence_buffer);
-
-    m_ocontext->updateBuffer<unsigned long long>( sequence_buffer, sq, "sq");
-    delete m_sequence_buf ; 
-    m_sequence_buf = new OBuf("sequence", m_sequence_buffer, sq);
-    m_sequence_buf->setMultiplicity(1u);
-    m_sequence_buf->setHexDump(true);
-
-
-}   
 
 
 
 
 
-// creates OBuf for gensteps, photon, record, sequence and uploads gensteps in compute, already there in interop
-void OPropagator::initEventBuffers(OpticksEvent* evt)   
-{
-    // when isInterop() == true 
-    // the OptiX buffers for the evt data are actually references 
-    // to the OpenGL buffers created with createBufferFromGLBO
-    // by Scene::uploadEvt Scene::uploadSelection
-    // 
-    //
-    // Hear are recreating buffer for each evt, 
-    // could try reusing OBuf ?
-
-
-    m_init_event = true ; 
-    LOG(info) << "OPropagator::initEventBuffers" ; 
-
-    NPY<float>* gensteps =  evt->getGenstepData() ;
-
-    m_genstep_buffer = m_ocontext->createBuffer<float>( gensteps, "gensteps");
-    m_context["genstep_buffer"]->set( m_genstep_buffer );
-    m_genstep_buf = new OBuf("genstep", m_genstep_buffer, gensteps);
-
-    if(m_ocontext->isCompute()) 
-    {
-        LOG(info) << "OPropagator::initGenerate (COMPUTE)" << " uploading gensteps " ;
-        OContext::upload<float>(m_genstep_buffer, gensteps);
-    }
-    else if(m_ocontext->isInterop())
-    {
-        assert(gensteps->getBufferId() > 0); 
-        LOG(info) << "OPropagator::initGenerate (INTEROP)" 
-                  << " gensteps handed to OptiX by referencing OpenGL buffer id  "
-                  ;
-    }
-
-
-    NPY<float>* photon = evt->getPhotonData() ; 
-    m_photon_buffer = m_ocontext->createBuffer<float>( photon, "photon");
-    m_context["photon_buffer"]->set( m_photon_buffer );
-    m_photon_buf = new OBuf("photon", m_photon_buffer, photon);
-
-    // photon buffer is OPTIX_INPUT_OUTPUT (INPUT for genstep seeds) 
-    // but the seeding is done GPU side via thrust  
-
-
-    if(m_opticks->hasOpt("dbginterop"))
-    {
-        LOG(info) << "OPropagator::initEvent skipping record/sequence buffer creation as dbginterop  " ;
-    }
-    else
-    {
-        NPY<short>* rx = evt->getRecordData() ;
-        assert(rx);
-        m_record_buffer = m_ocontext->createBuffer<short>( rx, "record");
-        m_context["record_buffer"]->set( m_record_buffer );
-        m_record_buf = new OBuf("record", m_record_buffer, rx);
-
-
-
-        NPY<unsigned long long>* sq = evt->getSequenceData() ;
-        assert(sq);
-
-        m_sequence_buffer = m_ocontext->createBuffer<unsigned long long>( sq, "sequence"); 
-        m_context["sequence_buffer"]->set( m_sequence_buffer );
-        m_sequence_buf = new OBuf("sequence", m_sequence_buffer, sq);
-        m_sequence_buf->setMultiplicity(1u);
-        m_sequence_buf->setHexDump(true);
-
-        // sequence buffer requirements:
-        //
-        //     * written by OptiX
-        //     * read by CUDA/Thrust in order to create the index
-        //     * not-touched by OpenGL, OpenGL only needs access to the index buffer written by Thrust 
-        //
-
-    }
-    LOG(info) << "OPropagator::initEventBuffers DONE" ; 
-}
 
 
 
@@ -397,20 +255,10 @@ void OPropagator::initEventBuffers(OpticksEvent* evt)
 void OPropagator::prelaunch()
 {
     bool entry = m_entry_index > -1 ; 
-    if(!entry)
-    {
-        LOG(fatal) << "OPropagator::prelaunch"
-                   << " must setEntry before prelaunch/launch  "
-                  ;  
- 
-    }
+    if(!entry) LOG(fatal) << "OPropagator::prelaunch MISSING entry " ;
     assert(entry);
 
     m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, m_prelaunch_times); 
-
-    // "prelaunch" by definition needs no dimensions, so it can be done prior to having an event 
-    // but it needs the event buffers in order for validation to succeed ...
-
     m_count += 1 ; 
     m_prelaunch = true ; 
 }
@@ -430,35 +278,18 @@ void OPropagator::dumpTimes(const char* msg)
 }
 
 
+void OPropagator::downloadEvent()
+{
+    OpticksEvent* evt = m_hub->getEvent();
+    if(!evt) return ;
+    m_oevt->download(evt);
+}
 
 void OPropagator::downloadPhotonData()
 {
     OpticksEvent* evt = m_hub->getEvent();
     if(!evt) return ;
-    LOG(info)<<"OPropagator::downloadPhotonData" ;
- 
-    NPY<float>* dpho = evt->getPhotonData();
-    OContext::download<float>( m_photon_buffer, dpho );
+    m_oevt->download(evt, OEvent::PHOTON);
 }
 
-
-void OPropagator::downloadEvent()
-{
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ;
-    LOG(info)<<"OPropagator::downloadEvent" ;
- 
-
-    NPY<float>* dpho = evt->getPhotonData();
-    OContext::download<float>( m_photon_buffer, dpho );
-
-    NPY<short>* drec = evt->getRecordData();
-    OContext::download<short>( m_record_buffer, drec );
-
-    NPY<unsigned long long>* dhis = evt->getSequenceData();
-    OContext::download<unsigned long long>( m_sequence_buffer, dhis );
-
-
-    LOG(info)<<"OPropagator::downloadEvent DONE" ;
-}
 

@@ -391,6 +391,9 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
     return buffer ; 
 }
 
+
+
+
 template <typename T>
 void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
 {
@@ -448,14 +451,19 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
 
 
 template <typename T>
-void OContext::updateBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
+void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
 {
-    int buffer_id = npy->getBufferId() ;
+    unsigned int ni = std::max(1u,npy->getShape(0));
+    unsigned int nj = std::max(1u,npy->getShape(1));  
+    unsigned int nk = std::max(1u,npy->getShape(2));  
 
-    assert( buffer_id == -1 && "OContext::updateBuffer only implemented for compute mode buffers " );
+    RTformat format = getFormat(npy->getType());
+    unsigned int size = format == RT_FORMAT_USER ? ni*nj*nk : npy->getNumQuads() ;
+    buffer->setSize(size); 
 
-    configureBuffer(buffer, npy, name) ;
+    LOG(info) << "OContext::resizeBuffer " << name << " shape " << npy->getShapeString() << " size " << size  ; 
 }
+
 
 
 
@@ -482,15 +490,15 @@ RTformat OContext::getFormat(NPYBase::Type_t type)
 
 template OXRAP_API void OContext::upload<float>(optix::Buffer&, NPY<float>* );
 template OXRAP_API void OContext::download<float>(optix::Buffer&, NPY<float>* );
-template OXRAP_API void OContext::updateBuffer<float>(optix::Buffer&, NPY<float>*, const char* );
+template OXRAP_API void OContext::resizeBuffer<float>(optix::Buffer&, NPY<float>*, const char* );
 
 template OXRAP_API void OContext::upload<short>(optix::Buffer&, NPY<short>* );
 template OXRAP_API void OContext::download<short>(optix::Buffer&, NPY<short>* );
-template OXRAP_API void OContext::updateBuffer<short>(optix::Buffer&, NPY<short>*, const char* );
+template OXRAP_API void OContext::resizeBuffer<short>(optix::Buffer&, NPY<short>*, const char* );
 
 template OXRAP_API void OContext::upload<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
 template OXRAP_API void OContext::download<unsigned long long>(optix::Buffer&, NPY<unsigned long long>* );
-template OXRAP_API void OContext::updateBuffer<unsigned long long>(optix::Buffer&, NPY<unsigned long long>*, const char* );
+template OXRAP_API void OContext::resizeBuffer<unsigned long long>(optix::Buffer&, NPY<unsigned long long>*, const char* );
 
 template OXRAP_API optix::Buffer OContext::createBuffer(NPY<float>*, const char* );
 template OXRAP_API optix::Buffer OContext::createBuffer(NPY<short>*, const char* );

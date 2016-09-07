@@ -187,6 +187,8 @@ void OEngineImp::preparePropagator()
    // attempt to prelaunch here, fails for lack of evt buffers
    // this suggests to create empty buffers up front and 
    // change content event by event ?
+   //
+   // optixrap-/tests/bufferTest.cc shows can prelaunch with zero sized buffers
 }
 
 
