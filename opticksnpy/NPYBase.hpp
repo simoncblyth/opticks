@@ -84,6 +84,7 @@ class NPY_API NPYBase {
 
        void         setBufferControl(unsigned long long  buffer_control);
        unsigned long long getBufferControl();
+       unsigned long long* getBufferControlPtr();
 
        void         setActionControl(unsigned long long  action_control);
        void         addActionControl(unsigned long long  action_control);

@@ -189,6 +189,10 @@ unsigned long long NPYBase::getBufferControl()
 {
     return m_buffer_control ;  
 }
+unsigned long long* NPYBase::getBufferControlPtr()
+{
+    return &m_buffer_control ;  
+}
 
 
 

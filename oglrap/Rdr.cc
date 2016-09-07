@@ -66,7 +66,7 @@ Rdr::Rdr(Device* device, const char* tag, const char* dir, const char* incl_path
 template <typename T>
 void Rdr::download( NPY<T>* npy )
 {
-    OpticksBufferControl ctrl(npy->getBufferControl());
+    OpticksBufferControl ctrl(npy->getBufferControlPtr());
     if(ctrl.isSet(OpticksBufferControl::OPTIX_NON_INTEROP_))
     {
         LOG(info) << "Rdr::download SKIP for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;

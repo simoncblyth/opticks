@@ -15,6 +15,8 @@ set(TEST_SOURCES
     OOboundaryLookupTest.cc
     OOtex0Test.cc
     OOtexTest.cc
+
+    bufferTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

@@ -145,6 +145,7 @@ set(SOURCES
     cu/hemi-pmt.cu 
     cu/generate.cu
     cu/textureTest.cu
+    cu/bufferTest.cu
     cu/minimalTest.cu
     cu/LTminimalTest.cu
     cu/axisTest.cu
@@ -174,6 +175,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_boundaryLookupTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_tex0Test.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_texTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_bufferTest.cu.ptx
 )
 
 

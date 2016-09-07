@@ -98,31 +98,37 @@ bool OpticksBufferControl::isSet(unsigned long long ctrl, const char* mask_)
     return match ; 
 }
 
-OpticksBufferControl::OpticksBufferControl(unsigned long long ctrl)
+
+
+
+OpticksBufferControl::OpticksBufferControl(unsigned long long* ctrl)
     :
     m_ctrl(ctrl)
-{
-}
-OpticksBufferControl::OpticksBufferControl(const char* ctrl)
-    :
-    m_ctrl(Parse(ctrl))
 {
 }
 
 void OpticksBufferControl::add(const char* ctrl)
 {
-    m_ctrl |= Parse(ctrl) ;
+    *m_ctrl |= Parse(ctrl) ;
 }
 
 bool OpticksBufferControl::isSet(const char* mask) const 
 {
-    return isSet(m_ctrl, mask );
+    return isSet(*m_ctrl, mask );
 }
+
+bool OpticksBufferControl::operator()(const char* mask)
+{
+    return isSet(*m_ctrl, mask );
+}
+
+
+
 std::string OpticksBufferControl::description(const char* msg) const
 {
    std::stringstream ss ;
    ss << msg << " : " ;
-   ss << Description(m_ctrl) ;
+   ss << Description(*m_ctrl) ;
    return ss.str();
 }
 

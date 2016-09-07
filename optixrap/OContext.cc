@@ -282,14 +282,14 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
 
-    OpticksBufferControl ctrl(npy->getBufferControl());
+    OpticksBufferControl ctrl(npy->getBufferControlPtr());
 
     LOG(info)<<"OContext::upload" 
              << " numBytes " << numBytes 
              << npy->description("upload")
              ;
 
-    if(ctrl.isSet("UPLOAD_WITH_CUDA"))
+    if(ctrl("UPLOAD_WITH_CUDA"))
     {
         void* d_ptr = NULL;
         rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
@@ -308,14 +308,14 @@ template <typename T>
 void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 {
     assert(npy);
-    OpticksBufferControl ctrl(npy->getBufferControl());
+    OpticksBufferControl ctrl(npy->getBufferControlPtr());
 
     bool proceed = false ; 
-    if(ctrl.isSet(OpticksBufferControl::COMPUTE_MODE_))
+    if(ctrl(OpticksBufferControl::COMPUTE_MODE_))
     {
          proceed = true ; 
     }
-    else if(ctrl.isSet(OpticksBufferControl::OPTIX_NON_INTEROP_))
+    else if(ctrl(OpticksBufferControl::OPTIX_NON_INTEROP_))
     {   
          proceed = true ;
          LOG(info) << "OContext::download PROCEED for " << npy->getBufferName() << " as " << OpticksBufferControl::OPTIX_NON_INTEROP_  ;
@@ -345,7 +345,7 @@ template <typename T>
 optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
-    OpticksBufferControl ctrl(npy->getBufferControl());
+    OpticksBufferControl ctrl(npy->getBufferControlPtr());
 
     bool compute = isCompute()  ; 
     LOG(info) << "OContext::createBuffer "
@@ -357,12 +357,12 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 
     unsigned int type(0);
     
-    if(      ctrl.isSet("OPTIX_INPUT_OUTPUT") )  type = RT_BUFFER_INPUT_OUTPUT ;
-    else if( ctrl.isSet("OPTIX_OUTPUT_ONLY")  )  type = RT_BUFFER_OUTPUT  ;
-    else if( ctrl.isSet("OPTIX_INPUT_ONLY")   )  type = RT_BUFFER_INPUT  ;
+    if(      ctrl("OPTIX_INPUT_OUTPUT") )  type = RT_BUFFER_INPUT_OUTPUT ;
+    else if( ctrl("OPTIX_OUTPUT_ONLY")  )  type = RT_BUFFER_OUTPUT  ;
+    else if( ctrl("OPTIX_INPUT_ONLY")   )  type = RT_BUFFER_INPUT  ;
     else  assert(0 && "ERR no buffer control ") ;
     
-    if( ctrl.isSet("BUFFER_COPY_ON_DIRTY") ) type |= RT_BUFFER_COPY_ON_DIRTY ;
+    if( ctrl("BUFFER_COPY_ON_DIRTY") )     type |= RT_BUFFER_COPY_ON_DIRTY ;
 
 
     optix::Buffer buffer ; 
@@ -371,7 +371,7 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
     {
         buffer = m_context->createBuffer(type);
     }
-    else if( ctrl.isSet("OPTIX_NON_INTEROP") )
+    else if( ctrl("OPTIX_NON_INTEROP") )
     {
         buffer = m_context->createBuffer(type);
     }

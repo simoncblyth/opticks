@@ -13,7 +13,9 @@ class OXRAP_API OLaunchTest {
     public:
         void setWidth(unsigned int width);
         void setHeight(unsigned int height);
+        void prelaunch();
         void launch();
+        void launch(unsigned width, unsigned height);
     private:
         void init();
     private:

@@ -35,12 +35,9 @@ int main(int argc, char** argv)
                << std::endl ; 
 
 
-     OpticksBufferControl c0(mask);
+     OpticksBufferControl c0(&mask);
      dump(c0);
       
-     OpticksBufferControl c1(ctrl_);
-     dump(c1);
- 
 
      return 0 ; 
 }

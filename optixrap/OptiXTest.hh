@@ -10,9 +10,10 @@
 class OXRAP_API OptiXTest {
    public:
       static std::string ptxname_(const char* projname, const char* name);
-      static std::string ptxpath_( const char* cu, const char* projdir="optixrap", const char* projname="OptiXRap") ;
+      static const char* ptxpath_( const char* cu, const char* projdir="optixrap", const char* projname="OptiXRap") ;
    public:
       OptiXTest(optix::Context& context, const char* cu, const char* raygen_name, const char* exception_name="exception"); 
+      std::string description();
       void Summary(const char* msg="OptiXTest::Summary");
    private:
       void init(optix::Context& context);

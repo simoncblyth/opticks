@@ -45,10 +45,20 @@ void OLaunchTest::init()
     m_entry_index = m_ocontext->addEntry(m_ptx, m_prog, m_exception);
 }
 
+
+void OLaunchTest::prelaunch()
+{
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0);
+}
+
 void OLaunchTest::launch()
 {
-    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  m_width, m_height);
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height);
+}
+
+void OLaunchTest::launch(unsigned int width, unsigned int height)
+{
+    m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  width, height);
 }
 
 

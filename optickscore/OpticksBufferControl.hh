@@ -43,13 +43,15 @@ class OKCORE_API OpticksBufferControl {
         static bool isSet(unsigned long long ctrl, const char* mask);
         static std::vector<const char*> Tags();
     public:
-        OpticksBufferControl(const char* ctrl); 
-        OpticksBufferControl(unsigned long long ctrl); 
+     //   OpticksBufferControl(const char* ctrl); 
+        OpticksBufferControl(unsigned long long* ctrl); 
         void add(const char* mask);
         bool isSet(const char* mask) const;
+        bool operator()(const char* mask);
+
         std::string description(const char* msg="OpticksBufferControl::description") const;
     private:
-         unsigned long long m_ctrl ; 
+         unsigned long long* m_ctrl ; 
 
 };
 
