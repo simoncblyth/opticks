@@ -4,7 +4,7 @@
 #include "NPY.hpp"
 
 #include "OContext.hh"
-#include "OTimes.hh"
+#include "STimes.hh"
 #include "Opticks.hh"
 #include "OpticksBufferControl.hh"
 
@@ -21,7 +21,7 @@ struct Evt
    std::string description();
 
    unsigned size ; 
-   OTimes* times ; 
+   STimes* times ; 
    NPY<float>* genstep ;
    NPY<float>* photon  ;
 
@@ -31,7 +31,7 @@ struct Evt
 Evt::Evt(unsigned size_) 
    :
    size(size_),
-   times(new OTimes),  
+   times(new STimes),  
    genstep(NPY<float>::make(size,1,4)),  
    photon(NPY<float>::make(size,1,4))  
 {

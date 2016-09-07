@@ -80,6 +80,7 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_gensteps(NULL),
    m_torchstep(NULL),
    m_g4step(NULL),
+   m_zero(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -119,7 +120,7 @@ void OpticksHub::loadGeometry()
         return ; 
     }
 
-    LOG(fatal) << "OpticksHub::loadGeometry" ; 
+    LOG(debug) << "OpticksHub::loadGeometry" ; 
 
     m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
 
@@ -135,7 +136,7 @@ void OpticksHub::loadGeometry()
 
     m_ggeo->setComposition(m_composition);
 
-    LOG(fatal) << "OpticksHub::loadGeometry DONE" ; 
+    LOG(debug) << "OpticksHub::loadGeometry DONE" ; 
 
     setupInputGensteps();
 }
@@ -144,8 +145,7 @@ void OpticksHub::loadGeometry()
 
 void OpticksHub::setupInputGensteps()
 {
-    LOG(fatal) << "OpticksHub::setupInputGensteps" ; 
-
+    LOG(debug) << "OpticksHub::setupInputGensteps" ; 
 
     unsigned int code = m_ok->getSourceCode();
 
@@ -259,6 +259,10 @@ G4StepNPY* OpticksHub::getG4Step()
 {
     return m_g4step ;  
 }
+OpticksEvent* OpticksHub::getZeroEvent()
+{
+    return m_zero ;  
+}
 
 
 
@@ -266,6 +270,8 @@ void OpticksHub::setGensteps(NPY<float>* gs)
 {
     m_gensteps = gs ; 
     m_g4step = new G4StepNPY(gs);    
+    m_zero = m_ok->makeEvent(true) ;
+    m_zero->setGenstepData(gs);  
 
     OpticksActionControl oac(gs->getActionControlPtr());
     bool gs_torch = oac.isSet("GS_TORCH") ; 

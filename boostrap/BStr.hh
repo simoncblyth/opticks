@@ -16,6 +16,7 @@
 class BRAP_API BStr {
   public:
      static int  atoi( const char* str, int fallback=0 );
+     static const char* itoa( int i );
      static const char* negate(const char* tag);
      static bool listHasKey(const char* dlist, const char* key, const char* delim=",");
      static char* trimPointerSuffixPrefix(const char* origname, const char* prefix);

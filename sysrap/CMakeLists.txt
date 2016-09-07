@@ -37,6 +37,7 @@ set(SOURCES
     SArrayDigest.cc
     SLauncher.cc
     SRenderer.cc
+    STimes.cc
     md5.cc
 ) 
 
@@ -52,6 +53,7 @@ set(HEADERS
     SArrayDigest.hh
     SLauncher.hh
     SRenderer.hh
+    STimes.hh
 )
 
 add_library( ${name}  SHARED ${SOURCES})

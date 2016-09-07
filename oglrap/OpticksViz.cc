@@ -124,6 +124,11 @@ void OpticksViz::init()
         prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
+
+
+        OpticksEvent* zero = m_hub->getZeroEvent();
+
+        uploadEvent(zero); 
     }
 }
 
@@ -257,17 +262,19 @@ int OpticksViz::getTarget()
 
 void OpticksViz::uploadEvent()
 {
-    if(m_hub->hasOpt("nooptix|noevent")) 
-    {
-        LOG(warning) << "OpticksViz::uploadEvent skip due to --nooptix/--noevent " ;
-        return ;
-    }
+    if(m_hub->hasOpt("nooptix|noevent")) return ; 
  
-    LOG(info) << "OpticksViz::uploadEvent START " ;
 
     m_composition->update();
 
     OpticksEvent* evt = m_hub->getEvent();
+
+    uploadEvent(evt);
+}
+
+void OpticksViz::uploadEvent(OpticksEvent* evt)
+{
+    LOG(info) << "OpticksViz::uploadEvent START " ;
 
     m_scene->upload(evt);
 
@@ -275,6 +282,9 @@ void OpticksViz::uploadEvent()
         m_scene->dump_uploads_table("OpticksViz::uploadEvent");
 
 }
+
+
+
 
 
 

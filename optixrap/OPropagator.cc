@@ -12,7 +12,7 @@
 // optixrap-
 #include "OContext.hh"
 #include "OConfig.hh"
-#include "OTimes.hh"
+#include "STimes.hh"
 #include "OEvent.hh"
 
 #include "OBuf.hh"
@@ -70,20 +70,15 @@ OBuf* OPropagator::getRecordBuf()
 
 
 
-OTimes* OPropagator::getPrelaunchTimes()
+STimes* OPropagator::getPrelaunchTimes()
 {
     return m_prelaunch_times ; 
 }
-OTimes* OPropagator::getLaunchTimes()
+STimes* OPropagator::getLaunchTimes()
 {
     return m_launch_times ; 
 }
 
-
-//bool OPropagator::hasInitEvent()
-//{
-//    return m_init_event ; 
-//}
 
 
 OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_) 
@@ -91,10 +86,10 @@ OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, in
     m_ocontext(ocontext),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_zero(m_ok->makeEvent(true, true)),     // ok=true, gs=true  including template gs buffers 
+    m_zero(hub->getZeroEvent()),
     m_oevt(new OEvent(m_ocontext, m_zero)),
-    m_prelaunch_times(new OTimes),
-    m_launch_times(new OTimes),
+    m_prelaunch_times(new STimes),
+    m_launch_times(new STimes),
     m_prelaunch(false),
     m_entry_index(entry),
 
@@ -105,7 +100,6 @@ OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, in
     m_prep(0),
     m_time(0),
     m_override(override_)
-  //  m_init_event(false)
 {
     init();
 }

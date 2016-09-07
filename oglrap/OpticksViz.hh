@@ -3,6 +3,7 @@
 class Opticks ; 
 class OpticksHub ; 
 class OpticksGeometry ; 
+class OpticksEvent ; 
 class OpticksIdx ; 
 class Composition ; 
 class OpticksEvent ; 
@@ -46,6 +47,8 @@ class OGLRAP_API OpticksViz {
          void uploadEvent();
          void indexPresentationPrep();
          void cleanup();
+    private: 
+         void uploadEvent(OpticksEvent* evt);
     private: 
          void init();
          void render();

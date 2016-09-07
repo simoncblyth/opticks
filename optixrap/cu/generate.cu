@@ -67,8 +67,6 @@ rtBuffer<uint4>                optical_buffer;
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
-#define GNUMQUAD 6
-
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
 #include "torchstep.h"

@@ -42,7 +42,14 @@ OpticksEventSpec::OpticksEventSpec(const char* typ, const char* tag, const char*
 }
 
 
-
+OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset)
+{
+    int itag = getITag();
+    assert(itag != 0);
+    int ntag = itag > 0 ? itag + tagoffset : itag - tagoffset ; 
+    const char* tag = BStr::itoa( ntag );
+    return new OpticksEventSpec( getTyp(), tag, getDet(), getCat() );
+}
 
 void OpticksEventSpec::init()
 {

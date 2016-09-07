@@ -15,6 +15,7 @@ const char* OpticksBufferControl::BUFFER_COPY_ON_DIRTY_ = "BUFFER_COPY_ON_DIRTY"
 const char* OpticksBufferControl::BUFFER_GPU_LOCAL_ = "BUFFER_GPU_LOCAL" ; 
 const char* OpticksBufferControl::INTEROP_MODE_ = "INTEROP_MODE" ; 
 const char* OpticksBufferControl::COMPUTE_MODE_ = "COMPUTE_MODE" ; 
+const char* OpticksBufferControl::VERBOSE_MODE_ = "VERBOSE_MODE" ; 
 
 std::vector<const char*> OpticksBufferControl::Tags()
 {
@@ -31,6 +32,7 @@ std::vector<const char*> OpticksBufferControl::Tags()
     tags.push_back(BUFFER_GPU_LOCAL_);
     tags.push_back(INTEROP_MODE_);
     tags.push_back(COMPUTE_MODE_);
+    tags.push_back(VERBOSE_MODE_);
     return tags  ;
 }
 
@@ -49,6 +51,7 @@ std::string OpticksBufferControl::Description(unsigned long long ctrl)
    if( ctrl & BUFFER_GPU_LOCAL ) ss << BUFFER_GPU_LOCAL_ << " "; 
    if( ctrl & INTEROP_MODE )     ss << INTEROP_MODE_ << " "; 
    if( ctrl & COMPUTE_MODE )     ss << COMPUTE_MODE_ << " "; 
+   if( ctrl & VERBOSE_MODE )     ss << VERBOSE_MODE_ << " "; 
    return ss.str();
 }
 
@@ -67,6 +70,7 @@ unsigned long long OpticksBufferControl::ParseTag(const char* k)
     else if(strcmp(k,BUFFER_GPU_LOCAL_)==0)     tag = BUFFER_GPU_LOCAL ;
     else if(strcmp(k,INTEROP_MODE_)==0)         tag = INTEROP_MODE ;
     else if(strcmp(k,COMPUTE_MODE_)==0)         tag = COMPUTE_MODE ;
+    else if(strcmp(k,VERBOSE_MODE_)==0)         tag = VERBOSE_MODE ;
     return tag ;
 }
 

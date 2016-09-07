@@ -1,9 +1,9 @@
-#include "OTimes.hh"
+#include "STimes.hh"
 
 #include <cstring>
 #include <cstdio>
 
-const char* OTimes::description(const char* msg)
+const char* STimes::description(const char* msg)
 {
     if(count == 0) return 0 ; 
 

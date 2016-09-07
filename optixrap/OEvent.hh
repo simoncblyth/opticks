@@ -2,6 +2,7 @@
 
 #include "OXPPNS.hh"
 class OpticksEvent ; 
+class OContext ; 
 class OBuf ; 
 
 #include "OXRAP_API_EXPORT.hh"

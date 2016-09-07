@@ -13,6 +13,9 @@
 #include <sstream>
 #include <cstring>
 
+// sysrap-
+#include "STimes.hh"
+
 // brap-
 #include "BStr.hh"
 #include "BTime.hh"
@@ -85,6 +88,12 @@ const char* OpticksEvent::recsel_  = "recsel" ;
 const char* OpticksEvent::sequence_  = "sequence" ; 
 
 
+OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
+{
+     OpticksEventSpec* offspec = spec->clone(tagoffset);
+     return new OpticksEvent(offspec) ; 
+}
+
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
           :
           OpticksEventSpec(spec),
@@ -140,7 +149,10 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_record_spec(NULL),
           m_phosel_spec(NULL),
           m_recsel_spec(NULL),
-          m_sequence_spec(NULL)
+          m_sequence_spec(NULL),
+
+          m_prelaunch_times(new STimes),
+          m_launch_times(new STimes)
 {
     init();
 }
@@ -150,6 +162,16 @@ OpticksEvent::~OpticksEvent()
 {
     LOG(info) << "OpticksEvent::~OpticksEvent PLACEHOLDER" ; 
 } 
+
+
+STimes* OpticksEvent::getPrelaunchTimes()
+{
+    return m_prelaunch_times ; 
+}
+STimes* OpticksEvent::getLaunchTimes()
+{
+    return m_launch_times ; 
+}
 
 
 bool OpticksEvent::isNoLoad()
@@ -653,7 +675,7 @@ void OpticksEvent::checkData(const char* name)
 
 
 
-void OpticksEvent::createBuffers(bool gs)
+void OpticksEvent::createBuffers(NPY<float>* gs)
 {
     // invoked by Opticks::makeEvent 
 
@@ -666,9 +688,8 @@ void OpticksEvent::createBuffers(bool gs)
     
     if(gs)   
     {
-        NPY<float>* genstep = NPY<float>::make(m_genstep_spec); 
         bool progenitor = false ;    
-        setGenstepData(genstep, progenitor);   
+        setGenstepData(gs, progenitor);   
     }
 
     NPY<float>* nop = NPY<float>::make(m_nopstep_spec); 
@@ -1135,7 +1156,17 @@ void OpticksEvent::save(bool verbose)
     }
 
 
-    saveIndex(verbose);
+    bool is_indexed = isIndexed();
+    if(is_indexed)
+    {
+        saveIndex(verbose);
+    }
+    else
+    {
+        LOG(warning) << "OpticksEvent::save SKIP saveIndex as not indexed " ; 
+    }
+   
+
     saveParameters();
 
     (*m_timer)("save");
@@ -1553,6 +1584,8 @@ void OpticksEvent::indexPhotonsCPU()
 
 void OpticksEvent::saveIndex(bool verbose_)
 {
+
+
     const char* udet = getUDet();
 
     NPYBase::setGlobalVerbose(verbose_);

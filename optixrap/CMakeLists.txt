@@ -117,7 +117,6 @@ set(SOURCES
     OptiXTest.cc
     OAccel.cc
     OProg.cc
-    OTimes.cc
     OConfig.cc
     OContext.cc
     OColors.cc
@@ -155,6 +154,7 @@ set(SOURCES
     cu/boundaryLookupTest.cu
     cu/tex0Test.cu
     cu/texTest.cu
+    cu/OEventTest.cu
 )
 
 
@@ -177,6 +177,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_tex0Test.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_texTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_bufferTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OEventTest.cu.ptx
 )
 
 
@@ -196,7 +197,6 @@ set(HEADERS
     OContext.hh
     OConfig.hh
     OProg.hh
-    OTimes.hh
     OGeo.hh
     OTracer.hh
     OEngineImp.hh

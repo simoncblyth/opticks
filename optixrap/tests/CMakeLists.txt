@@ -17,6 +17,7 @@ set(TEST_SOURCES
     OOtexTest.cc
 
     bufferTest.cc
+    OEventTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

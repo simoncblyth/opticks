@@ -6,7 +6,7 @@
 #include "NPYBase.hpp"
 template <typename T> class NPY ; 
 class OConfig ; 
-struct OTimes ; 
+struct STimes ; 
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OContext {
@@ -43,7 +43,7 @@ class OXRAP_API OContext {
             void setDebugPhoton(unsigned int debug_photon);
             unsigned int getDebugPhoton();
      public:
-            void launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height=1, OTimes* times=NULL);
+            void launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height=1, STimes* times=NULL);
      public:
             // pass thru to OConfig
             optix::Program createProgram(const char* filename, const char* progname );

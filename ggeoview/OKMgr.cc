@@ -29,6 +29,20 @@ class NConfigurable ;
     }
 
 
+
+/*
+
+Ordering issue in INTEROP,  
+cannot create OEvent buffers as gensteps
+not yet uploaded to OpenGL when OKPropagator
+is being made
+
+OR maybe they are, just I was fabricating dummy gensteps ?
+
+
+*/
+
+
 OKMgr::OKMgr(int argc, char** argv) 
     :
     m_ok(new Opticks(argc, argv, false)),   // false: NOT integrated running

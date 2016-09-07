@@ -585,11 +585,11 @@ OpticksEventSpec* Opticks::getEventSpec()
 }
 
 
-OpticksEvent* Opticks::makeEvent(bool ok, bool gs)
+OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
     m_event_count += 1 ; 
 
-    OpticksEvent* evt = new OpticksEvent(ok ? m_spec : m_nspec);
+    OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
     evt->setId(m_event_count) ; 
 
 
@@ -627,7 +627,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, bool gs)
 
     evt->setMaxRec(m_cfg->getRecordMax());
     evt->createSpec();   
-    evt->createBuffers(gs);  // not-allocated and with itemcount 0 
+    evt->createBuffers();  // not-allocated and with itemcount 0 
  
     // ctor args define the identity of the Evt, coming in from config
     // other params are best keep in m_parameters where they get saved/loaded  

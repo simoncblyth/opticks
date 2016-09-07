@@ -150,6 +150,8 @@ class A(np.ndarray):
         pass
 
         a = None
+        missing = False  
+        
         if os.path.exists(path):
             log.debug("loading %s " % path )
             if dbg: 
@@ -159,6 +161,7 @@ class A(np.ndarray):
             if not optional: 
                 raise IOError("cannot load %s " % path)
             arr = np.zeros(())
+            missing = True
 
         a = arr.view(cls)
         a.path = path 
@@ -166,6 +169,7 @@ class A(np.ndarray):
         a.tag = tag
         a.det = det 
         a.stamp = stamp_(path)
+        a.missing = missing
 
         return a
 

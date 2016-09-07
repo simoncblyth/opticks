@@ -87,6 +87,7 @@ class OKGEO_API OpticksHub {
        std::string          getG4GunConfig();
        TorchStepNPY*        getTorchstep(); // needs geometry for targetting 
        G4StepNPY*           getG4Step();    // created in setGensteps
+       OpticksEvent*        getZeroEvent(); // created in setGensteps
    private:
        void                 translateGensteps(NPY<float>* gs);  // into Opticks lingo
        NPY<float>*          loadGenstepFile();
@@ -137,6 +138,7 @@ class OKGEO_API OpticksHub {
        NPY<float>*      m_gensteps ;
        TorchStepNPY*    m_torchstep ; 
        G4StepNPY*       m_g4step ;
+       OpticksEvent*    m_zero ;      // objective of zero event is to be available early, and enable "zero" sized event buffers to be used in initialization
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 
        numpyserver<numpydelegate>* m_server ;

@@ -179,7 +179,7 @@ void OEngineImp::preparePropagator()
     }
 
 
-    m_opropagator = new OPropagator(m_ocontext, m_hub, entry, override_);
+    m_opropagator = new OPropagator(m_ocontext, m_hub, entry, override_);   // prelaunch done in init
 
     LOG(trace) << "OEngineImp::preparePropagator DONE ";
     
@@ -190,8 +190,6 @@ void OEngineImp::preparePropagator()
    //
    // optixrap-/tests/bufferTest.cc shows can prelaunch with zero sized buffers
 }
-
-
 
 
 
@@ -208,14 +206,13 @@ void OEngineImp::initEvent()
 }
 
 
-
 void OEngineImp::propagate()
 {
     LOG(trace)<< "OEngineImp::propagate" ;
 
-    m_opropagator->prelaunch();
-
-    TIMER("prelaunch");
+   // m_opropagator->prelaunch();
+   //
+   // TIMER("prelaunch");
 
     m_opropagator->launch();
 
@@ -247,19 +244,12 @@ void OEngineImp::downloadEvt()
     // is now done from App::saveEvt just prior to this being called
 
     m_opropagator->downloadEvent();  
+
     // formerly did OPropagator::downloadEvt only in compute mode
     // but now that interop/compute are blurring have to check each buffer
     // as some may be compute mode even whilst running interop
 
     TIMER("downloadEvt");
-
-    // evt->dumpDomains("OEngineImp::saveEvt dumpDomains");
-    // evt->save();  // TODO: this should happen at higher level, not buried here ?
-
-    LOG(warning) << "OEngineImp::downloadEvt NO LONGER SAVES " ; 
-
-
-    TIMER("saveEvt");
 }
 
 

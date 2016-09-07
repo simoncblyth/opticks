@@ -15,7 +15,7 @@
 
 #include "OTracer.hh"
 #include "OContext.hh"
-#include "OTimes.hh"
+#include "STimes.hh"
 
 
 #include "PLOG.hh"
@@ -74,7 +74,7 @@ void OTracer::init()
     m_context[ "bg_color" ]->setFloat(  0.34f, 0.55f, 0.85f, 1.0f ); // map(int,np.array([0.34,0.55,0.85])*255) -> [86, 140, 216]
     m_context[ "bad_color" ]->setFloat( 1.0f, 0.0f, 0.0f, 1.0f );
 
-    m_trace_times = new OTimes ; 
+    m_trace_times = new STimes ; 
 }
 
 

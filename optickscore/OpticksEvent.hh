@@ -6,6 +6,8 @@
 //template <typename T> class NPY ; 
 #include "NPY.hpp"
 
+struct STimes ; 
+
 class Timer ; 
 class Parameters ;
 class Report ;
@@ -97,7 +99,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
       static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
 
+
    public:
+       static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);
        virtual ~OpticksEvent();
 
@@ -109,6 +113,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        bool isIndexed();
        bool isStep();
        bool isFlat();
+
+       STimes* getPrelaunchTimes();
+       STimes* getLaunchTimes();
    public:
        void postPropagateGeant4(); // called following dynamic photon/record/sequence collection
    public:
@@ -182,7 +189,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void loadIndex();
        void loadBuffers(bool verbose=true);
    public: 
-       void createBuffers(bool gs=false); 
+       void createBuffers(NPY<float>* gs=NULL); 
        void createSpec(); 
    private:
        void setPhotonData(NPY<float>* photon_data);
@@ -324,6 +331,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPYSpec* m_recsel_spec ;  
        NPYSpec* m_sequence_spec ;  
 
+       STimes*  m_prelaunch_times ; 
+       STimes*  m_launch_times ; 
 
 };
 

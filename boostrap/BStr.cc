@@ -42,6 +42,16 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
     return name ;   
 }
 
+
+const char* BStr::itoa( int i )
+{
+    std::stringstream ss ; 
+    ss << i ; 
+    std::string s = ss.str() ;
+    return strdup(s.c_str());
+}
+
+
 int BStr::atoi( const char* str, int fallback )
 {
     int i(fallback) ;   

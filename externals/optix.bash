@@ -39,6 +39,54 @@ Fora Posts
 * https://devtalk.nvidia.com/default/topic/817572/optix/graph-nodes-in-optix/
 * https://devtalk.nvidia.com/default/topic/771998/optix/optix-acceleration-structure/
 
+
+Moving Geometry
+~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/952332/optix/move-objects/
+
+
+Launch Times : removeVariable triggers megakernel recompile, avoid leaking buffers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/938033/optix/excessive-setup-times/
+
+Separate Thread OptiX
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/938478/optix/is-it-possible-for-optix-to-run-in-a-background-host-thread/
+
+Detlef:
+
+Running OptiX in a separate thread should just work.
+Just make sure only that thread is doing OptiX calls. 
+The OptiX API is not guaranteed to be multi-threaded safe.
+
+Doing this will not improve the renderer time.  Also if the GUI is run on the
+same GPU as OptiX there will always be a sluggishness to the GUI unless your
+OptiX renderer has a very small runtime per frame.  With a dedicated compute
+GPU or VCA cluster, running OptiX fully asynchronous in a separate host thread
+would make the GUI rendering independent of the ray tracing. That's one thing
+on my list to implement in a renderer app.
+
+
+Dirty CUDA Interop Buffers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/925622/optix/should-i-free-buffer-data-/
+
+Detlef:
+
+Another case would be CUDA interop buffers which use device side pointers where
+the update happens through CUDA device code. Then you'd need to make the buffer
+dirty manually to let OptiX know its contents have changed, to be able to
+rebuild accelerations structures etc.)
+
+
+
+
+
+
 Downloading OptiX
 -------------------
 

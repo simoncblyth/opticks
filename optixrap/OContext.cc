@@ -15,7 +15,7 @@
 #include "OpticksBufferControl.hh"
 
 // optixrap-
-#include "OTimes.hh"
+#include "STimes.hh"
 #include "OConfig.hh"
 #include "OContext.hh"
 
@@ -213,7 +213,7 @@ unsigned int OContext::getNumEntryPoint()
 
 
 
-void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, OTimes* times )
+void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, STimes* times )
 {
     if(!m_closed) close();
 
@@ -283,14 +283,12 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
     unsigned int numBytes = npy->getNumBytes(0) ;
 
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
-
-    LOG(info)<<"OContext::upload" 
-             << " numBytes " << numBytes 
-             << npy->description("upload")
-             ;
+    bool verbose = ctrl("VERBOSE_MODE") ;
 
     if(ctrl("UPLOAD_WITH_CUDA"))
     {
+        if(verbose) LOG(info) << npy->description("UPLOAD_WITH_CUDA markDirty") ;
+
         void* d_ptr = NULL;
         rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
         cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
@@ -298,6 +296,7 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
     }
     else
     {
+        if(verbose) LOG(info) << npy->description("standard OptiX UPLOAD") ;
         memcpy( buffer->map(), npy->getBytes(), numBytes );
         buffer->unmap(); 
     }
@@ -309,6 +308,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 {
     assert(npy);
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
+    bool verbose = ctrl("VERBOSE_MODE") ;
 
     bool proceed = false ; 
     if(ctrl(OpticksBufferControl::COMPUTE_MODE_))
@@ -323,11 +323,9 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     
     if(proceed)
     {
-        unsigned int numBytes = npy->getNumBytes(0) ;
-        LOG(info)<<"OContext::download" 
-                 << " numBytes " << numBytes 
-                 << npy->description("download")
-                 ;
+
+        if(verbose)
+             LOG(info) << npy->description("download") ;
 
         void* ptr = buffer->map() ; 
         npy->read( ptr );
@@ -335,7 +333,9 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     }
     else
     {
-        LOG(info)<<"OContext::download SKIPPED for INTEROP buffer  " << npy->getBufferName() ; 
+        if(verbose)
+             LOG(info)<< npy->description("download SKIPPED") ;
+
     }
 }
 
@@ -346,9 +346,12 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {
     assert(npy);
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
+    bool verbose = ctrl("VERBOSE_MODE") ;
 
     bool compute = isCompute()  ; 
-    LOG(info) << "OContext::createBuffer "
+
+    if(verbose) 
+       LOG(info) << "OContext::createBuffer "
               << std::setw(20) << name 
               << std::setw(20) << npy->getShapeString()
               << " mode : " << ( compute ? "COMPUTE " : "INTEROP " )

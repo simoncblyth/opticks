@@ -52,8 +52,29 @@ Things to try
 ---------------
 
 * Does buffer recreation always mean a long prelaunch ?
-* isolated test of changing OptiX buffer, filling with some marker stripes, using the same machinery 
+* DONE: isolated test of changing OptiX buffer, filling with some marker stripes, using the same machinery 
 * Try skipping prelaunch, for events after the 1st 
+
+
+DONE : bufferTest.cu bufferTest.cc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This indicates that can resize OptiX buffers between launches without issue. 
+Also can start with a zero sized buffer. 
+
+Used this pattern in OEvent OPropagator using m_zero OpticksEvent.
+
+
+But this has issue in interop as to craete the OpenGL buffers
+will need to OpticksViz::uploadEvent() for this zero event.
+
+
+
+
+
+
+
+
 
 
 

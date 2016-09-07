@@ -222,20 +222,22 @@ class Evt(object):
         self.desc['ph'] = "(records) photon history flag/material sequence"
 
 
-    def init_index(self, tag, src, det, dbg):
-        ps = A.load_("ps",src,tag,det,dbg)
-        if not ps is None:
+    def init_index(self, tag, src, det, dbg, index_optional=True):
+
+        ps = A.load_("ps",src,tag,det,dbg, optional=index_optional)
+
+        if not ps is None and not ps.missing:
             ups = len(np.unique(ps))
         else:
             ups = -1 
 
-        rs = A.load_("rs",src,tag,det,dbg)
-        if not rs is None:
+        rs = A.load_("rs",src,tag,det,dbg, optional=index_optional)
+        if not rs is None and not rs.missing :
             urs = len(np.unique(rs))
         else: 
             urs = -1
 
-        if not rs is None:
+        if not rs is None and not rs.missing:
             rsr = rs.reshape(-1, self.nrec, 1, 4)        
         else: 
             rsr = None

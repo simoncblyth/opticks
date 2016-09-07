@@ -1,8 +1,8 @@
 #pragma once
 
-#include "OXRAP_API_EXPORT.hh"
+#include "SYSRAP_API_EXPORT.hh"
 
-struct OXRAP_API OTimes {
+struct SYSRAP_API STimes {
 
    unsigned int count ; 
    double validate ; 
@@ -11,7 +11,7 @@ struct OXRAP_API OTimes {
    double launch ; 
    const char* _description ; 
 
-   OTimes() :
+   STimes() :
       count(0),
       validate(0),
       compile(0),
@@ -21,7 +21,7 @@ struct OXRAP_API OTimes {
    {
    }
 
-   const char* description(const char* msg="OTimes::description");
+   const char* description(const char* msg="STimes::description");
 
 };
 

@@ -4,7 +4,7 @@
 
 class OContext ; 
 class Composition ; 
-struct OTimes ; 
+struct STimes ; 
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OTracer {
@@ -25,7 +25,7 @@ class OXRAP_API OTracer {
        optix::Context  m_context ; 
        unsigned int    m_resolution_scale ; 
 
-       OTimes*          m_trace_times ; 
+       STimes*          m_trace_times ; 
        unsigned int     m_trace_count ; 
        double           m_trace_prep ; 
        double           m_trace_time ; 

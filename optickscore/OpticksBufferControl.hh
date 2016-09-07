@@ -20,6 +20,7 @@ class OKCORE_API OpticksBufferControl {
                 BUFFER_GPU_LOCAL        = 0x1 << 10,
                 INTEROP_MODE            = 0x1 << 11,
                 COMPUTE_MODE            = 0x1 << 12,
+                VERBOSE_MODE            = 0x1 << 13,
                 DUMMY                   = 0x1 << 31 
              };  
     public:
@@ -35,6 +36,7 @@ class OKCORE_API OpticksBufferControl {
         static const char* BUFFER_GPU_LOCAL_ ; 
         static const char* INTEROP_MODE_ ; 
         static const char* COMPUTE_MODE_ ; 
+        static const char* VERBOSE_MODE_ ; 
 
     public:
         static std::string Description(unsigned long long ctrl);

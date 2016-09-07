@@ -11,7 +11,7 @@ class Opticks ;
 class OContext ; 
 class OBuf ; 
 class OEvent ; 
-struct OTimes ; 
+struct STimes ; 
 
 // TODO: maybe split OptiX buffer management into an OEvent ?
 //       need experience with multi-event running to see 
@@ -47,8 +47,8 @@ class OXRAP_API OPropagator {
         OBuf* getGenstepBuf();
         OBuf* getRecordBuf();
 
-        OTimes* getPrelaunchTimes();
-        OTimes* getLaunchTimes();
+        STimes* getPrelaunchTimes();
+        STimes* getLaunchTimes();
         void dumpTimes(const char* msg="OPropagator::dumpTimes");
 
     private:
@@ -66,8 +66,8 @@ class OXRAP_API OPropagator {
         OpticksEvent*    m_zero ; 
         OEvent*          m_oevt ; 
         optix::Context   m_context ;
-        OTimes*          m_prelaunch_times ; 
-        OTimes*          m_launch_times ; 
+        STimes*          m_prelaunch_times ; 
+        STimes*          m_launch_times ; 
         bool             m_prelaunch ;
         int              m_entry_index ; 
 

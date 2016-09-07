@@ -2,15 +2,13 @@
 #include <optixu/optixu_math_namespace.h>
 
 #include "define.h"
+#include "quad.h"
 
 using namespace optix;
-
-#include "quad.h"
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
-#define GNUMQUAD 6
 
 rtBuffer<float4>  genstep_buffer;
 rtBuffer<float4>  photon_buffer;
