@@ -3,6 +3,7 @@
 #include <string>
 #include "G4Types.hh"
 
+class OpticksHub ; 
 class NLookup ; 
 template <typename T> class NPY ;
 
@@ -37,7 +38,7 @@ class CFG4_API CCollector
    public:
          static CCollector* Instance();
    public:
-         CCollector(NLookup* lookup);
+         CCollector(OpticksHub* hub);
    public:
          NPY<float>*  getGensteps();
    public:
@@ -117,6 +118,7 @@ class CFG4_API CCollector
    private:
          static CCollector* INSTANCE ;      
    private:
+         OpticksHub*  m_hub ; 
          NLookup*     m_lookup ; 
          NPY<float>*  m_onestep ;
          float*       m_values ;  

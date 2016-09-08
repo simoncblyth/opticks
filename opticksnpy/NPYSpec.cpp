@@ -20,6 +20,12 @@ NPYSpec::NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned in
 {
 }
 
+NPYSpec* NPYSpec::clone()
+{
+    return new NPYSpec(m_name, m_ni, m_nj, m_nk, m_nl, m_type, m_ctrl );
+}
+
+
 NPYBase::Type_t NPYSpec::getType()
 { 
     return m_type ;

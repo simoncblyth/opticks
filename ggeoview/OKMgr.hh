@@ -18,15 +18,15 @@ class OKPropagator ;
 class GGV_API OKMgr {
    public:
        OKMgr(int argc, char** argv);
-   public:
-       void action();
+       virtual ~OKMgr();
    public:
        void propagate();
-       void loadPropagation();
        void visualize();
-       void cleanup();
    private:
        void init();
+       void propagate(NPY<float>* gs);
+       void loadPropagation();
+       void cleanup();
    private:
        SLog*          m_log ; 
        Opticks*       m_ok ; 

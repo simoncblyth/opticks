@@ -37,7 +37,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_hub(new OpticksHub(m_ok, true)),                 // true: configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
     m_g4(new CG4(m_hub, true)),                        // true: configure and initialize immediately 
-    m_collector(new CCollector(m_hub->getLookup())),   // after CG4 loads geometry, for material code cross-referenceing in NLookup
+    m_collector(new CCollector(m_hub)),                // after CG4 loads geometry, currently hub just used for material code lookup, not evt access
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
 #ifdef WITH_OPTIX
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
@@ -47,6 +47,12 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     init();
     LOG(fatal) << "OKG4Mgr::OKG4Mgr DONE" ;  
 }
+
+OKG4Mgr::~OKG4Mgr()
+{
+    cleanup();
+}
+
 
 void OKG4Mgr::init()
 {
@@ -58,8 +64,13 @@ void OKG4Mgr::propagate()
 
     m_g4->propagate();
 
-    NPY<float>* gs = m_ok->isLiveGensteps() ? m_collector->getGensteps() : m_hub->getGensteps() ;  
+    OpticksEvent* zero = m_hub->getZeroEvent();
 
+    NPY<float>* gs0 = m_ok->isLiveGensteps() ? m_collector->getGensteps() : zero->getGenstepData() ;  
+
+    NPY<float>* gs = gs0->clone();
+
+    // hmm why from collector ? should be collected into m_g4evt OpticksEvent ?
     // collected from G4 directly OR input gensteps fabricated from config (eg torch) or loaded from file
 
     m_propagator->propagate(gs);

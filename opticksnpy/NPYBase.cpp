@@ -57,6 +57,14 @@ void NPYBase::setGlobalVerbose(bool verbose)
     GLOBAL_VERBOSE = verbose ;
 }
 
+void NPYBase::setLookup(NLookup* lookup)
+{
+    m_lookup = lookup ; 
+}
+NLookup* NPYBase::getLookup()
+{
+    return m_lookup ; 
+}
 
 
 
@@ -78,7 +86,8 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
          m_shape(shape),
          m_metadata(metadata),
          m_has_data(has_data),
-         m_dynamic(false)
+         m_dynamic(false),
+         m_lookup(NULL)
 {
    init();
 } 

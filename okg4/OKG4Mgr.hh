@@ -17,12 +17,13 @@ class OKPropagator ;
 class OKG4_API OKG4Mgr {
    public:
        OKG4Mgr(int argc, char** argv);
+       virtual ~OKG4Mgr();
+  public:
+       void propagate();
+       void visualize();
    private:
        void init();
-   public:
-       void propagate();
        void indexPropagation();
-       void visualize();
        void cleanup();
    private:
        Opticks*       m_ok ; 

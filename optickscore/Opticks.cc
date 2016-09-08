@@ -580,21 +580,17 @@ OpticksEventSpec* Opticks::getEventSpec()
 
 OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
-    m_event_count += 1 ; 
-
-
     LOG(info) << "Opticks::makeEvent" 
               << ( ok ? " OK " : " G4 " )
               << " tagoffset " << tagoffset 
               << " id " << m_event_count 
               ;
 
-
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
 
-    //assert(m_event_count < 3 );
+    evt->setId(m_event_count) ;   // start from id 0 
 
-    evt->setId(m_event_count) ; 
+    m_event_count += 1 ; 
 
 
     const char* x_udet = getUDet();
@@ -610,7 +606,6 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
                    ;
     }
     assert(match);
-
 
     evt->setMode(m_mode);
 

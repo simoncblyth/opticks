@@ -4,6 +4,7 @@
 #include "NPY.hpp"
 #include "CCollector.hh"
 
+#include "OpticksHub.hh"
 #include "OpticksPhoton.h"
 
 #include "PLOG.hh"
@@ -12,13 +13,14 @@ CCollector* CCollector::INSTANCE = NULL ;
 
 CCollector* CCollector::Instance()
 {
-   assert(INSTANCE && "CCollector needs to be instanciated with NLookup instance first");
+   assert(INSTANCE && "CCollector needs to be instanciated with OpticksHub instance first");
    return INSTANCE ;
 }
 
-CCollector::CCollector(NLookup* lookup)  
+CCollector::CCollector(OpticksHub* hub)  
     :
-    m_lookup(lookup),
+    m_hub(hub),
+    m_lookup(m_hub->getLookup()),
     m_onestep(NPY<float>::make(1,6,4)),
     m_values(NULL),
     m_genstep(NPY<float>::make(0,6,4)),

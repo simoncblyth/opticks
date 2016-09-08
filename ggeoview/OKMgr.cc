@@ -46,6 +46,11 @@ OKMgr::OKMgr(int argc, char** argv)
     (*m_log)("DONE");
 }
 
+OKMgr::~OKMgr()
+{
+    cleanup();
+}
+
 void OKMgr::init()
 {
     bool g4gun = m_ok->getSourceCode() == G4GUN ;
@@ -55,7 +60,7 @@ void OKMgr::init()
 }
 
 
-void OKMgr::action()
+void OKMgr::propagate()
 {
     if(m_ok->hasOpt("load"))
     {
@@ -68,16 +73,22 @@ void OKMgr::action()
     else
     { 
         int multi = m_ok->getMultiEvent();
-        for(int i=0 ; i < multi ; i++) propagate();
+        OpticksEvent* zero = m_hub->getZeroEvent();
+        NPY<float>* gs0 = zero->getGenstepData();
+        for(int i=0 ; i < multi ; i++) 
+        {
+            //NPY<float>* gs = gs0->clone() ;
+            propagate(gs0);
+        }
     }
 }
 
-void OKMgr::propagate()
+void OKMgr::propagate(NPY<float>* gs)
 {
     m_count += 1 ; 
 
     LOG(fatal) << "OKMgr::propagate(" << m_count << ")" ; 
-    NPY<float>* gs = m_hub->getGensteps();  
+
 #ifdef WITH_OPTIX
     m_propagator->propagate(gs);
 #endif

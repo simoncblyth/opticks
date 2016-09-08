@@ -21,7 +21,6 @@ class NState ;
 class NLookup ; 
 class NConfigurable ; 
 class TorchStepNPY ; 
-class G4StepNPY ; 
 
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
@@ -33,8 +32,17 @@ template <typename> class numpyserver ;
 
 #include "OKGEO_API_EXPORT.hh"
 
-// non-viz, hostside intersection of config, geometry and event
-// task: slurp up pieces of App that match the above tagline 
+
+/**
+
+OpticksHub
+=============
+
+* Non-viz, hostside intersection of config, geometry and event
+* Intended to operate at event level, not below 
+
+**/
+
 
 class OKGEO_API OpticksHub {
 
@@ -81,16 +89,14 @@ class OKGEO_API OpticksHub {
        void setTarget(unsigned target=0, bool aim=true);
        unsigned getTarget();
    public:
-       void setGensteps(NPY<float>* gs);   // does checks and defines G4StepNPY 
-       NPY<float>*          getGensteps();  
-       NPY<float>*          getNopsteps();  // updated when new G4 event is created
-   public:
        std::string          getG4GunConfig();
-       TorchStepNPY*        getTorchstep(); // needs geometry for targetting 
-       G4StepNPY*           getG4Step();    // created in setGensteps
-       OpticksEvent*        getZeroEvent(); // created in setGensteps
+       OpticksEvent*        getZeroEvent(); 
+   public:
+       // Torchstep is here are it needs geometry for targetting 
+       // getter used by CGenerator::makeTorchSource so that cfg4-
+       // reuses the same torch 
+       TorchStepNPY*        getTorchstep(); 
    private:
-       void                 translateGensteps(NPY<float>* gs);  // into Opticks lingo
        NPY<float>*          loadGenstepFile();
        TorchStepNPY*        makeTorchstep();
    public:
@@ -136,10 +142,7 @@ class OKGEO_API OpticksHub {
        OpticksEvent*    m_g4evt ; 
        OpticksEvent*    m_okevt ; 
    private:
-       NPY<float>*      m_nopsteps ;
-       NPY<float>*      m_gensteps ;
        TorchStepNPY*    m_torchstep ; 
-       G4StepNPY*       m_g4step ;
        OpticksEvent*    m_zero ;      // objective of zero event is to be available early, and enable "zero" sized event buffers to be used in initialization
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 
@@ -150,8 +153,6 @@ class OKGEO_API OpticksHub {
        NState*              m_state ; 
        NLookup*             m_lookup ; 
        Bookmarks*           m_bookmarks ; 
- 
 };
-
 
 

@@ -20,59 +20,43 @@ class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 class BoundariesNPY ; 
+class G4StepNPY ; 
 class HitsNPY ; 
 class NPYSpec ; 
 
 class OpticksMode ; 
 class OpticksDomain ; 
 
-/*
+/**
 OpticksEvent
 =============
 
+NPY buffer allocation on the host is deferred until/if they are downloaded from the GPU. 
+The buffer shapes represent future sizes if they ever get downloaded. 
+Only the generally small gensteps and nopsteps are usually hostside allocated, 
+as they are the input buffers.
 
-Steps : G4 Only
------------------
+So there is no problem with having multiple OpticksEvent instances.
+But full GPU memory is immediately allocated on "uploading", 
+so avoid uploading more than one.
+
 
 nopstep
       non-optical steps
 genstep
       scintillation or cerenkov
-
-
-Steps : G4 or Op
---------------------
-
 records
       photon step records
 photons
       last photon step at absorption, detection
 sequence   
       photon level material/flag histories
-
-
-Other : G4 or Op Indexing
---------------------------
-
 phosel
       obtained by indexing *sequence*
 recsel
       obtained by repeating *phosel* by maxrec
 
-
-Not currently Used
--------------------
-
-incoming
-      slated for NumpyServer revival
-aux
-      was formerly used for photon level debugging 
-primary
-      hold initial particle info
-
-
-
-*/
+**/
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
@@ -140,9 +124,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
+       G4StepNPY* getG4Step(); 
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    private:
+       void importGenstepData(NPY<float>* gs);
        void setBufferControl(NPYBase* data);
    public:
        Parameters* getParameters();
@@ -293,6 +279,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
 
        OpticksDomain*        m_domain ; 
 
+       G4StepNPY*      m_g4step ; 
        ViewNPY*        m_genstep_vpos ;
 
        MultiViewNPY*   m_genstep_attr ;

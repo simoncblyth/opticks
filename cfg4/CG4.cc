@@ -35,7 +35,6 @@
 
 //cg4-
 #include "ActionInitialization.hh"
-//#include "CCollector.hh"
 
 #include "CPhysics.hh"
 #include "CGeometry.hh"
@@ -282,14 +281,7 @@ void CG4::postpropagate()
 
     if(!finmac.empty()) execute(finmac.c_str());
 
-/*
-    m_collector = CCollector::Instance() ;
-    m_collector->Summary("CG4::postpropagate");
-
-    setGenstepsRecorded(m_collector->getGensteps());
-*/
-
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_hub->getG4Event();
     assert(evt);
     evt->postPropagateGeant4();
 

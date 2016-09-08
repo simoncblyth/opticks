@@ -30,6 +30,7 @@
 #include "NPY.hpp"
 #include "NLoad.hpp"
 #include "NPYSpec.hpp"
+#include "NLookup.hpp"
 
 #include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
@@ -44,11 +45,13 @@
 #include "TimesTable.hpp"
 
 // okc-
+#include "OpticksPhoton.h"
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
 #include "OpticksBufferControl.hh"
+#include "OpticksActionControl.hh"
 #include "Indexer.hh"
 
 #include "PLOG.hh"
@@ -120,6 +123,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
           m_domain(NULL),
 
+          m_g4step(NULL),
           m_genstep_vpos(NULL),
           m_genstep_attr(NULL),
           m_nopstep_attr(NULL),
@@ -790,6 +794,8 @@ void OpticksEvent::importDomainsBuffer()
 
 void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 {
+    importGenstepData(genstep_data);
+
     setBufferControl(genstep_data);
 
     m_genstep_data = genstep_data  ;
@@ -818,6 +824,94 @@ const glm::vec4& OpticksEvent::getGenstepCenterExtent()
     assert(m_genstep_vpos && "must setGenstepData before getGenstepCenterExtent"); 
     return m_genstep_vpos->getCenterExtent() ; 
 }
+
+G4StepNPY* OpticksEvent::getG4Step()
+{
+    return m_g4step ; 
+}
+
+void OpticksEvent::importGenstepData(NPY<float>* gs)
+{
+    gs->setBufferSpec(OpticksEvent::GenstepSpec());
+
+    assert(m_g4step == NULL && "OpticksEvent::importGenstepData can only do this once ");
+    m_g4step = new G4StepNPY(gs);    
+
+    OpticksActionControl oac(gs->getActionControlPtr());
+    bool gs_torch = oac.isSet("GS_TORCH") ; 
+    bool gs_legacy = oac.isSet("GS_LEGACY") ; 
+
+    LOG(fatal) << "OpticksEvent::importGenstepData"
+               << " shape " << gs->getShapeString()
+               << " " << oac.description("oac")
+               ;
+
+
+    if(gs_legacy)
+    {
+        assert(!gs_torch); // there are no legacy torch files ?
+
+        NLookup* lookup = gs->getLookup();
+        if(!lookup)
+            LOG(fatal) << "OpticksEvent::importGenstepData"
+                       << " IMPORT OF LEGACY GENSTEPS REQUIRES gs->setLookup(NLookup*) "
+                       << " PRIOR TO OpticksEvent::setGenstepData(gs) "
+                       ;
+
+        assert(lookup); 
+
+        m_g4step->relabel(CERENKOV, SCINTILLATION); 
+
+        // CERENKOV or SCINTILLATION codes are used depending on 
+        // the sign of the pre-label 
+        // this becomes the ghead.i.x used in cu/generate.cu
+        // which dictates what to generate
+
+        lookup->close("OpticksEvent::importGenstepData GS_LEGACY");
+
+        m_g4step->setLookup(lookup);   
+        m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+        // replaces original material indices with material lines
+        // for easy access to properties using boundary_lookup GPU side
+
+    }
+    else if(gs_torch)
+    {
+        LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
+        m_g4step->checklabel(TORCH); 
+    }
+    else
+    {
+        LOG(info) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
+        m_g4step->checklabel(CERENKOV, SCINTILLATION);
+    }
+
+    m_g4step->countPhotons();
+
+    LOG(info) 
+         << " Keys "
+         << " TORCH: " << TORCH 
+         << " CERENKOV: " << CERENKOV 
+         << " SCINTILLATION: " << SCINTILLATION  
+         << " G4GUN: " << G4GUN  
+         ;
+
+     LOG(info) 
+         << " counts " 
+         << m_g4step->description()
+         ;
+ 
+
+}
+
+
+
+
+
+
+
+
+
 
 
 void OpticksEvent::setPhotonData(NPY<float>* photon_data)

@@ -33,10 +33,10 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok, true);
     OpticksEvent* zero = hub.getZeroEvent();
-
     zero->Summary("zero");
 
     LOG(info) << argv[0] << " zero shape " << zero->getShapeString() ; 
+    NPY<float>* gs0 = zero->getGenstepData(); 
 
 
     optix::Context context = optix::Context::create();
@@ -48,11 +48,12 @@ int main(int argc, char** argv)
  
     ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, zero->getPrelaunchTimes() );
 
-    NPY<float>* gs = hub.getGensteps(); 
 
 
     for(unsigned i=0 ; i < 10 ; i++)
     {
+         NPY<float>* gs = gs0->clone();
+
          unsigned tagoffset = i ; 
 
          OpticksEvent* evt = ok.makeEvent(true, tagoffset) ;

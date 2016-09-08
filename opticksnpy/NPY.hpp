@@ -129,6 +129,8 @@ class NPY_API NPY : public NPYBase {
 
        // manipulations change types, not tags:  tfmt % targ -> typ
    public:
+       NPY<T>* clone();
+       static NPY<T>* copy(NPY<T>* src);
        NPY<T>* make_slice(const char* slice);
        NPY<T>* make_slice(NSlice* slice);
    public:

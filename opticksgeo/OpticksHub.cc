@@ -80,10 +80,7 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_evt(NULL),
    m_g4evt(NULL),
    m_okevt(NULL),
-   m_nopsteps(NULL),
-   m_gensteps(NULL),
    m_torchstep(NULL),
-   m_g4step(NULL),
    m_zero(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
@@ -113,10 +110,154 @@ void OpticksHub::init()
    {
        configure();
        loadGeometry() ;    
-
        setupInputGensteps();
    }
 }
+
+void OpticksHub::configure()
+{
+    m_composition->addConfig(m_cfg); 
+    //m_cfg->dumpTree();
+
+    int argc    = m_ok->getArgc();
+    char** argv = m_ok->getArgv();
+
+    LOG(debug) << "OpticksHub::configure " << argv[0] ; 
+
+    m_cfg->commandline(argc, argv);
+    m_ok->configure();      
+
+    if(m_fcfg->hasError())
+    {
+        LOG(fatal) << "OpticksHub::config parse error " << m_fcfg->getErrorMessage() ; 
+        m_fcfg->dump("OpticksHub::config m_fcfg");
+        m_ok->setExit(true);
+        return ; 
+    }
+
+    bool compute = m_ok->isCompute();
+    bool compute_opt = hasOpt("compute") ;
+    if(compute && !compute_opt)
+        LOG(warning) << "OpticksHub::configure FORCED COMPUTE MODE : as remote session detected " ;  
+
+
+    if(hasOpt("idpath")) std::cout << m_ok->getIdPath() << std::endl ;
+    if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
+    if(hasOpt("help|version|idpath"))
+    {
+        m_ok->setExit(true);
+        return ; 
+    }
+
+    if(!m_ok->isValid())
+    {
+        // defer death til after getting help
+        LOG(fatal) << "OpticksHub::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
+        assert(0);
+    }
+#ifdef WITH_NPYSERVER
+    configureServer();
+#endif
+
+    configureCompositionSize();
+
+    configureLookupA();
+
+    TIMER("configure");
+}
+
+
+
+
+#ifdef WITH_NPYSERVER
+void OpticksHub::configureServer()
+{
+    if(!hasOpt("nonet"))
+    {
+      // MAYBE liveConnect should happen in initialization, not here now that event creation happens latter 
+        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
+
+        try { 
+            m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
+        } 
+        catch( const std::exception& e)
+        {
+            LOG(fatal) << "OpticksHub::configureServer EXCEPTION " << e.what() ; 
+            LOG(fatal) << "OpticksHub::configureServer FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
+        }
+    }
+}
+#endif
+
+
+void OpticksHub::configureCompositionSize()
+{
+    glm::uvec4 size = m_ok->getSize();
+    glm::uvec4 position = m_ok->getPosition() ;
+
+    LOG(debug) << "OpticksHub::configureCompositionSize"
+              << " size " << gformat(size)
+              << " position " << gformat(position)
+              ;
+
+    m_composition->setSize( size );
+    m_composition->setFramePosition( position );
+}
+
+
+void OpticksHub::configureState(NConfigurable* scene)
+{
+    // NState manages the state (in the form of strings) of a collection of NConfigurable objects
+    // this needs to happen after configuration and the scene is created
+
+    m_state = m_ok->getState();  
+    m_state->setVerbose(false);
+
+    LOG(trace) << "OpticksHub::configureState " << m_state->description();
+
+    m_state->addConfigurable(scene);
+    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
+
+    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
+    m_bookmarks->setState(m_state);
+    m_bookmarks->setVerbose();
+    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
+
+    m_composition->setBookmarks(m_bookmarks);
+
+    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
+    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
+}
+
+
+void OpticksHub::configureLookupA()
+{
+    const char* path = m_ok->getMaterialMap(); 
+    const char* prefix = m_ok->getMaterialPrefix(); 
+
+    LOG(debug) << "OpticksHub::configureLookupA"
+              << " loading genstep material index map "
+              << " path " << path
+              << " prefix " << prefix
+              ;
+
+    std::map<std::string, unsigned> A ; 
+    BMap<std::string, unsigned int>::load(&A, path ); 
+
+    m_lookup->setA(A, prefix, path);
+}
+
+void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg)
+{
+   // Used from OKG4Mgr to override the default mapping 
+   // when using G4 steps directly 
+
+    m_lookup->setA( A, "", msg);
+}
+
+
+
+
 
 
 void OpticksHub::loadGeometry()
@@ -144,9 +285,7 @@ void OpticksHub::loadGeometry()
     m_ggeo->setComposition(m_composition);
 
     LOG(debug) << "OpticksHub::loadGeometry DONE" ; 
-
 }
-
 
 
 void OpticksHub::setupInputGensteps()
@@ -154,6 +293,7 @@ void OpticksHub::setupInputGensteps()
     LOG(debug) << "OpticksHub::setupInputGensteps" ; 
 
     m_zero = m_ok->makeEvent(true) ;  // needs to be after configure for spec to be defined
+    assert(m_zero->getId() == 0);
 
     unsigned int code = m_ok->getSourceCode();
 
@@ -164,13 +304,11 @@ void OpticksHub::setupInputGensteps()
         m_torchstep = makeTorchstep() ;
         gs = m_torchstep->getNPY();
         gs->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
-        setGensteps(gs);
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
         gs = loadGenstepFile();
         gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
-        setGensteps(gs);
     }
     else if( code == G4GUN  )
     {
@@ -183,7 +321,6 @@ void OpticksHub::setupInputGensteps()
              LOG(info) << " non-integrated G4GUN running, attempt to load gensteps from file " ;  
              gs = loadGenstepFile();
              gs->addActionControl(OpticksActionControl::Parse("GS_LOADED"));
-             setGensteps(gs);
         }
     }
 
@@ -262,92 +399,15 @@ NPY<float>* OpticksHub::loadGenstepFile()
 
 
 
-NPY<float>* OpticksHub::getGensteps()
-{
-    return m_gensteps ; 
-}
-TorchStepNPY* OpticksHub::getTorchstep()
+TorchStepNPY* OpticksHub::getTorchstep()   // needed by CGenerator
 {
     return m_torchstep ; 
 }
-G4StepNPY* OpticksHub::getG4Step()
-{
-    return m_g4step ;  
-}
+
 OpticksEvent* OpticksHub::getZeroEvent()
 {
+    assert(m_zero->getId() == 0 );
     return m_zero ;  
-}
-
-
-
-
-// hmm confusing to have this here, rather than in OpticksEvent ?
-//
-void OpticksHub::setGensteps(NPY<float>* gs)
-{
-    gs->setBufferSpec(OpticksEvent::GenstepSpec());
-
-    m_gensteps = gs ; 
-    m_g4step = new G4StepNPY(gs);    
-
-    OpticksActionControl oac(gs->getActionControlPtr());
-    bool gs_torch = oac.isSet("GS_TORCH") ; 
-    bool gs_legacy = oac.isSet("GS_LEGACY") ; 
-
-    LOG(fatal) << "OpticksHub::setGensteps"
-               << " shape " << gs->getShapeString()
-               << " " << oac.description("oac")
-               ;
-
-
-    if(gs_legacy)
-    {
-        assert(!gs_torch); // there are no legacy torch files ?
-
-        m_g4step->relabel(CERENKOV, SCINTILLATION); 
-        // CERENKOV or SCINTILLATION codes are used depending on 
-        // the sign of the pre-label 
-        // this becomes the ghead.i.x used in cu/generate.cu
-        // which dictates what to generate
-
-        assert(m_lookup);
-        m_lookup->close("OpticksHub::setGensteps GS_LEGACY");
-
-        m_g4step->setLookup(m_lookup);   
-        m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
-        // replaces original material indices with material lines
-        // for easy access to properties using boundary_lookup GPU side
-
-    }
-    else if(gs_torch)
-    {
-        LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
-        m_g4step->checklabel(TORCH); 
-    }
-    else
-    {
-        // non-legacy gensteps (ie collected direct from G4) already 
-        // have proper labelling and lookup applied during collection
-
-        m_g4step->checklabel(CERENKOV, SCINTILLATION);
-    }
-
-    m_g4step->countPhotons();
-
-    LOG(info) 
-         << " Keys "
-         << " TORCH: " << TORCH 
-         << " CERENKOV: " << CERENKOV 
-         << " SCINTILLATION: " << SCINTILLATION  
-         << " G4GUN: " << G4GUN  
-         ;
-
-     LOG(info) 
-         << " counts " 
-         << m_g4step->description()
-         ;
- 
 }
 
 
@@ -472,147 +532,6 @@ void OpticksHub::add(BCfg* cfg)
 }
 
 
-void OpticksHub::configure()
-{
-    m_composition->addConfig(m_cfg); 
-    //m_cfg->dumpTree();
-
-    int argc    = m_ok->getArgc();
-    char** argv = m_ok->getArgv();
-
-    LOG(debug) << "OpticksHub::configure " << argv[0] ; 
-
-    m_cfg->commandline(argc, argv);
-    m_ok->configure();      
-
-    if(m_fcfg->hasError())
-    {
-        LOG(fatal) << "OpticksHub::config parse error " << m_fcfg->getErrorMessage() ; 
-        m_fcfg->dump("OpticksHub::config m_fcfg");
-        m_ok->setExit(true);
-        return ; 
-    }
-
-
-    bool compute = m_ok->isCompute();
-    bool compute_opt = hasOpt("compute") ;
-    if(compute && !compute_opt)
-        LOG(warning) << "OpticksHub::configure FORCED COMPUTE MODE : as remote session detected " ;  
-
-
-    if(hasOpt("idpath")) std::cout << m_ok->getIdPath() << std::endl ;
-    if(hasOpt("help"))   std::cout << m_cfg->getDesc()     << std::endl ;
-    if(hasOpt("help|version|idpath"))
-    {
-        m_ok->setExit(true);
-        return ; 
-    }
-
-    if(!m_ok->isValid())
-    {
-        // defer death til after getting help
-        LOG(fatal) << "OpticksHub::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
-        assert(0);
-    }
-#ifdef WITH_NPYSERVER
-    configureServer();
-#endif
-
-    configureCompositionSize();
-
-    configureLookupA();
-
-    TIMER("configure");
-}
-
-
-void OpticksHub::configureLookupA()
-{
-    const char* path = m_ok->getMaterialMap(); 
-    const char* prefix = m_ok->getMaterialPrefix(); 
-
-    LOG(debug) << "OpticksHub::configureLookupA"
-              << " loading genstep material index map "
-              << " path " << path
-              << " prefix " << prefix
-              ;
-
-    std::map<std::string, unsigned> A ; 
-    BMap<std::string, unsigned int>::load(&A, path ); 
-
-    m_lookup->setA(A, prefix, path);
-}
-
-void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg)
-{
-   // Used from OKG4Mgr to override the default mapping 
-   // when using G4 steps directly 
-
-    m_lookup->setA( A, "", msg);
-}
-
-
-
-#ifdef WITH_NPYSERVER
-void OpticksHub::configureServer()
-{
-    if(!hasOpt("nonet"))
-    {
-      // MAYBE liveConnect should happen in initialization, not here now that event creation happens latter 
-        m_delegate->liveConnect(m_cfg); // hookup live config via UDP messages
-
-        try { 
-            m_server = new numpyserver<numpydelegate>(m_delegate); // connect to external messages 
-        } 
-        catch( const std::exception& e)
-        {
-            LOG(fatal) << "OpticksHub::configureServer EXCEPTION " << e.what() ; 
-            LOG(fatal) << "OpticksHub::configureServer FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
-        }
-    }
-}
-#endif
-
-
-void OpticksHub::configureCompositionSize()
-{
-    glm::uvec4 size = m_ok->getSize();
-    glm::uvec4 position = m_ok->getPosition() ;
-
-    LOG(debug) << "OpticksHub::configureCompositionSize"
-              << " size " << gformat(size)
-              << " position " << gformat(position)
-              ;
-
-    m_composition->setSize( size );
-    m_composition->setFramePosition( position );
-}
-
-
-void OpticksHub::configureState(NConfigurable* scene)
-{
-    // NState manages the state (in the form of strings) of a collection of NConfigurable objects
-    // this needs to happen after configuration and the scene is created
-
-    m_state = m_ok->getState();  
-    m_state->setVerbose(false);
-
-    LOG(trace) << "OpticksHub::configureState " << m_state->description();
-
-    m_state->addConfigurable(scene);
-    m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
-
-    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
-    m_bookmarks->setState(m_state);
-    m_bookmarks->setVerbose();
-    m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());
-
-    m_composition->setBookmarks(m_bookmarks);
-
-    m_composition->setOrbitalViewPeriod(m_fcfg->getOrbitalViewPeriod()); 
-    m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
-}
-
 
 NPY<unsigned char>* OpticksHub::getColorBuffer()
 {
@@ -638,13 +557,11 @@ OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
     LOG(info) << "OpticksHub::initOKEvent "
               << " gs " << gs->getShapeString()
               ;
- 
-    setGensteps(gs);  
 
     bool ok = true ; 
     createEvent(ok); 
 
-    m_okevt->setGenstepData(gs);
+    m_okevt->setGenstepData(gs->clone());
     assert(m_evt == m_okevt);
 
     if(m_g4evt)   // if there is a preexisting G4 event use the same timestamp for the OK event
@@ -654,6 +571,10 @@ OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
 
        std::string tstamp = m_g4evt->getTimeStamp();
        m_okevt->setTimeStamp( tstamp.c_str() );      
+
+       NPY<float>* nopstep = m_g4evt->getNopstepData() ;
+       if(nopstep)
+           m_okevt->setNopstepData(nopstep->clone());
     }
 
     LOG(info) << "OpticksHub::initOKEvent "
@@ -729,19 +650,11 @@ OpticksEvent* OpticksHub::createEvent(bool ok)
     {
         delete m_g4evt ;
         m_g4evt = NULL ; 
-        m_nopsteps = NULL ; 
-
         m_g4evt = m_evt ;
-        m_nopsteps = m_g4evt->getNopstepData(); 
         assert(m_g4evt->isG4());
     }
     configureEvent(m_evt);
     return m_evt ; 
-}
-
-NPY<float>* OpticksHub::getNopsteps()
-{
-    return m_nopsteps ; 
 }
 
 

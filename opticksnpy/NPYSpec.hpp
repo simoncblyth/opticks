@@ -11,6 +11,8 @@ class NPY_API NPYSpec {
    public:
         NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type, const char* ctrl);
 
+        NPYSpec* clone(); 
+
         NPYBase::Type_t getType();
         const char* getName();
         const char* getTypeName();

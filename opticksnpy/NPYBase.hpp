@@ -11,6 +11,7 @@
 #include <glm/fwd.hpp>
 
 
+class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
 
@@ -91,6 +92,8 @@ class NPY_API NPYBase {
        unsigned long long  getActionControl();
        unsigned long long* getActionControlPtr();
 
+       void     setLookup(NLookup* lookup);   // needed for legacy gensteps
+       NLookup* getLookup();
 
        void         setBufferSpec(NPYSpec* spec);
        NPYSpec*     getBufferSpec();
@@ -133,6 +136,7 @@ class NPY_API NPYBase {
    //protected:
     public:
        void setNumItems(unsigned int ni);
+
    protected:
        unsigned int       m_dim ; 
        unsigned int       m_ni ; 
@@ -159,6 +163,7 @@ class NPY_API NPYBase {
        std::string        m_metadata ; 
        bool               m_has_data ;
        bool               m_dynamic ;
+       NLookup*           m_lookup ;   // only needed for legacy gensteps 
 
 };
 

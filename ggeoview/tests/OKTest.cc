@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
  
     OKMgr ok(argc, argv);
-    ok.action();
+    ok.propagate();
     ok.visualize();
 
     exit(EXIT_SUCCESS);

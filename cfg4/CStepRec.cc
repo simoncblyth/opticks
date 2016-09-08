@@ -82,7 +82,9 @@ void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id,
 void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point)
 {
     // nopstep updated when new G4 evt is created, so no action is required to handle change of event
-    NPY<float>* nopstep = m_hub->getNopsteps();  
+
+    OpticksEvent* g4evt = m_hub->getG4Event();
+    NPY<float>* nopstep = g4evt->getNopstepData();  
 
     const G4ThreeVector& pos = point->GetPosition();
     G4double time = point->GetGlobalTime();

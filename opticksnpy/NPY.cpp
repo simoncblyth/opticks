@@ -525,7 +525,6 @@ NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
 
     unsigned int size = src->getNumBytes(1);  // item size in bytes (from dimension 1)  
 
-
     char* sbytes = (char*)src->getBytes();
     char* dbytes = (char*)dst->getBytes();
 
@@ -548,6 +547,36 @@ NPY<T>* NPY<T>::make_like(NPY<T>* src)
      dst->zero();
      return dst ; 
 }
+
+
+template <typename T>
+NPY<T>* NPY<T>::clone()
+{
+    return NPY<T>::copy(this) ;
+}
+
+template <typename T>
+NPY<T>* NPY<T>::copy(NPY<T>* src)
+{
+    NPY<T>* dst = NPY<T>::make_like(src);
+   
+    unsigned int size = src->getNumBytes(0);  // total size in bytes 
+    char* sbytes = (char*)src->getBytes();
+    char* dbytes = (char*)dst->getBytes();
+    memcpy( (void*)dbytes, (void*)sbytes, size );
+
+    NPYSpec* spec = src->getBufferSpec();
+
+    dst->setBufferSpec(spec ? spec->clone() : NULL);
+    dst->setBufferControl(src->getBufferControl());
+    dst->setActionControl(src->getActionControl());
+
+    // hmm what about BufferId ???
+
+    return dst ; 
+}
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::make_dbg_like(NPY<T>* src, int label_)
