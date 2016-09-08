@@ -1,4 +1,5 @@
-#include "OKPropagator.hh"
+#include "SLog.hh"
+
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -10,6 +11,7 @@
 #include "OpticksHub.hh"    // opticksgeo-
 #include "OpticksIdx.hh"    // opticksgeo-
 
+#include "OKPropagator.hh"
 #include "OKGLTracer.hh"     // optixgl-
 #include "OpEngine.hh"  // opticksop-
 
@@ -32,6 +34,7 @@
 
 OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz) 
     :
+    m_log(new SLog("OKPropagator::OKPropagator")),
     m_hub(hub),    
     m_idx(idx),
     m_viz(viz),    

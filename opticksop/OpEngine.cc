@@ -1,3 +1,6 @@
+
+#include "SLog.hh"
+
 #include "Opticks.hh"  // okc-
 #include "OpticksHub.hh" // okg-
 
@@ -19,6 +22,7 @@ OContext* OpEngine::getOContext()
 
 OpEngine::OpEngine(OpticksHub* hub) 
      : 
+      m_log(new SLog("OpEngine::OpEngine")),
       m_hub(hub),
       m_ok(m_hub->getOpticks()),
       m_imp(new OEngineImp(m_hub)),

@@ -98,8 +98,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
       static Index* loadMaterialIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
-
-
+      static NPYSpec* GenstepSpec();
    public:
        static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);
@@ -138,12 +137,13 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        static const char* recsel_  ;
        static const char* sequence_  ;
    public:
-       void checkData(const char* name);
        NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
+   private:
+       void setBufferControl(NPYBase* data);
    public:
        Parameters* getParameters();
        Timer*      getTimer();

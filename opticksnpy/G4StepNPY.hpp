@@ -3,23 +3,9 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <string>
 template <typename T> class NPY ; 
 class NLookup ; 
-
-//
-// hmm CerenkovStep and ScintillationStep have same shapes but different meanings see
-//     /usr/local/env/chroma_env/src/chroma/chroma/cuda/cerenkov.h
-//     /usr/local/env/chroma_env/src/chroma/chroma/cuda/scintillation.h
-//
-//  but whats needed for visualization should be in the same locations ?
-//
-//
-// resist temptation to use inheritance here, 
-// it causes much grief for little benefit 
-// instead if needed use "friend class" status to 
-// give G4StepNPY access to innards of NPY
-//
- 
 
 #include "NPY_API_EXPORT.hh"
 
@@ -37,6 +23,7 @@ class NPY_API G4StepNPY {
        void countPhotons();
        int getNumPhotons(int label);
        int getNumPhotons();
+       std::string description();
        void Summary(const char* msg="G4StepNPY::Summary");
    public:  
        void setLookup(NLookup* lookup);
@@ -46,8 +33,6 @@ class NPY_API G4StepNPY {
        void dumpLines(const char* msg);
    public:  
        int  getStepId(unsigned int i=0);
-       //bool isCerenkovStep(unsigned int i=0);
-       //bool isScintillationStep(unsigned int i=0);
   private:
        // the heart of the lookup:  int bcode = m_lookup->a2b(acode) ;
        bool applyLookup(unsigned int index);

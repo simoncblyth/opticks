@@ -2,6 +2,7 @@
 
 class NConfigurable ; 
 
+#include "SLog.hh"
 #include "Timer.hpp"
 
 #include "Opticks.hh"       // okc-
@@ -29,23 +30,10 @@ class NConfigurable ;
     }
 
 
-
-/*
-
-Ordering issue in INTEROP,  
-cannot create OEvent buffers as gensteps
-not yet uploaded to OpenGL when OKPropagator
-is being made
-
-OR maybe they are, just I was fabricating dummy gensteps ?
-
-
-*/
-
-
 OKMgr::OKMgr(int argc, char** argv) 
     :
-    m_ok(new Opticks(argc, argv, false)),   // false: NOT integrated running
+    m_log(new SLog("OKMgr::OKMgr")),
+    m_ok(new Opticks(argc, argv, false)),   // false: NOT OKG4 integrated running
     m_hub(new OpticksHub(m_ok, true)),      // true: immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
@@ -55,7 +43,7 @@ OKMgr::OKMgr(int argc, char** argv)
     m_count(0)
 {
     init();
-    LOG(fatal) << "OKMgr::OKMgr DONE" ;
+    (*m_log)("DONE");
 }
 
 void OKMgr::init()

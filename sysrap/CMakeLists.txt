@@ -38,6 +38,7 @@ set(SOURCES
     SLauncher.cc
     SRenderer.cc
     STimes.cc
+    SLog.cc
     md5.cc
 ) 
 
@@ -54,6 +55,7 @@ set(HEADERS
     SLauncher.hh
     SRenderer.hh
     STimes.hh
+    SLog.hh
 )
 
 add_library( ${name}  SHARED ${SOURCES})

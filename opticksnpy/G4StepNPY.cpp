@@ -131,28 +131,36 @@ void G4StepNPY::checkCounts(std::vector<int>& counts, const char* msg)
 
 
 
-void G4StepNPY::Summary(const char* msg)
+std::string G4StepNPY::description()
 {
-    LOG(info) << msg ; 
-
+    std::stringstream ss ; 
     int total(0) ; 
-
     for(std::map<int,int>::const_iterator it=m_photons.begin() ; it != m_photons.end() ; it++)
     {
         int label = it->first ; 
         int numPhotons = it->second ; 
         total += numPhotons ; 
-        std::cout
+        ss   << " [ "
              << std::setw(10) << label 
              << std::setw(10) << numPhotons
-             << std::endl ; 
+             << " ] "
+             ;
     }
 
     assert(total == m_total_photons);
-    std::cout
+    ss       << " [ "
              << std::setw(10) << "total"
              << std::setw(10) << m_total_photons
-             << std::endl ; 
+             << " ] " 
+             ;
+
+    return ss.str();
+}
+
+void G4StepNPY::Summary(const char* msg)
+{
+    LOG(info) << msg << description() ; 
+
 }
 
 int G4StepNPY::getNumPhotons(int label)
@@ -167,7 +175,7 @@ int G4StepNPY::getNumPhotons()
 
 void G4StepNPY::checklabel(int xlabel, int ylabel)
 {
-    LOG(info)<<"G4StepNPY::checklabel" 
+    LOG(debug)<<"G4StepNPY::checklabel" 
              << " xlabel " << xlabel 
              << " ylabel " << ylabel 
              ;

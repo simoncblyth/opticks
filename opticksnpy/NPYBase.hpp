@@ -91,13 +91,18 @@ class NPY_API NPYBase {
        unsigned long long  getActionControl();
        unsigned long long* getActionControlPtr();
 
-       void         setBufferName(const char* name);
+
+       void         setBufferSpec(NPYSpec* spec);
+       NPYSpec*     getBufferSpec();
        const char*  getBufferName();
 
        void         setAux(void* aux);
        void*        getAux();
        void         setDynamic(bool dynamic=true);
        bool         isDynamic();    // used by oglrap-/Rdr::upload
+
+   private:
+       void         setBufferName(const char* name);
    public:
        // NumPy static persistency path/dir providers moved to brap-/BOpticksEvent
 
@@ -136,6 +141,7 @@ class NPY_API NPYBase {
        unsigned int       m_nl ; 
        NPYSpec*           m_shape_spec ; 
        NPYSpec*           m_item_spec ; 
+       NPYSpec*           m_buffer_spec ; 
 
        unsigned char      m_sizeoftype ; 
        Type_t             m_type ; 

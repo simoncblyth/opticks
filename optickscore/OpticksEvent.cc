@@ -12,6 +12,7 @@
 #include <cassert>
 #include <sstream>
 #include <cstring>
+#include <iomanip>
 
 // sysrap-
 #include "STimes.hh"
@@ -240,37 +241,30 @@ void OpticksEvent::setMaxRec(unsigned int maxrec)
 
 NPY<float>* OpticksEvent::getGenstepData()
 { 
-     checkData(OpticksEvent::genstep_);
      return m_genstep_data ;
 }
 NPY<float>* OpticksEvent::getNopstepData() 
 { 
-     checkData(OpticksEvent::nopstep_);
      return m_nopstep_data ; 
 }
 NPY<float>* OpticksEvent::getPhotonData()
 {
-     checkData(OpticksEvent::photon_);
      return m_photon_data ; 
 } 
 NPY<short>* OpticksEvent::getRecordData()
 { 
-    checkData(OpticksEvent::record_);
     return m_record_data ; 
 }
 NPY<unsigned char>* OpticksEvent::getPhoselData()
 { 
-    checkData(OpticksEvent::phosel_);
     return m_phosel_data ;
 }
 NPY<unsigned char>* OpticksEvent::getRecselData()
 { 
-    checkData(OpticksEvent::recsel_);
     return m_recsel_data ; 
 }
 NPY<unsigned long long>* OpticksEvent::getSequenceData()
 { 
-    checkData(OpticksEvent::sequence_);
     return m_sequence_data ;
 }
 
@@ -593,6 +587,13 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
 
 */
 
+
+NPYSpec* OpticksEvent::GenstepSpec()
+{
+    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
+}
+
+
 void OpticksEvent::createSpec()
 {
     // invoked by Opticks::makeEvent   or OpticksEvent::load
@@ -605,7 +606,7 @@ void OpticksEvent::createSpec()
     // Better for the tags to be easy to find, ie not the same as OptiX RT_ tags
     //
 
-    m_genstep_spec = new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
+    m_genstep_spec = GenstepSpec();
 
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,PTR_FROM_OPENGL") ;
 
@@ -641,37 +642,36 @@ void OpticksEvent::createSpec()
 }
 
 
-void OpticksEvent::checkData(const char* name)
+
+
+void OpticksEvent::setBufferControl(NPYBase* data)
 {
-    NPYBase* data = getData(name);
-    NPYSpec* spec = getSpec(name);
-    if(!data) return ; 
-    assert(spec);
+    NPYSpec* spec = data->getBufferSpec();
+    const char* name = data->getBufferName(); 
 
-    const char* sctrl_ = spec->getCtrl() ;
-    unsigned long long sctrl = OpticksBufferControl::Parse(sctrl_); 
-    unsigned long long dctrl = data->getBufferControl();
-
-
-    if(dctrl == 0 && sctrl != 0)
+    if(!spec)
     {
-        LOG(info) << " setting buffer ctrl "
-                  << " name " << name
-                  << " dctrl " << dctrl 
-                  << " : " << OpticksBufferControl::Description(dctrl)
-                  << " sctrl " << sctrl 
-                  << " : " << OpticksBufferControl::Description(sctrl)
-                  ;
 
-        // plant the mode in each buffer control : for unification 
-        if(m_mode->isCompute()) sctrl |= OpticksBufferControl::COMPUTE_MODE ; 
-        if(m_mode->isInterop()) sctrl |= OpticksBufferControl::INTEROP_MODE ; 
+        LOG(fatal) << "OpticksEvent::setBufferControl"
+                     << " SKIPPED FOR " << name 
+                     << " AS NO spec "
+                     ;
 
-        data->setBufferControl(sctrl);
+        assert(0);
+        return ; 
     }
+
+
+    OpticksBufferControl ctrl(data->getBufferControlPtr());
+    ctrl.add(spec->getCtrl());
+
+    if(m_mode->isCompute()) ctrl.add(OpticksBufferControl::COMPUTE_MODE_) ; 
+    if(m_mode->isInterop()) ctrl.add(OpticksBufferControl::INTEROP_MODE_) ; 
+
+     LOG(info) << std::setw(10) << name 
+               << " : " << ctrl.description("(spec)") 
+               ;
 }
-
-
 
 
 
@@ -786,11 +786,12 @@ void OpticksEvent::importDomainsBuffer()
 
 
 
-void OpticksEvent::setGenstepData(NPY<float>* genstep, bool progenitor)
+void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 {
+    setBufferControl(genstep_data);
 
-    m_genstep_data = genstep  ;
-    m_parameters->add<std::string>("genstepDigest",   genstep->getDigestString()  );
+    m_genstep_data = genstep_data  ;
+    m_parameters->add<std::string>("genstepDigest",   m_genstep_data->getDigestString()  );
 
     //                                                j k l sz   type        norm   iatt  item_from_dim
     ViewNPY* vpos = new ViewNPY("vpos",m_genstep_data,1,0,0,4,ViewNPY::FLOAT,false,false, 1);    // (x0, t0)                     2nd GenStep quad 
@@ -819,6 +820,8 @@ const glm::vec4& OpticksEvent::getGenstepCenterExtent()
 
 void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 {
+    setBufferControl(photon_data);
+
     m_photon_data = photon_data  ;
     if(m_num_photons == 0) 
     {
@@ -872,6 +875,8 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 
 void OpticksEvent::setNopstepData(NPY<float>* nopstep)
 {
+    setBufferControl(nopstep);
+
     m_nopstep_data = nopstep  ;
     if(!nopstep) return ; 
 
@@ -895,6 +900,8 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
 
 void OpticksEvent::setRecordData(NPY<short>* record_data)
 {
+    setBufferControl(record_data);
+
     m_record_data = record_data  ;
 
 
@@ -946,6 +953,8 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 
 void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
 {
+    setBufferControl(phosel_data);
+
     m_phosel_data = phosel_data ;
     if(!m_phosel_data) return ; 
 
@@ -967,6 +976,8 @@ delta:gl blyth$
 
 void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
 {
+    setBufferControl(recsel_data);
+
     m_recsel_data = recsel_data ;
 
     if(!m_recsel_data) return ; 
@@ -995,6 +1006,8 @@ delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
 
 void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
 {
+    setBufferControl(sequence_data);
+
     m_sequence_data = sequence_data  ;
     assert(sizeof(unsigned long long) == 4*sizeof(unsigned short));  
     //

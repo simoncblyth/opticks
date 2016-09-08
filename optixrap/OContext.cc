@@ -359,12 +359,17 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
               ;
 
     unsigned int type(0);
+    bool noctrl = false ; 
     
     if(      ctrl("OPTIX_INPUT_OUTPUT") )  type = RT_BUFFER_INPUT_OUTPUT ;
     else if( ctrl("OPTIX_OUTPUT_ONLY")  )  type = RT_BUFFER_OUTPUT  ;
     else if( ctrl("OPTIX_INPUT_ONLY")   )  type = RT_BUFFER_INPUT  ;
-    else  assert(0 && "ERR no buffer control ") ;
-    
+    else                                   noctrl = true ; 
+   
+    if(noctrl) LOG(fatal) << "no buffer control for " << name << ctrl.description("") ;
+    assert(!noctrl);
+
+ 
     if( ctrl("BUFFER_COPY_ON_DIRTY") )     type |= RT_BUFFER_COPY_ON_DIRTY ;
 
 

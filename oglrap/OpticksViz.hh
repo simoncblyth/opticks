@@ -1,5 +1,6 @@
 #pragma once
 
+class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
 class OpticksGeometry ; 
@@ -59,6 +60,7 @@ class OGLRAP_API OpticksViz {
          void downloadData(NPY<float>* data);
          void downloadEvent();
     private:
+         SLog*         m_log ; 
          OpticksHub*   m_hub ; 
          OpticksGeometry* m_geometry ; 
          OpticksIdx*   m_idx ; 

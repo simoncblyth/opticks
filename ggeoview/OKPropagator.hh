@@ -1,5 +1,6 @@
 #pragma once
 
+class SLog ; 
 template <typename T> class NPY ; 
 
 class OpticksHub ; 
@@ -23,6 +24,7 @@ class GGV_API OKPropagator {
    private:
        void init();
    private:
+       SLog*          m_log ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        OpticksViz*    m_viz ; 

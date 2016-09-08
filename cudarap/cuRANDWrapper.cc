@@ -12,10 +12,11 @@
 #include "curand_kernel.h"
 
 
-cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset )
+cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset, bool verbose )
            :
            m_seed(seed),
            m_offset(offset),
+           m_verbose(verbose),
            m_dev_rng_states(0),
            m_host_rng_states(0),
            m_test(0),
@@ -37,6 +38,12 @@ unsigned int cuRANDWrapper::getOffset()
 { 
     return m_offset ; 
 }
+bool cuRANDWrapper::isVerbose()
+{
+    return m_verbose ; 
+}
+
+
 LaunchSequence* cuRANDWrapper::getLaunchSequence()
 { 
     return m_launchseq ; 
@@ -300,6 +307,7 @@ int cuRANDWrapper::Save()
 
 int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements)
 {
+    if(m_verbose)
     printf("cuRANDWrapper::LoadIntoHostBuffer\n");
 
     assert( elements == getItems()); 
@@ -314,11 +322,13 @@ int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int
         char* path = getCachePath() ;
         if(hasCache())
         {
+            if(m_verbose)
             printf("cuRANDWrapper::LoadIntoHostBuffer : loading from cache %s \n", path);
 
             int rc = Load(path);
             assert(rc == 0);
             char* load_digest = digest() ;
+            if(m_verbose)
             printf("cuRANDWrapper::LoadIntoHostBuffer %u items from %s load_digest %s \n", getItems(), path, load_digest);
             memcpy((void*)host_rng_states, (void*)m_host_rng_states, sizeof(curandState)*getItems());
 
@@ -448,19 +458,22 @@ cuRANDWrapper* cuRANDWrapper::instanciate(
          unsigned long long seed,
          unsigned long long offset,
          unsigned int max_blocks,
-         unsigned int threads_per_block
+         unsigned int threads_per_block,
+         bool verbose
      )
 {
     LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks ) ;
-    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset);
+    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset, verbose);
     if(cachedir)
     {
+        if(verbose)
         printf("cuRANDWrapper::instanciate with cache enabled : cachedir %s\n", cachedir);
         crw->setCacheDir(cachedir);
         crw->setCacheEnabled(true);
     }
     else
     {
+        if(verbose)
         printf("cuRANDWrapper::instanciate with cache disabled\n");
         crw->setCacheEnabled(false);
     }
@@ -495,6 +508,7 @@ void cuRANDWrapper::resize(unsigned int elements)
 
 int cuRANDWrapper::fillHostBuffer(curandState* host_rng_states, unsigned int elements)
 {
+    if(m_verbose)
     printf("cuRANDWrapper::fillHostBuffer\n");
 
     int rc = LoadIntoHostBuffer(host_rng_states, elements );
@@ -502,7 +516,6 @@ int cuRANDWrapper::fillHostBuffer(curandState* host_rng_states, unsigned int ele
     return rc ;
 
 }
-
 
 
 

@@ -79,7 +79,7 @@ void OpticksGeometry::init()
     bool geocache = !m_fcfg->hasOpt("nogeocache") ;
     bool instanced = !m_fcfg->hasOpt("noinstanced") ; // find repeated geometry 
 
-    LOG(info) << "OpticksGeometry::init"
+    LOG(debug) << "OpticksGeometry::init"
               << " geocache " << geocache 
               << " instanced " << instanced
               ;
@@ -185,7 +185,7 @@ void OpticksGeometry::loadGeometry()
 {
     bool modify = m_opticks->hasOpt("test") ;
 
-    LOG(info) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
+    LOG(debug) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
 
     loadGeometryBase();
 
@@ -312,7 +312,7 @@ void OpticksGeometry::configureGeometry()
 
     int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(info) << "OpticksGeometry::configureGeometry" 
+    LOG(debug) << "OpticksGeometry::configureGeometry" 
               << " restrict_mesh " << restrict_mesh
               << " analytic_mesh " << analytic_mesh
               << " nmm " << nmm
@@ -380,7 +380,7 @@ void OpticksGeometry::registerGeometry()
     m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
 
 
-    LOG(fatal) << "OpticksGeometry::registerGeometry setting opticks SpaceDomain : " 
+    LOG(debug) << "OpticksGeometry::registerGeometry setting opticks SpaceDomain : " 
                       << " x " << ce0.x
                       << " y " << ce0.y
                       << " z " << ce0.z

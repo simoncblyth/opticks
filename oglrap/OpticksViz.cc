@@ -1,6 +1,7 @@
 #include <cstring>
 
 // sysrap-
+#include "SLog.hh"
 #include "SLauncher.hh"
 #include "SRenderer.hh"
 
@@ -66,6 +67,7 @@
 
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
+    m_log(new SLog("OpticksViz::OpticksViz")),
     m_hub(hub),
     m_geometry(m_hub->getGeometry()),
     m_idx(idx),

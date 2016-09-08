@@ -456,7 +456,7 @@ void Opticks::configureDomains()
    int x_rng_max = getRngMax() ;
 
    if(e_rng_max != x_rng_max)
-       LOG(fatal) << "Opticks::configureDomains"
+       LOG(trace) << "Opticks::configureDomains"
                   << " CUDAWRAP_RNG_MAX " << e_rng_max 
                   << " x_rng_max " << x_rng_max 
                   ;
@@ -521,13 +521,6 @@ const char* Opticks::getSourceType()
 
 const char* Opticks::getEventTag()
 {
-
-    if(!m_tag)
-    {
-        m_tag = strdup(m_cfg->getEventTag().c_str());
-
-    }
-
     return m_spec->getTag();
 }
 int Opticks::getEventITag()
@@ -588,6 +581,14 @@ OpticksEventSpec* Opticks::getEventSpec()
 OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
     m_event_count += 1 ; 
+
+
+    LOG(info) << "Opticks::makeEvent" 
+              << ( ok ? " OK " : " G4 " )
+              << " tagoffset " << tagoffset 
+              << " id " << m_event_count 
+              ;
+
 
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
     evt->setId(m_event_count) ; 

@@ -1,5 +1,7 @@
 #pragma once
 
+class SLog ; 
+
 class Opticks ;       // okc-
 class OpticksHub ;    // okg-
 
@@ -39,6 +41,7 @@ class OKOP_API OpEngine {
        void downloadPhotonData();       // see App::dbgSeed
 
     private:
+       SLog*                m_log ; 
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
        OEngineImp*          m_imp ; 

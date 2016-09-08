@@ -46,7 +46,7 @@ class LaunchSequence ;
 
 class CUDARAP_API cuRANDWrapper {
   public: 
-     cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0 );
+     cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed=0, unsigned long long offset=0, bool verbose=false);
  
      static cuRANDWrapper* instanciate(
          unsigned int elements, 
@@ -54,13 +54,15 @@ class CUDARAP_API cuRANDWrapper {
          unsigned long long seed=0,
          unsigned long long offset=0,
          unsigned int max_blocks=128,
-         unsigned int threads_per_block=256
+         unsigned int threads_per_block=256,
+         bool verbose=false
      );
 
   public: 
      char* getCachePath();
      unsigned int getSeed();
      unsigned int getOffset();
+     bool isVerbose();
      LaunchSequence* getLaunchSequence();
      unsigned int getItems();
      bool isOwner();
@@ -109,6 +111,7 @@ class CUDARAP_API cuRANDWrapper {
   private:
      unsigned long long m_seed ;
      unsigned long long m_offset ;
+     bool               m_verbose ; 
 
   private:
      CUdeviceptr      m_dev_rng_states ;

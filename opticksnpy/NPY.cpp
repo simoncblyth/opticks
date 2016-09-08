@@ -437,10 +437,10 @@ NPY<T>* NPY<T>::make(NPYSpec* argspec)
     }
     assert( spec_match && "NPY<T>::make spec mismatch " );
 
-    npy->setBufferName(argspec->getName());
-
+    npy->setBufferSpec(argspec);  // also sets BufferName
     return npy ; 
 }
+
 
 
 

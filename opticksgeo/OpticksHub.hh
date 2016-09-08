@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 
+class SLog ; 
 class BCfg ; 
 class Timer ; 
 
@@ -124,6 +125,7 @@ class OKGEO_API OpticksHub {
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void setupInputGensteps();
    private:
+       SLog*            m_log ; 
        Opticks*         m_ok ; 
        bool             m_immediate ; 
        OpticksGeometry* m_geometry ; 

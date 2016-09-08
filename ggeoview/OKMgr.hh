@@ -1,5 +1,7 @@
 #pragma once
 
+class SLog ; 
+
 template <typename T> class NPY ; 
 class Opticks ; 
 class OpticksHub ; 
@@ -26,6 +28,7 @@ class GGV_API OKMgr {
    private:
        void init();
    private:
+       SLog*          m_log ; 
        Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 

@@ -58,7 +58,7 @@ void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* ap
     assert(!m_closed);
 
     m_alabel = strdup(alabel);
-    LOG(info) << "NLookup::setA " << alabel  ; 
+    LOG(debug) << "NLookup::setA " << alabel  ; 
 
     for(MSU::const_iterator it=A.begin() ; it != A.end() ; it++)
     {
@@ -76,7 +76,7 @@ void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bp
     assert(!m_closed);
 
     m_blabel = strdup(blabel);
-    LOG(info) << "NLookup::setB " << blabel  ; 
+    LOG(debug) << "NLookup::setB " << blabel  ; 
     for(MSU::const_iterator it=B.begin() ; it != B.end() ; it++)
     {
         const char* name = it->first.c_str() ; 

@@ -551,7 +551,7 @@ unsigned int GBndLib::getMaterialLine(const char* shortname_)
         } 
     }
 
-    LOG(info) << "GBndLib::getMaterialLine"
+    LOG(trace) << "GBndLib::getMaterialLine"
               << " shortname_ " << shortname_ 
               << " line " << line 
               ; 

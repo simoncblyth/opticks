@@ -64,6 +64,7 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
          :
          m_shape_spec(NULL),
          m_item_spec(NULL),
+         m_buffer_spec(NULL),
          m_sizeoftype(sizeoftype),
          m_type(type),
          m_buffer_id(-1),
@@ -101,11 +102,10 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
 {
     return m_shape_spec ; 
 }
- NPYSpec* NPYBase::getItemSpec()
+NPYSpec* NPYBase::getItemSpec()
 {
     return m_item_spec ; 
 }
-
 
 
 
@@ -219,15 +219,26 @@ unsigned long long* NPYBase::getActionControlPtr()
 
 
 
-
 void NPYBase::setBufferName(const char* name )
 {
     m_buffer_name = name ? strdup(name) : NULL  ;  
 }
+void NPYBase::setBufferSpec(NPYSpec* spec)
+{
+    // set when OpticksEvent uses the ctor  NPY<T>::make(NPYSpec* )
+    m_buffer_spec = spec ; 
+    setBufferName(spec->getName());
+}
+
 const char* NPYBase::getBufferName()
 {
     return m_buffer_name ;  
 }
+NPYSpec* NPYBase::getBufferSpec()
+{
+    return m_buffer_spec ; 
+}
+
 
 
 

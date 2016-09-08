@@ -1,3 +1,6 @@
+// sysrap-
+#include "SLog.hh"
+
 // brap-
 #include "BCfg.hh"
 #include "BMap.hh"
@@ -68,6 +71,7 @@
 
 OpticksHub::OpticksHub(Opticks* opticks, bool immediate) 
    :
+   m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(opticks),
    m_immediate(immediate),
    m_geometry(NULL),
@@ -92,6 +96,7 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_bookmarks(NULL)
 {
    init();
+   (*m_log)("DONE");
 }
 
 
@@ -268,6 +273,8 @@ OpticksEvent* OpticksHub::getZeroEvent()
 
 void OpticksHub::setGensteps(NPY<float>* gs)
 {
+    gs->setBufferSpec(OpticksEvent::GenstepSpec());
+
     m_gensteps = gs ; 
     m_g4step = new G4StepNPY(gs);    
     m_zero = m_ok->makeEvent(true) ;
@@ -304,7 +311,7 @@ void OpticksHub::setGensteps(NPY<float>* gs)
     }
     else if(gs_torch)
     {
-        LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
+        LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
         m_g4step->checklabel(TORCH); 
     }
     else
@@ -317,16 +324,19 @@ void OpticksHub::setGensteps(NPY<float>* gs)
 
     m_g4step->countPhotons();
 
-    std::stringstream ss ; 
-    ss << "OpticksHub::setGensteps " 
-       << " TORCH: " << TORCH 
-       << " CERENKOV: " << CERENKOV 
-       << " SCINTILLATION: " << SCINTILLATION  
-       << " G4GUN: " << G4GUN  
-       ;
+    LOG(info) 
+         << " Keys "
+         << " TORCH: " << TORCH 
+         << " CERENKOV: " << CERENKOV 
+         << " SCINTILLATION: " << SCINTILLATION  
+         << " G4GUN: " << G4GUN  
+         ;
+
+     LOG(info) 
+         << " counts " 
+         << m_g4step->description()
+         ;
  
-    std::string key = ss.str();
-    m_g4step->Summary(key.c_str());
 
 }
 
@@ -348,7 +358,7 @@ TorchStepNPY* OpticksHub::makeTorchstep()
         unsigned int matline = m_ggeo->getMaterialLine(material);
         torchstep->setMaterialLine(matline);  
 
-        LOG(fatal) << "OpticksHub::makeGenstepTorch"
+        LOG(debug) << "OpticksHub::makeGenstepTorch"
                    << " config " << torchstep->getConfig() 
                    << " material " << material 
                    << " matline " << matline
@@ -511,7 +521,7 @@ void OpticksHub::configureLookupA()
     const char* path = m_ok->getMaterialMap(); 
     const char* prefix = m_ok->getMaterialPrefix(); 
 
-    LOG(info) << "OpticksHub::configureLookupA"
+    LOG(debug) << "OpticksHub::configureLookupA"
               << " loading genstep material index map "
               << " path " << path
               << " prefix " << prefix

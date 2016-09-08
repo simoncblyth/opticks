@@ -207,8 +207,8 @@ class OKCORE_API Opticks {
        Parameters*          m_parameters ; 
    private:
        const char*          m_detector ; 
-       const char*          m_tag ; 
-       const char*          m_cat ; 
+       //const char*          m_tag ; 
+       //const char*          m_cat ; 
        unsigned             m_event_count ; 
    private:
        bool                 m_domains_configured ;  
