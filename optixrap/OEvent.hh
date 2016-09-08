@@ -1,6 +1,8 @@
 #pragma once
 
 #include "OXPPNS.hh"
+
+class SLog ; 
 class OpticksEvent ; 
 class OContext ; 
 class OBuf ; 
@@ -19,15 +21,19 @@ class OXRAP_API OEvent
     public:
         OEvent(OContext* ocontext, OpticksEvent* evt);
         void upload(OpticksEvent* evt);
-        void download(OpticksEvent* evt, unsigned mask=DEFAULT );
+        void download(unsigned mask=DEFAULT );
     public:
+        OpticksEvent* getEvent();
         OBuf* getSequenceBuf();
         OBuf* getPhotonBuf();
         OBuf* getGenstepBuf();
         OBuf* getRecordBuf();
     private:
         void init(OpticksEvent* evt);
+        void setEvent(OpticksEvent* evt);
+        void download(OpticksEvent* evt, unsigned mask=DEFAULT );
     private:
+        SLog*           m_log ; 
         OContext*       m_ocontext ; 
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 

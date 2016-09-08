@@ -37,14 +37,15 @@ const char* OContext::getModeName()
 }
 
 
-OContext::OContext(optix::Context context, Mode_t mode, bool with_top) 
+OContext::OContext(optix::Context context, Mode_t mode, bool with_top, bool verbose) 
     : 
     m_context(context),
     m_mode(mode),
     m_debug_photon(-1),
     m_entry(0),
     m_closed(false),
-    m_with_top(with_top)
+    m_with_top(with_top),
+    m_verbose(verbose)
 {
     init();
 }
@@ -194,8 +195,8 @@ void OContext::close()
     LOG(info) << "OContext::close numEntryPoint " << num ; 
 
     m_context->setEntryPointCount( num );
-  
-    m_cfg->dump("OContext::close");
+ 
+    if(m_verbose) m_cfg->dump("OContext::close");
 
     m_cfg->apply();
 }

@@ -1,5 +1,7 @@
 #include "OPropagator.hh"
 
+#include "SLog.hh"
+
 // optickscore-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
@@ -8,7 +10,6 @@
 // opticksgeo-
 #include "OpticksHub.hh"
 
-
 // optixrap-
 #include "OContext.hh"
 #include "OConfig.hh"
@@ -16,7 +17,6 @@
 #include "OEvent.hh"
 
 #include "OBuf.hh"
-#include "OBufPair.hh"
 
 // optix-
 #include <optixu/optixu.h>
@@ -24,16 +24,14 @@
 using namespace optix ; 
 
 // brap-
-#include "timeutil.hh"
+//#include "timeutil.hh"
 
 // npy-
-#include "GLMPrint.hpp"
-#include "NPY.hpp"
-
+//#include "GLMPrint.hpp"
+//#include "NPY.hpp"
 
 // cudawrap-  NB needs to be after namespace optix
 #include "cuRANDWrapper.hh"
-
 
 #include "PLOG.hh"
 
@@ -70,26 +68,16 @@ OBuf* OPropagator::getRecordBuf()
 
 
 
-STimes* OPropagator::getPrelaunchTimes()
-{
-    return m_prelaunch_times ; 
-}
-STimes* OPropagator::getLaunchTimes()
-{
-    return m_launch_times ; 
-}
-
 
 
 OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_) 
    :
+    m_log(new SLog("OPropagator::OPropagator")),
     m_ocontext(ocontext),
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_zero(hub->getZeroEvent()),
     m_oevt(new OEvent(m_ocontext, m_zero)),
-    m_prelaunch_times(new STimes),
-    m_launch_times(new STimes),
     m_prelaunch(false),
     m_entry_index(entry),
 
@@ -102,6 +90,7 @@ OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, in
     m_override(override_)
 {
     init();
+    (*m_log)("DONE");
 }
 
 
@@ -153,7 +142,7 @@ void OPropagator::initRng()
     }
     const char* rngCacheDir = m_ok->getRNGInstallCacheDir();
 
-    LOG(info) << "OPropagator::initRng"
+    LOG(debug) << "OPropagator::initRng"
                << " rng_max " << rng_max
                << " rngCacheDir " << rngCacheDir
                ;
@@ -185,65 +174,49 @@ void OPropagator::initRng()
 }
 
 
-
-
-void OPropagator::initEvent()
+void OPropagator::uploadEvent()
 {
     OpticksEvent* evt = m_hub->getOKEvent();
-
     if(!evt) return ;
 
     unsigned int numPhotons = evt->getNumPhotons();
-
     bool enoughRng = numPhotons <= m_ok->getRngMax() ;
 
     if(!enoughRng)
-    {
-        LOG(info) << "OPropagator::initEvent"
-                  << " not enoughRng "
-                  << " numPhotons " << numPhotons 
-                  << " rngMax " << m_ok->getRngMax()
-                  ;  
-    } 
+        LOG(fatal) << "OPropagator::uploadEvent"
+                   << " not enoughRng "
+                   << " numPhotons " << numPhotons 
+                   << " rngMax " << m_ok->getRngMax()
+                   ;  
 
     assert( enoughRng  && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons to be generated per invokation " );
 
-
-    m_width  = numPhotons ;
+    m_width  = m_override > 0 ? m_override : numPhotons ;
     m_height = 1 ;
 
-    LOG(info) << "OPropagator::initEvent count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
+    LOG(info) << "OPropagator::uploadEvent count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
 
     if(m_override > 0)
-    {
-        m_width = m_override ; 
         LOG(warning) << "OPropagator::initEvent OVERRIDE photon count for debugging to " << m_width ; 
-    }
 
 
     if( m_ocontext->isCompute() )
-    {
         m_oevt->upload(evt);
-    }
     else
-    {
         m_oevt = new OEvent(m_ocontext, evt) ;  // leaking resources in interop
-    }
 }
 
 
 
+void OPropagator::downloadEvent()
+{
+    m_oevt->download();
+}
 
-
-
-
-
-
-
-
-
-
-
+void OPropagator::downloadPhotonData()
+{
+    m_oevt->download(OEvent::PHOTON);
+}
 
 
 void OPropagator::prelaunch()
@@ -252,38 +225,25 @@ void OPropagator::prelaunch()
     if(!entry) LOG(fatal) << "OPropagator::prelaunch MISSING entry " ;
     assert(entry);
 
-    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, m_prelaunch_times); 
+    OpticksEvent* evt = m_oevt->getEvent(); 
+    STimes* prelaunch_times = evt->getPrelaunchTimes() ;
+
+    m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
     m_count += 1 ; 
     m_prelaunch = true ; 
+
+    LOG(info) << prelaunch_times->description("prelaunch_times");
 }
 
 void OPropagator::launch()
 {
     assert(m_prelaunch && "must prelaunch before launch");
-    m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, m_launch_times);
+
+    OpticksEvent* evt = m_oevt->getEvent(); 
+    STimes* launch_times = evt->getLaunchTimes() ;
+
+    m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
+
+    LOG(info) << launch_times->description("launch_times");
 }
-
-
-void OPropagator::dumpTimes(const char* msg)
-{
-    LOG(info) << msg ; 
-    LOG(info) << m_prelaunch_times->description("prelaunch_times");
-    LOG(info) << m_launch_times->description("launch_times");
-}
-
-
-void OPropagator::downloadEvent()
-{
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ;
-    m_oevt->download(evt);
-}
-
-void OPropagator::downloadPhotonData()
-{
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ;
-    m_oevt->download(evt, OEvent::PHOTON);
-}
-
 

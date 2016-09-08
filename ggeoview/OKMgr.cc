@@ -75,12 +75,13 @@ void OKMgr::action()
 void OKMgr::propagate()
 {
     m_count += 1 ; 
-    LOG(fatal) << "OKMgr::propagate " << m_count ; 
+
+    LOG(fatal) << "OKMgr::propagate(" << m_count << ")" ; 
     NPY<float>* gs = m_hub->getGensteps();  
 #ifdef WITH_OPTIX
     m_propagator->propagate(gs);
 #endif
-    LOG(fatal) << "OKMgr::propagate DONE " << m_count ; 
+    LOG(fatal) << "OKMgr::propagate(" << m_count << ") DONE"  ; 
 }
 
 

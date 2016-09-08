@@ -1,6 +1,6 @@
 #include "Timer.hpp"
 
-
+#include "SLog.hh"
 #include "OXPPNS.hh"
 
 #include "Opticks.hh"
@@ -54,6 +54,7 @@ OPropagator* OEngineImp::getOPropagator()
 
 OEngineImp::OEngineImp(OpticksHub* hub) 
      :   
+      m_log(new SLog("OEngineImp::OEngineImp")),
       m_timer(new Timer("OEngineImp::")),
       m_hub(hub),
       m_ok(hub->getOpticks()),
@@ -70,6 +71,7 @@ OEngineImp::OEngineImp(OpticksHub* hub)
       m_opropagator(NULL)
 {
       init();
+      (*m_log)("DONE");
 }
 
 void OEngineImp::init()
@@ -155,7 +157,6 @@ void OEngineImp::preparePropagator()
     bool seedtest   = m_cfg->hasOpt("seedtest");
     int  override_   = m_cfg->getOverride();
 
-
     LOG(trace) << "OEngineImp::preparePropagator" 
               << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
               << " override_ " << override_
@@ -166,41 +167,27 @@ void OEngineImp::preparePropagator()
     bool defer = true ; 
 
     if(trivial)
-    {
         entry = m_ocontext->addEntry("generate.cu.ptx", "trivial", "exception", defer);
-    }
     else if(seedtest)
-    {
         entry = m_ocontext->addEntry("seedTest.cu.ptx", "seedTest", "exception", defer);
-    }
     else
-    {
         entry = m_ocontext->addEntry("generate.cu.ptx", "generate", "exception", defer);
-    }
 
 
     m_opropagator = new OPropagator(m_ocontext, m_hub, entry, override_);   // prelaunch done in init
 
     LOG(trace) << "OEngineImp::preparePropagator DONE ";
-    
-
-   // attempt to prelaunch here, fails for lack of evt buffers
-   // this suggests to create empty buffers up front and 
-   // change content event by event ?
-   //
-   // optixrap-/tests/bufferTest.cc shows can prelaunch with zero sized buffers
 }
 
 
-
-void OEngineImp::initEvent()
+void OEngineImp::uploadEvent()
 {
     OpticksEvent* evt = m_hub->getOKEvent(); 
     assert(evt);
 
     TIMER("_initEvent");
 
-    m_opropagator->initEvent();
+    m_opropagator->uploadEvent();
 
     TIMER("initEvent");
 }
@@ -210,30 +197,14 @@ void OEngineImp::propagate()
 {
     LOG(trace)<< "OEngineImp::propagate" ;
 
-   // m_opropagator->prelaunch();
-   //
-   // TIMER("prelaunch");
-
     m_opropagator->launch();
 
     TIMER("propagate");
 
-    m_opropagator->dumpTimes("OEngineImp::propagate");
 }
 
 
-void OEngineImp::downloadPhotonData()
-{
-    OpticksEvent* evt = m_hub->getEvent(); 
-    if(!evt) return ;
-
-    if(m_ok->isCompute())
-    {
-        m_opropagator->downloadPhotonData();
-    }
-}
-
-void OEngineImp::downloadEvt()
+void OEngineImp::downloadEvent()
 {
     OpticksEvent* evt = m_hub->getOKEvent(); 
     if(!evt) return ;
@@ -259,4 +230,13 @@ void OEngineImp::cleanup()
 }
 
 
+void OEngineImp::downloadPhotonData()
+{
+    OpticksEvent* evt = m_hub->getEvent(); 
+    if(!evt) return ;
 
+    if(m_ok->isCompute())
+    {
+        m_opropagator->downloadPhotonData();
+    }
+}

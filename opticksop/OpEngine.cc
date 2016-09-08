@@ -31,6 +31,7 @@ OpEngine::OpEngine(OpticksHub* hub)
       m_indexer(new OpIndexer(m_hub, m_imp))
 {
    init();
+   (*m_log)("DONE");
 }
 
 void OpEngine::init()
@@ -41,7 +42,7 @@ void OpEngine::init()
 
 void OpEngine::propagate()
 {
-    m_imp->initEvent();                   // creates OptiX buffers, uploads gensteps
+    m_imp->uploadEvent();                   // creates OptiX buffers, uploads gensteps
 
     m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer
 
@@ -58,7 +59,7 @@ void OpEngine::propagate()
 
 void OpEngine::downloadEvt()
 {
-    m_imp->downloadEvt();
+    m_imp->downloadEvent();
 }
 void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffer overwrite in interop mode on Linux)
 {

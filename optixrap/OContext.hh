@@ -30,7 +30,7 @@ class OXRAP_API OContext {
         static const char* INTEROP_ ; 
 
      public:
-            OContext(optix::Context context, Mode_t mode, bool with_top=true);
+            OContext(optix::Context context, Mode_t mode, bool with_top=true, bool verbose=false);
             void cleanUp();
      public:
             const char* getModeName();
@@ -90,6 +90,7 @@ class OXRAP_API OContext {
             unsigned int      m_entry ; 
             bool              m_closed ; 
             bool              m_with_top ; 
+            bool              m_verbose ; 
 };
 
 

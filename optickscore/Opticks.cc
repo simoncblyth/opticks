@@ -591,6 +591,9 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
 
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
+
+    //assert(m_event_count < 3 );
+
     evt->setId(m_event_count) ; 
 
 

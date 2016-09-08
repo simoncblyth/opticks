@@ -43,11 +43,11 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     m_tracer(m_viz ? new OKGLTracer(m_engine,m_viz, true) : NULL )
 {
     init();
+    (*m_log)("DONE");
 }
 
 void OKPropagator::init()
 {
-    LOG(fatal) << "OKPropagator::OKPropagator DONE" ;
 }
 
 void OKPropagator::propagate(NPY<float>* genstep)
@@ -60,7 +60,9 @@ void OKPropagator::propagate(NPY<float>* genstep)
          return ;   
     }
 
+    LOG(fatal) << "OKPropagator::propagate calling initOKEvent "  ;
     m_hub->initOKEvent(genstep);
+    LOG(fatal) << "OKPropagator::propagate calling initOKEvent DONE "  ;
 
     if(m_viz)
     { 
@@ -70,8 +72,8 @@ void OKPropagator::propagate(NPY<float>* genstep)
     }
 
 
+    LOG(fatal) << "OKPropagator::propagate calling propagate "  ;
     m_engine->propagate();           // perform OptiX GPU propagation 
-
 
 
     m_idx->indexBoundariesHost();

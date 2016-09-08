@@ -20,6 +20,7 @@
 // brap-
 #include "BStr.hh"
 #include "BTime.hh"
+#include "BFile.hh"
 #include "BOpticksResource.hh"
 #include "BOpticksEvent.hh"
 
@@ -514,6 +515,7 @@ std::string OpticksEvent::getShapeString()
     }
     return ss.str();
 }
+
 
 
 
@@ -1459,32 +1461,12 @@ bool OpticksEvent::isIndexed()
 }
 
 
-NPY<float>* OpticksEvent::loadGenstepDerivativeFromFile(const char* postfix, bool quietly)
+NPY<float>* OpticksEvent::loadGenstepDerivativeFromFile(const char* stem)
 {
-
-    char stem[128];
-    snprintf(stem, 128, "%s_%s", m_tag, postfix );
-
     std::string path = BOpticksEvent::path(m_det, m_typ, m_tag, stem, ".npy" ); // top/sub/tag/stem/ext
+    bool exists = BFile::ExistsFile(path.c_str()) ;
 
-/*
-simon:optickscore blyth$ mdfind -name 1_track.npy
-/usr/local/env/opticks/dayabay/cerenkov/1_track.npy
-/usr/local/env/opticks/juno/cerenkov/1_track.npy
-
-    ## note the gensteps were special in that they had no prefix 
-    ## on the directory 
-
-In new layout that would be 
-     dayabay/cerenkov/1/track.npy 
-
-alongside standard constituents
-     dayabay/cerenkov/1/phosel.npy 
-     dayabay/cerenkov/1/gensteps.npy 
-
-*/
-
-    if(!quietly)
+    if(exists)
     LOG(info) << "OpticksEvent::loadGenstepDerivativeFromFile  "
               << " m_det " << m_det
               << " m_typ " << m_typ
@@ -1492,18 +1474,8 @@ alongside standard constituents
               << " stem " << stem
               << " --> " << path 
               ;
-   
-
-    NPY<float>* npy = NPY<float>::load(path.c_str()) ;
-    if(npy)
-    {
-        npy->dump("OpticksEvent::loadGenstepDerivativeFromFile");
-    }
-    else
-    {
-        if(!quietly)
-        LOG(warning) << "OpticksEvent::loadGenstepDerivativeFromFile FAILED for postfix " << postfix ;
-    }
+ 
+    NPY<float>* npy = exists ? NPY<float>::load(path.c_str()) : NULL ;
     return npy ; 
 }
 

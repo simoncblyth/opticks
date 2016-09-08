@@ -1,3 +1,4 @@
+#include "SLog.hh"
 #include "NPY.hpp"
 #include "OpticksEvent.hh"
 
@@ -8,22 +9,37 @@
 #include "PLOG.hh"
 
 
+OpticksEvent* OEvent::getEvent()
+{
+    return m_evt ; 
+}
+void OEvent::setEvent(OpticksEvent* evt)
+{
+    m_evt = evt ; 
+}
+
+
+
 OEvent::OEvent(OContext* ocontext, OpticksEvent* evt)
    :
+   m_log(new SLog("OEvent::OEvent")),
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
-   m_evt(evt),
+   m_evt(NULL),
    m_genstep_buf(NULL),
    m_photon_buf(NULL),
    m_record_buf(NULL),
    m_sequence_buf(NULL)
 {
     init(evt);
+    (*m_log)("DONE");
 }
+
 
 void OEvent::init(OpticksEvent* evt)
 {
-    LOG(info) << "OEvent::init" ; 
+    LOG(info) << "OEvent::init id " << evt->getId() ; 
+    setEvent(evt);
 
     // NB in INTEROP mode the OptiX buffers for the evt data 
     // are actually references to the OpenGL buffers created 
@@ -54,14 +70,15 @@ void OEvent::init(OpticksEvent* evt)
     m_sequence_buf = new OBuf("sequence", m_sequence_buffer);
     m_sequence_buf->setMultiplicity(1u);
     m_sequence_buf->setHexDump(true);
-
-    LOG(info) << "OEvent::init DONE" ; 
 }
+
 
 
 void OEvent::upload(OpticksEvent* evt)   
 {
-    LOG(info) << "OEvent::upload" ; 
+    LOG(info) << "OEvent::upload id " << evt->getId() ; 
+
+    setEvent(evt);
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     assert(gensteps);
@@ -96,11 +113,14 @@ void OEvent::upload(OpticksEvent* evt)
     LOG(info) << "OEvent::upload DONE" ; 
 }
 
-
+void OEvent::download(unsigned mask)
+{
+    download(m_evt, mask);
+}
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {
-    if(!evt) return ;
-    LOG(info)<<"OEvent::download" ;
+    assert(evt) ;
+    LOG(info)<<"OEvent::download id " << evt->getId()  ;
  
     if(mask & GENSTEP)
     {
@@ -144,6 +164,4 @@ OBuf* OEvent::getRecordBuf()
 {
     return m_record_buf ; 
 }
-
-
 

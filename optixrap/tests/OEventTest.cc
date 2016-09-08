@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
          ctx.launch( OContext::LAUNCH, entry,  evt->getNumPhotons(), 1, evt->getLaunchTimes());
 
-         oevt->download(evt);
+         oevt->download();
 
          evt->save();
 

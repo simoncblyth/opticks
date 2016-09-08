@@ -1,4 +1,4 @@
-#pragma once
+
 
 #include <map>
 #include <string>
@@ -137,7 +137,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        static const char* recsel_  ;
        static const char* sequence_  ;
    public:
-       NPY<float>* loadGenstepDerivativeFromFile(const char* postfix="track", bool quietly=false);
+       NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
        void zero();

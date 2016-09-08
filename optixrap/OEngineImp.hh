@@ -1,5 +1,6 @@
 #pragma once
 
+class SLog ; 
 class Timer ; 
 class Opticks ;
 class OpticksHub ;
@@ -25,9 +26,10 @@ class OXRAP_API OEngineImp {
        OContext*    getOContext();
        OPropagator* getOPropagator();
     public:
-       void initEvent(); // creates GPU buffers: genstep, photon, record, sequence 
-       void propagate(); // populates buffers via OptiX launch
-       void downloadEvt();
+       void uploadEvent();
+       void propagate(); 
+       void downloadEvent();
+    public:
        void downloadPhotonData();
        void cleanup();
     private:
@@ -35,6 +37,7 @@ class OXRAP_API OEngineImp {
        void preparePropagator();        // create OPropagator does prelaunch
 
     private:
+       SLog*                m_log ; 
        Timer*               m_timer ;
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 

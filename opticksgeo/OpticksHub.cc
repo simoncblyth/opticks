@@ -113,6 +113,8 @@ void OpticksHub::init()
    {
        configure();
        loadGeometry() ;    
+
+       setupInputGensteps();
    }
 }
 
@@ -143,7 +145,6 @@ void OpticksHub::loadGeometry()
 
     LOG(debug) << "OpticksHub::loadGeometry DONE" ; 
 
-    setupInputGensteps();
 }
 
 
@@ -152,18 +153,22 @@ void OpticksHub::setupInputGensteps()
 {
     LOG(debug) << "OpticksHub::setupInputGensteps" ; 
 
+    m_zero = m_ok->makeEvent(true) ;  // needs to be after configure for spec to be defined
+
     unsigned int code = m_ok->getSourceCode();
+
+    NPY<float>* gs = NULL ; 
 
     if(code == TORCH)
     {
         m_torchstep = makeTorchstep() ;
-        NPY<float>* gs = m_torchstep->getNPY();
+        gs = m_torchstep->getNPY();
         gs->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
         setGensteps(gs);
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
-        NPY<float>* gs = loadGenstepFile();
+        gs = loadGenstepFile();
         gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
         setGensteps(gs);
     }
@@ -176,11 +181,16 @@ void OpticksHub::setupInputGensteps()
         else
         {
              LOG(info) << " non-integrated G4GUN running, attempt to load gensteps from file " ;  
-             NPY<float>* gs = loadGenstepFile();
+             gs = loadGenstepFile();
              gs->addActionControl(OpticksActionControl::Parse("GS_LOADED"));
              setGensteps(gs);
         }
     }
+
+   if(gs)
+   {
+       m_zero->setGenstepData(gs);
+   }
 }
 
 
@@ -271,14 +281,15 @@ OpticksEvent* OpticksHub::getZeroEvent()
 
 
 
+
+// hmm confusing to have this here, rather than in OpticksEvent ?
+//
 void OpticksHub::setGensteps(NPY<float>* gs)
 {
     gs->setBufferSpec(OpticksEvent::GenstepSpec());
 
     m_gensteps = gs ; 
     m_g4step = new G4StepNPY(gs);    
-    m_zero = m_ok->makeEvent(true) ;
-    m_zero->setGenstepData(gs);  
 
     OpticksActionControl oac(gs->getActionControlPtr());
     bool gs_torch = oac.isSet("GS_TORCH") ; 
@@ -337,7 +348,6 @@ void OpticksHub::setGensteps(NPY<float>* gs)
          << m_g4step->description()
          ;
  
-
 }
 
 
@@ -767,8 +777,7 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
     m_composition->setEvt(evt);  // look like used only for Composition::setPickPhoton  TODO: reposition this 
     m_composition->setTrackViewPeriod(m_fcfg->getTrackViewPeriod()); 
 
-    bool quietly = true ;       
-    NPY<float>* track = evt->loadGenstepDerivativeFromFile("track", quietly);
+    NPY<float>* track = evt->loadGenstepDerivativeFromFile("track");
     m_composition->setTrack(track);
 }
 
