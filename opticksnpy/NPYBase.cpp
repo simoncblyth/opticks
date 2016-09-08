@@ -16,6 +16,7 @@
 #include "BStr.hh"
 
 
+#include "Parameters.hpp"
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 
@@ -65,6 +66,11 @@ NLookup* NPYBase::getLookup()
 {
     return m_lookup ; 
 }
+Parameters* NPYBase::getParameters()
+{
+    return m_parameters ;
+}
+
 
 
 
@@ -87,7 +93,8 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
          m_metadata(metadata),
          m_has_data(has_data),
          m_dynamic(false),
-         m_lookup(NULL)
+         m_lookup(NULL),
+         m_parameters(new Parameters)
 {
    init();
 } 
@@ -224,8 +231,15 @@ unsigned long long* NPYBase::getActionControlPtr()
 }
 
 
+void NPYBase::transfer(NPYBase* dst, NPYBase* src)
+{
+    NPYSpec* spec = src->getBufferSpec();
 
-
+    dst->setBufferSpec(spec ? spec->clone() : NULL);
+    dst->setBufferControl(src->getBufferControl());
+    dst->setActionControl(src->getActionControl());
+    dst->setLookup(src->getLookup());   // NB not cloning, as lookup is kinda global
+}
 
 
 void NPYBase::setBufferName(const char* name )
@@ -407,15 +421,27 @@ bool NPYBase::hasShapeSpec(NPYSpec* shape_spec)
 void NPYBase::setNumItems(unsigned int ni)
 {
     unsigned int orig = m_shape[0] ;
-    assert(ni >= orig);
+    //assert(ni >= orig);
 
-    LOG(debug) << "NPYBase::setNumItems"
-              << " increase from " << orig << " to " << ni 
-              ; 
- 
+    if(ni >= orig)
+    {
+       LOG(debug) << "NPYBase::setNumItems"
+                  << " increase from " << orig << " to " << ni 
+                  ; 
+    }
+    else
+    {
+       LOG(warning) << "NPYBase::setNumItems"
+                  << " decrease from " << orig << " to " << ni 
+                  ; 
+    }
+  
     m_shape[0] = ni ; 
     m_ni = ni ; 
 }
+
+
+
 
 
 void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl)

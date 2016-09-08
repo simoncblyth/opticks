@@ -565,13 +565,7 @@ NPY<T>* NPY<T>::copy(NPY<T>* src)
     char* dbytes = (char*)dst->getBytes();
     memcpy( (void*)dbytes, (void*)sbytes, size );
 
-    NPYSpec* spec = src->getBufferSpec();
-
-    dst->setBufferSpec(spec ? spec->clone() : NULL);
-    dst->setBufferControl(src->getBufferControl());
-    dst->setActionControl(src->getActionControl());
-
-    // hmm what about BufferId ???
+    NPYBase::transfer(dst, src);
 
     return dst ; 
 }

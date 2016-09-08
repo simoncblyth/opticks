@@ -1,4 +1,7 @@
 #pragma once
+
+class SLog ; 
+
 // okc-
 class Composition ; 
 
@@ -35,6 +38,7 @@ class OKGL_API OKGLTracer : public SRenderer {
     private:
        void init();
     private:
+       SLog*            m_log ; 
        OpEngine*        m_ope ; 
        OpticksViz*      m_viz ; 
        OpticksHub*      m_hub ; 

@@ -11,6 +11,7 @@
 #include <glm/fwd.hpp>
 
 
+class Parameters ; 
 class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
@@ -37,6 +38,7 @@ class NPY_API NPYBase {
         virtual ~NPYBase();
         void setHasData(bool has_data=true);
         bool hasData();
+        static void transfer(NPYBase* dst, NPYBase* src); 
    public:
        // shape related
        NPYSpec* getShapeSpec();
@@ -64,6 +66,8 @@ class NPY_API NPYBase {
        unsigned int getShape(unsigned int dim);
        unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
        unsigned int getNumValues(unsigned int from_dim=0);
+
+       Parameters*  getParameters();
    public:
        // depending on sizeoftype
        Type_t        getType();
@@ -164,6 +168,7 @@ class NPY_API NPYBase {
        bool               m_has_data ;
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
+       Parameters*        m_parameters ;  // for keeping notes, especially for gensteps
 
 };
 

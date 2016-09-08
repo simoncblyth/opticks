@@ -46,24 +46,21 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     (*m_log)("DONE");
 }
 
+OKPropagator::~OKPropagator()
+{
+    //cleanup();
+}
+
 void OKPropagator::init()
 {
 }
 
-void OKPropagator::propagate(NPY<float>* genstep)
+void OKPropagator::propagate()
 {
-    int n_gs  = genstep ? genstep->getNumItems() : -1 ;   // hmm could count photons instead of steps ?
+    OpticksEvent* evt = m_hub->getOKEvent();
+    assert(evt);
 
-    if( n_gs <= 0 )
-    {  
-         LOG(fatal) << "OKPropagator::propagate SKIP AS NO GENSTEPS " ;   
-         return ;   
-    }
-
-    LOG(fatal) << "OKPropagator::propagate calling initOKEvent "  ;
-    m_hub->initOKEvent(genstep);
-    LOG(fatal) << "OKPropagator::propagate calling initOKEvent DONE "  ;
-
+    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ")"   ;
     if(m_viz)
     { 
         m_hub->target();             // if not Scene targetted, point Camera at gensteps 
@@ -71,8 +68,6 @@ void OKPropagator::propagate(NPY<float>* genstep)
         m_viz->uploadEvent();        // allocates GPU buffers with OpenGL glBufferData
     }
 
-
-    LOG(fatal) << "OKPropagator::propagate calling propagate "  ;
     m_engine->propagate();           // perform OptiX GPU propagation 
 
 
@@ -93,6 +88,7 @@ void OKPropagator::propagate(NPY<float>* genstep)
 
         m_hub->save();
     }
+    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE "   ;
 }
 
 

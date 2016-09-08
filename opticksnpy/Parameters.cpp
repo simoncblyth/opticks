@@ -18,6 +18,10 @@ std::vector<std::string>& Parameters::getLines()
     return m_lines ;
 }
 
+const std::vector<std::pair<std::string,std::string> >& Parameters::getVec()
+{
+    return m_parameters ; 
+}
 
 
 std::string Parameters::getStringValue(const char* name)
@@ -30,7 +34,6 @@ std::string Parameters::getStringValue(const char* name)
     }
     return value ;  
 }
-
 
 
 
@@ -132,6 +135,23 @@ void Parameters::add(const char* name, T value)
 {
     m_parameters.push_back(SS(name, boost::lexical_cast<std::string>(value) ));
 }
+
+
+
+void Parameters::append(Parameters* other)
+{
+    if(!other) return ; 
+
+    const VSS& other_v = other->getVec();
+    for(VSS::const_iterator it=other_v.begin() ; it != other_v.end() ; it++)
+    {
+        std::string name  = it->first ; 
+        std::string value = it->second ; 
+        m_parameters.push_back(SS(name, value));
+    }
+}
+
+
 
 
 template <typename T>

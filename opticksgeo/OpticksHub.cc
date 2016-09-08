@@ -11,6 +11,7 @@
 #include "NGLM.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
+#include "Parameters.hpp"
 
 // npy-
 #include "Timer.hpp"
@@ -81,7 +82,6 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_g4evt(NULL),
    m_okevt(NULL),
    m_torchstep(NULL),
-   m_zero(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -291,10 +291,6 @@ void OpticksHub::loadGeometry()
 void OpticksHub::setupInputGensteps()
 {
     LOG(debug) << "OpticksHub::setupInputGensteps" ; 
-
-    m_zero = m_ok->makeEvent(true) ;  // needs to be after configure for spec to be defined
-    assert(m_zero->getId() == 0);
-
     unsigned int code = m_ok->getSourceCode();
 
     NPY<float>* gs = NULL ; 
@@ -324,13 +320,39 @@ void OpticksHub::setupInputGensteps()
         }
     }
 
-   if(gs)
-   {
-       m_zero->setGenstepData(gs);
-   }
+    //if(gs) setupZeroEvent(gs);
+
+    if(gs)
+    {
+       initOKEvent(gs);
+    }
+
 }
 
 
+
+/*
+
+OpticksEvent* OpticksHub::getZeroEvent()
+{
+    assert(m_zero->getId() == 0 );
+    return m_zero ;  
+}
+
+void OpticksHub::setupZeroEvent(NPY<float>* gs)
+{
+    m_zero = m_ok->makeEvent(true) ;  // needs to be after configure for spec to be defined
+    assert(m_zero->getId() == 0);
+    m_zero->setGenstepData(gs);
+
+    if(m_ok->isCompute())
+    {
+        unsigned numPhotons = m_zero->getNumPhotons();
+        m_zero->resizeToZero();
+        LOG(info) << "OpticksHub::setupZeroEvent(COMPUTE) resizing " <<  numPhotons << " -> " << m_zero->getNumPhotons() ; 
+    }
+}
+*/
 
 std::string OpticksHub::getG4GunConfig()
 {
@@ -378,19 +400,25 @@ std::string OpticksHub::getG4GunConfig()
 NPY<float>* OpticksHub::loadGenstepFile()
 {
     NPY<float>* gs = m_ok->loadGenstep();
-    if(gs == NULL) LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
-    assert(gs);
+    if(gs == NULL)
+    {
+        LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
+        m_ok->setExit(true);
+        return NULL ; 
+    } 
+ 
+    gs->setLookup(m_lookup);
 
     int modulo = m_fcfg->getModulo();
 
-    //m_parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
-    //m_parameters->add<int>("Modulo", modulo );
-
+    Parameters* parameters = gs->getParameters();
+    parameters->add<int>("Modulo", modulo );
     if(modulo > 0) 
     {    
+        parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
         LOG(warning) << "OptickHub::loadGenstepFile applying modulo scaledown " << modulo ;
         gs = NPY<float>::make_modulo(gs, modulo);
-        //m_parameters->add<std::string>("genstepModulo",   genstep->getDigestString()  );
+        parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
     }    
 
     return gs ; 
@@ -404,11 +432,6 @@ TorchStepNPY* OpticksHub::getTorchstep()   // needed by CGenerator
     return m_torchstep ; 
 }
 
-OpticksEvent* OpticksHub::getZeroEvent()
-{
-    assert(m_zero->getId() == 0 );
-    return m_zero ;  
-}
 
 
 
@@ -546,45 +569,6 @@ NPY<unsigned char>* OpticksHub::getColorBuffer()
 }
 
 
-OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
-{
-    // Opticks OK events are created with gensteps (Scintillation+Cerenkov) 
-    // from a G4 event (the G4 event can either be loaded from file 
-    // or directly obtained from live G4)
-
-    assert(gs && "OpticksHub::initOKEvent gs NULL");
-
-    LOG(info) << "OpticksHub::initOKEvent "
-              << " gs " << gs->getShapeString()
-              ;
-
-    bool ok = true ; 
-    createEvent(ok); 
-
-    m_okevt->setGenstepData(gs->clone());
-    assert(m_evt == m_okevt);
-
-    if(m_g4evt)   // if there is a preexisting G4 event use the same timestamp for the OK event
-    {
-       assert(m_g4evt->isG4());
-       assert(m_okevt->isOK());
-
-       std::string tstamp = m_g4evt->getTimeStamp();
-       m_okevt->setTimeStamp( tstamp.c_str() );      
-
-       NPY<float>* nopstep = m_g4evt->getNopstepData() ;
-       if(nopstep)
-           m_okevt->setNopstepData(nopstep->clone());
-    }
-
-    LOG(info) << "OpticksHub::initOKEvent "
-              << " gensteps " << gs->getShapeString()
-              << " tagdir " << m_okevt->getTagDir() 
-              ;
-
-    return m_okevt ; 
-}
-
 
 OpticksEvent* OpticksHub::loadPersistedEvent()
 {
@@ -619,7 +603,10 @@ void OpticksHub::loadEventBuffers()
     m_evt->loadBuffers(verbose=false);
 
     if(m_evt->isNoLoad())
-        LOG(warning) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
+    {
+        LOG(fatal) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
+        m_ok->setExit(true);
+    }
 
     TIMER("loadEvent"); 
 }
@@ -658,24 +645,6 @@ OpticksEvent* OpticksHub::createEvent(bool ok)
 }
 
 
-
-OpticksEvent* OpticksHub::getG4Event()
-{
-    return m_g4evt ; 
-}
-OpticksEvent* OpticksHub::getOKEvent()
-{
-    return m_okevt ; 
-}
-OpticksEvent* OpticksHub::getEvent()
-{
-    return m_evt ; 
-}
-
-
-
-
-
 void OpticksHub::configureEvent(OpticksEvent* evt)
 {
     if(!evt) return 
@@ -693,6 +662,74 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
     NPY<float>* track = evt->loadGenstepDerivativeFromFile("track");
     m_composition->setTrack(track);
 }
+
+
+
+OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
+{
+    // Opticks OK events are created with gensteps (Scintillation+Cerenkov) 
+    // from a G4 event (the G4 event can either be loaded from file 
+    // or directly obtained from live G4)
+
+    assert(gs && "OpticksHub::initOKEvent gs NULL");
+    int ngs  = gs->getNumItems() ;   // hmm could count photons instead of steps ?
+    assert(ngs > 0 );
+
+    LOG(info) << "OpticksHub::initOKEvent "
+              << " gs " << gs->getShapeString()
+              ;
+
+    bool ok = true ; 
+    createEvent(ok); 
+
+    m_okevt->setGenstepData(gs);
+    assert(m_evt == m_okevt);
+
+    if(m_g4evt)   // if there is a preexisting G4 event use the same timestamp for the OK event
+    {
+       assert(m_g4evt->isG4());
+       assert(m_okevt->isOK());
+
+       std::string tstamp = m_g4evt->getTimeStamp();
+       m_okevt->setTimeStamp( tstamp.c_str() );      
+
+       NPY<float>* nopstep = m_g4evt->getNopstepData() ;
+       if(nopstep)
+           m_okevt->setNopstepData(nopstep->clone());
+    }
+
+    LOG(info) << "OpticksHub::initOKEvent "
+              << " gensteps " << gs->getShapeString()
+              << " tagdir " << m_okevt->getTagDir() 
+              ;
+
+    return m_okevt ; 
+}
+
+
+
+
+
+
+
+
+
+OpticksEvent* OpticksHub::getG4Event()
+{
+    return m_g4evt ; 
+}
+OpticksEvent* OpticksHub::getOKEvent()
+{
+    return m_okevt ; 
+}
+OpticksEvent* OpticksHub::getEvent()
+{
+    return m_evt ; 
+}
+
+
+
+
 
 
 

@@ -243,6 +243,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        unsigned int getNumPhotons();
        unsigned int getNumRecords();
        unsigned int getMaxRec();  // per-photon
+   public:
+       void resizeToZero();  // used by OpticksHub::setupZeroEvent
    private:
        // set by setGenstepData based on summation over Cerenkov/Scintillation photons to generate
        void setNumPhotons(unsigned int num_photons, bool resize=true);

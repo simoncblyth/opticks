@@ -62,6 +62,8 @@ void OKMgr::init()
 
 void OKMgr::propagate()
 {
+    int multi = m_ok->getMultiEvent();
+
     if(m_ok->hasOpt("load"))
     {
         loadPropagation();
@@ -70,30 +72,26 @@ void OKMgr::propagate()
     {
         LOG(info) << "--nopropagate/-P" ;
     }
-    else
+    else if(multi == 1)
     { 
-        int multi = m_ok->getMultiEvent();
-        OpticksEvent* zero = m_hub->getZeroEvent();
-        NPY<float>* gs0 = zero->getGenstepData();
+#ifdef WITH_OPTIX
+        m_propagator->propagate();
+#endif
+    }
+    else if(multi > 1)
+    {
+        OpticksEvent* evt = m_hub->getOKEvent();
+        NPY<float>* gs = evt->getGenstepData();
         for(int i=0 ; i < multi ; i++) 
         {
-            //NPY<float>* gs = gs0->clone() ;
-            propagate(gs0);
+            if(i > 0) m_hub->initOKEvent(gs);
+#ifdef WITH_OPTIX
+            m_propagator->propagate();
+#endif
         }
     }
 }
 
-void OKMgr::propagate(NPY<float>* gs)
-{
-    m_count += 1 ; 
-
-    LOG(fatal) << "OKMgr::propagate(" << m_count << ")" ; 
-
-#ifdef WITH_OPTIX
-    m_propagator->propagate(gs);
-#endif
-    LOG(fatal) << "OKMgr::propagate(" << m_count << ") DONE"  ; 
-}
 
 
 void OKMgr::loadPropagation()
@@ -101,6 +99,8 @@ void OKMgr::loadPropagation()
     LOG(fatal) << "OKMgr::loadPropagation" ; 
 
     m_hub->loadPersistedEvent(); 
+
+    if(m_ok->isExit()) exit(EXIT_FAILURE) ; 
 
     // formerly did indexing on load, 
     // but that is kinda crazy and should not normally be needed 

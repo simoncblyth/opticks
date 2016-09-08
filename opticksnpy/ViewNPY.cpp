@@ -175,11 +175,27 @@ unsigned int ViewNPY::getCount()
 
     if(count == 0)
     {
-        LOG(warning) << "ViewNPY::getCount UNEXPECTED"
-                     << " desc " << description()
-                     << " count " << count 
-                     << " shape " <<  getShapeString() 
-                     ;
+
+        const char* bufname = m_npy->getBufferName();
+
+        if(bufname && strcmp(bufname, "nopstep")==0)
+        {
+           LOG(debug) << "ViewNPY::getCount UNEXPECTED"
+                        << " bufname " << bufname
+                        << " desc " << description()
+                        << " count " << count 
+                        << " shape " <<  getShapeString() 
+                        ;
+        }
+        else
+        {
+           LOG(warning) << "ViewNPY::getCount UNEXPECTED"
+                        << " bufname " << bufname
+                        << " desc " << description()
+                        << " count " << count 
+                        << " shape " <<  getShapeString() 
+                        ;
+        }
     }
 
     return count ; 

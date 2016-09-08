@@ -76,7 +76,7 @@ OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, in
     m_ocontext(ocontext),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_zero(hub->getZeroEvent()),
+    m_zero(hub->getOKEvent()),
     m_oevt(new OEvent(m_ocontext, m_zero)),
     m_prelaunch(false),
     m_entry_index(entry),
@@ -201,7 +201,7 @@ void OPropagator::uploadEvent()
 
 
     if( m_ocontext->isCompute() )
-        m_oevt->upload(evt);
+        m_oevt->upload(evt);     // reusing OptiX buffers by resizing them before upload
     else
         m_oevt = new OEvent(m_ocontext, evt) ;  // leaking resources in interop
 }

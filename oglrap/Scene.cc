@@ -200,7 +200,7 @@ const char* Scene::getRecordStyleName()
  
 void Scene::init()
 {
-    LOG(info) << "Scene::init" ; 
+    LOG(debug) << "Scene::init" ; 
     LOG(trace) << "Scene::init (config from cmake)"
               << " OGLRAP_INSTALL_PREFIX " << OGLRAP_INSTALL_PREFIX
               << " OGLRAP_SHADER_DIR " << OGLRAP_SHADER_DIR
@@ -562,12 +562,12 @@ void Scene::setComposition(Composition* composition)
 
 void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 {
+    LOG(debug)<< "Scene::uploadGeometryGlobal " ;
     bool skip = mm->isSkip() ;
 
     assert(m_mesh0 == NULL); // not expected to Scene::uploadGeometryGlobal more than once 
     m_mesh0 = mm ; 
     static unsigned int n_global(0);
-    LOG(info)<< "Scene::uploadGeometryGlobal " ;
 
     if(!skip)
     {
@@ -731,15 +731,13 @@ void Scene::uploadEvent(OpticksEvent* evt)
         m_genstep_renderer->upload(evt->getGenstepAttr());
 
     if(m_nopstep_renderer) 
-         m_nopstep_renderer->upload(evt->getNopstepAttr(), false);
+         m_nopstep_renderer->upload(evt->getNopstepAttr());
 
     if(m_photon_renderer)
          m_photon_renderer->upload(evt->getPhotonAttr());
 
 
     uploadRecordAttr(evt->getRecordAttr());
-
-    //uploadRecordAttr(evt->getAuxAttr());
 
     // Note that the above means that the same record renderers are 
     // uploading mutiple things from different NPY.

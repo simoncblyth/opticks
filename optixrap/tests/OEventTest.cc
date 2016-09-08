@@ -32,21 +32,21 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok, true);
-    OpticksEvent* zero = hub.getZeroEvent();
-    zero->Summary("zero");
+    OpticksEvent* evt = hub.getOKEvent();
+    evt->Summary("evt");
 
-    LOG(info) << argv[0] << " zero shape " << zero->getShapeString() ; 
-    NPY<float>* gs0 = zero->getGenstepData(); 
+    LOG(info) << argv[0] << " evt shape " << evt->getShapeString() ; 
+    NPY<float>* gs0 = evt->getGenstepData(); 
 
 
     optix::Context context = optix::Context::create();
     OContext ctx(context, OContext::COMPUTE);
 
-    OEvent* oevt = new OEvent(&ctx, zero );   // creates buffers, so can validate the prelaunch
+    OEvent* oevt = new OEvent(&ctx, evt);   // creates buffers, so can validate the prelaunch
 
     int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
  
-    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, zero->getPrelaunchTimes() );
+    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt->getPrelaunchTimes() );
 
 
 

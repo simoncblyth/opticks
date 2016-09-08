@@ -110,7 +110,7 @@ optix::Buffer OFrame::createOutputBuffer_PBO(unsigned int& id, RTformat format, 
     size_t element_size ; 
     m_context->checkError(rtuGetSizeForRTformat(format, &element_size));
 
-    LOG(info) << "OFrame::createOutputBuffer_PBO" 
+    LOG(debug) << "OFrame::createOutputBuffer_PBO" 
               <<  " element_size " << element_size 
               ;
 

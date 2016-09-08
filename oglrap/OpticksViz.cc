@@ -90,12 +90,11 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_external_renderer(NULL)
 {
     init();
+    (*m_log)("DONE");
 }
 
 void OpticksViz::init()
 {
-    LOG(trace) << "OpticksViz::init" ; 
-
     const char* shader_dir = getenv("OPTICKS_SHADER_DIR"); 
     const char* shader_incl_path = getenv("OPTICKS_SHADER_INCL_PATH"); 
     const char* shader_dynamic_dir = getenv("OPTICKS_SHADER_DYNAMIC_DIR"); 
@@ -128,9 +127,8 @@ void OpticksViz::init()
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 
-        OpticksEvent* zero = m_hub->getZeroEvent();
-
-        uploadEvent(zero); 
+        OpticksEvent* evt = m_hub->getEvent();
+        uploadEvent(evt);    // without this the buffer_id will not be set 
     }
 }
 
@@ -237,7 +235,7 @@ void OpticksViz::uploadGeometry()
 
     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    LOG(fatal) << "OpticksViz::uploadGeometry opticks domains " << m_opticks->description();
+    LOG(info) << "OpticksViz::uploadGeometry " << m_opticks->description();
 
     m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
@@ -276,16 +274,15 @@ void OpticksViz::uploadEvent()
 
 void OpticksViz::uploadEvent(OpticksEvent* evt)
 {
-    LOG(info) << "OpticksViz::uploadEvent START " ;
+    LOG(info) << "OpticksViz::uploadEvent (" << evt->getId() << ")"  ;
 
     m_scene->upload(evt);
 
     if(m_hub->hasOpt("dbguploads"))
         m_scene->dump_uploads_table("OpticksViz::uploadEvent");
 
+    LOG(info) << "OpticksViz::uploadEvent (" << evt->getId() << ") DONE "  ;
 }
-
-
 
 
 
@@ -301,8 +298,9 @@ void OpticksViz::downloadEvent()
 {
     OpticksEvent* evt = m_hub->getEvent(); 
     assert(evt);
-    LOG(info) << "OpticksViz::downloadEvent" ;
+    LOG(info) << "OpticksViz::downloadEvent (" << evt->getId() << ")" ;
     Rdr::download(evt);
+    LOG(info) << "OpticksViz::downloadEvent (" << evt->getId() << ") DONE " ;
 }
 
 

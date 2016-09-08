@@ -300,15 +300,15 @@ void Rdr::upload(NPYBase* npy, ViewNPY* vnpy)
         glGenBuffers(1, &buffer_id);
         glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
-        LOG(info) << " up "
+        LOG(info) 
                   << std::setw(15) << parent->getName() 
                   << std::setw(5)  << vnpy->getName()
-                  << " count " << std::setw(8) << vnpy->getCount()
-                  << " shape " << std::setw(20) << vnpy->getShapeString()
-                  << " buffer_id " << std::setw(5) << buffer_id
-                  << " data " << std::setw(16) << repdata 
-                  << " hasData " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
-                  << " nbytes " << std::setw(10) << nbytes 
+                  << " cn " << std::setw(8) << vnpy->getCount()
+                  << " sh " << std::setw(20) << vnpy->getShapeString()
+                  << " id " << std::setw(5) << buffer_id
+                  << " dt " << std::setw(16) << repdata 
+                  << " hd " << std::setw(5) << ( npy->hasData() ? "Y" : "N" )
+                  << " nb " << std::setw(10) << nbytes 
                   << " " << (dynamic ? "GL_DYNAMIC_DRAW" : "GL_STATIC_DRAW" )
                   ;   
 

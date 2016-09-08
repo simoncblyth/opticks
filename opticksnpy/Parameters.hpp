@@ -17,7 +17,11 @@ class NPY_API Parameters {
        typedef std::vector<std::string>              VS ; 
    public:
        Parameters();
+       const std::vector<std::pair<std::string,std::string> >& getVec() ;
+
        std::string getStringValue(const char* name);
+   public:
+       void append(Parameters* other);
    public:
        template <typename T> 
        void add(const char* name, T value);

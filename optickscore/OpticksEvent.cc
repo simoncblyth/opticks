@@ -209,6 +209,12 @@ unsigned int OpticksEvent::getNumNopsteps()
     return m_num_nopsteps ; 
 }
 
+void OpticksEvent::resizeToZero()
+{
+    bool resize = true ; 
+    setNumPhotons(0, resize);
+}
+
 void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)
 {
     m_num_photons = num_photons ; 
@@ -832,6 +838,8 @@ G4StepNPY* OpticksEvent::getG4Step()
 
 void OpticksEvent::importGenstepData(NPY<float>* gs)
 {
+    m_parameters->append(gs->getParameters());
+
     gs->setBufferSpec(OpticksEvent::GenstepSpec());
 
     assert(m_g4step == NULL && "OpticksEvent::importGenstepData can only do this once ");
@@ -841,7 +849,7 @@ void OpticksEvent::importGenstepData(NPY<float>* gs)
     bool gs_torch = oac.isSet("GS_TORCH") ; 
     bool gs_legacy = oac.isSet("GS_LEGACY") ; 
 
-    LOG(fatal) << "OpticksEvent::importGenstepData"
+    LOG(debug) << "OpticksEvent::importGenstepData"
                << " shape " << gs->getShapeString()
                << " " << oac.description("oac")
                ;
@@ -877,18 +885,18 @@ void OpticksEvent::importGenstepData(NPY<float>* gs)
     }
     else if(gs_torch)
     {
-        LOG(info) << " checklabel of torch steps  " << oac.description("oac") ; 
+        LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
         m_g4step->checklabel(TORCH); 
     }
     else
     {
-        LOG(info) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
+        LOG(debug) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
         m_g4step->checklabel(CERENKOV, SCINTILLATION);
     }
 
     m_g4step->countPhotons();
 
-    LOG(info) 
+    LOG(debug) 
          << " Keys "
          << " TORCH: " << TORCH 
          << " CERENKOV: " << CERENKOV 
@@ -896,7 +904,7 @@ void OpticksEvent::importGenstepData(NPY<float>* gs)
          << " G4GUN: " << G4GUN  
          ;
 
-     LOG(info) 
+     LOG(debug) 
          << " counts " 
          << m_g4step->description()
          ;

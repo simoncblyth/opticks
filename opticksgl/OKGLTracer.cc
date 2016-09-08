@@ -1,3 +1,4 @@
+#include "SLog.hh"
 #include "PLOG.hh"
 // npy-
 #include "NGLM.hpp"
@@ -31,6 +32,7 @@
 
 OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate) 
    :
+      m_log(new SLog("OKGLTracer::OKGLTracer")),
       m_ope(ope),
       m_viz(viz),
       m_hub(m_viz->getHub()),
@@ -44,14 +46,8 @@ OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate)
       m_orenderer(NULL),
       m_otracer(NULL)
 {
-
-    LOG(info) << "OKGLTracer::OKGLTracer"
-              << " ope " << ope
-              << " viz " << viz
-              << " immediate " << immediate 
-              ;
-
     init();
+    (*m_log)("DONE");
 }
 
 void OKGLTracer::init()
@@ -77,7 +73,8 @@ void OKGLTracer::prepareTracer()
 
     unsigned int width  = m_composition->getPixelWidth();
     unsigned int height = m_composition->getPixelHeight();
-    LOG(fatal) << "OKGLTracer::prepareTracer plant external renderer into viz" 
+
+    LOG(debug) << "OKGLTracer::prepareTracer plant external renderer into viz" 
                << " width " << width 
                << " height " << height 
                 ;
@@ -98,9 +95,7 @@ void OKGLTracer::prepareTracer()
 
     m_otracer = new OTracer(m_ocontext, m_composition);
 
-    LOG(info) << "OKGLTracer::prepareOptiXViz DONE ";
-
-    m_ocontext->dump("OKGLTracer::prepareOptiXVix");
+    //m_ocontext->dump("OKGLTracer::prepareTracer");
 }
 
 void OKGLTracer::render()

@@ -62,18 +62,20 @@ void OKG4Mgr::propagate()
 {
     LOG(fatal) << "OKG4Mgr::propagate" ;
 
-    m_g4->propagate();
+    bool live = m_ok->isLiveGensteps() ;
 
-    OpticksEvent* zero = m_hub->getZeroEvent();
+    NPY<float>* gs = NULL ; 
 
-    NPY<float>* gs0 = m_ok->isLiveGensteps() ? m_collector->getGensteps() : zero->getGenstepData() ;  
+    if(live)
+    {
+        m_g4->propagate();
 
-    NPY<float>* gs = gs0->clone();
+        gs = m_collector->getGensteps() ;  // TODO: come from g4evt not collector
 
-    // hmm why from collector ? should be collected into m_g4evt OpticksEvent ?
-    // collected from G4 directly OR input gensteps fabricated from config (eg torch) or loaded from file
+        m_hub->initOKEvent(gs);
+    }
 
-    m_propagator->propagate(gs);
+    m_propagator->propagate();
 
     LOG(fatal) << "OKG4Mgr::propagate DONE" ;
 }

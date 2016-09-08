@@ -90,7 +90,7 @@ class OKGEO_API OpticksHub {
        unsigned getTarget();
    public:
        std::string          getG4GunConfig();
-       OpticksEvent*        getZeroEvent(); 
+       //OpticksEvent*        getZeroEvent(); 
    public:
        // Torchstep is here are it needs geometry for targetting 
        // getter used by CGenerator::makeTorchSource so that cfg4-
@@ -130,6 +130,7 @@ class OKGEO_API OpticksHub {
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
        void setupInputGensteps();
+       //void setupZeroEvent(NPY<float>* gs);
    private:
        SLog*            m_log ; 
        Opticks*         m_ok ; 
@@ -143,7 +144,7 @@ class OKGEO_API OpticksHub {
        OpticksEvent*    m_okevt ; 
    private:
        TorchStepNPY*    m_torchstep ; 
-       OpticksEvent*    m_zero ;      // objective of zero event is to be available early, and enable "zero" sized event buffers to be used in initialization
+       //OpticksEvent*    m_zero ;      // objective of zero event is to be available early, and enable "zero" sized event buffers to be used in initialization
 #ifdef WITH_NPYSERVER
        numpydelegate*              m_delegate ; 
        numpyserver<numpydelegate>* m_server ;
