@@ -83,15 +83,13 @@ void OpticksRun::loadEvent()
 
 void OpticksRun::saveEvent()
 {
-    // TODO: detect if the event has been populated
+    // they skip if no photon data
     if(m_g4evt)
     {
-        m_g4evt->dumpDomains("OpticksRun::saveEvent g4evt domains");
         m_g4evt->save();
     } 
     if(m_evt)
     {
-        m_evt->dumpDomains("OpticksRun::saveEvent evt domains");
         m_evt->save();
     } 
 }

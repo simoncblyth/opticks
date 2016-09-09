@@ -72,6 +72,16 @@ Parameters* NPYBase::getParameters()
 }
 
 
+bool NPYBase::isGenstepTranslated()
+{
+    return m_parameters->get<bool>("GenstepTranslated","0");  // fallback to false if not set 
+}
+void NPYBase::setGenstepTranslated(bool flag)
+{
+    m_parameters->add<bool>("GenstepTranslated", flag); 
+}
+
+
 
 
 NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 

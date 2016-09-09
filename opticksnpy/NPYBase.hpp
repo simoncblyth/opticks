@@ -108,6 +108,8 @@ class NPY_API NPYBase {
        void         setDynamic(bool dynamic=true);
        bool         isDynamic();    // used by oglrap-/Rdr::upload
 
+       bool isGenstepTranslated();
+       void setGenstepTranslated(bool flag=true);
    private:
        void         setBufferName(const char* name);
    public:

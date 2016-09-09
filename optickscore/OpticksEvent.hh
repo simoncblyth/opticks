@@ -98,6 +98,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        bool isIndexed();
        bool isStep();
        bool isFlat();
+       bool isTorchType();
 
        STimes* getPrelaunchTimes();
        STimes* getLaunchTimes();
@@ -130,8 +131,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    private:
+       void importGenstepDataLoaded(NPY<float>* gs);
        void importGenstepData(NPY<float>* gs);
+       void translateLegacyGensteps(NPY<float>* gs);
        void setBufferControl(NPYBase* data);
+
    public:
        Parameters* getParameters();
        Timer*      getTimer();
@@ -176,6 +180,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void saveIndex(bool verbose=false);
        void loadIndex();
        void loadBuffers(bool verbose=true);
+   private:
+       void loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec);
    public: 
        void createBuffers(NPY<float>* gs=NULL); 
        void createSpec(); 
@@ -199,6 +205,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
    public:
+       bool                 hasPhotonData();
        bool                 hasGenstepData();
        const glm::vec4&     getGenstepCenterExtent();
    public:

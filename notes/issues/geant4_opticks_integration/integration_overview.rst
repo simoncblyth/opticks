@@ -251,8 +251,13 @@ NEXT : OKMgr/OKG4Mgr propagation multi-event test
 
 
 
-NEXT : check operation from loaded gensteps still operational
+NEXT : loaded propagation viz lacks index 
 ---------------------------------------------------------------
+
+::
+
+   OKTest  --load 
+
 
 
 NEXT : OKG4 genstep shakedown 

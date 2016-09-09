@@ -127,8 +127,8 @@ void OpticksViz::init()
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
 
 
-        OpticksEvent* evt = m_hub->getEvent();
-        uploadEvent(evt);    // without this the buffer_id will not be set 
+        //OpticksEvent* evt = m_hub->getEvent();
+        //uploadEvent(evt);    // without this the buffer_id will not be set 
     }
 }
 
@@ -235,7 +235,7 @@ void OpticksViz::uploadGeometry()
 
     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    LOG(info) << "OpticksViz::uploadGeometry " << m_opticks->description();
+    LOG(info) << m_opticks->description();
 
     m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());

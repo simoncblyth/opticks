@@ -1,4 +1,4 @@
-
+     
 #ifdef _MSC_VER
 // 'ViewNPY': object allocated on the heap may not be aligned 16
 // https://github.com/g-truc/glm/issues/235
@@ -265,8 +265,15 @@ void OpticksEvent::setMaxRec(unsigned int maxrec)
 
 bool OpticksEvent::hasGenstepData()
 {
-    return m_genstep_data != NULL ; 
+    return m_genstep_data && m_genstep_data->hasData() ; 
 }
+bool OpticksEvent::hasPhotonData()
+{
+    return m_photon_data && m_photon_data->hasData() ; 
+}
+
+
+
 
 NPY<float>* OpticksEvent::getGenstepData()
 { 
@@ -854,9 +861,65 @@ G4StepNPY* OpticksEvent::getG4Step()
     return m_g4step ; 
 }
 
+
+void OpticksEvent::translateLegacyGensteps(NPY<float>* gs)
+{
+    OpticksActionControl oac(gs->getActionControlPtr());
+    bool gs_torch = oac.isSet("GS_TORCH") ; 
+    bool gs_legacy = oac.isSet("GS_LEGACY") ; 
+
+    if(!gs_legacy) return ; 
+    assert(!gs_torch); // there are no legacy torch files ?
+
+    if(gs->isGenstepTranslated())
+    {
+        LOG(warning) << "OpticksEvent::translateLegacyGensteps already translated " ;
+        return ; 
+    }
+
+    gs->setGenstepTranslated();
+
+    NLookup* lookup = gs->getLookup();
+    if(!lookup)
+            LOG(fatal) << "OpticksEvent::translateLegacyGensteps"
+                       << " IMPORT OF LEGACY GENSTEPS REQUIRES gs->setLookup(NLookup*) "
+                       << " PRIOR TO OpticksEvent::setGenstepData(gs) "
+                       ;
+
+    assert(lookup); 
+
+    m_g4step->relabel(CERENKOV, SCINTILLATION); 
+
+    // CERENKOV or SCINTILLATION codes are used depending on 
+    // the sign of the pre-label 
+    // this becomes the ghead.i.x used in cu/generate.cu
+    // which dictates what to generate
+
+    lookup->close("OpticksEvent::translateLegacyGensteps GS_LEGACY");
+
+    m_g4step->setLookup(lookup);   
+    m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+    // replaces original material indices with material lines
+    // for easy access to properties using boundary_lookup GPU side
+
+}
+
+
+bool OpticksEvent::isTorchType()
+{    
+   return strcmp(m_typ, "torch") == 0 ; 
+}
+void OpticksEvent::importGenstepDataLoaded(NPY<float>* gs)
+{
+     OpticksActionControl ctrl(gs->getActionControlPtr());     
+     ctrl.add(OpticksActionControl::GS_LOADED_);
+     if(isTorchType())  ctrl.add(OpticksActionControl::GS_TORCH_);
+}
+
 void OpticksEvent::importGenstepData(NPY<float>* gs)
 {
-    m_parameters->append(gs->getParameters());
+    Parameters* gsp = gs->getParameters();
+    m_parameters->append(gsp);
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec());
 
@@ -872,34 +935,9 @@ void OpticksEvent::importGenstepData(NPY<float>* gs)
                << " " << oac.description("oac")
                ;
 
-
     if(gs_legacy)
     {
-        assert(!gs_torch); // there are no legacy torch files ?
-
-        NLookup* lookup = gs->getLookup();
-        if(!lookup)
-            LOG(fatal) << "OpticksEvent::importGenstepData"
-                       << " IMPORT OF LEGACY GENSTEPS REQUIRES gs->setLookup(NLookup*) "
-                       << " PRIOR TO OpticksEvent::setGenstepData(gs) "
-                       ;
-
-        assert(lookup); 
-
-        m_g4step->relabel(CERENKOV, SCINTILLATION); 
-
-        // CERENKOV or SCINTILLATION codes are used depending on 
-        // the sign of the pre-label 
-        // this becomes the ghead.i.x used in cu/generate.cu
-        // which dictates what to generate
-
-        lookup->close("OpticksEvent::importGenstepData GS_LEGACY");
-
-        m_g4step->setLookup(lookup);   
-        m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
-        // replaces original material indices with material lines
-        // for easy access to properties using boundary_lookup GPU side
-
+        translateLegacyGensteps(gs);
     }
     else if(gs_torch)
     {
@@ -1227,7 +1265,16 @@ void OpticksEvent::recordDigests()
 
 void OpticksEvent::save(bool verbose)
 {
+    bool hpd = hasPhotonData();
+    if(!hpd)
+    {
+        LOG(warning) << "OpticksEvent::save SKIP as no photon data " ; 
+        return ; 
+    }
+
+
     (*m_timer)("_save");
+
 
     recordDigests();
 
@@ -1430,14 +1477,13 @@ OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* d
 }
 
 
-/*
-NPY<int>* OpticksEvent::loadIDomain(const char* typ, const char* tag, const char* det)
+
+void OpticksEvent::loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec)
 {
-    bool qload = true ; 
-    NPY<int>*   idom = NPY<int>::load(idom_tfmt, typ,  tag, det, qload);
-    return idom ; 
+    assert(npy->hasItemSpec(spec));
+    npy->setBufferSpec(spec);
 }
-*/
+
 
 void OpticksEvent::loadBuffers(bool verbose)
 {
@@ -1495,7 +1541,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     {  
         no = NPY<float>::load("no", m_typ,  m_tag, udet, qload);
     }
-    if(no) assert(no->hasItemSpec(m_nopstep_spec) );
+    if(no) loadBuffersImportSpec(no, m_nopstep_spec) ;
 
     NPY<float>*              gs = NPY<float>::load("gs", m_typ,  m_tag, udet, qload);
     NPY<float>*              ox = NPY<float>::load("ox", m_typ,  m_tag, udet, qload);
@@ -1504,12 +1550,16 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs", m_typ,  m_tag, udet, qload );
 
-    if(gs) assert(gs->hasItemSpec(m_genstep_spec) );
-    if(ox) assert(ox->hasItemSpec(m_photon_spec) );
-    if(rx) assert(rx->hasItemSpec(m_record_spec) );
-    if(ph) assert(ph->hasItemSpec(m_sequence_spec) );
-    if(ps) assert(ps->hasItemSpec(m_phosel_spec) );
-    if(rs) assert(rs->hasItemSpec(m_recsel_spec) );
+
+    if(gs) loadBuffersImportSpec(gs,m_genstep_spec) ;
+    if(ox) loadBuffersImportSpec(ox,m_photon_spec) ;
+    if(rx) loadBuffersImportSpec(rx,m_record_spec) ;
+    if(ph) loadBuffersImportSpec(ph,m_sequence_spec) ;
+    if(ps) loadBuffersImportSpec(ps,m_phosel_spec) ;
+    if(rs) loadBuffersImportSpec(rs,m_recsel_spec) ;
+
+
+    if(gs) importGenstepDataLoaded(gs);   // sets action control, so setGenstepData label checks can succeed
 
     unsigned int num_genstep = gs ? gs->getShape(0) : 0 ;
     unsigned int num_nopstep = no ? no->getShape(0) : 0 ;

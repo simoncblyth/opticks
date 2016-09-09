@@ -184,24 +184,28 @@ T Parameters::get(const char* name, const char* fallback)
 
 
 
+template NPY_API void Parameters::add(const char* name, bool value);
 template NPY_API void Parameters::add(const char* name, int value);
 template NPY_API void Parameters::add(const char* name, unsigned int value);
 template NPY_API void Parameters::add(const char* name, std::string value);
 template NPY_API void Parameters::add(const char* name, float value);
 
 
+template NPY_API void Parameters::set(const char* name, bool value);
 template NPY_API void Parameters::set(const char* name, int value);
 template NPY_API void Parameters::set(const char* name, unsigned int value);
 template NPY_API void Parameters::set(const char* name, std::string value);
 template NPY_API void Parameters::set(const char* name, float value);
 
 
+template NPY_API bool         Parameters::get(const char* name);
 template NPY_API int          Parameters::get(const char* name);
 template NPY_API unsigned int Parameters::get(const char* name);
 template NPY_API std::string  Parameters::get(const char* name);
 template NPY_API float        Parameters::get(const char* name);
 
 
+template NPY_API bool         Parameters::get(const char* name, const char* fallback);
 template NPY_API int          Parameters::get(const char* name, const char* fallback);
 template NPY_API unsigned int Parameters::get(const char* name, const char* fallback);
 template NPY_API std::string  Parameters::get(const char* name, const char* fallback);

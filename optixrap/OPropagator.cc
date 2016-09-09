@@ -196,8 +196,6 @@ void OPropagator::uploadEvent()
     if(m_override > 0)
         LOG(warning) << "OPropagator::initEvent OVERRIDE photon count for debugging to " << m_width ; 
 
-
-
     if(m_ok->isCompute())
     {
         m_oevt->upload(evt) ;  
@@ -208,11 +206,7 @@ void OPropagator::uploadEvent()
         m_oevt->upload(evt) ;  
         // maybe difficult in interop as the buffers are actually references to OpenGL objs 
     }
-
-
 }
-
-
 
 void OPropagator::downloadEvent()
 {
@@ -224,9 +218,11 @@ void OPropagator::downloadPhotonData()
     m_oevt->download(OEvent::PHOTON);
 }
 
-
 void OPropagator::prelaunch()
 {
+    assert(m_prelaunch == false);
+    m_prelaunch = true ; 
+
     bool entry = m_entry_index > -1 ; 
     if(!entry) LOG(fatal) << "OPropagator::prelaunch MISSING entry " ;
     assert(entry);
@@ -236,14 +232,13 @@ void OPropagator::prelaunch()
 
     m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
     m_count += 1 ; 
-    m_prelaunch = true ; 
 
     LOG(info) << prelaunch_times->description("prelaunch_times");
 }
 
 void OPropagator::launch()
 {
-    assert(m_prelaunch && "must prelaunch before launch");
+    if(m_prelaunch == false) prelaunch();
 
     OpticksEvent* evt = m_oevt->getEvent(); 
     STimes* launch_times = evt->getLaunchTimes() ;
