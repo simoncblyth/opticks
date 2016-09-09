@@ -3,7 +3,7 @@
 // opop-
 #include "OpIndexerApp.hh"
 #include "OpIndexer.hh"
-
+#include "OpEngine.hh"
 
 // opticks-
 #include "Opticks.hh"
@@ -22,30 +22,18 @@
 
 OpIndexerApp::OpIndexerApp(int argc, char** argv) 
    :   
-     m_opticks(new Opticks(argc, argv)),
-     m_hub(new OpticksHub(m_opticks)),
-     m_cfg(m_opticks->getCfg()),
-     m_indexer(new OpIndexer(m_hub, NULL)),
-     m_run(m_hub->getRun())
+     m_ok(new Opticks(argc, argv)),
+     m_cfg(m_ok->getCfg()),
+     m_hub(new OpticksHub(m_ok)),
+     m_run(m_hub->getRun()),
+     m_engine(new OpEngine(m_hub)),
+     m_indexer(new OpIndexer(m_hub, m_engine))
 {
-    init();
 }
-
-
-void OpIndexerApp::init()
-{
-} 
-
-
-void OpIndexerApp::configure()
-{
-    LOG(debug) << "OpIndexerApp::configure" ; 
-}
-
 
 void OpIndexerApp::loadEvtFromFile()
 {
-    m_opticks->setSpaceDomain(0.f,0.f,0.f,1000.f);  // this is required before can create an evt 
+    m_ok->setSpaceDomain(0.f,0.f,0.f,1000.f);  // this is required before can create an evt 
 
     m_run->loadEvent();
 
@@ -65,7 +53,7 @@ void OpIndexerApp::makeIndex()
     OpticksEvent* evt = m_run->getEvent();
     if(evt->isIndexed())
     {
-        bool forceindex = m_opticks->hasOpt("forceindex");
+        bool forceindex = m_ok->hasOpt("forceindex");
         if(forceindex)
         {
             LOG(info) << "OpIndexerApp::makeIndex evt is indexed already, but --forceindex option in use, so proceeding..." ;

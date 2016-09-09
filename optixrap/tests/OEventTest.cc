@@ -8,6 +8,8 @@
 #include "STimes.hh"
 #include "Opticks.hh"
 #include "OpticksHub.hh"
+#include "OpticksRun.hh"
+#include "OpticksGen.hh"
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
 
@@ -32,11 +34,19 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
-    OpticksEvent* evt = hub.getEvent();
+
+    OpticksGen* gen = hub.getGen();
+    NPY<float>* gs0 = gen->getInputGensteps(); 
+    assert(gs0);
+
+
+    OpticksRun* run = hub.getRun();
+    run->createEvent();
+
+    OpticksEvent* evt = run->getEvent();
     evt->Summary("evt");
 
     LOG(info) << argv[0] << " evt shape " << evt->getShapeString() ; 
-    NPY<float>* gs0 = evt->getGenstepData(); 
 
 
     optix::Context context = optix::Context::create();

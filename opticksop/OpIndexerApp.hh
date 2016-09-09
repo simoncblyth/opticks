@@ -10,23 +10,24 @@ class OpticksHub ;
 class OpticksRun ; 
 
 // opticksop-
+class OpEngine ; 
 class OpIndexer ; 
 
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpIndexerApp {
    public:
       OpIndexerApp(int argc, char** argv);
-      void configure();
+   public:
       void loadEvtFromFile();
       void makeIndex();
    private:
-      void init();
-   private:
-      Opticks*              m_opticks ;   
-      OpticksHub*           m_hub ;   
+      Opticks*              m_ok ;   
       OpticksCfg<Opticks>*  m_cfg ;
-      OpIndexer*            m_indexer ; 
+      OpticksHub*           m_hub ;   
       OpticksRun*           m_run ;   
+
+      OpEngine*             m_engine ; 
+      OpIndexer*            m_indexer ; 
 
 };
 

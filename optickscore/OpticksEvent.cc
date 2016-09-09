@@ -694,6 +694,9 @@ void OpticksEvent::setBufferControl(NPYBase* data)
                      << " AS NO spec "
                      ;
 
+        Parameters* param = data->getParameters();
+        if(param)
+            param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC"); 
         assert(0);
         return ; 
     }
@@ -1722,9 +1725,19 @@ void OpticksEvent::indexPhotonsCPU()
 
     NPY<unsigned char>* recsel1 = NPY<unsigned char>::make_repeat(phosel, maxrec ) ;
     recsel1->reshape(-1, maxrec, 1, 4);
-    //recsel->save("$TMP/recsel.npy"); 
+    recsel1->setBufferSpec(m_recsel_spec);  
+
+    //recsel1->save("$TMP/recsel1.npy"); 
 
     // TODO: fix leak?, review recsel0 creation/zeroing/allocation
+    //       MAYBE NOT ALLOCATED... ANYHOW
+    //
+
+    if(recsel0 && recsel0->hasData())
+    {
+        LOG(warning) << " leaking recsel0 " ; 
+    }
+
     setRecselData(recsel1);
 
 

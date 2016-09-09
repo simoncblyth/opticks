@@ -86,6 +86,8 @@ Opticks::Opticks(int argc, char** argv, bool integrated )
        m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
 
+       m_spec(NULL),
+       m_nspec(NULL),
        m_resource(NULL),
        m_state(NULL),
 

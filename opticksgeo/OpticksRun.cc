@@ -20,10 +20,10 @@ void OpticksRun::init()
 }
 
 
-void OpticksRun::createEvent()
+void OpticksRun::createEvent(unsigned tagoffset)
 {
-    m_g4evt = m_ok->makeEvent(false) ;
-    m_evt = m_ok->makeEvent(true) ;
+    m_g4evt = m_ok->makeEvent(false, tagoffset) ;
+    m_evt = m_ok->makeEvent(true, tagoffset) ;
 
     m_evt->setSibling(m_g4evt);
     m_g4evt->setSibling(m_evt);

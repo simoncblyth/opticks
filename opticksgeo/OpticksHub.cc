@@ -383,9 +383,6 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 }
 
 
-
-
-
 OpticksEvent* OpticksHub::getG4Event()
 {
     return m_run->getG4Event() ; 
@@ -396,12 +393,6 @@ OpticksEvent* OpticksHub::getEvent()
 }
 
 
-
-
-
-
-
-
 unsigned OpticksHub::getTarget()
 {
    return m_geometry->getTarget();
@@ -410,7 +401,6 @@ void OpticksHub::setTarget(unsigned target, bool aim)
 {
     m_geometry->setTarget(target, aim );
 }
-
 
 void OpticksHub::target()
 {
@@ -443,16 +433,6 @@ void OpticksHub::target()
 
 
 
-
-
-void OpticksHub::cleanup()
-{
-#ifdef WITH_NPYSERVER
-    if(m_server) m_server->stop();
-#endif
-}
-
-
 OpticksAttrSeq* OpticksHub::getFlagNames()
 {
     return m_ok->getFlagNames();
@@ -470,6 +450,11 @@ std::map<unsigned int, std::string> OpticksHub::getBoundaryNamesMap()
     return m_geometry->getBoundaryNamesMap();
 }
 
-
+void OpticksHub::cleanup()
+{
+#ifdef WITH_NPYSERVER
+    if(m_server) m_server->stop();
+#endif
+}
 
 

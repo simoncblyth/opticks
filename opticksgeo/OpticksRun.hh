@@ -20,7 +20,7 @@ class OKGEO_API OpticksRun
 
         void setGensteps(NPY<float>* gs);
 
-        void createEvent();
+        void createEvent(unsigned tagoffset=0);  
         void loadEvent();
         void saveEvent();
     private:

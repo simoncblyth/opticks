@@ -10,6 +10,7 @@
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 #include "OpticksHub.hh"
+#include "OpticksEvent.hh"
 #include "OpticksActionControl.hh"
 
 #include "OpticksGen.hh"
@@ -37,9 +38,10 @@ NPY<float>* OpticksGen::getInputGensteps()
 {
     return m_input_gensteps ; 
 }
-void OpticksGen::setInputGensteps(NPY<float>* igs)
+void OpticksGen::setInputGensteps(NPY<float>* gs)
 {
-    m_input_gensteps = igs ;  
+    m_input_gensteps = gs ;  
+    gs->setBufferSpec(OpticksEvent::GenstepSpec());
 }
 
 void OpticksGen::initInputGensteps()

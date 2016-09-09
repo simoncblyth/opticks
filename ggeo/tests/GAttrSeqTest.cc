@@ -93,6 +93,7 @@ int main(int argc, char** argv)
     GGEO_LOG_ ;
 
     Opticks ok(argc, argv);
+    ok.configure();
 
     test_history_sequence(&ok);
     test_material_sequence(&ok);

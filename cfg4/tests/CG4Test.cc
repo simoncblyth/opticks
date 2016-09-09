@@ -4,6 +4,8 @@
 #include "OpticksMode.hh"
 #include "OpticksEvent.hh"
 #include "OpticksHub.hh"
+#include "OpticksRun.hh"
+
 #include "CG4.hh"
 
 #include "PLOG.hh"
@@ -25,15 +27,13 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    Opticks* m_opticks = new Opticks(argc, argv);
+    Opticks ok(argc, argv);
+    ok.setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
-    m_opticks->setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
-
-    OpticksHub* m_hub = new OpticksHub(m_opticks) ; 
-
+    OpticksHub hub(&ok) ; 
+    OpticksRun* run = hub.getRun();
     
-
-    CG4* g4 = new CG4(m_hub) ; 
+    CG4* g4 = new CG4(&hub) ; 
 
     LOG(info) << "  CG4 ctor DONE "  ;
 
@@ -50,11 +50,15 @@ int main(int argc, char** argv)
 
     LOG(info) << "  CG4 interactive DONE "  ;
 
+
+    run->createEvent();
+
     g4->propagate();
 
     LOG(info) << "  CG4 propagate DONE "  ;
 
-    OpticksEvent* evt = m_hub->getG4Event();
+
+    OpticksEvent* evt = run->getG4Event();
     assert(evt->isG4()); 
     evt->save();
 
