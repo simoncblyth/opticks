@@ -6,6 +6,7 @@
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
+#include "OpticksCfg.hh"
 
 // opticksgeo-
 #include "OpticksHub.hh"

@@ -125,7 +125,7 @@ set(SOURCES
     OScintillatorLib.cc
     OSourceLib.cc
     OTracer.cc
-    OEngineImp.cc
+    OScene.cc
 
     OBuf_.cu     
     OBufBase_.cu     
@@ -199,7 +199,7 @@ set(HEADERS
     OProg.hh
     OGeo.hh
     OTracer.hh
-    OEngineImp.hh
+    OScene.hh
 
     OColors.hh
     OBndLib.hh

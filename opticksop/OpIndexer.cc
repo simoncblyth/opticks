@@ -2,9 +2,6 @@
 #include <algorithm>
 #include <cassert>
 
-// opticksop-
-#include "OpIndexer.hh"
-
 // optickscore-
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
@@ -29,7 +26,6 @@
 // optixrap-
 #include "OBuf.hh"
 #include "OContext.hh"
-#include "OEngineImp.hh"
 #include "OPropagator.hh"
 
 // cudawrap-
@@ -38,6 +34,12 @@
 
 // thrust 
 #include <thrust/device_vector.h>
+
+
+// opticksop-
+#include "OpIndexer.hh"
+#include "OpEngine.hh"
+
 
 
 #define TIMER(s) \
@@ -50,14 +52,14 @@
     }
 
 
-OpIndexer::OpIndexer(OpticksHub* hub, OEngineImp* imp)  
+OpIndexer::OpIndexer(OpticksHub* hub, OpEngine* engine)  
    :
      m_hub(hub),
-     m_imp(imp),
+     m_engine(engine),
      m_opticks(hub->getOpticks()),
      m_evt(NULL),
-     m_ocontext(imp->getOContext()),
-     m_propagator(imp->getOPropagator()),
+     m_ocontext(engine->getOContext()),
+     m_propagator(engine->getOPropagator()),
      m_seq(NULL),
      m_pho(NULL),
      m_verbose(false),

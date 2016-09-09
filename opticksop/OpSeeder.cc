@@ -1,14 +1,9 @@
 #include <cstddef>
-#include "OpSeeder.hh"
 
-// optickscore-
-#include "OpticksEvent.hh"
+#include "OpticksEvent.hh"  // okc-
+#include "OpticksHub.hh"    // okg-
 
-// opticksgeo-
-#include "OpticksHub.hh"
-
-// npy-
-#include "Timer.hpp"
+#include "Timer.hpp"   // npy-
 #include "NPY.hpp"
 
 // cudawrap-
@@ -22,8 +17,10 @@
 // optixrap-
 #include "OContext.hh"
 #include "OPropagator.hh"
-#include "OEngineImp.hh"
 #include "OBuf.hh"
+
+#include "OpSeeder.hh"
+#include "OpEngine.hh"
 
 #include "PLOG.hh"
 
@@ -38,22 +35,14 @@
 
 
 
-OpSeeder::OpSeeder(OpticksHub* hub, OEngineImp* imp)  
+OpSeeder::OpSeeder(OpticksHub* hub, OpEngine* engine)  
    :
      m_hub(hub),
-     m_imp(imp),
-     m_ocontext(imp->getOContext()),
-     m_propagator(imp->getOPropagator())
-{
-   init(); 
-}
-
-
-
-void OpSeeder::init()
+     m_engine(engine),
+     m_ocontext(engine->getOContext()),
+     m_propagator(engine->getOPropagator())
 {
 }
-
 
 
 void OpSeeder::seedPhotonsFromGensteps()

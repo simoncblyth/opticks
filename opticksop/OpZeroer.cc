@@ -23,7 +23,7 @@
 // optixrap-
 #include "OContext.hh"
 #include "OPropagator.hh"
-#include "OEngineImp.hh"
+#include "OpEngine.hh"
 #include "OBuf.hh"
 
 
@@ -39,12 +39,12 @@
 
 
 
-OpZeroer::OpZeroer(OpticksHub* hub, OEngineImp* imp)  
+OpZeroer::OpZeroer(OpticksHub* hub, OpEngine* engine)  
    :
      m_hub(hub),
-     m_imp(imp),
-     m_ocontext(imp->getOContext()),
-     m_propagator(imp->getOPropagator())
+     m_engine(engine),
+     m_ocontext(engine->getOContext()),
+     m_propagator(engine->getOPropagator())
 {
 }
 

@@ -12,25 +12,32 @@
 
 // optixrap-
 #include "OPropagator.hh"
-#include "OEngineImp.hh"
+#include "OScene.hh"
 
 #include "PLOG.hh"
 
+
 OContext* OpEngine::getOContext()
 {
-    return m_imp->getOContext(); 
+    return m_scene->getOContext(); 
 }
+
+OPropagator* OpEngine::getOPropagator()
+{
+    return m_propagator ; 
+}
+
 
 OpEngine::OpEngine(OpticksHub* hub) 
      : 
       m_log(new SLog("OpEngine::OpEngine")),
       m_hub(hub),
       m_ok(m_hub->getOpticks()),
-      m_imp(new OEngineImp(m_hub)),
-      m_propagator(m_imp->getOPropagator()),
-      m_seeder(new OpSeeder(m_hub, m_imp)),
-      m_zeroer(new OpZeroer(m_hub, m_imp)),
-      m_indexer(new OpIndexer(m_hub, m_imp))
+      m_scene(new OScene(m_hub)),
+      m_propagator(OPropagator::make(m_scene->getOContext(), m_hub)),
+      m_seeder(new OpSeeder(m_hub, this)),
+      m_zeroer(new OpZeroer(m_hub, this)),
+      m_indexer(new OpIndexer(m_hub, this))
 {
    (*m_log)("DONE");
 }
@@ -65,7 +72,7 @@ void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffe
 }
 void OpEngine::cleanup()
 {
-    m_imp->cleanup();
+    m_scene->cleanup();
 }
 
 

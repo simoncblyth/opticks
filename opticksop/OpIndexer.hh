@@ -53,7 +53,7 @@
 class OBuf ; 
 class OContext ; 
 class OPropagator ; 
-class OEngineImp ; 
+class OpEngine ; 
 
 class TBuf ; 
 
@@ -94,7 +94,7 @@ Sequence Indexing histograms the per-photon sequ
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpIndexer {
    public:
-      OpIndexer(OpticksHub* hub, OEngineImp* imp);
+      OpIndexer(OpticksHub* hub, OpEngine* engine);
       void setVerbose(bool verbose=true);
       void setNumPhotons(unsigned int num_photons);
       void setSeq(OBuf* seq);
@@ -150,7 +150,7 @@ class OKOP_API OpIndexer {
    private:
       // resident
       OpticksHub*              m_hub ; 
-      OEngineImp*              m_imp ; 
+      OpEngine*                m_engine ; 
       Opticks*                 m_opticks ; 
       OpticksEvent*            m_evt ; 
       OContext*                m_ocontext ;

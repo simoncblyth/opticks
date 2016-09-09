@@ -5,7 +5,7 @@ class SLog ;
 class Opticks ;       // okc-
 class OpticksHub ;    // okg-
 
-class OEngineImp ;   // optixrap-
+class OScene ;   // optixrap-
 class OPropagator ; 
 class OContext ; 
 
@@ -25,13 +25,16 @@ Canonical m_engine instance resides in ggeoview-/OKPropagator
 **/
 
 class OKOP_API OpEngine {
+       // friends can access the OPropagator
+       friend class OpIndexer ; 
+       friend class OpSeeder ; 
+       friend class OpZeroer ; 
     public:
        OpEngine(OpticksHub* hub);
     public:
-       OContext* getOContext();         // needed by opticksgl-/OpViz
- 
-       void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
+       OContext*    getOContext();         // needed by opticksgl-/OpViz
 
+       void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
        void downloadEvent();
        void uploadEvent();
 
@@ -39,13 +42,15 @@ class OKOP_API OpEngine {
        void Summary(const char* msg="OpEngine::Summary");
 
     private:
+       OPropagator* getOPropagator();
+    private:
        void downloadPhotonData();       // see App::dbgSeed
 
     private:
        SLog*                m_log ; 
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
-       OEngineImp*          m_imp ; 
+       OScene*              m_scene ; 
        OPropagator*         m_propagator ; 
        OpSeeder*            m_seeder ; 
        OpZeroer*            m_zeroer ; 
