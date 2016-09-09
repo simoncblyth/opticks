@@ -47,6 +47,29 @@ Steps to create a new project
 
 
 
+Debugging Tip
+---------------
+
+::
+
+    (lldb) expr -- m_parameters->dump("")
+
+          TimeStamp : 20160909_200652
+               Type :           g4gun
+                Tag :              -1
+           Detector :         dayabay
+                Cat :                
+               UDet :         dayabay
+                 Id :               0
+             RngMax :         3000000
+          BounceMax :               9
+          RecordMax :              10
+               mode :    INTEROP_MODE
+            cmdline :        --g4gun 
+    (lldb) 
+
+
+
 Buffer Flow Review  (pseudo code)
 --------------------------------------
 

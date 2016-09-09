@@ -1666,11 +1666,11 @@ void OpticksEvent::setNumPhotonsPerG4Event(unsigned int n)
 }
 unsigned int OpticksEvent::getNumG4Event()
 {
-   return m_parameters->get<int>("NumG4Event");
+   return m_parameters->get<int>("NumG4Event","1");
 }
 unsigned int OpticksEvent::getNumPhotonsPerG4Event()
 {
-   return m_parameters->get<int>("NumPhotonsPerG4Event");
+   return m_parameters->get<int>("NumPhotonsPerG4Event","0");  // "0" : fallback if not set (eg for G4GUN running )
 }
  
 void OpticksEvent::postPropagateGeant4()

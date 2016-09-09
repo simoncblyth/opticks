@@ -334,7 +334,7 @@ cfg4---(){     touch $(cfg4-apihh) ; cfg4--  ; }
 cfg4-wipe(){    local bdir=$(cfg4-bdir) ; rm -rf $bdir ; } 
 
 cfg4--(){       opticks-- $(cfg4-bdir) ; } 
-cfg4-ctest(){   opticks-ctest $(cfg4-bdir) $* ; } 
+cfg4-t(){       opticks-t $(cfg4-bdir) $* ; } 
 cfg4-genproj(){ cfg4-scd ; opticks-genproj $(cfg4-name) $(cfg4-tag) ; } 
 cfg4-gentest(){ cfg4-tcd ; opticks-gentest ${1:-CExample} $(cfg4-tag) ; } 
 cfg4-txt(){     vi $(cfg4-sdir)/CMakeLists.txt $(cfg4-tdir)/CMakeLists.txt ; } 

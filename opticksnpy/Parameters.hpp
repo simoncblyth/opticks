@@ -35,7 +35,8 @@ class NPY_API Parameters {
        template <typename T> 
        T get(const char* name, const char* fallback);
    public:
-       void dump(const char* msg="Parameters::dump");
+       void dump();
+       void dump(const char* msg);
        void prepLines();
        std::vector<std::string>& getLines();
    public:

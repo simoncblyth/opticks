@@ -42,7 +42,7 @@ okg4---(){     touch $(okg4-apihh) ; okg4--  ; }
 okg4-wipe(){    local bdir=$(okg4-bdir) ; rm -rf $bdir ; } 
 
 okg4--(){       opticks-- $(okg4-bdir) ; } 
-okg4-ctest(){   opticks-ctest $(okg4-bdir) $* ; } 
+okg4-t(){       opticks-t $(okg4-bdir) $* ; } 
 okg4-genproj(){ okg4-scd ; oks- ; oks-genproj $(okg4-name) $(okg4-tag) ; } 
 okg4-gentest(){ okg4-tcd ; oks- ; oks-gentest ${1:-CExample} $(okg4-tag) ; } 
 okg4-txt(){     vi $(okg4-sdir)/CMakeLists.txt $(okg4-tdir)/CMakeLists.txt ; } 

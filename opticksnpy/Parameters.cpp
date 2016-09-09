@@ -71,6 +71,10 @@ void Parameters::save(const char* dir, const char* name)
 }
 
 
+void Parameters::dump()
+{
+    dump("Parameters::dump");  // handy for debugging::   (lldb) expr m_parameters->dump()
+}
 
 void Parameters::dump(const char* msg)
 {
