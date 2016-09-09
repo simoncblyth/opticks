@@ -11,6 +11,7 @@
 #include "OpZeroer.hh"
 
 // optixrap-
+#include "OPropagator.hh"
 #include "OEngineImp.hh"
 
 #include "PLOG.hh"
@@ -26,29 +27,22 @@ OpEngine::OpEngine(OpticksHub* hub)
       m_hub(hub),
       m_ok(m_hub->getOpticks()),
       m_imp(new OEngineImp(m_hub)),
+      m_propagator(m_imp->getOPropagator()),
       m_seeder(new OpSeeder(m_hub, m_imp)),
       m_zeroer(new OpZeroer(m_hub, m_imp)),
       m_indexer(new OpIndexer(m_hub, m_imp))
 {
-   init();
    (*m_log)("DONE");
-}
-
-void OpEngine::init()
-{
-   
 }
 
 
 void OpEngine::propagate()
 {
-    m_imp->uploadEvent();                   // creates OptiX buffers, uploads gensteps
-
     m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer
 
     m_zeroer->zeroRecords();              // zeros on GPU record buffer via OptiX or OpenGL  (not working OptiX 4 in interop)
 
-    m_imp->propagate();                   // perform OptiX GPU propagation 
+    m_propagator->launch();                   // perform OptiX GPU propagation 
 
     m_indexer->indexSequence();
 
@@ -56,14 +50,18 @@ void OpEngine::propagate()
 }
 
 
-
-void OpEngine::downloadEvt()
+void OpEngine::uploadEvent()
 {
-    m_imp->downloadEvent();
+    m_propagator->uploadEvent();                   // creates OptiX buffers, uploads gensteps
 }
+void OpEngine::downloadEvent()
+{
+    m_propagator->downloadEvent();
+}
+
 void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffer overwrite in interop mode on Linux)
 {
-    m_imp->downloadPhotonData();
+     if(m_ok->isCompute()) m_propagator->downloadPhotonData(); 
 }
 void OpEngine::cleanup()
 {

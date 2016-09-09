@@ -279,7 +279,7 @@ void OpticksViz::uploadEvent(OpticksEvent* evt)
     m_scene->upload(evt);
 
     if(m_hub->hasOpt("dbguploads"))
-        m_scene->dump_uploads_table("OpticksViz::uploadEvent");
+        m_scene->dump_uploads_table("OpticksViz::uploadEvent(--dbguploads)");
 
     LOG(info) << "OpticksViz::uploadEvent (" << evt->getId() << ") DONE "  ;
 }

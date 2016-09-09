@@ -19,6 +19,9 @@ void OEvent::setEvent(OpticksEvent* evt)
 
 }
 
+// canonical single OEvent instance resides in OPropagator 
+// and is instanciated with OPropagator
+
 OEvent::OEvent(OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent")),

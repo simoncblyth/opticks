@@ -22,10 +22,8 @@
 #include "OSourceLib.hh"
 #include "OBuf.hh"
 #include "OConfig.hh"
-#include "OTracer.hh"
-#include "OPropagator.hh"
 
-#include "OEngineImp.hh"
+#include "OScene.hh"
 
 
 #include "PLOG.hh"
@@ -37,20 +35,15 @@
     }
 
 
-OContext* OEngineImp::getOContext()
+OContext* OScene::getOContext()
 {
     return m_ocontext ; 
 }
-OPropagator* OEngineImp::getOPropagator()
-{
-    return m_opropagator ; 
-}
 
-
-OEngineImp::OEngineImp(OpticksHub* hub) 
+OScene::OScene(OpticksHub* hub) 
      :   
-      m_log(new SLog("OEngineImp::OEngineImp")),
-      m_timer(new Timer("OEngineImp::")),
+      m_log(new SLog("OScene::OScene")),
+      m_timer(new Timer("OScene::")),
       m_hub(hub),
       m_ok(hub->getOpticks()),
       m_cfg(m_ok->getCfg()),
@@ -61,27 +54,17 @@ OEngineImp::OEngineImp(OpticksHub* hub)
       m_ogeo(NULL),
       m_olib(NULL),
       m_oscin(NULL),
-      m_osrc(NULL),
-      m_otracer(NULL),
-      m_opropagator(NULL)
+      m_osrc(NULL)
 {
       init();
       (*m_log)("DONE");
 }
 
-void OEngineImp::init()
+void OScene::init()
 {
+    LOG(trace) << "OScene::init START" ; 
     m_timer->setVerbose(true);
     m_timer->start();
-
-    prepareOptiXGeometry();
-    preparePropagator();
-}
-
-
-void OEngineImp::prepareOptiXGeometry()
-{
-    LOG(trace) << "OEngineImp::prepareOptiX START" ; 
 
     std::string builder_   = m_cfg->getBuilder();
     std::string traverser_ = m_cfg->getTraverser();
@@ -93,7 +76,7 @@ void OEngineImp::prepareOptiXGeometry()
 
     optix::Context context = optix::Context::create();
 
-    LOG(debug) << "OEngineImp::prepareOptiX (OContext)" ;
+    LOG(debug) << "OScene::init (OContext)" ;
     m_ocontext = new OContext(context, mode);
     m_ocontext->setStackSize(m_cfg->getStack());
     m_ocontext->setPrintIndex(m_cfg->getPrintIndex().c_str());
@@ -103,123 +86,52 @@ void OEngineImp::prepareOptiXGeometry()
 
     if(m_ggeo == NULL)
     {
-        LOG(warning) << "OEngineImp::prepareOptiX EARLY EXIT AS no geometry " ; 
+        LOG(warning) << "OScene::init EARLY EXIT AS no geometry " ; 
         return ; 
     }
 
 
-    LOG(debug) << "OEngineImp::prepareOptiX (OColors)" ;
+    LOG(debug) << "OScene::init (OColors)" ;
     m_ocolors = new OColors(context, m_ok->getColors() );
     m_ocolors->convert();
 
     // formerly did OBndLib here, too soon
 
-    LOG(debug) << "OEngineImp::prepareOptiX (OSourceLib)" ;
+    LOG(debug) << "OScene::init (OSourceLib)" ;
     m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
     m_osrc->convert();
 
 
     const char* slice = "0:1" ;
-    LOG(debug) << "OEngineImp::prepareOptiX (OScintillatorLib) slice " << slice  ;
+    LOG(debug) << "OScene::init (OScintillatorLib) slice " << slice  ;
     m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
     m_oscin->convert(slice);
 
 
-    LOG(debug) << "OEngineImp::prepareOptiX (OGeo)" ;
+    LOG(debug) << "OScene::init (OGeo)" ;
     m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
-    LOG(debug) << "OEngineImp::prepareOptiX (OGeo) -> setTop" ;
+    LOG(debug) << "OScene::init (OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
-    LOG(debug) << "OEngineImp::prepareOptiX (OGeo) -> convert" ;
+    LOG(debug) << "OScene::init (OGeo) -> convert" ;
     m_ogeo->convert();
-    LOG(debug) << "OEngineImp::prepareOptiX (OGeo) done" ;
+    LOG(debug) << "OScene::init (OGeo) done" ;
 
 
-    LOG(debug) << "OEngineImp::prepareOptiX (OBndLib)" ;
+    LOG(debug) << "OScene::init (OBndLib)" ;
     m_olib = new OBndLib(context,m_ggeo->getBndLib());
     m_olib->convert();
     // this creates the BndLib dynamic buffers, which needs to be after OGeo
     // as that may add boundaries when using analytic geometry
 
 
-    LOG(debug) << m_ogeo->description("OEngineImp::prepareOptiX ogeo");
-    LOG(trace) << "OEngineImp::prepareOptiXGeometry DONE" ;
+    LOG(debug) << m_ogeo->description("OScene::init ogeo");
+    LOG(trace) << "OScene::init DONE" ;
 }
 
 
-void OEngineImp::preparePropagator()
-{
-    bool trivial    = m_cfg->hasOpt("trivial");
-    bool seedtest   = m_cfg->hasOpt("seedtest");
-    int  override_   = m_cfg->getOverride();
-
-    LOG(trace) << "OEngineImp::preparePropagator" 
-              << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
-              << " override_ " << override_
-              ;  
-
-    unsigned int entry ;
-
-    bool defer = true ; 
-
-    if(trivial)
-        entry = m_ocontext->addEntry("generate.cu.ptx", "trivial", "exception", defer);
-    else if(seedtest)
-        entry = m_ocontext->addEntry("seedTest.cu.ptx", "seedTest", "exception", defer);
-    else
-        entry = m_ocontext->addEntry("generate.cu.ptx", "generate", "exception", defer);
-
-
-    m_opropagator = new OPropagator(m_ocontext, m_hub, entry, override_);   // prelaunch done in init
-
-    LOG(trace) << "OEngineImp::preparePropagator DONE ";
-}
-
-
-void OEngineImp::uploadEvent()
-{
-    TIMER("_uploadEvent");
-
-    m_opropagator->uploadEvent();
-
-    TIMER("uploadEvent");
-}
-
-
-void OEngineImp::propagate()
-{
-    LOG(trace)<< "OEngineImp::propagate" ;
-
-    m_opropagator->launch();
-
-    TIMER("propagate");
-}
-
-
-void OEngineImp::downloadEvent()
-{
-    // note that "interop" download with Rdr::download(evt);   
-    // is now done from App::saveEvt just prior to this being called
-
-    m_opropagator->downloadEvent();  
-
-    // formerly did OPropagator::downloadEvt only in compute mode
-    // but now that interop/compute are blurring have to check each buffer
-    // as some may be compute mode even whilst running interop
-
-    TIMER("downloadEvt");
-}
-
-
-void OEngineImp::cleanup()
+void OScene::cleanup()
 {
    if(m_ocontext) m_ocontext->cleanUp();
 }
 
 
-void OEngineImp::downloadPhotonData()
-{
-    if(m_ok->isCompute())
-    {
-        m_opropagator->downloadPhotonData();
-    }
-}

@@ -187,6 +187,9 @@ void OpticksCfg<Listener>::init()
        ("dbgseed",  "save empty interop mode photons buffer after seeding to $TMP/dbgseed.npy "); 
    m_desc.add_options()
        ("dbginterop", "used Scene::initRenderersDebug with subset of renderers "); 
+   m_desc.add_options()
+       ("dbguploads", "used in OpticksViz::uploadEvent to dump the uploads table "); 
+
 
 
    m_desc.add_options()

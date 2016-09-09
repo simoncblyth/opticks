@@ -69,6 +69,39 @@ OBuf* OPropagator::getRecordBuf()
 
 
 
+OPropagator* OPropagator::make(OContext* ocontext, OpticksHub* hub )
+{
+    Opticks* ok = hub->getOpticks() ;
+    OpticksCfg<Opticks>* cfg = ok->getCfg();
+
+    bool trivial   = cfg->hasOpt("trivial");
+    bool seedtest  = cfg->hasOpt("seedtest");
+    int  override_  = cfg->getOverride();
+
+    LOG(trace) << "OPropagator::make" 
+              << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
+              << " override_ " << override_
+              ;  
+
+    unsigned int entry ;
+
+    bool defer = true ; 
+
+    if(trivial)
+        entry = ocontext->addEntry("generate.cu.ptx", "trivial", "exception", defer);
+    else if(seedtest)
+        entry = ocontext->addEntry("seedTest.cu.ptx", "seedTest", "exception", defer);
+    else
+        entry = ocontext->addEntry("generate.cu.ptx", "generate", "exception", defer);
+
+
+    OPropagator* opropagator = new OPropagator(ocontext, hub, entry, override_);   
+    return opropagator ; 
+}
+
+
+
+
 
 OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_) 
    :

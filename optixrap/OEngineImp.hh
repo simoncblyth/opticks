@@ -13,29 +13,18 @@ class OGeo ;
 class OBndLib ; 
 class OScintillatorLib ; 
 class OSourceLib ; 
-class OTracer ; 
-class OPropagator ; 
+
 
 #include "OXRAP_API_EXPORT.hh"
-class OXRAP_API OEngineImp {
+class OXRAP_API OScene {
     public:
-       OEngineImp(OpticksHub* hub);
-    private:
-       void init();
+       OScene(OpticksHub* hub);
     public:
        OContext*    getOContext();
-       OPropagator* getOPropagator();
     public:
-       void uploadEvent();
-       void propagate(); 
-       void downloadEvent();
-    public:
-       void downloadPhotonData();
        void cleanup();
     private:
-       void prepareOptiXGeometry();     // creates OptiX context and populates with geometry info
-       void preparePropagator();        // create OPropagator does prelaunch
-
+       void init();   // creates OptiX context and populates with geometry info
     private:
        SLog*                m_log ; 
        Timer*               m_timer ;
@@ -50,9 +39,6 @@ class OXRAP_API OEngineImp {
        OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
        OSourceLib*       m_osrc ; 
-       OTracer*          m_otracer ; 
-       OPropagator*      m_opropagator ; 
-
 
 };
 

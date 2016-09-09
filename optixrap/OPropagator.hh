@@ -19,6 +19,7 @@ struct STimes ;
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
     public:
+        static OPropagator* make(OContext* ocontext, OpticksHub* hub );
         OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_=0); 
     public:
         void prelaunch();   // done with the zero event

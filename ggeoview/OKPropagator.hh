@@ -8,8 +8,11 @@ class OpticksIdx ;
 class OpticksViz ; 
 class Opticks ; 
 
+
+#ifdef WITH_OPTIX
 class OpEngine ; 
 class OKGLTracer ; 
+#endif
 
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
@@ -25,26 +28,34 @@ doing the OptiX launch to populate
 the buffers and downloading back into the 
 event.
 
+Methods intended to operate above the 
+level of the compute/interop split.
+
+
 **/
 
 
 class GGV_API OKPropagator {
    public:
        OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz);
-       virtual ~OKPropagator();
    public:
        void propagate();
        void cleanup();
-   private:
-       void init();
+   public:
+       void uploadEvent();
+       void downloadEvent();
+       void indexEvent();
    private:
        SLog*          m_log ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        OpticksViz*    m_viz ; 
        Opticks*       m_ok ; 
+#ifdef WITH_OPTIX
        OpEngine*      m_engine ; 
        OKGLTracer*    m_tracer ; 
+#endif
+       int            m_placeholder ; 
        
 };
 

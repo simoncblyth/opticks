@@ -7,6 +7,22 @@ class OpticksEvent ;
 class OContext ; 
 class OBuf ; 
 
+/**
+
+OEvent
+=======
+
+OptiX buffers representing an OpticksEvent propagation.
+
+The canonical single OEvent instance resides 
+in OPropagator and is instanciated together with OPropagator.
+
+Buffers are created at the first *upload* and
+are subsequently resized to correspond to the OpticksEvent. 
+
+**/
+
+
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OEvent 
 {

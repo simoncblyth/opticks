@@ -73,6 +73,9 @@ void OKMgr::propagate()
     {
          m_run->loadEvent(); 
 
+#ifdef WITH_OPTIX
+         m_propagator->uploadEvent();
+#endif
          if(m_viz) 
          {
              m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
