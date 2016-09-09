@@ -49,11 +49,17 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
-#include "define.h"
+//#include "numquad.h"
 //#define DEBUG 1 
 #include "PerRayData_propagate.h"
 
 using namespace optix;
+
+
+rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
+rtDeclareVariable(unsigned int,  PNUMQUAD, , );
+rtDeclareVariable(unsigned int,  RNUMQUAD, , );
+rtDeclareVariable(unsigned int,  GNUMQUAD, , );
 
 #include "quad.h"
 #include "boundary_lookup.h"
@@ -99,6 +105,7 @@ rtDeclareVariable(float,         propagate_epsilon, , );
 rtDeclareVariable(unsigned int,  propagate_ray_type, , );
 rtDeclareVariable(unsigned int,  bounce_max, , );
 rtDeclareVariable(unsigned int,  record_max, , );
+
 rtDeclareVariable(rtObject,      top_object, , );
 
 // beyond MAXREC overwrite save into top slot
@@ -156,8 +163,11 @@ RT_PROGRAM void trivial()
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
+    int gencode = ghead.i.x ; 
+    
+    rtPrintf("(trivial) GNUMQUAD %d PNUMQUAD %d RNUMQUAD %d \n", GNUMQUAD, PNUMQUAD, RNUMQUAD );
 
-    rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d GNUMQUAD %d genstep_offset %d \n", photon_id, photon_offset, genstep_id, GNUMQUAD, genstep_offset  );
+    rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d genstep_offset %d gencode %d \n", photon_id, photon_offset, genstep_id, genstep_offset, gencode );
 
     //rtPrintf("ghead.i.x %d \n", ghead.i.x );
     //
@@ -190,6 +200,8 @@ RT_PROGRAM void generate()
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
+    int gencode = ghead.i.x ; 
+
 
 #ifdef DEBUG
     bool dbg = photon_id == debug_control.x ;  
@@ -207,7 +219,7 @@ RT_PROGRAM void generate()
     Photon p ;  
 
 
-    if(ghead.i.x == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
+    if(gencode == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
     {
         CerenkovStep cs ;
         csload(cs, genstep_buffer, genstep_offset, genstep_id);
@@ -218,7 +230,7 @@ RT_PROGRAM void generate()
         //MaterialIndex = cs.MaterialIndex ;  
         s.flag = CERENKOV ;  
     }
-    else if(ghead.i.x == SCINTILLATION)
+    else if(gencode == SCINTILLATION)
     {
         ScintillationStep ss ;
         ssload(ss, genstep_buffer, genstep_offset, genstep_id);
@@ -229,7 +241,7 @@ RT_PROGRAM void generate()
         //MaterialIndex = ss.MaterialIndex ;  
         s.flag = SCINTILLATION ;  
     }
-    else if(ghead.i.x == TORCH)
+    else if(gencode == TORCH)
     {
         TorchStep ts ;
         tsload(ts, genstep_buffer, genstep_offset, genstep_id);

@@ -1,10 +1,15 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
-#include "define.h"
+//#include "numquad.h"
 #include "quad.h"
 
 using namespace optix;
+
+rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
+rtDeclareVariable(unsigned int,  PNUMQUAD, , );
+rtDeclareVariable(unsigned int,  RNUMQUAD, , );
+rtDeclareVariable(unsigned int,  GNUMQUAD, , );
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );

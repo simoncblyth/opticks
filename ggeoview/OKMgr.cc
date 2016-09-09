@@ -96,7 +96,7 @@ void OKMgr::propagate()
         {
             m_run->createEvent();
 
-            m_run->setGensteps(m_gen->getInputGensteps()); 
+            m_run->setGensteps(m_gen->getInputGensteps()->clone()); 
 
             m_propagator->propagate();
 

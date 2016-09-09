@@ -142,6 +142,11 @@ void OPropagator::initParameters()
     m_context[ "bounce_max" ]->setUint( m_ok->getBounceMax() );
     m_context[ "record_max" ]->setUint( m_ok->getRecordMax() );
 
+    m_context[ "RNUMQUAD" ]->setUint( 2 );   // quads per record 
+    m_context[ "PNUMQUAD" ]->setUint( 4 );   // quads per photon
+    m_context[ "GNUMQUAD" ]->setUint( 6 );   // quads per genstep
+    m_context["SPEED_OF_LIGHT"]->setFloat(299.792458f) ;   // mm/ns
+
     optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0,0);
     LOG(debug) << "OPropagator::init debugControl " 
               << " x " << debugControl.x 

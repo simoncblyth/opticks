@@ -1,6 +1,6 @@
 #pragma once
 
-#include "define.h"
+//#include "numquad.h"
 
 #define NM_BLUE   475.f
 #define NM_GREEN  510.f

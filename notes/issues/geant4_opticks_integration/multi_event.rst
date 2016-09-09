@@ -53,7 +53,7 @@ Things to try
 
 * Does buffer recreation always mean a long prelaunch ?
 * DONE: isolated test of changing OptiX buffer, filling with some marker stripes, using the same machinery 
-* Try skipping prelaunch, for events after the 1st 
+* DONE : Try skipping prelaunch, for events after the 1st  : makes no difference
 
 
 DONE : bufferTest.cu bufferTest.cc
@@ -69,9 +69,32 @@ But this has issue in interop as to craete the OpenGL buffers
 will need to OpticksViz::uploadEvent() for this zero event.
 
 
+Trivial Program works
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OKTest --compute --trivial --multievent 2 
 
 
+::
 
+    simon:cu blyth$ cat ../numquad.h 
+    #define GNUMQUAD 6  // quads per genstep  
+    #define PNUMQUAD 4  // quads per photon  
+    #define RNUMQUAD 2  // quads per record  
+
+
+But the NUMQUAD defines coming out with wrong values::
+
+    (trivial) photon_id 59 photon_offset 0 genstep_id 236 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 60 photon_offset 0 genstep_id 240 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 61 photon_offset 0 genstep_id 244 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 62 photon_offset 0 genstep_id 248 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 63 photon_offset 0 genstep_id 252 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 32 photon_offset 0 genstep_id 128 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 33 photon_offset 0 genstep_id 132 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
+    (trivial) photon_id 34 photon_offset 0 genstep_id 136 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
 
 
 

@@ -3,7 +3,13 @@
 
 using namespace optix;
 
-#include "define.h"
+//#include "numquad.h"
+
+rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
+rtDeclareVariable(unsigned int,  PNUMQUAD, , );
+rtDeclareVariable(unsigned int,  RNUMQUAD, , );
+rtDeclareVariable(unsigned int,  GNUMQUAD, , );
+
 #include "quad.h"
 
 rtBuffer<float4>               genstep_buffer ;

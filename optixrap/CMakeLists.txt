@@ -209,7 +209,7 @@ set(HEADERS
     OAccel.hh
     OPropagator.hh
     OEvent.hh
-    define.h
+    numquad.h
 
     OBuf.hh
     OBufBase.hh
