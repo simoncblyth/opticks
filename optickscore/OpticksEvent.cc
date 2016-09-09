@@ -158,7 +158,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_sequence_spec(NULL),
 
           m_prelaunch_times(new STimes),
-          m_launch_times(new STimes)
+          m_launch_times(new STimes),
+          m_sibling(NULL)
 {
     init();
 }
@@ -178,6 +179,18 @@ STimes* OpticksEvent::getLaunchTimes()
 {
     return m_launch_times ; 
 }
+
+void OpticksEvent::setSibling(OpticksEvent* sibling)
+{
+    m_sibling = sibling ; 
+}
+OpticksEvent* OpticksEvent::getSibling()
+{
+    return m_sibling ; 
+}
+
+
+
 
 
 bool OpticksEvent::isNoLoad()
@@ -249,6 +262,11 @@ void OpticksEvent::setMaxRec(unsigned int maxrec)
 }
 
 
+
+bool OpticksEvent::hasGenstepData()
+{
+    return m_genstep_data != NULL ; 
+}
 
 NPY<float>* OpticksEvent::getGenstepData()
 { 
@@ -827,7 +845,7 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 
 const glm::vec4& OpticksEvent::getGenstepCenterExtent()
 {
-    assert(m_genstep_vpos && "must setGenstepData before getGenstepCenterExtent"); 
+    assert(m_genstep_vpos && "check hasGenstepData() before getGenstepCenterExtent"); 
     return m_genstep_vpos->getCenterExtent() ; 
 }
 

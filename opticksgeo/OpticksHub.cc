@@ -43,6 +43,9 @@
 
 // opticksgeo-
 #include "OpticksHub.hh"
+#include "OpticksGen.hh"
+#include "OpticksGun.hh"
+#include "OpticksRun.hh"
 #include "OpticksGeometry.hh"
 
 #include "PLOG.hh"
@@ -70,18 +73,13 @@
 //    this means is usable from anywhere, so can mop up config
 //
 
-OpticksHub::OpticksHub(Opticks* opticks, bool immediate) 
+OpticksHub::OpticksHub(Opticks* opticks) 
    :
    m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(opticks),
-   m_immediate(immediate),
    m_geometry(NULL),
    m_ggeo(NULL),
    m_composition(new Composition),
-   m_evt(NULL),
-   m_g4evt(NULL),
-   m_okevt(NULL),
-   m_torchstep(NULL),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
@@ -90,7 +88,10 @@ OpticksHub::OpticksHub(Opticks* opticks, bool immediate)
    m_fcfg(m_ok->getCfg()),
    m_state(NULL),
    m_lookup(new NLookup()),
-   m_bookmarks(NULL)
+   m_bookmarks(NULL),
+   m_gen(NULL),
+   m_gun(NULL),
+   m_run(NULL)
 {
    init();
    (*m_log)("DONE");
@@ -101,17 +102,15 @@ void OpticksHub::init()
 {
     add(m_fcfg);
 
-#ifdef WITH_NPYSERVER
-    m_delegate    = new numpydelegate ; 
-    add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
-#endif
+    configure();
+    configureServer();
+    configureCompositionSize();
+    configureLookupA();
+    loadGeometry() ;    
 
-   if(m_immediate) 
-   {
-       configure();
-       loadGeometry() ;    
-       setupInputGensteps();
-   }
+    m_gen = new OpticksGen(this) ;
+    m_gun = new OpticksGun(this) ;
+    m_run = new OpticksRun(this) ;
 }
 
 void OpticksHub::configure()
@@ -155,23 +154,16 @@ void OpticksHub::configure()
         LOG(fatal) << "OpticksHub::configure OPTICKS INVALID : missing envvar or geometry path ?" ;
         assert(0);
     }
-#ifdef WITH_NPYSERVER
-    configureServer();
-#endif
-
-    configureCompositionSize();
-
-    configureLookupA();
-
-    TIMER("configure");
 }
 
 
-
-
-#ifdef WITH_NPYSERVER
 void OpticksHub::configureServer()
 {
+#ifdef WITH_NPYSERVER
+
+    m_delegate    = new numpydelegate ; 
+    add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
+
     if(!hasOpt("nonet"))
     {
       // MAYBE liveConnect should happen in initialization, not here now that event creation happens latter 
@@ -186,9 +178,8 @@ void OpticksHub::configureServer()
             LOG(fatal) << "OpticksHub::configureServer FAILED to instanciate numpyserver : probably another instance is running : check debugger sessions " ;
         }
     }
-}
 #endif
-
+}
 
 void OpticksHub::configureCompositionSize()
 {
@@ -203,7 +194,6 @@ void OpticksHub::configureCompositionSize()
     m_composition->setSize( size );
     m_composition->setFramePosition( position );
 }
-
 
 void OpticksHub::configureState(NConfigurable* scene)
 {
@@ -229,7 +219,6 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_composition->setAnimatorPeriod(m_fcfg->getAnimatorPeriod()); 
 }
 
-
 void OpticksHub::configureLookupA()
 {
     const char* path = m_ok->getMaterialMap(); 
@@ -249,24 +238,13 @@ void OpticksHub::configureLookupA()
 
 void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg)
 {
-   // Used from OKG4Mgr to override the default mapping 
-   // when using G4 steps directly 
-
+   // Used from OKG4Mgr to override the default mapping when using G4 steps directly 
     m_lookup->setA( A, "", msg);
 }
 
-
-
-
-
-
 void OpticksHub::loadGeometry()
 {
-    if(m_geometry) 
-    {
-        LOG(warning) << "OpticksHub::loadGeometry ALREADY LOADED "   ;
-        return ; 
-    }
+    assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");
 
     LOG(debug) << "OpticksHub::loadGeometry" ; 
 
@@ -274,11 +252,9 @@ void OpticksHub::loadGeometry()
 
     m_geometry->loadGeometry();   
 
-    //   lookup A and B are now set ...
-    //
-    //   A : by OpticksHub::configureLookup (ChromaMaterialMap.json)
-    //   B : on GGeo loading in GGeo::setupLookup
-    //
+    //   Lookup A and B are now set ...
+    //      A : by OpticksHub::configureLookupA (ChromaMaterialMap.json)
+    //      B : on GGeo loading in GGeo::setupLookup
 
     m_ggeo = m_geometry->getGGeo();
 
@@ -288,211 +264,15 @@ void OpticksHub::loadGeometry()
 }
 
 
-void OpticksHub::setupInputGensteps()
-{
-    LOG(debug) << "OpticksHub::setupInputGensteps" ; 
-    unsigned int code = m_ok->getSourceCode();
-
-    NPY<float>* gs = NULL ; 
-
-    if(code == TORCH)
-    {
-        m_torchstep = makeTorchstep() ;
-        gs = m_torchstep->getNPY();
-        gs->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
-    }
-    else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
-    {
-        gs = loadGenstepFile();
-        gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
-    }
-    else if( code == G4GUN  )
-    {
-        if(m_ok->isIntegrated())
-        {
-             LOG(info) << " integrated G4GUN running, gensteps will be collected from G4 directly " ;  
-        }
-        else
-        {
-             LOG(info) << " non-integrated G4GUN running, attempt to load gensteps from file " ;  
-             gs = loadGenstepFile();
-             gs->addActionControl(OpticksActionControl::Parse("GS_LOADED"));
-        }
-    }
-
-    //if(gs) setupZeroEvent(gs);
-
-    if(gs)
-    {
-       initOKEvent(gs);
-    }
-
-}
-
-
-
-/*
-
-OpticksEvent* OpticksHub::getZeroEvent()
-{
-    assert(m_zero->getId() == 0 );
-    return m_zero ;  
-}
-
-void OpticksHub::setupZeroEvent(NPY<float>* gs)
-{
-    m_zero = m_ok->makeEvent(true) ;  // needs to be after configure for spec to be defined
-    assert(m_zero->getId() == 0);
-    m_zero->setGenstepData(gs);
-
-    if(m_ok->isCompute())
-    {
-        unsigned numPhotons = m_zero->getNumPhotons();
-        m_zero->resizeToZero();
-        LOG(info) << "OpticksHub::setupZeroEvent(COMPUTE) resizing " <<  numPhotons << " -> " << m_zero->getNumPhotons() ; 
-    }
-}
-*/
-
 std::string OpticksHub::getG4GunConfig()
 {
-    std::string config ; 
-    int itag = m_ok->getEventITag();
-
-    if( itag == 1 )
-         config.assign(
-    "comment=default-config-comment-without-spaces-_"
-    "particle=mu-_"
-    "frame=3153_"
-    "position=0,0,-1_"
-    "direction=0,0,1_"
-    "polarization=1,0,0_"
-    "time=0.1_"
-    "energy=1000.0_"
-    "number=1_")
-    ;  // mm,ns,MeV 
-
-    else if(itag == 100)
-         config.assign(
-    "comment=default-config-comment-without-spaces-_"
-    "particle=mu-_"
-    "frame=3153_"
-    "position=0,0,-1_"
-    "direction=0,0,1_"
-    "polarization=1,0,0_"
-    "time=0.1_"
-    "energy=100000.0_"
-    "number=1_")
-    ;  // mm,ns,MeV 
-
-
-
-
-    LOG(info) << "OpticksHub::getG4GunConfig"
-              << " itag : " << itag 
-              << " config : " << config 
-              ; 
-
-    return config ; 
+    return m_gun->getConfig();
 }
-
-
-NPY<float>* OpticksHub::loadGenstepFile()
-{
-    NPY<float>* gs = m_ok->loadGenstep();
-    if(gs == NULL)
-    {
-        LOG(fatal) << "OpticksHub::loadGenstepFile FAILED" ;
-        m_ok->setExit(true);
-        return NULL ; 
-    } 
- 
-    gs->setLookup(m_lookup);
-
-    int modulo = m_fcfg->getModulo();
-
-    Parameters* parameters = gs->getParameters();
-    parameters->add<int>("Modulo", modulo );
-    if(modulo > 0) 
-    {    
-        parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
-        LOG(warning) << "OptickHub::loadGenstepFile applying modulo scaledown " << modulo ;
-        gs = NPY<float>::make_modulo(gs, modulo);
-        parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
-    }    
-
-    return gs ; 
-}
-
-
-
 
 TorchStepNPY* OpticksHub::getTorchstep()   // needed by CGenerator
 {
-    return m_torchstep ; 
+    return m_gen->getTorchstep() ; 
 }
-
-
-
-
-TorchStepNPY* OpticksHub::makeTorchstep()
-{
-    TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep();
-
-    if(m_ggeo)
-    {
-        m_ggeo->targetTorchStep(torchstep);   // sets frame transform of the torchstep
-
-        // translation from a string name from config into a mat line
-        // only depends on the GBndLib being loaded, so no G4 complications
-        // just need to avoid trying to translate the matline later
-
-        const char* material = torchstep->getMaterial() ;
-        unsigned int matline = m_ggeo->getMaterialLine(material);
-        torchstep->setMaterialLine(matline);  
-
-        LOG(debug) << "OpticksHub::makeGenstepTorch"
-                   << " config " << torchstep->getConfig() 
-                   << " material " << material 
-                   << " matline " << matline
-                         ;
-    }
-    else
-    {
-        LOG(warning) << "OpticksHub::makeTorchstep no ggeo, skip setting torchstep material line " ;
-    } 
-
-    bool torchdbg = hasOpt("torchdbg");
-    torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
-
-    if(torchdbg)
-    {
-        NPY<float>* gs = torchstep->getNPY();
-        gs->save("$TMP/torchdbg.npy");
-    }
-
-    return torchstep ; 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 bool OpticksHub::hasOpt(const char* name)
@@ -541,11 +321,22 @@ Bookmarks* OpticksHub::getBookmarks()
 {
     return m_bookmarks ; 
 }
+
 Timer* OpticksHub::getTimer()
 {
-    return m_evt ? m_evt->getTimer() : m_ok->getTimer() ; 
+    OpticksEvent* evt = m_run->getEvent();
+    return evt ? evt->getTimer() : m_ok->getTimer() ; 
 }
 
+
+OpticksGen* OpticksHub::getGen()
+{
+    return m_gen ; 
+}
+OpticksRun* OpticksHub::getRun()
+{
+    return m_run ; 
+}
 
 
 
@@ -570,79 +361,7 @@ NPY<unsigned char>* OpticksHub::getColorBuffer()
 
 
 
-OpticksEvent* OpticksHub::loadPersistedEvent()
-{
-    // should this handle both G4 and OK evts ?
 
-    bool ok = true ; 
-    createEvent(ok);
-    loadEventBuffers();
-    assert(m_evt == m_okevt);
-    return m_okevt ; 
-}
-
-void OpticksHub::save()
-{
-    if(m_g4evt)
-    {
-        m_g4evt->dumpDomains("OpticksHub::save g4evt domains");
-        m_g4evt->save();
-    } 
-    if(m_okevt)
-    {
-        m_okevt->dumpDomains("OpticksHub::save okevt domains");
-        m_okevt->save();
-    } 
-}
-
-void OpticksHub::loadEventBuffers()
-{
-    LOG(info) << "OpticksHub::loadEventBuffers START" ;
-   
-    bool verbose ; 
-    m_evt->loadBuffers(verbose=false);
-
-    if(m_evt->isNoLoad())
-    {
-        LOG(fatal) << "OpticksHub::loadEventBuffers LOAD FAILED " ;
-        m_ok->setExit(true);
-    }
-
-    TIMER("loadEvent"); 
-}
-
-
-OpticksEvent* OpticksHub::createG4Event()
-{
-    return createEvent(false);
-}
-OpticksEvent* OpticksHub::createOKEvent()
-{
-    return createEvent(true);
-}
-
-
-OpticksEvent* OpticksHub::createEvent(bool ok)
-{
-    m_evt = m_ok->makeEvent(ok) ; 
-    if(ok)
-    {
-        delete m_okevt ;
-        m_okevt = NULL ; 
-
-        m_okevt = m_evt ; 
-        assert(m_okevt->isOK());
-    }
-    else
-    {
-        delete m_g4evt ;
-        m_g4evt = NULL ; 
-        m_g4evt = m_evt ;
-        assert(m_g4evt->isG4());
-    }
-    configureEvent(m_evt);
-    return m_evt ; 
-}
 
 
 void OpticksHub::configureEvent(OpticksEvent* evt)
@@ -665,69 +384,16 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 
 
 
-OpticksEvent* OpticksHub::initOKEvent(NPY<float>* gs)
-{
-    // Opticks OK events are created with gensteps (Scintillation+Cerenkov) 
-    // from a G4 event (the G4 event can either be loaded from file 
-    // or directly obtained from live G4)
-
-    assert(gs && "OpticksHub::initOKEvent gs NULL");
-    int ngs  = gs->getNumItems() ;   // hmm could count photons instead of steps ?
-    assert(ngs > 0 );
-
-    LOG(info) << "OpticksHub::initOKEvent "
-              << " gs " << gs->getShapeString()
-              ;
-
-    bool ok = true ; 
-    createEvent(ok); 
-
-    m_okevt->setGenstepData(gs);
-    assert(m_evt == m_okevt);
-
-    if(m_g4evt)   // if there is a preexisting G4 event use the same timestamp for the OK event
-    {
-       assert(m_g4evt->isG4());
-       assert(m_okevt->isOK());
-
-       std::string tstamp = m_g4evt->getTimeStamp();
-       m_okevt->setTimeStamp( tstamp.c_str() );      
-
-       NPY<float>* nopstep = m_g4evt->getNopstepData() ;
-       if(nopstep)
-           m_okevt->setNopstepData(nopstep->clone());
-    }
-
-    LOG(info) << "OpticksHub::initOKEvent "
-              << " gensteps " << gs->getShapeString()
-              << " tagdir " << m_okevt->getTagDir() 
-              ;
-
-    return m_okevt ; 
-}
-
-
-
-
-
-
-
 
 
 OpticksEvent* OpticksHub::getG4Event()
 {
-    return m_g4evt ; 
-}
-OpticksEvent* OpticksHub::getOKEvent()
-{
-    return m_okevt ; 
+    return m_run->getG4Event() ; 
 }
 OpticksEvent* OpticksHub::getEvent()
 {
-    return m_evt ; 
+    return m_run->getEvent() ; 
 }
-
-
 
 
 
@@ -752,6 +418,8 @@ void OpticksHub::target()
     bool geocenter  = hasOpt("geocenter");
     bool autocam = true ; 
 
+    OpticksEvent* evt = m_run->getEvent();
+
     if(target != 0)
     {
         LOG(info) << "OpticksHub::target SKIP as geometry target already set  " << target ; 
@@ -762,12 +430,12 @@ void OpticksHub::target()
         m_composition->setCenterExtent( mmce , autocam );
         LOG(info) << "OpticksHub::target (geocenter) mmce " << gformat(mmce) ; 
     }
-    else if(m_evt)
+    else if(evt && evt->hasGenstepData())
     {
-        glm::vec4 gsce = m_evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
+        glm::vec4 gsce = evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
         m_composition->setCenterExtent( gsce , autocam );
         LOG(info) << "OpticksHub::target"
-                  << " evt " << m_evt->brief()
+                  << " evt " << evt->brief()
                   << " gsce " << gformat(gsce) 
                   ; 
     }

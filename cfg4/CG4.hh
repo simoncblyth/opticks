@@ -30,6 +30,7 @@ class Rec ;
 class CStepRec ; 
 
 class OpticksHub ; 
+class OpticksRun ; 
 class OpticksEvent ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ;
@@ -58,7 +59,7 @@ class CFG4_API CG4
         void init();
         void setUserInitialization(G4VUserDetectorConstruction* detector);
         void execute(const char* path);
-        OpticksEvent* initEvent();
+        void initEvent(OpticksEvent* evt);
    public:
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
@@ -68,6 +69,7 @@ class CFG4_API CG4
 
    private:
         OpticksHub*           m_hub ; 
+        OpticksRun*           m_run ; 
         bool                  m_immediate ; 
         Opticks*              m_ok ; 
         OpticksCfg<Opticks>*  m_cfg ; 

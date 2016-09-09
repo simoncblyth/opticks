@@ -84,7 +84,7 @@ void OpIndexer::setVerbose(bool verbose)
 
 void OpIndexer::update()
 {
-    m_evt = m_hub->getOKEvent();
+    m_evt = m_hub->getEvent();
     assert(m_evt) ;
 
     m_maxrec = m_evt->getMaxRec(); 

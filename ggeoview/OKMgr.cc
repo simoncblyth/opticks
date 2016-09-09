@@ -7,8 +7,11 @@ class NConfigurable ;
 
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
-#include "OpticksHub.hh"    // opticksgeo-
-#include "OpticksIdx.hh"    // opticksgeo-
+
+#include "OpticksHub.hh"    // okg-
+#include "OpticksIdx.hh"    
+#include "OpticksGen.hh"    
+#include "OpticksRun.hh"    
 
 #ifdef WITH_OPTIX
 #include "OKPropagator.hh"  // ggeoview-
@@ -34,8 +37,10 @@ OKMgr::OKMgr(int argc, char** argv)
     :
     m_log(new SLog("OKMgr::OKMgr")),
     m_ok(new Opticks(argc, argv, false)),   // false: NOT OKG4 integrated running
-    m_hub(new OpticksHub(m_ok, true)),      // true: immediate configure and loadGeometry 
+    m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
+    m_gen(m_hub->getGen()),
+    m_run(m_hub->getRun()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
 #ifdef WITH_OPTIX
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
@@ -66,54 +71,39 @@ void OKMgr::propagate()
 
     if(m_ok->hasOpt("load"))
     {
-        loadPropagation();
+         m_run->loadEvent(); 
+
+         if(m_ok->isExit()) exit(EXIT_FAILURE) ; 
+
+         if(m_viz) 
+         {
+             m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+
+             m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
+         }
     }
     else if(m_ok->hasOpt("nopropagate"))
     {
         LOG(info) << "--nopropagate/-P" ;
     }
-    else if(multi == 1)
-    { 
-#ifdef WITH_OPTIX
-        m_propagator->propagate();
-#endif
-    }
-    else if(multi > 1)
+    else if(multi > 0)
     {
-        OpticksEvent* evt = m_hub->getOKEvent();
-        NPY<float>* gs = evt->getGenstepData();
+#ifdef WITH_OPTIX
         for(int i=0 ; i < multi ; i++) 
         {
-            if(i > 0) m_hub->initOKEvent(gs);
-#ifdef WITH_OPTIX
+            m_run->createEvent();
+
+            m_run->setGensteps(m_gen->getInputGensteps()); 
+
             m_propagator->propagate();
-#endif
+
+            if(m_ok->hasOpt("save"))
+            {
+                 m_run->saveEvent();
+            }
         }
+#endif
     }
-}
-
-
-
-void OKMgr::loadPropagation()
-{
-    LOG(fatal) << "OKMgr::loadPropagation" ; 
-
-    m_hub->loadPersistedEvent(); 
-
-    if(m_ok->isExit()) exit(EXIT_FAILURE) ; 
-
-    // formerly did indexing on load, 
-    // but that is kinda crazy and should not normally be needed 
-    // probably this was for G4 propagations prior to implementing
-    // CPU indexing over in cfg4-
-
-    if(!m_viz) return  ;
-
-    m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
-
-    m_viz->uploadEvent();  
-
-    LOG(fatal) << "OKMgr::loadPropagation DONE" ; 
 }
 
 void OKMgr::visualize()

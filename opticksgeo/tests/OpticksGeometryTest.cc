@@ -20,11 +20,6 @@ int main(int argc, char** argv)
 
     OpticksHub hub(&ok);
 
-    hub.configure();
-
-    OpticksGeometry og(&hub);
-
-    og.loadGeometry();
 
     return 0 ; 
 }

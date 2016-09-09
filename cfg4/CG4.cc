@@ -12,6 +12,7 @@
 
 // opticksgeo-
 #include "OpticksHub.hh"
+#include "OpticksRun.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -98,6 +99,7 @@ CDetector* CG4::getDetector()
 CG4::CG4(OpticksHub* hub, bool immediate) 
    :
      m_hub(hub),
+     m_run(hub->getRun()),
      m_immediate(immediate),
      m_ok(m_hub->getOpticks()),
      m_cfg(m_ok->getCfg()),
@@ -219,21 +221,23 @@ void CG4::interactive()
 }
 
 
-OpticksEvent* CG4::initEvent()
+void CG4::initEvent(OpticksEvent* evt)
 {
-    OpticksEvent* evt = m_hub->createG4Event();   
-    assert(evt->isG4());
-    evt->dumpDomains("CG4::propagate");
- 
-    unsigned int numG4Evt = m_generator->getNumG4Event();
-
     NPY<float>* gs = m_generator->getGensteps(); 
-    //setGenstepsGenerated(gs);
 
     if(gs)
     {
-        evt->setGenstepData(gs);   // <-- this will switch on static running as numPhotons is known 
-        evt->zero();               // static approach requires allocation ahead
+        LOG(info) << "CG4::initEvent"
+                  << " fabricated TORCH genstep (STATIC RUNNING) "
+                  ;
+
+        evt->setNumG4Event(m_generator->getNumG4Event());
+        evt->setNumPhotonsPerG4Event(m_generator->getNumPhotonsPerG4Event()) ; 
+
+        m_run->setGensteps(gs); // <-- this will switch on static running as numPhotons is known 
+        evt->zero();            // static approach requires allocation ahead
+    
+        evt->dumpDomains("CG4::initEvent");
     } 
     else
     {
@@ -242,21 +246,21 @@ OpticksEvent* CG4::initEvent()
                    ;  
     }
 
-    evt->setNumG4Event(numG4Evt) ; 
-    evt->setNumPhotonsPerG4Event(m_generator->getNumPhotonsPerG4Event()) ; 
-
 
     m_recorder->initEvent();
     m_rec->initEvent();
 
-    return evt ; 
 }
 
 
 
 void CG4::propagate()
 {
-    OpticksEvent* evt = initEvent();
+    OpticksEvent* evt = m_run->getG4Event();
+    assert(evt && evt->isG4() && "Must OpticksRun::createEvent before CG4::propagate");
+
+    initEvent(evt);
+
     unsigned int numG4Evt = evt->getNumG4Event();
 
     LOG(info) << "CG4::propagate" << " numG4Evt " << numG4Evt ; 

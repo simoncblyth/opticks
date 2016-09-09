@@ -34,11 +34,6 @@
 #define TIMER(s) \
     { \
        (*m_timer)((s)); \
-       if(m_hub)\
-       {\
-          Timer& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
     }
 
 
@@ -182,14 +177,11 @@ void OEngineImp::preparePropagator()
 
 void OEngineImp::uploadEvent()
 {
-    OpticksEvent* evt = m_hub->getOKEvent(); 
-    assert(evt);
-
-    TIMER("_initEvent");
+    TIMER("_uploadEvent");
 
     m_opropagator->uploadEvent();
 
-    TIMER("initEvent");
+    TIMER("uploadEvent");
 }
 
 
@@ -200,17 +192,11 @@ void OEngineImp::propagate()
     m_opropagator->launch();
 
     TIMER("propagate");
-
 }
 
 
 void OEngineImp::downloadEvent()
 {
-    OpticksEvent* evt = m_hub->getOKEvent(); 
-    if(!evt) return ;
-
-    assert(evt->isOK()); 
-
     // note that "interop" download with Rdr::download(evt);   
     // is now done from App::saveEvt just prior to this being called
 
@@ -232,9 +218,6 @@ void OEngineImp::cleanup()
 
 void OEngineImp::downloadPhotonData()
 {
-    OpticksEvent* evt = m_hub->getEvent(); 
-    if(!evt) return ;
-
     if(m_ok->isCompute())
     {
         m_opropagator->downloadPhotonData();

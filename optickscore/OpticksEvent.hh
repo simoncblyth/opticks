@@ -87,6 +87,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);
        virtual ~OpticksEvent();
+       void           setSibling(OpticksEvent* sibling);
+       OpticksEvent*  getSibling();
 
        void setId(int id);
        int  getId();
@@ -197,6 +199,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
    public:
+       bool                 hasGenstepData();
        const glm::vec4&     getGenstepCenterExtent();
    public:
        NPY<float>*          getGenstepData();
@@ -322,6 +325,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
 
        STimes*  m_prelaunch_times ; 
        STimes*  m_launch_times ; 
+
+       OpticksEvent*  m_sibling ; 
 
 };
 

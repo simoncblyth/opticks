@@ -12,6 +12,7 @@
 
 // opticksgeo-
 #include "OpticksHub.hh"
+#include "OpticksRun.hh"
 
 
 // npy-
@@ -24,7 +25,8 @@ OpIndexerApp::OpIndexerApp(int argc, char** argv)
      m_opticks(new Opticks(argc, argv)),
      m_hub(new OpticksHub(m_opticks)),
      m_cfg(m_opticks->getCfg()),
-     m_indexer(new OpIndexer(m_hub, NULL))
+     m_indexer(new OpIndexer(m_hub, NULL)),
+     m_run(m_hub->getRun())
 {
     init();
 }
@@ -37,8 +39,6 @@ void OpIndexerApp::init()
 
 void OpIndexerApp::configure()
 {
-    m_hub->configure();
-
     LOG(debug) << "OpIndexerApp::configure" ; 
 }
 
@@ -47,9 +47,9 @@ void OpIndexerApp::loadEvtFromFile()
 {
     m_opticks->setSpaceDomain(0.f,0.f,0.f,1000.f);  // this is required before can create an evt 
 
-    m_hub->loadPersistedEvent();
+    m_run->loadEvent();
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_run->getEvent();
     evt->Summary("OpIndexerApp::configure");
  
     if(evt->isNoLoad())
@@ -62,7 +62,7 @@ void OpIndexerApp::loadEvtFromFile()
 
 void OpIndexerApp::makeIndex()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_run->getEvent();
     if(evt->isIndexed())
     {
         bool forceindex = m_opticks->hasOpt("forceindex");

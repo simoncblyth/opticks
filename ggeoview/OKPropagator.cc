@@ -57,7 +57,7 @@ void OKPropagator::init()
 
 void OKPropagator::propagate()
 {
-    OpticksEvent* evt = m_hub->getOKEvent();
+    OpticksEvent* evt = m_hub->getEvent();
     assert(evt);
 
     LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ")"   ;
@@ -69,7 +69,6 @@ void OKPropagator::propagate()
     }
 
     m_engine->propagate();           // perform OptiX GPU propagation 
-
 
     m_idx->indexBoundariesHost();
 
@@ -85,8 +84,6 @@ void OKPropagator::propagate()
         m_idx->indexEvtOld();   // hostside checks, when saving makes sense 
 
         m_idx->indexSeqHost();
-
-        m_hub->save();
     }
     LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE "   ;
 }

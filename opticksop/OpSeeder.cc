@@ -75,7 +75,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 {
     LOG(info)<<"OpSeeder::seedPhotonsFromGenstepsViaOpenGL" ;
 
-    OpticksEvent* evt = m_hub->getOKEvent();
+    OpticksEvent* evt = m_hub->getEvent();
     assert(evt); 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     NPY<float>* photons  =  evt->getPhotonData() ;    // NB has no allocation and "uploaded" with glBufferData NULL
@@ -138,7 +138,7 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     
     //tgs.dump<unsigned int>("App::seedPhotonsFromGenstepsImp tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
-    OpticksEvent* evt = m_hub->getOKEvent();
+    OpticksEvent* evt = m_hub->getEvent();
     assert(evt); 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;

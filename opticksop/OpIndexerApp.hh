@@ -7,6 +7,7 @@ template <typename T> class OpticksCfg ;
 
 // opticksgeo-
 class OpticksHub ; 
+class OpticksRun ; 
 
 // opticksop-
 class OpIndexer ; 
@@ -25,6 +26,7 @@ class OKOP_API OpIndexerApp {
       OpticksHub*           m_hub ;   
       OpticksCfg<Opticks>*  m_cfg ;
       OpIndexer*            m_indexer ; 
+      OpticksRun*           m_run ;   
 
 };
 

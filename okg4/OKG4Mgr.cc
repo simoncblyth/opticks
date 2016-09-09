@@ -2,12 +2,16 @@
 
 class NConfigurable ; 
 
+#include "SLog.hh"
 #include "Timer.hpp"
 
 #include "Opticks.hh"       // okc-
 #include "OpticksEvent.hh"
-#include "OpticksHub.hh"    // opticksgeo-
-#include "OpticksIdx.hh"    // opticksgeo-
+
+#include "OpticksHub.hh"    // okg-
+#include "OpticksIdx.hh"    
+#include "OpticksGen.hh"    
+#include "OpticksRun.hh"    
 
 #ifdef WITH_OPTIX
 #include "OKPropagator.hh"  // ggeoview-
@@ -33,9 +37,12 @@ class NConfigurable ;
 
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
+    m_log(new SLog("OKG4Mgr::OKG4Mgr")),
     m_ok(new Opticks(argc, argv, true)),               // true: integrated running 
-    m_hub(new OpticksHub(m_ok, true)),                 // true: configure, loadGeometry and setupInputGensteps immediately
+    m_hub(new OpticksHub(m_ok)),                       // configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
+    m_gen(m_hub->getGen()),
+    m_run(m_hub->getRun()),
     m_g4(new CG4(m_hub, true)),                        // true: configure and initialize immediately 
     m_collector(new CCollector(m_hub)),                // after CG4 loads geometry, currently hub just used for material code lookup, not evt access
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
@@ -45,7 +52,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_placeholder(0)
 {
     init();
-    LOG(fatal) << "OKG4Mgr::OKG4Mgr DONE" ;  
+    (*m_log)("DONE");
 }
 
 OKG4Mgr::~OKG4Mgr()
@@ -58,27 +65,67 @@ void OKG4Mgr::init()
 {
 }
 
+
 void OKG4Mgr::propagate()
 {
-    LOG(fatal) << "OKG4Mgr::propagate" ;
+    int multi = m_ok->getMultiEvent();
 
-    bool live = m_ok->isLiveGensteps() ;
+    if(m_ok->hasOpt("load"))
+    {   
+         m_run->loadEvent(); 
 
-    NPY<float>* gs = NULL ; 
+         if(m_ok->isExit()) exit(EXIT_FAILURE) ; 
 
-    if(live)
+         if(m_viz) 
+         {   
+             m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
+
+             m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
+         }   
+    }   
+    else if(m_ok->hasOpt("nopropagate"))
+    {   
+        LOG(info) << "--nopropagate/-P" ;
+    }   
+    else if( m_ok->isLiveGensteps() )   // eg G4GUN running 
     {
+        m_run->createEvent();
+
         m_g4->propagate();
+   
+        NPY<float>* gs = m_collector->getGensteps() ;   // TODO: come from g4evt not collector
 
-        gs = m_collector->getGensteps() ;  // TODO: come from g4evt not collector
+        m_run->setGensteps(gs); 
 
-        m_hub->initOKEvent(gs);
+        m_propagator->propagate();
+
+        if(m_ok->hasOpt("save"))
+        {   
+            m_run->saveEvent();
+        }   
+
     }
+    else if(multi > 0)
+    {   
+#ifdef WITH_OPTIX
+        for(int i=0 ; i < multi ; i++) 
+        {   
+            m_run->createEvent();
 
-    m_propagator->propagate();
+            m_run->setGensteps(m_gen->getInputGensteps()); 
 
-    LOG(fatal) << "OKG4Mgr::propagate DONE" ;
+            m_propagator->propagate();
+
+            if(m_ok->hasOpt("save"))
+            {   
+                 m_run->saveEvent();
+            }   
+        }   
+#endif
+    }   
 }
+
+
 
 void OKG4Mgr::visualize()
 {

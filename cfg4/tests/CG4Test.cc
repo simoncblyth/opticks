@@ -31,7 +31,6 @@ int main(int argc, char** argv)
 
     OpticksHub* m_hub = new OpticksHub(m_opticks) ; 
 
-    m_hub->configure();
     
 
     CG4* g4 = new CG4(m_hub) ; 

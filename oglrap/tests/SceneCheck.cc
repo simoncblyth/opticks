@@ -45,9 +45,8 @@ int main(int argc, char** argv)
 
     Opticks* m_opticks = new Opticks(argc, argv);
     OpticksHub* m_hub = new OpticksHub(m_opticks);
-    m_hub->configure();
 
-    // 
+    //  hmm below is now done inside the Hub 
     m_ggeo = new GGeo(m_opticks);
     m_ggeo->loadFromCache();
     m_ggeo->dumpStats();

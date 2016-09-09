@@ -38,7 +38,6 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
-    hub.configure();
 
 
     Frame frame ; 

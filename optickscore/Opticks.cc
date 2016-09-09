@@ -497,6 +497,14 @@ unsigned int Opticks::getSourceCode()
     return code ;
 }
 
+
+
+
+bool Opticks::isNoInputGensteps()
+{
+    return hasOpt("load|nopropagate") ;
+}
+
 bool Opticks::isLiveGensteps()
 {   
     unsigned int code = getSourceCode();

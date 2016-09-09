@@ -1,7 +1,10 @@
 #pragma once
 
+class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksGen ; 
+class OpticksRun ; 
 class OpticksIdx; 
 class CCollector ; 
 class CG4 ; 
@@ -26,9 +29,12 @@ class OKG4_API OKG4Mgr {
        void indexPropagation();
        void cleanup();
    private:
+       SLog*          m_log ; 
        Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
+       OpticksGen*    m_gen ; 
+       OpticksRun*    m_run ; 
        CG4*           m_g4 ; 
        CCollector*    m_collector ; 
        OpticksViz*    m_viz ; 

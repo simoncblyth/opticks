@@ -76,8 +76,7 @@ OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, in
     m_ocontext(ocontext),
     m_hub(hub),
     m_ok(hub->getOpticks()),
-    m_zero(hub->getOKEvent()),
-    m_oevt(new OEvent(m_ocontext, m_zero)),
+    m_oevt(new OEvent(m_ocontext)),
     m_prelaunch(false),
     m_entry_index(entry),
 
@@ -98,8 +97,6 @@ void OPropagator::init()
 {
     initParameters();
     initRng();
-
-    prelaunch();
 }
 
 
@@ -176,7 +173,7 @@ void OPropagator::initRng()
 
 void OPropagator::uploadEvent()
 {
-    OpticksEvent* evt = m_hub->getOKEvent();
+    OpticksEvent* evt = m_hub->getEvent();
     if(!evt) return ;
 
     unsigned int numPhotons = evt->getNumPhotons();
@@ -200,10 +197,19 @@ void OPropagator::uploadEvent()
         LOG(warning) << "OPropagator::initEvent OVERRIDE photon count for debugging to " << m_width ; 
 
 
-    if( m_ocontext->isCompute() )
-        m_oevt->upload(evt);     // reusing OptiX buffers by resizing them before upload
+
+    if(m_ok->isCompute())
+    {
+        m_oevt->upload(evt) ;  
+       // on first call createsBuffers, subsequently reuses them by resizing before upload
+    }
     else
-        m_oevt = new OEvent(m_ocontext, evt) ;  // leaking resources in interop
+    {
+        m_oevt->upload(evt) ;  
+        // maybe difficult in interop as the buffers are actually references to OpenGL objs 
+    }
+
+
 }
 
 

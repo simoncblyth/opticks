@@ -145,6 +145,7 @@ CSource* CGenerator::makeG4GunSource()
          assert(0);
     }  
 
+    setGensteps(NULL);  // gensteps must be collected from G4, they cannot be fabricated
     setDynamic(true);
     setNumG4Event(gc->getNumber()); 
     setNumPhotonsPerG4Event(0); 

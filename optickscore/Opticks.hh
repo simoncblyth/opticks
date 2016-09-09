@@ -122,6 +122,7 @@ class OKCORE_API Opticks {
    public:
        int                  getMultiEvent();
        unsigned int         getSourceCode();
+       bool                 isNoInputGensteps();  // eg when loading a prior propagation
        bool                 isLiveGensteps();  // collected directly from CG4 propagation
        const char*          getSourceType();
        const char*          getEventTag();

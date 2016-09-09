@@ -155,7 +155,7 @@ void OpticksIdx::indexEvtOld()
         evt->setRecordsNPY(rec);
     }
 
-    TIMER("indexEvtOld"); 
+    //TIMER("indexEvtOld"); 
 }
 
 
@@ -211,7 +211,7 @@ void OpticksIdx::indexBoundariesHost()
         LOG(warning) << "OpticksIdx::indexBoundariesHost dpho NULL or no data " ;
     }
 
-    TIMER("indexBoundariesHost");
+    //TIMER("indexBoundariesHost");
 }
 
 

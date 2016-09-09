@@ -22,10 +22,7 @@ int main(int argc, char** argv)
     OKOP_LOG__ ; 
 
     Opticks* m_opticks = new Opticks(argc, argv);
-    m_opticks->configure();
-
     OpticksHub* m_hub = new OpticksHub(m_opticks);
-    m_hub->loadGeometry();
      
 #ifdef WITH_OPTIX
     OpEngine* m_engine = new OpEngine(m_hub);

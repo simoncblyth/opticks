@@ -19,19 +19,6 @@ struct STimes ;
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
     public:
-/*
-        enum { 
-                e_config_idomain,
-                e_number_idomain
-             } ;
-        enum { 
-                e_center_extent, 
-                e_time_domain, 
-                e_boundary_domain,
-                e_number_domain
-             } ;
-*/
-    public:
         OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_=0); 
     public:
         void prelaunch();   // done with the zero event
@@ -56,7 +43,6 @@ class OXRAP_API OPropagator {
         OContext*        m_ocontext ; 
         OpticksHub*      m_hub ; 
         Opticks*         m_ok ; 
-        OpticksEvent*    m_zero ; 
         OEvent*          m_oevt ; 
         optix::Context   m_context ;
         bool             m_prelaunch ;

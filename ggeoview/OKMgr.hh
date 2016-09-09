@@ -5,6 +5,8 @@ class SLog ;
 template <typename T> class NPY ; 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksGen ; 
+class OpticksRun ; 
 class OpticksIdx; 
 class OpticksViz ; 
 
@@ -24,14 +26,14 @@ class GGV_API OKMgr {
        void visualize();
    private:
        void init();
-       void propagate(NPY<float>* gs);
-       void loadPropagation();
        void cleanup();
    private:
        SLog*          m_log ; 
        Opticks*       m_ok ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
+       OpticksGen*    m_gen ; 
+       OpticksRun*    m_run ; 
        OpticksViz*    m_viz ; 
 #ifdef WITH_OPTIX
        OKPropagator*  m_propagator ; 

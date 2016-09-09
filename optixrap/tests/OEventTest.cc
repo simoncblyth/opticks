@@ -31,8 +31,8 @@ int main(int argc, char** argv)
     OXRAP_LOG__ ; 
 
     Opticks ok(argc, argv);
-    OpticksHub hub(&ok, true);
-    OpticksEvent* evt = hub.getOKEvent();
+    OpticksHub hub(&ok);
+    OpticksEvent* evt = hub.getEvent();
     evt->Summary("evt");
 
     LOG(info) << argv[0] << " evt shape " << evt->getShapeString() ; 
@@ -41,14 +41,11 @@ int main(int argc, char** argv)
 
     optix::Context context = optix::Context::create();
     OContext ctx(context, OContext::COMPUTE);
-
-    OEvent* oevt = new OEvent(&ctx, evt);   // creates buffers, so can validate the prelaunch
-
     int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
+
+    OEvent* oevt = new OEvent(&ctx);   
  
-    ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt->getPrelaunchTimes() );
-
-
+    bool prelaunch = false ; 
 
     for(unsigned i=0 ; i < 10 ; i++)
     {
@@ -74,6 +71,12 @@ int main(int argc, char** argv)
 
          
          oevt->upload(evt);
+
+         if(!prelaunch)
+         {
+             ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, evt->getPrelaunchTimes() );
+             prelaunch = true ; 
+         } 
 
          ctx.launch( OContext::LAUNCH, entry,  evt->getNumPhotons(), 1, evt->getLaunchTimes());
 

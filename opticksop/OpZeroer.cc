@@ -66,7 +66,7 @@ void OpZeroer::zeroRecords()
 
 void OpZeroer::zeroRecordsViaOpenGL()
 {
-    OpticksEvent* evt = m_hub->getOKEvent();
+    OpticksEvent* evt = m_hub->getEvent();
 
     NPY<short>* record = evt->getRecordData(); 
 

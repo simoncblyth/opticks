@@ -41,8 +41,6 @@ AxisApp::AxisApp(int argc, char** argv)
 
 void AxisApp::init()
 {
-    m_hub->configure();
-
     m_viz->setTitle("AxisApp");
 
     m_viz->prepareScene("+axis");    // setup renderer
