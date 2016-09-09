@@ -1782,17 +1782,20 @@ void OpticksEvent::saveIndex(bool verbose_)
 
 void OpticksEvent::loadIndex()
 {
-    std::string tagdir = getTagDir();
-    m_seqhis = Index::load(tagdir.c_str(), OpticksConst::SEQHIS_NAME_ );
-    m_seqmat = Index::load(tagdir.c_str(), OpticksConst::SEQMAT_NAME_ );  
-    m_bndidx = Index::load(tagdir.c_str(), OpticksConst::BNDIDX_NAME_ );
+    std::string tagdir_ = getTagDir();
+    const char* tagdir = tagdir_.c_str();
 
-    //std::string ixdir = getSpeciesDir("ix");
-    //m_seqhis = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQHIS_NAME_ );
-    //m_seqmat = Index::load(ixdir.c_str(), m_tag, OpticksConst::SEQMAT_NAME_ );  
-    //m_bndidx = Index::load(ixdir.c_str(), m_tag, OpticksConst::BNDIDX_NAME_ );
+    m_seqhis = Index::load(tagdir, OpticksConst::SEQHIS_NAME_ );
+    m_seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_ );  
+    m_bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_ );
+
+    LOG(debug) << "OpticksEvent::loadIndex"
+              << " tagdir " << tagdir 
+              << " seqhis " << m_seqhis 
+              << " seqmat " << m_seqmat 
+              << " bndidx " << m_bndidx 
+              ;
 }
-
 
 
 

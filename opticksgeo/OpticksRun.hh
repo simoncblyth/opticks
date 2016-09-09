@@ -13,17 +13,16 @@ class OKGEO_API OpticksRun
         OpticksRun(OpticksHub* hub);
     private:
         void init();
+        void passBaton();
     public:
         OpticksEvent* getEvent();
         OpticksEvent* getG4Event();
 
         void setGensteps(NPY<float>* gs);
 
-        void passBaton();
         void createEvent();
         void loadEvent();
         void saveEvent();
-
     private:
         OpticksHub*    m_hub ; 
         Opticks*       m_ok ; 

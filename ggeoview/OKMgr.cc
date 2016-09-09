@@ -73,13 +73,13 @@ void OKMgr::propagate()
     {
          m_run->loadEvent(); 
 
-         if(m_ok->isExit()) exit(EXIT_FAILURE) ; 
-
          if(m_viz) 
          {
              m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
 
              m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
+
+             m_viz->indexPresentationPrep();
          }
     }
     else if(m_ok->hasOpt("nopropagate"))

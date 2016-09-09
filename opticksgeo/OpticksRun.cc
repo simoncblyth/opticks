@@ -57,10 +57,14 @@ void OpticksRun::passBaton()
     NPY<float>* nopstep = m_g4evt->getNopstepData() ;
     NPY<float>* genstep = m_g4evt->getGenstepData() ;
 
-   // not-cloning as not actually distinct (?)
-   // nopstep and genstep should be treated as owned 
+   //
+   // Not-cloning as these buffers are not actually distinct 
+   // between G4 and OK.
+   //
+   // Nopstep and Genstep should be treated as owned 
    // by the m_g4evt not the Opticks m_evt 
-   // where the pointers are just weak reference guests 
+   // where the m_evt pointers are just weak reference guests 
+   //
 
     m_evt->setNopstepData(nopstep);  
     m_evt->setGenstepData(genstep);
@@ -79,6 +83,8 @@ void OpticksRun::loadEvent()
         LOG(fatal) << "OpticksRun::loadEvent LOAD FAILED " ;
         m_ok->setExit(true);
     }
+
+    if(m_ok->isExit()) exit(EXIT_FAILURE) ;
 }
 
 void OpticksRun::saveEvent()

@@ -74,6 +74,7 @@ int main()
     test_save_load();
     test_set();
     test_bool_nonexisting();
+    test_bool();
 
     return 0 ; 
 }
