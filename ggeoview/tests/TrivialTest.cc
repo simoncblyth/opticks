@@ -63,57 +63,10 @@ For multievent (1 is default anyhow so this is same as above)::
    OKTest --cerenkov --trivial --save --compute --multievent 1
    TrivialTest --cerenkov --multievent 1
 
-Up to 2::
 
-   OKTest --cerenkov --trivial --save --compute --multievent 2
-   TrivialTest --cerenkov    ## running this now fails with values stuck on first genstep
-   TrivialTest --cerenkov --multievent 2
+See :doc:`notes/issues/geant4_opticks_integration/multi_event_seed_stuck_at_zero_for_second_event`
 
-
-
-The seeds (genstep_id) stuck at zero in multi-event::
-
-    In [9]: ox.view(np.int32)
-    Out[9]: 
-    array([[[         0,          0,          0,          0],
-            [1065353216, 1065353216, 1065353216, 1065353216],
-            [         1,          1,         67,         80],
-            [         0,          0,          0,          0]],
-
-           [[         0,          0,          0,          0],
-            [1065353216, 1065353216, 1065353216, 1065353216],
-            [         1,          1,         67,         80],
-            [         1,          4,          0,          0]],
-
-           [[         0,          0,          0,          0],
-            [1065353216, 1065353216, 1065353216, 1065353216],
-            [         1,          1,         67,         80],
-            [         2,          8,          0,          0]],
-
-           ..., 
-           [[         0,          0,          0,          0],
-            [1065353216, 1065353216, 1065353216, 1065353216],
-            [         1,          1,         67,         80],
-            [    612838,    2451352,          0,          0]],
-
-           [[         0,          0,          0,          0],
-            [1065353216, 1065353216, 1065353216, 1065353216],
-            [         1,          1,         67,         80],
-            [    612839,    2451356,          0,          0]],
-
-           [[         0,          0,          0,          0],
-            [1065353216, 1065353216, 1065353216, 1065353216],
-            [         1,          1,         67,         80],
-            [    612840,    2451360,          0,          0]]], dtype=int32)
-
-    In [10]: len(ox)
-    Out[10]: 612841
-
-    In [11]: len(ox)*4
-    Out[11]: 2451364
-
-
-
+   
 
 **/
 

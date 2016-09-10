@@ -645,10 +645,10 @@ void OpticksEvent::createSpec()
 
     m_genstep_spec = GenstepSpec();
 
-    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,PTR_FROM_OPENGL") ;
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL") ;
 
           //   OPTIX_INPUT_OUTPUT : INPUT needed as seeding writes genstep identifiers into photon buffer
-          //     PTR_FROM_OPENGL  : needed with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop no longer working 
+          //     INTEROP_PTR_FROM_OPENGL  : needed with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop no longer working 
           //                        instead move to 
           //                                 OpenGL/OptiX : to write the photon data
           //                                 OpenGL/CUDA  : to index the photons  

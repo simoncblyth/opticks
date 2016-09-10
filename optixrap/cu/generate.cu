@@ -174,7 +174,8 @@ RT_PROGRAM void trivial()
     ghead.f = genstep_buffer[genstep_offset+0]; 
     unsigned gencode = ghead.u.x ; 
    
-    rtPrintf("(trivial) gencode %u \n", gencode );
+    //rtPrintf("(trivial) gencode %u \n", gencode );
+    //rtPrintf("(trivial) genstep_id %u \n", genstep_id );
 
     quad indices ;  
     indices.u.x = photon_id ; 

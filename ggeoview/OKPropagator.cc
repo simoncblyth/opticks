@@ -81,11 +81,11 @@ void OKPropagator::propagate()
 void OKPropagator::trivialCheck()
 {
     LOG(fatal) << "OKPropagator::trivialCheck" ; 
-    OpticksEvent* evt = m_hub->getEvent();
-    NPY<float>* photon = evt->getPhotonData();
-
-    photon->dump("OKPropagator::trivialCheck");
-    photon->save("$TMP/trivialCheck.npy");
+  //  OpticksEvent* evt = m_hub->getEvent();
+  //  NPY<float>* photon = evt->getPhotonData();
+  //
+  //  photon->dump("OKPropagator::trivialCheck");
+  //  photon->save("$TMP/trivialCheck.npy");
 }
 
 

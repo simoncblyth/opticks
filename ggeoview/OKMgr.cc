@@ -86,7 +86,7 @@ void OKMgr::propagate()
     {
         for(int i=0 ; i < multi ; i++) 
         {
-            m_run->createEvent();
+            m_run->createEvent(i);
 
             m_run->setGensteps(m_gen->getInputGensteps()); 
 

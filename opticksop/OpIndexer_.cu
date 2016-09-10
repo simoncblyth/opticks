@@ -162,7 +162,7 @@ void OpIndexer::indexBoundariesFromOptiX(OBuf* pho, unsigned int stride, unsigne
      boundaries.make_lookup();
 
      if(m_verbose)
-        boundaries.dump("OpIndexer::indexBoundariesFromOptiX PTR_FROM_OPTIX TSparse<int>::dump");
+        boundaries.dump("OpIndexer::indexBoundariesFromOptiX INTEROP_PTR_FROM_OPTIX TSparse<int>::dump");
 }
 
 void OpIndexer::indexBoundariesFromOpenGL(unsigned int photon_id, unsigned int stride, unsigned int begin)
@@ -183,7 +183,7 @@ void OpIndexer::indexBoundariesFromOpenGL(unsigned int photon_id, unsigned int s
         boundaries.make_lookup();
 
         if(m_verbose)
-           boundaries.dump("OpIndexer::indexBoundariesFromOpenGL PTR_FROM_OPTIX TSparse<int>::dump");
+           boundaries.dump("OpIndexer::indexBoundariesFromOpenGL INTEROP_PTR_FROM_OPTIX TSparse<int>::dump");
 
         rphoton.unmapGLToCUDA(); 
     }

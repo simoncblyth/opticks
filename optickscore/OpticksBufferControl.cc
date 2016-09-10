@@ -8,8 +8,8 @@ const char* OpticksBufferControl::OPTIX_NON_INTEROP_ = "OPTIX_NON_INTEROP" ;   /
 const char* OpticksBufferControl::OPTIX_INPUT_OUTPUT_ = "OPTIX_INPUT_OUTPUT" ; 
 const char* OpticksBufferControl::OPTIX_INPUT_ONLY_ = "OPTIX_INPUT_ONLY" ; 
 const char* OpticksBufferControl::OPTIX_OUTPUT_ONLY_ = "OPTIX_OUTPUT_ONLY" ; 
-const char* OpticksBufferControl::PTR_FROM_OPTIX_ = "PTR_FROM_OPTIX" ; 
-const char* OpticksBufferControl::PTR_FROM_OPENGL_ = "PTR_FROM_OPENGL" ; 
+const char* OpticksBufferControl::INTEROP_PTR_FROM_OPTIX_ = "INTEROP_PTR_FROM_OPTIX" ; 
+const char* OpticksBufferControl::INTEROP_PTR_FROM_OPENGL_ = "INTEROP_PTR_FROM_OPENGL" ; 
 const char* OpticksBufferControl::UPLOAD_WITH_CUDA_ = "UPLOAD_WITH_CUDA" ; 
 const char* OpticksBufferControl::BUFFER_COPY_ON_DIRTY_ = "BUFFER_COPY_ON_DIRTY" ; 
 const char* OpticksBufferControl::BUFFER_GPU_LOCAL_ = "BUFFER_GPU_LOCAL" ; 
@@ -25,8 +25,8 @@ std::vector<const char*> OpticksBufferControl::Tags()
     tags.push_back(OPTIX_INPUT_OUTPUT_);
     tags.push_back(OPTIX_INPUT_ONLY_);
     tags.push_back(OPTIX_OUTPUT_ONLY_);
-    tags.push_back(PTR_FROM_OPTIX_);
-    tags.push_back(PTR_FROM_OPENGL_);
+    tags.push_back(INTEROP_PTR_FROM_OPTIX_);
+    tags.push_back(INTEROP_PTR_FROM_OPENGL_);
     tags.push_back(UPLOAD_WITH_CUDA_);
     tags.push_back(BUFFER_COPY_ON_DIRTY_);
     tags.push_back(BUFFER_GPU_LOCAL_);
@@ -44,8 +44,8 @@ std::string OpticksBufferControl::Description(unsigned long long ctrl)
    if( ctrl & OPTIX_INPUT_OUTPUT )  ss << OPTIX_INPUT_OUTPUT_ << " "; 
    if( ctrl & OPTIX_INPUT_ONLY   )  ss << OPTIX_INPUT_ONLY_ << " "; 
    if( ctrl & OPTIX_OUTPUT_ONLY   ) ss << OPTIX_OUTPUT_ONLY_ << " "; 
-   if( ctrl & PTR_FROM_OPTIX      ) ss << PTR_FROM_OPTIX_ << " "; 
-   if( ctrl & PTR_FROM_OPENGL     ) ss << PTR_FROM_OPENGL_ << " "; 
+   if( ctrl & INTEROP_PTR_FROM_OPTIX      ) ss << INTEROP_PTR_FROM_OPTIX_ << " "; 
+   if( ctrl & INTEROP_PTR_FROM_OPENGL     ) ss << INTEROP_PTR_FROM_OPENGL_ << " "; 
    if( ctrl & UPLOAD_WITH_CUDA    ) ss << UPLOAD_WITH_CUDA_ << " "; 
    if( ctrl & BUFFER_COPY_ON_DIRTY ) ss << BUFFER_COPY_ON_DIRTY_ << " "; 
    if( ctrl & BUFFER_GPU_LOCAL ) ss << BUFFER_GPU_LOCAL_ << " "; 
@@ -63,8 +63,8 @@ unsigned long long OpticksBufferControl::ParseTag(const char* k)
     else if(strcmp(k,OPTIX_INPUT_OUTPUT_)==0) tag = OPTIX_INPUT_OUTPUT ;
     else if(strcmp(k,OPTIX_INPUT_ONLY_)==0)   tag = OPTIX_INPUT_ONLY ;
     else if(strcmp(k,OPTIX_OUTPUT_ONLY_)==0)  tag = OPTIX_OUTPUT_ONLY ;
-    else if(strcmp(k,PTR_FROM_OPTIX_)==0)     tag = PTR_FROM_OPTIX ;
-    else if(strcmp(k,PTR_FROM_OPENGL_)==0)    tag = PTR_FROM_OPENGL ;
+    else if(strcmp(k,INTEROP_PTR_FROM_OPTIX_)==0)     tag = INTEROP_PTR_FROM_OPTIX ;
+    else if(strcmp(k,INTEROP_PTR_FROM_OPENGL_)==0)    tag = INTEROP_PTR_FROM_OPENGL ;
     else if(strcmp(k,UPLOAD_WITH_CUDA_)==0)   tag = UPLOAD_WITH_CUDA ;
     else if(strcmp(k,BUFFER_COPY_ON_DIRTY_)==0) tag = BUFFER_COPY_ON_DIRTY ;
     else if(strcmp(k,BUFFER_GPU_LOCAL_)==0)     tag = BUFFER_GPU_LOCAL ;

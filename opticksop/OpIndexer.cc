@@ -149,11 +149,11 @@ void OpIndexer::indexBoundaries()
     {
          indexBoundariesFromOptiX(m_pho, stride, begin);
     }
-    else if(ctrl & OpticksBufferControl::PTR_FROM_OPTIX )
+    else if(ctrl & OpticksBufferControl::INTEROP_PTR_FROM_OPTIX )
     {
          indexBoundariesFromOptiX(m_pho, stride, begin);
     } 
-    else if(ctrl & OpticksBufferControl::PTR_FROM_OPENGL)
+    else if(ctrl & OpticksBufferControl::INTEROP_PTR_FROM_OPENGL)
     {
          assert(buffer_id > 0);
          indexBoundariesFromOpenGL(buffer_id, stride, begin);

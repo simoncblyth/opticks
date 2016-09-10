@@ -13,8 +13,8 @@ class OKCORE_API OpticksBufferControl {
                 OPTIX_INPUT_OUTPUT      = 0x1 << 3,
                 OPTIX_INPUT_ONLY        = 0x1 << 4,
                 OPTIX_OUTPUT_ONLY       = 0x1 << 5,
-                PTR_FROM_OPTIX          = 0x1 << 6,
-                PTR_FROM_OPENGL         = 0x1 << 7,
+                INTEROP_PTR_FROM_OPTIX  = 0x1 << 6,
+                INTEROP_PTR_FROM_OPENGL = 0x1 << 7,
                 UPLOAD_WITH_CUDA        = 0x1 << 8,
                 BUFFER_COPY_ON_DIRTY    = 0x1 << 9,
                 BUFFER_GPU_LOCAL        = 0x1 << 10,
@@ -29,8 +29,8 @@ class OKCORE_API OpticksBufferControl {
         static const char* OPTIX_INPUT_OUTPUT_ ; 
         static const char* OPTIX_INPUT_ONLY_ ; 
         static const char* OPTIX_OUTPUT_ONLY_ ; 
-        static const char* PTR_FROM_OPTIX_ ; 
-        static const char* PTR_FROM_OPENGL_ ; 
+        static const char* INTEROP_PTR_FROM_OPTIX_ ; 
+        static const char* INTEROP_PTR_FROM_OPENGL_ ; 
         static const char* UPLOAD_WITH_CUDA_ ; 
         static const char* BUFFER_COPY_ON_DIRTY_ ; 
         static const char* BUFFER_GPU_LOCAL_ ; 

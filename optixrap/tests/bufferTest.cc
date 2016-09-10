@@ -41,7 +41,7 @@ Evt::Evt(unsigned size_)
    //    OPropagator::initEventBuffers
 
    const char* genstep_ctrl = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY" ;
-   const char* photon_ctrl  = "OPTIX_INPUT_OUTPUT,PTR_FROM_OPENGL" ;
+   const char* photon_ctrl  = "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL" ;
  
    OpticksBufferControl c_genstep(genstep->getBufferControlPtr()); 
    c_genstep.add(genstep_ctrl); 
