@@ -109,6 +109,7 @@ set(SOURCES
     SeqNPY.cpp
     TorchStepNPY.cpp
     AxisNPY.cpp
+    TrivialCheckNPY.cpp
 
     SequenceNPY.cpp
     PhotonsNPY.cpp
@@ -151,6 +152,7 @@ MaterialLibNPY.hpp
 SequenceNPY.hpp
 SeqNPY.hpp
 AxisNPY.hpp
+TrivialCheckNPY.hpp
 Counts.hpp
 numpy.hpp
 

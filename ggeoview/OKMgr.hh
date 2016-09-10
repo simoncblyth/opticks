@@ -10,9 +10,7 @@ class OpticksRun ;
 class OpticksIdx; 
 class OpticksViz ; 
 
-#ifdef WITH_OPTIX
 class OKPropagator ; 
-#endif
 
 #include "GGV_API_EXPORT.hh"
 #include "GGV_HEAD.hh"
@@ -35,9 +33,7 @@ class GGV_API OKMgr {
        OpticksGen*    m_gen ; 
        OpticksRun*    m_run ; 
        OpticksViz*    m_viz ; 
-#ifdef WITH_OPTIX
        OKPropagator*  m_propagator ; 
-#endif
        int            m_count ;  
        
 };

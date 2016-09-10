@@ -1,6 +1,6 @@
-#include "OPropagator.hh"
 
 #include "SLog.hh"
+#include "STimes.hh"
 
 // optickscore-
 #include "Opticks.hh"
@@ -13,29 +13,22 @@
 
 // optixrap-
 #include "OContext.hh"
+#include "OEntry.hh"
 #include "OConfig.hh"
-#include "STimes.hh"
 #include "OEvent.hh"
-
 #include "OBuf.hh"
+#include "OPropagator.hh"
 
 // optix-
 #include <optixu/optixu.h>
 #include <optixu/optixu_math_stream_namespace.h>
 using namespace optix ; 
 
-// brap-
-//#include "timeutil.hh"
-
-// npy-
-//#include "GLMPrint.hpp"
-//#include "NPY.hpp"
 
 // cudawrap-  NB needs to be after namespace optix
 #include "cuRANDWrapper.hh"
 
 #include "PLOG.hh"
-
 
 
 
@@ -70,57 +63,23 @@ OBuf* OPropagator::getRecordBuf()
 
 
 
-OPropagator* OPropagator::make(OContext* ocontext, OpticksHub* hub )
-{
-    Opticks* ok = hub->getOpticks() ;
-    OpticksCfg<Opticks>* cfg = ok->getCfg();
 
-    bool trivial   = cfg->hasOpt("trivial");
-    bool seedtest  = cfg->hasOpt("seedtest");
-    int  override_  = cfg->getOverride();
-
-    LOG(trace) << "OPropagator::make" 
-              << ( trivial ? " TRIVIAL TEST" : "NORMAL" )
-              << " override_ " << override_
-              ;  
-
-    unsigned int entry ;
-
-    bool defer = true ; 
-
-    if(trivial)
-        entry = ocontext->addEntry("generate.cu.ptx", "trivial", "exception", defer);
-    else if(seedtest)
-        entry = ocontext->addEntry("seedTest.cu.ptx", "seedTest", "exception", defer);
-    else
-        entry = ocontext->addEntry("generate.cu.ptx", "generate", "exception", defer);
-
-
-    OPropagator* opropagator = new OPropagator(ocontext, hub, entry, override_);   
-    return opropagator ; 
-}
-
-
-
-
-
-OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, unsigned entry, int override_) 
+OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, OEntry* entry) 
    :
     m_log(new SLog("OPropagator::OPropagator")),
     m_ocontext(ocontext),
     m_hub(hub),
     m_ok(hub->getOpticks()),
+    m_cfg(m_ok->getCfg()),
+    m_override(m_cfg->getOverride()),
+    m_entry(entry),
+    m_entry_index(entry->getIndex()),
     m_oevt(new OEvent(m_ocontext)),
     m_prelaunch(false),
-    m_entry_index(entry),
-
     m_rng_wrapper(NULL),
     m_count(0),
     m_width(0),
-    m_height(0),
-    m_prep(0),
-    m_time(0),
-    m_override(override_)
+    m_height(0)
 {
     init();
     (*m_log)("DONE");

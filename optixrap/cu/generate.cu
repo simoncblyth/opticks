@@ -148,26 +148,49 @@ rtDeclareVariable(rtObject,      top_object, , );
 
 RT_PROGRAM void trivial()
 {
-
     unsigned long long photon_id = launch_index.x ;  
-    unsigned int photon_offset = photon_id*PNUMQUAD ; 
-    //rtPrintf("(trivial) photon_id %d photon_offset %d \n", photon_id, photon_offset );
+    unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
 
-    // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
-    // this seeding is done by App::seedPhotonsFromGensteps
+    // BIZARRE NEW rtPrintf BUG IN OptiX 400 when formatting more than a single value
+    //
+    //   * first value prints with expected value
+    //   * second value appears as zero no matter what the real value
+    //   * third value appears as same at the first value no matter what the real value
+    // 
+    // rtPrintf("(trivial) photon_id %u \n", photon_id );
+    // rtPrintf("(trivial) photon_offset %u \n", photon_offset );
+    // rtPrintf("(trivial) photon_id %u photon_id %u photon_offset %u \n", photon_id, photon_id, photon_offset );
+    //
+
     union quad phead ;
-    phead.f = photon_buffer[photon_offset+0] ;
-    unsigned int genstep_id = phead.u.x ; 
-    // getting crazy values for this in interop, photon_buffer being overwritten ?? 
+    phead.f = photon_buffer[photon_offset+0] ;   // crazy values for this in interop mode on Linux, photon_buffer being overwritten ?? 
+    unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
+
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+
+    //rtPrintf("(trivial) genstep_offset %u \n", genstep_offset );
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
-    int gencode = ghead.i.x ; 
-    
-    rtPrintf("(trivial) GNUMQUAD %d PNUMQUAD %d RNUMQUAD %d \n", GNUMQUAD, PNUMQUAD, RNUMQUAD );
+    unsigned gencode = ghead.u.x ; 
+   
+    rtPrintf("(trivial) gencode %u \n", gencode );
 
-    rtPrintf("(trivial) photon_id %d photon_offset %d genstep_id %d genstep_offset %d gencode %d \n", photon_id, photon_offset, genstep_id, genstep_offset, gencode );
+    quad indices ;  
+    indices.u.x = photon_id ; 
+    indices.u.y = photon_offset ; 
+    indices.u.z = genstep_id ; 
+    indices.u.w = genstep_offset ; 
+
+    photon_buffer[photon_offset+0] = make_float4(  0.f , 0.f , 0.f, 0.f );
+    photon_buffer[photon_offset+1] = make_float4(  1.f , 1.f , 1.f, 1.f );
+    photon_buffer[photon_offset+2] = make_float4(  ghead.f.x,     ghead.f.y,    ghead.f.z,     ghead.f.w); 
+    photon_buffer[photon_offset+3] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w); 
+
+ 
+    //rtPrintf("(trivial) GNUMQUAD %d PNUMQUAD %d RNUMQUAD %d \n", GNUMQUAD, PNUMQUAD, RNUMQUAD );
+
+    //rtPrintf("(trivial) photon_id %u photon_offset %u genstep_id %u genstep_offset %u gencode %d \n", photon_id, photon_offset, genstep_id, genstep_offset, gencode );
 
     //rtPrintf("ghead.i.x %d \n", ghead.i.x );
     //
@@ -179,8 +202,6 @@ RT_PROGRAM void trivial()
     //     (trivial) photon_id 1057 photon_offset 4228 genstep_id 0 GNUMQUAD 6 genstep_offset 0 
     //
     //
-/*
-*/
 
 }
 

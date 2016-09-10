@@ -64,6 +64,7 @@ class OKCORE_API Opticks {
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        bool hasOpt(const char* name);
+       bool operator()(const char* name) const ; 
        void cleanup();
    public:
        // from OpticksResource
@@ -122,6 +123,10 @@ class OKCORE_API Opticks {
    public:
        int                  getMultiEvent();
        unsigned int         getSourceCode();
+       char                 getEntryCode();    // G:generate S:seedTest T:trivial
+       bool                 isTrivial();
+       bool                 isSeedtest();
+
        bool                 isNoInputGensteps();  // eg when loading a prior propagation
        bool                 isLiveGensteps();  // collected directly from CG4 propagation
        const char*          getSourceType();

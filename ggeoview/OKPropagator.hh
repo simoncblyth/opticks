@@ -45,6 +45,8 @@ class GGV_API OKPropagator {
        void uploadEvent();
        void downloadEvent();
        void indexEvent();
+   public:
+       void trivialCheck();
    private:
        SLog*          m_log ; 
        OpticksHub*    m_hub ; 

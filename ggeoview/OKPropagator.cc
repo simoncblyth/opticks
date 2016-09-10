@@ -66,10 +66,26 @@ void OKPropagator::propagate()
     m_engine->propagate();        //  seedPhotonsFromGensteps, zeroRecords, propagate, indexSequence, indexBoundaries
 
     if(m_viz) m_viz->indexPresentationPrep();
+
+    bool trivial = m_ok->isTrivial();
  
-    if(m_ok->hasOpt("save")) downloadEvent();
+    if(m_ok->hasOpt("save") || trivial) downloadEvent();
+
+    if(trivial) trivialCheck();
 
     LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE "   ;
+}
+
+
+
+void OKPropagator::trivialCheck()
+{
+    LOG(fatal) << "OKPropagator::trivialCheck" ; 
+    OpticksEvent* evt = m_hub->getEvent();
+    NPY<float>* photon = evt->getPhotonData();
+
+    photon->dump("OKPropagator::trivialCheck");
+    photon->save("$TMP/trivialCheck.npy");
 }
 
 

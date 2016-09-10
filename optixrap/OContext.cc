@@ -17,6 +17,7 @@
 // optixrap-
 #include "STimes.hh"
 #include "OConfig.hh"
+#include "OEntry.hh"
 #include "OContext.hh"
 
 #include "PLOG.hh"
@@ -35,6 +36,22 @@ const char* OContext::getModeName()
     }
     assert(0);
 }
+
+
+
+OEntry* OContext::addEntry(char code)
+{
+    bool defer = true ; 
+    unsigned index ;
+    switch(code)
+    { 
+        case 'G': index = addEntry("generate.cu.ptx", "generate", "exception", defer) ; break ;
+        case 'T': index = addEntry("generate.cu.ptx", "trivial",  "exception", defer) ; break ;
+        case 'S': index = addEntry("seedTest.cu.ptx", "seedTest", "exception", defer) ; break ;
+    }
+    return new OEntry(index, code) ; 
+}
+
 
 
 OContext::OContext(optix::Context context, Mode_t mode, bool with_top, bool verbose) 
@@ -102,6 +119,16 @@ bool OContext::isInterop()
 
 
 
+
+
+
+
+
+
+
+
+
+
 void OContext::setStackSize(unsigned int stacksize)
 {
     LOG(debug) << "OContext::setStackSize " << stacksize ;  
@@ -162,7 +189,6 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
 {
     return m_cfg->createProgram(filename, progname);
 }
-
 
 unsigned int OContext::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
 {

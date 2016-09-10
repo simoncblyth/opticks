@@ -499,6 +499,25 @@ unsigned int Opticks::getSourceCode()
     return code ;
 }
 
+char Opticks::getEntryCode()
+{
+    char code ;
+    if(     m_cfg->hasOpt("trivial"))   code = 'T' ; 
+    else if(m_cfg->hasOpt("seedtest"))  code = 'S' ; 
+    else                                code = 'G' ; 
+    return code  ;   
+}
+
+bool Opticks::isTrivial()
+{
+   char code = getEntryCode();
+   return  code == 'T' ; 
+}
+bool Opticks::isSeedtest()
+{
+   char code = getEntryCode();
+   return  code == 'S' ; 
+}
 
 
 
@@ -751,8 +770,10 @@ unsigned int Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
 float Opticks::getEpsilon() {            return m_cfg->getEpsilon()  ; }
 bool Opticks::hasOpt(const char* name) { return m_cfg->hasOpt(name); }
 
-
-
+bool Opticks::operator()(const char* name) const 
+{
+    return m_cfg->hasOpt(name) ;
+} 
 
 
 

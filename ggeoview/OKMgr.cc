@@ -13,9 +13,7 @@ class NConfigurable ;
 #include "OpticksGen.hh"    
 #include "OpticksRun.hh"    
 
-#ifdef WITH_OPTIX
 #include "OKPropagator.hh"  // ggeoview-
-#endif
 
 #define GUI_ 1
 #include "OpticksViz.hh"
@@ -42,9 +40,7 @@ OKMgr::OKMgr(int argc, char** argv)
     m_gen(m_hub->getGen()),
     m_run(m_hub->getRun()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
-#ifdef WITH_OPTIX
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
-#endif
     m_count(0)
 {
     init();
@@ -67,45 +63,37 @@ void OKMgr::init()
 
 void OKMgr::propagate()
 {
-    int multi = m_ok->getMultiEvent();
+    const Opticks& ok = *m_ok ; 
 
-    if(m_ok->hasOpt("load"))
+    if(ok("nopropagate")) return ; 
+
+    int multi = m_ok->getMultiEvent(); // defaults to 1
+
+    if(ok("load"))
     {
          m_run->loadEvent(); 
 
-#ifdef WITH_OPTIX
          m_propagator->uploadEvent();
-#endif
+
          if(m_viz) 
          {
              m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
 
-             m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
-
              m_viz->indexPresentationPrep();
          }
     }
-    else if(m_ok->hasOpt("nopropagate"))
-    {
-        LOG(info) << "--nopropagate/-P" ;
-    }
     else if(multi > 0)
     {
-#ifdef WITH_OPTIX
         for(int i=0 ; i < multi ; i++) 
         {
             m_run->createEvent();
 
-            m_run->setGensteps(m_gen->getInputGensteps()->clone()); 
+            m_run->setGensteps(m_gen->getInputGensteps()); 
 
             m_propagator->propagate();
 
-            if(m_ok->hasOpt("save"))
-            {
-                 m_run->saveEvent();
-            }
+            if(ok("save")) m_run->saveEvent();
         }
-#endif
     }
 }
 
@@ -116,9 +104,7 @@ void OKMgr::visualize()
 
 void OKMgr::cleanup()
 {
-#ifdef WITH_OPTIX
     m_propagator->cleanup();
-#endif
     m_hub->cleanup();
     if(m_viz) m_viz->cleanup();
     m_ok->cleanup(); 

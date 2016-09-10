@@ -131,6 +131,7 @@ set(SOURCES
     OBufBase_.cu     
     OBufPair_.cu     
     OPropagator.cc
+    OEntry.cc
     OEvent.cc
     OLaunchTest.cc
 
@@ -208,6 +209,7 @@ set(HEADERS
     OPropertyLib.hh
     OAccel.hh
     OPropagator.hh
+    OEntry.hh
     OEvent.hh
     numquad.h
 
