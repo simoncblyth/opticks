@@ -35,6 +35,51 @@ NLookup* G4StepNPY::getLookup()
 } 
 
 
+unsigned G4StepNPY::getNumSteps()
+{
+    return m_npy->getShape(0);
+}
+unsigned G4StepNPY::getNumPhotons(unsigned i)
+{
+    unsigned ni = getNumSteps();
+    assert(i < ni);
+    int numPhotons = m_npy->getInt(i,0u,3u);
+    return numPhotons ; 
+}
+unsigned G4StepNPY::getGencode(unsigned i)
+{
+    unsigned ni = getNumSteps();
+    assert(i < ni);
+    unsigned gencode = m_npy->getInt(i,0u,0u);
+    return gencode  ; 
+}
+
+
+unsigned G4StepNPY::getNumPhotonsTotal()
+{
+    unsigned ni = getNumSteps();
+    unsigned total(0);
+    for(unsigned i=0 ; i<ni ; i++) total+= getNumPhotons(i) ;
+    return total ; 
+}
+
+unsigned* G4StepNPY::makePhotonSeedArray()
+{
+    unsigned nstep = getNumSteps();
+    unsigned nseed = getNumPhotonsTotal();
+    unsigned* seeds = new unsigned[nseed] ; 
+    unsigned offset(0);
+    for(unsigned s=0 ; s < nstep ; s++)
+    {
+        unsigned npho = getNumPhotons(s);
+        for(unsigned ipho=0 ; ipho<npho ; ipho++) seeds[offset + ipho] = s ; 
+        offset += npho ; 
+    } 
+    return seeds ; 
+   // genstep id for each photon
+}
+
+ 
 
 void G4StepNPY::dump(const char* msg)
 {
@@ -163,11 +208,11 @@ void G4StepNPY::Summary(const char* msg)
 
 }
 
-int G4StepNPY::getNumPhotons(int label)
+int G4StepNPY::getNumPhotonsCounted(int label)
 {
     return m_photons.count(label) == 0 ? 0 : m_photons[label] ; 
 }
-int G4StepNPY::getNumPhotons()
+int G4StepNPY::getNumPhotonsCounted()
 {
     return m_total_photons ; 
 }

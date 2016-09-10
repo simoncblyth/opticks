@@ -13,7 +13,7 @@
 
 // optixrap-
 #include "OContext.hh"
-#include "OEntry.hh"
+#include "OpticksEntry.hh"
 #include "OConfig.hh"
 #include "OEvent.hh"
 #include "OBuf.hh"
@@ -64,7 +64,7 @@ OBuf* OPropagator::getRecordBuf()
 
 
 
-OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, OEntry* entry) 
+OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, OpticksEntry* entry) 
    :
     m_log(new SLog("OPropagator::OPropagator")),
     m_ocontext(ocontext),

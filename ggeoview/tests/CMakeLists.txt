@@ -15,6 +15,7 @@ set(TESTS
     OTracerTest.cc
     LogTest.cc
     OpEngineTest.cc
+    TrivialTest.cc
 )
 
 

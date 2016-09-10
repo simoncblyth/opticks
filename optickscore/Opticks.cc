@@ -1,4 +1,3 @@
-
 #ifdef _MSC_VER
 // object allocated on the heap may not be aligned 16
 // https://github.com/g-truc/glm/issues/235
@@ -33,6 +32,7 @@
 #include "OpticksColors.hh"
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
+#include "OpticksEntry.hh"
 
 
 #include "OpticksCfg.hh"
@@ -508,6 +508,13 @@ char Opticks::getEntryCode()
     return code  ;   
 }
 
+const char* Opticks::getEntryName()
+{  
+    char code = getEntryCode();
+    return OpticksEntry::Name(code);
+}
+
+
 bool Opticks::isTrivial()
 {
    char code = getEntryCode();
@@ -606,6 +613,12 @@ OpticksEventSpec* Opticks::getEventSpec()
     return m_spec ; 
 }
 
+OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
+{
+    OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
+    evt->loadBuffers();
+    return evt ; 
+}
 
 OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
@@ -673,6 +686,9 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     parameters->add<std::string>("mode", m_mode->description());
     parameters->add<std::string>("cmdline", m_cfg->getCommandLine() );
+
+    parameters->add<std::string>("EntryCode", BStr::ctoa(getEntryCode()) );
+    parameters->add<std::string>("EntryName", getEntryName() );
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );
     assert( parameters->get<unsigned int>("BounceMax") == bounce_max );

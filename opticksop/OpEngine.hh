@@ -3,11 +3,11 @@
 class SLog ; 
 
 class Opticks ;       // okc-
+class OpticksEntry ; 
 class OpticksHub ;    // okg-
 
 class OScene ;   // optixrap-
 class OPropagator ; 
-class OEntry ; 
 class OContext ; 
 
 class OpSeeder ; 
@@ -53,7 +53,7 @@ class OKOP_API OpEngine {
        Opticks*             m_ok ; 
        OScene*              m_scene ; 
        OContext*            m_ocontext ; 
-       OEntry*              m_entry ; 
+       OpticksEntry*        m_entry ; 
        OPropagator*         m_propagator ; 
        OpSeeder*            m_seeder ; 
        OpZeroer*            m_zeroer ; 

@@ -6,11 +6,16 @@
 #include "NPYBase.hpp"
 template <typename T> class NPY ; 
 class OConfig ; 
-class OEntry ; 
+class OpticksEntry ; 
 struct STimes ; 
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OContext {
+
+        // access to lowlevel  addEntry 
+        friend class OLaunchTest ; 
+        friend class LTOOContextUploadDownloadTest ;
+        friend class OAxisTest ;
     public:
         enum {
                 e_propagate_ray,
@@ -51,9 +56,9 @@ class OXRAP_API OContext {
             void dump(const char* msg="OContext::dump");
             void close();
      public:
-            OEntry*  addEntry(char code='G');
-            unsigned int addEntry(const char* filename="generate.cu.ptx", const char* raygen="generate", const char* exception="exception", bool defer=true);
+            OpticksEntry*  addEntry(char code='G');
             void setMissProgram( unsigned int index, const char* filename, const char* progname, bool defer=true);
+            unsigned int addEntry(const char* filename="generate.cu.ptx", const char* raygen="generate", const char* exception="exception", bool defer=true);
      private:
             unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=true);
             unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=true);

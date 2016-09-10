@@ -12,12 +12,12 @@
 #include "GLMFormat.hpp"
 
 // okc-
+#include "OpticksEntry.hh"
 #include "OpticksBufferControl.hh"
 
 // optixrap-
 #include "STimes.hh"
 #include "OConfig.hh"
-#include "OEntry.hh"
 #include "OContext.hh"
 
 #include "PLOG.hh"
@@ -39,7 +39,7 @@ const char* OContext::getModeName()
 
 
 
-OEntry* OContext::addEntry(char code)
+OpticksEntry* OContext::addEntry(char code)
 {
     bool defer = true ; 
     unsigned index ;
@@ -48,8 +48,9 @@ OEntry* OContext::addEntry(char code)
         case 'G': index = addEntry("generate.cu.ptx", "generate", "exception", defer) ; break ;
         case 'T': index = addEntry("generate.cu.ptx", "trivial",  "exception", defer) ; break ;
         case 'S': index = addEntry("seedTest.cu.ptx", "seedTest", "exception", defer) ; break ;
+        case 'P': index = addEntry("pinhole_camera.cu.ptx", "pinhole_camera" , "exception", defer);  break;
     }
-    return new OEntry(index, code) ; 
+    return new OpticksEntry(index, code) ; 
 }
 
 

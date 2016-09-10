@@ -11,6 +11,7 @@
 #include "GLMFormat.hpp"
 
 // okc-
+#include "OpticksEntry.hh"
 #include "Composition.hh"
 
 #include "OTracer.hh"
@@ -62,7 +63,11 @@ void OTracer::init()
 
     // OContext::e_pinhole_camera_entry
     bool defer = true ; 
-    m_entry_index = m_ocontext->addEntry("pinhole_camera.cu.ptx", "pinhole_camera" , "exception", defer);
+
+    //m_entry_index = m_ocontext->addEntry("pinhole_camera.cu.ptx", "pinhole_camera" , "exception", defer);
+    OpticksEntry* entry =  m_ocontext->addEntry('P');
+    m_entry_index = entry->getIndex();
+
     m_ocontext->setMissProgram(           OContext::e_radiance_ray , "constantbg.cu.ptx", "miss", defer );
 
     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());

@@ -9,7 +9,6 @@
 // ... so prefer to rely on external allocation of output 
 // and just fill in the content here, as done in removeField
 
-
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
@@ -17,6 +16,7 @@ class BRAP_API BStr {
   public:
      static int  atoi( const char* str, int fallback=0 );
      static const char* itoa( int i );
+     static const char* ctoa( char c );
      static const char* negate(const char* tag);
      static bool listHasKey(const char* dlist, const char* key, const char* delim=",");
      static char* trimPointerSuffixPrefix(const char* origname, const char* prefix);

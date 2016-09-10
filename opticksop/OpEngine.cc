@@ -12,7 +12,6 @@
 
 // optixrap-
 #include "OContext.hh"
-#include "OEntry.hh"
 #include "OPropagator.hh"
 #include "OScene.hh"
 

@@ -124,6 +124,7 @@ class OKCORE_API Opticks {
        int                  getMultiEvent();
        unsigned int         getSourceCode();
        char                 getEntryCode();    // G:generate S:seedTest T:trivial
+       const char*          getEntryName();    
        bool                 isTrivial();
        bool                 isSeedtest();
 
@@ -141,6 +142,7 @@ class OKCORE_API Opticks {
        TorchStepNPY*        makeSimpleTorchStep();
        OpticksEventSpec*    getEventSpec();
        OpticksEvent*        makeEvent(bool ok=true, unsigned tagoffset=0); 
+       OpticksEvent*        loadEvent(bool ok=true, unsigned tagoffset=0); 
        BDynamicDefine*      makeDynamicDefine();
    public:
        // load precooked indices

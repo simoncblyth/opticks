@@ -20,9 +20,15 @@ class NPY_API G4StepNPY {
        void checklabel(int xlabel, int ylabel=-1);
        void checkCounts(std::vector<int>& counts, const char* msg="G4StepNPY::checkCounts");
    public:  
+       unsigned getNumSteps();
+       unsigned getNumPhotons(unsigned step);
+       unsigned getGencode(unsigned step);
+       unsigned getNumPhotonsTotal();
+       unsigned* makePhotonSeedArray();  // genstep id for each photon
+   public:  
        void countPhotons();
-       int getNumPhotons(int label);
-       int getNumPhotons();
+       int getNumPhotonsCounted(int label);
+       int getNumPhotonsCounted();
        std::string description();
        void Summary(const char* msg="G4StepNPY::Summary");
    public:  

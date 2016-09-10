@@ -43,6 +43,14 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
 }
 
 
+const char* BStr::ctoa( char c )
+{
+    std::stringstream ss ; 
+    ss << c ; 
+    std::string s = ss.str() ;
+    return strdup(s.c_str());
+}
+
 const char* BStr::itoa( int i )
 {
     std::stringstream ss ; 

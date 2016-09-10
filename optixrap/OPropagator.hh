@@ -12,7 +12,7 @@ class Opticks ;
 template <typename T> class OpticksCfg ;
 
 class OContext ; 
-class OEntry ; 
+class OpticksEntry ; 
 class OBuf ; 
 class OEvent ; 
 struct STimes ; 
@@ -21,7 +21,7 @@ struct STimes ;
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
     public:
-        OPropagator(OContext* ocontext, OpticksHub* hub, OEntry* entry); 
+        OPropagator(OContext* ocontext, OpticksHub* hub, OpticksEntry* entry); 
     public:
         void prelaunch();   // done with the zero event
         void uploadEvent();  
@@ -48,7 +48,7 @@ class OXRAP_API OPropagator {
         OpticksCfg<Opticks>* m_cfg ; 
         int                  m_override ; 
 
-        OEntry*              m_entry ; 
+        OpticksEntry*        m_entry ; 
         int                  m_entry_index ; 
 
         OEvent*              m_oevt ; 
