@@ -19,10 +19,10 @@ class NPY_API TrivialCheckNPY {
        int checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0, unsigned i1, unsigned jj, unsigned kk, const char* label, int expect, int constant=0, int scale=0 );
    public:  
        void dump(const char* msg="TrivialCheckNPY::dump");
-       void check();
+       int check(const char* msg);
   private:
         void checkGensteps(NPY<float>* gs);
-        void checkPhotons(unsigned istep, NPY<float>* photons, unsigned i0, unsigned i1, unsigned gencode, unsigned numPhotons);
+        int checkPhotons(unsigned istep, NPY<float>* photons, unsigned i0, unsigned i1, unsigned gencode, unsigned numPhotons);
   private:
         NPY<float>*  m_photons ; 
         NPY<float>*  m_gensteps ; 

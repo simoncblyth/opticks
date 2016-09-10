@@ -13,9 +13,11 @@ TrivialCheckNPY::TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps)
 {
 }
 
-void TrivialCheckNPY::check(const char* msg)
+int TrivialCheckNPY::check(const char* msg)
 {
     dump(msg);
+
+    int fail(0);
 
     checkGensteps(m_gensteps);
 
@@ -27,10 +29,11 @@ void TrivialCheckNPY::check(const char* msg)
         unsigned numPhotonsForStep = m_g4step->getNumPhotons(istep);
         unsigned gencode = m_g4step->getGencode(istep);
 
-        checkPhotons(istep, m_photons, photon_offset, photon_offset+numPhotonsForStep, gencode, numPhotonsForStep);
+        fail += checkPhotons(istep, m_photons, photon_offset, photon_offset+numPhotonsForStep, gencode, numPhotonsForStep);
 
         photon_offset += numPhotonsForStep ;  
     }
+    return fail ; 
 }
 
 void TrivialCheckNPY::checkGensteps(NPY<float>* gs)
@@ -45,19 +48,30 @@ void TrivialCheckNPY::checkGensteps(NPY<float>* gs)
 }
 
 
-void TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned i0, unsigned i1, unsigned gencode, unsigned numPhotons )
+int TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned i0, unsigned i1, unsigned gencode, unsigned numPhotons )
 {
-    assert(0==checkItemValue( istep, photons, i0, i1, 2, 0, "(ghead.u.x)gencode"         , IS_UCONSTANT,     gencode, 0 ));
-    assert(0==checkItemValue( istep, photons, i0, i1, 2, 3, "(ghead.u.w)numPhotons"      , IS_UCONSTANT,  numPhotons, 0 ));
+    LOG(info) << "TrivialCheckNPY::checkPhotons" 
+              << " istep " << istep 
+              << " i0 " << i0
+              << " i1 " << i1
+              << " gencode " << gencode
+              << " numPhotons " << numPhotons
+              ;
+
+    int fail(0);
+
+    fail += checkItemValue( istep, photons, i0, i1, 2, 0, "(ghead.u.x)gencode"         , IS_UCONSTANT,     gencode, 0 );
+    fail += checkItemValue( istep, photons, i0, i1, 2, 3, "(ghead.u.w)numPhotons"      , IS_UCONSTANT,  numPhotons, 0 );
 
     unsigned PNUMQUAD = 4 ; 
     unsigned GNUMQUAD = 6 ; 
 
-    assert(0==checkItemValue( istep, photons, i0, i1, 3, 0, "(indices.u.x)photon_id"     , IS_UINDEX,              -1,        0 ));
-    assert(0==checkItemValue( istep, photons, i0, i1, 3, 1, "(indices.u.y)photon_offset" , IS_UINDEX_SCALED,       -1, PNUMQUAD ));
-    assert(0==checkItemValue( istep, photons, i0, i1, 3, 2, "(indices.u.z)genstep_id"    , IS_UCONSTANT,        istep,        0 ));
-    assert(0==checkItemValue( istep, photons, i0, i1, 3, 3, "(indices.u.w)genstep_offset", IS_UCONSTANT_SCALED, istep, GNUMQUAD ));
+    fail += checkItemValue( istep, photons, i0, i1, 3, 0, "(indices.u.x)photon_id"     , IS_UINDEX,              -1,        0 );
+    fail += checkItemValue( istep, photons, i0, i1, 3, 1, "(indices.u.y)photon_offset" , IS_UINDEX_SCALED,       -1, PNUMQUAD );
+    fail += checkItemValue( istep, photons, i0, i1, 3, 2, "(indices.u.z)genstep_id"    , IS_UCONSTANT,        istep,        0 );
+    fail += checkItemValue( istep, photons, i0, i1, 3, 3, "(indices.u.w)genstep_offset", IS_UCONSTANT_SCALED, istep, GNUMQUAD );
 
+    return fail ; 
 }
 
 void TrivialCheckNPY::dump(const char* msg)
@@ -115,7 +129,14 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
         {
             if(u != uconstant )
             {
-                LOG(warning) << "FAIL checkItemValue IS_UCONSTANT " << u << " " << i << " " << uconstant ; 
+                if(fail < 10)
+                LOG(warning) << "FAIL checkItemValue IS_UCONSTANT " 
+                             << " istep:" << istep 
+                             << " label:" << label 
+                             << " i:" << i 
+                             << " u:" << u 
+                             << " uconstant:" << uconstant
+                             ; 
                 fail += 1 ;   
             }
         }
@@ -123,7 +144,15 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
         {
             if(u != uconstant*scale )
             {
-                LOG(warning) << "FAIL checkItemValue IS_UCONSTANT_SCALED " << u << " " << i << " " << uconstant*scale ; 
+                if(fail < 10)
+                LOG(warning) << "FAIL checkItemValue IS_UCONSTANT_SCALED " 
+                             << " istep:" << istep 
+                             << " label:" << label 
+                             << " i:" << i 
+                             << " u:" << u 
+                             << " uconstant*s:" << uconstant*scale
+                             ;
+
                 fail += 1 ;   
             }
         }
