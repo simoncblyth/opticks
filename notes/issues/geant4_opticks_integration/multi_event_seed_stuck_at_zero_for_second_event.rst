@@ -78,9 +78,7 @@ rebuild accelerations structures etc.
 FIX: Using BUFFER_COPY_ON_DIRTY for photon buffer and manually marking dirty
 ------------------------------------------------------------------------------
 
-
-
-
+*  https://bitbucket.org/simoncblyth/opticks/commits/e3d49ccd4dd6
 
 
 Maybe Use Separate INPUT_ONLY SEED BUFFER ?
