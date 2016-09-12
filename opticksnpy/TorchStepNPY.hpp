@@ -37,10 +37,12 @@ typedef enum {
 
 template<typename T> class NPY ; 
 
+
+#include "GenstepNPY.hpp"
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
-class NPY_API TorchStepNPY {
+class NPY_API TorchStepNPY : public GenstepNPY {
    public:
        typedef enum { TYPE, 
                       MODE, 
@@ -99,10 +101,8 @@ class NPY_API TorchStepNPY {
        static const char* M_WAVELENGTH_COMB_ ; 
 
    public:  
-       TorchStepNPY(unsigned int genstep_id, unsigned int num_step=1, const char* config=NULL); 
+       TorchStepNPY(unsigned int genstep_type, unsigned int num_step=1, const char* config=NULL); 
        void configure(const char* config);
-       void addStep(bool verbose=false); // increments m_step_index
-       NPY<float>* getNPY();
        void update();
    private:
        ::Mode_t  parseMode(const char* k);
@@ -152,66 +152,16 @@ class NPY_API TorchStepNPY {
        void setMaterial(const char* s );
        const char* getConfig();
        const char* getMaterial();
-   public:  
-        // methods invoked by update after frame transform is available
-       void setPosition(const glm::vec4& pos );
-       void setDirection(const glm::vec3& dir );
-       void setPolarization(const glm::vec4& pol );
-   public:  
-       void setNumPhotons(const char* s );
-       void setMaterialLine(unsigned int ml);
-       void setDirection(const char* s );
-       void setZenithAzimuth(const char* s );
-       void setWavelength(const char* s );
-       void setWeight(const char* s );
-       void setTime(const char* s );
-       void setRadius(const char* s );
-       void setDistance(const char* s );
-
-       void setNumPhotons(unsigned int num_photons );
-       void setRadius(float radius );
-       void setDistance(float distance);
-   public:  
-       glm::vec3 getPosition();
-       glm::vec3 getDirection();
-       glm::vec3 getPolarization();
-       glm::vec4 getZenithAzimuth();
-
-       float getTime();
-       float getRadius();
-       float getWavelength();
-
 
    public:  
        ::Mode_t  getMode();
        ::Torch_t getType();
        std::string getModeString();
        const char* getTypeName();
-       unsigned int getNumPhotons();
-       unsigned int getMaterialLine();
 
-
-/*
-   *setZenithAzimuth*
-
-   Photons directions are generated using two random numbers in range 0:1 
-   which are used scale the zenith and azimuth ranges.
-   Default is a uniform sphere. Changing zenith ranges allows cones or
-   rings to be generated and changing azimuth range allows 
-   to chop the cone, ring or sphere.
-
-                       mapped to 0:2pi of azimuth angle    
-                    -------
-           (0.f,1.f,0.f,1.f)
-            --------
-              mapped to 0:pi of zenith angle
-*/
 
        void dump(const char* msg="TorchStepNPY::dump");
   private:
-       void setGenstepId(); 
-  private:
-       unsigned int m_genstep_id ; 
        const char*  m_config ;
        const char*  m_material ;
   private:
@@ -228,18 +178,6 @@ class NPY_API TorchStepNPY {
        glm::vec4    m_tgt ;
        glm::vec4    m_pol ;
        glm::vec3    m_dir ;
-  private:
-       // 6 quads that are copied into the genstep and passed to GPU cu/torchstep.h
-       glm::ivec4   m_ctrl ;
-       glm::vec4    m_post ;
-       glm::vec4    m_dirw ;
-       glm::vec4    m_polw ;
-       glm::vec4    m_zeaz ;
-       glm::vec4    m_beam ; 
-  private:
-       unsigned int m_num_step ; 
-       unsigned int m_step_index ; 
-       NPY<float>*  m_npy ; 
   private:
        unsigned int m_num_photons_per_g4event ;
  

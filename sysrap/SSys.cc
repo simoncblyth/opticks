@@ -8,6 +8,26 @@
 #include "PLOG.hh"
 
 
+
+void SSys::npdump(const char* path, const char* nptype)
+{
+
+    std::stringstream ss ; 
+    ss << "python -c 'import os, numpy as np ; np.set_printoptions(suppress=True, precision=3) ; print np.load(os.path.expandvars(\""
+       << path
+       << "\")).view(" 
+       << nptype 
+       << ")' " 
+    ;    
+
+    std::string cmd = ss.str();
+    LOG(info) << cmd ; 
+
+    system(cmd.c_str());
+}
+
+
+
 int SSys::GetInteractivityLevel()
 {
     // see opticks/notes/issues/automated_interop_tests.rst

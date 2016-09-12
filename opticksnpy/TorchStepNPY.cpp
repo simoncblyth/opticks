@@ -11,12 +11,11 @@
 #include "BStr.hh"
 
 // npy-
-#include "TorchStepNPY.hpp"
-#include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "uif.h"
-
+#include "GenstepNPY.hpp"
+#include "TorchStepNPY.hpp"
 #include "PLOG.hh"
 
 const char* TorchStepNPY::DEFAULT_CONFIG = 
@@ -71,12 +70,15 @@ Torch_t TorchStepNPY::parseType(const char* k)
     return type ;   
 }
 
+
+
+
+
 ::Torch_t TorchStepNPY::getType()
 {
-    uif_t uif ;
-    uif.f = m_beam.w ; 
+    unsigned utype = getBaseType();
     Torch_t type = T_UNDEF ;
-    switch(uif.u)
+    switch(utype)
     {
        case T_SPHERE:      type=T_SPHERE     ;break; 
        case T_DISC:        type=T_DISC       ;break; 
@@ -123,10 +125,10 @@ const char* TorchStepNPY::getTypeName()
 void TorchStepNPY::setType(const char* s)
 {
     ::Torch_t type = parseType(s) ;
-    uif_t uif ; 
-    uif.u = type ; 
-    m_beam.w = uif.f ;
+    unsigned utype = unsigned(type);
+    setBaseType(utype);
 }
+
 
 
 
@@ -154,13 +156,11 @@ Mode_t TorchStepNPY::parseMode(const char* k)
 
 ::Mode_t TorchStepNPY::getMode()
 {
-    uif_t uif ;
-    uif.f = m_beam.z ; 
-
-    ::Mode_t mode = (::Mode_t)uif.u ;
-
+    ::Mode_t mode = (::Mode_t)getBaseMode() ;
     return mode ; 
 }
+
+
 
 std::string TorchStepNPY::getModeString()
 {
@@ -249,15 +249,13 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 
 
-TorchStepNPY::TorchStepNPY(unsigned int genstep_id, unsigned int num_step, const char* config) 
+TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
        :  
-       m_genstep_id(genstep_id), 
+       GenstepNPY(genstep_type,  num_step),
        m_config(config ? strdup(config) : DEFAULT_CONFIG),
        m_material(NULL),
        m_frame_targetted(false),
-       m_num_step(num_step),
-       m_step_index(0),
-       m_npy(NULL),
+
        m_num_photons_per_g4event(10000)
 {
    configure(m_config);
@@ -340,14 +338,13 @@ unsigned int TorchStepNPY::getNumG4Event()
 }
 
 
+
+
 bool TorchStepNPY::isIncidentSphere()
 {
     ::Torch_t type = getType();
     return type == T_DISC_INTERSECT_SPHERE  ;
 }
-
-
-
 bool TorchStepNPY::isDisc()
 {
     ::Torch_t type = getType();
@@ -358,20 +355,16 @@ bool TorchStepNPY::isDiscLinear()
     ::Torch_t type = getType();
     return type == T_DISCLIN  ;
 }
-
 bool TorchStepNPY::isRing()
 {
     ::Torch_t type = getType();
     return type == T_RING  ;
 }
-
 bool TorchStepNPY::isPoint()
 {
     ::Torch_t type = getType();
     return type == T_POINT  ;
 }
-
-
 bool TorchStepNPY::isReflTest()
 {
     ::Torch_t type = getType();
@@ -433,7 +426,6 @@ void TorchStepNPY::configure(const char* config_)
             set(p, v);
         }
     }
-    setGenstepId();
 }
 
 void TorchStepNPY::setFrame(const char* s)
@@ -462,13 +454,6 @@ void TorchStepNPY::setFrameTransform(const char* s)
 void TorchStepNPY::setMaterial(const char* s)
 {
     m_material = strdup(s);
-}
-
-void TorchStepNPY::setDirection(const char* s)
-{
-    std::string ss(s);
-    glm::vec3 dir = gvec3(ss) ;
-    setDirection(dir);
 }
 
 void TorchStepNPY::setSourceLocal(const char* s)
@@ -524,186 +509,6 @@ void TorchStepNPY::update()
 }
 
 
-
-
-/// seqializing and setting the transport quads
-
-void TorchStepNPY::addStep(bool verbose)
-{
-    if(m_npy == NULL)
-    {
-        m_npy = NPY<float>::make(m_num_step, 6, 4);
-        m_npy->zero();
-    }
-   
-    unsigned int i = m_step_index ; 
-
-    update(); 
-
-    if(verbose) dump("TorchStepNPY::addStep");
-
-    m_npy->setQuadI(m_ctrl, i, 0 );
-    m_npy->setQuad( m_post, i, 1);
-    m_npy->setQuad( m_dirw, i, 2);
-    m_npy->setQuad( m_polw, i, 3);
-    m_npy->setQuad( m_zeaz, i, 4);
-    m_npy->setQuad( m_beam, i, 5);
-
-    m_step_index++ ; 
-}
-
-NPY<float>* TorchStepNPY::getNPY()
-{
-    assert( m_step_index == m_num_step ); // TorchStepNPY is incomplete
-    return m_npy ; 
-}
-
-
-
-
-// m_ctrl
-
-void TorchStepNPY::setGenstepId()
-{
-   m_ctrl.x = m_genstep_id ; 
-}
-
-
-void TorchStepNPY::setMaterialLine(unsigned int ml)
-{
-    m_ctrl.z = ml ; 
-}
-
-void TorchStepNPY::setNumPhotons(const char* s)
-{
-    setNumPhotons(boost::lexical_cast<unsigned int>(s)) ; 
-}
-void TorchStepNPY::setNumPhotons(unsigned int num_photons)
-{
-    m_ctrl.w = num_photons ; 
-}
-unsigned int TorchStepNPY::getNumPhotons()
-{
-    return m_ctrl.w ; 
-}
-
-
-
-
-// m_post
-
-void TorchStepNPY::setPosition(const glm::vec4& pos)
-{
-    m_post.x = pos.x ; 
-    m_post.y = pos.y ; 
-    m_post.z = pos.z ; 
-}
-
-void TorchStepNPY::setTime(const char* s)
-{
-    m_post.w = boost::lexical_cast<float>(s) ;
-}
-float TorchStepNPY::getTime()
-{
-    return m_post.w ; 
-}
-
-glm::vec3 TorchStepNPY::getPosition()
-{
-    return glm::vec3(m_post);
-}
-
-
-
-
-// m_dirw
-
-void TorchStepNPY::setDirection(const glm::vec3& dir)
-{
-    m_dirw.x = dir.x ; 
-    m_dirw.y = dir.y ; 
-    m_dirw.z = dir.z ; 
-}
-
-glm::vec3 TorchStepNPY::getDirection()
-{
-    return glm::vec3(m_dirw);
-}
-
-
-
-
-
-void TorchStepNPY::setWeight(const char* s)
-{
-    m_dirw.w = boost::lexical_cast<float>(s) ;
-}
-
-
-// m_polw
-
-void TorchStepNPY::setPolarization(const glm::vec4& pol)
-{
-    m_polw.x = pol.x ; 
-    m_polw.y = pol.y ; 
-    m_polw.z = pol.z ; 
-}
-void TorchStepNPY::setWavelength(const char* s)
-{
-    m_polw.w = boost::lexical_cast<float>(s) ;
-}
-float TorchStepNPY::getWavelength()
-{
-    return m_polw.w ; 
-}
-glm::vec3 TorchStepNPY::getPolarization()
-{
-    return glm::vec3(m_polw);
-}
-
-
-
-
-
-// m_zeaz
-
-void TorchStepNPY::setZenithAzimuth(const char* s)
-{
-    std::string ss(s);
-    m_zeaz = gvec4(ss) ;
-}
-glm::vec4 TorchStepNPY::getZenithAzimuth()
-{
-    return m_zeaz ; 
-}
-
-
-
-/// m_beam
-
-void TorchStepNPY::setRadius(const char* s)
-{
-    setRadius(boost::lexical_cast<float>(s)) ;
-}
-void TorchStepNPY::setRadius(float radius)
-{
-    m_beam.x = radius ;
-}
-float TorchStepNPY::getRadius()
-{
-    return m_beam.x ; 
-}
-
-
-
-void TorchStepNPY::setDistance(const char* s)
-{
-    setDistance(boost::lexical_cast<float>(s)) ;
-}
-void TorchStepNPY::setDistance(float distance)
-{
-    m_beam.y = distance ;
-}
 void TorchStepNPY::setMode(const char* s)
 {
     std::vector<std::string> tp; 
@@ -724,10 +529,7 @@ void TorchStepNPY::setMode(const char* s)
                   ; 
     }
 
-
-    uif_t uif ; 
-    uif.u = mode ; 
-    m_beam.z = uif.f ;
+    setBaseMode(mode);
 }
 
 
@@ -746,12 +548,7 @@ void TorchStepNPY::dump(const char* msg)
 
     print(m_dir, "m_dir [normalize(m_tgt - m_src)] ");
 
-    print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
-    print(m_post, "m_post : position, time " ); 
-    print(m_dirw, "m_dirw : direction, weight" ); 
-    print(m_polw, "m_polw : polarization, wavelength" ); 
-    print(m_zeaz, "m_zeaz: zenith, azimuth " ); 
-    print(m_beam, "m_beam: radius,... " ); 
+
 }
 
 

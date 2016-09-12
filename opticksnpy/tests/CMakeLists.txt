@@ -46,6 +46,7 @@ NSphereTest.cc
 NTesselateTest.cc
 G4StepNPYTest.cc
 _TorchStepNPYTest.cc
+GenstepTest.cc
 
 HitsNPYTest.cc
 _BoundariesNPYTest.cc

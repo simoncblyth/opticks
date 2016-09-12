@@ -131,9 +131,6 @@ int main(int argc, char** argv)
    
          Evt* evt = new Evt(size) ;
 
-         //context["genstep_buffer"]->getBuffer()->setSize(evt->size);
-         //context["photon_buffer"]->getBuffer()->setSize(evt->size);
-
          m_genstep_buffer->setSize(evt->size);
          m_photon_buffer->setSize(evt->size);
 

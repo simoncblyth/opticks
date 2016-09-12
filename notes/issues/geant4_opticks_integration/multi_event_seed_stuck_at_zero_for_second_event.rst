@@ -52,3 +52,33 @@ The seeds (genstep_id) stuck at zero for the 2nd evt::
             [    612838,    2451352,          0,          0]],
 
 
+
+
+
+TODO : Getting OptiX to notice CUDA/Thrust change to Photon buffer
+----------------------------------------------------------------------
+
+Seeding is done by CUDA/Thrust, seems OptiX is not noticing.
+
+* try manual dirtying of the photon buffer to force resync   
+
+
+Dirty CUDA Interop Buffers
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+* https://devtalk.nvidia.com/default/topic/925622/optix/should-i-free-buffer-data-/
+  
+Detlef:
+  
+Another case would be CUDA interop buffers which use device side pointers where
+the update happens through CUDA device code. Then you'd need to make the buffer
+dirty manually to let OptiX know its contents have changed, to be able to
+rebuild accelerations structures etc.
+
+
+
+
+
+
+
+
