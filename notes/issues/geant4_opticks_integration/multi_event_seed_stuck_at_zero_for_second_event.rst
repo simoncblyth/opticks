@@ -23,7 +23,6 @@ OpticksEvent buffer control::
 * photon :  "OPTIX_INPUT_OUTPUT,PTR_FROM_OPENGL"
 
 
-* maybe use separate seed_buffer ??
 
 
 The seeds (genstep_id) stuck at zero for the 2nd evt::
@@ -55,7 +54,7 @@ The seeds (genstep_id) stuck at zero for the 2nd evt::
 
 
 
-TODO : Getting OptiX to notice CUDA/Thrust change to Photon buffer
+DONE: Getting OptiX to notice CUDA/Thrust change to Photon buffer
 ----------------------------------------------------------------------
 
 Seeding is done by CUDA/Thrust, seems OptiX is not noticing.
@@ -76,9 +75,29 @@ dirty manually to let OptiX know its contents have changed, to be able to
 rebuild accelerations structures etc.
 
 
+FIX: Using BUFFER_COPY_ON_DIRTY for photon buffer and manually marking dirty
+------------------------------------------------------------------------------
 
 
 
 
+
+
+Maybe Use Separate INPUT_ONLY SEED BUFFER ?
+-----------------------------------------------
+
+* THIS IS IMPLEMENTED BUT PRIOR TO TESTING FOUND THAT COULD
+  GET MULTI EVENT TO WORK AS SHOWN ABOVE
+
+::
+
+    simon:opticksop blyth$ opticks-find WITH_SEED_BUF
+    ./opticksop/OpSeeder.cc://#define WITH_SEED_BUF 1
+    ./opticksop/OpSeeder.cc:#ifdef WITH_SEED_BUF
+    ./opticksop/OpSeeder.cc:#ifdef WITH_SEED_BUF
+
+
+TODO: Measure multievent compute speed using INPUT_OUTPUT seeded photon buffer vs INPUT only seed buffer
+----------------------------------------------------------------------------------------------------------
 
 

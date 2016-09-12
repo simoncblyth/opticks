@@ -1,6 +1,7 @@
 #include <cstddef>
 
-#include "OpticksEvent.hh"  // okc-
+#include "OpticksBufferControl.hh"  // okc-
+#include "OpticksEvent.hh"  
 #include "OpticksHub.hh"    // okg-
 
 #include "Timer.hpp"   // npy-
@@ -32,6 +33,9 @@
        }\
     }
 
+
+
+//#define WITH_SEED_BUF 1
 
 
 OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)  
@@ -95,21 +99,29 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 {
     OBuf* genstep = m_oevt->getGenstepBuf() ;
-    OBuf* photon = m_oevt->getPhotonBuf() ;
-
     CBufSpec s_gs = genstep->bufspec();
-    CBufSpec s_ox = photon->bufspec();
 
-    genstep->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)genstep");
+#ifdef WITH_SEED_BUF
+    LOG(warning) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
+    OBuf* seed = m_oevt->getSeedBuf() ;
+    CBufSpec s_ox = seed->bufspec();
+#else
+    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : seeding to photon buf  " ; 
+    OBuf* photon = m_oevt->getPhotonBuf() ;
+    CBufSpec s_ox = photon->bufspec();
+#endif
+
+    //genstep->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)genstep");
     //s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
 
-    photon->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)photon ");
+    //photon->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)photon ");
     //s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_ox");
 
 
     seedPhotonsFromGenstepsImp(s_gs, s_ox);
 
     TIMER("seedPhotonsFromGenstepsViaOptiX"); 
+
 }
 
 
@@ -127,10 +139,16 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     assert(evt); 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
+    NPY<float>* photons  =  evt->getPhotonData() ;
 
     unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
 
-    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsImp"
+    OpticksBufferControl ph_ctrl(photons->getBufferControlPtr());
+    bool ph_verbose = ph_ctrl("VERBOSE_MODE") ;
+
+    if(ph_verbose)
+    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsImp photons(VERBOSE_MODE) "
+               << " photons " << photons->getShapeString() 
                << " gensteps " << gensteps->getShapeString() 
                << " num_genstep_values " << num_genstep_values
                ;
@@ -152,10 +170,17 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     // dst slice points at the first value of each item in photon buffer
     // buffer size and num_bytes comes directly from CBufSpec
     CBufSlice src = tgs.slice(6*4,3,num_genstep_values) ;  // stride, begin, end 
+
+#ifdef WITH_SEED_BUF
+    CBufSlice dst = tox.slice(1*1,0,num_photons*1*1) ;
+#else
     CBufSlice dst = tox.slice(4*4,0,num_photons*4*4) ;
+#endif
 
     TBufPair<unsigned int> tgp(src, dst);
     tgp.seedDestination();
+
+
 }
 
 

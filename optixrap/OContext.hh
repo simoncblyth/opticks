@@ -83,6 +83,9 @@ class OXRAP_API OContext {
      private:
             template<typename T>
             void configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
+
+            template <typename T>
+            unsigned determineBufferSize(NPY<T>* npy, const char* name);
       public:
             template<typename T>
             static void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  

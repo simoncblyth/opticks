@@ -50,6 +50,7 @@ OPropagator::OPropagator(OpticksHub* hub, OEvent* oevt, OpticksEntry* entry)
     m_ok(hub->getOpticks()),
     m_cfg(m_ok->getCfg()),
     m_override(m_cfg->getOverride()),
+    m_nopropagate(false),
     m_entry(entry),
     m_entry_index(entry->getIndex()),
     m_prelaunch(false),
@@ -154,6 +155,12 @@ void OPropagator::setSize(unsigned width, unsigned height)
     m_height = height ; 
 }
 
+void OPropagator::setNoPropagate(bool nopropagate)
+{
+    m_nopropagate = nopropagate ; 
+}
+
+
 void OPropagator::prelaunch()
 {
     assert(m_prelaunch == false);
@@ -167,6 +174,7 @@ void OPropagator::prelaunch()
 
     unsigned numPhotons = evt->getNumPhotons(); 
     setSize( m_override > 0 ? m_override : numPhotons ,  1 );
+    setNoPropagate(m_ok->hasOpt("nopropagate"));
 
     STimes* prelaunch_times = evt->getPrelaunchTimes() ;
 
@@ -179,6 +187,12 @@ void OPropagator::prelaunch()
 void OPropagator::launch()
 {
     if(m_prelaunch == false) prelaunch();
+
+    if(m_nopropagate)
+    {
+        LOG(warning) << "OPropagator::launch SKIP due to --nopropagate " ; 
+        return ; 
+    }
 
     OpticksEvent* evt = m_oevt->getEvent(); 
     STimes* launch_times = evt->getLaunchTimes() ;

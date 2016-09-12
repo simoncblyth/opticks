@@ -81,10 +81,36 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_sequence_buf->setMultiplicity(1u);
     m_sequence_buf->setHexDump(true);
 
+    NPY<unsigned>* se = evt->getSeedData() ;
+    assert(se);
+    m_seed_buffer = m_ocontext->createBuffer<unsigned>( se, "seed");  // name:seed triggers special case non-quad handling  
+    m_context["seed_buffer"]->set( m_seed_buffer );
+    m_seed_buf = new OBuf("seed", m_seed_buffer);
+    m_seed_buf->setMultiplicity(1u);
+
+
 }
+
+
+
+void OEvent::markDirtyPhotonBuffer()
+{
+     LOG(info) << "OEvent::markDirtyPhotonBuffer" ;
+     m_photon_buffer->markDirty();   
+
+/*
+2016-09-12 20:50:24.482 INFO  [438131] [OEvent::markDirtyPhotonBuffer@98] OEvent::markDirtyPhotonBuffer
+libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtBufferMarkDirty(RTbuffer)" caught exception: Mark dirty only allowed on buffers created with RT_BUFFER_COPY_ON_DIRTY, file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Objects/Buffer.cpp, line: 867)
+Abort trap: 6
+*/
+
+}
+
 
 void OEvent::resizeBuffers(OpticksEvent* evt)
 {
+    LOG(info) << "OEvent::resizeBuffers " << evt->getShapeString() ; 
+
     NPY<float>* gensteps =  evt->getGenstepData() ;
     assert(gensteps);
     OContext::resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
@@ -100,7 +126,15 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     NPY<unsigned long long>* sq = evt->getSequenceData() ; 
     assert(sq);
     OContext::resizeBuffer<unsigned long long>(m_sequence_buffer, sq , "sequence");
+
+    NPY<unsigned>* se = evt->getSeedData() ; 
+    assert(se);
+    OContext::resizeBuffer<unsigned>(m_seed_buffer, se , "seed");
+
+
 }
+
+
 
 
 
@@ -183,6 +217,11 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         NPY<unsigned long long>* sq = evt->getSequenceData();
         OContext::download<unsigned long long>( m_sequence_buffer, sq );
     }
+    if(mask & SEED)
+    {
+        NPY<unsigned>* se = evt->getSeedData();
+        OContext::download<unsigned>( m_seed_buffer, se );
+    }
 
     LOG(info)<<"OEvent::download DONE" ;
 }
@@ -192,6 +231,10 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
 OBuf* OEvent::getSequenceBuf()
 {
     return m_sequence_buf ; 
+}
+OBuf* OEvent::getSeedBuf()
+{
+    return m_seed_buf ; 
 }
 OBuf* OEvent::getPhotonBuf()
 {

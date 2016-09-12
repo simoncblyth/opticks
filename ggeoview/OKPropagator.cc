@@ -51,6 +51,18 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     (*m_log)("DONE");
 }
 
+
+
+
+void OKPropagator::uploadEvent()
+{
+    if(m_viz) m_viz->uploadEvent();
+#ifdef WITH_OPTIX
+    m_engine->uploadEvent();
+#endif
+}
+
+
 void OKPropagator::propagate()
 {
     OpticksEvent* evt = m_hub->getEvent();
@@ -65,6 +77,8 @@ void OKPropagator::propagate()
 
     m_engine->propagate();        //  seedPhotonsFromGensteps, zeroRecords, propagate, indexSequence, indexBoundaries
 
+
+
     if(m_viz) m_viz->indexPresentationPrep();
 
     bool trivial = m_ok->isTrivial();
@@ -74,6 +88,15 @@ void OKPropagator::propagate()
     if(trivial) trivialCheck();
 
     LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE "   ;
+}
+
+
+void OKPropagator::downloadEvent()
+{
+    if(m_viz) m_viz->downloadEvent();
+#ifdef WITH_OPTIX
+    m_engine->downloadEvent();
+#endif
 }
 
 
@@ -89,23 +112,7 @@ void OKPropagator::trivialCheck()
 }
 
 
-void OKPropagator::uploadEvent()
-{
-    if(m_viz) m_viz->uploadEvent();
 
-#ifdef WITH_OPTIX
-    m_engine->uploadEvent();
-#endif
-}
-
-void OKPropagator::downloadEvent()
-{
-    if(m_viz) m_viz->downloadEvent();
-
-#ifdef WITH_OPTIX
-    m_engine->downloadEvent();
-#endif
-}
 
 
 void OKPropagator::indexEvent()

@@ -27,7 +27,7 @@ template<typename T> class NPY ;
 
 class NPY_API GenstepNPY {
    public:  
-       static GenstepNPY* Fabricate(unsigned genstep_type, unsigned num_step=10);
+       static GenstepNPY* Fabricate(unsigned genstep_type, unsigned num_step=10, unsigned num_photons_per_step=1000);
        GenstepNPY(unsigned genstep_type, unsigned num_step=1); 
        void addStep(bool verbose=false); // increments m_step_index
        NPY<float>* getNPY();

@@ -118,7 +118,7 @@ void Parameters::set(const char* name, T value)
         if( strncmp(npar.c_str(), name, strlen(name))==0)
         {
             std::string prior = it->second ; 
-            LOG(info) << "Parameters::set changing "
+            LOG(debug) << "Parameters::set changing "
                       << name 
                       << " from " << prior 
                       << " to " << svalue 

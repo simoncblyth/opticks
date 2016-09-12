@@ -47,6 +47,8 @@ OpticksEntry* OContext::addEntry(char code)
     { 
         case 'G': index = addEntry("generate.cu.ptx", "generate", "exception", defer) ; break ;
         case 'T': index = addEntry("generate.cu.ptx", "trivial",  "exception", defer) ; break ;
+        case 'N': index = addEntry("generate.cu.ptx", "nothing",  "exception", defer) ; break ;
+        case 'D': index = addEntry("generate.cu.ptx", "dumpseed", "exception", defer) ; break ;
         case 'S': index = addEntry("seedTest.cu.ptx", "seedTest", "exception", defer) ; break ;
         case 'P': index = addEntry("pinhole_camera.cu.ptx", "pinhole_camera" , "exception", defer);  break;
     }
@@ -353,7 +355,7 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     {
 
         if(verbose)
-             LOG(info) << npy->description("download") ;
+             LOG(info) << " VERBOSE_MODE "  << " " << npy->description("download") ;
 
         void* ptr = buffer->map() ; 
         npy->read( ptr );
@@ -431,43 +433,67 @@ optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 
 
 template <typename T>
-void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
+unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
 {
     unsigned int ni = std::max(1u,npy->getShape(0));
     unsigned int nj = std::max(1u,npy->getShape(1));  
     unsigned int nk = std::max(1u,npy->getShape(2));  
-    //unsigned int nl = std::max(1u,npy->getShape(3));  
-    //unsigned long long ctrl = npy->getBufferControl();
 
+    bool seed = strcmp(name, "seed")==0 ;
+    RTformat format = getFormat(npy->getType());
+    unsigned int size ; 
+
+    if(format == RT_FORMAT_USER || seed)
+    {
+        size = ni*nj*nk ; 
+    }
+    else
+    {
+        size = npy->getNumQuads() ;  
+ 
+    }
+    return size ; 
+}
+
+
+template <typename T>
+void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
+{
+
+    bool seed = strcmp(name, "seed")==0 ;
     RTformat format = getFormat(npy->getType());
     buffer->setFormat(format);  // must set format, before can set ElementSize
+    unsigned size = determineBufferSize(npy, name);
+
+
+    const char* label ; 
+    if(     format == RT_FORMAT_USER) label = "USER";
+    else if(seed)                     label = "SEED";
+    else                              label = "QUAD";
+
+
 
     std::stringstream ss ; 
     ss 
        << std::setw(10) << name
        << std::setw(20) << npy->getShapeString()
-       << ( format == RT_FORMAT_USER ? " USER" : " QUAD"  )   
+       << label 
+       << " size " << size ; 
        ;
-
     std::string hdr = ss.str();
 
-    unsigned int size ; 
-    if(format == RT_FORMAT_USER)
+    if(format == RT_FORMAT_USER )
     {
         buffer->setElementSize(sizeof(T));
-        size = ni*nj*nk ; 
         LOG(info) << hdr
-                  << " size (ijk) " << std::setw(10) << size 
                   << " elementsize " << sizeof(T)
                   ;
     }
     else
     {
-        size = npy->getNumQuads() ;  
-        LOG(info) << hdr 
-                  << " size (gnq) " << std::setw(10) << size 
-                  ;
+        LOG(info) << hdr ;
     }
+    
 
     buffer->setSize(size); 
 
@@ -489,6 +515,10 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
 template <typename T>
 void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
 {
+    OpticksBufferControl ctrl(npy->getBufferControlPtr());
+    bool verbose = ctrl("VERBOSE_MODE") ;
+
+
     unsigned int ni = std::max(1u,npy->getShape(0));
     unsigned int nj = std::max(1u,npy->getShape(1));  
     unsigned int nk = std::max(1u,npy->getShape(2));  
@@ -497,6 +527,7 @@ void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name
     unsigned int size = format == RT_FORMAT_USER ? ni*nj*nk : npy->getNumQuads() ;
     buffer->setSize(size); 
 
+    if(verbose)
     LOG(info) << "OContext::resizeBuffer " << name << " shape " << npy->getShapeString() << " size " << size  ; 
 }
 
@@ -524,6 +555,10 @@ RTformat OContext::getFormat(NPYBase::Type_t type)
 
 
 
+template OXRAP_API void OContext::upload<unsigned>(optix::Buffer&, NPY<unsigned>* );
+template OXRAP_API void OContext::download<unsigned>(optix::Buffer&, NPY<unsigned>* );
+template OXRAP_API void OContext::resizeBuffer<unsigned>(optix::Buffer&, NPY<unsigned>*, const char* );
+
 template OXRAP_API void OContext::upload<float>(optix::Buffer&, NPY<float>* );
 template OXRAP_API void OContext::download<float>(optix::Buffer&, NPY<float>* );
 template OXRAP_API void OContext::resizeBuffer<float>(optix::Buffer&, NPY<float>*, const char* );
@@ -539,5 +574,6 @@ template OXRAP_API void OContext::resizeBuffer<unsigned long long>(optix::Buffer
 template OXRAP_API optix::Buffer OContext::createBuffer(NPY<float>*, const char* );
 template OXRAP_API optix::Buffer OContext::createBuffer(NPY<short>*, const char* );
 template OXRAP_API optix::Buffer OContext::createBuffer(NPY<unsigned long long>*, const char* );
+template OXRAP_API optix::Buffer OContext::createBuffer(NPY<unsigned>*, const char* );
 
 

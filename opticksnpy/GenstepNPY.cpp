@@ -12,13 +12,13 @@
 #include "PLOG.hh"
 
 
-GenstepNPY* GenstepNPY::Fabricate(unsigned genstep_type, unsigned num_step)
+GenstepNPY* GenstepNPY::Fabricate(unsigned genstep_type, unsigned num_step, unsigned num_photons_per_step)
 {
     GenstepNPY* fab = new GenstepNPY(genstep_type, num_step) ;      
     for(unsigned i=0 ; i < num_step ; i++)
     {   
-        fab->setMaterialLine(i*10);
-        fab->setNumPhotons(1000); 
+        fab->setMaterialLine(i*10);   
+        fab->setNumPhotons(num_photons_per_step); 
         fab->addStep();
     }   
     return fab ; 

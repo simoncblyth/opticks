@@ -504,6 +504,8 @@ char Opticks::getEntryCode()
 {
     char code ;
     if(     m_cfg->hasOpt("trivial"))   code = 'T' ; 
+    else if(m_cfg->hasOpt("nothing"))   code = 'N' ; 
+    else if(m_cfg->hasOpt("dumpseed"))  code = 'D' ; 
     else if(m_cfg->hasOpt("seedtest"))  code = 'S' ; 
     else                                code = 'G' ; 
     return code  ;   

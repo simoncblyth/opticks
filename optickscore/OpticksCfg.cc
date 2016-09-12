@@ -130,6 +130,12 @@ void OpticksCfg<Listener>::init()
        ("trivial",  "swap OptiX generate program with trivial standin for debugging") ;
 
    m_desc.add_options()
+       ("nothing",  "swap OptiX generate program with do nothing standin for debugging, NB this is different from --nopropagate as a launch is done") ;
+
+   m_desc.add_options()
+       ("dumpseed",  "swap OptiX generate program with standin for debugging, that just dumps the seed ");
+
+   m_desc.add_options()
        ("seedtest",  "interop buffer overwrite debugging") ;
 
 

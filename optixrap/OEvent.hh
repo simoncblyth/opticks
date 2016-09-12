@@ -33,6 +33,7 @@ class OXRAP_API OEvent
             PHOTON   = 0x1 << 2, 
             RECORD   = 0x1 << 3, 
             SEQUENCE = 0x1 << 4,
+            SEED     = 0x1 << 5,
             DEFAULT  = PHOTON | RECORD | SEQUENCE
             };
     public:
@@ -49,6 +50,8 @@ class OXRAP_API OEvent
         OBuf* getPhotonBuf();
         OBuf* getGenstepBuf();
         OBuf* getRecordBuf();
+        OBuf* getSeedBuf();
+        void markDirtyPhotonBuffer();
     private:
         void createBuffers(OpticksEvent* evt);
         void resizeBuffers(OpticksEvent* evt);
@@ -65,11 +68,14 @@ class OXRAP_API OEvent
         optix::Buffer   m_photon_buffer ; 
         optix::Buffer   m_record_buffer ; 
         optix::Buffer   m_sequence_buffer ; 
+        optix::Buffer   m_seed_buffer ; 
     private:
         OBuf*           m_genstep_buf ;
         OBuf*           m_photon_buf ;
         OBuf*           m_record_buf ;
         OBuf*           m_sequence_buf ;
+        OBuf*           m_seed_buf ;
+    private:
         bool            m_buffers_created ; 
 
 };

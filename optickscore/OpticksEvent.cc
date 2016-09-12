@@ -91,6 +91,7 @@ const char* OpticksEvent::record_  = "record" ;
 const char* OpticksEvent::phosel_ = "phosel" ; 
 const char* OpticksEvent::recsel_  = "recsel" ; 
 const char* OpticksEvent::sequence_  = "sequence" ; 
+const char* OpticksEvent::seed_  = "seed" ; 
 
 
 OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
@@ -120,6 +121,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_phosel_data(NULL),
           m_recsel_data(NULL),
           m_sequence_data(NULL),
+          m_seed_data(NULL),
 
           m_domain(NULL),
 
@@ -132,6 +134,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_phosel_attr(NULL),
           m_recsel_attr(NULL),
           m_sequence_attr(NULL),
+          m_seed_attr(NULL),
 
           m_records(NULL),
           m_photons(NULL),
@@ -303,7 +306,10 @@ NPY<unsigned long long>* OpticksEvent::getSequenceData()
 { 
     return m_sequence_data ;
 }
-
+NPY<unsigned>* OpticksEvent::getSeedData()
+{ 
+    return m_seed_data ;
+}
 
 
 MultiViewNPY* OpticksEvent::getGenstepAttr(){ return m_genstep_attr ; }
@@ -313,6 +319,7 @@ MultiViewNPY* OpticksEvent::getRecordAttr(){ return m_record_attr ; }
 MultiViewNPY* OpticksEvent::getPhoselAttr(){ return m_phosel_attr ; }
 MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
 MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
+MultiViewNPY* OpticksEvent::getSeedAttr(){  return m_seed_attr ; }
 
 
 
@@ -498,6 +505,7 @@ void OpticksEvent::init()
     m_data_names.push_back(phosel_);
     m_data_names.push_back(recsel_);
     m_data_names.push_back(sequence_);
+    m_data_names.push_back(seed_);
 
     m_abbrev[genstep_] = "gs" ;    // input gs are named: cerenkov, scintillation but for posterity need common output tag
     m_abbrev[nopstep_] = "no" ;    // non optical particle steps obtained from G4 eg with g4gun
@@ -506,6 +514,7 @@ void OpticksEvent::init()
     m_abbrev[phosel_] = "ps" ;     // photon selection index
     m_abbrev[recsel_] = "rs" ;     // record selection index
     m_abbrev[sequence_] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
+    m_abbrev[seed_] = "se" ;   //   (short) genstep id used for photon seeding 
 }
 
 
@@ -519,6 +528,7 @@ NPYBase* OpticksEvent::getData(const char* name)
     else if(strcmp(name, phosel_)==0)  data = static_cast<NPYBase*>(m_phosel_data) ;
     else if(strcmp(name, recsel_)==0)  data = static_cast<NPYBase*>(m_recsel_data) ;
     else if(strcmp(name, sequence_)==0) data = static_cast<NPYBase*>(m_sequence_data) ;
+    else if(strcmp(name, seed_)==0) data = static_cast<NPYBase*>(m_seed_data) ;
     return data ; 
 }
 
@@ -532,6 +542,7 @@ NPYSpec* OpticksEvent::getSpec(const char* name)
     else if(strcmp(name, phosel_)==0)  spec = static_cast<NPYSpec*>(m_phosel_spec) ;
     else if(strcmp(name, recsel_)==0)  spec = static_cast<NPYSpec*>(m_recsel_spec) ;
     else if(strcmp(name, sequence_)==0) spec = static_cast<NPYSpec*>(m_sequence_spec) ;
+    else if(strcmp(name, seed_)==0)     spec = static_cast<NPYSpec*>(m_seed_spec) ;
     else if(strcmp(name, fdom_)==0)     spec = static_cast<NPYSpec*>(m_fdom_spec) ;
     else if(strcmp(name, idom_)==0)     spec = static_cast<NPYSpec*>(m_idom_spec) ;
     return spec ; 
@@ -602,6 +613,7 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     else if(elem[0] == phosel_)   mvn = m_phosel_attr ;
     else if(elem[0] == recsel_)   mvn = m_recsel_attr ;
     else if(elem[0] == sequence_) mvn = m_sequence_attr ;
+    else if(elem[0] == seed_)     mvn = m_seed_attr ;
 
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
@@ -648,9 +660,10 @@ void OpticksEvent::createSpec()
     // Better for the tags to be easy to find, ie not the same as OptiX RT_ tags
     //
 
+
     m_genstep_spec = GenstepSpec();
 
-    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL") ;
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY") ;
 
           //   OPTIX_INPUT_OUTPUT : INPUT needed as seeding writes genstep identifiers into photon buffer
           //     INTEROP_PTR_FROM_OPENGL  : needed with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop no longer working 
@@ -663,6 +676,7 @@ void OpticksEvent::createSpec()
           //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 
     m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG , "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY") ;
+    m_seed_spec     = new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
 
           // OPTIX_NON_INTEROP  : creates OptiX buffer even in INTEROP mode, this is possible for sequence as 
           //                      it is not used by OpenGL shaders so no need for INTEROP
@@ -684,6 +698,23 @@ void OpticksEvent::createSpec()
 }
 
 
+void OpticksEvent::addBufferControl(const char* name, const char* ctrl_)
+{
+    NPYBase* npy = getData(name);
+    assert(npy);
+
+    OpticksBufferControl ctrl(npy->getBufferControlPtr());
+    ctrl.add(ctrl_);
+    std::string orig = ctrl.description("orig");
+
+    LOG(info) << "OpticksEvent::addBufferControl"
+              << " name " << name 
+              << " ctrl_ " << ctrl_ 
+              << " changed from " << orig
+              << " to " << ctrl.description("changed:") 
+              ;
+
+}
 
 
 void OpticksEvent::setBufferControl(NPYBase* data)
@@ -713,6 +744,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
     if(m_mode->isCompute()) ctrl.add(OpticksBufferControl::COMPUTE_MODE_) ; 
     if(m_mode->isInterop()) ctrl.add(OpticksBufferControl::INTEROP_MODE_) ; 
 
+    if(ctrl("VERBOSE_MODE"))
      LOG(info) << std::setw(10) << name 
                << " : " << ctrl.description("(spec)") 
                ;
@@ -745,6 +777,9 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
 
     NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec); 
     setSequenceData(seq);   
+
+    NPY<unsigned>* seed = NPY<unsigned>::make(m_seed_spec); 
+    setSeedData(seed);   
 
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_phosel_spec); 
     setPhoselData(phosel);   
@@ -780,6 +815,7 @@ void OpticksEvent::resize()
     assert(m_phosel_data);
     assert(m_recsel_data);
     assert(m_record_data);
+    assert(m_seed_data);
 
     unsigned int num_photons = getNumPhotons();
     unsigned int num_records = getNumRecords();
@@ -805,6 +841,7 @@ void OpticksEvent::resize()
 
     m_photon_data->setNumItems(num_photons);
     m_sequence_data->setNumItems(num_photons);
+    m_seed_data->setNumItems(num_photons);
     m_phosel_data->setNumItems(num_photons);
     m_recsel_data->setNumItems(num_photons);
     m_record_data->setNumItems(num_photons);
@@ -951,7 +988,7 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
     OpticksActionControl oac(gs->getActionControlPtr());
     if(oac_label)
     {
-        LOG(info) << "OpticksEvent::importGenstepData adding oac_label " << oac_label ; 
+        LOG(debug) << "OpticksEvent::importGenstepData adding oac_label " << oac_label ; 
         oac.add(oac_label);
     }
 
@@ -1192,6 +1229,13 @@ delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
 
 }
 
+void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
+{
+    setBufferControl(seed_data);
+    m_seed_data = seed_data  ;
+    m_seed_attr = new MultiViewNPY("seed_attr");
+
+}
 
 void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
 {

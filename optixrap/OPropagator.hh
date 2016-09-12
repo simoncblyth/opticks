@@ -27,6 +27,7 @@ class OXRAP_API OPropagator {
         void launch();
     public:
         void setOverride(unsigned int override);
+        void setNoPropagate(bool nopropagate=true );
     private:
         void init();
         void setEntry(unsigned int entry);
@@ -40,7 +41,9 @@ class OXRAP_API OPropagator {
         OContext*            m_ocontext ; 
         Opticks*             m_ok ; 
         OpticksCfg<Opticks>* m_cfg ; 
+
         int                  m_override ; 
+        bool                 m_nopropagate ; 
 
         OpticksEntry*        m_entry ; 
         int                  m_entry_index ; 

@@ -10,6 +10,7 @@ class OKCORE_API OpticksEntry
    private:
         static const char* GENERATE_ ; 
         static const char* TRIVIAL_ ; 
+        static const char* NOTHING_ ; 
         static const char* SEEDTEST_ ; 
         static const char* UNKNOWN_ ; 
    public:
@@ -21,6 +22,7 @@ class OKCORE_API OpticksEntry
         const char*   getName();
         std::string   description();
         bool          isTrivial();
+        bool          isNothing();
    private:
         unsigned             m_index ; 
         char                 m_code ; 

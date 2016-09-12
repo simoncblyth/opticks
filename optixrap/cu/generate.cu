@@ -146,6 +146,37 @@ rtDeclareVariable(rtObject,      top_object, , );
 //    p.flags.u.z = s.index.x ;   \
 
 
+RT_PROGRAM void dumpseed()
+{
+    unsigned long long photon_id = launch_index.x ;  
+    unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
+
+    union quad phead ;
+    phead.f = photon_buffer[photon_offset+0] ;   
+    unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
+
+    //rtPrintf("(dumpseed) genstep_id %u \n", genstep_id );
+
+    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+
+    //rtPrintf("(trivial) genstep_offset %u \n", genstep_offset );
+
+    union quad ghead ; 
+    ghead.f = genstep_buffer[genstep_offset+0]; 
+ 
+    quad indices ;  
+    indices.u.x = photon_id ; 
+    indices.u.y = photon_offset ; 
+    indices.u.z = genstep_id ; 
+    indices.u.w = genstep_offset ; 
+
+    //photon_buffer[photon_offset+0] = make_float4(  0.f , 0.f , 0.f, 0.f );
+    // writing over where the seeds were causes the problem for 2nd event
+    //
+    photon_buffer[photon_offset+3] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w); 
+}
+
+
 RT_PROGRAM void trivial()
 {
     unsigned long long photon_id = launch_index.x ;  
@@ -184,7 +215,7 @@ RT_PROGRAM void trivial()
     indices.u.w = genstep_offset ; 
 
     photon_buffer[photon_offset+0] = make_float4(  0.f , 0.f , 0.f, 0.f );
-    photon_buffer[photon_offset+1] = make_float4(  1.f , 1.f , 1.f, 1.f );
+    photon_buffer[photon_offset+1] = make_float4(  0.f , 0.f , 0.f, 0.f );
     photon_buffer[photon_offset+2] = make_float4(  ghead.f.x,     ghead.f.y,    ghead.f.z,     ghead.f.w); 
     photon_buffer[photon_offset+3] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w); 
 
