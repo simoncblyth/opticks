@@ -85,6 +85,7 @@ class OKGEO_API OpticksHub {
        NPY<float>*    getInputGensteps();
        OpticksEvent*  getG4Event();
        OpticksEvent*  getEvent();
+       void createEvent(unsigned tagoffset=0);
    private:
        void configureEvent(OpticksEvent* evt);
    public:

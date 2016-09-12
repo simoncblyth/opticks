@@ -578,8 +578,13 @@ unsigned int OpticksEvent::getBounceMax()
 }
 unsigned int OpticksEvent::getRngMax()
 {
-    return m_parameters->get<unsigned int>("RngMax");
+    return m_parameters->get<unsigned int>("RngMax", "0");
 }
+void OpticksEvent::setRngMax(unsigned int rng_max)
+{
+    m_parameters->add<unsigned int>("RngMax",    rng_max );
+}
+
 
 
 ViewNPY* OpticksEvent::operator [](const char* spec)
@@ -762,6 +767,9 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
 }
 
 
+
+
+
 void OpticksEvent::resize()
 {
     // NB these are all photon level qtys on the first dimension
@@ -777,6 +785,17 @@ void OpticksEvent::resize()
     unsigned int num_records = getNumRecords();
     unsigned int maxrec = getMaxRec();
  
+    unsigned rng_max = getRngMax(); 
+    bool enoughRng = num_photons <= rng_max ; 
+    if(!enoughRng)
+        LOG(fatal) << "OpticksEvent::resize  NOT ENOUGH RNG "
+                   << " num_photons " << num_photons
+                   << " rng_max " << rng_max 
+                   ;
+    assert(enoughRng && " need to prepare and persist more RNG states up to maximual per propagation number" );
+
+
+
 
     LOG(info) << "OpticksEvent::resize " 
               << " num_photons " << num_photons  
@@ -826,9 +845,9 @@ void OpticksEvent::importDomainsBuffer()
 
 
 
-void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
+void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor, const char* oac_label)
 {
-    importGenstepData(genstep_data);
+    importGenstepData(genstep_data, oac_label );
 
     setBufferControl(genstep_data);
 
@@ -919,7 +938,7 @@ void OpticksEvent::importGenstepDataLoaded(NPY<float>* gs)
      if(isTorchType())  ctrl.add(OpticksActionControl::GS_TORCH_);
 }
 
-void OpticksEvent::importGenstepData(NPY<float>* gs)
+void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
     Parameters* gsp = gs->getParameters();
     m_parameters->append(gsp);
@@ -930,6 +949,13 @@ void OpticksEvent::importGenstepData(NPY<float>* gs)
     m_g4step = new G4StepNPY(gs);    
 
     OpticksActionControl oac(gs->getActionControlPtr());
+    if(oac_label)
+    {
+        LOG(info) << "OpticksEvent::importGenstepData adding oac_label " << oac_label ; 
+        oac.add(oac_label);
+    }
+
+
     bool gs_torch = oac.isSet("GS_TORCH") ; 
     bool gs_legacy = oac.isSet("GS_LEGACY") ; 
 
@@ -1651,7 +1677,6 @@ NPY<float>* OpticksEvent::loadGenstepDerivativeFromFile(const char* stem)
     NPY<float>* npy = exists ? NPY<float>::load(path.c_str()) : NULL ;
     return npy ; 
 }
-
 
 
 

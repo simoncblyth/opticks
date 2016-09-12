@@ -1,6 +1,8 @@
 #include "SLog.hh"
 #include "NPY.hpp"
-#include "OpticksEvent.hh"
+
+#include "OpticksEvent.hh"  // okc-
+#include "OpticksHub.hh"    // okg-
 
 #include "OContext.hh"
 #include "OEvent.hh"
@@ -27,9 +29,10 @@ OContext* OEvent::getOContext()
 // canonical single OEvent instance resides in OPropagator 
 // and is instanciated with OPropagator
 
-OEvent::OEvent(OContext* ocontext)
+OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent")),
+   m_hub(hub),
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
    m_evt(NULL),
@@ -101,6 +104,16 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 
 
 
+void OEvent::upload()
+{
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt); 
+    upload(evt) ;  
+    // on first call createsBuffers, subsequently reuses them by resizing before upload
+    // interop not debugged yet 
+}
+
+
 void OEvent::upload(OpticksEvent* evt)   
 {
     LOG(info) << "OEvent::upload id " << evt->getId() ; 
@@ -133,10 +146,18 @@ void OEvent::upload(OpticksEvent* evt)
     LOG(info) << "OEvent::upload DONE" ; 
 }
 
+
+
+void OEvent::downloadPhotonData()
+{
+    download(PHOTON);
+}
 void OEvent::download(unsigned mask)
 {
     download(m_evt, mask);
 }
+
+
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {
     assert(evt) ;

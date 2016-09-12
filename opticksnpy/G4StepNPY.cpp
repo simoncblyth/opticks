@@ -220,14 +220,10 @@ int G4StepNPY::getNumPhotonsCounted()
 
 void G4StepNPY::checklabel(int xlabel, int ylabel)
 {
-    LOG(debug)<<"G4StepNPY::checklabel" 
-             << " xlabel " << xlabel 
-             << " ylabel " << ylabel 
-             ;
-
+    unsigned numStep = m_npy->getNumItems();
     unsigned mismatch = 0 ;  
 
-    for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
+    for(unsigned int i=0 ; i<numStep ; i++ )
     {
         int label = m_npy->getInt(i,0u,0u);
 
@@ -252,10 +248,16 @@ void G4StepNPY::checklabel(int xlabel, int ylabel)
             else 
                  mismatch += 1 ;  
         } 
+        
     }
 
     if(mismatch > 0) 
-       LOG(fatal) << " mismatch " << mismatch ; 
+         LOG(fatal)<<"G4StepNPY::checklabel FAIL" 
+                   << " xlabel " << xlabel 
+                   << " ylabel " << ylabel 
+                   << " numStep " << numStep
+                   << " mismatch " << mismatch ; 
+                   ;
   
     assert(mismatch == 0 );
 }

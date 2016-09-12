@@ -274,6 +274,12 @@ TorchStepNPY* OpticksHub::getTorchstep()   // needed by CGenerator
     return m_gen->getTorchstep() ; 
 }
 
+NPY<float>* OpticksHub::getInputGensteps()
+{
+    return m_gen->getInputGensteps();
+}
+
+
 
 bool OpticksHub::hasOpt(const char* name)
 {
@@ -383,6 +389,11 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 }
 
 
+
+void OpticksHub::createEvent(unsigned tagoffset)
+{
+    m_run->createEvent(tagoffset);
+}
 OpticksEvent* OpticksHub::getG4Event()
 {
     return m_run->getG4Event() ; 

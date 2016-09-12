@@ -8,7 +8,6 @@
 #include "STimes.hh"
 #include "Opticks.hh"
 #include "OpticksHub.hh"
-#include "OpticksRun.hh"
 #include "OpticksGen.hh"
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
@@ -35,25 +34,15 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
-    OpticksGen* gen = hub.getGen();
-    NPY<float>* gs0 = gen->getInputGensteps(); 
+    NPY<float>* gs0 = hub.getInputGensteps(); 
     assert(gs0);
-
-
-    OpticksRun* run = hub.getRun();
-    run->createEvent();
-
-    OpticksEvent* evt = run->getEvent();
-    evt->Summary("evt");
-
-    LOG(info) << argv[0] << " evt shape " << evt->getShapeString() ; 
 
 
     optix::Context context = optix::Context::create();
     OContext ctx(context, OContext::COMPUTE);
     int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
 
-    OEvent* oevt = new OEvent(&ctx);   
+    OEvent* oevt = new OEvent(&hub, &ctx);   
  
     bool prelaunch = false ; 
 
@@ -61,9 +50,9 @@ int main(int argc, char** argv)
     {
          NPY<float>* gs = gs0->clone();
 
-         unsigned tagoffset = i ; 
+         hub.createEvent(i);
 
-         OpticksEvent* evt = ok.makeEvent(true, tagoffset) ;
+         OpticksEvent* evt = hub.getEvent();
 
          evt->setGenstepData(gs);
 
@@ -80,7 +69,7 @@ int main(int argc, char** argv)
          // TODO avoid this complication
 
          
-         oevt->upload(evt);
+         oevt->upload();
 
          if(!prelaunch)
          {

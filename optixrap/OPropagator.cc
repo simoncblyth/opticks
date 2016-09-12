@@ -31,7 +31,6 @@ using namespace optix ;
 #include "PLOG.hh"
 
 
-
 void OPropagator::setOverride(unsigned int override_)
 {
     m_override = override_ ; 
@@ -39,25 +38,6 @@ void OPropagator::setOverride(unsigned int override_)
 void OPropagator::setEntry(unsigned int entry_index)
 {
     m_entry_index = entry_index;
-}
-
-
-
-OBuf* OPropagator::getSequenceBuf()
-{
-    return m_oevt->getSequenceBuf() ;
-}
-OBuf* OPropagator::getPhotonBuf()
-{
-    return m_oevt->getPhotonBuf() ;
-}
-OBuf* OPropagator::getGenstepBuf()
-{
-    return m_oevt->getGenstepBuf() ;
-}
-OBuf* OPropagator::getRecordBuf()
-{
-    return m_oevt->getRecordBuf() ; 
 }
 
 
@@ -166,51 +146,12 @@ void OPropagator::initRng()
 }
 
 
-void OPropagator::uploadEvent()
+
+
+void OPropagator::setSize(unsigned width, unsigned height)
 {
-    OpticksEvent* evt = m_hub->getEvent();
-    if(!evt) return ;
-
-    unsigned int numPhotons = evt->getNumPhotons();
-    bool enoughRng = numPhotons <= m_ok->getRngMax() ;
-
-    if(!enoughRng)
-        LOG(fatal) << "OPropagator::uploadEvent"
-                   << " not enoughRng "
-                   << " numPhotons " << numPhotons 
-                   << " rngMax " << m_ok->getRngMax()
-                   ;  
-
-    assert( enoughRng  && "Use ggeoview-rng-prep to prepare RNG states up to the maximal number of photons to be generated per invokation " );
-
-    m_width  = m_override > 0 ? m_override : numPhotons ;
-    m_height = 1 ;
-
-    LOG(info) << "OPropagator::uploadEvent count " << m_count << " size(" <<  m_width << "," <<  m_height << ")";
-
-    if(m_override > 0)
-        LOG(warning) << "OPropagator::initEvent OVERRIDE photon count for debugging to " << m_width ; 
-
-    if(m_ok->isCompute())
-    {
-        m_oevt->upload(evt) ;  
-       // on first call createsBuffers, subsequently reuses them by resizing before upload
-    }
-    else
-    {
-        m_oevt->upload(evt) ;  
-        // maybe difficult in interop as the buffers are actually references to OpenGL objs 
-    }
-}
-
-void OPropagator::downloadEvent()
-{
-    m_oevt->download();
-}
-
-void OPropagator::downloadPhotonData()
-{
-    m_oevt->download(OEvent::PHOTON);
+    m_width = width ; 
+    m_height = height ; 
 }
 
 void OPropagator::prelaunch()
@@ -223,6 +164,10 @@ void OPropagator::prelaunch()
     assert(entry);
 
     OpticksEvent* evt = m_oevt->getEvent(); 
+
+    unsigned numPhotons = evt->getNumPhotons(); 
+    setSize( m_override > 0 ? m_override : numPhotons ,  1 );
+
     STimes* prelaunch_times = evt->getPrelaunchTimes() ;
 
     m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 

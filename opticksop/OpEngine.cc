@@ -37,7 +37,7 @@ OpEngine::OpEngine(OpticksHub* hub)
       m_scene(new OScene(m_hub)),
       m_ocontext(m_scene->getOContext()),
       m_entry(m_ocontext->addEntry(m_ok->getEntryCode())),
-      m_oevt(new OEvent(m_ocontext)),
+      m_oevt(new OEvent(m_hub, m_ocontext)),
       m_propagator(new OPropagator(m_hub, m_oevt, m_entry)),
       m_seeder(new OpSeeder(m_hub, m_oevt)),
       m_zeroer(new OpZeroer(m_hub, m_oevt)),
@@ -46,6 +46,12 @@ OpEngine::OpEngine(OpticksHub* hub)
    (*m_log)("DONE");
 }
 
+
+
+void OpEngine::uploadEvent()
+{
+    m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
+}
 
 void OpEngine::propagate()
 {
@@ -60,30 +66,26 @@ void OpEngine::propagate()
     m_indexer->indexBoundaries();
 }
 
-
-void OpEngine::uploadEvent()
-{
-    m_propagator->uploadEvent();                   // creates OptiX buffers, uploads gensteps
-}
 void OpEngine::downloadEvent()
 {
-    m_propagator->downloadEvent();
+    m_oevt->download();
 }
 
-void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffer overwrite in interop mode on Linux)
-{
-     if(m_ok->isCompute()) m_propagator->downloadPhotonData(); 
-}
 void OpEngine::cleanup()
 {
     m_scene->cleanup();
 }
-
-
 
 void OpEngine::Summary(const char* msg)
 {
     LOG(info) << msg ; 
 }
 
+
+
+
+void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffer overwrite in interop mode on Linux)
+{
+     if(m_ok->isCompute()) m_oevt->downloadPhotonData(); 
+}
 

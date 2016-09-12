@@ -4,6 +4,7 @@
 
 class SLog ; 
 class OpticksEvent ; 
+class OpticksHub ; 
 class OContext ; 
 class OBuf ; 
 
@@ -35,9 +36,12 @@ class OXRAP_API OEvent
             DEFAULT  = PHOTON | RECORD | SEQUENCE
             };
     public:
-        OEvent(OContext* ocontext);
-        void upload(OpticksEvent* evt);
+        OEvent(OpticksHub* hub, OContext* ocontext);
+        void upload();
         void download(unsigned mask=DEFAULT );
+        void downloadPhotonData();
+    private:
+        void upload(OpticksEvent* evt);
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();
@@ -52,6 +56,7 @@ class OXRAP_API OEvent
         void download(OpticksEvent* evt, unsigned mask=DEFAULT );
     private:
         SLog*           m_log ; 
+        OpticksHub*     m_hub ; 
         OContext*       m_ocontext ; 
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 

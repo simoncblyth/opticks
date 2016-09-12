@@ -31,7 +31,7 @@ OpIndexerApp::OpIndexerApp(int argc, char** argv)
      m_run(m_hub->getRun()),
      m_scene(new OScene(m_hub)),
      m_ocontext(m_scene->getOContext()),
-     m_oevt(new OEvent(m_ocontext)),
+     m_oevt(new OEvent(m_hub,m_ocontext)),
      m_indexer(new OpIndexer(m_hub, m_oevt))
 {
 }

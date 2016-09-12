@@ -1,21 +1,21 @@
 #pragma once
 
-#include "OXPPNS.hh"
+
+struct STimes ; 
+class SLog ; 
 template <typename T> class NPY ;
 
-class SLog ; 
-
-class cuRANDWrapper ; 
-class OpticksHub ; 
 class OpticksEvent ; 
+class OpticksEntry ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ;
+class OpticksHub ; 
+
+#include "OXPPNS.hh"
+class cuRANDWrapper ; 
 
 class OContext ; 
-class OpticksEntry ; 
-class OBuf ; 
 class OEvent ; 
-struct STimes ; 
 
 
 #include "OXRAP_API_EXPORT.hh"
@@ -23,23 +23,16 @@ class OXRAP_API OPropagator {
     public:
         OPropagator( OpticksHub* hub, OEvent* oevt, OpticksEntry* entry); 
     public:
-        void prelaunch();   // done with the zero event
-        void uploadEvent();  
+        void prelaunch();   
         void launch();
-        void downloadEvent();
-        void downloadPhotonData();
     public:
         void setOverride(unsigned int override);
-    public:
-        OBuf* getSequenceBuf();
-        OBuf* getPhotonBuf();
-        OBuf* getGenstepBuf();
-        OBuf* getRecordBuf();
     private:
         void init();
         void setEntry(unsigned int entry);
         void initParameters();
         void initRng();
+        void setSize(unsigned width, unsigned height);
     private:
         SLog*                m_log ; 
         OpticksHub*          m_hub ; 

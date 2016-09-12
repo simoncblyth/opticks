@@ -13,11 +13,12 @@ void SSys::npdump(const char* path, const char* nptype)
 {
 
     std::stringstream ss ; 
-    ss << "python -c 'import os, numpy as np ; np.set_printoptions(suppress=True, precision=3) ; print np.load(os.path.expandvars(\""
-       << path
-       << "\")).view(" 
-       << nptype 
-       << ")' " 
+    ss << "python -c 'import os, numpy as np ;"
+       << " np.set_printoptions(suppress=True, precision=3) ;"
+       << " a=np.load(os.path.expandvars(\"" << path << "\")) ;"
+       << " print a.shape ;"
+       << " print a.view(" << nptype << ") ;"
+       << " ' " 
     ;    
 
     std::string cmd = ss.str();

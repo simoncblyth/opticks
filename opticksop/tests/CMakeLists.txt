@@ -5,6 +5,7 @@ project(${name})
 #file(GLOB TEST_SOURCES "*Test.cc")
 set(TEST_SOURCES
     OpIndexerTest.cc
+    OpSeederTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

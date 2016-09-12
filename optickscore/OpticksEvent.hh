@@ -111,6 +111,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        std::string getTimeStamp();
        void setTimeStamp(const char* tstamp);
    private:
+       void setRngMax(unsigned int rng_max);
        void init();
        void indexPhotonsCPU();
    public:
@@ -125,14 +126,14 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        static const char* sequence_  ;
    public:
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
-       void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
+       void setGenstepData(NPY<float>* genstep_data, bool progenitor=true, const char* oac_label=NULL);
        void setNopstepData(NPY<float>* nopstep_data);
        G4StepNPY* getG4Step(); 
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    private:
        void importGenstepDataLoaded(NPY<float>* gs);
-       void importGenstepData(NPY<float>* gs);
+       void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
        void translateLegacyGensteps(NPY<float>* gs);
        void setBufferControl(NPYBase* data);
 
