@@ -39,6 +39,7 @@ class OXRAP_API OEvent
         void upload(OpticksEvent* evt);
         void download(unsigned mask=DEFAULT );
     public:
+        OContext*     getOContext();
         OpticksEvent* getEvent();
         OBuf* getSequenceBuf();
         OBuf* getPhotonBuf();

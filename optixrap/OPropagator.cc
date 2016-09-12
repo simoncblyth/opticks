@@ -61,20 +61,17 @@ OBuf* OPropagator::getRecordBuf()
 }
 
 
-
-
-
-OPropagator::OPropagator(OContext* ocontext, OpticksHub* hub, OpticksEntry* entry) 
+OPropagator::OPropagator(OpticksHub* hub, OEvent* oevt, OpticksEntry* entry) 
    :
     m_log(new SLog("OPropagator::OPropagator")),
-    m_ocontext(ocontext),
     m_hub(hub),
+    m_oevt(oevt),
+    m_ocontext(m_oevt->getOContext()),
     m_ok(hub->getOpticks()),
     m_cfg(m_ok->getCfg()),
     m_override(m_cfg->getOverride()),
     m_entry(entry),
     m_entry_index(entry->getIndex()),
-    m_oevt(new OEvent(m_ocontext)),
     m_prelaunch(false),
     m_rng_wrapper(NULL),
     m_count(0),

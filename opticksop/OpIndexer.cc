@@ -26,7 +26,7 @@
 // optixrap-
 #include "OBuf.hh"
 #include "OContext.hh"
-#include "OPropagator.hh"
+#include "OEvent.hh"
 
 // cudawrap-
 #include "CResource.hh"
@@ -38,7 +38,6 @@
 
 // opticksop-
 #include "OpIndexer.hh"
-#include "OpEngine.hh"
 
 
 
@@ -52,14 +51,13 @@
     }
 
 
-OpIndexer::OpIndexer(OpticksHub* hub, OpEngine* engine)  
+OpIndexer::OpIndexer(OpticksHub* hub, OEvent* oevt)  
    :
      m_hub(hub),
-     m_engine(engine),
+     m_oevt(oevt),
      m_opticks(hub->getOpticks()),
      m_evt(NULL),
-     m_ocontext(engine->getOContext()),
-     m_propagator(engine->getOPropagator()),
+     m_ocontext(oevt->getOContext()),
      m_seq(NULL),
      m_pho(NULL),
      m_verbose(false),
@@ -93,10 +91,10 @@ void OpIndexer::update()
 
     setNumPhotons(m_evt->getNumPhotons());
 
-    OBuf* seq = m_propagator ? m_propagator->getSequenceBuf() : NULL ;
+    OBuf* seq = m_oevt ? m_oevt->getSequenceBuf() : NULL ;
     setSeq(seq);
 
-    OBuf* pho = m_propagator ? m_propagator->getPhotonBuf() : NULL ;
+    OBuf* pho = m_oevt ? m_oevt->getPhotonBuf() : NULL ;
     setPho(pho);
 
 }

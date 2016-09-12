@@ -23,6 +23,10 @@ int main(int argc, char** argv)
 
     int multi = ok.getMultiEvent();
 
+    LOG(info) << argv[0] 
+              << " multi " << multi 
+              ; 
+
     int fail(0);
 
     for(int tagoffset=0 ; tagoffset < multi ; tagoffset++)
@@ -54,6 +58,9 @@ correctly uploaded and available at photon level in the OptiX
 program.
 
 Produce single event to examine and check it with::
+
+   OKTest --compute --save --trivial     ## default to torch 
+   TrivialTest  
 
    OKTest --compute --cerenkov --save --trivial
    TrivialTest --cerenkov 

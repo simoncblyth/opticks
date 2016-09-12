@@ -8,6 +8,7 @@ class OpticksHub ;    // okg-
 
 class OScene ;   // optixrap-
 class OPropagator ; 
+class OEvent ; 
 class OContext ; 
 
 class OpSeeder ; 
@@ -54,6 +55,8 @@ class OKOP_API OpEngine {
        OScene*              m_scene ; 
        OContext*            m_ocontext ; 
        OpticksEntry*        m_entry ; 
+
+       OEvent*              m_oevt ; 
        OPropagator*         m_propagator ; 
        OpSeeder*            m_seeder ; 
        OpZeroer*            m_zeroer ; 

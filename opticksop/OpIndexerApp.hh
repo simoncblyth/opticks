@@ -1,17 +1,17 @@
 #pragma once
 
-// optickscore-
-class Opticks ; 
+class Opticks ;   // okc-
 class OpticksEvent ; 
 template <typename T> class OpticksCfg ;
 
-// opticksgeo-
-class OpticksHub ; 
+class OpticksHub ;   // okg-
 class OpticksRun ; 
 
-// opticksop-
-class OpEngine ; 
-class OpIndexer ; 
+class OContext ;   // optixrap-
+class OScene ; 
+class OEvent ; 
+
+class OpIndexer ;   // opop-
 
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpIndexerApp {
@@ -26,7 +26,10 @@ class OKOP_API OpIndexerApp {
       OpticksHub*           m_hub ;   
       OpticksRun*           m_run ;   
 
-      OpEngine*             m_engine ; 
+      OScene*               m_scene ; 
+      OContext*             m_ocontext ; 
+      OEvent*               m_oevt ; 
+
       OpIndexer*            m_indexer ; 
 
 };

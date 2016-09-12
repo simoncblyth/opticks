@@ -1,9 +1,5 @@
 #include <cstddef>
 
-// opop-
-#include "OpIndexerApp.hh"
-#include "OpIndexer.hh"
-#include "OpEngine.hh"
 
 // opticks-
 #include "Opticks.hh"
@@ -14,6 +10,13 @@
 #include "OpticksHub.hh"
 #include "OpticksRun.hh"
 
+// optixrap-
+#include "OEvent.hh"
+#include "OScene.hh"
+
+// opop-
+#include "OpIndexerApp.hh"
+#include "OpIndexer.hh"
 
 // npy-
 #include "PLOG.hh"
@@ -26,8 +29,10 @@ OpIndexerApp::OpIndexerApp(int argc, char** argv)
      m_cfg(m_ok->getCfg()),
      m_hub(new OpticksHub(m_ok)),
      m_run(m_hub->getRun()),
-     m_engine(new OpEngine(m_hub)),
-     m_indexer(new OpIndexer(m_hub, m_engine))
+     m_scene(new OScene(m_hub)),
+     m_ocontext(m_scene->getOContext()),
+     m_oevt(new OEvent(m_ocontext)),
+     m_indexer(new OpIndexer(m_hub, m_oevt))
 {
 }
 

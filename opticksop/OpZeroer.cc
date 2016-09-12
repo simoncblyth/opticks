@@ -2,11 +2,8 @@
 
 #include "OpZeroer.hh"
 
-// optickscore-
-#include "OpticksEvent.hh"
-
-// opticksgeo-
-#include "OpticksHub.hh"
+#include "OpticksEvent.hh"   // okc-
+#include "OpticksHub.hh"    // okg-
 
 // npy-
 #include "Timer.hpp"
@@ -22,8 +19,7 @@
 
 // optixrap-
 #include "OContext.hh"
-#include "OPropagator.hh"
-#include "OpEngine.hh"
+#include "OEvent.hh"
 #include "OBuf.hh"
 
 
@@ -39,12 +35,11 @@
 
 
 
-OpZeroer::OpZeroer(OpticksHub* hub, OpEngine* engine)  
+OpZeroer::OpZeroer(OpticksHub* hub, OEvent* oevt)  
    :
      m_hub(hub),
-     m_engine(engine),
-     m_ocontext(engine->getOContext()),
-     m_propagator(engine->getOPropagator())
+     m_oevt(oevt),
+     m_ocontext(oevt->getOContext())
 {
 }
 
@@ -88,9 +83,7 @@ void OpZeroer::zeroRecordsViaOpenGL()
 
 void OpZeroer::zeroRecordsViaOptiX()
 {
-    assert(m_propagator);
- 
-    OBuf* record = m_propagator->getRecordBuf() ;
+    OBuf* record = m_oevt->getRecordBuf() ;
 
     CBufSpec s_rec = record->bufspec();
 

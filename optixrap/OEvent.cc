@@ -18,6 +18,11 @@ void OEvent::setEvent(OpticksEvent* evt)
     m_evt = evt ; 
 
 }
+OContext* OEvent::getOContext()
+{
+    return m_ocontext ; 
+}
+
 
 // canonical single OEvent instance resides in OPropagator 
 // and is instanciated with OPropagator

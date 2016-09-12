@@ -25,8 +25,7 @@
 
 
 class OpticksHub ; 
-class OPropagator ; 
-class OpEngine ; 
+class OEvent ; 
 class OContext ; 
 
 struct CBufSpec ; 
@@ -35,7 +34,7 @@ struct CBufSpec ;
 
 class OKOP_API OpSeeder {
    public:
-      OpSeeder(OpticksHub* hub, OpEngine* engine);
+      OpSeeder(OpticksHub* hub, OEvent* oevt);
    public:
       void seedPhotonsFromGensteps();
    private:
@@ -44,9 +43,8 @@ class OKOP_API OpSeeder {
       void seedPhotonsFromGenstepsImp(const CBufSpec& rgs_, const CBufSpec& rox_);
    private:
       OpticksHub*              m_hub ;
-      OpEngine*                m_engine ;
+      OEvent*                  m_oevt ;
       OContext*                m_ocontext ;
-      OPropagator*             m_propagator ;
 };
 
 

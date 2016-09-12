@@ -16,11 +16,10 @@
 
 // optixrap-
 #include "OContext.hh"
-#include "OPropagator.hh"
+#include "OEvent.hh"
 #include "OBuf.hh"
 
 #include "OpSeeder.hh"
-#include "OpEngine.hh"
 
 #include "PLOG.hh"
 
@@ -35,12 +34,11 @@
 
 
 
-OpSeeder::OpSeeder(OpticksHub* hub, OpEngine* engine)  
+OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)  
    :
      m_hub(hub),
-     m_engine(engine),
-     m_ocontext(engine->getOContext()),
-     m_propagator(engine->getOPropagator())
+     m_oevt(oevt),
+     m_ocontext(oevt->getOContext())
 {
 }
 
@@ -96,10 +94,8 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 
 void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 {
-    assert(m_propagator);
- 
-    OBuf* genstep = m_propagator->getGenstepBuf() ;
-    OBuf* photon = m_propagator->getPhotonBuf() ;
+    OBuf* genstep = m_oevt->getGenstepBuf() ;
+    OBuf* photon = m_oevt->getPhotonBuf() ;
 
     CBufSpec s_gs = genstep->bufspec();
     CBufSpec s_ox = photon->bufspec();

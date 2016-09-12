@@ -113,7 +113,13 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
         {
             if(u != i )
             {
-                LOG(warning) << "FAIL checkItemValue IS_UINDEX " << u << " " << i ; 
+                if(fail < 10)
+                LOG(warning) << "FAIL checkItemValue IS_UINDEX "
+                             << " istep:" << istep 
+                             << " label:" << label 
+                             << " i:" << i 
+                             << " u:" << u 
+                             ;
                 fail += 1 ;   
             }
         }
@@ -121,7 +127,15 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
         {
             if(u != i*scale )
             {
-                LOG(warning) << "FAIL checkItemValue IS_UINDEX_SCALED " << u << " " << i*scale ; 
+                if(fail < 10)
+                LOG(warning) << "FAIL checkItemValue IS_UINDEX_SCALED " 
+                             << " istep:" << istep 
+                             << " label:" << label 
+                             << " i:" << i 
+                             << " u:" << u 
+                             << " i*s:" << i*scale
+                             ;
+
                 fail += 1 ;   
             }
         }

@@ -21,7 +21,7 @@ struct STimes ;
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OPropagator {
     public:
-        OPropagator(OContext* ocontext, OpticksHub* hub, OpticksEntry* entry); 
+        OPropagator( OpticksHub* hub, OEvent* oevt, OpticksEntry* entry); 
     public:
         void prelaunch();   // done with the zero event
         void uploadEvent();  
@@ -42,8 +42,9 @@ class OXRAP_API OPropagator {
         void initRng();
     private:
         SLog*                m_log ; 
-        OContext*            m_ocontext ; 
         OpticksHub*          m_hub ; 
+        OEvent*              m_oevt ; 
+        OContext*            m_ocontext ; 
         Opticks*             m_ok ; 
         OpticksCfg<Opticks>* m_cfg ; 
         int                  m_override ; 
@@ -51,7 +52,6 @@ class OXRAP_API OPropagator {
         OpticksEntry*        m_entry ; 
         int                  m_entry_index ; 
 
-        OEvent*              m_oevt ; 
         optix::Context       m_context ;
         bool                 m_prelaunch ;
 

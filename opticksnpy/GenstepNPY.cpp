@@ -37,14 +37,12 @@ GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step)
 
 void GenstepNPY::update()
 {
+    // placeholder overridden in subclasses like TorchStepNPY 
 }
 
 void GenstepNPY::addStep(bool verbose)
 {
-    if(m_npy == NULL)
-    {
-        m_npy->zero();
-    }
+    assert(m_npy && m_npy->hasData());
 
     unsigned int i = m_step_index ; 
 
