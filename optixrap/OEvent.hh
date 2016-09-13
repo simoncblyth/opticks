@@ -41,6 +41,7 @@ class OXRAP_API OEvent
         void upload();
         void download(unsigned mask=DEFAULT );
         void downloadPhotonData();
+        void downloadSeedData();
     private:
         void upload(OpticksEvent* evt);
     public:
@@ -63,6 +64,7 @@ class OXRAP_API OEvent
         OContext*       m_ocontext ; 
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 
+        bool            m_photonMarkDirty ; 
     protected:
         optix::Buffer   m_genstep_buffer ; 
         optix::Buffer   m_photon_buffer ; 

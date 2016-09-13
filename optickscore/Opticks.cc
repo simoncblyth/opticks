@@ -111,6 +111,32 @@ Opticks::Opticks(int argc, char** argv, bool integrated )
        init();
 }
 
+
+void Opticks::init()
+{
+    m_mode = new OpticksMode(hasArg(COMPUTE_ARG_)) ; 
+
+    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+
+    m_timer = new Timer("Opticks::");
+
+    m_timer->setVerbose(true);
+
+    m_timer->start();
+
+    m_parameters = new Parameters ;  
+
+    m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
+
+    m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
+
+    setDetector( m_resource->getDetector() );
+
+    LOG(trace) << "Opticks::init DONE " ;
+}
+
+
+
 int Opticks::getArgc()
 {
     return m_argc ; 
@@ -277,30 +303,6 @@ void Opticks::setExit(bool exit_)
     }
 }
  
-
-void Opticks::init()
-{
-    m_mode = new OpticksMode(hasArg(COMPUTE_ARG_)) ; 
-
-    m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
-
-    m_timer = new Timer("Opticks::");
-
-    m_timer->setVerbose(true);
-
-    m_timer->start();
-
-    m_parameters = new Parameters ;  
-
-    m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
-
-    m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
-
-    setDetector( m_resource->getDetector() );
-
-    LOG(trace) << "Opticks::init DONE " ;
-}
-
 
 void Opticks::defineEventSpec()
 {

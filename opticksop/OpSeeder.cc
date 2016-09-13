@@ -1,6 +1,7 @@
 #include <cstddef>
 
 #include "OpticksBufferControl.hh"  // okc-
+#include "OpticksSwitches.h"  
 #include "OpticksEvent.hh"  
 #include "OpticksHub.hh"    // okg-
 
@@ -35,7 +36,6 @@
 
 
 
-//#define WITH_SEED_BUF 1
 
 
 OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)  
@@ -101,14 +101,18 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     OBuf* genstep = m_oevt->getGenstepBuf() ;
     CBufSpec s_gs = genstep->bufspec();
 
-#ifdef WITH_SEED_BUF
+#ifdef WITH_SEED_BUFFER
     LOG(warning) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
     OBuf* seed = m_oevt->getSeedBuf() ;
-    CBufSpec s_ox = seed->bufspec();
+    CBufSpec s_se = seed->bufspec();
+    seedPhotonsFromGenstepsImp(s_gs, s_se);
+    s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
+    s_se.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_se");
 #else
     LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : seeding to photon buf  " ; 
     OBuf* photon = m_oevt->getPhotonBuf() ;
     CBufSpec s_ox = photon->bufspec();
+    seedPhotonsFromGenstepsImp(s_gs, s_ox);
 #endif
 
     //genstep->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)genstep");
@@ -118,11 +122,42 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     //s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_ox");
 
 
-    seedPhotonsFromGenstepsImp(s_gs, s_ox);
 
     TIMER("seedPhotonsFromGenstepsViaOptiX"); 
 
 }
+
+
+
+
+unsigned OpSeeder::getNumPhotonsCheck(const TBuf& tgs)
+{
+    OpticksEvent* evt = m_hub->getEvent();
+
+    assert(evt); 
+
+    NPY<float>* gensteps =  evt->getGenstepData() ;
+
+    unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
+
+    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, num_genstep_values );  // adding photon counts for each genstep 
+ 
+    unsigned int x_num_photons = evt->getNumPhotons() ;
+
+
+    if(num_photons != x_num_photons)
+          LOG(fatal)
+          << "OpSeeder::getNumPhotonsCheck"
+          << " num_photons " << num_photons 
+          << " x_num_photons " << x_num_photons 
+          ;
+
+    assert(num_photons == x_num_photons && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
+
+    return num_photons ; 
+}
+
+
 
 
 void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& s_ox)
@@ -133,54 +168,62 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     TBuf tgs("tgs", s_gs );
     TBuf tox("tox", s_ox );
     
-    //tgs.dump<unsigned int>("App::seedPhotonsFromGenstepsImp tgs", 6*4, 3, nv0 ); // stride, begin, end 
 
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt); 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
-    NPY<float>* photons  =  evt->getPhotonData() ;
 
     unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
 
-    OpticksBufferControl ph_ctrl(photons->getBufferControlPtr());
-    bool ph_verbose = ph_ctrl("VERBOSE_MODE") ;
+    //tgs.dump<unsigned int>("OpSeeder::seedPhotonsFromGenstepsImp tgs.dump", 6*4, 3, num_genstep_values ); // stride, begin, end 
 
-    if(ph_verbose)
+
+    unsigned int num_photons = getNumPhotonsCheck(tgs);
+
+    OpticksBufferControl* ph_ctrl = evt->getPhotonCtrl();
+
+    if(ph_ctrl->isSet("VERBOSE_MODE"))
     LOG(info) << "OpSeeder::seedPhotonsFromGenstepsImp photons(VERBOSE_MODE) "
-               << " photons " << photons->getShapeString() 
+               << " num_photons " << num_photons 
                << " gensteps " << gensteps->getShapeString() 
                << " num_genstep_values " << num_genstep_values
                ;
-
-    unsigned int num_photons = tgs.reduce<unsigned int>(6*4, 3, num_genstep_values );  // adding photon counts for each genstep 
-
-    unsigned int x_num_photons = evt->getNumPhotons() ;
-
-    if(num_photons != x_num_photons)
-          LOG(fatal)
-          << "OpSeeder::seedPhotonsFromGenstepsImp"
-          << " num_photons " << num_photons 
-          << " x_num_photons " << x_num_photons 
-          ;
-
-    assert(num_photons == x_num_photons && "FATAL : mismatch between CPU and GPU photon counts from the gensteps") ;   
 
     // src slice is plucking photon counts from each genstep
     // dst slice points at the first value of each item in photon buffer
     // buffer size and num_bytes comes directly from CBufSpec
     CBufSlice src = tgs.slice(6*4,3,num_genstep_values) ;  // stride, begin, end 
 
-#ifdef WITH_SEED_BUF
+#ifdef WITH_SEED_BUFFER
+    tox.zero();   // huh seeding of SEED buffer requires zeroing ahead ?? otherwise get one 0 with the rest 4294967295 ie overrun -1 
     CBufSlice dst = tox.slice(1*1,0,num_photons*1*1) ;
 #else
     CBufSlice dst = tox.slice(4*4,0,num_photons*4*4) ;
 #endif
 
-    TBufPair<unsigned int> tgp(src, dst);
+    bool verbose = false ; 
+    TBufPair<unsigned int> tgp(src, dst, verbose);
     tgp.seedDestination();
 
+#ifdef WITH_SEED_BUFFER
+    //tox.dump<unsigned int>("OpSeeder::seedPhotonsFromGenstepsImp tox.dump", 1*1, 0, num_photons ); // stride, begin, end 
+#endif
 
 }
+
+/*
+In [5]: np.uint32((1 << 32) - 1 )
+Out[5]: 4294967295
+
+In [6]: np.uint32(-1)
+Out[6]: 4294967295
+
+
+*/
+
+
+
+
 
 

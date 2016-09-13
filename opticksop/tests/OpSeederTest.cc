@@ -1,7 +1,8 @@
 #include <string>
 #include <sstream>
 
-#include "SSys.hh"      // sysrap-
+#include "SArgs.hh"      // sysrap-
+#include "SSys.hh"    
 
 #include "NPY.hpp"      // npy-
 #include "GenstepNPY.hpp"
@@ -44,8 +45,10 @@ int main(int argc, char** argv)
     OXRAP_LOG__ ; 
     OKOP_LOG__ ; 
 
-    Opticks ok(argc, argv);
+    SArgs sa(argc, argv, "--compute");   // force --compute into arguments, with deduping 
+    Opticks ok(sa.argc, sa.argv);
     OpticksHub hub(&ok);
+    assert(ok.isCompute());
 
     OScene scene(&hub);
     OContext* octx = scene.getOContext();
@@ -53,7 +56,7 @@ int main(int argc, char** argv)
     OpSeeder  seeder(&hub, &oevt );
     OPropagator propagator(&hub, &oevt, octx->addEntry(ok.getEntryCode()) );
 
-    GenstepNPY* fab = GenstepNPY::Fabricate(TORCH, 100, 1000 ); // genstep_type, num_step, num_photons_per_step
+    GenstepNPY* fab = GenstepNPY::Fabricate(TORCH, 10, 10 ); // genstep_type, num_step, num_photons_per_step
     NPY<float>* gs = fab->getNPY();
     const char* oac_label = "GS_TORCH" ; 
 
@@ -65,6 +68,7 @@ int main(int argc, char** argv)
         hub.createEvent(i);
 
         OpticksEvent* evt = hub.getEvent();
+        evt->addBufferControl("seed", "VERBOSE_MODE");
         evt->addBufferControl("photon", "VERBOSE_MODE");
         evt->setGenstepData(gs, true, oac_label);
 
@@ -74,12 +78,21 @@ int main(int argc, char** argv)
 
         propagator.launch();                  // write the photon, record and sequence buffers
 
-        oevt.downloadPhotonData();            // allocates hostsize photon buffer and copies into it 
+        oevt.downloadPhotonData();            // allocates hostside buffer and copies into it 
+        oevt.downloadSeedData();             
 
         NPY<float>* photon = evt->getPhotonData();
-        const char* path = "$TMP/OpSeederTest.npy";
-        photon->save(path);
-        SSys::npdump(path, "np.int32");
+        const char* photon_path = "$TMP/OpSeederTest_photon.npy";
+        photon->save(photon_path);
+        SSys::npdump(photon_path, "np.int32");
+
+        NPY<unsigned>* seed = evt->getSeedData();
+        const char* seed_path = "$TMP/OpSeederTest_seed.npy";
+        seed->save(seed_path);
+        SSys::npdump(seed_path, "np.uint32");
+
+
+
     }
 
     return 0 ;     
@@ -88,25 +101,43 @@ int main(int argc, char** argv)
 /*
 
     OpSeederTest --compute    
-       # this gives all zeros for the photons, as the fabricated gensteps 
-       # are not complete, they just have photon count and a fake materialline
+       # this gives random bits for the photons, 
+       # photon buffers on the device are allocated but as the fabricated gensteps are incomplete
+       # ray traces will always miss geometry resulring in misses so psave will 
+       # record random content of GPU stack ?
+       #
+       # Fabricated gensteps just have photon count and a fake materialline
        # so they will not generate photons that can hit geometry
+       #
+       # MAYBE: introduce a FABRICATED source type which minimally sets up some photons
+       # but without the complication of TORCH ?
+       #
 
     OpSeederTest  --compute --nopropagate
-       # actual seeds at the head of the photons are visible
-       # lack of real gensteps doesnt matter as propagation is skipped
-
     OpSeederTest  --compute --trivial --nopropagate
-       # actual seeds at the head of the photons, same as above
+       # actual seeds at the head of the photons are visible with the rest of 
+       # the buffer being zero 
+       # lack of real gensteps doesnt matter as propagation is skipped
+       #
+       # The rest of the buffer being zero is due to the filling of missers
+       # never being done
+
 
     OpSeederTest  --compute --trivial
        # trivial debug lines are visible
 
     OpSeederTest  --compute --trivial --multievent 2
-       # 2nd event has genstep id stuck at zero
+    OpSeederTest  --compute --trivial --multievent 10
+       #
+       # (previously the 2nd event has genstep id stuck at zero, before adopting 
+       #  BUFFER_COPY_ON_DIRTY and manual markDirtyPhotonBuffer)
+       #
+       #  now the 2nd and subsequent events have proper seeds 
 
     OpSeederTest  --compute --nopropagate --multievent 2
+       #
        # huh: unexpectedly the seeds ARE BEING SET FOR THE 2nd event (when the propagate launch is skipped altogether)
+       # IT IS STILL NOT UNDERSTOOD WHY THE SYNC SOMETIMES DID AND SOMETIMES DIDNT HAPPEN
 
     OpSeederTest  --compute --nothing --multievent 2
        # try launching but running a do nothing program 
@@ -120,14 +151,11 @@ int main(int argc, char** argv)
        #
        # problem is that the 2nd seeding doesnt overwrite the zeroing       
  
-
     OpSeederTest  --compute --trivial --multievent 2
        # after changing to use BUFFER_COPY_ON_DIRTY and invoking  oevt.markDirtyPhotonBuffer(); 
        # above multievent now appears to see the changed seeds
        # 
        # NOTE: have implemented an input only seed buffer but not yet using it 
-        
-
 
 
 */

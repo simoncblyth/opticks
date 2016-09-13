@@ -406,7 +406,11 @@ void NPY<T>::save(const char* raw)
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
 
-    aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), getValues());
+    T* values = getValues();
+
+    if(values == NULL) LOG(fatal) << "NPY values NULL " ; 
+
+    aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), values );
 }
 
 

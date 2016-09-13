@@ -69,7 +69,7 @@ class OXRAP_API OContext {
             optix::Context    getContext();
             optix::Group      getTop();
      public:
-            static RTformat       getFormat(NPYBase::Type_t type);
+            static RTformat       getFormat(NPYBase::Type_t type, bool seed);
 
             template <typename T>
             static void           upload(optix::Buffer& buffer, NPY<T>* npy);
@@ -85,7 +85,7 @@ class OXRAP_API OContext {
             void configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
 
             template <typename T>
-            unsigned determineBufferSize(NPY<T>* npy, const char* name);
+            static unsigned determineBufferSize(NPY<T>* npy, const char* name);
       public:
             template<typename T>
             static void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  

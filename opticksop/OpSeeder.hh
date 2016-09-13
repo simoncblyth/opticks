@@ -27,6 +27,7 @@
 class OpticksHub ; 
 class OEvent ; 
 class OContext ; 
+class TBuf ; 
 
 struct CBufSpec ; 
 
@@ -41,6 +42,7 @@ class OKOP_API OpSeeder {
       void seedPhotonsFromGenstepsViaOptiX();
       void seedPhotonsFromGenstepsViaOpenGL();
       void seedPhotonsFromGenstepsImp(const CBufSpec& rgs_, const CBufSpec& rox_);
+      unsigned getNumPhotonsCheck(const TBuf& tgs);
    private:
       OpticksHub*              m_hub ;
       OEvent*                  m_oevt ;

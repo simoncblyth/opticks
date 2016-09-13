@@ -2,6 +2,8 @@
 #include "NPY.hpp"
 
 #include "OpticksEvent.hh"  // okc-
+#include "OpticksBufferControl.hh"  
+
 #include "OpticksHub.hh"    // okg-
 
 #include "OContext.hh"
@@ -36,6 +38,7 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
    m_evt(NULL),
+   m_photonMarkDirty(false),
    m_genstep_buf(NULL),
    m_photon_buf(NULL),
    m_record_buf(NULL),
@@ -63,7 +66,12 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
     NPY<float>* photon = evt->getPhotonData() ; 
     assert(photon);
+
+    OpticksBufferControl* photonCtrl = evt->getPhotonCtrl();
+    m_photonMarkDirty = photonCtrl->isSet("BUFFER_COPY_ON_DIRTY") ;
+
     m_photon_buffer = m_ocontext->createBuffer<float>( photon, "photon");
+
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer);
 
@@ -95,14 +103,30 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
 void OEvent::markDirtyPhotonBuffer()
 {
-     LOG(info) << "OEvent::markDirtyPhotonBuffer" ;
-     m_photon_buffer->markDirty();   
+     if(m_photonMarkDirty)
+     {
+         LOG(info) << "OEvent::markDirtyPhotonBuffer PROCEED" ;
+         m_photon_buffer->markDirty();   
+     }
+     else
+     {
+         LOG(info) << "OEvent::markDirtyPhotonBuffer SKIP " ;
+     }
 
 /*
 2016-09-12 20:50:24.482 INFO  [438131] [OEvent::markDirtyPhotonBuffer@98] OEvent::markDirtyPhotonBuffer
 libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtBufferMarkDirty(RTbuffer)" caught exception: Mark dirty only allowed on buffers created with RT_BUFFER_COPY_ON_DIRTY, file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Objects/Buffer.cpp, line: 867)
 Abort trap: 6
+
+2016-09-13 12:55:19.941 INFO  [495555] [OEvent::markDirtyPhotonBuffer@98] OEvent::markDirtyPhotonBuffer
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error 
+            (Details: Function "RTresult _rtBufferMarkDirty(RTbuffer)" caught exception: 
+             Must set or get buffer device pointer before calling rtBufferMarkDirty()., 
+             file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Objects/Buffer.cpp, line: 861)
+    Abort trap: 6
+
 */
+
 
 }
 
@@ -182,10 +206,8 @@ void OEvent::upload(OpticksEvent* evt)
 
 
 
-void OEvent::downloadPhotonData()
-{
-    download(PHOTON);
-}
+void OEvent::downloadPhotonData() { download(PHOTON); }
+void OEvent::downloadSeedData()   { download(SEED); }
 void OEvent::download(unsigned mask)
 {
     download(m_evt, mask);

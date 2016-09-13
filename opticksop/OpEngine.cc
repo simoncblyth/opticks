@@ -3,6 +3,7 @@
 
 #include "Opticks.hh"  // okc-
 #include "OpticksHub.hh" // okg-
+#include "OpticksSwitches.h" 
 
 // opop-
 #include "OpEngine.hh"
@@ -55,9 +56,12 @@ void OpEngine::uploadEvent()
 
 void OpEngine::propagate()
 {
-    m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer
+    m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer OR seed buffer
 
+#ifdef WITH_SEED_BUFFER
+#else
     m_oevt->markDirtyPhotonBuffer();      // inform OptiX that must sync with the CUDA modified photon buffer
+#endif
 
     //m_zeroer->zeroRecords();              // zeros on GPU record buffer via OptiX or OpenGL  (not working OptiX 4 in interop)
 

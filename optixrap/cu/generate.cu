@@ -52,6 +52,7 @@
 //#include "numquad.h"
 //#define DEBUG 1 
 #include "PerRayData_propagate.h"
+#include "OpticksSwitches.h"
 
 using namespace optix;
 
@@ -94,6 +95,11 @@ rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes
 #ifdef AUX
 rtBuffer<short4>                aux_buffer ; 
 #endif
+
+#ifdef WITH_SEED_BUFFER
+rtBuffer<unsigned>              seed_buffer ; 
+#endif
+
 
 
 rtBuffer<curandState, 1>       rng_states ;
@@ -146,23 +152,39 @@ rtDeclareVariable(rtObject,      top_object, , );
 //    p.flags.u.z = s.index.x ;   \
 
 
+
+RT_PROGRAM void nothing()
+{
+}
+
+// BIZARRE NEW rtPrintf BUG IN OptiX 400 when formatting more than a single value
+//
+//   * first value prints with expected value
+//   * second value appears as zero no matter what the real value
+//   * third value appears as same at the first value no matter what the real value
+// 
+// rtPrintf("(trivial) photon_id %u \n", photon_id );
+// rtPrintf("(trivial) photon_offset %u \n", photon_offset );
+// rtPrintf("(trivial) photon_id %u photon_id %u photon_offset %u \n", photon_id, photon_id, photon_offset );
+//
+
 RT_PROGRAM void dumpseed()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
 
+#ifdef WITH_SEED_BUFFER
+    unsigned int genstep_id = seed_buffer[photon_id] ;      
+   // rtPrintf("(dumpseed WITH_SEED_BUFFER) genstep_id %u \n", genstep_id );
+#else
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;   
-    unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
-
-    //rtPrintf("(dumpseed) genstep_id %u \n", genstep_id );
+    unsigned int genstep_id = phead.u.x ;        
+    rtPrintf("(dumpseed NOT with_seed_buffer) genstep_id %u \n", genstep_id );
+#endif
 
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
-
     //rtPrintf("(trivial) genstep_offset %u \n", genstep_offset );
-
-    union quad ghead ; 
-    ghead.f = genstep_buffer[genstep_offset+0]; 
  
     quad indices ;  
     indices.u.x = photon_id ; 
@@ -172,6 +194,7 @@ RT_PROGRAM void dumpseed()
 
     //photon_buffer[photon_offset+0] = make_float4(  0.f , 0.f , 0.f, 0.f );
     // writing over where the seeds were causes the problem for 2nd event
+    // until moved to BUFFER_COPY_ON_DIRTY and manual markDirty
     //
     photon_buffer[photon_offset+3] = make_float4(  indices.f.x,   indices.f.y,  indices.f.z,   indices.f.w); 
 }
@@ -182,32 +205,21 @@ RT_PROGRAM void trivial()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
 
-    // BIZARRE NEW rtPrintf BUG IN OptiX 400 when formatting more than a single value
-    //
-    //   * first value prints with expected value
-    //   * second value appears as zero no matter what the real value
-    //   * third value appears as same at the first value no matter what the real value
-    // 
-    // rtPrintf("(trivial) photon_id %u \n", photon_id );
-    // rtPrintf("(trivial) photon_offset %u \n", photon_offset );
-    // rtPrintf("(trivial) photon_id %u photon_id %u photon_offset %u \n", photon_id, photon_id, photon_offset );
-    //
-
+#ifdef WITH_SEED_BUFFER
+    unsigned int genstep_id = seed_buffer[photon_id] ;      
+#else
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;   // crazy values for this in interop mode on Linux, photon_buffer being overwritten ?? 
     unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
-
+#endif
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
+    //rtPrintf("(trivial) genstep_id %u \n", genstep_id );
     //rtPrintf("(trivial) genstep_offset %u \n", genstep_offset );
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
-    unsigned gencode = ghead.u.x ; 
    
-    //rtPrintf("(trivial) gencode %u \n", gencode );
-    //rtPrintf("(trivial) genstep_id %u \n", genstep_id );
-
     quad indices ;  
     indices.u.x = photon_id ; 
     indices.u.y = photon_offset ; 
@@ -221,9 +233,7 @@ RT_PROGRAM void trivial()
 
  
     //rtPrintf("(trivial) GNUMQUAD %d PNUMQUAD %d RNUMQUAD %d \n", GNUMQUAD, PNUMQUAD, RNUMQUAD );
-
     //rtPrintf("(trivial) photon_id %u photon_offset %u genstep_id %u genstep_offset %u gencode %d \n", photon_id, photon_offset, genstep_id, genstep_offset, gencode );
-
     //rtPrintf("ghead.i.x %d \n", ghead.i.x );
     //
     // in interop mode ( GGeoViewTest --trivial ) on SDU Dell Precision Workstation getting genstep_id -1 
@@ -233,8 +243,6 @@ RT_PROGRAM void trivial()
     // in compute mode ( GGeoViewTest --trivial --compute ) get sensible genstep_id
     //     (trivial) photon_id 1057 photon_offset 4228 genstep_id 0 GNUMQUAD 6 genstep_offset 0 
     //
-    //
-
 }
 
 
@@ -243,12 +251,13 @@ RT_PROGRAM void generate()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 
-    // first 4 bytes of photon_buffer photon records is seeded with genstep_id 
-    // this seeding is done by App::seedPhotonsFromGensteps
-
+#ifdef WITH_SEED_BUFFER
+    unsigned int genstep_id = seed_buffer[photon_id] ;      
+#else
     union quad phead ;
-    phead.f = photon_buffer[photon_offset+0] ;
-    unsigned int genstep_id = phead.u.x ; 
+    phead.f = photon_buffer[photon_offset+0] ;   // crazy values for this in interop mode on Linux, photon_buffer being overwritten ?? 
+    unsigned int genstep_id = phead.u.x ;        // input "seed" pointing from photon to genstep (see seedPhotonsFromGensteps)
+#endif
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
     union quad ghead ; 
@@ -280,7 +289,6 @@ RT_PROGRAM void generate()
         if(dbg) csdebug(cs);
 #endif
         generate_cerenkov_photon(p, cs, rng );         
-        //MaterialIndex = cs.MaterialIndex ;  
         s.flag = CERENKOV ;  
     }
     else if(gencode == SCINTILLATION)
@@ -291,7 +299,6 @@ RT_PROGRAM void generate()
         if(dbg) ssdebug(ss);
 #endif
         generate_scintillation_photon(p, ss, rng );         
-        //MaterialIndex = ss.MaterialIndex ;  
         s.flag = SCINTILLATION ;  
     }
     else if(gencode == TORCH)
@@ -302,7 +309,6 @@ RT_PROGRAM void generate()
         if(dbg) tsdebug(ts);
 #endif
         generate_torch_photon(p, ts, rng );         
-        //MaterialIndex = ts.MaterialIndex ;  
         s.flag = TORCH ;  
     }
 
@@ -328,10 +334,14 @@ RT_PROGRAM void generate()
     int command = START ; 
     int slot = 0 ;
 
+
+#ifdef AUX
+    int MaterialIndex(0) ; 
+#endif
+
 #ifdef RECORD
     unsigned long long seqhis(0) ;
     unsigned long long seqmat(0) ;
-    int MaterialIndex(0) ; 
     unsigned int MAXREC = record_max ; 
     int slot_min = photon_id*MAXREC ; 
     int slot_max = slot_min + MAXREC - 1 ; 

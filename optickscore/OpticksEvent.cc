@@ -45,6 +45,7 @@
 #include "TimesTable.hpp"
 
 // okc-
+#include "OpticksSwitches.h"
 #include "OpticksPhoton.h"
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
@@ -123,6 +124,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_sequence_data(NULL),
           m_seed_data(NULL),
 
+          m_photon_ctrl(NULL),
           m_domain(NULL),
 
           m_g4step(NULL),
@@ -647,25 +649,23 @@ NPYSpec* OpticksEvent::GenstepSpec()
     return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
 }
 
-
 void OpticksEvent::createSpec()
 {
     // invoked by Opticks::makeEvent   or OpticksEvent::load
     unsigned int maxrec = getMaxRec();
 
-    // Maybe should split controls into INTEROP and COMPUTE ???
-    //     actually the simple modal split is now becoming bit blurred, need to 
-    //     control/act at buffer level not global mode level
-    //
-    // Better for the tags to be easy to find, ie not the same as OptiX RT_ tags
-    //
-
-
     m_genstep_spec = GenstepSpec();
 
-    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY") ;
+    m_seed_spec     = new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
 
+#ifdef WITH_SEED_BUFFER
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_OUTPUT_ONLY,INTEROP_PTR_FROM_OPENGL") ;
+#else
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY") ;
           //   OPTIX_INPUT_OUTPUT : INPUT needed as seeding writes genstep identifiers into photon buffer
+#endif
+
+
           //     INTEROP_PTR_FROM_OPENGL  : needed with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop no longer working 
           //                        instead move to 
           //                                 OpenGL/OptiX : to write the photon data
@@ -676,7 +676,6 @@ void OpticksEvent::createSpec()
           //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 
     m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG , "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY") ;
-    m_seed_spec     = new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
 
           // OPTIX_NON_INTEROP  : creates OptiX buffer even in INTEROP mode, this is possible for sequence as 
           //                      it is not used by OpenGL shaders so no need for INTEROP
@@ -1042,13 +1041,17 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
 
 
 
-
+OpticksBufferControl* OpticksEvent::getPhotonCtrl()
+{
+   return m_photon_ctrl ; 
+}
 
 void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 {
     setBufferControl(photon_data);
 
     m_photon_data = photon_data  ;
+    m_photon_ctrl = new OpticksBufferControl(m_photon_data->getBufferControlPtr());
     if(m_num_photons == 0) 
     {
         m_num_photons = photon_data->getShape(0) ;

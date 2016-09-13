@@ -25,6 +25,7 @@ class HitsNPY ;
 class NPYSpec ; 
 
 class OpticksMode ; 
+class OpticksBufferControl ; 
 class OpticksDomain ; 
 
 /**
@@ -223,6 +224,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPY<unsigned long long>*  getSequenceData();
        NPY<unsigned>*          getSeedData();
    public:
+       OpticksBufferControl* getPhotonCtrl();
+   public:
        NPYBase*             getData(const char* name);
        NPYSpec*             getSpec(const char* name);
        std::string          getShapeString(); 
@@ -297,6 +300,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPY<unsigned long long>*  m_sequence_data ;
        NPY<unsigned>*           m_seed_data ;
 
+       OpticksBufferControl*  m_photon_ctrl ; 
        OpticksDomain*        m_domain ; 
 
        G4StepNPY*      m_g4step ; 

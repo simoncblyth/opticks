@@ -5,6 +5,32 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+
+/**
+OpticksBufferControl
+======================
+
+Combinations of control flags for the standard OpticksEvent buffers
+are defined in OpticksEvent::createSpec.
+
+
+BUFFER_COPY_ON_DIRTY
+     From p67 of OptiX 400 Guide: With this flag, an application must call 
+     rtBufferMarkDirty for synchronizations to take place. 
+     Calling rtBufferMarkDirty after rtBufferUnmap will cause a synchronization from the 
+     buffer device pointer at launch and override any pending synchronization from the host.
+
+     Experience shows this flag is needed for OptiX to see updates (such as seeding the 
+     photon buffer) made by CUDA/Thrust. 
+
+OPTIX_NON_INTEROP
+     Used for the sequence buffer which is not visualized hence in both interop 
+     and compute modes a pure OptiX buffer is used with no interop.
+
+
+
+**/
+
 class OKCORE_API OpticksBufferControl {
     public:
         enum {

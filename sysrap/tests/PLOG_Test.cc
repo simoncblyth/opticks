@@ -1,7 +1,7 @@
 #include "PLOG.hh"
 #include "SArgs.hh"
 
-int main(int, char**)
+int main(int, char** argv_)
 {
     std::vector<std::string> tt  ; 
     tt.push_back( "--trace" );
@@ -55,7 +55,7 @@ int main(int, char**)
     {
         std::string t = tt[i]; 
 
-        SArgs* a = new SArgs(t) ;
+        SArgs* a = new SArgs(argv_[0], t.c_str()) ;
 
         PLOG* pl = j == 0 ?
                              new PLOG(a->argc, a->argv, fallback ) 

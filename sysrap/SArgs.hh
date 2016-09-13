@@ -4,7 +4,20 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <iterator>
+#include <algorithm>
+
+/**
+struct SArgs
+==============
+
+Allows combining standard arguments with arguments 
+from a split string.
+
+
+**/
+
 
 struct SArgs
 {
@@ -13,23 +26,38 @@ struct SArgs
 
     std::vector<std::string> elem ; 
 
-    SArgs(const std::string& line)
+    void add(int argc_, char** argv_)
     {
+        for(int i=0 ; i < argc_ ; i++) elem.push_back(argv_[i]) ;
+    }
+
+    void addElements(const std::string& line, bool dedupe)
+    {
+        // split string on whitespace
         std::stringstream ss(line);
         typedef std::istream_iterator<std::string> ISI ; 
         ISI begin(ss);
         ISI end ; 
         std::vector<std::string> vs(begin, end);
 
-        elem.resize(vs.size());
-        std::copy(vs.begin(), vs.end(), elem.begin());
+        for(std::vector<std::string>::const_iterator it=vs.begin() ; it != vs.end() ; it++)
+        {
+            std::string e = *it ; 
+            bool skip = dedupe && std::find(elem.begin(), elem.end(), e) != elem.end() ;
+            if(skip) 
+                printf("dedupe skipping %s \n", e.c_str());
+            else 
+                elem.push_back(e);
+        }
+    } 
 
-        argc = 1 + elem.size();
+    void make()
+    {
+        argc = elem.size();
         argv = new char*[argc];
+        for(int i=0 ; i < argc ; i++) argv[i] = const_cast<char*>(elem[i].c_str()) ;
+    } 
 
-        argv[0] = const_cast<char*>("dummy") ;
-        for(int i=1 ; i < argc ; i++) argv[i] = const_cast<char*>(elem[i-1].c_str()) ;
-    }
 
     void dump()
     {
@@ -41,6 +69,31 @@ struct SArgs
                       << std::endl ; 
         }
     }
+
+
+
+    SArgs(int argc_, char** argv_, const char* extra, bool dedupe=true)
+    {
+        // combine standard arguments with elements split from extra 
+        std::string line = extra ? extra : "" ;  
+        add(argc_, argv_);
+        addElements(line, dedupe);
+        make();
+    }
+
+    SArgs(const char* argv0, const char* argline)
+    {
+        // construct standard arguments from argv0 (executable path)
+        // and argline space delimited string
+        std::stringstream ss ;  
+        ss << argv0 << " " << argline ; 
+        std::string line = ss.str() ; 
+        addElements(line, false);
+        make();
+    }
+
+
+
 };
 
 

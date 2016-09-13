@@ -29,7 +29,7 @@ void test_standard_usage(int argc, char** argv)
 }
 
 
-int main(int, char** )
+int main(int /*argc_*/, char** argv_)
 {
     std::vector<std::string> tt  ; 
     tt.push_back( "--trace" );
@@ -83,7 +83,7 @@ int main(int, char** )
     {
         std::string t = tt[i]; 
 
-        SArgs* a = new SArgs(t) ;
+        SArgs* a = new SArgs(argv_[0], t.c_str()) ;
 
         const char* uprefix = j == 0 ? NULL : prefix ; 
 
