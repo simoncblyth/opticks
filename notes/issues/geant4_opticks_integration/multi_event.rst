@@ -1,8 +1,8 @@
 Multi Event
 =============
 
-Issue
--------
+FIXED : Issue
+--------------
 
 Multi event test causes hard CUDA crash on launch of 2nd event forcing reboot...
 
@@ -38,6 +38,12 @@ Multi event test causes hard CUDA crash on launch of 2nd event forcing reboot...
     OpZeroer::zeroRecords@54: OpZeroer::zeroRecords
     OContext::launch@220: OContext::launch entry 0 width 0 height 0
     OContext::launch@220: OContext::launch entry 0 width 100000 height 1
+
+
+FIX
+----
+
+Fixed by a major reworking of buffer handling, including adoption of new WITH_SEED_BUFFER approach.
 
 
 Workaround
@@ -96,8 +102,7 @@ But the NUMQUAD defines coming out with wrong values::
     (trivial) photon_id 33 photon_offset 0 genstep_id 132 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
     (trivial) photon_id 34 photon_offset 0 genstep_id 136 GNUMQUAD 0 PNUMQUAD 6 RNUMQUAD 4 genstep_offset 2 
 
-
-
+That turns out to be a new rtPrintf buf in OptiX 400.
 
 
 

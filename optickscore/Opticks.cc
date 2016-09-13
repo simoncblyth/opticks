@@ -145,6 +145,10 @@ char** Opticks::getArgv()
 {
     return m_argv ; 
 }
+char* Opticks::getArgv0()
+{
+    return m_argc > 0 && m_argv ? m_argv[0] : NULL ; 
+}
 
 
 bool Opticks::hasArg(const char* arg)
@@ -681,6 +685,8 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     assert(m_domains_configured);
 
+
+    
     evt->setTimeDomain(getTimeDomain());
     evt->setSpaceDomain(getSpaceDomain());  
     evt->setWavelengthDomain(getWavelengthDomain());
@@ -708,6 +714,9 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     parameters->add<std::string>("EntryCode", BStr::ctoa(getEntryCode()) );
     parameters->add<std::string>("EntryName", getEntryName() );
+
+    char* executable = getArgv0();
+    parameters->add<std::string>("Creator", executable ? executable : "NULL" );
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );
     assert( parameters->get<unsigned int>("BounceMax") == bounce_max );

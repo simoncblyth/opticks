@@ -37,6 +37,7 @@ OKMgr::OKMgr(int argc, char** argv)
     m_ok(new Opticks(argc, argv, false)),   // false: NOT OKG4 integrated running
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
+    m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
     m_run(m_hub->getRun()),
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),
@@ -67,8 +68,6 @@ void OKMgr::propagate()
 
     if(ok("nopropagate")) return ; 
 
-    int multi = m_ok->getMultiEvent(); // defaults to 1
-
     if(ok("load"))
     {
          m_run->loadEvent(); 
@@ -82,9 +81,9 @@ void OKMgr::propagate()
              m_viz->indexPresentationPrep();
          }
     }
-    else if(multi > 0)
+    else if(m_num_event > 0)
     {
-        for(int i=0 ; i < multi ; i++) 
+        for(int i=0 ; i < m_num_event ; i++) 
         {
             m_run->createEvent(i);
 

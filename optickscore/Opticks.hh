@@ -181,6 +181,7 @@ class OKCORE_API Opticks {
    public:
        int    getArgc();
        char** getArgv();
+       char*  getArgv0();
    public:
        // attempt to follow request,  but constrain to compute when remote session
        bool isCompute();

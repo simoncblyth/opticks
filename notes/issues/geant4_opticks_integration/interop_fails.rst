@@ -3,8 +3,11 @@ Interop Failures
 ============================
 
 
-Interop mode with seed buffer : get hard crash even with trivial
--------------------------------------------------------------------
+FIXED : Interop mode with seed buffer : get hard crash even with trivial
+--------------------------------------------------------------------------
+
+* Fixed with OpSeeder::seedComputeSeedsFromInteropGensteps 
+
 
 ::
 

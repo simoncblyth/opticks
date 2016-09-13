@@ -13,9 +13,7 @@ class NConfigurable ;
 #include "OpticksGen.hh"    
 #include "OpticksRun.hh"    
 
-#ifdef WITH_OPTIX
 #include "OKPropagator.hh"  // ggeoview-
-#endif
 
 #define GUI_ 1
 #include "OpticksViz.hh"
@@ -41,15 +39,13 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_ok(new Opticks(argc, argv, true)),               // true: integrated running 
     m_hub(new OpticksHub(m_ok)),                       // configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
+    m_num_event(m_ok->getMultiEvent()),                    // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
     m_run(m_hub->getRun()),
     m_g4(new CG4(m_hub, true)),                        // true: configure and initialize immediately 
     m_collector(new CCollector(m_hub)),                // after CG4 loads geometry, currently hub just used for material code lookup, not evt access
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
-#ifdef WITH_OPTIX
-    m_propagator(new OKPropagator(m_hub, m_idx, m_viz)),
-#endif
-    m_placeholder(0)
+    m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
 {
     init();
     (*m_log)("DONE");
@@ -68,8 +64,6 @@ void OKG4Mgr::init()
 
 void OKG4Mgr::propagate()
 {
-    int multi = m_ok->getMultiEvent();
-
     if(m_ok->hasOpt("load"))
     {   
          m_run->loadEvent(); 
@@ -87,41 +81,31 @@ void OKG4Mgr::propagate()
     {   
         LOG(info) << "--nopropagate/-P" ;
     }   
-    else if( m_ok->isLiveGensteps() )   // eg G4GUN running 
+    else if(m_num_event > 0)
     {
-        m_run->createEvent();
-
-        m_g4->propagate();
-   
-        NPY<float>* gs = m_collector->getGensteps() ;   // TODO: come from g4evt not collector
-
-        m_run->setGensteps(gs); 
-
-        m_propagator->propagate();
-
-        if(m_ok->hasOpt("save"))
+        for(int i=0 ; i < m_num_event ; i++) 
         {   
-            m_run->saveEvent();
-        }   
+            m_run->createEvent(i);
 
-    }
-    else if(multi > 0)
-    {   
-#ifdef WITH_OPTIX
-        for(int i=0 ; i < multi ; i++) 
-        {   
-            m_run->createEvent();
+            NPY<float>* gs = NULL ; 
 
-            m_run->setGensteps(m_gen->getInputGensteps()); 
+            if(m_ok->isLiveGensteps()) // eg G4GUN running 
+            {
+                m_g4->propagate();
+       
+                gs = m_collector->getGensteps() ;   // TODO: come from g4evt not collector
+            }
+            else
+            {
+                gs = m_gen->getInputGensteps() ;   // NB currently the same gensteps for each event
+            }
+
+            m_run->setGensteps(gs); 
 
             m_propagator->propagate();
 
-            if(m_ok->hasOpt("save"))
-            {   
-                 m_run->saveEvent();
-            }   
-        }   
-#endif
+            if(m_ok->hasOpt("save")) m_run->saveEvent();
+        }
     }   
 }
 

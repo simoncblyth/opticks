@@ -19,23 +19,32 @@ See Also
 
 
 DONE : High Level Cleanup/Refactor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 * main: migrate from App to ggeoview-/OpticksMgr
 * config/control/event: handling into okg-/OpticksHub 
 * visualization: into oglrap-/OpticksViz 
 
-TODO : Testing untested aspects of cleanup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Aspects included in cleanup, but as yet un-tested 
+WIP : Multi event handling
+--------------------------------
+
+Compute mode multievent has been tested and shown to
+work with fabricated gensteps.
+
+
+TODO : G4 driven multievent 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Setup and test real G4 driven compute mode multi-event.
+
+
+DONE : init and per-event distinction
+----------------------------------------
 
 * clearer distinction between once-only geometry initialization 
   within OptiX and otherwise per-event actions (in response to input gensteps) 
 
-* multi-event handling ... gensteps (eg G4gun derived or from multi-event file or over network ZMQ) 
-  need to be repeatedly passed to OpEngine and the OpticksHub, 
-  OpticksViz etc.. 
 
  
 DONE : Optical Step Collection
