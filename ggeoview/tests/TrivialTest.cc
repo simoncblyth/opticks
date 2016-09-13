@@ -63,7 +63,11 @@ Produce single event to examine and check it with::
    TrivialTest  
 
    OKTest --compute --cerenkov --save --trivial
-   TrivialTest --cerenkov 
+   TrivialTest --cerenkov
+
+
+   
+
 
 For multievent (1 is default anyhow so this is same as above)::
 

@@ -196,6 +196,15 @@ NPYSpec* NPYBase::getItemSpec()
 {
     return m_buffer_id ;
 }
+bool NPYBase::isComputeBuffer()
+{
+    return m_buffer_id == -1 ; 
+}
+bool NPYBase::isInteropBuffer()
+{
+    return m_buffer_id > -1 ; 
+}
+
 
  void NPYBase::setBufferTarget(int buffer_target)
 {

@@ -331,11 +331,25 @@ void Opticks::dumpArgs(const char* msg)
 
 }
 
+
+void Opticks::checkOptionValidity()
+{
+    if(isInterop() && getMultiEvent() > 1)
+    {
+        LOG(fatal) << "INTEROP mode with --multievent greater than 1 is not supported " ;  
+        setExit(true);
+    }
+}
+
+
+
 void Opticks::configure()
 {
     //dumpArgs("Opticks::configure");  
 
     m_cfg->commandline(m_argc, m_argv);
+
+    checkOptionValidity();
 
     defineEventSpec();
 

@@ -66,6 +66,8 @@ class OKCORE_API Opticks {
        bool hasOpt(const char* name);
        bool operator()(const char* name) const ; 
        void cleanup();
+   private:
+       void checkOptionValidity();
    public:
        // from OpticksResource
        const char* getDetector();

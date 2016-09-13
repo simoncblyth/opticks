@@ -21,6 +21,11 @@ in OPropagator and is instanciated together with OPropagator.
 Buffers are created at the first *upload* and
 are subsequently resized to correspond to the OpticksEvent. 
 
+NB upload/download will only act on compute buffers, interop
+buffers are skipped within underlying OContext methods
+based on OpticksBufferControl settings.
+
+
 **/
 
 

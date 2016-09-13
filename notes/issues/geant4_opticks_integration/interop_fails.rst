@@ -3,6 +3,31 @@ Interop Failures
 ============================
 
 
+Interop mode with seed buffer : get hard crash even with trivial
+-------------------------------------------------------------------
+
+::
+
+    simon:opticks blyth$ OKTest --trivial --save 
+
+    2016-09-13 18:33:42.255 INFO  [47199] [OContext::getFormat@555] OContext::getFormat override format for seed 
+    2016-09-13 18:33:42.255 INFO  [47199] [OContext::configureBuffer@498]       seed          100000,1,1SEED size 100000
+    2016-09-13 18:33:42.257 INFO  [47199] [OEvent::upload@200] OEvent::upload (INTEROP) gensteps handed to OptiX by referencing OpenGL buffer id  
+    2016-09-13 18:33:42.257 INFO  [47199] [OEvent::upload@204] OEvent::upload DONE
+    2016-09-13 18:33:42.257 INFO  [47199] [OpSeeder::seedPhotonsFromGensteps@52] OpSeeder::seedPhotonsFromGensteps
+    2016-09-13 18:33:42.257 INFO  [47199] [OpSeeder::seedPhotonsFromGenstepsViaOpenGL@67] OpSeeder::seedPhotonsFromGenstepsViaOpenGL
+    iexpand  counts_size 1 output_size 100000
+    2016-09-13 18:33:42.315 INFO  [47199] [OContext::close@224] OContext::close numEntryPoint 2
+    2016-09-13 18:33:42.569 INFO  [47199] [OContext::launch@250] OContext::launch entry 0 width 0 height 0
+
+
+::
+
+    OKTest --nopropagate   # doesnt crash when skip the launch 
+
+
+
+
 
 
 Trying to do raytrace when loaded, fails for lack of record buffer

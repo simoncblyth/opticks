@@ -39,6 +39,7 @@ class OKOP_API OpSeeder {
    public:
       void seedPhotonsFromGensteps();
    private:
+      void seedComputeSeedsFromInteropGensteps();  // used WITH_SEED_BUFFER
       void seedPhotonsFromGenstepsViaOptiX();
       void seedPhotonsFromGenstepsViaOpenGL();
       void seedPhotonsFromGenstepsImp(const CBufSpec& rgs_, const CBufSpec& rox_);

@@ -83,6 +83,8 @@ class NPY_API NPYBase {
        // OpenGL related
        void         setBufferId(int buffer_id);
        int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
+       bool         isComputeBuffer();
+       bool         isInteropBuffer();
 
        void         setBufferTarget(int buffer_target);
        int          getBufferTarget();  // -1 if unset

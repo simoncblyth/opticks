@@ -12,6 +12,7 @@
 #include "OpticksEvent.hh"
 
 #include "OpticksHub.hh"  // okg-
+//#include "OpticksIdx.hh"  
 #include "OpticksRun.hh"  
 
 #include "OContext.hh"   // optixrap-
@@ -45,9 +46,18 @@ int main(int argc, char** argv)
     OXRAP_LOG__ ; 
     OKOP_LOG__ ; 
 
-    SArgs sa(argc, argv, "--compute");   // force --compute into arguments, with deduping 
+
+   
+
+    const char* argforce = "--compute" ; 
+ 
+    SArgs sa(argc, argv, argforce);   
     Opticks ok(sa.argc, sa.argv);
+
     OpticksHub hub(&ok);
+    //OpticksIdx idx(&hub);
+
+    
     assert(ok.isCompute());
 
     OScene scene(&hub);
@@ -55,6 +65,9 @@ int main(int argc, char** argv)
     OEvent oevt(&hub, octx );
     OpSeeder  seeder(&hub, &oevt );
     OPropagator propagator(&hub, &oevt, octx->addEntry(ok.getEntryCode()) );
+
+
+
 
     GenstepNPY* fab = GenstepNPY::Fabricate(TORCH, 10, 10 ); // genstep_type, num_step, num_photons_per_step
     NPY<float>* gs = fab->getNPY();
@@ -73,12 +86,14 @@ int main(int argc, char** argv)
         evt->setGenstepData(gs, true, oac_label);
 
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
+
         seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer using the genstep numPhotons for each step
         oevt.markDirtyPhotonBuffer();         // inform OptiX that must sync up the photon buffer
 
         propagator.launch();                  // write the photon, record and sequence buffers
 
-        oevt.downloadPhotonData();            // allocates hostside buffer and copies into it 
+
+        oevt.downloadPhotonData();            // allocates hostside buffer and copies into it (WILL SKIP IN INTEROP)
         oevt.downloadSeedData();             
 
         NPY<float>* photon = evt->getPhotonData();
@@ -94,6 +109,8 @@ int main(int argc, char** argv)
 
 
     }
+
+
 
     return 0 ;     
 }
@@ -154,8 +171,12 @@ int main(int argc, char** argv)
     OpSeederTest  --compute --trivial --multievent 2
        # after changing to use BUFFER_COPY_ON_DIRTY and invoking  oevt.markDirtyPhotonBuffer(); 
        # above multievent now appears to see the changed seeds
-       # 
-       # NOTE: have implemented an input only seed buffer but not yet using it 
+       #
+       # but this approach not working in interop, so have got WITH_SEED_BUFFER
+       # approach working in compute,  but not yet in INTEROP
+
+    OpSeederTest --dumpseed
+
 
 
 */

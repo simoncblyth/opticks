@@ -52,13 +52,49 @@ void OpSeeder::seedPhotonsFromGensteps()
     LOG(info)<<"OpSeeder::seedPhotonsFromGensteps" ;
     if( m_ocontext->isInterop() )
     {    
+#ifdef WITH_SEED_BUFFER
+        seedComputeSeedsFromInteropGensteps();
+#else
         seedPhotonsFromGenstepsViaOpenGL();
+#endif
     }    
     else if ( m_ocontext->isCompute() )
     {    
         seedPhotonsFromGenstepsViaOptiX();
     }    
     if(m_hub->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+}
+
+void OpSeeder::seedComputeSeedsFromInteropGensteps()
+{
+#ifdef WITH_SEED_BUFFER
+    LOG(info)<<"OpSeeder::seedComputeSeedsFromInteropGensteps : WITH_SEED_BUFFER " ;
+
+    OpticksEvent* evt = m_hub->getEvent();
+    assert(evt); 
+
+    NPY<unsigned>* seedData =  evt->getSeedData() ;
+    assert(seedData->isComputeBuffer());
+
+    OBuf* seed = m_oevt->getSeedBuf() ;
+    CBufSpec s_se = seed->bufspec();
+
+
+    NPY<float>* gensteps =  evt->getGenstepData() ;
+    int gensteps_id = gensteps->getBufferId() ;
+    assert(gensteps_id > -1 );
+
+    CResource r_gs( gensteps_id , CResource::R );
+    CBufSpec s_gs = r_gs.mapGLToCUDA<unsigned int>() ;
+    s_gs.size = s_gs.size/4 ; 
+
+    seedPhotonsFromGenstepsImp(s_gs, s_se);
+
+    r_gs.unmapGLToCUDA(); 
+
+#else
+    assert(0 && "OpSeeder::seedComputeSeedsFromInteropGensteps is applicable only WITH_SEED_BUFFER "); 
+#endif
 }
 
 
@@ -95,6 +131,10 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 
     TIMER("seedPhotonsFromGenstepsViaOpenGL"); 
 }
+
+
+
+
 
 void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 {

@@ -125,10 +125,6 @@ void OpticksViz::init()
         prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
  
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
-
-
-        //OpticksEvent* evt = m_hub->getEvent();
-        //uploadEvent(evt);    // without this the buffer_id will not be set 
     }
 }
 
