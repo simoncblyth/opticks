@@ -87,7 +87,7 @@ void OKG4Mgr::propagate()
             {
                 m_g4->propagate();
        
-                gs = m_collector->getGensteps() ;   // TODO: come from g4evt not collector
+                gs = m_collector->getGensteps() ;  
             }
             else
             {

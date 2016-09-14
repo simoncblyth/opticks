@@ -49,7 +49,6 @@ int main(int argc, char** argv)
     float* vmv = vm->getValues();
 
     Opticks ok(argc, argv);
-
     OpticksHub hub(&ok);
 
     CCollector cc(&hub);
@@ -80,3 +79,39 @@ int main(int argc, char** argv)
 
     return ok.getRC() ; 
 }
+
+
+/*
+
+In [1]: import sys, os, numpy as np ; np.set_printoptions(suppress=True, precision=3)
+
+In [2]: a=np.load(os.path.expandvars("$TMP/CCollectorTest_vm.npy"))
+
+In [3]: a.shape
+Out[3]: (100,)
+
+In [4]: a
+Out[4]: 
+array([  1.,  10.,  10.,  11.,  19.,  19.,  19.,  20.,  28.,  28.,  28.,
+        28.,  28.,  28.,  30.,  38.,  38.,  38.,  38.,  38.,  38.,  39.,
+        47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,
+        47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,
+        47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,
+        47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,  47.,
+        47.,  47.,  47.,  48.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,
+        57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,
+        57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,  57.,
+        57.], dtype=float32)
+
+In [5]: import matplotlib.pyplot as plt 
+
+In [6]: plt.plot(a)
+Out[6]: [<matplotlib.lines.Line2D at 0x112f0bdd0>]
+
+In [7]: plt.show()
+
+
+*/
+
+
+
