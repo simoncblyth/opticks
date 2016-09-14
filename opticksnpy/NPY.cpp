@@ -80,6 +80,19 @@ T* NPY<T>::allocate()
     //     there is some use of m_data.size() so using resize
 }
 
+template <typename T>
+void NPY<T>::deallocate()
+{
+    setHasData(false);
+    m_data.clear();
+    setNumItems( 0 );
+}
+
+template <typename T>
+void NPY<T>::reset()
+{
+    deallocate();
+}
 
 template <typename T>
 void NPY<T>::read(void* ptr)

@@ -45,7 +45,6 @@ DONE : init and per-event distinction
 * clearer distinction between once-only geometry initialization 
   within OptiX and otherwise per-event actions (in response to input gensteps) 
 
-
  
 DONE : Optical Step Collection
 --------------------------------

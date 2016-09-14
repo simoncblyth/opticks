@@ -30,6 +30,7 @@ class OpticksColors ;
 class OpticksQuery; 
 class OpticksFlags ;
 class OpticksAttrSeq ;
+class OpticksProfile ;
 
 
 #include "OpticksPhoton.h"
@@ -68,6 +69,7 @@ class OKCORE_API Opticks {
        bool hasOpt(const char* name);
        bool operator()(const char* name) const ; 
        void cleanup();
+       void stamp(const char* label=NULL);
    private:
        void checkOptionValidity();
    public:
@@ -79,6 +81,8 @@ class OKCORE_API Opticks {
        bool isPmtInBox();
        bool isOther();
        bool isValid();
+       int  getRC();
+       void setRC(int rc); 
    public:
        void prepareInstallCache(const char* dir=NULL);
    public:
@@ -234,6 +238,8 @@ class OKCORE_API Opticks {
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
        OpticksMode*         m_mode ; 
+       OpticksProfile*      m_profile ; 
+       int                  m_rc ; 
    private:
        glm::uvec4           m_size ; 
        glm::uvec4           m_position ; 

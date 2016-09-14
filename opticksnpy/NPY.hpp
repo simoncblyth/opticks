@@ -158,12 +158,15 @@ class NPY_API NPY : public NPYBase {
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
        void add(const glm::vec4& v ) ;  // add quad, itemsize must be 4 
+       void reset();   //  clears data, setHasData to false and setNumItems to zero
     public:
        std::vector<T>& data();
        void setData(T* data);
        void fill(T value);
        T* zero();
        T* allocate();
+    private:
+       void deallocate();  // clears data, setHasData to false and setNumItems to zero
     public:
        T* getUnsetItem();
        bool isUnsetItem(unsigned int i, unsigned int j);

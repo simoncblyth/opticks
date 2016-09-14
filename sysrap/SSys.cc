@@ -17,6 +17,14 @@ simon:optixrap blyth$ echo $?
 */
 
 
+const char* SSys::fmt(const char* tmpl, unsigned val)
+{
+    char buf[100] ; 
+    snprintf(buf, 100, tmpl, val );
+    return strdup(buf);
+}
+
+
 int SSys::npdump(const char* path, const char* nptype, const char* postview )
 {
     std::stringstream ss ; 

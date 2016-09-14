@@ -22,7 +22,6 @@ class OKG4_API OKG4Mgr {
        void propagate();
        void visualize();
    private:
-       void init();
        void cleanup();
    private:
        SLog*          m_log ; 

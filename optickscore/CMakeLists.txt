@@ -81,6 +81,7 @@ set(SOURCES
     OpticksMode.cc
     OpticksCfg.cc
     OpticksResource.cc
+    OpticksProfile.cc
 
     CameraCfg.cc
     ViewCfg.cc
@@ -136,6 +137,7 @@ set(HEADERS
     OpticksMode.hh
     OpticksCfg.hh
     OpticksResource.hh
+    OpticksProfile.hh
 
     CameraCfg.hh
     ViewCfg.hh

@@ -17,6 +17,7 @@ set(TEST_SOURCES
     G4MaterialTest.cc
     G4StringTest.cc
     G4BoxTest.cc
+    CCollectorTest.cc
 
 )
 

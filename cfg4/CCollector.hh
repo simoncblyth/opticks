@@ -114,17 +114,19 @@ class CFG4_API CCollector
             G4double             spare2=0
         );
 
-
+   public:
+         void collectMachineryStep(unsigned code);
    private:
          static CCollector* INSTANCE ;      
    private:
          OpticksHub*  m_hub ; 
          NLookup*     m_lookup ; 
-         NPY<float>*  m_onestep ;
-         float*       m_values ;  
          NPY<float>*  m_genstep ;
+         unsigned     m_itemsize ; 
+         float*       m_values ;  
          unsigned     m_scintillation_count ; 
          unsigned     m_cerenkov_count ; 
+         unsigned     m_machinery_count ; 
 
 
 };

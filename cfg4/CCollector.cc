@@ -21,14 +21,12 @@ CCollector::CCollector(OpticksHub* hub)
     :
     m_hub(hub),
     m_lookup(m_hub->getLookup()),
-    m_onestep(NPY<float>::make(1,6,4)),
-    m_values(NULL),
     m_genstep(NPY<float>::make(0,6,4)),
+    m_itemsize(m_genstep->getNumValues(1)),
+    m_values(new float[m_itemsize]),
     m_scintillation_count(0),
     m_cerenkov_count(0)
 {
-    m_onestep->zero();
-    m_values = m_onestep->getValues();
 
     INSTANCE = this ; 
 
@@ -69,7 +67,7 @@ void CCollector::setGensteps(NPY<float>* gs)
 void CCollector::consistencyCheck()
 {
      unsigned numItems = m_genstep->getNumItems();
-     bool consistent = numItems == m_scintillation_count + m_cerenkov_count ;
+     bool consistent = numItems == m_scintillation_count + m_cerenkov_count + m_machinery_count ;
      if(!consistent)
          LOG(fatal) << "CCollector::consistencyCheck FAIL " 
                     << description()
@@ -84,7 +82,8 @@ std::string CCollector::description()
        << " numItems " << m_genstep->getNumItems() 
        << " scintillation_count " << m_scintillation_count
        << " cerenkov_count " << m_cerenkov_count
-       << " step_count " << m_scintillation_count + m_cerenkov_count
+       << " machinery_count " << m_machinery_count
+       << " step_count " << m_scintillation_count + m_cerenkov_count + m_machinery_count 
        ;
     return ss.str();
 }
@@ -182,7 +181,7 @@ void CCollector::collectScintillationStep
      ss[5*4+2] = spare1 ;
      ss[5*4+3] = spare2 ;
 
-     m_genstep->add(m_onestep);
+     m_genstep->add(ss, m_itemsize);
 }
 
 
@@ -271,7 +270,22 @@ void CCollector::collectCerenkovStep
      cs[5*4+2] = meanNumberOfPhotons2 ;
      cs[5*4+3] = spare2 ;
 
-     m_genstep->add(m_onestep);
+     m_genstep->add(cs, m_itemsize);
 }
 
+void CCollector::collectMachineryStep(unsigned code)
+{
+     m_machinery_count += 1 ;   // 1-based index
+     LOG(debug) 
+           << " machinery_count " << m_machinery_count ;
+
+
+     float* ms = m_values ; 
+
+     uif_t uif ; 
+     uif.u = code ; 
+     for(unsigned i=0 ; i < m_itemsize ; i++) ms[i] = uif.f ; 
+
+     m_genstep->add(ms, m_itemsize);
+}
  

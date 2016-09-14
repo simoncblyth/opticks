@@ -7,6 +7,7 @@ set(TEST_SOURCES
    SArgsTest.cc
    SEnvTest.cc
    SSysTest.cc
+   SProcTest.cc
    SDigestTest.cc
    PLogTest.cc 
    PLOG_Test.cc 

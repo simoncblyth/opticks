@@ -35,6 +35,7 @@
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
 #include "OpticksEntry.hh"
+#include "OpticksProfile.hh"
 
 
 #include "OpticksCfg.hh"
@@ -81,6 +82,15 @@ glm::vec4 Opticks::getDefaultDomainSpec()
 }
 
 
+int Opticks::getRC()
+{
+    return m_rc ; 
+}
+void Opticks::setRC(int rc)
+{
+    m_rc = rc ; 
+}
+
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
        m_sargs(new SArgs(argc, argv, argforced)), 
@@ -107,11 +117,17 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_detector(NULL),
        m_event_count(0),
        m_domains_configured(false),
-       m_mode(NULL)
+       m_mode(NULL),
+       m_profile(new OpticksProfile),
+       m_rc(0)
 {
        init();
 }
 
+void Opticks::stamp(const char* label)
+{
+    m_profile->stamp(label);
+}
 
 void Opticks::init()
 {
@@ -929,4 +945,5 @@ void Opticks::configureF(const char* name, std::vector<float> values)
      }   
 }
  
+
 

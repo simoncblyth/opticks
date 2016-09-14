@@ -47,18 +47,12 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
 {
-    init();
     (*m_log)("DONE");
 }
 
 OKG4Mgr::~OKG4Mgr()
 {
     cleanup();
-}
-
-
-void OKG4Mgr::init()
-{
 }
 
 

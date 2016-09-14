@@ -32,6 +32,7 @@ add_definitions(
 set(SOURCES
     SYSRAP_LOG.cc 
     PLOG.cc 
+    SProc.cc
     SSys.cc
     SDigest.cc
     SArrayDigest.cc
@@ -49,6 +50,7 @@ set(HEADERS
     SYSRAP_TAIL.hh
     PLOG.hh
     PLOG_INIT.hh  
+    SProc.hh
     SSys.hh
     SDigest.hh
     SArrayDigest.hh
