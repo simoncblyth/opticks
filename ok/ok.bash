@@ -1,8 +1,8 @@
-ggeoview-src(){      echo ggeoview/ggeoview.bash ; }
-ggeoview-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ggeoview-src)} ; }
-ggeoview-vi(){       vi $(ggeoview-source) ; }
+ok-src(){      echo ok/ok.bash ; }
+ok-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(ok-src)} ; }
+ok-vi(){       vi $(ok-source) ; }
 
-ggeoview-usage(){ cat << EOU
+ok-usage(){ cat << EOU
 
 GGeoView
 ==========
@@ -192,7 +192,7 @@ enhancement : COMPUTE mode
 
 Next:
 
-* pull out ggeoview- App into separate file and make reusable 
+* pull out ok- App into separate file and make reusable 
   from tests/computeTest.cc with minimal duplication with main.cc
   
   * ie need to partition up compute from interop 
@@ -466,7 +466,7 @@ issue: jpmt wavelengthBuffer/boundarylib ? maybe bad material indices ?
 
 Initial values of material indices are not unreasonable, maybe problem on subsequent steps::
 
-    simon:ggeoview blyth$ ggeoview-detector-jpmt
+    simon:ggeoview blyth$ ok-detector-jpmt
     simon:ggeo blyth$ ggeo-blt 24 42 48
     /usr/local/env/optix/ggeo/bin/GBoundaryLibTest 24 42 48
     GCache::readEnvironment setting IDPATH internally to /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae 
@@ -735,12 +735,12 @@ GGeoview Compute
 
 Compute only mode::
 
-   ggeoview-compute -b0
-   ggeoview-compute -b1
-   ggeoview-compute -b2
-   ggeoview-compute -b4   # up to 4 bounces working 
+   ok-compute -b0
+   ok-compute -b1
+   ok-compute -b2
+   ok-compute -b4   # up to 4 bounces working 
 
-   ggeoview-compute -b5   # crash for beyond 4  
+   ok-compute -b5   # crash for beyond 4  
 
 
 Usage tips
@@ -764,7 +764,7 @@ Low GPU memory running
 When GPU memory is low OptiX startup causes a crash, 
 to run anyhow disable OptiX with::
 
-    ggeoview-run --optixmode -1
+    ok-run --optixmode -1
 
 To free up GPU memory restart the machine, or try sleep/unsleep and
 exit applications including Safari, Mail that all use GPU memory. 
@@ -982,7 +982,7 @@ C++ library versions
 
 ::
 
-    delta:~ blyth$ otool -L $(ggeoview-;ggeoview-deps) | grep c++
+    delta:~ blyth$ otool -L $(ok-;ok-deps) | grep c++
         /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
         /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
         /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
@@ -1006,7 +1006,7 @@ Pre-cook RNG Cache
 
 ::
 
-    delta:ggeoview blyth$ ggeoview-rng-prep
+    delta:ggeoview blyth$ ok-rng-prep
     cuRANDWrapper::instanciate with cache enabled : cachedir /usr/local/env/ggeoview.build/lib/rng
     cuRANDWrapper::Allocate
     cuRANDWrapper::InitFromCacheIfPossible
@@ -1103,7 +1103,7 @@ With each cmd equivalent to::
 EOU
 }
 
-ggeoview-env(){     
+ok-env(){     
     olocal- 
     #optix-
     #optix-export
@@ -1111,83 +1111,83 @@ ggeoview-env(){
 }
 
 
-ggeoview-sdir(){ echo $(opticks-home)/ggeoview ; }
-ggeoview-tdir(){ echo $(opticks-home)/ggeoview/tests ; }
-ggeoview-idir(){ echo $(opticks-idir) ; }
-ggeoview-bdir(){ echo $(opticks-bdir)/ggeoview ; }
+ok-sdir(){ echo $(opticks-home)/ok; }
+ok-tdir(){ echo $(opticks-home)/ok/tests ; }
+ok-idir(){ echo $(opticks-idir) ; }
+ok-bdir(){ echo $(opticks-bdir)/ok; }
 
-ggeoview-cd(){   cd $(ggeoview-sdir)/$1 ; }
-ggeoview-scd(){  cd $(ggeoview-sdir); }
-ggeoview-tcd(){  cd $(ggeoview-tdir); }
-ggeoview-icd(){  cd $(ggeoview-idir); }
-ggeoview-bcd(){  cd $(ggeoview-bdir); }
-
-
-ggeoview-gdir(){ echo $(ggeoview-idir).generated ; }
-ggeoview-bindir(){  echo $(ggeoview-idir)/bin ; }
-ggeoview-bin(){ echo ${OPTICKS_BINARY:-$(ggeoview-idir)/bin/$(ggeoview-name)} ; }
-
-#ggeoview-rng-dir(){ echo $(ggeoview-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
-ggeoview-rng-dir(){ echo $(ggeoview-idir)/cache/rng ; }
-
-ggeoview-ptx-dir(){ echo $(ggeoview-bdir)/lib/ptx ; }
-ggeoview-rng-ls(){  ls -l $(ggeoview-rng-dir) ; }
-ggeoview-ptx-ls(){  ls -l $(ggeoview-ptx-dir) ; }
-
-ggeoview-name(){ echo GGeoView ; }
-ggeoview-tag(){  echo GGV ; }
-
-ggeoview-apihh(){  echo $(ggeoview-sdir)/$(ggeoview-tag)_API_EXPORT.hh ; }
-ggeoview---(){     touch $(ggeoview-apihh) ; ggeoview--  ; }
+ok-cd(){   cd $(ok-sdir)/$1 ; }
+ok-scd(){  cd $(ok-sdir); }
+ok-tcd(){  cd $(ok-tdir); }
+ok-icd(){  cd $(ok-idir); }
+ok-bcd(){  cd $(ok-bdir); }
 
 
-ggeoview-edit(){     vi $(ggeoview-sdir)/ggv.sh ; }
+ok-gdir(){ echo $(ok-idir).generated ; }
+ok-bindir(){  echo $(ok-idir)/bin ; }
+ok-bin(){ echo ${OPTICKS_BINARY:-$(ok-idir)/bin/$(ok-name)} ; }
 
-ggeoview-wipe(){
-   local bdir=$(ggeoview-bdir)
+#ok-rng-dir(){ echo $(ok-bdir)/lib/rng ; }  gets deleted too often for keeping RNG 
+ok-rng-dir(){ echo $(ok-idir)/cache/rng ; }
+
+ok-ptx-dir(){ echo $(ok-bdir)/lib/ptx ; }
+ok-rng-ls(){  ls -l $(ok-rng-dir) ; }
+ok-ptx-ls(){  ls -l $(ok-ptx-dir) ; }
+
+ok-name(){ echo OK ; }
+ok-tag(){  echo OK ; }
+
+ok-apihh(){  echo $(ok-sdir)/$(ok-tag)_API_EXPORT.hh ; }
+ok---(){     touch $(ok-apihh) ; ok--  ; }
+
+
+ok-edit(){     vi $(ok-sdir)/ggv.sh ; }
+
+ok-wipe(){
+   local bdir=$(ok-bdir)
    rm -rf $bdir
 }
 
 
-ggeoview--(){        opticks--     $(ggeoview-bdir) ; }
-ggeoview-t(){        opticks-t   $(ggeoview-bdir) $* ; }
-ggeoview-ti(){       opticks-ti  $(ggeoview-bdir) $* ; }
-ggeoview-genproj(){  ggeoview-scd ; opticks-genproj $(ggeoview-name) $(ggeoview-tag) ; }
-ggeoview-gentest(){  ggeoview-tcd ; opticks-gentest ${1:-Scene} $(ggeoview-tag) ; }
-ggeoview-txt(){      vi $(ggeoview-sdir)/CMakeLists.txt $(ggeoview-tdir)/CMakeLists.txt ; }
+ok--(){        opticks--     $(ok-bdir) ; }
+ok-t(){        opticks-t   $(ok-bdir) $* ; }
+ok-ti(){       opticks-ti  $(ok-bdir) $* ; }
+ok-genproj(){  ok-scd ; opticks-genproj $(ok-name) $(ok-tag) ; }
+ok-gentest(){  ok-tcd ; opticks-gentest ${1:-Scene} $(ok-tag) ; }
+ok-txt(){      vi $(ok-sdir)/CMakeLists.txt $(ok-tdir)/CMakeLists.txt ; }
 
 
 
 
-ggeoview-accelcache()
+ok-accelcache()
 {
-    ggeoview-export
+    ok-export
     ls -l ${DAE_NAME_DYB/.dae}.*.accelcache
 }
-ggeoview-accelcache-rm()
+ok-accelcache-rm()
 {
-    ggeoview-export
+    ok-export
     rm ${DAE_NAME_DYB/.dae}.*.accelcache
 }
 
 
 
 
-ggeoview-idpath()
+ok-idpath()
 {
-   ggeoview-
-   ggeoview-run --idpath 2>/dev/null 
+   ok-
+   ok-run --idpath 2>/dev/null 
 }
 
-ggeoview-steal-bookmarks()
+ok-steal-bookmarks()
 {
-   local idpath=$(ggeoview-idpath)
+   local idpath=$(ok-idpath)
    cp ~/.g4daeview/dyb/bookmarks20141128-2053.cfg $idpath/bookmarks.ini
 }
 
 
 
-ggeoview-export()
+ok-export()
 {
    local msg="=== $FUNCNAME :"
 
@@ -1205,10 +1205,10 @@ ggeoview-export()
    unset RAYTRACE_PTX_DIR
    unset RAYTRACE_RNG_DIR
 
-   export CUDAWRAP_RNG_MAX=$(ggeoview-rng-max)
+   export CUDAWRAP_RNG_MAX=$(ok-rng-max)
 } 
 
-ggeoview-export-dump()
+ok-export-dump()
 {
    env | grep OPTICKS
    env | grep SHADER
@@ -1217,9 +1217,9 @@ ggeoview-export-dump()
 
 }
 
-ggeoview-run(){ 
-   local bin=$(ggeoview-bin)
-   ggeoview-export
+ok-run(){ 
+   local bin=$(ok-bin)
+   ok-export
    if [ "${bin: -3}" == ".py" ]; then 
       python $bin $* 
    else    
@@ -1229,89 +1229,89 @@ ggeoview-run(){
 
 
 
-ggeoview-compute(){ 
-   local bin=$(ggeoview-compute-bin)
-   ggeoview-export
+ok-compute(){ 
+   local bin=$(ok-compute-bin)
+   ok-export
    $bin $*
 }
 
-ggeoview-compute-lldb(){ 
-   local bin=$(ggeoview-compute-bin)
-   ggeoview-export
+ok-compute-lldb(){ 
+   local bin=$(ok-compute-bin)
+   ok-export
    lldb $bin $*
 }
 
-ggeoview-compute-gdb(){ 
-   local bin=$(ggeoview-compute-bin)
-   ggeoview-export
+ok-compute-gdb(){ 
+   local bin=$(ok-compute-bin)
+   ok-export
    gdb --args $bin $*
 }
 
 
 
-ggeoview-vrun(){ 
-   local bin=$(ggeoview-bin)
-   ggeoview-export
+ok-vrun(){ 
+   local bin=$(ok-bin)
+   ok-export
    vglrun $bin $*
 }
 
-ggeoview-gdb(){ 
-   local bin=$(ggeoview-bin)
-   ggeoview-export
+ok-gdb(){ 
+   local bin=$(ok-bin)
+   ok-export
    gdb --args $bin $*
 }
 
-ggeoview-valgrind(){ 
-   local bin=$(ggeoview-bin)
-   ggeoview-export
+ok-valgrind(){ 
+   local bin=$(ok-bin)
+   ok-export
    valgrind $bin $*
 }
 
-ggeoview-lldb()
+ok-lldb()
 {
-   local bin=$(ggeoview-bin)
-   ggeoview-export
+   local bin=$(ok-bin)
+   ok-export
    lldb $bin -- $*
 }
 
-ggeoview-dbg()
+ok-dbg()
 {
    case $(uname) in
-     Darwin) ggeoview-lldb $* ;;
-          *) ggeoview-gdb  $* ;;
+     Darwin) ok-lldb $* ;;
+          *) ok-gdb  $* ;;
    esac
 }
 
 
 
-ggeoview-dep-action()
+ok-dep-action()
 {
     local action=${1:-install}
-    ggeoview-deps- | while read dep 
+    ok-deps- | while read dep 
     do
         $dep-
         $dep-$action
     done
 }
 
-ggeoview-dep-cmake(){   ggeoview-dep-action cmake ; }
-ggeoview-dep-install(){ ggeoview-dep-action install ; }
-ggeoview-dep-wipe(){    ggeoview-dep-action wipe ; }
+ok-dep-cmake(){   ok-dep-action cmake ; }
+ok-dep-install(){ ok-dep-action install ; }
+ok-dep-wipe(){    ok-dep-action wipe ; }
 
 
-ggeoview-full()
+ok-full()
 {
 
-   ggeoview-dep-wipe
+   ok-dep-wipe
 
    opticks-cmake
    opticks-install
 
-   #ggeoview-dep-install
+   #ok-dep-install
 }
 
 
-ggeoview-deps-(){ cat << EOD
+ok-deps-(){ cat << EOD
 bcfg
 bregex
 npy
@@ -1326,11 +1326,11 @@ thrustrap
 optixrap
 opticksop
 opticksgl
-ggeoview
+ok
 EOD
 }
 
-ggeoview-deps(){
+ok-deps(){
    local suffix=${1:-dylib}
    local dep
    $FUNCNAME- | while read dep ; do
@@ -1340,10 +1340,10 @@ ggeoview-deps(){
    done
 }
 
-ggeoview-ls(){   ls -1 $(ggeoview-;ggeoview-deps) ; }
-ggeoview-libs(){ otool -L $(ggeoview-;ggeoview-deps) ; }
+ok-ls(){   ls -1 $(ok-;ok-deps) ; }
+ok-libs(){ otool -L $(ok-;ok-deps) ; }
 
-ggeoview-linux-setup() {
+ok-linux-setup() {
     local dep
     local edeps="boost glew glfw imgui glm assimp"
     local deps="$edeps bcfg bregex npy ggeo assimpwrap ppm oglrap cudawrap optixrap thrustrap"
@@ -1358,7 +1358,7 @@ ggeoview-linux-setup() {
     export LD_LIBRARY_PATH=$(assimp-prefix)/lib:$LD_LIBRARY_PATH
 }
 
-ggeoview-linux-install-external() {
+ok-linux-install-external() {
     local edeps="glew glfw imgui glm assimp"
     local edep
     for edep in $edeps
@@ -1368,7 +1368,7 @@ ggeoview-linux-install-external() {
         ${edep}--
     done
 }
-ggeoview-linux-install() {
+ok-linux-install() {
 
     local deps="bcfg bregex npy ggeo assimpwrap ppm oglrap cudawrap optixrap thrustrap"
     local dep

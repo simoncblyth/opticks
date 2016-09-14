@@ -3,10 +3,10 @@
 
 /* 
 
-Source "Generated" hdr GGV_API_EXPORT.hh 
+Source "Generated" hdr OK_API_EXPORT.hh 
 Created Fri, Jun 24, 2016  1:15:57 PM with commandline::
 
-    importlib-exports GGeoView GGV_API  
+    importlib-exports GGeoView OK_API  
 
 https://cmake.org/Wiki/BuildingWinDLL
 
@@ -23,14 +23,14 @@ building a DLL on windows.
 #if defined (_WIN32) 
 
    #if defined(GGeoView_EXPORTS)
-       #define  GGV_API __declspec(dllexport)
+       #define  OK_API __declspec(dllexport)
    #else
-       #define  GGV_API __declspec(dllimport)
+       #define  OK_API __declspec(dllimport)
    #endif
 
 #else
 
-   #define GGV_API  __attribute__ ((visibility ("default")))
+   #define OK_API  __attribute__ ((visibility ("default")))
 
 #endif
 

@@ -18,7 +18,7 @@
 #include "OKGL_LOG.hh"
 #endif
 
-#include "GGV_LOG.hh"
+#include "OK_LOG.hh"
 #include "CFG4_LOG.hh"
 #include "OKG4_LOG.hh"
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     OKGL_LOG__ ;
 #endif
 
-    GGV_LOG__ ;
+    OK_LOG__ ;
     CFG4_LOG__ ;
     OKG4_LOG__ ;
 

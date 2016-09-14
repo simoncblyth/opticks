@@ -36,7 +36,7 @@ class NConfigurable ;
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_log(new SLog("OKG4Mgr::OKG4Mgr")),
-    m_ok(new Opticks(argc, argv, true)),               // true: integrated running 
+    m_ok(new Opticks(argc, argv)),  
     m_hub(new OpticksHub(m_ok)),                       // configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),                    // after hub instanciation, as that configures Opticks

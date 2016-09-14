@@ -1,19 +1,18 @@
 #include <string>
 #include <sstream>
 
-#include "SArgs.hh"      // sysrap-
-#include "SSys.hh"    
+#include "SSys.hh"     // sysrap- 
 
 #include "NPY.hpp"      // npy-
-#include "GenstepNPY.hpp"
+#include "FabStepNPY.hpp"
 
 #include "Opticks.hh"   // okc-
 #include "OpticksPhoton.h"   
 #include "OpticksEvent.hh"
 
 #include "OpticksHub.hh"  // okg-
-//#include "OpticksIdx.hh"  
 #include "OpticksRun.hh"  
+#include "OpticksGen.hh"  
 
 #include "OContext.hh"   // optixrap-
 #include "OPropagator.hh"   
@@ -47,15 +46,13 @@ int main(int argc, char** argv)
     OKOP_LOG__ ; 
 
 
-   
-
-    const char* argforce = "--compute" ; 
  
-    SArgs sa(argc, argv, argforce);   
-    Opticks ok(sa.argc, sa.argv);
+    Opticks ok(argc, argv, "--compute");
 
     OpticksHub hub(&ok);
     //OpticksIdx idx(&hub);
+
+    OpticksGen* gen = hub.getGen();
 
     
     assert(ok.isCompute());
@@ -67,12 +64,9 @@ int main(int argc, char** argv)
     OPropagator propagator(&hub, &oevt, octx->addEntry(ok.getEntryCode()) );
 
 
-
-
-    GenstepNPY* fab = GenstepNPY::Fabricate(TORCH, 10, 10 ); // genstep_type, num_step, num_photons_per_step
+    FabStepNPY* fab = gen->makeFabstep();
     NPY<float>* gs = fab->getNPY();
     const char* oac_label = "GS_TORCH" ; 
-
 
     int multi = ok.getMultiEvent();
 

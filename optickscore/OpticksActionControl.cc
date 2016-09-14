@@ -85,6 +85,14 @@ bool OpticksActionControl::isSet(const char* mask) const
 {
     return isSet(*m_ctrl, mask );
 }
+
+bool OpticksActionControl::operator()(const char* mask) const 
+{
+    return isSet(*m_ctrl, mask );
+}
+
+
+
 std::string OpticksActionControl::description(const char* msg) const
 {
    std::stringstream ss ;

@@ -8,6 +8,7 @@
 #endif
 
 
+#include "SArgs.hh"
 #include "SSys.hh"
 // brap-
 #include "BDynamicDefine.hh"
@@ -80,10 +81,11 @@ glm::vec4 Opticks::getDefaultDomainSpec()
 }
 
 
-Opticks::Opticks(int argc, char** argv, bool integrated )
+Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
-       m_argc(argc),
-       m_argv(argv),
+       m_sargs(new SArgs(argc, argv, argforced)), 
+       m_argc(m_sargs->argc),
+       m_argv(m_sargs->argv),
        m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
 
@@ -96,7 +98,6 @@ Opticks::Opticks(int argc, char** argv, bool integrated )
        m_compute(false),
        m_geocache(false),
        m_instanced(true),
-       m_integrated(integrated),
 
        m_lastarg(NULL),
 
@@ -515,6 +516,7 @@ unsigned int Opticks::getSourceCode()
     else if(m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
     else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
     else if(m_cfg->hasOpt("torch"))         code = TORCH ;
+    else if(m_cfg->hasOpt("machinery"))     code = MACHINERY ;
     else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;
     else                                    code = TORCH ;
     return code ;
@@ -715,8 +717,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     parameters->add<std::string>("EntryCode", BStr::ctoa(getEntryCode()) );
     parameters->add<std::string>("EntryName", getEntryName() );
 
-    char* executable = getArgv0();
-    parameters->add<std::string>("Creator", executable ? executable : "NULL" );
+    evt->setCreator(getArgv0()) ;  
 
     assert( parameters->get<unsigned int>("RngMax") == rng_max );
     assert( parameters->get<unsigned int>("BounceMax") == bounce_max );
@@ -795,13 +796,12 @@ std::string Opticks::MaterialSequence(const unsigned long long seqmat)
 
 TorchStepNPY* Opticks::makeSimpleTorchStep()
 {
-    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1);
-
     std::string config = m_cfg->getTorchConfig() ;
 
-    if(!config.empty()) torchstep->configure(config.c_str());
+    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, config.empty() ? NULL : config.c_str() );
 
     unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
+
     torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
 
     return torchstep ; 
@@ -821,6 +821,7 @@ bool Opticks::operator()(const char* name) const
 
 
 
+const char* Opticks::getDefaultMaterial() { return m_resource->getDefaultMaterial(); }
 const char* Opticks::getDetector() { return m_resource->getDetector(); }
 bool Opticks::isJuno() {    return m_resource->isJuno(); }
 bool Opticks::isDayabay() { return m_resource->isDayabay(); }

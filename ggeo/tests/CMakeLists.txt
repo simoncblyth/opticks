@@ -64,7 +64,6 @@ set(TEST_SOURCES
 
     NLookupTest.cc
     RecordsNPYTest.cc
-    TorchStepNPYTest.cc
 
 )
 

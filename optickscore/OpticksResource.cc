@@ -48,6 +48,9 @@ const char* OpticksResource::DEFAULT_CTRL = "volnames" ;
 const char* OpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
 const char* OpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
 
+const char* OpticksResource::DEFAULT_MATERIAL_DYB  = "GdDopedLS" ; 
+const char* OpticksResource::DEFAULT_MATERIAL_JUNO = "LS" ; 
+const char* OpticksResource::DEFAULT_MATERIAL_OTHER = "Water" ; 
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
     :
@@ -86,7 +89,8 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_detector_name(NULL),
        m_detector_base(NULL),
        m_resource_base(NULL),
-       m_material_map(NULL)
+       m_material_map(NULL),
+       m_default_material(NULL)
 
 {
     init();
@@ -264,6 +268,7 @@ void OpticksResource::init()
    readMetadata();
    identifyGeometry();
    assignDetectorName(); 
+   assignDefaultMaterial(); 
 
    LOG(trace) << "OpticksResource::init DONE" ; 
 }
@@ -326,6 +331,17 @@ void OpticksResource::identifyGeometry()
               << " m_detector " << m_detector
               ;
 
+}
+
+void OpticksResource::assignDefaultMaterial()
+{
+    m_default_material =  DEFAULT_MATERIAL_OTHER ; 
+    if(m_juno)    m_default_material = DEFAULT_MATERIAL_JUNO ;
+    if(m_dayabay) m_default_material = DEFAULT_MATERIAL_DYB ;
+}
+const char* OpticksResource::getDefaultMaterial()
+{
+    return m_default_material ; 
 }
 
 void OpticksResource::assignDetectorName()

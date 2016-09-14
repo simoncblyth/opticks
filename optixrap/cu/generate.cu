@@ -323,7 +323,7 @@ RT_PROGRAM void generate()
                   (  p.position.z > 0.f ? QZ : 0u )
                   ; 
 
-    c4.uchar_.y = 2u ; 
+    c4.uchar_.y = 2u ;   // 3-bytes up for grabs
     c4.uchar_.z = 3u ; 
     c4.uchar_.w = 4u ; 
 

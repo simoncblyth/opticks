@@ -14,8 +14,8 @@ class OpEngine ;
 class OKGLTracer ; 
 #endif
 
-#include "GGV_API_EXPORT.hh"
-#include "GGV_HEAD.hh"
+#include "OK_API_EXPORT.hh"
+#include "OK_HEAD.hh"
 
 /**
 OKPropagator
@@ -35,7 +35,7 @@ level of the compute/interop split.
 **/
 
 
-class GGV_API OKPropagator {
+class OK_API OKPropagator {
    public:
        OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz);
    public:
@@ -61,6 +61,6 @@ class GGV_API OKPropagator {
        
 };
 
-#include "GGV_TAIL.hh"
+#include "OK_TAIL.hh"
 
 

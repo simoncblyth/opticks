@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     OKCORE_LOG__ ; 
     OXRAP_LOG__ ; 
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--machinery");
     OpticksHub hub(&ok);
 
     NPY<float>* gs0 = hub.getInputGensteps(); 
@@ -54,20 +54,13 @@ int main(int argc, char** argv)
 
          OpticksEvent* evt = hub.getEvent();
 
+         assert(evt->isMachineryType() && "--machinery type is forced as this writes incomplete OpticksEvents " );
+
          evt->setGenstepData(gs);
 
-
-         NPYBase* ox = evt->getData("photon");
-         OpticksBufferControl c_ox(ox->getBufferControlPtr());
-         c_ox.add(OpticksBufferControl::COMPUTE_MODE_);    
-
-         NPYBase* rx = evt->getData("record");
-         OpticksBufferControl c_rx(rx->getBufferControlPtr());
-         c_rx.add(OpticksBufferControl::COMPUTE_MODE_);    
-
-         // without the buffer control the download is skipped, claiming interop 
-         // TODO avoid this complication
-
+         evt->addBufferControl("photon", OpticksBufferControl::COMPUTE_MODE_ );
+         evt->addBufferControl("record", OpticksBufferControl::COMPUTE_MODE_ );
+         // defaults to INTEROP, need to set to COMPUTE to get OContext::download to not skip
          
          oevt->upload();
 
@@ -83,7 +76,6 @@ int main(int argc, char** argv)
 
          evt->save();
 
-         //evt->check();
 
          LOG(info) <<  evt->description() ;
     }

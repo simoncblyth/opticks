@@ -1,8 +1,9 @@
-#include <string>
 
 #include "NPY.hpp"
+#include "FabStepNPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "Parameters.hpp"
+#include "GLMFormat.hpp"
 
 #include "GGeo.hh"
 
@@ -23,7 +24,10 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_ok(hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
    m_lookup(hub->getLookup()),
-   m_ggeo(hub->getGGeo())
+   m_ggeo(hub->getGGeo()),
+   m_torchstep(NULL),
+   m_fabstep(NULL),
+   m_input_gensteps(NULL)
 {
     init() ;
 }
@@ -56,20 +60,23 @@ void OpticksGen::initInputGensteps()
     } 
 
     LOG(debug) << "OpticksGen::initInputGensteps" ; 
-    unsigned int code = m_ok->getSourceCode();
 
+    unsigned int code = m_ok->getSourceCode();
     NPY<float>* gs = NULL ; 
 
-    if(code == TORCH)
+    if( code == FABRICATED || code == MACHINERY  )
+    {
+        m_fabstep = makeFabstep();
+        gs = m_fabstep->getNPY();
+    }
+    else if(code == TORCH)
     {
         m_torchstep = makeTorchstep() ;
         gs = m_torchstep->getNPY();
-        gs->addActionControl(OpticksActionControl::Parse("GS_FABRICATED,GS_TORCH"));
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
         gs = loadGenstepFile();
-        gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
     }
     else if( code == G4GUN  )
     {
@@ -88,51 +95,96 @@ void OpticksGen::initInputGensteps()
 }
 
 
-TorchStepNPY* OpticksGen::getTorchstep()   // needed by CGenerator
+TorchStepNPY* OpticksGen::getTorchstep()   
+// needed by CGenerator, full details of the torchstep are used in cfg4-/CTorchSource to 
+// duplicate the on GPU generation done by Opticks torchstep.h on the CPU for Geant4  
 {
     return m_torchstep ; 
 }
 
 
+
+
+void OpticksGen::targetGenstep( GenstepNPY* gs )
+{
+    // targetted positioning and directioning of the torch requires geometry info, 
+    // which is not available within npy- so need to externally setFrameTransform
+    // based on integer frame volume index
+
+    if(gs->isFrameTargetted())
+    {    
+        LOG(info) << "OpticksGen::targetGenstep frame targetted already  " << gformat(gs->getFrameTransform()) ;  
+    }    
+    else 
+    {    
+        if(m_ggeo)
+        {
+            glm::ivec4& iframe = gs->getFrame();
+            glm::mat4 transform = m_ggeo->getTransform( iframe.x );
+            LOG(debug) << "OpticksGen::targetGenstep setting frame " << iframe.x << " " << gformat(transform) ;  
+            gs->setFrameTransform(transform);
+        }
+        else
+        {
+            LOG(warning) << "OpticksGen::targetGenstep SKIP AS NO GEOMETRY " ; 
+        }
+    }    
+}
+
+
+void OpticksGen::setMaterialLine( GenstepNPY* gs )
+{
+    if(!m_ggeo)
+    {
+        LOG(warning) << "OpticksGen::setMaterialLine no ggeo, skip setting material line " ;
+        return ; 
+    }
+
+   // translation from a string name from config into a mat line
+   // only depends on the GBndLib being loaded, so no G4 complications
+   // just need to avoid trying to translate the matline later
+
+   const char* material = gs->getMaterial() ;
+   unsigned int matline = m_ggeo->getMaterialLine(material);
+   gs->setMaterialLine(matline);  
+
+   LOG(debug) << "OpticksGen::setMaterialLine"
+              << " material " << material 
+              << " matline " << matline
+              ;
+}
+
+
+
+
+FabStepNPY* OpticksGen::makeFabstep()
+{
+    FabStepNPY* fabstep = new FabStepNPY(FABRICATED, 10, 10 );
+
+    const char* material = m_ok->getDefaultMaterial();
+    fabstep->setMaterial(material);
+
+    targetGenstep(fabstep);  // sets frame transform
+    setMaterialLine(fabstep);
+    fabstep->addActionControl(OpticksActionControl::Parse("GS_FABRICATED"));
+    return fabstep ; 
+}
+
 TorchStepNPY* OpticksGen::makeTorchstep()
 {
     TorchStepNPY* torchstep = m_ok->makeSimpleTorchStep();
-
-    if(m_ggeo)
-    {
-        m_ggeo->targetTorchStep(torchstep);   // sets frame transform of the torchstep
-
-        // translation from a string name from config into a mat line
-        // only depends on the GBndLib being loaded, so no G4 complications
-        // just need to avoid trying to translate the matline later
-
-        const char* material = torchstep->getMaterial() ;
-        unsigned int matline = m_ggeo->getMaterialLine(material);
-        torchstep->setMaterialLine(matline);  
-
-        LOG(debug) << "OpticksGen::makeGenstepTorch"
-                   << " config " << torchstep->getConfig() 
-                   << " material " << material 
-                   << " matline " << matline
-                         ;
-    }
-    else
-    {
-        LOG(warning) << "OpticksGen::makeTorchstep no ggeo, skip setting torchstep material line " ;
-    } 
+    targetGenstep(torchstep);  // sets frame transform
+    setMaterialLine(torchstep);
+    torchstep->addActionControl(OpticksActionControl::Parse("GS_TORCH"));
 
     bool torchdbg = m_ok->hasOpt("torchdbg");
     torchstep->addStep(torchdbg);  // copyies above configured step settings into the NPY and increments the step index, ready for configuring the next step 
 
-    if(torchdbg)
-    {
-        NPY<float>* gs = torchstep->getNPY();
-        gs->save("$TMP/torchdbg.npy");
-    }
+    NPY<float>* gs = torchstep->getNPY();
+    if(torchdbg) gs->save("$TMP/torchdbg.npy");
 
     return torchstep ; 
 }
-
 
 NPY<float>* OpticksGen::loadGenstepFile()
 {
@@ -143,7 +195,6 @@ NPY<float>* OpticksGen::loadGenstepFile()
         m_ok->setExit(true);
         return NULL ; 
     } 
- 
     gs->setLookup(m_lookup);
 
     int modulo = m_cfg->getModulo();
@@ -157,10 +208,9 @@ NPY<float>* OpticksGen::loadGenstepFile()
         gs = NPY<float>::make_modulo(gs, modulo);
         parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
     }    
-
+    gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
     return gs ; 
 }
-
 
 
 

@@ -35,6 +35,10 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static const char* DEFAULT_MESHFIX ;
        static const char* DEFAULT_MESHFIX_CFG ;
     public:
+       static const char* DEFAULT_MATERIAL_DYB ;
+       static const char* DEFAULT_MATERIAL_JUNO ;
+       static const char* DEFAULT_MATERIAL_OTHER ;
+    public:
        static bool existsFile(const char* path);
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
@@ -50,6 +54,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        void readMetadata();
        void identifyGeometry();
        void assignDetectorName();
+       void assignDefaultMaterial();
        void setValid(bool valid);
     public:
        const char* getInstallPrefix();
@@ -58,6 +63,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getIdBase();  // parent directory of idfold, typically the "export" folder
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
        const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
+       const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
     public:
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
@@ -158,6 +164,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_detector_base ;
        const char* m_resource_base ;
        const char* m_material_map  ;
+       const char* m_default_material  ;
        
    private:
        std::map<std::string, std::string> m_metadata ;  

@@ -5,7 +5,7 @@
 
 
 #include "OKCORE_LOG.hh"
-#include "GGV_LOG.hh"
+#include "OK_LOG.hh"
 #include "NPY_LOG.hh"
 
 #include "PLOG.hh"
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
     NPY_LOG__ ;  
     OKCORE_LOG__ ;  
-    GGV_LOG__ ;  
+    OK_LOG__ ;  
 
     Opticks ok(argc, argv);
     ok.configure();

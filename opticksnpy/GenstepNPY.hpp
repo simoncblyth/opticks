@@ -27,13 +27,16 @@ template<typename T> class NPY ;
 
 class NPY_API GenstepNPY {
    public:  
-       static GenstepNPY* Fabricate(unsigned genstep_type, unsigned num_step=10, unsigned num_photons_per_step=1000);
-       GenstepNPY(unsigned genstep_type, unsigned num_step=1); 
+       GenstepNPY(unsigned genstep_type, unsigned num_step=1, const char* config=NULL); 
        void addStep(bool verbose=false); // increments m_step_index
-       NPY<float>* getNPY();
+       unsigned getNumStep();
 
-       virtual void update();
+       NPY<float>* getNPY();
+       void         addActionControl(unsigned long long  action_control);
+
+       virtual void update() = 0 ;
        virtual void dump(const char* msg="GenstepNPY::dump");
+       void dumpBase(const char* msg="GenstepNPY::dumpBase");
    public:  
        void setNumPhotons(const char* s );
        void setNumPhotons(unsigned int num_photons );
@@ -45,6 +48,20 @@ class NPY_API GenstepNPY {
        // invoked by addStep using the ctor argument type 
        // genstep types identify what to generate eg: TORCH, CERENKOV, SCINTILLATION
        // currently limited to all gensteps within a GenstepNPY instance having same type
+
+   public:  
+       // target setting needs external info regarding geometry 
+       void setFrame(const char* s );
+       void setFrame(unsigned int vindex );
+       glm::ivec4&  getFrame();
+       void setFrameTransform(glm::mat4& transform);
+       // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
+
+       void setFrameTransform(const char* s );       // directly from string of 16 comma delimited floats 
+       void setFrameTargetted(bool targetted=true);
+       bool isFrameTargetted();
+       const glm::mat4& getFrameTransform();
+
    public:  
         // methods invoked by update after frame transform is available
        void setPosition(const glm::vec4& pos );
@@ -75,11 +92,18 @@ class NPY_API GenstepNPY {
 
        unsigned getBaseMode();
        unsigned getBaseType();
-
+   public:  
+       // need external help to set the MaterialLine
+       void setMaterial(const char* s );
+       const char* getConfig();
+       const char* getMaterial();
   private:
        unsigned int m_genstep_type ; 
-       NPY<float>*  m_npy ; 
        unsigned int m_num_step ; 
+       const char*  m_config ;
+  private:
+       const char*  m_material ;
+       NPY<float>*  m_npy ; 
        unsigned int m_step_index ; 
   private:
        // 6 transport quads that are copied into the genstep buffer by addStep
@@ -89,6 +113,11 @@ class NPY_API GenstepNPY {
        glm::vec4    m_polw ;
        glm::vec4    m_zeaz ;
        glm::vec4    m_beam ; 
+  private:
+       glm::ivec4   m_frame ;
+       glm::mat4    m_frame_transform ; 
+       bool         m_frame_targetted ; 
+
 
 };
 

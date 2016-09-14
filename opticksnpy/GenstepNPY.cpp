@@ -12,32 +12,43 @@
 #include "PLOG.hh"
 
 
-GenstepNPY* GenstepNPY::Fabricate(unsigned genstep_type, unsigned num_step, unsigned num_photons_per_step)
-{
-    GenstepNPY* fab = new GenstepNPY(genstep_type, num_step) ;      
-    for(unsigned i=0 ; i < num_step ; i++)
-    {   
-        fab->setMaterialLine(i*10);   
-        fab->setNumPhotons(num_photons_per_step); 
-        fab->addStep();
-    }   
-    return fab ; 
-}
 
 
-GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step) 
+GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* config) 
        :  
        m_genstep_type(genstep_type),
-       m_npy(NPY<float>::make(num_step, 6, 4)),
        m_num_step(num_step),
-       m_step_index(0)
+       m_config(config ? strdup(config) : NULL),
+       m_material(NULL),
+       m_npy(NPY<float>::make(num_step, 6, 4)),
+       m_step_index(0),
+       m_frame_targetted(false)
 {
     m_npy->zero();
 }
 
-void GenstepNPY::update()
+void GenstepNPY::addActionControl(unsigned long long  action_control)
 {
-    // placeholder overridden in subclasses like TorchStepNPY 
+    m_npy->addActionControl(action_control);
+}
+
+const char* GenstepNPY::getMaterial()
+{
+    return m_material ; 
+}
+const char* GenstepNPY::getConfig()
+{
+    return m_config ; 
+}
+
+void GenstepNPY::setMaterial(const char* s)
+{
+    m_material = strdup(s);
+}
+
+unsigned GenstepNPY::getNumStep()
+{
+   return m_num_step ;  
 }
 
 void GenstepNPY::addStep(bool verbose)
@@ -266,9 +277,70 @@ unsigned GenstepNPY::getBaseType()
 
 
 
+
+
+
+
+void GenstepNPY::setFrameTransform(const char* s)
+{
+    std::string ss(s);
+    bool flip = true ;  
+    glm::mat4 transform = gmat4(ss, flip);
+    setFrameTransform(transform);
+    setFrameTargetted(true);
+}
+
+
+void GenstepNPY::setFrameTransform(glm::mat4& frame_transform)
+{
+    m_frame_transform = frame_transform ;
+}
+const glm::mat4& GenstepNPY::getFrameTransform()
+{
+    return m_frame_transform ;
+}
+
+
+void GenstepNPY::setFrameTargetted(bool targetted)
+{
+    m_frame_targetted = targetted ;
+}
+bool GenstepNPY::isFrameTargetted()
+{
+    return m_frame_targetted ;
+} 
+
+void GenstepNPY::setFrame(const char* s)
+{
+    std::string ss(s);
+    m_frame = givec4(ss);
+}
+void GenstepNPY::setFrame(unsigned int vindex)
+{
+    m_frame.x = vindex ; 
+    m_frame.y = 0 ; 
+    m_frame.z = 0 ; 
+    m_frame.w = 0 ; 
+}
+glm::ivec4& GenstepNPY::getFrame()
+{
+    return m_frame ; 
+}
+
+
+
+
+
 void GenstepNPY::dump(const char* msg)
 {
+    dumpBase(msg);
+}
+
+void GenstepNPY::dumpBase(const char* msg)
+{
     LOG(info) << msg  
+              << " config " << m_config 
+              << " material " << m_material
               ; 
 
     print(m_ctrl, "m_ctrl : id/pid/MaterialLine/NumPhotons" );
@@ -277,6 +349,8 @@ void GenstepNPY::dump(const char* msg)
     print(m_polw, "m_polw : polarization, wavelength" ); 
     print(m_zeaz, "m_zeaz: zenith, azimuth " ); 
     print(m_beam, "m_beam: radius,... " ); 
+
+    print(m_frame, "m_frame ");
 }
 
 

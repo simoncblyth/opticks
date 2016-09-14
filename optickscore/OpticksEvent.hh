@@ -100,17 +100,21 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        bool isStep();
        bool isFlat();
        bool isTorchType();
+       bool isMachineryType();
 
        STimes* getPrelaunchTimes();
        STimes* getLaunchTimes();
    public:
        void postPropagateGeant4(); // called following dynamic photon/record/sequence collection
    public:
-       // from parameters
+       // from parameters set in Opticks::makeEvent
        unsigned int getBounceMax();
        unsigned int getRngMax();
        std::string getTimeStamp();
+       std::string getCreator();
+
        void setTimeStamp(const char* tstamp);
+       void setCreator(const char* executable);
    private:
        void setRngMax(unsigned int rng_max);
        void init();
@@ -271,6 +275,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void resize();
    public:
        void Summary(const char* msg="OpticksEvent::Summary");
+       std::string  brief();
        std::string  description(const char* msg="OpticksEvent::description");
        void         dumpPhotonData();
        static void  dumpPhotonData(NPY<float>* photon_data);

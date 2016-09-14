@@ -416,7 +416,7 @@ optixrap
 opticksop
 opticksgl
 
-ggeoview
+ok
 cfg4
 okg4
 EOP
@@ -629,7 +629,7 @@ optixrap-(){        . $(opticks-home)/optixrap/optixrap.bash && optixrap-env $* 
 
 opticksop-(){       . $(opticks-home)/opticksop/opticksop.bash && opticksop-env $* ; }
 opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env $* ; }
-ggeoview-(){        . $(opticks-home)/ggeoview/ggeoview.bash && ggeoview-env $* ; }
+ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }

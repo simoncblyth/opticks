@@ -49,6 +49,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
+#include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
 #include "OpticksBufferControl.hh"
@@ -576,6 +577,15 @@ void OpticksEvent::setId(int id)
     m_parameters->add<int>("Id", id);
 }
 
+void OpticksEvent::setCreator(const char* executable)
+{
+    m_parameters->add<std::string>("Creator", executable ? executable : "NULL" );
+}
+std::string OpticksEvent::getCreator()
+{
+    return m_parameters->get<std::string>("Creator", "NONE");
+}
+
 
 void OpticksEvent::setTimeStamp(const char* tstamp)
 {
@@ -704,13 +714,11 @@ void OpticksEvent::addBufferControl(const char* name, const char* ctrl_)
 
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
     ctrl.add(ctrl_);
-    std::string orig = ctrl.description("orig");
 
     LOG(info) << "OpticksEvent::addBufferControl"
               << " name " << name 
-              << " ctrl_ " << ctrl_ 
-              << " changed from " << orig
-              << " to " << ctrl.description("changed:") 
+              << " adding " << ctrl_ 
+              << " " << ctrl.description("result:") 
               ;
 
 }
@@ -965,8 +973,14 @@ void OpticksEvent::translateLegacyGensteps(NPY<float>* gs)
 
 bool OpticksEvent::isTorchType()
 {    
-   return strcmp(m_typ, "torch") == 0 ; 
+   return strcmp(m_typ, OpticksFlags::torch_) == 0 ; 
 }
+bool OpticksEvent::isMachineryType()
+{    
+   return strcmp(m_typ, OpticksFlags::machinery_) == 0 ; 
+}
+
+
 void OpticksEvent::importGenstepDataLoaded(NPY<float>* gs)
 {
      OpticksActionControl ctrl(gs->getActionControlPtr());     
@@ -992,22 +1006,24 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
 
 
-    bool gs_torch = oac.isSet("GS_TORCH") ; 
-    bool gs_legacy = oac.isSet("GS_LEGACY") ; 
 
     LOG(debug) << "OpticksEvent::importGenstepData"
                << " shape " << gs->getShapeString()
                << " " << oac.description("oac")
                ;
 
-    if(gs_legacy)
+    if(oac("GS_LEGACY"))
     {
         translateLegacyGensteps(gs);
     }
-    else if(gs_torch)
+    else if(oac("GS_TORCH"))
     {
         LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
         m_g4step->checklabel(TORCH); 
+    }
+    else if(oac("GS_FABRICATED"))
+    {
+        m_g4step->checklabel(FABRICATED); 
     }
     else
     {
@@ -1182,10 +1198,9 @@ void OpticksEvent::setRecordData(NPY<short>* record_data)
 
 void OpticksEvent::setPhoselData(NPY<unsigned char>* phosel_data)
 {
-    setBufferControl(phosel_data);
-
     m_phosel_data = phosel_data ;
     if(!m_phosel_data) return ; 
+    setBufferControl(m_phosel_data);
 
     //                                               j k l sz   type                norm   iatt   item_from_dim
     ViewNPY* psel = new ViewNPY("psel",m_phosel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true, 1);
@@ -1205,11 +1220,9 @@ delta:gl blyth$
 
 void OpticksEvent::setRecselData(NPY<unsigned char>* recsel_data)
 {
-    setBufferControl(recsel_data);
-
     m_recsel_data = recsel_data ;
-
     if(!m_recsel_data) return ; 
+    setBufferControl(m_recsel_data);
     //                                               j k l sz   type                norm   iatt   item_from_dim
     ViewNPY* rsel = new ViewNPY("rsel",m_recsel_data,0,0,0,4,ViewNPY::UNSIGNED_BYTE,false,  true, 2);
     // structured recsel array, means the count needs to come from product of 1st two dimensions, 
@@ -1302,6 +1315,17 @@ void OpticksEvent::dumpPhotonData(NPY<float>* photons)
 void OpticksEvent::Summary(const char* msg)
 {
     LOG(info) << description(msg) ; 
+}
+
+std::string OpticksEvent::brief()
+{
+    std::stringstream ss ; 
+    ss << "Evt " 
+       << getDir()
+       << " " << getTimeStamp() 
+       << " " << getCreator()
+       ;
+    return ss.str();
 }
 
 std::string OpticksEvent::description(const char* msg)
@@ -1543,12 +1567,14 @@ OpticksEvent* OpticksEvent::load(const char* typ, const char* tag, const char* d
     OpticksEvent* evt = new OpticksEvent(spec);
 
     evt->loadBuffers(verbose);
+
     if(evt->isNoLoad())
     {
          LOG(warning) << "OpticksEvent::load FAILED " ;
          delete evt ;
          evt = NULL ;
     } 
+
     return evt ;  
 }
 
@@ -1610,7 +1636,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<float>* no = NULL ; 
     if(m_fake_nopstep_path)
     {
-        LOG(warning) << "OpticksEvent::load using setFakeNopstepPath " << m_fake_nopstep_path ; 
+        LOG(warning) << "OpticksEvent::loadBuffers using setFakeNopstepPath " << m_fake_nopstep_path ; 
         no = NPY<float>::debugload(m_fake_nopstep_path);
     }
     else
@@ -1622,9 +1648,18 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<float>*              gs = NPY<float>::load("gs", m_typ,  m_tag, udet, qload);
     NPY<float>*              ox = NPY<float>::load("ox", m_typ,  m_tag, udet, qload);
     NPY<short>*              rx = NPY<short>::load("rx", m_typ,  m_tag, udet, qload);
+
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs", m_typ,  m_tag, udet, qload );
+
+    if(ph == NULL || ps == NULL || rs == NULL )
+        LOG(warning) << "OpticksEvent::loadBuffers " << getDir()
+                     << " MISSING INDEX BUFFER(S) " 
+                     << " ph " << ph
+                     << " ps " << ps
+                     << " rs " << rs
+                     ;
 
 
     if(gs) loadBuffersImportSpec(gs,m_genstep_spec) ;
@@ -1698,6 +1733,16 @@ void OpticksEvent::loadBuffers(bool verbose)
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
     }
+
+    if(!isIndexed())
+    {
+         LOG(warning) << "OpticksEvent::load IS NOT INDEXED " 
+                      << brief()
+                      ;
+    }
+
+
+
 
 }
 

@@ -22,7 +22,7 @@
 #include "OpticksViz.hh"
 
 #include "PLOG.hh"
-#include "GGV_BODY.hh"
+#include "OK_BODY.hh"
 
 #define TIMER(s) \
     { \

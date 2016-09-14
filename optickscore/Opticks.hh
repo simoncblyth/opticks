@@ -7,6 +7,8 @@
 
 #include "NGLM.hpp"
 
+
+struct SArgs ; 
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
@@ -56,7 +58,7 @@ class OKCORE_API Opticks {
        static glm::vec4    getDefaultDomainSpec();
 
    public:
-       Opticks(int argc=0, char** argv=NULL, bool integrated=false);
+       Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:
        void init();
    public:
@@ -71,6 +73,7 @@ class OKCORE_API Opticks {
    public:
        // from OpticksResource
        const char* getDetector();
+       const char* getDefaultMaterial();
        bool isJuno();
        bool isDayabay();
        bool isPmtInBox();
@@ -195,6 +198,7 @@ class OKCORE_API Opticks {
    private:
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
+       SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
        const char*          m_envprefix ;
@@ -218,8 +222,6 @@ class OKCORE_API Opticks {
        Parameters*          m_parameters ; 
    private:
        const char*          m_detector ; 
-       //const char*          m_tag ; 
-       //const char*          m_cat ; 
        unsigned             m_event_count ; 
    private:
        bool                 m_domains_configured ;  

@@ -30,6 +30,7 @@ class OKCORE_API OpticksActionControl {
         OpticksActionControl(unsigned long long* ctrl); 
         void add(const char* mask);
         bool isSet(const char* mask) const;
+        bool operator()(const char* mask) const;
         std::string description(const char* msg="OpticksActionControl::description") const;
     private:
          unsigned long long* m_ctrl ; 

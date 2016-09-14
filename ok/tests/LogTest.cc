@@ -18,7 +18,7 @@
 #include "OKGL_LOG.hh"
 #endif
 
-#include "GGV_LOG.hh"
+#include "OK_LOG.hh"
 
 
 int main(int argc, char** argv)
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     OKOP_LOG__ ;
     OKGL_LOG__ ;
 #endif
-    GGV_LOG__ ;
+    OK_LOG__ ;
 
 
     const char* msg = argv[0] ;
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
     OKOP_LOG::Check(msg) ;
     OKGL_LOG::Check(msg) ;
 #endif
-    GGV_LOG::Check(msg) ;
+    OK_LOG::Check(msg) ;
 
 
     return 0 ;

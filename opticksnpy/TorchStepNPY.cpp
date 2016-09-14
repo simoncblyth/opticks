@@ -251,37 +251,52 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
        :  
-       GenstepNPY(genstep_type,  num_step),
-       m_config(config ? strdup(config) : DEFAULT_CONFIG),
-       m_material(NULL),
-       m_frame_targetted(false),
-
+       GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG ),
        m_num_photons_per_g4event(10000)
 {
-   configure(m_config);
+   init();
 }
 
 
-glm::ivec4& TorchStepNPY::getFrame()
+void TorchStepNPY::init()
 {
-    return m_frame ; 
+    const char* config = getConfig(); 
+
+    typedef std::pair<std::string,std::string> KV ; 
+    std::vector<KV> ekv = BStr::ekv_split(config,'_',"=");
+
+    LOG(debug) << "TorchStepNPY::init " <<  config ;
+    for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
+    {
+        const char* k = it->first.c_str() ;  
+        const char* v = it->second.c_str() ;  
+
+        Param_t p = parseParam(k) ;
+
+        LOG(debug) << std::setw(20) << k << ":" << v  ; 
+
+        if(p == UNRECOGNIZED)
+        {
+            LOG(fatal) << "TorchStepNPY::init "
+                       << " UNRECOGNIZED parameter "
+                       << " [" << k << "] = [" << v << "]"
+                       ;
+            assert(0);
+        }
+
+
+        if(strlen(v)==0)
+        {
+            LOG(warning) << "TorchStepNPY::init skip empty value for key " << k ; 
+        }
+        else
+        {
+            set(p, v);
+        }
+    }
 }
-void TorchStepNPY::setFrameTransform(glm::mat4& frame_transform)
-{
-    m_frame_transform = frame_transform ;
-}
-const glm::mat4& TorchStepNPY::getFrameTransform()
-{
-    return m_frame_transform ;
-}
-void TorchStepNPY::setFrameTargetted(bool targetted)
-{
-    m_frame_targetted = targetted ;
-}
-bool TorchStepNPY::isFrameTargetted()
-{
-    return m_frame_targetted ;
-} 
+
+
 
 
 
@@ -300,15 +315,6 @@ glm::vec4& TorchStepNPY::getPolarizationLocal()
 
 
 
-
-const char* TorchStepNPY::getMaterial()
-{
-    return m_material ; 
-}
-const char* TorchStepNPY::getConfig()
-{
-    return m_config ; 
-}
 
 
 // used from cfg4-
@@ -391,70 +397,6 @@ bool TorchStepNPY::isFixPolarized()
 
 
 
-void TorchStepNPY::configure(const char* config_)
-{
-    m_config = strdup(config_); 
-
-    std::string config(config_);
-    typedef std::pair<std::string,std::string> KV ; 
-    std::vector<KV> ekv = BStr::ekv_split(config.c_str(),'_',"=");
-
-    LOG(debug) << "TorchStepNPY::configure " <<  config.c_str() ;
-    for(std::vector<KV>::const_iterator it=ekv.begin() ; it!=ekv.end() ; it++)
-    {
-        const char* k = it->first.c_str() ;  
-        const char* v = it->second.c_str() ;  
-        Param_t p = parseParam(k) ;
-        LOG(debug) << std::setw(20) << k << ":" << v  ; 
-
-        if(p == UNRECOGNIZED)
-        {
-            LOG(fatal) << "TorchStepNPY::configure"
-                       << " UNRECOGNIZED parameter "
-                       << " [" << k << "] = [" << v << "]"
-                       ;
-            assert(0);
-        }
-
-
-        if(strlen(v)==0)
-        {
-            LOG(warning) << "TorchStepNPY::configure skip empty value for key " << k ; 
-        }
-        else
-        {
-            set(p, v);
-        }
-    }
-}
-
-void TorchStepNPY::setFrame(const char* s)
-{
-    std::string ss(s);
-    m_frame = givec4(ss);
-}
-
-void TorchStepNPY::setFrame(unsigned int vindex)
-{
-    m_frame.x = vindex ; 
-    m_frame.y = 0 ; 
-    m_frame.z = 0 ; 
-    m_frame.w = 0 ; 
-}
-
-void TorchStepNPY::setFrameTransform(const char* s)
-{
-    std::string ss(s);
-    bool flip = true ;  
-    glm::mat4 transform = gmat4(ss, flip);
-    setFrameTransform(transform);
-    setFrameTargetted(true);
-}
-
-void TorchStepNPY::setMaterial(const char* s)
-{
-    m_material = strdup(s);
-}
 
 void TorchStepNPY::setSourceLocal(const char* s)
 {
@@ -495,9 +437,11 @@ void TorchStepNPY::update()
    // direction from: target - source
    // position from : source
 
-    m_src = m_frame_transform * m_source_local  ; 
-    m_tgt = m_frame_transform * m_target_local  ; 
-    m_pol = m_frame_transform * m_polarization_local  ; 
+    const glm::mat4& frame_transform = getFrameTransform() ;
+
+    m_src = frame_transform * m_source_local  ; 
+    m_tgt = frame_transform * m_target_local  ; 
+    m_pol = frame_transform * m_polarization_local  ; 
 
     m_dir = glm::vec3(m_tgt) - glm::vec3(m_src) ;
 
@@ -536,19 +480,15 @@ void TorchStepNPY::setMode(const char* s)
 
 void TorchStepNPY::dump(const char* msg)
 {
-    LOG(info) << msg  
-              << " config " << m_config 
-              << " material " << m_material
-              ; 
+    LOG(info) << msg  ;
 
-    print(m_frame,              "m_frame ");
     print(m_source_local,       "m_source_local       ", m_src, "m_src");
     print(m_target_local,       "m_target_local       ", m_tgt, "m_tgt");
     print(m_polarization_local, "m_polarization_local ", m_pol, "m_pol");
 
     print(m_dir, "m_dir [normalize(m_tgt - m_src)] ");
 
-
+    GenstepNPY::dumpBase(msg);
 }
 
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name GGeoViewTest)
+set(name OKTest)
 project(${name})
 
 #file(GLOB TEST_CC_SRCS "*Test.cc")
@@ -31,7 +31,7 @@ foreach(SRC ${TESTS})
 
     add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} GGeoView)
+    target_link_libraries(${TGT} ${LIBRARIES} OK)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

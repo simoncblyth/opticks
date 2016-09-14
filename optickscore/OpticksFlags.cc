@@ -22,6 +22,8 @@ const char* OpticksFlags::ENUM_HEADER_PATH = "$OPTICKS_INSTALL_PREFIX/include/Op
 
 const char* OpticksFlags::ZERO_              = "." ;
 const char* OpticksFlags::NATURAL_           = "NATURAL" ;
+const char* OpticksFlags::FABRICATED_        = "FABRICATED" ;
+const char* OpticksFlags::MACHINERY_         = "MACHINERY" ;
 const char* OpticksFlags::CERENKOV_          = "CERENKOV" ;
 const char* OpticksFlags::SCINTILLATION_     = "SCINTILLATION" ;
 const char* OpticksFlags::MISS_              = "MISS" ;
@@ -42,6 +44,8 @@ const char* OpticksFlags::BAD_FLAG_          = "BAD_FLAG" ;
 
 
 const char* OpticksFlags::natural_           = "natural" ;
+const char* OpticksFlags::fabricated_        = "fabricated" ;
+const char* OpticksFlags::machinery_         = "machinery" ;
 const char* OpticksFlags::cerenkov_          = "cerenkov" ;
 const char* OpticksFlags::scintillation_     = "scintillation" ;
 const char* OpticksFlags::torch_             = "torch" ; 
@@ -71,6 +75,8 @@ const char* OpticksFlags::Flag(const unsigned int flag)
         case NAN_ABORT:        s=NAN_ABORT_ ;break; 
         case G4GUN:            s=G4GUN_ ;break; 
         case NATURAL:          s=NATURAL_ ;break; 
+        case FABRICATED:       s=FABRICATED_ ;break; 
+        case MACHINERY:        s=MACHINERY_;break; 
         default:               s=BAD_FLAG_  ;
                                LOG(warning) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -98,6 +104,8 @@ const char* OpticksFlags::SourceType( int code )
     switch(code)
     {
        case NATURAL      :name = NATURAL_       ;break;
+       case FABRICATED   :name = FABRICATED_    ;break;
+       case MACHINERY    :name = MACHINERY_     ;break;
        case CERENKOV     :name = CERENKOV_      ;break;
        case SCINTILLATION:name = SCINTILLATION_ ;break;
        case TORCH        :name = TORCH_         ;break;
@@ -113,6 +121,8 @@ const char* OpticksFlags::SourceTypeLowercase( int code )
     switch(code)
     {
        case NATURAL      :name = natural_       ;break;
+       case FABRICATED   :name = fabricated_    ;break;
+       case MACHINERY    :name = machinery_     ;break;
        case CERENKOV     :name = cerenkov_      ;break;
        case SCINTILLATION:name = scintillation_ ;break;
        case TORCH        :name = torch_         ;break;
@@ -126,6 +136,8 @@ unsigned int OpticksFlags::SourceCode(const char* type)
 {
     unsigned int code = 0 ; 
     if(     strcmp(type,natural_)==0)       code = NATURAL ;
+    else if(strcmp(type,fabricated_)==0)    code = FABRICATED ;
+    else if(strcmp(type,machinery_)==0)     code = MACHINERY ;
     else if(strcmp(type,torch_)==0)         code = TORCH ;
     else if(strcmp(type,cerenkov_)==0)      code = CERENKOV ;
     else if(strcmp(type,scintillation_)==0) code = SCINTILLATION ;

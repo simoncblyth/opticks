@@ -16,7 +16,7 @@ foreach(SRC ${TESTS})
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
 
-    add_test(${name}.${TGT}_g4gun ${TGT} --g4gun)   ## add test with an argument
+#    add_test(${name}.${TGT}_g4gun ${TGT} --g4gun)   ## add test with argument : --g4gun
 
 endforeach()
 

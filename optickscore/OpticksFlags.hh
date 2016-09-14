@@ -15,6 +15,8 @@ class OKCORE_API OpticksFlags {
        static const char* CERENKOV_ ;
        static const char* SCINTILLATION_ ;
        static const char* NATURAL_ ;
+       static const char* FABRICATED_ ;
+       static const char* MACHINERY_ ;
        static const char* TORCH_ ;
        static const char* G4GUN_ ;   
        static const char* OTHER_ ;
@@ -22,6 +24,8 @@ class OKCORE_API OpticksFlags {
        static const char* cerenkov_ ;
        static const char* scintillation_ ;
        static const char* natural_ ;
+       static const char* fabricated_ ;
+       static const char* machinery_ ;
        static const char* torch_ ;
        static const char* g4gun_ ;
        static const char* other_ ;

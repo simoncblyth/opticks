@@ -19,7 +19,7 @@ class NConfigurable ;
 #include "OpticksViz.hh"
 
 #include "PLOG.hh"
-#include "GGV_BODY.hh"
+#include "OK_BODY.hh"
 
 #define TIMER(s) \
     { \
@@ -34,7 +34,7 @@ class NConfigurable ;
 OKMgr::OKMgr(int argc, char** argv) 
     :
     m_log(new SLog("OKMgr::OKMgr")),
-    m_ok(new Opticks(argc, argv, false)),   // false: NOT OKG4 integrated running
+    m_ok(new Opticks(argc, argv)),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks

@@ -1,11 +1,10 @@
 #include <string>
 #include <sstream>
 
-#include "SArgs.hh"      // sysrap-
-#include "SSys.hh"    
+#include "SSys.hh"    // sysrap-
 
 #include "NPY.hpp"      // npy-
-#include "GenstepNPY.hpp"
+#include "FabStepNPY.hpp"
 
 #include "Opticks.hh"   // okc-
 #include "OpticksPhoton.h"   
@@ -14,6 +13,7 @@
 #include "OpticksHub.hh"  // okg-
 #include "OpticksIdx.hh"  
 #include "OpticksRun.hh"  
+#include "OpticksGen.hh"  
 
 #include "OContext.hh"   // optixrap-
 #include "OPropagator.hh"   
@@ -54,6 +54,8 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
     OpticksIdx idx(&hub);
+    OpticksGen* gen = hub.getGen();
+
 
     OScene scene(&hub);
     OContext* octx = scene.getOContext();
@@ -64,9 +66,8 @@ int main(int argc, char** argv)
     OpticksViz* viz = ok.isCompute() ? NULL : new OpticksViz(&hub, &idx, true) ;
 
 
-    GenstepNPY* fab = GenstepNPY::Fabricate(TORCH, 10, 10 ); // genstep_type, num_step, num_photons_per_step
+    FabStepNPY* fab = gen->makeFabstep();
     NPY<float>* gs = fab->getNPY();
-    const char* oac_label = "GS_TORCH" ; 
 
 
     int multi = ok.getMultiEvent();
@@ -78,7 +79,8 @@ int main(int argc, char** argv)
         OpticksEvent* evt = hub.getEvent();
         evt->addBufferControl("seed", "VERBOSE_MODE");
         evt->addBufferControl("photon", "VERBOSE_MODE");
-        evt->setGenstepData(gs, true, oac_label);
+
+        evt->setGenstepData(gs);
 
         if(viz) viz->uploadEvent();           // via Scene and Rdr (only interop buffers)
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads

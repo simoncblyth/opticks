@@ -89,7 +89,7 @@ The tags for each project are listed below.
             optixrap                          OXRAP 
            opticksop                           OKOP 
            opticksgl                           OKGL 
-            ggeoview                            GGV 
+                  ok                             OK 
                 cfg4                           CFG4 
 =======================  ============================
 

@@ -20,15 +20,20 @@
 #include "OKGL_LOG.hh"
 #endif
 
-#include "GGV_LOG.hh"
+#include "OK_LOG.hh"
 
 /**
 
-OKMgrTest
+OTracerTest
 ================
 
-**/
+Expedient separate executable. Equivalent to running::
 
+   OKTest --nopropagate 
+   OKTest -P
+
+
+**/
 
 int main(int argc, char** argv)
 {
@@ -53,12 +58,10 @@ int main(int argc, char** argv)
     OKGL_LOG__ ;
 #endif
 
-    GGV_LOG__ ;
-
-
+    OK_LOG__ ;
  
     OKMgr ok(argc, argv);
-    ok.propagate();
+
     ok.visualize();
 
     exit(EXIT_SUCCESS);

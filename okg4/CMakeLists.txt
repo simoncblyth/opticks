@@ -212,9 +212,9 @@ else()
 endif()
 
 
-############## GGeoView : integration of OptiX and OpenGL ##############
+############## OK : integration of OptiX and OpenGL ##############
 
-find_package(GGeoView REQUIRED)
+find_package(OK REQUIRED)
 
 
 ############## GEANT4 ##############
@@ -254,7 +254,7 @@ set(INCLUDES
    ${OPENGL_INCLUDES}
    ${WITH_NPYSERVER_INCLUDES}
    ${WITH_OPTIX_INCLUDES}
-   ${GGeoView_INCLUDE_DIRS}
+   ${OK_INCLUDE_DIRS}
    ${WITH_G4_INCLUDES}
 )
 set(DEFINITIONS 
@@ -263,7 +263,7 @@ set(DEFINITIONS
    ${OPENGL_DEFINITIONS}
    ${WITH_NPYSERVER_DEFINITIONS}
    ${WITH_OPTIX_DEFINITIONS}
-   ${GGeoView_DEFINITIONS}
+   ${OK_DEFINITIONS}
    ${WITH_G4_DEFINITIONS}
 )
 set(LIBRARIES 
@@ -272,7 +272,7 @@ set(LIBRARIES
    ${OPENGL_LIBRARIES}
    ${WITH_NPYSERVER_LIBRARIES}
    ${WITH_OPTIX_LIBRARIES}
-   ${GGeoView_LIBRARIES}
+   ${OK_LIBRARIES}
    ${WITH_G4_LIBRARIES}
 )
 

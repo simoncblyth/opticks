@@ -9,10 +9,10 @@ class OpticksIdx;
 class OpticksViz ; 
 class OKPropagator ; 
 
-#include "GGV_API_EXPORT.hh"
-#include "GGV_HEAD.hh"
+#include "OK_API_EXPORT.hh"
+#include "OK_HEAD.hh"
 
-class GGV_API OKMgr {
+class OK_API OKMgr {
    public:
        OKMgr(int argc, char** argv);
        virtual ~OKMgr();
@@ -36,5 +36,5 @@ class GGV_API OKMgr {
        
 };
 
-#include "GGV_TAIL.hh"
+#include "OK_TAIL.hh"
 

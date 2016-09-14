@@ -238,9 +238,6 @@ class GGEO_API GGeo : public NConfigurable {
         GBorderSurface* getBorderSurface(unsigned int index);  
 
     public:
-        void targetTorchStep(TorchStepNPY* torchstep);
-
-    public:
         void findScintillatorMaterials(const char* props);
         void dumpScintillatorMaterials(const char* msg="GGeo::dumpScintillatorMaterials");
         unsigned int getNumScintillatorMaterials();

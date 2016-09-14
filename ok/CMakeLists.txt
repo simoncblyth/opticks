@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-set(name GGeoView)
+set(name OK)
 project(${name})
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake") 
@@ -233,16 +233,16 @@ add_definitions(${DEFINITIONS})
 
 set(SOURCES
 
-    GGV_LOG.cc
+    OK_LOG.cc
     OKMgr.cc 
     OKPropagator.cc 
 )
 set(HEADERS
 
-    GGV_LOG.hh
-    GGV_API_EXPORT.hh
-    GGV_HEAD.hh
-    GGV_TAIL.hh
+    OK_LOG.hh
+    OK_API_EXPORT.hh
+    OK_HEAD.hh
+    OK_TAIL.hh
 
     OKMgr.hh
     OKPropagator.hh

@@ -92,9 +92,9 @@ else(NOT (COMPUTE_CAPABILITY LESS 30))
 endif()
 
 
-set(REST ON CACHE BOOL "Build GGeoView and CFG4 packages")
+set(REST ON CACHE BOOL "Build OK and CFG4 packages")
 if(REST)
-   add_subdirectory(ggeoview)
+   add_subdirectory(ok)
 
    find_package(Geant4 QUIET)
    if(Geant4_FOUND)

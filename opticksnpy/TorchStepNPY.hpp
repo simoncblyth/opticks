@@ -102,9 +102,9 @@ class NPY_API TorchStepNPY : public GenstepNPY {
 
    public:  
        TorchStepNPY(unsigned int genstep_type, unsigned int num_step=1, const char* config=NULL); 
-       void configure(const char* config);
        void update();
    private:
+       void init();
        ::Mode_t  parseMode(const char* k);
        ::Torch_t parseType(const char* k);
        Param_t parseParam(const char* k);
@@ -112,18 +112,6 @@ class NPY_API TorchStepNPY : public GenstepNPY {
    public:  
        void setMode(const char* s );
        void setType(const char* s );
-   public:  
-       // target setting needs external info regarding geometry 
-       void setFrame(const char* s );
-       void setFrame(unsigned int vindex );
-       glm::ivec4&  getFrame();
-       void setFrameTransform(glm::mat4& transform);
-       // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
-
-       void setFrameTransform(const char* s );       // directly from string of 16 comma delimited floats 
-       void setFrameTargetted(bool targetted=true);
-       bool isFrameTargetted();
-       const glm::mat4& getFrameTransform();
    public:
        // slots used by Geant4 only (not Opticks) from cfg4- 
        void setNumPhotonsPerG4Event(unsigned int n);
@@ -148,26 +136,13 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        glm::vec4& getTargetLocal();
        glm::vec4& getPolarizationLocal();
    public:  
-       // need external help to set the MaterialLine
-       void setMaterial(const char* s );
-       const char* getConfig();
-       const char* getMaterial();
-
-   public:  
        ::Mode_t  getMode();
        ::Torch_t getType();
        std::string getModeString();
        const char* getTypeName();
 
-
        void dump(const char* msg="TorchStepNPY::dump");
-  private:
-       const char*  m_config ;
-       const char*  m_material ;
-  private:
-       glm::ivec4   m_frame ;
-       glm::mat4    m_frame_transform ; 
-       bool         m_frame_targetted ; 
+
   private:
        // position and directions to which the frame transform is applied in update
        glm::vec4    m_source_local ; 
