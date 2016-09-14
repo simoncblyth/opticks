@@ -46,12 +46,9 @@ int main(int argc, char** argv)
     OKOP_LOG__ ; 
 
 
- 
-    Opticks ok(argc, argv, "--compute");
+    Opticks ok(argc, argv, "--compute --trivial --multievent 2 --machinery");
 
     OpticksHub hub(&ok);
-    //OpticksIdx idx(&hub);
-
     OpticksGen* gen = hub.getGen();
 
     
@@ -63,10 +60,8 @@ int main(int argc, char** argv)
     OpSeeder  seeder(&hub, &oevt );
     OPropagator propagator(&hub, &oevt, octx->addEntry(ok.getEntryCode()) );
 
-
     FabStepNPY* fab = gen->makeFabstep();
     NPY<float>* gs = fab->getNPY();
-    const char* oac_label = "GS_TORCH" ; 
 
     int multi = ok.getMultiEvent();
 
@@ -75,9 +70,11 @@ int main(int argc, char** argv)
         hub.createEvent(i);
 
         OpticksEvent* evt = hub.getEvent();
+        assert(evt->isMachineryType() && "--machinery type is forced as this writes non-standardOpticksEvents which would otherwise cause test failures for event reading tests" ); 
+
         evt->addBufferControl("seed", "VERBOSE_MODE");
         evt->addBufferControl("photon", "VERBOSE_MODE");
-        evt->setGenstepData(gs, true, oac_label);
+        evt->setGenstepData(gs);
 
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 
@@ -86,24 +83,12 @@ int main(int argc, char** argv)
 
         propagator.launch();                  // write the photon, record and sequence buffers
 
+        oevt.download();
+        evt->save();
 
-        oevt.downloadPhotonData();            // allocates hostside buffer and copies into it (WILL SKIP IN INTEROP)
-        oevt.downloadSeedData();             
-
-        NPY<float>* photon = evt->getPhotonData();
-        const char* photon_path = "$TMP/OpSeederTest_photon.npy";
-        photon->save(photon_path);
-        SSys::npdump(photon_path, "np.int32");
-
-        NPY<unsigned>* seed = evt->getSeedData();
-        const char* seed_path = "$TMP/OpSeederTest_seed.npy";
-        seed->save(seed_path);
-        SSys::npdump(seed_path, "np.uint32");
-
-
-
+        SSys::npdump(evt->getPath("photon"), "np.int32");
+        SSys::npdump(evt->getPath("seed"), "np.uint32", ".ravel()" );
     }
-
 
 
     return 0 ;     

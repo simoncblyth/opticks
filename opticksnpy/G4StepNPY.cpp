@@ -248,7 +248,6 @@ void G4StepNPY::checklabel(int xlabel, int ylabel)
             else 
                  mismatch += 1 ;  
         } 
-        
     }
 
     if(mismatch > 0) 

@@ -407,10 +407,14 @@ void NPY<T>::save(const char* raw)
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
 
     T* values = getValues();
-
-    if(values == NULL) LOG(fatal) << "NPY values NULL " ; 
-
-    aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), values );
+    if(values == NULL)
+    {
+         LOG(fatal) << "NPY values NULL, buffer not allocated, SKIP attempt to save to  " << native ; 
+    }
+    else
+    {
+        aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), values );
+    }
 }
 
 

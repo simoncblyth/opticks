@@ -47,9 +47,9 @@ find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 find_package(OptiXRap REQUIRED)
 find_package(OpticksGeometry REQUIRED)
-find_package(OpticksOp REQUIRED)
+find_package(OKOP REQUIRED)
 
-#message("${name}.OpticksOp_INCLUDE_DIRS : ${OpticksOp_INCLUDE_DIRS} " )
+#message("${name}.OKOP_INCLUDE_DIRS : ${OKOP_INCLUDE_DIRS} " )
 
 
 include_directories(
@@ -79,7 +79,7 @@ include_directories(
     ${ThrustRap_INCLUDE_DIRS}  
 
     ${OptiXRap_INCLUDE_DIRS}
-    ${OpticksOp_INCLUDE_DIRS}
+    ${OKOP_INCLUDE_DIRS}
 )
 
 
@@ -109,7 +109,7 @@ set(LIBRARIES
       ${CUDARap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
       ${OptiXRap_LIBRARIES}
-      ${OpticksOp_LIBRARIES}
+      ${OKOP_LIBRARIES}
 )
 
 add_definitions(
@@ -135,7 +135,7 @@ add_definitions(
     ${OptiX_DEFINITIONS} 
     ${CUDARap_DEFINITIONS} 
     ${OptiXRap_DEFINITIONS} 
-    ${OpticksOp_DEFINITIONS}
+    ${OKOP_DEFINITIONS}
 )
 
 

@@ -1423,6 +1423,12 @@ void OpticksEvent::save(bool verbose)
         ph->save("ph", m_typ,  m_tag, udet);
     }
 
+    NPY<unsigned>* se  = getSeedData();
+    {
+        se->setVerbose(verbose);
+        se->save("se", m_typ,  m_tag, udet);
+    }
+
 
     updateDomainsBuffer();
 
@@ -1587,6 +1593,15 @@ void OpticksEvent::loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec)
 }
 
 
+const char* OpticksEvent::getPath(const char* xx)
+{
+    std::string name = m_abbrev.count(xx) == 1 ? m_abbrev[xx] : xx ;  
+    const char* udet = getUDet(); // cat overrides det if present 
+    std::string path = BOpticksEvent::path(udet, m_typ, m_tag, name.c_str() );
+    return strdup(path.c_str()) ; 
+}
+
+
 void OpticksEvent::loadBuffers(bool verbose)
 {
     TIMER("_load");
@@ -1652,6 +1667,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<unsigned long long>* ph = NPY<unsigned long long>::load("ph", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs", m_typ,  m_tag, udet, qload );
+    NPY<unsigned>*           se = NPY<unsigned>::load("se", m_typ,  m_tag, udet, qload );
 
     if(ph == NULL || ps == NULL || rs == NULL )
         LOG(warning) << "OpticksEvent::loadBuffers " << getDir()
@@ -1668,6 +1684,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     if(ph) loadBuffersImportSpec(ph,m_sequence_spec) ;
     if(ps) loadBuffersImportSpec(ps,m_phosel_spec) ;
     if(rs) loadBuffersImportSpec(rs,m_recsel_spec) ;
+    if(se) loadBuffersImportSpec(se,m_seed_spec) ;
 
 
     if(gs) importGenstepDataLoaded(gs);   // sets action control, so setGenstepData label checks can succeed
@@ -1677,10 +1694,12 @@ void OpticksEvent::loadBuffers(bool verbose)
     unsigned int num_photons = ox ? ox->getShape(0) : 0 ;
     unsigned int num_history = ph ? ph->getShape(0) : 0 ;
     unsigned int num_phosel  = ps ? ps->getShape(0) : 0 ;
+    unsigned int num_seed    = se ? se->getShape(0) : 0 ;
 
     // either zero or matching 
     assert(num_history == 0 || num_photons == num_history );
     assert(num_phosel == 0 || num_photons == num_phosel );
+    assert(num_seed == 0 || num_photons == num_seed );
 
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
@@ -1695,6 +1714,7 @@ void OpticksEvent::loadBuffers(bool verbose)
               << " num_photons " << num_photons
               << " num_history " << num_history
               << " num_phosel " << num_phosel 
+              << " num_seed " << num_seed 
               << " ] "
               << " [ "
               << " num_records " << num_records
@@ -1715,6 +1735,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
     setPhoselData(ps);
     setRecselData(rs);
+    setSeedData(se);
 
     (*m_timer)("load");
 
@@ -1732,6 +1753,7 @@ void OpticksEvent::loadBuffers(bool verbose)
         if(ph) ph->Summary("ph");
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
+        if(se) se->Summary("se");
     }
 
     if(!isIndexed())

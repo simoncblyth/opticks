@@ -29,7 +29,7 @@ if(WITH_OPTIX)
     find_package(CUDARap REQUIRED)
     find_package(OptiXRap REQUIRED)
     find_package(ThrustRap REQUIRED)
-    find_package(OpticksOp REQUIRED)
+    find_package(OKOP REQUIRED)
     find_package(OpticksGL REQUIRED)
 
     set(WITH_OPTIX_INCLUDES
@@ -38,7 +38,7 @@ if(WITH_OPTIX)
        ${OptiX_INCLUDE_DIRS}  
        ${OptiXRap_INCLUDE_DIRS}  
        ${ThrustRap_INCLUDE_DIRS}
-       ${OpticksOp_INCLUDE_DIRS} 
+       ${OKOP_INCLUDE_DIRS} 
        ${OpticksGL_INCLUDE_DIRS} 
     )
     set(WITH_OPTIX_DEFINITIONS
@@ -47,7 +47,7 @@ if(WITH_OPTIX)
        ${OptiX_DEFINITIONS} 
        ${OptiXRap_DEFINITIONS} 
        ${ThrustRap_DEFINITIONS}
-       ${OpticksOp_DEFINITIONS}
+       ${OKOP_DEFINITIONS}
        ${OpticksGL_DEFINITIONS}
     )
     set(WITH_OPTIX_LIBRARIES
@@ -56,7 +56,7 @@ if(WITH_OPTIX)
       ${OptiX_LIBRARIES}
       ${OptiXRap_LIBRARIES}
       ${ThrustRap_LIBRARIES}
-      ${OpticksOp_LIBRARIES}
+      ${OKOP_LIBRARIES}
       ${OpticksGL_LIBRARIES}
       ssl
       crypto 

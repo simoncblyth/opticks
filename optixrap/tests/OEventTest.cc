@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
          OpticksEvent* evt = hub.getEvent();
 
-         assert(evt->isMachineryType() && "--machinery type is forced as this writes incomplete OpticksEvents " );
+         assert(evt->isMachineryType() && "--machinery type is forced as this writes incomplete OpticksEvents which would otherwise cause test failures for event reading tests" );
 
          evt->setGenstepData(gs);
 

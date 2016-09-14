@@ -146,6 +146,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void setBufferControl(NPYBase* data);
 
    public:
+       const char* getPath(const char* xx);  // accepts abbreviated or full constituent names
        Parameters* getParameters();
        Timer*      getTimer();
        TimesTable* getTimesTable();

@@ -39,7 +39,7 @@ class OXRAP_API OEvent
             RECORD   = 0x1 << 3, 
             SEQUENCE = 0x1 << 4,
             SEED     = 0x1 << 5,
-            DEFAULT  = PHOTON | RECORD | SEQUENCE
+            DEFAULT  = PHOTON | RECORD | SEQUENCE | SEED
             };
     public:
         OEvent(OpticksHub* hub, OContext* ocontext);

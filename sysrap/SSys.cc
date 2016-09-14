@@ -4,27 +4,41 @@
 #include <cstring>
 
 
+#include <sys/wait.h>
+
 #include "SSys.hh"
 #include "PLOG.hh"
 
 
+/*
+simon:optixrap blyth$ python -c 'import sys, os, numpy as np ; sys.exit(214) '
+simon:optixrap blyth$ echo $?
+214
+*/
 
-void SSys::npdump(const char* path, const char* nptype)
+
+int SSys::npdump(const char* path, const char* nptype, const char* postview )
 {
-
     std::stringstream ss ; 
-    ss << "python -c 'import os, numpy as np ;"
+    ss << "python -c 'import sys, os, numpy as np ;"
        << " np.set_printoptions(suppress=True, precision=3) ;"
        << " a=np.load(os.path.expandvars(\"" << path << "\")) ;"
        << " print a.shape ;"
-       << " print a.view(" << nptype << ") ;"
-       << " ' " 
+       << " print a.view(" << nptype << ")" << ( postview ? postview : "" ) << " ;"
+       << " sys.exit(214) ' " 
     ;    
 
     std::string cmd = ss.str();
-    LOG(info) << cmd ; 
 
-    system(cmd.c_str());
+    int rc_raw = system(cmd.c_str());
+    int rc =  WEXITSTATUS(rc_raw) ;
+
+    LOG(info) << cmd 
+              << " rc_raw : " << rc_raw 
+              << " rc : " << rc
+              ;
+
+    return rc ;  
 }
 
 

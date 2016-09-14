@@ -33,7 +33,15 @@ int main(int argc, char** argv)
     {
         LOG(fatal) << " ################## tagoffset " << tagoffset ; 
 
-        OpticksEvent* evt = ok.loadEvent(true, tagoffset);  // ok=true, tagoffset=0
+        OpticksEvent* evt = ok.loadEvent(true, tagoffset);  
+
+        if(evt->isNoLoad()) 
+        {
+            LOG(error) << "FAILED to load evt from " << evt->getDir() ;
+            continue ;  
+        }
+         
+
         evt->Summary();
 
         TrivialCheckNPY tcn(evt->getPhotonData(), evt->getGenstepData());

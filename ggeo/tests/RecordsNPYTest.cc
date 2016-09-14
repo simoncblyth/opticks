@@ -17,60 +17,42 @@
 
 #include "GGEO_BODY.hh"
 
+#include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "PLOG.hh"
 
-
-// architecture problem, need ggeo-/GPropertyLib funciontality 
-// regards meanings of things at the lower npy- level 
-// (in python just read in from persisted)
-//
-// maybe retain Types and simplify it to a holder of maps
-// obtained from the higher level, or create a higher level 
-// GEvt ?
-
 int main(int argc, char** argv)
 {
-
     PLOG_(argc, argv);
 
+    NPY_LOG__ ; 
     OKCORE_LOG__ ; 
-
-
 
     LOG(info) << argv[0] ; 
 
-    // canonically App::indexEvtOld , contrast with npy-/ana.py
 
-    Opticks* ok = new Opticks(argc, argv);
+    Opticks ok(argc, argv);
 
-    LOG(info) << " after ok " ; 
+    ok.configure() ; // hub not available at ggeo- level 
 
-    Types* types = ok->getTypes();
-
-    LOG(info) << " after types  " ; 
-
-
-    GBndLib* blib = GBndLib::load(ok, true); 
+    Types* types = ok.getTypes();
+    GBndLib* blib = GBndLib::load(&ok, true); 
     GMaterialLib* mlib = blib->getMaterialLib();
     //GSurfaceLib*  slib = blib->getSurfaceLib();
 
     // see GGeo::setupTyp
-    Typ* typ = ok->getTyp();
+    Typ* typ = ok.getTyp();
     typ->setMaterialNames(mlib->getNamesMap());
 
     //OpticksFlags* flags = ok->getFlags();
     //typ->setFlagNames(flags->getNamesMap());
-    typ->setFlagNames(ok->getFlagNamesMap());
+    typ->setFlagNames(ok.getFlagNamesMap());
 
-    const char* src = "torch" ; 
-    const char* tag = "1" ; 
-    const char* det = ok->getDetector() ; 
 
-    OpticksEvent* evt = OpticksEvent::load(src, tag, det) ;
-    if(!evt)
+    OpticksEvent* evt = ok.loadEvent();
+    if(evt->isNoLoad())
     {
-        LOG(error) << "failed to load evt " ;
+        LOG(error) << "failed to load evt from " << evt->getDir()  ;
         return 0 ;  
     }    
 

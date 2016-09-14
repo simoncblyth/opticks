@@ -1,22 +1,22 @@
 # === func-gen- : opticksop/opticksop fgp opticksop/opticksop.bash fgn opticksop fgh opticksop
-opticksop-rel(){      echo opticksop ; }
-opticksop-src(){      echo opticksop/opticksop.bash ; }
-opticksop-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticksop-src)} ; }
-opticksop-vi(){       vi $(opticksop-source) ; }
-opticksop-usage(){ cat << EOU
+okop-rel(){      echo okop ; }
+okop-src(){      echo okop/okop.bash ; }
+okop-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(okop-src)} ; }
+okop-vi(){       vi $(okop-source) ; }
+okop-usage(){ cat << EOU
 
 Opticks Operations
 ====================
 
 ::
 
-   opticksop-;opticksop-index --dbg
+   okop-;okop-index --dbg
 
-   opticksop-;opticksop-index -5 rainbow
-   opticksop-;opticksop-index -6 rainbow
+   okop-;okop-index -5 rainbow
+   okop-;okop-index -6 rainbow
 
-   opticksop-;opticksop-index -1 reflect
-   opticksop-;opticksop-index -2 reflect
+   okop-;okop-index -1 reflect
+   okop-;okop-index -2 reflect
 
 
 
@@ -146,79 +146,79 @@ EOU
 
 
 
-opticksop-env(){
+okop-env(){
     olocal-
    # optix-
    # optix-export
    # opticks-
 }
 
-opticksop-sdir(){ echo $(opticks-home)/opticksop ; }
-opticksop-tdir(){ echo $(opticks-home)/opticksop/tests ; }
-opticksop-idir(){ echo $(opticks-idir); }
-opticksop-bdir(){ echo $(opticks-bdir)/$(opticksop-rel) ; }
+okop-sdir(){ echo $(opticks-home)/okop ; }
+okop-tdir(){ echo $(opticks-home)/okop/tests ; }
+okop-idir(){ echo $(opticks-idir); }
+okop-bdir(){ echo $(opticks-bdir)/$(okop-rel) ; }
 
-opticksop-bin(){  echo $(opticksop-idir)/bin/${1:-OpIndexerTest} ; }
+okop-bin(){  echo $(okop-idir)/bin/${1:-OpIndexerTest} ; }
 
-opticksop-cd(){   cd $(opticksop-sdir); }
-opticksop-scd(){  cd $(opticksop-sdir); }
-opticksop-tcd(){  cd $(opticksop-tdir); }
-opticksop-icd(){  cd $(opticksop-idir); }
-opticksop-bcd(){  cd $(opticksop-bdir); }
+okop-cd(){   cd $(okop-sdir); }
+okop-scd(){  cd $(okop-sdir); }
+okop-tcd(){  cd $(okop-tdir); }
+okop-icd(){  cd $(okop-idir); }
+okop-bcd(){  cd $(okop-bdir); }
 
-opticksop-name(){ echo OpticksOp ; }
-opticksop-tag(){  echo OKOP ; }
-
-
-opticksop-apihh(){  echo $(opticksop-sdir)/$(opticksop-tag)_API_EXPORT.hh ; }
-opticksop---(){     touch $(opticksop-apihh) ; opticksop--  ; } 
+okop-name(){ echo OKOP ; }
+okop-tag(){  echo OKOP ; }
 
 
-
-opticksop-wipe(){ local bdir=$(opticksop-bdir) ; rm -rf $bdir ; } 
-opticksop--(){                   opticks-- $(opticksop-bdir) ; } 
-opticksop-ctest(){               opticks-ctest $(opticksop-bdir) $* ; } 
-opticksop-genproj() { opticksop-scd ; opticks-genproj $(opticksop-name) $(opticksop-tag) ; } 
-opticksop-gentest() { opticksop-tcd ; opticks-gentest ${1:-OExample} $(opticksop-tag) ; } 
-opticksop-txt(){ vi $(opticksop-sdir)/CMakeLists.txt $(opticksop-tdir)/CMakeLists.txt ; } 
+okop-apihh(){  echo $(okop-sdir)/$(okop-tag)_API_EXPORT.hh ; }
+okop---(){     touch $(okop-apihh) ; okop--  ; } 
 
 
+
+okop-wipe(){ local bdir=$(okop-bdir) ; rm -rf $bdir ; } 
+okop--(){                   opticks-- $(okop-bdir) ; } 
+okop-ctest(){               opticks-ctest $(okop-bdir) $* ; } 
+okop-genproj() { okop-scd ; opticks-genproj $(okop-name) $(okop-tag) ; } 
+okop-gentest() { okop-tcd ; opticks-gentest ${1:-OExample} $(okop-tag) ; } 
+okop-txt(){ vi $(okop-sdir)/CMakeLists.txt $(okop-tdir)/CMakeLists.txt ; } 
 
 
 
 
 
-opticksop-options(){
+
+
+okop-options(){
    echo -n
 }
 
-opticksop-cmake-deprecated(){
+okop-cmake-deprecated(){
    local iwd=$PWD
 
-   local bdir=$(opticksop-bdir)
+   local bdir=$(okop-bdir)
    mkdir -p $bdir
 
-   opticksop-bcd
+   okop-bcd
 
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(opticksop-idir) \
+       -DCMAKE_INSTALL_PREFIX=$(okop-idir) \
        -DOptiX_INSTALL_DIR=$(optix-install-dir) \
        -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
-       $(opticksop-options) \
-       $(opticksop-sdir)
+       $(okop-options) \
+       $(okop-sdir)
 
 
    cd $iwd
 }
 
-opticksop-index(){
+okop-index(){
     local msg="=== $FUNCNAME : "
     local tag=${1:--5}
     local cat=${2:-rainbow}
     local typ=${3:-torch}
 
-    local shdir=$(opticksop-index-path sh $tag $cat $typ)
+    local shdir=$(okop-index-path sh $tag $cat $typ)
     if [ -d "$shdir" ]; then 
         echo $msg index exists already tag $tag cat $cat typ $typ shdir $shdir
         return 
@@ -232,12 +232,12 @@ opticksop-index(){
        dbg=1
     fi
     case $dbg in  
-       0) $(opticksop-bin) --tag $tag --cat $cat   ;;
-       1) lldb $(opticksop-bin) -- --tag $tag --cat $cat   ;;
+       0) $(okop-bin) --tag $tag --cat $cat   ;;
+       1) lldb $(okop-bin) -- --tag $tag --cat $cat   ;;
     esac
 }
 
-opticksop-index-path(){
+okop-index-path(){
     local cmp=${1:-ps}
     local tag=${2:-5}
     local cat=${3:-rainbow}
@@ -249,7 +249,7 @@ opticksop-index-path(){
     esac 
 }
 
-opticksop-index-op(){
+okop-index-op(){
    local tag=-5
    local cat=rainbow
    local typ=torch
@@ -258,7 +258,7 @@ opticksop-index-op(){
    local cmp
    for cmp in $cmps ; do
        #echo $cmp $tag $cat $typ
-       path=$(opticksop-index-path $cmp $tag $cat $typ)  
+       path=$(okop-index-path $cmp $tag $cat $typ)  
        echo $path
    done
 }

@@ -7,8 +7,7 @@
 class SYSRAP_API SSys {
   public:
 
-     static void npdump(const char* path="$TMP/torchstep.npy", const char* nptype="np.int32");
-
+     static int npdump(const char* path="$TMP/torchstep.npy", const char* nptype="np.int32", const char* postview=NULL );
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
      static int getenvint( const char* envkey, int fallback=-1 );
      static int atoi_( const char* a );

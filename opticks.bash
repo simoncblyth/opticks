@@ -360,6 +360,7 @@ opticks-find(){
    find . -name '*.cpp' -exec grep $opt $str {} \;
    find . -name '*.hpp' -exec grep $opt $str {} \;
    find . -name '*.h' -exec grep $opt $str {} \;
+   find . -name '*.txt' -exec grep $opt $str {} \;
 
    #cd $iwd
 }
@@ -413,7 +414,7 @@ oglrap
 cudarap
 thrustrap
 optixrap
-opticksop
+okop
 opticksgl
 
 ok
@@ -427,7 +428,7 @@ opticks-cuda-projs-(){ cat << EOP
 cudarap
 thrustrap
 optixrap
-opticksop
+okop
 opticksgl
 EOP
 }
@@ -627,7 +628,7 @@ cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
 thrustrap-(){       . $(opticks-home)/thrustrap/thrustrap.bash && thrustrap-env $* ; }
 optixrap-(){        . $(opticks-home)/optixrap/optixrap.bash && optixrap-env $* ; }
 
-opticksop-(){       . $(opticks-home)/opticksop/opticksop.bash && opticksop-env $* ; }
+okop-(){            . $(opticks-home)/okop/okop.bash && okop-env $* ; }
 opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env $* ; }
 ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
