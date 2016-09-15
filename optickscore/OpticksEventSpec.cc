@@ -24,6 +24,7 @@ OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec)
     m_det(spec->getDet()),
     m_cat(spec->getCat()),
     m_dir(NULL),
+    m_fold(NULL),
     m_itag(spec->getITag())
 {
     init();
@@ -36,6 +37,7 @@ OpticksEventSpec::OpticksEventSpec(const char* typ, const char* tag, const char*
     m_det(strdup(det)),
     m_cat(cat ? strdup(cat) : NULL),
     m_dir(NULL),
+    m_fold(NULL),
     m_itag(BStr::atoi(m_tag, 0))
 {
     init();
@@ -55,7 +57,9 @@ void OpticksEventSpec::init()
 {
     const char* udet = getUDet();    
     std::string tagdir = NLoad::directory(udet, m_typ, m_tag ) ; 
+    std::string typdir = NLoad::directory(udet, m_typ, NULL ) ; 
     m_dir = strdup(tagdir.c_str());
+    m_fold = strdup(typdir.c_str());
 }
 
 int OpticksEventSpec::getITag()
@@ -103,6 +107,10 @@ const char* OpticksEventSpec::getUDet()
 const char* OpticksEventSpec::getDir()
 {
     return m_dir ; 
+}
+const char* OpticksEventSpec::getFold()
+{
+    return m_fold ; 
 }
 
 

@@ -8,6 +8,36 @@
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+/**
+
+Times
+=======
+
+Labeled vector of (string,double) pairs corresponding to 
+a table "column".
+
+The string identifies to what the number refers and 
+allows matching with quantities in other *Times* instances.
+
+The vector is persisted to json::
+
+    simon:1 blyth$ cat t_absolute.ini 
+    _seqhisMakeLookup=5.9437209999996412
+    seqhisMakeLookup=5.9510969999992085
+    seqhisApplyLookup=5.9511210000000574
+    _seqmatMakeLookup=5.9511220000003959
+    seqmatMakeLookup=5.9562640000003739
+    seqmatApplyLookup=5.9562779999996565
+    indexSequenceInterop=5.9864919999999984
+    indexBoundaries=6.0250880000003235
+    indexPresentationPrep=6.0276389999999083
+    _save=6.1372140000003128
+    save=6.3327879999997094
+
+
+**/
+
+
 class NPY_API Times {
   public:
      typedef std::pair<std::string, double>  SD ; 

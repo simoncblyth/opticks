@@ -43,7 +43,7 @@
 #include "CDetector.hh"
 #include "CGenerator.hh"
 
-
+#include "CCollector.hh"
 #include "CRecorder.hh"
 #include "Rec.hh"
 #include "CStepRec.hh"
@@ -96,11 +96,10 @@ CDetector* CG4::getDetector()
 
 
 
-CG4::CG4(OpticksHub* hub, bool immediate) 
+CG4::CG4(OpticksHub* hub) 
    :
      m_hub(hub),
      m_run(hub->getRun()),
-     m_immediate(immediate),
      m_ok(m_hub->getOpticks()),
      m_cfg(m_ok->getCfg()),
      m_physics(new CPhysics(m_hub)),
@@ -110,6 +109,7 @@ CG4::CG4(OpticksHub* hub, bool immediate)
      m_detector(m_geometry->getDetector()),
      m_generator(new CGenerator(m_hub, this)),
      m_material_table(NULL),
+     m_collector(new CCollector(m_hub)),    //  after CG4 loads geometry, currently hub just used for material code lookup, not evt access
      m_recorder(new CRecorder(m_hub, m_lib, m_generator->isDynamic())), 
      m_rec(new Rec(m_hub, m_lib, m_generator->isDynamic())), 
      m_steprec(new CStepRec(m_hub, m_generator->isDynamic())),  
@@ -128,11 +128,8 @@ void CG4::init()
 {
     //m_ok->Summary("CG4::init opticks summary");
 
-    if(m_immediate)
-    {
-        configure();
-        initialize();
-    }
+    configure();
+    initialize();
 
     TIMER("init");
 }
@@ -179,6 +176,7 @@ void CG4::postinitialize()
     LOG(info) << "CG4::postinitialize DONE" ;
     TIMER("postinitialize");
 }
+
 
 
 
@@ -288,8 +286,14 @@ void CG4::postpropagate()
     OpticksEvent* evt = m_hub->getG4Event();
     assert(evt);
     evt->postPropagateGeant4();
-
 }
+
+
+NPY<float>* CG4::getGensteps()
+{
+    return m_collector->getGensteps();
+}
+
 
 void CG4::cleanup()
 {

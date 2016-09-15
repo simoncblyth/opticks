@@ -69,7 +69,11 @@ class OKCORE_API Opticks {
        bool hasOpt(const char* name);
        bool operator()(const char* name) const ; 
        void cleanup();
-       void stamp(const char* label=NULL);
+   public:
+       // profile ops
+       template <typename T> void profile(T label);
+       void dumpProfile(const char* msg="Opticks::dumpProfile");
+       void saveProfile();
    private:
        void checkOptionValidity();
    public:
@@ -141,6 +145,8 @@ class OKCORE_API Opticks {
        bool                 isLiveGensteps();  // collected directly from CG4 propagation
        const char*          getSourceType();
        const char*          getEventTag();
+       const char*          getEventDir();  // tag directory 
+       const char*          getEventFold(); // one level above the tag directory 
        int                  getEventITag(); 
        const char*          getEventCat();
        const char*          getUDet();

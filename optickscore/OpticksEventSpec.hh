@@ -31,6 +31,7 @@ class OKCORE_API OpticksEventSpec {
         const char*  getCat();
         const char*  getUDet();
         const char*  getDir();
+        const char*  getFold();   // one level above Dir without the tag 
    public:
         int          getITag();
    protected:
@@ -40,6 +41,7 @@ class OKCORE_API OpticksEventSpec {
         const char*  m_cat ; 
    private:
         const char*  m_dir ; 
+        const char*  m_fold ; 
         int          m_itag ; 
 };
 

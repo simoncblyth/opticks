@@ -118,16 +118,29 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_event_count(0),
        m_domains_configured(false),
        m_mode(NULL),
-       m_profile(new OpticksProfile),
+       m_profile(NULL),
        m_rc(0)
 {
        init();
 }
 
-void Opticks::stamp(const char* label)
+
+template <typename T>
+void Opticks::profile(T label)
 {
-    m_profile->stamp(label);
+    m_profile->stamp<T>(label);
 }
+void Opticks::dumpProfile(const char* msg)
+{
+   m_profile->dump(msg);
+}
+void Opticks::saveProfile()
+{
+   m_profile->save();
+}
+
+
+
 
 void Opticks::init()
 {
@@ -374,6 +387,8 @@ void Opticks::configure()
 
     defineEventSpec();
 
+    m_profile = new OpticksProfile(getEventFold(), "Opticks");
+
     const std::string& ssize = m_cfg->getSize();
 
     if(!ssize.empty()) 
@@ -596,6 +611,16 @@ const char* Opticks::getSourceType()
     return OpticksFlags::SourceTypeLowercase(code) ; 
 }
 
+
+
+const char* Opticks::getEventFold()
+{
+    return m_spec ? m_spec->getFold() : NULL ;
+}
+const char* Opticks::getEventDir()
+{
+    return m_spec ? m_spec->getDir() : NULL ;
+}
 const char* Opticks::getEventTag()
 {
     return m_spec->getTag();
@@ -945,5 +970,12 @@ void Opticks::configureF(const char* name, std::vector<float> values)
      }   
 }
  
+
+
+template OKCORE_API void Opticks::profile<unsigned>(unsigned );
+template OKCORE_API void Opticks::profile<int>(int);
+template OKCORE_API void Opticks::profile<char*>(char*);
+template OKCORE_API void Opticks::profile<const char*>(const char*);
+
 
 

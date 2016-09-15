@@ -21,16 +21,20 @@ class BRAP_API BStr {
      static bool listHasKey(const char* dlist, const char* key, const char* delim=",");
      static char* trimPointerSuffixPrefix(const char* origname, const char* prefix);
      static const char* uppercase( const char* str );
+
      static std::string patternPickField(std::string str, std::string ptn, int num );
 
      static void split( std::vector<std::string>& elem, const char* line, char delim );
      static std::vector<std::pair<std::string, std::string> > ekv_split( const char* line, char edelim=' ', const char* kvdelim=":" );
 
-
      static std::string join(std::vector<std::string>& elem, char delim );
      static void removeField(char* dest, const char* line, char delim, int index );
      static std::string insertField(const char* line, char delim, int index, const char* field);
      static unsigned char* make_uchar4_colors(unsigned int n);
+
+     template <typename T>
+     static const char* concat( const char* head, T body, const char* tail );
+
 };
 
 

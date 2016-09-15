@@ -79,8 +79,8 @@ TimesTable* Timer::makeTable()
 
         if(start_) t0 = t ; 
         
-        double d0 = t - t0 ; 
-        double dp = t - tp ; 
+        double d0 = t - t0 ;   // time since start 
+        double dp = t - tp ;   // time since last mark
 
         if(!start_ && !stop_)
         {

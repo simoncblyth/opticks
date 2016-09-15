@@ -1,18 +1,17 @@
-#include "SProc.hh"
+//#include "SProc.hh"
 #include "SSys.hh"
 
 #include "NGLM.hpp"
 #include "NPY.hpp"
-#include "SYSRAP_LOG.hh"
 
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
 #include "CCollector.hh"
 
-
+#include "SYSRAP_LOG.hh"
+#include "OKCORE_LOG.hh"
 #include "PLOG.hh"
-
 
 
 unsigned mock_num_steps( unsigned e )
@@ -40,13 +39,9 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
     SYSRAP_LOG__ ; 
-
+    OKCORE_LOG__ ; 
 
     unsigned mock_num_evt = 100 ; 
-
-    NPY<float>* vm = NPY<float>::make(mock_num_evt) ;  
-    vm->zero();
-    float* vmv = vm->getValues();
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
@@ -54,7 +49,6 @@ int main(int argc, char** argv)
     CCollector cc(&hub);
     NPY<float>* gs = cc.getGensteps(); 
 
-    float vmb0 = SProc::VirtualMemoryUsageMB();
 
     for(unsigned e=0 ; e < mock_num_evt ; e++)
     {
@@ -68,14 +62,12 @@ int main(int argc, char** argv)
 
         SSys::npdump(path, "np.uint32" );
 
-        float dvmb = SProc::VirtualMemoryUsageMB() - vmb0 ;
-        vmv[e] = dvmb ; 
+        ok.profile(e) ; 
     }
 
-    const char* vmpath = "$TMP/CCollectorTest_vm.npy" ;
-    vm->save(vmpath);
-    SSys::npdump(vmpath, "np.float32" );
-
+    ok.dumpProfile(argv[0]); 
+    ok.saveProfile();
+   
 
     return ok.getRC() ; 
 }

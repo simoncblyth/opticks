@@ -11,6 +11,7 @@ class BRAP_API  BOpticksEvent {
         static const int DEFAULT_LAYOUT_VERSION ; 
         static int       LAYOUT_VERSION ; 
         static const char* DEFAULT_DIR_TEMPLATE  ;
+        static const char* DEFAULT_DIR_TEMPLATE_NOTAG  ;
         static const char* OVERRIDE_EVENT_BASE ;
    public:
         virtual void Summary(const char* msg="BOpticksEvent::Summary");
@@ -30,7 +31,7 @@ class BRAP_API  BOpticksEvent {
        static std::string path(     const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
        static std::string path(const char* dir, const char* name);
    private:
-       static std::string directory_template();
+       static std::string directory_template(bool notag=false);
        static std::string directory_(const char* top, const char* sub, const char* tag, const char* anno=NULL );
        static std::string path_(const char* top, const char* sub, const char* tag, const char* stem, const char* ext=".npy");
 

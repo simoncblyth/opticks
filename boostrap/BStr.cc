@@ -290,6 +290,22 @@ Out[10]: array([ 0.1,  0.3,  0.5,  0.7,  0.9])
     return colors ; 
 }
 
+template <typename T>
+const char* BStr::concat( const char* head, T body_, const char* tail )
+{
+    std::string body = boost::lexical_cast<std::string>(body_) ;
+    std::stringstream ss ; 
+
+    if(head) ss << head ; 
+    ss << body ; 
+    if(tail) ss << tail ; 
+
+    std::string s = ss.str();
+    return strdup(s.c_str());
+}
 
 
+template BRAP_API const char* BStr::concat(const char*, int        , const char* );
+template BRAP_API const char* BStr::concat(const char*, unsigned   , const char* );
+template BRAP_API const char* BStr::concat(const char*, const char*, const char* );
 

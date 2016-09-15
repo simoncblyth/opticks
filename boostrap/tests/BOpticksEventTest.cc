@@ -58,6 +58,21 @@ void BOpticksEventTest::check_layout_version(const char* det, const char* source
 
 
 
+void test_notag()
+{
+    std::string dir0 = BOpticksEvent::directory("det","source", "tag");
+    std::string dir1 = BOpticksEvent::directory("det","source", NULL );
+    LOG(info) 
+         << " test_notag "
+         << " dir0 " << dir0 
+         << " dir1 " << dir1 
+         ; 
+
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -73,6 +88,8 @@ int main(int argc, char** argv)
 
     oet.check_layout_version("PmtInBox","torch","10", "ox", ".npy") ;
     oet.check_layout_version("det",   "source","tag", "stem", "ext") ;
+
+    test_notag();
 
     return 0 ; 
 }

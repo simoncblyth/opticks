@@ -25,6 +25,7 @@ class CDetector ;
 class CMaterialTable ; 
 class CGenerator ; 
 
+class CCollector ; 
 class CRecorder ; 
 class Rec ; 
 class CStepRec ; 
@@ -42,7 +43,7 @@ class CFG4_API CG4
 {
         friend class CGeometry ; 
    public:
-        CG4(OpticksHub* hub, bool immediate=false);
+        CG4(OpticksHub* hub);
         void configure();
         void interactive();
         void cleanup();
@@ -66,11 +67,10 @@ class CFG4_API CG4
         Rec*           getRec();
         CPropLib*      getPropLib();
         CDetector*     getDetector();
-
+        NPY<float>*    getGensteps();
    private:
         OpticksHub*           m_hub ; 
         OpticksRun*           m_run ; 
-        bool                  m_immediate ; 
         Opticks*              m_ok ; 
         OpticksCfg<Opticks>*  m_cfg ; 
         CPhysics*             m_physics ; 
@@ -81,6 +81,7 @@ class CFG4_API CG4
         CGenerator*           m_generator ; 
         CMaterialTable*       m_material_table ; 
    private:
+        CCollector*           m_collector ; 
         CRecorder*            m_recorder ; 
         Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 

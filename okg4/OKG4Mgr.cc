@@ -19,7 +19,6 @@ class NConfigurable ;
 #include "OpticksViz.hh"
 
 #include "CG4.hh"
-#include "CCollector.hh"
 
 #include "PLOG.hh"
 #include "OKG4_BODY.hh"
@@ -42,8 +41,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_num_event(m_ok->getMultiEvent()),                    // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
     m_run(m_hub->getRun()),
-    m_g4(new CG4(m_hub, true)),                        // true: configure and initialize immediately 
-    m_collector(new CCollector(m_hub)),                // after CG4 loads geometry, currently hub just used for material code lookup, not evt access
+    m_g4(new CG4(m_hub)),                        // configure and initialize immediately 
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
 {
@@ -87,7 +85,7 @@ void OKG4Mgr::propagate()
             {
                 m_g4->propagate();
        
-                gs = m_collector->getGensteps() ;  
+                gs = m_g4->getGensteps() ;  
             }
             else
             {

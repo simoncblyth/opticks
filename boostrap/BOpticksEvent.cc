@@ -11,7 +11,8 @@
 
 #include "PLOG.hh"
 
-const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE = "$OPTICKS_EVENT_BASE/evt/$1/$2/$3" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE_NOTAG = "$OPTICKS_EVENT_BASE/evt/$1/$2" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
+const char* BOpticksEvent::DEFAULT_DIR_TEMPLATE       = "$OPTICKS_EVENT_BASE/evt/$1/$2/$3" ;  // formerly "$LOCAL_BASE/env/opticks/$1/$2"
 const char* BOpticksEvent::OVERRIDE_EVENT_BASE = NULL ; 
 
 const int BOpticksEvent::DEFAULT_LAYOUT_VERSION = 2 ; 
@@ -38,9 +39,9 @@ void BOpticksEvent::Summary(const char* msg)
     LOG(info) << msg ; 
 }
 
-std::string BOpticksEvent::directory_template()
+std::string BOpticksEvent::directory_template(bool notag)
 {
-    std::string deftmpl(DEFAULT_DIR_TEMPLATE) ; 
+    std::string deftmpl(notag ? DEFAULT_DIR_TEMPLATE_NOTAG : DEFAULT_DIR_TEMPLATE) ; 
     if(OVERRIDE_EVENT_BASE)
     {
        LOG(info) << "BOpticksEvent::directory_template OVERRIDE_EVENT_BASE replacing OPTICKS_EVENT_BASE with " << OVERRIDE_EVENT_BASE ; 
@@ -66,10 +67,11 @@ std::string BOpticksEvent::directory_(const char* top, const char* sub, const ch
     //     within the tag folder
     //  
 
-    std::string base = directory_template();
+    bool notag = tag == NULL ; 
+    std::string base = directory_template(notag);
     boost::replace_first(base, "$1", top ); 
     boost::replace_first(base, "$2", sub ); 
-    boost::replace_first(base, "$3", tag ); 
+    if(tag) boost::replace_first(base, "$3", tag ); 
 
     std::stringstream ss ; 
     ss << base ;
@@ -79,9 +81,10 @@ std::string BOpticksEvent::directory_(const char* top, const char* sub, const ch
     std::string dir = BFile::FormPath( ubase.c_str() ); 
     return dir ; 
 }
+
 std::string BOpticksEvent::directory(const char* top, const char* sub, const char* tag, const char* anno)
 {
-    std::string dir_ = directory_(top, sub, tag, anno);
+    std::string dir_ = directory_(top, sub, tag, anno );
     std::string dir = BFile::FormPath( dir_.c_str() ); 
     return dir ; 
 }
