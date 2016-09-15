@@ -50,7 +50,10 @@ const char* NPYBase::TypeName(Type_t type)
     return name ; 
 }
 
-
+int NPYBase::checkNumItems(NPYBase* data)
+{
+    return data && data->hasData() ? data->getNumItems() : -1 ;
+}
 
 
 void NPYBase::setGlobalVerbose(bool verbose)

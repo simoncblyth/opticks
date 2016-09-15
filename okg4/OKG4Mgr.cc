@@ -79,22 +79,21 @@ void OKG4Mgr::propagate()
         {   
             m_run->createEvent(i);
 
-            NPY<float>* gs = NULL ; 
-
-            if(m_ok->isLiveGensteps()) // eg G4GUN running , maybe just base on NULL gensteps ?
+            if(m_ok->isFabricatedGensteps())
             {
-                m_g4->propagate();
-       
-                gs = m_g4->getGensteps() ;  
+                 NPY<float>* gs = m_gen->getInputGensteps() ;
+
+                 m_run->setGensteps(gs); 
+
+                 m_g4->propagate();
             }
             else
             {
-                gs = m_gen->getInputGensteps() ;  
-                 // NB currently the same gensteps for each event, 
-                 // should be using tagoffset for genstep loading 
+                 NPY<float>* gs = m_g4->propagate() ;
+
+                 m_run->setGensteps(gs); 
             }
 
-            m_run->setGensteps(gs); 
 
             m_propagator->propagate();
 
@@ -121,4 +120,11 @@ void OKG4Mgr::cleanup()
     m_ok->cleanup(); 
     m_g4->cleanup(); 
 }
+
+
+/**
+   
+    tpmt-- --okg4 --live --compute --debugger
+
+**/
 

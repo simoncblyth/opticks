@@ -887,10 +887,17 @@ void OpticksEvent::importDomainsBuffer()
 }
 
 
-
-
 void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor, const char* oac_label)
 {
+    int nitems = NPYBase::checkNumItems(genstep_data);
+    if(nitems < 1)
+    {
+         LOG(warning) << "OpticksEvent::setGenstepData SKIP "
+                      << " nitems " << nitems
+                      ;
+         return ; 
+    } 
+
     importGenstepData(genstep_data, oac_label );
 
     setBufferControl(genstep_data);
@@ -1006,8 +1013,8 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
 
 
-
-    LOG(debug) << "OpticksEvent::importGenstepData"
+    LOG(fatal) << "OpticksEvent::importGenstepData"
+               << brief()
                << " shape " << gs->getShapeString()
                << " " << oac.description("oac")
                ;
@@ -1120,6 +1127,17 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 
 void OpticksEvent::setNopstepData(NPY<float>* nopstep)
 {
+    int nitems = NPYBase::checkNumItems(nopstep);
+    if(nitems < 1)
+    {
+         LOG(warning) << "OpticksEvent::setNopstepData SKIP "
+                      << " nitems " << nitems
+                      ;
+         return ; 
+    } 
+
+
+
     setBufferControl(nopstep);
 
     m_nopstep_data = nopstep  ;

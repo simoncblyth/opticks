@@ -561,6 +561,30 @@ unsigned int Opticks::getSourceCode()
     return code ;
 }
 
+bool Opticks::isFabricatedGensteps()
+{
+    unsigned int code = getSourceCode() ;
+    return code == TORCH || code == MACHINERY ;  
+}
+
+bool Opticks::isLiveGensteps()
+{  
+    return hasOpt("live");
+    //unsigned int code = getSourceCode();
+    //return code == G4GUN ;
+    //
+    //  *live-gensteps* 
+    //        G4GUN: collected from a live CG4 instance  
+    //
+    //  *loaded-from-file*
+    //        CERENKOV SCINTILLATION NATURAL
+    //
+    //  *fabricated-from-config*
+    //        TORCH  
+}
+
+
+
 char Opticks::getEntryCode()
 {
     char code ;
@@ -595,21 +619,6 @@ bool Opticks::isSeedtest()
 bool Opticks::isNoInputGensteps()
 {
     return hasOpt("load|nopropagate") ;
-}
-
-bool Opticks::isLiveGensteps()
-{   
-    unsigned int code = getSourceCode();
-    return code == G4GUN ;
-    //
-    //  *live-gensteps* 
-    //        G4GUN: collected from a live CG4 instance  
-    //
-    //  *loaded-from-file*
-    //        CERENKOV SCINTILLATION NATURAL
-    //
-    //  *fabricated-from-config*
-    //        TORCH  
 }
 
 

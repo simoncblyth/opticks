@@ -37,14 +37,6 @@ int main(int argc, char** argv)
 
     LOG(info) << "  CG4 ctor DONE "  ;
 
-    g4->configure();
-
-    LOG(info) << "  CG4 configure DONE "  ;
-
-    g4->initialize();
-
-    LOG(info) << "  CG4 initialize DONE "  ;
-
 
     g4->interactive();
 

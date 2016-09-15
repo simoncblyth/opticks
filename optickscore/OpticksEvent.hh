@@ -134,6 +134,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true, const char* oac_label=NULL);
        void setNopstepData(NPY<float>* nopstep_data);
+
+
        G4StepNPY* getG4Step(); 
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");

@@ -23,23 +23,20 @@
 #include "PLOG.hh"
 
 
-CStepRec::CStepRec( OpticksHub* hub, bool dynamic)
+CStepRec::CStepRec( Opticks* ok, bool dynamic)
    :
-   m_hub(hub),
+   m_ok(ok),
    m_dynamic(dynamic),
-   m_store_count(0)
+   m_store_count(0),
+   m_num_vals(16), 
+   m_vals(new float[m_num_vals]),
+   m_nopstep(NULL)
 {
-    init();
 }
 
 unsigned int CStepRec::getStoreCount()
 {
    return m_store_count ; 
-}
-
-
-void CStepRec::init()
-{
 }
 
 void CStepRec::collectStep(const G4Step* step, unsigned int step_id)
@@ -78,13 +75,19 @@ void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id,
     m_steps.clear();
 }
 
+void CStepRec::initEvent(NPY<float>* nopstep)
+{
+    setNopstep(nopstep);
+}
+
+void CStepRec::setNopstep(NPY<float>* nopstep)
+{
+    m_nopstep = nopstep ; 
+}
 
 void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point)
 {
     // nopstep updated when new G4 evt is created, so no action is required to handle change of event
-
-    OpticksEvent* g4evt = m_hub->getG4Event();
-    NPY<float>* nopstep = g4evt->getNopstepData();  
 
     const G4ThreeVector& pos = point->GetPosition();
     G4double time = point->GetGlobalTime();
@@ -95,23 +98,20 @@ void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int part
     const G4ThreeVector& pol = point->GetPolarization();
     G4double energy = point->GetKineticEnergy();
 
-    unsigned int nvals = 16 ; 
-    float* vals = new float[nvals] ;
+    m_vals[0] =  pos.x()/mm ;  
+    m_vals[1] =  pos.y()/mm ;  
+    m_vals[2] =  pos.z()/mm ;  
+    m_vals[3] =  time/ns    ;  
 
-    vals[0] =  pos.x()/mm ;  
-    vals[1] =  pos.y()/mm ;  
-    vals[2] =  pos.z()/mm ;  
-    vals[3] =  time/ns    ;  
+    m_vals[4] =  dir.x() ;
+    m_vals[5] =  dir.y() ;
+    m_vals[6] =  dir.z() ;
+    m_vals[7] =  weight ;
 
-    vals[4] =  dir.x() ;
-    vals[5] =  dir.y() ;
-    vals[6] =  dir.z() ;
-    vals[7] =  weight ;
-
-    vals[8]  =  pol.x() ;
-    vals[9]  =  pol.y() ;
-    vals[10] =  pol.z() ;
-    vals[11] =  energy/keV ;
+    m_vals[8]  =  pol.x() ;
+    m_vals[9]  =  pol.y() ;
+    m_vals[10] =  pol.z() ;
+    m_vals[11] =  energy/keV ;
 
     uif_t uif[4] ; 
 
@@ -120,15 +120,13 @@ void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int part
     uif[2].i = particle_id ; 
     uif[3].u = point_id ;
 
-    vals[12]  = uif[0].f ;
-    vals[13]  = uif[1].f ;
-    vals[14] =  uif[2].f ;
-    vals[15] =  uif[3].f ;
+    m_vals[12]  = uif[0].f ;
+    m_vals[13]  = uif[1].f ;
+    m_vals[14] =  uif[2].f ;
+    m_vals[15] =  uif[3].f ;
 
-    nopstep->add(vals, nvals);
-    // dynamically adding is efficient, but cannot handle on GPU
+    m_nopstep->add(m_vals, m_num_vals);
 
-    delete vals ; 
 }
 
 

@@ -150,8 +150,9 @@ class OKCORE_API Opticks {
        bool                 isTrivial();
        bool                 isSeedtest();
 
-       bool                 isNoInputGensteps();  // eg when loading a prior propagation
-       bool                 isLiveGensteps();  // collected directly from CG4 propagation
+       bool                 isNoInputGensteps();          // eg when loading a prior propagation
+       bool                 isLiveGensteps();             // --live option indicating get gensteps from G4 directly
+       bool                 isFabricatedGensteps();       // TORCH or MACHINERY source
        const char*          getSourceType();
        const char*          getEventTag();
        const char*          getEventDir();  // tag directory 

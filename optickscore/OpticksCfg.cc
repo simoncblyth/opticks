@@ -177,6 +177,9 @@ void OpticksCfg<Listener>::init()
        ("machinery",  "machinery testing gensteps/event potentially non-indexable  ");
 
 
+   m_desc.add_options()
+       ("live",   "get gensteps direct from live Geant4") ; 
+
 
    m_desc.add_options()
        ("save",  "download generated/propagated event data from GPU and save to file") ;

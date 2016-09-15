@@ -2,6 +2,7 @@
 
 class OpticksHub ; 
 class Opticks ; 
+class OpticksEvent ; 
 template <typename T> class OpticksCfg ; 
 class CG4 ; 
 class TorchStepNPY ; 
@@ -19,6 +20,8 @@ class CFG4_API CGenerator
        unsigned    getNumG4Event();
        unsigned    getNumPhotonsPerG4Event();
        NPY<float>* getGensteps();
+       bool hasGensteps();
+       void configureEvent(OpticksEvent* evt);
     private:
        void init();
        void setDynamic(bool dynamic);

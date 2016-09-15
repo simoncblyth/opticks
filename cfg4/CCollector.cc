@@ -25,7 +25,8 @@ CCollector::CCollector(OpticksHub* hub)
     m_itemsize(m_genstep->getNumValues(1)),
     m_values(new float[m_itemsize]),
     m_scintillation_count(0),
-    m_cerenkov_count(0)
+    m_cerenkov_count(0),
+    m_machinery_count(0)
 {
 
     INSTANCE = this ; 

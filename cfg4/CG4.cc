@@ -110,9 +110,9 @@ CG4::CG4(OpticksHub* hub)
      m_generator(new CGenerator(m_hub, this)),
      m_material_table(NULL),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
-     m_recorder(new CRecorder(m_hub, m_lib, m_generator->isDynamic())), 
-     m_rec(new Rec(m_hub, m_lib, m_generator->isDynamic())), 
-     m_steprec(new CStepRec(m_hub, m_generator->isDynamic())),  
+     m_recorder(new CRecorder(m_ok, m_lib, m_generator->isDynamic())), 
+     m_rec(new Rec(m_ok, m_lib, m_generator->isDynamic())), 
+     m_steprec(new CStepRec(m_ok, m_generator->isDynamic())),  
      m_visManager(NULL),
      m_uiManager(NULL),
      m_ui(NULL),
@@ -120,7 +120,8 @@ CG4::CG4(OpticksHub* hub)
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
      m_ra(new CRunAction(m_hub)),
      m_ea(new CEventAction(m_hub)),
-     m_count(0)
+     m_count(0),
+     m_initialized(false)
 {
      init();
 }
@@ -129,16 +130,9 @@ void CG4::init()
 {
     //m_ok->Summary("CG4::init opticks summary");
 
-    configure();
     initialize();
 
     TIMER("init");
-}
-
-void CG4::configure()
-{
-    LOG(info) << "CG4::configure" ;
-    TIMER("configure");
 }
 
 
@@ -150,6 +144,8 @@ void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)
 
 void CG4::initialize()
 {
+    assert(!m_initialized && "CG4::initialize already initialized");
+    m_initialized = true ; 
     LOG(info) << "CG4::initialize" ;
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa, m_ra, m_ea)) ;
     m_runManager->Initialize();
@@ -224,38 +220,15 @@ void CG4::interactive()
 
 void CG4::initEvent(OpticksEvent* evt)
 {
-    NPY<float>* gs = m_generator->getGensteps(); 
+    m_generator->configureEvent(evt);
 
-    if(gs)
-    {
-        LOG(info) << "CG4::initEvent"
-                  << " fabricated TORCH genstep (STATIC RUNNING) "
-                  ;
-
-        evt->setNumG4Event(m_generator->getNumG4Event());
-        evt->setNumPhotonsPerG4Event(m_generator->getNumPhotonsPerG4Event()) ; 
-
-        m_run->setGensteps(gs); // <-- this will switch on static running as numPhotons is known 
-        evt->zero();            // static approach requires allocation ahead
-    
-        evt->dumpDomains("CG4::initEvent");
-    } 
-    else
-    {
-         LOG(info) << "CG4::initEvent"
-                   << " no genstep (DYNAMIC RUNNING) "
-                   ;  
-    }
-
-
-    m_recorder->initEvent();
-    m_rec->initEvent();
-
+    m_recorder->initEvent(evt);
+    m_rec->initEvent(evt);
+    m_steprec->initEvent(evt->getNopstepData());
 }
 
 
-
-void CG4::propagate()
+NPY<float>* CG4::propagate()
 {
     OpticksEvent* evt = m_run->getG4Event();
     assert(evt && evt->isG4() && "Must OpticksRun::createEvent before CG4::propagate");
@@ -280,6 +253,8 @@ void CG4::propagate()
     postpropagate();
 
     m_count += 1 ; 
+
+    return m_collector->getGensteps(); 
 }
 
 void CG4::postpropagate()

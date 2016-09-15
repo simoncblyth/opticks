@@ -33,6 +33,7 @@ class NPY_API NPYBase {
        static const char* TypeName(Type_t type);
 
        static bool GLOBAL_VERBOSE ; 
+       static int checkNumItems(NPYBase* data);
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
         virtual ~NPYBase();

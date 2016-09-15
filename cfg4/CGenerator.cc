@@ -1,6 +1,7 @@
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 #include "OpticksCfg.hh"
+#include "OpticksEvent.hh"
 #include "CG4.hh"
 
 #include "NGLM.hpp"
@@ -94,6 +95,38 @@ bool CGenerator::isDynamic()
     return m_dynamic ; 
 }
 
+
+bool CGenerator::hasGensteps()
+{
+    return m_gensteps != NULL ; 
+}
+
+void CGenerator::configureEvent(OpticksEvent* evt)
+{
+   if(hasGensteps())
+   {
+        LOG(info) << "CGenerator:configureEvent"
+                  << " fabricated TORCH genstep (STATIC RUNNING) "
+                  ;
+
+        evt->setNumG4Event(getNumG4Event());
+        evt->setNumPhotonsPerG4Event(getNumPhotonsPerG4Event()) ; 
+
+          //  m_run->setGensteps(gs); // <-- this will switch on static running as numPhotons is known 
+          //  setting of gensteps happens externally at a higher level
+
+        evt->zero();            // static approach requires allocation ahead
+    
+        evt->dumpDomains("CGenerator::configureEvent");
+    } 
+    else
+    {
+         LOG(info) << "CGenerator::configureEvent"
+                   << " no genstep (DYNAMIC RUNNING) "
+                   ;  
+    }
+}
+
 CSource* CGenerator::makeTorchSource()
 {
     LOG(info) << "CGenerator::makeTorchSource " ; 
@@ -157,5 +190,7 @@ CSource* CGenerator::makeG4GunSource()
     CSource* source  = static_cast<CSource*>(gun);
     return source ; 
 }
+
+
 
 

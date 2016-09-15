@@ -30,6 +30,8 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
     std::string tstamp = m_g4evt->getTimeStamp();
     m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
+
+    LOG(info) << "OpticksRun::createEvent(" << tagoffset << ") DONE " ; 
 }
 
 

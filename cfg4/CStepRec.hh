@@ -2,11 +2,13 @@
 
 #include <vector>
 
+
+template <typename T> class NPY ; 
+
 // g4-
 class G4Step ; 
 class G4StepPoint ; 
 
-class OpticksHub ; // okg-
 class CStep ;     // cg4-
 
 
@@ -28,9 +30,10 @@ recording into the nopstep provided by the hub.
 
 class CFG4_API CStepRec {
    public:
-       CStepRec(OpticksHub* hub, bool dynamic);
+       CStepRec(Opticks* ok, bool dynamic);
+       void initEvent(NPY<float>* nopstep);    
    private:
-       void init();    
+       void setNopstep(NPY<float>* nopstep);
    public:
        void collectStep(const G4Step* step, unsigned int step_id);   
        void storeStepsCollected(unsigned int event_id, unsigned int track_id, int particle_id);
@@ -38,10 +41,13 @@ class CFG4_API CStepRec {
    private:
        void storePoint(unsigned int event_id, unsigned int track_id, int particle_id, unsigned int point_id, const G4StepPoint* point);
    private:
-       OpticksHub*                 m_hub ; 
+       Opticks*                    m_ok ; 
        bool                        m_dynamic ; 
        std::vector<const CStep*>   m_steps ; 
-       unsigned int                m_store_count ; 
+       unsigned                    m_store_count ; 
+       unsigned                    m_num_vals ; 
+       float*                      m_vals ;
+       NPY<float>*                 m_nopstep ; 
 
 };
 

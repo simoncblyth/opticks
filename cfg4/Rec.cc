@@ -8,8 +8,6 @@
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
 
-// okg-
-#include "OpticksHub.hh"
 
 // g4-
 #include "G4Step.hh"
@@ -24,9 +22,9 @@
 #include "PLOG.hh"
 
 
-Rec::Rec(OpticksHub* hub, CPropLib* clib, bool dynamic)  
+Rec::Rec(Opticks* ok, CPropLib* clib, bool dynamic)  
    :
-    m_hub(hub), 
+    m_ok(ok), 
     m_clib(clib),
     m_dynamic(dynamic),
     m_evt(NULL), 
@@ -39,7 +37,6 @@ Rec::Rec(OpticksHub* hub, CPropLib* clib, bool dynamic)
     m_steps_per_photon(0),
     m_debug(false)
 {
-   init();
 }
 
 
@@ -58,17 +55,14 @@ unsigned long long Rec::getSeqMat()
 }
 
 
-void Rec::init()
+void Rec::setEvent(OpticksEvent* evt)
 {
-}
-
-
-void Rec::initEvent()
-{
-   // hmm maybe better get them once from config rather than from each event
-
-    m_evt = m_hub->getG4Event();
+    m_evt = evt ; 
     assert(m_evt && m_evt->isG4());
+}
+void Rec::initEvent(OpticksEvent* evt)
+{
+    setEvent(evt);
 
     m_record_max = m_evt->getNumPhotons(); 
     m_bounce_max = m_evt->getBounceMax();

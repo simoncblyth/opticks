@@ -44,13 +44,12 @@ class CFG4_API CG4
         friend class CGeometry ; 
    public:
         CG4(OpticksHub* hub);
-        void configure();
         void interactive();
         void cleanup();
         bool isDynamic(); // true for G4GUN without gensteps ahead of time, false for TORCH with gensteps ahead of time
    public:
         void initialize();
-        void propagate();
+        NPY<float>* propagate();
    private:
         void postinitialize();
         void postpropagate();
@@ -95,6 +94,7 @@ class CFG4_API CG4
         G4UserRunAction*               m_ra ; 
         G4UserEventAction*             m_ea ; 
         int                            m_count ; 
+        bool                           m_initialized ; 
         
 };
 
