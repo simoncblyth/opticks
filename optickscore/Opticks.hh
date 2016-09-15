@@ -32,6 +32,14 @@ class OpticksFlags ;
 class OpticksAttrSeq ;
 class OpticksProfile ;
 
+#define OK_PROFILE(s, c) \
+    { \
+       if(m_ok)\
+       {\
+          m_ok->profile((s),(c)) ;\
+       }\
+    }
+
 
 #include "OpticksPhoton.h"
 
@@ -69,9 +77,10 @@ class OKCORE_API Opticks {
        bool hasOpt(const char* name);
        bool operator()(const char* name) const ; 
        void cleanup();
+       void postpropagate();
    public:
        // profile ops
-       template <typename T> void profile(T label);
+       template <typename T> void profile(T label, int count=-1);
        void dumpProfile(const char* msg="Opticks::dumpProfile");
        void saveProfile();
    private:
@@ -153,6 +162,8 @@ class OKCORE_API Opticks {
    public:
        std::string          getPreferenceDir(const char* type, const char* subtype);
    public:
+       std::string          getGenstepPath();
+       bool                 existsGenstepPath();
        NPY<float>*          loadGenstep();
        TorchStepNPY*        makeSimpleTorchStep();
        OpticksEventSpec*    getEventSpec();

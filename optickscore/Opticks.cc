@@ -12,6 +12,7 @@
 #include "SSys.hh"
 // brap-
 #include "BDynamicDefine.hh"
+#include "BFile.hh"
 #include "BStr.hh"
 #include "PLOG.hh"
 #include "Map.hh"
@@ -39,6 +40,8 @@
 
 
 #include "OpticksCfg.hh"
+
+
 
 
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
@@ -126,9 +129,9 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 
 
 template <typename T>
-void Opticks::profile(T label)
+void Opticks::profile(T label, int count)
 {
-    m_profile->stamp<T>(label);
+    m_profile->stamp<T>(label, count);
 }
 void Opticks::dumpProfile(const char* msg)
 {
@@ -139,6 +142,11 @@ void Opticks::saveProfile()
    m_profile->save();
 }
 
+void Opticks::postpropagate()
+{
+   saveProfile();
+   dumpProfile("Opticks::postpropagate");
+}
 
 
 
@@ -775,22 +783,32 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 }
 
 
-NPY<float>* Opticks::loadGenstep()
+std::string Opticks::getGenstepPath()
 {
     const char* det = m_spec->getDet();
     const char* typ = m_spec->getTyp();
     const char* tag = m_spec->getTag();
 
     std::string path = NLoad::GenstepsPath(det, typ, tag);
+    return path ; 
+}
+
+bool Opticks::existsGenstepPath()
+{
+    std::string path = getGenstepPath();
+    return BFile::ExistsFile(path.c_str()); 
+}
+
+
+NPY<float>* Opticks::loadGenstep()
+{
+    std::string path = getGenstepPath();
     NPY<float>* gs = NPY<float>::load(path.c_str());
     if(!gs)
     {
         LOG(warning) << "Opticks::loadGenstep"
                      << " FAILED TO LOAD GENSTEPS FROM "
                      << " path " << path 
-                     << " typ " << typ
-                     << " tag " << tag
-                     << " det " << det
                      ; 
         return NULL ;
     }
@@ -972,10 +990,10 @@ void Opticks::configureF(const char* name, std::vector<float> values)
  
 
 
-template OKCORE_API void Opticks::profile<unsigned>(unsigned );
-template OKCORE_API void Opticks::profile<int>(int);
-template OKCORE_API void Opticks::profile<char*>(char*);
-template OKCORE_API void Opticks::profile<const char*>(const char*);
+template OKCORE_API void Opticks::profile<unsigned>(unsigned , int);
+template OKCORE_API void Opticks::profile<int>(int, int);
+template OKCORE_API void Opticks::profile<char*>(char*, int);
+template OKCORE_API void Opticks::profile<const char*>(const char*, int);
 
 
 

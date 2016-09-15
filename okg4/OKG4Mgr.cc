@@ -81,7 +81,7 @@ void OKG4Mgr::propagate()
 
             NPY<float>* gs = NULL ; 
 
-            if(m_ok->isLiveGensteps()) // eg G4GUN running 
+            if(m_ok->isLiveGensteps()) // eg G4GUN running , maybe just base on NULL gensteps ?
             {
                 m_g4->propagate();
        
@@ -89,7 +89,9 @@ void OKG4Mgr::propagate()
             }
             else
             {
-                gs = m_gen->getInputGensteps() ;   // NB currently the same gensteps for each event
+                gs = m_gen->getInputGensteps() ;  
+                 // NB currently the same gensteps for each event, 
+                 // should be using tagoffset for genstep loading 
             }
 
             m_run->setGensteps(gs); 
@@ -98,6 +100,7 @@ void OKG4Mgr::propagate()
 
             if(m_ok->hasOpt("save")) m_run->saveEvent();
         }
+        m_ok->postpropagate();
     }   
 }
 

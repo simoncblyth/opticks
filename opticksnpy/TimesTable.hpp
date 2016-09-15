@@ -44,7 +44,8 @@ class NPY_API TimesTable {
         unsigned getNumColumns();
         Times* getColumn(unsigned int j);
 
-        template <typename T> void add( T row, double x, double y, double z, double w );
+        template <typename T> void add( T row, double x, double y, double z, double w, int count=-1 );
+        template <typename T> const char* makeLabel( T row_, int count=-1 );
 
         void makeLines();
         std::vector<std::string>& getLines(); 

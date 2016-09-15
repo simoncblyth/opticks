@@ -11,7 +11,7 @@ class OKCORE_API OpticksProfile
 {
     public:
        OpticksProfile(const char* dir="$TMP", const char* name="OpticksProfile");
-       template <typename T> void stamp(T row);
+       template <typename T> void stamp(T row, int count);
        void save();
        void load();
        void dump(const char* msg="OpticksProfile::dump");
@@ -38,7 +38,7 @@ class OKCORE_API OpticksProfile
        float       m_vmprev ; 
        float       m_vm ; 
 
-       unsigned    m_count ; 
+       unsigned    m_num_stamp ; 
 
 };
 

@@ -60,17 +60,27 @@ std::vector<std::string>& TimesTable::getLines()
 }
 
 
+template <typename T>
+const char* TimesTable::makeLabel( T row_, int count )
+{
+    std::stringstream ss ; 
+    ss << boost::lexical_cast<std::string>(row_) ;
+    if(count > -1) ss << "_" << count ; 
+
+    std::string slabel = ss.str();
+    return strdup(slabel.c_str());
+}
+
 
 template <typename T>
-void TimesTable::add( T row_, double x, double y, double z, double w )
+void TimesTable::add( T row_, double x, double y, double z, double w, int count )
 {
-    std::string srow = boost::lexical_cast<std::string>(row_) ; 
-    const char* row = srow.c_str() ; 
+    const char* label = makeLabel( row_ , count );
 
-    if(m_tx) m_tx->add(row, x );
-    if(m_ty) m_ty->add(row, y );
-    if(m_tz) m_tz->add(row, z );
-    if(m_tw) m_tw->add(row, w );
+    if(m_tx) m_tx->add(label, x );
+    if(m_ty) m_ty->add(label, y );
+    if(m_tz) m_tz->add(label, z );
+    if(m_tw) m_tw->add(label, w );
 } 
 
 
@@ -101,10 +111,8 @@ void TimesTable::load(const char* dir)
 }
 
 
-
 void TimesTable::makeLines()
 {
-
     unsigned wid = 15 ; 
 
     m_lines.clear() ;  
@@ -150,8 +158,14 @@ void TimesTable::makeLines()
 }
 
 
-template NPY_API void TimesTable::add(int           , double, double, double, double );
-template NPY_API void TimesTable::add(unsigned      , double, double, double, double );
-template NPY_API void TimesTable::add(char*         , double, double, double, double );
-template NPY_API void TimesTable::add(const char*   , double, double, double, double );
+template NPY_API void TimesTable::add(int           , double, double, double, double, int);
+template NPY_API void TimesTable::add(unsigned      , double, double, double, double, int);
+template NPY_API void TimesTable::add(char*         , double, double, double, double, int);
+template NPY_API void TimesTable::add(const char*   , double, double, double, double, int);
+
+template NPY_API const char* TimesTable::makeLabel( int          , int count );
+template NPY_API const char* TimesTable::makeLabel( unsigned     , int count );
+template NPY_API const char* TimesTable::makeLabel( char*        , int count );
+template NPY_API const char* TimesTable::makeLabel( const char*  , int count );
+
 

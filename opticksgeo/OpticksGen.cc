@@ -76,19 +76,20 @@ void OpticksGen::initInputGensteps()
     }
     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
     {
-        gs = loadGenstepFile();
+        gs = loadGenstepFile("GS_LOADED,GS_LEGACY");
     }
     else if( code == G4GUN  )
     {
-        if(m_ok->isIntegrated())
+        if(m_ok->existsGenstepPath())
         {
-             LOG(info) << " integrated G4GUN running, gensteps will be collected from G4 directly " ;  
+             gs = loadGenstepFile("GS_LOADED");
         }
         else
         {
-             LOG(info) << " non-integrated G4GUN running, attempt to load gensteps from file " ;  
-             gs = loadGenstepFile();
-             gs->addActionControl(OpticksActionControl::Parse("GS_LOADED"));
+             std::string path = m_ok->getGenstepPath();
+             LOG(warning) <<  "G4GUN running, but no gensteps at " << path 
+                          << " LIVE G4 is required to provide the gensteps " 
+                          ;
         }
     }
     setInputGensteps(gs);
@@ -186,7 +187,7 @@ TorchStepNPY* OpticksGen::makeTorchstep()
     return torchstep ; 
 }
 
-NPY<float>* OpticksGen::loadGenstepFile()
+NPY<float>* OpticksGen::loadGenstepFile(const char* label)
 {
     NPY<float>* gs = m_ok->loadGenstep();
     if(gs == NULL)
@@ -208,7 +209,7 @@ NPY<float>* OpticksGen::loadGenstepFile()
         gs = NPY<float>::make_modulo(gs, modulo);
         parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
     }    
-    gs->addActionControl(OpticksActionControl::Parse("GS_LOADED,GS_LEGACY"));
+    gs->addActionControl(OpticksActionControl::Parse(label));
     return gs ; 
 }
 

@@ -44,7 +44,7 @@ std::string BOpticksEvent::directory_template(bool notag)
     std::string deftmpl(notag ? DEFAULT_DIR_TEMPLATE_NOTAG : DEFAULT_DIR_TEMPLATE) ; 
     if(OVERRIDE_EVENT_BASE)
     {
-       LOG(info) << "BOpticksEvent::directory_template OVERRIDE_EVENT_BASE replacing OPTICKS_EVENT_BASE with " << OVERRIDE_EVENT_BASE ; 
+       LOG(debug) << "BOpticksEvent::directory_template OVERRIDE_EVENT_BASE replacing OPTICKS_EVENT_BASE with " << OVERRIDE_EVENT_BASE ; 
        boost::replace_first(deftmpl, "$OPTICKS_EVENT_BASE/evt", OVERRIDE_EVENT_BASE );
     } 
     return deftmpl ; 

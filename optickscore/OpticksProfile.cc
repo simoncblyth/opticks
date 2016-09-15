@@ -29,7 +29,7 @@ OpticksProfile::OpticksProfile(const char* dir, const char* name)
    m_vmprev(0),
    m_vm(0),
 
-   m_count(0)
+   m_num_stamp(0)
 {
 }
 
@@ -46,23 +46,23 @@ const char* OpticksProfile::getName()
 
 void OpticksProfile::setT(float t)
 {
-   if(m_count == 0) m_t0 = t ;
+   if(m_num_stamp == 0) m_t0 = t ;
    m_tprev = m_t ;  
    m_t  = t ;   
 }
 void OpticksProfile::setVM(float vm)
 {
-   if(m_count == 0) m_vm0 = vm ;
+   if(m_num_stamp == 0) m_vm0 = vm ;
    m_vmprev = m_vm ;  
    m_vm = vm ; 
 }
 
 template <typename T>
-void OpticksProfile::stamp(T row)
+void OpticksProfile::stamp(T row, int count)
 {
    setT(BTimer::RealTime()) ;
    setVM(SProc::VirtualMemoryUsageMB()) ;
-   m_count += 1 ; 
+   m_num_stamp += 1 ; 
 
    float  t   = m_t - m_t0 ;      // time since instanciation
    float dt   = m_t - m_tprev ;   // time since previous stamp
@@ -70,7 +70,7 @@ void OpticksProfile::stamp(T row)
    float vm   = m_vm - m_vm0 ;     // vm since instanciation
    float dvm  = m_vm - m_vmprev ;  // vm since previous stamp
 
-   m_tt->add<T>(row, t, dt, vm, dvm   );
+   m_tt->add<T>(row, t, dt, vm, dvm,  count );
    m_npy->add(       t, dt, vm, dvm ); 
 }
 
@@ -102,7 +102,7 @@ std::string OpticksProfile::brief()
    ss
        << " dir " << m_dir 
        << " name " << m_name
-       << " count " << m_count 
+       << " num_stamp " << m_num_stamp 
        ; 
    
    return ss.str();
@@ -120,10 +120,9 @@ void OpticksProfile::dump(const char* msg)
 
 
 
-template OKCORE_API void OpticksProfile::stamp<unsigned>(unsigned );
-template OKCORE_API void OpticksProfile::stamp<int>(int);
-template OKCORE_API void OpticksProfile::stamp<char*>(char*);
-template OKCORE_API void OpticksProfile::stamp<const char*>(const char*);
-
+template OKCORE_API void OpticksProfile::stamp<unsigned>(unsigned , int);
+template OKCORE_API void OpticksProfile::stamp<int>(int  , int);
+template OKCORE_API void OpticksProfile::stamp<char*>(char*, int);
+template OKCORE_API void OpticksProfile::stamp<const char*>(const char*, int);
 
 

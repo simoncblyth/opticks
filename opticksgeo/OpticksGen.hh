@@ -26,7 +26,7 @@ class OKGEO_API OpticksGen
         void                 init();
         void                 initInputGensteps();
     private:
-        NPY<float>*          loadGenstepFile();
+        NPY<float>*          loadGenstepFile(const char* label);
         TorchStepNPY*        makeTorchstep();
     private:
         void                 targetGenstep( GenstepNPY* gs );

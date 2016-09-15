@@ -109,7 +109,7 @@ CG4::CG4(OpticksHub* hub)
      m_detector(m_geometry->getDetector()),
      m_generator(new CGenerator(m_hub, this)),
      m_material_table(NULL),
-     m_collector(new CCollector(m_hub)),    //  after CG4 loads geometry, currently hub just used for material code lookup, not evt access
+     m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
      m_recorder(new CRecorder(m_hub, m_lib, m_generator->isDynamic())), 
      m_rec(new Rec(m_hub, m_lib, m_generator->isDynamic())), 
      m_steprec(new CStepRec(m_hub, m_generator->isDynamic())),  
@@ -119,7 +119,8 @@ CG4::CG4(OpticksHub* hub)
      m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
      m_ra(new CRunAction(m_hub)),
-     m_ea(new CEventAction(m_hub))
+     m_ea(new CEventAction(m_hub)),
+     m_count(0)
 {
      init();
 }
@@ -172,6 +173,8 @@ void CG4::postinitialize()
     //m_material_table->dump("CG4::postinitialize");
 
     m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ;  // for translation of material indices into GPU texture lines 
+
+    m_collector = new CCollector(m_hub) ; // currently hub just used for material code lookup, not evt access
 
     LOG(info) << "CG4::postinitialize DONE" ;
     TIMER("postinitialize");
@@ -261,19 +264,22 @@ void CG4::propagate()
 
     unsigned int numG4Evt = evt->getNumG4Event();
 
-    LOG(info) << "CG4::propagate" << " numG4Evt " << numG4Evt ; 
+    LOG(info) << "CG4::propagate(" << m_count << ")" 
+              << " numG4Evt " << numG4Evt
+               ; 
 
-    TIMER("_propagate");
-
+    OK_PROFILE("_CG4::propagate", m_count);
     m_runManager->BeamOn(numG4Evt);
+    OK_PROFILE("CG4::propagate", m_count );
 
     std::string runmac = m_cfg->getG4RunMac();
     LOG(info) << "CG4::propagate [" << runmac << "]"  ;
     if(!runmac.empty()) execute(runmac.c_str());
 
-    TIMER("propagate");
 
     postpropagate();
+
+    m_count += 1 ; 
 }
 
 void CG4::postpropagate()
