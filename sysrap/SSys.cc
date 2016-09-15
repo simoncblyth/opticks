@@ -25,6 +25,19 @@ const char* SSys::fmt(const char* tmpl, unsigned val)
 }
 
 
+int SSys::run(const char* cmd)
+{
+    int rc_raw = system(cmd);
+    int rc =  WEXITSTATUS(rc_raw) ;
+
+    LOG(info) << cmd 
+              << " rc_raw : " << rc_raw 
+              << " rc : " << rc
+              ;
+
+    return rc ;  
+}
+
 int SSys::npdump(const char* path, const char* nptype, const char* postview )
 {
     std::stringstream ss ; 
@@ -37,16 +50,7 @@ int SSys::npdump(const char* path, const char* nptype, const char* postview )
     ;    
 
     std::string cmd = ss.str();
-
-    int rc_raw = system(cmd.c_str());
-    int rc =  WEXITSTATUS(rc_raw) ;
-
-    LOG(info) << cmd 
-              << " rc_raw : " << rc_raw 
-              << " rc : " << rc
-              ;
-
-    return rc ;  
+    return run(cmd.c_str());
 }
 
 

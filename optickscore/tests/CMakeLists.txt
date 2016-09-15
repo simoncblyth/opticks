@@ -21,6 +21,7 @@ set(TEST_SOURCES
     OpticksIDPATH.cc
     OpticksPrepareInstallCache.cc
     OpticksEventSpecTest.cc
+    OpticksAnaTest.cc
 )
 
 

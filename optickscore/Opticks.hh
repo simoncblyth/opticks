@@ -31,12 +31,13 @@ class OpticksQuery;
 class OpticksFlags ;
 class OpticksAttrSeq ;
 class OpticksProfile ;
+class OpticksAna ;
 
-#define OK_PROFILE(s, c) \
+#define OK_PROFILE(s) \
     { \
        if(m_ok)\
        {\
-          m_ok->profile((s),(c)) ;\
+          m_ok->profile((s)) ;\
        }\
     }
 
@@ -78,9 +79,10 @@ class OKCORE_API Opticks {
        bool operator()(const char* name) const ; 
        void cleanup();
        void postpropagate();
+       void ana();
    public:
        // profile ops
-       template <typename T> void profile(T label, int count=-1);
+       template <typename T> void profile(T label);
        void dumpProfile(const char* msg="Opticks::dumpProfile");
        void saveProfile();
    private:
@@ -114,6 +116,9 @@ class OKCORE_API Opticks {
        int         getInteractivityLevel();
    public:
        void setIdPathOverride(const char* idpath_tmp=NULL); // used for saves into non-standard locations whilst testing
+       unsigned getTagOffset();
+   private:
+       void setTagOffset(unsigned tagoffset);   // set by Opticks::makeEvent, used for uniqing profile labels
    public:
        void setGeocache(bool geocache=true);
        bool isGeocache();
@@ -128,6 +133,7 @@ class OKCORE_API Opticks {
        void setDetector(const char* detector); 
    public:
        OpticksCfg<Opticks>* getCfg();
+       std::string          getAnaKey();
        OpticksResource*     getResource(); 
    public:
        OpticksQuery*        getQuery(); 
@@ -257,7 +263,9 @@ class OKCORE_API Opticks {
 
        OpticksMode*         m_mode ; 
        OpticksProfile*      m_profile ; 
+       OpticksAna*          m_ana ; 
        int                  m_rc ; 
+       unsigned             m_tagoffset ; 
    private:
        glm::uvec4           m_size ; 
        glm::uvec4           m_position ; 

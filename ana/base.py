@@ -175,6 +175,7 @@ def opticks_args(**kwa):
     mrc = kwa.get("mrc", 101)
     doc = kwa.get("doc", None)
     tag = kwa.get("tag", None)
+    tagoffset = kwa.get("tagoffset", 0)
     stag = kwa.get("stag", None)
     ptag = kwa.get("ptag", None)
     src = kwa.get("src", None)
@@ -192,6 +193,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--loglevel", default=llv, help=" set logging level : DEBUG/INFO/WARNING/ERROR/CRITICAL. Default %(default)s." )
 
     parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
+    parser.add_argument(     "--tagoffset",  default=tagoffset, type=int, help="tagoffset : unsigned offset from tag, identifies event in multivent running. Default %(default)s "  )
     parser.add_argument(     "--stag",  default=stag, help="S-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
     parser.add_argument(     "--ptag",  default=ptag, help="P-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
     parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
@@ -204,6 +206,8 @@ def opticks_args(**kwa):
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)
+
+    args.utag = int(args.tag) + args.tagoffset 
 
     if args.show:
          print " ".join(sys.argv)

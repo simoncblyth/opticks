@@ -22,6 +22,8 @@ void OpticksRun::init()
 
 void OpticksRun::createEvent(unsigned tagoffset)
 {
+    m_ok->setTagOffset(tagoffset);
+
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
 

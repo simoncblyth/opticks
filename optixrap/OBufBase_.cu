@@ -198,7 +198,7 @@ unsigned int OBufBase::getNumBytes(const optix::Buffer& buffer)
     if(element_size == 0u && format == RT_FORMAT_USER)
     {
         element_size = buffer->getElementSize();
-        printf("OBufBase::getNumBytes RT_FORMAT_USER element_size %u size %u \n", element_size, size );
+        //printf("OBufBase::getNumBytes RT_FORMAT_USER element_size %u size %u \n", element_size, size );
     }
     return size*element_size ; 
 }
@@ -212,7 +212,7 @@ void OBufBase::upload(NPYBase* npy)
     unsigned int x_numBytes = getNumBytes();
     assert(numBytes == x_numBytes);
 
-    printf("OBufBase::upload nbytes %u \n", numBytes);
+    //printf("OBufBase::upload nbytes %u \n", numBytes);
 
     memcpy( m_buffer->map(), data, numBytes );
 

@@ -125,19 +125,18 @@ from opticks.ana.evt  import Evt
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
-    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox", c2max=2.0)
+    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox", c2max=2.0, tagoffset=0)
 
-    log.info("tag %s src %s det %s c2max %s  " % (args.tag,args.src,args.det, args.c2max))
+    log.info("tag %s src %s det %s c2max %s  " % (args.utag,args.src,args.det, args.c2max))
 
-    tag = args.tag
 
     #seqs = ["TO BT BR BT BT BT BT SA"] 
     #seqs = ["TO BT BR BR BT SA"]
     seqs=[]
 
     try:
-        a = Evt(tag="%s" % tag, src=args.src, det=args.det, seqs=seqs)
-        b = Evt(tag="-%s" % tag , src=args.src, det=args.det, seqs=seqs)
+        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=seqs)
+        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=seqs)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

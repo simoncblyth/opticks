@@ -93,7 +93,6 @@ class CFG4_API CG4
         G4UserSteppingAction*          m_sa ; 
         G4UserRunAction*               m_ra ; 
         G4UserEventAction*             m_ea ; 
-        int                            m_count ; 
         bool                           m_initialized ; 
         
 };

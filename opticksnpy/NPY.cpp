@@ -100,7 +100,7 @@ void NPY<T>::read(void* ptr)
     if(m_data.size() == 0)
     {
         unsigned int nv0 = getNumValues(0) ; 
-        LOG(info) << "NPY<T>::read allocating space now (deferred from earlier) for NumValues(0) " << nv0 ; 
+        LOG(debug) << "NPY<T>::read allocating space now (deferred from earlier) for NumValues(0) " << nv0 ; 
         allocate();
     }
     memcpy(m_data.data(), ptr, getNumBytes(0) );

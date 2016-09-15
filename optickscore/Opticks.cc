@@ -37,6 +37,7 @@
 #include "OpticksMode.hh"
 #include "OpticksEntry.hh"
 #include "OpticksProfile.hh"
+#include "OpticksAna.hh"
 
 
 #include "OpticksCfg.hh"
@@ -122,16 +123,19 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_domains_configured(false),
        m_mode(NULL),
        m_profile(NULL),
-       m_rc(0)
+       m_ana(new OpticksAna(this)),
+       m_rc(0),
+       m_tagoffset(0)
 {
        init();
 }
 
 
 template <typename T>
-void Opticks::profile(T label, int count)
+void Opticks::profile(T label)
 {
-    m_profile->stamp<T>(label, count);
+    m_profile->stamp<T>(label, m_tagoffset);
+   // m_tagoffset is set by Opticks::makeEvent
 }
 void Opticks::dumpProfile(const char* msg)
 {
@@ -146,8 +150,13 @@ void Opticks::postpropagate()
 {
    saveProfile();
    dumpProfile("Opticks::postpropagate");
+   ana();    
 }
 
+void Opticks::ana()
+{
+   m_ana->run();
+}
 
 
 void Opticks::init()
@@ -703,8 +712,18 @@ OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
     return evt ; 
 }
 
+void Opticks::setTagOffset(unsigned tagoffset)
+{
+    m_tagoffset = tagoffset ; 
+}
+unsigned Opticks::getTagOffset()
+{
+    return m_tagoffset ; 
+}
 OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
+    setTagOffset(tagoffset) ; 
+
     LOG(info) << "Opticks::makeEvent" 
               << ( ok ? " OK " : " G4 " )
               << " tagoffset " << tagoffset 
@@ -888,6 +907,12 @@ bool Opticks::operator()(const char* name) const
 } 
 
 
+std::string Opticks::getAnaKey()
+{
+    std::string s = m_cfg->getAnaKey();
+    return s ; 
+}
+
 
 const char* Opticks::getDefaultMaterial() { return m_resource->getDefaultMaterial(); }
 const char* Opticks::getDetector() { return m_resource->getDetector(); }
@@ -999,10 +1024,10 @@ void Opticks::configureF(const char* name, std::vector<float> values)
  
 
 
-template OKCORE_API void Opticks::profile<unsigned>(unsigned , int);
-template OKCORE_API void Opticks::profile<int>(int, int);
-template OKCORE_API void Opticks::profile<char*>(char*, int);
-template OKCORE_API void Opticks::profile<const char*>(const char*, int);
+template OKCORE_API void Opticks::profile<unsigned>(unsigned);
+template OKCORE_API void Opticks::profile<int>(int);
+template OKCORE_API void Opticks::profile<char*>(char*);
+template OKCORE_API void Opticks::profile<const char*>(const char*);
 
 
 

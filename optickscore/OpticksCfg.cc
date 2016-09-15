@@ -31,6 +31,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_g4inimac(""),
        m_g4runmac(""),
        m_g4finmac(""),
+       m_anakey(""),
        m_testconfig(""),
        m_state_tag(""),
        m_materialprefix("/dd/Materials/"),
@@ -234,7 +235,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("g4finmac",   boost::program_options::value<std::string>(&m_g4finmac), "path to g4 final .mac file, see cfg4-/CG4" );
 
-
+   m_desc.add_options()
+       ("anakey",   boost::program_options::value<std::string>(&m_anakey), "string identifying an analysis configuration, often the invoking bash FUNCNAME stem, see OpticksAna " );
 
 
 
@@ -605,6 +607,11 @@ const std::string& OpticksCfg<Listener>::getG4FinMac()
     return m_g4finmac ;
 }
 
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getAnaKey()
+{
+    return m_anakey ;
+}
 
 
 template <class Listener>

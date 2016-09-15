@@ -1,6 +1,7 @@
 #include "SLog.hh"
 #include "NPY.hpp"
 
+#include "Opticks.hh"
 #include "OpticksEvent.hh"  // okc-
 #include "OpticksBufferControl.hh"  
 
@@ -35,6 +36,7 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    :
    m_log(new SLog("OEvent::OEvent")),
    m_hub(hub),
+   m_ok(hub->getOpticks()),
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
    m_evt(NULL),
@@ -217,6 +219,8 @@ void OEvent::download(unsigned mask)
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {
     assert(evt) ;
+
+   
     LOG(info)<<"OEvent::download id " << evt->getId()  ;
  
     if(mask & GENSTEP)
@@ -245,7 +249,7 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         OContext::download<unsigned>( m_seed_buffer, se );
     }
 
-    LOG(info)<<"OEvent::download DONE" ;
+    LOG(debug)<<"OEvent::download DONE" ;
 }
 
 

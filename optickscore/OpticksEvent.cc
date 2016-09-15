@@ -1404,6 +1404,7 @@ void OpticksEvent::save(bool verbose)
 
 
     NPY<float>* no = getNopstepData();
+    if(no)
     {
         no->setVerbose(verbose);
         no->save("no", m_typ,  m_tag, udet);
@@ -1555,7 +1556,7 @@ void OpticksEvent::saveReport()
 void OpticksEvent::saveReport(const char* dir)
 {
     if(!m_ttable || !m_report) return ; 
-    LOG(info) << "OpticksEvent::saveReport to " << dir  ; 
+    LOG(debug) << "OpticksEvent::saveReport to " << dir  ; 
 
     m_ttable->save(dir);
     m_report->save(dir);  

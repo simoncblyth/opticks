@@ -3,6 +3,7 @@
 #include "OXPPNS.hh"
 
 class SLog ; 
+class Opticks; 
 class OpticksEvent ; 
 class OpticksHub ; 
 class OContext ; 
@@ -66,6 +67,7 @@ class OXRAP_API OEvent
     private:
         SLog*           m_log ; 
         OpticksHub*     m_hub ; 
+        Opticks*        m_ok ; 
         OContext*       m_ocontext ; 
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 

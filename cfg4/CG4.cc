@@ -120,7 +120,6 @@ CG4::CG4(OpticksHub* hub)
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
      m_ra(new CRunAction(m_hub)),
      m_ea(new CEventAction(m_hub)),
-     m_count(0),
      m_initialized(false)
 {
      init();
@@ -237,13 +236,15 @@ NPY<float>* CG4::propagate()
 
     unsigned int numG4Evt = evt->getNumG4Event();
 
-    LOG(info) << "CG4::propagate(" << m_count << ")" 
+    LOG(info) << "CG4::propagate(" << m_ok->getTagOffset() << ")" 
               << " numG4Evt " << numG4Evt
                ; 
 
-    OK_PROFILE("_CG4::propagate", m_count);
+    OK_PROFILE("_CG4::propagate");
+
     m_runManager->BeamOn(numG4Evt);
-    OK_PROFILE("CG4::propagate", m_count );
+
+    OK_PROFILE("CG4::propagate");
 
     std::string runmac = m_cfg->getG4RunMac();
     LOG(info) << "CG4::propagate [" << runmac << "]"  ;
@@ -252,7 +253,6 @@ NPY<float>* CG4::propagate()
 
     postpropagate();
 
-    m_count += 1 ; 
 
     return m_collector->getGensteps(); 
 }

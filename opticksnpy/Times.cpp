@@ -77,7 +77,7 @@ void Times::save(const char* dir)
 {
     std::string nam = name();
     std::string path = BFile::preparePath(dir, nam.c_str(), true);
-    LOG(info) << "Times::save to " << path ;
+    LOG(debug) << "Times::save to " << path ;
     BList<std::string, double>::save( &m_times, dir, nam.c_str());
 }
 
