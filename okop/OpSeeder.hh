@@ -24,6 +24,7 @@
 //
 
 
+class Opticks ; 
 class OpticksHub ; 
 class OEvent ; 
 class OContext ; 
@@ -46,6 +47,7 @@ class OKOP_API OpSeeder {
       unsigned getNumPhotonsCheck(const TBuf& tgs);
    private:
       OpticksHub*              m_hub ;
+      Opticks*                 m_ok ;
       OEvent*                  m_oevt ;
       OContext*                m_ocontext ;
 };

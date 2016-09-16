@@ -24,6 +24,7 @@ class G4StepNPY ;
 class HitsNPY ; 
 class NPYSpec ; 
 
+class Opticks ; 
 class OpticksMode ; 
 class OpticksBufferControl ; 
 class OpticksDomain ; 
@@ -87,11 +88,17 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
    public:
        static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);
+       void reset();
        virtual ~OpticksEvent();
+   private:
+       void resetBuffers();
+   public:
+       // set by Opticks::makeEvent OpticksRun::createEvent
        void           setSibling(OpticksEvent* sibling);
+       void           setOpticks(Opticks* ok);
+       void           setId(int id);
+   public:
        OpticksEvent*  getSibling();
-
-       void setId(int id);
        int  getId();
    public:
        bool isNoLoad();
@@ -153,7 +160,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        Timer*      getTimer();
        TimesTable* getTimesTable();
    public:
-       void makeReport();
+       void makeReport(bool verbose=false);
        void saveReport();
        void loadReport();
    private:
@@ -288,6 +295,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
 
    private:
        OpticksEventSpec*     m_event_spec ; 
+       Opticks*              m_ok ;  
        OpticksMode*          m_mode ; 
 
        bool                  m_noload ; 

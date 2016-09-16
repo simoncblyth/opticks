@@ -110,7 +110,7 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
     m_gun = new OpticksGun(this) ;
-    m_run = new OpticksRun(this) ;
+    m_run = m_ok->getRun(); 
 }
 
 void OpticksHub::configure()

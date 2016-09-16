@@ -45,6 +45,7 @@
 #include "TimesTable.hpp"
 
 // okc-
+#include "Opticks.hh"
 #include "OpticksSwitches.h"
 #include "OpticksPhoton.h"
 #include "OpticksConst.hh"
@@ -106,6 +107,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           :
           OpticksEventSpec(spec),
           m_event_spec(spec),
+          m_ok(NULL),   // set by Opticks::makeEvent
 
           m_noload(false),
           m_loaded(false),
@@ -566,7 +568,10 @@ std::string OpticksEvent::getShapeString()
 }
 
 
-
+void OpticksEvent::setOpticks(Opticks* ok)
+{
+    m_ok = ok ; 
+}
 
 int OpticksEvent::getId()
 {
@@ -585,7 +590,6 @@ std::string OpticksEvent::getCreator()
 {
     return m_parameters->get<std::string>("Creator", "NONE");
 }
-
 
 void OpticksEvent::setTimeStamp(const char* tstamp)
 {
@@ -809,7 +813,20 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
 }
 
 
-
+void OpticksEvent::reset()
+{
+    resetBuffers();
+}
+void OpticksEvent::resetBuffers()
+{
+    if(m_nopstep_data)  m_nopstep_data->reset();    
+    if(m_photon_data)   m_photon_data->reset();    
+    if(m_sequence_data) m_sequence_data->reset();    
+    if(m_seed_data)     m_seed_data->reset();    
+    if(m_phosel_data)   m_phosel_data->reset();    
+    if(m_recsel_data)   m_recsel_data->reset();    
+    if(m_record_data)   m_record_data->reset();    
+}
 
 
 void OpticksEvent::resize()
@@ -844,6 +861,7 @@ void OpticksEvent::resize()
               << " num_photons " << num_photons  
               << " num_records " << num_records 
               << " maxrec " << maxrec
+              << " " << getDir()
               ;
 
     m_photon_data->setNumItems(num_photons);
@@ -1013,7 +1031,7 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
     }
 
 
-    LOG(fatal) << "OpticksEvent::importGenstepData"
+    LOG(debug) << "OpticksEvent::importGenstepData"
                << brief()
                << " shape " << gs->getShapeString()
                << " " << oac.description("oac")
@@ -1130,7 +1148,7 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
     int nitems = NPYBase::checkNumItems(nopstep);
     if(nitems < 1)
     {
-         LOG(warning) << "OpticksEvent::setNopstepData SKIP "
+         LOG(debug) << "OpticksEvent::setNopstepData SKIP "
                       << " nitems " << nitems
                       ;
          return ; 
@@ -1478,26 +1496,40 @@ void OpticksEvent::save(bool verbose)
 
     (*m_timer)("save");
 
-    makeReport();  // after timer save, in order to include that in the report
+    makeReport(false);  // after timer save, in order to include that in the report
     saveReport();
 }
 
 
 
-void OpticksEvent::makeReport()
+void OpticksEvent::makeReport(bool verbose)
 {
-    LOG(info) << "OpticksEvent::makeReport" ; 
+    LOG(info) << "OpticksEvent::makeReport " << getTagDir()  ; 
 
+    if(verbose)
     m_parameters->dump();
 
     m_timer->stop();
 
     m_ttable = m_timer->makeTable();
+    if(verbose)
     m_ttable->dump("OpticksEvent::makeReport");
 
     m_report->add(m_parameters->getLines());
     m_report->add(m_ttable->getLines());
 }
+
+
+void OpticksEvent::saveReport()
+{
+    std::string tagdir = getTagDir();
+    saveReport(tagdir.c_str());
+
+    std::string anno = getTimeStamp() ;
+    std::string tagdir_ts = getTagDir(anno.c_str());
+    saveReport(tagdir_ts.c_str());
+}
+
 
 
 std::string OpticksEvent::TagDir(const char* det, const char* typ, const char* tag, const char* anno)
@@ -1541,16 +1573,6 @@ void OpticksEvent::importParameters()
     setMode(mode);
 }
 
-
-void OpticksEvent::saveReport()
-{
-    std::string tagdir = getTagDir();
-    saveReport(tagdir.c_str());
-
-    std::string anno = getTimeStamp() ;
-    std::string tagdir_ts = getTagDir(anno.c_str());
-    saveReport(tagdir_ts.c_str());
-}
 
 
 void OpticksEvent::saveReport(const char* dir)
@@ -1839,7 +1861,9 @@ void OpticksEvent::postPropagateGeant4()
               << " num_photons " << num_photons
               ;
 
-    setNumPhotons(num_photons);  // triggers resize
+    setNumPhotons(num_photons);  
+   // triggers resize ???  THIS IS ONLY NEED FOR DYNAMIC RUNNING 
+   // WITH FABRICATED OR LOADED GENSTEPS THIS IS KNOWN AHEAD OF TIME
 
     indexPhotonsCPU();    
 }
@@ -1847,6 +1871,8 @@ void OpticksEvent::postPropagateGeant4()
 void OpticksEvent::indexPhotonsCPU()
 {
     // see tests/IndexerTest
+
+    OK_PROFILE("_OpticksEvent::indexPhotonsCPU");
 
     NPY<unsigned long long>* sequence = getSequenceData();
     NPY<unsigned char>*        phosel = getPhoselData();
@@ -1859,7 +1885,6 @@ void OpticksEvent::indexPhotonsCPU()
               << " recsel0 "   << recsel0->getShapeString()
               << " recsel0.hasData "   << recsel0->hasData()
               ;
-
 
     unsigned int maxrec = getMaxRec();
 
@@ -1885,16 +1910,7 @@ void OpticksEvent::indexPhotonsCPU()
     recsel1->reshape(-1, maxrec, 1, 4);
     recsel1->setBufferSpec(m_recsel_spec);  
 
-    //recsel1->save("$TMP/recsel1.npy"); 
-
-    // TODO: fix leak?, review recsel0 creation/zeroing/allocation
-    //       MAYBE NOT ALLOCATED... ANYHOW
-    //
-
-    if(recsel0 && recsel0->hasData())
-    {
-        LOG(warning) << " leaking recsel0 " ; 
-    }
+    if(recsel0 && recsel0->hasData()) LOG(warning) << " leaking recsel0 " ; 
 
     setRecselData(recsel1);
 
@@ -1903,6 +1919,8 @@ void OpticksEvent::indexPhotonsCPU()
     setMaterialIndex(idx->getMaterialIndex());
 
     TIMER("indexPhotonsCPU");    
+
+    OK_PROFILE("OpticksEvent::indexPhotonsCPU");
 }
 
 

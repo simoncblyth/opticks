@@ -14,7 +14,8 @@ TimesTable::TimesTable(const std::vector<std::string>& columns)
     m_tx(NULL),
     m_ty(NULL),
     m_tz(NULL),
-    m_tw(NULL)
+    m_tw(NULL),
+    m_label(NULL)
 {
     init(columns);
 }
@@ -24,7 +25,8 @@ TimesTable::TimesTable(const char* cols, const char* delim)
     m_tx(NULL),
     m_ty(NULL),
     m_tz(NULL),
-    m_tw(NULL)
+    m_tw(NULL),
+    m_label(NULL)
 {
     std::vector<std::string> columns ; 
     boost::split(columns, cols, boost::is_any_of(delim));
@@ -76,12 +78,25 @@ template <typename T>
 void TimesTable::add( T row_, double x, double y, double z, double w, int count )
 {
     const char* label = makeLabel( row_ , count );
+    setLabel(label);
 
-    if(m_tx) m_tx->add(label, x );
-    if(m_ty) m_ty->add(label, y );
-    if(m_tz) m_tz->add(label, z );
-    if(m_tw) m_tw->add(label, w );
+    if(m_tx) m_tx->add(m_label, x );
+    if(m_ty) m_ty->add(m_label, y );
+    if(m_tz) m_tz->add(m_label, z );
+    if(m_tw) m_tw->add(m_label, w );
 } 
+
+void TimesTable::setLabel(const char* label)
+{
+    free((void*)m_label);
+    m_label = label ; 
+}
+const char* TimesTable::getLabel()
+{
+    return m_label ;
+}
+
+
 
 
 void TimesTable::dump(const char* msg)

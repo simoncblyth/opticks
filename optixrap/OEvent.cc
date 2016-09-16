@@ -53,6 +53,7 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
 
 void OEvent::createBuffers(OpticksEvent* evt)
 {
+    LOG(info) << "OEvent::createBuffers " << evt->getShapeString() ; 
     // NB in INTEROP mode the OptiX buffers for the evt data 
     // are actually references to the OpenGL buffers created 
     // with createBufferFromGLBO by Scene::uploadEvt Scene::uploadSelection
@@ -169,14 +170,11 @@ void OEvent::upload()
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt); 
     upload(evt) ;  
-    // on first call createsBuffers, subsequently reuses them by resizing before upload
-    // interop not debugged yet 
 }
-
 
 void OEvent::upload(OpticksEvent* evt)   
 {
-    LOG(info) << "OEvent::upload id " << evt->getId() ; 
+    LOG(info)<<"OEvent::upload id " << evt->getId()  ;
     setEvent(evt);
 
     if(!m_buffers_created)
@@ -187,23 +185,24 @@ void OEvent::upload(OpticksEvent* evt)
     {
         resizeBuffers(evt);
     }
+    uploadGensteps(evt);
+    LOG(info)<<"OEvent::upload id " << evt->getId() << " DONE "  ;
+}
 
 
+void OEvent::uploadGensteps(OpticksEvent* evt)
+{
     NPY<float>* gensteps =  evt->getGenstepData() ;
-
     if(m_ocontext->isCompute()) 
     {
-        LOG(info) << "OEvent::upload (COMPUTE)" << " uploading gensteps " ;
+        LOG(info) << "OEvent::uploadGensteps (COMPUTE)"  ;
         OContext::upload<float>(m_genstep_buffer, gensteps);
     }
     else if(m_ocontext->isInterop())
     {
         assert(gensteps->getBufferId() > 0); 
-        LOG(info) << "OEvent::upload (INTEROP)" 
-                  << " gensteps handed to OptiX by referencing OpenGL buffer id  "
-                  ;
+        LOG(info) << "OEvent::uploadGensteps (INTEROP) SKIP OpenGL BufferId " << gensteps->getBufferId()  ;
     }
-    LOG(info) << "OEvent::upload DONE" ; 
 }
 
 

@@ -13,9 +13,9 @@
 
 #include "PLOG.hh"
 
-OpticksProfile::OpticksProfile(const char* dir, const char* name) 
+OpticksProfile::OpticksProfile(const char* name) 
    :
-   m_dir(strdup(dir)),
+   m_dir(NULL),
    m_name(BStr::concat(NULL,name,".npy")),
    m_columns("Time,DeltaTime,VM,DeltaVM"),
    m_tt(new TimesTable(m_columns)),
@@ -34,6 +34,11 @@ OpticksProfile::OpticksProfile(const char* dir, const char* name)
 }
 
 
+void OpticksProfile::setDir(const char* dir)
+{
+    m_dir = strdup(dir);
+}
+
 const char* OpticksProfile::getDir()
 {
     return m_dir ; 
@@ -41,6 +46,10 @@ const char* OpticksProfile::getDir()
 const char* OpticksProfile::getName()
 {
     return m_name ; 
+}
+std::string OpticksProfile::getPath()
+{
+    return NPYBase::path(m_dir, m_name);
 }
 
 
@@ -70,8 +79,12 @@ void OpticksProfile::stamp(T row, int count)
    float vm   = m_vm - m_vm0 ;     // vm since instanciation
    float dvm  = m_vm - m_vmprev ;  // vm since previous stamp
 
+   // the prev start at zero, so first dt and dvm give absolute m_t0 m_vm0 valules
+
    m_tt->add<T>(row, t, dt, vm, dvm,  count );
    m_npy->add(       t, dt, vm, dvm ); 
+
+   LOG(fatal) << "OpticksProfile::stamp " << m_tt->getLabel() ; 
 }
 
 
@@ -85,13 +98,17 @@ void OpticksProfile::load()
    load(m_dir); 
 }
 
+
+
 void OpticksProfile::save(const char* dir)
 {
+   assert(dir);
    m_tt->save(dir);
    m_npy->save(dir, m_name);
 }
 void OpticksProfile::load(const char* dir)
 {
+   assert(dir);
    m_tt->load(dir);
    m_npy = NPY<float>::load(dir, m_name);
 }
@@ -114,7 +131,10 @@ void OpticksProfile::dump(const char* msg)
     LOG(info) << msg << brief() ; 
   
     m_tt->dump(msg);
-    m_npy->dump(msg);
+    //m_npy->dump(msg);
+
+    LOG(info) << " npy " << m_npy->getShapeString() << " " << getPath() ; 
+
 }
 
 

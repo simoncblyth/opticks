@@ -122,6 +122,7 @@ CG4::CG4(OpticksHub* hub)
      m_ea(new CEventAction(m_hub)),
      m_initialized(false)
 {
+     OK_PROFILE("CG4::CG4");
      init();
 }
 
@@ -232,13 +233,11 @@ NPY<float>* CG4::propagate()
     OpticksEvent* evt = m_run->getG4Event();
     assert(evt && evt->isG4() && "Must OpticksRun::createEvent before CG4::propagate");
 
+    LOG(info) << "CG4::propagate(" << m_ok->getTagOffset() << ") " << evt->getDir() ; 
+
     initEvent(evt);
 
     unsigned int numG4Evt = evt->getNumG4Event();
-
-    LOG(info) << "CG4::propagate(" << m_ok->getTagOffset() << ")" 
-              << " numG4Evt " << numG4Evt
-               ; 
 
     OK_PROFILE("_CG4::propagate");
 
@@ -247,26 +246,29 @@ NPY<float>* CG4::propagate()
     OK_PROFILE("CG4::propagate");
 
     std::string runmac = m_cfg->getG4RunMac();
-    LOG(info) << "CG4::propagate [" << runmac << "]"  ;
     if(!runmac.empty()) execute(runmac.c_str());
-
 
     postpropagate();
 
+    NPY<float>* gs = m_collector->getGensteps(); 
 
-    return m_collector->getGensteps(); 
+
+
+    return gs ; 
 }
 
 void CG4::postpropagate()
 {
-    std::string finmac = m_cfg->getG4FinMac();
-    LOG(info) << "CG4::postpropagate [" << finmac << "]"  ;
+    LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ")"  ;
 
+    std::string finmac = m_cfg->getG4FinMac();
     if(!finmac.empty()) execute(finmac.c_str());
 
-    OpticksEvent* evt = m_hub->getG4Event();
+    OpticksEvent* evt = m_run->getG4Event();
     assert(evt);
     evt->postPropagateGeant4();
+
+    LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;
 }
 
 

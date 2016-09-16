@@ -4,6 +4,7 @@ class SLog ;
 template <typename T> class NPY ; 
 
 class OpticksHub ; 
+class Opticks ; 
 class OpticksIdx ; 
 class OpticksViz ; 
 class Opticks ; 

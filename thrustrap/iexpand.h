@@ -64,10 +64,12 @@ void iexpand(InputIterator  counts_first,
   difference_type counts_size = thrust::distance(counts_first, counts_last);
   difference_type output_size = thrust::distance(output_first, output_last);
 
+#ifdef DEBUG
   std::cout << "iexpand " 
             << " counts_size " << counts_size  
             << " output_size " << output_size  
             << std::endl ; 
+#endif
 
 
   thrust::device_vector<difference_type> output_offsets(counts_size, 0);

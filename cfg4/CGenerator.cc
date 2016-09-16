@@ -46,19 +46,11 @@ void CGenerator::init()
 void CGenerator::setSource(CSource* source)
 {
     m_source = source ; 
-
-   
-   // CRecorder* recorder = m_g4->getRecorder(); 
-   // m_source->setRecorder(recorder);  
-   // SEEMS NOT USED ???  PROBABLY FOR THE AS YET UNIMPLEMENTED PRIMARY RECORDING 
-   // CAUSES INIT ORDER ISSUE TOO, AS NEED Generator 
-   //
 }
 CSource* CGenerator::getSource()
 {
     return m_source ; 
 }
-
 
 void CGenerator::setNumG4Event(unsigned num)
 {
@@ -111,13 +103,9 @@ void CGenerator::configureEvent(OpticksEvent* evt)
 
         evt->setNumG4Event(getNumG4Event());
         evt->setNumPhotonsPerG4Event(getNumPhotonsPerG4Event()) ; 
-
-          //  m_run->setGensteps(gs); // <-- this will switch on static running as numPhotons is known 
-          //  setting of gensteps happens externally at a higher level
-
-        evt->zero();            // static approach requires allocation ahead
+        evt->zero();  // static approach requires allocation ahead
     
-        evt->dumpDomains("CGenerator::configureEvent");
+        //evt->dumpDomains("CGenerator::configureEvent");
     } 
     else
     {

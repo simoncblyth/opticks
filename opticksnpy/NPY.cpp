@@ -6,7 +6,6 @@ namespace fs = boost::filesystem;
 
 #include "BFile.hh"
 #include "BBufSpec.hh"
-#include "BOpticksEvent.hh"
 
 #include "NSlice.hpp"
 #include "NGLM.hpp"
@@ -328,19 +327,21 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 template <typename T>
 NPY<T>* NPY<T>::load(const char* dir, const char* name, bool quietly)
 {
-    std::string path = BOpticksEvent::path(dir, name);
+    std::string path = NPYBase::path(dir, name);
     return load(path.c_str(), quietly);
 }
+
+
 template <typename T>
 void NPY<T>::save(const char* dir, const char* name)
 {
-    std::string path = BOpticksEvent::path(dir, name);
+    std::string path = NPYBase::path(dir, name);
     save(path.c_str());
 }
 template <typename T>
 bool NPY<T>::exists(const char* dir, const char* name)
 {
-    std::string path = BOpticksEvent::path(dir, name);
+    std::string path = NPYBase::path(dir, name);
     return exists(path.c_str());
 }
 
@@ -354,13 +355,13 @@ NPY<T>* NPY<T>::load(const char* tfmt, const char* source, const char* tag, cons
     //     arg order twiddling done here is transitional to ease the migration 
     //     once working in the close to old arg order, can untwiddling all the calls
     //
-    std::string path = BOpticksEvent::path(det, source, tag, tfmt );
+    std::string path = NPYBase::path(det, source, tag, tfmt );
     return load(path.c_str(),quietly);
 }
 template <typename T>
 void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const char* det)
 {
-    std::string path = BOpticksEvent::path(det, source, tag, tfmt );
+    std::string path = NPYBase::path(det, source, tag, tfmt );
     save(path.c_str());
 }
 
@@ -369,7 +370,7 @@ void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const c
 template <typename T>
 bool NPY<T>::exists(const char* tfmt, const char* source, const char* tag, const char* det)
 {
-    std::string path = BOpticksEvent::path(det, source, tag, tfmt );
+    std::string path = NPYBase::path(det, source, tag, tfmt );
     return exists(path.c_str());
 }
 

@@ -50,6 +50,7 @@ class OXRAP_API OEvent
         void downloadSeedData();
     private:
         void upload(OpticksEvent* evt);
+        void uploadGensteps(OpticksEvent* evt);
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();

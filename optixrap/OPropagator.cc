@@ -178,7 +178,10 @@ void OPropagator::prelaunch()
 
     STimes* prelaunch_times = evt->getPrelaunchTimes() ;
 
+    OK_PROFILE("_OPropagator::prelaunch");
     m_ocontext->launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  m_entry_index ,  0, 0, prelaunch_times ); 
+    OK_PROFILE("OPropagator::prelaunch");
+
     m_count += 1 ; 
 
     LOG(info) << prelaunch_times->description("prelaunch_times");
@@ -197,7 +200,9 @@ void OPropagator::launch()
     OpticksEvent* evt = m_oevt->getEvent(); 
     STimes* launch_times = evt->getLaunchTimes() ;
 
+    OK_PROFILE("_OPropagator::launch");
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
+    OK_PROFILE("OPropagator::launch");
 
     LOG(info) << launch_times->description("launch_times");
 }

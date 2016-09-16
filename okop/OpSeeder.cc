@@ -2,6 +2,7 @@
 
 #include "OpticksBufferControl.hh"  // okc-
 #include "OpticksSwitches.h"  
+#include "Opticks.hh"  
 #include "OpticksEvent.hh"  
 #include "OpticksHub.hh"    // okg-
 
@@ -41,6 +42,7 @@
 OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)  
    :
      m_hub(hub),
+     m_ok(hub->getOpticks()),
      m_oevt(oevt),
      m_ocontext(oevt->getOContext())
 {
@@ -138,16 +140,18 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
 
 void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 {
+    OK_PROFILE("_OpSeeder::seedPhotonsFromGenstepsViaOptiX");
+
     OBuf* genstep = m_oevt->getGenstepBuf() ;
     CBufSpec s_gs = genstep->bufspec();
 
 #ifdef WITH_SEED_BUFFER
-    LOG(warning) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
+    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
     OBuf* seed = m_oevt->getSeedBuf() ;
     CBufSpec s_se = seed->bufspec();
     seedPhotonsFromGenstepsImp(s_gs, s_se);
-    s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
-    s_se.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_se");
+    //s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
+    //s_se.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_se");
 #else
     LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : seeding to photon buf  " ; 
     OBuf* photon = m_oevt->getPhotonBuf() ;
@@ -164,6 +168,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 
 
     TIMER("seedPhotonsFromGenstepsViaOptiX"); 
+    OK_PROFILE("OpSeeder::seedPhotonsFromGenstepsViaOptiX");
 
 }
 

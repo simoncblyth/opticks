@@ -1189,6 +1189,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
       identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
       unsigned int boundary = q1.u.z ; 
+/*
       rtPrintf("bounds primIdx %u p %u partIdx %u boundary %u identity (%u,%u,%u,%u) partType %d \n", primIdx, p, partIdx, boundary,  
                   identity.x, 
                   identity.y, 
@@ -1196,7 +1197,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                   identity.w,
                   partType 
               );  
-
 
       rtPrintf("q0 %10.4f %10.4f %10.4f %10.4f q1 %10.4f %10.4f %10.4f %10.4f \n",
                   q0.f.x, 
@@ -1217,7 +1217,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                   q3.f.y, 
                   q3.f.z, 
                   q3.f.w);
-
+*/
 
       if(partType == 4) 
       {
@@ -1229,6 +1229,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       }
   } 
 
+
+/*
   rtPrintf("bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 
        result[0],
        result[1],
@@ -1237,6 +1239,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
        result[4],
        result[5]
      );
+*/
 
 }
 

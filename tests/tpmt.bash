@@ -100,8 +100,8 @@ tpmt--(){
     local tag=$(tpmt-tag)
     local det=$(tpmt-det)
 
-    #local photons=500000
-    local photons=100000
+    local photons=500000
+    #local photons=100000
 
     local zenith=0,1
     #local typ=disclin
@@ -152,11 +152,15 @@ tpmt--(){
 
    op.sh \
        --anakey tpmt \
-       --test --testconfig "$(join _ ${test_config[@]})" \
-       --torch --torchconfig "$(join _ ${torch_config[@]})" \
+       --save \
+       --testconfig "$(join _ ${test_config[@]})" \
+       --test \
+       --torchconfig "$(join _ ${torch_config[@]})" \
+       --torch \
+       --cat $det \
+       --tag $tag \
        --timemax 10 \
        --animtimemax 10 \
-       --cat $det --tag $tag --save \
        --eye 0.0,-0.5,0.0 \
        --geocenter \
        $* 

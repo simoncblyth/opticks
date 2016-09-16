@@ -65,6 +65,8 @@ void OKPropagator::uploadEvent()
 
 void OKPropagator::propagate()
 {
+    OK_PROFILE("OKPropagator::propagate.BEG");
+
     OpticksEvent* evt = m_hub->getEvent();
 
     assert(evt);
@@ -78,7 +80,6 @@ void OKPropagator::propagate()
     m_engine->propagate();        //  seedPhotonsFromGensteps, zeroRecords, propagate, indexSequence, indexBoundaries
 
 
-
     if(m_viz) m_viz->indexPresentationPrep();
 
     bool trivial = m_ok->isTrivial();
@@ -88,6 +89,8 @@ void OKPropagator::propagate()
     if(trivial) trivialCheck();
 
     LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE "   ;
+
+    OK_PROFILE("OKPropagator::propagate.END");
 }
 
 

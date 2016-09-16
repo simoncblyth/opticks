@@ -14,6 +14,7 @@
 
 //brap- 
 #include "BStr.hh"
+#include "BOpticksEvent.hh"
 
 
 #include "Parameters.hpp"
@@ -49,6 +50,20 @@ const char* NPYBase::TypeName(Type_t type)
     } 
     return name ; 
 }
+
+
+std::string NPYBase::path(const char* dir, const char* name)
+{
+    std::string path = BOpticksEvent::path(dir, name);
+    return path ; 
+}
+
+std::string NPYBase::path(const char* det, const char* source, const char* tag, const char* tfmt)
+{
+    std::string path = BOpticksEvent::path(det, source, tag, tfmt );
+    return path ; 
+}
+
 
 int NPYBase::checkNumItems(NPYBase* data)
 {

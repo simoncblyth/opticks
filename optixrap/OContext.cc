@@ -117,21 +117,6 @@ bool OContext::isInterop()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void OContext::setStackSize(unsigned int stacksize)
 {
     LOG(debug) << "OContext::setStackSize " << stacksize ;  
@@ -481,7 +466,7 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
     ss 
        << std::setw(10) << name
        << std::setw(20) << npy->getShapeString()
-       << label 
+       << " " << label 
        << " size " << size ; 
        ;
     std::string hdr = ss.str();
@@ -489,13 +474,13 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
     if(format == RT_FORMAT_USER )
     {
         buffer->setElementSize(sizeof(T));
-        LOG(info) << hdr
+        LOG(debug) << hdr
                   << " elementsize " << sizeof(T)
                   ;
     }
     else
     {
-        LOG(info) << hdr ;
+        LOG(debug) << hdr ;
     }
     
 
@@ -552,7 +537,7 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool seed)
     {
          assert(type == NPYBase::UINT);
          format = RT_FORMAT_UNSIGNED_INT ;
-         LOG(info) << "OContext::getFormat override format for seed " ; 
+         LOG(debug) << "OContext::getFormat override format for seed " ; 
     }
     return format ; 
 }

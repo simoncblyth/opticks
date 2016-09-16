@@ -10,13 +10,17 @@ template <typename T> class NPY ;
 class OKCORE_API OpticksProfile 
 {
     public:
-       OpticksProfile(const char* dir="$TMP", const char* name="OpticksProfile");
+       OpticksProfile(const char* name="OpticksProfile");
        template <typename T> void stamp(T row, int count);
        void save();
        void load();
        void dump(const char* msg="OpticksProfile::dump");
-       const char* getName();
+
+       void setDir(const char* dir);
        const char* getDir();
+       const char* getName();
+       std::string getPath();
+
        std::string brief();
     private:
        void setT(float t);

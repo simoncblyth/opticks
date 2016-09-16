@@ -34,6 +34,8 @@ class NPY_API NPYBase {
 
        static bool GLOBAL_VERBOSE ; 
        static int checkNumItems(NPYBase* data);
+       static std::string path(const char* dir, const char* name);
+       static std::string path(const char* det, const char* source, const char* tag, const char* tfmt);
    public:
         NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
         virtual ~NPYBase();

@@ -25,11 +25,11 @@ class OKG4_API OKG4Mgr {
    private:
        SLog*          m_log ; 
        Opticks*       m_ok ; 
+       OpticksRun*    m_run ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 
        int            m_num_event ; 
        OpticksGen*    m_gen ; 
-       OpticksRun*    m_run ; 
        CG4*           m_g4 ; 
        OpticksViz*    m_viz ; 
        OKPropagator*  m_propagator ; 

@@ -1,28 +1,23 @@
 #include "Opticks.hh"
-#include "OpticksHub.hh"
 #include "OpticksRun.hh"
 #include "OpticksEvent.hh"
 
 #include "PLOG.hh"
 
-OpticksRun::OpticksRun(OpticksHub* hub) 
+OpticksRun::OpticksRun(Opticks* ok) 
    :
-   m_hub(hub),
-   m_ok(hub->getOpticks()),
+   m_ok(ok),
    m_g4evt(NULL),
    m_evt(NULL)
 {
-    init();
+    OK_PROFILE("OpticksRun::OpticksRun");
 }
-
-void OpticksRun::init()
-{
-}
-
-
 void OpticksRun::createEvent(unsigned tagoffset)
 {
     m_ok->setTagOffset(tagoffset);
+    // tagoffset is recorded with Opticks::setTagOffset within the makeEvent, but need it here before that 
+
+    OK_PROFILE("OpticksRun::createEvent.BEG");
 
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
@@ -33,7 +28,25 @@ void OpticksRun::createEvent(unsigned tagoffset)
     std::string tstamp = m_g4evt->getTimeStamp();
     m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
 
-    LOG(info) << "OpticksRun::createEvent(" << tagoffset << ") DONE " ; 
+    LOG(info) << "OpticksRun::createEvent(" 
+              << tagoffset 
+              << ") " 
+              << tstamp 
+              << "[ "
+              << " ok:" << m_evt->getId() << " " << m_evt->getDir() 
+              << " g4:" << m_g4evt->getId() << " " << m_g4evt->getDir()
+              << "] DONE "
+              ; 
+
+    OK_PROFILE("OpticksRun::createEvent.END");
+}
+
+void OpticksRun::resetEvent()
+{
+    OK_PROFILE("OpticksRun::resetEvent.BEG");
+    m_g4evt->reset();
+    m_evt->reset();
+    OK_PROFILE("OpticksRun::resetEvent.END");
 }
 
 
@@ -46,9 +59,10 @@ OpticksEvent* OpticksRun::getEvent()
     return m_evt ; 
 }
 
-
 void OpticksRun::setGensteps(NPY<float>* gensteps)
 {
+    LOG(info) << "OpticksRun::setGensteps " << gensteps->getShapeString() ;  
+
     assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
     m_g4evt->setGenstepData(gensteps);
@@ -74,6 +88,31 @@ void OpticksRun::passBaton()
     m_evt->setGenstepData(genstep);
 }
 
+void OpticksRun::saveEvent()
+{
+    OK_PROFILE("OpticksRun::saveEvent.BEG");
+    // they skip if no photon data
+    if(m_g4evt)
+    {
+        m_g4evt->save();
+    } 
+    if(m_evt)
+    {
+        m_evt->save();
+    } 
+    OK_PROFILE("OpticksRun::saveEvent.END");
+}
+
+void OpticksRun::anaEvent()
+{
+    OK_PROFILE("OpticksRun::anaEvent.BEG");
+    if(m_g4evt && m_evt )
+    {
+        m_ok->ana();
+    }
+    OK_PROFILE("OpticksRun::anaEvent.END");
+}
+
 
 void OpticksRun::loadEvent()
 {
@@ -89,18 +128,5 @@ void OpticksRun::loadEvent()
     }
 
     if(m_ok->isExit()) exit(EXIT_FAILURE) ;
-}
-
-void OpticksRun::saveEvent()
-{
-    // they skip if no photon data
-    if(m_g4evt)
-    {
-        m_g4evt->save();
-    } 
-    if(m_evt)
-    {
-        m_evt->save();
-    } 
 }
 

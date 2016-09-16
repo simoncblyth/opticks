@@ -1,6 +1,5 @@
 #pragma once 
 
-class OpticksHub ; 
 class Opticks ; 
 class OpticksEvent ; 
 template <typename T> class NPY ; 
@@ -10,9 +9,8 @@ template <typename T> class NPY ;
 class OKGEO_API OpticksRun 
 { 
     public:
-        OpticksRun(OpticksHub* hub);
+        OpticksRun(Opticks* ok);
     private:
-        void init();
         void passBaton();
     public:
         OpticksEvent* getEvent();
@@ -21,10 +19,11 @@ class OKGEO_API OpticksRun
         void setGensteps(NPY<float>* gs);
 
         void createEvent(unsigned tagoffset=0);  
+        void resetEvent();  
         void loadEvent();
-        void saveEvent();
+        void saveEvent(); 
+        void anaEvent(); // analysis based on saved evts 
     private:
-        OpticksHub*    m_hub ; 
         Opticks*       m_ok ; 
         OpticksEvent*  m_g4evt ; 
         OpticksEvent*  m_evt ; 

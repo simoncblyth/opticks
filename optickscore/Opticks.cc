@@ -97,6 +97,7 @@ void Opticks::setRC(int rc)
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
+       m_ok(this),
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
@@ -122,11 +123,12 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_event_count(0),
        m_domains_configured(false),
        m_mode(NULL),
-       m_profile(NULL),
+       m_profile(new OpticksProfile("Opticks")),
        m_ana(new OpticksAna(this)),
        m_rc(0),
        m_tagoffset(0)
 {
+       OK_PROFILE("Opticks::Opticks");
        init();
 }
 
@@ -150,7 +152,6 @@ void Opticks::postpropagate()
 {
    saveProfile();
    dumpProfile("Opticks::postpropagate");
-   ana();    
 }
 
 void Opticks::ana()
@@ -404,7 +405,7 @@ void Opticks::configure()
 
     defineEventSpec();
 
-    m_profile = new OpticksProfile(getEventFold(), "Opticks");
+    m_profile->setDir(getEventFold());
 
     const std::string& ssize = m_cfg->getSize();
 
@@ -724,15 +725,17 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 {
     setTagOffset(tagoffset) ; 
 
-    LOG(info) << "Opticks::makeEvent" 
-              << ( ok ? " OK " : " G4 " )
-              << " tagoffset " << tagoffset 
-              << " id " << m_event_count 
-              ;
-
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
 
-    evt->setId(m_event_count) ;   // start from id 0 
+    evt->setId(m_event_count) ;   // starts from id 0 
+    evt->setOpticks(this);
+
+
+    LOG(debug) << "Opticks::makeEvent" 
+               << ( ok ? " OK " : " G4 " )
+               << " tagoffset " << tagoffset 
+               << " id " << evt->getId() 
+               ;
 
     m_event_count += 1 ; 
 

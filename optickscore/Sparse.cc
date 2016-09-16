@@ -71,7 +71,7 @@ void Sparse<T>::count_unique()
                                        std::not_equal_to<T>()    // pair-by-pair operator, returning 1 at edges 
                                       );  
 
-    LOG(info) << "Sparse<T>::count_unique"
+    LOG(debug) << "Sparse<T>::count_unique"
               << " label " << m_label
               << " num_unique " << m_num_unique 
               ;
@@ -171,7 +171,7 @@ void Sparse<T>::reduce_by_key(std::vector<T>& data)
         m_valuecount[unique++] = P(value, count) ;
     }
 
-    LOG(info) << "Sparse<T>::reduce_by_key"
+    LOG(debug) << "Sparse<T>::reduce_by_key"
               << " unique " << unique 
               << " num_unique " << m_num_unique 
               ;

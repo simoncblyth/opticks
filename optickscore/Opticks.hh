@@ -22,6 +22,7 @@ class Types ;
 class Typ ;
 class Index ; 
 
+class Opticks ; 
 class OpticksEventSpec ;
 class OpticksEvent ;
 class OpticksMode ;
@@ -49,6 +50,7 @@ class OpticksAna ;
 
 class OKCORE_API Opticks {
        friend class OpticksCfg<Opticks> ; 
+       friend class OpticksRun ; 
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
    public:
@@ -226,6 +228,7 @@ class OKCORE_API Opticks {
    private:
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
+       Opticks*             m_ok ;   // for OK_PROFILE 
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 

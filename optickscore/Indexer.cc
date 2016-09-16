@@ -71,7 +71,7 @@ void Indexer<T>::splitSequence()
     typedef std::vector<T> V ;  
     V& seq = m_seq->data();
 
-    LOG(info) 
+    LOG(debug) 
               << "Indexer<T>::splitSequence" 
               << " num_photons " << num_photons
               << " m_seq shape " << m_seq->getShapeString()
@@ -94,7 +94,7 @@ void Indexer<T>::splitSequence()
        *(mat_v + i) = *(seq_v + 2*i + 1) ;
     }
 
-    LOG(info) << "Indexer<T>::splitSequence" 
+    LOG(debug) << "Indexer<T>::splitSequence" 
               << " his " << m_his->getShapeString()
               << " mat " << m_mat->getShapeString()
               ;

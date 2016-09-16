@@ -52,13 +52,16 @@ class NPY_API TimesTable {
     public:
         void save(const char* dir);
         void load(const char* dir);
+        const char* getLabel();
     private:
         void init(const std::vector<std::string>& columns);
+        void setLabel(const char* label);
     private:
         Times*   m_tx ; 
         Times*   m_ty ; 
         Times*   m_tz ; 
         Times*   m_tw ; 
+        const char* m_label ; 
 
         std::vector<Times*>      m_table ; 
         std::vector<std::string> m_lines ; 
