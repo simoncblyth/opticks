@@ -240,6 +240,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPY<unsigned>*          getSeedData();
    public:
        OpticksBufferControl* getPhotonCtrl();
+       OpticksBufferControl* getSeedCtrl();
    public:
        NPYBase*             getData(const char* name);
        NPYSpec*             getSpec(const char* name);
@@ -318,6 +319,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        NPY<unsigned>*           m_seed_data ;
 
        OpticksBufferControl*  m_photon_ctrl ; 
+       OpticksBufferControl*  m_seed_ctrl ; 
        OpticksDomain*        m_domain ; 
 
        G4StepNPY*      m_g4step ; 

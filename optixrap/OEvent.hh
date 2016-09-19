@@ -62,7 +62,7 @@ class OXRAP_API OEvent
         OBuf* getSequenceBuf();
         OBuf* getRecordBuf();
 #endif
-        void markDirtyPhotonBuffer();
+        void markDirty();
     private:
         void createBuffers(OpticksEvent* evt);
         void resizeBuffers(OpticksEvent* evt);
@@ -76,6 +76,7 @@ class OXRAP_API OEvent
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 
         bool            m_photonMarkDirty ; 
+        bool            m_seedMarkDirty ; 
     protected:
         optix::Buffer   m_genstep_buffer ; 
         optix::Buffer   m_photon_buffer ; 

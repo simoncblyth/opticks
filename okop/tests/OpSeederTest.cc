@@ -79,7 +79,7 @@ int main(int argc, char** argv)
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 
         seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer using the genstep numPhotons for each step
-        oevt.markDirtyPhotonBuffer();         // inform OptiX that must sync up the photon buffer (skipped at lower level when WITH_SEED_BUFFER)
+        oevt.markDirty();                     // inform OptiX that must sync buffers that are using ctrl: BUFFER_COPY_ON_DIRTY
 
         propagator.launch();                  // write the photon, record and sequence buffers
 

@@ -41,6 +41,7 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    m_context(ocontext->getContext()),
    m_evt(NULL),
    m_photonMarkDirty(false),
+   m_seedMarkDirty(false),
    m_genstep_buf(NULL),
    m_photon_buf(NULL),
 #ifdef WITH_RECORD
@@ -71,6 +72,10 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
     NPY<unsigned>* se = evt->getSeedData() ;
     assert(se);
+
+    OpticksBufferControl* seedCtrl = evt->getSeedCtrl();
+    m_seedMarkDirty = seedCtrl->isSet("BUFFER_COPY_ON_DIRTY") ;
+
     m_seed_buffer = m_ocontext->createBuffer<unsigned>( se, "seed");  // name:seed triggers special case non-quad handling  
     m_context["seed_buffer"]->set( m_seed_buffer );
     m_seed_buf = new OBuf("seed", m_seed_buffer);
@@ -109,17 +114,34 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
 
 
-void OEvent::markDirtyPhotonBuffer()
+void OEvent::markDirty()
 {
+
+#ifdef WITH_SEED_BUFFER
+
+     if(m_seedMarkDirty)
+     {
+         LOG(info) << "OEvent::markDirty(seed) PROCEED" ;
+         m_seed_buffer->markDirty();   
+     }
+     else
+     {
+         LOG(info) << "OEvent::markDirty(seed) SKIP " ;
+     }
+
+#else
+
      if(m_photonMarkDirty)
      {
-         LOG(info) << "OEvent::markDirtyPhotonBuffer PROCEED" ;
+         LOG(info) << "OEvent::markDirty(photon) PROCEED" ;
          m_photon_buffer->markDirty();   
      }
      else
      {
-         LOG(info) << "OEvent::markDirtyPhotonBuffer SKIP " ;
+         LOG(info) << "OEvent::markDirty(photon) SKIP " ;
      }
+
+#endif
 
 /*
 2016-09-12 20:50:24.482 INFO  [438131] [OEvent::markDirtyPhotonBuffer@98] OEvent::markDirtyPhotonBuffer

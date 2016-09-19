@@ -6,6 +6,7 @@ project(${name})
 set(TEST_SOURCES
     OpIndexerTest.cc
     OpSeederTest.cc
+    dirtyBufferTest
 )
 
 foreach(SRC ${TEST_SOURCES})

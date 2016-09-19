@@ -69,10 +69,7 @@ void OpEngine::propagate()
 {
     m_seeder->seedPhotonsFromGensteps();  // distributes genstep indices into the photons buffer OR seed buffer
 
-#ifdef WITH_SEED_BUFFER
-#else
-    m_oevt->markDirtyPhotonBuffer();      // inform OptiX that must sync with the CUDA modified photon buffer
-#endif
+    m_oevt->markDirty();                   // inform OptiX that must sync with the CUDA modified photon/seed depending on WITH_SEED_BUFFER 
 
     //m_zeroer->zeroRecords();              // zeros on GPU record buffer via OptiX or OpenGL  (not working OptiX 4 in interop)
 

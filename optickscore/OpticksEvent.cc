@@ -13,6 +13,9 @@
 #include <cstring>
 #include <iomanip>
 
+
+#include "OpticksCMakeConfig.hh"
+
 // sysrap-
 #include "STimes.hh"
 
@@ -127,6 +130,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_seed_data(NULL),
 
           m_photon_ctrl(NULL),
+          m_seed_ctrl(NULL),
           m_domain(NULL),
 
           m_g4step(NULL),
@@ -664,7 +668,19 @@ NPYSpec* OpticksEvent::GenstepSpec()
 
 NPYSpec* OpticksEvent::SeedSpec()
 {
+    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,VERBOSE_MODE,BUFFER_COPY_ON_DIRTY") ;
+
+/*
+#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
     return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY") ;
+#elif OXRAP_OPTIX_VERSION == 400000
+    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
+#else  
+     assert(0 && "UNEXPECTED OXRAP_OPTIX_VERSION ");
+     return NULL ;  
+#endif
+*/
+
 }
 
 void OpticksEvent::createSpec()
@@ -1085,6 +1101,17 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
 
 
 
+OpticksBufferControl* OpticksEvent::getSeedCtrl()
+{
+   return m_seed_ctrl ; 
+}
+void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
+{
+    setBufferControl(seed_data);
+    m_seed_data = seed_data  ;
+    m_seed_ctrl = new OpticksBufferControl(m_seed_data->getBufferControlPtr());
+    m_seed_attr = new MultiViewNPY("seed_attr");
+}
 
 OpticksBufferControl* OpticksEvent::getPhotonCtrl()
 {
@@ -1285,13 +1312,7 @@ delta:gl blyth$ find . -type f -exec grep -H rsel {} \;
 
 }
 
-void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
-{
-    setBufferControl(seed_data);
-    m_seed_data = seed_data  ;
-    m_seed_attr = new MultiViewNPY("seed_attr");
 
-}
 
 void OpticksEvent::setSequenceData(NPY<unsigned long long>* sequence_data)
 {

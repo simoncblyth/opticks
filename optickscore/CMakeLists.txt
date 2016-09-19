@@ -12,9 +12,9 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 
-#   ${CMAKE_CURRENT_BINARY_DIR}/inc
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_BINARY_DIR}/inc
 
    ${PLog_INCLUDE_DIRS} 
    ${OpticksBoost_INCLUDE_DIRS} 

@@ -15,6 +15,7 @@ find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 # OptiX not playing ball with CMake version conventions, even EXACT has no teeth, 
 # so parse the optix.h header to get the #define OPTIX_VERSION into CMake variable
 # This means can know the version at configure time
+# the value is written to inc/OpticksCMakeConfig.hh by top level CMakeLists.txt
 
 set(OXRAP_OPTIX_VERSION 0 PARENT_SCOPE)
 if(OptiX_FOUND)
@@ -172,6 +173,7 @@ set(SOURCES
     cu/generate.cu
     cu/textureTest.cu
     cu/bufferTest.cu
+    cu/dirtyBufferTest.cu
     cu/minimalTest.cu
     cu/LTminimalTest.cu
     cu/axisTest.cu
@@ -203,6 +205,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_tex0Test.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_texTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_bufferTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_dirtyBufferTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OEventTest.cu.ptx
 )
 

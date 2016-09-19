@@ -149,9 +149,16 @@ Huh the below are working, but OKTest as used by tpmt is failing for gt 1::
    OpSeederTest --compute --trivial --multievent 10    
        ##
        ## WHY IS THIS SUCCEEDING TO READ FROM GENSTEP ???
-       ## LOOKING MORE CLOSELY : THE OLD STUCK AT ZERO SEED ISSUE
+       ## ACTUALLY LOOKING MORE CLOSELY : THE OLD STUCK AT ZERO SEED ISSUE
        ## IS APPARENT FROM THE 2nd EVT 
        ##
+
+
+
+
+
+See :doc:`optix_cuda_interop_3080` 
+
 
 
 

@@ -85,8 +85,8 @@ int main(int argc, char** argv)
         if(viz) viz->uploadEvent();           // via Scene and Rdr (only interop buffers)
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 
-        seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer using the genstep numPhotons for each step
-        oevt.markDirtyPhotonBuffer();         // inform OptiX that must sync up the photon buffer
+        seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer (or WITH_SEED_BUFFER the seed buffer) using the genstep numPhotons for each step
+        oevt.markDirty();                     // inform OptiX that must sync up input buffers with ctrl BUFFER_COPY_ON_DIRTY
 
         propagator.launch();                  // write the photon, record and sequence buffers
 
