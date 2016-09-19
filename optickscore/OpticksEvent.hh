@@ -85,6 +85,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
       static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
       static NPYSpec* GenstepSpec();
+      static NPYSpec* SeedSpec();
    public:
        static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);

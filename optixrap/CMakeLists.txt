@@ -6,7 +6,33 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake")
 
 include(EnvBuildOptions)
 
-find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
+find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)   
+
+
+
+###### Find #define OPTIX_VERSION by parsing optix.h set variable at parent scope 
+#
+# OptiX not playing ball with CMake version conventions, even EXACT has no teeth, 
+# so parse the optix.h header to get the #define OPTIX_VERSION into CMake variable
+# This means can know the version at configure time
+
+set(OXRAP_OPTIX_VERSION 0 PARENT_SCOPE)
+if(OptiX_FOUND)
+   message(STATUS "${name}.OPTICKS_OPTIX_VERSION : ${OPTICKS_OPTIX_VERSION}  FOUND ")
+   message(STATUS "${name}.OptiX_INCLUDE_DIRS    : ${OptiX_INCLUDE_DIRS} ")
+   message(STATUS "${name}.OptiX_LIBRARIES       : ${OptiX_LIBRARIES} ")
+   file(READ "${OptiX_INCLUDE_DIRS}/optix.h" _contents)
+   #message(STATUS "${name}.contents : ${_contents} ")
+   string(REGEX REPLACE "\n" ";" _contents "${_contents}")
+   foreach(_line ${_contents})
+        if (_line MATCHES "#define OPTIX_VERSION ([0-9]+) ")
+            set(OXRAP_OPTIX_VERSION ${CMAKE_MATCH_1} PARENT_SCOPE)
+            message(STATUS "${name}._line ${_line} ===> ${CMAKE_MATCH_1} ") 
+        endif()
+   endforeach()
+else(OptiX_FOUND)
+   message(STATUS "${name}.OPTICKS_OPTIX_VERSION : ${OPTICKS_OPTIX_VERSION}  NOT-FOUND ")
+endif(OptiX_FOUND)
 
 
 ########################## from OPTIX_SDK_DIR/CMake

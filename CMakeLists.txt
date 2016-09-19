@@ -21,7 +21,6 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
 
-
 set(DUMP ON)
 if(DUMP)
    # https://cmake.org/Wiki/CMake_Useful_Variables
@@ -74,6 +73,7 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
    find_package(CUDA ${OPTICKS_CUDA_VERSION})
    find_package(OptiX ${OPTICKS_OPTIX_VERSION})
 
+
    if(CUDA_FOUND AND OptiX_FOUND)
        set(WITH_OPTIX ON)
        add_subdirectory(cudarap)        
@@ -81,6 +81,9 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
        add_subdirectory(optixrap)
        add_subdirectory(okop)
        add_subdirectory(opticksgl)
+       
+       message(STATUS "${name}.OXRAP_OPTIX_VERSION : ${OXRAP_OPTIX_VERSION} ")
+
    else(CUDA_FOUND AND OptiX_FOUND)
        set(WITH_OPTIX OFF)
        message("${name}.Failed to find at least CUDA ${OPTICKS_CUDA_VERSION} and OptiX ${OPTICKS_OPTIX_VERSION} ")
@@ -105,5 +108,12 @@ if(REST)
    endif(Geant4_FOUND)
 
 endif(REST)
+
+
+
+# collects version defines, currently only OXRAP_OPTIX_VERSION
+configure_file(OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh)
+
+
 
 

@@ -20,6 +20,7 @@ endif(UNIX)
 #message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
 
 include_directories(
+   ${CMAKE_BINARY_DIR}/inc         # top level inc for OpticksCMakeConfig.hh 
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}
    ${PLog_INCLUDE_DIRS} 
