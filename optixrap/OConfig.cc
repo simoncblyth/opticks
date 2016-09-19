@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -9,7 +10,6 @@
 
 #include "PLOG.hh"
 
-// #include "Config.hh"  // ptxpath, RNGDIR
 
 
 OConfig::OConfig(optix::Context context )
@@ -22,15 +22,30 @@ OConfig::OConfig(optix::Context context )
     
 }
 
-//const char* OConfig::RngDir()
-//{
-//    return RNGDIR ; 
-//} 
-
 void OConfig::Print(const char* msg)
 {
     printf("%s \n", msg);
 }
+
+
+unsigned OConfig::OptiXVersion()
+{
+   return OPTIX_VERSION ; 
+}
+
+bool OConfig::DefaultWithTop()
+{
+    unsigned version = OptiXVersion();
+    bool with_top = false ; 
+    switch(version)
+    {
+       case 3080:  with_top = false ;break; 
+       case 40000: with_top = true ;break;      
+       default: assert(0 && "unexpected OPTIX_VERSION") ;break;
+    }
+    return with_top ;
+}
+
 
 optix::Program OConfig::createProgram(const char* filename, const char* progname )
 {
@@ -229,7 +244,7 @@ unsigned int OConfig::getMultiplicity(RTformat format)
       case RT_FORMAT_SHORT3: mul=3 ; break ;
       case RT_FORMAT_SHORT4: mul=4 ; break ;
 
-#if OPTIX_VERSION >= 400
+#if OPTIX_VERSION > 3080
       case RT_FORMAT_HALF:  mul=1 ; break ;
       case RT_FORMAT_HALF2: mul=2 ; break ;
       case RT_FORMAT_HALF3: mul=3 ; break ;
@@ -288,7 +303,7 @@ const char* OConfig::getFormatName(RTformat format)
       case RT_FORMAT_SHORT3: name=_RT_FORMAT_SHORT3 ; break ;
       case RT_FORMAT_SHORT4: name=_RT_FORMAT_SHORT4 ; break ;
 
-#if OPTIX_VERSION >= 400
+#if OPTIX_VERSION > 3080
       case RT_FORMAT_HALF:  name=_RT_FORMAT_HALF ; break ;
       case RT_FORMAT_HALF2: name=_RT_FORMAT_HALF2 ; break ;
       case RT_FORMAT_HALF3: name=_RT_FORMAT_HALF3 ; break ;
@@ -342,7 +357,7 @@ const char* OConfig::getFormatName(RTformat format)
    const char* OConfig::_RT_FORMAT_SHORT3 = "SHORT3" ;
    const char* OConfig::_RT_FORMAT_SHORT4 = "SHORT4" ;
 
-#if OPTIX_VERSION >= 400
+#if OPTIX_VERSION > 3080
    const char* OConfig::_RT_FORMAT_HALF = "HALF" ;
    const char* OConfig::_RT_FORMAT_HALF2 = "HALF2" ;
    const char* OConfig::_RT_FORMAT_HALF3 = "HALF3" ;

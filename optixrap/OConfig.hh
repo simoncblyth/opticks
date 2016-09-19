@@ -72,6 +72,8 @@ public:
    static unsigned int getMultiplicity(RTformat format);
    static const char* getFormatName(RTformat format);
    static void configureSampler(optix::TextureSampler& sampler, optix::Buffer& buffer);
+   static unsigned OptiXVersion();
+   static bool DefaultWithTop();
 public:
     OConfig(optix::Context context);
     void dump(const char* msg="OConfig::dump");

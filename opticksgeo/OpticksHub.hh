@@ -126,6 +126,7 @@ class OKGEO_API OpticksHub {
    private:
        SLog*            m_log ; 
        Opticks*         m_ok ; 
+       OpticksRun*      m_run ; 
        bool             m_immediate ; 
        OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ;  
@@ -145,7 +146,6 @@ class OKGEO_API OpticksHub {
    private:
        OpticksGen*          m_gen ; 
        OpticksGun*          m_gun ; 
-       OpticksRun*          m_run ; 
 
 
 

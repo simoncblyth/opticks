@@ -3,6 +3,8 @@
 #include <cassert>
 
 // optickscore-
+#include "Opticks.hh"
+#include "OpticksSwitches.h"
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
@@ -54,6 +56,7 @@
 OpIndexer::OpIndexer(OpticksHub* hub, OEvent* oevt)  
    :
      m_hub(hub),
+     m_ok(hub->getOpticks()),
      m_oevt(oevt),
      m_opticks(hub->getOpticks()),
      m_evt(NULL),
@@ -91,8 +94,10 @@ void OpIndexer::update()
 
     setNumPhotons(m_evt->getNumPhotons());
 
+#ifdef WITH_RECORD
     OBuf* seq = m_oevt ? m_oevt->getSequenceBuf() : NULL ;
     setSeq(seq);
+#endif
 
     OBuf* pho = m_oevt ? m_oevt->getPhotonBuf() : NULL ;
     setPho(pho);
@@ -102,14 +107,19 @@ void OpIndexer::update()
 void OpIndexer::setNumPhotons(unsigned int num_photons)
 {
 
+#ifdef WITH_RECORD
     NPY<unsigned long long>* seq = m_evt->getSequenceData() ;
     unsigned int x_num_photons = seq ? seq->getShape(0) : 0 ; 
+#else
+    NPY<float>* pho = m_evt->getPhotonData();
+    unsigned int x_num_photons = pho ? pho->getShape(0) : 0 ; 
+#endif
     bool expected = num_photons == x_num_photons ;
 
     if(!expected)
     {
         LOG(fatal) << "OpIndexer::setNumPhotons"
-                   << " discrepancy with sequence data length " 
+                   << " DISCREPANCY  " 
                    << " num_photons " << num_photons
                    << " x_num_photons " << x_num_photons
                    ; 
@@ -173,10 +183,11 @@ void OpIndexer::indexBoundaries()
 
 
 
-
-
+#ifdef WITH_RECORD
 void OpIndexer::indexSequence()
 {
+    OK_PROFILE("_OpIndexer::indexSequence");
+
     update();
 
     if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex"))
@@ -202,6 +213,7 @@ void OpIndexer::indexSequence()
     {
         indexSequenceInterop();
     }
+    OK_PROFILE("OpIndexer::indexSequence");
 }
 
 void OpIndexer::indexSequenceCompute()
@@ -375,5 +387,6 @@ void OpIndexer::dump(const TBuf& tphosel, const TBuf& trecsel)
         assert(nrecsel == m_maxrec*2*nsqa);
     } 
 }
+#endif
 
 

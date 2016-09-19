@@ -34,6 +34,7 @@
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 #include "OpticksEvent.hh"
+#include "OpticksRun.hh"
 #include "OpticksMode.hh"
 #include "OpticksEntry.hh"
 #include "OpticksProfile.hh"
@@ -98,6 +99,7 @@ void Opticks::setRC(int rc)
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
        m_ok(this),
+       m_profile(new OpticksProfile("Opticks")),
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
@@ -123,7 +125,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_event_count(0),
        m_domains_configured(false),
        m_mode(NULL),
-       m_profile(new OpticksProfile("Opticks")),
+       m_run(new OpticksRun(this)),
        m_ana(new OpticksAna(this)),
        m_rc(0),
        m_tagoffset(0)
@@ -139,9 +141,9 @@ void Opticks::profile(T label)
     m_profile->stamp<T>(label, m_tagoffset);
    // m_tagoffset is set by Opticks::makeEvent
 }
-void Opticks::dumpProfile(const char* msg)
+void Opticks::dumpProfile(const char* msg, const char* startswith)
 {
-   m_profile->dump(msg);
+   m_profile->dump(msg, startswith);
 }
 void Opticks::saveProfile()
 {
@@ -152,6 +154,8 @@ void Opticks::postpropagate()
 {
    saveProfile();
    dumpProfile("Opticks::postpropagate");
+   dumpProfile("Opticks::postpropagate", "OPropagator::launch");  // startswith filtering
+   dumpParameters("Opticks::postpropagate");
 }
 
 void Opticks::ana()
@@ -199,6 +203,9 @@ char* Opticks::getArgv0()
 }
 
 
+
+
+
 bool Opticks::hasArg(const char* arg)
 {
     bool has = false ; 
@@ -214,6 +221,12 @@ OpticksCfg<Opticks>* Opticks::getCfg()
 {
     return m_cfg ; 
 }
+OpticksRun* Opticks::getRun()
+{
+    return m_run ;  
+}
+
+
 
 Timer* Opticks::getTimer()
 {
@@ -223,6 +236,11 @@ Parameters* Opticks::getParameters()
 {
     return m_parameters ; 
 }
+void Opticks::dumpParameters(const char* msg)
+{
+    m_parameters->dump(msg);
+}
+
 
 OpticksResource* Opticks::getResource()
 {
@@ -811,6 +829,25 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     m_settings.w = record_max ;   
 
     return evt ; 
+}
+
+
+void Opticks::setOptiXVersion(unsigned version)
+{
+    m_parameters->add<unsigned>("OptiXVersion",version);
+}
+void Opticks::setGeant4Version(unsigned version)
+{
+    m_parameters->add<unsigned>("Geant4Version",version);
+}
+
+unsigned Opticks::getOptiXVersion()
+{
+    return m_parameters->get<unsigned>("OptiXVersion",0);
+}
+unsigned Opticks::getGeant4Version()
+{
+    return m_parameters->get<unsigned>("Geant4Version",0);
 }
 
 

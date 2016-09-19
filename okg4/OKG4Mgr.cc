@@ -36,7 +36,7 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     :
     m_log(new SLog("OKG4Mgr::OKG4Mgr")),
     m_ok(new Opticks(argc, argv)),  
-    m_run(new OpticksRun(m_ok)),
+    m_run(m_ok->getRun()),
     m_hub(new OpticksHub(m_ok)),                       // configure, loadGeometry and setupInputGensteps immediately
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),                    // after hub instanciation, as that configures Opticks
@@ -56,11 +56,11 @@ OKG4Mgr::~OKG4Mgr()
 
 void OKG4Mgr::propagate()
 {
-    if(m_ok->hasOpt("load"))
+    const Opticks& ok = *m_ok ;
+
+    if(ok("load"))
     {   
          m_run->loadEvent(); 
-
-         if(m_ok->isExit()) exit(EXIT_FAILURE) ; 
 
          if(m_viz) 
          {   
@@ -69,7 +69,7 @@ void OKG4Mgr::propagate()
              m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
          }   
     }   
-    else if(m_ok->hasOpt("nopropagate"))
+    else if(ok("nopropagate"))
     {   
         LOG(info) << "--nopropagate/-P" ;
     }   
@@ -96,7 +96,7 @@ void OKG4Mgr::propagate()
 
             m_propagator->propagate();
 
-            if(m_ok->hasOpt("save"))
+            if(ok("save"))
             {
                 m_run->saveEvent();
                 m_run->anaEvent();

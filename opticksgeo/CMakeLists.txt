@@ -101,7 +101,6 @@ set(SOURCES
     OpticksHub.cc
     OpticksGen.cc
     OpticksGun.cc
-    OpticksRun.cc
     OpticksIdx.cc
 
 )
@@ -116,7 +115,6 @@ set(HEADERS
     OpticksHub.hh
     OpticksGen.hh
     OpticksGun.hh
-    OpticksRun.hh
     OpticksIdx.hh
 )
 

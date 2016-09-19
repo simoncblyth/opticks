@@ -2,6 +2,7 @@
 
 #include "OpZeroer.hh"
 
+#include "OpticksSwitches.h"
 #include "OpticksEvent.hh"   // okc-
 #include "OpticksHub.hh"    // okg-
 
@@ -46,6 +47,7 @@ OpZeroer::OpZeroer(OpticksHub* hub, OEvent* oevt)
 
 void OpZeroer::zeroRecords()
 {
+#ifdef WITH_RECORD
     LOG(info)<<"OpZeroer::zeroRecords" ;
 
     if( m_ocontext->isInterop() )
@@ -56,11 +58,13 @@ void OpZeroer::zeroRecords()
     {    
         zeroRecordsViaOptiX();
     }    
+#endif
 }
 
 
 void OpZeroer::zeroRecordsViaOpenGL()
 {
+#ifdef WITH_RECORD
     OpticksEvent* evt = m_hub->getEvent();
 
     NPY<short>* record = evt->getRecordData(); 
@@ -78,11 +82,13 @@ void OpZeroer::zeroRecordsViaOpenGL()
     r_rec.unmapGLToCUDA();
 
     TIMER("zeroRecordsViaOpenGL"); 
+#endif
 }
 
 
 void OpZeroer::zeroRecordsViaOptiX()
 {
+#ifdef WITH_RECORD
     OBuf* record = m_oevt->getRecordBuf() ;
 
     CBufSpec s_rec = record->bufspec();
@@ -94,6 +100,7 @@ void OpZeroer::zeroRecordsViaOptiX()
     trec.zero();
 
     TIMER("zeroRecordsViaOptiX"); 
+#endif
 }
 
 

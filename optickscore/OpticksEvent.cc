@@ -670,7 +670,7 @@ void OpticksEvent::createSpec()
 
     m_genstep_spec = GenstepSpec();
 
-    m_seed_spec     = new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
+    m_seed_spec     = new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,BUFFER_COPY_ON_DIRTY") ;
 
 #ifdef WITH_SEED_BUFFER
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_OUTPUT_ONLY,INTEROP_PTR_FROM_OPENGL") ;

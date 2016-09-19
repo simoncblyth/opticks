@@ -49,13 +49,11 @@
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
 
-//#include "numquad.h"
 //#define DEBUG 1 
 #include "PerRayData_propagate.h"
 #include "OpticksSwitches.h"
 
 using namespace optix;
-
 
 rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
@@ -84,22 +82,14 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               photon_buffer;
 
-// TODO: find no-compromise way to flip these switches without recompilation 
-#define RECORD 1
-#ifdef RECORD
+#ifdef WITH_RECORD
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
-#endif
-
-//#define AUX 1
-#ifdef AUX
-rtBuffer<short4>                aux_buffer ; 
 #endif
 
 #ifdef WITH_SEED_BUFFER
 rtBuffer<unsigned>              seed_buffer ; 
 #endif
-
 
 
 rtBuffer<curandState, 1>       rng_states ;
@@ -175,7 +165,7 @@ RT_PROGRAM void dumpseed()
 
 #ifdef WITH_SEED_BUFFER
     unsigned int genstep_id = seed_buffer[photon_id] ;      
-   // rtPrintf("(dumpseed WITH_SEED_BUFFER) genstep_id %u \n", genstep_id );
+    rtPrintf("(dumpseed WITH_SEED_BUFFER) genstep_id %u \n", genstep_id );
 #else
     union quad phead ;
     phead.f = photon_buffer[photon_offset+0] ;   
@@ -202,6 +192,9 @@ RT_PROGRAM void dumpseed()
 
 RT_PROGRAM void trivial()
 {
+    // "trivial" goes one step beyond "dumpseed" in that 
+    // it attempts to read from the genstep buffer
+
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = unsigned(photon_id)*PNUMQUAD ; 
 
@@ -334,12 +327,7 @@ RT_PROGRAM void generate()
     int command = START ; 
     int slot = 0 ;
 
-
-#ifdef AUX
-    int MaterialIndex(0) ; 
-#endif
-
-#ifdef RECORD
+#ifdef WITH_RECORD
     unsigned long long seqhis(0) ;
     unsigned long long seqmat(0) ;
     unsigned int MAXREC = record_max ; 
@@ -399,23 +387,12 @@ RT_PROGRAM void generate()
 
         FLAGS(p, s, prd); 
 
-#ifdef RECORD
+#ifdef WITH_RECORD
         slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
         RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
 #endif
 
-#ifdef AUX
-        if(dbg)
-        {
-           rtPrintf("bounce %d \n", bounce);
-           rtPrintf("post  %10.3f %10.3f %10.3f %10.3f  % \n", p.position.x, p.position.y, p.position.z, p.time );
-           rtPrintf("polw  %10.3f %10.3f %10.3f %10.3f  % \n", p.polarization.x, p.polarization.y, p.polarization.z, p.wavelength );
-        } 
-        ASAVE(p, s, slot, slot_offset, MaterialIndex );
-#endif
         slot++ ; 
-
-
 
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
@@ -444,7 +421,7 @@ RT_PROGRAM void generate()
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 
 
-#ifdef RECORD
+#ifdef WITH_RECORD
     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  
     RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
 
@@ -452,10 +429,6 @@ RT_PROGRAM void generate()
     sequence_buffer[photon_id*2 + 1] = seqmat ;  
 #endif
 
-
-#ifdef AUX
-    ASAVE(p, s, slot, slot_offset, MaterialIndex);
-#endif
 
     rng_states[photon_id] = rng ;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OXPPNS.hh"
+#include "OpticksSwitches.h"
 
 class SLog ; 
 class Opticks; 
@@ -54,11 +55,13 @@ class OXRAP_API OEvent
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();
-        OBuf* getSequenceBuf();
+        OBuf* getSeedBuf();
         OBuf* getPhotonBuf();
         OBuf* getGenstepBuf();
+#ifdef WITH_RECORD
+        OBuf* getSequenceBuf();
         OBuf* getRecordBuf();
-        OBuf* getSeedBuf();
+#endif
         void markDirtyPhotonBuffer();
     private:
         void createBuffers(OpticksEvent* evt);
@@ -76,14 +79,18 @@ class OXRAP_API OEvent
     protected:
         optix::Buffer   m_genstep_buffer ; 
         optix::Buffer   m_photon_buffer ; 
+#ifdef WITH_RECORD
         optix::Buffer   m_record_buffer ; 
         optix::Buffer   m_sequence_buffer ; 
+#endif
         optix::Buffer   m_seed_buffer ; 
     private:
         OBuf*           m_genstep_buf ;
         OBuf*           m_photon_buf ;
+#ifdef WITH_RECORD
         OBuf*           m_record_buf ;
         OBuf*           m_sequence_buf ;
+#endif
         OBuf*           m_seed_buf ;
     private:
         bool            m_buffers_created ; 

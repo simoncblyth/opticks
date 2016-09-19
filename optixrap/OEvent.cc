@@ -43,8 +43,10 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    m_photonMarkDirty(false),
    m_genstep_buf(NULL),
    m_photon_buf(NULL),
+#ifdef WITH_RECORD
    m_record_buf(NULL),
    m_sequence_buf(NULL),
+#endif
    m_buffers_created(false)
 {
     (*m_log)("DONE");
@@ -67,6 +69,14 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_context["genstep_buffer"]->set( m_genstep_buffer );
     m_genstep_buf = new OBuf("genstep", m_genstep_buffer);
 
+    NPY<unsigned>* se = evt->getSeedData() ;
+    assert(se);
+    m_seed_buffer = m_ocontext->createBuffer<unsigned>( se, "seed");  // name:seed triggers special case non-quad handling  
+    m_context["seed_buffer"]->set( m_seed_buffer );
+    m_seed_buf = new OBuf("seed", m_seed_buffer);
+    m_seed_buf->setMultiplicity(1u);
+
+
     NPY<float>* photon = evt->getPhotonData() ; 
     assert(photon);
 
@@ -78,6 +88,8 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer);
 
+
+#ifdef WITH_RECORD
     NPY<short>* rx = evt->getRecordData() ;
     assert(rx);
     m_record_buffer = m_ocontext->createBuffer<short>( rx, "record");
@@ -91,14 +103,7 @@ void OEvent::createBuffers(OpticksEvent* evt)
     m_sequence_buf = new OBuf("sequence", m_sequence_buffer);
     m_sequence_buf->setMultiplicity(1u);
     m_sequence_buf->setHexDump(true);
-
-    NPY<unsigned>* se = evt->getSeedData() ;
-    assert(se);
-    m_seed_buffer = m_ocontext->createBuffer<unsigned>( se, "seed");  // name:seed triggers special case non-quad handling  
-    m_context["seed_buffer"]->set( m_seed_buffer );
-    m_seed_buf = new OBuf("seed", m_seed_buffer);
-    m_seed_buf->setMultiplicity(1u);
-
+#endif
 
 }
 
@@ -142,10 +147,15 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     assert(gensteps);
     OContext::resizeBuffer<float>(m_genstep_buffer, gensteps, "gensteps");
 
+    NPY<unsigned>* se = evt->getSeedData() ; 
+    assert(se);
+    OContext::resizeBuffer<unsigned>(m_seed_buffer, se , "seed");
+
     NPY<float>* photon = evt->getPhotonData() ; 
     assert(photon);
     OContext::resizeBuffer<float>(m_photon_buffer,  photon, "photon");
 
+#ifdef WITH_RECORD
     NPY<short>* rx = evt->getRecordData() ; 
     assert(rx);
     OContext::resizeBuffer<short>(m_record_buffer,  rx, "record");
@@ -153,11 +163,7 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     NPY<unsigned long long>* sq = evt->getSequenceData() ; 
     assert(sq);
     OContext::resizeBuffer<unsigned long long>(m_sequence_buffer, sq , "sequence");
-
-    NPY<unsigned>* se = evt->getSeedData() ; 
-    assert(se);
-    OContext::resizeBuffer<unsigned>(m_seed_buffer, se , "seed");
-
+#endif
 
 }
 
@@ -227,11 +233,17 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         NPY<float>* genstep = evt->getGenstepData();
         OContext::download<float>( m_genstep_buffer, genstep );
     }
+    if(mask & SEED)
+    {
+        NPY<unsigned>* se = evt->getSeedData();
+        OContext::download<unsigned>( m_seed_buffer, se );
+    }
     if(mask & PHOTON)
     {
        NPY<float>* photon = evt->getPhotonData();
        OContext::download<float>( m_photon_buffer, photon );
     }
+#ifdef WITH_RECORD
     if(mask & RECORD)
     {
         NPY<short>* rx = evt->getRecordData();
@@ -242,21 +254,15 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
         NPY<unsigned long long>* sq = evt->getSequenceData();
         OContext::download<unsigned long long>( m_sequence_buffer, sq );
     }
-    if(mask & SEED)
-    {
-        NPY<unsigned>* se = evt->getSeedData();
-        OContext::download<unsigned>( m_seed_buffer, se );
-    }
+#endif
 
     LOG(debug)<<"OEvent::download DONE" ;
 }
 
 
 
-OBuf* OEvent::getSequenceBuf()
-{
-    return m_sequence_buf ; 
-}
+
+
 OBuf* OEvent::getSeedBuf()
 {
     return m_seed_buf ; 
@@ -269,8 +275,18 @@ OBuf* OEvent::getGenstepBuf()
 {
     return m_genstep_buf ; 
 }
+
+
+#ifdef WITH_RECORD
 OBuf* OEvent::getRecordBuf()
 {
     return m_record_buf ; 
 }
+OBuf* OEvent::getSequenceBuf()
+{
+    return m_sequence_buf ; 
+}
+#endif
+
+
 

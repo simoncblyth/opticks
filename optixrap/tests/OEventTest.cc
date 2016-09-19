@@ -5,6 +5,8 @@
 
 #include "OEvent.hh"
 #include "OContext.hh"
+#include "OConfig.hh"
+
 #include "STimes.hh"
 #include "Opticks.hh"
 #include "OpticksHub.hh"
@@ -38,8 +40,12 @@ int main(int argc, char** argv)
     assert(gs0);
 
 
+    unsigned version = OConfig::OptiXVersion()  ;
+    LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
+    bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
+
     optix::Context context = optix::Context::create();
-    OContext ctx(context, OContext::COMPUTE);
+    OContext ctx(context, OContext::COMPUTE, with_top);
     int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
 
     OEvent* oevt = new OEvent(&hub, &ctx);   

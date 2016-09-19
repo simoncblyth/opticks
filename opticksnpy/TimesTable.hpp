@@ -39,7 +39,7 @@ class NPY_API TimesTable {
     public:
         TimesTable(const char* columns, const char* delim=","); 
         TimesTable(const std::vector<std::string>& columns);
-        void dump(const char* msg="TimesTable::dump");
+        void dump(const char* msg="TimesTable::dump", const char* startswith=NULL);
 
         unsigned getNumColumns();
         Times* getColumn(unsigned int j);
@@ -65,6 +65,7 @@ class NPY_API TimesTable {
 
         std::vector<Times*>      m_table ; 
         std::vector<std::string> m_lines ; 
+        std::vector<std::string> m_names ; 
 };
 
 #include "NPY_TAIL.hh"

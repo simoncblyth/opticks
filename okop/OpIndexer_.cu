@@ -3,6 +3,7 @@
 #include <cassert>
 
 // optickscore-
+#include "OpticksSwitches.h"  
 #include "OpticksConst.hh"  
 #include "OpticksEvent.hh"  
 
@@ -38,6 +39,8 @@
        }\
     }
 
+
+#ifdef WITH_RECORD
 
 void OpIndexer::indexSequenceViaThrust(
    TSparse<unsigned long long>& seqhis, 
@@ -146,7 +149,7 @@ void OpIndexer::indexSequenceImp(
 }
 
 
-
+#endif
 
 
 

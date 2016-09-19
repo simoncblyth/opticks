@@ -76,7 +76,8 @@ opticks-xcd(){  cd $(opticks-xdir); }
 opticks-optix-install-dir(){ 
     local t=$NODE_TAG
     case $t in 
-       D) echo /Developer/OptiX ;;
+       D_400) echo /Developer/OptiX_400 ;;
+       D) echo /Developer/OptiX_380 ;;
      GTL) echo ${MYENVTOP}/OptiX ;;
     H5H2) echo ${MYENVTOP}/OptiX ;;
        X) echo /usr/local/optix-3.8.0/NVIDIA-OptiX-SDK-3.8.0-linux64 ;;

@@ -74,9 +74,6 @@ Produce single event to examine and check it with::
    TrivialTest --cerenkov
 
 
-   
-
-
 For multievent (1 is default anyhow so this is same as above)::
 
    OKTest --cerenkov --trivial --save --compute --multievent 1

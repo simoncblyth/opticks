@@ -73,10 +73,11 @@
 //    this means is usable from anywhere, so can mop up config
 //
 
-OpticksHub::OpticksHub(Opticks* opticks) 
+OpticksHub::OpticksHub(Opticks* ok) 
    :
    m_log(new SLog("OpticksHub::OpticksHub")),
-   m_ok(opticks),
+   m_ok(ok),
+   m_run(m_ok->getRun()),
    m_geometry(NULL),
    m_ggeo(NULL),
    m_composition(new Composition),
@@ -90,8 +91,7 @@ OpticksHub::OpticksHub(Opticks* opticks)
    m_lookup(new NLookup()),
    m_bookmarks(NULL),
    m_gen(NULL),
-   m_gun(NULL),
-   m_run(NULL)
+   m_gun(NULL)
 {
    init();
    (*m_log)("DONE");
@@ -110,7 +110,6 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
     m_gun = new OpticksGun(this) ;
-    m_run = m_ok->getRun(); 
 }
 
 void OpticksHub::configure()

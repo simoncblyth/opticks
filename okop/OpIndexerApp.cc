@@ -2,6 +2,7 @@
 
 
 // opticks-
+#include "OpticksSwitches.h"
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 #include "OpticksEvent.hh"
@@ -79,8 +80,11 @@ void OpIndexerApp::makeIndex()
     evt->Summary("OpIndexerApp::makeIndex");
 
     //evt->prepareForIndexing();
-
+#ifdef WITH_RECORD
     m_indexer->indexSequence();
+#else
+    LOG(fatal) << " compile WITH_RECORD to indexSequence " ;
+#endif
 
     evt->saveIndex(true);
 }

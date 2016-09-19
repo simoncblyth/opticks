@@ -13,6 +13,16 @@ Resources
 * https://devtalk.nvidia.com/default/board/90/optix/
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
+
+TODO: rearrange OptiX use to facilitate easier version switching
+------------------------------------------------------------------
+
+* avoid having to rebuild all of Opticks just to use a different OptiX version ?
+* how far can forward decalarations of OptiX types in optixrap- get me
+* http://stackoverflow.com/questions/3597693/how-does-the-pimpl-idiom-reduce-dependencies
+
+
+
 Alternatives to OptiX
 -----------------------
 

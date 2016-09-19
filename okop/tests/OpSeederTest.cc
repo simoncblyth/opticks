@@ -79,17 +79,19 @@ int main(int argc, char** argv)
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 
         seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer using the genstep numPhotons for each step
-        oevt.markDirtyPhotonBuffer();         // inform OptiX that must sync up the photon buffer
+        oevt.markDirtyPhotonBuffer();         // inform OptiX that must sync up the photon buffer (skipped at lower level when WITH_SEED_BUFFER)
 
         propagator.launch();                  // write the photon, record and sequence buffers
 
         oevt.download();
         evt->save();
 
+       // TODO: arrange this to use standard anakey running of analysis scripts
         SSys::npdump(evt->getPath("photon"), "np.int32");
         SSys::npdump(evt->getPath("seed"), "np.uint32", ".ravel()" );
-    }
 
+    }
+    ok.postpropagate();
 
     return 0 ;     
 }

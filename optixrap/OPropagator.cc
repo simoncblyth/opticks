@@ -40,7 +40,6 @@ void OPropagator::setEntry(unsigned int entry_index)
     m_entry_index = entry_index;
 }
 
-
 OPropagator::OPropagator(OpticksHub* hub, OEvent* oevt, OpticksEntry* entry) 
    :
     m_log(new SLog("OPropagator::OPropagator")),

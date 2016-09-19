@@ -1,8 +1,10 @@
+#include <cassert>
 #include <string>
 #include <sstream>
 
 #include "NPY.hpp"
 
+#include "OConfig.hh"
 #include "OContext.hh"
 #include "STimes.hh"
 #include "Opticks.hh"
@@ -103,10 +105,13 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     ok.configure();
 
-    LOG(info) << argv[0] ; 
+
+    unsigned version = OConfig::OptiXVersion()  ;
+    LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
+    bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
     optix::Context context = optix::Context::create();
-    OContext ctx(context, OContext::COMPUTE);
+    OContext ctx(context, OContext::COMPUTE, with_top);
     int entry = ctx.addEntry("bufferTest.cu.ptx", "bufferTest", "exception");
 
     // using zero sized buffers allows to prelaunch in initialization
@@ -146,4 +151,21 @@ int main(int argc, char** argv)
     }
     return 0 ;     
 }
+
+/*
+
+delta:optixrap blyth$ bufferTest 
+2016-09-16 19:42:19.236 FATAL [8117] [OpticksProfile::stamp@87] OpticksProfile::stamp OpticksRun::OpticksRun_0 (0,42139.2,0,2583)
+2016-09-16 19:42:19.236 FATAL [8117] [OpticksProfile::stamp@87] OpticksProfile::stamp Opticks::Opticks_0 (0.00390625,0.00390625,10,10)
+2016-09-16 19:42:19.237 INFO  [8117] [main@107] bufferTest OPTIX_VERSION 3080
+2016-09-16 19:42:19.724 INFO  [8117] [OContext::close@209] OContext::close numEntryPoint 1
+2016-09-16 19:42:19.733 INFO  [8117] [OContext::launch@235] OContext::launch entry 0 width 0 height 0
+libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Invalid context (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Validation error: Node validation failed for 'top_object':
+Validation error: Group does not have an Acceleration Structure, [4915492], [4915305])
+Abort trap: 6
+
+
+*/
+
+
 

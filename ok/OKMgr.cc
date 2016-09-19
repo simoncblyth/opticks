@@ -59,6 +59,8 @@ void OKMgr::init()
     if(g4gun)
          LOG(fatal) << "OKMgr doesnt support G4GUN, other that via loading (TO BE IMPLEMENTED) " ;
     assert(!g4gun);
+
+    m_ok->dumpParameters("OKMgr::init");
 }
 
 
@@ -91,8 +93,16 @@ void OKMgr::propagate()
 
             m_propagator->propagate();
 
-            if(ok("save")) m_run->saveEvent();
+            if(ok("save")) 
+            {
+                m_run->saveEvent();
+                m_run->anaEvent();
+            }
+
+            m_run->resetEvent();
         }
+
+        m_ok->postpropagate();
     }
 }
 

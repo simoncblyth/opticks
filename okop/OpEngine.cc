@@ -12,6 +12,7 @@
 #include "OpZeroer.hh"
 
 // optixrap-
+#include "OConfig.hh"
 #include "OContext.hh"
 #include "OEvent.hh"
 #include "OPropagator.hh"
@@ -19,6 +20,11 @@
 
 #include "PLOG.hh"
 
+
+unsigned OpEngine::getOptiXVersion()
+{
+   return OConfig::OptiXVersion();
+}
 
 OContext* OpEngine::getOContext()
 {
@@ -44,6 +50,7 @@ OpEngine::OpEngine(OpticksHub* hub)
       m_zeroer(new OpZeroer(m_hub, m_oevt)),
       m_indexer(new OpIndexer(m_hub, m_oevt))
 {
+   m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
    (*m_log)("DONE");
 }
 
@@ -71,7 +78,9 @@ void OpEngine::propagate()
 
     m_propagator->launch();               // perform OptiX GPU propagation : write the photon, record and sequence buffers
 
+#ifdef WITH_RECORD
     m_indexer->indexSequence();
+#endif
 
     m_indexer->indexBoundaries();
 }

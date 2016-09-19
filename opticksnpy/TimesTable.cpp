@@ -99,12 +99,26 @@ const char* TimesTable::getLabel()
 
 
 
-void TimesTable::dump(const char* msg)
+void TimesTable::dump(const char* msg, const char* startswith)
 {
     makeLines();
-    LOG(info) << msg ; 
-    typedef std::vector<std::string>::const_iterator VSI ;  
-    for(VSI it=m_lines.begin() ; it != m_lines.end() ; it++) std::cout << *it << std::endl ;  
+    LOG(info) << msg 
+              << " filter: " << ( startswith ? startswith : "NONE" )
+              ;
+
+    assert(m_lines.size() == m_names.size());
+    unsigned nline = m_lines.size();
+
+    for( unsigned i=0 ; i < nline ; i++)
+    {
+        std::string line = m_lines[i];
+        const char* name = m_names[i].c_str();
+
+        bool include = startswith == NULL ? true  :
+                        strlen(startswith) <= strlen(name) && strncmp(name,startswith,strlen(startswith))==0 ;  
+
+        if(include) std::cout << line << std::endl ;  
+    }
 }
 
 void TimesTable::save(const char* dir)
@@ -131,6 +145,7 @@ void TimesTable::makeLines()
     unsigned wid = 15 ; 
 
     m_lines.clear() ;  
+    m_names.clear() ;  
 
     unsigned int nrow = 0 ;
     unsigned int numcol = m_table.size() ;
@@ -147,6 +162,7 @@ void TimesTable::makeLines()
         ll << std::setw(wid) << ts->getLabel() ;
     }
     m_lines.push_back(ll.str());
+    m_names.push_back("header");
 
     for(unsigned int i=0 ; i < nrow ; i++)
     {
@@ -169,6 +185,7 @@ void TimesTable::makeLines()
         ss << " : " << rowname ;       
 
         m_lines.push_back(ss.str());
+        m_names.push_back(rowname);
     }
 }
 

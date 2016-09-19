@@ -35,6 +35,39 @@ void quad_add()
     zz->dump();
 }
 
+void filter_dump()
+{
+    const char* columns = "A,B,C,D" ; 
+    TimesTable* tt = new TimesTable(columns); 
+
+    tt->add("red", 0, 10, 20, 30, 0 );
+    tt->add("red", 0, 10, 20, 30, 1 );
+    tt->add("red", 0, 10, 20, 30, 2 );
+
+    tt->add("gred", 0, 10, 20, 30, 0 );
+    tt->add("gred", 0, 10, 20, 30, 1 );
+    tt->add("gred", 0, 10, 20, 30, 2 );
+   
+    tt->add("rouge", 0, 10, 20, 30, 0 );
+    tt->add("rouge", 0, 10, 20, 30, 1 );
+    tt->add("rouge", 0, 10, 20, 30, 2 );
+     
+    tt->add("rout", 0, 10, 20, 30, 0 );
+    tt->add("rout", 0, 10, 20, 30, 1 );
+    tt->add("rout", 0, 10, 20, 30, 2 );
+
+    tt->add("Opticks::Opticks", 0, 10, 20, 30, 0 );
+    tt->add("OPropagator::launch", 0, 10, 20, 30, 0 );
+    tt->add("OPropagator::launch", 0, 10, 20, 30, 1 );
+    
+
+    tt->dump("unfiltered");
+
+    tt->dump("starting with ro", "ro");
+ 
+    tt->dump("starting with OPropagator::launch", "OPropagator::launch");
+}
+
 
 int main(int argc, char** argv)
 {
@@ -44,6 +77,7 @@ int main(int argc, char** argv)
 
     load_dump();
     quad_add();
+    filter_dump();
 
 
     return 0 ; 

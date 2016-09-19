@@ -90,6 +90,10 @@ Sequence Indexing histograms the per-photon sequ
 
 */
 
+// TODO: split sequence indeixng from boundary indexing 
+
+
+#include "OpticksSwitches.h"
 #include "OKOP_API_EXPORT.hh"
 class OKOP_API OpIndexer {
    public:
@@ -99,9 +103,10 @@ class OKOP_API OpIndexer {
       void setSeq(OBuf* seq);
       void setPho(OBuf* pho);
    public:
-      void indexSequence(); 
       void indexBoundaries(); 
       void prepareTarget(const char* msg="OpIndexer::prepareTarget");
+   public:
+      void indexSequence(); 
    private:
       void checkTarget(const char* msg);
       void indexSequenceLoaded();  
@@ -110,10 +115,6 @@ class OKOP_API OpIndexer {
    private:
       void init();
       void update();  
-      // **update**
-      //      setSeq(OBuf*) SequenceBuf  from OPropagator
-      //      setPho(OBuf*) PhotonBuf    from OPropagator 
-      //      setNumPhotons              from OpticksEvent 
    private:
       // implemented in OpIndexer_.cu for nvcc compilation
       // allocates recsel and phosel buffers with Thrust device_vector 
@@ -128,7 +129,6 @@ class OKOP_API OpIndexer {
            TSparse<unsigned long long>& seqmat, 
            bool verbose 
       );
-
 
       void indexSequenceImp(
            TSparse<unsigned long long>& seqhis, 
@@ -149,6 +149,7 @@ class OKOP_API OpIndexer {
    private:
       // resident
       OpticksHub*              m_hub ; 
+      Opticks*                 m_ok ; 
       OEvent*                  m_oevt ; 
       Opticks*                 m_opticks ; 
       OpticksEvent*            m_evt ; 

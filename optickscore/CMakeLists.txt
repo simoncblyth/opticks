@@ -71,6 +71,7 @@ set(SOURCES
     OpticksDomain.cc
     OpticksEventSpec.cc
     OpticksEvent.cc
+    OpticksRun.cc
     OpticksEntry.cc
     OpticksBufferControl.cc
     OpticksActionControl.cc
@@ -129,6 +130,7 @@ set(HEADERS
     OpticksDomain.hh
     OpticksEventSpec.hh
     OpticksEvent.hh
+    OpticksRun.hh
     OpticksEntry.hh
     OpticksBufferControl.hh
     Indexer.hh

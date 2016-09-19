@@ -39,7 +39,7 @@ class OKOP_API OpEngine {
        void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
        void downloadEvent();
        void uploadEvent();
-
+       unsigned getOptiXVersion();
        void cleanup();
        void Summary(const char* msg="OpEngine::Summary");
 

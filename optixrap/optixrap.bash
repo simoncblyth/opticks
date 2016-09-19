@@ -21,7 +21,6 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
-
 OptiX 400
 -----------
 
@@ -31,6 +30,61 @@ OptiX 400
     /Users/blyth/opticks/optixrap/OConfig.cc:204:11: warning: 4 enumeration values not handled in switch: 'RT_FORMAT_HALF', 'RT_FORMAT_HALF2', 'RT_FORMAT_HALF3'... [-Wswitch]
        switch(format)
               ^
+
+
+OptiX Version Isolation ?
+---------------------------
+
+TODO: rearrange OptiX use to facilitate easier version switching
+
+* avoid having to rebuild all of Opticks just to use a different OptiX version ?
+* try to firewall the change to just optixrap- ?
+* how far can forward decalarations of OptiX types in optixrap- get me so other
+  packages do not need to include any OptiX headers ?
+
+
+Only opticksgl- and optixrap- use optix types?::
+
+    simon:opticks blyth$ opticks-find optix:: -l | sort 
+    ...
+    ./opticksgl/OAxisTest.cc
+    ...
+    ./opticksgl/tests/OOAxisAppCheck.cc
+    ./optixrap/OAccel.cc
+    ./optixrap/OAccel.hh
+    ...
+    ./optixrap/tests/bufferTest.cc
+
+
+But lots of inclusion of OptiX headers in optixrap- headers::
+
+    simon:opticks blyth$ opticks-find OXPPNS | grep \.hh
+    ./optixrap/OScene.cc:#include "OXPPNS.hh"
+    ./optixrap/tests/OOtex0Test.cc:#include "OXPPNS.hh"
+    ./optixrap/tests/OOtexTest.cc:#include "OXPPNS.hh"
+    ./optixrap/tests/OPropertyLibTest.cc:#include "OXPPNS.hh"
+    ./optixrap/OAccel.hh:#include "OXPPNS.hh"
+    ./optixrap/OBndLib.hh:#include "OXPPNS.hh"
+    ./optixrap/OColors.hh:#include "OXPPNS.hh"
+    ./optixrap/OConfig.hh:#include "OXPPNS.hh"
+    ./optixrap/OContext.hh:#include "OXPPNS.hh"
+    ./optixrap/OEvent.hh:#include "OXPPNS.hh"
+    ./optixrap/OGeo.hh:#include "OXPPNS.hh"
+    ./optixrap/OLaunchTest.hh:#include "OXPPNS.hh"
+    ./optixrap/OPropagator.hh:#include "OXPPNS.hh"
+    ./optixrap/OPropertyLib.hh:#include "OXPPNS.hh"
+    ./optixrap/OptiXUtil.hh:#include "OXPPNS.hh"
+    ./optixrap/OScintillatorLib.hh:#include "OXPPNS.hh"
+    ./optixrap/OSourceLib.hh:#include "OXPPNS.hh"
+    ./optixrap/OTracer.hh:#include "OXPPNS.hh"
+
+
+pimpl : hopefully forward decls will avoid going full pimpl
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://www.drdobbs.com/cpp/making-pimpl-easy/205918714
+* http://stackoverflow.com/questions/3597693/how-does-the-pimpl-idiom-reduce-dependencies
+* http://stackoverflow.com/questions/13103311/hiding-library-dependencies-from-library-users
 
 
 

@@ -84,7 +84,14 @@ void OpticksProfile::stamp(T row, int count)
    m_tt->add<T>(row, t, dt, vm, dvm,  count );
    m_npy->add(       t, dt, vm, dvm ); 
 
-   LOG(fatal) << "OpticksProfile::stamp " << m_tt->getLabel() ; 
+   LOG(fatal) << "OpticksProfile::stamp " 
+              << m_tt->getLabel() 
+              << " (" 
+              << t << ","
+              << dt << ","
+              << vm << ","
+              << dvm << ")"
+              ; 
 }
 
 
@@ -126,11 +133,11 @@ std::string OpticksProfile::brief()
 }
 
 
-void OpticksProfile::dump(const char* msg)
+void OpticksProfile::dump(const char* msg, const char* startswith)
 {
     LOG(info) << msg << brief() ; 
   
-    m_tt->dump(msg);
+    m_tt->dump(msg, startswith);
     //m_npy->dump(msg);
 
     LOG(info) << " npy " << m_npy->getShapeString() << " " << getPath() ; 

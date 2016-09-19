@@ -25,6 +25,7 @@ class Index ;
 class Opticks ; 
 class OpticksEventSpec ;
 class OpticksEvent ;
+class OpticksRun ;
 class OpticksMode ;
 class OpticksResource ; 
 class OpticksColors ; 
@@ -51,6 +52,8 @@ class OpticksAna ;
 class OKCORE_API Opticks {
        friend class OpticksCfg<Opticks> ; 
        friend class OpticksRun ; 
+       friend class OpEngine ; 
+       friend class CG4 ; 
    public:
        static const float F_SPEED_OF_LIGHT ;  // mm/ns
    public:
@@ -77,6 +80,7 @@ class OKCORE_API Opticks {
        void configure();  // invoked after commandline parsed
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
+       void dumpParameters(const char* msg="Opticks::dumpParameters");
        bool hasOpt(const char* name);
        bool operator()(const char* name) const ; 
        void cleanup();
@@ -85,7 +89,7 @@ class OKCORE_API Opticks {
    public:
        // profile ops
        template <typename T> void profile(T label);
-       void dumpProfile(const char* msg="Opticks::dumpProfile");
+       void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL);
        void saveProfile();
    private:
        void checkOptionValidity();
@@ -117,6 +121,12 @@ class OKCORE_API Opticks {
        int         getLastArgInt();
        int         getInteractivityLevel();
    public:
+       unsigned    getOptiXVersion();
+       unsigned    getGeant4Version();
+   private:
+       void setOptiXVersion(unsigned version);
+       void setGeant4Version(unsigned version);
+   public:
        void setIdPathOverride(const char* idpath_tmp=NULL); // used for saves into non-standard locations whilst testing
        unsigned getTagOffset();
    private:
@@ -137,6 +147,7 @@ class OKCORE_API Opticks {
        OpticksCfg<Opticks>* getCfg();
        std::string          getAnaKey();
        OpticksResource*     getResource(); 
+       OpticksRun*          getRun(); 
    public:
        OpticksQuery*        getQuery(); 
        OpticksColors*       getColors(); 
@@ -229,6 +240,7 @@ class OKCORE_API Opticks {
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
        Opticks*             m_ok ;   // for OK_PROFILE 
+       OpticksProfile*      m_profile ; 
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
@@ -265,7 +277,7 @@ class OKCORE_API Opticks {
        //NB avoid duplication between here and OpticksCfg , only things that need more control need be here
 
        OpticksMode*         m_mode ; 
-       OpticksProfile*      m_profile ; 
+       OpticksRun*          m_run ; 
        OpticksAna*          m_ana ; 
        int                  m_rc ; 
        unsigned             m_tagoffset ; 
