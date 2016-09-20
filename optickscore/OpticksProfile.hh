@@ -14,7 +14,7 @@ class OKCORE_API OpticksProfile
        template <typename T> void stamp(T row, int count);
        void save();
        void load();
-       void dump(const char* msg="OpticksProfile::dump", const char* startswith=NULL);
+       void dump(const char* msg="OpticksProfile::dump", const char* startswith=NULL, const char* spacewith=NULL);
 
        void setDir(const char* dir);
        const char* getDir();

@@ -148,9 +148,9 @@ void Opticks::profile(T label)
     m_profile->stamp<T>(label, m_tagoffset);
    // m_tagoffset is set by Opticks::makeEvent
 }
-void Opticks::dumpProfile(const char* msg, const char* startswith)
+void Opticks::dumpProfile(const char* msg, const char* startswith, const char* spacewith)
 {
-   m_profile->dump(msg, startswith);
+   m_profile->dump(msg, startswith, spacewith);
 }
 void Opticks::saveProfile()
 {
@@ -160,7 +160,7 @@ void Opticks::saveProfile()
 void Opticks::postpropagate()
 {
    saveProfile();
-   dumpProfile("Opticks::postpropagate");
+   dumpProfile("Opticks::postpropagate", NULL, "OpticksRun::createEvent.BEG");  // spacwith spacing at start if each evt
    dumpProfile("Opticks::postpropagate", "OPropagator::launch");  // startswith filtering
    dumpParameters("Opticks::postpropagate");
 }

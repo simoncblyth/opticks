@@ -5,12 +5,41 @@ Attempting to use UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY OR BUFFER_COPY_ON_DIRTY
 with the seed buffer in 3080 yields a hard CUDA crash on 2nd event launch, even 
 with dumpseed.
 
+Success in 3080 with okop-/tests/dirtyBufferTest made me get rid 
+of UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY.
+
+Initially however the stuck at zero issue remained
+
+
+FIX
+-----
+
+The below commit succeeds to fix issue.
+
+* https://bitbucket.org/simoncblyth/opticks/commits/7387baedddb53897a4d710b0a59b78157efec6de
+
+
+Initially it looked like the use of a prelaunch between 
+gensteps upload and seeding was the reason for success, but subsequently 
+it is operational without that... so there is some other cause.
+
+Examining the commit the other significant change is to not try 
+to download the OPTIX_INPUT_ONLY seed buffer. And remove the BUFFER_COPY_ON_DIRTY
+from seed buffer. 
+Potentially those messed things up ?
+
+
+Reference
+-----------
+
 ::
 
    
    open /Developer/OptiX_380/doc/OptiX_Programming_Guide_3.8.0.pdf
 
 
+Overview of seeding interop
+-------------------------------
 
 Seeding OpSeeder::seedPhotonsFromGenstepsImp is done via Thrust, dumping 
 seed buffer shows is as expected on all events, but it is only seen

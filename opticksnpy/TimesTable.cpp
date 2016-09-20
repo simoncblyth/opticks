@@ -99,7 +99,7 @@ const char* TimesTable::getLabel()
 
 
 
-void TimesTable::dump(const char* msg, const char* startswith)
+void TimesTable::dump(const char* msg, const char* startswith, const char* spacewith)
 {
     makeLines();
     LOG(info) << msg 
@@ -109,15 +109,27 @@ void TimesTable::dump(const char* msg, const char* startswith)
     assert(m_lines.size() == m_names.size());
     unsigned nline = m_lines.size();
 
+    double prior_first(0);
+
     for( unsigned i=0 ; i < nline ; i++)
     {
         std::string line = m_lines[i];
         const char* name = m_names[i].c_str();
+        double first = m_first[i] ;
+
+        bool space = spacewith == NULL ? false : 
+                        strlen(spacewith) <= strlen(name) && strncmp(name,spacewith,strlen(spacewith))==0 ;  
 
         bool include = startswith == NULL ? true  :
                         strlen(startswith) <= strlen(name) && strncmp(name,startswith,strlen(startswith))==0 ;  
 
-        if(include) std::cout << line << std::endl ;  
+        if(include) 
+        {
+            double delta = first - prior_first ; 
+            if(space) std::cout << std::endl ; 
+            std::cout << std::fixed << std::setw(15) << std::setprecision(3) << delta << " " << line << std::endl ;  
+            prior_first = first ; 
+        }
     }
 }
 
@@ -146,6 +158,7 @@ void TimesTable::makeLines()
 
     m_lines.clear() ;  
     m_names.clear() ;  
+    m_first.clear() ;  
 
     unsigned int nrow = 0 ;
     unsigned int numcol = m_table.size() ;
@@ -163,12 +176,14 @@ void TimesTable::makeLines()
     }
     m_lines.push_back(ll.str());
     m_names.push_back("header");
+    m_first.push_back(0);
 
     for(unsigned int i=0 ; i < nrow ; i++)
     {
         std::stringstream ss ;  
 
         std::string rowname ; 
+        double first = 0 ; 
         for(unsigned int j=0 ; j < numcol ; j++)
         { 
             Times* ts = m_table[j];
@@ -180,12 +195,15 @@ void TimesTable::makeLines()
                 assert(entry.first.compare(rowname) == 0) ;
 
              ss << std::fixed << std::setw(wid) << std::setprecision(3) << entry.second ;
+
+            if(j==0) first = entry.second ;
         }
 
         ss << " : " << rowname ;       
 
         m_lines.push_back(ss.str());
         m_names.push_back(rowname);
+        m_first.push_back(first);
     }
 }
 

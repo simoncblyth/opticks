@@ -101,6 +101,7 @@ int main(int argc, char** argv)
         if(entryCode == 'T' || entryCode == 'D') 
         {
             int sdc = evt->seedDebugCheck("OpSeederTest");
+            if(sdc != 0) LOG(fatal) << "seedDebugCheck FAIL " << sdc ;  
             assert(sdc == 0); 
         }
 

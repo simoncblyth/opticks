@@ -1,7 +1,6 @@
 Multievent Performance
 =======================
 
-
 Observations about performance : large pinch of salt
 -----------------------------------------------------------
 
@@ -24,7 +23,6 @@ Move to USHORT (16bit) for seeds, UINT (32bit) is extravagant as just needs to h
     m_seed_spec     = new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
 
     USHRT_MAX   Maximum value for a variable of type unsigned short.    65535
-
 
 
 
@@ -134,6 +132,10 @@ Performance is drastically faster with 3080, but multievent >1 is failing even w
     Opticks::postpropagate
        OptiXVersion :            3080
 
+
+3080 multievent was failing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Huh trivial multievent fails but dumpseed multievent works::
 
    tpmt-- --compute --multievent 2 --dumpseed   ## works
@@ -142,22 +144,83 @@ Huh trivial multievent fails but dumpseed multievent works::
 *trivial* gone one step beyond *dumpseed* in that it attempts to read from the genstep buffer
 using the genstep_id read from the seed buffer.
 
-Huh the below are working, but OKTest as used by tpmt is failing for gt 1::
-
-   OpSeederTest --compute --dumpseed --multievent 2    ## huh it worked 
-   OpSeederTest --compute --trivial  --multievent 2    ## huh it worked 
-   OpSeederTest --compute --trivial --multievent 10    
-       ##
-       ## WHY IS THIS SUCCEEDING TO READ FROM GENSTEP ???
-       ## ACTUALLY LOOKING MORE CLOSELY : THE OLD STUCK AT ZERO SEED ISSUE
-       ## IS APPARENT FROM THE 2nd EVT 
-       ##
-
-
-
-
-
 See :doc:`optix_cuda_interop_3080` 
+
+
+3080 multievent times
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    tpmt-;tpmt--  --compute --multievent 10    
+   
+     ## 0.5M launch takes around 0.2-0.25s with total of 2.5s between launches 
+     ## 
+     ## most of the 2.5s not needed in production...
+     ##       launch:0.25s  indexSequence:0.19, saveEvent:0.66, anaEvent:~0.90, resetEvent:0.25
+     ##
+     ##       TODO: split up the  0.328s 
+     ##
+     ##         0.25+0.19+0.66+0.90+0.25+0.33 = 2.58
+     ##
+
+::
+
+
+              0.000          23.219          0.000      31804.000          0.000 : OpticksRun::createEvent.BEG_8
+              0.000          23.219          0.000      31804.000          0.000 : OpticksRun::createEvent.END_8
+              0.000          23.219          0.000      31804.000          0.000 : OKPropagator::propagate.BEG_8
+              0.000          23.219          0.000      31804.000          0.000 : _OpSeeder::seedPhotonsFromGenstepsViaOptiX_8
+              0.004          23.223          0.004      31804.000          0.000 : OpSeeder::seedPhotonsFromGenstepsViaOptiX_8
+              0.000          23.223          0.000      31804.000          0.000 : _OPropagator::launch_8
+              0.250          23.473          0.250      31804.000          0.000 : OPropagator::launch_8
+              0.000          23.473          0.000      31804.000          0.000 : _OpIndexer::indexSequence_8
+              0.191          23.664          0.191      31826.000         22.000 : OpIndexer::indexSequence_8
+              0.328          23.992          0.328      31946.000        120.000 : OKPropagator::propagate.END_8
+              0.000          23.992          0.000      31946.000          0.000 : OpticksRun::saveEvent.BEG_8
+              0.668          24.660          0.668      31946.000          0.000 : OpticksRun::saveEvent.END_8
+              0.000          24.660          0.000      31946.000          0.000 : OpticksRun::anaEvent.BEG_8
+              0.906          25.566          0.906      31946.000          0.000 : OpticksRun::anaEvent.END_8
+              0.000          25.566          0.000      31946.000          0.000 : OpticksRun::resetEvent.BEG_8
+              0.250          25.816          0.250      31946.000          0.000 : OpticksRun::resetEvent.END_8
+
+              0.000          25.816          0.000      31946.000          0.000 : OpticksRun::createEvent.BEG_9
+              0.000          25.816          0.000      31946.000          0.000 : OpticksRun::createEvent.END_9
+              0.000          25.816          0.000      31946.000          0.000 : OKPropagator::propagate.BEG_9
+              0.000          25.816          0.000      31946.000          0.000 : _OpSeeder::seedPhotonsFromGenstepsViaOptiX_9
+              0.004          25.820          0.004      31946.000          0.000 : OpSeeder::seedPhotonsFromGenstepsViaOptiX_9
+              0.000          25.820          0.000      31946.000          0.000 : _OPropagator::launch_9
+              0.211          26.031          0.211      31946.000          0.000 : OPropagator::launch_9
+              0.000          26.031          0.000      31946.000          0.000 : _OpIndexer::indexSequence_9
+              0.191          26.223          0.191      31968.000         22.000 : OpIndexer::indexSequence_9
+              0.328          26.551          0.328      32088.000        120.000 : OKPropagator::propagate.END_9
+              0.000          26.551          0.000      32088.000          0.000 : OpticksRun::saveEvent.BEG_9
+              0.660          27.211          0.660      32088.000          0.000 : OpticksRun::saveEvent.END_9
+              0.000          27.211          0.000      32088.000          0.000 : OpticksRun::anaEvent.BEG_9
+              0.898          28.109          0.898      32088.000          0.000 : OpticksRun::anaEvent.END_9
+              0.000          28.109          0.000      32088.000          0.000 : OpticksRun::resetEvent.BEG_9
+              0.250          28.359          0.250      32088.000          0.000 : OpticksRun::resetEvent.END_9
+    2016-09-20 21:24:32.065 INFO  [259201] [OpticksProfile::dump@145]  npy 164,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-20 21:24:32.065 INFO  [259201] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 164
+    2016-09-20 21:24:32.066 INFO  [259201] [TimesTable::dump@105] Opticks::postpropagate filter: OPropagator::launch
+              3.008           3.008          0.066      30668.000          0.000 : OPropagator::launch_0
+              2.531           5.539          0.121      30810.000          0.000 : OPropagator::launch_1
+              2.434           7.973          0.117      30952.000          0.000 : OPropagator::launch_2
+              2.586          10.559          0.242      31094.000          0.000 : OPropagator::launch_3
+              2.617          13.176          0.242      31236.000          0.000 : OPropagator::launch_4
+              2.559          15.734          0.207      31378.000          0.000 : OPropagator::launch_5
+              2.594          18.328          0.246      31520.000          0.000 : OPropagator::launch_6
+              2.562          20.891          0.203      31662.000          0.000 : OPropagator::launch_7
+              2.582          23.473          0.250      31804.000          0.000 : OPropagator::launch_8
+              2.559          26.031          0.211      31946.000          0.000 : OPropagator::launch_9
+    2016-09-20 21:24:32.066 INFO  [259201] [OpticksProfile::dump@145]  npy 164,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    Opticks::postpropagate
+       OptiXVersion :            3080
+    /Users/blyth/opticks/bin/op.sh RC 0
+
+
+
+
 
 
 

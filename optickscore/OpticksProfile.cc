@@ -135,11 +135,11 @@ std::string OpticksProfile::brief()
 }
 
 
-void OpticksProfile::dump(const char* msg, const char* startswith)
+void OpticksProfile::dump(const char* msg, const char* startswith, const char* spacewith)
 {
     LOG(info) << msg << brief() ; 
   
-    m_tt->dump(msg, startswith);
+    m_tt->dump(msg, startswith, spacewith );
     //m_npy->dump(msg);
 
     LOG(info) << " npy " << m_npy->getShapeString() << " " << getPath() ; 
