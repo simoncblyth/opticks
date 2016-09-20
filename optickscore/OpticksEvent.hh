@@ -120,9 +120,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        unsigned int getRngMax();
        std::string getTimeStamp();
        std::string getCreator();
+       char getEntryCode();
 
        void setTimeStamp(const char* tstamp);
        void setCreator(const char* executable);
+       void setEntryCode(char entryCode);
    private:
        void setRngMax(unsigned int rng_max);
        void init();
@@ -149,6 +151,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    public:
        void addBufferControl(const char* name, const char* ctrl_);
+       int seedDebugCheck(const char* msg="OpticksEvent::seedDebugCheck");
    private:
        void importGenstepDataLoaded(NPY<float>* gs);
        void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);

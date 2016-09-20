@@ -71,7 +71,6 @@ struct SArgs
     }
 
 
-
     SArgs(int argc_, char** argv_, const char* extra, bool dedupe=true)
     {
         // combine standard arguments with elements split from extra 
@@ -92,6 +91,18 @@ struct SArgs
         make();
     }
 
+    bool hasArg(const char* arg)
+    {
+        for(int i=0 ; i < argc ; i++) if(strcmp(argv[i], arg) == 0) return true ; 
+        return false ;         
+    }
+
+    std::string getArgLine()
+    {
+        std::stringstream ss ;  
+        for(int i=0 ; i < argc ; i++) ss << argv[i] << " " ; 
+        return ss.str();
+    }
 
 
 };

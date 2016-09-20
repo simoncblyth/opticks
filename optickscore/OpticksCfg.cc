@@ -103,6 +103,12 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nonet,N",  "inhibit use of network") ;
 
+   m_desc.add_options()
+       ("stamp",  "output profile stamps as they are made, see OpticksProfile") ; 
+
+
+
+
 
    m_desc.add_options()
        ("jwire",  "enable wire frame view, use only with workstation GPUs") ;

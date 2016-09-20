@@ -12,6 +12,17 @@
 #include "NPY_LOG.hh"
 
 
+/**
+
+dirtyBufferTest
+=================
+
+* a failed attempt to reproduce the seeding interop failure 
+
+
+
+**/
+
 
 unsigned test_value(unsigned i)
 {
@@ -65,7 +76,6 @@ struct Evt {
     NPY<unsigned>* out_data ;
 };
 
-
 Evt* Evt::make(unsigned t)
 {
     unsigned tval = test_value(t) ; 
@@ -94,7 +104,6 @@ bool Evt::check()
     return out_data->isConstant(val*2) ;
 }
 
-
 Evt::~Evt()
 {
    in_data->reset();
@@ -112,7 +121,6 @@ struct OEvt
    OBuf*  obuf ; 
 
    void resize(unsigned size);
-
 };
 
 OEvt::OEvt(optix::Context& context, unsigned size )  
@@ -132,7 +140,6 @@ OEvt::OEvt(optix::Context& context, unsigned size )
 
     context["in_buffer"]->setBuffer(in_buffer);  
     context["out_buffer"]->setBuffer(out_buffer);  
-
 }
 
 void OEvt::resize(unsigned size)
@@ -167,8 +174,18 @@ void pure_upload_launch_download( unsigned ntest,
     } 
 }
 
-
 // TBuf::upload is standin for seeding 
+
+/** 
+   in real case, 
+
+     1)  upload genstep buffer
+     2)  invoke seeder to read from genstep and write to seeds 
+
+
+**/
+
+
 void dirty_upload_launch_download( unsigned ntest, 
                                    int entry, 
                                    OContext& ctx, 
@@ -179,11 +196,18 @@ void dirty_upload_launch_download( unsigned ntest,
     {
         Evt* evt = Evt::make(t) ;  
 
+        oevt.resize( evt->size ) ; 
+
+        // OBuf state comes entirely(?) from the optix::Buffer handle, so just 
+        // have to make sure to resize optix Buffer first to get a correct CBufSpec
+
         CBufSpec s_in = oevt.ibuf->bufspec();   // getDevicePointer happens here with OBufBase::bufspec
 
         TBuf t_in("in", s_in );
 
-        t_in.upload(evt->in_data);
+        //t_in.upload(evt->in_data);   // THIS WORKS
+        t_in.fill(evt->val);           // ALSO WORKS 
+
 
         ctx.launch( OContext::LAUNCH, entry, evt->size, 1, NULL ); 
 

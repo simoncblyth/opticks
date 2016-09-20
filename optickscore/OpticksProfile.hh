@@ -10,7 +10,7 @@ template <typename T> class NPY ;
 class OKCORE_API OpticksProfile 
 {
     public:
-       OpticksProfile(const char* name="OpticksProfile");
+       OpticksProfile(const char* name="OpticksProfile", bool stamp_out=false);
        template <typename T> void stamp(T row, int count);
        void save();
        void load();
@@ -43,6 +43,7 @@ class OKCORE_API OpticksProfile
        float       m_vm ; 
 
        unsigned    m_num_stamp ; 
+       bool        m_stamp_out ; 
 
 };
 

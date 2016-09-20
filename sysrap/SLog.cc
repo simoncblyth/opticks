@@ -7,7 +7,7 @@ SLog::SLog(const char* label)
    :
    m_label(strdup(label))
 {
-   (*this)();
+    LOG(debug) << m_label ;  
 }
 
 void SLog::operator()(const char* msg)

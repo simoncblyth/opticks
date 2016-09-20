@@ -99,10 +99,10 @@ void Opticks::setRC(int rc)
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
        m_ok(this),
-       m_profile(new OpticksProfile("Opticks")),
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
+       m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("stamp"))),
        m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
 
@@ -132,6 +132,13 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 {
        OK_PROFILE("Opticks::Opticks");
        init();
+}
+
+
+
+std::string Opticks::getArgLine()
+{
+    return m_sargs->getArgLine();
 }
 
 
@@ -747,6 +754,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
 
     evt->setId(m_event_count) ;   // starts from id 0 
     evt->setOpticks(this);
+    evt->setEntryCode(getEntryCode());
 
 
     LOG(debug) << "Opticks::makeEvent" 

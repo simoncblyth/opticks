@@ -37,6 +37,7 @@
 #include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
+#include "TrivialCheckNPY.hpp"
 #include "Parameters.hpp"
 #include "GLMFormat.hpp"
 #include "Index.hpp"
@@ -594,6 +595,21 @@ std::string OpticksEvent::getCreator()
     return m_parameters->get<std::string>("Creator", "NONE");
 }
 
+void OpticksEvent::setEntryCode(char entryCode)
+{
+    m_parameters->add<char>("EntryCode", entryCode );
+}
+char OpticksEvent::getEntryCode()
+{
+    return m_parameters->get<char>("EntryCode", "0");
+}
+
+
+
+
+
+
+
 void OpticksEvent::setTimeStamp(const char* tstamp)
 {
     m_parameters->set<std::string>("TimeStamp", tstamp);
@@ -663,12 +679,19 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
 
 NPYSpec* OpticksEvent::GenstepSpec()
 {
+#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
+    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,VERBOSE_MODE")  ;
+#elif OXRAP_OPTIX_VERSION == 400000
     return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
+#else  
+     assert(0 && "UNEXPECTED OXRAP_OPTIX_VERSION ");
+     return NULL ;  
+#endif
 }
 
 NPYSpec* OpticksEvent::SeedSpec()
 {
-    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,VERBOSE_MODE,BUFFER_COPY_ON_DIRTY") ;
+    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,VERBOSE_MODE") ;
 
 /*
 #if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
@@ -778,6 +801,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
     if(ctrl("VERBOSE_MODE"))
      LOG(info) << std::setw(10) << name 
                << " : " << ctrl.description("(spec)") 
+               << " : " << brief()
                ;
 }
 
@@ -1485,12 +1509,14 @@ void OpticksEvent::save(bool verbose)
         ph->save("ph", m_typ,  m_tag, udet);
     }
 
+    /*
+    // dont try, seed buffer is OPTIX_INPUT_ONLY , so attempts to download yields garbage
     NPY<unsigned>* se  = getSeedData();
     {
         se->setVerbose(verbose);
         se->save("se", m_typ,  m_tag, udet);
     }
-
+    */
 
     updateDomainsBuffer();
 
@@ -2035,6 +2061,21 @@ Index* OpticksEvent::loadBoundaryIndex( const char* typ, const char* tag, const 
     return loadNamedIndex(typ, tag, udet, OpticksConst::BNDIDX_NAME_); 
 }
 
+
+int OpticksEvent::seedDebugCheck(const char* msg)
+{
+    // This can only be used with specific debug entry points 
+    // that write seeds as uint into the photon buffer
+    //
+    //     * entryCode T    TRIVIAL
+    //     * entryCode D    DUMPSEED
+
+    assert(m_photon_data && m_photon_data->hasData());
+    assert(m_genstep_data && m_genstep_data->hasData());
+
+    TrivialCheckNPY chk(m_photon_data, m_genstep_data, m_ok->getEntryCode());
+    return chk.check(msg);
+}
 
 
 

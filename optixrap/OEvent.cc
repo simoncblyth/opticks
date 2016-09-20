@@ -126,7 +126,7 @@ void OEvent::markDirty()
      }
      else
      {
-         LOG(info) << "OEvent::markDirty(seed) SKIP " ;
+         LOG(debug) << "OEvent::markDirty(seed) SKIP " ;
      }
 
 #else
@@ -138,7 +138,7 @@ void OEvent::markDirty()
      }
      else
      {
-         LOG(info) << "OEvent::markDirty(photon) SKIP " ;
+         LOG(debug) << "OEvent::markDirty(photon) SKIP " ;
      }
 
 #endif
@@ -236,7 +236,6 @@ void OEvent::uploadGensteps(OpticksEvent* evt)
 
 
 void OEvent::downloadPhotonData() { download(PHOTON); }
-void OEvent::downloadSeedData()   { download(SEED); }
 void OEvent::download(unsigned mask)
 {
     download(m_evt, mask);

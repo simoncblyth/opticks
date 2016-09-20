@@ -13,7 +13,7 @@
 
 #include "PLOG.hh"
 
-OpticksProfile::OpticksProfile(const char* name) 
+OpticksProfile::OpticksProfile(const char* name, bool stamp_out) 
    :
    m_dir(NULL),
    m_name(BStr::concat(NULL,name,".npy")),
@@ -29,7 +29,8 @@ OpticksProfile::OpticksProfile(const char* name)
    m_vmprev(0),
    m_vm(0),
 
-   m_num_stamp(0)
+   m_num_stamp(0),
+   m_stamp_out(stamp_out)
 {
 }
 
@@ -84,6 +85,7 @@ void OpticksProfile::stamp(T row, int count)
    m_tt->add<T>(row, t, dt, vm, dvm,  count );
    m_npy->add(       t, dt, vm, dvm ); 
 
+   if(m_stamp_out)
    LOG(fatal) << "OpticksProfile::stamp " 
               << m_tt->getLabel() 
               << " (" 

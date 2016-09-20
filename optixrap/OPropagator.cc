@@ -162,7 +162,7 @@ void OPropagator::setNoPropagate(bool nopropagate)
 
 void OPropagator::prelaunch()
 {
-    assert(m_prelaunch == false);
+    //assert(m_prelaunch == false);
     m_prelaunch = true ; 
 
     bool entry = m_entry_index > -1 ; 

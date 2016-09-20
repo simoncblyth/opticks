@@ -15,6 +15,7 @@ class THRAP_API TBuf {
       unsigned int getNumBytes() const ;
       unsigned int getSize() const ;
 
+      template <typename T> void fill(T value) const ;
       template <typename T> void upload(NPY<T>* npy) const ;
       template <typename T> void download(NPY<T>* npy) const ;
       template <typename T> void repeat_to(TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats) const ;

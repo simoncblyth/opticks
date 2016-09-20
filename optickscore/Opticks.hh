@@ -120,6 +120,7 @@ class OKCORE_API Opticks {
        const char* getLastArg();
        int         getLastArgInt();
        int         getInteractivityLevel();
+       std::string getArgLine();
    public:
        unsigned    getOptiXVersion();
        unsigned    getGeant4Version();
@@ -240,10 +241,10 @@ class OKCORE_API Opticks {
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
        Opticks*             m_ok ;   // for OK_PROFILE 
-       OpticksProfile*      m_profile ; 
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
+       OpticksProfile*      m_profile ; 
        const char*          m_envprefix ;
        const char*          m_materialprefix ;
    private:

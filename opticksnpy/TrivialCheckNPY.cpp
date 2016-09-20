@@ -5,12 +5,14 @@
 
 #include "PLOG.hh"
 
-TrivialCheckNPY::TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps)
+TrivialCheckNPY::TrivialCheckNPY(NPY<float>* photons, NPY<float>* gensteps, char entryCode)
     :
+    m_entryCode(entryCode),
     m_photons(photons),
     m_gensteps(gensteps),
     m_g4step(new G4StepNPY(m_gensteps))
 {
+    assert(m_entryCode == 'T' || m_entryCode == 'D');
 }
 
 int TrivialCheckNPY::check(const char* msg)
@@ -44,13 +46,13 @@ void TrivialCheckNPY::checkGensteps(NPY<float>* gs)
 
     assert(ni > 0 && nj == 6 && nk == 4);
 
-    m_g4step->dump("TrivialCheckNPY::checkGensteps");
+    //m_g4step->dump("TrivialCheckNPY::checkGensteps");
 }
 
 
 int TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned i0, unsigned i1, unsigned gencode, unsigned numPhotons )
 {
-    LOG(info) << "TrivialCheckNPY::checkPhotons" 
+    LOG(debug) << "TrivialCheckNPY::checkPhotons" 
               << " istep " << istep 
               << " i0 " << i0
               << " i1 " << i1
@@ -60,16 +62,23 @@ int TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned 
 
     int fail(0);
 
-    fail += checkItemValue( istep, photons, i0, i1, 2, 0, "(ghead.u.x)gencode"         , IS_UCONSTANT,     gencode, 0 );
-    fail += checkItemValue( istep, photons, i0, i1, 2, 3, "(ghead.u.w)numPhotons"      , IS_UCONSTANT,  numPhotons, 0 );
+    if(m_entryCode == 'T')
+    {
+        fail += checkItemValue( istep, photons, i0, i1, 2, 0, "(ghead.u.x)gencode"         , IS_UCONSTANT,     gencode, 0 );
+        fail += checkItemValue( istep, photons, i0, i1, 2, 3, "(ghead.u.w)numPhotons"      , IS_UCONSTANT,  numPhotons, 0 );
+    }
 
     unsigned PNUMQUAD = 4 ; 
     unsigned GNUMQUAD = 6 ; 
 
-    fail += checkItemValue( istep, photons, i0, i1, 3, 0, "(indices.u.x)photon_id"     , IS_UINDEX,              -1,        0 );
-    fail += checkItemValue( istep, photons, i0, i1, 3, 1, "(indices.u.y)photon_offset" , IS_UINDEX_SCALED,       -1, PNUMQUAD );
-    fail += checkItemValue( istep, photons, i0, i1, 3, 2, "(indices.u.z)genstep_id"    , IS_UCONSTANT,        istep,        0 );
-    fail += checkItemValue( istep, photons, i0, i1, 3, 3, "(indices.u.w)genstep_offset", IS_UCONSTANT_SCALED, istep, GNUMQUAD );
+ 
+    if(m_entryCode == 'T' || m_entryCode == 'D')
+    {
+        fail += checkItemValue( istep, photons, i0, i1, 3, 0, "(indices.u.x)photon_id"     , IS_UINDEX,              -1,        0 );
+        fail += checkItemValue( istep, photons, i0, i1, 3, 1, "(indices.u.y)photon_offset" , IS_UINDEX_SCALED,       -1, PNUMQUAD );
+        fail += checkItemValue( istep, photons, i0, i1, 3, 2, "(indices.u.z)genstep_id"    , IS_UCONSTANT,        istep,        0 );
+        fail += checkItemValue( istep, photons, i0, i1, 3, 3, "(indices.u.w)genstep_offset", IS_UCONSTANT_SCALED, istep, GNUMQUAD );
+    }
 
     return fail ; 
 }
@@ -77,6 +86,7 @@ int TrivialCheckNPY::checkPhotons(unsigned istep, NPY<float>* photons, unsigned 
 void TrivialCheckNPY::dump(const char* msg)
 {
     LOG(info) << msg 
+              << " entryCode " << m_entryCode
               << " photons " << m_photons->getShapeString()
               << " gensteps " << m_gensteps->getShapeString()
               ;
@@ -173,11 +183,24 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
 
 
     }
-    LOG(info) 
+
+    if(fail == 0)
+    {
+        LOG(debug) 
             << " step " << istep
             << "[:," << jj << "," << kk << "] " 
             << std::setw(30) << label 
             << ( fail == 0 ? " OK " : " FAIL " ) << fail  ; 
+    }
+    else
+    {
+        LOG(fatal) 
+            << " step " << istep
+            << "[:," << jj << "," << kk << "] " 
+            << std::setw(30) << label 
+            << ( fail == 0 ? " OK " : " FAIL " ) << fail  ; 
+    }
+
 
     return fail ; 
 }

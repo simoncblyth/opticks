@@ -5,6 +5,7 @@
 
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
+#include <thrust/fill.h>
 
 #include "TBuf.hh"
 #include "TUtil.hh"
@@ -92,6 +93,18 @@ void TBuf::zero()
 {
     cudaMemset( getDevicePtr(), 0, getNumBytes());
 }
+
+
+template <typename T>
+void TBuf::fill(T value) const 
+{
+    thrust::device_ptr<T> p = thrust::device_pointer_cast((T*)getDevicePtr()) ;
+
+    unsigned numval = getSize();
+
+    thrust::fill(p, p+numval , value);
+}
+
 
 template <typename T>
 void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const 
@@ -200,6 +213,9 @@ template void TBuf::download<unsigned char>(NPY<unsigned char>*) const ;
 
 template void TBuf::upload<unsigned>(NPY<unsigned>*) const ;
 template void TBuf::upload<unsigned char>(NPY<unsigned char>*) const ;
+
+template void TBuf::fill<unsigned>(unsigned value) const ;
+template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
 
 

@@ -1,3 +1,4 @@
+#include <cassert>
 #include "SArgs.hh"
 
 #include "SYSRAP_LOG.hh"
@@ -14,6 +15,11 @@ int main(int argc, char** argv)
     SArgs sa(argc, argv, extra );
 
     sa.dump();
+
+    assert(sa.hasArg("--compute"));
+    assert(sa.hasArg("--nopropagate"));
+
+
 
     return 0 ; 
 }

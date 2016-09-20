@@ -41,14 +41,13 @@ class OXRAP_API OEvent
             RECORD   = 0x1 << 3, 
             SEQUENCE = 0x1 << 4,
             SEED     = 0x1 << 5,
-            DEFAULT  = PHOTON | RECORD | SEQUENCE | SEED
+            DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE 
             };
     public:
         OEvent(OpticksHub* hub, OContext* ocontext);
         void upload();
-        void download(unsigned mask=DEFAULT );
+        void download(unsigned mask=DOWNLOAD_DEFAULT );
         void downloadPhotonData();
-        void downloadSeedData();
     private:
         void upload(OpticksEvent* evt);
         void uploadGensteps(OpticksEvent* evt);
@@ -67,7 +66,7 @@ class OXRAP_API OEvent
         void createBuffers(OpticksEvent* evt);
         void resizeBuffers(OpticksEvent* evt);
         void setEvent(OpticksEvent* evt);
-        void download(OpticksEvent* evt, unsigned mask=DEFAULT );
+        void download(OpticksEvent* evt, unsigned mask=DOWNLOAD_DEFAULT );
     private:
         SLog*           m_log ; 
         OpticksHub*     m_hub ; 

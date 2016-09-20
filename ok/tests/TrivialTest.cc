@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
         evt->Summary();
 
-        TrivialCheckNPY tcn(evt->getPhotonData(), evt->getGenstepData());
+        TrivialCheckNPY tcn(evt->getPhotonData(), evt->getGenstepData(), evt->getEntryCode());
         fail += tcn.check(argv[0]);
     }
 

@@ -300,7 +300,16 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
     OpticksBufferControl ctrl(npy->getBufferControlPtr());
     bool verbose = ctrl("VERBOSE_MODE") ;
 
-    if(ctrl("UPLOAD_WITH_CUDA"))
+    if(ctrl(OpticksBufferControl::OPTIX_OUTPUT_ONLY_))
+    { 
+         LOG(warning) << "OContext::upload NOT PROCEEDING "
+                      << " name " << npy->getBufferName()
+                      << " as " << OpticksBufferControl::OPTIX_OUTPUT_ONLY_
+                      << " desc " << npy->description("skip-upload") 
+                      ;
+     
+    }
+    else if(ctrl("UPLOAD_WITH_CUDA"))
     {
         if(verbose) LOG(info) << npy->description("UPLOAD_WITH_CUDA markDirty") ;
 
@@ -326,7 +335,16 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
     bool verbose = ctrl("VERBOSE_MODE") ;
 
     bool proceed = false ; 
-    if(ctrl(OpticksBufferControl::COMPUTE_MODE_))
+    if(ctrl(OpticksBufferControl::OPTIX_INPUT_ONLY_))
+    {
+         proceed = false ; 
+         LOG(warning) << "OContext::download NOT PROCEEDING "
+                      << " name " << npy->getBufferName()
+                      << " as " << OpticksBufferControl::OPTIX_INPUT_ONLY_
+                      << " desc " << npy->description("skip-download") 
+                      ;
+    }
+    else if(ctrl(OpticksBufferControl::COMPUTE_MODE_))
     {
          proceed = true ; 
     }

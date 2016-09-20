@@ -85,6 +85,8 @@ int main(int argc, char** argv)
         if(viz) viz->uploadEvent();           // via Scene and Rdr (only interop buffers)
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 
+        propagator.prelaunch();               // keeps Thrust and OptiX talking about the same buffers
+
         seeder.seedPhotonsFromGensteps() ;    // Thrust: seed photon buffer (or WITH_SEED_BUFFER the seed buffer) using the genstep numPhotons for each step
         oevt.markDirty();                     // inform OptiX that must sync up input buffers with ctrl BUFFER_COPY_ON_DIRTY
 
@@ -93,18 +95,12 @@ int main(int argc, char** argv)
 
         if(viz) viz->downloadEvent();
         oevt.downloadPhotonData();            // allocates hostside buffer and copies into it (WILL SKIP IN INTEROP)
-        oevt.downloadSeedData();             
+
 
         NPY<float>* photon = evt->getPhotonData();
         const char* photon_path = "$TMP/VizTest_photon.npy";
         photon->save(photon_path);
         SSys::npdump(photon_path, "np.int32");
-
-        NPY<unsigned>* seed = evt->getSeedData();
-        const char* seed_path = "$TMP/VizTest_seed.npy";
-        seed->save(seed_path);
-        SSys::npdump(seed_path, "np.uint32");
-
 
 
     }
