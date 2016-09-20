@@ -58,6 +58,8 @@ So problem is Thrust to OptiX handover.
      29    return CBufSpec( getDevicePtr(), getSize(), getNumBytes()) ;
      30 }     
 
+    /// CBufSpec is just a holder for dev_ptr together with size and numBytes
+
 
     175 void* OBufBase::getDevicePtr()
     176 {
@@ -77,12 +79,12 @@ So problem is Thrust to OptiX handover.
     143     OK_PROFILE("_OpSeeder::seedPhotonsFromGenstepsViaOptiX");
     144 
     145     OBuf* genstep = m_oevt->getGenstepBuf() ;
-    146     CBufSpec s_gs = genstep->bufspec();
+    146     CBufSpec s_gs = genstep->bufspec();     /// just a holder for dev_ptr, size, num_bytes
     147 
     148 #ifdef WITH_SEED_BUFFER
     149     LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ;
     150     OBuf* seed = m_oevt->getSeedBuf() ;
-    151     CBufSpec s_se = seed->bufspec();
+    151     CBufSpec s_se = seed->bufspec();  //  optix::Buffer::getDevicePointer happens here 
     152     seedPhotonsFromGenstepsImp(s_gs, s_se);
     153     //s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
     154     //s_se.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_se");

@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <algorithm>
+#include <limits>  
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
@@ -206,6 +207,56 @@ void NPY<T>::add(T x, T y, T z, T w)
 
 
 
+
+template <typename T>
+void NPY<T>::minmax(T& mi_, T& mx_)
+{
+    unsigned int nv = getNumValues(0);
+    T* vv = getValues();
+
+    T mx(std::numeric_limits<T>::min()); 
+    T mi(std::numeric_limits<T>::max()); 
+
+    for(unsigned i=0 ; i < nv ; i++)
+    {
+        T v = *(vv+i) ; 
+        if(v > mx) mx = v ; 
+        if(v < mi) mi = v ; 
+    }
+    mi_ = mi ; 
+    mx_ = mx ; 
+}
+
+
+template <typename T>
+bool NPY<T>::isConstant(T val)
+{
+    T mi(0);
+    T mx(0);
+    minmax(mi, mx) ;
+    
+    bool yes = val == mi && val == mx ;
+
+    LOG(info) << "NPY<T>::isConstant " 
+              << " val " << val 
+              << " mi " << mi 
+              << " mx " << mx
+              << " const? " << ( yes ? "YES" : "NO" )
+              ; 
+    return yes ; 
+}
+
+
+template <typename T>
+void NPY<T>::qdump(const char* msg)
+{
+    unsigned int nv = getNumValues(0);
+    T* vv = getValues();
+
+    LOG(info) << msg << " nv " << nv ; 
+    for(unsigned i=0 ; i < nv ; i++ ) std::cout << *(vv + i) << " " ; 
+    std::cout << std::endl ;       
+}
 
 
 

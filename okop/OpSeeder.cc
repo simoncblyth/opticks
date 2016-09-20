@@ -148,7 +148,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
 #ifdef WITH_SEED_BUFFER
     LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
     OBuf* seed = m_oevt->getSeedBuf() ;
-    CBufSpec s_se = seed->bufspec();
+    CBufSpec s_se = seed->bufspec();   //  optix::Buffer::getDevicePointer happens here  ( CBufSpec just holder for devPtr, size, numBytes )
     seedPhotonsFromGenstepsImp(s_gs, s_se);
     //s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_gs");
     //s_se.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_se");

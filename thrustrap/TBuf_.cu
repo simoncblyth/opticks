@@ -51,7 +51,6 @@ template <typename T>
 void TBuf::download(NPY<T>* npy) const 
 {
     unsigned int numBytes = npy->getNumBytes(0) ;
-
     unsigned int numBytes2 = getNumBytes();
 
     if(numBytes != numBytes2)
@@ -65,6 +64,29 @@ void TBuf::download(NPY<T>* npy) const
     void* dst = npy->zero();
     cudaMemcpy( dst, src, numBytes, cudaMemcpyDeviceToHost );
 }
+
+
+template <typename T>
+void TBuf::upload(NPY<T>* npy) const 
+{
+    unsigned int numBytes = npy->getNumBytes(0) ;
+    unsigned int numBytes2 = getNumBytes();
+
+    if(numBytes != numBytes2)
+        std::cout << "TBuf::upload FATAL numBytes mismatch "
+                  << " numBytes " << numBytes 
+                  << " numBytes2 " << numBytes2
+                  << std::endl ;  
+
+    assert(numBytes == numBytes2);
+    void* src = npy->getBytes() ;
+    void* dst = getDevicePtr();
+    cudaMemcpy( dst, src, numBytes, cudaMemcpyHostToDevice );
+}
+
+
+
+
 
 void TBuf::zero()
 {
@@ -176,6 +198,8 @@ template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, uns
 
 template void TBuf::download<unsigned char>(NPY<unsigned char>*) const ;
 
+template void TBuf::upload<unsigned>(NPY<unsigned>*) const ;
+template void TBuf::upload<unsigned char>(NPY<unsigned char>*) const ;
 
 
 

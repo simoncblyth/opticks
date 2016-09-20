@@ -172,6 +172,9 @@ class NPY_API NPY : public NPYBase {
        bool isUnsetItem(unsigned int i, unsigned int j);
     public:
        void dump(const char* msg="NPY::dump", unsigned int limit=15);
+       void minmax(T& mi, T& mx);
+       bool isConstant(T val);
+       void qdump(const char* msg="NPY::qdump");
     public:
        // methods assuming 3D shape
        std::set<int> uniquei(unsigned int j, unsigned int k);
