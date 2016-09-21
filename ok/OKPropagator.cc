@@ -79,6 +79,7 @@ void OKPropagator::propagate()
 
     m_engine->propagate();        //  seedPhotonsFromGensteps, zeroRecords, propagate, indexSequence, indexBoundaries
 
+    OK_PROFILE("OKPropagator::propagate.MID");
 
     if(m_viz) m_viz->indexPresentationPrep();
 

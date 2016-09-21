@@ -202,6 +202,7 @@ void OEvent::upload()
 
 void OEvent::upload(OpticksEvent* evt)   
 {
+    OK_PROFILE("_OEvent::upload");
     LOG(info)<<"OEvent::upload id " << evt->getId()  ;
     setEvent(evt);
 
@@ -215,6 +216,7 @@ void OEvent::upload(OpticksEvent* evt)
     }
     uploadGensteps(evt);
     LOG(info)<<"OEvent::upload id " << evt->getId() << " DONE "  ;
+    OK_PROFILE("OEvent::upload");
 }
 
 
@@ -244,6 +246,7 @@ void OEvent::download(unsigned mask)
 
 void OEvent::download(OpticksEvent* evt, unsigned mask)
 {
+    OK_PROFILE("_OEvent::download");
     assert(evt) ;
 
    
@@ -278,6 +281,7 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
 #endif
 
     LOG(debug)<<"OEvent::download DONE" ;
+    OK_PROFILE("OEvent::download");
 }
 
 

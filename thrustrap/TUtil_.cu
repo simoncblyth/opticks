@@ -1,6 +1,8 @@
 #include "TUtil.hh"
 #include <thrust/device_vector.h>
 #include "CBufSpec.hh"
+#include "float4x4.h"
+
 
 
 template <typename T>
@@ -21,6 +23,8 @@ template THRAP_API CBufSpec make_bufspec<unsigned int>(const thrust::device_vect
 template THRAP_API CBufSpec make_bufspec<unsigned char>(const thrust::device_vector<unsigned char>& );
 template THRAP_API CBufSpec make_bufspec<int>(const thrust::device_vector<int>& );
 template THRAP_API CBufSpec make_bufspec<float4>(const thrust::device_vector<float4>& );
+template THRAP_API CBufSpec make_bufspec<float>(const thrust::device_vector<float>& );
+template THRAP_API CBufSpec make_bufspec<float4x4>(const thrust::device_vector<float4x4>& );
 
 
 

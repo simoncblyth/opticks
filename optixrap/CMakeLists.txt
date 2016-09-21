@@ -174,6 +174,7 @@ set(SOURCES
     cu/textureTest.cu
     cu/bufferTest.cu
     cu/dirtyBufferTest.cu
+    cu/compactionTest.cu
     cu/minimalTest.cu
     cu/LTminimalTest.cu
     cu/axisTest.cu
@@ -206,6 +207,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_texTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_bufferTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_dirtyBufferTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_compactionTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OEventTest.cu.ptx
 )
 

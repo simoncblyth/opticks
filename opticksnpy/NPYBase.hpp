@@ -115,6 +115,9 @@ class NPY_API NPYBase {
 
        bool isGenstepTranslated();
        void setGenstepTranslated(bool flag=true);
+
+       unsigned getNumHit();
+       void setNumHit(unsigned num_hit);
    private:
        void         setBufferName(const char* name);
    public:

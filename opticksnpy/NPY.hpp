@@ -219,6 +219,7 @@ class NPY_API NPY : public NPYBase {
 
        void         setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
+       void         setQuadU(const     nuvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
 
        ///  quad getters
        glm::vec4    getQuad(unsigned int i,  unsigned int j=0, unsigned int k=0 );

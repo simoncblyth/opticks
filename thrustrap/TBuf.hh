@@ -15,6 +15,9 @@ class THRAP_API TBuf {
       unsigned int getNumBytes() const ;
       unsigned int getSize() const ;
 
+      template <typename T> unsigned count4x4_if(unsigned jj, unsigned kk) const ; 
+      template <typename T> void  download4x4_if(NPY<T>* npy, unsigned jj, unsigned kk) const ;
+
       template <typename T> void fill(T value) const ;
       template <typename T> void upload(NPY<T>* npy) const ;
       template <typename T> void download(NPY<T>* npy) const ;

@@ -100,6 +100,17 @@ void NPYBase::setGenstepTranslated(bool flag)
 }
 
 
+void NPYBase::setNumHit(unsigned num_hit)
+{
+    m_parameters->set<unsigned>("NumHit", num_hit); 
+}
+
+unsigned NPYBase::getNumHit()
+{
+    return m_parameters->get<unsigned>("NumHit","0"); 
+}
+
+
 
 
 NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 

@@ -1343,6 +1343,17 @@ template <typename T>
     for(unsigned int l=0 ; l < 4 ; l++) setUInt(i,j,k,l,vec[l]); 
 }
 
+template <typename T> 
+ void NPY<T>::setQuadU(const nuvec4& vec, unsigned int i, unsigned int j, unsigned int k )
+{
+    setUInt(i,j,k,0,vec.x); 
+    setUInt(i,j,k,1,vec.y); 
+    setUInt(i,j,k,2,vec.z); 
+    setUInt(i,j,k,3,vec.w); 
+}
+
+
+
 
 template <typename T> 
  glm::mat4 NPY<T>::getMat4(unsigned int i)

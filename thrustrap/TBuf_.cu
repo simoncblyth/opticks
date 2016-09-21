@@ -10,6 +10,7 @@
 #include "TBuf.hh"
 #include "TUtil.hh"
 
+#include "float4x4.h"
 #include "strided_range.h"
 #include "strided_repeated_range.h"
 
@@ -65,6 +66,21 @@ void TBuf::download(NPY<T>* npy) const
     void* dst = npy->zero();
     cudaMemcpy( dst, src, numBytes, cudaMemcpyDeviceToHost );
 }
+
+
+template <typename T>
+unsigned TBuf::count4x4_if(unsigned jj, unsigned kk) const 
+{
+    return 0 ; 
+}
+
+template <typename T>
+void TBuf::download4x4_if(NPY<T>* npy, unsigned jj, unsigned kk) const 
+{
+}
+
+
+
 
 
 template <typename T>
@@ -200,6 +216,10 @@ void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsi
 
 
 
+
+template void TBuf::dump<float4x4>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dump<float4>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dump<float>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<unsigned long long>(const char*, unsigned int, unsigned int, unsigned int) const ;
@@ -209,13 +229,25 @@ template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned i
 template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int) const ;
 template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const ;
 
+template void TBuf::download<float>(NPY<float>*) const ;
 template void TBuf::download<unsigned char>(NPY<unsigned char>*) const ;
 
+template void TBuf::upload<float>(NPY<float>*) const ;
 template void TBuf::upload<unsigned>(NPY<unsigned>*) const ;
 template void TBuf::upload<unsigned char>(NPY<unsigned char>*) const ;
 
 template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;
+
+
+template unsigned TBuf::count4x4_if<float>(unsigned, unsigned) const ;
+template void     TBuf::download4x4_if<float>(NPY<float>*, unsigned, unsigned) const ;
+
+
+
+
+
+
 
 
 
