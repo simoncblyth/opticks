@@ -119,6 +119,7 @@ set(SOURCES
     HitsNPY.cpp
     BoundariesNPY.cpp
     MaterialLibNPY.cpp
+    DummyPhotonsNPY.cpp
 )
 
 set(REST_SOURCES
@@ -153,6 +154,7 @@ HitsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp
 MaterialLibNPY.hpp
+DummyPhotonsNPY.hpp
 SequenceNPY.hpp
 SeqNPY.hpp
 AxisNPY.hpp

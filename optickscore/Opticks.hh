@@ -232,6 +232,7 @@ class OKCORE_API Opticks {
        bool isCompute();
        bool isInterop();
        bool isCfG4();   // needs manual override to set to CFG4_MODE
+       bool isProduction();
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);
@@ -244,6 +245,7 @@ class OKCORE_API Opticks {
        SArgs*               m_sargs ; 
        int                  m_argc ; 
        char**               m_argv ; 
+       bool                 m_production ; 
        OpticksProfile*      m_profile ; 
        const char*          m_envprefix ;
        const char*          m_materialprefix ;

@@ -13,11 +13,14 @@ class THRAP_API TBuf {
 
       void* getDevicePtr() const ;
       unsigned int getNumBytes() const ;
-      unsigned int getSize() const ;
+      unsigned int getSize() const ;      // NumItems might be better name
+      unsigned int getItemSize() const ;  //  NumBytes/Size
 
-      template <typename T> unsigned count4x4_if(unsigned jj, unsigned kk) const ; 
-      template <typename T> void  download4x4_if(NPY<T>* npy, unsigned jj, unsigned kk) const ;
+     
+      void downloadSelection4x4(const char* name, NPY<float>* npy) const ; // selection done on items of size float4x4
+      void dump4x4(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;
 
+      template <typename T> void downloadSelection(const char* name, NPY<float>* npy) const ; // selection done on items of size T
       template <typename T> void fill(T value) const ;
       template <typename T> void upload(NPY<T>* npy) const ;
       template <typename T> void download(NPY<T>* npy) const ;

@@ -104,7 +104,6 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
 
-
        // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, T*  data            , std::string& metadata) ;
        NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;

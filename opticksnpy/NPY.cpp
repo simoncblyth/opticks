@@ -700,6 +700,8 @@ NPY<T>* NPY<T>::make_dbg_like(NPY<T>* src, int label_)
 
 
 
+
+
 template <typename T>
 NPY<T>* NPY<T>::make_modulo(NPY<T>* src, unsigned int scaledown)
 {

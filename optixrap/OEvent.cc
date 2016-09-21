@@ -11,6 +11,9 @@
 #include "OEvent.hh"
 #include "OBuf.hh"
 
+#include "TBuf.hh"
+
+
 #include "PLOG.hh"
 
 
@@ -236,11 +239,22 @@ void OEvent::uploadGensteps(OpticksEvent* evt)
 }
 
 
-
 void OEvent::downloadPhotonData() { download(PHOTON); }
-void OEvent::download(unsigned mask)
+void OEvent::download()
 {
-    download(m_evt, mask);
+    if(m_ok->isProduction())
+    {
+        downloadHits(m_evt);
+    }
+    else
+    {
+        download(m_evt, DOWNLOAD_DEFAULT);
+    }
+}
+
+void OEvent::downloadHits()
+{
+    downloadHits(m_evt);
 }
 
 
@@ -285,6 +299,21 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
 }
 
 
+void OEvent::downloadHits(OpticksEvent* evt)
+{
+    OK_PROFILE("_OEvent::downloadHits");
+
+    NPY<float>* hit = evt->getHitData();
+
+    CBufSpec cpho = m_photon_buf->bufspec();  
+    assert( cpho.size % 4 == 0 );
+    cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
+
+    TBuf tpho("tpho", cpho );
+    tpho.downloadSelection4x4("OEvent::downloadHits", hit );
+
+    OK_PROFILE("OEvent::downloadHits");
+}
 
 
 

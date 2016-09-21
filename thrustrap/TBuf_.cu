@@ -6,9 +6,11 @@
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 #include <thrust/fill.h>
+#include <thrust/count.h>
 
 #include "TBuf.hh"
 #include "TUtil.hh"
+#include "TIsHit.hh"
 
 #include "float4x4.h"
 #include "strided_range.h"
@@ -48,35 +50,123 @@ unsigned int TBuf::getSize() const
     return m_spec.size ; 
 }
 
+unsigned int TBuf::getItemSize() const 
+{
+    return m_spec.size > 0 ? m_spec.num_bytes / m_spec.size : 0  ; 
+}
+
+
+
+
+
 
 template <typename T>
 void TBuf::download(NPY<T>* npy) const 
 {
-    unsigned int numBytes = npy->getNumBytes(0) ;
-    unsigned int numBytes2 = getNumBytes();
+    unsigned numItems_npy = npy->getNumItems();
+    unsigned numItems_tbuf = getSize(); 
 
-    if(numBytes != numBytes2)
+    if(numItems_npy == 0)
+    {    
+        unsigned itemSize_tbuf = getItemSize();
+        unsigned itemSize_npy = sizeof(T) ;
+        assert(itemSize_tbuf % itemSize_npy == 0);
+
+        unsigned itemFactor = itemSize_tbuf / itemSize_npy ; 
+        assert(itemFactor % 4 == 0) ;
+
+        unsigned numQuad = itemFactor/4 ; 
+
+        std::cout << "TBuf::download resizing empty npy"
+                  << " itemSize_tbuf (eg float4x4 => 4*4*4 = 64) " << itemSize_tbuf
+                  << " itemSize_npy  (eg float => 4 ) " << itemSize_npy
+                  << " itemFactor (eg float4x4/float => 16 ) " << itemFactor  
+                  << " numQuad " << numQuad 
+                  << " numItems_tbuf " << numItems_tbuf
+                  << std::endl 
+                  ;
+
+        assert(npy->hasItemShape(numQuad,4));
+        npy->setNumItems(numItems_tbuf);
+    } 
+
+    unsigned int numBytes_npy = npy->getNumBytes(0) ;
+    unsigned int numBytes_tbuf = getNumBytes();
+
+    if(numBytes_npy != numBytes_tbuf)
         std::cout << "TBuf::download FATAL numBytes mismatch "
-                  << " numBytes " << numBytes 
-                  << " numBytes2 " << numBytes2
+                  << " numBytes_npy " << numBytes_npy 
+                  << " numBytes_tbuf " << numBytes_tbuf
                   << std::endl ;  
 
-    assert(numBytes == numBytes2);
+    assert(numBytes_npy == numBytes_tbuf);
     void* src = getDevicePtr();
     void* dst = npy->zero();
-    cudaMemcpy( dst, src, numBytes, cudaMemcpyDeviceToHost );
+    cudaMemcpy( dst, src, numBytes_tbuf, cudaMemcpyDeviceToHost );
 }
 
 
-template <typename T>
-unsigned TBuf::count4x4_if(unsigned jj, unsigned kk) const 
+
+
+
+// TODO: generalize with selector template type such as TIsHit 
+//
+//
+//  Initially tried to 
+//      TBuf* TBuf::make_selection
+//
+//  but that means the d_selected thrust::device_vector 
+//  goes out of scope prior to being able to download
+//  its content to host.
+//
+//  Avoid complication of hanging onto thrust::device_vector
+//  by combining the making of the selection TBuf and 
+//  the download 
+//
+
+
+
+void TBuf::downloadSelection4x4(const char* name, NPY<float>* npy) const 
 {
-    return 0 ; 
+    downloadSelection<float4x4>(name, npy);
 }
 
 template <typename T>
-void TBuf::download4x4_if(NPY<T>* npy, unsigned jj, unsigned kk) const 
+void TBuf::downloadSelection(const char* name, NPY<float>* selection) const 
 {
+    thrust::device_ptr<T> ptr = thrust::device_pointer_cast((T*)getDevicePtr()) ;
+
+    unsigned numItems = getSize();
+
+    TIsHit selector ;
+
+    unsigned numSel = thrust::count_if(ptr, ptr+numItems, selector );
+
+    std::cout << "TBuf::downloadSelection"
+              << " name : " << name 
+              << " numItems :" << numItems 
+              << " numSel :" << numSel 
+              ; 
+
+
+    // device buffer is deallocated when d_selected goes out of scope 
+    // so do the download to host within this scope
+
+    thrust::device_vector<T> d_selected(numSel) ;    
+
+    thrust::copy_if(ptr, ptr+numItems, d_selected.begin(), selector );
+
+    CBufSpec cselected = make_bufspec<T>(d_selected); 
+
+    TBuf tsel(name, cselected );
+ 
+    tsel.dump<T>("tsel dump<T> 0:numSel", 1, 0, numSel );
+ 
+    assert(sizeof(T) == tsel.getItemSize());
+
+    assert(tsel.getSize() == numSel );
+
+    tsel.download(selection);
 }
 
 
@@ -120,6 +210,14 @@ void TBuf::fill(T value) const
 
     thrust::fill(p, p+numval , value);
 }
+
+
+
+void TBuf::dump4x4(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const 
+{
+     dump<float4x4>(msg, stride, begin, end);
+}
+
 
 
 template <typename T>
@@ -217,6 +315,8 @@ void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsi
 
 
 
+
+
 template void TBuf::dump<float4x4>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<float4>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<float>(const char*, unsigned int, unsigned int, unsigned int) const ;
@@ -240,8 +340,7 @@ template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
 
-template unsigned TBuf::count4x4_if<float>(unsigned, unsigned) const ;
-template void     TBuf::download4x4_if<float>(NPY<float>*, unsigned, unsigned) const ;
+template void TBuf::downloadSelection<float4x4>(const char*, NPY<float>* ) const ;
 
 
 

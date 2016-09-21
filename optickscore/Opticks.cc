@@ -102,6 +102,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
+       m_production(m_sargs->hasArg("production")),
        m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("stamp"))),
        m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
@@ -307,6 +308,12 @@ bool Opticks::isInstanced()
 {
    return m_instanced ; 
 }
+bool Opticks::isProduction()
+{
+   return m_production ; 
+}
+
+
 
 
 void Opticks::setIntegrated(bool integrated)

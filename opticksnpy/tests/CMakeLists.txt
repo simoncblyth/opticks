@@ -59,6 +59,7 @@ NPYTest.cc
 NPY2Test.cc
 NLoadTest.cc
 NLoadCheck.cc
+DummyPhotonsNPYTest.cc
 
 )
 

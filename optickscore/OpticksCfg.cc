@@ -106,7 +106,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("stamp",  "output profile stamps as they are made, see OpticksProfile") ; 
 
-
+   m_desc.add_options()
+       ("production",  "skip all debug/test features, do only what is needed in production") ; 
 
 
 

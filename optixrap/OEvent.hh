@@ -46,11 +46,13 @@ class OXRAP_API OEvent
     public:
         OEvent(OpticksHub* hub, OContext* ocontext);
         void upload();
-        void download(unsigned mask=DOWNLOAD_DEFAULT );
+        void download();
         void downloadPhotonData();
+        void downloadHits();
     private:
         void upload(OpticksEvent* evt);
         void uploadGensteps(OpticksEvent* evt);
+        void downloadHits(OpticksEvent* evt);
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();

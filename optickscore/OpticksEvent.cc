@@ -98,6 +98,7 @@ const char* OpticksEvent::phosel_ = "phosel" ;
 const char* OpticksEvent::recsel_  = "recsel" ; 
 const char* OpticksEvent::sequence_  = "sequence" ; 
 const char* OpticksEvent::seed_  = "seed" ; 
+const char* OpticksEvent::hit_  = "hit" ; 
 
 
 OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
@@ -129,6 +130,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_recsel_data(NULL),
           m_sequence_data(NULL),
           m_seed_data(NULL),
+          m_hit_data(NULL),
 
           m_photon_ctrl(NULL),
           m_seed_ctrl(NULL),
@@ -144,6 +146,7 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_recsel_attr(NULL),
           m_sequence_attr(NULL),
           m_seed_attr(NULL),
+          m_hit_attr(NULL),
 
           m_records(NULL),
           m_photons(NULL),
@@ -319,6 +322,10 @@ NPY<unsigned>* OpticksEvent::getSeedData()
 { 
     return m_seed_data ;
 }
+NPY<float>* OpticksEvent::getHitData()
+{ 
+    return m_hit_data ;
+}
 
 
 MultiViewNPY* OpticksEvent::getGenstepAttr(){ return m_genstep_attr ; }
@@ -328,7 +335,8 @@ MultiViewNPY* OpticksEvent::getRecordAttr(){ return m_record_attr ; }
 MultiViewNPY* OpticksEvent::getPhoselAttr(){ return m_phosel_attr ; }
 MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
 MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
-MultiViewNPY* OpticksEvent::getSeedAttr(){  return m_seed_attr ; }
+MultiViewNPY* OpticksEvent::getSeedAttr(){   return m_seed_attr ; }
+MultiViewNPY* OpticksEvent::getHitAttr(){    return m_hit_attr ; }
 
 
 
@@ -524,6 +532,7 @@ void OpticksEvent::init()
     m_abbrev[recsel_] = "rs" ;     // record selection index
     m_abbrev[sequence_] = "ph" ;   // (unsigned long long) photon seqhis/seqmat
     m_abbrev[seed_] = "se" ;   //   (short) genstep id used for photon seeding 
+    m_abbrev[hit_] = "ht" ;  
 }
 
 
@@ -538,6 +547,7 @@ NPYBase* OpticksEvent::getData(const char* name)
     else if(strcmp(name, recsel_)==0)  data = static_cast<NPYBase*>(m_recsel_data) ;
     else if(strcmp(name, sequence_)==0) data = static_cast<NPYBase*>(m_sequence_data) ;
     else if(strcmp(name, seed_)==0) data = static_cast<NPYBase*>(m_seed_data) ;
+    else if(strcmp(name, hit_)==0) data = static_cast<NPYBase*>(m_hit_data) ;
     return data ; 
 }
 
@@ -552,6 +562,7 @@ NPYSpec* OpticksEvent::getSpec(const char* name)
     else if(strcmp(name, recsel_)==0)  spec = static_cast<NPYSpec*>(m_recsel_spec) ;
     else if(strcmp(name, sequence_)==0) spec = static_cast<NPYSpec*>(m_sequence_spec) ;
     else if(strcmp(name, seed_)==0)     spec = static_cast<NPYSpec*>(m_seed_spec) ;
+    else if(strcmp(name, hit_)==0)     spec = static_cast<NPYSpec*>(m_hit_spec) ;
     else if(strcmp(name, fdom_)==0)     spec = static_cast<NPYSpec*>(m_fdom_spec) ;
     else if(strcmp(name, idom_)==0)     spec = static_cast<NPYSpec*>(m_idom_spec) ;
     return spec ; 
@@ -649,6 +660,7 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     else if(elem[0] == recsel_)   mvn = m_recsel_attr ;
     else if(elem[0] == sequence_) mvn = m_sequence_attr ;
     else if(elem[0] == seed_)     mvn = m_seed_attr ;
+    else if(elem[0] == hit_)      mvn = m_hit_attr ;
 
     assert(mvn);
     return (*mvn)[elem[1].c_str()] ;
@@ -714,6 +726,9 @@ void OpticksEvent::createSpec()
     m_genstep_spec = GenstepSpec();
 
     m_seed_spec    = SeedSpec();
+
+    m_hit_spec    = new NPYSpec(hit_       , 0,4,4,0,      NPYBase::FLOAT      , "");
+
 
 #ifdef WITH_SEED_BUFFER
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_OUTPUT_ONLY,INTEROP_PTR_FROM_OPENGL") ;
@@ -836,6 +851,9 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
     NPY<unsigned>* seed = NPY<unsigned>::make(m_seed_spec); 
     setSeedData(seed);   
 
+    NPY<float>* hit = NPY<float>::make(m_hit_spec); 
+    setHitData(hit);   
+
     NPY<unsigned char>* phosel = NPY<unsigned char>::make(m_phosel_spec); 
     setPhoselData(phosel);   
 
@@ -870,6 +888,7 @@ void OpticksEvent::resetBuffers()
     if(m_phosel_data)   m_phosel_data->reset();    
     if(m_recsel_data)   m_recsel_data->reset();    
     if(m_record_data)   m_record_data->reset();    
+    if(m_hit_data)      m_hit_data->reset();    
 }
 
 
@@ -1136,6 +1155,15 @@ void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
     m_seed_ctrl = new OpticksBufferControl(m_seed_data->getBufferControlPtr());
     m_seed_attr = new MultiViewNPY("seed_attr");
 }
+
+void OpticksEvent::setHitData(NPY<float>* hit_data)
+{
+    setBufferControl(hit_data);
+    m_hit_data = hit_data  ;
+    m_hit_attr = new MultiViewNPY("hit_attr");
+}
+
+
 
 OpticksBufferControl* OpticksEvent::getPhotonCtrl()
 {
@@ -1511,12 +1539,21 @@ void OpticksEvent::save(bool verbose)
 
     /*
     // dont try, seed buffer is OPTIX_INPUT_ONLY , so attempts to download yields garbage
+    // also suspect such an attempt messes up the OptiX context is peculiar ways 
     NPY<unsigned>* se  = getSeedData();
     {
         se->setVerbose(verbose);
         se->save("se", m_typ,  m_tag, udet);
     }
     */
+
+    NPY<float>* ht = getHitData();
+    if(ht)
+    {
+        ht->setVerbose(verbose);
+        ht->save("ht", m_typ,  m_tag, udet);
+    }
+
 
     updateDomainsBuffer();
 
@@ -1760,6 +1797,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     NPY<unsigned char>*      ps = NPY<unsigned char>::load("ps", m_typ,  m_tag, udet, qload );
     NPY<unsigned char>*      rs = NPY<unsigned char>::load("rs", m_typ,  m_tag, udet, qload );
     NPY<unsigned>*           se = NPY<unsigned>::load("se", m_typ,  m_tag, udet, qload );
+    NPY<float>*              ht = NPY<float>::load("ht", m_typ,  m_tag, udet, qload );
 
     if(ph == NULL || ps == NULL || rs == NULL )
         LOG(warning) << "OpticksEvent::loadBuffers " << getDir()
@@ -1777,6 +1815,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     if(ps) loadBuffersImportSpec(ps,m_phosel_spec) ;
     if(rs) loadBuffersImportSpec(rs,m_recsel_spec) ;
     if(se) loadBuffersImportSpec(se,m_seed_spec) ;
+    if(ht) loadBuffersImportSpec(ht,m_hit_spec) ;
 
 
     if(gs) importGenstepDataLoaded(gs);   // sets action control, so setGenstepData label checks can succeed
@@ -1787,11 +1826,13 @@ void OpticksEvent::loadBuffers(bool verbose)
     unsigned int num_history = ph ? ph->getShape(0) : 0 ;
     unsigned int num_phosel  = ps ? ps->getShape(0) : 0 ;
     unsigned int num_seed    = se ? se->getShape(0) : 0 ;
+    unsigned int num_hit     = ht ? ht->getShape(0) : 0 ;
 
     // either zero or matching 
     assert(num_history == 0 || num_photons == num_history );
     assert(num_phosel == 0 || num_photons == num_phosel );
     assert(num_seed == 0 || num_photons == num_seed );
+    
 
     unsigned int num_records = rx ? rx->getShape(0) : 0 ;
     unsigned int num_recsel  = rs ? rs->getShape(0) : 0 ;
@@ -1807,6 +1848,7 @@ void OpticksEvent::loadBuffers(bool verbose)
               << " num_history " << num_history
               << " num_phosel " << num_phosel 
               << " num_seed " << num_seed 
+              << " num_hit " << num_hit
               << " ] "
               << " [ "
               << " num_records " << num_records
@@ -1828,6 +1870,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     setPhoselData(ps);
     setRecselData(rs);
     setSeedData(se);
+    setHitData(ht);
 
     (*m_timer)("load");
 
@@ -1846,6 +1889,7 @@ void OpticksEvent::loadBuffers(bool verbose)
         if(ps) ps->Summary("ps");
         if(rs) rs->Summary("rs");
         if(se) se->Summary("se");
+        if(ht) ht->Summary("ht");
     }
 
     if(!isIndexed())
