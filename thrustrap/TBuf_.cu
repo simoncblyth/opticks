@@ -66,6 +66,14 @@ void TBuf::download(NPY<T>* npy) const
     unsigned numItems_npy = npy->getNumItems();
     unsigned numItems_tbuf = getSize(); 
 
+    if(numItems_tbuf == 0)
+    {
+        std::cout << "TBuf::download SKIP "
+                  << " numItems_tbuf " << numItems_tbuf
+                  << std::endl ; 
+        return ; 
+    }
+
     if(numItems_npy == 0)
     {    
         unsigned itemSize_tbuf = getItemSize();
@@ -92,14 +100,16 @@ void TBuf::download(NPY<T>* npy) const
 
     unsigned int numBytes_npy = npy->getNumBytes(0) ;
     unsigned int numBytes_tbuf = getNumBytes();
+    bool numBytes_match = numBytes_npy == numBytes_tbuf ;
 
-    if(numBytes_npy != numBytes_tbuf)
-        std::cout << "TBuf::download FATAL numBytes mismatch "
+    if(!numBytes_match)
+        std::cout << "TBuf::download FATAL numBytes MISMATCH "
                   << " numBytes_npy " << numBytes_npy 
                   << " numBytes_tbuf " << numBytes_tbuf
-                  << std::endl ;  
+                  << std::endl 
+                  ;  
+    assert(numBytes_match);
 
-    assert(numBytes_npy == numBytes_tbuf);
     void* src = getDevicePtr();
     void* dst = npy->zero();
     cudaMemcpy( dst, src, numBytes_tbuf, cudaMemcpyDeviceToHost );
@@ -126,13 +136,13 @@ void TBuf::download(NPY<T>* npy) const
 
 
 
-void TBuf::downloadSelection4x4(const char* name, NPY<float>* npy) const 
+void TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose) const 
 {
-    downloadSelection<float4x4>(name, npy);
+    downloadSelection<float4x4>(name, npy, verbose);
 }
 
 template <typename T>
-void TBuf::downloadSelection(const char* name, NPY<float>* selection) const 
+void TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbose) const 
 {
     thrust::device_ptr<T> ptr = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
@@ -146,6 +156,8 @@ void TBuf::downloadSelection(const char* name, NPY<float>* selection) const
               << " name : " << name 
               << " numItems :" << numItems 
               << " numSel :" << numSel 
+              << " sizeof(T) : " << sizeof(T)
+              << std::endl 
               ; 
 
 
@@ -160,9 +172,20 @@ void TBuf::downloadSelection(const char* name, NPY<float>* selection) const
 
     TBuf tsel(name, cselected );
  
-    tsel.dump<T>("tsel dump<T> 0:numSel", 1, 0, numSel );
- 
-    assert(sizeof(T) == tsel.getItemSize());
+    if(verbose)
+    tsel.dump<T>("TBuf::downloadSelection tsel dump<T> 0:numSel", 1, 0, numSel );
+
+    if(numSel > 0)
+    {
+        bool itemsize_match = sizeof(T) == tsel.getItemSize() ;
+        if(!itemsize_match)
+            std::cerr << "TBuf::downloadSelection   FATAL"
+                      << " sizeof(T) " << sizeof(T)
+                      << " tsel ItemSize " << tsel.getItemSize()
+                      << std::endl 
+                 ; 
+        assert(itemsize_match);
+    }
 
     assert(tsel.getSize() == numSel );
 
@@ -340,7 +363,7 @@ template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
 
-template void TBuf::downloadSelection<float4x4>(const char*, NPY<float>* ) const ;
+template void TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, bool ) const ;
 
 
 

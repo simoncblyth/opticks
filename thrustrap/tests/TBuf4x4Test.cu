@@ -231,6 +231,8 @@ void test_copy4x4_encapsulated()
 
     NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
 
+
+
     thrust::device_vector<float4x4> d_pho(num_photons) ;
 
     CBufSpec cpho = make_bufspec<float4x4>(d_pho); 
@@ -249,8 +251,6 @@ void test_copy4x4_encapsulated()
     hit->save(path);
     SSys::npdump(path);
 }
-
-
 
 
 

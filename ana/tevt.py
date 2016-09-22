@@ -35,12 +35,12 @@ if __name__ == '__main__':
     np.set_printoptions(suppress=True, precision=3)
 
     try:
-        evt = Evt(tag=args.tag, src=args.src, det=args.det, seqs=[])
+        evt = Evt(tag=args.utag, src=args.src, det=args.det, seqs=[])
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)
 
-    log.info("loaded evt %s " % repr(evt))
+    log.info("loaded evt")
 
     print evt
     print evt.history_table(slice(0,20))

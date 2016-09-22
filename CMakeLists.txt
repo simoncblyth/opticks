@@ -111,7 +111,7 @@ endif(REST)
 
 
 
-# collects version defines, currently only OXRAP_OPTIX_VERSION
+# collects version defines, currently only OXRAP_OPTIX_VERSION and CFG4_G4VERSION_NUMBER
 configure_file(OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh)
 
 

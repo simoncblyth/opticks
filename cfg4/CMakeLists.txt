@@ -28,6 +28,38 @@ find_package(OpticksGeometry REQUIRED)
 
 find_package(Geant4 REQUIRED) ## invoke cmake with -DGeant4_DIR=$(g4-cmake-dir) 
 
+
+
+# Parsing G4Version.hh header makes the CFG4_G4VERSION_NUMBER
+# available at configure time, the value is written to inc/OpticksCMakeConfig.hh 
+# by top level CMakeLists.txt
+
+set(CFG4_G4VERSION_NUMBER 0 PARENT_SCOPE)
+if(Geant4_FOUND)
+   set(_dirs ${Geant4_INCLUDE_DIRS}) 
+   list(GET _dirs 0 _firstdir)
+   #message(STATUS "${name}.Geant4_INCLUDE_DIRS    : ${Geant4_INCLUDE_DIRS} ")
+   #message(STATUS "${name}._firstdir              : ${_firstdir} ")
+   file(READ "${_firstdir}/G4Version.hh" _contents)
+   #message(STATUS "${name}.contents : ${_contents} ")
+   string(REGEX REPLACE "\n" ";" _contents "${_contents}")
+   foreach(_line ${_contents})
+        if (_line MATCHES "#define G4VERSION_NUMBER[ ]+([0-9]+)$")
+            set(CFG4_G4VERSION_NUMBER ${CMAKE_MATCH_1} PARENT_SCOPE)
+            message(STATUS "${name}._line ${_line} ===> ${CMAKE_MATCH_1} ") 
+        endif()
+   endforeach()
+else(Geant4_FOUND)
+   message(STATUS "${name}.Geant4 NOT-FOUND ")
+endif(Geant4_FOUND)
+
+
+
+
+
+
+
+
 #message("${name}.CMAKE_CXX_FLAGS (fg4)  : ${CMAKE_CXX_FLAGS} ")
 
 

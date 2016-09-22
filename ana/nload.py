@@ -38,15 +38,25 @@ def tagdir_(det, typ, tag, layout=2):
     layout version 1 (which is still used for source gensteps) does
     not have the tag in the directory 
     """
+    log.debug("tagdir_ det %s typ %s tag %s layout %s DEFAULT_DIR_TEMPLATE %s " % (det,typ,tag,layout, DEFAULT_DIR_TEMPLATE))
+    log.debug("tagdir_ type(tag) %s " % type(tag)) 
+
     if layout == 1: 
         utag = "."
-        tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",utag))
+        tmpl = DEFAULT_DIR_TEMPLATE
+        tmpl = tmpl.replace("$1", det)
+        tmpl = tmpl.replace("$2", typ)
+        tmpl = tmpl.replace("$3",utag)
     elif layout == 2:
-        tmpl = os.path.expandvars(DEFAULT_DIR_TEMPLATE.replace("$1", det).replace("$2",typ).replace("$3",tag))
+        tmpl = DEFAULT_DIR_TEMPLATE
+        tmpl = tmpl.replace("$1", det)
+        tmpl = tmpl.replace("$2", typ)
+        tmpl = tmpl.replace("$3", str(tag))
     else:
         assert 0, "bad layout"
 
-    return tmpl
+    log.debug("tagdir_ tmpl %s " % tmpl )
+    return os.path.expandvars(tmpl)
 
 
 def typdirs_(evtdir=None):

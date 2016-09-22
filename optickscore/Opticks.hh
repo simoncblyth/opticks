@@ -78,6 +78,7 @@ class OKCORE_API Opticks {
        void init();
    public:
        void configure();  // invoked after commandline parsed
+       std::string brief();
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        void dumpParameters(const char* msg="Opticks::dumpParameters");

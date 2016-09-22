@@ -150,8 +150,16 @@ tpmt--(){
     fi 
 
 
+    local anakey
+    if [ "${cmdline/--okg4}" != "${cmdline}" ]; then
+        anakey=tpmt   ## compare OK and G4 evt histories
+    else
+        anakey=tevt    ## just dump OK history table
+    fi 
+
+
    op.sh \
-       --anakey tpmt \
+       --anakey $anakey \
        --save \
        --testconfig "$(join _ ${test_config[@]})" \
        --test \

@@ -11,6 +11,7 @@ except ImportError:
 from collections import OrderedDict 
 
 from opticks.ana.base import opticks_environment
+from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
 from opticks.ana.seq import SeqAna
@@ -77,6 +78,7 @@ class Evt(object):
 
         self.init_gensteps(tag, src, det, dbg)
         self.init_photons(tag, src, det, dbg)
+        self.init_hits(tag, src, det, dbg)
 
         if rec:
             self.init_records(tag, src, det, dbg)
@@ -91,13 +93,10 @@ class Evt(object):
         self.tag = str(tag)
         self.src = src
         self.det = det  
+        self.tagdir = tagdir_(det, src, tag)
 
-        #adir = adir_("md"+src, tag, det)
-        #mdir = os.path.join(adir, tag)   ## md dir has different layout from array dirs 
-        mdir = tagdir_(det, src, tag)
-
-        metadata = Metadata(mdir)
-        log.info("loaded metadata from %s : %s " % (mdir, repr(metadata)))
+        metadata = Metadata(self.tagdir)
+        log.debug("loaded metadata from %s : %s " % (self.tagdir, repr(metadata)))
         self.metadata = metadata  
 
         fdom = A.load_("fdom",src,tag,det, dbg=dbg) 
@@ -169,6 +168,31 @@ class Evt(object):
         self.desc['polw'] = "(photons) final photon step: polarization, wavelength "
         self.desc['flags'] = "(photons) final photon step: flags "
         self.desc['c4'] = "(photons) final photon step: dtype split uint8 view of ox flags"
+
+    def init_hits(self, tag, src, det, dbg):
+        ht = A.load_("ht",src,tag,det, optional=True) 
+        self.ht = ht
+        self.desc['ht'] = "(hits) surface detect SD final photon steps"
+
+        if ht.missing:return
+
+        hwl = ht[:,2,W] 
+        hc4 = ht[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
+
+        self.hwl = hwl
+        self.hpost = ht[:,0] 
+        self.hdirw = ht[:,1]
+        self.hpolw = ht[:,2]
+        self.hflags = ht.view(np.uint32)[:,3,3]
+        self.hc4 = hc4
+
+        self.desc['hwl'] = "(hits) wavelength"
+        self.desc['hpost'] = "(hits) final photon step: position, time"
+        self.desc['hdirw'] = "(hits) final photon step: direction, weight "
+        self.desc['hpolw'] = "(hits) final photon step: polarization, wavelength "
+        self.desc['hflags'] = "(hits) final photon step: flags "
+        self.desc['hc4'] = "(hits) final photon step: dtype split uint8 view of ox flags"
+
 
     def init_records(self, tag, src, det, dbg):
 
@@ -321,7 +345,8 @@ class Evt(object):
              return "%s %s" % (self.label, "EVT LOAD FAILED")
 
     brief = property(_brief)
-    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",\"%s\", seqs=\"%s\") %s %s" % (self.tag, self.src, self.det,self.label, repr(self.seqs), self.stamp, self.path))
+    summary = property(lambda self:"Evt(%3s,\"%s\",\"%s\",\"%s\", seqs=\"%s\") %s %s" % 
+            (self.tag, self.src, self.det,self.label, repr(self.seqs), self.stamp, self.tagdir))
 
     def __repr__(self):
         return "\n".join([self.summary, self.description])
@@ -745,31 +770,26 @@ def check_wavelength(evt):
 
 
 if __name__ == '__main__':
+    np.set_printoptions(precision=4, linewidth=200)
 
-    #logging.basicConfig(level=logging.DEBUG)
-    logging.basicConfig(level=logging.INFO)
-    opticks_environment(dump=True)
+    opticks_environment()
+
+    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox", c2max=2.0, tagoffset=0)
 
     rec = True  
-
-
-    #cat, src, tag = "rainbow", "torch", "-5"
-    #cat, src, tag = "juno", "cerenkov", "1"
-    cat, src, tag = "PmtInBox", "torch", "10"
-
-    evt = Evt(tag, src, cat, label="tag %s" % tag, rec=rec)
+    evt = Evt(tag=args.utag, src=args.src, det=args.det, label="utag %s" % args.utag, rec=rec)
 
     evt.history_table(slice(0,20))
 
-    dv = evt.a_deviation_angle(axis=X)
-
-    if plt:
-        plt.close()
-        plt.ion()
-
-        plt.hist(dv/deg, bins=360, log=True, histtype="step") 
-
-        plt.show()
+    #dv = evt.a_deviation_angle(axis=X)
+    #
+    #if plt:
+    #    plt.close()
+    #    plt.ion()
+    #
+    #    plt.hist(dv/deg, bins=360, log=True, histtype="step") 
+    #
+    #    plt.show()
 
 
   

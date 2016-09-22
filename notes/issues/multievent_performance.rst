@@ -58,7 +58,6 @@ OK
     OPropagator::launch_8=0.791015625
     OPropagator::launch_9=0.765625
 
-
 Bouncemax zero (just generate) drops that thru floor::
 
     tpmt-;tpmt-- --okg4 --compute --multievent 2 --bouncemax 0
@@ -117,10 +116,6 @@ Revert back to 3080 by changing CMake argument and doing a major rebuild::
     /Developer/OptiX_380
 
 
-TODO: arrange separate build dirs and installs for different OptiX versions
-to make it less painfull to jump inbetween versions.
-
-
 Performance is drastically faster with 3080, but multievent >1 is failing even with trivial::
 
     tpmt-;tpmt-- --compute --multievent 1
@@ -159,6 +154,7 @@ See :doc:`optix_cuda_interop_3080`
      ## most of the 2.5s not needed in production...
      ## 
      ##              launch:0.25s      << fully needed in production
+     ##                                   actually can skip WITH_RECORD in production 
      ##
      ##       indexSequence:0.19,      << not needed
      ##       downloadEvent:~0.33      <<---  only partially needed, stream compaction grab hits

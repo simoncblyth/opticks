@@ -14,7 +14,7 @@ OpticksAna::OpticksAna(Opticks* ok)
    m_cfg(ok->getCfg())
 {
    m_scripts["tpmt"] = "tpmt.py" ;  
-   m_scripts["evt"] = "evt.py" ;  
+   m_scripts["tevt"] = "tevt.py" ;  
 }
 
 const char* OpticksAna::getScript(const char* anakey)

@@ -1,9 +1,9 @@
 # === func-gen- : optixrap/optixrap fgp optixrap/optixrap.bash fgn optixrap fgh optixrap
-optixrap-rel(){      echo optixrap  ; }
-optixrap-src(){      echo optixrap/optixrap.bash ; }
-optixrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(optixrap-src)} ; }
-optixrap-vi(){       vi $(optixrap-source) ; }
-optixrap-usage(){ cat << EOU
+oxrap-rel(){      echo optixrap  ; }
+oxrap-src(){      echo optixrap/optixrap.bash ; }
+oxrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(oxrap-src)} ; }
+oxrap-vi(){       vi $(oxrap-source) ; }
+oxrap-usage(){ cat << EOU
 
 OptiX Engine
 ==============
@@ -38,12 +38,12 @@ OptiX Version Isolation ?
 TODO: rearrange OptiX use to facilitate easier version switching
 
 * avoid having to rebuild all of Opticks just to use a different OptiX version ?
-* try to firewall the change to just optixrap- ?
-* how far can forward decalarations of OptiX types in optixrap- get me so other
+* try to firewall the change to just oxrap- ?
+* how far can forward decalarations of OptiX types in oxrap- get me so other
   packages do not need to include any OptiX headers ?
 
 
-Only opticksgl- and optixrap- use optix types?::
+Only opticksgl- and oxrap- use optix types?::
 
     simon:opticks blyth$ opticks-find optix:: -l | sort 
     ...
@@ -56,7 +56,7 @@ Only opticksgl- and optixrap- use optix types?::
     ./optixrap/tests/bufferTest.cc
 
 
-But lots of inclusion of OptiX headers in optixrap- headers::
+But lots of inclusion of OptiX headers in oxrap- headers::
 
     simon:opticks blyth$ opticks-find OXPPNS | grep \.hh
     ./optixrap/OScene.cc:#include "OXPPNS.hh"
@@ -443,7 +443,7 @@ EOU
 }
 
 
-optixrap-env(){  
+oxrap-env(){  
    olocal- 
    #optix-
    #optix-export 
@@ -451,42 +451,42 @@ optixrap-env(){
 }
 
 
-optixrap-sdir(){ echo $(opticks-home)/optixrap ; }
-optixrap-tdir(){ echo $(opticks-home)/optixrap/tests ; }
-optixrap-idir(){ echo $(opticks-idir); }
-optixrap-bdir(){ echo $(opticks-bdir)/$(optixrap-rel) ; }
+oxrap-sdir(){ echo $(opticks-home)/optixrap ; }
+oxrap-tdir(){ echo $(opticks-home)/optixrap/tests ; }
+oxrap-idir(){ echo $(opticks-idir); }
+oxrap-bdir(){ echo $(opticks-bdir)/$(oxrap-rel) ; }
 
-optixrap-cd(){   cd $(optixrap-sdir); }
-optixrap-scd(){  cd $(optixrap-sdir); }
-optixrap-tcd(){  cd $(optixrap-tdir); }
-optixrap-icd(){  cd $(optixrap-idir); }
-optixrap-bcd(){  cd $(optixrap-bdir); }
+oxrap-cd(){   cd $(oxrap-sdir); }
+oxrap-scd(){  cd $(oxrap-sdir); }
+oxrap-tcd(){  cd $(oxrap-tdir); }
+oxrap-icd(){  cd $(oxrap-idir); }
+oxrap-bcd(){  cd $(oxrap-bdir); }
 
-optixrap-name(){ echo OptiXRap ; }
-optixrap-tag(){  echo OXRAP ; }
-
-
-optixrap-apihh(){  echo $(optixrap-sdir)/$(optixrap-tag)_API_EXPORT.hh ; }
-optixrap---(){     touch $(optixrap-apihh) ; optixrap--  ; } 
+oxrap-name(){ echo OptiXRap ; }
+oxrap-tag(){  echo OXRAP ; }
 
 
-optixrap-wipe(){ local bdir=$(optixrap-bdir) ; rm -rf $bdir ; } 
-
-optixrap--(){                   opticks-- $(optixrap-bdir) ; } 
-optixrap-t(){                   opticks-t $(optixrap-bdir) $* ; } 
-optixrap-genproj() { optixrap-scd ; opticks-genproj $(optixrap-name) $(optixrap-tag) ; } 
-optixrap-gentest() { optixrap-tcd ; opticks-gentest ${1:-OExample} $(optixrap-tag) ; } 
-optixrap-txt(){ vi $(optixrap-sdir)/CMakeLists.txt $(optixrap-tdir)/CMakeLists.txt ; } 
+oxrap-apihh(){  echo $(oxrap-sdir)/$(oxrap-tag)_API_EXPORT.hh ; }
+oxrap---(){     touch $(oxrap-apihh) ; oxrap--  ; } 
 
 
+oxrap-wipe(){ local bdir=$(oxrap-bdir) ; rm -rf $bdir ; } 
 
-optixrap-lsptx(){
-   ls -l $(optixrap-bdir)/*.ptx
+oxrap--(){                   opticks-- $(oxrap-bdir) ; } 
+oxrap-t(){                   opticks-t $(oxrap-bdir) $* ; } 
+oxrap-genproj() { oxrap-scd ; opticks-genproj $(oxrap-name) $(oxrap-tag) ; } 
+oxrap-gentest() { oxrap-tcd ; opticks-gentest ${1:-OExample} $(oxrap-tag) ; } 
+oxrap-txt(){ vi $(oxrap-sdir)/CMakeLists.txt $(oxrap-tdir)/CMakeLists.txt ; } 
+
+
+
+oxrap-lsptx(){
+   ls -l $(oxrap-bdir)/*.ptx
    ls -l $(opticks-prefix)/ptx/*.ptx
 }
 
-optixrap-rmptx(){
-   rm $(optixrap-bdir)/*.ptx
+oxrap-rmptx(){
+   rm $(oxrap-bdir)/*.ptx
    rm $(opticks-prefix)/ptx/*.ptx
 }
 
@@ -494,46 +494,46 @@ optixrap-rmptx(){
 
 ################# OLD FUNCS ####################
 
-optixrap-cmake-deprecated(){
+oxrap-cmake-deprecated(){
    local iwd=$PWD
 
-   local bdir=$(optixrap-bdir)
+   local bdir=$(oxrap-bdir)
    mkdir -p $bdir
   
-   optixrap-bcd 
+   oxrap-bcd 
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(optixrap-idir) \
+       -DCMAKE_INSTALL_PREFIX=$(oxrap-idir) \
        -DOptiX_INSTALL_DIR=$(optix-install-dir) \
        -DCUDA_NVCC_FLAGS="$(optix-cuda-nvcc-flags)" \
-       $(optixrap-sdir)
+       $(oxrap-sdir)
 
    cd $iwd
 }
 
 
-optixrap-bin(){ echo $(optixrap-idir)/bin/${1:-OptiXRapTest} ; }
-optixrap-export()
+oxrap-bin(){ echo $(oxrap-idir)/bin/${1:-OptiXRapTest} ; }
+oxrap-export()
 {
    echo -n
-   #export SHADER_DIR=$(optixrap-sdir)/glsl
+   #export SHADER_DIR=$(oxrap-sdir)/glsl
 }
-optixrap-run(){
-   local bin=$(optixrap-bin)
-   optixrap-export
+oxrap-run(){
+   local bin=$(oxrap-bin)
+   oxrap-export
    $bin $*
 }
 
 
-optixrap-ptxs(){
+oxrap-ptxs(){
    local name=${1:-boundaryTest}
    local ptx=OptiXRap_generated_${name}.cu.ptx
-   find $(optixrap-bdir) -name $ptx
+   find $(oxrap-bdir) -name $ptx
    find $(opticks-prefix)/installcache/PTX -name $ptx
 }
 
 
-optixrap-cu()
+oxrap-cu()
 {
    ## workaround for suspected lack of dependency setup for OptiX ptx 
    ## by touching the cu and cc of the test to force rebuilding 
@@ -542,7 +542,7 @@ optixrap-cu()
    local cu=cu/$name.cu
    local cc=tests/OO$name.cc
 
-   optixrap-cd
+   oxrap-cd
 
    [ ! -f $cc ] && echo no such cc $cc && return 
    [ ! -f $cu ] && echo no such cu $cu && return 
@@ -550,9 +550,9 @@ optixrap-cu()
    #rm $ptxs
 
    touch $cu $cc
-   optixrap--
+   oxrap--
 
-   local ptxs=$(optixrap-ptxs $name)
+   local ptxs=$(oxrap-ptxs $name)
    ls -l $ptxs
 
    local tst=OO$name

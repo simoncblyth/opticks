@@ -17,6 +17,7 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
+find_package(OpticksCore REQUIRED)
 find_package(CUDARap  REQUIRED)
 
 include_directories(
@@ -29,6 +30,7 @@ include_directories(
     ${NPY_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS}
     ${CUDARap_INCLUDE_DIRS}
+    ${OpticksCore_INCLUDE_DIRS}
 )
 
 add_definitions(
@@ -37,6 +39,7 @@ add_definitions(
     ${SysRap_DEFINITIONS}
     ${BoostRap_DEFINITIONS}
     ${CUDARap_DEFINITIONS}
+    ${OpticksCore_DEFINITIONS}
 )
 
 set(LIBRARIES
@@ -46,6 +49,7 @@ set(LIBRARIES
     ${BoostRap_LIBRARIES}
     ${NPY_LIBRARIES}
     ${CUDARap_LIBRARIES}
+    ${OpticksCore_LIBRARIES}
 )
 
 set(SOURCES

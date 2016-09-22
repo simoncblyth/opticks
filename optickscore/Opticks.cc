@@ -102,8 +102,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
        m_argv(m_sargs->argv),
-       m_production(m_sargs->hasArg("production")),
-       m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("stamp"))),
+       m_production(m_sargs->hasArg("--production")),
+       m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
        m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
 
@@ -287,6 +287,15 @@ bool Opticks::isInterop()
 bool Opticks::isCfG4()
 {
     return m_mode->isCfG4(); 
+}
+
+std::string Opticks::brief()
+{
+    std::stringstream ss ; 
+    ss << "OK" ;
+    ss << ( isCompute() ? " COMPUTE" : " INTEROP" ) ;
+    ss << ( isProduction() ? " PRODUCTION" : " DEVELOPMENT" ) ;
+    return ss.str();
 }
 
 

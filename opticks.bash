@@ -413,8 +413,8 @@ okg
 oglrap
 
 cudarap
-thrustrap
-optixrap
+thrap
+oxrap
 okop
 opticksgl
 
@@ -427,8 +427,8 @@ EOP
 
 opticks-cuda-projs-(){ cat << EOP
 cudarap
-thrustrap
-optixrap
+thrap
+oxrap
 okop
 opticksgl
 EOP
@@ -626,8 +626,8 @@ okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
 
 oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
 cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
-thrustrap-(){       . $(opticks-home)/thrustrap/thrustrap.bash && thrustrap-env $* ; }
-optixrap-(){        . $(opticks-home)/optixrap/optixrap.bash && optixrap-env $* ; }
+thrap-(){           . $(opticks-home)/thrustrap/thrap.bash && thrap-env $* ; }
+oxrap-(){           . $(opticks-home)/optixrap/oxrap.bash && oxrap-env $* ; }
 
 okop-(){            . $(opticks-home)/okop/okop.bash && okop-env $* ; }
 opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env $* ; }

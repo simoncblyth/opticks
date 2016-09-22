@@ -97,8 +97,6 @@ const char* TimesTable::getLabel()
 }
 
 
-
-
 void TimesTable::dump(const char* msg, const char* startswith, const char* spacewith)
 {
     makeLines();

@@ -239,7 +239,18 @@ void OEvent::uploadGensteps(OpticksEvent* evt)
 }
 
 
-void OEvent::downloadPhotonData() { download(PHOTON); }
+void OEvent::downloadPhotonData() 
+{ 
+    download(m_evt, PHOTON); 
+}
+
+
+
+void OEvent::downloadHits()
+{
+    downloadHits(m_evt);
+}
+
 void OEvent::download()
 {
     if(m_ok->isProduction())
@@ -249,12 +260,8 @@ void OEvent::download()
     else
     {
         download(m_evt, DOWNLOAD_DEFAULT);
+        downloadHits(m_evt);  
     }
-}
-
-void OEvent::downloadHits()
-{
-    downloadHits(m_evt);
 }
 
 
@@ -309,8 +316,9 @@ void OEvent::downloadHits(OpticksEvent* evt)
     assert( cpho.size % 4 == 0 );
     cpho.size /= 4 ;    //  decrease size by factor of 4, increases cpho "item" from 1*float4 to 4*float4 
 
+    bool verbose = false ; 
     TBuf tpho("tpho", cpho );
-    tpho.downloadSelection4x4("OEvent::downloadHits", hit );
+    tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
 
     OK_PROFILE("OEvent::downloadHits");
 }

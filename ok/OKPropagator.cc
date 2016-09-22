@@ -71,7 +71,7 @@ void OKPropagator::propagate()
 
     assert(evt);
 
-    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ")"   ;
+    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") " << m_ok->brief()   ;
 
     if(m_viz) m_hub->target();     // if not Scene targetted, point Camera at gensteps 
 

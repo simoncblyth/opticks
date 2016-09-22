@@ -84,7 +84,12 @@ void OpEngine::propagate()
 
 void OpEngine::downloadEvent()
 {
+
+
     m_oevt->download();
+
+    
+
 }
 
 void OpEngine::cleanup()

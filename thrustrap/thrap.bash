@@ -1,8 +1,8 @@
 # === func-gen- : numerics/thrustrap/thrustrap fgp numerics/thrustrap/thrustrap.bash fgn thrustrap fgh numerics/thrustrap
-thrustrap-src(){      echo thrustrap/thrustrap.bash ; }
-thrustrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrustrap-src)} ; }
-thrustrap-vi(){       vi $(thrustrap-source) ; }
-thrustrap-usage(){ cat << EOU
+thrap-src(){      echo thrustrap/thrustrap.bash ; }
+thrap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(thrap-src)} ; }
+thrap-vi(){       vi $(thrap-source) ; }
+thrap-usage(){ cat << EOU
 
 ThrustRap
 ============
@@ -20,7 +20,7 @@ First Use of CUDA App::seedPhotonsFromGensteps is slow ? A repeating without rec
 Initially tried changing CMakeLists.txt::
 
     +set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
-    VERBOSE=1 thrustrap--
+    VERBOSE=1 thrap--
 
 But that gives::
 
@@ -60,7 +60,7 @@ Other packages using CUDA
 
 Adjusted OPTIONS in 
 
-* thrustrap-
+* thrap-
 * cudawrap-
 * optixrap-
 
@@ -273,38 +273,38 @@ and unregistration calls are expensive and should be avoided if possible.
 EOU
 }
 
-thrustrap-env(){      olocal- ; opticks- ; }
+thrap-env(){      olocal- ; opticks- ; }
 
 
-thrustrap-sdir(){ echo $(opticks-home)/thrustrap ; }
-thrustrap-tdir(){ echo $(opticks-home)/thrustrap/tests ; }
-thrustrap-idir(){ echo $(opticks-idir) ; }
-thrustrap-bdir(){ echo $(opticks-bdir)/thrustrap ; }
+thrap-sdir(){ echo $(opticks-home)/thrustrap ; }
+thrap-tdir(){ echo $(opticks-home)/thrustrap/tests ; }
+thrap-idir(){ echo $(opticks-idir) ; }
+thrap-bdir(){ echo $(opticks-bdir)/thrustrap ; }
 
-thrustrap-cd(){   cd $(thrustrap-sdir); }
-thrustrap-scd(){  cd $(thrustrap-sdir); }
-thrustrap-tcd(){  cd $(thrustrap-tdir); }
-thrustrap-icd(){  cd $(thrustrap-idir); }
-thrustrap-bcd(){  cd $(thrustrap-bdir); }
+thrap-cd(){   cd $(thrap-sdir); }
+thrap-scd(){  cd $(thrap-sdir); }
+thrap-tcd(){  cd $(thrap-tdir); }
+thrap-icd(){  cd $(thrap-idir); }
+thrap-bcd(){  cd $(thrap-bdir); }
 
-thrustrap-name(){ echo ThrustRap ; }
-thrustrap-tag(){  echo THRAP ; }
+thrap-name(){ echo ThrustRap ; }
+thrap-tag(){  echo THRAP ; }
 
-thrustrap-apihh(){  echo $(thrustrap-sdir)/$(thrustrap-tag)_API_EXPORT.hh ; }
-thrustrap---(){     touch $(thrustrap-apihh) ; thrustrap--  ; }
-
-
-thrustrap-wipe(){ local bdir=$(thrustrap-bdir) ;  rm -rf $bdir ; }
-
-thrustrap--(){                   opticks-- $(thrustrap-bdir) ; } 
-thrustrap-ctest(){               opticks-ctest $(thrustrap-bdir) $* ; } 
-thrustrap-genproj() { thrustrap-scd ; opticks-genproj $(thrustrap-name) $(thrustrap-tag) ; } 
-thrustrap-gentest() { thrustrap-tcd ; opticks-gentest ${1:-TExample} $(thrustrap-tag) ; } 
-thrustrap-txt(){ vi $(thrustrap-sdir)/CMakeLists.txt $(thrustrap-tdir)/CMakeLists.txt ; } 
+thrap-apihh(){  echo $(thrap-sdir)/$(thrap-tag)_API_EXPORT.hh ; }
+thrap---(){     touch $(thrap-apihh) ; thrap--  ; }
 
 
+thrap-wipe(){ local bdir=$(thrap-bdir) ;  rm -rf $bdir ; }
 
-thrustrap-env(){  
+thrap--(){                   opticks-- $(thrap-bdir) ; } 
+thrap-ctest(){               opticks-ctest $(thrap-bdir) $* ; } 
+thrap-genproj() { thrap-scd ; opticks-genproj $(thrap-name) $(thrap-tag) ; } 
+thrap-gentest() { thrap-tcd ; opticks-gentest ${1:-TExample} $(thrap-tag) ; } 
+thrap-txt(){ vi $(thrap-sdir)/CMakeLists.txt $(thrap-tdir)/CMakeLists.txt ; } 
+
+
+
+thrap-env(){  
    olocal- 
    cuda-
    cuda-export
@@ -314,34 +314,34 @@ thrustrap-env(){
    thrust-export 
 }
 
-thrustrap-cmake-deprecated(){
+thrap-cmake-deprecated(){
    local iwd=$PWD
    local msg="=== $FUNCNAME : "
-   local bdir=$(thrustrap-bdir)
+   local bdir=$(thrap-bdir)
    mkdir -p $bdir
   
-   thrustrap-bcd 
+   thrap-bcd 
 
    local flags=$(cuda-nvcc-flags)
    echo $msg using CUDA_NVCC_FLAGS $flags
 
    cmake \
        -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(thrustrap-idir) \
+       -DCMAKE_INSTALL_PREFIX=$(thrap-idir) \
        -DCUDA_NVCC_FLAGS="$flags" \
-       $(thrustrap-sdir)
+       $(thrap-sdir)
 
    cd $iwd
 }
 
-thrustrap-bin(){ echo $(thrustrap-idir)/bin/$(thrustrap-name)Test ; }
-thrustrap-export()
+thrap-bin(){ echo $(thrap-idir)/bin/$(thrap-name)Test ; }
+thrap-export()
 { 
    echo -n 
 }
-thrustrap-run(){
-   local bin=$(thrustrap-bin)
-   thrustrap-export
+thrap-run(){
+   local bin=$(thrap-bin)
+   thrap-export
    $bin $*
 }
 
