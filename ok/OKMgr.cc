@@ -67,8 +67,10 @@ void OKMgr::init()
 void OKMgr::propagate()
 {
     const Opticks& ok = *m_ok ; 
-
+    
     if(ok("nopropagate")) return ; 
+
+    bool production = m_ok->isProduction();
 
     if(ok("load"))
     {
@@ -96,7 +98,7 @@ void OKMgr::propagate()
             if(ok("save")) 
             {
                 m_run->saveEvent();
-                m_run->anaEvent();
+                if(!production) m_run->anaEvent();
             }
 
             m_run->resetEvent();

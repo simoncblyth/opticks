@@ -90,7 +90,7 @@ class OKCORE_API Opticks {
    public:
        // profile ops
        template <typename T> void profile(T label);
-       void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL, const char* spacewith=NULL);
+       void dumpProfile(const char* msg="Opticks::dumpProfile", const char* startswith=NULL, const char* spacewith=NULL, double tcut=0 );
        void saveProfile();
    private:
        void checkOptionValidity();
@@ -234,6 +234,7 @@ class OKCORE_API Opticks {
        bool isInterop();
        bool isCfG4();   // needs manual override to set to CFG4_MODE
        bool isProduction();
+       bool isSave();
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);

@@ -210,83 +210,13 @@ See :doc:`optix_cuda_interop_3080`
 Next Steps
 ------------
 
-* *production* option to skip most processing expenses
-* compaction in multievent setting 
+* *production* option to skip most processing expenses, other than saving hits 
 
 
+DONE : Get compaction operational in multievent setting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-Get compaction operational in multievent setting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Proof of concept code for stream compaction 
-
-That uses a float4 buffer, and pulls back at float4 level.
-
-For real usage photon buffer has shape (N,4,4) ie N* (4,4) items
-need to pull back only the (4,4) photons matching some criteria. 
-
-
-Demo code for stream compaction
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* env-;optixthrust-  OptiXThrust::compaction 
-
-* https://bitbucket.org/simoncblyth/env/commits/398811a731ffc4caef3f07fdc18362b842d98c37 
-
-Hmm this would be simpler with a float4x4 type ? 
-
-env/optix/optixthrust/optixthrust_.cu::
-
-    206 void OptiXThrust::compaction4()
-    207 {
-    208     // Initial approach of count_if/copy_if targeting 
-    209     // a zip iterator output failed at runtime.
-    210     //
-    211     // But actually the approach adopted of using a mask 
-    212     // is preferable as the mask has an obvious meaning 
-    213     // and could be created by other means, such as with OptiX.
-    214 
-    215     printf("OptiXThrust::compaction4 size %u \n", m_size );
-    216 
-    217     assert(m_size % 4 == 0);
-    218 
-    219     // masker functor is passed the four float4 of each photon
-    220     // demo code : just masking based on uint index encoded in 4th float4
-    221     photon_mask4 mskr(5, 15);
-    222 
-    223     thrust::device_ptr<float4> d = getThrustDevicePtr<float4>(m_buffer, m_device);
-    224 
-    225     thrust::device_vector<int> mask(m_size/4) ;
-    226 
-    227     typedef thrust::device_vector<float4>::iterator Iterator;
-    228     strided_range<Iterator> four0(d + 0, d + m_size, 4);
-    229     strided_range<Iterator> four1(d + 1, d + m_size, 4);
-    230     strided_range<Iterator> four2(d + 2, d + m_size, 4);
-    231     strided_range<Iterator> four3(d + 3, d + m_size, 4);
-    232 
-    233     thrust::transform(   // step thru float4 buffer in groups of 4*float4 
-    234           thrust::make_zip_iterator(thrust::make_tuple( four0.begin(), four1.begin(), four2.begin(), four3.begin() )),
-    235           thrust::make_zip_iterator(thrust::make_tuple( four0.end(),   four1.end()  , four2.end()  , four3.end()   )),
-    236           mask.begin(),
-    237           mskr );
-    238 
-    239     //printf("mask\n"); thrust::copy(mask.begin(), mask.end(), std::ostream_iterator<int>(std::cout, "\n")); 
-    240     unsigned int num = thrust::count(mask.begin(), mask.end(), 1);  // number of 1s in the mask
-    241     if( num > 0 )
-    242     {
-    243         int* d_mask = thrust::raw_pointer_cast(mask.data());
-    244         float4* photons = make_masked_buffer( d_mask, mask.size(), num );
-    245         dump_photons( photons, num );
-    246     }
-    247 }
-
-
-
-
-
-
-
+* DONE using a float4x4 type see thrap-/TBuf_.cu thrap-/tests/TBuf4x4Test.cu
 
 
 

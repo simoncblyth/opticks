@@ -22,8 +22,7 @@ class OpIndexer ;
 OpEngine
 =========
 
-Canonical m_engine instance resides in ggeoview-/OKPropagator
-
+Canonical m_engine instance resides in ok-/OKPropagator
 **/
 
 class OKOP_API OpEngine {
@@ -37,8 +36,9 @@ class OKOP_API OpEngine {
        OContext*    getOContext();         // needed by opticksgl-/OpViz
 
        void propagate();                // OPropagator prelaunch+launch : populates GPU photon, record and sequence buffers
-       void downloadEvent();
-       void uploadEvent();
+       void indexEvent();
+       unsigned downloadEvent();
+       unsigned uploadEvent();
        unsigned getOptiXVersion();
        void cleanup();
        void Summary(const char* msg="OpEngine::Summary");

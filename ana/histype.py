@@ -15,7 +15,7 @@ import numpy as np
 
 from opticks.ana.base import opticks_main
 from opticks.ana.base import Abbrev, IniFlags
-from opticks.ana.seq import SeqType, SeqTable, SeqAna
+from opticks.ana.seq import SeqType, SeqTable, SeqAna, MaskType
 from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
 
@@ -42,6 +42,12 @@ class HisType(SeqType):
         flags = IniFlags()
         abbrev = Abbrev()
         SeqType.__init__(self, flags, abbrev)
+
+class HisMask(MaskType):
+    def __init__(self):
+        flags = EnumFlags()
+        abbrev = Abbrev()
+        MaskType.__init__(self, flags, abbrev)
 
 
 

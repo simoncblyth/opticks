@@ -58,6 +58,19 @@ phosel
 recsel
       obtained by repeating *phosel* by maxrec
 
+
+TODO:
+
+* currently switching to production mode
+  which persists much less results in a mixed write event, 
+  current approach 
+  of persisting evt metadata into the evt tag folder makes
+  it not so easy to just scrub the event
+
+  * TODO: make metadata folders sibling to the evt ?
+          so can easily scrub ?  
+
+
 **/
 
 #include "OKCORE_API_EXPORT.hh"
@@ -65,7 +78,13 @@ recsel
 
 #include "OpticksEventSpec.hh"
 
-class OKCORE_API OpticksEvent : public OpticksEventSpec {
+class OKCORE_API OpticksEvent : public OpticksEventSpec 
+{
+      // loadBuffers
+      friend class Opticks ; 
+      friend class OpticksRun ; 
+      // saveIndex
+      friend class OpIndexerApp ; 
    public:
       static const char* PARAMETERS_NAME ;  
       static const char* PARAMETERS_STEM ;  
@@ -169,6 +188,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void saveReport();
        void loadReport();
    private:
+       void saveDomains();
        void saveReport(const char* dir);
    public:
        void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
@@ -200,10 +220,19 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec {
        void updateDomainsBuffer();
        void importDomainsBuffer();
    public:
-       void save(bool verbose=false);
-       void saveIndex(bool verbose=false);
+       void save();
+   private:
+       void saveHitData(); 
+       void saveNopstepData(); 
+       void saveGenstepData(); 
+       void savePhotonData(); 
+       void saveRecordData(); 
+       void saveSequenceData(); 
+       void saveSeedData(); 
+       void saveIndex();
        void loadIndex();
        void loadBuffers(bool verbose=true);
+
    private:
        void loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec);
    public: 

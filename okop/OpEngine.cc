@@ -60,9 +60,9 @@ OpEngine::OpEngine(OpticksHub* hub)
 //     OKPropagator::downloadEvent
 //   
 
-void OpEngine::uploadEvent()
+unsigned OpEngine::uploadEvent()
 {
-    m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
+    return m_oevt->upload();                   // creates OptiX buffers, uploads gensteps
 }
 
 void OpEngine::propagate()
@@ -75,22 +75,26 @@ void OpEngine::propagate()
 
     m_propagator->launch();               // perform OptiX GPU propagation : write the photon, record and sequence buffers
 
+    indexEvent();
+}
+
+
+void OpEngine::indexEvent()
+{
+    if(m_ok->isProduction()) return ; 
+
 #ifdef WITH_RECORD
     m_indexer->indexSequence();
 #endif
-
     m_indexer->indexBoundaries();
 }
 
-void OpEngine::downloadEvent()
+
+unsigned OpEngine::downloadEvent()
 {
-
-
-    m_oevt->download();
-
-    
-
+    return m_oevt->download();
 }
+
 
 void OpEngine::cleanup()
 {
@@ -101,7 +105,6 @@ void OpEngine::Summary(const char* msg)
 {
     LOG(info) << msg ; 
 }
-
 
 
 void OpEngine::downloadPhotonData()  // was used for debugging of seeding (buffer overwrite in interop mode on Linux)

@@ -17,13 +17,13 @@ class THRAP_API TBuf {
       unsigned int getItemSize() const ;  //  NumBytes/Size
 
      
-      void downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose=false) const ; // selection done on items of size float4x4
+      unsigned downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose=false) const ; // selection done on items of size float4x4
       void dump4x4(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;
 
-      template <typename T> void downloadSelection(const char* name, NPY<float>* npy, bool verbose=false) const ; // selection done on items of size T
+      template <typename T> unsigned downloadSelection(const char* name, NPY<float>* npy, bool verbose=false) const ; // selection done on items of size T
       template <typename T> void fill(T value) const ;
       template <typename T> void upload(NPY<T>* npy) const ;
-      template <typename T> void download(NPY<T>* npy) const ;
+      template <typename T> void download(NPY<T>* npy, bool verbose=false) const ;
       template <typename T> void repeat_to(TBuf* other, unsigned int stride, unsigned int begin, unsigned int end, unsigned int repeats) const ;
       template <typename T> void dump(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;
       template <typename T> void dumpint(const char* msg, unsigned int stride, unsigned int begin, unsigned int end ) const ;

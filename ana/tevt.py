@@ -43,6 +43,7 @@ if __name__ == '__main__':
     log.info("loaded evt")
 
     print evt
+    log.info("evt.history_table:")
     print evt.history_table(slice(0,20))
     #print evt.material_table(slice(0,20))
    

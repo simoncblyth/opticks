@@ -43,11 +43,9 @@ class OK_API OKPropagator {
        void propagate();
        void cleanup();
    public:
-       void uploadEvent();
-       void downloadEvent();
+       int uploadEvent();
+       int downloadEvent();
        void indexEvent();
-   public:
-       void trivialCheck();
    private:
        SLog*          m_log ; 
        OpticksHub*    m_hub ; 

@@ -11,14 +11,15 @@ class OContext ;
 class OBuf ; 
 
 /**
-
 OEvent
 =======
 
 OptiX buffers representing an OpticksEvent propagation.
 
 The canonical single OEvent instance resides 
-in OPropagator and is instanciated together with OPropagator.
+in OpEngine and is instanciated with OpEngine.
+A pointer is also available in OPropagator, which
+is also instanciated with OpEngine.
 
 Buffers are created at the first *upload* and
 are subsequently resized to correspond to the OpticksEvent. 
@@ -27,9 +28,7 @@ NB upload/download will only act on compute buffers, interop
 buffers are skipped within underlying OContext methods
 based on OpticksBufferControl settings.
 
-
 **/
-
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OEvent 
@@ -45,14 +44,14 @@ class OXRAP_API OEvent
             };
     public:
         OEvent(OpticksHub* hub, OContext* ocontext);
-        void upload();
-        void download();
+        unsigned upload();
+        unsigned download();
         void downloadPhotonData();
-        void downloadHits();
+        unsigned downloadHits();
     private:
-        void upload(OpticksEvent* evt);
-        void uploadGensteps(OpticksEvent* evt);
-        void downloadHits(OpticksEvent* evt);
+        unsigned upload(OpticksEvent* evt);
+        unsigned uploadGensteps(OpticksEvent* evt);
+        unsigned downloadHits(OpticksEvent* evt);
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();

@@ -232,7 +232,7 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
 {
     if(!m_closed) close();
 
-    LOG(info)<< "OContext::launch" 
+    LOG(debug)<< "OContext::launch" 
               << " entry " << entry 
               << " width " << width 
               << " height " << height 

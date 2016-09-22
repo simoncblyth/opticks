@@ -26,18 +26,6 @@
 
 #include "PLOG.hh"
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          Timer& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
-
-
 
 OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)  
    :
@@ -51,8 +39,12 @@ OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)
 
 void OpSeeder::seedPhotonsFromGensteps()
 {
-    LOG(info)<<"OpSeeder::seedPhotonsFromGensteps" ;
-    if( m_ocontext->isInterop() )
+    LOG(debug)<<"OpSeeder::seedPhotonsFromGensteps" ;
+    if( m_ocontext->isCompute() )
+    {    
+        seedPhotonsFromGenstepsViaOptiX();
+    }    
+    else if( m_ocontext->isInterop() )
     {    
 #ifdef WITH_SEED_BUFFER
         seedComputeSeedsFromInteropGensteps();
@@ -60,11 +52,8 @@ void OpSeeder::seedPhotonsFromGensteps()
         seedPhotonsFromGenstepsViaOpenGL();
 #endif
     }    
-    else if ( m_ocontext->isCompute() )
-    {    
-        seedPhotonsFromGenstepsViaOptiX();
-    }    
-    if(m_hub->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
+
+   // if(m_hub->hasOpt("onlyseed")) exit(EXIT_SUCCESS);
 }
 
 void OpSeeder::seedComputeSeedsFromInteropGensteps()
@@ -131,7 +120,6 @@ void OpSeeder::seedPhotonsFromGenstepsViaOpenGL()
     r_gs.unmapGLToCUDA(); 
     r_ox.unmapGLToCUDA(); 
 
-    TIMER("seedPhotonsFromGenstepsViaOpenGL"); 
 }
 
 
@@ -146,7 +134,7 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     CBufSpec s_gs = genstep->bufspec();
 
 #ifdef WITH_SEED_BUFFER
-    LOG(info) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
+    LOG(debug) << "OpSeeder::seedPhotonsFromGenstepsViaOptiX : SEEDING TO SEED BUF  " ; 
     OBuf* seed = m_oevt->getSeedBuf() ;
     CBufSpec s_se = seed->bufspec();   //  optix::Buffer::getDevicePointer happens here  ( CBufSpec just holder for devPtr, size, numBytes )
     seedPhotonsFromGenstepsImp(s_gs, s_se);
@@ -165,9 +153,6 @@ void OpSeeder::seedPhotonsFromGenstepsViaOptiX()
     //photon->Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (OBuf)photon ");
     //s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsViaOptiX (CBufSpec)s_ox");
 
-
-
-    TIMER("seedPhotonsFromGenstepsViaOptiX"); 
     OK_PROFILE("OpSeeder::seedPhotonsFromGenstepsViaOptiX");
 
 }

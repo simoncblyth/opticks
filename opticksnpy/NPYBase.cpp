@@ -479,7 +479,7 @@ void NPYBase::setNumItems(unsigned int ni)
     }
     else
     {
-       LOG(warning) << "NPYBase::setNumItems"
+       LOG(debug) << "NPYBase::setNumItems"
                   << " decrease from " << orig << " to " << ni 
                   ; 
     }

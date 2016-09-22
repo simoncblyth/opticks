@@ -39,6 +39,7 @@ class OKCORE_API OpticksEventSpec {
         const char*  m_tag ; 
         const char*  m_det ; 
         const char*  m_cat ; 
+        const char*  m_udet ; 
    private:
         const char*  m_dir ; 
         const char*  m_fold ; 

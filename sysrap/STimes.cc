@@ -1,7 +1,28 @@
 #include "STimes.hh"
 
+#include <sstream>
 #include <cstring>
 #include <cstdio>
+#include <iomanip>
+
+
+std::string STimes::brief(const char* msg)
+{
+    std::stringstream ss ; 
+    ss 
+       << msg 
+       << " vali,comp,prel,lnch "
+       << std::fixed << std::setw(7) << std::setprecision(4) 
+       << validate 
+       << std::fixed << std::setw(7) << std::setprecision(4) 
+       << compile 
+       << std::fixed << std::setw(7) << std::setprecision(4) 
+       << prelaunch
+       << std::fixed << std::setw(7) << std::setprecision(4) 
+       << launch
+       ;
+    return ss.str();
+}
 
 const char* STimes::description(const char* msg)
 {

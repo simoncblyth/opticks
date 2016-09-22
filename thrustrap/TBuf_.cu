@@ -61,7 +61,7 @@ unsigned int TBuf::getItemSize() const
 
 
 template <typename T>
-void TBuf::download(NPY<T>* npy) const 
+void TBuf::download(NPY<T>* npy, bool verbose) const 
 {
     unsigned numItems_npy = npy->getNumItems();
     unsigned numItems_tbuf = getSize(); 
@@ -85,6 +85,7 @@ void TBuf::download(NPY<T>* npy) const
 
         unsigned numQuad = itemFactor/4 ; 
 
+        if(verbose)
         std::cout << "TBuf::download resizing empty npy"
                   << " itemSize_tbuf (eg float4x4 => 4*4*4 = 64) " << itemSize_tbuf
                   << " itemSize_npy  (eg float => 4 ) " << itemSize_npy
@@ -136,13 +137,13 @@ void TBuf::download(NPY<T>* npy) const
 
 
 
-void TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose) const 
+unsigned TBuf::downloadSelection4x4(const char* name, NPY<float>* npy, bool verbose) const 
 {
-    downloadSelection<float4x4>(name, npy, verbose);
+    return downloadSelection<float4x4>(name, npy, verbose);
 }
 
 template <typename T>
-void TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbose) const 
+unsigned TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbose) const 
 {
     thrust::device_ptr<T> ptr = thrust::device_pointer_cast((T*)getDevicePtr()) ;
 
@@ -152,6 +153,7 @@ void TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbo
 
     unsigned numSel = thrust::count_if(ptr, ptr+numItems, selector );
 
+    if(verbose)
     std::cout << "TBuf::downloadSelection"
               << " name : " << name 
               << " numItems :" << numItems 
@@ -189,7 +191,9 @@ void TBuf::downloadSelection(const char* name, NPY<float>* selection, bool verbo
 
     assert(tsel.getSize() == numSel );
 
-    tsel.download(selection);
+    tsel.download(selection, verbose);
+
+    return numSel ; 
 }
 
 
@@ -352,8 +356,8 @@ template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned i
 template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int) const ;
 template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const ;
 
-template void TBuf::download<float>(NPY<float>*) const ;
-template void TBuf::download<unsigned char>(NPY<unsigned char>*) const ;
+template void TBuf::download<float>(NPY<float>*, bool) const ;
+template void TBuf::download<unsigned char>(NPY<unsigned char>*, bool) const ;
 
 template void TBuf::upload<float>(NPY<float>*) const ;
 template void TBuf::upload<unsigned>(NPY<unsigned>*) const ;
@@ -363,7 +367,7 @@ template void TBuf::fill<unsigned>(unsigned value) const ;
 template void TBuf::fill<unsigned char>(unsigned char value) const ;
 
 
-template void TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, bool ) const ;
+template unsigned TBuf::downloadSelection<float4x4>(const char*, NPY<float>*, bool ) const ;
 
 
 

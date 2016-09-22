@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 
 struct STimes ; 
 class SLog ; 
@@ -25,6 +26,7 @@ class OXRAP_API OPropagator {
     public:
         void prelaunch();   
         void launch();
+        std::string brief();
     public:
         void setOverride(unsigned int override);
         void setNoPropagate(bool nopropagate=true );

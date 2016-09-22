@@ -97,7 +97,7 @@ const char* TimesTable::getLabel()
 }
 
 
-void TimesTable::dump(const char* msg, const char* startswith, const char* spacewith)
+void TimesTable::dump(const char* msg, const char* startswith, const char* spacewith, double tcut )
 {
     makeLines();
     LOG(info) << msg 
@@ -125,7 +125,12 @@ void TimesTable::dump(const char* msg, const char* startswith, const char* space
         {
             double delta = first - prior_first ; 
             if(space) std::cout << std::endl ; 
+
+            bool cut = tcut == 0.0 ? false : delta < tcut ;   // suppress lines with delta less than tcut 
+
+            if(!cut)
             std::cout << std::fixed << std::setw(15) << std::setprecision(3) << delta << " " << line << std::endl ;  
+
             prior_first = first ; 
         }
     }

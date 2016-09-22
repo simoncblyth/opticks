@@ -5,6 +5,8 @@ Mostly Non-numpy basics, just numpy configuration
 
 import numpy as np
 import os, logging, json, ctypes, subprocess, argparse, sys
+from enum import Enum 
+
 log = logging.getLogger(__name__) 
 
 
@@ -261,6 +263,23 @@ def json_(path):
     return _json[path] 
 
 
+_enum = {}
+def enum_(path):
+    global _enum
+    if _enum.get(path, None):
+        log.debug("return cached enum for key %s" % path)
+        return _enum[path] 
+    try:
+        log.debug("parsing enum for key %s" % path)
+        d = Enum(path)
+        _enum[path] = d 
+    except IOError:
+        log.fatal("failed to load enum from %s" % path)
+        _enum[path] = {}
+    pass
+    return _enum[path] 
+
+
 class Abbrev(object):
     def __init__(self, path="$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json"):
         js = json_(path)
@@ -300,7 +319,18 @@ class IniFlags(object):
         self.name2code = dict(zip(names, codes)) 
         self.code2name = dict(zip(codes, names))
 
+class EnumFlags(object):
+    def __init__(self, path="$OPTICKS_HOME/optickscore/OpticksPhoton.h"): 
+        d = enum_(path) 
+        ini = dict(zip(d.keys(),map(int,d.values())))  
 
+        names = map(str,ini.keys())
+        codes = map(int,ini.values())
+
+        self.names = names
+        self.codes = codes
+        self.name2code = dict(zip(names, codes)) 
+        self.code2name = dict(zip(codes, names))
 
 
 if __name__ == '__main__':
@@ -316,5 +346,8 @@ if __name__ == '__main__':
     print "IniFlags(photon flags)"
     print "\n".join([" %s : %s " % (k,v) for k,v in inif.name2code.items()])
 
+    enuf = EnumFlags()
+    print "EnumFlags(photon flags)"
+    print "\n".join([" %s : %s " % (k,v) for k,v in enuf.name2code.items()])
 
 

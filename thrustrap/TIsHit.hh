@@ -9,9 +9,18 @@ TIsHit functor
 
 Decision based on SURFACE_DETECT "SD" bit in photon flags
 
-* SURFACE_DETECT set in s.flag by oxrap-/cu/propagate.h
-* at each bounce the oxrap-/cu/generate.cu FLAGS macro ORs that into p.flags.u.w
-* photon flags saved into photon buffer by oxrap-/cu/photon.h:psave
+* photon flags such as SURFACE_DETECT are assigned to s.flag by oxrap-/cu/propagate.h
+* at each bounce oxrap-/cu/generate.cu FLAGS macro ORs s.flag into p.flags.u.w
+* p.flags.f saved into photon buffer by oxrap-/cu/photon.h:psave
+
+Suspect a failure to rebuild dependency issue regards 
+updates to this header... so touch the principal user TBuf_.cu 
+when changing this as workaround.
+
+Potentially a template instanciation and nvcc issue ? 
+
+It may be easier to surface this functor type as a template 
+argument.
 
 **/
 

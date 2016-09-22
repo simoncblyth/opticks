@@ -23,6 +23,7 @@ OpticksEventSpec::OpticksEventSpec(OpticksEventSpec* spec)
     m_tag(spec->getTag()),
     m_det(spec->getDet()),
     m_cat(spec->getCat()),
+    m_udet(spec->getUDet()),
     m_dir(NULL),
     m_fold(NULL),
     m_itag(spec->getITag())
@@ -36,6 +37,7 @@ OpticksEventSpec::OpticksEventSpec(const char* typ, const char* tag, const char*
     m_tag(strdup(tag)),
     m_det(strdup(det)),
     m_cat(cat ? strdup(cat) : NULL),
+    m_udet(cat && strlen(cat) > 0 ? strdup(cat) : strdup(det)),
     m_dir(NULL),
     m_fold(NULL),
     m_itag(BStr::atoi(m_tag, 0))
@@ -102,7 +104,7 @@ const char* OpticksEventSpec::getCat()
 }
 const char* OpticksEventSpec::getUDet()
 {
-    return m_cat && strlen(m_cat) > 0 ? m_cat : m_det ; 
+    return m_udet ; 
 }
 const char* OpticksEventSpec::getDir()
 {

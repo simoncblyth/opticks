@@ -1,3 +1,4 @@
+#include <sstream>
 
 #include "SLog.hh"
 #include "STimes.hh"
@@ -60,6 +61,14 @@ OPropagator::OPropagator(OpticksHub* hub, OEvent* oevt, OpticksEntry* entry)
 {
     init();
     (*m_log)("DONE");
+}
+
+
+std::string OPropagator::brief()
+{
+    std::stringstream ss ; 
+    ss << m_count << " : (" << m_entry_index << ";" << m_width << "," << m_height << ") " ; 
+    return ss.str();
 }
 
 
@@ -183,8 +192,11 @@ void OPropagator::prelaunch()
 
     m_count += 1 ; 
 
-    LOG(info) << prelaunch_times->description("prelaunch_times");
+    LOG(info) << brief() << prelaunch_times->brief("prelaunch_times");
+
 }
+
+
 
 void OPropagator::launch()
 {
@@ -203,6 +215,6 @@ void OPropagator::launch()
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
     OK_PROFILE("OPropagator::launch");
 
-    LOG(info) << launch_times->description("launch_times");
+    LOG(info) << brief() << launch_times->brief("launch_times");
 }
 

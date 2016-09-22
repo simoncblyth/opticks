@@ -166,7 +166,7 @@ Abort trap: 6
 
 void OEvent::resizeBuffers(OpticksEvent* evt)
 {
-    LOG(info) << "OEvent::resizeBuffers " << evt->getShapeString() ; 
+    LOG(debug) << "OEvent::resizeBuffers " << evt->getShapeString() ; 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
     assert(gensteps);
@@ -194,19 +194,17 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
 
 
 
-
-
-void OEvent::upload()
+unsigned OEvent::upload()
 {
     OpticksEvent* evt = m_hub->getEvent();
     assert(evt); 
-    upload(evt) ;  
+    return upload(evt) ;  
 }
 
-void OEvent::upload(OpticksEvent* evt)   
+unsigned OEvent::upload(OpticksEvent* evt)   
 {
     OK_PROFILE("_OEvent::upload");
-    LOG(info)<<"OEvent::upload id " << evt->getId()  ;
+    LOG(debug)<<"OEvent::upload id " << evt->getId()  ;
     setEvent(evt);
 
     if(!m_buffers_created)
@@ -217,18 +215,25 @@ void OEvent::upload(OpticksEvent* evt)
     {
         resizeBuffers(evt);
     }
-    uploadGensteps(evt);
-    LOG(info)<<"OEvent::upload id " << evt->getId() << " DONE "  ;
+    unsigned npho = uploadGensteps(evt);
+
+    LOG(debug)<<"OEvent::upload id " << evt->getId() << " DONE "  ;
+
     OK_PROFILE("OEvent::upload");
+
+    return npho ;  
 }
 
 
-void OEvent::uploadGensteps(OpticksEvent* evt)
+unsigned OEvent::uploadGensteps(OpticksEvent* evt)
 {
     NPY<float>* gensteps =  evt->getGenstepData() ;
+
+    unsigned npho = evt->getNumPhotons();
+
     if(m_ocontext->isCompute()) 
     {
-        LOG(info) << "OEvent::uploadGensteps (COMPUTE)"  ;
+        LOG(info) << "OEvent::uploadGensteps (COMPUTE) id " << evt->getId() << " " << gensteps->getShapeString() << " -> " << npho  ;
         OContext::upload<float>(m_genstep_buffer, gensteps);
     }
     else if(m_ocontext->isInterop())
@@ -236,6 +241,7 @@ void OEvent::uploadGensteps(OpticksEvent* evt)
         assert(gensteps->getBufferId() > 0); 
         LOG(info) << "OEvent::uploadGensteps (INTEROP) SKIP OpenGL BufferId " << gensteps->getBufferId()  ;
     }
+    return npho ; 
 }
 
 
@@ -244,24 +250,15 @@ void OEvent::downloadPhotonData()
     download(m_evt, PHOTON); 
 }
 
-
-
-void OEvent::downloadHits()
+unsigned OEvent::downloadHits()
 {
-    downloadHits(m_evt);
+    return downloadHits(m_evt);
 }
 
-void OEvent::download()
+unsigned OEvent::download()
 {
-    if(m_ok->isProduction())
-    {
-        downloadHits(m_evt);
-    }
-    else
-    {
-        download(m_evt, DOWNLOAD_DEFAULT);
-        downloadHits(m_evt);  
-    }
+    if(!m_ok->isProduction()) download(m_evt, DOWNLOAD_DEFAULT);
+    return downloadHits(m_evt);  
 }
 
 
@@ -306,7 +303,7 @@ void OEvent::download(OpticksEvent* evt, unsigned mask)
 }
 
 
-void OEvent::downloadHits(OpticksEvent* evt)
+unsigned OEvent::downloadHits(OpticksEvent* evt)
 {
     OK_PROFILE("_OEvent::downloadHits");
 
@@ -318,9 +315,11 @@ void OEvent::downloadHits(OpticksEvent* evt)
 
     bool verbose = false ; 
     TBuf tpho("tpho", cpho );
-    tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
+    unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
 
     OK_PROFILE("OEvent::downloadHits");
+
+    return nhit ; 
 }
 
 

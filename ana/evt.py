@@ -15,7 +15,7 @@ from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
 from opticks.ana.seq import SeqAna
-from opticks.ana.histype import HisType 
+from opticks.ana.histype import HisType, HisMask
 from opticks.ana.mattype import MatType 
 from opticks.ana.metadata import Metadata
 
@@ -82,6 +82,7 @@ class Evt(object):
 
         if rec:
             self.init_records(tag, src, det, dbg)
+            self.init_sequence(tag, src, det, dbg)
             self.init_selection(seqs, not_ )
             self.init_index(tag, src, det, dbg)
         else:
@@ -135,9 +136,7 @@ class Evt(object):
     def init_gensteps(self, tag, src, det, dbg):
         """
         """
-        optional = int(tag) < 0   # for G4 running like G4GUN misses gensteps
-
-        gs = A.load_("gs",src,tag,det, optional=optional) 
+        gs = A.load_("gs",src,tag,det, optional=True) 
 
         self.gs = gs
         self.desc['gs'] = "(gensteps)"
@@ -147,13 +146,17 @@ class Evt(object):
         """
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
         """
-        ox = A.load_("ox",src,tag,det) 
+        ox = A.load_("ox",src,tag,det, optional=True ) 
+        self.ox = ox
+        self.desc['ox'] = "(photons) final photon step"
+
+        if ox.missing:return 
+
         wl = ox[:,2,W] 
         c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
 
         log.debug("ox shape %s " % str(ox.shape))
 
-        self.ox = ox
         self.wl = wl
         self.post = ox[:,0] 
         self.dirw = ox[:,1]
@@ -161,7 +164,6 @@ class Evt(object):
         self.flags = ox.view(np.uint32)[:,3,3]
         self.c4 = c4
 
-        self.desc['ox'] = "(photons) final photon step"
         self.desc['wl'] = "(photons) wavelength"
         self.desc['post'] = "(photons) final photon step: position, time"
         self.desc['dirw'] = "(photons) final photon step: direction, weight "
@@ -193,18 +195,43 @@ class Evt(object):
         self.desc['hflags'] = "(hits) final photon step: flags "
         self.desc['hc4'] = "(hits) final photon step: dtype split uint8 view of ox flags"
 
+       
+    def init_hflags(self):
+        """
+        photon and hit flags are a bit mask (not a bit sequence)
+        """
+        hismask = HisMask()
+        
 
     def init_records(self, tag, src, det, dbg):
+        """
+        suspect the reshaping no longer needed ?
+        """
 
-        rx_raw = A.load_("rx",src,tag,det,dbg)
-        rx = rx_raw.reshape(-1, self.nrec, 2, 4)
-        ph = A.load_("ph",src,tag,det,dbg)
+        # rx_raw = A.load_("rx",src,tag,det,dbg)
+        # self.rx_raw = rx_raw
+        # self.desc['rx_raw'] = "(records) photon step records RAW:before reshaping"
+        # rx = rx_raw.reshape(-1, self.nrec, 2, 4)
 
+        rx = A.load_("rx",src,tag,det,dbg, optional=True)
+        self.rx = rx
+        self.desc['rx'] = "(records) photon step records"
+
+        if rx.missing:return 
+       
         log.debug("rx shape %s " % str(rx.shape))
+
+    def init_sequence(self, tag, src, det, dbg):
+
+        ph = A.load_("ph",src,tag,det,dbg, optional=True)
+        self.ph = ph
+        self.desc['ph'] = "(records) photon history flag/material sequence"
+        if ph.missing:
+            log.info(" ph missing ==> no history ")
+            return 
 
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
-
 
         log.debug("init_records create types")
         histype = HisType()
@@ -215,10 +242,6 @@ class Evt(object):
         # full history without selection
         all_history = SeqAna(seqhis, histype , cnames=[cn])  
         all_material = SeqAna(seqmat, mattype , cnames=[cn])  
-
-        self.rx_raw = rx_raw
-        self.rx = rx
-        self.ph = ph
 
         self.seqhis = seqhis
         self.seqmat = seqmat
@@ -231,7 +254,6 @@ class Evt(object):
         if useqmat <= 1:
             log.warning("init_records %s finds too few (ph)seqmat uniques : %s : EMPTY HISTORY" % (self.label,useqmat) ) 
 
-
         self.all_history = all_history
         self.history = all_history
 
@@ -241,9 +263,6 @@ class Evt(object):
         self.histype = histype
         self.mattype = mattype
 
-        self.desc['rx_raw'] = "(records) photon step records RAW:before reshaping"
-        self.desc['rx'] = "(records) photon step records"
-        self.desc['ph'] = "(records) photon history flag/material sequence"
 
 
     def init_index(self, tag, src, det, dbg, index_optional=True):
@@ -363,7 +382,12 @@ class Evt(object):
         """
         TODO: make the table directly sliceable
         """
-        if not self.history:return 
+        if not hasattr(self, 'history'):
+            log.info("no history attr")
+            return
+        if not self.history:
+            log.info("history None ")
+            return 
         #print self
         self.history.table.sli = sli 
         print self.history.table

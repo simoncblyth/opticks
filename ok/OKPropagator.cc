@@ -53,19 +53,10 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
 
 
 
-
-void OKPropagator::uploadEvent()
-{
-    if(m_viz) m_viz->uploadEvent();
-#ifdef WITH_OPTIX
-    m_engine->uploadEvent();
-#endif
-}
-
-
 void OKPropagator::propagate()
 {
     OK_PROFILE("OKPropagator::propagate.BEG");
+
 
     OpticksEvent* evt = m_hub->getEvent();
 
@@ -83,40 +74,36 @@ void OKPropagator::propagate()
 
     if(m_viz) m_viz->indexPresentationPrep();
 
-    bool trivial = m_ok->isTrivial();
- 
-    if(m_ok->hasOpt("save") || trivial) downloadEvent();
+    int nhit = m_ok->isSave() ? downloadEvent() : -1 ; 
 
-    if(trivial) trivialCheck();
-
-    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE "   ;
+    LOG(fatal) << "OKPropagator::propagate(" << evt->getId() << ") DONE nhit: " << nhit    ;
 
     OK_PROFILE("OKPropagator::propagate.END");
 }
 
 
-void OKPropagator::downloadEvent()
+
+int OKPropagator::uploadEvent()
+{
+    if(m_viz) m_viz->uploadEvent();
+
+    int npho = -1 ; 
+#ifdef WITH_OPTIX
+    npho = m_engine->uploadEvent();
+#endif
+    return npho ; 
+}
+
+int OKPropagator::downloadEvent()
 {
     if(m_viz) m_viz->downloadEvent();
+
+    int nhit = -1 ; 
 #ifdef WITH_OPTIX
-    m_engine->downloadEvent();
+    nhit = m_engine->downloadEvent();
 #endif
+    return nhit ; 
 }
-
-
-
-void OKPropagator::trivialCheck()
-{
-    LOG(fatal) << "OKPropagator::trivialCheck" ; 
-  //  OpticksEvent* evt = m_hub->getEvent();
-  //  NPY<float>* photon = evt->getPhotonData();
-  //
-  //  photon->dump("OKPropagator::trivialCheck");
-  //  photon->save("$TMP/trivialCheck.npy");
-}
-
-
-
 
 
 void OKPropagator::indexEvent()

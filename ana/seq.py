@@ -7,20 +7,21 @@ from opticks.ana.base import ihex_
 from opticks.ana.nbase import chi2, count_unique_sorted
 from opticks.ana.nload import A
 
-class SeqType(object):
-    def __init__(self, flags, abbrev):
 
+
+class BaseType(object):
+    def __init__(self, flags, abbrev):
         abbrs = map(lambda name:abbrev.name2abbr.get(name,name), flags.names )
         self.abbr2code = dict(zip(abbrs, flags.codes))
         self.code2abbr = dict(zip(flags.codes, abbrs))
         self.flags = flags
         self.abbrev = abbrev
 
-    def code(self, s):
-        """
-        :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
-        :return: integer code eg 0x8cbbbcd
-        """
+    def __call__(self, args):
+        for a in args:
+            return self.code(a) 
+
+    def check(self, s):
         f = self.abbr2code
         bad = 0 
         for n in s.strip().split(" "):
@@ -30,12 +31,45 @@ class SeqType(object):
 
         if bad>0:
            log.warn("code sees %s bad abbr in [%s] " % (bad, s )) 
+        return bad
 
+
+class MaskType(BaseType):
+    def __init__(self, flags, abbrev):
+         BaseType.__init__(self, flags, abbrev)
+
+    def code(self, s):
+        """
+        :param s: abbreviation string eg "TO BT SD"
+        :return: integer bitmask 
+        """
+        f = self.abbr2code
+        bad = self.check(s) 
+        return reduce(lambda a,b:a|b,map(lambda n:f.get(n,0), s.split(" ")))
+
+    def label(self, i):
+        """
+        :param i: integer bitmask
+        :return: abbreviation mask string 
+        """
+        xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
+        seq = map(lambda _:int(_,16), xs ) 
+        log.debug("label xs %s seq %s " % (xs, repr(seq)) )
+        d = self.code2abbr
+        return " ".join(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
+
+
+class SeqType(BaseType):
+    def __init__(self, flags, abbrev):
+         BaseType.__init__(self, flags, abbrev)
+
+    def code(self, s):
+        """
+        :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
+        :return: integer code eg 0x8cbbbcd
+        """
+        bad = self.check(s) 
         return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(" ")))))
-
-    def __call__(self, args):
-        for a in args:
-            return self.code(a) 
 
     def label(self, i):
         """
@@ -47,6 +81,8 @@ class SeqType(object):
         log.debug("label xs %s seq %s " % (xs, repr(seq)) )
         d = self.code2abbr
         return " ".join(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
+
+
 
 
  

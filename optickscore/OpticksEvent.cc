@@ -692,7 +692,7 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
 NPYSpec* OpticksEvent::GenstepSpec()
 {
 #if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
-    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,VERBOSE_MODE")  ;
+    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY")  ;
 #elif OXRAP_OPTIX_VERSION == 400000
     return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
 #else  
@@ -703,7 +703,7 @@ NPYSpec* OpticksEvent::GenstepSpec()
 
 NPYSpec* OpticksEvent::SeedSpec()
 {
-    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,VERBOSE_MODE") ;
+    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
 
 /*
 #if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
@@ -881,6 +881,7 @@ void OpticksEvent::reset()
 }
 void OpticksEvent::resetBuffers()
 {
+    // deallocate (clearing the underlying vector) and setNumItems to 0 
     if(m_nopstep_data)  m_nopstep_data->reset();    
     if(m_photon_data)   m_photon_data->reset();    
     if(m_sequence_data) m_sequence_data->reset();    
@@ -920,7 +921,7 @@ void OpticksEvent::resize()
 
 
 
-    LOG(info) << "OpticksEvent::resize " 
+    LOG(debug) << "OpticksEvent::resize " 
               << " num_photons " << num_photons  
               << " num_records " << num_records 
               << " maxrec " << maxrec
@@ -1476,110 +1477,44 @@ void OpticksEvent::recordDigests()
         m_parameters->add<std::string>("sequenceData", ph->getDigestString()  );
 }
 
-void OpticksEvent::save(bool verbose)
+
+void OpticksEvent::saveDomains()
 {
-    bool hpd = hasPhotonData();
-    if(!hpd)
-    {
-        LOG(warning) << "OpticksEvent::save SKIP as no photon data " ; 
-        return ; 
-    }
-
-
-    (*m_timer)("_save");
-
-
-    recordDigests();
-
-    const char* udet = getUDet();
-    LOG(info) << description("OpticksEvent::save")
-              << getShapeString()
-              << " dir " << m_event_spec->getDir() 
-              ;    
-
-
-    NPY<float>* no = getNopstepData();
-    if(no)
-    {
-        no->setVerbose(verbose);
-        no->save("no", m_typ,  m_tag, udet);
-        no->dump("OpticksEvent::save (nopstep)");
-    }
-    
-   // genstep were formally not saved as they exist already elsewhere,
-   // however recording the gs in use for posterity makes sense
-    NPY<float>* gs = getGenstepData();
-    if(gs)
-    {
-        gs->setVerbose(verbose);
-        gs->save("gs", m_typ,  m_tag, udet);
-    }
-    else
-    {
-        LOG(warning) << "failed to getGenstepData" ; 
-    }
-
-    NPY<float>* ox = getPhotonData();
-    {
-        ox->setVerbose(verbose);
-        ox->save("ox", m_typ,  m_tag, udet);
-    } 
-
-    NPY<short>* rx = getRecordData();    
-    {
-        rx->setVerbose(verbose);
-        rx->save("rx", m_typ,  m_tag, udet);
-    }
-
-    NPY<unsigned long long>* ph = getSequenceData();
-    {
-        ph->setVerbose(verbose);
-        ph->save("ph", m_typ,  m_tag, udet);
-    }
-
-    /*
-    // dont try, seed buffer is OPTIX_INPUT_ONLY , so attempts to download yields garbage
-    // also suspect such an attempt messes up the OptiX context is peculiar ways 
-    NPY<unsigned>* se  = getSeedData();
-    {
-        se->setVerbose(verbose);
-        se->save("se", m_typ,  m_tag, udet);
-    }
-    */
-
-    NPY<float>* ht = getHitData();
-    if(ht)
-    {
-        ht->setVerbose(verbose);
-        ht->save("ht", m_typ,  m_tag, udet);
-    }
-
-
     updateDomainsBuffer();
 
     NPY<float>* fdom = getFDomain();
-    if(fdom) fdom->save(fdom_, m_typ,  m_tag, udet);
+    if(fdom) fdom->save(fdom_, m_typ,  m_tag, m_udet);
 
     NPY<int>* idom = getIDomain();
-    if(idom) idom->save(idom_, m_typ,  m_tag, udet);
+    if(idom) idom->save(idom_, m_typ,  m_tag, m_udet);
+}
 
-    if(no)
+
+
+void OpticksEvent::save()
+{
+    (*m_timer)("_save");
+
+    LOG(info) << description("OpticksEvent::save") << getShapeString() << " dir " << m_event_spec->getDir() ;    
+
+    if(m_ok->isProduction())
     {
-       assert(idom && "OpticksEvent::save non-null nopstep BUT HAS NULL IDOM ");
-    }
-
-
-    bool is_indexed = isIndexed();
-    if(is_indexed)
-    {
-        saveIndex(verbose);
+        saveHitData();   //  TEMPORARY SAVE, FOR production hit check
     }
     else
     {
-        LOG(warning) << "OpticksEvent::save SKIP saveIndex as not indexed " ; 
+        saveHitData();   
+        saveNopstepData();
+        saveGenstepData();
+        savePhotonData();
+        saveRecordData();
+        saveSequenceData();
+        //saveSeedData();
+        saveIndex();
     }
-   
 
+    recordDigests();
+    saveDomains();
     saveParameters();
 
     (*m_timer)("save");
@@ -1588,6 +1523,55 @@ void OpticksEvent::save(bool verbose)
     saveReport();
 }
 
+
+void OpticksEvent::saveHitData()
+{
+    NPY<float>* ht = getHitData();
+    if(ht) ht->save("ht", m_typ,  m_tag, m_udet);
+}
+void OpticksEvent::saveNopstepData()
+{
+    NPY<float>* no = getNopstepData();
+    if(no)
+    {
+        no->save("no", m_typ,  m_tag, m_udet);
+        no->dump("OpticksEvent::save (nopstep)");
+    
+        NPY<int>* idom = getIDomain();
+        assert(idom && "OpticksEvent::save non-null nopstep BUT HAS NULL IDOM ");
+    }
+}
+void OpticksEvent::saveGenstepData()
+{
+    // genstep were formally not saved as they exist already elsewhere,
+    // however recording the gs in use for posterity makes sense
+    // 
+    NPY<float>* gs = getGenstepData();
+    if(gs) gs->save("gs", m_typ,  m_tag, m_udet);
+}
+void OpticksEvent::savePhotonData()
+{
+    NPY<float>* ox = getPhotonData();
+    if(ox) ox->save("ox", m_typ,  m_tag, m_udet);
+}
+void OpticksEvent::saveRecordData()
+{
+    NPY<short>* rx = getRecordData();    
+    if(rx) rx->save("rx", m_typ,  m_tag, m_udet);
+}
+void OpticksEvent::saveSequenceData()
+{
+    NPY<unsigned long long>* ph = getSequenceData();
+    if(ph) ph->save("ph", m_typ,  m_tag, m_udet);
+}
+void OpticksEvent::saveSeedData()
+{
+    // dont try, seed buffer is OPTIX_INPUT_ONLY , so attempts to download from GPU yields garbage
+    // also suspect such an attempt messes up the OptiX context is peculiar ways 
+    //
+    // NPY<unsigned>* se  = getSeedData();
+    // if(se) se->save("se", m_typ,  m_tag, m_udet);
+}
 
 
 void OpticksEvent::makeReport(bool verbose)
@@ -2020,14 +2004,14 @@ void OpticksEvent::indexPhotonsCPU()
 
 
 
-
-void OpticksEvent::saveIndex(bool verbose_)
+void OpticksEvent::saveIndex()
 {
-
-
-    const char* udet = getUDet();
-
-    NPYBase::setGlobalVerbose(verbose_);
+    bool is_indexed = isIndexed();
+    if(!is_indexed)
+    {
+        LOG(warning) << "OpticksEvent::saveIndex SKIP as not indexed " ; 
+        return ; 
+    }
 
     NPY<unsigned char>* ps = getPhoselData();
     NPY<unsigned char>* rs = getRecselData();
@@ -2035,8 +2019,8 @@ void OpticksEvent::saveIndex(bool verbose_)
     assert(ps);
     assert(rs);
 
-    ps->save("ps", m_typ,  m_tag, udet);
-    rs->save("rs", m_typ,  m_tag, udet);
+    ps->save("ps", m_typ,  m_tag, m_udet);
+    rs->save("rs", m_typ,  m_tag, m_udet);
 
     NPYBase::setGlobalVerbose(false);
 

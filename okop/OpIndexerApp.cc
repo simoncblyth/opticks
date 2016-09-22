@@ -86,7 +86,7 @@ void OpIndexerApp::makeIndex()
     LOG(fatal) << " compile WITH_RECORD to indexSequence " ;
 #endif
 
-    evt->saveIndex(true);
+    evt->saveIndex();
 }
 
 
