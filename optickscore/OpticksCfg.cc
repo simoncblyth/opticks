@@ -98,6 +98,10 @@ void OpticksCfg<Listener>::init()
        ("nostep,S",  "inhibit step by step recording") ;
 
    m_desc.add_options()
+       ("hitsave",   "save hits even in production running") ; 
+
+
+   m_desc.add_options()
        ("nooptix,O",  "inhibit use of OptiX") ;
 
    m_desc.add_options()

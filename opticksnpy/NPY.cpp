@@ -686,6 +686,7 @@ unsigned NPY<T>::_copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned
                        << " mask " << mask 
                        << " size " << size 
                        << " " 
+                       << std::endl 
                         ; 
     unsigned s(0);
     for(unsigned i=0 ; i < ni ; i++)
@@ -694,12 +695,12 @@ unsigned NPY<T>::_copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned
         //if(dump) std::cout << val << " " ; 
         if( (val & mask) != 0 ) 
         {
-            if(dump) std::cout << val << " " ; 
+            //if(dump) std::cout << val << " " ; 
             memcpy( (void*)(dbytes + size*s),(void*)(sbytes + size*i), size ) ; 
             s += 1 ; 
         }
     } 
-    if(dump) std::cout << std::endl  ; 
+    //if(dump) std::cout << std::endl  ; 
     return s ; 
 }
 

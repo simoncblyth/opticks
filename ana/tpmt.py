@@ -162,21 +162,10 @@ if 0:
             print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
 if 1:
-    if not (a.valid and b.valid):
-        log.fatal("need two valid events to compare ")
-        sys.exit(1)
+    Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=args.c2max )
+    Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=None )
 
-    lmx = 20 
-    hcf = a.history.table.compare(b.history.table)
-    if len(hcf.lines) > lmx:
-        hcf.sli = slice(0,lmx)
-    print hcf
-    assert hcf.c2p < args.c2max, "c2p deviation for history table hcf.c2p %s >= args.c2max %s " % ( hcf.c2p, args.c2max )
+    #a.history_table()
+    #b.history_table()
 
-
-    mcf = a.material.table.compare(b.material.table)
-    if len(mcf.lines) > lmx:
-        mcf.sli = slice(0,lmx)
-    print mcf
-    assert mcf.c2p < args.c2max, "c2p deviation for material table mcf.c2p %s >= args.c2max %s  " % ( mcf.c2p, args.c2max )
 

@@ -400,6 +400,35 @@ class Evt(object):
     def material_table(self, sli=slice(None)):
         self.present_table( 'seqmat_ana'.split(), sli)
 
+    @classmethod
+    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None):
+        if not (a.valid and b.valid):
+            log.fatal("need two valid events to compare ")
+            sys.exit(1)
+
+        for ana_ in analist:
+            a_ana = getattr(a, ana_, None)
+            b_ana = getattr(b, ana_, None)
+
+            if a_ana is None:
+                log.warning("missing a_ana %s " % ana_ )  
+                continue
+            if b_ana is None:
+                log.warning("missing b_ana  %s " % ana_ )  
+                continue
+                 
+            a_tab = a_ana.table
+            b_tab = b_ana.table
+            c_tab = a_tab.compare(b_tab)
+            c_tab.title = ana_
+
+            if len(c_tab.lines) > lmx:
+                c_tab.sli = slice(0,lmx)
+            print c_tab
+            if c2max is not None:
+                assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
+
+
     def material_table_old(self):
         seqmat = self.seqmat
         cu = count_unique(seqmat)

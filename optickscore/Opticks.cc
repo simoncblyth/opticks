@@ -162,7 +162,11 @@ void Opticks::postpropagate()
 {
    saveProfile();
    dumpProfile("Opticks::postpropagate", NULL, "OpticksRun::createEvent.BEG", 0.0001 );  // spacwith spacing at start if each evt
-   dumpProfile("Opticks::postpropagate", "OPropagator::launch");  // startswith filtering
+
+   // startswith filtering 
+   dumpProfile("Opticks::postpropagate", "OPropagator::launch");  
+   dumpProfile("Opticks::postpropagate", "CG4::propagate");  
+
    dumpParameters("Opticks::postpropagate");
 }
 

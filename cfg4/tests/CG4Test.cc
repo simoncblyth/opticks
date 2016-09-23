@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 
     LOG(info) << "  CG4 propagate DONE "  ;
 
+    ok.postpropagate();
 
     OpticksEvent* evt = run->getG4Event();
     assert(evt->isG4()); 
@@ -65,6 +66,9 @@ int main(int argc, char** argv)
     LOG(info) << "  evt save DONE "  ;
 
     g4->cleanup();
+
+
+
 
     LOG(info) << "exiting " << argv[0] ; 
 

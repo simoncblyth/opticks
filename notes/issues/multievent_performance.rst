@@ -221,6 +221,9 @@ DONE : Get compaction operational in multievent setting
 
 
 
+
+
+
 G4 
 ~~~
 
@@ -348,4 +351,106 @@ G4
     2016-09-16 14:32:26.859 INFO  [646185] [OpticksProfile::dump@134]  npy 95,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
     2016-09-16 14:32:27.041 INFO  [646185] [Opticks::cleanup@1002] Opticks::cleanup
     2016-09-16 14:32:27.041 INFO  [646185] [CG4::cleanup@283] CG4::cleanup opening geometry
+
+
+
+
+
+
+::
+
+    simon:opticks blyth$ tpmt-;tpmt-- --okg4 --compute --multievent 10
+
+    2016-09-23 20:53:58.532 INFO  [132317] [OpticksProfile::dump@145]  npy 295,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-23 20:53:58.532 INFO  [132317] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 295
+    2016-09-23 20:53:58.533 INFO  [132317] [TimesTable::dump@103] Opticks::postpropagate filter: OPropagator::launch
+             12.438          12.438          0.152      34615.000          0.000 : OPropagator::launch_0
+             13.109          25.547          0.172      38736.000          0.000 : OPropagator::launch_1
+             14.473          40.020          0.242      42861.000          0.000 : OPropagator::launch_2
+             15.590          55.609          0.250      46942.000          0.000 : OPropagator::launch_3
+             15.570          71.180          0.242      51021.000          0.000 : OPropagator::launch_4
+             15.684          86.863          0.180      55236.000          0.000 : OPropagator::launch_5
+             15.762         102.625          0.250      59318.000          0.000 : OPropagator::launch_6
+             15.574         118.199          0.199      63398.000          0.000 : OPropagator::launch_7
+             15.770         133.969          0.254      67480.000          0.000 : OPropagator::launch_8
+             15.730         149.699          0.180      71562.000          0.000 : OPropagator::launch_9
+    2016-09-23 20:53:58.533 INFO  [132317] [OpticksProfile::dump@145]  npy 295,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-23 20:53:58.533 INFO  [132317] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 295
+    2016-09-23 20:53:58.534 INFO  [132317] [TimesTable::dump@103] Opticks::postpropagate filter: CG4::propagate
+             11.336          11.336          8.465      34412.000       3809.000 : CG4::propagate_0
+             13.574          24.910          8.152      38697.000       3805.000 : CG4::propagate_1
+             14.387          39.297          9.348      42842.000       3837.000 : CG4::propagate_2
+             15.578          54.875          9.734      46903.000       3773.000 : CG4::propagate_3
+             15.578          70.453          9.766      50982.000       3772.000 : CG4::propagate_4
+             15.742          86.195          9.938      55198.000       3908.000 : CG4::propagate_5
+             15.688         101.883          9.812      59279.000       3774.000 : CG4::propagate_6
+             15.629         117.512          9.777      63359.000       3772.000 : CG4::propagate_7
+             15.711         133.223          9.906      67441.000       3774.000 : CG4::propagate_8
+             15.805         149.027         10.012      71523.000       3774.000 : CG4::propagate_9
+    2016-09-23 20:53:58.534 INFO  [132317] [OpticksProfile::dump@145]  npy 295,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    Opticks::postpropagate
+       OptiXVersion :            3080
+    2016-09-23 20:53:58.596 INFO  [132317] [Opticks::cleanup@1073] Opticks::cleanup
+    2016-09-23 20:53:58.596 INFO  [132317] [CG4::cleanup@291] CG4::cleanup opening geometry
+    /Users/blyth/opticks/bin/op.sh RC 0
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+
+
+
+::
+
+    tpmt-;tpmt-- --compute --multievent 10
+
+
+    2016-09-23 21:00:51.415 INFO  [134399] [OpticksProfile::dump@145]  npy 234,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-23 21:00:51.415 INFO  [134399] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 234
+    2016-09-23 21:00:51.415 INFO  [134399] [TimesTable::dump@103] Opticks::postpropagate filter: OPropagator::launch
+              3.520           3.520          0.133      30655.000          0.000 : OPropagator::launch_0
+              2.750           6.270          0.223      30804.000          0.000 : OPropagator::launch_1
+              2.699           8.969          0.250      30953.000          0.000 : OPropagator::launch_2
+              2.590          11.559          0.172      31101.000          0.000 : OPropagator::launch_3
+              2.676          14.234          0.227      31250.000          0.000 : OPropagator::launch_4
+              2.684          16.918          0.254      31399.000          0.000 : OPropagator::launch_5
+              2.703          19.621          0.188      31548.000          0.000 : OPropagator::launch_6
+              2.688          22.309          0.234      31697.000          0.000 : OPropagator::launch_7
+              2.707          25.016          0.254      31846.000          0.000 : OPropagator::launch_8
+              2.680          27.695          0.195      31995.000          0.000 : OPropagator::launch_9
+    2016-09-23 21:00:51.416 INFO  [134399] [OpticksProfile::dump@145]  npy 234,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-23 21:00:51.416 INFO  [134399] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 234
+    2016-09-23 21:00:51.416 INFO  [134399] [TimesTable::dump@103] Opticks::postpropagate filter: CG4::propagate
+    2016-09-23 21:00:51.417 INFO  [134399] [OpticksProfile::dump@145]  npy 234,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    Opticks::postpropagate
+       OptiXVersion :            3080
+    /Users/blyth/opticks/bin/op.sh RC 0
+
+
+
+Production running without --savehit gives up to 3 times faster launches ? A busy host seems to slow down the GPU launches::
+
+    simon:optickscore blyth$ tpmt-;tpmt-- --compute --multievent 10 --production
+
+    2016-09-23 21:07:14.003 INFO  [136545] [OpticksProfile::dump@145]  npy 174,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-23 21:07:14.003 INFO  [136545] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 174
+    2016-09-23 21:07:14.004 INFO  [136545] [TimesTable::dump@103] Opticks::postpropagate filter: OPropagator::launch
+              3.059           3.059          0.152      30657.000          0.000 : OPropagator::launch_0
+              0.184           3.242          0.133      30664.000          0.000 : OPropagator::launch_1
+              0.152           3.395          0.105      30671.000          0.000 : OPropagator::launch_2
+              0.113           3.508          0.074      30678.000          0.000 : OPropagator::launch_3
+              0.109           3.617          0.070      30685.000          0.000 : OPropagator::launch_4
+              0.105           3.723          0.066      30691.000          0.000 : OPropagator::launch_5
+              0.109           3.832          0.070      30698.000          0.000 : OPropagator::launch_6
+              0.105           3.938          0.070      30705.000          0.000 : OPropagator::launch_7
+              0.105           4.043          0.070      30712.000          0.000 : OPropagator::launch_8
+              0.105           4.148          0.070      30719.000          0.000 : OPropagator::launch_9
+    2016-09-23 21:07:14.004 INFO  [136545] [OpticksProfile::dump@145]  npy 174,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    2016-09-23 21:07:14.004 INFO  [136545] [OpticksProfile::dump@140] Opticks::postpropagate dir /tmp/blyth/opticks/evt/PmtInBox/torch name Opticks.npy num_stamp 174
+    2016-09-23 21:07:14.005 INFO  [136545] [TimesTable::dump@103] Opticks::postpropagate filter: CG4::propagate
+    2016-09-23 21:07:14.005 INFO  [136545] [OpticksProfile::dump@145]  npy 174,1,4 /tmp/blyth/opticks/evt/PmtInBox/torch/Opticks.npy
+    Opticks::postpropagate
+       OptiXVersion :            3080
+    /Users/blyth/opticks/bin/op.sh RC 0
+
+
+
 

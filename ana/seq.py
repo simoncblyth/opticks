@@ -34,7 +34,7 @@ class BaseType(object):
     def check(self, s):
         f = self.abbr2code
         bad = 0 
-        for n in s.strip().split(" "):
+        for n in s.strip().split(self.delim):
             if f.get(n,0) == 0:
                log.warn("code bad abbr [%s] s [%s] " % (n, s) ) 
                bad += 1

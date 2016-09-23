@@ -1442,7 +1442,7 @@ void OpticksEvent::save()
 
     if(m_ok->isProduction())
     {
-        saveHitData();   //  TEMPORARY SAVE, FOR production hit check
+        if(m_ok->hasOpt("savehit")) saveHitData();  // FOR production hit check
     }
     else
     {
@@ -1902,8 +1902,13 @@ void OpticksEvent::collectPhotonHitsCPU()
     NPY<float>* ox = getPhotonData();
     NPY<float>* ht = getHitData();
 
-    //unsigned hitmask = SURFACE_DETECT ;   // TODO: get G4 to come up with SURFACE_DETECT
-    unsigned hitmask = SURFACE_ABSORB ; 
+    unsigned hitmask = SURFACE_DETECT ;  
+
+    // TODO: investigate why CFG4 not providing any "SD" 
+    //       in torch GDML running
+    //       but it does with test geometry with tpmt--
+    //
+    //unsigned hitmask = SURFACE_ABSORB ; 
 
     unsigned numHits = ox->write_selection(ht, 3,3, hitmask );
 
