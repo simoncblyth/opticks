@@ -246,6 +246,17 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
+    m_step = true ;
+
+    LOG(info) << "CRecorder::initEvent"
+              << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
+              << " record_max " << m_record_max
+              << " bounce_max  " << m_bounce_max 
+              << " steps_per_photon " << m_steps_per_photon 
+              << " photons_per_g4event " << m_photons_per_g4event
+              << " num_g4event " << m_evt->getNumG4Event() 
+              << " isStep " << m_step  
+              ;
 
     if(m_dynamic)
     {
@@ -271,19 +282,6 @@ void CRecorder::initEvent(OpticksEvent* evt)
     {
         assert(m_record_max > 0 );
     }
-
-    //m_step = m_evt->isStep();
-    m_step = true ;
-
-    LOG(info) << "CRecorder::initEvent"
-              << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
-              << " record_max " << m_record_max
-              << " bounce_max  " << m_bounce_max 
-              << " steps_per_photon " << m_steps_per_photon 
-              << " photons_per_g4event " << m_photons_per_g4event
-              << " num_g4event " << m_evt->getNumG4Event() 
-              << " isStep " << m_step  
-              ;
 
     //m_evt->zero();
 

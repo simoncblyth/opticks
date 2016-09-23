@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <algorithm>
 
 #include "OpticksBufferControl.hh"  // okc-
 #include "OpticksSwitches.h"  
@@ -31,6 +32,7 @@ OpSeeder::OpSeeder(OpticksHub* hub, OEvent* oevt)
    :
      m_hub(hub),
      m_ok(hub->getOpticks()),
+     m_dbg(m_ok->hasOpt("dbgseed")),
      m_oevt(oevt),
      m_ocontext(oevt->getOContext())
 {
@@ -192,11 +194,14 @@ unsigned OpSeeder::getNumPhotonsCheck(const TBuf& tgs)
 
 void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& s_ox)
 {
-    //s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs");
-    //s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox");
+    if(m_dbg)
+    { 
+        s_gs.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_gs --dbgseed");
+        s_ox.Summary("OpSeeder::seedPhotonsFromGenstepsImp (CBufSpec)s_ox --dbgseed");
+    }
 
-    TBuf tgs("tgs", s_gs );
-    TBuf tox("tox", s_ox );
+    TBuf tgs("tgs", s_gs, " ");
+    TBuf tox("tox", s_ox, " ");
     
 
     OpticksEvent* evt = m_hub->getEvent();
@@ -204,16 +209,23 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
 
     NPY<float>* gensteps =  evt->getGenstepData() ;
 
-    unsigned int num_genstep_values = gensteps->getNumValues(0) ; 
+    unsigned num_genstep_values = gensteps->getNumValues(0) ; 
 
-    //tgs.dump<unsigned int>("OpSeeder::seedPhotonsFromGenstepsImp tgs.dump", 6*4, 3, num_genstep_values ); // stride, begin, end 
+    if(m_dbg)
+    {
+       LOG(info) << "OpSeeder::seedPhotonsFromGenstepsImp"
+                 << " gensteps " << gensteps->getShapeString()
+                 << " num_genstep_values " << num_genstep_values
+                 ;
+       tgs.dump<unsigned>("OpSeeder::seedPhotonsFromGenstepsImp tgs.dump --dbgseed", 6*4, 3, num_genstep_values ); // stride, begin, end 
+    }
 
 
-    unsigned int num_photons = getNumPhotonsCheck(tgs);
+    unsigned num_photons = getNumPhotonsCheck(tgs);
 
     OpticksBufferControl* ph_ctrl = evt->getPhotonCtrl();
 
-    if(ph_ctrl->isSet("VERBOSE_MODE"))
+    if(ph_ctrl->isSet("VERBOSE_MODE") || m_dbg)
     LOG(info) << "OpSeeder::seedPhotonsFromGenstepsImp photons(VERBOSE_MODE) "
                << " num_photons " << num_photons 
                << " gensteps " << gensteps->getShapeString() 
@@ -232,28 +244,19 @@ void OpSeeder::seedPhotonsFromGenstepsImp(const CBufSpec& s_gs, const CBufSpec& 
     CBufSlice dst = tox.slice(4*4,0,num_photons*4*4) ;
 #endif
 
-    bool verbose = false ; 
-    TBufPair<unsigned int> tgp(src, dst, verbose);
+
+    bool verbose = m_dbg ; 
+    TBufPair<unsigned> tgp(src, dst, verbose);
     tgp.seedDestination();
 
 #ifdef WITH_SEED_BUFFER
-    //tox.dump<unsigned int>("OpSeeder::seedPhotonsFromGenstepsImp tox.dump", 1*1, 0, num_photons ); // stride, begin, end 
+    if(m_dbg)
+    {
+        tox.dump<unsigned>("OpSeeder::seedPhotonsFromGenstepsImp tox.dump --dbgseed", 1*1, 0, std::min(num_photons,10000u) ); // stride, begin, end 
+    }
 #endif
 
 }
-
-/*
-In [5]: np.uint32((1 << 32) - 1 )
-Out[5]: 4294967295
-
-In [6]: np.uint32(-1)
-Out[6]: 4294967295
-
-
-*/
-
-
-
 
 
 

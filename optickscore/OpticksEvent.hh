@@ -103,8 +103,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
       static Index* loadMaterialIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadBoundaryIndex( const char* typ, const char* tag, const char* udet);
       static Index* loadNamedIndex(    const char* typ, const char* tag, const char* udet, const char* name);
-      static NPYSpec* GenstepSpec();
-      static NPYSpec* SeedSpec();
+      static NPYSpec* GenstepSpec(bool compute);
+      static NPYSpec* SeedSpec(bool compute);
+      static void pushNames(std::vector<std::string>& names);
    public:
        static OpticksEvent* make(OpticksEventSpec* spec, unsigned tagoffset=0);
        OpticksEvent(OpticksEventSpec* spec);

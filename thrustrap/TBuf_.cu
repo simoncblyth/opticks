@@ -20,9 +20,10 @@
 
 
 
-TBuf::TBuf(const char* name, CBufSpec spec ) :
+TBuf::TBuf(const char* name, CBufSpec spec, const char* delim) :
         m_name(strdup(name)),
-        m_spec(spec)
+        m_spec(spec),
+        m_delim(strdup(delim))
 {
 }
 
@@ -259,14 +260,16 @@ void TBuf::dump(const char* msg, unsigned int stride, unsigned int begin, unsign
 
     if( stride == 0 )
     {
-        thrust::copy( p + begin, p + end, std::ostream_iterator<T>(out, " \n") );
+        thrust::copy( p + begin, p + end, std::ostream_iterator<T>(out, m_delim) );
     }
     else
     {
         typedef typename thrust::device_vector<T>::iterator Iterator;
         strided_range<Iterator> sri( p + begin, p + end, stride );
-        thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(out, " \n") );
+        thrust::copy( sri.begin(), sri.end(), std::ostream_iterator<T>(out, m_delim) );
     }
+    out << std::endl ; 
+
 }
 
 

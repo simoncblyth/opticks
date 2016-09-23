@@ -8,7 +8,7 @@ template <typename T> class NPY ;
 #include "THRAP_API_EXPORT.hh" 
 class THRAP_API TBuf {
    public:
-      TBuf(const char* name, CBufSpec spec );
+      TBuf(const char* name, CBufSpec spec, const char* delim=" \n" );
       void zero();
 
       void* getDevicePtr() const ;
@@ -35,6 +35,7 @@ class THRAP_API TBuf {
    private:
       const char* m_name ;
       CBufSpec    m_spec ; 
+      const char* m_delim ;
 };
 
 

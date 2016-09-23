@@ -135,7 +135,12 @@ class OpticksEnv(object):
             lines.append(line)    
 
         path = os.path.expandvars(path) 
-        #print "writing opticks environment to %s " % path 
+
+        dir_ = os.path.dirname(path)
+        if not os.path.isdir(dir_):
+             os.makedirs(dir_)
+
+        print "writing opticks environment to %s " % path 
         open(path,"w").write("\n".join(lines)) 
 
 

@@ -47,7 +47,7 @@ void OpticksGen::setInputGensteps(NPY<float>* gs)
     m_input_gensteps = gs ;  
     if(gs)  // will be NULL for G4GUN for example
     {
-        gs->setBufferSpec(OpticksEvent::GenstepSpec());
+        gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
     }
 }
 

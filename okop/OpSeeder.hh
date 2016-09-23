@@ -48,6 +48,7 @@ class OKOP_API OpSeeder {
    private:
       OpticksHub*              m_hub ;
       Opticks*                 m_ok ;
+      bool                     m_dbg ; 
       OEvent*                  m_oevt ;
       OContext*                m_ocontext ;
 };

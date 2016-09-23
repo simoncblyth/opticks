@@ -56,6 +56,7 @@
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
+#include "OpticksBufferSpec.hh"
 #include "OpticksBufferControl.hh"
 #include "OpticksActionControl.hh"
 #include "Indexer.hh"
@@ -498,6 +499,19 @@ TimesTable* OpticksEvent::getTimesTable()
 }
 
 
+
+void OpticksEvent::pushNames(std::vector<std::string>& names)
+{
+    names.push_back(genstep_);
+    names.push_back(nopstep_);
+    names.push_back(photon_);
+    names.push_back(record_);
+    names.push_back(phosel_);
+    names.push_back(recsel_);
+    names.push_back(sequence_);
+    names.push_back(seed_);
+} 
+
 void OpticksEvent::init()
 {
     m_timer = new Timer("OpticksEvent"); 
@@ -515,14 +529,7 @@ void OpticksEvent::init()
     if(m_cat) m_parameters->add<std::string>("Cat", m_cat );
     m_parameters->add<std::string>("UDet", getUDet() );
 
-    m_data_names.push_back(genstep_);
-    m_data_names.push_back(nopstep_);
-    m_data_names.push_back(photon_);
-    m_data_names.push_back(record_);
-    m_data_names.push_back(phosel_);
-    m_data_names.push_back(recsel_);
-    m_data_names.push_back(sequence_);
-    m_data_names.push_back(seed_);
+    pushNames(m_data_names);
 
     m_abbrev[genstep_] = "gs" ;    // input gs are named: cerenkov, scintillation but for posterity need common output tag
     m_abbrev[nopstep_] = "no" ;    // non optical particle steps obtained from G4 eg with g4gun
@@ -689,83 +696,41 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
 */
 
 
-NPYSpec* OpticksEvent::GenstepSpec()
+NPYSpec* OpticksEvent::GenstepSpec(bool compute)
 {
-#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
-    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY")  ;
-#elif OXRAP_OPTIX_VERSION == 400000
-    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY")  ;
-#else  
-     assert(0 && "UNEXPECTED OXRAP_OPTIX_VERSION ");
-     return NULL ;  
-#endif
+    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(genstep_, compute))  ;
 }
 
-NPYSpec* OpticksEvent::SeedSpec()
+NPYSpec* OpticksEvent::SeedSpec(bool compute)
 {
-    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
-
-/*
-#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
-    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY") ;
-#elif OXRAP_OPTIX_VERSION == 400000
-    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY") ;
-#else  
-     assert(0 && "UNEXPECTED OXRAP_OPTIX_VERSION ");
-     return NULL ;  
-#endif
-*/
-
+    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , OpticksBufferSpec::Get(seed_, compute)) ;
 }
+
 
 void OpticksEvent::createSpec()
 {
     // invoked by Opticks::makeEvent   or OpticksEvent::load
     unsigned int maxrec = getMaxRec();
+    bool compute = isCompute();
 
-    m_genstep_spec = GenstepSpec();
+    m_genstep_spec = GenstepSpec(compute);
+    m_seed_spec    = SeedSpec(compute);
 
-    m_seed_spec    = SeedSpec();
+    m_hit_spec      = new NPYSpec(hit_       , 0,4,4,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hit_, compute));
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(photon_, compute)) ;
+    m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
+    //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 
-    m_hit_spec    = new NPYSpec(hit_       , 0,4,4,0,      NPYBase::FLOAT      , "");
+    m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG ,  OpticksBufferSpec::Get(sequence_, compute)) ;
+    //    ULONGLONG -> RT_FORMAT_USER  and size set to ni*nj*nk = num_photons*1*2
 
+    m_nopstep_spec = new NPYSpec(nopstep_   ,  0,4,4,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(nopstep_, compute) ) ;
+    m_phosel_spec   = new NPYSpec(phosel_   ,  0,1,4,0,      NPYBase::UCHAR     , OpticksBufferSpec::Get(phosel_, compute) ) ;
+    m_recsel_spec   = new NPYSpec(recsel_   ,  0,maxrec,1,4, NPYBase::UCHAR     , OpticksBufferSpec::Get(recsel_, compute) ) ;
 
-#ifdef WITH_SEED_BUFFER
-    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_OUTPUT_ONLY,INTEROP_PTR_FROM_OPENGL") ;
-#else
-    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     , "OPTIX_INPUT_OUTPUT,INTEROP_PTR_FROM_OPENGL,BUFFER_COPY_ON_DIRTY") ;
-          //   OPTIX_INPUT_OUTPUT : INPUT needed as seeding writes genstep identifiers into photon buffer
-#endif
+    m_fdom_spec    = new NPYSpec(fdom_      ,  3,1,4,0,      NPYBase::FLOAT     ,  "" ) ;
+    m_idom_spec    = new NPYSpec(idom_      ,  1,1,4,0,      NPYBase::INT       ,  "" ) ;
 
-
-          //     INTEROP_PTR_FROM_OPENGL  : needed with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop no longer working 
-          //                        instead move to 
-          //                                 OpenGL/OptiX : to write the photon data
-          //                                 OpenGL/CUDA  : to index the photons  
-
-    m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4, NPYBase::SHORT     , "OPTIX_OUTPUT_ONLY") ;
-         
-          //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
-
-    m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG , "OPTIX_NON_INTEROP,OPTIX_OUTPUT_ONLY") ;
-
-          // OPTIX_NON_INTEROP  : creates OptiX buffer even in INTEROP mode, this is possible for sequence as 
-          //                      it is not used by OpenGL shaders so no need for INTEROP
-          //
-          //    ULONGLONG -> RT_FORMAT_USER  and size set to ni*nj*nk = num_photons*1*2
-
-
-    m_nopstep_spec = new NPYSpec(nopstep_   ,  0,4,4,0,      NPYBase::FLOAT     , "" ) ;
-    m_fdom_spec    = new NPYSpec(fdom_      ,  3,1,4,0,      NPYBase::FLOAT     , "" ) ;
-    m_idom_spec    = new NPYSpec(idom_      ,  1,1,4,0,      NPYBase::INT       , "" ) ;
-
-        // OptiX buffers never created for nopstep, fdom, idom  
-
-    m_phosel_spec   = new NPYSpec(phosel_   ,  0,1,4,0,      NPYBase::UCHAR     , "" ) ;
-    m_recsel_spec   = new NPYSpec(recsel_   ,  0,maxrec,1,4, NPYBase::UCHAR     , "" ) ;
-
-         // OptiX never sees phosel or recsel, they are written by Thrust by application of the index
-         // and are read by OpenGL shaders to do record (and photon) selection
 }
 
 
@@ -810,8 +775,8 @@ void OpticksEvent::setBufferControl(NPYBase* data)
     OpticksBufferControl ctrl(data->getBufferControlPtr());
     ctrl.add(spec->getCtrl());
 
-    if(m_mode->isCompute()) ctrl.add(OpticksBufferControl::COMPUTE_MODE_) ; 
-    if(m_mode->isInterop()) ctrl.add(OpticksBufferControl::INTEROP_MODE_) ; 
+    if(isCompute()) ctrl.add(OpticksBufferControl::COMPUTE_MODE_) ; 
+    if(isInterop()) ctrl.add(OpticksBufferControl::INTEROP_MODE_) ; 
 
     if(ctrl("VERBOSE_MODE"))
      LOG(info) << std::setw(10) << name 
@@ -1082,7 +1047,7 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
     Parameters* gsp = gs->getParameters();
     m_parameters->append(gsp);
 
-    gs->setBufferSpec(OpticksEvent::GenstepSpec());
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(isCompute()));
 
     assert(m_g4step == NULL && "OpticksEvent::importGenstepData can only do this once ");
     m_g4step = new G4StepNPY(gs);    

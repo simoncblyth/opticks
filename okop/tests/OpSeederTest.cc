@@ -46,7 +46,8 @@ int main(int argc, char** argv)
     OKOP_LOG__ ; 
 
 
-    Opticks ok(argc, argv, "--compute --trivial --multievent 2 --machinery");
+    const char* forced = "--compute --trivial --multievent 2 --machinery" ;
+    Opticks ok(argc, argv, forced );
 
     OpticksHub hub(&ok);
     OpticksGen* gen = hub.getGen();
