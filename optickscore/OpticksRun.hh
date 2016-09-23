@@ -17,6 +17,7 @@ class OKCORE_API OpticksRun
         OpticksEvent* getG4Event();
 
         void setGensteps(NPY<float>* gs);
+        bool hasGensteps();
 
         void createEvent(unsigned tagoffset=0);  
         void resetEvent();  

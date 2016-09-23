@@ -613,6 +613,100 @@ NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
     return dst ; 
 }
 
+
+
+
+
+template <typename T>
+unsigned NPY<T>::count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
+{
+    unsigned ni = src->getShape(0);
+    unsigned nsel(0) ;
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned val = src->getUInt(i,jj,kk) ;
+        if( val & mask ) nsel += 1 ; 
+    } 
+    return nsel ; 
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
+{
+    unsigned ni = src->getShape(0);
+    assert( ni > 0);
+
+    unsigned nsel = count_selection(src, jj, kk, mask ); 
+    std::vector<int> dshape(src->getShapeVector());
+    dshape[0] = nsel ;          // adjust first dimension to selection count
+
+    NPY<T>* dst = NPY<T>::make(dshape) ;
+    dst->zero();
+
+    unsigned nsel2 = _copy_selection( dst, src, jj, kk, mask) ; 
+    assert(nsel == nsel2);
+
+    return dst ; 
+}
+
+template <typename T>
+unsigned NPY<T>::copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
+{
+    unsigned fromdim = 1 ; 
+    assert(dst->hasSameShape(src,fromdim));
+
+    unsigned nsel = count_selection(src, jj, kk, mask ); 
+    dst->setNumItems(nsel);
+    dst->zero();
+
+    unsigned s = _copy_selection( dst, src, jj, kk, mask) ; 
+    assert( nsel == s );
+    return nsel ; 
+}
+
+template <typename T>
+unsigned NPY<T>::write_selection(NPY<T>* dst, unsigned jj, unsigned kk, unsigned mask )
+{
+    return copy_selection(dst, this, jj, kk, mask );
+}
+
+
+template <typename T>
+unsigned NPY<T>::_copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
+{
+    unsigned ni = src->getShape(0);
+    unsigned size = src->getNumBytes(1);  // item size in bytes (from dimension 1)  
+    char* sbytes = (char*)src->getBytes();
+    char* dbytes = (char*)dst->getBytes();
+    assert(size == dst->getNumBytes(1)) ;
+
+    bool dump = true ; 
+    if(dump) std::cout << "_copy_selection"
+                       << " ni " << ni 
+                       << " mask " << mask 
+                       << " size " << size 
+                       << " " 
+                        ; 
+    unsigned s(0);
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned val = src->getUInt(i,jj,kk) ;
+        //if(dump) std::cout << val << " " ; 
+        if( (val & mask) != 0 ) 
+        {
+            if(dump) std::cout << val << " " ; 
+            memcpy( (void*)(dbytes + size*s),(void*)(sbytes + size*i), size ) ; 
+            s += 1 ; 
+        }
+    } 
+    if(dump) std::cout << std::endl  ; 
+    return s ; 
+}
+
+
+
+
+
 template <typename T>
 NPY<T>* NPY<T>::make_like(NPY<T>* src)
 {

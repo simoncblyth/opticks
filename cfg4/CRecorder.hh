@@ -185,6 +185,8 @@ class CFG4_API CRecorder {
 
         unsigned long long m_seqhis ; 
         unsigned long long m_seqmat ; 
+        unsigned           m_mskhis ; 
+
         unsigned long long m_seqhis_select ; 
         unsigned long long m_seqmat_select ; 
         unsigned int       m_slot ; 

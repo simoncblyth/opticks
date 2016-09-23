@@ -99,8 +99,8 @@ CDetector* CG4::getDetector()
 CG4::CG4(OpticksHub* hub) 
    :
      m_hub(hub),
-     m_run(hub->getRun()),
      m_ok(m_hub->getOpticks()),
+     m_run(m_ok->getRun()),
      m_cfg(m_ok->getCfg()),
      m_physics(new CPhysics(m_hub)),
      m_runManager(m_physics->getRunManager()),
@@ -231,7 +231,15 @@ void CG4::initEvent(OpticksEvent* evt)
 NPY<float>* CG4::propagate()
 {
     OpticksEvent* evt = m_run->getG4Event();
-    assert(evt && evt->isG4() && "Must OpticksRun::createEvent before CG4::propagate");
+    assert(evt && evt->isG4() && "MUST: OpticksRun::createEvent before CG4::propagate");
+
+    if(m_ok->isFabricatedGensteps())
+    {
+        bool hasGensteps = evt->hasGenstepData();
+        if(!hasGensteps) 
+             LOG(fatal) << "MUST: OpticksRun::setGensteps before CG4::propagate when ok.isFabricatedGensteps " ; 
+        assert(hasGensteps);    
+    }
 
     LOG(info) << "CG4::propagate(" << m_ok->getTagOffset() << ") " << evt->getDir() ; 
 

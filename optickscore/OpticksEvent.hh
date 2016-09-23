@@ -149,6 +149,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setRngMax(unsigned int rng_max);
        void init();
        void indexPhotonsCPU();
+       void collectPhotonHitsCPU();
    public:
        static const char* idom_ ;
        static const char* fdom_ ;

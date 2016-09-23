@@ -2,28 +2,45 @@
 #include "OpticksBufferSpec.hh"
 #include "OpticksCMakeConfig.hh"
 #include "OpticksSwitches.h"
+/**
+OpticksBufferSpec
+==================
 
-//
-// OPTIX_NON_INTEROP  
-//    creates OptiX buffer even in INTEROP mode, this is possible for buffers such as "sequence"
-//    which are not used from OpenGL shaders so there is no need for the INTEROP OpenGL buffer
-//    instead can profit from speed and simplicity of pure OptiX buffer
-//
-// INTEROP_PTR_FROM_OPENGL  
-//    adopted this with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop not working in 400000 
-//    instead moved to 
-//           OpenGL/OptiX : to write the photon data
-//           OpenGL/CUDA  : to index the photons  
-//
-//
-//  NB have just moved to splitting the spec by compute and interop
-//     so some simplifications should be possible
-//
+OPTIX_NON_INTEROP  
+    creates OptiX buffer even in INTEROP mode, this is possible for buffers such as "sequence"
+    which are not used from OpenGL shaders so there is no need for the INTEROP OpenGL buffer
+    instead can profit from speed and simplicity of pure OptiX buffer
+
+ INTEROP_PTR_FROM_OPENGL  
+    adopted this with OptiX 4.0, as OpenGL/OptiX/CUDA 3-way interop not working in 400000 
+    instead moved to 
+           OpenGL/OptiX : to write the photon data
+           OpenGL/CUDA  : to index the photons  
 
 
-/** 
+NB have just moved to splitting the spec by compute and interop
+   so some simplifications should be possible
+
+
+INTEROP mode GPU buffer access C:create R:read W:write
+----------------------------------------------------------
+
+                 OpenGL     OptiX              Thrust 
+
+   gensteps       CR       R (gen/prop)       R (seeding)
+
+   photons        CR       W (gen/prop)       W (seeding)
+   sequence                W (gen/prop)
+   phosel         CR                          W (indexing) 
+
+   records        CR       W  
+   recsel         CR                          W (indexing)
+
+
+OptiX has no business with phosel and recsel 
+
 Photon spec
-============
+--------------
 
 * OpIndexer::indexBoundaries demands to know where to get pointer from for interop running
 
@@ -113,5 +130,4 @@ const char* OpticksBufferSpec::Get(const char* name, bool compute )
     else if(strcmp(name, OpticksEvent::hit_)==0)      bspc = compute ? hit_compute_  : hit_interop_ ;
     return bspc ; 
 }
-
 

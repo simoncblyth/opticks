@@ -88,6 +88,12 @@ void OpticksRun::passBaton()
     m_evt->setGenstepData(genstep);
 }
 
+bool OpticksRun::hasGensteps()
+{
+   return m_evt->hasGenstepData() && m_g4evt->hasGenstepData() ; 
+}
+
+
 void OpticksRun::saveEvent()
 {
     OK_PROFILE("OpticksRun::saveEvent.BEG");

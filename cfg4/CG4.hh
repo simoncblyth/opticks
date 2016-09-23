@@ -69,8 +69,8 @@ class CFG4_API CG4
         NPY<float>*    getGensteps();
    private:
         OpticksHub*           m_hub ; 
-        OpticksRun*           m_run ; 
         Opticks*              m_ok ; 
+        OpticksRun*           m_run ; 
         OpticksCfg<Opticks>*  m_cfg ; 
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 

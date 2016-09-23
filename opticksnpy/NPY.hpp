@@ -101,9 +101,18 @@ class NPY_API NPY : public NPYBase {
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
        static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);
+
+
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
-
+   public:
+       static NPY<T>* make_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
+       static unsigned count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
+       static unsigned copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
+       unsigned write_selection(NPY<T>* dst, unsigned jj, unsigned kk, unsigned mask);
+   private:
+       static unsigned _copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
+   public:
        // ctor takes ownership of a copy of the inputs 
        NPY(std::vector<int>& shape, T*  data            , std::string& metadata) ;
        NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;

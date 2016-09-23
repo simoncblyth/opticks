@@ -23,15 +23,6 @@ class NConfigurable ;
 #include "PLOG.hh"
 #include "OKG4_BODY.hh"
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          Timer& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_log(new SLog("OKG4Mgr::OKG4Mgr")),

@@ -94,6 +94,8 @@ CRecorder::CRecorder(Opticks* ok, CPropLib* clib, bool dynamic)
 
    m_seqhis(0),
    m_seqmat(0),
+   m_mskhis(0),
+
    m_seqhis_select(0),
    m_seqmat_select(0),
    m_slot(0),
@@ -326,6 +328,7 @@ void CRecorder::startPhoton()
 
     m_seqmat = 0 ; 
     m_seqhis = 0 ; 
+    m_mskhis = 0 ; 
 
     //m_seqhis_select = 0xfbbbbbbbcd ;
     //m_seqhis_select = 0x8cbbbbbc0 ;
@@ -420,6 +423,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
         unsigned long long mat = material < 0xFull ? material : 0xFull ; 
         m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
         m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
+        m_mskhis |= flag ; 
 
         RecordStepPoint(slot, point, flag, material, label);
 
@@ -558,12 +562,18 @@ void CRecorder::RecordPhoton(const G4Step* step)
     target->setUInt(target_record_id, 3, 0, 0, m_slot );
     target->setUInt(target_record_id, 3, 0, 1, 0u );
     target->setUInt(target_record_id, 3, 0, 2, m_c4.u );
-    target->setUInt(target_record_id, 3, 0, 3, 0u );
+    target->setUInt(target_record_id, 3, 0, 3, m_mskhis );
+
+
+    // in static case directly populate the pre-sized photon buffer
+    // in dynamic case populate the single photon buffer first and then 
+    // add that to the photons below
 
     if(m_dynamic)
     {
         m_photons->add(m_dynamic_photons);
     }
+
 
     // generate.cu
     //

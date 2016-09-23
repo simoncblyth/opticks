@@ -316,6 +316,8 @@ unsigned OEvent::downloadHits(OpticksEvent* evt)
     bool verbose = false ; 
     TBuf tpho("tpho", cpho );
     unsigned nhit = tpho.downloadSelection4x4("OEvent::downloadHits", hit, verbose);
+    // hit buffer (0,4,4) resized to fit downloaded hits (nhit,4,4)
+    assert(hit->hasShape(nhit,4,4));
 
     OK_PROFILE("OEvent::downloadHits");
 

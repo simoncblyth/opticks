@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cassert>
 
-
+#include "SSys.hh"
 #include "BOpticksEvent.hh"
 #include "BBufSpec.hh"
 
@@ -13,9 +13,61 @@
 #include "NGLM.hpp"
 #include "NLoad.hpp"
 #include "NPY.hpp"
+#include "DummyPhotonsNPY.hpp"
 
 #include "BRAP_LOG.hh"
 #include "PLOG.hh"
+
+
+void test_selection_write()
+{
+    unsigned numPhotons = 1000 ; 
+    unsigned hitmask = 0x1 << 5 ; 
+
+    NPY<float>* ox = DummyPhotonsNPY::make(numPhotons, hitmask);
+    NPY<float>* ht = NPY<float>::make(0,4,4);
+    unsigned numHits = ox->write_selection(ht, 3,3, hitmask );
+
+    LOG(info) 
+        << " numPhotons " << numPhotons
+        << " numHits    " << numHits
+        << " ht " << ht->getShapeString()
+        ;
+
+    assert( ht->getNumItems() == numHits );
+    assert( numHits <= numPhotons);  
+
+    const char* path = "$TMP/NPYTest/ht2.npy" ;
+    ht->save(path);
+    SSys::npdump(path);
+}
+
+
+
+void test_selection()
+{
+    unsigned numPhotons = 1000 ; 
+    unsigned hitmask = 0x1 << 5 ; 
+
+    NPY<float>* ox = DummyPhotonsNPY::make(numPhotons, hitmask);
+    unsigned numHits = NPY<float>::count_selection(ox, 3,3, hitmask );
+    NPY<float>* ht  = NPY<float>::make_selection(ox, 3,3, hitmask );
+
+    LOG(info) 
+        << " numPhotons " << numPhotons
+        << " numHits    " << numHits
+        << " ht " << ht->getShapeString()
+        ;
+
+    assert( ht->getNumItems() == numHits );
+    assert( numHits <= numPhotons);  
+
+    const char* path = "$TMP/NPYTest/ht.npy" ;
+    ht->save(path);
+    SSys::npdump(path);
+}
+
+
 
 void test_repeat()
 {
@@ -407,10 +459,12 @@ int main(int argc, char** argv )
 
    /* 
     test_getBufSpec();
-
     test_dbg_like();
    */
 
+
+    test_selection();
+    test_selection_write();
 
     return 0 ;
 }

@@ -5,6 +5,7 @@
 #include "OpticksEvent.hh"
 #include "OpticksHub.hh"
 #include "OpticksRun.hh"
+#include "OpticksGen.hh"
 
 #include "CG4.hh"
 
@@ -31,7 +32,8 @@ int main(int argc, char** argv)
     ok.setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
 
     OpticksHub hub(&ok) ; 
-    OpticksRun* run = hub.getRun();
+    OpticksRun* run = ok.getRun();
+    OpticksGen* gen = hub.getGen();
     
     CG4* g4 = new CG4(&hub) ; 
 
@@ -44,6 +46,12 @@ int main(int argc, char** argv)
 
 
     run->createEvent();
+
+    if(ok.isFabricatedGensteps())  // eg TORCH running
+    { 
+        NPY<float>* gs = gen->getInputGensteps() ;
+        run->setGensteps(gs);
+    }
 
     g4->propagate();
 

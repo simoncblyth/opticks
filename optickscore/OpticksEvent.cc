@@ -510,6 +510,7 @@ void OpticksEvent::pushNames(std::vector<std::string>& names)
     names.push_back(recsel_);
     names.push_back(sequence_);
     names.push_back(seed_);
+    names.push_back(hit_);
 } 
 
 void OpticksEvent::init()
@@ -673,39 +674,16 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
     return (*mvn)[elem[1].c_str()] ;
 }
 
-/*
-
-
-   INTEROP mode GPU buffer access C:create R:read W:write
-   ----------------------------------------------------------
-
-                 OpenGL     OptiX              Thrust 
-
-   gensteps       CR       R (gen/prop)       R (seeding)
-
-   photons        CR       W (gen/prop)       W (seeding)
-   sequence                W (gen/prop)
-   phosel         CR                          W (indexing) 
-
-   records        CR       W  
-   recsel         CR                          W (indexing)
-
-
-   OptiX has no business with phosel and recsel 
-
-*/
 
 
 NPYSpec* OpticksEvent::GenstepSpec(bool compute)
 {
     return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(genstep_, compute))  ;
 }
-
 NPYSpec* OpticksEvent::SeedSpec(bool compute)
 {
     return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , OpticksBufferSpec::Get(seed_, compute)) ;
 }
-
 
 void OpticksEvent::createSpec()
 {
@@ -1905,11 +1883,35 @@ void OpticksEvent::postPropagateGeant4()
               << " num_photons " << num_photons
               ;
 
-    setNumPhotons(num_photons);  
-   // triggers resize ???  THIS IS ONLY NEED FOR DYNAMIC RUNNING 
-   // WITH FABRICATED OR LOADED GENSTEPS THIS IS KNOWN AHEAD OF TIME
+
+    if(!m_ok->isFabricatedGensteps())
+    {
+        setNumPhotons(num_photons);  
+        // triggers resize ???  THIS IS ONLY NEED FOR DYNAMIC RUNNING 
+        // WITH FABRICATED OR LOADED GENSTEPS THIS IS KNOWN AHEAD OF TIME
+    }
 
     indexPhotonsCPU();    
+    collectPhotonHitsCPU();
+}
+
+void OpticksEvent::collectPhotonHitsCPU()
+{
+    OK_PROFILE("_OpticksEvent::collectPhotonHitsCPU");
+
+    NPY<float>* ox = getPhotonData();
+    NPY<float>* ht = getHitData();
+
+    //unsigned hitmask = SURFACE_DETECT ;   // TODO: get G4 to come up with SURFACE_DETECT
+    unsigned hitmask = SURFACE_ABSORB ; 
+
+    unsigned numHits = ox->write_selection(ht, 3,3, hitmask );
+
+    LOG(info) << "OpticksEvent::collectPhotonHitsCPU"
+              << " numHits " << numHits 
+              ;
+
+    OK_PROFILE("OpticksEvent::collectPhotonHitsCPU");
 }
 
 void OpticksEvent::indexPhotonsCPU()
@@ -1949,7 +1951,6 @@ void OpticksEvent::indexPhotonsCPU()
     idx->applyLookup<unsigned char>(phosel_values);
 
 
-
     NPY<unsigned char>* recsel1 = NPY<unsigned char>::make_repeat(phosel, maxrec ) ;
     recsel1->reshape(-1, maxrec, 1, 4);
     recsel1->setBufferSpec(m_recsel_spec);  
@@ -1958,11 +1959,8 @@ void OpticksEvent::indexPhotonsCPU()
 
     setRecselData(recsel1);
 
-
     setHistoryIndex(idx->getHistoryIndex());
     setMaterialIndex(idx->getMaterialIndex());
-
-    TIMER("indexPhotonsCPU");    
 
     OK_PROFILE("OpticksEvent::indexPhotonsCPU");
 }

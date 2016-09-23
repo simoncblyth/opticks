@@ -432,13 +432,13 @@ unsigned int NPYBase::getNumQuads()
 }
 
 
-bool NPYBase::hasSameShape(NPYBase* other)
+bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim)
 {
     std::vector<int>& a = getShapeVector();
     std::vector<int>& b = other->getShapeVector();
     if(a.size() != b.size()) return false ; 
     unsigned int n = a.size();
-    for(unsigned int i=0 ; i < n ; i++) if(a[i] != b[i]) return false ;
+    for(unsigned int i=fromdim ; i < n ; i++) if(a[i] != b[i]) return false ;
     return true ; 
 }
 
