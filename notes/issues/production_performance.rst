@@ -91,4 +91,7 @@ Hit only evt needs some changes::
 
     ipython -i $(which tevt.py) -- --tag 10
 
+    tevt.py --multievent 10 --terse     ## dump just mask tables of the saved hits, have to manully scrub folder ahead to get just hits
+
+
 

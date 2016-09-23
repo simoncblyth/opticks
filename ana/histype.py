@@ -15,11 +15,12 @@ import numpy as np
 
 from opticks.ana.base import opticks_main
 from opticks.ana.base import Abbrev, IniFlags
-from opticks.ana.seq import SeqType, SeqTable, SeqAna, MaskType
+from opticks.ana.seq import SeqType, SeqTable, SeqAna
 from opticks.ana.nbase import count_unique_sorted
 from opticks.ana.nload import A
 
 def test_HistoryTable(ht, seqhis):
+     log.info("test_HistoryTable")  
      for seq in ht.labels:
          seqs = [seq]
          s_seqhis = map(lambda _:seqhis == af.code(_), seqs )
@@ -28,6 +29,8 @@ def test_HistoryTable(ht, seqhis):
          n = len(seqhis[psel])
          assert n == ht.label2count.get(seq)
          print "%10s %s " % (n, seq ) 
+     pass
+     log.info("test_HistoryTable DONE")  
 
 def test_roundtrip(af):
      x=0x8cbbbcd
@@ -42,12 +45,6 @@ class HisType(SeqType):
         flags = IniFlags()
         abbrev = Abbrev()
         SeqType.__init__(self, flags, abbrev)
-
-class HisMask(MaskType):
-    def __init__(self):
-        flags = EnumFlags()
-        abbrev = Abbrev()
-        MaskType.__init__(self, flags, abbrev)
 
 
 
@@ -73,5 +70,10 @@ if __name__ == '__main__':
      test_HistoryTable(ht, seqhis)
 
      #test_roundtrip(af)
+
+
+
+
+
 
 

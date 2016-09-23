@@ -31,20 +31,20 @@ from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
 
 if __name__ == '__main__':
-    args = opticks_main(tag="1",src="torch", det="dayabay", doc=__doc__)
+    args = opticks_main(tag="10",src="torch", det="PmtInBox", doc=__doc__)
     np.set_printoptions(suppress=True, precision=3)
 
-    try:
-        evt = Evt(tag=args.utag, src=args.src, det=args.det, seqs=[])
-    except IOError as err:
-        log.fatal(err)
-        sys.exit(args.mrc)
+    for utag in args.utags:
+        try:
+            evt = Evt(tag=utag, src=args.src, det=args.det, seqs=[], terse=args.terse)
+        except IOError as err:
+            log.fatal(err)
+            sys.exit(args.mrc)
 
-    log.info("loaded evt")
-
-    print evt
-    log.info("evt.history_table:")
-    print evt.history_table(slice(0,20))
-    #print evt.material_table(slice(0,20))
-   
+        log.debug("evt") 
+        print evt
+        log.debug("evt.history_table") 
+        evt.history_table(slice(0,20))
+        log.debug("evt.history_table DONE") 
+       
 

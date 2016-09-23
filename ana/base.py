@@ -178,12 +178,14 @@ def opticks_args(**kwa):
     doc = kwa.get("doc", None)
     tag = kwa.get("tag", None)
     tagoffset = kwa.get("tagoffset", 0)
+    multievent = kwa.get("multievent", 1)
     stag = kwa.get("stag", None)
     ptag = kwa.get("ptag", None)
     src = kwa.get("src", None)
     det = kwa.get("det", None)
     typ = kwa.get("typ", None)
     show = kwa.get("show", True)
+    terse = kwa.get("terse", False)
     mat = kwa.get("mat", "GdDopedLS")
     sli = kwa.get("sli", "::1")
     c2max = kwa.get("c2max", 2.0)
@@ -196,6 +198,7 @@ def opticks_args(**kwa):
 
     parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
     parser.add_argument(     "--tagoffset",  default=tagoffset, type=int, help="tagoffset : unsigned offset from tag, identifies event in multivent running. Default %(default)s "  )
+    parser.add_argument(     "--multievent",  default=multievent, type=int, help="multievent : unsigned number of events to handle. Default %(default)s "  )
     parser.add_argument(     "--stag",  default=stag, help="S-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
     parser.add_argument(     "--ptag",  default=ptag, help="P-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
     parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
@@ -205,11 +208,22 @@ def opticks_args(**kwa):
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting. Default %(default)s"  )
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
+    parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)
 
-    args.utag = int(args.tag) + args.tagoffset 
+    if args.multievent > 1 and args.tagoffset > 0:
+         log.fatal("use either --multievent n or --tagoffset o to pick one from multi, USING BOTH --multievent and --tagoffset NOT SUPPORTED  ") 
+         sys.exit(1)
+
+    if args.multievent > 1:
+        args.utags =  map(lambda offset:int(args.tag) + offset, range(args.multievent)) 
+        args.utag = args.utags[0]   # backward compat for scripts not supporting multievent yet 
+    else:
+        args.utag = int(args.tag) + args.tagoffset 
+        args.utags = [args.utag]   
+    pass
 
     if args.show:
          print " ".join(sys.argv)

@@ -15,7 +15,8 @@ from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
 from opticks.ana.seq import SeqAna
-from opticks.ana.histype import HisType, HisMask
+from opticks.ana.histype import HisType
+from opticks.ana.hismask import HisMask
 from opticks.ana.mattype import MatType 
 from opticks.ana.metadata import Metadata
 
@@ -57,11 +58,13 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False):
+    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False):
 
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
         self.seqs = seqs
+        self.terse = terse
+       
  
         if label is None:
             label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(seqs)) 
@@ -76,6 +79,7 @@ class Evt(object):
            log.warning("FAILED TO LOAD EVT %s " % label )
            return   
 
+        self.init_types()
         self.init_gensteps(tag, src, det, dbg)
         self.init_photons(tag, src, det, dbg)
         self.init_hits(tag, src, det, dbg)
@@ -85,9 +89,14 @@ class Evt(object):
             self.init_sequence(tag, src, det, dbg)
             self.init_selection(seqs, not_ )
             self.init_index(tag, src, det, dbg)
-        else:
-            self.history = None
-        pass
+
+
+    def init_types(self):
+        log.debug("init_types")
+        self.hismask = HisMask()
+        self.histype = HisType()
+        self.mattype = MatType()
+        log.debug("init_types DONE")
 
 
     def init_metadata(self, tag, src, det, dbg):
@@ -128,9 +137,6 @@ class Evt(object):
         fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
         self.desc['fdom'] = fdom.desc
         self.desc['idom'] = "(metadata) int domain"
-
-
-
         return True         
 
     def init_gensteps(self, tag, src, det, dbg):
@@ -161,15 +167,19 @@ class Evt(object):
         self.post = ox[:,0] 
         self.dirw = ox[:,1]
         self.polw = ox[:,2]
-        self.flags = ox.view(np.uint32)[:,3,3]
+        self.pflags = ox.view(np.uint32)[:,3,3]
         self.c4 = c4
+
+        cn = "%s:%s" % (str(tag), det)
+        self.pflags_ana = SeqAna( self.pflags, self.hismask, cnames=[cn] )
 
         self.desc['wl'] = "(photons) wavelength"
         self.desc['post'] = "(photons) final photon step: position, time"
         self.desc['dirw'] = "(photons) final photon step: direction, weight "
         self.desc['polw'] = "(photons) final photon step: polarization, wavelength "
-        self.desc['flags'] = "(photons) final photon step: flags "
+        self.desc['pflags'] = "(photons) final photon step: flags "
         self.desc['c4'] = "(photons) final photon step: dtype split uint8 view of ox flags"
+
 
     def init_hits(self, tag, src, det, dbg):
         ht = A.load_("ht",src,tag,det, optional=True) 
@@ -188,6 +198,9 @@ class Evt(object):
         self.hflags = ht.view(np.uint32)[:,3,3]
         self.hc4 = hc4
 
+        cn = "%s:%s" % (str(tag), det)
+        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn] )
+ 
         self.desc['hwl'] = "(hits) wavelength"
         self.desc['hpost'] = "(hits) final photon step: position, time"
         self.desc['hdirw'] = "(hits) final photon step: direction, weight "
@@ -195,19 +208,11 @@ class Evt(object):
         self.desc['hflags'] = "(hits) final photon step: flags "
         self.desc['hc4'] = "(hits) final photon step: dtype split uint8 view of ox flags"
 
-       
-    def init_hflags(self):
-        """
-        photon and hit flags are a bit mask (not a bit sequence)
-        """
-        hismask = HisMask()
-        
 
     def init_records(self, tag, src, det, dbg):
         """
-        suspect the reshaping no longer needed ?
+        reshaping no longer needed ?
         """
-
         # rx_raw = A.load_("rx",src,tag,det,dbg)
         # self.rx_raw = rx_raw
         # self.desc['rx_raw'] = "(records) photon step records RAW:before reshaping"
@@ -227,21 +232,16 @@ class Evt(object):
         self.ph = ph
         self.desc['ph'] = "(records) photon history flag/material sequence"
         if ph.missing:
-            log.info(" ph missing ==> no history ")
+            log.debug(" ph missing ==> no history aka seqhis_ana  ")
             return 
 
         seqhis = ph[:,0,0]
         seqmat = ph[:,0,1]
 
-        log.debug("init_records create types")
-        histype = HisType()
-        mattype = MatType()
-        log.debug("init_records create types DONE")
-
         cn = "%s:%s" % (str(tag), det)
         # full history without selection
-        all_history = SeqAna(seqhis, histype , cnames=[cn])  
-        all_material = SeqAna(seqmat, mattype , cnames=[cn])  
+        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn])  
+        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn])  
 
         self.seqhis = seqhis
         self.seqmat = seqmat
@@ -254,27 +254,25 @@ class Evt(object):
         if useqmat <= 1:
             log.warning("init_records %s finds too few (ph)seqmat uniques : %s : EMPTY HISTORY" % (self.label,useqmat) ) 
 
-        self.all_history = all_history
-        self.history = all_history
+        self.all_seqhis_ana = all_seqhis_ana
+        self.seqhis_ana = all_seqhis_ana
 
-        self.all_material = all_material
-        self.material = all_material
-
-        self.histype = histype
-        self.mattype = mattype
+        self.all_seqmat_ana = all_seqmat_ana
+        self.seqmat_ana = all_seqmat_ana
 
 
 
-    def init_index(self, tag, src, det, dbg, index_optional=True):
 
-        ps = A.load_("ps",src,tag,det,dbg, optional=index_optional)
+    def init_index(self, tag, src, det, dbg):
+
+        ps = A.load_("ps",src,tag,det,dbg, optional=True)
 
         if not ps is None and not ps.missing:
             ups = len(np.unique(ps))
         else:
             ups = -1 
 
-        rs = A.load_("rs",src,tag,det,dbg, optional=index_optional)
+        rs = A.load_("rs",src,tag,det,dbg, optional=True)
         if not rs is None and not rs.missing :
             urs = len(np.unique(rs))
         else: 
@@ -291,11 +289,11 @@ class Evt(object):
             ursr = -1
 
 
-        if ups <= 1:
+        if ups <= 1 and not ps.missing:
             log.warning("init_index %s finds too few (ps)phosel uniques : %s" % (self.label,ups) ) 
-        if urs <= 1:
+        if urs <= 1 and not rs.missing:
             log.warning("init_index %s finds too few (rs)recsel uniques : %s" % (self.label,urs) ) 
-        if ursr <= 1:
+        if ursr <= 1 and not rs.missing:
             log.warning("init_index %s finds too few (rsr)reshaped-recsel uniques : %s" % (self.label,ursr) ) 
 
 
@@ -320,7 +318,7 @@ class Evt(object):
         if not self.rec or len(seqs) == 0:return  
 
         log.debug("Evt seqs %s " % repr(seqs))
-        psel = self.all_history.seq_or(seqs, not_=not_)
+        psel = self.all_seqhis_ana.seq_or(seqs, not_=not_)
 
         nsel = len(psel[psel == True])
         if nsel == 0:
@@ -334,9 +332,7 @@ class Evt(object):
         self.wl = self.wl[psel]
         self.rx = self.rx[psel]
 
-        self.history = SeqAna(self.seqhis[psel], self.histype)   # history with selection applied
-
-        # TODO: material with history selection applied
+        self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
     
  
     x = property(lambda self:self.ox[:,0,0])
@@ -368,7 +364,12 @@ class Evt(object):
             (self.tag, self.src, self.det,self.label, repr(self.seqs), self.stamp, self.tagdir))
 
     def __repr__(self):
-        return "\n".join([self.summary, self.description])
+        if self.terse:
+            elem = [self.summary]
+        else:
+            elem = [self.summary, self.description]
+        pass
+        return "\n".join(elem)
 
     def msize(self):
         return float(self.ox.shape[0])/1e6
@@ -378,21 +379,28 @@ class Evt(object):
         assert len(uwl) == 1 
         return uwl[0]
 
-    def history_table(self, sli=slice(None)):
+    def present_table(self, analist,sli=slice(None)):
         """
         TODO: make the table directly sliceable
         """
-        if not hasattr(self, 'history'):
-            log.info("no history attr")
-            return
-        if not self.history:
-            log.info("history None ")
-            return 
-        #print self
-        self.history.table.sli = sli 
-        print self.history.table
+        for ana_ in analist:
+            ana = getattr(self, ana_, None) 
+            if ana:
+                log.debug("history_table %s " % ana_ )
+                ana.table.title = ana_ 
+                ana.table.sli = sli 
+                print ana.table
+            else:
+                log.debug("%s noattr " % ana_ )
+        pass
 
-    def material_table(self):
+    def history_table(self, sli=slice(None)):
+        self.present_table( 'seqhis_ana seqmat_ana hflags_ana pflags_ana'.split(), sli)
+
+    def material_table(self, sli=slice(None)):
+        self.present_table( 'seqmat_ana'.split(), sli)
+
+    def material_table_old(self):
         seqmat = self.seqmat
         cu = count_unique(seqmat)
         ## TODO: fix this  
@@ -401,7 +409,7 @@ class Evt(object):
         print "tot:", tot
         return cu
 
-    def flags_table(self):
+    def flags_table_old(self):
         flags = self.flags
         cu = count_unique(flags)
         gflags_table(cu)

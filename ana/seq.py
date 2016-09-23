@@ -8,14 +8,24 @@ from opticks.ana.nbase import chi2, count_unique_sorted
 from opticks.ana.nload import A
 
 
+firstlast_ = lambda name:name[0] + name[-1]
 
 class BaseType(object):
-    def __init__(self, flags, abbrev):
-        abbrs = map(lambda name:abbrev.name2abbr.get(name,name), flags.names )
+    def __init__(self, flags, abbrev, delim=" "):
+        """
+        When no abbreviation available, use first and last letter of name eg::
+
+           MACHINERY -> MY
+           FABRICATED -> FD
+           G4GUN -> GN
+
+        """
+        abbrs = map(lambda name:abbrev.name2abbr.get(name,firstlast_(name)), flags.names )
         self.abbr2code = dict(zip(abbrs, flags.codes))
         self.code2abbr = dict(zip(flags.codes, abbrs))
         self.flags = flags
         self.abbrev = abbrev
+        self.delim = delim
 
     def __call__(self, args):
         for a in args:
@@ -36,40 +46,44 @@ class BaseType(object):
 
 class MaskType(BaseType):
     def __init__(self, flags, abbrev):
-         BaseType.__init__(self, flags, abbrev)
+         BaseType.__init__(self, flags, abbrev, delim="|")
+         log.debug("abbr2code %s " % repr(self.abbr2code))
+         log.debug("code2abbr %s " % repr(self.code2abbr))
+         log.debug("flags.codes %s " % repr(self.flags.codes))
 
     def code(self, s):
         """
-        :param s: abbreviation string eg "TO BT SD"
+        :param s: abbreviation string eg "TO|BT|SD"
         :return: integer bitmask 
         """
         f = self.abbr2code
         bad = self.check(s) 
-        return reduce(lambda a,b:a|b,map(lambda n:f.get(n,0), s.split(" ")))
+        return reduce(lambda a,b:a|b,map(lambda n:f.get(n,0), s.split(self.delim)))
 
     def label(self, i):
         """
         :param i: integer bitmask
         :return: abbreviation mask string 
         """
-        xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
-        seq = map(lambda _:int(_,16), xs ) 
-        log.debug("label xs %s seq %s " % (xs, repr(seq)) )
+        log.debug(" i : %s %s " % (repr(i), type(i)))
+        codes = filter(lambda c:int(i) & c, self.flags.codes)
+        codes = sorted(codes,reverse=True)
         d = self.code2abbr
-        return " ".join(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
+        return self.delim.join(map(lambda _:d.get(_,'?%s?' % _ ), codes )) 
 
 
 class SeqType(BaseType):
     def __init__(self, flags, abbrev):
-         BaseType.__init__(self, flags, abbrev)
+         BaseType.__init__(self, flags, abbrev, delim=" ")
 
     def code(self, s):
         """
         :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
         :return: integer code eg 0x8cbbbcd
         """
+        f = self.abbr2code
         bad = self.check(s) 
-        return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(" ")))))
+        return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(self.delim)))))
 
     def label(self, i):
         """
@@ -80,7 +94,7 @@ class SeqType(BaseType):
         seq = map(lambda _:int(_,16), xs ) 
         log.debug("label xs %s seq %s " % (xs, repr(seq)) )
         d = self.code2abbr
-        return " ".join(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
+        return self.delim.join(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
 
 
 
@@ -93,6 +107,8 @@ class SeqTable(object):
         :param af: instance of SeqType subclass such as HisType
         :param cnames: column names 
         """
+        log.debug("SeqTable.__init__")
+
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
 
         ncol = cu.shape[1] - 1 
@@ -131,15 +147,22 @@ class SeqTable(object):
 
         self.seqs = seqs
 
+
+        codes = cu[:,0]
         counts = cu[:,1]
-        labels = map(lambda i:af.label(i), cu[:,0] )
-        nstep = map(lambda l:len(l.split(" ")),labels)
+
+        log.debug("codes  : %s " % repr(codes))
+        log.debug("counts : %s " % repr(counts))
+
+        labels = map(lambda i:af.label(i), codes )
+        nstep = map(lambda l:len(l.split(af.delim)),labels)
 
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
 
         lines = map(lambda n:self.line(n), range(len(cu)))
 
+        self.codes = codes  
         self.counts = counts
         self.lines = lines
 
@@ -181,9 +204,13 @@ class SeqTable(object):
         return "\n".join(map(lambda _:self.label2line.get(_,None), ll )) 
 
     def __repr__(self):
-        space = "%20s " % ""
+
+        spacer_ = lambda _:"%20s " % _
+        space = spacer_("")
+        title = spacer_(getattr(self,'title',""))
+
         body_ = lambda _:" %10s " % _
-        head = space + " ".join(map(body_, self.cnames ))
+        head = title + " ".join(map(body_, self.cnames ))
         tail = space + " ".join(map(body_, self.tots ))
         return "\n".join([head] + self.lines[self.sli] + [tail])
 
