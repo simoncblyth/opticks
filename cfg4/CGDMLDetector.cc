@@ -13,6 +13,7 @@
 
 // ggeo-
 #include "GMaterial.hh"
+#include "GSurfaceLib.hh"
 
 // okc-
 #include "Opticks.hh"
@@ -84,6 +85,7 @@ void CGDMLDetector::init()
     setTop(parser.GetWorldVolume());   // invokes *CDetector::traverse*
 
     addMPT();
+    addSurfaces();
 }
 
 
@@ -145,6 +147,43 @@ void CGDMLDetector::addMPT()
     }
 
     LOG(info) << "CGDMLDetector::addMPT added MPT to " <<  ng4mat << " g4 materials " ; 
+
+}
+
+
+
+
+
+void CGDMLDetector::addSurfaces()
+{
+    // GDML exported by geant4 that comes with nuwa lacks surfaces
+    // entirely so use the bordersurface and skinsurfaces and associated opticalsurface 
+    // from G4DAE export, as available in ggeo- 
+
+    LOG(info) << "CGDMLDetector::addSurfaces" ; 
+
+    unsigned int nsur = m_traverser->getNumSurfaces();
+
+    if(nsur != 0) LOG(fatal) << "CGDMLDetector::addSurfaces"
+                             << " not expecting any surfaces to be provided by GDML geometry " 
+                             ;
+    assert( nsur == 0);
+
+
+    GSurfaceLib* slib = m_lib->getSurfaceLib();
+
+    unsigned oksur = slib->getNumSurfaces() ;
+
+    LOG(info) << "CGDMLDetector::addSurfaces" 
+              << " G4DAE/ggeo oksur " << oksur
+               ; 
+
+
+    slib->dump("CGDMLDetector::addSurfaces slib");    
+
+
+
+
 
 }
 

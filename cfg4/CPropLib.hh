@@ -64,6 +64,8 @@ class CFG4_API CPropLib {
        void setupOverrides(); 
        //void convert();  commented in init 
    public:
+       GSurfaceLib* getSurfaceLib();
+   public:
        // GGeo material access
        unsigned int getNumMaterials();
        const GMaterial* getMaterial(unsigned int index);

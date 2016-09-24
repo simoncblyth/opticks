@@ -12,6 +12,7 @@
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 #include "CMaterialTable.hh"
+#include "CBorderSurfaceTable.hh"
 
 // g4-
 #include "G4VPhysicalVolume.hh"
@@ -21,6 +22,7 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
+#include "GGEO_LOG.hh"
 #include "CFG4_LOG.hh"
 #include "PLOG.hh"
 
@@ -32,21 +34,24 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ;
 
     CFG4_LOG__ ; 
+    GGEO_LOG__ ; 
 
-    Opticks* m_opticks = new Opticks(argc, argv);
+    Opticks ok(argc, argv);
 
-    OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
+    ok.configure();
 
-    m_cfg->commandline(argc, argv);  
+    //OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
 
-    OpticksQuery* query = m_opticks->getQuery();   // non-done inside Detector classes for transparent control/flexibility 
-
-    CGDMLDetector* m_detector  = new CGDMLDetector(m_opticks, query) ; 
+    //m_cfg->commandline(argc, argv);  
 
 
-    m_opticks->setIdPathOverride("$TMP");
+    OpticksQuery* query = ok.getQuery();   // non-done inside Detector classes for transparent control/flexibility 
+
+    CGDMLDetector* m_detector  = new CGDMLDetector(&ok, query) ; 
+
+    ok.setIdPathOverride("$TMP");
     m_detector->saveBuffers();
-    m_opticks->setIdPathOverride(NULL);
+    ok.setIdPathOverride(NULL);
 
     bool valid = m_detector->isValid();
     if(!valid)
@@ -78,6 +83,8 @@ int main(int argc, char** argv)
     CMaterialTable mt ; 
     mt.dump("CGDMLDetectorTest CMaterialTable");
 
+    CBorderSurfaceTable bst ; 
+    bst.dump("CGDMLDetectorTest CBorderSurfaceTable");
 
     return 0 ; 
 }

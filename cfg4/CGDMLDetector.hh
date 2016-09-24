@@ -29,6 +29,7 @@ class CFG4_API CGDMLDetector : public CDetector
     void init();
   private:
     void addMPT();
+    void addSurfaces();
 };
 
 

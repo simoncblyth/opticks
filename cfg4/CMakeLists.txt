@@ -142,6 +142,7 @@ set(SOURCES
     CSolid.cc
     CMPT.cc
     CMaterialTable.cc
+    CBorderSurfaceTable.cc
     OpStatus.cc
     Format.cc
     CTraverser.cc
@@ -197,6 +198,7 @@ set(HEADERS
     CSolid.hh
     CMPT.hh
     CMaterialTable.hh
+    CBorderSurfaceTable.cc
     OpStatus.hh
     Format.hh
     CTraverser.hh

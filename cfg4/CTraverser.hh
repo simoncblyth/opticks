@@ -10,6 +10,11 @@ class G4LogicalVolume ;
 class G4Material ; 
 class G4VSolid;
 
+class G4OpticalSurface ; 
+class G4LogicalBorderSurface ; 
+class G4LogicalSkinSurface ; 
+
+
 #include "G4Transform3D.hh"
 #include "G4MaterialPropertyVector.hh" 
 // fwd-decl difficult due to typedef 
@@ -61,6 +66,13 @@ class CFG4_API CTraverser {
          void AncestorTraverse();
          void VolumeTreeTraverse();
     public:
+        unsigned int getNumSurfaces();
+    private:
+        void addBorderSurface(const G4LogicalBorderSurface*);
+        void addSkinSurface(const G4LogicalSkinSurface*);
+        void addOpticalSurface(const G4OpticalSurface*);
+    public:
+        // TODO: split material collection into another class ?
         void         dumpMaterials(const char* msg="CTraverser::dumpMaterials");
         unsigned int getNumMaterials();
         unsigned int getNumMaterialsWithoutMPT();

@@ -4,6 +4,7 @@ geant4_opticks_integration
 
 .. toctree::
 
+   missing_cfg4_surface_detect
    integration_overview
    high_level_refactor
    gui_photon_selection_failure

@@ -442,6 +442,33 @@ void CTraverser::addMaterialWithoutMPT(G4Material* material)
 
 
 
+
+
+
+unsigned CTraverser::getNumSurfaces()
+{
+   return 0 ;
+}
+void CTraverser::addBorderSurface(const G4LogicalBorderSurface*)
+{
+    assert(0);
+}
+void CTraverser::addSkinSurface(const G4LogicalSkinSurface*)
+{
+    assert(0);
+}
+void CTraverser::addOpticalSurface(const G4OpticalSurface*)
+{
+    assert(0);
+}
+
+
+
+
+
+
+
+
 void CTraverser::dumpMaterials(const char* msg)
 {
     LOG(info) << msg ; 

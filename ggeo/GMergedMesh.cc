@@ -613,8 +613,6 @@ void GMergedMesh::dumpSolids(const char* msg)
              << " bb " << std::setw(64) << bb.description()       
              << std::endl 
              ;
-
-        //printf("  %u :    center %10.3f %10.3f %10.3f   extent %10.3f \n", index, ce.x, ce.y, ce.z, ce.w ); 
     }
 }
 

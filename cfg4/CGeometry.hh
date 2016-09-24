@@ -1,6 +1,7 @@
 #pragma once
 
 class OpticksHub ; 
+class GGeo ; 
 class CG4 ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ; 
@@ -18,8 +19,10 @@ class CFG4_API CGeometry
        CDetector* getDetector();
    private:
        void init();
+       void kludgeSensorSurfaces();
    private:
        OpticksHub*          m_hub ; 
+       GGeo*                m_ggeo ; 
        CG4*                 m_g4 ; 
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 

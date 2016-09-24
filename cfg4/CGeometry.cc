@@ -8,6 +8,7 @@ class OpticksQuery ;
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GGeoTestConfig.hh"
+#include "GGeo.hh"
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 
@@ -21,6 +22,7 @@ class CPropLib ;
 CGeometry::CGeometry(OpticksHub* hub, CG4* g4) 
    :
    m_hub(hub),
+   m_ggeo(hub->getGGeo()),
    m_g4(g4),
    m_ok(m_hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
@@ -57,6 +59,7 @@ void CGeometry::init()
         LOG(info) << "CGeometry::init G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_ok, query)) ; 
+        kludgeSensorSurfaces(); 
     }
 
     m_detector = detector ; 
@@ -72,4 +75,15 @@ void CGeometry::init()
     m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
 
 }
+
+
+void CGeometry::kludgeSensorSurfaces()
+{
+    LOG(info) << "CGeometry::kludgeSensorSurfaces" ; 
+
+
+
+
+}
+
 

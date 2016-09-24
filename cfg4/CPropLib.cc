@@ -64,11 +64,19 @@ void CPropLib::setGroupvelKludge(bool gvk)
 }
 
 
+GSurfaceLib* CPropLib::getSurfaceLib()
+{
+   return m_slib ; 
+}
+
+
 void CPropLib::init()
 {
     LOG(info) << "CPropLib::init loading GBndLib" ; 
 
     bool constituents ; 
+
+   // TODO: fix this, this duplicates geometry loading done in OpticksHub 
 
     m_bndlib = GBndLib::load(m_opticks, constituents=true);
     m_mlib = m_bndlib->getMaterialLib();

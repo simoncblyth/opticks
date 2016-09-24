@@ -48,6 +48,8 @@ log = logging.getLogger(__name__)
 class MergedMesh(object):
     def __init__(self, base):
         mdir = os.path.expandvars(base)
+        log.info("ready buffers from %s " % mdir)
+        stems = []
         for name in os.listdir(mdir):
             stem, ext = os.path.splitext(name)
             log.debug(" name %s ext [%s] " % (name, ext))
@@ -58,10 +60,12 @@ class MergedMesh(object):
                 a = np.load(path)
                 log.debug(" stem %s shape %s " % (stem, repr(a.shape)))
                 setattr(self, stem, a)
+                stems.append(stem)
             else:
                 pass
             pass
         pass
+        self.stems = stems
 
     def vertices_(self, i):
         """
@@ -98,8 +102,8 @@ class MergedMesh(object):
         rz[:,1] = v[:,2]
         return rz 
 
-
-
+    def __repr__(self):
+        return "\n".join( map(lambda stem:" %20s : %s " % (stem, repr(getattr(self,stem,None).shape)), self.stems))
 
 
 
@@ -113,7 +117,7 @@ if __name__ == '__main__':
     mm = MergedMesh("$IDPATH/GMergedMesh/0")
     vn = VolumeNames()
 
-
+    log.info("check: mm and vn ")
 
 
 
