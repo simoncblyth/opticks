@@ -13,6 +13,7 @@ set(TEST_SOURCES
     CPropLibTest.cc
     CTestDetectorTest.cc
     CGDMLDetectorTest.cc
+    CGeometryTest.cc
     CG4Test.cc
     G4MaterialTest.cc
     G4StringTest.cc

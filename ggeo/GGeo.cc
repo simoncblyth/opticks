@@ -47,6 +47,7 @@ namespace fs = boost::filesystem;
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GSurLib.hh"
 #include "GScintillatorLib.hh"
 #include "GSourceLib.hh"
 #include "GSolid.hh"
@@ -87,6 +88,7 @@ GGeo::GGeo(Opticks* opticks)
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
+   m_surlib(NULL),
    m_scintillatorlib(NULL),
    m_sourcelib(NULL),
    m_pmt(NULL),
@@ -252,6 +254,11 @@ GSurfaceLib* GGeo::getSurfaceLib()
 {
     return m_surfacelib ; 
 }
+GSurLib* GGeo::getSurLib()
+{
+    return m_surlib ; 
+}
+
 GScintillatorLib* GGeo::getScintillatorLib()
 {
     return m_scintillatorlib ; 
@@ -619,6 +626,7 @@ void GGeo::loadFromCache()
     m_scintillatorlib  = GScintillatorLib::load(m_opticks);
     m_sourcelib  = GSourceLib::load(m_opticks);
 
+    m_surlib = new GSurLib(this) ; 
 
     LOG(trace) << "GGeo::loadFromCache DONE" ; 
 }

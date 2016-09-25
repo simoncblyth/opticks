@@ -9,6 +9,9 @@ class OpticksQuery ;
 #include "GLMFormat.hpp"
 #include "GGeoTestConfig.hh"
 #include "GGeo.hh"
+#include "GSurLib.hh"
+#include "GSur.hh"
+
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 
@@ -19,11 +22,11 @@ class CPropLib ;
 
 #include "PLOG.hh"
 
-CGeometry::CGeometry(OpticksHub* hub, CG4* g4) 
+CGeometry::CGeometry(OpticksHub* hub) 
    :
    m_hub(hub),
    m_ggeo(hub->getGGeo()),
-   m_g4(g4),
+   m_surlib(m_ggeo->getSurLib()),
    m_ok(m_hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
    m_detector(NULL),
@@ -59,31 +62,43 @@ void CGeometry::init()
         LOG(info) << "CGeometry::init G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_ok, query)) ; 
-        kludgeSensorSurfaces(); 
+        kludgeSurfaces(); 
     }
 
     m_detector = detector ; 
     m_lib = detector->getPropLib();
+}
 
-    m_g4->setUserInitialization(detector);
+
+bool CGeometry::hookup(CG4* g4)
+{
+    g4->setUserInitialization(m_detector);
 
     glm::vec4 ce = m_detector->getCenterExtent();
-    LOG(info) << "CGeometry::init"
+    LOG(info) << "CGeometry::hookup"
               << " center_extent " << gformat(ce) 
               ;    
 
     m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
 
+   return true ; 
 }
 
 
-void CGeometry::kludgeSensorSurfaces()
+void CGeometry::kludgeSurfaces()
 {
-    LOG(info) << "CGeometry::kludgeSensorSurfaces" ; 
+    unsigned numSur = m_surlib->getNumSur();
+    LOG(info) << "CGeometry::kludgeSurfaces numSur " << numSur  ; 
+    for(unsigned i=0 ; i < numSur ; i++)
+    {   
+        GSur* sur = m_surlib->getSur(i);
+        char type = sur->getType();
+        const char* name = sur->getName() ;
 
+        LOG(info) << sur->brief() ; 
 
-
-
+        //if(type == 'B') LOG(info) << type << std::setw(4) << i << " " << name ; 
+    }
 }
 
 

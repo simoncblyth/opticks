@@ -46,6 +46,8 @@ class GScintillatorLib ;
 class GSourceLib ;
 class GPmt ; 
 
+class GSurLib ; 
+
 class GTreeCheck ;
 class GTreePresent ;
 class GColorizer ; 
@@ -218,6 +220,7 @@ class GGEO_API GGeo : public NConfigurable {
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
+        GSurLib*           getSurLib();
         GScintillatorLib*  getScintillatorLib();
         GSourceLib*        getSourceLib();
         GPmt*              getPmt(); 
@@ -327,6 +330,7 @@ class GGEO_API GGeo : public NConfigurable {
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
+        GSurLib*                      m_surlib ; 
         GScintillatorLib*             m_scintillatorlib ; 
         GSourceLib*                   m_sourcelib ; 
         GPmt*                         m_pmt ; 

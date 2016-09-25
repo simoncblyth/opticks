@@ -18,8 +18,6 @@ CGDMLDetector vs CTestDetector
 -------------------------------
 
 
-
-
 Writing G4DAE Optical surfaces
 ---------------------------------
 

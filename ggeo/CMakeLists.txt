@@ -82,8 +82,11 @@ set(SOURCES
 
     GSkinSurface.cc
     GBorderSurface.cc
-
     GSurfaceLib.cc
+
+    GSur.cc
+    GSurLib.cc
+
     GScintillatorLib.cc
 
     GSource.cc
@@ -110,6 +113,8 @@ set(SOURCES
     GTraverse.cc
     GMergedMesh.cc
     GGeo.cc
+
+
 )
 set(HEADERS
 
@@ -134,16 +139,23 @@ SET(ALL_HEADERS
     GAry.hh
     GPropertyMap.hh
     GSolid.hh
+
     GSkinSurface.hh
     GBorderSurface.hh
     GOpticalSurface.hh
+
     GGeoLib.hh
     GScintillatorLib.hh
     GSourceLib.hh
     GPropertyLib.hh
     GBndLib.hh
     GMaterialLib.hh
+
     GSurfaceLib.hh
+    GSur.hh
+    GSurLib.hh
+
+
     GVector.hh
     GMatrix.hh
     GIds.hh
@@ -168,6 +180,7 @@ SET(ALL_HEADERS
     GCIE.hh
     GGeoTest.hh
     GGeoTestConfig.hh
+
 )
 
 add_library(${name} SHARED ${SOURCES})

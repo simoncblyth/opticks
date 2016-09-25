@@ -5,6 +5,7 @@
 #include "Opticks.hh"
 #include "GGeo.hh"
 #include "GBndLib.hh"
+#include "GSurfaceLib.hh"
 #include "GMergedMesh.hh"
 
 #include "PLOG.hh"
@@ -52,6 +53,10 @@ void misc(GGeo* m_ggeo)
 //     when using CGDMLDetector
 //  
 
+
+
+
+
 void test_GGeo(GGeo* gg)
 {
     GMergedMesh* mm = gg->getMergedMesh(0);
@@ -89,14 +94,14 @@ void test_GGeo(GGeo* gg)
         std::string bname = blib->shortname(boundary);
         guint4 bnd = blib->getBnd(boundary);
 
-        unsigned imat = bnd.x ; 
+        //unsigned imat = bnd.x ; 
         unsigned isur = bnd.y ; 
         unsigned osur = bnd.z ; 
-        unsigned omat = bnd.w ; 
+        //unsigned omat = bnd.w ; 
 
         const char* ppv = parent == unset ? NULL : gg->getPVName(parent) ;
         const char* pv = gg->getPVName(i) ;
-        const char* lv = gg->getLVName(i) ;
+        //const char* lv = gg->getLVName(i) ;
 
         bool hasSurface =  isur != unset || osur != unset ; 
 
@@ -152,6 +157,8 @@ void test_GGeo(GGeo* gg)
 
 
 
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -163,6 +170,7 @@ int main(int argc, char** argv)
     gg.dumpStats();
 
     test_GGeo(&gg);
+
 
     return 0 ;
 }

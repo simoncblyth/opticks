@@ -75,6 +75,7 @@ class CFG4_API CG4
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
         CGeometry*            m_geometry ; 
+        bool                  m_hookup ; 
         CPropLib*             m_lib ; 
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 

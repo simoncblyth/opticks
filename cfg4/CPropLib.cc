@@ -76,7 +76,7 @@ void CPropLib::init()
 
     bool constituents ; 
 
-   // TODO: fix this, this duplicates geometry loading done in OpticksHub 
+   // TODO: fix this, it duplicates geometry loading done in OpticksHub 
 
     m_bndlib = GBndLib::load(m_opticks, constituents=true);
     m_mlib = m_bndlib->getMaterialLib();
