@@ -139,6 +139,10 @@ void CTraverser::AncestorTraverse()
 {
      assert(m_top) ;
      m_pvnames.clear();
+     m_pvs.clear();
+     m_lvs.clear();
+     m_lvm.clear();
+
      m_ancestor_index = 0 ; 
      std::vector<const G4VPhysicalVolume*> ancestors ; 
 
@@ -209,6 +213,13 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 
     collectTransformT(m_gtransforms, T );
     m_pvnames.push_back(pv->GetName());
+    m_pvs.push_back(pv);
+    m_lvs.push_back(lv);
+
+    std::string lvn = lv->GetName();
+    m_lvm[lvn] = lv ; 
+
+
     m_ancestor_index += 1 ; 
 }
 
@@ -236,6 +247,34 @@ void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& t
               ;
 
 }
+
+
+
+
+unsigned CTraverser::getNumPV()
+{
+    return m_pvs.size();
+}
+const G4VPhysicalVolume* CTraverser::getPV(unsigned index)
+{
+    return index < m_pvs.size() ? m_pvs[index] : NULL ;  
+}
+unsigned CTraverser::getNumLV()
+{
+    return m_lvs.size();
+}
+const G4LogicalVolume* CTraverser::getLV(unsigned index)
+{
+    return index < m_lvs.size() ? m_lvs[index] : NULL ;  
+}
+
+const G4LogicalVolume* CTraverser::getLV(const char* name)
+{
+   return m_lvm.count(name) == 1 ? m_lvm[name] : NULL ; 
+}
+
+
+
 
 
 glm::mat4 CTraverser::getGlobalTransform(unsigned int index)

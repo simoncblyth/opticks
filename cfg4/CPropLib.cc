@@ -448,6 +448,9 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
                << " matname " << matname
                ;   
 
+
+    // TODO: adopt CMPT::addProperty by moving the special casing elsewhere 
+
     G4double* ddom = new G4double[nval] ;
     G4double* dval = new G4double[nval] ;
 

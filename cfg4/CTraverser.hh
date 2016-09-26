@@ -84,6 +84,13 @@ class CFG4_API CTraverser {
         glm::mat4    getGlobalTransform(unsigned int index);
         glm::mat4    getLocalTransform(unsigned int index);
         glm::vec4    getCenterExtent(unsigned int index);
+
+    public:
+        unsigned getNumPV();
+        unsigned getNumLV();
+        const G4VPhysicalVolume* getPV(unsigned index);
+        const G4LogicalVolume*   getLV(unsigned index);
+        const G4LogicalVolume*   getLV(const char* name);
     public:
         NPY<float>*  getGlobalTransforms();
         NPY<float>*  getLocalTransforms();
@@ -130,6 +137,9 @@ class CFG4_API CTraverser {
         NPY<float>*    m_center_extent ;
  
         std::vector<std::string> m_pvnames ; 
+        std::vector<const G4VPhysicalVolume*> m_pvs ; 
+        std::vector<const G4LogicalVolume*>   m_lvs ; 
+        std::map<std::string, const G4LogicalVolume*>  m_lvm ; 
         std::vector<unsigned int> m_selection ; 
 };
 

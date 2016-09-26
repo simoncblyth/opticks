@@ -154,6 +154,7 @@ set(SOURCES
     CRecorder.cc
     CDetector.cc
     CGDMLDetector.cc
+    CSurLib.cc
     CMaker.cc
     CTestDetector.cc
     Rec.cc
@@ -210,6 +211,7 @@ set(HEADERS
     CRecorder.hh
     CDetector.hh
     CGDMLDetector.hh
+    CSurLib.hh
     CMaker.hh
     CTestDetector.hh
     Rec.hh

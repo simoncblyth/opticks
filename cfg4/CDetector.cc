@@ -42,20 +42,14 @@ CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
     init();
 }
 
-
 bool CDetector::isValid()
 {
     return m_valid ; 
 }
-
 void CDetector::setValid(bool valid)
 {
     m_valid = valid ; 
 }
-
-
-
-
 
 void CDetector::setTop(G4VPhysicalVolume* top)
 {
@@ -70,7 +64,6 @@ G4VPhysicalVolume* CDetector::getTop()
 {
     return m_top ; 
 }
-
 
 CPropLib* CDetector::getPropLib()
 {
@@ -87,7 +80,6 @@ void CDetector::setVerbosity(unsigned int verbosity)
 }
 
 
-
 void CDetector::init()
 {
     LOG(trace) << "CDetector::init" ;
@@ -100,7 +92,6 @@ void CDetector::init()
 void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 {
     // invoked from CGDMLDetector::init via setTop
-
     m_traverser = new CTraverser(m_top, m_bbox, m_query ); 
     m_traverser->Traverse();
     m_traverser->Summary("CDetector::traverse");
@@ -125,8 +116,6 @@ void CDetector::saveBuffers(const char* objname, unsigned int objindex)
     ltransforms->save(cachedir.c_str(), "ltransforms.npy");
     center_extent->save(cachedir.c_str(), "center_extent.npy");
 }
-
-
 
 unsigned int CDetector::getNumGlobalTransforms()
 {
@@ -170,10 +159,31 @@ const char* CDetector::getPVName(unsigned int index)
 
 
 
+const G4VPhysicalVolume* CDetector::getPV(unsigned index)
+{
+   return m_traverser->getPV(index); 
+}
+const G4LogicalVolume* CDetector::getLV(unsigned index)
+{
+   return m_traverser->getLV(index); 
+}
+const G4LogicalVolume* CDetector::getLV(const char* name)
+{
+   return m_traverser->getLV(name); 
+}
 
 
 
-void CDetector::dumpPV(const char* msg)
+
+
+
+
+//////// TODO get rid of m_pvm based methods, that rely on 
+///////       manually setting m_pvm in CTestDetector
+
+
+
+void CDetector::dumpLocalPV(const char* msg)
 {
     LOG(info) << msg ; 
 
@@ -192,7 +202,8 @@ void CDetector::dumpPV(const char* msg)
     }
 }
 
-G4VPhysicalVolume* CDetector::getPV(const char* name)
+  
+G4VPhysicalVolume* CDetector::getLocalPV(const char* name)
 {
     return m_pvm.count(name) == 1 ? m_pvm[name] : NULL ; 
 }
@@ -203,3 +214,6 @@ CDetector::~CDetector()
     //G4GeometryManager::GetInstance()->OpenGeometry();
     //printf("CDetector::~CDetector DONE\n");
 }
+
+
+

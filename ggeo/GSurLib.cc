@@ -14,6 +14,23 @@
 
 const unsigned GSurLib::UNSET = -1 ; 
 
+
+void GSurLib::add(GSur* sur)
+{
+    m_surs.push_back(sur);
+}
+unsigned GSurLib::getNumSur()
+{
+    return m_surs.size();
+}
+GSur* GSurLib::getSur(unsigned i)
+{
+    unsigned numSur = getNumSur();
+    return i < numSur ? m_surs[i] : NULL ; 
+}
+
+
+
 GSurLib::GSurLib(GGeo* gg) 
     : 
     m_ggeo(gg),
@@ -24,28 +41,10 @@ GSurLib::GSurLib(GGeo* gg)
     init();
 }
 
-void GSurLib::add(GSur* sur)
-{
-    m_surs.push_back(sur);
-}
 
-unsigned GSurLib::getNumSur()
+GSurfaceLib* GSurLib::getSurfaceLib()
 {
-    return m_surs.size();
-}
-
-GSur* GSurLib::getSur(unsigned i)
-{
-    unsigned numSur = getNumSur();
-    return i < numSur ? m_surs[i] : NULL ; 
-}
-
-void GSurLib::init()
-{
-    pushBorderSurfaces(m_bordersurface);
-    collectSur();
-    examineSolidBndSurfaces();  
-    assignVolumes();
+   return m_slib ; 
 }
 
 
@@ -65,6 +64,14 @@ void GSurLib::pushBorderSurfaces(std::vector<std::string>& names)
 bool GSurLib::isBorderSurface(const char* name)
 {
     return std::find(m_bordersurface.begin(), m_bordersurface.end(), name ) != m_bordersurface.end() ; 
+}
+
+void GSurLib::init()
+{
+    pushBorderSurfaces(m_bordersurface);
+    collectSur();
+    examineSolidBndSurfaces();  
+    assignType();
 }
 
 void GSurLib::collectSur()
@@ -110,23 +117,28 @@ void GSurLib::examineSolidBndSurfaces()
         unsigned isur_ = bnd.z ; 
         //unsigned imat_ = bnd.w ; 
 
-        const char* ppv = parent == UNSET ? NULL : gg->getPVName(parent) ;
-        const char* pv = gg->getPVName(i) ;
         const char* lv = gg->getLVName(i) ;
 
         GSur* isur = isur_ == UNSET ? NULL : getSur(isur_);
         GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
 
+        // the reason for the order swap between osur and isur is explained below
+
+
         if(osur)
         {
             osur->addOuter(i, boundary);
-            osur->addPVPair(ppv, pv);   // below text explains the (ppv,pv) ordering for osur 
-            osur->addLV(lv);
+
+            osur->addVolumePair(parent,  i);   
+            // border surface identity based on PV instances, so must use the index NOT THE NAME
+
+            osur->addLV(lv); 
+            // skin surface identity is 1-to-1 with lv name ?
         } 
         if(isur)
         {
             isur->addInner(i,boundary);
-            isur->addPVPair(pv, ppv);  // below text explains the (pv, ppv) ordering for isur
+            isur->addVolumePair(i, parent);
             isur->addLV(lv);
         } 
     }
@@ -162,13 +174,13 @@ Examples of isur::
   
 **/
 
-void GSurLib::assignVolumes()
+void GSurLib::assignType()
 {
     unsigned numSur = getNumSur();
     for(unsigned i=0 ; i < numSur ; i++)
     {
         GSur* sur = getSur(i);
-        sur->assignVolumes();
+        sur->assignType();
     }
 }
 
@@ -212,6 +224,5 @@ void GSurLib::dump(const char* msg)
         //sur->dump();
     }
 }
-
 
 

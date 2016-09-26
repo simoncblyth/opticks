@@ -3,6 +3,7 @@
 class OpticksHub ; 
 class GGeo ; 
 class GSurLib ; 
+class CSurLib ; 
 class CG4 ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ; 
@@ -22,11 +23,11 @@ class CFG4_API CGeometry
        CDetector* getDetector();
    private:
        void init();
-       void kludgeSurfaces();
    private:
        OpticksHub*          m_hub ; 
        GGeo*                m_ggeo ; 
        GSurLib*             m_surlib ; 
+       CSurLib*             m_csurlib ; 
 
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 

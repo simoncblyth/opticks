@@ -60,9 +60,15 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  protected:
     void               setValid(bool valid); 
  public: 
+    // from traverser
+    const G4VPhysicalVolume* getPV(unsigned index);
+    const G4LogicalVolume*   getLV(unsigned index);
+    const G4LogicalVolume*   getLV(const char* name);
+ public: 
     const char*    getPVName(unsigned int index);
-    G4VPhysicalVolume* getPV(const char* name);
-    void dumpPV(const char* msg="CDetector::dumpPV");
+    // from local m_pvm map used for CTestDetector, TODO: adopt traverser for this
+    G4VPhysicalVolume* getLocalPV(const char* name);
+    void dumpLocalPV(const char* msg="CDetector::dumpLocalPV");
  public: 
      // via traverser
     unsigned int   getNumGlobalTransforms();
@@ -87,6 +93,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     int                m_verbosity ; 
     bool               m_valid ;
     std::map<std::string, G4VPhysicalVolume*> m_pvm ; 
+    std::map<std::string, G4LogicalVolume*>   m_lvm ; 
 }; 
 #include "CFG4_TAIL.hh"
 

@@ -3,9 +3,15 @@
 #include <sstream>
 #include <iomanip>
 
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "GProperty.hh"
 
 #include "CMPT.hh"
+
+#include "PLOG.hh"
+
 
 CMPT::CMPT(G4MaterialPropertiesTable* mpt)
     :
@@ -97,6 +103,48 @@ std::vector<double> CMPT::getConstPropertyValues()
     for(MKC::const_iterator it=cm->begin() ; it != cm->end() ; it++)  vals.push_back(it->second) ;
     return vals ; 
 }
+
+
+
+
+void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
+{
+    unsigned int nval  = prop->getLength();
+
+    LOG(debug) << "CMPT::addProperty" 
+               << " lkey " << std::setw(40) << lkey
+               << " nval " << std::setw(10) << nval
+               ;   
+
+    G4double* ddom = new G4double[nval] ;
+    G4double* dval = new G4double[nval] ;
+
+    for(unsigned int j=0 ; j < nval ; j++)
+    {
+        float fnm = prop->getDomain(j) ;
+        float fval = prop->getValue(j) ; 
+
+        G4double wavelength = G4double(fnm)*nm ; 
+        G4double energy = h_Planck*c_light/wavelength ;
+
+        G4double value = G4double(fval) ;
+
+        ddom[nval-1-j] = G4double(energy) ;   // reverse wavelength order to give increasing energy order
+        dval[nval-1-j] = G4double(value) ;
+    }
+
+    G4MaterialPropertyVector* mpv = m_mpt->AddProperty(lkey, ddom, dval, nval);
+    mpv->SetSpline(spline);
+    // see issue/optical_local_time_goes_backward.rst
+
+    delete [] ddom ; 
+    delete [] dval ; 
+}
+
+
+
+
+
 
 
 

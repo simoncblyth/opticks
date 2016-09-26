@@ -270,8 +270,8 @@ void CTestDetector::kludgePhotoCathode()
     float refl = 0.f ; 
     {
         const char* name = "kludgePhotoCathode_PyrexBialkali" ; 
-        G4VPhysicalVolume* pv1 = getPV("pvPmtHemi") ; 
-        G4VPhysicalVolume* pv2 = getPV("pvPmtHemiCathode") ; 
+        G4VPhysicalVolume* pv1 = getLocalPV("pvPmtHemi") ; 
+        G4VPhysicalVolume* pv2 = getLocalPV("pvPmtHemiCathode") ; 
         assert(pv1 && pv2);
         //G4LogicalBorderSurface* lbs = m_lib->makeCathodeSurface(name, pv1, pv2, effi, refl );
         G4LogicalBorderSurface* lbs = m_lib->makeCathodeSurface(name, pv1, pv2);
@@ -279,8 +279,8 @@ void CTestDetector::kludgePhotoCathode()
     }
     {
         const char* name = "kludgePhotoCathode_PyrexVacuum" ; 
-        G4VPhysicalVolume* pv1 = getPV("pvPmtHemi") ; 
-        G4VPhysicalVolume* pv2 = getPV("pvPmtHemiVacuum") ; 
+        G4VPhysicalVolume* pv1 = getLocalPV("pvPmtHemi") ; 
+        G4VPhysicalVolume* pv2 = getLocalPV("pvPmtHemiVacuum") ; 
         assert(pv1 && pv2);
         G4LogicalBorderSurface* lbs = m_lib->makeConstantSurface(name, pv1, pv2, effi, refl );
         assert(lbs);

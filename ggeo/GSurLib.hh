@@ -39,6 +39,7 @@ class GGEO_API GSurLib
     public:
          GSurLib(GGeo* gg);
          void dump(const char* msg="GSurLib::dump");
+         GSurfaceLib* getSurfaceLib();
 
          unsigned getNumSur();
          GSur* getSur(unsigned index);
@@ -46,7 +47,7 @@ class GGEO_API GSurLib
          void init();
          void collectSur();
          void examineSolidBndSurfaces();
-         void assignVolumes();
+         void assignType();
          void add(GSur* surf);
          std::string desc(const std::set<unsigned>& bnd);
     public:
