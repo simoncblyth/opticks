@@ -569,6 +569,8 @@ which are fabricated by AssimpGGeo::convertSensors.
 
         gss->setSensor();
         // story continues in GBoundaryLib::standardizeSurfaceProperties
+        // that no longer exists, now probably GSurfaceLib::getSensorSurface
+       //
 
         addProperties(gss, m_cathode );
 

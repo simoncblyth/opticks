@@ -1,4 +1,6 @@
 #include "CFG4_BODY.hh"
+#include <iomanip>
+
 //
 //  Local copy from 
 //      /usr/local/env/g4/geant4.10.02/
@@ -241,15 +243,21 @@ void OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
   const G4int numOfMaterials = G4Material::GetNumberOfMaterials();
 
   thePhysicsTable = new G4PhysicsTable( numOfMaterials );
-  
+ 
+
+ 
   for( G4int iMaterial = 0; iMaterial < numOfMaterials; iMaterial++ )
   {
       G4Material* material = (*theMaterialTable)[iMaterial];
       G4MaterialPropertiesTable* materialProperties = 
                                        material->GetMaterialPropertiesTable();
+
+      std::string name = material->GetName();
+
       G4PhysicsOrderedFreeVector* rayleigh = NULL;
       if ( materialProperties != NULL ) {
          rayleigh = materialProperties->GetProperty( "RAYLEIGH" );
+
 
          check(material, rayleigh);
 
@@ -266,11 +274,13 @@ void OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
 
 void OpRayleigh::check(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh)
 {
-     LOG(debug) << "OpRayleigh::check"
-               << " mat " << material->GetName()
-               << " min " << rayleigh->GetMinValue()
-               << " max " << rayleigh->GetMaxValue()
-               << " num " << rayleigh->GetVectorLength()
+     LOG(info) << "OpRayleigh::check"
+               << " mat " << std::setw(35) << material->GetName()
+               << " fdom(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMinLowEdgeEnergy()
+               << " fval(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMinValue()
+               << " bdom(Max) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMaxLowEdgeEnergy()
+               << " bval(Max) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMaxValue()
+               << " num " << std::setw(10) << rayleigh->GetVectorLength()
                ;
 }
 
@@ -292,8 +302,36 @@ G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
   
   G4double rsLength = DBL_MAX;
   if( rayleigh != NULL ) rsLength = rayleigh->Value( photonMomentum );
+
+
+  { 
+        G4double wavelength = h_Planck*c_light/photonMomentum ; 
+
+        LOG(info) 
+
+                  << " photonMomentum (keV) " << std::setw(10) << std::fixed << std::setprecision(3) << photonMomentum/keV
+                  << " wavelength (nm) " << std::setw(10) << std::fixed << std::setprecision(3) << wavelength/nm
+                  << " rsLength (mm) " << std::setw(10) << std::fixed << std::setprecision(3) << rsLength/mm
+                  ;
+
+  } 
+
   return rsLength;
 }
+
+
+void OpRayleigh::check_GetMeanFreePath(const G4Material* material)
+{
+    unsigned index = material->GetIndex() ;
+    LOG(info) << " material " << material->GetName()
+              << " index " << index ; 
+
+   // G4PhysicsOrderedFreeVector* rayleigh = static_cast<G4PhysicsOrderedFreeVector*>((*thePhysicsTable)(index));
+
+
+}
+
+
 
 // CalculateRayleighMeanFreePaths()
 // --------------------------------

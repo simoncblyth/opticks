@@ -418,9 +418,10 @@ op-cmdline-binary-match()
     for arg in $cmdline 
     do
        bin=$(op-binary-name $arg)
-       #echo arg $arg bin $bin geo $geo 
+       #echo arg $arg bin $bin  
        if [ "$bin" != "" ]; then 
            export OPTICKS_CMD=$arg
+           echo $msg $arg
            return 
        fi
     done
@@ -438,10 +439,18 @@ op-binary-setup()
        bin=$def
     fi 
 
+    local inbin=$bin
+
     if [ "$OPTICKS_LOAD" == "1" ]; then 
-        echo $msg OPTICKS_LOAD overrides binary from $bin to default $def as cfg4 doesnt handle visualization of loaded NumpyEvt 
-        bin=$def
+        case $bin in
+           OKTest|OKG4Test)  echo -n ;;
+                         *)  bin=$def ;; 
+        esac 
     fi 
+
+    if [ "$bin" != "$inbin" ]; then
+        echo $msg OPTICKS_LOAD overrides binary from $inbin to default $bin as not all binaries support OpticksEvent loading
+    fi
 
     #echo $msg cfm $cfm bin $bin def $def
     unset OPTICKS_BINARY 

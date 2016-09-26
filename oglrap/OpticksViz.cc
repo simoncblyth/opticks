@@ -260,10 +260,11 @@ void OpticksViz::uploadEvent()
 {
     if(m_hub->hasOpt("nooptix|noevent")) return ; 
  
+    bool vizg4 = m_opticks->hasOpt("vizg4");
 
     m_composition->update();
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = vizg4 ? m_hub->getG4Event() : m_hub->getEvent();
 
     uploadEvent(evt);
 }

@@ -29,10 +29,11 @@ OKG4Mgr::OKG4Mgr(int argc, char** argv)
     m_ok(new Opticks(argc, argv)),  
     m_run(m_ok->getRun()),
     m_hub(new OpticksHub(m_ok)),                       // configure, loadGeometry and setupInputGensteps immediately
+    m_load(m_ok->isLoad()),
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),                    // after hub instanciation, as that configures Opticks
     m_gen(m_hub->getGen()),
-    m_g4(new CG4(m_hub)),                        // configure and initialize immediately 
+    m_g4(m_load ? NULL : new CG4(m_hub)),                        // configure and initialize immediately 
     m_viz(m_ok->isCompute() ? NULL : new OpticksViz(m_hub, m_idx, true)),    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
     m_propagator(new OKPropagator(m_hub, m_idx, m_viz))
 {
@@ -49,7 +50,7 @@ void OKG4Mgr::propagate()
 {
     const Opticks& ok = *m_ok ;
 
-    if(ok("load"))
+    if(m_load)
     {   
          m_run->loadEvent(); 
 

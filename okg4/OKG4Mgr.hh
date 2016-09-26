@@ -27,6 +27,7 @@ class OKG4_API OKG4Mgr {
        Opticks*       m_ok ; 
        OpticksRun*    m_run ; 
        OpticksHub*    m_hub ; 
+       bool           m_load ; 
        OpticksIdx*    m_idx ; 
        int            m_num_event ; 
        OpticksGen*    m_gen ; 

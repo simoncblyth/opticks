@@ -44,8 +44,11 @@ int main(int argc, char** argv)
     CMaterialTable mt ; 
     mt.dump("CGeometryTest CMaterialTable");
 
-    CBorderSurfaceTable bst ; 
-    bst.dump("CGeometryTest CBorderSurfaceTable");
+    mt.dumpMaterial("GdDopedLS");
+
+
+    //CBorderSurfaceTable bst ; 
+    //bst.dump("CGeometryTest CBorderSurfaceTable");
 
 
     return 0 ; 

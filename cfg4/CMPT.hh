@@ -11,6 +11,9 @@ class CFG4_API CMPT {
        CMPT(G4MaterialPropertiesTable* mpt);
        void addProperty(const char* lkey,  GProperty<float>* prop, bool spline);
    public:
+       void dump(const char* msg="CMPT::dump"); 
+       void dumpProperty(const char* lkey);
+
        std::string description(const char* msg);
        std::vector<std::string> getPropertyKeys();
        std::vector<std::string> getPropertyDesc();

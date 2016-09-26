@@ -296,6 +296,11 @@ bool Opticks::isSave()
 {
     return m_cfg->hasOpt("save"); 
 }
+bool Opticks::isLoad()
+{
+    return m_cfg->hasOpt("load"); 
+}
+
 
 
 

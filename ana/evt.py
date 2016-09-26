@@ -90,6 +90,9 @@ class Evt(object):
             self.init_selection(seqs, not_ )
             self.init_index(tag, src, det, dbg)
 
+        pass
+        self.check_stamps()
+
 
     def init_types(self):
         log.debug("init_types")
@@ -353,6 +356,26 @@ class Evt(object):
     stamp = property(lambda self:stamp_(self.path))
 
 
+    def check_stamps(self, names="fdom idom ox rx ht"):
+        sst = set()
+
+        lines = []
+        for name in names.split():
+            a = getattr(self, name, None)
+            if a is None:continue
+            p = getattr(a,"path",None)
+            t = stamp_(p)
+            sst.add(t)
+            lines.append("%10s  %s  %s " % (name, p, t ))
+
+        nstamp = len(sst)
+        if nstamp > 1:
+            log.warning("MIXED TIMESTAMP EVENT DETECTED")
+            print "\n".join(lines)
+
+        return nstamp
+
+
     def _brief(self):
         if self.valid:
              return "%s %s %s" % (self.label, self.stamp, self.path)
@@ -401,7 +424,7 @@ class Evt(object):
         self.present_table( 'seqmat_ana'.split(), sli)
 
     @classmethod
-    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None):
+    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True):
         if not (a.valid and b.valid):
             log.fatal("need two valid events to compare ")
             sys.exit(1)
@@ -419,14 +442,35 @@ class Evt(object):
                  
             a_tab = a_ana.table
             b_tab = b_ana.table
-            c_tab = a_tab.compare(b_tab)
-            c_tab.title = ana_
 
-            if len(c_tab.lines) > lmx:
-                c_tab.sli = slice(0,lmx)
-            print c_tab
-            if c2max is not None:
-                assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
+            if cf:
+                c_tab = a_tab.compare(b_tab)
+                c_tab.title = ana_
+
+                if len(c_tab.lines) > lmx:
+                    c_tab.sli = slice(0,lmx)
+
+                print c_tab
+                if c2max is not None:
+                    assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
+
+            else:
+                a_tab.title = "A:%s " % ana_
+                if len(a_tab.lines) > lmx:
+                    a_tab.sli = slice(0,lmx)
+                print a_tab
+
+                b_tab.title = "B:%s " % ana_
+                if len(b_tab.lines) > lmx:
+                    b_tab.sli = slice(0,lmx)
+                print b_tab
+
+
+
+
+
+
+
 
 
     def material_table_old(self):

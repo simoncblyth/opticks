@@ -3,9 +3,13 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/algorithm/string.hpp>
+
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4MaterialPropertiesTable.hh"
+#include "G4MaterialPropertyVector.hh"
+#include "G4PhysicsOrderedFreeVector.hh"
 #include "GProperty.hh"
 
 #include "CMPT.hh"
@@ -17,6 +21,17 @@ CMPT::CMPT(G4MaterialPropertiesTable* mpt)
     :
      m_mpt(mpt)
 {
+}
+
+
+void CMPT::dump(const char* msg)
+{
+    LOG(info) << msg ;
+    std::vector<std::string> pdesc = getPropertyDesc() ;
+
+    for(unsigned int i=0 ; i < pdesc.size() ; i++) 
+        std::cout << pdesc[i] << std::endl ; 
+
 }
 
 
@@ -143,9 +158,45 @@ void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
 
 
 
+void CMPT::dumpProperty(const char* _keys)
+{
+    LOG(info) << _keys ;  
 
+    std::vector<std::string> keys ; 
+    boost::split(keys, _keys, boost::is_any_of(","));   
+    unsigned nkey = keys.size();
 
+    std::vector<G4PhysicsOrderedFreeVector*> vecs ; 
+    for(unsigned i=0 ; i < nkey ; i++ )
+    {
+        const char* key = keys[i].c_str(); 
+        G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
+        G4PhysicsOrderedFreeVector* pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
+        vecs.push_back(pofv);
+    }
+ 
+    std::cout << std::setw(5) << "nm" << std::setw(15) << "eV" ; 
+    for(unsigned i=0 ; i < nkey ; i++ ) std::cout << std::setw(15) << keys[i].c_str()  ;
+    std::cout << std::endl ; 
 
+    for(unsigned wl=60 ; wl < 821 ; wl+= 20)
+    {
+         G4double wavelength = wl*nm ; 
+         G4double photonMomentum = h_Planck*c_light/wavelength ; 
+         std::cout 
+                   << std::setw(5) << wl
+                   << std::setw(15) << photonMomentum/eV   
+                   ;
+
+         for(unsigned i=0 ; i < nkey ; i++)
+         {
+              G4PhysicsOrderedFreeVector* pofv = vecs[i] ;
+              G4double value = pofv->Value( photonMomentum );
+              std::cout  << std::setw(15) << value ;
+         }
+         std::cout << std::endl ; 
+    }
+}
 
 
 

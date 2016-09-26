@@ -98,7 +98,11 @@ void OpticksCfg<Listener>::init()
        ("nostep,S",  "inhibit step by step recording") ;
 
    m_desc.add_options()
-       ("hitsave",   "save hits even in production running") ; 
+       ("savehit",   "save hits even in production running") ; 
+
+   m_desc.add_options()
+       ("vizg4",   "when vizualizing loaded events, upload the G4Evt not the OKEvt one ") ; 
+
 
 
    m_desc.add_options()

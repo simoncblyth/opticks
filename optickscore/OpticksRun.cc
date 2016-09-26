@@ -134,5 +134,20 @@ void OpticksRun::loadEvent()
     }
 
     if(m_ok->isExit()) exit(EXIT_FAILURE) ;
+
+
+    if(m_ok->hasOpt("vizg4"))
+    {
+        m_g4evt->loadBuffers(verbose=false);
+        if(m_g4evt->isNoLoad())
+        {
+            LOG(fatal) << "OpticksRun::loadEvent LOAD g4evt FAILED " ;
+            exit(EXIT_FAILURE);
+        }
+    }
+
+
+
+
 }
 

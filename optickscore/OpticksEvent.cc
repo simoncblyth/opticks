@@ -1094,8 +1094,14 @@ OpticksBufferControl* OpticksEvent::getSeedCtrl()
 }
 void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
 {
-    setBufferControl(seed_data);
+    if(!seed_data)
+    {
+        LOG(warning) << "OpticksEvent::setSeedData seed_data NULL " ;
+        return ; 
+    }
+
     m_seed_data = seed_data  ;
+    setBufferControl(seed_data);
     m_seed_ctrl = new OpticksBufferControl(m_seed_data->getBufferControlPtr());
     m_seed_attr = new MultiViewNPY("seed_attr");
 }
@@ -1903,12 +1909,7 @@ void OpticksEvent::collectPhotonHitsCPU()
     NPY<float>* ht = getHitData();
 
     unsigned hitmask = SURFACE_DETECT ;  
-
-    // TODO: investigate why CFG4 not providing any "SD" 
-    //       in torch GDML running
-    //       but it does with test geometry with tpmt--
-    //
-    //unsigned hitmask = SURFACE_ABSORB ; 
+    // see notes/issues/geant4_opticks_integration/missing_cfg4_surface_detect.rst
 
     unsigned numHits = ox->write_selection(ht, 3,3, hitmask );
 

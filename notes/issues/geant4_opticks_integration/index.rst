@@ -4,6 +4,7 @@ geant4_opticks_integration
 
 .. toctree::
 
+   okg4_vizg4_noshow
    missing_cfg4_surface_detect
    integration_overview
    high_level_refactor

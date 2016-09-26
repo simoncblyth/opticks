@@ -5,9 +5,13 @@
 
 #include "PLOG.hh"
 
-#include "CMaterialTable.hh"
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
+#include "G4MaterialPropertiesTable.hh"
+
+#include "CMPT.hh"
+#include "CMaterialTable.hh"
+
 
 CMaterialTable::CMaterialTable(const char* prefix)
     :
@@ -87,4 +91,51 @@ std::map<std::string, unsigned>& CMaterialTable::getMaterialMap()
 {
    return m_name2index ;  
 }
+
+
+unsigned CMaterialTable::getMaterialIndex(const char* shortname)
+{
+    return m_name2index.count(shortname) == 1 ? m_name2index[shortname] : -1 ; 
+}
+
+void CMaterialTable::dumpMaterial(const char* shortname)
+{
+     unsigned index = getMaterialIndex(shortname);
+     dumpMaterial(index);
+}
+
+
+void CMaterialTable::dumpMaterial(unsigned index)
+{
+    const G4MaterialTable* theMaterialTable = G4Material::GetMaterialTable();
+    unsigned numOfMaterials = G4Material::GetNumberOfMaterials();
+
+    G4Material* material = index < numOfMaterials ? (*theMaterialTable)[index] : NULL ;
+    dumpMaterial(material);
+}
+
+
+void CMaterialTable::dumpMaterial(G4Material* material)
+{
+    if(!material) return ; 
+    G4String name = material->GetName() ;
+
+    CMPT mpt(material->GetMaterialPropertiesTable());
+
+    LOG(info) << "CMaterialTable::dumpMaterial "
+              << name 
+              ;
+
+
+    mpt.dump("MPT:");
+
+    mpt.dumpProperty("RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB");
+
+
+
+}
+
+
+
+
 

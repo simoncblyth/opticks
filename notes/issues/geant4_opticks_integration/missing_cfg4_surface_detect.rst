@@ -14,6 +14,15 @@ Observations
   (with EFFICIENCY values) on PMTs ? 
 
 
+
+Fixed ? Seems Y, now getting some hits, but this is just the start...
+-----------------------------------------------------------------------
+
+::
+
+   OKG4Test --save
+
+
 CGDMLDetector vs CTestDetector
 -------------------------------
 
@@ -461,6 +470,133 @@ Avoid duplicated geometry loading in CProplib
 
 Code Trace photon SD flags
 ----------------------------
+
+
+optixrap- where flags come from
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+oxrap/cu/genrate.cu::
+
+    402 
+    403         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    404         {
+    405             command = propagate_at_surface(p, s, rng);
+    406             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    407             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    408         }
+    409         else
+    410         {
+    411             //propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    412             propagate_at_boundary_geant4_style(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    413             // tacit CONTINUE
+    414         }
+
+
+oxrap/cu/propagate.h::
+
+    455 /*
+    456 propagate_at_surface
+    457 ======================
+    458 
+    459 Inputs:
+    460 
+    461 * s.surface.x detect
+    462 * s.surface.y absorb              (1.f - reflectivity ) ?
+    463 * s.surface.z reflect_specular
+    464 * s.surface.w reflect_diffuse
+    ...
+    488 __device__ int
+    489 propagate_at_surface(Photon &p, State &s, curandState &rng)
+    490 {
+    491 
+    492     float u = curand_uniform(&rng);
+    493 
+    494     if( u < s.surface.y )   // absorb   
+    495     {
+    496         s.flag = SURFACE_ABSORB ;
+    497         return BREAK ;
+    498     }
+    499     else if ( u < s.surface.y + s.surface.x )  // absorb + detect
+    500     {
+    501         s.flag = SURFACE_DETECT ;
+    502         return BREAK ;
+    503     }
+    504     else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
+    505     {
+    506         s.flag = SURFACE_DREFLECT ;
+    507         propagate_at_diffuse_reflector(p, s, rng);
+    508         return CONTINUE;
+    509     }
+    510     else
+    511     {
+    512         s.flag = SURFACE_SREFLECT ;
+    513         propagate_at_specular_reflector(p, s, rng );
+    514         return CONTINUE;
+    515     }
+    516 }
+
+
+
+
+
+* surface handling requires > 0 surface index
+
+
+optixrap where properties come from
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    240 GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src)
+    241 {
+    ...
+    258         GOpticalSurface* os = src->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
+    259 
+    260         if(src->isSensor())
+    261         {
+    262             GProperty<float>* _EFFICIENCY = src->getProperty(EFFICIENCY);
+    263             assert(_EFFICIENCY && os && "sensor surfaces must have an efficiency" );
+    264 
+    265             if(m_fake_efficiency >= 0.f && m_fake_efficiency <= 1.0f)
+    266             {
+    267                 _detect           = makeConstantProperty(m_fake_efficiency) ;
+    268                 _absorb           = makeConstantProperty(1.0-m_fake_efficiency);
+    269                 _reflect_specular = makeConstantProperty(0.0);
+    270                 _reflect_diffuse  = makeConstantProperty(0.0);
+    271             }
+    272             else
+    273             {
+    274                 _detect = _EFFICIENCY ;
+    275                 _absorb = GProperty<float>::make_one_minus( _detect );
+    276                 _reflect_specular = makeConstantProperty(0.0);
+    277                 _reflect_diffuse  = makeConstantProperty(0.0);
+    278             }
+    279         }
+    280         else
+    281         {
+    282             GProperty<float>* _REFLECTIVITY = src->getProperty(REFLECTIVITY);
+    283             assert(_REFLECTIVITY && os && "non-sensor surfaces must have a reflectivity " );
+    284 
+    285             if(os->isSpecular())
+    286             {
+    287                 _detect  = makeConstantProperty(0.0) ;
+    288                 _reflect_specular = _REFLECTIVITY ;
+    289                 _reflect_diffuse  = makeConstantProperty(0.0) ;
+    290                 _absorb  = GProperty<float>::make_one_minus(_reflect_specular);
+    291             }
+    292             else
+    293             {
+    294                 _detect  = makeConstantProperty(0.0) ;
+    295                 _reflect_specular = makeConstantProperty(0.0) ;
+    296                 _reflect_diffuse  = _REFLECTIVITY ;
+    297                 _absorb  = GProperty<float>::make_one_minus(_reflect_diffuse);
+    298             }
+    299         }
+    300     }
+
+
+
+
 
 CFG4 Where the flags come from
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
