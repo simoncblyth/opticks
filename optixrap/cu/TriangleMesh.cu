@@ -5,6 +5,8 @@
 
 using namespace optix;
 
+// TODO: compare performance as modify int3,float3 -> int4,float4 
+
 // inputs from OGeo
 rtBuffer<int3>   indexBuffer; 
 rtBuffer<float3> vertexBuffer;     
@@ -17,6 +19,7 @@ rtDeclareVariable(unsigned int, primitive_count, ,);
 rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 rtDeclareVariable(float3, geometricNormal, attribute geometric_normal, ); 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
+
 
 
 RT_PROGRAM void mesh_intersect(int primIdx)

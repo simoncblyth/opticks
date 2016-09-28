@@ -303,18 +303,17 @@ G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
   G4double rsLength = DBL_MAX;
   if( rayleigh != NULL ) rsLength = rayleigh->Value( photonMomentum );
 
-
+/*
   { 
         G4double wavelength = h_Planck*c_light/photonMomentum ; 
-
         LOG(info) 
-
-                  << " photonMomentum (keV) " << std::setw(10) << std::fixed << std::setprecision(3) << photonMomentum/keV
+                  << " material " << material->GetName()
+                  << " photonMomentum (eV) " << std::setw(10) << std::fixed << std::setprecision(3) << photonMomentum/eV
                   << " wavelength (nm) " << std::setw(10) << std::fixed << std::setprecision(3) << wavelength/nm
                   << " rsLength (mm) " << std::setw(10) << std::fixed << std::setprecision(3) << rsLength/mm
                   ;
-
   } 
+*/
 
   return rsLength;
 }

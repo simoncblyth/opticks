@@ -1178,6 +1178,7 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 
 void OpticksEvent::setNopstepData(NPY<float>* nopstep)
 {
+   /*
     int nitems = NPYBase::checkNumItems(nopstep);
     if(nitems < 1)
     {
@@ -1186,7 +1187,7 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
                       ;
          return ; 
     } 
-
+   */
 
 
     setBufferControl(nopstep);

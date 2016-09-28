@@ -28,6 +28,8 @@ norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
 def stamp_(path, fmt="%Y%m%d-%H%M"): 
    if path is None:
        return None
+   elif not os.path.exists(path):
+       return None
    else:
        return datetime.datetime.fromtimestamp(os.stat(path).st_ctime).strftime(fmt)
    pass

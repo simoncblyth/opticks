@@ -22,6 +22,10 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
 
+    LOG(fatal) << m_g4evt->brief() << " " << m_g4evt->getShapeString() ;  
+    LOG(fatal) << m_evt->brief() << " " << m_evt->getShapeString() ;  
+  
+
     m_evt->setSibling(m_g4evt);
     m_g4evt->setSibling(m_evt);
 
@@ -74,6 +78,12 @@ void OpticksRun::passBaton()
 {
     NPY<float>* nopstep = m_g4evt->getNopstepData() ;
     NPY<float>* genstep = m_g4evt->getGenstepData() ;
+
+    LOG(info) << "OpticksRun::passBaton"
+              << " nopstep " << nopstep
+              << " genstep " << genstep
+              ;
+
 
    //
    // Not-cloning as these buffers are not actually distinct 

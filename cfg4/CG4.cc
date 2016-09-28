@@ -225,13 +225,24 @@ void CG4::initEvent(OpticksEvent* evt)
 
     m_recorder->initEvent(evt);
     m_rec->initEvent(evt);
-    m_steprec->initEvent(evt->getNopstepData());
+
+    NPY<float>* nopstep = evt->getNopstepData();
+
+    if(!nopstep)
+        LOG(fatal) << " nopstep NULL "
+                   << " evt " << evt->getShapeString()
+                   ;
+
+    assert(nopstep); 
+    m_steprec->initEvent(nopstep);
 }
 
 
 NPY<float>* CG4::propagate()
 {
     OpticksEvent* evt = m_run->getG4Event();
+    LOG(info) << evt->brief() <<  " " << evt->getShapeString() ;
+
     assert(evt && evt->isG4() && "MUST: OpticksRun::createEvent before CG4::propagate");
 
     if(m_ok->isFabricatedGensteps())

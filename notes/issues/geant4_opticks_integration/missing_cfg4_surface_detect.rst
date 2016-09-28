@@ -14,13 +14,23 @@ Observations
   (with EFFICIENCY values) on PMTs ? 
 
 
-
-Fixed ? Seems Y, now getting some hits, but this is just the start...
+Fixed ? N
 -----------------------------------------------------------------------
 
 ::
 
    OKG4Test --save
+
+   lldb OKG4Test -- --compute --save
+
+   (lldb) b "OpRayleigh::GetMeanFreePath(G4Track const&, double, G4ForceCondition*)" 
+
+       ## torch running : G4 thinks in vacuum.... 
+
+
+   OKG4Test --g4gun --compute --save
+
+
 
 
 CGDMLDetector vs CTestDetector
