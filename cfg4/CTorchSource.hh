@@ -1,5 +1,7 @@
 #pragma once
 
+
+template <typename T> class NPY ; 
 class TorchStepNPY ; 
 
 class G4SPSPosDistribution ;
@@ -9,6 +11,16 @@ class G4SPSRandomGenerator ;
 
 #include "CSource.hh"
 #include "CFG4_API_EXPORT.hh"
+
+
+/**
+CTorchSource
+=============
+
+Canonical instance lives in CGenerator
+
+**/
+
 
 class CFG4_API CTorchSource: public CSource
 {
@@ -27,6 +39,7 @@ class CFG4_API CTorchSource: public CSource
     G4SPSAngDistribution* m_angGen;
     G4SPSEneDistribution* m_eneGen;
     G4SPSRandomGenerator* m_ranGen;
+    NPY<float>*           m_primary ; 
 
 };
 

@@ -3,6 +3,7 @@
 #include <cmath>
 
 // npy-
+#include "NPY.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 
@@ -38,7 +39,8 @@ CTorchSource::CTorchSource(TorchStepNPY* torch, unsigned int verbosity)
     m_posGen(NULL),
     m_angGen(NULL),
     m_eneGen(NULL),
-    m_ranGen(NULL)
+    m_ranGen(NULL),
+    m_primary(NPY<float>::make(0,4,4))
 {
     init();
 }
@@ -74,149 +76,8 @@ CTorchSource::~CTorchSource()
     G4MUTEXDESTROY(m_mutex);
 }
 
-void CTorchSource::SetVerbosity(int vL) 
-{
-    G4AutoLock l(&m_mutex);
-	m_verbosityLevel = vL;
-	m_posGen->SetVerbosity(vL);
-	m_angGen->SetVerbosity(vL);
-	m_eneGen->SetVerbosity(vL);
-}
 
 
-void CTorchSource::GeneratePrimaryVertex(G4Event *evt) 
-{
-    assert(m_definition);
-
-	if (m_verbosityLevel > 1)
-		G4cout << " NumberOfParticlesToBeGenerated: "
-				<< m_num << G4endl;
-
-    part_prop_t& pp = m_pp.Get();
-
-    bool incidentSphere = m_torch->isIncidentSphere() ;
-    bool disc = m_torch->isDisc() ;
-    bool discLin = m_torch->isDiscLinear() ;
-    bool ring = m_torch->isRing() ;
-    bool point = m_torch->isPoint() ;
-    bool reflTest = m_torch->isReflTest() ;
-
-    bool SPol =  m_torch->isSPolarized() ;
-    bool PPol =  m_torch->isPPolarized() ;
-    bool fixpol =  m_torch->isFixPolarized() ;
-    glm::vec3 polarization = m_torch->getPolarization() ;
-
-	if (m_verbosityLevel > 1)
-    LOG(info) << "CTorchSource::GeneratePrimaryVertex"
-              << " incidentSphere " << incidentSphere
-              << " disc " << disc 
-              << " discLin " << discLin 
-              << " ring " << ring 
-              << " reflTest " << reflTest
-              << " SPol " << SPol 
-              << " PPol " << PPol 
-              << " fixpol " << fixpol 
-              << " polarization " << gformat(polarization)
-              << " num " << m_num 
-              ;
-
-
-	for (G4int i = 0; i < m_num; i++) 
-    {
-	    pp.position = m_posGen->GenerateOne();
-        G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position,m_time);
-
-		pp.momentum_direction = m_angGen->GenerateOne();
-		pp.energy = m_eneGen->GenerateOne(m_definition);
-
-     /*
-        LOG(info) << "CTorchSource::GeneratePrimaryVertex"
-                  << " i " << std::setw(6) << i 
-                  << " posx " << pp.position.x()
-                  << " posy " << pp.position.y()
-                  << " posz " << pp.position.z()
-                  << " dirx " << pp.momentum_direction.x()
-                  << " diry " << pp.momentum_direction.y()
-                  << " dirz " << pp.momentum_direction.z()
-                  ;
-
-      */
-
-		if (m_verbosityLevel >= 2)
-			G4cout << "Creating primaries and assigning to vertex" << G4endl;
-		// create new primaries and set them to the vertex
-
-
-        G4double mass = m_definition->GetPDGMass();
-        G4double charge = m_definition->GetPDGCharge();
-
-		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
-		particle->SetKineticEnergy(pp.energy );
-		particle->SetMass( mass );
-		particle->SetMomentumDirection( pp.momentum_direction );
-		particle->SetCharge( charge );
-
-        if(incidentSphere)
-        {
-            // custom S/P-polarization specific to "rainbow geometry" 
-            // (planar disc of photons incident on sphere with same radius as disc)
-            //
-            G4ThreeVector tangent(-pp.position.y(),  pp.position.x(), 0. );  // anti-clockwise tangent
-            G4ThreeVector radial(  pp.position.x(),  pp.position.y(), 0. ); 
-            if(SPol)
-		       particle->SetPolarization(tangent.unit()); 
-            else if(PPol)
-		       particle->SetPolarization(radial.unit());  
-            else
-		       particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
-
-        }
-        else if(discLin || disc)
-        {
-            // match the adhoc (sinPhi, -cosPhi, 0) polarization from optixrap-/cu/torchstep.h:generate_torch_photon
-            G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
-		    particle->SetPolarization(tangent.unit()); 
-        }
-        else if(point)
-        {
-            G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
-		    particle->SetPolarization(tangent.unit()); 
-        }
-        else
-        {
-		    particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
-        }  
-
-
-        if(m_torch->isFixPolarized())
-        {
-             //LOG(info) << "CTorchSource::GeneratePrimaryVertex" 
-             //          << " fixpol override "
-             //          << gformat(polarization)
-             //          ; 
-		     particle->SetPolarization(polarization.x, polarization.y, polarization.z);
-        }
-
-
-		if (m_verbosityLevel > 1) {
-			G4cout << "Particle name: "
-					<< m_definition->GetParticleName() << G4endl;
-			G4cout << "       Energy: " << pp.energy << G4endl;
-			G4cout << "     Position: " << pp.position << G4endl;
-			G4cout << "    Direction: " << pp.momentum_direction
-					<< G4endl;
-		}
-		// Set bweight equal to the multiple of all non-zero weights
-		G4double weight = m_eneGen->GetWeight()*m_ranGen->GetBiasWeight();
-		particle->SetWeight(weight);
-
-		vertex->SetPrimary(particle);
-
-        //m_recorder->RecordPrimaryVertex(vertex);
-
-        evt->AddPrimaryVertex(vertex);
-	}
-}
 
 
 
@@ -251,6 +112,14 @@ void CTorchSource::configure()
     float _radius = m_torch->getRadius();
     glm::vec4 _zeaz = m_torch->getZenithAzimuth();
 
+    LOG(fatal) << "CTorchSource::configure"
+               << " _t " << _t 
+               << " _radius " << _radius
+               << " _pos " << gformat(_pos) 
+               << " _dir " << gformat(_dir) 
+               << " _zeaz " << gformat(_zeaz)
+                ; 
+
 
     SetParticleTime(_t*ns);
     G4ThreeVector pos(_pos.x*mm,_pos.y*mm,_pos.z*mm);
@@ -267,6 +136,7 @@ void CTorchSource::configure()
     bool discLin        = m_torch->isDiscLinear() ;
     bool ring           = m_torch->isRing() ;
     bool point          = m_torch->isPoint() ;
+    bool sphere         = m_torch->isSphere() ;
     bool reflTest       = m_torch->isReflTest() ;
 
     // for sanity test geometries use standard X Y for 
@@ -276,17 +146,25 @@ void CTorchSource::configure()
     m_posGen->SetPosRot1(posX);
     m_posGen->SetPosRot2(posY);
 
-    if(point)
+    if(point )
     {
         m_posGen->SetPosDisType("Point");
         m_posGen->SetCentreCoords(cen);
+    }
+    else if( sphere )
+    {
+        m_posGen->SetPosDisType("Point");
+        m_posGen->SetCentreCoords(cen);
+
+        m_angGen->SetAngDistType("iso");
+    
     }
     else if(incidentSphere || discLin || disc || ring)  // used with "rainbow" geometry 
     {
         m_posGen->SetPosDisType("Plane");
 
-       float ze_x = _zeaz.x ; 
-       float ze_y = _zeaz.y ; 
+        float ze_x = _zeaz.x ; 
+        float ze_y = _zeaz.y ; 
        
         if(ze_x == 0.f )
         {
@@ -341,5 +219,168 @@ void CTorchSource::configure()
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(angGen->GenerateOne(), "angGen") << G4endl ; 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void CTorchSource::SetVerbosity(int vL) 
+{
+    G4AutoLock l(&m_mutex);
+	m_verbosityLevel = vL;
+	m_posGen->SetVerbosity(vL);
+	m_angGen->SetVerbosity(vL);
+	m_eneGen->SetVerbosity(vL);
+}
+
+
+void CTorchSource::GeneratePrimaryVertex(G4Event *evt) 
+{
+    assert(m_definition);
+
+	if (m_verbosityLevel > 1)
+		G4cout << " NumberOfParticlesToBeGenerated: "
+				<< m_num << G4endl;
+
+    part_prop_t& pp = m_pp.Get();
+
+    glm::vec3 polarization = m_torch->getPolarization() ;
+
+	//if (m_verbosityLevel > 1)
+    LOG(info) << "CTorchSource::GeneratePrimaryVertex"
+              << m_torch->description()
+              << " polarization " << gformat(polarization)
+              << " num " << m_num 
+              ;
+
+
+	for (G4int i = 0; i < m_num; i++) 
+    {
+	    pp.position = m_posGen->GenerateOne();
+        G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position,m_time);
+
+		pp.momentum_direction = m_angGen->GenerateOne();
+
+		pp.energy = m_eneGen->GenerateOne(m_definition);
+
+/*
+        LOG(info) << "CTorchSource::GeneratePrimaryVertex"
+                  << " i " << std::setw(6) << i 
+                  << " posx " << pp.position.x()
+                  << " posy " << pp.position.y()
+                  << " posz " << pp.position.z()
+                  << " dirx " << pp.momentum_direction.x()
+                  << " diry " << pp.momentum_direction.y()
+                  << " dirz " << pp.momentum_direction.z()
+                  ;
+*/
+
+
+		if (m_verbosityLevel >= 2)
+			G4cout << "Creating primaries and assigning to vertex" << G4endl;
+		// create new primaries and set them to the vertex
+
+
+        G4double mass = m_definition->GetPDGMass();
+        G4double charge = m_definition->GetPDGCharge();
+
+		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
+		particle->SetKineticEnergy(pp.energy );
+		particle->SetMass( mass );
+		particle->SetMomentumDirection( pp.momentum_direction );
+		particle->SetCharge( charge );
+
+        if(m_torch->isIncidentSphere())
+        {
+            // custom S/P-polarization specific to "rainbow geometry" 
+            // (planar disc of photons incident on sphere with same radius as disc)
+            //
+            G4ThreeVector tangent(-pp.position.y(),  pp.position.x(), 0. );  // anti-clockwise tangent
+            G4ThreeVector radial(  pp.position.x(),  pp.position.y(), 0. ); 
+            if(m_torch->isSPolarized())
+            { 
+		       particle->SetPolarization(tangent.unit()); 
+            }
+            else if(m_torch->isPPolarized())
+            {
+		       particle->SetPolarization(radial.unit());  
+            }
+            else
+            {
+		       particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
+            }
+
+        }
+        else if(m_torch->isDiscLinear() || m_torch->isDisc())
+        {
+            // match the adhoc (sinPhi, -cosPhi, 0) polarization from optixrap-/cu/torchstep.h:generate_torch_photon
+            G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
+		    particle->SetPolarization(tangent.unit()); 
+        }
+        else if(m_torch->isPoint())
+        {
+            G4ThreeVector tangent(pp.position.y(),  -pp.position.x(), 0. );  
+		    particle->SetPolarization(tangent.unit()); 
+        }
+        else if(m_torch->isSphere())
+        {
+            // see  cu/torchstep.h
+            G4ThreeVector pol0(1,0,0); // <-- this direction needs to not be parallel to mom dir ?
+            G4ThreeVector perp = pol0 - pol0.dot(pp.momentum_direction) * pp.momentum_direction;  
+            // subtract vector component in the momentum direction, to yield perpendicular polarization
+		    particle->SetPolarization(perp.unit()); 
+        } 
+        else
+        {
+		    particle->SetPolarization(m_polarization.x(), m_polarization.y(), m_polarization.z());
+        }  
+
+
+        if(m_torch->isFixPolarized())
+        {
+             LOG(warning) << "CTorchSource::GeneratePrimaryVertex" 
+                       << " fixpol override "
+                       << gformat(polarization)
+                       ; 
+		     particle->SetPolarization(polarization.x, polarization.y, polarization.z);
+        }
+
+
+		if (m_verbosityLevel > 1) {
+			G4cout << "Particle name: "
+					<< m_definition->GetParticleName() << G4endl;
+			G4cout << "       Energy: " << pp.energy << G4endl;
+			G4cout << "     Position: " << pp.position << G4endl;
+			G4cout << "    Direction: " << pp.momentum_direction
+					<< G4endl;
+		}
+		// Set bweight equal to the multiple of all non-zero weights
+		G4double weight = m_eneGen->GetWeight()*m_ranGen->GetBiasWeight();
+		particle->SetWeight(weight);
+
+		vertex->SetPrimary(particle);
+        evt->AddPrimaryVertex(vertex);
+
+        collectPrimary(vertex);
+
+	}
+}
+
+
+
 
 

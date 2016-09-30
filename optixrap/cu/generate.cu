@@ -323,6 +323,9 @@ RT_PROGRAM void generate()
     p.flags.f.z = c4.f ; 
 
 
+
+    //rtPrintf("(generate.cu) p0 %10.4f %10.4f %10.4f  \n", p.position.x, p.position.y, p.position.z );
+
     int bounce = 0 ; 
     int command = START ; 
     int slot = 0 ;

@@ -41,6 +41,7 @@ class CFG4_API CCollector
          CCollector(OpticksHub* hub);
    public:
          NPY<float>*  getGensteps();
+         NPY<float>*  getPrimary();
    public:
          std::string description();
          void Summary(const char* msg="CCollector::Summary");
@@ -113,6 +114,28 @@ class CFG4_API CCollector
             G4double             meanNumberOfPhotons2,
             G4double             spare2=0
         );
+   public:
+          void collectPrimary(
+               G4double  x0,
+               G4double  y0,
+               G4double  z0,
+               G4double  t0,
+
+               G4double  dir_x,
+               G4double  dir_y,
+               G4double  dir_z,
+               G4double  weight,
+
+               G4double  pol_x,
+               G4double  pol_y,
+               G4double  pol_z,
+               G4double  wavelength,
+
+               unsigned flags_x,
+               unsigned flags_y,
+               unsigned flags_z,
+               unsigned flags_w
+          );
 
    public:
          void collectMachineryStep(unsigned code);
@@ -121,12 +144,18 @@ class CFG4_API CCollector
    private:
          OpticksHub*  m_hub ; 
          NLookup*     m_lookup ; 
+
          NPY<float>*  m_genstep ;
-         unsigned     m_itemsize ; 
-         float*       m_values ;  
+         unsigned     m_genstep_itemsize ; 
+         float*       m_genstep_values ;  
+
          unsigned     m_scintillation_count ; 
          unsigned     m_cerenkov_count ; 
          unsigned     m_machinery_count ; 
 
+         NPY<float>*  m_primary ;
+         unsigned     m_primary_itemsize ; 
+         float*       m_primary_values ;  
+         unsigned     m_primary_count ;  
 
 };

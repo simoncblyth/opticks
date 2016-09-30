@@ -42,6 +42,8 @@ template<typename T> class NPY ;
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+
+// frame targetting and NPY creation are handled in base class 
 class NPY_API TorchStepNPY : public GenstepNPY {
    public:
        typedef enum { TYPE, 
@@ -122,10 +124,12 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        bool isDiscLinear();
        bool isRing();
        bool isPoint();
+       bool isSphere();
        bool isReflTest();
        bool isSPolarized();
        bool isPPolarized();
        bool isFixPolarized();
+       std::string description();
        void Summary(const char* msg="TorchStepNPY::Summary");
    public:
        // local positions/vectors, frame transform is applied in *update* yielding world frame m_post m_dirw 

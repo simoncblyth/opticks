@@ -1190,10 +1190,11 @@ void OpticksEvent::setNopstepData(NPY<float>* nopstep)
    */
 
 
-    setBufferControl(nopstep);
 
     m_nopstep_data = nopstep  ;
     if(!nopstep) return ; 
+
+    setBufferControl(nopstep);
 
     m_num_nopsteps = m_nopstep_data->getShape(0) ;
     LOG(debug) << "OpticksEvent::setNopstepData"

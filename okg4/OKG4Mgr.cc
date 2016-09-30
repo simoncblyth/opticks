@@ -59,6 +59,8 @@ void OKG4Mgr::propagate()
              m_hub->target();           // if not Scene targetted, point Camera at gensteps of last created evt
 
              m_viz->uploadEvent();      // not needed when propagating as event is created directly on GPU
+
+             m_viz->indexPresentationPrep();
          }   
     }   
     else if(ok("nopropagate"))

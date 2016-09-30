@@ -23,7 +23,7 @@ const char* TorchStepNPY::DEFAULT_CONFIG =
     "frame=3153_"
     "source=0,0,0_"
     "target=0,0,1_"
-    "photons=100000_"
+    "photons=1000000_"
     "material=GdDopedLS_"   
     "wavelength=430_"
     "weight=1.0_"
@@ -177,6 +177,33 @@ std::string TorchStepNPY::getModeString()
 
     return ss.str();
 } 
+
+
+
+std::string TorchStepNPY::description()
+{
+    glm::vec3 pos = getPosition() ;
+    glm::vec3 dir = getDirection() ;
+    glm::vec3 pol = getPolarization() ;
+
+    std::stringstream ss ; 
+    ss
+        << " typeName " << getTypeName() 
+        << " modeString " << getModeString() 
+        << " position " << gformat(pos)
+        << " direction " << gformat(dir)
+        << " polarization " << gformat(pol)
+        << " radius " << getRadius()
+        << " wavelength " << getWavelength()
+        << " time " << getTime()
+        ; 
+
+    return ss.str();
+}
+
+
+
+
 
 
 const char* TorchStepNPY::TYPE_ = "type"; 
@@ -351,6 +378,7 @@ bool TorchStepNPY::isIncidentSphere()
     ::Torch_t type = getType();
     return type == T_DISC_INTERSECT_SPHERE  ;
 }
+
 bool TorchStepNPY::isDisc()
 {
     ::Torch_t type = getType();
@@ -371,6 +399,12 @@ bool TorchStepNPY::isPoint()
     ::Torch_t type = getType();
     return type == T_POINT  ;
 }
+bool TorchStepNPY::isSphere()
+{
+    ::Torch_t type = getType();
+    return type == T_SPHERE  ;
+}
+
 bool TorchStepNPY::isReflTest()
 {
     ::Torch_t type = getType();
@@ -495,24 +529,11 @@ void TorchStepNPY::dump(const char* msg)
 
 void TorchStepNPY::Summary(const char* msg)
 {
-    glm::vec3 pos = getPosition() ;
-    glm::vec3 dir = getDirection() ;
-    glm::vec3 pol = getPolarization() ;
-
-    LOG(info) << msg  
-              << " typeName " << getTypeName() 
-              << " modeString " << getModeString() 
-              << " incidentSphere " << isIncidentSphere()
-              << " sPolarized " << isSPolarized()
-              << " pPolarized " << isPPolarized()
-              << " position " << gformat(pos)
-              << " direction " << gformat(dir)
-              << " polarization " << gformat(pol)
-              << " radius " << getRadius()
-              << " wavelength " << getWavelength()
-              << " time " << getTime()
-              ; 
-
+    LOG(info) << msg  << description() ; 
 }
+
+
+
+
 
 

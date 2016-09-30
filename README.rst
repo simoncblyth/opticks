@@ -2,18 +2,30 @@
 Opticks : A GPU Accelerated Optical Photon Simulation using NVIDIA OptiX  
 ==========================================================================
 
-This *opticks* repository was spawned from its cradle *env* repository on July 4th, 2016.
+For presentations and videos about Opticks:
 
-Clone *opticks* with::
+* http://simoncblyth.bitbucket.org
+
+For instructions on building Opticks and externals: 
+
+* http://simoncblyth.bitbucket.org/opticks/
+
+Related repositories:
+
+* https://bitbucket.org/simoncblyth/env
+* https://bitbucket.org/simoncblyth/g4dae
+
+
+
+Installation instructions start with a clone::
 
     cd $HOME ;
     hg clone http://bitbucket.org/simoncblyth/opticks  
 
-If you need to commit to *opticks*, you need to use SSH::
+For commit access to *opticks*, you need to use SSH::
 
     cd $HOME ;
     hg clone ssh://hg@bitbucket.org/simoncblyth/opticks   
-
 
 Source opticks from your bash shell profile with::
 
@@ -24,15 +36,5 @@ Source opticks from your bash shell profile with::
     o(){ cd $OPTICKS_HOME ; hg st ; } 
 
 
-For instructions on building Opticks and externals see: 
-
-* http://simoncblyth.bitbucket.org/opticks/
-
-
-Transitionally it may be necessary for developers to also clone the *env* repository
-and similarly source *env*. If so that should be done prior to opticks.
-More details about bitbucket/mercurial setup can be found on the *env* frontpage:
-
-* https://bitbucket.org/simoncblyth/env
 
 

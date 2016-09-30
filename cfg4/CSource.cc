@@ -4,10 +4,12 @@
 #include "G4Geantino.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleDefinition.hh"
+#include "G4PrimaryVertex.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "CCollector.hh"
 #include "CSource.hh"
 #include "PLOG.hh"
 
@@ -18,9 +20,6 @@ CSource::part_prop_t::part_prop_t()
   energy = 1.*MeV;
   position = G4ThreeVector();
 }
-
-
-
 
 
 CSource::CSource(int verbosity)  
@@ -74,7 +73,6 @@ void CSource::SetParticleEnergy(G4double energy)
     part_prop_t& pp = m_pp.Get();
     pp.energy = energy ; 
 }
-
 
 
 G4int CSource::GetNumberOfParticles() const 
@@ -134,6 +132,51 @@ void CSource::SetParticleDefinition(G4ParticleDefinition* definition)
 }
 
 
+
+
+
+
+
+
+void CSource::collectPrimary(G4PrimaryVertex* vtx)
+{
+    G4ThreeVector pos = vtx->GetPosition() ;
+    G4double time = vtx->GetT0() ;
+
+    G4PrimaryParticle* pp = vtx->GetPrimary();     
+
+    const G4ThreeVector& dir = pp->GetMomentumDirection()  ; 
+    G4ThreeVector pol = pp->GetPolarization() ;
+  
+    G4double energy = pp->GetTotalEnergy()  ; 
+    G4double wavelength = h_Planck*c_light/energy ;
+
+    G4double weight = pp->GetWeight() ; 
+
+    CCollector::Instance()->collectPrimary(
+
+           pos.x()/mm,
+           pos.y()/mm,
+           pos.z()/mm,
+           time/ns,
+
+           dir.x(),
+           dir.y(),
+           dir.z(),
+           weight,
+
+           pol.x(),
+           pol.y(),
+           pol.z(),
+           wavelength/nm,
+
+           0u,
+           0u,
+           0u,
+           0u 
+               
+         ); 
+}
 
 
 

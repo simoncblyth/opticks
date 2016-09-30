@@ -3,6 +3,7 @@
 class CRecorder ; 
 class G4Event ; 
 class G4ParticleDefinition ;
+class G4PrimaryVertex ; 
 
 #include "G4ParticleMomentum.hh"
 #include "G4Threading.hh"
@@ -36,6 +37,8 @@ class CFG4_API CSource : public G4VPrimaryGenerator
     void SetParticleMomentumDirection(G4ThreeVector direction);
     void SetParticleEnergy(G4double energy);
     void SetParticleTime(G4double time);
+ public:
+    void collectPrimary(G4PrimaryVertex* vertex);
  public:
     // inline getters
     G4int                 GetNumberOfParticles() const ;

@@ -272,7 +272,8 @@ NPY<float>* CG4::propagate()
 
     NPY<float>* gs = m_collector->getGensteps(); 
 
-
+    NPY<float>* pr = m_collector->getPrimary(); 
+    pr->save("$TMP/cg4/primary.npy");   // debugging primary position issue 
 
     return gs ; 
 }
@@ -287,6 +288,10 @@ void CG4::postpropagate()
     OpticksEvent* evt = m_run->getG4Event();
     assert(evt);
     evt->postPropagateGeant4();
+
+
+
+
 
     LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;
 }
