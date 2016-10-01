@@ -46,6 +46,12 @@ GMaterialLib* GMaterialLib::load(Opticks* cache)
     return mlib ; 
 }
 
+/*
+const char* GMaterialLib::FindShortName(const char* name, const char* prefix)
+{
+    return GPropertyMap<float>::FindShortName(name, prefix);
+}
+*/
 
 
 GMaterialLib::GMaterialLib(Opticks* cache) 
@@ -533,6 +539,9 @@ GMaterial* GMaterialLib::getMaterial(const char* name)
     unsigned int index = getIndex(name);
     return getMaterial(index);   
 }
+
+
+
 
 GMaterial* GMaterialLib::getMaterial(unsigned int index)
 {

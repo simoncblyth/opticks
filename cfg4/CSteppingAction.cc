@@ -15,6 +15,8 @@
 #include "G4PhysicalConstants.hh"
 
 // cg4-
+#include "CGeometry.hh"
+#include "CMaterialBridge.hh"
 #include "CRecorder.hh"
 #include "Rec.hh"
 #include "State.hh"
@@ -61,17 +63,26 @@ G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
 }
 
 
+/**
+CSteppingAction
+=================
+
+Canonical instance (m_sa) is ctor resident of CG4 
+
+**/
 
 CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 
    G4UserSteppingAction(),
    m_g4(g4),
    m_dynamic(dynamic),
-   m_clib(NULL),
-   m_recorder(NULL),
-   m_rec(NULL),
-   m_steprec(NULL),
-   m_verbosity(0),
+   m_geometry(g4->getGeometry()),
+   m_material_bridge(NULL),
+   m_clib(g4->getPropLib()),
+   m_recorder(g4->getRecorder()),
+   m_rec(g4->getRec()),
+   m_steprec(g4->getStepRec()),
+   m_verbosity(m_recorder->getVerbosity()),
    m_event_id(-1),
    m_track_id(-1),
    m_event_total(0),
@@ -83,6 +94,21 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
 { 
    init();
 }
+
+void CSteppingAction::init()
+{
+    LOG(fatal) << "CSteppingAction::init " 
+              << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
+              ;
+}
+
+void CSteppingAction::postinitialize()
+{
+   // called from CG4::postinitialize
+    m_material_bridge = m_geometry->getMaterialBridge();
+    assert(m_material_bridge);
+}
+
 
 CSteppingAction::~CSteppingAction()
 { 
@@ -100,22 +126,6 @@ void CSteppingAction::setEventId(unsigned int event_id)
 
 
 
-void CSteppingAction::init()
-{
-    m_clib     = m_g4->getPropLib();
-    m_recorder = m_g4->getRecorder();
-    m_rec      = m_g4->getRec();
-    m_steprec  = m_g4->getStepRec();
-
-    m_verbosity = m_recorder->getVerbosity(); 
-
-    //OpticksEvent* evt = m_recorder->getEvent();
-     // << " evt " << evt->description() 
-
-    LOG(fatal) << "CSteppingAction::init " 
-              << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
-              ;
-}
 
 const unsigned long long CSteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,SurfaceAbsorb
 const unsigned long long CSteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
@@ -217,8 +227,6 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
 
 
-
-
 void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 {
     //LOG(trace) << "CSA::UserSteppingActionOptical" ; 
@@ -231,10 +239,27 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
+
     const G4Material* preMat  = pre->GetMaterial() ;
     const G4Material* postMat = post->GetMaterial() ;
-    unsigned int preMaterial = preMat ? m_clib->getMaterialIndex(preMat) + 1 : 0 ;
-    unsigned int postMaterial = postMat ? m_clib->getMaterialIndex(postMat) + 1 : 0 ;
+
+    //if(preMat == postMat) return ;  
+    // CANNOT JUST SKIP ALL SAME MATERIAL STEPS, AS BULK ABSORB "AB" THEN GETS MISSED
+
+
+    unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
+    unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
+
+/*
+    LOG(fatal) << "CSteppingAction::UserSteppingActionOptical"
+               << " preMat " << preMat->GetName() 
+               << " postMat " << postMat->GetName() 
+               << " preMaterial " << preMaterial
+               << " postMaterial " << postMaterial
+               ;
+*/ 
+
+
 
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
@@ -333,8 +358,8 @@ void CSteppingAction::compareRecords()
         }
         if(!same_seqmat)
         { 
-             std::cout << "(rec)" << m_clib->MaterialSequence(rec_seqmat) << std::endl ;  
-             std::cout << "(rdr)" << m_clib->MaterialSequence(rdr_seqmat) << std::endl ;  
+             std::cout << "(rec)" << m_material_bridge->MaterialSequence(rec_seqmat) << std::endl ;  
+             std::cout << "(rdr)" << m_material_bridge->MaterialSequence(rdr_seqmat) << std::endl ;  
         }
     }
 }

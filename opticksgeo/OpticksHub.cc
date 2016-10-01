@@ -285,6 +285,23 @@ GGeo* OpticksHub::getGGeo()
 {
     return m_ggeo ; 
 }
+
+GMaterialLib* OpticksHub::getMaterialLib()
+{
+    return m_ggeo ? m_ggeo->getMaterialLib() : NULL ; 
+}
+GSurfaceLib* OpticksHub::getSurfaceLib()
+{
+    return m_ggeo ? m_ggeo->getSurfaceLib() : NULL ; 
+}
+GBndLib* OpticksHub::getBndLib()
+{
+    return m_ggeo ? m_ggeo->getBndLib() : NULL ; 
+}
+
+
+
+
 NState* OpticksHub::getState()
 {
     return m_state ; 

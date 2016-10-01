@@ -3,7 +3,8 @@
 #include "G4OpBoundaryProcess.hh"
 #include <vector>
 
-class CPropLib ; 
+class CGeometry ; 
+class CMaterialBridge ; 
 class Opticks ; 
 class OpticksEvent ; 
 class State ; 
@@ -127,7 +128,8 @@ class CFG4_API Rec {
        typedef enum { OK, SKIP_STS } Rec_t ; 
        typedef enum { PRE, POST } Flag_t ; 
    public:
-       Rec(Opticks* ok, CPropLib* clib, bool dynamic);
+       Rec(Opticks* ok, CGeometry* geometry, bool dynamic);
+       void postinitialize();
        void initEvent(OpticksEvent* evt);
    private:
        void setEvent(OpticksEvent* evt);
@@ -151,7 +153,8 @@ class CFG4_API Rec {
        void setDebug(bool debug=true);
    private:
        Opticks*                    m_ok ;  
-       CPropLib*                   m_clib ; 
+       CGeometry*                  m_geometry ; 
+       CMaterialBridge*            m_material_bridge ; 
        bool                        m_dynamic ; 
 
        OpticksEvent*               m_evt ;  

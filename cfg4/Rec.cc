@@ -16,16 +16,18 @@
 #include "Format.hh"
 #include "State.hh"
 #include "OpStatus.hh"
-#include "CPropLib.hh"
+#include "CGeometry.hh"
+#include "CMaterialBridge.hh"
 #include "Rec.hh"
 
 #include "PLOG.hh"
 
 
-Rec::Rec(Opticks* ok, CPropLib* clib, bool dynamic)  
+Rec::Rec(Opticks* ok, CGeometry* geometry, bool dynamic)  
    :
     m_ok(ok), 
-    m_clib(clib),
+    m_geometry(geometry),
+    m_material_bridge(NULL),
     m_dynamic(dynamic),
     m_evt(NULL), 
     m_genflag(0),
@@ -37,6 +39,12 @@ Rec::Rec(Opticks* ok, CPropLib* clib, bool dynamic)
     m_steps_per_photon(0),
     m_debug(false)
 {
+}
+
+void Rec::postinitialize()
+{
+    m_material_bridge = m_geometry->getMaterialBridge();
+    assert(m_material_bridge);
 }
 
 
@@ -246,8 +254,8 @@ void Rec::Dump(const char* msg)
         unsigned int preMatRaw = state->getPreMaterial();
         unsigned int postMatRaw = state->getPostMaterial();
 
-        const char* preMaterialRaw  = preMatRaw == 0 ? "-" : m_clib->getMaterialName(preMatRaw - 1) ;
-        const char* postMaterialRaw = postMatRaw == 0 ? "-" : m_clib->getMaterialName(postMatRaw - 1) ;
+        const char* preMaterialRaw  = preMatRaw == 0 ? "-" : m_material_bridge->getMaterialName(preMatRaw - 1) ;
+        const char* postMaterialRaw = postMatRaw == 0 ? "-" : m_material_bridge->getMaterialName(postMatRaw - 1) ;
    
         
         G4OpBoundaryProcessStatus boundary_status = getBoundaryStatus(i) ;
@@ -275,7 +283,7 @@ void Rec::Dump(const char* msg)
               << std::endl ;
 
     std::cout << "(rec)MaterialSequence "
-              << m_clib->MaterialSequence(m_seqmat) 
+              << m_material_bridge->MaterialSequence(m_seqmat) 
               << std::endl ;
 
  

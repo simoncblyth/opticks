@@ -6,12 +6,16 @@
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
+#include "GGeo.hh"
+#include "GMaterialLib.hh"
+
 // cfg4-
 #include "CG4.hh"
 #include "CGeometry.hh"
 #include "CDetector.hh"
 #include "CMaterialTable.hh"
 #include "CBorderSurfaceTable.hh"
+#include "CMaterialBridge.hh"
 
 // g4-
 #include "G4VPhysicalVolume.hh"
@@ -49,6 +53,12 @@ int main(int argc, char** argv)
 
     //CBorderSurfaceTable bst ; 
     //bst.dump("CGeometryTest CBorderSurfaceTable");
+
+    GGeo* gg = hub.getGGeo();
+    GMaterialLib* mlib = gg->getMaterialLib(); 
+
+    CMaterialBridge mb(mlib) ;
+    mb.dump("CGeometryTest"); 
 
 
     return 0 ; 

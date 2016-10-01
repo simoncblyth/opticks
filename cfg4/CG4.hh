@@ -22,7 +22,6 @@ class CPhysics ;
 class CGeometry ; 
 class CPropLib ; 
 class CDetector ; 
-class CMaterialTable ; 
 class CGenerator ; 
 
 class CCollector ; 
@@ -61,6 +60,7 @@ class CFG4_API CG4
         void execute(const char* path);
         void initEvent(OpticksEvent* evt);
    public:
+        CGeometry*     getGeometry();
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
         Rec*           getRec();
@@ -79,7 +79,6 @@ class CFG4_API CG4
         CPropLib*             m_lib ; 
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 
-        CMaterialTable*       m_material_table ; 
    private:
         CCollector*           m_collector ; 
         CRecorder*            m_recorder ; 

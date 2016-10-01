@@ -101,15 +101,15 @@ void CPropLib::init()
 
     m_dscale = float(GConstant::h_Planck*GConstant::c_light/GConstant::nanometer) ;
 
-    checkConstants(); 
+    initCheckConstants(); 
 
-    setupOverrides();
+    initSetupOverrides();
  
     //convert();
 }
 
 
-void CPropLib::setupOverrides()
+void CPropLib::initSetupOverrides()
 {
     float yield = 10.f ; 
 
@@ -124,10 +124,10 @@ void CPropLib::setupOverrides()
 }
 
 
-void CPropLib::checkConstants()
+void CPropLib::initCheckConstants()
 {
 
-    LOG(info) << "CPropLib::checkConstants" 
+    LOG(info) << "CPropLib::initCheckConstants" 
                << " mm " << mm 
                << " MeV " << MeV
                << " nanosecond " << nanosecond
@@ -571,15 +571,23 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     material->SetMaterialPropertiesTable(mpt);
 
     m_ggtog4[kmat] = material ; 
-    m_g4toix[material] = materialIndex ; 
-    m_ixtoname[materialIndex] = name ;  
+
+
+    // MOVED TO CMaterialBridge
+    // m_g4toix[material] = materialIndex ; 
+    // m_ixtoname[materialIndex] = name ;  
 
     return material ;  
 }
 
 
+
+/*
+    MOVED TO CMaterialBridge
+
 unsigned int CPropLib::getMaterialIndex(const G4Material* material)
 {
+    // used from CSteppingAction::UserSteppingActionOptical to CRecorder::setBoundaryStatus
     return m_g4toix[material] ;
 }
 
@@ -588,23 +596,9 @@ const char* CPropLib::getMaterialName(unsigned int index)
     return m_ixtoname[index].c_str() ;
 }
 
+*/
 
 
-std::string CPropLib::MaterialSequence(unsigned long long seqmat)
-{
-    std::stringstream ss ;
-    assert(sizeof(unsigned long long)*8 == 16*4);
-    for(unsigned int i=0 ; i < 16 ; i++)
-    {   
-        unsigned long long msk = (seqmat >> i*4) & 0xF ; 
-
-        unsigned int idx = unsigned(msk - 1);  
-
-        ss << ( msk > 0 ? getMaterialName(idx) : "-" ) << " " ;
-        // using 1-based material indices, so 0 represents None
-    }   
-    return ss.str();
-}
 
 
 void CPropLib::dump(const char* msg)
@@ -701,6 +695,8 @@ void CPropLib::dumpMaterials(const char* msg)
                   ;
     }
 
+
+/*
     typedef std::map<const G4Material*, unsigned int> MMU ; 
     LOG(info) << " g4toix " << m_g4toix.size() << " " ; 
 
@@ -717,7 +713,7 @@ void CPropLib::dumpMaterials(const char* msg)
                   << std::setw(40) << name_2
                   << std::endl ; 
     }
-
+*/
 
     LOG(info) << msg  << " ggtog4" ; 
     typedef std::map<const GMaterial*, const G4Material*> MMM ; 

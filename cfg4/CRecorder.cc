@@ -29,6 +29,8 @@
 #include "CRecorder.h"
 #include "CPropLib.hh"
 #include "Format.hh"
+#include "CGeometry.hh"
+#include "CMaterialBridge.hh"
 #include "CRecorder.hh"
 
 #include "PLOG.hh"
@@ -56,14 +58,20 @@ unsigned char uchar_( float f )  // f in range -1.:1.
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
 
+/**
+CRecorder
+==========
 
+Canonical instance is ctor resident of CG4 
 
+**/
 
-CRecorder::CRecorder(Opticks* ok, CPropLib* clib, bool dynamic) 
+CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic) 
    :
    m_ok(ok),
    m_evt(NULL),
-   m_clib(clib),
+   m_geometry(geometry),
+   m_material_bridge(NULL),
    m_dynamic(dynamic),
    m_gen(0),
 
@@ -117,6 +125,16 @@ CRecorder::CRecorder(Opticks* ok, CPropLib* clib, bool dynamic)
 }
 
 
+void CRecorder::postinitialize()
+{
+    m_material_bridge = m_geometry->getMaterialBridge();
+    assert(m_material_bridge);
+}
+
+
+
+
+
 unsigned int CRecorder::getVerbosity()
 {
     return m_verbosity ; 
@@ -146,12 +164,10 @@ unsigned long long CRecorder::getSeqMat()
 
 
 
-
-
-void CRecorder::setPropLib(CPropLib* clib)
-{
-    m_clib = clib  ; 
-}
+//void CRecorder::setPropLib(CPropLib* clib)
+//{
+//    m_clib = clib  ; 
+//}
 
 
 //OpticksEvent* CRecorder::getEvent()
@@ -313,7 +329,7 @@ void CRecorder::startPhoton()
 
     //if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton(%10k)") ;
 
-    assert(m_step_id == 0);
+    //assert(m_step_id == 0);  <-- when not always true when skipping same material steps 
 
     m_c4.u = 0u ; 
 
@@ -350,7 +366,16 @@ void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, uns
 
     m_boundary_status = boundary_status ; 
     m_premat = premat ; 
-    m_postmat = postmat ; 
+    m_postmat = postmat ;
+
+/*
+    LOG(fatal) << "CRecorder::setBoundaryStatus"
+               << " premat " << premat 
+               << " postmat " << postmat 
+               ;
+   // both always 1 Gd when Dump suggests otherwise
+*/
+    
 }
   
 bool CRecorder::RecordStep(const G4Step* step)
@@ -366,16 +391,28 @@ bool CRecorder::RecordStep(const G4Step* step)
     // shift flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 
-    if(m_step_id == 0)
+    //if(m_step_id == 0)
+    if(m_slot == 0)
     {
         preFlag = m_gen ;         
         postFlag = OpPointFlag(post, m_boundary_status) ;
+
+        if(postFlag == 0 && m_boundary_status != SameMaterial)
+            LOG(warning) << " (step_id=0) boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
     }
     else
     {
         preFlag  = OpPointFlag(pre,  m_prior_boundary_status);
         postFlag = OpPointFlag(post, m_boundary_status) ;
+
+        if(preFlag == 0 && m_prior_boundary_status != SameMaterial)
+            LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_prior_boundary_status) ; 
+
+        if(postFlag == 0 && m_boundary_status != SameMaterial)
+            LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
+
     }
+
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
@@ -412,6 +449,12 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
+
+    if(flag == 0 && boundary_status != SameMaterial)
+         LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
+
+    // hmm SameMaterial steps could the problem
+
 
     //Dump(label,  slot, point, boundary_status );
 
@@ -614,9 +657,9 @@ bool CRecorder::hasIssue()
     return issue ; 
 }
 
-void CRecorder::Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
+void CRecorder::Dump(const char* /*msg*/, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
 {
-    LOG(info) << msg ; 
+    //LOG(info) << msg ; 
     std::string bs = OpBoundaryAbbrevString(boundary_status) ;
     G4ThreeVector origin ; 
     std::cout << std::setw(7) << index << " " << std::setw(15) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
@@ -633,7 +676,7 @@ void CRecorder::Dump(const char* msg)
               ;
     LOG(info) 
               << " seqmat " << std::hex << m_seqmat << std::dec 
-              << " " << m_clib->MaterialSequence(m_seqmat) 
+              << " " << m_material_bridge->MaterialSequence(m_seqmat) 
               ;
 
     if(!m_debug) return ; 
@@ -643,8 +686,8 @@ void CRecorder::Dump(const char* msg)
        //unsigned long long seqhis = m_seqhis_dbg[i] ;
        //unsigned long long seqmat = m_seqmat_dbg[i] ;
        G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
-       unsigned int mat = m_materials[i] ;
-       const char* matname = ( mat == 0 ? "-" : m_clib->getMaterialName(mat-1)  ) ;
+       unsigned mat = m_materials[i] ;
+       const char* matname = ( mat == 0 ? "-" : m_material_bridge->getMaterialName(mat-1)  ) ;
 
        Dump(msg, i, m_points[i], bst, matname );
 
@@ -675,54 +718,6 @@ void CRecorder::Clear()
     m_seqhis_dbg.clear();
     m_seqmat_dbg.clear();
 }
-
-
-/*
-void CRecorder::setupPrimaryRecording()
-{
-    m_evt->prepareForPrimaryRecording();
-
-    m_primary = m_evt->getPrimaryData() ;
-    m_primary_max = m_primary->getShape(0) ;
-
-    m_primary_id = 0 ;  
-    m_primary->zero();
-
-    LOG(info) << "CRecorder::setupPrimaryRecording"
-              << " primary_max " << m_primary_max 
-              ; 
-}
-
-
-void CRecorder::RecordPrimaryVertex(G4PrimaryVertex* vertex)
-{
-    if(m_primary == NULL || m_primary_id >= m_primary_max ) return ; 
-
-    G4ThreeVector pos = vertex->GetPosition() ;
-    G4double time = vertex->GetT0() ;
-
-    G4PrimaryParticle* particle = vertex->GetPrimary();     
-
-    const G4ThreeVector& dir = particle->GetMomentumDirection()  ; 
-    G4ThreeVector pol = particle->GetPolarization() ;
-  
-    G4double energy = particle->GetTotalEnergy()  ; 
-    G4double wavelength = h_Planck*c_light/energy ;
-    G4double weight = particle->GetWeight() ; 
-
-    m_primary->setQuad(m_primary_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-    m_primary->setQuad(m_primary_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-    m_primary->setQuad(m_primary_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-
-    m_primary->setUInt(m_primary_id, 3, 0, 0, 0u );
-    m_primary->setUInt(m_primary_id, 3, 0, 1, 0u );
-    m_primary->setUInt(m_primary_id, 3, 0, 2, 0u );
-    m_primary->setUInt(m_primary_id, 3, 0, 3, 0u );
-
-    m_primary_id += 1 ; 
-}
-
-*/
 
 
 

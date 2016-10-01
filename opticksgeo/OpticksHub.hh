@@ -11,7 +11,12 @@ class Opticks ;
 class OpticksGeometry ; 
 class OpticksAttrSeq ; 
 class OpticksEvent ; 
+
 class GGeo ; 
+class GMaterialLib ; 
+class GSurfaceLib ; 
+class GBndLib ; 
+
 class Composition ; 
 class Bookmarks ; 
 
@@ -102,6 +107,10 @@ class OKGEO_API OpticksHub {
        Composition*         getComposition();
        OpticksGeometry*     getGeometry();
        GGeo*                getGGeo();
+       GMaterialLib*        getMaterialLib();
+       GSurfaceLib*         getSurfaceLib();
+       GBndLib*             getBndLib();
+
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
        std::string          getCfgString();

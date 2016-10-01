@@ -50,7 +50,7 @@ std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status)
         case Absorption:s="Abs";break; 
         case Detection:s="Det";break;
         case NotAtBoundary:s="NAB";break;
-        case SameMaterial:s="SMA";break; 
+        case SameMaterial:s="SAM";break; 
         case StepTooSmall:s="STS";break;
         case NoRINDEX:s="NRI";break;
         case PolishedLumirrorAirReflection:s="PolishedLumirrorAirReflection";break;
@@ -143,7 +143,7 @@ std::string OpBoundaryString(const G4OpBoundaryProcessStatus status)
 
 unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
 {
-    unsigned int flag = 0 ; 
+    unsigned flag = 0 ; 
     switch(status)
     {
         case FresnelRefraction:
@@ -162,6 +162,13 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case Detection:
                                flag=SURFACE_DETECT ; 
                                break;
+        case SpikeReflection:
+                               flag=SURFACE_SREFLECT ; 
+                               break;
+        case LobeReflection:
+        case LambertianReflection:
+                               flag=SURFACE_DREFLECT ; 
+                               break;
         case Undefined:
         case Transmission:
         case BackScattering:
@@ -169,9 +176,6 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case SameMaterial:
         case NoRINDEX:
 
-        case LambertianReflection:
-        case LobeReflection:
-        case SpikeReflection:
         case PolishedLumirrorAirReflection:
         case PolishedLumirrorGlueReflection:
         case PolishedAirReflection:
@@ -215,7 +219,7 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     bool scatter = strcmp(processName, "OpRayleigh") == 0 ; 
     bool absorption = strcmp(processName, "OpAbsorption") == 0 ;
 
-    unsigned int flag(0);
+    unsigned flag(0);
     if(absorption && status == fPostStepDoItProc )
     {
         flag = BULK_ABSORB ;
@@ -230,7 +234,7 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     }
     else if(transportation && status == fGeomBoundary )
     {
-        flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT
+        flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT/SURFACE_DREFLECT/SURFACE_SREFLECT
     } 
     return flag ; 
 }

@@ -22,17 +22,17 @@ CMaterialTable::CMaterialTable(const char* prefix)
    
 void CMaterialTable::init()
 {
-    const G4MaterialTable* theMaterialTable = G4Material::GetMaterialTable();
-    unsigned numOfMaterials = G4Material::GetNumberOfMaterials();
+    const G4MaterialTable* mtab  = G4Material::GetMaterialTable();
+    unsigned nmat = G4Material::GetNumberOfMaterials();
 
     LOG(info) << "CMaterialTable::init "
-              << " numOfMaterials " << numOfMaterials
+              << " numOfMaterials " << nmat
               << " prefix " << m_prefix 
               ;
     
-    for(unsigned i=0 ; i < numOfMaterials ; i++)
+    for(unsigned i=0 ; i < nmat ; i++)
     {
-        G4Material* material = (*theMaterialTable)[i];
+        G4Material* material = (*mtab)[i];
         G4String name_ = material->GetName() ;
         const char* name = name_.c_str();
 
@@ -131,10 +131,7 @@ void CMaterialTable::dumpMaterial(G4Material* material)
 
     mpt.dumpProperty("RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB");
 
-
-
 }
-
 
 
 

@@ -12,6 +12,8 @@ class OpticksQuery ;
 #include "GSurLib.hh"
 #include "GSur.hh"
 
+#include "CMaterialTable.hh"
+#include "CMaterialBridge.hh"
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 
@@ -32,7 +34,9 @@ CGeometry::CGeometry(OpticksHub* hub)
    m_ok(m_hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
    m_detector(NULL),
-   m_lib(NULL)
+   m_lib(NULL),
+   m_material_table(NULL),
+   m_material_bridge(NULL)
 {
    init();
 }
@@ -45,6 +49,8 @@ CDetector* CGeometry::getDetector()
 {
    return m_detector; 
 }
+
+
 
 
 void CGeometry::init()
@@ -85,6 +91,31 @@ bool CGeometry::hookup(CG4* g4)
     m_ok->setSpaceDomain(ce); // triggers Opticks::configureDomains
 
    return true ; 
+}
+
+
+void CGeometry::postinitialize()
+{
+    // both these are deferred til here as needs G4 materials table to have been constructed 
+
+    m_material_table = new CMaterialTable(m_ok->getMaterialPrefix()); // TODO: move into CGeometry
+    //m_material_table->dump("CGeometry::postinitialize");
+
+    GMaterialLib* mlib = m_hub->getMaterialLib(); 
+    m_material_bridge = new CMaterialBridge( mlib ); 
+}
+
+CMaterialBridge* CGeometry::getMaterialBridge()
+{
+   // used by CRecorder::postinitialize
+    assert(m_material_bridge);
+    return m_material_bridge ; 
+}
+
+std::map<std::string, unsigned>& CGeometry::getMaterialMap()
+{
+    assert(m_material_table);
+    return m_material_table->getMaterialMap();
 }
 
 

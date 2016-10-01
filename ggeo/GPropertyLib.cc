@@ -38,6 +38,8 @@ unsigned int GPropertyLib::NUM_MATSUR = BOUNDARY_NUM_MATSUR  ;    // 4 material/
 unsigned int GPropertyLib::NUM_PROP = BOUNDARY_NUM_PROP  ; 
 unsigned int GPropertyLib::NUM_FLOAT4 = BOUNDARY_NUM_FLOAT4  ; 
 
+
+
 void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
 {
 

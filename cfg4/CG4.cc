@@ -63,20 +63,16 @@
 
 #include "PLOG.hh"
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          Timer& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
 
-
+CGeometry* CG4::getGeometry()
+{
+    return m_geometry ; 
+}
 CRecorder* CG4::getRecorder()
 {
     return m_recorder ; 
 }
+
 Rec* CG4::getRec()
 {
     return m_rec ; 
@@ -109,10 +105,9 @@ CG4::CG4(OpticksHub* hub)
      m_lib(m_geometry->getPropLib()),
      m_detector(m_geometry->getDetector()),
      m_generator(new CGenerator(m_hub, this)),
-     m_material_table(NULL),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
-     m_recorder(new CRecorder(m_ok, m_lib, m_generator->isDynamic())), 
-     m_rec(new Rec(m_ok, m_lib, m_generator->isDynamic())), 
+     m_recorder(new CRecorder(m_ok, m_geometry, m_generator->isDynamic())), 
+     m_rec(new Rec(m_ok, m_geometry, m_generator->isDynamic())), 
      m_steprec(new CStepRec(m_ok, m_generator->isDynamic())),  
      m_visManager(NULL),
      m_uiManager(NULL),
@@ -133,7 +128,6 @@ void CG4::init()
 
     initialize();
 
-    TIMER("init");
 }
 
 
@@ -150,7 +144,6 @@ void CG4::initialize()
     LOG(info) << "CG4::initialize" ;
     m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa, m_ra, m_ea)) ;
     m_runManager->Initialize();
-    TIMER("initialize");
     postinitialize();
 }
 
@@ -166,25 +159,27 @@ void CG4::postinitialize()
     m_physics->setProcessVerbosity(0); 
 
     // needs to be after the detector Construct creates the materials
-    m_material_table = new CMaterialTable(m_ok->getMaterialPrefix());
-    //m_material_table->dump("CG4::postinitialize");
+
+    // postinitialize order matters, creates/shares m_material_bridge instance
+
+    m_geometry->postinitialize();
+    m_recorder->postinitialize();  
+    m_rec->postinitialize();
+
+    CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
+    sa->postinitialize();
 
     m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ;  // for translation of material indices into GPU texture lines 
 
     m_collector = new CCollector(m_hub) ; // currently hub just used for material code lookup, not evt access
 
     LOG(info) << "CG4::postinitialize DONE" ;
-    TIMER("postinitialize");
 }
-
-
-
 
 
 std::map<std::string, unsigned>& CG4::getMaterialMap()
 {
-    assert(m_material_table);
-    return m_material_table->getMaterialMap();
+    return m_geometry->getMaterialMap();
 }
 
 void CG4::execute(const char* path)

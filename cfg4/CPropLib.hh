@@ -60,8 +60,8 @@ class CFG4_API CPropLib {
        void convert(); // commented in init 
    private:
        void init();
-       void checkConstants(); 
-       void setupOverrides(); 
+       void initCheckConstants(); 
+       void initSetupOverrides(); 
        //void convert();  commented in init 
    public:
        GSurfaceLib* getSurfaceLib();
@@ -80,9 +80,10 @@ class CFG4_API CPropLib {
        const G4Material* makeMaterial(const char* matname);
        GCSG*       getPmtCSG(NSlice* slice);
    public:
-       unsigned int getMaterialIndex(const G4Material* material);
-       const char*  getMaterialName(unsigned int index);
-       std::string MaterialSequence(unsigned long long seqmat);
+       // -> CMaterialBridge
+       //unsigned int getMaterialIndex(const G4Material* material);
+       //const char*  getMaterialName(unsigned int index);
+       //std::string MaterialSequence(unsigned long long seqmat);
        void setGroupvelKludge(bool gk=true);
    public:
        G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
@@ -123,8 +124,10 @@ class CFG4_API CPropLib {
        GPropertyMap<float>* m_sensor_surface ; 
 
        std::map<const GMaterial*, const G4Material*>   m_ggtog4 ; 
-       std::map<const G4Material*, unsigned int> m_g4toix ; 
-       std::map<unsigned int, std::string> m_ixtoname ; 
+
+       // moved to CMaterialBridge
+       //std::map<const G4Material*, unsigned int> m_g4toix ; 
+       //std::map<unsigned int, std::string> m_ixtoname ; 
 
        bool              m_groupvel_kludge ; 
    private:

@@ -1,5 +1,32 @@
 #include "BStr.hh"
+#include <iomanip>
 #include <cstdio>
+
+#include "PLOG.hh"
+
+void test_afterLastOrAll_(const char* s, const char* x )
+{
+    char* a = BStr::afterLastOrAll(s) ; 
+    bool match = strcmp(a,x) == 0 ; 
+
+    if(!match)
+    LOG(fatal) << " MISMATCH " 
+               << " s " << std::setw(30) << s 
+               << " x " << std::setw(30) << x 
+               << " a " << std::setw(30) << a
+                ;
+
+    assert(match); 
+}
+
+
+void test_afterLastOrAll()
+{
+    test_afterLastOrAll_("/hello/dear/world/take/me","me") ; 
+    test_afterLastOrAll_("me","me") ; 
+    test_afterLastOrAll_("me/","me/") ; 
+}
+
 
 void test_patternPickField()
 {
@@ -14,10 +41,11 @@ void test_patternPickField()
     }
 }
 
-
-int main()
+int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
     test_patternPickField();
+    test_afterLastOrAll();
     return 0 ; 
 }
 

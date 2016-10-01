@@ -46,6 +46,8 @@ class GGEO_API GPropertyMap {
   public:
       std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
 
+  public:
+      static const char* FindShortName(const char* name, const char* prefix);
   private:
       void findShortName(const char* prefix="__dd__Materials__");
       //char* trimSuffixPrefix(const char* origname, const char* prefix=NULL);

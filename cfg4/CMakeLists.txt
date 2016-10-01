@@ -142,6 +142,7 @@ set(SOURCES
     CSolid.cc
     CMPT.cc
     CMaterialTable.cc
+    CMaterialBridge.cc
     CBorderSurfaceTable.cc
     OpStatus.cc
     Format.cc
@@ -199,6 +200,7 @@ set(HEADERS
     CSolid.hh
     CMPT.hh
     CMaterialTable.hh
+    CMaterialBridge.hh
     CBorderSurfaceTable.cc
     OpStatus.hh
     Format.hh

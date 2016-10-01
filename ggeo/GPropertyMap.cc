@@ -251,17 +251,19 @@ bool GPropertyMap<T>::hasDefinedName()
 
 
 template <typename T>
-void GPropertyMap<T>::findShortName(const char* prefix)
+const char* GPropertyMap<T>::FindShortName(const char* name, const char* prefix)
 {
     //printf("GPropertyMap<T>::getShortName %s \n", prefix);
 
-    if(m_name.empty() || strcmp(m_name.c_str(), NOT_DEFINED) == 0)
+    const char* shortname = NULL ; 
+
+    if(strcmp(name, NOT_DEFINED) == 0)
     { 
-        m_shortname = NOT_DEFINED ;
+        shortname = NOT_DEFINED ;
     }  
-    else if(strncmp( m_name.c_str(), prefix, strlen(prefix)) == 0)
+    else if( prefix && strncmp( name, prefix, strlen(prefix)) == 0)
     { 
-        m_shortname = BStr::trimPointerSuffixPrefix(m_name.c_str(), prefix); 
+        shortname = BStr::trimPointerSuffixPrefix(name, prefix); 
     }
     else
     {
@@ -269,20 +271,31 @@ void GPropertyMap<T>::findShortName(const char* prefix)
         //     __dd__Geometry__PoolDetails__PoolSurfacesAll__UnistrutRib1Surface
         // just provide chars after the last _
 
-        if( m_name[0] == '_') //  detect dyb names by first char 
+        if( name[0] == '_') //  detect dyb names by first char 
         { 
-            const char* p = strrchr(m_name.c_str(), '_') ;
-            m_shortname = p ? p + 1 :  NOT_DEFINED ; 
+            const char* p = strrchr(name, '_') ;
+            shortname = p ? p + 1 :  NOT_DEFINED ; 
         }
         else
         {
             //  JUNO names have no prefix and are short, so just trim the 0x tail
-            m_shortname = BStr::trimPointerSuffixPrefix(m_name.c_str(), NULL) ; 
+            shortname = BStr::trimPointerSuffixPrefix(name, NULL) ; 
         }
-
-
     }
+
+    return shortname ? strdup(shortname) : NULL ; 
 }
+
+
+
+template <typename T>
+void GPropertyMap<T>::findShortName(const char* prefix)
+{
+    const char* name = m_name.empty() ? NOT_DEFINED : m_name.c_str() ; 
+    m_shortname = FindShortName(name, prefix );  
+}
+
+
 
 
 template <typename T>

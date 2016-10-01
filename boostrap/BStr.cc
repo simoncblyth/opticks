@@ -43,6 +43,15 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
 }
 
 
+char* BStr::afterLastOrAll(const char* orig, char delim)
+{
+    const char* p = strrchr(orig, delim) ;      // point at last delim, or NULL if no delim 
+    bool lastchar = p && ( p == orig + strlen(orig) - 1 ) ;
+    const char* name = p && !lastchar ? p + 1 : orig ; 
+    return strdup(name) ;
+}
+
+
 const char* BStr::ctoa( char c )
 {
     std::stringstream ss ; 

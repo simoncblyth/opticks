@@ -8,7 +8,10 @@ Simulation
 
 ::
 
-   OKG4Test --save
+   OKG4Test --compute --save
+
+   OKG4Test --compute --save --steppingdbg     ## very verbose
+
 
    lldb OKG4Test -- --compute --save 
 
@@ -159,6 +162,34 @@ Now at least in same ballpark, some zero flags to identify::
           c0cccccc6d        0.004            440       [10] TO SC BT BT BT BT BT BT ?0? BT
           c0b0c0cccd        0.004            385       [10] TO BT BT BT ?0? BT ?0? BR ?0? BT
           cbcccccccd        0.004            384       [10] TO BT BT BT BT BT BT BT BR BT
+
+
+After identify SR SURFACE_SREFLECT with SpikeReflection eliminate some zero flags,
+suspect remainder due to SameMaterial steps::
+ 
+       B:seqhis_ana   -1:dayabay 
+            8ccccccd        0.420         419905       [8 ] TO BT BT BT BT BT BT SA      
+          ccaccccccd        0.081          81049       [10] TO BT BT BT BT BT BT SR BT BT
+                  4d        0.078          77610       [2 ] TO AB
+          c0cac0cccd        0.066          66482       [10] TO BT BT BT ?0? BT SR BT ?0? BT
+          cccbcccccd        0.063          63079       [10] TO BT BT BT BT BT BR BT BT BT
+          cc9ccccccd        0.034          33940       [10] TO BT BT BT BT BT BT DR BT BT
+          cccccccccd        0.031          30534       [10] TO BT BT BT BT BT BT BT BT BT
+          ccbccccccd        0.023          23444       [10] TO BT BT BT BT BT BT BR BT BT
+                4ccd        0.019          19127       [4 ] TO BT BT AB
+           8cccccc6d        0.015          15140       [9 ] TO SC BT BT BT BT BT BT SA
+          cac00cc0cd        0.013          12771       [10] TO BT ?0? BT BT ?0? ?0? BT SR BT
+              8ccccd        0.012          12083       [6 ] TO BT BT BT BT SA
+          abaccccccd        0.008           8032       [10] TO BT BT BT BT BT BT SR BR SR
+           8cbcccccd        0.008           7512       [9 ] TO BT BT BT BT BT BR BT SA
+              4ccccd        0.007           7050       [6 ] TO BT BT BT BT AB
+             4cccccd        0.006           5645       [7 ] TO BT BT BT BT BT AB
+          ccc0b0cccd        0.005           4873       [10] TO BT BT BT ?0? BR ?0? BT BT BT
+            4ccccccd        0.005           4847       [8 ] TO BT BT BT BT BT BT AB
+          cbcccccccd        0.004           3735       [10] TO BT BT BT BT BT BT BT BR BT
+          cabac0cccd        0.004           3725       [10] TO BT BT BT ?0? BT SR BR SR BT
+                         1000000         1.00 
+
 
 
 zero flags, SR?

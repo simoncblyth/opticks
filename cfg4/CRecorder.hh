@@ -21,7 +21,9 @@ class OpticksEvent ;
 
 
 // cfg4-
-class CPropLib ; 
+//class CPropLib ; 
+class CGeometry ; 
+class CMaterialBridge ; 
 
 #include "CRecorder.h"
 
@@ -90,12 +92,13 @@ class CFG4_API CRecorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        CRecorder(Opticks* ok, CPropLib* clib, bool dynamic);
+        CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic);
+        void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
         void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
    private:
         void setEvent(OpticksEvent* evt);
    public:
-        void setPropLib(CPropLib* lib);
+        //void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         bool RecordStep(const G4Step*);
@@ -151,7 +154,9 @@ class CFG4_API CRecorder {
    private:
         Opticks*       m_ok; 
         OpticksEvent*  m_evt ; 
-        CPropLib*      m_clib ; 
+        CGeometry*     m_geometry ; 
+        //CPropLib*      m_clib ; 
+        CMaterialBridge* m_material_bridge ; 
         bool           m_dynamic ;
 
         unsigned int m_gen ; 

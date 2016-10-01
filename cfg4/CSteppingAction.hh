@@ -14,6 +14,8 @@
 class CG4 ; 
 class CPropLib ; 
 class CRecorder ; 
+class CGeometry ; 
+class CMaterialBridge ; 
 class Rec ; 
 class CStepRec ; 
 
@@ -28,6 +30,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 
   public:
     CSteppingAction(CG4* g4, bool dynamic);
+    void postinitialize();
     virtual ~CSteppingAction();
 
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
@@ -41,6 +44,8 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   private:
     CG4*         m_g4 ; 
     bool         m_dynamic ; 
+    CGeometry*   m_geometry ; 
+    CMaterialBridge*  m_material_bridge ; 
     CPropLib*    m_clib ; 
     CRecorder*   m_recorder   ; 
     Rec*         m_rec   ; 
