@@ -12,14 +12,11 @@ Simulation
 
    lldb OKG4Test -- --compute --save 
 
-
    (lldb) b "OpRayleigh::GetMeanFreePath(G4Track const&, double, G4ForceCondition*)" 
 
-       ## torch running : G4 thinks in vacuum.... 
 
 Analysis
 ----------
-
 
 ::
 

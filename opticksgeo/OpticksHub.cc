@@ -51,21 +51,6 @@
 #include "PLOG.hh"
 
 
-#define TIMER(s) \
-    { \
-       if(m_evt)\
-       {\
-          Timer& t = *(m_evt->getTimer()) ;\
-          t((s)) ;\
-       }\
-       else if(m_ok) \
-       {\
-          Timer& t = *(m_ok->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
 //
 // **OpticksHub**
 //    Non-viz, hostside intersection of config, geometry and event

@@ -15,6 +15,7 @@ class OKCORE_API OpticksRun
     public:
         OpticksEvent* getEvent();
         OpticksEvent* getG4Event();
+        OpticksEvent* getCurrentEvent(); // either G4 or OK evt depending on options
 
         void setGensteps(NPY<float>* gs);
         bool hasGensteps();

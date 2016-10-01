@@ -62,6 +62,15 @@ OpticksEvent* OpticksRun::getEvent()
 {
     return m_evt ; 
 }
+OpticksEvent* OpticksRun::getCurrentEvent()
+{
+    bool g4 = m_ok->hasOpt("vizg4|evtg4") ;
+    return g4 ? m_g4evt : m_evt ;
+}
+
+
+
+
 
 void OpticksRun::setGensteps(NPY<float>* gensteps)
 {
@@ -146,6 +155,7 @@ void OpticksRun::loadEvent()
     if(m_ok->isExit()) exit(EXIT_FAILURE) ;
 
 
+    // hmm when g4 evt is selected, perhaps skip loading OK evt ?
     if(m_ok->hasOpt("vizg4"))
     {
         m_g4evt->loadBuffers(verbose=false);

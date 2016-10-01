@@ -3,6 +3,7 @@
 class SLog ; 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksRun ; 
 class OpticksGeometry ; 
 class OpticksEvent ; 
 class OpticksIdx ; 
@@ -62,10 +63,11 @@ class OGLRAP_API OpticksViz {
     private:
          SLog*         m_log ; 
          OpticksHub*   m_hub ; 
+         Opticks*      m_ok ; 
+         OpticksRun*   m_run ; 
          OpticksGeometry* m_geometry ; 
          OpticksIdx*   m_idx ; 
          bool          m_immediate ; 
-         Opticks*      m_opticks ; 
          int           m_interactivity ; 
          Composition*  m_composition ;
          Types*        m_types ; 

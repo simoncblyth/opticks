@@ -4,6 +4,8 @@ class GItemIndex ;
 
 class Opticks ; 
 class OpticksHub ; 
+class OpticksRun ; 
+class OpticksEvent ; 
 
 #include "OKGEO_API_EXPORT.hh"
 
@@ -11,6 +13,7 @@ class OKGEO_API OpticksIdx {
    public:
        OpticksIdx(OpticksHub* hub);
    public:
+       // presentation prep
        GItemIndex* makeHistoryItemIndex();
        GItemIndex* makeMaterialItemIndex();
        GItemIndex* makeBoundaryItemIndex();
@@ -20,8 +23,12 @@ class OKGEO_API OpticksIdx {
        void indexBoundariesHost();
        void indexSeqHost();
    private:
+        // from OpticksRun, uncached
+        OpticksEvent* getEvent();
+   private:
         OpticksHub*    m_hub ; 
-        Opticks*       m_opticks ; 
+        Opticks*       m_ok ; 
+        OpticksRun*    m_run ; 
 
 };
 

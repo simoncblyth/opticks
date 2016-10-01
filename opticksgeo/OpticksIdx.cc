@@ -18,36 +18,36 @@
 #include "Opticks.hh"
 #include "OpticksIdx.hh"
 #include "OpticksHub.hh"
+#include "OpticksRun.hh"
 #include "OpticksEvent.hh"
 
 #include "PLOG.hh"
 
+/**
+OpticksIdx
+===========
 
+Canonical instance is ctor resident of OKMgr or OKG4Mgr 
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          Timer& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
-
+**/
 
 OpticksIdx::OpticksIdx(OpticksHub* hub)
    :
    m_hub(hub), 
-   m_opticks(hub->getOpticks())
+   m_ok(hub->getOpticks()),
+   m_run(m_ok->getRun())
 {
 }
 
-
-
+OpticksEvent* OpticksIdx::getEvent()
+{
+    OpticksEvent* evt = m_run->getCurrentEvent();
+    return evt ; 
+}
 
 GItemIndex* OpticksIdx::makeHistoryItemIndex()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = getEvent();
     Index* seqhis_ = evt->getHistoryIndex() ;
     if(!seqhis_)
     {
@@ -68,7 +68,7 @@ GItemIndex* OpticksIdx::makeHistoryItemIndex()
 
 GItemIndex* OpticksIdx::makeMaterialItemIndex()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = getEvent();
     Index* seqmat_ = evt->getMaterialIndex() ;
     if(!seqmat_)
     {
@@ -88,7 +88,7 @@ GItemIndex* OpticksIdx::makeMaterialItemIndex()
 
 GItemIndex* OpticksIdx::makeBoundaryItemIndex()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = getEvent();
     Index* bndidx_ = evt->getBoundaryIndex();
     if(!bndidx_)
     {
@@ -111,12 +111,12 @@ GItemIndex* OpticksIdx::makeBoundaryItemIndex()
 
 void OpticksIdx::indexEvtOld()
 {
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = getEvent();
     if(!evt) return ; 
 
     // TODO: wean this off use of Types, for the new way (GFlags..)
-    Types* types = m_opticks->getTypes();
-    Typ* typ = m_opticks->getTyp();
+    Types* types = m_ok->getTypes();
+    Typ* typ = m_ok->getTyp();
 
     NPY<float>* ox = evt->getPhotonData();
 
@@ -155,7 +155,6 @@ void OpticksIdx::indexEvtOld()
         evt->setRecordsNPY(rec);
     }
 
-    //TIMER("indexEvtOld"); 
 }
 
 
@@ -163,7 +162,7 @@ void OpticksIdx::indexSeqHost()
 {
     LOG(info) << "OpticksIdx::indexSeqHost" ; 
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = getEvent();
     if(!evt) return ; 
 
     NPY<unsigned long long>* ph = evt->getSequenceData();
@@ -192,7 +191,7 @@ void OpticksIdx::indexBoundariesHost()
     // see also opop-/OpIndexer::indexBoundaries for GPU version of this indexing 
     // also see optickscore-/Indexer for another CPU version 
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = getEvent();
     if(!evt) return ; 
 
     NPY<float>* dpho = evt->getPhotonData();
@@ -211,9 +210,7 @@ void OpticksIdx::indexBoundariesHost()
         LOG(warning) << "OpticksIdx::indexBoundariesHost dpho NULL or no data " ;
     }
 
-    //TIMER("indexBoundariesHost");
 }
-
 
 
 

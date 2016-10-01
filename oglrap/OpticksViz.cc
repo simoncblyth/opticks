@@ -13,14 +13,16 @@
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
-// okc-
-#include "Opticks.hh"
-#include "OpticksEvent.hh"
-#include "Composition.hh"
-#include "Bookmarks.hh"
 
 #include "GItemIndex.hh"
 
+
+// okc-
+#include "Opticks.hh"
+#include "OpticksEvent.hh"
+#include "OpticksRun.hh"
+#include "Composition.hh"
+#include "Bookmarks.hh"
 
 // opticksgeo-
 #include "OpticksGeometry.hh"
@@ -55,27 +57,19 @@
 #include "InteractorCfg.hh"
 
 
-#define TIMER(s) \
-    { \
-       if(m_hub)\
-       {\
-          Timer& t = *(m_hub->getTimer()) ;\
-          t((s)) ;\
-       }\
-    }
-
 
 OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     :
     m_log(new SLog("OpticksViz::OpticksViz")),
     m_hub(hub),
+    m_ok(hub->getOpticks()),
+    m_run(m_ok->getRun()),
     m_geometry(m_hub->getGeometry()),
     m_idx(idx),
     m_immediate(immediate),
-    m_opticks(hub->getOpticks()),
-    m_interactivity(m_opticks->getInteractivityLevel()),
+    m_interactivity(m_ok->getInteractivityLevel()),
     m_composition(hub->getComposition()),
-    m_types(m_opticks->getTypes()),
+    m_types(m_ok->getTypes()),
     m_title(NULL),
     m_scene(NULL),
     m_frame(NULL),
@@ -151,7 +145,7 @@ Scene* OpticksViz::getScene()
 }
 Opticks* OpticksViz::getOpticks()
 {
-    return m_opticks ; 
+    return m_ok ; 
 }
 Interactor* OpticksViz::getInteractor()
 {
@@ -179,7 +173,7 @@ void OpticksViz::prepareScene(const char* rendermode)
         LOG(warning) << "OpticksViz::prepareScene using non-standard rendermode " << rendermode ;
         m_scene->setRenderMode(rendermode);
     } 
-    else if(m_opticks->isJuno())
+    else if(m_ok->isJuno())
     {
         LOG(warning) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
 
@@ -194,12 +188,12 @@ void OpticksViz::prepareScene(const char* rendermode)
         std::string rmode = m_scene->getRenderMode();
         LOG(info) << "App::prepareViz " << rmode ; 
     }
-    else if(m_opticks->isDayabay())
+    else if(m_ok->isDayabay())
     {
         m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }
 
-    BDynamicDefine* dd = m_opticks->makeDynamicDefine(); 
+    BDynamicDefine* dd = m_ok->makeDynamicDefine(); 
     m_scene->write(dd);
 
     if(m_hub->hasOpt("dbginterop"))
@@ -231,10 +225,10 @@ void OpticksViz::uploadGeometry()
 
     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
 
-    LOG(info) << m_opticks->description();
+    LOG(info) << m_ok->description();
 
-    m_composition->setTimeDomain(        m_opticks->getTimeDomain() );
-    m_composition->setDomainCenterExtent(m_opticks->getSpaceDomain());
+    m_composition->setTimeDomain(        m_ok->getTimeDomain() );
+    m_composition->setDomainCenterExtent(m_ok->getSpaceDomain());
 
     m_scene->setGeometry(m_hub->getGGeo());
 
@@ -260,11 +254,9 @@ void OpticksViz::uploadEvent()
 {
     if(m_hub->hasOpt("nooptix|noevent")) return ; 
  
-    bool vizg4 = m_opticks->hasOpt("vizg4");
-
     m_composition->update();
 
-    OpticksEvent* evt = vizg4 ? m_hub->getG4Event() : m_hub->getEvent();
+    OpticksEvent* evt = m_run->getCurrentEvent() ;
 
     uploadEvent(evt);
 }
@@ -293,7 +285,7 @@ void OpticksViz::downloadData(NPY<float>* data)
 
 void OpticksViz::downloadEvent()
 {
-    OpticksEvent* evt = m_hub->getEvent(); 
+    OpticksEvent* evt = m_run->getEvent();  // almost always OK evt never G4 ?
     assert(evt);
     LOG(info) << "OpticksViz::downloadEvent (" << evt->getId() << ")" ;
     Rdr::download(evt);
@@ -311,7 +303,6 @@ void OpticksViz::indexPresentationPrep()
     m_seqmat = m_idx->makeMaterialItemIndex();
     m_boundaries = m_idx->makeBoundaryItemIndex();
 
-    TIMER("indexPresentationPrep"); 
 }
 
 void OpticksViz::prepareGUI()
@@ -324,7 +315,7 @@ void OpticksViz::prepareGUI()
 
     if(m_idx)
     {
-        Types* types = m_opticks->getTypes();  // needed for each render
+        Types* types = m_ok->getTypes();  // needed for each render
         m_photons = new Photons(types, m_boundaries, m_seqhis, m_seqmat ) ; // GUI jacket 
         m_scene->setPhotons(m_photons);
     }
@@ -340,7 +331,7 @@ void OpticksViz::prepareGUI()
     m_gui->init(m_window);
     m_gui->setupHelpText( m_hub->getCfgString() );
 
-    OpticksEvent* evt = m_hub->getEvent();
+    OpticksEvent* evt = m_run->getCurrentEvent();
 
     TimesTable* tt = evt ? evt->getTimesTable() : NULL ; 
     if(tt)
@@ -352,13 +343,12 @@ void OpticksViz::prepareGUI()
         LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
     }  
 
-    Parameters* parameters = evt ? evt->getParameters() : m_opticks->getParameters() ; 
+    Parameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
 
     m_gui->setupParams(parameters->getLines());
 
 #endif
 
-    TIMER("prepareGUI"); 
 }
 
 

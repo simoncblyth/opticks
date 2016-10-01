@@ -2028,7 +2028,7 @@ void OpticksEvent::loadIndex()
     m_seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_ );  
     m_bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_ );
 
-    LOG(debug) << "OpticksEvent::loadIndex"
+    LOG(info) << "OpticksEvent::loadIndex"
               << " tagdir " << tagdir 
               << " seqhis " << m_seqhis 
               << " seqmat " << m_seqmat 
