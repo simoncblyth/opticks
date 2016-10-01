@@ -75,6 +75,9 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 
    G4UserSteppingAction(),
    m_g4(g4),
+   m_ok(g4->getOpticks()),
+   m_dbgseqhis(m_ok->getDbgSeqhis()),
+   m_dbgseqmat(m_ok->getDbgSeqmat()),
    m_dynamic(dynamic),
    m_geometry(g4->getGeometry()),
    m_material_bridge(NULL),
@@ -327,8 +330,11 @@ void CSteppingAction::compareRecords()
     unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
     unsigned long long rdr_seqmat = m_recorder->getSeqMat() ;
 
+    bool debug_seqhis = m_dbgseqhis == rdr_seqhis ; 
+    bool debug_seqmat = m_dbgseqmat == rdr_seqmat ; 
+
     //bool debug = rdr_seqmat == SEQMAT_MO_PY_BK && m_verbosity > 0 ;
-    bool debug = m_verbosity > 0 ;
+    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat ;
 
     m_rec->setDebug(debug);
     m_rec->sequence();
@@ -342,7 +348,7 @@ void CSteppingAction::compareRecords()
     assert(same_seqhis);
     assert(same_seqmat);
 
-    if(m_verbosity > 0)
+    if(m_verbosity > 0 || debug )
     {
         if(!same_seqmat || !same_seqhis || debug )
         {

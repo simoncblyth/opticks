@@ -43,6 +43,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_pindex(""),
        m_builder(""),
        m_traverser(""),
+       m_dbgseqhis("0"),
+       m_dbgseqmat("0"),
        m_epsilon(0.1f),     
        m_rngmax(3000000),     
        m_bouncemax(9),     
@@ -382,6 +384,15 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("traverser",      boost::program_options::value<std::string>(&m_traverser), "OptiX Accel structure traverser, CAUTION case sensitive ");
 
+   m_desc.add_options()
+       ("dbgseqhis",      boost::program_options::value<std::string>(&m_dbgseqhis), "Debug photon history hex string" );
+
+   m_desc.add_options()
+       ("dbgseqmat",      boost::program_options::value<std::string>(&m_dbgseqmat), "Debug photon material hex string" );
+
+
+
+
    char rngmax[128];
    snprintf(rngmax,128, 
 "Maximum number of photons that can be generated/propagated as limited by the number of pre-persisted curand streams. "
@@ -684,11 +695,24 @@ const std::string& OpticksCfg<Listener>::getBuilder()
 {
     return m_builder ;
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getTraverser()
 {
     return m_traverser ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgSeqhis()
+{
+    return m_dbgseqhis  ;
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgSeqmat()
+{
+    return m_dbgseqmat  ;
+}
+
 
 
 

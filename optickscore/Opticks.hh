@@ -145,6 +145,11 @@ class OKCORE_API Opticks {
    public:
        void setModeOverride(unsigned int mode);
        void setDetector(const char* detector); 
+
+   public:
+        // from cfg
+       unsigned long long getDbgSeqhis();
+       unsigned long long getDbgSeqmat();
    public:
        OpticksCfg<Opticks>* getCfg();
        std::string          getAnaKey();

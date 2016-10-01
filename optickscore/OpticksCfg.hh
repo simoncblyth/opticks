@@ -43,6 +43,9 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getPrintIndex();
      const std::string& getBuilder();
      const std::string& getTraverser();
+     const std::string& getDbgSeqhis();
+     const std::string& getDbgSeqmat();
+
 
      float        getEpsilon(); 
      int          getRngMax(); 
@@ -99,6 +102,8 @@ private:
      std::string m_pindex ;
      std::string m_builder ;
      std::string m_traverser  ;
+     std::string m_dbgseqhis ;
+     std::string m_dbgseqmat ;
 
      float       m_epsilon ; 
      int         m_rngmax ; 

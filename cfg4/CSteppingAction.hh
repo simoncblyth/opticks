@@ -11,6 +11,7 @@
 //
 //
 // cg4-
+class Opticks ; 
 class CG4 ; 
 class CPropLib ; 
 class CRecorder ; 
@@ -43,6 +44,9 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     void setEventId(unsigned int event_id);
   private:
     CG4*         m_g4 ; 
+    Opticks*     m_ok ; 
+    unsigned long long m_dbgseqhis ;
+    unsigned long long m_dbgseqmat ;
     bool         m_dynamic ; 
     CGeometry*   m_geometry ; 
     CMaterialBridge*  m_material_bridge ; 

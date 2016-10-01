@@ -64,6 +64,11 @@
 #include "PLOG.hh"
 
 
+
+Opticks* CG4::getOpticks()
+{
+    return m_ok ; 
+}
 CGeometry* CG4::getGeometry()
 {
     return m_geometry ; 

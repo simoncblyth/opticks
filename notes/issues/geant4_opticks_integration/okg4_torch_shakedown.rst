@@ -1,6 +1,44 @@
 OKG4 Torch Shakedown
 ======================
 
+Issues Overview
+-----------------
+
+CG4 more BT than OK
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    OKG4Test --compute --save --dbgseqhis 8ccccccd 
+
+              8ccccd        0.439           4386       [6 ] TO BT BT BT BT SA
+            8ccccccd        0.424           4240       [8 ] TO BT BT BT BT BT BT SA    <<< CG4 recording has extra "BT BT" cf Opticks
+
+* in CG4 this is BT straight out, then surface absorb on stainless steel SST
+* TODO: find what happend for Opticks 
+
+::
+
+    2016-10-01 18:25:39.730 INFO  [1273721] [CRecorder::Dump@670] CSteppingAction::UserSteppingAction DONE record_id    6893
+    2016-10-01 18:25:39.730 INFO  [1273721] [CRecorder::Dump@673]  seqhis 8ccccccd TORCH BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT SURFACE_ABSORB . . . . . . . . 
+    2016-10-01 18:25:39.731 INFO  [1273721] [CRecorder::Dump@677]  seqmat 44343231 GdDopedLS Acrylic LiquidScintillator Acrylic MineralOil Acrylic MineralOil MineralOil - - - - - - - - 
+
+    TODO: get seqmat to include the Stainless Steel on which SURFACE_ABSORB happens
+
+CG4 zero flags
+~~~~~~~~~~~~~~~
+
+Associated to Acrylic to Acrylic steps between OAV and reflector
+
+
+What would be useful for debugging ?
+--------------------------------------
+
+* steered propagation with no random element : so can directly compare the same photons (not very clear how to do this though)
+
+* viz jumping between G4 and OK events (also unclear, not having worked out how to change OpenGL buffers is why interop multievent is not allowed)
+
+* some equivalent handling of dbgseqhis in Opticks, recording node numbers at least (this at least is feasible) 
 
 
 Simulation
@@ -12,6 +50,7 @@ Simulation
 
    OKG4Test --compute --save --steppingdbg     ## very verbose
 
+   OKG4Test --compute --save --dbgseqhis c0cac0cccd   ## just dump particular history photons, with some zero flags 
 
    lldb OKG4Test -- --compute --save 
 
@@ -220,6 +259,133 @@ zero flags, SR?
         "BOUNDARY_TRANSMIT":"BT",
         "NAN_ABORT":"NA"
     }
+
+
+
+dbgseqhis c0cac0cccd 
+---------------------------------------
+
+::
+
+   OKG4Test --compute --save --dbgseqhis c0cac0cccd   ## just dump particular history photons, with some zero flags 
+    
+
+
+    ----CSteppingAction----
+    2016-10-01 17:53:24.033 INFO  [1267418] [CRecorder::Dump@670] CSteppingAction::UserSteppingAction DONE record_id      68
+    2016-10-01 17:53:24.033 INFO  [1267418] [CRecorder::Dump@673]  seqhis c0cac0cccd TORCH BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT . BOUNDARY_TRANSMIT SURFACE_SREFLECT BOUNDARY_TRANSMIT . BOUNDARY_TRANSMIT . . . . . . 
+    2016-10-01 17:53:24.033 INFO  [1267418] [CRecorder::Dump@677]  seqmat 233ff33231 GdDopedLS Acrylic LiquidScintillator Acrylic Acrylic Air Air Acrylic Acrylic LiquidScintillator - - - - - - 
+    2016-10-01 17:53:24.033 INFO  [1267418] [Rec::Dump@226] CSteppingAction::UserSteppingAction (Rec)DONE nstates 11
+    [  0/ 11]
+               stepStatus [           Undefined/        GeomBoundary]
+                     flag [               TORCH/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 Und/                 FrT]
+                 material [           GdDopedLS/             Acrylic]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre d/Geometry/AD/lvIAV#pvGDS rials/GdDopedLS          noProc           Undefined pos[        0       0       0]  dir[   -0.238    0.33  -0.913]  pol[    0.971   0.081  -0.224]  ns  0.100 nm 430.000
+     post d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[     -530     734-2.03e+03]  dir[   -0.237   0.329  -0.914]  pol[    0.971  0.0807  -0.223]  ns 11.512 nm 430.000
+     )
+    [  1/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [             Acrylic/  LiquidScintillator]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[     -530     734-2.03e+03]  dir[   -0.237   0.329  -0.914]  pol[    0.971  0.0807  -0.223]  ns 11.512 nm 430.000
+     post d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[     -534     739-2.04e+03]  dir[   -0.238    0.33  -0.913]  pol[    0.971   0.081  -0.224]  ns 11.597 nm 430.000
+     )
+    [  2/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [  LiquidScintillator/             Acrylic]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[     -534     739-2.04e+03]  dir[   -0.238    0.33  -0.913]  pol[    0.971   0.081  -0.224]  ns 11.597 nm 430.000
+     post d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[     -649     899-2.49e+03]  dir[   -0.237   0.329  -0.914]  pol[    0.971  0.0807  -0.223]  ns 14.082 nm 430.000
+     )
+    [  3/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/                   .]
+               bs pri/cur [                 FrT/                 SAM]
+                 material [             Acrylic/             Acrylic]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[     -649     899-2.49e+03]  dir[   -0.237   0.329  -0.914]  pol[    0.971  0.0807  -0.223]  ns 14.082 nm 430.000
+     post y/AD/lvOIL#pvBotReflector terials/Acrylic  Transportation        GeomBoundary pos[     -654     905-2.50e+03]  dir[   -0.237   0.329  -0.914]  pol[    0.971  0.0807  -0.223]  ns 14.184 nm 430.000
+     )
+    [  4/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [                   ./   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 SAM/                 FrT]
+                 material [             Acrylic/                 Air]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre y/AD/lvOIL#pvBotReflector terials/Acrylic  Transportation        GeomBoundary pos[     -654     905-2.50e+03]  dir[   -0.237   0.329  -0.914]  pol[    0.971  0.0807  -0.223]  ns 14.184 nm 430.000
+     post vBotReflector#pvBotRefGap d/Materials/Air  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.357   0.494  -0.793]  pol[    0.932   0.123  -0.342]  ns 14.241 nm 430.000
+     )
+
+    ///
+    ///  zero flags confirmed to be associated with same material (Acrylic->Acrylic) steps, 
+    ///       but the Acrylic are from different volumes OAV -> botReflector
+    ///
+
+
+    [  5/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/    SURFACE_SREFLECT]
+               bs pri/cur [                 FrT/                 SpR]
+                 material [                 Air/                 ESR]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre vBotReflector#pvBotRefGap d/Materials/Air  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.357   0.494  -0.793]  pol[    0.932   0.123  -0.342]  ns 14.241 nm 430.000
+     post ails/lvBotRefGap#pvBotESR d/Materials/ESR  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.357   0.494   0.793]  pol[   -0.932  -0.123  -0.342]  ns 14.241 nm 430.000
+     )
+    [  6/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [    SURFACE_SREFLECT/           NAN_ABORT]
+               bs pri/cur [                 SpR/                 STS]
+                 material [                 ESR/                 Air]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre ails/lvBotRefGap#pvBotESR d/Materials/ESR  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.357   0.494   0.793]  pol[   -0.932  -0.123  -0.342]  ns 14.241 nm 430.000
+     post vBotReflector#pvBotRefGap d/Materials/Air  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.357   0.494   0.793]  pol[   -0.932  -0.123  -0.342]  ns 14.241 nm 430.000
+     )
+    [  7/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [    SURFACE_SREFLECT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 STS/                 FrT]
+                 material [                 Air/             Acrylic]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre vBotReflector#pvBotRefGap d/Materials/Air  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.357   0.494   0.793]  pol[   -0.932  -0.123  -0.342]  ns 14.241 nm 430.000
+     post y/AD/lvOIL#pvBotReflector terials/Acrylic  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.237   0.329   0.914]  pol[   -0.358  -0.904   0.232]  ns 14.241 nm 430.000
+     )
+    [  8/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/                   .]
+               bs pri/cur [                 FrT/                 SAM]
+                 material [             Acrylic/             Acrylic]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre y/AD/lvOIL#pvBotReflector terials/Acrylic  Transportation        GeomBoundary pos[     -656     909-2.51e+03]  dir[   -0.237   0.329   0.914]  pol[   -0.358  -0.904   0.232]  ns 14.241 nm 430.000
+     post d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[     -659     913-2.50e+03]  dir[   -0.237   0.329   0.914]  pol[   -0.358  -0.904   0.232]  ns 14.297 nm 430.000
+     )
+    [  9/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [                   ./   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 SAM/                 FrT]
+                 material [             Acrylic/  LiquidScintillator]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[     -659     913-2.50e+03]  dir[   -0.237   0.329   0.914]  pol[   -0.358  -0.904   0.232]  ns 14.297 nm 430.000
+     post d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[     -664     919-2.49e+03]  dir[   -0.238    0.33   0.913]  pol[   -0.359  -0.904   0.233]  ns 14.400 nm 430.000
+     )
+    [ 10/ 11]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [  LiquidScintillator/             Acrylic]
+    (rec state ;opticalphoton stepNum   11(tk ;opticalphoton tid 69 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[     -7791.08e+03-2.04e+03]  )
+      pre d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[     -664     919-2.49e+03]  dir[   -0.238    0.33   0.913]  pol[   -0.359  -0.904   0.233]  ns 14.400 nm 430.000
+     post d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[     -7791.08e+03-2.04e+03]  dir[   -0.237   0.329   0.914]  pol[   -0.358  -0.904   0.232]  ns 16.884 nm 430.000
+     )
+    (rec)FlagSequence TORCH BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT . BOUNDARY_TRANSMIT SURFACE_SREFLECT BOUNDARY_TRANSMIT . BOUNDARY_TRANSMIT . . . . . . 
+    (rec)MaterialSequence GdDopedLS Acrylic LiquidScintillator Acrylic Acrylic Air Air Acrylic Acrylic LiquidScintillator - - - - - - 
+    2016-10-01 17:53:24.035 INFO  [1267418] [Rec::sequence@200] Rec::sequence nstep 11
+
 
 
 
@@ -433,10 +599,11 @@ After setting **iso** get::
 
 
 
-Material reporting not operational in CG4
+FIXED : Material reporting with CG4
 --------------------------------------------
 
-::
+
+Initially matseq stuck on G4::
 
       A:seqmat_ana    1:dayabay 
               443231        0.441          44062       [6 ] Gd Ac LS Ac MO MO
@@ -471,6 +638,99 @@ Material reporting not operational in CG4
                  111        0.005            455       [3 ] Gd Gd Gd
                11111        0.004            365       [5 ] Gd Gd Gd Gd Gd
                           100000         1.00 
+
+::
+
+      A:seqhis_ana    1:dayabay 
+              8ccccd        0.439           4386       [6 ] TO BT BT BT BT SA
+          ccaccccccd        0.089            893       [10] TO BT BT BT BT BT BT SR BT BT
+             4cccccd        0.060            603       [7 ] TO BT BT BT BT BT AB
+                  4d        0.060            600       [2 ] TO AB
+          cccbcccccd        0.039            389       [10] TO BT BT BT BT BT BR BT BT BT
+             8cccccd        0.029            286       [7 ] TO BT BT BT BT BT SA
+           8cbcccccd        0.028            280       [9 ] TO BT BT BT BT BT BR BT SA
+             8cccc6d        0.021            206       [7 ] TO SC BT BT BT BT SA
+            8ccccccd        0.016            160       [8 ] TO BT BT BT BT BT BT SA
+                4ccd        0.014            137       [4 ] TO BT BT AB
+          cccc9ccccd        0.014            136       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc5d        0.012            118       [7 ] TO RE BT BT BT BT SA
+          cccacccccd        0.011            108       [10] TO BT BT BT BT BT SR BT BT BT
+          accccccccd        0.008             82       [10] TO BT BT BT BT BT BT BT BT SR
+                 45d        0.008             76       [3 ] TO RE AB
+             7cccccd        0.006             61       [7 ] TO BT BT BT BT BT SD
+            8cccc55d        0.005             54       [8 ] TO RE RE BT BT BT BT SA
+              4ccccd        0.005             53       [6 ] TO BT BT BT BT AB
+           4cccccccd        0.005             49       [9 ] TO BT BT BT BT BT BT BT AB
+          cccccccccd        0.004             45       [10] TO BT BT BT BT BT BT BT BT BT
+                           10000         1.00 
+       B:seqhis_ana   -1:dayabay 
+            8ccccccd        0.424           4240       [8 ] TO BT BT BT BT BT BT SA    <<< CG4 recording has more "BT BT" than Opticks does ???
+          ccaccccccd        0.081            813       [10] TO BT BT BT BT BT BT SR BT BT
+                  4d        0.079            787       [2 ] TO AB
+          cccbcccccd        0.062            619       [10] TO BT BT BT BT BT BR BT BT BT
+          c0cac0cccd        0.062            616       [10] TO BT BT BT ?0? BT SR BT ?0? BT
+          cc9ccccccd        0.032            320       [10] TO BT BT BT BT BT BT DR BT BT
+          cccccccccd        0.030            296       [10] TO BT BT BT BT BT BT BT BT BT
+          ccbccccccd        0.023            227       [10] TO BT BT BT BT BT BT BR BT BT
+                4ccd        0.019            188       [4 ] TO BT BT AB
+           8cccccc6d        0.015            146       [9 ] TO SC BT BT BT BT BT BT SA
+              8ccccd        0.013            131       [6 ] TO BT BT BT BT SA
+          cac00cc0cd        0.013            131       [10] TO BT ?0? BT BT ?0? ?0? BT SR BT
+          abaccccccd        0.008             79       [10] TO BT BT BT BT BT BT SR BR SR
+              4ccccd        0.007             69       [6 ] TO BT BT BT BT AB
+           8cbcccccd        0.007             68       [9 ] TO BT BT BT BT BT BR BT SA
+            4ccccccd        0.006             60       [8 ] TO BT BT BT BT BT BT AB
+          ccc0b0cccd        0.006             59       [10] TO BT BT BT ?0? BR ?0? BT BT BT
+             4cccccd        0.005             46       [7 ] TO BT BT BT BT BT AB
+          bc9ccccccd        0.004             42       [10] TO BT BT BT BT BT BT DR BT BR
+          cabac0cccd        0.004             40       [10] TO BT BT BT ?0? BT SR BR SR BT
+                           10000         1.00 
+
+       A:seqmat_ana    1:dayabay 
+              443231        0.444           4437       [6 ] Gd Ac LS Ac MO MO
+          33ff343231        0.089            894       [10] Gd Ac LS Ac MO Ac Ai Ai Ac Ac
+                  11        0.060            600       [2 ] Gd Gd
+             aa33231        0.048            478       [7 ] Gd Ac LS Ac Ac ES ES
+          3343343231        0.037            373       [10] Gd Ac LS Ac MO Ac Ac MO Ac Ac
+             4432311        0.033            328       [7 ] Gd Gd Ac LS Ac MO MO
+             dd43231        0.029            295       [7 ] Gd Ac LS Ac MO Vm Vm
+           443343231        0.023            232       [9 ] Gd Ac LS Ac MO Ac Ac MO MO
+          3323443231        0.015            146       [10] Gd Ac LS Ac MO MO Ac LS Ac Ac
+                2231        0.013            135       [4 ] Gd Ac LS LS
+             aa34231        0.011            113       [7 ] Gd Ac LS MO Ac ES ES
+             4443231        0.011            105       [7 ] Gd Ac LS Ac MO MO MO
+                 111        0.010             97       [3 ] Gd Gd Gd
+          ff33424321        0.008             81       [10] Gd LS Ac MO LS MO Ac Ac Ai Ai
+          334ff33231        0.008             78       [10] Gd Ac LS Ac Ac Ai Ai MO Ac Ac
+            44323111        0.007             70       [8 ] Gd Gd Gd Ac LS Ac MO MO
+            dde43231        0.007             67       [8 ] Gd Ac LS Ac MO Py Vm Vm
+             4432231        0.006             62       [7 ] Gd Ac LS LS Ac MO MO
+           44ee43231        0.005             54       [9 ] Gd Ac LS Ac MO Py Py MO MO
+            ff343231        0.005             47       [8 ] Gd Ac LS Ac MO Ac Ai Ai
+                           10000         1.00 
+       B:seqmat_ana   -1:dayabay 
+            44343231        0.425           4249       [8 ] Gd Ac LS Ac MO Ac MO MO
+          43ff343231        0.081            814       [10] Gd Ac LS Ac MO Ac Ai Ai Ac MO
+                  11        0.079            787       [2 ] Gd Gd
+          233ff33231        0.061            607       [10] Gd Ac LS Ac Ac Ai Ai Ac Ac LS
+          2343343231        0.039            390       [10] Gd Ac LS Ac MO Ac Ac MO Ac LS
+          4344343231        0.030            298       [10] Gd Ac LS Ac MO Ac MO MO Ac MO
+          4343343231        0.022            216       [10] Gd Ac LS Ac MO Ac Ac MO Ac MO
+          ebd5e43231        0.021            215       [10] Gd Ac LS Ac MO Py Bk Vm OV Py
+              443231        0.020            200       [6 ] Gd Ac LS Ac MO MO
+                2231        0.019            188       [4 ] Gd Ac LS LS
+           443432311        0.015            146       [9 ] Gd Gd Ac LS Ac MO Ac MO MO
+          3ff3332331        0.013            131       [10] Gd Ac Ac LS Ac Ac Ac Ai Ai Ac
+          4e55e43231        0.013            130       [10] Gd Ac LS Ac MO Py Bk Bk Py MO
+          4ed5e43231        0.009             95       [10] Gd Ac LS Ac MO Py Bk Vm Py MO
+          ffff343231        0.008             81       [10] Gd Ac LS Ac MO Ac Ai Ai Ai Ai
+           443343231        0.007             70       [9 ] Gd Ac LS Ac MO Ac Ac MO MO
+           444343231        0.006             62       [9 ] Gd Ac LS Ac MO Ac MO MO MO
+          e5d5e43231        0.005             46       [10] Gd Ac LS Ac MO Py Bk Vm Bk Py
+          4323333231        0.004             42       [10] Gd Ac LS Ac Ac Ac Ac LS Ac MO
+          3ffff33231        0.004             40       [10] Gd Ac LS Ac Ac Ai Ai Ai Ai Ac
+                           10000         1.00 
+
 
 
 
