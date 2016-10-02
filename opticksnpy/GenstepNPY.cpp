@@ -51,13 +51,37 @@ unsigned GenstepNPY::getNumStep()
    return m_num_step ;  
 }
 
+
+/*
+frame #4: 0x00000001007ce6d9 libNPY.dylib`GenstepNPY::addStep(this=0x0000000108667020, verbose=false) + 57 at GenstepNPY.cpp:56
+frame #5: 0x0000000101e2a7d6 libOpticksGeometry.dylib`OpticksGen::makeTorchstep(this=0x0000000108664f50) + 150 at OpticksGen.cc:182
+frame #6: 0x0000000101e2a32e libOpticksGeometry.dylib`OpticksGen::initInputGensteps(this=0x0000000108664f50) + 606 at OpticksGen.cc:74
+frame #7: 0x0000000101e2a095 libOpticksGeometry.dylib`OpticksGen::init(this=0x0000000108664f50) + 21 at OpticksGen.cc:37
+frame #8: 0x0000000101e2a073 libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108664f50, hub=0x0000000105609f20) + 131 at OpticksGen.cc:32
+frame #9: 0x0000000101e2a0bd libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108664f50, hub=0x0000000105609f20) + 29 at OpticksGen.cc:33
+frame #10: 0x0000000101e27706 libOpticksGeometry.dylib`OpticksHub::init(this=0x0000000105609f20) + 118 at OpticksHub.cc:96
+frame #11: 0x0000000101e27610 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 416 at OpticksHub.cc:81
+frame #12: 0x0000000101e277ad libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 29 at OpticksHub.cc:83
+frame #13: 0x0000000103790294 libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfedd8, argc=1, argv=0x00007fff5fbfeeb8) + 260 at OKMgr.cc:46
+*/
+
 void GenstepNPY::addStep(bool verbose)
 {
+    bool dummy_frame = isDummyFrame();
+    bool target_acquired = dummy_frame ? true : m_frame_targetted ;
+    if(!target_acquired) 
+         LOG(fatal) << "GenstepNPY::addStep target MUST be set for non-dummy frame" 
+                    << brief()
+                    ;
+
+    assert(target_acquired);
+
     assert(m_npy && m_npy->hasData());
 
     unsigned int i = m_step_index ; 
 
     setGenstepType( m_genstep_type ) ;    
+
     update(); 
 
     if(verbose) dump("GenstepNPY::addStep");
@@ -276,10 +300,18 @@ unsigned GenstepNPY::getBaseType()
 
 
 
-
-
-
-
+/*
+frame #4: 0x00000001007cfdf8 libNPY.dylib`GenstepNPY::setFrameTransform(this=0x0000000108742400, frame_transform=0x00007fff5fbfe3f8)0>&) + 56 at GenstepNPY.cpp:317
+frame #5: 0x0000000101e2bf87 libOpticksGeometry.dylib`OpticksGen::targetGenstep(this=0x0000000108740330, gs=0x0000000108742400) + 903 at OpticksGen.cc:126
+frame #6: 0x0000000101e2b774 libOpticksGeometry.dylib`OpticksGen::makeTorchstep(this=0x0000000108740330) + 52 at OpticksGen.cc:177
+frame #7: 0x0000000101e2b32e libOpticksGeometry.dylib`OpticksGen::initInputGensteps(this=0x0000000108740330) + 606 at OpticksGen.cc:74
+frame #8: 0x0000000101e2b095 libOpticksGeometry.dylib`OpticksGen::init(this=0x0000000108740330) + 21 at OpticksGen.cc:37
+frame #9: 0x0000000101e2b073 libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108740330, hub=0x0000000105609f20) + 131 at OpticksGen.cc:32
+frame #10: 0x0000000101e2b0bd libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x0000000108740330, hub=0x0000000105609f20) + 29 at OpticksGen.cc:33
+frame #11: 0x0000000101e28706 libOpticksGeometry.dylib`OpticksHub::init(this=0x0000000105609f20) + 118 at OpticksHub.cc:96
+frame #12: 0x0000000101e28610 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 416 at OpticksHub.cc:81
+frame #13: 0x0000000101e287ad libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105609f20, ok=0x0000000105421710) + 29 at OpticksHub.cc:83
+*/
 
 void GenstepNPY::setFrameTransform(const char* s)
 {
@@ -287,13 +319,13 @@ void GenstepNPY::setFrameTransform(const char* s)
     bool flip = true ;  
     glm::mat4 transform = gmat4(ss, flip);
     setFrameTransform(transform);
-    setFrameTargetted(true);
 }
 
 
 void GenstepNPY::setFrameTransform(glm::mat4& frame_transform)
 {
     m_frame_transform = frame_transform ;
+    setFrameTargetted(true);
 }
 const glm::mat4& GenstepNPY::getFrameTransform()
 {
@@ -327,7 +359,30 @@ glm::ivec4& GenstepNPY::getFrame()
     return m_frame ; 
 }
 
+int GenstepNPY::getFrameIndex()
+{
+    return m_frame.x ; 
+}
 
+std::string GenstepNPY::brief()
+{
+    std::stringstream ss ; 
+
+    ss << "GenstepNPY "
+       << " frameIndex " << getFrameIndex()
+       << " frameTargetted " << isFrameTargetted()
+       << " frameTransform " << gformat(m_frame_transform)
+       ;
+
+    return ss.str();
+}
+
+
+
+bool GenstepNPY::isDummyFrame()
+{
+    return m_frame.x == -1 ; 
+}
 
 
 
@@ -352,8 +407,6 @@ void GenstepNPY::dumpBase(const char* msg)
 
     print(m_frame, "m_frame ");
 }
-
-
 
 
 

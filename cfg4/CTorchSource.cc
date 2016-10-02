@@ -106,10 +106,10 @@ void CTorchSource::configure()
 
 
 
-    float _t = m_torch->getTime();
+    float _t       = m_torch->getTime();
     glm::vec3 _pos = m_torch->getPosition();
     glm::vec3 _dir = m_torch->getDirection();
-    float _radius = m_torch->getRadius();
+    float _radius  = m_torch->getRadius();
     glm::vec4 _zeaz = m_torch->getZenithAzimuth();
 
     LOG(fatal) << "CTorchSource::configure"
@@ -150,6 +150,10 @@ void CTorchSource::configure()
     {
         m_posGen->SetPosDisType("Point");
         m_posGen->SetCentreCoords(cen);
+
+        G4ThreeVector dir(_dir.x,_dir.y,_dir.z);
+        m_angGen->SetParticleMomentumDirection(dir);
+
     }
     else if( sphere )
     {

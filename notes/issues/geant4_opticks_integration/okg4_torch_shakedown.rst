@@ -25,6 +25,16 @@ CG4 more BT than OK
 
     TODO: get seqmat to include the Stainless Steel on which SURFACE_ABSORB happens
 
+
+Possible cause of history diff
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* impinging or touching volumes are a possible cause, in boundary model
+  these mean missing intersections : volume model is more forgiving  
+
+* TODO: laser source pointing at the problem area and make step positions plot from records with matplotlib 
+
+
 CG4 zero flags
 ~~~~~~~~~~~~~~~
 
@@ -39,6 +49,22 @@ What would be useful for debugging ?
 * viz jumping between G4 and OK events (also unclear, not having worked out how to change OpenGL buffers is why interop multievent is not allowed)
 
 * some equivalent handling of dbgseqhis in Opticks, recording node numbers at least (this at least is feasible) 
+
+
+tlaser testing
+~~~~~~~~~~~~~~~~~
+
+* :doc:`tlaser`
+
+  
+seqvol : volume sequence indexing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Problem with volume sequencing is the large number of volumes and expensive storage of int32*10 sequence
+but actually the number relevant to critical optical path is not so big, 
+so judicious favoriting of 15 volumes 0x0->0xE specific to targetted AD and overflow 0xF for all others
+
+* :doc:`seqvol`
 
 
 Simulation

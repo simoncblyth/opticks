@@ -1094,13 +1094,13 @@ OpticksBufferControl* OpticksEvent::getSeedCtrl()
 }
 void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
 {
+    m_seed_data = seed_data  ;
     if(!seed_data)
     {
         LOG(warning) << "OpticksEvent::setSeedData seed_data NULL " ;
         return ; 
     }
 
-    m_seed_data = seed_data  ;
     setBufferControl(seed_data);
     m_seed_ctrl = new OpticksBufferControl(m_seed_data->getBufferControlPtr());
     m_seed_attr = new MultiViewNPY("seed_attr");
@@ -1108,8 +1108,14 @@ void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
 
 void OpticksEvent::setHitData(NPY<float>* hit_data)
 {
-    setBufferControl(hit_data);
     m_hit_data = hit_data  ;
+    if(!hit_data)
+    {
+        LOG(warning) << "OpticksEvent::setHitData hit_data NULL " ;
+        return ; 
+    }
+
+    setBufferControl(hit_data);
     m_hit_attr = new MultiViewNPY("hit_attr");
 }
 

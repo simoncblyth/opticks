@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-tokg4.py 
+tlaser.py 
 =============================================
 
 Loads test events from Opticks and Geant4 and 
@@ -20,17 +20,20 @@ from opticks.ana.evt  import Evt
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
-    args = opticks_main(doc=__doc__, tag="1", src="torch", det="dayabay", c2max=2.0, tagoffset=0)
+    args = opticks_main(doc=__doc__, tag="1", src="torch", det="laser", c2max=2.0, tagoffset=0)
 
     log.info("tag %s src %s det %s c2max %s  " % (args.utag,args.src,args.det, args.c2max))
 
 
-    
+    a_seqs = ["8ccccd"]
+    b_seqs = ["8ccccccd"]
 
-    seqs=[]
+    #a_seqs = []
+    #b_seqs = []
+
     try:
-        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=seqs)
-        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=seqs)
+        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs)
+        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "NGLM.hpp"
 
 template<typename T> class NPY ; 
@@ -34,7 +35,8 @@ class NPY_API GenstepNPY {
        NPY<float>* getNPY();
        void         addActionControl(unsigned long long  action_control);
 
-       virtual void update() = 0 ;
+       virtual void update() = 0 ;   // <-- provided by subclasses such as TorchstepNPY
+
        virtual void dump(const char* msg="GenstepNPY::dump");
        void dumpBase(const char* msg="GenstepNPY::dumpBase");
    public:  
@@ -54,14 +56,17 @@ class NPY_API GenstepNPY {
        void setFrame(const char* s );
        void setFrame(unsigned int vindex );
        glm::ivec4&  getFrame();
+       int getFrameIndex();
        void setFrameTransform(glm::mat4& transform);
        // targetting needs frame transform info which is done by GGeo::targetTorchStep(torchstep)
 
        void setFrameTransform(const char* s );       // directly from string of 16 comma delimited floats 
        void setFrameTargetted(bool targetted=true);
        bool isFrameTargetted();
+       bool isDummyFrame();
        const glm::mat4& getFrameTransform();
 
+       std::string brief(); 
    public:  
         // methods invoked by update after frame transform is available
        void setPosition(const glm::vec4& pos );
@@ -89,6 +94,7 @@ class NPY_API GenstepNPY {
        float getTime();
        float getRadius();
        float getWavelength();
+
 
        unsigned getBaseMode();
        unsigned getBaseType();

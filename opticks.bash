@@ -656,7 +656,7 @@ treflect-(){   . $(opticks-home)/tests/treflect.bash && treflect-env $* ; }
 twhite-(){     . $(opticks-home)/tests/twhite.bash   && twhite-env $* ; }
 tlens-(){      . $(opticks-home)/tests/tlens.bash    && tlens-env $* ; }
 tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash   && tg4gun-env $* ; }
-
+tlaser-(){     . $(opticks-home)/tests/tlaser.bash   && tlaser-env $* ; }
 
 
 ####### below functions support analysis on machines without a full opticks install

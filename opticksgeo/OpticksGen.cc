@@ -122,7 +122,7 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
         {
             glm::ivec4& iframe = gs->getFrame();
             glm::mat4 transform = m_ggeo->getTransform( iframe.x );
-            LOG(debug) << "OpticksGen::targetGenstep setting frame " << iframe.x << " " << gformat(transform) ;  
+            LOG(info) << "OpticksGen::targetGenstep setting frame " << iframe.x << " " << gformat(transform) ;  
             gs->setFrameTransform(transform);
         }
         else

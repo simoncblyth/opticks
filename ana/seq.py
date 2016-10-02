@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, datetime, logging
+import os, datetime, logging, re
 log = logging.getLogger(__name__)
 import numpy as np
 
@@ -11,6 +11,7 @@ from opticks.ana.nload import A
 firstlast_ = lambda name:name[0] + name[-1]
 
 class BaseType(object):
+    hexstr = re.compile("^[0-9a-f]+$")
     def __init__(self, flags, abbrev, delim=" "):
         """
         When no abbreviation available, use first and last letter of name eg::
@@ -53,12 +54,22 @@ class MaskType(BaseType):
 
     def code(self, s):
         """
-        :param s: abbreviation string eg "TO|BT|SD"
+        :param s: abbreviation string eg "TO|BT|SD"  or hexstring 8ccccd  (without 0x prefix)
         :return: integer bitmask 
         """
-        f = self.abbr2code
-        bad = self.check(s) 
-        return reduce(lambda a,b:a|b,map(lambda n:f.get(n,0), s.split(self.delim)))
+        #log.info(" s [%s] " % s)
+        if self.hexstr.match(s):
+            c = int(s,16) 
+            cs = "%x" % c 
+            log.info("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
+            assert s == cs
+        else:
+            f = self.abbr2code
+            bad = self.check(s) 
+            c = reduce(lambda a,b:a|b,map(lambda n:f.get(n,0), s.split(self.delim)))
+        pass
+        return c 
+
 
     def label(self, i):
         """
@@ -81,9 +92,18 @@ class SeqType(BaseType):
         :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
         :return: integer code eg 0x8cbbbcd
         """
-        f = self.abbr2code
-        bad = self.check(s) 
-        return reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(self.delim)))))
+        if self.hexstr.match(s):
+            c = int(s,16) 
+            cs = "%x" % c 
+            log.info("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
+            assert s == cs
+        else:
+            f = self.abbr2code
+            bad = self.check(s) 
+            c = reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(self.delim)))))
+        pass
+        return c
+   
 
     def label(self, i):
         """
