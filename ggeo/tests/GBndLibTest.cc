@@ -21,9 +21,9 @@
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    BRAP_LOG_ ;
-    NPY_LOG_ ;
-    GGEO_LOG_ ;
+    BRAP_LOG__ ;
+    NPY_LOG__ ;
+    GGEO_LOG__ ;
 
     LOG(info) << argv[0] ; 
 

@@ -51,6 +51,7 @@ GSurfaceLib* GSurLib::getSurfaceLib()
 void GSurLib::pushBorderSurfaces(std::vector<std::string>& names)
 {
     // cheat determination of bordersurfaces by looking at the .dae
+    // these have directionality, the other **skin** surfaces do not
     names.push_back("ESRAirSurfaceTop");
     names.push_back("ESRAirSurfaceBot");
     names.push_back("SSTOilSurface");

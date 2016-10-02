@@ -139,6 +139,20 @@ Restricting to top seq::
            [ -16520.    , -802110.    ,   -7125.    ,       0.    ],
            [ -16520.    , -802110.    ,   -7125.    ,       0.    ]])
 
+
+    In [14]: a.ox[:,0]    # final position photons, no compression
+    Out[14]: 
+    A()sliced
+    A([[ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           ..., 
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472]], dtype=float32)
+
+
+
     In [9]: b.rpost_(slice(0,9))[0]
     Out[9]: 
     A()sliced
@@ -152,10 +166,188 @@ Restricting to top seq::
            [ -16696.9582, -801768.0847,   -6604.9499,      12.842 ],
            [ -16520.    , -802110.    ,   -7125.    ,       0.    ]])
 
+    In [15]: b.ox[:,0]
+    Out[15]: 
+    A()sliced
+    A([[ -16697.0586, -801768.0625,   -6605.    ,      12.842 ],
+           [ -16697.0586, -801768.0625,   -6605.    ,      12.842 ],
+           [ -16697.0586, -801768.0625,   -6605.    ,      12.842 ],
+           ..., 
+           [ -16697.0586, -801768.0625,   -6605.    ,      12.842 ],
+           [ -16697.0586, -801768.0625,   -6605.    ,      12.842 ],
+           [ -16697.0586, -801768.0625,   -6605.    ,      12.842 ]], dtype=float32)
+
+    In [17]: a.ox[:7500,0] - b.ox[:,0]
+    Out[17]: 
+    A()sliced
+    A([[-129.3359,  192.6875,    0.    ,   -1.4948],
+           [-129.3359,  192.6875,    0.    ,   -1.4948],
+           [-129.3359,  192.6875,    0.    ,   -1.4948],
+           ..., 
+           [-129.3359,  192.6875,    0.    ,   -1.4948],
+           [-129.3359,  192.6875,    0.    ,   -1.4948],
+           [-129.3359,  192.6875,    0.    ,   -1.4948]], dtype=float32)
+
+
+Termination boundaries
+------------------------
+
+::
+
+    134 #define FLAGS(p, s, prd) \
+    135 { \
+    136     p.flags.i.x = prd.boundary ;  \
+    137     p.flags.u.y = s.identity.w ;  \
+    138     p.flags.u.w |= s.flag ; \
+    139 } \
+
+
+::
+
+    ( 37) om:               MineralOil os:             RSOilSurface is:                          im:                  Acrylic
+
+    (signed boundaries are 1-based, as 0 means miss : so subtract 1 for the 0-based op --bnd)
+
+    GSurLib::pushBorderSurfaces does not list it, so it should be isur/osur duped in order to be relevant in both directions ???
+
+    WHAT IS THE CG4 8? just the slot 
+
+    HUH : -ve boundary corresponds to inward going photons  ???
+
+
+    In [21]: a.ox[:,3].view(np.int32)
+    Out[21]: 
+    A()sliced
+    A([[     -38,        0, 67305984,     6272],
+           [     -38,        0, 67305984,     6272],
+           [     -38,        0, 67305984,     6272],
+           ..., 
+           [     -38,        0, 67305984,     6272],
+           [     -38,        0, 67305984,     6272],
+           [     -38,        0, 67305984,     6272]], dtype=int32)
+
+    In [22]: b.ox[:,3].view(np.int32)
+    Out[22]: 
+    A()sliced
+    A([[       8,        0, 67305984,     6272],
+           [       8,        0, 67305984,     6272],
+           [       8,        0, 67305984,     6272],
+           ..., 
+           [       8,        0, 67305984,     6272],
+           [       8,        0, 67305984,     6272],
+           [       8,        0, 67305984,     6272]], dtype=int32)
+
+
+::
+
+    586 void CRecorder::RecordPhoton(const G4Step* step)
+    587 {
+    588     // gets called at last step (eg absorption) or when truncated
+    ...
+    609     target->setUInt(target_record_id, 3, 0, 0, m_slot );
+    610     target->setUInt(target_record_id, 3, 0, 1, 0u );
+    611     target->setUInt(target_record_id, 3, 0, 2, m_c4.u );
+    612     target->setUInt(target_record_id, 3, 0, 3, m_mskhis );
+    613 
+
+
+z is c4::
+
+    309     // initial quadrant 
+    310     uifchar4 c4 ;
+    311     c4.uchar_.x =
+    312                   (  p.position.x > 0.f ? QX : 0u )
+    313                    |
+    314                   (  p.position.y > 0.f ? QY : 0u )
+    315                    |
+    316                   (  p.position.z > 0.f ? QZ : 0u )
+    317                   ;
+    318 
+    319     c4.uchar_.y = 2u ;   // 3-bytes up for grabs
+    320     c4.uchar_.z = 3u ;
+    321     c4.uchar_.w = 4u ;
+    322 
+    323     p.flags.f.z = c4.f ;
+
+
+    In [28]: a.c4
+    Out[28]: 
+    rec.array([(0, 2, 3, 4), (0, 2, 3, 4), (0, 2, 3, 4), ..., (0, 2, 3, 4), (0, 2, 3, 4), (0, 2, 3, 4)], 
+          dtype=[('x', 'u1'), ('y', 'u1'), ('z', 'u1'), ('w', 'u1')])
+
+    In [29]: b.c4
+    Out[29]: 
+    rec.array([(0, 2, 3, 4), (0, 2, 3, 4), (0, 2, 3, 4), ..., (0, 2, 3, 4), (0, 2, 3, 4), (0, 2, 3, 4)], 
+          dtype=[('x', 'u1'), ('y', 'u1'), ('z', 'u1'), ('w', 'u1')])
+
+
 
 
 * old groupvel timing issue apparent, fixing that will help with this
 * looks like CG4 is taking a few steps more prior to SA
+
+
+
+probable cause CG4 logical skin surfaces lacking lv
+-----------------------------------------------------
+
+::
+
+    2016-10-02 16:51:37.006 INFO  [1411044] [CBorderSurfaceTable::init@21] CBorderSurfaceTable::init nsurf 11
+        0               NearDeadLinerSurface pv1 /dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead #0 pv2 /dd/Geometry/Pool/lvNearPoolDead#pvNearPoolLiner #0
+        1                NearOWSLinerSurface pv1 /dd/Geometry/Pool/lvNearPoolLiner#pvNearPoolOWS #0 pv2 /dd/Geometry/Pool/lvNearPoolDead#pvNearPoolLiner #0
+        2              NearIWSCurtainSurface pv1 /dd/Geometry/Pool/lvNearPoolCurtain#pvNearPoolIWS #0 pv2 /dd/Geometry/Pool/lvNearPoolOWS#pvNearPoolCurtain #0
+        3               SSTWaterSurfaceNear1 pv1 /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE1 #0 pv2 /dd/Geometry/AD/lvADE#pvSST #0
+        4                      SSTOilSurface pv1 /dd/Geometry/AD/lvSST#pvOIL #0 pv2 /dd/Geometry/AD/lvADE#pvSST #0
+        5                      SSTOilSurface pv1 /dd/Geometry/AD/lvSST#pvOIL #0 pv2 /dd/Geometry/AD/lvADE#pvSST #0
+        6                   ESRAirSurfaceTop pv1 /dd/Geometry/AdDetails/lvTopReflector#pvTopRefGap #0 pv2 /dd/Geometry/AdDetails/lvTopRefGap#pvTopESR #0
+        7                   ESRAirSurfaceTop pv1 /dd/Geometry/AdDetails/lvTopReflector#pvTopRefGap #0 pv2 /dd/Geometry/AdDetails/lvTopRefGap#pvTopESR #0
+        8                   ESRAirSurfaceBot pv1 /dd/Geometry/AdDetails/lvBotReflector#pvBotRefGap #0 pv2 /dd/Geometry/AdDetails/lvBotRefGap#pvBotESR #0
+        9                   ESRAirSurfaceBot pv1 /dd/Geometry/AdDetails/lvBotReflector#pvBotRefGap #0 pv2 /dd/Geometry/AdDetails/lvBotRefGap#pvBotESR #0
+       10               SSTWaterSurfaceNear2 pv1 /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE2 #0 pv2 /dd/Geometry/AD/lvADE#pvSST #0
+
+    2016-10-02 16:51:37.006 INFO  [1411044] [CBorderSurfaceTable::dump@47] CGeometryTest CBorderSurfaceTable
+    2016-10-02 16:51:37.006 INFO  [1411044] [CSkinSurfaceTable::init@22] CSkinSurfaceTable::init nsurf 36
+        0               NearPoolCoverSurface lv NULL
+        1      lvPmtHemiCathodeSensorSurface lv NULL
+        2    lvHeadonPmtCathodeSensorSurface lv NULL
+        3                       RSOilSurface lv NULL
+        4                 AdCableTraySurface lv NULL
+        5                PmtMtTopRingSurface lv NULL
+        6               PmtMtBaseRingSurface lv NULL
+        7                   PmtMtRib1Surface lv NULL
+        8                   PmtMtRib2Surface lv NULL
+        9                   PmtMtRib3Surface lv NULL
+       10                 LegInIWSTubSurface lv NULL
+       11                  TablePanelSurface lv NULL
+       12                 SupportRib1Surface lv NULL
+       13                 SupportRib5Surface lv NULL
+       14                   SlopeRib1Surface lv NULL
+       15                   SlopeRib5Surface lv NULL
+       16            ADVertiCableTraySurface lv NULL
+       17           ShortParCableTraySurface lv NULL
+       18              NearInnInPiperSurface lv NULL
+       19             NearInnOutPiperSurface lv NULL
+       20                 LegInOWSTubSurface lv NULL
+       21                UnistrutRib6Surface lv NULL
+       22                UnistrutRib7Surface lv NULL
+       23                UnistrutRib3Surface lv NULL
+       24                UnistrutRib5Surface lv NULL
+       25                UnistrutRib4Surface lv NULL
+       26                UnistrutRib1Surface lv NULL
+       27                UnistrutRib2Surface lv NULL
+       28                UnistrutRib8Surface lv NULL
+       29                UnistrutRib9Surface lv NULL
+       30           TopShortCableTraySurface lv NULL
+       31          TopCornerCableTraySurface lv NULL
+       32              VertiCableTraySurface lv NULL
+       33              NearOutInPiperSurface lv NULL
+       34             NearOutOutPiperSurface lv NULL
+       35                LegInDeadTubSurface lv NULL
+
+
+
+
 
 
 

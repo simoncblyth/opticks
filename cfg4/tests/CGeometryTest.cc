@@ -15,6 +15,7 @@
 #include "CDetector.hh"
 #include "CMaterialTable.hh"
 #include "CBorderSurfaceTable.hh"
+#include "CSkinSurfaceTable.hh"
 #include "CMaterialBridge.hh"
 
 // g4-
@@ -51,8 +52,14 @@ int main(int argc, char** argv)
     mt.dumpMaterial("GdDopedLS");
 
 
-    //CBorderSurfaceTable bst ; 
-    //bst.dump("CGeometryTest CBorderSurfaceTable");
+    CBorderSurfaceTable bst ; 
+    bst.dump("CGeometryTest CBorderSurfaceTable");
+
+    CSkinSurfaceTable sst ; 
+    sst.dump("CGeometryTest CSkinSurfaceTable");
+
+
+
 
     GGeo* gg = hub.getGGeo();
     GMaterialLib* mlib = gg->getMaterialLib(); 

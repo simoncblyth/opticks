@@ -144,6 +144,7 @@ set(SOURCES
     CMaterialTable.cc
     CMaterialBridge.cc
     CBorderSurfaceTable.cc
+    CSkinSurfaceTable.cc
     OpStatus.cc
     Format.cc
     CTraverser.cc
@@ -202,6 +203,7 @@ set(HEADERS
     CMaterialTable.hh
     CMaterialBridge.hh
     CBorderSurfaceTable.cc
+    CSkinSurfaceTable.cc
     OpStatus.hh
     Format.hh
     CTraverser.hh

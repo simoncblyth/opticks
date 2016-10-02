@@ -4,6 +4,7 @@
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
+#include "G4LogicalVolume.hh"
 
 #include "GVector.hh"
 #include "GProperty.hh"
@@ -171,6 +172,15 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
     const char* name = pmap->getName() ;
     const char* lvn = sur->getLV(ilv);       // assuming LV identity is 1-to-1 with name 
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
+
+    //if(!lv) 
+        LOG(fatal) << "CSurLib::makeSkinSurface"
+                   << " ilv " << std::setw(5) << ilv
+                   << " name " << std::setw(35) << name
+                   << " lvn " << std::setw(35) << lvn 
+                   << " lv " << ( lv ? lv->GetName() : "NULL" )
+                   ;
+
     G4LogicalSkinSurface* lss = new G4LogicalSkinSurface(name, const_cast<G4LogicalVolume*>(lv), os );
     return lss ;
 }

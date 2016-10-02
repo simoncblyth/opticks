@@ -32,9 +32,11 @@ void CBorderSurfaceTable::init()
         const G4VPhysicalVolume* pv1 = bs->GetVolume1() ;
         const G4VPhysicalVolume* pv2 = bs->GetVolume2() ;
 
-        LOG(info) << std::setw(5) << i 
+        std::cout << std::setw(5) << i 
+                  << std::setw(35) << bs->GetName()
                   << " pv1 " << pv1->GetName() << " #" << pv1->GetCopyNo() 
                   << " pv2 " << pv2->GetName() << " #" << pv2->GetCopyNo() 
+                  << std::endl 
                   ;
     }
 

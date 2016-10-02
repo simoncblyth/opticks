@@ -6,7 +6,6 @@ but actually the number relevant to critical optical path is not so big,
 so judicious favoriting of 15 volumes 0x0->0xE specific to targetted AD and overflow 0xF for all others
 may be sufficient.
 
-
 tlaser node index dumping
 ---------------------------
 
@@ -202,10 +201,315 @@ Where did the surface handling come from in Opticks...
 ----------------------------------------------------------
 
 
+cu/generate.cu::
+
+    418         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    419         {
+    420             command = propagate_at_surface(p, s, rng);
+    421             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    422             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    423         }
+    424         else
+    425         {
+    426             //propagate_at_boundary(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    427             propagate_at_boundary_geant4_style(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    428             // tacit CONTINUE
+    429         }
+
+
+cu/state.h::
+
+     27 __device__ void fill_state( State& s, int boundary, uint4 identity, float wavelength )
+     28 {           
+     29     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
+     30     // >0 outward going photon
+     31     // <0 inward going photon
+     32     //  
+     33     // NB the line is above the details of the payload (ie how many float4 per matsur) 
+     34     //    it is just 
+     35     //                boundaryIndex*4  + 0/1/2/3     for OMAT/OSUR/ISUR/IMAT 
+     36     //      
+     37         
+     38     int line = boundary > 0 ? (boundary - 1)*BOUNDARY_NUM_MATSUR : (-boundary - 1)*BOUNDARY_NUM_MATSUR  ;
+     39     
+     40     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
+     41     // 
+     42     int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;
+     43     int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;
+     44     int su_line = boundary > 0 ? line + ISUR : line + OSUR ;  
+     ///
+     ///      *su_line*
+     ///         of the inner/outer surface for this boundary depending on photon direction
+     ///         hmm THAT means logical skin surfaces which have no directionality 
+     ///         (as opposed to border surfaces that do)
+     ///         would need to be duplicated into ISUR and OSUR ?? is that the case ??
+     ///
+     ///         this feeds directly into surface or boundary treatment via s.optical = optical_buffer[su_line]
+     ///
+     45     
+     46     //  consider photons arriving at PMT cathode surface
+     47     //  geometry normals are expected to be out of the PMT 
+     48     //
+     49     //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
+     50     
+     51     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
+     52     s.material2 = boundary_lookup( wavelength, m2_line, 0);
+     53     s.surface   = boundary_lookup( wavelength, su_line, 0);
+     54     
+     55     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
+     ..
 
 
 
 
+op --bnd : shows no isur/osur duping but there are more skin surfs that border surfs, SO THIS IS A BUG
+-----------------------------------------------------------------------------------------------------------
+
+But this is in wrong direction ? Unless equivalent CSur issue ?
+
+::
+
+    delta:ggeo blyth$ op --bnd
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --bnd
+    248 -rwxr-xr-x  1 blyth  staff  126436 Oct  2 15:49 /usr/local/opticks/lib/GBndLibTest
+    proceeding : /usr/local/opticks/lib/GBndLibTest --bnd
+    2016-10-02 15:49:56.271 INFO  [1395790] [main@28] /usr/local/opticks/lib/GBndLibTest
+    2016-10-02 15:49:56.273 INFO  [1395790] [main@32]  ok 
+    2016-10-02 15:49:56.273 INFO  [1395790] [main@36]  loaded blib 
+    2016-10-02 15:49:56.278 INFO  [1395790] [main@40]  loaded all  blib 0x7fbc19e09e30 mlib 0x7fbc19e0afd0 slib 0x7fbc19e46090
+    2016-10-02 15:49:56.278 INFO  [1395790] [GBndLib::dump@836] GBndLib::dump
+    2016-10-02 15:49:56.278 INFO  [1395790] [GBndLib::dump@838] GBndLib::dump ni 123
+     (  0) om:                   Vacuum os:                          is:                          im:                   Vacuum
+     (  1) om:                   Vacuum os:                          is:                          im:                     Rock
+     (  2) om:                     Rock os:                          is:                          im:                      Air
+     (  3) om:                      Air os:     NearPoolCoverSurface is:                          im:                      PPE
+     (  4) om:                      Air os:                          is:                          im:                Aluminium
+     (  5) om:                Aluminium os:                          is:                          im:                     Foam
+     (  6) om:                     Foam os:                          is:                          im:                 Bakelite
+     (  7) om:                 Bakelite os:                          is:                          im:                      Air
+     (  8) om:                      Air os:                          is:                          im:                   MixGas
+     (  9) om:                      Air os:                          is:                          im:                      Air
+     ( 10) om:                      Air os:                          is:                          im:                     Iron
+     ( 11) om:                     Rock os:                          is:                          im:                     Rock
+     ( 12) om:                     Rock os:                          is:                          im:                DeadWater
+     ( 13) om:                DeadWater os:     NearDeadLinerSurface is:                          im:                    Tyvek
+     ( 14) om:                    Tyvek os:                          is:      NearOWSLinerSurface im:                 OwsWater
+     ( 15) om:                 OwsWater os:                          is:                          im:                    Tyvek
+     ( 16) om:                    Tyvek os:                          is:    NearIWSCurtainSurface im:                 IwsWater
+     ( 17) om:                 IwsWater os:                          is:                          im:                 IwsWater
+     ( 18) om:                 IwsWater os:     SSTWaterSurfaceNear1 is:                          im:           StainlessSteel
+     ( 19) om:           StainlessSteel os:                          is:            SSTOilSurface im:               MineralOil
+     ( 20) om:               MineralOil os:                          is:                          im:                  Acrylic
+     ( 21) om:                  Acrylic os:                          is:                          im:       LiquidScintillator
+     ( 22) om:       LiquidScintillator os:                          is:                          im:                  Acrylic
+     ( 23) om:                  Acrylic os:                          is:                          im:                GdDopedLS
+     ( 24) om:       LiquidScintillator os:                          is:                          im:                   Teflon
+     ( 25) om:       LiquidScintillator os:                          is:                          im:                GdDopedLS
+     ( 26) om:                   Teflon os:                          is:                          im:                GdDopedLS
+     ( 27) om:               MineralOil os:                          is:                          im:                    Pyrex
+     ( 28) om:                    Pyrex os:                          is:                          im:                   Vacuum
+     ( 29) om:                   Vacuum os:lvPmtHemiCathodeSensorSurface is:                          im:                 Bialkali
+     ( 30) om:                   Vacuum os:                          is:                          im:             OpaqueVacuum
+     ( 31) om:               MineralOil os:                          is:                          im:       UnstStainlessSteel
+     ( 32) om:               MineralOil os:                          is:                          im:                   Vacuum
+     ( 33) om:                   Vacuum os:                          is:                          im:                    Pyrex
+     ( 34) om:                   Vacuum os:lvHeadonPmtCathodeSensorSurface is:                          im:                 Bialkali
+     ( 35) om:                   Vacuum os:                          is:                          im:                      PVC
+     ( 36) om:               MineralOil os:                          is:                          im:           StainlessSteel
+     ( 37) om:               MineralOil os:             RSOilSurface is:                          im:                  Acrylic
+     ( 38) om:                  Acrylic os:                          is:                          im:                      Air
+     ( 39) om:                      Air os:         ESRAirSurfaceTop is:                          im:                      ESR
+     ( 40) om:                      Air os:         ESRAirSurfaceBot is:                          im:                      ESR
+     ( 41) om:               MineralOil os:                          is:                          im:                   Teflon
+     ( 42) om:               MineralOil os:                          is:                          im:       LiquidScintillator
+     ( 43) om:                   Vacuum os:                          is:                          im:                    Nylon
+     ( 44) om:                   Vacuum os:                          is:                          im:                  Acrylic
+     ( 45) om:           StainlessSteel os:                          is:                          im:                GdDopedLS
+     ( 46) om:           StainlessSteel os:                          is:                          im:       LiquidScintillator
+     ( 47) om:                 IwsWater os:                          is:                          im:                    Water
+     ( 48) om:                    Water os:                          is:                          im:           StainlessSteel
+     ( 49) om:           StainlessSteel os:                          is:                          im:                 Nitrogen
+     ( 50) om:                 Nitrogen os:                          is:                          im:                      BPE
+     ( 51) om:                 Nitrogen os:                          is:                          im:           StainlessSteel
+     ( 52) om:                 Nitrogen os:                          is:                          im:                   Vacuum
+     ( 53) om:                  Acrylic os:                          is:                          im:                    Nylon
+     ( 54) om:                  Acrylic os:                          is:                          im:           StainlessSteel
+     ( 55) om:                   Vacuum os:                          is:                          im:           StainlessSteel
+     ( 56) om:           StainlessSteel os:                          is:                          im:                Aluminium
+     ( 57) om:                Aluminium os:                          is:                          im:                    Ge_68
+     ( 58) om:                      Air os:                          is:                          im:           StainlessSteel
+     ( 59) om:           StainlessSteel os:                          is:                          im:                      Air
+     ( 60) om:                      Air os:                          is:                          im:                  Acrylic
+     ( 61) om:                  Acrylic os:                          is:                          im:                Aluminium
+     ( 62) om:                Aluminium os:                          is:                          im:                    Co_60
+     ( 63) om:                  Acrylic os:                          is:                          im:                   Vacuum
+     ( 64) om:           StainlessSteel os:                          is:                          im:                   Vacuum
+     ( 65) om:                   Vacuum os:                          is:                          im:                     C_13
+     ( 66) om:                   Vacuum os:                          is:                          im:                   Silver
+     ( 67) om:                 Nitrogen os:                          is:                          im:                  Acrylic
+     ( 68) om:                 IwsWater os:                          is:                          im:           StainlessSteel
+     ( 69) om:           StainlessSteel os:                          is:                          im:              NitrogenGas
+     ( 70) om:              NitrogenGas os:                          is:                          im:                  Acrylic
+     ( 71) om:              NitrogenGas os:                          is:                          im:       LiquidScintillator
+     ( 72) om:              NitrogenGas os:                          is:                          im:                GdDopedLS
+     ( 73) om:                 Nitrogen os:                          is:                          im:                 Nitrogen
+     ( 74) om:                 Nitrogen os:                          is:                          im:                GdDopedLS
+     ( 75) om:                 Nitrogen os:                          is:                          im:       LiquidScintillator
+     ( 76) om:                 IwsWater os:       AdCableTraySurface is:                          im:       UnstStainlessSteel
+     ( 77) om:       UnstStainlessSteel os:                          is:                          im:                      BPE
+     ( 78) om:                    Water os:                          is:                          im:                 Nitrogen
+     ( 79) om:                 Nitrogen os:                          is:                          im:               MineralOil
+     ( 80) om:                 IwsWater os:     SSTWaterSurfaceNear2 is:                          im:           StainlessSteel
+     ( 81) om:                 IwsWater os:                          is:                          im:                    Pyrex
+     ( 82) om:                 IwsWater os:      PmtMtTopRingSurface is:                          im:       UnstStainlessSteel
+     ( 83) om:                 IwsWater os:     PmtMtBaseRingSurface is:                          im:       UnstStainlessSteel
+     ( 84) om:                 IwsWater os:         PmtMtRib1Surface is:                          im:       UnstStainlessSteel
+     ( 85) om:                 IwsWater os:                          is:                          im:       UnstStainlessSteel
+     ( 86) om:                 IwsWater os:         PmtMtRib2Surface is:                          im:       UnstStainlessSteel
+     ( 87) om:                 IwsWater os:         PmtMtRib3Surface is:                          im:       UnstStainlessSteel
+     ( 88) om:                 IwsWater os:       LegInIWSTubSurface is:                          im:    ADTableStainlessSteel
+     ( 89) om:                 IwsWater os:        TablePanelSurface is:                          im:    ADTableStainlessSteel
+     ( 90) om:                 IwsWater os:       SupportRib1Surface is:                          im:    ADTableStainlessSteel
+     ( 91) om:                 IwsWater os:       SupportRib5Surface is:                          im:    ADTableStainlessSteel
+     ( 92) om:                 IwsWater os:         SlopeRib1Surface is:                          im:    ADTableStainlessSteel
+     ( 93) om:                 IwsWater os:         SlopeRib5Surface is:                          im:    ADTableStainlessSteel
+     ( 94) om:                 IwsWater os:  ADVertiCableTraySurface is:                          im:       UnstStainlessSteel
+     ( 95) om:                 IwsWater os: ShortParCableTraySurface is:                          im:       UnstStainlessSteel
+     ( 96) om:                 IwsWater os:    NearInnInPiperSurface is:                          im:                      PVC
+     ( 97) om:                 IwsWater os:   NearInnOutPiperSurface is:                          im:                      PVC
+     ( 98) om:                    Tyvek os:                          is:                          im:    ADTableStainlessSteel
+     ( 99) om:                 OwsWater os:                          is:                          im:                    Pyrex
+     (100) om:                 OwsWater os:      PmtMtTopRingSurface is:                          im:       UnstStainlessSteel
+     (101) om:                 OwsWater os:     PmtMtBaseRingSurface is:                          im:       UnstStainlessSteel
+     (102) om:                 OwsWater os:         PmtMtRib1Surface is:                          im:       UnstStainlessSteel
+     (103) om:                 OwsWater os:                          is:                          im:       UnstStainlessSteel
+     (104) om:                 OwsWater os:         PmtMtRib2Surface is:                          im:       UnstStainlessSteel
+     (105) om:                 OwsWater os:         PmtMtRib3Surface is:                          im:       UnstStainlessSteel
+     (106) om:                 OwsWater os:       LegInOWSTubSurface is:                          im:    ADTableStainlessSteel
+     (107) om:                 OwsWater os:      UnistrutRib6Surface is:                          im:       UnstStainlessSteel
+     (108) om:                 OwsWater os:      UnistrutRib7Surface is:                          im:       UnstStainlessSteel
+     (109) om:                 OwsWater os:      UnistrutRib3Surface is:                          im:       UnstStainlessSteel
+     (110) om:                 OwsWater os:      UnistrutRib5Surface is:                          im:       UnstStainlessSteel
+     (111) om:                 OwsWater os:      UnistrutRib4Surface is:                          im:       UnstStainlessSteel
+     (112) om:                 OwsWater os:      UnistrutRib1Surface is:                          im:       UnstStainlessSteel
+     (113) om:                 OwsWater os:      UnistrutRib2Surface is:                          im:       UnstStainlessSteel
+     (114) om:                 OwsWater os:      UnistrutRib8Surface is:                          im:       UnstStainlessSteel
+     (115) om:                 OwsWater os:      UnistrutRib9Surface is:                          im:       UnstStainlessSteel
+     (116) om:                 OwsWater os: TopShortCableTraySurface is:                          im:       UnstStainlessSteel
+     (117) om:                 OwsWater os:TopCornerCableTraySurface is:                          im:       UnstStainlessSteel
+     (118) om:                 OwsWater os:    VertiCableTraySurface is:                          im:       UnstStainlessSteel
+     (119) om:                 OwsWater os:    NearOutInPiperSurface is:                          im:                      PVC
+     (120) om:                 OwsWater os:   NearOutOutPiperSurface is:                          im:                      PVC
+     (121) om:                DeadWater os:      LegInDeadTubSurface is:                          im:    ADTableStainlessSteel
+     (122) om:                     Rock os:                          is:                          im:                  RadRock
+    2016-10-02 15:49:56.282 INFO  [1395790] [GPropertyLib::close@318] GPropertyLib::close type GBndLib buf 123,4,2,39,4
+    2016-10-02 15:49:56.284 INFO  [1395790] [GItemList::save@114] GItemList::save writing to /tmp/blyth/opticks/GItemList/GBndLib.txt
+    2016-10-02 15:49:56.285 INFO  [1395790] [main@59]  after blib saveToCache 
+    2016-10-02 15:49:56.285 INFO  [1395790] [main@61]  after blib saveOpticalBuffer 
+    /Users/blyth/opticks/bin/op.sh RC 0
+    delta:ggeo blyth$ 
+
+
+
+
+
+
+
+optical_buffer
+-----------------
+
+
+::
+
+    delta:optixrap blyth$ opticks-find optical_buffer 
+    ./bin/oks.bash:    rtBuffer<uint4>                optical_buffer;   // INPUT 
+    ./ggeo/ggeodev.bash:    simon:ggeo blyth$ ./optical_buffer.py 
+    ./optixrap/cu/generate.cu:rtBuffer<uint4>                optical_buffer; 
+    ./optixrap/cu/generate.cu:             slot == 0 ? optical_buffer[MaterialIndex].x : s.index.z, \
+    ./ggeo/GBndLib.cc:    NPY<unsigned int>* optical_buffer = createOpticalBuffer();
+    ./ggeo/GBndLib.cc:    setOpticalBuffer(optical_buffer);
+    ./ggeo/GBndLib.cc:    saveToCache(optical_buffer, "Optical") ; 
+    ./ggeo/GBndLib.cc:    NPY<unsigned int>* optical_buffer = createOpticalBuffer();
+    ./ggeo/GBndLib.cc:    setOpticalBuffer(optical_buffer);
+    ./ggeo/GBndLib.cc:              << " optical_buffer  " << optical_buffer->getShapeString()
+    ./ggeo/GBndLib.cc:    m_optical_buffer(NULL)
+    ./ggeo/GBndLib.cc:    return m_optical_buffer ;
+    ./ggeo/GBndLib.cc:void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
+    ./ggeo/GBndLib.cc:    m_optical_buffer = optical_buffer ;
+    ./ggeo/GSurfaceLib.cc:    m_optical_buffer(NULL)
+    ./ggeo/GSurfaceLib.cc:    m_optical_buffer = ibuf ; 
+    ./ggeo/GSurfaceLib.cc:    return m_optical_buffer ;
+    ./optixrap/OBndLib.cc:    optix::Buffer optical_buffer = m_context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_UNSIGNED_INT4, nx );
+    ./optixrap/OBndLib.cc:    memcpy( optical_buffer->map(), obuf->getBytes(), numBytes );
+    ./optixrap/OBndLib.cc:    optical_buffer->unmap();
+    ./optixrap/OBndLib.cc:    m_context["optical_buffer"]->setBuffer(optical_buffer);
+    ./ggeo/GBndLib.hh:// Former *GBoundaryLib* encompassed uint4 optical_buffer that 
+    ./ggeo/GBndLib.hh:       void setOpticalBuffer(NPY<unsigned int>* optical_buffer);
+    ./ggeo/GBndLib.hh:       NPY<unsigned int>*   m_optical_buffer ;  
+    ./ggeo/GSurfaceLib.hh:       NPY<unsigned int>*                      m_optical_buffer ; 
+    ./optixrap/cu/state.h:    s.optical = optical_buffer[su_line] ;   // index/type/finish/value
+    ./optixrap/cu/state.h:    s.index.x = optical_buffer[m1_line].x ; // m1 index
+    ./optixrap/cu/state.h:    s.index.y = optical_buffer[m2_line].x ; // m2 index 
+    ./optixrap/cu/state.h:    s.index.z = optical_buffer[su_line].x ; // su index
+    delta:opticks blyth$ 
+
+
+::
+
+    delta:geant4_opticks_integration blyth$ op --surf 
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --surf
+    224 -rwxr-xr-x  1 blyth  staff  112772 Oct  2 15:10 /usr/local/opticks/lib/GSurfaceLibTest
+    proceeding : /usr/local/opticks/lib/GSurfaceLibTest
+    2016-10-02 15:41:35.411 INFO  [1393288] [GSurfaceLib::Summary@137] GSurfaceLib::dump NumSurfaces 48 NumFloat4 2
+    2016-10-02 15:41:35.411 INFO  [1393288] [GSurfaceLib::dump@651]  (index,type,finish,value) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]           NearPoolCoverSurface (  0,  0,  3,100) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]           NearDeadLinerSurface (  1,  0,  3, 20) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]            NearOWSLinerSurface (  2,  0,  3, 20) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]          NearIWSCurtainSurface (  3,  0,  3, 20) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]           SSTWaterSurfaceNear1 (  4,  0,  3,100) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]                  SSTOilSurface (  5,  0,  3,100) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]  lvPmtHemiCathodeSensorSurface (  6,  0,  3,100) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658] lvHeadonPmtCathodeSensorSurface (  7,  0,  3,100) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]                   RSOilSurface (  8,  0,  3,100) 
+    2016-10-02 15:41:35.411 WARN  [1393288] [GSurfaceLib::dump@658]               ESRAirSurfaceTop (  9,  0,  0,  0) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]               ESRAirSurfaceBot ( 10,  0,  0,  0) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]             AdCableTraySurface ( 11,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]           SSTWaterSurfaceNear2 ( 12,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            PmtMtTopRingSurface ( 13,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]           PmtMtBaseRingSurface ( 14,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]               PmtMtRib1Surface ( 15,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]               PmtMtRib2Surface ( 16,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]               PmtMtRib3Surface ( 17,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]             LegInIWSTubSurface ( 18,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]              TablePanelSurface ( 19,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]             SupportRib1Surface ( 20,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]             SupportRib5Surface ( 21,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]               SlopeRib1Surface ( 22,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]               SlopeRib5Surface ( 23,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]        ADVertiCableTraySurface ( 24,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]       ShortParCableTraySurface ( 25,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]          NearInnInPiperSurface ( 26,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]         NearInnOutPiperSurface ( 27,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]             LegInOWSTubSurface ( 28,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib6Surface ( 29,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib7Surface ( 30,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib3Surface ( 31,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib5Surface ( 32,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib4Surface ( 33,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib1Surface ( 34,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib2Surface ( 35,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib8Surface ( 36,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]            UnistrutRib9Surface ( 37,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]       TopShortCableTraySurface ( 38,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]      TopCornerCableTraySurface ( 39,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]          VertiCableTraySurface ( 40,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]          NearOutInPiperSurface ( 41,  0,  3,100) 
+    2016-10-02 15:41:35.412 WARN  [1393288] [GSurfaceLib::dump@658]         NearOutOutPiperSurface ( 42,  0,  3,100) 
+    2016-10-02 15:41:35.413 WARN  [1393288] [GSurfaceLib::dump@658]            LegInDeadTubSurface ( 43,  0,  3,100) 
+    2016-10-02 15:41:35.413 WARN  [1393288] [GSurfaceLib::dump@658]           perfectDetectSurface ( 44,  1,  1,100) 
+    2016-10-02 15:41:35.413 WARN  [1393288] [GSurfaceLib::dump@658]           perfectAbsorbSurface ( 45,  1,  1,100) 
+    2016-10-02 15:41:35.413 WARN  [1393288] [GSurfaceLib::dump@658]         perfectSpecularSurface ( 46,  1,  1,100) 
+    2016-10-02 15:41:35.413 WARN  [1393288] [GSurfaceLib::dump@658]          perfectDiffuseSurface ( 47,  1,  1,100) 
 
 
 
