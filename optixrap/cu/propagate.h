@@ -494,11 +494,13 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     if( u < s.surface.y )   // absorb   
     {
         s.flag = SURFACE_ABSORB ;
+        s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
         return BREAK ;
     }
     else if ( u < s.surface.y + s.surface.x )  // absorb + detect
     {
         s.flag = SURFACE_DETECT ;
+        s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
         return BREAK ;
     } 
     else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 

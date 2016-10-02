@@ -155,10 +155,20 @@ Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsi
                   break;
        case POST: 
                   flag = postFlag ; 
-                  material = ( matSwap || postMat == 0 || surfaceAbsorb) ? preMat : postMat ;  
-                 // avoid NoMaterial at last step with postMat == 0 causing to use preMat
-                 // avoid Bialkali at surfaceAbsorb as Opticks surface treatment never records that 
-                 // MAYBE:special case it to set Bialkali, as kinda useful
+
+                  //  Spring 2016
+                  // material = ( matSwap || postMat == 0 || surfaceAbsorb) ? preMat : postMat ;  
+                  //
+                  // avoid NoMaterial at last step with postMat == 0 causing to use preMat
+                  // avoid Bialkali at surfaceAbsorb as Opticks surface treatment never records that 
+                  // MAYBE:special case it to set Bialkali, as kinda useful
+                  //
+                  // Oct 2016:  have changed oxrap/cu/generate.cu to record m2 material in seqmat now for SA and SD
+                  //            so try to do the same here
+                  //
+                  material = ( matSwap || postMat == 0 ) ? preMat : postMat ;  
+                  material = ( surfaceAbsorb ) ? postMat : material ; 
+
                   break;
     }
 

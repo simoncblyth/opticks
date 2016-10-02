@@ -422,7 +422,11 @@ bool CRecorder::RecordStep(const G4Step* step)
     bool matSwap = m_boundary_status == StepTooSmall ; 
 
     preMat  = matSwap ? m_postmat : m_premat ;
-    postMat = ( matSwap || m_postmat == 0 || surfaceAbsorb )  ? m_premat  : m_postmat ;
+    //postMat = ( matSwap || m_postmat == 0 || surfaceAbsorb )  ? m_premat  : m_postmat ;
+    postMat = ( matSwap || m_postmat == 0 )  ? m_premat  : m_postmat ;
+
+    if(surfaceAbsorb) postMat = m_postmat ; 
+
 
     bool done = false ; 
 

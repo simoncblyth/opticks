@@ -395,7 +395,19 @@ RT_PROGRAM void generate()
         RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;
 #endif
 
+
+        //
+        // see seqvol.rst 
+        //     below dumping more useful with option --pindex 0/1/2 etc.. restricting indices to dump
+        //     in order to follow a single photons intersect volumes
+        //   
+        // rtPrintf(" photon_id %d slot %d s.identity.x %d \n", photon_id, slot, s.identity.x );
+        //
+
         slot++ ; 
+
+       
+
 
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
@@ -423,6 +435,16 @@ RT_PROGRAM void generate()
 
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 
+
+
+    // RSAVE lays down s.flag and s.index.x into the seqhis and seqmat
+    // but there is inconsistency for BREAKers as s.index.x is only updated by fill_state 
+    // but s.flag is updated after that by the propagate methods : so the last m1 
+    // will usually be repeated in seqmat and the material on which the absorb or detect 
+    // happened will be missed
+    //
+    //  kludged this with s.index.y -> s.index.x in propagate for SURFACE_ABSORB and SURFACE_DETECT
+    //
 
 #ifdef WITH_RECORD
     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;  

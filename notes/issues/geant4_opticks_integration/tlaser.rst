@@ -35,6 +35,13 @@ Shoot horizontal laser in X direction (vertical geometry too involved)::
 
     tlaser- ; tlaser-- --okg4 --compute
 
+
+
+Prior to fixing aim
+----------------------
+
+
+::
     delta:ana blyth$ tlaser.py  ## apply seqhis selection to pick the most common seqs for A and B
 
       A:seqhis_ana       noname 
@@ -112,6 +119,9 @@ Restricting to top seq::
        B:seqhis_ana       noname 
             8ccccccd        1.000           7500       [8 ] TO BT BT BT BT BT BT SA
                             7500         1.00 
+
+
+       tlaser- ; tlaser-- --okg4 --compute --dbgseqhis 8ccccccd
 
 
 ::

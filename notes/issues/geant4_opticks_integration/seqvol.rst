@@ -7,6 +7,208 @@ so judicious favoriting of 15 volumes 0x0->0xE specific to targetted AD and over
 may be sufficient.
 
 
+tlaser node index dumping
+---------------------------
+
+::
+
+     tlaser- ; tlaser-- --compute --pindex 0
+     ...
+     photon_id 0 slot 0 s.identity.x 3159 
+     photon_id 0 slot 1 s.identity.x 3158 
+     photon_id 0 slot 2 s.identity.x 3157 
+     photon_id 0 slot 3 s.identity.x 3156 
+     photon_id 0 slot 4 s.identity.x 4413 
+     2016-10-02 13:50:36.831 INFO  [1363053] [OPropagator::launch@218] 1 : (0;10000,1) launch_times vali,comp,prel,lnch  0.0000 0.0000 0.0000 0.0335
+
+
+     tlaser- ; tlaser-- --compute --pindex 1
+
+     photon_id 1 slot 0 s.identity.x 3159 
+     photon_id 1 slot 1 s.identity.x 3158 
+     photon_id 1 slot 2 s.identity.x 3157 
+     photon_id 1 slot 3 s.identity.x 3156 
+     photon_id 1 slot 4 s.identity.x 4413 
+     2016-10-02 13:51:56.063 INFO  [1363607] [OPropagator::launch@218] 1 : (0;10000,1) launch_times vali,comp,prel,lnch  0.0000 0.0000 0.0000 0.0334
+
+     tlaser- ; tlaser-- --compute --pindex 2
+
+     photon_id 2 slot 0 s.identity.x 3159 
+     photon_id 2 slot 1 s.identity.x 3159 
+     photon_id 2 slot 2 s.identity.x 3158 
+     photon_id 2 slot 3 s.identity.x 3157 
+     photon_id 2 slot 4 s.identity.x 3156 
+     photon_id 2 slot 5 s.identity.x 4412 
+     2016-10-02 13:52:42.050 INFO  [1364078] [OPropagator::launch@218] 1 : (0;10000,1) launch_times vali,comp,prel,lnch  0.0000 0.0000 0.0000 0.0235
+
+     tlaser- ; tlaser-- --compute --pindex 3
+
+     photon_id 3 slot 0 s.identity.x 3159 
+     photon_id 3 slot 1 s.identity.x 3158 
+     photon_id 3 slot 2 s.identity.x 3157 
+     photon_id 3 slot 3 s.identity.x 3156 
+     photon_id 3 slot 4 s.identity.x 4413 
+     2016-10-02 13:54:25.898 INFO  [1364844] [OPropagator::launch@218] 1 : (0;10000,1) launch_times vali,comp,prel,lnch  0.0000 0.0000 0.0000 0.0544
+
+
+
+Above identity.x is probably a zero based index, but below list is 1-based::
+
+    delta:GItemList blyth$ idp
+    delta:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ vi GItemList/PVNames.txt 
+
+    00001 top
+     0002 __dd__Structure__Sites__db-rock0xc15d358
+     0003 __dd__Geometry__Sites__lvNearSiteRock--pvNearHallTop0xbf89820
+     0004 __dd__Geometry__Sites__lvNearHallTop--pvNearTopCover0xc23f9b8
+     ....
+     3147 __dd__Geometry__RPCSupport__lvNearHbeamBigUnit--pvNearRightDiagSILeftY40xbf89630
+     3148 __dd__Geometry__Sites__lvNearSiteRock--pvNearHallBot0xcd2fa58
+     3149 __dd__Geometry__Sites__lvNearHallBot--pvNearPoolDead0xc13c018
+     3150 __dd__Geometry__Pool__lvNearPoolDead--pvNearPoolLiner0xbf4b270
+     3151 __dd__Geometry__Pool__lvNearPoolLiner--pvNearPoolOWS0xbf55b10
+     3152 __dd__Geometry__Pool__lvNearPoolOWS--pvNearPoolCurtain0xc5c5f20
+     3153 __dd__Geometry__Pool__lvNearPoolCurtain--pvNearPoolIWS0xc15a498
+     3154 __dd__Geometry__Pool__lvNearPoolIWS--pvNearADE10xc2cf528
+     3155 __dd__Geometry__AD__lvADE--pvSST0xc128d90
+     3156 __dd__Geometry__AD__lvSST--pvOIL0xc241510
+     3157 __dd__Geometry__AD__lvOIL--pvOAV0xbf8f638
+     3158 __dd__Geometry__AD__lvOAV--pvLSO0xbf8e120
+     3159 __dd__Geometry__AD__lvLSO--pvIAV0xc2d0348
+     3160 __dd__Geometry__AD__lvIAV--pvGDS0xbf6ab00
+     3161 __dd__Geometry__AD__lvIAV--pvOcrGdsInIAV0xbf6b0e0
+     ....
+     4409 __dd__Geometry__AD__lvOIL--pvRadialShield..150xc113258
+     4410 __dd__Geometry__AD__lvOIL--pvRadialShield..160xc3ccdb8
+     4411 __dd__Geometry__AD__lvOIL--pvRadialShield..170xc3cce80
+     4412 __dd__Geometry__AD__lvOIL--pvRadialShield..180xc3d6b88
+     4413 __dd__Geometry__AD__lvOIL--pvRadialShield..190xc3d6c50
+     4414 __dd__Geometry__AD__lvOIL--pvRadialShield..200xc3d6d18
+     4415 __dd__Geometry__AD__lvOIL--pvRadialShield..210xc3d6de0
+    12228 __dd__Geometry__Sites__lvNearHallBot--pvNearHallRadSlabs--pvNearHallRadSlab70xc15ccb0
+    12229 __dd__Geometry__Sites__lvNearHallBot--pvNearHallRadSlabs--pvNearHallRadSlab80xc15cdb8
+    12230 __dd__Geometry__Sites__lvNearHallBot--pvNearHallRadSlabs--pvNearHallRadSlab90xc15cf08
+
+
+    delta:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ vi GItemList/LVNames.txt 
+    00001 World0xc15cfc0
+        2 __dd__Geometry__Sites__lvNearSiteRock0xc030350
+        3 __dd__Geometry__Sites__lvNearHallTop0xc136890
+        4 __dd__Geometry__PoolDetails__lvNearTopCover0xc137060
+        5 __dd__Geometry__RPC__lvRPCMod0xbf54e60
+    .....
+    03148 __dd__Geometry__Sites__lvNearHallBot0xbf89c60
+     3149 __dd__Geometry__Pool__lvNearPoolDead0xc2dc490
+     3150 __dd__Geometry__Pool__lvNearPoolLiner0xc21e9d0
+     3151 __dd__Geometry__Pool__lvNearPoolOWS0xbf93840
+     3152 __dd__Geometry__Pool__lvNearPoolCurtain0xc2ceef0
+     3153 __dd__Geometry__Pool__lvNearPoolIWS0xc28bc60
+     3154 __dd__Geometry__AD__lvADE0xc2a78c0
+     3155 __dd__Geometry__AD__lvSST0xc234cd0
+     3156 __dd__Geometry__AD__lvOIL0xbf5e0b8
+     3157 __dd__Geometry__AD__lvOAV0xbf1c760
+     3158 __dd__Geometry__AD__lvLSO0xc403e40
+     3159 __dd__Geometry__AD__lvIAV0xc404ee8
+     3160 __dd__Geometry__AD__lvGDS0xbf6cbb8
+     3161 __dd__Geometry__AdDetails__lvOcrGdsInIav0xbf6dd58
+     3162 __dd__Geometry__AdDetails__lvIavTopHub0xc129d88
+     3163 __dd__Geometry__AdDetails__lvCtrGdsOflBotClp0xc407eb0
+
+
+
+dbgseqhis
+------------
+
+Hmm looks like in Opticks gets SURFACE_ABSORB on radial shield, but with 
+CG4 that happens on SST ?
+
+
+
+::
+
+   tlaser- ; tlaser-- --okg4 --compute --dbgseqhis 8ccccccd
+
+
+
+    ----CSteppingAction----
+    2016-10-02 14:22:14.619 INFO  [1371115] [CRecorder::Dump@670] CSteppingAction::UserSteppingAction DONE record_id    6717
+    2016-10-02 14:22:14.619 INFO  [1371115] [CRecorder::Dump@673]  seqhis 8ccccccd TORCH BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT SURFACE_ABSORB . . . . . . . . 
+    2016-10-02 14:22:14.619 INFO  [1371115] [CRecorder::Dump@677]  seqmat 44343231 GdDopedLS Acrylic LiquidScintillator Acrylic MineralOil Acrylic MineralOil MineralOil - - - - - - - - 
+    2016-10-02 14:22:14.619 INFO  [1371115] [Rec::Dump@226] CSteppingAction::UserSteppingAction (Rec)DONE nstates 7
+    [  0/  7]
+               stepStatus [           Undefined/        GeomBoundary]
+                     flag [               TORCH/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 Und/                 FrT]
+                 material [           GdDopedLS/             Acrylic]
+    (rec state ;opticalphoton stepNum    7(tk ;opticalphoton tid 6718 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[ 1.38e+03-2.07e+03       0]  )
+      pre d/Geometry/AD/lvIAV#pvGDS rials/GdDopedLS          noProc           Undefined pos[        0       0       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns  0.100 nm 430.000
+     post d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[      861-1.29e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns  8.059 nm 430.000
+     )
+    [  1/  7]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [             Acrylic/  LiquidScintillator]
+    (rec state ;opticalphoton stepNum    7(tk ;opticalphoton tid 6718 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[ 1.38e+03-2.07e+03       0]  )
+      pre d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[      861-1.29e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns  8.059 nm 430.000
+     post d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[      867-1.3e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns  8.110 nm 430.000
+     )
+    [  2/  7]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [  LiquidScintillator/             Acrylic]
+    (rec state ;opticalphoton stepNum    7(tk ;opticalphoton tid 6718 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[ 1.38e+03-2.07e+03       0]  )
+      pre d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[      867-1.3e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns  8.110 nm 430.000
+     post d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[  1.1e+03-1.65e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 10.277 nm 430.000
+     )
+    [  3/  7]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [             Acrylic/          MineralOil]
+    (rec state ;opticalphoton stepNum    7(tk ;opticalphoton tid 6718 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[ 1.38e+03-2.07e+03       0]  )
+      pre d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[  1.1e+03-1.65e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 10.277 nm 430.000
+     post d/Geometry/AD/lvSST#pvOIL ials/MineralOil  Transportation        GeomBoundary pos[ 1.11e+03-1.66e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 10.371 nm 430.000
+     )
+    [  4/  7]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [          MineralOil/             Acrylic]
+    (rec state ;opticalphoton stepNum    7(tk ;opticalphoton tid 6718 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[ 1.38e+03-2.07e+03       0]  )
+      pre d/Geometry/AD/lvSST#pvOIL ials/MineralOil  Transportation        GeomBoundary pos[ 1.11e+03-1.66e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 10.371 nm 430.000
+     post D/lvOIL#pvRadialShield:20 terials/Acrylic  Transportation        GeomBoundary pos[ 1.26e+03-1.88e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 11.683 nm 430.000
+     )
+    [  5/  7]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/   BOUNDARY_TRANSMIT]
+               bs pri/cur [                 FrT/                 FrT]
+                 material [             Acrylic/          MineralOil]
+    (rec state ;opticalphoton stepNum    7(tk ;opticalphoton tid 6718 pid 0 nm    430 mm  ori[ -1.81e+04  -8e+05-6.60e+03]  pos[ 1.38e+03-2.07e+03       0]  )
+      pre D/lvOIL#pvRadialShield:20 terials/Acrylic  Transportation        GeomBoundary pos[ 1.26e+03-1.88e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 11.683 nm 430.000
+     post d/Geometry/AD/lvSST#pvOIL ials/MineralOil  Transportation        GeomBoundary pos[ 1.26e+03-1.88e+03       0]  dir[    0.556  -0.831       0]  pol[       -1  0.0226       0]  ns 11.698 nm 430.000
+     )
+    [  6/  7]
+               stepStatus [        GeomBoundary/        GeomBoundary]
+                     flag [   BOUNDARY_TRANSMIT/      SURFACE_ABSORB]
+               bs pri/cur [                 FrT/                 Abs]
+                 material [          MineralOil/      StainlessSteel]
+
+
+
+
+Where did the surface handling come from in Opticks...
+----------------------------------------------------------
+
+
+
+
+
+
+
+
+
 closest_hit_propagate
 ------------------------
 

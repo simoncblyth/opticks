@@ -25,11 +25,11 @@ if __name__ == '__main__':
     log.info("tag %s src %s det %s c2max %s  " % (args.utag,args.src,args.det, args.c2max))
 
 
-    a_seqs = ["8ccccd"]
-    b_seqs = ["8ccccccd"]
+    #a_seqs = ["8ccccd"]
+    #b_seqs = ["8ccccccd"]
 
-    #a_seqs = []
-    #b_seqs = []
+    a_seqs = []
+    b_seqs = []
 
     try:
         a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs)
