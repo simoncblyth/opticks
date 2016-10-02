@@ -224,6 +224,30 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 }
 
 
+
+
+void CTraverser::dumpLV(const char* msg)
+{
+    LOG(info) << msg ; 
+    typedef std::map<std::string, const G4LogicalVolume*> SV ; 
+    for(SV::const_iterator it=m_lvm.begin() ; it != m_lvm.end() ; it++)
+    {
+        std::string name = it->first ; 
+        const G4LogicalVolume* lv = it->second ; 
+
+        std::cout
+                  << ( lv ? lv->GetName() : "NULL" )
+                  << std::endl ; 
+
+        assert(lv);
+        std::string check = lv->GetName();
+        assert(strcmp(check.c_str(), name.c_str()) == 0);
+
+    }
+}
+
+
+
 void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& transform, bool selected)
 {
     glm::vec3 low ; 
@@ -500,8 +524,6 @@ void CTraverser::addOpticalSurface(const G4OpticalSurface*)
 {
     assert(0);
 }
-
-
 
 
 

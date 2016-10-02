@@ -4,8 +4,8 @@ OKG4 Torch Shakedown
 Issues Overview
 -----------------
 
-CG4 more BT than OK
-~~~~~~~~~~~~~~~~~~~~~~
+CG4 more BT than OK : zero order fixed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -26,13 +26,80 @@ CG4 more BT than OK
     TODO: get seqmat to include the Stainless Steel on which SURFACE_ABSORB happens
 
 
-Possible cause of history diff
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Possible cause of history diff : no evidence seen for this yet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * impinging or touching volumes are a possible cause, in boundary model
   these mean missing intersections : volume model is more forgiving  
 
-* TODO: laser source pointing at the problem area and make step positions plot from records with matplotlib 
+
+
+Major culprit was incomplete skin surfaces in CG4, after fixing that
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Investigated issue in :doc:`tlaser` and :doc:`seqvol`. 
+Next: rather different AB (BULK_ABSORB). 
+
+::
+
+    delta:opticksnpy blyth$ tokg4.py 
+    /Users/blyth/opticks/ana/tokg4.py
+    writing opticks environment to /tmp/blyth/opticks/opticks_env.bash 
+    [2016-10-02 18:35:49,636] p48179 {/Users/blyth/opticks/ana/tokg4.py:25} INFO - tag 1 src torch det dayabay c2max 2.0  
+    [2016-10-02 18:35:50,057] p48179 {/Users/blyth/opticks/ana/tokg4.py:39} INFO -  a : dayabay/torch/  1 :  20161002-1835 /tmp/blyth/opticks/evt/dayabay/torch/1/fdom.npy 
+    [2016-10-02 18:35:50,057] p48179 {/Users/blyth/opticks/ana/tokg4.py:40} INFO -  b : dayabay/torch/ -1 :  20161002-1835 /tmp/blyth/opticks/evt/dayabay/torch/-1/fdom.npy 
+    A Evt(  1,"torch","dayabay","dayabay/torch/  1 : ", seqs="[]") 20161002-1835 /tmp/blyth/opticks/evt/dayabay/torch/1
+    B Evt( -1,"torch","dayabay","dayabay/torch/ -1 : ", seqs="[]") 20161002-1835 /tmp/blyth/opticks/evt/dayabay/torch/-1
+
+           A:seqhis_ana    1:dayabay 
+                  8ccccd        0.434          43405       [6 ] TO BT BT BT BT SA
+              ccaccccccd        0.090           9009       [10] TO BT BT BT BT BT BT SR BT BT
+                 4cccccd        0.061           6104       [7 ] TO BT BT BT BT BT AB
+                      4d        0.061           6051       [2 ] TO AB
+              cccbcccccd        0.038           3822       [10] TO BT BT BT BT BT BR BT BT BT
+                 8cccccd        0.030           2978       [7 ] TO BT BT BT BT BT SA
+               8cbcccccd        0.025           2511       [9 ] TO BT BT BT BT BT BR BT SA
+                 8cccc6d        0.022           2165       [7 ] TO SC BT BT BT BT SA
+                8ccccccd        0.016           1565       [8 ] TO BT BT BT BT BT BT SA
+                    4ccd        0.013           1347       [4 ] TO BT BT AB
+              cccc9ccccd        0.013           1326       [10] TO BT BT BT BT DR BT BT BT BT
+                 8cccc5d        0.011           1126       [7 ] TO RE BT BT BT BT SA
+              cccacccccd        0.011           1103       [10] TO BT BT BT BT BT SR BT BT BT
+              accccccccd        0.009            861       [10] TO BT BT BT BT BT BT BT BT SR
+                     45d        0.008            833       [3 ] TO RE AB
+                  4ccccd        0.007            701       [6 ] TO BT BT BT BT AB
+                 7cccccd        0.006            636       [7 ] TO BT BT BT BT BT SD
+                8cccc55d        0.006            609       [8 ] TO RE RE BT BT BT BT SA
+               4cccccccd        0.005            542       [9 ] TO BT BT BT BT BT BT BT AB
+              cccccccccd        0.004            450       [10] TO BT BT BT BT BT BT BT BT BT
+                              100000         1.00 
+           B:seqhis_ana   -1:dayabay 
+                  8ccccd        0.461          46136       [6 ] TO BT BT BT BT SA
+              ccaccccccd        0.081           8088       [10] TO BT BT BT BT BT BT SR BT BT
+                      4d        0.077           7687       [2 ] TO AB
+              c0cac0cccd        0.067           6679       [10] TO BT BT BT ?0? BT SR BT ?0? BT
+              cccbcccccd        0.046           4560       [10] TO BT BT BT BT BT BR BT BT BT
+                 8cccccd        0.045           4459       [7 ] TO BT BT BT BT BT SA
+               8cbcccccd        0.023           2320       [9 ] TO BT BT BT BT BT BR BT SA
+                    4ccd        0.019           1939       [4 ] TO BT BT AB
+                 8cccc6d        0.018           1810       [7 ] TO SC BT BT BT BT SA
+              cccc9ccccd        0.014           1363       [10] TO BT BT BT BT DR BT BT BT BT
+              cac00cc0cd        0.013           1284       [10] TO BT ?0? BT BT ?0? ?0? BT SR BT
+                8ccccccd        0.011           1129       [8 ] TO BT BT BT BT BT BT SA
+                 7cccccd        0.011           1110       [7 ] TO BT BT BT BT BT SD
+              abaccccccd        0.008            847       [10] TO BT BT BT BT BT BT SR BR SR
+                  4ccccd        0.007            731       [6 ] TO BT BT BT BT AB
+                 4cccccd        0.006            553       [7 ] TO BT BT BT BT BT AB
+              ccc0b0cccd        0.005            473       [10] TO BT BT BT ?0? BR ?0? BT BT BT
+              cabac0cccd        0.004            388       [10] TO BT BT BT ?0? BT SR BR SR BT
+                 8c0cccd        0.003            308       [7 ] TO BT BT BT ?0? BT SA
+              cacccccc6d        0.003            300       [10] TO SC BT BT BT BT BT BT SR BT
+                              100000         1.00 
+
+
+
+
+
 
 
 CG4 zero flags

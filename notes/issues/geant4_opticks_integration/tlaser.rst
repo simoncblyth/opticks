@@ -189,6 +189,80 @@ Restricting to top seq::
            [-129.3359,  192.6875,    0.    ,   -1.4948]], dtype=float32)
 
 
+After fix CG4 skin surfaces
+----------------------------
+
+::
+
+    In [1]: a.rpost_(slice(0,9))[0]
+    Out[1]: 
+    A()sliced
+    A([[ -18079.4443, -799699.4149,   -6604.9499,       0.0998],
+           [ -17219.8321, -800985.8917,   -6604.9499,       7.8266],
+           [ -17214.1845, -800994.1278,   -6604.9499,       7.8765],
+           [ -16980.2796, -801344.2792,   -6604.9499,       9.98  ],
+           [ -16970.161 , -801359.3395,   -6604.9499,      10.0702],
+           [ -16826.3825, -801575.3603,   -6604.9499,      11.3474],
+           [ -16520.    , -802110.    ,   -7125.    ,       0.    ],
+           [ -16520.    , -802110.    ,   -7125.    ,       0.    ],
+           [ -16520.    , -802110.    ,   -7125.    ,       0.    ]])
+
+    In [2]: b.rpost_(slice(0,9))[0]
+    Out[2]: 
+    A()sliced
+    A([[ -18079.4443, -799699.4149,   -6604.9499,       0.0998],
+           [ -17218.1849, -800988.2449,   -6604.9499,       8.0587],
+           [ -17212.7726, -800996.481 ,   -6604.9499,       8.1104],
+           [ -16978.1618, -801347.3383,   -6604.9499,      10.2771],
+           [ -16968.2785, -801362.3986,   -6604.9499,      10.3705],
+           [ -16824.2646, -801577.7134,   -6604.9499,      11.6829],
+           [ -16520.    , -802110.    ,   -7125.    ,       0.    ],
+           [ -16520.    , -802110.    ,   -7125.    ,       0.    ],
+           [ -16520.    , -802110.    ,   -7125.    ,       0.    ]])
+
+
+    In [4]: a.ox[:,0]
+    Out[4]: 
+    A()sliced
+    A([[ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           ..., 
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472],
+           [ -16826.3945, -801575.375 ,   -6605.    ,      11.3472]], dtype=float32)
+
+    In [5]: b.ox[:,0]
+    Out[5]: 
+    A()sliced
+    A([[ -16824.2129, -801577.8125,   -6605.    ,      11.6829],
+           [ -16824.2129, -801577.8125,   -6605.    ,      11.6829],
+           [ -16824.2129, -801577.8125,   -6605.    ,      11.6829],
+           ..., 
+           [ -16824.2129, -801577.8125,   -6605.    ,      11.6829],
+           [ -16824.2129, -801577.8125,   -6605.    ,      11.6829],
+           [ -16824.2129, -801577.8125,   -6605.    ,      11.6829]], dtype=float32)
+
+    In [8]: a.ox[:,0] - b.ox[:763501,0]    ## few mm presumably tesselation effect
+    Out[8]: 
+    A()sliced
+    A([[-2.1816,  2.4375,  0.    , -0.3357],
+           [-2.1816,  2.4375,  0.    , -0.3357],
+           [-2.1816,  2.4375,  0.    , -0.3357],
+           ..., 
+           [-2.1816,  2.4375,  0.    , -0.3357],
+           [-2.1816,  2.4375,  0.    , -0.3357],
+           [-2.1816,  2.4375,  0.    , -0.3357]], dtype=float32)
+
+
+Time shift is smaller than I recall the groupvel issue being::
+
+    In [30]: 0.33/11.
+    Out[30]: 0.030
+
+
+
+
 Termination boundaries
 ------------------------
 
@@ -345,6 +419,58 @@ probable cause CG4 logical skin surfaces lacking lv
        34             NearOutOutPiperSurface lv NULL
        35                LegInDeadTubSurface lv NULL
 
+
+After fix CG4 logical skin surfaces 
+--------------------------------------
+
+Steps looking rather similar now, next issue more  BULK_ABSORB AB in CG4 than OK.
+
+::
+
+       A:seqhis_ana      1:laser 
+              8ccccd        0.764         763501       [6 ] TO BT BT BT BT SA
+                  4d        0.056          55825       [2 ] TO AB
+          cccc9ccccd        0.025          25263       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.020          19707       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.013          12576       [4 ] TO BT BT AB
+             8cccc5d        0.011          11183       [7 ] TO RE BT BT BT BT SA
+              4ccccd        0.009           8554       [6 ] TO BT BT BT BT AB
+                 45d        0.008           7531       [3 ] TO RE AB
+            8cccc55d        0.005           5362       [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd        0.004           4109       [7 ] TO BT BT SC BT BT SA
+                455d        0.004           3588       [4 ] TO RE RE AB
+             86ccccd        0.003           2836       [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd        0.003           2674       [10] TO BT BT SC BT BT BT BT BT BT
+           8cccc555d        0.003           2524       [9 ] TO RE RE RE BT BT BT BT SA
+             8cc5ccd        0.002           2359       [7 ] TO BT BT RE BT BT SA
+          cacccccc6d        0.002           2210       [10] TO SC BT BT BT BT BT BT SR BT
+                 46d        0.002           2118       [3 ] TO SC AB
+          cccc6ccccd        0.002           2060       [10] TO BT BT BT BT SC BT BT BT BT
+               4cccd        0.002           1940       [5 ] TO BT BT BT AB
+             89ccccd        0.002           1880       [7 ] TO BT BT BT BT DR SA
+                         1000000         1.00 
+       B:seqhis_ana     -1:laser 
+              8ccccd        0.813         813472       [6 ] TO BT BT BT BT SA
+                  4d        0.072          71523       [2 ] TO AB
+          cccc9ccccd        0.027          27170       [10] TO BT BT BT BT DR BT BT BT BT
+                4ccd        0.017          17386       [4 ] TO BT BT AB
+             8cccc6d        0.015          15107       [7 ] TO SC BT BT BT BT SA
+              4ccccd        0.009           8842       [6 ] TO BT BT BT BT AB
+          cacccccc6d        0.004           3577       [10] TO SC BT BT BT BT BT BT SR BT
+             8cc6ccd        0.003           3466       [7 ] TO BT BT SC BT BT SA
+                 46d        0.003           2515       [3 ] TO SC AB
+             86ccccd        0.002           2476       [7 ] TO BT BT BT BT SC SA
+           cac0ccc6d        0.002           2356       [9 ] TO SC BT BT BT ?0? BT SR BT
+          cccccc6ccd        0.002           2157       [10] TO BT BT SC BT BT BT BT BT BT
+             89ccccd        0.002           2127       [7 ] TO BT BT BT BT DR SA
+               4cccd        0.002           1977       [5 ] TO BT BT BT AB
+          cccc6ccccd        0.002           1949       [10] TO BT BT BT BT SC BT BT BT BT
+            8ccccc6d        0.002           1515       [8 ] TO SC BT BT BT BT BT SA
+          ccbccccc6d        0.001           1429       [10] TO SC BT BT BT BT BT BR BT BT
+           4cc9ccccd        0.001           1215       [9 ] TO BT BT BT BT DR BT BT AB
+                 4cd        0.001           1077       [3 ] TO BT AB
+               4cc6d        0.001            802       [5 ] TO SC BT BT AB
+                         1000000         1.00 
 
 
 

@@ -64,11 +64,14 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     const G4VPhysicalVolume* getPV(unsigned index);
     const G4LogicalVolume*   getLV(unsigned index);
     const G4LogicalVolume*   getLV(const char* name);
+
+    void dumpLV(const char* msg="CDetector::dumpLV");
  public: 
     const char*    getPVName(unsigned int index);
     // from local m_pvm map used for CTestDetector, TODO: adopt traverser for this
     G4VPhysicalVolume* getLocalPV(const char* name);
     void dumpLocalPV(const char* msg="CDetector::dumpLocalPV");
+
  public: 
      // via traverser
     unsigned int   getNumGlobalTransforms();

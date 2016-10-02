@@ -74,6 +74,7 @@ class CFG4_API CTraverser {
     public:
         // TODO: split material collection into another class ?
         void         dumpMaterials(const char* msg="CTraverser::dumpMaterials");
+        void         dumpLV(const char* msg="CTraverser::dumpLV");
         unsigned int getNumMaterials();
         unsigned int getNumMaterialsWithoutMPT();
     public:

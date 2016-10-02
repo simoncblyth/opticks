@@ -34,10 +34,10 @@ class CFG4_API CSurLib
          std::string brief();
     protected:
          void convert(CDetector* detector);
+    private:
          G4LogicalBorderSurface* makeBorderSurface(GSur* sur, unsigned ivp, G4OpticalSurface* os);
          G4LogicalSkinSurface*   makeSkinSurface(  GSur* sur, unsigned ilv, G4OpticalSurface* os);
          G4OpticalSurface*       makeOpticalSurface(GSur* sur);
-    private:
          void addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap);
          void setDetector(CDetector* detector);
     private:

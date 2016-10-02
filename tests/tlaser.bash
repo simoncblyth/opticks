@@ -25,7 +25,7 @@ tlaser--(){
                  frame=3153
                  source=0,0,0
                  target=1,0,0
-                 photons=10000
+                 photons=1000000
                  material=GdDopedLS
                  wavelength=430
                  weight=1.0
@@ -40,7 +40,6 @@ tlaser--(){
             --timemax 15 \
             --eye 0,1,0 \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --torchdbg \
             --save --tag $tag --cat laser
 
 
@@ -51,5 +50,5 @@ tlaser-args(){ echo --tag $(tlaser-tag) --det laser --src torch ; }
 tlaser-i(){ ipython -i $(which tlaser.py) ; }
 
 
-tlaser-okg4(){ tlaser-;tlaser-- --okg4 --compute ; } 
+tlaser-t(){ tlaser-;tlaser-- --okg4 --compute ; } 
 

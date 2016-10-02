@@ -6,6 +6,8 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4LogicalVolume.hh"
 
+#include "BStr.hh"
+
 #include "GVector.hh"
 #include "GProperty.hh"
 #include "GPropertyMap.hh"
@@ -92,12 +94,12 @@ std::string CSurLib::brief()
     return ss.str();
 }
 
-
+// called by CGeometry::init for CGDMLDetector case
 void CSurLib::convert(CDetector* detector)
 {
     setDetector(detector);
     unsigned numSur = m_surlib->getNumSur();
-    LOG(debug) << "CSurLib::convert  numSur " << numSur  ;   
+    LOG(info) << "CSurLib::convert  numSur " << numSur  ;   
     for(unsigned i=0 ; i < numSur ; i++)
     {   
         GSur* sur = m_surlib->getSur(i);
@@ -170,7 +172,10 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
 {
     GPropertyMap<float>* pmap = sur->getPMap();
     const char* name = pmap->getName() ;
-    const char* lvn = sur->getLV(ilv);       // assuming LV identity is 1-to-1 with name 
+    const char* daelvn = sur->getLV(ilv);       // assuming LV identity is 1-to-1 with name 
+
+    char* lvn = BStr::DAEIdToG4(daelvn);
+    
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
     //if(!lv) 

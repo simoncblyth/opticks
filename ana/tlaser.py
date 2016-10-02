@@ -27,9 +27,8 @@ if __name__ == '__main__':
 
     #a_seqs = ["8ccccd"]
     #b_seqs = ["8ccccccd"]
-
-    a_seqs = []
-    b_seqs = []
+    a_seqs = ["8ccccd"]
+    b_seqs = ["8ccccd"]
 
     try:
         a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs)

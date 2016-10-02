@@ -46,6 +46,10 @@ int main(int argc, char** argv)
     assert(world_pv);
 
 
+    detector->dumpLV();
+
+
+
     CMaterialTable mt ; 
     mt.dump("CGeometryTest CMaterialTable");
 

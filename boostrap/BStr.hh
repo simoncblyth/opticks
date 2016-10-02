@@ -20,6 +20,8 @@ class BRAP_API BStr {
      static const char* negate(const char* tag);
      static bool listHasKey(const char* dlist, const char* key, const char* delim=",");
      static char* trimPointerSuffixPrefix(const char* origname, const char* prefix);
+     static char* DAEIdToG4( const char* daeid);
+
      static const char* uppercase( const char* str );
      static char* afterLastOrAll(const char* orig, char delim='/');
 

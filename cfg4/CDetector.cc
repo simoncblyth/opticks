@@ -97,6 +97,13 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
     m_traverser->Summary("CDetector::traverse");
 }
 
+void CDetector::dumpLV(const char* msg)
+{ 
+    assert(m_traverser);
+    m_traverser->dumpLV(msg);
+}
+
+
 const glm::vec4& CDetector::getCenterExtent()
 {
     return m_bbox->getCenterExtent() ; 

@@ -8,6 +8,7 @@
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "BStr.hh"
 
@@ -28,6 +29,29 @@ bool BStr::listHasKey(const char* dlist, const char* key, const char* delim)
        }    
     }    
     return haskey ; 
+}
+
+
+char* BStr::DAEIdToG4( const char* daeid)
+{
+    /**
+        Convert daeid such as  "__dd__Geometry__PoolDetails__lvLegInIWSTub0xc400e40" 
+        to G4 name                  /dd/Geometry/PoolDetails/lvLegInIWSTub
+    **/
+
+    std::string trimPtr = BStr::trimPointerSuffixPrefix(daeid, NULL);
+    std::string rep__(trimPtr);
+    boost::replace_all(rep__, "__", "/"); 
+
+/*
+    LOG(info) 
+              << " daeid " << std::setw(40) << daeid 
+              << " trimPtr " << std::setw(40) << trimPtr
+              << " rep__  " << std::setw(40) << rep__
+              ;
+*/
+
+    return strdup(rep__.c_str());
 }
 
 
