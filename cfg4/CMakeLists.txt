@@ -122,6 +122,11 @@ set(SOURCES
 
     PhysicsList.cc
     Scintillation.cc
+
+    DsG4Scintillation.cc
+    DsPhotonTrackInfo.cc
+    DsG4CompositeTrackInfo.cc
+
     Cerenkov.cc
     OpRayleigh.cc
 
@@ -181,6 +186,11 @@ set(HEADERS
 
     PhysicsList.hh
     Scintillation.hh
+
+    DsG4Scintillation.h
+    DsPhotonTrackInfo.h
+    DsG4CompositeTrackInfo.h
+
     Cerenkov.hh
     OpRayleigh.hh
 
