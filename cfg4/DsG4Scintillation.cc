@@ -851,7 +851,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
                     G4double currentCII = 0.0;
 #if ( G4VERSION_NUMBER > 1000 )
-                    G4double currentPM = theFastLightVector->Energy(0); 
+                    G4double currentPM = theFastLightVector->Energy(fastBin); 
                     aPhysicsOrderedFreeVector->PutValue(fastBin, currentCII);
 #else
                     G4double currentPM = theFastLightVector->GetPhotonEnergy();

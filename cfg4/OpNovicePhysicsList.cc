@@ -1,6 +1,5 @@
 #include "CFG4_BODY.hh"
 
-
 #include "CFG4_PUSH.hh"
 
 #include "globals.hh"
@@ -20,45 +19,337 @@
 #include "G4ShortLivedConstructor.hh"
 
 #include "G4ProcessManager.hh"
+#include "G4FastSimulationManagerProcess.hh"
 
 #include "G4OpAbsorption.hh"
 #include "G4OpMieHG.hh"
+#include "DsG4OpRayleigh.h"
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+#include "DsG4OpBoundaryProcess.h"
+#else
 #include "G4OpBoundaryProcess.hh"
+#endif
+
+#ifdef USE_CUSTOM_CERENKOV
+#include "DsG4Cerenkov.h"
+#else
+#include "G4Cerenkov.hh"
+#endif
+
+#ifdef USE_CUSTOM_SCINTILLATION
+#include "DsG4Scintillation.h"
+#else
+#include "G4Scintillation.hh"
+#endif
+
 
 #include "G4LossTableManager.hh"
 #include "G4EmSaturation.hh"
 
 #include "CFG4_POP.hh"
 
-
-
 // cfg4-
+#include "Opticks.hh"
+#include "PLOG.hh"
 #include "CMPT.hh"
 #include "OpRayleigh.hh"
 #include "Scintillation.hh"
 #include "Cerenkov.hh"
 
 
+using CLHEP::g ; 
+using CLHEP::cm2 ; 
+using CLHEP::MeV ; 
+using CLHEP::ns ; 
+
+
+
 
 G4ThreadLocal G4int OpNovicePhysicsList::fVerboseLevel = 1;
 G4ThreadLocal G4int OpNovicePhysicsList::fMaxNumPhotonStep = 20;
-G4ThreadLocal Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
 
-G4ThreadLocal Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+
+#ifdef USE_CUSTOM_CERENKOV
+G4ThreadLocal DsG4Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
+//G4ThreadLocal Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
+#else
+G4ThreadLocal G4Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
+#endif
+
+#ifdef USE_CUSTOM_SCINTILLATION
+G4ThreadLocal DsG4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+//G4ThreadLocal Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+#else
+G4ThreadLocal G4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+#endif
+
+#ifdef USE_CUSTOM_BOUNDARY
+G4ThreadLocal DsG4OpBoundaryProcess* OpNovicePhysicsList::fBoundaryProcess = 0;
+#else
+G4ThreadLocal G4OpBoundaryProcess* OpNovicePhysicsList::fBoundaryProcess = 0;
+#endif
+ 
+
+
 
 G4ThreadLocal G4OpAbsorption* OpNovicePhysicsList::fAbsorptionProcess = 0;
 
 G4ThreadLocal OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
 
 G4ThreadLocal G4OpMieHG* OpNovicePhysicsList::fMieHGScatteringProcess = 0;
-G4ThreadLocal G4OpBoundaryProcess* OpNovicePhysicsList::fBoundaryProcess = 0;
- 
 
-OpNovicePhysicsList::OpNovicePhysicsList() 
- : G4VUserPhysicsList()
+
+
+OpNovicePhysicsList::OpNovicePhysicsList(Opticks* ok) 
+    : 
+    G4VUserPhysicsList(),
+    m_ok(ok),
+    // below defaults from DsPhysConsOptical
+    m_doReemission(true),               // "ScintDoReemission"        "Do reemission in scintilator."
+    m_doScintAndCeren(true),            // "ScintDoScintAndCeren"     "Do both scintillation and Cerenkov in scintilator."
+    m_useFastMu300nsTrick(false),       // "UseFastMu300nsTrick"      "Use Fast muon simulation?"
+    m_useCerenkov(true),                // "UseCerenkov"              "Use the Cerenkov process?"
+    m_useScintillation(true),           // "UseScintillation"         "Use the Scintillation process?"
+    m_useRayleigh(true),                // "UseRayleigh"              "Use the Rayleigh scattering process?"
+    m_useAbsorption(true),              // "UseAbsorption"            "Use light absorption process?"
+    m_applyWaterQe(true),               // "ApplyWaterQe"             
+                                        // "Apply QE for water cerenkov process when OP is created? If it is true the CerenPhotonScaleWeight will be disabled in water, but it still works for AD and others "
+    m_cerenPhotonScaleWeight(3.125),    // "CerenPhotonScaleWeight"    "Scale down number of produced Cerenkov photons by this much."
+    m_cerenMaxPhotonPerStep(300),       // "CerenMaxPhotonsPerStep"   "Limit step to at most this many (unscaled) Cerenkov photons."
+    m_scintPhotonScaleWeight(3.125),    // "ScintPhotonScaleWeight"    "Scale down number of produced scintillation photons by this much."
+    m_ScintillationYieldFactor(1.0),    // "ScintillationYieldFactor" "Scale the number of scintillation photons per MeV by this much."
+    m_birksConstant1(6.5e-3*g/cm2/MeV), // "BirksConstant1"           "Birks constant C1"
+    m_birksConstant2(3.0e-6*(g/cm2/MeV)*(g/cm2/MeV)),  
+                                          // "BirksConstant2"            "Birks constant C2" 
+    m_gammaSlowerTime(149*ns),          // "GammaSlowerTime"           "Gamma Slower time constant"
+    m_gammaSlowerRatio(0.338),          // "GammaSlowerRatio"          "Gamma Slower time ratio"
+    m_neutronSlowerTime(220*ns),        // "NeutronSlowerTime"         "Neutron Slower time constant"
+    m_neutronSlowerRatio(0.34),         // "NeutronSlowerRatio"        "Neutron Slower time ratio"
+    m_alphaSlowerTime(220*ns),          // "AlphaSlowerTime"           "Alpha Slower time constant"
+    m_alphaSlowerRatio(0.35)            // "AlphaSlowerRatio"          "Alpha Slower time ratio"
 {
-  fMessenger = new OpNovicePhysicsListMessenger(this);
+    fMessenger = new OpNovicePhysicsListMessenger(this) ;
 }
+
+
+void OpNovicePhysicsList::dumpParam(const char* msg)
+{
+    LOG(info) << msg ; 
+    LOG(info)<<"Photons prescaling is "<<( m_cerenPhotonScaleWeight>1.?"on":"off" )
+             <<" for Cerenkov. Preliminary applied efficiency is "
+             <<1./m_cerenPhotonScaleWeight<<" (weight="<<m_cerenPhotonScaleWeight<<")" ;
+    LOG(info)<<"Photons prescaling is "<<( m_scintPhotonScaleWeight>1.?"on":"off" )
+             <<" for Scintillation. Preliminary applied efficiency is "
+             <<1./m_scintPhotonScaleWeight<<" (weight="<<m_scintPhotonScaleWeight<<")";
+    LOG(info)<<"WaterQE is turned "<<(m_applyWaterQe?"on":"off")<<" for Cerenkov.";
+}
+
+
+void OpNovicePhysicsList::ConstructProcess()
+{
+  setupEmVerbosity(0); 
+
+  AddTransportation();
+  ConstructDecay();
+  ConstructEM();
+
+  ConstructOpDYB();
+
+//  need to rethink approach to physics switching 
+//  if(m_ok->hasOpt("opdyb"))
+//  {  
+//      ConstructOpDYB();
+//  }
+//  else
+//  {
+//      ConstructOpNovice();
+//  } 
+
+  dump("OpNovicePhysicsList::ConstructProcess"); 
+}
+
+
+
+
+void OpNovicePhysicsList::ConstructOpDYB()
+{
+#ifdef USE_CUSTOM_CERENKOV
+    
+    LOG(info)  << "Using customized DsG4Cerenkov." ;
+    DsG4Cerenkov* cerenkov = 0;
+    if (m_useCerenkov) 
+    {
+        cerenkov = new DsG4Cerenkov();
+        cerenkov->SetMaxNumPhotonsPerStep(m_cerenMaxPhotonPerStep);
+        cerenkov->SetApplyPreQE(m_cerenPhotonScaleWeight>1.);
+        cerenkov->SetPreQE(1./m_cerenPhotonScaleWeight);
+        cerenkov->SetApplyWaterQe(m_applyWaterQe);
+        cerenkov->SetTrackSecondariesFirst(true);
+    }
+#else
+    LOG(info) << "Using standard G4Cerenkov." ;
+    G4Cerenkov* cerenkov = 0;
+    if (m_useCerenkov) 
+    {
+        cerenkov = new G4Cerenkov();
+        cerenkov->SetMaxNumPhotonsPerStep(m_cerenMaxPhotonPerStep);
+        cerenkov->SetTrackSecondariesFirst(true);
+    }
+#endif
+    fCerenkovProcess = cerenkov ; 
+
+#ifdef USE_CUSTOM_SCINTILLATION
+    DsG4Scintillation* scint = 0;
+    LOG(info) << "Using customized DsG4Scintillation." ;
+    scint = new DsG4Scintillation();
+    scint->SetBirksConstant1(m_birksConstant1);
+    scint->SetBirksConstant2(m_birksConstant2);
+    scint->SetGammaSlowerTimeConstant(m_gammaSlowerTime);
+    scint->SetGammaSlowerRatio(m_gammaSlowerRatio);
+    scint->SetNeutronSlowerTimeConstant(m_neutronSlowerTime);
+    scint->SetNeutronSlowerRatio(m_neutronSlowerRatio);
+    scint->SetAlphaSlowerTimeConstant(m_alphaSlowerTime);
+    scint->SetAlphaSlowerRatio(m_alphaSlowerRatio);
+    scint->SetDoReemission(m_doReemission);
+    scint->SetDoBothProcess(m_doScintAndCeren);
+    scint->SetApplyPreQE(m_scintPhotonScaleWeight>1.);
+    scint->SetPreQE(1./m_scintPhotonScaleWeight);
+    scint->SetScintillationYieldFactor(m_ScintillationYieldFactor); //1.);
+    scint->SetUseFastMu300nsTrick(m_useFastMu300nsTrick);
+    scint->SetTrackSecondariesFirst(true);
+    if (!m_useScintillation) scint->SetNoOp();
+#else  // standard G4 scint
+    G4Scintillation* scint = 0;
+    if (m_useScintillation) 
+    {
+        LOG(info) << "Using standard G4Scintillation." ;
+        scint = new G4Scintillation();
+        scint->SetScintillationYieldFactor(m_ScintillationYieldFactor); // 1.);
+        scint->SetTrackSecondariesFirst(true);
+    }
+#endif
+    fScintillationProcess = scint ; 
+
+
+
+    G4OpAbsorption* absorb  = m_useAbsorption ? new G4OpAbsorption() : NULL ;
+    DsG4OpRayleigh* rayleigh = m_useRayleigh  ? new DsG4OpRayleigh() : NULL ; 
+
+    //G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();
+    DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess();
+    boundproc->SetModel(unified);
+
+    //G4FastSimulationManagerProcess* fast_sim_man = new G4FastSimulationManagerProcess("fast_sim_man");
+    
+    theParticleIterator->reset();
+    while( (*theParticleIterator)() ) {
+
+        G4ParticleDefinition* particle = theParticleIterator->value();
+        G4ProcessManager* pmanager = particle->GetProcessManager();
+    
+        // Caution: as of G4.9, Cerenkov becomes a Discrete Process.
+        // This code assumes a version of G4Cerenkov from before this version.
+        //
+        /// SCB: Contrary to above FUD-comment, contemporary G4 code such as 
+        ///      OpNovicePhysicsList sets up Cerenkov just like this
+
+        if(cerenkov && cerenkov->IsApplicable(*particle)) 
+        {
+            pmanager->AddProcess(cerenkov);
+            pmanager->SetProcessOrdering(cerenkov, idxPostStep);
+            LOG(debug) << "Process: adding Cherenkov to " 
+                       << particle->GetParticleName() ;
+        }
+
+        if(scint && scint->IsApplicable(*particle))
+        {
+            pmanager->AddProcess(scint);
+            pmanager->SetProcessOrderingToLast(scint, idxAtRest);
+            pmanager->SetProcessOrderingToLast(scint, idxPostStep);
+            LOG(debug) << "Process: adding Scintillation to "
+                       << particle->GetParticleName() ;
+        }
+
+        if(particle == G4OpticalPhoton::Definition()) 
+        {
+            if(absorb) pmanager->AddDiscreteProcess(absorb);
+            if(rayleigh) pmanager->AddDiscreteProcess(rayleigh);
+            pmanager->AddDiscreteProcess(boundproc);
+            //pmanager->AddDiscreteProcess(fast_sim_man);
+        }
+    }
+}
+
+
+
+/*
+void OpNovicePhysicsList::ConstructOpNovice()
+{
+  fCerenkovProcess = new Cerenkov("Cerenkov");
+  fCerenkovProcess->SetMaxNumPhotonsPerStep(fMaxNumPhotonStep);
+  fCerenkovProcess->SetMaxBetaChangePerStep(10.0);
+  fCerenkovProcess->SetTrackSecondariesFirst(true);
+
+  //fScintillationProcess = new G4Scintillation("Scintillation");
+  fScintillationProcess = new Scintillation("Scintillation");
+  fScintillationProcess->SetScintillationYieldFactor(1.);
+  fScintillationProcess->SetTrackSecondariesFirst(true);
+  fAbsorptionProcess = new G4OpAbsorption();
+
+  //fRayleighScatteringProcess = new G4OpRayleigh();
+  fRayleighScatteringProcess = new OpRayleigh();
+
+  fMieHGScatteringProcess = new G4OpMieHG();
+  fBoundaryProcess = new G4OpBoundaryProcess();
+
+  if(fCerenkovProcess) 
+  fCerenkovProcess->SetVerboseLevel(fVerboseLevel);
+
+  fScintillationProcess->SetVerboseLevel(fVerboseLevel);
+  fAbsorptionProcess->SetVerboseLevel(fVerboseLevel);
+  fRayleighScatteringProcess->SetVerboseLevel(fVerboseLevel);
+  fMieHGScatteringProcess->SetVerboseLevel(fVerboseLevel);
+  fBoundaryProcess->SetVerboseLevel(fVerboseLevel);
+  
+  // Use Birks Correction in the Scintillation process
+  if(G4Threading::IsMasterThread())
+  {
+    G4EmSaturation* emSaturation =
+              G4LossTableManager::Instance()->EmSaturation();
+      fScintillationProcess->AddSaturation(emSaturation);
+  }
+
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() ){
+    G4ParticleDefinition* particle = theParticleIterator->value();
+    G4ProcessManager* pmanager = particle->GetProcessManager();
+    G4String particleName = particle->GetParticleName();
+    if (fCerenkovProcess && fCerenkovProcess->IsApplicable(*particle)) {
+      pmanager->AddProcess(fCerenkovProcess);
+      pmanager->SetProcessOrdering(fCerenkovProcess,idxPostStep);
+    }
+    if (fScintillationProcess->IsApplicable(*particle)) {
+      pmanager->AddProcess(fScintillationProcess);
+      pmanager->SetProcessOrderingToLast(fScintillationProcess, idxAtRest);
+      pmanager->SetProcessOrderingToLast(fScintillationProcess, idxPostStep);
+    }
+    if (particleName == "opticalphoton") {
+      G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
+      pmanager->AddDiscreteProcess(fAbsorptionProcess);
+      pmanager->AddDiscreteProcess(fRayleighScatteringProcess);
+      pmanager->AddDiscreteProcess(fMieHGScatteringProcess);
+      pmanager->AddDiscreteProcess(fBoundaryProcess);
+    }
+  }
+}
+
+*/
+
+
+
+
 
 
 OpNovicePhysicsList::~OpNovicePhysicsList() { delete fMessenger; }
@@ -91,19 +382,6 @@ void OpNovicePhysicsList::ConstructParticle()
 
 
 
-
-
-void OpNovicePhysicsList::ConstructProcess()
-{
-  setupEmVerbosity(0); 
-
-  AddTransportation();
-  ConstructDecay();
-  ConstructEM();
-  ConstructOp();
-
-  dump("OpNovicePhysicsList::ConstructProcess"); 
-}
 
 
 #include "G4Decay.hh"
@@ -147,7 +425,6 @@ void OpNovicePhysicsList::ConstructDecay()
 
 
 
-#include "PLOG.hh"
 
 void OpNovicePhysicsList::Summary(const char* msg)
 {
@@ -306,66 +583,6 @@ void OpNovicePhysicsList::ConstructEM()
 
 #include "G4Threading.hh"
 
-void OpNovicePhysicsList::ConstructOp()
-{
-  fCerenkovProcess = new Cerenkov("Cerenkov");
-  fCerenkovProcess->SetMaxNumPhotonsPerStep(fMaxNumPhotonStep);
-  fCerenkovProcess->SetMaxBetaChangePerStep(10.0);
-  fCerenkovProcess->SetTrackSecondariesFirst(true);
-
-  //fScintillationProcess = new G4Scintillation("Scintillation");
-  fScintillationProcess = new Scintillation("Scintillation");
-  fScintillationProcess->SetScintillationYieldFactor(1.);
-  fScintillationProcess->SetTrackSecondariesFirst(true);
-  fAbsorptionProcess = new G4OpAbsorption();
-
-  //fRayleighScatteringProcess = new G4OpRayleigh();
-  fRayleighScatteringProcess = new OpRayleigh();
-
-  fMieHGScatteringProcess = new G4OpMieHG();
-  fBoundaryProcess = new G4OpBoundaryProcess();
-
-  if(fCerenkovProcess) 
-  fCerenkovProcess->SetVerboseLevel(fVerboseLevel);
-
-  fScintillationProcess->SetVerboseLevel(fVerboseLevel);
-  fAbsorptionProcess->SetVerboseLevel(fVerboseLevel);
-  fRayleighScatteringProcess->SetVerboseLevel(fVerboseLevel);
-  fMieHGScatteringProcess->SetVerboseLevel(fVerboseLevel);
-  fBoundaryProcess->SetVerboseLevel(fVerboseLevel);
-  
-  // Use Birks Correction in the Scintillation process
-  if(G4Threading::IsMasterThread())
-  {
-    G4EmSaturation* emSaturation =
-              G4LossTableManager::Instance()->EmSaturation();
-      fScintillationProcess->AddSaturation(emSaturation);
-  }
-
-  theParticleIterator->reset();
-  while( (*theParticleIterator)() ){
-    G4ParticleDefinition* particle = theParticleIterator->value();
-    G4ProcessManager* pmanager = particle->GetProcessManager();
-    G4String particleName = particle->GetParticleName();
-    if (fCerenkovProcess && fCerenkovProcess->IsApplicable(*particle)) {
-      pmanager->AddProcess(fCerenkovProcess);
-      pmanager->SetProcessOrdering(fCerenkovProcess,idxPostStep);
-    }
-    if (fScintillationProcess->IsApplicable(*particle)) {
-      pmanager->AddProcess(fScintillationProcess);
-      pmanager->SetProcessOrderingToLast(fScintillationProcess, idxAtRest);
-      pmanager->SetProcessOrderingToLast(fScintillationProcess, idxPostStep);
-    }
-    if (particleName == "opticalphoton") {
-      G4cout << " AddDiscreteProcess to OpticalPhoton " << G4endl;
-      pmanager->AddDiscreteProcess(fAbsorptionProcess);
-      pmanager->AddDiscreteProcess(fRayleighScatteringProcess);
-      pmanager->AddDiscreteProcess(fMieHGScatteringProcess);
-      pmanager->AddDiscreteProcess(fBoundaryProcess);
-    }
-  }
-}
-
 
 void OpNovicePhysicsList::SetVerbose(G4int verbose)
 {
@@ -407,6 +624,7 @@ void OpNovicePhysicsList::SetCuts()
 
 void OpNovicePhysicsList::dump(const char* msg)
 {
+    dumpParam(msg);
     dumpMaterials(msg);
     dumpRayleigh(msg);
 }
@@ -447,5 +665,9 @@ void OpNovicePhysicsList::dumpRayleigh(const char* msg)
     }
 
 }
+
+
+
+
 
 

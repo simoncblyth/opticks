@@ -1,5 +1,6 @@
 #pragma once
 
+class Opticks ; 
 class OpticksHub ; 
 class G4RunManager ; 
 
@@ -23,6 +24,7 @@ class CFG4_API CPhysics
         void init();
     private:
         OpticksHub*    m_hub ;     
+        Opticks*       m_ok ;     
         G4RunManager*  m_runManager ; 
 #ifdef OLDPHYS
         PhysicsList*          m_physics ; 

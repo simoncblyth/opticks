@@ -16,6 +16,8 @@
 #include "G4Scintillation.hh"
 #endif
 
+#include "PLOG.hh"
+
 
 #include "G4OpAbsorption.hh"
 #include "G4OpRayleigh.hh"
@@ -24,19 +26,28 @@
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
+using CLHEP::g ; 
+using CLHEP::cm2 ; 
+using CLHEP::MeV ; 
+using CLHEP::ns ; 
 
-DsPhysConsOptical::DsPhysConsOptical()
+
+
+DsPhysConsOptical::DsPhysConsOptical(Opticks* ok)
    :
-      m_cerenMaxPhotonPerStep(300),       // "CerenMaxPhotonsPerStep"   "Limit step to at most this many (unscaled) Cerenkov photons."
+      m_ok(ok),
       m_doReemission(true),               // "ScintDoReemission"        "Do reemission in scintilator."
       m_doScintAndCeren(true),            // "ScintDoScintAndCeren"     "Do both scintillation and Cerenkov in scintilator."
+      m_useFastMu300nsTrick(false),       // "UseFastMu300nsTrick"      "Use Fast muon simulation?"
       m_useCerenkov(true),                // "UseCerenkov"              "Use the Cerenkov process?"
-      m_applyWaterQe(true),               // "ApplyWaterQe"             
-                                          // "Apply QE for water cerenkov process when OP is created? If it is true the CerenPhotonScaleWeight will be disabled in water, but it still works for AD and others "
       m_useScintillation(true),           // "UseScintillation"         "Use the Scintillation process?"
       m_useRayleigh(true),                // "UseRayleigh"              "Use the Rayleigh scattering process?"
       m_useAbsorption(true),              // "UseAbsorption"            "Use light absorption process?"
-      m_useFastMu300nsTrick(false),       // "UseFastMu300nsTrick"      "Use Fast muon simulation?"
+      m_applyWaterQe(true),               // "ApplyWaterQe"             
+                                          // "Apply QE for water cerenkov process when OP is created? If it is true the CerenPhotonScaleWeight will be disabled in water, but it still works for AD and others "
+      m_cerenPhotonScaleWeight(3.125),    // "CerenPhotonScaleWeight"    "Scale down number of produced Cerenkov photons by this much."
+      m_cerenMaxPhotonPerStep(300),       // "CerenMaxPhotonsPerStep"   "Limit step to at most this many (unscaled) Cerenkov photons."
+      m_scintPhotonScaleWeight(3.125),    // "ScintPhotonScaleWeight"    "Scale down number of produced scintillation photons by this much."
       m_ScintillationYieldFactor(1.0),    // "ScintillationYieldFactor" "Scale the number of scintillation photons per MeV by this much."
       m_birksConstant1(6.5e-3*g/cm2/MeV), // "BirksConstant1"           "Birks constant C1"
       m_birksConstant2(3.0e-6*(g/cm2/MeV)*(g/cm2/MeV)),  
@@ -46,14 +57,13 @@ DsPhysConsOptical::DsPhysConsOptical()
       m_neutronSlowerTime(220*ns),        // "NeutronSlowerTime"         "Neutron Slower time constant"
       m_neutronSlowerRatio(0.34),         // "NeutronSlowerRatio"        "Neutron Slower time ratio"
       m_alphaSlowerTime(220*ns),          // "AlphaSlowerTime"           "Alpha Slower time constant"
-      m_alphaSlowerRatio(0.35),           // "AlphaSlowerRatio"          "Alpha Slower time ratio"
-      m_cerenPhotonScaleWeight(3.125),    // "CerenPhotonScaleWeight"    "Scale down number of produced Cerenkov photons by this much."
-      m_scintPhotonScaleWeight(3.125)     // "ScintPhotonScaleWeight"    "Scale down number of produced scintillation photons by this much."
+      m_alphaSlowerRatio(0.35)            // "AlphaSlowerRatio"          "Alpha Slower time ratio"
 {
 }
 
-void DsPhysConsOptical::initialize()
+void DsPhysConsOptical::dump(const char* msg)
 {
+    LOG(info) << msg ; 
     LOG(info)<<"Photons prescaling is "<<( m_cerenPhotonScaleWeight>1.?"on":"off" )
              <<" for Cerenkov. Preliminary applied efficiency is "
              <<1./m_cerenPhotonScaleWeight<<" (weight="<<m_cerenPhotonScaleWeight<<")" ;
@@ -63,9 +73,6 @@ void DsPhysConsOptical::initialize()
     LOG(info)<<"WaterQE is turned "<<(m_applyWaterQe?"on":"off")<<" for Cerenkov.";
 }
 
-void DsPhysConsOptical::ConstructParticle()
-{
-}
 
 void DsPhysConsOptical::ConstructProcess()
 {

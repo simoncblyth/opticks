@@ -124,6 +124,9 @@ set(SOURCES
     Scintillation.cc
 
     DsG4Scintillation.cc
+    DsG4OpRayleigh.cc
+    DsG4OpBoundaryProcess.cc
+    DsG4Cerenkov.cc
     DsPhotonTrackInfo.cc
     DsG4CompositeTrackInfo.cc
 
@@ -188,6 +191,9 @@ set(HEADERS
     Scintillation.hh
 
     DsG4Scintillation.h
+    DsG4OpRayleigh.h
+    DsG4OpBoundaryProcess.h
+    DsG4Cerenkov.h
     DsPhotonTrackInfo.h
     DsG4CompositeTrackInfo.h
 
