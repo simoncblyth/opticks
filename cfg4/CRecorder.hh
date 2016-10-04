@@ -143,17 +143,20 @@ class CFG4_API CRecorder {
 
         void Dump(const char* msg="CRecorder::Dump");
    public:
-        void setEventId(unsigned int event_id);
-        void setPhotonId(unsigned int photon_id);
-        void setStepId(unsigned int step_id);
-        void setRecordId(unsigned int record_id);
+        void setEventId(int event_id);
+        void setPhotonId(int photon_id);
+        void setParentId(int parent_id);
+        void setStepId(int step_id);
+        void setRecordId(int record_id);
    public:
-        unsigned int getEventId();
-        unsigned int getPhotonId();
-        unsigned int getStepId();
-        unsigned int defineRecordId();
-        unsigned int getRecordId();
-        unsigned int getRecordMax();
+        int getEventId();
+        int getPhotonId();
+        int getParentId();
+        int getStepId();
+        int defineRecordId();
+        int getRecordId();
+
+        unsigned getRecordMax();
 
         unsigned long long getSeqHis();
         unsigned long long getSeqMat();
@@ -169,17 +172,20 @@ class CFG4_API CRecorder {
 
         unsigned int m_gen ; 
        
-        unsigned int m_record_max ; 
-        unsigned int m_bounce_max ; 
-        unsigned int m_steps_per_photon ; 
+        unsigned m_record_max ; 
+        unsigned m_bounce_max ; 
+        unsigned m_steps_per_photon ; 
 
-        unsigned int m_photons_per_g4event ; 
-        unsigned int m_verbosity ; 
+        unsigned m_photons_per_g4event ; 
+        unsigned m_verbosity ; 
         bool         m_debug ; 
-        unsigned int m_event_id ; 
-        unsigned int m_photon_id ; 
-        unsigned int m_step_id ; 
-        unsigned int m_record_id ; 
+
+        int m_event_id ; 
+        int m_photon_id ; 
+        int m_parent_id ; 
+        int m_step_id ; 
+        int m_record_id ; 
+
         unsigned int m_primary_id ; 
         unsigned int m_primary_max ; 
 

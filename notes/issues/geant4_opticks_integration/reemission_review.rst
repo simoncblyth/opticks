@@ -18,14 +18,13 @@ First tack, teleport in the DsG4Scintillation code and try to get it to work::
 Adopting DYBOp into CFG4
 ---------------------------
 
-
-
 flags borked, so flying blind
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * lots of Undefined boundary status
 
-tlaser.py::
+
+tlaser-;tlaser-d;tlaser.py::
 
       A:seqhis_ana      1:laser 
               8ccccd        0.767           7673       [6 ] TO BT BT BT BT SA
@@ -72,6 +71,55 @@ tlaser.py::
                6000d        0.000              3       [5 ] TO ?0? ?0? ?0? SC
                            10000         1.00 
 
+Regained flags with USE_CUSTOM_BOUNDARY flipping::
+
+      A:seqhis_ana      1:laser 
+              8ccccd        0.767           7673       [6 ] TO BT BT BT BT SA
+                  4d        0.055            553       [2 ] TO AB
+          cccc9ccccd        0.024            242       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.019            188       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.012            122       [4 ] TO BT BT AB
+             8cccc5d        0.012            121       [7 ] TO RE BT BT BT BT SA
+                 45d        0.006             65       [3 ] TO RE AB
+              4ccccd        0.006             63       [6 ] TO BT BT BT BT AB
+            8cccc55d        0.005             52       [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd        0.004             39       [7 ] TO BT BT SC BT BT SA
+                455d        0.003             34       [4 ] TO RE RE AB
+          cccccc6ccd        0.003             34       [10] TO BT BT SC BT BT BT BT BT BT
+             8cc5ccd        0.003             27       [7 ] TO BT BT RE BT BT SA
+             86ccccd        0.003             27       [7 ] TO BT BT BT BT SC SA
+           8cccc555d        0.003             26       [9 ] TO RE RE RE BT BT BT BT SA
+               4cccd        0.003             25       [5 ] TO BT BT BT AB
+          cacccccc5d        0.002             22       [10] TO RE BT BT BT BT BT BT SR BT
+                 46d        0.002             21       [3 ] TO SC AB
+          cccc6ccccd        0.002             20       [10] TO BT BT BT BT SC BT BT BT BT
+            4ccccc5d        0.002             19       [8 ] TO RE BT BT BT BT BT AB
+                           10000         1.00 
+       B:seqhis_ana     -1:laser 
+              8ccccd        0.811           8110       [6 ] TO BT BT BT BT SA
+                  4d        0.075            750       [2 ] TO AB
+          cccc9ccccd        0.024            238       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.018            177       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.016            161       [4 ] TO BT BT AB
+              4ccccd        0.010            101       [6 ] TO BT BT BT BT AB
+             8cc6ccd        0.004             44       [7 ] TO BT BT SC BT BT SA
+             86ccccd        0.003             27       [7 ] TO BT BT BT BT SC SA
+             89ccccd        0.003             27       [7 ] TO BT BT BT BT DR SA
+                 46d        0.003             26       [3 ] TO SC AB
+               4cccd        0.002             22       [5 ] TO BT BT BT AB
+          cacccccc6d        0.002             22       [10] TO SC BT BT BT BT BT BT SR BT
+            8ccccc6d        0.002             21       [8 ] TO SC BT BT BT BT BT SA
+          cccccc6ccd        0.002             20       [10] TO BT BT SC BT BT BT BT BT BT
+          cccc6ccccd        0.002             16       [10] TO BT BT BT BT SC BT BT BT BT
+          ccbccccc6d        0.002             15       [10] TO SC BT BT BT BT BT BR BT BT
+           4cc9ccccd        0.001             14       [9 ] TO BT BT BT BT DR BT BT AB
+           cac0ccc6d        0.001             14       [9 ] TO SC BT BT BT ?0? BT SR BT
+                 4cd        0.001             13       [3 ] TO BT AB
+             49ccccd        0.001              9       [7 ] TO BT BT BT BT DR AB
+                           10000         1.00 
+
+
+
 
 
 live reemission photon counts
@@ -88,13 +136,15 @@ STATIC buffer was expecting a certain number of photons, so currently truncates:
     2016-10-04 11:49:42.532 INFO  [1669872] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
 
 
+Hmm, I wonder if all the "NOT RECORDING" are RE ?  Looks to be so
+
+
 Normally with fabricated (as opposed to G4 live) gensteps, the number of photons is known ahead of time.
 
 Reemission means cannot know photon counts ahead of time ?
 
-* that statement is true only if you count reemits are new photons, Opticks does not 
+* that statement is true only if you count reemits as new photons, Opticks does not do that
  
-
 Contining the slot for reemiisions with G4 ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -102,6 +152,31 @@ This is necessary for easy comparisons between G4 and Opticks.
 
 With Opticks a reemitted photon continues the lineage (buffer slot) 
 of its predecessor but with G4 a fresh new particle is created ...  
+
+Small scale less than 10k photon torch running (corresponding to a single G4 "subevt") 
+looks like can effect a continuation of reemission photons using the parent_id.  
+
+For over 10k, need to cope with finding parent "subevt" too to line up with the correct 
+record number. Unless can be sure subevt dont handled in mixed order ?
+
+::
+
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     219 parent_id      -1 step_id    0 record_id     219 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     218 parent_id      -1 step_id    0 record_id     218 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     217 parent_id      -1 step_id    0 record_id     217 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     216 parent_id      -1 step_id    0 record_id     216 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     215 parent_id      -1 step_id    0 record_id     215 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [*DsG4Scintillation::PostStepDoIt@761] reemit secondaryTime(ns) 18.6468 parent_id 215
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] SC- photon_id   10454 parent_id     215 step_id    0 record_id   10454 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] -C- photon_id   10454 parent_id     215 step_id    1 record_id   10454 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] -C- photon_id   10454 parent_id     215 step_id    2 record_id   10454 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     214 parent_id      -1 step_id    0 record_id     214 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     213 parent_id      -1 step_id    0 record_id     213 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     212 parent_id      -1 step_id    0 record_id     212 record_max   10000 STATIC 
+    2016-10-04 15:01:45.104 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     211 parent_id      -1 step_id    0 record_id     211 record_max   10000 STATIC 
+    2016-10-04 15:01:45.105 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     210 parent_id      -1 step_id    0 record_id     210 record_max   10000 STATIC 
+    2016-10-04 15:01:45.105 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     209 parent_id      -1 step_id    0 record_id     209 record_max   10000 STATIC 
+    2016-10-04 15:01:45.105 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     208 parent_id      -1 step_id    0 record_id     208 record_max   10000 STATIC 
 
 
 

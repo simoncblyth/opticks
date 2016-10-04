@@ -79,6 +79,10 @@
 #include "DsPhotonTrackInfo.h"
 #include "DsG4CompositeTrackInfo.h"
 
+
+#include "PLOG.hh"
+
+
 ///////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -750,7 +754,17 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             aSecondaryTrack->SetWeight( weight );
             aSecondaryTrack->SetTouchableHandle(aStep.GetPreStepPoint()->GetTouchableHandle());
             // aSecondaryTrack->SetTouchableHandle((G4VTouchable*)0);//this is wrong
-		
+	
+
+            if(flagReemission)
+            { 
+                LOG(info) << "reemit" 
+                          << " secondaryTime(ns) " << aSecondaryTime/ns 
+                          << " parent_id " << aTrack.GetTrackID() - 1 
+                           ;
+
+            } 
+	
             aSecondaryTrack->SetParentID(aTrack.GetTrackID());
 		
             // add the secondary to the ParticleChange object

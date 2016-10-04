@@ -253,8 +253,14 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     unsigned int eid = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
 
     G4Track* track = step->GetTrack();
-    unsigned photon_id = track->GetTrackID() - 1;
-    unsigned step_id  = track->GetCurrentStepNumber() - 1 ;
+
+    int photon_id = track->GetTrackID() - 1;
+    int parent_id = track->GetParentID() - 1 ;
+    int step_id  = track->GetCurrentStepNumber() - 1 ;
+
+    assert( photon_id >= 0 );
+    assert( step_id   >= 0 );
+    assert( parent_id >= -1 );  // parent_id is -1 for non-secondary tracks 
 
     const G4StepPoint* pre  = step->GetPreStepPoint() ; 
     const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -262,43 +268,40 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     const G4Material* preMat  = pre->GetMaterial() ;
     const G4Material* postMat = post->GetMaterial() ;
 
-    //if(preMat == postMat) return ;  
-    // CANNOT JUST SKIP ALL SAME MATERIAL STEPS, AS BULK ABSORB "AB" THEN GETS MISSED
-
-
     unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
     unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
-
-/*
-    LOG(fatal) << "CSteppingAction::UserSteppingActionOptical"
-               << " preMat " << preMat->GetName() 
-               << " postMat " << postMat->GetName() 
-               << " preMaterial " << preMaterial
-               << " postMaterial " << postMaterial
-               ;
-*/ 
-
-
-    // slot continuation for reemission means need to find the prior id 
+   
 
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
+    bool continuePhoton = parent_id >= 0  ;
 
     m_recorder->setEventId(eid);
     m_recorder->setStepId(step_id);
     m_recorder->setPhotonId(photon_id);   
+    m_recorder->setParentId(parent_id);   
 
-    unsigned int record_id = m_recorder->defineRecordId();
+    unsigned int record_id = m_recorder->defineRecordId();   //  m_photons_per_g4event*m_event_id + m_photon_id 
     unsigned int record_max = m_recorder->getRecordMax() ;
 
-    if(startPhoton)
-         LOG(debug) << "    (opti)"
-                   << " photon_id " << photon_id 
-                   << " step_id " << step_id 
-                   << " record_id " << record_id 
-                   << " record_max " << record_max
+    bool stepRecord = record_id < record_max ||  m_dynamic ; 
+
+   // slot continuation for reemission means need to find the prior id 
+
+    if(startPhoton || continuePhoton || !stepRecord)
+         LOG(info) 
+                   << ( startPhoton     ? "S" : "-" )
+                   << ( continuePhoton  ? "C" : "-" )
+                   << ( stepRecord      ? "R" : "-" )
+                   << " photon_id " << std::setw(7) << photon_id 
+                   << " parent_id " << std::setw(7) << parent_id
+                   << " step_id " << std::setw(4) << step_id 
+                   << " record_id " << std::setw(7) << record_id 
+                   << " record_max " << std::setw(7) << record_max
+                  << ( m_dynamic ? " DYNAMIC " : " STATIC " )
                    ;
 
-    if(record_id < record_max ||  m_dynamic)
+
+    if(stepRecord)
     {
         if(startPhoton)
         { 
@@ -336,14 +339,8 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
             // for absorption, this should already be set  ? TODO:check
         } 
     }
-    else
-    {
-        LOG(info) << "CSA::UserSteppingActionOptical NOT RECORDING "
-                  << " record_id " << record_id 
-                  << " record_max " << record_max
-                  << ( m_dynamic ? " DYNAMIC " : " STATIC " )
-                  ;
-    }
+
+
 }
 
 void CSteppingAction::compareRecords()

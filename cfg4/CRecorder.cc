@@ -166,48 +166,58 @@ unsigned long long CRecorder::getSeqMat()
 
 
 
-unsigned int CRecorder::getRecordMax()
+unsigned CRecorder::getRecordMax()
 {
     return m_record_max ; 
 }
 
 
-unsigned int CRecorder::getEventId()
+int CRecorder::getEventId()
 {
    return m_event_id ; 
 }
-unsigned int CRecorder::getPhotonId()
+int CRecorder::getPhotonId()
 {
    return m_photon_id ; 
 }
-unsigned int CRecorder::getStepId()
+int CRecorder::getParentId()
+{
+   return m_parent_id ; 
+}
+int CRecorder::getStepId()
 {
    return m_step_id ; 
 }
-unsigned int CRecorder::getRecordId()
+int CRecorder::getRecordId()
 {
    return m_record_id ; 
 }
 
 
-void CRecorder::setEventId(unsigned int event_id)
+void CRecorder::setEventId(int event_id)
 {
     m_event_id = event_id ; 
 }
-void CRecorder::setPhotonId(unsigned int photon_id)
+void CRecorder::setPhotonId(int photon_id)
 {
     m_photon_id = photon_id ; 
 }
-void CRecorder::setStepId(unsigned int step_id)
+void CRecorder::setParentId(int parent_id)
+{
+    m_parent_id = parent_id ; 
+}
+
+
+void CRecorder::setStepId(int step_id)
 {
     m_step_id = step_id ; 
 }
-unsigned int CRecorder::defineRecordId()   
+int CRecorder::defineRecordId()   
 {
    return m_photons_per_g4event*m_event_id + m_photon_id ; 
 }
 
-void CRecorder::setRecordId(unsigned int record_id)
+void CRecorder::setRecordId(int record_id)
 {
     m_record_id = record_id ; 
 }
