@@ -1,4 +1,6 @@
 #include "CFG4_BODY.hh"
+#include "CBoundaryProcess.hh"
+
 // brap-
 #include "BBit.hh"
 
@@ -164,17 +166,6 @@ unsigned long long CRecorder::getSeqMat()
 
 
 
-//void CRecorder::setPropLib(CPropLib* clib)
-//{
-//    m_clib = clib  ; 
-//}
-
-
-//OpticksEvent* CRecorder::getEvent()
-//{
-//    return m_evt ; 
-//}
-
 unsigned int CRecorder::getRecordMax()
 {
     return m_record_max ; 
@@ -197,15 +188,6 @@ unsigned int CRecorder::getRecordId()
 {
    return m_record_id ; 
 }
-
-
-
-
-G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
-{
-   return m_boundary_status ; 
-}
-
 
 
 void CRecorder::setEventId(unsigned int event_id)
@@ -357,7 +339,11 @@ void CRecorder::startPhoton()
 }
 
 
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+#else
 void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+#endif
 {
     // this is invoked before RecordStep is called from SteppingAction
     m_prior_boundary_status = m_boundary_status ; 
@@ -397,19 +383,19 @@ bool CRecorder::RecordStep(const G4Step* step)
         preFlag = m_gen ;         
         postFlag = OpPointFlag(post, m_boundary_status) ;
 
-        if(postFlag == 0 && m_boundary_status != SameMaterial)
-            LOG(warning) << " (step_id=0) boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
+        //if(postFlag == 0 && m_boundary_status != SameMaterial)
+        //    LOG(warning) << " (step_id=0) boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
     }
     else
     {
         preFlag  = OpPointFlag(pre,  m_prior_boundary_status);
         postFlag = OpPointFlag(post, m_boundary_status) ;
 
-        if(preFlag == 0 && m_prior_boundary_status != SameMaterial)
-            LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_prior_boundary_status) ; 
+        //if(preFlag == 0 && m_prior_boundary_status != SameMaterial)
+        //    LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_prior_boundary_status) ; 
 
-        if(postFlag == 0 && m_boundary_status != SameMaterial)
-            LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
+        //if(postFlag == 0 && m_boundary_status != SameMaterial)
+        //    LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
 
     }
 
@@ -448,17 +434,24 @@ bool CRecorder::RecordStep(const G4Step* step)
 }
 
 
+#ifdef USE_CUSTOM_BOUNDARY
+bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label)
+#else
 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
+#endif
 {
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
 
-    if(flag == 0 && boundary_status != SameMaterial)
-         LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
 
-    // hmm SameMaterial steps could the problem
+    if(flag == 0)
+    {
+       if(!(boundary_status == SameMaterial || boundary_status == Undefined))
+            LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
 
+        // DYBOp giving lots of Undefined
+    }
 
     //Dump(label,  slot, point, boundary_status );
 
@@ -489,6 +482,48 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     return done ; 
 }
+
+
+
+
+
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
+#else
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
+#endif
+{
+    assert(m_debug);
+    m_points.push_back(new G4StepPoint(*point));
+    m_flags.push_back(flag);
+    m_materials.push_back(material);
+    m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
+    m_seqhis_dbg.push_back(seqhis);
+    m_seqmat_dbg.push_back(seqmat);
+}
+
+
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+DsG4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
+{
+   return m_boundary_status ; 
+}
+#else
+G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
+{
+   return m_boundary_status ; 
+}
+#endif
+
+
+
+
+
+
 
 
 void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
@@ -661,7 +696,11 @@ bool CRecorder::hasIssue()
     return issue ; 
 }
 
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::Dump(const char* /*msg*/, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname )
+#else
 void CRecorder::Dump(const char* /*msg*/, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
+#endif
 {
     //LOG(info) << msg ; 
     std::string bs = OpBoundaryAbbrevString(boundary_status) ;
@@ -689,7 +728,11 @@ void CRecorder::Dump(const char* msg)
     {
        //unsigned long long seqhis = m_seqhis_dbg[i] ;
        //unsigned long long seqmat = m_seqmat_dbg[i] ;
+#ifdef USE_CUSTOM_BOUNDARY
+       DsG4OpBoundaryProcessStatus bst = m_bndstats[i] ;
+#else
        G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
+#endif
        unsigned mat = m_materials[i] ;
        const char* matname = ( mat == 0 ? "-" : m_material_bridge->getMaterialName(mat-1)  ) ;
 
@@ -700,16 +743,6 @@ void CRecorder::Dump(const char* msg)
     }
 }
 
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
-{
-    assert(m_debug);
-    m_points.push_back(new G4StepPoint(*point));
-    m_flags.push_back(flag);
-    m_materials.push_back(material);
-    m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
-    m_seqhis_dbg.push_back(seqhis);
-    m_seqmat_dbg.push_back(seqmat);
-}
 
 void CRecorder::Clear()
 {
@@ -735,4 +768,12 @@ void CRecorder::Summary(const char* msg)
               << " m_slot " << m_slot 
               ;
 }
+
+
+
+
+
+
+
+
 

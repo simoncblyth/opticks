@@ -15,6 +15,96 @@ First tack, teleport in the DsG4Scintillation code and try to get it to work::
 
 
 
+Adopting DYBOp into CFG4
+---------------------------
+
+
+
+flags borked, so flying blind
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* lots of Undefined boundary status
+
+tlaser.py::
+
+      A:seqhis_ana      1:laser 
+              8ccccd        0.767           7673       [6 ] TO BT BT BT BT SA
+                  4d        0.055            553       [2 ] TO AB
+          cccc9ccccd        0.024            242       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.019            188       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.012            122       [4 ] TO BT BT AB
+             8cccc5d        0.012            121       [7 ] TO RE BT BT BT BT SA
+                 45d        0.006             65       [3 ] TO RE AB
+              4ccccd        0.006             63       [6 ] TO BT BT BT BT AB
+            8cccc55d        0.005             52       [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd        0.004             39       [7 ] TO BT BT SC BT BT SA
+                455d        0.003             34       [4 ] TO RE RE AB
+          cccccc6ccd        0.003             34       [10] TO BT BT SC BT BT BT BT BT BT
+             8cc5ccd        0.003             27       [7 ] TO BT BT RE BT BT SA
+             86ccccd        0.003             27       [7 ] TO BT BT BT BT SC SA
+           8cccc555d        0.003             26       [9 ] TO RE RE RE BT BT BT BT SA
+               4cccd        0.003             25       [5 ] TO BT BT BT AB
+          cacccccc5d        0.002             22       [10] TO RE BT BT BT BT BT BT SR BT
+                 46d        0.002             21       [3 ] TO SC AB
+          cccc6ccccd        0.002             20       [10] TO BT BT BT BT SC BT BT BT BT
+            4ccccc5d        0.002             19       [8 ] TO RE BT BT BT BT BT AB
+                           10000         1.00 
+       B:seqhis_ana     -1:laser 
+                   0        0.850           8498       [1 ] ?0?
+                  4d        0.071            708       [2 ] TO AB
+                   d        0.028            276       [1 ] TO
+                400d        0.017            168       [4 ] TO ?0? ?0? AB
+              40000d        0.009             92       [6 ] TO ?0? ?0? ?0? ?0? AB
+                  6d        0.008             82       [2 ] TO SC
+                600d        0.004             35       [4 ] TO ?0? ?0? SC
+                 46d        0.003             26       [3 ] TO SC AB
+              60000d        0.002             16       [6 ] TO ?0? ?0? ?0? ?0? SC
+               4000d        0.002             15       [5 ] TO ?0? ?0? ?0? AB
+          400000000d        0.002             15       [10] TO ?0? ?0? ?0? ?0? ?0? ?0? ?0? ?0? AB
+                 40d        0.001             11       [3 ] TO ?0? AB
+            4000000d        0.001              7       [8 ] TO ?0? ?0? ?0? ?0? ?0? ?0? AB
+             400600d        0.001              6       [7 ] TO ?0? ?0? SC ?0? ?0? AB
+               4006d        0.001              6       [5 ] TO SC ?0? ?0? AB
+          600000000d        0.001              6       [10] TO ?0? ?0? ?0? ?0? ?0? ?0? ?0? ?0? SC
+             400006d        0.000              4       [7 ] TO SC ?0? ?0? ?0? ?0? AB
+                 66d        0.000              3       [3 ] TO SC SC
+               6006d        0.000              3       [5 ] TO SC ?0? ?0? SC
+               6000d        0.000              3       [5 ] TO ?0? ?0? ?0? SC
+                           10000         1.00 
+
+
+
+live reemission photon counts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+STATIC buffer was expecting a certain number of photons, so currently truncates::
+
+    2016-10-04 11:49:41.787 INFO  [1669872] [CSteppingAction::UserSteppingAction@156] CSA (startEvent) event_id 9 event_total 9
+    2016-10-04 11:49:41.787 INFO  [1669872] [CSteppingAction::UserSteppingActionOptical@320] CSA::UserSteppingActionOptical NOT RECORDING  record_id 100000 record_max 100000 STATIC 
+    2016-10-04 11:49:41.787 INFO  [1669872] [CSteppingAction::UserSteppingActionOptical@320] CSA::UserSteppingActionOptical NOT RECORDING  record_id 100000 record_max 100000 STATIC 
+    ...
+    2016-10-04 11:49:42.529 INFO  [1669872] [CSteppingAction::UserSteppingActionOptical@320] CSA::UserSteppingActionOptical NOT RECORDING  record_id 100495 record_max 100000 STATIC 
+    2016-10-04 11:49:42.529 INFO  [1669872] [CSteppingAction::UserSteppingActionOptical@320] CSA::UserSteppingActionOptical NOT RECORDING  record_id 100495 record_max 100000 STATIC 
+    2016-10-04 11:49:42.532 INFO  [1669872] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+
+
+Normally with fabricated (as opposed to G4 live) gensteps, the number of photons is known ahead of time.
+
+Reemission means cannot know photon counts ahead of time ?
+
+* that statement is true only if you count reemits are new photons, Opticks does not 
+ 
+
+Contining the slot for reemiisions with G4 ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is necessary for easy comparisons between G4 and Opticks.
+
+With Opticks a reemitted photon continues the lineage (buffer slot) 
+of its predecessor but with G4 a fresh new particle is created ...  
+
+
+
 REEMISSIONPROB is not a standard G4 property
 ----------------------------------------------
 

@@ -15,6 +15,8 @@
 #include "G4PhysicalConstants.hh"
 
 // cg4-
+#include "CBoundaryProcess.hh"
+
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
 #include "CRecorder.hh"
@@ -39,19 +41,33 @@
 #include "PLOG.hh"
 
 
+#ifdef USE_CUSTOM_BOUNDARY
+DsG4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
+{
+    DsG4OpBoundaryProcessStatus status = Undefined;
+#else
 G4OpBoundaryProcessStatus CSteppingAction::GetOpBoundaryProcessStatus()
 {
     G4OpBoundaryProcessStatus status = Undefined;
+#endif
     G4ProcessManager* mgr = G4OpticalPhoton::OpticalPhoton()->GetProcessManager() ;
     if(mgr) 
     {
+#ifdef USE_CUSTOM_BOUNDARY
+        DsG4OpBoundaryProcess* opProc = NULL ;  
+#else
         G4OpBoundaryProcess* opProc = NULL ;  
+#endif
         G4int npmax = mgr->GetPostStepProcessVector()->entries();
         G4ProcessVector* pv = mgr->GetPostStepProcessVector(typeDoIt);
         for (G4int i=0; i<npmax; i++) 
         {
             G4VProcess* proc = (*pv)[i];
+#ifdef USE_CUSTOM_BOUNDARY
+            opProc = dynamic_cast<DsG4OpBoundaryProcess*>(proc);
+#else
             opProc = dynamic_cast<G4OpBoundaryProcess*>(proc);
+#endif
             if (opProc) 
             { 
                 status = opProc->GetStatus(); 
@@ -263,6 +279,7 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 */ 
 
 
+    // slot continuation for reemission means need to find the prior id 
 
     bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
 
@@ -291,7 +308,11 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
             m_recorder->RecordQuadrant(step);
         }
 
+#ifdef USE_CUSTOM_BOUNDARY
+        DsG4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
+#else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
+#endif
 
         m_recorder->setRecordId(record_id);
         m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);

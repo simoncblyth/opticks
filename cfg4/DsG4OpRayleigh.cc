@@ -359,11 +359,10 @@ DsG4OpRayleigh::RayleighAttenuationLengthGenerator(G4MaterialPropertiesTable *aM
         if (Rindex ) {
 
 #if ( G4VERSION_NUMBER > 1000 )
-           unsigned numBin = Rindex->GetVectorLength();
-           unsigned scBin = 0 ;  
-           while(scBin++ < numBin){
-                e = Rindex->Energy(scBin);
-                refraction_index = (*Rindex)[scBin];
+          for(size_t ii=0 ; ii < Rindex->GetVectorLength() ; ii++)
+          {
+                e = Rindex->Energy(ii);
+                refraction_index = (*Rindex)[ii];
 #else
            Rindex->ResetIterator();
            while (++(*Rindex)) {
@@ -395,7 +394,7 @@ DsG4OpRayleigh::RayleighAttenuationLengthGenerator(G4MaterialPropertiesTable *aM
 		}
 
 #if ( G4VERSION_NUMBER > 1000 )
-                RayleighScatteringLengths->PutValue(scBin, Dist);
+                RayleighScatteringLengths->InsertValues(e, Dist);
 #else
                 RayleighScatteringLengths->
 			InsertValues(Rindex->GetPhotonEnergy(), Dist);

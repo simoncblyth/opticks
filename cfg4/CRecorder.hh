@@ -6,22 +6,22 @@
 #include <glm/fwd.hpp>
 
 // g4-
-
-
-#include "CFG4_PUSH.hh"
-#include "G4OpBoundaryProcess.hh"
-#include "CFG4_POP.hh"
-
 class G4Run ;
 class G4Step ; 
 class G4PrimaryVertex ; 
+
+
+#include "CFG4_PUSH.hh"
+
+#include "CBoundaryProcess.hh"
+
+#include "CFG4_POP.hh"
 
 class Opticks ; // okc-
 class OpticksEvent ; 
 
 
 // cfg4-
-//class CPropLib ; 
 class CGeometry ; 
 class CMaterialBridge ; 
 
@@ -115,12 +115,25 @@ class CFG4_API CRecorder {
    public:
         unsigned int getVerbosity();
    public:
+
+#ifdef USE_CUSTOM_BOUNDARY
+        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
+        void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
+        DsG4OpBoundaryProcessStatus getBoundaryStatus();
+        void Dump(const char* msg, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname );
+#else
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
+        void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
+        G4OpBoundaryProcessStatus getBoundaryStatus();
+        void Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname );
+#endif
+
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
         void RecordQuadrant(const G4Step* step);
 
         void Clear();
-        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
         bool hasIssue();
    public:
     //    bool isDynamic(); 
@@ -129,7 +142,6 @@ class CFG4_API CRecorder {
         bool isMaterialSelected(); 
 
         void Dump(const char* msg="CRecorder::Dump");
-        void Dump(const char* msg, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname );
    public:
         void setEventId(unsigned int event_id);
         void setPhotonId(unsigned int photon_id);
@@ -145,17 +157,13 @@ class CFG4_API CRecorder {
 
         unsigned long long getSeqHis();
         unsigned long long getSeqMat();
-   public:
-        //unsigned int getPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
-        void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
-        G4OpBoundaryProcessStatus getBoundaryStatus();
+
    private:
         void init();
    private:
         Opticks*       m_ok; 
         OpticksEvent*  m_evt ; 
         CGeometry*     m_geometry ; 
-        //CPropLib*      m_clib ; 
         CMaterialBridge* m_material_bridge ; 
         bool           m_dynamic ;
 
@@ -178,8 +186,15 @@ class CFG4_API CRecorder {
         uifchar4     m_c4 ; 
 
 
+#ifdef USE_CUSTOM_BOUNDARY
+        DsG4OpBoundaryProcessStatus m_boundary_status ; 
+        DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
+        std::vector<DsG4OpBoundaryProcessStatus>  m_bndstats ; 
+#else
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
+        std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
+#endif
 
         unsigned int m_premat ; 
         unsigned int m_prior_premat ; 
@@ -212,7 +227,6 @@ class CFG4_API CRecorder {
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned int>               m_flags ; 
         std::vector<unsigned int>               m_materials ; 
-        std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
         std::vector<unsigned long long>         m_seqhis_dbg  ; 
         std::vector<unsigned long long>         m_seqmat_dbg  ; 
 };

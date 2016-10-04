@@ -1,6 +1,6 @@
 #pragma once
 
-#include "G4OpBoundaryProcess.hh"
+#include "CBoundaryProcess.hh"
 #include <vector>
 
 class CGeometry ; 
@@ -140,7 +140,11 @@ class CFG4_API Rec {
    public:
        void Dump(const char* msg); 
    public:
+#ifdef USE_CUSTOM_BOUNDARY
+       DsG4OpBoundaryProcessStatus getBoundaryStatus(unsigned int i);
+#else
        G4OpBoundaryProcessStatus getBoundaryStatus(unsigned int i);
+#endif
        const State* getState(unsigned int i);
        unsigned int getNumStates();
    public:

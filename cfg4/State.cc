@@ -10,7 +10,12 @@ const G4Step* State::getStep() const
 {
     return m_step ; 
 }
+
+#ifdef USE_CUSTOM_BOUNDARY
+DsG4OpBoundaryProcessStatus State::getBoundaryStatus() const
+#else
 G4OpBoundaryProcessStatus State::getBoundaryStatus() const
+#endif
 {
     return m_boundary_status ; 
 }
@@ -25,7 +30,11 @@ unsigned int State::getPostMaterial() const
 
 
 
+#ifdef USE_CUSTOM_BOUNDARY
+State::State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat) 
+#else
 State::State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat) 
+#endif
    :
    m_step(NULL),
    m_boundary_status(boundary_status),

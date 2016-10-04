@@ -134,12 +134,15 @@ DsG4Cerenkov::DsG4Cerenkov(const G4String& processName, G4ProcessType type)
            , fApplyPreQE(false)
            , fPreQE(1.)
 {
+
+       /*
         G4cout << "DsG4Cerenkov::DsG4Cerenkov constructor" << G4endl;
         G4cout << "NOTE: this is now a G4VProcess!" << G4endl;
         G4cout << "Required change in UserPhysicsList: " << G4endl;
         G4cout << "change: pmanager->AddContinuousProcess(theCerenkovProcess);" << G4endl; // 
         G4cout << "to:     pmanager->AddProcess(theCerenkovProcess);" << G4endl;
         G4cout << "        pmanager->SetProcessOrdering(theCerenkovProcess,idxPostStep);" << G4endl;
+        */
 
         SetProcessSubType(fCerenkov);
 
@@ -516,9 +519,7 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 		      // of (photon energy, refraction index) pairs 
 
 #if ( G4VERSION_NUMBER > 1000 )
-              unsigned numCkBin = theRefractionIndexVector->GetVectorLength();
-              unsigned ckBin = 0 ; 
-		      G4double currentRI = (*theRefractionIndexVector)[ckBin] ;
+		      G4double currentRI = (*theRefractionIndexVector)[0] ;
 #else
 		      theRefractionIndexVector->ResetIterator();
 		      ++(*theRefractionIndexVector);	// advance to 1st entry 
@@ -534,14 +535,13 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 
 			 G4double currentCAI = 0.0;
 #if ( G4VERSION_NUMBER > 1000 )
-			 G4double currentPM = theRefractionIndexVector->Energy(ckBin);
-			 aPhysicsOrderedFreeVector->PutValue(ckBin , currentCAI);
+			 G4double currentPM = theRefractionIndexVector->Energy(0);
 #else
 			 G4double currentPM = theRefractionIndexVector->
 			 			 GetPhotonEnergy();
+#endif
 			 aPhysicsOrderedFreeVector->
 			 	 InsertValues(currentPM , currentCAI);
-#endif
 
 
 
@@ -555,10 +555,10 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 			 // pairs stored for this material  
 
 #if ( G4VERSION_NUMBER > 1000 )
-             while(++ckBin < numCkBin)
+             for (size_t ii = 1; ii < theRefractionIndexVector->GetVectorLength(); ++ii)
              {
-				currentRI=(*theRefractionIndexVector)[ckBin];
-                currentPM = theRefractionIndexVector->Energy(ckBin);
+				currentRI=(*theRefractionIndexVector)[ii];
+                currentPM = theRefractionIndexVector->Energy(ii);
 #else
 			 while(++(*theRefractionIndexVector))
 			 {
@@ -574,12 +574,8 @@ void DsG4Cerenkov::BuildThePhysicsTable()
 				currentCAI = prevCAI + 
 					     (currentPM - prevPM) * currentCAI;
 
-#if ( G4VERSION_NUMBER > 1000 )
-				aPhysicsOrderedFreeVector->PutValue(ckBin, currentCAI);
-#else
 				aPhysicsOrderedFreeVector->
 				    InsertValues(currentPM, currentCAI);
-#endif
 
 				prevPM  = currentPM;
 				prevCAI = currentCAI;

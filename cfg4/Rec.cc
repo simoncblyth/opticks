@@ -107,7 +107,11 @@ const State* Rec::getState(unsigned int i)
 }
 
 
+#ifdef USE_CUSTOM_BOUNDARY
+DsG4OpBoundaryProcessStatus Rec::getBoundaryStatus(unsigned int i)
+#else
 G4OpBoundaryProcessStatus Rec::getBoundaryStatus(unsigned int i)
+#endif
 {
     const State* state = getState(i) ;
     return state ? state->getBoundaryStatus() : Undefined ;
@@ -129,8 +133,13 @@ Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsi
     unsigned int preMat  = state->getPreMaterial();
     unsigned int postMat = state->getPostMaterial();
 
+#ifdef USE_CUSTOM_BOUNDARY
+    DsG4OpBoundaryProcessStatus boundary_status = state->getBoundaryStatus() ;
+    DsG4OpBoundaryProcessStatus prior_boundary_status = prior ? prior->getBoundaryStatus() : Undefined ;
+#else
     G4OpBoundaryProcessStatus boundary_status = state->getBoundaryStatus() ;
     G4OpBoundaryProcessStatus prior_boundary_status = prior ? prior->getBoundaryStatus() : Undefined ;
+#endif
 
     unsigned int preFlag   = i == 0 ? m_genflag : OpPointFlag(pre,  prior_boundary_status) ; 
     unsigned int postFlag  = OpPointFlag(post, boundary_status) ;
@@ -267,9 +276,14 @@ void Rec::Dump(const char* msg)
         const char* preMaterialRaw  = preMatRaw == 0 ? "-" : m_material_bridge->getMaterialName(preMatRaw - 1) ;
         const char* postMaterialRaw = postMatRaw == 0 ? "-" : m_material_bridge->getMaterialName(postMatRaw - 1) ;
    
-        
+       
+#ifdef USE_CUSTOM_BOUNDARY
+        DsG4OpBoundaryProcessStatus boundary_status = getBoundaryStatus(i) ;
+        DsG4OpBoundaryProcessStatus prior_boundary_status = i > 0 ? getBoundaryStatus(i-1) : Undefined ;
+#else 
         G4OpBoundaryProcessStatus boundary_status = getBoundaryStatus(i) ;
         G4OpBoundaryProcessStatus prior_boundary_status = i > 0 ? getBoundaryStatus(i-1) : Undefined ;
+#endif
  
         std::cout << "[" << std::setw(3) << i
                   << "/" << std::setw(3) << nstates

@@ -834,9 +834,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
 
 #if ( G4VERSION_NUMBER > 1000 )
-                size_t   numFastBin = theFastLightVector->GetVectorLength() ; 
-                unsigned fastBin = 0 ; // maybe need to start from bin 1 to match the ++ ?
-                G4double currentIN = (*theFastLightVector)[fastBin] ;
+                G4double currentIN = (*theFastLightVector)[0] ;
 #else
                 theFastLightVector->ResetIterator();
                 ++(*theFastLightVector);	// advance to 1st entry 
@@ -851,12 +849,11 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
                     G4double currentCII = 0.0;
 #if ( G4VERSION_NUMBER > 1000 )
-                    G4double currentPM = theFastLightVector->Energy(fastBin); 
-                    aPhysicsOrderedFreeVector->PutValue(fastBin, currentCII);
+                    G4double currentPM = theFastLightVector->Energy(0); 
 #else
                     G4double currentPM = theFastLightVector->GetPhotonEnergy();
-                    aPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
 #endif
+                    aPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
 
                     // Set previous values to current ones prior to loop
 
@@ -868,9 +865,10 @@ void DsG4Scintillation::BuildThePhysicsTable()
                     // pairs stored for this material  
 
 #if ( G4VERSION_NUMBER > 1000 )
-                    while(++fastBin < numFastBin){
-                        currentPM = theFastLightVector->Energy(fastBin);
-                        currentIN = (*theFastLightVector)[fastBin] ;
+                   for (size_t ii = 1; ii < theFastLightVector->GetVectorLength(); ++ii )
+                   {
+                        currentPM = theFastLightVector->Energy(ii);
+                        currentIN = (*theFastLightVector)[ii] ;
 #else
                     while(++(*theFastLightVector)) {
                         currentPM = theFastLightVector->GetPhotonEnergy();
@@ -882,11 +880,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-#if ( G4VERSION_NUMBER > 1000 )
-                        aPhysicsOrderedFreeVector->PutValue(fastBin, currentCII);
-#else
                         aPhysicsOrderedFreeVector->InsertValues(currentPM, currentCII);
-#endif
 
                         prevPM  = currentPM;
                         prevCII = currentCII;
@@ -913,9 +907,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
 
 #if ( G4VERSION_NUMBER > 1000 )
-                size_t   numSlowBin = theSlowLightVector->GetVectorLength() ; 
-                unsigned slowBin = 0 ; // perhaps need to start from bin 1 to match the ++ ?
-                G4double currentIN = (*theSlowLightVector)[slowBin] ;  
+                G4double currentIN = (*theSlowLightVector)[0] ;  
 #else
                 theSlowLightVector->ResetIterator();
                 ++(*theSlowLightVector);  // advance to 1st entry
@@ -932,12 +924,11 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
                     G4double currentCII = 0.0;
 #if ( G4VERSION_NUMBER > 1000 )
-                    G4double currentPM = theSlowLightVector->Energy(slowBin); 
-                    bPhysicsOrderedFreeVector->PutValue(slowBin, currentCII);
+                    G4double currentPM = theSlowLightVector->Energy(0); 
 #else
                     G4double currentPM = theSlowLightVector->GetPhotonEnergy();
-                    bPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
 #endif
+                    bPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
 
                     // Set previous values to current ones prior to loop
 
@@ -951,10 +942,10 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
 
 #if ( G4VERSION_NUMBER > 1000 )
-                    while(++slowBin < numSlowBin)
+                    for (size_t ii = 1; ii < theSlowLightVector->GetVectorLength() ; ++ii) 
                     {
-                        currentPM = theSlowLightVector->Energy(slowBin);
-                        currentIN = (*theSlowLightVector)[slowBin] ;
+                        currentPM = theSlowLightVector->Energy(ii);
+                        currentIN = (*theSlowLightVector)[ii] ;
 #else
                     while(++(*theSlowLightVector)) 
                     {
@@ -967,11 +958,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-#if ( G4VERSION_NUMBER > 1000 )
-                         bPhysicsOrderedFreeVector->PutValue(slowBin, currentCII);
-#else
                          bPhysicsOrderedFreeVector->InsertValues(currentPM, currentCII);
-#endif
 
                         prevPM  = currentPM;
                         prevCII = currentCII;
@@ -994,9 +981,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
 
 #if ( G4VERSION_NUMBER > 1000 )
-                size_t   numReemBin = theReemissionVector->GetVectorLength() ; 
-                unsigned reemBin = 0 ; // perhaps need to start from bin 1 to match the ++ ?
-                G4double currentIN = (*theReemissionVector)[reemBin] ;  
+                G4double currentIN = (*theReemissionVector)[0] ;  
 #else
                 theReemissionVector->ResetIterator();
                 ++(*theReemissionVector);  // advance to 1st entry
@@ -1011,12 +996,11 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
                      G4double currentCII = 0.0;
 #if ( G4VERSION_NUMBER > 1000 )
-                     G4double currentPM = theReemissionVector->Energy(reemBin); 
-                     cPhysicsOrderedFreeVector->PutValue(reemBin, currentCII);
+                     G4double currentPM = theReemissionVector->Energy(0); 
 #else
                      G4double currentPM = theReemissionVector->GetPhotonEnergy();
-                     cPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
 #endif
+                     cPhysicsOrderedFreeVector->InsertValues(currentPM , currentCII);
                     // Set previous values to current ones prior to loop
 
                     G4double prevPM  = currentPM;
@@ -1028,10 +1012,10 @@ void DsG4Scintillation::BuildThePhysicsTable()
 
 
 #if ( G4VERSION_NUMBER > 1000 )
-                    while(++reemBin < numReemBin)
+                    for(size_t ii=1 ; ii < theReemissionVector->GetVectorLength() ; ++ii)
                     {
-                        currentPM = theReemissionVector->Energy(reemBin);
-                        currentIN = (*theReemissionVector)[reemBin] ;
+                        currentPM = theReemissionVector->Energy(ii);
+                        currentIN = (*theReemissionVector)[ii] ;
 #else
                     while(++(*theReemissionVector)) 
                     {
@@ -1044,12 +1028,7 @@ void DsG4Scintillation::BuildThePhysicsTable()
                         currentCII = prevCII +
                             (currentPM - prevPM) * currentCII;
 
-
-#if ( G4VERSION_NUMBER > 1000 )
-                        cPhysicsOrderedFreeVector->PutValue(reemBin, currentCII);
-#else
                         cPhysicsOrderedFreeVector-> InsertValues(currentPM, currentCII);
-#endif
 
                         prevPM  = currentPM;
                         prevCII = currentCII;

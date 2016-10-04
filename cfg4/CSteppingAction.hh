@@ -2,7 +2,7 @@
 
 
 #include "G4UserSteppingAction.hh"
-#include "G4OpBoundaryProcess.hh"
+#include "CBoundaryProcess.hh"
 #include "globals.hh"
 
 // CSteppingAction
@@ -34,7 +34,11 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     void postinitialize();
     virtual ~CSteppingAction();
 
+#ifdef USE_CUSTOM_BOUNDARY
+    DsG4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
+#else
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
+#endif
     virtual void UserSteppingAction(const G4Step*);
   private:
     void init();

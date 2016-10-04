@@ -19,13 +19,16 @@ tlaser--(){
 
     local msg="=== $FUNCNAME :"
 
+    #local photons=1000000
+    local photons=10000
+
     local tag=$(tlaser-tag)
     local torch_config=(
                  type=point
                  frame=3153
                  source=0,0,0
                  target=1,0,0
-                 photons=1000000
+                 photons=$photons
                  material=GdDopedLS
                  wavelength=430
                  weight=1.0
@@ -50,5 +53,7 @@ tlaser-args(){ echo --tag $(tlaser-tag) --det laser --src torch ; }
 tlaser-i(){ ipython -i $(which tlaser.py) ; }
 
 
-tlaser-t(){ tlaser-;tlaser-- --okg4 --compute ; } 
+tlaser-t(){ tlaser-;tlaser-- --okg4 --compute $* ; } 
+tlaser-d(){ tlaser-;tlaser-t --steppingdbg  ; } 
+
 
