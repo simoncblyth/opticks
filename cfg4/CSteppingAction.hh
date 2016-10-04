@@ -28,7 +28,14 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 {
   static const unsigned long long SEQHIS_TO_SA ; 
   static const unsigned long long SEQMAT_MO_PY_BK ; 
-
+  public:
+    typedef enum { UNKNOWN, START, COLLECT, RHOP, RJUMP } RecStage_t ;
+    static const char* UNKNOWN_ ;
+    static const char* START_  ;
+    static const char* COLLECT_  ;
+    static const char* RHOP_  ;
+    static const char* RJUMP_  ;
+    static const char* RecStage( RecStage_t stage);
   public:
     CSteppingAction(CG4* g4, bool dynamic);
     void postinitialize();

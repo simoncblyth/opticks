@@ -14,6 +14,11 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "DsG4CompositeTrackInfo.h"
+#include "DsPhotonTrackInfo.h"
+
+
+
 // cg4-
 #include "CBoundaryProcess.hh"
 
@@ -245,6 +250,26 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 }
 
 
+const char* CSteppingAction::UNKNOWN_ = "UNKNOWN" ;
+const char* CSteppingAction::START_   = "START" ;
+const char* CSteppingAction::COLLECT_ = "COLLECT" ;
+const char* CSteppingAction::RHOP_    = "RHOP" ;
+const char* CSteppingAction::RJUMP_   = "RJUMP" ;
+
+const char* CSteppingAction::RecStage( RecStage_t stage)
+{
+    const char* s = NULL ; 
+    switch(stage)
+    {
+        case UNKNOWN:  s = UNKNOWN_ ; break ;
+        case START:    s = START_   ; break ;
+        case COLLECT:  s = COLLECT_ ; break ;
+        case RHOP:     s = RHOP_    ; break ;
+        case RJUMP:    s = RJUMP_   ; break ;
+    } 
+    return s ; 
+}
+
 
 void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 {
@@ -254,9 +279,24 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
     G4Track* track = step->GetTrack();
 
+
+
     int photon_id = track->GetTrackID() - 1;
     int parent_id = track->GetParentID() - 1 ;
     int step_id  = track->GetCurrentStepNumber() - 1 ;
+
+    int grandparent_id = -2 ; 
+
+    DsG4CompositeTrackInfo* cti = dynamic_cast<DsG4CompositeTrackInfo*>(track->GetUserInformation());
+    if(cti)
+    {
+        DsPhotonTrackInfo* pti = dynamic_cast<DsPhotonTrackInfo*>(cti->GetPhotonTrackInfo());
+        if(pti)
+        {
+            grandparent_id = pti->GetReGrandparent() - 1; 
+        }
+    }
+
 
     assert( photon_id >= 0 );
     assert( step_id   >= 0 );
@@ -272,43 +312,81 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
    
 
-    bool startPhoton = photon_id != m_recorder->getPhotonId() ; 
-    bool continuePhoton = parent_id >= 0  ;
+    int last_photon_id = m_recorder->getPhotonId();  
 
+    RecStage_t stage = UNKNOWN ; 
+    if( parent_id == -1 )
+    {
+        // without reemission no photons with 2nd-aries
+        stage = photon_id != last_photon_id  ? START : COLLECT ;     
+    } 
+    else if( parent_id >= 0 && parent_id == last_photon_id )
+    {
+        // when reemission need to connect the reem photon with its lineage for opticks style recording 
+        stage = RHOP ; 
+        photon_id = parent_id ; 
+    }
+    else if( grandparent_id >= 0 && grandparent_id == last_photon_id )
+    {
+        stage = RJUMP ;
+        photon_id = grandparent_id ; 
+    } 
+          
+
+    m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(eid);
     m_recorder->setStepId(step_id);
-    m_recorder->setPhotonId(photon_id);   
     m_recorder->setParentId(parent_id);   
 
     unsigned int record_id = m_recorder->defineRecordId();   //  m_photons_per_g4event*m_event_id + m_photon_id 
     unsigned int record_max = m_recorder->getRecordMax() ;
+    unsigned slot = m_recorder->getSlot();
 
-    bool stepRecord = record_id < record_max ||  m_dynamic ; 
-
-   // slot continuation for reemission means need to find the prior id 
-
-    if(startPhoton || continuePhoton || !stepRecord)
-         LOG(info) 
-                   << ( startPhoton     ? "S" : "-" )
-                   << ( continuePhoton  ? "C" : "-" )
-                   << ( stepRecord      ? "R" : "-" )
-                   << " photon_id " << std::setw(7) << photon_id 
-                   << " parent_id " << std::setw(7) << parent_id
-                   << " step_id " << std::setw(4) << step_id 
-                   << " record_id " << std::setw(7) << record_id 
-                   << " record_max " << std::setw(7) << record_max
-                  << ( m_dynamic ? " DYNAMIC " : " STATIC " )
-                   ;
+    bool recording = record_id < record_max ||  m_dynamic ; 
 
 
-    if(stepRecord)
+    if(stage == UNKNOWN || !recording)
     {
-        if(startPhoton)
+        double preTime = m_recorder->getPreGlobalTime(step);
+        double postTime = m_recorder->getPostGlobalTime(step);
+        LOG(info) 
+                       << std::setw(10) << RecStage(stage)
+                       << " evt " << std::setw(7) << eid
+                       << " pho " << std::setw(7) << photon_id 
+                       << " par " << std::setw(7) << parent_id
+                       << " grp " << std::setw(7) << grandparent_id
+                       << " ste " << std::setw(4) << step_id 
+                       << " rid " << std::setw(4) << record_id 
+                       << " slt " << std::setw(4) << slot
+                       << " pre " << std::setw(7) << preTime/ns 
+                       << " pst " << std::setw(7) << postTime/ns 
+                       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+                       ;
+
+    }
+
+    // hmm RHOP probably needs to omit first step ?
+
+    if(recording)
+    {
+        if(stage == START)
         { 
             m_rec->Clear();
 
             m_recorder->startPhoton();  // MUST be invoked from up here,  prior to setBoundaryStatus
             m_recorder->RecordQuadrant(step);
+        }
+        else if(stage == RHOP || stage == RJUMP)
+        {
+             if( slot > 0)
+             {
+                 m_recorder->setSlot(slot-1 );   // back up by one, to scrub the "AB" an refill with "RE"
+             }
+             else
+             {
+                 LOG(warning) << " RHOP or RJUMP, unexpected slot " << slot ;   
+
+             } 
         }
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -329,7 +407,7 @@ void CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
         if(done)
         {
-            compareRecords();
+            //compareRecords();
 
             m_recorder->RecordPhoton(step);
 

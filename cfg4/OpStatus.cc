@@ -263,8 +263,8 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     } 
     else
     {
-         LOG(warning) << "NEED TO UPDATE PROCESS NAMES ??? "
-                      << processName ;
+        LOG(warning) << " reaching...  " << processName ;
+        flag = BULK_REEMIT ;    // sure?
     }
     return flag ; 
 }

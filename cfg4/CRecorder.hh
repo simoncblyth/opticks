@@ -102,6 +102,8 @@ class CFG4_API CRecorder {
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         bool RecordStep(const G4Step*);
+        double getPreGlobalTime(const G4Step* step);
+        double getPostGlobalTime(const G4Step* step);
 
         void RecordPhoton(const G4Step* step);
         void startPhoton();
@@ -143,6 +145,10 @@ class CFG4_API CRecorder {
 
         void Dump(const char* msg="CRecorder::Dump");
    public:
+        // for reemission continuation
+        void setSlot(unsigned slot);
+        unsigned getSlot();
+   public:
         void setEventId(int event_id);
         void setPhotonId(int photon_id);
         void setParentId(int parent_id);
@@ -151,6 +157,7 @@ class CFG4_API CRecorder {
    public:
         int getEventId();
         int getPhotonId();
+        int getPhotonIdPrior();
         int getParentId();
         int getStepId();
         int defineRecordId();
@@ -182,9 +189,12 @@ class CFG4_API CRecorder {
 
         int m_event_id ; 
         int m_photon_id ; 
+        int m_photon_id_prior ; 
         int m_parent_id ; 
         int m_step_id ; 
         int m_record_id ; 
+
+
 
         unsigned int m_primary_id ; 
         unsigned int m_primary_max ; 

@@ -296,6 +296,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     G4int nscnt = 1;
     if (Fast_Intensity && Slow_Intensity) nscnt = 2;
+
     if ( verboseLevel > 0) {
       G4cout << " Fast_Intensity " << Fast_Intensity << " Slow_Intensity " << Slow_Intensity << " nscnt " << nscnt << G4endl;
     }
@@ -328,6 +329,10 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         if (G4UniformRand() >= p_reemission)
             return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
         NumTracks= 1;
+
+        // SCB: suspect nscnt = 2 is messing with reemission continuation, so try 
+        // nscnt = 1 ; 
+
         weight= aTrack.GetWeight();
 	if (verboseLevel > 0 ) {
 	    G4cout << " flagReemission " << flagReemission << " weight " << weight << G4endl;}
@@ -743,6 +748,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             if ( flagReemission ){
                 if ( reemittedTI ) *trackinf = *reemittedTI;
                 trackinf->SetReemitted();
+                trackinf->SetReGrandparent( aTrack.GetParentID() ); // SCB for reemission continuation recording 
             }
             else if ( fApplyPreQE ) {
                 trackinf->SetMode(DsPhotonTrackInfo::kQEPreScale);
@@ -758,9 +764,12 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
             if(flagReemission)
             { 
-                LOG(info) << "reemit" 
+                LOG(info) << " DsG4Scintillation reemit as secondary from this track: " 
                           << " secondaryTime(ns) " << aSecondaryTime/ns 
+                          << " grandparent_id " << aTrack.GetParentID() - 1 
                           << " parent_id " << aTrack.GetTrackID() - 1 
+                          << " scnt " << scnt
+                          << " nscnt " << nscnt
                            ;
 
             } 

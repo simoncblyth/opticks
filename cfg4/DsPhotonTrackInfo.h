@@ -26,12 +26,16 @@ public:
 
     bool GetReemitted() { return fReemitted; }
     void SetReemitted( bool re=true ) { fReemitted=re; }
+
+    void  SetReGrandparent(int rgp){ fReGrandparent = rgp ; }
+    int   GetReGrandparent(){ return fReGrandparent ; } 
     
     void Print() const {};
 private:
     QEMode fMode;
     double fQE;
     bool   fReemitted;
+    int    fReGrandparent ; 
 };
 
 #include "CFG4_TAIL.hh"

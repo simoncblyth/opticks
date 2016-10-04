@@ -87,6 +87,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_debug(m_verbosity > 0),
    m_event_id(UINT_MAX),
    m_photon_id(UINT_MAX),
+   m_photon_id_prior(UINT_MAX),
    m_step_id(UINT_MAX),
    m_record_id(UINT_MAX),
 
@@ -180,6 +181,12 @@ int CRecorder::getPhotonId()
 {
    return m_photon_id ; 
 }
+int CRecorder::getPhotonIdPrior()
+{
+   return m_photon_id_prior ; 
+}
+
+
 int CRecorder::getParentId()
 {
    return m_parent_id ; 
@@ -200,6 +207,7 @@ void CRecorder::setEventId(int event_id)
 }
 void CRecorder::setPhotonId(int photon_id)
 {
+    m_photon_id_prior = m_photon_id ; 
     m_photon_id = photon_id ; 
 }
 void CRecorder::setParentId(int parent_id)
@@ -314,6 +322,16 @@ void CRecorder::initEvent(OpticksEvent* evt)
 }
 
 
+unsigned CRecorder::getSlot()
+{
+    return m_slot ; 
+}
+
+void CRecorder::setSlot(unsigned slot)
+{
+   // needed for reemission continuation
+    m_slot = slot ; 
+}
 
 void CRecorder::startPhoton()
 {
@@ -373,6 +391,17 @@ void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, uns
 */
     
 }
+double CRecorder::getPreGlobalTime(const G4Step* step)
+{
+    const G4StepPoint* point  = step->GetPreStepPoint() ; 
+    return point->GetGlobalTime();
+}
+double CRecorder::getPostGlobalTime(const G4Step* step)
+{
+    const G4StepPoint* point  = step->GetPostStepPoint() ; 
+    return point->GetGlobalTime();
+}
+
   
 bool CRecorder::RecordStep(const G4Step* step)
 {
@@ -428,6 +457,10 @@ bool CRecorder::RecordStep(const G4Step* step)
 
     // skip the pre, but the post becomes the pre at next step where will be taken 
     // 1-based material indices, so zero can represent None
+    //
+    //   RecordStepPoint records into m_slot (if < m_steps_per_photon) and increments m_slot
+    // 
+
     if(!preSkip)
     {
        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE ); 
@@ -467,7 +500,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     if(m_step)
     {
-        unsigned long long shift = slot*4ull ;   
+        unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
         unsigned long long msk = 0xFull << shift ; 
         unsigned long long his = BBit::ffs(flag) & 0xFull ; 
         unsigned long long mat = material < 0xFull ? material : 0xFull ; 

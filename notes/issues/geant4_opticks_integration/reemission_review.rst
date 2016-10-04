@@ -179,6 +179,170 @@ record number. Unless can be sure subevt dont handled in mixed order ?
     2016-10-04 15:01:45.105 INFO  [1721635] [CSteppingAction::UserSteppingActionOptical@291] S-R photon_id     208 parent_id      -1 step_id    0 record_id     208 record_max   10000 STATIC 
 
 
+will the reemit step always come immediately after its parent one...  note the reversed photon order
+what about multiple reemissions 
+
+otherwise need to record the slots for all photons in order to continue them ?
+
+::
+
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      21 parent_id      -1 step_id    0 record_id      21 record_max      50 event_id       0 pre     0.1 post 8.05857 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      20 parent_id      -1 step_id    0 record_id      20 record_max      50 event_id       0 pre     0.1 post 8.05857 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      19 parent_id      -1 step_id    0 record_id      19 record_max      50 event_id       0 pre     0.1 post 8.05857 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      18 parent_id      -1 step_id    0 record_id      18 record_max      50 event_id       0 pre     0.1 post 8.05857 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [*DsG4Scintillation::PostStepDoIt@761] reemit secondaryTime(ns) 1.48211 parent_id 17
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      17 parent_id      -1 step_id    0 record_id      17 record_max      50 event_id       0 pre     0.1 post 1.48211 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] SC- photon_id      50 parent_id      17 step_id    0 record_id      50 record_max      50 event_id       0 pre 1.48211 post 6.09097 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      16 parent_id      -1 step_id    0 record_id      16 record_max      50 event_id       0 pre     0.1 post 8.05857 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      15 parent_id      -1 step_id    0 record_id      15 record_max      50 event_id       0 pre     0.1 post 0.489073 STATIC 
+    2016-10-04 18:12:58.303 INFO  [1777349] [CSteppingAction::UserSteppingActionOptical@296] S-R photon_id      14 parent_id      -1 step_id    0 record_id      14 record_max      50 event_id       0 pre     0.1 post 8.05857 STATIC 
+
+
+
+reemission continuation are difficult to implement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+G4 produces secondary reemission photon with large trackId, which then have task of
+linking with the fixed set of photons, within the recording range. 
+
+When the parent id of the 2ndary photon matches the last_photon_id 
+is a simple RHOP and can just continue filling slots.
+
+Similarly when grandparent id photon matches last_photon_id can
+just continue.
+
+::
+
+    318     int last_photon_id = m_recorder->getPhotonId();
+    319 
+    320     RecStage_t stage = UNKNOWN ;
+    321     if( parent_id == -1 )
+    322     {
+    323         stage = photon_id != last_photon_id  ? START : COLLECT ;
+    324     }
+    325     else if( parent_id >= 0 && parent_id == last_photon_id )
+    326     {
+    327         stage = RHOP ;
+    328         photon_id = parent_id ;
+    329     }
+    330     else if( grandparent_id >= 0 && grandparent_id == last_photon_id )
+    331     {
+    332         stage = RJUMP ;
+    333         photon_id = grandparent_id ;
+    334     }
+    335 
+    336 
+    337     m_recorder->setPhotonId(photon_id);
+    338     m_recorder->setEventId(eid);
+    339     m_recorder->setStepId(step_id);
+    340     m_recorder->setParentId(parent_id);
+
+
+
+
+* difficult to make the connection between the secondary and the parent/grandparent
+  that the new photons are in lineage with
+
+* how can avoid the AB ? and getting stuck in 
+
+
+::
+
+
+     A:seqhis_ana      1:laser 
+              8ccccd        0.756            756       [6 ] TO BT BT BT BT SA
+                  4d        0.063             63       [2 ] TO AB
+          cccc9ccccd        0.026             26       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.021             21       [7 ] TO SC BT BT BT BT SA
+             8cccc5d        0.012             12       [7 ] TO RE BT BT BT BT SA
+                4ccd        0.011             11       [4 ] TO BT BT AB
+              4ccccd        0.007              7       [6 ] TO BT BT BT BT AB
+                 45d        0.005              5       [3 ] TO RE AB
+           8cccc555d        0.005              5       [9 ] TO RE RE RE BT BT BT BT SA
+             8cc6ccd        0.005              5       [7 ] TO BT BT SC BT BT SA
+            4ccccc5d        0.005              5       [8 ] TO RE BT BT BT BT BT AB
+            8cccc55d        0.005              5       [8 ] TO RE RE BT BT BT BT SA
+                 4cd        0.003              3       [3 ] TO BT AB
+                455d        0.003              3       [4 ] TO RE RE AB
+             86ccccd        0.003              3       [7 ] TO BT BT BT BT SC SA
+            4ccccc6d        0.003              3       [8 ] TO SC BT BT BT BT BT AB
+            8cc55ccd        0.003              3       [8 ] TO BT BT RE RE BT BT SA
+          cccccc6ccd        0.003              3       [10] TO BT BT SC BT BT BT BT BT BT
+          cccc55555d        0.003              3       [10] TO RE RE RE RE RE BT BT BT BT
+          ccc9cccc6d        0.002              2       [10] TO SC BT BT BT BT DR BT BT BT
+                            1000         1.00 
+       B:seqhis_ana     -1:laser 
+              8ccccd        0.817            817       [6 ] TO BT BT BT BT SA
+                  4d        0.060             60       [2 ] TO AB
+          cccc9ccccd        0.024             24       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.009              9       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.007              7       [4 ] TO BT BT AB
+              45454d        0.005              5       [6 ] TO AB RE AB RE AB   
+              4ccccd        0.005              5       [6 ] TO BT BT BT BT AB
+          cccccc6ccd        0.005              5       [10] TO BT BT SC BT BT BT BT BT BT
+            8ccccc6d        0.003              3       [8 ] TO SC BT BT BT BT BT SA
+            8cccc54d        0.003              3       [8 ] TO AB RE BT BT BT BT SA
+           ccc9ccccd        0.003              3       [9 ] TO BT BT BT BT DR BT BT BT
+          8cccc5454d        0.003              3       [10] TO AB RE AB RE BT BT BT BT SA
+               4cccd        0.003              3       [5 ] TO BT BT BT AB
+                 46d        0.003              3       [3 ] TO SC AB
+             86ccccd        0.003              3       [7 ] TO BT BT BT BT SC SA
+             8cc6ccd        0.003              3       [7 ] TO BT BT SC BT BT SA
+           8cccc654d        0.002              2       [9 ] TO AB RE SC BT BT BT BT SA
+          8cbccccc6d        0.002              2       [10] TO SC BT BT BT BT BT BR BT SA
+             8ccc6cd        0.002              2       [7 ] TO BT SC BT BT BT SA
+          cacccccc6d        0.002              2       [10] TO SC BT BT BT BT BT BT SR BT
+                            1000         1.00 
+
+
+Must less RE in CG4 ? Scrubbing the AB by going back one slot and replace with RE::
+
+       A:seqhis_ana      1:laser 
+              8ccccd        0.764         763501       [6 ] TO BT BT BT BT SA
+                  4d        0.056          55825       [2 ] TO AB
+          cccc9ccccd        0.025          25263       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.020          19707       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.013          12576       [4 ] TO BT BT AB
+             8cccc5d        0.011          11183       [7 ] TO RE BT BT BT BT SA
+              4ccccd        0.009           8554       [6 ] TO BT BT BT BT AB
+                 45d        0.008           7531       [3 ] TO RE AB
+            8cccc55d        0.005           5362       [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd        0.004           4109       [7 ] TO BT BT SC BT BT SA
+                455d        0.004           3588       [4 ] TO RE RE AB
+             86ccccd        0.003           2836       [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd        0.003           2674       [10] TO BT BT SC BT BT BT BT BT BT
+           8cccc555d        0.003           2524       [9 ] TO RE RE RE BT BT BT BT SA
+             8cc5ccd        0.002           2359       [7 ] TO BT BT RE BT BT SA
+          cacccccc6d        0.002           2210       [10] TO SC BT BT BT BT BT BT SR BT
+                 46d        0.002           2118       [3 ] TO SC AB
+          cccc6ccccd        0.002           2060       [10] TO BT BT BT BT SC BT BT BT BT
+               4cccd        0.002           1940       [5 ] TO BT BT BT AB
+             89ccccd        0.002           1880       [7 ] TO BT BT BT BT DR SA
+                         1000000         1.00 
+       B:seqhis_ana     -1:laser 
+              8ccccd        0.814         813976       [6 ] TO BT BT BT BT SA
+                  4d        0.048          48056       [2 ] TO AB
+          cccc9ccccd        0.026          26149       [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d        0.019          18604       [7 ] TO SC BT BT BT BT SA
+                4ccd        0.012          11614       [4 ] TO BT BT AB
+                 8cd        0.010          10193       [3 ] TO BT SA
+              4ccccd        0.009           8755       [6 ] TO BT BT BT BT AB
+             8cc6ccd        0.004           4157       [7 ] TO BT BT SC BT BT SA
+                  8d        0.004           3614       [2 ] TO SA
+               8cccd        0.003           2746       [5 ] TO BT BT BT SA
+             86ccccd        0.003           2696       [7 ] TO BT BT BT BT SC SA
+                8c5d        0.002           2454       [4 ] TO RE BT SA
+                455d        0.002           2354       [4 ] TO RE RE AB
+                 45d        0.002           2306       [3 ] TO RE AB
+               4cccd        0.002           2244       [5 ] TO BT BT BT AB
+             89ccccd        0.002           2241       [7 ] TO BT BT BT BT DR SA
+          cacccccc6d        0.002           2172       [10] TO SC BT BT BT BT BT BT SR BT
+                 4cd        0.002           1967       [3 ] TO BT AB
+          cccccc6ccd        0.002           1931       [10] TO BT BT SC BT BT BT BT BT BT
+            8ccccc6d        0.002           1787       [8 ] TO SC BT BT BT BT BT SA
+                         1000000         1.00 
+
+
 
 REEMISSIONPROB is not a standard G4 property
 ----------------------------------------------

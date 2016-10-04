@@ -358,7 +358,7 @@ unsigned int TorchStepNPY::getNumG4Event()
     unsigned int num_photons = getNumPhotons();
     unsigned int ppe = m_num_photons_per_g4event ; 
     unsigned int num_g4event ; 
-    if(num_photons == 1)
+    if(num_photons < ppe)
     {
         num_g4event = 1 ; 
     }
