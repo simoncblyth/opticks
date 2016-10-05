@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <cstring>
+#include <string>
 #include <vector>
 #include <glm/fwd.hpp>
 
@@ -14,6 +15,7 @@ class G4PrimaryVertex ;
 #include "CFG4_PUSH.hh"
 
 #include "CBoundaryProcess.hh"
+#include "CStage.hh"
 
 #include "CFG4_POP.hh"
 
@@ -148,12 +150,16 @@ class CFG4_API CRecorder {
         // for reemission continuation
         void setSlot(unsigned slot);
         unsigned getSlot();
+        void decrementSlot();
    public:
+        void setStep(const G4Step* step);
+        void setStage(CStage::CStage_t stage);
         void setEventId(int event_id);
         void setPhotonId(int photon_id);
         void setParentId(int parent_id);
         void setStepId(int step_id);
         void setRecordId(int record_id);
+        void setPrimaryId(int primary_id);
    public:
         int getEventId();
         int getPhotonId();
@@ -167,6 +173,8 @@ class CFG4_API CRecorder {
 
         unsigned long long getSeqHis();
         unsigned long long getSeqMat();
+
+        std::string description();
 
    private:
         void init();
@@ -187,17 +195,15 @@ class CFG4_API CRecorder {
         unsigned m_verbosity ; 
         bool         m_debug ; 
 
+        CStage::CStage_t m_stage ;
         int m_event_id ; 
         int m_photon_id ; 
         int m_photon_id_prior ; 
         int m_parent_id ; 
         int m_step_id ; 
         int m_record_id ; 
+        int m_primary_id ; 
 
-
-
-        unsigned int m_primary_id ; 
-        unsigned int m_primary_max ; 
 
         uifchar4     m_c4 ; 
 
@@ -227,7 +233,7 @@ class CFG4_API CRecorder {
         unsigned long long m_seqmat_select ; 
         unsigned int       m_slot ; 
         bool               m_truncate ; 
-        bool               m_step ; 
+        const G4Step*      m_step ; 
 
         NPY<float>*               m_primary ; 
         NPY<float>*               m_photons ; 
@@ -235,7 +241,6 @@ class CFG4_API CRecorder {
         NPY<unsigned long long>*  m_history ; 
 
 
-        NPY<float>*               m_dynamic_primary ; 
         NPY<short>*               m_dynamic_records ; 
         NPY<float>*               m_dynamic_photons ; 
         NPY<unsigned long long>*  m_dynamic_history ; 

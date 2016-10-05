@@ -106,6 +106,8 @@
 using namespace std;
 
 
+#include "PLOG.hh"
+
 using CLHEP::twopi ; 
 using CLHEP::um ; 
 using CLHEP::cm ; 
@@ -453,8 +455,10 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	  
 	  aSecondaryTrack->SetTouchableHandle(
 					      aStep.GetPreStepPoint()->GetTouchableHandle());
-	  
-	  aSecondaryTrack->SetParentID(aTrack.GetTrackID());
+	 
+      int ParentID = aTrack.GetTrackID();
+      LOG(info) << " ParentID " << ParentID ; 
+	  aSecondaryTrack->SetParentID(ParentID);
 	  
 	  aParticleChange.AddSecondary(aSecondaryTrack);
 	  

@@ -69,6 +69,8 @@
 #ifndef DsG4Scintillation_h
 #define DsG4Scintillation_h 1
 
+#include <vector>
+
 #include "globals.hh"
 #include "templates.hh"
 #include "Randomize.hh"
@@ -242,7 +244,7 @@ public: // With description
         // photocathode (???) 
         void SetNoOp(bool tf = true) { m_noop = tf; }
 private:
-
+        int getReemissionPrimaryPhotonID(const G4Track& aTrack, G4double aSecondaryTime);
         void BuildThePhysicsTable();
         // It builds either the fast or slow scintillation integral table; 
         // or both. 
@@ -290,6 +292,10 @@ private:
         G4bool   fApplyPreQE;
         G4double fPreQE;
         bool m_noop;
+
+        int m_psdi_index ; 
+
+        std::vector<int> m_lineage ; 
 
 };
 

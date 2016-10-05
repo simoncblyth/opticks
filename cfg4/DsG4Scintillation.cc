@@ -116,6 +116,7 @@ DsG4Scintillation::DsG4Scintillation(const G4String& processName,
     , fApplyPreQE(false)
     , fPreQE(1.)
     , m_noop(false)
+    , m_psdi_index(-1)
 {
     SetProcessSubType(fScintillation);
     fTrackSecondariesFirst = false;
@@ -187,6 +188,8 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 // evenly along the track segment and uniformly into 4pi.
 
 {
+    m_psdi_index++ ; // SCB  0-based index
+
     aParticleChange.Initialize(aTrack);
 
     if (m_noop) {               // do nothing, bail
@@ -310,34 +313,26 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     //Replace NumPhotons by NumTracks
     G4int NumTracks=0;
     G4double weight=1.0;
-    if (flagReemission) {   
-        if(verboseLevel > 0){   
-            G4cout<<"the process name is "<<pname<<"!!"<<G4endl;}
-	
-        if ( Reemission_Prob == 0)
-            return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
+    if (flagReemission) 
+    {   
+        if(verboseLevel > 0) G4cout<<"the process name is "<<pname<<"!!"<<G4endl;
+        if( Reemission_Prob == 0) return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
 
 #if ( G4VERSION_NUMBER > 1000 )
-        G4double p_reemission=
-            Reemission_Prob->Value(aTrack.GetKineticEnergy());
+        G4double p_reemission= Reemission_Prob->Value(aTrack.GetKineticEnergy());
 #else
-        G4double p_reemission=
-            Reemission_Prob->GetProperty(aTrack.GetKineticEnergy());
+        G4double p_reemission= Reemission_Prob->GetProperty(aTrack.GetKineticEnergy());
 #endif
 
-        if (G4UniformRand() >= p_reemission)
-            return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
+        if (G4UniformRand() >= p_reemission) return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
         NumTracks= 1;
 
-        // SCB: suspect nscnt = 2 is messing with reemission continuation, so try 
-        // nscnt = 1 ; 
-
         weight= aTrack.GetWeight();
-	if (verboseLevel > 0 ) {
-	    G4cout << " flagReemission " << flagReemission << " weight " << weight << G4endl;}
+	    if (verboseLevel > 0 ) G4cout << " flagReemission " << flagReemission << " weight " << weight << G4endl;
     }
-    else {
+    else 
+    {
         //////////////////////////////////// Birks' law ////////////////////////
         // J.B.Birks. The theory and practice of Scintillation Counting. 
         // Pergamon Press, 1964.      
@@ -441,15 +436,18 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         else {
             NumTracks = G4int(G4Poisson(MeanNumberOfTracks));
         }
-	if ( verboseLevel > 0 ) {
-	  G4cout << " Generated " << NumTracks << " scint photons. mean(scint photons) = " << MeanNumberOfTracks << G4endl;
-	}
+
+   	    if ( verboseLevel > 0 ) 
+        {
+	           G4cout << " Generated " << NumTracks << " scint photons. mean(scint photons) = " << MeanNumberOfTracks << G4endl;
+	    }
     }
     weight*=fPhotonWeight;
-    if ( verboseLevel > 0 ) {
-      G4cout << " set scint photon weight to " << weight << " after multiplying original weight by fPhotonWeight " << fPhotonWeight 
-	     << " NumTracks = " << NumTracks
-	     << G4endl;
+    if ( verboseLevel > 0 ) 
+    {
+         G4cout << " set scint photon weight to " << weight << " after multiplying original weight by fPhotonWeight " << fPhotonWeight 
+	            << " NumTracks = " << NumTracks
+	            << G4endl;
     }
     // G4cerr<<"Scint weight is "<<weight<<G4endl;
     if (NumTracks <= 0) {
@@ -743,12 +741,16 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             G4Track* aSecondaryTrack = 
                 new G4Track(aScintillationPhoton,aSecondaryTime,aSecondaryPosition);
 
+
+
             DsG4CompositeTrackInfo* comp=new DsG4CompositeTrackInfo();
             DsPhotonTrackInfo* trackinf=new DsPhotonTrackInfo();
-            if ( flagReemission ){
+            if ( flagReemission )
+            {
                 if ( reemittedTI ) *trackinf = *reemittedTI;
                 trackinf->SetReemitted();
-                trackinf->SetReGrandparent( aTrack.GetParentID() ); // SCB for reemission continuation recording 
+                int primary_id = getReemissionPrimaryPhotonID(aTrack, aSecondaryTime); 
+                trackinf->SetPrimaryPhotonID( primary_id ); // SCB for reemission continuation recording 
             }
             else if ( fApplyPreQE ) {
                 trackinf->SetMode(DsPhotonTrackInfo::kQEPreScale);
@@ -757,25 +759,11 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             comp->SetPhotonTrackInfo(trackinf);
             aSecondaryTrack->SetUserInformation(comp);
 		
+            aSecondaryTrack->SetParentID(aTrack.GetTrackID()) ;
             aSecondaryTrack->SetWeight( weight );
             aSecondaryTrack->SetTouchableHandle(aStep.GetPreStepPoint()->GetTouchableHandle());
             // aSecondaryTrack->SetTouchableHandle((G4VTouchable*)0);//this is wrong
-	
 
-            if(flagReemission)
-            { 
-                LOG(info) << " DsG4Scintillation reemit as secondary from this track: " 
-                          << " secondaryTime(ns) " << aSecondaryTime/ns 
-                          << " grandparent_id " << aTrack.GetParentID() - 1 
-                          << " parent_id " << aTrack.GetTrackID() - 1 
-                          << " scnt " << scnt
-                          << " nscnt " << nscnt
-                           ;
-
-            } 
-	
-            aSecondaryTrack->SetParentID(aTrack.GetTrackID());
-		
             // add the secondary to the ParticleChange object
             aParticleChange.SetSecondaryWeightByProcess( true ); // recommended
             aParticleChange.AddSecondary(aSecondaryTrack);
@@ -799,6 +787,61 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
+
+
+
+int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4double aSecondaryTime)
+{
+// SCB
+//  For Opticks style reemission continuation recording need to 
+//  trace reemission lineage back to first photon.
+//
+//  Initially tried  hijacking the "secondary-tracking" ParentID 
+//  but G4 stomped on that approach, so using trackinfo to hold PrimaryPhotonID 
+//
+//  The below attempts at each reemission generation to pass 
+//  along this primary index unchanged, so reemission photons 
+//  stay associated thru the  generations back to the primary photon id.
+//
+//  This makes an assumption that multi-reemits are handled 
+//  in subsequent optical calls to DsG4Scintillation::PostStepDoItProc
+//	
+
+    int track_id = aTrack.GetTrackID() - 1 ;
+    int parent_id = aTrack.GetParentID() - 1 ;
+    int primary_id = -1 ; 
+
+    if(parent_id == -1)  // primary photon 
+    {
+        m_lineage.clear() ;
+        primary_id  = track_id ; 
+        m_lineage.push_back(primary_id); 
+    }
+    else
+    {
+        m_lineage.push_back(parent_id) ;                
+        primary_id = m_lineage.front() ;  
+    }
+                
+    LOG(info) << " DsG4Scintillation::getReemissionPrimaryPhotonID" 
+              << " psdi_index " << m_psdi_index
+              << " secondaryTime(ns) " << aSecondaryTime/ns 
+              << " track_id " << track_id
+              << " parent_id " << parent_id
+              << " primary_id " << primary_id
+              << " lineage " << m_lineage.size()
+              ;
+
+    std::cout << " lineage (" ;
+    for(std::vector<int>::const_iterator it=m_lineage.begin() ; it != m_lineage.end() ; it++) std::cout << *it << " " ; 
+    std::cout << ")" << std::endl  ;  
+
+    return primary_id ; 
+}
+
+
+
+
 
 // BuildThePhysicsTable for the scintillation process
 // --------------------------------------------------

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "CFG4_BODY.hh"
 #include "CBoundaryProcess.hh"
 
@@ -90,9 +91,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_photon_id_prior(UINT_MAX),
    m_step_id(UINT_MAX),
    m_record_id(UINT_MAX),
-
    m_primary_id(UINT_MAX),
-   m_primary_max(0),
 
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
@@ -111,7 +110,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_seqmat_select(0),
    m_slot(0),
    m_truncate(false),
-   m_step(true),
+   m_step(NULL),
 
    m_primary(0),
    m_photons(0),
@@ -119,7 +118,6 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_history(0),
 
 
-   m_dynamic_primary(NULL),
    m_dynamic_records(NULL),
    m_dynamic_photons(NULL),
    m_dynamic_history(NULL)
@@ -201,6 +199,12 @@ int CRecorder::getRecordId()
 }
 
 
+
+
+void CRecorder::setStep(const G4Step* step)
+{
+    m_step = step ; 
+}
 void CRecorder::setEventId(int event_id)
 {
     m_event_id = event_id ; 
@@ -210,10 +214,47 @@ void CRecorder::setPhotonId(int photon_id)
     m_photon_id_prior = m_photon_id ; 
     m_photon_id = photon_id ; 
 }
+
 void CRecorder::setParentId(int parent_id)
 {
     m_parent_id = parent_id ; 
 }
+void CRecorder::setPrimaryId(int primary_id)
+{
+    m_primary_id = primary_id ; 
+}
+
+
+void CRecorder::setStage(CStage::CStage_t stage)
+{
+    m_stage = stage ; 
+}
+
+
+std::string CRecorder::description()
+{
+    std::stringstream ss ; 
+    ss << std::setw(10) << CStage::Label(m_stage)
+       << " evt " << std::setw(7) << m_event_id
+       << " pho " << std::setw(7) << m_photon_id 
+       << " par " << std::setw(7) << m_parent_id
+       << " pri " << std::setw(7) << m_primary_id
+       << " ste " << std::setw(4) << m_step_id 
+       << " rid " << std::setw(4) << m_record_id 
+       << " slt " << std::setw(4) << m_slot
+       << " pre " << std::setw(7) << getPreGlobalTime(m_step)/ns
+       << " pst " << std::setw(7) << getPostGlobalTime(m_step)/ns
+       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+       ;
+
+   return ss.str();
+}
+
+
+
+
+
+
 
 
 void CRecorder::setStepId(int step_id)
@@ -264,7 +305,6 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
     m_bounce_max = m_evt->getBounceMax();
     m_steps_per_photon = m_evt->getMaxRec() ;    
-    m_step = true ;
 
     LOG(info) << "CRecorder::initEvent"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
@@ -288,9 +328,6 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
         m_dynamic_photons = NPY<float>::make(1, 4, 4) ;
         m_dynamic_photons->zero();
-
-        m_dynamic_primary = NPY<float>::make(1, 4, 4) ;
-        m_dynamic_primary->zero();
 
         m_dynamic_history = NPY<unsigned long long>::make(1, 1, 2) ;
         m_dynamic_history->zero();
@@ -316,11 +353,17 @@ void CRecorder::initEvent(OpticksEvent* evt)
     m_gen = OpticksFlags::SourceCode(typ);
 
     assert( m_gen == TORCH || m_gen == G4GUN  );
-
-
-
 }
 
+void CRecorder::decrementSlot()
+{
+    if(m_slot == 0)
+    {
+        LOG(warning) << "CRecorder::decrementSlot called with slot 0, SKIPPING" ;
+        return ;
+    }
+    m_slot -= 1; 
+}
 
 unsigned CRecorder::getSlot()
 {
@@ -365,6 +408,13 @@ void CRecorder::startPhoton()
 
     if(m_debug) Clear();
 }
+
+
+
+
+
+
+
 
 
 #ifdef USE_CUSTOM_BOUNDARY

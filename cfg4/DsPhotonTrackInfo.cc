@@ -5,7 +5,7 @@ DsPhotonTrackInfo::DsPhotonTrackInfo( QEMode mode, double qe )
     fMode(mode), 
     fQE(qe), 
     fReemitted(false),
-    fReGrandparent(-1)
+    fPrimaryPhotonID(-1)
 {
 }
 

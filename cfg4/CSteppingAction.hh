@@ -1,6 +1,10 @@
 #pragma once
 
 
+class G4ParticleDefinition ; 
+class G4Track ; 
+class G4Event ; 
+
 #include "G4UserSteppingAction.hh"
 #include "CBoundaryProcess.hh"
 #include "globals.hh"
@@ -29,14 +33,6 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   static const unsigned long long SEQHIS_TO_SA ; 
   static const unsigned long long SEQMAT_MO_PY_BK ; 
   public:
-    typedef enum { UNKNOWN, START, COLLECT, RHOP, RJUMP } RecStage_t ;
-    static const char* UNKNOWN_ ;
-    static const char* START_  ;
-    static const char* COLLECT_  ;
-    static const char* RHOP_  ;
-    static const char* RJUMP_  ;
-    static const char* RecStage( RecStage_t stage);
-  public:
     CSteppingAction(CG4* g4, bool dynamic);
     void postinitialize();
     virtual ~CSteppingAction();
@@ -46,13 +42,15 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 #else
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
 #endif
+  public:
     virtual void UserSteppingAction(const G4Step*);
   private:
-    void init();
-    void UserSteppingActionOptical(const G4Step*);
+    void setEvent(const G4Event* event, int event_id);
+    void setTrack(const G4Track* track, int track_id, int parent_id);
+    bool setStep( const G4Step* step, int step_id);
+    bool UserSteppingActionOptical(const G4Step* step);
     void compareRecords();
-    void setTrackId(unsigned int track_id);
-    void setEventId(unsigned int event_id);
+    int getPrimaryPhotonID();
   private:
     CG4*         m_g4 ; 
     Opticks*     m_ok ; 
@@ -66,14 +64,35 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     Rec*         m_rec   ; 
     CStepRec*    m_steprec   ; 
     int          m_verbosity ; 
-    int          m_event_id ; 
-    int          m_track_id ; 
+
     unsigned int m_event_total ; 
     unsigned int m_track_total ; 
     unsigned int m_step_total ; 
     unsigned int m_event_track_count ; 
     unsigned int m_track_step_count ; 
     unsigned int m_steprec_store_count ;
+    unsigned int m_rejoin_count ;
+
+    const G4Event* m_event ; 
+    const G4Track* m_track ; 
+    const G4Step*  m_step ; 
+
+    bool m_startEvent ; 
+    bool m_startTrack ; 
+
+    int m_event_id ;
+    int m_track_id ;
+    int m_parent_id ;
+    int m_step_id ;
+    int m_primary_id ; 
+
+    G4TrackStatus         m_track_status ; 
+    G4ParticleDefinition* m_particle  ; 
+    bool                  m_optical ; 
+    int                   m_pdg_encoding ;
+ 
+
+
 };
 
 #include "CFG4_TAIL.hh"

@@ -18,6 +18,150 @@ First tack, teleport in the DsG4Scintillation code and try to get it to work::
 Adopting DYBOp into CFG4
 ---------------------------
 
+Trying to passalong the primary index in CSteppingAction::setTrack
+only works when one reem happens (ie there is at most one call to DsG4Scintillation::PostStepDoIt)
+in between steps.  But there are often two such calls.. 
+
+::
+
+    208     if(m_optical)          
+    209     {                      
+    210          if(m_parent_id == -1) // track is a primary opticalphoton (ie not from reemission)
+    211          {                 
+    212              G4Track* mtrack = const_cast<G4Track*>(track);
+    213 
+    214              // m_primary_photon_id++ ;  // <-- starts at -1, thus giving zero-based index
+    215              int primary_photon_id = m_track_id ;   // instead of minting new index, use track_id
+    216 
+    217              mtrack->SetParentID(primary_photon_id);      
+    218 
+    219              LOG(info) << "CSteppingAction::setTrack"
+    220                        << " primary photon "
+    221                        << " track_id " << m_track_id
+    222                        << " parent_id " << m_parent_id
+    223                        << " primary_photon_id " << primary_photon_id 
+    224                        ;
+    225 
+    226          }   
+    227          else
+    228          {   
+    229              LOG(info) << "CSteppingAction::setTrack"
+    230                        << " 2ndary photon "
+    231                        << " track_id " << m_track_id
+    232                        << " parent_id " << m_parent_id << "<-primary" 
+    233                        ;
+    234          }
+    235     }        
+    236 }        
+
+
+
+
+::
+
+    2016-10-05 13:02:27.694 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 543 parent_id -1 primary_photon_id 543
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 542 parent_id -1 primary_photon_id 542
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 541 parent_id -1 primary_photon_id 541
+    2016-10-05 13:02:27.695 INFO  [1902787] [*DsG4Scintillation::PostStepDoIt@771]  DsG4Scintillation reemit  psdi_index 49098 secondaryTime(ns) 2.57509 track_id 540 parent_id -1 scnt 2 nscnt 2
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 540 parent_id -1 primary_photon_id 540
+    2016-10-05 13:02:27.695 INFO  [1902787] [*DsG4Scintillation::PostStepDoIt@771]  DsG4Scintillation reemit  psdi_index 49099 secondaryTime(ns) 2.66136 track_id 10440 parent_id 540 scnt 2 nscnt 2
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@229] CSteppingAction::setTrack 2ndary photon  track_id 10440 parent_id 540<-primary
+    2016-10-05 13:02:27.695 WARN  [1902787] [OpPointFlag@266]  reaching...  NoProc
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@229] CSteppingAction::setTrack 2ndary photon  track_id 10441 parent_id 10440<-primary
+    2016-10-05 13:02:27.695 WARN  [1902787] [OpPointFlag@266]  reaching...  NoProc
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 539 parent_id -1 primary_photon_id 539
+    2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 538 parent_id -1 primary_photon_id 538
+
+
+
+Hmm seems hijacking ParentID is not so easy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:geant4_10_02_p01 blyth$ find source -name '*.cc' -exec grep -H SetParentID {} \;
+    source/error_propagation/src/G4ErrorPropagator.cc:  theG4Track->SetParentID(0);
+    source/event/src/G4PrimaryTransformer.cc:    track->SetParentID(0);
+    source/event/src/G4StackManager.cc:      aTrack->SetParentID(-1);
+    source/processes/electromagnetic/dna/management/src/G4ITModelProcessor.cc:          GetIT(secondary)->SetParentID(trackA->GetTrackID(),
+    source/processes/electromagnetic/dna/management/src/G4ITStepProcessor2.cc:    tempSecondaryTrack->SetParentID(fpTrack->GetTrackID());
+    source/processes/electromagnetic/dna/utils/src/G4DNAChemistryManager.cc:    H2OTrack -> SetParentID(theIncomingTrack->GetTrackID());
+    source/processes/electromagnetic/dna/utils/src/G4DNAChemistryManager.cc:    e_aqTrack -> SetParentID(theIncomingTrack->GetTrackID());
+    source/processes/electromagnetic/dna/utils/src/G4DNAChemistryManager.cc:    track -> SetParentID(parentID);
+    source/processes/electromagnetic/dna/utils/src/G4DNAChemistryManager.cc:    track -> SetParentID(theIncomingTrack->GetTrackID());
+    source/processes/electromagnetic/xrays/src/G4Cerenkov.cc:                aSecondaryTrack->SetParentID(aTrack.GetTrackID());
+    source/processes/electromagnetic/xrays/src/G4Scintillation.cc:                aSecondaryTrack->SetParentID(aTrack.GetTrackID());
+    source/processes/electromagnetic/xrays/src/G4VXTRenergyLoss.cc:      aSecondaryTrack->SetParentID( aTrack.GetTrackID() );
+    source/processes/optical/src/G4OpWLS.cc:    aSecondaryTrack->SetParentID(aTrack.GetTrackID());
+    source/tracking/src/G4SteppingManager2.cc:         tempSecondaryTrack->SetParentID( fTrack->GetTrackID() );
+    source/tracking/src/G4SteppingManager2.cc:         tempSecondaryTrack->SetParentID( fTrack->GetTrackID() );
+    source/tracking/src/G4SteppingManager2.cc:            tempSecondaryTrack->SetParentID( fTrack->GetTrackID() );
+    simon:geant4_10_02_p01 blyth$ 
+
+
+attach primaryPhotonId ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Generators create G4PrimaryVertex and add to G4Event::
+
+    255 void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
+    256 {
+    ...
+    275     for (G4int i = 0; i < m_num; i++)
+    276     {
+    277         pp.position = m_posGen->GenerateOne();
+    278         G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position,m_time);
+    ...
+    305         G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
+    ...
+    ...
+    379         vertex->SetPrimary(particle);
+    380         evt->AddPrimaryVertex(vertex);
+    ...
+    384     }
+    385 }
+
+
+Searching for what happens to G4PrimaryVertex next reveals::
+
+    //  g4-;g4-cls G4PrimaryTransformer
+
+    041 // class description:
+     42 //
+     43 //  This class is exclusively used by G4EventManager for the conversion
+     44 // from G4PrimaryVertex/G4PrimaryParticle to G4DynamicParticle/G4Track.
+     45 //
+     46 
+     47 class G4PrimaryTransformer
+     48 {
+
+    115 void G4PrimaryTransformer::GenerateSingleTrack
+    116      (G4PrimaryParticle* primaryParticle,
+    117       G4double x0,G4double y0,G4double z0,G4double t0,G4double wv)
+    118 {
+    ...
+    ...
+    218     // Create G4Track object
+    219     G4Track* track = new G4Track(DP,t0,G4ThreeVector(x0,y0,z0));
+    220     // Set trackID and let primary particle know it
+    221     trackID++;
+    222     track->SetTrackID(trackID);
+    223     primaryParticle->SetTrackID(trackID);
+    224     // Set parentID to 0 as a primary particle
+    225     track->SetParentID(0);
+    226     // Set weight ( vertex weight * particle weight )
+    227     track->SetWeight(wv*(primaryParticle->GetWeight()));
+    228     // Store it to G4TrackVector
+    229     TV.push_back( track );
+    230 
+    231   }
+    232 }
+
+
+
+
+
+
 flags borked, so flying blind
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
