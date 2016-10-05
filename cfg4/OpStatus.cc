@@ -230,9 +230,9 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-unsigned int OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst)
+unsigned int OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
 #else
-unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)
+unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
 #endif
 {
     G4StepStatus status = point->GetStepStatus()  ;
@@ -245,7 +245,12 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     bool absorption = strcmp(processName, "OpAbsorption") == 0 ;
 
     unsigned flag(0);
-    if(absorption && status == fPostStepDoItProc )
+
+    if(stage == CStage::REJOIN )
+    {
+        flag = BULK_REEMIT ;  
+    }
+    else if(absorption && status == fPostStepDoItProc )
     {
         flag = BULK_ABSORB ;
     }
@@ -263,8 +268,10 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     } 
     else
     {
-        LOG(warning) << " reaching...  " << processName ;
-        flag = BULK_REEMIT ;    // sure?
+        LOG(warning) << " OpPointFlag ZERO  " 
+                     << " proceesDefinedStep? " << processName 
+                     << " stage " << CStage::Label(stage)
+                     ;
     }
     return flag ; 
 }

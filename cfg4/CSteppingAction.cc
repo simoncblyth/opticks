@@ -202,12 +202,13 @@ void CSteppingAction::setTrack(const G4Track* track, int track_id, int parent_id
     m_pdg_encoding = m_particle->GetPDGEncoding();
 
     m_event_track_count += 1 ; 
-    m_track_step_count = 0 ; 
     m_track_total += 1 ; 
+
+    m_track_step_count = 0 ; 
     m_rejoin_count = 0 ; 
 
     if(m_optical)
-        LOG(info) << "CSteppingAction::setTrack(optical)"
+        LOG(trace) << "CSteppingAction::setTrack(optical)"
                   << " track_id " << m_track_id
                   << " parent_id " << m_parent_id
                   ;
@@ -283,7 +284,6 @@ int CSteppingAction::getPrimaryPhotonID()
 bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 {
     bool done = false ; 
-
     int photon_id = m_track_id ;
     int parent_id = m_parent_id ;
     int step_id  = m_step_id ;
@@ -316,12 +316,8 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         m_rejoin_count++ ; 
     }
       
-    m_recorder->setStep(step);
-    m_recorder->setStage(stage);
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);
-    m_recorder->setStepId(m_step_id);
-    m_recorder->setParentId(parent_id);   
 
     unsigned int record_id = m_recorder->defineRecordId();   //  m_photons_per_g4event*m_event_id + m_photon_id 
     unsigned int record_max = m_recorder->getRecordMax() ;
@@ -329,6 +325,12 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
     if(recording)
     {
+        m_recorder->setStep(step);
+        m_recorder->setStage(stage);
+        m_recorder->setStepId(m_step_id);
+        m_recorder->setParentId(parent_id);   
+        m_recorder->setRecordId(record_id);
+
         if(stage == CStage::START)
         { 
             m_rec->Clear();
@@ -337,10 +339,11 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         }
         else if(stage == CStage::REJOIN )
         {
-            m_recorder->decrementSlot();   // back up by one, to scrub the "AB" an refill with "RE"
+            // back up by one, to scrub the "AB" an refill with "RE"
+            m_recorder->decrementSlot();  
         }
 
-        LOG(info) << m_recorder->description() ;
+        //LOG(info) << m_recorder->description() ;
 
 #ifdef USE_CUSTOM_BOUNDARY
         DsG4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
@@ -348,26 +351,76 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
 
-        m_recorder->setRecordId(record_id);
         m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);
 
-        done = m_recorder->RecordStep(step);   // done=true for *absorption* OR *truncation
+        done = m_recorder->RecordStep();   // done=true for *absorption* OR *truncation
 
-        m_rec->add(new State(step, boundary_status, preMaterial, postMaterial));
+        m_rec->add(new State(step, boundary_status, preMaterial, postMaterial, stage));
 
         if(done)
         {
-            //compareRecords();
+            compareRecords();
 
             m_recorder->RecordPhoton(step);
         } 
     }
-
     return done ; 
+}
+
+
+
+void CSteppingAction::addSeqhisMismatch(unsigned long long rdr, unsigned long long rec)
+{
+    m_seqhis_mismatch.push_back(std::pair<unsigned long long, unsigned long long>(rdr, rec));
+}
+void CSteppingAction::addSeqmatMismatch(unsigned long long rdr, unsigned long long rec)
+{
+    m_seqmat_mismatch.push_back(std::pair<unsigned long long, unsigned long long>(rdr, rec));
+}
+void CSteppingAction::report(const char* msg)
+{
+    LOG(info) << msg ;
+
+    std::cout 
+           << " event_total " <<  m_event_total << std::endl 
+           << " track_total " <<  m_track_total << std::endl 
+           << " step_total " <<  m_step_total << std::endl 
+           ;
+
+     typedef std::vector<std::pair<unsigned long long, unsigned long long> >  VUU ; 
+    
+     LOG(info) << " seqhis_mismatch " << m_seqhis_mismatch.size() ;
+
+     for(VUU::const_iterator it=m_seqhis_mismatch.begin() ; it != m_seqhis_mismatch.end() ; it++)
+     { 
+          unsigned long long rdr = it->first ;
+          unsigned long long rec = it->second ;
+          std::cout 
+                    << " rdr " << std::setw(16) << std::hex << rdr
+                    << " rec " << std::setw(16) << std::hex << rec
+                //    << " rdr " << std::setw(50) << OpticksFlags::FlagSequence(rdr)
+                //    << " rec " << std::setw(50) << OpticksFlags::FlagSequence(rec)
+                    << std::endl ; 
+     }
+
+     LOG(info) << " seqmat_mismatch " << m_seqmat_mismatch.size() ; 
+     for(VUU::const_iterator it=m_seqmat_mismatch.begin() ; it != m_seqmat_mismatch.end() ; it++)
+     {
+          unsigned long long rdr = it->first ;
+          unsigned long long rec = it->second ;
+          std::cout 
+                    << " rdr " << std::setw(16) << std::hex << rdr 
+                    << " rec " << std::setw(16) << std::hex << rec
+                    << " rdr " << std::setw(50) << m_material_bridge->MaterialSequence(rdr)
+                    << " rec " << std::setw(50) << m_material_bridge->MaterialSequence(rec)
+                    << std::endl ; 
+     }
 }
 
 void CSteppingAction::compareRecords()
 {
+    int photon_id = m_recorder->getPhotonId(); 
+
     unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
     unsigned long long rdr_seqmat = m_recorder->getSeqMat() ;
 
@@ -386,10 +439,16 @@ void CSteppingAction::compareRecords()
     bool same_seqhis = rec_seqhis == rdr_seqhis ; 
     bool same_seqmat = rec_seqmat == rdr_seqmat ; 
 
-    assert(same_seqhis);
-    assert(same_seqmat);
+    //assert(same_seqhis);
+    //assert(same_seqmat);
 
-    if(m_verbosity > 0 || debug )
+    if(!same_seqhis) addSeqhisMismatch(rec_seqhis, rdr_seqhis, m_track_id);
+    if(!same_seqmat) addSeqmatMismatch(rec_seqmat, rdr_seqmat, m_track_id);
+
+    
+
+
+    if(m_verbosity > 0 || debug || !same_seqhis || !same_seqmat  )
     {
         if(!same_seqmat || !same_seqhis || debug )
         {
@@ -403,6 +462,7 @@ void CSteppingAction::compareRecords()
              std::cout << "(rec)" << OpticksFlags::FlagSequence(rec_seqhis) << std::endl ;  
              std::cout << "(rdr)" << OpticksFlags::FlagSequence(rdr_seqhis) << std::endl ;  
         }
+
         if(!same_seqmat)
         { 
              std::cout << "(rec)" << m_material_bridge->MaterialSequence(rec_seqmat) << std::endl ;  

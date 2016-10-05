@@ -290,7 +290,7 @@ void CG4::postpropagate()
     evt->postPropagateGeant4();
 
 
-
+    dynamic_cast<CSteppingAction*>(m_sa)->report("CG4::postpropagate");
 
 
     LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;

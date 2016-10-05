@@ -201,10 +201,7 @@ int CRecorder::getRecordId()
 
 
 
-void CRecorder::setStep(const G4Step* step)
-{
-    m_step = step ; 
-}
+
 void CRecorder::setEventId(int event_id)
 {
     m_event_id = event_id ; 
@@ -357,9 +354,13 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
 void CRecorder::decrementSlot()
 {
-    if(m_slot == 0)
+    //if(m_slot == 0 || m_truncate)
+    if(m_slot == 0 )
     {
-        LOG(warning) << "CRecorder::decrementSlot called with slot 0, SKIPPING" ;
+        LOG(warning) << "CRecorder::decrementSlot SKIPPING"
+                     << " slot " << m_slot 
+                     << " truncate " << m_truncate 
+                      ;
         return ;
     }
     m_slot -= 1; 
@@ -431,15 +432,6 @@ void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, uns
     m_boundary_status = boundary_status ; 
     m_premat = premat ; 
     m_postmat = postmat ;
-
-/*
-    LOG(fatal) << "CRecorder::setBoundaryStatus"
-               << " premat " << premat 
-               << " postmat " << postmat 
-               ;
-   // both always 1 Gd when Dump suggests otherwise
-*/
-    
 }
 double CRecorder::getPreGlobalTime(const G4Step* step)
 {
@@ -452,11 +444,17 @@ double CRecorder::getPostGlobalTime(const G4Step* step)
     return point->GetGlobalTime();
 }
 
-  
-bool CRecorder::RecordStep(const G4Step* step)
+ 
+void CRecorder::setStep(const G4Step* step)
 {
-    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    m_step = step ; 
+}
+bool CRecorder::RecordStep()
+{
+    assert(m_step && "MUST setStep FIRST");
+
+    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
+    const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
     unsigned int preFlag ; 
     unsigned int postFlag ; 
@@ -466,26 +464,15 @@ bool CRecorder::RecordStep(const G4Step* step)
     // shift flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 
-    //if(m_step_id == 0)
     if(m_slot == 0)
     {
         preFlag = m_gen ;         
-        postFlag = OpPointFlag(post, m_boundary_status) ;
-
-        //if(postFlag == 0 && m_boundary_status != SameMaterial)
-        //    LOG(warning) << " (step_id=0) boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
+        postFlag = OpPointFlag(post, m_boundary_status, m_stage ) ;
     }
     else
     {
-        preFlag  = OpPointFlag(pre,  m_prior_boundary_status);
-        postFlag = OpPointFlag(post, m_boundary_status) ;
-
-        //if(preFlag == 0 && m_prior_boundary_status != SameMaterial)
-        //    LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_prior_boundary_status) ; 
-
-        //if(postFlag == 0 && m_boundary_status != SameMaterial)
-        //    LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(m_boundary_status) ; 
-
+        preFlag  = OpPointFlag(pre,  m_prior_boundary_status, m_stage);
+        postFlag = OpPointFlag(post, m_boundary_status, m_stage ) ;
     }
 
 
@@ -522,6 +509,18 @@ bool CRecorder::RecordStep(const G4Step* step)
     }
 
     // when not *absorb* the post step will become the pre step at next RecordStep
+    //
+    // in case of reemission a BULK_ABSORB is reincarnated with a BULK_REEMIT that 
+    // needs to replace the BULK_ABSORB that was layed down in an earlier lastPost
+    //
+    // It looks like static mode will mostly succeed to scrub the AB and replace with RE 
+    // just by decrementing m_slot and running again
+    // but dynamic mode will have an extra record.
+    //
+    //  Decrementing m_slot and running again is effectively replacing 
+    //  the final "AB" (post) RecordStepPoint 
+    //  with the subsequent "RE" (pre) RecordStepPoint  
+    //
 
     return done ;
 }
@@ -537,6 +536,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
 
+    m_truncate = slot == m_steps_per_photon - 1 ; 
 
     if(flag == 0)
     {
@@ -548,20 +548,18 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     //Dump(label,  slot, point, boundary_status );
 
-    if(m_step)
-    {
-        unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
-        unsigned long long msk = 0xFull << shift ; 
-        unsigned long long his = BBit::ffs(flag) & 0xFull ; 
-        unsigned long long mat = material < 0xFull ? material : 0xFull ; 
-        m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
-        m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
-        m_mskhis |= flag ; 
+    unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
+    unsigned long long msk = 0xFull << shift ; 
+    unsigned long long his = BBit::ffs(flag) & 0xFull ; 
+    unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+    m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
+    m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
 
-        RecordStepPoint(slot, point, flag, material, label);
+    m_mskhis |= flag ;   // <-- hmm decrementing m_slot and running again will not scrub the AB from the mask
 
-        if(m_debug) Collect(point, flag, material, boundary_status, m_seqhis, m_seqmat);
-    }
+    RecordStepPoint(slot, point, flag, material, label);
+
+    if(m_debug) Collect(point, flag, material, boundary_status, m_seqhis, m_seqmat);
 
     m_slot += 1 ; 
 
@@ -602,21 +600,12 @@ void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned in
 
 #ifdef USE_CUSTOM_BOUNDARY
 DsG4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
-{
-   return m_boundary_status ; 
-}
 #else
 G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
+#endif
 {
    return m_boundary_status ; 
 }
-#endif
-
-
-
-
-
-
 
 
 void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
@@ -631,9 +620,7 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
               << " flag " << flag
               << " m_seqhis " << std::hex << m_seqhis << std::dec 
               ;
-
 */
-
     const G4ThreeVector& pos = point->GetPosition();
     //const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
@@ -690,6 +677,10 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
 
     // dynamic mode : fills in slots into single photon dynamic_records structure 
     // static mode  : fills directly into a large fixed dimension records structure
+
+    // looks like static mode will succeed to scrub the AB and replace with RE 
+    // just by decrementing m_slot and running again
+    // but dynamic mode will have an extra record
 }
 
 void CRecorder::RecordQuadrant(const G4Step* step)
@@ -739,7 +730,6 @@ void CRecorder::RecordPhoton(const G4Step* step)
     target->setUInt(target_record_id, 3, 0, 2, m_c4.u );
     target->setUInt(target_record_id, 3, 0, 3, m_mskhis );
 
-
     // in static case directly populate the pre-sized photon buffer
     // in dynamic case populate the single photon buffer first and then 
     // add that to the photons below
@@ -749,7 +739,6 @@ void CRecorder::RecordPhoton(const G4Step* step)
         m_photons->add(m_dynamic_photons);
     }
 
-
     // generate.cu
     //
     //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
@@ -758,19 +747,15 @@ void CRecorder::RecordPhoton(const G4Step* step)
     //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
     //
 
-    if(m_step)
+    NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ; 
+
+    unsigned long long* history = h_target->getValues() + 2*target_record_id ;
+    *(history+0) = m_seqhis ; 
+    *(history+1) = m_seqmat ; 
+
+    if(m_dynamic)
     {
-
-        NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ; 
-
-        unsigned long long* history = h_target->getValues() + 2*target_record_id ;
-        *(history+0) = m_seqhis ; 
-        *(history+1) = m_seqmat ; 
-
-        if(m_dynamic)
-        {
-            m_history->add(m_dynamic_history);
-        }
+        m_history->add(m_dynamic_history);
     }
 }
 

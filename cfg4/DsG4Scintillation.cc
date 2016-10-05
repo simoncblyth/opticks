@@ -811,6 +811,8 @@ int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4dou
     int parent_id = aTrack.GetParentID() - 1 ;
     int primary_id = -1 ; 
 
+   // TODO: replace m_lineage with simply  m_primary_id ??? 
+
     if(parent_id == -1)  // primary photon 
     {
         m_lineage.clear() ;
@@ -822,7 +824,9 @@ int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4dou
         m_lineage.push_back(parent_id) ;                
         primary_id = m_lineage.front() ;  
     }
-                
+               
+
+/* 
     LOG(info) << " DsG4Scintillation::getReemissionPrimaryPhotonID" 
               << " psdi_index " << m_psdi_index
               << " secondaryTime(ns) " << aSecondaryTime/ns 
@@ -835,6 +839,8 @@ int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4dou
     std::cout << " lineage (" ;
     for(std::vector<int>::const_iterator it=m_lineage.begin() ; it != m_lineage.end() ; it++) std::cout << *it << " " ; 
     std::cout << ")" << std::endl  ;  
+*/
+
 
     return primary_id ; 
 }

@@ -73,6 +73,28 @@ in between steps.  But there are often two such calls..
     2016-10-05 13:02:27.695 INFO  [1902787] [CSteppingAction::setTrack@219] CSteppingAction::setTrack primary photon  track_id 538 parent_id -1 primary_photon_id 538
 
 
+CRecorder and Rec are almost matching at 10k level : truncation difference
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* truncation difference for REJOIN into last slot 
+
+::
+
+    2016-10-05 20:42:04.769 INFO  [2023965] [CSteppingAction::report@383] CG4::postpropagate
+     event_total 1
+     track_total 10468
+     step_total 51335
+    2016-10-05 20:42:04.769 INFO  [2023965] [CSteppingAction::report@393]  seqhis_mismatch 6
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+    2016-10-05 20:42:04.769 INFO  [2023965] [CSteppingAction::report@407]  seqmat_mismatch 0
+
+
+
 
 Hmm seems hijacking ParentID is not so easy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

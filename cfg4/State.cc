@@ -29,17 +29,23 @@ unsigned int State::getPostMaterial() const
 }
 
 
+CStage::CStage_t State::getStage() const 
+{
+    return m_stage ; 
+}
+
 
 #ifdef USE_CUSTOM_BOUNDARY
-State::State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat) 
+State::State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage) 
 #else
-State::State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat) 
+State::State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage) 
 #endif
    :
    m_step(NULL),
    m_boundary_status(boundary_status),
    m_premat(premat),
-   m_postmat(postmat)
+   m_postmat(postmat),
+   m_stage(stage)
 {
    m_step = new G4Step(*step) ;
 }

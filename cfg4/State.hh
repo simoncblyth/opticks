@@ -4,6 +4,7 @@
 #include "CFG4_PUSH.hh"
 // huh: G4OpBoundaryProcess pulls in CLHEP/Random headers that raise warnings
 #include "CBoundaryProcess.hh"
+#include "CStage.hh"
 #include "CFG4_POP.hh"
 
 class G4Step ; 
@@ -15,7 +16,7 @@ class CFG4_API State
 {
    public:
 #ifdef USE_CUSTOM_BOUNDARY
-       State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat );
+       State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage);
        DsG4OpBoundaryProcessStatus getBoundaryStatus() const ;
 #else
        State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat );
@@ -28,6 +29,7 @@ class CFG4_API State
        const G4StepPoint* getPostStepPoint() const ;
        unsigned int getPreMaterial() const ;
        unsigned int getPostMaterial() const ;
+       CStage::CStage_t getStage() const ; 
    private:
        const G4Step*             m_step ;
 #ifdef USE_CUSTOM_BOUNDARY
@@ -37,6 +39,7 @@ class CFG4_API State
 #endif
        unsigned int              m_premat ;
        unsigned int              m_postmat ;
+       CStage::CStage_t          m_stage ; 
 };
 
 

@@ -3,6 +3,7 @@
 #include "CFG4_PUSH.hh"
 #include "G4StepStatus.hh"
 #include "CBoundaryProcess.hh"
+#include "CStage.hh"
 #include "CFG4_POP.hh"
 
 #include "CFG4_API_EXPORT.hh"
@@ -18,12 +19,12 @@ CFG4_API std::string OpStepString(const G4StepStatus status);
 CFG4_API std::string  OpBoundaryString(const DsG4OpBoundaryProcessStatus status);
 CFG4_API std::string OpBoundaryAbbrevString(const DsG4OpBoundaryProcessStatus status);
 CFG4_API unsigned int OpBoundaryFlag(const DsG4OpBoundaryProcessStatus status);
-CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst);
+CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
 #else
 CFG4_API std::string  OpBoundaryString(const G4OpBoundaryProcessStatus status);
 CFG4_API std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status);
 CFG4_API unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
-CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
+CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
 #endif
 
 

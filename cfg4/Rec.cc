@@ -53,6 +53,8 @@ void Rec::setDebug(bool debug)
     m_debug = debug ; 
 }
 
+
+
 unsigned long long Rec::getSeqHis()
 {
     return m_seqhis ; 
@@ -87,6 +89,21 @@ void Rec::add(const State* state)
 {
     m_states.push_back(state);
 }
+void Rec::pop()
+{
+    m_states.pop_back();
+}
+void Rec::decrementSlot()
+{
+    if(m_slot == 0)
+    {
+        LOG(warning) << " CANNOT DECREMENT " << m_slot ; 
+        return ; 
+    }
+    m_slot -= 1 ; 
+}
+
+
 
 void Rec::Clear()
 {
@@ -118,21 +135,28 @@ G4OpBoundaryProcessStatus Rec::getBoundaryStatus(unsigned int i)
 }
 
 
-Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsigned int i, Flag_t type )
+CStage::CStage_t Rec::getStage(unsigned int i)
+{
+    const State* state = getState(i) ;
+    return state ? state->getStage() : CStage::UNKNOWN ;
+}
+
+
+Rec::Rec_t Rec::getFlagMaterialStage(unsigned int& flag, unsigned int& material,  CStage::CStage_t& stage, unsigned int i, Flag_t type )
 {
     // recast of Recorder::RecordStep flag assignment 
     // in after-recording-all-states way instead of live stepping
     // for sanity and checking  
 
-    const State* state = getState(i) ;
     const State* prior = i > 0 ? getState(i-1) : NULL ; 
+    const State* state = getState(i) ;
+    const State* next  = getState(i+1) ; 
 
     const G4StepPoint* pre = state->getPreStepPoint();
     const G4StepPoint* post = state->getPostStepPoint();
 
     unsigned int preMat  = state->getPreMaterial();
     unsigned int postMat = state->getPostMaterial();
-
 #ifdef USE_CUSTOM_BOUNDARY
     DsG4OpBoundaryProcessStatus boundary_status = state->getBoundaryStatus() ;
     DsG4OpBoundaryProcessStatus prior_boundary_status = prior ? prior->getBoundaryStatus() : Undefined ;
@@ -141,18 +165,29 @@ Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsi
     G4OpBoundaryProcessStatus prior_boundary_status = prior ? prior->getBoundaryStatus() : Undefined ;
 #endif
 
-    unsigned int preFlag   = i == 0 ? m_genflag : OpPointFlag(pre,  prior_boundary_status) ; 
-    unsigned int postFlag  = OpPointFlag(post, boundary_status) ;
+    CStage::CStage_t current_stage = state->getStage() ; 
+    CStage::CStage_t next_stage = next ? next->getStage() : CStage::UNKNOWN ; 
 
-    // winging-it to match Opticks record logic, whilst iterating with pmt_test.py box_test.py 
-    // to compare seqmat and seqhis
+    // zero shunting to include m_genflag in pole position
+    // means must use prior_boundary_status and prior_stage for all the PRE to avoid skipping getState(0)
+    unsigned int preFlag = i == 0 ? 
+                                       m_genflag 
+                                    : 
+                                       OpPointFlag(pre,  prior_boundary_status, current_stage) 
+                                    ; 
+
+    unsigned int postFlag =  OpPointFlag(post, boundary_status, next_stage ) ;
+
+    // NB nothing fundamental here : just winging it in adhoc attempt to duplicate CRecorder and Opticks logic
+    bool reemSkip = current_stage == CStage::REJOIN && next_stage == CStage::REJOIN ; 
+    if(reemSkip) return SKIP_REJOIN ; 
+
 
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     bool preSkip = type == PRE && prior_boundary_status == StepTooSmall ; 
 
     bool matSwap = boundary_status == StepTooSmall ;  
-
 
     if(preSkip) return SKIP_STS ; 
 
@@ -161,9 +196,11 @@ Rec::Rec_t Rec::getFlagMaterial(unsigned int& flag, unsigned int& material, unsi
        case  PRE: 
                   flag = preFlag ; 
                   material = matSwap ? postMat : preMat ;  
+                  stage = current_stage ; 
                   break;
        case POST: 
                   flag = postFlag ; 
+                  stage = current_stage ; 
 
                   //  Spring 2016
                   // material = ( matSwap || postMat == 0 || surfaceAbsorb) ? preMat : postMat ;  
@@ -213,26 +250,36 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material)
 
 void Rec::sequence()
 {
-    unsigned int nstep = getNumStates();
+    // NB externally changing slot will 
+    // not work like it does with CRecorder
+    // as the cycle is controlled entirely
+    // here from the saved states
+
+    unsigned int nstate = getNumStates();
 
     if(m_debug)
     LOG(info) << "Rec::sequence" 
-              << " nstep " << nstep 
+              << " nstate" << nstate 
               ;  
 
-    unsigned int flag ;
-    unsigned int material ;
+    unsigned flag ;
+    unsigned material ;
+    CStage::CStage_t stage ; 
+
     m_slot = 0 ;
     Rec_t rc ; 
 
-    for(unsigned int i=0 ; i < nstep ; i++)
+
+   // add all PRE, until last when add POST
+
+    for(unsigned i=0 ; i < nstate; i++)
     {
-        rc = getFlagMaterial(flag, material, i, PRE );
+        rc = getFlagMaterialStage(flag, material, stage, i, PRE );
         if(rc == OK)
             addFlagMaterial(flag, material) ;
     }
 
-    rc = getFlagMaterial(flag, material, nstep-1, POST );
+    rc = getFlagMaterialStage(flag, material, stage, nstate-1, POST );
     if(rc == OK)
         addFlagMaterial(flag, material) ;
 }
@@ -250,13 +297,15 @@ void Rec::Dump(const char* msg)
     unsigned int preMat ; 
     unsigned int postFlag ;
     unsigned int postMat ;
+    CStage::CStage_t preStage ;
+    CStage::CStage_t postStage ;
+
 
     G4ThreeVector origin ; 
 
     for(unsigned int i=0 ; i < nstates ; i++)
     {
         const State* state = getState(i) ;
-        //const State* prior = i > 0 ? getState(i-1) : NULL ; 
 
         const G4StepPoint* pre  = state->getPreStepPoint() ; 
         const G4StepPoint* post = state->getPostStepPoint() ; 
@@ -267,8 +316,8 @@ void Rec::Dump(const char* msg)
             origin = pos ; 
         } 
 
-        getFlagMaterial(preFlag,  preMat, i, PRE );
-        getFlagMaterial(postFlag, postMat, i, POST );
+        getFlagMaterialStage(preFlag,  preMat, preStage,  i, PRE );
+        getFlagMaterialStage(postFlag, postMat,postStage,  i, POST );
 
         unsigned int preMatRaw = state->getPreMaterial();
         unsigned int postMatRaw = state->getPostMaterial();
@@ -288,6 +337,8 @@ void Rec::Dump(const char* msg)
         std::cout << "[" << std::setw(3) << i
                   << "/" << std::setw(3) << nstates
                   << "]"   
+                  << std::endl
+                  << ::Format("stepStage",  CStage::Label(preStage), CStage::Label(postStage) )
                   << std::endl
                   << ::Format("stepStatus", OpStepString(pre->GetStepStatus()), OpStepString(post->GetStepStatus()) )
                   << std::endl

@@ -103,7 +103,7 @@ class CFG4_API CRecorder {
         //void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
-        bool RecordStep(const G4Step*);
+        bool RecordStep();
         double getPreGlobalTime(const G4Step* step);
         double getPostGlobalTime(const G4Step* step);
 
