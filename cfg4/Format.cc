@@ -28,6 +28,7 @@ std::string Format(const G4ThreeVector& vec, const char* msg, unsigned int fwid)
 {
     std::stringstream ss ; 
     ss << " " << msg << "[ "
+       << std::fixed
        << std::setprecision(3)  
        << std::setw(fwid) << vec.x()
        << std::setw(fwid) << vec.y() 
@@ -93,7 +94,7 @@ std::string Tail(const G4String& _str, unsigned int n )
 }
 
 
-std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const char* msg, bool op)
+std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const char* msg, bool op )
 {
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -125,7 +126,7 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
        << " " << std::setw(15) << Tail(matName, 15) 
        << " " << std::setw(15) << Tail(processName, 15) 
        << std::setw(20) << OpStepString(status)
-       << Format(offpos, "pos", 8)
+       << Format(offpos, "pos", 10)
        << Format(dir, "dir", 8)
        << Format(pol, "pol", 8)
        << std::setprecision(3) << std::fixed
@@ -138,7 +139,7 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
 }
 
 
-std::string Format(const G4Step* step, const G4ThreeVector& origin, const char* msg, bool op)
+std::string Format(const G4Step* step, const G4ThreeVector& origin, const char* msg, bool op )
 {
     G4Track* track = step->GetTrack();
     G4int stepNum = track->GetCurrentStepNumber() ;

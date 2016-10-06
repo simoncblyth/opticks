@@ -132,10 +132,10 @@ void CRecorder::postinitialize()
     assert(m_material_bridge);
 }
 
-
-
-
-
+void CRecorder::setDebug(bool debug)
+{
+    m_debug = debug ; 
+}
 unsigned int CRecorder::getVerbosity()
 {
     return m_verbosity ; 
@@ -775,15 +775,13 @@ bool CRecorder::hasIssue()
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::Dump(const char* /*msg*/, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname )
+void CRecorder::Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname )
 #else
-void CRecorder::Dump(const char* /*msg*/, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
+void CRecorder::Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname )
 #endif
 {
-    //LOG(info) << msg ; 
     std::string bs = OpBoundaryAbbrevString(boundary_status) ;
-    G4ThreeVector origin ; 
-    std::cout << std::setw(7) << index << " " << std::setw(15) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
+    std::cout << std::setw(7) << index << " " << std::setw(18) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
 }
 
 void CRecorder::Dump(const char* msg)
@@ -802,10 +800,11 @@ void CRecorder::Dump(const char* msg)
 
     if(!m_debug) return ; 
 
+    G4ThreeVector origin ;
+    if(m_points.size() > 0) origin = m_points[0]->GetPosition();
+
     for(unsigned int i=0 ; i<m_points.size() ; i++) 
     {
-       //unsigned long long seqhis = m_seqhis_dbg[i] ;
-       //unsigned long long seqmat = m_seqmat_dbg[i] ;
 #ifdef USE_CUSTOM_BOUNDARY
        DsG4OpBoundaryProcessStatus bst = m_bndstats[i] ;
 #else
@@ -814,10 +813,10 @@ void CRecorder::Dump(const char* msg)
        unsigned mat = m_materials[i] ;
        const char* matname = ( mat == 0 ? "-" : m_material_bridge->getMaterialName(mat-1)  ) ;
 
-       Dump(msg, i, m_points[i], bst, matname );
+       Dump(origin, i, m_points[i], bst, matname );
 
-       //std::cout << std::hex << seqhis << std::dec << std::endl ; 
-       //std::cout << std::hex << seqmat << std::dec << std::endl ; 
+       //std::cout << std::hex << m_seqhis_dbg[i] << std::dec << std::endl ; 
+       //std::cout << std::hex << m_seqmat_dbg[i] << std::dec << std::endl ; 
     }
 }
 

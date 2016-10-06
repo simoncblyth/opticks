@@ -294,16 +294,7 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     assert( photon_id >= 0 );
     assert( step_id   >= 0 );
     assert( parent_id >= -1 );  // parent_id is -1 for primary photon
-
-    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
-    const G4StepPoint* post = step->GetPostStepPoint() ; 
-
-    const G4Material* preMat  = pre->GetMaterial() ;
-    const G4Material* postMat = post->GetMaterial() ;
-
-    unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
-    unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
-   
+  
     int primary_id = getPrimaryPhotonID() ;
     int last_photon_id = m_recorder->getPhotonId();  
 
@@ -315,15 +306,16 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     else if( primary_id >= 0)
     {
         photon_id = primary_id ; 
-        stage = m_rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ; 
+        stage = m_rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
         m_rejoin_count++ ; 
+        // rejoin count is zeroed in setTrack, so each remission generation track will result in REJOIN 
     }
       
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);
 
-    m_dindexDebug = m_ok->isDbgPhoton(photon_id) ;
-
+    m_dindexDebug = m_ok->isDbgPhoton(photon_id) ; // from option: --dindex=1,100,1000,10000 
+    m_recorder->setDebug(m_dindexDebug);
 
     unsigned int record_id = m_recorder->defineRecordId();   //  m_photons_per_g4event*m_event_id + m_photon_id 
     unsigned int record_max = m_recorder->getRecordMax() ;
@@ -351,6 +343,16 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
         if(m_dindexDebug)
         LOG(info) << m_recorder->description() ;
+
+
+        const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+        const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+        const G4Material* preMat  = pre->GetMaterial() ;
+        const G4Material* postMat = post->GetMaterial() ;
+
+        unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
+        unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
 
 #ifdef USE_CUSTOM_BOUNDARY
         DsG4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
@@ -451,7 +453,7 @@ int CSteppingAction::compareRecords()
     bool debug_seqmat = m_dbgseqmat == rdr_seqmat ; 
 
     //bool debug = rdr_seqmat == SEQMAT_MO_PY_BK && m_verbosity > 0 ;
-    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat ;
+    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_dindexDebug ;
 
     m_rec->setDebug(debug);
     m_rec->sequence();
