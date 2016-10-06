@@ -23,6 +23,7 @@ set(TEST_SOURCES
     OpticksPrepareInstallCache.cc
     OpticksEventSpecTest.cc
     OpticksAnaTest.cc
+    OpticksDbgTest.cc
 )
 
 

@@ -50,10 +50,11 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     void setTrack(const G4Track* track, int track_id, int parent_id);
     bool setStep( const G4Step* step, int step_id);
     bool UserSteppingActionOptical(const G4Step* step);
-    void compareRecords();
+    int compareRecords();
     int getPrimaryPhotonID();
     void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
     void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
+    void addDebugPhoton(int photon_id);
   private:
     CG4*         m_g4 ; 
     Opticks*     m_ok ; 
@@ -82,6 +83,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 
     bool m_startEvent ; 
     bool m_startTrack ; 
+    bool m_dindexDebug ; 
 
     int m_event_id ;
     int m_track_id ;
@@ -97,7 +99,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 
     std::vector<std::pair<unsigned long long, unsigned long long> > m_seqhis_mismatch ; 
     std::vector<std::pair<unsigned long long, unsigned long long> > m_seqmat_mismatch ; 
-
+    std::vector<int> m_debug_photon ; 
 
 };
 

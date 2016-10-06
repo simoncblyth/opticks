@@ -68,6 +68,7 @@ set(SOURCES
     OpticksColors.cc
     Sparse.cc
     OpticksAna.cc
+    OpticksDbg.cc
     OpticksDomain.cc
     OpticksEventSpec.cc
     OpticksEvent.cc
@@ -128,6 +129,7 @@ set(HEADERS
     OpticksColors.hh
     Sparse.hh
     OpticksAna.hh
+    OpticksDbg.hh
     OpticksDomain.hh
     OpticksEventSpec.hh
     OpticksEvent.hh

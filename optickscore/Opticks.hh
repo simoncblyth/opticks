@@ -34,6 +34,7 @@ class OpticksFlags ;
 class OpticksAttrSeq ;
 class OpticksProfile ;
 class OpticksAna ;
+class OpticksDbg ;
 
 #define OK_PROFILE(s) \
     { \
@@ -87,6 +88,7 @@ class OKCORE_API Opticks {
        void cleanup();
        void postpropagate();
        void ana();
+       bool isDbgPhoton(int photon_id);
    public:
        // profile ops
        template <typename T> void profile(T label);
@@ -161,6 +163,7 @@ class OKCORE_API Opticks {
        OpticksFlags*        getFlags(); 
        OpticksAttrSeq*      getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
+       const std::vector<int>&  getDbgIndex();
    public:
        Types*               getTypes();
        Typ*                 getTyp();
@@ -290,6 +293,7 @@ class OKCORE_API Opticks {
        OpticksMode*         m_mode ; 
        OpticksRun*          m_run ; 
        OpticksAna*          m_ana ; 
+       OpticksDbg*          m_dbg ; 
        int                  m_rc ; 
        unsigned             m_tagoffset ; 
    private:

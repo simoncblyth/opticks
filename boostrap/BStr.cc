@@ -5,6 +5,9 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <iterator>
+#include <iostream>
+
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
@@ -155,6 +158,32 @@ void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
     std::string s;
     while (getline(f, s, delim)) elem.push_back(s);
 }
+
+void BStr::isplit( std::vector<int>& elem, const char* line, char delim )
+{
+    if(line == NULL) return ; 
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, delim))
+    {
+        int i = BStr::atoi(s.c_str(), -1);
+        elem.push_back(i);
+    }
+}
+
+std::string BStr::ijoin( std::vector<int>& elem, char delim)
+{
+    char delimiter[2] ;
+    delimiter[0] = delim ;
+    delimiter[1] = '\0' ;
+
+    std::stringstream ss ;    
+    std::copy( elem.begin(), elem.end(), std::ostream_iterator<int>(ss,delimiter));
+    std::string s_ = ss.str();
+    std::string s = s_.substr(0, s_.size()-1) ;  // remove trailing delimiter
+    return s ;
+}
+
 
 
 std::vector<std::pair<std::string, std::string> > 

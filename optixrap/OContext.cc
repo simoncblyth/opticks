@@ -134,6 +134,13 @@ void OContext::setPrintIndex(const std::string& pindex)
                   << " idx " << gformat(idx) 
                    ;  
         m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
+
+/*
+  rtContextSetPrintLaunchIndex 
+  toggles printing for individual computation grid cells. 
+  Print statements have no adverse effect on performance while printing is globally disabled, which is the default behavior.
+*/
+
     }
 }
 

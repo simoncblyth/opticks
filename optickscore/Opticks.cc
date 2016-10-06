@@ -40,6 +40,7 @@
 #include "OpticksEntry.hh"
 #include "OpticksProfile.hh"
 #include "OpticksAna.hh"
+#include "OpticksDbg.hh"
 
 
 #include "OpticksCfg.hh"
@@ -129,6 +130,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_mode(NULL),
        m_run(new OpticksRun(this)),
        m_ana(new OpticksAna(this)),
+       m_dbg(new OpticksDbg(this)),
        m_rc(0),
        m_tagoffset(0)
 {
@@ -174,6 +176,14 @@ void Opticks::postpropagate()
 void Opticks::ana()
 {
    m_ana->run();
+}
+bool Opticks::isDbgPhoton(int photon_id)
+{
+   return m_dbg->isDbgPhoton(photon_id);
+}
+const std::vector<int>&  Opticks::getDbgIndex()
+{
+   return m_dbg->getDbgIndex();
 }
 
 
@@ -524,6 +534,8 @@ void Opticks::configure()
 
     const std::string& mpfx = m_cfg->getMaterialPrefix();
     m_materialprefix = ( mpfx.empty() || isJuno()) ? NULL : strdup(mpfx.c_str()) ;
+
+    m_dbg->postconfigure();
 
     LOG(debug) << "Opticks::configure DONE " ;
 }

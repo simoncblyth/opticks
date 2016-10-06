@@ -1,9 +1,45 @@
 #include "BStr.hh"
 #include <iomanip>
+
+#include <iterator>
+#include <iostream>
+
 #include <cstdio>
 #include <boost/algorithm/string/replace.hpp>
 
 #include "PLOG.hh"
+
+
+void test_ijoin()
+{
+    std::vector<int> elem ; 
+    std::string ij = BStr::ijoin(elem, ',');
+    assert( strcmp(ij.c_str(), "") == 0 );
+}
+
+
+void test_isplit()
+{
+    const char* line = "1,10,100,-200" ;
+
+    std::vector<int> elem ; 
+    BStr::isplit(elem, line, ',');
+
+    LOG(info) << " isplit [" << line << "] into elem count " << elem.size() ; 
+
+    assert(elem.size() == 4);
+    assert(elem[0] == 1 );
+    assert(elem[1] == 10 );
+    assert(elem[2] == 100 );
+    assert(elem[3] == -200 );
+
+    std::string ij = BStr::ijoin(elem, ',');
+
+    LOG(info) << " ijoin elem into [" << ij << "]" ;
+
+    assert( strcmp( ij.c_str(), line) == 0);
+}
+
 
 void test_afterLastOrAll_(const char* s, const char* x )
 {
@@ -69,6 +105,9 @@ int main(int argc, char** argv)
     test_patternPickField();
     test_afterLastOrAll();
     test_DAEIdToG4();
+    test_isplit();
+    test_ijoin();
+
     return 0 ; 
 }
 
