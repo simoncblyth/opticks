@@ -23,6 +23,22 @@
 #include "PLOG.hh"
 
 
+const char* Rec::OK_ = "OK" ; 
+const char* Rec::SKIP_STS_ = "SKIP_STS" ; 
+const char* Rec::SKIP_REJOIN_ = "SKIP_REJOIN" ; 
+const char* Rec::Label(Rec_t r)
+{
+    const char*  l = NULL ; 
+    switch(r)
+    {
+        case OK         : l = OK_          ;break;
+        case SKIP_STS   : l = SKIP_STS_    ;break;
+        case SKIP_REJOIN: l = SKIP_REJOIN_ ;break;
+    }
+    return l ; 
+}
+ 
+
 Rec::Rec(Opticks* ok, CGeometry* geometry, bool dynamic)  
    :
     m_ok(ok), 
@@ -37,6 +53,7 @@ Rec::Rec(Opticks* ok, CGeometry* geometry, bool dynamic)
     m_record_max(0),
     m_bounce_max(0),
     m_steps_per_photon(0),
+    m_rejoin_count(0),
     m_debug(false)
 {
 }
@@ -93,14 +110,9 @@ void Rec::pop()
 {
     m_states.pop_back();
 }
-void Rec::decrementSlot()
+void Rec::notifyRejoin()
 {
-    if(m_slot == 0)
-    {
-        LOG(warning) << " CANNOT DECREMENT " << m_slot ; 
-        return ; 
-    }
-    m_slot -= 1 ; 
+    m_rejoin_count += 1 ; 
 }
 
 
@@ -111,6 +123,7 @@ void Rec::Clear()
     m_seqhis = 0ull ; 
     m_seqmat = 0ull ; 
     m_slot = 0  ; 
+    m_rejoin_count = 0 ; 
 }
 
 unsigned int Rec::getNumStates()
@@ -141,8 +154,23 @@ CStage::CStage_t Rec::getStage(unsigned int i)
     return state ? state->getStage() : CStage::UNKNOWN ;
 }
 
+double Rec::getPreGlobalTime(unsigned i)
+{
+    const State* state = getState(i) ;
+    const G4StepPoint* pre = state ? state->getPreStepPoint() : NULL ; 
+    return pre ? pre->GetGlobalTime() : -1 ;
+}
 
-Rec::Rec_t Rec::getFlagMaterialStage(unsigned int& flag, unsigned int& material,  CStage::CStage_t& stage, unsigned int i, Flag_t type )
+double Rec::getPostGlobalTime(unsigned i)
+{
+    const State* state = getState(i) ;
+    const G4StepPoint* post  = state ? state->getPostStepPoint() : NULL ; 
+    return post ? post->GetGlobalTime() : -1 ;
+}
+
+
+
+Rec::Rec_t Rec::getFlagMaterialStageDone(unsigned int& flag, unsigned int& material,  CStage::CStage_t& stage, bool& done, unsigned int i, Flag_t type )
 {
     // recast of Recorder::RecordStep flag assignment 
     // in after-recording-all-states way instead of live stepping
@@ -168,15 +196,13 @@ Rec::Rec_t Rec::getFlagMaterialStage(unsigned int& flag, unsigned int& material,
     CStage::CStage_t current_stage = state->getStage() ; 
     CStage::CStage_t next_stage = next ? next->getStage() : CStage::UNKNOWN ; 
 
+    bool current_done = state->getDone();
+    //bool next_done = next ? next->getDone() : false ; 
+
     // zero shunting to include m_genflag in pole position
     // means must use prior_boundary_status and prior_stage for all the PRE to avoid skipping getState(0)
-    unsigned int preFlag = i == 0 ? 
-                                       m_genflag 
-                                    : 
-                                       OpPointFlag(pre,  prior_boundary_status, current_stage) 
-                                    ; 
-
-    unsigned int postFlag =  OpPointFlag(post, boundary_status, next_stage ) ;
+    unsigned int preFlag = i == 0 ?  m_genflag : OpPointFlag(pre,  prior_boundary_status, current_stage) ; 
+    unsigned int postFlag =                      OpPointFlag(post, boundary_status,       current_stage ) ;
 
     // NB nothing fundamental here : just winging it in adhoc attempt to duplicate CRecorder and Opticks logic
     bool reemSkip = current_stage == CStage::REJOIN && next_stage == CStage::REJOIN ; 
@@ -191,16 +217,20 @@ Rec::Rec_t Rec::getFlagMaterialStage(unsigned int& flag, unsigned int& material,
 
     if(preSkip) return SKIP_STS ; 
 
+
+
     switch(type)
     {
        case  PRE: 
                   flag = preFlag ; 
                   material = matSwap ? postMat : preMat ;  
                   stage = current_stage ; 
+                  done = current_done ;
                   break;
        case POST: 
                   flag = postFlag ; 
                   stage = current_stage ; 
+                  done = current_done ;
 
                   //  Spring 2016
                   // material = ( matSwap || postMat == 0 || surfaceAbsorb) ? preMat : postMat ;  
@@ -221,31 +251,49 @@ Rec::Rec_t Rec::getFlagMaterialStage(unsigned int& flag, unsigned int& material,
     return OK ; 
 }
 
-void Rec::addFlagMaterial(unsigned int flag, unsigned int material)
+void Rec::addFlagMaterial(unsigned int flag, unsigned int material, CStage::CStage_t stage)
 {
     bool invalid = flag == NAN_ABORT ; 
-    bool truncate = m_slot > m_bounce_max  ;  
+    bool truncate = m_slot > m_bounce_max ; 
+    bool bail = invalid || ( truncate && stage != CStage::REJOIN ) ;   
+    // <-- special case for last slot REEMISSION as CRecorder decrementSlot allows REJOIN changing of top slot 
+
+    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
 
     if(m_debug)
     LOG(info) << "Rec::addFlagMaterial " 
+              << " m_slot " << m_slot 
+              << " m_rejoin_count " << m_rejoin_count 
+              << " slot " << slot 
               << " flag " << std::hex << flag << std::dec
+              << " flagffs " << std::hex << BBit::ffs(flag) << std::dec
+              << " flagffs& " << std::hex << (BBit::ffs(flag) & 0xFull) << std::dec
               << " material " << std::hex << material << std::dec
-              << " invalid " << invalid 
-              << " truncate " << truncate
+              << " invalid " << ( invalid ? "Y" : "N" )
+              << " truncate " << ( truncate ? "Y" : "N" )
+              << " bail " << ( bail ? "Y" : "N" )
               ; 
 
-    if(invalid || truncate) return ; 
 
-    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
-    unsigned long long shift = slot*4ull ;   
-    unsigned long long msk = 0xFull << shift ; 
-    unsigned long long his = BBit::ffs(flag) & 0xFull ; 
-    unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+    // CRecorder::decrementSlot allows rewriting of topslot in
+    // special case of REJOIN
 
-    m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ;
-    m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
+    if(bail)
+    {
+        LOG(warning) << "NAN_ABORT or bounce truncate bail out " ; 
+    }
+    else
+    {
+        unsigned long long shift = slot*4ull ;   
+        unsigned long long msk = 0xFull << shift ; 
+        unsigned long long his = BBit::ffs(flag) & 0xFull ; 
+        unsigned long long mat = material < 0xFull ? material : 0xFull ; 
 
-    m_slot += 1 ; 
+        m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ;
+        m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
+        m_slot += 1 ; 
+    }
+
 }
 
 void Rec::sequence()
@@ -254,6 +302,15 @@ void Rec::sequence()
     // not work like it does with CRecorder
     // as the cycle is controlled entirely
     // here from the saved states
+    //
+    // Note that do not need to do anything special
+    // to rejoin reemission as the BULK_ABSORB that 
+    // goes into POST gets ignored when there is a subsequent state
+    // with BULK_REEMIT in PRE
+    //
+    // Presumably this is relying on the 2ndaries from reemission 
+    // being propagated immediately following the BULK_ABSORB
+    //
 
     unsigned int nstate = getNumStates();
 
@@ -262,26 +319,35 @@ void Rec::sequence()
               << " nstate" << nstate 
               ;  
 
-    unsigned flag ;
+    unsigned preFlag ;
+    unsigned postFlag ;
     unsigned material ;
     CStage::CStage_t stage ; 
+    bool done = false ; 
 
     m_slot = 0 ;
     Rec_t rc ; 
 
 
-   // add all PRE, until last when add POST
+   // add all PRE, until lastPost when add POST
 
     for(unsigned i=0 ; i < nstate; i++)
     {
-        rc = getFlagMaterialStage(flag, material, stage, i, PRE );
+        rc = getFlagMaterialStageDone(preFlag, material, stage, done, i, PRE );
+        if(m_debug) LOG(info) << "PRE" << std::setw(3) << i << " " << Label(rc) << std::setw(10) << getPreGlobalTime(i)  ;
         if(rc == OK)
-            addFlagMaterial(flag, material) ;
+            addFlagMaterial(preFlag, material, stage) ;
+
     }
 
-    rc = getFlagMaterialStage(flag, material, stage, nstate-1, POST );
-    if(rc == OK)
-        addFlagMaterial(flag, material) ;
+    rc = getFlagMaterialStageDone(postFlag, material, stage, done, nstate-1, POST );
+    // hmm lastPost kinda assumes complete propagation with no truncation 
+    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+    if(m_debug) LOG(info) << "PST" << std::setw(3) << nstate-1 << " " << Label(rc) << std::setw(10) << getPostGlobalTime(nstate-1) << " lastPost " << ( lastPost ? "Y" : "N" ) ;
+
+    if(rc == OK && lastPost )
+        addFlagMaterial(postFlag, material, stage) ;
+
 }
 
 
@@ -299,6 +365,8 @@ void Rec::Dump(const char* msg)
     unsigned int postMat ;
     CStage::CStage_t preStage ;
     CStage::CStage_t postStage ;
+    bool preDone ; 
+    bool postDone ; 
 
 
     G4ThreeVector origin ; 
@@ -316,8 +384,8 @@ void Rec::Dump(const char* msg)
             origin = pos ; 
         } 
 
-        getFlagMaterialStage(preFlag,  preMat, preStage,  i, PRE );
-        getFlagMaterialStage(postFlag, postMat,postStage,  i, POST );
+        getFlagMaterialStageDone(preFlag,  preMat, preStage, preDone,   i, PRE );
+        getFlagMaterialStageDone(postFlag, postMat,postStage,postDone,  i, POST );
 
         unsigned int preMatRaw = state->getPreMaterial();
         unsigned int postMatRaw = state->getPostMaterial();
@@ -338,6 +406,8 @@ void Rec::Dump(const char* msg)
                   << "/" << std::setw(3) << nstates
                   << "]"   
                   << std::endl
+                  << ::Format("done",   (preDone ? "preDone" : "") , (postDone ? "postDone" : "" ) )
+                   << std::endl
                   << ::Format("stepStage",  CStage::Label(preStage), CStage::Label(postStage) )
                   << std::endl
                   << ::Format("stepStatus", OpStepString(pre->GetStepStatus()), OpStepString(post->GetStepStatus()) )
@@ -360,9 +430,6 @@ void Rec::Dump(const char* msg)
     std::cout << "(rec)MaterialSequence "
               << m_material_bridge->MaterialSequence(m_seqmat) 
               << std::endl ;
-
- 
-
 
 }
 

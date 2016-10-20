@@ -456,36 +456,23 @@ bool CRecorder::RecordStep()
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
-    unsigned int preFlag ; 
-    unsigned int postFlag ; 
-    unsigned int preMat ; 
-    unsigned int postMat ; 
-
-    // shift flags by 1 relative to steps, in order to set the generation code on first step
+    // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 
-    if(m_slot == 0)
-    {
-        preFlag = m_gen ;         
-        postFlag = OpPointFlag(post, m_boundary_status, m_stage ) ;
-    }
-    else
-    {
-        preFlag  = OpPointFlag(pre,  m_prior_boundary_status, m_stage);
-        postFlag = OpPointFlag(post, m_boundary_status, m_stage ) ;
-    }
-
+    unsigned preFlag = m_slot == 0 ? m_gen : OpPointFlag(pre,  m_prior_boundary_status, m_stage);
+    unsigned postFlag =                      OpPointFlag(post, m_boundary_status      , m_stage);
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     bool preSkip = m_prior_boundary_status == StepTooSmall ;  
 
     bool matSwap = m_boundary_status == StepTooSmall ; 
 
-    preMat  = matSwap ? m_postmat : m_premat ;
-    //postMat = ( matSwap || m_postmat == 0 || surfaceAbsorb )  ? m_premat  : m_postmat ;
-    postMat = ( matSwap || m_postmat == 0 )  ? m_premat  : m_postmat ;
+    unsigned preMat  = matSwap ? m_postmat : m_premat ;
+
+    unsigned postMat = ( matSwap || m_postmat == 0 )  ? m_premat  : m_postmat ;
 
     if(surfaceAbsorb) postMat = m_postmat ; 
 
@@ -508,7 +495,8 @@ bool CRecorder::RecordStep()
        done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
     }
 
-    // when not *absorb* the post step will become the pre step at next RecordStep
+    // when not *lastPost* the post step will become the pre step at next RecordStep
+    // so every step point is recorded 
     //
     // in case of reemission a BULK_ABSORB is reincarnated with a BULK_REEMIT that 
     // needs to replace the BULK_ABSORB that was layed down in an earlier lastPost
@@ -535,6 +523,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
+    // constrain slot to recording inclusive range (0,m_steps_per_photon-1) 
 
     m_truncate = slot == m_steps_per_photon - 1 ; 
 
@@ -542,8 +531,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     {
        if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
-
-        // DYBOp giving lots of Undefined
     }
 
     //Dump(label,  slot, point, boundary_status );
@@ -552,6 +539,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     unsigned long long msk = 0xFull << shift ; 
     unsigned long long his = BBit::ffs(flag) & 0xFull ; 
     unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+
     m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
     m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
 
@@ -559,31 +547,46 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     RecordStepPoint(slot, point, flag, material, label);
 
-    if(m_debug) Collect(point, flag, material, boundary_status, m_seqhis, m_seqmat);
+    double time = point->GetGlobalTime();
+    if(m_debug) Collect(point, flag, material, boundary_status, m_seqhis, m_seqmat, time);
 
-    m_slot += 1 ; 
+    m_slot += 1 ;   
+
+    // m_slot is incremented regardless of truncation, 
+    // only local *slot* is constrained to recording range
 
     bool truncate = m_slot > m_bounce_max  ;  
-    bool done = truncate || absorb ;
+    bool done = truncate || absorb ;   
 
     if(done && m_dynamic)
     {
         m_records->add(m_dynamic_records);
     }
 
+
+    if(m_debug)
+       LOG(info) << "CRecorder::RecordStepPoint"
+                 << " m_slot " << m_slot 
+                 << " slot " << slot 
+                 << " flag " << std::hex << BBit::ffs(flag) << std::dec
+                 << " done " << ( done ? "Y" : "N" )
+                 << " truncate " << ( truncate ? "Y" : "N" )
+                 << description()
+                 ; 
+
     return done ; 
+
+  /*
+      edge case of reemission when already reached truncation means that the decrementSlot 
+      can change truncation state ...  
+  */
 }
 
 
-
-
-
-
-
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time)
 #else
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat)
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time)
 #endif
 {
     assert(m_debug);
@@ -593,6 +596,7 @@ void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned in
     m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
     m_seqhis_dbg.push_back(seqhis);
     m_seqmat_dbg.push_back(seqmat);
+    m_times.push_back(time);
 }
 
 
@@ -831,9 +835,8 @@ void CRecorder::Clear()
     m_bndstats.clear();
     m_seqhis_dbg.clear();
     m_seqmat_dbg.clear();
+    m_times.clear();
 }
-
-
 
 void CRecorder::Summary(const char* msg)
 {
@@ -845,12 +848,4 @@ void CRecorder::Summary(const char* msg)
               << " m_slot " << m_slot 
               ;
 }
-
-
-
-
-
-
-
-
 

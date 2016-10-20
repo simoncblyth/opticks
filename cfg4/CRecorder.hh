@@ -123,13 +123,13 @@ class CFG4_API CRecorder {
 
 #ifdef USE_CUSTOM_BOUNDARY
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
-        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         DsG4OpBoundaryProcessStatus getBoundaryStatus();
         void Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname );
 #else
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
-        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         G4OpBoundaryProcessStatus getBoundaryStatus();
         void Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname );
@@ -251,6 +251,7 @@ class CFG4_API CRecorder {
         std::vector<unsigned int>               m_materials ; 
         std::vector<unsigned long long>         m_seqhis_dbg  ; 
         std::vector<unsigned long long>         m_seqmat_dbg  ; 
+        std::vector<double>                     m_times  ; 
 };
 #include "CFG4_TAIL.hh"
 

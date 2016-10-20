@@ -1,4 +1,3 @@
-#include "CFG4_BODY.hh"
 // g4-
 
 #include "CFG4_PUSH.hh"
@@ -305,12 +304,20 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     } 
     else if( primary_id >= 0)
     {
-        photon_id = primary_id ; 
+        photon_id = primary_id ;  // <-- tacking reem step recording onto primary record 
         stage = m_rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
         m_rejoin_count++ ; 
         // rejoin count is zeroed in setTrack, so each remission generation track will result in REJOIN 
     }
-      
+     
+
+    if(stage == CStage::START && last_photon_id >= 0 )
+    {
+        //  backwards looking comparison of prior (potentially rejoined) photon
+        compareRecords(last_photon_id);
+    }
+
+ 
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);
 
@@ -338,11 +345,11 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         else if(stage == CStage::REJOIN )
         {
             // back up by one, to scrub the "AB" an refill with "RE"
-            m_recorder->decrementSlot();  
+            // hmm what about when already truncating ?
+            m_recorder->decrementSlot();    // this allows rewriting 
+            m_rec->notifyRejoin(); 
         }
 
-        if(m_dindexDebug)
-        LOG(info) << m_recorder->description() ;
 
 
         const G4StepPoint* pre  = step->GetPreStepPoint() ; 
@@ -362,13 +369,21 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
         m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);
 
-        done = m_recorder->RecordStep();   // done=true for *absorption* OR *truncation
+        done = m_recorder->RecordStep();   // done=true for *absorption* OR *truncation*
 
-        m_rec->add(new State(step, boundary_status, preMaterial, postMaterial, stage));
+        m_rec->add(new State(step, boundary_status, preMaterial, postMaterial, stage, done));
 
         if(done)
         {
-            compareRecords();
+            // compareRecords();  MOVED TO BACKWARDS LOOKING APPROACH  
+            // splitting of a photon by G4/NuWa-Detsim-scintillation (reproduced in Scintillation) into separate tracks at each reemission
+            // throws spanner in the works for inplace sequence comparison 
+            //
+            //  to regain the capability need to identify the rejoin lifecycle,
+            //  a subsequent G4Step can rejoin onto the prior one
+            //
+            //  when move to a new primary photon (assuming immediate secondaries) could 
+            //  be the juncture to make the comparison
 
             m_recorder->RecordPhoton(step);
         } 
@@ -442,8 +457,14 @@ void CSteppingAction::report(const char* msg)
 
 }
 
-int CSteppingAction::compareRecords()
+int CSteppingAction::compareRecords(int photon_id)
 {
+    assert(photon_id >= 0 );
+
+    LOG(info) << "CSteppingAction::compareRecords"
+              << " photon_id " << photon_id 
+              ;
+
     int rc = 0 ; 
 
     unsigned long long rdr_seqhis = m_recorder->getSeqHis() ;
@@ -479,9 +500,17 @@ int CSteppingAction::compareRecords()
     {
         if(!same_seqmat || !same_seqhis || debug )
         {
-            std::cout << std::endl << std::endl << "----CSteppingAction----" << std::endl  ; 
-            m_recorder->Dump("CSteppingAction::UserSteppingAction DONE");
-            m_rec->Dump("CSteppingAction::UserSteppingAction (Rec)DONE");
+            std::cout << std::endl 
+                      << std::endl
+                      << "----CSteppingAction----" 
+                      << ( !same_seqhis  ? " !same_seqhis " : "" )
+                      << ( !same_seqmat  ? " !same_seqmat " : "" )
+                      << ( debug  ? " debug " : "" )
+                      << std::endl 
+                       ; 
+
+            m_recorder->Dump("CSteppingAction::UserSteppingAction (rdr-dump)DONE");
+            m_rec->Dump(     "CSteppingAction::UserSteppingAction (rec-dump)DONE");
         }
 
         if(!same_seqhis)
@@ -499,7 +528,6 @@ int CSteppingAction::compareRecords()
 
     if(rc > 0)
     {
-        int photon_id = m_recorder->getPhotonId(); 
         addDebugPhoton(photon_id);  
     }
     return rc ; 

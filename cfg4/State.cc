@@ -34,18 +34,25 @@ CStage::CStage_t State::getStage() const
     return m_stage ; 
 }
 
+bool State::getDone() const 
+{
+    return m_done ; 
+}
+
+
 
 #ifdef USE_CUSTOM_BOUNDARY
-State::State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage) 
+State::State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, bool done) 
 #else
-State::State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage) 
+State::State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, bool done) 
 #endif
    :
    m_step(NULL),
    m_boundary_status(boundary_status),
    m_premat(premat),
    m_postmat(postmat),
-   m_stage(stage)
+   m_stage(stage),
+   m_done(done)
 {
    m_step = new G4Step(*step) ;
 }

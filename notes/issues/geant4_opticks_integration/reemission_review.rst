@@ -2,6 +2,170 @@ Reemission Review
 ====================
 
 
+
+seqhis machinery inconsistency between CRecorder and Rec
+----------------------------------------------------------
+
+::
+
+    simon:geant4_opticks_integration blyth$ t tlaser-d
+    tlaser-d () 
+    { 
+        tlaser-;
+        tlaser-t --steppingdbg   ## dumps every event 
+    }
+    simon:geant4_opticks_integration blyth$ t tlaser-t
+    tlaser-t () 
+    { 
+        tlaser-;
+        tlaser-- --okg4 --compute $*
+    }
+
+
+
+CRecorder and Rec are disagreeing for the last slot at the 6 in 10k level. 
+Presumably a truncation behavior difference::
+
+    2016-10-20 11:23:58.951 INFO  [2770241] [OpticksEvent::collectPhotonHitsCPU@1924] OpticksEvent::collectPhotonHitsCPU numHits 13
+    2016-10-20 11:23:58.951 INFO  [2770241] [CSteppingAction::report@397] CG4::postpropagate
+     event_total 1
+     track_total 10468
+     step_total 51335
+    2016-10-20 11:23:58.951 INFO  [2770241] [CSteppingAction::report@407]  seqhis_mismatch 6
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+     rdr       cccc9ccccd rec       5ccc9ccccd
+    2016-10-20 11:23:58.951 INFO  [2770241] [CSteppingAction::report@421]  seqmat_mismatch 0
+    2016-10-20 11:23:58.951 INFO  [2770241] [CSteppingAction::report@434]  debug_photon 6 (photon_id) 
+        5235
+        4221
+        3186
+        2766
+        2766
+         839
+    2016-10-20 11:23:58.951 INFO  [2770241] [CSteppingAction::report@441] TO DEBUG THESE USE:  --dindex=5235,4221,3186,2766,2766,839
+    2016-10-20 11:23:58.951 INFO  [2770241] [CG4::postpropagate@296] CG4::postpropagate(0) DONE
+
+
+
+pushing out truncation, pushes out the problem 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    tlaser-t --dindex=4124,3285 --bouncemax 15 --recordmax 16 
+
+
+    2016-10-20 15:27:35.934 INFO  [2830854] [CSteppingAction::report@412]  seqhis_mismatch 2
+     rdr cccbcc0ccc9ccccd rec 5ccbcc0ccc9ccccd
+     rdr cc6ccccacccccc5d rec 5c6ccccacccccc5d
+    2016-10-20 15:27:35.934 INFO  [2830854] [CSteppingAction::report@426]  seqmat_mismatch 0
+    2016-10-20 15:27:35.934 INFO  [2830854] [CSteppingAction::report@439]  debug_photon 2 (photon_id) 
+        4124
+        3285
+    2016-10-20 15:27:35.934 INFO  [2830854] [CSteppingAction::report@446] TO DEBUG THESE USE:  --dindex=4124,3285
+
+
+    tlaser-t --bouncemax 16 --recordmax 16 
+
+    2016-10-20 15:59:31.210 INFO  [2839084] [CSteppingAction::report@412]  seqhis_mismatch 2
+     rdr cccacccccc9ccccd rec 5ccacccccc9ccccd
+     rdr cccc0b0ccccc6ccd rec 5ccc0b0ccccc6ccd
+    2016-10-20 15:59:31.210 INFO  [2839084] [CSteppingAction::report@426]  seqmat_mismatch 0
+    2016-10-20 15:59:31.210 INFO  [2839084] [CSteppingAction::report@439]  debug_photon 2 (photon_id) 
+        7836
+        5501
+
+
+
+inkling 
+~~~~~~~~~
+
+Suspect the comparison if happening prior to the
+rejoin being completed ... 
+
+
+
+
+truncation control
+~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    409    char bouncemax[128];
+    410    snprintf(bouncemax,128,
+    411 "Maximum number of boundary bounces, 0:prevents any propagation leaving generated photons"
+    412 "Default %d ", m_bouncemax);
+    413    m_desc.add_options()
+    414        ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
+    415 
+    416 
+    417    // keeping bouncemax one less than recordmax is advantageous 
+    418    // as bookeeping is then consistent between the photons and the records 
+    419    // as this avoiding truncation of the records
+    420 
+    421    char recordmax[128];
+    422    snprintf(recordmax,128,
+    423 "Maximum number of photon step records per photon, 1:to minimize without breaking machinery. Default %d ", m_recordmax);
+    424    m_desc.add_options()
+    425        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
+    426 
+
+
+
+
+CRecorder m_seqhis 
+~~~~~~~~~~~~~~~~~~
+
+primarily from CRecorder::RecordStepPoint based on flag argument and current slot,
+note that m_slot continues to increment well past the recording range. 
+
+This means that local *slot* gets will continue to point to m_steps_per_photon - 1 
+
+
+The mismatch happens prior to lastPost, so problem all from pre::
+
+
+    488     if(!preSkip)
+    489     {
+    490        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );
+    491     }
+    492 
+    493     if(lastPost && !done)
+    494     {
+    495        done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST );
+    496     }
+    497 
+
+
+Rec m_seqhis
+~~~~~~~~~~~~~~~~
+
+Rec::addFlagMaterial attemps to mimmick CRecorder recording based on m_slot and flag argument.
+This is invoked based on saved states by Rec::sequence
+
+Hmm the below will always end with POST even prior to lastPost or when truncated... 
+
+::
+
+    298     
+    299     for(unsigned i=0 ; i < nstate; i++)
+    300     {
+    301         rc = getFlagMaterialStageDone(flag, material, stage, done, i, PRE );
+    302         if(rc == OK)
+    303             addFlagMaterial(flag, material) ;
+    304     }
+    305     
+    306     rc = getFlagMaterialStageDone(flag, material, stage, done, nstate-1, POST );
+    307     if(rc == OK)
+    308         addFlagMaterial(flag, material) ;
+
+
+
+
 How to proceed ?
 ------------------
 

@@ -16,10 +16,10 @@ class CFG4_API State
 {
    public:
 #ifdef USE_CUSTOM_BOUNDARY
-       State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage);
+       State(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, bool done);
        DsG4OpBoundaryProcessStatus getBoundaryStatus() const ;
 #else
-       State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat );
+       State(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, bool done);
        G4OpBoundaryProcessStatus getBoundaryStatus() const ;
 #endif
        virtual ~State();
@@ -30,6 +30,7 @@ class CFG4_API State
        unsigned int getPreMaterial() const ;
        unsigned int getPostMaterial() const ;
        CStage::CStage_t getStage() const ; 
+       bool getDone() const ; 
    private:
        const G4Step*             m_step ;
 #ifdef USE_CUSTOM_BOUNDARY
@@ -40,6 +41,7 @@ class CFG4_API State
        unsigned int              m_premat ;
        unsigned int              m_postmat ;
        CStage::CStage_t          m_stage ; 
+       bool                      m_done ; 
 };
 
 

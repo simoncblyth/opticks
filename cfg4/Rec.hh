@@ -127,6 +127,10 @@ class CFG4_API Rec {
    public:
        typedef enum { OK, SKIP_STS, SKIP_REJOIN } Rec_t ; 
        typedef enum { PRE, POST } Flag_t ; 
+       static const char* OK_ ; 
+       static const char* SKIP_STS_ ; 
+       static const char* SKIP_REJOIN_ ; 
+       static const char* Label(Rec_t r);
    public:
        Rec(Opticks* ok, CGeometry* geometry, bool dynamic);
        void postinitialize();
@@ -136,9 +140,13 @@ class CFG4_API Rec {
    public:
        void add(const State* state); 
        void pop(); 
-       void decrementSlot();
+       void notifyRejoin();
        void sequence();
        void Clear();
+
+       double getPostGlobalTime(unsigned i);
+       double getPreGlobalTime(unsigned i);
+
    public:
        void Dump(const char* msg); 
    public:
@@ -151,9 +159,9 @@ class CFG4_API Rec {
        CStage::CStage_t getStage(unsigned int i);
        unsigned int getNumStates();
    public:
-       Rec_t getFlagMaterialStage(unsigned int& flag, unsigned int& material, CStage::CStage_t& stage, unsigned int i, Flag_t type );
+       Rec_t getFlagMaterialStageDone(unsigned int& flag, unsigned int& material, CStage::CStage_t& stage, bool& done, unsigned int i, Flag_t type );
    public:
-       void addFlagMaterial(unsigned int flag, unsigned int material);
+       void addFlagMaterial(unsigned int flag, unsigned int material, CStage::CStage_t stage);
        unsigned long long getSeqHis();
        unsigned long long getSeqMat();
 
@@ -175,6 +183,7 @@ class CFG4_API Rec {
        unsigned int m_record_max ; 
        unsigned int m_bounce_max ; 
        unsigned int m_steps_per_photon ; 
+       unsigned int m_rejoin_count ; 
 
        bool         m_debug ; 
 };

@@ -50,7 +50,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     void setTrack(const G4Track* track, int track_id, int parent_id);
     bool setStep( const G4Step* step, int step_id);
     bool UserSteppingActionOptical(const G4Step* step);
-    int compareRecords();
+    int compareRecords(int photon_id);
     int getPrimaryPhotonID();
     void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
     void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
