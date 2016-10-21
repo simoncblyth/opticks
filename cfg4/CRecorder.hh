@@ -216,6 +216,7 @@ class CFG4_API CRecorder {
         int m_parent_id ; 
         int m_step_id ; 
         int m_record_id ; 
+        int m_record_id_prior ; 
         int m_primary_id ; 
 
 

@@ -92,12 +92,14 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
    m_debug(m_verbosity > 0),
-   m_event_id(UINT_MAX),
-   m_photon_id(UINT_MAX),
-   m_photon_id_prior(UINT_MAX),
-   m_step_id(UINT_MAX),
-   m_record_id(UINT_MAX),
-   m_primary_id(UINT_MAX),
+
+   m_event_id(INT_MAX),
+   m_photon_id(INT_MAX),
+   m_photon_id_prior(INT_MAX),
+   m_step_id(INT_MAX),
+   m_record_id(INT_MAX),
+   m_record_id_prior(INT_MAX),
+   m_primary_id(INT_MAX),
 
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
@@ -206,10 +208,6 @@ int CRecorder::getRecordId()
    return m_record_id ; 
 }
 
-
-
-
-
 void CRecorder::setEventId(int event_id)
 {
     m_event_id = event_id ; 
@@ -218,10 +216,27 @@ void CRecorder::setPhotonId(int photon_id)
 {
     m_photon_id_prior = m_photon_id ; 
     m_photon_id = photon_id ; 
+}
 
-    bool dindexDebug = m_ok->isDbgPhoton(photon_id) ; // from option: --dindex=1,100,1000,10000 
+
+void CRecorder::setStepId(int step_id)
+{
+    m_step_id = step_id ; 
+}
+int CRecorder::defineRecordId()   
+{
+   return m_photons_per_g4event*m_event_id + m_photon_id ; 
+}
+
+void CRecorder::setRecordId(int record_id)
+{
+    m_record_id_prior = m_record_id ; 
+    m_record_id = record_id ; 
+
+    bool dindexDebug = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
     setDebug(dindexDebug);
 }
+
 
 void CRecorder::setParentId(int parent_id)
 {
@@ -231,6 +246,7 @@ void CRecorder::setPrimaryId(int primary_id)
 {
     m_primary_id = primary_id ; 
 }
+
 
 
 void CRecorder::setStage(CStage::CStage_t stage)
@@ -261,26 +277,6 @@ std::string CRecorder::description()
 
 
 
-
-
-
-
-void CRecorder::setStepId(int step_id)
-{
-    m_step_id = step_id ; 
-}
-int CRecorder::defineRecordId()   
-{
-   return m_photons_per_g4event*m_event_id + m_photon_id ; 
-}
-
-void CRecorder::setRecordId(int record_id)
-{
-    m_record_id = record_id ; 
-}
-
-
-
 void CRecorder::RecordBeginOfRun(const G4Run*)
 {
 }
@@ -288,12 +284,6 @@ void CRecorder::RecordBeginOfRun(const G4Run*)
 void CRecorder::RecordEndOfRun(const G4Run*)
 {
 }
-
-
-//bool CRecorder::isDynamic()
-//{
-//    return m_dynamic ; 
-//}
 
 
 void CRecorder::setEvent(OpticksEvent* evt)
@@ -883,9 +873,9 @@ void CRecorder::addSeqmatMismatch(unsigned long long rdr, unsigned long long rec
 {
     m_seqmat_mismatch.push_back(std::pair<unsigned long long, unsigned long long>(rdr, rec));
 }
-void CRecorder::addDebugPhoton(int photon_id)
+void CRecorder::addDebugPhoton(int record_id)
 {
-    m_debug_photon.push_back(photon_id);
+    m_debug_photon.push_back(record_id);
 }
 
 
@@ -936,11 +926,11 @@ void CRecorder::report(const char* msg)
 
 
 
-int CRecorder::compare(int photon_id)
+int CRecorder::compare(int record_id)
 {
-    assert(photon_id >= 0 );
+    assert(record_id >= 0 );
 
-    //LOG(info) << "CRecorder::compare" << " photon_id " << photon_id ;
+    //LOG(info) << "CRecorder::compare" << " record_id " << record_id ;
 
     int rc = 0 ; 
 
@@ -979,6 +969,7 @@ int CRecorder::compare(int photon_id)
             std::cout << std::endl 
                       << std::endl
                       << "----CRecorder::compare----" 
+                      << " record_id " << std::setw(8) << record_id 
                       << ( !same_seqhis  ? " !same_seqhis " : "" )
                       << ( !same_seqmat  ? " !same_seqmat " : "" )
                       << ( debug  ? " debug " : "" )
@@ -1004,7 +995,7 @@ int CRecorder::compare(int photon_id)
 
     if(rc > 0)
     {
-        addDebugPhoton(photon_id);  
+        addDebugPhoton(record_id);  
     }
     return rc ; 
 }

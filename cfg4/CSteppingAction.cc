@@ -292,6 +292,7 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
   
     int primary_id = getPrimaryPhotonID() ;
     int last_photon_id = m_recorder->getPhotonId();  
+    int last_record_id = m_recorder->getRecordId();  
 
     CStage::CStage_t stage = CStage::UNKNOWN ; 
     if( parent_id == -1 )  // primary photon
@@ -307,21 +308,20 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     }
      
 
-    if(stage == CStage::START && last_photon_id >= 0 )
+    if(stage == CStage::START && last_record_id >= 0 && last_record_id < INT_MAX )
     {
         //  backwards looking comparison of prior (potentially rejoined) photon
-        m_recorder->compare(last_photon_id);
+        //  using record_id for absolute indexing across multiple G4 subevt 
+        m_recorder->compare(last_record_id);
     }
 
  
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);
 
-    //m_dindexDebug = m_ok->isDbgPhoton(photon_id) ; // from option: --dindex=1,100,1000,10000 
-    //m_recorder->setDebug(m_dindexDebug);
-
     unsigned int record_id = m_recorder->defineRecordId();   //  m_photons_per_g4event*m_event_id + m_photon_id 
     unsigned int record_max = m_recorder->getRecordMax() ;
+
     bool recording = record_id < record_max ||  m_dynamic ; 
 
     if(recording)
@@ -334,7 +334,6 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
         if(stage == CStage::START)
         { 
-            //m_rec->Clear();
             m_recorder->startPhoton();  // MUST be invoked from up here,  prior to setBoundaryStatus
             m_recorder->RecordQuadrant(step);
         }
@@ -342,7 +341,6 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         {
             m_recorder->decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
         }
-
 
         const G4StepPoint* pre  = step->GetPreStepPoint() ; 
         const G4StepPoint* post = step->GetPostStepPoint() ; 
@@ -362,8 +360,6 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);
 
         done = m_recorder->RecordStep();   // done=true for *absorption* OR *truncation*
-
-      //    m_rec->add(new State(step, boundary_status, preMaterial, postMaterial, stage, done));
 
         if(done)
         {

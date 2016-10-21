@@ -8,6 +8,8 @@ push stats to 1M have 35 CRecorder/Rec discrepant seqhis/seqmat
 * TODO: move to record_id for debug indexing across G4 subevt
  
 
+* most common discrep is, one less "c" in rec
+
 ::
 
     2016-10-21 13:11:34.267 INFO  [2947727] [CSteppingAction::report@380] CG4::postpropagate
@@ -54,6 +56,20 @@ push stats to 1M have 35 CRecorder/Rec discrepant seqhis/seqmat
     2016-10-21 13:11:34.267 INFO  [2947727] [CRecorder::report@912]  seqmat_mismatch 35
      rdr           343231 rec            34323 rdr GdDopedLS Acrylic LiquidScintillator Acrylic MineralOil Acrylic - - - - - - - - - -  rec Acrylic LiquidScintillator Acrylic MineralOil Acrylic - - - - - - - - - - - 
      rdr          af33231 rec           af3323 rdr GdDopedLS Acrylic LiquidScintillator Acrylic Acrylic Air ESR - - - - - - - - -  rec Acrylic LiquidScintillator Acrylic Acrylic Air ESR - - - - - - - - - - 
+
+* approx half have a skipped decrementSlot warning 
+
+::
+
+    2016-10-21 13:41:23.927 INFO  [2954706] [CSteppingAction::setEvent@179] CSA (startEvent) event_id 6 event_total 6
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 1 slot 0 flag d done N truncate N     START evt       6 pho     626 par      -1 pri 2147483647 ste    0 rid 60626 slt    1 pre     0.1 pst 2.80399 STATIC 
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 2 slot 1 flag 4 done Y truncate N     START evt       6 pho     626 par      -1 pri 2147483647 ste    0 rid 60626 slt    2 pre     0.1 pst 2.80399 STATIC 
+    2016-10-21 13:41:24.381 WARN  [2954706] [CRecorder::decrementSlot@363] CRecorder::decrementSlot SKIPPING slot 0 truncate 0
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 1 slot 0 flag d done N truncate N    RECOLL evt       6 pho     626 par   10432 pri 2147483647 ste    1 rid 60626 slt    1 pre 11.0342 pst 11.0921 STATIC 
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 2 slot 1 flag c done N truncate N    RECOLL evt       6 pho     626 par   10432 pri 2147483647 ste    2 rid 60626 slt    2 pre 11.0921 pst  13.488 STATIC 
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 3 slot 2 flag c done N truncate N    RECOLL evt       6 pho     626 par   10432 pri 2147483647 ste    3 rid 60626 slt    3 pre  13.488 pst 13.5877 STATIC 
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 4 slot 3 flag c done N truncate N    RECOLL evt       6 pho     626 par   10432 pri 2147483647 ste    4 rid 60626 slt    4 pre 13.5877 pst 15.0218 STATIC 
+    2016-10-21 13:41:24.381 INFO  [2954706] [CRecorder::RecordStepPoint@576] CRecorder::RecordStepPoint m_slot 5 slot 4 flag 8 done Y truncate N    RECOLL evt       6 pho     626 par   10432 pri 2147483647 ste    4 rid 60626 slt    5 pre 13.5877 pst 15.0218 STATIC 
 
 
 
