@@ -45,7 +45,7 @@
 
 #include "CCollector.hh"
 #include "CRecorder.hh"
-#include "Rec.hh"
+//#include "Rec.hh"
 #include "CStepRec.hh"
 
 #include "CPrimaryGeneratorAction.hh"
@@ -78,10 +78,10 @@ CRecorder* CG4::getRecorder()
     return m_recorder ; 
 }
 
-Rec* CG4::getRec()
-{
-    return m_rec ; 
-}
+//Rec* CG4::getRec()
+//{
+//    return m_rec ; 
+//}
 CStepRec* CG4::getStepRec()
 {
     return m_steprec ; 
@@ -112,7 +112,7 @@ CG4::CG4(OpticksHub* hub)
      m_generator(new CGenerator(m_hub, this)),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
      m_recorder(new CRecorder(m_ok, m_geometry, m_generator->isDynamic())), 
-     m_rec(new Rec(m_ok, m_geometry, m_generator->isDynamic())), 
+     //m_rec(new Rec(m_ok, m_geometry, m_generator->isDynamic())), 
      m_steprec(new CStepRec(m_ok, m_generator->isDynamic())),  
      m_visManager(NULL),
      m_uiManager(NULL),
@@ -169,7 +169,7 @@ void CG4::postinitialize()
 
     m_geometry->postinitialize();
     m_recorder->postinitialize();  
-    m_rec->postinitialize();
+    //m_rec->postinitialize();
 
     CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
     sa->postinitialize();
@@ -224,7 +224,7 @@ void CG4::initEvent(OpticksEvent* evt)
     m_generator->configureEvent(evt);
 
     m_recorder->initEvent(evt);
-    m_rec->initEvent(evt);
+    //m_rec->initEvent(evt);
 
     NPY<float>* nopstep = evt->getNopstepData();
 

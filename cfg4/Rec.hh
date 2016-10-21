@@ -139,8 +139,8 @@ class CFG4_API Rec {
        void setEvent(OpticksEvent* evt);
    public:
        void add(const State* state); 
-       void pop(); 
-       void notifyRejoin();
+       //void pop(); 
+       //void notifyRejoin();
        void sequence();
        void Clear();
 
@@ -173,17 +173,18 @@ class CFG4_API Rec {
        bool                        m_dynamic ; 
 
        OpticksEvent*               m_evt ;  
-       unsigned int                m_genflag ;
+       unsigned                    m_genflag ;
        std::vector<const State*>   m_states ; 
 
        unsigned long long          m_seqhis ; 
        unsigned long long          m_seqmat ; 
-       unsigned int                m_slot ; 
+       unsigned m_slot ; 
 
-       unsigned int m_record_max ; 
-       unsigned int m_bounce_max ; 
-       unsigned int m_steps_per_photon ; 
-       unsigned int m_rejoin_count ; 
+       unsigned m_record_max ; 
+       unsigned m_bounce_max ; 
+       unsigned m_steps_per_photon ; 
+   //    unsigned m_rejoin_count ; 
+       unsigned m_bail_count ; 
 
        bool         m_debug ; 
 };

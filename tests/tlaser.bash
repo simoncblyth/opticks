@@ -5,6 +5,9 @@ tlaser-usage(){ cat << \EOU
 tlaser- : Pencil beam 
 ==================================================
 
+See :doc:`notes/issues/geant4_opticks_integration/reemission_review`
+
+
 EOU
 }
 tlaser-env(){      olocal- ;  }
@@ -19,12 +22,12 @@ tlaser--(){
 
     local msg="=== $FUNCNAME :"
 
-    #local photons=1000000
+    local photons=1000000
     #local photons=20000
-    local photons=10000
+    #local photons=10000
 
-    #local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)
-    local g4ppe=$photons
+    local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)
+    #local g4ppe=$photons
 
     local tag=$(tlaser-tag)
     local torch_config=(

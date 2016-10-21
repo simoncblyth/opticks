@@ -2,6 +2,61 @@ Reemission Review
 ====================
 
 
+push stats to 1M have 35 CRecorder/Rec discrepant seqhis/seqmat
+----------------------------------------------------------------
+
+* TODO: move to record_id for debug indexing across G4 subevt
+ 
+
+::
+
+    2016-10-21 13:11:34.267 INFO  [2947727] [CSteppingAction::report@380] CG4::postpropagate
+     event_total 100
+     track_total 1045143
+     step_total 5165738
+    2016-10-21 13:11:34.267 INFO  [2947727] [CRecorder::report@894] CG4::postpropagate
+    2016-10-21 13:11:34.267 INFO  [2947727] [CRecorder::report@898]  seqhis_mismatch 35
+     rdr           8ccccd rec            8cccd
+     rdr          8c0cccd rec           8c0ccd
+     rdr                d rec               4d
+     rdr                d rec               4d
+     rdr           8ccccd rec            8cccd
+     rdr           8ccccd rec            8cccd
+     rdr           8ccccd rec            8cccd
+     rdr           8ccccd rec            8cccd
+     rdr                d rec               4d
+     rdr       c0cac0cccd rec       cc0cac0ccd
+     rdr              b6d rec             4b6d
+     rdr                d rec               4d
+     rdr                d rec               4d
+     rdr                d rec               4d
+     rdr                d rec               4d
+     rdr       ccaccccccd rec       cccacccccd
+     rdr                d rec               4d
+     rdr           8ccccd rec            8cccd
+     rdr       c0cac0cccd rec       cc0cac0ccd
+     rdr                d rec               4d
+     rdr           8ccccd rec            8cccd
+     rdr       cccc9ccccd rec       ccccc9cccd
+     rdr       ccaccccccd rec       cccacccccd
+     rdr                d rec               4d
+     rdr         8ccccb5d rec           8ccccd
+     rdr           8ccccd rec            8cccd
+     rdr           8ccccd rec            8cccd
+     rdr           8ccccd rec            8cccd
+     rdr                d rec               4d
+     rdr       c0b0cccccd rec       cc0b0ccccd
+     rdr       cc0b00cccd rec       ccc0b00ccd
+     rdr       cccbcccccd rec       ccccbccccd
+     rdr       cacccc5ccd rec       ccacccc5cd
+     rdr           8ccccd rec            8cccd
+     rdr           8ccccd rec            8cccd
+    2016-10-21 13:11:34.267 INFO  [2947727] [CRecorder::report@912]  seqmat_mismatch 35
+     rdr           343231 rec            34323 rdr GdDopedLS Acrylic LiquidScintillator Acrylic MineralOil Acrylic - - - - - - - - - -  rec Acrylic LiquidScintillator Acrylic MineralOil Acrylic - - - - - - - - - - - 
+     rdr          af33231 rec           af3323 rdr GdDopedLS Acrylic LiquidScintillator Acrylic Acrylic Air ESR - - - - - - - - -  rec Acrylic LiquidScintillator Acrylic Acrylic Air ESR - - - - - - - - - - 
+
+
+
 
 seqhis machinery inconsistency between CRecorder and Rec
 ----------------------------------------------------------
@@ -81,12 +136,13 @@ pushing out truncation, pushes out the problem
 
 
 
-inkling 
-~~~~~~~~~
+FIXED : was comparing before all REJOINs are in
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Suspect the comparison if happening prior to the
 rejoin being completed ... 
 
+Yep. Moved to backwards looking comparison to fix. 
 
 
 

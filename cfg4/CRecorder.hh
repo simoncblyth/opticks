@@ -24,6 +24,7 @@ class OpticksEvent ;
 
 
 // cfg4-
+class Rec ; 
 class CGeometry ; 
 class CMaterialBridge ; 
 
@@ -177,10 +178,22 @@ class CFG4_API CRecorder {
 
         std::string description();
 
+   public:
+        // debugging/dumping 
+        void report(const char* msg="CRecorder::report");
+        int compare(int photon_id);
+        void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
+        void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
+        void addDebugPhoton(int photon_id);
+
    private:
         void init();
    private:
         Opticks*       m_ok; 
+        unsigned long long m_dbgseqhis ;
+        unsigned long long m_dbgseqmat ;
+
+        Rec*           m_rec ; 
         OpticksEvent*  m_evt ; 
         CGeometry*     m_geometry ; 
         CMaterialBridge* m_material_bridge ; 
@@ -252,6 +265,11 @@ class CFG4_API CRecorder {
         std::vector<unsigned long long>         m_seqhis_dbg  ; 
         std::vector<unsigned long long>         m_seqmat_dbg  ; 
         std::vector<double>                     m_times  ; 
+
+        std::vector<std::pair<unsigned long long, unsigned long long> > m_seqhis_mismatch ; 
+        std::vector<std::pair<unsigned long long, unsigned long long> > m_seqmat_mismatch ; 
+        std::vector<int> m_debug_photon ; 
+
 };
 #include "CFG4_TAIL.hh"
 

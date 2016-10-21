@@ -26,7 +26,7 @@ class CGenerator ;
 
 class CCollector ; 
 class CRecorder ; 
-class Rec ; 
+//class Rec ; 
 class CStepRec ; 
 
 class OpticksHub ; 
@@ -64,7 +64,7 @@ class CFG4_API CG4
         CGeometry*     getGeometry();
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
-        Rec*           getRec();
+      //  Rec*           getRec();
         CPropLib*      getPropLib();
         CDetector*     getDetector();
         NPY<float>*    getGensteps();
@@ -83,7 +83,7 @@ class CFG4_API CG4
    private:
         CCollector*           m_collector ; 
         CRecorder*            m_recorder ; 
-        Rec*                  m_rec ; 
+        //Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
    private:
         G4VisManager*         m_visManager ; 

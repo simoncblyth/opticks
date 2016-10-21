@@ -3,6 +3,7 @@
 #include "CBoundaryProcess.hh"
 
 // brap-
+#include "BStr.hh"
 #include "BBit.hh"
 
 // npy-
@@ -34,6 +35,8 @@
 #include "Format.hh"
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
+#include "Rec.hh"
+#include "State.hh"
 #include "CRecorder.hh"
 
 #include "PLOG.hh"
@@ -72,6 +75,9 @@ Canonical instance is ctor resident of CG4
 CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic) 
    :
    m_ok(ok),
+   m_dbgseqhis(m_ok->getDbgSeqhis()),
+   m_dbgseqmat(m_ok->getDbgSeqmat()),
+   m_rec(new Rec(ok, geometry, dynamic)),
    m_evt(NULL),
    m_geometry(geometry),
    m_material_bridge(NULL),
@@ -130,6 +136,8 @@ void CRecorder::postinitialize()
 {
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
+
+    m_rec->postinitialize();
 }
 
 void CRecorder::setDebug(bool debug)
@@ -210,6 +218,9 @@ void CRecorder::setPhotonId(int photon_id)
 {
     m_photon_id_prior = m_photon_id ; 
     m_photon_id = photon_id ; 
+
+    bool dindexDebug = m_ok->isDbgPhoton(photon_id) ; // from option: --dindex=1,100,1000,10000 
+    setDebug(dindexDebug);
 }
 
 void CRecorder::setParentId(int parent_id)
@@ -294,6 +305,8 @@ void CRecorder::setEvent(OpticksEvent* evt)
 void CRecorder::initEvent(OpticksEvent* evt)
 {
     setEvent(evt);
+    
+    m_rec->initEvent(evt);
 
     m_c4.u = 0u ; 
 
@@ -382,8 +395,9 @@ void CRecorder::startPhoton()
     //LOG(trace) << "CRecorder::startPhoton" ; 
 
     //if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton(%10k)") ;
-
     //assert(m_step_id == 0);  <-- when not always true when skipping same material steps 
+    
+    m_rec->Clear();
 
     m_c4.u = 0u ; 
 
@@ -509,6 +523,10 @@ bool CRecorder::RecordStep()
     //  the final "AB" (post) RecordStepPoint 
     //  with the subsequent "RE" (pre) RecordStepPoint  
     //
+
+
+    m_rec->add(new State(m_step, m_boundary_status, m_premat, m_postmat, m_stage, done));
+
 
     return done ;
 }
@@ -848,4 +866,150 @@ void CRecorder::Summary(const char* msg)
               << " m_slot " << m_slot 
               ;
 }
+
+
+
+
+
+
+
+
+
+void CRecorder::addSeqhisMismatch(unsigned long long rdr, unsigned long long rec)
+{
+    m_seqhis_mismatch.push_back(std::pair<unsigned long long, unsigned long long>(rdr, rec));
+}
+void CRecorder::addSeqmatMismatch(unsigned long long rdr, unsigned long long rec)
+{
+    m_seqmat_mismatch.push_back(std::pair<unsigned long long, unsigned long long>(rdr, rec));
+}
+void CRecorder::addDebugPhoton(int photon_id)
+{
+    m_debug_photon.push_back(photon_id);
+}
+
+
+void CRecorder::report(const char* msg)
+{
+     LOG(info) << msg ;
+
+     typedef std::vector<std::pair<unsigned long long, unsigned long long> >  VUU ; 
+    
+     LOG(info) << " seqhis_mismatch " << m_seqhis_mismatch.size() ;
+
+     for(VUU::const_iterator it=m_seqhis_mismatch.begin() ; it != m_seqhis_mismatch.end() ; it++)
+     { 
+          unsigned long long rdr = it->first ;
+          unsigned long long rec = it->second ;
+          std::cout 
+                    << " rdr " << std::setw(16) << std::hex << rdr << std::dec
+                    << " rec " << std::setw(16) << std::hex << rec << std::dec
+                //    << " rdr " << std::setw(50) << OpticksFlags::FlagSequence(rdr)
+                //    << " rec " << std::setw(50) << OpticksFlags::FlagSequence(rec)
+                    << std::endl ; 
+     }
+
+     LOG(info) << " seqmat_mismatch " << m_seqmat_mismatch.size() ; 
+     for(VUU::const_iterator it=m_seqmat_mismatch.begin() ; it != m_seqmat_mismatch.end() ; it++)
+     {
+          unsigned long long rdr = it->first ;
+          unsigned long long rec = it->second ;
+          std::cout 
+                    << " rdr " << std::setw(16) << std::hex << rdr << std::dec
+                    << " rec " << std::setw(16) << std::hex << rec << std::dec
+                    << " rdr " << std::setw(50) << m_material_bridge->MaterialSequence(rdr)
+                    << " rec " << std::setw(50) << m_material_bridge->MaterialSequence(rec)
+                    << std::endl ; 
+     }
+
+     LOG(info) << " debug_photon " << m_debug_photon.size() << " (photon_id) " ; 
+     typedef std::vector<int> VI ; 
+     for(VI::const_iterator it=m_debug_photon.begin() ; it != m_debug_photon.end() ; it++)
+     {
+         std::cout << std::setw(8) << *it << std::endl ; 
+     }
+
+     LOG(info) << "TO DEBUG THESE USE:  --dindex=" << BStr::ijoin(m_debug_photon, ',') ;
+
+}
+
+
+
+
+int CRecorder::compare(int photon_id)
+{
+    assert(photon_id >= 0 );
+
+    //LOG(info) << "CRecorder::compare" << " photon_id " << photon_id ;
+
+    int rc = 0 ; 
+
+    unsigned long long rdr_seqhis = getSeqHis() ;
+    unsigned long long rdr_seqmat = getSeqMat() ;
+
+    bool debug_seqhis = m_dbgseqhis == rdr_seqhis ; 
+    bool debug_seqmat = m_dbgseqmat == rdr_seqmat ; 
+
+    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_debug ;
+
+    m_rec->setDebug(debug);
+    m_rec->sequence();
+
+    unsigned long long rec_seqhis = m_rec->getSeqHis() ;
+    unsigned long long rec_seqmat = m_rec->getSeqMat() ;
+
+    bool same_seqhis = rec_seqhis == rdr_seqhis ; 
+    bool same_seqmat = rec_seqmat == rdr_seqmat ; 
+
+    //assert(same_seqhis);
+    //assert(same_seqmat);
+
+
+    if(!same_seqhis) rc += 1 ; 
+    if(!same_seqmat) rc += 1 ; 
+
+    if(!same_seqhis) addSeqhisMismatch(rec_seqhis, rdr_seqhis);
+    if(!same_seqmat) addSeqmatMismatch(rec_seqmat, rdr_seqmat);
+
+
+    if(m_verbosity > 0 || debug || !same_seqhis || !same_seqmat  )
+    {
+        if(!same_seqmat || !same_seqhis || debug )
+        {
+            std::cout << std::endl 
+                      << std::endl
+                      << "----CRecorder::compare----" 
+                      << ( !same_seqhis  ? " !same_seqhis " : "" )
+                      << ( !same_seqmat  ? " !same_seqmat " : "" )
+                      << ( debug  ? " debug " : "" )
+                      << std::endl 
+                       ; 
+
+            Dump(       "CRecorder::compare (rdr-dump)DONE");
+            m_rec->Dump("CRecorder::compare (rec-dump)DONE");
+        }
+
+        if(!same_seqhis)
+        { 
+             std::cout << "(rec)" << OpticksFlags::FlagSequence(rec_seqhis) << std::endl ;  
+             std::cout << "(rdr)" << OpticksFlags::FlagSequence(rdr_seqhis) << std::endl ;  
+        }
+
+        if(!same_seqmat)
+        { 
+             std::cout << "(rec)" << m_material_bridge->MaterialSequence(rec_seqmat) << std::endl ;  
+             std::cout << "(rdr)" << m_material_bridge->MaterialSequence(rdr_seqmat) << std::endl ;  
+        }
+    }
+
+    if(rc > 0)
+    {
+        addDebugPhoton(photon_id);  
+    }
+    return rc ; 
+}
+
+
+
+
 

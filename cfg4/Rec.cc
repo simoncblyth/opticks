@@ -53,7 +53,8 @@ Rec::Rec(Opticks* ok, CGeometry* geometry, bool dynamic)
     m_record_max(0),
     m_bounce_max(0),
     m_steps_per_photon(0),
-    m_rejoin_count(0),
+//    m_rejoin_count(0),
+    m_bail_count(0),
     m_debug(false)
 {
 }
@@ -106,14 +107,14 @@ void Rec::add(const State* state)
 {
     m_states.push_back(state);
 }
-void Rec::pop()
-{
-    m_states.pop_back();
-}
-void Rec::notifyRejoin()
-{
-    m_rejoin_count += 1 ; 
-}
+//void Rec::pop()
+//{
+//    m_states.pop_back();
+//}
+//void Rec::notifyRejoin()
+//{
+//    m_rejoin_count += 1 ; 
+//}
 
 
 
@@ -123,7 +124,7 @@ void Rec::Clear()
     m_seqhis = 0ull ; 
     m_seqmat = 0ull ; 
     m_slot = 0  ; 
-    m_rejoin_count = 0 ; 
+   // m_rejoin_count = 0 ; 
 }
 
 unsigned int Rec::getNumStates()
@@ -255,15 +256,17 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material, CStage::CSta
 {
     bool invalid = flag == NAN_ABORT ; 
     bool truncate = m_slot > m_bounce_max ; 
-    bool bail = invalid || ( truncate && stage != CStage::REJOIN ) ;   
-    // <-- special case for last slot REEMISSION as CRecorder decrementSlot allows REJOIN changing of top slot 
+    bool truncate_not_rejoin = truncate && stage != CStage::REJOIN ; 
+    //  _not_rejoin special case needed to match the result of Recorder::decrementSlot 
+    //  allowing the changing of a BULK_ABSORB into a BULK_REEMIT 
+
+    bool bail = invalid || truncate_not_rejoin ;   
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
 
     if(m_debug)
     LOG(info) << "Rec::addFlagMaterial " 
               << " m_slot " << m_slot 
-              << " m_rejoin_count " << m_rejoin_count 
               << " slot " << slot 
               << " flag " << std::hex << flag << std::dec
               << " flagffs " << std::hex << BBit::ffs(flag) << std::dec
@@ -280,7 +283,13 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material, CStage::CSta
 
     if(bail)
     {
-        LOG(warning) << "NAN_ABORT or bounce truncate bail out " ; 
+        LOG(debug) << "NAN_ABORT or bounce truncate bail out " 
+                     << " bail " << ( bail ? "Y" : "N" )
+                     << " truncate_not_rejoin " << ( truncate_not_rejoin ? "Y" : "N" )
+                     << " truncate " << ( truncate ? "Y" : "N" )
+                     << " invalid " << ( invalid ? "Y" : "N" )
+                      ; 
+        m_bail_count += 1 ; 
     }
     else
     {
@@ -357,6 +366,7 @@ void Rec::Dump(const char* msg)
     unsigned int nstates = m_states.size();
     LOG(info) << msg 
               << " nstates " << nstates 
+              << " bail_count " << m_bail_count 
               ;
 
     unsigned int preFlag ; 

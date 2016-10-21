@@ -21,7 +21,6 @@ class CPropLib ;
 class CRecorder ; 
 class CGeometry ; 
 class CMaterialBridge ; 
-class Rec ; 
 class CStepRec ; 
 
 
@@ -35,6 +34,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   public:
     CSteppingAction(CG4* g4, bool dynamic);
     void postinitialize();
+    void report(const char* msg="CSteppingAction::report");
     virtual ~CSteppingAction();
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -44,28 +44,22 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 #endif
   public:
     virtual void UserSteppingAction(const G4Step*);
-    void report(const char* msg="CSteppingAction::Report");
   private:
     void setEvent(const G4Event* event, int event_id);
     void setTrack(const G4Track* track, int track_id, int parent_id);
     bool setStep( const G4Step* step, int step_id);
     bool UserSteppingActionOptical(const G4Step* step);
-    int compareRecords(int photon_id);
     int getPrimaryPhotonID();
-    void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
-    void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
-    void addDebugPhoton(int photon_id);
+
   private:
     CG4*         m_g4 ; 
     Opticks*     m_ok ; 
-    unsigned long long m_dbgseqhis ;
-    unsigned long long m_dbgseqmat ;
+
     bool         m_dynamic ; 
     CGeometry*   m_geometry ; 
     CMaterialBridge*  m_material_bridge ; 
     CPropLib*    m_clib ; 
     CRecorder*   m_recorder   ; 
-    Rec*         m_rec   ; 
     CStepRec*    m_steprec   ; 
     int          m_verbosity ; 
 
@@ -83,7 +77,6 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 
     bool m_startEvent ; 
     bool m_startTrack ; 
-    bool m_dindexDebug ; 
 
     int m_event_id ;
     int m_track_id ;
@@ -97,9 +90,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     int                   m_pdg_encoding ;
  
 
-    std::vector<std::pair<unsigned long long, unsigned long long> > m_seqhis_mismatch ; 
-    std::vector<std::pair<unsigned long long, unsigned long long> > m_seqmat_mismatch ; 
-    std::vector<int> m_debug_photon ; 
+
 
 };
 
