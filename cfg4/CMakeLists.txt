@@ -146,6 +146,7 @@ set(SOURCES
 
     CStep.cc
     CStp.cc
+    CRec.cc
     CTrack.cc
     CPropLib.cc
     CMath.cc
@@ -169,7 +170,6 @@ set(SOURCES
     CSurLib.cc
     CMaker.cc
     CTestDetector.cc
-    Rec.cc
     CStepRec.cc
     CGunSource.cc
     CTorchSource.cc
@@ -215,6 +215,7 @@ set(HEADERS
 
     CStep.hh
     CStp.hh
+    CRec.hh
     CTrack.hh
     CPropLib.hh
     CMath.hh
@@ -238,7 +239,6 @@ set(HEADERS
     CSurLib.hh
     CMaker.hh
     CTestDetector.hh
-    Rec.hh
     CStepRec.hh
     CGunSource.hh
     CTorchSource.hh

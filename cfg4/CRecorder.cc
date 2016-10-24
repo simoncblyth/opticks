@@ -35,7 +35,7 @@
 #include "Format.hh"
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
-#include "Rec.hh"
+#include "CRec.hh"
 #include "State.hh"
 #include "CRecorder.hh"
 
@@ -104,7 +104,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_ok(ok),
    m_dbgseqhis(m_ok->getDbgSeqhis()),
    m_dbgseqmat(m_ok->getDbgSeqmat()),
-   m_rec(new Rec(ok, geometry, dynamic)),
+   m_crec(new CRec(ok, geometry, dynamic)),
    m_evt(NULL),
    m_geometry(geometry),
    m_material_bridge(NULL),
@@ -119,6 +119,9 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
    m_debug(m_verbosity > 0),
+
+   m_stage(CStage::UNKNOWN),
+   m_prior_stage(CStage::UNKNOWN),
 
    m_event_id(INT_MAX),
    m_photon_id(INT_MAX),
@@ -144,6 +147,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_seqhis_select(0),
    m_seqmat_select(0),
    m_slot(0),
+   m_decrement_request(0),
    m_truncate(false),
    m_step(NULL),
 
@@ -166,7 +170,6 @@ void CRecorder::postinitialize()
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
 
-    m_rec->postinitialize();
 }
 
 void CRecorder::setDebug(bool debug)
@@ -251,10 +254,7 @@ void CRecorder::setPhotonId(int photon_id)
 }
 
 
-void CRecorder::setStepId(int step_id)
-{
-    m_step_id = step_id ; 
-}
+
 int CRecorder::defineRecordId()   
 {
    return m_photons_per_g4event*m_event_id + m_photon_id ; 
@@ -323,8 +323,6 @@ void CRecorder::setEvent(OpticksEvent* evt)
 void CRecorder::initEvent(OpticksEvent* evt)
 {
     setEvent(evt);
-    
-    m_rec->initEvent(evt);
 
     m_c4.u = 0u ; 
 
@@ -409,7 +407,11 @@ void CRecorder::setSlot(unsigned slot)
 
 void CRecorder::startPhoton()
 {
-    m_rec->Clear();
+
+    const G4StepPoint* pre = m_step->GetPreStepPoint() ;
+    const G4ThreeVector& pos = pre->GetPosition();
+    m_crec->startPhoton(m_record_id, pos);
+
 
     m_c4.u = 0u ; 
 
@@ -429,6 +431,7 @@ void CRecorder::startPhoton()
     m_seqhis_select = 0x8bd ;
 
     m_slot = 0 ; 
+    m_decrement_request = 0 ; 
     m_truncate = false ; 
 
     if(m_debug) Clear();
@@ -444,27 +447,36 @@ void CRecorder::decrementSlot()
                       ;
         return ;
     }
-    m_slot -= 1; 
+
+    if(m_decrement_request == 0) m_slot -= 1;    // only act on 1st decrement request
+    m_decrement_request += 1 ; 
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::setStepBoundaryStatusStage(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+void CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #else
-void CRecorder::setStepBoundaryStatusStage(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+void CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #endif
 {
     m_step = step ; 
-    m_stage = stage ; 
+    m_step_id = step_id ; 
 
-    if(m_stage == CStage::START)
+    setRecordId(record_id);
+    setParentId(parent_id); 
+
+    if(stage == CStage::START)
     { 
         startPhoton();  // MUST be invoked prior to setBoundaryStatus
         RecordQuadrant(m_step);
     }
-    else if(m_stage == CStage::REJOIN )
+    else if(stage == CStage::REJOIN )
     {
         decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
     }
+    else if(stage == CStage::RECOLL )
+    {
+        m_decrement_request = 0 ;  
+    } 
 
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
@@ -475,24 +487,26 @@ void CRecorder::setStepBoundaryStatusStage(const G4Step* step, G4OpBoundaryProce
     unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
     unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
 
-    setBoundaryStatus( boundary_status, preMaterial, postMaterial );
+    setBoundaryStatusStage( boundary_status, preMaterial, postMaterial, stage );
 }
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+void CRecorder::setBoundaryStatusStage(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage)
 #else
-void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+void CRecorder::setBoundaryStatusStage(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage)
 #endif
 {
-    // this is invoked before RecordStep is called from SteppingAction
+    // this is invoked before RecordStep 
     m_prior_boundary_status = m_boundary_status ; 
     m_prior_premat = m_premat ; 
     m_prior_postmat = m_postmat ; 
+    m_prior_stage = m_stage ; 
 
     m_boundary_status = boundary_status ; 
     m_premat = premat ; 
     m_postmat = postmat ;
+    m_stage = stage ; 
 }
 
 
@@ -508,8 +522,15 @@ bool CRecorder::RecordStep()
     // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 
-    unsigned preFlag = m_slot == 0 ? m_gen : OpPointFlag(pre,  m_prior_boundary_status, m_stage);
-    unsigned postFlag =                      OpPointFlag(post, m_boundary_status      , m_stage);
+    unsigned preFlag = m_slot == 0 ? 
+                                      m_gen 
+                                   : 
+                                      OpPointFlag(pre,  m_prior_boundary_status, m_stage)
+                                   ;
+
+    unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage);
+
+
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
@@ -538,7 +559,6 @@ bool CRecorder::RecordStep()
     if(preSkip)       action |= PRE_SKIP ; 
     if(matSwap)       action |= MAT_SWAP ; 
 
-
     if(!preSkip)
     {
         action |= PRE_SAVE ; 
@@ -553,25 +573,12 @@ bool CRecorder::RecordStep()
         if(done) action |= POST_DONE ; 
     }
 
-    // when not *lastPost* the post step will become the pre step at next RecordStep
-    // so every step point is recorded 
-    //
-    // in case of reemission a BULK_ABSORB is reincarnated with a BULK_REEMIT that 
-    // needs to replace the BULK_ABSORB that was layed down in an earlier lastPost
-    //
-    // It looks like static mode will mostly succeed to scrub the AB and replace with RE 
-    // just by decrementing m_slot and running again
-    // but dynamic mode will have an extra record.
-    //
-    //  Decrementing m_slot and running again is effectively replacing 
-    //  the final "AB" (post) RecordStepPoint 
-    //  with the subsequent "RE" (pre) RecordStepPoint  
-    //
 
-    m_rec->add(new State(m_step, m_boundary_status, m_premat, m_postmat, m_stage, action));
+    m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, m_stage, action );
 
     return done ;
 }
+
 
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -896,42 +903,65 @@ void CRecorder::addDebugPhoton(int record_id)
 void CRecorder::report(const char* msg)
 {
      LOG(info) << msg ;
+     unsigned cut = 50 ; 
 
      typedef std::vector<std::pair<unsigned long long, unsigned long long> >  VUU ; 
-    
-     LOG(info) << " seqhis_mismatch " << m_seqhis_mismatch.size() ;
-
+   
+     unsigned nhis = m_seqhis_mismatch.size() ;
+     unsigned ihis(0); 
+     LOG(info) << " seqhis_mismatch " << nhis ;
      for(VUU::const_iterator it=m_seqhis_mismatch.begin() ; it != m_seqhis_mismatch.end() ; it++)
      { 
-          unsigned long long rdr = it->first ;
-          unsigned long long rec = it->second ;
-          std::cout 
-                    << " rdr " << std::setw(16) << std::hex << rdr << std::dec
-                    << " rec " << std::setw(16) << std::hex << rec << std::dec
-                //    << " rdr " << std::setw(50) << OpticksFlags::FlagSequence(rdr)
-                //    << " rec " << std::setw(50) << OpticksFlags::FlagSequence(rec)
-                    << std::endl ; 
+          ihis++ ;
+          if(ihis < cut || ihis > nhis - cut )
+          {
+              unsigned long long rdr = it->first ;
+              unsigned long long rec = it->second ;
+              std::cout 
+                        << " ihis " << std::setw(10) << ihis
+                        << " rdr " << std::setw(16) << std::hex << rdr << std::dec
+                        << " rec " << std::setw(16) << std::hex << rec << std::dec
+                    //    << " rdr " << std::setw(50) << OpticksFlags::FlagSequence(rdr)
+                    //    << " rec " << std::setw(50) << OpticksFlags::FlagSequence(rec)
+                        << std::endl ; 
+          }
+          else if(ihis == cut)
+          {
+                std::cout << " ... " << std::endl ; 
+          }
      }
 
-     LOG(info) << " seqmat_mismatch " << m_seqmat_mismatch.size() ; 
+
+     unsigned nmat = m_seqmat_mismatch.size() ;
+     unsigned imat(0); 
+     LOG(info) << " seqmat_mismatch " << nmat ;
      for(VUU::const_iterator it=m_seqmat_mismatch.begin() ; it != m_seqmat_mismatch.end() ; it++)
      {
-          unsigned long long rdr = it->first ;
-          unsigned long long rec = it->second ;
-          std::cout 
-                    << " rdr " << std::setw(16) << std::hex << rdr << std::dec
-                    << " rec " << std::setw(16) << std::hex << rec << std::dec
-                    << " rdr " << std::setw(50) << m_material_bridge->MaterialSequence(rdr)
-                    << " rec " << std::setw(50) << m_material_bridge->MaterialSequence(rec)
-                    << std::endl ; 
+          imat++ ; 
+          if(imat < cut || imat > nmat - cut)
+          {
+              unsigned long long rdr = it->first ;
+              unsigned long long rec = it->second ;
+              std::cout 
+                        << " imat " << std::setw(10) << imat
+                        << " rdr " << std::setw(16) << std::hex << rdr << std::dec
+                        << " rec " << std::setw(16) << std::hex << rec << std::dec
+                        << " rdr " << std::setw(50) << m_material_bridge->MaterialSequence(rdr)
+                        << " rec " << std::setw(50) << m_material_bridge->MaterialSequence(rec)
+                        << std::endl ; 
+           } 
+           else if(imat == cut)
+           {
+                std::cout << " ... " << std::endl ; 
+           }
      }
 
-     LOG(info) << " debug_photon " << m_debug_photon.size() << " (photon_id) " ; 
+
+     unsigned ndbg = m_debug_photon.size() ;
+     LOG(info) << " debug_photon " << ndbg << " (photon_id) " ; 
      typedef std::vector<int> VI ; 
-     for(VI::const_iterator it=m_debug_photon.begin() ; it != m_debug_photon.end() ; it++)
-     {
-         std::cout << std::setw(8) << *it << std::endl ; 
-     }
+     if(ndbg < 100) 
+     for(VI::const_iterator it=m_debug_photon.begin() ; it != m_debug_photon.end() ; it++) std::cout << std::setw(8) << *it << std::endl ; 
 
      LOG(info) << "TO DEBUG THESE USE:  --dindex=" << BStr::ijoin(m_debug_photon, ',') ;
 
@@ -944,8 +974,6 @@ int CRecorder::compare(int record_id)
 {
     assert(record_id >= 0 );
 
-    //LOG(info) << "CRecorder::compare" << " record_id " << record_id ;
-
     int rc = 0 ; 
 
     unsigned long long rdr_seqhis = getSeqHis() ;
@@ -956,73 +984,31 @@ int CRecorder::compare(int record_id)
 
     bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_debug ;
 
-    m_rec->setDebug(debug);
-    m_rec->sequence();
-
-    unsigned long long rec_seqhis = m_rec->getSeqHis() ;
-    unsigned long long rec_seqmat = m_rec->getSeqMat() ;
-
-    bool same_seqhis = rec_seqhis == rdr_seqhis ; 
-    bool same_seqmat = rec_seqmat == rdr_seqmat ; 
-
-    //assert(same_seqhis);
-    //assert(same_seqmat);
-
-
-    if(!same_seqhis) rc += 1 ; 
-    if(!same_seqmat) rc += 1 ; 
-
-    if(!same_seqhis) addSeqhisMismatch(rec_seqhis, rdr_seqhis);
-    if(!same_seqmat) addSeqmatMismatch(rec_seqmat, rdr_seqmat);
-
-
-    if(m_verbosity > 0 || debug || !same_seqhis || !same_seqmat  )
+    if(m_verbosity > 0 || debug )
     {
-        if(!same_seqmat || !same_seqhis || debug )
-        {
-            std::cout << std::endl 
+        std::cout << std::endl 
                       << std::endl
                       << "----CRecorder::compare----" 
                       << " record_id " << std::setw(8) << record_id 
                       ; 
 
-            if(!same_seqhis) std::cout << " !same_seqhis " 
-                          << " rdr " << std::setw(16) << std::hex << rdr_seqhis  << std::dec
-                          << " rec " << std::setw(16) << std::hex << rec_seqhis  << std::dec
-                          ;
-  
-            if(!same_seqmat) std::cout << " !same_seqmat " 
-                          << " rdr " << std::setw(16) << std::hex << rdr_seqmat << std::dec
-                          << " rec " << std::setw(16) << std::hex << rec_seqmat << std::dec  
-                          ;
+        if(debug) std::cout << " --dindex " ;
+        std::cout << std::endl ; 
 
-            if(debug) std::cout << " --dindex " ;
-            std::cout << std::endl ; 
-
-            Dump(       "CRecorder::compare (rdr-dump)DONE");
-            m_rec->Dump("CRecorder::compare (rec-dump)DONE");
-        }
-
-        if(!same_seqhis)
-        { 
-             std::cout << "(rec)" << OpticksFlags::FlagSequence(rec_seqhis) << std::endl ;  
-             std::cout << "(rdr)" << OpticksFlags::FlagSequence(rdr_seqhis) << std::endl ;  
-        }
-
-        if(!same_seqmat)
-        { 
-             std::cout << "(rec)" << m_material_bridge->MaterialSequence(rec_seqmat) << std::endl ;  
-             std::cout << "(rdr)" << m_material_bridge->MaterialSequence(rdr_seqmat) << std::endl ;  
-        }
+        Dump(       "CRecorder::compare (rdr-dump)DONE");
     }
 
     if(rc > 0)
     {
         addDebugPhoton(record_id);  
     }
+
+    if(debug)
+    {
+        m_crec->dump("crec");
+    }
     return rc ; 
 }
-
 
 
 

@@ -6,7 +6,6 @@ class G4Track ;
 class G4Event ; 
 
 #include "G4UserSteppingAction.hh"
-#include "G4ThreeVector.hh"
 #include "CBoundaryProcess.hh"
 #include "globals.hh"
 
@@ -49,7 +48,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     void setEvent(const G4Event* event, int event_id);
     void setTrack(const G4Track* track, int track_id, int parent_id);
     bool setStep( const G4Step* step, int step_id);
-    bool UserSteppingActionOptical(const G4Step* step);
+    bool UserSteppingActionOptical(const G4Step* step, int step_id );
     int getPrimaryPhotonID();
 
   private:
@@ -94,7 +93,6 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     G4ParticleDefinition* m_particle  ; 
     bool                  m_optical ; 
     int                   m_pdg_encoding ;
-    G4ThreeVector         m_origin ; 
 
 
 };

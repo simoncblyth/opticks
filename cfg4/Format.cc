@@ -143,6 +143,7 @@ std::string Format(const G4Step* step, const G4ThreeVector& origin, const char* 
 {
     G4Track* track = step->GetTrack();
     G4int stepNum = track->GetCurrentStepNumber() ;
+    //  gives crazy stepNum from persisted step, persumably depending on live not persisted in Step state
     G4String particleName = track->GetDynamicParticle()->GetParticleDefinition()->GetParticleName();
 
     G4StepPoint* pre  = step->GetPreStepPoint() ;
