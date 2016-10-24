@@ -22,8 +22,9 @@ tlaser--(){
 
     local msg="=== $FUNCNAME :"
 
-    local photons=1000000
+    #local photons=1000000
     #local photons=20000
+    local photons=100000
     #local photons=10000
 
     local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)

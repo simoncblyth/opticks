@@ -94,11 +94,33 @@ class CFG4_API CRecorder {
    public:
         static const char* PRE ; 
         static const char* POST ; 
+        enum 
+        {
+           PRE_SAVE  = 0x1 << 0,
+           POST_SAVE = 0x1 << 1,
+           PRE_DONE  = 0x1 << 2,
+           POST_DONE = 0x1 << 3,
+           LAST_POST = 0x1 << 4,
+           SURF_ABS  = 0x1 << 5,
+           PRE_SKIP  = 0x1 << 6,
+           MAT_SWAP  = 0x1 << 7
+        };
+
+        static const char* PRE_SAVE_ ; 
+        static const char* POST_SAVE_ ; 
+        static const char* PRE_DONE_ ; 
+        static const char* POST_DONE_ ; 
+        static const char* LAST_POST_ ; 
+        static const char* SURF_ABS_ ; 
+        static const char* PRE_SKIP_ ; 
+        static const char* MAT_SWAP_ ; 
+        static std::string Action(int action);
    public:
         CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic);
         void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
         void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
         void setDebug(bool debug);
+        bool isDebug(); 
    private:
         void setEvent(OpticksEvent* evt);
    public:
@@ -106,14 +128,11 @@ class CFG4_API CRecorder {
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         bool RecordStep();
-        double getPreGlobalTime(const G4Step* step);
-        double getPostGlobalTime(const G4Step* step);
+        static double PreGlobalTime(const G4Step* step);
+        static double PostGlobalTime(const G4Step* step);
 
         void RecordPhoton(const G4Step* step);
         void startPhoton();
-
-        //void setupPrimaryRecording();
-        //void RecordPrimaryVertex(G4PrimaryVertex* vertex);
 
         void Summary(const char* msg);
         void DumpSteps(const char* msg="CRecorder::DumpSteps");
@@ -123,12 +142,18 @@ class CFG4_API CRecorder {
    public:
 
 #ifdef USE_CUSTOM_BOUNDARY
+    public:
+        void setStepBoundaryStatusStage(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+    private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         DsG4OpBoundaryProcessStatus getBoundaryStatus();
         void Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname );
 #else
+    public:
+        void setStepBoundaryStatusStage(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+    private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
@@ -142,7 +167,6 @@ class CFG4_API CRecorder {
         void Clear();
         bool hasIssue();
    public:
-    //    bool isDynamic(); 
         bool isSelected(); 
         bool isHistorySelected(); 
         bool isMaterialSelected(); 
@@ -155,7 +179,6 @@ class CFG4_API CRecorder {
         void decrementSlot();
    public:
         void setStep(const G4Step* step);
-        void setStage(CStage::CStage_t stage);
         void setEventId(int event_id);
         void setPhotonId(int photon_id);
         void setParentId(int parent_id);

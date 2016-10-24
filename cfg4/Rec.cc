@@ -1,4 +1,9 @@
+#include <sstream>
+
 #include "CFG4_BODY.hh"
+
+
+
 // npy-
 #include "BBit.hh"
 
@@ -18,6 +23,7 @@
 #include "OpStatus.hh"
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
+#include "CRecorder.hh"
 #include "Rec.hh"
 
 #include "PLOG.hh"
@@ -26,17 +32,36 @@
 const char* Rec::OK_ = "OK" ; 
 const char* Rec::SKIP_STS_ = "SKIP_STS" ; 
 const char* Rec::SKIP_REJOIN_ = "SKIP_REJOIN" ; 
-const char* Rec::Label(Rec_t r)
+std::string Rec::Label(unsigned r)
 {
-    const char*  l = NULL ; 
-    switch(r)
+   std::stringstream ss ; 
+   if( r == OK )
+   {
+       ss << OK_ ; 
+   } 
+   else 
+   {
+      if((r & SKIP_STS) != 0 )    ss << SKIP_STS_ << " " ; 
+      if((r & SKIP_REJOIN) != 0 ) ss << SKIP_REJOIN_ << " " ; 
+   }
+   return ss.str(); 
+}
+
+const char* Rec::PRE_ = "PRE" ; 
+const char* Rec::POST_ = "PST" ; 
+const char* Rec::FlagLabel(Flag_t f)
+{
+    const char* l = NULL ; 
+    switch(f) 
     {
-        case OK         : l = OK_          ;break;
-        case SKIP_STS   : l = SKIP_STS_    ;break;
-        case SKIP_REJOIN: l = SKIP_REJOIN_ ;break;
+       case PRE:  l = PRE_ ; break ;
+       case POST: l = POST_ ; break ;
     }
     return l ; 
 }
+ 
+
+
  
 
 Rec::Rec(Opticks* ok, CGeometry* geometry, bool dynamic)  
@@ -53,7 +78,6 @@ Rec::Rec(Opticks* ok, CGeometry* geometry, bool dynamic)
     m_record_max(0),
     m_bounce_max(0),
     m_steps_per_photon(0),
-//    m_rejoin_count(0),
     m_bail_count(0),
     m_debug(false)
 {
@@ -107,15 +131,6 @@ void Rec::add(const State* state)
 {
     m_states.push_back(state);
 }
-//void Rec::pop()
-//{
-//    m_states.pop_back();
-//}
-//void Rec::notifyRejoin()
-//{
-//    m_rejoin_count += 1 ; 
-//}
-
 
 
 void Rec::Clear()
@@ -124,7 +139,6 @@ void Rec::Clear()
     m_seqhis = 0ull ; 
     m_seqmat = 0ull ; 
     m_slot = 0  ; 
-   // m_rejoin_count = 0 ; 
 }
 
 unsigned int Rec::getNumStates()
@@ -171,11 +185,15 @@ double Rec::getPostGlobalTime(unsigned i)
 
 
 
-Rec::Rec_t Rec::getFlagMaterialStageDone(unsigned int& flag, unsigned int& material,  CStage::CStage_t& stage, bool& done, unsigned int i, Flag_t type )
+unsigned Rec::getFlagMaterialStageDone(unsigned int& flag, unsigned int& material,  CStage::CStage_t& stage, bool& done, unsigned int i, Flag_t type )
 {
     // recast of Recorder::RecordStep flag assignment 
     // in after-recording-all-states way instead of live stepping
     // for sanity and checking  
+
+
+    unsigned rc = OK ; 
+
 
     const State* prior = i > 0 ? getState(i-1) : NULL ; 
     const State* state = getState(i) ;
@@ -183,6 +201,8 @@ Rec::Rec_t Rec::getFlagMaterialStageDone(unsigned int& flag, unsigned int& mater
 
     const G4StepPoint* pre = state->getPreStepPoint();
     const G4StepPoint* post = state->getPostStepPoint();
+
+    unsigned action = state->getAction();
 
     unsigned int preMat  = state->getPreMaterial();
     unsigned int postMat = state->getPostMaterial();
@@ -197,9 +217,6 @@ Rec::Rec_t Rec::getFlagMaterialStageDone(unsigned int& flag, unsigned int& mater
     CStage::CStage_t current_stage = state->getStage() ; 
     CStage::CStage_t next_stage = next ? next->getStage() : CStage::UNKNOWN ; 
 
-    bool current_done = state->getDone();
-    //bool next_done = next ? next->getDone() : false ; 
-
     // zero shunting to include m_genflag in pole position
     // means must use prior_boundary_status and prior_stage for all the PRE to avoid skipping getState(0)
     unsigned int preFlag = i == 0 ?  m_genflag : OpPointFlag(pre,  prior_boundary_status, current_stage) ; 
@@ -207,50 +224,69 @@ Rec::Rec_t Rec::getFlagMaterialStageDone(unsigned int& flag, unsigned int& mater
 
     // NB nothing fundamental here : just winging it in adhoc attempt to duplicate CRecorder and Opticks logic
     bool reemSkip = current_stage == CStage::REJOIN && next_stage == CStage::REJOIN ; 
-    if(reemSkip) return SKIP_REJOIN ; 
+    if(reemSkip) rc |= SKIP_REJOIN ; 
 
 
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+    bool surfaceAbsorb_ = ( action & CRecorder::SURF_ABS ) != 0 ; 
+    assert(surfaceAbsorb == surfaceAbsorb_ );
 
     bool preSkip = type == PRE && prior_boundary_status == StepTooSmall ; 
 
-    bool matSwap = boundary_status == StepTooSmall ;  
-
-    if(preSkip) return SKIP_STS ; 
-
-
-
-    switch(type)
+    if(type == PRE)
     {
-       case  PRE: 
-                  flag = preFlag ; 
-                  material = matSwap ? postMat : preMat ;  
-                  stage = current_stage ; 
-                  done = current_done ;
-                  break;
-       case POST: 
-                  flag = postFlag ; 
-                  stage = current_stage ; 
-                  done = current_done ;
-
-                  //  Spring 2016
-                  // material = ( matSwap || postMat == 0 || surfaceAbsorb) ? preMat : postMat ;  
-                  //
-                  // avoid NoMaterial at last step with postMat == 0 causing to use preMat
-                  // avoid Bialkali at surfaceAbsorb as Opticks surface treatment never records that 
-                  // MAYBE:special case it to set Bialkali, as kinda useful
-                  //
-                  // Oct 2016:  have changed oxrap/cu/generate.cu to record m2 material in seqmat now for SA and SD
-                  //            so try to do the same here
-                  //
-                  material = ( matSwap || postMat == 0 ) ? preMat : postMat ;  
-                  material = ( surfaceAbsorb ) ? postMat : material ; 
-
-                  break;
+        bool preSkip_ = ( action & CRecorder::PRE_SKIP ) != 0 ; 
+        assert(preSkip == preSkip_ );
     }
 
-    return OK ; 
+    bool matSwap = boundary_status == StepTooSmall ;  
+    bool matSwap_ = ( action & CRecorder::MAT_SWAP ) != 0 ;  ;  
+    assert(matSwap == matSwap_ );
+
+    if(preSkip) rc |= SKIP_STS ; 
+
+
+    if(rc == OK)
+    {
+        switch(type)
+        {
+           case  PRE: 
+                      flag = preFlag ; 
+                      material = matSwap ? postMat : preMat ;  
+                      stage = current_stage ; 
+                      done = ( action & CRecorder::PRE_DONE ) != 0 ;
+                      break;
+           case POST: 
+                      flag = postFlag ; 
+                      stage = current_stage ; 
+                      done = ( action & CRecorder::POST_DONE ) != 0 ;
+
+                      material = ( matSwap || postMat == 0 ) ? preMat : postMat ;  
+                      material = ( surfaceAbsorb ) ? postMat : material ; 
+
+                      break;
+        }
+    }
+    if(m_debug)
+    {
+         std::cout << FlagLabel(type) << std::setw(3) << i << " " 
+                   << std::setw(10) << std::fixed << std::setprecision(3) << getPreGlobalTime(i)  
+                   << std::setw(10) << std::fixed << std::setprecision(3) << getPostGlobalTime(i)  
+                   << " " <<  Label(rc) 
+                   ;
+         if(rc != OK) std::cout << std::endl ; 
+    }
+    return rc ; 
 }
+
+/*
+What exactly is the purpose of the highly duplicitous Rec ?
+As its quite an effort to get it to give same results as CRecorder ?
+
+* state vector check of the "live" CRecorder that provides full dumping debug  
+
+*/
+
 
 void Rec::addFlagMaterial(unsigned int flag, unsigned int material, CStage::CStage_t stage)
 {
@@ -263,19 +299,6 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material, CStage::CSta
     bool bail = invalid || truncate_not_rejoin ;   
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
-
-    if(m_debug)
-    LOG(info) << "Rec::addFlagMaterial " 
-              << " m_slot " << m_slot 
-              << " slot " << slot 
-              << " flag " << std::hex << flag << std::dec
-              << " flagffs " << std::hex << BBit::ffs(flag) << std::dec
-              << " flagffs& " << std::hex << (BBit::ffs(flag) & 0xFull) << std::dec
-              << " material " << std::hex << material << std::dec
-              << " invalid " << ( invalid ? "Y" : "N" )
-              << " truncate " << ( truncate ? "Y" : "N" )
-              << " bail " << ( bail ? "Y" : "N" )
-              ; 
 
 
     // CRecorder::decrementSlot allows rewriting of topslot in
@@ -303,6 +326,20 @@ void Rec::addFlagMaterial(unsigned int flag, unsigned int material, CStage::CSta
         m_slot += 1 ; 
     }
 
+
+    if(m_debug)
+    std::cout << " AFM: " << std::setw(2) << slot 
+              << " fl/ma " << std::hex << BBit::ffs(flag) << std::dec
+                           << "/"
+                           << std::hex << material << std::dec
+              << " sh/sm " << std::setw(16) << std::hex << m_seqhis << std::dec 
+                           << "/"
+                           << std::setw(16) << std::hex << m_seqmat << std::dec 
+              << " invalid " << ( invalid ? "Y" : "N" )
+              << " truncate " << ( truncate ? "Y" : "N" )
+              << " bail " << ( bail ? "Y" : "N" )
+              << std::endl 
+              ; 
 }
 
 void Rec::sequence()
@@ -335,7 +372,7 @@ void Rec::sequence()
     bool done = false ; 
 
     m_slot = 0 ;
-    Rec_t rc ; 
+    unsigned rc ; 
 
 
    // add all PRE, until lastPost when add POST
@@ -343,18 +380,16 @@ void Rec::sequence()
     for(unsigned i=0 ; i < nstate; i++)
     {
         rc = getFlagMaterialStageDone(preFlag, material, stage, done, i, PRE );
-        if(m_debug) LOG(info) << "PRE" << std::setw(3) << i << " " << Label(rc) << std::setw(10) << getPreGlobalTime(i)  ;
-        if(rc == OK)
+        if(rc == 0)
             addFlagMaterial(preFlag, material, stage) ;
 
     }
 
     rc = getFlagMaterialStageDone(postFlag, material, stage, done, nstate-1, POST );
-    // hmm lastPost kinda assumes complete propagation with no truncation 
-    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-    if(m_debug) LOG(info) << "PST" << std::setw(3) << nstate-1 << " " << Label(rc) << std::setw(10) << getPostGlobalTime(nstate-1) << " lastPost " << ( lastPost ? "Y" : "N" ) ;
 
-    if(rc == OK && lastPost )
+    // only reach lastPost for complete un-truncated propagations
+    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+    if(rc == 0 && lastPost )
         addFlagMaterial(postFlag, material, stage) ;
 
 }
@@ -397,6 +432,8 @@ void Rec::Dump(const char* msg)
         getFlagMaterialStageDone(preFlag,  preMat, preStage, preDone,   i, PRE );
         getFlagMaterialStageDone(postFlag, postMat,postStage,postDone,  i, POST );
 
+        unsigned action = state->getAction();
+
         unsigned int preMatRaw = state->getPreMaterial();
         unsigned int postMatRaw = state->getPostMaterial();
 
@@ -415,6 +452,7 @@ void Rec::Dump(const char* msg)
         std::cout << "[" << std::setw(3) << i
                   << "/" << std::setw(3) << nstates
                   << "]"   
+                  << CRecorder::Action(action)
                   << std::endl
                   << ::Format("done",   (preDone ? "preDone" : "") , (postDone ? "postDone" : "" ) )
                    << std::endl

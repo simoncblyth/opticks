@@ -64,6 +64,33 @@ unsigned char uchar_( float f )  // f in range -1.:1.
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
 
+const char* CRecorder::PRE_SAVE_ = "PRE_SAVE" ; 
+const char* CRecorder::POST_SAVE_ = "POST_SAVE" ; 
+const char* CRecorder::PRE_DONE_  = "PRE_DONE" ; 
+const char* CRecorder::POST_DONE_ = "POST_DONE" ; 
+const char* CRecorder::LAST_POST_ = "LAST_POST" ; 
+const char* CRecorder::SURF_ABS_ = "SURF_ABS" ; 
+const char* CRecorder::PRE_SKIP_ = "PRE_SKIP" ; 
+const char* CRecorder::MAT_SWAP_ = "MAT_SWAP" ; 
+
+std::string CRecorder::Action(int action)
+{
+    std::stringstream ss ;
+
+    if((action & PRE_SAVE) != 0)  ss << PRE_SAVE_ << " " ; 
+    if((action & POST_SAVE) != 0) ss << POST_SAVE_ << " " ; 
+    if((action & PRE_DONE) != 0)  ss << PRE_DONE_ << " " ; 
+    if((action & POST_DONE) != 0) ss << POST_DONE_ << " " ; 
+    if((action & LAST_POST) != 0) ss << LAST_POST_ << " " ; 
+    if((action & SURF_ABS) != 0)  ss << SURF_ABS_ << " " ; 
+    if((action & PRE_SKIP) != 0)  ss << PRE_SKIP_ << " " ; 
+    if((action & MAT_SWAP) != 0)  ss << MAT_SWAP_ << " " ; 
+
+    return ss.str();
+}
+ 
+
+
 /**
 CRecorder
 ==========
@@ -146,6 +173,11 @@ void CRecorder::setDebug(bool debug)
 {
     m_debug = debug ; 
 }
+bool CRecorder::isDebug()
+{
+    return m_debug ; 
+}
+
 unsigned int CRecorder::getVerbosity()
 {
     return m_verbosity ; 
@@ -249,10 +281,6 @@ void CRecorder::setPrimaryId(int primary_id)
 
 
 
-void CRecorder::setStage(CStage::CStage_t stage)
-{
-    m_stage = stage ; 
-}
 
 
 std::string CRecorder::description()
@@ -266,8 +294,8 @@ std::string CRecorder::description()
        << " ste " << std::setw(4) << m_step_id 
        << " rid " << std::setw(4) << m_record_id 
        << " slt " << std::setw(4) << m_slot
-       << " pre " << std::setw(7) << getPreGlobalTime(m_step)/ns
-       << " pst " << std::setw(7) << getPostGlobalTime(m_step)/ns
+       << " pre " << std::setw(7) << PreGlobalTime(m_step)
+       << " pst " << std::setw(7) << PostGlobalTime(m_step)
        << ( m_dynamic ? " DYNAMIC " : " STATIC " )
        ;
 
@@ -355,19 +383,18 @@ void CRecorder::initEvent(OpticksEvent* evt)
     assert( m_gen == TORCH || m_gen == G4GUN  );
 }
 
-void CRecorder::decrementSlot()
+
+double CRecorder::PreGlobalTime(const G4Step* step)
 {
-    //if(m_slot == 0 || m_truncate)
-    if(m_slot == 0 )
-    {
-        LOG(warning) << "CRecorder::decrementSlot SKIPPING"
-                     << " slot " << m_slot 
-                     << " truncate " << m_truncate 
-                      ;
-        return ;
-    }
-    m_slot -= 1; 
+    const G4StepPoint* point  = step->GetPreStepPoint() ; 
+    return point ? point->GetGlobalTime()/ns : -1 ;
 }
+double CRecorder::PostGlobalTime(const G4Step* step)
+{
+    const G4StepPoint* point  = step->GetPostStepPoint() ; 
+    return point ? point->GetGlobalTime()/ns : -1 ;
+}
+
 
 unsigned CRecorder::getSlot()
 {
@@ -382,11 +409,6 @@ void CRecorder::setSlot(unsigned slot)
 
 void CRecorder::startPhoton()
 {
-    //LOG(trace) << "CRecorder::startPhoton" ; 
-
-    //if(m_record_id % 10000 == 0) Summary("CRecorder::startPhoton(%10k)") ;
-    //assert(m_step_id == 0);  <-- when not always true when skipping same material steps 
-    
     m_rec->Clear();
 
     m_c4.u = 0u ; 
@@ -404,8 +426,6 @@ void CRecorder::startPhoton()
     m_seqhis = 0 ; 
     m_mskhis = 0 ; 
 
-    //m_seqhis_select = 0xfbbbbbbbcd ;
-    //m_seqhis_select = 0x8cbbbbbc0 ;
     m_seqhis_select = 0x8bd ;
 
     m_slot = 0 ; 
@@ -414,12 +434,49 @@ void CRecorder::startPhoton()
     if(m_debug) Clear();
 }
 
+void CRecorder::decrementSlot()
+{
+    if(m_slot == 0 )
+    {
+        LOG(warning) << "CRecorder::decrementSlot SKIPPING"
+                     << " slot " << m_slot 
+                     << " truncate " << m_truncate 
+                      ;
+        return ;
+    }
+    m_slot -= 1; 
+}
 
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::setStepBoundaryStatusStage(const G4Step* step, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+#else
+void CRecorder::setStepBoundaryStatusStage(const G4Step* step, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+#endif
+{
+    m_step = step ; 
+    m_stage = stage ; 
 
+    if(m_stage == CStage::START)
+    { 
+        startPhoton();  // MUST be invoked prior to setBoundaryStatus
+        RecordQuadrant(m_step);
+    }
+    else if(m_stage == CStage::REJOIN )
+    {
+        decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+    }
 
+    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
+    const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
+    const G4Material* preMat  = pre->GetMaterial() ;
+    const G4Material* postMat = post->GetMaterial() ;
 
+    unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
+    unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
 
+    setBoundaryStatus( boundary_status, preMaterial, postMaterial );
+}
 
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -437,25 +494,13 @@ void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, uns
     m_premat = premat ; 
     m_postmat = postmat ;
 }
-double CRecorder::getPreGlobalTime(const G4Step* step)
-{
-    const G4StepPoint* point  = step->GetPreStepPoint() ; 
-    return point->GetGlobalTime();
-}
-double CRecorder::getPostGlobalTime(const G4Step* step)
-{
-    const G4StepPoint* point  = step->GetPostStepPoint() ; 
-    return point->GetGlobalTime();
-}
 
- 
-void CRecorder::setStep(const G4Step* step)
-{
-    m_step = step ; 
-}
+
 bool CRecorder::RecordStep()
 {
     assert(m_step && "MUST setStep FIRST");
+
+    int action = 0 ; 
 
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
@@ -480,7 +525,6 @@ bool CRecorder::RecordStep()
 
     if(surfaceAbsorb) postMat = m_postmat ; 
 
-
     bool done = false ; 
 
     // skip the pre, but the post becomes the pre at next step where will be taken 
@@ -489,14 +533,24 @@ bool CRecorder::RecordStep()
     //   RecordStepPoint records into m_slot (if < m_steps_per_photon) and increments m_slot
     // 
 
+    if(lastPost)      action |= LAST_POST ; 
+    if(surfaceAbsorb) action |= SURF_ABS ;  
+    if(preSkip)       action |= PRE_SKIP ; 
+    if(matSwap)       action |= MAT_SWAP ; 
+
+
     if(!preSkip)
     {
-       done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE ); 
+        action |= PRE_SAVE ; 
+        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE ); 
+        if(done) action |= PRE_DONE ; 
     }
 
     if(lastPost && !done)
     {
-       done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
+        action |= POST_SAVE ; 
+        done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
+        if(done) action |= POST_DONE ; 
     }
 
     // when not *lastPost* the post step will become the pre step at next RecordStep
@@ -514,9 +568,7 @@ bool CRecorder::RecordStep()
     //  with the subsequent "RE" (pre) RecordStepPoint  
     //
 
-
-    m_rec->add(new State(m_step, m_boundary_status, m_premat, m_postmat, m_stage, done));
-
+    m_rec->add(new State(m_step, m_boundary_status, m_premat, m_postmat, m_stage, action));
 
     return done ;
 }
@@ -541,8 +593,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
     }
 
-    //Dump(label,  slot, point, boundary_status );
-
     unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
     unsigned long long msk = 0xFull << shift ; 
     unsigned long long his = BBit::ffs(flag) & 0xFull ; 
@@ -558,10 +608,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     double time = point->GetGlobalTime();
     if(m_debug) Collect(point, flag, material, boundary_status, m_seqhis, m_seqmat, time);
 
-    m_slot += 1 ;   
-
-    // m_slot is incremented regardless of truncation, 
-    // only local *slot* is constrained to recording range
+    m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
     bool truncate = m_slot > m_bounce_max  ;  
     bool done = truncate || absorb ;   
@@ -571,23 +618,16 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
         m_records->add(m_dynamic_records);
     }
 
-
     if(m_debug)
-       LOG(info) << "CRecorder::RecordStepPoint"
-                 << " m_slot " << m_slot 
-                 << " slot " << slot 
-                 << " flag " << std::hex << BBit::ffs(flag) << std::dec
-                 << " done " << ( done ? "Y" : "N" )
-                 << " truncate " << ( truncate ? "Y" : "N" )
+       LOG(info) << "RSP:" << std::setw(2) << slot  
+                 << " fl " << std::hex << BBit::ffs(flag) << std::dec
+                 << " sh " << std::setw(16) << std::hex << m_seqhis << std::dec
+                 << " do " << ( done ? "Y" : "N" )
+                 << " tr " << ( truncate ? "Y" : "N" )
                  << description()
                  ; 
 
     return done ; 
-
-  /*
-      edge case of reemission when already reached truncation means that the decrementSlot 
-      can change truncation state ...  
-  */
 }
 
 
@@ -622,25 +662,12 @@ G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
 
 void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
 {
-
-/*
-    LOG(trace) << "CRecorder::RecordStepPoint" 
-              << " m_record_id " << m_record_id 
-              << " m_step_id " << m_step_id 
-              << " m_slot " << m_slot 
-              << " slot " << slot 
-              << " flag " << flag
-              << " m_seqhis " << std::hex << m_seqhis << std::dec 
-              ;
-*/
     const G4ThreeVector& pos = point->GetPosition();
-    //const G4ThreeVector& dir = point->GetMomentumDirection();
     const G4ThreeVector& pol = point->GetPolarization();
 
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
-    //G4double weight = 1.0 ; 
 
     const glm::vec4& sd = m_evt->getSpaceDomain() ; 
     const glm::vec4& td = m_evt->getTimeDomain() ; 
@@ -650,19 +677,6 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     short posy = shortnorm(pos.y()/mm, sd.y, sd.w ); 
     short posz = shortnorm(pos.z()/mm, sd.z, sd.w ); 
     short time_ = shortnorm(time/ns,   td.x, td.y );
-
-    /*
-    LOG(info) << "CRecorder::RecordStepPoint"
-              << " globalTime " << time 
-              << " td.x " << td.x
-              << " td.y " << td.y
-              << " ns " << ns
-              << " time/ns " << time/ns
-              <<  " time_ " << time_
-              ;
-     */
-  
-
 
     unsigned char polx = uchar_( pol.x() );
     unsigned char poly = uchar_( pol.y() );
@@ -970,11 +984,20 @@ int CRecorder::compare(int record_id)
                       << std::endl
                       << "----CRecorder::compare----" 
                       << " record_id " << std::setw(8) << record_id 
-                      << ( !same_seqhis  ? " !same_seqhis " : "" )
-                      << ( !same_seqmat  ? " !same_seqmat " : "" )
-                      << ( debug  ? " debug " : "" )
-                      << std::endl 
-                       ; 
+                      ; 
+
+            if(!same_seqhis) std::cout << " !same_seqhis " 
+                          << " rdr " << std::setw(16) << std::hex << rdr_seqhis  << std::dec
+                          << " rec " << std::setw(16) << std::hex << rec_seqhis  << std::dec
+                          ;
+  
+            if(!same_seqmat) std::cout << " !same_seqmat " 
+                          << " rdr " << std::setw(16) << std::hex << rdr_seqmat << std::dec
+                          << " rec " << std::setw(16) << std::hex << rec_seqmat << std::dec  
+                          ;
+
+            if(debug) std::cout << " --dindex " ;
+            std::cout << std::endl ; 
 
             Dump(       "CRecorder::compare (rdr-dump)DONE");
             m_rec->Dump("CRecorder::compare (rec-dump)DONE");

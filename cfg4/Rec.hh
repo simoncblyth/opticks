@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CBoundaryProcess.hh"
+#include <string>
 #include <vector>
 
 class CGeometry ; 
@@ -125,12 +126,20 @@ Consider truncated case with bounce_max = 9, MAXREC = 10
 
 class CFG4_API Rec {
    public:
-       typedef enum { OK, SKIP_STS, SKIP_REJOIN } Rec_t ; 
-       typedef enum { PRE, POST } Flag_t ; 
+       typedef enum { OK = 0 , 
+                      SKIP_STS = 0x1 << 0, 
+                      SKIP_REJOIN = 0x1 << 1 
+                    } Rec_t ; 
+
        static const char* OK_ ; 
        static const char* SKIP_STS_ ; 
        static const char* SKIP_REJOIN_ ; 
-       static const char* Label(Rec_t r);
+       static std::string Label(unsigned r);
+   public:
+       typedef enum { PRE, POST } Flag_t ; 
+       static const char* PRE_ ; 
+       static const char* POST_ ; 
+       static const char* FlagLabel(Flag_t r);
    public:
        Rec(Opticks* ok, CGeometry* geometry, bool dynamic);
        void postinitialize();
@@ -139,8 +148,6 @@ class CFG4_API Rec {
        void setEvent(OpticksEvent* evt);
    public:
        void add(const State* state); 
-       //void pop(); 
-       //void notifyRejoin();
        void sequence();
        void Clear();
 
@@ -159,7 +166,7 @@ class CFG4_API Rec {
        CStage::CStage_t getStage(unsigned int i);
        unsigned int getNumStates();
    public:
-       Rec_t getFlagMaterialStageDone(unsigned int& flag, unsigned int& material, CStage::CStage_t& stage, bool& done, unsigned int i, Flag_t type );
+       unsigned getFlagMaterialStageDone(unsigned int& flag, unsigned int& material, CStage::CStage_t& stage, bool& done, unsigned int i, Flag_t type );
    public:
        void addFlagMaterial(unsigned int flag, unsigned int material, CStage::CStage_t stage);
        unsigned long long getSeqHis();
@@ -183,7 +190,6 @@ class CFG4_API Rec {
        unsigned m_record_max ; 
        unsigned m_bounce_max ; 
        unsigned m_steps_per_photon ; 
-   //    unsigned m_rejoin_count ; 
        unsigned m_bail_count ; 
 
        bool         m_debug ; 

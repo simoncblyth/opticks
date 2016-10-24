@@ -117,6 +117,7 @@ set(DEFINITIONS
 include_directories(${INCLUDE_DIRS})   
 add_definitions(${DEFINITIONS})
 
+
 set(SOURCES
     CFG4_LOG.cc
 
@@ -144,6 +145,7 @@ set(SOURCES
     CGenerator.cc
 
     CStep.cc
+    CStp.cc
     CTrack.cc
     CPropLib.cc
     CMath.cc
@@ -212,6 +214,7 @@ set(HEADERS
     CGenerator.hh
 
     CStep.hh
+    CStp.hh
     CTrack.hh
     CPropLib.hh
     CMath.hh

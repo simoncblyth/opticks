@@ -6,6 +6,7 @@ class G4Track ;
 class G4Event ; 
 
 #include "G4UserSteppingAction.hh"
+#include "G4ThreeVector.hh"
 #include "CBoundaryProcess.hh"
 #include "globals.hh"
 
@@ -81,6 +82,11 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     int m_event_id ;
     int m_track_id ;
     int m_parent_id ;
+
+    int m_optical_track_id ;
+    int m_optical_parent_id ;
+
+
     int m_step_id ;
     int m_primary_id ; 
 
@@ -88,8 +94,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     G4ParticleDefinition* m_particle  ; 
     bool                  m_optical ; 
     int                   m_pdg_encoding ;
- 
-
+    G4ThreeVector         m_origin ; 
 
 
 };

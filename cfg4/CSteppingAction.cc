@@ -26,11 +26,10 @@
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
 #include "CRecorder.hh"
-//#include "Rec.hh"
-//#include "State.hh"
 #include "Format.hh"
 #include "CPropLib.hh"
 #include "CStepRec.hh"
+#include "CStp.hh"
 #include "CSteppingAction.hh"
 #include "CTrack.hh"
 #include "CG4.hh"
@@ -120,6 +119,8 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_event_id(-1),
    m_track_id(-1),
    m_parent_id(-1),
+   m_optical_track_id(-1),
+   m_optical_parent_id(-1),
    m_step_id(-1),
    m_primary_id(-1),
    m_track_status(fAlive),
@@ -206,10 +207,25 @@ void CSteppingAction::setTrack(const G4Track* track, int track_id, int parent_id
     m_rejoin_count = 0 ; 
 
     if(m_optical)
+    {
+        m_optical_track_id = track_id ;
+        m_optical_parent_id = parent_id ; 
+
         LOG(trace) << "CSteppingAction::setTrack(optical)"
-                  << " track_id " << m_track_id
-                  << " parent_id " << m_parent_id
+                  << " optical_track_id " << m_optical_track_id
+                  << " optical_parent_id " << m_optical_parent_id
                   ;
+
+        if(m_optical_parent_id != -1 && m_optical_parent_id >= m_optical_track_id) 
+        {
+           LOG(fatal) << "CSteppingAction::setTrack(optical) UNEXPECTED m_optical_parent_id >= m_optical_track_id  "
+                      << " optical_track_id " << m_optical_track_id
+                      << " optical_parent_id " << m_optical_parent_id
+                      ;
+
+           assert(m_optical_parent_id < m_optical_track_id) ;  
+        }
+    }
 
 }
 
@@ -282,8 +298,8 @@ int CSteppingAction::getPrimaryPhotonID()
 bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 {
     bool done = false ; 
-    int photon_id = m_track_id ;
-    int parent_id = m_parent_id ;
+    int photon_id = m_optical_track_id ;
+    int parent_id = m_optical_parent_id ;
     int step_id  = m_step_id ;
 
     assert( photon_id >= 0 );
@@ -293,6 +309,17 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
     int primary_id = getPrimaryPhotonID() ;
     int last_photon_id = m_recorder->getPhotonId();  
     int last_record_id = m_recorder->getRecordId();  
+    bool last_debug = m_recorder->isDebug();
+
+    if(m_startTrack)
+    {
+        const G4StepPoint* pre = step->GetPreStepPoint() ;
+        const G4ThreeVector& pos = pre->GetPosition();
+        m_origin = pos ; 
+    }
+ 
+    // acertain step stage by comparing photon_id/parent_id set by prior setTrack  
+    // with the last 
 
     CStage::CStage_t stage = CStage::UNKNOWN ; 
     if( parent_id == -1 )  // primary photon
@@ -306,7 +333,6 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         m_rejoin_count++ ; 
         // rejoin count is zeroed in setTrack, so each remission generation track will result in REJOIN 
     }
-     
 
     if(stage == CStage::START && last_record_id >= 0 && last_record_id < INT_MAX )
     {
@@ -314,6 +340,26 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
         //  using record_id for absolute indexing across multiple G4 subevt 
         m_recorder->compare(last_record_id);
     }
+
+
+    if(last_debug || m_verbosity > 0)
+    {
+        CStp stp(step, step_id, m_origin );
+        LOG(info) 
+                  << " pri " << std::setw(10) << primary_id
+                  << " ("
+                  << " trk " << std::setw(10) << m_optical_track_id
+                  << " par " << std::setw(10) << m_optical_parent_id
+                  << " stp " << stp.description()
+                  << " ) " 
+                  << " pho " << std::setw(10) << photon_id
+                  << " lpho " << std::setw(10) << last_photon_id
+                  << " lrec " << std::setw(10) << last_record_id
+                  << " rjco " << std::setw(3) << m_rejoin_count 
+                  << " stge " << CStage::Label(stage) 
+                     
+                  ;
+    } 
 
  
     m_recorder->setPhotonId(photon_id);   
@@ -326,38 +372,17 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step)
 
     if(recording)
     {
-        m_recorder->setStep(step);
-        m_recorder->setStage(stage);
-        m_recorder->setStepId(m_step_id);
-        m_recorder->setParentId(parent_id);   
-        m_recorder->setRecordId(record_id);
-
-        if(stage == CStage::START)
-        { 
-            m_recorder->startPhoton();  // MUST be invoked from up here,  prior to setBoundaryStatus
-            m_recorder->RecordQuadrant(step);
-        }
-        else if(stage == CStage::REJOIN )
-        {
-            m_recorder->decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
-        }
-
-        const G4StepPoint* pre  = step->GetPreStepPoint() ; 
-        const G4StepPoint* post = step->GetPostStepPoint() ; 
-
-        const G4Material* preMat  = pre->GetMaterial() ;
-        const G4Material* postMat = post->GetMaterial() ;
-
-        unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
-        unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
 
 #ifdef USE_CUSTOM_BOUNDARY
         DsG4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
+        m_recorder->setStepBoundaryStatusStage(step, boundary_status, stage);
 
-        m_recorder->setBoundaryStatus(boundary_status, preMaterial, postMaterial);
+        m_recorder->setStepId(m_step_id);
+        m_recorder->setParentId(parent_id);   
+        m_recorder->setRecordId(record_id);
 
         done = m_recorder->RecordStep();   // done=true for *absorption* OR *truncation*
 

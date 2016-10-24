@@ -812,6 +812,7 @@ int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4dou
     int primary_id = -1 ; 
 
    // TODO: replace m_lineage with simply  m_primary_id ??? 
+   //       perhaps this should be using record_id for absolute indexing ??
 
     if(parent_id == -1)  // primary photon 
     {
