@@ -129,11 +129,10 @@ class CFG4_API CRecorder {
         //void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
-        bool RecordStep();
         static double PreGlobalTime(const G4Step* step);
         static double PostGlobalTime(const G4Step* step);
 
-        void RecordPhoton(const G4Step* step);
+        void RecordPhoton();  // overwrites target_record_id (ie m_record_id for static) entry for REJOINs
         void startPhoton();
 
         void Summary(const char* msg);
@@ -145,7 +144,7 @@ class CFG4_API CRecorder {
 
 #ifdef USE_CUSTOM_BOUNDARY
     public:
-        void setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
@@ -154,7 +153,7 @@ class CFG4_API CRecorder {
         void Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const char* matname );
 #else
     public:
-        void setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
@@ -162,9 +161,10 @@ class CFG4_API CRecorder {
         G4OpBoundaryProcessStatus getBoundaryStatus();
         void Dump(const G4ThreeVector& origin, unsigned int index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const char* matname );
 #endif
-
+    private:
+        bool RecordStep();
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
-        void RecordQuadrant(const G4Step* step);
+        void RecordQuadrant();
 
         void Clear();
         bool hasIssue();

@@ -101,7 +101,23 @@ void OpticksCfg<Listener>::init()
        ("nostep,S",  "inhibit step by step recording") ;
 
    m_desc.add_options()
-       ("noreem",  "inhibit reemission by zeroing reemission_prob of named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+       ("nore",  "inhibit reemission by zeroing reemission_prob of named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+   m_desc.add_options()
+       ("xxre",  "enhance reemission by setting reemission_prob to one for named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+
+
+   m_desc.add_options()
+       ("noab",  "inhibit absorption by setting large absorption_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+   m_desc.add_options()
+       ("xxab",  "enhance absorption by setting small absorption_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+
+
+   m_desc.add_options()
+       ("nosc",  "inhibit scattering by setting large scattering_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+   m_desc.add_options()
+       ("xxsc",  "enhance scattering by setting small scattering_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+
+
 
    m_desc.add_options()
        ("savehit",   "save hits even in production running") ; 

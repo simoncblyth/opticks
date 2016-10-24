@@ -246,11 +246,7 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
 
     unsigned flag(0);
 
-    if(stage == CStage::REJOIN )
-    {
-        flag = BULK_REEMIT ;  
-    }
-    else if(absorption && status == fPostStepDoItProc )
+    if(absorption && status == fPostStepDoItProc )
     {
         flag = BULK_ABSORB ;
     }
@@ -266,6 +262,10 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     {
         flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT/SURFACE_DREFLECT/SURFACE_SREFLECT
     } 
+    else if( stage == CStage::REJOIN )
+    {
+        flag = BULK_REEMIT ;  
+    }
     else
     {
         LOG(warning) << " OpPointFlag ZERO  " 

@@ -51,17 +51,63 @@ GMaterialLib* GMaterialLib::load(Opticks* cache)
 
 void GMaterialLib::postLoadFromCache()
 {
-    bool noreem = m_ok->hasOpt("noreem") ;
+    bool nore = m_ok->hasOpt("nore") ;
+    bool noab = m_ok->hasOpt("noab") ;
+    bool nosc = m_ok->hasOpt("nosc") ;
+
+    bool xxre = m_ok->hasOpt("xxre") ;
+    bool xxab = m_ok->hasOpt("xxab") ;
+    bool xxsc = m_ok->hasOpt("xxsc") ;
+
+
     LOG(info) << "GMaterialLib::postLoadFromCache " 
-              << " noreem " << noreem 
+              << " nore " << nore 
+              << " noab " << noab 
+              << " nosc " << nosc 
+              << " xxre " << xxre 
+              << " xxab " << xxab 
+              << " xxsc " << xxsc 
               ; 
 
-    if(noreem)
+    if(nore || xxre )
     {    
-        LOG(fatal) << "GMaterialLib::postLoadFromCache --noreem option postCache modifying reemission_prob " ; 
-        setMaterialPropertyValues("GdDopedLS",          "reemission_prob", 0.f );
-        setMaterialPropertyValues("LiquidScintillator", "reemission_prob", 0.f );
+        float reemission_prob = 0.f ; 
+        if(nore) reemission_prob = 0.f ;
+        if(xxre) reemission_prob = 0.5f ;  // not 1.0 in order to leave some AB, otherwise too unphysical 
+
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --nore option postCache modifying reemission_prob " ; 
+        setMaterialPropertyValues("GdDopedLS",          "reemission_prob", reemission_prob );
+        setMaterialPropertyValues("LiquidScintillator", "reemission_prob", reemission_prob );
     }
+
+    if(noab || xxab )
+    {
+        float absorption_length = 0.f ; 
+        if(noab) absorption_length = 1000000000.f ;
+        if(xxab) absorption_length = 100.f ;
+
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --noab/--xxab option postCache modifying absorption_length: " << absorption_length ; 
+        setMaterialPropertyValues("*",  "absorption_length", absorption_length );
+    }
+
+    if(nosc || xxsc)
+    {
+        float scattering_length = 0.f ; 
+        if(nosc) scattering_length = 1000000000.f ;
+        if(xxsc) scattering_length = 100.f ;
+
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --nosc/--xxsc option postCache modifying scattering_length: " << scattering_length ; 
+        setMaterialPropertyValues("*",  "scattering_length", scattering_length );
+    }
+
+
+    if(nore || noab || nosc || xxre || xxab || xxsc)
+    {
+        // need to replace the loaded buffer with a new one with the changes for Opticks to see it 
+        NPY<float>* mbuf = createBuffer();
+        setBuffer(mbuf);
+    }
+
 }
 
 
@@ -462,15 +508,35 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
 
 bool GMaterialLib::setMaterialPropertyValues(const char* matname, const char* propname, float val)
 {
-    GMaterial* mat = getMaterial(matname);
-    if(!mat) 
-    {
-         LOG(warning) << " no material with name " << matname ; 
-         return false ; 
-    } 
+    bool ret = true ; 
 
-    bool ret = mat->setPropertyValues( propname, val );
-    assert(ret);
+    if(matname && matname[0] == '*')
+    {
+         unsigned ni = m_buffer->getShape(0);
+         LOG(info) << " wildcard GMaterialLib::setMaterialPropertyValues " << propname << " val " << val << " ni " << ni ; 
+         for(unsigned i=0 ; i < ni ; i++)
+         {
+              const char* key = m_names->getKey(i);
+              GMaterial* mat = getMaterial(key);
+              LOG(info) << " i " << std::setw(3) << i 
+                        << " key " << std::setw(35) << key 
+                        ;
+
+              ret = mat->setPropertyValues( propname, val );
+         }
+    }
+    else
+    {
+        GMaterial* mat = getMaterial(matname);
+        if(!mat) 
+        {
+             LOG(fatal) << " no material with name " << matname ; 
+             assert(0);
+             return false ; 
+        } 
+        ret = mat->setPropertyValues( propname, val );
+        assert(ret);
+    }
 
     return ret ; 
 }

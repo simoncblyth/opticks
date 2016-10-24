@@ -2,6 +2,516 @@ Reemission Review
 ====================
 
 
+
+recsel segv : last one issue
+-------------------------------
+
+::
+
+    (lldb) p *f
+    (float) $1 = 0.000000000000000000000000000000000000000000360133705
+    (lldb) p *(f+1)
+    (float) $2 = 0.000000000000000000000000000000000000000000360133705
+    (lldb) p count
+    (unsigned int) $3 = 16000000
+    (lldb) p i
+    (unsigned int) $4 = 15999998
+    (lldb) 
+
+    (lldb) p *this
+    (ViewNPY) $7 = {
+      m_name = 0x0000000918243c70 "rsel"
+      m_npy = 0x0000000918244780
+      m_parent = 0x0000000000000000
+      m_bytes = 0x000000091a7a2000
+      m_j = '\0'
+      m_k = '\0'
+      m_l = '\0'
+      m_size = 4
+      m_type = UNSIGNED_BYTE
+      m_norm = false
+      m_iatt = true
+      m_item_from_dim = 2
+      m_numbytes = 64000000
+      m_stride = 4
+      m_offset = 0
+      m_low = 0x0000000000000000
+
+
+
+    (lldb) bt
+    * thread #1: tid = 0x315978, 0x000000010074ab85 libNPY.dylib`glm::tvec3<float, (this=0x00007fff5fbfd0d0, a=0x000000091e4aaff8, b=0x000000091e4aaffc, c=0x000000091e4ab000)0>::tvec3(float const&, float const&, float const&) + 53 at type_vec3.inl:71, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x91e4ab000)
+      * frame #0: 0x000000010074ab85 libNPY.dylib`glm::tvec3<float, (this=0x00007fff5fbfd0d0, a=0x000000091e4aaff8, b=0x000000091e4aaffc, c=0x000000091e4ab000)0>::tvec3(float const&, float const&, float const&) + 53 at type_vec3.inl:71
+        frame #1: 0x0000000100745a9d libNPY.dylib`glm::tvec3<float, (this=0x00007fff5fbfd0d0, a=0x000000091e4aaff8, b=0x000000091e4aaffc, c=0x000000091e4ab000)0>::tvec3(float const&, float const&, float const&) + 45 at type_vec3.inl:71
+        frame #2: 0x000000010075246d libNPY.dylib`ViewNPY::findBounds(this=0x00000009182446c0) + 317 at ViewNPY.cpp:287
+        frame #3: 0x000000010075163c libNPY.dylib`ViewNPY::addressNPY(this=0x00000009182446c0) + 28 at ViewNPY.cpp:207
+        frame #4: 0x0000000100751304 libNPY.dylib`ViewNPY::init(this=0x00000009182446c0) + 340 at ViewNPY.cpp:155
+        frame #5: 0x000000010075116c libNPY.dylib`ViewNPY::ViewNPY(this=0x00000009182446c0, name=0x0000000100a0471b, npy=0x0000000918244780, j=0, k=0, l=0, size=4, type=UNSIGNED_BYTE, norm=false, iatt=true, item_from_dim=2) + 332 at ViewNPY.cpp:84
+        frame #6: 0x00000001007513b0 libNPY.dylib`ViewNPY::ViewNPY(this=0x00000009182446c0, name=0x0000000100a0471b, npy=0x0000000918244780, j=0, k=0, l=0, size=4, type=UNSIGNED_BYTE, norm=false, iatt=true, item_from_dim=2) + 160 at ViewNPY.cpp:85
+        frame #7: 0x0000000100972f2d libOpticksCore.dylib`OpticksEvent::setRecselData(this=0x000000011156c280, recsel_data=0x0000000918244780) + 189 at OpticksEvent.cc:1304
+        frame #8: 0x000000010097b5ef libOpticksCore.dylib`OpticksEvent::indexPhotonsCPU(this=0x000000011156c280) + 2063 at OpticksEvent.cc:1974
+        frame #9: 0x000000010097adb3 libOpticksCore.dylib`OpticksEvent::postPropagateGeant4(this=0x000000011156c280) + 499 at OpticksEvent.cc:1908
+        frame #10: 0x0000000103eae635 libcfg4.dylib`CG4::postpropagate(this=0x000000010c06a920) + 997 at CG4.cc:290
+        frame #11: 0x0000000103eae194 libcfg4.dylib`CG4::propagate(this=0x000000010c06a920) + 2052 at CG4.cc:271
+        frame #12: 0x0000000103f8c52a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfe840) + 538 at OKG4Mgr.cc:82
+        frame #13: 0x00000001000139ca OKG4Test`main(argc=27, argv=0x00007fff5fbfe920) + 1498 at OKG4Test.cc:57
+        frame #14: 0x00007fff8b3ee5fd libdyld.dylib`start + 1
+    (lldb) f 8
+    frame #8: 0x000000010097b5ef libOpticksCore.dylib`OpticksEvent::indexPhotonsCPU(this=0x000000011156c280) + 2063 at OpticksEvent.cc:1974
+       1971 
+       1972     if(recsel0 && recsel0->hasData()) LOG(warning) << " leaking recsel0 " ; 
+       1973 
+    -> 1974     setRecselData(recsel1);
+       1975 
+       1976     setHistoryIndex(idx->getHistoryIndex());
+       1977     setMaterialIndex(idx->getMaterialIndex());
+    (lldb) 
+
+
+
+fixing REJOIN recording
+--------------------------
+
+
+checking matching with extremes of material properties
+---------------------------------------------------------
+
+No surprises with extrema, so issue from interplay ?
+
+
+Dial up absorption and scattering, both lengths are set to 100mm so its 50:50 which happens first, 
+(summing up "TO SC xx" will get close to half) note good agreement
+
+This almost corresponds to the infinite detector case, but not quite as the 
+lengths are both set to constants... 
+
+* TODO: support scaling of scattering/absorption lengths, so can properly do the 
+  infinite detector case 
+
+
+::
+
+    tlaser-t --xxre --xxab --nosc  --bouncemax 15 --recordmax 16     ## pushing out the truncation
+
+         seqhis_ana     1:laser     -1:laser           c2 
+                  4d        499722       499926             0.04  [2 ] TO AB
+                 45d        250289       249482             1.30  [3 ] TO RE AB
+                455d        124565       125538             3.79  [4 ] TO RE RE AB
+               4555d         62467        62510             0.01  [5 ] TO RE RE RE AB
+              45555d         31409        31393             0.00  [6 ] TO RE RE RE RE AB
+             455555d         15795        15711             0.22  [7 ] TO RE RE RE RE RE AB
+            4555555d          7942         7837             0.70  [8 ] TO RE RE RE RE RE RE AB
+           45555555d          3803         3893             1.05  [9 ] TO RE RE RE RE RE RE RE AB
+          455555555d          2001         1890             3.17  [10] TO RE RE RE RE RE RE RE RE AB
+         4555555555d           979          929             1.31  [11] TO RE RE RE RE RE RE RE RE RE AB
+        45555555555d           534          448             7.53  [12] TO RE RE RE RE RE RE RE RE RE RE AB
+       455555555555d           236          216             0.88  [13] TO RE RE RE RE RE RE RE RE RE RE RE AB
+      4555555555555c           114          104             0.46  [14] BT RE RE RE RE RE RE RE RE RE RE RE RE AB
+     455555555555540            71           64             0.36  [15] ?0? AB RE RE RE RE RE RE RE RE RE RE RE RE AB
+    4555555555555400            36           25             1.98  [16] ?0? ?0? AB RE RE RE RE RE RE RE RE RE RE RE RE AB
+    5555555555555400            35           30             0.38  [16] ?0? ?0? AB RE RE RE RE RE RE RE RE RE RE RE RE RE
+              4c555d             0            2             0.00  [6 ] TO RE RE RE BT AB
+               4cc5d             1            0             0.00  [5 ] TO RE BT BT AB
+     4cc5cc555555540             0            1             0.00  [15] ?0? AB RE RE RE RE RE RE RE BT BT RE BT BT AB
+             4c5555d             1            0             0.00  [7 ] TO RE RE RE RE BT AB
+                         1000000      1000000         1.45 
+
+
+    tlaser-t --xxre --xxab --nosc  
+
+       ## pump up the stats, possibly bounce max truncation effect
+
+         seqhis_ana     1:laser     -1:laser           c2 
+                  4d        499722       499926             0.04  [2 ] TO AB
+                 45d        250289       249483             1.30  [3 ] TO RE AB
+                455d        124565       125538             3.79  [4 ] TO RE RE AB
+               4555d         62467        62509             0.01  [5 ] TO RE RE RE AB
+              45555d         31409        31393             0.00  [6 ] TO RE RE RE RE AB
+             455555d         15795        15711             0.22  [7 ] TO RE RE RE RE RE AB
+            4555555d          7942         7837             0.70  [8 ] TO RE RE RE RE RE RE AB
+           45555555d          3803         3893             1.05  [9 ] TO RE RE RE RE RE RE RE AB
+          555555555d          2005         1816             9.35  [10] TO RE RE RE RE RE RE RE RE RE
+          455555555d          2001         1890             3.17  [10] TO RE RE RE RE RE RE RE RE AB
+              4c555d             0            2             0.00  [6 ] TO RE RE RE BT AB
+          cc5555555d             0            1             0.00  [10] TO RE RE RE RE RE RE RE BT BT
+               4cc5d             1            0             0.00  [5 ] TO RE BT BT AB
+             4c5555d             1            0             0.00  [7 ] TO RE RE RE RE BT AB
+          c55555555d             0            1             0.00  [10] TO RE RE RE RE RE RE RE RE BT
+                         1000000      1000000         1.96 
+          seqmat_ana     1:laser     -1:laser           c2 
+                  11        499722       499926             0.04  [2 ] Gd Gd
+                 111        250289       249483             1.30  [3 ] Gd Gd Gd
+                1111        124565       125538             3.79  [4 ] Gd Gd Gd Gd
+               11111         62467        62509             0.01  [5 ] Gd Gd Gd Gd Gd
+              111111         31409        31393             0.00  [6 ] Gd Gd Gd Gd Gd Gd
+             1111111         15795        15711             0.22  [7 ] Gd Gd Gd Gd Gd Gd Gd
+            11111111          7942         7837             0.70  [8 ] Gd Gd Gd Gd Gd Gd Gd Gd
+          1111111111          4006         3706            11.67  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Gd
+           111111111          3803         3893             1.05  [9 ] Gd Gd Gd Gd Gd Gd Gd Gd Gd
+              331111             0            2             0.00  [6 ] Gd Gd Gd Gd Ac Ac
+          2311111111             0            1             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Ac LS
+             3311111             1            0             0.00  [7 ] Gd Gd Gd Gd Gd Ac Ac
+               33211             1            0             0.00  [5 ] Gd Gd LS Ac Ac
+          3111111111             0            1             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Ac
+                         1000000      1000000         2.09 
+
+
+
+        ## finally rejoin logic yields more sensical seqs 
+
+          seqhis_ana     1:laser     -1:laser           c2 
+                  4d            48           44             0.17  [2 ] TO AB
+                 45d            29           31             0.07  [3 ] TO RE AB
+                455d            10           15             0.00  [4 ] TO RE RE AB
+              45555d             5            1             0.00  [6 ] TO RE RE RE RE AB
+               4555d             5            5             0.00  [5 ] TO RE RE RE AB
+            4555555d             1            2             0.00  [8 ] TO RE RE RE RE RE RE AB
+             455555d             2            2             0.00  [7 ] TO RE RE RE RE RE AB
+                             100          100         0.12 
+
+    tlaser-d --xxre --xxab --nosc  
+
+         ## hmm, getting an inkling of cause of REJOIN problem
+         ##
+         ## in reality are seeing a new trk (most often "TO AB") from Scintillation with primary 
+         ## matching a preexisting record ... so can rejoin 
+         ## (but that is not a single entry but rather tis both a REJOIN:RE and a RECOLL:AB )
+         ##
+         ## hmm should be an AB and only when a REJOIN track comes along can know it was actually a RE
+
+          seqhis_ana     1:laser     -1:laser           c2 
+                  4d            48           44             0.17  [2 ] TO AB
+                  5d             0           31            31.00  [2 ] TO RE
+                 45d            29            0             0.00  [3 ] TO RE AB
+                 55d             0           15             0.00  [3 ] TO RE RE
+                455d            10            0             0.00  [4 ] TO RE RE AB
+                555d             0            5             0.00  [4 ] TO RE RE RE
+              45555d             5            0             0.00  [6 ] TO RE RE RE RE AB
+               4555d             5            0             0.00  [5 ] TO RE RE RE AB
+              55555d             0            2             0.00  [6 ] TO RE RE RE RE RE
+             555555d             0            2             0.00  [7 ] TO RE RE RE RE RE RE
+             455555d             2            0             0.00  [7 ] TO RE RE RE RE RE AB
+            4555555d             1            0             0.00  [8 ] TO RE RE RE RE RE RE AB
+               5555d             0            1             0.00  [5 ] TO RE RE RE RE
+
+
+    tlaser-d --xxre --xxab --nosc     ## dial down stats for --steppingdbg,   using 50% reemission_prob
+        
+       ## tis better debug environment that searching for diffs in 35/1000000
+       ##   huh the dumped seqhis is entirely different to the index ???  SMOKING GUN BUG 
+
+         seqhis_ana     1:laser     -1:laser           c2 
+                  4d            48          100            18.27  [2 ] TO AB
+                 45d            29            0             0.00  [3 ] TO RE AB
+                455d            10            0             0.00  [4 ] TO RE RE AB
+               4555d             5            0             0.00  [5 ] TO RE RE RE AB
+              45555d             5            0             0.00  [6 ] TO RE RE RE RE AB
+             455555d             2            0             0.00  [7 ] TO RE RE RE RE RE AB
+            4555555d             1            0             0.00  [8 ] TO RE RE RE RE RE RE AB
+
+
+
+    tlaser-t --xxre --xxab --nosc
+    tlaser-t --xxre --xxab --nosc --dbgseqhis 45d   ## hmm dbgseqhis uses the CFG4 seqhis so not so useful
+
+      ## switch off SC to see bug more clearly, looks to be halfing for each category   
+
+          seqhis_ana     1:laser     -1:laser           c2 
+                  4d         49755        99819         16756.95  [2 ] TO AB
+                 45d         25261            0         25261.00  [3 ] TO RE AB
+                455d         12349            0         12349.00  [4 ] TO RE RE AB
+               4555d          6223            0          6223.00  [5 ] TO RE RE RE AB
+              45555d          3204            0          3204.00  [6 ] TO RE RE RE RE AB
+             455555d          1602            0          1602.00  [7 ] TO RE RE RE RE RE AB
+            4555555d           791            0           791.00  [8 ] TO RE RE RE RE RE RE AB
+           45555555d           391            0           391.00  [9 ] TO RE RE RE RE RE RE RE AB
+          455555555d           213            0           213.00  [10] TO RE RE RE RE RE RE RE RE AB
+          555555555d           211          180             2.46  [10] TO RE RE RE RE RE RE RE RE RE
+          cc5555555d             0            1             0.00  [10] TO RE RE RE RE RE RE RE BT BT
+                          100000       100000      6679.34 
+          seqmat_ana     1:laser     -1:laser           c2 
+                  11         49755        99819         16756.95  [2 ] Gd Gd
+                 111         25261            0         25261.00  [3 ] Gd Gd Gd
+                1111         12349            0         12349.00  [4 ] Gd Gd Gd Gd
+               11111          6223            0          6223.00  [5 ] Gd Gd Gd Gd Gd
+              111111          3204            0          3204.00  [6 ] Gd Gd Gd Gd Gd Gd
+             1111111          1602            0          1602.00  [7 ] Gd Gd Gd Gd Gd Gd Gd
+            11111111           791            0           791.00  [8 ] Gd Gd Gd Gd Gd Gd Gd Gd
+          1111111111           424          180            98.57  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Gd
+           111111111           391            0           391.00  [9 ] Gd Gd Gd Gd Gd Gd Gd Gd Gd
+          2311111111             0            1             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Ac LS
+                          100000       100000      7408.50 
+
+
+    tlaser-t --xxre --xxab --xxsc   
+
+      ## with xxre corresponding to 50% reemission_prob
+      ## CFG4 not yielding any TO RE AB  (must be a REJOIN bug ?)
+
+         seqhis_ana     1:laser     -1:laser           c2 
+                  4d         24925        33517          1263.17  [2 ] TO AB
+                 46d         12509        16747           613.91  [3 ] TO SC AB
+                466d          6246         8262           280.14  [4 ] TO SC SC AB
+                 45d          6326            0          6326.00  [3 ] TO RE AB          <--- REJOIN bug ? no reason for this not to happen ?
+                465d          3140         4250           166.73  [4 ] TO RE SC AB
+               4666d          3039         4170           177.44  [5 ] TO SC SC SC AB
+                456d          3123            0          3123.00  [4 ] TO SC RE AB       <-- REJOIN bug ?  
+               4665d          1563         2143            90.77  [5 ] TO RE SC SC AB
+              46666d          1564         2114            82.25  [6 ] TO SC SC SC SC AB
+               4656d          1541         2102            86.39  [5 ] TO SC RE SC AB
+               4566d          1637            0          1637.00  [5 ] TO SC SC RE AB    <-- REJOIN bug ?  
+                455d          1541            0          1541.00  [4 ] TO RE RE AB     
+              46656d           796         1081            43.27  [6 ] TO SC RE SC SC AB
+              46566d           767         1048            43.50  [6 ] TO SC SC RE SC AB
+             466666d           786         1030            32.78  [7 ] TO SC SC SC SC SC AB
+               4655d           765          994            29.81  [5 ] TO RE RE SC AB
+              46665d           797          955            14.25  [6 ] TO RE SC SC SC AB
+              45666d           856            0           856.00  [6 ] TO SC SC SC RE AB
+               4556d           839            0           839.00  [5 ] TO SC RE RE AB
+               4565d           773            0           773.00  [5 ] TO RE SC RE AB
+
+
+    ## hmm 100% reemission_prob is too unphysical, need to leave some possibility of AB otherwise 
+    ## just truncate and get no sensible sequence index
+
+          seqhis_ana     1:laser     -1:laser           c2 
+          556566665d           207          336            30.65  [10] TO RE SC SC SC SC RE SC RE RE
+          565666655d           197          332            34.45  [10] TO RE RE SC SC SC SC RE SC RE
+          566655566d           167          331            54.01  [10] TO SC SC RE RE RE SC SC SC RE
+          556655565d           178          330            45.48  [10] TO RE SC RE RE RE SC SC RE RE
+          555566656d           183          329            41.63  [10] TO SC RE SC SC SC RE RE RE RE
+          565665556d           169          329            51.41  [10] TO SC RE RE RE SC SC RE SC RE
+          566655565d           203          325            28.19  [10] TO RE SC RE RE RE SC SC SC RE
+          556556566d           188          325            36.59  [10] TO SC SC RE SC RE RE SC RE RE
+          556555566d           200          325            29.76  [10] TO SC SC RE RE RE RE SC RE RE
+          556556665d           171          323            46.77  [10] TO RE SC SC SC RE RE SC RE RE
+          565566555d           194          322            31.75  [10] TO RE RE RE SC SC RE RE SC RE
+          555556555d           192          322            32.88  [10] TO RE RE RE SC RE RE RE RE RE
+          555566566d           195          318            29.49  [10] TO SC SC RE SC SC RE RE RE RE
+          556666656d           222          317            16.74  [10] TO SC RE SC SC SC SC SC RE RE
+          565665565d           194          317            29.61  [10] TO RE SC RE RE SC SC RE SC RE
+          555556656d           193          317            30.15  [10] TO SC RE SC SC RE RE RE RE RE
+          555555555d           213          316            20.05  [10] TO RE RE RE RE RE RE RE RE RE
+          556556555d           192          316            30.27  [10] TO RE RE RE SC RE RE SC RE RE
+          556556655d           187          316            33.08  [10] TO RE RE SC SC RE RE SC RE RE
+          556556556d           179          316            37.92  [10] TO SC RE RE SC RE RE SC RE RE
+
+
+
+
+
+::
+
+    tlaser-t --nore --xxab --xxsc
+
+          seqhis_ana     1:laser     -1:laser           c2 
+                  4d         49958        50039             0.07  [2 ] TO AB
+                 46d         25055        24984             0.10  [3 ] TO SC AB
+                466d         12502        12496             0.00  [4 ] TO SC SC AB
+               4666d          6236         6246             0.01  [5 ] TO SC SC SC AB
+              46666d          3117         3079             0.23  [6 ] TO SC SC SC SC AB
+             466666d          1547         1607             1.14  [7 ] TO SC SC SC SC SC AB
+            4666666d           818          757             2.36  [8 ] TO SC SC SC SC SC SC AB
+           46666666d           373          381             0.08  [9 ] TO SC SC SC SC SC SC SC AB
+          466666666d           204          209             0.06  [10] TO SC SC SC SC SC SC SC SC AB
+          666666666d           190          202             0.37  [10] TO SC SC SC SC SC SC SC SC SC
+                          100000       100000         0.44 
+          seqmat_ana     1:laser     -1:laser           c2 
+                  11         49958        50039             0.07  [2 ] Gd Gd
+                 111         25055        24984             0.10  [3 ] Gd Gd Gd
+                1111         12502        12496             0.00  [4 ] Gd Gd Gd Gd
+               11111          6236         6246             0.01  [5 ] Gd Gd Gd Gd Gd
+              111111          3117         3079             0.23  [6 ] Gd Gd Gd Gd Gd Gd
+             1111111          1547         1607             1.14  [7 ] Gd Gd Gd Gd Gd Gd Gd
+            11111111           818          757             2.36  [8 ] Gd Gd Gd Gd Gd Gd Gd Gd
+          1111111111           394          411             0.36  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Gd
+           111111111           373          381             0.08  [9 ] Gd Gd Gd Gd Gd Gd Gd Gd Gd
+
+
+
+Dialing up absorption and reemission runs slow::
+
+       tlaser-t --xxab --nosc --xxre 
+
+         seqhis_ana     1:laser     -1:laser           c2 
+          555555555d         99979        99985             0.00  [10] TO RE RE RE RE RE RE RE RE RE
+          c55555555d            12            7             0.00  [10] TO RE RE RE RE RE RE RE RE BT
+          5c5555555d             0            5             0.00  [10] TO RE RE RE RE RE RE RE BT RE
+          cc5555555d             2            0             0.00  [10] TO RE RE RE RE RE RE RE BT BT
+          55cc55555d             2            1             0.00  [10] TO RE RE RE RE RE BT BT RE RE
+          555cc5555d             2            0             0.00  [10] TO RE RE RE RE BT BT RE RE RE
+          5cc555555d             2            0             0.00  [10] TO RE RE RE RE RE RE BT BT RE
+          5ccc55555d             1            0             0.00  [10] TO RE RE RE RE RE BT BT BT RE
+           c5555555d             0            1             0.00  [9 ] TO RE RE RE RE RE RE RE BT
+          55555cc55d             0            1             0.00  [10] TO RE RE BT BT RE RE RE RE RE
+                          100000       100000         0.00 
+          seqmat_ana     1:laser     -1:laser           c2 
+          1111111111         99991        99985             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Gd
+          3111111111             0            7             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Ac
+          2311111111             0            5             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Ac LS
+          3311111111             2            1             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Ac Ac
+          2222311111             2            0             0.00  [10] Gd Gd Gd Gd Gd Ac LS LS LS LS
+          2231111111             2            0             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Ac LS LS
+          2223111111             2            1             0.00  [10] Gd Gd Gd Gd Gd Gd Ac LS LS LS
+          2232111111             1            0             0.00  [10] Gd Gd Gd Gd Gd Gd LS Ac LS LS
+          2222223111             0            1             0.00  [10] Gd Gd Gd Ac LS LS LS LS LS LS
+
+Dialing up reemission alone doesnt produce any RE as its handled as subset of AB::
+
+       tlaser-t --noab --nosc --xxre 
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd         95962        95937             0.00  [6 ] TO BT BT BT BT SA
+          cccc9ccccd          3449         3460             0.02  [10] TO BT BT BT BT DR BT BT BT BT
+             89ccccd           265          293             1.41  [7 ] TO BT BT BT BT DR SA
+            8c9ccccd            42           88            16.28  [8 ] TO BT BT BT BT DR BT SA
+           ccc9ccccd             0           75            75.00  [9 ] TO BT BT BT BT DR BT BT BT
+            8b9ccccd            36           18             6.00  [8 ] TO BT BT BT BT DR BR SA
+          bbbb9ccccd            36            0            36.00  [10] TO BT BT BT BT DR BR BR BR BR
+          bccc9ccccd            32           31             0.02  [10] TO BT BT BT BT DR BT BT BT BR
+          ccbc9ccccd            25            3             0.00  [10] TO BT BT BT BT DR BT BR BT BT
+          cacc9ccccd            11           24             4.83  [10] TO BT BT BT BT DR BT BT SR BT
+            7c9ccccd             7           23             0.00  [8 ] TO BT BT BT BT DR BT SD
+          8cbb9ccccd            18            0             0.00  [10] TO BT BT BT BT DR BR BR BT SA
+           8bb9ccccd            18            0             0.00  [9 ] TO BT BT BT BT DR BR BR SA
+          ccc99ccccd            14            8             0.00  [10] TO BT BT BT BT DR DR BT BT BT
+           8cc9ccccd            10           11             0.00  [9 ] TO BT BT BT BT DR BT BT SA
+          cccccbcccd            10            8             0.00  [10] TO BT BT BT BR BT BT BT BT BT
+          8bbb9ccccd             9            0             0.00  [10] TO BT BT BT BT DR BR BR BR SA
+           8cb9ccccd             7            1             0.00  [9 ] TO BT BT BT BT DR BR BT SA
+          8cbc9ccccd             5            5             0.00  [10] TO BT BT BT BT DR BT BR BT SA
+            899ccccd             5            1             0.00  [8 ] TO BT BT BT BT DR DR SA
+
+With scattering dialed up::
+
+   tlaser-t --noab --xxsc --nore 
+
+         seqhis_ana     1:laser     -1:laser           c2 
+          666666666d         99985        99991             0.00  [10] TO SC SC SC SC SC SC SC SC SC
+          c66666666d             6            6             0.00  [10] TO SC SC SC SC SC SC SC SC BT
+          cc6666666d             5            1             0.00  [10] TO SC SC SC SC SC SC SC BT BT
+          6cc666666d             0            2             0.00  [10] TO SC SC SC SC SC SC BT BT SC
+          bc6666666d             1            0             0.00  [10] TO SC SC SC SC SC SC SC BT BR
+          6c6666666d             1            0             0.00  [10] TO SC SC SC SC SC SC SC BT SC
+          66cc66666d             1            0             0.00  [10] TO SC SC SC SC SC BT BT SC SC
+          66c66cc66d             1            0             0.00  [10] TO SC SC BT BT SC SC BT SC SC
+                          100000       100000         0.00 
+          seqmat_ana     1:laser     -1:laser           c2 
+          1111111111         99991        99991             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Gd
+          3311111111             6            0             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Ac Ac
+          3111111111             0            6             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Gd Ac
+          2231111111             0            2             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Ac LS LS
+          2311111111             0            1             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd Ac LS
+          2211111111             1            0             0.00  [10] Gd Gd Gd Gd Gd Gd Gd Gd LS LS
+          2223111111             1            0             0.00  [10] Gd Gd Gd Gd Gd Gd Ac LS LS LS
+          2223332111             1            0             0.00  [10] Gd Gd Gd LS Ac Ac Ac LS LS LS
+
+
+With absorption dialed up, nothing else has a chance::
+
+    tlaser-t --xxab --nosc --nore 
+
+         seqhis_ana     1:laser     -1:laser           c2 
+                  4d        100000       100000             0.00  [2 ] TO AB
+                          100000       100000         0.00 
+          seqmat_ana     1:laser     -1:laser           c2 
+                  11        100000       100000             0.00  [2 ] Gd Gd
+                          100000       100000         0.00 
+
+
+
+Killing AB SC (with 1 million mm scattering and absorption lengths) and RE (prob 0) 
+leaves just boundary processes with agree quite well (not the same geometry due
+to triangulation so some low level discrep to be expected)::
+
+    simon:ggeo blyth$ tlaser-t --noab --nosc --nore 
+
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd         95535        95346             0.19  [6 ] TO BT BT BT BT SA
+          cccc9ccccd          3424         3579             3.43  [10] TO BT BT BT BT DR BT BT BT BT
+             89ccccd           263          295             1.84  [7 ] TO BT BT BT BT DR SA
+                  4d           154          166             0.45  [2 ] TO AB
+             8cccc6d           111           86             3.17  [7 ] TO SC BT BT BT BT SA
+            8c9ccccd            41           95            21.44  [8 ] TO BT BT BT BT DR BT SA
+           ccc9ccccd             0           93            93.00  [9 ] TO BT BT BT BT DR BT BT BT
+          cacc9ccccd            11           36            13.30  [10] TO BT BT BT BT DR BT BT SR BT
+          bbbb9ccccd            36            0            36.00  [10] TO BT BT BT BT DR BR BR BR BR
+            8b9ccccd            36           13            10.80  [8 ] TO BT BT BT BT DR BR SA
+                4ccd            32           34             0.06  [4 ] TO BT BT AB
+          bccc9ccccd            32           23             1.47  [10] TO BT BT BT BT DR BT BT BT BR
+              4ccccd            22           29             0.96  [6 ] TO BT BT BT BT AB
+          ccbc9ccccd            25            3             0.00  [10] TO BT BT BT BT DR BT BR BT BT
+            7c9ccccd             7           25            10.12  [8 ] TO BT BT BT BT DR BT SD
+             8cc6ccd            19           21             0.10  [7 ] TO BT BT SC BT BT SA
+          cccccc6ccd            20           14             1.06  [10] TO BT BT SC BT BT BT BT BT BT
+           8bb9ccccd            18            0             0.00  [9 ] TO BT BT BT BT DR BR BR SA
+          8cbb9ccccd            18            0             0.00  [10] TO BT BT BT BT DR BR BR BT SA
+          cacccccc6d            14           14             0.00  [10] TO SC BT BT BT BT BT BT SR BT
+
+
+
+switch off reemission with nore option
+-----------------------------------------
+
+Now with tex buffer updated both do no RE, note very different AB BULK_ABSORB::
+
+
+
+     tlaser-t --nore
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd         76521        81497           156.69  [6 ] TO BT BT BT BT SA
+                  4d         11030         7100           851.90  [2 ] TO AB               ## Opticks AB much more ???
+          cccc9ccccd          2428         2701            14.53  [10] TO BT BT BT BT DR BT BT BT BT
+                4ccd          2433         1695           131.94  [4 ] TO BT BT AB
+             8cccc6d          1980         1847             4.62  [7 ] TO SC BT BT BT BT SA
+              4ccccd           822          915             4.98  [6 ] TO BT BT BT BT AB
+                 46d           428          246            49.15  [3 ] TO SC AB
+             8cc6ccd           413          402             0.15  [7 ] TO BT BT SC BT BT SA
+             86ccccd           299          275             1.00  [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd           262          185            13.26  [10] TO BT BT SC BT BT BT BT BT BT
+          cccc6ccccd           229          164            10.75  [10] TO BT BT BT BT SC BT BT BT BT
+          cacccccc6d           205          215             0.24  [10] TO SC BT BT BT BT BT BT SR BT
+               4cccd           209          196             0.42  [5 ] TO BT BT BT AB
+             89ccccd           191          197             0.09  [7 ] TO BT BT BT BT DR SA
+            8ccccc6d           122          175             9.46  [8 ] TO SC BT BT BT BT BT SA
+            4ccccc6d           152           11           121.97  [8 ] TO SC BT BT BT BT BT AB
+          ccbccccc6d           135          143             0.23  [10] TO SC BT BT BT BT BT BR BT BT
+           4cc9ccccd           140          114             2.66  [9 ] TO BT BT BT BT DR BT BT AB
+           cac0ccc6d             0          134           134.00  [9 ] TO SC BT BT BT ?0? BT SR BT
+               4cc6d           128           76            13.25  [5 ] TO SC BT BT AB
+
+
+Before updated the tex buffer opticks still doing RE::
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd         76521        81497           156.69  [6 ] TO BT BT BT BT SA
+                  4d          5573         7100           183.99  [2 ] TO AB
+          cccc9ccccd          2428         2701            14.53  [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d          1980         1847             4.62  [7 ] TO SC BT BT BT BT SA
+                4ccd          1194         1695            86.88  [4 ] TO BT BT AB
+             8cccc5d          1074            0          1074.00  [7 ] TO RE BT BT BT BT SA
+              4ccccd           822          915             4.98  [6 ] TO BT BT BT BT AB
+                 45d           754            0           754.00  [3 ] TO RE AB
+            8cccc55d           561            0           561.00  [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd           413          402             0.15  [7 ] TO BT BT SC BT BT SA
+                455d           345            0           345.00  [4 ] TO RE RE AB
+             86ccccd           299          275             1.00  [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd           262          185            13.26  [10] TO BT BT SC BT BT BT BT BT BT
+                 46d           217          246             1.82  [3 ] TO SC AB
+           8cccc555d           243            0           243.00  [9 ] TO RE RE RE BT BT BT BT SA
+             8cc5ccd           236            0           236.00  [7 ] TO BT BT RE BT BT SA
+          cccc6ccccd           229          164            10.75  [10] TO BT BT BT BT SC BT BT BT BT
+          cacccccc6d           205          215             0.24  [10] TO SC BT BT BT BT BT BT SR BT
+               4cccd           209          196             0.42  [5 ] TO BT BT BT AB
+             89ccccd           191          197             0.09  [7 ] TO BT BT BT BT DR SA
+                          100000       100000        79.91 
+
+
+
+
+
 tlaser : sizable differences in many categories : how to proceed ?
 ---------------------------------------------------------------------
 
@@ -14,6 +524,32 @@ Ideas to isolate the issue:
 * sequence recording bugs regards the reemission are also possible 
 
 ::
+
+        After fixing REJOIN issue, some zeroes removed, but still big discreps:
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd        763501       813497          1585.04  [6 ] TO BT BT BT BT SA
+                  4d         55825        47634           648.49  [2 ] TO AB
+          cccc9ccccd         25263        26200            17.06  [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d         19707        18533            36.04  [7 ] TO SC BT BT BT BT SA
+                4ccd         12576        11563            42.51  [4 ] TO BT BT AB
+             8cccc5d         11183         7742           625.65  [7 ] TO RE BT BT BT BT SA
+              4ccccd          8554         8756             2.36  [6 ] TO BT BT BT BT AB
+                 45d          7531         2208          2909.37  [3 ] TO RE AB
+            8cccc55d          5362         2116          1409.00  [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd          4109         4155             0.26  [7 ] TO BT BT SC BT BT SA
+                455d          3588          621          2091.49  [4 ] TO RE RE AB
+             86ccccd          2836         2743             1.55  [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd          2674         1919           124.11  [10] TO BT BT SC BT BT BT BT BT BT
+           8cccc555d          2524          610          1168.92  [9 ] TO RE RE RE BT BT BT BT SA
+             8cc5ccd          2359         1866            57.53  [7 ] TO BT BT RE BT BT SA
+             89ccccd          1880         2221            28.35  [7 ] TO BT BT BT BT DR SA
+          cacccccc6d          2210         2127             1.59  [10] TO SC BT BT BT BT BT BT SR BT
+                 46d          2118         1569            81.75  [3 ] TO SC AB
+          cccc6ccccd          2060         1752            24.89  [10] TO BT BT BT BT SC BT BT BT BT
+               4cccd          1940         1981             0.43  [5 ] TO BT BT BT AB
+                         1000000      1000000       106.82 
+
 
          seqhis_ana     1:laser     -1:laser           c2 
               8ccccd         76521        81336           146.87  [6 ] TO BT BT BT BT SA

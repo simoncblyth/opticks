@@ -76,13 +76,12 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
                 p.direction = uniform_sphere(&rng);
                 p.polarization = normalize(cross(uniform_sphere(&rng), p.direction));
                 p.flags.i.x = 0 ;   // no-boundary-yet for new direction
-                //p.flags.i.w |= BULK_REEMIT;
+
                 s.flag = BULK_REEMIT ;
                 return CONTINUE;
             }                           
             else 
             {
-                //p.flags.i.w |= BULK_ABSORB;
                 s.flag = BULK_ABSORB ;
                 return BREAK;
             }                         
@@ -98,7 +97,6 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 
             rayleigh_scatter(p, rng);
 
-            //p.flags.i.w |= RAYLEIGH_SCATTER;
             s.flag = BULK_SCATTER;
             p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 

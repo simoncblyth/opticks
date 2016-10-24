@@ -273,6 +273,12 @@ void ViewNPY::dump(const char* msg)
 
 void ViewNPY::findBounds()
 {
+    if(strcmp(m_name, "rsel") == 0)
+    {
+        LOG(warning) << "ViewNPY::findBounds skipping for " << m_name  ;
+        return ; 
+    }
+
     glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
     glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 

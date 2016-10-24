@@ -361,11 +361,7 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
 #else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
-        m_recorder->setStepRecordParentBoundaryStage(step, step_id, record_id, parent_id, boundary_status, stage);
-
-        done = m_recorder->RecordStep();   // done=true for *absorption* OR *truncation*
-
-        if(done) m_recorder->RecordPhoton(step);
+        done = m_recorder->setStepRecordParentBoundaryStage(step, step_id, record_id, parent_id, boundary_status, stage);
     }
     return done ; 
 }

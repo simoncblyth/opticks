@@ -448,14 +448,26 @@ void CRecorder::decrementSlot()
         return ;
     }
 
+
+    m_slot -= 1 ; 
+
+/* 
+
     if(m_decrement_request == 0) m_slot -= 1;    // only act on 1st decrement request
+    else LOG(warning) << "CRecorder::decrementSlot SKIPPING"
+                      << " slot " << m_slot 
+                      << " decrement_request " << m_decrement_request
+                      ;
+
+*/
+
     m_decrement_request += 1 ; 
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #else
-void CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #endif
 {
     m_step = step ; 
@@ -466,8 +478,8 @@ void CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id
 
     if(stage == CStage::START)
     { 
-        startPhoton();  // MUST be invoked prior to setBoundaryStatus
-        RecordQuadrant(m_step);
+        startPhoton();       // MUST be invoked prior to setBoundaryStatus
+        RecordQuadrant();
     }
     else if(stage == CStage::REJOIN )
     {
@@ -488,6 +500,8 @@ void CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id
     unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
 
     setBoundaryStatusStage( boundary_status, preMaterial, postMaterial, stage );
+
+    return RecordStep();
 }
 
 
@@ -512,8 +526,6 @@ void CRecorder::setBoundaryStatusStage(G4OpBoundaryProcessStatus boundary_status
 
 bool CRecorder::RecordStep()
 {
-    assert(m_step && "MUST setStep FIRST");
-
     int action = 0 ; 
 
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
@@ -522,7 +534,7 @@ bool CRecorder::RecordStep()
     // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 
-    unsigned preFlag = m_slot == 0 ? 
+    unsigned preFlag = m_slot == 0 && m_stage == CStage::START ? 
                                       m_gen 
                                    : 
                                       OpPointFlag(pre,  m_prior_boundary_status, m_stage)
@@ -530,7 +542,7 @@ bool CRecorder::RecordStep()
 
     unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage);
 
-
+    //bool preReemit = ( preFlag & BULK_REEMIT ) != 0 ;   // <-- from stage REJOIN 
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
@@ -573,8 +585,10 @@ bool CRecorder::RecordStep()
         if(done) action |= POST_DONE ; 
     }
 
+    if(done) RecordPhoton();  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
 
     m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, m_stage, action );
+
 
     return done ;
 }
@@ -634,7 +648,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
                  << description()
                  ; 
 
-    return done ; 
+    return done ;    
 }
 
 
@@ -716,9 +730,9 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     // but dynamic mode will have an extra record
 }
 
-void CRecorder::RecordQuadrant(const G4Step* step)
+void CRecorder::RecordQuadrant()
 {
-    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4ThreeVector& pos = pre->GetPosition();
 
     // initial quadrant 
@@ -735,11 +749,13 @@ void CRecorder::RecordQuadrant(const G4Step* step)
     m_c4.uchar_.w = 4u ; 
 }
 
-void CRecorder::RecordPhoton(const G4Step* step)
+void CRecorder::RecordPhoton()
 {
     // gets called at last step (eg absorption) or when truncated
+    // for reemission have to rely on downstream overwrites
+    // via rerunning with a target_record_id to scrub old values
 
-    const G4StepPoint* point  = step->GetPostStepPoint() ; 
+    const G4StepPoint* point  = m_step->GetPostStepPoint() ; 
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -781,6 +797,15 @@ void CRecorder::RecordPhoton(const G4Step* step)
     //
 
     NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ; 
+
+
+/*
+    LOG(info) << " target_record_id " << target_record_id 
+              << " seqhis " << std::setw(16) << std::hex << m_seqhis << std::dec  
+              << " seqmat " << std::setw(16) << std::hex << m_seqmat << std::dec  
+              ;
+*/
+
 
     unsigned long long* history = h_target->getValues() + 2*target_record_id ;
     *(history+0) = m_seqhis ; 
