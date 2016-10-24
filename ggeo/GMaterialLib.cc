@@ -43,8 +43,28 @@ GMaterialLib* GMaterialLib::load(Opticks* cache)
 {
     GMaterialLib* mlib = new GMaterialLib(cache);
     mlib->loadFromCache();
+    mlib->postLoadFromCache();
+
     return mlib ; 
 }
+
+
+void GMaterialLib::postLoadFromCache()
+{
+    bool noreem = m_ok->hasOpt("noreem") ;
+    LOG(info) << "GMaterialLib::postLoadFromCache " 
+              << " noreem " << noreem 
+              ; 
+
+    if(noreem)
+    {    
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --noreem option postCache modifying reemission_prob " ; 
+        setMaterialPropertyValues("GdDopedLS",          "reemission_prob", 0.f );
+        setMaterialPropertyValues("LiquidScintillator", "reemission_prob", 0.f );
+    }
+}
+
+
 
 /*
 const char* GMaterialLib::FindShortName(const char* name, const char* prefix)
@@ -440,6 +460,26 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
 
 
 
+bool GMaterialLib::setMaterialPropertyValues(const char* matname, const char* propname, float val)
+{
+    GMaterial* mat = getMaterial(matname);
+    if(!mat) 
+    {
+         LOG(warning) << " no material with name " << matname ; 
+         return false ; 
+    } 
+
+    bool ret = mat->setPropertyValues( propname, val );
+    assert(ret);
+
+    return ret ; 
+}
+
+
+
+
+
+
 
 
 void GMaterialLib::dump(const char* msg)
@@ -448,8 +488,8 @@ void GMaterialLib::dump(const char* msg)
 
     unsigned int ni = getNumMaterials() ; 
 
-    int index = m_cache->getLastArgInt();
-    const char* lastarg = m_cache->getLastArg();
+    int index = m_ok->getLastArgInt();
+    const char* lastarg = m_ok->getLastArg();
 
     if(hasMaterial(index))
     {

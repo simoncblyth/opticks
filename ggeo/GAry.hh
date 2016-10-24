@@ -62,7 +62,7 @@ public:
 
 public: 
    void setValue(unsigned int index, T val){ m_values[index] = val ;}
-
+   void setValues(T val);
 public: 
    void Summary(const char* msg="GAry::Summary", unsigned int imod=1, T presentation_scale=1.0);
    void scale(T sc);

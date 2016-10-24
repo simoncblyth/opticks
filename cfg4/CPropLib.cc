@@ -572,32 +572,8 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
 
     m_ggtog4[kmat] = material ; 
 
-
-    // MOVED TO CMaterialBridge
-    // m_g4toix[material] = materialIndex ; 
-    // m_ixtoname[materialIndex] = name ;  
-
     return material ;  
 }
-
-
-
-/*
-    MOVED TO CMaterialBridge
-
-unsigned int CPropLib::getMaterialIndex(const G4Material* material)
-{
-    // used from CSteppingAction::UserSteppingActionOptical to CRecorder::setBoundaryStatus
-    return m_g4toix[material] ;
-}
-
-const char* CPropLib::getMaterialName(unsigned int index)
-{
-    return m_ixtoname[index].c_str() ;
-}
-
-*/
-
 
 
 

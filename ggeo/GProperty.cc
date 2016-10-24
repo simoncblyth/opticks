@@ -57,6 +57,14 @@ GAry<T>* GProperty<T>::getValues()
 }
 
 template <typename T>
+void GProperty<T>::setValues(T val)
+{
+    m_values->setValues(val) ;  
+}
+
+
+
+template <typename T>
 GAry<T>* GProperty<T>::getDomain()
 {
     return m_domain ; 

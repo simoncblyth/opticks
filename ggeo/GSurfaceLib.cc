@@ -660,8 +660,8 @@ void GSurfaceLib::dump(const char* msg)
                   ;
     } 
 
-    int index = m_cache->getLastArgInt();
-    const char* lastarg = m_cache->getLastArg();
+    int index = m_ok->getLastArgInt();
+    const char* lastarg = m_ok->getLastArg();
     if(hasSurface(index))
         dump(index);
     else if(hasSurface(lastarg))

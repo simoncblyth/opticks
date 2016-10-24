@@ -75,6 +75,14 @@ void test_addTestMaterial(GMaterialLib* mlib)
 }
 
 
+void test_setMaterialPropertyValues(GMaterialLib* mlib)
+{
+    // this can no be done with --noreem option
+    mlib->setMaterialPropertyValues("GdDopedLS", "reemission_prob", 0.f );
+    mlib->setMaterialPropertyValues("LiquidScintillator", "reemission_prob", 0.f );
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -84,6 +92,7 @@ int main(int argc, char** argv)
     SSys::setenvvar("", "IDPATH", "$TMP", true );
 
     Opticks ok(argc, argv);
+    ok.configure();
 
     LOG(info) << " ok " ; 
 
@@ -93,6 +102,7 @@ int main(int argc, char** argv)
 
     LOG(info) << " after load " ; 
     test_addTestMaterial(mlib);
+    //test_setMaterialPropertyValues(mlib);
 
     mlib->dump("dump");
     LOG(info) << " after dump " ; 

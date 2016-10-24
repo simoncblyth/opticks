@@ -447,6 +447,15 @@ bool GPropertyMap<T>::hasNonZeroProperty(const char* pname)
      return !prop->isZero();
 }
 
+template <typename T>
+bool GPropertyMap<T>::setPropertyValues(const char* pname, T val) 
+{
+     if(!hasProperty(pname)) return false ; 
+     GProperty<T>* prop = getProperty(pname);
+     prop->setValues(val);
+     return true ; 
+}
+
 
 template <typename T>
 bool GPropertyMap<T>::hasProperty(const char* pname)  

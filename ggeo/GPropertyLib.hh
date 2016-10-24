@@ -139,7 +139,7 @@ class GGEO_API GPropertyLib {
         void setBuffer(NPY<float>* buf);
         void setNames(GItemList* names);
     protected:
-        Opticks*                             m_cache ; 
+        Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
         NPY<float>*                          m_buffer ; 
         OpticksAttrSeq*                      m_attrnames ; // attributed name list 

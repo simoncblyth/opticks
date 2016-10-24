@@ -85,6 +85,7 @@ class GGEO_API GPropertyMap {
   public:
       void add(GPropertyMap<T>* other, const char* prefix=NULL);
       void addConstantProperty(const char* pname, T value, const char* prefix=NULL);
+      bool setPropertyValues(const char* pname, T val); 
 
       // when a standard domain is defined these methods interpolates the values provided onto that domain
       void addProperty(const char* pname, T* values, T* domain, unsigned int length, const char* prefix=NULL);

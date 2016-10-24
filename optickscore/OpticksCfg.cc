@@ -101,6 +101,9 @@ void OpticksCfg<Listener>::init()
        ("nostep,S",  "inhibit step by step recording") ;
 
    m_desc.add_options()
+       ("noreem",  "inhibit reemission by zeroing reemission_prob of named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+
+   m_desc.add_options()
        ("savehit",   "save hits even in production running") ; 
 
    m_desc.add_options()

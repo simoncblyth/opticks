@@ -2,10 +2,72 @@ Reemission Review
 ====================
 
 
+tlaser : sizable differences in many categories : how to proceed ?
+---------------------------------------------------------------------
+
+Ideas to isolate the issue:
+
+* switch off reemission, and compare without it 
+* arrange effectively infinite sphere of scintillator and try tlaser in that  
+
+* suspect difference in multi-reemission 
+* sequence recording bugs regards the reemission are also possible 
+
+::
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd         76521        81336           146.87  [6 ] TO BT BT BT BT SA
+                  4d          5573         5002            30.83  [2 ] TO AB
+          cccc9ccccd          2428         2661            10.67  [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d          1980         1899             1.69  [7 ] TO SC BT BT BT BT SA
+                4ccd          1194         1208             0.08  [4 ] TO BT BT AB
+             8cccc5d          1074          753            56.40  [7 ] TO RE BT BT BT BT SA
+              4ccccd           822          858             0.77  [6 ] TO BT BT BT BT AB
+                 45d           754            0           754.00  [3 ] TO RE AB
+            8cccc55d           561          230           138.51  [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd           413          403             0.12  [7 ] TO BT BT SC BT BT SA
+                455d           345            0           345.00  [4 ] TO RE RE AB
+             86ccccd           299          263             2.31  [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd           262          198             8.90  [10] TO BT BT SC BT BT BT BT BT BT
+           8cccc555d           243           66           101.39  [9 ] TO RE RE RE BT BT BT BT SA
+             8cc5ccd           236          190             4.97  [7 ] TO BT BT RE BT BT SA
+          cccc6ccccd           229          164            10.75  [10] TO BT BT BT BT SC BT BT BT BT
+             89ccccd           191          218             1.78  [7 ] TO BT BT BT BT DR SA
+                 46d           217          148            13.04  [3 ] TO SC AB
+               4cccd           209          207             0.01  [5 ] TO BT BT BT AB
+          cacccccc6d           205          208             0.02  [10] TO SC BT BT BT BT BT BT SR BT
+                          100000       100000        37.61 
+          seqmat_ana     1:laser     -1:laser           c2 
+              343231         76521        81336           146.87  [6 ] Gd Ac LS Ac MO Ac
+                  11          5573         5002            30.83  [2 ] Gd Gd
+             3432311          2949         2591            23.13  [7 ] Gd Gd Ac LS Ac MO Ac
+          3323443231          2656          102          2365.09  [10] Gd Ac LS Ac MO MO Ac LS Ac Ac
+          1323443231             0         2191          2191.00  [10] Gd Ac LS Ac MO MO Ac LS Ac Gd
+                2231          1194         1208             0.08  [4 ] Gd Ac LS LS
+                 111           971          148           605.30  [3 ] Gd Gd Gd
+              443231           822          858             0.77  [6 ] Gd Ac LS Ac MO MO
+            34323111           682          335           118.40  [8 ] Gd Gd Gd Ac LS Ac MO Ac
+          4323443231             0          664           664.00  [10] Gd Ac LS Ac MO MO Ac LS Ac MO
+             3432231           638          586             2.21  [7 ] Gd Ac LS LS Ac MO Ac
+             3443231           475          473             0.00  [7 ] Gd Ac LS Ac MO MO Ac
+          fff3432311           398           30           316.41  [10] Gd Gd Ac LS Ac MO Ac Ai Ai Ai
+                1111           377           14           337.01  [4 ] Gd Gd Gd Gd
+            5e432311             0          357           357.00  [8 ] Gd Gd Ac LS Ac MO Py Bk
+          3323132231           350           49           227.07  [10] Gd Ac LS LS Ac Gd Ac LS Ac Ac
+          3ff3432311             0          330           330.00  [10] Gd Gd Ac LS Ac MO Ac Ai Ai Ac
+           343231111           294           85           115.25  [9 ] Gd Gd Gd Gd Ac LS Ac MO Ac
+          3433432311            76          267           106.36  [10] Gd Gd Ac LS Ac MO Ac Ac MO Ac
+          4323132231             0          265           265.00  [10] Gd Ac LS LS Ac Gd Ac LS Ac MO
+
+
+
+
 push stats to 1M have 35 CRecorder/Rec discrepant seqhis/seqmat
 ----------------------------------------------------------------
 
-* TODO: move to record_id for debug indexing across G4 subevt
+* decided to throwaway Rec sequencing, keeping two very different 
+  CFG4 implementations matched turns out to be too much work for the benefit, 
+  it was distracting from primary task of matching Opticks to G4 
  
 
 * most common discrep is, one less "c" in rec

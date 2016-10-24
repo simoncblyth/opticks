@@ -58,6 +58,7 @@ public:
    unsigned int getLength();
    GAry<T>* getValues();
    GAry<T>* getDomain();
+   void setValues(T val);
    char* digest();   
    std::string getDigestString();
 public:

@@ -501,6 +501,12 @@ GAry<T>::~GAry()
 
 
 
+template <typename T>
+void GAry<T>::setValues(T val)
+{
+    for(unsigned int i=0 ; i < m_length; i++) m_values[i] = val ;
+}
+
 
 template <typename T>
 GAry<T>* GAry<T>::cumsum(unsigned int offzero)

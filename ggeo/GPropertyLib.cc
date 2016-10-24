@@ -75,7 +75,7 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 
 GPropertyLib::GPropertyLib(Opticks* cache, const char* type) 
      :
-     m_cache(cache),
+     m_ok(cache),
      m_resource(NULL),
      m_buffer(NULL),
      m_attrnames(NULL),
@@ -108,6 +108,12 @@ GDomain<float>* GPropertyLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
+
+
+
+
+
+
 
 
 
@@ -201,7 +207,7 @@ unsigned int GPropertyLib::getNumRaw()
 
 void GPropertyLib::init()
 {
-    m_resource = m_cache->getResource();
+    m_resource = m_ok->getResource();
 
     m_standard_domain = getDefaultDomain(); 
 
@@ -222,7 +228,7 @@ void GPropertyLib::init()
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
 
-    m_attrnames = new OpticksAttrSeq(m_cache, m_type);
+    m_attrnames = new OpticksAttrSeq(m_ok, m_type);
     m_attrnames->loadPrefs(); // color, abbrev and order 
 
 
@@ -264,6 +270,10 @@ std::string GPropertyLib::getPreferenceDir()
 {
     return m_resource->getPreferenceDir(m_type);
 }
+
+
+
+
 
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
@@ -611,5 +621,7 @@ void GPropertyLib::saveRaw()
         pmap->save(dir.c_str());
     }
 }
+
+
 
 

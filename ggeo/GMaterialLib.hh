@@ -98,6 +98,9 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
        void import();
+       void postLoadFromCache();
+       bool setMaterialPropertyValues(const char* matname, const char* propname, float val); // post-import modification
+
        NPY<float>* createBuffer();
        GItemList*  createNames();
    private:
