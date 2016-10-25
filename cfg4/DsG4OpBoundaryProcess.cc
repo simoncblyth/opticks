@@ -439,7 +439,6 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                       theEfficiency = PropertyPointer->GetProperty(thePhotonMomentum);
 #endif
 
-/*
                       LOG(info) << "OpticalSurface "
                                 << " name " << OpticalSurface->GetName() 
                                 << " thePhotonMomentum (eV) " << thePhotonMomentum/eV
@@ -452,7 +451,6 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                 << " m1 " << Material1->GetName()
                                 << " m2 " << Material2->GetName()
                                 ; 
-*/
 
               } 
               else 

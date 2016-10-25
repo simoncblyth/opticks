@@ -37,6 +37,256 @@ Shoot horizontal laser in X direction (vertical geometry too involved)::
 
 
 
+
+
+After REJOIN fix still large discreps, eg top line SA
+---------------------------------------------------------
+
+::
+
+    tlaser-;tlaser-t
+    tlaser.py 
+
+         seqhis_ana     1:laser     -1:laser           c2 
+              8ccccd        763501       813497          1585.04  [6 ] TO BT BT BT BT SA     
+          cccc9ccccd         25263        26200            17.06  [10] TO BT BT BT BT DR BT BT BT BT
+                            
+    In [2]: 25263./(763501.+25263.) 
+    Out[2]: 0.03202859156858072
+
+    In [3]: 26200./(813497.+26200.)
+    Out[3]: 0.0312017311006232
+
+
+    In [1]: 813497./763501.     TODO: include the ratio in the output  (expected reflectivity is ballpark 4%)
+    Out[1]: 1.0654825599442568
+
+
+                  4d         55825        47634           648.49  [2 ] TO AB
+             8cccc6d         19707        18533            36.04  [7 ] TO SC BT BT BT BT SA
+                4ccd         12576        11563            42.51  [4 ] TO BT BT AB
+             8cccc5d         11183         7742           625.65  [7 ] TO RE BT BT BT BT SA
+              4ccccd          8554         8756             2.36  [6 ] TO BT BT BT BT AB
+                 45d          7531         2208          2909.37  [3 ] TO RE AB
+            8cccc55d          5362         2116          1409.00  [8 ] TO RE RE BT BT BT BT SA
+             8cc6ccd          4109         4155             0.26  [7 ] TO BT BT SC BT BT SA
+                455d          3588          621          2091.49  [4 ] TO RE RE AB
+             86ccccd          2836         2743             1.55  [7 ] TO BT BT BT BT SC SA
+          cccccc6ccd          2674         1919           124.11  [10] TO BT BT SC BT BT BT BT BT BT
+           8cccc555d          2524          610          1168.92  [9 ] TO RE RE RE BT BT BT BT SA
+             8cc5ccd          2359         1866            57.53  [7 ] TO BT BT RE BT BT SA
+             89ccccd          1880         2221            28.35  [7 ] TO BT BT BT BT DR SA
+          cacccccc6d          2210         2127             1.59  [10] TO SC BT BT BT BT BT BT SR BT
+                 46d          2118         1569            81.75  [3 ] TO SC AB
+          cccc6ccccd          2060         1752            24.89  [10] TO BT BT BT BT SC BT BT BT BT
+               4cccd          1940         1981             0.43  [5 ] TO BT BT BT AB
+                         1000000      1000000       106.82 
+ 
+
+Dump top line, RSOilSurface as dielectric_metal when its MO/Ac ?::
+
+    tlaser-;tlaser-t --dbgseqhis 8ccccd 
+
+
+    ----CRecorder::compare---- record_id        5 --dindex 
+    2016-10-25 20:11:36.056 INFO  [3525262] [CRecorder::Dump@847] CRecorder::compare (rdr-dump)DONE record_id       5
+    2016-10-25 20:11:36.056 INFO  [3525262] [CRecorder::Dump@850]  seqhis 8ccccd TORCH BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT BOUNDARY_TRANSMIT SURFACE_ABSORB . . . . . . . . . . 
+    2016-10-25 20:11:36.056 INFO  [3525262] [CRecorder::Dump@854]  seqmat 343231 GdDopedLS Acrylic LiquidScintillator Acrylic MineralOil Acrylic - - - - - - - - - - 
+    2016-10-25 20:11:36.056 INFO  [3525262] [CRec::dump@40] crec record_id 5 nstp 5  Ori[ -18079.453-799699.438-6605.000] 
+        0[   0](Stp ;opticalphoton stepNum 1513010768(tk ;opticalphoton tid 6 pid 0 nm    430 mm  ori[ -18079.453-799699.438-6605.000]  pos[ 1255.240-1878.345   0.000]  )
+      pre d/Geometry/AD/lvIAV#pvGDS rials/GdDopedLS          noProc           Undefined pos[      0.000     0.000     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns  0.100 nm 430.000
+     post d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[    861.221 -1288.733     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns  8.059 nm 430.000
+     )
+        1[   1](Stp ;opticalphoton stepNum 1513010768(tk ;opticalphoton tid 6 pid 0 nm    430 mm  ori[ -18079.453-799699.438-6605.000]  pos[ 1255.240-1878.345   0.000]  )
+      pre d/Geometry/AD/lvLSO#pvIAV terials/Acrylic  Transportation        GeomBoundary pos[    861.221 -1288.733     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns  8.059 nm 430.000
+     post d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[    866.777 -1297.048     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns  8.110 nm 430.000
+     )
+        2[   2](Stp ;opticalphoton stepNum 1513010768(tk ;opticalphoton tid 6 pid 0 nm    430 mm  ori[ -18079.453-799699.438-6605.000]  pos[ 1255.240-1878.345   0.000]  )
+      pre d/Geometry/AD/lvOAV#pvLSO uidScintillator  Transportation        GeomBoundary pos[    866.777 -1297.048     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns  8.110 nm 430.000
+     post d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[   1101.250 -1647.913     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns 10.301 nm 430.000
+     )
+        3[   3](Stp ;opticalphoton stepNum 1513010768(tk ;opticalphoton tid 6 pid 0 nm    430 mm  ori[ -18079.453-799699.438-6605.000]  pos[ 1255.240-1878.345   0.000]  )
+      pre d/Geometry/AD/lvOIL#pvOAV terials/Acrylic  Transportation        GeomBoundary pos[   1101.250 -1647.913     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns 10.301 nm 430.000
+     post d/Geometry/AD/lvSST#pvOIL ials/MineralOil  Transportation        GeomBoundary pos[   1111.251 -1662.879     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns 10.393 nm 430.000
+     )
+        4[   4](Stp ;opticalphoton stepNum 1513010768(tk ;opticalphoton tid 6 pid 0 nm    430 mm  ori[ -18079.453-799699.438-6605.000]  pos[ 1255.240-1878.345   0.000]  )
+      pre d/Geometry/AD/lvSST#pvOIL ials/MineralOil  Transportation        GeomBoundary pos[   1111.251 -1662.879     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns 10.393 nm 430.000
+     post D/lvOIL#pvRadialShield:20 terials/Acrylic  Transportation        GeomBoundary pos[   1255.240 -1878.345     0.000]  dir[    0.556  -0.831   0.000]  pol[   -1.000   0.023   0.000]  ns 11.738 nm 430.000
+     )
+    2016-10-25 20:11:36.057 INFO  [3525262] [*DsG4OpBoundaryProcess::PostStepDoIt@442] OpticalSurface  name RSOilSurface thePhotonMomentum (eV) 2.88335 theReflectivity 0.0409174 theEfficiency 0. dielectric_metal  ground - m1 /dd/Materials/MineralOil m2 /dd/Materials/Acrylic
+    2016-10-25 20:11:36.057 INFO  [3525262] [*DsG4OpBoundaryProcess::PostStepDoIt@442] OpticalSurface  name RSOilSurface thePhotonMomentum (eV) 2.88335 theReflectivity 0.0409174 theEfficiency 0. dielectric_metal  ground - m1 /dd/Materials/MineralOil m2 /dd/Materials/Acrylic
+
+
+
+
+
+::
+
+    2016-10-25 20:11:31.336 INFO  [3525262] [GSurLib::dump@196] GGeo::loadFromCache GSurLib::dump
+        0 S(   0                NearPoolCoverSurface)  nlv   1 npvp   1  [ obnd    3:Air/NearPoolCoverSurface//PPE] 
+        1 B(   1                NearDeadLinerSurface)  nlv   1 npvp   1  [ obnd   13:DeadWater/NearDeadLinerSurface//Tyvek] 
+        2 B(   2                 NearOWSLinerSurface)  nlv   1 npvp   1  [ ibnd   14:Tyvek//NearOWSLinerSurface/OwsWater] 
+        3 B(   3               NearIWSCurtainSurface)  nlv   1 npvp   1  [ ibnd   16:Tyvek//NearIWSCurtainSurface/IwsWater] 
+        4 B(   4                SSTWaterSurfaceNear1)  nlv   1 npvp   1  [ obnd   18:IwsWater/SSTWaterSurfaceNear1//StainlessSteel] 
+        5 B(   5                       SSTOilSurface)  nlv   1 npvp   2  [ ibnd   19:StainlessSteel//SSTOilSurface/MineralOil] 
+        6 S(   6       lvPmtHemiCathodeSensorSurface)  nlv   1 npvp 672  [ obnd   29:Vacuum/lvPmtHemiCathodeSensorSurface//Bialkali] 
+        7 S(   7     lvHeadonPmtCathodeSensorSurface)  nlv   1 npvp  12  [ obnd   34:Vacuum/lvHeadonPmtCathodeSensorSurface//Bialkali] 
+        8 S(   8                        RSOilSurface)  nlv   1 npvp  64  [ obnd   37:MineralOil/RSOilSurface//Acrylic]                <-- FLIPPED ???
+        9 B(   9                    ESRAirSurfaceTop)  nlv   1 npvp   2  [ obnd   39:Air/ESRAirSurfaceTop//ESR] 
+       10 B(  10                    ESRAirSurfaceBot)  nlv   1 npvp   2  [ obnd   40:Air/ESRAirSurfaceBot//ESR] 
+       11 S(  11                  AdCableTraySurface)  nlv   1 npvp   2  [ obnd   76:IwsWater/AdCableTraySurface//UnstStainlessSteel] 
+       12 B(  12                SSTWaterSurfaceNear2)  nlv   1 npvp   1  [ obnd   80:IwsWater/SSTWaterSurfaceNear2//StainlessSteel] 
+
+
+::
+
+    op --surf 8    ## type 0, is dielectric_metal ... TODO: trace this 
+
+
+    2016-10-25 20:29:13.727 INFO  [3530462] [GSurfaceLib::dump@717]  (  8,  0,  3,100) GPropertyMap<T>::  8        surface s: GOpticalSurface  type 0 model 1 finish 3 value     1                  RSOilSurface k:detect absorb reflect_specular reflect_diffuse extra_x extra_y extra_z extra_w RSOilSurface
+                  domain              detect              absorb    reflect_specular     reflect_diffuse             extra_x
+                      60                   0               0.827                   0               0.173                  -1
+                      80                   0            0.827015                   0            0.172985                  -1
+                     100                   0             0.85649                   0             0.14351                  -1
+                     120                   0            0.885965                   0            0.114035                  -1
+                     140                   0            0.897743                   0            0.102257                  -1
+                     160                   0            0.909501                   0           0.0904994                  -1
+                     180                   0            0.921258                   0           0.0787423                  -1
+                     200                   0            0.933007                   0           0.0669933                  -1
+                     220                   0            0.938282                   0           0.0617179                  -1
+                     240                   0            0.943557                   0           0.0564426                  -1
+                     260                   0            0.947648                   0           0.0523518                  -1
+                     280                   0             0.95055                   0           0.0494499                  -1
+                     300                   0            0.953451                   0           0.0465491                  -1
+                     320                   0            0.954789                   0           0.0452105                  -1
+                     340                   0            0.956128                   0            0.043872                  -1
+
+
+
+Optical Surface Trace
+------------------------
+
+Other than perfect additions all surfaces are type=dielectric_metal with finish ground 
+(other than ESRAir.. which is polished)
+
+Looks to be a surface type bug.
+
+Hmm the perfect surfaces listed as finish: polishedfrontpainted
+
+::
+
+     61 enum G4OpticalSurfaceFinish
+     62 {
+     63    polished,                    // smooth perfectly polished surface
+     64    polishedfrontpainted,        // smooth top-layer (front) paint
+     65    polishedbackpainted,         // same is 'polished' but with a back-paint
+     66 
+     67    ground,                      // rough surface
+     68    groundfrontpainted,          // rough top-layer (front) paint
+     69    groundbackpainted,           // same as 'ground' but with a back-paint
+
+::
+
+     65 enum G4SurfaceType
+     66 {
+     67    dielectric_metal,            // dielectric-metal interface
+     68    dielectric_dielectric,       // dielectric-dielectric interface
+     69    dielectric_LUT,              // dielectric-Look-Up-Table interface
+     70    dielectric_dichroic,         // dichroic filter interface
+     71    firsov,                      // for Firsov Process
+     72    x_ray                        // for x-ray mirror process
+     73 };
+     74 
+     75 /////////////////////
+     76 // Class Definition
+     77 /////////////////////
+     78 
+     79 class G4SurfaceProperty
+     80 {
+
+::
+
+    op --surf
+
+    2016-10-25 20:54:23.188 INFO  [3537695] [GSurfaceLib::Summary@137] GSurfaceLib::dump NumSurfaces 48 NumFloat4 2
+    2016-10-25 20:54:23.189 INFO  [3537695] [GSurfaceLib::dump@651]  (index,type,finish,value) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]           NearPoolCoverSurface (  0,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]           NearDeadLinerSurface (  1,  0,  3, 20) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]            NearOWSLinerSurface (  2,  0,  3, 20) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]          NearIWSCurtainSurface (  3,  0,  3, 20) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]           SSTWaterSurfaceNear1 (  4,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]                  SSTOilSurface (  5,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]  lvPmtHemiCathodeSensorSurface (  6,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658] lvHeadonPmtCathodeSensorSurface (  7,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]                   RSOilSurface (  8,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               ESRAirSurfaceTop (  9,  0,  0,  0) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               ESRAirSurfaceBot ( 10,  0,  0,  0) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]             AdCableTraySurface ( 11,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]           SSTWaterSurfaceNear2 ( 12,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]            PmtMtTopRingSurface ( 13,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]           PmtMtBaseRingSurface ( 14,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               PmtMtRib1Surface ( 15,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               PmtMtRib2Surface ( 16,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               PmtMtRib3Surface ( 17,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]             LegInIWSTubSurface ( 18,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]              TablePanelSurface ( 19,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]             SupportRib1Surface ( 20,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]             SupportRib5Surface ( 21,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               SlopeRib1Surface ( 22,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]               SlopeRib5Surface ( 23,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]        ADVertiCableTraySurface ( 24,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]       ShortParCableTraySurface ( 25,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]          NearInnInPiperSurface ( 26,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]         NearInnOutPiperSurface ( 27,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]             LegInOWSTubSurface ( 28,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib6Surface ( 29,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib7Surface ( 30,  0,  3,100) 
+    2016-10-25 20:54:23.189 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib3Surface ( 31,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib5Surface ( 32,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib4Surface ( 33,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib1Surface ( 34,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib2Surface ( 35,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib8Surface ( 36,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            UnistrutRib9Surface ( 37,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]       TopShortCableTraySurface ( 38,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]      TopCornerCableTraySurface ( 39,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]          VertiCableTraySurface ( 40,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]          NearOutInPiperSurface ( 41,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]         NearOutOutPiperSurface ( 42,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]            LegInDeadTubSurface ( 43,  0,  3,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]           perfectDetectSurface ( 44,  1,  1,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]           perfectAbsorbSurface ( 45,  1,  1,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]         perfectSpecularSurface ( 46,  1,  1,100) 
+    2016-10-25 20:54:23.190 WARN  [3537695] [GSurfaceLib::dump@658]          perfectDiffuseSurface ( 47,  1,  1,100) 
+
+
+
+::
+
+    248 void G4DAEWriteStructure::
+    249 OpticalSurfaceWrite(xercesc::DOMElement* targetElement,
+    250                     const G4OpticalSurface* const surf)
+    251 {
+    252    xercesc::DOMElement* optElement = NewElement("opticalsurface");
+    253    G4OpticalSurfaceModel smodel = surf->GetModel();
+    254    G4double sval = (smodel==glisur) ? surf->GetPolish() : surf->GetSigmaAlpha();
+    255 
+    256    optElement->setAttributeNode(NewNCNameAttribute("name", surf->GetName()));
+    257    optElement->setAttributeNode(NewAttribute("model", smodel));
+    258    optElement->setAttributeNode(NewAttribute("finish", surf->GetFinish()));
+    259    optElement->setAttributeNode(NewAttribute("type", surf->GetType()));
+    260    optElement->setAttributeNode(NewAttribute("value", sval));
+    261 
+    262    G4MaterialPropertiesTable* ptable = surf->GetMaterialPropertiesTable();
+    263    PropertyWrite( optElement, ptable );
+    264 
+    265    targetElement->appendChild(optElement);
+    266 }
+
+
+
+
+
 Prior to fixing aim
 ----------------------
 

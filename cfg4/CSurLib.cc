@@ -183,12 +183,14 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
     //if(!lv) 
+/*
         LOG(fatal) << "CSurLib::makeSkinSurface"
                    << " ilv " << std::setw(5) << ilv
                    << " name " << std::setw(35) << name
                    << " lvn " << std::setw(35) << lvn 
                    << " lv " << ( lv ? lv->GetName() : "NULL" )
                    ;
+*/
 
     G4LogicalSkinSurface* lss = new G4LogicalSkinSurface(name, const_cast<G4LogicalVolume*>(lv), os );
     return lss ;
@@ -208,10 +210,10 @@ void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>
     CMPT mpt(mpt_);
 
     GOpticalSurface* os_ = pmap->getOpticalSurface();
-    const char* name = pmap->getShortName();
-    unsigned   nprop = pmap->getNumProperties();
 
-    LOG(info) << "CSurLib::addProperties " << name ;  
+    //unsigned   nprop = pmap->getNumProperties();
+    //const char* name = pmap->getShortName();
+    //LOG(info) << "CSurLib::addProperties " << name ;  
 
     GProperty<float>* detect = pmap->getProperty(GSurfaceLib::detect);
     GProperty<float>* absorb = pmap->getProperty(GSurfaceLib::absorb);
@@ -268,6 +270,7 @@ void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>
     if(is_specular) tt << " is_specular " ; 
 
 
+/*
     LOG(info) 
               << " name " << std::setw(35) << name
               << " nprop " << std::setw(4) << nprop
@@ -277,6 +280,8 @@ void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>
 
 
     LOG(info) << mpt.description("MPT:");
+
+*/
 
 }
 
