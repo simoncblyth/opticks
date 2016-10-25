@@ -627,6 +627,7 @@ void GGeo::loadFromCache()
     m_sourcelib  = GSourceLib::load(m_opticks);
 
     m_surlib = new GSurLib(this) ; 
+    m_surlib->dump("GGeo::loadFromCache GSurLib::dump");
 
     LOG(trace) << "GGeo::loadFromCache DONE" ; 
 }
@@ -642,8 +643,6 @@ void GGeo::setupLookup()
     const std::map<std::string, unsigned int>& B  = m_bndlib->getMaterialLineMap();
 
     m_lookup->setB(B,"", "GGeo::setupLookup/m_bndlib") ;
-
-
 }
 
 

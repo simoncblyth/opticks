@@ -44,7 +44,7 @@ void CMaterialTable::init()
         }
         else
         {
-            LOG(warning) << "CMaterialTable::init material with incorrect prefix " 
+            LOG(debug) << "CMaterialTable::init material with unexpected prefix " 
                          << " name " << name
                          << " prefix " << m_prefix 
                          ; 

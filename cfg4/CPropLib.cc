@@ -224,7 +224,7 @@ const G4Material* CPropLib::makeMaterial(const char* matname)
         LOG(info) << "CPropLib::makeMaterial" 
                   << " matname " << std::setw(35) << matname
                   << " kmat " << kmat 
-                  << " material " << material 
+                  << " material " << (void*)material 
                   ;
     }
     else
@@ -232,7 +232,7 @@ const G4Material* CPropLib::makeMaterial(const char* matname)
         LOG(info) << "CPropLib::makeMaterial" 
                   << " REUSING PREEXISTING G4Material "
                   << " matname " << std::setw(35) << matname
-                  << " material " << material 
+                  << " material " << (void*)material 
                   ;
  
     }
@@ -294,6 +294,9 @@ G4LogicalBorderSurface* CPropLib::makeConstantSurface(const char* name, G4VPhysi
 G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2)
 {
     G4OpticalSurface* os = makeOpticalSurface(name);
+    os->SetType(dielectric_metal); 
+    // dielectric_metal is required so DsG4OpBoundaryProcess can doAbsorption 
+    // where EFFICIENCY is consulted and detect can happen
 
     GProperty<float>* detect = m_sensor_surface->getProperty("detect"); assert(detect);
     GProperty<float>* reflectivity = m_mlib->makeConstantProperty(0.f);
@@ -347,6 +350,8 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 
         assert(surf);
         addProperties(mpt, surf, "EFFICIENCY");
+
+        // REFLECTIVITY ?
     }
 
     if(_ggmat->hasNonZeroProperty("reemission_prob"))

@@ -29,8 +29,7 @@ CGeometry::CGeometry(OpticksHub* hub)
    :
    m_hub(hub),
    m_ggeo(hub->getGGeo()),
-   m_surlib(m_ggeo->getSurLib()),
-   m_csurlib(new CSurLib(m_surlib)),
+   m_csurlib(new CSurLib(m_ggeo->getSurLib())),
    m_ok(m_hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
    m_detector(NULL),

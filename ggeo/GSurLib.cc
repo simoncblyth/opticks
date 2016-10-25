@@ -124,22 +124,16 @@ void GSurLib::examineSolidBndSurfaces()
         GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
 
         // the reason for the order swap between osur and isur is explained below
-
-
         if(osur)
         {
             osur->addOuter(i, boundary);
-
-            osur->addVolumePair(parent,  i);   
-            // border surface identity based on PV instances, so must use the index NOT THE NAME
-
-            osur->addLV(lv); 
-            // skin surface identity is 1-to-1 with lv name ?
+            osur->addVolumePair(parent,  i);   // border surface identity based on PV instances, so must use the index NOT THE NAME
+            osur->addLV(lv);                   // skin surface identity is 1-to-1 with lv name ?
         } 
         if(isur)
         {
             isur->addInner(i,boundary);
-            isur->addVolumePair(i, parent);
+            isur->addVolumePair(i, parent);   // note volume order for isur is opposite to osur
             isur->addLV(lv);
         } 
     }

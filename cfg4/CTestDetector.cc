@@ -264,9 +264,23 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
 void CTestDetector::kludgePhotoCathode()
 {
+   // HMM THIS IS A DIRTY KLUDGE ..
+   //
+   // Over in CGDMLDetector have implemented the GSurLib/CSurLib machinery
+   // for revivifying optical surfaces "properly" ...
+   //
+   // Can that machinery be used here with test geometry ?
+   //
+   // Possibly but it would be quite involved as border surfaces need pv volume indices 
+   // that change for test geometry.
+   // Decided too much effort to do this in general when the only surface needed in test geometry for now is the cathode.
+   //
+   // See :doc:`notes/issues/geant4_opticks_integration/surlib_with_test_geometry` 
+   //
+
     LOG(info) << "CTestDetector::kludgePhotoCathode" ;
 
-    float effi = 0.f ; 
+    float effi = 1.f ; 
     float refl = 0.f ; 
     {
         const char* name = "kludgePhotoCathode_PyrexBialkali" ; 

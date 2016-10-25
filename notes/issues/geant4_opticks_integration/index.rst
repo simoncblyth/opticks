@@ -4,6 +4,7 @@ geant4_opticks_integration
 
 .. toctree::
 
+   surlib_with_test_geometry
    okg4_tpmt_revisit
    reemission_review
    okg4_torch_shakedown

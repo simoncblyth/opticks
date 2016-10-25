@@ -1,6 +1,88 @@
 OKG4 tpmt revisited
 ======================
 
+FIXED : CTestDetector::kludgePhotoCathode was incorrectly using dielectric_dielectric
+------------------------------------------------------------------------------------------
+
+::
+
+         seqhis_ana  10:PmtInBox   -10:PmtInBox           c2 
+                 8cd        340272       340302             0.00  [3 ] TO BT SA
+                 7cd        107599       107429             0.13  [3 ] TO BT SD
+                8ccd         23215        23047             0.61  [4 ] TO BT BT SA
+                  4d         18866        19198             2.90  [2 ] TO AB
+                 86d          3179         3400             7.42  [3 ] TO SC SA
+                 4cd          2204         2108             2.14  [3 ] TO BT AB
+                4ccd          1696         1685             0.04  [4 ] TO BT BT AB
+                 8bd          1446         1553             3.82  [3 ] TO BR SA
+                8c6d           382          261            22.77  [4 ] TO SC BT SA
+               86ccd           260          254             0.07  [5 ] TO BT BT SC SA
+              8cbbcd           190          205             0.57  [6 ] TO BT BR BR BT SA
+                 46d           197          173             1.56  [3 ] TO SC AB
+                 4bd           132          104             3.32  [3 ] TO BR AB
+                7c6d           111           72             8.31  [4 ] TO SC BT SD
+                866d            35           28             0.78  [4 ] TO SC SC SA
+               8cc6d            31           21             1.92  [5 ] TO SC BT BT SA
+            8cbc6ccd            31           16             4.79  [8 ] TO BT BT SC BT BR BT SA
+                8b6d            26           23             0.18  [4 ] TO SC BR SA
+              4cbbcd            24           14             2.63  [6 ] TO BT BR BR BT AB
+               46ccd            17           24             1.20  [5 ] TO BT BT SC AB
+                          500000       500000         3.11 
+
+
+But material sequence looks to have bug...
+
+::
+
+      A:seqmat_ana   10:PmtInBox 
+                 5e4        0.896         447871       [3 ] MO Py Bk
+                c4e4        0.046          23215       [4 ] MO Py MO Rk
+                  44        0.038          18866       [2 ] MO MO
+                 c44        0.009           4625       [3 ] MO MO Rk
+                 ee4        0.004           2204       [3 ] MO Py Py
+                44e4        0.003           1696       [4 ] MO Py MO MO
+                5e44        0.001            493       [4 ] MO MO Py Bk
+                 444        0.001            329       [3 ] MO MO MO
+               c44e4        0.001            260       [5 ] MO Py MO MO Rk
+              c4eee4        0.000            190       [6 ] MO Py Py Py MO Rk
+                c444        0.000             80       [4 ] MO MO MO Rk
+               c4e44        0.000             31       [5 ] MO MO Py MO Rk
+              44eee4        0.000             24       [6 ] MO Py Py Py MO MO
+               444e4        0.000             17       [5 ] MO Py MO MO MO
+            c4ee44e4        0.000             16       [8 ] MO Py MO MO Py Py MO Rk
+            c44e44e4        0.000             15       [8 ] MO Py MO MO Py MO MO Rk
+          44e4eeeee4        0.000              7       [10] MO Py Py Py Py Py MO Py MO MO
+              c444e4        0.000              7       [6 ] MO Py MO MO MO Rk
+          c4edbe44e4        0.000              6       [10] MO Py MO MO Py OV Vm Py MO Rk
+             c44eee4        0.000              5       [7 ] MO Py Py Py MO MO Rk
+                          500000         1.00 
+       B:seqmat_ana   -10:PmtInBox 
+                 5e4        0.895         447731       [3 ] MO Py Bk
+                  44        0.048          24151       [2 ] MO MO
+                 4e4        0.046          23047       [3 ] MO Py MO
+                 ee4        0.004           2108       [3 ] MO Py Py
+                44e4        0.004           1939       [4 ] MO Py MO MO
+                 444        0.001            350       [3 ] MO MO MO
+                5e44        0.001            333       [4 ] MO MO Py Bk
+               4eee4        0.000            205       [5 ] MO Py Py Py MO
+               444e4        0.000             29       [5 ] MO Py MO MO MO
+                4e44        0.000             21       [4 ] MO MO Py MO
+              44eee4        0.000             18       [6 ] MO Py Py Py MO MO
+             4ee44e4        0.000             16       [7 ] MO Py MO MO Py Py MO
+                4444        0.000              9       [4 ] MO MO MO MO
+          4e5dbe44e4        0.000              6       [10] MO Py MO MO Py OV Vm Bk Py MO
+               44e44        0.000              5       [5 ] MO MO Py MO MO
+               5e444        0.000              5       [5 ] MO MO MO Py Bk
+               eeee4        0.000              4       [5 ] MO Py Py Py Py
+                eee4        0.000              4       [4 ] MO Py Py Py
+                ee44        0.000              2       [4 ] MO MO Py Py
+              ee44e4        0.000              2       [6 ] MO Py MO MO Py Py
+                          500000         1.00 
+
+
+
+
+
 Perhaps surface conversion not yet implemented for CTestDetector ?
 ---------------------------------------------------------------------
 

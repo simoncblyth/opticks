@@ -187,7 +187,7 @@ void OpticksGeometry::loadGeometry()
 
     LOG(debug) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
 
-    loadGeometryBase();
+    loadGeometryBase(); //  usually from cache
 
     if(!m_ggeo->isValid())
     {
@@ -238,7 +238,7 @@ void OpticksGeometry::loadGeometryBase()
         m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
     }
 
-    m_ggeo->loadGeometry();
+    m_ggeo->loadGeometry();   // potentially from cache 
         
     if(m_ggeo->getMeshVerbosity() > 2)
     {

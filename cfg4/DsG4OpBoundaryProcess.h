@@ -275,27 +275,6 @@ void DsG4OpBoundaryProcess::ChooseReflection()
                  }
 }
 
-inline
-void DsG4OpBoundaryProcess::DoAbsorption()
-{
-              theStatus = Absorption;
-
-              if ( G4BooleanRand(theEfficiency) ) {
-		
-                 // EnergyDeposited =/= 0 means: photon has been detected
-                 theStatus = Detection;
-                 aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
-              }
-              else {
-                 aParticleChange.ProposeLocalEnergyDeposit(0.0);
-              }
-
-              NewMomentum = OldMomentum;
-              NewPolarization = OldPolarization;
-
-//              aParticleChange.ProposeEnergy(0.0);
-              aParticleChange.ProposeTrackStatus(fStopAndKill);
-}
 
 inline
 void DsG4OpBoundaryProcess::DoReflection()

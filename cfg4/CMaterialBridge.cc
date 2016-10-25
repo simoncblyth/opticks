@@ -23,7 +23,7 @@ void CMaterialBridge::initMap()
     const G4MaterialTable* mtab = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();
 
-    LOG(info) << "CMaterialBridge::initMap" 
+    LOG(trace) << "CMaterialBridge::initMap" 
               << " nmat (G4Material::GetNumberOfMaterials) " << nmat 
               ;
 
@@ -42,14 +42,14 @@ void CMaterialBridge::initMap()
         m_ixtoname[index] = shortname ;
 
 
-        LOG(info) << " i " << std::setw(3) << i 
+        LOG(trace) << " i " << std::setw(3) << i 
                   << " name " << std::setw(35) << name 
                   << " shortname " << std::setw(35) << shortname 
                   << " index " << std::setw(5)  << index
                   ; 
     }
 
-    LOG(info)
+    LOG(trace)
             << " nmat " << nmat 
             << " m_g4toix.size() "   << m_g4toix.size() 
             << " m_ixtoname.size() " << m_ixtoname.size() 

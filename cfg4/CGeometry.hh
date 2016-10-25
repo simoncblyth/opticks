@@ -5,7 +5,6 @@
 
 class OpticksHub ; 
 class GGeo ; 
-class GSurLib ; 
 class CSurLib ; 
 class CG4 ; 
 class Opticks ; 
@@ -33,7 +32,6 @@ class CFG4_API CGeometry
    private:
        OpticksHub*          m_hub ; 
        GGeo*                m_ggeo ; 
-       GSurLib*             m_surlib ; 
        CSurLib*             m_csurlib ; 
 
        Opticks*             m_ok ; 

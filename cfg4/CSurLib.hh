@@ -22,6 +22,15 @@ class CDetector ;
 CSurLib
 ========
 
+CSurLib is a constituent of CGeometry that is instanciated with CGeometry. 
+The `convert(CDetector* detector)` method is invoked from CGeometry::init 
+this creates G4  borders and skins together with their associated optical surfaces. 
+The CDetector argument is used to lookup actual PhysicalVolumes from pv indices 
+and actual LogicalVolumes from lv names.
+
+Hmm how to apply to CTestDetector ? PV indices are all different.
+
+
 * Tested with CGeometryTest 
 
 **/

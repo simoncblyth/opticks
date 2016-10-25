@@ -123,6 +123,10 @@ void CSurLib::convert(CDetector* detector)
                  m_skin.push_back(lss);
              }
         } 
+        else
+        {
+              LOG(warning) << "CSurLib::convert SKIPPED GSur index " << i << " : " << sur->brief() ;  
+        }
     }   
     LOG(info) << brief();
 }
@@ -206,6 +210,8 @@ void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>
     GOpticalSurface* os_ = pmap->getOpticalSurface();
     const char* name = pmap->getShortName();
     unsigned   nprop = pmap->getNumProperties();
+
+    LOG(info) << "CSurLib::addProperties " << name ;  
 
     GProperty<float>* detect = pmap->getProperty(GSurfaceLib::detect);
     GProperty<float>* absorb = pmap->getProperty(GSurfaceLib::absorb);
