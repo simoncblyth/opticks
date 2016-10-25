@@ -182,7 +182,6 @@ void CPropLib::convert()
         const char* name = ggmat->getShortName() ;
         const G4Material* g4mat = convertMaterial(ggmat);
         std::string keys = getMaterialKeys(g4mat);
-        m_g4mat[name] = g4mat ; 
         LOG(debug) << "CPropLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
     }
     LOG(info) << "CPropLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
@@ -192,15 +191,6 @@ void CPropLib::convert()
 const G4Material* CPropLib::getG4Material(const char* shortname)
 {
     const G4Material* mat =  m_g4mat.count(shortname) == 1 ? m_g4mat[shortname] : NULL ; 
-
-    if(mat == NULL)
-    {
-        LOG(error) << " No G4Material in m_g4mat with shortname " << shortname 
-                   << " out of " << m_g4mat.size()
-                    ; 
-                     
-     
-    }
     return mat ; 
 }
 
@@ -225,8 +215,27 @@ const G4Material* CPropLib::makeInnerMaterial(const char* spec)
 
 const G4Material* CPropLib::makeMaterial(const char* matname)
 {
-    GMaterial* kmat = m_mlib->getMaterial(matname) ;
-    const G4Material* material = convertMaterial(kmat);
+    const G4Material* material = getG4Material(matname) ;
+    if( material == NULL )
+    { 
+        GMaterial* kmat = m_mlib->getMaterial(matname) ;
+        material = convertMaterial(kmat);
+
+        LOG(info) << "CPropLib::makeMaterial" 
+                  << " matname " << std::setw(35) << matname
+                  << " kmat " << kmat 
+                  << " material " << material 
+                  ;
+    }
+    else
+    {
+        LOG(info) << "CPropLib::makeMaterial" 
+                  << " REUSING PREEXISTING G4Material "
+                  << " matname " << std::setw(35) << matname
+                  << " material " << material 
+                  ;
+ 
+    }
     return material ; 
 }
 
@@ -571,6 +580,7 @@ const G4Material* CPropLib::convertMaterial(const GMaterial* kmat)
     material->SetMaterialPropertiesTable(mpt);
 
     m_ggtog4[kmat] = material ; 
+    m_g4mat[name] = material ;   // used by getG4Material(shortname) 
 
     return material ;  
 }

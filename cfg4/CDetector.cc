@@ -27,9 +27,9 @@
 
 
 
-CDetector::CDetector(Opticks* opticks, OpticksQuery* query)
+CDetector::CDetector(Opticks* ok, OpticksQuery* query)
   : 
-  m_opticks(opticks),
+  m_ok(ok),
   m_query(query),
   m_resource(NULL),
   m_lib(NULL),
@@ -84,8 +84,8 @@ void CDetector::init()
 {
     LOG(trace) << "CDetector::init" ;
 
-    m_resource = m_opticks->getResource();
-    m_lib = new CPropLib(m_opticks);
+    m_resource = m_ok->getResource();
+    m_lib = new CPropLib(m_ok);
     m_bbox = new NBoundingBox ;
 }
 
@@ -113,7 +113,7 @@ void CDetector::saveBuffers(const char* objname, unsigned int objindex)
 {
     assert(m_traverser);
 
-    std::string cachedir = m_opticks->getObjectPath(objname, objindex);
+    std::string cachedir = m_ok->getObjectPath(objname, objindex);
 
     NPY<float>* gtransforms = m_traverser->getGlobalTransforms(); 
     NPY<float>* ltransforms = m_traverser->getLocalTransforms(); 

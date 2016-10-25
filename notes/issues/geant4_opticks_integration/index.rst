@@ -4,6 +4,7 @@ geant4_opticks_integration
 
 .. toctree::
 
+   okg4_tpmt_revisit
    reemission_review
    okg4_torch_shakedown
    okg4_g4gun_shakedown

@@ -23,6 +23,10 @@ void CMaterialBridge::initMap()
     const G4MaterialTable* mtab = G4Material::GetMaterialTable();
     unsigned nmat = G4Material::GetNumberOfMaterials();
 
+    LOG(info) << "CMaterialBridge::initMap" 
+              << " nmat (G4Material::GetNumberOfMaterials) " << nmat 
+              ;
+
     for(unsigned i=0 ; i < nmat ; i++)
     {
         const G4Material* material = (*mtab)[i];
@@ -36,10 +40,24 @@ void CMaterialBridge::initMap()
         m_g4toix[material] = index ; 
 
         m_ixtoname[index] = shortname ;
+
+
+        LOG(info) << " i " << std::setw(3) << i 
+                  << " name " << std::setw(35) << name 
+                  << " shortname " << std::setw(35) << shortname 
+                  << " index " << std::setw(5)  << index
+                  ; 
     }
 
+    LOG(info)
+            << " nmat " << nmat 
+            << " m_g4toix.size() "   << m_g4toix.size() 
+            << " m_ixtoname.size() " << m_ixtoname.size() 
+             ; 
+
+
     assert( m_g4toix.size() == nmat );
-    assert( m_ixtoname.size() == nmat );
+    assert( m_ixtoname.size() == nmat && "there is probably a duplicated material name");
 }
 
 

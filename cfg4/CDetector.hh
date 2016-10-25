@@ -86,7 +86,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     // via bbox
     const glm::vec4& getCenterExtent();
  private:
-    Opticks*           m_opticks ;
+    Opticks*           m_ok ;
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
     CPropLib*          m_lib ; 

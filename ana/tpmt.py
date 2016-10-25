@@ -162,7 +162,8 @@ if 0:
             print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
 if 1:
-    Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=args.c2max )
+    Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=args.c2max, cf=False)
+    Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=args.c2max, cf=True)
     Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=None )
 
     #a.history_table()

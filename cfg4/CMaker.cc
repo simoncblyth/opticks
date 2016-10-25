@@ -26,9 +26,9 @@
 
 
 
-CMaker::CMaker(Opticks* cache, int verbosity) 
+CMaker::CMaker(Opticks* ok, int verbosity) 
    :
-   m_cache(cache),
+   m_ok(ok),
    m_verbosity(verbosity)
 {
 }   

@@ -100,7 +100,8 @@ tpmt--(){
     local tag=$(tpmt-tag)
     local det=$(tpmt-det)
 
-    local photons=500000
+    local photons=10000
+    #local photons=500000
     #local photons=100000
 
     local zenith=0,1
@@ -182,11 +183,11 @@ tpmt-cf-distrib() { tpmt_distrib.py  $(tpmt-args) ; }
 tpmt-skimmer() {    tpmt_skimmer.py  $(tpmt-args) ; } 
 
 
-tpmt-gen()
-{
-    tpmt--  --compute 
-    tpmt--  --tcfg4
-}
+#tpmt-gen()
+#{
+#    tpmt--  --compute 
+#    tpmt--  --tcfg4
+#}
 
 tpmt-ana()
 {
@@ -197,12 +198,14 @@ tpmt-ana()
 
 tpmt-t()
 {
-    tpmt-gen
-    tpmt-ana
+    tpmt-
+    tpmt-- --okg4 --compute
 }
 
 tpmt-v-g4() { tpmt-- --load --tcfg4 ; } 
+
 tpmt-v() {    tpmt-- --load ; } 
+tpmt-vg4() {  tpmt-- --load --vizg4 ; } 
 
 
 

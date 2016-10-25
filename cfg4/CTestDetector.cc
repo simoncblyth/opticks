@@ -50,9 +50,9 @@
 
 
 
-CTestDetector::CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query)
+CTestDetector::CTestDetector(Opticks* ok, GGeoTestConfig* config, OpticksQuery* query)
   : 
-  CDetector(cache, query),
+  CDetector(ok, query),
   m_config(config),
   m_maker(NULL)
 {
@@ -67,7 +67,7 @@ void CTestDetector::init()
 
     m_lib->setGroupvelKludge(m_config->getGroupvel());
 
-    m_maker = new CMaker(m_opticks);
+    m_maker = new CMaker(m_ok);
 
     LOG(trace) << "CTestDetector::init CMaker created" ; 
 

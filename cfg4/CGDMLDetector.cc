@@ -47,7 +47,7 @@ CGDMLDetector::~CGDMLDetector()
 
 void CGDMLDetector::init()
 {
-    const char* path = m_opticks->getGDMLPath();
+    const char* path = m_ok->getGDMLPath();
     bool exists = BFile::ExistsFile(path);
     std::string npath = BFile::FormPath(path);
 

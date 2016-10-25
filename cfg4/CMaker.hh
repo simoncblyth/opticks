@@ -7,20 +7,30 @@ class GCSG ;
 class G4VSolid;
 class Opticks ; 
 
-//
-// CMaker is a constitent of CTestDetector used
-// to convert GCSG geometry into G4 geometry in 
-// G4VPhysicalVolume* CTestDetector::Construct() 
-//
+
+/**
+CMaker
+======
+
+CMaker is a constitent of CTestDetector used
+to convert GCSG geometry into G4 geometry in 
+G4VPhysicalVolume* CTestDetector::Construct(). 
+
+CMaker only handles the geometrical shapes.
+Material assignments are done elsewhere, 
+at a higher level eg by CTestDetector.
+
+**/
 
 #include "CFG4_API_EXPORT.hh"
 
-class CFG4_API CMaker {
+class CFG4_API CMaker 
+{
     public:
         static std::string PVName(const char* shapename);
         static std::string LVName(const char* shapename);
     public:
-        CMaker(Opticks* cache, int verbosity=0);
+        CMaker(Opticks* ok, int verbosity=0);
     public:
         G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
         G4VSolid* makeBox(const glm::vec4& param);
@@ -28,7 +38,7 @@ class CFG4_API CMaker {
     public:
         G4VSolid* makeSolid(GCSG* csg, unsigned int i);
     private:
-        Opticks* m_cache ; 
+        Opticks* m_ok ; 
         int      m_verbosity ; 
 
 };

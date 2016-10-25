@@ -27,9 +27,7 @@ Fixed ? N
 
        ## torch running : G4 thinks in vacuum.... 
 
-
    OKG4Test --g4gun --compute --save
-
 
 
 
@@ -616,7 +614,6 @@ cfg4/OpStatus.hh::
     020 CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst);
 
 cfg4/OpStatus.cc::
-
 
     207 unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst)
     208 {
