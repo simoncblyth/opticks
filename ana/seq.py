@@ -4,7 +4,7 @@ log = logging.getLogger(__name__)
 import numpy as np
 
 from opticks.ana.base import ihex_
-from opticks.ana.nbase import chi2, count_unique_sorted
+from opticks.ana.nbase import chi2, ratio, count_unique_sorted
 from opticks.ana.nload import A
 
 
@@ -142,15 +142,23 @@ class SeqTable(object):
         if ncol == 2:
             a = cu[:,1].astype(np.float64)
             b = cu[:,2].astype(np.float64)
+
             c2, c2n, c2c = chi2(a, b, cut=30)
             c2p = c2.sum()/c2n
             cnames += ["c2"]
             tots += ["%10.2f" % c2p ]
             cfcount = cu[:,1:]
+
+            ab, ba = ratio(a, b)
+            cnames += ["ab"]
+            cnames += ["ba"]
+
         else:
             c2 = None
             c2p = None
             cfcount = None
+            ab = None
+            ba = None
         pass
 
 
@@ -164,6 +172,8 @@ class SeqTable(object):
         self.total = total
         self.c2 = c2
         self.c2p = c2p
+        self.ab = ab  
+        self.ba = ba  
 
         self.seqs = seqs
 
@@ -210,6 +220,19 @@ class SeqTable(object):
             sc2 = ""
         pass
 
+        if self.ab is not None:
+            sab = " %10.2f " % self.ab[n]
+        else:
+            sab = ""
+        pass
+
+        if self.ba is not None:
+            sba = " %10.2f " % self.ba[n]
+        else:
+            sba = ""
+        pass
+
+
         if self.total is not None:
              frac = float(self.cu[n,1])/float(self.total)
              frac = " %10.3f   " % frac
@@ -217,7 +240,7 @@ class SeqTable(object):
              frac = ""
         pass
 
-        return " ".join([xs] + [frac] + vals + ["   "]+ [sc2, nstep, label]) 
+        return " ".join([xs] + [frac] + vals + ["   "]+ [sc2, sab, sba, nstep, label]) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 

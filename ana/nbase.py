@@ -46,6 +46,16 @@ def chi2(a, b, cut=30):
     c2 = np.zeros_like(a)
     c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
     return c2, len(a[msk]), len(a[~msk]) 
+
+def ratio(a, b):
+    ab = np.zeros_like(a)
+    ba = np.zeros_like(a)
+    ab[b>0] = a[b>0]/b[b>0] 
+    ba[a>0] = b[a>0]/a[a>0]
+    return ab, ba
+
+
+
  
 
 def decompression_bins(cbins, *vals):

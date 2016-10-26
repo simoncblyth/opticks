@@ -1,5 +1,6 @@
 tlaser-source(){   echo $(opticks-home)/tests/tlaser.bash ; }
-tlaser-vi(){       vi $(tlaser-source) ; }
+tlaser-asource(){  echo $(opticks-home)/ana/tlaser.py ; }
+tlaser-vi(){       vi $(tlaser-source) $(tlaser-asource) ; }
 tlaser-usage(){ cat << \EOU
 
 tlaser- : Pencil beam 
@@ -23,9 +24,9 @@ tlaser--(){
     local msg="=== $FUNCNAME :"
 
     #local photons=1000000
+    local photons=100000
     #local photons=20000
-    #local photons=100000
-    local photons=100
+    #local photons=100
 
     local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)
     case $photons in

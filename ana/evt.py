@@ -25,6 +25,9 @@ ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(vnorm(b),3).reshape(-1,3)
 norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
 
+msk_ = lambda n:(1 << 4*n) - 1  # msk_(0)=0x0 msk_(1)=0xf msk_(2)=0xff msk_(3)=0xfff  
+
+
 def stamp_(path, fmt="%Y%m%d-%H%M"): 
    if path is None:
        return None
@@ -232,7 +235,25 @@ class Evt(object):
         log.debug("rx shape %s " % str(rx.shape))
 
     def init_sequence(self, tag, src, det, dbg):
+        """
+        Sequence values seqhis and seqmat for each photon::
 
+            In [8]: a.ph.shape
+            Out[8]: (100, 1, 2)
+
+            In [9]: np.set_printoptions(formatter={'int':hex})
+
+            In [10]: a.ph
+            Out[10]: 
+            A(torch,1,laser)-
+            A([[[0x8ccccdL, 0x343231L]],
+               [[0x8ccccdL, 0x343231L]],
+               [[0x8cccc6dL, 0x3432311L]],
+               [[0x8ccccdL, 0x343231L]],
+               [[0x8ccccdL, 0x343231L]],
+               [[0xbcbccccc6dL, 0x3333342311L]],
+
+        """
         ph = A.load_("ph",src,tag,det,dbg, optional=True)
         self.ph = ph
         self.desc['ph'] = "(records) photon history flag/material sequence"
@@ -265,11 +286,30 @@ class Evt(object):
         self.all_seqmat_ana = all_seqmat_ana
         self.seqmat_ana = all_seqmat_ana
 
+        for imsk in range(1,10):
+            msk = msk_(imsk) 
+            setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[cn])) 
 
 
 
     def init_index(self, tag, src, det, dbg):
+        """
+        Sequence indices for each photon::
+ 
+            In [2]: a.ps.shape
+            Out[2]: (100, 1, 4)
 
+            In [1]: a.ps
+            Out[1]: 
+            A([[[ 1,  1,  0,  0]],
+               [[ 1,  1,  0,  0]],
+               [[ 3,  3,  0,  0]],
+               [[ 1,  1,  0,  0]],
+
+            In [6]: a.rs.shape      ## same information as a.ps duped by maxrec for record access
+            Out[6]: (100, 10, 1, 4)
+
+        """
         ps = A.load_("ps",src,tag,det,dbg, optional=True)
 
         if not ps is None and not ps.missing:
