@@ -101,8 +101,8 @@ tpmt--(){
     local det=$(tpmt-det)
 
     #local photons=10000
-    local photons=500000
-    #local photons=100000
+    #local photons=500000
+    local photons=100000
 
     local zenith=0,1
     #local typ=disclin
@@ -135,6 +135,10 @@ tpmt--(){
 
     [ -z "$OPTICKS_INSTALL_PREFIX" ] && echo missing envvar OPTICKS_INSTALL_PREFIX && return 
 
+
+    local material=MineralOil
+    #local material=GdDopedLS
+
     local test_config=(
                  mode=PmtInBox
                  pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0
@@ -142,7 +146,7 @@ tpmt--(){
                  analytic=1
                  groupvel=$groupvelkludge
                  shape=box
-                 boundary=Rock/NONE/perfectAbsorbSurface/MineralOil
+                 boundary=Rock/NONE/perfectAbsorbSurface/$material
                  parameters=0,0,0,300
                    ) 
 

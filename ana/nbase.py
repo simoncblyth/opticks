@@ -48,10 +48,17 @@ def chi2(a, b, cut=30):
     return c2, len(a[msk]), len(a[~msk]) 
 
 def ratio(a, b):
-    ab = np.zeros_like(a)
-    ba = np.zeros_like(a)
-    ab[b>0] = a[b>0]/b[b>0] 
-    ba[a>0] = b[a>0]/a[a>0]
+    m = np.logical_and(a > 0, b > 0)
+
+    ab = np.zeros((len(a),2))
+    ba = np.zeros((len(a),2))
+
+    ab[m,0] = a[m]/b[m] 
+    ab[m,1] = np.sqrt(a[m])/b[m] 
+
+    ba[m,0] = b[m]/a[m]
+    ba[m,1] = np.sqrt(b[m])/a[m]
+
     return ab, ba
 
 

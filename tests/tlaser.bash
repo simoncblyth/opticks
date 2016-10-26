@@ -33,15 +33,21 @@ tlaser--(){
        1|10|100|1000|10000) g4ppe=$photons ;;
      esac
 
+    local nm=430
+    #local nm=480
+
+    ## beam from center of GDML AD in +X direction, fixpol +Y direction
     local tag=$(tlaser-tag)
     local torch_config=(
                  type=point
+                 mode=fixpol
+                 polarization=0,1,0
                  frame=3153
                  source=0,0,0
                  target=1,0,0
                  photons=$photons
                  material=GdDopedLS
-                 wavelength=430
+                 wavelength=$nm
                  weight=1.0
                  time=0.1
                  zenithazimuth=0,1,0,1
@@ -67,5 +73,11 @@ tlaser-i(){ ipython -i $(which tlaser.py) ; }
 
 tlaser-t(){ tlaser-;tlaser-- --okg4 --compute $* ; } 
 tlaser-d(){ tlaser-;tlaser-t --steppingdbg $* ; } 
+
+
+tlaser-tfx()
+{
+    tlaser-t  --fxabconfig 10000 --fxab --fxscconfig 10000 --fxsc --fxreconfig 0.5 --fxre $*
+}
 
 

@@ -221,13 +221,13 @@ class SeqTable(object):
         pass
 
         if self.ab is not None:
-            sab = " %10.2f " % self.ab[n]
+            sab = " %10.2f +- %4.2f " % ( self.ab[n,0], self.ab[n,1] )
         else:
             sab = ""
         pass
 
         if self.ba is not None:
-            sba = " %10.2f " % self.ba[n]
+            sba = " %10.2f +- %4.2f " % ( self.ba[n,0], self.ba[n,1] )
         else:
             sba = ""
         pass

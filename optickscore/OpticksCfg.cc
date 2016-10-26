@@ -46,6 +46,9 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_traverser(""),
        m_dbgseqhis("0"),
        m_dbgseqmat("0"),
+       m_fxreconfig("0"),
+       m_fxabconfig("0"),
+       m_fxscconfig("0"),
        m_epsilon(0.1f),     
        m_rngmax(3000000),     
        m_bouncemax(9),     
@@ -104,18 +107,36 @@ void OpticksCfg<Listener>::init()
        ("nore",  "inhibit reemission by zeroing reemission_prob of named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
    m_desc.add_options()
        ("xxre",  "enhance reemission by setting reemission_prob to one for named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+   m_desc.add_options()
+       ("fxre",  "enable application of config from   --fxreconfig option ");
+   m_desc.add_options()
+       ("fxreconfig",   boost::program_options::value<std::string>(&m_fxreconfig), "post cache artificial modification of reemission prob of scintillating materials, see GMaterialLib::postLoadFromCache" );
 
 
    m_desc.add_options()
        ("noab",  "inhibit absorption by setting large absorption_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
    m_desc.add_options()
        ("xxab",  "enhance absorption by setting small absorption_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+   m_desc.add_options()
+       ("fxab",  "enable application of config from   --fxabconfig option ");
+   m_desc.add_options()
+       ("fxabconfig",   boost::program_options::value<std::string>(&m_fxabconfig), "post cache artificial modification of absorption lengths of materials, see GMaterialLib::postLoadFromCache" );
 
 
    m_desc.add_options()
        ("nosc",  "inhibit scattering by setting large scattering_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
    m_desc.add_options()
        ("xxsc",  "enhance scattering by setting small scattering_length of all materials after loading from cache, see GMaterialLib::postLoadFromCache ") ;
+   m_desc.add_options()
+       ("fxsc",  "enable application of config from   --fxscconfig option ");
+   m_desc.add_options()
+       ("fxscconfig",   boost::program_options::value<std::string>(&m_fxscconfig), "configure post cache artificial modification of scattering lengths of materials, see GMaterialLib::postLoadFromCache" );
+
+
+
+
+
+
 
 
 
@@ -741,6 +762,25 @@ const std::string& OpticksCfg<Listener>::getDbgSeqmat()
 {
     return m_dbgseqmat  ;
 }
+
+
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getFxReConfig()
+{
+    return m_fxreconfig  ;
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getFxAbConfig()
+{
+    return m_fxabconfig  ;
+}
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getFxScConfig()
+{
+    return m_fxscconfig  ;
+}
+
 
 
 

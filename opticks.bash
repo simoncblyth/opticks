@@ -646,18 +646,18 @@ op-(){              . $(opticks-home)/bin/op.sh ; }
 
 #### opticks top level tests ########
 
-tviz-(){       . $(opticks-home)/tests/tviz.bash     && tviz-env $* ; }
-tpmt-(){       . $(opticks-home)/tests/tpmt.bash     && tpmt-env $* ; }
-trainbow-(){   . $(opticks-home)/tests/trainbow.bash && trainbow-env $* ; }
-tnewton-(){    . $(opticks-home)/tests/tnewton.bash  && tnewton-env $* ; }
-tprism-(){     . $(opticks-home)/tests/tprism.bash   && tprism-env $* ; }
-tbox-(){       . $(opticks-home)/tests/tbox.bash     && tbox-env $* ; }
-treflect-(){   . $(opticks-home)/tests/treflect.bash && treflect-env $* ; }
-twhite-(){     . $(opticks-home)/tests/twhite.bash   && twhite-env $* ; }
-tlens-(){      . $(opticks-home)/tests/tlens.bash    && tlens-env $* ; }
-tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash   && tg4gun-env $* ; }
-tlaser-(){     . $(opticks-home)/tests/tlaser.bash   && tlaser-env $* ; }
-
+tviz-(){       . $(opticks-home)/tests/tviz.bash      && tviz-env $* ; }
+tpmt-(){       . $(opticks-home)/tests/tpmt.bash      && tpmt-env $* ; }
+trainbow-(){   . $(opticks-home)/tests/trainbow.bash  && trainbow-env $* ; }
+tnewton-(){    . $(opticks-home)/tests/tnewton.bash   && tnewton-env $* ; }
+tprism-(){     . $(opticks-home)/tests/tprism.bash    && tprism-env $* ; }
+tbox-(){       . $(opticks-home)/tests/tbox.bash      && tbox-env $* ; }
+treflect-(){   . $(opticks-home)/tests/treflect.bash  && treflect-env $* ; }
+twhite-(){     . $(opticks-home)/tests/twhite.bash    && twhite-env $* ; }
+tlens-(){      . $(opticks-home)/tests/tlens.bash     && tlens-env $* ; }
+tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash    && tg4gun-env $* ; }
+tlaser-(){     . $(opticks-home)/tests/tlaser.bash    && tlaser-env $* ; }
+tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 
 ####### below functions support analysis on machines without a full opticks install
 ####### by copying some parts of an opticks install to corresponding local locations 

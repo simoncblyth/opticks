@@ -113,6 +113,27 @@ int BStr::atoi( const char* str, int fallback )
     return i ;
 }
 
+float BStr::atof( const char* str, float fallback )
+{
+    float f(fallback) ;   
+    if(!str) return f ; 
+ 
+    try{ 
+        f = boost::lexical_cast<float>(str) ;
+    }   
+    catch (const boost::bad_lexical_cast& e ) { 
+        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+    }   
+    catch( ... ){
+        LOG(warning) << "Unknown exception caught!" ;
+    }   
+    return f ;
+}
+
+
+
+
+
 const char* BStr::negate(const char* tag)
 {
     int itag = BStr::atoi(tag) ;

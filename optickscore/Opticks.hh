@@ -152,6 +152,9 @@ class OKCORE_API Opticks {
         // from cfg
        unsigned long long getDbgSeqhis();
        unsigned long long getDbgSeqmat();
+       float getFxRe();
+       float getFxAb();
+       float getFxSc();
    public:
        OpticksCfg<Opticks>* getCfg();
        std::string          getAnaKey();

@@ -54,28 +54,36 @@ tbox--(){
         photons=1
     fi
 
+
+    #local nm=380
+    local nm=480
+
     local torch_config=(
                  type=disclin
                  photons=$photons
-                 wavelength=380 
+                 wavelength=$nm 
                  frame=1
-                 source=0,0,300
+                 source=0,0,299
                  target=0,0,0
                  radius=100
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
 
+
+    #local material=MineralOil
+    local material=GdDopedLS
+
     local test_config=(
                  mode=BoxInBox
                  analytic=1
 
                  shape=box
-                 boundary=Rock//perfectAbsorbSurface/MineralOil
+                 boundary=Rock//perfectAbsorbSurface/$material
                  parameters=0,0,0,300
 
                  shape=box
-                 boundary=MineralOil///Pyrex
+                 boundary=$material///Pyrex
                  parameters=0,0,0,100
                    ) 
 
@@ -93,9 +101,19 @@ tbox-py(){    tbox.py  $(tbox-args) $* ; }
 tbox-ipy(){   ipython -i $(which tbox.py) --  $(tbox-args) $* ; } 
 tbox-t()
 {
-    tbox-- --compute
-    tbox-- --tcfg4
+    tbox-- --okg4 --compute $*
     tbox-py 
 }
+
+tbox-v()
+{
+    tbox-- --okg4 --load $*
+}
+
+tbox-vg4()
+{
+    tbox-- --okg4 --vizg4 --load $*
+}
+
 
 

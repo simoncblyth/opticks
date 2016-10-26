@@ -146,6 +146,11 @@ void OpticksGen::setMaterialLine( GenstepNPY* gs )
    // just need to avoid trying to translate the matline later
 
    const char* material = gs->getMaterial() ;
+
+   if(material == NULL)
+      LOG(fatal) << "NULL material from GenstepNPY, probably missed material in torch config" ;
+   assert(material);
+
    unsigned int matline = m_ggeo->getMaterialLine(material);
    gs->setMaterialLine(matline);  
 

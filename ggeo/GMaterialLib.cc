@@ -59,6 +59,10 @@ void GMaterialLib::postLoadFromCache()
     bool xxab = m_ok->hasOpt("xxab") ;
     bool xxsc = m_ok->hasOpt("xxsc") ;
 
+    bool fxre = m_ok->hasOpt("fxre") ;
+    bool fxab = m_ok->hasOpt("fxab") ;
+    bool fxsc = m_ok->hasOpt("fxsc") ;
+
 
     LOG(info) << "GMaterialLib::postLoadFromCache " 
               << " nore " << nore 
@@ -67,41 +71,47 @@ void GMaterialLib::postLoadFromCache()
               << " xxre " << xxre 
               << " xxab " << xxab 
               << " xxsc " << xxsc 
+              << " fxre " << fxre 
+              << " fxab " << fxab 
+              << " fxsc " << fxsc 
               ; 
 
-    if(nore || xxre )
+    if(nore || xxre || fxre)
     {    
         float reemission_prob = 0.f ; 
         if(nore) reemission_prob = 0.f ;
         if(xxre) reemission_prob = 0.5f ;  // not 1.0 in order to leave some AB, otherwise too unphysical 
+        if(fxre) reemission_prob = m_ok->getFxRe();
 
-        LOG(fatal) << "GMaterialLib::postLoadFromCache --nore option postCache modifying reemission_prob " ; 
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --nore/--xxre/--fxre option postCache modifying reemission_prob " ; 
         setMaterialPropertyValues("GdDopedLS",          "reemission_prob", reemission_prob );
         setMaterialPropertyValues("LiquidScintillator", "reemission_prob", reemission_prob );
     }
 
-    if(noab || xxab )
+    if(noab || xxab || fxab)
     {
         float absorption_length = 0.f ; 
         if(noab) absorption_length = 1000000000.f ;
         if(xxab) absorption_length = 100.f ;
+        if(fxab) absorption_length = m_ok->getFxAb();
 
-        LOG(fatal) << "GMaterialLib::postLoadFromCache --noab/--xxab option postCache modifying absorption_length: " << absorption_length ; 
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --noab/--xxab/--fxab option postCache modifying absorption_length: " << absorption_length ; 
         setMaterialPropertyValues("*",  "absorption_length", absorption_length );
     }
 
-    if(nosc || xxsc)
+    if(nosc || xxsc || fxsc)
     {
         float scattering_length = 0.f ; 
         if(nosc) scattering_length = 1000000000.f ;
         if(xxsc) scattering_length = 100.f ;
+        if(fxsc) scattering_length = m_ok->getFxSc();
 
-        LOG(fatal) << "GMaterialLib::postLoadFromCache --nosc/--xxsc option postCache modifying scattering_length: " << scattering_length ; 
+        LOG(fatal) << "GMaterialLib::postLoadFromCache --nosc/--xxsc/--fxsc option postCache modifying scattering_length: " << scattering_length ; 
         setMaterialPropertyValues("*",  "scattering_length", scattering_length );
     }
 
 
-    if(nore || noab || nosc || xxre || xxab || xxsc)
+    if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab)
     {
         // need to replace the loaded buffer with a new one with the changes for Opticks to see it 
         NPY<float>* mbuf = createBuffer();

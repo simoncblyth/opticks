@@ -233,6 +233,7 @@ if __name__ == '__main__':
     args = opticks_main(tag="1",src="torch",det="BoxInBox")
 
     np.set_printoptions(precision=4, linewidth=200)
+    np.set_printoptions(formatter={'int':hex})
 
     plt.ion()
     plt.close()
@@ -247,6 +248,17 @@ if __name__ == '__main__':
     log.info(" A : %s " % a.brief )
     log.info(" B : %s " % b.brief )
 
+if 1:
+    c2max = args.c2max
+    c2max = None
+
+    Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=c2max, cf=False)
+    Evt.compare_table(a,b, "seqhis_ana seqhis_ana_2 seqhis_ana_3 seqhis_ana_4 seqmat_ana".split(), lmx=20, c2max=c2max, cf=True)
+    Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=c2max )
+
+
+
+if 0:
     if a.valid:
         a0 = a.rpost_(0)
         #a0r = np.linalg.norm(a0[:,:2],2,1)
@@ -260,15 +272,6 @@ if __name__ == '__main__':
         print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
 
 
-    if a.valid and b.valid:
-        hcf = a.history.table.compare(b.history.table)
-        print hcf
-
-        mcf = a.material.table.compare(b.material.table)
-        print mcf
-
-    np.set_printoptions(formatter={'int':hex})
-
     if a.valid:
         ahm = np.dstack([a.seqhis,a.seqmat])[0]
         print "ahm (Op)\n", ahm
@@ -278,6 +281,7 @@ if __name__ == '__main__':
         print "bhm (G4)\n", bhm
 
 
+if 0:
     sel = "TO BT BT SA" 
     nst = len(sel.split())
 

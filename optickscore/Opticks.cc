@@ -433,6 +433,26 @@ unsigned long long Opticks::getDbgSeqhis()
 }
 
 
+float Opticks::getFxRe()
+{
+    std::string fxre = m_cfg->getFxReConfig();
+    return BStr::atof(fxre.c_str(), 0);
+}
+float Opticks::getFxAb()
+{
+    std::string fxab = m_cfg->getFxAbConfig();
+    return BStr::atof(fxab.c_str(), 0);
+}
+float Opticks::getFxSc()
+{
+    std::string fxsc = m_cfg->getFxScConfig();
+    return BStr::atof(fxsc.c_str(), 0);
+}
+
+
+
+
+
 
 void Opticks::defineEventSpec()
 {

@@ -356,7 +356,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
         if(m_torch->isFixPolarized())
         {
-             LOG(warning) << "CTorchSource::GeneratePrimaryVertex" 
+             LOG(trace) << "CTorchSource::GeneratePrimaryVertex" 
                        << " fixpol override "
                        << gformat(polarization)
                        ; 
