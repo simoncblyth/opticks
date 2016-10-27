@@ -40,6 +40,93 @@ Shoot horizontal laser in X direction (vertical geometry too involved)::
 TODO: property comparison plots using G4 interpolation and Opticks tex interpolation
 --------------------------------------------------------------------------------------
 
+* see :doc:`interpol_mismatch`
+
+* after fixing boundary_lookup 20nm posterization, discreps pushed out to low 
+  stats categories : need to fix the bad flags issue to make progress from this level
+
+::
+
+          seqhis_ana     1:laser     -1:laser           c2           ab           ba 
+              8ccccd         81381        81398             0.00         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                  4d          4577         4623             0.23         0.99 +- 0.01         1.01 +- 0.01  [2 ] TO AB
+          cccc9ccccd          2627         2685             0.63         0.98 +- 0.02         1.02 +- 0.02  [10] TO BT BT BT BT DR BT BT BT BT
+             8cccc6d          1570         1845            22.14         0.85 +- 0.02         1.18 +- 0.03  [7 ] TO SC BT BT BT BT SA
+                4ccd          1070         1101             0.44         0.97 +- 0.03         1.03 +- 0.03  [4 ] TO BT BT AB
+              4ccccd           859          846             0.10         1.02 +- 0.03         0.98 +- 0.03  [6 ] TO BT BT BT BT AB
+             8cccc5d           815          808             0.03         1.01 +- 0.04         0.99 +- 0.03  [7 ] TO RE BT BT BT BT SA
+             8cc6ccd           356          400             2.56         0.89 +- 0.05         1.12 +- 0.06  [7 ] TO BT BT SC BT BT SA
+          cacccccc6d           312          236            10.54         1.32 +- 0.07         0.76 +- 0.05  [10] TO SC BT BT BT BT BT BT SR BT
+          cccccc6ccd           291          226             8.17         1.29 +- 0.08         0.78 +- 0.05  [10] TO BT BT SC BT BT BT BT BT BT
+             86ccccd           268          267             0.00         1.00 +- 0.06         1.00 +- 0.06  [7 ] TO BT BT BT BT SC SA
+            4ccccc6d           257            4           245.25        64.25 +- 4.01         0.02 +- 0.01  [8 ] TO SC BT BT BT BT BT AB
+                 45d           240          239             0.00         1.00 +- 0.06         1.00 +- 0.06  [3 ] TO RE AB
+            8cccc55d           222          224             0.01         0.99 +- 0.07         1.01 +- 0.07  [8 ] TO RE RE BT BT BT BT SA
+               4cccd           220          198             1.16         1.11 +- 0.07         0.90 +- 0.06  [5 ] TO BT BT BT AB
+          cccc6ccccd           216          174             4.52         1.24 +- 0.08         0.81 +- 0.06  [10] TO BT BT BT BT SC BT BT BT BT
+            8ccccc6d           100          211            39.62         0.47 +- 0.05         2.11 +- 0.15  [8 ] TO SC BT BT BT BT BT SA
+             89ccccd           203          201             0.01         1.01 +- 0.07         0.99 +- 0.07  [7 ] TO BT BT BT BT DR SA
+             8cc5ccd           187          200             0.44         0.94 +- 0.07         1.07 +- 0.08  [7 ] TO BT BT RE BT BT SA
+                 46d           195          160             3.45         1.22 +- 0.09         0.82 +- 0.06  [3 ] TO SC AB
+                          100000       100000        13.72 
+
+
+::
+
+        seqhis_ana_1     1:laser     -1:laser           c2           ab           ba 
+                   d        100000       100000             0.00         1.00 +- 0.00         1.00 +- 0.00  [1 ] TO
+                          100000       100000         0.00 
+        seqhis_ana_2     1:laser     -1:laser           c2           ab           ba 
+                  cd         89182        89249             0.03         1.00 +- 0.00         1.00 +- 0.00  [2 ] TO BT
+                  4d          4577         4623             0.23         0.99 +- 0.01         1.01 +- 0.01  [2 ] TO AB
+                  6d          3674         3629             0.28         1.01 +- 0.02         0.99 +- 0.02  [2 ] TO SC
+                  5d          2566         2498             0.91         1.03 +- 0.02         0.97 +- 0.02  [2 ] TO RE
+                  bd             1            1             0.00         1.00 +- 1.00         1.00 +- 1.00  [2 ] TO BR
+                          100000       100000         0.36 
+        seqhis_ana_3     1:laser     -1:laser           c2           ab           ba 
+                 ccd         89038        89128             0.05         1.00 +- 0.00         1.00 +- 0.00  [3 ] TO BT BT
+                  4d          4577         4623             0.23         0.99 +- 0.01         1.01 +- 0.01  [2 ] TO AB
+                 c6d          3253         3237             0.04         1.00 +- 0.02         1.00 +- 0.02  [3 ] TO SC BT
+                 c5d          1593         1508             2.33         1.06 +- 0.03         0.95 +- 0.02  [3 ] TO RE BT
+                 55d           669          686             0.21         0.98 +- 0.04         1.03 +- 0.04  [3 ] TO RE RE
+                 45d           240          239             0.00         1.00 +- 0.06         1.00 +- 0.06  [3 ] TO RE AB
+                 46d           195          160             3.45         1.22 +- 0.09         0.82 +- 0.06  [3 ] TO SC AB
+                 66d           134          122             0.56         1.10 +- 0.09         0.91 +- 0.08  [3 ] TO SC SC
+                 4cd           126          101             2.75         1.25 +- 0.11         0.80 +- 0.08  [3 ] TO BT AB
+                 56d            92          108             1.28         0.85 +- 0.09         1.17 +- 0.11  [3 ] TO SC RE
+                 65d            63           65             0.03         0.97 +- 0.12         1.03 +- 0.13  [3 ] TO RE SC
+                 6cd            18           18             0.00         1.00 +- 0.24         1.00 +- 0.24  [3 ] TO BT SC
+                  6d             0            1             0.00         0.00 +- 0.00         0.00 +- 0.00  [2 ] TO SC
+                 b6d             0            1             0.00         0.00 +- 0.00         0.00 +- 0.00  [3 ] TO SC BR
+                 cbd             1            1             0.00         1.00 +- 1.00         1.00 +- 1.00  [3 ] TO BR BT
+                  cd             0            1             0.00         0.00 +- 0.00         0.00 +- 0.00  [2 ] TO BT
+                 b5d             1            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [3 ] TO RE BR
+                 bcd             0            1             0.00         0.00 +- 0.00         0.00 +- 0.00  [3 ] TO BT BR
+                          100000       100000         0.91 
+        seqhis_ana_4     1:laser     -1:laser           c2           ab           ba 
+                cccd         86472        86511             0.01         1.00 +- 0.00         1.00 +- 0.00  [4 ] TO BT BT BT
+                  4d          4577         4623             0.23         0.99 +- 0.01         1.01 +- 0.01  [2 ] TO AB
+                cc6d          3246         3187             0.54         1.02 +- 0.02         0.98 +- 0.02  [4 ] TO SC BT BT
+                cc5d          1589         1467             4.87         1.08 +- 0.03         0.92 +- 0.02  [4 ] TO RE BT BT
+                4ccd          1070         1101             0.44         0.97 +- 0.03         1.03 +- 0.03  [4 ] TO BT BT AB
+                6ccd           890          899             0.05         0.99 +- 0.03         1.01 +- 0.03  [4 ] TO BT BT SC
+                5ccd           606          616             0.08         0.98 +- 0.04         1.02 +- 0.04  [4 ] TO BT BT RE
+                c55d           416          418             0.00         1.00 +- 0.05         1.00 +- 0.05  [4 ] TO RE RE BT
+                 45d           240          239             0.00         1.00 +- 0.06         1.00 +- 0.06  [3 ] TO RE AB
+                 46d           195          160             3.45         1.22 +- 0.09         0.82 +- 0.06  [3 ] TO SC AB
+                555d           175          193             0.88         0.91 +- 0.07         1.10 +- 0.08  [4 ] TO RE RE RE
+                 4cd           126          101             2.75         1.25 +- 0.11         0.80 +- 0.08  [3 ] TO BT AB
+                c66d           124          107             1.25         1.16 +- 0.10         0.86 +- 0.08  [4 ] TO SC SC BT
+                c56d            57           74             2.21         0.77 +- 0.10         1.30 +- 0.15  [4 ] TO SC RE BT
+                455d            57           60             0.08         0.95 +- 0.13         1.05 +- 0.14  [4 ] TO RE RE AB
+                c65d            55           53             0.04         1.04 +- 0.14         0.96 +- 0.13  [4 ] TO RE SC BT
+                 c6d             0           40            40.00         0.00 +- 0.00         0.00 +- 0.00  [3 ] TO SC BT
+                 c5d             0           37            37.00         0.00 +- 0.00         0.00 +- 0.00  [3 ] TO RE BT
+                556d            24           21             0.20         1.14 +- 0.23         0.88 +- 0.19  [4 ] TO SC RE RE
+                655d            21           15             1.00         1.40 +- 0.31         0.71 +- 0.18  [4 ] TO RE RE SC
+
+
+
 
 Using constant material prop values gives much better agreement
 ---------------------------------------------------------------------------- 

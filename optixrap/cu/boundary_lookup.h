@@ -70,10 +70,14 @@ static __device__ __inline__ float4 boundary_lookup( float nm, unsigned int line
 
     unsigned nx = boundary_texture_dim.x ;  //  (ni*nj*nk)  ix: 0->nx-1
     unsigned ny = boundary_texture_dim.y ;
-    unsigned ix = unsigned((nm - boundary_domain.x)/boundary_domain.z) ;    // (nm-80.)/20. -> 0..38 
-    unsigned iy = boundary_lookup_linek(line, k );
 
-    float x = (float(ix)+0.5f)/float(nx) ; 
+    //unsigned ix = unsigned((nm - boundary_domain.x)/boundary_domain.z) ;    // (nm-80.)/20. -> unsigned(0..38) 
+    //float x = (float(ix)+0.5f)/float(nx) ; 
+
+    float fx = (nm - boundary_domain.x)/boundary_domain.z ;    // (nm-80.)/20. -> float(0..38) 
+    float x = (fx+0.5f)/float(nx) ; 
+
+    unsigned iy = boundary_lookup_linek(line, k );
     float y = (float(iy)+0.5f)/float(ny) ; 
 
     float4 val = tex2D(boundary_texture, x, y );

@@ -504,7 +504,9 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     }
     else
     {
-        mpv->SetSpline(true);
+        //mpv->SetSpline(true);
+       // see issue/geant4_opticks_integration/interpol_mismatch.rst
+        mpv->SetSpline(false);
 
     } 
 

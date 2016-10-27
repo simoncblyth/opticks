@@ -14,20 +14,12 @@ if __name__ == '__main__':
     names = blib.names
     t = np.load(os.path.expandvars("$IDPATH/GBndLib/GBndLib.npy"))
 
-    #interpol = False 
-    interpol = True
-
-    if interpol:
-       ext, nl = "interpol", 820-60+1
-    else:
-       ext, nl = "identity", 39
+    ext, nl = "identity", 39
 
     o = np.load(os.path.expandvars("$TMP/InterpolationTest/OInterpolationTest_%s.npy" % ext)).reshape(-1,4,2,nl,4) 
     c = np.load(os.path.expandvars("$TMP/InterpolationTest/CInterpolationTest_%s.npy" % ext)).reshape(-1,4,2,nl,4) 
 
-    if not interpol:
-       assert np.all(t == o)
-    
+    assert np.all(t == o)
 
     assert len(t) == len(names)
     assert len(t) == len(o) 

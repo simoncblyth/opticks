@@ -8,11 +8,42 @@ using namespace optix;
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
+
 rtBuffer<float4,2>  out_buffer;
 
 
 
 RT_PROGRAM void OInterpolationTest()
+{
+    unsigned nj = BOUNDARY_NUM_MATSUR ;
+    unsigned nk = BOUNDARY_NUM_FLOAT4 ;
+
+    uint2 out_index ; 
+    int w = int(launch_index.x) ;  // 0:820-60+1  wavelength sample index
+    int i = int(launch_index.y) ;  // 0:123 bnd   index
+
+    out_index.x = w ;  
+    float nm = boundary_domain.x + w*1.0f ;
+
+
+    for(unsigned j=0 ; j < nj ; j++)
+    {
+        unsigned line = i*nj + j ;  
+        for(unsigned k=0 ; k < nk ; k++)
+        {
+           out_index.y = boundary_lookup_linek(line, k );  
+           out_buffer[out_index] = boundary_lookup(nm, line, k ) ; 
+        }
+    }
+
+    // NB 
+    //    out_buffer.x same dim as launch.x (width), 
+    //    out_buffer.y eight times larger than launch.y (height) to match the above loops
+}
+
+
+
+RT_PROGRAM void OIdentityTest()
 {
     unsigned nj = BOUNDARY_NUM_MATSUR ;
     unsigned nk = BOUNDARY_NUM_FLOAT4 ;
