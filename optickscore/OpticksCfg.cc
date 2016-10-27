@@ -256,6 +256,9 @@ void OpticksCfg<Listener>::init()
        ("torchdbg",  "dump details of torch config") ;
 
    m_desc.add_options()
+       ("dbgflags",  "debug bad flags" );
+
+   m_desc.add_options()
        ("dbgseed",  "save empty interop mode photons buffer after seeding to $TMP/dbgseed.npy "); 
    m_desc.add_options()
        ("dbginterop", "used Scene::initRenderersDebug with subset of renderers "); 

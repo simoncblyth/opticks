@@ -104,6 +104,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_ok(ok),
    m_dbgseqhis(m_ok->getDbgSeqhis()),
    m_dbgseqmat(m_ok->getDbgSeqmat()),
+   m_dbgflags(m_ok->hasOpt("dbgflags")),
    m_crec(new CRec(ok, geometry, dynamic)),
    m_evt(NULL),
    m_geometry(geometry),
@@ -149,6 +150,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_slot(0),
    m_decrement_request(0),
    m_truncate(false),
+   m_badflag(0),
    m_step(NULL),
 
    m_primary(0),
@@ -434,6 +436,9 @@ void CRecorder::startPhoton()
     m_decrement_request = 0 ; 
     m_truncate = false ; 
 
+    m_badflag = 0 ; 
+
+
     if(m_debug) Clear();
 }
 
@@ -610,6 +615,8 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     if(flag == 0)
     {
+       m_badflag += 1 ; 
+
        if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
     }
@@ -1007,7 +1014,7 @@ int CRecorder::compare(int record_id)
     bool debug_seqhis = m_dbgseqhis == rdr_seqhis ; 
     bool debug_seqmat = m_dbgseqmat == rdr_seqmat ; 
 
-    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_debug ;
+    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_debug || (m_dbgflags && m_badflag > 0 ) ;
 
     if(m_verbosity > 0 || debug )
     {
@@ -1015,6 +1022,7 @@ int CRecorder::compare(int record_id)
                       << std::endl
                       << "----CRecorder::compare----" 
                       << " record_id " << std::setw(8) << record_id 
+                      << " badflag " << std::setw(5) << m_badflag 
                       ; 
 
         if(debug) std::cout << " --dindex " ;
@@ -1023,7 +1031,7 @@ int CRecorder::compare(int record_id)
         Dump(       "CRecorder::compare (rdr-dump)DONE");
     }
 
-    if(rc > 0)
+    if(m_dbgflags && m_badflag > 0)
     {
         addDebugPhoton(record_id);  
     }

@@ -439,6 +439,8 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                       theEfficiency = PropertyPointer->GetProperty(thePhotonMomentum);
 #endif
 
+
+/*
                       LOG(info) << "OpticalSurface "
                                 << " name " << OpticalSurface->GetName() 
                                 << " thePhotonMomentum (eV) " << thePhotonMomentum/eV
@@ -451,6 +453,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                 << " m1 " << Material1->GetName()
                                 << " m2 " << Material2->GetName()
                                 ; 
+*/
 
               } 
               else 
@@ -501,18 +504,21 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                   {
                       prob_bs = 0.0;
                   }
-	          }
-	   }
-           else if (theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
-           {
+	          }  // unified
+	   }           // OpticalSurface has MPT
+       else if (theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
+       {
                aParticleChange.ProposeTrackStatus(fStopAndKill);
                return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-           }
-        }
+       }
+   }    // boundary has OpticalSurface
+
+
+
 
         if (type == dielectric_dielectric ) 
         {
-            if (theFinish == polished || theFinish == ground ) 
+            if (theFinish == polished || theFinish == ground )   // polished is default even without OpticalSurface
             {
 	            if (Material1 == Material2)
                 {

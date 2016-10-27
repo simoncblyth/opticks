@@ -165,6 +165,7 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
     switch(status)
     {
         case FresnelRefraction:
+        case SameMaterial:
                                flag=BOUNDARY_TRANSMIT;
                                break;
         case TotalInternalReflection:
@@ -190,7 +191,6 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
         case Undefined:
         case BackScattering:
         case NotAtBoundary:
-        case SameMaterial:
         case NoRINDEX:
 
 #ifdef USE_CUSTOM_BOUNDARY

@@ -215,6 +215,7 @@ class CFG4_API CRecorder {
         Opticks*       m_ok; 
         unsigned long long m_dbgseqhis ;
         unsigned long long m_dbgseqmat ;
+        bool               m_dbgflags ;
 
         CRec*          m_crec ; 
         OpticksEvent*  m_evt ; 
@@ -274,6 +275,7 @@ class CFG4_API CRecorder {
         unsigned int       m_slot ; 
         unsigned int       m_decrement_request ; 
         bool               m_truncate ; 
+        unsigned           m_badflag ; 
         const G4Step*      m_step ; 
 
         NPY<float>*               m_primary ; 
