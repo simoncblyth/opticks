@@ -184,6 +184,7 @@ set(SOURCES
     cu/tex0Test.cu
     cu/texTest.cu
     cu/OEventTest.cu
+    cu/OInterpolationTest.cu
 )
 
 
@@ -209,6 +210,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_dirtyBufferTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_compactionTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OEventTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OInterpolationTest.cu.ptx
 )
 
 

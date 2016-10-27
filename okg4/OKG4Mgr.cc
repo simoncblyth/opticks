@@ -13,7 +13,7 @@ class NConfigurable ;
 #include "OpticksIdx.hh"    
 #include "OpticksGen.hh"    
 
-#include "OKPropagator.hh"  // ggeoview-
+#include "OKPropagator.hh"  // ok-
 
 #define GUI_ 1
 #include "OpticksViz.hh"

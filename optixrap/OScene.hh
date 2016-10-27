@@ -21,6 +21,7 @@ class OXRAP_API OScene {
        OScene(OpticksHub* hub);
     public:
        OContext*    getOContext();
+       OBndLib*     getOBndLib();
     public:
        void cleanup();
     private:

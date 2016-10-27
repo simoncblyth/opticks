@@ -73,15 +73,16 @@ CGeometry* CG4::getGeometry()
 {
     return m_geometry ; 
 }
+CMaterialBridge* CG4::getMaterialBridge()
+{
+    return m_geometry->getMaterialBridge() ; 
+}
+
 CRecorder* CG4::getRecorder()
 {
     return m_recorder ; 
 }
 
-//Rec* CG4::getRec()
-//{
-//    return m_rec ; 
-//}
 CStepRec* CG4::getStepRec()
 {
     return m_steprec ; 

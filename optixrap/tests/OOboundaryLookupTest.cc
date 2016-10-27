@@ -80,6 +80,8 @@ int main(int argc, char** argv)
 
     unsigned int nx = obnd.getWidth();  // number of wavelength samples
     unsigned int ny = obnd.getHeight(); // number of float4 props
+
+    LOG(info) << " nx " << nx << " ny " << ny ; 
     NPY<float>* out = NPY<float>::make(nx, ny, 4);
 
 

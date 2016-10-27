@@ -693,59 +693,6 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
 
 
-NPY<float>* GBndLib::createBufferOld()
-{
-
-    NPY<float>* mat = m_mlib->getBuffer();
-    NPY<float>* sur = m_slib->getBuffer();
-
-    unsigned int ni = getNumBnd();
-    unsigned int nj = NUM_MATSUR ;       // im-om-is-os 
-    unsigned int nk = Opticks::DOMAIN_LENGTH ; 
-    unsigned int nl = NUM_PROP ;       // 4/8 interweaved props
-
-    assert( nl == 4 || nl == 8);
-
-    assert(nk == getStandardDomainLength()) ;
-    assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
-    assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
-
-    NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl ) ;
-    wav->fill( GSurfaceLib::SURFACE_UNSET ); 
-
-    float* mdat = mat->getValues();
-    float* sdat = sur->getValues();
-    float* wdat = wav->getValues(); // destination
-
-    for(unsigned int i=0 ; i < ni ; i++)      // over bnd
-    {
-        const guint4& bnd = m_bnd[i] ;
-        for(unsigned int j=0 ; j < nj ; j++)  // over imat/omat/isur/osur species
-        {
-            unsigned int wof = nj*nk*nl*i + nk*nl*j ;
-
-            if(j == IMAT || j == OMAT)    
-            {
-                unsigned int midx = bnd[j] ;
-                assert(midx != UNSET);
-                unsigned int mof = nk*nl*midx ; 
-                memcpy( wdat+wof, mdat+mof, sizeof(float)*nk*nl );  
-            }
-            else if(j == ISUR || j == OSUR)  // isur/osur
-            {
-                unsigned int sidx = bnd[j] ;
-                if(sidx != UNSET)
-                {
-                    unsigned int sof = nk*nl*sidx ;  
-                    memcpy( wdat+wof, sdat+sof, sizeof(float)*nk*nl );  
-                }
-            }
-        } 
-    }
-    return wav ; 
-}
-
-
 NPY<unsigned int>* GBndLib::createOpticalBuffer()
 {
     /*
@@ -759,6 +706,8 @@ NPY<unsigned int>* GBndLib::createOpticalBuffer()
     */
  
     bool one_based = true ; // surface and material indices 1-based, so 0 can stand for unset
+    // hmm, the bnd itself is zero-based
+
     unsigned int ni = getNumBnd();
     unsigned int nj = NUM_MATSUR ;    // om-os-is-im
     unsigned int nk = 4 ;           // THIS 4 IS NOT RELATED TO NUM_PROP

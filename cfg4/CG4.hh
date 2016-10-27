@@ -22,6 +22,7 @@ class CPhysics ;
 class CGeometry ; 
 class CPropLib ; 
 class CDetector ; 
+class CMaterialBridge ; 
 class CGenerator ; 
 
 class CCollector ; 
@@ -62,9 +63,10 @@ class CFG4_API CG4
    public:
         Opticks*       getOpticks();
         CGeometry*     getGeometry();
+        CMaterialBridge* getMaterialBridge();
+
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
-      //  Rec*           getRec();
         CPropLib*      getPropLib();
         CDetector*     getDetector();
         NPY<float>*    getGensteps();
@@ -83,7 +85,6 @@ class CFG4_API CG4
    private:
         CCollector*           m_collector ; 
         CRecorder*            m_recorder ; 
-        //Rec*                  m_rec ; 
         CStepRec*             m_steprec ; 
    private:
         G4VisManager*         m_visManager ; 

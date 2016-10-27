@@ -4,6 +4,16 @@
 #include "PLOG.hh"
 
 
+/**
+OOtexTest
+==========
+
+Technical tex roundtrip test.
+
+
+**/
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);    

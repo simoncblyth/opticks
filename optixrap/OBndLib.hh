@@ -14,12 +14,14 @@ class OXRAP_API OBndLib  : public OPropertyLib
 public:
     OBndLib(optix::Context& ctx, GBndLib* lib);
 public:
+    unsigned getNumBnd();
+
     void setDebugBuffer(NPY<float>* npy);
 
     void setWidth(unsigned int width);
     void setHeight(unsigned int height);
-    unsigned int getWidth();
-    unsigned int getHeight();
+    unsigned getWidth();
+    unsigned getHeight();
 
     void convert();
 private:

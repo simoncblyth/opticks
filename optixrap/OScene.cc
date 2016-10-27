@@ -40,6 +40,26 @@ OContext* OScene::getOContext()
     return m_ocontext ; 
 }
 
+OBndLib*  OScene::getOBndLib()
+{
+    return m_olib ; 
+}
+
+
+
+/*
+//
+// dont do this it adds an optix dependency to the interface
+// are aiming to get rid of optix from interfaces for 
+// easier version hopping
+//
+optix::Context OScene::getContext()
+{
+     return m_ocontext->getContext() ; 
+}
+*/
+
+
 OScene::OScene(OpticksHub* hub) 
      :   
       m_log(new SLog("OScene::OScene")),

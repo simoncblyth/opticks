@@ -16,6 +16,8 @@ class CFG4_API CMaterialBridge
 
         unsigned getMaterialIndex(const G4Material* mat); // G4Material instance to 0-based Opticks material index
         const char* getMaterialName(unsigned int index);  // 0-based Opticks material index to shortname
+        const G4Material* getG4Material(unsigned int index); // 0-based Opticks material index to G4Material
+
         std::string MaterialSequence(unsigned long long seqmat);
 
         void dump(const char* msg="CMaterialBridge::dump");

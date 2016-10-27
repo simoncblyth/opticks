@@ -18,6 +18,12 @@ OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
 {
 }
 
+unsigned OBndLib::getNumBnd()
+{
+    return m_lib->getNumBnd() ;
+}
+
+
 void OBndLib::setDebugBuffer(NPY<float>* buf)
 {
     m_debug_buffer = buf ; 
@@ -42,7 +48,26 @@ unsigned int OBndLib::getHeight()
 
 
 
+/**
+boundary buffer dimensions example (123, 4, 2, 39, 4)
 
+   123: count of unique boundaries
+     4: NUM_MATSUR (count of materials and surfaces ie omat/osur/isur/imat )
+     2: NUM_FLOAT4 (number of sets of values for the MATSUR, 2nd set not yet much used : just groupvel)
+
+    39: number of wavelength samples
+     4: number of property values in tex, 4 for float4 tex
+
+
+    In [2]: 123*4*2   ## number of float4 vs wavelength properties in the tex 
+    Out[2]: 984
+
+Material and surface props are interleaved into the tex for each boundary,
+this is an optimization that duplicates mat and sur props as each mat and sur
+are present within multiple unique boundaries.  
+This keeps lookup simple.
+
+**/
 
 void OBndLib::convert()
 {
@@ -62,6 +87,8 @@ void OBndLib::convert()
 
     makeBoundaryOptical(obuf);
 }
+
+
 
 
 void OBndLib::makeBoundaryTexture(NPY<float>* buf)

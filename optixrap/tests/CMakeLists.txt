@@ -18,6 +18,7 @@ set(TEST_SOURCES
 
     bufferTest.cc
     OEventTest.cc
+    OInterpolationTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

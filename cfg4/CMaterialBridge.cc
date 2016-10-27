@@ -129,6 +129,22 @@ const char* CMaterialBridge::getMaterialName(unsigned int index)
 }
 
 
+const G4Material* CMaterialBridge::getG4Material(unsigned int qindex) // 0-based Opticks material index to G4Material
+{
+    typedef std::map<const G4Material*, unsigned> MU ; 
+    const G4Material* mat = NULL ; 
+    for(MU::const_iterator it=m_g4toix.begin() ; it != m_g4toix.end() ; it++)
+    {
+         unsigned index = it->second ; 
+         if(index == qindex)
+         {
+             mat = it->first ; 
+             break ;
+         }
+    }
+    return mat ; 
+}
+
 
 std::string CMaterialBridge::MaterialSequence(unsigned long long seqmat)
 {
