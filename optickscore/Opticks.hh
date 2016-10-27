@@ -72,6 +72,7 @@ class OKCORE_API Opticks {
        static float        DOMAIN_HIGH ; 
        static float        DOMAIN_STEP ; 
        static glm::vec4    getDefaultDomainSpec();
+       static glm::vec4    getDefaultDomainReciprocalSpec();
 
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );

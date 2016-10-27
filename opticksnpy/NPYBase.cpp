@@ -344,15 +344,17 @@ NPYSpec* NPYBase::getBufferSpec()
 }
 
 
- unsigned int NPYBase::getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+ unsigned int NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m)
 {
-    //assert(m_dim == 3 ); 
-    unsigned int nj = m_nj ;
-    unsigned int nk = m_nk ;
+    unsigned int nj = m_nj == 0 ? 1 : m_nj ;
+    unsigned int nk = m_nk == 0 ? 1 : m_nk ;
     unsigned int nl = m_nl == 0 ? 1 : m_nl ;
+    unsigned int nm = m_nm == 0 ? 1 : m_nm ;
 
-    return  i*nj*nk*nl + j*nk*nl + k*nl + l ;
+    return  i*nj*nk*nl*nm + j*nk*nl*nm + k*nl*nm + l*nm + m ;
 }
+
+
 
  unsigned int NPYBase::getNumValues(unsigned int from_dim)
 {
@@ -379,9 +381,9 @@ NPYSpec* NPYBase::getBufferSpec()
 {
     return m_sizeoftype*getNumValues(from_dim);
 }
- unsigned int NPYBase::getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l)
+ unsigned int NPYBase::getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m)
 {
-    return m_sizeoftype*getValueIndex(i,j,k,l);
+    return m_sizeoftype*getValueIndex(i,j,k,l,m);
 }
 
  void NPYBase::setDynamic(bool dynamic)
@@ -397,8 +399,8 @@ NPYSpec* NPYBase::getBufferSpec()
 void NPYBase::init()
 {
    updateDimensions(); 
-   m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_type, "" ); 
-   m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_type, "" ); 
+   m_shape_spec = new NPYSpec(NULL, m_ni, m_nj, m_nk, m_nl, m_nm, m_type, "" ); 
+   m_item_spec  = new NPYSpec(NULL,    0, m_nj, m_nk, m_nl, m_nm, m_type, "" ); 
 }
 
 
@@ -408,6 +410,8 @@ void NPYBase::updateDimensions()
     m_nj = getShape(1);
     m_nk = getShape(2);
     m_nl = getShape(3);  // gives 0 when beyond dimensions
+    m_nm = getShape(4);
+
     m_dim = m_shape.size();
 }
 
@@ -442,14 +446,14 @@ bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim)
     return true ; 
 }
 
-bool NPYBase::hasShape(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl)
+bool NPYBase::hasShape(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned nm)
 {
-    return m_ni == ni && m_nj == nj && m_nk == nk && m_nl == nl ;
+    return m_ni == ni && m_nj == nj && m_nk == nk && m_nl == nl && m_nm == nm ;
 }
 
-bool NPYBase::hasItemShape(unsigned int nj, unsigned int nk, unsigned int nl)
+bool NPYBase::hasItemShape(unsigned int nj, unsigned int nk, unsigned int nl, unsigned nm)
 {
-    return m_nj == nj && m_nk == nk && m_nl == nl ;
+    return m_nj == nj && m_nk == nk && m_nl == nl && m_nm == nm ;
 }
 
 bool NPYBase::hasItemSpec(NPYSpec* item_spec)
@@ -492,13 +496,13 @@ void NPYBase::setNumItems(unsigned int ni)
 
 
 
-void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl)
+void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm)
 {
-    unsigned int nvals = std::max(1u,m_ni)*std::max(1u,m_nj)*std::max(1u,m_nk)*std::max(1u,m_nl) ; 
-    unsigned int njkl  = std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl) ;
-    unsigned int ni    = ni_ < 0 ? nvals/njkl : ni_ ;    // auto resizing of 1st dimension, when -ve
+    unsigned int nvals = std::max(1u,m_ni)*std::max(1u,m_nj)*std::max(1u,m_nk)*std::max(1u,m_nl)*std::max(1u,m_nm) ; 
+    unsigned int njklm = std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl)*std::max(1u,nm) ;
+    unsigned int ni    = ni_ < 0 ? nvals/njklm : ni_ ;    // auto resizing of 1st dimension, when -ve
 
-    unsigned int nvals2 = std::max(1u,ni)*std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl) ; 
+    unsigned int nvals2 = std::max(1u,ni)*std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl)*std::max(1u,nm) ; 
 
     if(nvals != nvals2) LOG(fatal) << "NPYBase::reshape INVALID AS CHANGES COUNTS " 
                               << " nvals " << nvals
@@ -508,9 +512,9 @@ void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl
     assert(nvals == nvals2 && "NPYBase::reshape cannot change number of values, just their addressing");
 
     LOG(debug) << "NPYBase::reshape (0 means no-dimension) "
-              << "(" << m_ni << "," << m_nj << "," << m_nk << "," << m_nl << ")"
+              << "(" << m_ni << "," << m_nj << "," << m_nk << "," << m_nl << "," << m_nm << ")"
               << " --> "
-              << "(" <<   ni << "," <<   nj << "," <<   nk << "," <<   nl << ")"
+              << "(" <<   ni << "," <<   nj << "," <<   nk << "," <<   nl << "," << nm << ")"
               ;
 
     m_shape.clear();
@@ -518,6 +522,7 @@ void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl
     if(nj > 0) m_shape.push_back(nj);
     if(nk > 0) m_shape.push_back(nk);
     if(nl > 0) m_shape.push_back(nl);
+    if(nm > 0) m_shape.push_back(nm);
 
     updateDimensions();
 }

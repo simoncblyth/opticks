@@ -12,6 +12,8 @@
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "GProperty.hh"
 
+
+#include "NPY.hpp"
 #include "CMPT.hh"
 
 #include "PLOG.hh"
@@ -198,5 +200,54 @@ void CMPT::dumpProperty(const char* _keys)
     }
 }
 
+
+
+void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep )
+{
+
+    std::vector<std::string> keys ; 
+    boost::split(keys, _keys, boost::is_any_of(","));   
+    unsigned nkey = keys.size();
+    std::vector<G4PhysicsOrderedFreeVector*> vecs ; 
+    for(unsigned i=0 ; i < nkey ; i++ )
+    {
+        const char* key = keys[i].c_str(); 
+        if(strlen(key) == 0) continue ; 
+
+        G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
+        if(!mpv) LOG(fatal) << " missing mpv for key " << key ; 
+        assert(mpv);
+
+        G4PhysicsOrderedFreeVector* pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
+        vecs.push_back(pofv);
+    }
+     
+    unsigned ndim = a->getDimensions() ;
+    assert(ndim == 5);
+    unsigned nl = a->getShape(3);
+    unsigned nm = a->getShape(4);
+
+    float* values = a->getValues() + offset ;
+
+    assert( nl == nstep );
+    assert( nm == nkey );
+
+    for(unsigned l=0 ; l < nl ; l++)
+    {   
+        G4double wavelength = (low + l*step)*CLHEP::nm ;
+        G4double photonMomentum = h_Planck*c_light/wavelength ; 
+
+        for(unsigned m=0 ; m < nm ; m++)
+        {
+            if(m >= vecs.size()) break ; 
+
+            G4PhysicsOrderedFreeVector* pofv = vecs[m] ;
+            G4double value = pofv->Value( photonMomentum );
+
+            *(values + l*nm + m) = value ;
+
+        }
+    }   
+}
 
 

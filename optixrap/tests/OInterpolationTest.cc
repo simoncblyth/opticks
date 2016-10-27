@@ -79,7 +79,7 @@ int main(int argc, char** argv)
     outBuffer->unmap(); 
 
     //out->dump();
-    out->save("$TMP/OInterpolationTest/out.npy");
+    out->save("$TMP/InterpolationTest/OInterpolationTest.npy");
 
 
     return 0 ;     

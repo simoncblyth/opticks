@@ -173,7 +173,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               ;
 
     glm::vec4 dom = Opticks::getDefaultDomainSpec() ;
-    glm::vec4 rdom( 1.f/dom.x, 1.f/dom.y , 0.f, 0.f ); // not flipping order, only endpoints used for sampling, not the step 
+    glm::vec4 rdom = Opticks::getDefaultDomainReciprocalSpec() ;
 
     m_context["boundary_texture"]->setTextureSampler(tex);
     m_context["boundary_texture_dim"]->setUint(texDim);

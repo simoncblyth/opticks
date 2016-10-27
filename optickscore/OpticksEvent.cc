@@ -678,11 +678,11 @@ ViewNPY* OpticksEvent::operator [](const char* spec)
 
 NPYSpec* OpticksEvent::GenstepSpec(bool compute)
 {
-    return new NPYSpec(genstep_   ,  0,6,4,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(genstep_, compute))  ;
+    return new NPYSpec(genstep_   ,  0,6,4,0,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(genstep_, compute))  ;
 }
 NPYSpec* OpticksEvent::SeedSpec(bool compute)
 {
-    return new NPYSpec(seed_     ,  0,1,1,0,      NPYBase::UINT      , OpticksBufferSpec::Get(seed_, compute)) ;
+    return new NPYSpec(seed_     ,  0,1,1,0,0,      NPYBase::UINT      , OpticksBufferSpec::Get(seed_, compute)) ;
 }
 
 void OpticksEvent::createSpec()
@@ -694,20 +694,20 @@ void OpticksEvent::createSpec()
     m_genstep_spec = GenstepSpec(compute);
     m_seed_spec    = SeedSpec(compute);
 
-    m_hit_spec      = new NPYSpec(hit_       , 0,4,4,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hit_, compute));
-    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(photon_, compute)) ;
-    m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
+    m_hit_spec      = new NPYSpec(hit_       , 0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hit_, compute));
+    m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(photon_, compute)) ;
+    m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4,0, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
     //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 
-    m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,      NPYBase::ULONGLONG ,  OpticksBufferSpec::Get(sequence_, compute)) ;
+    m_sequence_spec = new NPYSpec(sequence_ ,  0,1,2,0,0,      NPYBase::ULONGLONG ,  OpticksBufferSpec::Get(sequence_, compute)) ;
     //    ULONGLONG -> RT_FORMAT_USER  and size set to ni*nj*nk = num_photons*1*2
 
-    m_nopstep_spec = new NPYSpec(nopstep_   ,  0,4,4,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(nopstep_, compute) ) ;
-    m_phosel_spec   = new NPYSpec(phosel_   ,  0,1,4,0,      NPYBase::UCHAR     , OpticksBufferSpec::Get(phosel_, compute) ) ;
-    m_recsel_spec   = new NPYSpec(recsel_   ,  0,maxrec,1,4, NPYBase::UCHAR     , OpticksBufferSpec::Get(recsel_, compute) ) ;
+    m_nopstep_spec = new NPYSpec(nopstep_   ,  0,4,4,0,0,      NPYBase::FLOAT     , OpticksBufferSpec::Get(nopstep_, compute) ) ;
+    m_phosel_spec   = new NPYSpec(phosel_   ,  0,1,4,0,0,      NPYBase::UCHAR     , OpticksBufferSpec::Get(phosel_, compute) ) ;
+    m_recsel_spec   = new NPYSpec(recsel_   ,  0,maxrec,1,4,0, NPYBase::UCHAR     , OpticksBufferSpec::Get(recsel_, compute) ) ;
 
-    m_fdom_spec    = new NPYSpec(fdom_      ,  3,1,4,0,      NPYBase::FLOAT     ,  "" ) ;
-    m_idom_spec    = new NPYSpec(idom_      ,  1,1,4,0,      NPYBase::INT       ,  "" ) ;
+    m_fdom_spec    = new NPYSpec(fdom_      ,  3,1,4,0,0,      NPYBase::FLOAT     ,  "" ) ;
+    m_idom_spec    = new NPYSpec(idom_      ,  1,1,4,0,0,      NPYBase::INT       ,  "" ) ;
 
 }
 

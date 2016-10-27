@@ -88,6 +88,20 @@ glm::vec4 Opticks::getDefaultDomainSpec()
     return bd ; 
 }
 
+glm::vec4 Opticks::getDefaultDomainReciprocalSpec()
+{
+    glm::vec4 rd ;
+    rd.x = 1.f/DOMAIN_LOW ;
+    rd.y = 1.f/DOMAIN_HIGH ;
+    rd.z = 0.f ;
+    rd.w = 0.f ;
+    // not flipping order, only endpoints used for sampling, not the step 
+
+    return rd ; 
+}
+
+
+
 
 int Opticks::getRC()
 {

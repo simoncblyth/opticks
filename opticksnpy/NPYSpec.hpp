@@ -9,7 +9,7 @@
 
 class NPY_API NPYSpec {
    public:
-        NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, NPYBase::Type_t type, const char* ctrl);
+        NPYSpec(const char* name, unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned int nm, NPYBase::Type_t type, const char* ctrl);
 
         NPYSpec* clone(); 
 
@@ -28,6 +28,8 @@ class NPY_API NPYSpec {
         unsigned int m_nj ; 
         unsigned int m_nk ; 
         unsigned int m_nl ; 
+        unsigned int m_nm ; 
+
         unsigned int m_bad_index ; 
         NPYBase::Type_t  m_type ; 
         const char*  m_ctrl  ; 

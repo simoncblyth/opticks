@@ -49,8 +49,8 @@ class NPY_API NPYBase {
        std::vector<int>& getShapeVector();
 
        bool hasSameShape(NPYBase* other, unsigned fromdim=0);
-       bool hasShape(unsigned int ni, unsigned int nj=0, unsigned int nk=0, unsigned int nl=0);
-       bool hasItemShape(unsigned int nj, unsigned int nk=0, unsigned int nl=0);
+       bool hasShape(unsigned ni, unsigned nj=0, unsigned nk=0, unsigned nl=0, unsigned nm=0);
+       bool hasItemShape(unsigned nj, unsigned nk=0, unsigned nl=0, unsigned nm=0);
 
        bool hasShapeSpec(NPYSpec* spec); 
        bool hasItemSpec(NPYSpec* spec); 
@@ -67,7 +67,7 @@ class NPY_API NPYBase {
        unsigned int getDimensions();
        std::string  getShapeString(unsigned int ifr=0);
        unsigned int getShape(unsigned int dim);
-       unsigned int getValueIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+       unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0);
        unsigned int getNumValues(unsigned int from_dim=0);
 
        Parameters*  getParameters();
@@ -76,9 +76,9 @@ class NPY_API NPYBase {
        Type_t        getType();
        unsigned char getSizeOfType();
        unsigned int  getNumBytes(unsigned int from_dim=0);
-       unsigned int  getByteIndex(unsigned int i, unsigned int j, unsigned int k, unsigned int l=0);
+       unsigned int  getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0);
    public:
-       void reshape(int ni, unsigned int nj=0, unsigned int nk=0, unsigned int nl=0);
+       void reshape(int ni, unsigned nj=0, unsigned nk=0, unsigned nl=0, unsigned nm=0);
    private:
        void init();
        void updateDimensions();
@@ -153,10 +153,13 @@ class NPY_API NPYBase {
 
    protected:
        unsigned int       m_dim ; 
+
        unsigned int       m_ni ; 
        unsigned int       m_nj ; 
        unsigned int       m_nk ; 
        unsigned int       m_nl ; 
+       unsigned int       m_nm ;
+ 
        NPYSpec*           m_shape_spec ; 
        NPYSpec*           m_item_spec ; 
        NPYSpec*           m_buffer_spec ; 

@@ -17,6 +17,7 @@
 
 // cfg4-
 #include "CG4.hh"
+#include "CMPT.hh"
 #include "CMaterialBridge.hh"
 
 // g4-
@@ -77,6 +78,18 @@ int main(int argc, char** argv)
 
     unsigned nb = blib->getNumBnd();
     assert( ni == nb );
+    assert( nj == 4 && nm == 4);
+
+
+    glm::vec4 boundary_domain = Opticks::getDefaultDomainSpec() ;
+
+    float wlow = boundary_domain.x ; 
+    float wstep = boundary_domain.z ; 
+
+
+    const char* keys_0 = "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB" ;
+    const char* keys_1 = "GROUPVEL,,," ;
+
 
     // getting from Opticks boundary omat/imat to the G4 materials
     LOG(info) << " nb " << nb ; 
@@ -93,6 +106,21 @@ int main(int argc, char** argv)
         const G4Material* im = mbr->getG4Material(imat);
         //  surface bridge ??
 
+        CMPT* ompt = new CMPT(om->GetMaterialPropertiesTable()); 
+        CMPT* impt = new CMPT(im->GetMaterialPropertiesTable()); 
+         
+        for(unsigned k = 0 ; k < nk ; k++)
+        { 
+            const char* keys = k == 0 ? keys_0 : keys_1 ; 
+
+            unsigned o_offset = out->getValueIndex(i, GBndLib::OMAT, k ) ;
+            unsigned i_offset = out->getValueIndex(i, GBndLib::IMAT, k ) ;
+
+            ompt->sample(out, o_offset, keys, wlow, wstep, nl );  
+            impt->sample(out, i_offset, keys, wlow, wstep, nl );  
+        }
+
+
         LOG(info) << std::setw(5) << i 
                   << "(" 
                   << std::setw(2) << omat << ","
@@ -105,10 +133,9 @@ int main(int argc, char** argv)
                   << " im " << std::setw(30) << ( im ? im->GetName() : "-" ) 
                   ; 
 
-
-
     } 
 
+    out->save("$TMP/InterpolationTest/CInterpolationTest.npy");
 
     return 0 ; 
 }

@@ -4,6 +4,7 @@
 #include <string>
 class G4MaterialPropertiesTable ;
 template <typename T> class GProperty ; 
+template <typename T> class NPY ; 
 
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CMPT {
@@ -13,6 +14,7 @@ class CFG4_API CMPT {
    public:
        void dump(const char* msg="CMPT::dump"); 
        void dumpProperty(const char* lkey);
+       void sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep );
 
        std::string description(const char* msg);
        std::vector<std::string> getPropertyKeys();
