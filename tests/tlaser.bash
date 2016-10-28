@@ -23,8 +23,8 @@ tlaser--(){
 
     local msg="=== $FUNCNAME :"
 
-    #local photons=1000000
-    local photons=100000
+    local photons=1000000
+    #local photons=100000
     #local photons=20000
     #local photons=100
 
@@ -73,6 +73,10 @@ tlaser-i(){ ipython -i $(which tlaser.py) ; }
 
 tlaser-t(){ tlaser-;tlaser-- --okg4 --compute $* ; } 
 tlaser-d(){ tlaser-;tlaser-t --steppingdbg $* ; } 
+
+tlaser-v(){   tlaser-;tlaser-- --okg4 --load $* ; }
+tlaser-vg4(){ tlaser-;tlaser-- --okg4 --load --vizg4 $* ; }
+
 
 
 tlaser-tfx()

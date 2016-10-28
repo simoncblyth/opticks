@@ -25,6 +25,14 @@ const char* SSys::fmt(const char* tmpl, unsigned val)
 }
 
 
+int SSys::exec(const char* exe, const char* path)
+{
+    std::stringstream ss ; 
+    ss << exe << " " << path ;
+    std::string cmd = ss.str();
+    return SSys::run(cmd.c_str());
+}
+
 int SSys::run(const char* cmd)
 {
     int rc_raw = system(cmd);

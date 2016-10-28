@@ -73,6 +73,11 @@ class PropLib(object):
         #self.domain = np.linspace(60.,810., 39)
         self.domain = np.linspace(60.,820., 39)
 
+        if kls == "GBndLib":
+            opticalpath = idp_("%(kls)s/%(kls)sOptical.npy" % locals())
+            self.optical = np.load(opticalpath)
+
+
     def index(self, name):
         return self.names.index(name)
 
@@ -103,5 +108,7 @@ if __name__ == '__main__':
 
     print "m1 %s wl %s ri %s " % (m1, wavelength, ri)
 
+
+    op = blib.optical
 
 

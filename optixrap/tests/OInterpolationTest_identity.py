@@ -14,10 +14,9 @@ if __name__ == '__main__':
     names = blib.names
     t = np.load(os.path.expandvars("$IDPATH/GBndLib/GBndLib.npy"))
 
-    ext, nl = "identity", 39
-
-    o = np.load(os.path.expandvars("$TMP/InterpolationTest/OInterpolationTest_%s.npy" % ext)).reshape(-1,4,2,nl,4) 
-    c = np.load(os.path.expandvars("$TMP/InterpolationTest/CInterpolationTest_%s.npy" % ext)).reshape(-1,4,2,nl,4) 
+    nl = 39
+    o = np.load(os.path.expandvars("$TMP/InterpolationTest/OInterpolationTest_identity.npy")).reshape(-1,4,2,nl,4) 
+    c = np.load(os.path.expandvars("$TMP/InterpolationTest/CInterpolationTest_identity.npy")).reshape(-1,4,2,nl,4) 
 
     assert np.all(t == o)
 

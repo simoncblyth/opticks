@@ -42,11 +42,11 @@ if __name__ == '__main__':
         sys.exit(args.mrc)
   
 
-    log.info( " a : %s " % a.brief)
-    log.info( " b : %s " % b.brief )
-
     print "A",a
     print "B",b
+
+    log.info( " a : %s " % a.brief)
+    log.info( " b : %s " % b.brief )
 
 
 

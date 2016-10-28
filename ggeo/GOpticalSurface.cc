@@ -53,6 +53,40 @@ char* GOpticalSurface::getFinish()
 */
 
 
+
+
+const char* GOpticalSurface::polished_ = "polished" ;
+const char* GOpticalSurface::polishedfrontpainted_ = "polishedfrontpainted" ;
+const char* GOpticalSurface::polishedbackpainted_  = "polishedbackpainted" ;
+const char* GOpticalSurface::ground_ = "ground" ;
+const char* GOpticalSurface::groundfrontpainted_ = "groundfrontpainted" ;
+const char* GOpticalSurface::groundbackpainted_  = "groundbackpainted" ;
+
+const char* GOpticalSurface::Finish(unsigned finish)
+{
+    const char* s = NULL ;
+    switch(finish)
+    {
+       case 0: s =  polished_             ; break ;
+       case 1: s =  polishedfrontpainted_ ; break ;
+       case 2: s =  polishedbackpainted_  ; break ;
+       case 3: s =  ground_               ; break ;
+       case 4: s =  groundfrontpainted_   ; break ;
+       case 5: s =  groundbackpainted_    ; break ;
+       default: assert(0 && "unexpected optical surface finish") ; break ;
+    } 
+    return s ;  
+}
+
+
+
+
+
+
+
+
+
+
 char* GOpticalSurface::getValue()
 {
     return m_value ; 
@@ -64,6 +98,58 @@ char* GOpticalSurface::getShortName()
 }
 
 
+/*
+     65 enum G4SurfaceType
+     66 {
+     67    dielectric_metal,            // dielectric-metal interface
+     68    dielectric_dielectric,       // dielectric-dielectric interface
+     69    dielectric_LUT,              // dielectric-Look-Up-Table interface
+     70    dielectric_dichroic,         // dichroic filter interface
+     71    firsov,                      // for Firsov Process
+     72    x_ray                        // for x-ray mirror process
+     73 };
+
+*/
+
+
+
+const char* GOpticalSurface::dielectric_dielectric_ = "dielectric_dielectric" ;
+const char* GOpticalSurface::dielectric_metal_      = "dielectric_metal" ;
+
+const char* GOpticalSurface::Type(unsigned type)
+{
+    const char* s = NULL ;
+    switch(type)
+    {
+       case 0: s =  dielectric_metal_      ; break ;
+       case 1: s =  dielectric_dielectric_ ; break ;
+       default: assert(0 && "unexpected optical surface type") ; break ;
+    } 
+    return s ;  
+}
+
+
+
+std::string GOpticalSurface::brief(const guint4& optical)
+{
+    std::stringstream ss ; 
+
+    unsigned index  = optical.x ; 
+    unsigned type   = optical.y ; 
+    unsigned finish = optical.z ; 
+    unsigned value  = optical.w ; 
+
+    ss << optical.description()
+       << " "
+       << "(" << std::setw(3) << index << ") "
+       << std::setw(30) << Type(type)
+       << std::setw(30) << Finish(finish)
+       << " value "  << value 
+       ;
+
+    return ss.str();
+}
+    
 
 
 

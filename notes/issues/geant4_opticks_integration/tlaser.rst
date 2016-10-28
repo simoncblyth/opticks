@@ -36,6 +36,71 @@ Shoot horizontal laser in X direction (vertical geometry too involved)::
     tlaser- ; tlaser-- --okg4 --compute
 
 
+1M 2016 Oct 28 seqhis
+------------------------
+
+Proceed from this in :doc:`SURFACE_ABSORB`
+
+In general the progressive mask totals show good step-by-step agreement, 
+discrepancies coming in only at last step (AB or SA).
+
+::
+
+
+    [2016-10-28 11:16:32,771] p43831 {/Users/blyth/opticks/ana/tlaser.py:48} INFO -  a : laser/torch/  1 :  20161028-1116 /tmp/blyth/opticks/evt/laser/torch/1/fdom.npy 
+    [2016-10-28 11:16:32,772] p43831 {/Users/blyth/opticks/ana/tlaser.py:49} INFO -  b : laser/torch/ -1 :  20161028-1116 /tmp/blyth/opticks/evt/laser/torch/-1/fdom.npy 
+              seqhis_ana     1:laser     -1:laser           c2           ab           ba 
+                  8ccccd        813163       813761             0.22         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d         45622        45617             0.00         1.00 +- 0.00         1.00 +- 0.00  [2 ] TO AB
+              cccc9ccccd         27443        27012             3.41         1.02 +- 0.01         0.98 +- 0.01  [10] TO BT BT BT BT DR BT BT BT BT
+                 8cccc6d         15516        18592           277.41         0.83 +- 0.01         1.20 +- 0.01  [7 ] TO SC BT BT BT BT SA               ## ~20% final SA
+                    4ccd         10975        11210             2.49         0.98 +- 0.01         1.02 +- 0.01  [4 ] TO BT BT AB
+                  4ccccd          9002         8820             1.86         1.02 +- 0.01         0.98 +- 0.01  [6 ] TO BT BT BT BT AB
+                 8cccc5d          8433         8284             1.33         1.02 +- 0.01         0.98 +- 0.01  [7 ] TO RE BT BT BT BT SA
+                 8cc6ccd          3370         3943            44.90         0.85 +- 0.01         1.17 +- 0.02  [7 ] TO BT BT SC BT BT SA               ## ~20% final SA
+              cacccccc6d          3345         2435           143.27         1.37 +- 0.02         0.73 +- 0.01  [10] TO SC BT BT BT BT BT BT SR BT      ## trunc
+              cccccc6ccd          2930         2396            53.54         1.22 +- 0.02         0.82 +- 0.02  [10] TO BT BT SC BT BT BT BT BT BT      ## trunc
+                 86ccccd          2554         2707             4.45         0.94 +- 0.02         1.06 +- 0.02  [7 ] TO BT BT BT BT SC SA               ## ~20% final SA
+                     45d          2436         2490             0.59         0.98 +- 0.02         1.02 +- 0.02  [3 ] TO RE AB
+                4ccccc6d          2431           78          2206.70        31.17 +- 0.63         0.03 +- 0.00  [8 ] TO SC BT BT BT BT BT AB            ## drastic AB discrep 
+
+                   tlaser-v    shows to be associated with specific geometry in viscinity of bottom reflector
+                   tlaser-vg4  cannot show the 78 as does not make it into the top chart
+
+                8cccc55d          2180         2119             0.87         1.03 +- 0.02         0.97 +- 0.02  [8 ] TO RE RE BT BT BT BT SA
+                 89ccccd          2011         2152             4.78         0.93 +- 0.02         1.07 +- 0.02  [7 ] TO BT BT BT BT DR SA               ## final SA
+              cccc6ccccd          2068         1750            26.49         1.18 +- 0.03         0.85 +- 0.02  [10] TO BT BT BT BT SC BT BT BT BT      ## trunc 
+                   4cccd          2065         1990             1.39         1.04 +- 0.02         0.96 +- 0.02  [5 ] TO BT BT BT AB
+                8ccccc6d           991         1985           332.00         0.50 +- 0.02         2.00 +- 0.04  [8 ] TO SC BT BT BT BT BT SA            ## final SA (OK is half of G4)
+                 8cc5ccd          1898         1964             1.13         0.97 +- 0.02         1.03 +- 0.02  [7 ] TO BT BT RE BT BT SA
+              ccbccccc6d          1621         1309            33.22         1.24 +- 0.03         0.81 +- 0.02  [10] TO SC BT BT BT BT BT BR BT BT      ## trunc
+                             1000000      1000000        37.28 
+
+
+     Progressive mask development of the 20% discrepant 8cccc6d  shows problem to be 
+     all in final SURFACE_ABSORB SA step, with G4 absorbing 20% more than OK.
+     Note that top line SA is in agreement, but 2nd step SC means are going in a 
+     random direction, indicating an issue with the "average" absorbing surface 
+     that is not present with the direct surface pointed at by the laser.
+
+                      6d         36156        35863             1.19         1.01 +- 0.01         0.99 +- 0.01  [2 ] TO SC
+                     c6d         32422        32101             1.60         1.01 +- 0.01         0.99 +- 0.01  [3 ] TO SC BT
+                    cc6d         32333        32014             1.58         1.01 +- 0.01         0.99 +- 0.01  [4 ] TO SC BT BT
+                   ccc6d         31049        30857             0.60         1.01 +- 0.01         0.99 +- 0.01  [5 ] TO SC BT BT BT
+                  cccc6d         30884        30721             0.43         1.01 +- 0.01         0.99 +- 0.01  [6 ] TO SC BT BT BT BT
+                 8cccc6d         15516        18592           277.41         0.83 +- 0.01         1.20 +- 0.01  [7 ] TO SC BT BT BT BT SA
+
+     Same again issue with final SA.
+
+                      cd        892640       893243             0.20         1.00 +- 0.00         1.00 +- 0.00  [2 ] TO BT
+                     ccd        891267       891910             0.23         1.00 +- 0.00         1.00 +- 0.00  [3 ] TO BT BT
+                    6ccd          9025         9035             0.01         1.00 +- 0.01         1.00 +- 0.01  [4 ] TO BT BT SC
+                   c6ccd          8675         8640             0.07         1.00 +- 0.01         1.00 +- 0.01  [5 ] TO BT BT SC BT
+                  cc6ccd          8446         8392             0.17         1.01 +- 0.01         0.99 +- 0.01  [6 ] TO BT BT SC BT BT
+                 8cc6ccd          3370         3943            44.90         0.85 +- 0.01         1.17 +- 0.02  [7 ] TO BT BT SC BT BT SA
+
+
+
 
 DONE: badflags fixed by categorizing SAM:SameMaterial as BT in cfg4-/OpStatus
 ----------------------------------------------------------------------------------

@@ -642,6 +642,9 @@ NPY<unsigned int>* GSurfaceLib::createOpticalBuffer()
 
 
 
+
+
+
 void GSurfaceLib::dump(const char* msg)
 {
     Summary(msg);
@@ -655,8 +658,8 @@ void GSurfaceLib::dump(const char* msg)
         guint4 optical = getOpticalSurface(i);
         GPropertyMap<float>* surf = getSurface(i);
 
-        LOG(warning) << std::setw(30) << surf->getName() 
-                  << optical.description() 
+        LOG(warning) << std::setw(35) << surf->getName() 
+                  <<  GOpticalSurface::brief(optical) 
                   ;
     } 
 

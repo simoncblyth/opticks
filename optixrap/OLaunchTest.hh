@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OXPPNS.hh"
-
+#include <string>
 class Opticks ; 
 class OContext ; 
 
@@ -10,6 +10,7 @@ class OContext ;
 class OXRAP_API OLaunchTest {
     public:
         OLaunchTest(OContext* ocontext, Opticks* opticks, const char* ptx="textureTest.cu.ptx", const char* prog="textureTest", const char* exception="exception"); 
+        std::string brief();
     public:
         void setWidth(unsigned int width);
         void setHeight(unsigned int height);

@@ -1,3 +1,6 @@
+#include <sstream>
+#include <iomanip>
+
 #include "OLaunchTest.hh"
 
 // optickscore-
@@ -43,6 +46,8 @@ void OLaunchTest::init()
 {
     m_context = m_ocontext->getContext();
     m_entry_index = m_ocontext->addEntry(m_ptx, m_prog, m_exception);
+
+    LOG(info) << brief() ;  
 }
 
 
@@ -53,13 +58,30 @@ void OLaunchTest::prelaunch()
 
 void OLaunchTest::launch()
 {
+    LOG(info) << brief() ;  
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height);
 }
 
 void OLaunchTest::launch(unsigned int width, unsigned int height)
 {
+    LOG(info) << brief() ;  
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  width, height);
 }
+
+std::string OLaunchTest::brief()
+{  
+    std::stringstream ss ; 
+
+    ss << "OLaunchTest"
+       << " entry " << std::setw(3) << m_entry_index
+       << " width " << std::setw(7) << m_width 
+       << " height " << std::setw(7) << m_height
+       << " ptx " << std::setw(50) << m_ptx
+       << " prog " << std::setw(50) << m_prog
+       ;
+
+    return ss.str();
+}  
 
 
 
