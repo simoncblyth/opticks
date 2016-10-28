@@ -14,6 +14,7 @@ class OpticksQuery ;
 
 #include "CMaterialTable.hh"
 #include "CMaterialBridge.hh"
+#include "CSurfaceBridge.hh"
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 
@@ -35,7 +36,8 @@ CGeometry::CGeometry(OpticksHub* hub)
    m_detector(NULL),
    m_lib(NULL),
    m_material_table(NULL),
-   m_material_bridge(NULL)
+   m_material_bridge(NULL),
+   m_surface_bridge(NULL)
 {
    init();
 }
@@ -102,6 +104,10 @@ void CGeometry::postinitialize()
 
     GMaterialLib* mlib = m_hub->getMaterialLib(); 
     m_material_bridge = new CMaterialBridge( mlib ); 
+
+    GSurfaceLib* slib = m_hub->getSurfaceLib(); 
+    m_surface_bridge = new CSurfaceBridge( slib ); 
+
 }
 
 CMaterialBridge* CGeometry::getMaterialBridge()
@@ -110,6 +116,15 @@ CMaterialBridge* CGeometry::getMaterialBridge()
     assert(m_material_bridge);
     return m_material_bridge ; 
 }
+CSurfaceBridge* CGeometry::getSurfaceBridge()
+{
+    assert(m_surface_bridge);
+    return m_surface_bridge ; 
+}
+
+
+
+
 
 std::map<std::string, unsigned>& CGeometry::getMaterialMap()
 {

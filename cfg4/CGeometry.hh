@@ -13,7 +13,7 @@ class CDetector ;
 class CPropLib ; 
 class CMaterialTable ; 
 class CMaterialBridge ; 
-
+class CSurfaceBridge ; 
 
 #include "CFG4_API_EXPORT.hh"
 
@@ -26,6 +26,7 @@ class CFG4_API CGeometry
        CPropLib*  getPropLib();
        CDetector* getDetector();
        CMaterialBridge* getMaterialBridge();
+       CSurfaceBridge*  getSurfaceBridge();
        std::map<std::string, unsigned>& getMaterialMap();        
    private:
        void init();
@@ -40,6 +41,7 @@ class CFG4_API CGeometry
        CPropLib*            m_lib ; 
        CMaterialTable*      m_material_table ; 
        CMaterialBridge*     m_material_bridge ; 
+       CSurfaceBridge*      m_surface_bridge ; 
 
 };
 

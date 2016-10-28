@@ -1,5 +1,6 @@
 #include "CFG4_BODY.hh"
 #include <cassert>
+#include <cstring>
 #include <sstream>
 #include <iomanip>
 
@@ -11,6 +12,7 @@
 #include "G4MaterialPropertyVector.hh"
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "GProperty.hh"
+#include "GAry.hh"
 
 
 #include "NPY.hpp"
@@ -19,9 +21,10 @@
 #include "PLOG.hh"
 
 
-CMPT::CMPT(G4MaterialPropertiesTable* mpt)
+CMPT::CMPT(G4MaterialPropertiesTable* mpt, const char* name)
     :
-     m_mpt(mpt)
+     m_mpt(mpt),
+     m_name(name ? strdup(name) : NULL)
 {
 }
 
@@ -202,52 +205,153 @@ void CMPT::dumpProperty(const char* _keys)
 
 
 
+
+
+G4PhysicsOrderedFreeVector* CMPT::getVec(const char* key)
+{
+    G4PhysicsOrderedFreeVector* pofv = NULL ; 
+    G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
+    if(mpv) pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
+    return pofv ; 
+}
+
+
+
 void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep )
 {
-
     std::vector<std::string> keys ; 
     boost::split(keys, _keys, boost::is_any_of(","));   
     unsigned nkey = keys.size();
-    std::vector<G4PhysicsOrderedFreeVector*> vecs ; 
-    for(unsigned i=0 ; i < nkey ; i++ )
-    {
-        const char* key = keys[i].c_str(); 
-        if(strlen(key) == 0) continue ; 
-
-        G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
-        if(!mpv) LOG(fatal) << " missing mpv for key " << key ; 
-        assert(mpv);
-
-        G4PhysicsOrderedFreeVector* pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
-        vecs.push_back(pofv);
-    }
-     
+    
     unsigned ndim = a->getDimensions() ;
     assert(ndim == 5);
     unsigned nl = a->getShape(3);
-    unsigned nm = a->getShape(4);
+    unsigned nm_ = a->getShape(4);  // 4 corresponding to float4 of props used in tex 
 
     float* values = a->getValues() + offset ;
 
     assert( nl == nstep );
-    assert( nm == nkey );
+    assert( nm_ == nkey );
 
     for(unsigned l=0 ; l < nl ; l++)
     {   
         G4double wavelength = (low + l*step)*CLHEP::nm ;
         G4double photonMomentum = h_Planck*c_light/wavelength ; 
 
-        for(unsigned m=0 ; m < nm ; m++)
+        for(unsigned m=0 ; m < nm_ ; m++)
         {
-            if(m >= vecs.size()) break ; 
+            const char* key = keys[m].c_str(); 
+            G4PhysicsOrderedFreeVector* pofv = getVec(key);
+            if(!pofv) continue ; 
 
-            G4PhysicsOrderedFreeVector* pofv = vecs[m] ;
             G4double value = pofv->Value( photonMomentum );
 
-            *(values + l*nm + m) = value ;
+            *(values + l*nm_ + m) = value ;
 
         }
     }   
 }
 
+
+/**
+ Mapping from G4 props to Opticks detect/absorb/reflect_specular/reflect_diffuse is non-trivial
+**/
+
+GProperty<double>* CMPT::makeProperty(const char* key, float low, float step, unsigned nstep)
+{
+    G4PhysicsOrderedFreeVector* vec = key == NULL ? NULL : getVec(key);
+
+    GAry<double>* dom = new GAry<double>(nstep);
+    GAry<double>* val = new GAry<double>(nstep);
+
+    for(unsigned i=0 ; i < nstep ; i++)
+    {
+        G4double wavelength = (low + i*step)*CLHEP::nm ;
+        G4double photonMomentum = h_Planck*c_light/wavelength ; 
+        dom->setValue(i, photonMomentum);
+        val->setValue(i, vec == NULL ? 0 : vec->Value(photonMomentum) );
+    }
+    return new GProperty<double>(val, dom);
+}
+
+
+
+void CMPT::sampleSurf(NPY<float>* a, unsigned offset, float low, float step, unsigned nstep, bool specular)
+{
+   // used from cfg4/tests/CInterpolationTest.cc
+
+    GProperty<double>* efficiency = makeProperty("EFFICIENCY", low, step, nstep);
+    GProperty<double>* reflectivity = makeProperty("REFLECTIVITY", low, step, nstep);
+
+    if(m_name) LOG(info) << m_name 
+                         << efficiency->brief(" efficiency")
+                         << reflectivity->brief(" reflectivity")
+                         ;
+
+
+    unsigned ndim = a->getDimensions() ;
+    assert(ndim == 5);
+    float* values = a->getValues() + offset ;
+
+    unsigned nl = a->getShape(3);
+    unsigned nm_ = a->getShape(4);  // 4 corresponding to float4 of props used in tex 
+    assert( nl == nstep );
+    assert( nm_ == 4 );
+
+    bool sensor = !efficiency->isZero() ;
+
+
+    // compare with GSurfaceLib::createStandardSurface
+    // default is to be all zeroes
+
+    GProperty<double>* zero = NULL ; 
+
+    GProperty<double>* _detect = NULL ; 
+    GProperty<double>* _absorb = NULL ; 
+    GProperty<double>* _specular = NULL ; 
+    GProperty<double>* _diffuse = NULL ; 
+
+    if(sensor)
+    {
+         _detect = efficiency ; 
+         _absorb = GProperty<double>::make_one_minus( _detect );
+         _specular = zero ; 
+         _diffuse = zero ; 
+    }
+    else
+    {
+         if(specular)
+         {
+              _detect = zero ; 
+              _absorb  = GProperty<double>::make_one_minus(reflectivity);
+              _specular = reflectivity ;
+              _diffuse = zero ; 
+         }
+         else
+         {
+              _detect = zero ; 
+              _absorb  = GProperty<double>::make_one_minus(reflectivity);
+              _specular = zero ; 
+              _diffuse = reflectivity ; 
+         }
+    }
+
+
+
+    for(unsigned l=0 ; l < nstep ; l++)
+    {
+        for(unsigned m=0 ; m < nm_ ; m++)
+        {
+            float value = 0 ; 
+            switch(m)
+            { 
+                case 0:  value = _detect   ? _detect->getValue(l) : 0.f ; break ; 
+                case 1:  value = _absorb   ? _absorb->getValue(l) : 0.f ; break ;
+                case 2:  value = _specular ? _specular->getValue(l) : 0.f ; break ;
+                case 3:  value = _diffuse  ? _diffuse->getValue(l) : 0.f ; break ;
+            }
+            *(values + l*nm_ + m) = value ;
+        }
+    }
+}
 

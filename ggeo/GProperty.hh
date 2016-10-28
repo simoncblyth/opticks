@@ -65,6 +65,8 @@ public:
    bool isZero();
    bool isConstant();
    T getConstant(); 
+   T getMin(); 
+   T getMax(); 
 public:
    // **lookup** here means that the input values are already within the domain 
    // this is appropriate for InverseCDF where the domain is 0:1 and 
@@ -97,6 +99,7 @@ public:
 public:
    void SummaryV(const char* msg, unsigned int nline=5);
    void Summary(const char* msg="GProperty::Summary", unsigned int imod=5 );
+   std::string brief(const char* msg=""); 
 
 private:
    unsigned int m_length ;

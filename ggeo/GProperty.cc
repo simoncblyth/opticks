@@ -35,7 +35,24 @@ template <typename T>
 const char* GProperty<T>::VALUE_FMT = " %10.3f" ; 
 
 
+template <typename T>
+std::string GProperty<T>::brief(const char* msg)
+{
+    std::stringstream ss ;
 
+    bool zero = isZero();
+    bool constant = isConstant();
+
+    ss << msg ;
+    if(zero) ss << " zero " ;
+
+    if(constant)  
+        ss << " constant: " << getConstant() ;
+    else 
+        ss << " range: " << getMin() << " : " << getMax() ;
+
+    return ss.str();
+}
 
 template <typename T>
 T GProperty<T>::getValue(unsigned int index)
@@ -438,6 +455,23 @@ T GProperty<T>::getConstant()
     assert(getLength() > 0);
     return m_values->getValue(0); 
 }
+
+template <typename T>
+T GProperty<T>::getMin()
+{
+    unsigned idx ;     
+    return m_values->min(idx); 
+}
+template <typename T>
+T GProperty<T>::getMax()
+{
+    unsigned idx ;     
+    return m_values->max(idx); 
+}
+
+
+
+
 
 
 template <typename T>

@@ -341,6 +341,8 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                  theReflectivity = PropertyPointer->GetProperty(thePhotonMomentum);
 #endif
 
+/*
+   // SCB comment out ESRAir reflectivity diddle
                  if(OpticalSurface->GetName().contains("ESRAir")) 
                  {
                       G4double inciAngle = GetIncidentAngle();
@@ -369,6 +371,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                    //  theReflectivity = (theReflectivity - 0.993) + 0.72;
                    //}
                  }
+*/
 
               } else if (PropertyPointer1 && PropertyPointer2) {
 
@@ -440,7 +443,6 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 
-/*
                       LOG(info) << "OpticalSurface "
                                 << " name " << OpticalSurface->GetName() 
                                 << " thePhotonMomentum (eV) " << thePhotonMomentum/eV
@@ -453,7 +455,6 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                 << " m1 " << Material1->GetName()
                                 << " m2 " << Material2->GetName()
                                 ; 
-*/
 
               } 
               else 
@@ -535,9 +536,6 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #else
                     Rindex2 = Rindex->GetProperty(thePhotonMomentum);
 #endif
-                    //LOG(info) << "OpticalSurface dielectric_dielectric  polished OR ground  " 
-                    //          << " Rindex2 " << Rindex2 
-                    //          ;
                 }
                 else 
                 {

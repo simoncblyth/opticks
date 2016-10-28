@@ -23,8 +23,8 @@ tlaser--(){
 
     local msg="=== $FUNCNAME :"
 
-    local photons=1000000
-    #local photons=100000
+    #local photons=1000000
+    local photons=100000
     #local photons=20000
     #local photons=100
 

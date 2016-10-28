@@ -23,11 +23,11 @@ class CGeometry ;
 class CPropLib ; 
 class CDetector ; 
 class CMaterialBridge ; 
+class CSurfaceBridge ; 
 class CGenerator ; 
 
 class CCollector ; 
 class CRecorder ; 
-//class Rec ; 
 class CStepRec ; 
 
 class OpticksHub ; 
@@ -64,6 +64,7 @@ class CFG4_API CG4
         Opticks*       getOpticks();
         CGeometry*     getGeometry();
         CMaterialBridge* getMaterialBridge();
+        CSurfaceBridge*  getSurfaceBridge();
 
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();

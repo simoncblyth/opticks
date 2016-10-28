@@ -19,9 +19,11 @@
 #include "CG4.hh"
 #include "CMPT.hh"
 #include "CMaterialBridge.hh"
+#include "CSurfaceBridge.hh"
 
 // g4-
 #include "G4Material.hh"
+#include "G4OpticalSurface.hh"
 
 
 #include "GGEO_LOG.hh"
@@ -34,8 +36,6 @@ CInterpolationTest
 ====================
 
 The GPU analogue of this is oxrap-/tests/OInterpolationTest
-
-
 
 **/
 
@@ -54,6 +54,7 @@ int main(int argc, char** argv)
 
     CG4 g4(&hub);
     CMaterialBridge* mbr = g4.getMaterialBridge();
+    CSurfaceBridge*  sbr = g4.getSurfaceBridge();
     //mbr->dump();
 
     GGeo* gg = hub.getGGeo();
@@ -104,11 +105,24 @@ int main(int argc, char** argv)
               ;
 
 
-    const char* keys_0 = "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB" ;
-    const char* keys_1 = "GROUPVEL,,," ;
+    const char* mkeys_0 = "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB" ;
+    const char* mkeys_1 = "GROUPVEL,,," ;
 
 
-    // getting from Opticks boundary omat/imat to the G4 materials
+    // gathering an Opticks tex buffer  from G4 material and surface properties
+    // as machinery and interpolation test 
+    //
+    //  cf with almost the reverse action done by 
+    //       CSurLib::addProperties
+    //             converts GGeo properties detect/absorb/reflect_specular/reflect_diffuse 
+    //
+    //       GSurfaceLib::createStandardSurface
+    //
+    //      into G4 props
+    //                  REFLECTIVITY 
+    //                  EFFICIENCY (when sensor)
+
+
     LOG(info) << " nb " << nb ; 
     for(unsigned i=0 ; i < ni ; i++)
     {
@@ -121,20 +135,40 @@ int main(int argc, char** argv)
 
         const G4Material* om = mbr->getG4Material(omat);
         const G4Material* im = mbr->getG4Material(imat);
-        //  surface bridge ??
 
-        CMPT* ompt = new CMPT(om->GetMaterialPropertiesTable()); 
-        CMPT* impt = new CMPT(im->GetMaterialPropertiesTable()); 
+        const G4OpticalSurface* os = osur == INT_MAX ? NULL : sbr->getG4Surface(osur) ;
+        const G4OpticalSurface* is = isur == INT_MAX ? NULL : sbr->getG4Surface(isur) ;
+
+        CMPT* ompt = new CMPT(om->GetMaterialPropertiesTable(), om->GetName().c_str()); 
+        CMPT* impt = new CMPT(im->GetMaterialPropertiesTable(), om->GetName().c_str()); 
+        CMPT* ospt = os == NULL ? NULL : new CMPT(os->GetMaterialPropertiesTable(), os->GetName().c_str());
+        CMPT* ispt = is == NULL ? NULL : new CMPT(is->GetMaterialPropertiesTable(), is->GetName().c_str());
          
         for(unsigned k = 0 ; k < nk ; k++)
         { 
-            const char* keys = k == 0 ? keys_0 : keys_1 ; 
+            const char* mkeys = k == 0 ? mkeys_0 : mkeys_1 ; 
 
-            unsigned o_offset = out->getValueIndex(i, GBndLib::OMAT, k ) ;
-            unsigned i_offset = out->getValueIndex(i, GBndLib::IMAT, k ) ;
+            unsigned om_offset = out->getValueIndex(i, GBndLib::OMAT, k ) ;
+            unsigned os_offset = out->getValueIndex(i, GBndLib::OSUR, k ) ;
+            unsigned is_offset = out->getValueIndex(i, GBndLib::ISUR, k ) ;
+            unsigned im_offset = out->getValueIndex(i, GBndLib::IMAT, k ) ;
 
-            ompt->sample(out, o_offset, keys, wlow, wstep, nl );  
-            impt->sample(out, i_offset, keys, wlow, wstep, nl );  
+            ompt->sample(out, om_offset, mkeys, wlow, wstep, nl );  
+            impt->sample(out, im_offset, mkeys, wlow, wstep, nl );  
+
+            if(k == 0)  // nothing in 2nd group for surfaces yet ???
+            {
+                if(ospt) 
+                {
+                    bool ospecular = os->GetFinish() == polished ;
+                    ospt->sampleSurf(out, os_offset, wlow, wstep, nl, ospecular );  
+                } 
+                if(ispt) 
+                {
+                    bool ispecular = is->GetFinish() == polished ;
+                    ispt->sampleSurf(out, is_offset, wlow, wstep, nl, ispecular  );  
+                }
+            }
         }
 
 

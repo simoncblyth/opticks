@@ -5,7 +5,36 @@ SURFACE_ABSORB
 NEXT
 ------
 
-Extend CInterpolationTest and OInterpolationTest to surface info ?
+* Extend CInterpolationTest and OInterpolationTest to surface info ?
+
+* logical as opposed to border surfaces need to be repeated in ISUR and OSUR slots for Opticks
+  to match the G4 logic, although expect no impact of this for almost all surfaces
+
+
+
+Commenting out ESRAir reflectivity diddle doesnt fix the 20%
+----------------------------------------------------------------------
+
+::
+
+     335               if (PropertyPointer)
+     336               {
+     337 
+     338 #if ( G4VERSION_NUMBER > 1000 )
+     339                  theReflectivity = PropertyPointer->Value(thePhotonMomentum);
+     340 #else
+     341                  theReflectivity = PropertyPointer->GetProperty(thePhotonMomentum);
+     342 #endif
+     343 
+     344                  if(OpticalSurface->GetName().contains("ESRAir"))
+     345                  {
+     346                       G4double inciAngle = GetIncidentAngle();
+     347                       //ESR in air
+     348                       if(inciAngle*180./pi > 40)
+     349                       {
+     350                           theReflectivity = (theReflectivity - 0.993) + 0.973572 + 9.53233e-04*(inciAngle*180./pi) - 1.22184e-05*((inciAngle*180./pi))*((inciAngle*180./pi));
+     351                       }
+
 
 
 1M 2016 Oct 28 seqhis

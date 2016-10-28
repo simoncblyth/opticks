@@ -77,6 +77,11 @@ CMaterialBridge* CG4::getMaterialBridge()
 {
     return m_geometry->getMaterialBridge() ; 
 }
+CSurfaceBridge* CG4::getSurfaceBridge()
+{
+    return m_geometry->getSurfaceBridge() ; 
+}
+
 
 CRecorder* CG4::getRecorder()
 {
