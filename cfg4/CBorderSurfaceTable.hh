@@ -3,7 +3,9 @@
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
-class CFG4_API CBorderSurfaceTable {
+#include "CSurfaceTable.hh"
+
+class CFG4_API CBorderSurfaceTable : public CSurfaceTable {
     public:
          CBorderSurfaceTable();
          void dump(const char* msg="CBorderSurfaceTable::dump");

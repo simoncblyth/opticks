@@ -14,9 +14,12 @@
 #include "CGeometry.hh"
 #include "CDetector.hh"
 #include "CMaterialTable.hh"
-#include "CBorderSurfaceTable.hh"
-#include "CSkinSurfaceTable.hh"
+
+//#include "CBorderSurfaceTable.hh"
+//#include "CSkinSurfaceTable.hh"
+
 #include "CMaterialBridge.hh"
+#include "CSurfaceBridge.hh"
 
 // g4-
 #include "G4VPhysicalVolume.hh"
@@ -45,32 +48,31 @@ int main(int argc, char** argv)
     G4VPhysicalVolume* world_pv = detector->Construct();
     assert(world_pv);
 
-
-    detector->dumpLV();
-
+    //detector->dumpLV();
 
 
+/*
     CMaterialTable mt ; 
     mt.dump("CGeometryTest CMaterialTable");
-
     mt.dumpMaterial("GdDopedLS");
+*/
 
+    // these now moved inside CSurfaceBridge
+    //CBorderSurfaceTable bst ; 
+    //bst.dump("CGeometryTest CBorderSurfaceTable");
+    //CSkinSurfaceTable sst ; 
+    //sst.dump("CGeometryTest CSkinSurfaceTable");
 
-    CBorderSurfaceTable bst ; 
-    bst.dump("CGeometryTest CBorderSurfaceTable");
-
-    CSkinSurfaceTable sst ; 
-    sst.dump("CGeometryTest CSkinSurfaceTable");
-
-
-
-
+   
     GGeo* gg = hub.getGGeo();
     GMaterialLib* mlib = gg->getMaterialLib(); 
+    GSurfaceLib*  slib = gg->getSurfaceLib(); 
 
-    CMaterialBridge mb(mlib) ;
-    mb.dump("CGeometryTest"); 
+    CMaterialBridge mbr(mlib) ;
+    mbr.dump("CGeometryTest"); 
 
+    CSurfaceBridge sbr(slib);
+    sbr.dump("CGeometryTest CSurfaceBridge");
 
     return 0 ; 
 }

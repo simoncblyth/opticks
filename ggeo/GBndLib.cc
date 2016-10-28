@@ -354,13 +354,24 @@ std::string GBndLib::description(const guint4& bnd)
     unsigned int idx = index(bnd) ;
     std::string tag = idx == UNSET ? "-" : boost::lexical_cast<std::string>(idx) ; 
 
+    unsigned omat = bnd[OMAT] ;
+    unsigned osur = bnd[OSUR] ;
+    unsigned isur = bnd[ISUR] ;
+    unsigned imat = bnd[IMAT] ;
+
     std::stringstream ss ; 
     ss 
        << " ("   << std::setw(3) << tag << ")" 
-       << " om:" << std::setw(25) << (bnd[OMAT] == UNSET ? "OMAT-unset-ERROR" : m_mlib->getName(bnd[OMAT]))
-       << " os:" << std::setw(25) << (bnd[OSUR] == UNSET ? "" : m_slib->getName(bnd[OSUR]))  
-       << " is:" << std::setw(25) << (bnd[ISUR] == UNSET ? "" : m_slib->getName(bnd[ISUR])) 
-       << " im:" << std::setw(25) << (bnd[IMAT] == UNSET ? "IMAT-unset-ERROR" : m_mlib->getName(bnd[IMAT])) 
+       << " om:" << std::setw(25) << (omat == UNSET ? "OMAT-unset-ERROR" : m_mlib->getName(omat))
+       << " os:" << std::setw(31) << (osur == UNSET ? ""                 : m_slib->getName(osur))  
+       << " is:" << std::setw(31) << (isur == UNSET ? ""                 : m_slib->getName(isur)) 
+       << " im:" << std::setw(25) << (imat == UNSET ? "IMAT-unset-ERROR" : m_mlib->getName(imat)) 
+       << " (" 
+       << std::setw(2) << omat << ","
+       << std::setw(2) << ( osur == UNSET ? -1 : (int)osur ) << ","
+       << std::setw(2) << ( isur == UNSET ? -1 : (int)isur ) << ","
+       << std::setw(2) << imat 
+       << ")" 
        ;
     return ss.str();
 }

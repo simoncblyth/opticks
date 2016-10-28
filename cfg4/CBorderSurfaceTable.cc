@@ -7,9 +7,11 @@
 
 #include "CBorderSurfaceTable.hh"
 #include "G4LogicalBorderSurface.hh"
-
+#include "G4OpticalSurface.hh"
 
 CBorderSurfaceTable::CBorderSurfaceTable()
+   :
+    CSurfaceTable("border")
 {
     init();
 }
@@ -29,21 +31,26 @@ void CBorderSurfaceTable::init()
     for(int i=0 ; i < nsurf ; i++)
     {
         G4LogicalBorderSurface* bs = (*bst)[i] ;
+        G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(bs->GetSurfaceProperty());
+        add(os);
+
         const G4VPhysicalVolume* pv1 = bs->GetVolume1() ;
         const G4VPhysicalVolume* pv2 = bs->GetVolume2() ;
 
         std::cout << std::setw(5) << i 
                   << std::setw(35) << bs->GetName()
+                  << std::setw(35) << os->GetName()
                   << " pv1 " << pv1->GetName() << " #" << pv1->GetCopyNo() 
                   << " pv2 " << pv2->GetName() << " #" << pv2->GetCopyNo() 
                   << std::endl 
                   ;
+
     }
 
 }
 
 void CBorderSurfaceTable::dump(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg << " numSurf " << getNumSurf() ; 
 }
 

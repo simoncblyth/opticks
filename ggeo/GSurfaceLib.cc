@@ -413,12 +413,12 @@ NPY<float>* GSurfaceLib::createBuffer()
 
 NPY<float>* GSurfaceLib::createBufferForTex2d()
 {
-    // trying to arrange the memory layout of this buffer to 
-    // match the requirements of tex2d<float4>
+    // memory layout of this buffer is constrained by 
+    // need to match the requirements of tex2d<float4>
 
-    unsigned int ni = getNumSurfaces();
-    unsigned int nj = NUM_FLOAT4 ; 
-    unsigned int nk = getStandardDomain()->getLength();
+    unsigned int ni = getNumSurfaces();                 // ~48
+    unsigned int nj = NUM_FLOAT4 ;                      // 2 
+    unsigned int nk = getStandardDomain()->getLength(); // 39
     unsigned int nl = 4 ;
 
     if(ni == 0 || nj == 0)
@@ -432,7 +432,7 @@ NPY<float>* GSurfaceLib::createBufferForTex2d()
     }  
 
 
-    NPY<float>* buf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
+    NPY<float>* buf = NPY<float>::make(ni, nj, nk, nl);  // surfaces/payload-group/wavelength-samples/4prop
     buf->zero();
     float* data = buf->getValues();
 
