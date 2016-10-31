@@ -19,6 +19,29 @@ dbgseqhis
    tlaser-t --dbgseqhis 8cccc6d
 
 
+Boundary 37 (with os:RSOilSurface) : wrong way around ? inner not outer surf ?
+---------------------------------------------------------------------------------
+
+Wrong way around ?
+
+* Perhaps black Acrylic radial shield is mounted in the MO ? So it has MO both inside it and outside it
+* inner not outer surf, so outgoing photons feel it
+
+::
+
+     ( 32) om:               MineralOil os:                                is:                                im:                   Vacuum ( 3,-1,-1,12)
+     ( 33) om:                   Vacuum os:                                is:                                im:                    Pyrex (12,-1,-1,13)
+     ( 34) om:                   Vacuum os:lvHeadonPmtCathodeSensorSurface is:                                im:                 Bialkali (12, 7,-1, 4)
+     ( 35) om:                   Vacuum os:                                is:                                im:                      PVC (12,-1,-1,23)
+     ( 36) om:               MineralOil os:                                is:                                im:           StainlessSteel ( 3,-1,-1,36)
+     ( 37) om:               MineralOil os:                   RSOilSurface is:                                im:                  Acrylic ( 3, 8,-1, 2)
+     ( 38) om:                  Acrylic os:                                is:                                im:                      Air ( 2,-1,-1,14)
+     ( 39) om:                      Air os:               ESRAirSurfaceTop is:                                im:                      ESR (14, 9,-1, 9)
+     ( 40) om:                      Air os:               ESRAirSurfaceBot is:                                im:                      ESR (14,10,-1, 9)
+     ( 41) om:               MineralOil os:                                is:                                im:                   Teflon ( 3,-1,-1,28)
+     ( 42) om:               MineralOil os:                                is:                                im:       LiquidScintillator ( 3,-1,-1, 1)
+
+
 
 Concentric test
 ------------------

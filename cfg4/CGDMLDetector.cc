@@ -20,7 +20,7 @@
 #include "OpticksResource.hh"
 
 // cfg4-
-#include "CPropLib.hh"
+#include "CMaterialLib.hh"
 #include "CTraverser.hh"
 
 // g4-

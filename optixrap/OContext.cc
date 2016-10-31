@@ -41,6 +41,8 @@ const char* OContext::getModeName()
 
 OpticksEntry* OContext::addEntry(char code)
 {
+    LOG(fatal) << "OContext::addEntry " << code ; 
+    //assert(0);
     bool defer = true ; 
     unsigned index ;
     switch(code)

@@ -10,7 +10,7 @@ set(_TEST_SOURCES
 
 set(TEST_SOURCES
 
-    CPropLibTest.cc
+    CMaterialLibTest.cc
     CTestDetectorTest.cc
     CGDMLDetectorTest.cc
     CGeometryTest.cc

@@ -10,7 +10,7 @@ class CG4 ;
 class Opticks ; 
 template <typename T> class OpticksCfg ; 
 class CDetector ; 
-class CPropLib ; 
+class CMaterialLib ; 
 class CMaterialTable ; 
 class CMaterialBridge ; 
 class CSurfaceBridge ; 
@@ -23,7 +23,7 @@ class CFG4_API CGeometry
        CGeometry(OpticksHub* hub);
        bool hookup(CG4* g4);
        void postinitialize();   // invoked by CG4::postinitialize after Geant4 geometry constructed
-       CPropLib*  getPropLib();
+       CMaterialLib*  getPropLib();
        CDetector* getDetector();
        CMaterialBridge* getMaterialBridge();
        CSurfaceBridge*  getSurfaceBridge();
@@ -38,7 +38,7 @@ class CFG4_API CGeometry
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 
        CDetector*           m_detector ; 
-       CPropLib*            m_lib ; 
+       CMaterialLib*        m_lib ; 
        CMaterialTable*      m_material_table ; 
        CMaterialBridge*     m_material_bridge ; 
        CSurfaceBridge*      m_surface_bridge ; 

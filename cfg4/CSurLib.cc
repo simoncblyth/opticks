@@ -18,10 +18,10 @@
 
 #include "CMPT.hh"
 #include "CSurLib.hh"
+#include "COpticalSurface.hh"
 #include "CDetector.hh"
 
 #include "PLOG.hh"
-
 
 
 G4OpticalSurfaceModel Model(unsigned model_)
@@ -37,14 +37,19 @@ G4OpticalSurfaceModel Model(unsigned model_)
     }
     return model ; 
 }   
+
 G4OpticalSurfaceFinish Finish(unsigned finish_)
 {
    // materials/include/G4OpticalSurface.hh
     G4OpticalSurfaceFinish finish = polished ;
     switch(finish_)
     {
-        case 0:finish = polished ;break;
-        case 3:finish = ground   ;break;
+        case 0:finish = polished              ;break;
+        case 1:finish = polishedfrontpainted  ;break;  
+        case 2:finish = polishedbackpainted   ;break;  
+        case 3:finish = ground                ;break;
+        case 4:finish = groundfrontpainted    ;break;  
+        case 5:finish = groundbackpainted     ;break;  
     }
     return finish ; 
 }
@@ -136,12 +141,21 @@ G4OpticalSurface* CSurLib::makeOpticalSurface(GSur* sur)
 {
     GPropertyMap<float>* pmap = sur->getPMap();
     GOpticalSurface* os_ = pmap->getOpticalSurface();
-    G4OpticalSurface* os = new G4OpticalSurface(os_->getName());
+    const char* name = os_->getName() ;
     guint4 optical = os_->getOptical();
 
-    os->SetModel(Model(1));
-    os->SetFinish(Finish(optical.z));
-    os->SetType(Type(optical.y));
+
+    G4OpticalSurface* os = new G4OpticalSurface(name);
+
+    G4OpticalSurfaceModel model = Model(0) ; // was 1:unified until 2016/10/31 when changed to 0:glisur
+    G4OpticalSurfaceFinish finish = Finish(optical.z) ;  //  polished,,,ground,,, 
+    G4SurfaceType type = Type(optical.y) ;   // dielectric_metal, dielectric_dielectric
+
+    os->SetModel(model);
+    os->SetFinish(finish);
+    os->SetType(type);
+
+    LOG(info) << "CSurLib::makeOpticalSurface " << COpticalSurface::Brief(os) ;
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     os->SetMaterialPropertiesTable(mpt);
@@ -284,7 +298,6 @@ void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>
 */
 
 }
-
 
 
 

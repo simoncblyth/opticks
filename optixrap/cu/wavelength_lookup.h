@@ -12,7 +12,6 @@ rtDeclareVariable(float4, reemission_domain, , );
 rtTextureSampler<float, 2>  source_texture ;
 rtDeclareVariable(float4, source_domain, , );
 
-
 /*
 #include "GPropertyLib.hh"
 rtTextureSampler<float4, 2>  boundary_texture ;

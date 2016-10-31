@@ -1,10 +1,10 @@
-// op --cproplib 
-// op --cproplib 0
-// op --cproplib GdDopedLS
+// op --cmat 
+// op --cmat 0
+// op --cmat GdDopedLS
 
 #include "Opticks.hh"
 #include "OpticksMode.hh"
-#include "CPropLib.hh"
+#include "CMaterialLib.hh"
 #include "CFG4_BODY.hh"
 #include "CFG4_LOG.hh"
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     
     m_opticks->setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
-    CPropLib* m_lib = new CPropLib(m_opticks); 
+    CMaterialLib* m_lib = new CMaterialLib(m_opticks); 
 
     LOG(info) << argv[0] << " convert " ; 
 

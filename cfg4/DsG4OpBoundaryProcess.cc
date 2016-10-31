@@ -725,19 +725,20 @@ void DsG4OpBoundaryProcess::DielectricMetal()
 
              } else {
 
-                if ( n == 1 ) ChooseReflection();
+                if ( n == 1 ) ChooseReflection();   //  this assumes unified model with prob_ss prob_bs prob_sl ...
                                                                                 
-                if ( theStatus == LambertianReflection ) {
+                if ( theStatus == LambertianReflection ) 
+                {
                    DoReflection();
                 }
-                else if ( theStatus == BackScattering ) {
+                else if ( theStatus == BackScattering ) 
+                {
                    NewMomentum = -OldMomentum;
                    NewPolarization = -OldPolarization;
                 }
                 else {
 
-                   if(theStatus==LobeReflection)theFacetNormal =
-                             GetFacetNormal(OldMomentum,theGlobalNormal);
+                   if(theStatus==LobeReflection)theFacetNormal = GetFacetNormal(OldMomentum,theGlobalNormal);
 
                    G4double PdotN = OldMomentum * theFacetNormal;
                    NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;

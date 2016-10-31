@@ -40,13 +40,17 @@ void CBorderSurfaceTable::init()
         std::cout << std::setw(5) << i 
                   << std::setw(35) << bs->GetName()
                   << std::setw(35) << os->GetName()
-                  << " pv1 " << pv1->GetName() << " #" << pv1->GetCopyNo() 
-                  << " pv2 " << pv2->GetName() << " #" << pv2->GetCopyNo() 
-                  << std::endl 
                   ;
 
-    }
+       if(pv1) std::cout << " pv1 " << pv1->GetName() << " #" << pv1->GetCopyNo()  ;
+       else std::cout << " pv1 NULL " ;
 
+       if(pv2) std::cout << " pv2 " << pv2->GetName() << " #" << pv2->GetCopyNo()  ;
+       else std::cout << " pv2 NULL " ;
+
+  
+       std::cout << std::endl ;
+    }
 }
 
 void CBorderSurfaceTable::dump(const char* msg)

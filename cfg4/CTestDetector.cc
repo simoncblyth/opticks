@@ -43,7 +43,7 @@
 
 // cfg4-
 #include "CMaker.hh"
-#include "CPropLib.hh"
+#include "CMaterialLib.hh"
 #include "CTestDetector.hh"
 
 #include "PLOG.hh"

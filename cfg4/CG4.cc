@@ -39,7 +39,7 @@
 
 #include "CPhysics.hh"
 #include "CGeometry.hh"
-#include "CPropLib.hh"
+#include "CMaterialLib.hh"
 #include "CDetector.hh"
 #include "CGenerator.hh"
 
@@ -92,7 +92,7 @@ CStepRec* CG4::getStepRec()
 {
     return m_steprec ; 
 }
-CPropLib* CG4::getPropLib()
+CMaterialLib* CG4::getPropLib()
 {
     return m_lib ; 
 }

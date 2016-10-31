@@ -149,6 +149,7 @@ set(SOURCES
     CRec.cc
     CTrack.cc
     CPropLib.cc
+    CMaterialLib.cc
     CMath.cc
     CSolid.cc
     CMPT.cc
@@ -159,6 +160,7 @@ set(SOURCES
     CSkinSurfaceTable.cc
     CSurfaceTable.cc
     CSurfaceBridge.cc
+    COpticalSurface.cc
 
     OpStatus.cc
     Format.cc
@@ -221,7 +223,10 @@ set(HEADERS
     CStp.hh
     CRec.hh
     CTrack.hh
+
     CPropLib.hh
+    CMaterialLib.hh
+
     CMath.hh
     CSolid.hh
     CMPT.hh
@@ -232,6 +237,7 @@ set(HEADERS
     CSkinSurfaceTable.hh
     CSurfaceTable.hh
     CSurfaceBridge.hh
+    COpticalSurface.hh
 
     OpStatus.hh
     Format.hh

@@ -35,17 +35,14 @@ class G4PhysicsVector ;
 CPropLib
 ==========
 
-CPropLib is a constituent of CDetector (eg CTestDector and CGDMLDetector)
+CPropLib is base class of CMaterialLib which is a constituent of CDetector (eg CTestDector and CGDMLDetector)
 that converts GGeo (ie Opticks G4DAE) materials and surfaces into G4 materials and surfaces.
-The GGeo gets loaded on initializing CPropLib.
 
-TODO : this need simplification
-----------------------------------
+TODO:
+------
 
-* far too much public API
-* moving to convert internally all at once approach 
-  and provide simple accessors
-* maybe split off conversion "reconstruction" into separate class
+* remove duplications between CPropLib and tests/CInterpolationTest 
+
 
 **/
 
@@ -57,12 +54,10 @@ class CFG4_API CPropLib {
        static const char* SENSOR_MATERIAL ;
    public:
        CPropLib(Opticks* opticks, int verbosity=0);
-       void convert(); // commented in init 
    private:
        void init();
        void initCheckConstants(); 
        void initSetupOverrides(); 
-       //void convert();  commented in init 
    public:
        GSurfaceLib* getSurfaceLib();
    public:
@@ -72,66 +67,42 @@ class CFG4_API CPropLib {
        const GMaterial* getMaterial(const char* shortname);
        bool hasMaterial(const char* shortname); 
    public:
-       // G4 material access
-       const G4Material* getG4Material(const char* shortname);
        std::string getMaterialKeys(const G4Material* mat);
    public:
-       const G4Material* makeInnerMaterial(const char* spec);
-       const G4Material* makeMaterial(const char* matname);
        GCSG*       getPmtCSG(NSlice* slice);
    public:
-       // -> CMaterialBridge
-       //unsigned int getMaterialIndex(const G4Material* material);
-       //const char*  getMaterialName(unsigned int index);
-       //std::string MaterialSequence(unsigned long long seqmat);
        void setGroupvelKludge(bool gk=true);
    public:
        G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
        G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
    private:
        G4OpticalSurface* makeOpticalSurface(const char* name);
-   private:
-       const G4Material* convertMaterial(const GMaterial* kmat);
-       G4Material* makeVacuum(const char* name);
-       G4Material* makeWater(const char* name);
+
    public:
        // used by CGDMLDetector::addMPT TODO: privatize
        G4MaterialPropertiesTable* makeMaterialPropertiesTable(const GMaterial* kmat);
-   private: 
+
+   protected:
        void addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>* pmap, const char* _keys, bool keylocal=true, bool constant=false);
        void addProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
        void addConstProperty(G4MaterialPropertiesTable* mpt, const char* matname, const char* lkey,  GProperty<float>* prop );
-   public: 
-       void dump(const char* msg="CPropLib::dump");
-       void dump(const GMaterial* mat, const char* msg="CPropLib::dump");
-       void dumpMaterials(const char* msg="CPropLib::dumpMaterials");
-       void dumpMaterial(const G4Material* mat, const char* msg="CPropLib::dumpMaterial");
-   private:
        GProperty<float>* convertVector(G4PhysicsVector* pvec);
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
 
-   private:
-       Opticks*           m_opticks ; 
+   protected:
+       Opticks*           m_ok ; 
        int                m_verbosity ; 
+
        GBndLib*           m_bndlib ; 
        GMaterialLib*      m_mlib ; 
        GSurfaceLib*       m_slib ; 
        GScintillatorLib*  m_sclib ; 
        GDomain<float>*    m_domain ; 
        float              m_dscale ;  
-       bool               m_converted ;      
-
        GPropertyMap<float>* m_sensor_surface ; 
-
-       std::map<const GMaterial*, const G4Material*>   m_ggtog4 ; 
-
-       // moved to CMaterialBridge
-       //std::map<const G4Material*, unsigned int> m_g4toix ; 
-       //std::map<unsigned int, std::string> m_ixtoname ; 
-
+   protected:
        bool              m_groupvel_kludge ; 
    private:
-       std::map<std::string, const G4Material*>   m_g4mat ; 
        std::map<std::string, std::map<std::string, float> > m_const_override ; 
 
 };

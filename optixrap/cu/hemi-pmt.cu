@@ -7,7 +7,7 @@
 
 using namespace optix;
 
-#include "wavelength_lookup.h"
+//#include "wavelength_lookup.h"
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
@@ -1160,11 +1160,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // but this is great place to dump things checking GPU side state
   // as only run once
 
-  if(primIdx == -1)
-  { 
-      source_check(); 
-      //wavelength_check(); 
-  }
 
   const uint4& solid    = solidBuffer[primIdx]; 
   uint4 identity = identityBuffer[instance_index] ; 
@@ -1188,8 +1183,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       int partType = q2.i.w ; 
 
       identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
-      unsigned int boundary = q1.u.z ; 
 /*
+      unsigned int boundary = q1.u.z ; 
       rtPrintf("bounds primIdx %u p %u partIdx %u boundary %u identity (%u,%u,%u,%u) partType %d \n", primIdx, p, partIdx, boundary,  
                   identity.x, 
                   identity.y, 

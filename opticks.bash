@@ -659,6 +659,7 @@ tg4gun-(){     . $(opticks-home)/tests/tg4gun.bash    && tg4gun-env $* ; }
 tlaser-(){     . $(opticks-home)/tests/tlaser.bash    && tlaser-env $* ; }
 tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 tdefault-(){   . $(opticks-home)/tests/tdefault.bash  && tdefault-env $* ; }
+tconcentric-(){   . $(opticks-home)/tests/tconcentric.bash  && tconcentric-env $* ; }
 
 ####### below functions support analysis on machines without a full opticks install
 ####### by copying some parts of an opticks install to corresponding local locations 

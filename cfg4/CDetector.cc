@@ -19,7 +19,7 @@
 #include "OpticksQuery.hh"
 
 // cfg4-
-#include "CPropLib.hh"
+#include "CMaterialLib.hh"
 #include "CTraverser.hh"
 #include "CDetector.hh"
 
@@ -65,7 +65,7 @@ G4VPhysicalVolume* CDetector::getTop()
     return m_top ; 
 }
 
-CPropLib* CDetector::getPropLib()
+CMaterialLib* CDetector::getPropLib()
 {
     return m_lib ; 
 }
@@ -85,7 +85,7 @@ void CDetector::init()
     LOG(trace) << "CDetector::init" ;
 
     m_resource = m_ok->getResource();
-    m_lib = new CPropLib(m_ok);
+    m_lib = new CMaterialLib(m_ok);
     m_bbox = new NBoundingBox ;
 }
 

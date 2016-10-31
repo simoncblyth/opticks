@@ -9,7 +9,7 @@ class OpticksResource ;
 class OpticksQuery ; 
 
 // cfg4-
-class CPropLib ; 
+class CMaterialLib ; 
 class CTraverser ; 
 
 // g4-
@@ -54,7 +54,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
  public: 
     NBoundingBox*      getBoundingBox();
-    CPropLib*          getPropLib();
+    CMaterialLib*      getPropLib();
     G4VPhysicalVolume* getTop();
     bool               isValid();
  protected:
@@ -89,7 +89,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     Opticks*           m_ok ;
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
-    CPropLib*          m_lib ; 
+    CMaterialLib*      m_lib ; 
     G4VPhysicalVolume* m_top ;
     CTraverser*        m_traverser ; 
     NBoundingBox*      m_bbox ; 

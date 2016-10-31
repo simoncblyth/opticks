@@ -173,7 +173,14 @@ private:
 	void DielectricMetal();
 	void DielectricDielectric();
 
-	void ChooseReflection();
+	void ChooseReflection(); 
+      //                                         u -> theStatus 
+      //
+      //                                 0:prob_ss -> SpikeReflection
+      //                   prob_ss:prop_ss+prob_sl -> LobeReflection
+      //   prob_ss+prob_sl:prob_ss+prob_sl+prob_bs -> BackScattering 
+      //      prob_ss+prob_sl+prob_bs:1            -> LambertianReflection
+      //
 	void DoAbsorption();
 	void DoReflection();
 

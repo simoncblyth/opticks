@@ -42,7 +42,7 @@ CGeometry::CGeometry(OpticksHub* hub)
    init();
 }
 
-CPropLib* CGeometry::getPropLib()
+CMaterialLib* CGeometry::getPropLib()
 {
    return m_lib ; 
 }
@@ -59,7 +59,7 @@ void CGeometry::init()
     CDetector* detector = NULL ; 
     if(m_ok->hasOpt("test"))
     {
-        LOG(info) << "CGeometry::init G4 simple test geometry " ; 
+        LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
         std::string testconfig = m_cfg->getTestConfig();
         GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
@@ -68,13 +68,13 @@ void CGeometry::init()
     else
     {
         // no options here: will load the .gdml sidecar of the geocache .dae 
-        LOG(info) << "CGeometry::init G4 GDML geometry " ; 
+        LOG(fatal) << "CGeometry::init G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_ok, query)) ; 
 
-        m_csurlib->convert(detector);
     }
 
+    m_csurlib->convert(detector);
     m_detector = detector ; 
     m_lib = detector->getPropLib();
 }

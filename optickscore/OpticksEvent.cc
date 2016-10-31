@@ -1955,7 +1955,9 @@ void OpticksEvent::indexPhotonsCPU()
     assert(sequence->getShape(0) == recsel0->getShape(0));
 
     Indexer<unsigned long long>* idx = new Indexer<unsigned long long>(sequence) ; 
+    LOG(info) << "indexSequence START " ;  
     idx->indexSequence(OpticksConst::SEQHIS_NAME_, OpticksConst::SEQMAT_NAME_);
+    LOG(info) << "indexSequence DONE " ;  
 
     assert(!phosel->hasData()) ; 
 

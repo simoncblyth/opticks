@@ -10,7 +10,7 @@
 
 #include "GGeoTestConfig.hh"
 
-#include "CPropLib.hh"
+#include "CMaterialLib.hh"
 #include "CTestDetector.hh"
 #include "CTraverser.hh"
 
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
     m_detector->setVerbosity(2) ;
 
-    CPropLib* clib = m_detector->getPropLib() ;
+    CMaterialLib* clib = m_detector->getPropLib() ;
     assert(clib); 
 
     G4VPhysicalVolume* world_pv = m_detector->getTop();

@@ -6,7 +6,6 @@
 
 using namespace optix;
 
-
 rtDeclareVariable(float3,        eye, , );
 rtDeclareVariable(float3,        U, , );
 rtDeclareVariable(float3,        V, , );
@@ -95,7 +94,6 @@ RT_PROGRAM void pinhole_camera()
   uchar4 color = make_color( prd.result ) ; // BGRA
 #endif
 
-
   if( resolution_scale == 1)  
   { 
       output_buffer[launch_index] = color ; 
@@ -134,7 +132,6 @@ RT_PROGRAM void pinhole_camera()
       }
       }
   }
-
 }
 
 RT_PROGRAM void exception()
@@ -143,8 +140,6 @@ RT_PROGRAM void exception()
   //rtPrintf( "Caught exception 0x%X at launch index (%d,%d)\n", code, launch_index.x, launch_index.y );
   output_buffer[launch_index] = make_color( bad_color );
 }
-
-
 
 
 

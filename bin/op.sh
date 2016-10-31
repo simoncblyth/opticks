@@ -50,11 +50,11 @@ op-binary-name()
            --okg4) echo OKG4Test ;;
          --tracer) echo OTracerTest ;;
             --mat) echo GMaterialLibTest ;;
+           --cmat) echo CMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;
             --bnd) echo GBndLibTest ;;
   --ctestdetector) echo CTestDetectorTest ;;
   --cgdmldetector) echo CGDMLDetectorTest ;;
-       --cproplib) echo CPropLibTest ;;
      --ngunconfig) echo NGunConfigTest ;;
    --gpropertymap) echo GPropertyMapTest ;;
   --gscintillatorlib) echo GScintillatorLibTest ;;

@@ -208,7 +208,7 @@ tpmt-t()
 
 tpmt-v-g4() { tpmt-- --load --tcfg4 ; } 
 
-tpmt-v() {    tpmt-- --load ; } 
+tpmt-v() {    tpmt-- --load $* ; } 
 tpmt-vg4() {  tpmt-- --load --vizg4 ; } 
 
 

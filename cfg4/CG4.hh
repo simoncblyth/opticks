@@ -20,7 +20,7 @@ template <typename T> class NPY ;
 // cfg4-
 class CPhysics ; 
 class CGeometry ; 
-class CPropLib ; 
+class CMaterialLib ; 
 class CDetector ; 
 class CMaterialBridge ; 
 class CSurfaceBridge ; 
@@ -68,7 +68,7 @@ class CFG4_API CG4
 
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
-        CPropLib*      getPropLib();
+        CMaterialLib*  getPropLib();
         CDetector*     getDetector();
         NPY<float>*    getGensteps();
    private:
@@ -80,7 +80,7 @@ class CFG4_API CG4
         G4RunManager*         m_runManager ; 
         CGeometry*            m_geometry ; 
         bool                  m_hookup ; 
-        CPropLib*             m_lib ; 
+        CMaterialLib*         m_lib ; 
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 
    private:
