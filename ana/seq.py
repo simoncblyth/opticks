@@ -121,20 +121,22 @@ class SeqType(BaseType):
 
  
 class SeqTable(object):
-    def __init__(self, cu, af, cnames=[]): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0): 
         """
         :param cu: count unique array, typically shaped (n, 2) 
         :param af: instance of SeqType subclass such as HisType
         :param cnames: column names 
         """
-        log.debug("SeqTable.__init__")
+        log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
 
         assert len(cu.shape) == 2 and cu.shape[1] >= 2 
 
         ncol = cu.shape[1] - 1 
 
+
         self.cu = cu 
         self.ncol = ncol
+        self.dbgseq = dbgseq
 
         seqs = cu[:,0]
         tots = [cu[:,n].sum() for n in range(1,ncol+1)]
@@ -190,7 +192,7 @@ class SeqTable(object):
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
 
-        lines = map(lambda n:self.line(n), range(len(cu)))
+        lines = filter(None, map(lambda n:self.line(n), range(len(cu))))
 
         self.codes = codes  
         self.counts = counts
@@ -209,7 +211,13 @@ class SeqTable(object):
         self.sli = slice(None)
 
     def line(self, n):
-        xs = "%20s " % ihex_(self.cu[n,0])        
+        isq = int(self.cu[n,0]) 
+
+        if self.dbgseq > 0 and ( self.dbgseq & isq ) != self.dbgseq  :
+           #log.info("isq %x dbgseq %x " % (isq,self.dbgseq))
+           return None 
+
+        xs = "%20s" % ihex_(isq)        
         vals = map(lambda _:" %10s " % _, self.cu[n,1:] ) 
         label = self.labels[n]
         nstep = "[%-2d]" % self.label2nstep[label]
@@ -240,7 +248,7 @@ class SeqTable(object):
              frac = ""
         pass
 
-        return " ".join([xs] + [frac] + vals + ["   "]+ [sc2, sab, sba, nstep, label]) 
+        return " ".join([xs+" "] + [frac] + vals + ["   "]+ [sc2, sab, sba, nstep, label]) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
@@ -255,7 +263,7 @@ class SeqTable(object):
         body_ = lambda _:" %10s " % _
         head = title + " ".join(map(body_, self.cnames ))
         tail = space + " ".join(map(body_, self.tots ))
-        return "\n".join([head] + self.lines[self.sli] + [tail])
+        return "\n".join([head] + filter(None,self.lines[self.sli]) + [tail])
 
     def compare(self, other):
         l = set(self.labels)
@@ -270,7 +278,7 @@ class SeqTable(object):
 
         cnames = self.cnames + other.cnames 
 
-        return SeqTable(cf, self.af, cnames=cnames)    
+        return SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq)    
 
 
 class SeqAna(object):
@@ -282,14 +290,17 @@ class SeqAna(object):
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     
-    def __init__(self, aseq, af, cnames=["noname"]):
+    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0):
         """
         :param aseq: photon length sequence array 
         :param af: instance of SeqType subclass 
         """
         cu = count_unique_sorted(aseq)
         self.af = af
-        self.table = SeqTable(cu, af, cnames=cnames)
+        self.dbgseq = dbgseq
+
+        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq)
+
         self.aseq = aseq
         self.cu = cu
 

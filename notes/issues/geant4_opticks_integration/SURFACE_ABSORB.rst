@@ -5,10 +5,131 @@ SURFACE_ABSORB
 NEXT
 ------
 
-* Extend CInterpolationTest and OInterpolationTest to surface info ?
-
 * logical as opposed to border surfaces need to be repeated in ISUR and OSUR slots for Opticks
   to match the G4 logic, although expect no impact of this for almost all surfaces
+
+
+
+
+dbgseqhis
+----------
+
+::
+
+   tlaser-t --dbgseqhis 8cccc6d
+
+
+
+Concentric test
+------------------
+
+
+Compare with tdefault where photons distributed randomly from point source
+-----------------------------------------------------------------------------
+
+Note that "8cccc6d" is matching better when average over all directions
+as compared to tlaser which picks one. This supports the cause being triangulation.
+
+::
+
+    /Users/blyth/opticks/ana/tdefault.py
+    [2016-10-31 15:13:16,021] p6238 {/Users/blyth/opticks/ana/tdefault.py:24} INFO - tag 1 src torch det default c2max 2.0  
+    [2016-10-31 15:13:16,588] p6238 {/Users/blyth/opticks/ana/cf.py:36} INFO - CF a default/torch/  1 :  20161031-1330 /tmp/blyth/opticks/evt/default/torch/1/fdom.npy 
+    [2016-10-31 15:13:16,588] p6238 {/Users/blyth/opticks/ana/cf.py:37} INFO - CF b default/torch/ -1 :  20161031-1330 /tmp/blyth/opticks/evt/default/torch/-1/fdom.npy 
+              seqhis_ana   1:default   -1:default           c2           ab           ba 
+                  8ccccd         46457        46236             0.53         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+              ccaccccccd          9547         8240            96.04         1.16 +- 0.01         0.86 +- 0.01  [10] TO BT BT BT BT BT BT SR BT BT
+              cccacccccd          1194         6627          3774.13         0.18 +- 0.01         5.55 +- 0.07  [10] TO BT BT BT BT BT SR BT BT BT
+                 4cccccd          6611          527          5185.63        12.54 +- 0.15         0.08 +- 0.00  [7 ] TO BT BT BT BT BT AB
+                      4d          5008         5021             0.02         1.00 +- 0.01         1.00 +- 0.01  [2 ] TO AB
+                 8cccccd          3231         4623           246.71         0.70 +- 0.01         1.43 +- 0.02  [7 ] TO BT BT BT BT BT SA
+              cccbcccccd          4098         4548            23.42         0.90 +- 0.01         1.11 +- 0.02  [10] TO BT BT BT BT BT BR BT BT BT
+               8cbcccccd          2728         2394            21.78         1.14 +- 0.02         0.88 +- 0.02  [9 ] TO BT BT BT BT BT BR BT SA
+
+                 8cccc6d          2084         1939             5.23         1.07 +- 0.02         0.93 +- 0.02  [7 ] TO SC BT BT BT BT SA
+
+                8ccccccd          1677         1107           116.70         1.51 +- 0.04         0.66 +- 0.02  [8 ] TO BT BT BT BT BT BT SA
+              cacccccccd           279         1591           920.50         0.18 +- 0.01         5.70 +- 0.14  [10] TO BT BT BT BT BT BT BT SR BT
+              cccc9ccccd          1455         1431             0.20         1.02 +- 0.03         0.98 +- 0.03  [10] TO BT BT BT BT DR BT BT BT BT
+                    4ccd          1168         1277             4.86         0.91 +- 0.03         1.09 +- 0.03  [4 ] TO BT BT AB
+                 7cccccd           657         1116           118.83         0.59 +- 0.02         1.70 +- 0.05  [7 ] TO BT BT BT BT BT SD
+              accccccccd           896           19           840.58        47.16 +- 1.58         0.02 +- 0.00  [10] TO BT BT BT BT BT BT BT BT SR
+                 8cccc5d           863          850             0.10         1.02 +- 0.03         0.98 +- 0.03  [7 ] TO RE BT BT BT BT SA
+              abaccccccd           314          797           209.98         0.39 +- 0.02         2.54 +- 0.09  [10] TO BT BT BT BT BT BT SR BR SR
+                  4ccccd           736          773             0.91         0.95 +- 0.04         1.05 +- 0.04  [6 ] TO BT BT BT BT AB
+               4cccccccd           586           10           556.67        58.60 +- 2.42         0.02 +- 0.01  [9 ] TO BT BT BT BT BT BT BT AB
+              ccccbccccd           136          481           192.91         0.28 +- 0.02         3.54 +- 0.16  [10] TO BT BT BT BT BR BT BT BT BT
+                              100000       100000       101.27 
+
+
+Complement checks... 
+----------------------
+
+Using new ana dbgseqhis option, can see the totals for the complement to a sequence.
+The Opticks shortfall in SA is made up with more BT.
+From this it seems plausible that the difference could be the result of 
+triangulated vs analytic geometry, due to different angle at which the scatter 
+from the laser beam impinges on triangulated vs analytic surfaces. 
+
+Easiest way to verify is to construct a concentric sphere
+test geometry, bounded by RSOilSurface.
+
+So aiming for a test geometry that has all the features of the real one
+other than the complicated geometry.
+
+
+::
+
+    simon:ana blyth$ tlaser.py --dbgseqhis cccc6d
+    /Users/blyth/opticks/ana/tlaser.py --dbgseqhis cccc6d
+    [2016-10-31 12:46:11,821] p5110 {/Users/blyth/opticks/ana/tlaser.py:25} INFO - tag 1 src torch det laser c2max 2.0  
+    [2016-10-31 12:46:12,272] p5110 {/Users/blyth/opticks/ana/tlaser.py:48} INFO -  a : laser/torch/  1 :  20161031-1151 /tmp/blyth/opticks/evt/laser/torch/1/fdom.npy 
+    [2016-10-31 12:46:12,272] p5110 {/Users/blyth/opticks/ana/tlaser.py:49} INFO -  b : laser/torch/ -1 :  20161031-1151 /tmp/blyth/opticks/evt/laser/torch/-1/fdom.npy 
+              seqhis_ana     1:laser     -1:laser           c2           ab           ba 
+                 8cccc6d          1570         1846            22.30         0.85 +- 0.02         1.18 +- 0.03  [7 ] TO SC BT BT BT BT SA
+              cacccccc6d           312          247             7.56         1.26 +- 0.07         0.79 +- 0.05  [10] TO SC BT BT BT BT BT BT SR BT
+                4ccccc6d           257            4           245.25        64.25 +- 4.01         0.02 +- 0.01  [8 ] TO SC BT BT BT BT BT AB
+                8ccccc6d           100          223            46.84         0.45 +- 0.04         2.23 +- 0.15  [8 ] TO SC BT BT BT BT BT SA
+              ccbccccc6d           148          124             2.12         1.19 +- 0.10         0.84 +- 0.08  [10] TO SC BT BT BT BT BT BR BT BT
+              ccaccccc6d            24          131            73.86         0.18 +- 0.04         5.46 +- 0.48  [10] TO SC BT BT BT BT BT SR BT BT
+              8cbccccc6d            84           80             0.10         1.05 +- 0.11         0.95 +- 0.11  [10] TO SC BT BT BT BT BT BR BT SA
+              cccccccc6d            73           32            16.01         2.28 +- 0.27         0.44 +- 0.08  [10] TO SC BT BT BT BT BT BT BT BT
+               8cccccc6d            66           33            11.00         2.00 +- 0.25         0.50 +- 0.09  [9 ] TO SC BT BT BT BT BT BT SA
+              ccc9cccc6d            50           55             0.24         0.91 +- 0.13         1.10 +- 0.15  [10] TO SC BT BT BT BT DR BT BT BT
+                7ccccc6d            19           55            17.51         0.35 +- 0.08         2.89 +- 0.39  [8 ] TO SC BT BT BT BT BT SD
+              accccccc6d            52           34             3.77         1.53 +- 0.21         0.65 +- 0.11  [10] TO SC BT BT BT BT BT BT BT SR
+              cccbcccc6d            51           15            19.64         3.40 +- 0.48         0.29 +- 0.08  [10] TO SC BT BT BT BT BR BT BT BT
+               4cccccc6d            43            2            37.36        21.50 +- 3.28         0.05 +- 0.03  [9 ] TO SC BT BT BT BT BT BT AB
+                 4cccc6d            35           27             1.03         1.30 +- 0.22         0.77 +- 0.15  [7 ] TO SC BT BT BT BT AB
+              cbcccccc6d            29           31             0.07         0.94 +- 0.17         1.07 +- 0.19  [10] TO SC BT BT BT BT BT BT BR BT
+              bccccccc6d            29           22             0.96         1.32 +- 0.24         0.76 +- 0.16  [10] TO SC BT BT BT BT BT BT BT BR
+              4ccccccc6d            28            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [10] TO SC BT BT BT BT BT BT BT AB
+              bacccccc6d            24           25             0.02         0.96 +- 0.20         1.04 +- 0.21  [10] TO SC BT BT BT BT BT BT SR BR
+              abaccccc6d            13            8             0.00         1.62 +- 0.45         0.62 +- 0.22  [10] TO SC BT BT BT BT BT SR BR SR
+                89cccc6d            11            6             0.00         1.83 +- 0.55         0.55 +- 0.22  [8 ] TO SC BT BT BT BT DR SA
+                8bcccc6d             6           10             0.00         0.60 +- 0.24         1.67 +- 0.53  [8 ] TO SC BT BT BT BT BR SA
+                86cccc6d             9            7             0.00         1.29 +- 0.43         0.78 +- 0.29  [8 ] TO SC BT BT BT BT SC SA
+              9cbccccc6d             3            8             0.00         0.38 +- 0.22         2.67 +- 0.94  [10] TO SC BT BT BT BT BT BR BT DR
+              ccc6cccc6d             4            7             0.00         0.57 +- 0.29         1.75 +- 0.66  [10] TO SC BT BT BT BT SC BT BT BT
+
+
+
+
+
+
+Visual inspection of photon termination points
+-----------------------------------------------
+
+* comparing distrib of photon termination points
+  using photon flag interface between tlaser-v and tlaser-vg4 
+  shows no large discrep 
+
+
+Surface info comparison with CInterpolationTest and OInterpolationTest
+------------------------------------------------------------------------
+
+
+* no smoking guns 
 
 
 

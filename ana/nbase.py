@@ -62,9 +62,6 @@ def ratio(a, b):
     return ab, ba
 
 
-
- 
-
 def decompression_bins(cbins, *vals):
     """
     :param cbins: full range decompressed bins 
@@ -76,6 +73,18 @@ def decompression_bins(cbins, *vals):
 
     This provides a subset of full range decompression bins, 
     corresponding to a value range.
+
+    ::
+
+        In [3]: cbins = cf.a.pbins()
+
+        In [4]: cbins
+        Out[4]: array([ -24230.625 ,  -24242.3772,  -24254.1294, ..., -794375.8706, -794387.6228, -794399.375 ])
+
+        In [15]: np.where( cbins <=  -60254.1294 )
+        Out[15]: (array([ 3066,  3067,  3068, ..., 65532, 65533, 65534]),)
+
+
     """
     vmin = min(map(lambda _:_.min(), vals))
     vmax = max(map(lambda _:_.max(), vals))
@@ -84,15 +93,25 @@ def decompression_bins(cbins, *vals):
 
     vmin = vmin-widen
     vmax = vmax+widen
-    imin = np.where(cbins>=vmin)[0][0]
-    imax = np.where(cbins<=vmax)[0][-1]
+
+    try:
+        imin = np.where(cbins>=vmin)[0][0]
+        imax = np.where(cbins<=vmax)[0][-1]
+        inum = imax - imin  
+    except IndexError:
+        log.warning(" MISMATCH BETWEEN COMPRESSION BINS AND VALUES cbins %s vmin %s vmax %s width %s " % (repr(cbins), vmin, vmax, width))
+        inum = None
+
+    if inum is None:
+       return None
+
     pass
-    inum = imax - imin  
     if inum == 0:
         log.warning("special case handling of all values the same")
         bins = np.linspace(vmin-1,vmax+1,3)
     else:
         bins = np.linspace(vmin,vmax,inum)
+    pass
     return bins
 
 if __name__ == '__main__':

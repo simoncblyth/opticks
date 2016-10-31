@@ -20,7 +20,7 @@ from opticks.ana.evt  import Evt
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
 
-    args = opticks_main(doc=__doc__, tag="1", src="torch", det="laser", c2max=2.0, tagoffset=0)
+    args = opticks_main(doc=__doc__, tag="1", src="torch", det="laser", c2max=2.0, tagoffset=0,  dbgseqhis=0)
 
     log.info("tag %s src %s det %s c2max %s  " % (args.utag,args.src,args.det, args.c2max))
 
@@ -35,15 +35,15 @@ if __name__ == '__main__':
 
 
     try:
-        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs)
-        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs)
+        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs, dbgseqhis=args.dbgseqhis)
+        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs, dbgseqhis=args.dbgseqhis)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)
   
 
-    print "A",a
-    print "B",b
+    #print "A",a
+    #print "B",b
 
     log.info( " a : %s " % a.brief)
     log.info( " b : %s " % b.brief )
@@ -68,7 +68,7 @@ if 0:
 if 1:
 
     tables = ["seqhis_ana"] + ["seqhis_ana_%d" % imsk for imsk in range(1,8)] + ["seqmat_ana"] 
-    Evt.compare_table(a,b, tables, lmx=20, c2max=None, cf=True)
+    Evt.compare_table(a,b, tables, lmx=120, c2max=None, cf=True)
 
 
     Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=None, cf=True)

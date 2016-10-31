@@ -1,27 +1,8 @@
 #!/usr/bin/env python
 """
-tpmt_distrib.py : PmtInBox Opticks vs Geant4 distributions
-================================================================
+tdefault_distrib.py 
+=============================================
 
-Usage
--------
-
-As this can create many tens of plot windows, a way of wading through them 
-without getting finger stain is to resize the invoking ipython window very 
-small and then repeatedly run::
-
-   plt.close()
-
-To close each window in turn.
-
-See Also
-----------
-
-:doc:`tpmt` 
-       history comparison and how to create the events
-
-:doc:`tpmt_debug` 
-       development notes debugging simulation to achieve *pmt_test.py* matching
 
 """
 import os, sys, logging, numpy as np
@@ -35,25 +16,25 @@ except ImportError:
     print "matplotlib missing : you need this to make plots"
     plt = None 
 
-
 from opticks.ana.base import opticks_main
-from opticks.ana.evt import Evt
-from opticks.ana.nbase import chi2, vnorm, decompression_bins
+from opticks.ana.nbase import vnorm
+from opticks.ana.evt  import Evt
 from opticks.ana.cf import CF 
 from opticks.ana.cfplot import cfplot, qwns_plot, qwn_plot, multiplot
 
 
-
 if __name__ == '__main__':
     np.set_printoptions(precision=4, linewidth=200)
-    args = opticks_main(tag="10", src="torch", det="PmtInBox")
+    args = opticks_main(tag="1", src="torch", det="default")
     log.info(" args %s " % repr(args))
+    log.info("tag %s src %s det %s c2max %s  " % (args.utag,args.src,args.det, args.c2max))
 
     plt.ion()
     plt.close()
 
     select = slice(1,2)
     #select = slice(0,8)
+
     try:
         cf = CF(tag=args.tag, src=args.src, det=args.det, select=select )
     except IOError as err:
@@ -61,16 +42,26 @@ if __name__ == '__main__':
         sys.exit(args.mrc)
 
     cf.dump()
-    multiplot(cf, pages=["XYZT","ABCR"])
+
+    irec = 1 
+
+    #multiplot(cf, pages=["XYZT","ABCR"])
   
     #qwn_plot( cf.ss[0], "T", -1, c2_ymax=2000)
-    #qwn_plot( scf, "R", irec)
-    #qwns_plot( scf, "XYZT", irec)
-    #qwns_plot( scf, "ABCR", irec)
+    #qwn_plot( cf, "R", irec)
+    #qwns_plot( cf, "XYZT", irec)
+    #qwns_plot( cf, "ABCR", irec)
+
+
+    binsx,ax,bx,lx = cf.rqwn("X",irec)
+    binsy,ay,by,ly = cf.rqwn("Y",irec)
+    binsz,az,bz,lz = cf.rqwn("Z",irec)
+
+   
 
 
 
 
 
 
-
+ 

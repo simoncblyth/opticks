@@ -63,12 +63,14 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False):
+    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False, dbgseqhis=0, dbgseqmat=0):
 
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
         self.seqs = seqs
         self.terse = terse
+        self.dbgseqhis = dbgseqhis
+        self.dbgseqmat = dbgseqmat
        
  
         if label is None:
@@ -266,8 +268,8 @@ class Evt(object):
 
         cn = "%s:%s" % (str(tag), det)
         # full history without selection
-        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn])  
-        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn])  
+        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn], dbgseq=self.dbgseqhis)  
+        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat)  
 
         self.seqhis = seqhis
         self.seqmat = seqmat
@@ -471,6 +473,7 @@ class Evt(object):
             log.fatal("need two valid events to compare ")
             sys.exit(1)
 
+        cft = {}
         for ana_ in analist:
             a_ana = getattr(a, ana_, None)
             b_ana = getattr(b, ana_, None)
@@ -489,6 +492,8 @@ class Evt(object):
                 c_tab = a_tab.compare(b_tab)
                 c_tab.title = ana_
 
+                cft[ana_] = c_tab 
+
                 if len(c_tab.lines) > lmx:
                     c_tab.sli = slice(0,lmx)
 
@@ -506,10 +511,9 @@ class Evt(object):
                 if len(b_tab.lines) > lmx:
                     b_tab.sli = slice(0,lmx)
                 print b_tab
-
-
-
-
+            pass
+        pass
+        return cft
 
 
 
@@ -682,7 +686,10 @@ class Evt(object):
     def pbins(self):
         p_center = self.fdom[0,0,:W]
         p_extent = self.fdom[0,0,W]
-        assert p_center[0] == p_center[1] == p_center[2] == 0., p_center
+
+        log.info(" pbins p_center %s p_extent %s " % (repr(p_center), repr(p_extent)))
+
+        #assert p_center[0] == p_center[1] == p_center[2] == 0., p_center
         pb = np.linspace(p_center[0] - p_extent, p_center[1] + p_extent, 2*32767+1)
         return pb 
 

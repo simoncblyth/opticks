@@ -69,6 +69,7 @@ tlaser--(){
  
 tlaser-args(){ echo --tag $(tlaser-tag) --det laser --src torch ; } 
 tlaser-i(){ ipython -i $(which tlaser.py) ; }
+tlaser-distrib(){ ipython -i $(which tlaser_distrib.py) ; }
 
 
 tlaser-t(){ tlaser-;tlaser-- --okg4 --compute $* ; } 

@@ -140,7 +140,7 @@ class OpticksEnv(object):
         if not os.path.isdir(dir_):
              os.makedirs(dir_)
 
-        print "writing opticks environment to %s " % path 
+        #print "writing opticks environment to %s " % path 
         open(path,"w").write("\n".join(lines)) 
 
 
@@ -194,6 +194,7 @@ def opticks_args(**kwa):
     mat = kwa.get("mat", "GdDopedLS")
     sli = kwa.get("sli", "::1")
     c2max = kwa.get("c2max", 2.0)
+    dbgseqhis = kwa.get("dbgseqhis", "0")
 
     parser = argparse.ArgumentParser(doc)
 
@@ -213,6 +214,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting. Default %(default)s"  )
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
+    parser.add_argument(     "--dbgseqhis",  default=dbgseqhis, help="Seqhis hexstring prefix for dumping. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
@@ -229,6 +231,8 @@ def opticks_args(**kwa):
         args.utag = int(args.tag) + args.tagoffset 
         args.utags = [args.utag]   
     pass
+    args.dbgseqhis = int(str(args.dbgseqhis),16) 
+    log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 
 
     if args.show:
          print " ".join(sys.argv)

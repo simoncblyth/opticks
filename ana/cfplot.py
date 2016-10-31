@@ -6,6 +6,7 @@ cfplot.py : Comparison Plotter with Chi2 Underplot
 
 """
 import os, logging, numpy as np
+from collections import OrderedDict as odict
 log = logging.getLogger(__name__)
 
 
@@ -66,6 +67,107 @@ def cfplot(fig, gss, bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, 
     ax.set_ylim([0,c2_ymax]) 
 
     return c2p  
+
+
+
+
+
+def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
+
+    fig = plt.figure()
+
+    if irec < 0:
+         irec += scf.nrec() 
+
+    fig.suptitle(scf.suptitle(irec))
+
+    nx = len(qwns)
+
+    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
+
+    c2ps = []
+    for ix in range(nx):
+
+        gss = [gs[ix], gs[nx+ix]]
+
+        qwn = qwns[ix]
+
+        bins, aval, bval, labels = scf.rqwn(qwn, irec)
+
+        log.info("%s %s " % (qwn, repr(labels) ))
+
+        c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
+
+        c2ps.append(c2p) 
+    pass
+
+    qd = odict(zip(list(qwns),c2ps))
+    return qd
+
+
+def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
+
+    if irec < 0:
+         irec += scf.nrec() 
+
+    bins, aval, bval, labels = scf.rqwn(qwn, irec)
+
+    fig = plt.figure()
+    fig.suptitle(scf.suptitle(irec))
+
+    nx,ix = 1,0
+    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
+    gss = [gs[ix], gs[nx+ix]]
+
+    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut, c2_ymax=c2_ymax)
+    c2ps = [c2p]
+
+    #print "c2p", c2p
+
+    qd = odict(zip(list(qwn),c2ps))
+    return qd
+
+
+
+
+def multiplot(cf, pages=["XYZT","ABCR"]):
+
+    qwns = "".join(pages)
+    dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+
+    log_ = False
+    c2_cut = 0.
+
+    stat = np.recarray((cf.totrec,), dtype=dtype)
+
+    ival = 0 
+    for scf in cf.ss:
+        nrec = scf.nrec()
+        for irec in range(nrec):
+            key = scf.suptitle(irec)
+
+            od = odict()
+            od.update(key=key) 
+
+            for page in pages:
+                qd = qwns_plot( scf, page, irec, log_, c2_cut)
+                od.update(qd)
+            pass
+
+            stat[ival] = tuple(od.values())
+            ival += 1
+        pass
+    pass
+
+    np.save(os.path.expandvars("$TMP/stat.npy"),stat)
+
+    #rst = recarray_as_rst(stat)
+    #print rst 
+
+
+
+
+
 
 
 if __name__ == '__main__':
