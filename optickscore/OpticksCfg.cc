@@ -264,6 +264,8 @@ void OpticksCfg<Listener>::init()
        ("dbginterop", "used Scene::initRenderersDebug with subset of renderers "); 
    m_desc.add_options()
        ("dbguploads", "used in OpticksViz::uploadEvent to dump the uploads table "); 
+   m_desc.add_options()
+       ("dbgtestgeo", "debug test geometry see cfg4/CTestDetector"); 
 
 
 

@@ -92,8 +92,12 @@ tconcentric-testconfig()
                  analytic=1
 
                  shape=sphere
+                 boundary=StainlessSteel///Acrylic
+                 parameters=0,0,0,$(( 5000 + 5 ))
+
+                 shape=sphere
                  boundary=Acrylic//RSOilSurface/MineralOil
-                 parameters=0,0,0,5000
+                 parameters=0,0,0,$(( 5000 - 5 ))
 
 
                  shape=sphere
@@ -121,7 +125,7 @@ tconcentric-testconfig()
 
 tconcentric-testconfig-()
 {
-     CTestDetectorTest --testconfig "$(tconcentric-testconfig)" 
+     CTestDetectorTest --testconfig "$(tconcentric-testconfig)"  --dbgtestgeo  $* 
 }
 
 

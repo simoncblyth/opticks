@@ -59,10 +59,10 @@ class GGEO_API GBndLib : public GPropertyLib {
        // boundary index lookups
        guint4 getBnd(unsigned int boundary);
   public:
-       unsigned int getOuterMaterial(unsigned int boundary);
-       unsigned int getOuterSurface(unsigned int boundary);
-       unsigned int getInnerSurface(unsigned int boundary);
-       unsigned int getInnerMaterial(unsigned int boundary);
+       unsigned getOuterMaterial(unsigned boundary);
+       unsigned getOuterSurface(unsigned boundary);
+       unsigned getInnerSurface(unsigned boundary);
+       unsigned getInnerMaterial(unsigned boundary);
   public:
        const char* getOuterMaterialName(unsigned int boundary);
        const char* getOuterSurfaceName(unsigned int boundary);

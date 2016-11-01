@@ -42,6 +42,10 @@ void CMaterialLib::convert()
 }
 
 
+
+
+
+/*
 const G4Material* CMaterialLib::makeInnerMaterial(const char* spec)
 {
     unsigned int boundary = m_bndlib->addBoundary(spec);
@@ -66,34 +70,15 @@ const G4Material* CMaterialLib::makeInnerMaterial(const char* spec)
     }
     return material ; 
 }
+*/
+
 
 const G4Material* CMaterialLib::makeMaterial(const char* matname)
 {
-    const G4Material* material = getG4Material(matname) ;
-    if( material == NULL )
-    { 
-        GMaterial* kmat = m_mlib->getMaterial(matname) ;
-        material = convertMaterial(kmat);
-
-        LOG(info) << "CMaterialLib::makeMaterial" 
-                  << " matname " << std::setw(35) << matname
-                  << " kmat " << kmat 
-                  << " material " << (void*)material 
-                  ;
-    }
-    else
-    {
-        LOG(info) << "CMaterialLib::makeMaterial" 
-                  << " REUSING PREEXISTING G4Material "
-                  << " matname " << std::setw(35) << matname
-                  << " material " << (void*)material 
-                  ;
- 
-    }
-    return material ; 
+     GMaterial* kmat = m_mlib->getMaterial(matname) ;
+     const G4Material* material = convertMaterial(kmat);
+     return material ; 
 }
-
-
 
 
 const G4Material* CMaterialLib::convertMaterial(const GMaterial* kmat)
@@ -104,12 +89,23 @@ const G4Material* CMaterialLib::convertMaterial(const GMaterial* kmat)
     } 
     assert(kmat);
 
-
     const char* name = kmat->getShortName();
+    const G4Material* prior = getG4Material(name) ;
+    if(prior)
+    {
+        LOG(info) << "CMaterialLib::convertMaterial" 
+                  << " REUSING PRIOR G4Material "
+                  << " name " << std::setw(35) << name
+                  << " prior " << (void*)prior 
+                  ;
+ 
+        return prior ; 
+    }
+
+
     unsigned int materialIndex = m_mlib->getMaterialIndex(kmat);
 
     G4String sname = name ; 
-
 
     LOG(debug) << "CMaterialLib::convertMaterial  " 
               << " name " << name

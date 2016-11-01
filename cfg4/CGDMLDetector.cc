@@ -133,7 +133,7 @@ void CGDMLDetector::addMPT()
         assert(elem.size() == 4 && "expecting material names like /dd/Materials/GdDopedLS " );
         const char* shortname = elem[3].c_str();
 
-        const GMaterial* ggmat = m_lib->getMaterial(shortname);          
+        const GMaterial* ggmat = m_mlib->getMaterial(shortname);          
         assert(ggmat && strcmp(ggmat->getShortName(), shortname)==0 && "failed to find corresponding G4DAE material") ;
 
         LOG(debug) << "CGDMLDetector::addMPT" 
@@ -141,9 +141,9 @@ void CGDMLDetector::addMPT()
                   << " shortname " << std::setw(25) << shortname
                    ;
 
-        G4MaterialPropertiesTable* mpt = m_lib->makeMaterialPropertiesTable(ggmat);
+        G4MaterialPropertiesTable* mpt = m_mlib->makeMaterialPropertiesTable(ggmat);
         g4mat->SetMaterialPropertiesTable(mpt);
-        //m_lib->dumpMaterial(g4mat, "CGDMLDetector::addMPT");        
+        //m_mlib->dumpMaterial(g4mat, "CGDMLDetector::addMPT");        
          
     }
 

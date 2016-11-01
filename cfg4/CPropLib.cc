@@ -74,18 +74,6 @@ void CPropLib::init()
 {
     LOG(info) << "CPropLib::init" ; 
     
-    /*
-    // was formerly duplicating  geometry loading 
-    // fixed by getting these from hub 
-    //
-    bool constituents ; 
-    m_bndlib = GBndLib::load(m_ok, constituents=true);
-    m_mlib = m_bndlib->getMaterialLib();
-    m_slib = m_bndlib->getSurfaceLib();
-
-    m_sclib = GScintillatorLib::load(m_ok);
-    */
-
     m_bndlib = m_hub->getBndLib();
     m_mlib = m_hub->getMaterialLib();
     m_slib = m_hub->getSurfaceLib();

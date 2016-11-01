@@ -25,17 +25,19 @@ Indexer<T>::Indexer(NPY<T>* seq)
 
 
 template <typename T>
-void Indexer<T>::indexSequence(const char* seqhis_label, const char* seqmat_label)
+void Indexer<T>::indexSequence(const char* seqhis_label, const char* seqmat_label, bool dump)
 {
     splitSequence();
     save();
 
     m_seqhis = new Sparse<T>(seqhis_label, m_his);
     m_seqhis->make_lookup();
+    if(dump)
     m_seqhis->dump("indexSequence seqhis");
 
     m_seqmat = new Sparse<T>(seqmat_label, m_mat);
     m_seqmat->make_lookup();
+    if(dump)
     m_seqmat->dump("indexSequence seqmat");
 }
 

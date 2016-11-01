@@ -10,6 +10,7 @@ class OpticksResource ;
 class OpticksQuery ; 
 
 // cfg4-
+class CBndLib ; 
 class CMaterialLib ; 
 class CTraverser ; 
 
@@ -92,10 +93,11 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     OpticksHub*        m_hub ;
  protected: 
     Opticks*           m_ok ;
+    CBndLib*           m_blib ; 
  private:
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
-    CMaterialLib*      m_lib ; 
+    CMaterialLib*      m_mlib ; 
     G4VPhysicalVolume* m_top ;
     CTraverser*        m_traverser ; 
     NBoundingBox*      m_bbox ; 

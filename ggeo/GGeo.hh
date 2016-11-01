@@ -105,6 +105,7 @@ class GGEO_API GGeo : public NConfigurable {
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
         void afterConvertMaterials();
+        void createSurLib();
     public:
         void modifyGeometry(const char* config);
     public:

@@ -44,6 +44,7 @@
 
 // cfg4-
 #include "CMaker.hh"
+#include "CBndLib.hh"
 #include "CMaterialLib.hh"
 #include "CTestDetector.hh"
 
@@ -66,7 +67,13 @@ void CTestDetector::init()
 {
     LOG(trace) << "CTestDetector::init" ; 
 
-    m_lib->setGroupvelKludge(m_config->getGroupvel());
+    if(m_ok->hasOpt("dbgtestgeo"))
+    {
+        LOG(info) << "CTestDetector::init --dbgtestgeo upping verbosity" ; 
+        setVerbosity(1);
+    }
+
+    m_mlib->setGroupvelKludge(m_config->getGroupvel());
 
     m_maker = new CMaker(m_ok);
 
@@ -115,6 +122,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
     unsigned int n = m_config->getNumElements();
 
+    G4VPhysicalVolume* ppv = NULL ;    // parent pv
     G4VPhysicalVolume* top = NULL ;  
     G4LogicalVolume* mother = NULL ; 
 
@@ -122,8 +130,16 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
     {   
         const char* spec = m_config->getBoundary(i);
 
-        // hmm better for CPropLib to not know about spec ? 
-        const G4Material* material = m_lib->makeInnerMaterial(spec);
+        unsigned boundary = m_blib->addBoundary(spec);
+
+        GMaterial* imat = m_blib->getInnerMaterial(boundary); 
+
+       // TODO:
+       //    access corresponding GSur and add lvnames and pv1 pv2 indices 
+       //    otherwise the surfaces fail to hookup
+       //    as the lvn/pv1/pv2 dont match with the modified geometry
+
+        const G4Material* material = m_mlib->convertMaterial(imat);
 
         glm::vec4 param = m_config->getParameters(i);
         char shapecode = m_config->getShape(i) ;
@@ -148,13 +164,14 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
         
         m_pvm[pvn] = pv ;  
+
+
+
+
+
  
-        if(top == NULL)
-        {
-            top = pv ; 
-            //setCenterExtent(param.x, param.y, param.z, param.w );
-            // this is now discerned by the CTraverser as a result of setTop
-        }
+        if(top == NULL) top = pv ; 
+        if(ppv == NULL) ppv = pv ; 
         mother = lv ; 
     }   
 
@@ -163,7 +180,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
         makePMT(mother);
     }
 
-    //m_lib->dumpMaterials("CTestDetector::Construct CPropLib::dumpMaterials");
+    //m_mlib->dumpMaterials("CTestDetector::Construct CPropLib::dumpMaterials");
 
     
     return top ;  
@@ -178,7 +195,7 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
     NSlice* slice = m_config->getSlice();
 
-    GCSG* csg = m_lib->getPmtCSG(slice);
+    GCSG* csg = m_mlib->getPmtCSG(slice);
 
     if(csg == NULL)
     {
@@ -288,8 +305,8 @@ void CTestDetector::kludgePhotoCathode()
         G4VPhysicalVolume* pv1 = getLocalPV("pvPmtHemi") ; 
         G4VPhysicalVolume* pv2 = getLocalPV("pvPmtHemiCathode") ; 
         assert(pv1 && pv2);
-        //G4LogicalBorderSurface* lbs = m_lib->makeCathodeSurface(name, pv1, pv2, effi, refl );
-        G4LogicalBorderSurface* lbs = m_lib->makeCathodeSurface(name, pv1, pv2);
+        //G4LogicalBorderSurface* lbs = m_mlib->makeCathodeSurface(name, pv1, pv2, effi, refl );
+        G4LogicalBorderSurface* lbs = m_mlib->makeCathodeSurface(name, pv1, pv2);
         assert(lbs);
     }
     {
@@ -297,7 +314,7 @@ void CTestDetector::kludgePhotoCathode()
         G4VPhysicalVolume* pv1 = getLocalPV("pvPmtHemi") ; 
         G4VPhysicalVolume* pv2 = getLocalPV("pvPmtHemiVacuum") ; 
         assert(pv1 && pv2);
-        G4LogicalBorderSurface* lbs = m_lib->makeConstantSurface(name, pv1, pv2, effi, refl );
+        G4LogicalBorderSurface* lbs = m_mlib->makeConstantSurface(name, pv1, pv2, effi, refl );
         assert(lbs);
     }
 }
@@ -313,7 +330,7 @@ G4LogicalVolume* CTestDetector::makeLV(GCSG* csg, unsigned int i)
 
     const char* lvn = csg->getLVName(ix - 1)  ;  
 
-    const G4Material* material = m_lib->makeMaterial(matname) ;
+    const G4Material* material = m_mlib->makeMaterial(matname) ;
 
     G4VSolid* solid = m_maker->makeSolid(csg, i );
 

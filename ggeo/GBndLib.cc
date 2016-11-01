@@ -40,9 +40,9 @@ void GBndLib::save()
     saveIndexBuffer();  
 }
 
-GBndLib* GBndLib::load(Opticks* cache, bool constituents)
+GBndLib* GBndLib::load(Opticks* ok, bool constituents)
 {
-    GBndLib* blib = new GBndLib(cache);
+    GBndLib* blib = new GBndLib(ok);
 
     LOG(trace) << "GBndLib::load" ; 
 
@@ -53,8 +53,8 @@ GBndLib* GBndLib::load(Opticks* cache, bool constituents)
 
     if(constituents)
     {
-        GMaterialLib* mlib = GMaterialLib::load(cache);
-        GSurfaceLib* slib = GSurfaceLib::load(cache);
+        GMaterialLib* mlib = GMaterialLib::load(ok);
+        GSurfaceLib* slib = GSurfaceLib::load(ok);
         blib->setMaterialLib(mlib);
         blib->setSurfaceLib(slib);
     }
@@ -177,9 +177,9 @@ void GBndLib::importIndexBuffer()
 }
 
 
-GBndLib::GBndLib(Opticks* cache) 
+GBndLib::GBndLib(Opticks* ok) 
    :
-    GPropertyLib(cache, "GBndLib"),
+    GPropertyLib(ok, "GBndLib"),
     m_mlib(NULL),
     m_slib(NULL),
     m_index_buffer(NULL),

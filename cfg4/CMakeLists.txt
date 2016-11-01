@@ -161,6 +161,7 @@ set(SOURCES
     CSurfaceTable.cc
     CSurfaceBridge.cc
     COpticalSurface.cc
+    CBndLib.cc
 
     OpStatus.cc
     Format.cc
@@ -238,6 +239,7 @@ set(HEADERS
     CSurfaceTable.hh
     CSurfaceBridge.hh
     COpticalSurface.hh
+    CBndLib.hh
 
     OpStatus.hh
     Format.hh

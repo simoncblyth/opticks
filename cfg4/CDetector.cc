@@ -20,6 +20,7 @@
 #include "OpticksQuery.hh"
 
 // cfg4-
+#include "CBndLib.hh"
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"
 #include "CDetector.hh"
@@ -32,17 +33,26 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   : 
   m_hub(hub),
   m_ok(m_hub->getOpticks()),
+  m_blib(new CBndLib(m_hub)),
   m_query(query),
-  m_resource(NULL),
-  m_lib(NULL),
+  m_resource(m_ok->getResource()),
+  m_mlib(new CMaterialLib(m_hub)),
   m_top(NULL),
   m_traverser(NULL),
-  m_bbox(NULL),
+  m_bbox(new NBoundingBox),
   m_verbosity(0),
   m_valid(true)
 {
     init();
 }
+
+
+void CDetector::init()
+{
+    LOG(trace) << "CDetector::init" ;
+}
+
+
 
 bool CDetector::isValid()
 {
@@ -69,7 +79,7 @@ G4VPhysicalVolume* CDetector::getTop()
 
 CMaterialLib* CDetector::getPropLib()
 {
-    return m_lib ; 
+    return m_mlib ; 
 }
 NBoundingBox* CDetector::getBoundingBox()
 {
@@ -82,14 +92,6 @@ void CDetector::setVerbosity(unsigned int verbosity)
 }
 
 
-void CDetector::init()
-{
-    LOG(trace) << "CDetector::init" ;
-
-    m_resource = m_ok->getResource();
-    m_lib = new CMaterialLib(m_hub);
-    m_bbox = new NBoundingBox ;
-}
 
 void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 {

@@ -30,8 +30,9 @@ class CFG4_API CMaterialLib : public CPropLib
        CMaterialLib(OpticksHub* hub);
 
        void convert(); // commented in init 
-       const G4Material* makeInnerMaterial(const char* spec);  // TODO: CMaterialLib better to not know about bnd spec
+      // const G4Material* makeInnerMaterial(const char* spec);  // TODO: CMaterialLib better to not know about bnd spec
        const G4Material* makeMaterial(const char* matname);
+       const G4Material* convertMaterial(const GMaterial* kmat);
 
        void dump(const char* msg="CMaterialLib::dump");
 
@@ -43,7 +44,6 @@ class CFG4_API CMaterialLib : public CPropLib
        void dumpMaterial(const G4Material* mat, const char* msg="CMaterialLib::dumpMaterial");
 
    private:
-       const G4Material* convertMaterial(const GMaterial* kmat);
        G4Material* makeVacuum(const char* name);
        G4Material* makeWater(const char* name);
 
