@@ -6,10 +6,10 @@
 class OpticksHub ; 
 class GBndLib ; 
 class GMaterialLib ; 
-class GSurfaceLib ; 
+class GSurLib ; 
 
 class GMaterial ; 
-template <typename T> class GPropertyMap ; 
+class GSur ; 
 
 /**
 CBndLib
@@ -25,13 +25,13 @@ class CFG4_API CBndLib
     public:
         GMaterial*        getOuterMaterial(unsigned boundary);
         GMaterial*        getInnerMaterial(unsigned boundary);
-        GPropertyMap<float>*  getOuterSurface(unsigned boundary);
-        GPropertyMap<float>*  getInnerSurface(unsigned boundary);
+        GSur*             getOuterSurface(unsigned boundary);
+        GSur*             getInnerSurface(unsigned boundary);
     private:
         OpticksHub*      m_hub ; 
         GBndLib*         m_bndlib ; 
         GMaterialLib*    m_matlib ; 
-        GSurfaceLib*     m_surlib ; 
+        GSurLib*         m_surlib ; 
 
 };
 

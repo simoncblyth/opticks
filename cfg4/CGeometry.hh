@@ -4,8 +4,6 @@
 #include <map>
 
 class OpticksHub ; 
-class GGeo ; 
-class CSurLib ; 
 class CG4 ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ; 
@@ -32,8 +30,6 @@ class CFG4_API CGeometry
        void init();
    private:
        OpticksHub*          m_hub ; 
-       GGeo*                m_ggeo ; 
-       CSurLib*             m_csurlib ; 
 
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 

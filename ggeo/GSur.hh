@@ -1,15 +1,5 @@
 #pragma once
 
-/**
-GSur
-=====
-
-Instances of GSur are created post-cache, as a 
-way of analysing surfaces and to reconstruct them.
-
-**/
-
-
 #include <set>
 #include <string>
 #include <vector>
@@ -43,9 +33,12 @@ class GGEO_API GSur
 
          std::string brief();
          std::string pvpBrief();
+         std::string lvBrief();
          std::string check();
          void dump(const char* msg="GSur::dump");
 
+
+         void setType(char type);
          char getType();
          bool isBorder();
          bool isSkin();

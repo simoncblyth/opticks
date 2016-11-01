@@ -5,7 +5,10 @@ GSurLib
 ==========
 
 GSurLib and the contained GSur are created post-cache
-as a constituent of GGeo in GGeo::loadFromCache.
+as a constituent of GGeo in GGeo::createSurLib.
+This creation is deferred until GGeo::getSurLib which 
+normally occurs at CG4/CGeometry/CSurLib instanciation
+
 GSurLib facilitates recreation of G4LogicalBorderSurface and G4LogicalSkinSurface 
 instances that are missing from the CGDMLDetector.
 
@@ -41,7 +44,6 @@ so a cheat based on names of bordersurfaces grepped from the .dae is used.
 #include <vector>
 
 class GGeo ;
-class GMergedMesh ;
 class GSur ; 
 class GSurfaceLib ; 
 class GBndLib ; 
@@ -50,6 +52,7 @@ class GBndLib ;
 
 class GGEO_API GSurLib 
 {
+         friend class CDetector ; 
     public:
          static const unsigned UNSET ;  
          static void pushBorderSurfaces(std::vector<std::string>& names);
@@ -61,18 +64,21 @@ class GGEO_API GSurLib
 
          unsigned getNumSur();
          GSur* getSur(unsigned index);
+
+         bool isClosed();
     private:
          void init();
          void collectSur();
+         void close();   // invoked by CDetector after potential mesh mods have been made
          void examineSolidBndSurfaces();
          void assignType();
          void add(GSur* surf);
          std::string desc(const std::set<unsigned>& bnd);
     public:
          GGeo*                 m_ggeo ;
-         GMergedMesh*          m_mesh0 ; 
          GSurfaceLib*          m_slib ; 
          GBndLib*              m_blib ; 
+         bool                  m_closed ; 
 
          std::vector<GSur*>        m_surs ; 
          std::vector<std::string>  m_bordersurface ; 

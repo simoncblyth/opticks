@@ -9,8 +9,13 @@ class OpticksHub ;
 class OpticksResource ; 
 class OpticksQuery ; 
 
+// gg-
+class GGeo ; 
+class GSurLib ; 
+
 // cfg4-
 class CBndLib ; 
+class CSurLib ; 
 class CMaterialLib ; 
 class CTraverser ; 
 
@@ -47,6 +52,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  public:
     CDetector(OpticksHub* hub, OpticksQuery* query);
     void setVerbosity(unsigned int verbosity);
+    void attachSurfaces();
     virtual ~CDetector();
  private:
     void init();
@@ -93,7 +99,10 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     OpticksHub*        m_hub ;
  protected: 
     Opticks*           m_ok ;
+    GGeo*              m_ggeo ; 
     CBndLib*           m_blib ; 
+    GSurLib*           m_gsurlib ; 
+    CSurLib*           m_csurlib ; 
  private:
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;

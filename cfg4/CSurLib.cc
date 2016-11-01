@@ -75,6 +75,7 @@ CSurLib::CSurLib(GSurLib* surlib)
    m_surfacelib(surlib->getSurfaceLib()),
    m_detector(NULL)
 {
+   assert(surlib->isClosed()); // typically closed in CDetector::attachSurfaces
 }
 
 
@@ -99,7 +100,29 @@ std::string CSurLib::brief()
     return ss.str();
 }
 
+
+
+unsigned CSurLib::getNumSur()
+{
+    return m_surlib->getNumSur();
+}
+GSur* CSurLib::getSur(unsigned index)
+{
+   return m_surlib->getSur(index); 
+}
+
+
+
 // called by CGeometry::init for both CGDMLDetector and CTestDetector branches
+//
+// TODO:converse method would seems more appropriate
+//
+//       detector->attachSurfaces(CSurLib* ) 
+//
+
+
+
+
 void CSurLib::convert(CDetector* detector)
 {
     setDetector(detector);
@@ -153,7 +176,14 @@ G4OpticalSurface* CSurLib::makeOpticalSurface(GSur* sur)
 
     G4OpticalSurface* os = new G4OpticalSurface(name);
 
-    G4OpticalSurfaceModel model = Model(0) ; // was 1:unified until 2016/10/31 when changed to 0:glisur
+    G4OpticalSurfaceModel model = Model(1) ; 
+       //
+       // 0:glisur
+       // 1:unified 
+       //       without any SPECULARSPIKE SPECULARLOBE etc.. defined 
+       //       hope that just does Lambertian  
+
+
     G4OpticalSurfaceFinish finish = Finish(optical.z) ;  //  polished,,,ground,,, 
     G4SurfaceType type = Type(optical.y) ;   // dielectric_metal, dielectric_dielectric
 

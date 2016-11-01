@@ -21,6 +21,9 @@
 #include "GCSG.hh"
 #include "GMaterial.hh"
 #include "GGeoTestConfig.hh"
+#include "GSur.hh"
+#include "GGeo.hh"
+#include "GMergedMesh.hh"
 
 // g4-
 #include "CFG4_PUSH.hh"
@@ -106,33 +109,85 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
    // creates Russian doll geometry layer by layer, starting from the outermost 
    // hooking up mother volume to prior 
    //
+    GMergedMesh* mm = m_ggeo->getMergedMesh(0);
+    unsigned numSolids = mm->getNumSolids();
+    unsigned int numSolidsConfig = m_config->getNumElements();
 
     bool is_pib = isPmtInBox() ;
     bool is_bib = isBoxInBox() ;
 
-    LOG(trace) << "CTestDetector::Construct"
+    LOG(info)  << "CTestDetector::makeDetector"
                << " PmtInBox " << is_pib
                << " BoxInBox " << is_bib
+               << " numSolids (from mesh0) " << numSolids
+               << " numSolids (from config) " << numSolidsConfig 
               ;
 
     assert( ( is_pib || is_bib ) && "CTestDetector::Construct mode not recognized");
 
+    assert( numSolids == numSolidsConfig );
+
     if(m_verbosity > 0)
     m_config->dump("CTestDetector::Construct");
 
-    unsigned int n = m_config->getNumElements();
 
     G4VPhysicalVolume* ppv = NULL ;    // parent pv
     G4VPhysicalVolume* top = NULL ;  
     G4LogicalVolume* mother = NULL ; 
 
-    for(unsigned int i=0 ; i < n ; i++)
+
+    for(unsigned int i=0 ; i < numSolidsConfig ; i++)
     {   
         const char* spec = m_config->getBoundary(i);
 
-        unsigned boundary = m_blib->addBoundary(spec);
+        guint4* ni = mm->getNodeInfo() + i ;
+        guint4* id = mm->getIdentity() + i ;
+
+        if(i > 0) ni->w = i - 1  ;  // set parent in test mesh node info, assuming simple Russian doll geometry 
+
+        LOG(info) 
+                  << "ni(" 
+                  << std::setw(10) << ni->x << ","
+                  << std::setw(10) << ni->y << ","
+                  << std::setw(10) << ni->z << ","
+                  << std::setw(10) << ni->w << ")"
+                  << "id(" 
+                  << std::setw(10) << id->x << ","
+                  << std::setw(10) << id->y << ","
+                  << std::setw(10) << id->z << ","
+                  << std::setw(10) << id->w << ")"
+                  ;
+
+        
+        unsigned boundary = id->z ; 
+        unsigned boundary2 = m_blib->addBoundary(spec);
+        assert(boundary == boundary2);  
+
 
         GMaterial* imat = m_blib->getInnerMaterial(boundary); 
+        GSur* isur      = m_blib->getInnerSurface(boundary); 
+        GSur* osur      = m_blib->getOuterSurface(boundary); 
+
+
+        if(isur) isur->setType('B');
+        if(osur) osur->setType('B');
+
+
+       if(isur) isur->dump("isur");
+       if(osur) osur->dump("osur");
+
+
+
+/*
+        LOG(info) 
+                  << " spec " << std::setw(50) << spec
+                  << " bnd " << std::setw(3) << boundary 
+                  << " imat " << std::setw(10) << imat
+                  << " isur " << std::setw(10) << isur
+                  << " osur " << std::setw(10) << osur
+                  ;
+*/
+
 
        // TODO:
        //    access corresponding GSur and add lvnames and pv1 pv2 indices 

@@ -19,8 +19,12 @@
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 
+#include "GGeo.hh"
+#include "GSurLib.hh"
+
 // cfg4-
 #include "CBndLib.hh"
+#include "CSurLib.hh"
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"
 #include "CDetector.hh"
@@ -33,7 +37,10 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   : 
   m_hub(hub),
   m_ok(m_hub->getOpticks()),
+  m_ggeo(m_hub->getGGeo()),
   m_blib(new CBndLib(m_hub)),
+  m_gsurlib(m_hub->getSurLib()),   // invokes the deferred GGeo::createSurLib  
+  m_csurlib(NULL),
   m_query(query),
   m_resource(m_ok->getResource()),
   m_mlib(new CMaterialLib(m_hub)),
@@ -51,7 +58,6 @@ void CDetector::init()
 {
     LOG(trace) << "CDetector::init" ;
 }
-
 
 
 bool CDetector::isValid()
@@ -225,6 +231,35 @@ CDetector::~CDetector()
     //G4GeometryManager::GetInstance()->OpenGeometry();
     //printf("CDetector::~CDetector DONE\n");
 }
+
+
+
+
+void CDetector::attachSurfaces()
+{
+    LOG(info) << "CDetector::attachSurfaces" ;
+
+
+    
+    m_gsurlib->close();
+ 
+    m_csurlib = new CSurLib(m_gsurlib);
+
+    m_csurlib->convert(this);     
+
+} 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

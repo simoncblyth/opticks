@@ -16,6 +16,7 @@ class GGeo ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
+class GSurLib ; 
 class GScintillatorLib ; 
 
 class Composition ; 
@@ -112,6 +113,7 @@ class OKGEO_API OpticksHub {
        GSurfaceLib*         getSurfaceLib();
        GBndLib*             getBndLib();
        GScintillatorLib*    getScintillatorLib();
+       GSurLib*             getSurLib();   //  getter triggers creation in GGeo::createSurLib from mesh0
 
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();

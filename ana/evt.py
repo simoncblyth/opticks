@@ -130,7 +130,7 @@ class Evt(object):
             return False
 
         if idom[0,0,3] != self.nrec:
-            log.fatal(" unexpected idom %s nrec %s " % (repr(idom), self.nrec ))  
+            log.warning(" non-standard idom %s nrec %s " % (repr(idom), self.nrec ))  
 
         #assert idom[0,0,3] == self.nrec
 
@@ -256,6 +256,8 @@ class Evt(object):
                [[0xbcbccccc6dL, 0x3333342311L]],
 
         """
+        log.debug("init_sequence START")
+
         ph = A.load_("ph",src,tag,det,dbg, optional=True)
         self.ph = ph
         self.desc['ph'] = "(records) photon history flag/material sequence"
@@ -292,6 +294,7 @@ class Evt(object):
             msk = msk_(imsk) 
             setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[cn])) 
 
+        log.debug("init_sequence DONE")
 
 
     def init_index(self, tag, src, det, dbg):

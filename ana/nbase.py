@@ -3,13 +3,25 @@ import numpy as np
 import os, logging
 log = logging.getLogger(__name__) 
 
-def count_unique(vals):
+
+def count_unique_truncating(vals):
     """  
     http://stackoverflow.com/questions/10741346/numpy-frequency-counts-for-unique-values-in-an-array
     """
     uniq = np.unique(vals)
     bins = uniq.searchsorted(vals)
     return np.vstack((uniq, np.bincount(bins))).T
+
+def count_unique_old(vals):
+    uniq = np.unique(vals)
+    bins = uniq.searchsorted(vals)
+    cnts = np.bincount(bins)
+    return np.vstack((uniq, cnts.astype(np.uint64))).T
+
+def count_unique(vals):
+    uniq, cnts = np.unique(vals, return_counts=True)
+    return np.vstack((uniq, cnts.astype(np.uint64))).T 
+
 
 def count_unique_sorted(vals):
     vals = vals.astype(np.uint64)
@@ -114,10 +126,10 @@ def decompression_bins(cbins, *vals):
     pass
     return bins
 
-if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO)
 
+
+def test_decompression_bins():
     cbins = np.linspace(-300,300,10)
     avals = np.repeat(300,1000)
     bvals = np.repeat(300,1000)
@@ -125,6 +137,66 @@ if __name__ == '__main__':
     rbins = decompression_bins(cbins, avals, bvals)
 
 
+
+
+def test_count_unique_(fn, a):
+    """
+    count_unique appears to go via floats which 
+    looses precision for large numbers
+    """
+
+    aa = np.array([ a,a,a ], dtype=np.uint64 )
+
+    cu = fn(aa)
+    n = cu[0,1]
+    assert n == 3
+
+    a_ = np.uint64(cu[0,0])
+
+    ok = a_ == a
+
+    if ok:
+         msg = "OK" 
+    else:
+         msg = "FAIL"
+
+
+    log.info("test_count_unique_ %16x %16x %s  %s %s  " % (a, a_, msg, a, a_) )
+
+        
+
+
+def test_count_unique():
+
+    vals=[0xfedcba9876543210,0xffffffffffffffff]
+
+    msk_ = lambda n:(1 << 4*n) - 1 
+    for n in range(16):
+        msk = msk_(n)    
+        vals.append(msk)
+
+
+    log.info("count_unique")
+    for v in vals:
+        test_count_unique_(count_unique, v)
+
+    log.info("count_unique_old")
+    for v in vals:
+        test_count_unique_(count_unique_old, v)
+
+    log.info("count_unique_truncating")
+    for v in vals:
+        test_count_unique_(count_unique_truncating, v)
+
+
+
+
+
+
+if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.INFO)
+    test_count_unique()
 
 
 

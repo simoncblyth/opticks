@@ -34,9 +34,9 @@ GSur* GSurLib::getSur(unsigned i)
 GSurLib::GSurLib(GGeo* gg) 
     : 
     m_ggeo(gg),
-    m_mesh0(gg->getMergedMesh(0)),
     m_slib(gg->getSurfaceLib()),
-    m_blib(gg->getBndLib())
+    m_blib(gg->getBndLib()),
+    m_closed(false)
 {
     init();
 }
@@ -71,8 +71,6 @@ void GSurLib::init()
 {
     pushBorderSurfaces(m_bordersurface);
     collectSur();
-    examineSolidBndSurfaces();  
-    assignType();
 }
 
 void GSurLib::collectSur()
@@ -89,12 +87,34 @@ void GSurLib::collectSur()
     }
 }
 
+void GSurLib::close()
+{
+    m_closed = true ; 
+    examineSolidBndSurfaces();  
+    assignType();
+}
+
+bool GSurLib::isClosed()
+{
+    return m_closed ; 
+}
+
+
+
 void GSurLib::examineSolidBndSurfaces()
 {
+    // this is deferred to CDetector::attachSurfaces 
+    // to allow CTestDetector to fixup mesh0 info 
+
     GGeo* gg = m_ggeo ; 
-    GMergedMesh* mm = m_mesh0 ; 
+
+    GMergedMesh* mm = gg->getMergedMesh(0) ;
 
     unsigned numSolids = mm->getNumSolids();
+
+    LOG(info) << "GSurLib::examineSolidBndSurfaces" 
+              << " numSolids " << numSolids
+              ; 
 
     for(unsigned i=0 ; i < numSolids ; i++)
     {
@@ -122,6 +142,15 @@ void GSurLib::examineSolidBndSurfaces()
 
         GSur* isur = isur_ == UNSET ? NULL : getSur(isur_);
         GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
+
+
+        LOG(info) << std::setw(3) << i 
+                  << " nodeinfo " << std::setw(50) << nodeinfo.description() 
+                  << " bnd " << std::setw(50) << bnd.description() 
+                  << ( isur ? " isur" : "" )
+                  << ( osur ? " osur" : "" )
+                  ;
+
 
         // the reason for the order swap between osur and isur is explained below
         if(osur)

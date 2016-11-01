@@ -443,11 +443,14 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
 
 
+/*
                       LOG(info) << "OpticalSurface "
                                 << " name " << OpticalSurface->GetName() 
                                 << " thePhotonMomentum (eV) " << thePhotonMomentum/eV
                                 << " theReflectivity " << theReflectivity
                                 << " theEfficiency " << theEfficiency
+                                << ( theModel == unified ? " unified " : "-" )
+                                << ( theModel == glisur ?  " glisur " : "-" )
                                 << ( type == dielectric_dielectric ? " dielectric_dielectric " : "." )
                                 << ( type == dielectric_metal ? " dielectric_metal " : "." )
                                 << ( theFinish == ground ? " ground " : "-" )
@@ -455,6 +458,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                                 << " m1 " << Material1->GetName()
                                 << " m2 " << Material2->GetName()
                                 ; 
+*/
 
               } 
               else 

@@ -298,6 +298,10 @@ GBndLib* OpticksHub::getBndLib()
 {
     return m_ggeo ? m_ggeo->getBndLib() : NULL ; 
 }
+GSurLib* OpticksHub::getSurLib()
+{
+    return m_ggeo ? m_ggeo->getSurLib() : NULL ; 
+}
 GScintillatorLib* OpticksHub::getScintillatorLib()
 {
     return m_ggeo ? m_ggeo->getScintillatorLib() : NULL ; 

@@ -8,7 +8,6 @@ class OpticksQuery ;
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "GGeoTestConfig.hh"
-#include "GGeo.hh"
 #include "GSurLib.hh"
 #include "GSur.hh"
 
@@ -29,8 +28,6 @@ class CPropLib ;
 CGeometry::CGeometry(OpticksHub* hub) 
    :
    m_hub(hub),
-   m_ggeo(hub->getGGeo()),
-   m_csurlib(new CSurLib(m_ggeo->getSurLib())),
    m_ok(m_hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
    m_detector(NULL),
@@ -71,10 +68,11 @@ void CGeometry::init()
         LOG(fatal) << "CGeometry::init G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
         detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query)) ; 
-
     }
 
-    m_csurlib->convert(detector);
+    detector->attachSurfaces();
+    //m_csurlib->convert(detector);
+
     m_detector = detector ; 
     m_lib = detector->getPropLib();
 }
@@ -121,10 +119,6 @@ CSurfaceBridge* CGeometry::getSurfaceBridge()
     assert(m_surface_bridge);
     return m_surface_bridge ; 
 }
-
-
-
-
 
 std::map<std::string, unsigned>& CGeometry::getMaterialMap()
 {

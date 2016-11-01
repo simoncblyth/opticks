@@ -37,10 +37,13 @@ Hmm how to apply to CTestDetector ? PV indices are all different.
 
 class CFG4_API CSurLib 
 {
+         friend class CDetector ;
          friend class CGeometry ;
     public:
          CSurLib(GSurLib* surlib);
          std::string brief();
+         unsigned getNumSur();
+         GSur* getSur(unsigned index);
     protected:
          void convert(CDetector* detector);
     private:

@@ -257,7 +257,6 @@ GSurfaceLib* GGeo::getSurfaceLib()
 GSurLib* GGeo::getSurLib()
 {
     if(m_surlib == NULL) createSurLib();
-
     return m_surlib ; 
 }
 

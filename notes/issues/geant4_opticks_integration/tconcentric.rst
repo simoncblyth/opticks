@@ -48,12 +48,274 @@ viz
     2016-10-31 20:46:50.716 INFO  [460591] [CTorchSource::GeneratePrimaryVertex@268] CTorchSource::GeneratePrimaryVertex typeName sphere modeString  position 0.0000,0.0000,0.0000 direction 0.0000,0.0000,1.0000 polarization 0.0000,0.0000,0.0000 radius 0 wavelength 430 time 0.1 polarization 0.0000,0.0000,0.0000 num 10000
 
 
-
 * Polarization viz looks different in g4 and ok.
 * Probably default G4 is random pol, and Opticks is some adhoc distrib... need to arrange these to match.
 
 TODO: check polz distribs
 
+
+
+with flags fixed
+-----------------
+
+Perhaps an SC discrep ? 
+
+::
+
+
+    [2016-11-01 21:09:04,278] p62207 {/Users/blyth/opticks/ana/cf.py:36} INFO - CF a concentric/torch/  1 :  20161101-2009 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-01 21:09:04,278] p62207 {/Users/blyth/opticks/ana/cf.py:37} INFO - CF b concentric/torch/ -1 :  20161101-2009 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-01 21:09:04,288] p62207 {/Users/blyth/opticks/ana/seq.py:279} INFO - SeqTable.compare forming cf ad.code len(u) 5099 
+    [2016-11-01 21:09:04,353] p62207 {/Users/blyth/opticks/ana/seq.py:284} INFO - SeqTable.compare forming cf af.code DONE 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                  8ccccd        669935       670752             0.50         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d         83950        84177             0.31         1.00 +- 0.00         1.00 +- 0.00  [2 ] TO AB
+                 8cccc6d         45599        45475             0.17         1.00 +- 0.00         1.00 +- 0.00  [7 ] TO SC BT BT BT BT SA
+                  4ccccd         28958        28871             0.13         1.00 +- 0.01         1.00 +- 0.01  [6 ] TO BT BT BT BT AB
+                    4ccd         23187        23447             1.45         0.99 +- 0.01         1.01 +- 0.01  [4 ] TO BT BT AB
+                 8cccc5d         20239        19674             8.00         1.03 +- 0.01         0.97 +- 0.01  [7 ] TO RE BT BT BT BT SA
+         ##      8cc6ccd         10397        10919            12.78         0.95 +- 0.01         1.05 +- 0.01  [7 ] TO BT BT SC BT BT SA
+         ##      86ccccd         10160        10825            21.07         0.94 +- 0.01         1.07 +- 0.01  [7 ] TO BT BT BT BT SC SA
+                 89ccccd          7605         7685             0.42         0.99 +- 0.01         1.01 +- 0.01  [7 ] TO BT BT BT BT DR SA
+                8cccc55d          5970         5911             0.29         1.01 +- 0.01         0.99 +- 0.01  [8 ] TO RE RE BT BT BT BT SA
+                     45d          5780         5627             2.05         1.03 +- 0.01         0.97 +- 0.01  [3 ] TO RE AB
+         8cccccccc9ccccd          5350         5451             0.94         0.98 +- 0.01         1.02 +- 0.01  [15] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+                 8cc5ccd          5113         4948             2.71         1.03 +- 0.01         0.97 +- 0.01  [7 ] TO BT BT RE BT BT SA
+                     46d          4783         4808             0.07         0.99 +- 0.01         1.01 +- 0.01  [3 ] TO SC AB
+             8cccc9ccccd          4525         4452             0.59         1.02 +- 0.02         0.98 +- 0.01  [11] TO BT BT BT BT DR BT BT BT BT SA
+         ##  8cccccc6ccd          3190         2785            27.45         1.15 +- 0.02         0.87 +- 0.02  [11] TO BT BT SC BT BT BT BT BT BT SA
+                8cccc66d          2600         2642             0.34         0.98 +- 0.02         1.02 +- 0.02  [8 ] TO SC SC BT BT BT BT SA
+                 49ccccd          2313         2452             4.05         0.94 +- 0.02         1.06 +- 0.02  [7 ] TO BT BT BT BT DR AB
+                 4cccc6d          2027         2040             0.04         0.99 +- 0.02         1.01 +- 0.02  [7 ] TO SC BT BT BT BT AB
+               8cccc555d          1819         1696             4.30         1.07 +- 0.03         0.93 +- 0.02  [9 ] TO RE RE RE BT BT BT BT SA
+                             1000000      1000000        18.83 
+
+
+
+
+FIXED : funny badflag 00
+----------------------------
+
+Using "--bouncemax 15 --recordmax 16" is causing some badflag zeros at python level only
+
+* could be bumping into signbit somewhere
+* nope count_unique was going via float and loosing precision with large uint64 see ana/nbase.py:test_count_unique
+
+
+
+avoiding truncation by pushing bouncemax and recordmax
+--------------------------------------------------------
+
+::
+
+    tconcentric-tt () 
+    { 
+        tconcentric-t --bouncemax 15 --recordmax 16 $*
+    }
+
+
+::
+
+        .    seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                  8ccccd        669935       670752             0.50         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d         83950        84177             0.31         1.00 +- 0.00         1.00 +- 0.00  [2 ] TO AB
+                 8cccc6d         45599        45475             0.17         1.00 +- 0.00         1.00 +- 0.00  [7 ] TO SC BT BT BT BT SA
+                  4ccccd         28958        28871             0.13         1.00 +- 0.01         1.00 +- 0.01  [6 ] TO BT BT BT BT AB
+                    4ccd         23187        23447             1.45         0.99 +- 0.01         1.01 +- 0.01  [4 ] TO BT BT AB
+                 8cccc5d         20239        19674             8.00         1.03 +- 0.01         0.97 +- 0.01  [7 ] TO RE BT BT BT BT SA
+                 8cc6ccd         10397        10919            12.78         0.95 +- 0.01         1.05 +- 0.01  [7 ] TO BT BT SC BT BT SA   ##
+                 86ccccd         10160        10825            21.07         0.94 +- 0.01         1.07 +- 0.01  [7 ] TO BT BT BT BT SC SA   ##
+                 89ccccd          7605         7685             0.42         0.99 +- 0.01         1.01 +- 0.01  [7 ] TO BT BT BT BT DR SA
+                8cccc55d          5970         5911             0.29         1.01 +- 0.01         0.99 +- 0.01  [8 ] TO RE RE BT BT BT BT SA
+                     45d          5780         5627             2.05         1.03 +- 0.01         0.97 +- 0.01  [3 ] TO RE AB
+         8cccccccc9ccd00          5350         5289             0.35         1.01 +- 0.01         0.99 +- 0.01  [15] ?0? ?0? TO BT BT DR BT BT BT BT BT BT BT BT SA
+                 8cc5ccd          5113         4948             2.71         1.03 +- 0.01         0.97 +- 0.01  [7 ] TO BT BT RE BT BT SA
+                     46d          4783         4808             0.07         0.99 +- 0.01         1.01 +- 0.01  [3 ] TO SC AB
+             8cccc9ccccd          4525         4452             0.59         1.02 +- 0.02         0.98 +- 0.01  [11] TO BT BT BT BT DR BT BT BT BT SA
+             8cccccc6ccd          3190         2785            27.45         1.15 +- 0.02         0.87 +- 0.02  [11] TO BT BT SC BT BT BT BT BT BT SA   ##
+                8cccc66d          2600         2642             0.34         0.98 +- 0.02         1.02 +- 0.02  [8 ] TO SC SC BT BT BT BT SA
+                 49ccccd          2313         2452             4.05         0.94 +- 0.02         1.06 +- 0.02  [7 ] TO BT BT BT BT DR AB
+                 4cccc6d          2027         2040             0.04         0.99 +- 0.02         1.01 +- 0.02  [7 ] TO SC BT BT BT BT AB
+               8cccc555d          1819         1696             4.30         1.07 +- 0.03         0.93 +- 0.02  [9 ] TO RE RE RE BT BT BT BT SA
+                              999037       999146         2.02 
+
+
+
+
+switch to unified model fixes incorrectly specular DR
+--------------------------------------------------------
+
+* push stats to 1M,  biggest discreps from trunc, possible from SC also  
+
+::
+
+    [2016-11-01 19:01:44,889] p60660 {/Users/blyth/opticks/ana/cf.py:36} INFO - CF a concentric/torch/  1 :  20161101-1901 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-01 19:01:44,889] p60660 {/Users/blyth/opticks/ana/cf.py:37} INFO - CF b concentric/torch/ -1 :  20161101-1901 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                  8ccccd        669935       671359             1.51         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d         83950        84265             0.59         1.00 +- 0.00         1.00 +- 0.00  [2 ] TO AB
+                 8cccc6d         45599        45244             1.39         1.01 +- 0.00         0.99 +- 0.00  [7 ] TO SC BT BT BT BT SA
+                  4ccccd         28958        28822             0.32         1.00 +- 0.01         1.00 +- 0.01  [6 ] TO BT BT BT BT AB
+                    4ccd         23187        23366             0.69         0.99 +- 0.01         1.01 +- 0.01  [4 ] TO BT BT AB
+                 8cccc5d         20239        19818             4.42         1.02 +- 0.01         0.98 +- 0.01  [7 ] TO RE BT BT BT BT SA
+              cccc9ccccd         14235        13343            28.85         1.07 +- 0.01         0.94 +- 0.01  [10] TO BT BT BT BT DR BT BT BT BT   ###  trunc
+                 8cc6ccd         10397        10930            13.32         0.95 +- 0.01         1.05 +- 0.01  [7 ] TO BT BT SC BT BT SA            ##  SC 
+                 86ccccd         10160        10725            15.28         0.95 +- 0.01         1.06 +- 0.01  [7 ] TO BT BT BT BT SC SA            ##  SC
+                 89ccccd          7605         7600             0.00         1.00 +- 0.01         1.00 +- 0.01  [7 ] TO BT BT BT BT DR SA
+                8cccc55d          5970         5847             1.28         1.02 +- 0.01         0.98 +- 0.01  [8 ] TO RE RE BT BT BT BT SA
+                     45d          5780         5616             2.36         1.03 +- 0.01         0.97 +- 0.01  [3 ] TO RE AB
+                 8cc5ccd          5113         4972             1.97         1.03 +- 0.01         0.97 +- 0.01  [7 ] TO BT BT RE BT BT SA
+                     46d          4783         4847             0.43         0.99 +- 0.01         1.01 +- 0.01  [3 ] TO SC AB
+              cccc6ccccd          4404         3549            91.92         1.24 +- 0.02         0.81 +- 0.01  [10] TO BT BT BT BT SC BT BT BT BT   ### trunc
+              cccccc6ccd          3588         3158            27.41         1.14 +- 0.02         0.88 +- 0.02  [10] TO BT BT SC BT BT BT BT BT BT   ### trunc
+                8cccc66d          2600         2641             0.32         0.98 +- 0.02         1.02 +- 0.02  [8 ] TO SC SC BT BT BT BT SA
+                 49ccccd          2313         2425             2.65         0.95 +- 0.02         1.05 +- 0.02  [7 ] TO BT BT BT BT DR AB
+                 4cccc6d          2027         2054             0.18         0.99 +- 0.02         1.01 +- 0.02  [7 ] TO SC BT BT BT BT AB
+               8cccc555d          1819         1684             5.20         1.08 +- 0.03         0.93 +- 0.02  [9 ] TO RE RE RE BT BT BT BT SA
+                             1000000      1000000         4.22 
+
+
+
+* remaining low level discrep from scattering in MO ?
+
+::
+
+    [2016-11-01 18:54:04,720] p60414 {/Users/blyth/opticks/ana/cf.py:36} INFO - CF a concentric/torch/  1 :  20161101-1853 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-01 18:54:04,720] p60414 {/Users/blyth/opticks/ana/cf.py:37} INFO - CF b concentric/torch/ -1 :  20161101-1853 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                  8ccccd         67144        67082             0.03         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d          8398         8355             0.11         1.01 +- 0.01         0.99 +- 0.01  [2 ] TO AB
+                 8cccc6d          4567         4564             0.00         1.00 +- 0.01         1.00 +- 0.01  [7 ] TO SC BT BT BT BT SA
+                  4ccccd          2912         2935             0.09         0.99 +- 0.02         1.01 +- 0.02  [6 ] TO BT BT BT BT AB
+                    4ccd          2264         2369             2.38         0.96 +- 0.02         1.05 +- 0.02  [4 ] TO BT BT AB
+                 8cccc5d          2056         1994             0.95         1.03 +- 0.02         0.97 +- 0.02  [7 ] TO RE BT BT BT BT SA
+              cccc9ccccd          1402         1311             3.05         1.07 +- 0.03         0.94 +- 0.03  [10] TO BT BT BT BT DR BT BT BT BT
+                 86ccccd           961         1109            10.58         0.87 +- 0.03         1.15 +- 0.03  [7 ] TO BT BT BT BT SC SA             ## SC in MO ??? more in cfg4
+                 8cc6ccd          1035         1091             1.48         0.95 +- 0.03         1.05 +- 0.03  [7 ] TO BT BT SC BT BT SA
+                 89ccccd           711          783             3.47         0.91 +- 0.03         1.10 +- 0.04  [7 ] TO BT BT BT BT DR SA
+                8cccc55d           601          616             0.18         0.98 +- 0.04         1.02 +- 0.04  [8 ] TO RE RE BT BT BT BT SA
+                     45d           554          537             0.26         1.03 +- 0.04         0.97 +- 0.04  [3 ] TO RE AB
+                     46d           539          484             2.96         1.11 +- 0.05         0.90 +- 0.04  [3 ] TO SC AB
+                 8cc5ccd           485          478             0.05         1.01 +- 0.05         0.99 +- 0.05  [7 ] TO BT BT RE BT BT SA
+              cccc6ccccd           461          357            13.22         1.29 +- 0.06         0.77 +- 0.04  [10] TO BT BT BT BT SC BT BT BT BT    ##  SC in MO ??? less in cfg4
+              cccccc6ccd           346          350             0.02         0.99 +- 0.05         1.01 +- 0.05  [10] TO BT BT SC BT BT BT BT BT BT
+                8cccc66d           280          254             1.27         1.10 +- 0.07         0.91 +- 0.06  [8 ] TO SC SC BT BT BT BT SA
+                 49ccccd           207          234             1.65         0.88 +- 0.06         1.13 +- 0.07  [7 ] TO BT BT BT BT DR AB
+                 4cccc6d           218          200             0.78         1.09 +- 0.07         0.92 +- 0.06  [7 ] TO SC BT BT BT BT AB
+                   4cc6d           194          181             0.45         1.07 +- 0.08         0.93 +- 0.07  [5 ] TO SC BT BT AB
+                              100000       100000         1.98 
+
+
+
+
+
+
+
+post DR discrep
+----------------
+
+tconcentric-v and selecting 89ccccd  "TO BT BT BT BT DR SA" shows some extreme DR kinks for Opticks.
+
+Checking in tconcentric_distrib.py for related category 49ccccd "TO BT BT BT BT DR AB"
+shows that cfg4 DR is happening specularly, with all the AB being along the incoming line. 
+So for cfg4 DR behaves like BR.
+
+
+::
+
+    tconcentric.py --dbgseqhis 9ccccd
+
+          seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+          cccc9ccccd          1396         2267           207.11         0.62 +- 0.02         1.62 +- 0.03  [10] TO BT BT BT BT DR BT BT BT BT
+             89ccccd           725            0           725.00         0.00 +- 0.00         0.00 +- 0.00  [7 ] TO BT BT BT BT DR SA
+             49ccccd           221          115            33.44         1.92 +- 0.13         0.52 +- 0.05  [7 ] TO BT BT BT BT DR AB
+          5ccc9ccccd             0          201           201.00         0.00 +- 0.00         0.00 +- 0.00  [10] TO BT BT BT BT DR BT BT BT RE
+           4cc9ccccd            83           79             0.10         1.05 +- 0.12         0.95 +- 0.11  [9 ] TO BT BT BT BT DR BT BT AB
+            869ccccd            77           36            14.88         2.14 +- 0.24         0.47 +- 0.08  [8 ] TO BT BT BT BT DR SC SA
+          c6cc9ccccd            75           45             7.50         1.67 +- 0.19         0.60 +- 0.09  [10] TO BT BT BT BT DR BT BT SC BT
+          c5cc9ccccd            34           21             3.07         1.62 +- 0.28         0.62 +- 0.13  [10] TO BT BT BT BT DR BT BT RE BT
+          ccc69ccccd            32           19             3.31         1.68 +- 0.30         0.59 +- 0.14  [10] TO BT BT BT BT DR SC BT BT BT
+          ccc99ccccd            19            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [10] TO BT BT BT BT DR DR BT BT BT
+          55cc9ccccd            12            8             0.00         1.50 +- 0.43         0.67 +- 0.24  [10] TO BT BT BT BT DR BT BT RE RE
+            899ccccd            10            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [8 ] TO BT BT BT BT DR DR SA
+            469ccccd             5           10             0.00         0.50 +- 0.22         2.00 +- 0.63  [8 ] TO BT BT BT BT DR SC AB
+          bccc9ccccd             9            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [10] TO BT BT BT BT DR BT BT BT BR
+          45cc9ccccd             8            2             0.00         4.00 +- 1.41         0.25 +- 0.18  [10] TO BT BT BT BT DR BT BT RE AB
+            4c9ccccd             8            4             0.00         2.00 +- 0.71         0.50 +- 0.25  [8 ] TO BT BT BT BT DR BT AB
+            8b9ccccd             7            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [8 ] TO BT BT BT BT DR BR SA
+          46cc9ccccd             6            3             0.00         2.00 +- 0.82         0.50 +- 0.29  [10] TO BT BT BT BT DR BT BT SC AB
+          4ccc9ccccd             6            2             0.00         3.00 +- 1.22         0.33 +- 0.24  [10] TO BT BT BT BT DR BT BT BT AB
+            499ccccd             5            0             0.00         0.00 +- 0.00         0.00 +- 0.00  [8 ] TO BT BT BT BT DR DR AB
+                          100000       100000        17.81 
+
+
+seqhis after optical surfaces hookup with test geometry
+----------------------------------------------------------
+
+With single direction source (like tlaser) behavior very similar, as geometry is symmetrical. But this is easier for 
+some distrib angle comparisons
+
+::
+
+    [2016-11-01 17:54:40,804] p58713 {/Users/blyth/opticks/ana/cf.py:36} INFO - CF a concentric/torch/  1 :  20161101-1754 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-01 17:54:40,804] p58713 {/Users/blyth/opticks/ana/cf.py:37} INFO - CF b concentric/torch/ -1 :  20161101-1754 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                  8ccccd         67144        67106             0.01         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d          8398         8316             0.40         1.01 +- 0.01         0.99 +- 0.01  [2 ] TO AB
+                 8cccc6d          4567         4612             0.22         0.99 +- 0.01         1.01 +- 0.01  [7 ] TO SC BT BT BT BT SA
+                  4ccccd          2912         2879             0.19         1.01 +- 0.02         0.99 +- 0.02  [6 ] TO BT BT BT BT AB
+                    4ccd          2264         2285             0.10         0.99 +- 0.02         1.01 +- 0.02  [4 ] TO BT BT AB
+              cccc9ccccd          1402         2278           208.53         0.62 +- 0.02         1.62 +- 0.03  [10] TO BT BT BT BT DR BT BT BT BT
+                 8cccc5d          2056         2050             0.01         1.00 +- 0.02         1.00 +- 0.02  [7 ] TO RE BT BT BT BT SA
+                 86ccccd           961         1105            10.04         0.87 +- 0.03         1.15 +- 0.03  [7 ] TO BT BT BT BT SC SA
+                 8cc6ccd          1035         1036             0.00         1.00 +- 0.03         1.00 +- 0.03  [7 ] TO BT BT SC BT BT SA
+                 89ccccd           711            0           711.00         0.00 +- 0.00         0.00 +- 0.00  [7 ] TO BT BT BT BT DR SA
+                8cccc55d           601          641             1.29         0.94 +- 0.04         1.07 +- 0.04  [8 ] TO RE RE BT BT BT BT SA
+                     45d           554          554             0.00         1.00 +- 0.04         1.00 +- 0.04  [3 ] TO RE AB
+                     46d           539          435            11.10         1.24 +- 0.05         0.81 +- 0.04  [3 ] TO SC AB
+                 8cc5ccd           485          468             0.30         1.04 +- 0.05         0.96 +- 0.04  [7 ] TO BT BT RE BT BT SA
+              cccc6ccccd           461          333            20.63         1.38 +- 0.06         0.72 +- 0.04  [10] TO BT BT BT BT SC BT BT BT BT
+              cccccc6ccd           346          339             0.07         1.02 +- 0.05         0.98 +- 0.05  [10] TO BT BT SC BT BT BT BT BT BT
+                8cccc66d           280          267             0.31         1.05 +- 0.06         0.95 +- 0.06  [8 ] TO SC SC BT BT BT BT SA
+                 4cccc6d           218          176             4.48         1.24 +- 0.08         0.81 +- 0.06  [7 ] TO SC BT BT BT BT AB
+              5ccc9ccccd             0          207           207.00         0.00 +- 0.00         0.00 +- 0.00  [10] TO BT BT BT BT DR BT BT BT RE
+                 49ccccd           207          117            25.00         1.77 +- 0.12         0.57 +- 0.05  [7 ] TO BT BT BT BT DR AB
+                              100000       100000        16.91 
+
+
+After hookup of Optical Surfaces with test geometry, the top line 4% is fixed. This is with random direction source:: 
+
+    [2016-11-01 17:22:57,862] p57567 {/Users/blyth/opticks/ana/cf.py:36} INFO - CF a concentric/torch/  1 :  20161101-1722 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-01 17:22:57,862] p57567 {/Users/blyth/opticks/ana/cf.py:37} INFO - CF b concentric/torch/ -1 :  20161101-1722 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                  8ccccd         67138        67065             0.04         1.00 +- 0.00         1.00 +- 0.00  [6 ] TO BT BT BT BT SA
+                      4d          8398         8284             0.78         1.01 +- 0.01         0.99 +- 0.01  [2 ] TO AB
+                 8cccc6d          4574         4630             0.34         0.99 +- 0.01         1.01 +- 0.01  [7 ] TO SC BT BT BT BT SA
+                  4ccccd          2912         2916             0.00         1.00 +- 0.02         1.00 +- 0.02  [6 ] TO BT BT BT BT AB
+                    4ccd          2264         2374             2.61         0.95 +- 0.02         1.05 +- 0.02  [4 ] TO BT BT AB
+              cccc9ccccd          1396         2267           207.11         0.62 +- 0.02         1.62 +- 0.03  [10] TO BT BT BT BT DR BT BT BT BT         ## truncation handling ???
+                 8cccc5d          2030         2048             0.08         0.99 +- 0.02         1.01 +- 0.02  [7 ] TO RE BT BT BT BT SA
+                 86ccccd           983         1086             5.13         0.91 +- 0.03         1.10 +- 0.03  [7 ] TO BT BT BT BT SC SA
+                 8cc6ccd          1013         1058             0.98         0.96 +- 0.03         1.04 +- 0.03  [7 ] TO BT BT SC BT BT SA
+                 89ccccd           725            0           725.00         0.00 +- 0.00         0.00 +- 0.00  [7 ] TO BT BT BT BT DR SA                   ## post DR very different, ouch zero
+                8cccc55d           612          635             0.42         0.96 +- 0.04         1.04 +- 0.04  [8 ] TO RE RE BT BT BT BT SA
+                     45d           553          552             0.00         1.00 +- 0.04         1.00 +- 0.04  [3 ] TO RE AB
+                 8cc5ccd           510          520             0.10         0.98 +- 0.04         1.02 +- 0.04  [7 ] TO BT BT RE BT BT SA
+                     46d           511          445             4.56         1.15 +- 0.05         0.87 +- 0.04  [3 ] TO SC AB
+              cccc6ccccd           472          348            18.75         1.36 +- 0.06         0.74 +- 0.04  [10] TO BT BT BT BT SC BT BT BT BT
+              cccccc6ccd           355          333             0.70         1.07 +- 0.06         0.94 +- 0.05  [10] TO BT BT SC BT BT BT BT BT BT
+                8cccc66d           278          254             1.08         1.09 +- 0.07         0.91 +- 0.06  [8 ] TO SC SC BT BT BT BT SA
+                 49ccccd           221          115            33.44         1.92 +- 0.13         0.52 +- 0.05  [7 ] TO BT BT BT BT DR AB                  ## post DR very different
+               8cccc555d           180          205             1.62         0.88 +- 0.07         1.14 +- 0.08  [9 ] TO RE RE RE BT BT BT BT SA
+                 4cccc6d           200          202             0.01         0.99 +- 0.07         1.01 +- 0.07  [7 ] TO SC BT BT BT BT AB
+                             100000       100000        17.81 
+
+
+
+Two issues to investigate
+
+* post DR very different
+* truncation handling difference
 
 
 seqhis

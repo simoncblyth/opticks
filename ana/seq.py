@@ -30,18 +30,18 @@ class BaseType(object):
 
     def __call__(self, args):
         for a in args:
-            return self.code(a) 
+            return self.code(a)    # code from subtype
 
     def check(self, s):
         f = self.abbr2code
         bad = 0 
         for n in s.strip().split(self.delim):
             if f.get(n,0) == 0:
-               log.warn("code bad abbr [%s] s [%s] " % (n, s) ) 
+               #log.warn("code bad abbr [%s] s [%s] " % (n, s) ) 
                bad += 1
 
-        if bad>0:
-           log.warn("code sees %s bad abbr in [%s] " % (bad, s )) 
+        #if bad>0:
+        #   log.warn("code sees %s bad abbr in [%s] " % (bad, s )) 
         return bad
 
 
@@ -100,6 +100,11 @@ class SeqType(BaseType):
         else:
             f = self.abbr2code
             bad = self.check(s) 
+
+            if bad>0:
+               #assert 0
+               log.warn("SeqType.code check [%s] bad %d " % (s, bad))
+
             c = reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(self.delim)))))
         pass
         return c
@@ -178,7 +183,6 @@ class SeqTable(object):
         self.ba = ba  
 
         self.seqs = seqs
-
 
         codes = cu[:,0]
         counts = cu[:,1]
@@ -272,9 +276,16 @@ class SeqTable(object):
 
         cf = np.zeros( (len(u),3), dtype=np.uint64 )
 
+        log.info("SeqTable.compare forming cf ad.code len(u) %s " % len(u) )
+        #print "\n".join(u)
+
         cf[:,0] = map(lambda _:self.af.code(_), u )
+
+        log.info("SeqTable.compare forming cf af.code DONE ")
+
         cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
         cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
+
 
         cnames = self.cnames + other.cnames 
 

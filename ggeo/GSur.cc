@@ -21,6 +21,10 @@ char GSur::getType()
 {
     return m_type ; 
 }
+void GSur::setType(char type)
+{
+    m_type = type ; 
+}
 const char* GSur::getName()
 {
     return m_pmap->getName();
@@ -183,22 +187,28 @@ std::string GSur::pvpBrief()
 }
 
 
-void GSur::dump(const char* msg)
+std::string GSur::lvBrief()
 {
-    LOG(info) << msg  << " " << brief() << pvpBrief()  ;
-
-
-/*
+    std::stringstream ss ;
     for(std::set<std::string>::const_iterator it=m_slv.begin() ; it != m_slv.end() ; it++ )
     {
         std::string lv = *it ; 
-        std::cout 
+        ss  
                << " lv   " 
                << std::setw(60) << lv
                << std::endl ; 
     }
-*/
+    return ss.str();
+}
 
+
+void GSur::dump(const char* msg)
+{
+    LOG(info) << msg  << " " 
+              << brief() 
+              << pvpBrief() 
+              << lvBrief()
+              ;
 
 }
 

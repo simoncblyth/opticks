@@ -21,8 +21,8 @@ tconcentric-src(){ echo torch ; }
 tconcentric--(){
     local cmdline=$*
 
-    #local photons=1000000
-    local photons=100000
+    local photons=1000000
+    #local photons=100000
     #local photons=20000
     #local photons=100
 
@@ -48,12 +48,15 @@ tconcentric--(){
                  zenithazimuth=0,1,0,1
                  radius=0
                )   
- # --torchconfig "$(join _ ${torch_config[@]})" \
+
+    ## tconcentric typically uses a random point source from center point
+    ## however handy to use laser for easy interpretation in tconcentric_distrib.py 
 
     op.sh \
        --g4ppe $g4ppe \
        --test --testconfig "$(tconcentric-testconfig)" \
        --torch \
+       --torchconfig "$(join _ ${torch_config[@]})" \
        --animtimemax 30 \
        --timemax 30 \
        --cat $(tconcentric-det) --tag $(tconcentric-tag) --save  \
@@ -71,6 +74,12 @@ tconcentric-t()
     tconcentric-
     tconcentric-- --okg4 --compute $*
     #tconcentric-py 
+}
+
+tconcentric-tt()
+{
+    #tconcentric-t --bouncemax 15 --recordmax 16 $*
+    tconcentric-t --bouncemax 15 --recordmax 15 $*
 }
 
 tconcentric-v()
