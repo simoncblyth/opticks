@@ -127,7 +127,7 @@ GMergedMesh* GGeoTest::loadPmt()
     else
     {
         LOG(info) << "GGeoTest::loadPmt"
-                  << " from mesh "
+                  << " from mesh with pmtpath "
                   << pmtpath
                   ;
         mmpmt = GMergedMesh::load(pmtpath);  

@@ -2,9 +2,8 @@
 #pragma once
 
 
-// okc-
-class Opticks ;
-class OpticksQuery ;
+class OpticksQuery ; // okc-
+class OpticksHub ;   // okg-
 
 #include "CDetector.hh"
 #include "CFG4_API_EXPORT.hh"
@@ -22,7 +21,7 @@ loads Geant4 GDML persisted geometry files.
 class CFG4_API CGDMLDetector : public CDetector
 {
   public:
-    CGDMLDetector(Opticks* cache, OpticksQuery* query);
+    CGDMLDetector(OpticksHub* hub, OpticksQuery* query);
     void saveBuffers();
     virtual ~CGDMLDetector();
   private:

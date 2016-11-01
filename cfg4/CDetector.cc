@@ -15,6 +15,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksHub.hh"
 #include "OpticksResource.hh"
 #include "OpticksQuery.hh"
 
@@ -27,9 +28,10 @@
 
 
 
-CDetector::CDetector(Opticks* ok, OpticksQuery* query)
+CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   : 
-  m_ok(ok),
+  m_hub(hub),
+  m_ok(m_hub->getOpticks()),
   m_query(query),
   m_resource(NULL),
   m_lib(NULL),
@@ -85,7 +87,7 @@ void CDetector::init()
     LOG(trace) << "CDetector::init" ;
 
     m_resource = m_ok->getResource();
-    m_lib = new CMaterialLib(m_ok);
+    m_lib = new CMaterialLib(m_hub);
     m_bbox = new NBoundingBox ;
 }
 

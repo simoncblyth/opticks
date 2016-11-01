@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 
-// okc-
-#include "Opticks.hh"
+#include "Opticks.hh"     // okc-
+#include "OpticksHub.hh"  // okg-
 
 // ggeo-
 #include "GDomain.hh"
@@ -41,9 +41,10 @@
 const char* CPropLib::SENSOR_MATERIAL = "Bialkali" ;
 
 
-CPropLib::CPropLib(Opticks* ok, int verbosity)
+CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   : 
-  m_ok(ok),
+  m_hub(hub),
+  m_ok(m_hub->getOpticks()),
   m_verbosity(verbosity),
   m_bndlib(NULL),
   m_mlib(NULL),
@@ -71,17 +72,26 @@ GSurfaceLib* CPropLib::getSurfaceLib()
 
 void CPropLib::init()
 {
-    LOG(info) << "CPropLib::init loading GBndLib" ; 
-
+    LOG(info) << "CPropLib::init" ; 
+    
+    /*
+    // was formerly duplicating  geometry loading 
+    // fixed by getting these from hub 
+    //
     bool constituents ; 
-
-   // TODO: fix this, it duplicates geometry loading done in OpticksHub 
-
     m_bndlib = GBndLib::load(m_ok, constituents=true);
     m_mlib = m_bndlib->getMaterialLib();
     m_slib = m_bndlib->getSurfaceLib();
 
     m_sclib = GScintillatorLib::load(m_ok);
+    */
+
+    m_bndlib = m_hub->getBndLib();
+    m_mlib = m_hub->getMaterialLib();
+    m_slib = m_hub->getSurfaceLib();
+    m_sclib = m_hub->getScintillatorLib();
+
+
     m_domain = m_mlib->getDefaultDomain();
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
@@ -171,6 +181,8 @@ const GMaterial* CPropLib::getMaterial(const char* shortname)
 
 GCSG* CPropLib::getPmtCSG(NSlice* slice)
 {
+   // hmm this is probably already loaded ???
+
     GPmt* pmt = GPmt::load( m_ok, m_bndlib, 0, slice );    // pmtIndex:0
 
     if(pmt == NULL)

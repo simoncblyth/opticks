@@ -19,7 +19,7 @@
 
 const char* GGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
-    "pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0_"
+    "pmtpath=$OPTICKSINSTALLPREFIX/opticksdata/export/dpib/GMergedMesh/0_"
     "control=1,0,0,0_"
     "analytic=1_"
     "groupvel=0_"

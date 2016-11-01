@@ -19,6 +19,8 @@
 #include "Opticks.hh"
 #include "OpticksResource.hh"
 
+#include "OpticksHub.hh"   // okg-
+
 // cfg4-
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"
@@ -33,9 +35,9 @@
 #include "PLOG.hh"
 
 
-CGDMLDetector::CGDMLDetector(Opticks* cache, OpticksQuery* query)
+CGDMLDetector::CGDMLDetector(OpticksHub* hub, OpticksQuery* query)
   : 
-  CDetector(cache, query)
+  CDetector(hub, query)
 {
     init();
 }

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <boost/filesystem.hpp>
+#include "BFile.hh"
 
 // npy-
 #include "Timer.hpp"
@@ -25,7 +25,6 @@
 #include "PLOG.hh"
 
 
-namespace fs = boost::filesystem;
 
 
 bool GMergedMesh::isSkip()
@@ -580,11 +579,25 @@ GMergedMesh* GMergedMesh::load(Opticks* opticks, unsigned int ridx, const char* 
     return mm ; 
 }
 
+
+
 GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* version)
 {
     GMergedMesh* mm(NULL);
-    fs::path cachedir(dir);
-    if(!fs::exists(cachedir))
+
+    std::string cachedir = BFile::FormPath(dir, NULL, NULL);
+    bool existsdir = BFile::ExistsDir(dir, NULL, NULL);
+
+    LOG(info) << "GMergedMesh::load"
+              << " dir " << dir 
+              << " -> cachedir " << cachedir
+              << " index " << index
+              << " version " << version
+              << " existsdir " << existsdir
+              ;
+ 
+
+    if(!existsdir)
     {
         LOG(warning) << "GMergedMesh::load directory DOES NOT EXIST " <<  dir ;
     }
@@ -592,7 +605,7 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
     {
         mm = new GMergedMesh(index);
         if(index == 0) mm->setVersion(version);  // mesh versioning applies to  global buffer 
-        mm->loadBuffers(dir);
+        mm->loadBuffers(cachedir.c_str());
     }
     return mm ; 
 }

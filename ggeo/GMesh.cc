@@ -1576,11 +1576,22 @@ std::string GMesh::getVersionedBufferName(std::string& name)
 
 GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir)
 {
+
     std::string cachedir = BFile::FormPath(dir, typedir, instancedir);
-    bool exists = BFile::ExistsDir(dir, typedir, instancedir);
+    bool existsdir = BFile::ExistsDir(dir, typedir, instancedir);
+
+    LOG(info) << "GMesh::load"
+              << " dir " << dir 
+              << " typedir " << typedir 
+              << " instancedir " << instancedir 
+              << " cachedir " << cachedir 
+              << " existsdir " << existsdir
+              ;
+ 
+
 
     GMesh* mesh(NULL);
-    if(!exists)
+    if(!existsdir)
     {
         LOG(error)  << "GMesh::load FAILED : NO DIRECTORY "
                     << " dir " << dir

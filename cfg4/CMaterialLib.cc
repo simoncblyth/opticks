@@ -5,6 +5,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include "Opticks.hh"
+#include "OpticksHub.hh"
 
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
@@ -15,9 +16,9 @@
 #include "PLOG.hh"
 
 
-CMaterialLib::CMaterialLib(Opticks* ok) 
+CMaterialLib::CMaterialLib(OpticksHub* hub) 
    :
-   CPropLib(ok, 0),
+   CPropLib(hub, 0),
    m_converted(false)
 {
 }

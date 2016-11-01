@@ -5,11 +5,13 @@
 #include "CFG4_BODY.hh"
 
 #include "Opticks.hh"
+#include "OpticksHub.hh"
 #include "OpticksMode.hh"
 #include "OpticksCfg.hh"
 
 #include "GGeoTestConfig.hh"
 
+#include "CG4.hh"
 #include "CMaterialLib.hh"
 #include "CTestDetector.hh"
 #include "CTraverser.hh"
@@ -39,41 +41,40 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
+    const char* forced = "--test" ; 
+    Opticks ok(argc, argv, forced);
+    ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
-    Opticks* m_opticks = new Opticks(argc, argv);
-    m_opticks->setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+    OpticksHub hub(&ok);
 
-    OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
-    m_cfg->commandline(argc, argv);  
+    CG4 g4(&hub);
 
+    LOG(info) << "CG4 DONE" ; 
+    CDetector* detector  = g4.getDetector();
 
-    std::string testconfig = m_cfg->getTestConfig();
-
-    GGeoTestConfig* m_testconfig = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-
-    LOG(info) << "create CTestDetector" ; 
-
-    CTestDetector* m_detector  = new CTestDetector(m_opticks, m_testconfig) ; 
-
-    LOG(info) << "create CTestDetector DONE " ; 
-
-    bool valid = m_detector->isValid();
+    bool valid = detector->isValid();
 
     if(!valid)
     {
-        LOG(error) << "CTestDetector not valid " ;
+        LOG(error) << "Detector not valid " ;
         return 0 ; 
     } 
 
 
 
-    m_detector->setVerbosity(2) ;
+    detector->setVerbosity(2) ;
 
-    CMaterialLib* clib = m_detector->getPropLib() ;
+    CMaterialLib* clib = detector->getPropLib() ;
     assert(clib); 
 
-    G4VPhysicalVolume* world_pv = m_detector->getTop();
+    G4VPhysicalVolume* world_pv = detector->getTop();
     assert(world_pv);
+
+
+
+
+/*
+    // TODO: move below into CGeometry?
 
     bool expo = m_cfg->hasOpt("export");
     std::string expoconfig = m_cfg->getExportConfig();
@@ -97,6 +98,9 @@ int main(int argc, char** argv)
 #endif
 
     }
+*/
+
+
 
     return 0 ; 
 }

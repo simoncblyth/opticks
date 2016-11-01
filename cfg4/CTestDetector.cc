@@ -9,6 +9,7 @@
 #include <map>
 
 // okc-
+#include "OpticksHub.hh"
 #include "Opticks.hh"
 
 // npy-
@@ -50,9 +51,9 @@
 
 
 
-CTestDetector::CTestDetector(Opticks* ok, GGeoTestConfig* config, OpticksQuery* query)
+CTestDetector::CTestDetector(OpticksHub* hub, GGeoTestConfig* config, OpticksQuery* query)
   : 
-  CDetector(ok, query),
+  CDetector(hub, query),
   m_config(config),
   m_maker(NULL)
 {

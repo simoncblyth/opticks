@@ -5,6 +5,7 @@
 
 // okc-
 class Opticks ; 
+class OpticksHub ; 
 class OpticksResource ; 
 class OpticksQuery ; 
 
@@ -27,10 +28,12 @@ class NBoundingBox ;
 
 /**
 CDetector
-~~~~~~~~~~
+===========
 
 *CDetector* is the base class of *CGDMLDetector* and *CTestDetector*, 
 it is a *G4VUserDetectorConstruction* providing detector geometry to Geant4.
+The *CDetector* instance is a constituent of *CGeometry* which is 
+instanciated in *CGeometry::init*.
 
 
 **/
@@ -41,7 +44,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     friend class CTestDetector ; 
     friend class CGDMLDetector ; 
  public:
-    CDetector(Opticks* opticks, OpticksQuery* query);
+    CDetector(OpticksHub* hub, OpticksQuery* query);
     void setVerbosity(unsigned int verbosity);
     virtual ~CDetector();
  private:
@@ -86,7 +89,10 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     // via bbox
     const glm::vec4& getCenterExtent();
  private:
+    OpticksHub*        m_hub ;
+ protected: 
     Opticks*           m_ok ;
+ private:
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
     CMaterialLib*      m_lib ; 

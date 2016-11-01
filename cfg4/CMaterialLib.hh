@@ -6,7 +6,8 @@
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
-class Opticks ; 
+class OpticksHub ; 
+
 class GMaterial ; 
 class G4Material ; 
 
@@ -26,7 +27,7 @@ The GGeo gets loaded on initializing base class CPropLib.
 class CFG4_API CMaterialLib : public CPropLib 
 {
    public:
-       CMaterialLib(Opticks* ok);
+       CMaterialLib(OpticksHub* hub);
 
        void convert(); // commented in init 
        const G4Material* makeInnerMaterial(const char* spec);  // TODO: CMaterialLib better to not know about bnd spec

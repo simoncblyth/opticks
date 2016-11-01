@@ -60,6 +60,11 @@ void BOpticksResource::adoptInstallPrefix()
  
    assert(rc==0); 
 
+    // for test geometry config underscore has special meaning, so duplicate the envvar without underscore in the key
+   int rc2 = SSys::setenvvar("OPTICKSINSTALLPREFIX", m_install_prefix, true );  
+   assert(rc2==0); 
+
+
    // The CMAKE_INSTALL_PREFIX from opticks-;opticks-cmake 
    // is set to the result of the opticks-prefix bash function 
    // at configure time.

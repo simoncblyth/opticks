@@ -4,9 +4,8 @@
 #include <string>
 #include <map>
 
-// okc-
-class Opticks; 
-
+class Opticks ;    // okc-
+class OpticksHub ; // okg-
 
 // ggeo-
 class GBndLib ;
@@ -53,7 +52,7 @@ class CFG4_API CPropLib {
    public:
        static const char* SENSOR_MATERIAL ;
    public:
-       CPropLib(Opticks* opticks, int verbosity=0);
+       CPropLib(OpticksHub* hub, int verbosity=0);
    private:
        void init();
        void initCheckConstants(); 
@@ -90,6 +89,7 @@ class CFG4_API CPropLib {
        GPropertyMap<float>* convertTable(G4MaterialPropertiesTable* mpt, const char* name);
 
    protected:
+       OpticksHub*        m_hub ; 
        Opticks*           m_ok ; 
        int                m_verbosity ; 
 

@@ -3,10 +3,11 @@
 
 #include "CFG4_BODY.hh"
 
-// okc-
-#include "Opticks.hh"
+#include "Opticks.hh"     // okc-
 #include "OpticksQuery.hh"
 #include "OpticksCfg.hh"
+
+#include "OpticksHub.hh"   // okg-
 
 // cfg4-
 #include "CTestDetector.hh"
@@ -38,22 +39,21 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
 
-    ok.configure();
+    OpticksHub hub(&ok);
 
     //OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
-
     //m_cfg->commandline(argc, argv);  
 
 
     OpticksQuery* query = ok.getQuery();   // non-done inside Detector classes for transparent control/flexibility 
 
-    CGDMLDetector* m_detector  = new CGDMLDetector(&ok, query) ; 
+    CGDMLDetector* detector  = new CGDMLDetector(&hub, query) ; 
 
     ok.setIdPathOverride("$TMP");
-    m_detector->saveBuffers();
+    detector->saveBuffers();
     ok.setIdPathOverride(NULL);
 
-    bool valid = m_detector->isValid();
+    bool valid = detector->isValid();
     if(!valid)
     {
         LOG(error) << "CGDMLDetector not valid " ;
@@ -61,23 +61,23 @@ int main(int argc, char** argv)
     }
 
 
-    m_detector->setVerbosity(2) ;
+    detector->setVerbosity(2) ;
 
-    NPY<float>* gtransforms = m_detector->getGlobalTransforms();
+    NPY<float>* gtransforms = detector->getGlobalTransforms();
     gtransforms->save("$TMP/gdml.npy");
 
     unsigned int index = 3160 ; 
 
-    glm::mat4 mg = m_detector->getGlobalTransform(index);
-    glm::mat4 ml = m_detector->getLocalTransform(index);
+    glm::mat4 mg = detector->getGlobalTransform(index);
+    glm::mat4 ml = detector->getLocalTransform(index);
 
     LOG(info) << " index " << index 
-              << " pvname " << m_detector->getPVName(index) 
+              << " pvname " << detector->getPVName(index) 
               << " global " << gformat(mg)
               << " local "  << gformat(ml)
               ;
 
-    G4VPhysicalVolume* world_pv = m_detector->Construct();
+    G4VPhysicalVolume* world_pv = detector->Construct();
     assert(world_pv);
 
     CMaterialTable mt ; 

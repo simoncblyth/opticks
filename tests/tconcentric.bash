@@ -48,40 +48,11 @@ tconcentric--(){
                  zenithazimuth=0,1,0,1
                  radius=0
                )   
-
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
-
-                 shape=sphere
-                 boundary=Acrylic//RSOilSurface/MineralOil
-                 parameters=0,0,0,5000
-
-
-                 shape=sphere
-                 boundary=MineralOil///Acrylic
-                 parameters=0,0,0,$(( 4000 + 5 ))
-
-                 shape=sphere
-                 boundary=Acrylic///LiquidScintillator
-                 parameters=0,0,0,$(( 4000 - 5 ))
-
-
-                 shape=sphere
-                 boundary=LiquidScintillator///Acrylic
-                 parameters=0,0,0,$(( 3000 + 5 ))
-
-                 shape=sphere
-                 boundary=Acrylic///$m1
-                 parameters=0,0,0,$(( 3000 - 5 ))
-
-                   ) 
-
  # --torchconfig "$(join _ ${torch_config[@]})" \
 
     op.sh \
        --g4ppe $g4ppe \
-       --test --testconfig "$(join _ ${test_config[@]})" \
+       --test --testconfig "$(tconcentric-testconfig)" \
        --torch \
        --animtimemax 30 \
        --timemax 30 \
@@ -112,6 +83,45 @@ tconcentric-vg4()
 {
     tconcentric-
     tconcentric-- --okg4 --vizg4 --load $*
+}
+
+tconcentric-testconfig()
+{
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=sphere
+                 boundary=Acrylic//RSOilSurface/MineralOil
+                 parameters=0,0,0,5000
+
+
+                 shape=sphere
+                 boundary=MineralOil///Acrylic
+                 parameters=0,0,0,$(( 4000 + 5 ))
+
+                 shape=sphere
+                 boundary=Acrylic///LiquidScintillator
+                 parameters=0,0,0,$(( 4000 - 5 ))
+
+
+                 shape=sphere
+                 boundary=LiquidScintillator///Acrylic
+                 parameters=0,0,0,$(( 3000 + 5 ))
+
+                 shape=sphere
+                 boundary=Acrylic///GdDopedLS
+                 parameters=0,0,0,$(( 3000 - 5 ))
+
+                   ) 
+
+     echo "$(join _ ${test_config[@]})" 
+}
+
+
+tconcentric-testconfig-()
+{
+     CTestDetectorTest --testconfig "$(tconcentric-testconfig)" 
 }
 
 

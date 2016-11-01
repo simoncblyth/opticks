@@ -16,6 +16,7 @@ class GGeo ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
+class GScintillatorLib ; 
 
 class Composition ; 
 class Bookmarks ; 
@@ -110,6 +111,7 @@ class OKGEO_API OpticksHub {
        GMaterialLib*        getMaterialLib();
        GSurfaceLib*         getSurfaceLib();
        GBndLib*             getBndLib();
+       GScintillatorLib*    getScintillatorLib();
 
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();

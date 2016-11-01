@@ -63,14 +63,14 @@ void CGeometry::init()
         std::string testconfig = m_cfg->getTestConfig();
         GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
-        detector  = static_cast<CDetector*>(new CTestDetector(m_ok, ggtc, query)) ; 
+        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, ggtc, query)) ; 
     }
     else
     {
         // no options here: will load the .gdml sidecar of the geocache .dae 
         LOG(fatal) << "CGeometry::init G4 GDML geometry " ; 
         OpticksQuery* query = m_ok->getQuery();
-        detector  = static_cast<CDetector*>(new CGDMLDetector(m_ok, query)) ; 
+        detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query)) ; 
 
     }
 

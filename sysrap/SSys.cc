@@ -160,29 +160,22 @@ const char* SSys::getenvvar( const char* envprefix, const char* envkey, const ch
     return evalue ? evalue : fallback ; 
 }
 
-int SSys::setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite)
+
+int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
 {
-    // heap as putenv does not copy
-
-
     std::stringstream ss ;
-    if(envprefix) ss << envprefix ; 
-    if(key)       ss << key ; 
-
-    std::string ekey = ss.str();
-
-    ss << "=" ;
+    ss << ekey << "=" ;
     if(value) ss << value ; 
 
     std::string ekv = ss.str();
 
-    const char* prior = getenv(ekey.c_str()) ;
+    const char* prior = getenv(ekey) ;
 
     char* ekv_ = const_cast<char*>(strdup(ekv.c_str()));
 
     int rc = ( overwrite || !prior ) ? putenv(ekv_) : 0  ; 
 
-    const char* after = getenv(ekey.c_str()) ;
+    const char* after = getenv(ekey) ;
 
     LOG(trace) << "SSys::setenvvar"
               << " ekey " << ekey 
@@ -193,8 +186,18 @@ int SSys::setenvvar( const char* envprefix, const char* key, const char* value, 
               << " after " << ( after ? after : "NULL" )   
               << " rc " << rc 
               ;
-
     return rc ;
+}
+
+
+
+int SSys::setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite)
+{
+    std::stringstream ss ;
+    if(envprefix) ss << envprefix ; 
+    if(key)       ss << key ; 
+    std::string ekey = ss.str();
+    return SSys::setenvvar(ekey.c_str(), value, overwrite );    
 } 
 
 

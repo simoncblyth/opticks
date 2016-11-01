@@ -4,7 +4,7 @@
 #include <string>
 
 // okc-
-class Opticks ; 
+class OpticksHub ; 
 class OpticksQuery ; 
 
 // ggeo-
@@ -67,7 +67,7 @@ parsed and represented by an instance of :doc:`../ggeo/GGeoTestConfig`.
 class CFG4_API CTestDetector : public CDetector
 {
  public:
-    CTestDetector(Opticks* cache, GGeoTestConfig* config, OpticksQuery* query=NULL);
+    CTestDetector(OpticksHub* hub, GGeoTestConfig* config, OpticksQuery* query=NULL);
   private:
     void init();
   public:

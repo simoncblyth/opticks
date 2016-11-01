@@ -3,6 +3,7 @@
 // op --cmat GdDopedLS
 
 #include "Opticks.hh"
+#include "OpticksHub.hh"
 #include "OpticksMode.hh"
 #include "CMaterialLib.hh"
 #include "CFG4_BODY.hh"
@@ -18,21 +19,23 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
-    Opticks* m_opticks = new Opticks(argc, argv);
+    Opticks ok(argc, argv);
     
-    m_opticks->setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
+    ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 
-    CMaterialLib* m_lib = new CMaterialLib(m_opticks); 
+    OpticksHub hub(&ok); 
+
+    CMaterialLib* clib = new CMaterialLib(&hub); 
 
     LOG(info) << argv[0] << " convert " ; 
 
-    m_lib->convert();
+    clib->convert();
 
     LOG(info) << argv[0] << " dump " ; 
 
-    m_lib->dump();
+    clib->dump();
 
-    //m_lib->dumpMaterials();
+    //clib->dumpMaterials();
 
 
 
