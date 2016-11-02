@@ -195,6 +195,9 @@ def opticks_args(**kwa):
     sli = kwa.get("sli", "::1")
     c2max = kwa.get("c2max", 2.0)
     dbgseqhis = kwa.get("dbgseqhis", "0")
+    dbgseqmat = kwa.get("dbgseqmat", "0")
+    dbgmskhis = kwa.get("dbgmskhis", "0")
+    dbgmskmat = kwa.get("dbgmskmat", "0")
     dbgzero = kwa.get("dbgzero", False)
     lmx = kwa.get("lmx", 20)
     cmx = kwa.get("cmx", 0)
@@ -220,6 +223,9 @@ def opticks_args(**kwa):
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
     parser.add_argument(     "--dbgseqhis",  default=dbgseqhis, help="Seqhis hexstring prefix for dumping. Default %(default)s"  )
+    parser.add_argument(     "--dbgseqmat",  default=dbgseqmat, help="Seqmat hexstring prefix for dumping. Default %(default)s"  )
+    parser.add_argument(     "--dbgmskhis",  default=dbgmskhis, help="History mask hexstring for selection/dumping. Default %(default)s"  )
+    parser.add_argument(     "--dbgmskmat",  default=dbgmskmat, help="Material mask hexstring for selection/dumping. Default %(default)s"  )
     parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     parser.add_argument(     "--prohis", action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
@@ -243,7 +249,13 @@ def opticks_args(**kwa):
         args.utag = int(args.tag) + args.tagoffset 
         args.utags = [args.utag]   
     pass
+
+    # hexstring -> hexint 
     args.dbgseqhis = int(str(args.dbgseqhis),16) 
+    args.dbgseqmat = int(str(args.dbgseqmat),16) 
+    args.dbgmskhis = int(str(args.dbgmskhis),16) 
+    args.dbgmskmat = int(str(args.dbgmskmat),16) 
+
     log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 
 
     if args.show:

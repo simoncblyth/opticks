@@ -629,7 +629,20 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
     m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
 
-    m_mskhis |= flag ;   // <-- hmm decrementing m_slot and running again will not scrub the AB from the mask
+    m_mskhis |= flag ;   
+
+    if(flag == BULK_REEMIT) m_mskhis = m_mskhis & (~BULK_ABSORB)  ;
+
+    //  Decrementing m_slot and running again will not scrub the AB from the mask
+    //  so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
+    //  occurs.
+    //
+    //  Thus should always be correct as AB is a terminating flag, 
+    //  so any REJOINed photon will have an AB in the mask
+    //  that needs to be a RE instead.
+    //
+    //  Another approach would be to create the mskhis from the seqhis (but when, what about rejoining)
+    //
 
     RecordStepPoint(slot, point, flag, material, label);
 

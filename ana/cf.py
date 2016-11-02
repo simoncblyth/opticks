@@ -8,31 +8,20 @@ log = logging.getLogger(__name__)
 
 
 class CF(object):
-    def __init__(self, tag="4", src="torch", det="PmtInBox", seqs=[], select=None, dbgseqhis=0, lmx=20, prohis=False, promat=False, dbgzero=False, cmx=0):
+    def __init__(self, args, select_slice=None):
 
-        self.tag = tag
-        self.src = src
-        self.det = det
-        self.seqs = seqs
-        self.lmx = lmx 
-        self.cmx = cmx 
-        self.prohis = prohis
-        self.promat = promat
-
-        self.select = select
-        self.dbgseqhis = dbgseqhis
-        self.dbgzero = dbgzero
-
+        self.args = args 
+        self.seqs = []
         self.compare()
 
         self.ss = []
-        if select is not None:
-            self.init_select(select)
+        if select_slice is not None:
+            self.init_select(select_slice)
 
     def compare(self):
         try:
-            a = Evt(tag="%s" % self.tag, src=self.src, det=self.det, seqs=self.seqs, dbgseqhis=self.dbgseqhis, dbgzero=self.dbgzero, cmx=self.cmx)
-            b = Evt(tag="-%s" % self.tag , src=self.src, det=self.det, seqs=self.seqs, dbgseqhis=self.dbgseqhis, dbgzero=self.dbgzero, cmx=self.cmx)
+            a = Evt(tag="%s" % self.args.tag, src=self.args.src, det=self.args.det, args=self.args)
+            b = Evt(tag="-%s" % self.args.tag , src=self.args.src, det=self.args.det, args=self.args)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)
@@ -45,18 +34,17 @@ class CF(object):
 
         tables = []
 
-        tables += ["seqhis_ana"] 
-        if self.prohis:
+        tables += ["seqhis_ana", "pflags_ana"] 
+        if self.args.prohis:
             tables += ["seqhis_ana_%d" % imsk for imsk in range(1,8)] 
 
         tables += ["seqmat_ana"]       
-        if self.promat:
+        if self.args.promat:
             tables += ["seqmat_ana_%d" % imsk for imsk in range(1,8)] 
 
-
-
-        cft = Evt.compare_table(a,b, tables, lmx=self.lmx, cmx=self.cmx, c2max=None, cf=True)
-        Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=None, cf=True)
+        tables2 = ["hflags_ana"]
+        cft = Evt.compare_table(a,b, tables, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
+        cft2 = Evt.compare_table(a,b, tables2, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
 
         self.his = cft["seqhis_ana"]
         self.mat = cft["seqmat_ana"]
@@ -77,7 +65,7 @@ class CF(object):
     def suptitle(self, irec=-1):
         abc = self.ab_count()
         lab = self.seqlab(irec)
-        title = "%s/%s/%s : %s  :  %s " % (self.tag, self.det, self.src, abc, lab )
+        title = "%s/%s/%s : %s  :  %s " % (self.args.tag, self.args.det, self.args.src, abc, lab )
         return title
 
     def nrec(self):
@@ -86,7 +74,7 @@ class CF(object):
         """ 
         nseq = len(self.seqs) 
         if nseq != 1:return -1
-        seq = self.seqs[0]
+        seq = self.args.seqs[0]
         eseq = seq.split()
         return len(eseq)
 
@@ -98,7 +86,7 @@ class CF(object):
         """
         nseq = len(self.seqs) 
         if nseq == 1 and irec > -1: 
-            seq = self.seqs[0]
+            seq = self.args.seqs[0]
             eseq = seq.split()
             if irec < len(eseq):
                 eseq[irec] = "[%s]" % eseq[irec]
@@ -124,10 +112,10 @@ class CF(object):
         self.totrec = totrec
 
     def __repr__(self):
-        return "CF(%s,%s,%s,%s) " % (self.tag, self.src, self.det, repr(self.seqs))
+        return "CF(%s,%s,%s,%s) " % (self.args.tag, self.args.src, self.args.det, repr(self.seqs))
 
     def spawn(self, seqs):
-        return CF(self.tag, self.src, self.det, seqs)
+        return CF(self.args.tag, self.args.src, self.args.det, seqs)
 
     def dump_ranges(self, i):
         log.info("%s : dump_ranges %s " % (repr(self), i) )

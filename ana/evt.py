@@ -66,20 +66,28 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False, dbgseqhis=0, dbgseqmat=0, dbgzero=False, cmx=0):
+    def __init__(self, tag="1", src="torch", det="dayabay", args=None, nrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False ):
+
+#seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False, 
+#             dbgseqhis=0, dbgseqmat=0, dbgmskhis=0, dbgmskmat=0, dbgzero=False, cmx=0):
 
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
         self.seqs = seqs
-        self.terse = terse
-        self.dbgseqhis = dbgseqhis
-        self.dbgseqmat = dbgseqmat
-        self.dbgzero = dbgzero 
-        self.cmx = cmx
+
+        self.terse = args.terse
+        self.dbgseqhis = args.dbgseqhis
+        self.dbgmskhis = args.dbgmskhis
+        self.dbgseqmat = args.dbgseqmat
+        self.dbgmskmat = args.dbgmskmat
+        self.dbgzero = args.dbgzero 
+        self.cmx = args.cmx
        
+
+        log.info(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
  
         if label is None:
-            label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(seqs)) 
+            label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(self.seqs)) 
 
         self.label = label
         self.rec = rec
@@ -186,7 +194,7 @@ class Evt(object):
         self.c4 = c4
 
         cn = "%s:%s" % (str(tag), det)
-        self.pflags_ana = SeqAna( self.pflags, self.hismask, cnames=[cn] )
+        self.pflags_ana = SeqAna( self.pflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx )
 
         self.desc['wl'] = "(photons) wavelength"
         self.desc['post'] = "(photons) final photon step: position, time"
@@ -214,7 +222,7 @@ class Evt(object):
         self.hc4 = hc4
 
         cn = "%s:%s" % (str(tag), det)
-        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn] )
+        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx)
  
         self.desc['hwl'] = "(hits) wavelength"
         self.desc['hpost'] = "(hits) final photon step: position, time"
@@ -275,8 +283,8 @@ class Evt(object):
 
         cn = "%s:%s" % (str(tag), det)
         # full history without selection
-        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn], dbgseq=self.dbgseqhis, dbgzero=self.dbgzero, cmx=self.cmx)  
-        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat, dbgzero=self.dbgzero, cmx=self.cmx)  
+        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx)  
+        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx)  
 
         self.seqhis = seqhis
         self.seqmat = seqmat

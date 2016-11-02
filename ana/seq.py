@@ -7,7 +7,7 @@ from opticks.ana.base import ihex_
 from opticks.ana.nbase import chi2, ratio, count_unique_sorted
 from opticks.ana.nload import A
 
-
+nibble_ = lambda n:0xf << (4*n)
 firstlast_ = lambda name:name[0] + name[-1]
 
 class BaseType(object):
@@ -43,6 +43,43 @@ class BaseType(object):
         #if bad>0:
         #   log.warn("code sees %s bad abbr in [%s] " % (bad, s )) 
         return bad
+
+
+def seq2msk_procedural(isq):
+    ifl = 0 
+    for n in range(16):
+        msk = 0xf << (4*n)
+        nib = ( isq & msk ) >> (4*n)
+        if nib == 0:continue   ## cannot vectorize with such procedural approach
+        flg = 1 << (nib - 1) 
+        ifl |= flg   
+    pass
+    return ifl
+
+def seq2msk(isq):
+    """
+    Convert seqhis into mskhis
+
+    OpticksPhoton.h uses a mask but seq use the index for bit-bevity::
+
+          3 enum
+          4 {
+          5     CERENKOV          = 0x1 <<  0,
+          6     SCINTILLATION     = 0x1 <<  1,
+          7     MISS              = 0x1 <<  2,
+          8     BULK_ABSORB       = 0x1 <<  3,
+          9     BULK_REEMIT       = 0x1 <<  4,
+
+
+    """
+    ifl = np.zeros_like(isq)
+    for n in range(16):
+        msk = 0xf << (4*n)                   ## nibble msk
+        nib = ( isq & msk ) >> (4*n)         ## shift to pole position
+        flg = 1 << ( nib[nib>0] - 1 )      ## convert flag bit index into flag mask 
+        ifl[nib>0] |= flg
+    pass
+    return ifl 
 
 
 class MaskType(BaseType):
@@ -126,7 +163,7 @@ class SeqType(BaseType):
 
  
 class SeqTable(object):
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgzero=False, cmx=0): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0): 
         """
         :param cu: count unique array, typically shaped (n, 2) 
         :param af: instance of SeqType subclass such as HisType
@@ -142,10 +179,13 @@ class SeqTable(object):
         self.cu = cu 
         self.ncol = ncol
         self.dbgseq = dbgseq
+        self.dbgmsk = dbgmsk
         self.dbgzero = dbgzero
         self.cmx = cmx
 
         seqs = cu[:,0]
+        msks = seq2msk(seqs)
+
         tots = [cu[:,n].sum() for n in range(1,ncol+1)]
 
         if ncol == 2:
@@ -194,6 +234,7 @@ class SeqTable(object):
         self.ba = ba  
 
         self.seqs = seqs
+        self.msks = msks
 
         codes = cu[:,0]
         counts = cu[:,1]
@@ -226,14 +267,23 @@ class SeqTable(object):
         self.sli = slice(None)
 
     def line(self, n):
-        isq = int(self.cu[n,0]) 
+        iseq = int(self.cu[n,0]) 
+        imsk = int(self.msks[n])
 
-        if self.dbgseq > 0 and ( self.dbgseq & isq ) != self.dbgseq  :
-           #log.info("isq %x dbgseq %x " % (isq,self.dbgseq))
+
+
+        if self.dbgseq > 0 and ( self.dbgseq & iseq ) != self.dbgseq:
+           #log.info("iseq %x dbgseq %x " % (iseq,self.dbgseq))
            return None 
-
-
-        xs = "%4d %20s" % (n, ihex_(isq))        
+    
+        if self.dbgmsk > 0:
+           #pick = self.dbgmsk == imsk 
+           pick = (self.dbgmsk & imsk) == self.dbgmsk   # 
+           #log.info(" iseq %x imsk %x dbgmsk %x pick %s" % (iseq, imsk, self.dbgmsk, pick ))
+           if not pick: 
+               return None 
+   
+        xs = "%4d %20s" % (n, ihex_(iseq))        
         vals = map(lambda _:" %10s " % _, self.cu[n,1:] ) 
         label = self.labels[n]
         nstep = "[%-2d]" % self.label2nstep[label]
@@ -282,7 +332,7 @@ class SeqTable(object):
 
     def __repr__(self):
 
-        spacer_ = lambda _:"%4s %22s " % ("",_)
+        spacer_ = lambda _:"%1s%3s %22s " % (".","",_)
         space = spacer_("")
         title = spacer_(getattr(self,'title',""))
 
@@ -308,7 +358,9 @@ class SeqTable(object):
 
         cnames = self.cnames + other.cnames 
 
-        return SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgzero=self.dbgzero, cmx=self.cmx)    
+        log.info("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
+
+        return SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)    
 
 
 class SeqAna(object):
@@ -320,7 +372,7 @@ class SeqAna(object):
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     
-    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgzero=False, cmx=0):
+    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0):
         """
         :param aseq: photon length sequence array 
         :param af: instance of SeqType subclass 
@@ -328,10 +380,11 @@ class SeqAna(object):
         cu = count_unique_sorted(aseq)
         self.af = af
         self.dbgseq = dbgseq
+        self.dbgmsk = dbgmsk
         self.dbgzero = dbgzero
         self.cmx = cmx
 
-        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgzero=self.dbgzero, cmx=self.cmx)
+        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)
 
         self.aseq = aseq
         self.cu = cu

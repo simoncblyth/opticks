@@ -68,7 +68,7 @@ tconcentric--(){
 }
 tconcentric-args(){  echo  --tag $(tconcentric-tag) --det $(tconcentric-det) --src $(tconcentric-src) ; }
 tconcentric-py(){    tconcentric.py  $(tconcentric-args) $* ; } 
-tconcentric-ipy(){   ipython -i $(which tconcentric.py) --  $(tconcentric-args) $* ; } 
+tconcentric-i(){     ipython --profile=g4opticks -i $(which tconcentric.py) --  $(tconcentric-args) $* ; } 
 tconcentric-t()
 {
     tconcentric-
