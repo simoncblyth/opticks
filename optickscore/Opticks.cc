@@ -900,12 +900,20 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     assert(m_domains_configured);
 
 
+
+
+    unsigned int rng_max = getRngMax() ;
+    unsigned int bounce_max = getBounceMax() ;
+    unsigned int record_max = getRecordMax() ;
     
     evt->setTimeDomain(getTimeDomain());
     evt->setSpaceDomain(getSpaceDomain());  
     evt->setWavelengthDomain(getWavelengthDomain());
 
-    evt->setMaxRec(m_cfg->getRecordMax());
+    evt->setMaxRng(rng_max);
+    evt->setMaxRec(record_max);
+    evt->setMaxBounce(bounce_max);
+
     evt->createSpec();   
     evt->createBuffers();  // not-allocated and with itemcount 0 
  
@@ -914,11 +922,6 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     // with the evt 
 
     Parameters* parameters = evt->getParameters();
-
-    unsigned int rng_max = getRngMax() ;
-    unsigned int bounce_max = getBounceMax() ;
-    unsigned int record_max = getRecordMax() ;
-
     parameters->add<unsigned int>("RngMax",    rng_max );
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );

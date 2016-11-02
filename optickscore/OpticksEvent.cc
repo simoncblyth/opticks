@@ -268,14 +268,37 @@ unsigned int OpticksEvent::getNumRecords()
     unsigned int maxrec = getMaxRec();
     return m_num_photons * maxrec ; 
 }
-unsigned int OpticksEvent::getMaxRec()
+
+unsigned OpticksEvent::getMaxRec()
 {
     return m_domain->getMaxRec() ; 
 }
-void OpticksEvent::setMaxRec(unsigned int maxrec)
+void OpticksEvent::setMaxRec(unsigned maxrec)
 {
     m_domain->setMaxRec(maxrec);
 }
+
+
+unsigned OpticksEvent::getMaxBounce()
+{
+    return m_domain->getMaxBounce() ; 
+}
+void OpticksEvent::setMaxBounce(unsigned maxbounce)
+{
+    m_domain->setMaxBounce(maxbounce);
+}
+
+
+unsigned OpticksEvent::getMaxRng()
+{
+    return m_domain->getMaxRng() ; 
+}
+void OpticksEvent::setMaxRng(unsigned maxrng)
+{
+    m_domain->setMaxRng(maxrng);
+}
+
+
 
 
 

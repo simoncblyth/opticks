@@ -19,6 +19,9 @@ def count_unique_old(vals):
     return np.vstack((uniq, cnts.astype(np.uint64))).T
 
 def count_unique(vals):
+    """
+    np.unique return_counts option requires at lease numpy 1.9 
+    """
     uniq, cnts = np.unique(vals, return_counts=True)
     return np.vstack((uniq, cnts.astype(np.uint64))).T 
 
@@ -43,6 +46,19 @@ def vnorm(a):
 
 def chi2(a, b, cut=30):
     """
+    :param a: array of counts
+    :param b: array of counts
+    :param cut: applied to sum of and and b excludes low counts from the chi2 
+    :return c2,c2n,c2c:
+
+    *c2*
+         array with elementwise square of difference over the sum 
+         (masked by the cut on the sum, zeros provided for low stat entries)
+    *c2n*
+         number of counts within the mask
+    *c2c*
+         number of counts not within the mask
+  
     ::
 
         c2, c2n = chi2(a, b)
@@ -57,7 +73,13 @@ def chi2(a, b, cut=30):
     msk = a+b > cut
     c2 = np.zeros_like(a)
     c2[msk] = np.power(a-b,2)[msk]/(a+b)[msk]
-    return c2, len(a[msk]), len(a[~msk]) 
+
+    c2n = len(a[msk])
+    c2c = len(a[~msk]) 
+
+    assert c2n + c2c == len(a)
+
+    return c2, c2n, c2c
 
 def ratio(a, b):
     m = np.logical_and(a > 0, b > 0)
@@ -175,18 +197,17 @@ def test_count_unique():
         msk = msk_(n)    
         vals.append(msk)
 
+    for fn in [count_unique, count_unique_old, count_unique_truncating]:
+        log.info(fn.__name__)
+        map(lambda v:test_count_unique_(fn, v), vals)
 
-    log.info("count_unique")
-    for v in vals:
-        test_count_unique_(count_unique, v)
 
-    log.info("count_unique_old")
-    for v in vals:
-        test_count_unique_(count_unique_old, v)
+def test_chi2():
+    a = np.array([0,100,500,500],dtype=np.int32)
+    b = np.array([0,100,500,0],  dtype=np.int32)
 
-    log.info("count_unique_truncating")
-    for v in vals:
-        test_count_unique_(count_unique_truncating, v)
+    c2,c2n,c2c = chi2(a,b, cut=30)
+
 
 
 
@@ -196,7 +217,12 @@ def test_count_unique():
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
-    test_count_unique()
+    #test_count_unique()
+    #test_chi2()
+    a = np.array([0,100,500,500],dtype=np.int32)
+    b = np.array([0,100,500,0],  dtype=np.int32)
+
+    c2,c2n,c2c = chi2(a,b, cut=30)
 
 
 

@@ -78,8 +78,8 @@ tconcentric-t()
 
 tconcentric-tt()
 {
-    #tconcentric-t --bouncemax 15 --recordmax 16 $*
-    tconcentric-t --bouncemax 15 --recordmax 15 $*
+    tconcentric-t --bouncemax 15 --recordmax 16 $*
+    #tconcentric-t --bouncemax 15 --recordmax 15 $*
 }
 
 tconcentric-v()

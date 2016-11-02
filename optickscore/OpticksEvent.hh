@@ -193,7 +193,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void saveDomains();
        void saveReport(const char* dir);
    public:
-       void setMaxRec(unsigned int maxrec);         // maximum record slots per photon
+       void setMaxRec(unsigned maxrec);         // maximum record slots per photon
+       void setMaxBounce(unsigned maxbounce);         // maximum record slots per photon
+       void setMaxRng(unsigned maxrng); 
    public:
        // G4 related qtys used by cfg4- when OpticksEvent used to store G4 propagations
        void setNumG4Event(unsigned int n);
@@ -316,7 +318,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        unsigned int getNumNopsteps();
        unsigned int getNumPhotons();
        unsigned int getNumRecords();
+   public:
+       // idom persisted 
        unsigned int getMaxRec();  // per-photon
+       unsigned int getMaxBounce();  // per-photon
+       unsigned int getMaxRng();  
    public:
        void resizeToZero();  // used by OpticksHub::setupZeroEvent
    private:

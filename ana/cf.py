@@ -8,16 +8,20 @@ log = logging.getLogger(__name__)
 
 
 class CF(object):
-    def __init__(self, tag="4", src="torch", det="PmtInBox", seqs=[], select=None, dbgseqhis=0, lmx=20):
+    def __init__(self, tag="4", src="torch", det="PmtInBox", seqs=[], select=None, dbgseqhis=0, lmx=20, prohis=False, promat=False, dbgzero=False, cmx=0):
 
         self.tag = tag
         self.src = src
         self.det = det
         self.seqs = seqs
         self.lmx = lmx 
+        self.cmx = cmx 
+        self.prohis = prohis
+        self.promat = promat
 
         self.select = select
         self.dbgseqhis = dbgseqhis
+        self.dbgzero = dbgzero
 
         self.compare()
 
@@ -27,21 +31,31 @@ class CF(object):
 
     def compare(self):
         try:
-            a = Evt(tag="%s" % self.tag, src=self.src, det=self.det, seqs=self.seqs, dbgseqhis=self.dbgseqhis)
-            b = Evt(tag="-%s" % self.tag , src=self.src, det=self.det, seqs=self.seqs, dbgseqhis=self.dbgseqhis)
+            a = Evt(tag="%s" % self.tag, src=self.src, det=self.det, seqs=self.seqs, dbgseqhis=self.dbgseqhis, dbgzero=self.dbgzero, cmx=self.cmx)
+            b = Evt(tag="-%s" % self.tag , src=self.src, det=self.det, seqs=self.seqs, dbgseqhis=self.dbgseqhis, dbgzero=self.dbgzero, cmx=self.cmx)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)
       
-        log.info("CF a %s " % (a.brief )) 
-        log.info("CF b %s " % (b.brief )) 
+        print "CF a %s " % a.brief 
+        print "CF b %s " % b.brief 
 
         self.a = a
         self.b = b 
 
-        tables = ["seqhis_ana"] + ["seqhis_ana_%d" % imsk for imsk in range(1,8)] + ["seqmat_ana"] 
+        tables = []
 
-        cft = Evt.compare_table(a,b, tables, lmx=self.lmx, c2max=None, cf=True)
+        tables += ["seqhis_ana"] 
+        if self.prohis:
+            tables += ["seqhis_ana_%d" % imsk for imsk in range(1,8)] 
+
+        tables += ["seqmat_ana"]       
+        if self.promat:
+            tables += ["seqmat_ana_%d" % imsk for imsk in range(1,8)] 
+
+
+
+        cft = Evt.compare_table(a,b, tables, lmx=self.lmx, cmx=self.cmx, c2max=None, cf=True)
         Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=None, cf=True)
 
         self.his = cft["seqhis_ana"]

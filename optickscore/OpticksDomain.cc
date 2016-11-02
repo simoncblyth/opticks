@@ -124,15 +124,40 @@ void OpticksDomain::importBuffer()
 }
 
 
+
+
+
+
+
+unsigned OpticksDomain::getMaxRng()
+{
+    return m_settings.y ; 
+}
+void OpticksDomain::setMaxRng(unsigned maxrng)
+{
+    m_settings.y = maxrng ; 
+}
+
+unsigned int OpticksDomain::getMaxBounce()
+{
+    return m_settings.z ; 
+}
+void OpticksDomain::setMaxBounce(unsigned int maxbounce)
+{
+    m_settings.z = maxbounce ; 
+}
+
 unsigned int OpticksDomain::getMaxRec()
 {
     return m_settings.w ; 
 }
-
 void OpticksDomain::setMaxRec(unsigned int maxrec)
 {
     m_settings.w = maxrec ; 
 }
+
+
+
 
 
 

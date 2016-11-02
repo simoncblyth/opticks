@@ -20,6 +20,9 @@ from opticks.ana.hismask import HisMask
 from opticks.ana.mattype import MatType 
 from opticks.ana.metadata import Metadata
 
+
+
+pdict_ = lambda d:" ".join(["%s:%s" % kv for kv in d.items()])
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b)) 
 ntile_ = lambda vec,N:np.tile(vec, N).reshape(-1, len(vec))
 cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(vnorm(b),3).reshape(-1,3)
@@ -63,7 +66,7 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False, dbgseqhis=0, dbgseqmat=0):
+    def __init__(self, tag="1", src="torch", det="dayabay", seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False, dbgseqhis=0, dbgseqmat=0, dbgzero=False, cmx=0):
 
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
@@ -71,6 +74,8 @@ class Evt(object):
         self.terse = terse
         self.dbgseqhis = dbgseqhis
         self.dbgseqmat = dbgseqmat
+        self.dbgzero = dbgzero 
+        self.cmx = cmx
        
  
         if label is None:
@@ -129,9 +134,8 @@ class Evt(object):
             self.valid = False
             return False
 
-        if idom[0,0,3] != self.nrec:
-            log.warning(" non-standard idom %s nrec %s " % (repr(idom), self.nrec ))  
-
+        #if idom[0,0,3] != self.nrec:
+        #    log.warning(" non-standard idom %s nrec %s " % (repr(idom), self.nrec ))  
         #assert idom[0,0,3] == self.nrec
 
         td = I.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
@@ -143,10 +147,11 @@ class Evt(object):
 
         self.fdom = fdom
         self.idom = idom
+        self.idomd = dict(maxrec=idom[0,0,3],maxbounce=idom[0,0,2],maxrng=idom[0,0,1])
 
         fdom.desc = "(metadata) 3*float4 domains of position, time, wavelength (used for compression)"
         self.desc['fdom'] = fdom.desc
-        self.desc['idom'] = "(metadata) int domain"
+        self.desc['idom'] = "(metadata) %s " % pdict_(self.idomd)
         return True         
 
     def init_gensteps(self, tag, src, det, dbg):
@@ -270,8 +275,8 @@ class Evt(object):
 
         cn = "%s:%s" % (str(tag), det)
         # full history without selection
-        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn], dbgseq=self.dbgseqhis)  
-        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat)  
+        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn], dbgseq=self.dbgseqhis, dbgzero=self.dbgzero, cmx=self.cmx)  
+        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat, dbgzero=self.dbgzero, cmx=self.cmx)  
 
         self.seqhis = seqhis
         self.seqmat = seqmat
@@ -412,7 +417,9 @@ class Evt(object):
             if a is None:continue
             p = getattr(a,"path",None)
             t = stamp_(p)
-            sst.add(t)
+            if t is not None:   # ht are often missing 
+                sst.add(t)
+            pass
             lines.append("%10s  %s  %s " % (name, p, t ))
 
         nstamp = len(sst)
@@ -425,7 +432,7 @@ class Evt(object):
 
     def _brief(self):
         if self.valid:
-             return "%s %s %s" % (self.label, self.stamp, self.path)
+             return "%s %s %s %s" % (self.label, self.stamp, pdict_(self.idomd), self.path)
         else:
              return "%s %s" % (self.label, "EVT LOAD FAILED")
 
@@ -471,7 +478,7 @@ class Evt(object):
         self.present_table( 'seqmat_ana'.split(), sli)
 
     @classmethod
-    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True):
+    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True, zero=False, cmx=0):
         if not (a.valid and b.valid):
             log.fatal("need two valid events to compare ")
             sys.exit(1)

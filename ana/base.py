@@ -195,6 +195,11 @@ def opticks_args(**kwa):
     sli = kwa.get("sli", "::1")
     c2max = kwa.get("c2max", 2.0)
     dbgseqhis = kwa.get("dbgseqhis", "0")
+    dbgzero = kwa.get("dbgzero", False)
+    lmx = kwa.get("lmx", 20)
+    cmx = kwa.get("cmx", 0)
+    prohis = kwa.get("prohis", False)
+    promat = kwa.get("promat", False)
 
     parser = argparse.ArgumentParser(doc)
 
@@ -215,7 +220,14 @@ def opticks_args(**kwa):
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
     parser.add_argument(     "--dbgseqhis",  default=dbgseqhis, help="Seqhis hexstring prefix for dumping. Default %(default)s"  )
+    parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
+    parser.add_argument(     "--prohis", action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
+    parser.add_argument(     "--promat", action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
+    parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
+    parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
+
+
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)

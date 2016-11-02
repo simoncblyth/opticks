@@ -126,7 +126,7 @@ class SeqType(BaseType):
 
  
 class SeqTable(object):
-    def __init__(self, cu, af, cnames=[], dbgseq=0): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgzero=False, cmx=0): 
         """
         :param cu: count unique array, typically shaped (n, 2) 
         :param af: instance of SeqType subclass such as HisType
@@ -142,6 +142,8 @@ class SeqTable(object):
         self.cu = cu 
         self.ncol = ncol
         self.dbgseq = dbgseq
+        self.dbgzero = dbgzero
+        self.cmx = cmx
 
         seqs = cu[:,0]
         tots = [cu[:,n].sum() for n in range(1,ncol+1)]
@@ -151,9 +153,16 @@ class SeqTable(object):
             b = cu[:,2].astype(np.float64)
 
             c2, c2n, c2c = chi2(a, b, cut=30)
-            c2p = c2.sum()/c2n
+            #c2s = c2/c2n
+            #c2s_tot = c2s.sum()  # same as c2p
+
+            c2sum = c2.sum()
+            c2p = c2sum/c2n
+
+            #log.info(" c2p %s c2s_tot %s " % (c2p, c2s_tot ))
+
             cnames += ["c2"]
-            tots += ["%10.2f" % c2p ]
+            tots += ["%10.2f/%d = %5.2f" % (c2sum,c2n,c2p) ]
             cfcount = cu[:,1:]
 
             ab, ba = ratio(a, b)
@@ -162,6 +171,7 @@ class SeqTable(object):
 
         else:
             c2 = None
+            #c2s = None
             c2p = None
             cfcount = None
             ab = None
@@ -178,6 +188,7 @@ class SeqTable(object):
 
         self.total = total
         self.c2 = c2
+        #self.c2s = c2s
         self.c2p = c2p
         self.ab = ab  
         self.ba = ba  
@@ -221,25 +232,36 @@ class SeqTable(object):
            #log.info("isq %x dbgseq %x " % (isq,self.dbgseq))
            return None 
 
-        xs = "%20s" % ihex_(isq)        
+
+        xs = "%4d %20s" % (n, ihex_(isq))        
         vals = map(lambda _:" %10s " % _, self.cu[n,1:] ) 
         label = self.labels[n]
         nstep = "[%-2d]" % self.label2nstep[label]
 
+        # show only lines with chi2 contrib greater than cmx
         if self.c2 is not None:
-            sc2 = " %10.2f " % self.c2[n]
+            if self.cmx > 0 and self.c2[n] < self.cmx:
+               return None
+
+        # show only lines with zero counts
+        if self.c2 is not None:
+           if self.dbgzero and self.cu[n,1] > 0 and self.cu[n,2] > 0:
+               return None
+
+        if self.c2 is not None:
+            sc2 = " %10.2f " % (self.c2[n])
         else:
             sc2 = ""
         pass
 
         if self.ab is not None:
-            sab = " %10.2f +- %4.2f " % ( self.ab[n,0], self.ab[n,1] )
+            sab = " %10.3f +- %4.3f " % ( self.ab[n,0], self.ab[n,1] )
         else:
             sab = ""
         pass
 
         if self.ba is not None:
-            sba = " %10.2f +- %4.2f " % ( self.ba[n,0], self.ba[n,1] )
+            sba = " %10.3f +- %4.3f " % ( self.ba[n,0], self.ba[n,1] )
         else:
             sba = ""
         pass
@@ -260,14 +282,14 @@ class SeqTable(object):
 
     def __repr__(self):
 
-        spacer_ = lambda _:"%20s " % _
+        spacer_ = lambda _:"%4s %22s " % ("",_)
         space = spacer_("")
         title = spacer_(getattr(self,'title',""))
 
         body_ = lambda _:" %10s " % _
         head = title + " ".join(map(body_, self.cnames ))
         tail = space + " ".join(map(body_, self.tots ))
-        return "\n".join([head] + filter(None,self.lines[self.sli]) + [tail])
+        return "\n".join([head,tail]+ filter(None,self.lines[self.sli]) + [tail])
 
     def compare(self, other):
         l = set(self.labels)
@@ -276,12 +298,9 @@ class SeqTable(object):
 
         cf = np.zeros( (len(u),3), dtype=np.uint64 )
 
-        log.info("SeqTable.compare forming cf ad.code len(u) %s " % len(u) )
-        #print "\n".join(u)
-
+        log.debug("SeqTable.compare forming cf ad.code len(u) %s " % len(u) )
         cf[:,0] = map(lambda _:self.af.code(_), u )
-
-        log.info("SeqTable.compare forming cf af.code DONE ")
+        log.debug("SeqTable.compare forming cf af.code DONE ")
 
         cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
         cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
@@ -289,7 +308,7 @@ class SeqTable(object):
 
         cnames = self.cnames + other.cnames 
 
-        return SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq)    
+        return SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgzero=self.dbgzero, cmx=self.cmx)    
 
 
 class SeqAna(object):
@@ -301,7 +320,7 @@ class SeqAna(object):
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     
-    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0):
+    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgzero=False, cmx=0):
         """
         :param aseq: photon length sequence array 
         :param af: instance of SeqType subclass 
@@ -309,8 +328,10 @@ class SeqAna(object):
         cu = count_unique_sorted(aseq)
         self.af = af
         self.dbgseq = dbgseq
+        self.dbgzero = dbgzero
+        self.cmx = cmx
 
-        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq)
+        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgzero=self.dbgzero, cmx=self.cmx)
 
         self.aseq = aseq
         self.cu = cu

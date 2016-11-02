@@ -13,8 +13,12 @@ class OKCORE_API OpticksDomain {
        void importBuffer();
        void dump(const char* msg="OpticksDomains::dump");
     public:
-       unsigned int getMaxRec();
-       void setMaxRec(unsigned int maxrec);
+       unsigned getMaxRng();
+       unsigned getMaxRec();
+       unsigned getMaxBounce();
+       void setMaxRng(unsigned maxrng);
+       void setMaxRec(unsigned maxrec);
+       void setMaxBounce(unsigned maxbounce);
     public:
        NPY<float>* getFDomain();
        NPY<int>*   getIDomain();

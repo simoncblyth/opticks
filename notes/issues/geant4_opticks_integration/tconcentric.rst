@@ -54,6 +54,298 @@ viz
 TODO: check polz distribs
 
 
+truncation control
+-------------------
+
+::
+
+    409    char bouncemax[128];
+    410    snprintf(bouncemax,128,
+    411 "Maximum number of boundary bounces, 0:prevents any propagation leaving generated photons"
+    412 "Default %d ", m_bouncemax);
+    413    m_desc.add_options()
+    414        ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
+    415 
+    416 
+    417    // keeping bouncemax one less than recordmax is advantageous 
+    418    // as bookeeping is then consistent between the photons and the records 
+    419    // as this avoiding truncation of the records
+    420 
+    421    char recordmax[128];
+    422    snprintf(recordmax,128,
+    423 "Maximum number of photon step records per photon, 1:to minimize without breaking machinery. Default %d ", m_recordmax);
+    424    m_desc.add_options()
+    425        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
+    426 
+
+
+
+
+
+
+looking for more zero counts
+-------------------------------
+
+Opticks is not doing "TO BT BT BT BR .."  
+
+* no "internal" reflection in the acrylic just prior to MO in Opticks ?
+
+::
+
+      Gd/Ac/LS/Ac/MO
+
+
+Dump only lines with zero counts, a rich source of bugs::
+
+    simon:optickscore blyth$ tconcentric.py  --lmx 1000 --dbgzero
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 1000 --dbgzero
+    [2016-11-02 13:41:46,821] p68095 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    CF a concentric/torch/  1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+                     seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                                    1000000      1000000       706.24/348 =  2.03 
+     200        8cccccccbcccd             0           44            44.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BR BT BT BT BT BT BT BT SA
+     466            4cccbcccd             0           11             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT BT BT BR BT BT BT AB
+     607      8cccc5555cc5ccd             0            7             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT RE BT BT RE RE RE RE BT BT BT BT SA
+     642           4cccc5556d             7            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC RE RE RE BT BT BT BT AB
+     660     cccc5cc6cc9ccccd             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT SC BT BT RE BT BT BT BT
+     689       8cccc9cccc655d             6            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO RE RE SC BT BT BT BT DR BT BT BT BT SA
+     697         8cc6cc55555d             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO RE RE RE RE RE BT BT SC BT BT SA
+     734     cc6cccccc96ccccd             5            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT SC DR BT BT BT BT BT BT SC BT BT
+     757         4cccccc65ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO BT BT RE SC BT BT BT BT BT BT AB
+     796       8cccc6cccbcccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT SC BT BT BT BT SA
+     800             4c555ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO BT BT RE RE RE BT AB
+
+
+Dump only lines starting "TO BT BT BT BR"::
+
+    simon:optickscore blyth$ tconcentric.py --dbgseqhis bcccd
+    /Users/blyth/opticks/ana/tconcentric.py --dbgseqhis bcccd
+    [2016-11-02 13:47:51,381] p68110 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    CF a concentric/torch/  1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+                     seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                                    1000000      1000000       706.24/348 =  2.03 
+     200        8cccccccbcccd             0           44            44.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BR BT BT BT BT BT BT BT SA
+     466            4cccbcccd             0           11             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT BT BT BR BT BT BT AB
+     796       8cccc6cccbcccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT SC BT BT BT BT SA
+    1052           45cccbcccd             0            3             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO BT BT BT BR BT BT BT RE AB
+    1176       8cccc5cccbcccd             0            3             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT RE BT BT BT BT SA
+    2198       89cccccccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT BT BT BT BT DR SA
+    2225         4cc6cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO BT BT BT BR BT BT BT SC BT BT AB
+    2474     ccc55cc5cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT BT BT RE BT BT RE RE BT BT BT
+    2521          466cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [11] TO BT BT BT BR BT BT BT SC SC AB
+    2812           46cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO BT BT BT BR BT BT BT SC AB
+    2961      86cccc5cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BR BT BT BT RE BT BT BT BT SC SA
+    2995        4cccccccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BR BT BT BT BT BT BT BT AB
+    3244      8cccc55cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BR BT BT BT RE RE BT BT BT BT SA
+    3330     cccc5555cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT BT BT RE RE RE RE BT BT BT BT
+    3798     89cccccc55cbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT RE RE BT BT BT BT BT BT DR SA
+    3954       8cccccc5cbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT RE BT BT BT BT BT BT SA
+    4056      8cc56cccccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BR BT BT BT BT BT SC RE BT BT SA
+    4165           8cc5cbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO BT BT BT BR BT RE BT BT SA
+    4178     8cccc555cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT BT BT RE RE RE BT BT BT BT SA
+    4526          456cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [11] TO BT BT BT BR BT BT BT SC RE AB
+                                    1000000      1000000       706.24/348 =  2.03 
+
+
+remaining discreps by cmx selection
+--------------------------------------
+
+::
+
+    23: truncation diff
+    200: opticks zero 
+
+    simon:optickscore blyth$ tconcentric.py  --lmx 500 --cmx 5
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 500 --cmx 5
+    [2016-11-02 13:57:06,819] p68134 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    CF a concentric/torch/  1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+                     seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                                    1000000      1000000       706.24/348 =  2.03 
+       5              8cccc5d         20239        19674             8.00        1.029 +- 0.007        0.972 +- 0.007  [7 ] TO RE BT BT BT BT SA
+       6              8cc6ccd         10397        10919            12.78        0.952 +- 0.009        1.050 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       7              86ccccd         10160        10825            21.07        0.939 +- 0.009        1.065 +- 0.010  [7 ] TO BT BT BT BT SC SA
+      15          8cccccc6ccd          3190         2785            27.45        1.145 +- 0.020        0.873 +- 0.017  [11] TO BT BT SC BT BT BT BT BT BT SA
+      20          8cccc6ccccd          1580         1805            14.96        0.875 +- 0.022        1.142 +- 0.027  [11] TO BT BT BT BT SC BT BT BT BT SA
+      23      8cccccccc6ccccd          1577          998           130.19        1.580 +- 0.040        0.633 +- 0.020  [15] TO BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+      36              46ccccd           788          977            20.24        0.807 +- 0.029        1.240 +- 0.040  [7 ] TO BT BT BT BT SC AB
+      51          4cccc6ccccd           384          308             8.35        1.247 +- 0.064        0.802 +- 0.046  [11] TO BT BT BT BT SC BT BT BT BT AB
+      72             89cccc5d           234          183             6.24        1.279 +- 0.084        0.782 +- 0.058  [8 ] TO RE BT BT BT BT DR SA
+      88     8cccc6cccc6ccccd           143           98             8.40        1.459 +- 0.122        0.685 +- 0.069  [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT SA
+      90            8cc55cc5d           136          100             5.49        1.360 +- 0.117        0.735 +- 0.074  [9 ] TO RE BT BT RE RE BT BT SA
+      98         8cccc5cc6ccd           122           83             7.42        1.470 +- 0.133        0.680 +- 0.075  [12] TO BT BT SC BT BT RE BT BT BT BT SA
+     102            8cccc565d            84          119             6.03        0.706 +- 0.077        1.417 +- 0.130  [9 ] TO RE SC RE BT BT BT BT SA
+     105     8cccccccc6cccc6d           116           67            13.12        1.731 +- 0.161        0.578 +- 0.071  [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+     123              8c6cccd            89           60             5.64        1.483 +- 0.157        0.674 +- 0.087  [7 ] TO BT BT BT SC BT SA
+     142        4cccccc6ccccd            75           46             6.95        1.630 +- 0.188        0.613 +- 0.090  [13] TO BT BT BT BT SC BT BT BT BT BT BT AB
+     157     8cccc5cccc6ccccd            67           36             9.33        1.861 +- 0.227        0.537 +- 0.090  [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT SA
+     159         8cccc66ccccd            35           66             9.51        0.530 +- 0.090        1.886 +- 0.232  [12] TO BT BT BT BT SC SC BT BT BT BT SA
+     200        8cccccccbcccd             0           44            44.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BR BT BT BT BT BT BT BT SA
+     225           8cccbc5ccd            17           36             6.81        0.472 +- 0.115        2.118 +- 0.353  [10] TO BT BT RE BT BR BT BT BT SA
+     236            86cccc56d            17           33             5.12        0.515 +- 0.125        1.941 +- 0.338  [9 ] TO SC RE BT BT BT BT SC SA
+     275           4cc6cc6ccd            27           12             5.77        2.250 +- 0.433        0.444 +- 0.128  [10] TO BT BT SC BT BT SC BT BT AB
+                                    1000000      1000000       706.24/348 =  2.03 
+
+
+
+truncation avoidance trick
+----------------------------
+
+Arranging maxbounce to be one less than maxrec avoids much of the truncation discrepancy
+
+::
+
+    simon:optickscore blyth$ tconcentric.py  --lmx 500 
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 500
+    [2016-11-02 13:37:40,224] p68080 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    CF a concentric/torch/  1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+                     seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                                    1000000      1000000       706.24/348 =  2.03 
+       0               8ccccd        669935       670752             0.50        0.999 +- 0.001        1.001 +- 0.001  [6 ] TO BT BT BT BT SA
+       1                   4d         83950        84177             0.31        0.997 +- 0.003        1.003 +- 0.003  [2 ] TO AB
+       2              8cccc6d         45599        45475             0.17        1.003 +- 0.005        0.997 +- 0.005  [7 ] TO SC BT BT BT BT SA
+       3               4ccccd         28958        28871             0.13        1.003 +- 0.006        0.997 +- 0.006  [6 ] TO BT BT BT BT AB
+       4                 4ccd         23187        23447             1.45        0.989 +- 0.006        1.011 +- 0.007  [4 ] TO BT BT AB
+       5              8cccc5d         20239        19674             8.00        1.029 +- 0.007        0.972 +- 0.007  [7 ] TO RE BT BT BT BT SA
+       6              8cc6ccd         10397        10919            12.78        0.952 +- 0.009        1.050 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       7              86ccccd         10160        10825            21.07        0.939 +- 0.009        1.065 +- 0.010  [7 ] TO BT BT BT BT SC SA
+       8              89ccccd          7605         7685             0.42        0.990 +- 0.011        1.011 +- 0.012  [7 ] TO BT BT BT BT DR SA
+       9             8cccc55d          5970         5911             0.29        1.010 +- 0.013        0.990 +- 0.013  [8 ] TO RE RE BT BT BT BT SA
+      10                  45d          5780         5627             2.05        1.027 +- 0.014        0.974 +- 0.013  [3 ] TO RE AB
+      11      8cccccccc9ccccd          5350         5289             0.35        1.012 +- 0.014        0.989 +- 0.014  [15] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+      12              8cc5ccd          5113         4948             2.71        1.033 +- 0.014        0.968 +- 0.014  [7 ] TO BT BT RE BT BT SA
+      13                  46d          4783         4808             0.07        0.995 +- 0.014        1.005 +- 0.014  [3 ] TO SC AB
+      14          8cccc9ccccd          4525         4452             0.59        1.016 +- 0.015        0.984 +- 0.015  [11] TO BT BT BT BT DR BT BT BT BT SA
+      15          8cccccc6ccd          3190         2785            27.45        1.145 +- 0.020        0.873 +- 0.017  [11] TO BT BT SC BT BT BT BT BT BT SA
+      16             8cccc66d          2600         2642             0.34        0.984 +- 0.019        1.016 +- 0.020  [8 ] TO SC SC BT BT BT BT SA
+      17              49ccccd          2313         2452             4.05        0.943 +- 0.020        1.060 +- 0.021  [7 ] TO BT BT BT BT DR AB
+      18              4cccc6d          2027         2040             0.04        0.994 +- 0.022        1.006 +- 0.022  [7 ] TO SC BT BT BT BT AB
+      19            8cccc555d          1819         1696             4.30        1.073 +- 0.025        0.932 +- 0.023  [9 ] TO RE RE RE BT BT BT BT SA
+      20          8cccc6ccccd          1580         1805            14.96        0.875 +- 0.022        1.142 +- 0.027  [11] TO BT BT BT BT SC BT BT BT BT SA
+      21                4cc6d          1733         1792             0.99        0.967 +- 0.023        1.034 +- 0.024  [5 ] TO SC BT BT AB
+      22                 455d          1695         1619             1.74        1.047 +- 0.025        0.955 +- 0.024  [4 ] TO RE RE AB
+      23      8cccccccc6ccccd          1577          998           130.19        1.580 +- 0.040        0.633 +- 0.020  [15] TO BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+      24          4cccc9ccccd          1310         1257             1.09        1.042 +- 0.029        0.960 +- 0.027  [11] TO BT BT BT BT DR BT BT BT BT AB
+      25             8cc55ccd          1268         1262             0.01        1.005 +- 0.028        0.995 +- 0.028  [8 ] TO BT BT RE RE BT BT SA
+      26             8cccc56d          1170         1104             1.92        1.060 +- 0.031        0.944 +- 0.028  [8 ] TO SC RE BT BT BT BT SA
+      27                45ccd          1168         1090             2.69        1.072 +- 0.031        0.933 +- 0.028  [5 ] TO BT BT RE AB
+      28          8cccccc5ccd          1104         1157             1.24        0.954 +- 0.029        1.048 +- 0.031  [11] TO BT BT RE BT BT BT BT BT BT SA
+      29              4cc6ccd          1148         1045             4.84        1.099 +- 0.032        0.910 +- 0.028  [7 ] TO BT BT SC BT BT AB
+      30             8cccc65d          1133         1066             2.04        1.063 +- 0.032        0.941 +- 0.029  [8 ] TO RE SC BT BT BT BT SA
+      31                  4cd          1035         1056             0.21        0.980 +- 0.030        1.020 +- 0.031  [3 ] TO BT AB
+      32            4cc9ccccd          1048         1048             0.00        1.000 +- 0.031        1.000 +- 0.031  [9 ] TO BT BT BT BT DR BT BT AB
+      33                4cc5d          1036         1018             0.16        1.018 +- 0.032        0.983 +- 0.031  [5 ] TO RE BT BT AB
+      34              4cccc5d           965         1023             1.69        0.943 +- 0.030        1.060 +- 0.033  [7 ] TO RE BT BT BT BT AB
+      35                4cccd           995          918             3.10        1.084 +- 0.034        0.923 +- 0.030  [5 ] TO BT BT BT AB
+      36              46ccccd           788          977            20.24        0.807 +- 0.029        1.240 +- 0.040  [7 ] TO BT BT BT BT SC AB
+      37             869ccccd           915          893             0.27        1.025 +- 0.034        0.976 +- 0.033  [8 ] TO BT BT BT BT DR SC SA
+      38             8cc6cc6d           803          809             0.02        0.993 +- 0.035        1.007 +- 0.035  [8 ] TO SC BT BT SC BT BT SA
+      39             86cccc6d           725          764             1.02        0.949 +- 0.035        1.054 +- 0.038  [8 ] TO SC BT BT BT BT SC SA
+      40                46ccd           635          689             2.20        0.922 +- 0.037        1.085 +- 0.041  [5 ] TO BT BT SC AB
+      41              4cc5ccd           611          678             3.48        0.901 +- 0.036        1.110 +- 0.043  [7 ] TO BT BT RE BT BT AB
+      42     8cccc6cccc9ccccd           571          575             0.01        0.993 +- 0.042        1.007 +- 0.042  [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT SA
+
+
+
+
+
+zeros in long tail issue, from truncation ?
+---------------------------------------------
+
+::
+
+    simon:ana blyth$ t tconcentric-tt
+    tconcentric-tt () 
+    { 
+        tconcentric-t --bouncemax 15 --recordmax 15 $*
+    }
+
+
+
+::
+
+    simon:ana blyth$ tconcentric.py --lmx 300 --dbgzero
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 300 --dbgzero
+    [2016-11-02 12:21:32,078] p63764 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    [2016-11-02 12:21:37,011] p63764 {/Users/blyth/opticks/ana/cf.py:39} INFO - CF a concentric/torch/  1 :  20161101-2009 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-02 12:21:37,011] p63764 {/Users/blyth/opticks/ana/cf.py:40} INFO - CF b concentric/torch/ -1 :  20161101-2009 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+      42      8ccc6cccc9ccccd             0          575           575.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT SC BT BT BT SA
+      43     8cccc6cccc9ccccd           571            0           571.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT SA
+      50      8ccccccc9cccc6d             0          398           398.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO SC BT BT BT BT DR BT BT BT BT BT BT BT SA
+      53     8cccccccc9cccc6d           369            0           369.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+      73     8cccc5cccc9ccccd           236            0           236.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT SA
+      76      8ccc5cccc9ccccd             0          204           204.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT RE BT BT BT SA
+      80      ccccccccc9ccccd             0          172           172.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT BT BT BT BT BT
+      90      8ccccccc9cccc5d             0          144           144.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO RE BT BT BT BT DR BT BT BT BT BT BT BT SA
+      91     c9cccccccc9ccccd           144            0           144.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR BT
+      92     8cccc6cccc6ccccd           143            0           143.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT SA
+      96     8cccccccc9cccc5d           135            0           135.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO RE BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+     105      8c6cccccc9ccccd             0          120           120.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT BT BT SC BT SA
+     110     8cccccccc6cccc6d           116            0           116.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+     112      8ccccc6cc9ccccd             0          114           114.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT SC BT BT BT BT BT SA
+     116     8cccccc6cc9ccccd           107            0           107.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT SC BT BT BT BT BT BT SA
+     120     8cc6cccccc9ccccd           103            0           103.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT BT BT SC BT BT SA
+     121     86cccccccc9ccccd           102            0           102.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SC SA
+     124      8ccc6cccc6ccccd             0           98            98.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT SC BT BT BT BT SC BT BT BT SA
+     125      8ccccccc69ccccd             0           98            98.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR SC BT BT BT BT BT BT BT SA
+     133      ccc55cccc9ccccd             0           88            88.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT RE RE BT BT BT
+     136      8ccccccc96ccccd             0           85            85.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT SC DR BT BT BT BT BT BT BT SA
+     137      8ccccccc9cc6ccd             0           84            84.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT SC BT BT DR BT BT BT BT BT BT BT SA
+     139     8cccccccc69ccccd            83            0            83.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR SC BT BT BT BT BT BT BT BT SA
+     144     cccc55cccc9ccccd            80            0            80.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT RE RE BT BT BT BT
+     146     8cccccccc9cc6ccd            80            0            80.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT SC BT BT DR BT BT BT BT BT BT BT BT SA
+     167      8c5cccccc9ccccd             0           68            68.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT BT BT RE BT SA
+     168     8cccc5cccc6ccccd            67            0            67.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT SA
+
+
+
+
+
+
+
+::
+
+    simon:ana blyth$ tconcentric.py --lmx 300
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 300
+    [2016-11-02 11:45:54,982] p63687 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    [2016-11-02 11:45:59,898] p63687 {/Users/blyth/opticks/ana/cf.py:38} INFO - CF a concentric/torch/  1 :  20161101-2009 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    [2016-11-02 11:45:59,898] p63687 {/Users/blyth/opticks/ana/cf.py:39} INFO - CF b concentric/torch/ -1 :  20161101-2009 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+              seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+       0               8ccccd        669935       670752             0.50        0.999 +- 0.001        1.001 +- 0.001  [6 ] TO BT BT BT BT SA
+       1                   4d         83950        84177             0.31        0.997 +- 0.003        1.003 +- 0.003  [2 ] TO AB
+       2              8cccc6d         45599        45475             0.17        1.003 +- 0.005        0.997 +- 0.005  [7 ] TO SC BT BT BT BT SA
+       3               4ccccd         28958        28871             0.13        1.003 +- 0.006        0.997 +- 0.006  [6 ] TO BT BT BT BT AB
+       4                 4ccd         23187        23447             1.45        0.989 +- 0.006        1.011 +- 0.007  [4 ] TO BT BT AB
+       5              8cccc5d         20239        19674             8.00        1.029 +- 0.007        0.972 +- 0.007  [7 ] TO RE BT BT BT BT SA
+       6              8cc6ccd         10397        10919            12.78        0.952 +- 0.009        1.050 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       7              86ccccd         10160        10825            21.07        0.939 +- 0.009        1.065 +- 0.010  [7 ] TO BT BT BT BT SC SA
+       8              89ccccd          7605         7685             0.42        0.990 +- 0.011        1.011 +- 0.012  [7 ] TO BT BT BT BT DR SA
+
+      ...  selecting the big c2 contributors, are being killed by zeros in tail ... possibly truncation related
+     # Opticks reporting extra BT ??? Or CFG4 missing a BT (prior to SA, or after DR???)
+       
+      42      8ccc6cccc9ccccd             0          575           575.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT SC BT BT BT SA
+      43     8cccc6cccc9ccccd           571            0           571.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT SA
+
+      50      8ccccccc9cccc6d             0          398           398.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO SC BT BT BT BT DR BT BT BT BT BT BT BT SA
+      53     8cccccccc9cccc6d           369            0           369.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+
+      76      8ccc5cccc9ccccd             0          204           204.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT RE BT BT BT SA
+      73     8cccc5cccc9ccccd           236            0           236.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT SA
+
+
+      80      ccccccccc9ccccd             0          172           172.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR BT BT BT BT BT BT BT BT BT
+        # trunc without counterpart ??
+
+
+                             1000000      1000000      6683.62/355 = 18.83 
+
+
+
 
 with flags fixed
 -----------------
