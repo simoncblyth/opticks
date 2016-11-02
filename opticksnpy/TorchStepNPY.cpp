@@ -475,7 +475,7 @@ void TorchStepNPY::update()
 
     m_src = frame_transform * m_source_local  ; 
     m_tgt = frame_transform * m_target_local  ; 
-    m_pol = frame_transform * m_polarization_local  ; 
+    glm::vec4 pol = frame_transform * m_polarization_local  ;   // yields unnormalized, but GenstepNPY setter normalizes
 
     m_dir = glm::vec3(m_tgt) - glm::vec3(m_src) ;
 
@@ -483,7 +483,8 @@ void TorchStepNPY::update()
 
     setPosition(m_src);
     setDirection(dir);
-    setPolarization(m_pol);
+    setPolarization(pol); 
+
 }
 
 

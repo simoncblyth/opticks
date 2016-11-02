@@ -43,6 +43,8 @@ def vnorm(a):
     """
     return np.sqrt(np.sum(a*a,1))
 
+vnorm_ = lambda _:np.sqrt(np.sum(_*_,1))
+
 
 def chi2(a, b, cut=30):
     """

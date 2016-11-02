@@ -14,7 +14,7 @@ from opticks.ana.base import opticks_environment
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
-from opticks.ana.seq import SeqAna
+from opticks.ana.seq import SeqAna, seq2msk
 from opticks.ana.histype import HisType
 from opticks.ana.hismask import HisMask
 from opticks.ana.mattype import MatType 
@@ -68,8 +68,6 @@ class Evt(object):
 
     def __init__(self, tag="1", src="torch", det="dayabay", args=None, nrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False ):
 
-#seqs=[], not_=False, label=None, nrec=10, rec=True, dbg=False, terse=False, 
-#             dbgseqhis=0, dbgseqmat=0, dbgmskhis=0, dbgmskmat=0, dbgzero=False, cmx=0):
 
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
@@ -82,9 +80,9 @@ class Evt(object):
         self.dbgmskmat = args.dbgmskmat
         self.dbgzero = args.dbgzero 
         self.cmx = args.cmx
-       
 
-        log.info(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
+        log.info( " seqs %s " % repr(seqs))
+        #log.info(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
  
         if label is None:
             label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(self.seqs)) 
@@ -287,6 +285,8 @@ class Evt(object):
         all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx)  
 
         self.seqhis = seqhis
+        self.pflags2 = seq2msk(seqhis) 
+
         self.seqmat = seqmat
 
         useqhis = len(np.unique(seqhis))
@@ -378,7 +378,9 @@ class Evt(object):
 
 
     def init_selection(self, seqs, not_):
-        if not self.rec or len(seqs) == 0:return  
+        if not self.rec or len(seqs) == 0:
+            log.info("skip init_selection as no seqs")
+            return  
 
         log.debug("Evt seqs %s " % repr(seqs))
         psel = self.all_seqhis_ana.seq_or(seqs, not_=not_)
@@ -575,6 +577,14 @@ class Evt(object):
 
         return p_wavelength 
 
+    def rpolw_(self, irec):
+        """
+        Unlike rpol_ this works with irec slices, 
+        BUT note that the wavelength returned in 4th column is 
+        not decompressed correctly.
+        Due to shape shifting it is not easy to remove
+        """
+        return self.rx[:,irec,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
 
     def rpol_(self, irec, recs=None):
         """

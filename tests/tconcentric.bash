@@ -21,9 +21,9 @@ tconcentric-src(){ echo torch ; }
 tconcentric--(){
     local cmdline=$*
 
-    local photons=1000000
+     local photons=1000000
     #local photons=100000
-    #local photons=20000
+    #local photons=10000
     #local photons=100
 
     local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)
@@ -69,6 +69,7 @@ tconcentric--(){
 tconcentric-args(){  echo  --tag $(tconcentric-tag) --det $(tconcentric-det) --src $(tconcentric-src) ; }
 tconcentric-py(){    tconcentric.py  $(tconcentric-args) $* ; } 
 tconcentric-i(){     ipython --profile=g4opticks -i $(which tconcentric.py) --  $(tconcentric-args) $* ; } 
+tconcentric-d(){     ipython --profile=g4opticks -i $(which tconcentric_distrib.py) --  $(tconcentric-args) $* ; } 
 tconcentric-t()
 {
     tconcentric-
@@ -79,7 +80,6 @@ tconcentric-t()
 tconcentric-tt()
 {
     tconcentric-t --bouncemax 15 --recordmax 16 $*
-    #tconcentric-t --bouncemax 15 --recordmax 15 $*
 }
 
 tconcentric-v()

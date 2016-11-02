@@ -32,32 +32,30 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    seqs = ["49ccccd"]
-
+    select_slice = slice(0,1)  # pluck top line of seqhis table, needed for multiplot
     try:
-        cf = CF(tag=args.tag, src=args.src, det=args.det, select=None, seqs=seqs )
+        cf = CF(args, select_slice=select_slice, seqs=[] )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)
 
     cf.dump()
 
-    irec = 6
 
-    #multiplot(cf, pages=["XYZT","ABCR"])
+    multiplot(cf, pages=["XYZT","ABCR"])
   
+    #irec = 6
     #qwn_plot( cf.ss[0], "T", -1, c2_ymax=2000)
     #qwn_plot( cf, "R", irec)
     #qwns_plot( cf, "XYZT", irec)
     #qwns_plot( cf, "ABCR", irec)
 
+    #binsx,ax,bx,lx = cf.rqwn("X",irec)
+    #binsy,ay,by,ly = cf.rqwn("Y",irec)
+    #binsz,az,bz,lz = cf.rqwn("Z",irec)
 
-    binsx,ax,bx,lx = cf.rqwn("X",irec)
-    binsy,ay,by,ly = cf.rqwn("Y",irec)
-    binsz,az,bz,lz = cf.rqwn("Z",irec)
-
-    axyz = np.array([[0,0,0],[2995.0267,0,0],[3004.9551,0,0],[3995.0491,0,0],[4004.9776,0,0],[4995.0716,0,0]])
-    bxyz = np.array([[0,0,0],[2995.0267,0,0],[3004.9551,0,0],[3995.0491,0,0],[4004.9776,0,0],[4995.0716,0,0]])
+    #axyz = np.array([[0,0,0],[2995.0267,0,0],[3004.9551,0,0],[3995.0491,0,0],[4004.9776,0,0],[4995.0716,0,0]])
+    #bxyz = np.array([[0,0,0],[2995.0267,0,0],[3004.9551,0,0],[3995.0491,0,0],[4004.9776,0,0],[4995.0716,0,0]])
    
 
 

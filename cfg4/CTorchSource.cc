@@ -84,6 +84,7 @@ CTorchSource::~CTorchSource()
 void CTorchSource::configure()
 {
     m_torch->Summary("CTorchSource::configure");
+    LOG(fatal) << m_torch->description();
 
     unsigned int n = m_torch->getNumPhotonsPerG4Event();
     SetNumberOfParticles(n);
@@ -105,10 +106,10 @@ void CTorchSource::configure()
     }
 
 
-
     float _t       = m_torch->getTime();
     glm::vec3 _pos = m_torch->getPosition();
     glm::vec3 _dir = m_torch->getDirection();
+    glm::vec3 _pol = m_torch->getPolarization() ; 
     float _radius  = m_torch->getRadius();
     glm::vec4 _zeaz = m_torch->getZenithAzimuth();
 
@@ -118,6 +119,7 @@ void CTorchSource::configure()
                << " _pos " << gformat(_pos) 
                << " _dir " << gformat(_dir) 
                << " _zeaz " << gformat(_zeaz)
+               << " _pol " << gformat(_pol)
                 ; 
 
 
@@ -262,12 +264,18 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
     part_prop_t& pp = m_pp.Get();
 
+
+
     glm::vec3 polarization = m_torch->getPolarization() ;
+    G4ThreeVector fixpol(polarization.x, polarization.y, polarization.z);   
+    // hmm starting as 0.0000,5005.0000,0.0000 
+    //      some frame tranform ???
+    //
 
 	//if (m_verbosityLevel > 1)
-    LOG(info) << "CTorchSource::GeneratePrimaryVertex"
+    LOG(fatal) << "CTorchSource::GeneratePrimaryVertex"
               << m_torch->description()
-              << " polarization " << gformat(polarization)
+              << " fixpol " << fixpol
               << " num " << m_num 
               ;
 
@@ -356,11 +364,11 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
         if(m_torch->isFixPolarized())
         {
-             LOG(trace) << "CTorchSource::GeneratePrimaryVertex" 
-                       << " fixpol override "
-                       << gformat(polarization)
-                       ; 
-		     particle->SetPolarization(polarization.x, polarization.y, polarization.z);
+             //LOG(fatal) << "CTorchSource::GeneratePrimaryVertex" 
+             //          << " fixpol override "
+             //          << gformat(polarization)
+             //          ; 
+		     particle->SetPolarization(fixpol.unit());
         }
 
 

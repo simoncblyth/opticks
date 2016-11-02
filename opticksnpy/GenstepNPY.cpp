@@ -203,9 +203,18 @@ void GenstepNPY::setWeight(const char* s)
 
 void GenstepNPY::setPolarization(const glm::vec4& pol)
 {
-    m_polw.x = pol.x ; 
-    m_polw.y = pol.y ; 
-    m_polw.z = pol.z ; 
+    glm::vec4 npol = glm::normalize(pol);
+
+    m_polw.x = npol.x ; 
+    m_polw.y = npol.y ; 
+    m_polw.z = npol.z ; 
+
+    LOG(fatal) << "GenstepNPY::setPolarization"
+              << " pol " << gformat(pol)
+              << " npol " << gformat(npol)
+              << " m_polw " << gformat(m_polw)
+              ;
+
 }
 void GenstepNPY::setWavelength(const char* s)
 {

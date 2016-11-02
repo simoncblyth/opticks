@@ -8,32 +8,85 @@ log = logging.getLogger(__name__)
 
 
 class CF(object):
-    def __init__(self, args, select_slice=None):
-
+    def __init__(self, args, seqs=[], select_slice=None, top=True):
+        """
+        :param args:
+        :param seqs: used beneath top level 
+        :param select_slice:  only used from top level cf
+        """
         self.args = args 
-        self.seqs = []
-        self.compare()
+        self.seqs = seqs
+        self.top = top
+
+        self.compare(seqs)
 
         self.ss = []
         if select_slice is not None:
+            assert self.top == True, "select_slice only allowed at top level "
             self.init_select(select_slice)
 
-    def compare(self):
+
+    def init_select(self, sli):
+        """
+        Spawn CF for each of the selections, according to 
+        slices of the history sequences.
+
+        ::
+
+            In [29]: cf.his.labels[:10]
+            Out[29]: 
+            ['TO BT BT BT BT SA',
+             'TO AB',
+             'TO SC BT BT BT BT SA',
+             'TO BT BT BT BT AB',
+             'TO BT BT AB',
+             'TO RE BT BT BT BT SA',
+             'TO BT BT SC BT BT SA',
+             'TO BT BT BT BT SC SA',
+             'TO BT BT BT BT DR SA',
+             'TO RE RE BT BT BT BT SA']
+
+        """
+        totrec = 0 
+        for label in self.his.labels[sli]:
+            seqs = [label]
+            scf = self.spawn(seqs)
+            totrec += scf.nrec() 
+            self.ss.append(scf) 
+        pass
+        self.totrec = totrec
+
+    def spawn(self, seqs):
+        scf = CF(self.args, seqs, select_slice=None, top=False)
+        scf.parent = self
+        scf.his = self.his
+        scf.mat = self.mat
+        return scf
+
+    def compare(self, seqs=[]):
         try:
-            a = Evt(tag="%s" % self.args.tag, src=self.args.src, det=self.args.det, args=self.args)
-            b = Evt(tag="-%s" % self.args.tag , src=self.args.src, det=self.args.det, args=self.args)
+            a = Evt(tag="%s" % self.args.tag, src=self.args.src, det=self.args.det, args=self.args, seqs=seqs)
+            b = Evt(tag="-%s" % self.args.tag , src=self.args.src, det=self.args.det, args=self.args, seqs=seqs)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)
       
-        print "CF a %s " % a.brief 
-        print "CF b %s " % b.brief 
-
         self.a = a
         self.b = b 
 
-        tables = []
+        if self.top:
+            self.fullcompare() 
+        else:
+            # self.fullcompare()    ## hmm can this be avoided for the spawned
+            pass
 
+    def fullcompare(self):
+        a = self.a
+        b = self.b
+        print "CF a %s " % a.brief 
+        print "CF b %s " % b.brief 
+
+        tables = []
         tables += ["seqhis_ana", "pflags_ana"] 
         if self.args.prohis:
             tables += ["seqhis_ana_%d" % imsk for imsk in range(1,8)] 
@@ -43,11 +96,13 @@ class CF(object):
             tables += ["seqmat_ana_%d" % imsk for imsk in range(1,8)] 
 
         tables2 = ["hflags_ana"]
+
         cft = Evt.compare_table(a,b, tables, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
         cft2 = Evt.compare_table(a,b, tables2, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
 
         self.his = cft["seqhis_ana"]
         self.mat = cft["seqmat_ana"]
+
 
 
     def a_count(self, line=0):
@@ -74,7 +129,7 @@ class CF(object):
         """ 
         nseq = len(self.seqs) 
         if nseq != 1:return -1
-        seq = self.args.seqs[0]
+        seq = self.seqs[0]
         eseq = seq.split()
         return len(eseq)
 
@@ -86,7 +141,7 @@ class CF(object):
         """
         nseq = len(self.seqs) 
         if nseq == 1 and irec > -1: 
-            seq = self.args.seqs[0]
+            seq = self.seqs[0]
             eseq = seq.split()
             if irec < len(eseq):
                 eseq[irec] = "[%s]" % eseq[irec]
@@ -97,26 +152,8 @@ class CF(object):
         pass
         return lab 
 
-    def init_select(self, sli):
-        """
-        Spawn CF for each of the selections, according to 
-        slices of the history sequences.
-        """
-        totrec = 0 
-        for label in self.his.labels[sli]:
-            seqs = [label]
-            scf = self.spawn(seqs)
-            totrec += scf.nrec() 
-            self.ss.append(scf) 
-        pass
-        self.totrec = totrec
-
     def __repr__(self):
         return "CF(%s,%s,%s,%s) " % (self.args.tag, self.args.src, self.args.det, repr(self.seqs))
-
-    def spawn(self, seqs):
-        return CF(self.args.tag, self.args.src, self.args.det, seqs)
-
     def dump_ranges(self, i):
         log.info("%s : dump_ranges %s " % (repr(self), i) )
 
@@ -147,6 +184,90 @@ class CF(object):
         self.dump_histories()
 
 
+
+    def xyzt(self):
+        """
+        Sliced decompression within a selection 
+        works via the rx replacement with rx[psel] 
+        done in Evt.init_selection.
+
+        ::
+
+            In [2]: scf = cf.ss[0]
+
+            In [3]: a,b=scf.xyzt()
+
+            In [4]: a
+            Out[4]: 
+            A([    [[    0.    ,     0.    ,     0.    ,     0.0998],
+                    [ 2995.0267,     0.    ,     0.    ,    15.0472],
+                    [ 3004.9551,     0.    ,     0.    ,    15.0975],
+                    [ 3995.0491,     0.    ,     0.    ,    20.0378],
+                    [ 4004.9776,     0.    ,     0.    ,    20.0882],
+                    [ 4995.0716,     0.    ,     0.    ,    24.9544]],
+
+                   [[    0.    ,     0.    ,     0.    ,     0.0998],
+                    [ 2995.0267,     0.    ,     0.    ,    15.0472],
+                    [ 3004.9551,     0.    ,     0.    ,    15.0975],
+                    [ 3995.0491,     0.    ,     0.    ,    20.0378],
+                    [ 4004.9776,     0.    ,     0.    ,    20.0882],
+                    [ 4995.0716,     0.    ,     0.    ,    24.9544]],
+
+            In [5]: b
+            Out[5]: 
+            A([    [[    0.    ,     0.    ,     0.    ,     0.0998],
+                    [ 2995.0267,     0.    ,     0.    ,    15.4775],
+                    [ 3004.9551,     0.    ,     0.    ,    15.5296],
+                    [ 3995.0491,     0.    ,     0.    ,    20.6687],
+                    [ 4004.9776,     0.    ,     0.    ,    20.7199],
+                    [ 4995.0716,     0.    ,     0.    ,    25.8589]],
+
+                   [[    0.    ,     0.    ,     0.    ,     0.0998],
+                    [ 2995.0267,     0.    ,     0.    ,    15.4775],
+                    [ 3004.9551,     0.    ,     0.    ,    15.5296],
+                    [ 3995.0491,     0.    ,     0.    ,    20.6687],
+                    [ 4004.9776,     0.    ,     0.    ,    20.7199],
+                    [ 4995.0716,     0.    ,     0.    ,    25.8589]],
+
+            In [6]: a.shape
+            Out[6]: (669843, 6, 4)
+
+            In [7]: b.shape
+            Out[7]: (670752, 6, 4)
+
+            In [8]: scf.a.seqs
+            Out[8]: ['TO BT BT BT BT SA']
+
+            In [9]: scf.a.psel
+            Out[9]: array([ True,  True, False, ...,  True,  True, False], dtype=bool)
+
+            In [10]: scf.a.psel.shape
+            Out[10]: (1000000,)
+
+        """
+        nstep = self.nrec()
+        if nstep == -1:
+            log.warning("this only works on sub-cf with single line seqs eg cf.ss[0]")
+            return None
+
+        irec = slice(0,nstep)
+        aval = self.a.rpost_(irec)
+        bval = self.b.rpost_(irec)
+        return aval, bval
+
+    def polw(self):
+        nstep = self.nrec()
+        if nstep == -1:
+            log.warning("this only works on sub-cf with single line seqs eg cf.ss[0]")
+            return None
+
+        irec = slice(0,nstep)
+        aval = self.a.rpolw_(irec)
+        bval = self.b.rpolw_(irec)
+        return aval, bval
+
+
+ 
     def rqwn(self, qwn, irec): 
         """
         :param qwn: X,Y,Z,W,T,A,B,C or R  
