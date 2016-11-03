@@ -120,7 +120,7 @@ void OpticksDomain::importBuffer()
         LOG(fatal) << "OpticksDomain::importBuffer" 
                    << " from idom settings m_maxrec BUT EXPECT 10 " << maxrec 
                         ;
-    assert(maxrec == 10);
+    //assert(maxrec == 10);
 }
 
 

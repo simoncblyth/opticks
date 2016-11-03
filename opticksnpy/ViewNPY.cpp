@@ -273,11 +273,21 @@ void ViewNPY::dump(const char* msg)
 
 void ViewNPY::findBounds()
 {
-    if(strcmp(m_name, "rsel") == 0)
+    // Views into compressed integer buffers when viewed 
+    // as floats without the proper decompression tend to have crazy values
+    // that cause crashes
+
+    if(m_npy->isIntegerType())
     {
-        LOG(warning) << "ViewNPY::findBounds skipping for " << m_name  ;
-        return ; 
+        LOG(warning) << "ViewNPY::findBounds skipping attribute of IntegerType buffer " << m_name  ;
+        return ;  
     }
+
+    //if(strcmp(m_name, "rsel") == 0 || strcmp(m_name, "rpol") == 0)
+    //{
+    //    LOG(warning) << "ViewNPY::findBounds skipping for " << m_name  ;
+    //    return ; 
+    //}
 
     glm::vec3 lo( FLT_MAX,  FLT_MAX,  FLT_MAX);
     glm::vec3 hi(-FLT_MAX, -FLT_MAX, -FLT_MAX);

@@ -46,6 +46,37 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
     132 }
 
 
+scatter discrep
+-----------------
+
+Using tconcentric-vg4 when viewing from +X into the beam note 
+distinct butterfly distrib with CFG4 that seems less distinct with Opticks.
+
+.. image:: tconcentric_cfg4_butterfly_8cc6ccd_view_x_pol_y_half.png
+
+But tis difficult in separate viewing sessions to get same conditions, so
+need to make some plots.
+
+
+::
+
+    simon:ana blyth$ tconcentric.py  --cmx 10
+    /Users/blyth/opticks/ana/tconcentric.py --cmx 10
+    [2016-11-03 12:08:40,071] p77344 {/Users/blyth/opticks/ana/tconcentric.py:20} INFO - tag 1 src torch det concentric c2max 2.0  
+    [2016-11-03 12:08:40,071] p77344 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 12:08:40,886] p77344 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    [2016-11-03 12:08:42,885] p77344 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 12:08:43,682] p77344 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    CF a concentric/torch/  1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-03 12:08:45,691] p77344 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       769.72/347 =  2.22 
+       6              8cc6ccd         10214        10919            23.52        0.935 +- 0.009        1.069 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       7              86ccccd         10176        10825            20.06        0.940 +- 0.009        1.064 +- 0.010  [7 ] TO BT BT BT BT SC SA
+
+           ## 7% more CFG4 scattering in LS and MO ???   
+
 
 
 FIXED : wrong wavelength compression/decompression in CFG4 
@@ -110,6 +141,41 @@ Before fix, CFG4 b wavelength was being compressed wrongly in CRecorder::
 polarization de-normalizing 
 -----------------------------
 
+Possibly this is just due to the extreme char compression applied to polarization records
+
+::
+
+
+     23     spawn = ["8cc6ccd"]
+     24     
+     25     cf = CF(ok, spawn=spawn)
+     26     
+     27     scf = cf.ss[0]
+     28     
+     29     #a,b = scf.rpost()
+     30     a,b = scf.rpol()
+
+
+::
+
+    In [12]: vnorm(a[10])
+    Out[12]: 
+    A()sliced
+    A([ 1.    ,  1.    ,  1.    ,  1.0027,  1.0027,  1.0027,  1.0027], dtype=float32)
+
+    In [13]: vnorm(a[100])
+    Out[13]: 
+    A()sliced
+    A([ 1.    ,  1.    ,  1.    ,  0.9963,  0.9963,  0.9963,  0.9963], dtype=float32)
+
+    In [14]: vnorm(a[1000])
+    Out[14]: 
+    A()sliced
+    A([ 1.    ,  1.    ,  1.    ,  1.0019,  0.995 ,  0.9975,  0.9975], dtype=float32)
+
+
+
+
 After some pol fixing, still note some de-normalizing::
 
     In [2]: cf.a.rpol_(0)
@@ -154,39 +220,6 @@ After some pol fixing, still note some de-normalizing::
 
 
 
-multiplot shakedown
-----------------------
-
-Huh the mal-decompressed wavelength should be the same ??
-
-::
-
-    In [5]: a,b=scf.polw()
-
-    In [6]: a
-    Out[6]: 
-    A()sliced
-    A([[[ 0.    ,  1.    ,  0.    , -0.0236],
-            [ 0.    ,  1.    ,  0.    , -0.0236],
-            [ 0.    ,  1.    ,  0.    , -0.0236],
-            [ 0.    ,  1.    ,  0.    , -0.0236],
-            [ 0.    ,  1.    ,  0.    , -0.0236],
-            [ 0.    ,  1.    ,  0.    , -0.0236]],
-
-    In [7]: b
-    Out[7]: 
-    A()sliced
-    A([[[ 0.    ,  1.    ,  0.    , -0.8346],
-            [ 0.    ,  1.    ,  0.    , -0.8346],
-            [ 0.    ,  1.    ,  0.    , -0.8346],
-            [ 0.    ,  1.    ,  0.    , -0.8346],
-            [ 0.    ,  1.    ,  0.    , -0.8346],
-            [ 0.    ,  1.    ,  0.    , -0.8346]],
-
-
-
-
-
 viz
 -------
 
@@ -198,8 +231,6 @@ viz
 
 * Polarization viz looks different in g4 and ok.
 * Probably default G4 is random pol, and Opticks is some adhoc distrib... need to arrange these to match.
-
-TODO: check polz distribs
 
 
 truncation control
@@ -473,9 +504,15 @@ chi2 biggest contribs
     .                               1000000      1000000       769.72/347 =  2.22 
        6              8cc6ccd         10214        10919            23.52        0.935 +- 0.009        1.069 +- 0.010  [7 ] TO BT BT SC BT BT SA
        7              86ccccd         10176        10825            20.06        0.940 +- 0.009        1.064 +- 0.010  [7 ] TO BT BT BT BT SC SA
+
+           ## 7% more CFG4 scattering in LS and MO ???   
+
       15          8cccccc6ccd          3317         2785            46.38        1.191 +- 0.021        0.840 +- 0.016  [11] TO BT BT SC BT BT BT BT BT BT SA
       20          8cccc6ccccd          1544         1805            20.34        0.855 +- 0.022        1.169 +- 0.028  [11] TO BT BT BT BT SC BT BT BT BT SA
       23      8cccccccc6ccccd          1616          998           146.11        1.619 +- 0.040        0.618 +- 0.020  [15] TO BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+
+          ## how did these find 8 boundaries to cross 
+
       36              46ccccd           728          977            36.36        0.745 +- 0.028        1.342 +- 0.043  [7 ] TO BT BT BT BT SC AB
       49          4cccc6ccccd           407          308            13.71        1.321 +- 0.066        0.757 +- 0.043  [11] TO BT BT BT BT SC BT BT BT BT AB
       82     8cccc6cccc6ccccd           158           98            14.06        1.612 +- 0.128        0.620 +- 0.063  [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT SA

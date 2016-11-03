@@ -74,6 +74,8 @@ class NPY_API NPYBase {
    public:
        // depending on sizeoftype
        Type_t        getType();
+       bool          isIntegerType();
+       bool          isFloatType();
        unsigned char getSizeOfType();
        unsigned int  getNumBytes(unsigned int from_dim=0);
        unsigned int  getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0);

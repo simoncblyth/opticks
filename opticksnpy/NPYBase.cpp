@@ -375,6 +375,14 @@ NPYSpec* NPYBase::getBufferSpec()
     return m_type;
 }
 
+bool NPYBase::isIntegerType()
+{
+    return m_type == SHORT || m_type == INT || m_type == UINT || m_type == CHAR || m_type == UCHAR || m_type == ULONGLONG ; 
+}
+bool NPYBase::isFloatType()
+{
+    return m_type == FLOAT || m_type == DOUBLE ;
+}
 
 
  unsigned int NPYBase::getNumBytes(unsigned int from_dim)

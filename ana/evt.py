@@ -595,13 +595,13 @@ class Evt(object):
         return p_wavelength 
 
 
-    def rpolw(self):
+    def rpol(self):
         nstep = self.nstep()
         if nstep == -1:
             log.warning("this only works on evt with single line seqs")
             return None
         irec = slice(0,nstep)
-        return self.rpolw_(irec)
+        return self.rpolw_(irec)[:,:,:3]
 
     def rpolw_(self, irec):
         """

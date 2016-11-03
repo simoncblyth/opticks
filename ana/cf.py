@@ -23,9 +23,7 @@ class CF(object):
         self.compare(seqs)
 
         self.ss = []
-        if spawn is not None:
-            assert self.top == True, "spawn is only allowed at top level "
-            self.init_spawn(spawn)
+        self.init_spawn(spawn)
 
     def init_spawn(self, spawn):
         """
@@ -48,6 +46,11 @@ class CF(object):
              'TO RE RE BT BT BT BT SA']
 
         """
+        if spawn is None:
+            return 
+
+        assert self.top == True, "spawn is only allowed at top level "
+
         totrec = 0 
 
         if type(spawn) is slice:
@@ -269,10 +272,10 @@ class CF(object):
             log.fatal("fixed step slicing only works on cf with single line seqs eg cf.ss[0]")
             assert 0
 
-    def rpolw(self):
+    def rpol(self):
         self.checkstep()
-        aval = self.a.rpolw()
-        bval = self.b.rpolw()
+        aval = self.a.rpol()
+        bval = self.b.rpol()
         return aval, bval
 
     def rw(self):

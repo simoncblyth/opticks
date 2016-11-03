@@ -176,9 +176,19 @@ def opticks_main(**kwa):
     return args
 
 
+def isIPython():
+    try:
+        __IPYTHON__
+    except NameError:
+        return False
+    else:
+        return True
+
 class OK(argparse.Namespace):
     pass
-    brief = property(lambda self:"tag %s src %s det %s c2max %s  " % (self.utag,self.src,self.det, self.c2max))
+    #ipython = property(lambda self:sys.argv[0].endswith("ipython"))
+    ipython = isIPython()
+    brief = property(lambda self:"tag %s src %s det %s c2max %s ipython %s " % (self.utag,self.src,self.det, self.c2max, self.ipython))
 
 
 def opticks_args(**kwa):
