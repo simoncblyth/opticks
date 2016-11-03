@@ -20,6 +20,7 @@ set(TEST_SOURCES
     OEventTest.cc
     OInterpolationTest.cc
     OInterpolationIdentityTest.cc
+    ORayleighTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

@@ -46,6 +46,24 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
     132 }
 
 
+
+
+comparing CPU/GPU rayleigh scattering in isolation
+----------------------------------------------------
+
+Generating rayleigh scattered photons in isolation within CFG4 and Opticks 
+is yielding visually matched distributions for momentum direction and polarization.
+
+::
+  
+   vi cfg4/tests/OpRayleighTest.cc cfg4/tests/OpRayleighTest.py optixrap/cu/ORayleighTest.cu optixrap/tests/ORayleighTest.cc
+
+
+TODO:
+
+* derive corresponding momdir and polarization plots from the OKG4 records 
+
+
 scatter discrep
 -----------------
 
@@ -76,6 +94,8 @@ need to make some plots.
        7              86ccccd         10176        10825            20.06        0.940 +- 0.009        1.064 +- 0.010  [7 ] TO BT BT BT BT SC SA
 
            ## 7% more CFG4 scattering in LS and MO ???   
+
+
 
 
 

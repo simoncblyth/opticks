@@ -13,9 +13,10 @@ template <typename T> class OpticksCfg ;
 class OpticksHub ; 
 
 #include "OXPPNS.hh"
-class cuRANDWrapper ; 
+//class cuRANDWrapper ; 
 
 class OContext ; 
+class ORng ; 
 class OEvent ; 
 
 
@@ -34,15 +35,16 @@ class OXRAP_API OPropagator {
         void init();
         void setEntry(unsigned int entry);
         void initParameters();
-        void initRng();
         void setSize(unsigned width, unsigned height);
     private:
         SLog*                m_log ; 
         OpticksHub*          m_hub ; 
         OEvent*              m_oevt ; 
         OContext*            m_ocontext ; 
+        optix::Context       m_context ;
         Opticks*             m_ok ; 
         OpticksCfg<Opticks>* m_cfg ; 
+        ORng*                m_orng ; 
 
         int                  m_override ; 
         bool                 m_nopropagate ; 
@@ -50,12 +52,7 @@ class OXRAP_API OPropagator {
         OpticksEntry*        m_entry ; 
         int                  m_entry_index ; 
 
-        optix::Context       m_context ;
         bool                 m_prelaunch ;
-
-    protected:
-        optix::Buffer        m_rng_states ;
-        cuRANDWrapper*       m_rng_wrapper ;
 
     private:
         unsigned int     m_count ; 

@@ -158,6 +158,7 @@ set(SOURCES
     OBufBase_.cu     
     OBufPair_.cu     
     OPropagator.cc
+    ORng.cc
     OEvent.cc
     OLaunchTest.cc
 
@@ -185,6 +186,7 @@ set(SOURCES
     cu/texTest.cu
     cu/OEventTest.cu
     cu/OInterpolationTest.cu
+    cu/ORayleighTest.cu
 )
 
 
@@ -211,6 +213,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_compactionTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OEventTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OInterpolationTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_ORayleighTest.cu.ptx
 )
 
 
@@ -241,6 +244,7 @@ set(HEADERS
     OPropertyLib.hh
     OAccel.hh
     OPropagator.hh
+    ORng.hh
     OEvent.hh
     numquad.h
 

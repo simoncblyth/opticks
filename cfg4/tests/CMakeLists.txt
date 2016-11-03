@@ -19,7 +19,8 @@ set(TEST_SOURCES
     G4StringTest.cc
     G4BoxTest.cc
     CCollectorTest.cc
-    CInterpolationTest
+    CInterpolationTest.cc
+    OpRayleighTest.cc 
 
 )
 
