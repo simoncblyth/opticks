@@ -272,11 +272,22 @@ class CF(object):
             log.fatal("fixed step slicing only works on cf with single line seqs eg cf.ss[0]")
             assert 0
 
+    def rdir(self, fr=0, to=1):
+        aval = self.a.rdir(fr,to)
+        bval = self.b.rdir(fr,to)
+        return aval, bval
+
+    def rpol_(self, fr):
+        aval = self.a.rpol_(fr)
+        bval = self.b.rpol_(fr)
+        return aval, bval
+
     def rpol(self):
         self.checkstep()
         aval = self.a.rpol()
         bval = self.b.rpol()
         return aval, bval
+
 
     def rw(self):
         self.checkstep()

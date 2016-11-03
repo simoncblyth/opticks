@@ -54,14 +54,18 @@ comparing CPU/GPU rayleigh scattering in isolation
 Generating rayleigh scattered photons in isolation within CFG4 and Opticks 
 is yielding visually matched distributions for momentum direction and polarization.
 
+Suggesting that the scattering is matched BUT the impact of the scattering 
+(principally the changed polarization) on what happens next is not matched ?
+
 ::
   
    vi cfg4/tests/OpRayleighTest.cc cfg4/tests/OpRayleighTest.py optixrap/cu/ORayleighTest.cu optixrap/tests/ORayleighTest.cc
 
 
-TODO:
-
 * derive corresponding momdir and polarization plots from the OKG4 records 
+
+
+
 
 
 scatter discrep

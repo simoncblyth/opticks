@@ -603,6 +603,9 @@ class Evt(object):
         irec = slice(0,nstep)
         return self.rpolw_(irec)[:,:,:3]
 
+    def rpol_(self, fr):
+        return self.rpolw_(fr)[:,:3]
+
     def rpolw_(self, irec):
         """
         Unlike rpol_ this works with irec slices, 
@@ -612,7 +615,7 @@ class Evt(object):
         """
         return self.rx[:,irec,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
 
-    def rpol_(self, irec, recs=None):
+    def rpol_old_(self, irec, recs=None):
         """
         TODO: rearrange to go direct from recs to the 
               result without resorting to new allocation
@@ -754,6 +757,26 @@ class Evt(object):
             return None
         irec = slice(0,nstep)
         return self.rpost_(irec)
+
+    def rdir(self, fr=0, to=1, nrm=True):
+        """
+        :param fr:
+        :param to:
+        :param nrm:
+
+        Vector between points on the propagation identified by "fr" and "to" 
+        zero based point indices.
+        """
+        fr_ = self.rpost_(fr)
+        to_ = self.rpost_(to)
+        step = to_[:,:3] - fr_[:,:3] 
+
+        if nrm:
+            dir_ = norm_(step)
+        else:
+            dir_ = step 
+        pass
+        return dir_
 
     def rpost_(self, irec, recs=None):
         """
