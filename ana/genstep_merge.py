@@ -34,17 +34,17 @@ log = logging.getLogger(__name__)
 
 if __name__ == '__main__':
 
-    args = opticks_main(det="dayabay", typ="cerenkov,scintillation", tag="1", sli="::3")
+    args = opticks_main(det="dayabay", src="cerenkov,scintillation", tag="1", sli="::3")
 
-    typs = args.typ.split(",")
-    assert len(typs) == 2
+    srcs = args.src.split(",")
+    assert len(srcs) == 2
 
     sli = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sli.split(":")))
 
 
     try:    
-        a = A.load_("gensteps",typs[0],args.tag,args.det)
-        b = A.load_("gensteps",typs[1],args.tag,args.det)
+        a = A.load_("gensteps",srcs[0],args.tag,args.det)
+        b = A.load_("gensteps",srcs[1],args.tag,args.det)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

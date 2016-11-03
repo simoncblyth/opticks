@@ -100,7 +100,7 @@ __device__ void rsave( Photon& p, State& s, optix::buffer<short4>& rbuffer, unsi
     float nwavelength = 255.f*(p.wavelength - boundary_domain.x)/boundary_domain.w ; // 255.f*0.f->1.f 
 
     qquad qpolw ;    
-    qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;
+    qpolw.uchar_.x = __float2uint_rn((p.polarization.x+1.f)*127.f) ;  // pol : -1->1  pol+1 : 0->2   (pol+1)*127 : 0->254
     qpolw.uchar_.y = __float2uint_rn((p.polarization.y+1.f)*127.f) ;
     qpolw.uchar_.z = __float2uint_rn((p.polarization.z+1.f)*127.f) ;
     qpolw.uchar_.w = __float2uint_rn(nwavelength)  ;

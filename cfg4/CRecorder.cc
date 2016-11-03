@@ -55,11 +55,12 @@ short shortnorm( float v, float center, float extent )
     return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
 } 
 
-unsigned char uchar_( float f )  // f in range -1.:1. 
+unsigned char my__float2uint_rn( float f )
 {
-    int ipol = iround((f+1.f)*127.f) ;
-    return ipol ; 
+    return iround(f);
 }
+
+
 
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
@@ -722,10 +723,23 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     short posz = shortnorm(pos.z()/mm, sd.z, sd.w ); 
     short time_ = shortnorm(time/ns,   td.x, td.y );
 
-    unsigned char polx = uchar_( pol.x() );
-    unsigned char poly = uchar_( pol.y() );
-    unsigned char polz = uchar_( pol.z() );
-    unsigned char wavl = uchar_( 255.f*(wavelength/nm - wd.x)/wd.w );
+    float wfrac = ((wavelength/nm) - wd.x)/wd.w ;   
+
+    // see oxrap/cu/photon.h
+    unsigned char polx = my__float2uint_rn( (pol.x()+1.f)*127.f );
+    unsigned char poly = my__float2uint_rn( (pol.y()+1.f)*127.f );
+    unsigned char polz = my__float2uint_rn( (pol.z()+1.f)*127.f );
+    unsigned char wavl = my__float2uint_rn( wfrac*255.f );
+
+/*
+    LOG(info) << "CRecorder::RecordStepPoint"
+              << " wavelength/nm " << wavelength/nm 
+              << " wd.x " << wd.x
+              << " wd.w " << wd.w
+              << " wfrac " << wfrac 
+              << " wavl " << unsigned(wavl) 
+              ;
+*/
 
     qquad qaux ; 
     qaux.uchar_.x = material ; 

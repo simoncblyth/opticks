@@ -32,9 +32,12 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    select_slice = slice(0,1)  # pluck top line of seqhis table, needed for multiplot
+    spawn = slice(0,1)  # pluck top line of seqhis table, needed for multiplot
+
+    
+
     try:
-        cf = CF(args, select_slice=select_slice, seqs=[] )
+        cf = CF(args, spawn=spawn, seqs=[] )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

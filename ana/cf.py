@@ -3,30 +3,31 @@
 import os, sys, logging, numpy as np
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import chi2, vnorm, decompression_bins
+from opticks.ana.histype import HisType
 from opticks.ana.evt import Evt
 log = logging.getLogger(__name__)
 
 
 class CF(object):
-    def __init__(self, args, seqs=[], select_slice=None, top=True):
+    def __init__(self, args, seqs=[], spawn=None, top=True):
         """
         :param args:
         :param seqs: used beneath top level 
-        :param select_slice:  only used from top level cf
+        :param spawn:  only used from top level cf
         """
         self.args = args 
         self.seqs = seqs
         self.top = top
+        self.af = HisType()
 
         self.compare(seqs)
 
         self.ss = []
-        if select_slice is not None:
-            assert self.top == True, "select_slice only allowed at top level "
-            self.init_select(select_slice)
+        if spawn is not None:
+            assert self.top == True, "spawn is only allowed at top level "
+            self.init_spawn(spawn)
 
-
-    def init_select(self, sli):
+    def init_spawn(self, spawn):
         """
         Spawn CF for each of the selections, according to 
         slices of the history sequences.
@@ -48,7 +49,18 @@ class CF(object):
 
         """
         totrec = 0 
-        for label in self.his.labels[sli]:
+
+        if type(spawn) is slice:
+            labels = self.his.labels[spawn] 
+        elif type(spawn) is list:
+            # elements of spawn can be hexint, hexstring(without 0x), or preformed labels  
+            labels = map( lambda _:self.af.label(_), spawn)
+        else:
+            log.fatal("spawn argument must be a slice or list of seqs") 
+            assert 0
+        pass
+
+        for label in labels:
             seqs = [label]
             scf = self.spawn(seqs)
             totrec += scf.nrec() 
@@ -57,7 +69,7 @@ class CF(object):
         self.totrec = totrec
 
     def spawn(self, seqs):
-        scf = CF(self.args, seqs, select_slice=None, top=False)
+        scf = CF(self.args, seqs, spawn=None, top=False)
         scf.parent = self
         scf.his = self.his
         scf.mat = self.mat
@@ -183,9 +195,7 @@ class CF(object):
         self.dump_ranges(0)
         self.dump_histories()
 
-
-
-    def xyzt(self):
+    def rpost(self):
         """
         Sliced decompression within a selection 
         works via the rx replacement with rx[psel] 
@@ -245,26 +255,32 @@ class CF(object):
             Out[10]: (1000000,)
 
         """
-        nstep = self.nrec()
-        if nstep == -1:
-            log.warning("this only works on sub-cf with single line seqs eg cf.ss[0]")
-            return None
-
-        irec = slice(0,nstep)
-        aval = self.a.rpost_(irec)
-        bval = self.b.rpost_(irec)
+        self.checkstep()
+        aval = self.a.rpost()
+        bval = self.b.rpost()
         return aval, bval
 
-    def polw(self):
-        nstep = self.nrec()
-        if nstep == -1:
-            log.warning("this only works on sub-cf with single line seqs eg cf.ss[0]")
-            return None
 
-        irec = slice(0,nstep)
-        aval = self.a.rpolw_(irec)
-        bval = self.b.rpolw_(irec)
+    def checkstep(self):
+        nstep = self.a.nstep()
+        nstep2 = self.b.nstep()
+        assert nstep == nstep2
+        if nstep == -1:
+            log.fatal("fixed step slicing only works on cf with single line seqs eg cf.ss[0]")
+            assert 0
+
+    def rpolw(self):
+        self.checkstep()
+        aval = self.a.rpolw()
+        bval = self.b.rpolw()
         return aval, bval
+
+    def rw(self):
+        self.checkstep()
+        aval = self.a.rw()
+        bval = self.b.rw()
+        return aval, bval
+
 
 
  

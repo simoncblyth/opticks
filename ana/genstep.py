@@ -48,10 +48,10 @@ X,Y,Z,W,T = 0,1,2,3,3
 
 if __name__ == '__main__':
 
-    args = opticks_main(det="juno", typ="cerenkov", tag="1")
+    args = opticks_main(det="juno", src="cerenkov", tag="1")
 
     try:    
-        a = A.load_("gensteps",args.typ,args.tag,args.det)
+        a = A.load_("gensteps",args.src,args.tag,args.det)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

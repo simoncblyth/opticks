@@ -91,7 +91,7 @@ class MaskType(BaseType):
 
     def code(self, s):
         """
-        :param s: abbreviation string eg "TO|BT|SD"  or hexstring 8ccccd  (without 0x prefix)
+        :param s: abbreviation string eg "TO|BT|SD"  or hexstring 8ccccd (without 0x prefix)
         :return: integer bitmask 
         """
         #log.info(" s [%s] " % s)
@@ -147,11 +147,44 @@ class SeqType(BaseType):
         return c
    
 
-    def label(self, i):
+    def label(self, arg):
         """
         :param i: integer code
         :return: abbreviation sequence string 
+
+        ::
+
+            In [6]: from opticks.ana.histype import HisType
+            In [7]: af = HisType()
+
+            In [4]: af.label(0xccd)        # hexint 
+            Out[4]: 'TO BT BT'
+
+            In [5]: af.label("TO BT BT")   # already a label 
+            Out[5]: 'TO BT BT'
+
+            In [6]: af.label("ccd")        # hexstring  (NB without 0x)
+            Out[6]: 'TO BT BT'
+
         """
+
+        i = None
+
+        if type(arg) is int:
+            i = arg
+        elif type(arg) is np.uint64:
+            i = arg
+        elif type(arg) is str:
+            if self.hexstr.match(arg):
+                i = int(arg, 16)
+            else:
+                return arg
+        else:
+            log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))        
+            assert 0
+        pass
+
+
         xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
         seq = map(lambda _:int(_,16), xs ) 
         log.debug("label xs %s seq %s " % (xs, repr(seq)) )

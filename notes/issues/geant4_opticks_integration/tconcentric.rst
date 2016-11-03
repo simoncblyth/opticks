@@ -1,41 +1,110 @@
 tconcentric
 ==============
 
-
 setup
 ---------
 
-Concentric spheres 3m 4m 5m  with default random radial torch
+Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polarized +y
 
 ::
 
-     52     local test_config=(
-     53                  mode=BoxInBox
-     54                  analytic=1
-     55     
-     56                  shape=sphere
-     57                  boundary=Acrylic//RSOilSurface/MineralOil
-     58                  parameters=0,0,0,5000
-     59 
-     60 
-     61                  shape=sphere
-     62                  boundary=MineralOil///Acrylic
-     63                  parameters=0,0,0,$(( 4000 + 5 ))
-     64 
-     65                  shape=sphere
-     66                  boundary=Acrylic///LiquidScintillator
-     67                  parameters=0,0,0,$(( 4000 - 5 ))
-     68 
-     69 
-     70                  shape=sphere
-     71                  boundary=LiquidScintillator///Acrylic
-     72                  parameters=0,0,0,$(( 3000 + 5 ))
-     73 
-     74                  shape=sphere
-     75                  boundary=Acrylic///$m1
-     76                  parameters=0,0,0,$(( 3000 - 5 ))
-     77 
-     78                    )
+    097 tconcentric-testconfig()
+    098 {
+    099     local test_config=(
+    100                  mode=BoxInBox
+    101                  analytic=1
+    102 
+    103                  shape=sphere
+    104                  boundary=StainlessSteel///Acrylic
+    105                  parameters=0,0,0,$(( 5000 + 5 ))
+    106 
+    107                  shape=sphere
+    108                  boundary=Acrylic//RSOilSurface/MineralOil
+    109                  parameters=0,0,0,$(( 5000 - 5 ))
+    110 
+    111 
+    112                  shape=sphere
+    113                  boundary=MineralOil///Acrylic
+    114                  parameters=0,0,0,$(( 4000 + 5 ))
+    115 
+    116                  shape=sphere
+    117                  boundary=Acrylic///LiquidScintillator
+    118                  parameters=0,0,0,$(( 4000 - 5 ))
+    119 
+    120 
+    121                  shape=sphere
+    122                  boundary=LiquidScintillator///Acrylic
+    123                  parameters=0,0,0,$(( 3000 + 5 ))
+    124 
+    125                  shape=sphere
+    126                  boundary=Acrylic///GdDopedLS
+    127                  parameters=0,0,0,$(( 3000 - 5 ))
+    128 
+    129                    )
+    130 
+    131      echo "$(join _ ${test_config[@]})" 
+    132 }
+
+
+
+
+FIXED : wrong wavelength compression/decompression in CFG4 
+--------------------------------------------------------------
+
+::
+
+    In [4]: a,b = scf.rw()
+
+    In [5]: a
+    Out[5]: 
+    A()sliced
+    A([[ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           ..., 
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686]], dtype=float32)
+
+    In [6]: b
+    Out[6]: 
+    A()sliced
+    A([[ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           ..., 
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686]], dtype=float32)
+
+
+Before fix, CFG4 b wavelength was being compressed wrongly in CRecorder::
+
+    In [24]: scf.a.wl
+    A([ 430.,  430.,  430., ...,  430.,  430.,  430.], dtype=float32)
+
+    In [21]: scf.a.recwavelength(slice(0,7))
+    A([[ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           ..., 
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686],
+           [ 429.5686,  429.5686,  429.5686, ...,  429.5686,  429.5686,  429.5686]], dtype=float32)
+
+
+    In [23]: scf.b.wl
+    A([ 430.,  430.,  430., ...,  430.,  430.,  430.], dtype=float32)
+
+    In [22]: scf.b.recwavelength(slice(0,7))
+    A([[ 122.5882,  122.5882,  122.5882, ...,  122.5882,  122.5882,  122.5882],
+           [ 122.5882,  122.5882,  122.5882, ...,  122.5882,  122.5882,  122.5882],
+           [ 122.5882,  122.5882,  122.5882, ...,  122.5882,  122.5882,  122.5882],
+           ..., 
+           [ 122.5882,  122.5882,  122.5882, ...,  122.5882,  122.5882,  122.5882],
+           [ 122.5882,  122.5882,  122.5882, ...,  122.5882,  122.5882,  122.5882],
+           [ 122.5882,  122.5882,  122.5882, ...,  122.5882,  122.5882,  122.5882]], dtype=float32)
+
 
 
 polarization de-normalizing 
@@ -305,39 +374,15 @@ Selecting just the seq that correspond to the funny mask, find no corresponding 
 
 
 
-looking for more zero counts
--------------------------------
+FIXED : Opticks not doing "TO BT BT BT BR .." by polz correction
+--------------------------------------------------------------------
 
-Opticks is not doing "TO BT BT BT BR .."  
-
-* no "internal" reflection in the acrylic just prior to MO in Opticks ?
+* no "internal" reflection in the acrylic just prior to MO in Opticks ?  
+* was caused by unnormalized polz with laser source in Opticks
 
 ::
 
       Gd/Ac/LS/Ac/MO
-
-
-Dump only lines with zero counts, a rich source of bugs::
-
-    simon:optickscore blyth$ tconcentric.py  --lmx 1000 --dbgzero
-    /Users/blyth/opticks/ana/tconcentric.py --lmx 1000 --dbgzero
-    [2016-11-02 13:41:46,821] p68095 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
-    CF a concentric/torch/  1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
-    CF b concentric/torch/ -1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
-                     seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
-                                    1000000      1000000       706.24/348 =  2.03 
-     200        8cccccccbcccd             0           44            44.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BR BT BT BT BT BT BT BT SA
-     466            4cccbcccd             0           11             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT BT BT BR BT BT BT AB
-     607      8cccc5555cc5ccd             0            7             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT RE BT BT RE RE RE RE BT BT BT BT SA
-     642           4cccc5556d             7            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC RE RE RE BT BT BT BT AB
-     660     cccc5cc6cc9ccccd             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT SC BT BT RE BT BT BT BT
-     689       8cccc9cccc655d             6            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO RE RE SC BT BT BT BT DR BT BT BT BT SA
-     697         8cc6cc55555d             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO RE RE RE RE RE BT BT SC BT BT SA
-     734     cc6cccccc96ccccd             5            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT SC DR BT BT BT BT BT BT SC BT BT
-     757         4cccccc65ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO BT BT RE SC BT BT BT BT BT BT AB
-     796       8cccc6cccbcccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT SC BT BT BT BT SA
-     800             4c555ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO BT BT RE RE RE BT AB
-
 
 Dump only lines starting "TO BT BT BT BR"::
 
@@ -369,6 +414,234 @@ Dump only lines starting "TO BT BT BT BR"::
     4178     8cccc555cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT BT BT RE RE RE BT BT BT BT SA
     4526          456cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [11] TO BT BT BT BR BT BT BT SC RE AB
                                     1000000      1000000       706.24/348 =  2.03 
+
+
+After polarization "alignment" this issue if fixed::
+
+    simon:opticks blyth$ tconcentric.py --dbgseqhis bcccd
+    /Users/blyth/opticks/ana/tconcentric.py --dbgseqhis bcccd
+    [2016-11-03 11:54:11,979] p77243 {/Users/blyth/opticks/ana/tconcentric.py:20} INFO - tag 1 src torch det concentric c2max 2.0  
+    [2016-11-03 11:54:11,979] p77243 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 11:54:12,750] p77243 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    [2016-11-03 11:54:14,720] p77243 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 11:54:15,476] p77243 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    CF a concentric/torch/  1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-03 11:54:17,458] p77243 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq bcccd dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       769.72/347 =  2.22 
+     190        8cccccccbcccd            46           44             0.04        1.045 +- 0.154        0.957 +- 0.144  [13] TO BT BT BT BR BT BT BT BT BT BT BT SA
+     463            4cccbcccd             6           11             0.00        0.545 +- 0.223        1.833 +- 0.553  [9 ] TO BT BT BT BR BT BT BT AB
+     637       8cccc6cccbcccd             7            5             0.00        1.400 +- 0.529        0.714 +- 0.319  [14] TO BT BT BT BR BT BT BT SC BT BT BT BT SA
+     844              4cbcccd             4            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO BT BT BT BR BT AB
+     903        4cccccccbcccd             4            1             0.00        4.000 +- 2.000        0.250 +- 0.250  [13] TO BT BT BT BR BT BT BT BT BT BT BT AB
+    1056           45cccbcccd             2            3             0.00        0.667 +- 0.471        1.500 +- 0.866  [10] TO BT BT BT BR BT BT BT RE AB
+    1178       8cccc5cccbcccd             3            3             0.00        1.000 +- 0.577        1.000 +- 0.577  [14] TO BT BT BT BR BT BT BT RE BT BT BT BT SA
+    1542      8cccc56cccbcccd             2            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BR BT BT BT SC RE BT BT BT BT SA
+    1584      8cccc55cccbcccd             2            1             0.00        2.000 +- 1.414        0.500 +- 0.500  [15] TO BT BT BT BR BT BT BT RE RE BT BT BT BT SA
+    2087     89cccccc55cbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT RE RE BT BT BT BT BT BT DR SA
+    2156       4cc5cccccbcccd             1            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT BT BT RE BT BT AB
+    2218       89cccccccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT BT BT BT BT DR SA
+    2243         4cc6cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO BT BT BT BR BT BT BT SC BT BT AB
+    2486     ccc55cc5cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BR BT BT BT RE BT BT RE RE BT BT BT
+    2527       8cccccc6cbcccd             1            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT SC BT BT BT BT BT BT SA
+    2535          466cccbcccd             1            1             0.00        1.000 +- 1.000        1.000 +- 1.000  [11] TO BT BT BT BR BT BT BT SC SC AB
+    2660       86cccccccbcccd             1            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT BT BT BT BT SC SA
+    2816           46cccbcccd             1            1             0.00        1.000 +- 1.000        1.000 +- 1.000  [10] TO BT BT BT BR BT BT BT SC AB
+    2847      8cccccc55cbcccd             1            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BR BT RE RE BT BT BT BT BT BT SA
+    2970      86cccc5cccbcccd             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BR BT BT BT RE BT BT BT BT SC SA
+    .                               1000000      1000000       769.72/347 =  2.22 
+
+
+
+chi2 biggest contribs
+------------------------
+
+::
+
+    simon:ana blyth$ tconcentric.py  --cmx 10
+    /Users/blyth/opticks/ana/tconcentric.py --cmx 10
+    [2016-11-03 12:08:40,071] p77344 {/Users/blyth/opticks/ana/tconcentric.py:20} INFO - tag 1 src torch det concentric c2max 2.0  
+    [2016-11-03 12:08:40,071] p77344 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 12:08:40,886] p77344 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    [2016-11-03 12:08:42,885] p77344 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 12:08:43,682] p77344 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    CF a concentric/torch/  1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-03 12:08:45,691] p77344 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       769.72/347 =  2.22 
+       6              8cc6ccd         10214        10919            23.52        0.935 +- 0.009        1.069 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       7              86ccccd         10176        10825            20.06        0.940 +- 0.009        1.064 +- 0.010  [7 ] TO BT BT BT BT SC SA
+      15          8cccccc6ccd          3317         2785            46.38        1.191 +- 0.021        0.840 +- 0.016  [11] TO BT BT SC BT BT BT BT BT BT SA
+      20          8cccc6ccccd          1544         1805            20.34        0.855 +- 0.022        1.169 +- 0.028  [11] TO BT BT BT BT SC BT BT BT BT SA
+      23      8cccccccc6ccccd          1616          998           146.11        1.619 +- 0.040        0.618 +- 0.020  [15] TO BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+      36              46ccccd           728          977            36.36        0.745 +- 0.028        1.342 +- 0.043  [7 ] TO BT BT BT BT SC AB
+      49          4cccc6ccccd           407          308            13.71        1.321 +- 0.066        0.757 +- 0.043  [11] TO BT BT BT BT SC BT BT BT BT AB
+      82     8cccc6cccc6ccccd           158           98            14.06        1.612 +- 0.128        0.620 +- 0.063  [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT SA
+      96     8cccccccc6cccc6d           126           67            18.04        1.881 +- 0.168        0.532 +- 0.065  [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+     147     8cccc5cccc6ccccd            72           36            12.00        2.000 +- 0.236        0.500 +- 0.083  [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT SA
+    .
+    .     THEY ALL HAVE "SC" 
+    .          TODO:Compare distribs especially polz after scattering 
+    .
+    .
+    .                               1000000      1000000       769.72/347 =  2.22 
+    [2016-11-03 12:08:45,810] p77344 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       184.12/44 =  4.18 
+       4                 1890         38518        37550            12.32        1.026 +- 0.005        0.975 +- 0.005  [4 ] TO|BT|SA|RE
+      21                 1830           352          245            19.18        1.437 +- 0.077        0.696 +- 0.044  [4 ] TO|BT|SC|RE
+      30                 1888             0          100           100.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO|BT|SA|AB
+    .                               1000000      1000000       184.12/44 =  4.18 
+    [2016-11-03 12:08:45,843] p77344 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000      2381.92/236 = 10.09 
+       5              3443231         17781        18510            14.64        0.961 +- 0.007        1.041 +- 0.008  [7 ] Gd Ac LS Ac MO MO Ac
+       9      343231323443231          6964         6287            34.59        1.108 +- 0.013        0.903 +- 0.011  [15] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO Ac
+      11          34323132231          4422         3943            27.43        1.121 +- 0.017        0.892 +- 0.014  [11] Gd Ac LS LS Ac Gd Ac LS Ac MO Ac
+      12              4443231          3040         3429            23.39        0.887 +- 0.016        1.128 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      43     3443231323443231           194          394            68.03        0.492 +- 0.035        2.031 +- 0.102  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+      50     4443231323443231           299           73           137.30        4.096 +- 0.237        0.244 +- 0.029  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO MO
+      61     3323111323443231           181            1           178.02      181.000 +- 13.454       0.006 +- 0.006  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac Ac
+      67     4323111323443231             0          153           153.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+      78     3323132344323111           126            1           123.03      126.000 +- 11.225       0.008 +- 0.008  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+      83     3323113234432311           118            1           115.03      118.000 +- 10.863       0.008 +- 0.008  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+      84     1132231323443231           114           18            69.82        6.333 +- 0.593        0.158 +- 0.037  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Gd
+      88     4323113234432311             0          109           109.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+      89     1132344323443231           108           32            41.26        3.375 +- 0.325        0.296 +- 0.052  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Gd
+     100     3132344323443231             0           96            96.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Ac
+     102     4323132344323111             0           93            93.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+     105     1132344323132231            84           12            54.00        7.000 +- 0.764        0.143 +- 0.041  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Gd
+     113     3132231323443231             0           76            76.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Ac
+     114     2332332332332231             0           75            75.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac LS
+     126     3322311323443231            60            0            60.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac Ac
+     127     3332332332332231            56            1            53.07       56.000 +- 7.483        0.018 +- 0.018  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac Ac
+    .                               1000000      1000000      2381.92/236 = 10.09 
+    [2016-11-03 12:08:45,892] p77344 {/Users/blyth/opticks/ana/evt.py:502} WARNING - missing a_ana hflags_ana 
+    simon:ana blyth$ 
+
+
+
+
+
+
+dbgzero lines
+-------------------
+
+seqmat truncation discrep, lots of zeros in tail
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Need way to crossref from a seqmat to corresponding seqhis for debugging these..
+
+::
+
+    tconcentric.py  --lmx 1000 --dbgzero
+
+    [2016-11-03 12:00:50,591] p77254 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000      2381.92/236 = 10.09 
+      67     4323111323443231             0          153           153.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+      88     4323113234432311             0          109           109.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+     100     3132344323443231             0           96            96.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Ac
+     102     4323132344323111             0           93            93.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+     113     3132231323443231             0           76            76.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Ac
+     114     2332332332332231             0           75            75.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac LS
+     126     3322311323443231            60            0            60.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac Ac
+     129     3132344323132231             0           56            56.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Ac
+     144     3322231323443231            45            0            45.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS LS Ac Ac
+     146     4323113234443231             0           44            44.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+     152     4322311323443231             0           40            40.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac MO
+     157     3231111323443231             0           38            38.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Gd Ac LS Ac
+     158     3323113234432231            37            0            37.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+     165     3323113223443231            35            0            35.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS Ac Gd Gd Ac LS Ac Ac
+     168     3323113234443231            34            0            34.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+     170     4323113223443231             0           34            34.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS Ac Gd Gd Ac LS Ac MO
+     173     4323132344432311             0           33            33.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO MO Ac LS Ac Gd Ac LS Ac MO
+     177     3323132344432311            31            0            31.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO MO Ac LS Ac Gd Ac LS Ac Ac
+     178     3323132223443231            30            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS LS Ac Gd Ac LS Ac Ac
+     188     4323132234432311             0           28             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS LS Ac Gd Ac LS Ac MO
+     192     3323132234432311            27            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS LS Ac Gd Ac LS Ac Ac
+     207     3323443231322311            23            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Ac
+     208     4323132344443231             0           23             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO MO MO Ac LS Ac Gd Ac LS Ac MO
+     212     4323132223443231             0           23             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS LS Ac Gd Ac LS Ac MO
+
+
+
+pflags
+~~~~~~~~
+
+Known impossible pflags issue remains::
+
+    tconcentric.py  --lmx 1000 --dbgzero
+
+    [2016-11-03 12:00:50,558] p77254 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       184.12/44 =  4.18 
+      30                 1888             0          100           100.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO|BT|SA|AB
+      49                 18a8             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO|BT|SA|SC|AB
+      51                 1db0             4            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO|BT|BR|DR|SA|SC|RE
+      52                 1c98             0            3             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO|BT|BR|SA|RE|AB
+      53                 1988             0            2             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO|BT|DR|SA|AB
+      54                 1408             0            2             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO|BR|AB
+      55                 1418             1            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO|BR|RE|AB
+      56                 19a8             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO|BT|DR|SA|SC|AB
+      57                 1c88             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO|BT|BR|SA|AB
+    .                               1000000      1000000       184.12/44 =  4.18 
+
+
+
+FIXED seqhis
+~~~~~~~~~~~~~~~
+
+Following polz fix no more discrepant seqhis zeros::
+
+    simon:ana blyth$ tconcentric.py  --lmx 1000 --dbgzero
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 1000 --dbgzero
+    [2016-11-03 12:00:44,838] p77254 {/Users/blyth/opticks/ana/tconcentric.py:20} INFO - tag 1 src torch det concentric c2max 2.0  
+    [2016-11-03 12:00:44,838] p77254 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 12:00:45,662] p77254 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    [2016-11-03 12:00:47,620] p77254 {/Users/blyth/opticks/ana/evt.py:84} INFO -  seqs [] 
+    [2016-11-03 12:00:48,401] p77254 {/Users/blyth/opticks/ana/evt.py:382} INFO - skip init_selection as no seqs
+    CF a concentric/torch/  1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1955 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-03 12:00:50,405] p77254 {/Users/blyth/opticks/ana/seq.py:394} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       769.72/347 =  2.22 
+     612      8cccc5555cc5ccd             0            7             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT RE BT BT RE RE RE RE BT BT BT BT SA
+     626        4cc55cc6ccccd             0            7             0.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BT SC BT BT RE RE BT BT AB
+     630               45656d             7            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SC RE SC RE AB
+     665     cccc5cc6cc9ccccd             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT SC BT BT RE BT BT BT BT
+     689       8cccc9cccc655d             6            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO RE RE SC BT BT BT BT DR BT BT BT BT SA
+     699         8cc6cc55555d             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO RE RE RE RE RE BT BT SC BT BT SA
+     723           4cccc5556d             6            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC RE RE RE BT BT BT BT AB
+     747       4555cccc6ccccd             5            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BT SC BT BT BT BT RE RE RE AB
+     764         4cccccc65ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO BT BT RE SC BT BT BT BT BT BT AB
+     783     cccccc6cccc6cc6d             5            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO SC BT BT SC BT BT BT BT SC BT BT BT BT BT BT
+
+
+
+Dump only lines with zero counts, a rich source of bugs::
+
+    simon:optickscore blyth$ tconcentric.py  --lmx 1000 --dbgzero
+    /Users/blyth/opticks/ana/tconcentric.py --lmx 1000 --dbgzero
+    [2016-11-02 13:41:46,821] p68095 {/Users/blyth/opticks/ana/tconcentric.py:24} INFO - tag 1 src torch det concentric c2max 2.0  
+    CF a concentric/torch/  1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161102-1256 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+                     seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+                                    1000000      1000000       706.24/348 =  2.03 
+     200        8cccccccbcccd             0           44            44.00        0.000 +- 0.000        0.000 +- 0.000  [13] TO BT BT BT BR BT BT BT BT BT BT BT SA
+     466            4cccbcccd             0           11             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT BT BT BR BT BT BT AB
+     607      8cccc5555cc5ccd             0            7             0.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT RE BT BT RE RE RE RE BT BT BT BT SA
+     642           4cccc5556d             7            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [10] TO SC RE RE RE BT BT BT BT AB
+     660     cccc5cc6cc9ccccd             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT DR BT BT SC BT BT RE BT BT BT BT
+     689       8cccc9cccc655d             6            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO RE RE SC BT BT BT BT DR BT BT BT BT SA
+     697         8cc6cc55555d             0            6             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO RE RE RE RE RE BT BT SC BT BT SA
+     734     cc6cccccc96ccccd             5            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] TO BT BT BT BT SC DR BT BT BT BT BT BT SC BT BT
+     757         4cccccc65ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [12] TO BT BT RE SC BT BT BT BT BT BT AB
+     796       8cccc6cccbcccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [14] TO BT BT BT BR BT BT BT SC BT BT BT BT SA
+     800             4c555ccd             0            5             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO BT BT RE RE RE BT AB
+
 
 
 remaining discreps by cmx selection

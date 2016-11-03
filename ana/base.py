@@ -176,19 +176,29 @@ def opticks_main(**kwa):
     return args
 
 
+class OK(argparse.Namespace):
+    pass
+    brief = property(lambda self:"tag %s src %s det %s c2max %s  " % (self.utag,self.src,self.det, self.c2max))
+
+
 def opticks_args(**kwa):
+
+    oad_key = "OPTICKS_ANA_DEFAULTS"
+    oad = os.environ.get(oad_key,"det=dayabay,src=torch,tag=1")
+    defaults = dict(map(lambda ekv:ekv.split("="), oad.split(","))) 
+    log.info("envvar %s -> defaults %s " % (oad_key, repr(defaults)))
+
+    det = kwa.get("det", defaults["det"])
+    src = kwa.get("src", defaults["src"])
+    tag = kwa.get("tag", defaults["tag"])
 
     llv = kwa.get("loglevel", "info")
     mrc = kwa.get("mrc", 101)
     doc = kwa.get("doc", None)
-    tag = kwa.get("tag", None)
     tagoffset = kwa.get("tagoffset", 0)
     multievent = kwa.get("multievent", 1)
     stag = kwa.get("stag", None)
     ptag = kwa.get("ptag", None)
-    src = kwa.get("src", None)
-    det = kwa.get("det", None)
-    typ = kwa.get("typ", None)
     show = kwa.get("show", True)
     terse = kwa.get("terse", False)
     mat = kwa.get("mat", "GdDopedLS")
@@ -204,20 +214,25 @@ def opticks_args(**kwa):
     prohis = kwa.get("prohis", False)
     promat = kwa.get("promat", False)
 
+
     parser = argparse.ArgumentParser(doc)
+
+    parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
+    parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay. Default %(default)s. "  )
+    parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
+    #parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation. Default %(default)s"  ) # now using "src"
 
     parser.add_argument(     "--noshow",  dest="show", default=show, action="store_false", help="switch off dumping commandline "  )
     parser.add_argument(     "--show",  default=show, action="store_true", help="dump invoking commandline "  )
     parser.add_argument(     "--loglevel", default=llv, help=" set logging level : DEBUG/INFO/WARNING/ERROR/CRITICAL. Default %(default)s." )
 
-    parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
+    parser.add_argument(     "--profile",  default=None, help="Unused option allowing argparser to cope with remnant ipython profile option"  )
+    parser.add_argument(     "-i", dest="interactive", action="store_true", default=False, help="Unused option allowing argparser to cope with remnant ipython -i option"  )
+
     parser.add_argument(     "--tagoffset",  default=tagoffset, type=int, help="tagoffset : unsigned offset from tag, identifies event in multivent running. Default %(default)s "  )
     parser.add_argument(     "--multievent",  default=multievent, type=int, help="multievent : unsigned number of events to handle. Default %(default)s "  )
     parser.add_argument(     "--stag",  default=stag, help="S-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
     parser.add_argument(     "--ptag",  default=ptag, help="P-Polarization tag : identifying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent" )
-    parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
-    parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay. Default %(default)s. "  )
-    parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation. Default %(default)s"  )
     parser.add_argument(     "--mrc",  default=mrc, type=int, help="script return code resulting from missing event files. Default %(default)s "  )
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting. Default %(default)s"  )
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
@@ -233,8 +248,11 @@ def opticks_args(**kwa):
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
 
+    parser.add_argument('script', nargs='*', help='script help')
 
-    args = parser.parse_args()
+
+    ok = OK()
+    args = parser.parse_args(namespace=ok)
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.loglevel.upper()), format=fmt)
 
@@ -261,7 +279,8 @@ def opticks_args(**kwa):
     if args.show:
          print " ".join(sys.argv)
 
-    return args 
+    #return args 
+    return ok 
 
     
  

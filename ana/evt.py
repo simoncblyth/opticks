@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!usr/bin/env python
 
 import os, logging, stat, datetime
 import numpy as np
@@ -111,6 +111,16 @@ class Evt(object):
         pass
         self.check_stamps()
 
+
+    def nstep(self):
+        """
+        :return: number of steps, when a single sequence is selected
+        """ 
+        nseq = len(self.seqs) 
+        if nseq != 1:return -1
+        seq = self.seqs[0]
+        eseq = seq.split()
+        return len(eseq)
 
     def init_types(self):
         log.debug("init_types")
@@ -560,6 +570,13 @@ class Evt(object):
     def seqhis_or_not(self, args):
         return np.logical_not(self.seqhis_or(args))    
 
+    def rw(self):
+        nstep = self.nstep()
+        if nstep == -1:
+            log.warning("this only works on evt with single line seqs")
+            return None
+        irec = slice(0,nstep)
+        return self.recwavelength(irec)
 
     def recwavelength(self, irec, recs=None):
         """
@@ -576,6 +593,15 @@ class Evt(object):
         p_wavelength = nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
 
         return p_wavelength 
+
+
+    def rpolw(self):
+        nstep = self.nstep()
+        if nstep == -1:
+            log.warning("this only works on evt with single line seqs")
+            return None
+        irec = slice(0,nstep)
+        return self.rpolw_(irec)
 
     def rpolw_(self, irec):
         """
@@ -720,6 +746,14 @@ class Evt(object):
         #assert p_center[0] == p_center[1] == p_center[2] == 0., p_center
         pb = np.linspace(p_center[0] - p_extent, p_center[1] + p_extent, 2*32767+1)
         return pb 
+
+    def rpost(self):
+        nstep = self.nstep()
+        if nstep == -1:
+            log.warning("this only works on evt with single line seqs")
+            return None
+        irec = slice(0,nstep)
+        return self.rpost_(irec)
 
     def rpost_(self, irec, recs=None):
         """

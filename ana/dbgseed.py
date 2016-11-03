@@ -147,7 +147,7 @@ def check_dbgseed(a,g):
 
 
 if __name__ == '__main__':
-    args = opticks_main(typ="torch", tag="1", det="dayabay")
+    args = opticks_main(src="torch", tag="1", det="dayabay")
 
     np.set_printoptions(suppress=True, precision=3)
 
@@ -171,14 +171,14 @@ if __name__ == '__main__':
     ij = i[:,0,0].view(np.int32)
 
 
-    if args.typ in ("cerenkov", "scintillation"):
-        g = np.load(x_("$OPTICKS_DATA_DIR/gensteps/%s/%s/%s.npy" % (args.det,args.typ,args.tag) ))
-    elif args.typ == "torch":
+    if args.src in ("cerenkov", "scintillation"):
+        g = np.load(x_("$OPTICKS_DATA_DIR/gensteps/%s/%s/%s.npy" % (args.det,args.src,args.tag) ))
+    elif args.src == "torch":
         g = np.load(x_("$TMP/torchdbg.npy"))
     else:
-        assert 0, args.typ 
+        assert 0, args.src
 
-    if args.typ == "torch":
+    if args.src == "torch":
         print "cj", cj[99500:]
         print "ij", ij[99500:]
     pass
