@@ -311,8 +311,12 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
 
     // acertain step stage by comparing photon_id/parent_id set by prior setTrack with the last 
 
+
+    // (parent_id, primary_id, photon_id, last_photon_id) -> stage
+
+
     CStage::CStage_t stage = CStage::UNKNOWN ; 
-    if( parent_id == -1 )  // primary photon, ie not downstream from reemission 
+    if( parent_id == -1 )     // primary photon, ie not downstream from reemission 
     {
         stage = photon_id != last_photon_id  ? CStage::START : CStage::COLLECT ;
     } 
@@ -321,8 +325,7 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
         photon_id = primary_id ;      // <-- tacking reem step recording onto primary record 
         stage = m_rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
         m_rejoin_count++ ; 
-        // rejoin count is zeroed in setTrack, 
-        // so each remission generation track will result in REJOIN 
+        // rejoin count is zeroed in setTrack, so each remission generation trk will result in REJOIN 
     }
 
     if(stage == CStage::START && last_record_id >= 0 && last_record_id < INT_MAX )
@@ -332,20 +335,23 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
         m_recorder->compare(last_record_id);
     }
 
-    if(last_debug || m_verbosity > 0)
+    if(last_debug || m_verbosity > 0 )
+    {
+        if(stage == CStage::START) LOG(info) << "." ; 
         LOG(info) 
-                  << " pri " << std::setw(10) << primary_id
-                  << " ("
-                  << " trk " << std::setw(10) << m_optical_track_id
-                  << " par " << std::setw(10) << m_optical_parent_id
-                  << " ) " 
-                  << " pho " << std::setw(10) << photon_id
-                  << " lpho " << std::setw(10) << last_photon_id
-                  << " lrec " << std::setw(10) << last_record_id
+                  << " track_step_count " << std::setw(4) << m_track_step_count
+                  << " pri " << std::setw(7) << primary_id
+                  << " par " << std::setw(7) << parent_id
+                  << " pho(trk) " << std::setw(7) << photon_id
+                  << " lpho " << std::setw(7) << last_photon_id
+                  << " lrec " << std::setw(7) << last_record_id
                   << " rjco " << std::setw(3) << m_rejoin_count 
                   << " stge " << CStage::Label(stage) 
                   ;
- 
+    } 
+
+
+
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);
 

@@ -111,16 +111,11 @@ Nov 4, 2016 : seqhis chi2 now less than 1
     [2016-11-04 15:32:45,756] p1606 {/Users/blyth/opticks/ana/tconcentric.py:196} INFO - early exit as non-interactive
 
 
+RESOLVED : scattered counts and distrib mismatch 
+-----------------------------------------------------
 
-
-
-
-wildcarded multiseq selection of scattered
------------------------------------------------
-
-Checking dir and pol distrib from the SC point to the next 
-with a combined selection "TO BT BT SC .." 
-(ie checking scatter distrib for all scatterers) 
+Checking dir and pol distrib from the SC point to the next point 
+using a wildcard selection "TO BT BT SC .."  (ie checking scatter distrib for all scatterers) 
 yields the expected no selection scatter distrib for Opticks.
 But for CFG4 get very different distrib with a zero in y dir.
 
@@ -131,7 +126,7 @@ RESOLVED:
   uses funny third power and no sampling to appropriately relate old and new polarizations 
 
 
-::
+Before fix::
 
     tconcentric-i --pfxseqhis .6ccd
 
@@ -165,25 +160,52 @@ RESOLVED:
     .                                 18763        18827       139.55/39 =  3.58 
 
 
+After fix, moving from DsG4OpRayleigh to OpRayleigh::
+
+    tconcentric-i --pfxseqhis .6ccd
+
+    [2016-11-04 17:49:43,774] p2627 {/Users/blyth/opticks/ana/tconcentric.py:222} INFO -  pfxseqhis [.6ccd] label [TO BT BT SC ..] 
+    [2016-11-04 17:49:49,450] p2627 {/Users/blyth/opticks/ana/cf.py:96} INFO - spawned seqs ['TO BT BT SC ..'] psel A 18763 B 18957 
+    CF a concentric/torch/  1 : TO BT BT SC .. 20161104-1715 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 : TO BT BT SC .. 20161104-1715 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-04 17:49:49,459] p2627 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana      noname       noname           c2           ab           ba 
+    .                                 18763        18957        28.20/39 =  0.72 
+       0              8cc6ccd         10214        10304             0.39        0.991 +- 0.010        1.009 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       1          8cccccc6ccd          3317         3336             0.05        0.994 +- 0.017        1.006 +- 0.017  [11] TO BT BT SC BT BT BT BT BT BT SA
+       2              4cc6ccd          1192         1214             0.20        0.982 +- 0.028        1.018 +- 0.029  [7 ] TO BT BT SC BT BT AB
+       3                46ccd           622          635             0.13        0.980 +- 0.039        1.021 +- 0.041  [5 ] TO BT BT SC AB
+       4         8cccc6cc6ccd           339          337             0.01        1.006 +- 0.055        0.994 +- 0.054  [12] TO BT BT SC BT BT SC BT BT BT BT SA
+       5             8cc66ccd           295          298             0.02        0.990 +- 0.058        1.010 +- 0.059  [8 ] TO BT BT SC SC BT BT SA
+       6             86cc6ccd           201          223             1.14        0.901 +- 0.064        1.109 +- 0.074  [8 ] TO BT BT SC BT BT SC SA
+       7          4cccccc6ccd           164          201             3.75        0.816 +- 0.064        1.226 +- 0.086  [11] TO BT BT SC BT BT BT BT BT BT AB
+       8            4cccc6ccd           154          163             0.26        0.945 +- 0.076        1.058 +- 0.083  [9 ] TO BT BT SC BT BT BT BT AB
+       9             89cc6ccd           113          131             1.33        0.863 +- 0.081        1.159 +- 0.101  [8 ] TO BT BT SC BT BT DR SA
+      10             8cc56ccd           130          122             0.25        1.066 +- 0.093        0.938 +- 0.085  [8 ] TO BT BT SC RE BT BT SA
+      11         8cccc5cc6ccd           127          118             0.33        1.076 +- 0.096        0.929 +- 0.086  [12] TO BT BT SC BT BT RE BT BT BT BT SA
+      12         8cccccc66ccd            91           96             0.13        0.948 +- 0.099        1.055 +- 0.108  [12] TO BT BT SC SC BT BT BT BT BT BT SA
+      13         8cccc9cc6ccd            74           53             3.47        1.396 +- 0.162        0.716 +- 0.098  [12] TO BT BT SC BT BT DR BT BT BT BT SA
+      14         8cc6cccc6ccd            72           71             0.01        1.014 +- 0.120        0.986 +- 0.117  [12] TO BT BT SC BT BT BT BT SC BT BT SA
+      15     8cccccccc9cc6ccd            70           71             0.01        0.986 +- 0.118        1.014 +- 0.120  [16] TO BT BT SC BT BT DR BT BT BT BT BT BT BT BT SA
+      16         86cccccc6ccd            70           43             6.45        1.628 +- 0.195        0.614 +- 0.094  [12] TO BT BT SC BT BT BT BT BT BT SC SA
+      17           8cccbc6ccd            65           63             0.03        1.032 +- 0.128        0.969 +- 0.122  [10] TO BT BT SC BT BR BT BT BT SA
+      18               4c6ccd            49           46             0.09        1.065 +- 0.152        0.939 +- 0.138  [6 ] TO BT BT SC BT AB
+      19         8cc5cccc6ccd            35           45             1.25        0.778 +- 0.131        1.286 +- 0.192  [12] TO BT BT SC BT BT BT BT RE BT BT SA
+    .                                 18763        18957        28.20/39 =  0.72 
 
 
 
 
-comparing CPU/GPU rayleigh scattering in isolation
-----------------------------------------------------
+MATCH : no selection CFG4/OK rayleigh scattering in isolation
+----------------------------------------------------------------
 
 Generating rayleigh scattered photons in isolation within CFG4 and Opticks 
-is yielding visually matched distributions for momentum direction and polarization.
-
-Suggesting that the scattering is matched BUT the impact of the scattering 
-(principally the changed polarization) on what happens next is not matched ?
+is yielding matched distributions for momentum direction and polarization.
 
 ::
   
    vi cfg4/tests/OpRayleighTest.cc cfg4/tests/OpRayleighTest.py optixrap/cu/ORayleighTest.cu optixrap/tests/ORayleighTest.cc
 
-
-* derive corresponding momdir and polarization plots from the OKG4 records 
 
 
 RESOLVED : scatter discrep
@@ -280,8 +302,8 @@ Before fix, CFG4 b wavelength was being compressed wrongly in CRecorder::
 
 
 
-polarization de-normalizing 
------------------------------
+ASIS : polarization de-normalizing 
+------------------------------------
 
 Possibly this is just due to the extreme char compression applied to polarization records
 
@@ -401,39 +423,60 @@ truncation control
 
 
 
-pflags inconsistency
-------------------------
+ISSUE : pflags inconsistency : due to incomplete REjoins, AB not scrubbed and replaced with RE
+---------------------------------------------------------------------------------------------------
+
+See ana/pflags.py 
+
+* running with the psel_dindex list of discepant masks (tconcentric-tt-pflags) 
+  reveals that all photons with inconsistency look to be incompletely REjoined,
+  ie they are rejoined but somehow the AB scrubbing and replacement with RE failed
+  to happen
+
 
 ::
 
-    In [1]: cf.a.pflags
-    A([6272, 6272, 6304, ..., 6272, 6272, 6152], dtype=uint32)
+    cu_pflags (masks from CRecorder)
+    ## actual photon masks have the impossible SA|AB masks
 
-    In [2]: cf.a.pflags2
-    A([6272, 6272, 6304, ..., 6272, 6272, 6152], dtype=uint64)
+    TO|BT|SA|AB
+    TO|BT|SA|SC|AB
+    TO|BT|DR|SA|AB
+    TO|BT|DR|SC|RE        ## APART FROM THIS ONE, ALL THE REST HAVE AN EXTRA AB COMPARED TO pflags2 (ie compared to seqhis)
+    TO|BT|BR|DR|SA|RE|AB
+    TO|BT|BR|SA|SC|AB
+    TO|BT|BR|SA|RE|AB
+    TO|BT|BR|SC|AB
 
-    In [3]: np.all( cf.a.pflags == cf.a.pflags2 )
-    A(True, dtype=bool)
+    [[6280  112]
+     [6312    8]
+     [6536    5]
+     [6448    3]
+     [7576    1]
+     [7336    1]
+     [7320    1]
+     [7208    1]]
 
-    In [4]: np.all( cf.b.pflags == cf.b.pflags2 )
-    A(False, dtype=bool)
+    cu_pflags2 (masks derived from seqhis)
+    ## pflags2 masks are derived from seqhis : so no surprise there are no impossible masks here
 
-    In [5]: cf.b.pflags
-    A([6272, 6272, 4104, ..., 6272, 6272, 6272], dtype=uint32)
+    TO|BT|SA
+    TO|BT|SA|SC
+    TO|BT|DR|SA
+    TO|BT|DR|RE
+    TO|BT|BR|DR|SA|RE    
+    TO|BT|BR|SA|SC
+    TO|BT|BR|SA|RE
+    TO|BT|BR|SC
 
-    In [6]: cf.b.pflags2
-    A([6272, 6272, 4104, ..., 6272, 6272, 6272], dtype=uint64)
-
-    In [8]: np.where(cf.b.pflags != cf.b.pflags2)
-    Out[8]: 
-    (array([  9293,  10417,  38703,  40531,  47866,  66511,  74056,  90889,  98124, 103790, 111520, 116997, 135801, 139493, 143921, 150541, 151219, 164255, 170259, 171262, 177002, 194160, 203513, 214671,
-           220551, 224903, 229273, 253992, 258138, 263355, 266127, 266186, 268319, 271286, 277796, 281298, 288618, 291006, 292897, 296337, 314518, 320768, 327006, 351412, 354076, 358256, 390495, 390733,
-           409293, 440796, 466268, 481324, 487080, 500494, 510353, 514529, 533494, 543191, 543762, 546128, 556228, 608587, 614032, 621449, 622235, 628030, 651722, 653140, 655326, 675203, 683446, 684549,
-           692990, 708189, 712979, 727854, 731511, 734173, 750190, 752983, 754708, 755547, 762979, 772864, 803011, 808268, 823787, 826555, 826808, 841612, 846686, 853481, 858163, 870089, 873611, 873845,
-           879960, 889659, 890908, 896371, 897459, 915381, 918676, 922042, 928606, 944816, 946072, 946257, 948055, 953226, 953905, 984992, 986098, 999950]),)
-
-    In [9]: np.where(cf.b.pflags != cf.b.pflags2)[0].shape
-    Out[9]: (114,)
+    [[6272  112]
+     [6304    8]
+     [6528    5]
+     [6416    3]
+     [7568    1]
+     [7328    1]
+     [7312    1]
+     [7200    1]]
 
 
 
@@ -627,8 +670,8 @@ After polarization "alignment" this issue if fixed::
 
 
 
-chi2 biggest contribs
-------------------------
+FIXED : chi2 large contribs from SC lines
+---------------------------------------------
 
 ::
 
@@ -662,7 +705,6 @@ chi2 biggest contribs
      147     8cccc5cccc6ccccd            72           36            12.00        2.000 +- 0.236        0.500 +- 0.083  [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT SA
     .
     .     THEY ALL HAVE "SC" 
-    .          TODO:Compare distribs especially polz after scattering 
     .
     .
     .                               1000000      1000000       769.72/347 =  2.22 

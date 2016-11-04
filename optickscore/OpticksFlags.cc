@@ -24,6 +24,7 @@ const char* OpticksFlags::ZERO_              = "." ;
 const char* OpticksFlags::NATURAL_           = "NATURAL" ;
 const char* OpticksFlags::FABRICATED_        = "FABRICATED" ;
 const char* OpticksFlags::MACHINERY_         = "MACHINERY" ;
+
 const char* OpticksFlags::CERENKOV_          = "CERENKOV" ;
 const char* OpticksFlags::SCINTILLATION_     = "SCINTILLATION" ;
 const char* OpticksFlags::MISS_              = "MISS" ;
@@ -41,6 +42,33 @@ const char* OpticksFlags::TORCH_             = "TORCH" ;
 const char* OpticksFlags::G4GUN_             = "G4GUN" ; 
 const char* OpticksFlags::NAN_ABORT_         = "NAN_ABORT" ; 
 const char* OpticksFlags::BAD_FLAG_          = "BAD_FLAG" ; 
+
+// NB this is duplicating abbrev from /usr/local/opticks/opticksdata/resource/GFlags/abbrev.json
+//    TODO: get rid of that 
+//
+//     as these are so fixed they deserve static enshrinement for easy access from everywhere
+//
+const char* OpticksFlags::_ZERO              = "ZE" ;
+const char* OpticksFlags::_NATURAL           = "NL" ;
+const char* OpticksFlags::_FABRICATED        = "FD" ;
+const char* OpticksFlags::_MACHINERY         = "MY" ;
+
+const char* OpticksFlags::_CERENKOV          = "CK" ;
+const char* OpticksFlags::_SCINTILLATION     = "SI" ;
+const char* OpticksFlags::_TORCH             = "TO" ; 
+const char* OpticksFlags::_MISS              = "MI" ;
+const char* OpticksFlags::_BULK_ABSORB       = "AB" ;
+const char* OpticksFlags::_BULK_REEMIT       = "RE" ;
+const char* OpticksFlags::_BULK_SCATTER      = "SC" ; 
+const char* OpticksFlags::_SURFACE_DETECT    = "SD" ;
+const char* OpticksFlags::_SURFACE_ABSORB    = "SA" ; 
+const char* OpticksFlags::_SURFACE_DREFLECT  = "DR" ; 
+const char* OpticksFlags::_SURFACE_SREFLECT  = "SR" ; 
+const char* OpticksFlags::_BOUNDARY_REFLECT  = "BR" ; 
+const char* OpticksFlags::_BOUNDARY_TRANSMIT = "BT" ; 
+const char* OpticksFlags::_NAN_ABORT         = "NA" ; 
+const char* OpticksFlags::_G4GUN             = "GN" ; 
+const char* OpticksFlags::_BAD_FLAG          = "XX" ; 
 
 
 const char* OpticksFlags::natural_           = "natural" ;
@@ -83,7 +111,51 @@ const char* OpticksFlags::Flag(const unsigned int flag)
     return s;
 }
 
-std::string OpticksFlags::FlagSequence(const unsigned long long seqhis)
+
+
+const char* OpticksFlags::Abbrev(const unsigned int flag)
+{
+    const char* s = 0 ; 
+    switch(flag)
+    {
+        case 0:                s=_ZERO;break;
+        case CERENKOV:         s=_CERENKOV;break;
+        case SCINTILLATION:    s=_SCINTILLATION ;break; 
+        case MISS:             s=_MISS ;break; 
+        case BULK_ABSORB:      s=_BULK_ABSORB ;break; 
+        case BULK_REEMIT:      s=_BULK_REEMIT ;break; 
+        case BULK_SCATTER:     s=_BULK_SCATTER ;break; 
+        case SURFACE_DETECT:   s=_SURFACE_DETECT ;break; 
+        case SURFACE_ABSORB:   s=_SURFACE_ABSORB ;break; 
+        case SURFACE_DREFLECT: s=_SURFACE_DREFLECT ;break; 
+        case SURFACE_SREFLECT: s=_SURFACE_SREFLECT ;break; 
+        case BOUNDARY_REFLECT: s=_BOUNDARY_REFLECT ;break; 
+        case BOUNDARY_TRANSMIT:s=_BOUNDARY_TRANSMIT ;break; 
+        case TORCH:            s=_TORCH ;break; 
+        case NAN_ABORT:        s=_NAN_ABORT ;break; 
+        case G4GUN:            s=_G4GUN ;break; 
+        case NATURAL:          s=_NATURAL ;break; 
+        case FABRICATED:       s=_FABRICATED ;break; 
+        case MACHINERY:        s=_MACHINERY;break; 
+        default:               s=_BAD_FLAG  ;
+                               LOG(warning) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
+    }
+    return s;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+std::string OpticksFlags::FlagSequence(const unsigned long long seqhis, bool abbrev)
 {
     std::stringstream ss ;
     assert(sizeof(unsigned long long)*8 == 16*4);
@@ -91,11 +163,31 @@ std::string OpticksFlags::FlagSequence(const unsigned long long seqhis)
     {
         unsigned long long f = (seqhis >> i*4) & 0xF ; 
         unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
-        ss << Flag(flg) << " " ;
+        ss << ( abbrev ? Abbrev(flg) : Flag(flg) ) << " " ;
     }
     return ss.str();
 }
 
+
+std::string OpticksFlags::FlagMask(const unsigned mskhis, bool abbrev)
+{
+    std::vector<const char*> labels ; 
+
+    assert( MACHINERY == 0x1 << 17 );
+    unsigned lastBit = BBit::ffs(MACHINERY) - 1 ;  
+    assert(lastBit == 17 ); 
+ 
+    for(unsigned n=0 ; n <= lastBit ; n++ )
+    {
+        unsigned flag = 0x1 << n ; 
+        if(mskhis & flag) labels.push_back( abbrev ? Abbrev(flag) : Flag(flag) );
+    }
+    unsigned nlab = labels.size() ; 
+
+    std::stringstream ss ;
+    for(unsigned i=0 ; i < nlab ; i++ ) ss << labels[i] << ( i < nlab - 1 ? "|" : ""  ) ; 
+    return ss.str();
+}
 
 
 const char* OpticksFlags::SourceType( int code )

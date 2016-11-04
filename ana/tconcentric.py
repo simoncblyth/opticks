@@ -127,23 +127,40 @@ def dirpol(scf):
 
 
 
-def abplt(a,b, bins=100,nx=2,ny=1,offset=0):
+def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
 
     ax = a[:,0]
     ay = a[:,1]
     az = a[:,2]
 
-    bx = b[:,0]
-    by = b[:,1]
-    bz = b[:,2]
+    nax = np.where(np.isnan(ax))[0] 
+    nay = np.where(np.isnan(ay))[0] 
+    naz = np.where(np.isnan(az))[0] 
+
+    if nax+nay+naz > 0:
+       log.warning("A: nan found in %s nax %d nay %d naz %d " % (title, nax, nay, naz)) 
 
     ax = ax[~np.isnan(ax)]
     ay = ay[~np.isnan(ay)]
     az = az[~np.isnan(az)]
 
+
+
+    bx = b[:,0]
+    by = b[:,1]
+    bz = b[:,2]
+
+    nbx = np.where(np.isnan(bx))[0] 
+    nby = np.where(np.isnan(by))[0] 
+    nbz = np.where(np.isnan(bz))[0] 
+
+    if nbx+nby+nbz > 0:
+       log.warning("B: nan found in %s nbx %d nby %d nbz %d " % (title, nbx, nby, nbz)) 
+
     bx = bx[~np.isnan(bx)]
     by = by[~np.isnan(by)]
     bz = bz[~np.isnan(bz)]
+
 
     plt.subplot(ny,nx,1+offset+0)
     plt.hist(ax,bins=bins,histtype="step", label="ax")
@@ -161,10 +178,10 @@ def dirpol(scf, fr, to):
     ny = 2
 
     a,b = scf.rdir(fr=fr,to=to)
-    abplt(a,b, bins=100, nx=nx, ny=ny, offset=0)
+    abplt(a,b, bins=100, nx=nx, ny=ny, offset=0, title="dirpol/rdir")
 
     a,b = scf.rpol_(fr=fr)
-    abplt(a,b, bins=100, nx=nx, ny=ny, offset=ny)
+    abplt(a,b, bins=100, nx=nx, ny=ny, offset=ny, title="dirpol/rpol")
 
     plt.show()
 

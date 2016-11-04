@@ -273,12 +273,14 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
     //
 
 	//if (m_verbosityLevel > 1)
+   /*
     LOG(fatal) << "CTorchSource::GeneratePrimaryVertex"
               << m_torch->description()
               << " fixpol " << fixpol
               << " num " << m_num 
               ;
 
+    */
 
 	for (G4int i = 0; i < m_num; i++) 
     {

@@ -297,6 +297,7 @@ class Evt(object):
         self.seqhis = seqhis
         self.pflags2 = seq2msk(seqhis) 
 
+
         self.seqmat = seqmat
 
         useqhis = len(np.unique(seqhis))
@@ -334,6 +335,8 @@ class Evt(object):
             log.debug("init_selection wildcard startswith %s " % seqs[0] ) 
             seq = seqs[0][:-3]
             psel = sa.seq_startswith(seq)
+        elif len(seqs) == 1 and seqs[0] == 'PFLAGS_DEBUG':
+            psel = self.pflags2 != self.pflags
         else:
             psel = sa.seq_or(seqs)
         pass
@@ -355,7 +358,12 @@ class Evt(object):
 
         self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
     
-
+    def psel_dindex(self):
+        """
+        Return dindex option string allowing debug dumping during OKG4 running,
+        see for example tconcentric-tt-pflags  
+        """ 
+        return "--dindex=%s" % ",".join(map(str,np.where(self.psel)[0]))
 
 
     def init_index(self, tag, src, det, dbg):
@@ -1022,28 +1030,27 @@ def check_wavelength(evt):
     assert dwl.max() < 2. 
 
 
+def deviation_plt(evt):
+    dv = evt.a_deviation_angle(axis=X)
+    if plt:
+        plt.close()
+        plt.ion()
+    
+        plt.hist(dv/deg, bins=360, log=True, histtype="step") 
+        plt.show()
+
 
 if __name__ == '__main__':
-    np.set_printoptions(precision=4, linewidth=200)
+    ok = opticks_main()
 
-    opticks_environment()
+    e0 = Evt(tag=ok.utag, src=ok.src, det=ok.det, args=ok)
+    e0.history_table(slice(0,20))
 
-    args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox", c2max=2.0, tagoffset=0)
+    e1 = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=["PFLAGS_DEBUG"])
+    e1.history_table(slice(0,20))
 
-    rec = True  
-    evt = Evt(tag=args.utag, src=args.src, det=args.det, label="utag %s" % args.utag, rec=rec)
 
-    evt.history_table(slice(0,20))
 
-    #dv = evt.a_deviation_angle(axis=X)
-    #
-    #if plt:
-    #    plt.close()
-    #    plt.ion()
-    #
-    #    plt.hist(dv/deg, bins=360, log=True, histtype="step") 
-    #
-    #    plt.show()
 
 
   

@@ -44,12 +44,35 @@ class OKCORE_API OpticksFlags {
        static const char* NAN_ABORT_ ;
        static const char* BAD_FLAG_ ;
     public:
+       static const char* _ZERO ;
+       static const char* _NATURAL ;
+       static const char* _FABRICATED ;
+       static const char* _MACHINERY ;
+       static const char* _G4GUN ;   
+       static const char* _CERENKOV ;
+       static const char* _SCINTILLATION ;
+       static const char* _TORCH ;
+       static const char* _MISS ;
+       static const char* _BULK_ABSORB ;
+       static const char* _BULK_REEMIT ;
+       static const char* _BULK_SCATTER ;
+       static const char* _SURFACE_DETECT ;
+       static const char* _SURFACE_ABSORB ;
+       static const char* _SURFACE_DREFLECT ;
+       static const char* _SURFACE_SREFLECT ;
+       static const char* _BOUNDARY_REFLECT ;
+       static const char* _BOUNDARY_TRANSMIT ;
+       static const char* _NAN_ABORT ;
+       static const char* _BAD_FLAG ;
+    public:
        static const char* SourceType(int code);
        static const char* SourceTypeLowercase(int code);
        static unsigned int SourceCode(const char* type);
     public:
        static const char* Flag(const unsigned int flag);
-       static std::string FlagSequence(const unsigned long long seqhis);
+       static const char* Abbrev(const unsigned int flag);
+       static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true);
+       static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
     public:
         OpticksFlags(const char* path=ENUM_HEADER_PATH);
         void save(const char* idpath);
