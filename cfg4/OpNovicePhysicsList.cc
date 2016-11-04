@@ -23,7 +23,13 @@
 
 #include "G4OpAbsorption.hh"
 #include "G4OpMieHG.hh"
+
+
+#ifdef USE_POWER_THIRD_RAYLEIGH
 #include "DsG4OpRayleigh.h"
+#else
+#include "OpRayleigh.hh"
+#endif
 
 
 #include "CBoundaryProcess.hh"
@@ -88,11 +94,13 @@ G4ThreadLocal G4OpBoundaryProcess* OpNovicePhysicsList::fBoundaryProcess = 0;
 #endif
  
 
-
-
 G4ThreadLocal G4OpAbsorption* OpNovicePhysicsList::fAbsorptionProcess = 0;
 
+#ifdef USE_POWER_THIRD_RAYLEIGH
+G4ThreadLocal DsG4OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
+#else
 G4ThreadLocal OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
+#endif
 
 G4ThreadLocal G4OpMieHG* OpNovicePhysicsList::fMieHGScatteringProcess = 0;
 
@@ -152,16 +160,6 @@ void OpNovicePhysicsList::ConstructProcess()
   ConstructEM();
 
   ConstructOpDYB();
-
-//  need to rethink approach to physics switching 
-//  if(m_ok->hasOpt("opdyb"))
-//  {  
-//      ConstructOpDYB();
-//  }
-//  else
-//  {
-//      ConstructOpNovice();
-//  } 
 
   dump("OpNovicePhysicsList::ConstructProcess"); 
 }
@@ -231,7 +229,13 @@ void OpNovicePhysicsList::ConstructOpDYB()
 
 
     G4OpAbsorption* absorb  = m_useAbsorption ? new G4OpAbsorption() : NULL ;
+
+
+#ifdef USE_POWER_THIRD_RAYLEIGH
     DsG4OpRayleigh* rayleigh = m_useRayleigh  ? new DsG4OpRayleigh() : NULL ; 
+#else
+    OpRayleigh* rayleigh = m_useRayleigh  ? new OpRayleigh() : NULL ; 
+#endif
 
     //G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();
     DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess();

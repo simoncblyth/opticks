@@ -87,10 +87,17 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     static G4ThreadLocal G4OpBoundaryProcess* fBoundaryProcess;
 #endif
 
-
     static G4ThreadLocal G4OpAbsorption* fAbsorptionProcess;
 
+
+#ifdef USE_POWER_THIRD_RAYLEIGH
+    static G4ThreadLocal DsG4OpRayleigh* fRayleighScatteringProcess;
+#else
     static G4ThreadLocal OpRayleigh* fRayleighScatteringProcess;
+#endif
+
+
+
 
     static G4ThreadLocal G4OpMieHG* fMieHGScatteringProcess;
 

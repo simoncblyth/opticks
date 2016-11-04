@@ -81,8 +81,8 @@ class Evt(object):
         self.dbgzero = args.dbgzero 
         self.cmx = args.cmx
 
-        log.info( " seqs %s " % repr(seqs))
-        #log.info(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
+        log.debug( " seqs %s " % repr(seqs))
+        log.debug(" dbgseqhis %x dbgmskhis %x dbgseqmat %x dbgmskmat %x " % (args.dbgseqhis, args.dbgmskhis, args.dbgseqmat, args.dbgmskmat ))
  
         if label is None:
             label = "%s/%s/%3s : %s" % (det, src, tag, ",".join(self.seqs)) 
@@ -309,6 +309,7 @@ class Evt(object):
 
         self.all_seqhis_ana = all_seqhis_ana
         self.seqhis_ana = all_seqhis_ana
+        ## when a selection is used seqhis_ana gets trumped by init_selection
 
         self.all_seqmat_ana = all_seqmat_ana
         self.seqmat_ana = all_seqmat_ana
@@ -318,6 +319,43 @@ class Evt(object):
             setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[cn])) 
 
         log.debug("init_sequence DONE")
+
+
+    def init_selection(self, seqs, not_):
+        if not self.rec or len(seqs) == 0:
+            log.debug("skip init_selection as no seqs")
+            return 
+   
+        log.debug("Evt seqs %s " % repr(seqs))
+
+        sa = self.all_seqhis_ana
+
+        if len(seqs) == 1 and seqs[0][-3:] == ' ..':
+            log.debug("init_selection wildcard startswith %s " % seqs[0] ) 
+            seq = seqs[0][:-3]
+            psel = sa.seq_startswith(seq)
+        else:
+            psel = sa.seq_or(seqs)
+        pass
+
+        if not_:
+            psel = np.logical_not(psel)
+
+        nsel = len(psel[psel == True])
+        if nsel == 0:
+            log.warning("empty selection seqs %s " % repr(seqs))
+
+        self.nsel = nsel 
+        self.psel = psel 
+
+        self.ox = self.ox[psel]
+        self.c4 = self.c4[psel]
+        self.wl = self.wl[psel]
+        self.rx = self.rx[psel]
+
+        self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
+    
+
 
 
     def init_index(self, tag, src, det, dbg):
@@ -386,29 +424,6 @@ class Evt(object):
             rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
             self.desc['rsr'] = rsr.desc
 
-
-    def init_selection(self, seqs, not_):
-        if not self.rec or len(seqs) == 0:
-            log.info("skip init_selection as no seqs")
-            return  
-
-        log.debug("Evt seqs %s " % repr(seqs))
-        psel = self.all_seqhis_ana.seq_or(seqs, not_=not_)
-
-        nsel = len(psel[psel == True])
-        if nsel == 0:
-            log.warning("empty selection seqs %s " % repr(seqs))
-
-        self.nsel = nsel 
-        self.psel = psel 
-
-        self.ox = self.ox[psel]
-        self.c4 = self.c4[psel]
-        self.wl = self.wl[psel]
-        self.rx = self.rx[psel]
-
-        self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
-    
  
     x = property(lambda self:self.ox[:,0,0])
     y = property(lambda self:self.ox[:,0,1])

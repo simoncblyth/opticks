@@ -166,9 +166,15 @@ class SeqType(BaseType):
             In [6]: af.label("ccd")        # hexstring  (NB without 0x)
             Out[6]: 'TO BT BT'
 
+            In [7]: af.label(".ccd")       # hexstring with wildcard continuation char "."
+            Out[7]: 'TO BT BT ..'
+
         """
 
         i = None
+        wildcard = type(arg) == str and arg[0] == "." 
+        if wildcard:
+            arg = arg[1:]
 
         if type(arg) is int:
             i = arg
@@ -179,17 +185,21 @@ class SeqType(BaseType):
                 i = int(arg, 16)
             else:
                 return arg
+            pass
         else:
             log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))        
             assert 0
         pass
 
-
         xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
         seq = map(lambda _:int(_,16), xs ) 
         log.debug("label xs %s seq %s " % (xs, repr(seq)) )
         d = self.code2abbr
-        return self.delim.join(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
+        elem = map(lambda _:d.get(_,'?%s?' % _ ), seq ) 
+        if wildcard:
+            elem += [".."] 
+
+        return self.delim.join(elem) 
 
 
 
@@ -409,6 +419,15 @@ class SeqAna(object):
         """
         :param aseq: photon length sequence array 
         :param af: instance of SeqType subclass 
+
+        ::
+
+            In [10]: sa.aseq
+            A([  9227469,   9227469, 147639405, ...,   9227469,   9227469,     19661], dtype=uint64)
+
+            In [11]: sa.aseq.shape
+            Out[11]: (1000000,)
+
         """
         cu = count_unique_sorted(aseq)
         self.af = af
@@ -422,22 +441,43 @@ class SeqAna(object):
         self.aseq = aseq
         self.cu = cu
 
-    def seq_or(self, sseq, not_=False):
+    def labels(self, prefix=None):
         """
-        :param sseq: sequence strings including source, eg "TO BR SA" "TO BR AB"
-        :return: selection boolean array of photon length
+        :param prefix: string sequence label eg "TO BT BT SC"
+        :return labels: list of string labels that start with the prefix   
+        """
+        codes = self.cu[:,0] 
+        if not prefix is None:
+            pfx = self.af.code(prefix)
+            codes = codes[np.where( codes & pfx == pfx )]   
+        pass
+        labels =  map( lambda _:self.af.label(_), codes )
+        return labels
 
-        photon level selection based on history sequence 
+    def seq_or(self, sseq):
+        """
+        :param sseq: list of sequence strings including source, eg "TO BR SA" "TO BR AB"
+        :return psel: selection boolean array of photon length
+
+        Selection of photons with any of the sequence arguments
         """
         af = self.table.af 
-
         bseq = map(lambda _:self.aseq == af.code(_), sseq)
-
         psel = np.logical_or.reduce(bseq)      
-        if not_:
-            psel = np.logical_not(psel)
-
         return psel 
+
+    def seq_startswith(self, prefix):
+        """
+        :param prefix: sequence string stub eg "TO BT BT SC"
+        :return psel: selection boolean array of photon length
+
+        Selection of all photons starting with prefix sequence
+        """
+        af = self.table.af 
+        pfx = af.code(prefix)
+        psel = self.aseq & pfx == pfx 
+        return psel 
+
 
 
 

@@ -12,13 +12,14 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 
+#include "GVector.hh"
 #include "Format.hh"
 
 using CLHEP::twopi ; 
 
 
 
-int rayleigh_scatter(const G4ThreeVector& OldMomentumDirection, 
+guint4 rayleigh_scatter(const G4ThreeVector& OldMomentumDirection, 
                      const G4ThreeVector& OldPolarization, 
                            G4ThreeVector& NewMomentumDirection,
                            G4ThreeVector& NewPolarization)
@@ -28,9 +29,14 @@ int rayleigh_scatter(const G4ThreeVector& OldMomentumDirection,
     G4double CosTheta, SinTheta, SinPhi, CosPhi, unit_x, unit_y, unit_z;
     G4ThreeVector UniformSphere ;
 
-    int count = 0 ; 
+    guint4 rc ;  
+    rc.x = 0 ; 
+    rc.y = 0 ; 
+    rc.z = 0 ; 
+    rc.w = 0 ; 
 
-    do{
+    do
+    {
         CosTheta = G4UniformRand() ; 
         SinTheta = std::sqrt(1.-CosTheta*CosTheta);
         if (G4UniformRand() < 0.5) CosTheta = -CosTheta;
@@ -66,6 +72,7 @@ int rayleigh_scatter(const G4ThreeVector& OldMomentumDirection,
         // random generate the azimuthal angle w.r.t. Newmomentum direction
         if (NewPolarization.mag() == 0.) 
         {
+            rc.y++ ; 
             rand = G4UniformRand()*twopi;
             NewPolarization.set(std::cos(rand),std::sin(rand),0.);
             NewPolarization.rotateUz(NewMomentumDirection);
@@ -79,12 +86,13 @@ int rayleigh_scatter(const G4ThreeVector& OldMomentumDirection,
 
         // simulate according to the distribution cos^2(theta)
         cosTheta = NewPolarization.dot(OldPolarization);
-        count++ ; 
+        rc.x++ ; 
     }
+    while (cosTheta*cosTheta < G4UniformRand());
+    //while (std::pow(cosTheta,2) < G4UniformRand());
     // Loop checking, 13-Aug-2015, Peter Gumplinger
-    while (std::pow(cosTheta,2) < G4UniformRand());
 
-    return count ; 
+    return rc ; 
 }
 
 
@@ -105,19 +113,30 @@ int main(int argc, char** argv)
     G4ThreeVector NewMomentumDirection;
     G4ThreeVector NewPolarization ;
 
-    unsigned ngen = 1000000*10 ;  
+    unsigned ngen = 1000000 ;  
     NPY<float>* buf = NPY<float>::make(ngen, 4, 4 );
     buf->zero(); 
 
+
+    guint4 tot(0,0,0,0) ; 
+
     for(unsigned i=0 ; i < ngen ; i++)
     {
-        int count = rayleigh_scatter(OldMomentumDirection, OldPolarization, NewMomentumDirection, NewPolarization );
+        guint4 rc = rayleigh_scatter(OldMomentumDirection, OldPolarization, NewMomentumDirection, NewPolarization );
        
+        tot.x += rc.x ; 
+        tot.y += rc.y ; 
+        tot.z += rc.z ; 
+        tot.w += rc.w ; 
+
+
         if(i%1000 == 0) LOG(info) 
             << " i " << std::setw(6) << i
-            << " count " << std::setw(6) << count 
+            << " count " << std::setw(6) << rc.x 
+            << " corner " << std::setw(6) << rc.y
             << Format(NewMomentumDirection, "DIR",7)
             << Format(NewPolarization, "POL",7)
+            << " rc " << rc.description()
             ;
 
         buf->setQuad(i, OLDMOM, 0, OldMomentumDirection.x(), OldMomentumDirection.y(), OldMomentumDirection.z(), 0.f );
@@ -125,6 +144,9 @@ int main(int argc, char** argv)
         buf->setQuad(i, NEWMOM, 0, NewMomentumDirection.x(), NewMomentumDirection.y(), NewMomentumDirection.z(), 0.f );
         buf->setQuad(i, NEWPOL, 0, NewPolarization.x(),      NewPolarization.y(),      NewPolarization.z(),      0.f );
     } 
+
+    LOG(info) << " tots " << tot.description() ; 
+
 
     buf->save("$TMP/RayleighTest/cfg4.npy");
     return 0 ;

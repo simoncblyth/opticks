@@ -143,6 +143,8 @@ OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         aParticleChange.Initialize(aTrack);
 
         const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+    
+        //LOG(info) << "OpRayleigh::PostStepDoIt" ; 
 
         if (verboseLevel>0) {
                 G4cout << "Scattering Photon!" << G4endl;

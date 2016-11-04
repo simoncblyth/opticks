@@ -48,6 +48,127 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
 
 
 
+
+Nov 4, 2016 : seqhis chi2 now less than 1 
+-------------------------------------------
+
+* seqhis now in agreement following resolution of the scattering problem
+* pflags : impossible mask issue remains
+* seqmat truncation discrepancy issue remains
+
+
+::
+
+    simon:ana blyth$ tconcentric.py --cmx 5
+    /Users/blyth/opticks/ana/tconcentric.py --cmx 5
+    [2016-11-04 15:32:39,964] p1606 {/Users/blyth/opticks/ana/tconcentric.py:191} INFO - tag 1 src torch det concentric c2max 2.0 ipython False 
+    CF a concentric/torch/  1 :  20161104-1505 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161104-1505 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-04 15:32:45,548] p1606 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       335.36/353 =  0.95 
+      12              8cc5ccd          5113         4870             5.91        1.050 +- 0.015        0.952 +- 0.014  [7 ] TO BT BT RE BT BT SA
+      17              49ccccd          2312         2471             5.29        0.936 +- 0.019        1.069 +- 0.022  [7 ] TO BT BT BT BT DR AB
+      43             89cccc6d           546          460             7.35        1.187 +- 0.051        0.842 +- 0.039  [8 ] TO SC BT BT BT BT DR SA
+      50             8cc6cc5d           385          310             8.09        1.242 +- 0.063        0.805 +- 0.046  [8 ] TO RE BT BT SC BT BT SA
+     122     89cccccccc9ccccd            53           89             9.13        0.596 +- 0.082        1.679 +- 0.178  [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR SA
+     153         86cccccc6ccd            70           43             6.45        1.628 +- 0.195        0.614 +- 0.094  [12] TO BT BT SC BT BT BT BT BT BT SC SA
+     207        8cccccc5cc55d            23           41             5.06        0.561 +- 0.117        1.783 +- 0.278  [13] TO RE RE BT BT RE BT BT BT BT BT BT SA
+     284            8cc6cc65d            11           25             5.44        0.440 +- 0.133        2.273 +- 0.455  [9 ] TO RE SC BT BT SC BT BT SA
+    .                               1000000      1000000       335.36/353 =  0.95 
+    [2016-11-04 15:32:45,673] p1606 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       165.09/43 =  3.84 
+       4                 1890         38518        37726             8.23        1.021 +- 0.005        0.979 +- 0.005  [4 ] TO|BT|SA|RE
+      19                 1910           482          410             5.81        1.176 +- 0.054        0.851 +- 0.042  [4 ] TO|BT|DR|RE
+      28                 1888             0          112           112.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO|BT|SA|AB
+    .                               1000000      1000000       165.09/43 =  3.84 
+    [2016-11-04 15:32:45,704] p1606 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000      2328.30/233 =  9.99 
+      12              4443231          3040         3271             8.46        0.929 +- 0.017        1.076 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      40     3443231323443231           194          483           123.37        0.402 +- 0.029        2.490 +- 0.113  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+      50     4443231323443231           299           57           164.51        5.246 +- 0.303        0.191 +- 0.025  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO MO
+      62     3323111323443231           181            1           178.02      181.000 +- 13.454        0.006 +- 0.006  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac Ac
+      68     4323111323443231             0          147           147.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+      70         344323132231           147          111             5.02        1.324 +- 0.109        0.755 +- 0.072  [12] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac
+      76     4323132344323111             0          132           132.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+      79     3323132344323111           126            1           123.03      126.000 +- 11.225        0.008 +- 0.008  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+      84     3323113234432311           118            0           118.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+      86     1132231323443231           114           32            46.05        3.562 +- 0.334        0.281 +- 0.050  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Gd
+      91     1132344323443231           108           16            68.26        6.750 +- 0.650        0.148 +- 0.037  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Gd
+      93     4323113234432311             0          107           107.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+     106     1132344323132231            84           23            34.78        3.652 +- 0.398        0.274 +- 0.057  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Gd
+     107     3132344323443231             0           83            83.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Ac
+     110              2223111            79           51             6.03        1.549 +- 0.174        0.646 +- 0.090  [7 ] Gd Gd Gd Ac LS LS LS
+     111     3132231323443231             0           79            79.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Ac
+     125     2332332332332231             0           64            64.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac LS
+     127     3322311323443231            60            0            60.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac Ac
+     129     3332332332332231            56            4            45.07       14.000 +- 1.871        0.071 +- 0.036  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac Ac
+     135     2231111323443231            51            6            35.53        8.500 +- 1.190        0.118 +- 0.048  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Gd Ac LS LS
+    .                               1000000      1000000      2328.30/233 =  9.99 
+    [2016-11-04 15:32:45,756] p1606 {/Users/blyth/opticks/ana/evt.py:527} WARNING - missing a_ana hflags_ana 
+    [2016-11-04 15:32:45,756] p1606 {/Users/blyth/opticks/ana/tconcentric.py:196} INFO - early exit as non-interactive
+
+
+
+
+
+
+wildcarded multiseq selection of scattered
+-----------------------------------------------
+
+Checking dir and pol distrib from the SC point to the next 
+with a combined selection "TO BT BT SC .." 
+(ie checking scatter distrib for all scatterers) 
+yields the expected no selection scatter distrib for Opticks.
+But for CFG4 get very different distrib with a zero in y dir.
+
+RESOLVED:
+
+* Opticks rayleigh.h implementation was ported based on standard G4OpRayleigh from recent G4 ~10.2 (ie with the Xin Qian rewrite) 
+* BUT DsG4OpRayleigh which was using seems to be based on G4OpRayleigh prior to the rewrite which 
+  uses funny third power and no sampling to appropriately relate old and new polarizations 
+
+
+::
+
+    tconcentric-i --pfxseqhis .6ccd
+
+    [2016-11-04 12:26:16,529] p98174 {/Users/blyth/opticks/ana/tconcentric.py:146} INFO -  pfxseqhis [.6ccd] label [TO BT BT SC ..] 
+    [2016-11-04 12:26:22,153] p98174 {/Users/blyth/opticks/ana/cf.py:96} INFO - spawned seqs ['TO BT BT SC ..'] psel A 18763 B 18827 
+    CF a concentric/torch/  1 : TO BT BT SC .. 20161103-1914 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 : TO BT BT SC .. 20161103-1914 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-04 12:26:22,162] p98174 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana      noname       noname           c2           ab           ba 
+    .                                 18763        18827       139.55/39 =  3.58 
+       0              8cc6ccd         10214        10919            23.52        0.935 +- 0.009        1.069 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       1          8cccccc6ccd          3317         2785            46.38        1.191 +- 0.021        0.840 +- 0.016  [11] TO BT BT SC BT BT BT BT BT BT SA
+       2              4cc6ccd          1192         1045             9.66        1.141 +- 0.033        0.877 +- 0.027  [7 ] TO BT BT SC BT BT AB
+       3                46ccd           622          689             3.42        0.903 +- 0.036        1.108 +- 0.042  [5 ] TO BT BT SC AB
+       4         8cccc6cc6ccd           339          271             7.58        1.251 +- 0.068        0.799 +- 0.049  [12] TO BT BT SC BT BT SC BT BT BT BT SA
+       5             8cc66ccd           295          337             2.79        0.875 +- 0.051        1.142 +- 0.062  [8 ] TO BT BT SC SC BT BT SA
+       6             86cc6ccd           201          253             5.96        0.794 +- 0.056        1.259 +- 0.079  [8 ] TO BT BT SC BT BT SC SA
+       7          4cccccc6ccd           164          136             2.61        1.206 +- 0.094        0.829 +- 0.071  [11] TO BT BT SC BT BT BT BT BT BT AB
+       8            4cccc6ccd           154          158             0.05        0.975 +- 0.079        1.026 +- 0.082  [9 ] TO BT BT SC BT BT BT BT AB
+       9             8cc56ccd           130          147             1.04        0.884 +- 0.078        1.131 +- 0.093  [8 ] TO BT BT SC RE BT BT SA
+      10             89cc6ccd           113          134             1.79        0.843 +- 0.079        1.186 +- 0.102  [8 ] TO BT BT SC BT BT DR SA
+      11         8cccc5cc6ccd           127           83             9.22        1.530 +- 0.136        0.654 +- 0.072  [12] TO BT BT SC BT BT RE BT BT BT BT SA
+      12         8cccccc66ccd            91           74             1.75        1.230 +- 0.129        0.813 +- 0.095  [12] TO BT BT SC SC BT BT BT BT BT BT SA
+      13     8cccccccc9cc6ccd            70           84             1.27        0.833 +- 0.100        1.200 +- 0.131  [16] TO BT BT SC BT BT DR BT BT BT BT BT BT BT BT SA
+      14         8cccc9cc6ccd            74           68             0.25        1.088 +- 0.127        0.919 +- 0.111  [12] TO BT BT SC BT BT DR BT BT BT BT SA
+      15         8cc6cccc6ccd            72           65             0.36        1.108 +- 0.131        0.903 +- 0.112  [12] TO BT BT SC BT BT BT BT SC BT BT SA
+      16         86cccccc6ccd            70           63             0.37        1.111 +- 0.133        0.900 +- 0.113  [12] TO BT BT SC BT BT BT BT BT BT SC SA
+      17           8cccbc6ccd            65           70             0.19        0.929 +- 0.115        1.077 +- 0.129  [10] TO BT BT SC BT BR BT BT BT SA
+      18     cbccbccbccbc6ccd            35           54             4.06        0.648 +- 0.110        1.543 +- 0.210  [16] TO BT BT SC BT BR BT BT BR BT BT BR BT BT BR BT
+      19             46cc6ccd            35           49             2.33        0.714 +- 0.121        1.400 +- 0.200  [8 ] TO BT BT SC BT BT SC AB
+    .                                 18763        18827       139.55/39 =  3.58 
+
+
+
+
+
+
 comparing CPU/GPU rayleigh scattering in isolation
 ----------------------------------------------------
 
@@ -65,11 +186,8 @@ Suggesting that the scattering is matched BUT the impact of the scattering
 * derive corresponding momdir and polarization plots from the OKG4 records 
 
 
-
-
-
-scatter discrep
------------------
+RESOLVED : scatter discrep
+-----------------------------
 
 Using tconcentric-vg4 when viewing from +X into the beam note 
 distinct butterfly distrib with CFG4 that seems less distinct with Opticks.

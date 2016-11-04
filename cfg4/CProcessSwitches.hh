@@ -4,6 +4,10 @@
 #define USE_CUSTOM_SCINTILLATION
 #define USE_CUSTOM_BOUNDARY
 
+//#define USE_POWER_THIRD_RAYLEIGH
+
+
+
 
 #ifdef USE_CUSTOM_CERENKOV
 class DsG4Cerenkov ; 
@@ -24,6 +28,15 @@ class DsG4OpBoundaryProcess ;
 #else
 class G4OpBoundaryProcess ; 
 #endif
+
+
+#ifdef USE_POWER_THIRD_RAYLEIGH
+class DsG4OpRayleigh ; 
+#else
+class OpRayleigh ; 
+#endif
+
+
 
 
 

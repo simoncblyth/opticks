@@ -12,7 +12,7 @@ import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
-from opticks.ana.nbase import vnorm
+from opticks.ana.nbase import vnorm, costheta_
 from opticks.ana.cf   import CF
 
 STEP = 4
@@ -42,8 +42,6 @@ def butterfly(plt, scf):
     butterfly_yz(plt, a, b, pt=4)
 
 
-
-
 def isolated_scatter():
     """
     Without selection scatter distrib plots 
@@ -55,6 +53,8 @@ def isolated_scatter():
     bins = 100 
     nx = 6 
     ny = 2 
+
+
 
     qwns = [ 
          (1,aa[:,NEWMOM,X],"Amomx"), 
@@ -80,35 +80,20 @@ def isolated_scatter():
     plt.show()
 
 
+def dirpol(scf):
+    assert len(scf.seqs) == 1
+    seq_ = scf.seqs[0]
 
-if __name__ == '__main__':
-    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric")  
-
-    log.info(ok.brief)
-
-    cf = CF(ok)
-
-    if not ok.ipython:
-        log.info("early exit as non-interactive")
-        sys.exit(0)
-
-
-    seq = "8cc6ccd"
-
-
-    cf.init_spawn([seq]) 
-    scf = cf.ss[0]
-
-    fr0 = seq[::-1].find("6") - 1  # point before the SC
-    fr1 = seq[::-1].find("8")      # SA 
-
+    fr0 = seq_.split().index("SC") - 1
+    #fr1 = seq_.split().index("SA") 
+    fr1 = len(seq_.split()) - 1 
 
     bins = 100 
     nx = 12 
     ny = fr1 - fr0 
     offset = 0
 
-    log.info(" fr0 %d fr1 %d ny %d " % (fr0, fr1, ny))
+    log.info(" seq_ %s fr0 %d fr1 %d ny %d " % (seq_, fr0, fr1, ny))
 
     for fr in range(fr0,fr1):
         to = fr + 1
@@ -141,6 +126,96 @@ if __name__ == '__main__':
     plt.show()
 
 
+
+def abplt(a,b, bins=100,nx=2,ny=1,offset=0):
+
+    ax = a[:,0]
+    ay = a[:,1]
+    az = a[:,2]
+
+    bx = b[:,0]
+    by = b[:,1]
+    bz = b[:,2]
+
+    ax = ax[~np.isnan(ax)]
+    ay = ay[~np.isnan(ay)]
+    az = az[~np.isnan(az)]
+
+    bx = bx[~np.isnan(bx)]
+    by = by[~np.isnan(by)]
+    bz = bz[~np.isnan(bz)]
+
+    plt.subplot(ny,nx,1+offset+0)
+    plt.hist(ax,bins=bins,histtype="step", label="ax")
+    plt.hist(ay,bins=bins,histtype="step", label="ay")
+    plt.hist(az,bins=bins,histtype="step", label="az")
+
+    plt.subplot(ny,nx,1+offset+1)
+    plt.hist(bx,bins=bins,histtype="step", label="bx")
+    plt.hist(by,bins=bins,histtype="step", label="by")
+    plt.hist(bz,bins=bins,histtype="step", label="bz")
+
+
+def dirpol(scf, fr, to):
+    nx = 2
+    ny = 2
+
+    a,b = scf.rdir(fr=fr,to=to)
+    abplt(a,b, bins=100, nx=nx, ny=ny, offset=0)
+
+    a,b = scf.rpol_(fr=fr)
+    abplt(a,b, bins=100, nx=nx, ny=ny, offset=ny)
+
+    plt.show()
+
+
+def poldot(scf, fr, oldpol=[0,1,0], bins=100):
+    """
+    dot product between old and new polarization
+    """
+    a,b = scf.rpol_(fr=fr)
+    act = costheta_( np.tile( oldpol, len(a) ).reshape(-1,3), a)
+    bct = costheta_( np.tile( oldpol, len(b) ).reshape(-1,3), b)
+
+    plt.hist(act, bins=bins, histtype="step", label="act")
+    plt.hist(bct, bins=bins, histtype="step", label="bct")
+  
+    plt.show()
+
+
+
+
+if __name__ == '__main__':
+    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric")  
+
+    log.info(ok.brief)
+
+    cf = CF(ok)
+
+    if not ok.ipython:
+        log.info("early exit as non-interactive")
+        sys.exit(0)
+
+    sa = cf.a.all_seqhis_ana
+    sb = cf.b.all_seqhis_ana
+
+    pfxseqhis = ok.pfxseqhis   ## eg ".6ccd" standing for "TO BT BT SC .."
+    
+    if len(pfxseqhis) > 0:
+        log.info(" pfxseqhis [%s] label [%s] " % (pfxseqhis, sa.af.label(pfxseqhis)))
+        cf.init_spawn([pfxseqhis]) 
+        scf = cf.ss[0]
+
+        if pfxseqhis[0] == ".":
+            to = pfxseqhis[::-1].index(".")
+            fr = to - 1
+
+            dirpol(scf, fr, to)
+            #poldot(scf, fr )   
+        pass 
+    else:
+        scf = None
+    pass
 
 
 

@@ -57,6 +57,7 @@ class CF(object):
             labels = self.his.labels[spawn] 
         elif type(spawn) is list:
             # elements of spawn can be hexint, hexstring(without 0x), or preformed labels  
+            # a single wildcarded label also supported eg "TO BT BT SC .."
             labels = map( lambda _:self.af.label(_), spawn)
         else:
             log.fatal("spawn argument must be a slice or list of seqs") 
@@ -92,8 +93,9 @@ class CF(object):
         if self.top:
             self.fullcompare() 
         else:
-            # self.fullcompare()    ## hmm can this be avoided for the spawned
-            pass
+            log.info("spawned seqs %s psel A %d B %d " % (repr(seqs), a.nsel, b.nsel ))
+            self.fullcompare() 
+        pass
 
     def fullcompare(self):
         a = self.a

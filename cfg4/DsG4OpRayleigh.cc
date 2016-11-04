@@ -72,6 +72,7 @@
 #include "G4Version.hh"
 
 #include "DsG4OpRayleigh.h"
+#include "PLOG.hh"
 
 
 using CLHEP::pi ; 
@@ -142,75 +143,74 @@ DsG4OpRayleigh::~DsG4OpRayleigh()
 G4VParticleChange* 
 DsG4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-        aParticleChange.Initialize(aTrack);
+    aParticleChange.Initialize(aTrack);
 
-        const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+    const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
 
-        if (verboseLevel>0) {
-		G4cout << "Scattering Photon!" << G4endl;
-		G4cout << "Old Momentum Direction: "
-	     	     << aParticle->GetMomentumDirection() << G4endl;
-		G4cout << "Old Polarization: "
-		     << aParticle->GetPolarization() << G4endl;
-	}
+    if (verboseLevel>0) 
+    {
+        G4cout << "Scattering Photon!" << G4endl;
+        G4cout << "Old Momentum Direction: " << aParticle->GetMomentumDirection() << G4endl;
+        G4cout << "Old Polarization: " << aParticle->GetPolarization() << G4endl;
+    }
 
-	// find polar angle w.r.t. old polarization vector
+    // find polar angle w.r.t. old polarization vector
 
-	G4double rand = G4UniformRand();
+    //LOG(info) << "DsG4OpRayleigh::PostStepDoIt" ; 
 
-	G4double CosTheta = std::pow(rand, 1./3.);
-	G4double SinTheta = std::sqrt(1.-CosTheta*CosTheta);
+    G4double rand = G4UniformRand();
 
-        if(G4UniformRand() < 0.5)CosTheta = -CosTheta;
+    G4double CosTheta = std::pow(rand, 1./3.);
+    G4double SinTheta = std::sqrt(1.-CosTheta*CosTheta);
 
-	// find azimuthal angle w.r.t old polarization vector 
+    if(G4UniformRand() < 0.5) CosTheta = -CosTheta;
 
-	rand = G4UniformRand();
+    // find azimuthal angle w.r.t old polarization vector 
 
-	G4double Phi = twopi*rand;
-	G4double SinPhi = std::sin(Phi); 
-	G4double CosPhi = std::cos(Phi); 
-	
-	G4double unit_x = SinTheta * CosPhi; 
-	G4double unit_y = SinTheta * SinPhi;  
-	G4double unit_z = CosTheta; 
-	
-        G4ThreeVector NewPolarization (unit_x,unit_y,unit_z);
+    rand = G4UniformRand();
 
-        // Rotate new polarization direction into global reference system 
+    G4double Phi = twopi*rand;
+    G4double SinPhi = std::sin(Phi); 
+    G4double CosPhi = std::cos(Phi); 
+   
+    G4double unit_x = SinTheta * CosPhi; 
+    G4double unit_y = SinTheta * SinPhi;  
+    G4double unit_z = CosTheta; 
+   
+    G4ThreeVector NewPolarization (unit_x,unit_y,unit_z);
 
-	G4ThreeVector OldPolarization = aParticle->GetPolarization();
-        OldPolarization = OldPolarization.unit();
+    // Rotate new polarization direction into global reference system 
 
-	NewPolarization.rotateUz(OldPolarization);
-        NewPolarization = NewPolarization.unit();
-	
-        // -- new momentum direction is normal to the new
-        // polarization vector and in the same plane as the
-        // old and new polarization vectors --
+    G4ThreeVector OldPolarization = aParticle->GetPolarization();
+    OldPolarization = OldPolarization.unit();
 
-        G4ThreeVector NewMomentumDirection = 
-                              OldPolarization - NewPolarization * CosTheta;
+    NewPolarization.rotateUz(OldPolarization);
+    NewPolarization = NewPolarization.unit();
+   
+    // -- new momentum direction is normal to the new
+    // polarization vector and in the same plane as the
+    // old and new polarization vectors --
 
-        if(G4UniformRand() < 0.5)NewMomentumDirection = -NewMomentumDirection;
-        NewMomentumDirection = NewMomentumDirection.unit();
+    G4ThreeVector NewMomentumDirection = OldPolarization - NewPolarization * CosTheta;
 
-	aParticleChange.ProposePolarization(NewPolarization);
+    if(G4UniformRand() < 0.5) NewMomentumDirection = -NewMomentumDirection;
+    NewMomentumDirection = NewMomentumDirection.unit();
 
-	aParticleChange.ProposeMomentumDirection(NewMomentumDirection);
 
-        if (verboseLevel>0) {
-		G4cout << "New Polarization: " 
-		     << NewPolarization << G4endl;
-		G4cout << "Polarization Change: "
-		     << *(aParticleChange.GetPolarization()) << G4endl;  
-		G4cout << "New Momentum Direction: " 
-		     << NewMomentumDirection << G4endl;
-		G4cout << "Momentum Change: "
-		     << *(aParticleChange.GetMomentumDirection()) << G4endl; 
-	}
 
-        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+
+    aParticleChange.ProposePolarization(NewPolarization);
+    aParticleChange.ProposeMomentumDirection(NewMomentumDirection);
+
+    if (verboseLevel>0) 
+    {
+        G4cout << "New Polarization: " << NewPolarization << G4endl;
+        G4cout << "Polarization Change: " << *(aParticleChange.GetPolarization()) << G4endl;  
+        G4cout << "New Momentum Direction: " << NewMomentumDirection << G4endl;
+        G4cout << "Momentum Change: " << *(aParticleChange.GetMomentumDirection()) << G4endl; 
+    }
+
+    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
 
 // BuildThePhysicsTable for the Rayleigh Scattering process
