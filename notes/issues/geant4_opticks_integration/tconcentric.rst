@@ -88,6 +88,15 @@ pflags.py::
       2055555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE RE 
       2155555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE RE 
 
+
+
+
+
+
+
+
+
+
       00               d TO                                              
        1              cd TO BT                                           
        2             ccd TO BT BT                                        
@@ -126,6 +135,115 @@ pflags.py::
       14 cccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT    
       156cccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT SC 
       165cccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT RE 
+
+
+All three have an SC/AB step within the truncation zone::
+
+
+    (11)  BT/BT     FrT                                            PRE_SAVE 
+    [  11](Stp ;opticalphoton stepNum 350471680(tk ;opticalphoton tid 10633 pid 10632 nm 371.759 mm  ori[    0.000   0.000   0.000]  pos[ 2158.9001662.988 123.665]  )
+      pre               sphere_phys         Acrylic  Transportation        GeomBoundary pos[   2906.266  -274.466   712.961]  dir[   -0.903   0.411   0.122]  pol[   -0.312  -0.826   0.469]  ns 43.486 nm 430.000
+     post               sphere_phys       GdDopedLS  Transportation        GeomBoundary pos[   2896.021  -269.805   714.348]  dir[   -0.903   0.412   0.124]  pol[   -0.313  -0.826   0.469]  ns 43.544 nm 430.000
+     )
+    (12)  BT/AB     FrT              PRE_SAVE POST_SAVE POST_DONE LAST_POST 
+    [  12](Stp ;opticalphoton stepNum 350471680(tk ;opticalphoton tid 10633 pid 10632 nm 371.759 mm  ori[    0.000   0.000   0.000]  pos[ 2158.9001662.988 123.665]  )
+      pre               sphere_phys       GdDopedLS  Transportation        GeomBoundary pos[   2896.021  -269.805   714.348]  dir[   -0.903   0.412   0.124]  pol[   -0.313  -0.826   0.469]  ns 43.544 nm 430.000
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[    795.643   690.003  1003.105]  dir[   -0.903   0.412   0.124]  pol[   -0.313  -0.826   0.469]  ns 55.625 nm 430.000
+     )
+    (13)  RE/AB     FrT   PRE_SAVE POST_SAVE POST_DONE LAST_POST STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350472720(tk ;opticalphoton tid 10632 pid 10631 nm 386.059 mm  ori[    0.000   0.000   0.000]  pos[ 2158.6041663.922 121.826]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[    795.643   690.003  1003.105]  dir[    0.830  -0.552  -0.080]  pol[   -0.159  -0.097  -0.982]  ns 55.625 nm 381.353
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[    803.720   684.631  1002.327]  dir[    0.830  -0.552  -0.080]  pol[   -0.159  -0.097  -0.982]  ns 55.677 nm 381.353
+     )
+    (14)  RE/AB     FrT   PRE_SAVE POST_SAVE POST_DONE LAST_POST STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350471680(tk ;opticalphoton tid 10633 pid 10632 nm 371.759 mm  ori[    0.000   0.000   0.000]  pos[ 2158.9001662.988 123.665]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[    803.720   684.631  1002.327]  dir[   -0.320  -0.821   0.472]  pol[    0.926  -0.377  -0.030]  ns 55.677 nm 360.954
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[    801.840   679.800  1005.106]  dir[   -0.320  -0.821   0.472]  pol[    0.926  -0.377  -0.030]  ns 55.709 nm 360.954
+     )
+    (15)  RE/AB     FrT   PRE_SAVE POST_SAVE POST_DONE LAST_POST STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350472720(tk ;opticalphoton tid 10632 pid 10631 nm 386.059 mm  ori[    0.000   0.000   0.000]  pos[ 2158.6041663.922 121.826]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[    801.840   679.800  1005.106]  dir[    0.661   0.700  -0.270]  pol[    0.750  -0.629   0.206]  ns 55.709 nm 422.151
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[   1721.967  1653.910   630.028]  dir[    0.661   0.700  -0.270]  pol[    0.750  -0.629   0.206]  ns 62.884 nm 422.151
+     )
+    (16)  RE/SC     NAB                                PRE_SAVE STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350471680(tk ;opticalphoton tid 10633 pid 10632 nm 371.759 mm  ori[    0.000   0.000   0.000]  pos[ 2158.9001662.988 123.665]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[   1721.967  1653.910   630.028]  dir[   -0.160   0.940  -0.303]  pol[   -0.490  -0.342  -0.802]  ns 62.884 nm 411.280
+     post               sphere_phys       GdDopedLS      OpRayleigh    PostStepDoItProc pos[   1655.808  2041.915   505.023]  dir[    0.703  -0.487  -0.519]  pol[   -0.677  -0.233  -0.698]  ns 65.028 nm 411.280
+     )
+    (17)  SC/AB     NAB   PRE_SAVE PRE_DONE LAST_POST STEP_RECOLL RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [   1](Stp ;opticalphoton stepNum 350471680(tk ;opticalphoton tid 10633 pid 10632 nm 371.759 mm  ori[    0.000   0.000   0.000]  pos[ 2158.9001662.988 123.665]  )
+      pre               sphere_phys       GdDopedLS      OpRayleigh    PostStepDoItProc pos[   1655.808  2041.915   505.023]  dir[    0.703  -0.487  -0.519]  pol[   -0.677  -0.233  -0.698]  ns 65.028 nm 411.280
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[   2224.549  1647.392    85.231]  dir[    0.703  -0.487  -0.519]  pol[   -0.677  -0.233  -0.698]  ns 69.229 nm 411.280
+     )
+    (18)  RE/AB     NAB   PRE_SAVE PRE_DONE LAST_POST STEP_REJOIN RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [   0](Stp ;opticalphoton stepNum 350472720(tk ;opticalphoton tid 10632 pid 10631 nm 386.059 mm  ori[    0.000   0.000   0.000]  pos[ 2158.6041663.922 121.826]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[   2224.549  1647.392    85.231]  dir[   -0.854   0.214   0.474]  pol[   -0.475   0.049  -0.879]  ns 69.229 nm 386.059
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[   2158.604  1663.922   121.826]  dir[   -0.854   0.214   0.474]  pol[   -0.475   0.049  -0.879]  ns 69.642 nm 386.059
+     )
+    (19)  RE/AB     NAB   PRE_SAVE PRE_DONE LAST_POST STEP_REJOIN RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [   0](Stp ;opticalphoton stepNum 350471680(tk ;opticalphoton tid 10633 pid 10632 nm 371.759 mm  ori[    0.000   0.000   0.000]  pos[ 2158.9001662.988 123.665]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[   2158.604  1663.922   121.826]  dir[    0.142  -0.448   0.883]  pol[   -0.795  -0.583  -0.168]  ns 69.642 nm 371.759
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[   2158.900  1662.988   123.665]  dir[    0.142  -0.448   0.883]  pol[   -0.795  -0.583  -0.168]  ns 69.654 nm 371.759
+     )
+
+
+
+
+    (11)  BT/BT     FrT                                            PRE_SAVE 
+    [  11](Stp ;opticalphoton stepNum 350543712(tk ;opticalphoton tid 10671 pid 10670 nm 384.165 mm  ori[    0.000   0.000   0.000]  pos[ -1399.5311445.5382287.614]  )
+      pre               sphere_phys         Acrylic  Transportation        GeomBoundary pos[   -449.301  1285.404  2667.563]  dir[   -0.877   0.209   0.434]  pol[    0.209  -0.646   0.734]  ns 58.029 nm 430.000
+     post               sphere_phys uidScintillator  Transportation        GeomBoundary pos[   -463.693  1288.834  2674.681]  dir[   -0.879   0.207   0.429]  pol[    0.207  -0.646   0.735]  ns 58.114 nm 430.000
+     )
+    (12)  BT/AB     FrT              PRE_SAVE POST_SAVE POST_DONE LAST_POST 
+    [  12](Stp ;opticalphoton stepNum 350543712(tk ;opticalphoton tid 10671 pid 10670 nm 384.165 mm  ori[    0.000   0.000   0.000]  pos[ -1399.5311445.5382287.614]  )
+      pre               sphere_phys uidScintillator  Transportation        GeomBoundary pos[   -463.693  1288.834  2674.681]  dir[   -0.879   0.207   0.429]  pol[    0.207  -0.646   0.735]  ns 58.114 nm 430.000
+     post               sphere_phys uidScintillator    OpAbsorption    PostStepDoItProc pos[   -699.526  1344.239  2789.661]  dir[   -0.879   0.207   0.429]  pol[    0.207  -0.646   0.735]  ns 59.506 nm 430.000
+     )
+    (13)  RE/AB     FrT   PRE_SAVE POST_SAVE POST_DONE LAST_POST STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350541904(tk ;opticalphoton tid 10670 pid 10669 nm 401.508 mm  ori[    0.000   0.000   0.000]  pos[ -1402.4771435.3462279.505]  )
+      pre               sphere_phys uidScintillator          noProc           Undefined pos[   -699.526  1344.239  2789.661]  dir[    0.685   0.241   0.688]  pol[    0.032  -0.953   0.302]  ns 59.506 nm 382.572
+     post               sphere_phys uidScintillator    OpAbsorption    PostStepDoItProc pos[   -687.275  1348.545  2801.973]  dir[    0.685   0.241   0.688]  pol[    0.032  -0.953   0.302]  ns 59.602 nm 382.572
+     )
+    (14)  RE/AB     FrT   PRE_SAVE POST_SAVE POST_DONE LAST_POST STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350543712(tk ;opticalphoton tid 10671 pid 10670 nm 384.165 mm  ori[    0.000   0.000   0.000]  pos[ -1399.5311445.5382287.614]  )
+      pre               sphere_phys uidScintillator          noProc           Undefined pos[   -687.275  1348.545  2801.973]  dir[   -0.076   0.399  -0.914]  pol[   -0.751  -0.626  -0.211]  ns 59.602 nm 397.084
+     post               sphere_phys uidScintillator    OpAbsorption    PostStepDoItProc pos[   -699.384  1411.971  2656.669]  dir[   -0.076   0.399  -0.914]  pol[   -0.751  -0.626  -0.211]  ns 60.443 nm 397.084
+     )
+    (15)  RE/SC     NAB                                PRE_SAVE STEP_REJOIN 
+    [   0](Stp ;opticalphoton stepNum 350541904(tk ;opticalphoton tid 10670 pid 10669 nm 401.508 mm  ori[    0.000   0.000   0.000]  pos[ -1402.4771435.3462279.505]  )
+      pre               sphere_phys uidScintillator          noProc           Undefined pos[   -699.384  1411.971  2656.669]  dir[    0.928  -0.294   0.231]  pol[    0.065  -0.482  -0.874]  ns 60.443 nm 401.508
+     post               sphere_phys uidScintillator      OpRayleigh    PostStepDoItProc pos[   -602.423  1381.225  2680.779]  dir[   -0.892   0.060  -0.448]  pol[    0.353  -0.525  -0.775]  ns 60.993 nm 401.508
+     )
+    (16)  SC/AB     NAB   PRE_SAVE PRE_DONE LAST_POST STEP_RECOLL RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [   1](Stp ;opticalphoton stepNum 350541904(tk ;opticalphoton tid 10670 pid 10669 nm 401.508 mm  ori[    0.000   0.000   0.000]  pos[ -1402.4771435.3462279.505]  )
+      pre               sphere_phys uidScintillator      OpRayleigh    PostStepDoItProc pos[   -602.423  1381.225  2680.779]  dir[   -0.892   0.060  -0.448]  pol[    0.353  -0.525  -0.775]  ns 60.993 nm 401.508
+     post               sphere_phys uidScintillator    OpAbsorption    PostStepDoItProc pos[  -1402.477  1435.346  2279.505]  dir[   -0.892   0.060  -0.448]  pol[    0.353  -0.525  -0.775]  ns 65.707 nm 401.508
+     )
+    (17)  RE/AB     NAB   PRE_SAVE PRE_DONE LAST_POST STEP_REJOIN RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [   0](Stp ;opticalphoton stepNum 350543712(tk ;opticalphoton tid 10671 pid 10670 nm 384.165 mm  ori[    0.000   0.000   0.000]  pos[ -1399.5311445.5382287.614]  )
+      pre               sphere_phys uidScintillator          noProc           Undefined pos[  -1402.477  1435.346  2279.505]  dir[    0.221   0.763   0.607]  pol[    0.923  -0.364   0.122]  ns 65.707 nm 384.165
+     post               sphere_phys uidScintillator    OpAbsorption    PostStepDoItProc pos[  -1399.531  1445.538  2287.614]  dir[    0.221   0.763   0.607]  pol[    0.923  -0.364   0.122]  ns 65.779 nm 384.165
+     )
+
+
+
+
+
+    (16)  BT/SC     NAB                                            PRE_SAVE 
+    [  16](Stp ;opticalphoton stepNum 349966608(tk ;opticalphoton tid 2432 pid 0 nm    430 mm  ori[    0.000   0.000   0.000]  pos[ -822.709-2083.337 173.565]  )
+      pre               sphere_phys       GdDopedLS  Transportation        GeomBoundary pos[   -832.975 -2775.615   756.399]  dir[    0.211   0.875  -0.436]  pol[   -0.895   0.352   0.274]  ns 77.401 nm 430.000
+     post               sphere_phys       GdDopedLS      OpRayleigh    PostStepDoItProc pos[   -613.290 -1862.728   301.282]  dir[   -0.635  -0.669  -0.387]  pol[   -0.771   0.517   0.372]  ns 82.818 nm 430.000
+     )
+    (17)  SC/AB     NAB   PRE_SAVE PRE_DONE LAST_POST RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [  17](Stp ;opticalphoton stepNum 349966608(tk ;opticalphoton tid 2432 pid 0 nm    430 mm  ori[    0.000   0.000   0.000]  pos[ -822.709-2083.337 173.565]  )
+      pre               sphere_phys       GdDopedLS      OpRayleigh    PostStepDoItProc pos[   -613.290 -1862.728   301.282]  dir[   -0.635  -0.669  -0.387]  pol[   -0.771   0.517   0.372]  ns 82.818 nm 430.000
+     post               sphere_phys       GdDopedLS    OpAbsorption    PostStepDoItProc pos[   -822.709 -2083.337   173.565]  dir[   -0.635  -0.669  -0.387]  pol[   -0.771   0.517   0.372]  ns 84.512 nm 430.000
+     )
+    (18)  RE/RE     FrT   PRE_SAVE PRE_DONE STEP_REJOIN RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [   0](Stp ;opticalphoton stepNum 349966112(tk ;opticalphoton tid 10659 pid 2432 nm 405.217 mm  ori[    0.000   0.000   0.000]  pos[ -1691.913-2455.968-275.091]  )
+      pre               sphere_phys       GdDopedLS          noProc           Undefined pos[   -822.709 -2083.337   173.565]  dir[   -0.830  -0.356  -0.429]  pol[    0.249  -0.925   0.286]  ns 84.512 nm 405.217
+     post               sphere_phys         Acrylic  Transportation        GeomBoundary pos[  -1691.913 -2455.968  -275.091]  dir[   -0.830  -0.359  -0.427]  pol[    0.252  -0.924   0.288]  ns 89.985 nm 405.217
+     )
 
 
 

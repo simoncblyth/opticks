@@ -25,12 +25,12 @@ void CRec::startPhoton(unsigned record_id, const G4ThreeVector& origin)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRec::add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, int action)
+void CRec::add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag,  CStage::CStage_t stage, int action)
 #else
-void CRec::add(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat, CStage::CStage_t stage, int action)
+void CRec::add(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action)
 #endif
 {
-    m_stp.push_back(new CStp(step, step_id, boundary_status, premat, postmat, stage, action, m_origin ));
+    m_stp.push_back(new CStp(step, step_id, boundary_status, premat, postmat, preflag, postflag, stage, action, m_origin ));
 }
 
 

@@ -76,6 +76,10 @@ const char* CRecorder::MAT_SWAP_ = "MAT_SWAP" ;
 const char* CRecorder::STEP_START_ = "STEP_START" ; 
 const char* CRecorder::STEP_REJOIN_ = "STEP_REJOIN" ; 
 const char* CRecorder::STEP_RECOLL_ = "STEP_RECOLL" ; 
+const char* CRecorder::RECORD_TRUNCATE_ = "RECORD_TRUNCATE" ; 
+const char* CRecorder::BOUNCE_TRUNCATE_ = "BOUNCE_TRUNCATE" ; 
+const char* CRecorder::ZERO_FLAG_ = "ZERO_FLAG" ; 
+
 
 
 std::string CRecorder::Action(int action)
@@ -93,6 +97,9 @@ std::string CRecorder::Action(int action)
     if((action & STEP_START) != 0)  ss << STEP_START_ << " " ; 
     if((action & STEP_REJOIN) != 0)  ss << STEP_REJOIN_ << " " ; 
     if((action & STEP_RECOLL) != 0)  ss << STEP_RECOLL_ << " " ; 
+    if((action & RECORD_TRUNCATE) != 0)  ss << RECORD_TRUNCATE_ << " " ; 
+    if((action & BOUNCE_TRUNCATE) != 0)  ss << BOUNCE_TRUNCATE_ << " " ; 
+    if((action & ZERO_FLAG) != 0)  ss << ZERO_FLAG_ << " " ; 
 
     return ss.str();
 }
@@ -581,7 +588,7 @@ bool CRecorder::RecordStep()
     if(!preSkip)
     {
         m_step_action |= PRE_SAVE ; 
-        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE ); 
+        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
         if(done) m_step_action |= PRE_DONE ; 
     }
 
@@ -593,52 +600,9 @@ bool CRecorder::RecordStep()
     }
 
     if(done) RecordPhoton();  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
-    m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, m_stage, m_step_action );
+    m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_stage, m_step_action );
 
     return done ;
-}
-
-
-
-std::string CRecorder::getStepActionString()
-{
-    return Action(m_step_action) ;
-}
-
-
-
-
-void CRecorder::setStep(const G4Step* step, int step_id)
-{
-    m_step = step ; 
-    m_step_id = step_id ; 
-    m_step_action = 0 ; 
-}
-
-void CRecorder::setStage(CStage::CStage_t stage)
-{
-    m_prior_stage = m_stage ; 
-    m_stage = stage ; 
-    // huh tis very common
-    //if(m_stage == CStage::RECOLL && m_prior_stage != CStage::REJOIN )
-    //    LOG(warning) << "CRecorder::setStage skipped REJOIN ? record_id " << m_record_id ; 
-
-}
-
-#ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
-#else
-void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
-#endif
-{
-    // this is invoked before RecordStep 
-    m_prior_boundary_status = m_boundary_status ; 
-    m_prior_premat = m_premat ; 
-    m_prior_postmat = m_postmat ; 
-
-    m_boundary_status = boundary_status ; 
-    m_premat = premat ; 
-    m_postmat = postmat ;
 }
 
 
@@ -656,10 +620,12 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     // constrain slot to recording inclusive range (0,m_steps_per_photon-1) 
 
     m_truncate = slot == m_steps_per_photon - 1 ; 
+    if(m_truncate) m_step_action |= RECORD_TRUNCATE ; 
 
     if(flag == 0)
     {
        m_badflag += 1 ; 
+       m_step_action |= ZERO_FLAG ; 
 
        if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
@@ -693,7 +659,10 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
-    bool truncate = m_slot > m_bounce_max  ;  
+    bool truncate = m_slot > m_bounce_max  ;   // TODO: rationalize with above m_truncate
+    if(truncate) m_step_action |= BOUNCE_TRUNCATE ; 
+
+
     bool done = truncate || absorb ;   
 
     if(done && m_dynamic)
@@ -715,6 +684,54 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     return done ;    
 }
+
+
+
+
+
+
+
+
+std::string CRecorder::getStepActionString()
+{
+    return Action(m_step_action) ;
+}
+
+
+void CRecorder::setStep(const G4Step* step, int step_id)
+{
+    m_step = step ; 
+    m_step_id = step_id ; 
+    m_step_action = 0 ; 
+}
+
+void CRecorder::setStage(CStage::CStage_t stage)
+{
+    m_prior_stage = m_stage ; 
+    m_stage = stage ; 
+}
+
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+#else
+void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+#endif
+{
+    // this is invoked before RecordStep 
+    m_prior_boundary_status = m_boundary_status ; 
+    m_prior_premat = m_premat ; 
+    m_prior_postmat = m_postmat ; 
+
+    m_boundary_status = boundary_status ; 
+    m_premat = premat ; 
+    m_postmat = postmat ;
+}
+
+
+
+
+
+
 
 
 #ifdef USE_CUSTOM_BOUNDARY
