@@ -208,6 +208,7 @@ void Opticks::ana()
 {
    m_ana->run();
 }
+
 bool Opticks::isDbgPhoton(int photon_id)
 {
    return m_dbg->isDbgPhoton(photon_id);
@@ -216,6 +217,18 @@ const std::vector<int>&  Opticks::getDbgIndex()
 {
    return m_dbg->getDbgIndex();
 }
+bool Opticks::isOtherPhoton(int photon_id)
+{
+   return m_dbg->isOtherPhoton(photon_id);
+}
+const std::vector<int>&  Opticks::getOtherIndex()
+{
+   return m_dbg->getOtherIndex();
+}
+
+
+
+
 
 
 void Opticks::init()

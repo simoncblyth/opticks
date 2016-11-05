@@ -15,10 +15,10 @@ class CFG4_API CMaterialBridge
         CMaterialBridge( GMaterialLib* mlib );
 
         unsigned getMaterialIndex(const G4Material* mat); // G4Material instance to 0-based Opticks material index
-        const char* getMaterialName(unsigned int index);  // 0-based Opticks material index to shortname
+        const char* getMaterialName(unsigned int index, bool abbrev=true);  // 0-based Opticks material index to shortname
         const G4Material* getG4Material(unsigned int index); // 0-based Opticks material index to G4Material
 
-        std::string MaterialSequence(unsigned long long seqmat);
+        std::string MaterialSequence(unsigned long long seqmat, bool abbrev=true );
 
         void dump(const char* msg="CMaterialBridge::dump");
         void dumpMap(const char* msg="CMaterialBridge::dumpMap");
@@ -29,6 +29,7 @@ class CFG4_API CMaterialBridge
         GMaterialLib*   m_mlib ; 
         std::map<const G4Material*, unsigned> m_g4toix ; 
         std::map<unsigned int, std::string>   m_ixtoname ; 
+        std::map<unsigned int, std::string>   m_ixtoabbr ; 
 
 };
 

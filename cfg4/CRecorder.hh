@@ -93,6 +93,7 @@ template <typename T> class NPY ;
 #include "CFG4_HEAD.hh"
 
 class CFG4_API CRecorder {
+        friend class CSteppingAction ;
    public:
         static const char* PRE ; 
         static const char* POST ; 
@@ -105,7 +106,10 @@ class CFG4_API CRecorder {
            LAST_POST = 0x1 << 4,
            SURF_ABS  = 0x1 << 5,
            PRE_SKIP  = 0x1 << 6,
-           MAT_SWAP  = 0x1 << 7
+           MAT_SWAP  = 0x1 << 7,
+           STEP_START  = 0x1 << 8,
+           STEP_REJOIN  = 0x1 << 9,
+           STEP_RECOLL  = 0x1 << 10
         };
 
         static const char* PRE_SAVE_ ; 
@@ -116,17 +120,26 @@ class CFG4_API CRecorder {
         static const char* SURF_ABS_ ; 
         static const char* PRE_SKIP_ ; 
         static const char* MAT_SWAP_ ; 
+        static const char* STEP_START_ ; 
+        static const char* STEP_REJOIN_ ; 
+        static const char* STEP_RECOLL_ ; 
+
         static std::string Action(int action);
    public:
         CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic);
         void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
         void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
-        void setDebug(bool debug);
+   public:
+        // controlled via --dindex and --oindex options
         bool isDebug(); 
+        bool isOther(); 
    private:
+        void setDebug(bool debug);
+        void setOther(bool other);
+   private:
+        void lookback(); // called from CSteppingAction::UserSteppingActionOptical on getting a new photon step before overwriting prior photon values 
         void setEvent(OpticksEvent* evt);
    public:
-        //void setPropLib(CPropLib* lib);
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         static double PreGlobalTime(const G4Step* step);
@@ -135,33 +148,33 @@ class CFG4_API CRecorder {
         void RecordPhoton();  // overwrites target_record_id (ie m_record_id for static) entry for REJOINs
         void startPhoton();
 
-        void Summary(const char* msg);
-        void DumpSteps(const char* msg="CRecorder::DumpSteps");
-        void DumpStep(const G4Step* step);
    public:
         unsigned int getVerbosity();
    public:
 
 #ifdef USE_CUSTOM_BOUNDARY
     public:
-        bool setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
-        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, 
+                        unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         DsG4OpBoundaryProcessStatus getBoundaryStatus();
-        void Dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
-        bool setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
-        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time);
+        void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, 
+                        unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         G4OpBoundaryProcessStatus getBoundaryStatus();
-        void Dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #endif
     private:
+        void setStep(const G4Step* step, int step_id);
         bool RecordStep();
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
         void RecordQuadrant();
@@ -169,11 +182,10 @@ class CFG4_API CRecorder {
         void Clear();
         bool hasIssue();
    public:
+        std::string getStepActionString();
         bool isSelected(); 
         bool isHistorySelected(); 
         bool isMaterialSelected(); 
-
-        void Dump(const char* msg="CRecorder::Dump");
    public:
         // for reemission continuation
         void setSlot(unsigned slot);
@@ -204,27 +216,27 @@ class CFG4_API CRecorder {
 
    public:
         // debugging/dumping 
+        void Summary(const char* msg);
         void report(const char* msg="CRecorder::report");
-        int compare(int photon_id);
+        void dump(const char* msg="CRecorder::dump");
         void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
         void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
         void addDebugPhoton(int photon_id);
-
    private:
         void init();
    private:
-        Opticks*       m_ok; 
+        Opticks*           m_ok; 
         unsigned long long m_dbgseqhis ;
         unsigned long long m_dbgseqmat ;
         bool               m_dbgflags ;
 
-        CRec*          m_crec ; 
-        OpticksEvent*  m_evt ; 
-        CGeometry*     m_geometry ; 
-        CMaterialBridge* m_material_bridge ; 
-        bool           m_dynamic ;
+        CRec*              m_crec ; 
+        OpticksEvent*      m_evt ; 
+        CGeometry*         m_geometry ; 
+        CMaterialBridge*   m_material_bridge ; 
+        bool               m_dynamic ;
 
-        unsigned int m_gen ; 
+        unsigned int       m_gen ; 
        
         unsigned m_record_max ; 
         unsigned m_bounce_max ; 
@@ -232,7 +244,8 @@ class CFG4_API CRecorder {
 
         unsigned m_photons_per_g4event ; 
         unsigned m_verbosity ; 
-        bool         m_debug ; 
+        bool     m_debug ; 
+        bool     m_other ; 
 
         CStage::CStage_t m_stage ;
         CStage::CStage_t m_prior_stage ;
@@ -245,6 +258,7 @@ class CFG4_API CRecorder {
         int m_record_id ; 
         int m_record_id_prior ; 
         int m_primary_id ; 
+
 
 
         uifchar4     m_c4 ; 
@@ -278,6 +292,7 @@ class CFG4_API CRecorder {
         bool               m_truncate ; 
         unsigned           m_badflag ; 
         const G4Step*      m_step ; 
+        unsigned           m_step_action ; 
 
         NPY<float>*               m_primary ; 
         NPY<float>*               m_photons ; 
@@ -294,6 +309,7 @@ class CFG4_API CRecorder {
         std::vector<unsigned int>               m_materials ; 
         std::vector<unsigned long long>         m_seqhis_dbg  ; 
         std::vector<unsigned long long>         m_seqmat_dbg  ; 
+        std::vector<unsigned>                   m_mskhis_dbg  ; 
         std::vector<double>                     m_times  ; 
 
         std::vector<std::pair<unsigned long long, unsigned long long> > m_seqhis_mismatch ; 

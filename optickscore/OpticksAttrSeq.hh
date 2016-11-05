@@ -53,7 +53,7 @@ class OKCORE_API OpticksAttrSeq {
              };
 
     public:
-        OpticksAttrSeq(Opticks* cache, const char* type);
+        OpticksAttrSeq(Opticks* ok, const char* type);
         void setCtrl(unsigned char ctrl);
         void loadPrefs();
         const char* getType();
@@ -80,7 +80,7 @@ class OKCORE_API OpticksAttrSeq {
     private:
         void init();
     private:
-        Opticks*                              m_cache ; 
+        Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
         const char*                          m_type ; 
         unsigned char                        m_ctrl ; 

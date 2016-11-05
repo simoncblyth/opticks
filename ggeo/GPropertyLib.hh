@@ -131,6 +131,7 @@ class GGEO_API GPropertyLib {
         NPY<float>*  getBuffer();
         GItemList*   getNames();
         OpticksAttrSeq*    getAttrNames();
+        std::string getAbbr(const char* key);
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
        void saveToCache();

@@ -44,7 +44,7 @@ void CRec::dump(const char* msg)
               ; 
 
     for( unsigned i=0 ; i < nstp ; i++)
-        std::cout << std::setw(5) << i << m_stp[i]->description() << std::endl ;  
+        std::cout << "(" << std::setw(2) << i << ") " << m_stp[i]->description() << std::endl ;  
 
 }
 

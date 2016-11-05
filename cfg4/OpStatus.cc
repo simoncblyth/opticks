@@ -246,6 +246,9 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
 
     unsigned flag(0);
 
+    // hmm stage and REJOINing look kinda odd here, do elsewhere ?
+    // moving it first, breaks seqhis matching for multi-RE lines 
+
     if(absorption && status == fPostStepDoItProc )
     {
         flag = BULK_ABSORB ;
@@ -254,17 +257,17 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     {
         flag = BULK_SCATTER ;
     }
-    else if(transportation && status == fWorldBoundary )
-    {
-        flag = SURFACE_ABSORB ;   // kludge for fWorldBoundary - no surface handling yet 
-    }
+    else if( stage == CStage::REJOIN )  
+    { 
+        flag = BULK_REEMIT ;  
+    } 
     else if(transportation && status == fGeomBoundary )
     {
         flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT/SURFACE_DREFLECT/SURFACE_SREFLECT
     } 
-    else if( stage == CStage::REJOIN )
+    else if(transportation && status == fWorldBoundary )
     {
-        flag = BULK_REEMIT ;  
+        flag = SURFACE_ABSORB ;   // kludge for fWorldBoundary - no surface handling yet 
     }
     else
     {

@@ -47,6 +47,191 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
 
 
 
+ISSUE : bad REjoin onto scatter, 3 in 1M
+------------------------------------------
+
+Those three are rejoins onto a scatter (which should not happen : bad rejoin?).
+In addition two of them are beyond bouncemax.
+
+pflags.py::
+
+    cu_pflags (masks from CRecorder)
+    TO|BT|DR|SC|RE
+    [[6448    3]]
+
+    cu_pflags2 (masks derived from seqhis)      ## 3 photons missing SC:BULK_SCATTER in seqhis relative to the mask
+    TO|BT|DR|RE
+    [[6416    3]]
+    --dindex=93373,173508,302431
+
+
+      00               d TO                                              
+       1              cd TO BT                                           
+       2             ccd TO BT BT                                        
+       3            cccd TO BT BT BT                                     
+       4           ccccd TO BT BT BT BT                                  
+       5          9ccccd TO BT BT BT BT DR                               
+       6         99ccccd TO BT BT BT BT DR DR                            
+       7        c99ccccd TO BT BT BT BT DR DR BT                         
+       8       cc99ccccd TO BT BT BT BT DR DR BT BT                      
+       9      ccc99ccccd TO BT BT BT BT DR DR BT BT BT                   
+      10     cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT                
+      11    4cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT AB             
+      12    5cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE             
+      13   45cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE AB          
+      14   55cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE          
+      15  455cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE AB       
+      16  555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE       
+      17 4555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE AB    
+      18 5555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE    
+      1965555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE SC 
+      2055555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE RE 
+      2155555cccc99ccccd TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE RE 
+
+      00               d TO                                              
+       1              cd TO BT                                           
+       2             ccd TO BT BT                                        
+       3            cccd TO BT BT BT                                     
+       4           ccccd TO BT BT BT BT                                  
+       5          9ccccd TO BT BT BT BT DR                               
+       6         c9ccccd TO BT BT BT BT DR BT                            
+       7        cc9ccccd TO BT BT BT BT DR BT BT                         
+       8       ccc9ccccd TO BT BT BT BT DR BT BT BT                      
+       9      cccc9ccccd TO BT BT BT BT DR BT BT BT BT                   
+      10     ccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT                
+      11    cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT             
+      12   4cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT AB          
+      13   5cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE          
+      14  45cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE AB       
+      15  55cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE RE       
+      16 455cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE RE AB    
+      17 555cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE RE RE    
+      186555cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE RE RE SC 
+      195555cccccc9ccccd TO BT BT BT BT DR BT BT BT BT BT BT RE RE RE RE 
+
+      00               d TO                                              
+       1              cd TO BT                                           
+       2             ccd TO BT BT                                        
+       3            cccd TO BT BT BT                                     
+       4           ccccd TO BT BT BT BT                                  
+       5          9ccccd TO BT BT BT BT DR                               
+       6         c9ccccd TO BT BT BT BT DR BT                            
+       7        cc9ccccd TO BT BT BT BT DR BT BT                         
+       8       ccc9ccccd TO BT BT BT BT DR BT BT BT                      
+       9      cccc9ccccd TO BT BT BT BT DR BT BT BT BT                   
+      10     9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR                
+      11    c9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT             
+      12   cc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT          
+      13  ccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT       
+      14 cccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT    
+      156cccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT SC 
+      165cccc9cccc9ccccd TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT RE 
+
+
+
+
+
+
+
+MOSTLY RESOLVED: pflags inconsistency : due to incomplete REjoins, AB not scrubbed and replaced with RE
+---------------------------------------------------------------------------------------------------------
+
+See ana/pflags.py 
+
+* running with the psel_dindex list of discepant masks (tconcentric-tt-pflags) 
+  reveals that all photons with inconsistency look to be incompletely REjoined,
+  ie they are rejoined but somehow the AB scrubbing and replacement with RE failed
+  to happen
+
+Mostly Resolved
+~~~~~~~~~~~~~~~~~~
+
+Investigating via improved dumping shows the problem 
+is that rejoins were not recorded as they were preSkipped
+due to StepTooSmall from prior boundary status.
+
+Modifying preSkip condition, gets down to 3 in 1M bad pflags, formerly was 130 in 1M::
+
+     557 
+     558     bool preSkip = m_prior_boundary_status == StepTooSmall && m_stage != CStage::REJOIN  ;
+     559 
+
+
+pflags.py after preSkip fix::
+
+    In [47]: run pflags.py
+    [2016-11-05 15:58:49,609] p29196 {/Users/blyth/opticks/ana/base.py:199} INFO - envvar OPTICKS_ANA_DEFAULTS -> defaults {'src': 'torch', 'tag': '1', 'det': 'concentric'} 
+    pflags.py
+    .                seqhis_ana      noname 
+    .                                     3         1.00 
+       0     5cccc9cccc9ccccd        0.333              1         [16] TO BT BT BT BT DR BT BT BT BT DR BT BT BT BT RE
+       1     5555cccccc9ccccd        0.333              1         [16] TO BT BT BT BT DR BT BT BT BT BT BT RE RE RE RE
+       2     55555cccc99ccccd        0.333              1         [16] TO BT BT BT BT DR DR BT BT BT BT RE RE RE RE RE
+    .                                     3         1.00 
+
+    cu_pflags (masks from CRecorder)
+    TO|BT|DR|SC|RE
+    [[6448    3]]
+
+    cu_pflags2 (masks derived from seqhis)      ## 3 photons missing SC:BULK_SCATTER in seqhis relative to the mask
+    TO|BT|DR|RE
+    [[6416    3]]
+    --dindex=93373,173508,302431
+
+
+
+
+pflags.py prior to preSkip fix::
+
+
+    cu_pflags (masks from CRecorder)
+    ## actual photon masks have the impossible SA|AB masks
+
+    TO|BT|SA|AB
+    TO|BT|SA|SC|AB
+    TO|BT|DR|SA|AB
+    TO|BT|DR|SC|RE        ## APART FROM THIS ONE, ALL THE REST HAVE AN EXTRA AB COMPARED TO pflags2 (ie compared to seqhis)
+    TO|BT|BR|DR|SA|RE|AB
+    TO|BT|BR|SA|SC|AB
+    TO|BT|BR|SA|RE|AB
+    TO|BT|BR|SC|AB
+
+    [[6280  112]
+     [6312    8]
+     [6536    5]
+     [6448    3]
+     [7576    1]
+     [7336    1]
+     [7320    1]
+     [7208    1]]
+
+    cu_pflags2 (masks derived from seqhis)
+    ## pflags2 masks are derived from seqhis : so no surprise there are no impossible masks here
+
+    TO|BT|SA
+    TO|BT|SA|SC
+    TO|BT|DR|SA
+    TO|BT|DR|RE
+    TO|BT|BR|DR|SA|RE    
+    TO|BT|BR|SA|SC
+    TO|BT|BR|SA|RE
+    TO|BT|BR|SC
+
+    [[6272  112]
+     [6304    8]
+     [6528    5]
+     [6416    3]
+     [7568    1]
+     [7328    1]
+     [7312    1]
+     [7200    1]]
+
+
+
+
+
+
+
 
 
 Nov 4, 2016 : seqhis chi2 now less than 1 
@@ -420,65 +605,6 @@ truncation control
     424    m_desc.add_options()
     425        ("recordmax,r",  boost::program_options::value<int>(&m_recordmax), recordmax );
     426 
-
-
-
-ISSUE : pflags inconsistency : due to incomplete REjoins, AB not scrubbed and replaced with RE
----------------------------------------------------------------------------------------------------
-
-See ana/pflags.py 
-
-* running with the psel_dindex list of discepant masks (tconcentric-tt-pflags) 
-  reveals that all photons with inconsistency look to be incompletely REjoined,
-  ie they are rejoined but somehow the AB scrubbing and replacement with RE failed
-  to happen
-
-
-::
-
-    cu_pflags (masks from CRecorder)
-    ## actual photon masks have the impossible SA|AB masks
-
-    TO|BT|SA|AB
-    TO|BT|SA|SC|AB
-    TO|BT|DR|SA|AB
-    TO|BT|DR|SC|RE        ## APART FROM THIS ONE, ALL THE REST HAVE AN EXTRA AB COMPARED TO pflags2 (ie compared to seqhis)
-    TO|BT|BR|DR|SA|RE|AB
-    TO|BT|BR|SA|SC|AB
-    TO|BT|BR|SA|RE|AB
-    TO|BT|BR|SC|AB
-
-    [[6280  112]
-     [6312    8]
-     [6536    5]
-     [6448    3]
-     [7576    1]
-     [7336    1]
-     [7320    1]
-     [7208    1]]
-
-    cu_pflags2 (masks derived from seqhis)
-    ## pflags2 masks are derived from seqhis : so no surprise there are no impossible masks here
-
-    TO|BT|SA
-    TO|BT|SA|SC
-    TO|BT|DR|SA
-    TO|BT|DR|RE
-    TO|BT|BR|DR|SA|RE    
-    TO|BT|BR|SA|SC
-    TO|BT|BR|SA|RE
-    TO|BT|BR|SC
-
-    [[6272  112]
-     [6304    8]
-     [6528    5]
-     [6416    3]
-     [7568    1]
-     [7328    1]
-     [7312    1]
-     [7200    1]]
-
-
 
 
 FIXED Longstanding pflags issue

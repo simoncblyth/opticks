@@ -12,7 +12,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 
 
 #include "BFile.hh"
@@ -20,7 +20,7 @@
 
 #include "PLOG.hh"
 
-namespace fs = boost::filesystem;
+//namespace fs = boost::filesystem;
 
 const char* GItemList::GITEMLIST = "GItemList" ; 
 
@@ -51,27 +51,6 @@ GItemList* GItemList::load(const char* idpath, const char* itemtype, const char*
 
 void GItemList::load_(const char* idpath)
 {
-
-   // TODO: adopt BFile
-
-   /*
-
-   fs::path cachedir(idpath);
-   fs::path typedir(cachedir / m_reldir );
-
-   if(fs::exists(typedir) && fs::is_directory(typedir))
-   {
-       fs::path txtpath(typedir);
-       txtpath /= m_itemtype + ".txt" ; 
-
-       if(fs::exists(txtpath) && fs::is_regular_file(txtpath))     
-       {
-            read_(txtpath.string().c_str());
-       }
-   }
-
-   */
-
    std::string txtname = m_itemtype + ".txt" ;  
    std::string txtpath = BFile::FormPath(idpath, m_reldir.c_str(), txtname.c_str()) ;
 
@@ -85,10 +64,7 @@ void GItemList::load_(const char* idpath)
                     << " NO SUCH TXTPATH " 
                     << txtpath 
                     ;
-  
    }
-
-
 }
 
 void GItemList::read_(const char* txtpath)
@@ -105,8 +81,6 @@ void GItemList::read_(const char* txtpath)
 }
 
 
-
-
 void GItemList::save(const char* idpath)
 {
     std::string txtname = m_itemtype + ".txt" ; 
@@ -121,37 +95,6 @@ void GItemList::save_(const char* txtpath)
     std::copy(m_list.begin(),m_list.end(),std::ostream_iterator<std::string>( ofs,"\n"));
     ofs.close();
 }
-
-
-/*
-void GItemList::save(const char* idpath)
-{
-   fs::path cachedir(idpath);
-   fs::path typedir(cachedir / m_reldir );
-
-   if(!fs::exists(typedir))
-   {
-        if (fs::create_directories(typedir))
-        {
-            printf("GItemList::save created directory %s \n", typedir.string().c_str() );
-        }
-   }
-
-   if(fs::exists(typedir) && fs::is_directory(typedir))
-   {
-       fs::path txtpath(typedir);
-       txtpath /= m_itemtype + ".txt" ; 
-
-       std::string path = txtpath.string();
-       LOG(info) << "GItemList::save writing to " << path ;       
-       save_(path.c_str());
-
-   }
-}
-*/
-
-
-
 
 
 GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()

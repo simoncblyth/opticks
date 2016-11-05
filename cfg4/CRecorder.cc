@@ -73,6 +73,10 @@ const char* CRecorder::LAST_POST_ = "LAST_POST" ;
 const char* CRecorder::SURF_ABS_ = "SURF_ABS" ; 
 const char* CRecorder::PRE_SKIP_ = "PRE_SKIP" ; 
 const char* CRecorder::MAT_SWAP_ = "MAT_SWAP" ; 
+const char* CRecorder::STEP_START_ = "STEP_START" ; 
+const char* CRecorder::STEP_REJOIN_ = "STEP_REJOIN" ; 
+const char* CRecorder::STEP_RECOLL_ = "STEP_RECOLL" ; 
+
 
 std::string CRecorder::Action(int action)
 {
@@ -86,6 +90,9 @@ std::string CRecorder::Action(int action)
     if((action & SURF_ABS) != 0)  ss << SURF_ABS_ << " " ; 
     if((action & PRE_SKIP) != 0)  ss << PRE_SKIP_ << " " ; 
     if((action & MAT_SWAP) != 0)  ss << MAT_SWAP_ << " " ; 
+    if((action & STEP_START) != 0)  ss << STEP_START_ << " " ; 
+    if((action & STEP_REJOIN) != 0)  ss << STEP_REJOIN_ << " " ; 
+    if((action & STEP_RECOLL) != 0)  ss << STEP_RECOLL_ << " " ; 
 
     return ss.str();
 }
@@ -121,6 +128,8 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
    m_debug(m_verbosity > 0),
+   m_other(false),
+
 
    m_stage(CStage::UNKNOWN),
    m_prior_stage(CStage::UNKNOWN),
@@ -153,6 +162,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_truncate(false),
    m_badflag(0),
    m_step(NULL),
+   m_step_action(0),
 
    m_primary(0),
    m_photons(0),
@@ -183,6 +193,19 @@ bool CRecorder::isDebug()
 {
     return m_debug ; 
 }
+
+void CRecorder::setOther(bool other)
+{
+    m_other = other ; 
+}
+bool CRecorder::isOther()
+{
+    return m_other ; 
+}
+
+
+
+
 
 unsigned int CRecorder::getVerbosity()
 {
@@ -268,8 +291,11 @@ void CRecorder::setRecordId(int record_id)
     m_record_id_prior = m_record_id ; 
     m_record_id = record_id ; 
 
-    bool dindexDebug = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
-    setDebug(dindexDebug);
+    bool dbg = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
+    setDebug(dbg);
+
+    bool other = m_ok->isOtherPhoton(record_id) ; // from option: --oindex=1,100,1000,10000 
+    setOther(other);
 }
 
 
@@ -440,7 +466,7 @@ void CRecorder::startPhoton()
     m_badflag = 0 ; 
 
 
-    if(m_debug) Clear();
+    if(m_debug || m_other) Clear();
 }
 
 void CRecorder::decrementSlot()
@@ -454,47 +480,35 @@ void CRecorder::decrementSlot()
         return ;
     }
 
-
     m_slot -= 1 ; 
-
-/* 
-
-    if(m_decrement_request == 0) m_slot -= 1;    // only act on 1st decrement request
-    else LOG(warning) << "CRecorder::decrementSlot SKIPPING"
-                      << " slot " << m_slot 
-                      << " decrement_request " << m_decrement_request
-                      ;
-
-*/
-
     m_decrement_request += 1 ; 
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #else
-bool CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #endif
 {
-    m_step = step ; 
-    m_step_id = step_id ; 
-
+    setStep(step, step_id);
     setRecordId(record_id);
     setParentId(parent_id); 
     setStage(stage);
 
-
     if(stage == CStage::START)
     { 
+        m_step_action |= STEP_START ; 
         startPhoton();       // MUST be invoked prior to setBoundaryStatus
         RecordQuadrant();
     }
     else if(stage == CStage::REJOIN )
     {
+        m_step_action |= STEP_REJOIN  ; 
         decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
     }
     else if(stage == CStage::RECOLL )
     {
+        m_step_action |= STEP_RECOLL  ; 
         m_decrement_request = 0 ;  
     } 
 
@@ -509,43 +523,19 @@ bool CRecorder::setStepRecordParentBoundaryStage(const G4Step* step, int step_id
 
     setBoundaryStatus( boundary_status, preMaterial, postMaterial);
 
-    return RecordStep();
-}
+    bool done = RecordStep();
 
-
-void CRecorder::setStage(CStage::CStage_t stage)
-{
-    m_prior_stage = m_stage ; 
-    m_stage = stage ; 
-
-    // huh tis very common
-    //if(m_stage == CStage::RECOLL && m_prior_stage != CStage::REJOIN )
-    //    LOG(warning) << "CRecorder::setStage skipped REJOIN ? record_id " << m_record_id ; 
-
-}
-
-
-#ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
-#else
-void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
-#endif
-{
-    // this is invoked before RecordStep 
-    m_prior_boundary_status = m_boundary_status ; 
-    m_prior_premat = m_premat ; 
-    m_prior_postmat = m_postmat ; 
-
-    m_boundary_status = boundary_status ; 
-    m_premat = premat ; 
-    m_postmat = postmat ;
+   // if(m_debug || m_other)
+   //     LOG(info) << " record_id " << std::setw(10) << m_record_id 
+   //               << " step_action " << Action(m_step_action)
+   //               ; 
+    
+    return done ; 
 }
 
 
 bool CRecorder::RecordStep()
 {
-    int action = 0 ; 
-
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
@@ -560,13 +550,12 @@ bool CRecorder::RecordStep()
 
     unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage);
 
-    //bool preReemit = ( preFlag & BULK_REEMIT ) != 0 ;   // <-- from stage REJOIN 
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
-    bool preSkip = m_prior_boundary_status == StepTooSmall ;  
+    bool preSkip = m_prior_boundary_status == StepTooSmall && m_stage != CStage::REJOIN  ;  
 
     bool matSwap = m_boundary_status == StepTooSmall ; 
 
@@ -584,32 +573,74 @@ bool CRecorder::RecordStep()
     //   RecordStepPoint records into m_slot (if < m_steps_per_photon) and increments m_slot
     // 
 
-    if(lastPost)      action |= LAST_POST ; 
-    if(surfaceAbsorb) action |= SURF_ABS ;  
-    if(preSkip)       action |= PRE_SKIP ; 
-    if(matSwap)       action |= MAT_SWAP ; 
+    if(lastPost)      m_step_action |= LAST_POST ; 
+    if(surfaceAbsorb) m_step_action |= SURF_ABS ;  
+    if(preSkip)       m_step_action |= PRE_SKIP ; 
+    if(matSwap)       m_step_action |= MAT_SWAP ; 
 
     if(!preSkip)
     {
-        action |= PRE_SAVE ; 
+        m_step_action |= PRE_SAVE ; 
         done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE ); 
-        if(done) action |= PRE_DONE ; 
+        if(done) m_step_action |= PRE_DONE ; 
     }
 
     if(lastPost && !done)
     {
-        action |= POST_SAVE ; 
+        m_step_action |= POST_SAVE ; 
         done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
-        if(done) action |= POST_DONE ; 
+        if(done) m_step_action |= POST_DONE ; 
     }
 
     if(done) RecordPhoton();  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
-
-    m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, m_stage, action );
-
+    m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, m_stage, m_step_action );
 
     return done ;
 }
+
+
+
+std::string CRecorder::getStepActionString()
+{
+    return Action(m_step_action) ;
+}
+
+
+
+
+void CRecorder::setStep(const G4Step* step, int step_id)
+{
+    m_step = step ; 
+    m_step_id = step_id ; 
+    m_step_action = 0 ; 
+}
+
+void CRecorder::setStage(CStage::CStage_t stage)
+{
+    m_prior_stage = m_stage ; 
+    m_stage = stage ; 
+    // huh tis very common
+    //if(m_stage == CStage::RECOLL && m_prior_stage != CStage::REJOIN )
+    //    LOG(warning) << "CRecorder::setStage skipped REJOIN ? record_id " << m_record_id ; 
+
+}
+
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+#else
+void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
+#endif
+{
+    // this is invoked before RecordStep 
+    m_prior_boundary_status = m_boundary_status ; 
+    m_prior_premat = m_premat ; 
+    m_prior_postmat = m_postmat ; 
+
+    m_boundary_status = boundary_status ; 
+    m_premat = premat ; 
+    m_postmat = postmat ;
+}
+
 
 
 
@@ -641,9 +672,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
     m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
-
     m_mskhis |= flag ;   
-
     if(flag == BULK_REEMIT) m_mskhis = m_mskhis & (~BULK_ABSORB)  ;
 
     //  Decrementing m_slot and running again will not scrub the AB from the mask
@@ -654,16 +683,13 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     //  so any REJOINed photon will have an AB in the mask
     //  that needs to be a RE instead.
     //
-    //  What about SA/SD ... those never REjoin ?
-    //
-    //
-    //  Another approach would be to create the mskhis from the seqhis (but when, what about rejoining)
-    //
+    //  What about SA/SD ... those should never REjoin ?
 
     RecordStepPoint(slot, point, flag, material, label);
 
     double time = point->GetGlobalTime();
-    if(m_debug) Collect(point, flag, material, boundary_status, m_seqhis, m_seqmat, time);
+
+    if(m_debug || m_other) Collect(point, flag, material, boundary_status, m_mskhis, m_seqhis, m_seqmat, time);
 
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
@@ -692,21 +718,36 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time)
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time)
 #else
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned long long seqhis, unsigned long long seqmat, double time)
+void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time)
 #endif
 {
-    assert(m_debug);
+    assert(m_debug || m_other);
     m_points.push_back(new G4StepPoint(*point));
     m_flags.push_back(flag);
     m_materials.push_back(material);
     m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
+    m_mskhis_dbg.push_back(mskhis);
     m_seqhis_dbg.push_back(seqhis);
     m_seqmat_dbg.push_back(seqmat);
     m_times.push_back(time);
 }
 
+
+void CRecorder::Clear()
+{
+    assert(m_debug || m_other);
+    for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
+    m_points.clear();
+    m_flags.clear();
+    m_materials.clear();
+    m_bndstats.clear();
+    m_seqhis_dbg.clear();
+    m_seqmat_dbg.clear();
+    m_mskhis_dbg.clear();
+    m_times.clear();
+}
 
 
 
@@ -884,76 +925,6 @@ bool CRecorder::hasIssue()
     return issue ; 
 }
 
-#ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::Dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
-#else
-void CRecorder::Dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
-#endif
-{
-    std::string bs = OpBoundaryAbbrevString(boundary_status) ;
-    const char* flg = OpticksFlags::Abbrev(flag) ;
-
-    std::cout << std::setw(3) << flg << std::setw(7) << index << " " << std::setw(18) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
-}
-
-void CRecorder::Dump(const char* msg)
-{
-    LOG(info) << msg 
-              << " record_id " << std::setw(7) << m_record_id 
-              ;
-    LOG(info) 
-              << " seqhis " << std::hex << m_seqhis << std::dec 
-              << " " << OpticksFlags::FlagSequence(m_seqhis, true) 
-              ;
-
-    LOG(info) 
-              << " mskhis " << std::hex << m_mskhis << std::dec 
-              << " " << OpticksFlags::FlagMask(m_mskhis, true) 
-              ;
- 
-
-    LOG(info) 
-              << " seqmat " << std::hex << m_seqmat << std::dec 
-              << " " << m_material_bridge->MaterialSequence(m_seqmat) 
-              ;
-
-    if(!m_debug) return ; 
-
-    G4ThreeVector origin ;
-    if(m_points.size() > 0) origin = m_points[0]->GetPosition();
-
-    for(unsigned int i=0 ; i<m_points.size() ; i++) 
-    {
-       unsigned flag = m_flags[i];  
-#ifdef USE_CUSTOM_BOUNDARY
-       DsG4OpBoundaryProcessStatus bst = m_bndstats[i] ;
-#else
-       G4OpBoundaryProcessStatus bst = m_bndstats[i] ;
-#endif
-       unsigned mat = m_materials[i] ;
-       const char* matname = ( mat == 0 ? "-" : m_material_bridge->getMaterialName(mat-1)  ) ;
-
-       Dump(origin, i, m_points[i], bst, flag, matname );
-
-       //std::cout << std::hex << m_seqhis_dbg[i] << std::dec << std::endl ; 
-       //std::cout << std::hex << m_seqmat_dbg[i] << std::dec << std::endl ; 
-    }
-}
-
-
-void CRecorder::Clear()
-{
-    assert(m_debug);
-    for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
-    m_points.clear();
-    m_flags.clear();
-    m_materials.clear();
-    m_bndstats.clear();
-    m_seqhis_dbg.clear();
-    m_seqmat_dbg.clear();
-    m_times.clear();
-}
-
 void CRecorder::Summary(const char* msg)
 {
     LOG(info) <<  msg
@@ -964,13 +935,6 @@ void CRecorder::Summary(const char* msg)
               << " m_slot " << m_slot 
               ;
 }
-
-
-
-
-
-
-
 
 
 void CRecorder::addSeqhisMismatch(unsigned long long rdr, unsigned long long rec)
@@ -1055,49 +1019,103 @@ void CRecorder::report(const char* msg)
 }
 
 
-
-
-int CRecorder::compare(int record_id)
+void CRecorder::lookback()
 {
-    assert(record_id >= 0 );
+    // this is invoked from CSteppingAction::UserSteppingActionOptical
+    // on getting a step from a new photon but prior to updating the prior photon values
 
-    int rc = 0 ; 
+    if(m_dbgflags && m_badflag > 0) addDebugPhoton(m_record_id);  
 
-    unsigned long long rdr_seqhis = getSeqHis() ;
-    unsigned long long rdr_seqmat = getSeqMat() ;
+    bool debug_seqhis = m_dbgseqhis == m_seqhis ; 
+    bool debug_seqmat = m_dbgseqmat == m_seqmat ; 
+    bool dump_ = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_other || m_debug || (m_dbgflags && m_badflag > 0 ) ;
 
-    bool debug_seqhis = m_dbgseqhis == rdr_seqhis ; 
-    bool debug_seqmat = m_dbgseqmat == rdr_seqmat ; 
-
-    bool debug = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_debug || (m_dbgflags && m_badflag > 0 ) ;
-
-    if(m_verbosity > 0 || debug )
-    {
-        std::cout << std::endl 
-                      << std::endl
-                      << "----CRecorder::compare----" 
-                      << " record_id " << std::setw(8) << record_id 
-                      << " badflag " << std::setw(5) << m_badflag 
-                      ; 
-
-        if(debug) std::cout << " --dindex " ;
-        std::cout << std::endl ; 
-
-        Dump(       "CRecorder::compare (rdr-dump)DONE");
-    }
-
-    if(m_dbgflags && m_badflag > 0)
-    {
-        addDebugPhoton(record_id);  
-    }
-
-    if(debug)
-    {
-        m_crec->dump("crec");
-    }
-    return rc ; 
+    if(dump_) dump("CRecorder::lookback");
 }
 
+
+
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+void CRecorder::dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
+#else
+void CRecorder::dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
+#endif
+{
+    std::string bs = OpBoundaryAbbrevString(boundary_status) ;
+    const char* flg = OpticksFlags::Abbrev(flag) ;
+
+    std::cout << std::setw(3) << flg << std::setw(7) << index << " " << std::setw(18) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
+}
+
+
+
+void CRecorder::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+    std::cout
+              << "----CRecorder::dump----" 
+              << " m_record_id " << std::setw(8) << m_record_id 
+              << " m_badflag " << std::setw(5) << m_badflag 
+              << (m_debug ? " --dindex " : "" )
+              << (m_other ? " --oindex " : "" )
+              << (m_dbgseqhis == m_seqhis ? " --dbgseqhis " : "" )
+              << (m_dbgseqmat == m_seqmat ? " --dbgseqmat " : "" )
+              << std::endl
+              ;
+
+    LOG(info) 
+              << " seqhis " << std::setw(16) << std::hex << m_seqhis << std::dec 
+              << "    " << OpticksFlags::FlagSequence(m_seqhis, true) 
+              ;
+
+    LOG(info) 
+              << " mskhis " << std::setw(16) << std::hex << m_mskhis << std::dec 
+              << "    " << OpticksFlags::FlagMask(m_mskhis, true) 
+              ;
+
+    LOG(info) 
+              << " seqmat " << std::setw(16) << std::hex << m_seqmat << std::dec 
+              << "    " << m_material_bridge->MaterialSequence(m_seqmat) 
+              ;
+
+    if(m_debug || m_other) 
+    { 
+        G4ThreeVector origin ;
+        unsigned npoints = m_points.size() ;
+        if(npoints > 0) origin = m_points[0]->GetPosition();
+
+        for(unsigned int i=0 ; i<npoints ; i++) 
+        {
+            unsigned mat = m_materials[i] ;
+            const char* matname = ( mat == 0 ? "-" : m_material_bridge->getMaterialName(mat-1)  ) ;
+            dump(origin, i, m_points[i], m_bndstats[i], m_flags[i], matname );
+        }
+
+        for(unsigned int i=0 ; i<npoints ; i++) 
+            std::cout << std::setw(4) << i << " "
+                      << std::setw(16) << std::hex << m_seqhis_dbg[i] << std::dec 
+                      << " " << OpticksFlags::FlagSequence(m_seqhis_dbg[i], true)
+                      << std::endl 
+                      ;
+
+        for(unsigned int i=0 ; i<npoints ; i++) 
+            std::cout << std::setw(4) << i << " "
+                      << std::setw(16) << std::hex << m_mskhis_dbg[i] << std::dec 
+                      << " " << OpticksFlags::FlagMask(m_mskhis_dbg[i], true)
+                      << std::endl 
+                      ;
+
+        for(unsigned int i=0 ; i<npoints ; i++) 
+            std::cout << std::setw(4) << i << " "
+                      << std::setw(16) << std::hex << m_seqmat_dbg[i] << std::dec 
+                      << " " << m_material_bridge->MaterialSequence(m_seqmat_dbg[i]) 
+                      << std::endl 
+                      ;
+    }
+    m_crec->dump("CRec::dump");
+}
 
 
 

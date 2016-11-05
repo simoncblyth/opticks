@@ -89,7 +89,7 @@ class OKCORE_API Opticks {
        void cleanup();
        void postpropagate();
        void ana();
-       bool isDbgPhoton(int photon_id);
+
    public:
        // profile ops
        template <typename T> void profile(T label);
@@ -167,7 +167,12 @@ class OKCORE_API Opticks {
        OpticksFlags*        getFlags(); 
        OpticksAttrSeq*      getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
+   public:
+       // from OpticksDbg --dindex and --oindex options
+       bool isDbgPhoton(int photon_id);
+       bool isOtherPhoton(int photon_id);
        const std::vector<int>&  getDbgIndex();
+       const std::vector<int>&  getOtherIndex();
    public:
        Types*               getTypes();
        Typ*                 getTyp();

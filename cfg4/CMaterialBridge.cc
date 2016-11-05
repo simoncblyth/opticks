@@ -35,16 +35,21 @@ void CMaterialBridge::initMap()
 
         const char* shortname = BStr::afterLastOrAll( name.c_str(), '/' );
 
+        std::string abbr = shortname ; //  
+
         unsigned index =  m_mlib->getIndex( shortname );
 
         m_g4toix[material] = index ; 
 
         m_ixtoname[index] = shortname ;
 
+        m_ixtoabbr[index] = m_mlib->getAbbr(shortname) ;
+
 
         LOG(trace) << " i " << std::setw(3) << i 
                   << " name " << std::setw(35) << name 
                   << " shortname " << std::setw(35) << shortname 
+                  << " abbr " << std::setw(35) << abbr 
                   << " index " << std::setw(5)  << index
                   ; 
     }
@@ -58,6 +63,7 @@ void CMaterialBridge::initMap()
 
     assert( m_g4toix.size() == nmat );
     assert( m_ixtoname.size() == nmat && "there is probably a duplicated material name");
+    assert( m_ixtoabbr.size() == nmat && "there is probably a duplicated material name");
 }
 
 
@@ -99,11 +105,13 @@ void CMaterialBridge::dump(const char* msg)
     {
         const G4Material* mat = *it ;  
         unsigned index = getMaterialIndex(mat);
-        const char* shortname = getMaterialName(index);
+        const char* shortname = getMaterialName(index, false);
+        const char* abbr = getMaterialName(index, true);
 
         std::cout << std::setw(50) << mat->GetName() 
                   << std::setw(10) << index 
                   << std::setw(30) << shortname 
+                  << std::setw(30) << abbr
                   << std::endl ; 
     }
 }
@@ -123,9 +131,9 @@ unsigned int CMaterialBridge::getMaterialIndex(const G4Material* material)
     // used from CSteppingAction::UserSteppingActionOptical to CRecorder::setBoundaryStatus
     return m_g4toix[material] ;
 }
-const char* CMaterialBridge::getMaterialName(unsigned int index)
+const char* CMaterialBridge::getMaterialName(unsigned int index, bool abbrev)
 {
-    return m_ixtoname[index].c_str() ;
+    return abbrev ? m_ixtoabbr[index].c_str() : m_ixtoname[index].c_str() ;
 }
 
 
@@ -146,7 +154,7 @@ const G4Material* CMaterialBridge::getG4Material(unsigned int qindex) // 0-based
 }
 
 
-std::string CMaterialBridge::MaterialSequence(unsigned long long seqmat)
+std::string CMaterialBridge::MaterialSequence(unsigned long long seqmat, bool abbrev)
 {
     std::stringstream ss ;
     assert(sizeof(unsigned long long)*8 == 16*4);
@@ -156,7 +164,7 @@ std::string CMaterialBridge::MaterialSequence(unsigned long long seqmat)
 
         unsigned int idx = unsigned(msk - 1);    // -> 0-based
 
-        ss << ( msk > 0 ? getMaterialName(idx) : "-" ) << " " ;
+        ss << ( msk > 0 ? getMaterialName(idx, abbrev) : "-" ) << " " ;
         // using 1-based material indices, so 0 represents None
     }   
     return ss.str();

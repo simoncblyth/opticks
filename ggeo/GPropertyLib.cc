@@ -177,6 +177,21 @@ OpticksAttrSeq* GPropertyLib::getAttrNames()
     return m_attrnames ;
 }
 
+std::string GPropertyLib::getAbbr(const char* key)
+{
+    assert(m_attrnames);
+    return m_attrnames->getAbbr(key);
+/*
+cat opticksdata/export/DayaBay/GMaterialLib/abbrev.json
+{
+    "ADTableStainlessSteel": "AS",
+    "Acrylic": "Ac",
+    "Air": "Ai",
+    "Aluminium": "Al",
+    "Bialkali": "Bk",
+*/
+}
+
 
 void GPropertyLib::setClosed(bool closed)
 {
@@ -229,7 +244,7 @@ void GPropertyLib::init()
     m_defaults->setStandardDomain(m_standard_domain);
 
     m_attrnames = new OpticksAttrSeq(m_ok, m_type);
-    m_attrnames->loadPrefs(); // color, abbrev and order 
+    m_attrnames->loadPrefs(); // color.json, abbrev.json and order.json 
 
 
     // hmm GPropertyMap expects bordersurface or skinsurface

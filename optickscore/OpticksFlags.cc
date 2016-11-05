@@ -48,7 +48,7 @@ const char* OpticksFlags::BAD_FLAG_          = "BAD_FLAG" ;
 //
 //     as these are so fixed they deserve static enshrinement for easy access from everywhere
 //
-const char* OpticksFlags::_ZERO              = "ZE" ;
+const char* OpticksFlags::_ZERO              = "  " ;
 const char* OpticksFlags::_NATURAL           = "NL" ;
 const char* OpticksFlags::_FABRICATED        = "FD" ;
 const char* OpticksFlags::_MACHINERY         = "MY" ;

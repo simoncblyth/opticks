@@ -21,7 +21,9 @@ class OKCORE_API OpticksDbg
     public:
        OpticksDbg(Opticks* ok);
        bool isDbgPhoton(int photon_id);
+       bool isOtherPhoton(int photon_id);
        const std::vector<int>&  getDbgIndex();
+       const std::vector<int>&  getOtherIndex();
        std::string description();
    private:
        void postconfigure();
@@ -29,6 +31,7 @@ class OKCORE_API OpticksDbg
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 
        std::vector<int> m_debug_photon ; 
+       std::vector<int> m_other_photon ; 
 
 };
 

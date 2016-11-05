@@ -42,6 +42,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_pslice(""),
        m_pindex(""),
        m_dindex(""),
+       m_oindex(""),
        m_builder(""),
        m_traverser(""),
        m_dbgseqhis("0"),
@@ -424,6 +425,9 @@ void OpticksCfg<Listener>::init()
        ("pindex",        boost::program_options::value<std::string>(&m_pindex), "debug OptiX launch print index specified by up to three comma delimited ints " );
    m_desc.add_options()
        ("dindex",        boost::program_options::value<std::string>(&m_dindex), "debug photon_id indices in comma delimited list of ints, no size limit" );
+   m_desc.add_options()
+       ("oindex",        boost::program_options::value<std::string>(&m_oindex), "other debug photon_id indices in comma delimited list of ints, no size limit" );
+
 
 
 
@@ -741,6 +745,12 @@ template <class Listener>
 const std::string& OpticksCfg<Listener>::getDbgIndex()
 {
     return m_dindex ;
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getOtherIndex()
+{
+    return m_oindex ;
 }
 
 

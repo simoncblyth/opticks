@@ -29,10 +29,10 @@ unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ;
 
 
 
-OpticksAttrSeq::OpticksAttrSeq(Opticks* cache, const char* type)
+OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    :
-   m_cache(cache),
-   m_resource(NULL),
+   m_ok(ok),
+   m_resource(m_ok->getResource()),
    m_type(strdup(type)),
    m_ctrl(0),
    m_sequence(NULL)
@@ -61,12 +61,8 @@ bool OpticksAttrSeq::hasSequence()
 }
 
 
-
-
-
 void OpticksAttrSeq::init()
 {
-    m_resource = m_cache->getResource();
 }
 
 void OpticksAttrSeq::loadPrefs()
@@ -109,7 +105,7 @@ const char* OpticksAttrSeq::getColorName(const char* key)
 unsigned int OpticksAttrSeq::getColorCode(const char* key )
 {
     const char*  colorname =  getColorName(key) ;
-    OpticksColors* palette = m_cache->getColors();
+    OpticksColors* palette = m_ok->getColors();
     unsigned int colorcode  = palette->getCode(colorname, 0xFFFFFF) ; 
     return colorcode ; 
 }

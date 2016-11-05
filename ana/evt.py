@@ -51,7 +51,6 @@ X,Y,Z,W,T = 0,1,2,3,3
 
 
 class Evt(object):
-
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
@@ -110,6 +109,9 @@ class Evt(object):
 
         pass
         self.check_stamps()
+
+
+
 
 
     def nstep(self):
@@ -365,6 +367,65 @@ class Evt(object):
         """ 
         return "--dindex=%s" % ",".join(map(str,np.where(self.psel)[0]))
 
+
+    def select_(self, label="TO RE BT BT BT BT SA"):
+        """
+        :param label:
+        :return boolean selection array:
+        """
+        if label == "BAD_PFLAGS":
+            select = self.pflags2 != self.pflags
+        else:
+            code = self.histype.code(label)
+            select = self.seqhis == code
+        pass
+        return select 
+
+    def dindex_(self, label="TO RE BT BT BT BT SA", limit=None, reverse=False):
+        """
+        :param label: seqhis label
+        :param limit:
+        :return array: list of photon record_id that match the seqhis label 
+
+
+
+
+
+        """
+        select = self.select_(label)
+        a = np.where(select)[0]
+        if reverse:
+            a = a[::-1] 
+        return a[:limit]
+
+    def dindex(self, label="TO RE BT BT BT BT SA", limit=10, reverse=False ):
+        """
+        :param label: seqhis label
+        :param limit:
+        :return string: dindex option string with record_id of photons with the selected history 
+
+        Find record_id of photons with particular histories::
+
+            In [27]: e1.dindex("TO AB")
+            Out[27]: '--dindex=13,14,24,26,28,34,53,83,84,98'
+
+            In [28]: e1.dindex("TO SC AB")
+            Out[28]: '--dindex=496,609,698,926,1300,1346,1356,1633,1637,2376'
+
+            In [29]: e1.dindex("TO RE SC AB")
+            Out[29]: '--dindex=1472,10272,12785,17200,22028,24184,31503,32334,43509,44892'
+
+            In [31]: e1.dindex("TO RE BT BT BT BT SA")
+            Out[31]: '--dindex=63,115,124,200,225,270,307,338,342,423'
+
+            In [36]: e1.dindex("BAD_PFLAGS")
+            Out[36]: '--dindex=3352,12902,22877,23065,41882,60653,68073,69957,93373,114425'
+
+            In [37]: e1.dindex("BAD_PFLAGS",reverse=True)
+            Out[37]: '--dindex=994454,978573,976708,967547,961725,929984,929891,925473,919938,917897'
+
+        """
+        return "--dindex=%s" % ",".join(map(str,self.dindex_(label, limit, reverse))) 
 
     def init_index(self, tag, src, det, dbg):
         """
@@ -1043,8 +1104,8 @@ def deviation_plt(evt):
 if __name__ == '__main__':
     ok = opticks_main()
 
-    e0 = Evt(tag=ok.utag, src=ok.src, det=ok.det, args=ok)
-    e0.history_table(slice(0,20))
+    #e0 = Evt(tag=ok.utag, src=ok.src, det=ok.det, args=ok)
+    #e0.history_table(slice(0,20))
 
     e1 = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=["PFLAGS_DEBUG"])
     e1.history_table(slice(0,20))

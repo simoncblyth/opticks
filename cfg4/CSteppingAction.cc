@@ -305,15 +305,15 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
     assert( parent_id >= -1 );  // parent_id is -1 for primary photon
   
     int primary_id = getPrimaryPhotonID() ;    // layed down in trackinfo by custom Scintillation process
+
+    // last_ as these are values from previous step, prior to setting them for this step  
+
     int last_photon_id = m_recorder->getPhotonId();  
     int last_record_id = m_recorder->getRecordId();  
-    bool last_debug = m_recorder->isDebug();
-
-    // acertain step stage by comparing photon_id/parent_id set by prior setTrack with the last 
+     // acertain step stage by comparing photon_id/parent_id set by prior setTrack with the last 
 
 
     // (parent_id, primary_id, photon_id, last_photon_id) -> stage
-
 
     CStage::CStage_t stage = CStage::UNKNOWN ; 
     if( parent_id == -1 )     // primary photon, ie not downstream from reemission 
@@ -330,14 +330,20 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
 
     if(stage == CStage::START && last_record_id >= 0 && last_record_id < INT_MAX )
     {
-        //  backwards looking comparison of prior (potentially rejoined) photon
-        //  using record_id for absolute indexing across multiple G4 subevt 
-        m_recorder->compare(last_record_id);
+        m_recorder->lookback(); // backwards looking comparison of prior (potentially rejoined) photon
     }
 
-    if(last_debug || m_verbosity > 0 )
+
+   /*
+    bool last_debug = m_recorder->isDebug();
+    bool last_other = m_recorder->isOther();
+    if(last_debug || last_other || m_verbosity > 0 )
     {
-        if(stage == CStage::START) LOG(info) << "." ; 
+        if(stage == CStage::START)
+        {
+            std::cout << std::endl << std::endl << std::endl ;
+            LOG(info) << "CStage::START" ; 
+        } 
         LOG(info) 
                   << " track_step_count " << std::setw(4) << m_track_step_count
                   << " pri " << std::setw(7) << primary_id
@@ -349,8 +355,7 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
                   << " stge " << CStage::Label(stage) 
                   ;
     } 
-
-
+    */
 
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);
@@ -367,7 +372,8 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
 #else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
-        done = m_recorder->setStepRecordParentBoundaryStage(step, step_id, record_id, parent_id, boundary_status, stage);
+        done = m_recorder->Record(step, step_id, record_id, parent_id, boundary_status, stage);
+
     }
     return done ; 
 }

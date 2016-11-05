@@ -42,6 +42,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getPSlice();
      const std::string& getPrintIndex();
      const std::string& getDbgIndex();
+     const std::string& getOtherIndex();
      const std::string& getBuilder();
      const std::string& getTraverser();
      const std::string& getDbgSeqhis();
@@ -105,6 +106,7 @@ private:
      std::string m_pslice ;
      std::string m_pindex ;
      std::string m_dindex ;
+     std::string m_oindex ;
      std::string m_builder ;
      std::string m_traverser  ;
      std::string m_dbgseqhis ;

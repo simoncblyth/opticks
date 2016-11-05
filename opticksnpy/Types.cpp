@@ -176,8 +176,8 @@ void Types::makeMaterialAbbrev()
     typedef std::map<std::string, unsigned int> MSU ; 
     typedef std::map<std::string, std::string>  MSS ; 
 
-    // HMM this is handled differently elsewhere via ~/.opticks/GMaterialLib/abbrev.json 
-    // but that needs to be detector specific...
+    // HMM this is handled differently elsewhere (formerly from ~/.opticks/GMaterialLib/abbrev.json )
+    // but now the detector specific  /usr/local/opticks/opticksdata/export/DayaBay/GMaterialLib/abbrev.json
 
 
     // special cases where 1st 2-chars not unique or misleading

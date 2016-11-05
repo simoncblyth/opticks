@@ -3,6 +3,8 @@
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "CStp.hh"
+#include "CRecorder.hh"
+#include "OpStatus.hh"
 
 #include "Format.hh"
 
@@ -40,7 +42,11 @@ std::string CStp::description()
 {
     std::stringstream ss ; 
 
-    ss << "[" 
+    ss 
+       << " " << std::setw(5) << OpBoundaryAbbrevString(m_boundary_status) 
+       << " " << CRecorder::Action(m_action) 
+       << std::endl 
+       << "[" 
        << std::setw(4) << m_step_id 
        << "]"       
        << ::Format(m_step, m_origin, "Stp" ) 
