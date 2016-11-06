@@ -4,6 +4,7 @@ import os, sys, logging, numpy as np
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import chi2, vnorm, decompression_bins
 from opticks.ana.histype import HisType
+from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
 log = logging.getLogger(__name__)
 
@@ -19,13 +20,14 @@ class CF(object):
         self.seqs = seqs
         self.top = top
         self.af = HisType()
+        self.mt = MatType()
 
         self.compare(seqs)
 
         self.ss = []
         self.init_spawn(spawn)
 
-    def init_spawn(self, spawn):
+    def init_spawn(self, spawn, flv="seqhis"):
         """
         Spawn CF for each of the selections, according to 
         slices of the history sequences.
@@ -54,11 +56,22 @@ class CF(object):
         totrec = 0 
 
         if type(spawn) is slice:
-            labels = self.his.labels[spawn] 
+            if flv == "seqhis":
+                labels = self.his.labels[spawn] 
+            elif flv == "seqmat":
+                labels = self.mat.labels[spawn] 
+            else:
+                assert 0, flv
+            pass
         elif type(spawn) is list:
             # elements of spawn can be hexint, hexstring(without 0x), or preformed labels  
             # a single wildcarded label also supported eg "TO BT BT SC .."
-            labels = map( lambda _:self.af.label(_), spawn)
+            if flv == "seqhis":
+                labels = map( lambda _:self.af.label(_), spawn)
+            elif flv == "seqmat":
+                labels = map( lambda _:self.mt.label(_), spawn)
+            else:
+                assert 0, flv
         else:
             log.fatal("spawn argument must be a slice or list of seqs") 
             assert 0

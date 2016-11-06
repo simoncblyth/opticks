@@ -406,14 +406,10 @@ RT_PROGRAM void generate()
 
         slot++ ; 
 
-       
-
-
         command = propagate_to_boundary( p, s, rng );
         if(command == BREAK)    break ;           // BULK_ABSORB
         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
         // PASS : survivors will go on to pick up one of the below flags, 
-      
 
         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
         {
@@ -438,12 +434,13 @@ RT_PROGRAM void generate()
 
 
     // RSAVE lays down s.flag and s.index.x into the seqhis and seqmat
-    // but there is inconsistency for BREAKers as s.index.x is only updated by fill_state 
+    // but there is inconsistency for BREAKers as s.index.x (m1) is only updated by fill_state 
     // but s.flag is updated after that by the propagate methods : so the last m1 
     // will usually be repeated in seqmat and the material on which the absorb or detect 
     // happened will be missed
     //
     //  kludged this with s.index.y -> s.index.x in propagate for SURFACE_ABSORB and SURFACE_DETECT
+    //  BUT WHAT ABOUT TRUNCATION ? DONT GET TO THE BREAK ?
     //
 
 #ifdef WITH_RECORD

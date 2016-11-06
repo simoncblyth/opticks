@@ -47,6 +47,335 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
 
 
 
+
+opticks seqmat
+----------------
+
+::
+
+    110 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
+    111 {    \
+    112     unsigned int shift = slot*4 ; \
+    113     unsigned long long his = __ffs((s).flag) & 0xF ; \
+    114     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
+    115     seqhis |= his << shift ; \
+    116     seqmat |= mat << shift ; \
+    117     rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    118 }   \
+
+::
+
+     27 __device__ void fill_state( State& s, int boundary, uint4 identity, float wavelength )
+     28 {
+     29     // boundary : 1 based code, signed by cos_theta of photon direction to outward geometric normal
+     30     // >0 outward going photon
+     31     // <0 inward going photon
+     32     //
+     33     // NB the line is above the details of the payload (ie how many float4 per matsur) 
+     34     //    it is just 
+     35     //                boundaryIndex*4  + 0/1/2/3     for OMAT/OSUR/ISUR/IMAT 
+     36     //
+     37 
+     38     int line = boundary > 0 ? (boundary - 1)*BOUNDARY_NUM_MATSUR : (-boundary - 1)*BOUNDARY_NUM_MATSUR  ;
+     39 
+     40     // pick relevant lines depening on boundary sign, ie photon direction relative to normal
+     41     // 
+     42     int m1_line = boundary > 0 ? line + IMAT : line + OMAT ;
+     43     int m2_line = boundary > 0 ? line + OMAT : line + IMAT ;
+     44     int su_line = boundary > 0 ? line + ISUR : line + OSUR ;
+     45 
+     46     //  consider photons arriving at PMT cathode surface
+     47     //  geometry normals are expected to be out of the PMT 
+     48     //
+     49     //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
+     50 
+     51     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
+     52     s.material2 = boundary_lookup( wavelength, m2_line, 0);
+     53     s.surface   = boundary_lookup( wavelength, su_line, 0);
+     54 
+     55     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
+     56 
+     57     s.index.x = optical_buffer[m1_line].x ; // m1 index
+     ////// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     58     s.index.y = optical_buffer[m2_line].x ; // m2 index 
+     59     s.index.z = optical_buffer[su_line].x ; // su index
+     60     s.index.w = identity.w   ;
+     61     
+     62     s.identity = identity ;
+     63 
+     64 }
+
+::
+
+    delta:cu blyth$ grep s.index *.*
+    generate.cu://   including s.index.x/y/z  m1/m2/su indices 
+    generate.cu:             s.index.x, \
+    generate.cu:             s.index.y, \
+    generate.cu:             slot == 0 ? optical_buffer[MaterialIndex].x : s.index.z, \
+    generate.cu://    p.flags.u.z = s.index.x ;   \
+    generate.cu:            s.index.x = 0 ;  
+    generate.cu:            s.index.y = 0 ;  
+    generate.cu:            s.index.z = 0 ; 
+    generate.cu:            s.index.w = 0 ; 
+    generate.cu:    // RSAVE lays down s.flag and s.index.x into the seqhis and seqmat
+    generate.cu:    // but there is inconsistency for BREAKers as s.index.x is only updated by fill_state 
+    generate.cu:    //  kludged this with s.index.y -> s.index.x in propagate for SURFACE_ABSORB and SURFACE_DETECT
+    photon.h:    qaux.uchar_.x =  s.index.x ;    // m1  
+    photon.h:    qaux.uchar_.y =  s.index.y ;    // m2   
+    propagate.h:        s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
+    propagate.h:        s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
+    state.h:    s.index.x = optical_buffer[m1_line].x ; // m1 index
+    state.h:    s.index.y = optical_buffer[m2_line].x ; // m2 index 
+    state.h:    s.index.z = optical_buffer[su_line].x ; // su index
+    state.h:    s.index.w = identity.w   ;
+    state.h:    rtPrintf(" dump_state:index           %10u %10u %10u %10i m1/m2/su/se \n", s.index.x  , s.index.y,   s.index.z,   s.index.w );
+
+::
+
+    426 
+    427     }   // bounce < max_bounce
+    428 
+    429 
+    430     FLAGS(p, s, prd);
+    431 
+    432     // breakers and maxers saved here
+    433     psave(p, photon_buffer, photon_offset );
+    434 
+    435 
+    436     // RSAVE lays down s.flag and s.index.x into the seqhis and seqmat
+    437     // but there is inconsistency for BREAKers as s.index.x (m1) is only updated by fill_state 
+    438     // but s.flag is updated after that by the propagate methods : so the last m1 
+    439     // will usually be repeated in seqmat and the material on which the absorb or detect 
+    440     // happened will be missed
+    441     //
+    442     //  kludged this with s.index.y -> s.index.x in propagate for SURFACE_ABSORB and SURFACE_DETECT
+    443     //
+    444 
+    445 #ifdef WITH_RECORD
+    446     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+    447     RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
+    448 
+    449     sequence_buffer[photon_id*2 + 0] = seqhis ;
+    450     sequence_buffer[photon_id*2 + 1] = seqmat ;
+    451 #endif
+
+::
+
+    486 __device__ int
+    487 propagate_at_surface(Photon &p, State &s, curandState &rng)
+    488 {
+    489 
+    490     float u = curand_uniform(&rng);
+    491 
+    492     if( u < s.surface.y )   // absorb   
+    493     {
+    494         s.flag = SURFACE_ABSORB ;
+    495         s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
+    496         return BREAK ;
+    497     }
+    498     else if ( u < s.surface.y + s.surface.x )  // absorb + detect
+    499     {
+    500         s.flag = SURFACE_DETECT ;
+    501         s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
+    502         return BREAK ;
+    503     }
+    504     else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
+    505     {
+    506         s.flag = SURFACE_DREFLECT ;
+    507         propagate_at_diffuse_reflector(p, s, rng);
+    508         return CONTINUE;
+    509     }
+    510     else
+    511     {
+    512         s.flag = SURFACE_SREFLECT ;
+    513         propagate_at_specular_reflector(p, s, rng );
+    514         return CONTINUE;
+    515     }
+    516 }
+
+
+Truncation means that BREAK never happens... 
+
+
+
+ISSUE: seqmat mismatches, zeros
+----------------------------------
+
+
+::
+
+    tconcentric-i --dbgseqmat 4443231
+
+    tconcentric.py --cmx 5
+
+    [2016-11-06 17:30:15,759] p43702 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000      2325.00/233 =  9.98 
+      12              4443231          3040         3272             8.53        0.929 +- 0.017        1.076 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      40     3443231323443231           194          483           123.37        0.402 +- 0.029        2.490 +- 0.113  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+      50     4443231323443231           299           57           164.51        5.246 +- 0.303        0.191 +- 0.025  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO MO
+
+      62     3323111323443231           181            1           178.02      181.000 +- 13.454       0.006 +- 0.006  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac Ac
+      68     4323111323443231             0          147           147.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+
+      70         344323132231           147          111             5.02        1.324 +- 0.109        0.755 +- 0.072  [12] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac
+      76     4323132344323111             0          132           132.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+      79     3323132344323111           126            1           123.03      126.000 +- 11.225       0.008 +- 0.008  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+      84     3323113234432311           118            0           118.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+      86     1132231323443231           114           32            46.05        3.562 +- 0.334        0.281 +- 0.050  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Gd
+      91     1132344323443231           108           16            68.26        6.750 +- 0.650        0.148 +- 0.037  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Gd
+      93     4323113234432311             0          107           107.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+     106     1132344323132231            84           23            34.78        3.652 +- 0.398        0.274 +- 0.057  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Gd
+     107     3132344323443231             0           83            83.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Ac
+     110              2223111            79           52             5.56        1.519 +- 0.171        0.658 +- 0.091  [7 ] Gd Gd Gd Ac LS LS LS
+     111     3132231323443231             0           79            79.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Ac
+
+     125     2332332332332231             0           64            64.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac LS
+     129     3332332332332231            56            4            45.07       14.000 +- 1.871        0.071 +- 0.036  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac Ac
+
+     127     3322311323443231            60            0            60.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac Ac
+     135     2231111323443231            51            6            35.53        8.500 +- 1.190        0.118 +- 0.048  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Gd Ac LS LS
+    .                               1000000      1000000      2325.00/233 =  9.98 
+
+
+
+    tconcentric.py --dbgzero    ## playing pelmanism
+
+    [2016-11-06 17:32:05,189] p43710 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000      2325.00/233 =  9.98 
+
+
+      93     4323113234432311             0          107           107.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+     168     4322311323443231             0           34            34.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac MO
+      68     4323111323443231             0          147           147.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+      76     4323132344323111             0          132           132.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+     107     3132344323443231             0           83            83.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Ac
+     111     3132231323443231             0           79            79.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Ac
+     125     2332332332332231             0           64            64.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac LS
+     136     4323113234443231             0           49            49.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+     137     3132344323132231             0           48            48.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Ac
+     144     4323113223443231             0           43            43.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS Ac Gd Gd Ac LS Ac MO
+     161     3231111323443231             0           37            37.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Gd Ac LS Ac
+     171     4322231323443231             0           32            32.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS LS Ac MO
+     174     4323113234432231             0           31            31.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+
+
+      84     3323113234432311           118            0           118.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+     127     3322311323443231            60            0            60.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac Ac
+     166     3323113234443231            34            0            34.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+     164     3323113223443231            35            0            35.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS Ac Gd Gd Ac LS Ac Ac
+     156     3323113234432231            37            0            37.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+     176     3323132344432311            31            0            31.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Ac LS Ac MO MO MO Ac LS Ac Gd Ac LS Ac Ac
+     180     3323132223443231            30            0             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS LS LS Ac Gd Ac LS Ac Ac
+
+     All truncated opticks seqmat duplicate the material in the last two slots... the m2 into m1 for BREAKERs kludge 
+     doesnt get a chance to run for truncated as BREAK never happens, can the kludge just be moved after the loop ?
+
+    .                               1000000      1000000      2325.00/233 =  9.98 
+
+
+
+Line 68: Looking for similar seqmat, by wildcarding the last topslot material 
+suggests the CFG4 seqmat ending MO is somehow mismatched to Opticks seqmat ending Ac.::
+
+    delta:ana blyth$ tconcentric-;tconcentric-i --pfxseqmat .323111323443231
+
+    [2016-11-06 19:14:31,977] p44070 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana      noname       noname           c2           ab           ba 
+    .                                   182          152       325.02/2 = 162.51 
+       0     3323111323443231           181            1           178.02      181.000 +- 13.454       0.006 +- 0.006  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac Ac
+       1     4323111323443231             0          147           147.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+       2     3333333323443231             1            2             0.00        0.500 +- 0.500        2.000 +- 1.414  [16] Gd Ac LS Ac MO MO Ac LS Ac Ac Ac Ac Ac Ac Ac Ac
+       3     3333333333443231             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac Ac Ac Ac Ac Ac Ac Ac Ac Ac
+       4     3333331323443231             0            1             0.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac Ac Ac Ac Ac Ac
+    .                                   182          152       325.02/2 = 162.51 
+
+
+Line 76, same story CFG4 ending MO somehow ends Ac in Opticks.::
+
+    tconcentric-i --pfxseqmat .323132344323111
+
+    [2016-11-06 19:22:35,169] p44088 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana      noname       noname           c2           ab           ba 
+    .                                   126          133       255.03/2 = 127.52 
+       0     4323132344323111             0          132           132.00        0.000 +- 0.000        0.000 +- 0.000  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+       1     3323132344323111           126            1           123.03      126.000 +- 11.225       0.008 +- 0.008  [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+    .                                   126          133       255.03/2 = 127.52 
+
+
+::
+
+
+    A                seqhis_ana      noname 
+    .                                   126         1.00 
+       0     cccccccc9cccc55d        0.373             47         [16] TO RE RE BT BT BT BT DR BT BT BT BT BT BT BT BT
+       1     cccccccc9cccc66d        0.175             22         [16] TO SC SC BT BT BT BT DR BT BT BT BT BT BT BT BT
+       2     cccccccc6cccc55d        0.151             19         [16] TO RE RE BT BT BT BT SC BT BT BT BT BT BT BT BT
+       3     cccccccc9cccc56d        0.111             14         [16] TO SC RE BT BT BT BT DR BT BT BT BT BT BT BT BT
+       4     cccccccc6cccc66d        0.095             12         [16] TO SC SC BT BT BT BT SC BT BT BT BT BT BT BT BT
+       5     cccccccc9cccc65d        0.048              6         [16] TO RE SC BT BT BT BT DR BT BT BT BT BT BT BT BT
+       6     cccccccc6cccc56d        0.032              4         [16] TO SC RE BT BT BT BT SC BT BT BT BT BT BT BT BT
+       7     cccccccc6cccc65d        0.016              2         [16] TO RE SC BT BT BT BT SC BT BT BT BT BT BT BT BT
+    .                                   126         1.00 
+    .                seqmat_ana      noname 
+    .                                   126         1.00 
+       0     3323132344323111        1.000            126         [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+
+    B                seqhis_ana      noname 
+    .                                     1         1.00 
+       0     4ccccccc9cccc55d        1.000              1         [16] TO RE RE BT BT BT BT DR BT BT BT BT BT BT BT AB
+    .                                     1         1.00 
+    .                seqmat_ana      noname 
+    .                                     1         1.00 
+       0     3323132344323111        1.000              1         [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+    .                                     1         1.00 
+
+
+
+Checking the seqhis after selecting by seqmat, for line 12
+shows two possible seqhis.
+Then selecting by the 2 seqhis reveals that there is one-to-one between those and the seqmat.
+Also the discrep is not huge::
+
+
+    .  12              4443231          3040         3272             8.53        0.929 +- 0.017        1.076 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      8 percent more from CFG4
+
+    In [1]: run seqmat.py
+    [2016-11-06 18:36:49,519] p43990 {/Users/blyth/opticks/ana/base.py:199} INFO - envvar OPTICKS_ANA_DEFAULTS -> defaults {'src': 'torch', 'tag': '1', 'det': 'concentric'} 
+    seqmat.py
+
+    A
+    .                seqhis_ana      noname 
+    .                                  3040         1.00 
+       0              49ccccd        0.761           2312         [7 ] TO BT BT BT BT DR AB
+       1              46ccccd        0.239            728         [7 ] TO BT BT BT BT SC AB
+                                                     3040 
+    .                seqmat_ana      noname 
+    .                                  3040         1.00 
+       0              4443231        1.000           3040         [7 ] Gd Ac LS Ac MO MO MO
+
+    B
+    .                seqhis_ana      noname 
+    .                                  3272         1.00 
+       0              49ccccd        0.756           2472         [7 ] TO BT BT BT BT DR AB
+       1              46ccccd        0.244            800         [7 ] TO BT BT BT BT SC AB
+    .                                  3272         1.00 
+    .                seqmat_ana      noname 
+    .                                  3272         1.00 
+       0              4443231        1.000           3272         [7 ] Gd Ac LS Ac MO MO MO
+    .                                  3272         1.00 
+
+
+::
+
+     17              49ccccd          2312         2472             5.35        0.935 +- 0.019        1.069 +- 0.022  [7 ] TO BT BT BT BT DR AB
+     38              46ccccd           728          800             3.39        0.910 +- 0.034        1.099 +- 0.039  [7 ] TO BT BT BT BT SC AB
+
+
+
+
 how should truncation be handled ?
 -------------------------------------
 
@@ -228,7 +557,7 @@ Resolved by adopting hard truncation in CRecorder::RecordStepPoint which is clos
     .                               1000000      1000000        65.31/43 =  1.52 
 
 
-After allowing a single TOPSLOT_REWRITE get pflags c2 down to 1.19::
+After allowing a single TOPSLOT_REWRITE get pflags c2 down to 1.19, then remove the incorrect decrementSlot denial down to 1.18::
 
     [2016-11-06 16:53:33,665] p43246 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
     .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
@@ -254,6 +583,7 @@ After allowing a single TOPSLOT_REWRITE get pflags c2 down to 1.19::
       18                 1918           619          609             0.08        1.016 +- 0.041        0.984 +- 0.040  [5 ] TO|BT|DR|RE|AB
       19                 1910           482          410             5.81        1.176 +- 0.054        0.851 +- 0.042  [4 ] TO|BT|DR|RE
     .                               1000000      1000000        51.03/43 =  1.19 
+
 
 
 

@@ -213,14 +213,17 @@ if __name__ == '__main__':
         log.info("early exit as non-interactive")
         sys.exit(0)
 
-    sa = cf.a.all_seqhis_ana
-    sb = cf.b.all_seqhis_ana
+    sha = cf.a.all_seqhis_ana
+    sma = cf.a.all_seqmat_ana
+    shb = cf.b.all_seqhis_ana
+    smb = cf.b.all_seqmat_ana
 
     pfxseqhis = ok.pfxseqhis   ## eg ".6ccd" standing for "TO BT BT SC .."
+    pfxseqmat = ok.pfxseqmat 
     
     if len(pfxseqhis) > 0:
-        log.info(" pfxseqhis [%s] label [%s] " % (pfxseqhis, sa.af.label(pfxseqhis)))
-        cf.init_spawn([pfxseqhis]) 
+        log.info(" pfxseqhis [%s] label [%s] " % (pfxseqhis, sha.af.label(pfxseqhis)))
+        cf.init_spawn([pfxseqhis], flv="seqhis") 
         scf = cf.ss[0]
 
         if pfxseqhis[0] == ".":
@@ -230,6 +233,10 @@ if __name__ == '__main__':
             dirpol(scf, fr, to)
             #poldot(scf, fr )   
         pass 
+    elif len(pfxseqmat) > 0:
+        log.info(" pfxseqmat [%s] label [%s] " % (pfxseqmat, sma.af.label(pfxseqmat)))
+        cf.init_spawn([pfxseqmat], flv="seqmat") 
+        scf = cf.ss[0]
     else:
         scf = None
     pass

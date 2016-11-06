@@ -331,16 +331,27 @@ class Evt(object):
    
         log.debug("Evt seqs %s " % repr(seqs))
 
-        sa = self.all_seqhis_ana
+        sh = self.all_seqhis_ana
+        sm = self.all_seqmat_ana
+        sh_start = "TO CK SI GN NL".split()
 
         if len(seqs) == 1 and seqs[0][-3:] == ' ..':
             log.debug("init_selection wildcard startswith %s " % seqs[0] ) 
             seq = seqs[0][:-3]
-            psel = sa.seq_startswith(seq)
+            if seq[0:2] in sh_start:
+                psel = sh.seq_startswith(seq)
+            else:
+                psel = sm.seq_startswith(seq)
+            pass
         elif len(seqs) == 1 and seqs[0] == 'PFLAGS_DEBUG':
             psel = self.pflags2 != self.pflags
+            flav = "seqhis"
         else:
-            psel = sa.seq_or(seqs)
+            if seqs[0][0:2] in sh_start:
+                psel = sh.seq_or(seqs)
+            else:
+                psel = sm.seq_or(seqs)
+            pass
         pass
 
         if not_:
@@ -359,6 +370,7 @@ class Evt(object):
         self.rx = self.rx[psel]
 
         self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
+        self.seqmat_ana = SeqAna(self.seqmat[psel], self.mattype)   # sequence history with selection applied
     
     def psel_dindex(self):
         """
@@ -370,27 +382,27 @@ class Evt(object):
 
     def select_(self, label="TO RE BT BT BT BT SA"):
         """
-        :param label:
+        :param label: seqhis or seqmat label
         :return boolean selection array:
         """
         if label == "BAD_PFLAGS":
             select = self.pflags2 != self.pflags
         else:
-            code = self.histype.code(label)
-            select = self.seqhis == code
+            if label[0:2] in "TO CK SI GN NL".split():
+                code = self.histype.code(label)
+                select = self.seqhis == code
+            else:
+                code = self.mattype.code(label)
+                select = self.seqmat == code
+            pass
         pass
         return select 
 
     def dindex_(self, label="TO RE BT BT BT BT SA", limit=None, reverse=False):
         """
-        :param label: seqhis label
+        :param label: seqhis or seqmat label
         :param limit:
         :return array: list of photon record_id that match the seqhis label 
-
-
-
-
-
         """
         select = self.select_(label)
         a = np.where(select)[0]

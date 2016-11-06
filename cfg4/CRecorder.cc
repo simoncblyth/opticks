@@ -490,7 +490,9 @@ void CRecorder::startPhoton()
 void CRecorder::decrementSlot()
 {
     m_decrement_request += 1 ; 
-    if(m_slot == 0 || m_bounce_truncate || m_record_truncate )
+    //if(m_slot == 0 || m_bounce_truncate || m_record_truncate )
+    // with the TOPSLOT_REWRITE dont want to deny decrement
+    if(m_slot == 0 )
     {
         m_decrement_denied += 1 ; 
         m_step_action |= DECREMENT_DENIED ; 
@@ -718,18 +720,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     {
         m_records->add(m_dynamic_records);
     }
-
-
-/*
-    if(m_debug)
-       LOG(info) << "RSP:" << std::setw(2) << slot  
-                 << " fl " << std::hex << BBit::ffs(flag) << std::dec
-                 << " sh " << std::setw(16) << std::hex << m_seqhis << std::dec
-                 << " do " << ( done ? "Y" : "N" )
-                 << " tr " << ( truncate ? "Y" : "N" )
-                 << description()
-                 ; 
-*/
 
     return done ;    
 }
