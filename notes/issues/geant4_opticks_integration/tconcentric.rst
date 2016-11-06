@@ -47,11 +47,301 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
 
 
 
-ISSUE : bad REjoin onto scatter, 3 in 1M
-------------------------------------------
+how should truncation be handled ?
+-------------------------------------
+
+
+oxrap/generate.cu::
+
+    102 rtDeclareVariable(unsigned int,  bounce_max, , );
+    103 rtDeclareVariable(unsigned int,  record_max, , );
+    ...
+    110 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
+    111 {    \
+    112     unsigned int shift = slot*4 ; \
+    113     unsigned long long his = __ffs((s).flag) & 0xF ; \
+    114     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
+    115     seqhis |= his << shift ; \
+    116     seqmat |= mat << shift ; \
+    117     rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    118 }   \
+    ...
+    273     State s ;
+    274     Photon p ;
+    /////////////  generate initial photon 
+    ...
+    329     int bounce = 0 ;
+    330     int command = START ;
+    331     int slot = 0 ;
+    ...
+    334     unsigned long long seqhis(0) ;
+    335     unsigned long long seqmat(0) ;
+    336     unsigned int MAXREC = record_max ;
+    337     int slot_min = photon_id*MAXREC ;
+    338     int slot_max = slot_min + MAXREC - 1 ;
+    339     int slot_offset = 0 ;
+    ...
+    356     while( bounce < bounce_max )
+    357     {
+    358         bounce++;   // increment at head, not tail, as CONTINUE skips the tail
+    359
+    ///////////  trace to find intersection  
+    ...
+    394         slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+    395         RSAVE(seqhis, seqmat, p, s, slot, slot_offset) ;        /// record initial photon, or SC,SR,DR,RE,BR,BT continuers
+    //////////
+    //////////   eg in loop RSAVEs for bounce_max = 15, record_max = 16  
+    //////////
+    //////////         bounce: 1   slot: 0
+    //////////         bounce: 2   slot: 1
+    //////////                ..        ..  
+    //////////         bounce:14   slot:13
+    //////////
+    ...
+    405         slot++ ;
+    ...
+    410         command = propagate_to_boundary( p, s, rng );
+    411         if(command == BREAK)    break ;           // BULK_ABSORB
+    412         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
+    413         // PASS : survivors will go on to pick up one of the below flags, 
+    414         
+    415         
+    416         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
+    417         {
+    418             command = propagate_at_surface(p, s, rng);
+    419             if(command == BREAK)    break ;       // SURFACE_DETECT/SURFACE_ABSORB
+    420             if(command == CONTINUE) continue ;    // SURFACE_DREFLECT/SURFACE_SREFLECT
+    421         }   
+    422         else
+    423         {
+    425             propagate_at_boundary_geant4_style(p, s, rng);     // BOUNDARY_RELECT/BOUNDARY_TRANSMIT
+    426             // tacit CONTINUE
+    427         }
+    428 
+    429     }   // bounce < max_bounce
+    430 
+    431 
+    432     FLAGS(p, s, prd);
+    433 
+    434     // breakers and maxers saved here
+    435     psave(p, photon_buffer, photon_offset );
+    ...
+    448     slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+    449     RSAVE(seqhis, seqmat, p, s, slot, slot_offset ) ;
+    450 
+    451     sequence_buffer[photon_id*2 + 0] = seqhis ;
+    452     sequence_buffer[photon_id*2 + 1] = seqmat ;
+
+
+
+ISSUE : negative times on exceeding time domain
+---------------------------------------------------
+
+When using ``--timemax 30``csome big bouncers, can exceed time domain causing negative times.
+
+::
+
+    1110     seq = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
+    1111     #seq = "PFLAGS_DEBUG"
+    1112     
+    1113     e1 = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
+    1114     e1.history_table(slice(0,20))
+
+
+    In [5]: pos = e1.rpost()
+
+    In [6]: pos[0]
+    Out[6]: 
+    A()sliced
+    A([[    0.    ,     0.    ,     0.    ,     0.0998],
+           [ 2995.0267,     0.    ,     0.    ,    15.4775],
+           [ 3004.9551,     0.    ,     0.    ,    15.5296],
+           [ 3995.0491,     0.    ,     0.    ,    20.6687],
+           [ 4004.9776,     0.    ,     0.    ,    20.7199],
+           [ 4995.0716,     0.    ,     0.    ,    25.8589],
+           [ 3959.6123,  -549.8825,   242.712 ,   -30.0009],
+           [ 3948.6146,  -555.5341,   245.3087,   -30.0009],
+           [ 2704.6582, -1197.8274,   528.8037,   -30.0009],
+           [ 2689.5364, -1205.6174,   532.1641,   -30.0009],
+           [ -260.8887, -2729.5557,  1205.0064,   -30.0009],
+           [ -276.0105, -2737.4984,  1208.5195,   -30.0009],
+           [-1519.8141, -3379.9445,  1492.0145,   -30.0009],
+           [-1530.8118, -3385.596 ,  1494.6112,   -30.0009],
+           [-2580.3236, -3912.5668,  1727.242 ,   -30.0009]])
+
+
+
+RESOLVED: bad REjoin onto scatter, 3 in 1M
+---------------------------------------------
+
+Resolved by adopting hard truncation in CRecorder::RecordStepPoint which is closer to what Opticks does.
+
+::
+
+    [2016-11-06 16:23:14,126] p42803 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       329.38/353 =  0.93 
+       0               8ccccd        669843       671254             1.48        0.998 +- 0.001        1.002 +- 0.001  [6 ] TO BT BT BT BT SA
+       1                   4d         83950        83649             0.54        1.004 +- 0.003        0.996 +- 0.003  [2 ] TO AB
+       2              8cccc6d         45490        45049             2.15        1.010 +- 0.005        0.990 +- 0.005  [7 ] TO SC BT BT BT BT SA
+       3               4ccccd         28955        28649             1.63        1.011 +- 0.006        0.989 +- 0.006  [6 ] TO BT BT BT BT AB
+       4                 4ccd         23187        23254             0.10        0.997 +- 0.007        1.003 +- 0.007  [4 ] TO BT BT AB
+       5              8cccc5d         20239        19949             2.09        1.015 +- 0.007        0.986 +- 0.007  [7 ] TO RE BT BT BT BT SA
+       6              86ccccd         10176        10397             2.37        0.979 +- 0.010        1.022 +- 0.010  [7 ] TO BT BT BT BT SC SA
+       7              8cc6ccd         10214        10304             0.39        0.991 +- 0.010        1.009 +- 0.010  [7 ] TO BT BT SC BT BT SA
+       8              89ccccd          7605         7695             0.53        0.988 +- 0.011        1.012 +- 0.012  [7 ] TO BT BT BT BT DR SA
+       9             8cccc55d          5970         5814             2.07        1.027 +- 0.013        0.974 +- 0.013  [8 ] TO RE RE BT BT BT BT SA
+      10                  45d          5780         5657             1.32        1.022 +- 0.013        0.979 +- 0.013  [3 ] TO RE AB
+      11      8cccccccc9ccccd          5348         5367             0.03        0.996 +- 0.014        1.004 +- 0.014  [15] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+      12              8cc5ccd          5113         4870             5.91        1.050 +- 0.015        0.952 +- 0.014  [7 ] TO BT BT RE BT BT SA
+      13                  46d          4797         4815             0.03        0.996 +- 0.014        1.004 +- 0.014  [3 ] TO SC AB
+      14          8cccc9ccccd          4525         4420             1.23        1.024 +- 0.015        0.977 +- 0.015  [11] TO BT BT BT BT DR BT BT BT BT SA
+      15          8cccccc6ccd          3317         3334             0.04        0.995 +- 0.017        1.005 +- 0.017  [11] TO BT BT SC BT BT BT BT BT BT SA
+      16             8cccc66d          2670         2734             0.76        0.977 +- 0.019        1.024 +- 0.020  [8 ] TO SC SC BT BT BT BT SA
+      17              49ccccd          2312         2471             5.29        0.936 +- 0.019        1.069 +- 0.022  [7 ] TO BT BT BT BT DR AB
+      18              4cccc6d          2043         2042             0.00        1.000 +- 0.022        1.000 +- 0.022  [7 ] TO SC BT BT BT BT AB
+      19            8cccc555d          1819         1763             0.88        1.032 +- 0.024        0.969 +- 0.023  [9 ] TO RE RE RE BT BT BT BT SA
+    .                               1000000      1000000       329.38/353 =  0.93 
+    [2016-11-06 16:23:14,271] p42803 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000        65.31/43 =  1.52 
+       0                 1880        669843       671254             1.48        0.998 +- 0.001        1.002 +- 0.001  [3 ] TO|BT|SA
+       1                 1008         83950        83649             0.54        1.004 +- 0.003        0.996 +- 0.003  [2 ] TO|AB
+       2                 18a0         79906        79769             0.12        1.002 +- 0.004        0.998 +- 0.004  [4 ] TO|BT|SA|SC
+       3                 1808         54172        53852             0.95        1.006 +- 0.004        0.994 +- 0.004  [3 ] TO|BT|AB
+       4                 1890         38518        37838             6.06        1.018 +- 0.005        0.982 +- 0.005  [4 ] TO|BT|SA|RE
+       5                 1980         17803        17844             0.05        0.998 +- 0.007        1.002 +- 0.008  [4 ] TO|BT|DR|SA
+       6                 1828          8788         9016             2.92        0.975 +- 0.010        1.026 +- 0.011  [4 ] TO|BT|SC|AB
+       7                 1018          8204         8000             2.57        1.026 +- 0.011        0.975 +- 0.011  [3 ] TO|RE|AB
+       8                 18b0          7901         7883             0.02        1.002 +- 0.011        0.998 +- 0.011  [5 ] TO|BT|SA|SC|RE
+       9                 1818          6024         5941             0.58        1.014 +- 0.013        0.986 +- 0.013  [4 ] TO|BT|RE|AB
+      10                 1908          5425         5465             0.15        0.993 +- 0.013        1.007 +- 0.014  [4 ] TO|BT|DR|AB
+      11                 1028          5089         5153             0.40        0.988 +- 0.014        1.013 +- 0.014  [3 ] TO|SC|AB
+      12                 19a0          4963         4928             0.12        1.007 +- 0.014        0.993 +- 0.014  [5 ] TO|BT|DR|SA|SC
+      13                 1838          1540         1559             0.12        0.988 +- 0.025        1.012 +- 0.026  [5 ] TO|BT|SC|RE|AB
+      14                 1990          1506         1541             0.40        0.977 +- 0.025        1.023 +- 0.026  [5 ] TO|BT|DR|SA|RE
+      15                 1928          1048         1091             0.86        0.961 +- 0.030        1.041 +- 0.032  [5 ] TO|BT|DR|SC|AB
+      16                 1038           770          776             0.02        0.992 +- 0.036        1.008 +- 0.036  [4 ] TO|SC|RE|AB
+      17                 1920           775          759             0.17        1.021 +- 0.037        0.979 +- 0.036  [4 ] TO|BT|DR|SC
+      18                 1918           619          624             0.02        0.992 +- 0.040        1.008 +- 0.040  [5 ] TO|BT|DR|RE|AB
+      19                 1910           482          392             9.27        1.230 +- 0.056        0.813 +- 0.041  [4 ] TO|BT|DR|RE
+    .                               1000000      1000000        65.31/43 =  1.52 
+
+
+After allowing a single TOPSLOT_REWRITE get pflags c2 down to 1.19::
+
+    [2016-11-06 16:53:33,665] p43246 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000        51.03/43 =  1.19 
+       0                 1880        669843       671254             1.48        0.998 +- 0.001        1.002 +- 0.001  [3 ] TO|BT|SA
+       1                 1008         83950        83649             0.54        1.004 +- 0.003        0.996 +- 0.003  [2 ] TO|AB
+       2                 18a0         79906        79769             0.12        1.002 +- 0.004        0.998 +- 0.004  [4 ] TO|BT|SA|SC
+       3                 1808         54172        53852             0.95        1.006 +- 0.004        0.994 +- 0.004  [3 ] TO|BT|AB
+       4                 1890         38518        37838             6.06        1.018 +- 0.005        0.982 +- 0.005  [4 ] TO|BT|SA|RE
+       5                 1980         17803        17844             0.05        0.998 +- 0.007        1.002 +- 0.008  [4 ] TO|BT|DR|SA
+       6                 1828          8788         9012             2.82        0.975 +- 0.010        1.025 +- 0.011  [4 ] TO|BT|SC|AB
+       7                 1018          8204         8000             2.57        1.026 +- 0.011        0.975 +- 0.011  [3 ] TO|RE|AB
+       8                 18b0          7901         7883             0.02        1.002 +- 0.011        0.998 +- 0.011  [5 ] TO|BT|SA|SC|RE
+       9                 1818          6024         5940             0.59        1.014 +- 0.013        0.986 +- 0.013  [4 ] TO|BT|RE|AB
+      10                 1908          5425         5462             0.13        0.993 +- 0.013        1.007 +- 0.014  [4 ] TO|BT|DR|AB
+      11                 1028          5089         5153             0.40        0.988 +- 0.014        1.013 +- 0.014  [3 ] TO|SC|AB
+      12                 19a0          4963         4928             0.12        1.007 +- 0.014        0.993 +- 0.014  [5 ] TO|BT|DR|SA|SC
+      13                 1990          1506         1541             0.40        0.977 +- 0.025        1.023 +- 0.026  [5 ] TO|BT|DR|SA|RE
+      14                 1838          1540         1534             0.01        1.004 +- 0.026        0.996 +- 0.025  [5 ] TO|BT|SC|RE|AB
+      15                 1928          1048         1085             0.64        0.966 +- 0.030        1.035 +- 0.031  [5 ] TO|BT|DR|SC|AB
+      16                 1038           770          776             0.02        0.992 +- 0.036        1.008 +- 0.036  [4 ] TO|SC|RE|AB
+      17                 1920           775          759             0.17        1.021 +- 0.037        0.979 +- 0.036  [4 ] TO|BT|DR|SC
+      18                 1918           619          609             0.08        1.016 +- 0.041        0.984 +- 0.040  [5 ] TO|BT|DR|RE|AB
+      19                 1910           482          410             5.81        1.176 +- 0.054        0.851 +- 0.042  [4 ] TO|BT|DR|RE
+    .                               1000000      1000000        51.03/43 =  1.19 
+
+
+
+elaborated fix
+~~~~~~~~~~~~~~~~
+
+::
+
+     655     unsigned long long prior_mat = ( m_seqmat & msk ) >> shift ;
+     656     unsigned long long prior_his = ( m_seqhis & msk ) >> shift ;
+     657     unsigned long long prior_flag = 0x1 << (prior_his - 1) ;
+     658 
+     659     if(m_record_truncate && prior_his != 0 && prior_mat != 0 )  // try to overwrite top slot 
+     660     {
+     661         m_topslot_rewrite += 1 ;
+     662         LOG(info)
+     663                   << ( m_topslot_rewrite > 1 ? HARD_TRUNCATE_ : TOPSLOT_REWRITE_ )
+     664                   << " topslot_rewrite " << m_topslot_rewrite 
+     665                   << " prior_flag -> flag " 
+     666                   <<   OpticksFlags::Abbrev(prior_flag)
+     667                   << " -> "
+     668                   <<   OpticksFlags::Abbrev(flag)
+     669                   << " prior_mat -> mat " 
+     670                   <<   ( prior_mat == 0 ? "-" : m_material_bridge->getMaterialName(prior_mat-1, true)  )
+     671                   << " -> "
+     672                   <<   ( mat == 0       ? "-" : m_material_bridge->getMaterialName(mat-1, true)  )
+     673                   ;
+     674                   
+     675         // allowing a single AB->RE rewrite is closer to Opticks
+     676         if(m_topslot_rewrite == 1 && flag == BULK_REEMIT && prior_flag == BULK_ABSORB)
+     677         {   
+     678             m_step_action |= TOPSLOT_REWRITE ;
+     679         }   
+     680         else
+     681         {   
+     682             m_step_action |= HARD_TRUNCATE ;
+     683             return true ; 
+     684         }   
+     685     }   
+
+
+
+initial fix
+~~~~~~~~~~~~~
+
+::
+
+ 
+    +    unsigned long long prior_mat = ( m_seqmat & msk ) >> shift ;
+    +    unsigned long long prior_his = ( m_seqhis & msk ) >> shift ;
+    +    unsigned long long prior_flag = 0x1 << (prior_his - 1) ;
+    +
+    +    if(m_record_truncate && prior_his != 0 && prior_mat != 0)   // overwriting top slot 
+    +    {
+    +        LOG(info)
+    +              << " HARD TRUNCATE "
+    +              << " prior_flag -> flag " 
+    +              <<   OpticksFlags::Abbrev(prior_flag)
+    +              << " -> "
+    +              <<   OpticksFlags::Abbrev(flag)
+    +              << " prior_mat -> mat " 
+    +              <<   ( prior_mat == 0 ? "-" : m_material_bridge->getMaterialName(prior_mat-1, true)  ) 
+    +              << " -> "
+    +              <<   ( mat == 0       ? "-" : m_material_bridge->getMaterialName(mat-1, true)  ) 
+    +              ;
+    +
+    +        m_step_action |= HARD_TRUNCATE ; 
+    +        return true ; 
+    +    }
+
+
+
+issue rare SC/AB at truncation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Those three are rejoins onto a scatter (which should not happen : bad rejoin?).
 In addition two of them are beyond bouncemax.
+
+* caused by very rare SC/AB step occuring on the truncation boundary
+  such that "SC" gets recorded but "AB" gets truncated, following which a
+  rejoin replaces the "SC" with a "RE" when it should have replaced the truncated "AB"
+
+* given the level of the issue, perhaps can just disallow decrementing slot (how rejoins are implemented)
+  when at truncation ... that does not quite match Opticks (as the fake AB and scrubbing to make RE is
+  entirely a CFG4 machinery thing, Opticks just directly does RE)
+
+  This would slightly increase AB over RE at truncation for CFG4  
+
 
 pflags.py::
 

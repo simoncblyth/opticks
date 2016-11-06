@@ -567,7 +567,14 @@ opticks-docs-make()
 ########## building opticks dev notes
 
 
+
+
 opticks-notes-cd(){ cd $(opticks-home)/notes/issues/geant4_opticks_integration ; }
+
+opticks-notes-image(){
+    find $(opticks-home)/notes -name '*.rst' -exec grep -H image {} \;
+}
+
 
 opticks-notes-notes(){ cat << EON
 

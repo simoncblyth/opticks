@@ -1107,7 +1107,10 @@ if __name__ == '__main__':
     #e0 = Evt(tag=ok.utag, src=ok.src, det=ok.det, args=ok)
     #e0.history_table(slice(0,20))
 
-    e1 = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=["PFLAGS_DEBUG"])
+    #seq = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
+    seq = "PFLAGS_DEBUG"
+
+    e1 = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
     e1.history_table(slice(0,20))
 
 

@@ -78,8 +78,10 @@ const char* CRecorder::STEP_REJOIN_ = "STEP_REJOIN" ;
 const char* CRecorder::STEP_RECOLL_ = "STEP_RECOLL" ; 
 const char* CRecorder::RECORD_TRUNCATE_ = "RECORD_TRUNCATE" ; 
 const char* CRecorder::BOUNCE_TRUNCATE_ = "BOUNCE_TRUNCATE" ; 
+const char* CRecorder::HARD_TRUNCATE_ = "HARD_TRUNCATE" ; 
 const char* CRecorder::ZERO_FLAG_ = "ZERO_FLAG" ; 
-
+const char* CRecorder::DECREMENT_DENIED_ = "DECREMENT_DENIED" ; 
+const char* CRecorder::TOPSLOT_REWRITE_ = "TOPSLOT_REWRITE" ; 
 
 
 std::string CRecorder::Action(int action)
@@ -99,7 +101,10 @@ std::string CRecorder::Action(int action)
     if((action & STEP_RECOLL) != 0)  ss << STEP_RECOLL_ << " " ; 
     if((action & RECORD_TRUNCATE) != 0)  ss << RECORD_TRUNCATE_ << " " ; 
     if((action & BOUNCE_TRUNCATE) != 0)  ss << BOUNCE_TRUNCATE_ << " " ; 
+    if((action & HARD_TRUNCATE) != 0)  ss << HARD_TRUNCATE_ << " " ; 
     if((action & ZERO_FLAG) != 0)  ss << ZERO_FLAG_ << " " ; 
+    if((action & DECREMENT_DENIED) != 0)  ss << DECREMENT_DENIED_ << " " ; 
+    if((action & TOPSLOT_REWRITE) != 0)  ss << TOPSLOT_REWRITE_ << " " ; 
 
     return ss.str();
 }
@@ -166,7 +171,10 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_seqmat_select(0),
    m_slot(0),
    m_decrement_request(0),
-   m_truncate(false),
+   m_decrement_denied(0),
+   m_record_truncate(false),
+   m_bounce_truncate(false),
+   m_topslot_rewrite(0),
    m_badflag(0),
    m_step(NULL),
    m_step_action(0),
@@ -468,7 +476,10 @@ void CRecorder::startPhoton()
 
     m_slot = 0 ; 
     m_decrement_request = 0 ; 
-    m_truncate = false ; 
+    m_decrement_denied = 0 ; 
+    m_record_truncate = false ; 
+    m_bounce_truncate = false ; 
+    m_topslot_rewrite = 0 ; 
 
     m_badflag = 0 ; 
 
@@ -478,17 +489,21 @@ void CRecorder::startPhoton()
 
 void CRecorder::decrementSlot()
 {
-    if(m_slot == 0 )
+    m_decrement_request += 1 ; 
+    if(m_slot == 0 || m_bounce_truncate || m_record_truncate )
     {
-        LOG(warning) << "CRecorder::decrementSlot SKIPPING"
+        m_decrement_denied += 1 ; 
+        m_step_action |= DECREMENT_DENIED ; 
+        LOG(warning) << "CRecorder::decrementSlot DENIED "
                      << " slot " << m_slot 
-                     << " truncate " << m_truncate 
+                     << " record_truncate " << m_record_truncate 
+                     << " bounce_truncate " << m_bounce_truncate 
+                     << " decrement_denied " << m_decrement_denied
+                     << " decrement_request " << m_decrement_request
                       ;
         return ;
     }
-
     m_slot -= 1 ; 
-    m_decrement_request += 1 ; 
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -532,11 +547,6 @@ bool CRecorder::Record(const G4Step* step, int step_id, int record_id, int paren
 
     bool done = RecordStep();
 
-   // if(m_debug || m_other)
-   //     LOG(info) << " record_id " << std::setw(10) << m_record_id 
-   //               << " step_action " << Action(m_step_action)
-   //               ; 
-    
     return done ; 
 }
 
@@ -614,13 +624,19 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
 #endif
 {
+    // Formerly at truncation, rerunning this overwrote "the top slot" 
+    // of seqhis,seqmat bitfields (which are persisted in photon buffer)
+    // and the record buffer. 
+    // As that is different from Opticks behaviour for the record buffer
+    // where truncation is truncation, a HARD_TRUNCATION has been adopted.
+
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
     // constrain slot to recording inclusive range (0,m_steps_per_photon-1) 
 
-    m_truncate = slot == m_steps_per_photon - 1 ; 
-    if(m_truncate) m_step_action |= RECORD_TRUNCATE ; 
+    m_record_truncate = slot == m_steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
+    if(m_record_truncate) m_step_action |= RECORD_TRUNCATE ; 
 
     if(flag == 0)
     {
@@ -635,6 +651,39 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     unsigned long long msk = 0xFull << shift ; 
     unsigned long long his = BBit::ffs(flag) & 0xFull ; 
     unsigned long long mat = material < 0xFull ? material : 0xFull ; 
+
+    unsigned long long prior_mat = ( m_seqmat & msk ) >> shift ;
+    unsigned long long prior_his = ( m_seqhis & msk ) >> shift ;
+    unsigned long long prior_flag = 0x1 << (prior_his - 1) ;
+
+    if(m_record_truncate && prior_his != 0 && prior_mat != 0 )  // try to overwrite top slot 
+    {
+        m_topslot_rewrite += 1 ; 
+        LOG(info)
+                  << ( m_topslot_rewrite > 1 ? HARD_TRUNCATE_ : TOPSLOT_REWRITE_ )
+                  << " topslot_rewrite " << m_topslot_rewrite
+                  << " prior_flag -> flag " 
+                  <<   OpticksFlags::Abbrev(prior_flag)
+                  << " -> "
+                  <<   OpticksFlags::Abbrev(flag)
+                  << " prior_mat -> mat " 
+                  <<   ( prior_mat == 0 ? "-" : m_material_bridge->getMaterialName(prior_mat-1, true)  ) 
+                  << " -> "
+                  <<   ( mat == 0       ? "-" : m_material_bridge->getMaterialName(mat-1, true)  ) 
+                  ;
+
+        // allowing a single AB->RE rewrite is closer to Opticks
+        if(m_topslot_rewrite == 1 && flag == BULK_REEMIT && prior_flag == BULK_ABSORB)
+        {
+            m_step_action |= TOPSLOT_REWRITE ; 
+        }
+        else
+        {
+            m_step_action |= HARD_TRUNCATE ; 
+            return true ; 
+        }
+    }
+
 
     m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
     m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
@@ -659,11 +708,11 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
-    bool truncate = m_slot > m_bounce_max  ;   // TODO: rationalize with above m_truncate
-    if(truncate) m_step_action |= BOUNCE_TRUNCATE ; 
+    m_bounce_truncate = m_slot > m_bounce_max  ;   
+    if(m_bounce_truncate) m_step_action |= BOUNCE_TRUNCATE ; 
 
 
-    bool done = truncate || absorb ;   
+    bool done = m_bounce_truncate || m_record_truncate || absorb ;   
 
     if(done && m_dynamic)
     {
