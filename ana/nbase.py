@@ -188,8 +188,8 @@ def decompression_bins(cbins, *vals):
 
 
     """
-    vmin = min(map(lambda _:_.min(), vals))
-    vmax = max(map(lambda _:_.max(), vals))
+    vmin = float(min(map(lambda _:_.min(), vals)))
+    vmax = float(max(map(lambda _:_.max(), vals)))
     width = (vmax - vmin)
     widen = width*0.1
 
@@ -209,11 +209,18 @@ def decompression_bins(cbins, *vals):
 
     pass
     if inum == 0:
-        log.warning("special case handling of all values the same")
+        log.debug("decompression_bins : special case handling of all values the same")
+        bins = np.linspace(vmin-1,vmax+1,3)
+    elif inum < 0:
+        log.debug("decompression_bins : special case handling of all values the same (with inum < 0) %d" % inum)
         bins = np.linspace(vmin-1,vmax+1,3)
     else:
         bins = np.linspace(vmin,vmax,inum)
     pass
+
+    if len(bins) == 0:
+        raise Exception("decompression_bins : no bins")
+
     return bins
 
 

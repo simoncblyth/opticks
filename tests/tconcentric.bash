@@ -40,12 +40,17 @@ tconcentric--(){
        1|10|100|1000|10000) g4ppe=$photons ;;
     esac
 
+
+    local animtimemax=132
+    local timemax=132
+
+
     op.sh \
        --g4ppe $g4ppe \
        --test --testconfig "$(tconcentric-testconfig)" \
        --torch --torchconfig "$(tconcentric-torchconfig)" \
-       --animtimemax 30 \
-       --timemax 30 \
+       --animtimemax $animtimemax \
+       --timemax $timemax \
        --cat $(tconcentric-det) --tag $(tconcentric-tag) --save  \
        --eye 0.5,0.5,0.0 \
        $* 

@@ -133,6 +133,13 @@ class CF(object):
         self.his = cft["seqhis_ana"]
         self.mat = cft["seqmat_ana"]
 
+    def cf(self, ana="seqhis_ana"):
+        a = self.a
+        b = self.b
+        print "CF a %s " % a.brief 
+        print "CF b %s " % b.brief 
+        c_tab = Evt.compare_ana( a, b, ana, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
+        return c_tab
 
 
     def a_count(self, line=0):
@@ -344,6 +351,7 @@ class CF(object):
                 cbins = a.tbins()
             else:
                 cbins = a.pbins()
+            pass
         elif qwn in Evt.RPOL:
             q = Evt.RPOL[qwn]
             aval = a.rpol_(irec)[:,q]
@@ -367,6 +375,10 @@ class CF(object):
                 else:
                     bins = rbins
                 pass
+            pass
+
+        if len(bins) == 0:
+            raise Exception("no bins")
 
         return bins, aval, bval, labels
 

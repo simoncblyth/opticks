@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 """
-tdefault_distrib.py 
+tconcentric_distrib.py 
 =============================================
+
+TODO:
+
+* find way to decouple plotting from distrib chi2 
+
+
 
 
 """
@@ -32,9 +38,7 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    spawn = slice(0,1)  # pluck top line of seqhis table, needed for multiplot
-
-    
+    spawn = slice(0,10)  # pluck top line of seqhis table, needed for multiplot
 
     try:
         cf = CF(args, spawn=spawn, seqs=[] )
@@ -45,8 +49,25 @@ if __name__ == '__main__':
     cf.dump()
 
 
-    multiplot(cf, pages=["XYZT","ABCR"])
-  
+    st = multiplot(cf, pages=["XYZT","ABCR"])
+    #st = multiplot(cf, pages=["XYZT"])
+ 
+    #log_ = False
+    #c2_cut = 0 
+ 
+    #scf = cf.ss[0]
+    #nrec = scf.nrec()
+    #nrec = 1 
+    #for irec in range(nrec):
+    #    key = scf.suptitle(irec)
+    #    page = "XYZT"
+    #    qd = qwns_plot( scf, page, irec, log_, c2_cut)
+    #    print "qd", qd
+    #
+
+    #qwns_plot( cf.ss[0], "XYZT", 0 ) 
+
+
     #irec = 6
     #qwn_plot( cf.ss[0], "T", -1, c2_ymax=2000)
     #qwn_plot( cf, "R", irec)
@@ -57,8 +78,6 @@ if __name__ == '__main__':
     #binsy,ay,by,ly = cf.rqwn("Y",irec)
     #binsz,az,bz,lz = cf.rqwn("Z",irec)
 
-    #axyz = np.array([[0,0,0],[2995.0267,0,0],[3004.9551,0,0],[3995.0491,0,0],[4004.9776,0,0],[4995.0716,0,0]])
-    #bxyz = np.array([[0,0,0],[2995.0267,0,0],[3004.9551,0,0],[3995.0491,0,0],[4004.9776,0,0],[4995.0716,0,0]])
    
 
 

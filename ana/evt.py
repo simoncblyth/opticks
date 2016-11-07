@@ -210,6 +210,17 @@ class Evt(object):
         self.tdii = tdii
 
         self.fdom = fdom
+        self.fdomd = { 
+                        'tmin':fdom[1,0,0],
+                        'tmax':fdom[1,0,1],
+                        'animtmax':fdom[1,0,2],
+                        'xmin':fdom[0,0,0]-fdom[0,0,3],
+                        'xmax':fdom[0,0,0]+fdom[0,0,3],
+                        'ymin':fdom[0,0,1]-fdom[0,0,3],
+                        'ymax':fdom[0,0,1]+fdom[0,0,3],
+                        'zmin':fdom[0,0,2]-fdom[0,0,3],
+                        'zmax':fdom[0,0,2]+fdom[0,0,3],
+                     }
         self.idom = idom
         self.idomd = dict(maxrec=idom[0,0,3],maxbounce=idom[0,0,2],maxrng=idom[0,0,1])
 
@@ -217,6 +228,8 @@ class Evt(object):
         self.desc['fdom'] = fdom.desc
         self.desc['idom'] = "(metadata) %s " % pdict_(self.idomd)
         return True         
+
+
 
     def init_gensteps(self, tag, src, det, dbg):
         """
@@ -236,6 +249,8 @@ class Evt(object):
         self.desc['ox'] = "(photons) final photon step"
 
         if ox.missing:return 
+
+        self.check_ox_fdom()
 
         wl = ox[:,2,W] 
         c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
@@ -258,6 +273,40 @@ class Evt(object):
         self.desc['polw'] = "(photons) final photon step: polarization, wavelength "
         self.desc['pflags'] = "(photons) final photon step: flags "
         self.desc['c4'] = "(photons) final photon step: dtype split uint8 view of ox flags"
+
+
+    def check_ox_fdom(self):
+        chks = [ 
+                  [ 'x', self.ox[:,0,0], self.fdomd["xmin"], self.fdomd["xmax"] ],
+                  [ 'y', self.ox[:,0,1], self.fdomd["ymin"], self.fdomd["ymax"] ],
+                  [ 'z', self.ox[:,0,2], self.fdomd["zmin"], self.fdomd["zmax"] ],
+                  [ 't', self.ox[:,0,3], self.fdomd["tmin"], self.fdomd["tmax"] ],
+               ]
+        tot = 0 
+        for l,q,mi,mx in chks:
+            nmx = np.count_nonzero( q > mx ) 
+            nmi = np.count_nonzero( q < mi ) 
+            nto = len(q)
+
+            tot += nmx
+            tot += nmi
+
+            fmt = "%5.3f"
+            if nto > 0:
+                fmx = fmt % (float(nmx)/float(nto)) 
+                fmi = fmt % (float(nmi)/float(nto)) 
+            else:
+                fmx = "-"
+                fmi = "-"
+
+            msg = " %s : %7.3f %7.3f : tot %d over %d %s  under %d %s : mi %10.3f mx %10.3f  " % (l, mi, mx, nto, nmx,fmx,  nmi, fmi, q.min(), q.max() )
+            if nmx == 0 and nmi == 0: 
+                log.debug(msg)
+            else:
+                log.warning(msg)
+            pass
+        pass
+        return tot
 
 
     def init_hits(self, tag, src, det, dbg):
@@ -345,6 +394,13 @@ class Evt(object):
         self.seqhis = seqhis
         self.pflags2 = seq2msk(seqhis) 
 
+        self.msk_mismatch = self.pflags != self.pflags2
+
+        if np.all( self.msk_mismatch == False  ):
+            log.info("pflags2(=seq2msk(seqhis)) and pflags  match")
+        else:
+            log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH (msk_mismatch)")
+        pass
 
         self.seqmat = seqmat
 
@@ -406,19 +462,6 @@ class Evt(object):
 
 
     def _init_selection(self, psel):
-        if psel is None:
-            log.warning("ignoring psel None")
-            return  
-
-        nsel = len(psel[psel == True])
-        if nsel == 0:
-            log.warning("_init_selection EMPTY nsel %s len(psel) %s " % (nsel, len(psel)))
-        else:
-            log.info("_init_selection nsel %s len(psel) %s  " % (nsel, len(psel)))
-        pass 
-
-        self.nsel = nsel 
-
         # for first _init_selection hold on to the originals
         if self._psel is None:
             self.ox_ = self.ox
@@ -426,7 +469,30 @@ class Evt(object):
             self.wl_ = self.wl
             self.rx_ = self.rx
         pass
+        if psel is None: 
+            if hasattr(self, 'ox_'):
+                log.warning("_init_selection with psel None : resetting selection to original ")
+                self.ox = self.ox_
+                self.c4 = self.c4_
+                self.wl = self.wl_
+                self.rx = self.rx_
+                self.seqhis_ana = SeqAna(self.seqhis, self.histype)   
+                self.seqmat_ana = SeqAna(self.seqmat, self.mattype)   
+                self.nsel = len(self.ox_)
+            else:
+                log.warning("_init_selection with psel None : no prior selection, ignoring ")
+            return  
+
+        log.info("psel %s " % repr(psel))
+
         self._psel = psel 
+        nsel = len(psel[psel == True])
+        if nsel == 0:
+            log.warning("_init_selection EMPTY nsel %s len(psel) %s " % (nsel, len(psel)))
+        else:
+            log.info("_init_selection nsel %s len(psel) %s  " % (nsel, len(psel)))
+        pass 
+        self.nsel = nsel 
 
         ## always basing new selection of the originals
         self.ox = self.ox_[psel]
@@ -669,55 +735,64 @@ class Evt(object):
     def material_table(self, sli=slice(None)):
         self.present_table( 'seqmat_ana'.split(), sli)
 
+
     @classmethod
-    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True, zero=False, cmx=0):
+    def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False):
         if not (a.valid and b.valid):
             log.fatal("need two valid events to compare ")
             sys.exit(1)
+        pass
 
-        cft = {}
-        for ana_ in analist:
-            a_ana = getattr(a, ana_, None)
-            b_ana = getattr(b, ana_, None)
+        a_ana = getattr(a, ana_, None)
+        b_ana = getattr(b, ana_, None)
 
-            if a_ana is None:
-                log.warning("missing a_ana %s " % ana_ )  
-                continue
-            if b_ana is None:
-                log.warning("missing b_ana  %s " % ana_ )  
-                continue
-                 
-            a_tab = a_ana.table
-            b_tab = b_ana.table
+        if a_ana is None:
+            log.warning("missing a_ana %s " % ana_ )  
+            return None
+        if b_ana is None:
+            log.warning("missing b_ana  %s " % ana_ )  
+            return None
+             
+        a_tab = a_ana.table
+        b_tab = b_ana.table
+        c_tab = None
 
-            if cf:
-                c_tab = a_tab.compare(b_tab)
-                c_tab.title = ana_
+        if cf:
+            c_tab = a_tab.compare(b_tab)
+            c_tab.title = ana_
 
-                cft[ana_] = c_tab 
+            if len(c_tab.lines) > lmx:
+                c_tab.sli = slice(0,lmx)
 
-                if len(c_tab.lines) > lmx:
-                    c_tab.sli = slice(0,lmx)
-
+            if pr:
                 print c_tab
-                if c2max is not None:
-                    assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
+            if c2max is not None:
+                assert c_tab.c2p < c2max, "c2p deviation for table %s c_tab.c2p %s >= c2max %s " % ( ana_, c_tab.c2p, c2max )
 
-            else:
-                a_tab.title = "A:%s " % ana_
-                if len(a_tab.lines) > lmx:
-                    a_tab.sli = slice(0,lmx)
+        else:
+            a_tab.title = "A:%s " % ana_
+            if len(a_tab.lines) > lmx:
+                a_tab.sli = slice(0,lmx)
+            if pr:
                 print a_tab
 
-                b_tab.title = "B:%s " % ana_
-                if len(b_tab.lines) > lmx:
-                    b_tab.sli = slice(0,lmx)
+            b_tab.title = "B:%s " % ana_
+            if len(b_tab.lines) > lmx:
+                b_tab.sli = slice(0,lmx)
+            if pr:
                 print b_tab
-            pass
+        pass
+        return c_tab
+
+
+    @classmethod
+    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True, zero=False, cmx=0):
+        cft = {}
+        for ana_ in analist:
+            c_tab = cls.compare_ana( a, b, ana_ , lmx=lmx, c2max=c2max, cf=cf, zero=zero, cmx=cmx, pr=True)
+            cft[ana_] = c_tab 
         pass
         return cft
-
-
 
 
 
@@ -913,11 +988,12 @@ class Evt(object):
         return tb 
 
     def pbins(self):
+        """
+        compression bins
+        """
         p_center = self.fdom[0,0,:W]
         p_extent = self.fdom[0,0,W]
-
-        log.info(" pbins p_center %s p_extent %s " % (repr(p_center), repr(p_extent)))
-
+        log.debug(" pbins p_center %s p_extent %s " % (repr(p_center), repr(p_extent)))
         #assert p_center[0] == p_center[1] == p_center[2] == 0., p_center
         pb = np.linspace(p_center[0] - p_extent, p_center[1] + p_extent, 2*32767+1)
         return pb 

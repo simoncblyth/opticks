@@ -655,6 +655,23 @@ int Opticks::getMultiEvent()
     return m_cfg->getMultiEvent();
 }
 
+float Opticks::getTimeMin()
+{
+    return m_time_domain.x ; 
+}
+float Opticks::getTimeMax()
+{
+    return m_time_domain.y ; 
+}
+float Opticks::getAnimTimeMax()
+{
+    return m_time_domain.z ; 
+}
+
+
+
+
+
 void Opticks::configureDomains()
 {
    // this is triggered by setSpaceDomain which is 

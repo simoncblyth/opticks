@@ -220,6 +220,10 @@ class OKCORE_API Opticks {
        const glm::vec4&  getWavelengthDomain();
        const glm::ivec4& getSettings();
    public:
+       float getTimeMin();
+       float getTimeMax();
+       float getAnimTimeMax();
+   public:
        // screen frame 
        const glm::uvec4& getSize();
        const glm::uvec4& getPosition();

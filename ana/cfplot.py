@@ -20,38 +20,67 @@ except ImportError:
 
 from opticks.ana.nbase import chi2
 
+
+def _cf_hist( ax, val, bins, log_, label):
+    try:
+        c, b, p = ax.hist(val, bins=bins, log=log_, histtype='step', label=label)
+    except IndexError:
+        log.warning("_cf_hist IndexError for  \"%s\" " % label ) 
+        log.warning(" val   %s " % repr(val) )
+        log.warning(" bins  %s " % repr(bins) )
+        c, b, p = None, None, None
+    pass
+    return c, b, p
+
+
 def _cf_plot(ax, aval, bval,  bins, labels,  log_=False):
     cnt = {}
     bns = {}
     ptc = {}
-    cnt[0], bns[0], ptc[0] = ax.hist(aval, bins=bins,  log=log_, histtype='step', label=labels[0])
-    cnt[1], bns[1], ptc[1] = ax.hist(bval, bins=bins,  log=log_, histtype='step', label=labels[1])
+
+    cnt[0], bns[0], ptc[0] = _cf_hist(ax, aval, bins=bins,  log_=log_, label=labels[0])
+    cnt[1], bns[1], ptc[1] = _cf_hist(ax, bval, bins=bins,  log_=log_, label=labels[1])
+
     return cnt, bns
 
 
-def _chi2_plot(ax, bins, counts, cut=30):
+def _chi2_plot(ax, _bins, counts, cut=30):
     a,b = counts[0],counts[1]
 
-    c2, c2n, c2c = chi2(a, b, cut=cut)
-    c2p = c2.sum()/c2n
-       
-    label = "chi2/ndf %4.2f [%d]" % (c2p, c2c)
+    if a is None or b is None:
+        log.warning("skip chi2 plot as got None %s %s " % (repr(a), repr(b)))
+        return 0  
 
-    ax.plot( bins[:-1], c2, drawstyle='steps', label=label )
+    c2, c2n, c2c = chi2(a, b, cut=cut)
+    ndf = max(c2n - 1, 1)
+
+    c2p = c2.sum()/ndf
+       
+    label = "chi2/ndf %4.2f [%d]" % (c2p, ndf)
+
+    ax.plot( _bins[:-1], c2, drawstyle='steps', label=label )
 
     return c2p
 
 
 
-def cfplot(fig, gss, bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, c2_ymax=10, logyfac=3., linyfac=1.3): 
+def cfplot(fig, gss, _bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, c2_ymax=10, logyfac=3., linyfac=1.3): 
 
     ax = fig.add_subplot(gss[0])
 
-    counts_dict, bns = _cf_plot(ax, aval, bval, bins=bins, labels=labels, log_=log_)
+    cnt, bns = _cf_plot(ax, aval, bval, bins=_bins, labels=labels, log_=log_)
 
     ymin = 1 if log_ else 0 
-    ymax = max(map(lambda _:_.max(), counts_dict.values()))*(logyfac if log_ else linyfac)
-    ylim = [ymin,ymax]
+    yfac = logyfac if log_ else linyfac
+    
+    ymax = 0 
+    for k,v in cnt.items():
+        if v is None:continue
+        vmax = v.max()
+        ymax = max(ymax, vmax) 
+    pass
+
+    ylim = [ymin,ymax*yfac]
 
     ax.set_ylim(ylim)
     ax.legend()
@@ -60,7 +89,7 @@ def cfplot(fig, gss, bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, 
 
     ax = fig.add_subplot(gss[1])
 
-    c2p = _chi2_plot(ax, bins, counts_dict, cut=c2_cut)  
+    c2p = _chi2_plot(ax, _bins, cnt, cut=c2_cut)  
 
     ax.set_xlim(xlim) 
     ax.legend()
@@ -73,6 +102,8 @@ def cfplot(fig, gss, bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, 
 
 
 def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
+
+    log.info("qwns_plot(scf, \"%s\", %d, log_=%s, c2_cut=%d )" % (qwns, irec, log_ , c2_cut)) 
 
     fig = plt.figure()
 
@@ -92,11 +123,11 @@ def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
 
         qwn = qwns[ix]
 
-        bins, aval, bval, labels = scf.rqwn(qwn, irec)
+        rqwn_bins, aval, bval, labels = scf.rqwn(qwn, irec)
 
         log.info("%s %s " % (qwn, repr(labels) ))
 
-        c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
+        c2p = cfplot(fig, gss, rqwn_bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
 
         c2ps.append(c2p) 
     pass
@@ -110,7 +141,7 @@ def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
     if irec < 0:
          irec += scf.nrec() 
 
-    bins, aval, bval, labels = scf.rqwn(qwn, irec)
+    rqwn_bins, aval, bval, labels = scf.rqwn(qwn, irec)
 
     fig = plt.figure()
     fig.suptitle(scf.suptitle(irec))
@@ -119,7 +150,7 @@ def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
     gss = [gs[ix], gs[nx+ix]]
 
-    c2p = cfplot(fig, gss, bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut, c2_ymax=c2_ymax)
+    c2p = cfplot(fig, gss, rqwn_bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut, c2_ymax=c2_ymax)
     c2ps = [c2p]
 
     #print "c2p", c2p
@@ -138,13 +169,17 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
     log_ = False
     c2_cut = 0.
 
+    totrec = cf.totrec
+    nrecs = map(lambda scf:scf.nrec(), cf.ss )
+    log.info(" multiplot : totrec %d nrecs %s " % ( totrec, repr(nrecs)) )
+        
     stat = np.recarray((cf.totrec,), dtype=dtype)
-
     ival = 0 
     for scf in cf.ss:
         nrec = scf.nrec()
         for irec in range(nrec):
             key = scf.suptitle(irec)
+            log.info("multiplot irec %d nrec %d ival %d key %s " % (irec, nrec, ival, key))
 
             od = odict()
             od.update(key=key) 
@@ -160,9 +195,29 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
     pass
 
     np.save(os.path.expandvars("$TMP/stat.npy"),stat)
+    return stat 
 
+    # a = np.load(os.path.expandvars("$TMP/stat.npy"))
     #rst = recarray_as_rst(stat)
     #print rst 
+
+
+
+#
+#In [1]: a = np.load(os.path.expandvars("$TMP/stat.npy"))
+#
+#In [2]: a
+#Out[2]: 
+#array([ ('1/concentric/torch : 669843/671267  :  [TO] BT BT BT BT SA ', 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904),
+#       ('1/concentric/torch : 669843/671267  :  TO [BT] BT BT BT SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
+#       ('1/concentric/torch : 669843/671267  :  TO BT [BT] BT BT SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
+#       ('1/concentric/torch : 669843/671267  :  TO BT BT [BT] BT SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
+#       ('1/concentric/torch : 669843/671267  :  TO BT BT BT [BT] SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
+#       ('1/concentric/torch : 669843/671267  :  TO BT BT BT BT [SA] ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0)], 
+#      dtype=[('key', 'S64'), ('X', '<f4'), ('Y', '<f4'), ('Z', '<f4'), ('T', '<f4'), ('A', '<f4'), ('B', '<f4'), ('C', '<f4'), ('R', '<f4')])
+#
+#In [3]: a.shape
+#Out[3]: (6,)
 
 
 
