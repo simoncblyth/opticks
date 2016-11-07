@@ -3,6 +3,12 @@ import numpy as np
 import os, logging
 log = logging.getLogger(__name__) 
 
+try:
+    from scipy.stats import chi2 as _chi2
+except ImportError:
+    _chi2 = None 
+
+
 
 
 def count_unique_truncating(vals):
@@ -47,6 +53,63 @@ def vnorm(a):
 vnorm_ = lambda _:np.sqrt(np.sum(_*_,1))
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b))
+
+
+def chi2_pvalue( c2obs, ndf ):
+    """
+    :param c2obs: observed chi2 value
+    :param ndf: 
+    :return pvalue:  1 - _chi2.cdf(c2obs, ndf) 
+
+    # probability of getting a chi2 <= c2obs for the ndf 
+
+    # https://onlinecourses.science.psu.edu/stat414/node/147
+
+    ::
+
+        In [49]: _chi2.cdf( 15.99, 10 )   ## for ndf 10, probability for chi2 < 15.99 is 0.900
+        Out[49]: 0.90008098002000925
+
+        In [53]: _chi2.cdf( range(10,21), 10 )    ## probability of getting chi2 < the value
+        Out[53]: array([ 0.5595,  0.6425,  0.7149,  0.7763,  0.827 ,  0.8679,  0.9004,  0.9256,  0.945 ,  0.9597,  0.9707])
+
+        In [54]: 1 - _chi2.cdf( range(10,21), 10 )  ## probability of getting chi2 > the value
+        Out[54]: array([ 0.4405,  0.3575,  0.2851,  0.2237,  0.173 ,  0.1321,  0.0996,  0.0744,  0.055 ,  0.0403,  0.0293])
+
+
+    * https://en.wikipedia.org/wiki/Chi-squared_distribution
+
+    The p-value is the probability of observing a test statistic at least as
+    extreme in a chi-squared distribution. Accordingly, since the cumulative
+    distribution function (CDF) for the appropriate degrees of freedom (df) gives
+    the probability of having obtained a value less extreme than this point,
+    subtracting the CDF value from 1 gives the p-value. The table below gives a
+    number of p-values matching to chi2 for the first 10 degrees of freedom.
+
+    A low p-value indicates greater statistical significance, i.e. greater
+    confidence that the observed deviation from the null hypothesis is significant.
+    A p-value of 0.05 is often used as a cutoff between significant and
+    not-significant results.
+
+    Of course for Opticks-CFG4 comparisons I wish to see no significant 
+    deviations, so I want the p-value to be large indicating nothing of significance.
+
+    ::
+
+        In [56]: _chi2.cdf( [3.94,4.87,6.18,7.27,9.34,11.78,13.44,15.99,18.31,23.21,29.59], 10 )
+        Out[56]: array([ 0.05  ,  0.1003,  0.2001,  0.3003,  0.4998,  0.6999,  0.7999,  0.9001,  0.95  ,  0.99  ,  0.999 ])
+
+        In [57]: 1 - _chi2.cdf( [3.94,4.87,6.18,7.27,9.34,11.78,13.44,15.99,18.31,23.21,29.59], 10 )   ## P-value (Probability)
+        Out[57]: array([ 0.95  ,  0.8997,  0.7999,  0.6997,  0.5002,  0.3001,  0.2001,  0.0999,  0.05  ,  0.01  ,  0.001 ])
+
+
+    """
+    if _chi2 is None:
+        return None 
+
+    p_value = 1 - _chi2.cdf(c2obs, ndf) 
+    return p_value
+
 
 
 def chi2(a, b, cut=30):

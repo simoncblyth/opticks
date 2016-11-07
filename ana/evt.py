@@ -113,7 +113,7 @@ class Evt(object):
 
     def __init__(self, tag="1", src="torch", det="dayabay", args=None, nrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False ):
 
-
+        self._psel = None
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
         self.seqs = seqs
@@ -419,15 +419,13 @@ class Evt(object):
 
         self.nsel = nsel 
 
-
         # for first _init_selection hold on to the originals
-        if not hasattr(self, '_psel'):
+        if self._psel is None:
             self.ox_ = self.ox
             self.c4_ = self.c4
             self.wl_ = self.wl
             self.rx_ = self.rx
         pass
-
         self._psel = psel 
 
         ## always basing new selection of the originals

@@ -48,6 +48,298 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
 
 
 
+RESOLVED seqmat truncation difference, c2 down to 0.91
+----------------------------------------------------------
+
+Resolved by targetting the kludge to BT, not doing the swap for reflects or bulks that do not change material::
+
+    430     // about to write non-BREAKER into topslot : this means truncation  
+    431     //if( bounce == bounce_max && ( s.flag == SURFACE_DETECT || s.flag == SURFACE_ABSORB ))
+    432     //if( bounce == bounce_max && command != BREAK )
+    433     //if( bounce == bounce_max && !( s.flag == SURFACE_DREFLECT || s.flag == BULK_SCATTER || s.flag == BULK_REEMIT || s.flag == SURFACE_SREFLECT  ))
+    434 
+    435     if( bounce == bounce_max && s.flag == BOUNDARY_TRANSMIT )
+    436     {
+    437         s.index.x = s.index.y ;   // kludge putting m2->m1 for seqmat for the truncated
+    438     }
+    439 
+    440 
+
+
+::
+
+    simon:geant4_opticks_integration blyth$ tconcentric.py --cmx 5
+    /Users/blyth/opticks/ana/tconcentric.py --cmx 5
+    [2016-11-07 15:17:15,045] p50074 {/Users/blyth/opticks/ana/tconcentric.py:208} INFO - tag 1 src torch det concentric c2max 2.0 ipython False 
+    [2016-11-07 15:17:15,901] p50074 {/Users/blyth/opticks/ana/evt.py:410} WARNING - ignoring psel None
+    [2016-11-07 15:17:18,735] p50074 {/Users/blyth/opticks/ana/evt.py:410} WARNING - ignoring psel None
+    CF a concentric/torch/  1 :  20161107-1500 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161107-1500 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-07 15:17:20,743] p50074 {/Users/blyth/opticks/ana/seq.py:410} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       329.90/352 =  0.94  (pval:0.796 prob:0.204)  
+      12              8cc5ccd          5113         4868             6.01        1.050 +- 0.015        0.952 +- 0.014  [7 ] TO BT BT RE BT BT SA
+      17              49ccccd          2312         2472             5.35        0.935 +- 0.019        1.069 +- 0.022  [7 ] TO BT BT BT BT DR AB
+      43             89cccc6d           546          460             7.35        1.187 +- 0.051        0.842 +- 0.039  [8 ] TO SC BT BT BT BT DR SA
+      50             8cc6cc5d           385          311             7.87        1.238 +- 0.063        0.808 +- 0.046  [8 ] TO RE BT BT SC BT BT SA
+     122     89cccccccc9ccccd            53           89             9.13        0.596 +- 0.082        1.679 +- 0.178  [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR SA
+     153         86cccccc6ccd            70           43             6.45        1.628 +- 0.195        0.614 +- 0.094  [12] TO BT BT SC BT BT BT BT BT BT SC SA
+     207        8cccccc5cc55d            23           41             5.06        0.561 +- 0.117        1.783 +- 0.278  [13] TO RE RE BT BT RE BT BT BT BT BT BT SA
+     284            8cc6cc65d            11           25             5.44        0.440 +- 0.133        2.273 +- 0.455  [9 ] TO RE SC BT BT SC BT BT SA
+    .                               1000000      1000000       329.90/352 =  0.94  (pval:0.796 prob:0.204)  
+    [2016-11-07 15:17:20,865] p50074 {/Users/blyth/opticks/ana/seq.py:410} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000        50.71/42 =  1.21  (pval:0.168 prob:0.832)  
+       4                 1890         38518        37832             6.16        1.018 +- 0.005        0.982 +- 0.005  [4 ] TO|BT|SA|RE
+      19                 1910           482          410             5.81        1.176 +- 0.054        0.851 +- 0.042  [4 ] TO|BT|DR|RE
+    .                               1000000      1000000        50.71/42 =  1.21  (pval:0.168 prob:0.832)  
+    [2016-11-07 15:17:20,895] p50074 {/Users/blyth/opticks/ana/seq.py:410} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       206.81/228 =  0.91  (pval:0.840 prob:0.160)  
+      12              4443231          3040         3272             8.53        0.929 +- 0.017        1.076 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      67         344323132231           147          111             5.02        1.324 +- 0.109        0.755 +- 0.072  [12] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac
+     104              2223111            79           52             5.56        1.519 +- 0.171        0.658 +- 0.091  [7 ] Gd Gd Gd Ac LS LS LS
+     156     1132344323443231            34           16             6.48        2.125 +- 0.364        0.471 +- 0.118  [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Gd
+    .                               1000000      1000000       206.81/228 =  0.91  (pval:0.840 prob:0.160)  
+    [2016-11-07 15:17:20,942] p50074 {/Users/blyth/opticks/ana/evt.py:684} WARNING - missing a_ana hflags_ana 
+    [2016-11-07 15:17:20,942] p50074 {/Users/blyth/opticks/ana/tconcentric.py:213} INFO - early exit as non-interactive
+    simon:geant4_opticks_integration blyth$ 
+
+
+
+
+
+
+seqmat still some truncation difference ?
+-----------------------------------------------
+
+::
+
+
+    simon:opticks blyth$ tconcentric.py --cmx 5
+    /Users/blyth/opticks/ana/tconcentric.py --cmx 5
+    [2016-11-07 13:41:25,182] p48341 {/Users/blyth/opticks/ana/tconcentric.py:208} INFO - tag 1 src torch det concentric c2max 2.0 ipython False 
+    CF a concentric/torch/  1 :  20161107-1225 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161107-1225 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-07 13:41:30,865] p48341 {/Users/blyth/opticks/ana/seq.py:408} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       329.90/353 =  0.93  (pval:0.806 prob:0.194)  
+      12              8cc5ccd          5113         4868             6.01        1.050 +- 0.015        0.952 +- 0.014  [7 ] TO BT BT RE BT BT SA
+      17              49ccccd          2312         2472             5.35        0.935 +- 0.019        1.069 +- 0.022  [7 ] TO BT BT BT BT DR AB
+      43             89cccc6d           546          460             7.35        1.187 +- 0.051        0.842 +- 0.039  [8 ] TO SC BT BT BT BT DR SA
+      50             8cc6cc5d           385          311             7.87        1.238 +- 0.063        0.808 +- 0.046  [8 ] TO RE BT BT SC BT BT SA
+     122     89cccccccc9ccccd            53           89             9.13        0.596 +- 0.082        1.679 +- 0.178  [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR SA
+     153         86cccccc6ccd            70           43             6.45        1.628 +- 0.195        0.614 +- 0.094  [12] TO BT BT SC BT BT BT BT BT BT SC SA
+     207        8cccccc5cc55d            23           41             5.06        0.561 +- 0.117        1.783 +- 0.278  [13] TO RE RE BT BT RE BT BT BT BT BT BT SA
+     284            8cc6cc65d            11           25             5.44        0.440 +- 0.133        2.273 +- 0.455  [9 ] TO RE SC BT BT SC BT BT SA
+    .                               1000000      1000000       329.90/353 =  0.93  (pval:0.806 prob:0.194)  
+    [2016-11-07 13:41:30,988] p48341 {/Users/blyth/opticks/ana/seq.py:408} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000        50.71/43 =  1.18  (pval:0.196 prob:0.804)  
+       4                 1890         38518        37832             6.16        1.018 +- 0.005        0.982 +- 0.005  [4 ] TO|BT|SA|RE
+      19                 1910           482          410             5.81        1.176 +- 0.054        0.851 +- 0.042  [4 ] TO|BT|DR|RE
+    .                               1000000      1000000        50.71/43 =  1.18  (pval:0.196 prob:0.804)  
+    [2016-11-07 13:41:31,018] p48341 {/Users/blyth/opticks/ana/seq.py:408} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       287.12/227 =  1.26  (pval:0.004 prob:0.996)  
+      12              4443231          3040         3272             8.53        0.929 +- 0.017        1.076 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      24     3432311323443231          1096          975             7.07        1.124 +- 0.034        0.890 +- 0.028  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO Ac
+      67         344323132231           147          111             5.02        1.324 +- 0.109        0.755 +- 0.072  [12] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac
+      79     4432311323443231            52          125            30.11        0.416 +- 0.058        2.404 +- 0.215  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO MO
+     100     4432313234432311            30           85            26.30        0.353 +- 0.064        2.833 +- 0.307  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO
+     104              2223111            79           52             5.56        1.519 +- 0.171        0.658 +- 0.091  [7 ] Gd Gd Gd Ac LS LS LS
+     108     3132344323132231            75           48             5.93        1.562 +- 0.180        0.640 +- 0.092  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Ac
+     165     4432231323443231            13           30             6.72        0.433 +- 0.120        2.308 +- 0.421  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac MO MO
+     194     1132344323132231             9           23             6.12        0.391 +- 0.130        2.556 +- 0.533  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Gd
+    .                               1000000      1000000       287.12/227 =  1.26  (pval:0.004 prob:0.996)  
+
+
+seqhis line 122, no surprises::
+
+    tconcentric-i
+
+    In [4]: cf.a.psel = cf.a.seqhis == 0x89cccccccc9ccccd
+    [2016-11-07 13:52:07,620] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 53 len(psel) 1000000  
+
+    In [6]: cf.b.psel = cf.b.seqhis == 0x89cccccccc9ccccd
+    [2016-11-07 13:52:44,401] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 89 len(psel) 1000000  
+
+    In [7]: cf.a.seqmat_ana.table
+       0     3443231323443231        1.000             53         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+
+    In [8]: cf.b.seqmat_ana.table
+       0     3443231323443231        1.000             89         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+
+seqmat line 79, Opticks has suspicious lack of truncations with DR,SC in topslot::
+
+    In [9]: cf.a.psel = cf.a.seqmat == 0x4432311323443231
+    [2016-11-07 13:56:45,866] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 52 len(psel) 1000000  
+
+    In [10]: cf.b.psel = cf.b.seqmat == 0x4432311323443231
+    [2016-11-07 13:57:04,488] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 125 len(psel) 1000000  
+
+    In [11]: cf.a.seqhis_ana.table  
+    Out[11]: 
+    .                                noname 
+    .                                    52         1.00 
+       0     4cccc6cccc9ccccd        0.577             30         [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT AB
+       1     4cccc5cccc9ccccd        0.173              9         [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT AB
+       2     4cccc5cccc6ccccd        0.135              7         [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT AB
+       3     4cccc6cccc6ccccd        0.096              5         [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT AB
+       4     4ccccbcccc6ccccd        0.019              1         [16] TO BT BT BT BT SC BT BT BT BT BR BT BT BT BT AB
+    .                                    52         1.00 
+
+    In [12]: cf.b.seqhis_ana.table
+    Out[12]: 
+    .                                noname 
+    .                                   125         1.00 
+       0     4cccc6cccc9ccccd        0.240             30         [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT AB
+       3     4cccc5cccc9ccccd        0.096             12         [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT AB
+      10     4cccc5cccc6ccccd        0.024              3         [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT AB
+       6     4cccc6cccc6ccccd        0.056              7         [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT AB
+
+       1     9cccc6cccc9ccccd        0.192             24         [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT DR
+       2     6cccc6cccc9ccccd        0.144             18         [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT SC
+       4     9cccc6cccc6ccccd        0.056              7         [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT DR
+       5     9cccc5cccc9ccccd        0.056              7         [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT DR
+       7     6cccc5cccc9ccccd        0.048              6         [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT SC
+       8     6cccc6cccc6ccccd        0.040              5         [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT SC
+       9     9cccc5cccc6ccccd        0.024              3         [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT DR
+      11     6cccc5cccc6ccccd        0.016              2         [16] TO BT BT BT BT SC BT BT BT BT RE BT BT BT BT SC
+      12     9ccccbcccc9ccccd        0.008              1         [16] TO BT BT BT BT DR BT BT BT BT BR BT BT BT BT DR
+    .                                   125         1.00 
+
+
+seqmat line 100, again Opticks has suspicious lack of truncations with DR,SC in topslot::
+
+    In [13]: cf.a.psel = cf.a.seqmat == 0x4432313234432311
+    [2016-11-07 14:06:30,796] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 30 len(psel) 1000000  
+
+    In [14]: cf.b.psel = cf.b.seqmat == 0x4432313234432311
+    [2016-11-07 14:06:42,627] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 85 len(psel) 1000000  
+
+    In [15]: cf.a.seqhis_ana.table
+    Out[15]: 
+    .                                noname 
+    .                                    30         1.00 
+       0     4cccccccc9cccc6d        0.633             19         [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT AB
+       1     4cccccccc6cccc6d        0.233              7         [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT AB
+       2     4cccccccc9cccc5d        0.100              3         [16] TO RE BT BT BT BT DR BT BT BT BT BT BT BT BT AB
+       3     4cccccccc6cccc5d        0.033              1         [16] TO RE BT BT BT BT SC BT BT BT BT BT BT BT BT AB
+    .                                    30         1.00 
+
+    In [16]: cf.b.seqhis_ana.table
+    Out[16]: 
+    .                                noname 
+    .                                    85         1.00 
+       0     4cccccccc9cccc6d        0.247             21         [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT AB
+       8     4cccccccc6cccc6d        0.035              3         [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT AB
+       4     4cccccccc9cccc5d        0.094              8         [16] TO RE BT BT BT BT DR BT BT BT BT BT BT BT BT AB
+      11     4cccccccc6cccc5d        0.012              1         [16] TO RE BT BT BT BT SC BT BT BT BT BT BT BT BT AB
+
+       1     9cccccccc9cccc6d        0.200             17         [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT DR
+       2     6cccccccc9cccc6d        0.094              8         [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT SC
+       3     6cccccccc6cccc6d        0.094              8         [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT SC
+       5     9cccccccc9cccc5d        0.071              6         [16] TO RE BT BT BT BT DR BT BT BT BT BT BT BT BT DR
+       6     9cccccccc6cccc6d        0.059              5         [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT DR
+       7     6cccccccc9cccc5d        0.047              4         [16] TO RE BT BT BT BT DR BT BT BT BT BT BT BT BT SC
+       9     9cccccccc6cccc5d        0.024              2         [16] TO RE BT BT BT BT SC BT BT BT BT BT BT BT BT DR
+      10     6cccccccc6cccc5d        0.024              2         [16] TO RE BT BT BT BT SC BT BT BT BT BT BT BT BT SC
+    .                                    85         1.00 
+
+
+Select the "TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT DR" the DR intersect would be m1/m2 MO/Ac::
+
+    In [17]: cf.a.psel = cf.a.seqhis == 0x9cccc6cccc9ccccd 
+    [2016-11-07 14:12:18,006] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 23 len(psel) 1000000  
+
+    In [18]: cf.b.psel = cf.b.seqhis == 0x9cccc6cccc9ccccd
+    [2016-11-07 14:12:27,134] p48457 {/Users/blyth/opticks/ana/evt.py:417} INFO - _init_selection nsel 25 len(psel) 1000000  
+
+    ## hmm for SC it would be incorrect to do the m2->m1 kludge at truncation as material stays same 
+    ##
+    ## TODO: dump CFG4 evt  material assignments at truncation with DR and SC in topslot 
+    ##
+
+    In [21]: cf.a.seqmat_ana.table       ## hmm the final Ac seems incorrect for DR ??? better to be the MO material are reflected back into
+    Out[21]: 
+    .                                noname 
+    .                                    23         1.00 
+       0     3432311323443231        1.000             23         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO Ac
+    .                                    23         1.00 
+
+    In [22]: cf.b.seqmat_ana.table     
+    Out[22]: 
+    .                                noname 
+    .                                    25         1.00 
+       0     4432311323443231        0.960             24         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO MO
+       1     4432344323443231        0.040              1         [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac MO MO
+    .                                    25         1.00 
+
+
+    In [30]: cf.b.dindex("TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT DR",200)
+    Out[30]: '--dindex=95324,166006,178463,206278,266703,304171,372458,384384,436024,471027,492290,500284,503639,527858,569752,667682,875192'
+
+
+
+All STS MAT_SWAP in topslot::
+
+    (14)  BT/BT     FrT                                            PRE_SAVE 
+    [  14](Stp ;opticalphoton stepNum 527046336(tk ;opticalphoton tid 4172 pid 0 nm    430 mm  ori[    0.000   0.000   0.000]  pos[ 3683.940 470.791-3340.204]  )
+      pre               sphere_phys         Acrylic  Transportation        GeomBoundary pos[   3176.114    45.040 -2422.870]  dir[    0.458   0.369  -0.809]  pol[    0.779   0.271   0.565]  ns 71.055 nm 430.000
+     post               sphere_phys      MineralOil  Transportation        GeomBoundary pos[   3181.445    49.337 -2432.282]  dir[    0.449   0.376  -0.811]  pol[    0.782   0.273   0.560]  ns 71.115 nm 430.000
+     )
+    (15)  BT/DR     LaR                                            PRE_SAVE 
+    [  15](Stp ;opticalphoton stepNum 527046336(tk ;opticalphoton tid 4172 pid 0 nm    430 mm  ori[    0.000   0.000   0.000]  pos[ 3683.940 470.791-3340.204]  )
+      pre               sphere_phys      MineralOil  Transportation        GeomBoundary pos[   3181.445    49.337 -2432.282]  dir[    0.449   0.376  -0.811]  pol[    0.782   0.273   0.560]  ns 71.115 nm 430.000
+     post               sphere_phys         Acrylic  Transportation        GeomBoundary pos[   3683.940   470.791 -3340.204]  dir[    0.280  -0.038   0.959]  pol[   -0.858  -0.459   0.232]  ns 76.929 nm 430.000
+     )
+    (16)  DR/NA     STS   PRE_SAVE PRE_DONE MAT_SWAP RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    [  16](Stp ;opticalphoton stepNum 527046336(tk ;opticalphoton tid 4172 pid 0 nm    430 mm  ori[    0.000   0.000   0.000]  pos[ 3683.940 470.791-3340.204]  )
+      pre               sphere_phys         Acrylic  Transportation        GeomBoundary pos[   3683.940   470.791 -3340.204]  dir[    0.280  -0.038   0.959]  pol[   -0.858  -0.459   0.232]  ns 76.929 nm 430.000
+     post               sphere_phys      MineralOil  Transportation        GeomBoundary pos[   3683.940   470.791 -3340.204]  dir[    0.280  -0.038   0.959]  pol[   -0.858  -0.459   0.232]  ns 76.929 nm 430.000
+     )
+
+::
+
+      00                d TO                                              
+       1               6d TO SC                                           
+       2              c6d TO SC BT                                        
+       3             cc6d TO SC BT BT                                     
+       4            ccc6d TO SC BT BT BT                                  
+       5           cccc6d TO SC BT BT BT BT                               
+       6          9cccc6d TO SC BT BT BT BT DR                            
+       7         c9cccc6d TO SC BT BT BT BT DR BT                         
+       8        cc9cccc6d TO SC BT BT BT BT DR BT BT                      
+       9       ccc9cccc6d TO SC BT BT BT BT DR BT BT BT                   
+      10      cccc9cccc6d TO SC BT BT BT BT DR BT BT BT BT                
+      11     ccccc9cccc6d TO SC BT BT BT BT DR BT BT BT BT BT             
+      12    cccccc9cccc6d TO SC BT BT BT BT DR BT BT BT BT BT BT          
+      13   ccccccc9cccc6d TO SC BT BT BT BT DR BT BT BT BT BT BT BT       
+      14  cccccccc9cccc6d TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT    
+      15 9cccccccc9cccc6d TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT DR 
+
+       0                1 Gd - - - - - - - - - - - - - - - 
+       1               11 Gd Gd - - - - - - - - - - - - - - 
+       2              311 Gd Gd Ac - - - - - - - - - - - - - 
+       3             2311 Gd Gd Ac LS - - - - - - - - - - - - 
+       4            32311 Gd Gd Ac LS Ac - - - - - - - - - - - 
+       5           432311 Gd Gd Ac LS Ac MO - - - - - - - - - - 
+       6          4432311 Gd Gd Ac LS Ac MO MO - - - - - - - - - 
+       7         34432311 Gd Gd Ac LS Ac MO MO Ac - - - - - - - - 
+       8        234432311 Gd Gd Ac LS Ac MO MO Ac LS - - - - - - - 
+       9       3234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac - - - - - - 
+      10      13234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac Gd - - - - - 
+      11     313234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac - - - - 
+      12    2313234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS - - - 
+      13   32313234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac - - 
+      14  432313234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO - 
+      15 4432313234432311 Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO 
+
+      For points on boundaries convention is to use the material into which are headed.
+
+
+
 seqmat mismatch mostly resolved
 ---------------------------------
 

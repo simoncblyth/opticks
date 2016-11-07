@@ -3,8 +3,9 @@ import os, datetime, logging, re
 log = logging.getLogger(__name__)
 import numpy as np
 
+
 from opticks.ana.base import ihex_
-from opticks.ana.nbase import chi2, ratio, count_unique_sorted
+from opticks.ana.nbase import chi2, chi2_pvalue, ratio, count_unique_sorted
 from opticks.ana.nload import A
 
 nibble_ = lambda n:0xf << (4*n)
@@ -239,13 +240,18 @@ class SeqTable(object):
             #c2s = c2/c2n
             #c2s_tot = c2s.sum()  # same as c2p
 
+            ndf = c2n - 1   ## totals are constrained to match, so one less degree of freedom ?
+
             c2sum = c2.sum()
-            c2p = c2sum/c2n
+            c2p = c2sum/ndf
+
+            c2_pval = chi2_pvalue( c2sum , ndf )
+
 
             #log.info(" c2p %s c2s_tot %s " % (c2p, c2s_tot ))
 
             cnames += ["c2"]
-            tots += ["%10.2f/%d = %5.2f" % (c2sum,c2n,c2p) ]
+            tots += ["%10.2f/%d = %5.2f  (pval:%0.3f prob:%0.3f) " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) ]
             cfcount = cu[:,1:]
 
             ab, ba = ratio(a, b)

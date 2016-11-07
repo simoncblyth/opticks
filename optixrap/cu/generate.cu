@@ -428,9 +428,13 @@ RT_PROGRAM void generate()
 
 
     // about to write non-BREAKER into topslot : this means truncation  
-    if( bounce == bounce_max && command != BREAK )
+    //if( bounce == bounce_max && ( s.flag == SURFACE_DETECT || s.flag == SURFACE_ABSORB ))
+    //if( bounce == bounce_max && command != BREAK )
+    //if( bounce == bounce_max && !( s.flag == SURFACE_DREFLECT || s.flag == BULK_SCATTER || s.flag == BULK_REEMIT || s.flag == SURFACE_SREFLECT  ))
+
+    if( bounce == bounce_max && s.flag == BOUNDARY_TRANSMIT )
     {
-        s.index.x = s.index.y ;   // kludge to get m2 into seqmat for the truncated
+        s.index.x = s.index.y ;   // kludge putting m2->m1 for seqmat for the truncated
     }
 
 
