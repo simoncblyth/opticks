@@ -39,7 +39,9 @@ BREAK = "BREAK"
 CONTINUE = "CONTINUE"
 PASS = "PASS"
 
-SEQHIS = "TO BT BT SC BT BT SA"
+#SEQHIS = "TO BT BT SC BT BT SA"
+#SEQHIS = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
+SEQHIS = "TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT SA"
 SQ = SEQHIS.split()
 tru = 0 
 
@@ -56,7 +58,7 @@ def truth():
 
 def RSAVE(msg, slot, slot_offset, bounce):
     global index  
-    log.info(" [%2d] (%10s) slot %2d slot_offset %2d bounce %2d " % (index, msg, slot, slot_offset, bounce))
+    log.info(" RSAVE  [%2d] (%10s) slot %2d slot_offset %2d bounce %2d " % (index, msg, slot, slot_offset, bounce))
     index += 1 
 
 
@@ -98,7 +100,7 @@ def generate():
     photon_id = 1000 
     slot_min = photon_id*MAXREC
     slot_max = slot_min + MAXREC - 1
-    log.info("photon_id %7d slot_min %2d slot_max %2d " % (photon_id, slot_min, slot_max))
+    log.info(" SEQHIS %s   photon_id %7d slot_min %2d slot_max %2d " % (SEQHIS, photon_id, slot_min, slot_max))
 
     bounce = 0 
     slot = 0 
@@ -108,10 +110,13 @@ def generate():
 
 
     while bounce < bounce_max:
+
+        print "\n"
+        # bounce here up to bounce_max - 1
         bounce += 1
+        # bounce here up to bounce_max 
 
         # raytrace happens here 
-
         if slot < MAXREC: 
             slot_offset = slot_min + slot 
         else:
@@ -136,6 +141,11 @@ def generate():
         else:
             assert 0, flag
     pass
+
+
+    if bounce == bounce_max:
+        log.warning(" exited while with: bounce == bounce_max (%d) ... about to post-loop write into topslot (0-based) (%d) " % (bounce, slot))
+
 
     if slot < MAXREC: 
         slot_offset = slot_min + slot 

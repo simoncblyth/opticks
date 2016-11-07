@@ -48,6 +48,126 @@ Concentric spheres 3m 4m 5m  with default random radial torch, or +x laser polar
 
 
 
+seqmat mismatch mostly resolved
+---------------------------------
+
+::
+
+    simon:ana blyth$ tconcentric.py --cmx 5
+    /Users/blyth/opticks/ana/tconcentric.py --cmx 5
+    [2016-11-07 12:29:18,756] p48107 {/Users/blyth/opticks/ana/tconcentric.py:208} INFO - tag 1 src torch det concentric c2max 2.0 ipython False 
+    [2016-11-07 12:29:19,609] p48107 {/Users/blyth/opticks/ana/evt.py:410} WARNING - ignoring psel None
+    [2016-11-07 12:29:22,455] p48107 {/Users/blyth/opticks/ana/evt.py:410} WARNING - ignoring psel None
+    CF a concentric/torch/  1 :  20161107-1225 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/1/fdom.npy 
+    CF b concentric/torch/ -1 :  20161107-1225 maxbounce:15 maxrec:16 maxrng:3000000 /tmp/blyth/opticks/evt/concentric/torch/-1/fdom.npy 
+    [2016-11-07 12:29:24,487] p48107 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqhis_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       329.90/353 =  0.93 
+      12              8cc5ccd          5113         4868             6.01        1.050 +- 0.015        0.952 +- 0.014  [7 ] TO BT BT RE BT BT SA
+      17              49ccccd          2312         2472             5.35        0.935 +- 0.019        1.069 +- 0.022  [7 ] TO BT BT BT BT DR AB
+      43             89cccc6d           546          460             7.35        1.187 +- 0.051        0.842 +- 0.039  [8 ] TO SC BT BT BT BT DR SA
+      50             8cc6cc5d           385          311             7.87        1.238 +- 0.063        0.808 +- 0.046  [8 ] TO RE BT BT SC BT BT SA
+     122     89cccccccc9ccccd            53           89             9.13        0.596 +- 0.082        1.679 +- 0.178  [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR SA
+     153         86cccccc6ccd            70           43             6.45        1.628 +- 0.195        0.614 +- 0.094  [12] TO BT BT SC BT BT BT BT BT BT SC SA
+     207        8cccccc5cc55d            23           41             5.06        0.561 +- 0.117        1.783 +- 0.278  [13] TO RE RE BT BT RE BT BT BT BT BT BT SA
+     284            8cc6cc65d            11           25             5.44        0.440 +- 0.133        2.273 +- 0.455  [9 ] TO RE SC BT BT SC BT BT SA
+    .                               1000000      1000000       329.90/353 =  0.93 
+    [2016-11-07 12:29:24,609] p48107 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                pflags_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000        50.71/43 =  1.18 
+       4                 1890         38518        37832             6.16        1.018 +- 0.005        0.982 +- 0.005  [4 ] TO|BT|SA|RE
+      19                 1910           482          410             5.81        1.176 +- 0.054        0.851 +- 0.042  [4 ] TO|BT|DR|RE
+    .                               1000000      1000000        50.71/43 =  1.18 
+    [2016-11-07 12:29:24,638] p48107 {/Users/blyth/opticks/ana/seq.py:404} INFO - compare dbgseq 0 dbgmsk 0 
+    .                seqmat_ana  1:concentric   -1:concentric           c2           ab           ba 
+    .                               1000000      1000000       287.12/227 =  1.26 
+      12              4443231          3040         3272             8.53        0.929 +- 0.017        1.076 +- 0.019  [7 ] Gd Ac LS Ac MO MO MO
+      24     3432311323443231          1096          975             7.07        1.124 +- 0.034        0.890 +- 0.028  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO Ac
+      67         344323132231           147          111             5.02        1.324 +- 0.109        0.755 +- 0.072  [12] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac
+      79     4432311323443231            52          125            30.11        0.416 +- 0.058        2.404 +- 0.215  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO MO
+     100     4432313234432311            30           85            26.30        0.353 +- 0.064        2.833 +- 0.307  [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO
+     104              2223111            79           52             5.56        1.519 +- 0.171        0.658 +- 0.091  [7 ] Gd Gd Gd Ac LS LS LS
+     108     3132344323132231            75           48             5.93        1.562 +- 0.180        0.640 +- 0.092  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Ac
+     165     4432231323443231            13           30             6.72        0.433 +- 0.120        2.308 +- 0.421  [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac MO MO
+     194     1132344323132231             9           23             6.12        0.391 +- 0.130        2.556 +- 0.533  [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Gd
+    .                               1000000      1000000       287.12/227 =  1.26 
+    [2016-11-07 12:29:24,685] p48107 {/Users/blyth/opticks/ana/evt.py:686} WARNING - missing a_ana hflags_ana 
+    [2016-11-07 12:29:24,685] p48107 {/Users/blyth/opticks/ana/tconcentric.py:213} INFO - early exit as non-interactive
+
+
+
+psel selection of truncated
+-----------------------------
+
+::
+
+
+    In [6]: a.psel = ( a.seqhis & (0xf << 4*15 )) >> 4*15 == 0xc   ## topslot BT, ie truncated
+    [2016-11-07 12:09:49,904] p45648 {/Users/blyth/opticks/ana/evt.py:413} INFO - _init_selection nsel 2238 len(psel) 1000000  
+
+    In [7]: a.seqhis_ana.table
+    Out[7]: 
+    .                                noname 
+    .                                  2238         1.00 
+       0     c9cccccccc9ccccd        0.064            144         [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR BT
+       1     cccc55cccc9ccccd        0.036             80         [16] TO BT BT BT BT DR BT BT BT BT RE RE BT BT BT BT
+       2     cccc6cccc9cccc6d        0.022             49         [16] TO SC BT BT BT BT DR BT BT BT BT SC BT BT BT BT
+       3     cccccccc9cccc55d        0.021             47         [16] TO RE RE BT BT BT BT DR BT BT BT BT BT BT BT BT
+       4     c6cccccccc9ccccd        0.020             44         [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SC BT
+       5     ccc6cccccc9ccccd        0.019             42         [16] TO BT BT BT BT DR BT BT BT BT BT BT SC BT BT BT
+    ....
+
+    In [8]: a.seqmat_ana.table               ## all topslot BT have duplicated material in the last 2 slots  
+    ##   topslot SA doesnt have this
+    Out[8]: 
+    .                                noname 
+    .                                  2238         1.00 
+       0     4443231323443231        0.105            235         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO MO
+       1     3323111323443231        0.081            181         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac Ac
+       2     3323132344323111        0.056            126         [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac Ac
+       3     3323113234432311        0.052            117         [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac Ac
+       4     1132344323443231        0.033             74         [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Gd
+       5     1132231323443231        0.033             73         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Gd
+       6     1132344323132231        0.028             63         [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac Gd Gd
+       7     3322311323443231        0.027             60         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS LS Ac Ac
+       8     3332332332332231        0.024             54         [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac Ac
+       9     2231111323443231        0.020             45         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Gd Ac LS LS
+      10     3322231323443231        0.020             44         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS LS Ac Ac
+
+
+    In [15]: b.psel = ( b.seqhis & ( 0xf << 4*15 )) >> 4*15 == 0xc    
+    [2016-11-07 11:58:18,161] p45629 {/Users/blyth/opticks/ana/evt.py:367} INFO - _init_selection nsel 2166 len(psel) 1000000  
+
+    In [16]: b.seqhis_ana.table
+    Out[16]: 
+    .                                noname 
+    .                                  2166         1.00 
+       0     c9cccccccc9ccccd        0.060            131         [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT DR BT
+       1     cccc55cccc9ccccd        0.027             59         [16] TO BT BT BT BT DR BT BT BT BT RE RE BT BT BT BT
+       2     cccccccc9cccc55d        0.024             53         [16] TO RE RE BT BT BT BT DR BT BT BT BT BT BT BT BT
+       3     cccc6cccc9cccc6d        0.024             52         [16] TO SC BT BT BT BT DR BT BT BT BT SC BT BT BT BT
+       4     c6cccccccc9ccccd        0.024             51         [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SC BT
+    ...
+
+    In [12]: b.seqmat_ana.table   ## none of the CFG4 have the duplicated material
+    Out[12]: 
+    .                                noname 
+    .                                  2166         1.00 
+       0     3443231323443231        0.113            244         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+       1     4323111323443231        0.068            147         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Gd Ac LS Ac MO
+       2     4323132344323111        0.061            132         [16] Gd Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO
+       3     4323113234432311        0.049            107         [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+       4     3132344323443231        0.038             83         [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac Gd Ac
+       5     3132231323443231        0.036             79         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac Gd Ac
+       6     2332332332332231        0.030             64         [16] Gd Ac LS LS Ac Ac LS Ac Ac LS Ac Ac LS Ac Ac LS
+       7     4323113234443231        0.023             49         [16] Gd Ac LS Ac MO MO MO Ac LS Ac Gd Gd Ac LS Ac MO
+
+
+
+
+
+
+
 opticks seqmat
 ----------------
 

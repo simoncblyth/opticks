@@ -424,14 +424,20 @@ RT_PROGRAM void generate()
             // tacit CONTINUE
         }
 
-    }   // bounce < max_bounce
+    }   // bounce < bounce_max
+
+
+    // about to write non-BREAKER into topslot : this means truncation  
+    if( bounce == bounce_max && command != BREAK )
+    {
+        s.index.x = s.index.y ;   // kludge to get m2 into seqmat for the truncated
+    }
 
 
     FLAGS(p, s, prd); 
 
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 
-
 
     // RSAVE lays down s.flag and s.index.x into the seqhis and seqmat
     // but there is inconsistency for BREAKers as s.index.x (m1) is only updated by fill_state 

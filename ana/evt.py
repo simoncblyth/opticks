@@ -51,6 +51,52 @@ X,Y,Z,W,T = 0,1,2,3,3
 
 
 class Evt(object):
+    """
+    Using interative psel selection, implemented via property setter which invokes _init_selection, to 
+    select photons that have SA in the topslot ::
+
+        In [7]: e1.psel = e1.seqhis & np.uint64(0xf000000000000000) == np.uint64(0x8000000000000000)
+        [2016-11-07 11:44:22,464] p45629 {/Users/blyth/opticks/ana/evt.py:367} INFO - _init_selection nsel 2988 len(psel) 1000000  
+
+        In [9]: e1.psel = e1.seqhis & 0xf000000000000000 == 0x8000000000000000         ## no need to specify the types
+        [2016-11-07 11:46:25,879] p45629 {/Users/blyth/opticks/ana/evt.py:367} INFO - _init_selection nsel 2988 len(psel) 1000000  
+
+        In [14]: e1.psel = ( e1.seqhis & ( 0xf << 4*15 )) >> 4*15 == 0x8     ## express with bitshifts
+        [2016-11-07 11:57:06,754] p45629 {/Users/blyth/opticks/ana/evt.py:367} INFO - _init_selection nsel 2988 len(psel) 1000000  
+
+
+        In [8]: e1.seqhis_ana.table
+        Out[8]: 
+        .                                noname 
+        .                                  2988         1.00 
+           0     8cccc6cccc9ccccd        0.189            566         [16] TO BT BT BT BT DR BT BT BT BT SC BT BT BT BT SA
+           1     8cccccccc9cccc6d        0.122            365         [16] TO SC BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+           2     8cccc5cccc9ccccd        0.074            222         [16] TO BT BT BT BT DR BT BT BT BT RE BT BT BT BT SA
+           3     8cccc6cccc6ccccd        0.052            155         [16] TO BT BT BT BT SC BT BT BT BT SC BT BT BT BT SA
+           4     8cccccccc9cccc5d        0.050            150         [16] TO RE BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+           5     8cccccc6cc9ccccd        0.041            123         [16] TO BT BT BT BT DR BT BT SC BT BT BT BT BT BT SA
+           6     8cc6cccccc9ccccd        0.040            119         [16] TO BT BT BT BT DR BT BT BT BT BT BT SC BT BT SA
+           7     8cccccccc6cccc6d        0.038            115         [16] TO SC BT BT BT BT SC BT BT BT BT BT BT BT BT SA
+           8     86cccccccc9ccccd        0.034            101         [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SC SA
+        ....
+
+        In [11]: e1.seqmat_ana.table
+        Out[11]: 
+        .                                noname 
+        .                                  2988         1.00 
+           0     3432311323443231        0.326            975         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Gd Ac LS Ac MO Ac
+           1     3432313234432311        0.228            681         [16] Gd Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO Ac
+           2     3432313234443231        0.085            253         [16] Gd Ac LS Ac MO MO MO Ac LS Ac Gd Ac LS Ac MO Ac
+           3     3443231323443231        0.080            239         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac
+           4     3432231323443231        0.076            226         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS LS Ac MO Ac
+           5     3432313223443231        0.073            219         [16] Gd Ac LS Ac MO MO Ac LS LS Ac Gd Ac LS Ac MO Ac
+           6     3432313234432231        0.050            149         [16] Gd Ac LS LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO Ac
+           7     3432344323443231        0.026             79         [16] Gd Ac LS Ac MO MO Ac LS Ac MO MO Ac LS Ac MO Ac
+           8     3432344323132231        0.016             47         [16] Gd Ac LS LS Ac Gd Ac LS Ac MO MO Ac LS Ac MO Ac
+        ....
+
+
+    """
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
@@ -104,13 +150,13 @@ class Evt(object):
         if rec:
             self.init_records(tag, src, det, dbg)
             self.init_sequence(tag, src, det, dbg)
-            self.init_selection(seqs, not_ )
-            self.init_index(tag, src, det, dbg)
 
+            psel = self.make_selection(seqs, not_)
+            self.psel = psel      # psel property setter
+
+            self.init_index(tag, src, det, dbg)
         pass
         self.check_stamps()
-
-
 
 
 
@@ -324,10 +370,10 @@ class Evt(object):
         log.debug("init_sequence DONE")
 
 
-    def init_selection(self, seqs, not_):
+    def make_selection(self, seqs, not_):
         if not self.rec or len(seqs) == 0:
             log.debug("skip init_selection as no seqs")
-            return 
+            return None
    
         log.debug("Evt seqs %s " % repr(seqs))
 
@@ -353,25 +399,57 @@ class Evt(object):
                 psel = sm.seq_or(seqs)
             pass
         pass
-
         if not_:
             psel = np.logical_not(psel)
+        pass
+        return psel
+
+
+    def _init_selection(self, psel):
+        if psel is None:
+            log.warning("ignoring psel None")
+            return  
 
         nsel = len(psel[psel == True])
         if nsel == 0:
-            log.warning("empty selection seqs %s " % repr(seqs))
+            log.warning("_init_selection EMPTY nsel %s len(psel) %s " % (nsel, len(psel)))
+        else:
+            log.info("_init_selection nsel %s len(psel) %s  " % (nsel, len(psel)))
+        pass 
 
         self.nsel = nsel 
-        self.psel = psel 
 
-        self.ox = self.ox[psel]
-        self.c4 = self.c4[psel]
-        self.wl = self.wl[psel]
-        self.rx = self.rx[psel]
+
+        # for first _init_selection hold on to the originals
+        if not hasattr(self, '_psel'):
+            self.ox_ = self.ox
+            self.c4_ = self.c4
+            self.wl_ = self.wl
+            self.rx_ = self.rx
+        pass
+
+        self._psel = psel 
+
+        ## always basing new selection of the originals
+        self.ox = self.ox_[psel]
+        self.c4 = self.c4_[psel]
+        self.wl = self.wl_[psel]
+        self.rx = self.rx_[psel]
 
         self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
         self.seqmat_ana = SeqAna(self.seqmat[psel], self.mattype)   # sequence history with selection applied
-    
+
+
+    def _get_psel(self):
+        return self._psel
+
+    def _set_psel(self, psel):
+        self._init_selection(psel)
+
+    psel = property(_get_psel, _set_psel)
+ 
+
+ 
     def psel_dindex(self):
         """
         Return dindex option string allowing debug dumping during OKG4 running,
@@ -1116,14 +1194,14 @@ def deviation_plt(evt):
 if __name__ == '__main__':
     ok = opticks_main()
 
-    #e0 = Evt(tag=ok.utag, src=ok.src, det=ok.det, args=ok)
-    #e0.history_table(slice(0,20))
+    seq = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
+    #seq = "PFLAGS_DEBUG"
 
-    #seq = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
-    seq = "PFLAGS_DEBUG"
+    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
+    a.history_table(slice(0,20))
 
-    e1 = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
-    e1.history_table(slice(0,20))
+    b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
+    b.history_table(slice(0,20))
 
 
 
