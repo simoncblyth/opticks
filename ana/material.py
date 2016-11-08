@@ -112,12 +112,9 @@ from opticks.ana.proplib import PropLib
 class Material(object):
     def __init__(self, name):
         self.name = name
-        self.mlib = None
+        self.mlib = PropLib("GMaterialLib")
 
     def lookup(self, prop, wavelength):
-        if self.mlib is None:
-            self.mlib = PropLib("GMaterialLib")
-        pass
         return self.mlib.interp(self.name,wavelength,prop)
 
     def data(self):

@@ -1,8 +1,12 @@
 
 #include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
 #include "globals.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+
+
+#include "NPY.hpp"
 
 #include "Opticks.hh"
 #include "OpticksHub.hh"
@@ -11,6 +15,7 @@
 #include "GMaterialLib.hh"
 #include "GBndLib.hh"
 
+#include "CMPT.hh"
 #include "CMaterialLib.hh"
 
 #include "PLOG.hh"
@@ -35,6 +40,12 @@ void CMaterialLib::convert()
         const GMaterial* ggmat = getMaterial(i);
         const char* name = ggmat->getShortName() ;
         const G4Material* g4mat = convertMaterial(ggmat);
+
+        // special cased GROUPVEL getter invokes setGROUPVEL which adds the property to the MPT 
+        // derived from RINDEX
+        G4MaterialPropertyVector* groupvel = g4mat->GetMaterialPropertiesTable()->GetProperty("GROUPVEL") ;
+        assert(groupvel);
+
         std::string keys = getMaterialKeys(g4mat);
         LOG(debug) << "CMaterialLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
     }
@@ -42,35 +53,6 @@ void CMaterialLib::convert()
 }
 
 
-
-
-
-/*
-const G4Material* CMaterialLib::makeInnerMaterial(const char* spec)
-{
-    unsigned int boundary = m_bndlib->addBoundary(spec);
-    unsigned int imat = m_bndlib->getInnerMaterial(boundary);
-    GMaterial* kmat = m_mlib->getMaterial(imat);
-
-    if(!kmat)
-    {
-        LOG(fatal) << "CMaterialLib::makeInnerMaterial"
-                   << " spec " << spec
-                   << " imat " << imat
-                   << " FAILED TO GET INNER MATERIAL "   
-                   ;
-    }
-    assert(kmat);
-
-    const char* matname = kmat->getShortName();
-    const G4Material* material = getG4Material(matname) ;
-    if( material == NULL )
-    { 
-        material = convertMaterial(kmat);
-    }
-    return material ; 
-}
-*/
 
 
 const G4Material* CMaterialLib::makeMaterial(const char* matname)
@@ -136,6 +118,9 @@ const G4Material* CMaterialLib::convertMaterial(const GMaterial* kmat)
 
     return material ;  
 }
+
+
+
 
 
 
@@ -226,8 +211,6 @@ void CMaterialLib::dump(const char* msg)
 
 
 
-
-
 void CMaterialLib::dump(const GMaterial* mat, const char* msg)
 {
     LOG(trace) << " dump mat " << mat ;
@@ -262,8 +245,21 @@ void CMaterialLib::dumpMaterial(const G4Material* mat, const char* msg)
     bool dreciprocal = true ; 
 
     std::cout << pmap->make_table(fw, m_dscale, dreciprocal) << std::endl ;
+
+
+    CMPT cmpt(mpt);
+    cmpt.dumpRaw("RINDEX,GROUPVEL");
+
 }
 
+
+NPY<float>* CMaterialLib::makeArray(const char* name, const char* keys, bool reverse)
+{
+    const G4Material* mat = getG4Material(name);
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    CMPT cmpt(mpt);
+    return cmpt.makeArray(keys, reverse);
+}
 
 
 
@@ -299,9 +295,10 @@ void CMaterialLib::dumpMaterials(const char* msg)
                   << std::endl ; 
 
         dumpMaterial(g4mat, "g4mat");
+
+
     }
 }
-
 
 
 

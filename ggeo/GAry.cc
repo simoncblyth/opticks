@@ -161,15 +161,38 @@ GAry<T>* np_add(GAry<T>* a, GAry<T>* b)
 
 
 template <typename T>
-T np_maxdiff(GAry<T>* a, GAry<T>* b)
+T np_maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
 {
-    assert(a->getLength() == b->getLength()); 
+
+    unsigned alen = a->getLength() ;
+    unsigned blen = b->getLength() ;
+ 
+    if(dump) LOG(info) << " np_maxdiff " 
+                       << " a " << std::setw(5) << alen
+                       << " b " << std::setw(5) << blen
+                       ;
+
+    assert(alen == blen); 
     T max(0);
     for (unsigned int i = 0; i < a->getLength() ; i++) 
     {
-       T ab = b->getValue(i) - a->getValue(i);
+       T av = a->getValue(i);
+       T bv = b->getValue(i);
+       T ab = bv - av ;
+
        max = std::max( max, ab );
+
+       if(dump) LOG(info) 
+                    <<  " i " << std::setw(4) << i
+                    <<  " av " << std::setw(10) << av 
+                    <<  " bv " << std::setw(10) << bv 
+                    <<  " ab " << std::setw(10) << ab 
+                    ; 
+
     }
+
+    if(dump) LOG(info) << " maxdiff " << max ; 
+
     return max ;
 }
 
@@ -395,9 +418,9 @@ GAry<T>* GAry<T>::add(GAry<T>* a, GAry<T>* b)
     return np_add(a, b);
 }
 template <typename T>
-T GAry<T>::maxdiff(GAry<T>* a, GAry<T>* b)
+T GAry<T>::maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
 {
-    return np_maxdiff(a, b);
+    return np_maxdiff(a, b, dump);
 }
 
 

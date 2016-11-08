@@ -14,7 +14,7 @@ public:
    static GAry<T>* product(GAry<T>* a, GAry<T>* b);
    static GAry<T>* subtract(GAry<T>* a, GAry<T>* b);
    static GAry<T>* add(GAry<T>* a, GAry<T>* b);
-   static T        maxdiff(GAry<T>* a, GAry<T>* b);
+   static T        maxdiff(GAry<T>* a, GAry<T>* b, bool dump=false);
    static GAry<T>* from_constant(unsigned int length, T value );
    static GAry<T>* zeros(unsigned int length);
    static GAry<T>* ones(unsigned int length);

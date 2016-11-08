@@ -6,6 +6,8 @@
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
+template <typename T> class NPY ; 
+
 class OpticksHub ; 
 
 class GMaterial ; 
@@ -30,7 +32,6 @@ class CFG4_API CMaterialLib : public CPropLib
        CMaterialLib(OpticksHub* hub);
 
        void convert(); // commented in init 
-      // const G4Material* makeInnerMaterial(const char* spec);  // TODO: CMaterialLib better to not know about bnd spec
        const G4Material* makeMaterial(const char* matname);
        const G4Material* convertMaterial(const GMaterial* kmat);
 
@@ -38,6 +39,8 @@ class CFG4_API CMaterialLib : public CPropLib
 
        // G4 material access
        const G4Material* getG4Material(const char* shortname);
+       const G4Material* getG4Material(unsigned index);
+       NPY<float>* makeArray(const char* name, const char* keys, bool reverse=true);
    private:
        void dump(const GMaterial* mat, const char* msg="CMaterialLib::dump");
        void dumpMaterials(const char* msg="CMaterialLib::dumpMaterials");

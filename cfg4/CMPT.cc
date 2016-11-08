@@ -204,6 +204,113 @@ void CMPT::dumpProperty(const char* _keys)
 }
 
 
+unsigned CMPT::getVecLength(const char* _keys)
+{
+    std::vector<std::string> keys ; 
+    unsigned nkey = splitKeys(keys, _keys);
+    unsigned vlen(0) ; 
+
+    for(unsigned i=0 ; i < nkey ; i++ )
+    {
+        const char* key = keys[i].c_str(); 
+        G4PhysicsOrderedFreeVector* v = getVec(key);
+
+        if(vlen == 0)
+             vlen = v->GetVectorLength() ;
+        else
+             assert(vlen == v->GetVectorLength());
+    } 
+    return vlen ; 
+}
+
+
+unsigned CMPT::splitKeys(std::vector<std::string>& keys, const char* _keys)
+{
+    boost::split(keys, _keys, boost::is_any_of(","));   
+    return keys.size();
+}
+
+
+NPY<float>* CMPT::makeArray(const char* _keys, bool reverse)
+{
+    unsigned vlen = getVecLength(_keys);
+    std::vector<std::string> keys ; 
+    unsigned nkey = splitKeys(keys, _keys);
+ 
+    NPY<float>* vals = NPY<float>::make(nkey, vlen, 4);
+    vals->zero();
+
+    for(unsigned i=0 ; i < nkey ; i++ )
+    {
+        const char* key = keys[i].c_str(); 
+        G4PhysicsOrderedFreeVector* v = getVec(key);
+        assert( v->GetVectorLength() == vlen );
+
+        for(unsigned j=0 ; j < vlen ; j++)
+        {
+            unsigned jj = reverse ? vlen - 1 - j : j ; 
+            G4double en = v->Energy(jj);
+            G4double wl = h_Planck*c_light/en ;
+            G4double vl =  (*v)[jj] ;
+
+            float x = en/eV ; 
+            float y = wl/nm ;
+            float z = vl ; 
+            float w = 0.f ; 
+
+            vals->setQuad(i, j, x, y, z, w );
+        }
+    }
+    return vals ; 
+}
+
+
+void CMPT::dumpRaw(const char* _keys)
+{
+    LOG(fatal) << "CMPT::dumpRaw " <<  _keys ;  
+
+    std::vector<std::string> keys ; 
+    unsigned nkey = splitKeys(keys, _keys);
+
+    for(unsigned i=0 ; i < nkey ; i++ )
+    {
+        const char* key = keys[i].c_str(); 
+        G4PhysicsOrderedFreeVector* v = getVec(key);
+
+        unsigned vlen = v->GetVectorLength() ;
+
+        LOG(info) << std::setw(15) << key 
+                  << " MinValue " << v->GetMinValue()
+                  << " MaxValue " << v->GetMaxValue()
+                  << " MaxLowEdgeEnergy " << v->GetMaxLowEdgeEnergy()
+                  << " MinLowEdgeEnergy " << v->GetMinLowEdgeEnergy()
+                  << " VectorLength " << vlen
+                  << " c_light " << c_light 
+                  << " c_light*ns/nm " << c_light*ns/nm 
+                  ;
+
+        G4double wl_prev(0) ; 
+
+        for(unsigned j=0 ; j < vlen ; j++)
+        {
+            unsigned i = vlen - 1 - j ; 
+            G4double en = v->Energy(i)/eV ;
+            G4double wl = h_Planck*c_light/en/nm ;
+            G4double vl =  (*v)[i] ;
+
+            LOG(info) << " i " << std::setw(4) << i 
+                      << " en(eV) " << std::setw(10) << en
+                      << " wl(nm) " << std::setw(10) << wl
+                      << " wl(nm) - prv " << std::setw(10) << wl - wl_prev
+                      << " val " << std::setw(10) << vl
+                      ;
+
+             wl_prev = wl ; 
+        }
+
+
+    }
+}
 
 
 

@@ -15,6 +15,8 @@ class CFG4_API CMPT {
        CMPT(G4MaterialPropertiesTable* mpt, const char* name=NULL);
        void addProperty(const char* lkey,  GProperty<float>* prop, bool spline);
    public:
+       void dumpRaw(const char* lkey);
+   public:
        void dump(const char* msg="CMPT::dump"); 
        void dumpProperty(const char* lkey);
        void sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep );
@@ -22,6 +24,10 @@ class CFG4_API CMPT {
 
        GProperty<double>* makeProperty(const char* key, float low, float step, unsigned nstep);
        G4PhysicsOrderedFreeVector* getVec(const char* key);
+
+       unsigned splitKeys(std::vector<std::string>& keys, const char* _keys);
+       unsigned getVecLength(const char* _keys);
+       NPY<float>* makeArray(const char* _keys, bool reverse=true);
 
 
        std::string description(const char* msg);

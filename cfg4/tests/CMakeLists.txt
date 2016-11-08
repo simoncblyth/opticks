@@ -21,6 +21,7 @@ set(TEST_SOURCES
     CCollectorTest.cc
     CInterpolationTest.cc
     OpRayleighTest.cc 
+    GROUPVELTest.cc 
 
 )
 

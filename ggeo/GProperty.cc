@@ -145,7 +145,7 @@ GProperty<T>* GProperty<T>::load(const char* path)
 
 
 template <typename T>
-T GProperty<T>::maxdiff(GProperty<T>* a, GProperty<T>* b)
+T GProperty<T>::maxdiff(GProperty<T>* a, GProperty<T>* b, bool dump)
 {
     assert(a->getLength() == b->getLength());
     T mv(0);
@@ -157,13 +157,15 @@ T GProperty<T>::maxdiff(GProperty<T>* a, GProperty<T>* b)
         T dv = fabs(av-bv); 
 
         if(dv > mv) mv = dv ;
-        //printf("av %10.3f bv %10.3f dv*1e9 %10.3f mv*1e9 %10.3f \n", av, bv, dv*1e9, mv*1e9); 
+        if(dump)
+        printf("(val) av %10.3f bv %10.3f dv*1e9 %10.3f mv*1e9 %10.3f \n", av, bv, dv*1e9, mv*1e9); 
 
         T ad = a->getDomain()->getValue(i) ;
         T bd = b->getDomain()->getValue(i) ;
         T dd = fabs(ad-bd); 
         if(dd > md) md = dd ;
-        //printf("ad %10.3f bd %10.3f dd*1e9 %10.3f md*1e9 %10.3f \n", ad, bd, dd*1e9, md*1e9); 
+        if(dump)
+        printf("(dom) ad %10.3f bd %10.3f dd*1e9 %10.3f md*1e9 %10.3f \n", ad, bd, dd*1e9, md*1e9); 
     }
 
     return mv > md ? mv : md  ; 
@@ -196,14 +198,12 @@ GProperty<T>* GProperty<T>::from_constant(T value, T dlow, T dhigh)
 
 
 template <typename T>
-bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta)
+bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta, bool dump)
 {
     if(a->getLength() != b->getLength())  return false ; 
-    if(GAry<T>::maxdiff(a->getDomain(), b->getDomain()) > delta ) return false ;
+    if(GAry<T>::maxdiff(a->getDomain(), b->getDomain(), dump) > delta ) return false ;
     return true ; 
 }
-
-
 
 template <typename T>
 GProperty<T>* GProperty<T>::make_one_minus(GProperty<T>* a)
@@ -242,6 +242,8 @@ std::string GProperty<T>::make_table(int fw, T dscale, bool dreciprocal, bool co
     assert(columns.size() == titles.size());
     unsigned int ncol = columns.size();
 
+    T delta = 3e-6 ;   // get domain mismatch with default 1e-6 for GROUPVEL 
+
     std::stringstream ss ; 
     if(ncol == 0) 
     {
@@ -250,7 +252,22 @@ std::string GProperty<T>::make_table(int fw, T dscale, bool dreciprocal, bool co
     else
     {
         GProperty<T>* a = columns[0] ;
-        for(unsigned int c=1 ; c < ncol ; c++) assert(hasSameDomain(a,columns[c]));
+        for(unsigned int c=1 ; c < ncol ; c++) 
+        {
+            GProperty<T>* b = columns[c] ;  
+            bool same_domain = hasSameDomain(a,b, delta) ;
+            if(!same_domain) 
+            {
+                 LOG(fatal) << "GProperty<T>::make_table"
+                            << " domain mismatch "
+                            << " " << a->brief(titles[0].c_str()) 
+                            << " " << b->brief(titles[c].c_str())
+                            ; 
+                 hasSameDomain(a,b, delta, true); // dump
+            }
+
+            //assert(same_domain);
+        }
         GAry<T>* doms = a ? a->getDomain() : NULL ;
         assert(doms);
 
