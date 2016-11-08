@@ -426,8 +426,6 @@ __device__ void propagate_at_specular_reflector(Photon &p, State &s, curandState
                           normalize(cross(incident_plane_normal, p.direction))
                        ;
 
-    //p.flags.i.w |= REFLECT_SPECULAR;
- 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 } 
 
@@ -445,9 +443,38 @@ __device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState 
     } while (! (curand_uniform(&rng) < ndotv) );
 
     p.polarization = normalize( cross(uniform_sphere(&rng), p.direction));
-    //p.flags.i.w |= REFLECT_DIFFUSE;
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 }                       
+
+
+
+__device__ void propagate_at_diffuse_reflector_geant4_style(Photon &p, State &s, curandState &rng)
+{
+
+    float3 old_direction = p.direction ; 
+
+    float ndotv;
+    do {
+	    p.direction = uniform_sphere(&rng);
+	    ndotv = dot(p.direction, s.surface_normal);
+	    if (ndotv < 0.0f) 
+        {
+	        p.direction = -p.direction;
+	        ndotv = -ndotv;
+	    }
+    } while (! (curand_uniform(&rng) < ndotv) );
+
+
+    float3 facet_normal = normalize( p.direction - old_direction ) ;
+
+    float normal_coefficient = dot(p.polarization, facet_normal);  // EdotN
+
+    p.polarization = -p.polarization + 2.f*normal_coefficient*facet_normal ; 
+
+    p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+} 
+
+
 
 
 /*
@@ -504,7 +531,7 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
     {
         s.flag = SURFACE_DREFLECT ;
-        propagate_at_diffuse_reflector(p, s, rng);
+        propagate_at_diffuse_reflector_geant4_style(p, s, rng);
         return CONTINUE;
     }
     else

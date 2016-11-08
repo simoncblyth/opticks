@@ -96,9 +96,10 @@ using CLHEP::twopi ;
         // Constructors
         /////////////////
 
-DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(const G4String& processName,
-                                               G4ProcessType type)
-             : G4VDiscreteProcess(processName, type)
+DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(const G4String& processName, G4ProcessType type)
+             : 
+             G4VDiscreteProcess(processName, type),
+             m_DielectricMetal_LambertianReflection(0) 
 {
 
     LOG(info) << "DsG4OpBoundaryProcess::DsG4OpBoundaryProcess" 
@@ -125,6 +126,8 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(const G4String& processName,
                         ->GetSurfaceTolerance();
 
         abNormalCounter = 0;
+
+       
 
 }
 
@@ -733,6 +736,8 @@ void DsG4OpBoundaryProcess::DielectricMetal()
                                                                                 
                 if ( theStatus == LambertianReflection ) 
                 {
+                   m_DielectricMetal_LambertianReflection += 1 ; 
+                   //LOG(info) << "DsG4OpBoundaryProcess::DielectricMetal LambertianReflection " << m_DielectricMetal_LambertianReflection ;
                    DoReflection();
                 }
                 else if ( theStatus == BackScattering ) 

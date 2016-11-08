@@ -222,6 +222,8 @@ private:
         G4double kCarTolerance;
 
         G4int abNormalCounter;
+
+        G4int m_DielectricMetal_LambertianReflection ; 
 };
 
 ////////////////////

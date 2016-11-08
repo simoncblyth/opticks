@@ -38,7 +38,8 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    spawn = slice(0,10)  # pluck top line of seqhis table, needed for multiplot
+    #spawn = slice(0,10)  # pluck top line of seqhis table, needed for multiplot
+    spawn = slice(8,9)  # pluck top line of seqhis table, needed for multiplot
 
     try:
         cf = CF(args, spawn=spawn, seqs=[] )

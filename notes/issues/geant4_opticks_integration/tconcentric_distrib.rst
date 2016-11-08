@@ -4,7 +4,7 @@ tconcentric_distrib
 machinery shakedown
 ----------------------
 
-* adopt less expensive approachs:
+* adopt less expensive approach
 
   * eg do not need to spawn CF for all seqhis lines, now that can easily switch psel 
   * decouple distrib chi2 from plotting 
@@ -19,13 +19,11 @@ multiplot slice(0,10) quick look
 * t discrep, known GROUPVEL problem still there : now that have G4 and OP live both
   at once can fix this 
 
-* yz polarization distribs followin DR REFLECT_DIFFUSE are discrepant 
-  
+* RESOLVED : yz polarization distribs followin DR SURFACE_DREFLECT are discrepant, see  :doc:`SURFACE_DREFLECT_diffuse_reflection` 
 
 
 tconcentric agreement sufficient to move on to distribs 
 ----------------------------------------------------------
-
 
 ::
 

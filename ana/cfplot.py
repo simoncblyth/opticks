@@ -159,6 +159,9 @@ def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
     return qd
 
 
+def mplot(scf, pages=["XYZT","ABCR"]):
+    pass
+
 
 
 def multiplot(cf, pages=["XYZT","ABCR"]):
