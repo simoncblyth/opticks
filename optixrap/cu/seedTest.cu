@@ -6,7 +6,7 @@
 
 using namespace optix;
 
-rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
+//rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
 rtDeclareVariable(unsigned int,  RNUMQUAD, , );
 rtDeclareVariable(unsigned int,  GNUMQUAD, , );

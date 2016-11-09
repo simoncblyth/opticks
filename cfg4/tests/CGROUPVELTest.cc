@@ -35,8 +35,7 @@ int main(int argc, char** argv)
 
     clib->dump();
 
-    NPY<float>* gdls = clib->makeArray("GdDopedLS","RINDEX,GROUPVEL");
-    gdls->save("$TMP/gdls.npy");
+    clib->saveGROUPVEL("$TMP/CGROUPVELTest");
 
 
 

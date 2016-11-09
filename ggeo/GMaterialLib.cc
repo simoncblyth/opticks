@@ -63,6 +63,8 @@ void GMaterialLib::postLoadFromCache()
     bool fxab = m_ok->hasOpt("fxab") ;
     bool fxsc = m_ok->hasOpt("fxsc") ;
 
+    bool groupvel = m_ok->hasOpt("groupvel") ;
+
 
     LOG(info) << "GMaterialLib::postLoadFromCache " 
               << " nore " << nore 
@@ -74,6 +76,7 @@ void GMaterialLib::postLoadFromCache()
               << " fxre " << fxre 
               << " fxab " << fxab 
               << " fxsc " << fxsc 
+              << " groupvel " << groupvel 
               ; 
 
     if(nore || xxre || fxre)
@@ -111,7 +114,13 @@ void GMaterialLib::postLoadFromCache()
     }
 
 
-    if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab)
+    if(groupvel)
+    {
+       bool debug = true ; 
+       replaceGROUPVEL(debug);
+    }
+
+    if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab || groupvel)
     {
         // need to replace the loaded buffer with a new one with the changes for Opticks to see it 
         NPY<float>* mbuf = createBuffer();
@@ -130,9 +139,9 @@ const char* GMaterialLib::FindShortName(const char* name, const char* prefix)
 */
 
 
-GMaterialLib::GMaterialLib(Opticks* cache) 
+GMaterialLib::GMaterialLib(Opticks* ok) 
     :
-    GPropertyLib(cache, "GMaterialLib")
+    GPropertyLib(ok, "GMaterialLib")
 {
     init();
 }
@@ -193,6 +202,9 @@ void GMaterialLib::Summary(const char* msg)
               << " NumFloat4 " << NUM_FLOAT4
               ;
 }
+
+
+// invoked pre-cache from by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
 void GMaterialLib::add(GMaterial* raw)
 {
     assert(!isClosed());
@@ -514,6 +526,39 @@ void GMaterialLib::import( GMaterial* mat, float* data, unsigned int nj, unsigne
     } 
 }
 
+void GMaterialLib::replaceGROUPVEL(bool debug)
+{
+    unsigned ni = m_buffer->getShape(0);
+    LOG(info) << "GMaterialLib::replaceGROUPVEL " << " ni " << ni ;
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        const char* key = m_names->getKey(i);
+        GMaterial* mat = getMaterial(key);
+
+        GProperty<float>* vg_default = mat->getProperty(group_velocity);
+        GProperty<float>* ri = mat->getProperty(refractive_index);
+        assert(vg_default);
+        assert(ri);
+
+        GProperty<float>* vg_calc = GProperty<float>::make_GROUPVEL(ri);
+        assert(vg_calc);
+        mat->replaceProperty(group_velocity, vg_calc );
+
+        if(debug)
+        {
+            LOG(info) << " i " << std::setw(3) << i 
+                      << " key " << std::setw(35) << key 
+                      << " vg_default " << vg_default 
+                      << " vg_calc " << vg_calc 
+                      ;
+
+            dump(mat, "replaceGROUPVEL");
+            ri->save("$TMP/replaceGROUPVEL", key, "refractive_index.npy" );  
+            vg_calc->save("$TMP/replaceGROUPVEL", key, "group_velocity.npy" );  
+        }
+
+    }
+}
 
 
 bool GMaterialLib::setMaterialPropertyValues(const char* matname, const char* propname, float val)

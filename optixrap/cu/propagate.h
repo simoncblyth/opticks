@@ -56,7 +56,9 @@ Returns:
 
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 {
-    float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index
+    //float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index    (phase velocity of light in medium)
+    float speed = s.m1group2.x ;  // .x:group_velocity  (group velocity of light in the material) see: opticks-find GROUPVEL
+
     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
 

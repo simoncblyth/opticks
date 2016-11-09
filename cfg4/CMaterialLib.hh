@@ -36,6 +36,7 @@ class CFG4_API CMaterialLib : public CPropLib
        const G4Material* convertMaterial(const GMaterial* kmat);
 
        void dump(const char* msg="CMaterialLib::dump");
+       void saveGROUPVEL(const char* base="$TMP/CMaterialLib");
 
        // G4 material access
        const G4Material* getG4Material(const char* shortname);

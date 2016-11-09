@@ -146,6 +146,7 @@ GAry<T>* np_subtract(GAry<T>* a, GAry<T>* b)
     return result ;
 }
 
+
 template <typename T>
 GAry<T>* np_add(GAry<T>* a, GAry<T>* b)
 {
@@ -158,6 +159,42 @@ GAry<T>* np_add(GAry<T>* a, GAry<T>* b)
     }
     return result ;
 }
+
+
+template <typename T>
+GAry<T>* np_clip(GAry<T>* a, GAry<T>* low, GAry<T>* high, GAry<T>* low_fallback, GAry<T>* high_fallback )
+{
+    assert(a->getLength() == low->getLength()); 
+    assert(a->getLength() == high->getLength()); 
+    if(low_fallback) assert(a->getLength() == low_fallback->getLength()); 
+    if(high_fallback) assert(a->getLength() == high_fallback->getLength()); 
+
+    GAry<T>* cc = new GAry<T>(a->getLength()); 
+    for (unsigned int i = 0; i < cc->getLength() ; i++) 
+    {
+        T aa = a->getValue(i);
+        T lo = low->getValue(i);
+        T hi = high->getValue(i);
+
+        if( aa < lo )
+        {
+            cc->setValue(i, low_fallback ? low_fallback->getValue(i) : lo );
+        }
+        else if(aa > hi )
+        {
+            cc->setValue(i, high_fallback ? high_fallback->getValue(i) : hi );
+        }
+        else
+        {
+            cc->setValue(i, aa );
+
+        }
+    }
+    return cc ;
+}
+
+
+
 
 
 template <typename T>
@@ -522,6 +559,15 @@ GAry<T>* GAry<T>::add(GAry<T>* a, GAry<T>* b)
 {
     return np_add(a, b);
 }
+
+
+template <typename T>
+GAry<T>* GAry<T>::clip(GAry<T>* low, GAry<T>* high, GAry<T>* low_fallback, GAry<T>* high_fallback )
+{
+    return np_clip(this, low, high, low_fallback, high_fallback );
+}
+
+
 template <typename T>
 T GAry<T>::maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
 {

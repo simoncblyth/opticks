@@ -45,6 +45,7 @@
 //
 //
 
+
 #include <curand_kernel.h>
 #include <optix_world.h>
 #include <optixu/optixu_math_namespace.h>
@@ -55,7 +56,7 @@
 
 using namespace optix;
 
-rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
+//rtDeclareVariable(float,         SPEED_OF_LIGHT, , );
 rtDeclareVariable(unsigned int,  PNUMQUAD, , );
 rtDeclareVariable(unsigned int,  RNUMQUAD, , );
 rtDeclareVariable(unsigned int,  GNUMQUAD, , );

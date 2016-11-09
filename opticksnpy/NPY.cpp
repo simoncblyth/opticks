@@ -389,6 +389,16 @@ void NPY<T>::save(const char* dir, const char* name)
     std::string path = NPYBase::path(dir, name);
     save(path.c_str());
 }
+
+template <typename T>
+void NPY<T>::save(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = NPYBase::path(dir, reldir, name);
+    save(path.c_str());
+}
+
+
+
 template <typename T>
 bool NPY<T>::exists(const char* dir, const char* name)
 {

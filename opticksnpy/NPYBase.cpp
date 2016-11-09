@@ -52,6 +52,15 @@ const char* NPYBase::TypeName(Type_t type)
 }
 
 
+
+
+std::string NPYBase::path(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = BOpticksEvent::path(dir, reldir, name);
+    return path ; 
+}
+
+
 std::string NPYBase::path(const char* dir, const char* name)
 {
     std::string path = BOpticksEvent::path(dir, name);

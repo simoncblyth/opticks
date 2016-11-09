@@ -53,6 +53,18 @@ void CMaterialLib::convert()
 }
 
 
+void CMaterialLib::saveGROUPVEL(const char* base)
+{
+   // invoked by GROUPVELTest 
+    unsigned int ngg = getNumMaterials() ;
+    for(unsigned int i=0 ; i < ngg ; i++)
+    {
+        const GMaterial* ggmat = getMaterial(i);
+        const char* name = ggmat->getShortName() ;
+        NPY<float>* pa = makeArray(name,"RINDEX,GROUPVEL");
+        pa->save(base, name, "saveGROUPVEL.npy");
+    }
+}
 
 
 const G4Material* CMaterialLib::makeMaterial(const char* matname)

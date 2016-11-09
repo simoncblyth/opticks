@@ -1,17 +1,32 @@
 #!/usr/bin/env python
 """
+groupvel.py
+============
 
-G4 uses funny raster, to avoid dropping a bin::
+* C++ and NumPy implementations of the ported GROUPVEL_ 
+  calculation are matching 
 
+  NB the calc interps back to original bin, 
+  to avoid bin shifting sins that G4 commits
+
+
+TODO:
+
+* compare actual G4 calc against mt port of the calc
+  
 
 """
 
-import os, numpy as np
+import os, logging, numpy as np
+log = logging.getLogger(__name__)
+
 from opticks.ana.base import opticks_main
 from opticks.ana.proplib import PropLib
 
-hc = 1239.8419     # eV.nm
-c_light = 299.792  # mm/ns
+# values from GConstantTest 
+hc = 1239.841875       # eV.nm
+c_light = 299.792458   # mm/ns
+wl = np.linspace(60,820,39)   # standard wavelength domain with increasing wavelenth (nm)
 
 
 def g4_bintrick(aa):
@@ -91,7 +106,7 @@ def np_gradient(y, edge_order=1):
 
 
 
-def g4style_edom(okmat,g4mat,wl):
+def GROUPVEL_(ri_, dump=False):
     """
     Reproduce G4 GROUPVEL calc by migrating from wavelength to energy 
     domain and duplicating the tricky bin shift manoever
@@ -110,7 +125,8 @@ def g4style_edom(okmat,g4mat,wl):
     Start by convert to energy and flipping order of energy 
     and refractive values to correspond to increasing energy domain 
     """
-    ri = okmat[0,:,0]  # refractive index values on wavelength domain
+
+    ri = ri_.copy()  # refractive index values on wavelength domain
     en = hc/wl[::-1]   # eV    
     ri = ri[::-1] 
 
@@ -135,108 +151,110 @@ def g4style_edom(okmat,g4mat,wl):
     vgm = vg.copy()
     vgm[msk] = vg0[msk]
 
-    g4vg = g4mat[1,::-1,2]
-
-    labels = "hc/en,en,hc/ee,hc/ee-hc/en,ee,nn,ds,vg0,vg,msk,vgm,g4vg,vgm-g4vg,vgi"
-
     vgi = np.interp( en, ee, vgm )   # linear interpolation onto original energy values
 
-    print "".join(map(lambda _:"%11s"%_, labels.split(",")))
-    print np.dstack([hc/en,en,hc/ee,hc/ee-hc/en,ee,nn,ds,vg0,vg,msk,vgm,g4vg,vgm-g4vg, vgi])
+
+    if dump:
+        labels = "hc/en,en,hc/ee,hc/ee-hc/en,ee,nn,ds,vg0,vg,msk,vgm,vgi"
+        print "".join(map(lambda _:"%11s"%_, labels.split(",")))
+        print np.dstack([hc/en,en,hc/ee,hc/ee-hc/en,ee,nn,ds,vg0,vg,msk,vgm,vgi])
+
+    return vgi[::-1]
 
 
 
 
-def gradient_edom(okmat, g4mat, wl):
+class PropTree(object):
+    def __init__(self):
+        self.names = os.listdir(os.path.expandvars(self.base))
+    def subdir(self, sub):
+        return os.path.expandvars(os.path.join(self.base, sub))
+    def path(self, sub, fname):
+        return os.path.expandvars(os.path.join(self.base, sub, fname + ".npy"))
+    def ary(self, sub, fname):
+        return np.load(self.path(sub, fname))
+
+
+class replaceGROUPVEL(PropTree):
     """
-                c         
-    vg =  ---------------        # angular freq proportional to E for light     
-            n + E dn/dE
+    GMaterialLib::replaceGROUPVEL in debug mode writes the 
+    GROUPVEL calculated from refractive index
+
+    ::
+
+       In [25]: rg.vg("GdDopedLS")
+       Out[25]: 
+       array([[  60.    ,  206.2414],
+              [  80.    ,  206.2414],
+              [ 100.    ,  206.2414],
+              [ 120.    ,  198.1083],
+              [ 140.    ,  181.5257],
+
 
     """
-    ri = okmat[0,:,0]  # refractive index values on wavelength domain
-    en = hc/wl[::-1]   # eV    
-    ri = ri[::-1] 
+    base = "$TMP/replaceGROUPVEL"
+    def ri_(self, matname):
+        return self.ary(matname, "refractive_index")
+    def vg_(self, matname):
+        return self.ary(matname, "group_velocity")
 
-    dn = np.gradient(ri)  # keeps same number of bins
-    de = np.gradient(en)
+    def check_all(self, dump=False):
+        for name in self.names:
+            self.check(name, dump=dump)
 
-    vg0 = c_light/ri 
-    vg = c_light /( ri + en*dn/de ) 
+    def check(self, name="GdDopedLS", dump=True):
 
-    msk = np.logical_or( vg < 0, vg > vg0)
-    vgm = vg.copy()
-    vgm[msk] = vg0[msk]
+        rip = self.ri_(name)
 
-    g4ee = bintrick(en)
-    g4vg = g4mat[1,::-1,2]
-    g4vgi = np.interp(en,g4ee,g4vg)  # interpolate g4 results from tricky bins to original bins
+        wl = rip[:,0]
+        ri = rip[:,1]
 
-    labels = "en,ri,hc/en,dn,de,vg0,vg,msk,vgm,g4ee,g4vg,g4vgi,vgm-g4vgi"
-    print "".join(map(lambda _:"%11s"%_, labels.split(",")))
-    print np.dstack([en,ri,hc/en,dn,de,vg0,vg,msk,vgm,g4ee,g4vg,g4vgi,vgm-g4vgi])
- 
+        vgp = self.vg_(name)
+        wl2 = vgp[:,0]
+        vg = vgp[:,1]
+
+        assert np.allclose(wl,wl2)
+
+        vgpy = GROUPVEL_(ri)   ## python implementation of same calc 
+        vgdf = vg-vgpy
+
+        if dump:
+            print np.dstack([wl,ri,vg,vgpy, vgdf])
+
+        log.info("check %30s  %s " % (name, vgdf.max()) )  
 
 
-
-def g4style_wdom(okmat,g4mat,wl):
+class CGROUPVELTest(PropTree):
     """
-    Attempt to stay in wavelength domain, and see how close can get to g4
-
-    Not keen on giving groupvel values on a different domain to standard input domain, 
-    but run with that for now whilst checking can do the calc in wavelength domain. 
-
-     c          dn  
-     -   +   c  ---
-     n          dlogw
-
-
-    Hmm seems not worth the effort to get wdom calc to match when 
-    easy enough to migrate into edom first.
+    CMaterialLib::saveGROUPVEL which is invoked by CGROUPVELTest  
+    writes arrays with the G4 calculated GROUPVEL
     """
-    pass
-    ri = okmat[0,:,0]  # refractive index values on wavelength domain
-    n0,n1= ri[:-1],ri[1:]
-    w0,w1 = wl[:-1],wl[1:]
+    base="$TMP/CGROUPVELTest"
+    fnam="saveGROUPVEL"
 
-    nn = bintrick(ri)
-    ww = bintrick(wl,reciprocal=True)
-    
-    vg0 = c_light/nn 
+    def ri(self, matname):
+        a = self.ary(matname, self.fnam)
+        return a[0,::-1,2]
 
-    ds = np.zeros_like(ri)
-    ds[1:] = (n1-n0)/np.log(w1/w0) 
-    ds[0] = ds[1]
-
-    vg = vg0 + c_light*ds
-
-    msk = np.logical_or( vg < 0, vg > vg0)
-    vgm = vg.copy()
-    vgm[msk] = vg0[msk]
-
-    g4vg = g4mat[1,:,2]
-
-    labels = "ww,nn,ds,vg0,vg,msk,vgm,g4vg,vgm-g4vg"
-    print "".join(map(lambda _:"%11s"%_, labels.split(",")))
-    print np.dstack([ww,nn,ds,vg0,vg,msk,vgm,g4vg,vgm-g4vg])
-
-
+    def vg(self, matname):
+        a = self.ary(matname, self.fnam)
+        return a[1,::-1,2]
 
 
 
 if __name__ == '__main__':
     ok = opticks_main()
+
     mlib = PropLib("GMaterialLib")
 
     name = "GdDopedLS"
-    g4name = "gdls"
-
-    wl = np.linspace(60,820,39)   # standard wavelength domain with increasing wavelenth (nm)
     okmat = mlib(name)
-    g4mat = np.load(os.path.expandvars("$TMP/%s.npy" % g4name))    # written by cfg4/tests/GROUPVELTest.cc
+    okri = okmat[0,:,0]  # refractive index values on wavelength domain, from GMaterialLib cache prior to postCache diddling 
 
-    g4style_edom(okmat,g4mat,wl)
-    gradient_edom(okmat,g4mat,wl)
+
+    cg = CGROUPVELTest()
+    rg = replaceGROUPVEL()
+
 
 
 

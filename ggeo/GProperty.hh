@@ -16,12 +16,13 @@ class GGEO_API GProperty {
 public: 
    static const char* DOMAIN_FMT ;
    static const char* VALUE_FMT ;
+   static const T DELTA ; 
 public: 
    static GProperty<T>* make_GROUPVEL(GProperty<T>* rindex);
    static GAry<T>*      make_dispersion_term(GProperty<T>* rindexE);
 public: 
    static T maxdiff(GProperty<T>* a, GProperty<T>* b, bool dump=false);
-   static bool hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta=1e-6, bool dump=false);
+   static bool hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta=-1, bool dump=false);
    static GProperty<T>* load(const char* path);
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length );
    static GProperty<T>* from_constant(T value, T dlow, T dhigh);

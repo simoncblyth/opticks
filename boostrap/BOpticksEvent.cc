@@ -140,8 +140,16 @@ std::string BOpticksEvent::path(const char* top, const char* sub, const char* ta
 
 std::string BOpticksEvent::path(const char* dir, const char* name)
 {
-    char path[256];
-    snprintf(path, 256, "%s/%s", dir, name);
+    //char path[256];
+    //snprintf(path, 256, "%s/%s", dir, name);
+    std::string path = BFile::FormPath(dir, name);  
+    return path ; 
+}
+
+
+std::string BOpticksEvent::path(const char* dir, const char* reldir, const char* name)
+{
+    std::string path = BFile::FormPath(dir, reldir, name);  
     return path ; 
 }
 

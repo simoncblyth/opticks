@@ -126,7 +126,7 @@ class NPY_API NPY : public NPYBase {
  
        void save(const char* path);
        void save(const char* dir, const char* name);
-       //void save(const char* typ, const char* tag, const char* det );
+       void save(const char* dir, const char* reldir, const char* name);
        void save(const char* tfmt, const char* targ, const char* tag, const char* det);
 
 

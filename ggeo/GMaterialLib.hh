@@ -104,6 +104,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        NPY<float>* createBuffer();
        GItemList*  createNames();
    private:
+       void replaceGROUPVEL(bool debug=false);  // triggered in postLoadFromCache with --groupvel option
        void importForTex2d();
        void importOld();
        NPY<float>* createBufferForTex2d();

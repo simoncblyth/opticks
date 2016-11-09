@@ -46,6 +46,7 @@ public:
    GAry<T>* g4_groupvel_bintrick();
    GAry<T>* gradient();
    GAry<T>* reciprocal(T scale=1);
+   GAry<T>* clip(GAry<T>* low, GAry<T>* high, GAry<T>* low_fallback=NULL, GAry<T>* high_fallback=NULL );
    void save(const char* path);
 
 public: 

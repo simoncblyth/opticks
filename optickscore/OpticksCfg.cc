@@ -104,12 +104,18 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nostep,S",  "inhibit step by step recording") ;
 
+
+   m_desc.add_options()
+       ("groupvel",  "add group_velocity property calculated from refractive_index in GMaterialLib::postLoadFromCache ");
+
+
    m_desc.add_options()
        ("nore",  "inhibit reemission by zeroing reemission_prob of named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
    m_desc.add_options()
        ("xxre",  "enhance reemission by setting reemission_prob to one for named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;
    m_desc.add_options()
        ("fxre",  "enable application of config from   --fxreconfig option ");
+
    m_desc.add_options()
        ("fxreconfig",   boost::program_options::value<std::string>(&m_fxreconfig), "post cache artificial modification of reemission prob of scintillating materials, see GMaterialLib::postLoadFromCache" );
 

@@ -5,6 +5,7 @@ struct State
 {
    unsigned int flag ; 
    float4 material1 ;    // refractive_index/absorption_length/scattering_length/reemission_prob
+   float4 m1group2  ;    // group_velocity/spare1/spare2/spare3
    float4 material2 ;  
    float4 surface    ;   //  detect/absorb/reflect_specular/reflect_diffuse
    float3 surface_normal ; 
@@ -49,6 +50,8 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
     //  boundary sign will be -ve : so line+3 outer-surface is the relevant one
 
     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
+    s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
+
     s.material2 = boundary_lookup( wavelength, m2_line, 0);
     s.surface   = boundary_lookup( wavelength, su_line, 0);                 
 

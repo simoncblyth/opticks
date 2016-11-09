@@ -28,6 +28,9 @@
 #include "PLOG.hh"
 
 
+template <typename T>
+const T GProperty<T>::DELTA = 1e-6 ; 
+
 
 template <typename T>
 const char* GProperty<T>::DOMAIN_FMT = " %10.3f" ; 
@@ -201,8 +204,21 @@ GProperty<T>* GProperty<T>::from_constant(T value, T dlow, T dhigh)
 template <typename T>
 bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta, bool dump)
 {
-    if(a->getLength() != b->getLength())  return false ; 
-    if(GAry<T>::maxdiff(a->getDomain(), b->getDomain(), dump) > delta ) return false ;
+    if(delta < 0) delta = DELTA ; 
+
+    unsigned alen = a->getLength() ;
+    unsigned blen = b->getLength() ;
+
+    if(dump) LOG(info)
+                << "GProperty<T>::hasSameDomain"
+                << " alen " << alen
+                << " blen " << blen
+                ;
+
+    if(alen != blen) return false ; 
+    T mxdif = GAry<T>::maxdiff(a->getDomain(), b->getDomain(), dump) ;
+    if(mxdif > delta) return false ;
+
     return true ; 
 }
 
@@ -231,18 +247,26 @@ GProperty<T>* GProperty<T>::make_GROUPVEL(GProperty<T>* rindex)
     assert(vg0->getLength() == vg->getLength());
     unsigned len = vg0->getLength();
 
+    GAry<T>* ze =  GAry<T>::zeros(len);
+
+    GAry<T>* vgc = vg->clip(ze, vg0, vg0, vg0 );
+
+
+/*
     for(unsigned i=0 ; i < len ; i++)
     {
         T vg0_ = vg0->getValue(i);
         T vg_  = vg->getValue(i);
         if(vg_ < 0 || vg_ > vg0_ ) vg->setValue(i, vg0_ );
     } 
+*/
 
-    // interpolate back onto original energy domain   
-    GAry<T>* vgi = GAry<T>::np_interp( en , ee, vg ) ;
+    // interpolate back onto original energy domain: en   
+    GAry<T>* vgi = GAry<T>::np_interp( en , ee, vgc ) ;
 
-    GProperty<T>* vgE = new GProperty<T>( vgi, ee );
+    GProperty<T>* vgE = new GProperty<T>( vgi, en );
 
+    // convert from energy domain back to standard wavelength domain 
     GProperty<T>* vgW = vgE->createReversedReciprocalDomain(GConstant::hc_eVnm);
 
     return vgW ;
@@ -415,7 +439,7 @@ std::string GProperty<T>::make_table(
     if(a && b) assert(hasSameDomain(a,b));
     if(a && c) assert(hasSameDomain(a,c));
     if(a && d) assert(hasSameDomain(a,d));
-    if(a && e) assert(hasSameDomain(a,e));
+    if(a && e) assert(hasSameDomain(a,e,DELTA,false));
     if(a && f) assert(hasSameDomain(a,f));
     if(a && g) assert(hasSameDomain(a,g));
     if(a && h) assert(hasSameDomain(a,h));

@@ -419,6 +419,23 @@ void GPropertyMap<T>::addProperty(const char* pname,  GProperty<T>* prop, const 
 
 
 template <typename T>
+void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* prop, const char* _prefix) 
+{
+    std::string key(pname) ;
+    if(_prefix) key = _prefix + key ;
+
+    GProperty<T>* prior = getProperty(key.c_str());
+    assert(prior && "replaceProperty requires a prior property with key provided" );
+
+    LOG(info) << "GPropertyMap<T>::replaceProperty replacing key " << key ; 
+
+    m_prop.erase(key);
+    m_prop[key] = prop ;
+}
+
+
+
+template <typename T>
 std::vector<std::string>& GPropertyMap<T>::getKeys()
 {
     return m_keys ; 
@@ -429,6 +446,8 @@ GProperty<T>* GPropertyMap<T>::getProperty(const char* pname)
 {
    return (m_prop.find(pname) != m_prop.end()) ? m_prop[pname] : NULL ;
 }
+
+
 
 template <typename T>
 GProperty<T>* GPropertyMap<T>::getProperty(const char* pname, const char* prefix)

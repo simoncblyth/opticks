@@ -93,6 +93,7 @@ class GGEO_API GPropertyMap {
 
        // this one does not interpolate  
       void addProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
+      void replaceProperty(const char* pname, GProperty<T>* prop, const char* prefix=NULL);
 
       unsigned int getNumProperties() const ;
 
@@ -103,7 +104,6 @@ class GGEO_API GPropertyMap {
       GProperty<T>* getProperty(const char* pname, const char* prefix);
       bool hasProperty(const char* pname) ;
       std::vector<std::string>& getKeys() ;
-
   private:
       std::string m_name ;
       const char* m_shortname ; 
