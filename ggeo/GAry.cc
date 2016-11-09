@@ -1,4 +1,4 @@
-
+   
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
@@ -220,20 +220,125 @@ GAry<T>* np_cumsum(GAry<T>* y, unsigned int offzero)
 }
 
 template <typename T>
-GAry<T>* np_reversed(GAry<T>* y, bool reciprocal)
+GAry<T>* np_reversed(GAry<T>* y, bool reciprocal, T scale)
 {
     unsigned int len = y->getLength();
     GAry<T>* ry = new GAry<T>(len); 
 
-    T one(1); 
     for (unsigned int i = 0; i < len ; i++)
     {
         T val = y->getValue(i) ; 
-        ry->setValue(len-1-i, reciprocal ? one/val : val );
+        ry->setValue(len-1-i, reciprocal ? scale/val : scale*val );
     }
     return ry ;
 }
 
+
+template <typename T>
+GAry<T>* GAry<T>::reciprocal(GAry<T>* y, T scale)
+{
+    unsigned int len = y->getLength();
+    GAry<T>* ry = new GAry<T>(len); 
+    for (unsigned int i = 0; i < len ; i++)
+    {
+        T val = y->getValue(i) ; 
+        ry->setValue(i, scale/val );
+    }
+    return ry ;
+}
+
+
+
+
+template <typename T>
+GAry<T>* g4_groupvel_bintrick(GAry<T>* y)
+{
+   /*
+    This curious bin shifting is used by G4 GROUPVEL calc
+
+    In order not to loose a bin
+    a tricky manoever of using the 1st and last bin and 
+    the average of the body bins
+    which means the first bin is half width, and last is 1.5 width
+    
+    ::
+
+            0  +  1  +  2  +  3  +  4  +  5        <--- 6 original values
+            |    /     /     /     /      |
+            |   /     /     /     /       |
+            0  1     2     3     4        5        <--- still 6 
+
+
+    bb = np.zeros_like(aa)
+    bb[0] = aa[0]
+    bb[1:-1] = (aa[1:-1] + aa[:-2])/2.
+    bb[-1] = aa[-1]
+    return bb
+
+   */
+
+    GAry<T>& Y = *y ;
+    unsigned int len = y->getLength();
+    GAry<T>* ry = new GAry<T>(len); 
+
+    ry->setValue(0    , Y[0]);
+    ry->setValue(len-1, Y[-1]);
+
+    T two(2);
+
+    for (unsigned i = 1; i < len - 1 ; i++)
+    {
+        T val = (Y[i-1] + Y[i])/two ; 
+        ry->setValue(i, val );
+    }
+    return ry ;
+}
+
+template <typename T>
+GAry<T>* np_gradient(GAry<T>* y)
+{
+    /*
+    Take a look at np.gradient??
+
+    The gradient is computed using second order accurate central differences
+    in the interior and either first differences or second order accurate 
+    one-sides (forward or backwards) differences at the boundaries. The
+    returned gradient hence has the same shape as the input array.
+
+          0    <--- (0,1)  
+  
+          1    <--- (0,2)/2
+          2    <--- (1,3)/2
+          3    <--  (2,4)/2
+          4    <--  (3,5)/2
+          5    <--  (4,6)/2
+          6    <--  (5,7)/2
+          7    <--  (6,8)/2
+          8    <--  (7,9)/2
+
+          9    <--  (8,9) 
+
+    ::
+
+        out = np.zeros_like(y)
+        out[0] = y[1] - y[0]
+        out[1:-1] = (y[2:]-y[:-2])/2.0
+        out[-1] = y[-1] - y[-2]
+        return o
+    */
+
+    GAry<T>& Y = *y ;
+    unsigned int len = y->getLength();
+    assert(len >= 2 );
+    T two(2);
+
+    GAry<T>* g = new GAry<T>(len); 
+    g->setValue(0    , Y[1] - Y[0] );
+    for (unsigned i = 1; i < len - 1 ; i++) g->setValue(i, (Y[i+1] - Y[i-1])/two );
+    g->setValue(len-1, Y[-1] - Y[-2]);
+
+    return g ;
+}
 
 
 template <typename T>
@@ -423,7 +528,11 @@ T GAry<T>::maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
     return np_maxdiff(a, b, dump);
 }
 
-
+template <typename T>
+GAry<T>* GAry<T>::reciprocal(T scale)
+{
+    return reciprocal(this, scale);
+}
 
 
 
@@ -537,6 +646,22 @@ GAry<T>* GAry<T>::cumsum(unsigned int offzero)
     return np_cumsum(this, offzero) ; 
 }
 
+template <typename T>
+GAry<T>* GAry<T>::g4_groupvel_bintrick()
+{  
+    return ::g4_groupvel_bintrick(this) ; 
+}
+
+template <typename T>
+GAry<T>* GAry<T>::gradient()
+{  
+    return ::np_gradient(this) ; 
+}
+
+
+
+
+
 
 
 template <typename T>
@@ -552,9 +677,9 @@ GAry<T>* GAry<T>::mid()
 }  // average of values at bin edges, ie linear approximation of mid bin "y" value 
 
 template <typename T>
-GAry<T>* GAry<T>::reversed(bool reciprocal)
+GAry<T>* GAry<T>::reversed(bool reciprocal, T scale)
 { 
-     return np_reversed(this, reciprocal) ; 
+     return np_reversed(this, reciprocal, scale) ; 
 }
 
 template <typename T>

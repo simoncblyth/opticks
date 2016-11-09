@@ -17,6 +17,9 @@ public:
    static const char* DOMAIN_FMT ;
    static const char* VALUE_FMT ;
 public: 
+   static GProperty<T>* make_GROUPVEL(GProperty<T>* rindex);
+   static GAry<T>*      make_dispersion_term(GProperty<T>* rindexE);
+public: 
    static T maxdiff(GProperty<T>* a, GProperty<T>* b, bool dump=false);
    static bool hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta=1e-6, bool dump=false);
    static GProperty<T>* load(const char* path);
@@ -90,7 +93,7 @@ public:
    GAry<T>*      sampleCDFDev(unsigned int n);
    GProperty<T>* createCDFTrivially();
    GProperty<T>* createCDF();
-   GProperty<T>* createReversedReciprocalDomain();
+   GProperty<T>* createReversedReciprocalDomain(T scale=1);
    GProperty<T>* createSliced(int ifr, int ito);
    GProperty<T>* createZeroTrimmed();  // trims extremes to create GProperty with at most one zero value entry at either end  
    GProperty<T>* createInverseCDF(unsigned int n=0);

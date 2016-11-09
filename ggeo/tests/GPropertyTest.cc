@@ -209,6 +209,19 @@ void test_inverseCDF_lookup()
 }
 
 
+void test_GROUPVEL()
+{
+    P* ri = P::load("$OPTICKS_INSTALL_PREFIX/opticksdata/refractiveindex/tmp/glass/schott/F2.npy");
+    ri->Summary("ri(nm)");
+   
+    P* vg = GProperty<float>::make_GROUPVEL(ri); 
+    vg->Summary("vg");
+
+
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -222,8 +235,10 @@ int main(int argc, char** argv)
     //test_traditional_remission_cdf_sampling();
     //test_inverseCDF_lookup();
 
-    test_loadRefractiveIndex();
+    //test_loadRefractiveIndex();
     //test_planck();
+
+    test_GROUPVEL();
 
     return 0 ;
 }

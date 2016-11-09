@@ -14,6 +14,7 @@ class GGEO_API GConstant {
       static const double joule ;
       static const double h_Planck ;
       static const double c_light ;
+      static const double hc_eVnm ;
 
 
 };

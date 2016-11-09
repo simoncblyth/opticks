@@ -14,6 +14,7 @@ public:
    static GAry<T>* product(GAry<T>* a, GAry<T>* b);
    static GAry<T>* subtract(GAry<T>* a, GAry<T>* b);
    static GAry<T>* add(GAry<T>* a, GAry<T>* b);
+   static GAry<T>* reciprocal(GAry<T>* a, T scale=1);
    static T        maxdiff(GAry<T>* a, GAry<T>* b, bool dump=false);
    static GAry<T>* from_constant(unsigned int length, T value );
    static GAry<T>* zeros(unsigned int length);
@@ -40,14 +41,18 @@ public:
    GAry<T>* cumsum(unsigned int offzero=0);
    GAry<T>* diff(); // domain bin widths
    GAry<T>* mid();  // average of values at bin edges, ie linear approximation of mid bin value 
-   GAry<T>* reversed(bool reciprocal=false);
+   GAry<T>* reversed(bool reciprocal=false, T scale=1);
    GAry<T>* sliced(int ifr, int ito);
+   GAry<T>* g4_groupvel_bintrick();
+   GAry<T>* gradient();
+   GAry<T>* reciprocal(T scale=1);
    void save(const char* path);
 
 public: 
    T getLeft(){                              return m_values[0] ; }
    T getRight(){                             return m_values[m_length-1] ; }
    T getValue(unsigned int index){           return m_values[index] ;}
+   T operator[](int index){                  return index < 0 ? m_values[m_length + index] : m_values[index] ;}
    T* getValues(){                           return m_values ; }
    unsigned int getLength(){                 return m_length ; }
    unsigned int getNbytes(){                 return m_length*sizeof(T) ; }

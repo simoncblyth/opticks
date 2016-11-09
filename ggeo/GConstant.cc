@@ -18,4 +18,7 @@ const double GConstant::joule = GConstant::electronvolt/GConstant::e_SI;
 const double GConstant::h_Planck = 6.62606896e-34 * GConstant::joule*GConstant::second ;
 const double GConstant::c_light = 2.99792458e+8 * GConstant::meter/GConstant::second ;
 
+const double GConstant::hc_eVnm = GConstant::h_Planck*GConstant::c_light/(GConstant::nanometer*GConstant::electronvolt) ;
+
+
 

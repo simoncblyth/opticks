@@ -23,6 +23,7 @@
 #include "GProperty.hh"
 #include "GDomain.hh"
 #include "GAry.hh"
+#include "GConstant.hh"
 
 #include "PLOG.hh"
 
@@ -204,6 +205,107 @@ bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta, bool
     if(GAry<T>::maxdiff(a->getDomain(), b->getDomain(), dump) > delta ) return false ;
     return true ; 
 }
+
+
+
+template <typename T>
+GProperty<T>* GProperty<T>::make_GROUPVEL(GProperty<T>* rindex)
+{
+    /*
+    :param rindex: refractive_index assumed to have standard wavelength domain and order
+    */
+
+    GProperty<T>* riE = rindex->createReversedReciprocalDomain(GConstant::hc_eVnm);
+    GAry<T>* en = riE->getDomain();
+    GAry<T>* ri = riE->getValues();
+
+    GAry<T>* ds = make_dispersion_term(riE);
+
+    GAry<T>* ee = en->g4_groupvel_bintrick();
+    GAry<T>* nn = ri->g4_groupvel_bintrick();
+    GAry<T>* nn_plus_ds = GAry<T>::add( nn, ds );
+
+    GAry<T>* vg0 = nn->reciprocal(GConstant::c_light);
+    GAry<T>* vg  = nn_plus_ds->reciprocal(GConstant::c_light);
+
+    assert(vg0->getLength() == vg->getLength());
+    unsigned len = vg0->getLength();
+
+    for(unsigned i=0 ; i < len ; i++)
+    {
+        T vg0_ = vg0->getValue(i);
+        T vg_  = vg->getValue(i);
+        if(vg_ < 0 || vg_ > vg0_ ) vg->setValue(i, vg0_ );
+    } 
+
+    // interpolate back onto original energy domain   
+    GAry<T>* vgi = GAry<T>::np_interp( en , ee, vg ) ;
+
+    GProperty<T>* vgE = new GProperty<T>( vgi, ee );
+
+    GProperty<T>* vgW = vgE->createReversedReciprocalDomain(GConstant::hc_eVnm);
+
+    return vgW ;
+} 
+
+
+
+template <typename T>
+GAry<T>* GProperty<T>::make_dispersion_term(GProperty<T>* rindexE)
+{
+   /*
+    Input property is assumed to be refractive index with 
+    ascending eV energy domain.  This means the order of refractive
+    index values is reversed compared to standard wavelength properties
+    to correspond to the increasing energy values.
+
+    By dispersion term I mean the "E dn/dE" in the groupvel eqn 
+
+                c         
+    vg =  ---------------        # angular freq proportional to E for light     
+            n + E dn/dE
+
+    Geant4 uses this energy domain approach approximating the dispersion part E dn/dE as shown below
+
+                c                  n1 - n0         n1 - n0               dn        dn    dE          
+    vg =  -----------       ds = ------------  =  ------------     ~   ------  =  ---- ------- =  E dn/dE 
+           nn +  ds               log(E1/E0)      log E1 - log E0      d(logE)     dE   dlogE        
+
+
+
+    n0,n1= ri[:-1],ri[1:]
+    e0,e1 = en[:-1],en[1:]
+
+    ds = np.zeros_like(ri)  # dispersion term
+    ds[1:] = (n1-n0)/np.log(e1/e0)  ## have lost a bin from the diff ... 
+    ds[0] = ds[1]                   ## duping into first value
+
+
+   */
+
+    unsigned len = rindexE->getLength();
+
+    GAry<T>& E = *(rindexE->getDomain()) ;
+    GAry<T>& n = *(rindexE->getValues()) ;
+
+    GAry<T>* ds = new GAry<T>(len);
+
+    for(unsigned i=1; i < len ; i++)
+    {
+        T dn = n[i] - n[i-1] ;
+        T dlogE = std::log(E[i]/E[i-1]) ;
+        ds->setValue(i, dn/dlogE) ;
+    }
+
+    ds->setValue(0, ds->getValue(1)) ;
+    
+    return ds ; 
+} 
+
+
+
+
+
 
 template <typename T>
 GProperty<T>* GProperty<T>::make_one_minus(GProperty<T>* a)
@@ -639,10 +741,10 @@ GProperty<T>* GProperty<T>::createCDFTrivially()
 
 
 template <typename T>
-GProperty<T>* GProperty<T>::createReversedReciprocalDomain()
+GProperty<T>* GProperty<T>::createReversedReciprocalDomain(T scale)
 {
     bool reciprocal = true ; 
-    GAry<T>* x = getDomain()->reversed(reciprocal);   // 1/nm in reverse order 
+    GAry<T>* x = getDomain()->reversed(reciprocal, scale);   // 1/nm in reverse order 
     GAry<T>* y = getValues()->reversed();
     return new GProperty<T>( y, x );        // stealing ctor 
 }

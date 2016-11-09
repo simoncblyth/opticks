@@ -77,6 +77,28 @@ void test_sliced()
 }
 
 
+void test_g4_groupvel_bintrick()
+{
+    A* a = A::ramp(10, 0.f, 0.1f );
+    a->Summary("ramp(10,0.f,0.1f)");
+
+    A* b = a->g4_groupvel_bintrick();
+    b->Summary("g4_groupvel_bintrick"); 
+}
+
+
+void test_gradient()
+{
+    A* a = A::ramp(10, 0.f, 0.1f );
+    a->Summary("ramp(10,0.f,0.1f)");
+
+    A* b = a->gradient();
+    b->Summary("gradient"); 
+}
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -84,9 +106,14 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG_ ;
 
+/*
     test_cie();   
     test_planck();   
     test_misc();   
     test_sliced();   
+*/
+    test_g4_groupvel_bintrick();
+    test_gradient();
+ 
     return 0 ;
 }
