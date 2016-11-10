@@ -37,7 +37,6 @@ class GGEO_API GGeoTestConfig {
                       DEBUG,
                       CONTROL,
                       PMTPATH,
-                      GROUPVEL,
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -53,7 +52,6 @@ class GGEO_API GGeoTestConfig {
        static const char* DEBUG_ ; 
        static const char* CONTROL_ ; 
        static const char* PMTPATH_ ; 
-       static const char* GROUPVEL_ ; 
     public:
        GGeoTestConfig(const char* config);
        int getVerbosity();
@@ -70,7 +68,6 @@ class GGEO_API GGeoTestConfig {
        void setDebug(const char* s);
        void setControl(const char* s);
        void setPmtPath(const char* s);
-       void setGroupvel(const char* s);
     private:
        void addShape(const char* s);
        void addBoundary(const char* s);
@@ -85,7 +82,6 @@ class GGEO_API GGeoTestConfig {
        const char* getMode();
        const char* getPmtPath();
        unsigned int getNumElements();
-       bool      getGroupvel();
 
        std::vector<std::pair<std::string, std::string> >& getCfg();
        void dump(const char* msg="GGeoTestConfig::dump");
@@ -100,7 +96,6 @@ class GGEO_API GGeoTestConfig {
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
-       glm::ivec4   m_groupvel ;
        glm::vec4    m_debug ;
        glm::ivec4   m_control ;
        std::vector<std::string> m_shapes ; 

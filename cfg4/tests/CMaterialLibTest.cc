@@ -7,6 +7,7 @@
 #include "OpticksMode.hh"
 #include "CMaterialLib.hh"
 #include "CFG4_BODY.hh"
+#include "GGEO_LOG.hh"
 #include "CFG4_LOG.hh"
 
 #include "PLOG.hh"
@@ -15,6 +16,7 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
+    GGEO_LOG__ ;  
     CFG4_LOG__ ;  
 
     LOG(info) << argv[0] ; 
@@ -34,8 +36,6 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " dump " ; 
 
     clib->dump();
-
-    //clib->dumpMaterials();
 
 
 

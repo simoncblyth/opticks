@@ -76,7 +76,6 @@ void CTestDetector::init()
         setVerbosity(1);
     }
 
-    m_mlib->setGroupvelKludge(m_config->getGroupvel());
 
     m_maker = new CMaker(m_ok);
 

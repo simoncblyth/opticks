@@ -164,75 +164,6 @@ def ratio(a, b):
     return ab, ba
 
 
-def decompression_bins(cbins, *vals):
-    """
-    :param cbins: full range decompressed bins 
-    :param vals:
-
-    Compression can be considered to be a very early (primordial) binning.  
-    To avoid artifacts all subsequent binning needs to be
-    use bins that correspond to these originals. 
-
-    This provides a subset of full range decompression bins, 
-    corresponding to a value range.
-
-    ::
-
-        In [3]: cbins = cf.a.pbins()
-
-        In [4]: cbins
-        Out[4]: array([ -24230.625 ,  -24242.3772,  -24254.1294, ..., -794375.8706, -794387.6228, -794399.375 ])
-
-        In [15]: np.where( cbins <=  -60254.1294 )
-        Out[15]: (array([ 3066,  3067,  3068, ..., 65532, 65533, 65534]),)
-
-
-    """
-    vmin = float(min(map(lambda _:_.min(), vals)))
-    vmax = float(max(map(lambda _:_.max(), vals)))
-    width = (vmax - vmin)
-    widen = width*0.1
-
-    vmin = vmin-widen
-    vmax = vmax+widen
-
-    try:
-        imin = np.where(cbins>=vmin)[0][0]
-        imax = np.where(cbins<=vmax)[0][-1]
-        inum = imax - imin  
-    except IndexError:
-        log.warning(" MISMATCH BETWEEN COMPRESSION BINS AND VALUES cbins %s vmin %s vmax %s width %s " % (repr(cbins), vmin, vmax, width))
-        inum = None
-
-    if inum is None:
-       return None
-
-    pass
-    if inum == 0:
-        log.debug("decompression_bins : special case handling of all values the same")
-        bins = np.linspace(vmin-1,vmax+1,3)
-    elif inum < 0:
-        log.debug("decompression_bins : special case handling of all values the same (with inum < 0) %d" % inum)
-        bins = np.linspace(vmin-1,vmax+1,3)
-    else:
-        bins = np.linspace(vmin,vmax,inum)
-    pass
-
-    if len(bins) == 0:
-        raise Exception("decompression_bins : no bins")
-
-    return bins
-
-
-
-
-def test_decompression_bins():
-    cbins = np.linspace(-300,300,10)
-    avals = np.repeat(300,1000)
-    bvals = np.repeat(300,1000)
-
-    rbins = decompression_bins(cbins, avals, bvals)
-
 
 
 
@@ -287,17 +218,15 @@ def test_chi2():
 
 
 
-
-
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
     #test_count_unique()
     #test_chi2()
-    a = np.array([0,100,500,500],dtype=np.int32)
-    b = np.array([0,100,500,0],  dtype=np.int32)
 
-    c2,c2n,c2c = chi2(a,b, cut=30)
+
+
+  
 
 
 

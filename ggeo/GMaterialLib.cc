@@ -530,31 +530,44 @@ void GMaterialLib::replaceGROUPVEL(bool debug)
 {
     unsigned ni = m_buffer->getShape(0);
     LOG(info) << "GMaterialLib::replaceGROUPVEL " << " ni " << ni ;
+
+    const char* base = "$TMP/replaceGROUPVEL" ;
+
+    if(debug)
+    {
+        LOG(warning) << "GMaterialLib::replaceGROUPVEL debug active : saving refractive_index.npy and group_velocity.npy beneath " << base  ; 
+    }
+
     for(unsigned i=0 ; i < ni ; i++)
     {
         const char* key = m_names->getKey(i);
         GMaterial* mat = getMaterial(key);
 
-        GProperty<float>* vg_default = mat->getProperty(group_velocity);
+        GProperty<float>* vg = mat->getProperty(group_velocity);
         GProperty<float>* ri = mat->getProperty(refractive_index);
-        assert(vg_default);
+        assert(vg);
         assert(ri);
 
         GProperty<float>* vg_calc = GProperty<float>::make_GROUPVEL(ri);
         assert(vg_calc);
-        mat->replaceProperty(group_velocity, vg_calc );
+
+        //mat->replaceProperty(group_velocity, vg_calc );
+        float wldelta = 1e-4 ; 
+        vg->copyValuesFrom(vg_calc, wldelta);       
+
 
         if(debug)
         {
             LOG(info) << " i " << std::setw(3) << i 
                       << " key " << std::setw(35) << key 
-                      << " vg_default " << vg_default 
+                      << " vg " << vg 
                       << " vg_calc " << vg_calc 
                       ;
 
             dump(mat, "replaceGROUPVEL");
-            ri->save("$TMP/replaceGROUPVEL", key, "refractive_index.npy" );  
-            vg_calc->save("$TMP/replaceGROUPVEL", key, "group_velocity.npy" );  
+            ri->save(base, key, "refractive_index.npy" );  
+            vg_calc->save(base, key, "vg_calc.npy" );  
+            vg->save(base, key, "group_velocity.npy" );  
         }
 
     }

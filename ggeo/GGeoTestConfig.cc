@@ -22,7 +22,6 @@ const char* GGeoTestConfig::DEFAULT_CONFIG =
     "pmtpath=$OPTICKSINSTALLPREFIX/opticksdata/export/dpib/GMergedMesh/0_"
     "control=1,0,0,0_"
     "analytic=1_"
-    "groupvel=0_"
     "shape=box_"
     "boundary=Rock/NONE/perfectAbsorbSurface/MineralOil_"
     "parameters=0,0,0,300_"
@@ -38,7 +37,6 @@ const char* GGeoTestConfig::ANALYTIC_ = "analytic";
 const char* GGeoTestConfig::DEBUG_ = "debug"; 
 const char* GGeoTestConfig::CONTROL_ = "control"; 
 const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
-const char* GGeoTestConfig::GROUPVEL_ = "groupvel"; 
 
 
 
@@ -50,7 +48,6 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
-    m_groupvel(0,0,0,0),
     m_debug(1.f,0.f,0.f,0.f),
     m_control(0,0,0,0)
 {
@@ -82,11 +79,6 @@ bool GGeoTestConfig::getAnalytic()
 {
     bool analytic = m_analytic.x > 0 ;
     return analytic ; 
-}
-bool GGeoTestConfig::getGroupvel()
-{
-    bool groupvel = m_groupvel.x > 0 ;
-    return groupvel ; 
 }
 
 
@@ -147,7 +139,6 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
     else if(strcmp(k,CONTROL_)==0)    arg = CONTROL ; 
     else if(strcmp(k,PMTPATH_)==0)    arg = PMTPATH ; 
-    else if(strcmp(k,GROUPVEL_)==0)   arg = GROUPVEL ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -169,7 +160,6 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case DEBUG          : setDebug(s)          ;break;
         case CONTROL        : setControl(s)        ;break;
         case PMTPATH        : setPmtPath(s)        ;break;
-        case GROUPVEL       : setGroupvel(s)       ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -236,11 +226,6 @@ void GGeoTestConfig::setAnalytic(const char* s)
 {
     std::string ss(s);
     m_analytic = givec4(ss);
-}
-void GGeoTestConfig::setGroupvel(const char* s)
-{
-    std::string ss(s);
-    m_groupvel = givec4(ss);
 }
 
 

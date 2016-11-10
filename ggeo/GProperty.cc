@@ -175,7 +175,36 @@ T GProperty<T>::maxdiff(GProperty<T>* a, GProperty<T>* b, bool dump)
     return mv > md ? mv : md  ; 
 }  
 
+template <typename T>
+void GProperty<T>::copy_values(GProperty<T>* to, GProperty<T>* fr, T domdelta)
+{
+    assert(to->getLength() == fr->getLength());
+    GAry<T>* fdom = fr->getDomain();
+    GAry<T>* tdom = to->getDomain();
+    GAry<T>* fval = fr->getValues();
+    GAry<T>* tval = to->getValues();
 
+    T mxdif = GAry<T>::maxdiff(fdom, tdom) ; 
+    bool samedom = mxdif < domdelta ; 
+    if(!samedom)
+    {
+        LOG(fatal) << "GProperty<T>::copy_values requires same domain "
+                   << " domdelta: " << domdelta
+                   << " mxdif: " << mxdif
+                   ;
+        GAry<T>::maxdiff(fdom, tdom, true );
+    }
+    assert(samedom);
+    
+    for(unsigned int i=0 ; i < tval->getLength() ; i++) tval->setValue(i,  fval->getValue(i)); 
+}
+
+
+template <typename T>
+void GProperty<T>::copyValuesFrom(GProperty<T>* other, T domdelta)
+{
+    copy_values(this, other, domdelta) ; 
+}
 
 
 template <typename T>
@@ -230,6 +259,7 @@ GProperty<T>* GProperty<T>::make_GROUPVEL(GProperty<T>* rindex)
     /*
     :param rindex: refractive_index assumed to have standard wavelength domain and order
     */
+    GAry<T>* wl0 = rindex->getDomain();
 
     GProperty<T>* riE = rindex->createReversedReciprocalDomain(GConstant::hc_eVnm);
     GAry<T>* en = riE->getDomain();
@@ -251,23 +281,29 @@ GProperty<T>* GProperty<T>::make_GROUPVEL(GProperty<T>* rindex)
 
     GAry<T>* vgc = vg->clip(ze, vg0, vg0, vg0 );
 
-
-/*
-    for(unsigned i=0 ; i < len ; i++)
-    {
-        T vg0_ = vg0->getValue(i);
-        T vg_  = vg->getValue(i);
-        if(vg_ < 0 || vg_ > vg0_ ) vg->setValue(i, vg0_ );
-    } 
-*/
-
     // interpolate back onto original energy domain: en   
     GAry<T>* vgi = GAry<T>::np_interp( en , ee, vgc ) ;
 
-    GProperty<T>* vgE = new GProperty<T>( vgi, en );
+    // clip again after the interpolation to avoid tachyons
+    GAry<T>* vgic = vgi->clip(ze, vg0, vg0, vg0 );
+
+    GProperty<T>* vgE = new GProperty<T>( vgic, en );
 
     // convert from energy domain back to standard wavelength domain 
     GProperty<T>* vgW = vgE->createReversedReciprocalDomain(GConstant::hc_eVnm);
+
+    GAry<T>* wl1 = vgW->getDomain();
+    
+    T mxdiff = GAry<T>::maxdiff(wl0, wl1, false);
+    bool same = mxdiff < 1e-6 ; 
+    if(!same)
+    {
+        LOG(fatal) << " wavelength domain discrepancy, mxdif " 
+                   << GAry<T>::maxdiff(wl0, wl1,true)
+                   ; 
+    }
+    assert(same);
+        
 
     return vgW ;
 } 

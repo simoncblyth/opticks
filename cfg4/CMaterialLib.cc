@@ -42,12 +42,12 @@ void CMaterialLib::convert()
         const G4Material* g4mat = convertMaterial(ggmat);
 
         // special cased GROUPVEL getter invokes setGROUPVEL which adds the property to the MPT 
-        // derived from RINDEX
-        G4MaterialPropertyVector* groupvel = g4mat->GetMaterialPropertiesTable()->GetProperty("GROUPVEL") ;
-        assert(groupvel);
+        // derived from RINDEX id the GROUPVEL property is not already present
+        //G4MaterialPropertyVector* groupvel = g4mat->GetMaterialPropertiesTable()->GetProperty("GROUPVEL") ;
+        //assert(groupvel);
 
         std::string keys = getMaterialKeys(g4mat);
-        LOG(debug) << "CMaterialLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
+        LOG(info) << "CMaterialLib::convert : converted ggeo material to G4 material " << name << " with keys " << keys ;  
     }
     LOG(info) << "CMaterialLib::convert : converted " << ngg << " ggeo materials to G4 materials " ; 
 }
@@ -259,8 +259,8 @@ void CMaterialLib::dumpMaterial(const G4Material* mat, const char* msg)
     std::cout << pmap->make_table(fw, m_dscale, dreciprocal) << std::endl ;
 
 
-    CMPT cmpt(mpt);
-    cmpt.dumpRaw("RINDEX,GROUPVEL");
+    //CMPT cmpt(mpt);
+    //cmpt.dumpRaw("RINDEX,GROUPVEL");
 
 }
 

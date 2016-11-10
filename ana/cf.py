@@ -2,7 +2,8 @@
 
 import os, sys, logging, numpy as np
 from opticks.ana.base import opticks_main
-from opticks.ana.nbase import chi2, vnorm, decompression_bins
+from opticks.ana.nbase import chi2, vnorm
+from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
@@ -365,17 +366,8 @@ class CF(object):
             # polarization is char compressed so have to use primordial bins
             bins = cbins
         else: 
-            rbins = decompression_bins(cbins, aval, bval)
-            if rbins is None:
-                bins = None
-            else: 
-                binscale = Evt.RQWN_BINSCALE[qwn]
-                if len(rbins) > binscale:
-                    bins = rbins[::binscale]
-                else:
-                    bins = rbins
-                pass
-            pass
+            bins = decompression_bins(cbins, [aval, bval], label=lval, binscale=Evt.RQWN_BINSCALE[qwn] )
+
 
         if len(bins) == 0:
             raise Exception("no bins")

@@ -27,6 +27,7 @@ public:
    static GProperty<T>* from_constant(T value, T* domain, unsigned int length );
    static GProperty<T>* from_constant(T value, T dlow, T dhigh);
    static GProperty<T>* make_one_minus(GProperty<T>* a);
+   static void copy_values(GProperty<T>* to, GProperty<T>* fr, T domdelta=1e-4);
    static GProperty<T>* make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c=NULL, GProperty<T>* d=NULL );
    static std::string   make_table(int fwid, T dscale, bool dreciprocal,
                                    GProperty<T>* a, const char* atitle, 
@@ -62,9 +63,11 @@ public:
    unsigned int getLength();
    GAry<T>* getValues();
    GAry<T>* getDomain();
-   void setValues(T val);
    char* digest();   
    std::string getDigestString();
+public:
+   void copyValuesFrom(GProperty<T>* other, T domdelta=1e-4 );
+   void setValues(T val);
 public:
    bool isZero();
    bool isConstant();

@@ -51,16 +51,9 @@ CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   m_slib(NULL),
   m_sclib(NULL),
   m_domain(NULL),
-  m_dscale(1), 
-  m_groupvel_kludge(true)
+  m_dscale(1)
 {
     init();
-}
-
-
-void CPropLib::setGroupvelKludge(bool gvk)
-{
-   m_groupvel_kludge = gvk ; 
 }
 
 
@@ -240,23 +233,6 @@ G4LogicalBorderSurface* CPropLib::makeCathodeSurface(const char* name, G4VPhysic
 }
 
 
-/*
- GROUPVEL kludge causing "generational" confusion
- as it assumed that no such property already existed
-
-     if(strcmp(lkey,"RINDEX")==0)
-     {
-         if(m_groupvel_kludge)
-         {
-             LOG(info) << "CPropLib::makeMaterialPropertiesTable applying GROUPVEL kludge" ; 
-             addProperty(mpt, "GROUPVEL", prop );
-         }
-     }
-
-
-*/
-
-
 
 G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial* ggmat)
 {
@@ -267,7 +243,7 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
 
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
-    addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB");
+    addProperties(mpt, _ggmat, "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB,GROUPVEL");
 
     if(strcmp(name, SENSOR_MATERIAL)==0)
     {
@@ -308,10 +284,23 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
     std::vector<std::string> keys ; 
     boost::split(keys, _keys, boost::is_any_of(","));   
 
+
+     
+
     bool all = keys.size() == 1 && keys[0].compare("ALL") == 0 ;
 
     const char* matname = pmap->getShortName();
     unsigned int nprop = pmap->getNumProperties();
+
+    LOG(info) << "CPropLib::addProperties"
+              << " keys " << _keys
+              << " matname " << matname 
+              << " nprop " << nprop
+              ;
+
+    pmap->dump("CPropLib::addProperties"); 
+
+
     std::stringstream ss ; 
 
     for(unsigned int i=0 ; i<nprop ; i++)
@@ -342,7 +331,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
         }
     }
     std::string lka = ss.str(); 
-    LOG(debug) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
+    LOG(info) << "CPropLib::addProperties MPT of " << std::setw(30) << matname << " keys: " << lka ; ; 
 }
 
 
@@ -376,7 +365,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
     bool abslength = strcmp(lkey, "ABSLENGTH") == 0 ;
     bool rayleigh = strcmp(lkey, "RAYLEIGH") == 0 ;
     bool length = abslength || rayleigh ;
-    bool groupvel = strcmp(lkey, "GROUPVEL") == 0 ; 
+    //bool groupvel = strcmp(lkey, "GROUPVEL") == 0 ; 
 
     unsigned int nval  = prop->getLength();
 
@@ -408,12 +397,7 @@ void CPropLib::addProperty(G4MaterialPropertiesTable* mpt, const char* matname, 
 
         G4double value = G4double(fval) ;
 
-        if(groupvel && m_groupvel_kludge)
-        {        
-            // special cased addProperty with the RINDEX property
-            value = c_light/value ;  
-        }
-        else if(length)
+        if(length)
         {
             value *= mm ;    // mm=1 anyhow, 
         }

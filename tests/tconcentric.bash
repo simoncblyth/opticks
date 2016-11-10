@@ -48,7 +48,8 @@ tconcentric--(){
     op.sh \
        --g4ppe $g4ppe \
        --test --testconfig "$(tconcentric-testconfig)" \
-       --torch --torchconfig "$(tconcentric-torchconfig)" \
+       --torch \
+       --torchconfig "$(tconcentric-torchconfig)" \
        --animtimemax $animtimemax \
        --timemax $timemax \
        --cat $(tconcentric-det) --tag $(tconcentric-tag) --save  \
@@ -63,7 +64,8 @@ tconcentric-t()
 }
 tconcentric-tt()
 {
-    tconcentric-t --bouncemax 15 --recordmax 16 $* 
+   # TODO: make these options the defaults
+    tconcentric-t --bouncemax 15 --recordmax 16 --groupvel $* 
 }
 
 tconcentric-tt-dindex()

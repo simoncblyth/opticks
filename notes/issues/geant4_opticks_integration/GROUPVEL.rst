@@ -68,6 +68,123 @@ Review
 
 
 
+Now get G4 warnings when run without groupvel option
+-------------------------------------------------------
+
+::
+
+    634   accuracy = theVelocityChange/c_light - 1.0;
+    635   if (accuracy > accuracyForWarning) {
+    636     itsOKforVelocity = false;
+    637     nError += 1;
+    638     exitWithError = exitWithError ||  (accuracy > accuracyForException);
+    639 #ifdef G4VERBOSE
+    640     if (nError < maxError) {
+    641       G4cout << "  G4ParticleChange::CheckIt    : ";
+    642       G4cout << "the velocity is greater than c_light  !!" << G4endl;
+    643       G4cout << "  Velocity:  " << theVelocityChange/c_light  <<G4endl;
+    644       G4cout << aTrack.GetDefinition()->GetParticleName()
+    645          << " E=" << aTrack.GetKineticEnergy()/MeV
+    646          << " pos=" << aTrack.GetPosition().x()/m
+    647          << ", " << aTrack.GetPosition().y()/m
+    648          << ", " << aTrack.GetPosition().z()/m
+    649          <<G4endl;
+    650     }
+    651 #endif
+    652   }
+
+
+
+    2016-11-10 17:03:42.091 INFO  [373895] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+      G4ParticleChange::CheckIt    : the velocity is greater than c_light  !!
+      Velocity:  1.00069
+    opticalphoton E=2.88335e-06 pos=1.18776, -0.130221, 2.74632
+          -----------------------------------------------
+            G4ParticleChange Information  
+          -----------------------------------------------
+            # of 2ndaries       :                    0
+          -----------------------------------------------
+            Energy Deposit (MeV):                    0
+            Non-ionizing Energy Deposit (MeV):                    0
+            Track Status        :                Alive
+            True Path Length (mm) :                3e+03
+            Stepping Control      :                    0
+        First Step In the voulme  : 
+        Last Step In the voulme  : 
+            Mass (GeV)   :                    0
+            Charge (eplus)   :                    0
+            MagneticMoment   :                    0
+                    :  =                    0*[e hbar]/[2 m]
+            Position - x (mm)   :             1.19e+03
+            Position - y (mm)   :                 -130
+            Position - z (mm)   :             2.75e+03
+            Time (ns)           :                 9.98
+            Proper Time (ns)    :                    0
+            Momentum Direct - x :                0.397
+            Momentum Direct - y :              -0.0435
+            Momentum Direct - z :                0.917
+            Kinetic Energy (MeV):             2.88e-06
+            Velocity  (/c):                    1
+            Polarization - x    :                0.918
+            Polarization - y    :               0.0188
+            Polarization - z    :               -0.396
+      G4ParticleChange::CheckIt    : the velocity is greater than c_light  !!
+      Velocity:  1.00069
+    opticalphoton E=2.88335e-06 pos=1.18776, -0.130221, 2.74632
+          -----------------------------------------------
+
+::
+
+    254 ///////////////////
+    255 G4double G4Track::CalculateVelocityForOpticalPhoton() const
+    256 ///////////////////
+    257 {
+    258    
+    259   G4double velocity = c_light ;
+    260  
+    261 
+    262   G4Material* mat=0;
+    263   G4bool update_groupvel = false;
+    264   if ( fpStep !=0  ){
+    265     mat= this->GetMaterial();         //   Fix for repeated volumes
+    266   }else{
+    267     if (fpTouchable!=0){
+    268       mat=fpTouchable->GetVolume()->GetLogicalVolume()->GetMaterial();
+    269     }
+    270   }
+    271   // check if previous step is in the same volume
+    272     //  and get new GROUPVELOCITY table if necessary 
+    273   if ((mat != 0) && ((mat != prev_mat)||(groupvel==0))) {
+    274     groupvel = 0;
+    275     if(mat->GetMaterialPropertiesTable() != 0)
+    276       groupvel = mat->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
+    277     update_groupvel = true;
+    278   }
+    279   prev_mat = mat;
+    280  
+    281   if  (groupvel != 0 ) {
+    282     // light velocity = c/(rindex+d(rindex)/d(log(E_phot)))
+    283     // values stored in GROUPVEL material properties vector
+    284     velocity =  prev_velocity;
+    285    
+    286     // check if momentum is same as in the previous step
+    287     //  and calculate group velocity if necessary 
+    288     G4double current_momentum = fpDynamicParticle->GetTotalMomentum();
+    289     if( update_groupvel || (current_momentum != prev_momentum) ) {
+    290       velocity =
+    291     groupvel->Value(current_momentum);
+    292       prev_velocity = velocity;
+    293       prev_momentum = current_momentum;
+    294     }
+    295   }  
+    296  
+    297   return velocity ;
+    298 }
+
+
+
+
+
 
 
 Opticks GROUPVEL

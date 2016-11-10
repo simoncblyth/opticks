@@ -38,7 +38,7 @@ except ImportError:
 
 from opticks.ana.base import opticks_main
 from opticks.ana.evt import Evt
-from opticks.ana.nbase import chi2, vnorm, decompression_bins
+from opticks.ana.nbase import chi2, vnorm
 from opticks.ana.cf import CF 
 from opticks.ana.cfplot import cfplot, qwns_plot, qwn_plot, multiplot
 

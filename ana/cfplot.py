@@ -21,14 +21,22 @@ except ImportError:
 from opticks.ana.nbase import chi2
 
 
+def _cf_dump( msg, val, bins, label):
+    log.warning("%s for  \"%s\" " % (msg, label) ) 
+    log.warning(" val   %s " % repr(val) )
+    log.warning(" bins  %s " % repr(bins) )
+
+
+
+
 def _cf_hist( ax, val, bins, log_, label):
+    c, b, p = None, None, None
     try:
         c, b, p = ax.hist(val, bins=bins, log=log_, histtype='step', label=label)
     except IndexError:
-        log.warning("_cf_hist IndexError for  \"%s\" " % label ) 
-        log.warning(" val   %s " % repr(val) )
-        log.warning(" bins  %s " % repr(bins) )
-        c, b, p = None, None, None
+        _cf_dump("_cf_hist IndexError", val, bins, label)
+    except ValueError:
+        _cf_dump("_cf_hist ValueError", val, bins, label)
     pass
     return c, b, p
 

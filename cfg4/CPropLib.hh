@@ -70,8 +70,6 @@ class CFG4_API CPropLib {
    public:
        GCSG*       getPmtCSG(NSlice* slice);
    public:
-       void setGroupvelKludge(bool gk=true);
-   public:
        G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
        G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
    private:
@@ -100,8 +98,6 @@ class CFG4_API CPropLib {
        GDomain<float>*    m_domain ; 
        float              m_dscale ;  
        GPropertyMap<float>* m_sensor_surface ; 
-   protected:
-       bool              m_groupvel_kludge ; 
    private:
        std::map<std::string, std::map<std::string, float> > m_const_override ; 
 

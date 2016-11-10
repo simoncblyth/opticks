@@ -419,8 +419,10 @@ void GPropertyMap<T>::addProperty(const char* pname,  GProperty<T>* prop, const 
 
 
 template <typename T>
-void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* prop, const char* _prefix) 
+void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* repl, const char* _prefix) 
 {
+    assert(0) ; // this needs testing, dont use
+
     std::string key(pname) ;
     if(_prefix) key = _prefix + key ;
 
@@ -430,8 +432,10 @@ void GPropertyMap<T>::replaceProperty(const char* pname, GProperty<T>* prop, con
     LOG(info) << "GPropertyMap<T>::replaceProperty replacing key " << key ; 
 
     m_prop.erase(key);
-    m_prop[key] = prop ;
+    m_prop[key] = repl ;
 }
+
+
 
 
 

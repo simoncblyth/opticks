@@ -294,14 +294,14 @@ void CMPT::dumpRaw(const char* _keys)
         for(unsigned j=0 ; j < vlen ; j++)
         {
             unsigned i = vlen - 1 - j ; 
-            G4double en = v->Energy(i)/eV ;
-            G4double wl = h_Planck*c_light/en/nm ;
+            G4double en = v->Energy(i) ;
+            G4double wl = h_Planck*c_light/en ;
             G4double vl =  (*v)[i] ;
 
             LOG(info) << " i " << std::setw(4) << i 
-                      << " en(eV) " << std::setw(10) << en
-                      << " wl(nm) " << std::setw(10) << wl
-                      << " wl(nm) - prv " << std::setw(10) << wl - wl_prev
+                      << " en(eV) " << std::setw(10) << en/eV
+                      << " wl(nm) " << std::setw(10) << wl/nm
+                      << " wl - prv " << std::setw(10) << (wl - wl_prev)/nm
                       << " val " << std::setw(10) << vl
                       ;
 
