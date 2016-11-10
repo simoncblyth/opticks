@@ -2,6 +2,7 @@
 
 import os, sys, logging, numpy as np
 from opticks.ana.base import opticks_main
+from opticks.ana.cfh import CFH
 from opticks.ana.nbase import chi2, vnorm
 from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
@@ -161,6 +162,13 @@ class CF(object):
         title = "%s/%s/%s : %s  :  %s " % (self.args.tag, self.args.det, self.args.src, abc, lab )
         return title
 
+    def ctx(self, **kwa):
+        irec = kwa.get('irec',"0")
+        lab = self.seqlab(irec)
+        d = {'det':self.args.det, 'tag':self.args.tag, 'src':self.args.src, 'seq':self.seqs[0].replace(" ","_"), 'lab':lab }
+        d.update(kwa)
+        return d 
+
     def nrec(self):
         """
         :return: number of steps, when a single sequence is selected
@@ -318,8 +326,12 @@ class CF(object):
         bval = self.b.rw()
         return aval, bval
 
-
-
+    def rhist(self, qwn, irec, cut=30): 
+        bn, av, bv, la = self.rqwn(qwn, irec)
+        ctx=self.ctx(qwn=qwn,irec=irec)
+        cfh = CFH(ctx)
+        cfh(bn,av,bv,la,cut=cut)
+        return cfh
  
     def rqwn(self, qwn, irec): 
         """
@@ -335,7 +347,7 @@ class CF(object):
         """
         a = self.a
         b = self.b
-        lval = "%s[%d]" % (qwn.lower(), irec)
+        lval = "%s[%s]" % (qwn.lower(), irec)
         labels = ["Op : %s" % lval, "G4 : %s" % lval]
  
         if qwn == "R":

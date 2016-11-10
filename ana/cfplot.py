@@ -7,6 +7,7 @@ cfplot.py : Comparison Plotter with Chi2 Underplot
 """
 import os, logging, numpy as np
 from collections import OrderedDict as odict
+from opticks.ana.cfh import CFH 
 log = logging.getLogger(__name__)
 
 
@@ -27,12 +28,21 @@ def _cf_dump( msg, val, bins, label):
     log.warning(" bins  %s " % repr(bins) )
 
 
-
+def __cf_hist( ax, val, bins, log_, label):
+    """
+    ax.hist gives errors for empty histos
+    """
+    c, b = np.histogram(val, bins=bins)
+    #c, b, p = ax.hist(val, bins=bins, log=log_, histtype='step', label=label)
+    p = ax.plot( bins[:-1], c , drawstyle="steps", label=label  )
+    if log_:
+        ax.set_yscale('log')
+    return c, b, p
 
 def _cf_hist( ax, val, bins, log_, label):
     c, b, p = None, None, None
     try:
-        c, b, p = ax.hist(val, bins=bins, log=log_, histtype='step', label=label)
+        c,b,p = __cf_hist(ax, val, bins, log_, label) 
     except IndexError:
         _cf_dump("_cf_hist IndexError", val, bins, label)
     except ValueError:
@@ -40,14 +50,13 @@ def _cf_hist( ax, val, bins, log_, label):
     pass
     return c, b, p
 
-
 def _cf_plot(ax, aval, bval,  bins, labels,  log_=False):
     cnt = {}
     bns = {}
     ptc = {}
 
-    cnt[0], bns[0], ptc[0] = _cf_hist(ax, aval, bins=bins,  log_=log_, label=labels[0])
-    cnt[1], bns[1], ptc[1] = _cf_hist(ax, bval, bins=bins,  log_=log_, label=labels[1])
+    cnt[0], bns[0], ptc[0] = __cf_hist(ax, aval, bins=bins,  log_=log_, label=labels[0])
+    cnt[1], bns[1], ptc[1] = __cf_hist(ax, bval, bins=bins,  log_=log_, label=labels[1])
 
     return cnt, bns
 
@@ -131,11 +140,11 @@ def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
 
         qwn = qwns[ix]
 
-        rqwn_bins, aval, bval, labels = scf.rqwn(qwn, irec)
+        bns, aval, bval, labels = scf.rqwn(qwn, irec)
 
         log.info("%s %s " % (qwn, repr(labels) ))
 
-        c2p = cfplot(fig, gss, rqwn_bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
+        c2p = cfplot(fig, gss, bns, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
 
         c2ps.append(c2p) 
     pass
@@ -172,8 +181,13 @@ def mplot(scf, pages=["XYZT","ABCR"]):
 
 
 
-def multiplot(cf, pages=["XYZT","ABCR"]):
 
+
+def multiplot(cf, pages=["XYZT","ABCR"]):
+    """
+    Inflexible approach taken for recording distrib chi2 
+    is making this inflexible to use
+    """
     qwns = "".join(pages)
     dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
 
@@ -214,35 +228,20 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
 
 
 
-#
-#In [1]: a = np.load(os.path.expandvars("$TMP/stat.npy"))
-#
-#In [2]: a
-#Out[2]: 
-#array([ ('1/concentric/torch : 669843/671267  :  [TO] BT BT BT BT SA ', 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904),
-#       ('1/concentric/torch : 669843/671267  :  TO [BT] BT BT BT SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
-#       ('1/concentric/torch : 669843/671267  :  TO BT [BT] BT BT SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
-#       ('1/concentric/torch : 669843/671267  :  TO BT BT [BT] BT SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
-#       ('1/concentric/torch : 669843/671267  :  TO BT BT BT [BT] SA ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0),
-#       ('1/concentric/torch : 669843/671267  :  TO BT BT BT BT [SA] ', 0.0, 1.5120131969451904, 1.5120131969451904, 670555.0, 1.5120131969451904, 1.5120131969451904, 1.5120131969451904, 0.0)], 
-#      dtype=[('key', 'S64'), ('X', '<f4'), ('Y', '<f4'), ('Z', '<f4'), ('T', '<f4'), ('A', '<f4'), ('B', '<f4'), ('C', '<f4'), ('R', '<f4')])
-#
-#In [3]: a.shape
-#Out[3]: (6,)
+
+class CFP(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    def __call__(self, **kwa): 
+        d = self.ctx
+        d.update(kwa)
+        h = CFH(d)
+        h.load()
+        return h 
 
 
-
-
-
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-
-    np.set_printoptions(precision=4, linewidth=200)
-
-    plt.ion()
-    plt.close()
+def test_cfplot():
 
     aval = np.random.standard_normal(8000)
     bval = np.random.standard_normal(8000)
@@ -258,5 +257,17 @@ if __name__ == '__main__':
         gss = [gs[ix], gs[nx+ix]]
         cfplot(fig, gss, bins, aval, bval, labels=["A test", "B test"], log_=log_ )
 
+
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    np.set_printoptions(precision=4, linewidth=200)
+
+    plt.ion()
+    plt.close()
+
+    ctx = {'det':"concentric", 'tag':"1", 'qwn':"X", 'irec':"5", 'seq':"TO_BT_BT_BT_BT_DR_SA" }
+    cfp = CFP(ctx)
+    h = cfp()
 
 

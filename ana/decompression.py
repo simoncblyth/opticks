@@ -26,6 +26,10 @@ class Deco(object):
         self.label = label
         self.binscale = binscale
 
+    @classmethod
+    def pbins(cls, extent=5005):
+        return np.linspace(-extent, extent, (1 << 16) - 1 )
+
     def vrange(self, vals):
         vmin = float(min(map(lambda _:_.min(), vals)))
         vmax = float(max(map(lambda _:_.max(), vals)))
@@ -98,13 +102,14 @@ class Deco(object):
         nbin = len(self.cbins)
         umin = imin
         umax = imax
-        inc = self.binscale
+        inc = self.binscale/10  # when inc too big cannot grow when near the edge
         while True:
             umin = max(0, umin - inc )
             umax = min( nbin - 1, umax + inc )
-            bins = self.cbins[umin:umax][::self.binscale]
-            lenb = len(bins)
-            #log.info("umin %d umax %d lenb %d bins %r " % (umin, umax, lenb, bins))
+            bins = self.cbins[umin:umax+1][::self.binscale]
+            lenb = len(bins) 
+            if self.debug:
+                log.info("umin %d umax %d lenb %d bins %r " % (umin, umax, lenb, bins))
             if lenb > mibin or (umin == 0 and umax == nbin - 1) : 
                 break
             pass
@@ -162,24 +167,34 @@ def test_decompression_bins_1():
     bvals = np.repeat( cbins[3841], 100)
     test_decompression_bins_(cbins, avals, bvals, binscale=100)
 
+def test_decompression_bins_2():
+    cbins = np.arange(0, 132.001, 0.004, dtype=np.float32)
+    avals = np.repeat( cbins[-1], 100)
+    bvals = np.repeat( cbins[-1], 100)
+    test_decompression_bins_(cbins, avals, bvals, binscale=100)
+
+
+
 
 
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
 
-    test_decompression_bins_0() 
-    test_decompression_bins_1() 
+    #test_decompression_bins_0() 
+    #test_decompression_bins_1() 
 
-    cbins = np.arange(0, 132.001, 0.004, dtype=np.float32)
-
-    avals = np.repeat( cbins[3840], 100)
-    bvals = np.repeat( cbins[3839], 100)
+    cbins = Deco.pbins(extent=5005)
+    avals = np.repeat( cbins[-1], 100)
+    bvals = np.repeat( cbins[-1], 100)
 
     dc = Deco(cbins, debug=True)
 
     bins = dc.bins([avals, bvals])
 
+    print "cbins",cbins 
+    print avals 
+    print bvals 
     print bins
 
 

@@ -161,17 +161,20 @@ if __name__ == '__main__':
 
     #spawn = slice(0,10)  # pluck top line of seqhis table, needed for multiplot
     spawn = slice(8,9)  # pluck top line of seqhis table, needed for multiplot
-
     try:
         cf = CF(args, spawn=spawn, seqs=[] )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)
-
     cf.dump()
 
 
-    st = multiplot(cf, pages=["XYZT","ABCR"])
+    #st = multiplot(cf, pages=["XYZT","ABCR"])
+
+    scf = cf.ss[0]
+    qwns_plot(scf, "XYZT", 5, log_=False, c2_cut=0 )
+
+
     #st = multiplot(cf, pages=["XYZT"])
  
     #log_ = False
