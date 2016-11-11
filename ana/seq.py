@@ -315,11 +315,10 @@ class SeqTable(object):
         self.af = af
         self.sli = slice(None)
 
+
     def line(self, n):
         iseq = int(self.cu[n,0]) 
         imsk = int(self.msks[n])
-
-
 
         if self.dbgseq > 0 and ( self.dbgseq & iseq ) != self.dbgseq:
            #log.info("iseq %x dbgseq %x " % (iseq,self.dbgseq))
@@ -390,7 +389,12 @@ class SeqTable(object):
         tail = space + " ".join(map(body_, self.tots ))
         return "\n".join([head,tail]+ filter(None,self.lines[self.sli]) + [tail])
 
+    def __getitem__(self, sli):
+         self.sli = sli
+         return self
+
     def compare(self, other):
+        log.info("SeqTable.compare START")
         l = set(self.labels)
         o = set(other.labels)
         u = sorted(list(l | o), key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
@@ -404,12 +408,13 @@ class SeqTable(object):
         cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
         cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
 
-
         cnames = self.cnames + other.cnames 
 
-        log.info("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
+        log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
-        return SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)    
+        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)    
+        log.info("SeqTable.compare DONE")
+        return cftab
 
 
 class SeqAna(object):

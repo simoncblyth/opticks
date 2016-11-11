@@ -48,11 +48,41 @@ X,Y,Z,W,T = 0,1,2,3,3
 
   
 
-
-
 class Evt(object):
     """
-    Using interative psel selection, implemented via property setter which invokes _init_selection, to 
+    Using interactive high level *sel* selection::
+
+        In [9]: a.sel = "TO BT BT BT BT DR SA"
+        [2016-11-11 13:23:06,182] p78027 {/Users/blyth/opticks/ana/evt.py:546} INFO - psel array([False, False, False, ..., False, False, False], dtype=bool) 
+        [2016-11-11 13:23:06,184] p78027 {/Users/blyth/opticks/ana/evt.py:553} INFO - _init_selection nsel 7540 len(psel) 1000000  
+
+        In [10]: a.his
+        Out[10]: 
+        .                                noname 
+        .                                  7540         1.00 
+           0              89ccccd        1.000           7540         [7 ] TO BT BT BT BT DR SA
+        .                                  7540         1.00 
+
+        In [15]: a.sel = None    # clear selection with None
+
+        In [16]: a.his[:10]
+        Out[16]: 
+        .                                noname 
+        .                               1000000         1.00 
+           0               8ccccd        0.670         669843         [6 ] TO BT BT BT BT SA
+           1                   4d        0.084          83950         [2 ] TO AB
+           2              8cccc6d        0.045          45490         [7 ] TO SC BT BT BT BT SA
+           3               4ccccd        0.029          28955         [6 ] TO BT BT BT BT AB
+           4                 4ccd        0.023          23187         [4 ] TO BT BT AB
+           5              8cccc5d        0.020          20239         [7 ] TO RE BT BT BT BT SA
+           6              8cc6ccd        0.010          10214         [7 ] TO BT BT SC BT BT SA
+           7              86ccccd        0.010          10176         [7 ] TO BT BT BT BT SC SA
+           8              89ccccd        0.008           7540         [7 ] TO BT BT BT BT DR SA
+           9             8cccc55d        0.006           5970         [8 ] TO RE RE BT BT BT BT SA
+        .                               1000000         1.00 
+
+
+    Using interative low level *psel* selection, implemented via property setter which invokes _init_selection, to 
     select photons that have SA in the topslot ::
 
         In [7]: e1.psel = e1.seqhis & np.uint64(0xf000000000000000) == np.uint64(0x8000000000000000)
@@ -65,7 +95,7 @@ class Evt(object):
         [2016-11-07 11:57:06,754] p45629 {/Users/blyth/opticks/ana/evt.py:367} INFO - _init_selection nsel 2988 len(psel) 1000000  
 
 
-        In [8]: e1.seqhis_ana.table
+        In [8]: e1.his
         Out[8]: 
         .                                noname 
         .                                  2988         1.00 
@@ -80,7 +110,7 @@ class Evt(object):
            8     86cccccccc9ccccd        0.034            101         [16] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SC SA
         ....
 
-        In [11]: e1.seqmat_ana.table
+        In [11]: e1.mat
         Out[11]: 
         .                                noname 
         .                                  2988         1.00 
@@ -117,6 +147,8 @@ class Evt(object):
         self.valid = True   ## load failures signalled by setting False
         self.nrec = nrec
         self.seqs = seqs
+        self.flv = "seqhis"  # default for selections
+
 
         self.terse = args.terse
         self.dbgseqhis = args.dbgseqhis
@@ -151,7 +183,11 @@ class Evt(object):
             self.init_records(tag, src, det, dbg)
             self.init_sequence(tag, src, det, dbg)
 
-            psel = self.make_selection(seqs, not_)
+            if len(seqs) == 0:
+                psel = None
+            else:
+                psel = self.make_selection(seqs, not_)
+            pass
             self.psel = psel      # psel property setter
 
             self.init_index(tag, src, det, dbg)
@@ -198,12 +234,7 @@ class Evt(object):
             self.valid = False
             return False
 
-        #if idom[0,0,3] != self.nrec:
-        #    log.warning(" non-standard idom %s nrec %s " % (repr(idom), self.nrec ))  
-        #assert idom[0,0,3] == self.nrec
-
         td = I.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
-        #log.info("loaded td %s " % str(td.keys()))
         tdii = II.load_(src,tag,det, name="t_delta.ini", dbg=dbg)
 
         self.td = td
@@ -339,13 +370,7 @@ class Evt(object):
 
     def init_records(self, tag, src, det, dbg):
         """
-        reshaping no longer needed ?
         """
-        # rx_raw = A.load_("rx",src,tag,det,dbg)
-        # self.rx_raw = rx_raw
-        # self.desc['rx_raw'] = "(records) photon step records RAW:before reshaping"
-        # rx = rx_raw.reshape(-1, self.nrec, 2, 4)
-
         rx = A.load_("rx",src,tag,det,dbg, optional=True)
         self.rx = rx
         self.desc['rx'] = "(records) photon step records"
@@ -397,7 +422,7 @@ class Evt(object):
         self.msk_mismatch = self.pflags != self.pflags2
 
         if np.all( self.msk_mismatch == False  ):
-            log.info("pflags2(=seq2msk(seqhis)) and pflags  match")
+            log.debug("pflags2(=seq2msk(seqhis)) and pflags  match")
         else:
             log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH (msk_mismatch)")
         pass
@@ -425,36 +450,99 @@ class Evt(object):
 
         log.debug("init_sequence DONE")
 
+    his = property(lambda self:self.seqhis_ana.table)
+    mat = property(lambda self:self.seqmat_ana.table)
 
-    def make_selection(self, seqs, not_):
-        if not self.rec or len(seqs) == 0:
-            log.debug("skip init_selection as no seqs")
+    def make_labels(self, sel):
+        """
+        :param sel: selection choice argument 
+
+        Sel can be of various types:
+
+        *slice*
+            picks seqmat or seqhis labels depending on the flv member
+        *list*
+            with elements which can be 
+ 
+            *hexint* 
+                eg 0x8ccd 
+
+            *hexstring(without 0x)* 
+                 eg "8ccd"
+
+            *string* 
+                 preformed labels "TO BT BT AB"  
+
+        """ 
+        if type(sel) is slice:
+            if self.flv == "seqhis":
+                labels = self.his.labels[sel] 
+            elif self.flv == "seqmat":
+                labels = self.mat.labels[sel] 
+            else:
+                assert 0, flv
+            pass
+        elif type(sel) is list:
+            if self.flv == "seqhis":
+                labels = map( lambda _:self.histype.label(_), sel)
+            elif self.flv == "seqmat":
+                labels = map( lambda _:self.mattype.label(_), sel)
+            else:
+                assert 0, flv
+        elif type(sel) is str or type(sel) is int or type(sel) is np.uint64:
+            if self.flv == "seqhis":
+                labels = [self.histype.label(sel)]
+            elif self.flv == "seqmat":
+                labels = [self.mattype.label(sel)]
+            else:
+                assert 0, flv
+            pass
+        else:
+            log.fatal("unhandled selection type %s %s " % (sel, type(sel)))
+            assert 0
+
+        return labels
+ 
+    def make_psel_startswith(self, lab):
+        if self.flv == "seqhis":
+            psel = self.all_seqhis_ana.seq_startswith(lab)
+        elif self.flv == "seqmat":
+            psel = self.all_seqmat_ana.seq_startswith(lab)
+        pass
+        return psel
+
+    def make_psel_or(self, labs):
+        if self.flv == "seqhis":
+            psel = self.all_seqhis_ana.seq_or(labs)
+        elif self.flv == "seqmat":
+            psel = self.all_seqmat_ana.seq_or(labs)
+        pass
+        return psel
+
+    def make_selection_(self, labels):
+        if not self.rec or len(labels) == 0:
+            log.debug("skip make_selection_ as no labels")
             return None
    
-        log.debug("Evt seqs %s " % repr(seqs))
+        log.debug("Evt labels %s " % repr(labels))
 
-        sh = self.all_seqhis_ana
-        sm = self.all_seqmat_ana
-        sh_start = "TO CK SI GN NL".split()
-
-        if len(seqs) == 1 and seqs[0][-3:] == ' ..':
-            log.debug("init_selection wildcard startswith %s " % seqs[0] ) 
-            seq = seqs[0][:-3]
-            if seq[0:2] in sh_start:
-                psel = sh.seq_startswith(seq)
-            else:
-                psel = sm.seq_startswith(seq)
-            pass
-        elif len(seqs) == 1 and seqs[0] == 'PFLAGS_DEBUG':
+        if len(labels) == 1 and labels[0][-3:] == ' ..':
+            log.debug("make_selection_ wildcard startswith %s " % labels[0] ) 
+            lab = labels[0][:-3]  # exclude the " .."
+            psel = self.make_psel_startswith(lab)
+        elif len(labels) == 1 and labels[0] == 'PFLAGS_DEBUG':
             psel = self.pflags2 != self.pflags
-            flav = "seqhis"
         else:
-            if seqs[0][0:2] in sh_start:
-                psel = sh.seq_or(seqs)
-            else:
-                psel = sm.seq_or(seqs)
-            pass
+            psel = self.make_psel_or(labels)
         pass
+        return psel
+
+    def make_selection(self, sel, not_):
+        if sel is None:
+            return None
+
+        labels = self.make_labels(sel)
+        psel = self.make_selection_(labels)
         if not_:
             psel = np.logical_not(psel)
         pass
@@ -462,6 +550,9 @@ class Evt(object):
 
 
     def _init_selection(self, psel):
+        """
+        :param psel: photon length boolean selection array, make it with make_selection or directy with numpy 
+        """
         # for first _init_selection hold on to the originals
         if self._psel is None:
             self.ox_ = self.ox
@@ -471,7 +562,7 @@ class Evt(object):
         pass
         if psel is None: 
             if hasattr(self, 'ox_'):
-                log.warning("_init_selection with psel None : resetting selection to original ")
+                log.debug("_init_selection with psel None : resetting selection to original ")
                 self.ox = self.ox_
                 self.c4 = self.c4_
                 self.wl = self.wl_
@@ -504,14 +595,24 @@ class Evt(object):
         self.seqmat_ana = SeqAna(self.seqmat[psel], self.mattype)   # sequence history with selection applied
 
 
+    # *psel* provides low level selection control via  boolean array 
     def _get_psel(self):
         return self._psel
-
     def _set_psel(self, psel):
         self._init_selection(psel)
-
     psel = property(_get_psel, _set_psel)
  
+
+    # *sel* provides high level selection control using slices, labels, hexint etc
+    def _get_sel(self):
+        return self._sel
+    def _set_sel(self, sel):
+        self._sel = sel
+        psel = self.make_selection(sel, False)
+        self._init_selection(psel)
+    sel = property(_get_sel, _set_sel)
+      
+
 
  
     def psel_dindex(self):
@@ -786,10 +887,10 @@ class Evt(object):
 
 
     @classmethod
-    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True, zero=False, cmx=0):
+    def compare_table(cls, a, b, analist='seqhis_ana seqmat_ana'.split(), lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False):
         cft = {}
         for ana_ in analist:
-            c_tab = cls.compare_ana( a, b, ana_ , lmx=lmx, c2max=c2max, cf=cf, zero=zero, cmx=cmx, pr=True)
+            c_tab = cls.compare_ana( a, b, ana_ , lmx=lmx, c2max=c2max, cf=cf, zero=zero, cmx=cmx, pr=pr)
             cft[ana_] = c_tab 
         pass
         return cft
@@ -1271,11 +1372,11 @@ if __name__ == '__main__':
     seq = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
     #seq = "PFLAGS_DEBUG"
 
-    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
-    a.history_table(slice(0,20))
+    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
+    print a.seqhis_ana.table[0:20]
 
-    b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
-    b.history_table(slice(0,20))
+    #b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
+    #b.history_table(slice(0,20))
 
 
 

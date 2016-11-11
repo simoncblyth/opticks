@@ -18,22 +18,25 @@ class CF(object):
         :param seqs: used beneath top level 
         :param spawn:  only used from top level cf
         """
+
+        log.info("CF.__init__ START")
         self.args = args 
         self.seqs = seqs
         self.top = top
+
         self.af = HisType()
         self.mt = MatType()
 
-        self.compare(seqs)
+        self.loadevt(seqs)
+        self.compare()
 
         self.ss = []
         self.init_spawn(spawn)
+        log.info("CF.__init__ DONE")
 
-    def init_spawn(self, spawn, flv="seqhis"):
+
+    def seqlabels(self, spawn, flv="seqhis"):
         """
-        Spawn CF for each of the selections, according to 
-        slices of the history sequences.
-
         ::
 
             In [29]: cf.his.labels[:10]
@@ -50,13 +53,6 @@ class CF(object):
              'TO RE RE BT BT BT BT SA']
 
         """
-        if spawn is None:
-            return 
-
-        assert self.top == True, "spawn is only allowed at top level "
-
-        totrec = 0 
-
         if type(spawn) is slice:
             if flv == "seqhis":
                 labels = self.his.labels[spawn] 
@@ -78,7 +74,20 @@ class CF(object):
             log.fatal("spawn argument must be a slice or list of seqs") 
             assert 0
         pass
+        return labels
 
+
+    def init_spawn(self, spawn, flv="seqhis"):
+        """
+        Spawn CF for each of the selections, according to 
+        slices of the history sequences.
+        """
+        if spawn is None:
+            return 
+
+        assert self.top == True, "spawn is only allowed at top level "
+        totrec = 0 
+        labels = self.seqlabels(spawn, flv)
         for label in labels:
             seqs = [label]
             scf = self.spawn(seqs)
@@ -94,25 +103,24 @@ class CF(object):
         scf.mat = self.mat
         return scf
 
-    def compare(self, seqs=[]):
+    def loadevt(self, seqs):
+        """
+        It takes a few seconds to load evt, so move to avoid needing to repeat with different seqs
+        """
+        log.info("CF.loadevt START ")
         try:
             a = Evt(tag="%s" % self.args.tag, src=self.args.src, det=self.args.det, args=self.args, seqs=seqs)
             b = Evt(tag="-%s" % self.args.tag , src=self.args.src, det=self.args.det, args=self.args, seqs=seqs)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)
-      
+        pass
         self.a = a
         self.b = b 
+        log.info("CF.loadevt DONE ")
 
-        if self.top:
-            self.fullcompare() 
-        else:
-            log.info("spawned seqs %s psel A %d B %d " % (repr(seqs), a.nsel, b.nsel ))
-            self.fullcompare() 
-        pass
-
-    def fullcompare(self):
+    def compare(self):
+        log.info("CF.compare START")
         a = self.a
         b = self.b
         print "CF a %s " % a.brief 
@@ -134,14 +142,7 @@ class CF(object):
 
         self.his = cft["seqhis_ana"]
         self.mat = cft["seqmat_ana"]
-
-    def cf(self, ana="seqhis_ana"):
-        a = self.a
-        b = self.b
-        print "CF a %s " % a.brief 
-        print "CF b %s " % b.brief 
-        c_tab = Evt.compare_ana( a, b, ana, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
-        return c_tab
+        log.info("CF.compare DONE")
 
 
     def a_count(self, line=0):
@@ -200,6 +201,7 @@ class CF(object):
 
     def __repr__(self):
         return "CF(%s,%s,%s,%s) " % (self.args.tag, self.args.src, self.args.det, repr(self.seqs))
+
     def dump_ranges(self, i):
         log.info("%s : dump_ranges %s " % (repr(self), i) )
 
