@@ -209,9 +209,10 @@ class SeqType(BaseType):
 class SeqTable(object):
     def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0): 
         """
-        :param cu: count unique array, typically shaped (n, 2) 
+        :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
         :param cnames: column names 
+
         """
         log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
 
@@ -394,31 +395,44 @@ class SeqTable(object):
          return self
 
     def compare(self, other):
-        log.info("SeqTable.compare START")
+        log.debug("SeqTable.compare START")
         l = set(self.labels)
         o = set(other.labels)
-        u = sorted(list(l | o), key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
+        lo = list(l | o)   
+        # union of labels in self or other
+
+        u = sorted( lo, key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
+        # order the labels union by descending maximum count in self or other
 
         cf = np.zeros( (len(u),3), dtype=np.uint64 )
-
-        log.debug("SeqTable.compare forming cf ad.code len(u) %s " % len(u) )
         cf[:,0] = map(lambda _:self.af.code(_), u )
-        log.debug("SeqTable.compare forming cf af.code DONE ")
-
         cf[:,1] = map(lambda _:self.label2count.get(_,0), u )
         cf[:,2] = map(lambda _:other.label2count.get(_,0), u )
+        # form comparison table
 
         cnames = self.cnames + other.cnames 
 
         log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
         cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)    
-        log.info("SeqTable.compare DONE")
+        log.debug("SeqTable.compare DONE")
         return cftab
 
 
 class SeqAna(object):
     """
+    Canonical usage is from evt with::
+
+        self.seqhis_ana = SeqAna(self.seqhis, self.histype) 
+        self.seqmat_ana = SeqAna(self.seqmat, self.mattype)   
+
+    In addition to holding the SeqTable instance SeqAna provides
+    methods to make boolean array selections using the aseq and
+    form labels. 
+
+    SeqAna and its contained SeqTable exist within a particular selection, 
+    ie changing selection entails recreation of SeqAna and its contained SeqTable
+
     """
     @classmethod 
     def for_evt(cls, af, tag="1", src="torch", det="dayabay", offset=0):
@@ -429,7 +443,7 @@ class SeqAna(object):
     def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0):
         """
         :param aseq: photon length sequence array 
-        :param af: instance of SeqType subclass 
+        :param af: instance of SeqType subclass, which knows what the codes mean 
 
         ::
 
@@ -467,7 +481,7 @@ class SeqAna(object):
 
     def seq_or(self, sseq):
         """
-        :param sseq: list of sequence strings including source, eg "TO BR SA" "TO BR AB"
+        :param sseq: list of sequence labels including source, eg "TO BR SA" "TO BR AB"
         :return psel: selection boolean array of photon length
 
         Selection of photons with any of the sequence arguments

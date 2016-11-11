@@ -209,6 +209,9 @@ if __name__ == '__main__':
 
     cf = CF(ok)
 
+    
+
+
     if not ok.ipython:
         log.info("early exit as non-interactive")
         sys.exit(0)

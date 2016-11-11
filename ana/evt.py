@@ -137,15 +137,18 @@ class Evt(object):
         if label is None:
             label = evt.label + " sel %s " % (repr(seqs)) 
         pass
-        sel = cls(tag=evt.tag, src=evt.src, det=evt.det, seqs=seqs, not_=not_ , label=label, nrec=evt.nrec, rec=evt.rec, dbg=dbg )
+        sel = cls(tag=evt.tag, src=evt.src, det=evt.det, seqs=seqs, not_=not_ , label=label, maxrec=evt.maxrec, rec=evt.rec, dbg=dbg )
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", args=None, nrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False ):
+    def __init__(self, tag="1", src="torch", det="dayabay", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?" ):
 
+        self.nom = nom
         self._psel = None
+        self._labels = []
+
         self.valid = True   ## load failures signalled by setting False
-        self.nrec = nrec
+        self.maxrec = maxrec
         self.seqs = seqs
         self.flv = "seqhis"  # default for selections
 
@@ -195,16 +198,6 @@ class Evt(object):
         self.check_stamps()
 
 
-
-    def nstep(self):
-        """
-        :return: number of steps, when a single sequence is selected
-        """ 
-        nseq = len(self.seqs) 
-        if nseq != 1:return -1
-        seq = self.seqs[0]
-        eseq = seq.split()
-        return len(eseq)
 
     def init_types(self):
         log.debug("init_types")
@@ -452,6 +445,8 @@ class Evt(object):
 
     his = property(lambda self:self.seqhis_ana.table)
     mat = property(lambda self:self.seqmat_ana.table)
+    ahis = property(lambda self:self.all_seqhis_ana.table)
+    amat = property(lambda self:self.all_seqmat_ana.table)
 
     def make_labels(self, sel):
         """
@@ -476,9 +471,9 @@ class Evt(object):
         """ 
         if type(sel) is slice:
             if self.flv == "seqhis":
-                labels = self.his.labels[sel] 
+                labels = self.ahis.labels[sel] 
             elif self.flv == "seqmat":
-                labels = self.mat.labels[sel] 
+                labels = self.amat.labels[sel] 
             else:
                 assert 0, flv
             pass
@@ -501,6 +496,7 @@ class Evt(object):
             log.fatal("unhandled selection type %s %s " % (sel, type(sel)))
             assert 0
 
+        log.info("%s.make_labels %s ->  %s " % (self.nom, repr(sel), repr(labels)))
         return labels
  
     def make_psel_startswith(self, lab):
@@ -521,11 +517,11 @@ class Evt(object):
 
     def make_selection_(self, labels):
         if not self.rec or len(labels) == 0:
-            log.debug("skip make_selection_ as no labels")
+            log.info("skip make_selection_ as no labels")
             return None
    
-        log.debug("Evt labels %s " % repr(labels))
-
+        log.info("%s.make_selection_ labels %s " % (self.nom,repr(labels)))
+        self._labels = labels
         if len(labels) == 1 and labels[0][-3:] == ' ..':
             log.debug("make_selection_ wildcard startswith %s " % labels[0] ) 
             lab = labels[0][:-3]  # exclude the " .."
@@ -536,6 +532,38 @@ class Evt(object):
             psel = self.make_psel_or(labels)
         pass
         return psel
+
+    def _get_label0(self):
+        nlab = len(self._labels) 
+        if nlab == 1:
+            lab0 = self._labels[0]
+        else:
+            lab0 = None
+        return lab0
+    label0 = property(_get_label0)
+    
+    def _get_nrec(self):
+        """
+        :return: number of records
+
+        with a single label selection such as "TO BT AB" nrec would return  3
+        If there is no single label selection return -1  
+        """ 
+        lab0 = self.label0
+        if lab0 is None:
+            return -1
+        elab = lab0.split()
+        return len(elab)
+    nrec = property(_get_nrec)
+
+    def _get_recs(self):
+        nr = self.nrec
+        if nr == -1:
+            log.warning("recs slicing only works when a single label selection is active ")
+            return None
+        pass
+        return slice(0,nr)
+    recs = property(_get_recs)
 
     def make_selection(self, sel, not_):
         if sel is None:
@@ -595,6 +623,35 @@ class Evt(object):
         self.seqmat_ana = SeqAna(self.seqmat[psel], self.mattype)   # sequence history with selection applied
 
 
+    def _get_reclab(self):
+        """
+        Sequence label with single record highlighted with a bracket 
+        eg  TO BT [BR] BR BT SA 
+
+        """
+        nlab = len(self._labels) 
+        if nlab == 1 and self._irec > -1: 
+            lab = self._labels[0]
+            elab= lab.split()
+            if self._irec < len(elab):
+                elab[self._irec] = "[%s]" % elab[self._irec]
+            pass
+            lab = " ".join(elab) 
+        else:
+            lab = ",".join(self._labels) 
+        pass
+        return lab 
+    reclab = property(_get_reclab)
+
+
+    # *irec* is convenience pointer the current record of interest 
+    def _get_irec(self):
+        return self._irec
+    def _set_irec(self, irec):
+        self._irec = irec
+    irec = property(_get_irec, _set_irec)
+ 
+
     # *psel* provides low level selection control via  boolean array 
     def _get_psel(self):
         return self._psel
@@ -607,6 +664,7 @@ class Evt(object):
     def _get_sel(self):
         return self._sel
     def _set_sel(self, sel):
+        log.info("Evt._set_sel %s " % repr(sel))
         self._sel = sel
         psel = self.make_selection(sel, False)
         self._init_selection(psel)
@@ -714,7 +772,7 @@ class Evt(object):
             urs = -1
 
         if not rs is None and not rs.missing:
-            rsr = rs.reshape(-1, self.nrec, 1, 4)        
+            rsr = rs.reshape(-1, self.maxrec, 1, 4)        
         else: 
             rsr = None
 
@@ -918,23 +976,18 @@ class Evt(object):
     def seqhis_or_not(self, args):
         return np.logical_not(self.seqhis_or(args))    
 
+
     def rw(self):
-        nstep = self.nstep()
-        if nstep == -1:
-            log.warning("this only works on evt with single line seqs")
-            return None
-        irec = slice(0,nstep)
-        return self.recwavelength(irec)
-
-    def recwavelength(self, irec, recs=None):
-        """
-        """
+        recs = self.recs
         if recs is None:
-            recs = self.rx
+             return None  
 
+        return self.recwavelength(recs)
+
+    def recwavelength(self, recs):
         boundary_domain = self.fdom[2,0]
 
-        pzwl = recs[:,irec,1,1]
+        pzwl = self.rx[:,recs,1,1]
 
         nwavelength = (pzwl & np.uint16(0xFF00)) >> 8
 
@@ -944,26 +997,24 @@ class Evt(object):
 
 
     def rpol(self):
-        nstep = self.nstep()
-        if nstep == -1:
-            log.warning("this only works on evt with single line seqs")
-            return None
-        irec = slice(0,nstep)
-        return self.rpolw_(irec)[:,:,:3]
+        recs = self.recs
+        if recs is None:
+             return None  
+        return self.rpolw_(recs)[:,:,:3]
 
     def rpol_(self, fr):
         return self.rpolw_(fr)[:,:3]
 
-    def rpolw_(self, irec):
+    def rpolw_(self, recs):
         """
         Unlike rpol_ this works with irec slices, 
         BUT note that the wavelength returned in 4th column is 
         not decompressed correctly.
         Due to shape shifting it is not easy to remove
         """
-        return self.rx[:,irec,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
+        return self.rx[:,recs,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
 
-    def rpol_old_(self, irec, recs=None):
+    def rpol_old_(self, recs):
         """
         TODO: rearrange to go direct from recs to the 
               result without resorting to new allocation
@@ -993,13 +1044,10 @@ class Evt(object):
 
 
         """ 
-        if recs is None:
-            recs = self.rx
-
-        pxpy = recs[:,irec,1,0]
-        pzwl = recs[:,irec,1,1]
-        m1m2 = recs[:,irec,1,2]
-        bdfl = recs[:,irec,1,3]
+        pxpy = self.rx[:,recs,1,0]
+        pzwl = self.rx[:,recs,1,1]
+        m1m2 = self.rx[:,recs,1,2]
+        bdfl = self.rx[:,recs,1,3]
 
         ipx = pxpy & np.uint16(0xFF)
         ipy = (pxpy & np.uint16(0xFF00)) >> 8
@@ -1043,9 +1091,9 @@ class Evt(object):
         lb = np.linspace(-1, 1, 255+1)   # 
         return lb 
 
-    def recflags(self, recs, irec):
-        m1m2 = recs[:,irec,1,2]
-        bdfl = recs[:,irec,1,3]
+    def recflags(self, recs):
+        m1m2 = self.rx[:,recs,1,2]
+        bdfl = self.rx[:,recs,1,3]
 
         m1 = m1m2 & np.uint16(0xFF)  
         m2 = (m1m2 & np.uint16(0xFF00)) >> 8 
@@ -1059,10 +1107,8 @@ class Evt(object):
         flgs[:,3] = fl
         return flgs
 
-    def rflgs_(self, irec, recs=None):
-        if recs is None:
-            recs = self.rx 
-        return self.recflags(recs,irec) 
+    def rflgs_(self, recs):
+        return self.recflags(recs) 
 
     def post_center_extent(self):
         p_center = self.fdom[0,0,:W] 
@@ -1100,12 +1146,11 @@ class Evt(object):
         return pb 
 
     def rpost(self):
-        nstep = self.nstep()
-        if nstep == -1:
+        recs = self.recs
+        if recs is None:
             log.warning("this only works on evt with single line seqs")
             return None
-        irec = slice(0,nstep)
-        return self.rpost_(irec)
+        return self.rpost_(recs)
 
     def rdir(self, fr=0, to=1, nrm=True):
         """
@@ -1127,9 +1172,9 @@ class Evt(object):
         pass
         return dir_
 
-    def rpost_(self, irec, recs=None):
+    def rpost_(self, recs):
         """
-        NB irec can be a slice, eg slice(0,5)
+        NB recs can be a slice, eg slice(0,5)
 
         Record compression can be regarded as a very early choice of binning, 
         as cannot use other binnings without suffering from artifacts
@@ -1145,10 +1190,8 @@ class Evt(object):
         domain of the compression, need to find that binning then throw
         away unused edge bins according to the plotted range. 
         """
-        if recs is None:
-            recs = self.rx 
         center, extent = self.post_center_extent()
-        p = recs[:,irec,0].astype(np.float32)*extent/32767.0 + center 
+        p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center 
         return p 
 
 
