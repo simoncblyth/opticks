@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import vnorm, costheta_
-from opticks.ana.cf   import CF
+from opticks.ana.ab   import AB
 
 STEP = 4
 
@@ -28,7 +28,7 @@ def butterfly_yz(plt, a, b, pt):
     plt.scatter(b[:,pt,Y],b[:,pt,Z])
 
 
-def butterfly(plt, scf):
+def butterfly(plt, ab):
     """
     Expecting 8cc6ccd 
 
@@ -38,7 +38,7 @@ def butterfly(plt, scf):
     p3: scatter occurs at point on X axis
     p4: first intersection point after the scatter  
     """
-    a,b = scf.rpost()
+    a,b = ab.rpost()
     butterfly_yz(plt, a, b, pt=4)
 
 
@@ -80,26 +80,28 @@ def isolated_scatter():
     plt.show()
 
 
-def dirpol(scf):
-    assert len(scf.seqs) == 1
-    seq_ = scf.seqs[0]
 
-    fr0 = seq_.split().index("SC") - 1
-    #fr1 = seq_.split().index("SA") 
-    fr1 = len(seq_.split()) - 1 
+
+def dirpol(ab, flg0="SC"):
+
+    iflg = ab.iflg(flg0)
+    nrec = ab.nrec()
+
+    fr0 = iflg - 1
+    fr1 = nrec - 1 
 
     bins = 100 
     nx = 12 
     ny = fr1 - fr0 
     offset = 0
 
-    log.info(" seq_ %s fr0 %d fr1 %d ny %d " % (seq_, fr0, fr1, ny))
+    log.info(" lab0 %s fr0 %d fr1 %d ny %d " % (lab0, fr0, fr1, ny))
 
     for fr in range(fr0,fr1):
         to = fr + 1
 
-        adir, bdir = scf.rdir(fr, to)
-        apol, bpol = scf.rpol_(fr)
+        adir, bdir = ab.rdir(fr, to)
+        apol, bpol = ab.rpol_(fr)
 
         qwns = [ 
             (adir[:,X],"adirx"),
@@ -144,8 +146,6 @@ def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
     ay = ay[~np.isnan(ay)]
     az = az[~np.isnan(az)]
 
-
-
     bx = b[:,0]
     by = b[:,1]
     bz = b[:,2]
@@ -161,7 +161,6 @@ def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
     by = by[~np.isnan(by)]
     bz = bz[~np.isnan(bz)]
 
-
     plt.subplot(ny,nx,1+offset+0)
     plt.hist(ax,bins=bins,histtype="step", label="ax")
     plt.hist(ay,bins=bins,histtype="step", label="ay")
@@ -173,24 +172,24 @@ def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
     plt.hist(bz,bins=bins,histtype="step", label="bz")
 
 
-def dirpol(scf, fr, to):
+def dirpol(ab, fr, to):
     nx = 2
     ny = 2
 
-    a,b = scf.rdir(fr=fr,to=to)
+    a,b = ab.rdir(fr=fr,to=to)
     abplt(a,b, bins=100, nx=nx, ny=ny, offset=0, title="dirpol/rdir")
 
-    a,b = scf.rpol_(fr=fr)
+    a,b = ab.rpol_(fr=fr)
     abplt(a,b, bins=100, nx=nx, ny=ny, offset=ny, title="dirpol/rpol")
 
     plt.show()
 
 
-def poldot(scf, fr, oldpol=[0,1,0], bins=100):
+def poldot(ab, fr, oldpol=[0,1,0], bins=100):
     """
     dot product between old and new polarization
     """
-    a,b = scf.rpol_(fr=fr)
+    a,b = ab.rpol_(fr=fr)
     act = costheta_( np.tile( oldpol, len(a) ).reshape(-1,3), a)
     bct = costheta_( np.tile( oldpol, len(b) ).reshape(-1,3), b)
 
@@ -202,47 +201,43 @@ def poldot(scf, fr, oldpol=[0,1,0], bins=100):
 
 
 
+
+
+
+
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric")  
-
     log.info(ok.brief)
 
-    cf = CF(ok)
-
-    
-
+    ab = AB(ok)
+    print ab
 
     if not ok.ipython:
         log.info("early exit as non-interactive")
         sys.exit(0)
 
-    sha = cf.a.all_seqhis_ana
-    sma = cf.a.all_seqmat_ana
-    shb = cf.b.all_seqhis_ana
-    smb = cf.b.all_seqmat_ana
-
     pfxseqhis = ok.pfxseqhis   ## eg ".6ccd" standing for "TO BT BT SC .."
     pfxseqmat = ok.pfxseqmat 
     
     if len(pfxseqhis) > 0:
-        log.info(" pfxseqhis [%s] label [%s] " % (pfxseqhis, sha.af.label(pfxseqhis)))
-        cf.init_spawn([pfxseqhis], flv="seqhis") 
-        scf = cf.ss[0]
+        log.info(" pfxseqhis [%s]  " % (pfxseqhis))
 
-        if pfxseqhis[0] == ".":
-            to = pfxseqhis[::-1].index(".")
-            fr = to - 1
+        ab.sel = pfxseqhis
 
-            dirpol(scf, fr, to)
-            #poldot(scf, fr )   
+        fr = ab.iflg("SC")
+
+        if fr is None:
+            log.fatal("expecting one line selection including SC")
+        else:
+            dirpol(ab, fr, fr+1)
+            #poldot(ab, fr )   
         pass 
     elif len(pfxseqmat) > 0:
-        log.info(" pfxseqmat [%s] label [%s] " % (pfxseqmat, sma.af.label(pfxseqmat)))
-        cf.init_spawn([pfxseqmat], flv="seqmat") 
-        scf = cf.ss[0]
+        log.info(" pfxseqmat [%s] " % (pfxseqmat))
+        ab.flv = "seqmat"
+        ab.sel = pfxseqmat 
     else:
-        scf = None
-    pass
+        pass
 
 
 

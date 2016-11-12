@@ -220,7 +220,7 @@ class SeqTable(object):
 
         ncol = cu.shape[1] - 1 
 
-
+        self.dirty = False
         self.cu = cu 
         self.ncol = ncol
         self.dbgseq = dbgseq
@@ -244,7 +244,7 @@ class SeqTable(object):
             ndf = c2n - 1   ## totals are constrained to match, so one less degree of freedom ?
 
             c2sum = c2.sum()
-            c2p = c2sum/ndf
+            c2p = c2sum/max(1,ndf)
 
             c2_pval = chi2_pvalue( c2sum , ndf )
 

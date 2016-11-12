@@ -19,6 +19,54 @@ See Also
 * ggeo/GProperty<T>::make_GROUPVEL
 
 
+tconcentric check
+--------------------
+
+::
+
+    In [2]: ab.sel = "TO BT BT BT BT SA"    ## straight thru selection
+
+    In [3]: a,b = ab.rpost()
+
+    In [4]: a.shape
+    Out[4]: (669843, 6, 4)
+
+    In [5]: b.shape
+    Out[5]: (671267, 6, 4)
+
+    In [7]: a[0]    ## positions match, times off a little
+    Out[7]: 
+    A()sliced
+    A([[    0.    ,     0.    ,     0.    ,     0.1007],
+           [ 2995.0267,     0.    ,     0.    ,    15.4974],
+           [ 3004.9551,     0.    ,     0.    ,    15.5498],
+           [ 3995.0491,     0.    ,     0.    ,    20.6377],
+           [ 4004.9776,     0.    ,     0.    ,    20.6901],
+           [ 4995.0716,     0.    ,     0.    ,    25.7136]])
+
+    In [8]: b[0]
+    Out[8]: 
+    A()sliced
+    A([[    0.    ,     0.    ,     0.    ,     0.1007],
+           [ 2995.0267,     0.    ,     0.    ,    15.4934],
+           [ 3004.9551,     0.    ,     0.    ,    15.5458],
+           [ 3995.0491,     0.    ,     0.    ,    20.682 ],
+           [ 4004.9776,     0.    ,     0.    ,    20.7344],
+           [ 4995.0716,     0.    ,     0.    ,    25.8666]])
+
+
+    In [35]: np.diff(a[0,:,0])/np.diff(a[0,:,3])  ## ratio of x diff to t diff -> groupvel in Gd Ac LS Ac MO for  429.5686 nm
+    A([ 194.5238,  189.5833,  194.5969,  189.5833,  197.0937])
+
+    In [36]: np.diff(b[0,:,0])/np.diff(b[0,:,3])
+    A([ 194.5747,  189.5833,  192.7654,  189.5833,  192.9167])
+
+    In [13]: np.diff(a[0,:,0])/np.diff(a[0,:,3]) - np.diff(b[0,:,0])/np.diff(b[0,:,3])
+    A([-0.0509,  0.    ,  1.8315,  0.    ,  4.177 ])    ## mm/ns
+
+    ## fairly close, possibly can attribute to interpolation differences ???
+
+
 Review
 --------
 

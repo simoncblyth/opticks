@@ -3,6 +3,9 @@
 cfplot.py : Comparison Plotter with Chi2 Underplot 
 ======================================================
 
+To control this warning, see the rcParam `figure.max_num_figures
+
+
 
 """
 import os, logging, numpy as np
@@ -14,124 +17,69 @@ log = logging.getLogger(__name__)
 try:
     import matplotlib.pyplot as plt
     import matplotlib.gridspec as gridspec
+    plt.rcParams["figure.max_open_warning"] = 200    # default is 20
 except ImportError:
     print "matplotlib missing : you need this to make plots"
     plt = None
 
 
-from opticks.ana.nbase import chi2
 
-
-def _cf_dump( msg, val, bins, label):
-    log.warning("%s for  \"%s\" " % (msg, label) ) 
-    log.warning(" val   %s " % repr(val) )
-    log.warning(" bins  %s " % repr(bins) )
-
-
-def __cf_hist( ax, val, bins, log_, label):
-    """
-    ax.hist gives errors for empty histos
-    """
-    c, b = np.histogram(val, bins=bins)
-    #c, b, p = ax.hist(val, bins=bins, log=log_, histtype='step', label=label)
-    p = ax.plot( bins[:-1], c , drawstyle="steps", label=label  )
-    if log_:
-        ax.set_yscale('log')
-    return c, b, p
-
-def _cf_hist( ax, val, bins, log_, label):
-    c, b, p = None, None, None
-    try:
-        c,b,p = __cf_hist(ax, val, bins, log_, label) 
-    except IndexError:
-        _cf_dump("_cf_hist IndexError", val, bins, label)
-    except ValueError:
-        _cf_dump("_cf_hist ValueError", val, bins, label)
-    pass
-    return c, b, p
-
-def _cf_plot(ax, aval, bval,  bins, labels,  log_=False):
-    cnt = {}
-    bns = {}
-    ptc = {}
-
-    cnt[0], bns[0], ptc[0] = __cf_hist(ax, aval, bins=bins,  log_=log_, label=labels[0])
-    cnt[1], bns[1], ptc[1] = __cf_hist(ax, bval, bins=bins,  log_=log_, label=labels[1])
-
-    return cnt, bns
-
-
-def _chi2_plot(ax, _bins, counts, cut=30):
-    a,b = counts[0],counts[1]
-
-    if a is None or b is None:
-        log.warning("skip chi2 plot as got None %s %s " % (repr(a), repr(b)))
-        return 0  
-
-    c2, c2n, c2c = chi2(a, b, cut=cut)
-    ndf = max(c2n - 1, 1)
-
-    c2p = c2.sum()/ndf
-       
-    label = "chi2/ndf %4.2f [%d]" % (c2p, ndf)
-
-    ax.plot( _bins[:-1], c2, drawstyle='steps', label=label )
-
-    return c2p
-
-
-
-def cfplot(fig, gss, _bins, aval, bval, labels=["A","B"], log_=False, c2_cut=30, c2_ymax=10, logyfac=3., linyfac=1.3): 
+def cfplot(fig, gss, h): 
 
     ax = fig.add_subplot(gss[0])
 
-    cnt, bns = _cf_plot(ax, aval, bval, bins=_bins, labels=labels, log_=log_)
+    ax.plot( h.bins[:-1], h.ahis , drawstyle="steps", label=h.la  )
+    ax.plot( h.bins[:-1], h.bhis , drawstyle="steps", label=h.lb  )
 
-    ymin = 1 if log_ else 0 
-    yfac = logyfac if log_ else linyfac
-    
-    ymax = 0 
-    for k,v in cnt.items():
-        if v is None:continue
-        vmax = v.max()
-        ymax = max(ymax, vmax) 
-    pass
+    if h.log:
+        ax.set_yscale('log')
 
-    ylim = [ymin,ymax*yfac]
-
-    ax.set_ylim(ylim)
+    ax.set_ylim(h.ylim)
     ax.legend()
-    xlim = ax.get_xlim()
 
+    xlim = ax.get_xlim()
 
     ax = fig.add_subplot(gss[1])
 
-    c2p = _chi2_plot(ax, _bins, cnt, cut=c2_cut)  
+    ax.plot( h.bins[:-1], h.chi2, drawstyle='steps', label=h.c2label )
 
     ax.set_xlim(xlim) 
     ax.legend()
-    ax.set_ylim([0,c2_ymax]) 
-
-    return c2p  
+    ax.set_ylim([0,h.c2_ymax]) 
 
 
 
+def one_cfplot(h):
+    fig = plt.figure()
+
+    fig.suptitle(h.suptitle)
+
+    ny = 2
+    nx = 1
+
+    gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
+    for ix in range(nx):
+        gss = [gs[ix], gs[nx+ix]]
+        cfplot(fig, gss, h )
+    pass
 
 
-def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
 
-    log.info("qwns_plot(scf, \"%s\", %d, log_=%s, c2_cut=%d )" % (qwns, irec, log_ , c2_cut)) 
+
+def qwns_plot(ab, qwns, irec, log_=False ):
+
+    log.info("qwns_plot(scf, \"%s\", %d, log_=%s  )" % (qwns, irec, log_ )) 
 
     fig = plt.figure()
 
-    if irec < 0:
-         irec += scf.nrec() 
+    ab.irec = irec
 
-    fig.suptitle(scf.suptitle(irec))
+    fig.suptitle(ab.suptitle)
 
+    ny = 2 
     nx = len(qwns)
 
-    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
+    gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
 
     c2ps = []
     for ix in range(nx):
@@ -140,35 +88,38 @@ def qwns_plot(scf, qwns, irec, log_=False, c2_cut=30):
 
         qwn = qwns[ix]
 
-        bns, aval, bval, labels = scf.rqwn(qwn, irec)
+        h = ab.rhist(qwn, irec)
 
-        log.info("%s %s " % (qwn, repr(labels) ))
+        h.log = log_
 
-        c2p = cfplot(fig, gss, bns, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut )
+        cfplot(fig, gss, h )
 
-        c2ps.append(c2p) 
+        c2ps.append(h.c2p) 
     pass
 
     qd = odict(zip(list(qwns),c2ps))
     return qd
 
 
-def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
 
-    if irec < 0:
-         irec += scf.nrec() 
+def qwn_plot(ab, qwn, irec, log_=False ):
 
-    rqwn_bins, aval, bval, labels = scf.rqwn(qwn, irec)
+    ab.irec = irec      
+
+    h = ab.rhist(qwn, irec)
+
+    h.log = log_
 
     fig = plt.figure()
-    fig.suptitle(scf.suptitle(irec))
+    fig.suptitle(ab.suptitle)
 
     nx,ix = 1,0
     gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
     gss = [gs[ix], gs[nx+ix]]
 
-    c2p = cfplot(fig, gss, rqwn_bins, aval, bval, labels=labels, log_=log_, c2_cut=c2_cut, c2_ymax=c2_ymax)
-    c2ps = [c2p]
+    cfplot(fig, gss, h )
+    
+    c2ps = [h.c2p]
 
     #print "c2p", c2p
 
@@ -176,14 +127,8 @@ def qwn_plot(scf, qwn, irec, log_=False, c2_cut=30, c2_ymax=10):
     return qd
 
 
-def mplot(scf, pages=["XYZT","ABCR"]):
-    pass
 
-
-
-
-
-def multiplot(cf, pages=["XYZT","ABCR"]):
+def multiplot(ab, pages=["XYZT","ABCR"], sli=slice(0,5)):
     """
     Inflexible approach taken for recording distrib chi2 
     is making this inflexible to use
@@ -192,25 +137,32 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
     dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
 
     log_ = False
-    c2_cut = 0.
 
-    totrec = cf.totrec
-    nrecs = map(lambda scf:scf.nrec(), cf.ss )
-    log.info(" multiplot : totrec %d nrecs %s " % ( totrec, repr(nrecs)) )
+    trs = ab.totrec(sli.start, sli.stop)
+    nrs = ab.nrecs(sli.start, sli.stop)
+
+    log.info(" multiplot : trs %d nrs %s " % ( trs, repr(nrs)) )
         
-    stat = np.recarray((cf.totrec,), dtype=dtype)
-    ival = 0 
-    for scf in cf.ss:
-        nrec = scf.nrec()
-        for irec in range(nrec):
-            key = scf.suptitle(irec)
-            log.info("multiplot irec %d nrec %d ival %d key %s " % (irec, nrec, ival, key))
+    stat = np.recarray((trs,), dtype=dtype)
+    ival = 0
+ 
+    for i,isel in enumerate(range(sli.start, sli.stop)):
+
+        ab.sel = slice(isel, isel+1)
+        nr = ab.nrec
+        assert nrs[i] == nr, (i, nrs[i], nr )  
+
+        for irec in range(nr):
+
+            ab.irec = irec 
+            key = ab.suptitle
+            log.info("multiplot irec %d nrec %d ival %d key %s " % (irec, nr, ival, key))
 
             od = odict()
             od.update(key=key) 
 
             for page in pages:
-                qd = qwns_plot( scf, page, irec, log_, c2_cut)
+                qd = qwns_plot( ab, page, irec, log_ )
                 od.update(qd)
             pass
 
@@ -219,43 +171,15 @@ def multiplot(cf, pages=["XYZT","ABCR"]):
         pass
     pass
 
-    np.save(os.path.expandvars("$TMP/stat.npy"),stat)
+    assert ival == trs, (ival, trs )
+
+    np.save(os.path.expandvars("$TMP/stat.npy"),stat)  # make_rst_table.py reads this and dumps RST table
     return stat 
 
     # a = np.load(os.path.expandvars("$TMP/stat.npy"))
     #rst = recarray_as_rst(stat)
     #print rst 
 
-
-
-
-class CFP(object):
-    def __init__(self, ctx):
-        self.ctx = ctx
-
-    def __call__(self, **kwa): 
-        d = self.ctx
-        d.update(kwa)
-        h = CFH(d)
-        h.load()
-        return h 
-
-
-def test_cfplot():
-
-    aval = np.random.standard_normal(8000)
-    bval = np.random.standard_normal(8000)
-    bins = np.linspace(-4,4,200)
-    log_ = False
-
-    fig = plt.figure()
-    fig.suptitle("cfplot test")
-
-    nx = 4
-    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
-    for ix in range(nx):
-        gss = [gs[ix], gs[nx+ix]]
-        cfplot(fig, gss, bins, aval, bval, labels=["A test", "B test"], log_=log_ )
 
 
 
@@ -266,8 +190,15 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
-    ctx = {'det':"concentric", 'tag':"1", 'qwn':"X", 'irec':"5", 'seq':"TO_BT_BT_BT_BT_DR_SA" }
-    cfp = CFP(ctx)
-    h = cfp()
+    from opticks.ana.ab import AB
+
+    h = AB.rrandhist()
+
+    #ctx = {'det':"concentric", 'tag':"1", 'qwn':"X", 'irec':"5", 'seq':"TO_BT_BT_BT_BT_DR_SA" }
+    #cfp = CFP(ctx)
+    #h = cfp()
+
+    one_cfplot(h) 
+
 
 

@@ -16,8 +16,31 @@ log = logging.getLogger(__name__)
 
 
 class AB(object):
+    """
+    Selection examples::
+
+         ab.sel = ".6ccd"             
+         ab.sel = "TO BT BT SC .."     # wildcard selection same as above
+         ab.sel = None                 # back to default no selection
+
+    Subsequently check tables with::
+
+         ab.his
+         ab.flg
+         ab.mat
+
+    Histo persisting, provides random access to histos for debugging::
+
+         ab.sel = slice(0,1)
+         ab.qwn = "Z"
+         ab.irec = 5
+
+         h = ab.h      # qwn and irec used in creation of histogram, which is persisted
+
+    """
     def __init__(self, args):
         self.args = args
+        self.tabs = []
         self.load()
         self.compare()
 
@@ -40,6 +63,7 @@ class AB(object):
         ## property setters
         self.sel = None
         self.irec = 0
+        self.qwn = "X"
         log.info("AB.load DONE ")
 
     def __repr__(self):
@@ -60,6 +84,9 @@ class AB(object):
     def compare(self):
         log.debug("AB.compare START ")
 
+        self.ahis = self._get_cf("all_seqhis_ana")
+        self.amat = self._get_cf("all_seqmat_ana")
+
         if self.args.prohis:self.prohis()
         if self.args.promat:self.promat()
         log.debug("AB.compare DONE")
@@ -73,21 +100,47 @@ class AB(object):
             setattr(self, "mat_%d" % imsk, self.cf("seqmat_ana_%d" % imsk)) 
         pass
 
+    def tabname(self, ana):
+        return ana.replace("_ana", "_tab")
+
     def _make_cf(self, ana="seqhis_ana"):
+        """
+        all_ tables have no selection applied so they are not dirtied by changing selection
+        """
         c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
+        if not ana[0:3] == "all":
+            self.tabs.append(c_tab)
+        pass 
+        tabname = self.tabname(ana)
+        setattr(self, tabname, c_tab)
         return c_tab 
+
+    def _set_dirty(self, dirty):
+        for tab in self.tabs:
+            tab.dirty = dirty
+        pass
+    def _get_dirty(self):
+        dtabs = filter(lambda tab:tab.dirty, self.tabs)
+        return len(dtabs) > 0 
+    dirty = property(_get_dirty, _set_dirty)
+
 
     def _get_cf(self, ana):
         """
-        Changing selection changes the SeqAna in the A B Evt, so 
-        to follow that a dirty flag is set on changing selection
-        to force recomparison.
-
-        Hmm need separate dirty labels ?
+        Changing *sel* property invokes _set_sel 
+        results in a change to the SeqAna in the A B Evt,
+        thus all AB comparison tables are marked dirty, causing 
+        them to be recreated at next access.
         """
-        if not hasattr(self, ana) or self._dirty == True:
-            setattr(self, ana, self._make_cf(ana))
-        return getattr(self, ana)
+        tabname = self.tabname(ana)
+        tab = getattr(self, tabname, None)
+        if tab is None:
+            tab = self._make_cf(ana) 
+        elif tab.dirty:
+            tab = self._make_cf(ana) 
+        else:
+            pass 
+        return tab
 
     def _get_his(self):
         return self._get_cf("seqhis_ana")
@@ -106,13 +159,22 @@ class AB(object):
     def _get_sel(self):
         return self._sel
     def _set_sel(self, sel):
-        log.info("AB._set_sel %s " % repr(sel))
+        log.debug("AB._set_sel %s " % repr(sel))
         self.a.sel = sel
         self.b.sel = sel
         self._sel = sel 
-        self._dirty = True  
+        self.dirty = True  
     sel = property(_get_sel, _set_sel)
 
+    def _set_flv(self, flv):
+        self.a.flv = flv
+        self.b.flv = flv
+    def _get_flv(self):
+        a_flv = self.a.flv    
+        b_flv = self.b.flv    
+        assert a_flv == b_flv
+        return a_flv
+    flv = property(_get_flv, _set_flv)
 
     def _set_irec(self, irec):
         self.a.irec = irec 
@@ -131,8 +193,20 @@ class AB(object):
         return a_reclab
     reclab = property(_get_reclab)
 
+    def _get_label0(self):
+        a_label0 = self.a.label0
+        b_label0 = self.a.label0
+        assert a_label0 == b_label0
+        return a_label0
+    label0 = property(_get_label0)
 
- 
+    def _get_seq0(self):
+        lab0 = self.label0
+        if lab0 is None:
+            return None
+        return lab0.replace(" ","_")
+    seq0 = property(_get_seq0)
+
     def a_count(self, line=0):
         """subselects usually have only one sequence line""" 
         return self.his.cu[line,1]
@@ -145,22 +219,23 @@ class AB(object):
         bc = self.b_count(line)
         return "%d/%d" % (ac,bc)
 
-    def suptitle(self, irec=-1):
+    def _get_suptitle(self):
         abc = self.ab_count()
-        lab = self.seqlab(irec)
-        title = "%s/%s/%s : %s  :  %s " % (self.args.tag, self.args.det, self.args.src, abc, lab )
+        title = "%s/%s/%s : %s  :  %s " % (self.args.tag, self.args.det, self.args.src, abc, self.reclab )
         return title
+    suptitle = property(_get_suptitle)
+
 
     def ctx(self, **kwa):
         irec = kwa.get('irec',"0")
         self.irec = irec
-        d = {'det':self.args.det, 'tag':self.args.tag, 'src':self.args.src, 'seq':self.seqs[0].replace(" ","_"), 'lab':self.reclab }
+        d = {'det':self.args.det, 'tag':self.args.tag, 'src':self.args.src, 'seq0':self.seq0, 'lab':self.reclab }
         d.update(kwa)
         return d 
 
-    def nrec(self):
+    def _get_nrec(self):
         """
-        :return: number of steps, when a single sequence is selected
+        :return: number of record points, when a single seq selection is active
         """ 
         a_nr = self.a.nrec
         b_nr = self.b.nrec
@@ -172,7 +247,68 @@ class AB(object):
         pass
         log.info(" a_nr:%d b_nr:%d nr:%d " % (a_nr, b_nr, nr) )
         return nr 
+    nrec = property(_get_nrec)
 
+
+    def iflg(self, flg):
+        """
+        :return: number of record points, when a single seq selection is active
+        """ 
+        a_ifl = self.a.iflg(flg)
+        b_ifl = self.b.iflg(flg)
+        assert a_ifl == b_ifl, (a_ifl, b_ifl, "A and B should have same iflg ?")
+        if a_ifl == b_ifl and a_ifl != None:
+            ifl = a_ifl
+        else:
+            ifl = None
+        pass
+        log.info(" a_ifl:%s b_ifl:%s ifl:%s " % (a_ifl, b_ifl, ifl) )
+        return ifl 
+
+    def nrecs(self, start=0, stop=None, step=1):
+        """
+        """
+        sli = slice(start, stop, step)
+        labels = self.alabels[sli] 
+        nrs = np.zeros(len(labels), dtype=np.int32) 
+        for ilab, lab in enumerate(labels):
+            nrs[ilab] = len(lab.split())
+        pass
+        return nrs
+
+    def totrec(self, start=0, stop=None, step=1):
+        """
+        :param sli:
+
+        ::
+
+            In [2]: ab.totrec()    # union of labels brings in a lot more of them
+            Out[2]: 64265
+
+            In [3]: ab.a.totrec()
+            Out[3]: 43177
+
+            In [4]: ab.b.totrec()
+            Out[4]: 43085
+
+        """
+        nrs = self.nrecs(start, stop, step)
+        return int(nrs.sum())
+
+    def _get_alabels(self):
+        """
+        :return alabels: all labels of current flv 
+        """
+        flv = self.flv
+        if flv == "seqhis":
+            alabels = self.ahis.labels
+        elif flv == "seqmat":
+            alabels = self.amat.labels
+        else:
+            alabels = []
+        pass
+        return alabels
+    alabels = property(_get_alabels)
 
     def rpost(self):
         """
@@ -221,11 +357,46 @@ class AB(object):
         bval = self.b.rw()
         return aval, bval
 
+
+    @classmethod
+    def rrandhist(cls):
+        bn = np.linspace(-4,4,200)
+        av = np.random.standard_normal(8000)
+        bv = np.random.standard_normal(8000)
+        la = ["A rand", "B rand"]
+
+        ctx = {}
+        ctx["det"] = "dummy"
+        ctx["tag"] = "1"
+        ctx["seq"] = "dummy"
+        ctx["qwn"] = "U"
+        ctx["irec"] = "0"   
+
+        cfh = CFH(ctx)
+        cfh(bn,av,bv,la,cut=30)
+        return cfh
+ 
+    def _set_qwn(self, qwn):
+        self._qwn = qwn 
+    def _get_qwn(self):
+        return self._qwn
+    qwn = property(_get_qwn, _set_qwn)
+
+    def _get_h(self):
+        cfh = self.rhist( self.qwn, self.irec)
+        return cfh        
+    h = property(_get_h)
+
     def rhist(self, qwn, irec, cut=30): 
-        bn, av, bv, la = self.rqwn(qwn, irec)
         ctx=self.ctx(qwn=qwn,irec=irec)
         cfh = CFH(ctx)
-        cfh(bn,av,bv,la,cut=cut)
+        if cfh.exists():
+            cfh.load()
+        else:
+            bn, av, bv, la = self.rqwn(qwn, irec)
+            cfh(bn,av,bv,la,cut=cut)
+            cfh.save()
+        pass
         return cfh
  
     def rqwn(self, qwn, irec): 

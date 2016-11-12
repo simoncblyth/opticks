@@ -496,7 +496,7 @@ class Evt(object):
             log.fatal("unhandled selection type %s %s " % (sel, type(sel)))
             assert 0
 
-        log.info("%s.make_labels %s ->  %s " % (self.nom, repr(sel), repr(labels)))
+        log.debug("%s.make_labels %s ->  %s " % (self.nom, repr(sel), repr(labels)))
         return labels
  
     def make_psel_startswith(self, lab):
@@ -520,7 +520,7 @@ class Evt(object):
             log.info("skip make_selection_ as no labels")
             return None
    
-        log.info("%s.make_selection_ labels %s " % (self.nom,repr(labels)))
+        log.debug("%s.make_selection_ labels %s " % (self.nom,repr(labels)))
         self._labels = labels
         if len(labels) == 1 and labels[0][-3:] == ' ..':
             log.debug("make_selection_ wildcard startswith %s " % labels[0] ) 
@@ -541,7 +541,32 @@ class Evt(object):
             lab0 = None
         return lab0
     label0 = property(_get_label0)
-    
+   
+
+    def iflg(self, flg):
+       """
+       :param flg: eg SC
+       :return iflg: zero based index of the flg within the label
+
+       For example iflg('SC') with label 'TO BT BT SC ..' would return 3
+       if a non-single line selection were active or the flg did not 
+       appear None is returned.
+
+       """ 
+       lab0 = self.label0
+       if lab0 is None:
+           log.fatal("Evt.index0 requires single line selection active, eg sel = slice(0,1) " )
+           return None
+       pass
+       flgs = lab0.split()
+       if flgs.count(flg) == 0:
+           log.fatal("Evt.index0 expects label0 %s containg flg %s " % (lab0, flg)) 
+           return None
+       pass
+       iflg = flgs.index(flg) 
+       return iflg
+
+ 
     def _get_nrec(self):
         """
         :return: number of records
@@ -555,6 +580,38 @@ class Evt(object):
         elab = lab0.split()
         return len(elab)
     nrec = property(_get_nrec)
+
+    def _get_alabels(self):
+        """
+        :return alabels: all labels of current flv 
+
+        NB cannot directly use with AB comparisons as the labels 
+        will be somewhat different for each evt 
+        """
+        if self.flv == "seqhis":
+            alabels = self.ahis.labels
+        elif self.flv == "seqmat":
+            alabels = self.amat.labels
+        else:
+            alabels = []
+        pass
+        return alabels
+    alabels = property(_get_alabels)
+
+
+    def nrecs(self, start=0, stop=None, step=1):
+        sli = slice(start, stop, step)
+        labels = self.alabels[sli] 
+        nrs = np.zeros(len(labels), dtype=np.int32) 
+        for ilab, lab in enumerate(labels):
+            nrs[ilab] = len(lab.split())
+        pass
+        return nrs
+
+    def totrec(self, start=0, stop=None, step=1):
+        nrs = self.nrecs(start, stop, step)
+        return int(nrs.sum())
+
 
     def _get_recs(self):
         nr = self.nrec
@@ -602,14 +659,14 @@ class Evt(object):
                 log.warning("_init_selection with psel None : no prior selection, ignoring ")
             return  
 
-        log.info("psel %s " % repr(psel))
+        log.debug("psel %s " % repr(psel))
 
         self._psel = psel 
         nsel = len(psel[psel == True])
         if nsel == 0:
             log.warning("_init_selection EMPTY nsel %s len(psel) %s " % (nsel, len(psel)))
         else:
-            log.info("_init_selection nsel %s len(psel) %s  " % (nsel, len(psel)))
+            log.debug("_init_selection nsel %s len(psel) %s  " % (nsel, len(psel)))
         pass 
         self.nsel = nsel 
 
@@ -648,6 +705,12 @@ class Evt(object):
     def _get_irec(self):
         return self._irec
     def _set_irec(self, irec):
+        ## hmm could convert a string "SC" into the first occurence integer ?
+
+        nr = self.nrec
+        if nr > -1 and irec < 0:
+            irec += nrec 
+
         self._irec = irec
     irec = property(_get_irec, _set_irec)
  
@@ -664,14 +727,12 @@ class Evt(object):
     def _get_sel(self):
         return self._sel
     def _set_sel(self, sel):
-        log.info("Evt._set_sel %s " % repr(sel))
+        log.debug("Evt._set_sel %s " % repr(sel))
         self._sel = sel
         psel = self.make_selection(sel, False)
         self._init_selection(psel)
     sel = property(_get_sel, _set_sel)
       
-
-
  
     def psel_dindex(self):
         """

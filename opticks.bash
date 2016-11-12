@@ -362,6 +362,7 @@ opticks-find(){
    find . -name '*.hpp' -exec grep $opt $str {} \;
    find . -name '*.h' -exec grep $opt $str {} \;
    find . -name '*.txt' -exec grep $opt $str {} \;
+   find . -name '*.py' -exec grep $opt $str {} \;
 
    #cd $iwd
 }
@@ -642,6 +643,7 @@ ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }
+cfh-(){             . $(opticks-home)/ana/cfh.bash && cfh-env $*  ; }
 tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
 
 ### opticks launchers ########

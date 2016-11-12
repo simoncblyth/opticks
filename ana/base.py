@@ -232,7 +232,6 @@ def opticks_args(**kwa):
     parser.add_argument(     "--tag",  default=tag, help="tag identifiying a simulation within a specific source and detector geometry, negated tag for Geant4 equivalent. Default %(default)s" )
     parser.add_argument(     "--det",  default=det, help="detector geometry: eg PmtInBox, dayabay. Default %(default)s. "  )
     parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
-    #parser.add_argument(     "--typ",  default=typ, help="photon source: eg torch, cerenkov, scintillation. Default %(default)s"  ) # now using "src"
 
     parser.add_argument(     "--noshow",  dest="show", default=show, action="store_false", help="switch off dumping commandline "  )
     parser.add_argument(     "--show",  default=show, action="store_true", help="dump invoking commandline "  )
@@ -262,7 +261,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
 
-    parser.add_argument('script', nargs='*', help='script help')
+    parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 
 
     ok = OK()
