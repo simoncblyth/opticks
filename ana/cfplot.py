@@ -48,15 +48,23 @@ def cfplot(fig, gss, h):
     ax.set_ylim([0,h.c2_ymax]) 
 
 
+def qwns_plot( hh, suptitle ):
+    fig = plt.figure()
+    fig.suptitle(suptitle)
+    ny = 2 
+    nx = len(hh)
+    gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
+    for ix in range(nx):
+        gss = [gs[ix], gs[nx+ix]]
+        h = hh[ix]
+        cfplot(fig, gss, hh[ix] )
+    pass
 
 def one_cfplot(h):
     fig = plt.figure()
-
     fig.suptitle(h.suptitle)
-
     ny = 2
     nx = 1
-
     gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
     for ix in range(nx):
         gss = [gs[ix], gs[nx+ix]]
@@ -64,121 +72,31 @@ def one_cfplot(h):
     pass
 
 
-
-
-def qwns_plot(ab, qwns, irec, log_=False ):
-
-    log.info("qwns_plot(scf, \"%s\", %d, log_=%s  )" % (qwns, irec, log_ )) 
-
-    fig = plt.figure()
-
-    ab.irec = irec
-
-    fig.suptitle(ab.suptitle)
-
-    ny = 2 
-    nx = len(qwns)
-
-    gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
-
-    c2ps = []
-    for ix in range(nx):
-
-        gss = [gs[ix], gs[nx+ix]]
-
-        qwn = qwns[ix]
-
-        h = ab.rhist(qwn, irec)
-
-        h.log = log_
-
-        cfplot(fig, gss, h )
-
-        c2ps.append(h.c2p) 
-    pass
-
-    qd = odict(zip(list(qwns),c2ps))
-    return qd
-
-
-
-def qwn_plot(ab, qwn, irec, log_=False ):
-
-    ab.irec = irec      
-
-    h = ab.rhist(qwn, irec)
-
-    h.log = log_
-
-    fig = plt.figure()
-    fig.suptitle(ab.suptitle)
-
-    nx,ix = 1,0
-    gs = gridspec.GridSpec(2, nx, height_ratios=[3,1])
-    gss = [gs[ix], gs[nx+ix]]
-
-    cfplot(fig, gss, h )
-    
-    c2ps = [h.c2p]
-
-    #print "c2p", c2p
-
-    qd = odict(zip(list(qwn),c2ps))
-    return qd
-
-
-
-def multiplot(ab, pages=["XYZT","ABCR"], sli=slice(0,5)):
+def multiplot(ab, start=0, stop=5, qwns="XYZT,ABCR", log_=False):
     """
-    Inflexible approach taken for recording distrib chi2 
-    is making this inflexible to use
     """
-    qwns = "".join(pages)
-    dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+    pages = qwns.split(",")
 
-    log_ = False
-
-    trs = ab.totrec(sli.start, sli.stop)
-    nrs = ab.nrecs(sli.start, sli.stop)
-
-    log.info(" multiplot : trs %d nrs %s " % ( trs, repr(nrs)) )
-        
-    stat = np.recarray((trs,), dtype=dtype)
-    ival = 0
- 
-    for i,isel in enumerate(range(sli.start, sli.stop)):
+    for i,isel in enumerate(range(start, stop)):
 
         ab.sel = slice(isel, isel+1)
-        nr = ab.nrec
-        assert nrs[i] == nr, (i, nrs[i], nr )  
+        nrec = ab.nrec
 
-        for irec in range(nr):
+        for irec in range(nrec):
 
             ab.irec = irec 
-            key = ab.suptitle
-            log.info("multiplot irec %d nrec %d ival %d key %s " % (irec, nr, ival, key))
+            suptitle = ab.suptitle
 
-            od = odict()
-            od.update(key=key) 
+            log.info("multiplot irec %d nrec %d suptitle %s " % (irec, nrec, suptitle))
 
             for page in pages:
-                qd = qwns_plot( ab, page, irec, log_ )
-                od.update(qd)
+                hh = ab.rhist(page, irec, log_ )
+                qwns_plot( hh, suptitle )
             pass
-
-            stat[ival] = tuple(od.values())
-            ival += 1
         pass
     pass
 
-    assert ival == trs, (ival, trs )
 
-    np.save(os.path.expandvars("$TMP/stat.npy"),stat)  # make_rst_table.py reads this and dumps RST table
-    return stat 
-
-    # a = np.load(os.path.expandvars("$TMP/stat.npy"))
-    #rst = recarray_as_rst(stat)
-    #print rst 
 
 
 
@@ -193,10 +111,6 @@ if __name__ == '__main__':
     from opticks.ana.ab import AB
 
     h = AB.rrandhist()
-
-    #ctx = {'det':"concentric", 'tag':"1", 'qwn':"X", 'irec':"5", 'seq':"TO_BT_BT_BT_BT_DR_SA" }
-    #cfp = CFP(ctx)
-    #h = cfp()
 
     one_cfplot(h) 
 

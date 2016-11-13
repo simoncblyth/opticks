@@ -3,6 +3,7 @@
 
 """
 import os, sys, logging, numpy as np
+from collections import OrderedDict as odict
 
 from opticks.ana.base import opticks_main
 from opticks.ana.cfh import CFH
@@ -11,6 +12,7 @@ from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
+from opticks.ana.make_rst_table import recarray_as_rst
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +40,7 @@ class AB(object):
          h = ab.h      # qwn and irec used in creation of histogram, which is persisted
 
     """
+    STATPATH = "$TMP/stat.npy"
     def __init__(self, args):
         self.args = args
         self.tabs = []
@@ -276,6 +279,60 @@ class AB(object):
         pass
         return nrs
 
+    def stats(self, start=0, stop=5, qwns="XYZT,ABCR"):
+
+        qwns = qwns.replace(",","")
+
+        dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+
+        trs = self.totrec(start, stop)
+        nrs = self.nrecs(start, stop)
+
+        log.info("AB.stats : %s :  trs %d nrs %s " % ( qwns, trs, repr(nrs)) )
+        
+        stat = np.recarray((trs,), dtype=dtype)
+        ival = 0
+        for i,isel in enumerate(range(start, stop)):
+
+            self.sel = slice(isel, isel+1)
+            nr = self.nrec
+            assert nrs[i] == nr, (i, nrs[i], nr )  
+
+            for irec in range(nr):
+
+                self.irec = irec 
+                key = self.suptitle
+                log.info("stats irec %d nrec %d ival %d key %s " % (irec, nr, ival, key))
+
+                od = odict(key=key)
+
+                hh = self.rhist(qwns, irec)
+
+                qd = odict(zip(list(qwns),map(lambda h:h.c2p, hh)))
+
+                od.update(qd)
+
+                stat[ival] = tuple(od.values())
+                ival += 1
+            pass
+        pass
+        assert ival == trs, (ival, trs )
+
+        np.save(os.path.expandvars(self.STATPATH),stat)  # make_rst_table.py reads this and dumps RST table
+        return stat 
+
+    @classmethod
+    def loadstats(cls):
+        st = np.load(os.path.expandvars(cls.STATPATH)).view(np.recarray)
+        return st 
+
+    @classmethod
+    def dumpstats(cls, st=None): 
+        if st is None:
+            st = cls.loadstats()
+        rst = recarray_as_rst(st)
+        print rst 
+
     def totrec(self, start=0, stop=None, step=1):
         """
         :param sli:
@@ -383,21 +440,47 @@ class AB(object):
     qwn = property(_get_qwn, _set_qwn)
 
     def _get_h(self):
-        cfh = self.rhist( self.qwn, self.irec)
-        return cfh        
+        hh = self.rhist( self.qwn, self.irec)
+        assert len(hh) == 1
+        return hh[0]        
     h = property(_get_h)
 
-    def rhist(self, qwn, irec, cut=30): 
-        ctx=self.ctx(qwn=qwn,irec=irec)
-        cfh = CFH(ctx)
-        if cfh.exists():
-            cfh.load()
-        else:
-            bn, av, bv, la = self.rqwn(qwn, irec)
-            cfh(bn,av,bv,la,cut=cut)
-            cfh.save()
+    def rhist_(self, ctxs, create=True):
+        seq0s = list(set(map(lambda ctx:ctx.get("seq0", None),ctxs)))
+        hh = []
+        for seq0 in seq0s:
+            sel = seq0.replace("_", " ")
+            log.info("AB.rhist_ setting sel to %s " % sel )
+
+            self.sel = sel   # adjust selection 
+
+            for ctx in filter(lambda ctx:ctx.get("seq0",None) == seq0, ctxs):
+                hs = self.rhist(qwn=ctx["qwn"], irec=ctx["irec"], create=create)
+                assert len(hs) == 1
+                hh.append(hs[0])
+            pass
         pass
-        return cfh
+        return hh
+
+    def rhist(self, qwn, irec, cut=30, create=False, log_=False): 
+        hs = []
+        for r in str(irec):
+            ir = str(int(r,16)) 
+            for q in str(qwn):
+                ctx=self.ctx(qwn=q,irec=ir)
+                h = CFH(ctx)
+                h.log = log_
+                if h.exists() and not create:
+                    h.load()
+                else:
+                    bn, av, bv, la = self.rqwn(qwn, irec)
+                    h(bn,av,bv,la,cut=cut)
+                    h.save()
+                pass
+                hs.append(h)
+            pass
+        pass
+        return hs
  
     def rqwn(self, qwn, irec): 
         """
@@ -457,4 +540,4 @@ if __name__ == '__main__':
     ok = opticks_main()
     ab = AB(ok)
     print ab
-
+    

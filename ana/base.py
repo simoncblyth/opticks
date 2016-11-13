@@ -225,6 +225,7 @@ def opticks_args(**kwa):
     cmx = kwa.get("cmx", 0)
     prohis = kwa.get("prohis", False)
     promat = kwa.get("promat", False)
+    rehist = kwa.get("rehist", False)
 
 
     parser = argparse.ArgumentParser(doc)
@@ -258,6 +259,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     parser.add_argument(     "--prohis", action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--promat", action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
+    parser.add_argument(     "--rehist", action="store_true", help="Recreate hists rather than loading persisted ones. Default %(default)s ")
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
 

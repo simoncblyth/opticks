@@ -130,7 +130,7 @@ class Evt(object):
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
-    RQWN_BINSCALE = {"X":100,"Y":100,"Z":100,"W":10,"R":100, "T":10,"A":1,"B":1,"C":1} 
+    RQWN_BINSCALE = {"X":1000,"Y":1000,"Z":1000,"W":10,"R":1000, "T":1000,"A":1,"B":1,"C":1} 
 
     @classmethod
     def selection(cls, evt, seqs=[], not_=False, label=None, dbg=False):
@@ -142,7 +142,7 @@ class Evt(object):
 
 
     def __init__(self, tag="1", src="torch", det="dayabay", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?" ):
-
+        log.info("%s.__init__ START " % nom)
         self.nom = nom
         self._psel = None
         self._labels = []
@@ -193,14 +193,14 @@ class Evt(object):
             pass
             self.psel = psel      # psel property setter
 
-            self.init_index(tag, src, det, dbg)
+            #self.init_index(tag, src, det, dbg)
         pass
         self.check_stamps()
-
+        log.info("%s.__init__ DONE " % nom)
 
 
     def init_types(self):
-        log.debug("init_types")
+        log.info("init_types")
         self.hismask = HisMask()
         self.histype = HisType()
         self.mattype = MatType()
@@ -208,6 +208,7 @@ class Evt(object):
 
 
     def init_metadata(self, tag, src, det, dbg):
+        log.info("init_metadata")
         self.tag = str(tag)
         self.src = src
         self.det = det  
@@ -258,6 +259,7 @@ class Evt(object):
     def init_gensteps(self, tag, src, det, dbg):
         """
         """
+        log.info("init_gensteps")
         gs = A.load_("gs",src,tag,det, optional=True) 
 
         self.gs = gs
@@ -268,6 +270,7 @@ class Evt(object):
         """
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
         """
+        log.info("init_photons")
         ox = A.load_("ox",src,tag,det, optional=True ) 
         self.ox = ox
         self.desc['ox'] = "(photons) final photon step"
@@ -334,6 +337,7 @@ class Evt(object):
 
 
     def init_hits(self, tag, src, det, dbg):
+        log.info("init_hits")
         ht = A.load_("ht",src,tag,det, optional=True) 
         self.ht = ht
         self.desc['ht'] = "(hits) surface detect SD final photon steps"
@@ -364,6 +368,7 @@ class Evt(object):
     def init_records(self, tag, src, det, dbg):
         """
         """
+        log.info("init_records")
         rx = A.load_("rx",src,tag,det,dbg, optional=True)
         self.rx = rx
         self.desc['rx'] = "(records) photon step records"
@@ -392,7 +397,7 @@ class Evt(object):
                [[0xbcbccccc6dL, 0x3333342311L]],
 
         """
-        log.debug("init_sequence START")
+        log.info("init_sequence START")
 
         ph = A.load_("ph",src,tag,det,dbg, optional=True)
         self.ph = ph
@@ -441,7 +446,7 @@ class Evt(object):
             msk = msk_(imsk) 
             setattr(self, "seqhis_ana_%d" % imsk, SeqAna(seqhis & msk, self.histype, cnames=[cn])) 
 
-        log.debug("init_sequence DONE")
+        log.info("init_sequence DONE")
 
     his = property(lambda self:self.seqhis_ana.table)
     mat = property(lambda self:self.seqmat_ana.table)
@@ -819,6 +824,7 @@ class Evt(object):
             Out[6]: (100, 10, 1, 4)
 
         """
+        log.info("init_index START")
         ps = A.load_("ps",src,tag,det,dbg, optional=True)
 
         if not ps is None and not ps.missing:
@@ -866,6 +872,9 @@ class Evt(object):
         if not rsr is None:
             rsr.desc = "(records) RESHAPED recsel sequence frequency index lookups (uniques %d)"  % ursr 
             self.desc['rsr'] = rsr.desc
+        pass
+
+        log.info("init_index DONE")
 
  
     x = property(lambda self:self.ox[:,0,0])
