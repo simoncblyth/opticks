@@ -12,6 +12,7 @@ Random access to qwn/irec AB comparison histograms and chi2 within AB single lin
    cfh-;cfh concentric/1/TO_BT_BT_BT_BT_SA/0/XYZT
 
    cfh-;cfh concentric/1/TO_SC_BT_BT_BT_BT_SA/6/XYZT
+   cfh-;cfh --rehist concentric/1/TO_SC_BT_BT_BT_BT_SA/6/XYZT
 
 
 EOU

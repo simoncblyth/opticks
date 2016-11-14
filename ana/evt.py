@@ -714,7 +714,7 @@ class Evt(object):
 
         nr = self.nrec
         if nr > -1 and irec < 0:
-            irec += nrec 
+            irec += nr
 
         self._irec = irec
     irec = property(_get_irec, _set_irec)

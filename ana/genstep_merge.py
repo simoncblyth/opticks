@@ -39,8 +39,8 @@ if __name__ == '__main__':
     srcs = args.src.split(",")
     assert len(srcs) == 2
 
-    sli = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sli.split(":")))
 
+    sli = args.sli
 
     try:    
         a = A.load_("gensteps",srcs[0],args.tag,args.det)

@@ -12,6 +12,7 @@ from opticks.ana.decompression import decompression_bins
 from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
+from opticks.ana.abstat import ABStat
 from opticks.ana.make_rst_table import recarray_as_rst
 
 log = logging.getLogger(__name__)
@@ -39,8 +40,26 @@ class AB(object):
 
          h = ab.h      # qwn and irec used in creation of histogram, which is persisted
 
+    For example, checking a hi chi2 contributor::
+
+        In [12]: h = ab.h
+        [2016-11-14 12:21:43,098] p12883 {/Users/blyth/opticks/ana/ab.py:473} INFO - AB.rhist qwn T irec 5 
+        [2016-11-14 12:21:43,098] p12883 {/Users/blyth/opticks/ana/cfh.py:344} INFO - CFH.load from /tmp/blyth/opticks/CFH/concentric/1/TO_BT_BT_BT_BT_AB/5/T 
+
+        In [13]: h.lhabc
+        Out[13]: 
+        array([[     2.9649,      6.9934,      0.    ,      0.    ,      0.    ],
+               [     6.9934,     11.0218,      0.    ,      0.    ,      0.    ],
+               [    11.0218,     15.0503,      0.    ,      0.    ,      0.    ],
+               [    15.0503,     19.0787,      0.    ,      0.    ,      0.    ],
+               [    19.0787,     23.1072,  14159.    ,  13454.    ,     17.9997],
+               [    23.1072,     27.1356,  14796.    ,  15195.    ,      5.3083],
+               [    27.1356,     31.164 ,      0.    ,      0.    ,      0.    ],
+               [    31.164 ,     35.1925,      0.    ,      0.    ,      0.    ],
+               [    35.1925,     39.2209,      0.    ,      0.    ,      0.    ],
+               [    39.2209,     43.2494,      0.    ,      0.    ,      0.    ]], dtype=float32)
+
     """
-    STATPATH = "$TMP/stat.npy"
     def __init__(self, args):
         self.args = args
         self.tabs = []
@@ -162,7 +181,21 @@ class AB(object):
     def _get_sel(self):
         return self._sel
     def _set_sel(self, sel):
+        """
+        NB slice selection at AB level must be
+        converted into seq string selection at evt level
+        as the labels can diverge, expecially out in the tail
+        """
         log.debug("AB._set_sel %s " % repr(sel))
+
+        if type(sel) is slice:
+            clabels = self.clabels
+            seqs = clabels[sel]  
+            assert len(seqs) == 1, seqs
+            log.debug("AB._set_set convert slice selection %r into common label seq selection  %s " % (sel, seqs[0]))
+            sel = seqs[0]
+        pass
+
         self.a.sel = sel
         self.b.sel = sel
         self._sel = sel 
@@ -210,12 +243,22 @@ class AB(object):
         return lab0.replace(" ","_")
     seq0 = property(_get_seq0)
 
-    def a_count(self, line=0):
+    def count(self, line=0, col=1):
         """subselects usually have only one sequence line""" 
-        return self.his.cu[line,1]
+        flv = self.flv
+        if flv == "seqhis":
+            return self.his.cu[line,col]
+        elif flv == "seqmat":
+            return self.mat.cu[line,col]
+        else:
+            pass
+        return None
+
+    def a_count(self, line=0):
+        return self.count(line,1)
 
     def b_count(self, line=0):
-        return self.his.cu[line,2]
+        return self.count(line,2)
 
     def ab_count(self, line=0):
         ac = self.a_count(line)
@@ -228,13 +271,20 @@ class AB(object):
         return title
     suptitle = property(_get_suptitle)
 
+    def _get_ctx(self):
+        return {'det':self.args.det, 'tag':self.args.tag, 'src':self.args.src, 'seq0':self.seq0, 'lab':self.reclab, 'irec':self.irec, 'qwn':self.qwn }
+    ctx = property(_get_ctx)
 
-    def ctx(self, **kwa):
-        irec = kwa.get('irec',"0")
-        self.irec = irec
-        d = {'det':self.args.det, 'tag':self.args.tag, 'src':self.args.src, 'seq0':self.seq0, 'lab':self.reclab }
-        d.update(kwa)
-        return d 
+    def _get_pctx(self):
+        ctx = self.ctx 
+        return CFH.pctx_(ctx)
+    pctx = property(_get_pctx)
+
+    def _get_qctx(self):
+        ctx = self.ctx 
+        return CFH.qctx_(ctx)
+    qctx = property(_get_qctx)
+
 
     def _get_nrec(self):
         """
@@ -248,7 +298,7 @@ class AB(object):
         else:
             nr = -1
         pass
-        log.info(" a_nr:%d b_nr:%d nr:%d " % (a_nr, b_nr, nr) )
+        log.debug(" a_nr:%d b_nr:%d nr:%d " % (a_nr, b_nr, nr) )
         return nr 
     nrec = property(_get_nrec)
 
@@ -272,18 +322,24 @@ class AB(object):
         """
         """
         sli = slice(start, stop, step)
-        labels = self.alabels[sli] 
+        labels = self.clabels[sli] 
         nrs = np.zeros(len(labels), dtype=np.int32) 
         for ilab, lab in enumerate(labels):
             nrs[ilab] = len(lab.split())
         pass
         return nrs
 
-    def stats(self, start=0, stop=5, qwns="XYZT,ABCR"):
-
+    def stats(self, start=0, stop=5, qwns="XYZT,ABCR", rehist=False):
+        """
+        slice selection in AB has to be converted into common seq selection 
+        in the evt 
+        """
         qwns = qwns.replace(",","")
 
-        dtype = [("key","|S64")] + [(q,np.float32) for q in list(qwns)]
+        dtype = [("na",np.int32), ("nb",np.int32)] 
+        dtype += [("qctx","|S64")]
+        dtype += [("reclab","|S64")]
+        dtype += [(q,np.float32) for q in list(qwns)]
 
         trs = self.totrec(start, stop)
         nrs = self.nrecs(start, stop)
@@ -294,19 +350,32 @@ class AB(object):
         ival = 0
         for i,isel in enumerate(range(start, stop)):
 
-            self.sel = slice(isel, isel+1)
+            self.sel = slice(isel, isel+1)    ## changing single seq line selection 
+
+
             nr = self.nrec
             assert nrs[i] == nr, (i, nrs[i], nr )  
 
             for irec in range(nr):
 
                 self.irec = irec 
+
+                self.qwn = qwns   # for collective qctx 
+
+                qctx = self.qctx
+
                 key = self.suptitle
-                log.info("stats irec %d nrec %d ival %d key %s " % (irec, nr, ival, key))
 
-                od = odict(key=key)
+                log.debug("stats irec %d nrec %d ival %d key %s qctx %s " % (irec, nr, ival, key, qctx))
 
-                hh = self.rhist(qwns, irec)
+                od = odict()
+
+                od["na"] = self.a_count(0)    # single line selection so line=0
+                od["nb"] = self.b_count(0)    # single line selection so line=0
+                od["qctx"] = qctx 
+                od["reclab"] = self.reclab 
+
+                hh = self.rhist(qwns, irec, rehist=rehist)
 
                 qd = odict(zip(list(qwns),map(lambda h:h.c2p, hh)))
 
@@ -318,20 +387,9 @@ class AB(object):
         pass
         assert ival == trs, (ival, trs )
 
-        np.save(os.path.expandvars(self.STATPATH),stat)  # make_rst_table.py reads this and dumps RST table
-        return stat 
-
-    @classmethod
-    def loadstats(cls):
-        st = np.load(os.path.expandvars(cls.STATPATH)).view(np.recarray)
+        st = ABStat(stat) 
+        st.save()
         return st 
-
-    @classmethod
-    def dumpstats(cls, st=None): 
-        if st is None:
-            st = cls.loadstats()
-        rst = recarray_as_rst(st)
-        print rst 
 
     def totrec(self, start=0, stop=None, step=1):
         """
@@ -352,20 +410,20 @@ class AB(object):
         nrs = self.nrecs(start, stop, step)
         return int(nrs.sum())
 
-    def _get_alabels(self):
+    def _get_clabels(self):
         """
-        :return alabels: all labels of current flv 
+        :return clabels: all labels of current flv 
         """
         flv = self.flv
         if flv == "seqhis":
-            alabels = self.ahis.labels
+            clabels = self.ahis.labels
         elif flv == "seqmat":
-            alabels = self.amat.labels
+            clabels = self.amat.labels
         else:
-            alabels = []
+            clabels = []
         pass
-        return alabels
-    alabels = property(_get_alabels)
+        return clabels
+    clabels = property(_get_clabels)
 
     def rpost(self):
         """
@@ -445,7 +503,11 @@ class AB(object):
         return hh[0]        
     h = property(_get_h)
 
-    def rhist_(self, ctxs, create=True):
+    def rhist_(self, ctxs, rehist=False):
+        """
+        :param ctxs: list of ctx
+        :param rehist: bool, when True recreate histograms, otherwise pre-persisted histos are loaded
+        """
         seq0s = list(set(map(lambda ctx:ctx.get("seq0", None),ctxs)))
         hh = []
         for seq0 in seq0s:
@@ -455,25 +517,34 @@ class AB(object):
             self.sel = sel   # adjust selection 
 
             for ctx in filter(lambda ctx:ctx.get("seq0",None) == seq0, ctxs):
-                hs = self.rhist(qwn=ctx["qwn"], irec=ctx["irec"], create=create)
+                hs = self.rhist(qwn=ctx["qwn"], irec=ctx["irec"], rehist=rehist)
                 assert len(hs) == 1
                 hh.append(hs[0])
             pass
         pass
         return hh
 
-    def rhist(self, qwn, irec, cut=30, create=False, log_=False): 
+    def rhist(self, qwn, irec, cut=30, rehist=False, log_=False): 
+
+        log.debug("AB.rhist qwn %s irec %s " % (qwn, irec))
+
         hs = []
         for r in str(irec):
             ir = str(int(r,16)) 
+            self.irec = ir
+
             for q in str(qwn):
-                ctx=self.ctx(qwn=q,irec=ir)
+
+                self.qwn = q 
+                ctx=self.ctx
+
                 h = CFH(ctx)
                 h.log = log_
-                if h.exists() and not create:
+
+                if h.exists() and not rehist:
                     h.load()
                 else:
-                    bn, av, bv, la = self.rqwn(qwn, irec)
+                    bn, av, bv, la = self.rqwn(q, irec)
                     h(bn,av,bv,la,cut=cut)
                     h.save()
                 pass

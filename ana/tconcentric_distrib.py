@@ -3,6 +3,20 @@
 tconcentric_distrib.py 
 =============================================
 
+::
+
+    tconcentric-d --noplot --sel 0:20   
+    tconcentric-d --noplot --sel 0:40
+    tconcentric-d --noplot --sel 0:100
+
+    # make rst chi2 table for all records of first many seq lines, 
+    #  (142 recline for 0:20, 295 for 0:40, 897 for 0:100)
+    #
+    # skipping the plotting makes this fast, allowing 
+    # chi2 distrib comparisons to be made for many thousands
+    # of distribs in seconds 897*8 = 7176 
+
+
 """
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
@@ -23,8 +37,7 @@ from opticks.ana.cfplot import cfplot, qwns_plot, multiplot
 
 
 if __name__ == '__main__':
-    np.set_printoptions(precision=4, linewidth=200)
-    ok = opticks_main(tag="1", src="torch", det="concentric")
+    ok = opticks_main(tag="1", src="torch", det="concentric", qwn="XYZT,ABCR", sel="0:5" )
     log.info(" ok %s " % repr(ok.brief))
 
     plt.ion()
@@ -38,12 +51,15 @@ if __name__ == '__main__':
     
     print ab
 
+    log.info(" sel %r qwn %s " % (ok.sel, ok.qwn )) 
 
-    start, stop, qwns = 0,5, "XYZT,ABCR" 
+    st = ab.stats( ok.sel.start, ok.sel.stop, ok.qwn, rehist=ok.rehist )
+    print st 
 
-    multiplot(ab, start, stop, qwns )
-
-    st = ab.stats( start, stop, qwns )
-
+    if ok.plot:
+        multiplot(ab, ok.sel.start, ok.sel.stop, ok.qwn )
+    else:
+        log.info("plotting skipped by --noplot option")
+    pass
 
  

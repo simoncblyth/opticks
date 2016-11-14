@@ -49,16 +49,25 @@ def cfplot(fig, gss, h):
 
 
 def qwns_plot( hh, suptitle ):
-    fig = plt.figure()
-    fig.suptitle(suptitle)
-    ny = 2 
-    nx = len(hh)
-    gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
-    for ix in range(nx):
-        gss = [gs[ix], gs[nx+ix]]
-        h = hh[ix]
-        cfplot(fig, gss, hh[ix] )
-    pass
+    nhh = len(hh)
+    nxm = 4 
+    if nhh > nxm:
+        # pagination 
+        for p in range(nhh/nxm):
+            phh = hh[p*nxm:(p+1)*nxm]
+            qwns_plot( phh, suptitle + " (%d)" % p )   
+        pass
+    else:
+        fig = plt.figure()
+        fig.suptitle(suptitle)
+        ny = 2 
+        nx = len(hh)
+        gs = gridspec.GridSpec(ny, nx, height_ratios=[3,1])
+        for ix in range(nx):
+            gss = [gs[ix], gs[nx+ix]]
+            h = hh[ix]
+            cfplot(fig, gss, hh[ix] )
+        pass
 
 def one_cfplot(h):
     fig = plt.figure()

@@ -210,9 +210,12 @@ def opticks_args(**kwa):
     stag = kwa.get("stag", None)
     ptag = kwa.get("ptag", None)
     show = kwa.get("show", True)
+    plot = kwa.get("plot", True)
     terse = kwa.get("terse", False)
     mat = kwa.get("mat", "GdDopedLS")
     sli = kwa.get("sli", "::1")
+    sel = kwa.get("sel", "0:5:1")
+    qwn = kwa.get("qwn", "XYZT,ABCR")
     c2max = kwa.get("c2max", 2.0)
     pfxseqhis = kwa.get("pfxseqhis", "")
     pfxseqmat = kwa.get("pfxseqmat", "")
@@ -235,6 +238,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--src",  default=src, help="photon source: torch, scintillation OR cerenkov. Default %(default)s " )
 
     parser.add_argument(     "--noshow",  dest="show", default=show, action="store_false", help="switch off dumping commandline "  )
+    parser.add_argument(     "--noplot",  dest="plot", default=plot, action="store_false", help="switch off plotting"  )
     parser.add_argument(     "--show",  default=show, action="store_true", help="dump invoking commandline "  )
     parser.add_argument(     "--loglevel", default=llv, help=" set logging level : DEBUG/INFO/WARNING/ERROR/CRITICAL. Default %(default)s." )
 
@@ -248,6 +252,8 @@ def opticks_args(**kwa):
     parser.add_argument(     "--mrc",  default=mrc, type=int, help="script return code resulting from missing event files. Default %(default)s "  )
     parser.add_argument(     "--mat",  default=mat, help="material name, used for optical property dumping/plotting. Default %(default)s"  )
     parser.add_argument(     "--sli",  default=sli, help="slice specification delimited by colon. Default %(default)s"  )
+    parser.add_argument(     "--sel",  default=sel, help="selection slice specification delimited by colon. Default %(default)s"  )
+    parser.add_argument(     "--qwn",  default=qwn, help="Quantity by single char, pages delimited by comma eg XYZT,ABCR. Default %(default)s"  )
     parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
     parser.add_argument(     "--pfxseqhis",  default=pfxseqhis, help="Seqhis hexstring prefix for spawned selection. Default %(default)s"  )
     parser.add_argument(     "--pfxseqmat",  default=pfxseqmat, help="Seqmat hexstring prefix for spawned selection. Default %(default)s"  )
@@ -288,6 +294,11 @@ def opticks_args(**kwa):
     args.dbgseqmat = int(str(args.dbgseqmat),16) 
     args.dbgmskhis = int(str(args.dbgmskhis),16) 
     args.dbgmskmat = int(str(args.dbgmskmat),16) 
+
+
+    args.sli = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sli.split(":")))
+    args.sel = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sel.split(":")))
+
 
     log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 
 

@@ -43,7 +43,8 @@ class CFH(object):
     The members are numpy arrays and a single ctx dict
     allowing simple load/save.
     """
-    NAMES = "bins ahis bhis chi2".split()
+    #NAMES = "bins ahis bhis chi2".split()
+    NAMES = "lhabc".split()
     BASE = "$TMP/CFH"
 
     @classmethod
@@ -51,14 +52,35 @@ class CFH(object):
         return os.path.expandvars(cls.BASE)
 
     @classmethod
-    def dir_(cls, ctx):
+    def tagdir_(cls, ctx):
+        return os.path.expandvars(os.path.join(cls.BASE,ctx["det"],ctx["tag"]))
+
+    @classmethod
+    def qctx_(cls, ctx):
         seq0 = ctx["seq0"]
         if seq0 is None:
             log.fatal("CFH histograms requires single line selections")
             return None
         pass
-        return os.path.expandvars(os.path.join(cls.BASE,ctx["det"],ctx["tag"],seq0,str(ctx["irec"]),ctx["qwn"]))
+        return os.path.join(seq0,str(ctx["irec"]),ctx["qwn"])
 
+    @classmethod
+    def pctx_(cls, ctx):
+        seq0 = ctx["seq0"]
+        if seq0 is None:
+            log.fatal("CFH histograms requires single line selections")
+            return None
+        pass
+        return os.path.join(ctx["det"],ctx["tag"],seq0,str(ctx["irec"]),ctx["qwn"])
+
+    @classmethod
+    def dir_(cls, ctx):
+        qctx = cls.qctx_(ctx)
+        if qctx is None:
+             return None
+        pass
+        tagd = cls.tagdir_(ctx)
+        return os.path.join(tagd,qctx)
 
     @classmethod
     def debase_(cls, dir_):
@@ -75,12 +97,19 @@ class CFH(object):
         adir = os.path.join(base, pctx)
         return pctx, adir
 
-
     @classmethod
-    def pctx2ctx_(cls, pctx):
+    def pctx2ctx_(cls, pctx, **kwa):
         """
         :param pctx:
         :return list of ctx:
+
+        Full pctx has 5 elem::
+
+            pctx = "concentric/1/TO_BT_BT_BT_BT_SA/0/X"
+  
+        Shorter qctx has 3 elem::
+
+            qctx = "TO_BT_BT_BT_BT_SA/0/X"
 
         Not using os.listdir for this as want to 
         work more generally prior to persisting and with 
@@ -90,16 +119,31 @@ class CFH(object):
         e = pctx.split("/")
         ne = len(e)
         if ne == 5:
-            for r in e[3]:
-                ir = str(int(r,16))
-                for q in e[4]:
-                    ctx = dict(det=e[0],tag=e[1],seq0=e[2],irec=ir,qwn=q)
-                    ctxs.append(ctx)
-                pass
-            pass
-        else:
+            ks = 2
+            kr = 3
+            kq = 4
+        elif ne == 3:
+            ks = 0
+            kr = 1
+            kq = 2
+        else: 
             log.warning("unexpected path context %s " % pctx )
             return []
+
+        for r in e[kr]:
+            ir = str(int(r,16))
+            for q in e[kq]:
+                ctx = dict(seq0=e[ks],irec=ir,qwn=q)
+                if ne == 5:
+                    ctx.update({"det":e[0], "tag":e[1]})
+                elif ne == 3:
+                    ctx.update(kwa)
+                else:
+                    pass
+                pass
+                ctxs.append(ctx)
+                pass
+            pass
         pass
         return ctxs
 
@@ -130,9 +174,22 @@ class CFH(object):
         """
         return filter(lambda ctx:ctx.get("seq0",None) == seq0, ctxs)
 
+    @classmethod
+    def reclab_(cls, ctxs):
+        """
+        :param ctxs: flat list of ctx dicts
+        :return reclab: label like 'TO BT BT BT BT [SC] SA'
+        """
+        def _reclab(ctx):
+            sqs = ctx["seq0"].split("_") 
+            return " ".join([ ("[%s]" if str(i) == ctx["irec"] else "%s") % sq for i,sq in enumerate(sqs)])
+        pass
+        rls = list(set(map(lambda ctx:_reclab(ctx), ctxs)))
+        assert len(rls) == 1, rls
+        return rls[0]
 
     @classmethod
-    def dir2ctx_(cls, dir_):
+    def dir2ctx_(cls, dir_, **kwa):
         """
         :param dir_:
         :return list of ctx:
@@ -150,12 +207,11 @@ class CFH(object):
 
         """
         pctx, adir = cls.debase_(dir_)
-        return cls.pctx2ctx_(pctx)
+        return cls.pctx2ctx_(pctx, **kwa)
 
     def dir(self):
         return self.dir_(self.ctx)
 
-    seq0 = property(lambda self:self.ctx.get("seq0", None))
 
     def _get_suptitle(self):
         return self.dir()
@@ -193,13 +249,29 @@ class CFH(object):
         self._log = False
 
     def __call__(self, bn, av, bv, lab, cut=30):
-        self.bins = bn
-        self.ahis,_ = np.histogram(av, bins=bn)
-        self.bhis,_ = np.histogram(bv, bins=bn)
-        c2, c2n, c2c = chi2(self.ahis.astype(np.float32), self.bhis.astype(np.float32), cut=cut)
-        self.chi2 = c2
+
+        ahis,_ = np.histogram(av, bins=bn)
+        bhis,_ = np.histogram(bv, bins=bn)
+        c2, c2n, c2c = chi2(ahis.astype(np.float32), bhis.astype(np.float32), cut=cut)
+
+        assert len(ahis) == len(bhis) == len(c2)
+        nval = len(ahis)
+        assert len(bn) - 1 == nval
+
+        lhabc = np.zeros((nval,5), dtype=np.float32)
+
+        lhabc[:,0] = bn[0:-1] 
+        lhabc[:,1] = bn[1:] 
+        lhabc[:,2] = ahis
+        lhabc[:,3] = bhis
+        lhabc[:,4] = c2
+
+        self.lhabc = lhabc
 
         meta = {}
+        meta['nedge'] = "%d" % len(bn)  
+        meta['nval'] = "%d" % nval  
+
         meta['cut'] = cut  
         meta['c2n'] = c2n  
         meta['c2c'] = c2c 
@@ -211,6 +283,28 @@ class CFH(object):
         meta['linyfac'] = "1.3"
 
         self.ctx.update(meta)
+
+
+    ledg = property(lambda self:self.lhabc[:,0])
+    hedg = property(lambda self:self.lhabc[:,1])
+    ahis = property(lambda self:self.lhabc[:,2])
+    bhis = property(lambda self:self.lhabc[:,3])
+    chi2 = property(lambda self:self.lhabc[:,4])
+
+    def _get_bins(self):
+        """
+        Recompose bins from lo and hi edges
+        """
+        lo = self.ledg
+        hi = self.hedg
+
+        bins = np.zeros(len(lo)+1, dtype=np.float32)
+        bins[0:-1] = lo
+        bins[-1] = hi[-1]
+
+        return bins
+    bins = property(_get_bins)
+
 
     def _get_ndf(self):
         ndf = max(self.c2n - 1, 1)
@@ -248,8 +342,14 @@ class CFH(object):
     def _get_ctxfloat(self, name, fallback="0"):
         return float(self.ctx.get(name,fallback))
 
+    def _get_ctxint(self, name, fallback="0"):
+        return int(self.ctx.get(name,fallback))
+
+
+    seq0 = property(lambda self:self.ctx.get("seq0", None))
     la = property(lambda self:self._get_ctxstr("la"))
     lb = property(lambda self:self._get_ctxstr("lb"))
+    qwn = property(lambda self:self._get_ctxstr("qwn"))
 
     c2_ymax = property(lambda self:self._get_ctxfloat("c2_ymax"))
     logyfac = property(lambda self:self._get_ctxfloat("logyfac"))
@@ -257,6 +357,10 @@ class CFH(object):
     c2n = property(lambda self:self._get_ctxfloat("c2n"))
     c2c = property(lambda self:self._get_ctxfloat("c2c"))
     cut = property(lambda self:self._get_ctxfloat("cut"))
+
+    nedge = property(lambda self:self._get_ctxint("nedge"))
+    nval = property(lambda self:self._get_ctxint("nval"))
+    irec = property(lambda self:self._get_ctxint("irec"))
 
     def __repr__(self):
         return "%s[%s]" % (self.ctx['qwn'],self.ctx['irec'])
@@ -284,10 +388,9 @@ class CFH(object):
             return  
 
         dir_ = self.dir_(self.ctx)
-        log.info("CFH.save to %s " % dir_)
+        log.debug("CFH.save to %s " % dir_)
         if not os.path.exists(dir_):
             os.makedirs(dir_)
-        log.info("saving to %s " % dir_)
         json.dump(self.ctx, file(self.ctxpath(),"w") )
         for name in self.NAMES:
             np.save(self.path(name+".npy"), getattr(self, name))
@@ -300,8 +403,14 @@ class CFH(object):
             return  
 
         dir_ = self.dir_(self.ctx)
-        assert os.path.exists(dir_)
-        log.info("CFH.load from %s " % dir_)
+        log.debug("CFH.load from %s " % dir_)
+
+        exists = os.path.exists(dir_)
+        if not exists:
+            log.fatal("CFH.load non existing dir %s ctx %r " % (dir_, self.ctx) )
+
+        assert exists, dir_
+
         js = json_(self.ctxpath())
         k = map(str, js.keys())
         v = map(str, js.values())
@@ -313,7 +422,7 @@ class CFH(object):
 
 
 def test_load():
-    ctx = {'det':"concentric", 'tag':"1", 'qwn':"X", 'irec':"5", 'seq':"TO_BT_BT_BT_BT_DR_SA" }
+    ctx = {'det':"concentric", 'tag':"1", 'qwn':"X", 'irec':"5", 'seq0':"TO_BT_BT_BT_BT_DR_SA" }
     h = CFH_.load(ctx)
 
 
@@ -325,6 +434,7 @@ if __name__ == '__main__':
     plt.rcParams["figure.max_open_warning"] = 200    # default is 20
     plt.ion()
 
+
     from opticks.ana.ab import AB
     from opticks.ana.cfplot import one_cfplot, qwns_plot 
     print ok.nargs
@@ -333,21 +443,26 @@ if __name__ == '__main__':
         ab = AB(ok)
     else:
         ab = None
+    pass
 
     if len(ok.nargs) > 0:
-        pctx = ok.nargs[0]
+        qctx = ok.nargs[0]
 
-        ctxs = CFH.dir2ctx_(pctx)
+        ctxs = CFH.dir2ctx_(qctx, tag=ok.tag, det=ok.det)
         det, tag, seq0s = CFH.det_tag_seq0s_(ctxs)
 
         for seq0 in seq0s:
             ctxs = CFH.filter_ctx_(ctxs, seq0)  
-            suptitle = " %s %s %s " % (det, tag, seq0)
+            reclab = CFH.reclab_(ctxs)
+
+            suptitle = " %s %s %s " % (det, tag, reclab)
+
             if ok.rehist:
                 hh = ab.rhist_(ctxs)
             else:
                 hh = CFH.load_(ctxs)
             pass
+
             if len(hh) == 1:
                 one_cfplot(hh[0])
             else:

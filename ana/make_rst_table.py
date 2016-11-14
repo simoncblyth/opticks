@@ -47,20 +47,31 @@ def normalize_row(row, max_cols):
 
 
 
-def fmt(cell, prefix=""):
+def fmt(cellkind, prefix="", trim="key"):
+
+    cell, kind = cellkind
+
+    if kind == "f":
+        fmt = "%5.2f"
+    elif kind == "i":
+        fmt = "%d"
+    else:
+        fmt = "%s"
+    pass
+
     if type(cell) is str or type(cell) is np.string_:
         s = str(cell) 
-        if s == "key":
+        if s == trim:
             return prefix  
         elif s.startswith(prefix):
             return s[len(prefix):]
         else:
             return s
 
-    return "%5.2f" % cell
+    return fmt % cell
          
 
-def recarray_as_rst(ra):
+def recarray_as_rst(ra, trim="key"):
     """
     Expecting recarray with dtype of form: 
 
@@ -83,11 +94,24 @@ def recarray_as_rst(ra):
 
 
     """
-    prefix = os.path.commonprefix(map(str,ra.key))
+
     grid = []
-    grid.append(map(lambda _:fmt(_,prefix),ra.dtype.names))
+
+    kinds = map( lambda k:ra.dtype[k].kind, ra.dtype.names )
+
+    kfield = getattr(ra, trim, None)
+
+    if kfield is None:
+        prefix = ""
+    else:  
+        prefix = os.path.commonprefix(map(str,kfield))
+    pass
+
+    strs = ["S" for _ in range(len(ra.dtype.names))]
+    grid.append(map(lambda _:fmt(_,prefix, trim),zip(ra.dtype.names,strs)))
+
     for i in range(len(ra)):
-        grid.append(map(lambda _:fmt(_,prefix),ra[i])) 
+        grid.append(map(lambda _:fmt(_,prefix, trim),zip(ra[i],kinds))) 
     pass
     return make_rst_table(grid)
 
