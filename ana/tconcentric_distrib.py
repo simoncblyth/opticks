@@ -17,6 +17,25 @@ tconcentric_distrib.py
     # of distribs in seconds 897*8 = 7176 
 
 
+Issue with hexchar irec, fail to write into a,b,c...::
+
+    tconcentric-d --noplot --sel 11:12
+
+    delta:ana blyth$ ll /tmp/blyth/opticks/CFH/concentric/1/TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/
+    total 0
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 9
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 8
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 7
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 6
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 5
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 4
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 3
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 2
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 1
+    drwxr-xr-x  10 blyth  wheel  340 Nov 14 18:03 0
+
+
+
 """
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)

@@ -15,6 +15,9 @@ Random access to qwn/irec AB comparison histograms and chi2 within AB single lin
    cfh-;cfh --rehist concentric/1/TO_SC_BT_BT_BT_BT_SA/6/XYZT
 
 
+   cfh-;cfh --chi2sel    # plotting pages selected by distrib chi2 sum greater than cut 
+
+
 EOU
 }
 

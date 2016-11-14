@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 """
 
-* TODO: complete the decoupling of chi2 distrib tables creation and plotting
-
-* chi2 tables are made with make_rst_table.py but the 
-  creation of stat.npy currently tied into plotting machinery 
-  which limits usage to small numbers of distribs
-
 
 CFH random access for debugging::
 
@@ -34,6 +28,7 @@ CFH random access for debugging::
 import os, sys, json, logging, numpy as np
 from opticks.ana.base import opticks_main, json_
 from opticks.ana.nbase import chi2
+from opticks.ana.abstat import ABStat
 log = logging.getLogger(__name__)
 
 
@@ -56,13 +51,33 @@ class CFH(object):
         return os.path.expandvars(os.path.join(cls.BASE,ctx["det"],ctx["tag"]))
 
     @classmethod
+    def srec_(cls, irec):
+        """
+        :param irec: decimal int
+        :return srec: single char hexint 
+        """
+        srec = "%x" % irec  
+        assert len(srec) == 1, (irec, srec, "expecting single char hexint string")
+        return srec 
+
+    @classmethod
+    def irec_(cls, srec):
+        """
+        :param srec: one or more single char hexint
+        :return irec: one or more ints 
+        """
+        return [int(c,16) for c in list(srec)]
+
+
+    @classmethod
     def qctx_(cls, ctx):
         seq0 = ctx["seq0"]
         if seq0 is None:
             log.fatal("CFH histograms requires single line selections")
             return None
         pass
-        return os.path.join(seq0,str(ctx["irec"]),ctx["qwn"])
+        srec = cls.srec_(int(ctx["irec"]))
+        return os.path.join(seq0,srec,ctx["qwn"])
 
     @classmethod
     def pctx_(cls, ctx):
@@ -71,7 +86,8 @@ class CFH(object):
             log.fatal("CFH histograms requires single line selections")
             return None
         pass
-        return os.path.join(ctx["det"],ctx["tag"],seq0,str(ctx["irec"]),ctx["qwn"])
+        srec = cls.srec_(int(ctx["irec"]))
+        return os.path.join(ctx["det"],ctx["tag"],seq0,srec,ctx["qwn"])
 
     @classmethod
     def dir_(cls, ctx):
@@ -131,7 +147,8 @@ class CFH(object):
             return []
 
         for r in e[kr]:
-            ir = str(int(r,16))
+            #ir = str(int(r,16))
+            ir = int(r,16)
             for q in e[kq]:
                 ctx = dict(seq0=e[ks],irec=ir,qwn=q)
                 if ne == 5:
@@ -185,7 +202,15 @@ class CFH(object):
             return " ".join([ ("[%s]" if str(i) == ctx["irec"] else "%s") % sq for i,sq in enumerate(sqs)])
         pass
         rls = list(set(map(lambda ctx:_reclab(ctx), ctxs)))
-        assert len(rls) == 1, rls
+        n_rls = len(rls)
+        if n_rls > 1:
+            log.fatal("n_rls %d " % n_rls )
+            for ictx, ctx in enumerate(ctxs):
+                log.fatal("ictx %d  ctx %s " % (ictx, repr(ctx)))
+            pass
+        pass
+
+        assert n_rls == 1, rls
         return rls[0]
 
     @classmethod
@@ -445,22 +470,36 @@ if __name__ == '__main__':
         ab = None
     pass
 
-    if len(ok.nargs) > 0:
-        qctx = ok.nargs[0]
+    if ok.chi2sel:
+        st = ABStat.load()
+        qctxs = st.qctxsel(cut=30)
+    elif len(ok.nargs) > 0:
+        qctxs = [ok.nargs[0]]
+    else:
+        pass
+
+
+    log.info(" n_qctxs : %d " % (len(qctxs)))
+
+    for qctx in qctxs:
 
         ctxs = CFH.dir2ctx_(qctx, tag=ok.tag, det=ok.det)
+        n_ctxs = len(ctxs)
+
         det, tag, seq0s = CFH.det_tag_seq0s_(ctxs)
 
+        log.info(" qctx %s det %s tag %s seq0s %s n_ctxs %d " % (qctx, det, tag, repr(seq0s), n_ctxs))
+
         for seq0 in seq0s:
-            ctxs = CFH.filter_ctx_(ctxs, seq0)  
-            reclab = CFH.reclab_(ctxs)
+            seq0_ctxs = CFH.filter_ctx_(ctxs, seq0)  
+            reclab = CFH.reclab_(seq0_ctxs)
 
             suptitle = " %s %s %s " % (det, tag, reclab)
 
             if ok.rehist:
-                hh = ab.rhist_(ctxs)
+                hh = ab.rhist_(seq0_ctxs)
             else:
-                hh = CFH.load_(ctxs)
+                hh = CFH.load_(seq0_ctxs)
             pass
 
             if len(hh) == 1:

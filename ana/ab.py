@@ -336,9 +336,8 @@ class AB(object):
         """
         qwns = qwns.replace(",","")
 
-        dtype = [("na",np.int32), ("nb",np.int32)] 
-        dtype += [("qctx","|S64")]
-        dtype += [("reclab","|S64")]
+        dtype = [(i,np.int32) for i in "iv is na nb".split()] 
+        dtype += [(s,"|S64") for s in "qctx reclab".split()]
         dtype += [(q,np.float32) for q in list(qwns)]
 
         trs = self.totrec(start, stop)
@@ -351,7 +350,6 @@ class AB(object):
         for i,isel in enumerate(range(start, stop)):
 
             self.sel = slice(isel, isel+1)    ## changing single seq line selection 
-
 
             nr = self.nrec
             assert nrs[i] == nr, (i, nrs[i], nr )  
@@ -368,8 +366,11 @@ class AB(object):
 
                 log.debug("stats irec %d nrec %d ival %d key %s qctx %s " % (irec, nr, ival, key, qctx))
 
-                od = odict()
 
+                # NB OrderedDict setting order must match dtype name order
+                od = odict()
+                od["iv"] = ival
+                od["is"] = isel
                 od["na"] = self.a_count(0)    # single line selection so line=0
                 od["nb"] = self.b_count(0)    # single line selection so line=0
                 od["qctx"] = qctx 
@@ -385,6 +386,7 @@ class AB(object):
                 ival += 1
             pass
         pass
+        log.info("AB.stats histogramming done")
         assert ival == trs, (ival, trs )
 
         st = ABStat(stat) 
@@ -517,7 +519,7 @@ class AB(object):
             self.sel = sel   # adjust selection 
 
             for ctx in filter(lambda ctx:ctx.get("seq0",None) == seq0, ctxs):
-                hs = self.rhist(qwn=ctx["qwn"], irec=ctx["irec"], rehist=rehist)
+                hs = self.rhist(qwn=ctx["qwn"], irec=int(ctx["irec"]), rehist=rehist)
                 assert len(hs) == 1
                 hh.append(hs[0])
             pass
@@ -526,11 +528,16 @@ class AB(object):
 
     def rhist(self, qwn, irec, cut=30, rehist=False, log_=False): 
 
-        log.debug("AB.rhist qwn %s irec %s " % (qwn, irec))
-
         hs = []
-        for r in str(irec):
-            ir = str(int(r,16)) 
+
+        assert type(irec) is int
+        srec = CFH.srec_(irec)
+        log.debug("AB.rhist qwn %s irec %s srec %s " % (qwn, irec, srec))
+
+        for ir in CFH.irec_(srec):
+
+            log.debug(" ir %s ir 0x%x " % (ir,ir))
+
             self.irec = ir
 
             for q in str(qwn):
@@ -544,7 +551,7 @@ class AB(object):
                 if h.exists() and not rehist:
                     h.load()
                 else:
-                    bn, av, bv, la = self.rqwn(q, irec)
+                    bn, av, bv, la = self.rqwn(q, ir)
                     h(bn,av,bv,la,cut=cut)
                     h.save()
                 pass
