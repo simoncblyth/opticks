@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import vnorm, costheta_
 from opticks.ana.ab   import AB
+from opticks.ana.cfh  import CFH
 
 STEP = 4
 
@@ -201,21 +202,7 @@ def poldot(ab, fr, oldpol=[0,1,0], bins=100):
 
 
 
-
-
-
-
-if __name__ == '__main__':
-    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric")  
-    log.info(ok.brief)
-
-    ab = AB(ok)
-    print ab
-
-    if not ok.ipython:
-        log.info("early exit as non-interactive")
-        sys.exit(0)
-
+def debug_plotting(ok, ab):
     pfxseqhis = ok.pfxseqhis   ## eg ".6ccd" standing for "TO BT BT SC .."
     pfxseqmat = ok.pfxseqmat 
     
@@ -242,7 +229,26 @@ if __name__ == '__main__':
 
 
 
+if __name__ == '__main__':
+    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric")  
+    log.info(ok.brief)
 
+    ab = AB(ok)
+    print ab
+
+    if not ok.ipython:
+        log.info("early exit as non-interactive")
+        sys.exit(0)
+
+
+    reclab = "[TO] BT BT BT BT SA" 
+    ctxs = CFH.reclab2ctxs_(reclab, tag=ok.tag, det=ok.det )
+    n_ctxs = len(ctxs)
+
+    log.info(" n_ctxs : %d " % n_ctxs )
+    hh = ab.rhist_(ctxs, rehist=True, c2shape=True )
+
+    
 
     
 

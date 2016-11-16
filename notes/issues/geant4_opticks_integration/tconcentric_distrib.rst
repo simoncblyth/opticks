@@ -1,8 +1,92 @@
 tconcentric_distrib
 =======================
 
-machinery shakedown
-----------------------
+
+
+After move to c2shape comparisons : listing seq points with sum of distrib chi2 > 20 
+---------------------------------------------------------------------------------------
+
+* T : well known groupvel interpolation issue dominates
+
+* Notable that worst distrib chi2 offenders almost all starting "TO BT BT BT BT DR .."
+  but possible that this is just because these are long lived photons
+  so groupvel interpolation differences are mounting up causing the times to diverge
+
+  the chi2 aint increaing with steps though, but adaptive binning makes
+  this hard to interpret 
+
+
+* BUT still machinery issues with binning...
+
+
+* TODO: check chi2 with absolute bins rather then the current somewhat dodgy adaptive binning 
+* TODO: work out how to combine chi2 into distc2 (with c2shape)
+* TODO: revisit OpInterpolationTest OInterpolationTest and compare wavelength "scans" of GROUPVEL 
+* TODO: do np.diff time/position groupvel calcs for the bad chi2 seqs 
+* TODO: add W wavelength to qwns, replacing the derivative and duplicitous R (which is only useful for specific geometry origins anyhow) 
+
+
+
+::
+
+    tconcentric-d --noplot --rehist --sel 0:100    # recreate histograms for first 100 seq lines 
+
+
+    ip>  run abstat.py   # load and examine the stats
+
+
+    In [8]: st[np.where( np.sum(ar, axis=1) > 20 )]
+    Out[8]: 
+    ABStat 22 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
+    === == ===== ===== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== ===== ====== 
+    iv  is na    nb    reclab                                            X     Y     Z     T      A     B     C     R     seqc2 distc2 
+    === == ===== ===== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== ===== ====== 
+    20  3  28955 28649 TO BT BT BT BT [AB]                                1.54  0.00  0.00 21.68   0.00  0.00  0.00  1.54  1.63  0.00  
+
+    70  11 5339  5367  TO BT BT BT BT DR [BT] BT BT BT BT BT BT BT SA     0.20  0.89  0.36 279.71  1.27  1.21  0.95  0.08  0.07  0.00  
+    71  11 5339  5367  TO BT BT BT BT DR BT [BT] BT BT BT BT BT BT SA     0.19  1.03  0.63 265.43  1.19  1.11  1.07  0.00  0.07  0.00  
+    72  11 5339  5367  TO BT BT BT BT DR BT BT [BT] BT BT BT BT BT SA     1.86  0.99  0.45 106.13  1.08  1.17  0.99  0.66  0.07  0.00  
+    73  11 5339  5367  TO BT BT BT BT DR BT BT BT [BT] BT BT BT BT SA     1.50  1.23  0.28 44.62   1.16  1.13  1.09  0.54  0.07  0.00  
+    76  11 5339  5367  TO BT BT BT BT DR BT BT BT BT BT BT [BT] BT SA     1.46  1.37  1.03 23.99   1.11  1.39  1.03  1.39  0.07  0.00  
+    77  11 5339  5367  TO BT BT BT BT DR BT BT BT BT BT BT BT [BT] SA     1.57  1.37  0.94 24.41   0.96  1.25  1.19  1.26  0.07  0.00  
+    78  11 5339  5367  TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]     1.05  1.24  0.99 79.07   0.96  1.25  1.19  1.01  0.07  0.00  
+    ##            straight thru, diffuse reflect then thru all 8 layers to
+ 
+    95  14 4494  4420  TO BT BT BT BT DR [BT] BT BT BT SA                 3.26  1.15  1.22 20.52   1.34  1.55  1.22  0.47  0.61  0.00  
+    96  14 4494  4420  TO BT BT BT BT DR BT [BT] BT BT SA                 3.80  1.41  1.34 18.53   1.27  1.48  1.30  0.70  0.61  0.00  
+    97  14 4494  4420  TO BT BT BT BT DR BT BT [BT] BT SA                 1.94  1.04  1.23 10.81   1.35  1.11  1.63  1.91  0.61  0.00  
+    98  14 4494  4420  TO BT BT BT BT DR BT BT BT [BT] SA                 1.86  1.30  1.52 13.31   1.11  1.29  1.55  1.78  0.61  0.00  
+    99  14 4494  4420  TO BT BT BT BT DR BT BT BT BT [SA]                 1.82  1.09  1.33 44.96   1.11  1.29  1.55  1.21  0.61  0.00  
+    ##                         4 layers after DR             
+
+
+    191 25 1260  1263  TO BT BT BT BT DR [BT] BT BT BT AB                 4.67  1.38  1.29 74.20   0.74  1.13  0.52  2.45  0.00  0.00  
+    192 25 1260  1263  TO BT BT BT BT DR BT [BT] BT BT AB                 5.07  1.24  0.67 11.46   0.51  1.60  0.57  2.37  0.00  0.00  
+
+    241 31 1067  1019  TO BT BT BT BT DR [BT] BT AB                       1.58  1.48  0.98 20.81   1.32  1.83  0.92  1.04  1.10  0.00  
+    242 31 1067  1019  TO BT BT BT BT DR BT [BT] AB                       0.82  1.40  0.96 20.32   1.29  2.07  1.01  0.53  1.10  0.00  
+
+    313 42 545   566   TO BT BT BT BT DR [BT] BT BT BT SC BT BT BT BT SA  0.04  1.18  1.35 78.15   0.01  1.07  0.81  0.01  0.40  0.00  
+    314 42 545   566   TO BT BT BT BT DR BT [BT] BT BT SC BT BT BT BT SA  0.01  1.03  1.32 77.45   0.41  1.04  0.71  0.01  0.40  0.00  
+
+    546 67 266   270   TO BT BT BT BT DR [BT] BT BT BT BT BT BT BT AB     0.80  2.05  0.71 15.21   0.00  0.61  1.60  0.15  0.03  0.00  
+
+    591 71 237   222   TO BT BT BT BT DR [BT] BT BT BT RE BT BT BT BT SA  0.89  1.25  0.57 17.58   0.00  1.16  0.74  0.01  0.49  0.00  
+    592 71 237   222   TO BT BT BT BT DR BT [BT] BT BT RE BT BT BT BT SA  2.18  1.36  0.66 17.57   0.00  1.16  0.74  0.01  0.49  0.00  
+    === == ===== ===== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== ===== ====== 
+
+    ABStat 22 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
+
+
+Load the 8 qwn point histos::
+
+    cfh-;cfh "TO BT BT BT BT [AB]"
+
+* note that auto-binning is coming up with too few time bins here
+
+
+DONE machinery shakedown
+-----------------------------
 
 * adopt less expensive approach
 

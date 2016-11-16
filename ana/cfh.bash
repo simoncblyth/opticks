@@ -29,6 +29,12 @@ cfh()
     ipython -i $(which cfh.py) -- "$*"
 }
 
+cfh-rehist()
+{
+    ipython -i $(which cfh.py) -- --rehist "$*"
+}
+
+
 cfh-env(){
     olocal-
     opticks-

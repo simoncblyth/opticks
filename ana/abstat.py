@@ -114,6 +114,7 @@ class ABStat(object):
     """
     STATPATH = "$TMP/stat.npy"
     QWNS = "XYZTABCR"
+    SKIP = "qctx".split()
 
     @classmethod
     def path_(cls):
@@ -133,11 +134,17 @@ class ABStat(object):
         return cls(ra) 
 
     def __repr__(self):
-        return "\n".join([self.brief,recarray_as_rst(self.st[self.sli]),self.brief])
+        return "\n".join([self.brief,recarray_as_rst(self.st[self.sli], skip=self.SKIP),self.brief])
 
     def _get_brief(self):
-        return "ABStat %s %s " % (len(self.st[self.sli]), ",".join(self.st.dtype.names) )
+        return "ABStat %s %s " % (len(self.st[self.sli]), ",".join(self.names) )
     brief = property(_get_brief)
+
+    def _get_names(self):
+        names = map( lambda k:None if k in self.SKIP else k, self.st.dtype.names )
+        return filter(None, names)
+    names = property(_get_names)
+
 
     def __getitem__(self, sli):
         self.sli = sli

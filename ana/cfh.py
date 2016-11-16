@@ -27,264 +27,32 @@ CFH random access for debugging::
 """
 import os, sys, json, logging, numpy as np
 from opticks.ana.base import opticks_main, json_
+from opticks.ana.ctx import Ctx 
 from opticks.ana.nbase import chi2
 from opticks.ana.abstat import ABStat
 log = logging.getLogger(__name__)
 
 
-class CFH(object):
+class CFH(Ctx):
     """
     Persistable comparison histograms and chi2
     The members are numpy arrays and a single ctx dict
     allowing simple load/save.
+
+
+    * :google:`chi2 comparison of normalized histograms`
+    * http://www.hep.caltech.edu/~fcp/statistics/hypothesisTest/PoissonConsistency/PoissonConsistency.pdf
+
+
     """
-    QWNS = "XYZTABCR"
     NAMES = "lhabc".split()
-    BASE = "$TMP/CFH"
 
-    @classmethod
-    def base(cls):
-        return os.path.expandvars(cls.BASE)
-
-    @classmethod
-    def tagdir_(cls, ctx):
-        return os.path.expandvars(os.path.join(cls.BASE,ctx["det"],ctx["tag"]))
-
-    @classmethod
-    def srec_(cls, irec):
-        """
-        :param irec: decimal int
-        :return srec: single char hexint 
-        """
-        srec = "%x" % irec  
-        assert len(srec) == 1, (irec, srec, "expecting single char hexint string")
-        return srec 
-
-    @classmethod
-    def irec_(cls, srec):
-        """
-        :param srec: one or more single char hexint
-        :return irec: one or more ints 
-        """
-        return [int(c,16) for c in list(srec)]
-
-
-    @classmethod
-    def qctx_(cls, ctx):
-        seq0 = ctx["seq0"]
-        if seq0 is None:
-            log.fatal("CFH histograms requires single line selections")
-            return None
-        pass
-        srec = cls.srec_(int(ctx["irec"]))
-        return os.path.join(seq0,srec,ctx["qwn"])
-
-    @classmethod
-    def pctx_(cls, ctx):
-        seq0 = ctx["seq0"]
-        if seq0 is None:
-            log.fatal("CFH histograms requires single line selections")
-            return None
-        pass
-        srec = cls.srec_(int(ctx["irec"]))
-        return os.path.join(ctx["det"],ctx["tag"],seq0,srec,ctx["qwn"])
-
-    @classmethod
-    def dir_(cls, ctx):
-        qctx = cls.qctx_(ctx)
-        if qctx is None:
-             return None
-        pass
-        tagd = cls.tagdir_(ctx)
-        return os.path.join(tagd,qctx)
-
-    @classmethod
-    def debase_(cls, dir_):
-        """
-        :param dir_:
-        :return pctx, adir: path string context, absolute dir
-        """
-        base = cls.base()
-        if dir_.startswith(base):
-            pctx = dir_[len(base)+1:] 
-        else:
-            pctx = dir_
-        pass
-        adir = os.path.join(base, pctx)
-        return pctx, adir
-
-    @classmethod
-    def pctx2ctx_(cls, pctx, **kwa):
-        """
-        :param pctx:
-        :return list of ctx:
-
-        Full pctx has 5 elem::
-
-            pctx = "concentric/1/TO_BT_BT_BT_BT_SA/0/X"
-  
-        Shorter qctx has 3 elem or 2 elem::
-
-            qctx = "TO_BT_BT_BT_BT_SA/0/X"
-            qctx = "TO_BT_BT_BT_BT_SA/0"
-
-        Not using os.listdir for this as want to 
-        work more generally prior to persisting and with 
-        path contexts that do not directly correspond to file system paths.
-        """
-        ctxs = []
-        e = pctx.split("/")
-        ne = len(e)
-        if ne == 5:
-            ks = 2
-            kr = 3
-            kq = 4
-        elif ne == 3:
-            ks = 0
-            kr = 1
-            kq = 2
-        elif ne == 2:
-            ks = 0
-            kr = 1
-            kq = None
-        else:
-            log.warning("unexpected path context %s " % pctx )
-            return []
-
-        if kq is None:
-            qwns = cls.QWNS
-        else:
-            qwns = e[kq]
-
-
-        for r in e[kr]:
-            #ir = str(int(r,16))
-            ir = int(r,16)
-            for q in qwns:
-                ctx = dict(seq0=e[ks],irec=ir,qwn=q)
-                if ne == 5:
-                    ctx.update({"det":e[0], "tag":e[1]})
-                elif ne == 3 or ne == 2:
-                    ctx.update(kwa)
-                else:
-                    pass
-                pass
-                ctxs.append(ctx)
-                pass
-            pass
-        pass
-        return ctxs
-
-
-
-    @classmethod
-    def det_tag_seq0s_(cls, ctxs):
-        """
-        :param ctxs: flat list of ctx
-        :return seq0s: unique list of seq0 
-        """
-        dets = list(set(map(lambda ctx:ctx.get("det", None),ctxs)))
-        tags = list(set(map(lambda ctx:ctx.get("tag", None),ctxs)))
-        seq0s = list(set(map(lambda ctx:ctx.get("seq0", None),ctxs)))
-
-        assert len(dets) == 1, (dets, "multiple dets in ctx list not supported")
-        assert len(tags) == 1, (tags, "multiple tags in ctx list not supported")
-        assert len(seq0s) >= 1, (seq0s, "unexpected seq0 in ctx list ")
-
-        return dets[0], tags[0], seq0s 
-
-    @classmethod
-    def filter_ctx_(cls, ctxs, seq0):
-        """
-        :param ctxs: flat list of ctx dicts
-        :param seq0: string 
-        :return fctx: filtered list ctx dicts 
-        """
-        return filter(lambda ctx:ctx.get("seq0",None) == seq0, ctxs)
-
-    @classmethod
-    def reclab_(cls, ctxs):
-        """
-        :param ctxs: flat list of ctx dicts
-        :return reclab: label like 'TO BT BT BT BT [SC] SA'
-        """
-        def _reclab(ctx):
-            sqs = ctx["seq0"].split("_") 
-            _rl = " ".join([ ("[%s]" if i == int(ctx["irec"]) else "%s") % sq for i,sq in enumerate(sqs)])
-            log.info("reclab_ ctx %r _rl %s " % ( ctx, _rl ))
-            return _rl
-        pass
-        rls = list(set(map(lambda ctx:_reclab(ctx), ctxs)))
-        n_rls = len(rls)
-        if n_rls > 1:
-            log.fatal("n_rls %d " % n_rls )
-            for ictx, ctx in enumerate(ctxs):
-                log.fatal("ictx %d  ctx %s " % (ictx, repr(ctx)))
-            pass
-        pass
-
-        assert n_rls == 1, rls
-        return rls[0]
-
-
-    @classmethod
-    def reclab2qctx_(cls, arg, **kwa):
-        """
-        If argument contains no spaces return unchanged otherwise apply reclab into qctx conversion, eg::
-
-             "[TO] BT BT BT BT SA"                             ->  "TO_BT_BT_BT_BT_SA/0"
-             "TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]"  ->  "TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/e" 
-
-        """
-        arg_ = arg.strip() 
-        if arg_.find(" ") == -1: 
-            return arg 
-
-        recs = filter(lambda _:_[1][0] == "[" and _[1][3] == "]", list(enumerate(arg_.split())))
-        assert len(recs) == 1
-        irec = int(recs[0][0])
-
-        elem = arg_.replace("[","").replace("]","").split()
-        return "%s/%s" % ("_".join(elem), "%x" % irec ) 
-
-    @classmethod
-    def dir2ctx_(cls, dir_, **kwa):
-        """
-        :param dir_:
-        :return list of ctx:
-
-        Expect absolute or relative directory paths such as::
-
-            dir_ = "/tmp/blyth/opticks/CFH/concentric/1/TO_BT_BT_BT_BT_SA/0/X"
-            dir_ = "concentric/1/TO_BT_BT_BT_BT_SA/0/X"
-
-        Last element "X" represents the quantity or quantities, with one or more of "XYZTABCR".
-
-        Penultimate element "0" represents the irec index within the sequence, with 
-        one or more single chars from "0123456789abcdef". For example "0" points to 
-        the "TO" step for seq0 of "TO_BT_BT_BT_BT_SA".
-
-        """
-        pctx, adir = cls.debase_(dir_)
-        return cls.pctx2ctx_(pctx, **kwa)
-
-    def dir(self):
-        return self.dir_(self.ctx)
-
-    def _get_suptitle(self):
-        return self.dir()
-    suptitle = property(_get_suptitle)
-
-    @classmethod
-    def path_(cls, ctx, name):
-        dir_ = cls.dir_(ctx)
-        return os.path.join(dir_, name)
 
     @classmethod
     def load_(cls, ctx):
          if type(ctx) is list:
              return map(lambda _:cls.load_(_), ctx)
-         elif type(ctx) is dict:
+         elif type(ctx) is Ctx:
              h = CFH(ctx)  
              h.load()
              return h 
@@ -292,26 +60,53 @@ class CFH(object):
              log.warning("CFH.load_ unexpected ctx %s " % repr(ctx))
          return None
 
-    def path(self, name):
-        return self.path_(self.ctx, name)
+    def __init__(self, *args, **kwa):
 
-    def __init__(self, ctx={}):
-        if type(ctx) is str:
-            ctxs = self.dir2ctx_(ctx)
-            assert len(ctxs) == 1, "expect only a single ctx"
-            ctx = ctxs[0]
-        pass
-        self.ctx = ctx 
+        Ctx.__init__(self, *args, **kwa)
+
+        #if type(ctx) is str:
+        #    ctxs = Ctx.dir2ctx_(ctx)
+        #    assert len(ctxs) == 1, "expect only a single ctx"
+        #    ctx = ctxs[0]
+        #pass
 
         # transients, not persisted
         self._log = False
 
-    def __call__(self, bn, av, bv, lab, c2cut=30):
+    def __call__(self, bn, av, bv, lab, c2cut=30, c2shape=False):
+        """
+        :param bn: bin edges array
+        :param av: a values array
+        :param bv: b values array
+        :param lab:
+
+        Called from AB.rhist
+
+        """
+
+        na = len(av)
+        nb = len(bv)
+        nv = 0.5*float(na + nb)
+
+        #log.info("CFH.__call__ na %d nb %d nv %7.2f " % (na,nb,nv))
 
         ahis,_ = np.histogram(av, bins=bn)
         bhis,_ = np.histogram(bv, bins=bn)
 
-        c2, c2n, c2c = chi2(ahis.astype(np.float32), bhis.astype(np.float32), cut=c2cut)
+        ah = ahis.astype(np.float32)
+        bh = bhis.astype(np.float32)
+
+        if c2shape:
+            # shape comparison, normalize bin counts to average 
+            #log.info("c2shape comparison")
+            uah = ah*nv/float(na)
+            ubh = bh*nv/float(nb)
+        else:
+            uah = ah 
+            ubh = bh 
+        pass
+
+        c2, c2n, c2c = chi2(uah, ubh, cut=c2cut)
 
         assert len(ahis) == len(bhis) == len(c2)
         nval = len(ahis)
@@ -321,8 +116,8 @@ class CFH(object):
 
         lhabc[:,0] = bn[0:-1] 
         lhabc[:,1] = bn[1:] 
-        lhabc[:,2] = ahis
-        lhabc[:,3] = bhis
+        lhabc[:,2] = uah
+        lhabc[:,3] = ubh
         lhabc[:,4] = c2
 
         self.lhabc = lhabc
@@ -331,7 +126,7 @@ class CFH(object):
         meta['nedge'] = "%d" % len(bn)  
         meta['nval'] = "%d" % nval  
 
-        meta['cut'] = cut  
+        meta['c2cut'] = c2cut  
         meta['c2n'] = c2n  
         meta['c2c'] = c2c 
         meta['la'] = lab[0] 
@@ -341,7 +136,7 @@ class CFH(object):
         meta['logyfac'] = "3."
         meta['linyfac'] = "1.3"
 
-        self.ctx.update(meta)
+        self.update(meta)
 
 
     ledg = property(lambda self:self.lhabc[:,0])
@@ -396,16 +191,16 @@ class CFH(object):
 
 
     def _get_ctxstr(self, name, fallback="?"):
-        return str(self.ctx.get(name,fallback))
+        return str(self.get(name,fallback))
 
     def _get_ctxfloat(self, name, fallback="0"):
-        return float(self.ctx.get(name,fallback))
+        return float(self.get(name,fallback))
 
     def _get_ctxint(self, name, fallback="0"):
-        return int(self.ctx.get(name,fallback))
+        return int(self.get(name,fallback))
 
 
-    seq0 = property(lambda self:self.ctx.get("seq0", None))
+    #seq0 = property(lambda self:self.ctx.get("seq0", None))
     la = property(lambda self:self._get_ctxstr("la"))
     lb = property(lambda self:self._get_ctxstr("lb"))
     qwn = property(lambda self:self._get_ctxstr("qwn"))
@@ -415,14 +210,14 @@ class CFH(object):
     linyfac = property(lambda self:self._get_ctxfloat("linyfac"))
     c2n = property(lambda self:self._get_ctxfloat("c2n"))
     c2c = property(lambda self:self._get_ctxfloat("c2c"))
-    cut = property(lambda self:self._get_ctxfloat("cut"))
+    c2cut = property(lambda self:self._get_ctxfloat("c2cut"))
 
     nedge = property(lambda self:self._get_ctxint("nedge"))
     nval = property(lambda self:self._get_ctxint("nval"))
     irec = property(lambda self:self._get_ctxint("irec"))
 
     def __repr__(self):
-        return "%s[%s]" % (self.ctx['qwn'],self.ctx['irec'])
+        return "%s[%s]" % (self.qwn,self.irec)
 
     def ctxpath(self):
         return self.path("ctx.json") 
@@ -446,11 +241,11 @@ class CFH(object):
             log.warning("CFH.save can only be used with single line selections")
             return  
 
-        dir_ = self.dir_(self.ctx)
+        dir_ = self.dir
         log.debug("CFH.save to %s " % dir_)
         if not os.path.exists(dir_):
             os.makedirs(dir_)
-        json.dump(self.ctx, file(self.ctxpath(),"w") )
+        json.dump(dict(self), file(self.ctxpath(),"w") )
         for name in self.NAMES:
             np.save(self.path(name+".npy"), getattr(self, name))
         pass
@@ -461,19 +256,21 @@ class CFH(object):
             log.warning("CFH.load can only be used with single line selections")
             return  
 
-        dir_ = self.dir_(self.ctx)
+        dir_ = self.dir
         log.debug("CFH.load from %s " % dir_)
 
         exists = os.path.exists(dir_)
         if not exists:
-            log.fatal("CFH.load non existing dir %s ctx %r " % (dir_, self.ctx) )
+            log.fatal("CFH.load non existing dir %s  " % (dir_) )
 
         assert exists, dir_
 
         js = json_(self.ctxpath())
         k = map(str, js.keys())
         v = map(str, js.values())
-        self.ctx = dict(zip(k,v))
+
+        self.update(dict(zip(k,v)))
+
         for name in self.NAMES:
             setattr(self, name, np.load(self.path(name+".npy")))
         pass
@@ -510,42 +307,31 @@ if __name__ == '__main__':
     elif len(ok.nargs) > 0:
         reclabs = [ok.nargs[0]]
     else:
-        pass
+        reclabs = ["[TO] AB",]
 
 
     log.info(" n_reclabs : %d " % (len(reclabs)))
 
+
     for reclab in reclabs:
 
-        qctx = CFH.reclab2qctx_(reclab)
-        ctxs = CFH.dir2ctx_(qctx, tag=ok.tag, det=ok.det)
-        n_ctxs = len(ctxs)
+        ctx = Ctx.reclab2ctx_(reclab, det=ok.det, tag=ok.tag)
 
-        det, tag, seq0s = CFH.det_tag_seq0s_(ctxs)
+        ctxs = ctx.qsub()
 
-        log.info(" qctx %s det %s tag %s seq0s %s n_ctxs %d " % (qctx, det, tag, repr(seq0s), n_ctxs))
+        log.info(" ctx %r n_ctxs %d " % ( ctx, len(ctxs)))
 
-        for seq0 in seq0s:
+        if ok.rehist:
+            hh = ab.rhist_(ctxs, rehist=True)
+        else:
+            hh = CFH.load_(ctxs)
+        pass
 
-            seq0_ctxs = CFH.filter_ctx_(ctxs, seq0)  
-
-            reclab = CFH.reclab_(seq0_ctxs)
-
-            suptitle = " %s %s %s " % (det, tag, reclab)
-
-            log.info(" suptitle %s " % suptitle ) 
-
-            if ok.rehist:
-                hh = ab.rhist_(seq0_ctxs)
-            else:
-                hh = CFH.load_(seq0_ctxs)
-            pass
-
-            if len(hh) == 1:
-                one_cfplot(hh[0])
-            else:
-                qwns_plot(hh, suptitle  )
-            pass
+        if len(hh) == 1:
+            one_cfplot(hh[0])
+        else:
+            qwns_plot(hh, ctx.suptitle  )
+        pass
         pass
     pass
 

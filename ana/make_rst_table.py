@@ -51,6 +51,11 @@ def fmt(cellkind, prefix="", trim="key"):
 
     cell, kind = cellkind
 
+    # indicates a skipped field
+    if kind is None:
+        return None
+
+
     if kind == "f":
         fmt = "%5.2f"
     elif kind == "i":
@@ -71,7 +76,7 @@ def fmt(cellkind, prefix="", trim="key"):
     return fmt % cell
          
 
-def recarray_as_rst(ra, trim="key"):
+def recarray_as_rst(ra, trim="key", skip=[]):
     """
     Expecting recarray with dtype of form: 
 
@@ -97,7 +102,7 @@ def recarray_as_rst(ra, trim="key"):
 
     grid = []
 
-    kinds = map( lambda k:ra.dtype[k].kind, ra.dtype.names )
+    kinds = map( lambda k:None if k in skip else ra.dtype[k].kind, ra.dtype.names )
 
     kfield = getattr(ra, trim, None)
 
@@ -107,11 +112,12 @@ def recarray_as_rst(ra, trim="key"):
         prefix = os.path.commonprefix(map(str,kfield))
     pass
 
-    strs = ["S" for _ in range(len(ra.dtype.names))]
-    grid.append(map(lambda _:fmt(_,prefix, trim),zip(ra.dtype.names,strs)))
+    label_kinds = [None if k in skip else "S" for k in ra.dtype.names]  # all "S" for string, or None for skips
+
+    grid.append(filter(None,map(lambda _:fmt(_,prefix, trim),zip(ra.dtype.names,label_kinds))))
 
     for i in range(len(ra)):
-        grid.append(map(lambda _:fmt(_,prefix, trim),zip(ra[i],kinds))) 
+        grid.append(filter(None,map(lambda _:fmt(_,prefix, trim),zip(ra[i],kinds)))) 
     pass
     return make_rst_table(grid)
 

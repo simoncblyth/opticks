@@ -5,6 +5,14 @@ tconcentric-usage(){ cat << \EOU
 tconcentric- 
 ==================================================
 
+::
+
+    tconcentric-d --noplot --rehist --sel 0:100
+        ## rehistogramming and making chi2 distrib comparisons
+        ## after this use "ip> run abstat.py" to examine the results 
+
+
+
 
 EOU
 }
