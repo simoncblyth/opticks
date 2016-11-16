@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 
-::
+ABStat slicing::
 
     In [22]: st[10:20]
     Out[22]: 
@@ -22,6 +22,21 @@
     ===== ===== =============================== ====================== ===== ===== ===== ===== ===== ===== ===== ===== 
 
     ABStat 10 slice(10, 20, None) na,nb,qctx,reclab,X,Y,Z,T,A,B,C,R 
+
+
+Lookup a line via reclab::
+
+    In [10]: st[st.st.reclab == "TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]"]
+    Out[10]: 
+    ABStat 1 iv,is,na,nb,qctx,reclab,X,Y,Z,T,A,B,C,R 
+    == == ==== ==== ======================================================= ============================================== ===== ===== ===== ===== ===== ===== ===== ===== 
+    iv is na   nb   qctx                                                    reclab                                         X     Y     Z     T     A     B     C     R     
+    == == ==== ==== ======================================================= ============================================== ===== ===== ===== ===== ===== ===== ===== ===== 
+    78 11 5339 5367 TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/e/XYZTABCR TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]  1.05  1.24  1.00 79.14  0.96  1.28  1.14  1.00 
+    == == ==== ==== ======================================================= ============================================== ===== ===== ===== ===== ===== ===== ===== ===== 
+
+
+Corresponding ndarray gives raw chi2 access::
 
     In [23]: a[10:20]
     Out[23]: 
@@ -86,6 +101,8 @@
 
 """
 import os, logging, numpy as np
+import numpy.lib.recfunctions as rf
+
 from opticks.ana.base import opticks_main
 from opticks.ana.make_rst_table import recarray_as_rst
 
@@ -110,11 +127,16 @@ class ABStat(object):
     def save(self):
         np.save(self.path_(),self.st)  
 
+    @classmethod
+    def load(cls):
+        ra = np.load(cls.path_()).view(np.recarray)
+        return cls(ra) 
+
     def __repr__(self):
         return "\n".join([self.brief,recarray_as_rst(self.st[self.sli]),self.brief])
 
     def _get_brief(self):
-        return "ABStat %s %s %s " % (len(self.st[self.sli]),  repr(self.sli),  ",".join(self.st.dtype.names) )
+        return "ABStat %s %s " % (len(self.st[self.sli]), ",".join(self.st.dtype.names) )
     brief = property(_get_brief)
 
     def __getitem__(self, sli):
@@ -140,11 +162,12 @@ class ABStat(object):
         """ 
         return self.st.qctx[self.chi2sel(cut)]
 
+    def reclabsel(self, cut=30):
+        """
+        :return reclab list: were chi2 sum exceeds the cut 
+        """ 
+        return self.st.reclab[self.chi2sel(cut)]
 
-    @classmethod
-    def load(cls):
-        st = np.load(cls.path_()).view(np.recarray)
-        return cls(st) 
 
     @classmethod
     def dump(cls, st=None): 

@@ -38,7 +38,7 @@ class CFH(object):
     The members are numpy arrays and a single ctx dict
     allowing simple load/save.
     """
-    #NAMES = "bins ahis bhis chi2".split()
+    QWNS = "XYZTABCR"
     NAMES = "lhabc".split()
     BASE = "$TMP/CFH"
 
@@ -123,9 +123,10 @@ class CFH(object):
 
             pctx = "concentric/1/TO_BT_BT_BT_BT_SA/0/X"
   
-        Shorter qctx has 3 elem::
+        Shorter qctx has 3 elem or 2 elem::
 
             qctx = "TO_BT_BT_BT_BT_SA/0/X"
+            qctx = "TO_BT_BT_BT_BT_SA/0"
 
         Not using os.listdir for this as want to 
         work more generally prior to persisting and with 
@@ -142,18 +143,28 @@ class CFH(object):
             ks = 0
             kr = 1
             kq = 2
-        else: 
+        elif ne == 2:
+            ks = 0
+            kr = 1
+            kq = None
+        else:
             log.warning("unexpected path context %s " % pctx )
             return []
+
+        if kq is None:
+            qwns = cls.QWNS
+        else:
+            qwns = e[kq]
+
 
         for r in e[kr]:
             #ir = str(int(r,16))
             ir = int(r,16)
-            for q in e[kq]:
+            for q in qwns:
                 ctx = dict(seq0=e[ks],irec=ir,qwn=q)
                 if ne == 5:
                     ctx.update({"det":e[0], "tag":e[1]})
-                elif ne == 3:
+                elif ne == 3 or ne == 2:
                     ctx.update(kwa)
                 else:
                     pass
@@ -199,7 +210,9 @@ class CFH(object):
         """
         def _reclab(ctx):
             sqs = ctx["seq0"].split("_") 
-            return " ".join([ ("[%s]" if str(i) == ctx["irec"] else "%s") % sq for i,sq in enumerate(sqs)])
+            _rl = " ".join([ ("[%s]" if i == int(ctx["irec"]) else "%s") % sq for i,sq in enumerate(sqs)])
+            log.info("reclab_ ctx %r _rl %s " % ( ctx, _rl ))
+            return _rl
         pass
         rls = list(set(map(lambda ctx:_reclab(ctx), ctxs)))
         n_rls = len(rls)
@@ -212,6 +225,27 @@ class CFH(object):
 
         assert n_rls == 1, rls
         return rls[0]
+
+
+    @classmethod
+    def reclab2qctx_(cls, arg, **kwa):
+        """
+        If argument contains no spaces return unchanged otherwise apply reclab into qctx conversion, eg::
+
+             "[TO] BT BT BT BT SA"                             ->  "TO_BT_BT_BT_BT_SA/0"
+             "TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]"  ->  "TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/e" 
+
+        """
+        arg_ = arg.strip() 
+        if arg_.find(" ") == -1: 
+            return arg 
+
+        recs = filter(lambda _:_[1][0] == "[" and _[1][3] == "]", list(enumerate(arg_.split())))
+        assert len(recs) == 1
+        irec = int(recs[0][0])
+
+        elem = arg_.replace("[","").replace("]","").split()
+        return "%s/%s" % ("_".join(elem), "%x" % irec ) 
 
     @classmethod
     def dir2ctx_(cls, dir_, **kwa):
@@ -236,7 +270,6 @@ class CFH(object):
 
     def dir(self):
         return self.dir_(self.ctx)
-
 
     def _get_suptitle(self):
         return self.dir()
@@ -273,11 +306,12 @@ class CFH(object):
         # transients, not persisted
         self._log = False
 
-    def __call__(self, bn, av, bv, lab, cut=30):
+    def __call__(self, bn, av, bv, lab, c2cut=30):
 
         ahis,_ = np.histogram(av, bins=bn)
         bhis,_ = np.histogram(bv, bins=bn)
-        c2, c2n, c2c = chi2(ahis.astype(np.float32), bhis.astype(np.float32), cut=cut)
+
+        c2, c2n, c2c = chi2(ahis.astype(np.float32), bhis.astype(np.float32), cut=c2cut)
 
         assert len(ahis) == len(bhis) == len(c2)
         nval = len(ahis)
@@ -472,17 +506,18 @@ if __name__ == '__main__':
 
     if ok.chi2sel:
         st = ABStat.load()
-        qctxs = st.qctxsel(cut=30)
+        reclabs = st.reclabsel(cut=40)
     elif len(ok.nargs) > 0:
-        qctxs = [ok.nargs[0]]
+        reclabs = [ok.nargs[0]]
     else:
         pass
 
 
-    log.info(" n_qctxs : %d " % (len(qctxs)))
+    log.info(" n_reclabs : %d " % (len(reclabs)))
 
-    for qctx in qctxs:
+    for reclab in reclabs:
 
+        qctx = CFH.reclab2qctx_(reclab)
         ctxs = CFH.dir2ctx_(qctx, tag=ok.tag, det=ok.det)
         n_ctxs = len(ctxs)
 
@@ -491,10 +526,14 @@ if __name__ == '__main__':
         log.info(" qctx %s det %s tag %s seq0s %s n_ctxs %d " % (qctx, det, tag, repr(seq0s), n_ctxs))
 
         for seq0 in seq0s:
+
             seq0_ctxs = CFH.filter_ctx_(ctxs, seq0)  
+
             reclab = CFH.reclab_(seq0_ctxs)
 
             suptitle = " %s %s %s " % (det, tag, reclab)
+
+            log.info(" suptitle %s " % suptitle ) 
 
             if ok.rehist:
                 hh = ab.rhist_(seq0_ctxs)

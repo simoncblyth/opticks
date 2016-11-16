@@ -60,6 +60,8 @@ class AB(object):
                [    39.2209,     43.2494,      0.    ,      0.    ,      0.    ]], dtype=float32)
 
     """
+    C2CUT = 30
+
     def __init__(self, args):
         self.args = args
         self.tabs = []
@@ -244,15 +246,46 @@ class AB(object):
     seq0 = property(_get_seq0)
 
     def count(self, line=0, col=1):
-        """subselects usually have only one sequence line""" 
+        """standard selects have only one sequence line""" 
+        cu = self.seq.cu 
+        if cu is None:
+            return None
+        pass
+        return cu[line,col]
+
+    def _get_aseq(self):
+        """
+        aseq is not changed by the current selection 
+        """
         flv = self.flv
         if flv == "seqhis":
-            return self.his.cu[line,col]
+            return self.ahis
         elif flv == "seqmat":
-            return self.mat.cu[line,col]
+            return self.amat
         else:
             pass
         return None
+    aseq = property(_get_aseq)
+
+    def _get_seq(self):
+        """
+        seq is changed by current selection
+        """
+        flv = self.flv
+        if flv == "seqhis":
+            return self.his
+        elif flv == "seqmat":
+            return self.mat
+        else:
+            pass
+        return None
+    seq = property(_get_seq)
+
+    def _get_achi2(self):
+        aseq = self.aseq 
+        assert not aseq is None
+        return aseq.c2
+    achi2 = property(_get_achi2)
 
     def a_count(self, line=0):
         return self.count(line,1)
@@ -339,6 +372,7 @@ class AB(object):
         dtype = [(i,np.int32) for i in "iv is na nb".split()] 
         dtype += [(s,"|S64") for s in "qctx reclab".split()]
         dtype += [(q,np.float32) for q in list(qwns)]
+        dtype += [(q,np.float32) for q in "seqc2 distc2".split()]
 
         trs = self.totrec(start, stop)
         nrs = self.nrecs(start, stop)
@@ -373,6 +407,7 @@ class AB(object):
                 od["is"] = isel
                 od["na"] = self.a_count(0)    # single line selection so line=0
                 od["nb"] = self.b_count(0)    # single line selection so line=0
+
                 od["qctx"] = qctx 
                 od["reclab"] = self.reclab 
 
@@ -381,6 +416,10 @@ class AB(object):
                 qd = odict(zip(list(qwns),map(lambda h:h.c2p, hh)))
 
                 od.update(qd)
+
+                od["seqc2"] = self.seq.c2[0]
+                od["distc2"] = 0
+
 
                 stat[ival] = tuple(od.values())
                 ival += 1
@@ -490,7 +529,7 @@ class AB(object):
         ctx["irec"] = "0"   
 
         cfh = CFH(ctx)
-        cfh(bn,av,bv,la,cut=30)
+        cfh(bn,av,bv,la,c2cut=cls.C2CUT)
         return cfh
  
     def _set_qwn(self, qwn):
@@ -526,7 +565,7 @@ class AB(object):
         pass
         return hh
 
-    def rhist(self, qwn, irec, cut=30, rehist=False, log_=False): 
+    def rhist(self, qwn, irec, rehist=False, log_=False): 
 
         hs = []
 
@@ -552,7 +591,7 @@ class AB(object):
                     h.load()
                 else:
                     bn, av, bv, la = self.rqwn(q, ir)
-                    h(bn,av,bv,la,cut=cut)
+                    h(bn,av,bv,la, c2cut=self.C2CUT)
                     h.save()
                 pass
                 hs.append(h)

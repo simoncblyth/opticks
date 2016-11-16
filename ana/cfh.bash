@@ -14,6 +14,9 @@ Random access to qwn/irec AB comparison histograms and chi2 within AB single lin
    cfh-;cfh concentric/1/TO_SC_BT_BT_BT_BT_SA/6/XYZT
    cfh-;cfh --rehist concentric/1/TO_SC_BT_BT_BT_BT_SA/6/XYZT
 
+   cfh-;cfh "TO SC BT BT BT BT [SA]"
+   cfh-;cfh "TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]"
+
 
    cfh-;cfh --chi2sel    # plotting pages selected by distrib chi2 sum greater than cut 
 
@@ -23,7 +26,7 @@ EOU
 
 cfh()
 {
-    ipython -i $(which cfh.py) -- $*
+    ipython -i $(which cfh.py) -- "$*"
 }
 
 cfh-env(){

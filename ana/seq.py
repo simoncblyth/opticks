@@ -207,7 +207,7 @@ class SeqType(BaseType):
 
  
 class SeqTable(object):
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30): 
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
@@ -237,7 +237,8 @@ class SeqTable(object):
             a = cu[:,1].astype(np.float64)
             b = cu[:,2].astype(np.float64)
 
-            c2, c2n, c2c = chi2(a, b, cut=30)
+            c2, c2n, c2c = chi2(a, b, cut=c2cut)
+
             #c2s = c2/c2n
             #c2s_tot = c2s.sum()  # same as c2p
 
