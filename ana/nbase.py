@@ -9,6 +9,21 @@ except ImportError:
     _chi2 = None 
 
 
+def ahash(a):
+    """
+    * http://stackoverflow.com/questions/16589791/most-efficient-property-to-hash-for-numpy-array    
+
+    ::
+
+        hash(a.data)
+        Out[7]: 7079931724019902235
+
+        In [8]: "%x" % hash(a.data)
+        Out[8]: '6240f8645439a71b'
+
+    """
+    a.flags.writeable = False
+    return "%x" % hash(a.data)
 
 
 def count_unique_truncating(vals):

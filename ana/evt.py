@@ -11,7 +11,7 @@ except ImportError:
 from collections import OrderedDict 
 
 from opticks.ana.base import opticks_environment
-from opticks.ana.base import opticks_main
+from opticks.ana.base import opticks_main, stamp_
 from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
@@ -30,16 +30,6 @@ cross_ = lambda a,b:np.cross(a,b)/np.repeat(vnorm(a),3).reshape(-1,3)/np.repeat(
 norm_ = lambda a:a/np.repeat(vnorm(a), 3).reshape(-1,3)
 
 msk_ = lambda n:(1 << 4*n) - 1  # msk_(0)=0x0 msk_(1)=0xf msk_(2)=0xff msk_(3)=0xfff  
-
-
-def stamp_(path, fmt="%Y%m%d-%H%M"): 
-   if path is None:
-       return None
-   elif not os.path.exists(path):
-       return None
-   else:
-       return datetime.datetime.fromtimestamp(os.stat(path).st_ctime).strftime(fmt)
-   pass
 
 deg = np.pi/180.
 

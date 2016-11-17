@@ -4,7 +4,7 @@ Mostly Non-numpy basics, just numpy configuration
 """
 
 import numpy as np
-import os, logging, json, ctypes, subprocess, argparse, sys
+import os, logging, json, ctypes, subprocess, argparse, sys, datetime
 from enum import Enum 
 
 log = logging.getLogger(__name__) 
@@ -18,6 +18,17 @@ except OSError:
 
 IDPATH = os.path.expandvars("$IDPATH")
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
+
+
+def stamp_(path, fmt="%Y%m%d-%H%M"): 
+   if path is None:
+       return None
+   elif not os.path.exists(path):
+       return None
+   else:
+       return datetime.datetime.fromtimestamp(os.stat(path).st_ctime).strftime(fmt)
+   pass
+
 
 def _dirname(path, n):
     for _ in range(n):
@@ -229,7 +240,8 @@ def opticks_args(**kwa):
     prohis = kwa.get("prohis", False)
     promat = kwa.get("promat", False)
     rehist = kwa.get("rehist", False)
-    rehist = kwa.get("chi2sel", False)
+    chi2sel = kwa.get("chi2sel", False)
+    nointerpol = kwa.get("nointerpol", False)
 
 
     parser = argparse.ArgumentParser(doc)
@@ -264,10 +276,11 @@ def opticks_args(**kwa):
     parser.add_argument(     "--dbgmskmat",  default=dbgmskmat, help="Material mask hexstring for selection/dumping. Default %(default)s"  )
     parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
-    parser.add_argument(     "--prohis", action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
-    parser.add_argument(     "--promat", action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
-    parser.add_argument(     "--rehist", action="store_true", help="Recreate hists rather than loading persisted ones. Default %(default)s ")
-    parser.add_argument(     "--chi2sel", action="store_true", help="Select histograms by their chi2 sum exceeding a cut, see cfh.py. Default %(default)s ")
+    parser.add_argument(     "--prohis", default=prohis, action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
+    parser.add_argument(     "--promat", default=promat, action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
+    parser.add_argument(     "--rehist", default=rehist, action="store_true", help="Recreate hists rather than loading persisted ones. Default %(default)s ")
+    parser.add_argument(     "--chi2sel", default=chi2sel, action="store_true", help="Select histograms by their chi2 sum exceeding a cut, see cfh.py. Default %(default)s ")
+    parser.add_argument(     "--nointerpol", dest="interpol", default=not nointerpol, action="store_false", help="See cfg4/tests/CInterpolationTest.py. Default %(default)s ")
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
 

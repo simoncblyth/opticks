@@ -63,8 +63,7 @@ void GMaterialLib::postLoadFromCache()
     bool fxab = m_ok->hasOpt("fxab") ;
     bool fxsc = m_ok->hasOpt("fxsc") ;
 
-    bool groupvel = m_ok->hasOpt("groupvel") ;
-
+    bool groupvel = !m_ok->hasOpt("nogroupvel") ;
 
     LOG(info) << "GMaterialLib::postLoadFromCache " 
               << " nore " << nore 

@@ -60,8 +60,8 @@ int main(int argc, char** argv)
     GGeo* gg = hub.getGGeo();
     GBndLib* blib = gg->getBndLib(); 
 
-    //bool interpolate = false ; 
-    bool interpolate = true ; 
+    bool interpolate = ok.hasOpt("nointerpol") ? false : true ; 
+
     unsigned nl_interpolate = unsigned(Opticks::DOMAIN_HIGH) - unsigned(Opticks::DOMAIN_LOW) + 1u ; 
 
     NPY<float>* tex = blib->createBuffer();   // zipping together the dynamic buffer from materials and surfaces
@@ -85,6 +85,7 @@ int main(int argc, char** argv)
     out->zero();
 
     LOG(info) 
+       << " interpolate (control with option: --nointerpol) " << interpolate
        << " path " << path
        << " tex " << tex->getShapeString()
        << " out " << out->getShapeString()

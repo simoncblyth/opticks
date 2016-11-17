@@ -2,6 +2,84 @@ tconcentric_distrib
 =======================
 
 
+Comparing interpolation blib 
+--------------------------------
+
+::
+
+    run bnd.py
+
+    In [26]: i1
+    Out[26]: 
+    GBndLib
+    /tmp/blyth/opticks/InterpolationTest/CInterpolationTest_interpol.npy
+    /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt
+    /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GBndLib/GBndLibOptical.npy
+    20161117-1600
+    20160709-1558
+    20160709-1558
+
+    In [27]: i2
+    Out[27]: 
+    GBndLib
+    /tmp/blyth/opticks/InterpolationTest/OInterpolationTest_interpol.npy
+    /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt
+    /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GBndLib/GBndLibOptical.npy
+    20161117-1845
+    20160709-1558
+    20160709-1558
+
+
+    i2.dat.ijk = 20,0,1
+    i1.dat.ijk = 20,0,1
+
+
+    In [23]: (i1.dat.d[:,0] - i2.dat.d[:,0]).max()
+    Out[23]: 0.99961853
+
+    In [24]: (i1.dat.d[:,0] - i2.dat.d[:,0]).min()
+    Out[24]: -1.8506927
+
+MineralOil seems not especially bad GROUPVEL discrep::
+
+
+    Acrylic 
+    [[  -0.0077    0.        0.        0.       -1.8155    0.        0.        0.    ]
+     [   0.0083   39.3328  350.2969    0.        0.9839    0.        0.        0.    ]]
+    Bialkali 
+    [[ 0.     -2.5545  0.      0.      0.      0.      0.      0.    ]
+     [ 0.      1.9261  0.      0.      0.      0.      0.      0.    ]]
+    DeadWater 
+    [[ -0.0001 -91.4863   0.       0.      -0.1297   0.       0.       0.    ]
+     [  0.      64.2637   0.       0.       0.0995   0.       0.       0.    ]]
+    GdDopedLS 
+    [[  -0.008   -88.0518    0.       -0.004    -1.8517    0.        0.        0.    ]
+     [   0.0083  193.9531  350.2969    0.0014    1.0106    0.        0.        0.    ]]
+    IwsWater 
+    [[ -0.0001 -91.4863   0.       0.      -0.1297   0.       0.       0.    ]
+     [  0.      64.2637   0.       0.       0.0995   0.       0.       0.    ]]
+    LiquidScintillator 
+    [[  -0.008   -94.8359    0.       -0.004    -1.8517    0.        0.        0.    ]
+     [   0.0083  187.0273  350.2969    0.0014    1.0106    0.        0.        0.    ]]
+    MineralOil 
+    [[  -0.0076  -74.7598    0.        0.       -1.8507    0.        0.        0.    ]
+     [   0.0081  173.9316  350.2969    0.        0.9996    0.        0.        0.    ]]
+    OwsWater 
+    [[ -0.0001 -91.4863   0.       0.      -0.1297   0.       0.       0.    ]
+     [  0.      64.2637   0.       0.       0.0995   0.       0.       0.    ]]
+    Pyrex 
+    [[ 0.     -2.5545  0.      0.      0.      0.      0.      0.    ]
+     [ 0.      1.9261  0.      0.      0.      0.      0.      0.    ]]
+    Teflon 
+    [[  -0.0077    0.        0.        0.       -1.8155    0.        0.        0.    ]
+     [   0.0083   39.3328  350.2969    0.        0.9839    0.        0.        0.    ]]
+    Water 
+    [[ -0.0001 -91.4863   0.       0.      -0.1297   0.       0.       0.    ]
+     [  0.      64.2637   0.       0.       0.0995   0.       0.       0.    ]]
+
+
+
+
 After move to c2shape comparisons : listing seq points with sum of distrib chi2 > 20 
 ---------------------------------------------------------------------------------------
 
