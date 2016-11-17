@@ -12,6 +12,7 @@ from collections import OrderedDict
 
 from opticks.ana.base import opticks_environment
 from opticks.ana.base import opticks_main
+from opticks.ana.ctx import Ctx
 from opticks.ana.nbase import count_unique, vnorm
 from opticks.ana.nload import A, I, II, tagdir_
 from opticks.ana.seq import SeqAna, seq2msk
@@ -126,11 +127,26 @@ class Evt(object):
         ....
 
 
+
+
+    Scales to avoiding trimming extremes ?
+
+        In [63]: len(np.arange(0, 1+1+0xffff)[::128])
+        Out[63]: 513
+
+        In [64]: len(np.arange(0, 1+1+0xffff)[::256])
+        Out[64]: 257
+
+
     """
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
-    RQWN_BINSCALE = {"X":1000,"Y":1000,"Z":1000,"W":10,"R":1000, "T":1000,"A":1,"B":1,"C":1} 
+    #RQWN_BINSCALE = {"X":1000,"Y":1000,"Z":1000,"W":10,"R":1000, "T":1000,"A":1,"B":1,"C":1} 
+    RQWN_BINSCALE = {"X":256,"Y":256,"Z":256,"W":None,"R":256, "T":256,"A":None,"B":None,"C":None} 
+    
+
+
 
     @classmethod
     def selection(cls, evt, seqs=[], not_=False, label=None, dbg=False):
@@ -734,8 +750,13 @@ class Evt(object):
     def _set_sel(self, sel):
         log.debug("Evt._set_sel %s " % repr(sel))
 
-        #if sel.find("[") > -1:
-        #    pass
+        if not sel is None and sel.find("[") > -1:
+            ctx = Ctx.reclab2ctx_(sel)
+            log.debug("_set_set with reclab converted arg %s into ctx %r " % (sel, ctx)) 
+            sel = ctx["seq0"]
+            irec = ctx["irec"]
+            self.irec = irec   
+        pass
 
         self._sel = sel
 
@@ -1067,7 +1088,11 @@ class Evt(object):
         nwavelength = (pzwl & np.uint16(0xFF00)) >> 8
 
         p_wavelength = nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
+        return p_wavelength 
 
+    def wbins(self):
+        nwavelength = np.arange(0,0xff+1)
+        p_wavelength = nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
         return p_wavelength 
 
 
@@ -1165,6 +1190,9 @@ class Evt(object):
         #lb = np.linspace(lo, hi, 255+1+1)
         lb = np.linspace(-1, 1, 255+1)   # 
         return lb 
+
+        
+
 
     def recflags(self, recs):
         m1m2 = self.rx[:,recs,1,2]

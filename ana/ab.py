@@ -69,6 +69,7 @@ class AB(object):
         self.tabs = []
         self.load()
         self.compare()
+        self.init_point()
 
     def load(self):
         """
@@ -116,6 +117,100 @@ class AB(object):
         if self.args.prohis:self.prohis()
         if self.args.promat:self.promat()
         log.debug("AB.compare DONE")
+
+
+    def init_point(self):
+        log.info("AB.init_point START")
+        self.point = self.make_point()
+        log.info("AB.init_point DONE")
+
+    def point_dtype(self):
+        dtype=[
+                ('irl', int), 
+                ('isel', int), 
+                ('irec', int), 
+                ('nrec', int), 
+                ('reclab', "|S64")
+              ]
+        return dtype
+
+    def _get_recpoint(self):
+        """
+        Returns None when single line selection is not active
+        otherwise returns selected recpoint
+
+        ::
+
+            In [2]: ab.sel = "TO BT BT RE BT BT [SA]"
+
+            In [3]: ab.recpoint
+            Out[3]: (85, 12, 6, 7, 'TO BT BT RE BT BT [SA]')
+
+            In [4]: ab.recpoint.isel
+            Out[4]: 12
+
+            In [5]: ab.recpoint.nrec
+            Out[5]: 7
+
+            In [6]: ab.recpoint.irec
+            Out[6]: 6
+
+        """
+        rl = self.reclab
+        if rl is None:
+            return None
+        pass 
+        rp = self.point[self.point.reclab == rl]
+        assert len(rp) == 1, rp
+        return rp[0]
+    recpoint = property(_get_recpoint)
+
+    def make_point(self):
+        """
+        :return point: recarray for holding point level metadata
+
+        ::
+
+            In [5]: print "\n".join(map(repr, ab.point[:8]))
+            (0, 0, 0, '[TO] BT BT BT BT SA')
+            (1, 0, 1, 'TO [BT] BT BT BT SA')
+            (2, 0, 2, 'TO BT [BT] BT BT SA')
+            (3, 0, 3, 'TO BT BT [BT] BT SA')
+            (4, 0, 4, 'TO BT BT BT [BT] SA')
+            (5, 0, 5, 'TO BT BT BT BT [SA]')
+            (6, 1, 0, '[TO] AB')
+            (7, 1, 1, 'TO [AB]')
+
+            In [6]: print "\n".join(map(repr, ab.point[-8:]))
+            (64257, 4847, 8, 'TO RE RE RE RE BT BT BT [SC] BR BR BR BR BR BR BR')
+            (64258, 4847, 9, 'TO RE RE RE RE BT BT BT SC [BR] BR BR BR BR BR BR')
+            (64259, 4847, 10, 'TO RE RE RE RE BT BT BT SC BR [BR] BR BR BR BR BR')
+            (64260, 4847, 11, 'TO RE RE RE RE BT BT BT SC BR BR [BR] BR BR BR BR')
+            (64261, 4847, 12, 'TO RE RE RE RE BT BT BT SC BR BR BR [BR] BR BR BR')
+            (64262, 4847, 13, 'TO RE RE RE RE BT BT BT SC BR BR BR BR [BR] BR BR')
+            (64263, 4847, 14, 'TO RE RE RE RE BT BT BT SC BR BR BR BR BR [BR] BR')
+            (64264, 4847, 15, 'TO RE RE RE RE BT BT BT SC BR BR BR BR BR BR [BR]')
+
+        """ 
+        rls = self.reclabs(0,None)
+        nrls = len(rls)
+
+        point = np.recarray((nrls,), dtype=self.point_dtype())
+        point.reclab = rls
+        point.irl = np.arange(0, nrls)
+
+        offset = 0 
+        for isel,clab in enumerate(self.clabels[0:None]):
+            sls = Ctx.reclabs_(clab)
+            nsls = len(sls)
+            point.isel[offset:offset+nsls] = np.repeat( isel, nsls)
+            point.irec[offset:offset+nsls] = np.arange( 0   , nsls)
+            point.nrec[offset:offset+nsls] = np.repeat( nsls, nsls)
+            offset += nsls 
+        pass
+        return point
+
+
 
     def prohis(self, rng=range(1,8)):
         for imsk in rng:
@@ -365,34 +460,88 @@ class AB(object):
             qwns = self.QWNS
         pass
         dtype = [(i,np.int32) for i in "iv is na nb".split()] 
-        dtype += [(s,"|S64") for s in "qctx reclab".split()]
-        dtype += [(q,np.float32) for q in list(qwns)]
+        dtype += [(s,"|S64") for s in "reclab".split()]
+        dtype += [(q,np.float32) for q in list(qwns.replace(",",""))]
         dtype += [(q,np.float32) for q in "seqc2 distc2".split()]
         return dtype
 
 
     def reclabs(self, start=0, stop=5):
-        _reclabs = []
-        ival = 0
+        """
+        :param start: common label slice starting index
+        :param stop: common label slice stop index, can be None
+        :return rls: list of reclabels
 
-        trs = self.totrec(start, stop)
-        nrs = self.nrecs(start, stop)
+        Full reclabs is very large list::
 
-        for i,isel in enumerate(range(start, stop)):
+            In [5]: rl = ab.reclabs(0,None)
 
-            self.sel = slice(isel, isel+1)    ## changing single seq line selection 
+            In [6]: len(rl)
+            Out[6]: 64265
 
-            nr = self.nrec
-            assert nrs[i] == nr, (i, nrs[i], nr )  
+            In [7]: len(ab.clabels)
+            Out[7]: 4848
 
-            for irec in range(nr):
-                self.irec = irec 
-                _reclabs.append(self.reclab) 
-            pass
+            In [8]: 64265./4848.        ## average seq0 length is 13 points 
+            Out[8]: 13.255981848184819
+
+            In [9]: rl[:5]
+            Out[9]: 
+            ['[TO] BT BT BT BT SA',
+             'TO [BT] BT BT BT SA',
+             'TO BT [BT] BT BT SA',
+             'TO BT BT [BT] BT SA',
+             'TO BT BT BT [BT] SA']
+
+        """
+        l = []
+        for clab in self.clabels[start:stop]:
+            l.extend(Ctx.reclabs_(clab))
         pass
-        return _reclabs
+        return l
 
 
+    def stats_(self, reclabs, qwns="XYZT,ABCR", rehist=False, c2shape=True):
+        """
+        ::
+
+            st = ab.stats_(ab.point.reclab[:10])
+
+        """
+        nrl = len(reclabs)
+        stat = np.recarray((nrl,), dtype=self.stats_dtype(qwns))
+
+        for ival, rl in enumerate(reclabs):
+
+            self.sel = rl     ## setting single line selection
+
+            rp = self.recpoint
+
+            isel = rp.isel
+
+            # NB OrderedDict setting order must match dtype name order
+            od = odict()
+            od["iv"] = rp.irl
+            od["is"] = isel
+            od["na"] = self.aseq.cu[isel,1] 
+            od["nb"] = self.aseq.cu[isel,2]
+            od["reclab"] = rl
+
+            hh = self.rhist(rehist=rehist, c2shape=c2shape)
+            qd = odict(map(lambda h:(h.qwn,h.c2p), hh))
+            od.update(qd)
+
+            od["seqc2"] = self.seq.c2[0]
+            od["distc2"] = CFH.c2per_(hh)
+
+            stat[ival] = tuple(od.values())
+        pass
+
+        st = ABStat(stat) 
+        st.save()
+        return st 
+
+ 
     def stats(self, start=0, stop=5, qwns="XYZT,ABCR", rehist=False, c2shape=True):
         """
         slice selection in AB has to be converted into common seq selection 
@@ -402,8 +551,8 @@ class AB(object):
 
         dtype = self.stats_dtype(qwns)
 
-        trs = self.totrec(start, stop)
         nrs = self.nrecs(start, stop)
+        trs = nrs.sum()
 
         log.info("AB.stats : %s :  trs %d nrs %s " % ( qwns, trs, repr(nrs)) )
         
@@ -435,19 +584,14 @@ class AB(object):
                 od["is"] = isel
                 od["na"] = self.a_count(0)    # single line selection so line=0
                 od["nb"] = self.b_count(0)    # single line selection so line=0
-
-                od["qctx"] = qctx 
                 od["reclab"] = self.reclab 
 
                 hh = self.rhist(qwns, irec, rehist=rehist, c2shape=c2shape)
-
-                qd = odict(zip(list(qwns),map(lambda h:h.c2p, hh)))
-
+                qd = odict(map(lambda h:(h.qwn,h.c2p), hh))
                 od.update(qd)
 
                 od["seqc2"] = self.seq.c2[0]
-                od["distc2"] = 0
-
+                od["distc2"] = CFH.c2per_(hh)
 
                 stat[ival] = tuple(od.values())
                 ival += 1
@@ -572,6 +716,12 @@ class AB(object):
         return hh[0]        
     h = property(_get_h)
 
+    def _get_hh(self):
+        hh = self.rhist()
+        return hh
+    hh = property(_get_hh)
+
+
     def rhist_(self, ctxs, rehist=False, c2shape=False):
         """
         :param ctxs: list of Ctx 
@@ -597,12 +747,20 @@ class AB(object):
         pass
         return hh
 
-    def rhist(self, qwn, irec, rehist=False, log_=False, c2shape=False ): 
+    def rhist(self, qwn=None, irec=None, rehist=False, log_=False, c2shape=True ): 
 
-        hs = []
+        if qwn is None:
+            qwn = Ctx.QWNS
+        assert type(qwn) is str
 
+        if irec is None:
+            irec = self.irec
         assert type(irec) is int
+
+        hh = []
+
         srec = CFH.srec_(irec)
+
         log.debug("AB.rhist qwn %s irec %s srec %s " % (qwn, irec, srec))
 
         for ir in CFH.irec_(srec):
@@ -614,9 +772,11 @@ class AB(object):
             for q in str(qwn):
 
                 self.qwn = q 
+
                 ctx=self.ctx
 
                 h = CFH(ctx)
+
                 h.log = log_
 
                 if h.exists() and not rehist:
@@ -626,10 +786,10 @@ class AB(object):
                     h(bn,av,bv,la, c2cut=self.C2CUT, c2shape=c2shape )
                     h.save()
                 pass
-                hs.append(h)
+                hh.append(h)
             pass
         pass
-        return hs
+        return hh
  
     def rqwn(self, qwn, irec): 
         """
@@ -653,6 +813,10 @@ class AB(object):
             aval = vnorm(apost[:,:2])
             bval = vnorm(bpost[:,:2])
             cbins = a.pbins()
+        elif qwn == "W":
+            aw = a.recwavelength(irec)
+            bw = b.recwavelength(irec)
+            cbins = a.wbins()
         elif qwn in Evt.RPOST:
             q = Evt.RPOST[qwn]
             aval = a.rpost_(irec)[:,q]
@@ -671,12 +835,14 @@ class AB(object):
             assert 0, "qwn %s unknown " % qwn 
         pass
 
-        if qwn in "ABC":
-            # polarization is char compressed so have to use primordial bins
+        # polarization and wavelength are char compressed so have to use primordial bins
+        if qwn in "ABCW":
             bins = cbins
         else: 
-            bins = decompression_bins(cbins, [aval, bval], label=lval, binscale=Evt.RQWN_BINSCALE[qwn] )
-
+            binscale = Evt.RQWN_BINSCALE[qwn]
+            #bins = decompression_bins(cbins, [aval, bval], label=lval, binscale=binscale )
+            bins = cbins[::binscale]   # hmm should arrange scaling to retain extreme bins to avoid clipping perhaps ??
+        pass
 
         if len(bins) == 0:
             raise Exception("no bins")

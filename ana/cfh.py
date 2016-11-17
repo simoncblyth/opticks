@@ -139,6 +139,51 @@ class CFH(Ctx):
         self.update(meta)
 
 
+    @classmethod
+    def c2per_(cls, hh):
+        """
+        :param hh: list of CFH instances
+        :return c2per:  combined chi2 float 
+
+        ::
+
+            In [6]: hh = ab.hh
+
+            In [7]: c2sums = map(lambda h:h.chi2.sum(), hh )
+            Out[7]: [11.125423, 0.0, 0.0, 5.8574519, 180.07062, 182.38904, 208.7128, 11.125423]
+
+            In [8]: c2nums = map(lambda h:h.c2n, hh )
+            Out[8]: [19.0, 1.0, 1.0, 4.0, 222.0, 159.0, 218.0, 19.0]
+
+            In [12]: sum(c2sums)
+            Out[12]: 599.28075361251831
+
+            In [13]: sum(c2nums)
+            Out[13]: 643.0
+
+            In [14]: sum(c2sums)/sum(c2nums)
+            Out[14]: 0.93200739286550283
+
+        """
+        if type(hh) is CFH:
+            hh = [hh]
+        pass
+        assert type(hh) is list 
+
+        c2sums = map(lambda h:h.chi2.sum(), hh )
+        c2nums = map(lambda h:h.c2n, hh )
+
+        s_c2sums = sum(c2sums)
+        s_c2nums = sum(c2nums)
+
+        if s_c2nums > 0:
+            c2per = s_c2sums/s_c2nums
+        else:
+            c2per = 0.
+        pass
+        return c2per
+
+
     ledg = property(lambda self:self.lhabc[:,0])
     hedg = property(lambda self:self.lhabc[:,1])
     ahis = property(lambda self:self.lhabc[:,2])

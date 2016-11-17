@@ -2,7 +2,6 @@ tconcentric_distrib
 =======================
 
 
-
 After move to c2shape comparisons : listing seq points with sum of distrib chi2 > 20 
 ---------------------------------------------------------------------------------------
 
@@ -15,67 +14,100 @@ After move to c2shape comparisons : listing seq points with sum of distrib chi2 
   the chi2 aint increaing with steps though, but adaptive binning makes
   this hard to interpret 
 
-
 * BUT still machinery issues with binning...
 
-
-* TODO: check chi2 with absolute bins rather then the current somewhat dodgy adaptive binning 
-* TODO: work out how to combine chi2 into distc2 (with c2shape)
+* DONE: check chi2 with absolute bins rather then the current somewhat dodgy adaptive binning 
+* DONE: combine chi2 into distc2 (with c2shape)
 * TODO: revisit OpInterpolationTest OInterpolationTest and compare wavelength "scans" of GROUPVEL 
 * TODO: do np.diff time/position groupvel calcs for the bad chi2 seqs 
 * TODO: add W wavelength to qwns, replacing the derivative and duplicitous R (which is only useful for specific geometry origins anyhow) 
 
 
-
 ::
 
-    tconcentric-d --noplot --rehist --sel 0:100    # recreate histograms for first 100 seq lines 
+    tconcentric-;tconcentric-d --noplot --rehist --sel 0:100    # recreate histograms for first 100 seq lines 
 
 
     ip>  run abstat.py   # load and examine the stats
 
 
-    In [8]: st[np.where( np.sum(ar, axis=1) > 20 )]
-    Out[8]: 
-    ABStat 22 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
-    === == ===== ===== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== ===== ====== 
-    iv  is na    nb    reclab                                            X     Y     Z     T      A     B     C     R     seqc2 distc2 
-    === == ===== ===== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== ===== ====== 
-    20  3  28955 28649 TO BT BT BT BT [AB]                                1.54  0.00  0.00 21.68   0.00  0.00  0.00  1.54  1.63  0.00  
+    In [12]: st[st.st.distc2 > 10]
+    Out[12]: 
+    ABStat 17 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
+    === == ====== ====== ================================================= ===== ===== ===== ========== ===== ===== ===== ===== ===== ========= 
+    iv  is na     nb     reclab                                            X     Y     Z     T          A     B     C     R     seqc2 distc2    
+    === == ====== ====== ================================================= ===== ===== ===== ========== ===== ===== ===== ===== ===== ========= 
+    5   0  669843 671267 TO BT BT BT BT [SA]                                0.00  0.00  0.00 1341110.00  0.00  0.00  0.00  0.00  1.51 191587.14 
+    51  8  7540   7694   TO BT BT BT BT [DR] SA                             0.00  0.00  0.00 15234.00    1.06  1.11  1.07  0.00  1.56 33.61     
+    69  11 5339   5367   TO BT BT BT BT [DR] BT BT BT BT BT BT BT BT SA     0.00  0.00  0.00 10706.00    1.07  1.10  0.89  0.00  0.07 54.54     
+    94  14 4494   4420   TO BT BT BT BT [DR] BT BT BT BT SA                 0.00  0.00  0.00 8914.00     1.33  2.02  1.60  0.00  0.61 34.49     
+    124 17 2432   2472   TO BT BT BT BT [DR] AB                             0.00  0.00  0.00 4904.00     1.61  0.92  1.27  0.00  0.33 35.86     
+    190 25 1260   1263   TO BT BT BT BT [DR] BT BT BT BT AB                 0.00  0.00  0.00 2523.00     0.30  1.09  0.62  0.00  0.00 55.57     
+    240 31 1067   1019   TO BT BT BT BT [DR] BT BT AB                       0.00  0.00  0.00 2086.00     0.00  1.23  1.16  0.00  1.10 30.47     
+    269 36 933    958    TO BT BT BT BT [DR] SC SA                          0.00  0.00  0.00 1891.00     0.00  1.58  0.86  0.00  0.33 58.27     
+    312 42 545    566    TO BT BT BT BT [DR] BT BT BT BT SC BT BT BT BT SA  0.00  0.00  0.00 1111.00     0.00  0.81  0.76  0.00  0.40 40.29     
+    346 45 507    517    TO BT BT BT BT [DR] BT BT SC BT BT SA              0.00  0.00  0.00 1024.00     0.00  0.40  0.71  0.00  0.10 49.16     
+    532 66 285    239    TO BT BT BT BT [DR] BT BT BT BT BT BT AB           0.00  0.00  0.00 524.00      0.00  0.73  1.66  0.00  4.04 44.26     
+    545 67 266    270    TO BT BT BT BT [DR] BT BT BT BT BT BT BT BT AB     0.00  0.00  0.00 536.00      0.00  2.08  1.44  0.00  0.03 42.20     
+    578 70 212    242    TO BT BT BT BT [DR] BT BT RE BT BT SA              0.00  0.00  0.00 454.00      0.00  0.48  0.00  0.00  1.98 64.99     
+    590 71 237    222    TO BT BT BT BT [DR] BT BT BT BT RE BT BT BT BT SA  0.00  0.00  0.00 459.00      0.00  0.55  0.28  0.00  0.49 35.54     
+    794 91 126    131    TO BT BT BT BT [DR] BT BT BT BT BT BT BT BT DR BT  0.00  0.00  0.00 257.00      0.00  0.29  2.55  0.00  0.10 43.31     
+    826 94 129    117    TO BT BT BT BT [DR] SC BT BT BT BT SA              0.00  0.00  0.00 246.00      0.00  0.00  0.00  0.00  0.59 61.50     
+    886 99 126    123    TO BT BT BT BT [DR] BT BT SC BT BT BT BT BT BT SA  0.00  0.00  0.00 249.00      0.00  2.66  0.00  0.00  0.04 41.94     
+    === == ====== ====== ================================================= ===== ===== ===== ========== ===== ===== ===== ===== ===== ========= 
 
-    70  11 5339  5367  TO BT BT BT BT DR [BT] BT BT BT BT BT BT BT SA     0.20  0.89  0.36 279.71  1.27  1.21  0.95  0.08  0.07  0.00  
-    71  11 5339  5367  TO BT BT BT BT DR BT [BT] BT BT BT BT BT BT SA     0.19  1.03  0.63 265.43  1.19  1.11  1.07  0.00  0.07  0.00  
-    72  11 5339  5367  TO BT BT BT BT DR BT BT [BT] BT BT BT BT BT SA     1.86  0.99  0.45 106.13  1.08  1.17  0.99  0.66  0.07  0.00  
-    73  11 5339  5367  TO BT BT BT BT DR BT BT BT [BT] BT BT BT BT SA     1.50  1.23  0.28 44.62   1.16  1.13  1.09  0.54  0.07  0.00  
-    76  11 5339  5367  TO BT BT BT BT DR BT BT BT BT BT BT [BT] BT SA     1.46  1.37  1.03 23.99   1.11  1.39  1.03  1.39  0.07  0.00  
-    77  11 5339  5367  TO BT BT BT BT DR BT BT BT BT BT BT BT [BT] SA     1.57  1.37  0.94 24.41   0.96  1.25  1.19  1.26  0.07  0.00  
-    78  11 5339  5367  TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]     1.05  1.24  0.99 79.07   0.96  1.25  1.19  1.01  0.07  0.00  
-    ##            straight thru, diffuse reflect then thru all 8 layers to
- 
-    95  14 4494  4420  TO BT BT BT BT DR [BT] BT BT BT SA                 3.26  1.15  1.22 20.52   1.34  1.55  1.22  0.47  0.61  0.00  
-    96  14 4494  4420  TO BT BT BT BT DR BT [BT] BT BT SA                 3.80  1.41  1.34 18.53   1.27  1.48  1.30  0.70  0.61  0.00  
-    97  14 4494  4420  TO BT BT BT BT DR BT BT [BT] BT SA                 1.94  1.04  1.23 10.81   1.35  1.11  1.63  1.91  0.61  0.00  
-    98  14 4494  4420  TO BT BT BT BT DR BT BT BT [BT] SA                 1.86  1.30  1.52 13.31   1.11  1.29  1.55  1.78  0.61  0.00  
-    99  14 4494  4420  TO BT BT BT BT DR BT BT BT BT [SA]                 1.82  1.09  1.33 44.96   1.11  1.29  1.55  1.21  0.61  0.00  
-    ##                         4 layers after DR             
+    ## looks like reclab irec stuck ???
+
+    In [17]: st[st.st.distc2 > 5]
+    Out[17]: 
+    ABStat 21 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
+    === == ====== ====== ================================================= ===== ===== ===== ========== ===== ===== ===== ===== ===== ========= 
+    iv  is na     nb     reclab                                            X     Y     Z     T          A     B     C     R     seqc2 distc2    
+    === == ====== ====== ================================================= ===== ===== ===== ========== ===== ===== ===== ===== ===== ========= 
+    5   0  669843 671267 TO BT BT BT BT [SA]                                0.00  0.00  0.00 1341110.00  0.00  0.00  0.00  0.00  1.51 191587.14 
+    20  3  28955  28649  TO BT BT BT BT [AB]                                1.23  0.00  0.00 105.35      0.00  0.00  0.00  1.23  1.63  9.60     
+    51  8  7540   7694   TO BT BT BT BT [DR] SA                             0.00  0.00  0.00 15234.00    1.06  1.11  1.07  0.00  1.56 33.61     
+    69  11 5339   5367   TO BT BT BT BT [DR] BT BT BT BT BT BT BT BT SA     0.00  0.00  0.00 10706.00    1.07  1.10  0.89  0.00  0.07 54.54     
+    94  14 4494   4420   TO BT BT BT BT [DR] BT BT BT BT SA                 0.00  0.00  0.00 8914.00     1.33  2.02  1.60  0.00  0.61 34.49     
+    124 17 2432   2472   TO BT BT BT BT [DR] AB                             0.00  0.00  0.00 4904.00     1.61  0.92  1.27  0.00  0.33 35.86     
+    190 25 1260   1263   TO BT BT BT BT [DR] BT BT BT BT AB                 0.00  0.00  0.00 2523.00     0.30  1.09  0.62  0.00  0.00 55.57     
+    240 31 1067   1019   TO BT BT BT BT [DR] BT BT AB                       0.00  0.00  0.00 2086.00     0.00  1.23  1.16  0.00  1.10 30.47     
+    269 36 933    958    TO BT BT BT BT [DR] SC SA                          0.00  0.00  0.00 1891.00     0.00  1.58  0.86  0.00  0.33 58.27     
+    312 42 545    566    TO BT BT BT BT [DR] BT BT BT BT SC BT BT BT BT SA  0.00  0.00  0.00 1111.00     0.00  0.81  0.76  0.00  0.40 40.29     
+    346 45 507    517    TO BT BT BT BT [DR] BT BT SC BT BT SA              0.00  0.00  0.00 1024.00     0.00  0.40  0.71  0.00  0.10 49.16     
+    532 66 285    239    TO BT BT BT BT [DR] BT BT BT BT BT BT AB           0.00  0.00  0.00 524.00      0.00  0.73  1.66  0.00  4.04 44.26     
+    545 67 266    270    TO BT BT BT BT [DR] BT BT BT BT BT BT BT BT AB     0.00  0.00  0.00 536.00      0.00  2.08  1.44  0.00  0.03 42.20     
+    578 70 212    242    TO BT BT BT BT [DR] BT BT RE BT BT SA              0.00  0.00  0.00 454.00      0.00  0.48  0.00  0.00  1.98 64.99     
+    590 71 237    222    TO BT BT BT BT [DR] BT BT BT BT RE BT BT BT BT SA  0.00  0.00  0.00 459.00      0.00  0.55  0.28  0.00  0.49 35.54     
+    591 71 237    222    TO BT BT BT BT DR [BT] BT BT BT RE BT BT BT BT SA  0.82  0.00  0.00 40.35       0.00  1.16  0.74  0.06  0.49  7.66     
+    592 71 237    222    TO BT BT BT BT DR BT [BT] BT BT RE BT BT BT BT SA  0.33  0.00  0.00 30.58       0.00  1.16  0.74  0.00  0.49  5.79     
+    660 78 167    168    TO BT BT RE BT BT RE BT BT BT [BT] SA              0.00  0.00  0.00  0.00       0.00  0.00  0.00  5.48  0.00  5.48     
+    794 91 126    131    TO BT BT BT BT [DR] BT BT BT BT BT BT BT BT DR BT  0.00  0.00  0.00 257.00      0.00  0.29  2.55  0.00  0.10 43.31     
+    826 94 129    117    TO BT BT BT BT [DR] SC BT BT BT BT SA              0.00  0.00  0.00 246.00      0.00  0.00  0.00  0.00  0.59 61.50     
+    886 99 126    123    TO BT BT BT BT [DR] BT BT SC BT BT BT BT BT BT SA  0.00  0.00  0.00 249.00      0.00  2.66  0.00  0.00  0.04 41.94     
+    === == ====== ====== ================================================= ===== ===== ===== ========== ===== ===== ===== ===== ===== ========= 
 
 
-    191 25 1260  1263  TO BT BT BT BT DR [BT] BT BT BT AB                 4.67  1.38  1.29 74.20   0.74  1.13  0.52  2.45  0.00  0.00  
-    192 25 1260  1263  TO BT BT BT BT DR BT [BT] BT BT AB                 5.07  1.24  0.67 11.46   0.51  1.60  0.57  2.37  0.00  0.00  
+Maybe not stuck, perhaps a problem with GROUPVEL in MineralOil ?::
 
-    241 31 1067  1019  TO BT BT BT BT DR [BT] BT AB                       1.58  1.48  0.98 20.81   1.32  1.83  0.92  1.04  1.10  0.00  
-    242 31 1067  1019  TO BT BT BT BT DR BT [BT] AB                       0.82  1.40  0.96 20.32   1.29  2.07  1.01  0.53  1.10  0.00  
+    In [14]: st[312:322]
+    Out[14]: 
+    ABStat 10 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
+    === == === === ================================================= ===== ===== ===== ======= ===== ===== ===== ===== ===== ====== 
+    iv  is na  nb  reclab                                            X     Y     Z     T       A     B     C     R     seqc2 distc2 
+    === == === === ================================================= ===== ===== ===== ======= ===== ===== ===== ===== ===== ====== 
+    312 42 545 566 TO BT BT BT BT [DR] BT BT BT BT SC BT BT BT BT SA  0.00  0.00  0.00 1111.00  0.00  0.81  0.76  0.00  0.40 40.29  
+    313 42 545 566 TO BT BT BT BT DR [BT] BT BT BT SC BT BT BT BT SA  0.04  0.87  1.35 66.68    0.01  1.07  0.81  1.02  0.40  3.15  
+    314 42 545 566 TO BT BT BT BT DR BT [BT] BT BT SC BT BT BT BT SA  0.73  0.91  1.13 47.93    0.41  1.04  0.71  1.24  0.40  2.45  
+    315 42 545 566 TO BT BT BT BT DR BT BT [BT] BT SC BT BT BT BT SA  0.66  0.00  1.43  8.92    0.00  0.96  0.96  0.12  0.40  2.01  
+    316 42 545 566 TO BT BT BT BT DR BT BT BT [BT] SC BT BT BT BT SA  0.43  1.85  0.00  7.79    0.41  0.85  0.76  0.73  0.40  1.75  
+    317 42 545 566 TO BT BT BT BT DR BT BT BT BT [SC] BT BT BT BT SA  0.00  0.00  0.00  0.52    0.00  0.00  0.00  2.35  0.40  0.56  
+    318 42 545 566 TO BT BT BT BT DR BT BT BT BT SC [BT] BT BT BT SA  0.00  0.00  0.00  0.71    0.00  0.00  0.00  0.27  0.40  0.55  
+    319 42 545 566 TO BT BT BT BT DR BT BT BT BT SC BT [BT] BT BT SA  0.00  0.00  0.00  0.79    0.00  0.00  0.00  0.66  0.40  0.70  
+    320 42 545 566 TO BT BT BT BT DR BT BT BT BT SC BT BT [BT] BT SA  0.00  0.00  0.00  1.03    0.00  0.00  0.00  2.73  0.40  1.39  
+    321 42 545 566 TO BT BT BT BT DR BT BT BT BT SC BT BT BT [BT] SA  0.00  0.00  0.00  1.22    0.00  0.00  0.00  0.24  0.40  0.87  
+    === == === === ================================================= ===== ===== ===== ======= ===== ===== ===== ===== ===== ====== 
 
-    313 42 545   566   TO BT BT BT BT DR [BT] BT BT BT SC BT BT BT BT SA  0.04  1.18  1.35 78.15   0.01  1.07  0.81  0.01  0.40  0.00  
-    314 42 545   566   TO BT BT BT BT DR BT [BT] BT BT SC BT BT BT BT SA  0.01  1.03  1.32 77.45   0.41  1.04  0.71  0.01  0.40  0.00  
-
-    546 67 266   270   TO BT BT BT BT DR [BT] BT BT BT BT BT BT BT AB     0.80  2.05  0.71 15.21   0.00  0.61  1.60  0.15  0.03  0.00  
-
-    591 71 237   222   TO BT BT BT BT DR [BT] BT BT BT RE BT BT BT BT SA  0.89  1.25  0.57 17.58   0.00  1.16  0.74  0.01  0.49  0.00  
-    592 71 237   222   TO BT BT BT BT DR BT [BT] BT BT RE BT BT BT BT SA  2.18  1.36  0.66 17.57   0.00  1.16  0.74  0.01  0.49  0.00  
-    === == ===== ===== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== ===== ====== 
-
-    ABStat 22 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
 
 
 Load the 8 qwn point histos::

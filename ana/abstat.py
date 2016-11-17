@@ -53,6 +53,9 @@ Corresponding ndarray gives raw chi2 access::
 
 
     In [8]: st[np.where( np.sum(ar, axis=1) > 30 )]    # propagation record points with chi2 sum greater than 30 
+
+          ## this was before moving to c2shape=True to take out normalization differences
+
     === == ===== ===== ========================================================== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== 
     iv  is na    nb    qctx                                                       reclab                                            X     Y     Z     T      A     B     C     R     
     === == ===== ===== ========================================================== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== 

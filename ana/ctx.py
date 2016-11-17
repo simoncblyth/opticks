@@ -29,6 +29,32 @@ class Ctx(dict):
     pctx = property(lambda self:os.path.join(self.det,self.tag,self.sseq0,self.srec,self.qwn))
     reclab = property(lambda self:" ".join([ ("[%s]" if i == self.irec else "%s") % sq for i,sq in enumerate(self.sqs)]))
 
+    @classmethod
+    def reclab_(cls, seq0, irec ):
+        return " ".join([ ("[%s]" if i == irec else "%s") % sq for i,sq in enumerate(seq0.split())])
+
+    @classmethod
+    def reclabs_(cls, seq0):
+        """
+        :param seq0: sequence label such as 'TO RE RE RE RE BT BT BT SC BR BR BR BR BR BR BR'
+        :return reclabel list: with each irec highlighted sequentially 
+
+        reclabs are strings of up to 16*3+2 = 50 chars
+        """
+        sqs = seq0.split()
+        nsqs = len(sqs)
+
+        sqlab = np.zeros( (16), dtype="|S4" )
+        sqlab[:nsqs] = sqs 
+
+        rls = np.tile(sqlab, nsqs).reshape(nsqs,-1)
+        for ir in range(nsqs):rls[ir,ir] = "[" + rls[ir,ir] + "]"
+
+        rlabs = map( lambda ir:" ".join(filter(None,rls[ir])), range(nsqs))
+
+        return rlabs  
+
+
     def qsub(self):
         subs = []
         for q in list(self.QWNS):
@@ -158,7 +184,8 @@ class Ctx(dict):
     @classmethod
     def reclab2ctx_(cls, arg, **kwa):
         """
-        If argument contains no spaces return unchanged otherwise apply reclab into qctx conversion, eg::
+        Requires reclab of below form, with a single point highlighted.
+        Applies reclab into Ctx conversion, eg::
 
              "[TO] BT BT BT BT SA"                             ->  Ctx(seq0="TO BT BT BT BT SA", irec=0)
              "TO BT BT BT BT DR BT BT BT BT BT BT BT BT [SA]"  ->  Ctx(seq0="TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA", irec=14)
