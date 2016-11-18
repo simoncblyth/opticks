@@ -70,6 +70,8 @@ int main(int argc, char** argv)
 
     unsigned nl_interpolate = unsigned(Opticks::DOMAIN_HIGH) - unsigned(Opticks::DOMAIN_LOW) + 1u ; 
 
+
+    // PROBABLY NOT NEEDED ANYMORE : DONE IN GBndLib::load 
     NPY<float>* tex = blib->createBuffer();   // zipping together the dynamic buffer from materials and surfaces
     unsigned ndim = tex->getDimensions() ;
     assert( ndim == 5 );

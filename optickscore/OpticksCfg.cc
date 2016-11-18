@@ -107,7 +107,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nointerpol",  "inhibit interpolation in cfg4/tests/CInterpolationTest for identity check") ;
 
-
+   m_desc.add_options()
+       ("finebndtex",  "Use 1nm pitch wavelength domain for boundary buffer (ie material and surface properties) obtained by interpolation postcache, see GGeo::loadFromCache");
 
    m_desc.add_options()
        ("nogroupvel",  "inhibit group_velocity property calculated from refractive_index in GMaterialLib::postLoadFromCache ");

@@ -87,6 +87,8 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
      m_valid(true)
 {
     init();
+
+    setNames(other->getNames());  // need setter for m_attrnames hookup
 }
 
 
@@ -131,6 +133,13 @@ GDomain<float>* GPropertyLib::getStandardDomain()
 {
     return m_standard_domain ;
 }
+
+
+void GPropertyLib::setStandardDomain(GDomain<float>* domain)
+{
+    m_standard_domain = domain ;
+}
+
 
 
 

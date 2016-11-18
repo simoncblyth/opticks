@@ -85,10 +85,9 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void save();
        static GMaterialLib* load(Opticks* cache);
    public:
-       GMaterialLib(GMaterialLib* other, GDomain<float>* domain=NULL);  // interpolating copy ctor
        GMaterialLib(Opticks* ok); 
-       static GMaterialLib* interpolate(GMaterialLib* src, float nm=1.0f);
-       GMaterialLib* spawn_interpolated(float nm=1.0f);
+   public:
+       GMaterialLib(GMaterialLib* other, GDomain<float>* domain=NULL);  // interpolating copy ctor
    public:
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");

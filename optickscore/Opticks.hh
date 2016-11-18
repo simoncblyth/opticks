@@ -67,13 +67,17 @@ class OKCORE_API Opticks {
        static std::string MaterialSequence(const unsigned long long seqmat);
    public:
        // wavelength domain
-       static unsigned int DOMAIN_LENGTH ; 
+       static unsigned     DOMAIN_LENGTH ; 
+       static unsigned     FINE_DOMAIN_LENGTH ; 
        static float        DOMAIN_LOW ; 
        static float        DOMAIN_HIGH ; 
        static float        DOMAIN_STEP ; 
+       static float        FINE_DOMAIN_STEP ; 
        static glm::vec4    getDefaultDomainSpec();
        static glm::vec4    getDefaultDomainReciprocalSpec();
 
+       static glm::vec4    getDomainSpec(bool fine=false);
+       static glm::vec4    getDomainReciprocalSpec(bool fine=false);
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:

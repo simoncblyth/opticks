@@ -22,6 +22,15 @@ TODO: check time distrib diff matches expectation from groupvel interpol mismatc
 ----------------------------------------------------------------------------------
 
 
+Testing finebndtex
+-------------------
+
+::
+
+    lldb CInterpolationTest -- --finebndtex
+    lldb OInterpolationTest -- --finebndtex
+
+
 How to up samples ?
 --------------------
 
@@ -286,6 +295,12 @@ Possible Approaches to reduce interpolation mismatch
 
 Dumping Interpol deviations
 -------------------------------
+
+
+After moving to fine domain pitch (1nm) all the below deviations go to zero::
+
+    np.all(rel == 0.)
+
 
 The below are deviations obtained from interpolations at every 1nm 
 using input raster of 20nm. 

@@ -79,14 +79,49 @@ void GSurfaceLib::saveOpticalBuffer()
 
 
 
-GSurfaceLib::GSurfaceLib(Opticks* cache) 
+
+
+
+
+GSurfaceLib::GSurfaceLib(Opticks* ok) 
     :
-    GPropertyLib(cache, "GSurfaceLib"),
+    GPropertyLib(ok, "GSurfaceLib"),
     m_fake_efficiency(-1.f),
     m_optical_buffer(NULL)
 {
     init();
 }
+
+
+
+GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain) 
+    :
+    GPropertyLib(src, domain)
+{
+    init();
+
+    unsigned nsur = src->getNumSurfaces();
+
+    for(unsigned i=0 ; i < nsur ; i++)
+    {
+        GPropertyMap<float>* ssur = src->getSurface(i);
+
+        if(!ssur->hasStandardDomain())
+        {
+             LOG(warning) << "GSurfaceLib::GSurfaceLib set ssur standard domain for " << i << " out of " << nsur ;
+             ssur->setStandardDomain(src->getStandardDomain());
+        }
+
+        GPropertyMap<float>* dsur = new GPropertyMap<float>(ssur, domain );   // interpolating "copy" ctor
+
+        addDirect(dsur);
+    }
+}
+ 
+
+
+
+
  
 unsigned int GSurfaceLib::getNumSurfaces()
 {

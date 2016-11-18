@@ -45,9 +45,10 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        static const char* keyspec ;
    public:
        void save();
-       static GSurfaceLib* load(Opticks* cache);
+       static GSurfaceLib* load(Opticks* ok);
    public:
-       GSurfaceLib(Opticks* cache); 
+       GSurfaceLib(Opticks* ok); 
+       GSurfaceLib(GSurfaceLib* other, GDomain<float>* domain=NULL);  // interpolating copy ctor
    public:
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");

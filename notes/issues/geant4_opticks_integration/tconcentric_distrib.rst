@@ -106,6 +106,9 @@ After move to c2shape comparisons : listing seq points with sum of distrib chi2 
     tconcentric-;tconcentric-d --noplot --rehist --sel 0:100    # recreate histograms for first 100 seq lines 
 
 
+
+
+
     ip>  run abstat.py   # load and examine the stats
 
 

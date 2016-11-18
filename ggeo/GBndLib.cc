@@ -51,12 +51,40 @@ GBndLib* GBndLib::load(Opticks* ok, bool constituents)
     LOG(trace) << "GBndLib::load indexBuffer loaded" ; 
     blib->importIndexBuffer();
 
+
     if(constituents)
     {
         GMaterialLib* mlib = GMaterialLib::load(ok);
         GSurfaceLib* slib = GSurfaceLib::load(ok);
-        blib->setMaterialLib(mlib);
-        blib->setSurfaceLib(slib);
+        GDomain<float>* finedom = ok->hasOpt("finebndtex") 
+                            ?
+                                mlib->getStandardDomain()->makeInterpolationDomain(Opticks::FINE_DOMAIN_STEP) 
+                            :
+                                NULL 
+                            ;
+
+        //assert(0); 
+
+        if(finedom)
+        {
+            LOG(warning) << "GBndLib::load  --finebndtex option triggers interpolation of material and surface props "  ;
+            GMaterialLib* mlib2 = new GMaterialLib(mlib, finedom );    
+            GSurfaceLib* slib2 = new GSurfaceLib(slib, finedom );    
+
+            mlib2->setBuffer(mlib2->createBuffer());
+            slib2->setBuffer(slib2->createBuffer());
+
+            blib->setStandardDomain(finedom);
+            blib->setMaterialLib(mlib2);
+            blib->setSurfaceLib(slib2);
+
+            blib->setBuffer(blib->createBuffer()); 
+        }
+        else
+        {
+            blib->setMaterialLib(mlib);
+            blib->setSurfaceLib(slib);
+        } 
     }
 
     LOG(trace) << "GBndLib::load DONE" ; 
@@ -641,13 +669,19 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
     // the klm matches the Materials and Surface buffer layouts, so can memcpy in 
     unsigned int nk = NUM_FLOAT4 ;    
-    unsigned int nl = Opticks::DOMAIN_LENGTH ; 
+    unsigned int nl = getStandardDomainLength() ; 
     unsigned int nm = 4 ; 
 
 
-    assert(nl == getStandardDomainLength()) ;
-    assert(mat->getShape(1) == sur->getShape(1) && sur->getShape(1) == nk );
-    assert(mat->getShape(2) == sur->getShape(2) && sur->getShape(2) == nl );
+    assert( nl == Opticks::DOMAIN_LENGTH || nl == Opticks::FINE_DOMAIN_LENGTH ) ;
+    assert( mat->getShape(1) == sur->getShape(1) );
+    assert( sur->getShape(1) == nk );
+
+    assert( mat->getShape(2) == sur->getShape(2) );
+    assert( mat->getShape(2) == nl );
+
+
+
 
     NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 

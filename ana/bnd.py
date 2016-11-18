@@ -44,7 +44,7 @@
                    ## never 0, refractive index, mostly absorption and scattering lengths 
 
 
-Material property min/max relative interpolation differences::
+Material property min/max relative interpolation differences with 20nm domain step::
 
                                                   RINDEX                   ABSLEN                 RAYLEIGH                 REEMPROB                 GROUPVEL  
  0                      GdDopedLS      -0.0048     0.0053       -0.0096     0.0821        0.0000     0.0237       -0.0423     0.0032       -0.0125     0.0065  

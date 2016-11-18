@@ -77,9 +77,19 @@ void OBndLib::convert()
 
     NPY<float>* orig = m_lib->getBuffer() ;  // (123, 4, 2, 39, 4)
 
+    assert(orig && "OBndLib::convert orig buffer NULL");
+
     NPY<float>* buf = m_debug_buffer ? m_debug_buffer : orig ; 
 
-    assert(buf->hasSameShape(orig));
+
+    bool same = buf->hasSameShape(orig) ;
+    if(!same)
+        LOG(fatal) << "OBndLib::convert buf/orig shape mismatch "
+                   << " orig " << orig->getShapeString()
+                   << " buf " << buf->getShapeString()
+                   ;
+
+    assert(same);
 
     makeBoundaryTexture( buf );
 
@@ -112,14 +122,14 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int ni = buf->getShape(0);  // (~123) number of boundaries 
     unsigned int nj = buf->getShape(1);  // (4)    number of species : omat/osur/isur/imat 
     unsigned int nk = buf->getShape(2);  // (2)    number of float4 property groups per species 
-    unsigned int nl = buf->getShape(3);  // (39)   number of wavelength samples of the property
+    unsigned int nl = buf->getShape(3);  // (39 or 761)   number of wavelength samples of the property
     unsigned int nm = buf->getShape(4);  // (4)    number of prop within the float4
 
     assert(ni == m_lib->getNumBnd()) ;
     assert(nj == GPropertyLib::NUM_MATSUR);
 
     assert(nk == GPropertyLib::NUM_FLOAT4); 
-    assert(nl == Opticks::DOMAIN_LENGTH); 
+    assert(nl == Opticks::DOMAIN_LENGTH || nl == Opticks::FINE_DOMAIN_LENGTH); 
     assert(nm == 4); 
 
     unsigned int nx = nl ;           // wavelength samples
@@ -172,8 +182,9 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
               << " w " << bounds.w 
               ;
 
-    glm::vec4 dom = Opticks::getDefaultDomainSpec() ;
-    glm::vec4 rdom = Opticks::getDefaultDomainReciprocalSpec() ;
+    bool fine = nl == Opticks::FINE_DOMAIN_LENGTH ;
+    glm::vec4 dom = Opticks::getDomainSpec(fine) ;
+    glm::vec4 rdom = Opticks::getDomainReciprocalSpec(fine) ;
 
     m_context["boundary_texture"]->setTextureSampler(tex);
     m_context["boundary_texture_dim"]->setUint(texDim);

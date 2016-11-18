@@ -44,21 +44,7 @@ GMaterialLib* GMaterialLib::load(Opticks* ok)
     GMaterialLib* mlib = new GMaterialLib(ok);
     mlib->loadFromCache();
     mlib->postLoadFromCache();
-
     return mlib ; 
-}
-
-
-GMaterialLib* GMaterialLib::interpolate(GMaterialLib* src, float nm)
-{
-    GDomain<float>* ddom = src->getStandardDomain()->makeInterpolationDomain(nm) ;
-    GMaterialLib* dst = new GMaterialLib( src, ddom );
-    return dst ; 
-}
-
-GMaterialLib* GMaterialLib::spawn_interpolated(float nm)
-{
-    return interpolate(this, nm );
 }
 
 

@@ -89,6 +89,7 @@ class GGEO_API GPropertyLib {
         static GDomain<float>* getDefaultDomain();
         static glm::vec4      getDefaultDomainSpec();
     public:
+        void                 setStandardDomain(GDomain<float>* domain );
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
         void                 dumpDomain(const char* msg="GPropertyLib::dumpDomain");

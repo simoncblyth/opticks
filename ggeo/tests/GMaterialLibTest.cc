@@ -17,6 +17,7 @@
 #include "GPropertyMap.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
+#include "GDomain.hh"
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
@@ -86,7 +87,8 @@ void test_setMaterialPropertyValues(GMaterialLib* mlib)
 
 void test_interpolatingCopyCtor(GMaterialLib* mlib)
 {
-    GMaterialLib* ilib = mlib->spawn_interpolated(1.f);
+    GDomain<float>* idom = mlib->getStandardDomain()->makeInterpolationDomain(1.f);
+    GMaterialLib* ilib = new GMaterialLib(mlib, idom);
 
     ilib->dump("test_interpolatingCopyCtor (ilib)");
 

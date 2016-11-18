@@ -614,15 +614,13 @@ void GGeo::loadFromCache()
         m_lvlist = GItemList::load(idpath, "LVNames");
     }
 
-    m_bndlib = GBndLib::load(m_opticks);  // GBndLib is persisted via index buffer, not float buffer
+    bool constituents = true ; 
+    m_bndlib = GBndLib::load(m_opticks, constituents);    // interpolation potentially happens in here
 
-    
+    // GBndLib is persisted via index buffer, not float buffer
+    m_materiallib = m_bndlib->getMaterialLib();
+    m_surfacelib = m_bndlib->getSurfaceLib();
 
-    m_materiallib = GMaterialLib::load(m_opticks);
-    m_surfacelib  = GSurfaceLib::load(m_opticks);
-
-    m_bndlib->setMaterialLib(m_materiallib);
-    m_bndlib->setSurfaceLib(m_surfacelib);
 
     m_scintillatorlib  = GScintillatorLib::load(m_opticks);
     m_sourcelib  = GSourceLib::load(m_opticks);
