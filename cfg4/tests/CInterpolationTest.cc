@@ -37,6 +37,12 @@ CInterpolationTest
 
 The GPU analogue of this is oxrap-/tests/OInterpolationTest
 
+::
+
+    CInterpolationTest --nointerpol   ## identity check
+    CInterpolationTest                ## interpol check
+
+
 **/
 
 
@@ -82,7 +88,7 @@ int main(int argc, char** argv)
 
 
     NPY<float>* out = NPY<float>::make(ni,nj,nk,nl,nm);
-    out->zero();
+    out->fill(-1.f);  // align unset to -1.f
 
     LOG(info) 
        << " interpolate (control with option: --nointerpol) " << interpolate

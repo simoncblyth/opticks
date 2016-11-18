@@ -2,23 +2,87 @@
 """
 ::
 
-    In [11]: bnd.nam[bnd.nam[:,0] == 'MineralOil']
-    Out[11]: 
-    array([['MineralOil', '', '', 'Acrylic'],
-           ['MineralOil', '', '', 'Pyrex'],
-           ['MineralOil', '', '', 'UnstStainlessSteel'],
-           ['MineralOil', '', '', 'Vacuum'],
-           ['MineralOil', '', '', 'StainlessSteel'],
-           ['MineralOil', 'RSOilSurface', '', 'Acrylic'],
-           ['MineralOil', '', '', 'Teflon'],
-           ['MineralOil', '', '', 'LiquidScintillator']], 
-          dtype='|S64')
+    In [13]: m0.data.shape
+    Out[13]: (38, 2, 39, 4)   # 38 materials, 2 groups, 39 wavelengths, 4 qwns in each group : 38 mats include 2 added ones: GlassSchottF2, MainH2OHale -> 36 standard ones
 
-    In [12]: bnd.nam[bnd.nam[:,3] == 'MineralOil']
-    Out[12]: 
-    array([['StainlessSteel', '', 'SSTOilSurface', 'MineralOil'],
-           ['Nitrogen', '', '', 'MineralOil']], 
-          dtype='|S64')
+        ## huh m0.names shows that GlassSchottF2 appears in the middle, not at the tail ???  MainH2OHale is last 
+
+    In [14]: b0.data.shape
+    Out[14]: (123, 4, 2, 39, 4)  # 123 bnds, 4 matsur, 2 groups, 39 wavelengths, 4 qwns in each group
+
+    In [15]: s0.data.shape       # 49 surs include 4 added "perfect" ones that dont appear in bnds, so 49-4 = 44 standard ones
+    Out[15]: (48, 2, 39, 4)
+
+    In [17]: len(b0.bnd.surs)   # includes 1 blank, so 44 surs occuring in bnd
+    Out[17]: 45
+
+    In [18]: len(b0.bnd.mats)   
+    Out[18]: 36
+
+
+    In [55]: np.where( np.logical_or( rel < -0.02, rel > 0.02 ))   ## 221/219168 off by more than 2%
+    Out[55]: 
+    (array([ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,
+            1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,
+            2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,
+            3,  4,  4,  4,  4,  5,  5,  5,  5,  5,  5,  5,  5,  6,  6,  6,  6,  6,  6,  6,  6,  7,  7,  7,  7,  7,  7,  7,  7,  8,  8,  8,  8,  8,  8,  8,  8, 13, 13, 13, 13, 27, 27, 27, 27, 27, 27, 27,
+           27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27]),
+     array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),   ## all group zero, ie not GROUPVEL
+     array([141, 142, 143, 144, 145, 145, 146, 146, 147, 147, 148, 148, 149, 149, 150, 150, 151, 152, 153, 154, 155, 288, 323, 324, 325, 326, 327, 328, 329, 330, 341, 342, 343, 344, 345, 346, 347, 348,
+           349, 350, 351, 653, 654, 655, 658, 659, 141, 142, 143, 144, 145, 145, 146, 146, 147, 147, 148, 148, 149, 149, 150, 150, 151, 152, 153, 154, 155, 288, 323, 324, 325, 326, 327, 328, 329, 330,
+           341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 653, 654, 655, 658, 659, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 141, 142, 143, 144, 145, 145, 146,
+           146, 147, 147, 148, 148, 149, 149, 150, 150, 151, 152, 153, 154, 155, 145, 146, 147, 148, 149, 150, 224, 225, 226, 228, 229, 263, 264, 265, 268, 269, 308, 733, 734, 738, 739, 124, 125, 126,
+           127, 128, 129, 130, 131, 124, 125, 126, 127, 128, 129, 130, 131, 124, 125, 126, 127, 128, 129, 130, 131, 124, 125, 126, 127, 128, 129, 130, 131, 733, 734, 738, 739, 121, 122, 123, 124, 125,
+           126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 141, 142, 143, 144, 145, 145, 146, 146, 147, 147, 148, 148, 149, 149, 150, 150, 151, 152, 153, 154, 155]),
+     array([1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1,
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1,
+           2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1]))
+                   ## never 0, refractive index, mostly absorption and scattering lengths 
+
+
+Material property min/max relative interpolation differences::
+
+                                                  RINDEX                   ABSLEN                 RAYLEIGH                 REEMPROB                 GROUPVEL  
+ 0                      GdDopedLS      -0.0048     0.0053       -0.0096     0.0821        0.0000     0.0237       -0.0423     0.0032       -0.0125     0.0065  
+ 1             LiquidScintillator      -0.0048     0.0053       -0.0100     0.0821        0.0000     0.0237       -0.0423     0.0032       -0.0125     0.0065  
+ 2                        Acrylic      -0.0046     0.0053        0.0000     0.0968        0.0000     0.0237        0.0000     0.0000       -0.0123     0.0064  
+ 3                     MineralOil      -0.0046     0.0053       -0.0083     0.0232        0.0000     0.0237        0.0000     0.0000       -0.0123     0.0063  
+ 4                       Bialkali       0.0000     0.0000       -0.0396     0.0017        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+ 5                       IwsWater      -0.0001     0.0000       -0.0084     0.0254        0.0000     0.0000        0.0000     0.0000       -0.0006     0.0005  
+ 6                          Water      -0.0001     0.0000       -0.0084     0.0254        0.0000     0.0000        0.0000     0.0000       -0.0006     0.0005  
+ 7                      DeadWater      -0.0001     0.0000       -0.0084     0.0254        0.0000     0.0000        0.0000     0.0000       -0.0006     0.0005  
+ 8                       OwsWater      -0.0001     0.0000       -0.0084     0.0254        0.0000     0.0000        0.0000     0.0000       -0.0006     0.0005  
+ 9                            ESR       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+10                   OpaqueVacuum       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+11                           Rock       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+12                         Vacuum       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+13                          Pyrex       0.0000     0.0000       -0.0396     0.0017        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+14                            Air       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+15                  GlassSchottF2       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+16                            PPE       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+17                      Aluminium       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+18          ADTableStainlessSteel       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+19                           Foam       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+20                       Nitrogen      -0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000       -0.0000     0.0000  
+21                    NitrogenGas       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+22                          Nylon       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+23                            PVC       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+24                          Tyvek       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+25                       Bakelite       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+26                         MixGas       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+27                           Iron      -0.0046     0.0053        0.0000     0.0968        0.0000     0.0237        0.0000     0.0000       -0.0123     0.0064  
+28                         Teflon       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+29             UnstStainlessSteel       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+30                            BPE       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+31                          Ge_68       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+32                          Co_60       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+33                           C_13       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+34                         Silver       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
+35                        RadRock       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
 
 
 """
@@ -29,141 +93,66 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main 
 from opticks.ana.proplib import PropLib, Bnd
 
-
 idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
-
 
 
 
 if __name__ == '__main__':
     ok = opticks_main()
-
     
     # from old geocache without groupvel setup
     m0 = PropLib("GMaterialLib") 
     s0 = PropLib("GSurfaceLib") 
-    b0 = PropLib("GBndLib", dpath=None) 
+    b0 = PropLib("GBndLib") 
 
-    # postcache groupvel calc, identity 
-    b1 = PropLib("GBndLib", dpath="$TMP/InterpolationTest/CInterpolationTest_identity.npy" ) 
-    b2 = PropLib("GBndLib", dpath="$TMP/InterpolationTest/OInterpolationTest_identity.npy" ) 
+    # persisted postcache modified bnd buffer including groupvel calc, identity wavelengths 20nm steps
+    b1 = PropLib("GBndLib", data="$TMP/InterpolationTest/CInterpolationTest_identity.npy" )  
+    b2 = PropLib("GBndLib", data="$TMP/InterpolationTest/OInterpolationTest_identity.npy" )  
+    assert np.allclose( b1.data, b2.data ) # after unset alignment
 
-    assert np.allclose( b1.data, b2.data ) == False  # due to unset difference, one uses zero, other uses -1 TODO: fix this
+    # persisted postcache groupvel calc, interpol wavelengths 1nm steps
+    i1 = PropLib("GBndLib", data="$TMP/InterpolationTest/CInterpolationTest_interpol.npy" ) 
+    i2 = PropLib("GBndLib", data="$TMP/InterpolationTest/OInterpolationTest_interpol.npy" ) 
 
-
-    # postcache groupvel calc, interpol
-    i1 = PropLib("GBndLib", dpath="$TMP/InterpolationTest/CInterpolationTest_interpol.npy" ) 
-    i2 = PropLib("GBndLib", dpath="$TMP/InterpolationTest/OInterpolationTest_interpol.npy" ) 
-
-
-    KL = odict()
-    KL["RINDEX"]   = (0,PropLib.M_REFRACTIVE_INDEX)
-    KL["ABSLEN"]   = (0,PropLib.M_ABSORPTION_LENGTH)
-    KL["RAYLEIGH"] = (0,PropLib.M_SCATTERING_LENGTH)
-    KL["REEMPROB"] = (0,PropLib.M_REEMISSION_PROB)
-    KL["GROUPVEL"] = (1,PropLib.L_GROUP_VELOCITY)
-
-    shape = b0.data.shape
-
-    ni = shape[0]   # bnd
-    nj = shape[1]   # omat/osur/isur/imat
-    nk = shape[2]   # g0,g1
-    nl = shape[3]   # samples = 39 for identity, or 761 for interpolating 
-    nm = shape[4]   # props   
-
-    cf = np.zeros( (ni, nj, nk, nm, 2), dtype=np.float32  )
+    assert np.allclose( i1.data[:,:,:,::20,:], i2.data[:,:,:,::20,:] ) == True   # plucking identity wavelengths from the interpol ones
+    assert np.allclose( i1.data[:,:,:,::20,:], b1.data  )
+    assert np.allclose( i2.data[:,:,:,::20,:], b2.data  )
 
 
-    #i12 = i1.data - i2.data
-    #np.where( i12 > 300)      difficult to interpret the 5-tuple of indices
+    # collapse material duplication for simpler comparisons
+    order = m0.names
+    b0m = b0.as_mlib(order=order)
+    b1m = b1.as_mlib(order=order)
+    b2m = b2.as_mlib(order=order)
+    i1m = i1.as_mlib(order=order)
+    i2m = i2.as_mlib(order=order)
 
-    for i in range(ni):
-        for j in range(nj):
-            for k in range(nk):
+    assert np.all( i1m.names == i2m.names ) 
+    matnames = i1m.names
+    assert np.all( b0m.data == m0.data[~np.logical_or(m0.names == 'GlassSchottF2', m0.names == 'MainH2OHale')] )
+    assert np.all( b1m.data == b2m.data )   ## identity match
 
-                b1.dat.ijk = i,j,k
-                b2.dat.ijk = i,j,k
-                i1.dat.ijk = i,j,k
-                i2.dat.ijk = i,j,k
-
-                assert np.allclose( b1.dat.d, b1.dat.d )
-
-                for m in range(nm):
-                    i12 = i1.dat.d[:,m] - i2.dat.d[:,m]
-                    cf[i,j,k,m,0] = i12.min()
-                    cf[i,j,k,m,1] = i12.max()
-                pass
-            pass
-        pass
-    pass
-
-    # big discreps in all Water flavors  absorption length
-    for i in range(ni):
-        for j in range(nj):
-            if cf[i,j].min() < -1 or cf[i,j].max() > 1:
-                 print i, j, b0.names[i],"\n", cf[i,j]
+    assert np.all( i1m.data[:,:,::20,:] == i2m.data[:,:,::20,:] )   ## on the raster, where there is no interpolation to do, get perfect match
 
 
-    mats = np.unique(np.hstack([b0.bnd.nam[:,0],b0.bnd.nam[:,3]]))
+    avg = (i1m.data + i2m.data)/2.0
+    dif = i1m.data - i2m.data                 # absolute difference
 
-    cfm = odict()
+    # signed relative difference of 36*2*761*4 = 219168 property values 
+    rel = np.where( np.logical_or(avg < 1e-6, dif == 0), 0, dif/avg )
 
-    for mat in mats:
-        oms = np.where(b0.bnd.nam[:,0] == mat)[0]   # indices of omat
-        ims = np.where(b0.bnd.nam[:,3] == mat)[0]   # indices of imat
-
-        print mat
-        for om in oms:
-            cfom = cf[om,0]
-            if mat in cfm:
-                assert np.all(cfm[mat] == cfom)
-            else:
-                cfm[mat] = cfom 
-            pass
-            #if cfom.min() < -1 or cfom.max() > 1:
-            #     print "om", b0.names[om],"\n", cfom
-
-        for im in ims:
-
-            cfim = cf[im,3]
-            if mat in cfm:
-                assert np.all(cfm[mat] == cfim)
-            else:
-                cfm[mat] = cfim
-            pass
-            #if cfim.min() < -1 or cfim.max() > 1:
-            #     print "im", b0.names[im],"\n", cfim
-
-
-    # interpol discreps seem big in absolute terms
-    # but maybe not in relative 
-
-    for mat in cfm.keys():
-        if cfm[mat].min() < -0.001 or cfm[mat].max() > 0.001:
-            print mat,"\n", cfm[mat].reshape(-1,2).T
-
-            oms = b0.bnd.oms(mat)
-            if len(oms) > 0:
-                i1.dat.ijk = oms[0],0,0
-                i2.dat.ijk = oms[0],0,0
-                for m in range(nm):
-                    print m,"\n",(i2.dat.d[:,m] - i1.dat.d[:,m]) / (i2.dat.d[:,m] + i1.dat.d[:,m])/2.
-
-                i1.dat.ijk = oms[0],0,1
-                i2.dat.ijk = oms[0],0,1
-                for m in range(nm):
-                    print m,"\n",(i2.dat.d[:,m] - i1.dat.d[:,m]) / (i2.dat.d[:,m] + i1.dat.d[:,m])/2.
+   
+    rd = np.zeros( (len(rel), 2, 4, 2), dtype=np.float32 ) 
+    rd[:,:,:,0] = np.amin(rel, axis=2) 
+    rd[:,:,:,1] = np.amax(rel, axis=2) 
 
 
 
-
-
-
-
-
-
-
-
+    print "".join(["%2s %30s " % ("","")] + map(lambda plab:"  %21s  " % plab, PropLib.M_LABELS ))
+    for i in range(len(rd)):
+        labl = ["%2d %30s " % ( i, matnames[i] )]
+        rnge =  map(lambda mimx:"  %10.4f %10.4f  " % ( float(mimx[0]), float(mimx[1])) , rd[i].reshape(-1,2)[:5] )
+        print "".join(labl + rnge)
 
 
 

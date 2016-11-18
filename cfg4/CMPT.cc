@@ -326,6 +326,8 @@ G4PhysicsOrderedFreeVector* CMPT::getVec(const char* key)
 
 void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep )
 {
+   // CAUTION: used by cfg4/tests/CInterpolationTest.cc 
+
     std::vector<std::string> keys ; 
     boost::split(keys, _keys, boost::is_any_of(","));   
     unsigned nkey = keys.size();
@@ -349,12 +351,8 @@ void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, 
         {
             const char* key = keys[m].c_str(); 
             G4PhysicsOrderedFreeVector* pofv = getVec(key);
-            if(!pofv) continue ; 
-
-            G4double value = pofv->Value( photonMomentum );
-
+            G4double value = pofv ? pofv->Value( photonMomentum ) : 0.f ;
             *(values + l*nm_ + m) = value ;
-
         }
     }   
 }
