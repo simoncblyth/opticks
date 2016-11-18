@@ -23,9 +23,10 @@ class GGEO_API GPropertyMap {
   static const char* NOT_DEFINED ;
   typedef std::map<std::string,GProperty<T>*> GPropertyMap_t ;
   public:
-      GPropertyMap(GPropertyMap* other);
+      GPropertyMap(GPropertyMap* other, GDomain<T>* domain=NULL);  // used for interpolation when domain provided
       GPropertyMap(const char* name);
       GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL);
+
       virtual ~GPropertyMap();
   public:
       void save(const char* path);
@@ -45,7 +46,8 @@ class GGEO_API GPropertyMap {
       std::string description();
   public:
       std::string make_table(unsigned int fwid=20, T dscale=1, bool dreciprocal=false);
-
+  public:
+      GPropertyMap<T>* spawn_interpolated(T nm=1.0f);
   public:
       static const char* FindShortName(const char* name, const char* prefix);
   private:
@@ -81,9 +83,12 @@ class GGEO_API GPropertyMap {
       bool hasStandardDomain();
       void setStandardDomain(GDomain<T>* standard_domain);
       GDomain<T>* getStandardDomain();
-
+      T getDomainLow();
+      T getDomainHigh();
+      T getDomainStep();
   public:
       void add(GPropertyMap<T>* other, const char* prefix=NULL);
+      void addStandardized(GPropertyMap<T>* other, const char* prefix=NULL);
       void addConstantProperty(const char* pname, T value, const char* prefix=NULL);
       bool setPropertyValues(const char* pname, T val); 
 

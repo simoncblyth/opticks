@@ -84,6 +84,16 @@ void test_setMaterialPropertyValues(GMaterialLib* mlib)
 
 
 
+void test_interpolatingCopyCtor(GMaterialLib* mlib)
+{
+    GMaterialLib* ilib = mlib->spawn_interpolated(1.f);
+
+    ilib->dump("test_interpolatingCopyCtor (ilib)");
+
+}
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -106,6 +116,10 @@ int main(int argc, char** argv)
 
     mlib->dump("dump");
     LOG(info) << " after dump " ; 
+
+
+    test_interpolatingCopyCtor(mlib);
+
 
     return 0 ;
 }

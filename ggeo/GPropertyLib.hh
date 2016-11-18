@@ -61,11 +61,13 @@ class GGEO_API GPropertyLib {
         const char*  getName(unsigned int index);
         unsigned int getIndex(const char* shortname);
     public:
-        GPropertyLib(Opticks* cache, const char* type);
+        GPropertyLib(GPropertyLib* other, GDomain<float>* domain=NULL);
+        GPropertyLib(Opticks* ok, const char* type);
         virtual ~GPropertyLib();
     public:
         const char* getType();
         const char* getComponentType();
+        Opticks*    getOpticks(); 
         std::string getCacheDir();
         std::string getPreferenceDir();
     public:

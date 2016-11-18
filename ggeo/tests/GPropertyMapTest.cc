@@ -45,8 +45,14 @@ int main(int argc, char** argv)
     pmap->addPropertyStandardized(ri, f2 );
    
     GProperty<float>* rip = pmap->getProperty(ri);
-
     rip->save("$TMP/f2.npy");
+
+
+    GPropertyMap<float>* imap = pmap->spawn_interpolated(1.f);
+    imap->save("$TMP/GPropertyMapTest_Interpolated");
+
+
+
 
     const char* matdir = "$TMP/GPropertyMapTest";
 

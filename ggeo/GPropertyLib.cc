@@ -72,10 +72,28 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 
 
 
+GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
+    :
+     m_ok(other->getOpticks()),
+     m_resource(NULL),
+     m_buffer(NULL),
+     m_attrnames(NULL),
+     m_names(NULL),
+     m_type(strdup(other->getType())),
+     m_comptype(NULL),
+     m_standard_domain(domain),
+     m_defaults(NULL),
+     m_closed(false),
+     m_valid(true)
+{
+    init();
+}
 
-GPropertyLib::GPropertyLib(Opticks* cache, const char* type) 
+
+
+GPropertyLib::GPropertyLib(Opticks* ok, const char* type) 
      :
-     m_ok(cache),
+     m_ok(ok),
      m_resource(NULL),
      m_buffer(NULL),
      m_attrnames(NULL),
@@ -88,6 +106,11 @@ GPropertyLib::GPropertyLib(Opticks* cache, const char* type)
      m_valid(true)
 {
      init();
+}
+
+Opticks* GPropertyLib::getOpticks()
+{
+    return m_ok ; 
 }
 
 const char* GPropertyLib::getType()
@@ -224,21 +247,32 @@ void GPropertyLib::init()
 {
     m_resource = m_ok->getResource();
 
-    m_standard_domain = getDefaultDomain(); 
+    if(m_standard_domain == NULL)
+    {
+        m_standard_domain = getDefaultDomain(); 
 
-    unsigned int len = getStandardDomainLength() ;
+        unsigned int len = getStandardDomainLength() ;
 
-    if(len != Opticks::DOMAIN_LENGTH)
-    { 
-        m_standard_domain->Summary("GPropertyLib::m_standard_domain");
-        LOG(fatal) << "GPropertyLib::init"
-                   << " mismatch "
-                   << " DOMAIN_LENGTH " << Opticks::DOMAIN_LENGTH
-                   << " len " << len 
-                   ;
+        if(len != Opticks::DOMAIN_LENGTH)
+        { 
+            m_standard_domain->Summary("GPropertyLib::m_standard_domain");
+            LOG(fatal) << "GPropertyLib::init"
+                       << " mismatch "
+                       << " DOMAIN_LENGTH " << Opticks::DOMAIN_LENGTH
+                       << " len " << len 
+                       ;
+        }
+
+        assert(len == Opticks::DOMAIN_LENGTH );
+    }
+    else
+    {
+        LOG(warning) << "GPropertyLib::init"
+                     << " using non-default domain " 
+                     << " step " << m_standard_domain->getStep()
+                     ; 
     }
 
-    assert(len == Opticks::DOMAIN_LENGTH );
 
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
@@ -261,8 +295,6 @@ void GPropertyLib::init()
         LOG(fatal) << "GPropertyLib::init " << m_type ;  
         assert( 0 &&  "unexpected GPropertyLib type");
     }    
-
-
 }
 
 std::map<std::string, unsigned int>& GPropertyLib::getOrder()

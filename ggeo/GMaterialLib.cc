@@ -39,13 +39,26 @@ void GMaterialLib::save()
     saveToCache();
 }
 
-GMaterialLib* GMaterialLib::load(Opticks* cache)
+GMaterialLib* GMaterialLib::load(Opticks* ok)
 {
-    GMaterialLib* mlib = new GMaterialLib(cache);
+    GMaterialLib* mlib = new GMaterialLib(ok);
     mlib->loadFromCache();
     mlib->postLoadFromCache();
 
     return mlib ; 
+}
+
+
+GMaterialLib* GMaterialLib::interpolate(GMaterialLib* src, float nm)
+{
+    GDomain<float>* ddom = src->getStandardDomain()->makeInterpolationDomain(nm) ;
+    GMaterialLib* dst = new GMaterialLib( src, ddom );
+    return dst ; 
+}
+
+GMaterialLib* GMaterialLib::spawn_interpolated(float nm)
+{
+    return interpolate(this, nm );
 }
 
 
@@ -144,6 +157,28 @@ GMaterialLib::GMaterialLib(Opticks* ok)
 {
     init();
 }
+
+
+GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain) 
+    :
+    GPropertyLib(src, domain)
+{
+    init();
+
+    unsigned nmat = src->getNumMaterials();
+
+    for(unsigned i=0 ; i < nmat ; i++)
+    {
+        GMaterial* smat = src->getMaterial(i);
+
+        GMaterial* dmat = new GMaterial(smat, domain );   // interpolating "copy" ctor
+
+        m_materials.push_back(dmat);
+    }
+}
+ 
+
+
  
 unsigned int GMaterialLib::getNumMaterials()
 {

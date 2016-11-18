@@ -29,7 +29,7 @@ template <typename T>
 const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
 
 template <typename T>
-GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other) 
+GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain) 
       : 
       m_name(other ? other->getName() : NOT_DEFINED ),
       m_shortname(NULL),
@@ -37,11 +37,27 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other)
       m_index(other ? other->getIndex() : UINT_MAX ),
       m_sensor(other ? other->isSensor() : false),
       m_valid(other ? other->isValid() : false),
-      m_standard_domain(NULL),
+      m_standard_domain(domain),
       m_optical_surface(other ? other->getOpticalSurface() : NULL )
 {
 
     findShortName();
+
+    if(m_standard_domain)
+    {
+        LOG(info) << "GPropertyMap<T> interpolating copy ctor changing domain "
+              << " other step " << other->getDomainStep()
+              << " dst step " << this->getDomainStep()
+              ;
+
+        addStandardized(other);  // interpolation done here 
+    }
+}
+
+template <typename T>
+GPropertyMap<T>* GPropertyMap<T>::spawn_interpolated(T nm)
+{
+    return new GPropertyMap<T>(this, m_standard_domain->makeInterpolationDomain(nm)); 
 }
 
 
@@ -52,7 +68,7 @@ GPropertyMap<T>::GPropertyMap(const char* name)
     m_standard_domain(NULL),
     m_optical_surface(NULL)
 {
-   m_name = name ; 
+   m_name = name ;   // m_name is std::string, no need for strdup 
    m_index = UINT_MAX ;
    m_sensor = false ;
    m_valid = false ;
@@ -145,6 +161,31 @@ bool GPropertyMap<T>::hasStandardDomain()
 {
     return m_standard_domain != NULL;
 }
+
+template <typename T>
+T GPropertyMap<T>::getDomainLow()
+{
+    return m_standard_domain->getLow();
+}
+
+template <typename T>
+T GPropertyMap<T>::getDomainHigh()
+{
+    return m_standard_domain->getHigh();
+}
+
+template <typename T>
+T GPropertyMap<T>::getDomainStep()
+{
+    return m_standard_domain->getStep();
+}
+
+
+
+
+
+
+
 
 
 
@@ -369,6 +410,8 @@ void GPropertyMap<T>::addConstantProperty(const char* pname, T value, const char
 template <typename T>
 void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsigned int length, const char* prefix)
 {
+   // TODO: change name of this to addPropertyStandardized too ??
+
    //printf("GPropertyMap<T>::addProperty name %s pname %s length %u \n", getName(), pname, length );
    assert(length < 1000);
 
@@ -703,6 +746,26 @@ void GPropertyMap<T>::add(GPropertyMap<T>* other, const char* prefix)
 }
 
 
+
+template <typename T>
+void GPropertyMap<T>::addStandardized(GPropertyMap<T>* other, const char* prefix)
+{
+    unsigned int n = other->getNumProperties();
+    for(unsigned int i=0 ; i<n ; i++)
+    {
+         const char* name  = other->getPropertyNameByIndex(i); 
+         GProperty<T>* prop = other->getPropertyByIndex(i); 
+
+         addPropertyStandardized( name, prop, prefix );
+    }
+}
+
+
+
+
+
+
+
 template <typename T>
 void GPropertyMap<T>::save(const char* path)
 {
@@ -750,7 +813,6 @@ GPropertyMap<T>* GPropertyMap<T>::load(const char* path, const char* name, const
     }
     return pmap ; 
 }
-
 
 
 /*

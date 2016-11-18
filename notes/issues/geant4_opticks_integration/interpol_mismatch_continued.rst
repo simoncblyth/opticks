@@ -22,6 +22,256 @@ TODO: check time distrib diff matches expectation from groupvel interpol mismatc
 ----------------------------------------------------------------------------------
 
 
+How to up samples ?
+--------------------
+
+Material buf is now by default recreated postcache, in order to replaceGROUPVEL, 
+so upsampling can happen there::
+
+    052 void GMaterialLib::postLoadFromCache()
+    053 {
+    ...
+    116     if(groupvel)
+    117     {
+    118        bool debug = true ;
+    119        replaceGROUPVEL(debug);
+    120     }
+    121 
+    122     if(nore || noab || nosc || xxre || xxab || xxsc || fxre || fxsc || fxab || groupvel)
+    123     {
+    124         // need to replace the loaded buffer with a new one with the changes for Opticks to see it 
+    125         NPY<float>* mbuf = createBuffer();
+    126         setBuffer(mbuf);
+    127     }
+    128 
+    129 }
+    130 
+    ...
+    293 NPY<float>* GMaterialLib::createBuffer()
+    294 {
+    295     return createBufferForTex2d() ;
+    296 }
+    297 
+    298 
+    299 NPY<float>* GMaterialLib::createBufferForTex2d()
+    300 {
+    301     // trying to arrange the memory layout of this buffer to 
+    302     // match the requirements of tex2d<float4>
+    303 
+    304     unsigned int ni = getNumMaterials();
+    305     unsigned int nj = NUM_FLOAT4 ;
+    306     unsigned int nk = getStandardDomain()->getLength();
+    307     unsigned int nl = 4 ;
+    308 
+    309 
+    310     if(ni == 0 || nj == 0)
+    311     {
+    312         LOG(error) << "GMaterialLib::createBufferForTex2d"
+    313                    << " NO MATERIALS ? "
+    314                    << " ni " << ni
+    315                    << " nj " << nj
+    316                    ;
+    317 
+    318         return NULL ;
+    319     }
+    320 
+    321 
+    322 
+    323     NPY<float>* mbuf = NPY<float>::make(ni, nj, nk, nl);  // materials/payload-category/wavelength-samples/4prop
+    324     mbuf->zero();
+    325     float* data = mbuf->getValues();
+    326 
+    327     for(unsigned int i=0 ; i < ni ; i++)
+    328     {
+    329         GMaterial* mat = m_materials[i] ;
+    330         GProperty<float> *p0,*p1,*p2,*p3 ;
+    331 
+    332         for(unsigned int j=0 ; j < nj ; j++)
+    333         {
+    334             p0 = mat->getPropertyByIndex(j*4+0);
+    335             p1 = mat->getPropertyByIndex(j*4+1);
+    336             p2 = mat->getPropertyByIndex(j*4+2);
+    337             p3 = mat->getPropertyByIndex(j*4+3);
+    338 
+    339             for( unsigned int k = 0; k < nk; k++ )    // over wavelength-samples
+    340             {
+    341                 unsigned int offset = i*nj*nk*nl + j*nk*nl + k*nl ;
+    342 
+    343                 data[offset+0] = p0 ? p0->getValue(k) : MATERIAL_UNSET ;
+    344                 data[offset+1] = p1 ? p1->getValue(k) : MATERIAL_UNSET ;
+
+
+::
+ 
+     27 void GMaterial::init()
+     28 {   
+     29     GDomain<float>* sd = GPropertyLib::getDefaultDomain();
+     30     setStandardDomain(sd);
+     31 }   
+
+
+     62 GDomain<float>* GPropertyLib::getDefaultDomain()
+     63 {
+     64    return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP );
+     65 }
+
+
+
+Where is GGeo standardization interpolation done::
+
+     757 template <typename T>
+     758 GProperty<T>* GProperty<T>::createInterpolatedProperty(GDomain<T>* domain)
+     759 {
+     760     GAry<T>* idom = new GAry<T>(domain->getLength(), domain->getValues());
+     761     GAry<T>* ival = GAry<T>::np_interp( idom , m_domain, m_values );
+     762 
+     763     GProperty<T>* prop = new GProperty<T>( ival, idom );
+     764     return prop ;
+     765 }
+     766 
+     767 template <typename T>
+     768 T GProperty<T>::getInterpolatedValue(T x)
+     769 {
+     770     // find the value "y" at "x" by first placing "x" within the domain
+     771     // and then using linear interpolation of the above and below values
+     772     return GAry<T>::np_interp( x , m_domain, m_values );
+     773 }
+::
+
+    simon:ggeo blyth$ opticks-find createInterpolated 
+    ./ggeo/GProperty.cc:GProperty<T>* GProperty<T>::createInterpolatedProperty(GDomain<T>* domain)
+    ./ggeo/GPropertyMap.cc:       GProperty<T>* ipol = orig->createInterpolatedProperty(m_standard_domain); 
+    ./ggeo/GProperty.hh:   GProperty<T>* createInterpolatedProperty(GDomain<T>* domain);
+    simon:opticks blyth$ 
+
+
+
+::
+
+     467             //printf("AssimpGGeo::convertMaterials aiScene materialIndex %u (GMaterial) name %s \n", i, name);
+     468             GMaterial* gmat = new GMaterial(name, index);
+     469             gmat->setStandardDomain(standard_domain);
+     470             addProperties(gmat, mat );
+     471             gg->add(gmat);
+
+     300 void AssimpGGeo::addProperties(GPropertyMap<float>* pmap, aiMaterial* material )
+     301 {
+     302     //unsigned int numProperties = material->mNumProperties ;
+     303     for(unsigned int i = 0; i < material->mNumProperties; i++)
+     304     {
+     305         aiMaterialProperty* property = material->mProperties[i] ;
+     306         aiString key = property->mKey ;
+     307         const char* k = key.C_Str();
+     308 
+     309         // skip Assimp standard material props $clr.emissive $mat.shininess ?mat.name  etc..
+     310         if( k[0] == '?' || k[0] == '$') continue ;
+     311 
+     312         //printf("AssimpGGeo::addProperties i %d k %s \n", i, k ); 
+     313 
+     314         aiPropertyTypeInfo type = property->mType ;
+     315         if(type == aiPTI_Float)
+     316         {
+     317             addPropertyVector(pmap, k, property );
+     318         }
+     319         else if( type == aiPTI_String )
+     320         {
+
+     173 void AssimpGGeo::addPropertyVector(GPropertyMap<float>* pmap, const char* k, aiMaterialProperty* property )
+     174 {
+     175     const char* shortname = pmap->getShortName();
+     176 
+     177     LOG(debug) << "AssimpGGeo::addPropertyVector "
+     178               << " shortname " << (shortname ? shortname : "-" )
+     179               << " k " << k
+     180                ;
+     181 
+     ...
+     214     std::vector<float> vals ;
+     215     std::vector<float> domain  ;
+     216 
+     217     for( unsigned int i = 0 ; i < npair ; i++ )
+     218     {
+     219         double d0 = data[2*i] ;
+     220         double d = m_domain_reciprocal ? dscale/d0 : dscale*d0 ;
+     221         double v = data[2*i+1]*vscale  ;
+     222 
+     223         double dd = noscale ? d0 : d ;
+     224 
+     225         domain.push_back( static_cast<float>(dd) );
+     226         vals.push_back( static_cast<float>(v) );
+     227 
+     228         //if( noscale && ( i < 5 || i > npair - 5) )
+     229         //printf("%4d %10.3e %10.3e \n", i, domain.back(), vals.back() );
+     230     }
+     231 
+     232     if(m_reverse)
+     233     {
+     234        std::reverse(vals.begin(), vals.end());
+     235        std::reverse(domain.begin(), domain.end());
+     236     }
+     237 
+     238     pmap->addProperty(k, vals.data(), domain.data(), vals.size() );
+     239 }
+     240 
+
+::
+
+    369 template <typename T>
+    370 void GPropertyMap<T>::addProperty(const char* pname, T* values, T* domain, unsigned int length, const char* prefix)
+    371 {
+    372    //printf("GPropertyMap<T>::addProperty name %s pname %s length %u \n", getName(), pname, length );
+    373    assert(length < 1000);
+    374 
+    375    GAry<T>* vals = new GAry<T>( length, values );
+    376    GAry<T>* doms  = new GAry<T>( length, domain );
+    377    GProperty<T>* orig = new GProperty<T>(vals, doms)  ;
+    378 
+    379    addPropertyStandardized(pname, orig, prefix);
+    380 }
+    381 
+
+Interpolation onto standard domain happens right back at AssimpGGeo conversion from assimp ai props into GGeo::
+
+    383 template <typename T>
+    384 void GPropertyMap<T>::addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix)
+    385 {
+    386    if(m_standard_domain)
+    387    {
+    388        GProperty<T>* ipol = orig->createInterpolatedProperty(m_standard_domain);
+    389 
+    390        //orig->Summary("orig", 10 );
+    391        //ipol->Summary("ipol", 10 );
+    392 
+    393        addProperty(pname, ipol, prefix) ;
+    394    }
+    395    else
+    396    {
+    397        addProperty(pname, orig, prefix);
+    398    }
+    399 }
+    400 
+
+
+::
+
+    simon:ggeo blyth$ opticks-find addPropertyStandardized
+    ./ggeo/GMaterialLib.cc:        raw->addPropertyStandardized( GMaterialLib::refractive_index_local, rif ); 
+    ./ggeo/GPropertyMap.cc:   addPropertyStandardized(pname, orig, prefix);
+    ./ggeo/GPropertyMap.cc:void GPropertyMap<T>::addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix)
+    ./ggeo/tests/GMaterialLibTest.cc:        raw->addPropertyStandardized( GMaterialLib::refractive_index_local, f2 ); 
+    ./ggeo/tests/GPropertyMapTest.cc:    pmap->addPropertyStandardized(ri, f2 );
+    ./ggeo/GPropertyMap.hh:      void addPropertyStandardized(const char* pname,  GProperty<T>* orig, const char* prefix=NULL);
+    simon:opticks blyth$ 
+
+
+
+
+
+
+
+
+
+
 Possible Approaches to reduce interpolation mismatch
 ---------------------------------------------------------
 

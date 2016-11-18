@@ -10,6 +10,11 @@
 
 #include "PLOG.hh"
 
+template <typename T>
+GDomain<T>* GDomain<T>::makeInterpolationDomain(T step)
+{
+   return new GDomain<T>(m_low, m_high, step);
+}
 
 template <typename T>
 void GDomain<T>::Summary(const char* msg)

@@ -8,6 +8,7 @@ template <class T>
 class GGEO_API GDomain {
   public: 
      GDomain(T low, T high, T step) : m_low(low), m_high(high), m_step(step) {}
+     GDomain<T>* makeInterpolationDomain(T step);
      virtual ~GDomain() {}
   public: 
      T getLow(){  return m_low ; }   

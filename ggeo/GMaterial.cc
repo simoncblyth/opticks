@@ -5,9 +5,11 @@
 #include "GPropertyLib.hh"
 
 
-GMaterial::GMaterial(GMaterial* other) : GPropertyMap<float>(other)
+
+GMaterial::GMaterial(GMaterial* other, GDomain<float>* domain ) : GPropertyMap<float>(other, domain)
 {
 }
+
 
 GMaterial::GMaterial(const char* name, unsigned int index) : GPropertyMap<float>(name, index, "material")
 {
