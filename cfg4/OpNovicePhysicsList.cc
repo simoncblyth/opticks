@@ -238,7 +238,7 @@ void OpNovicePhysicsList::ConstructOpDYB()
 #endif
 
     //G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();
-    DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess();
+    DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess(m_ok);
     boundproc->SetModel(unified);
 
     //G4FastSimulationManagerProcess* fast_sim_man = new G4FastSimulationManagerProcess("fast_sim_man");

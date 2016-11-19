@@ -147,12 +147,46 @@ if __name__ == '__main__':
     rd[:,:,:,1] = np.amax(rel, axis=2) 
 
 
-
     print "".join(["%2s %30s " % ("","")] + map(lambda plab:"  %21s  " % plab, PropLib.M_LABELS ))
     for i in range(len(rd)):
         labl = ["%2d %30s " % ( i, matnames[i] )]
         rnge =  map(lambda mimx:"  %10.4f %10.4f  " % ( float(mimx[0]), float(mimx[1])) , rd[i].reshape(-1,2)[:5] )
         print "".join(labl + rnge)
+
+
+
+    Gd,LS,Ac,MO = 0,1,2,3
+    gvel  = i1m.data[(Gd,Ac,LS,Ac,MO),1,430-60,0]
+    gvel2 = i1m.data[(Gd,LS,Ac,MO,Ac),1,430-60,0]
+    gvel3 = i1m.data[(Gd,LS,Ac,LS,Ac),1,430-60,0]
+    dist = np.array([0,3000-5,3000+5,4000-5,4000+5,5000-5], dtype=np.float32)   # tconcentric radii
+    ddif = np.diff(dist)
+
+    tdif = ddif/gvel
+    tabs = np.cumsum(tdif) + 0.1
+
+    tdif2 = ddif/gvel2 
+    tabs2 = np.cumsum(tdif2) + 0.1
+
+    tdif3 = ddif/gvel3 
+    tabs3 = np.cumsum(tdif3) + 0.1
+
+
+    print "gvel: %r " %  gvel
+    print "dist: %r " %  dist
+    print "ddif: %r " %  ddif
+    print "tdif: %r " %  tdif
+    print "tabs: %r " %  tabs
+
+    print "gvel2: %r " %  gvel2
+    print "tdif2: %r " %  tdif2
+    print "tabs2: %r " %  tabs2
+
+    print "gvel3: %r " %  gvel3
+    print "tdif3: %r " %  tdif3
+    print "tabs3: %r " %  tabs3
+
+
 
 
 

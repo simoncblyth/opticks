@@ -59,6 +59,12 @@
 #ifndef DsG4OpBoundaryProcess_h
 #define DsG4OpBoundaryProcess_h 1
 
+
+// SCB
+#define GEANT4_BT_GROUPVEL_FIX 1
+#define SCB_DEBUG 1
+
+
 /////////////
 // Includes
 /////////////
@@ -80,6 +86,8 @@
 #include "G4OpticalSurface.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4TransportationManager.hh"
+
+class Opticks ; 
 
 // Class Description:
 // Discrete Process -- reflection/refraction at optical interfaces.
@@ -117,7 +125,8 @@ public: // Without description
         // Constructors and Destructor
         ////////////////////////////////
 
-        DsG4OpBoundaryProcess(const G4String& processName = "OpBoundary",
+        DsG4OpBoundaryProcess(       Opticks* ok=NULL,
+                                     const G4String& processName = "OpBoundary",
                                      G4ProcessType type = fOptical);
 
 	~DsG4OpBoundaryProcess();
@@ -185,6 +194,14 @@ private:
 	void DoReflection();
 
 private:
+    Opticks* m_ok ; 
+#ifdef SCB_DEBUG
+    bool     m_dbg ; 
+    bool     m_other ; 
+    int      m_event_id ; 
+    int      m_photon_id ; 
+    int      m_step_id ; 
+#endif
 
 	G4double thePhotonMomentum;
 

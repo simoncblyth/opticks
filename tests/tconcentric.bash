@@ -28,9 +28,9 @@ tconcentric-src(){ echo torch ; }
 
 
 tconcentric-photons(){
-   local photons=1000000
+   #local photons=1000000
    #local photons=100000
-   #local photons=10000
+   local photons=10000
    #local photons=100
    echo $photons
 }
@@ -73,13 +73,16 @@ tconcentric-t()
 tconcentric-tt()
 {
    # TODO: make these options the defaults
-    tconcentric-t --bouncemax 15 --recordmax 16 --groupvel $* 
+    tconcentric-t --bouncemax 15 --recordmax 16 --groupvel --finebndtex $* 
 }
 
 tconcentric-tt-dindex()
 {
     tconcentric-tt \
-         --dindex=95324,166006,178463,206278,266703,304171,372458,384384,436024,471027,492290,500284,503639,527858,569752,667682,875192
+         --dindex=2,4,5,6,7,9,10,11,13,14
+
+    #--dindex=999999,999997,999996,999995,999994,999993,999992,999991,999990,999989
+    #--dindex=95324,166006,178463,206278,266703,304171,372458,384384,436024,471027,492290,500284,503639,527858,569752,667682,875192
 }
 
 

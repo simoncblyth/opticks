@@ -72,6 +72,14 @@
 #include "G4GeometryTolerance.hh"
 #include "G4Version.hh"
 
+#ifdef SCB_DEBUG
+#include "G4Event.hh"
+#include "G4RunManager.hh"
+#endif
+
+
+
+#include "Opticks.hh"
 #include "PLOG.hh"
 
 using CLHEP::eV ; 
@@ -96,9 +104,17 @@ using CLHEP::twopi ;
         // Constructors
         /////////////////
 
-DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(const G4String& processName, G4ProcessType type)
+DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(Opticks* ok, const G4String& processName, G4ProcessType type)
              : 
              G4VDiscreteProcess(processName, type),
+             m_ok(ok),
+#ifdef SCB_DEBUG
+             m_dbg(false),
+             m_other(false),
+             m_event_id(0),
+             m_photon_id(0),
+             m_step_id(0),
+#endif
              m_DielectricMetal_LambertianReflection(0) 
 {
 
@@ -151,11 +167,52 @@ DsG4OpBoundaryProcess::~DsG4OpBoundaryProcess(){}
 G4VParticleChange*
 DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
-    //LOG(info) << "DsG4OpBoundaryProcess::PostStepDoIt" ; 
 
     theStatus = Undefined;
 
     aParticleChange.Initialize(aTrack);
+
+    aParticleChange.ProposeVelocity(aTrack.GetVelocity());  // SCB add, matching geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
+     // suspect wrong material groupvel bug
+
+#ifdef SCB_DEBUG
+    {
+        const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
+        m_event_id = event->GetEventID() ;
+        m_photon_id = aTrack.GetTrackID() - 1 ;
+        m_step_id = aTrack.GetCurrentStepNumber() - 1 ;
+
+        // debugging via record_id lists with --dindex and --oindex options
+        // has the advantage of "knowing the future"
+        // so using a single line selection like "TO BT BT BT BT SA" 
+        // can just dump a single code path 
+        //
+        //     tconcentric-i::
+        //
+        //        In [2]: ab.b.sel = "TO BT BT BT BT SA"
+        // 
+        //        In [3]: ab.b.psel_dindex(limit=10, reverse=True)
+        //        Out[3]: '--dindex=999999,999997,999996,999995,999994,999993,999992,999991,999990,999989'
+        //
+        //
+
+        m_dbg   = m_ok->isDbgPhoton(m_event_id, m_photon_id);
+        m_other = m_ok->isOtherPhoton(m_event_id, m_photon_id);
+
+        if(m_dbg || m_other)
+        {
+          /*
+            LOG(info) << "DsG4OpBoundaryProcess::PostStepDoIt" 
+                      << " event_id " << std::setw(7) << m_event_id
+                      << " photon_id " << std::setw(7) << m_photon_id
+                      << " step_id " << std::setw(4) << m_step_id 
+                      ;
+          */
+ 
+        }
+    }
+#endif    
+
 
     G4StepPoint* pPreStepPoint  = aStep.GetPreStepPoint();
     G4StepPoint* pPostStepPoint = aStep.GetPostStepPoint();
@@ -295,7 +352,10 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 	if (OpticalSurface) 
     {
-          //LOG(info) << "found OpticalSurface " << OpticalSurface->GetName() ; 
+#ifdef SCB_DEBUG
+          if(m_dbg || m_other)
+          LOG(info) << "found OpticalSurface " << OpticalSurface->GetName() ; 
+#endif
 
           type      = OpticalSurface->GetType();
 	      theModel  = OpticalSurface->GetModel();
@@ -597,6 +657,8 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         NewMomentum = NewMomentum.unit();
         NewPolarization = NewPolarization.unit();
 
+
+
         if ( verboseLevel > 0) 
         {
 		    G4cout << " New Momentum Direction: " << NewMomentum     << G4endl;
@@ -632,6 +694,38 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	aParticleChange.ProposeMomentumDirection(NewMomentum);
 	aParticleChange.ProposePolarization(NewPolarization);
 
+
+#ifdef GEANT4_BT_GROUPVEL_FIX
+    // from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
+       //if ( theStatus == FresnelRefraction || theStatus == Transmission ) {
+       if ( theStatus == FresnelRefraction ) 
+       {
+           G4MaterialPropertyVector* groupvel = Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
+           G4double finalVelocity = groupvel->Value(thePhotonMomentum);
+
+#ifdef SCB_DEBUG
+           G4double priorVelocity = aParticleChange.GetVelocity();  // seems to be only use of this method
+           G4MaterialPropertyVector* groupvel_m1 = Material1->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
+           G4double finalVelocity_m1 = groupvel_m1->Value(thePhotonMomentum);
+
+           if(m_dbg || m_other)
+           std::cout 
+                      << "DsG4OpBoundaryProcess::PostStepDoIt" 
+                      //<< " event_id " << std::setw(7) << m_event_id
+                      //<< " photon_id " << std::setw(7) << m_photon_id
+                      << " step_id " << std::setw(4) << m_step_id 
+                     //<< " eV " << std::setw(10) << thePhotonMomentum/CLHEP::eV 
+                     << " nm " << std::setw(10) << CLHEP::h_Planck*CLHEP::c_light/thePhotonMomentum/CLHEP::nm 
+                     << " priorVelocity "    << std::setw(10) << priorVelocity
+                     << " groupvel_m1 " << std::setw(20) << Material1->GetName() << std::setw(10) << finalVelocity_m1
+                     << " groupvel_m2 " << std::setw(20) << Material2->GetName() << std::setw(10) << finalVelocity << " <-proposed "
+                     << std::endl;
+                     ;
+#endif
+           aParticleChange.ProposeVelocity(finalVelocity);
+
+        }    
+#endif
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
 }
 
@@ -801,7 +895,26 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 	      Swap = !Swap;
 	      Through = false;
 	      theGlobalNormal = -theGlobalNormal;
+
+#ifdef SCB_DEBUG
+          if(m_dbg)
+          {
+               LOG(info) << "DsG4OpBoundaryProcess::DielectricDielectric (before swap)"
+                         << " m1 " << std::setw(20) << Material1->GetName()
+                         << " m2 " << std::setw(20) << Material2->GetName()
+                         ;
+         }
+#endif
 	      G4SwapPtr(Material1,Material2);
+#ifdef SCB_DEBUG
+          if(m_dbg)
+          {
+               LOG(info) << "DsG4OpBoundaryProcess::DielectricDielectric (after swap)"
+                         << " m1 " << std::setw(20) << Material1->GetName()
+                         << " m2 " << std::setw(20) << Material2->GetName()
+                         ;
+         }
+#endif
 	      G4SwapObj(&Rindex1,&Rindex2);
 	   }
 
@@ -995,33 +1108,38 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 	} while (!Done);
 
-	if (Inside && !Swap) {
-          if( theFinish == polishedbackpainted ||
-              theFinish == groundbackpainted ) {
+	if (Inside && !Swap) 
+    {
+          if( theFinish == polishedbackpainted || theFinish == groundbackpainted ) 
+          {
 
-	      if( !G4BooleanRand(theReflectivity) ) {
-		DoAbsorption();
+	          if( !G4BooleanRand(theReflectivity) ) 
+              {
+		          DoAbsorption();
               }
-	      else {
-		if (theStatus != FresnelRefraction ) {
-		   theGlobalNormal = -theGlobalNormal;
-	        }
-	        else {
-		   Swap = !Swap;
-		   G4SwapPtr(Material1,Material2);
-		   G4SwapObj(&Rindex1,&Rindex2);
-	        }
-		if ( theFinish == groundbackpainted )
-					theStatus = LambertianReflection;
+	          else 
+              {
+		           if (theStatus != FresnelRefraction ) 
+                   {
+		               theGlobalNormal = -theGlobalNormal;
+	               }
+	               else 
+                   {
+		               Swap = !Swap;
+		               G4SwapPtr(Material1,Material2);
+		               G4SwapObj(&Rindex1,&Rindex2);
+	               }
+		           if ( theFinish == groundbackpainted )
+				 	     theStatus = LambertianReflection;
 
-	        DoReflection();
+	               DoReflection();
 
-	        theGlobalNormal = -theGlobalNormal;
-		OldMomentum = NewMomentum;
+	               theGlobalNormal = -theGlobalNormal;
+		           OldMomentum = NewMomentum;
 
-	        goto leap;
-	      }
-	  }
+	               goto leap;
+	         }
+	     }
 	}
 }
 

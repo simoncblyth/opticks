@@ -755,13 +755,18 @@ class Evt(object):
     sel = property(_get_sel, _set_sel)
       
  
-    def psel_dindex(self):
+    def psel_dindex_(self, limit=None, reverse=False):
         """
         Return dindex option string allowing debug dumping during OKG4 running,
         see for example tconcentric-tt-pflags  
         """ 
-        return "--dindex=%s" % ",".join(map(str,np.where(self.psel)[0]))
+        a = np.where(self.psel)[0]
+        if reverse:
+            a = a[::-1] 
+        return a[:limit]
 
+    def psel_dindex(self, limit=None, reverse=False):
+        return "--dindex=%s" % ",".join(map(str,self.psel_dindex_(limit, reverse))) 
 
     def select_(self, label="TO RE BT BT BT BT SA"):
         """

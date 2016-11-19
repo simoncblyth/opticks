@@ -173,6 +173,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
        m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
+       m_photons_per_g4event(0), 
 
        m_spec(NULL),
        m_nspec(NULL),
@@ -243,17 +244,32 @@ void Opticks::ana()
    m_ana->run();
 }
 
-bool Opticks::isDbgPhoton(int photon_id)
+bool Opticks::isDbgPhoton(int record_id)
 {
-   return m_dbg->isDbgPhoton(photon_id);
-}
-const std::vector<int>&  Opticks::getDbgIndex()
-{
-   return m_dbg->getDbgIndex();
+   return m_dbg->isDbgPhoton(record_id);
 }
 bool Opticks::isOtherPhoton(int photon_id)
 {
    return m_dbg->isOtherPhoton(photon_id);
+}
+bool Opticks::isDbgPhoton(int event_id, int track_id)
+{
+    int record_id = event_id*m_photons_per_g4event + track_id ; 
+    return m_dbg->isDbgPhoton(record_id);
+}
+bool Opticks::isOtherPhoton(int event_id, int track_id)
+{
+    int record_id = event_id*m_photons_per_g4event + track_id ; 
+    return m_dbg->isOtherPhoton(record_id);
+}
+
+
+
+
+
+const std::vector<int>&  Opticks::getDbgIndex()
+{
+   return m_dbg->getDbgIndex();
 }
 const std::vector<int>&  Opticks::getOtherIndex()
 {
@@ -633,6 +649,8 @@ void Opticks::configure()
     const std::string& mpfx = m_cfg->getMaterialPrefix();
     m_materialprefix = ( mpfx.empty() || isJuno()) ? NULL : strdup(mpfx.c_str()) ;
 
+
+    m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
     m_dbg->postconfigure();
 
     LOG(debug) << "Opticks::configure DONE " ;
@@ -1116,9 +1134,11 @@ TorchStepNPY* Opticks::makeSimpleTorchStep()
 }
 
 
-unsigned int Opticks::getRngMax(){       return m_cfg->getRngMax(); }
-unsigned int Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
-unsigned int Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
+unsigned Opticks::getNumPhotonsPerG4Event(){ return m_cfg->getNumPhotonsPerG4Event() ; }
+unsigned Opticks::getRngMax(){       return m_cfg->getRngMax(); }
+unsigned Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
+unsigned Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
+
 float Opticks::getEpsilon() {            return m_cfg->getEpsilon()  ; }
 bool Opticks::hasOpt(const char* name) { return m_cfg->hasOpt(name); }
 

@@ -114,6 +114,8 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
     G4double time = point->GetGlobalTime();
     G4double energy = point->GetKineticEnergy();
     G4double wavelength = h_Planck*c_light/energy ;
+    G4double velocity = point->GetVelocity();
+
 
     const G4VProcess* process = point->GetProcessDefinedStep() ;
     const G4String& processName = process ? process->GetProcessName() : noProc ; 
@@ -133,6 +135,8 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
        << " ns " << std::setw(6) << time/ns 
        << ( op ? " nm " : " keV " ) 
        << std::setw(6) << ( op ? wavelength/nm : energy/keV )
+       << " mm/ns "
+       << std::setw(6) << velocity
        ;
 
     return ss.str();

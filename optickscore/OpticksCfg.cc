@@ -757,7 +757,6 @@ const std::string& OpticksCfg<Listener>::getDbgIndex()
 {
     return m_dindex ;
 }
-
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getOtherIndex()
 {

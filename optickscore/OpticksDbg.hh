@@ -20,8 +20,9 @@ class OKCORE_API OpticksDbg
        friend class Opticks ;  
     public:
        OpticksDbg(Opticks* ok);
-       bool isDbgPhoton(int photon_id);
-       bool isOtherPhoton(int photon_id);
+       bool isDbgPhoton(int record_id);
+       bool isOtherPhoton(int record_id);
+    public:
        const std::vector<int>&  getDbgIndex();
        const std::vector<int>&  getOtherIndex();
        std::string description();

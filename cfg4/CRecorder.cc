@@ -558,6 +558,40 @@ bool CRecorder::RecordStep()
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
+   
+
+    if(m_debug)
+    {
+       // try to understand GlobalTime calc from G4Transportation::AlongStepDoIt by duping attempt
+       //  issue is what velocity it gets to use, and the updating of that 
+        G4Track* track = m_step->GetTrack() ;
+        G4double trackStepLength = track->GetStepLength();
+        G4double trackGlobalTime = track->GetGlobalTime() ;
+        G4double trackVelocity = track->GetVelocity() ;
+
+        G4double preDeltaTime = 0.0 ; 
+        G4double preVelocity = pre->GetVelocity();
+        if ( preVelocity > 0.0 )  { preDeltaTime = trackStepLength/preVelocity; }
+
+        G4double postDeltaTime = 0.0 ; 
+        G4double postVelocity = post->GetVelocity();
+        if ( postVelocity > 0.0 )  { postDeltaTime = trackStepLength/postVelocity; }
+
+
+        std::cout << "CRecorder::RecordStep"
+                  << " trackStepLength " << std::setw(10) << trackStepLength 
+                  << " trackGlobalTime " << std::setw(10) << trackGlobalTime
+                  << " trackVelocity " << std::setw(10) << trackVelocity
+                  << " preVelocity " << std::setw(10) << preVelocity
+                  << " postVelocity " << std::setw(10) << postVelocity
+                  << " preDeltaTime " << std::setw(10) << preDeltaTime
+                  << " postDeltaTime " << std::setw(10) << postDeltaTime
+                  << std::endl 
+                  ;
+    } 
+
+
+
     // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 

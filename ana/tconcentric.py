@@ -241,12 +241,9 @@ if __name__ == '__main__':
         sys.exit(0)
 
 
-    reclab = "[TO] BT BT BT BT SA" 
-    ctxs = CFH.reclab2ctxs_(reclab, tag=ok.tag, det=ok.det )
-    n_ctxs = len(ctxs)
+    ab.sel = "[TO] BT BT BT BT SA" 
 
-    log.info(" n_ctxs : %d " % n_ctxs )
-    hh = ab.rhist_(ctxs, rehist=True, c2shape=True )
+    hh = ab.hh
 
     
 

@@ -50,14 +50,14 @@ void OpticksDbg::postconfigure()
 }
 
 
-bool OpticksDbg::isDbgPhoton(int photon_id)
-{
-    return std::find(m_debug_photon.begin(), m_debug_photon.end(), photon_id ) != m_debug_photon.end() ; 
-}
 
-bool OpticksDbg::isOtherPhoton(int photon_id)
+bool OpticksDbg::isDbgPhoton(int record_id)
 {
-    return std::find(m_other_photon.begin(), m_other_photon.end(), photon_id ) != m_other_photon.end() ; 
+    return std::find(m_debug_photon.begin(), m_debug_photon.end(), record_id ) != m_debug_photon.end() ; 
+}
+bool OpticksDbg::isOtherPhoton(int record_id)
+{
+    return std::find(m_other_photon.begin(), m_other_photon.end(), record_id ) != m_other_photon.end() ; 
 }
 
 

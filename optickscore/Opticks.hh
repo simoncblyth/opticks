@@ -172,9 +172,12 @@ class OKCORE_API Opticks {
        OpticksAttrSeq*      getFlagNames();
        std::map<unsigned int, std::string> getFlagNamesMap();
    public:
-       // from OpticksDbg --dindex and --oindex options
-       bool isDbgPhoton(int photon_id);
-       bool isOtherPhoton(int photon_id);
+       // from OpticksDbg --dindex and --oindex options  
+       // NB these are for cfg4 debugging  (Opticks uses different approach with --pindex option)
+       bool isDbgPhoton(int record_id);
+       bool isOtherPhoton(int record_id);
+       bool isDbgPhoton(int event_id, int track_id);
+       bool isOtherPhoton(int event_id, int track_id);
        const std::vector<int>&  getDbgIndex();
        const std::vector<int>&  getOtherIndex();
    public:
@@ -239,9 +242,10 @@ class OKCORE_API Opticks {
        void defineEventSpec();
        void configureDomains();
    public:
-       unsigned int getRngMax();
-       unsigned int getBounceMax();
-       unsigned int getRecordMax();
+       unsigned getNumPhotonsPerG4Event();
+       unsigned getRngMax();
+       unsigned getBounceMax();
+       unsigned getRecordMax();
        float        getEpsilon();
    public:
        void setExit(bool exit=true);
@@ -277,6 +281,8 @@ class OKCORE_API Opticks {
        OpticksProfile*      m_profile ; 
        const char*          m_envprefix ;
        const char*          m_materialprefix ;
+   private:
+       unsigned             m_photons_per_g4event ;
    private:
        OpticksEventSpec*    m_spec ; 
        OpticksEventSpec*    m_nspec ; 
