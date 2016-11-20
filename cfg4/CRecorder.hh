@@ -170,7 +170,7 @@ class CFG4_API CRecorder {
 
 #ifdef USE_CUSTOM_BOUNDARY
     public:
-        bool Record(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, int record_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, 
@@ -180,7 +180,7 @@ class CFG4_API CRecorder {
         void dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
-        bool Record(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, int record_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, 

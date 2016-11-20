@@ -9,6 +9,8 @@
 #include "G4UserTrackingAction.hh"
 #include "globals.hh"
 
+class G4Event ; 
+
 class Opticks ; 
 class CG4 ; 
 class CRecorder ; 
@@ -30,12 +32,19 @@ class CFG4_API CTrackingAction : public G4UserTrackingAction
     virtual void  PreUserTrackingAction(const G4Track* track);
     virtual void PostUserTrackingAction(const G4Track* track);
   private:
+    void setEvent(const G4Event* event);
     void setTrack(const G4Track* track);
+    void setPhotonId(int photon_id, bool reemtrack);
   private:
-    CG4*         m_g4 ; 
-    Opticks*     m_ok ; 
-    CRecorder*   m_recorder ; 
+    CG4*               m_g4 ; 
+    Opticks*           m_ok ; 
+    CRecorder*         m_recorder ; 
+    CSteppingAction*   m_sa ;  
 
+  private:
+    // setEvent
+    const G4Event*        m_event ; 
+    int                   m_event_id ;
   private:
     // setTrack
     const G4Track*        m_track ; 
@@ -45,10 +54,9 @@ class CFG4_API CTrackingAction : public G4UserTrackingAction
     G4ParticleDefinition* m_particle  ; 
     int                   m_pdg_encoding ;
     bool                  m_optical ; 
-    int                   m_optical_track_id ;
-    int                   m_optical_parent_id ;
- 
-
+    bool                  m_reemtrack ; 
+    int                   m_primary_id ;
+    int                   m_photon_id ;
 
 
 };

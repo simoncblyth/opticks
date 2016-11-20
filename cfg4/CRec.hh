@@ -19,9 +19,13 @@ class CFG4_API CRec
     public:
         CRec(Opticks* ok, CGeometry* geometry, bool dynamic);
         void startPhoton(unsigned record_id, const G4ThreeVector& origin);
+        void clearStp();
+
+
         void dump(const char* msg="CRec::dump");
         unsigned getNumStps();
         CStp* getStp(unsigned index);
+
 
 #ifdef USE_CUSTOM_BOUNDARY
         void add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action);

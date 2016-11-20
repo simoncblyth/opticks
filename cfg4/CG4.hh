@@ -31,6 +31,8 @@ class ActionInitialization ;
 class CCollector ; 
 class CRecorder ; 
 class CStepRec ; 
+class CSteppingAction ; 
+class CTrackingAction ; 
 
 class OpticksHub ; 
 class OpticksRun ; 
@@ -55,6 +57,9 @@ class CFG4_API CG4
    private:
         void postinitialize();
         void postpropagate();
+   public:
+        CSteppingAction* getSteppingAction();
+        CTrackingAction* getTrackingAction();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        
    private:

@@ -170,6 +170,19 @@ void CG4::initialize()
     postinitialize();
 }
 
+CTrackingAction* CG4::getTrackingAction()
+{
+    CTrackingAction* ta = dynamic_cast<CTrackingAction*>(m_ta);
+    return ta ;    
+}
+
+CSteppingAction* CG4::getSteppingAction()
+{
+    CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
+    return sa ;    
+}
+
+
 void CG4::postinitialize()
 {
     m_uiManager = G4UImanager::GetUIpointer();
@@ -189,10 +202,10 @@ void CG4::postinitialize()
     m_recorder->postinitialize();  
     //m_rec->postinitialize();
 
-    CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
+    CSteppingAction* sa = getSteppingAction();
     sa->postinitialize();
 
-    CTrackingAction* ta = dynamic_cast<CTrackingAction*>(m_ta);
+    CTrackingAction* ta = getTrackingAction();
     ta->postinitialize();
 
 

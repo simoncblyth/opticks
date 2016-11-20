@@ -17,6 +17,7 @@ class CFG4_API CTrack {
       static int Id(const G4Track* track);
       static int ParentId(const G4Track* track);
       static int StepId(const G4Track* track);
+      static int PrimaryPhotonID(const G4Track* track);
    public:
       CTrack(const G4Track* track);
       const char* getTrackStatusString();

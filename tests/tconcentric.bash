@@ -28,10 +28,11 @@ tconcentric-src(){ echo torch ; }
 
 
 tconcentric-photons(){
-   #local photons=1000000
+    local photons=1000000
    #local photons=100000
-   local photons=10000
+   #local photons=10000
    #local photons=100
+   #local photons=30
    #local photons=10
    #local photons=1
    echo $photons
@@ -47,7 +48,7 @@ tconcentric--(){
     local photons=$(tconcentric-photons)
     local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)
     case $photons in
-       1|2|3|4|5|6|7|8|9|10|100|1000|10000) g4ppe=$photons ;;
+       1|2|3|4|5|6|7|8|9|10|20|30|40|50|60|70|80|90|100|1000|10000) g4ppe=$photons ;;
     esac
 
 
@@ -90,7 +91,7 @@ tconcentric-tt-dindex()
 tconcentric-tt-dbg()
 {
     tconcentric-tt \
-         --dindex=0,1,2,3,4,5,6,7,8,9 --debugger $*
+            --debugger $*
 
 }
 

@@ -2,6 +2,7 @@
 
 #include "CRec.hh"
 #include "CStp.hh"
+#include "Format.hh"
 
 #include "PLOG.hh"
 
@@ -18,10 +19,27 @@ CRec::CRec(Opticks* ok, CGeometry* geometry, bool dynamic)
 
 void CRec::startPhoton(unsigned record_id, const G4ThreeVector& origin)
 {
+    LOG(debug) << "CRec::startPhoton" 
+              << " record_id " << record_id
+              << " " << Format(origin, "origin")
+              ;
+
     m_record_id = record_id ; 
     m_origin = origin ; 
+
+    clearStp();
+}
+
+
+void CRec::clearStp()
+{
+    LOG(debug) << "CRec::clearStp"
+              << " clearing " << m_stp.size() << " stps "
+              ;
+ 
     m_stp.clear();
 }
+
 
 
 #ifdef USE_CUSTOM_BOUNDARY

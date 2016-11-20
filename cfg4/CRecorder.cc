@@ -273,10 +273,7 @@ int CRecorder::getPhotonIdPrior()
 }
 
 
-int CRecorder::getParentId()
-{
-   return m_parent_id ; 
-}
+
 int CRecorder::getStepId()
 {
    return m_step_id ; 
@@ -316,10 +313,7 @@ void CRecorder::setRecordId(int record_id)
 }
 
 
-void CRecorder::setParentId(int parent_id)
-{
-    m_parent_id = parent_id ; 
-}
+
 void CRecorder::setPrimaryId(int primary_id)
 {
     m_primary_id = primary_id ; 
@@ -335,7 +329,6 @@ std::string CRecorder::description()
     ss << std::setw(10) << CStage::Label(m_stage)
        << " evt " << std::setw(7) << m_event_id
        << " pho " << std::setw(7) << m_photon_id 
-       << " par " << std::setw(7) << m_parent_id
        << " pri " << std::setw(7) << m_primary_id
        << " ste " << std::setw(4) << m_step_id 
        << " rid " << std::setw(4) << m_record_id 
@@ -514,26 +507,40 @@ void CRecorder::decrementSlot()
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::Record(const G4Step* step, int step_id, int record_id, int parent_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, int record_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #else
-bool CRecorder::Record(const G4Step* step, int step_id, int record_id, int parent_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, int record_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #endif
 {
     setStep(step, step_id);
     setRecordId(record_id);
-    setParentId(parent_id); 
     setStage(stage);
+
+    LOG(trace) << "CRecorder::Record"
+              << " step_id " << step_id
+              << " record_id " << record_id
+              << " stage " << CStage::Label(stage)
+              ;
 
     if(stage == CStage::START)
     { 
         m_step_action |= STEP_START ; 
+
         startPhoton();       // MUST be invoked prior to setBoundaryStatus
         RecordQuadrant();
     }
     else if(stage == CStage::REJOIN )
     {
         m_step_action |= STEP_REJOIN  ; 
-        decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+        if(m_live)
+        { 
+            decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+        }
+        else
+        {
+            m_crec->clearStp();
+            // rejoin happens on output side, not in the crec CStp list
+        }
     }
     else if(stage == CStage::RECOLL )
     {
@@ -601,10 +608,10 @@ bool CRecorder::RecordStep()
     unsigned preFlag = m_slot == 0 && m_stage == CStage::START ? 
                                       m_gen 
                                    : 
-                                      OpPointFlag(pre,  m_prior_boundary_status, m_stage)
+                                      OpPointFlag(pre,  m_prior_boundary_status, m_stage )
                                    ;
 
-    unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage);
+    unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage );
 
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
@@ -680,11 +687,19 @@ void CRecorder::writeStps()
     unsigned preFlag, postFlag ; 
     bool     done ;  
 
+    assert(!m_live) ;
     unsigned num_stps = m_crec->getNumStps(); 
     LOG(trace) << "CRecorder::writeStps"
                << " num_stps " << num_stps
+               << " m_slot " << m_slot
                ;
-    assert(!m_live) ;
+
+    /*
+    std::cout << "CRecorder::writeStps stages:"  
+    for(unsigned i=0 ; i < num_stps ; i++)
+        std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
+    std::cout << std::endl ;  
+    */
 
     for(unsigned i=0 ; i < num_stps ; i++)
     {
@@ -702,10 +717,15 @@ void CRecorder::writeStps()
         premat = preMaterial ? m_material_bridge->getMaterialIndex(preMaterial) + 1 : 0 ;
         postmat = postMaterial ? m_material_bridge->getMaterialIndex(postMaterial) + 1 : 0 ;
 
-        postFlag = OpPointFlag(post, boundary_status, stage);
 
+        CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
+        postFlag = OpPointFlag(post, boundary_status, postStage);
+
+        bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-        bool postSkip = boundary_status == StepTooSmall && stage != CStage::REJOIN  ;  
+
+        //bool postSkip = boundary_status == StepTooSmall && stage != CStage::REJOIN  ;  
+        bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
         bool matSwap = boundary_status == StepTooSmall ; 
 
         unsigned u_premat  = matSwap ? postmat : premat ;
@@ -715,12 +735,27 @@ void CRecorder::writeStps()
 
         bool first = m_slot == 0 && stage == CStage::START ;
 
-        if(stage == CStage::REJOIN) decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+        /*
+        LOG(info) << "CRecorder::writeStps"
+                  << " i " << std::setw(3) << i 
+                  << " m_slot " << std::setw(3) << m_slot 
+                  << " stage " << CStage::Label(stage)
+                  << " postSkip " << postSkip
+                  ;
+        */
+ 
+        if(stage == CStage::REJOIN) 
+        {
+             decrementSlot();   // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+        }
 
        // record pre and post i=0, then post for i > 0 
-        if(i == 0 || stage == CStage::REJOIN)
+
+       // now that are clearStp for each track, REJOIN will always be i=0
+        preFlag = first ? m_gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
+
+        if(i == 0)
         {
-            preFlag = first ? m_gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
             done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );  
             done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
         }
@@ -854,6 +889,17 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     m_mskhis |= flag ;   
     if(flag == BULK_REEMIT) m_mskhis = m_mskhis & (~BULK_ABSORB)  ;
 
+
+    /*
+    std::cout << "RecordStepPoint.slot "
+              << std::setw(4) << slot << " "
+              << std::setw(16) << std::hex << m_seqhis << std::dec 
+              << " " << OpticksFlags::FlagSequence(m_seqhis, true)
+              << std::endl 
+              ;
+    */
+
+
     //  Decrementing m_slot and running again will not scrub the AB from the mask
     //  so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
     //  occurs. 
@@ -869,6 +915,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     double time = point->GetGlobalTime();
 
     if(m_debug || m_other) Collect(point, flag, material, boundary_status, m_mskhis, m_seqhis, m_seqmat, time);
+
+
+
 
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
@@ -1301,7 +1350,7 @@ void CRecorder::dump(const char* msg)
               << "    " << m_material_bridge->MaterialSequence(m_seqmat) 
               ;
 
-    if(m_debug || m_other) 
+    if(m_debug || m_other ) 
     { 
         G4ThreeVector origin ;
         unsigned npoints = m_points.size() ;

@@ -2,6 +2,10 @@
 #include "CTrack.hh"
 #include "G4Track.hh"
 
+#include "DsG4CompositeTrackInfo.h"
+#include "DsPhotonTrackInfo.h"
+
+
 const char* CTrack::fAlive_                    = "fAlive" ;
 const char* CTrack::fStopButAlive_             = "fStopButAlive" ;
 const char* CTrack::fStopAndKill_              = "fStopAndKill" ;
@@ -48,6 +52,27 @@ int CTrack::StepId(const G4Track* track)
 {
     return track->GetCurrentStepNumber() - 1 ;
 }
+
+int CTrack::PrimaryPhotonID(const G4Track* track)
+{
+    int primary_id = -2 ; 
+    DsG4CompositeTrackInfo* cti = dynamic_cast<DsG4CompositeTrackInfo*>(track->GetUserInformation());
+    if(cti)
+    {
+        DsPhotonTrackInfo* pti = dynamic_cast<DsPhotonTrackInfo*>(cti->GetPhotonTrackInfo());
+        if(pti)
+        {
+            primary_id = pti->GetPrimaryPhotonID() ; 
+        }
+    }
+    return primary_id ; 
+}
+
+
+
+
+
+
 
 
 

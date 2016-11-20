@@ -274,7 +274,9 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
         LOG(warning) << " OpPointFlag ZERO  " 
                      << " proceesDefinedStep? " << processName 
                      << " stage " << CStage::Label(stage)
+                     << " status " << OpStepString(status)
                      ;
+        //assert(0);
     }
     return flag ; 
 }

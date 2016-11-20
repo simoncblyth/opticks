@@ -108,6 +108,12 @@ Calculate expectations for global times with tconcentric geometry, in bnd.py::
     tabs3: array([ 15.4969,  15.5483,  20.6837,  20.7352,  25.8706], dtype=float32) 
 
 
+
+
+
+
+
+
 Hmm looks like difference between use of preVelocity vs postVelocity (are using pre when should be using post).
 Potentially due to CRecorder operating PRE_SAVE ?
 
@@ -192,6 +198,19 @@ Caution heavy compression with below values::
            [ 4004.9776,     0.    ,     0.    ,    20.7344],
            [ 4995.0716,     0.    ,     0.    ,    25.8666]])
 
+
+
+Post recording returns to the values without the BT proposeVelocity::
+
+    In [4]: b[0]
+    Out[4]: 
+    A()sliced
+    A([[    0.    ,     0.    ,     0.    ,     0.1007],
+           [ 2995.0267,     0.    ,     0.    ,    15.4974],
+           [ 3004.9551,     0.    ,     0.    ,    15.5498],
+           [ 3995.0491,     0.    ,     0.    ,    20.682 ],
+           [ 4004.9776,     0.    ,     0.    ,    20.7344],
+           [ 4995.0716,     0.    ,     0.    ,    25.8707]])
 
 
 
@@ -486,14 +505,6 @@ Add to cfg4/DsG4OpBoundaryProcess.cc::
 
 
 
-
-
-
-
-
-
-
-
 tconcentric check
 --------------------
 
@@ -540,6 +551,8 @@ tconcentric check
     A([-0.0509,  0.    ,  1.8315,  0.    ,  4.177 ])    ## mm/ns
 
     ## fairly close, possibly can attribute to interpolation differences ???
+
+
 
 
 Review

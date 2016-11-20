@@ -29,6 +29,8 @@ class CStepRec ;
 
 class CFG4_API CSteppingAction : public G4UserSteppingAction
 {
+   friend class CTrackingAction ; 
+
   static const unsigned long long SEQHIS_TO_SA ; 
   static const unsigned long long SEQMAT_MO_PY_BK ; 
   public:
@@ -46,10 +48,10 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     virtual void UserSteppingAction(const G4Step*);
   private:
     void setEvent(const G4Event* event, int event_id);
-    void setTrack(const G4Track* track, int track_id, int parent_id);
+    void setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding );
+    void setPhotonId(int photon_id, bool reemtrack);
     bool setStep( const G4Step* step, int step_id);
-    bool UserSteppingActionOptical(const G4Step* step, int step_id );
-    int getPrimaryPhotonID();
+    bool collectPhotonStep();
 
   private:
     CG4*              m_g4 ; 
@@ -79,17 +81,18 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 
     // set by setTrack
     unsigned int          m_track_step_count ; 
-    unsigned int          m_rejoin_count ;
 
     const G4Track*        m_track ; 
     int                   m_track_id ;
-    int                   m_parent_id ;
-    G4TrackStatus         m_track_status ; 
-    G4ParticleDefinition* m_particle  ; 
-    int                   m_pdg_encoding ;
     bool                  m_optical ; 
-    int                   m_optical_track_id ;
-    int                   m_optical_parent_id ;
+    int                   m_pdg_encoding ;
+
+    // set by setPhotonId
+    int                   m_photon_id ; 
+    bool                  m_reemtrack ; 
+    unsigned int          m_rejoin_count ;
+    unsigned int          m_primarystep_count ;
+
   
     // set by setStep 
     const G4Step*         m_step ; 
