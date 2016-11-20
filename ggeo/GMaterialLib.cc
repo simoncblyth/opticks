@@ -114,7 +114,7 @@ void GMaterialLib::postLoadFromCache()
 
     if(groupvel)
     {
-       bool debug = true ; 
+       bool debug = false ; 
        replaceGROUPVEL(debug);
     }
 

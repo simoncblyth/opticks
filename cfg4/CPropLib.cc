@@ -298,7 +298,7 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
               << " nprop " << nprop
               ;
 
-    pmap->dump("CPropLib::addProperties"); 
+    //pmap->dump("CPropLib::addProperties"); 
 
 
     std::stringstream ss ; 

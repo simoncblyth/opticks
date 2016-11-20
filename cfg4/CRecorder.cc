@@ -36,6 +36,7 @@
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
 #include "CRec.hh"
+#include "CStp.hh"
 #include "State.hh"
 #include "CRecorder.hh"
 
@@ -130,6 +131,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_geometry(geometry),
    m_material_bridge(NULL),
    m_dynamic(dynamic),
+   m_live(m_ok->hasOpt("liverecorder")),
    m_gen(0),
 
    m_record_max(0),
@@ -451,10 +453,13 @@ void CRecorder::setSlot(unsigned slot)
 
 void CRecorder::startPhoton()
 {
+   // invoked from CRecorder::Record when stage = CStage::START
+   // the start stage is set for a new non-rejoing optical track by   CSteppingAction::UserSteppingActionOptical
 
     const G4StepPoint* pre = m_step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
-    m_crec->startPhoton(m_record_id, pos);
+
+    m_crec->startPhoton(m_record_id, pos);   // clears CStp vector
 
 
     m_c4.u = 0u ; 
@@ -558,8 +563,6 @@ bool CRecorder::RecordStep()
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
-   
-
     if(m_debug)
     {
        // try to understand GlobalTime calc from G4Transportation::AlongStepDoIt by duping attempt
@@ -620,7 +623,7 @@ bool CRecorder::RecordStep()
 
     bool done = false ; 
 
-    // skip the pre, but the post becomes the pre at next step where will be taken 
+    // usually skip the pre, but the post becomes the pre at next step where will be taken 
     // 1-based material indices, so zero can represent None
     //
     //   RecordStepPoint records into m_slot (if < m_steps_per_photon) and increments m_slot
@@ -631,26 +634,151 @@ bool CRecorder::RecordStep()
     if(preSkip)       m_step_action |= PRE_SKIP ; 
     if(matSwap)       m_step_action |= MAT_SWAP ; 
 
-    if(!preSkip)
+
+    if(m_live)
     {
-        m_step_action |= PRE_SAVE ; 
-        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
-        if(done) m_step_action |= PRE_DONE ; 
+        if(!preSkip)
+        {
+            m_step_action |= PRE_SAVE ; 
+            done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
+            if(done) m_step_action |= PRE_DONE ; 
+        }
+
+        if(lastPost && !done )
+        {
+            m_step_action |= POST_SAVE ; 
+            done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
+            if(done) m_step_action |= POST_DONE ; 
+        }
+
+        if(done) 
+        {
+            RecordPhoton(post);  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
+        }
     }
 
-    if(lastPost && !done)
-    {
-        m_step_action |= POST_SAVE ; 
-        done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
-        if(done) m_step_action |= POST_DONE ; 
-    }
+    // hmm in non-live running not clear how to deal with the done ??
 
-    if(done) RecordPhoton();  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
     m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_stage, m_step_action );
 
     return done ;
 }
 
+void CRecorder::writeStps()
+{
+#ifdef USE_CUSTOM_BOUNDARY
+    DsG4OpBoundaryProcessStatus boundary_status, prior_boundary_status ;
+#else
+    G4OpBoundaryProcessStatus boundary_status, prior_boundary_status ;
+#endif
+    CStp* stp ;
+    CStage::CStage_t stage ; 
+    const G4Step* step ; 
+    const G4StepPoint *pre, *post ; 
+    const G4Material *preMaterial, *postMaterial ;
+    unsigned premat, postmat ; 
+    unsigned preFlag, postFlag ; 
+    bool     done ;  
+
+    unsigned num_stps = m_crec->getNumStps(); 
+    LOG(trace) << "CRecorder::writeStps"
+               << " num_stps " << num_stps
+               ;
+    assert(!m_live) ;
+
+    for(unsigned i=0 ; i < num_stps ; i++)
+    {
+        stp  = m_crec->getStp(i);
+        stage = stp->getStage();
+        step = stp->getStep();
+        pre  = step->GetPreStepPoint() ; 
+        post = step->GetPostStepPoint() ; 
+
+        prior_boundary_status = i == 0 ? Undefined : boundary_status ; 
+        boundary_status = stp->getBoundaryStatus() ; 
+
+        preMaterial = pre->GetMaterial() ;
+        postMaterial = post->GetMaterial() ;
+        premat = preMaterial ? m_material_bridge->getMaterialIndex(preMaterial) + 1 : 0 ;
+        postmat = postMaterial ? m_material_bridge->getMaterialIndex(postMaterial) + 1 : 0 ;
+
+        postFlag = OpPointFlag(post, boundary_status, stage);
+
+        bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+        bool postSkip = boundary_status == StepTooSmall && stage != CStage::REJOIN  ;  
+        bool matSwap = boundary_status == StepTooSmall ; 
+
+        unsigned u_premat  = matSwap ? postmat : premat ;
+        unsigned u_postmat = ( matSwap || postmat == 0 )  ? premat  : postmat ;
+
+        if(surfaceAbsorb) u_postmat = postmat ; 
+
+        bool first = m_slot == 0 && stage == CStage::START ;
+
+        if(stage == CStage::REJOIN) decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+
+       // record pre and post i=0, then post for i > 0 
+        if(i == 0 || stage == CStage::REJOIN)
+        {
+            preFlag = first ? m_gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
+            done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );  
+            done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
+        }
+        else
+        {
+            if(!postSkip)
+            done = RecordStepPoint( post, postFlag, u_postmat, boundary_status, POST );
+        }
+    }
+    RecordPhoton(post);
+}
+
+/**
+   Consider 
+       TO RE BT BT BT BT SA
+
+   Live mode:
+       write pre until last when write pre,post 
+
+   Canned mode:
+        For first write pre,post then write post
+
+
+   Rejoins are not known until another track comes along 
+   that lines up with former ending in AB. 
+
+
+
+         TO AB      (only one step so pre and post are written)
+
+            RE BT BT BT BT SA 
+
+         RE BT
+
+    Hmm when rejoining need to write the pre
+
+    In canned mode            
+       
+         
+  
+       
+
+
+
+
+
+**/
+
+
+
+void CRecorder::posttrack()
+{
+    if(!m_live)
+    { 
+        writeStps();
+    }
+    lookback();
+}
 
 
 
@@ -764,7 +892,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
 
 
-
 std::string CRecorder::getStepActionString()
 {
     return Action(m_step_action) ;
@@ -853,6 +980,8 @@ G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
 
 void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
 {
+    // write compressed record quads into buffer at location for the m_record_id 
+
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& pol = point->GetPolarization();
 
@@ -932,13 +1061,12 @@ void CRecorder::RecordQuadrant()
     m_c4.uchar_.w = 4u ; 
 }
 
-void CRecorder::RecordPhoton()
+void CRecorder::RecordPhoton(const G4StepPoint* point)
 {
     // gets called at last step (eg absorption) or when truncated
     // for reemission have to rely on downstream overwrites
     // via rerunning with a target_record_id to scrub old values
 
-    const G4StepPoint* point  = m_step->GetPostStepPoint() ; 
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -1119,6 +1247,9 @@ void CRecorder::lookback()
     bool debug_seqhis = m_dbgseqhis == m_seqhis ; 
     bool debug_seqmat = m_dbgseqmat == m_seqmat ; 
     bool dump_ = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_other || m_debug || (m_dbgflags && m_badflag > 0 ) ;
+
+    if(m_badflag > 0) dump_ = true ; 
+
 
     if(dump_) dump("CRecorder::lookback");
 }

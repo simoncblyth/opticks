@@ -125,6 +125,9 @@ void Sparse<T>::reduce_by_key(std::vector<T>& data)
 
     T value(0) ; 
 
+    // presumably this is assuming the vals are sorted, so
+    // it looks for transitions between the runs of repeats 
+    //
     // from the second
     for(unsigned int i=1 ; i < n ; i++)
     {
@@ -176,7 +179,10 @@ void Sparse<T>::reduce_by_key(std::vector<T>& data)
               << " num_unique " << m_num_unique 
               ;
 
-    assert(unique == m_num_unique);
+    if(n > 1)
+    {
+        assert(unique == m_num_unique);
+    }
 }
 
 

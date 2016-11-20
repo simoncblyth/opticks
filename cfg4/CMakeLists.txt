@@ -182,6 +182,7 @@ set(SOURCES
     CTorchSource.cc
 
     CSteppingAction.cc
+    CTrackingAction.cc
     CStage.cc
     CG4.cc
     CCollector.cc
@@ -260,6 +261,7 @@ set(HEADERS
     CTorchSource.hh
 
     CSteppingAction.hh
+    CTrackingAction.hh
     CStage.hh
     CG4.hh
     CCollector.hh

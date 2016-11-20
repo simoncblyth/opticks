@@ -45,11 +45,11 @@
 
 #include "CCollector.hh"
 #include "CRecorder.hh"
-//#include "Rec.hh"
 #include "CStepRec.hh"
 
 #include "CPrimaryGeneratorAction.hh"
 #include "CSteppingAction.hh"
+#include "CTrackingAction.hh"
 #include "CRunAction.hh"
 #include "CEventAction.hh"
 
@@ -125,8 +125,11 @@ CG4::CG4(OpticksHub* hub)
      m_ui(NULL),
      m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
+     m_ta(new CTrackingAction(this)),
      m_ra(new CRunAction(m_hub)),
      m_ea(new CEventAction(m_hub)),
+     //m_ai(new ActionInitialization(m_pga, m_sa, m_ta, m_ra, m_ea)),
+     m_ai(NULL),
      m_initialized(false)
 {
      OK_PROFILE("CG4::CG4");
@@ -153,7 +156,16 @@ void CG4::initialize()
     assert(!m_initialized && "CG4::initialize already initialized");
     m_initialized = true ; 
     LOG(info) << "CG4::initialize" ;
-    m_runManager->SetUserInitialization(new ActionInitialization(m_pga, m_sa, m_ra, m_ea)) ;
+
+    //m_runManager->SetUserInitialization(m_ai) ;
+
+    m_runManager->SetUserAction(m_pga);
+    m_runManager->SetUserAction(m_sa);
+    m_runManager->SetUserAction(m_ta);
+    m_runManager->SetUserAction(m_ra);
+    m_runManager->SetUserAction(m_ea);
+
+
     m_runManager->Initialize();
     postinitialize();
 }
@@ -179,6 +191,11 @@ void CG4::postinitialize()
 
     CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
     sa->postinitialize();
+
+    CTrackingAction* ta = dynamic_cast<CTrackingAction*>(m_ta);
+    ta->postinitialize();
+
+
 
     m_hub->overrideMaterialMapA( getMaterialMap(), "CG4::postinitialize/g4mm") ;  // for translation of material indices into GPU texture lines 
 

@@ -113,6 +113,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nogroupvel",  "inhibit group_velocity property calculated from refractive_index in GMaterialLib::postLoadFromCache ");
 
+   m_desc.add_options()
+       ("liverecorder", "adopt cfg4/CRecorder live stepping recording");
+
 
    m_desc.add_options()
        ("nore",  "inhibit reemission by zeroing reemission_prob of named scintillators after loading from cache, see GMaterialLib::postLoadFromCache ") ;

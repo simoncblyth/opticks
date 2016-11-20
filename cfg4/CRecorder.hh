@@ -149,15 +149,19 @@ class CFG4_API CRecorder {
         void setDebug(bool debug);
         void setOther(bool other);
    private:
-        void lookback(); // called from CSteppingAction::UserSteppingActionOptical on getting a new photon step before overwriting prior photon values 
         void setEvent(OpticksEvent* evt);
+   public:
+        void posttrack(); 
+        // formerly called from CSteppingAction::UserSteppingActionOptical on getting a new photon step before overwriting prior photon values 
+        // now moved to CTrackingAction::PostUserTrackingAction
+        void lookback(); 
    public:
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
         static double PreGlobalTime(const G4Step* step);
         static double PostGlobalTime(const G4Step* step);
 
-        void RecordPhoton();  // overwrites target_record_id (ie m_record_id for static) entry for REJOINs
+        void RecordPhoton(const G4StepPoint* point); // overwrites target_record_id (ie m_record_id for static) entry for REJOINs
         void startPhoton();
 
    public:
@@ -204,6 +208,9 @@ class CFG4_API CRecorder {
         unsigned getSlot();
         void decrementSlot();
    public:
+        // non-live running 
+        void writeStps();
+   public:
         void setEventId(int event_id);
         void setPhotonId(int photon_id);
         void setParentId(int parent_id);
@@ -247,6 +254,10 @@ class CFG4_API CRecorder {
         CGeometry*         m_geometry ; 
         CMaterialBridge*   m_material_bridge ; 
         bool               m_dynamic ;
+        bool               m_live ;   
+
+        // m_live = true  : live recording mode, OpticksEvent records written during stepping
+        // m_live = false : canned recording mode, records written Trajectory style from saved CRec CStp vector  
 
         unsigned int       m_gen ; 
        

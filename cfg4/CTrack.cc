@@ -9,7 +9,7 @@ const char* CTrack::fKillTrackAndSecondaries_  = "fKillTrackAndSecondaries" ;
 const char* CTrack::fSuspend_                  = "fSuspend" ;
 const char* CTrack::fPostponeToNextEvent_      = "fPostponeToNextEvent" ;
 
-CTrack::CTrack(G4Track* track) 
+CTrack::CTrack(const G4Track* track) 
    :
      m_track(track)
 {
@@ -34,5 +34,21 @@ const char* CTrack::getTrackStatusString()
 {
    return TrackStatusString(m_track->GetTrackStatus());
 }
+
+
+int CTrack::Id(const G4Track* track)
+{
+    return track->GetTrackID() - 1 ;
+}
+int CTrack::ParentId(const G4Track* track)
+{
+    return track->GetParentID() - 1 ;
+}
+int CTrack::StepId(const G4Track* track)
+{
+    return track->GetCurrentStepNumber() - 1 ;
+}
+
+
 
 

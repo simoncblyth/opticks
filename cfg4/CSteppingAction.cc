@@ -104,28 +104,37 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_recorder(g4->getRecorder()),
    m_steprec(g4->getStepRec()),
    m_verbosity(m_recorder->getVerbosity()),
+
    m_event_total(0),
    m_track_total(0),
    m_step_total(0),
    m_event_track_count(0),
-   m_track_step_count(0),
    m_steprec_store_count(0),
-   m_event(NULL),
-   m_track(NULL),
-   m_step(NULL),
+
+
    m_startEvent(false),
    m_startTrack(false),
+
+
+
+   m_event(NULL),
    m_event_id(-1),
+
+   m_track_step_count(0),
+   m_rejoin_count(0),
+
+   m_track(NULL),
    m_track_id(-1),
    m_parent_id(-1),
-   m_optical_track_id(-1),
-   m_optical_parent_id(-1),
-   m_step_id(-1),
-   m_primary_id(-1),
    m_track_status(fAlive),
    m_particle(NULL),
+   m_pdg_encoding(0),
    m_optical(false),
-   m_pdg_encoding(0)
+   m_optical_track_id(-1),
+   m_optical_parent_id(-1),
+
+   m_step(NULL),
+   m_step_id(-1)
 { 
 }
 
@@ -190,6 +199,11 @@ void CSteppingAction::setEvent(const G4Event* event, int event_id)
 
 void CSteppingAction::setTrack(const G4Track* track, int track_id, int parent_id)
 {
+    // IN PROCESS OF MIGRATING THIS TO CTrackingAction::setTrack
+
+    m_track_step_count = 0 ; 
+    m_rejoin_count = 0 ; 
+
     m_track = track ; 
     m_track_id = track_id ; 
     m_parent_id = parent_id ;
@@ -201,9 +215,6 @@ void CSteppingAction::setTrack(const G4Track* track, int track_id, int parent_id
 
     m_event_track_count += 1 ; 
     m_track_total += 1 ; 
-
-    m_track_step_count = 0 ; 
-    m_rejoin_count = 0 ; 
 
     if(m_optical)
     {
@@ -309,13 +320,12 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
     // last_ as these are values from previous step, prior to setting them for this step  
 
     int last_photon_id = m_recorder->getPhotonId();  
-    int last_record_id = m_recorder->getRecordId();  
-     // acertain step stage by comparing photon_id/parent_id set by prior setTrack with the last 
-
+    // acertain step stage by comparing photon_id/parent_id set by prior setTrack with the last 
 
     // (parent_id, primary_id, photon_id, last_photon_id) -> stage
 
     CStage::CStage_t stage = CStage::UNKNOWN ; 
+
     if( parent_id == -1 )     // primary photon, ie not downstream from reemission 
     {
         stage = photon_id != last_photon_id  ? CStage::START : CStage::COLLECT ;
@@ -328,34 +338,12 @@ bool CSteppingAction::UserSteppingActionOptical(const G4Step* step, int step_id)
         // rejoin count is zeroed in setTrack, so each remission generation trk will result in REJOIN 
     }
 
-    if(stage == CStage::START && last_record_id >= 0 && last_record_id < INT_MAX )
-    {
-        m_recorder->lookback(); // backwards looking comparison of prior (potentially rejoined) photon
-    }
 
+    // backwards looking comparison of prior (potentially rejoined) photon
+    // moved lookback invokation to CTrackingAction::PostUserTrackingAction
+    //int last_record_id = m_recorder->getRecordId();  
+    //if(stage == CStage::START && last_record_id >= 0 && last_record_id < INT_MAX ) m_recorder->lookback(); 
 
-   /*
-    bool last_debug = m_recorder->isDebug();
-    bool last_other = m_recorder->isOther();
-    if(last_debug || last_other || m_verbosity > 0 )
-    {
-        if(stage == CStage::START)
-        {
-            std::cout << std::endl << std::endl << std::endl ;
-            LOG(info) << "CStage::START" ; 
-        } 
-        LOG(info) 
-                  << " track_step_count " << std::setw(4) << m_track_step_count
-                  << " pri " << std::setw(7) << primary_id
-                  << " par " << std::setw(7) << parent_id
-                  << " pho(trk) " << std::setw(7) << photon_id
-                  << " lpho " << std::setw(7) << last_photon_id
-                  << " lrec " << std::setw(7) << last_record_id
-                  << " rjco " << std::setw(3) << m_rejoin_count 
-                  << " stge " << CStage::Label(stage) 
-                  ;
-    } 
-    */
 
     m_recorder->setPhotonId(photon_id);   
     m_recorder->setEventId(m_event_id);

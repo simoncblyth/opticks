@@ -30,6 +30,33 @@ CStp::CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary
 }
 
 
+const G4Step* CStp::getStep()
+{
+   return m_step ; 
+}
+
+int CStp::getStepId()
+{
+   return m_step_id ; 
+}
+
+#ifdef USE_CUSTOM_BOUNDARY
+DsG4OpBoundaryProcessStatus CStp::getBoundaryStatus() 
+#else
+G4OpBoundaryProcessStatus   CStp::getBoundaryStatus() 
+#endif
+{
+   return m_boundary_status ;  
+}
+
+CStage::CStage_t CStp::getStage()
+{
+   return m_stage ; 
+}
+
+
+
+
 std::string CStp::origin()
 {
     std::stringstream ss ; 

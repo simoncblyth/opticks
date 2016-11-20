@@ -52,47 +52,49 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     int getPrimaryPhotonID();
 
   private:
-    CG4*         m_g4 ; 
-    Opticks*     m_ok ; 
-
-    bool         m_dynamic ; 
-    CGeometry*   m_geometry ; 
+    CG4*              m_g4 ; 
+    Opticks*          m_ok ; 
+    bool              m_dynamic ; 
+    CGeometry*        m_geometry ; 
     CMaterialBridge*  m_material_bridge ; 
-    CMaterialLib*    m_clib ; 
-    CRecorder*   m_recorder   ; 
-    CStepRec*    m_steprec   ; 
-    int          m_verbosity ; 
+    CMaterialLib*     m_clib ; 
+    CRecorder*        m_recorder   ; 
+    CStepRec*         m_steprec   ; 
+    int               m_verbosity ; 
 
+    // init in ctor
     unsigned int m_event_total ; 
     unsigned int m_track_total ; 
     unsigned int m_step_total ; 
     unsigned int m_event_track_count ; 
-    unsigned int m_track_step_count ; 
     unsigned int m_steprec_store_count ;
-    unsigned int m_rejoin_count ;
 
-    const G4Event* m_event ; 
-    const G4Track* m_track ; 
-    const G4Step*  m_step ; 
+    // set by UserSteppingAction
+    bool                  m_startEvent ; 
+    bool                  m_startTrack ; 
 
-    bool m_startEvent ; 
-    bool m_startTrack ; 
+    // set by setEvent
+    const G4Event*        m_event ; 
+    int                   m_event_id ;
 
-    int m_event_id ;
-    int m_track_id ;
-    int m_parent_id ;
+    // set by setTrack
+    unsigned int          m_track_step_count ; 
+    unsigned int          m_rejoin_count ;
 
-    int m_optical_track_id ;
-    int m_optical_parent_id ;
-
-
-    int m_step_id ;
-    int m_primary_id ; 
-
+    const G4Track*        m_track ; 
+    int                   m_track_id ;
+    int                   m_parent_id ;
     G4TrackStatus         m_track_status ; 
     G4ParticleDefinition* m_particle  ; 
-    bool                  m_optical ; 
     int                   m_pdg_encoding ;
+    bool                  m_optical ; 
+    int                   m_optical_track_id ;
+    int                   m_optical_parent_id ;
+  
+    // set by setStep 
+    const G4Step*         m_step ; 
+    int                   m_step_id ;
+
 
 
 };

@@ -14,11 +14,15 @@ class CFG4_API CTrack {
     static const char* fSuspend_ ;
     static const char* fPostponeToNextEvent_ ;
    public:
-      CTrack(G4Track* track);
+      static int Id(const G4Track* track);
+      static int ParentId(const G4Track* track);
+      static int StepId(const G4Track* track);
+   public:
+      CTrack(const G4Track* track);
       const char* getTrackStatusString();
       static const char* TrackStatusString(G4TrackStatus status);
    private:
-      G4Track* m_track ; 
+      const G4Track* m_track ; 
 };
 
 

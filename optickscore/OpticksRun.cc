@@ -22,8 +22,8 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_g4evt = m_ok->makeEvent(false, tagoffset) ;
     m_evt = m_ok->makeEvent(true, tagoffset) ;
 
-    LOG(fatal) << m_g4evt->brief() << " " << m_g4evt->getShapeString() ;  
-    LOG(fatal) << m_evt->brief() << " " << m_evt->getShapeString() ;  
+    LOG(trace) << m_g4evt->brief() << " " << m_g4evt->getShapeString() ;  
+    LOG(trace) << m_evt->brief() << " " << m_evt->getShapeString() ;  
   
 
     m_evt->setSibling(m_g4evt);
@@ -32,7 +32,7 @@ void OpticksRun::createEvent(unsigned tagoffset)
     std::string tstamp = m_g4evt->getTimeStamp();
     m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
 
-    LOG(info) << "OpticksRun::createEvent(" 
+    LOG(debug) << "OpticksRun::createEvent(" 
               << tagoffset 
               << ") " 
               << tstamp 

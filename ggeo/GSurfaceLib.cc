@@ -108,7 +108,7 @@ GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain)
 
         if(!ssur->hasStandardDomain())
         {
-             LOG(warning) << "GSurfaceLib::GSurfaceLib set ssur standard domain for " << i << " out of " << nsur ;
+             LOG(trace) << "GSurfaceLib::GSurfaceLib set ssur standard domain for " << i << " out of " << nsur ;
              ssur->setStandardDomain(src->getStandardDomain());
         }
 

@@ -2,6 +2,7 @@
 
 class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
+class G4UserTrackingAction ;
 class G4UserRunAction ;
 class G4UserEventAction ;
 
@@ -15,6 +16,7 @@ class CFG4_API ActionInitialization : public G4VUserActionInitialization
     ActionInitialization(
            G4VUserPrimaryGeneratorAction* pga, 
            G4UserSteppingAction* sa,
+           G4UserTrackingAction* ta,
            G4UserRunAction* ra,
            G4UserEventAction* ea
     );
@@ -27,6 +29,7 @@ class CFG4_API ActionInitialization : public G4VUserActionInitialization
   private:
     G4VUserPrimaryGeneratorAction* m_pga ;  
     G4UserSteppingAction*          m_sa ; 
+    G4UserTrackingAction*          m_ta ; 
     G4UserRunAction*               m_ra ; 
     G4UserEventAction*             m_ea ; 
 

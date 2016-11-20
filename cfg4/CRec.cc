@@ -34,6 +34,19 @@ void CRec::add(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus bound
 }
 
 
+
+unsigned CRec::getNumStps()
+{
+    return m_stp.size();
+}
+
+CStp* CRec::getStp(unsigned index)
+{
+    return m_stp[index]; 
+}
+
+
+
 void CRec::dump(const char* msg)
 {
     unsigned nstp = m_stp.size();

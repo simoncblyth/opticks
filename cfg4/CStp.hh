@@ -21,6 +21,17 @@ class CFG4_API CStp
         std::string description();
         std::string origin();
 
+    public:
+         const G4Step* getStep();
+         int           getStepId(); 
+#ifdef USE_CUSTOM_BOUNDARY
+         DsG4OpBoundaryProcessStatus getBoundaryStatus() ;
+#else
+         G4OpBoundaryProcessStatus   getBoundaryStatus() ;
+#endif
+         CStage::CStage_t getStage();
+        
+
    private:
          const G4Step* m_step ; 
          int           m_step_id ; 

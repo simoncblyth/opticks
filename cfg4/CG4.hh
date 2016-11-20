@@ -11,6 +11,7 @@ class G4UIExecutive ;
 class G4VUserDetectorConstruction ;
 class G4VUserPrimaryGeneratorAction ;
 class G4UserSteppingAction ;
+class G4UserTrackingAction ;
 class G4UserRunAction ;
 class G4UserEventAction ;
 
@@ -25,6 +26,7 @@ class CDetector ;
 class CMaterialBridge ; 
 class CSurfaceBridge ; 
 class CGenerator ; 
+class ActionInitialization ;
 
 class CCollector ; 
 class CRecorder ; 
@@ -94,8 +96,10 @@ class CFG4_API CG4
    private:
         G4VUserPrimaryGeneratorAction* m_pga ; 
         G4UserSteppingAction*          m_sa ; 
+        G4UserTrackingAction*          m_ta ; 
         G4UserRunAction*               m_ra ; 
         G4UserEventAction*             m_ea ; 
+        ActionInitialization*          m_ai ; 
         bool                           m_initialized ; 
         
 };

@@ -45,7 +45,7 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
 
     if(m_standard_domain)
     {
-        LOG(info) << "GPropertyMap<T> interpolating copy ctor changing domain "
+        LOG(trace) << "GPropertyMap<T> interpolating copy ctor changing domain "
               << " other step " << other->getDomainStep()
               << " dst step " << this->getDomainStep()
               ;

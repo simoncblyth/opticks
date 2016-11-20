@@ -12,6 +12,7 @@
 ActionInitialization::ActionInitialization(
        G4VUserPrimaryGeneratorAction* pga, 
        G4UserSteppingAction* sa,
+       G4UserTrackingAction* ta,
        G4UserRunAction* ra,
        G4UserEventAction* ea
 )
@@ -19,6 +20,7 @@ ActionInitialization::ActionInitialization(
     G4VUserActionInitialization(), 
     m_pga(pga),
     m_sa(sa),
+    m_ta(ta),
     m_ra(ra),
     m_ea(ea)
 {}
@@ -31,6 +33,7 @@ void ActionInitialization::Build() const
 {
     SetUserAction(m_pga);
     SetUserAction(m_sa);
+    SetUserAction(m_ta);
     SetUserAction(m_ra);
     SetUserAction(m_ea);
 }

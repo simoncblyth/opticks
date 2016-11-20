@@ -32,6 +32,8 @@ tconcentric-photons(){
    #local photons=100000
    local photons=10000
    #local photons=100
+   #local photons=10
+   #local photons=1
    echo $photons
 }
 tconcentric-oindex(){
@@ -45,7 +47,7 @@ tconcentric--(){
     local photons=$(tconcentric-photons)
     local g4ppe=10000  # default 10k photons per g4 evt (subevt splitting for G4 memory reasons)
     case $photons in
-       1|10|100|1000|10000) g4ppe=$photons ;;
+       1|2|3|4|5|6|7|8|9|10|100|1000|10000) g4ppe=$photons ;;
     esac
 
 
@@ -79,11 +81,20 @@ tconcentric-tt()
 tconcentric-tt-dindex()
 {
     tconcentric-tt \
-         --dindex=2,4,5,6,7,9,10,11,13,14
+         --dindex=2,4,5,6,7,9,10,11,13,14 $*
 
     #--dindex=999999,999997,999996,999995,999994,999993,999992,999991,999990,999989
     #--dindex=95324,166006,178463,206278,266703,304171,372458,384384,436024,471027,492290,500284,503639,527858,569752,667682,875192
 }
+
+tconcentric-tt-dbg()
+{
+    tconcentric-tt \
+         --dindex=0,1,2,3,4,5,6,7,8,9 --debugger $*
+
+}
+
+
 
 
 
