@@ -30,6 +30,61 @@ See Also
 * ggeo/GProperty<T>::make_GROUPVEL
 
 
+Transport gets velocity from preStep
+--------------------------------------
+
+* actually postStep is not complete during AlongStepDoIt, so it has no choice in the matter.
+
+
+::
+
+    525 G4VParticleChange* G4Transportation::AlongStepDoIt( const G4Track& track,
+    526                                                     const G4Step&  stepData )
+    527 {
+    528   static G4ThreadLocal G4int noCalls=0;
+    529   noCalls++;
+    530 
+    531   fParticleChange.Initialize(track) ;
+    532 
+    533   //  Code for specific process 
+    534   //
+    535   fParticleChange.ProposePosition(fTransportEndPosition) ;
+    536   fParticleChange.ProposeMomentumDirection(fTransportEndMomentumDir) ;
+    537   fParticleChange.ProposeEnergy(fTransportEndKineticEnergy) ;
+    538   fParticleChange.SetMomentumChanged(fMomentumChanged) ;
+    539 
+    540   fParticleChange.ProposePolarization(fTransportEndSpin);
+    541 
+    542   G4double deltaTime = 0.0 ;
+    543 
+    544   // Calculate  Lab Time of Flight (ONLY if field Equations used it!)
+    545   // G4double endTime   = fCandidateEndGlobalTime;
+    546   // G4double delta_time = endTime - startTime;
+    547 
+    548   G4double startTime = track.GetGlobalTime() ;
+    549 
+    550   if (!fEndGlobalTimeComputed)
+    551   {
+    552      // The time was not integrated .. make the best estimate possible
+    553      //
+    554      G4double initialVelocity = stepData.GetPreStepPoint()->GetVelocity();
+    555      G4double stepLength      = track.GetStepLength();
+    556 
+    557      deltaTime= 0.0;  // in case initialVelocity = 0 
+    558      if ( initialVelocity > 0.0 )  { deltaTime = stepLength/initialVelocity; }
+    559 
+    560      fCandidateEndGlobalTime   = startTime + deltaTime ;
+    561      fParticleChange.ProposeLocalTime(  track.GetLocalTime() + deltaTime) ;
+    562   }
+    563   else
+    564   {
+    565      deltaTime = fCandidateEndGlobalTime - startTime ;
+    566      fParticleChange.ProposeGlobalTime( fCandidateEndGlobalTime ) ;
+    567   }
+
+
+
+
 GROUPVEL Injection at tail of PSDIP has no effect
 ---------------------------------------------------
 
@@ -296,9 +351,21 @@ Calculate expectations for global times with tconcentric geometry, in bnd.py::
     tabs3: array([ 15.4969,  15.5483,  20.6837,  20.7352,  25.8706], dtype=float32) 
 
 
+Dumping from DebugG4Navigation::
 
+    2016-11-21 22:31:05.318 INFO  [1546020] [CMaterialLib::dumpGroupvelMaterial@38]   5     trans.ASDIP.beg nm   430 nm/ns    194.519 ns    15.3969 lkp GdDopedLS qwn 
+    2016-11-21 22:31:05.318 INFO  [1546020] [CMaterialLib::dumpGroupvelMaterial@38]   0     trans.ASDIP.beg nm   430 nm/ns    194.519 ns  0.0514088 lkp GdDopedLS qwn 
+    2016-11-21 22:31:05.318 INFO  [1546020] [CMaterialLib::dumpGroupvelMaterial@38]   1     trans.ASDIP.beg nm   430 nm/ns     192.78 ns     5.1354 lkp Acrylic qwn 
+    2016-11-21 22:31:05.319 INFO  [1546020] [CMaterialLib::dumpGroupvelMaterial@38]   2     trans.ASDIP.beg nm   430 nm/ns    194.519 ns  0.0514088 lkp GdDopedLS qwn 
+    2016-11-21 22:31:05.319 INFO  [1546020] [CMaterialLib::dumpGroupvelMaterial@38]   3     trans.ASDIP.beg nm   430 nm/ns     192.78 ns     5.1354 lkp Acrylic qwn 
 
+After G4Track::UseGivenVelocity requiring a const_cast in CTrackingAction get the correct velocities and times::
 
+    2016-11-21 22:46:59.837 INFO  [1549372] [CMaterialLib::dumpGroupvelMaterial@38]   5     trans.ASDIP.beg nm   430 nm/ns    194.519 ns    15.3969 lkp GdDopedLS qwn 
+    2016-11-21 22:46:59.837 INFO  [1549372] [CMaterialLib::dumpGroupvelMaterial@38]   0     trans.ASDIP.beg nm   430 nm/ns     192.78 ns  0.0518727 lkp Acrylic qwn 
+    2016-11-21 22:46:59.837 INFO  [1549372] [CMaterialLib::dumpGroupvelMaterial@38]   1     trans.ASDIP.beg nm   430 nm/ns    194.519 ns    5.08947 lkp GdDopedLS qwn 
+    2016-11-21 22:46:59.838 INFO  [1549372] [CMaterialLib::dumpGroupvelMaterial@38]   2     trans.ASDIP.beg nm   430 nm/ns     192.78 ns  0.0518727 lkp Acrylic qwn 
+    2016-11-21 22:46:59.838 INFO  [1549372] [CMaterialLib::dumpGroupvelMaterial@38]   3     trans.ASDIP.beg nm   430 nm/ns    197.134 ns    5.02196 lkp MineralOil qwn 
 
 
 

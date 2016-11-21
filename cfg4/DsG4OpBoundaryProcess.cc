@@ -177,6 +177,8 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef SCB_DEBUG
     {
+
+
        //  int step_id = m_g4->getStepId();
        //  startVelocity = 205.61897 ;
        //  LOG(info) << "inject Bialkali groupvel startVelocity " << startVelocity << " at step_id " << step_id ; 
@@ -189,12 +191,16 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     aParticleChange.ProposeVelocity(startVelocity);  
 
 
-
 #ifdef SCB_DEBUG
     {
          // suspect wrong material groupvel bug
         float wavelength = CTrack::Wavelength(&aTrack);
-        m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, startVelocity, m_g4->getStepId());
+        m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, startVelocity,0.f, m_g4->getStepId(), "startVelocity" );
+
+        G4double calcVelocity = aTrack.CalculateVelocityForOpticalPhoton();
+        m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, calcVelocity,0.f, m_g4->getStepId(), "calcVelocity");
+
+
 
         const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
         m_event_id = event->GetEventID() ;
@@ -753,7 +759,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
            // suspect wrong material groupvel bug
            float wavelength = CTrack::Wavelength(thePhotonMomentum);
-           m_mlib->dumpGroupvelMaterial("bndary.PSDIP.end", wavelength, finalVelocity, step_id);
+           m_mlib->dumpGroupvelMaterial("bndary.PSDIP.end", wavelength, finalVelocity, 0.f, step_id);
 
 #endif
            aParticleChange.ProposeVelocity(finalVelocity);

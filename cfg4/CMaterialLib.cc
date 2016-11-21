@@ -30,7 +30,7 @@ CMaterialLib::CMaterialLib(OpticksHub* hub)
 {
 }
 
-void CMaterialLib::dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, int step_id)
+void CMaterialLib::dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, float tdiff, int step_id, const char* qwn)
 {
     if(std::abs(wavelength - 430.f) < 0.01 )
     {
@@ -38,9 +38,11 @@ void CMaterialLib::dumpGroupvelMaterial(const char* msg, float wavelength, float
          LOG(info) 
                    << std::setw(3) << step_id
                    << std::setw(20) << msg 
-                   << " wavelength " << std::setw(5) << wavelength 
-                   << " groupvel " << std::setw(10) << groupvel
-                   << " lookupMat " << mat
+                   << " nm " << std::setw(5) << wavelength 
+                   << " nm/ns " << std::setw(10) << groupvel
+                   << " ns " << std::setw(10) << tdiff 
+                   << " lkp " << mat
+                   << " qwn " << qwn 
                    ; 
     }
 }

@@ -5,6 +5,7 @@
 class CG4 ; 
 class CMaterialLib ; 
 
+//#include "G4ThreeVector.hh"
 #include "G4Transportation.hh"
 
 class DebugG4Transportation : public G4Transportation 
@@ -20,6 +21,7 @@ class DebugG4Transportation : public G4Transportation
    private:
        CG4*          m_g4 ; 
        CMaterialLib* m_mlib ; 
+       G4ThreeVector m_origin ; 
 
 
 };

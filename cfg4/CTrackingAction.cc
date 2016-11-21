@@ -69,6 +69,8 @@ void CTrackingAction::setTrack(const G4Track* track)
     m_track_id = CTrack::Id(track) ;
     m_parent_id = CTrack::ParentId(track) ;
 
+
+
     if(m_parent_id != -1 && m_parent_id >= m_track_id) 
     {
        LOG(fatal) << "CTrackingAction::setTrack UNEXPECTED m_parent_id >= m_track_id  "
@@ -91,6 +93,9 @@ void CTrackingAction::setTrack(const G4Track* track)
 
     if(m_optical)
     { 
+         LOG(warning) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
+         const_cast<G4Track*>(m_track)->UseGivenVelocity(true);
+
          int photon_id = -1 ; 
          int primary_id = CTrack::PrimaryPhotonID(m_track) ;    // layed down in trackinfo by custom Scintillation process
          bool reemtrack = false  ;

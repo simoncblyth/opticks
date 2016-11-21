@@ -214,6 +214,11 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     }
 }
 
+const G4ThreeVector& CSteppingAction::getStepOrigin()
+{
+    return m_step_origin ;
+}
+
 
 bool CSteppingAction::setStep(const G4Step* step, int step_id)
 {
@@ -221,6 +226,13 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
 
     m_step = step ; 
     m_step_id = step_id ; 
+
+    if(m_step_id == 0)
+    {
+        const G4StepPoint* pre = m_step->GetPreStepPoint() ;
+        m_step_origin = pre->GetPosition();
+    }
+
 
     m_track_step_count += 1 ; 
     m_step_total += 1 ; 

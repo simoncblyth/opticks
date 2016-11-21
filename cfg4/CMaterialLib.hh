@@ -55,7 +55,7 @@ class CFG4_API CMaterialLib : public CPropLib
        const CMPT*       getG4MPT(const char* shortname);
 
 
-       void dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, int step_id );
+       void dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, float tdiff, int step_id, const char* qwn="" );
        std::string firstMaterialWithGroupvelAt430nm(float groupvel, float delta=0.0001f);
        void fillMaterialValueMap();
        void fillMaterialValueMap(std::map<std::string,float>& vmp,  const char* matnames, const char* key, float nm);

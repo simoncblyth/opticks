@@ -5,6 +5,7 @@ class G4ParticleDefinition ;
 class G4Track ; 
 class G4Event ; 
 
+#include "G4ThreeVector.hh"
 #include "G4UserSteppingAction.hh"
 #include "CBoundaryProcess.hh"
 #include "globals.hh"
@@ -45,6 +46,8 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 #else
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
 #endif
+  public:
+    const G4ThreeVector& getStepOrigin();
   public:
     virtual void UserSteppingAction(const G4Step*);
   private:
@@ -98,6 +101,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     // set by setStep 
     const G4Step*         m_step ; 
     int                   m_step_id ;
+    G4ThreeVector         m_step_origin ; 
 
 
 
