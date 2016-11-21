@@ -69,6 +69,10 @@ Opticks* CG4::getOpticks()
 {
     return m_ok ; 
 }
+OpticksHub* CG4::getHub()
+{
+    return m_hub ; 
+}
 CGeometry* CG4::getGeometry()
 {
     return m_geometry ; 
@@ -96,6 +100,12 @@ CMaterialLib* CG4::getPropLib()
 {
     return m_lib ; 
 }
+CMaterialLib* CG4::getMaterialLib()
+{
+    return m_lib ; 
+}
+
+
 CDetector* CG4::getDetector()
 {
     return m_detector ; 
@@ -109,7 +119,7 @@ CG4::CG4(OpticksHub* hub)
      m_ok(m_hub->getOpticks()),
      m_run(m_ok->getRun()),
      m_cfg(m_ok->getCfg()),
-     m_physics(new CPhysics(m_hub)),
+     m_physics(new CPhysics(this)),
      m_runManager(m_physics->getRunManager()),
      m_geometry(new CGeometry(m_hub)),
      m_hookup(m_geometry->hookup(this)),
@@ -181,6 +191,13 @@ CSteppingAction* CG4::getSteppingAction()
     CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
     return sa ;    
 }
+
+int CG4::getStepId()
+{
+    CSteppingAction* sa = getSteppingAction();
+    return sa->getStepId();
+}
+
 
 
 void CG4::postinitialize()

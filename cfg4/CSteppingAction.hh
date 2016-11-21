@@ -36,6 +36,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   public:
     CSteppingAction(CG4* g4, bool dynamic);
     void postinitialize();
+    int getStepId();
     void report(const char* msg="CSteppingAction::report");
     virtual ~CSteppingAction();
 

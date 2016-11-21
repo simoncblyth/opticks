@@ -5,6 +5,8 @@
 #include "globals.hh"
 #include "OpNovicePhysicsList.hh"
 #include "OpNovicePhysicsListMessenger.hh"
+#include "DebugG4Transportation.hh"
+#include "G4RunManagerKernel.hh"
 
 
 #include "G4ParticleDefinition.hh"
@@ -52,8 +54,9 @@
 
 #include "CFG4_POP.hh"
 
-// cfg4-
 #include "Opticks.hh"
+// cfg4-
+#include "CG4.hh"
 #include "PLOG.hh"
 #include "CMPT.hh"
 #include "OpRayleigh.hh"
@@ -102,14 +105,22 @@ G4ThreadLocal DsG4OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 
 G4ThreadLocal OpRayleigh* OpNovicePhysicsList::fRayleighScatteringProcess = 0;
 #endif
 
+#ifdef USE_DEBUG_TRANSPORTATION
+G4ThreadLocal DebugG4Transportation* OpNovicePhysicsList::fTransportationProcess = 0;
+#else
+G4ThreadLocal G4Transportation*      OpNovicePhysicsList::fTransportationProcess = 0;
+#endif
+
+
 G4ThreadLocal G4OpMieHG* OpNovicePhysicsList::fMieHGScatteringProcess = 0;
 
 
 
-OpNovicePhysicsList::OpNovicePhysicsList(Opticks* ok) 
+OpNovicePhysicsList::OpNovicePhysicsList(CG4* g4) 
     : 
     G4VUserPhysicsList(),
-    m_ok(ok),
+    m_g4(g4),
+    m_ok(g4->getOpticks()),
     // below defaults from DsPhysConsOptical
     m_doReemission(true),               // "ScintDoReemission"        "Do reemission in scintilator."
     m_doScintAndCeren(true),            // "ScintDoScintAndCeren"     "Do both scintillation and Cerenkov in scintilator."
@@ -155,7 +166,10 @@ void OpNovicePhysicsList::ConstructProcess()
 {
   setupEmVerbosity(0); 
 
-  AddTransportation();
+  //AddTransportation();
+  addTransportation();
+
+
   ConstructDecay();
   ConstructEM();
 
@@ -165,6 +179,37 @@ void OpNovicePhysicsList::ConstructProcess()
 }
 
 
+
+void OpNovicePhysicsList::addTransportation()
+{
+   // adpated from 
+   // /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4PhysicsListHelper.cc
+
+  G4int verboseLevelTransport = 0;
+  G4int nParaWorld = G4RunManagerKernel::GetRunManagerKernel()->GetNumberOfParallelWorld();
+  assert(nParaWorld == 0); 
+
+#ifdef USE_DEBUG_TRANSPORTATION  
+  fTransportationProcess = new DebugG4Transportation(m_g4, verboseLevelTransport);
+#else
+  fTransportationProcess = new G4Transportation(verboseLevelTransport);
+#endif
+ 
+  // loop over all particles in G4ParticleTable
+  theParticleIterator->reset();
+  while( (*theParticleIterator)() )
+  {
+      G4ParticleDefinition* particle = theParticleIterator->value();
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+      // Add transportation process for all particles 
+      assert( pmanager );
+
+      // add transportation with ordering = ( -1, "first", "first" )
+      pmanager ->AddProcess(fTransportationProcess);
+      pmanager ->SetProcessOrderingToFirst(fTransportationProcess, idxAlongStep);
+      pmanager ->SetProcessOrderingToFirst(fTransportationProcess, idxPostStep);
+  }
+}
 
 
 void OpNovicePhysicsList::ConstructOpDYB()
@@ -238,7 +283,7 @@ void OpNovicePhysicsList::ConstructOpDYB()
 #endif
 
     //G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();
-    DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess(m_ok);
+    DsG4OpBoundaryProcess* boundproc = new DsG4OpBoundaryProcess(m_g4);
     boundproc->SetModel(unified);
 
     //G4FastSimulationManagerProcess* fast_sim_man = new G4FastSimulationManagerProcess("fast_sim_man");

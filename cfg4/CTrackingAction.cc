@@ -120,7 +120,9 @@ void CTrackingAction::setPhotonId(int photon_id, bool reemtrack)
     m_photon_id = photon_id ; 
     m_reemtrack = reemtrack ; 
 
-    LOG(debug) << "CTrackingAction::setPhotonId"
+    LOG(info) << "." ;
+    LOG(info) << "." ;
+    LOG(info) << "CTrackingAction::setPhotonId"
               << " track_id " << m_track_id
               << " parent_id " << m_parent_id
               << " primary_id " << m_primary_id

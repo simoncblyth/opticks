@@ -87,6 +87,8 @@
 #include "G4OpticalPhoton.hh"
 #include "G4TransportationManager.hh"
 
+class CG4 ; 
+class CMaterialLib ; 
 class Opticks ; 
 
 // Class Description:
@@ -125,7 +127,7 @@ public: // Without description
         // Constructors and Destructor
         ////////////////////////////////
 
-        DsG4OpBoundaryProcess(       Opticks* ok=NULL,
+        DsG4OpBoundaryProcess(       CG4* g4 = NULL,
                                      const G4String& processName = "OpBoundary",
                                      G4ProcessType type = fOptical);
 
@@ -194,7 +196,10 @@ private:
 	void DoReflection();
 
 private:
-    Opticks* m_ok ; 
+    CG4*          m_g4 ; 
+    CMaterialLib* m_mlib ; 
+    Opticks*      m_ok ; 
+
 #ifdef SCB_DEBUG
     bool     m_dbg ; 
     bool     m_other ; 

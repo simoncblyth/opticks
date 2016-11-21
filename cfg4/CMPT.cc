@@ -8,6 +8,7 @@
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
+
 #include "G4MaterialPropertiesTable.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "G4PhysicsOrderedFreeVector.hh"
@@ -16,6 +17,7 @@
 
 
 #include "NPY.hpp"
+#include "CVec.hh"
 #include "CMPT.hh"
 
 #include "PLOG.hh"
@@ -29,7 +31,7 @@ CMPT::CMPT(G4MaterialPropertiesTable* mpt, const char* name)
 }
 
 
-void CMPT::dump(const char* msg)
+void CMPT::dump(const char* msg) const
 {
     LOG(info) << msg ;
     std::vector<std::string> pdesc = getPropertyDesc() ;
@@ -73,7 +75,7 @@ std::vector<std::string> CMPT::getPropertyKeys()
     return keys ; 
 }
 
-std::vector<std::string> CMPT::getPropertyDesc()
+std::vector<std::string> CMPT::getPropertyDesc() const
 {
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = m_mpt->GetPropertiesMap() ;
@@ -160,7 +162,6 @@ void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
     delete [] ddom ; 
     delete [] dval ; 
 }
-
 
 
 void CMPT::dumpProperty(const char* _keys)
@@ -314,13 +315,23 @@ void CMPT::dumpRaw(const char* _keys)
 
 
 
-G4PhysicsOrderedFreeVector* CMPT::getVec(const char* key)
+G4PhysicsOrderedFreeVector* CMPT::getVec(const char* key) const 
 {
     G4PhysicsOrderedFreeVector* pofv = NULL ; 
     G4MaterialPropertyVector* mpv = m_mpt->GetProperty(key); 
     if(mpv) pofv = static_cast<G4PhysicsOrderedFreeVector*>(mpv);
     return pofv ; 
 }
+
+CVec* CMPT::getCVec(const char* lkey) const
+{
+    G4PhysicsOrderedFreeVector* vec = getVec(lkey) ;
+    return new CVec(vec);
+}
+
+
+
+
 
 
 

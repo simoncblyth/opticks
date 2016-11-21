@@ -77,9 +77,10 @@
 #include "G4RunManager.hh"
 #endif
 
-
-
 #include "Opticks.hh"
+#include "CG4.hh"
+#include "CTrack.hh"
+#include "CMaterialLib.hh"
 #include "PLOG.hh"
 
 using CLHEP::eV ; 
@@ -104,10 +105,12 @@ using CLHEP::twopi ;
         // Constructors
         /////////////////
 
-DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(Opticks* ok, const G4String& processName, G4ProcessType type)
+DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processName, G4ProcessType type)
              : 
              G4VDiscreteProcess(processName, type),
-             m_ok(ok),
+             m_g4(g4),
+             m_mlib(g4->getMaterialLib()),
+             m_ok(g4->getOpticks()),
 #ifdef SCB_DEBUG
              m_dbg(false),
              m_other(false),
@@ -143,9 +146,10 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(Opticks* ok, const G4String& proces
 
         abNormalCounter = 0;
 
-       
 
 }
+
+
 
 // DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(const DsG4OpBoundaryProcess &right)
 // {
@@ -157,13 +161,11 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(Opticks* ok, const G4String& proces
 
 DsG4OpBoundaryProcess::~DsG4OpBoundaryProcess(){}
 
-        ////////////
-        // Methods
-        ////////////
 
-// PostStepDoIt
-// ------------
-//
+
+
+
+
 G4VParticleChange*
 DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
@@ -171,12 +173,29 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     theStatus = Undefined;
 
     aParticleChange.Initialize(aTrack);
-
-    aParticleChange.ProposeVelocity(aTrack.GetVelocity());  // SCB add, matching geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
-     // suspect wrong material groupvel bug
+    G4double startVelocity = aTrack.GetVelocity() ; 
 
 #ifdef SCB_DEBUG
     {
+       //  int step_id = m_g4->getStepId();
+       //  startVelocity = 205.61897 ;
+       //  LOG(info) << "inject Bialkali groupvel startVelocity " << startVelocity << " at step_id " << step_id ; 
+    }
+#endif
+
+   // SCB add, matching geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
+  // but it think this is doing nothing 
+
+    aParticleChange.ProposeVelocity(startVelocity);  
+
+
+
+#ifdef SCB_DEBUG
+    {
+         // suspect wrong material groupvel bug
+        float wavelength = CTrack::Wavelength(&aTrack);
+        m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, startVelocity, m_g4->getStepId());
+
         const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
         m_event_id = event->GetEventID() ;
         m_photon_id = aTrack.GetTrackID() - 1 ;
@@ -704,11 +723,11 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
 
 #ifdef SCB_DEBUG
+         /*
            G4double priorVelocity = aParticleChange.GetVelocity();  // seems to be only use of this method
            G4MaterialPropertyVector* groupvel_m1 = Material1->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
            G4double finalVelocity_m1 = groupvel_m1->Value(thePhotonMomentum);
 
-           if(m_dbg || m_other)
            std::cout 
                       << "DsG4OpBoundaryProcess::PostStepDoIt" 
                       //<< " event_id " << std::setw(7) << m_event_id
@@ -721,6 +740,21 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                      << " groupvel_m2 " << std::setw(20) << Material2->GetName() << std::setw(10) << finalVelocity << " <-proposed "
                      << std::endl;
                      ;
+        */
+
+           int step_id = m_g4->getStepId();
+
+          
+          // if(step_id == 0)
+          // {
+          //      finalVelocity = 205.61897 ;
+          //      LOG(info) << "inject Bialkali groupvel " << finalVelocity << " at step_id " << step_id ; 
+          // }
+
+           // suspect wrong material groupvel bug
+           float wavelength = CTrack::Wavelength(thePhotonMomentum);
+           m_mlib->dumpGroupvelMaterial("bndary.PSDIP.end", wavelength, finalVelocity, step_id);
+
 #endif
            aParticleChange.ProposeVelocity(finalVelocity);
 

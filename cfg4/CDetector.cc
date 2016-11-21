@@ -255,11 +255,3 @@ void CDetector::attachSurfaces()
 
 
 
-
-
-
-
-
-
-
-

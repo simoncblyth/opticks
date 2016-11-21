@@ -60,6 +60,7 @@ class CFG4_API CG4
    public:
         CSteppingAction* getSteppingAction();
         CTrackingAction* getTrackingAction();
+        int getStepId();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        
    private:
@@ -69,12 +70,14 @@ class CFG4_API CG4
         void initEvent(OpticksEvent* evt);
    public:
         Opticks*       getOpticks();
+        OpticksHub*    getHub();
         CGeometry*     getGeometry();
         CMaterialBridge* getMaterialBridge();
         CSurfaceBridge*  getSurfaceBridge();
 
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
+        CMaterialLib*  getMaterialLib();
         CMaterialLib*  getPropLib();
         CDetector*     getDetector();
         NPY<float>*    getGensteps();

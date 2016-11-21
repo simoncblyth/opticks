@@ -8,17 +8,19 @@
 #endif
 
 #include "OpticksHub.hh"
+#include "CG4.hh"
 #include "CPhysics.hh"
 
-CPhysics::CPhysics(OpticksHub* hub) 
+CPhysics::CPhysics(CG4* g4) 
     :
-    m_hub(hub),
-    m_ok(hub->getOpticks()),
+    m_g4(g4),
+    m_hub(g4->getHub()),
+    m_ok(g4->getOpticks()),
     m_runManager(new G4RunManager),
 #ifdef OLDPHYS
     m_physics(new PhysicsList())
 #else
-    m_physics(new OpNovicePhysicsList(m_ok))
+    m_physics(new OpNovicePhysicsList(m_g4))
 #endif
 {
     init();

@@ -17,10 +17,10 @@ class OpticksQuery ;
 #include "CTestDetector.hh"
 #include "CGDMLDetector.hh"
 
-class CPropLib ; 
 #include "CG4.hh"
 #include "CDetector.hh"
 #include "CGeometry.hh"
+#include "CMaterialLib.hh"
 #include "CSurLib.hh"
 
 #include "PLOG.hh"
@@ -105,6 +105,14 @@ void CGeometry::postinitialize()
 
     GSurfaceLib* slib = m_hub->getSurfaceLib(); 
     m_surface_bridge = new CSurfaceBridge( slib ); 
+
+
+    // was surprised to find that CMaterialLib is that comes from detector is not 
+    // converted as standard the materoal converts are called individually 
+
+    CMaterialLib* clib = m_lib ; 
+    assert( clib );
+    clib->postinitialize();
 
 }
 

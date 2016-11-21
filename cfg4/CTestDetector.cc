@@ -384,7 +384,7 @@ G4LogicalVolume* CTestDetector::makeLV(GCSG* csg, unsigned int i)
 
     const char* lvn = csg->getLVName(ix - 1)  ;  
 
-    const G4Material* material = m_mlib->makeMaterial(matname) ;
+    const G4Material* material = m_mlib->makeG4Material(matname) ;
 
     G4VSolid* solid = m_maker->makeSolid(csg, i );
 

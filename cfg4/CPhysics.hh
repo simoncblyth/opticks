@@ -2,6 +2,7 @@
 
 class Opticks ; 
 class OpticksHub ; 
+class CG4 ; 
 class G4RunManager ; 
 
 //#define OLDPHYS 1
@@ -16,13 +17,14 @@ class OpNovicePhysicsList ;
 class CFG4_API CPhysics 
 {
     public:
-        CPhysics(OpticksHub* hub);
+        CPhysics(CG4* g4);
     public:
         G4RunManager* getRunManager(); 
         void setProcessVerbosity(int verbosity);
     private:
         void init();
     private:
+        CG4*           m_g4 ;     
         OpticksHub*    m_hub ;     
         Opticks*       m_ok ;     
         G4RunManager*  m_runManager ; 

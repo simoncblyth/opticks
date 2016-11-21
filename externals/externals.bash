@@ -16,3 +16,5 @@ zmq-(){              . $(opticks-home)/externals/zmq.bash               && zmq-e
 asiozmq-(){          . $(opticks-home)/externals/asiozmq.bash           && asiozmq-env $* ; }
 opticksdata-(){      . $(opticks-home)/externals/opticksdata.bash       && opticksdata-env $* ; }
 
+g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
+

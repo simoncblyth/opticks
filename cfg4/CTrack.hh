@@ -18,6 +18,8 @@ class CFG4_API CTrack {
       static int ParentId(const G4Track* track);
       static int StepId(const G4Track* track);
       static int PrimaryPhotonID(const G4Track* track);
+      static float Wavelength(const G4Track* track);
+      static float Wavelength(double thePhotonMomentum);
    public:
       CTrack(const G4Track* track);
       const char* getTrackStatusString();

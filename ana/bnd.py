@@ -85,6 +85,23 @@ Material property min/max relative interpolation differences with 20nm domain st
 35                        RadRock       0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000        0.0000     0.0000  
 
 
+::
+
+    In [21]: dict(filter(lambda kv:kv[1]<299,zip(i1m.names,i1m.data[:,1,430-60,0])))
+    Out[21]: 
+    {'Acrylic': 192.77956,
+     'Bialkali': 205.61897,
+     'DeadWater': 217.83527,
+     'GdDopedLS': 194.5192,
+     'IwsWater': 217.83527,
+     'LiquidScintillator': 194.5192,
+     'MineralOil': 197.13411,
+     'OwsWater': 217.83527,
+     'Pyrex': 205.61897,
+     'Teflon': 192.77956,
+     'Water': 217.83527}
+
+
 """
 import os, logging, numpy as np
 from collections import OrderedDict as odict

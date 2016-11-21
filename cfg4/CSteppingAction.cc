@@ -135,6 +135,11 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
 { 
 }
 
+int CSteppingAction::getStepId()
+{
+    return m_step_id ; 
+}
+
 
 void CSteppingAction::postinitialize()
 {

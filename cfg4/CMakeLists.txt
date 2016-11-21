@@ -136,6 +136,7 @@ set(SOURCES
 
     OpNovicePhysicsListMessenger.cc
     OpNovicePhysicsList.cc
+    DebugG4Transportation.cc
 
     SteppingVerbose.cc
     ActionInitialization.cc
@@ -153,6 +154,7 @@ set(SOURCES
     CMath.cc
     CSolid.cc
     CMPT.cc
+    CVec.cc
     CMaterialTable.cc
     CMaterialBridge.cc
 
@@ -213,6 +215,7 @@ set(HEADERS
 
     OpNovicePhysicsListMessenger.hh
     OpNovicePhysicsList.hh
+    DebugG4Transportation.hh
 
     SteppingVerbose.hh
     ActionInitialization.hh
@@ -232,6 +235,7 @@ set(HEADERS
     CMath.hh
     CSolid.hh
     CMPT.hh
+    CVec.hh
     CMaterialTable.hh
     CMaterialBridge.hh
 

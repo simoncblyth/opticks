@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
@@ -16,6 +17,7 @@
 #include "GBndLib.hh"
 
 #include "CMPT.hh"
+#include "CVec.hh"
 #include "CMaterialLib.hh"
 
 #include "PLOG.hh"
@@ -28,9 +30,73 @@ CMaterialLib::CMaterialLib(OpticksHub* hub)
 {
 }
 
+void CMaterialLib::dumpGroupvelMaterial(const char* msg, float wavelength, float groupvel, int step_id)
+{
+    if(std::abs(wavelength - 430.f) < 0.01 )
+    {
+         std::string mat = firstMaterialWithGroupvelAt430nm( groupvel, 0.001f );
+         LOG(info) 
+                   << std::setw(3) << step_id
+                   << std::setw(20) << msg 
+                   << " wavelength " << std::setw(5) << wavelength 
+                   << " groupvel " << std::setw(10) << groupvel
+                   << " lookupMat " << mat
+                   ; 
+    }
+}
+
+void CMaterialLib::fillMaterialValueMap()
+{
+    const char* matnames = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
+
+   // Bialkali for debug injection black ops 
+    fillMaterialValueMap(m_groupvel_430nm, matnames, "GROUPVEL", 430.f );
+    dumpMaterialValueMap(matnames, m_groupvel_430nm);
+}
+
+/*
+
+See ana/bnd.py::
+
+    In [21]: dict(filter(lambda kv:kv[1]<299,zip(i1m.names,i1m.data[:,1,430-60,0])))
+        Out[21]: 
+        {'Acrylic': 192.77956,
+         'Bialkali': 205.61897,
+         'DeadWater': 217.83527,
+         'GdDopedLS': 194.5192,
+         'IwsWater': 217.83527,
+         'LiquidScintillator': 194.5192,
+         'MineralOil': 197.13411,
+         'OwsWater': 217.83527,
+         'Pyrex': 205.61897,
+         'Teflon': 192.77956,
+         'Water': 217.83527}
+*/
+
+
+std::string CMaterialLib::firstMaterialWithGroupvelAt430nm(float groupvel, float delta)
+{
+    return CMaterialLib::firstKeyForValue( groupvel , m_groupvel_430nm, delta); 
+}
+
+void CMaterialLib::postinitialize()
+{
+   // invoked from CGeometry::postinitialize
+    fillMaterialValueMap(); 
+}
+
+bool CMaterialLib::isConverted()
+{
+    return m_converted ; 
+}
+
 
 void CMaterialLib::convert()
 {
+   // assert(0) ; 
+   // huh this never getting called during standard running, 
+   // nope  materials are converted one-by-one from CTestDetector::makeDetector
+
     assert(m_converted == false);
     m_converted = true ; 
 
@@ -67,10 +133,15 @@ void CMaterialLib::saveGROUPVEL(const char* base)
 }
 
 
-const G4Material* CMaterialLib::makeMaterial(const char* matname)
+const G4Material* CMaterialLib::makeG4Material(const char* matname)
 {
      GMaterial* kmat = m_mlib->getMaterial(matname) ;
      const G4Material* material = convertMaterial(kmat);
+     LOG(info) << "CMaterialLib::makeMaterial" 
+               << " matname " << matname 
+               << " material " << material
+               ;
+       
      return material ; 
 }
 
@@ -134,7 +205,10 @@ const G4Material* CMaterialLib::convertMaterial(const GMaterial* kmat)
 
 
 
-
+bool CMaterialLib::hasG4Material(const char* shortname)
+{
+    return  m_g4mat.count(shortname) ; 
+}
 
 const G4Material* CMaterialLib::getG4Material(const char* shortname)
 {
@@ -142,7 +216,21 @@ const G4Material* CMaterialLib::getG4Material(const char* shortname)
     return mat ; 
 }
 
+const CMPT* CMaterialLib::getG4MPT(const char* shortname)
+{
+    const G4Material* mat = getG4Material(shortname);
+    if(mat == NULL)
+    {
+         LOG(warning) << "CMaterialLib::getG4MPT"
+                      << " no G4Material " << shortname
+                      ;
 
+    }
+
+
+    G4MaterialPropertiesTable* mpt = mat ? mat->GetMaterialPropertiesTable() : NULL ;
+    return mpt ? new CMPT(mpt) : NULL ;
+}
 
 
 
@@ -274,6 +362,65 @@ NPY<float>* CMaterialLib::makeArray(const char* name, const char* keys, bool rev
 }
 
 
+
+/*
+   names="GdDopedLS,Acrylic,LiquidScintillator,MineralOil"
+   keys="GROUPVEL"
+*/
+
+void CMaterialLib::fillMaterialValueMap(std::map<std::string,float>& vmp,  const char* _matnames, const char* key, float nm)
+{
+    std::vector<std::string> matnames ; 
+    boost::split(matnames, _matnames, boost::is_any_of(","));   
+
+    unsigned nmat = matnames.size();
+
+    for(unsigned i=0 ; i<nmat ; i++)
+    {
+         const char* name = matnames[i].c_str() ;
+
+         if(!hasG4Material(name))
+         {
+             makeG4Material(name);
+         }
+
+
+         const CMPT* cmpt = getG4MPT(name);
+         assert(cmpt);
+         CVec* vec = cmpt->getCVec(key); 
+         assert(vec);
+         vmp[name] = vec->getValue(nm);
+    }
+}
+
+
+void CMaterialLib::dumpMaterialValueMap(const char* msg, std::map<std::string,float>& vmp)
+{
+
+    LOG(info) << msg ;
+    typedef std::map<std::string, float> SF ; 
+    for(SF::iterator it=vmp.begin() ; it != vmp.end() ; it++)
+    {
+         std::cout
+              << std::setw(20) << it->first 
+              << std::setw(20) << it->second
+              << std::endl ; 
+    } 
+}
+
+
+std::string CMaterialLib::firstKeyForValue(float val, std::map<std::string,float>& vmp, float delta)
+{
+    std::string empty ; 
+    typedef std::map<std::string, float> SF ; 
+    for(SF::iterator it=vmp.begin() ; it != vmp.end() ; it++)
+    {
+        std::string key = it->first ; 
+        float kval = it->second ; 
+        if( std::abs(kval-val) < delta ) return key ;
+    }
+    return empty ;
+}
 
 
 

@@ -7,6 +7,7 @@
 #include "G4VUserPhysicsList.hh"
 
 class OpNovicePhysicsListMessenger;
+class CG4 ; 
 class Opticks ; 
 
 
@@ -24,7 +25,7 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
 {
   public:
 
-    OpNovicePhysicsList(Opticks* ok);
+    OpNovicePhysicsList(CG4* g4);
     virtual ~OpNovicePhysicsList();
   public:
     void Summary(const char* msg="OpNovicePhysicsList::Summary");
@@ -38,6 +39,7 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     void dumpRayleigh(const char* msg="OpNovicePhysicsList::dumpRayleigh");
     void dumpMaterials(const char* msg="OpNovicePhysicsList::dumpMaterials");
     void dumpProcesses(const char* msg="OpNovicePhysicsList::dumpProcesses");
+    void addTransportation();
   public:
 
     virtual void ConstructParticle();
@@ -57,6 +59,7 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     void SetNbOfPhotonsCerenkov(G4int);
  
   private:
+    CG4*               m_g4 ;  
     Opticks*           m_ok ;  
 
     std::set<G4VProcess*> m_procs ; 
@@ -94,6 +97,12 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     static G4ThreadLocal DsG4OpRayleigh* fRayleighScatteringProcess;
 #else
     static G4ThreadLocal OpRayleigh* fRayleighScatteringProcess;
+#endif
+
+#ifdef USE_DEBUG_TRANSPORTATION
+    static G4ThreadLocal DebugG4Transportation* fTransportationProcess;
+#else
+    static G4ThreadLocal G4Transportation* fTransportationProcess;
 #endif
 
 

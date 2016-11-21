@@ -3,6 +3,7 @@
 #define USE_CUSTOM_CERENKOV
 #define USE_CUSTOM_SCINTILLATION
 #define USE_CUSTOM_BOUNDARY
+#define USE_DEBUG_TRANSPORTATION
 
 //#define USE_POWER_THIRD_RAYLEIGH
 
@@ -34,6 +35,12 @@ class G4OpBoundaryProcess ;
 class DsG4OpRayleigh ; 
 #else
 class OpRayleigh ; 
+#endif
+
+#ifdef USE_DEBUG_TRANSPORTATION
+class DebugG4Transportation ; 
+#else
+class G4Transportation ; 
 #endif
 
 

@@ -30,6 +30,194 @@ See Also
 * ggeo/GProperty<T>::make_GROUPVEL
 
 
+GROUPVEL Injection at tail of PSDIP has no effect
+---------------------------------------------------
+
+Looks like PSDIP proposed velocities never make it into transport calc::
+
+    2016-11-21 18:34:23.260 INFO  [1509817] [CTrackingAction::setPhotonId@125] CTrackingAction::setPhotonId track_id 1 parent_id -1 primary_id -1 photon_id 1 reemtrack 0
+    2016-11-21 18:34:23.260 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]  -1     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.260 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]  -1    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   0     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   1     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [*DsG4OpBoundaryProcess::PostStepDoIt@738] inject Bialkali groupvel 205.619 at step_id 1
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.end wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   2     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   3     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   3    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   3    bndary.PSDIP.end wavelength   430 groupvel    197.134 lookupMat MineralOil
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   4     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   4    bndary.PSDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CTrackingAction::setPhotonId@123] .
+    2016-11-21 18:34:23.261 INFO  [1509817] [CTrackingAction::setPhotonId@124] .
+    2016-11-21 18:34:23.261 INFO  [1509817] [CTrackingAction::setPhotonId@125] CTrackingAction::setPhotonId track_id 0 parent_id -1 primary_id -2 photon_id 0 reemtrack 0
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   5     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   5    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   5    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   0     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.end wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   1     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.261 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.262 INFO  [1509817] [*DsG4OpBoundaryProcess::PostStepDoIt@738] inject Bialkali groupvel 205.619 at step_id 1
+    2016-11-21 18:34:23.262 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.end wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:34:23.262 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   2     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.262 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:34:23.262 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.end wavelength   430 groupvel    197.134 lookupMat MineralOil
+    2016-11-21 18:34:23.262 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   3     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.262 INFO  [1509817] [CMaterialLib::dumpGroupvelMaterial@38]   3    bndary.PSDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:34:23.262 INFO  [1509817] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+    2016-11-21 18:34:23.262 INFO  [1509817] [CG4::postpropagate@336] CG4::postpropagate(0)
+
+::
+
+    2016-11-21 18:42:01.307 INFO  [1512715] [CTrackingAction::setPhotonId@125] CTrackingAction::setPhotonId track_id 1 parent_id -1 primary_id -1 photon_id 1 reemtrack 0
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]  -1     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.307 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id -1
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]  -1    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   0     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.307 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 0
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   1     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.307 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 1
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.end wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   2     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.307 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 2
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   3     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.307 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 3
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   3    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   3    bndary.PSDIP.end wavelength   430 groupvel    197.134 lookupMat MineralOil
+    2016-11-21 18:42:01.307 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   4     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.308 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 4
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   4    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.308 INFO  [1512715] [CTrackingAction::setPhotonId@123] .
+    2016-11-21 18:42:01.308 INFO  [1512715] [CTrackingAction::setPhotonId@124] .
+    2016-11-21 18:42:01.308 INFO  [1512715] [CTrackingAction::setPhotonId@125] CTrackingAction::setPhotonId track_id 0 parent_id -1 primary_id -2 photon_id 0 reemtrack 0
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   5     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.308 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 5
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   5    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   5    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   0     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.308 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 0
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   0    bndary.PSDIP.end wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   1     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.308 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 1
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   1    bndary.PSDIP.end wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   2     trans.ASDIP.beg wavelength   430 groupvel    194.519 lookupMat GdDopedLS
+    2016-11-21 18:42:01.308 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 2
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   2    bndary.PSDIP.end wavelength   430 groupvel    197.134 lookupMat MineralOil
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   3     trans.ASDIP.beg wavelength   430 groupvel     192.78 lookupMat Acrylic
+    2016-11-21 18:42:01.308 INFO  [1512715] [*DsG4OpBoundaryProcess::PostStepDoIt@182] inject Bialkali groupvel startVelocity 205.619 at step_id 3
+    2016-11-21 18:42:01.308 INFO  [1512715] [CMaterialLib::dumpGroupvelMaterial@38]   3    bndary.PSDIP.beg wavelength   430 groupvel    205.619 lookupMat Bialkali
+    2016-11-21 18:42:01.308 INFO  [1512715] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+
+
+
+
+
+
+Can I replace G4Transportation with a debug version ?
+--------------------------------------------------------
+
+cfg4::
+
+    154 void OpNovicePhysicsList::ConstructProcess()
+    155 {
+    156   setupEmVerbosity(0);
+    157 
+    158   AddTransportation();
+    159   ConstructDecay();
+    160   ConstructEM();
+    161 
+    162   ConstructOpDYB();
+    163 
+    164   dump("OpNovicePhysicsList::ConstructProcess");
+    165 }
+
+
+AddTransportation
+~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:cfg4 blyth$ g4-cc AddTransportation
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4PhysicsListHelper.cc:void G4PhysicsListHelper::AddTransportation()
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4PhysicsListHelper.cc:    G4cout << "G4PhysicsListHelper::AddTransportation()  "<< G4endl;
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4PhysicsListHelper.cc:      G4cout << " G4PhysicsListHelper::AddTransportation()"
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4PhysicsListHelper.cc: G4cout << "G4PhysicsListHelper::AddTransportation  "
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4PhysicsListHelper.cc:      G4Exception("G4PhysicsListHelper::AddTransportation",
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4VModularPhysicsList.cc: AddTransportation();
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4VUserPhysicsList.cc:void G4VUserPhysicsList::AddTransportation()
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/run/src/G4VUserPhysicsList.cc:  G4MT_thePLHelper->AddTransportation();
+
+::
+
+     956 void G4VUserPhysicsList::AddTransportation()
+     957 {
+     958   G4MT_thePLHelper->AddTransportation();
+     959 }
+
+
+
+
+
+::
+
+    simon:cfg4 blyth$ g4-cc G4Transportation\(\)
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/error_propagation/src/G4ErrorPhysicsList.cc:  G4Transportation* theTransportationProcess= new G4Transportation();
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/transportation/src/G4Transportation.cc:G4Transportation::~G4Transportation()
+
+
+
+    111 void G4ErrorPhysicsList::ConstructProcess()
+    112 {
+    113   G4Transportation* theTransportationProcess= new G4Transportation();
+    114 
+    115 #ifdef G4VERBOSE
+    116     if (verboseLevel >= 4){
+    117       G4cout << "G4VUserPhysicsList::ConstructProcess()  "<< G4endl;
+    118     }
+    119 #endif
+    120 
+    121   // loop over all particles in G4ParticleTable
+    122   theParticleIterator->reset();
+    123   while( (*theParticleIterator)() ) {  // Loop checking, 06.08.2015, G.Cosmo
+    124     G4ParticleDefinition* particle = theParticleIterator->value();
+    125     G4ProcessManager* pmanager = particle->GetProcessManager();
+    126     if (!particle->IsShortLived()) {
+    127       G4cout << particle << "G4ErrorPhysicsList:: particle process manager " << particle->GetParticleName() << " = " << particle->GetProcessManager() << G4endl;
+    128       // Add transportation process for all particles other than  "shortlived"
+    129       if ( pmanager == 0) {
+    130         // Error !! no process manager
+    131         G4String particleName = particle->GetParticleName();
+    132         G4Exception("G4ErrorPhysicsList::ConstructProcess","No process manager",
+    133                     RunMustBeAborted, particleName );
+    134       } else {
+    135         // add transportation with ordering = ( -1, "first", "first" )
+    136         pmanager ->AddProcess(theTransportationProcess);
+    137         pmanager ->SetProcessOrderingToFirst(theTransportationProcess, idxAlongStep);
+    138         pmanager ->SetProcessOrderingToFirst(theTransportationProcess, idxPostStep);
+    139       }
+    140     } else {
+    141       // shortlived particle case
+    142     }
+    143   }
+
+
+
+
 
 
 DsG4OpBoundaryProcess dumping : looks like getting groupvel from Ac instead of LS and MO
@@ -399,90 +587,6 @@ After 1st try at applying GEANT4_BT_GROUPVEL_FIX minimal change, is there a mate
     A([ 194.5238,    189.5833,  192.9167,    189.5833,  192.7654,  -84.4902]))     B.gv mm/ns
 
     ## consistent issue, slow LS and MO groupvel in CFG4 (looking like Ac groupvel)
-
-
-
-
-
-Suspect seeing G4 bug that is fixed in lastest G4 with the below special case GROUPVEL access for
-
-
-
-/usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc::
-
-     165 G4VParticleChange*
-     166 G4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
-     167 {
-     ...
-     529 
-     530         aParticleChange.ProposeMomentumDirection(NewMomentum);
-     531         aParticleChange.ProposePolarization(NewPolarization);
-     532 
-     533         if ( theStatus == FresnelRefraction || theStatus == Transmission ) {
-     534            G4MaterialPropertyVector* groupvel =
-     535            Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
-     536            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
-     537            aParticleChange.ProposeVelocity(finalVelocity);
-     538         }
-     539 
-     540         if ( theStatus == Detection ) InvokeSD(pStep);
-     541 
-     542         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
-     543 }
-
-Looking for the bug that induced the above special case, yeilds zilch.
-
-* https://bugzilla-geant4.kek.jp/buglist.cgi?component=processes%2Foptical&product=Geant4
-
-Try looking at code history
-
-* http://www-geant4.kek.jp/lxr/source//processes/optical/src/G4OpBoundaryProcess.cc
-* http://www-geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc?v=8.0  Not there
-* http://www-geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc?v=9.5  Nope
-* http://www-geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc?v=9.6  First appearance, for only FresnelRefraction
-
-::
-
-    497         if ( theStatus == FresnelRefraction ) {
-    498            G4MaterialPropertyVector* groupvel =
-    499            Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
-    500            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
-    501            aParticleChange.ProposeVelocity(finalVelocity);
-    502         }
-
-* http://www-geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc?v=10.1 Adds in Transmission
-
-::
-
-    532         if ( theStatus == FresnelRefraction || theStatus == Transmission ) {
-    533            G4MaterialPropertyVector* groupvel =
-    534            Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
-    535            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
-    536            aParticleChange.ProposeVelocity(finalVelocity);
-    537         }
-    538 
-
-Look for commit history, Geant4 svn is hidden behind CERN login, try mirrors.
-
-The below have no history
-
-* https://gitlab.cern.ch/geant4/geant4/commits/master/source/processes/optical/src/G4OpBoundaryProcess.cc
-* https://github.com/alisw/geant4
-
-
-Add to cfg4/DsG4OpBoundaryProcess.cc::
-
-     600         
-     601 #ifdef GEANT4_BT_GROUPVEL_FIX
-     602     // from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
-     603        if ( theStatus == FresnelRefraction || theStatus == Transmission ) {
-     604            G4MaterialPropertyVector* groupvel =
-     605            Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
-     606            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
-     607            aParticleChange.ProposeVelocity(finalVelocity);
-     608         }
-     609 #endif  
-     610 
 
 
 
