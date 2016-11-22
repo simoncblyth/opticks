@@ -12,17 +12,13 @@ class G4Step ;
 class G4PrimaryVertex ; 
 #include "G4ThreeVector.hh"
 
-
 #include "CFG4_PUSH.hh"
-
 #include "CBoundaryProcess.hh"
 #include "CStage.hh"
-
 #include "CFG4_POP.hh"
 
 class Opticks ; // okc-
 class OpticksEvent ; 
-
 
 // cfg4-
 class CRec ; 
@@ -115,7 +111,8 @@ class CFG4_API CRecorder {
            ZERO_FLAG        = 0x1 << 13,
            DECREMENT_DENIED = 0x1 << 14,
            HARD_TRUNCATE    = 0x1 << 15,
-           TOPSLOT_REWRITE  = 0x1 << 16
+           TOPSLOT_REWRITE  = 0x1 << 16,
+           POST_SKIP        = 0x1 << 17
         };
 
         static const char* PRE_SAVE_ ; 
@@ -135,6 +132,7 @@ class CFG4_API CRecorder {
         static const char* ZERO_FLAG_ ; 
         static const char* DECREMENT_DENIED_ ; 
         static const char* TOPSLOT_REWRITE_ ; 
+        static const char* POST_SKIP_ ; 
 
         static std::string Action(int action);
    public:
@@ -151,10 +149,7 @@ class CFG4_API CRecorder {
    private:
         void setEvent(OpticksEvent* evt);
    public:
-        void posttrack(); 
-        // formerly called from CSteppingAction::UserSteppingActionOptical on getting a new photon step before overwriting prior photon values 
-        // now moved to CTrackingAction::PostUserTrackingAction
-        void lookback(); 
+        void posttrack(); // invoked from CTrackingAction::PostUserTrackingAction
    public:
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
@@ -177,7 +172,7 @@ class CFG4_API CRecorder {
                         unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         DsG4OpBoundaryProcessStatus getBoundaryStatus();
-        void dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
         bool Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
@@ -187,11 +182,12 @@ class CFG4_API CRecorder {
                         unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         G4OpBoundaryProcessStatus getBoundaryStatus();
-        void dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
+        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #endif
     private:
         void setStep(const G4Step* step, int step_id);
         bool LiveRecordStep();
+        void CannedRecordStep();
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
         void RecordQuadrant();
 
@@ -209,7 +205,7 @@ class CFG4_API CRecorder {
         void decrementSlot();
    public:
         // non-live running 
-        void writeStps();
+        void CannedWriteSteps();
    public:
         void setEventId(int event_id);
         void setPhotonId(int photon_id);
@@ -235,9 +231,13 @@ class CFG4_API CRecorder {
    public:
         // debugging/dumping 
         void Summary(const char* msg);
-        void report(const char* msg="CRecorder::report");
         void dump(const char* msg="CRecorder::dump");
-        void dump_full(const char* msg="CRecorder::dump_full");
+        void dump_brief(const char* msg="CRecorder::dump_brief");
+        void dump_sequence(const char* msg="CRecorder::dump_sequence");
+        void dump_points(const char* msg="CRecorder::dump_points");
+   public:
+        // reporting
+        void report(const char* msg="CRecorder::report");
         void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
         void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
         void addDebugPhoton(int photon_id);
@@ -280,8 +280,6 @@ class CFG4_API CRecorder {
         int m_record_id ; 
         int m_record_id_prior ; 
         int m_primary_id ; 
-
-
 
         uifchar4     m_c4 ; 
 
