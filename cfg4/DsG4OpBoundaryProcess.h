@@ -62,7 +62,7 @@
 
 // SCB
 #define GEANT4_BT_GROUPVEL_FIX 1
-#define SCB_DEBUG 1
+//#define SCB_BND_DEBUG 1
 
 
 /////////////
@@ -200,7 +200,7 @@ private:
     CMaterialLib* m_mlib ; 
     Opticks*      m_ok ; 
 
-#ifdef SCB_DEBUG
+#ifdef SCB_BND_DEBUG
     bool     m_dbg ; 
     bool     m_other ; 
     int      m_event_id ; 

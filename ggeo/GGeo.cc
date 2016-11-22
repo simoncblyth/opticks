@@ -657,7 +657,7 @@ void GGeo::createSurLib()
     }
 
     m_surlib = new GSurLib(this) ; 
-    m_surlib->dump("GGeo::createSurLib");
+    //m_surlib->dump("GGeo::createSurLib");
 }
 
 

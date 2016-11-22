@@ -32,8 +32,6 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 {
    friend class CTrackingAction ; 
 
-  static const unsigned long long SEQHIS_TO_SA ; 
-  static const unsigned long long SEQMAT_MO_PY_BK ; 
   public:
     CSteppingAction(CG4* g4, bool dynamic);
     void postinitialize();
@@ -54,6 +52,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     void setEvent(const G4Event* event, int event_id);
     void setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding );
     void setPhotonId(int photon_id, bool reemtrack);
+    void setRecordId(int photon_id, bool debug, bool other);
     bool setStep( const G4Step* step, int step_id);
     bool collectPhotonStep();
 
@@ -96,6 +95,11 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     bool                  m_reemtrack ; 
     unsigned int          m_rejoin_count ;
     unsigned int          m_primarystep_count ;
+    
+    // set by setRecordId
+    int                    m_record_id ;
+    bool                   m_debug ; 
+    bool                   m_other ; 
 
   
     // set by setStep 

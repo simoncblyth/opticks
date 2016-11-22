@@ -72,7 +72,7 @@
 #include "G4GeometryTolerance.hh"
 #include "G4Version.hh"
 
-#ifdef SCB_DEBUG
+#ifdef SCB_BND_DEBUG
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #endif
@@ -111,7 +111,7 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
              m_g4(g4),
              m_mlib(g4->getMaterialLib()),
              m_ok(g4->getOpticks()),
-#ifdef SCB_DEBUG
+#ifdef SCB_BND_DEBUG
              m_dbg(false),
              m_other(false),
              m_event_id(0),
@@ -174,34 +174,26 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
     aParticleChange.Initialize(aTrack);
     G4double startVelocity = aTrack.GetVelocity() ; 
-
-#ifdef SCB_DEBUG
-    {
-
-
-       //  int step_id = m_g4->getStepId();
-       //  startVelocity = 205.61897 ;
-       //  LOG(info) << "inject Bialkali groupvel startVelocity " << startVelocity << " at step_id " << step_id ; 
-    }
-#endif
-
-   // SCB add, matching geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
-  // but it think this is doing nothing 
-
     aParticleChange.ProposeVelocity(startVelocity);  
 
+    // SCB add above velocity proposal from geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
+    //     NB the proposal is trumped by G4Track::CalculateVelocity unless
+    //     G4Track::UseGivenVelocity is in force, that is done in CTrackingAction
 
-#ifdef SCB_DEBUG
+
+#ifdef SCB_BND_DEBUG
+
     {
-         // suspect wrong material groupvel bug
+         //  confirmed wrong material groupvel bug
         float wavelength = CTrack::Wavelength(&aTrack);
         m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, startVelocity,0.f, m_g4->getStepId(), "startVelocity" );
 
         G4double calcVelocity = aTrack.CalculateVelocityForOpticalPhoton();
         m_mlib->dumpGroupvelMaterial("bndary.PSDIP.beg", wavelength, calcVelocity,0.f, m_g4->getStepId(), "calcVelocity");
+    }
 
-
-
+    {
+        // TODO: move below stuff into CEventAction/CTrackAction and access via m_g4 like above
         const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
         m_event_id = event->GetEventID() ;
         m_photon_id = aTrack.GetTrackID() - 1 ;
@@ -225,16 +217,12 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         m_other = m_ok->isOtherPhoton(m_event_id, m_photon_id);
 
         if(m_dbg || m_other)
-        {
-          /*
             LOG(info) << "DsG4OpBoundaryProcess::PostStepDoIt" 
                       << " event_id " << std::setw(7) << m_event_id
                       << " photon_id " << std::setw(7) << m_photon_id
                       << " step_id " << std::setw(4) << m_step_id 
                       ;
-          */
  
-        }
     }
 #endif    
 
@@ -377,7 +365,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 	if (OpticalSurface) 
     {
-#ifdef SCB_DEBUG
+#ifdef SCB_BND_DEBUG
           if(m_dbg || m_other)
           LOG(info) << "found OpticalSurface " << OpticalSurface->GetName() ; 
 #endif
@@ -721,49 +709,17 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef GEANT4_BT_GROUPVEL_FIX
-    // from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
+       // from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
        //if ( theStatus == FresnelRefraction || theStatus == Transmission ) {
        if ( theStatus == FresnelRefraction ) 
        {
            G4MaterialPropertyVector* groupvel = Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
            G4double finalVelocity = groupvel->Value(thePhotonMomentum);
-
-#ifdef SCB_DEBUG
-         /*
-           G4double priorVelocity = aParticleChange.GetVelocity();  // seems to be only use of this method
-           G4MaterialPropertyVector* groupvel_m1 = Material1->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
-           G4double finalVelocity_m1 = groupvel_m1->Value(thePhotonMomentum);
-
-           std::cout 
-                      << "DsG4OpBoundaryProcess::PostStepDoIt" 
-                      //<< " event_id " << std::setw(7) << m_event_id
-                      //<< " photon_id " << std::setw(7) << m_photon_id
-                      << " step_id " << std::setw(4) << m_step_id 
-                     //<< " eV " << std::setw(10) << thePhotonMomentum/CLHEP::eV 
-                     << " nm " << std::setw(10) << CLHEP::h_Planck*CLHEP::c_light/thePhotonMomentum/CLHEP::nm 
-                     << " priorVelocity "    << std::setw(10) << priorVelocity
-                     << " groupvel_m1 " << std::setw(20) << Material1->GetName() << std::setw(10) << finalVelocity_m1
-                     << " groupvel_m2 " << std::setw(20) << Material2->GetName() << std::setw(10) << finalVelocity << " <-proposed "
-                     << std::endl;
-                     ;
-        */
-
-           int step_id = m_g4->getStepId();
-
-          
-          // if(step_id == 0)
-          // {
-          //      finalVelocity = 205.61897 ;
-          //      LOG(info) << "inject Bialkali groupvel " << finalVelocity << " at step_id " << step_id ; 
-          // }
-
-           // suspect wrong material groupvel bug
-           float wavelength = CTrack::Wavelength(thePhotonMomentum);
-           m_mlib->dumpGroupvelMaterial("bndary.PSDIP.end", wavelength, finalVelocity, 0.f, step_id);
-
-#endif
            aParticleChange.ProposeVelocity(finalVelocity);
 
+#ifdef SCB_BND_DEBUG
+           m_mlib->dumpGroupvelMaterial("bndary.PSDIP.end", CTrack::Wavelength(thePhotonMomentum), finalVelocity, 0.f, m_g4->getStepId());
+#endif
         }    
 #endif
         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
@@ -936,7 +892,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 	      Through = false;
 	      theGlobalNormal = -theGlobalNormal;
 
-#ifdef SCB_DEBUG
+#ifdef SCB_BND_DEBUG
           if(m_dbg)
           {
                LOG(info) << "DsG4OpBoundaryProcess::DielectricDielectric (before swap)"
@@ -946,7 +902,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
          }
 #endif
 	      G4SwapPtr(Material1,Material2);
-#ifdef SCB_DEBUG
+#ifdef SCB_BND_DEBUG
           if(m_dbg)
           {
                LOG(info) << "DsG4OpBoundaryProcess::DielectricDielectric (after swap)"

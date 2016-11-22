@@ -9,11 +9,12 @@ class G4VisManager ;
 class G4UImanager ; 
 class G4UIExecutive ; 
 class G4VUserDetectorConstruction ;
-class G4VUserPrimaryGeneratorAction ;
-class G4UserSteppingAction ;
-class G4UserTrackingAction ;
-class G4UserRunAction ;
-class G4UserEventAction ;
+
+//class G4VUserPrimaryGeneratorAction ;
+//class G4UserSteppingAction ;
+//class G4UserTrackingAction ;
+//class G4UserRunAction ;
+//class G4UserEventAction ;
 
 // npy-
 template <typename T> class NPY ; 
@@ -26,13 +27,17 @@ class CDetector ;
 class CMaterialBridge ; 
 class CSurfaceBridge ; 
 class CGenerator ; 
-class ActionInitialization ;
 
 class CCollector ; 
 class CRecorder ; 
 class CStepRec ; 
-class CSteppingAction ; 
+
+//class ActionInitialization ;
+class CRunAction ; 
+class CEventAction ; 
+class CPrimaryGeneratorAction ;
 class CTrackingAction ; 
+class CSteppingAction ; 
 
 class OpticksHub ; 
 class OpticksRun ; 
@@ -58,6 +63,7 @@ class CFG4_API CG4
         void postinitialize();
         void postpropagate();
    public:
+        CEventAction*    getEventAction();
         CSteppingAction* getSteppingAction();
         CTrackingAction* getTrackingAction();
         int getStepId();
@@ -102,12 +108,19 @@ class CFG4_API CG4
         G4UImanager*          m_uiManager ; 
         G4UIExecutive*        m_ui ; 
    private:
-        G4VUserPrimaryGeneratorAction* m_pga ; 
-        G4UserSteppingAction*          m_sa ; 
-        G4UserTrackingAction*          m_ta ; 
-        G4UserRunAction*               m_ra ; 
-        G4UserEventAction*             m_ea ; 
-        ActionInitialization*          m_ai ; 
+        //G4VUserPrimaryGeneratorAction* m_pga ; 
+        //G4UserSteppingAction*          m_sa ; 
+        //G4UserTrackingAction*          m_ta ; 
+        //G4UserRunAction*               m_ra ; 
+        //G4UserEventAction*             m_ea ;
+        // ActionInitialization*          m_ai ;  // TODO: eliminate
+ 
+        CPrimaryGeneratorAction*       m_pga ;  // TODO: rename this 
+        CSteppingAction*               m_sa ;
+        CTrackingAction*               m_ta ;
+        CRunAction*                    m_ra ;
+        CEventAction*                  m_ea ;
+
         bool                           m_initialized ; 
         
 };

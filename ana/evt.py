@@ -153,6 +153,13 @@ class Evt(object):
         self._psel = None
         self._labels = []
 
+
+        self.tag = tag
+        self.src = src
+        self.det = det
+        self.dbg = dbg
+
+
         self.valid = True   ## load failures signalled by setting False
         self.maxrec = maxrec
         self.seqs = seqs
@@ -185,7 +192,7 @@ class Evt(object):
 
         self.init_types()
         self.init_gensteps(tag, src, det, dbg)
-        self.init_photons(tag, src, det, dbg)
+        self.init_photons()
         self.init_hits(tag, src, det, dbg)
 
         if rec:
@@ -211,6 +218,32 @@ class Evt(object):
         self.histype = HisType()
         self.mattype = MatType()
         log.debug("init_types DONE")
+
+    def _get_flvtype(self):
+        flv = self.flv
+        if flv == "seqhis":
+            _flvtype = self.histype
+        elif flv == "seqmat":
+            _flvtype = self.mattype
+        elif flv == "pflags":
+            _flvtype = self.hismask
+        else:
+            assert 0, flv
+        return _flvtype
+    flvtype = property(_get_flvtype)
+
+    def _get_flvana(self):
+        flv = self.flv
+        if flv == "seqhis":
+            _flvana = self.all_seqhis_ana
+        elif flv == "seqmat":
+            _flvana = self.all_seqmat_ana
+        elif flv == "pflags":
+            _flvana = self.all_pflags_ana
+        else:
+            assert 0, flv
+        return _flvana
+    flvana = property(_get_flvana)
 
 
     def init_metadata(self, tag, src, det, dbg):
@@ -272,12 +305,18 @@ class Evt(object):
         self.desc['gs'] = "(gensteps)"
 
 
-    def init_photons(self, tag, src, det, dbg):
+
+    def make_pflags_ana(self, pflags):
+        cn = "%s:%s" % (str(self.tag), self.det)
+        return SeqAna( pflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx )
+
+
+    def init_photons(self):
         """
         #. c4 uses shape changing dtype splitting the 32 bits into 4*8 bits  
         """
         log.debug("init_photons")
-        ox = A.load_("ox",src,tag,det, optional=True ) 
+        ox = A.load_("ox",self.src,self.tag, self.det, optional=True ) 
         self.ox = ox
         self.desc['ox'] = "(photons) final photon step"
 
@@ -297,8 +336,10 @@ class Evt(object):
         self.pflags = ox.view(np.uint32)[:,3,3]
         self.c4 = c4
 
-        cn = "%s:%s" % (str(tag), det)
-        self.pflags_ana = SeqAna( self.pflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx )
+        all_pflags_ana = self.make_pflags_ana( self.pflags )
+
+        self.all_pflags_ana = all_pflags_ana
+        self.pflags_ana = all_pflags_ana
 
         self.desc['wl'] = "(photons) wavelength"
         self.desc['post'] = "(photons) final photon step: position, time"
@@ -424,11 +465,12 @@ class Evt(object):
         self.pflags2 = seq2msk(seqhis) 
 
         self.msk_mismatch = self.pflags != self.pflags2
+        self.num_msk_mismatch = np.count_nonzero(self.msk_mismatch)
 
-        if np.all( self.msk_mismatch == False  ):
+        if self.num_msk_mismatch == 0:
             log.debug("pflags2(=seq2msk(seqhis)) and pflags  match")
         else:
-            log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH (msk_mismatch)")
+            log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH    num_msk_mismatch: %d " % self.num_msk_mismatch )
         pass
 
         self.seqmat = seqmat
@@ -456,8 +498,11 @@ class Evt(object):
 
     his = property(lambda self:self.seqhis_ana.table)
     mat = property(lambda self:self.seqmat_ana.table)
+    flg = property(lambda self:self.pflags_ana.table)
+
     ahis = property(lambda self:self.all_seqhis_ana.table)
     amat = property(lambda self:self.all_seqmat_ana.table)
+    aflg = property(lambda self:self.all_pflags_ana.table)
 
     def make_labels(self, sel):
         """
@@ -489,20 +534,27 @@ class Evt(object):
                 assert 0, flv
             pass
         elif type(sel) is list:
-            if self.flv == "seqhis":
-                labels = map( lambda _:self.histype.label(_), sel)
-            elif self.flv == "seqmat":
-                labels = map( lambda _:self.mattype.label(_), sel)
-            else:
-                assert 0, flv
+
+            #if self.flv == "seqhis":
+            #    labels = map( lambda _:self.histype.label(_), sel)
+            #elif self.flv == "seqmat":
+            #    labels = map( lambda _:self.mattype.label(_), sel)
+            #else:
+            #    assert 0, flv
+
+            labels = map(lambda _:self.flvtype.label(_), sel )
+
         elif type(sel) is str or type(sel) is int or type(sel) is np.uint64:
-            if self.flv == "seqhis":
-                labels = [self.histype.label(sel)]
-            elif self.flv == "seqmat":
-                labels = [self.mattype.label(sel)]
-            else:
-                assert 0, flv
-            pass
+            #if self.flv == "seqhis":
+            #    labels = [self.histype.label(sel)]
+            #elif self.flv == "seqmat":
+            #    labels = [self.mattype.label(sel)]
+            #else:
+            #    assert 0, self.flv
+            #pass
+
+            labels = [self.flvtype.label(sel)]
+
         else:
             log.fatal("unhandled selection type %s %s " % (sel, type(sel)))
             assert 0
@@ -511,19 +563,13 @@ class Evt(object):
         return labels
  
     def make_psel_startswith(self, lab):
-        if self.flv == "seqhis":
-            psel = self.all_seqhis_ana.seq_startswith(lab)
-        elif self.flv == "seqmat":
-            psel = self.all_seqmat_ana.seq_startswith(lab)
-        pass
+        flvana = self.flvana 
+        psel = flvana.seq_startswith(lab)
         return psel
 
     def make_psel_or(self, labs):
-        if self.flv == "seqhis":
-            psel = self.all_seqhis_ana.seq_or(labs)
-        elif self.flv == "seqmat":
-            psel = self.all_seqmat_ana.seq_or(labs)
-        pass
+        flvana = self.flvana 
+        psel = flvana.seq_or(labs)
         return psel
 
     def make_selection_(self, labels):
@@ -665,6 +711,7 @@ class Evt(object):
                 self.rx = self.rx_
                 self.seqhis_ana = SeqAna(self.seqhis, self.histype)   
                 self.seqmat_ana = SeqAna(self.seqmat, self.mattype)   
+                self.pflags_ana = self.make_pflags_ana( self.pflags ) 
                 self.nsel = len(self.ox_)
             else:
                 log.warning("_init_selection with psel None : no prior selection, ignoring ")
@@ -689,6 +736,7 @@ class Evt(object):
 
         self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
         self.seqmat_ana = SeqAna(self.seqmat[psel], self.mattype)   # sequence history with selection applied
+        self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
 
 
     def _get_reclab(self):
@@ -742,10 +790,15 @@ class Evt(object):
 
         if not sel is None and sel.find("[") > -1:
             ctx = Ctx.reclab2ctx_(sel)
-            log.debug("_set_set with reclab converted arg %s into ctx %r " % (sel, ctx)) 
+            log.debug("_set_sel with reclab converted arg %s into ctx %r " % (sel, ctx)) 
             sel = ctx["seq0"]
             irec = ctx["irec"]
             self.irec = irec   
+        pass
+
+        if not sel is None and sel.find("|") > -1:
+             log.warning("_set_sel arg %s causes flv switch to pflags " % sel)
+             self.flv = "pflags"
         pass
 
         self._sel = sel
@@ -1510,16 +1563,17 @@ def deviation_plt(evt):
 if __name__ == '__main__':
     ok = opticks_main()
 
-    seq = "TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA"
-    #seq = "PFLAGS_DEBUG"
 
-    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
-    print a.seqhis_ana.table[0:20]
+    #a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
+    #print a.seqhis_ana.table[0:20]
 
-    #b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok, seqs=[seq])
-    #b.history_table(slice(0,20))
+    b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
 
+    print b.his[:20]
 
+    b.sel = "TO|BT|DR|SC|RE"
+
+    print b.his
 
 
 

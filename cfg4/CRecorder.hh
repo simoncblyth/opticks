@@ -170,7 +170,7 @@ class CFG4_API CRecorder {
 
 #ifdef USE_CUSTOM_BOUNDARY
     public:
-        bool Record(const G4Step* step, int step_id, int record_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, 
@@ -180,7 +180,7 @@ class CFG4_API CRecorder {
         void dump(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
-        bool Record(const G4Step* step, int step_id, int record_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, 
@@ -214,7 +214,7 @@ class CFG4_API CRecorder {
         void setEventId(int event_id);
         void setPhotonId(int photon_id);
         void setParentId(int parent_id);
-        void setRecordId(int record_id);
+        void setRecordId(int record_id, bool dbg, bool other);
         void setPrimaryId(int primary_id);
         void setStage(CStage::CStage_t stage);
    public:
@@ -223,7 +223,6 @@ class CFG4_API CRecorder {
         int getPhotonIdPrior();
         int getParentId();
         int getStepId();
-        int defineRecordId();
         int getRecordId();
 
         unsigned getRecordMax();
@@ -238,6 +237,7 @@ class CFG4_API CRecorder {
         void Summary(const char* msg);
         void report(const char* msg="CRecorder::report");
         void dump(const char* msg="CRecorder::dump");
+        void dump_full(const char* msg="CRecorder::dump_full");
         void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
         void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
         void addDebugPhoton(int photon_id);
@@ -265,7 +265,6 @@ class CFG4_API CRecorder {
         unsigned m_bounce_max ; 
         unsigned m_steps_per_photon ; 
 
-        unsigned m_photons_per_g4event ; 
         unsigned m_verbosity ; 
         bool     m_debug ; 
         bool     m_other ; 

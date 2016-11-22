@@ -103,7 +103,7 @@ private:
 
 public:
 
-       void check(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh);
+       void dump(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh);
        void check_GetMeanFreePath(const G4Material* material);
 
 

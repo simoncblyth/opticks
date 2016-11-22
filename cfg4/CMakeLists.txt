@@ -183,6 +183,7 @@ set(SOURCES
     CGunSource.cc
     CTorchSource.cc
 
+    CEventAction.cc
     CSteppingAction.cc
     CTrackingAction.cc
     CStage.cc
@@ -264,6 +265,7 @@ set(HEADERS
     CGunSource.hh
     CTorchSource.hh
 
+    CEventAction.hh
     CSteppingAction.hh
     CTrackingAction.hh
     CStage.hh

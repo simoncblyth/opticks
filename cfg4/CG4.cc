@@ -35,7 +35,6 @@
 
 
 //cg4-
-#include "ActionInitialization.hh"
 
 #include "CPhysics.hh"
 #include "CGeometry.hh"
@@ -137,9 +136,7 @@ CG4::CG4(OpticksHub* hub)
      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
      m_ta(new CTrackingAction(this)),
      m_ra(new CRunAction(m_hub)),
-     m_ea(new CEventAction(m_hub)),
-     //m_ai(new ActionInitialization(m_pga, m_sa, m_ta, m_ra, m_ea)),
-     m_ai(NULL),
+     m_ea(new CEventAction(this)),
      m_initialized(false)
 {
      OK_PROFILE("CG4::CG4");
@@ -167,35 +164,41 @@ void CG4::initialize()
     m_initialized = true ; 
     LOG(info) << "CG4::initialize" ;
 
-    //m_runManager->SetUserInitialization(m_ai) ;
 
-    m_runManager->SetUserAction(m_pga);
-    m_runManager->SetUserAction(m_sa);
-    m_runManager->SetUserAction(m_ta);
     m_runManager->SetUserAction(m_ra);
     m_runManager->SetUserAction(m_ea);
+    m_runManager->SetUserAction(m_pga);
+    m_runManager->SetUserAction(m_ta);
+    m_runManager->SetUserAction(m_sa);
 
 
     m_runManager->Initialize();
     postinitialize();
 }
 
+
+
+CEventAction* CG4::getEventAction()
+{
+    //CEventAction* ea = dynamic_cast<CEventAction*>(m_ea);
+    return m_ea ;    
+}
 CTrackingAction* CG4::getTrackingAction()
 {
-    CTrackingAction* ta = dynamic_cast<CTrackingAction*>(m_ta);
-    return ta ;    
+    //CTrackingAction* ta = dynamic_cast<CTrackingAction*>(m_ta);
+    return m_ta ;    
 }
-
 CSteppingAction* CG4::getSteppingAction()
 {
-    CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
-    return sa ;    
+    //CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
+    return m_sa ;    
 }
 
 int CG4::getStepId()
 {
-    CSteppingAction* sa = getSteppingAction();
-    return sa->getStepId();
+    //CSteppingAction* sa = getSteppingAction();
+    //return sa->getStepId();
+    return m_sa->getStepId();
 }
 
 
@@ -219,11 +222,15 @@ void CG4::postinitialize()
     m_recorder->postinitialize();  
     //m_rec->postinitialize();
 
-    CSteppingAction* sa = getSteppingAction();
-    sa->postinitialize();
 
-    CTrackingAction* ta = getTrackingAction();
-    ta->postinitialize();
+    //CEventAction* ea = getEventAction();
+    m_ea->postinitialize();
+
+    //CTrackingAction* ta = getTrackingAction();
+    m_ta->postinitialize();
+
+    //CSteppingAction* sa = getSteppingAction();
+    m_sa->postinitialize();
 
 
 
@@ -272,9 +279,17 @@ void CG4::interactive()
 }
 
 
+
+
+
+
+
+
 void CG4::initEvent(OpticksEvent* evt)
 {
     m_generator->configureEvent(evt);
+
+    m_ta->initEvent(evt);
 
     m_recorder->initEvent(evt);
     //m_rec->initEvent(evt);
@@ -289,6 +304,10 @@ void CG4::initEvent(OpticksEvent* evt)
     assert(nopstep); 
     m_steprec->initEvent(nopstep);
 }
+
+
+
+
 
 
 NPY<float>* CG4::propagate()

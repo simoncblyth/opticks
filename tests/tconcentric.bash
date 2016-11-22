@@ -28,13 +28,13 @@ tconcentric-src(){ echo torch ; }
 
 
 tconcentric-photons(){
-   #local photons=1000000
+    local photons=1000000
    #local photons=100000
    #local photons=10000
    #local photons=100
    #local photons=30
    #local photons=10
-   local photons=2
+   #local photons=2
    echo $photons
 }
 tconcentric-oindex(){
@@ -185,6 +185,7 @@ tconcentric-py(){    tconcentric.py  $(tconcentric-args) $* ; }
 tconcentric-i(){     ipython --profile=g4opticks -i $(which tconcentric.py) --  $(tconcentric-args) $* ; } 
 tconcentric-d(){     ipython --profile=g4opticks -i $(which tconcentric_distrib.py) --  $(tconcentric-args) $* ; } 
 
+tconcentric-rehist(){ tconcentric-d --noplot --rehist --sel 0:100  ; }
 
 
 

@@ -138,7 +138,6 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_bounce_max(0),
    m_steps_per_photon(0), 
 
-   m_photons_per_g4event(0),
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
    m_debug(m_verbosity > 0),
@@ -294,21 +293,12 @@ void CRecorder::setPhotonId(int photon_id)
 }
 
 
-
-int CRecorder::defineRecordId()   
-{
-   return m_photons_per_g4event*m_event_id + m_photon_id ; 
-}
-
-void CRecorder::setRecordId(int record_id)
+void CRecorder::setRecordId(int record_id, bool dbg, bool other)
 {
     m_record_id_prior = m_record_id ; 
     m_record_id = record_id ; 
 
-    bool dbg = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
     setDebug(dbg);
-
-    bool other = m_ok->isOtherPhoton(record_id) ; // from option: --oindex=1,100,1000,10000 
     setOther(other);
 }
 
@@ -365,10 +355,9 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
     m_c4.u = 0u ; 
 
-    m_photons_per_g4event = m_evt->getNumPhotonsPerG4Event() ; 
     m_record_max = m_evt->getNumPhotons();   // from the genstep summation
-
     m_bounce_max = m_evt->getBounceMax();
+
     m_steps_per_photon = m_evt->getMaxRec() ;    
 
     LOG(info) << "CRecorder::initEvent"
@@ -376,7 +365,6 @@ void CRecorder::initEvent(OpticksEvent* evt)
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
-              << " photons_per_g4event " << m_photons_per_g4event
               << " num_g4event " << m_evt->getNumG4Event() 
               << " isStep " << m_step  
               ;
@@ -507,13 +495,13 @@ void CRecorder::decrementSlot()
 }
 
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::Record(const G4Step* step, int step_id, int record_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #else
-bool CRecorder::Record(const G4Step* step, int step_id, int record_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #endif
 {
     setStep(step, step_id);
-    setRecordId(record_id);
+    setRecordId(record_id, dbg, other );
     setStage(stage);
 
     LOG(trace) << "CRecorder::Record"
@@ -791,17 +779,6 @@ void CRecorder::writeStps()
          RE BT
 
     Hmm when rejoining need to write the pre
-
-    In canned mode            
-       
-         
-  
-       
-
-
-
-
-
 **/
 
 
@@ -858,7 +835,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     if(m_record_truncate && prior_his != 0 && prior_mat != 0 )  // try to overwrite top slot 
     {
         m_topslot_rewrite += 1 ; 
-        LOG(info)
+        LOG(debug)
                   << ( m_topslot_rewrite > 1 ? HARD_TRUNCATE_ : TOPSLOT_REWRITE_ )
                   << " topslot_rewrite " << m_topslot_rewrite
                   << " prior_flag -> flag " 
@@ -1324,8 +1301,15 @@ void CRecorder::dump(const G4ThreeVector& origin, unsigned index, const G4StepPo
 void CRecorder::dump(const char* msg)
 {
     LOG(info) << msg ; 
+
+   // dump_full("CRecorder::dump_full");
+   //  m_crec->dump("CRec::dump");
+}
+
+void CRecorder::dump_full(const char* msg)
+{
     std::cout
-              << "----CRecorder::dump----" 
+              << msg
               << " m_record_id " << std::setw(8) << m_record_id 
               << " m_badflag " << std::setw(5) << m_badflag 
               << (m_debug ? " --dindex " : "" )
@@ -1384,7 +1368,6 @@ void CRecorder::dump(const char* msg)
                       << std::endl 
                       ;
     }
-    m_crec->dump("CRec::dump");
 }
 
 

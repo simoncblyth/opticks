@@ -285,13 +285,12 @@ void CPropLib::addProperties(G4MaterialPropertiesTable* mpt, GPropertyMap<float>
     boost::split(keys, _keys, boost::is_any_of(","));   
 
 
-     
-
     bool all = keys.size() == 1 && keys[0].compare("ALL") == 0 ;
 
     const char* matname = pmap->getShortName();
     unsigned int nprop = pmap->getNumProperties();
 
+    if(m_verbosity > 1)
     LOG(info) << "CPropLib::addProperties"
               << " keys " << _keys
               << " matname " << matname 

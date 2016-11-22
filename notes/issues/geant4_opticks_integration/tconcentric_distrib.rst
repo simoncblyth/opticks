@@ -102,10 +102,41 @@ After move to c2shape comparisons : listing seq points with sum of distrib chi2 
 * TODO: add W wavelength to qwns, replacing the derivative and duplicitous R (which is only useful for specific geometry origins anyhow) 
 
 
+
+
+After the GROUPVEL material fix::
+
+    In [4]: st[st.st.distc2 > 2]
+    Out[4]: 
+    ABStat 19 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,R,seqc2,distc2 
+    === == === === ================================================= ===== ===== ===== ===== ===== ===== ===== ===== ===== ====== 
+    iv  is na  nb  reclab                                            X     Y     Z     T     A     B     C     R     seqc2 distc2 
+    === == === === ================================================= ===== ===== ===== ===== ===== ===== ===== ===== ===== ====== 
+    360 47 414 451 TO RE [BT] BT RE BT BT SA                          0.32  0.00  0.00  3.62  0.00  0.00  0.00  2.75  1.58  2.19  
+    361 47 414 451 TO RE BT [BT] RE BT BT SA                          0.40  0.00  0.00  3.81  0.00  0.00  0.00  2.02  1.58  2.12  
+    441 55 339 320 TO BT BT SC BT BT [SC] BT BT BT BT SA              0.00  0.00  0.00  2.41  0.00  0.00  0.00  0.00  0.55  2.11  
+    506 63 277 302 TO SC SC [AB]                                      0.00  0.00  0.00  7.18  0.00  0.00  0.00  0.00  1.08  3.59  
+    570 69 255 243 TO SC BT BT SC BT BT BT BT [BT] BT SA              0.00  0.00  0.00  4.18  0.00  0.00  0.00  0.59  0.29  2.39  
+    572 69 255 243 TO SC BT BT SC BT BT BT BT BT BT [SA]              0.00  0.00  0.00  6.09  0.00  0.00  0.00  0.00  0.29  3.04  
+    592 71 212 239 TO BT BT BT BT DR BT BT RE BT BT [SA]              0.00  0.00  0.00  0.00  0.00  0.00  0.00  3.36  1.62  3.36  
+    624 74 164 202 TO BT BT SC BT BT BT [BT] BT BT AB                 0.00  0.00  0.00  0.00  0.00  0.00  0.00  4.43  3.95  4.43  
+    635 75 166 181 TO BT BT RE BT BT RE [BT] BT BT BT SA              1.08  0.00  0.00  0.00  0.00  0.00  0.00  4.13  0.65  2.33  
+    638 75 166 181 TO BT BT RE BT BT RE BT BT BT [BT] SA              0.00  0.00  0.00  0.00  0.00  0.00  0.00  4.85  0.65  4.85  
+    653 77 179 180 TO BT BT BT BT SC BT BT SC [BT] BT SA              0.23  0.00  0.00  0.00  0.00  0.00  0.00  4.19  0.00  2.15  
+    660 78 171 154 TO RE RE RE [RE] AB                                0.00  4.45  6.69  0.00  0.00  0.00  0.00  0.00  0.89  2.79  
+    699 82 162 158 TO SC BT BT [BT] BT DR AB                          0.00  0.00  0.00  4.64  0.00  0.00  0.00  0.00  0.05  2.32  
+    701 82 162 158 TO SC BT BT BT BT [DR] AB                          0.00  0.00  0.00  5.72  0.00  0.00  0.00  0.00  0.05  2.86  
+    732 85 132 150 TO RE BT BT BT BT DR BT BT [BT] BT BT BT BT BT SA  0.00  0.00  0.00  0.00  0.00  0.00  0.00  2.92  1.15  2.92  
+    734 85 132 150 TO RE BT BT BT BT DR BT BT BT BT [BT] BT BT BT SA  0.00  0.00  0.00  0.00  0.00  0.00  0.00  3.89  1.15  3.89  
+    735 85 132 150 TO RE BT BT BT BT DR BT BT BT BT BT [BT] BT BT SA  0.00  0.00  0.00  0.00  0.00  0.00  0.00  2.64  1.15  2.64  
+    744 86 135 145 TO RE RE BT BT [RE] BT BT SA                       0.00  0.00  0.00  9.35  0.00  0.00  0.00  0.00  0.36  4.67  
+    745 86 135 145 TO RE RE BT BT RE [BT] BT SA                       0.00  0.00  0.00  0.00  0.00  0.00  0.00  4.68  0.36  4.68  
+    === == === === ================================================= ===== ===== ===== ===== ===== ===== ===== ===== ===== ======  
+
+
 ::
 
     tconcentric-;tconcentric-d --noplot --rehist --sel 0:100    # recreate histograms for first 100 seq lines 
-
 
 
 

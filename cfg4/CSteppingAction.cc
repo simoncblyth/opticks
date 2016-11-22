@@ -152,9 +152,6 @@ CSteppingAction::~CSteppingAction()
 { 
 }
 
-const unsigned long long CSteppingAction::SEQHIS_TO_SA = 0x8dull ;     // Torch,SurfaceAbsorb
-const unsigned long long CSteppingAction::SEQMAT_MO_PY_BK = 0x5e4ull ; // MineralOil,Pyrex,Bakelite?
-
 
 void CSteppingAction::setEvent(const G4Event* event, int event_id)
 {
@@ -198,6 +195,16 @@ void CSteppingAction::setPhotonId(int photon_id, bool reemtrack)
               << " reemtrack " << reemtrack
               ; 
 }
+
+
+void CSteppingAction::setRecordId(int record_id, bool dbg, bool other)
+{
+    m_record_id = record_id ; 
+    m_debug = dbg  ; 
+    m_other = other  ; 
+}
+
+
 
 /// above methods are invoked from on high by CTrackingAction prior to getting any steps
 
@@ -294,12 +301,12 @@ bool CSteppingAction::collectPhotonStep()
     }
 
 
+    // TODO: avoid need for these
     m_recorder->setPhotonId(m_photon_id);   
     m_recorder->setEventId(m_event_id);
-    unsigned int record_id = m_recorder->defineRecordId();   //  m_photons_per_g4event*m_event_id + m_photon_id 
-    unsigned int record_max = m_recorder->getRecordMax() ;
 
-    bool recording = record_id < record_max ||  m_dynamic ; 
+    int record_max = m_recorder->getRecordMax() ;
+    bool recording = m_record_id < record_max ||  m_dynamic ; 
 
     if(recording)
     {
@@ -308,7 +315,7 @@ bool CSteppingAction::collectPhotonStep()
 #else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
-        done = m_recorder->Record(m_step, m_step_id, record_id, boundary_status, stage);
+        done = m_recorder->Record(m_step, m_step_id, m_record_id, m_debug, m_other, boundary_status, stage);
 
     }
     return done ; 

@@ -1,7 +1,7 @@
 // g4-
 
 #include "CFG4_PUSH.hh"
-#include "G4RunManager.hh"
+//#include "G4RunManager.hh"
 #include "G4Track.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4Event.hh"
@@ -10,6 +10,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 
 // cg4-
 #include "CG4.hh"
@@ -25,7 +26,7 @@
 CTrackingAction
 =================
 
-Canonical instance (m_sa) is ctor resident of CG4 
+Canonical instance (m_ta) is ctor resident of CG4 
 
 **/
 
@@ -37,6 +38,9 @@ CTrackingAction::CTrackingAction(CG4* g4)
    m_recorder(g4->getRecorder()),
    m_sa(g4->getSteppingAction()),
 
+   m_event(NULL),
+   m_event_id(-1),
+
    m_track(NULL),
    m_track_id(-1),
    m_parent_id(-1),
@@ -45,8 +49,15 @@ CTrackingAction::CTrackingAction(CG4* g4)
    m_pdg_encoding(0),
    m_optical(false),
    m_reemtrack(false),
+   m_dump(false),
    m_primary_id(-1),
-   m_photon_id(-1)
+   m_photon_id(-1),
+
+   m_photons_per_g4event(0),
+
+   m_record_id(-1),
+   m_debug(false),
+   m_other(false)
 { 
 }
 
@@ -55,10 +66,21 @@ CTrackingAction::~CTrackingAction()
 { 
 }
 
-void CTrackingAction::setEvent(const G4Event* event)
+void CTrackingAction::initEvent(OpticksEvent* evt)
+{
+   // invoked from CG4::initEvent
+    m_photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
+
+    LOG(info) << "CTrackingAction::initEvent"
+              << " photons_per_g4event " << m_photons_per_g4event
+              ;
+}
+
+
+void CTrackingAction::setEvent(const G4Event* event, int event_id )
 {
     m_event = event ; 
-    m_event_id = event->GetEventID() ;
+    m_event_id = event_id ;
 
     m_sa->setEvent(m_event, m_event_id );
 }
@@ -68,7 +90,6 @@ void CTrackingAction::setTrack(const G4Track* track)
     m_track = track ; 
     m_track_id = CTrack::Id(track) ;
     m_parent_id = CTrack::ParentId(track) ;
-
 
 
     if(m_parent_id != -1 && m_parent_id >= m_track_id) 
@@ -93,8 +114,10 @@ void CTrackingAction::setTrack(const G4Track* track)
 
     if(m_optical)
     { 
-         LOG(warning) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
+         LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
          const_cast<G4Track*>(m_track)->UseGivenVelocity(true);
+         // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
+         //    are trumpled by G4Track::CalculateVelocity 
 
          int photon_id = -1 ; 
          int primary_id = CTrack::PrimaryPhotonID(m_track) ;    // layed down in trackinfo by custom Scintillation process
@@ -122,22 +145,56 @@ void CTrackingAction::setTrack(const G4Track* track)
 
 void CTrackingAction::setPhotonId(int photon_id, bool reemtrack)
 {
-    m_photon_id = photon_id ; 
+    m_photon_id = photon_id ;    // NB photon_id continues reemission photons
     m_reemtrack = reemtrack ; 
 
-    LOG(info) << "." ;
-    LOG(info) << "." ;
-    LOG(info) << "CTrackingAction::setPhotonId"
-              << " track_id " << m_track_id
-              << " parent_id " << m_parent_id
-              << " primary_id " << m_primary_id
-              << " photon_id " << m_photon_id
-              << " reemtrack " << m_reemtrack
-              ;
-
     m_sa->setPhotonId(m_photon_id, m_reemtrack);
+
+    int record_id = m_photons_per_g4event*m_event_id + m_photon_id ; 
+    setRecordId(record_id);
+
+    if(m_dump) dump("CTrackingAction::setPhotonId");
 }
 
+void CTrackingAction::setRecordId(int record_id )
+{
+    m_record_id = record_id ; 
+
+    bool _debug = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
+    setDebug(_debug);
+
+    bool other = m_ok->isOtherPhoton(record_id) ; // from option: --oindex=1,100,1000,10000 
+    setOther(other);
+
+    m_dump = m_debug || m_other ; 
+
+    m_sa->setRecordId(record_id, _debug, other);
+}
+
+void CTrackingAction::setDebug(bool _debug)
+{
+    m_debug = _debug ; 
+}
+void CTrackingAction::setOther(bool other)
+{
+    m_other = other ; 
+}
+
+void CTrackingAction::dump(const char* msg )
+{
+    LOG(info) << "." ;
+    LOG(info) << msg  
+              << ( m_debug ? " --dindex " : "" )
+              << ( m_other ? " --oindex " : "" )
+              << " record_id " << m_record_id
+              << " event_id " << m_event_id
+              << " track_id " << m_track_id
+              << " photon_id " << m_photon_id
+              << " parent_id " << m_parent_id
+              << " primary_id " << m_primary_id
+              << " reemtrack " << m_reemtrack
+              ;
+}
 
 
 
@@ -167,10 +224,9 @@ std::string CTrackingAction::brief()
 
 void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 {
-
-    const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
-
-    setEvent(event);
+   // TODO: move to CEventAction
+   // const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent() ;
+   // setEvent(event);
 
     setTrack(track);
 
@@ -194,6 +250,5 @@ void CTrackingAction::PostUserTrackingAction(const G4Track* track)
         m_recorder->posttrack();
     } 
 }
-
 
 

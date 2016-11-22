@@ -125,7 +125,7 @@ void NLookup::close(const char* msg)
 
     crossReference();
 
-    dump(msg);
+    //dump(msg);
 }
 
 void NLookup::crossReference()

@@ -86,21 +86,8 @@
 #include "PLOG.hh"
 
 
-/////////////////////////
-// Class Implementation
-/////////////////////////
+//#define SCB_SC_DEBUG 1
 
-        //////////////
-        // Operators
-        //////////////
-
-// OpRayleigh::operator=(const OpRayleigh &right)
-// {
-// }
-
-        /////////////////
-        // Constructors
-        /////////////////
 
 OpRayleigh::OpRayleigh(const G4String& processName, G4ProcessType type)
            : G4VDiscreteProcess(processName, type)
@@ -114,13 +101,6 @@ OpRayleigh::OpRayleigh(const G4String& processName, G4ProcessType type)
         }
 }
 
-// OpRayleigh::OpRayleigh(const OpRayleigh &right)
-// {
-// }
-
-        ////////////////
-        // Destructors
-        ////////////////
 
 OpRayleigh::~OpRayleigh()
 {
@@ -130,13 +110,7 @@ OpRayleigh::~OpRayleigh()
         }
 }
 
-        ////////////
-        // Methods
-        ////////////
 
-// PostStepDoIt
-// -------------
-//
 G4VParticleChange*
 OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 {
@@ -261,7 +235,9 @@ void OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
          rayleigh = materialProperties->GetProperty( "RAYLEIGH" );
 
 
-         check(material, rayleigh);
+#ifdef SCB_SC_DEBUG
+         dump(material, rayleigh);
+#endif
 
          if ( rayleigh == NULL ) rayleigh = 
                                    CalculateRayleighMeanFreePaths( material );
@@ -269,14 +245,17 @@ void OpRayleigh::BuildPhysicsTable(const G4ParticleDefinition&)
       thePhysicsTable->insertAt( iMaterial, rayleigh );
   }
 
+
+#ifdef SCB_SC_DEBUG
   LOG(info) << "OpRayleigh::BuildPhysicsTable" ;
+#endif
 }
 
 
 
-void OpRayleigh::check(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh)
+void OpRayleigh::dump(G4Material* material, G4PhysicsOrderedFreeVector* rayleigh)
 {
-     LOG(info) << "OpRayleigh::check"
+     LOG(info) << "OpRayleigh::dump"
                << " mat " << std::setw(35) << material->GetName()
                << " fdom(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMinLowEdgeEnergy()
                << " fval(Min) " << std::setw(15) << std::fixed << std::setprecision(3) << rayleigh->GetMinValue()
@@ -305,7 +284,7 @@ G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
   G4double rsLength = DBL_MAX;
   if( rayleigh != NULL ) rsLength = rayleigh->Value( photonMomentum );
 
-/*
+#ifdef SCB_SC_DEBUG
   { 
         G4double wavelength = h_Planck*c_light/photonMomentum ; 
         LOG(info) 
@@ -315,7 +294,7 @@ G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
                   << " rsLength (mm) " << std::setw(10) << std::fixed << std::setprecision(3) << rsLength/mm
                   ;
   } 
-*/
+#endif
 
   return rsLength;
 }

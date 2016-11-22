@@ -109,11 +109,27 @@ class MaskType(BaseType):
         return c 
 
 
-    def label(self, i):
+    def label(self, arg):
         """
         :param i: integer bitmask
         :return: abbreviation mask string 
         """
+
+        if type(arg) is int:
+            i = arg
+        elif type(arg) is np.uint64:
+            i = arg
+        elif type(arg) is str:
+            if self.hexstr.match(arg):
+                i = int(arg, 16)
+            else:
+                return arg
+            pass
+        else:
+            log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))        
+            assert 0
+        pass
+
         log.debug(" i : %s %s " % (repr(i), type(i)))
         codes = filter(lambda c:int(i) & c, self.flags.codes)
         codes = sorted(codes,reverse=True)

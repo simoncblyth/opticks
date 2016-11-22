@@ -141,7 +141,7 @@ const G4Material* CMaterialLib::makeG4Material(const char* matname)
      const G4Material* material = convertMaterial(kmat);
      LOG(info) << "CMaterialLib::makeMaterial" 
                << " matname " << matname 
-               << " material " << material
+               << " material " << (void*)material
                ;
        
      return material ; 
