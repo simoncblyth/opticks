@@ -28,8 +28,10 @@ class CFG4_API CRec
 
 
 #ifdef USE_CUSTOM_BOUNDARY
+        bool add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage );
         void add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action);
 #else
+        bool add(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage );
         void add(const G4Step* step, int step_id,  G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action);
 #endif
     private:

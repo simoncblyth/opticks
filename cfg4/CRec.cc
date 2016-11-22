@@ -42,6 +42,21 @@ void CRec::clearStp()
 
 
 
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+bool CRec::add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status,  CStage::CStage_t stage )
+#else
+bool CRec::add(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status,  CStage::CStage_t stage )
+#endif
+{
+    m_stp.push_back(new CStp(step, step_id, boundary_status, stage));
+    return false ; 
+}
+
+
+
+
 #ifdef USE_CUSTOM_BOUNDARY
 void CRec::add(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag,  CStage::CStage_t stage, int action)
 #else

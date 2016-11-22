@@ -279,11 +279,13 @@ class AB(object):
 
     def _get_sel(self):
         return self._sel
-    def _set_sel(self, sel):
+    def _set_sel(self, sel, nom="sel"):
         """
         NB slice selection at AB level must be
         converted into seq string selection at evt level
         as the labels can diverge, expecially out in the tail
+
+        slice selection forces into seqhis selection
         """
         log.debug("AB._set_sel %s " % repr(sel))
 
@@ -293,13 +295,41 @@ class AB(object):
             assert len(seqs) == 1, seqs
             log.debug("AB._set_set convert slice selection %r into common label seq selection  %s " % (sel, seqs[0]))
             sel = seqs[0]
+            self.flv = "seqhis"
         pass
 
-        self.a.sel = sel
-        self.b.sel = sel
+        if nom == "sel":
+            self.a.sel = sel
+            self.b.sel = sel
+        elif nom == "selhis":
+            self.a.selhis = sel
+            self.b.selhis = sel
+        elif nom == "selmat":
+            self.a.selmat = sel
+            self.b.selmat = sel
+        elif nom == "selflg":
+            self.a.selflg = sel
+            self.b.selflg = sel
+        else:
+            assert 0, nom 
+        pass
+
         self._sel = sel 
         self.dirty = True  
+
     sel = property(_get_sel, _set_sel)
+    
+    def _set_selmat(self, sel):
+        self._set_sel( sel, nom="selmat")
+    def _set_selhis(self, sel):
+        self._set_sel( sel, nom="selhis")
+    def _set_selflg(self, sel):
+        self._set_sel( sel, nom="selflg")
+
+    selmat = property(_get_sel, _set_selmat)
+    selhis = property(_get_sel, _set_selhis)
+    selflg = property(_get_sel, _set_selflg)
+
 
     def _set_flv(self, flv):
         self.a.flv = flv

@@ -57,7 +57,7 @@ template <typename T> class NPY ;
 //  It is also used for CRecorder::RecordPrimaryVertex.
 //  from CGunSource and CTorchSource.
 //
-//  *RecordStep* is called for all G4Step
+//  *LiveRecordStep* is called for all G4Step
 //  each of which is comprised of *pre* and *post* G4StepPoint, 
 //  as a result the same G4StepPoint are "seen" twice, 
 //  thus *RecordStep* only records the 1st of the pair 
@@ -191,7 +191,7 @@ class CFG4_API CRecorder {
 #endif
     private:
         void setStep(const G4Step* step, int step_id);
-        bool RecordStep();
+        bool LiveRecordStep();
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
         void RecordQuadrant();
 

@@ -547,14 +547,25 @@ bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg,
 
     setBoundaryStatus( boundary_status, preMaterial, postMaterial);
 
-    bool done = RecordStep();
+    bool done = false ; 
+
+    if( m_live )
+    {
+         done = LiveRecordStep();
+    }
+    else
+    {
+         done = m_crec->add(m_step, m_step_id, m_boundary_status, m_stage );
+    }
 
     return done ; 
 }
 
 
-bool CRecorder::RecordStep()
+bool CRecorder::LiveRecordStep()
 {
+    assert(m_live);
+
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
@@ -587,8 +598,6 @@ bool CRecorder::RecordStep()
                   << std::endl 
                   ;
     } 
-
-
 
     // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
@@ -630,29 +639,24 @@ bool CRecorder::RecordStep()
     if(matSwap)       m_step_action |= MAT_SWAP ; 
 
 
-    if(m_live)
+    if(!preSkip)
     {
-        if(!preSkip)
-        {
-            m_step_action |= PRE_SAVE ; 
-            done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
-            if(done) m_step_action |= PRE_DONE ; 
-        }
-
-        if(lastPost && !done )
-        {
-            m_step_action |= POST_SAVE ; 
-            done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
-            if(done) m_step_action |= POST_DONE ; 
-        }
-
-        if(done) 
-        {
-            RecordPhoton(post);  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
-        }
+        m_step_action |= PRE_SAVE ; 
+        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
+        if(done) m_step_action |= PRE_DONE ; 
     }
 
-    // hmm in non-live running not clear how to deal with the done ??
+    if(lastPost && !done )
+    {
+        m_step_action |= POST_SAVE ; 
+        done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
+        if(done) m_step_action |= POST_DONE ; 
+    }
+
+    if(done) 
+    {
+        RecordPhoton(post);  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
+    }
 
     m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_stage, m_step_action );
 
@@ -662,9 +666,11 @@ bool CRecorder::RecordStep()
 void CRecorder::writeStps()
 {
 #ifdef USE_CUSTOM_BOUNDARY
-    DsG4OpBoundaryProcessStatus boundary_status, prior_boundary_status ;
+    DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
+    DsG4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
 #else
-    G4OpBoundaryProcessStatus boundary_status, prior_boundary_status ;
+    G4OpBoundaryProcessStatus boundary_status = Undefined ;
+    G4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
 #endif
     CStp* stp ;
     CStage::CStage_t stage ; 

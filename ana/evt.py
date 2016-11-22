@@ -424,6 +424,16 @@ class Evt(object):
        
         log.debug("rx shape %s " % str(rx.shape))
 
+
+    def make_seqhis_ana(self, seqhis):
+        cn = "%s:%s" % (str(self.tag), self.det)
+        return SeqAna( seqhis, self.histype, cnames=[cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx )
+
+    def make_seqmat_ana(self, seqmat):
+        cn = "%s:%s" % (str(self.tag), self.det)
+        return SeqAna( seqmat, self.mattype, cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx )
+
+
     def init_sequence(self, tag, src, det, dbg):
         """
         Sequence values seqhis and seqmat for each photon::
@@ -458,8 +468,8 @@ class Evt(object):
 
         cn = "%s:%s" % (str(tag), det)
         # full history without selection
-        all_seqhis_ana = SeqAna(seqhis, self.histype , cnames=[cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx)  
-        all_seqmat_ana = SeqAna(seqmat, self.mattype , cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx)  
+        all_seqhis_ana = self.make_seqhis_ana(seqhis)
+        all_seqmat_ana = self.make_seqmat_ana(seqmat)
 
         self.seqhis = seqhis
         self.pflags2 = seq2msk(seqhis) 
@@ -534,27 +544,9 @@ class Evt(object):
                 assert 0, flv
             pass
         elif type(sel) is list:
-
-            #if self.flv == "seqhis":
-            #    labels = map( lambda _:self.histype.label(_), sel)
-            #elif self.flv == "seqmat":
-            #    labels = map( lambda _:self.mattype.label(_), sel)
-            #else:
-            #    assert 0, flv
-
             labels = map(lambda _:self.flvtype.label(_), sel )
-
         elif type(sel) is str or type(sel) is int or type(sel) is np.uint64:
-            #if self.flv == "seqhis":
-            #    labels = [self.histype.label(sel)]
-            #elif self.flv == "seqmat":
-            #    labels = [self.mattype.label(sel)]
-            #else:
-            #    assert 0, self.flv
-            #pass
-
-            labels = [self.flvtype.label(sel)]
-
+           labels = [self.flvtype.label(sel)]
         else:
             log.fatal("unhandled selection type %s %s " % (sel, type(sel)))
             assert 0
@@ -709,8 +701,8 @@ class Evt(object):
                 self.c4 = self.c4_
                 self.wl = self.wl_
                 self.rx = self.rx_
-                self.seqhis_ana = SeqAna(self.seqhis, self.histype)   
-                self.seqmat_ana = SeqAna(self.seqmat, self.mattype)   
+                self.seqhis_ana = self.make_seqhis_ana( self.seqhis )   
+                self.seqmat_ana = self.make_seqmat_ana( self.seqmat )   
                 self.pflags_ana = self.make_pflags_ana( self.pflags ) 
                 self.nsel = len(self.ox_)
             else:
@@ -734,8 +726,8 @@ class Evt(object):
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]
 
-        self.seqhis_ana = SeqAna(self.seqhis[psel], self.histype)   # sequence history with selection applied
-        self.seqmat_ana = SeqAna(self.seqmat[psel], self.mattype)   # sequence history with selection applied
+        self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
+        self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
         self.pflags_ana = self.make_pflags_ana( self.pflags[psel] )
 
 
@@ -780,33 +772,67 @@ class Evt(object):
     def _set_psel(self, psel):
         self._init_selection(psel)
     psel = property(_get_psel, _set_psel)
- 
+
+    def _parse_sel(self, arg):
+        """
+        Note that use of square backet record selection will
+        cause a jump to seqhis flv selections
+        """
+        sel = arg 
+        if arg.find("[") > -1:
+            ctx = Ctx.reclab2ctx_(arg)
+            log.debug("_parse_sel with reclab converted arg %s into ctx %r " % (arg, ctx)) 
+            sel = ctx["seq0"]
+            irec = ctx["irec"]
+            self.flv = "seqhis"
+            self.irec = irec   
+        pass
+
+        #if arg.find("|") > -1:
+        #    log.warning("_parse_sel arg %s causes flv switch to pflags " % arg)
+        #    self.flv = "pflags"
+        #    sel = arg
+        pass
+        return sel
 
     # *sel* provides high level selection control using slices, labels, hexint etc
     def _get_sel(self):
         return self._sel
-    def _set_sel(self, sel):
-        log.debug("Evt._set_sel %s " % repr(sel))
+    def _set_sel(self, arg):
+        log.debug("Evt._set_sel %s " % repr(arg))
 
-        if not sel is None and sel.find("[") > -1:
-            ctx = Ctx.reclab2ctx_(sel)
-            log.debug("_set_sel with reclab converted arg %s into ctx %r " % (sel, ctx)) 
-            sel = ctx["seq0"]
-            irec = ctx["irec"]
-            self.irec = irec   
+        if arg is None:
+            sel = None
+        else:
+            sel = self._parse_sel(arg)
         pass
-
-        if not sel is None and sel.find("|") > -1:
-             log.warning("_set_sel arg %s causes flv switch to pflags " % sel)
-             self.flv = "pflags"
-        pass
-
         self._sel = sel
 
         psel = self.make_selection(sel, False)
         self._init_selection(psel)
     sel = property(_get_sel, _set_sel)
-      
+     
+
+
+    ## avoid complexities of auto detection, by providing explicit selection interface props
+    def _set_selmat(self, arg):
+        self.flv = "seqmat"
+        self.sel = arg 
+    selmat = property(_get_sel, _set_selmat)
+
+    def _set_selhis(self, arg):
+        self.flv = "seqhis"
+        self.sel = arg 
+    selhis = property(_get_sel, _set_selhis)
+
+    def _set_selflg(self, arg):
+        self.flv = "pflags"
+        self.sel = arg 
+    selflg = property(_get_sel, _set_selflg)
+
+
+
+ 
  
     def psel_dindex_(self, limit=None, reverse=False):
         """

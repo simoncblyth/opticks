@@ -14,8 +14,10 @@ class CFG4_API CStp
 {
    public:
 #ifdef USE_CUSTOM_BOUNDARY
+       CStp(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
        CStp(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin);
 #else
+       CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
        CStp(const G4Step* step, int step_id,   G4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, CStage::CStage_t stage, int action, const G4ThreeVector& origin); 
 #endif
         std::string description();
