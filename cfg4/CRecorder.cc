@@ -674,7 +674,7 @@ void CRecorder::CannedWriteSteps()
     const G4Material *preMaterial, *postMaterial ;
     unsigned premat, postmat ; 
     unsigned preFlag, postFlag ; 
-    bool     done ;  
+    bool     done = false  ;  
 
     assert(!m_live) ;
     unsigned num = m_crec->getNumStps(); 
@@ -780,11 +780,17 @@ void CRecorder::CannedWriteSteps()
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_step_action );
 
-        if(done) break ; 
-    }
+        bool hard_truncate = (m_step_action & HARD_TRUNCATE) != 0 ; 
 
-    RecordPhoton(post);
+        if(done && !hard_truncate)
+        {
+            RecordPhoton(post);
+        }
+
+        if(done) break ; 
+    }   // stp loop
 }
+
 
 /**
    Consider 
@@ -833,7 +839,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
 #endif
 {
-    // see notes/issues/geant4_opticks_integration/pflags_mismatch.rst
+    // see notes/issues/geant4_opticks_integration/tconcentric_pflags_mismatch_from_truncation_handling.rst
     //
     // NB this is used by both the live and non-live "canned" modes of recording 
     //
@@ -1126,6 +1132,7 @@ void CRecorder::RecordPhoton(const G4StepPoint* point)
     // for reemission have to rely on downstream overwrites
     // via rerunning with a target_record_id to scrub old values
 
+    if(m_debug || m_other) dump_brief("CRecorder::RecordPhoton");
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -1230,6 +1237,8 @@ void CRecorder::addDebugPhoton(int record_id)
 void CRecorder::dump(const char* msg)
 {
     LOG(info) << msg ; 
+
+/*
     dump_brief("CRecorder::dump_brief");
     if(m_debug || m_other ) 
     {
@@ -1237,6 +1246,7 @@ void CRecorder::dump(const char* msg)
         dump_points("CRecorder::dump_points");
     }
     m_crec->dump("CRec::dump");
+*/
 }
 
 void CRecorder::dump_brief(const char* msg)
@@ -1248,6 +1258,7 @@ void CRecorder::dump_brief(const char* msg)
               << (m_other ? " --oindex " : "" )
               << (m_dbgseqhis == m_seqhis ? " --dbgseqhis " : "" )
               << (m_dbgseqmat == m_seqmat ? " --dbgseqmat " : "" )
+              << getStepActionString()
               ;
     LOG(info) 
               << " seqhis " << std::setw(16) << std::hex << m_seqhis << std::dec 

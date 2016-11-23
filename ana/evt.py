@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 
 import os, logging, stat, datetime
 import numpy as np
@@ -1597,9 +1597,12 @@ if __name__ == '__main__':
 
     print b.his[:20]
 
-    b.selflg = "TO|BT|DR|SC|RE"
+    #b.selflg = "TO|BT|DR|SC|RE"
 
-    print b.his
+    b.sel = "PFLAGS_DEBUG"  
+
+    print b.his, b.mat, b.flg, b.psel_dindex()
+
 
 
 

@@ -27,13 +27,228 @@ So need to know the "done" status before, not after in canned running.
      832 #endif
         
 
-
-
 Issue
 -------
 
 pflags obtained from seqhis and direct pflags obtained from photon buffer 
 are mismatched for 2 out of 1M photons : probably a truncation difference
+
+
+FIXED BY ENFORCING HARD_TRUNCATE IN CANNED RUNNING
+--------------------------------------------------------
+
+::
+
+    +        bool hard_truncate = (m_step_action & HARD_TRUNCATE) != 0 ; 
+    +
+    +        if(done && !hard_truncate)
+    +        {
+    +            RecordPhoton(post);
+    +        }
+    +
+
+
+
+
+Internal CFG4 Opticks event inconsistency
+---------------------------------------------
+
+This is an internal inconsistency within the CFG4 opticks event buffers.
+
+Sequence buffer /tmp/blyth/opticks/evt/concentric/torch/-1/ph.npy
+contains the seqhis and seqmat 64bit uints, with the point by point flags.
+      
+Photon buffer /tmp/blyth/opticks/evt/concentric/torch/-1/ox.npy
+contains uncompressed final photon parametrs including the pflags mask.
+
+The pflags can be derived from the seqhis, this check is done on evt loading.
+
+
+
+ana/evt.py::
+
+     314     def init_photons(self):
+     319         ox = A.load_("ox",self.src,self.tag, self.det, optional=True )
+     320         self.ox = ox
+     321         self.desc['ox'] = "(photons) final photon step"
+     325         self.check_ox_fdom()
+     ...
+     327         wl = ox[:,2,W]
+     328         c4 = ox[:,3,2].copy().view(dtype=[('x',np.uint8),('y',np.uint8),('z',np.uint8),('w',np.uint8)]).view(np.recarray)
+     ...
+     332         self.wl = wl
+     333         self.post = ox[:,0]
+     334         self.dirw = ox[:,1]
+     335         self.polw = ox[:,2]
+     336         self.pflags = ox.view(np.uint32)[:,3,3]
+     ...
+     437     def init_sequence(self, tag, src, det, dbg):
+     438         """
+     439         Sequence values seqhis and seqmat for each photon::
+     440 
+     441             In [8]: a.ph.shape
+     442             Out[8]: (100, 1, 2)
+     443 
+     444             In [9]: np.set_printoptions(formatter={'int':hex})
+     445 
+     446             In [10]: a.ph
+     447             Out[10]: 
+     448             A(torch,1,laser)-
+     449             A([[[0x8ccccdL, 0x343231L]],
+     450                [[0x8ccccdL, 0x343231L]],
+     451                [[0x8cccc6dL, 0x3432311L]],
+     452                [[0x8ccccdL, 0x343231L]],
+     453                [[0x8ccccdL, 0x343231L]],
+     454                [[0xbcbccccc6dL, 0x3333342311L]],
+     455 
+     456         """
+     ...  
+     459         ph = A.load_("ph",src,tag,det,dbg, optional=True)
+     460         self.ph = ph
+     461         self.desc['ph'] = "(records) photon history flag/material sequence"
+     ...
+     466         seqhis = ph[:,0,0]
+     467         seqmat = ph[:,0,1]
+     ...
+     474         self.seqhis = seqhis
+     475         self.pflags2 = seq2msk(seqhis)
+     476 
+     477         self.msk_mismatch = self.pflags != self.pflags2
+     478         self.num_msk_mismatch = np.count_nonzero(self.msk_mismatch)
+     479 
+     480         if self.num_msk_mismatch == 0:
+     481             log.debug("pflags2(=seq2msk(seqhis)) and pflags  match")
+     482         else:
+     483             log.info("pflags2(=seq2msk(seqhis)) and pflags  MISMATCH    num_msk_mismatch: %d " % self.num_msk_mismatch )
+     484         pass
+
+
+CRecorder::RecordPhoton
+--------------------------
+
+Writes both m_mskhis into photon buffer and m_seqhis m_seqmat into sequence/history buffer.
+Rerunning will overwrite prior m_record_id writes with current values of m_mskhis,m_seqhis,m_seqmat.
+
+::
+
+    1123 void CRecorder::RecordPhoton(const G4StepPoint* point)
+    1124 {
+    1125     // gets called at last step (eg absorption) or when truncated
+    1126     // for reemission have to rely on downstream overwrites
+    1127     // via rerunning with a target_record_id to scrub old values
+    ....
+    ....
+    1139     NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons ;
+    1140     unsigned int target_record_id = m_dynamic ? 0 : m_record_id ;
+    1141 
+    1142 
+    1143     target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
+    1144     target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
+    1145     target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
+    1146 
+    1147     target->setUInt(target_record_id, 3, 0, 0, m_slot );
+    1148     target->setUInt(target_record_id, 3, 0, 1, 0u );
+    1149     target->setUInt(target_record_id, 3, 0, 2, m_c4.u );
+    1150     target->setUInt(target_record_id, 3, 0, 3, m_mskhis );
+    ....
+    ....
+    1169     NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ;
+    1170 
+    1171     unsigned long long* history = h_target->getValues() + 2*target_record_id ;
+    1172     *(history+0) = m_seqhis ;
+    1173     *(history+1) = m_seqmat ;
+    1174 
+    1175     if(m_dynamic)
+    1176     {
+    1177         m_history->add(m_dynamic_history);
+    1178     }
+    1179 }
+
+
+Where these are invoked:: 
+
+     564 bool CRecorder::LiveRecordStep()
+     ...
+     637     if(done)
+     638     {
+     639         RecordPhoton(post);  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
+     640     }
+     641 
+     642     m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_stage, m_step_action );
+     643 
+     644     return done ;
+     645 }
+
+Low verbosity dump::
+
+    2016-11-23 15:54:11.943 INFO  [1819418] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+    2016-11-23 15:54:27.694 INFO  [1819418] [CTrackingAction::dump@185] .
+    2016-11-23 15:54:27.694 INFO  [1819418] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 603 photon_id 603 parent_id -1 primary_id -2 reemtrack 0
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1252] CRecorder::RecordPhoton m_record_id   430603 m_badflag     0 --dindex POST_SAVE POST_DONE RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1261]  seqhis c9cccccccc6ccccd    TO BT BT BT BT SC BT BT BT BT BT BT BT BT DR BT 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1266]  mskhis             1920    SC|DR|BT|TO
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1271]  seqmat 3443231323443231    Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump@1237] CRecorder::posttrack
+    2016-11-23 15:54:27.694 INFO  [1819418] [CTrackingAction::dump@185] .
+    2016-11-23 15:54:27.694 INFO  [1819418] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 10893 photon_id 603 parent_id 603 primary_id -2 reemtrack 1
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::RecordStepPoint@879] TOPSLOT_REWRITE topslot_rewrite 1 prior_flag -> flag BT -> RE prior_mat -> mat Ac -> Gd
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1252] CRecorder::RecordPhoton m_record_id   430603 m_badflag     0 --dindex PRE_SAVE PRE_DONE LAST_POST STEP_REJOIN RECORD_TRUNCATE HARD_TRUNCATE 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1261]  seqhis c9cccccccc6ccccd    TO BT BT BT BT SC BT BT BT BT BT BT BT BT DR BT 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1266]  mskhis             1920    SC|DR|BT|TO
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1271]  seqmat 3443231323443231    Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump@1237] CRecorder::posttrack
+    2016-11-23 15:54:27.694 INFO  [1819418] [CTrackingAction::dump@185] .
+    2016-11-23 15:54:27.694 INFO  [1819418] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 10894 photon_id 603 parent_id 10893 primary_id 603 reemtrack 1
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::RecordStepPoint@879] HARD_TRUNCATE topslot_rewrite 2 prior_flag -> flag BT -> AB prior_mat -> mat Ac -> Gd
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1252] CRecorder::RecordPhoton m_record_id   430603 m_badflag     0 --dindex PRE_SAVE POST_SAVE POST_DONE LAST_POST STEP_REJOIN RECORD_TRUNCATE HARD_TRUNCATE 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1261]  seqhis c5cccccccc6ccccd    TO BT BT BT BT SC BT BT BT BT BT BT BT BT RE BT 
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1266]  mskhis             1930    RE|SC|DR|BT|TO
+    2016-11-23 15:54:27.694 INFO  [1819418] [CRecorder::dump_brief@1271]  seqmat 3143231323443231    Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO Gd Ac 
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::dump@1237] CRecorder::posttrack
+    2016-11-23 15:54:27.695 INFO  [1819418] [CTrackingAction::dump@185] .
+    2016-11-23 15:54:27.695 INFO  [1819418] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 10895 photon_id 603 parent_id 10894 primary_id 603 reemtrack 1
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::RecordStepPoint@879] HARD_TRUNCATE topslot_rewrite 3 prior_flag -> flag BT -> BT prior_mat -> mat Ac -> Ac
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::dump_brief@1252] CRecorder::RecordPhoton m_record_id   430603 m_badflag     0 --dindex PRE_SAVE POST_SAVE POST_DONE STEP_REJOIN RECORD_TRUNCATE HARD_TRUNCATE 
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::dump_brief@1261]  seqhis c5cccccccc6ccccd    TO BT BT BT BT SC BT BT BT BT BT BT BT BT RE BT 
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::dump_brief@1266]  mskhis             1930    RE|SC|DR|BT|TO
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::dump_brief@1271]  seqmat 3143231323443231    Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO Gd Ac 
+    2016-11-23 15:54:27.695 INFO  [1819418] [CRecorder::dump@1237] CRecorder::posttrack
+    2016-11-23 15:54:48.878 INFO  [1819418] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+
+
+After fix of special casing the RecordPhoton::
+
+    2016-11-23 16:00:43.958 INFO  [1821647] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+    2016-11-23 16:01:00.069 INFO  [1821647] [CTrackingAction::dump@185] .
+    2016-11-23 16:01:00.069 INFO  [1821647] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 603 photon_id 603 parent_id -1 primary_id -2 reemtrack 0
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump_brief@1254] CRecorder::RecordPhoton m_record_id   430603 m_badflag     0 --dindex POST_SAVE POST_DONE RECORD_TRUNCATE BOUNCE_TRUNCATE 
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump_brief@1263]  seqhis c9cccccccc6ccccd    TO BT BT BT BT SC BT BT BT BT BT BT BT BT DR BT 
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump_brief@1268]  mskhis             1920    SC|DR|BT|TO
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump_brief@1273]  seqmat 3443231323443231    Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO MO Ac 
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump@1239] CRecorder::posttrack
+    2016-11-23 16:01:00.070 INFO  [1821647] [CTrackingAction::dump@185] .
+    2016-11-23 16:01:00.070 INFO  [1821647] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 10893 photon_id 603 parent_id 603 primary_id -2 reemtrack 1
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::RecordStepPoint@881] TOPSLOT_REWRITE topslot_rewrite 1 prior_flag -> flag BT -> RE prior_mat -> mat Ac -> Gd
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump@1239] CRecorder::posttrack
+    2016-11-23 16:01:00.070 INFO  [1821647] [CTrackingAction::dump@185] .
+    2016-11-23 16:01:00.070 INFO  [1821647] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 10894 photon_id 603 parent_id 10893 primary_id 603 reemtrack 1
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::RecordStepPoint@881] HARD_TRUNCATE topslot_rewrite 2 prior_flag -> flag BT -> AB prior_mat -> mat Ac -> Gd
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump@1239] CRecorder::posttrack
+    2016-11-23 16:01:00.070 INFO  [1821647] [CTrackingAction::dump@185] .
+    2016-11-23 16:01:00.070 INFO  [1821647] [CTrackingAction::dump@186] CTrackingAction::setPhotonId --dindex  record_id 430603 event_id 43 track_id 10895 photon_id 603 parent_id 10894 primary_id 603 reemtrack 1
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::RecordStepPoint@881] HARD_TRUNCATE topslot_rewrite 3 prior_flag -> flag BT -> BT prior_mat -> mat Ac -> Ac
+    2016-11-23 16:01:00.070 INFO  [1821647] [CRecorder::dump@1239] CRecorder::posttrack
+    2016-11-23 16:01:22.156 INFO  [1821647] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+    2016-11-23 16:01:22.157 INFO  [1821647] [CG4::postpropagate@355] CG4::postpropagate(0)
+
+
+
+
+
+
+
+tconcentric.py
+----------------
 
 
 ::
@@ -100,7 +315,50 @@ Selecting mismatch using PFLAGS_DEBUG
 
 The mask has a DR that does not appear in seqhis::
 
-    In [2]: b = ab.b    ## or run evt.py 
+    simon:ana blyth$ evt.py 
+    /Users/blyth/opticks/ana/evt.py
+    [2016-11-23 15:28:36,111] p16560 {/Users/blyth/opticks/ana/evt.py:380} WARNING -  t :   0.000 132.000 : tot 1000000 over 8 0.000  under 0 0.000 : mi      0.100 mx    192.303  
+    [2016-11-23 15:28:36,647] p16560 {/Users/blyth/opticks/ana/evt.py:483} INFO - pflags2(=seq2msk(seqhis)) and pflags  MISMATCH    num_msk_mismatch: 2 
+    .                            -1:concentric 
+    .                               1000000         1.00 
+       0               8ccccd        0.670         670001         [6 ] TO BT BT BT BT SA
+       1                   4d        0.084          84149         [2 ] TO AB
+       2              8cccc6d        0.045          44770         [7 ] TO SC BT BT BT BT SA
+       3               4ccccd        0.029          28718         [6 ] TO BT BT BT BT AB
+       4                 4ccd        0.023          23170         [4 ] TO BT BT AB
+       5              8cccc5d        0.020          20140         [7 ] TO RE BT BT BT BT SA
+       6              8cc6ccd        0.010          10357         [7 ] TO BT BT SC BT BT SA
+       7              86ccccd        0.010          10318         [7 ] TO BT BT BT BT SC SA
+       8              89ccccd        0.008           7710         [7 ] TO BT BT BT BT DR SA
+       9             8cccc55d        0.006           5934         [8 ] TO RE RE BT BT BT BT SA
+      10                  45d        0.006           5766         [3 ] TO RE AB
+      11      8cccccccc9ccccd        0.005           5269         [15] TO BT BT BT BT DR BT BT BT BT BT BT BT BT SA
+      12              8cc5ccd        0.005           4940         [7 ] TO BT BT RE BT BT SA
+      13                  46d        0.005           4886         [3 ] TO SC AB
+      14          8cccc9ccccd        0.004           4469         [11] TO BT BT BT BT DR BT BT BT BT SA
+      15          8cccccc6ccd        0.003           3302         [11] TO BT BT SC BT BT BT BT BT BT SA
+      16             8cccc66d        0.003           2675         [8 ] TO SC SC BT BT BT BT SA
+      17              49ccccd        0.002           2383         [7 ] TO BT BT BT BT DR AB
+      18              4cccc6d        0.002           1991         [7 ] TO SC BT BT BT BT AB
+      19                4cc6d        0.002           1826         [5 ] TO SC BT BT AB
+    .                               1000000         1.00 
+    .                            -1:concentric 
+    .                                     2         1.00 
+       0     c5cccccccc6ccccd        1.000              2         [16] TO BT BT BT BT SC BT BT BT BT BT BT BT BT RE BT
+    .                                     2         1.00  .                            -1:concentric 
+    .                                     2         1.00 
+       0     3243231323443231        0.500              1         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO LS Ac
+       1     3143231323443231        0.500              1         [16] Gd Ac LS Ac MO MO Ac LS Ac Gd Ac LS Ac MO Gd Ac
+    .                                     2         1.00  .                            -1:concentric 
+    .                                     2         1.00 
+       0                 1930        1.000              2         [5 ] TO|BT|DR|SC|RE
+    .                                     2         1.00  --dindex=430603,521493
+    simon:ana blyth$ 
+
+
+
+
+
 
     In [3]: b.sel = "PFLAGS_DEBUG"  ; print b.his, b.mat, b.flg   
     .                            -1:concentric 
@@ -118,23 +376,6 @@ The mask has a DR that does not appear in seqhis::
     In [4]: b.psel_dindex()
     Out[4]: '--dindex=430603,521493'
 
-
-
-    In [9]: b.pflags, b.pflags2
-    Out[9]: 
-    A([6152, 6272, 6272, ..., 6272, 6272, 6272], dtype=uint32),
-    A([6152, 6272, 6272, ..., 6272, 6272, 6272], dtype=uint64))
-
-    In [8]: b.pflags == b.pflags2
-    Out[8]: 
-    A()sliced
-    A([ True,  True,  True, ...,  True,  True,  True], dtype=bool)
-
-    In [9]: np.count_nonzero(b.pflags == b.pflags2)
-    Out[9]: 999998
-
-    In [10]: np.count_nonzero(b.pflags != b.pflags2)    ## 2 in 1M issue
-    Out[10]: 2
 
 
 
