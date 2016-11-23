@@ -559,6 +559,8 @@ bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg,
 }
 
 
+
+
 bool CRecorder::LiveRecordStep()
 {
     assert(m_live);
@@ -575,35 +577,8 @@ bool CRecorder::LiveRecordStep()
     const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
     const G4StepPoint* post = m_step->GetPostStepPoint() ; 
 
-    if(m_debug)
-    {
-       // try to understand GlobalTime calc from G4Transportation::AlongStepDoIt by duping attempt
-       //  issue is what velocity it gets to use, and the updating of that 
-        G4Track* track = m_step->GetTrack() ;
-        G4double trackStepLength = track->GetStepLength();
-        G4double trackGlobalTime = track->GetGlobalTime() ;
-        G4double trackVelocity = track->GetVelocity() ;
+    //if(m_debug) dumpStepVelocity("CRecorder::LiveRecordStep");
 
-        G4double preDeltaTime = 0.0 ; 
-        G4double preVelocity = pre->GetVelocity();
-        if ( preVelocity > 0.0 )  { preDeltaTime = trackStepLength/preVelocity; }
-
-        G4double postDeltaTime = 0.0 ; 
-        G4double postVelocity = post->GetVelocity();
-        if ( postVelocity > 0.0 )  { postDeltaTime = trackStepLength/postVelocity; }
-
-
-        std::cout << "CRecorder::RecordStep"
-                  << " trackStepLength " << std::setw(10) << trackStepLength 
-                  << " trackGlobalTime " << std::setw(10) << trackGlobalTime
-                  << " trackVelocity " << std::setw(10) << trackVelocity
-                  << " preVelocity " << std::setw(10) << preVelocity
-                  << " postVelocity " << std::setw(10) << postVelocity
-                  << " preDeltaTime " << std::setw(10) << preDeltaTime
-                  << " postDeltaTime " << std::setw(10) << postDeltaTime
-                  << std::endl 
-                  ;
-    } 
 
     // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
@@ -678,13 +653,16 @@ void CRecorder::CannedRecordStep()
 void CRecorder::CannedWriteSteps()
 {
 #ifdef USE_CUSTOM_BOUNDARY
-    DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
     DsG4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
+    DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
+    DsG4OpBoundaryProcessStatus next_boundary_status = Undefined ;
 #else
-    G4OpBoundaryProcessStatus boundary_status = Undefined ;
     G4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
+    G4OpBoundaryProcessStatus boundary_status = Undefined ;
+    G4OpBoundaryProcessStatus next_boundary_status = Undefined ;
 #endif
-    CStp* stp ;
+    CStp* stp = NULL ;
+    CStp* next_stp = NULL ;
     CStage::CStage_t stage ; 
     const G4Step* step ; 
     const G4StepPoint *pre, *post ; 
@@ -694,23 +672,26 @@ void CRecorder::CannedWriteSteps()
     bool     done ;  
 
     assert(!m_live) ;
-    unsigned num_stps = m_crec->getNumStps(); 
+    unsigned num = m_crec->getNumStps(); 
     LOG(trace) << "CRecorder::CannedWriteSteps"
-               << " num_stps " << num_stps
+               << " num " << num
                << " m_slot " << m_slot
                ;
 
     /*
     std::cout << "CRecorder::CannedWriteSteps stages:"  
-    for(unsigned i=0 ; i < num_stps ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
+    for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
     std::cout << std::endl ;  
     */
 
-    for(unsigned i=0 ; i < num_stps ; i++)
+
+    for(unsigned i=0 ; i < num ; i++)
     {
         m_step_action = 0 ; 
 
         stp  = m_crec->getStp(i);
+        next_stp = m_crec->getStp(i+1) ;   // NULL for i = num - 1 
+
         stage = stp->getStage();
         step = stp->getStep();
         pre  = step->GetPreStepPoint() ; 
@@ -718,6 +699,8 @@ void CRecorder::CannedWriteSteps()
 
         prior_boundary_status = i == 0 ? Undefined : boundary_status ; 
         boundary_status = stp->getBoundaryStatus() ; 
+        next_boundary_status = next_stp ? next_stp->getBoundaryStatus() : Undefined ; 
+
 
         preMaterial = pre->GetMaterial() ;
         postMaterial = post->GetMaterial() ;
@@ -731,10 +714,11 @@ void CRecorder::CannedWriteSteps()
         bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
-        //bool postSkip = boundary_status == StepTooSmall && stage != CStage::REJOIN  ;  
         bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
-        bool matSwap = boundary_status == StepTooSmall ; 
 
+        bool matSwap = next_boundary_status == StepTooSmall ; 
+
+        // see notes/issues/geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros.rst
 
         if(lastPost)      m_step_action |= LAST_POST ; 
         if(surfaceAbsorb) m_step_action |= SURF_ABS ;  
@@ -1321,6 +1305,44 @@ void CRecorder::dump_point(const G4ThreeVector& origin, unsigned index, const G4
     const char* flg = OpticksFlags::Abbrev(flag) ;
     std::cout << std::setw(3) << flg << std::setw(7) << index << " " << std::setw(18) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
 }
+
+
+
+void CRecorder::dumpStepVelocity(const char* msg )
+{
+    // try to understand GlobalTime calc from G4Transportation::AlongStepDoIt by duping attempt
+    // issue is what velocity it gets to use, and the updating of that 
+
+    G4Track* track = m_step->GetTrack() ;
+    G4double trackStepLength = track->GetStepLength();
+    G4double trackGlobalTime = track->GetGlobalTime() ;
+    G4double trackVelocity = track->GetVelocity() ;
+
+    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
+    const G4StepPoint* post = m_step->GetPostStepPoint() ; 
+
+
+    G4double preDeltaTime = 0.0 ; 
+    G4double preVelocity = pre->GetVelocity();
+    if ( preVelocity > 0.0 )  { preDeltaTime = trackStepLength/preVelocity; }
+
+    G4double postDeltaTime = 0.0 ; 
+    G4double postVelocity = post->GetVelocity();
+    if ( postVelocity > 0.0 )  { postDeltaTime = trackStepLength/postVelocity; }
+
+
+    LOG(info) << msg
+              << " trackStepLength " << std::setw(10) << trackStepLength 
+              << " trackGlobalTime " << std::setw(10) << trackGlobalTime
+              << " trackVelocity " << std::setw(10) << trackVelocity
+              << " preVelocity " << std::setw(10) << preVelocity
+              << " postVelocity " << std::setw(10) << postVelocity
+              << " preDeltaTime " << std::setw(10) << preDeltaTime
+              << " postDeltaTime " << std::setw(10) << postDeltaTime
+              ;
+
+}
+
 
 
 void CRecorder::report(const char* msg)

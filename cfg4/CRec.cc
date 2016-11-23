@@ -75,7 +75,7 @@ unsigned CRec::getNumStps()
 
 CStp* CRec::getStp(unsigned index)
 {
-    return m_stp[index]; 
+    return index < m_stp.size() ? m_stp[index] : NULL ; 
 }
 
 

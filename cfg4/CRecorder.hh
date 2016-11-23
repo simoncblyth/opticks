@@ -235,6 +235,7 @@ class CFG4_API CRecorder {
         void dump_brief(const char* msg="CRecorder::dump_brief");
         void dump_sequence(const char* msg="CRecorder::dump_sequence");
         void dump_points(const char* msg="CRecorder::dump_points");
+        void dumpStepVelocity(const char* msg="CRecorder::dumpStepVelocity");
    public:
         // reporting
         void report(const char* msg="CRecorder::report");
