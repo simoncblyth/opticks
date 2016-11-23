@@ -652,6 +652,11 @@ void CRecorder::CannedRecordStep()
 
 void CRecorder::CannedWriteSteps()
 {
+   // CRecorder::CannedWriteSteps is invoked from CRecorder::posttrack, 
+   // once for the primary photon track and then for 0 or more reemtracks
+   // via the record_id the info is written onto the correct place 
+   // in the photon record buffer
+
 #ifdef USE_CUSTOM_BOUNDARY
     DsG4OpBoundaryProcessStatus prior_boundary_status = Undefined ;
     DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
@@ -684,7 +689,6 @@ void CRecorder::CannedWriteSteps()
     std::cout << std::endl ;  
     */
 
-
     for(unsigned i=0 ; i < num ; i++)
     {
         m_step_action = 0 ; 
@@ -701,12 +705,10 @@ void CRecorder::CannedWriteSteps()
         boundary_status = stp->getBoundaryStatus() ; 
         next_boundary_status = next_stp ? next_stp->getBoundaryStatus() : Undefined ; 
 
-
         preMaterial = pre->GetMaterial() ;
         postMaterial = post->GetMaterial() ;
         premat = preMaterial ? m_material_bridge->getMaterialIndex(preMaterial) + 1 : 0 ;
         postmat = postMaterial ? m_material_bridge->getMaterialIndex(postMaterial) + 1 : 0 ;
-
 
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
         postFlag = OpPointFlag(post, boundary_status, postStage);
@@ -753,21 +755,34 @@ void CRecorder::CannedWriteSteps()
 
         if(i == 0)
         {
+            m_step_action |= PRE_SAVE ; 
             done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );  
-            done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
+            if(done) m_step_action |= PRE_DONE ; 
+
+            if(!done)
+            {
+                 done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
+                 m_step_action |= POST_SAVE ; 
+                 if(done) m_step_action |= POST_DONE ; 
+            }
         }
         else
         {
-            if(!postSkip)
+            if(!postSkip && !done)
             {
+                m_step_action |= POST_SAVE ; 
                 done = RecordStepPoint( post, postFlag, u_postmat, boundary_status, POST );
+                if(done) m_step_action |= POST_DONE ; 
             }
         }
 
         stp->setMat(  u_premat, u_postmat );
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_step_action );
+
+        if(done) break ; 
     }
+
     RecordPhoton(post);
 }
 
@@ -818,8 +833,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
 #endif
 {
-    // NB this is used by both the live and non-live "canned" modes of recording 
+    // see notes/issues/geant4_opticks_integration/pflags_mismatch.rst
     //
+    // NB this is used by both the live and non-live "canned" modes of recording 
     //
     // Formerly at truncation, rerunning this overwrote "the top slot" 
     // of seqhis,seqmat bitfields (which are persisted in photon buffer)
@@ -829,8 +845,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
-    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ;
-    // constrain slot to recording inclusive range (0,m_steps_per_photon-1) 
+    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ; // constrain slot to inclusive range (0,m_steps_per_photon-1) 
 
     m_record_truncate = slot == m_steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
     if(m_record_truncate) m_step_action |= RECORD_TRUNCATE ; 
@@ -856,13 +871,12 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     if(m_record_truncate && prior_his != 0 && prior_mat != 0 )  // try to overwrite top slot 
     {
         m_topslot_rewrite += 1 ; 
-        LOG(debug)
+        if(m_debug || m_other)
+        LOG(info)
                   << ( m_topslot_rewrite > 1 ? HARD_TRUNCATE_ : TOPSLOT_REWRITE_ )
                   << " topslot_rewrite " << m_topslot_rewrite
-                  << " prior_flag -> flag " 
-                  <<   OpticksFlags::Abbrev(prior_flag)
-                  << " -> "
-                  <<   OpticksFlags::Abbrev(flag)
+                  << " prior_flag -> flag " <<   OpticksFlags::Abbrev(prior_flag)
+                  << " -> " <<   OpticksFlags::Abbrev(flag)
                   << " prior_mat -> mat " 
                   <<   ( prior_mat == 0 ? "-" : m_material_bridge->getMaterialName(prior_mat-1, true)  ) 
                   << " -> "

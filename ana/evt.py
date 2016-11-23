@@ -1597,7 +1597,7 @@ if __name__ == '__main__':
 
     print b.his[:20]
 
-    b.sel = "TO|BT|DR|SC|RE"
+    b.selflg = "TO|BT|DR|SC|RE"
 
     print b.his
 

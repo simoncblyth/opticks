@@ -1,8 +1,24 @@
 post recording has seqmat zeros
 ==================================
 
+Overview
+-----------
 
+The kernel of the issue was that boundary status if a property between points, so moving from pre(live) to post(canned) recording 
+requires translating "pre" style::
 
+     598 
+     599     bool preSkip = m_prior_boundary_status == StepTooSmall && m_stage != CStage::REJOIN  ;
+     600 
+     601     bool matSwap = m_boundary_status == StepTooSmall ;
+     602 
+
+Into "post" style::
+
+     712     bool postSkip = boundary_status == StepTooSmall && !lastPost  ;
+     713         
+     714     bool matSwap = next_boundary_status == StepTooSmall ;
+     715         
 
 
 
@@ -589,23 +605,6 @@ Results in seqhis zeros with NA instead of BT following a DR::
       13      8ccccccce9ccccd             0         5269          5269.00        0.000 +- 0.000        0.000 +- 0.000  [15] TO BT BT BT BT DR NA BT BT BT BT BT BT BT SA
 
 
-
-
-The kernel of the issue is that boundary status if a property between points, so moving from pre(live) to post(canned) recording 
-requires translating "pre" style::
-
-     598 
-     599     bool preSkip = m_prior_boundary_status == StepTooSmall && m_stage != CStage::REJOIN  ;
-     600 
-     601     bool matSwap = m_boundary_status == StepTooSmall ;
-     602 
-
-Into "post" style::
-
-     712     bool postSkip = boundary_status == StepTooSmall && !lastPost  ;
-     713         
-     714     bool matSwap = prior_boundary_status == StepTooSmall ;
-     715         
 
 
 
