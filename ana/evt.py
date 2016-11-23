@@ -132,10 +132,17 @@ class Evt(object):
     RPOST = {"X":X,"Y":Y,"Z":Z,"W":W,"T":T} 
     RPOL = {"A":X,"B":Y,"C":Z} 
 
-    #RQWN_BINSCALE = {"X":1000,"Y":1000,"Z":1000,"W":10,"R":1000, "T":1000,"A":1,"B":1,"C":1} 
-    RQWN_BINSCALE = {"X":256,"Y":256,"Z":256,"W":None,"R":256, "T":256,"A":None,"B":None,"C":None} 
-    
-
+    RQWN_BINSCALE = dict(X=1024,Y=1024,Z=1024,T=1024,R=1024,W=4,A=4,B=4,C=4) 
+   
+    # XYZT 
+    #      position and time are short compressed, 
+    #      (0x1 << 16)/1024  = 64
+    #
+    # ABCW 
+    #      polarization and wavelength are char compressed 
+    #      so are limited to 1 for primordial bins, or 2 or 4 
+    #      (0x1 << 8)/4 = 64
+    # 
 
 
     @classmethod
@@ -1155,19 +1162,28 @@ class Evt(object):
         return self.recwavelength(recs)
 
     def recwavelength(self, recs):
-        boundary_domain = self.fdom[2,0]
-
         pzwl = self.rx[:,recs,1,1]
-
         nwavelength = (pzwl & np.uint16(0xFF00)) >> 8
-
-        p_wavelength = nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
-        return p_wavelength 
+        return self.w_decompress(nwavelength)
 
     def wbins(self):
-        nwavelength = np.arange(0,0xff+1)
-        p_wavelength = nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
-        return p_wavelength 
+        """
+        ::
+
+            In [23]: b.wbins()
+            Out[23]: 
+            array([  60.    ,   62.9804,   65.9608, ... 814.0392,  817.0196,  820.    ], dtype=float32)
+
+            In [24]: b.wbins().shape
+            Out[24]: (256,)
+
+        """
+        nwavelength = np.arange(0,0xff+1)   ## hmm could be off by one here
+        return self.w_decompress(nwavelength)
+
+    def w_decompress(self, nwavelength):
+        boundary_domain = self.fdom[2,0]
+        return nwavelength.astype(np.float32)*boundary_domain[W]/255.0 + boundary_domain[X]
 
 
     def rpol(self):
@@ -1599,9 +1615,12 @@ if __name__ == '__main__':
 
     #b.selflg = "TO|BT|DR|SC|RE"
 
-    b.sel = "PFLAGS_DEBUG"  
 
-    print b.his, b.mat, b.flg, b.psel_dindex()
+    sel = "PFLAGS_DEBUG"  
+    b.sel = sel
+    log.info("sel %s nsel %d " % (sel, b.nsel))
+    if b.nsel > 0:
+        print b.his, b.mat, b.flg, b.psel_dindex()
 
 
 

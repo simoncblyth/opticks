@@ -79,6 +79,7 @@ class CFH(Ctx):
         :param av: a values array
         :param bv: b values array
         :param lab:
+        :param c2cut: a+b stat requirement to compute chi2
 
         Called from AB.rhist
 
@@ -329,7 +330,8 @@ def test_load():
 
 
 if __name__ == '__main__':
-    ok = opticks_main(tag="1", src="torch", det="concentric")
+    ok = opticks_main()
+    print ok
 
     import matplotlib.pyplot as plt
     plt.rcParams["figure.max_open_warning"] = 200    # default is 20
@@ -340,31 +342,43 @@ if __name__ == '__main__':
     from opticks.ana.cfplot import one_cfplot, qwns_plot 
     print ok.nargs
 
+    ## only reload evts for rehisting
     if ok.rehist:
         ab = AB(ok)
     else:
         ab = None
     pass
 
+
+    st = ABStat.load(ok)
+
     if ok.chi2sel:
-        st = ABStat.load()
-        reclabs = st.reclabsel(cut=40)
+        reclabs = st.reclabsel()
     elif len(ok.nargs) > 0:
         reclabs = [ok.nargs[0]]
     else:
         reclabs = ["[TO] AB",]
+    pass
 
+    n_reclabs = len(reclabs)
+    log.info(" n_reclabs : %d " % (n_reclabs))
 
-    log.info(" n_reclabs : %d " % (len(reclabs)))
-
+    n_limit = 50 
+    if n_reclabs > n_limit:
+        log.warning("too many reclabs truncating to %d" % n_limit )  
+        reclabs = reclabs[:n_limit]
+    pass
 
     for reclab in reclabs:
 
         ctx = Ctx.reclab2ctx_(reclab, det=ok.det, tag=ok.tag)
 
-        ctxs = ctx.qsub()
+        st[st.st.reclab==reclab]   # sets a single line slice
+        suptitle = st.suptitle
 
-        log.info(" ctx %r n_ctxs %d " % ( ctx, len(ctxs)))
+        ctxs = ctx.qsub()
+        assert len(ctxs) == 8 , ctxs
+        log.info(" %s " % suptitle)
 
         if ok.rehist:
             hh = ab.rhist_(ctxs, rehist=True)
@@ -373,10 +387,9 @@ if __name__ == '__main__':
         pass
 
         if len(hh) == 1:
-            one_cfplot(hh[0])
+            one_cfplot(ok, hh[0])
         else:
-            qwns_plot(hh, ctx.suptitle  )
-        pass
+            qwns_plot(ok, hh, suptitle  )
         pass
     pass
 

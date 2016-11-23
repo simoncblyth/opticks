@@ -36,72 +36,6 @@ Lookup a line via reclab::
     == == ==== ==== ======================================================= ============================================== ===== ===== ===== ===== ===== ===== ===== ===== 
 
 
-Corresponding ndarray gives raw chi2 access::
-
-    In [23]: a[10:20]
-    Out[23]: 
-    array([[ 1.1243,  1.285 ,  1.1159,  0.8648,  0.7049,  1.0259,  0.9997,  0.8856],
-           [ 1.032 ,  1.3914,  1.1746,  0.875 ,  0.7139,  0.9835,  1.0135,  0.7598],
-           [ 1.0422,  0.9272,  0.8455,  1.6319,  0.6992,  0.9856,  1.0088,  1.1129],
-           [ 0.9838,  0.9115,  0.8178,  1.6159,  1.017 ,  1.0052,  0.9891,  1.2069],
-           [ 0.7997,  0.9926,  1.0145,  4.7815,  1.017 ,  1.0052,  0.9891,  1.1766],
-           [ 1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255],
-           [ 1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255],
-           [ 1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255],
-           [ 1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255],
-           [ 1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255,  1.6255]], dtype=float32)
-
-
-    In [8]: st[np.where( np.sum(ar, axis=1) > 30 )]    # propagation record points with chi2 sum greater than 30 
-
-          ## this was before moving to c2shape=True to take out normalization differences
-
-    === == ===== ===== ========================================================== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== 
-    iv  is na    nb    qctx                                                       reclab                                            X     Y     Z     T      A     B     C     R     
-    === == ===== ===== ========================================================== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== 
-    20  3  28955 28649 TO_BT_BT_BT_BT_AB/5/XYZTABCR                               TO BT BT BT BT [AB]                                1.81  1.63  1.63 23.31   1.63  1.63  1.63  1.81 
-    70  11 5339  5367  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/6/XYZTABCR    TO BT BT BT BT DR [BT] BT BT BT BT BT BT BT SA     0.28  0.91  0.36 279.80  1.27  1.20  0.97  0.15 
-    71  11 5339  5367  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/7/XYZTABCR    TO BT BT BT BT DR BT [BT] BT BT BT BT BT BT SA     0.27  1.04  0.64 265.52  1.19  1.16  1.08  0.07 
-    72  11 5339  5367  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/8/XYZTABCR    TO BT BT BT BT DR BT BT [BT] BT BT BT BT BT SA     1.87  0.99  0.45 106.27  1.08  1.07  1.01  0.67 
-    73  11 5339  5367  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_BT_BT_SA/9/XYZTABCR    TO BT BT BT BT DR BT BT BT [BT] BT BT BT BT SA     1.51  1.24  0.28 44.65   1.16  1.16  1.08  0.55 
-    79  12 5113  4868  TO_BT_BT_RE_BT_BT_SA/0/XYZTABCR                            [TO] BT BT RE BT BT SA                             6.01  6.01  6.01  6.01   6.01  6.01  6.01  6.01 
-    80  12 5113  4868  TO_BT_BT_RE_BT_BT_SA/1/XYZTABCR                            TO [BT] BT RE BT BT SA                             6.01  6.01  6.01  6.01   6.01  6.01  6.01  6.01 
-    81  12 5113  4868  TO_BT_BT_RE_BT_BT_SA/2/XYZTABCR                            TO BT [BT] RE BT BT SA                             6.01  6.01  6.01  6.01   6.01  6.01  6.01  6.01 
-    95  14 4494  4420  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_SA/6/XYZTABCR                TO BT BT BT BT DR [BT] BT BT BT SA                 3.42  1.18  1.24 21.20   1.34  1.56  1.21  0.64 
-    96  14 4494  4420  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_SA/7/XYZTABCR                TO BT BT BT BT DR BT [BT] BT BT SA                 3.96  1.44  1.37 19.25   1.27  1.49  1.30  0.87 
-    191 25 1260  1263  TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_AB/6/XYZTABCR                TO BT BT BT BT DR [BT] BT BT BT AB                 4.67  1.39  1.29 74.24   0.76  1.13  0.52  2.46 
-    203 27 1104  1199  TO_BT_BT_RE_BT_BT_BT_BT_BT_BT_SA/0/XYZTABCR                [TO] BT BT RE BT BT BT BT BT BT SA                 3.92  3.92  3.92  3.92   3.92  3.92  3.92  3.92 
-    204 27 1104  1199  TO_BT_BT_RE_BT_BT_BT_BT_BT_BT_SA/1/XYZTABCR                TO [BT] BT RE BT BT BT BT BT BT SA                 3.92  3.92  3.92  3.92   3.92  3.92  3.92  3.92 
-    205 27 1104  1199  TO_BT_BT_RE_BT_BT_BT_BT_BT_BT_SA/2/XYZTABCR                TO BT [BT] RE BT BT BT BT BT BT SA                 3.92  3.92  3.92  3.92   3.92  3.92  3.92  3.92 
-    213 27 1104  1199  TO_BT_BT_RE_BT_BT_BT_BT_BT_BT_SA/10/XYZTABCR               TO BT BT RE BT BT BT BT BT BT [SA]                 3.92  3.92  3.92  3.92   3.92  3.92  3.92  3.92 
-    241 31 1067  1019  TO_BT_BT_BT_BT_DR_BT_BT_AB/6/XYZTABCR                      TO BT BT BT BT DR [BT] BT AB                       1.90  1.56  1.07 21.19   1.83  1.72  0.95  1.53 
-    272 37 817   733   TO_SC_BT_BT_SC_BT_BT_SA/0/XYZTABCR                         [TO] SC BT BT SC BT BT SA                          4.55  4.55  4.55  4.55   4.55  4.55  4.55  4.55 
-    313 42 545   566   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_SC_BT_BT_BT_BT_SA/6/XYZTABCR TO BT BT BT BT DR [BT] BT BT BT SC BT BT BT BT SA  0.37  1.21  1.38 78.85   0.00  0.91  0.71  0.30 
-    314 42 545   566   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_SC_BT_BT_BT_BT_SA/7/XYZTABCR TO BT BT BT BT DR BT [BT] BT BT SC BT BT BT BT SA  0.34  1.08  1.34 78.18   0.29  0.88  0.59  0.30 
-    323 43 538   460   TO_SC_BT_BT_BT_BT_DR_SA/0/XYZTABCR                         [TO] SC BT BT BT BT DR SA                          6.10  6.10  6.10  6.10   6.10  6.10  6.10  6.10 
-    385 50 385   311   TO_RE_BT_BT_SC_BT_BT_SA/0/XYZTABCR                         [TO] RE BT BT SC BT BT SA                          7.87  7.87  7.87  7.87   7.87  7.87  7.87  7.87 
-    527 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/0/XYZTABCR          [TO] BT BT BT BT DR BT BT BT BT BT BT AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    528 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/1/XYZTABCR          TO [BT] BT BT BT DR BT BT BT BT BT BT AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    529 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/2/XYZTABCR          TO BT [BT] BT BT DR BT BT BT BT BT BT AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    530 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/3/XYZTABCR          TO BT BT [BT] BT DR BT BT BT BT BT BT AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    531 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/4/XYZTABCR          TO BT BT BT [BT] DR BT BT BT BT BT BT AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    537 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/10/XYZTABCR         TO BT BT BT BT DR BT BT BT BT [BT] BT AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    538 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/11/XYZTABCR         TO BT BT BT BT DR BT BT BT BT BT [BT] AB           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    539 66 285   239   TO_BT_BT_BT_BT_DR_BT_BT_BT_BT_BT_BT_AB/12/XYZTABCR         TO BT BT BT BT DR BT BT BT BT BT BT [AB]           4.04  4.04  4.04  4.04   4.04  4.04  4.04  4.04 
-    617 74 164   201   TO_BT_BT_SC_BT_BT_BT_BT_BT_BT_AB/0/XYZTABCR                [TO] BT BT SC BT BT BT BT BT BT AB                 3.75  3.75  3.75  3.75   3.75  3.75  3.75  3.75 
-    618 74 164   201   TO_BT_BT_SC_BT_BT_BT_BT_BT_BT_AB/1/XYZTABCR                TO [BT] BT SC BT BT BT BT BT BT AB                 3.75  3.75  3.75  3.75   3.75  3.75  3.75  3.75 
-    619 74 164   201   TO_BT_BT_SC_BT_BT_BT_BT_BT_BT_AB/2/XYZTABCR                TO BT [BT] SC BT BT BT BT BT BT AB                 3.75  3.75  3.75  3.75   3.75  3.75  3.75  3.75 
-    627 74 164   201   TO_BT_BT_SC_BT_BT_BT_BT_BT_BT_AB/10/XYZTABCR               TO BT BT SC BT BT BT BT BT BT [AB]                 3.75  3.75  3.75  3.75   3.75  3.75  3.75  3.75 
-    756 88 136   103   TO_RE_BT_BT_RE_RE_BT_BT_SA/0/XYZTABCR                      [TO] RE BT BT RE RE BT BT SA                       4.56  4.56  4.56  4.56   4.56  4.56  4.56  4.56 
-    777 90 98    131   TO_BT_BT_RE_BT_BT_SC_BT_BT_BT_BT_SA/0/XYZTABCR             [TO] BT BT RE BT BT SC BT BT BT BT SA              4.76  4.76  4.76  4.76   4.76  4.76  4.76  4.76 
-    778 90 98    131   TO_BT_BT_RE_BT_BT_SC_BT_BT_BT_BT_SA/1/XYZTABCR             TO [BT] BT RE BT BT SC BT BT BT BT SA              4.76  4.76  4.76  4.76   4.76  4.76  4.76  4.76 
-    779 90 98    131   TO_BT_BT_RE_BT_BT_SC_BT_BT_BT_BT_SA/2/XYZTABCR             TO BT [BT] RE BT BT SC BT BT BT BT SA              4.76  4.76  4.76  4.76   4.76  4.76  4.76  4.76 
-    787 90 98    131   TO_BT_BT_RE_BT_BT_SC_BT_BT_BT_BT_SA/10/XYZTABCR            TO BT BT RE BT BT SC BT BT BT [BT] SA              4.76  4.76  4.76  4.76   4.76  4.76  4.76  4.76 
-    788 90 98    131   TO_BT_BT_RE_BT_BT_SC_BT_BT_BT_BT_SA/11/XYZTABCR            TO BT BT RE BT BT SC BT BT BT BT [SA]              4.76  4.76  4.76  4.76   4.76  4.76  4.76  4.76 
-    === == ===== ===== ========================================================== ================================================= ===== ===== ===== ====== ===== ===== ===== ===== 
-
-
-
 """
 import os, logging, numpy as np
 import numpy.lib.recfunctions as rf
@@ -114,16 +48,18 @@ log = logging.getLogger(__name__)
 
 class ABStat(object):
     """
+    Hmm stats should probably have a standard path within the event tree 
     """
     STATPATH = "$TMP/stat.npy"
-    QWNS = "XYZTABCR"
+    SUPTITLE = "  %(det)s/%(src)s/%(tag)s  %(iv)s/%(is)s %(na)d/%(nb)d   %(reclab)-50s  XYZT: %(X)4.2f %(Y)4.2f %(Z)4.2f %(T)4.2f ABCW: %(A)4.2f %(B)4.2f %(C)4.2f %(W)4.2f  seqc2 %(seqc2)4.2f dstc2 %(distc2)4.2f " 
     SKIP = "qctx".split()
 
     @classmethod
     def path_(cls):
         return os.path.expandvars(cls.STATPATH)
 
-    def __init__(self, st):
+    def __init__(self, ok, st):
+        self.ok = ok 
         self.st = st
         self.ar = self.ary
         self.sli = slice(0,None,1)
@@ -132,9 +68,9 @@ class ABStat(object):
         np.save(self.path_(),self.st)  
 
     @classmethod
-    def load(cls):
+    def load(cls, ok):
         ra = np.load(cls.path_()).view(np.recarray)
-        return cls(ra) 
+        return cls(ok, ra) 
 
     def __repr__(self):
         return "\n".join([self.brief,recarray_as_rst(self.st[self.sli], skip=self.SKIP),self.brief])
@@ -148,35 +84,95 @@ class ABStat(object):
         return filter(None, names)
     names = property(_get_names)
 
-
     def __getitem__(self, sli):
+        if type(sli) is int:
+            sli = slice(sli,sli+1)
+        pass
         self.sli = sli
         return self
 
     def _get_ary(self, qwns=None):
         if qwns is None:
-            qwns = list(self.QWNS)
+            qwns = list(self.ok.qwns)
         pass
         return np.vstack([self.st[q] for q in qwns]).T
     ary = property(_get_ary) 
 
-    def chi2sel(self, cut=30):
+    def _get_suptitle(self):
+        """
+        After making a single line selection this provides a plot title::
+
+            In [11]: st[26].suptitle
+            Out[11]: ' 26/5 20238/20140   TO [RE] BT BT BT BT SA                              XYZT: 0.85 0.00 0.00 1.31 ABCW: 1.12 1.37 1.10 0.78  seqc2 0.24 distc2 1.10 '
+
+            In [16]: st[st.st.reclab=="TO RE BT [BT] BT BT DR BT BT BT BT SA"]
+            Out[16]: 
+            ABStat 1 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,W,seqc2,distc2 
+            === == === === ===================================== ===== ===== ===== ===== ===== ===== ===== ===== ===== ====== 
+            iv  is na  nb  reclab                                X     Y     Z     T     A     B     C     W     seqc2 distc2 
+            === == === === ===================================== ===== ===== ===== ===== ===== ===== ===== ===== ===== ====== 
+            868 97 125 126 TO RE BT [BT] BT BT DR BT BT BT BT SA  0.00  0.00  0.00  1.84  0.00  0.00  0.00  1.24  0.00  1.08  
+            === == === === ===================================== ===== ===== ===== ===== ===== ===== ===== ===== ===== ====== 
+
+            ABStat 1 iv,is,na,nb,reclab,X,Y,Z,T,A,B,C,W,seqc2,distc2 
+
+            In [17]: st.suptitle
+            Out[17]: ' 868/97 125/126   TO RE BT [BT] BT BT DR BT BT BT BT SA               XYZT: 0.00 0.00 0.00 1.84 ABCW: 0.00 0.00 0.00 1.24  seqc2 0.00 distc2 1.08 '
+
+        """
+        nli = len(self.st[self.sli]) 
+        if nli == 1:
+            st_tup = self.st[self.sli][0] 
+
+            d = {}
+            d.update(self.ok.ctx)
+            d.update(dict(zip(self.st.dtype.names,st_tup)))
+            return self.SUPTITLE % d
+        pass
+        log.warning("st.suptitle requires single line slice")
+        return None
+    suptitle = property(_get_suptitle)
+
+
+    def chi2sel(self, chi2cut=None,  statcut=None, style=None):
         """
         :return indices: propagation record point indices with chi2 sum greater than cut
         """
-        return np.where( np.sum(self.ar, axis=1) > cut )[0]
+        if chi2cut is None:
+            chi2cut = self.ok.chi2selcut
+        if statcut is None:
+            statcut = self.ok.statcut
+        if style is None:
+            style = "distc2stat"
+        pass
 
-    def qctxsel(self, cut=30):
+        if style == "distc2":
+            s = np.where( self.st.distc2 > chi2cut) 
+        elif style == "distc2stat":
+            s = np.where( np.logical_and(self.st.distc2 > chi2cut, self.st.na > statcut)) 
+        elif style == "seqc2":
+            s = np.where( self.st.seqc2 > chi2cut) 
+        elif style == "qwnsum":
+            s = np.where( np.sum(self.ar, axis=1) > chi2cut )
+        else:
+            assert 0, style
+        pass
+
+        log.info("style %s chi2cut %s statcut %s nsel %d " % (style, chi2cut, statcut, len(s[0]))) 
+
+        return s 
+
+    def qctxsel(self, chi2cut=None, statcut=None, style="qwnsum"):
         """
         :return qctx list: were chi2 sum exceeds the cut 
         """ 
-        return self.st.qctx[self.chi2sel(cut)]
+        return self.st.qctx[self.chi2sel(chi2cut=chi2cut, statcut=statcut, style=style)]
 
-    def reclabsel(self, cut=30):
+    def reclabsel(self, chi2cut=None, statcut=None, style="distc2stat"):
         """
         :return reclab list: were chi2 sum exceeds the cut 
         """ 
-        return self.st.reclab[self.chi2sel(cut)]
+        return self.st.reclab[self.chi2sel(chi2cut=chi2cut, statcut=statcut, style=style)]
 
 
     @classmethod
@@ -188,8 +184,11 @@ class ABStat(object):
 
 if __name__ == '__main__':
     ok = opticks_main()
-    st = ABStat.load()
-    print st 
+    st = ABStat.load(ok)
+    
+    #print st 
+    print st[st.chi2sel()]
+
     ar = st.ar
 
           

@@ -56,7 +56,7 @@ from opticks.ana.cfplot import cfplot, qwns_plot, multiplot
 
 
 if __name__ == '__main__':
-    ok = opticks_main(tag="1", src="torch", det="concentric", qwn="XYZT,ABCR", sel="0:5" )
+    ok = opticks_main(sel="0:5")
     log.info(" ok %s " % repr(ok.brief))
 
     plt.ion()
@@ -70,10 +70,12 @@ if __name__ == '__main__':
     
     print ab
 
-    log.info(" sel %r qwn %s " % (ok.sel, ok.qwn )) 
+    log.info(" sel %r qwn %s qwns %s " % (ok.sel, ok.qwn, ok.qwns )) 
 
     st = ab.stats( ok.sel.start, ok.sel.stop, ok.qwn, rehist=ok.rehist )
-    print st 
+    
+    #print st 
+    print st[st.chi2sel()]
 
     if ok.plot:
         multiplot(ab, ok.sel.start, ok.sel.stop, ok.qwn )

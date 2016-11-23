@@ -10,6 +10,7 @@ To control this warning, see the rcParam `figure.max_num_figures
 """
 import os, logging, numpy as np
 from collections import OrderedDict as odict
+from opticks.ana.base import opticks_main
 from opticks.ana.cfh import CFH 
 log = logging.getLogger(__name__)
 
@@ -48,17 +49,17 @@ def cfplot(fig, gss, h):
     ax.set_ylim([0,h.c2_ymax]) 
 
 
-def qwns_plot( hh, suptitle ):
+def qwns_plot( ok, hh, suptitle ):
     nhh = len(hh)
     nxm = 4 
     if nhh > nxm:
         # pagination 
         for p in range(nhh/nxm):
             phh = hh[p*nxm:(p+1)*nxm]
-            qwns_plot( phh, suptitle + " (%d)" % p )   
+            qwns_plot( ok, phh, suptitle + " (%d)" % p )   
         pass
     else:
-        fig = plt.figure()
+        fig = plt.figure(figsize=ok.figsize)
         fig.suptitle(suptitle)
         ny = 2 
         nx = len(hh)
@@ -69,8 +70,8 @@ def qwns_plot( hh, suptitle ):
             cfplot(fig, gss, hh[ix] )
         pass
 
-def one_cfplot(h):
-    fig = plt.figure()
+def one_cfplot(ok, h):
+    fig = plt.figure(figsize=ok.figsize)
     fig.suptitle(h.suptitle)
     ny = 2
     nx = 1
@@ -81,10 +82,10 @@ def one_cfplot(h):
     pass
 
 
-def multiplot(ab, start=0, stop=5, qwns="XYZT,ABCR", log_=False):
+def multiplot(ok, ab, start=0, stop=5, log_=False):
     """
     """
-    pages = qwns.split(",")
+    pages = ok.qwn.split(",")
 
     for i,isel in enumerate(range(start, stop)):
 
@@ -110,9 +111,10 @@ def multiplot(ab, start=0, stop=5, qwns="XYZT,ABCR", log_=False):
 
 
 
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    np.set_printoptions(precision=4, linewidth=200)
+    ok = opticks_main()
+    print ok
 
     plt.ion()
     plt.close()
@@ -121,7 +123,7 @@ if __name__ == '__main__':
 
     h = AB.rrandhist()
 
-    one_cfplot(h) 
+    one_cfplot(ok, h) 
 
 
 

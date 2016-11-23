@@ -62,10 +62,9 @@ class AB(object):
 
     """
     C2CUT = 30
-    QWNS = "XYZTABCR"
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, ok):
+        self.ok = ok
         self.tabs = []
         self.load()
         self.compare()
@@ -76,7 +75,7 @@ class AB(object):
         It takes aound 6s to load 1M full AB evt pair. So avoid needing to duplicate that.
         """
         log.info("AB.load START ")
-        args = self.args
+        args = self.ok
         try:
             a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, args=args, nom="A")
             b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, args=args, nom="B")
@@ -94,13 +93,13 @@ class AB(object):
         log.info("AB.load DONE ")
 
     def __repr__(self):
-        abn = "AB(%s,%s,%s)  %s %s " % (self.args.tag, self.args.src, self.args.det, self.sel, self.irec )
+        abn = "AB(%s,%s,%s)  %s %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec )
         abr = "A %s " % self.a.brief 
         bbr = "B %s " % self.b.brief 
         return "\n".join([abn, abr, bbr])
 
     def __str__(self):
-        lmx = self.args.lmx
+        lmx = self.ok.lmx
         if len(self.his.lines) > lmx:
             self.his.sli = slice(0,lmx)
         if len(self.mat.lines) > lmx:
@@ -114,8 +113,8 @@ class AB(object):
         self.ahis = self._get_cf("all_seqhis_ana")
         self.amat = self._get_cf("all_seqmat_ana")
 
-        if self.args.prohis:self.prohis()
-        if self.args.promat:self.promat()
+        if self.ok.prohis:self.prohis()
+        if self.ok.promat:self.promat()
         log.debug("AB.compare DONE")
 
 
@@ -228,7 +227,7 @@ class AB(object):
         """
         all_ tables have no selection applied so they are not dirtied by changing selection
         """
-        c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.args.lmx, cmx=self.args.cmx, c2max=None, cf=True)
+        c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.ok.lmx, cmx=self.ok.cmx, c2max=None, cf=True)
         if not ana[0:3] == "all":
             self.tabs.append(c_tab)
         pass 
@@ -427,7 +426,7 @@ class AB(object):
 
     def _get_suptitle(self):
         abc = self.ab_count()
-        title = "%s/%s/%s : %s  :  %s " % (self.args.tag, self.args.det, self.args.src, abc, self.reclab )
+        title = "%s/%s/%s : %s  :  %s " % (self.ok.tag, self.ok.det, self.ok.src, abc, self.reclab )
         return title
     suptitle = property(_get_suptitle)
 
@@ -435,7 +434,7 @@ class AB(object):
         """
         hmm at some point seq0 lost its underscores
         """
-        return Ctx({'det':self.args.det, 'tag':self.args.tag, 'src':self.args.src, 'seq0':self.label0, 'lab':self.reclab, 'irec':self.irec, 'qwn':self.qwn })
+        return Ctx({'det':self.ok.det, 'tag':self.ok.tag, 'src':self.ok.src, 'seq0':self.label0, 'lab':self.reclab, 'irec':self.irec, 'qwn':self.qwn })
     ctx = property(_get_ctx)
 
     pctx = property(lambda self:self.ctx.pctx)
@@ -487,7 +486,7 @@ class AB(object):
 
     def stats_dtype(self, qwns=None):
         if qwns is None:
-            qwns = self.QWNS
+            qwns = self.ok.qwns
         pass
         dtype = [(i,np.int32) for i in "iv is na nb".split()] 
         dtype += [(s,"|S64") for s in "reclab".split()]
@@ -531,13 +530,17 @@ class AB(object):
         return l
 
 
-    def stats_(self, reclabs, qwns="XYZT,ABCR", rehist=False, c2shape=True):
+    def stats_(self, reclabs, qwns=None, rehist=False, c2shape=True):
         """
         ::
 
             st = ab.stats_(ab.point.reclab[:10])
 
         """
+        if qwns is None:
+            qwns = self.ok.qwns
+        pass
+
         nrl = len(reclabs)
         stat = np.recarray((nrl,), dtype=self.stats_dtype(qwns))
 
@@ -572,11 +575,14 @@ class AB(object):
         return st 
 
  
-    def stats(self, start=0, stop=5, qwns="XYZT,ABCR", rehist=False, c2shape=True):
+    def stats(self, start=0, stop=5, qwns=None, rehist=False, c2shape=True):
         """
         slice selection in AB has to be converted into common seq selection 
         in the evt 
         """
+        if qwns is None:
+            qwns = self.ok.qwns
+        pass
         qwns = qwns.replace(",","")
 
         dtype = self.stats_dtype(qwns)
@@ -630,7 +636,7 @@ class AB(object):
         log.info("AB.stats histogramming done")
         assert ival == trs, (ival, trs )
 
-        st = ABStat(stat) 
+        st = ABStat(self.ok, stat) 
         st.save()
         return st 
 
@@ -780,7 +786,7 @@ class AB(object):
     def rhist(self, qwn=None, irec=None, rehist=False, log_=False, c2shape=True ): 
 
         if qwn is None:
-            qwn = Ctx.QWNS
+            qwn = self.ok.qwns
         assert type(qwn) is str
 
         if irec is None:
@@ -813,7 +819,9 @@ class AB(object):
                     h.load()
                 else:
                     bn, av, bv, la = self.rqwn(q, ir)
+
                     h(bn,av,bv,la, c2cut=self.C2CUT, c2shape=c2shape )
+
                     h.save()
                 pass
                 hh.append(h)
@@ -844,8 +852,8 @@ class AB(object):
             bval = vnorm(bpost[:,:2])
             cbins = a.pbins()
         elif qwn == "W":
-            aw = a.recwavelength(irec)
-            bw = b.recwavelength(irec)
+            aval = a.recwavelength(irec)
+            bval = b.recwavelength(irec)
             cbins = a.wbins()
         elif qwn in Evt.RPOST:
             q = Evt.RPOST[qwn]
@@ -865,14 +873,13 @@ class AB(object):
             assert 0, "qwn %s unknown " % qwn 
         pass
 
-        # polarization and wavelength are char compressed so have to use primordial bins
-        if qwn in "ABCW":
-            bins = cbins
-        else: 
-            binscale = Evt.RQWN_BINSCALE[qwn]
-            #bins = decompression_bins(cbins, [aval, bval], label=lval, binscale=binscale )
-            bins = cbins[::binscale]   # hmm should arrange scaling to retain extreme bins to avoid clipping perhaps ??
-        pass
+        binscale = Evt.RQWN_BINSCALE[qwn]
+        bins = cbins[::binscale]   
+
+        # hmm should arrange scaling to retain extreme bins to avoid clipping perhaps ??
+        # formerly tried clever binning, but certainty of simple binning turns out easier to interpret
+        #    bins = decompression_bins(cbins, [aval, bval], label=lval, binscale=binscale )
+        #  
 
         if len(bins) == 0:
             raise Exception("no bins")

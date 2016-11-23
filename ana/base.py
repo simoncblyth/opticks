@@ -201,6 +201,10 @@ class OK(argparse.Namespace):
     ipython = isIPython()
     brief = property(lambda self:"tag %s src %s det %s c2max %s ipython %s " % (self.utag,self.src,self.det, self.c2max, self.ipython))
 
+    def _get_ctx(self):
+        return dict(tag=self.tag, utag=self.utag, src=self.src, det=self.det)
+    ctx = property(_get_ctx)
+
 
 def opticks_args(**kwa):
 
@@ -226,7 +230,7 @@ def opticks_args(**kwa):
     mat = kwa.get("mat", "GdDopedLS")
     sli = kwa.get("sli", "::1")
     sel = kwa.get("sel", "0:5:1")
-    qwn = kwa.get("qwn", "XYZT,ABCR")
+    qwn = kwa.get("qwn", "XYZT,ABCW")
     c2max = kwa.get("c2max", 2.0)
     pfxseqhis = kwa.get("pfxseqhis", "")
     pfxseqmat = kwa.get("pfxseqmat", "")
@@ -241,7 +245,10 @@ def opticks_args(**kwa):
     promat = kwa.get("promat", False)
     rehist = kwa.get("rehist", False)
     chi2sel = kwa.get("chi2sel", False)
+    chi2selcut = kwa.get("chi2selcut", 1.1)
+    statcut = kwa.get("statcut", 1000)
     nointerpol = kwa.get("nointerpol", False)
+    figsize = kwa.get("figsize", "18,10.2" )
 
 
     parser = argparse.ArgumentParser(doc)
@@ -274,12 +281,15 @@ def opticks_args(**kwa):
     parser.add_argument(     "--dbgseqmat",  default=dbgseqmat, help="Seqmat hexstring prefix for dumping. Default %(default)s"  )
     parser.add_argument(     "--dbgmskhis",  default=dbgmskhis, help="History mask hexstring for selection/dumping. Default %(default)s"  )
     parser.add_argument(     "--dbgmskmat",  default=dbgmskmat, help="Material mask hexstring for selection/dumping. Default %(default)s"  )
+    parser.add_argument(     "--figsize",  default=figsize, help="Comma delimited figure width,height in inches. Default %(default)s"  )
     parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     parser.add_argument(     "--prohis", default=prohis, action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--promat", default=promat, action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--rehist", default=rehist, action="store_true", help="Recreate hists rather than loading persisted ones. Default %(default)s ")
     parser.add_argument(     "--chi2sel", default=chi2sel, action="store_true", help="Select histograms by their chi2 sum exceeding a cut, see cfh.py. Default %(default)s ")
+    parser.add_argument(     "--chi2selcut", default=chi2selcut, type=float, help="chi2 per degree of freedom cut used to select histograms when using --chi2sel option, see cfh-vi. Default %(default)s ")
+    parser.add_argument(     "--statcut", default=statcut, type=int, help="Statistics cut used with --chi2sel option, see cfh-vi Default %(default)s ")
     parser.add_argument(     "--nointerpol", dest="interpol", default=not nointerpol, action="store_false", help="See cfg4/tests/CInterpolationTest.py. Default %(default)s ")
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
@@ -304,12 +314,15 @@ def opticks_args(**kwa):
         args.utags = [args.utag]   
     pass
 
+    args.qwns = args.qwn.replace(",","")       
+    os.environ.update(OPTICKS_MAIN_QWNS=args.qwns)  # dirty trick to avoid passing ok to objects that need this
+
     # hexstring -> hexint 
     args.dbgseqhis = int(str(args.dbgseqhis),16) 
     args.dbgseqmat = int(str(args.dbgseqmat),16) 
     args.dbgmskhis = int(str(args.dbgmskhis),16) 
     args.dbgmskmat = int(str(args.dbgmskmat),16) 
-
+    args.figsize = map(float, args.figsize.split(","))
 
     args.sli = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sli.split(":")))
     args.sel = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sel.split(":")))

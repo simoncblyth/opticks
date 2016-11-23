@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 class Ctx(dict):
     DET = "concentric"
     TAG = "1"
-    QWNS = "XYZTABCR"
     BASE = "$TMP/CFH"
     SEQ0 = "TO AB"
     IREC = 0
@@ -17,6 +16,7 @@ class Ctx(dict):
     def __init__(self, *args, **kwa):
         dict.__init__(self, *args, **kwa) 
 
+    QWNS = property(lambda self:os.environ["OPTICKS_MAIN_QWNS"])
     qwn = property(lambda self:self.get("qwn",self.QWNS))
     det = property(lambda self:self.get("det",self.DET))
     tag = property(lambda self:self.get("tag",self.TAG))
