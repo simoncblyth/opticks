@@ -3,6 +3,57 @@ Tracer Crash
 
 Huh, why is genstep_buffer causing a tracing issue ?
 
+Perhsaps resolved with::
+
+    --- a/okop/OpEngine.cc  Wed Nov 23 20:04:06 2016 +0800
+    +++ b/okop/OpEngine.cc  Fri Nov 25 19:43:16 2016 +0800
+    @@ -43,17 +43,40 @@
+           m_ok(m_hub->getOpticks()),
+           m_scene(new OScene(m_hub)),
+           m_ocontext(m_scene->getOContext()),
+    -      m_entry(m_ocontext->addEntry(m_ok->getEntryCode())),
+    -      m_oevt(new OEvent(m_hub, m_ocontext)),
+    -      m_propagator(new OPropagator(m_hub, m_oevt, m_entry)),
+    -      m_seeder(new OpSeeder(m_hub, m_oevt)),
+    -      m_zeroer(new OpZeroer(m_hub, m_oevt)),
+    -      m_indexer(new OpIndexer(m_hub, m_oevt))
+    +      m_entry(NULL),
+    +      m_oevt(NULL),
+    +      m_propagator(NULL),
+    +      m_seeder(NULL),
+    +      m_zeroer(NULL),
+    +      m_indexer(NULL)
+    +{
+    +   init();
+    +   (*m_log)("DONE");
+    +}
+    +void OpEngine::init()
+     {
+        m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
+    -   (*m_log)("DONE");
+    +   if(m_ok->isLoad())
+    +   {
+    +       LOG(warning) << "OpEngine::init skip initPropagation as just loading pre-cooked event " ;
+    +   }
+    +   else
+    +   {
+    +       initPropagation(); 
+    +   }
+     }
+     
+    +void OpEngine::initPropagation()
+    +{
+    +    m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
+    +    m_oevt = new OEvent(m_hub, m_ocontext);
+    +    m_propagator = new OPropagator(m_hub, m_oevt, m_entry);
+    +    m_seeder = new OpSeeder(m_hub, m_oevt) ;
+    +    m_zeroer = new OpZeroer(m_hub, m_oevt) ;
+    +    m_indexer = new OpIndexer(m_hub, m_oevt) ;
+    +}
+    +
+
+
+
 
 ::
 

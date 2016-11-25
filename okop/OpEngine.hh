@@ -47,7 +47,8 @@ class OKOP_API OpEngine {
        OPropagator* getOPropagator();
     private:
        void downloadPhotonData();       // see App::dbgSeed
-
+       void init();
+       void initPropagation();
     private:
        SLog*                m_log ; 
        OpticksHub*          m_hub ; 

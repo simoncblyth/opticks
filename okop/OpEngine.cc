@@ -43,16 +43,39 @@ OpEngine::OpEngine(OpticksHub* hub)
       m_ok(m_hub->getOpticks()),
       m_scene(new OScene(m_hub)),
       m_ocontext(m_scene->getOContext()),
-      m_entry(m_ocontext->addEntry(m_ok->getEntryCode())),
-      m_oevt(new OEvent(m_hub, m_ocontext)),
-      m_propagator(new OPropagator(m_hub, m_oevt, m_entry)),
-      m_seeder(new OpSeeder(m_hub, m_oevt)),
-      m_zeroer(new OpZeroer(m_hub, m_oevt)),
-      m_indexer(new OpIndexer(m_hub, m_oevt))
+      m_entry(NULL),
+      m_oevt(NULL),
+      m_propagator(NULL),
+      m_seeder(NULL),
+      m_zeroer(NULL),
+      m_indexer(NULL)
 {
-   m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
+   init();
    (*m_log)("DONE");
 }
+void OpEngine::init()
+{
+   m_ok->setOptiXVersion(OConfig::OptiXVersion()); 
+   if(m_ok->isLoad())
+   {
+       LOG(warning) << "OpEngine::init skip initPropagation as just loading pre-cooked event " ;
+   }
+   else
+   {
+       initPropagation(); 
+   }
+}
+
+void OpEngine::initPropagation()
+{
+    m_entry = m_ocontext->addEntry(m_ok->getEntryCode()) ;
+    m_oevt = new OEvent(m_hub, m_ocontext);
+    m_propagator = new OPropagator(m_hub, m_oevt, m_entry);
+    m_seeder = new OpSeeder(m_hub, m_oevt) ;
+    m_zeroer = new OpZeroer(m_hub, m_oevt) ;
+    m_indexer = new OpIndexer(m_hub, m_oevt) ;
+}
+
 
 
 // NB OpEngine is ONLY AT COMPUTE LEVEL, FOR THE FULL PICTURE NEED TO SEE ONE LEVEL UP 
