@@ -880,7 +880,10 @@ Index* Opticks::loadHistoryIndex()
     const char* typ = getSourceType();
     const char* tag = getEventTag();
     const char* udet = getUDet();
-    return OpticksEvent::loadHistoryIndex(typ, tag, udet) ;
+
+    Index* index = OpticksEvent::loadHistoryIndex(typ, tag, udet) ;
+
+    return index ; 
 }
 Index* Opticks::loadMaterialIndex()
 {

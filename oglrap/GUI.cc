@@ -177,6 +177,50 @@ void GUI::choose( unsigned int n, const char** choices, bool** selection )
 }
 
 
+void GUI::show_label(bool* opened)
+{
+    ImGuiWindowFlags window_flags = 0;
+    window_flags |= ImGuiWindowFlags_NoTitleBar ;
+
+    if (!ImGui::Begin("Label", opened, ImVec2(550,100), m_label_alpha, window_flags)) 
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return ; 
+    }
+    ImGui::PushItemWidth(-140);  
+
+
+    ImGui::SliderFloat("float", &m_label_alpha, 0.0f, 1.0f);
+
+    // attempt to add fontsize control : aiming for readable label of the current selection in the scrub window
+    // search for Font in imgui-demo 
+
+    static float window_scale = 1.0f;
+    ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.1f");              // scale only this window
+
+    if(m_photons)
+    {
+        const char* key   = m_photons->getSeqhisSelectedKey() ;
+        const char* label = m_photons->getSeqhisSelectedLabel() ;
+        ImGui::Text("%s : %s", key, label);
+    } 
+    
+    ImGui::SetWindowFontScale(window_scale);
+
+/*
+    ImFontAtlas* atlas = ImGui::GetIO().Fonts;  
+    if( atlas->Fonts.Size > 0)
+    {
+        ImFont* font = atlas->Fonts[0];
+        static float window_scale = 1.0f;
+        ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.1f");              // scale only this window
+        ImGui::SetWindowFontScale(window_scale);
+        ImGui::Text("The quick brown fox jumps over the lazy dog");
+    }
+*/
+    ImGui::End();
+}
 
 void GUI::show_scrubber(bool* opened)
 {
@@ -199,9 +243,9 @@ void GUI::show_scrubber(bool* opened)
         animator_gui(m_animator, "time (ns)", "%0.3f", 2.0f);
     } 
 
-    //ImGui::SliderFloat("float", &m_scrub_alpha, 0.0f, 1.0f);
 
     ImGui::End();
+
 }
 
 
@@ -720,7 +764,7 @@ void GUI::gui_radio_select(GItemIndex* ii)
            std::string iname = names[i] ;
            std::string label = labels[i] ;
            unsigned int local  = index->getIndexLocal(iname.c_str()) ;
-           ImGui::RadioButton( label.c_str(), ptr, local);
+           ImGui::RadioButton( label.c_str(), ptr, local);  // when selected the local value is written into the ptr location
        }   
        ImGui::Text("%s %d ", index->getItemType(), *ptr);
    }   

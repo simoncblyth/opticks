@@ -241,9 +241,9 @@ if __name__ == '__main__':
         sys.exit(0)
 
 
-    ab.sel = "[TO] BT BT BT BT SA" 
-
-    hh = ab.hh
+    #ab.sel = "[TO] BT BT BT BT SA" 
+    #
+    #hh = ab.hh
 
     
 

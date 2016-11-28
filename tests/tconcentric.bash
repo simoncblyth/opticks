@@ -26,7 +26,6 @@ tconcentric-tag(){ echo 1 ; }
 tconcentric-det(){ echo concentric ; }
 tconcentric-src(){ echo torch ; }
 
-
 tconcentric-photons(){
     local photons=1000000
    #local photons=100000
@@ -51,10 +50,8 @@ tconcentric--(){
        1|2|3|4|5|6|7|8|9|10|20|30|40|50|60|70|80|90|100|1000|10000) g4ppe=$photons ;;
     esac
 
-
     local animtimemax=132
     local timemax=132
-
 
     op.sh \
        --g4ppe $g4ppe \
@@ -94,10 +91,6 @@ tconcentric-tt-dbg()
             --debugger $*
 
 }
-
-
-
-
 
 tconcentric-v()
 {

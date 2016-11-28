@@ -276,8 +276,8 @@ std::string OpticksAttrSeq::getLabel(Index* index, const char* key, unsigned int
     ss
         << std::setw(10) << source 
         << std::setw(10) << std::setprecision(3) << std::fixed << fraction 
-        << std::setw(25) << ( key ? key : "-" ) 
-        << std::setw(40) << dseq 
+        << std::setw(18) << ( key ? key : "-" ) 
+        << std::setw(50) << dseq 
         ; 
     
     return ss.str();
@@ -305,7 +305,7 @@ void OpticksAttrSeq::dumpTable(Index* seqtab, const char* msg)
               << std::setw(10) << seqtab->getIndexSourceTotal()
               << std::endl ;
 
-    LOG(info) << ss.str() ;
+    std::cout << ss.str() ;
 }
 
 

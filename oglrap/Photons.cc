@@ -1,5 +1,5 @@
 // op --gitemindex
-
+#include <cstring>
 
 
 // npy-
@@ -29,6 +29,20 @@ Photons::Photons(Types* types, GItemIndex* boundaries, GItemIndex* seqhis, GItem
     m_seqmat(seqmat)
 {
 }
+
+const char* Photons::getSeqhisSelectedKey()
+{
+    return m_seqhis->getSelectedKey();
+}
+const char* Photons::getSeqhisSelectedLabel(unsigned ntail)
+{
+    const char* label = m_seqhis->getSelectedLabel() ;
+    unsigned len = strlen(label);
+    const char* tail = len > ntail ? strdup( label + len - ntail ) : label ;
+    return tail ; 
+}
+
+
 
 
 void Photons::gui()

@@ -4,8 +4,8 @@ ok-vi(){       vi $(ok-source) ; }
 
 ok-usage(){ cat << EOU
 
-GGeoView
-==========
+OK : Formerly GGeoView
+=========================
 
 Start from glfwtest- and add in OptiX functionality from optixrap-
 

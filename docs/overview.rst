@@ -21,17 +21,19 @@ optickscore            okc-             OpticksCore       OpticksBoost PLog SysR
 ggeo                   ggeo-            GGeo              OpticksBoost PLog SysRap BoostRap GLM NPY OpticksCore (abbreviation:BASE)
 assimprap              assimprap-       AssimpRap         BASE GGeo Assimp
 openmeshrap            openmeshrap-     OpenMeshRap       BASE GGeo OpenMesh
-opticksgeo             opticksgeo-      OpticksGeometry   BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap      
+opticksgeo             okg-             OpticksGeometry   BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap      
 oglrap                 oglrap-          OGLRap            BASE GGeo GLEW GLFW ImGui        
 cudarap                cudarap-         CUDARap           PLog SysRap CUDA (ssl) 
 thrustrap              thrustrap-       ThrustRap         OpticksBoost PLog SysRap BoostRap GLM NPY CUDA CUDARap 
-optixrap               optixrap-        OptiXRap          BASE GGeo Assimp AssimpRap CUDARap ThrustRap
-opticksop              opticksop-       OpticksOp         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap      
+optixrap               oxrap-           OptiXRap          BASE GGeo Assimp AssimpRap CUDARap ThrustRap
+okop                   okop-            OKOP              BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap      
 opticksgl              opticksgl-       OpticksGL         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksOp Assimp AssimpRap GLEW GLFW OGLRap 
-ggeoview               ggeoview-        GGeoView          BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap 
-cfg4                   cfg4-            CfG4              BASE GGeo Geant4 EnvXercesC [G4DAE] 
+ok                     ok-              OK                BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap 
+cfg4                   cfg4-            cfg4              BASE GGeo Geant4 EnvXercesC [G4DAE] 
 okg4                   okg4-            okg4              BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap Geant4 EnvXercesC
 =====================  ===============  ===============   ==============================================================================
+
+
 
 
 Roles of the Opticks projects
@@ -42,7 +44,7 @@ sysrap
 boostrap
     filesystem utils, regular expression matching, commandline parsing 
 opticksnpy
-    array handling 
+    array handling, persistency
 optickscore
     definitions, loosely the model of the app 
 ggeo
@@ -61,12 +63,12 @@ thrustrap
     fast GPU photon indexing using interop techniques 
 optixrap
     conversion of GGeo geometry into OptiX GPU geometry, OptiX programs for propagation 
-opticksop
-    high level OptiX control 
+okop
+    operations, high level OptiX control 
 opticksgl 
     combination of oglrap- OpenGL and OptiX raytracing 
-ggeoview
-    putting together all the above
+ok
+    high level OKMgr and OKPropagator, pulling together all the above
 cfg4
     contained geant4, comparison of Geant4 and Opticks simulations
 okg4

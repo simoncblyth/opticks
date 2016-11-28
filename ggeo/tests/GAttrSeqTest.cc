@@ -1,4 +1,9 @@
-//  ggv --attr
+//  op --attr
+//
+// To override the default geometry detector use "--cat" option eg::
+//   
+//     GAttrSeqTest --cat concentric
+//
 
 #include <iostream>
 #include <iomanip>
@@ -16,6 +21,7 @@
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
+#include "OKCORE_LOG.hh"
 
 
 void test_history_sequence(Opticks* opticks)
@@ -90,7 +96,8 @@ void test_material_dump(Opticks* opticks)
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    GGEO_LOG__ ;
+    OKCORE_LOG__ ;
 
     Opticks ok(argc, argv);
     ok.configure();

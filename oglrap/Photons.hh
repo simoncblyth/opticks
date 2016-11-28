@@ -17,6 +17,8 @@ class OGLRAP_API Photons {
        void gui_flag_selection();
        void gui_radio_select(GItemIndex* ii);
        void gui_item_index(GItemIndex* ii);
+       const char* getSeqhisSelectedKey();
+       const char* getSeqhisSelectedLabel(unsigned ntail=50);
    private:
         Types*            m_types ; 
         GItemIndex*       m_boundaries ;  

@@ -140,7 +140,7 @@ June
 July
 ------
 
-* migate logging from boostlog to PLOG, as works better on windows : it also turns out to be better overall
+* migrate logging from boostlog to PLOG, as works better on windows : it also turns out to be better overall
 * learning windows symbol export API approachs 
 * succeed to get all non-CUDA/Thrust/OptiX packages to compile/run with windows VS2015
 * migrate Opticks from env into new opticks repository, mercurial history manipulations
@@ -155,8 +155,28 @@ Aug
 * migration to OptiX 4.0.0 prompts adoption of buffer control system
 * texture handling reworked for 400
 * adopt cleaner OpticksEvent layout, with better containment
+* add OpticksMode (interop,compute,cfg4) to persisted OpticksEvent metadata
+* fix bizarre swarming photon visualization from noise in compressed buffer 
+* adjust genstep handling to work with natural (mixed) Scintillation and Cerenkov gensteps
+* start app simplification refactoring with low hanging fruit of splitting up classes along 
+  lines of dependency : intro OpticksHub (beneath viz, hostside config,geometry,event) 
+  and OpticksViz 
 
+* With eye towards future support for fully integrated but layered(for dendency flexibility)
+  Opticks/G4 running  
 
+* take sledge hammer to the monolith App, pulling the pieces into separate classes, by dependency
+* rework for simultaneous Opticks, G4 simulation : OpticksEvent pairs held in OpticksHub
+* integration genstep handoff form G4 to Opticks
+
+Sep
+-----
+
+* encapsulate Geant4 into CG4
+* multievent handling rejig, looks to be mostly done in optixrap/OEvent.cc
+* intro OKMgr and OKG4Mgr the slimmed down replacements for the old App
+* Integrated Geant4/Opticks runing allowing G4GUN steps to be directly Opticks GPU propagated
+* OptiX buffer control worked out for multi-event running, using buffer control flags system  
 
 
 

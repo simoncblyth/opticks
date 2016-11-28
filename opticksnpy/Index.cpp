@@ -71,6 +71,10 @@ int* Index::getSelectedPtr()
 {
     return &m_selected ; 
 }
+const char* Index::getSelectedKey()
+{
+    return getKey(m_selected);
+}
 
 
 std::string Index::description()

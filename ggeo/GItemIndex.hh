@@ -92,6 +92,8 @@ class GGEO_API GItemIndex {
    public:
         Index*       getIndex();
         int          getSelected();
+        const char*  getSelectedKey();
+        const char*  getSelectedLabel();
    public:
         void loadIndex(const char* idpath, const char* override=NULL);
    private:
@@ -115,7 +117,7 @@ class GGEO_API GItemIndex {
 
         std::vector<unsigned int>&    getCodes();
         std::vector<std::string>&     getLabels();
-
+        const char* getLabel(unsigned index);
    public:
         void     formTable(bool verbose=false);
 

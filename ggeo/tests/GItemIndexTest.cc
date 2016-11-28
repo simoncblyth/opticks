@@ -11,6 +11,10 @@
 #include "Types.hpp"
 #include "Index.hpp"
 
+// okc-
+#include "OpticksEvent.hh"
+#include "OpticksConst.hh"
+
 // ggeo-
 #include "GItemIndex.hh"
 
@@ -35,21 +39,20 @@ int main(int argc, char** argv)
 
     Types types ; 
 
-    const char* m_typ = "torch" ; 
-    const char* m_tag = "-4" ;
-    const char* m_udet = "PmtInBox" ; 
-    
-    //const char* m_typ = "G4Gun" ; 
-    //const char* m_tag = "-1" ;
-    //const char* m_udet = "G4Gun" ; 
+    const char* det = "concentric" ; 
+    const char* typ = "torch" ; 
+    const char* tag = "1" ;
 
-    std::string ixdir = BOpticksEvent::directory( "ix", m_typ, m_udet );  
+    std::string tagdir_ = OpticksEvent::TagDir( det, typ, tag );  
+    const char* tagdir = tagdir_.c_str() ; 
 
-    std::cout << argv[0] << " ixdir " << ixdir << std::endl ;  
+    LOG(info) << argv[0] << " tagdir " << tagdir ;  
+
+
 
     if(1)
     {
-        Index* seqhis = Index::load(ixdir.c_str(), m_tag, "History_Sequence" );  // SEQHIS_NAME_
+        Index* seqhis = Index::load(tagdir, OpticksConst::SEQHIS_NAME_ );
         if(!seqhis)
         {
             LOG(error) << " NULL seqhis " ; 
@@ -61,10 +64,26 @@ int main(int argc, char** argv)
         m_seqhis->setLabeller(GItemIndex::HISTORYSEQ);
         m_seqhis->formTable();
         dump(m_seqhis, "m_seqhis");
+
+
+        int* ptr = seqhis->getSelectedPtr();
+
+        for(unsigned i=0 ; i < seqhis->getNumKeys() ; i++)
+        {
+            *ptr = i ; 
+            const char* key = m_seqhis->getSelectedKey();
+            const char* label = m_seqhis->getSelectedLabel();
+            LOG(info) << " i " << std::setw(5) << i 
+                      << " key: " << std::setw(30) << key 
+                      << " label: " << std::setw(60) << label
+                      ; 
+        }
+
+
     }
     if(0)
     {
-        Index* seqmat = Index::load(ixdir.c_str(), m_tag, "Material_Sequence");  // SEQMAT_NAME_
+        Index* seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_ );
         GItemIndex* m_seqmat = new GItemIndex(seqmat);
         m_seqmat->setTypes(&types);
         m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
@@ -73,9 +92,9 @@ int main(int argc, char** argv)
     }
     if(0)
     {
-        Index* bndidx_ = Index::load(ixdir.c_str(), m_tag, "Boundary_Index");     // BNDIDX_NAME_
-        GItemIndex* bndidx = new GItemIndex(bndidx_);
-        bndidx->dump("bndidx");
+        Index* bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_ );
+        GItemIndex* m_bndidx = new GItemIndex(bndidx);
+        dump(m_bndidx,"m_bndidx");
     }
 
 

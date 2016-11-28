@@ -38,6 +38,7 @@ class NPY_API Index : public NSequence {
    public:
         int* getSelectedPtr();
         int  getSelected();
+        const char* getSelectedKey();
    public:
         // fulfil NSequence, in order to use with GAttrSequence
         unsigned int getNumKeys();

@@ -28,6 +28,32 @@ NB upload/download will only act on compute buffers, interop
 buffers are skipped within underlying OContext methods
 based on OpticksBufferControl settings.
 
+
+Necessary Buffers
+------------------
+
+*genstep*
+    (n_genstep,6,4) float
+
+*photon*
+    (n_photon,4,4) float
+
+*seed*
+    (n_seed, 1) uint32
+
+
+Buffers During Debugging
+-------------------------
+
+*sequence*
+    (n_photon, 1, 2) uint64 : flag and material sequence (64 bits = 16*4 bits )
+
+*record*
+    (n_photon, 16, 2, 4) int16
+
+
+
+
 **/
 
 #include "OXRAP_API_EXPORT.hh"

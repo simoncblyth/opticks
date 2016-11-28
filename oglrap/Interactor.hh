@@ -55,6 +55,7 @@ class OGLRAP_API Interactor {
        Frame*       getFrame();
        bool*        getScrubModeAddress();
        bool*        getGUIModeAddress();
+       bool*        getLabelModeAddress();
 
        //bool*        getModeAddress(const char* name);
        unsigned int getContainer();
@@ -65,7 +66,7 @@ class OGLRAP_API Interactor {
        void cursor_drag( float x, float y, float dx, float dy, int ix, int iy );
 
    public:
-        typedef enum { NONE, SCRUB, FULL, NUM_GUI_STYLE } GUIStyle_t ;  
+        typedef enum { NONE, SCRUB, LABEL, FULL, NUM_GUI_STYLE } GUIStyle_t ;  
         void nextGUIStyle();
         void applyGUIStyle();
   public:
@@ -109,6 +110,7 @@ class OGLRAP_API Interactor {
        bool m_bookmark_mode ;
        bool m_gui_mode ;
        bool m_scrub_mode ;
+       bool m_label_mode ;
        bool m_keys_down[NUM_KEYS] ; 
 
        //int  m_optix_mode ;

@@ -381,6 +381,12 @@ void OpticksViz::renderGUI()
     if(*show_scrub_window)
         m_gui->show_scrubber(show_scrub_window);
 
+
+    bool* show_label_window = m_interactor->getLabelModeAddress();
+    if(*show_label_window)
+        m_gui->show_label(show_label_window);
+
+
     m_gui->render();
 #endif
 }

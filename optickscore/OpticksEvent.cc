@@ -2071,11 +2071,21 @@ void OpticksEvent::loadIndex()
 
 Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const char* udet, const char* name)
 {
-    //const char* species = "ix" ; 
-    //std::string ixdir = speciesDir(species, udet, typ);
     std::string tagdir = TagDir(udet, typ, tag);
-    Index* seqhis = Index::load(tagdir.c_str(), name );
-    return seqhis ; 
+    Index* index = Index::load(tagdir.c_str(), name );
+
+    if(!index)
+    {
+        LOG(warning) << "OpticksEvent::loadNamedIndex FAILED" 
+                     << " name " << name
+                     << " typ " << typ
+                     << " tag " << tag
+                     << " udet " << udet
+                     << " tagdir " << tagdir 
+                     ;
+    }
+
+    return index ; 
 }
 
 Index* OpticksEvent::loadHistoryIndex( const char* typ, const char* tag, const char* udet)

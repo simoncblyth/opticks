@@ -63,6 +63,7 @@ Interactor::Interactor(OpticksHub* hub)
    m_bookmark_mode(false),
    m_gui_mode(false),
    m_scrub_mode(false),
+   m_label_mode(false),
    //m_optix_mode(0),
    m_optix_resolution_scale(1),
    m_dragfactor(1.f),
@@ -85,11 +86,17 @@ bool* Interactor::getGUIModeAddress()
 {
     return &m_gui_mode ; 
 }
-
 bool* Interactor::getScrubModeAddress()
 {
     return &m_scrub_mode ; 
 }
+bool* Interactor::getLabelModeAddress()
+{
+    return &m_label_mode ; 
+}
+
+
+
 
 void Interactor::nextGUIStyle()
 {
@@ -105,14 +112,22 @@ void Interactor::applyGUIStyle()  // G:key
         case NONE:
                   m_gui_mode = false ;    
                   m_scrub_mode = false ;    
+                  m_label_mode = false ; 
                   break ; 
         case SCRUB:
                   m_gui_mode = false ;    
                   m_scrub_mode = true ;    
+                  m_label_mode = false ; 
+                  break ; 
+        case LABEL:
+                  m_gui_mode = false ;    
+                  m_scrub_mode = false ;    
+                  m_label_mode = true ; 
                   break ; 
         case FULL:
                   m_gui_mode = true ;    
                   m_scrub_mode = true ;    
+                  m_label_mode = true ;    
                   break ; 
         default:
                   break ; 

@@ -104,9 +104,6 @@ Index* GItemIndex::getIndex()
 }
 
 
-
-
-
 std::vector<unsigned int>& GItemIndex::getCodes()
 {
    return m_codes ; 
@@ -115,6 +112,11 @@ std::vector<unsigned int>& GItemIndex::getCodes()
 std::vector<std::string>& GItemIndex::getLabels()
 {
    return m_labels ; 
+}
+
+const char* GItemIndex::getLabel(unsigned index)
+{
+   return index < m_labels.size() ? m_labels[index].c_str() : NULL ;
 }
 
 
@@ -134,6 +136,20 @@ int GItemIndex::getSelected()
 {
    return m_index->getSelected();
 }
+const char* GItemIndex::getSelectedKey()
+{
+   return m_index->getSelectedKey();
+}
+const char* GItemIndex::getSelectedLabel()
+{
+   int sel = m_index->getSelected();
+   return getLabel(sel);
+}
+
+
+
+
+
 
 void GItemIndex::loadIndex(const char* idpath, const char* override)
 {

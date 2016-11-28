@@ -56,6 +56,7 @@ class OGLRAP_API GUI {
        void newframe();
        void show(bool* opened);
        void show_scrubber(bool* opened);
+       void show_label(bool* opened);
        void render();
        void shutdown();
 
@@ -98,6 +99,7 @@ class OGLRAP_API GUI {
        bool          m_show_test_window ;
        float         m_bg_alpha ; 
        float         m_scrub_alpha ; 
+       float         m_label_alpha ; 
        Interactor*   m_interactor ; 
        Scene*        m_scene ; 
        Composition*  m_composition ; 
