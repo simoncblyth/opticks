@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
+#include <cstring>
 
 /**
 struct SArgs
