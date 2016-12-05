@@ -350,6 +350,13 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         
         G4double ScintillationYield = 0;
         {// Yield.  Material must have this or we lack raisins dayetras
+
+            // try const first
+            if (aMaterialPropertiesTable->ConstPropertyExists("SCINTILLATIONYIELD")) {
+                ScintillationYield = aMaterialPropertiesTable->GetConstProperty("SCINTILLATIONYIELD"); 
+                G4cout << "SCINTILLATIONYIELD const: " << ScintillationYield << G4endl;
+            } else {
+            
             const G4MaterialPropertyVector* ptable =
                 aMaterialPropertiesTable->GetProperty("SCINTILLATIONYIELD");
             if (!ptable) {
@@ -362,6 +369,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #else
             ScintillationYield = ptable->GetProperty(0);
 #endif
+            }
         }
 
         G4double ResolutionScale    = 1;
