@@ -187,12 +187,18 @@ void OpticksHub::configureState(NConfigurable* scene)
     m_state = m_ok->getState();  
     m_state->setVerbose(false);
 
-    LOG(trace) << "OpticksHub::configureState " << m_state->description();
 
     m_state->addConfigurable(scene);
     m_composition->addConstituentConfigurables(m_state); // constituents: trackball, view, camera, clipper
 
-    m_bookmarks   = new Bookmarks(m_state->getDir()) ; 
+    const char* dir = m_state->getDir();
+
+    LOG(fatal) << "OpticksHub::configureState " 
+               << m_state->description()
+               << " dir " << dir
+               ;
+
+    m_bookmarks   = new Bookmarks(dir) ; 
     m_bookmarks->setState(m_state);
     m_bookmarks->setVerbose();
     m_bookmarks->setInterpolatedViewPeriod(m_fcfg->getInterpolatedViewPeriod());

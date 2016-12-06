@@ -144,7 +144,7 @@ void GSurLib::examineSolidBndSurfaces()
         GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
 
 
-        LOG(info) << std::setw(3) << i 
+        LOG(debug) << std::setw(3) << i 
                   << " nodeinfo " << std::setw(50) << nodeinfo.description() 
                   << " bnd " << std::setw(50) << bnd.description() 
                   << ( isur ? " isur" : "" )

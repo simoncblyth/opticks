@@ -131,14 +131,16 @@ def dirpol(ab, flg0="SC"):
 
 
 def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
-
+    """
+    Two subplots containg x,y,z coordinates of a and b 
+    """
     ax = a[:,0]
     ay = a[:,1]
     az = a[:,2]
 
-    nax = np.where(np.isnan(ax))[0] 
-    nay = np.where(np.isnan(ay))[0] 
-    naz = np.where(np.isnan(az))[0] 
+    nax = np.count_nonzero(np.isnan(ax))
+    nay = np.count_nonzero(np.isnan(ay))
+    naz = np.count_nonzero(np.isnan(az))
 
     if nax+nay+naz > 0:
        log.warning("A: nan found in %s nax %d nay %d naz %d " % (title, nax, nay, naz)) 
@@ -151,9 +153,9 @@ def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
     by = b[:,1]
     bz = b[:,2]
 
-    nbx = np.where(np.isnan(bx))[0] 
-    nby = np.where(np.isnan(by))[0] 
-    nbz = np.where(np.isnan(bz))[0] 
+    nbx = np.count_nonzero(np.isnan(bx))
+    nby = np.count_nonzero(np.isnan(by))
+    nbz = np.count_nonzero(np.isnan(bz))
 
     if nbx+nby+nbz > 0:
        log.warning("B: nan found in %s nbx %d nby %d nbz %d " % (title, nbx, nby, nbz)) 
@@ -174,6 +176,11 @@ def abplt(a,b, bins=100,nx=2,ny=1,offset=0, title=""):
 
 
 def dirpol(ab, fr, to):
+    """
+    """
+
+    log.info("dirpol fr %d to %d " % (fr, to ))
+
     nx = 2
     ny = 2
 
@@ -186,11 +193,79 @@ def dirpol(ab, fr, to):
     plt.show()
 
 
+
+def scatter(ab):
+    """
+    """
+    ab.sel = "TO SC BT BT BT BT SA"
+
+    fr = ab.iflg("SC")
+
+    a_opol, b_opol = ab.rpol_(fr=fr-1)
+    a_npol, b_npol = ab.rpol_(fr=fr)
+
+    a_odir, b_odir = ab.rdir(fr=fr-1,to=fr)
+    a_ndir, b_ndir = ab.rdir(fr=fr,to=fr+1)
+
+    a_ct = costheta_( np.cross(a_opol, a_ndir ), a_opol )
+    b_ct = costheta_( np.cross(b_opol, b_ndir) , b_opol )
+
+    return a_ct, b_ct
+
+
+
+
 def poldot(ab, fr, oldpol=[0,1,0], bins=100):
     """
     dot product between old and new polarization
+
+
+  
+        o_pol,o_dir  / n_pol,n_dir
+          |         /
+          |--------/
+
+
+    * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=207
+ 
+    New pol needs to be
+
+    * Perpendicular to the new momentum vector
+    * Same plane as the new momentum vector and initial polarization vector
+
+
+    OpRayleigh.cc::
+
+        164            // calculate the new polarization direction
+        165            // The new polarization needs to be in the same plane as the new
+        166            // momentum direction and the old polarization direction
+        167            OldPolarization = aParticle->GetPolarization();
+        168            constant = -NewMomentumDirection.dot(OldPolarization);
+        ...
+        170            NewPolarization = OldPolarization + constant*NewMomentumDirection;
+        ///
+        ///          linear combination of oldpol and newdir is in same plane as these
+        ///
+        171            NewPolarization = NewPolarization.unit();
+
+
+    ::
+
+             constant = -n_dir.o_pol
+
+             n_pol = o_pol + (-n_dir.o_pol )n_dir
+          
+             n_dir.n_pol = n_dir.o_pol + (-n_dir.o_pol) n_dir.n_dir = 0
+
+
+             o_pol ^ n_dir : is normal to the plane 
+
+             n_pol.( o_pol ^ n_dir ) == 0 
+
+
+
     """
-    a,b = ab.rpol_(fr=fr)
+    a,b = ab.rpol_(fr=fr)  # new pol
     act = costheta_( np.tile( oldpol, len(a) ).reshape(-1,3), a)
     bct = costheta_( np.tile( oldpol, len(b) ).reshape(-1,3), b)
 
@@ -217,7 +292,7 @@ def debug_plotting(ok, ab):
             log.fatal("expecting one line selection including SC")
         else:
             dirpol(ab, fr, fr+1)
-            #poldot(ab, fr )   
+            poldot(ab, fr )   
         pass 
     elif len(pfxseqmat) > 0:
         log.info(" pfxseqmat [%s] " % (pfxseqmat))
@@ -230,8 +305,12 @@ def debug_plotting(ok, ab):
 
 
 if __name__ == '__main__':
-    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric")  
+    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="concentric", smry=True)  
+
+    print "ok.smry %d " % ok.smry 
     log.info(ok.brief)
+
+
 
     ab = AB(ok)
     print ab
@@ -240,6 +319,8 @@ if __name__ == '__main__':
         log.info("early exit as non-interactive")
         sys.exit(0)
 
+
+    debug_plotting(ok, ab)
 
     #ab.sel = "[TO] BT BT BT BT SA" 
     #

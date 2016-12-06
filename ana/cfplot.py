@@ -101,13 +101,22 @@ def multiplot(ok, ab, start=0, stop=5, log_=False):
 
             for page in pages:
                 hh = ab.rhist(page, irec, log_ )
-                qwns_plot( hh, suptitle )
+                qwns_plot( ok, hh, suptitle )
             pass
         pass
     pass
 
 
+def sc_selection_plot(ok, ab, log_=False):
+    pages = ok.qwn.split(",")
+    irec = ab.iflg("SC")
 
+    ab.irec = irec
+    suptitle = ab.suptitle
+
+    for page in pages:
+        hh = ab.rhist(page, irec, log_)
+        qwns_plot( ok, hh, suptitle )
 
 
 

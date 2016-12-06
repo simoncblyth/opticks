@@ -123,20 +123,20 @@ void CTrackingAction::setTrack(const G4Track* track)
          int primary_id = CTrack::PrimaryPhotonID(m_track) ;    // layed down in trackinfo by custom Scintillation process
          bool reemtrack = false  ;
  
-         if( m_parent_id == -1 )     // primary photon, ie not downstream from reemission 
-         {
-             reemtrack = false ; 
-             photon_id = m_track_id ; 
-         } 
-         else if( primary_id >= 0)
+         if( primary_id >= 0)
          {
              reemtrack = true ; 
              photon_id = primary_id ;      // <-- tacking reem step recording onto primary record 
          }
          else
          {
-             assert(0);
-         } 
+             // with torch running aleays m_parent_id == -1 indicating primary photon
+             // but remove that requirment for g4gun running
+
+             // primary photon, ie not downstream from reemission 
+             reemtrack = false ; 
+             photon_id = m_track_id ; 
+         }
 
          setPhotonId(photon_id, reemtrack);
          m_primary_id = primary_id ; // for debug only 

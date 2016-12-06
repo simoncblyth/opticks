@@ -85,6 +85,9 @@ void OKG4Mgr::propagate()
             {
                  NPY<float>* gs = m_g4->propagate() ;
 
+                 if(!gs) LOG(fatal) << "CG4::propagate failed to return gensteps" ; 
+                 assert(gs);
+
                  m_run->setGensteps(gs); 
             }
 

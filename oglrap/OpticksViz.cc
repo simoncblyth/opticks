@@ -114,6 +114,7 @@ void OpticksViz::init()
 
     if(m_immediate)
     {
+        
         m_hub->configureState(getSceneConfigurable()) ;    // loads/creates Bookmarks
 
         prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)

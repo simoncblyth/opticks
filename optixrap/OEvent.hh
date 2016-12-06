@@ -33,13 +33,13 @@ Necessary Buffers
 ------------------
 
 *genstep*
-    (n_genstep,6,4) float
+    (n_genstep,6,4) float32, parameters of Cerenkov, Scintillation or Torch genstep
 
 *photon*
-    (n_photon,4,4) float
+    (n_photon,4,4) float32
 
 *seed*
-    (n_seed, 1) uint32
+    (n_photon, 1) uint32, provides genstep_id for each photon  
 
 
 Buffers During Debugging

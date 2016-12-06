@@ -17,6 +17,16 @@ Dates from the patch files or release notes html
 
 
 
+
+Scattering Bug
+----------------
+
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=207
+
+
+
+
+
 ProposeVelocity does nothing as CalculateVelocityForOpticalPhoton is repeatedly called
 -----------------------------------------------------------------------------------------
 
@@ -61,7 +71,7 @@ Found it
 
 ::
 
-    24th Jan 2012 P.Gumplinger (op-V09-05-00)
+   24th Jan 2012 P.Gumplinger (op-V09-05-00)
                   G4OpBoundaryProcess.cc - solves Problem #1275
                   call aParticleChange.ProposeVelocity(aTrack.GetVelocity())
                   at every invocation of DoIt; for FresnelRefraction calculate

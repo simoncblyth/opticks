@@ -47,7 +47,7 @@ tg4gun-cd(){  cd $(tg4gun-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }
 
-tg4gun-tag(){ echo -1 ; }
+tg4gun-tag(){ echo 1 ; }
 tg4gun-det(){ echo G4Gun ; }
 tg4gun-src(){ echo torch ; }
 
@@ -81,14 +81,26 @@ tg4gun--()
 /run/particle/verbose 1
 EOI
 
+
+#   op.sh \
+#       --tcfg4 \
+#       --cat G4Gun --tag $tag --save \
+#       --g4inimac "$inimac" \
+#       --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
+#       $* 
+
    op.sh \
-       --tcfg4 \
+       --okg4 \
        --cat G4Gun --tag $tag --save \
-       --g4inimac "$inimac" \
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
 
+
+
+
 }
+
+
 
 tg4gun-t()
 {

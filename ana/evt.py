@@ -154,9 +154,10 @@ class Evt(object):
         return sel 
 
 
-    def __init__(self, tag="1", src="torch", det="dayabay", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?" ):
+    def __init__(self, tag="1", src="torch", det="dayabay", args=None, maxrec=10, rec=True, dbg=False, label=None, seqs=[], not_=False, nom="?", smry=False):
         log.debug("%s.__init__ START " % nom)
         self.nom = nom
+        self.smry = smry
         self._psel = None
         self._labels = []
 
@@ -315,7 +316,7 @@ class Evt(object):
 
     def make_pflags_ana(self, pflags):
         cn = "%s:%s" % (str(self.tag), self.det)
-        return SeqAna( pflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx )
+        return SeqAna( pflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry )
 
 
     def init_photons(self):
@@ -409,7 +410,7 @@ class Evt(object):
         self.hc4 = hc4
 
         cn = "%s:%s" % (str(tag), det)
-        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx)
+        self.hflags_ana = SeqAna( self.hflags, self.hismask, cnames=[cn], dbgseq=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
  
         self.desc['hwl'] = "(hits) wavelength"
         self.desc['hpost'] = "(hits) final photon step: position, time"
@@ -434,11 +435,11 @@ class Evt(object):
 
     def make_seqhis_ana(self, seqhis):
         cn = "%s:%s" % (str(self.tag), self.det)
-        return SeqAna( seqhis, self.histype, cnames=[cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx )
+        return SeqAna( seqhis, self.histype, cnames=[cn], dbgseq=self.dbgseqhis, dbgmsk=self.dbgmskhis, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
 
     def make_seqmat_ana(self, seqmat):
         cn = "%s:%s" % (str(self.tag), self.det)
-        return SeqAna( seqmat, self.mattype, cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx )
+        return SeqAna( seqmat, self.mattype, cnames=[cn], dbgseq=self.dbgseqmat, dbgmsk=self.dbgmskmat, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
 
 
     def init_sequence(self, tag, src, det, dbg):

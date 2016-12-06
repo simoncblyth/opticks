@@ -34,6 +34,8 @@ class OGLRAP_API Interactor {
 
        void gui();
 
+
+       Bookmarks* getBookmarks();
        void setTouchable(Touchable* touchable);
        void setScene(Scene* scene);
        void setFrame(Frame* frame);

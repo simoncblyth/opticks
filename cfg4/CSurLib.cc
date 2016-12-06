@@ -192,7 +192,7 @@ G4OpticalSurface* CSurLib::makeOpticalSurface(GSur* sur)
     os->SetType(type);
 
 
-    LOG(info) << "CSurLib::makeOpticalSurface " 
+    LOG(debug) << "CSurLib::makeOpticalSurface " 
               << std::setw(10) << flavor 
               << COpticalSurface::Brief(os) 
               ;
@@ -236,7 +236,7 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
     
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
-    LOG(info) << "CSurLib::makeSkinSurface"
+    LOG(debug) << "CSurLib::makeSkinSurface"
               << " ilv " << std::setw(5) << ilv
               << " name " << std::setw(35) << name
               << " lvn " << std::setw(35) << lvn 

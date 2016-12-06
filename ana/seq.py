@@ -223,7 +223,7 @@ class SeqType(BaseType):
 
  
 class SeqTable(object):
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, smry=False): 
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
@@ -236,6 +236,7 @@ class SeqTable(object):
 
         ncol = cu.shape[1] - 1 
 
+        self.smry = smry
         self.dirty = False
         self.cu = cu 
         self.ncol = ncol
@@ -349,8 +350,8 @@ class SeqTable(object):
            if not pick: 
                return None 
    
-        xs = "%4d %20s" % (n, ihex_(iseq))        
-        vals = map(lambda _:" %10s " % _, self.cu[n,1:] ) 
+        xs = "%0.4d %16s" % (n, ihex_(iseq))        
+        vals = map(lambda _:" %7s " % _, self.cu[n,1:] ) 
         label = self.labels[n]
         nstep = "[%-2d]" % self.label2nstep[label]
 
@@ -370,13 +371,13 @@ class SeqTable(object):
             sc2 = ""
         pass
 
-        if self.ab is not None:
+        if self.ab is not None and self.smry == False:
             sab = " %10.3f +- %4.3f " % ( self.ab[n,0], self.ab[n,1] )
         else:
             sab = ""
         pass
 
-        if self.ba is not None:
+        if self.ba is not None and self.smry == False:
             sba = " %10.3f +- %4.3f " % ( self.ba[n,0], self.ba[n,1] )
         else:
             sba = ""
@@ -389,8 +390,8 @@ class SeqTable(object):
         else:
              frac = ""
         pass
-
-        return " ".join([xs+" "] + [frac] + vals + ["   "]+ [sc2, sab, sba, nstep, label]) 
+        cols = [xs+" "] + [frac] + vals + ["   "]+ [sc2, sab, sba, nstep, label]
+        return " ".join(filter(lambda _:_ != "", cols)) 
 
     def __call__(self, labels):
         ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
@@ -402,7 +403,7 @@ class SeqTable(object):
         space = spacer_("")
         title = spacer_(getattr(self,'title',""))
 
-        body_ = lambda _:" %10s " % _
+        body_ = lambda _:" %7s " % _
         head = title + " ".join(map(body_, self.cnames ))
         tail = space + " ".join(map(body_, self.tots ))
         return "\n".join([head,tail]+ filter(None,self.lines[self.sli]) + [tail])
@@ -431,7 +432,7 @@ class SeqTable(object):
 
         log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
-        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)    
+        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)    
         log.debug("SeqTable.compare DONE")
         return cftab
 
@@ -457,7 +458,7 @@ class SeqAna(object):
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
     
-    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0):
+    def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, smry=False):
         """
         :param aseq: photon length sequence array 
         :param af: instance of SeqType subclass, which knows what the codes mean 
@@ -472,13 +473,14 @@ class SeqAna(object):
 
         """
         cu = count_unique_sorted(aseq)
+        self.smry = smry 
         self.af = af
         self.dbgseq = dbgseq
         self.dbgmsk = dbgmsk
         self.dbgzero = dbgzero
         self.cmx = cmx
 
-        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx)
+        self.table = SeqTable(cu, af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, smry=self.smry)
 
         self.aseq = aseq
         self.cu = cu

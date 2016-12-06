@@ -314,11 +314,13 @@ bool G4StepNPY::applyLookup(unsigned int index)
     unsigned int acode = uif.u  ;
     int bcode = m_lookup->a2b(acode) ;
 
+
+
     if(true)
     {
         std::string aname = m_lookup->acode2name(acode) ;
         std::string bname = m_lookup->bcode2name(bcode) ;
-        //printf(" G4StepNPY::applyLookup  %3u -> %3d  a[%s] b[%s] \n", acode, bcode, aname.c_str(), bname.c_str() );
+        printf(" G4StepNPY::applyLookup  %3u -> %3d  a[%s] b[%s] \n", acode, bcode, aname.c_str(), bname.c_str() );
         assert(aname == bname);
     }
 
@@ -328,15 +330,53 @@ bool G4StepNPY::applyLookup(unsigned int index)
         uif.u = bcode ; 
         data[index] = uif.f ;
         m_lines.insert(bcode);
+
+        if(m_lookup_ok.count(acode) == 0) m_lookup_ok[acode] = 0 ; 
+        m_lookup_ok[acode]++ ; 
     }
     else
     {
         std::string aname = m_lookup->acode2name(acode) ;
         printf("G4StepNPY::applyLookup failed to translate acode %u : %s \n", acode, aname.c_str() );
+
+        if(m_lookup_fails.count(acode) == 0) m_lookup_fails[acode] = 0 ; 
+        m_lookup_fails[acode]++ ; 
+
     }
 
     return bcode > -1 ; 
 }
+
+
+void G4StepNPY::dumpLookupFails(const char* msg)
+{
+    LOG(info) << msg 
+              << " lookup_fails " << m_lookup_fails.size()
+              << " lookup_ok " << m_lookup_ok.size()
+              ;
+
+    typedef std::map<int,int> MII ;
+    for(MII::const_iterator it=m_lookup_fails.begin() ; it != m_lookup_fails.end() ; it++)
+    {
+         std::cout << " acode " <<  std::setw(10) << it->first 
+                   << " lookup_fails " << std::setw(10) << it->second
+                   << std::endl 
+                   ;
+
+    }
+
+    for(MII::const_iterator it=m_lookup_ok.begin() ; it != m_lookup_ok.end() ; it++)
+    {
+         std::cout << " acode " <<  std::setw(10) << it->first 
+                   << " lookup_ok " << std::setw(10) << it->second
+                   << std::endl 
+                   ;
+
+    }
+
+}
+
+
 
 
 int G4StepNPY::getStepId(unsigned int i)
@@ -390,6 +430,9 @@ void G4StepNPY::applyLookup(unsigned int jj, unsigned int kk)
                   ;
        NPYBase::setGlobalVerbose(true);
        m_npy->save("$TMP/G4StepNPY_applyLookup_FAIL.npy");
+
+       dumpLookupFails("G4StepNPY::applyLookup");
+
     }
 
     assert(nfail == 0);

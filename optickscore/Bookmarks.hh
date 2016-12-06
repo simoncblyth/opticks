@@ -11,23 +11,23 @@ class NState ;
 // opticks-
 class InterpolatedView ; 
 
-//
-//  *Bookmarks*
-//
-//       Manages swapping between states persisted into .ini files within a single *Bookmarks* directory
-//       details handled by npy-/NState
-//
-//       Instantiating *Bookmarks* reads all the .ini state files within the directory into NState 
-//       instances held in m_bookmarks std::map<unsigned int, NState*>
-//
-//       An InterpolatedView moving between Bookmarks can be created, to result in visible 
-//       changes the viewpoint needs to differ between the states. Currently camera only differences
-//       are not interpolated.
-//
-//       NB trackballed changes need to be collapsed into the view... 
-// 
-//
-//
+/**
+Bookmarks
+==========
+
+Manages swapping between states persisted into .ini files within a single *Bookmarks* directory
+details handled by npy-/NState
+
+Instantiating *Bookmarks* reads all the .ini state files within the directory into NState 
+instances held in m_bookmarks std::map<unsigned int, NState*>
+
+An InterpolatedView moving between Bookmarks can be created, to result in visible 
+changes the viewpoint needs to differ between the states. Currently camera only differences
+are not interpolated.
+
+NB trackballed changes need to be collapsed into the view... 
+
+**/
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"

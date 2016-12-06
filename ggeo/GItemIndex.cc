@@ -143,7 +143,7 @@ const char* GItemIndex::getSelectedKey()
 const char* GItemIndex::getSelectedLabel()
 {
    int sel = m_index->getSelected();
-   return getLabel(sel);
+   return sel == 0 ? "All" : getLabel(sel-1);
 }
 
 

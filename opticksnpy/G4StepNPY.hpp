@@ -37,6 +37,7 @@ class NPY_API G4StepNPY {
        void applyLookup(unsigned int jj, unsigned int kk);
        void dump(const char* msg);
        void dumpLines(const char* msg);
+       void dumpLookupFails(const char* msg="G4StepNPY::dumpLookupFails");
    public:  
        int  getStepId(unsigned int i=0);
   private:
@@ -48,6 +49,8 @@ class NPY_API G4StepNPY {
         Set_t    m_lines ;
         std::map<int, int> m_photons ; 
         int                m_total_photons ; 
+        std::map<int, int> m_lookup_fails ; 
+        std::map<int, int> m_lookup_ok ; 
  
 };
 

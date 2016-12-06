@@ -105,7 +105,7 @@
 #include "DsG4CompositeTrackInfo.h"
 using namespace std;
 
-
+#include "CCollector.hh"
 #include "PLOG.hh"
 
 using CLHEP::twopi ; 
@@ -315,6 +315,50 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         G4double MeanNumberOfPhotons2 =
                      GetAverageNumberOfPhotons(charge,beta2,aMaterial,Rindex);
 
+
+
+
+    // OPTICKS STEP COLLECTION : STEALING THE STACK
+    {
+        const G4ParticleDefinition* definition = aParticle->GetDefinition();
+        G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+        G4int materialIndex = aMaterial->GetIndex();
+        CCollector::Instance()->collectCerenkovStep(
+
+               0,                  // 0     id:zero means use cerenkov step count 
+               aTrack.GetTrackID(),
+               materialIndex, 
+               NumPhotons,
+
+               x0.x(),                // 1
+               x0.y(),
+               x0.z(),
+               t0,
+
+               deltaPosition.x(),     // 2
+               deltaPosition.y(),
+               deltaPosition.z(),
+               aStep.GetStepLength(),
+
+               definition->GetPDGEncoding(),   // 3
+               definition->GetPDGCharge(),
+               aTrack.GetWeight(),
+               ((pPreStepPoint->GetVelocity()+ pPostStepPoint->GetVelocity())/2.),
+               
+               BetaInverse,       // 4   
+               Pmin,
+               Pmax,
+               maxCos,
+
+               maxSin2,   // 5
+               MeanNumberOfPhotons1, 
+               MeanNumberOfPhotons2,
+               0
+        );
+    }
+
+
+
 	for (G4int i = 0; i < NumPhotons; i++) {
 	  // Determine photon energy
 	  G4double rand=0;
@@ -457,7 +501,7 @@ DsG4Cerenkov::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 					      aStep.GetPreStepPoint()->GetTouchableHandle());
 	 
       int ParentID = aTrack.GetTrackID();
-      LOG(info) << " ParentID " << ParentID ; 
+      //LOG(info) << " ParentID " << ParentID ; 
 	  aSecondaryTrack->SetParentID(ParentID);
 	  
 	  aParticleChange.AddSecondary(aSecondaryTrack);
@@ -829,20 +873,34 @@ G4double DsG4Cerenkov::GetPoolPmtQe(G4double energy) const
 {
   static bool first = true;
   static G4Material* bialkali = 0;
+
   if(first) {
     bialkali = G4Material::GetMaterial("/dd/Materials/Bialkali");
     if( bialkali ==0 ) {
       G4cout<<"Error: DsG4Cerenkov::Can't find material bialkali."<<G4endl;
     }
+    if(bialkali == NULL ) LOG(fatal) << "missing bialkali " ; 
+    assert(bialkali); 
     first = false;
   }
-  
-  G4MaterialPropertyVector* qevec = bialkali->GetMaterialPropertiesTable()->GetProperty("EFFICIENCY");
-#if ( G4VERSION_NUMBER > 1000 )
-  return qevec->Value(energy);
-#else
-  return qevec->GetProperty(energy);
-#endif
+ 
 
+   G4MaterialPropertiesTable* ptable = bialkali->GetMaterialPropertiesTable();
+
+   G4double efficiency = 0 ; 
+   if(ptable)
+   {
+       G4MaterialPropertyVector* qevec = ptable->GetProperty("EFFICIENCY");
+#if ( G4VERSION_NUMBER > 1000 )
+       efficiency = qevec ? qevec->Value(energy) : 0 ;
+#else
+       efficiency = qevec ? qevec->GetProperty(energy) : 0 ;
+#endif
+   }
+   else
+   { 
+       efficiency = ptable->GetConstProperty("EFFICIENCY");
+   }       
+   return efficiency ; 
 }
 // wz

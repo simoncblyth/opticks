@@ -101,8 +101,8 @@ tpmt--(){
     local det=$(tpmt-det)
 
     #local photons=10000
-    #local photons=500000
-    local photons=100000
+    local photons=500000
+    #local photons=100000
 
     local zenith=0,1
     #local typ=disclin

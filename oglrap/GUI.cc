@@ -182,6 +182,8 @@ void GUI::show_label(bool* opened)
     ImGuiWindowFlags window_flags = 0;
     window_flags |= ImGuiWindowFlags_NoTitleBar ;
 
+    m_label_alpha = 0.5f ; 
+
     if (!ImGui::Begin("Label", opened, ImVec2(550,100), m_label_alpha, window_flags)) 
     {
         // Early out if the window is collapsed, as an optimization.
@@ -191,19 +193,20 @@ void GUI::show_label(bool* opened)
     ImGui::PushItemWidth(-140);  
 
 
-    ImGui::SliderFloat("float", &m_label_alpha, 0.0f, 1.0f);
+    //ImGui::SliderFloat("float", &m_label_alpha, 0.0f, 1.0f);
 
     // attempt to add fontsize control : aiming for readable label of the current selection in the scrub window
     // search for Font in imgui-demo 
 
-    static float window_scale = 1.0f;
-    ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.1f");              // scale only this window
+    static float window_scale = 2.5f;
+    //ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.1f");              // scale only this window
 
     if(m_photons)
     {
-        const char* key   = m_photons->getSeqhisSelectedKey() ;
+        //const char* key   = m_photons->getSeqhisSelectedKey() ;
         const char* label = m_photons->getSeqhisSelectedLabel() ;
-        ImGui::Text("%s : %s", key, label);
+        //ImGui::Text("%s : %s", key, label);
+        ImGui::Text("%s", label);
     } 
     
     ImGui::SetWindowFontScale(window_scale);

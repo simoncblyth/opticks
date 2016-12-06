@@ -17,6 +17,45 @@ so same photon count between them is a given.
 The history and material differences are all bugs to fix. 
 
 
+
+Debug running
+---------------
+
+::
+
+    2016-11-29 21:13:16.803 INFO  [37041] [*DsG4Cerenkov::PostStepDoIt@460]  ParentID 1
+    Process 8288 stopped
+    * thread #1: tid = 0x90b1, 0x000000010708de44 libG4global.dylib`G4PhysicsVector::Value(this=0x0000000000000000, theEnergy=<unavailable>, lastIdx=0x00007fff5fbfd6d8) const + 4 at G4PhysicsVector.cc:501, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x10)
+        frame #0: 0x000000010708de44 libG4global.dylib`G4PhysicsVector::Value(this=0x0000000000000000, theEnergy=<unavailable>, lastIdx=0x00007fff5fbfd6d8) const + 4 at G4PhysicsVector.cc:501
+       498  G4double G4PhysicsVector::Value(G4double theEnergy, size_t& lastIdx) const
+       499  {
+       500    G4double y;
+    -> 501    if(theEnergy <= edgeMin) {
+       502      lastIdx = 0; 
+       503      y = dataVector[0]; 
+       504    } else if(theEnergy >= edgeMax) { 
+    (lldb) bt
+    * thread #1: tid = 0x90b1, 0x000000010708de44 libG4global.dylib`G4PhysicsVector::Value(this=0x0000000000000000, theEnergy=<unavailable>, lastIdx=0x00007fff5fbfd6d8) const + 4 at G4PhysicsVector.cc:501, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x10)
+      * frame #0: 0x000000010708de44 libG4global.dylib`G4PhysicsVector::Value(this=0x0000000000000000, theEnergy=<unavailable>, lastIdx=0x00007fff5fbfd6d8) const + 4 at G4PhysicsVector.cc:501
+        frame #1: 0x0000000103e1364b libcfg4.dylib`G4PhysicsVector::Value(this=0x0000000000000000, theEnergy=0.000018830823148420297) const + 43 at G4PhysicsVector.icc:249
+        frame #2: 0x0000000103e33cc1 libcfg4.dylib`DsG4Cerenkov::GetPoolPmtQe(this=0x000000010b04d330, energy=0.000018830823148420297) const + 241 at DsG4Cerenkov.cc:842
+        frame #3: 0x0000000103e32a13 libcfg4.dylib`DsG4Cerenkov::PostStepDoIt(this=0x000000010b04d330, aTrack=0x0000000135e8ef00, aStep=0x000000010c2547c0) + 3267 at DsG4Cerenkov.cc:347
+        frame #4: 0x0000000104c88e2b libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x000000010c254630, np=<unavailable>) + 59 at G4SteppingManager2.cc:530
+        frame #5: 0x0000000104c88d2b libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x000000010c254630) + 139 at G4SteppingManager2.cc:502
+        frame #6: 0x0000000104c86909 libG4tracking.dylib`G4SteppingManager::Stepping(this=0x000000010c254630) + 825 at G4SteppingManager.cc:209
+        frame #7: 0x0000000104c90771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x000000010c2545f0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #8: 0x0000000104be8727 libG4event.dylib`G4EventManager::DoProcessing(this=0x000000010c254560, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #9: 0x0000000104b6a611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010c145d00, i_event=0) + 49 at G4RunManager.cc:399
+        frame #10: 0x0000000104b6a4db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010c145d00, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #11: 0x0000000104b69913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010c145d00, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #12: 0x0000000103ef0433 libcfg4.dylib`CG4::propagate(this=0x000000010c145c40) + 1667 at CG4.cc:342
+        frame #13: 0x0000000103fdf546 libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfed90) + 566 at OKG4Mgr.cc:86
+        frame #14: 0x00000001000139ca OKG4Test`main(argc=2, argv=0x00007fff5fbfee78) + 1498 at OKG4Test.cc:57
+        frame #15: 0x00007fff8ab4b5fd libdyld.dylib`start + 1
+        frame #16: 0x00007fff8ab4b5fd libdyld.dylib`start + 1
+
+
+
 Peculiarities
 ---------------
 

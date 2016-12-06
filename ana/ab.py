@@ -74,11 +74,11 @@ class AB(object):
         """
         It takes aound 6s to load 1M full AB evt pair. So avoid needing to duplicate that.
         """
-        log.info("AB.load START ")
+        log.info("AB.load START smry %d " % self.ok.smry )
         args = self.ok
         try:
-            a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, args=args, nom="A")
-            b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, args=args, nom="B")
+            a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, args=args, nom="A", smry=args.smry)
+            b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, args=args, nom="B", smry=args.smry)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)

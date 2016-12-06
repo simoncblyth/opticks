@@ -61,7 +61,7 @@ tconcentric--(){
        --animtimemax $animtimemax \
        --timemax $timemax \
        --cat $(tconcentric-det) --tag $(tconcentric-tag) --save  \
-       --eye 0.5,0.5,0.0 \
+       --eye 0,5,0 \
        $* 
 }
 
@@ -179,6 +179,9 @@ tconcentric-i(){     ipython --profile=g4opticks -i $(which tconcentric.py) --  
 tconcentric-d(){     ipython --profile=g4opticks -i $(which tconcentric_distrib.py) --  $(tconcentric-args) $* ; } 
 
 tconcentric-rehist(){ tconcentric-d --noplot --rehist --sel 0:100  ; }
+
+#tconcentric-sc(){   tconcentric-i --pfxseqhis .6d ; }
+tconcentric-sc(){   tconcentric-i --pfxseqhis .6ccd ; }
 
 
 

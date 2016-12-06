@@ -78,7 +78,7 @@ if __name__ == '__main__':
     print st[st.chi2sel()]
 
     if ok.plot:
-        multiplot(ab, ok.sel.start, ok.sel.stop, ok.qwn )
+        multiplot(ok, ab, ok.sel.start, ok.sel.stop, ok.qwn )
     else:
         log.info("plotting skipped by --noplot option")
     pass

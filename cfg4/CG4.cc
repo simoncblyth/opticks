@@ -315,7 +315,13 @@ NPY<float>* CG4::propagate()
     OpticksEvent* evt = m_run->getG4Event();
     LOG(info) << evt->brief() <<  " " << evt->getShapeString() ;
 
-    assert(evt && evt->isG4() && "MUST: OpticksRun::createEvent before CG4::propagate");
+
+    bool isg4evt = evt && evt->isG4() ;  
+
+    if(!isg4evt)
+        LOG(fatal) << "CG4::propagate expecting G4 Opticks Evt " ; 
+
+    assert(isg4evt);
 
     if(m_ok->isFabricatedGensteps())
     {

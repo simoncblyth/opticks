@@ -9,11 +9,6 @@ at first event upload (ie on uploading gensteps) subsequent
 uploads resize event buffers appropriately for the photon count.  
 
 
-
-
-
-
-
 FIXED : Issue
 --------------
 

@@ -44,7 +44,7 @@ Interactor::Interactor(OpticksHub* hub)
    :
    m_hub(hub),
    m_composition(NULL),
-   m_bookmarks(m_hub->getBookmarks()),
+   m_bookmarks(NULL),  // defer, as my be NULL at this point
    m_camera(NULL),
    m_view(NULL),
    m_trackball(NULL),
@@ -558,6 +558,14 @@ void Interactor::key_released(unsigned int key)
     } 
 }
 
+
+Bookmarks* Interactor::getBookmarks()
+{
+    if(m_bookmarks == NULL) m_bookmarks = m_hub->getBookmarks();
+    return m_bookmarks ; 
+}
+
+
 void Interactor::number_key_pressed(unsigned int number)
 {
     m_bookmark_mode = true ; 
@@ -566,17 +574,21 @@ void Interactor::number_key_pressed(unsigned int number)
 
     m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
 
-    m_bookmarks->number_key_pressed(number, modifiers);
+    Bookmarks* bookmarks = getBookmarks();
+
+    bookmarks->number_key_pressed(number, modifiers);
 }
 
 void Interactor::space_pressed()
 {
-    unsigned int current = m_bookmarks->getCurrent();
+    Bookmarks* bookmarks = getBookmarks();
+
+    unsigned int current = bookmarks->getCurrent();
     if(current == 0) return ; 
     LOG(info) << "Interactor::space_pressed current " << current ;   
 
     m_composition->commitView(); // fold rotator+trackball into view (and home rotator+trackball)
-    m_bookmarks->updateCurrent();
+    bookmarks->updateCurrent();
 }
 
 
