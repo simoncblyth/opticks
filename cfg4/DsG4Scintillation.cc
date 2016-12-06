@@ -354,7 +354,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             // try const first
             if (aMaterialPropertiesTable->ConstPropertyExists("SCINTILLATIONYIELD")) {
                 ScintillationYield = aMaterialPropertiesTable->GetConstProperty("SCINTILLATIONYIELD"); 
-                G4cout << "SCINTILLATIONYIELD const: " << ScintillationYield << G4endl;
+                // G4cout << "SCINTILLATIONYIELD const: " << ScintillationYield << G4endl;
             } else {
             
             const G4MaterialPropertyVector* ptable =
