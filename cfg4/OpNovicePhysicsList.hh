@@ -71,15 +71,21 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     static G4ThreadLocal G4int fMaxNumPhotonStep;
 
 #ifdef USE_CUSTOM_CERENKOV
+#  ifndef USE_CUSTOM_WITHGENSTEP_CERENKOV
     static G4ThreadLocal DsG4Cerenkov* fCerenkovProcess;
-    //static G4ThreadLocal Cerenkov* fCerenkovProcess;
+#  else
+    static G4ThreadLocal Cerenkov* fCerenkovProcess;
+#  endif
 #else
     static G4ThreadLocal G4Cerenkov* fCerenkovProcess;
 #endif
 
 #ifdef USE_CUSTOM_SCINTILLATION
+#  ifndef USE_CUSTOM_WITHGENSTEP_SCINTILLATION
     static G4ThreadLocal DsG4Scintillation* fScintillationProcess;
-    //static G4ThreadLocal Scintillation* fScintillationProcess;
+#  else
+    static G4ThreadLocal Scintillation* fScintillationProcess;
+#  endif
 #else
     static G4ThreadLocal G4Scintillation* fScintillationProcess;
 #endif

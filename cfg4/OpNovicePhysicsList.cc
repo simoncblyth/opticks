@@ -77,15 +77,21 @@ G4ThreadLocal G4int OpNovicePhysicsList::fMaxNumPhotonStep = 20;
 
 
 #ifdef USE_CUSTOM_CERENKOV
+#  ifndef USE_CUSTOM_WITHGENSTEP_CERENKOV
 G4ThreadLocal DsG4Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
-//G4ThreadLocal Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
+#  else
+G4ThreadLocal Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
+#  endif
 #else
 G4ThreadLocal G4Cerenkov* OpNovicePhysicsList::fCerenkovProcess = 0;
 #endif
 
 #ifdef USE_CUSTOM_SCINTILLATION
+#  ifndef USE_CUSTOM_WITHGENSTEP_SCINTILLATION
 G4ThreadLocal DsG4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
-//G4ThreadLocal Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+#  else
+G4ThreadLocal Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
+#  endif
 #else
 G4ThreadLocal G4Scintillation* OpNovicePhysicsList::fScintillationProcess = 0;
 #endif
@@ -215,7 +221,7 @@ void OpNovicePhysicsList::addTransportation()
 void OpNovicePhysicsList::ConstructOpDYB()
 {
 #ifdef USE_CUSTOM_CERENKOV
-    
+#  ifndef USE_CUSTOM_WITHGENSTEP_CERENKOV    
     LOG(info)  << "Using customized DsG4Cerenkov." ;
     DsG4Cerenkov* cerenkov = 0;
     if (m_useCerenkov) 
@@ -227,6 +233,20 @@ void OpNovicePhysicsList::ConstructOpDYB()
         cerenkov->SetApplyWaterQe(m_applyWaterQe);
         cerenkov->SetTrackSecondariesFirst(true);
     }
+#  else
+    LOG(info)  << "Using customized Cerenkov." ;
+    Cerenkov* cerenkov = 0;
+    if (m_useCerenkov) 
+    {
+        cerenkov = new Cerenkov();
+        cerenkov->SetMaxNumPhotonsPerStep(m_cerenMaxPhotonPerStep);
+        // cerenkov->SetApplyPreQE(m_cerenPhotonScaleWeight>1.);
+        // cerenkov->SetPreQE(1./m_cerenPhotonScaleWeight);
+        // cerenkov->SetApplyWaterQe(m_applyWaterQe);
+        cerenkov->SetTrackSecondariesFirst(true);
+    }
+
+#  endif
 #else
     LOG(info) << "Using standard G4Cerenkov." ;
     G4Cerenkov* cerenkov = 0;
@@ -240,6 +260,7 @@ void OpNovicePhysicsList::ConstructOpDYB()
     fCerenkovProcess = cerenkov ; 
 
 #ifdef USE_CUSTOM_SCINTILLATION
+#  ifndef USE_CUSTOM_WITHGENSTEP_SCINTILLATION
     DsG4Scintillation* scint = 0;
     LOG(info) << "Using customized DsG4Scintillation." ;
     scint = new DsG4Scintillation();
@@ -259,6 +280,27 @@ void OpNovicePhysicsList::ConstructOpDYB()
     scint->SetUseFastMu300nsTrick(m_useFastMu300nsTrick);
     scint->SetTrackSecondariesFirst(true);
     if (!m_useScintillation) scint->SetNoOp();
+#  else
+    Scintillation* scint = 0;
+    LOG(info) << "Using customized Scintillation." ;
+    scint = new Scintillation();
+    // scint->SetBirksConstant1(m_birksConstant1);
+    // scint->SetBirksConstant2(m_birksConstant2);
+    // scint->SetGammaSlowerTimeConstant(m_gammaSlowerTime);
+    // scint->SetGammaSlowerRatio(m_gammaSlowerRatio);
+    // scint->SetNeutronSlowerTimeConstant(m_neutronSlowerTime);
+    // scint->SetNeutronSlowerRatio(m_neutronSlowerRatio);
+    // scint->SetAlphaSlowerTimeConstant(m_alphaSlowerTime);
+    // scint->SetAlphaSlowerRatio(m_alphaSlowerRatio);
+    // scint->SetDoReemission(m_doReemission);
+    // scint->SetDoBothProcess(m_doScintAndCeren);
+    // scint->SetApplyPreQE(m_scintPhotonScaleWeight>1.);
+    // scint->SetPreQE(1./m_scintPhotonScaleWeight);
+    scint->SetScintillationYieldFactor(m_ScintillationYieldFactor); //1.);
+    // scint->SetUseFastMu300nsTrick(m_useFastMu300nsTrick);
+    scint->SetTrackSecondariesFirst(true);
+    // if (!m_useScintillation) scint->SetNoOp();
+#  endif
 #else  // standard G4 scint
     G4Scintillation* scint = 0;
     if (m_useScintillation) 
