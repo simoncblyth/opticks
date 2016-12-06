@@ -79,7 +79,7 @@
 #include "DsPhotonTrackInfo.h"
 #include "DsG4CompositeTrackInfo.h"
 
-
+#include "CCollector.hh"
 #include "PLOG.hh"
 
 
@@ -310,6 +310,8 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     G4ThreeVector p0 = aStep.GetDeltaPosition().unit();
     G4double      t0 = pPreStepPoint->GetGlobalTime();
 
+
+
     //Replace NumPhotons by NumTracks
     G4int NumTracks=0;
     G4double weight=1.0;
@@ -348,41 +350,49 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         // /////////////////////////////////////////////////////////////////////
 	
         
-        G4double ScintillationYield = 0;
+        G4double ScintillationYield = -1 ;
         {// Yield.  Material must have this or we lack raisins dayetras
+            const G4MaterialPropertyVector* ptable = aMaterialPropertiesTable->GetProperty("SCINTILLATIONYIELD");
 
-            // try const first
-            if (aMaterialPropertiesTable->ConstPropertyExists("SCINTILLATIONYIELD")) {
-                ScintillationYield = aMaterialPropertiesTable->GetConstProperty("SCINTILLATIONYIELD"); 
-                // G4cout << "SCINTILLATIONYIELD const: " << ScintillationYield << G4endl;
-            } else {
-            
-            const G4MaterialPropertyVector* ptable =
-                aMaterialPropertiesTable->GetProperty("SCINTILLATIONYIELD");
-            if (!ptable) {
-                G4cout << "ConstProperty: failed to get SCINTILLATIONYIELD"
-                       << G4endl;
-                return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
-            }
+            if(ptable)
+            {
 #if ( G4VERSION_NUMBER > 1000 )
-            ScintillationYield = ptable->Value(0);
+                ScintillationYield = ptable->Value(0);
 #else
-            ScintillationYield = ptable->GetProperty(0);
+                ScintillationYield = ptable->GetProperty(0);
 #endif
+            } 
+            else
+            {
+                ScintillationYield = aMaterialPropertiesTable->GetConstProperty("SCINTILLATIONYIELD") ;
+            } 
+
+            if(ScintillationYield < 0)
+            { 
+                LOG(fatal) << "Failed to get SCINTILLATIONYIELD" ;
+                assert(0);
+
+                return G4VRestDiscreteProcess::PostStepDoIt(aTrack, aStep);
             }
         }
 
         G4double ResolutionScale    = 1;
         {// Resolution Scale
-            const G4MaterialPropertyVector* ptable = 
-                 aMaterialPropertiesTable->GetProperty("RESOLUTIONSCALE");
+            const G4MaterialPropertyVector* ptable = aMaterialPropertiesTable->GetProperty("RESOLUTIONSCALE");
+
+            if(ptable)
+            {
 #if ( G4VERSION_NUMBER > 1000 )
-            if (ptable) ResolutionScale = ptable->Value(0);
+                ResolutionScale = ptable->Value(0);
 #else
-            if (ptable)
                 ResolutionScale = ptable->GetProperty(0);
 #endif
-        }
+            }
+            else
+            {
+                ResolutionScale = aMaterialPropertiesTable->GetConstProperty("RESOLUTIONSCALE") ; 
+            }
+       }
 
         G4double dE = TotalEnergyDeposit;
         G4double dx = aStep.GetStepLength();
@@ -612,8 +622,51 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         if (!ScintillationIntegral) continue;
 	
-        // Max Scintillation Integral
-		
+
+            // OPTICKS STEP COLLECTION : STEALING THE STACK
+            {
+                const G4ParticleDefinition* definition = aParticle->GetDefinition();
+                G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+                CCollector::Instance()->collectScintillationStep(
+
+                       0,                  // 0     id:zero means use scintillation step count 
+                       aTrack.GetTrackID(),
+                       materialIndex, 
+                       Num,
+
+                       x0.x(),                // 1
+                       x0.y(),
+                       x0.z(),
+                       t0,
+
+                       deltaPosition.x(),     // 2
+                       deltaPosition.y(),
+                       deltaPosition.z(),
+                       aStep.GetStepLength(),
+
+                       definition->GetPDGEncoding(),   // 3
+                       definition->GetPDGCharge(),
+                       aTrack.GetWeight(),
+                       ((pPreStepPoint->GetVelocity()+ pPostStepPoint->GetVelocity())/2.),
+                       
+                       scnt,       // 4     details of what must go here depends on below implementation details
+                       0,
+                       0,
+                       0,
+
+                       ScintillationTime,   // 5
+                       ScintillationIntegral->GetMaxValue(), 
+                       0,
+                       0
+                );
+            }
+
+
+
+
+
+
+	
         for (G4int i = 0; i < Num; i++) { //Num is # of 2ndary tracks now
 	    // Determine photon energy
 
@@ -798,7 +851,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 
-int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4double aSecondaryTime)
+int DsG4Scintillation::getReemissionPrimaryPhotonID(const G4Track& aTrack, G4double /*aSecondaryTime*/)
 {
 // SCB
 //  For Opticks style reemission continuation recording need to 
