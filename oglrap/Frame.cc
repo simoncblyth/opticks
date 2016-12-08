@@ -532,9 +532,31 @@ void Frame::handle_event(GLEQevent& event)
                       if(m_interactor)
                       {
                           getCursorPos();
+                          // printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
                           m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
                       }
                   }
+             }
+             break;
+        case GLEQ_SCROLLED:
+             // FIXME
+             printf("Scrolled (%0.2f %0.2f)\n", event.pos.x, event.pos.y);
+             if (1) {
+                 float cursor_dx = float(event.pos.x); 
+                 float cursor_dy = float(event.pos.y); 
+
+                 float dx = 40.f*cursor_dx/m_width  ;
+                 float dy = -40.f*cursor_dy/m_height;
+                 float x = 1.;
+                 float y = 1.;
+                 if(m_cursor_inwindow)
+                 {
+                      if(m_interactor)
+                      {
+                          getCursorPos();
+                          m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
+                      }
+                 }
              }
              break;
         case GLEQ_CURSOR_ENTERED:
@@ -545,7 +567,7 @@ void Frame::handle_event(GLEQevent& event)
              m_cursor_inwindow = false ;
              LOG(debug) << "Cursor left window";
              break;
-        case GLEQ_SCROLLED:
+        // case GLEQ_SCROLLED:
         case GLEQ_KEY_PRESSED:
              key_pressed(event.key.key);
              break;
