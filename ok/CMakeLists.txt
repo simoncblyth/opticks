@@ -14,6 +14,7 @@ if(WITH_OPTIX)
     include(Macros)
     include(CompilerInfo)
     include(ConfigCompilerFlags)
+    string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
     OPTION(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING "Suppress the \"Advisory: Cannot tell what pointer points to, assuming global memory space\" warning nvcc makes." ON)
 
