@@ -285,6 +285,29 @@ So *G4StepNPY::relabel* rejigs the markers to the OpticksPhoton.h enumerated cod
 The genstep index is still available from the photon buffer, and this is 
 written into the *Id* of GPU structs.
 
+
+
+G4gun gensteps look to already have been relabled 
+
+
+In [8]: np.count_nonzero(evt.gs[:,0,0].view(np.int32) == 1)
+Out[8]: 5080
+
+In [9]: np.count_nonzero(evt.gs[:,0,0].view(np.int32) == 2)
+Out[9]: 339530
+
+
+simon:opticksnpy blyth$ opticks-find relabel
+./optickscore/OpticksEvent.cc:    m_g4step->relabel(CERENKOV, SCINTILLATION);    // 1, 2 
+./opticksnpy/G4StepNPY.cpp:void G4StepNPY::relabel(int cerenkov_label, int scintillation_label)
+./opticksnpy/G4StepNPY.cpp:So *G4StepNPY::relabel* rejigs the markers to the OpticksPhoton.h enumerated code of the source.  
+./opticksnpy/G4StepNPY.cpp:    LOG(info)<<"G4StepNPY::relabel" ;
+./opticksnpy/G4StepNPY.cpp:        if(i % 1000 == 0) printf("G4StepNPY::relabel (%u) %d -> %d \n", i, code, label );
+./opticksnpy/G4StepNPY.hpp:       void relabel(int cerenkov_label, int scintillation_label);
+
+
+
+
 */
     LOG(info)<<"G4StepNPY::relabel" ;
     for(unsigned int i=0 ; i<m_npy->m_ni ; i++ )
