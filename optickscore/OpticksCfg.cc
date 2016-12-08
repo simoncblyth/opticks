@@ -262,6 +262,11 @@ void OpticksCfg<Listener>::init()
        ("load",  "load event data from file and upload to GPU for visualization") ;
 
    m_desc.add_options()
+       ("noload",  "disable prior or subsequent load option, as seen from Opticks::isLoad method") ;
+
+
+
+   m_desc.add_options()
        ("torch",  "fabricate torch genstep using torch config settings") ;
 
    m_desc.add_options()

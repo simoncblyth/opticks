@@ -622,8 +622,8 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
         if (!ScintillationIntegral) continue;
 	
-
             // OPTICKS STEP COLLECTION : STEALING THE STACK
+            if(Num > 0)
             {
                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();

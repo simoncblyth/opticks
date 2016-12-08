@@ -17,6 +17,78 @@ so same photon count between them is a given.
 The history and material differences are all bugs to fix. 
 
 
+Red Gensteps everywhere issue
+------------------------------
+
+Observations
+~~~~~~~~~~~~~~
+
+* reducing Composition arbitrary param.x makes the viz much more sensible
+  with scintillation steps in sensible places
+
+  * TODO: review why param.x is an arbitrary scale and make it non-arbitrary, probably will need to change genstep shader for this  
+  * TODO: still not clear that scintillation propagation direct from g4gun is doing anything sensible, switch off the more
+    mature cerenkov while debug scintillation 
+
+* half scint gs have zero photons, due to scnt loop with 
+  all Num used up on first turn, DONE: added condition at collection to skip these
+
+* gs is mixed CK, SI : simpler CK in more mature state producing
+  observed upwards propagation
+
+
+g4gun.py min/avg/max of genstep position/time::
+
+    array([[ -20059.457 ,  -18087.8789,  -16097.7148],
+           [-801680.75  , -799696.    , -797717.5   ],
+           [  -9092.    ,   -5589.7075,   -2110.8208],
+           [      0.1   ,       4.5868,     974.2122]], dtype=float32)
+
+
+Note suspicious doubled up 0/1 for scintillation, probably the scintillation imp got abandoned
+when dived into validation comparisons using tconcentric::
+
+    In [11]: evt.gs[:100,0].view(np.int32)   #  sid/parentId/materialIndex/numPhotons 
+    Out[11]: 
+    A()sliced
+    A([[  1,   1,  95, 102],
+           [  2,   1,  95,   0],
+           [  2,   1,  95,   1],
+           [  2, 103,  95,   0],
+           [  2, 103,  95,   1],
+           [  2, 102,  95,   0],
+           [  2, 102,  95,   1],
+           [  2, 100,  95,   0],
+           [  2, 100,  95,   1],
+           [  2,  94,  95,   0],
+           [  2,  94,  95,   1],
+           [  2,  93,  95,   0],
+           [  2,  93,  95,   1],
+           [  2,  91,  95,   0],
+           [  2,  91,  95,   1],
+    ...
+    In [13]: evt.gs[-10:,0].view(np.int32)
+    Out[13]: 
+    A()sliced
+    A([[     2, 479475,     95,      0],
+           [     2, 479475,     95,      1],
+           [     2, 479382,     95,      0],
+           [     2, 479382,     95,      1],
+           [     2, 479477,     95,      0],
+           [     2, 479477,     95,      1],
+           [     2, 479381,     95,      0],
+           [     2, 479381,     95,      1],
+           [     2, 479377,     95,      0],
+           [     2, 479377,     95,      1]], dtype=int32)
+
+
+
+
+Tao commit changing Scintillaton and Cerenkov
+-----------------------------------------------
+
+* https://bitbucket.org/simoncblyth/opticks/commits/55879cfc0aea49d57227bcb23a2ac92f01355082 
+
 
 Debug running
 ---------------

@@ -937,6 +937,12 @@ void OpticksEvent::importDomainsBuffer()
 
 void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor, const char* oac_label)
 {
+    /**
+    :param genstep_data:
+    :param progenitor:
+    :param oac_label:   adds to the OpticksActionControl to customize the import for different genstep types 
+    **/
+
     int nitems = NPYBase::checkNumItems(genstep_data);
     if(nitems < 1)
     {

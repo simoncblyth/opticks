@@ -72,7 +72,7 @@ void OKMgr::propagate()
 
     bool production = m_ok->isProduction();
 
-    if(ok("load"))
+    if(ok.isLoad())
     {
          m_run->loadEvent(); 
 

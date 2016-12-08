@@ -401,9 +401,10 @@ bool Opticks::isSave()
 {
     return m_cfg->hasOpt("save"); 
 }
-bool Opticks::isLoad()
+bool Opticks::isLoad() const
 {
-    return m_cfg->hasOpt("load"); 
+   // --noload trumps --load
+    return m_cfg->hasOpt("load") && !m_cfg->hasOpt("noload"); 
 }
 
 

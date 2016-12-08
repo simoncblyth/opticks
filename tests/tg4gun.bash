@@ -49,11 +49,11 @@ join(){ local IFS="$1"; shift; echo "$*"; }
 
 tg4gun-tag(){ echo 1 ; }
 tg4gun-det(){ echo G4Gun ; }
-tg4gun-src(){ echo torch ; }
+tg4gun-src(){ echo g4gun ; }
 
 
 tg4gun-args() {        echo  --tag $(tg4gun-tag) --det $(tg4gun-det) --src $(tg4gun-src) ; }
-
+tg4gun-i(){     ipython --profile=g4opticks -i $(which g4gun.py) --  $(tg4gun-args) $* ; }
 tg4gun--()
 {
     type $FUNCNAME
@@ -81,7 +81,6 @@ tg4gun--()
 /run/particle/verbose 1
 EOI
 
-
 #   op.sh \
 #       --tcfg4 \
 #       --cat G4Gun --tag $tag --save \
@@ -94,22 +93,19 @@ EOI
        --cat G4Gun --tag $tag --save \
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
        $* 
-
-
-
-
 }
-
 
 
 tg4gun-t()
 {
+    tg4gun-
     tg4gun-- 
 }
 
 tg4gun-v()
 {
-   tg4gun-- --load --optixviz --target 3153
+    tg4gun-
+    tg4gun-- --load --optixviz --target 3153
 }
 
 
