@@ -74,6 +74,10 @@ OpticksEvent* OpticksRun::getCurrentEvent()
 
 void OpticksRun::setGensteps(NPY<float>* gensteps)
 {
+    bool no_gensteps = gensteps == NULL ; 
+    if(no_gensteps) LOG(fatal) << "OpticksRun::setGensteps given NULL gensteps" ; 
+    assert(!no_gensteps); 
+
     LOG(info) << "OpticksRun::setGensteps " << gensteps->getShapeString() ;  
 
     assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");

@@ -63,12 +63,12 @@ tg4gun--()
 
     local g4gun_config=(
                  comment=$FUNCNAME
-                 particle=e+
+                 particle=e-
                  number=1
                  frame=3153
                  position=0,0,0
-                 direction=0,0,1
-              polarization=1,0,0
+                 direction=1,0,0
+              polarization=0,1,0
                       time=0.
                     energy=10.0
                    ) 

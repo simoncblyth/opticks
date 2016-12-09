@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include <boost/algorithm/string.hpp>
+
 
 // okc-
 #include "OpticksAttrSeq.hh"
@@ -119,6 +121,18 @@ const char* GItemIndex::getLabel(unsigned index)
    return index < m_labels.size() ? m_labels[index].c_str() : NULL ;
 }
 
+const char* GItemIndex::getShortLabel(unsigned index)
+{
+   return index < m_labels_short.size() ? m_labels_short[index].c_str() : NULL ;
+}
+
+
+    
+
+
+
+
+
 
 
 
@@ -143,7 +157,7 @@ const char* GItemIndex::getSelectedKey()
 const char* GItemIndex::getSelectedLabel()
 {
    int sel = m_index->getSelected();
-   return sel == 0 ? "All" : getLabel(sel-1);
+   return sel == 0 ? "All" : getShortLabel(sel-1);
 }
 
 
@@ -355,6 +369,7 @@ void GItemIndex::formTable(bool verbose)
 {
    m_codes.clear(); 
    m_labels.clear(); 
+   m_labels_short.clear(); 
 
    // collect keys (item names) into vector and sort into ascending local index order 
 
@@ -385,11 +400,20 @@ void GItemIndex::formTable(bool verbose)
 
        m_codes.push_back(colorcode);
        m_labels.push_back(label);
+       m_labels_short.push_back(ShortenLabel(label.c_str(),50));
    }
 }
 
 
+const char* GItemIndex::ShortenLabel(const char* label, unsigned ntail )
+{
+    unsigned len = strlen(label);
+    const char* tail_ = len > ntail ? strdup( label + len - ntail ) : label ;
 
+    std::string tail(tail_);
+    boost::trim(tail);
+    return strdup(tail.c_str()) ; 
+}
 
 
 

@@ -1157,6 +1157,11 @@ std::string Opticks::getAnaKey()
     std::string s = m_cfg->getAnaKey();
     return s ; 
 }
+std::string Opticks::getG4GunConfig()
+{
+    std::string s = m_cfg->getG4GunConfig();
+    return s ; 
+}
 
 
 const char* Opticks::getDefaultMaterial() { return m_resource->getDefaultMaterial(); }

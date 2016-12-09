@@ -122,7 +122,18 @@ void CSource::SetVerbosity(int vL)
 
 void CSource::setParticle(const char* name)
 { 
-	G4ParticleDefinition* definition = G4ParticleTable::GetParticleTable()->FindParticle(name);
+    G4ParticleTable* table = G4ParticleTable::GetParticleTable() ;
+	G4ParticleDefinition* definition = table->FindParticle(name);
+    bool known_particle = definition != NULL ; 
+    if(!known_particle) 
+    {
+        LOG(fatal) << "CSource::setParticle no particle with name [" << name << "] valid names listed below " ; 
+        for(int i=0 ; i < table->entries() ; i++)
+        {
+             LOG(info) << std::setw(5) << i << " name [" << table->GetParticleName(i) << "]" ;  
+        }
+    } 
+    assert(known_particle);
     SetParticleDefinition(definition);
 }
 
@@ -130,12 +141,6 @@ void CSource::SetParticleDefinition(G4ParticleDefinition* definition)
 { 
     m_definition = definition ; 
 }
-
-
-
-
-
-
 
 
 void CSource::collectPrimary(G4PrimaryVertex* vtx)

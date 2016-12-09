@@ -12,8 +12,8 @@ Reproduce::
     op --jpmt 
 
 
-Issue : segv
----------------
+Issue : segv due to no input gensteps
+----------------------------------------
 
 Segv with new override --noload::
 
@@ -58,5 +58,55 @@ Segv with new override --noload::
     simon:optickscore blyth$ 
     simon:optickscore blyth$ 
     simon:optickscore blyth$ tviz-jpmt-cerenkov --noload
+
+
+
+::
+
+    tviz-;tviz-jpmt-cerenkov --noload --debugger
+
+
+    (lldb) bt
+    * thread #1: tid = 0x8265a, 0x000000010067cb8d libNPY.dylib`NPYBase::getItemShape(unsigned int) [inlined] std::__1::vector<int, std::__1::allocator<int> >::size(this=0x0000000000000070) const at vector:656, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x78)
+      * frame #0: 0x000000010067cb8d libNPY.dylib`NPYBase::getItemShape(unsigned int) [inlined] std::__1::vector<int, std::__1::allocator<int> >::size(this=0x0000000000000070) const at vector:656
+        frame #1: 0x000000010067cb8d libNPY.dylib`NPYBase::getItemShape(this=0x0000000000000000, ifr=0) + 1341 at NPYBase.cpp:592
+        frame #2: 0x0000000100679c62 libNPY.dylib`NPYBase::getShapeString(this=0x0000000000000000, ifr=0) + 34 at NPYBase.cpp:586
+        frame #3: 0x000000010097d5f4 libOpticksCore.dylib`OpticksRun::setGensteps(this=0x00000001055220f0, gensteps=0x0000000000000000) + 180 at OpticksRun.cc:77
+        frame #4: 0x00000001037be8b0 libOK.dylib`OKMgr::propagate(this=0x00007fff5fbfea78) + 272 at OKMgr.cc:94
+        frame #5: 0x000000010000a9f2 OKTest`main(argc=15, argv=0x00007fff5fbfeb50) + 1378 at OKTest.cc:61
+        frame #6: 0x00007fff8aded5fd libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) f 4
+    frame #4: 0x00000001037be8b0 libOK.dylib`OKMgr::propagate(this=0x00007fff5fbfea98) + 272 at OKMgr.cc:94
+       91           {
+       92               m_run->createEvent(i);
+       93   
+    -> 94               m_run->setGensteps(m_gen->getInputGensteps()); 
+       95   
+       96               m_propagator->propagate();
+       97   
+
+       75   void OpticksRun::setGensteps(NPY<float>* gensteps)
+       76   {
+    -> 77       LOG(info) << "OpticksRun::setGensteps " << gensteps->getShapeString() ;  
+       78   
+       79       assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
+       80   
+
+
+
+::
+
+    2016-12-09 12:33:57.668 INFO  [538973] [SLog::operator@15] OKMgr::OKMgr DONE
+    2016-12-09 12:33:57.668 FATAL [538973] [OpticksRun::setGensteps@78] OpticksRun::setGensteps given NULL gensteps
+    Assertion failed: (!no_gensteps), function setGensteps, file /Users/blyth/opticks/optickscore/OpticksRun.cc, line 79.
+    Process 62799 stopped
+
+
+Hmm the tviz was setup prior to OKG4 so --noload is not going to work without some effort.
+
+
+
 
 
