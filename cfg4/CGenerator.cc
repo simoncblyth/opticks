@@ -38,7 +38,7 @@ void CGenerator::init()
 {
     unsigned code = m_ok->getSourceCode();
 
-    LOG(fatal) << "CGenerator::init" 
+    LOG(trace) << "CGenerator::init" 
               << " code " << code
               << " type " << m_ok->getSourceType()
               ; 
@@ -123,7 +123,7 @@ void CGenerator::configureEvent(OpticksEvent* evt)
 
 CSource* CGenerator::makeTorchSource()
 {
-    LOG(info) << "CGenerator::makeTorchSource " ; 
+    LOG(trace) << "CGenerator::makeTorchSource " ; 
 
     TorchStepNPY* torch = m_hub->getTorchstep();
 
@@ -139,8 +139,8 @@ CSource* CGenerator::makeTorchSource()
 
 CSource* CGenerator::makeG4GunSource()
 {
-    std::string gunconfig = m_hub->getG4GunConfig() ;
-    LOG(fatal) << "CGenerator::makeG4GunSource " 
+    std::string gunconfig = m_hub->getG4GunConfig() ; // NB via OpticksGun in the hub, not directly from Opticks
+    LOG(trace) << "CGenerator::makeG4GunSource " 
                << " gunconfig " << gunconfig
                 ; 
 

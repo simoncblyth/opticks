@@ -63,7 +63,7 @@ tg4gun--()
 
     local g4gun_config=(
                  comment=$FUNCNAME
-                 particle=e+
+                 particle=e-
                  number=1
                  frame=3153
                  position=0,0,0
