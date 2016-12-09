@@ -335,6 +335,12 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     }
 }
 
+void Interactor::touch(int ix, int iy )
+{
+    m_changed = true ; 
+    m_frame->touch(ix, iy );  
+
+}
 
 const char* Interactor::keys = 
 "\n A: Composition::nextMode     record animation, enable and control speed  "

@@ -66,6 +66,7 @@ class OGLRAP_API Interactor {
 
   public:
        void cursor_drag( float x, float y, float dx, float dy, int ix, int iy );
+       void touch(int ix, int iy);
 
    public:
         typedef enum { NONE, SCRUB, LABEL, FULL, NUM_GUI_STYLE } GUIStyle_t ;  

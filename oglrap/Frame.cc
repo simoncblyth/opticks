@@ -476,12 +476,12 @@ void Frame::handle_event(GLEQevent& event)
     switch (event.type)
     {
         case GLEQ_FRAMEBUFFER_RESIZED:
-            printf("Frame::handle_event framebuffer resized to (%i %i)\n", event.size.width, event.size.height);
+            // printf("Frame::handle_event framebuffer resized to (%i %i)\n", event.size.width, event.size.height);
             resize(event.size.width, event.size.height, m_coord2pixel);
             break;
         case GLEQ_WINDOW_MOVED:
         case GLEQ_WINDOW_RESIZED:
-            printf("Frame::handle_event window resized to (%i %i)\n", event.size.width, event.size.height);
+            // printf("Frame::handle_event window resized to (%i %i)\n", event.size.width, event.size.height);
             resize(event.size.width, event.size.height, m_coord2pixel);
             break;
         case GLEQ_WINDOW_CLOSED:
@@ -493,13 +493,42 @@ void Frame::handle_event(GLEQevent& event)
         case GLEQ_BUTTON_PRESSED:
         case GLEQ_BUTTON_RELEASED:
         case GLEQ_CURSOR_MOVED:
-             if(m_cursor_inwindow)
+            {
+                static bool flag_drag_done = false;
+                // Using ctrl+click to control
+                if ( 1 ) {
+                    static bool flag_drag_begin = false;
+                    if (event.type == GLEQ_BUTTON_PRESSED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
+                        // printf("LT BUTTON PRESSED: mods: %d\n", event.button.mods);
+                        // save first time
+                        if (!flag_drag_begin) {
+                            flag_drag_begin = true;
+                            double _cursor_x, _cursor_y;
+                            glfwGetCursorPos(m_window, &_cursor_x, &_cursor_y );
+                            m_cursor_x = _cursor_x;
+                            m_cursor_y = _cursor_y;
+                        }
+                    } else if (event.type == GLEQ_BUTTON_RELEASED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
+                        if (flag_drag_begin) {
+                        // printf("LT BUTTON RELEASED: mods: %d\n", event.button.mods);
+                        flag_drag_done = true;
+                        flag_drag_begin = false;
+                        }
+                    }
+                }
+             if(m_cursor_inwindow && flag_drag_done)
              {
-                  float cursor_dx = m_cursor_x > 0.f ? float(event.pos.x) - m_cursor_x : 0.f ; 
-                  float cursor_dy = m_cursor_y > 0.f ? float(event.pos.y) - m_cursor_y : 0.f ; 
+                 double _cursor_x, _cursor_y;
+                 glfwGetCursorPos(m_window, &_cursor_x, &_cursor_y );
+                  float cursor_dx = m_cursor_x > 0.f ? _cursor_x - m_cursor_x : 0.f ; 
+                  float cursor_dy = m_cursor_y > 0.f ? _cursor_y - m_cursor_y : 0.f ; 
+                  m_cursor_x = _cursor_x ;
+                  m_cursor_y = _cursor_y ;
+                 //  float cursor_dx = m_cursor_x > 0.f ? float(event.pos.x) - m_cursor_x : 0.f ; 
+                 //  float cursor_dy = m_cursor_y > 0.f ? float(event.pos.y) - m_cursor_y : 0.f ; 
 
-                  m_cursor_x = float(event.pos.x) ;
-                  m_cursor_y = float(event.pos.y) ;
+                 // m_cursor_x = float(event.pos.x) ;
+                 // m_cursor_y = float(event.pos.y) ;
 
                   //printf("Cursor x,y %0.2f,%0.2f dx,dy  %0.2f,%0.2f \n", m_cursor_x, m_cursor_y, cursor_dx, cursor_dy );
                   //
@@ -534,13 +563,20 @@ void Frame::handle_event(GLEQevent& event)
                           getCursorPos();
                           // printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
                           m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
+                          flag_drag_done = false; // after drag done, reset it
                       }
                   }
+             } else if (m_cursor_inwindow) {
+                 // printf("LT touch pos (%d,%d)\n", m_pos_x, m_pos_y);
+                 getCursorPos();
+                 // touch(m_pos_x, m_pos_y);
+                 m_interactor->touch(m_pos_x, m_pos_y);
              }
+            }
              break;
         case GLEQ_SCROLLED:
              // FIXME
-             printf("Scrolled (%0.2f %0.2f)\n", event.pos.x, event.pos.y);
+             // printf("Scrolled (%0.2f %0.2f)\n", event.pos.x, event.pos.y);
              if (1) {
                  float cursor_dx = float(event.pos.x); 
                  float cursor_dy = float(event.pos.y); 
