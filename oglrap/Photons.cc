@@ -1,6 +1,5 @@
 // op --gitemindex
 #include <cstring>
-#include <boost/algorithm/string.hpp>
 
 
 // npy-
@@ -35,19 +34,10 @@ const char* Photons::getSeqhisSelectedKey()
 {
     return m_seqhis->getSelectedKey();
 }
-const char* Photons::getSeqhisSelectedLabel(unsigned ntail)
+const char* Photons::getSeqhisSelectedLabel()
 {
-    if (!m_seqhis) { return ""; }
-    const char* label = m_seqhis->getSelectedLabel() ;
-    unsigned len = strlen(label);
-    const char* tail_ = len > ntail ? strdup( label + len - ntail ) : label ;
-
-    std::string tail(tail_);
-    boost::trim(tail);
-    return strdup(tail.c_str()) ; 
+    return m_seqhis ? m_seqhis->getSelectedLabel() : "" ; 
 }
-
-
 
 
 void Photons::gui()

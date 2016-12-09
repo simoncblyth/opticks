@@ -62,6 +62,8 @@ class GGEO_API GItemIndex {
         static std::string materialSeqLabeller(GItemIndex* self, const char* key, unsigned int& colorcode);
         static std::string historySeqLabeller(GItemIndex* self, const char* key, unsigned int& colorcode);
    public:
+        static const char* ShortenLabel(const char* label, unsigned ntail );
+   public:
         std::string gui_radio_select_debug();
         void setLabeller(GItemIndexLabellerPtr labeller);
         void setLabeller(Labeller_t labeller );
@@ -118,6 +120,7 @@ class GGEO_API GItemIndex {
         std::vector<unsigned int>&    getCodes();
         std::vector<std::string>&     getLabels();
         const char* getLabel(unsigned index);
+        const char* getShortLabel(unsigned index);
    public:
         void     formTable(bool verbose=false);
 
@@ -134,6 +137,7 @@ class GGEO_API GItemIndex {
    private:
         // populated by formTable
         std::vector<std::string>             m_labels ; 
+        std::vector<std::string>             m_labels_short ; 
         std::vector<unsigned int>            m_codes ; 
 };
 
