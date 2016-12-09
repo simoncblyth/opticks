@@ -162,6 +162,7 @@ class OKCORE_API Opticks {
        float getFxSc();
    public:
        OpticksCfg<Opticks>* getCfg();
+       std::string          getG4GunConfig();
        std::string          getAnaKey();
        OpticksResource*     getResource(); 
        OpticksRun*          getRun(); 

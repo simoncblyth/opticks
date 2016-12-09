@@ -27,8 +27,33 @@ Red Gensteps everywhere issue
 
 
 
-issue: G4Gun ignoring gunconfig argument and using default
+FIXED issue: G4Gun ignoring gunconfig argument and using default
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:optickscore blyth$ opticks-find g4gunconfig
+    ./bin/ggv.bash:       --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
+    ./tests/tg4gun.bash:#       --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
+    ./tests/tg4gun.bash:       --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
+    ./optickscore/OpticksCfg.cc:       m_g4gunconfig(""),
+    ./optickscore/OpticksCfg.cc:       ("g4gunconfig",   boost::program_options::value<std::string>(&m_g4gunconfig), "g4gun configuration" );
+    ./optickscore/OpticksCfg.cc:    return m_g4gunconfig ;
+    ./optickscore/OpticksCfg.hh:     std::string m_g4gunconfig ;
+    ./.hg/last-message.txt:find that tg4gun currently ignoring g4gunconfig argument and using defaults
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+    simon:opticks blyth$ vi optickscore/OpticksCfg.cc
+    simon:opticks blyth$ opticks-find getG4GunConfig
+    ./cfg4/CGenerator.cc:    std::string gunconfig = m_hub->getG4GunConfig() ;
+    ./optickscore/OpticksCfg.cc:const std::string& OpticksCfg<Listener>::getG4GunConfig()
+    ./opticksgeo/OpticksHub.cc:std::string OpticksHub::getG4GunConfig()
+    ./optickscore/OpticksCfg.hh:     const std::string& getG4GunConfig();
+    ./opticksgeo/OpticksHub.hh:       std::string    getG4GunConfig();
+    simon:opticks blyth$ 
+
+
+
 
 
 Genstep visualization
