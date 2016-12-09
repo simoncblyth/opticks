@@ -27,6 +27,10 @@ Red Gensteps everywhere issue
 
 
 
+issue: G4Gun ignoring gunconfig argument and using default
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 Genstep visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
