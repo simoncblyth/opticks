@@ -37,6 +37,7 @@ const char* Photons::getSeqhisSelectedKey()
 }
 const char* Photons::getSeqhisSelectedLabel(unsigned ntail)
 {
+    if (!m_seqhis) { return ""; }
     const char* label = m_seqhis->getSelectedLabel() ;
     unsigned len = strlen(label);
     const char* tail_ = len > ntail ? strdup( label + len - ntail ) : label ;
