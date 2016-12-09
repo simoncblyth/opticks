@@ -54,14 +54,15 @@ tviz-jpmt-(){
            --animtimemax 200 \
            --timemax 200 \
            --optixviz \
-           --fullscreen \
             $* 
 }
+
+#  --fullscreen \
+
 
 
 tviz-jpmt-cerenkov(){      tviz-jpmt- --cerenkov $* ; }
 tviz-jpmt-scintillation(){ tviz-jpmt- --scintillation $*  ; }
-
 
 
 tviz-dyb-(){
@@ -80,8 +81,6 @@ tviz-dyb-scintillation(){ tviz-dyb- --scintillation $*  ; }
 tviz-dyb-torch(){         tviz-dyb- --torch $*  ; }
 
 
-
-
 tviz-dfar(){
       op.sh \
            --dfar \
@@ -89,12 +88,6 @@ tviz-dfar(){
            --fullscreen \
             $* 
 }
-
-
-
-
-
-
 
 
 
