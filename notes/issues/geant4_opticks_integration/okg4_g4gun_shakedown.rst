@@ -26,15 +26,31 @@ Red Gensteps everywhere issue
    tg4gun-t 
 
 
-Observations
-~~~~~~~~~~~~~~
 
-* reducing Composition arbitrary param.x makes the viz much more sensible
-  with scintillation steps in sensible places
+Genstep visualization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  * TODO: review why param.x is an arbitrary scale and make it non-arbitrary, probably will need to change genstep shader for this  
-  * TODO: still not clear that scintillation propagation direct from g4gun is doing anything sensible, switch off the more
-    mature cerenkov while debug scintillation 
+The formerly considered arbitrary param.x should actually be 1 (current default is 25) 
+as vdir is actually DeltaPosition.
+
+With param.x 25 get crazy red viz, but even with the correct 1 the scintillation gensteps mostly
+hide the photon propagation. And this is with scintillation yield dialed down. 
+
+* TODO: record style time input genstep visualization ? almost certainly would need to 
+  be used as an alternative to photon record propagation
+
+
+Lack of scintillation propagation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Position of propagation suggests its just original cerenkov. 
+
+* TODO: interface for live genstep selection (CK or SI) during gun running 
+  and modulo scaledown 
+
+
+Genstep examination
+~~~~~~~~~~~~~~~~~~~~~
 
 * half scint gs have zero photons, due to scnt loop with 
   all Num used up on first turn, DONE: added condition at collection to skip these
@@ -86,6 +102,401 @@ when dived into validation comparisons using tconcentric::
            [     2, 479381,     95,      1],
            [     2, 479377,     95,      0],
            [     2, 479377,     95,      1]], dtype=int32)
+
+
+
+
+genstep rendering uses p2l Rdr, currently the only user of the p2l shaders::
+
+     448 void Scene::initRenderers()
+     449 {
+     450     LOG(debug) << "Scene::initRenderers "
+     451               << " shader_dir " << m_shader_dir
+     452               << " shader_incl_path " << m_shader_incl_path
+     453                ;
+     454 
+     455     assert(m_shader_dir);
+     456 
+     457     m_device = new Device();
+     458 
+     459     m_colors = new Colors(m_device);
+     460 
+     461     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
+     462     m_globalvec_renderer = new Renderer("nrmvec", m_shader_dir, m_shader_incl_path );
+     463     m_raytrace_renderer = new Renderer("tex", m_shader_dir, m_shader_incl_path );
+     464 
+     465    // small array of instance renderers to handle multiple assemblies of repeats 
+     466     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
+     467     {
+     468         m_instance_mode[i] = false ;
+     469         m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
+     470         m_instance_renderer[i]->setInstanced();
+     471 
+     472         m_bbox_mode[i] = false ;
+     473         m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
+     474         m_bbox_renderer[i]->setInstanced();
+     475         m_bbox_renderer[i]->setWireframe(false);  // wireframe is much slower than filled
+     476     }
+     477 
+     478     //LOG(info) << "Scene::init geometry_renderer ctor DONE";
+     479 
+     480     m_axis_renderer = new Rdr(m_device, "axis", m_shader_dir, m_shader_incl_path );
+     481 
+     482     m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
+
+::
+
+    simon:ok blyth$ opticks-find p2l
+    ./externals/optix.bash:* p2l: genstep
+    ./oglrap/oglrap.bash:  and p2l (point to line) geometry shader based on my ancient one
+    ./oglrap/Scene.cc:    m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
+    ./oglrap/Scene.cc:    m_genstep_renderer = new Rdr(m_device, "p2l", m_shader_dir, m_shader_incl_path);
+    simon:opticks blyth$ 
+
+
+Looks like just need to form an attribute to grab the steplength which 
+can then scale the mom direction by instead of using arbitray Param.x.
+
+Nope, the vdir is actually absolute delta position so it duplicates the 
+info in the step length.
+
+
+
+oglrap/gl/p2l/vert.glsl::
+
+     01 #version 400
+      2 
+      3 // p2l passthrough to geometry shader
+      4 
+      5 uniform mat4 ModelViewProjection ;
+      6 uniform mat4 ModelView ;
+      7 
+      8 layout(location = 0) in vec4 vpos ;
+      9 layout(location = 1) in vec4 vdir ;
+     10 
+     11 out vec3 colour;
+     12 out vec3 direction ;
+     13 
+     14 
+     15 void main ()
+     16 {
+     17     colour = vec3(1.0,0.0,0.0) ;
+     18     direction = vdir.xyz ;
+     19     gl_Position = vec4( vpos.xyz, 1.0);
+     20 }   
+     21 
+
+oglrap/gl/p2l/geom.glsl::
+
+     01 #version 400
+      2 
+      3 uniform mat4 ModelViewProjection ;
+      4 uniform vec4 Param ;
+      5 in vec3 colour[];
+      6 in vec3 direction[];
+      7 
+      8 // https://www.opengl.org/wiki/Geometry_Shader
+      9 
+     10 layout (points) in;
+     11 layout (line_strip, max_vertices = 2) out;
+     12 
+     13 out vec3 fcolour ;
+     14 
+     15 
+     16 void main ()
+     17 {
+     18     gl_Position = ModelViewProjection * gl_in[0].gl_Position ;
+     19     fcolour = colour[0] ;
+     20     EmitVertex();
+     21 
+     22     gl_Position = ModelViewProjection * ( gl_in[0].gl_Position + Param.x*vec4(direction[0], 0.) ) ;
+     23     fcolour = colour[0] ;
+     24     EmitVertex();
+     25 
+     26     EndPrimitive();
+     27 
+     28 }
+
+
+
+tg4gun.py examine gensteps shows vdir to actually be non-normalized DeltaPosition::
+
+    In [10]: gs[:100,(1,2)]
+    Out[10]: 
+    A()sliced
+    A([[[ -18079.4531, -799699.4375,   -6606.    ,       0.1   ],
+            [      0.    ,       0.    ,       0.7653,       0.7653]],
+
+           [[ -18079.4531, -799699.4375,   -6606.    ,       0.1   ],
+            [      0.    ,       0.    ,       0.7653,       0.7653]],
+
+           [[ -18079.4531, -799699.4375,   -6605.9136,       0.1003],
+            [      0.    ,      -0.    ,       0.    ,       0.    ]],
+
+           [[ -18079.4531, -799699.4375,   -6605.3418,       0.1022],
+            [   -231.3343,      -5.7752,     209.7892,     312.3466]],
+
+           [[ -18079.4531, -799699.4375,   -6605.7944,       0.1007],
+            [     -0.    ,       0.0002,       0.0001,       0.0002]],
+
+           [[ -18079.4531, -799699.4375,   -6605.9741,       0.1001],
+            [   -103.424 ,     -85.0688,     120.7377,     180.3076]],
+
+           [[ -18079.4531, -799699.4375,   -6605.3564,       0.1022],
+            [     -0.0001,      -0.    ,       0.0001,       0.0001]],
+
+           [[ -18079.4531, -799699.4375,   -6605.8066,       0.1006],
+            [     -0.0014,      -0.0007,       0.0015,       0.0022]],
+
+           [[ -18079.4531, -799699.4375,   -6605.8101,       0.1006],
+            [      0.0002,       0.0001,       0.0002,       0.0003]],
+
+           [[ -18079.4531, -799699.4375,   -6605.3013,       0.1023],
+            [     -0.    ,       0.    ,       0.    ,       0.0001]],
+
+           [[ -18079.4531, -799699.4375,   -6605.3013,       0.1023],
+            [     50.4503,      95.0544,     -79.5832,     133.8434]],
+
+
+
+
+Comparing length of the DeltaPosition with the stepLength shows several 100 
+deviations, most of them are Cerenkov steps.::
+
+    In [18]: df = np.sqrt(np.sum(gs[:,2,:3]*gs[:,2,:3], axis=1)) - gs[:,2,3] 
+
+    In [19]: df
+    A([-0., -0., -0., ...,  0.,  0.,  0.], dtype=float32)
+
+    In [20]: df.min()
+    A(-0.41480427980422974, dtype=float32)
+
+    In [21]: df.max()
+    A(0.000244140625, dtype=float32)
+
+
+    In [37]: np.count_nonzero(df < -0.01)
+    Out[37]: 424
+
+    In [38]: np.count_nonzero(df > 0.01)
+    Out[38]: 0
+
+    In [39]: np.count_nonzero(df < 0.01)
+    Out[39]: 174845
+
+
+    In [24]: gs[:,2][df < -0.01]
+    Out[24]: 
+    A()sliced
+    A([[ 0.2876, -0.6129,  0.516 ,  0.9698],
+           [ 0.0663,  0.5022,  0.6936,  1.1281],
+           [ 0.0663,  0.5022,  0.6936,  1.1281],
+           ..., 
+           [-0.3708,  0.272 ,  0.731 ,  1.0429],
+           [-0.2866,  0.1007,  0.3472,  0.5684],
+           [-0.0442,  0.2691,  0.0583,  0.4641]], dtype=float32)
+
+    In [25]: gs[:,2][df > -0.01]
+    A([[  0.    ,   0.    ,   0.7653,   0.7653],
+           [  0.    ,   0.    ,   0.7653,   0.7653],
+           [  0.    ,  -0.    ,   0.    ,   0.    ],
+           ..., 
+           [ 11.8779,   7.8823,   3.869 ,  14.771 ],
+           [ -0.0207,   0.0142,   0.0077,   0.0263],
+           [ -0.0024,   0.0008,   0.0012,   0.0028]], dtype=float32)
+
+
+::
+
+    321     // OPTICKS STEP COLLECTION : STEALING THE STACK
+    322     {
+    323         const G4ParticleDefinition* definition = aParticle->GetDefinition();
+    324         G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+    325         G4int materialIndex = aMaterial->GetIndex();
+    326         CCollector::Instance()->collectCerenkovStep(
+    327 
+    328                0,                  // 0     id:zero means use cerenkov step count 
+    329                aTrack.GetTrackID(),
+    330                materialIndex,
+    331                NumPhotons,
+    332 
+    333                x0.x(),                // 1
+    334                x0.y(),
+    335                x0.z(),
+    336                t0,
+    337 
+    338                deltaPosition.x(),     // 2
+    339                deltaPosition.y(),
+    340                deltaPosition.z(),
+    341                aStep.GetStepLength(),
+    342 
+
+
+::
+
+     625             // OPTICKS STEP COLLECTION : STEALING THE STACK
+     626             if(Num > 0)
+     627             {
+     628                 const G4ParticleDefinition* definition = aParticle->GetDefinition();
+     629                 G4ThreeVector deltaPosition = aStep.GetDeltaPosition();
+     630                 CCollector::Instance()->collectScintillationStep(
+     631 
+     632                        0,                  // 0     id:zero means use scintillation step count 
+     633                        aTrack.GetTrackID(),
+     634                        materialIndex,
+     635                        Num,
+     636 
+     637                        x0.x(),                // 1
+     638                        x0.y(),
+     639                        x0.z(),
+     640                        t0,
+     641 
+     642                        deltaPosition.x(),     // 2
+     643                        deltaPosition.y(),
+     644                        deltaPosition.z(),
+     645                        aStep.GetStepLength(),
+
+
+
+Collecting the stepLength within Scintillation/Cerenkov processes 
+results in relationship between deltaPosition and stepLength that in some cases 
+(400 out of 175000) us not as would expect. But this is only a fraction of a mm difference
+so can probably ignore it.
+
+g4-cls G4Step::
+
+    106    // step length
+    107    G4double GetStepLength() const;
+    108    void SetStepLength(G4double value);
+    109     // Before the end of the AlongStepDoIt loop,StepLength keeps
+    110     // the initial value which is determined by the shortest geometrical Step
+    111     // proposed by a physics process. After finishing the AlongStepDoIt,
+    112     // it will be set equal to 'StepLength' in G4Step. 
+    113 
+
+    186 // Member data
+    187    G4StepPoint* fpPreStepPoint;
+    188    G4StepPoint* fpPostStepPoint;
+    189    G4double fStepLength;
+    190      // Step length which may be updated at each invocation of 
+    191      // AlongStepDoIt and PostStepDoIt
+
+
+    063 inline
+     64  G4double G4Step::GetStepLength() const
+     65  {
+     66    return fStepLength;
+     67  }
+     68 
+     69 inline
+     70  void G4Step::SetStepLength(G4double value)
+     71  {
+     72    fStepLength = value;
+     73  }
+     74 
+     75 inline
+     76  G4ThreeVector G4Step::GetDeltaPosition() const
+     77  {
+     78    return fpPostStepPoint->GetPosition()
+     79             - fpPreStepPoint->GetPosition();
+     80  }
+
+
+::
+
+    simon:geant4_opticks_integration blyth$ g4-cc SetStepLength 
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/biasing/importance/src/G4ImportanceProcess.cc:  fGhostStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/biasing/importance/src/G4WeightCutOffProcess.cc:  fGhostStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/biasing/importance/src/G4WeightWindowProcess.cc:  fGhostStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/management/src/G4ITStepProcessor2.cc:    fpTrack->SetStepLength(fpState->fPhysicalStep);
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/management/src/G4ITStepProcessor2.cc:    fpStep->SetStepLength(fpState->fPhysicalStep);
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/management/src/G4ITStepProcessor2.cc:  fpStep->SetStepLength(0.);  //the particle has stopped
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/management/src/G4ITStepProcessor2.cc:  fpTrack->SetStepLength(0.);
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/scoring/src/G4ParallelWorldProcess.cc:  fGhostStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/scoring/src/G4ParallelWorldProcess.cc:    fpHyperStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/scoring/src/G4ParallelWorldScoringProcess.cc:  fGhostStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/scoring/src/G4ScoreSplittingProcess.cc:        fSplitStep->SetStepLength(stepLength);
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/scoring/src/G4ScoreSplittingProcess.cc:  fSplitStep->SetStepLength(step.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/track/src/G4ParticleChangeForGamma.cc:  pStep->SetStepLength( 0.0 );
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/track/src/G4ParticleChangeForMSC.cc:  pStep->SetStepLength(theTrueStepLength);
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/track/src/G4ParticleChangeForTransport.cc:  //pStep->SetStepLength( theTrueStepLength );
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/track/src/G4VParticleChange.cc:  pStep->SetStepLength( theTrueStepLength );
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/tracking/src/G4SteppingManager.cc:     fStep->SetStepLength( PhysicalStep );
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/tracking/src/G4SteppingManager.cc:     fTrack->SetStepLength( PhysicalStep );
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/tracking/src/G4SteppingManager2.cc:   fStep->SetStepLength( 0. );  //the particle has stopped
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/tracking/src/G4SteppingManager2.cc:   fTrack->SetStepLength( 0. );
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/visualization/RayTracer/src/G4RayTrajectory.cc:  trajectoryPoint->SetStepLength(aStep->GetStepLength());
+    simon:geant4_opticks_integration blyth$ 
+
+
+g4-cls G4VParticleChange::
+
+    ### but this Propose not used in cfg4 
+
+    145   public: // with description
+    146     //---- the following methods are for TruePathLength ----
+    147     G4double GetTrueStepLength() const;
+    148     void  ProposeTrueStepLength(G4double truePathLength);
+    149     //  Get/Propose theTrueStepLength
+    150 
+
+
+g4-cls G4SteppingManager::
+
+    179      // Find minimum Step length demanded by active disc./cont. processes
+    180      DefinePhysicalStepLength();
+    181 
+    182      // Store the Step length (geometrical length) to G4Step and G4Track
+    183      fStep->SetStepLength( PhysicalStep );
+    184      fTrack->SetStepLength( PhysicalStep );
+    185      G4double GeomStepLength = PhysicalStep;
+    186 
+    187      // Store StepStatus to PostStepPoint
+    188      fStep->GetPostStepPoint()->SetStepStatus( fStepStatus );
+    189 
+    190      // Invoke AlongStepDoIt 
+    191      InvokeAlongStepDoItProcs();
+    192 
+    193      // Update track by taking into account all changes by AlongStepDoIt
+    194      fStep->UpdateTrack();
+    195 
+    196      // Update safety after invocation of all AlongStepDoIts
+    197      endpointSafOrigin= fPostStepPoint->GetPosition();
+    198 //     endpointSafety=  std::max( proposedSafety - GeomStepLength, 0.);
+    199      endpointSafety=  std::max( proposedSafety - GeomStepLength, kCarTolerance);
+    200 
+    201      fStep->GetPostStepPoint()->SetSafety( endpointSafety );
+    202 
+    203 #ifdef G4VERBOSE
+    204                          // !!!!! Verbose
+    205            if(verboseLevel>0) fVerbose->AlongStepDoItAllDone();
+    206 #endif
+    207 
+    208      // Invoke PostStepDoIt
+    209      InvokePostStepDoItProcs();
+
+
+
+::
+
+    simon:opticksnpy blyth$ g4-cc ProposeTrue 
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/management/src/G4ITTransportation.cc:  // fParticleChange.ProposeTrueStepLength(geometryStepLength) ;
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/management/src/G4ITTransportation.cc:  fParticleChange.ProposeTrueStepLength(track.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/dna/processes/src/G4DNABrownianTransportation.cc:  fParticleChange.ProposeTrueStepLength(track.GetStepLength());
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/electromagnetic/utils/src/G4VMultipleScattering.cc:  fParticleChange.ProposeTrueStepLength(tPathLength);
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/transportation/src/G4CoupledTransportation.cc:  fParticleChange.ProposeTrueStepLength(geometryStepLength) ;
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/transportation/src/G4CoupledTransportation.cc:  //fParticleChange. ProposeTrueStepLength( track.GetStepLength() ) ;
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/transportation/src/G4Transportation.cc:  fParticleChange.ProposeTrueStepLength(geometryStepLength) ;
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/transportation/src/G4Transportation.cc:  //fParticleChange. ProposeTrueStepLength( track.GetStepLength() ) ;
+    simon:opticksnpy blyth$ 
+
+
+
+
+
+
+
+
 
 
 
