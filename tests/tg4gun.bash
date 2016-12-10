@@ -99,13 +99,13 @@ EOI
 tg4gun-t()
 {
     tg4gun-
-    tg4gun-- 
+    tg4gun-- $*
 }
 
 tg4gun-v()
 {
     tg4gun-
-    tg4gun-- --load --optixviz --target 3153
+    tg4gun-- --load --optixviz --target 3153 $*
 }
 
 

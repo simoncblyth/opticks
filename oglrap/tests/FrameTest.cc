@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     OpticksHub hub(&ok);
 
 
-    Frame frame ; 
+    Frame frame(&ok) ; 
     Composition composition ; 
     Interactor interactor(&hub) ;
     Renderer renderer("tex") ; 

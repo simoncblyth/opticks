@@ -12,6 +12,8 @@
 
 #include "Touchable.hh"
 
+class Opticks ; 
+
 class Config ;
 class Interactor ; 
 class Composition ; 
@@ -53,7 +55,7 @@ class Scene ;
 #include "OGLRAP_API_EXPORT.hh"
 class OGLRAP_API Frame : public Touchable {
    public:
-       Frame();
+       Frame(Opticks* ok);
        virtual ~Frame();
        
        void configureI(const char* name, std::vector<int> values);
@@ -118,6 +120,12 @@ class OGLRAP_API Frame : public Touchable {
        void key_released(unsigned int key);
 
    private:
+        enum { JUST_MOVE, CTRL_DRAG } ;
+        void cursor_moved(GLEQevent& event);
+        void cursor_moved_just_move(GLEQevent& event);
+        void cursor_moved_ctrl_drag(GLEQevent& event);
+   private:
+       Opticks*      m_ok ;
        bool          m_fullscreen ;
        bool          m_is_fullscreen ;
 
@@ -146,6 +154,10 @@ class OGLRAP_API Frame : public Touchable {
        // updated by getCursorPos
        int           m_pos_x ;
        int           m_pos_y ;
+
+   private:
+        unsigned m_cursor_moved_mode ; 
+
 
 };
 

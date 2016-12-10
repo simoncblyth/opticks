@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     m_composition = new Composition ; 
 
     m_scene = new Scene(m_hub) ; 
-    m_frame = new Frame ; 
+    m_frame = new Frame(m_opticks) ; 
     m_interactor = new Interactor(m_hub) ; 
 
     m_interactor->setFrame(m_frame);

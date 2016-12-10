@@ -15,6 +15,8 @@
 // when PLOG is after glfw3
 
 
+#include "Opticks.hh"
+
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -30,7 +32,8 @@
 #include "Scene.hh"
 
 
-Frame::Frame() : 
+Frame::Frame(Opticks* ok) :
+     m_ok(ok), 
      m_fullscreen(false),
      m_is_fullscreen(false),
      m_coord2pixel(1),
@@ -43,7 +46,8 @@ Frame::Frame() :
      m_dumpevent(0),
      m_pixel_factor(1),
      m_pos_x(0),
-     m_pos_y(0)
+     m_pos_y(0),
+     m_cursor_moved_mode(ok->hasOpt("ctrldrag") ? CTRL_DRAG : JUST_MOVE)
 {
 }
 
@@ -466,6 +470,149 @@ void Frame::getCursorPos()
     //printf("Frame::getCursorPos    %d %d  (%d)    \n", m_pos_x, m_pos_y, m_coord2pixel );
 }
 
+
+void Frame::cursor_moved(GLEQevent& event)
+{
+    switch(m_cursor_moved_mode)
+    {
+        case JUST_MOVE: cursor_moved_just_move(event) ; break ;    
+        case CTRL_DRAG: cursor_moved_ctrl_drag(event) ; break ;    
+    }
+}
+
+void Frame::cursor_moved_just_move(GLEQevent& event)
+{
+     if(m_cursor_inwindow)
+     {
+          float cursor_dx = m_cursor_x > 0.f ? float(event.pos.x) - m_cursor_x : 0.f ; 
+          float cursor_dy = m_cursor_y > 0.f ? float(event.pos.y) - m_cursor_y : 0.f ; 
+
+          m_cursor_x = float(event.pos.x) ;
+          m_cursor_y = float(event.pos.y) ;
+
+          //printf("Cursor x,y %0.2f,%0.2f dx,dy  %0.2f,%0.2f \n", m_cursor_x, m_cursor_y, cursor_dx, cursor_dy );
+          //
+          // adjust to -1:1 -1:1 range with
+          // 
+          //       top right at (1,1)
+          //       middle       (0,0)
+          //       bottom left  (-1,-1)
+          //
+
+          float x = (2.f*m_cursor_x - m_width)/m_width ;
+          float y = (m_height - 2.f*m_cursor_y)/m_height ;
+
+          float dx = 2.f*cursor_dx/m_width  ;
+          float dy = -2.f*cursor_dy/m_height ;
+
+          // problem with this is how to end the drag, lifting finger and tapping 
+          // screen comes over as sudden large drag, causing large trackball rotations
+          //
+          // so try a reset of the cursor position to being "undefined" when a jump is detected 
+          //
+          if(abs(dx) > 0.1 || abs(dy) > 0.1) 
+          { 
+              printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
+              m_cursor_x = -1.f ; 
+              m_cursor_y = -1.f ; 
+          }
+          else
+          {
+              if(m_interactor)
+              {
+                  getCursorPos();
+                  m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
+              }
+          }
+    }
+}
+
+
+void Frame::cursor_moved_ctrl_drag(GLEQevent& event)
+{
+        static bool flag_drag_done = false;
+        // Using ctrl+click to control
+        if ( 1 ) {
+            static bool flag_drag_begin = false;
+            if (event.type == GLEQ_BUTTON_PRESSED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
+                // printf("LT BUTTON PRESSED: mods: %d\n", event.button.mods);
+                // save first time
+                if (!flag_drag_begin) {
+                    flag_drag_begin = true;
+                    double _cursor_x, _cursor_y;
+                    glfwGetCursorPos(m_window, &_cursor_x, &_cursor_y );
+                    m_cursor_x = _cursor_x;
+                    m_cursor_y = _cursor_y;
+                }
+            } else if (event.type == GLEQ_BUTTON_RELEASED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
+                if (flag_drag_begin) {
+                // printf("LT BUTTON RELEASED: mods: %d\n", event.button.mods);
+                flag_drag_done = true;
+                flag_drag_begin = false;
+                }
+            }
+        }
+
+     if(m_cursor_inwindow && flag_drag_done)
+     {
+         double _cursor_x, _cursor_y;
+         glfwGetCursorPos(m_window, &_cursor_x, &_cursor_y );
+          float cursor_dx = m_cursor_x > 0.f ? _cursor_x - m_cursor_x : 0.f ; 
+          float cursor_dy = m_cursor_y > 0.f ? _cursor_y - m_cursor_y : 0.f ; 
+          m_cursor_x = _cursor_x ;
+          m_cursor_y = _cursor_y ;
+         //  float cursor_dx = m_cursor_x > 0.f ? float(event.pos.x) - m_cursor_x : 0.f ; 
+         //  float cursor_dy = m_cursor_y > 0.f ? float(event.pos.y) - m_cursor_y : 0.f ; 
+
+         // m_cursor_x = float(event.pos.x) ;
+         // m_cursor_y = float(event.pos.y) ;
+
+          //printf("Cursor x,y %0.2f,%0.2f dx,dy  %0.2f,%0.2f \n", m_cursor_x, m_cursor_y, cursor_dx, cursor_dy );
+          //
+          // adjust to -1:1 -1:1 range with
+          // 
+          //       top right at (1,1)
+          //       middle       (0,0)
+          //       bottom left  (-1,-1)
+          //
+
+          float x = (2.f*m_cursor_x - m_width)/m_width ;
+          float y = (m_height - 2.f*m_cursor_y)/m_height ;
+
+          float dx = 2.f*cursor_dx/m_width  ;
+          float dy = -2.f*cursor_dy/m_height ;
+
+          // problem with this is how to end the drag, lifting finger and tapping 
+          // screen comes over as sudden large drag, causing large trackball rotations
+          //
+          // so try a reset of the cursor position to being "undefined" when a jump is detected 
+          //
+          if(abs(dx) > 0.1 || abs(dy) > 0.1) 
+          { 
+              printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
+              m_cursor_x = -1.f ; 
+              m_cursor_y = -1.f ; 
+          }
+          else
+          {
+              if(m_interactor)
+              {
+                  getCursorPos();
+                  // printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
+                  m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
+                  flag_drag_done = false; // after drag done, reset it
+              }
+          }
+     } else if (m_cursor_inwindow) {
+         // printf("LT touch pos (%d,%d)\n", m_pos_x, m_pos_y);
+         getCursorPos();
+         // touch(m_pos_x, m_pos_y);
+         m_interactor->touch(m_pos_x, m_pos_y);
+     }
+}
+
+
+
 void Frame::handle_event(GLEQevent& event)
 {
     // some events like key presses scrub the position 
@@ -493,86 +640,7 @@ void Frame::handle_event(GLEQevent& event)
         case GLEQ_BUTTON_PRESSED:
         case GLEQ_BUTTON_RELEASED:
         case GLEQ_CURSOR_MOVED:
-            {
-                static bool flag_drag_done = false;
-                // Using ctrl+click to control
-                if ( 1 ) {
-                    static bool flag_drag_begin = false;
-                    if (event.type == GLEQ_BUTTON_PRESSED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
-                        // printf("LT BUTTON PRESSED: mods: %d\n", event.button.mods);
-                        // save first time
-                        if (!flag_drag_begin) {
-                            flag_drag_begin = true;
-                            double _cursor_x, _cursor_y;
-                            glfwGetCursorPos(m_window, &_cursor_x, &_cursor_y );
-                            m_cursor_x = _cursor_x;
-                            m_cursor_y = _cursor_y;
-                        }
-                    } else if (event.type == GLEQ_BUTTON_RELEASED && event.button.button == 0 && event.button.mods == GLFW_MOD_CONTROL) {
-                        if (flag_drag_begin) {
-                        // printf("LT BUTTON RELEASED: mods: %d\n", event.button.mods);
-                        flag_drag_done = true;
-                        flag_drag_begin = false;
-                        }
-                    }
-                }
-             if(m_cursor_inwindow && flag_drag_done)
-             {
-                 double _cursor_x, _cursor_y;
-                 glfwGetCursorPos(m_window, &_cursor_x, &_cursor_y );
-                  float cursor_dx = m_cursor_x > 0.f ? _cursor_x - m_cursor_x : 0.f ; 
-                  float cursor_dy = m_cursor_y > 0.f ? _cursor_y - m_cursor_y : 0.f ; 
-                  m_cursor_x = _cursor_x ;
-                  m_cursor_y = _cursor_y ;
-                 //  float cursor_dx = m_cursor_x > 0.f ? float(event.pos.x) - m_cursor_x : 0.f ; 
-                 //  float cursor_dy = m_cursor_y > 0.f ? float(event.pos.y) - m_cursor_y : 0.f ; 
-
-                 // m_cursor_x = float(event.pos.x) ;
-                 // m_cursor_y = float(event.pos.y) ;
-
-                  //printf("Cursor x,y %0.2f,%0.2f dx,dy  %0.2f,%0.2f \n", m_cursor_x, m_cursor_y, cursor_dx, cursor_dy );
-                  //
-                  // adjust to -1:1 -1:1 range with
-                  // 
-                  //       top right at (1,1)
-                  //       middle       (0,0)
-                  //       bottom left  (-1,-1)
-                  //
-
-                  float x = (2.f*m_cursor_x - m_width)/m_width ;
-                  float y = (m_height - 2.f*m_cursor_y)/m_height ;
- 
-                  float dx = 2.f*cursor_dx/m_width  ;
-                  float dy = -2.f*cursor_dy/m_height ;
-
-                  // problem with this is how to end the drag, lifting finger and tapping 
-                  // screen comes over as sudden large drag, causing large trackball rotations
-                  //
-                  // so try a reset of the cursor position to being "undefined" when a jump is detected 
-                  //
-                  if(abs(dx) > 0.1 || abs(dy) > 0.1) 
-                  { 
-                      printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
-                      m_cursor_x = -1.f ; 
-                      m_cursor_y = -1.f ; 
-                  }
-                  else
-                  {
-                      if(m_interactor)
-                      {
-                          getCursorPos();
-                          // printf("jump? x,y (%0.5f,%0.5f)  dx,dy (%0.5f,%0.5f) \n", x, y, dx, dy );  
-                          m_interactor->cursor_drag( x, y, dx, dy, m_pos_x, m_pos_y );
-                          flag_drag_done = false; // after drag done, reset it
-                      }
-                  }
-             } else if (m_cursor_inwindow) {
-                 // printf("LT touch pos (%d,%d)\n", m_pos_x, m_pos_y);
-                 getCursorPos();
-                 // touch(m_pos_x, m_pos_y);
-                 m_interactor->touch(m_pos_x, m_pos_y);
-             }
-            }
+             cursor_moved(event);
              break;
         case GLEQ_SCROLLED:
              // FIXME

@@ -95,7 +95,7 @@ void OpticksViz::init()
     // envvars normally not defined, using cmake configure_file values instead
 
     m_scene      = new Scene(m_hub, shader_dir, shader_incl_path, shader_dynamic_dir ) ;
-    m_frame       = new Frame ; 
+    m_frame       = new Frame(m_ok) ; 
     m_interactor  = new Interactor(m_hub) ;  // perhaps treat m_viz as the "hub" here ??
 
     m_interactor->setFrame(m_frame);
