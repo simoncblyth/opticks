@@ -28,6 +28,15 @@ Alternatives to OptiX
 
 * http://raytracey.blogspot.tw/2016/05/start-your-engines-source-code-for.html
 
+
+Intel : Embree  (works on CPUs and many integrated core (MICs) coprocessors)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* http://neams.rpi.edu/jiw2/papers/M&C2015%20Liu02.pdf
+
+
+
 AMD : RadeonRays, FireRays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -355,10 +364,12 @@ all system GPUs.
 
 
 
-OptiX CSG
-----------
+Excellent Comprehensive Slides on Ray Tracing
+------------------------------------------------
 
 * https://mediatech.aalto.fi/~jaakko/ME-C3100/S2013/12_RayTracing.pdf
+* https://mediatech.aalto.fi/~jaakko/ME-C3100/S2013/
+
 
 Samples
 --------

@@ -349,11 +349,20 @@ class SeqTable(object):
            #log.info(" iseq %x imsk %x dbgmsk %x pick %s" % (iseq, imsk, self.dbgmsk, pick ))
            if not pick: 
                return None 
-   
-        xs = "%0.4d %16s" % (n, ihex_(iseq))        
+
+        if self.smry == False:
+            xs = "%0.4d %16s" % (n, ihex_(iseq))        
+        else:
+            xs = "%0.4d " % (n)        
+        pass
+      
         vals = map(lambda _:" %7s " % _, self.cu[n,1:] ) 
         label = self.labels[n]
-        nstep = "[%-2d]" % self.label2nstep[label]
+
+        if self.smry == False:
+            nstep = "[%-2d]" % self.label2nstep[label]
+        else:
+            nstep = "" 
 
         # show only lines with chi2 contrib greater than cmx
         if self.c2 is not None:
