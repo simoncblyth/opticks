@@ -18,6 +18,10 @@ GGeoTest
 
 Creates simple test geometries from a commandline specification.
 
+The canonical *GGeo* member *m_geotest* instance of *GGeoTest* is only 
+instanciated when the `--test` option is used causing the running 
+of `GGeo::modifyGeometry`
+
 **/
 
 

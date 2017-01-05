@@ -17,10 +17,20 @@ struct gfloat3 ;
 class GItemList ; 
 class GBndLib ; 
 
-// *GParts* 
-//     creates *solid* buffer from the *parts* buffer
-//     the *parts* buffer .npy is created by detdesc partitioning with pmt-/tree.py 
-//
+/**
+
+GParts
+======= 
+
+Creates *solid* buffer from the *parts* buffer
+the *parts* buffer .npy for DYB PMT geometry is created by detdesc partitioning with pmt-/tree.py 
+OR for test geometries it is created part-by-part using methods of the npy primitive structs, see eg::
+
+   npy/NPart.hpp
+   npy/NSphere.hpp 
+
+**/
+
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -36,6 +46,7 @@ class GGEO_API GParts {
        static const char* TUBS_ ; 
        static const char* BOX_ ; 
        static const char* PRISM_ ; 
+       static const char* BOOLEANTEST_ ; 
        static const char* TypeName(unsigned int typecode);
 
     public:

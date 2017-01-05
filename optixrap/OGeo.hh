@@ -8,6 +8,8 @@
 
 class RayTraceConfig ; 
 
+class Opticks ; 
+
 class OContext ; 
 class GGeo ; 
 class GMergedMesh ; 
@@ -15,6 +17,25 @@ class GBuffer ;
 template <typename S> class NPY ;
 
 // used by OEngine::initGeometry
+
+/**
+OGeo
+=====
+
+Crucial OptiX geometrical members:
+
+
+*(optix::Group)m_top*
+
+*(optix::GeometryGroup)m_geometry_group*
+
+*(optix::Group)m_repeated_group*
+
+
+
+**/
+
+
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API  OGeo 
 {
@@ -60,6 +81,7 @@ private:
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     GGeo*                m_ggeo ; 
+    Opticks*             m_ok ; 
     const char*          m_builder ; 
     const char*          m_traverser ; 
     const char*          m_description ; 

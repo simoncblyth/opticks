@@ -31,6 +31,7 @@ const char* GMaker::ZSPHERE = "zsphere" ;
 const char* GMaker::ZLENS = "lens" ; 
 const char* GMaker::PMT = "pmt" ; 
 const char* GMaker::PRISM = "prism" ; 
+const char* GMaker::BOOLEANTEST = "booleantest" ; 
 const char* GMaker::UNDEFINED = "undefined" ; 
  
 const char* GMaker::ShapeName(char shapecode)
@@ -43,6 +44,7 @@ const char* GMaker::ShapeName(char shapecode)
        case 'L':return ZLENS   ; break ; 
        case 'P':return PMT     ; break ; 
        case 'M':return PRISM     ; break ; 
+       case 'T':return BOOLEANTEST  ; break ; 
        case 'U':return UNDEFINED ; break ;
     }
     return NULL ;
@@ -57,6 +59,7 @@ char GMaker::ShapeCode(const char* shapename)
     else if(strcmp(shapename, ZLENS) == 0)   sc = 'L' ; 
     else if(strcmp(shapename, PMT) == 0)     sc = 'P' ;  // not operational
     else if(strcmp(shapename, PRISM) == 0)   sc = 'M' ; 
+    else if(strcmp(shapename, BOOLEANTEST) == 0)   sc = 'T' ; 
     return sc ; 
 }
 
@@ -65,12 +68,13 @@ char GMaker::ShapeCode(const char* shapename)
 std::vector<GSolid*> GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
 {
     std::vector<GSolid*> solids ; 
-    bool is_composite = shapecode == 'L' ;
+    bool is_composite = shapecode == 'L' || shapecode == 'T' ;
     if(is_composite)
     {
         switch(shapecode)
         {
             case 'L': makeZSphereIntersect(solids, param, spec) ; break;
+            case 'T': makeZSphereIntersect(solids, param, spec) ; break;
         }
     }
     else
@@ -301,6 +305,9 @@ GSolid* GMaker::makeZSphere(glm::vec4& param)
 
 void GMaker::makeZSphereIntersect(std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec)
 {
+    // parameters of two spheres with offset z positions used
+    // to create
+
     float a_radius = param.x ; 
     float b_radius = param.y ; 
     float a_zpos   = param.z ;

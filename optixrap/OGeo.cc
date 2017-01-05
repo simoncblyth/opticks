@@ -12,6 +12,7 @@
 #include <optix_world.h>
 
 // opticks-
+#include "Opticks.hh"
 #include "OpticksConst.hh"
 
 // optixrap-
@@ -121,6 +122,7 @@ OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char* traver
            : 
            m_ocontext(ocontext),
            m_ggeo(gg),
+           m_ok(m_ggeo->getOpticks()),
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
            m_description(NULL),
@@ -177,6 +179,10 @@ void OGeo::convert()
                          ;
             continue ; 
         }
+
+        // 1st merged mesh is the global non-instanced one
+        // subsequent merged meshes contain repeated PMT geometry
+        // that typically has analytic primitive intersection implementations  
 
         if( i == 0 )
         {
@@ -444,33 +450,40 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
     // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
-    GParts* pmt = mm->getParts();
-    assert(pmt && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
+    GParts* pts = mm->getParts();
+    assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
-    if(pmt->getSolidBuffer() == NULL)
+    if(pts->getSolidBuffer() == NULL)
     {
         LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry" ; 
-        pmt->close();
+        pts->close();
         LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry DONE" ; 
     }
 
-
     if(m_verbose)
-    pmt->Summary("OGeo::makeAnalyticGeometry pmt Summary");
+    pts->Summary("OGeo::makeAnalyticGeometry pmt Summary");
 
-    NPY<float>* partBuf = pmt->getPartBuffer();
-    NPY<unsigned int>* solidBuf = pmt->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
+    NPY<float>* partBuf = pts->getPartBuffer();
+    NPY<unsigned int>* solidBuf = pts->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
 
     assert(partBuf);
     assert(solidBuf);
 
+    bool dbganalytic = m_ok->hasOpt("dbganalytic");
 
-    if(m_verbose)
+    if(m_verbose || dbganalytic )
     {
+        pts->dump("OGeo::makeAnalyticGeometry pts");
+
         partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
         solidBuf->dump("OGeo::makeAnalyticGeometry solidBuf partOffset/numParts/solidIndex/0");
-        //partBuf->save("$TMP/partBuf.npy");
-        //solidBuf->save("$TMP/solidBuf.npy");
+
+        if(dbganalytic)
+        {
+
+            partBuf->save("$TMP/OGeo_partBuf.npy");
+            solidBuf->save("$TMP/OGeo_solidBuf.npy");
+        }
     }
 
     NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
@@ -511,6 +524,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry["identityBuffer"]->setBuffer(identityBuffer);
 
 
+    // TODO: why is this here? Remove?
     optix::Buffer prismBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     prismBuffer->setFormat(RT_FORMAT_FLOAT4);
     prismBuffer->setSize(5);

@@ -26,6 +26,7 @@ const char* GParts::SPHERE_ = "Sphere" ;
 const char* GParts::TUBS_   = "Tubs" ;
 const char* GParts::BOX_    = "Box" ;
 const char* GParts::PRISM_  = "Prism" ;
+const char* GParts::BOOLEANTEST_  = "BooleanTest" ;
 
 const char* GParts::TypeName(unsigned int typecode)
 {
@@ -36,6 +37,7 @@ const char* GParts::TypeName(unsigned int typecode)
         case   TUBS:return TUBS_   ; break ;
         case    BOX:return BOX_    ; break ;
         case  PRISM:return PRISM_  ; break ;
+        case  BOOLEANTEST:return BOOLEANTEST_  ; break ;
         default:  assert(0) ; break ; 
     }
     return NULL ; 
@@ -102,6 +104,7 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
     else if(typecode == 'S')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'Z')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'M')  pt->setTypeCode(0u, PRISM);
+    else if(typecode == 'T')  pt->setTypeCode(0u, BOOLEANTEST);
     else
     {
         LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 
@@ -322,7 +325,7 @@ void GParts::makeSolidBuffer()
     {
         unsigned int nodeIndex = getNodeIndex(i);
 
-        LOG(debug) << "GParts::solidify"
+        LOG(info) << "GParts::solidify"
                    << " i " << std::setw(3) << i  
                    << " nodeIndex " << std::setw(3) << nodeIndex
                    ;  
@@ -378,8 +381,10 @@ void GParts::makeSolidBuffer()
 
 void GParts::dumpSolidInfo(const char* msg)
 {
-    LOG(info) << msg << " (part_offset, parts_for_solid, solid_index, 0) " ;
-    for(unsigned int i=0 ; i < getNumSolids(); i++)
+    unsigned int numSolids = getNumSolids() ;
+    LOG(info) << msg << " (part_offset, parts_for_solid, solid_index, 0) numSolids:" << numSolids  ;
+
+    for(unsigned int i=0 ; i < numSolids; i++)
     {
         guint4 si = getSolidInfo(i);
         LOG(info) << si.description() ;
@@ -561,6 +566,8 @@ std::string GParts::getBoundaryName(unsigned int part)
 
 void GParts::dump(const char* msg)
 {
+    LOG(info) << "GParts::dump " << msg ; 
+
     dumpSolidInfo(msg);
 
     NPY<float>* buf = m_part_buffer ; 
@@ -570,6 +577,8 @@ void GParts::dump(const char* msg)
     unsigned int ni = buf->getShape(0) ;
     unsigned int nj = buf->getShape(1) ;
     unsigned int nk = buf->getShape(2) ;
+
+    LOG(info) << "GParts::dump ni " << ni ; 
 
     assert( nj == NJ );
     assert( nk == NK );

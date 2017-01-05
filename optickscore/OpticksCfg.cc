@@ -285,6 +285,9 @@ void OpticksCfg<Listener>::init()
        ("dbguploads", "used in OpticksViz::uploadEvent to dump the uploads table "); 
    m_desc.add_options()
        ("dbgtestgeo", "debug test geometry see cfg4/CTestDetector"); 
+   m_desc.add_options()
+       ("dbganalytic", "debug analytic test geometry see ggeo/GGeoTest"); 
+
 
 
 

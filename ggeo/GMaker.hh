@@ -25,6 +25,7 @@ class GGEO_API GMaker {
        static const char* BOX ; 
        static const char* PMT ; 
        static const char* PRISM ; 
+       static const char* BOOLEANTEST ; 
        static const char* UNDEFINED ; 
        static const char* ShapeName(char shapecode); 
        static char ShapeCode(const char* shapename); 

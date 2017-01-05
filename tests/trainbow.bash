@@ -66,6 +66,10 @@ trainbow-poltag()
    esac
 }
 
+
+
+
+
 trainbow--(){
 
     local msg="=== $FUNCNAME :"
@@ -87,9 +91,7 @@ trainbow--(){
         tag=-$tag  
     fi 
 
-    #local material=GlassSchottF2
     local wavelength=500
-    local material=MainH2OHale
     local surfaceNormal=0,1,0
     #local azimuth=-0.25,0.25
     local azimuth=0,1
@@ -114,12 +116,6 @@ trainbow--(){
                  wavelength=$wavelength 
                )
  
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
-                 shape=box    parameters=0,0,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
-               )
     echo $msg pol $pol wavelength $wavelength tag $tag tag_offset $tag_offset 
 
     op.sh  \
@@ -128,13 +124,37 @@ trainbow--(){
             --timemax 10 \
             --geocenter \
             --eye 0,0,1 \
-            --test --testconfig "$(join _ ${test_config[@]})" \
+            --test --testconfig "$(trainbow-testconfig)" --dbganalytic \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --tag $tag --cat $(trainbow-det) \
             --save
 
         #    --torchdbg \
 }
+
+
+
+
+
+trainbow-testconfig()
+{
+    #local material=GlassSchottF2
+    local material=MainH2OHale
+
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=box    parameters=0,0,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=booleantest  parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
+               )
+
+                 
+     # shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
+
+     echo "$(join _ ${test_config[@]})" 
+}
+
 
 
 trainbow-cf() 

@@ -215,6 +215,10 @@ GMergedMesh* GGeoTest::createPmtInBox()
     analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
     analytic->close();
 
+
+   
+
+
     // needed by OGeo::makeAnalyticGeometry
 
     NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
@@ -246,7 +250,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
         glm::vec4 param = m_config->getParameters(i);
         unsigned int boundary = m_bndlib->addBoundary(spec);
 
-        LOG(debug) << "GGeoTest::createBoxInBox" 
+        LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
                   << " shapecode " << std::setw(2) << shapecode 
                   << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
@@ -293,6 +297,16 @@ GMergedMesh* GGeoTest::createBoxInBox()
     tri->setITransformsBuffer(txf->getBuffer());
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
+
+
+    if(m_opticks->hasOpt("dbganalytic"))
+    {
+        GParts* pts = tri->getParts();
+        const char* msg = "GGeoTest::createBoxInBox --dbganalytic" ;
+        pts->Summary(msg);
+        pts->dumpSolidInfo(msg); // this usually dumps nothing as solid buffer not yet created
+    }
+
     return tri ; 
 } 
 

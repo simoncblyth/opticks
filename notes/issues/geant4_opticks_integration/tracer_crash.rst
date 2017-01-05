@@ -1,6 +1,15 @@
 Tracer Crash
 ==============
 
+Still get the crash with OTracerTest unless use `--load` option
+despite loading an event not making sense when just tracing::
+
+    OTracerTest --load
+
+    // TODO: tidy this 
+
+
+
 Huh, why is genstep_buffer causing a tracing issue ?
 
 Perhsaps resolved with::
