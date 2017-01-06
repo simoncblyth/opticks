@@ -26,26 +26,35 @@ const char* GParts::SPHERE_ = "Sphere" ;
 const char* GParts::TUBS_   = "Tubs" ;
 const char* GParts::BOX_    = "Box" ;
 const char* GParts::PRISM_  = "Prism" ;
-const char* GParts::BOOLEANTEST_  = "BooleanTest" ;
+const char* GParts::INTERSECTION_  = "Intersection" ;
+const char* GParts::UNION_         = "Union" ;
+const char* GParts::DIFFERENCE_    = "Difference" ;
 
 const char* GParts::TypeName(unsigned int typecode)
 {
     LOG(debug) << "GParts::TypeName " << typecode ; 
+
+    const char* s = NULL ; 
+
     switch(typecode)
     {
-        case SPHERE:return SPHERE_ ; break ;
-        case   TUBS:return TUBS_   ; break ;
-        case    BOX:return BOX_    ; break ;
-        case  PRISM:return PRISM_  ; break ;
-        case  BOOLEANTEST:return BOOLEANTEST_  ; break ;
-        default:  assert(0) ; break ; 
+        case SPHERE:        s=SPHERE_        ; break ;
+        case   TUBS:        s=TUBS_          ; break ;
+        case    BOX:        s=BOX_           ; break ;
+        case  PRISM:        s=PRISM_         ; break ;
+        case  INTERSECTION: s=INTERSECTION_  ; break ;
+        case  UNION:        s=UNION_         ; break ;
+        case  DIFFERENCE:   s=DIFFERENCE_    ; break ;
     }
-    return NULL ; 
+    assert(s);
+    return s ; 
 }
 
 
 GParts* GParts::combine(std::vector<GParts*> subs)
 {
+    // Concatenate vector of GParts instances into a single GParts instance
+
     GParts* parts = new GParts(); 
     GBndLib* bndlib = NULL ; 
     for(unsigned int i=0 ; i < subs.size() ; i++)
@@ -61,6 +70,10 @@ GParts* GParts::combine(std::vector<GParts*> subs)
 
 GParts* GParts::make(const npart& pt, const char* spec)
 {
+    // Serialize the npart shape (BOX, SPHERE or PRISM) into a (1,4,4) parts buffer. 
+    // Then instanciate a GParts instance to hold the parts buffer 
+    // together with the boundary spec.
+
     NPY<float>* part = NPY<float>::make(1, NJ, NK );
     part->zero();
 
@@ -72,6 +85,9 @@ GParts* GParts::make(const npart& pt, const char* spec)
     GParts* gpt = new GParts(part, spec) ;
     char typecode = gpt->getTypeCode(0u);
     assert(typecode == BOX || typecode == SPHERE || typecode == PRISM);
+
+    // hmm need to set flag identifying as constituent of a boolean composite
+
 
     return gpt ; 
 }
@@ -100,11 +116,16 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
 
     GParts* pt = new GParts(part, spec) ;
 
+    // part enum from npy/NPart.hpp
+    // hmm the boolean info should be in constitutent flags not TypeCode 
+
     if( typecode == 'B' )     pt->setTypeCode(0u, BOX);
     else if(typecode == 'S')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'Z')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'M')  pt->setTypeCode(0u, PRISM);
-    else if(typecode == 'T')  pt->setTypeCode(0u, BOOLEANTEST);
+//    else if(typecode == 'I')  pt->setTypeCode(0u, INTERSECTION );
+//    else if(typecode == 'J')  pt->setTypeCode(0u, UNION );
+//    else if(typecode == 'K')  pt->setTypeCode(0u, DIFFERENCE );
     else
     {
         LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 
@@ -120,7 +141,7 @@ GParts::GParts(GBndLib* bndlib)
       m_part_buffer(NULL),
       m_bndspec(NULL),
       m_bndlib(bndlib),
-      m_solid_buffer(NULL),
+      m_prim_buffer(NULL),
       m_closed(false),
       m_verbose(false)
 {
@@ -132,7 +153,7 @@ GParts::GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib)
       m_part_buffer(buffer),
       m_bndspec(NULL),
       m_bndlib(bndlib),
-      m_solid_buffer(NULL),
+      m_prim_buffer(NULL),
       m_closed(false)
 {
       init(spec) ; 
@@ -143,7 +164,7 @@ GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib)
       m_part_buffer(buffer),
       m_bndspec(spec),
       m_bndlib(bndlib),
-      m_solid_buffer(NULL),
+      m_prim_buffer(NULL),
       m_closed(false)
 {
       init() ; 
@@ -161,9 +182,9 @@ bool GParts::isClosed()
 
 
 
-unsigned int GParts::getSolidNumParts(unsigned int solid_index)
+unsigned int GParts::getPrimNumParts(unsigned int prim_index)
 {
-    return m_parts_per_solid.count(solid_index)==1 ? m_parts_per_solid[solid_index] : 0 ; 
+    return m_parts_per_prim.count(prim_index)==1 ? m_parts_per_prim[prim_index] : 0 ; 
 }
 
 
@@ -186,13 +207,13 @@ GBndLib* GParts::getBndLib()
 }
 
 
-void GParts::setSolidBuffer(NPY<unsigned int>* solid_buffer)
+void GParts::setPrimBuffer(NPY<unsigned int>* prim_buffer)
 {
-    m_solid_buffer = solid_buffer ; 
+    m_prim_buffer = prim_buffer ; 
 }
-NPY<unsigned int>* GParts::getSolidBuffer()
+NPY<unsigned int>* GParts::getPrimBuffer()
 {
-    return m_solid_buffer ; 
+    return m_prim_buffer ; 
 }
 
 void GParts::setPartBuffer(NPY<float>* part_buffer)
@@ -288,7 +309,7 @@ void GParts::setSensorSurface(const char* surface)
 void GParts::close()
 {
     registerBoundaries();
-    makeSolidBuffer(); 
+    makePrimBuffer(); 
 }
 
 void GParts::registerBoundaries()
@@ -314,9 +335,22 @@ void GParts::registerBoundaries()
    } 
 }
 
-void GParts::makeSolidBuffer()
+void GParts::makePrimBuffer()
 {
-    m_parts_per_solid.clear();
+    // "prim" here was previously renamed "solid"
+    // but thats confusing due to other solids so renamed
+    // to "prim" as this corresponds to OptiX primitives GPU side, 
+    // see oxrap/cu/hemi-pmt.cu::intersect
+    //
+    // "parts" are associated to their containing "prim" 
+    // via the NodeIndex property  
+    // so to prep a boolean composite need to:
+    //
+    // * set intersect/union/difference flag in primBuffer .w?
+    // * arrange for constituent parts to share the same NodeIndex 
+    //
+
+    m_parts_per_prim.clear();
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 
 
@@ -325,69 +359,69 @@ void GParts::makeSolidBuffer()
     {
         unsigned int nodeIndex = getNodeIndex(i);
 
-        LOG(info) << "GParts::solidify"
+        LOG(info) << "GParts::makePrimBuffer"
                    << " i " << std::setw(3) << i  
                    << " nodeIndex " << std::setw(3) << nodeIndex
                    ;  
                      
-        m_parts_per_solid[nodeIndex] += 1 ; 
+        m_parts_per_prim[nodeIndex] += 1 ; 
 
         if(nodeIndex < nmin) nmin = nodeIndex ; 
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-    unsigned int num_solids = m_parts_per_solid.size() ;
+    unsigned int num_prim = m_parts_per_prim.size() ;
     //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
-    if(nmax - nmin != num_solids - 1)
+    if(nmax - nmin != num_prim - 1)
     {
-        LOG(warning) << "GParts::solidify non-contiguous node indices"
+        LOG(warning) << "GParts::makePrimBuffer non-contiguous node indices"
                      << " nmin " << nmin 
                      << " nmax " << nmax
-                     << " num_solids " << num_solids 
+                     << " num_prim " << num_prim
                      ; 
     }
 
 
-    guint4* solidinfo = new guint4[num_solids] ;
+    guint4* priminfo = new guint4[num_prim] ;
 
     typedef std::map<unsigned int, unsigned int> UU ; 
     unsigned int part_offset = 0 ; 
     unsigned int n = 0 ; 
-    for(UU::const_iterator it=m_parts_per_solid.begin() ; it != m_parts_per_solid.end() ; it++)
+    for(UU::const_iterator it=m_parts_per_prim.begin() ; it != m_parts_per_prim.end() ; it++)
     {
         unsigned int node_index = it->first ; 
-        unsigned int parts_for_solid = it->second ; 
+        unsigned int parts_for_prim = it->second ; 
 
-        guint4& si = *(solidinfo+n) ;
+        guint4& pri = *(priminfo+n) ;
 
-        si.x = part_offset ; 
-        si.y = parts_for_solid ;
-        si.z = node_index ; 
-        si.w = 0 ;              
+        pri.x = part_offset ; 
+        pri.y = parts_for_prim ;
+        pri.z = node_index ; 
+        pri.w = 0 ;            // <--- prim/boolean-opcode ?  
 
-        LOG(debug) << "GParts::solidify solidinfo " << si.description() ;       
+        LOG(debug) << "GParts::makePrimBuffer priminfo " << pri.description() ;       
 
-        part_offset += parts_for_solid ; 
+        part_offset += parts_for_prim ; 
         n++ ; 
     }
 
-    NPY<unsigned int>* buf = NPY<unsigned int>::make( num_solids, 4 );
-    buf->setData((unsigned int*)solidinfo);
-    delete [] solidinfo ; 
+    NPY<unsigned int>* buf = NPY<unsigned int>::make( num_prim, 4 );
+    buf->setData((unsigned int*)priminfo);
+    delete [] priminfo ; 
 
-    setSolidBuffer(buf);
+    setPrimBuffer(buf);
 }
 
 
-void GParts::dumpSolidInfo(const char* msg)
+void GParts::dumpPrimInfo(const char* msg)
 {
-    unsigned int numSolids = getNumSolids() ;
-    LOG(info) << msg << " (part_offset, parts_for_solid, solid_index, 0) numSolids:" << numSolids  ;
+    unsigned int numPrim = getNumPrim() ;
+    LOG(info) << msg << " (part_offset, parts_for_prim, prim_index, prim_flags) numPrim:" << numPrim  ;
 
-    for(unsigned int i=0 ; i < numSolids; i++)
+    for(unsigned int i=0 ; i < numPrim ; i++)
     {
-        guint4 si = getSolidInfo(i);
-        LOG(info) << si.description() ;
+        guint4 pri = getPrimInfo(i);
+        LOG(info) << pri.description() ;
     }
 }
 
@@ -396,16 +430,16 @@ void GParts::Summary(const char* msg)
 {
     LOG(info) << msg 
               << " num_parts " << getNumParts() 
-              << " num_solids " << getNumSolids()
+              << " num_prim " << getNumPrim()
               ;
  
     typedef std::map<unsigned int, unsigned int> UU ; 
-    for(UU::const_iterator it=m_parts_per_solid.begin() ; it!=m_parts_per_solid.end() ; it++)
+    for(UU::const_iterator it=m_parts_per_prim.begin() ; it!=m_parts_per_prim.end() ; it++)
     {
-        unsigned int solid_index = it->first ; 
+        unsigned int prim_index = it->first ; 
         unsigned int nparts = it->second ; 
-        unsigned int nparts2 = getSolidNumParts(solid_index) ; 
-        printf("%2u : %2u \n", solid_index, nparts );
+        unsigned int nparts2 = getPrimNumParts(prim_index) ; 
+        printf("%2u : %2u \n", prim_index, nparts );
         assert( nparts == nparts2 );
     }
 
@@ -419,9 +453,9 @@ void GParts::Summary(const char* msg)
 
 
 
-unsigned int GParts::getNumSolids()
+unsigned int GParts::getNumPrim()
 {
-    return m_solid_buffer ? m_solid_buffer->getShape(0) : 0 ; 
+    return m_prim_buffer ? m_prim_buffer->getShape(0) : 0 ; 
 }
 const char* GParts::getTypeName(unsigned int part_index)
 {
@@ -441,10 +475,10 @@ gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
     float* ptr = getValues(i,j,k);
     return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
 }
-guint4 GParts::getSolidInfo(unsigned int isolid)
+guint4 GParts::getPrimInfo(unsigned int iprim)
 {
-    unsigned int* data = m_solid_buffer->getValues();
-    unsigned int* ptr = data + isolid*SK  ;
+    unsigned int* data = m_prim_buffer->getValues();
+    unsigned int* ptr = data + iprim*SK  ;
     return guint4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
 }
 gbbox GParts::getBBox(unsigned int i)
@@ -550,6 +584,10 @@ void GParts::setBoundaryAll(unsigned int boundary)
 {
     for(unsigned int i=0 ; i < getNumParts() ; i++) setBoundary(i, boundary);
 }
+void GParts::setFlagsAll(unsigned int flags)
+{
+    for(unsigned int i=0 ; i < getNumParts() ; i++) setFlags(i, flags);
+}
 
 
 
@@ -568,7 +606,7 @@ void GParts::dump(const char* msg)
 {
     LOG(info) << "GParts::dump " << msg ; 
 
-    dumpSolidInfo(msg);
+    dumpPrimInfo(msg);
 
     NPY<float>* buf = m_part_buffer ; 
     assert(buf);

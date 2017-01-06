@@ -8,7 +8,9 @@ enum {
       TUBS, 
       BOX,
       PRISM,
-      BOOLEANTEST
+      INTERSECTION,
+      UNION,
+      DIFFERENCE
       };  
 
 
@@ -43,8 +45,6 @@ struct NPY_API npart
     void setBBox(const nbbox& bb);
     void setParam(const nvec4& param);
 };
-
-
 
 
 

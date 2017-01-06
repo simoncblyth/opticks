@@ -7,7 +7,6 @@
 
 using namespace optix;
 
-//#include "wavelength_lookup.h"
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
@@ -16,7 +15,7 @@ rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
 
 rtBuffer<float4> partBuffer; 
-rtBuffer<uint4>  solidBuffer; 
+rtBuffer<uint4>  primBuffer; 
 rtBuffer<uint4>  identityBuffer; 
 rtBuffer<float4> prismBuffer ;
 
@@ -27,8 +26,6 @@ rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
-
-//#define FLT_MAX         1e30
 
 #define DEBUG 1
 
@@ -1161,9 +1158,9 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // as only run once
 
 
-  const uint4& solid    = solidBuffer[primIdx]; 
+  const uint4& prim    = primBuffer[primIdx]; 
   uint4 identity = identityBuffer[instance_index] ; 
-  unsigned int numParts = solid.y ; 
+  unsigned int numParts = prim.y ; 
 
   optix::Aabb* aabb = (optix::Aabb*)result;
   *aabb = optix::Aabb();
@@ -1171,7 +1168,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
   for(unsigned int p=0 ; p < numParts ; p++)
   { 
-      unsigned int partIdx = solid.x + p ;  
+      unsigned int partIdx = prim.x + p ;  
 
       quad q0, q1, q2, q3 ; 
 
@@ -1242,8 +1239,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
 RT_PROGRAM void intersect(int primIdx)
 {
-  const uint4& solid    = solidBuffer[primIdx]; 
-  unsigned int numParts = solid.y ; 
+  const uint4& prim    = primBuffer[primIdx]; 
+  unsigned int numParts = prim.y ; 
 
   //const uint4& identity = identityBuffer[primIdx] ; 
   //const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
@@ -1254,7 +1251,7 @@ RT_PROGRAM void intersect(int primIdx)
 
   for(unsigned int p=0 ; p < numParts ; p++)
   {  
-      unsigned int partIdx = solid.x + p ;  
+      unsigned int partIdx = prim.x + p ;  
 
       quad q0, q1, q2, q3 ; 
 
@@ -1267,7 +1264,7 @@ RT_PROGRAM void intersect(int primIdx)
 
       int partType = q2.i.w ; 
 
-      // TODO: use enum
+      // TODO: use enum from npy/NPart.hpp
       switch(partType)
       {
           case 0:

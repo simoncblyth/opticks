@@ -76,6 +76,7 @@ class GGEO_API GGeoTestConfig {
        const char* getBoundary(unsigned int i);
        glm::vec4 getParameters(unsigned int i);
        char      getShape(unsigned int i);
+       std::string getShapeString(unsigned int i); 
 
        NSlice*   getSlice();
        bool      getAnalytic();

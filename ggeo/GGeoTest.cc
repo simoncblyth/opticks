@@ -241,10 +241,15 @@ GMergedMesh* GGeoTest::createPmtInBox()
 GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
+
+    int boolean_start = -1 ;  
+    OpticksShape_t flag = SHAPE_UNDEFINED ; 
+
     unsigned int n = m_config->getNumElements();
 
     for(unsigned int i=0 ; i < n ; i++)
     {
+        std::string shape = m_config->getShapeString(i);
         char shapecode = m_config->getShape(i) ;
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
@@ -252,6 +257,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
+                  << " shape " << std::setw(20) << shape
                   << " shapecode " << std::setw(2) << shapecode 
                   << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
                   << " spec " << spec
@@ -259,19 +265,53 @@ GMergedMesh* GGeoTest::createBoxInBox()
                   << " param " << gformat(param)
                   ;
 
-        std::vector<GSolid*> ss = m_maker->make(i, shapecode, param, spec ); 
+        if(shapecode == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured shape not implemented " << shape ;
+        assert(shapecode != 'U');
 
-        for(unsigned int j=0 ; j < ss.size() ; j++)
+
+        // with boolean config marker before the primitives 
+        // can form  boolean_index:0, 1 for boolean constituents, otherwise -1
+
+        bool is_boolean = GMaker::IsBooleanShape(shapecode) ;
+        if(is_boolean) 
         {
-            GSolid* solid = ss[j];
-            solid->setBoundary(boundary);
-            GParts* pts = solid->getParts();
-            if(pts) pts->setBoundaryAll(boundary);
-
-            solids.push_back(solid);
+            boolean_start = i ; 
+            flag = GMaker::ShapeFlag(shapecode);
         } 
+
+        int boolean_index = boolean_start > -1 && i - boolean_start < 2 ? i - boolean_start : -1 ;  
+
+        if(!is_boolean)
+        {
+            std::vector<GSolid*> ss = m_maker->make(i, shapecode, param, spec );   
+            // normally only one solid in vector, composite just for the non-CSG lens shape ??
+
+            for(unsigned int j=0 ; j < ss.size() ; j++)
+            {
+                GSolid* solid = ss[j];
+                solid->setBoundary(boundary);
+                GParts* pts = solid->getParts();
+
+                if(pts) 
+                {
+                    pts->setBoundaryAll(boundary);
+                    if(boolean_index == 0 || boolean_index == 1) pts->setFlagsAll(flag);  
+                } 
+
+                solids.push_back(solid);
+            } 
+        }
     }
 
+
+/*
+    if(booleans.size() > 0)
+    {
+        assert(booleans.size() == 1); // only single boolean supported in test geometry currently
+        unsigned int ibool = booleans[0] ; 
+        assert(ibool >= 2);  // booleans require two prior shapes entries as constituents 
+    }
+*/
 
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
@@ -304,7 +344,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
         GParts* pts = tri->getParts();
         const char* msg = "GGeoTest::createBoxInBox --dbganalytic" ;
         pts->Summary(msg);
-        pts->dumpSolidInfo(msg); // this usually dumps nothing as solid buffer not yet created
+        pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
     }
 
     return tri ; 

@@ -75,6 +75,8 @@ unsigned int GGeoTestConfig::getNumShapes()
     return m_shapes.size() ; 
 }
 
+
+
 bool GGeoTestConfig::getAnalytic()
 {
     bool analytic = m_analytic.x > 0 ;
@@ -169,6 +171,8 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
 
 unsigned int GGeoTestConfig::getNumElements()
 {
+    // hmm: boolean shapes need to swallow entries, where to do that ?
+
     unsigned int nbnd = getNumBoundaries();
     unsigned int nshp = getNumShapes();
     unsigned int npar = getNumParameters();
@@ -274,6 +278,14 @@ char GGeoTestConfig::getShape(unsigned int i)
     char shapecode = GMaker::ShapeCode(m_shapes[i].c_str());
     return shapecode ; 
 }
+
+std::string GGeoTestConfig::getShapeString(unsigned int i)
+{
+    assert( i < m_shapes.size() );
+    return m_shapes[i] ;
+}
+
+
 
 const char* GGeoTestConfig::getBoundary(unsigned int i)
 {

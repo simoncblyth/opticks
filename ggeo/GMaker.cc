@@ -10,6 +10,9 @@
 #include "NPrism.hpp"
 #include "NPart.hpp"
 
+
+#include "OpticksShape.h"
+
 // ggeo-
 #include "GGeo.hh"
 #include "GGeoLib.hh"
@@ -31,8 +34,11 @@ const char* GMaker::ZSPHERE = "zsphere" ;
 const char* GMaker::ZLENS = "lens" ; 
 const char* GMaker::PMT = "pmt" ; 
 const char* GMaker::PRISM = "prism" ; 
-const char* GMaker::BOOLEANTEST = "booleantest" ; 
 const char* GMaker::UNDEFINED = "undefined" ; 
+
+const char* GMaker::UNION = "union" ; 
+const char* GMaker::INTERSECTION = "intersection" ; 
+const char* GMaker::DIFFERENCE = "difference" ; 
  
 const char* GMaker::ShapeName(char shapecode)
 {
@@ -44,11 +50,32 @@ const char* GMaker::ShapeName(char shapecode)
        case 'L':return ZLENS   ; break ; 
        case 'P':return PMT     ; break ; 
        case 'M':return PRISM     ; break ; 
-       case 'T':return BOOLEANTEST  ; break ; 
+       case 'I':return INTERSECTION ; break ; 
+       case 'J':return UNION        ; break ; 
+       case 'K':return DIFFERENCE   ; break ; 
        case 'U':return UNDEFINED ; break ;
     }
     return NULL ;
 } 
+
+bool GMaker::IsBooleanShape(char shapecode)
+{
+    return shapecode == 'I' || shapecode == 'J' || shapecode == 'K'  ;
+}
+
+
+// enum from OpticksShape.h
+OpticksShape_t GMaker::ShapeFlag(char shapecode)
+{
+    OpticksShape_t flag = SHAPE_PRIMITIVE ; 
+    switch(shapecode)
+    {
+       case 'I': flag = SHAPE_INTERSECTION ; break ;
+       case 'J': flag = SHAPE_UNION        ; break ;
+       case 'K': flag = SHAPE_DIFFERENCE   ; break ;
+    }
+    return flag ;  
+}
 
 char GMaker::ShapeCode(const char* shapename)
 {
@@ -59,22 +86,35 @@ char GMaker::ShapeCode(const char* shapename)
     else if(strcmp(shapename, ZLENS) == 0)   sc = 'L' ; 
     else if(strcmp(shapename, PMT) == 0)     sc = 'P' ;  // not operational
     else if(strcmp(shapename, PRISM) == 0)   sc = 'M' ; 
-    else if(strcmp(shapename, BOOLEANTEST) == 0)   sc = 'T' ; 
+    else if(strcmp(shapename, INTERSECTION) == 0)   sc = 'I' ; 
+    else if(strcmp(shapename, UNION) == 0)          sc = 'J' ; 
+    else if(strcmp(shapename, DIFFERENCE) == 0)     sc = 'K' ; 
     return sc ; 
 }
 
 
 
+
 std::vector<GSolid*> GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
 {
+    // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
+    // hmm for generality a boolean shape needs to reference two others, the prior two? 
+    // hmm this is too soon to do booleans, need the basis solids first 
+    // unless handle booleans by setting constituent flag 
+
+
     std::vector<GSolid*> solids ; 
-    bool is_composite = shapecode == 'L' || shapecode == 'T' ;
+
+    bool is_composite = shapecode == 'L' ;
+
+    bool is_boolean   = shapecode == 'I' || shapecode == 'J' || shapecode == 'K' ;
+    assert(is_boolean == false );
+
     if(is_composite)
     {
         switch(shapecode)
         {
             case 'L': makeZSphereIntersect(solids, param, spec) ; break;
-            case 'T': makeZSphereIntersect(solids, param, spec) ; break;
         }
     }
     else
@@ -302,6 +342,14 @@ GSolid* GMaker::makeZSphere(glm::vec4& param)
     return makeSphere(ll);
 }
 
+
+void GMaker::makeBooleanComposite(char shapecode, std::vector<GSolid*>& /*solids*/,  glm::vec4& /*param*/, const char* /*spec*/)
+{
+    assert( shapecode == 'I' || shapecode == 'J' || shapecode == 'K' );
+
+    // hmm rustling up a trianglulated boolean composite is real difficult to do in general, 
+    // but tis just for viz so could use bbox placeholder ?
+}
 
 void GMaker::makeZSphereIntersect(std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec)
 {

@@ -8,6 +8,7 @@ class NTrianglesNPY ;
 #include <glm/fwd.hpp>
 
 class Opticks ; 
+#include "OpticksShape.h"
 
 struct gbbox ; 
 
@@ -25,10 +26,15 @@ class GGEO_API GMaker {
        static const char* BOX ; 
        static const char* PMT ; 
        static const char* PRISM ; 
-       static const char* BOOLEANTEST ; 
+       static const char* UNION ; 
+       static const char* INTERSECTION ; 
+       static const char* DIFFERENCE ; 
        static const char* UNDEFINED ; 
+       static OpticksShape_t ShapeFlag(char shapecode);
        static const char* ShapeName(char shapecode); 
        static char ShapeCode(const char* shapename); 
+       static bool IsBooleanShape(char shapecode); 
+       static unsigned BooleanFlag(char shapecode); 
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
@@ -39,6 +45,7 @@ class GGEO_API GMaker {
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);
        static void makeZSphereIntersect(std::vector<GSolid*>& solids, glm::vec4& param, const char* spec);
+       static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
    private:
        static GSolid* makeBox(gbbox& bbox);
    private:

@@ -453,7 +453,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     GParts* pts = mm->getParts();
     assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
-    if(pts->getSolidBuffer() == NULL)
+    if(pts->getPrimBuffer() == NULL)
     {
         LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry" ; 
         pts->close();
@@ -463,11 +463,11 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     if(m_verbose)
     pts->Summary("OGeo::makeAnalyticGeometry pmt Summary");
 
-    NPY<float>* partBuf = pts->getPartBuffer();
-    NPY<unsigned int>* solidBuf = pts->getSolidBuffer(); // not a good name, as connection to CSG Solid is weakening
+    NPY<float>*        partBuf = pts->getPartBuffer();
+    NPY<unsigned int>* primBuf = pts->getPrimBuffer(); 
 
     assert(partBuf);
-    assert(solidBuf);
+    assert(primBuf);
 
     bool dbganalytic = m_ok->hasOpt("dbganalytic");
 
@@ -476,13 +476,12 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
         pts->dump("OGeo::makeAnalyticGeometry pts");
 
         partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
-        solidBuf->dump("OGeo::makeAnalyticGeometry solidBuf partOffset/numParts/solidIndex/0");
+        primBuf->dump("OGeo::makeAnalyticGeometry primBuf partOffset/numParts/primIndex/0");
 
         if(dbganalytic)
         {
-
             partBuf->save("$TMP/OGeo_partBuf.npy");
-            solidBuf->save("$TMP/OGeo_solidBuf.npy");
+            primBuf->save("$TMP/OGeo_primBuf.npy");
         }
     }
 
@@ -493,29 +492,29 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
     assert(idBuf->getNumItems() == numITransforms );
 
-    unsigned int numSolids = solidBuf->getNumItems();
+    unsigned int numPrim = primBuf->getNumItems();
     unsigned int numParts = partBuf->getNumItems();
 
-    assert( numSolids < 10 );  // expecting small number
+    assert( numPrim < 10 );  // expecting small number
 
 
     LOG(debug)   << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
-                 << " numSolids " << numSolids 
+                 << " numPrim " << numPrim 
                  << " numParts " << numParts
                  << " numITransforms " << numITransforms 
                  ;
 
     optix::Geometry geometry = m_context->createGeometry();
 
-    geometry->setPrimitiveCount( numSolids );
-    geometry["primitive_count"]->setUint( numSolids );  // needed GPU side, for instanced offsets 
+    geometry->setPrimitiveCount( numPrim );
+    geometry["primitive_count"]->setUint( numPrim );  // needed GPU side, for instanced offsets 
 
     geometry->setIntersectionProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "bounds"));
 
-    optix::Buffer solidBuffer = createInputBuffer<optix::uint4, unsigned int>( solidBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "solidBuffer"); 
-    geometry["solidBuffer"]->setBuffer(solidBuffer);
+    optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 
+    geometry["primBuffer"]->setBuffer(primBuffer);
 
     optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);

@@ -22,7 +22,7 @@ class GBndLib ;
 GParts
 ======= 
 
-Creates *solid* buffer from the *parts* buffer
+Creates *primitive* buffer (formerly called *solid*) from the *parts* buffer
 the *parts* buffer .npy for DYB PMT geometry is created by detdesc partitioning with pmt-/tree.py 
 OR for test geometries it is created part-by-part using methods of the npy primitive structs, see eg::
 
@@ -46,7 +46,9 @@ class GGEO_API GParts {
        static const char* TUBS_ ; 
        static const char* BOX_ ; 
        static const char* PRISM_ ; 
-       static const char* BOOLEANTEST_ ; 
+       static const char* INTERSECTION_; 
+       static const char* UNION_ ; 
+       static const char* DIFFERENCE_ ; 
        static const char* TypeName(unsigned int typecode);
 
     public:
@@ -92,7 +94,7 @@ class GGEO_API GParts {
         gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
         float*       getValues(unsigned int i, unsigned int j, unsigned int k);
     public:
-        guint4       getSolidInfo(unsigned int isolid);
+        guint4       getPrimInfo(unsigned int iprim);
    public:
         void setIndex(unsigned int part, unsigned int index);
         void setFlags(unsigned int part, unsigned int flags);
@@ -100,28 +102,29 @@ class GGEO_API GParts {
         void setNodeIndex(unsigned int part, unsigned int nodeindex);
         void setBoundary(unsigned int part, unsigned int boundary);
         void setBoundaryAll(unsigned int boundary);
+        void setFlagsAll(unsigned int flags);
     public:
         GBndLib*           getBndLib();
         GItemList*         getBndSpec();
-        NPY<unsigned int>* getSolidBuffer();
+        NPY<unsigned int>* getPrimBuffer();
         NPY<float>*        getPartBuffer();
-        unsigned int       getNumSolids();
+        unsigned int       getNumPrim();
         unsigned int       getNumParts();
-        unsigned int       getSolidNumParts(unsigned int solid_index);
+        unsigned int       getPrimNumParts(unsigned int prim_index);
     public:
         void dump(const char* msg="GPmt::dump");
-        void dumpSolidInfo(const char* msg="GPmt::dumpSolidInfo");
+        void dumpPrimInfo(const char* msg="GPmt::dumpPrimInfo");
         void Summary(const char* msg="GPmt::Summary");
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
     private:
         void registerBoundaries();
-        void makeSolidBuffer();
+        void makePrimBuffer();
     private:
        void         setBndSpec(GItemList* bndspec);
        void         setPartBuffer(NPY<float>* part_buffer);
-       void         setSolidBuffer(NPY<unsigned int>* solid_buffer);
+       void         setPrimBuffer(NPY<unsigned int>* prim_buffer);
        unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
        void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
     private:
@@ -131,9 +134,9 @@ class GGEO_API GParts {
         GItemList*         m_bndspec ;  
         GBndLib*           m_bndlib ; 
     private:
-        NPY<unsigned int>* m_solid_buffer ; 
+        NPY<unsigned int>* m_prim_buffer ; 
         bool               m_closed ; 
-        std::map<unsigned int, unsigned int> m_parts_per_solid ;
+        std::map<unsigned int, unsigned int> m_parts_per_prim ;
         bool               m_verbose ; 
 };
 

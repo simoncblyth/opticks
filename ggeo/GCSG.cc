@@ -83,6 +83,7 @@ float GCSG::getInnerRadius(unsigned int i) { return getFloat(i, 1, 3 ); }
 unsigned int GCSG::getTypeCode(unsigned int i){         return getUInt(i, 2, 0); }
 unsigned int GCSG::getNodeIndex(unsigned int i) {       return getUInt(i, 2, 1); }
 unsigned int GCSG::getParentIndex(unsigned int i) {     return getUInt(i, 2, 2); }
+unsigned int GCSG::getSpare(unsigned int i) {           return getUInt(i, 2, 3); }
 
 unsigned int GCSG::getIndex(unsigned int i) {           return getUInt(i, 3, 0); }
 unsigned int GCSG::getNumChildren(unsigned int i) {     return getUInt(i, 3, 1); }

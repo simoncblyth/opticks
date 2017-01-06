@@ -145,11 +145,16 @@ trainbow-testconfig()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box    parameters=0,0,0,1200       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=booleantest  parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
-               )
+                 shape=box      parameters=0,0,0,1200           boundary=Rock//perfectAbsorbSurface/Vacuum
 
+                 shape=union    parameters=0,0,0,0              boundary=Vacuum///$material
+                 shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
+                 shape=sphere   parameters=0,0,50,100           boundary=Vacuum///$material
+
+               )
                  
+     # shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
+     # shape=boolean   parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
      # shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
 
      echo "$(join _ ${test_config[@]})" 

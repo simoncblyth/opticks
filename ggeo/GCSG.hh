@@ -3,6 +3,35 @@
 template <typename T> class NPY ;
 class GItemList ; 
 
+/**
+GCSG
+======
+
+
+Users
+------
+
+ggeo/GPmt.cc
+    GCSG is a member of GPmt that is loaded from the python prepared GPmt_csg.npy  
+
+    See also:
+ 
+    * notes at the tail of ggeo/GPmt.cc
+    * pmt-vi pmt-ecd
+
+cfg4/CMaker.cc
+
+cfg4/CPropLib.cc
+
+cfg4/CTestDetector.cc
+
+
+
+
+
+
+**/
+
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GCSG {
     public:
@@ -53,6 +82,7 @@ class GGEO_API GCSG {
 
         unsigned int getNodeIndex(unsigned int i);  // 1-based index, 0:unset
         unsigned int getParentIndex(unsigned int i);  // 1-based index, 0:unset
+        unsigned int getSpare(unsigned int i); 
 
         const char* getTypeName(unsigned int i);
     public:
