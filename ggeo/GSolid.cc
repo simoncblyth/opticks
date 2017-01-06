@@ -21,6 +21,7 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),
+         m_shapeflag(SHAPE_UNDEFINED),
          m_sensor(sensor),
          m_selected(true),
          m_pvname(NULL),
@@ -29,6 +30,11 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
 {
 }
 
+
+OpticksShape_t GSolid::getShapeFlag()
+{
+    return m_shapeflag ; 
+}
 
 unsigned int GSolid::getBoundary()
 {
@@ -108,11 +114,35 @@ void GSolid::setParts(GParts* pts)
 
 
 
+void GSolid::setShapeFlag(OpticksShape_t shapeflag)
+{
+    m_shapeflag = shapeflag ; 
+}
+
 void GSolid::setBoundary(unsigned int boundary)
 {
     m_boundary = boundary ; 
     setBoundaryIndices( boundary );
 }
+
+
+void GSolid::setBoundaryAll(unsigned boundary)
+{
+     unsigned nchild = getNumChildren();
+     if(nchild > 0)
+     {
+        for(unsigned i=0 ; i < nchild ; i++)
+        {
+            GNode* node = getChild(i);
+            GSolid* sub = dynamic_cast<GSolid*>(node);
+            sub->setBoundary(boundary);
+        }
+     } 
+ }
+
+
+
+
 
 void GSolid::setSensor(NSensor* sensor)
 {

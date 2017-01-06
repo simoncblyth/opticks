@@ -1,4 +1,3 @@
-
 #include <iomanip>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -197,14 +196,10 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMergedMesh* mmpmt = loadPmt();
     unsigned int index = mmpmt->getNumSolids() ;
 
-    std::vector<GSolid*> solids = m_maker->make( index, shapecode, param, spec) ;
-    for(unsigned int j=0 ; j < solids.size() ; j++)
-    {
-        GSolid* solid = solids[j];
-        solid->getMesh()->setIndex(1000);
-    }
+    GSolid* solid = m_maker->make( index, shapecode, param, spec) ;
+    solid->getMesh()->setIndex(1000);
 
-    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solids );   
+    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
 
     if(verbosity > 1)
         triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
@@ -241,12 +236,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
 GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
-
-    int boolean_start = -1 ;  
-    OpticksShape_t flag = SHAPE_UNDEFINED ; 
-
     unsigned int n = m_config->getNumElements();
-
     for(unsigned int i=0 ; i < n ; i++)
     {
         std::string shape = m_config->getShapeString(i);
@@ -268,64 +258,62 @@ GMergedMesh* GGeoTest::createBoxInBox()
         if(shapecode == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured shape not implemented " << shape ;
         assert(shapecode != 'U');
 
-
-        // with boolean config marker before the primitives 
-        // can form  boolean_index:0, 1 for boolean constituents, otherwise -1
-
-        bool is_boolean = GMaker::IsBooleanShape(shapecode) ;
-        if(is_boolean) 
-        {
-            boolean_start = i ; 
-            flag = GMaker::ShapeFlag(shapecode);
-        } 
-
-        int boolean_index = boolean_start > -1 && i - boolean_start < 2 ? i - boolean_start : -1 ;  
-
-        if(!is_boolean)
-        {
-            std::vector<GSolid*> ss = m_maker->make(i, shapecode, param, spec );   
-            // normally only one solid in vector, composite just for the non-CSG lens shape ??
-
-            for(unsigned int j=0 ; j < ss.size() ; j++)
-            {
-                GSolid* solid = ss[j];
-                solid->setBoundary(boundary);
-                GParts* pts = solid->getParts();
-
-                if(pts) 
-                {
-                    pts->setBoundaryAll(boundary);
-                    if(boolean_index == 0 || boolean_index == 1) pts->setFlagsAll(flag);  
-                } 
-
-                solids.push_back(solid);
-            } 
-        }
+        GSolid* solid = m_maker->make(i, shapecode, param, spec );   
+        solids.push_back(solid);
     }
 
 
-/*
-    if(booleans.size() > 0)
-    {
-        assert(booleans.size() == 1); // only single boolean supported in test geometry currently
-        unsigned int ibool = booleans[0] ; 
-        assert(ibool >= 2);  // booleans require two prior shapes entries as constituents 
-    }
-*/
+
+    int boolean_start = -1 ;  
+    OpticksShape_t boolean_shapeflag = SHAPE_UNDEFINED ; 
+
 
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
+
         GSolid* solid = solids[i];
-        solid->setIndex(i);
+        OpticksShape_t shapeflag = solid->getShapeFlag(); 
+        if(shapeflag == SHAPE_INTERSECTION || shapeflag == SHAPE_UNION || shapeflag == SHAPE_DIFFERENCE)
+        {
+            boolean_start = i ;       
+            boolean_shapeflag = shapeflag ; 
+        }
+        int boolean_index = boolean_start > -1 ? i - boolean_start : -1 ;  
+
+
+        unsigned node_index = i ;  
+        solid->setIndex(node_index);
+
         GParts* pts = solid->getParts();
+
+        LOG(info) << "GGeoTest::createBoxInBox"
+                  << " i " << std::setw(3) << i 
+                  << " shapeflag " << std::setw(5) << shapeflag 
+                  << std::setw(20) << ShapeName(shapeflag)
+                  << " pts " << pts 
+                  ;
+
         if(pts)
-        { 
-            pts->setIndex(0u, solid->getIndex());
+        {
+            // correspondence between parts and primitives
+            // is controlled via the nodeIndex
+ 
+            pts->setIndex(0u, i);
             pts->setNodeIndex(0u, solid->getIndex());
+
+            int flags(0);
+            switch(boolean_index)
+            {
+               case 0: flags = boolean_shapeflag | SHAPE_BOOLEAN                           ; break ; 
+               case 1: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_A ; break ; 
+               case 2: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_B ; break ; 
+            }
+            pts->setFlags(0u, flags);
             pts->setBndLib(m_bndlib);
         }
     }
-    
+
+    // collected pts are converted into primitives in GParts::makePrimBuffer
 
 
     GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );

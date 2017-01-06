@@ -14,7 +14,7 @@ class OKPropagator ;
 
 class OK_API OKMgr {
    public:
-       OKMgr(int argc, char** argv);
+       OKMgr(int argc, char** argv, const char* argforced=0 );
        virtual ~OKMgr();
    public:
        void propagate();

@@ -16,6 +16,7 @@ class GParts ;
 class NSensor ; 
 template <typename T> class GMatrix ; 
 
+#include "OpticksShape.h"
 #include "GVector.hh"
 
 #include "GNode.hh"
@@ -28,7 +29,9 @@ class GGEO_API GSolid : public GNode {
       void setSelected(bool selected);
       bool isSelected();
   public:
-      void setBoundary(unsigned int boundary);
+      void setShapeFlag(OpticksShape_t flag);
+      void setBoundary(unsigned boundary);
+      void setBoundaryAll(unsigned boundary);
       void setSensor(NSensor* sensor);
       void setSensorSurfaceIndex(unsigned int ssi);
       unsigned int getSensorSurfaceIndex();
@@ -39,6 +42,7 @@ class GGEO_API GSolid : public GNode {
       const char* getPVName();
       const char* getLVName();
   public:
+      OpticksShape_t getShapeFlag();
       unsigned int getBoundary();
       guint4       getIdentity();
       NSensor*     getSensor();
@@ -50,6 +54,7 @@ class GGEO_API GSolid : public GNode {
       std::string description();
   private:
       unsigned int      m_boundary ; 
+      OpticksShape_t    m_shapeflag ; 
       NSensor*          m_sensor ; 
       bool              m_selected ;
       const char*       m_pvname ; 

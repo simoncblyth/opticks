@@ -137,6 +137,7 @@ class GGEO_API GParts {
         NPY<unsigned int>* m_prim_buffer ; 
         bool               m_closed ; 
         std::map<unsigned int, unsigned int> m_parts_per_prim ;
+        std::map<unsigned int, unsigned int> m_flag_prim ;
         bool               m_verbose ; 
 };
 

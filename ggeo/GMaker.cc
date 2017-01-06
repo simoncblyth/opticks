@@ -58,6 +58,10 @@ const char* GMaker::ShapeName(char shapecode)
     return NULL ;
 } 
 
+bool GMaker::IsCompositeShape(char shapecode)
+{
+    return shapecode == 'L' ; 
+}
 bool GMaker::IsBooleanShape(char shapecode)
 {
     return shapecode == 'I' || shapecode == 'J' || shapecode == 'K'  ;
@@ -67,12 +71,14 @@ bool GMaker::IsBooleanShape(char shapecode)
 // enum from OpticksShape.h
 OpticksShape_t GMaker::ShapeFlag(char shapecode)
 {
-    OpticksShape_t flag = SHAPE_PRIMITIVE ; 
+    OpticksShape_t flag = SHAPE_UNDEFINED ; 
     switch(shapecode)
     {
        case 'I': flag = SHAPE_INTERSECTION ; break ;
        case 'J': flag = SHAPE_UNION        ; break ;
        case 'K': flag = SHAPE_DIFFERENCE   ; break ;
+       case 'L': flag = SHAPE_COMPOSITE    ; break ;
+       default:  flag = SHAPE_PRIMITIVE    ; break ; 
     }
     return flag ;  
 }
@@ -95,59 +101,48 @@ char GMaker::ShapeCode(const char* shapename)
 
 
 
-std::vector<GSolid*> GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
+GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
     // hmm for generality a boolean shape needs to reference two others, the prior two? 
     // hmm this is too soon to do booleans, need the basis solids first 
     // unless handle booleans by setting constituent flag 
 
+     GSolid* solid = NULL ; 
+     switch(shapecode)
+     {
+         case 'B': solid = makeBox(param); break;
+         case 'M': solid = makePrism(param, spec); break;
+         case 'S': solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
+         case 'Z': solid = makeZSphere(param) ; break;
+         case 'L': solid = makeZSphereIntersect(param, spec) ; break;   // composite handled by adding child node
+         case 'I': solid = makeBox(param); break ;    // boolean intersect
+         case 'J': solid = makeBox(param); break ;    // boolean union
+         case 'K': solid = makeBox(param); break ;    // boolean difference
+     }
+     assert(solid);
 
-    std::vector<GSolid*> solids ; 
+     OpticksShape_t shapeflag = GMaker::ShapeFlag(shapecode) ; 
+     solid->setShapeFlag( shapeflag );
 
-    bool is_composite = shapecode == 'L' ;
+     // TODO: most parts alread hooked up above, do this uniformly
+     GParts* pts = solid->getParts();  
+     if(pts == NULL)
+     {
+         pts = GParts::make(shapecode, param, spec);
+         solid->setParts(pts);
+     }
 
-    bool is_boolean   = shapecode == 'I' || shapecode == 'J' || shapecode == 'K' ;
-    assert(is_boolean == false );
+     unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
+     solid->setBoundaryAll(boundary);   // All loops over immediate children, needed for composite
 
-    if(is_composite)
-    {
-        switch(shapecode)
-        {
-            case 'L': makeZSphereIntersect(solids, param, spec) ; break;
-        }
-    }
-    else
-    {
-        GSolid* solid = NULL ; 
-        switch(shapecode)
-        {
-            case 'B': solid = makeBox(param); break;
-            case 'M': solid = makePrism(param, spec); break;
-            case 'S': solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
-            case 'Z': solid = makeZSphere(param) ; break;
-        }
-        assert(solid);
-        solids.push_back(solid); 
-    }
+     assert(pts);
 
-    unsigned int boundary = m_bndlib->addBoundary(spec);
-    for(unsigned int i=0 ; i < solids.size() ; i++)
-    {
-         GSolid* solid = solids[i];
-         GParts* pts = solid->getParts();
-         if(pts==NULL)
-         {
-             pts = GParts::make(shapecode, param, spec);
-             solid->setParts(pts);
-         }
-         solid->setBoundary(boundary);
-         assert(pts);
-         pts->enlargeBBoxAll(0.01f );
-    } 
-    return solids ; 
+     pts->enlargeBBoxAll(0.01f );
+     pts->setBoundaryAll(boundary);
+
+     return solid ; 
 }
-
 
 
 
@@ -225,6 +220,8 @@ GSolid* GMaker::makeBox(gbbox& bbox)
 
     solid->setBoundary(0);     // unlike ctor these create arrays
     solid->setSensor( NULL );      
+
+
 
     return solid ; 
 }
@@ -351,7 +348,7 @@ void GMaker::makeBooleanComposite(char shapecode, std::vector<GSolid*>& /*solids
     // but tis just for viz so could use bbox placeholder ?
 }
 
-void GMaker::makeZSphereIntersect(std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec)
+GSolid* GMaker::makeZSphereIntersect(glm::vec4& param, const char* spec)
 {
     // parameters of two spheres with offset z positions used
     // to create
@@ -397,9 +394,11 @@ void GMaker::makeZSphereIntersect(std::vector<GSolid*>& solids,  glm::vec4& para
     a_solid->setParts(a_pts);
     b_solid->setParts(b_pts);
 
-    solids.push_back(a_solid);
-    solids.push_back(b_solid);
+    //solids.push_back(a_solid);
+    //solids.push_back(b_solid);
 
+    a_solid->addChild(b_solid);
+    return a_solid ; 
 }
 
 

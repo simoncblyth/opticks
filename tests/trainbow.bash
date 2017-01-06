@@ -147,7 +147,7 @@ trainbow-testconfig()
 
                  shape=box      parameters=0,0,0,1200           boundary=Rock//perfectAbsorbSurface/Vacuum
 
-                 shape=union    parameters=0,0,0,0              boundary=Vacuum///$material
+                 shape=union    parameters=0,0,0,200            boundary=Vacuum///$material
                  shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
                  shape=sphere   parameters=0,0,50,100           boundary=Vacuum///$material
 

@@ -4,6 +4,9 @@
 #include <cassert>
 #include <climits>
 
+
+#include "OpticksShape.h"
+
 // npy-
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -123,9 +126,9 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
     else if(typecode == 'S')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'Z')  pt->setTypeCode(0u, SPHERE);
     else if(typecode == 'M')  pt->setTypeCode(0u, PRISM);
-//    else if(typecode == 'I')  pt->setTypeCode(0u, INTERSECTION );
-//    else if(typecode == 'J')  pt->setTypeCode(0u, UNION );
-//    else if(typecode == 'K')  pt->setTypeCode(0u, DIFFERENCE );
+    else if(typecode == 'I')  pt->setTypeCode(0u, BOX );
+    else if(typecode == 'J')  pt->setTypeCode(0u, BOX );
+    else if(typecode == 'K')  pt->setTypeCode(0u, BOX );
     else
     {
         LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 
@@ -351,20 +354,35 @@ void GParts::makePrimBuffer()
     //
 
     m_parts_per_prim.clear();
+    m_flag_prim.clear();
+
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 
 
+    unsigned numParts = getNumParts() ; 
+
+    LOG(info) << "GParts::makePrimBuffer"
+              << " numParts " << numParts 
+              ;
+ 
+
     // count parts for each nodeindex
-    for(unsigned int i=0; i < getNumParts() ; i++)
+    for(unsigned int i=0; i < numParts ; i++)
     {
         unsigned int nodeIndex = getNodeIndex(i);
-
+        unsigned int flg = getFlags(i);
+        std::string msk = ShapeMask(flg);
+ 
         LOG(info) << "GParts::makePrimBuffer"
                    << " i " << std::setw(3) << i  
                    << " nodeIndex " << std::setw(3) << nodeIndex
+                   << " msk " << msk 
                    ;  
                      
         m_parts_per_prim[nodeIndex] += 1 ; 
+
+        // flag from the first part of each nodeIndex is promoted into primitive buffer 
+        if(m_flag_prim.count(nodeIndex) == 0) m_flag_prim[nodeIndex] = flg ; 
 
         if(nodeIndex < nmin) nmin = nodeIndex ; 
         if(nodeIndex > nmax) nmax = nodeIndex ; 
@@ -391,15 +409,16 @@ void GParts::makePrimBuffer()
     {
         unsigned int node_index = it->first ; 
         unsigned int parts_for_prim = it->second ; 
+        unsigned int flg_for_prim = m_flag_prim[node_index] ; 
 
         guint4& pri = *(priminfo+n) ;
 
         pri.x = part_offset ; 
         pri.y = parts_for_prim ;
         pri.z = node_index ; 
-        pri.w = 0 ;            // <--- prim/boolean-opcode ?  
+        pri.w = flg_for_prim ;            // <--- prim/boolean-opcode ?  
 
-        LOG(debug) << "GParts::makePrimBuffer priminfo " << pri.description() ;       
+        LOG(info) << "GParts::makePrimBuffer priminfo " << pri.description() ;       
 
         part_offset += parts_for_prim ; 
         n++ ; 
@@ -632,6 +651,7 @@ void GParts::dump(const char* msg)
        unsigned int bnd = getBoundary(i);
        std::string  bn = getBoundaryName(i);
        unsigned int flg = getFlags(i);
+       std::string msk = ShapeMask(flg);
        const char*  tn = getTypeName(i);
 
        for(unsigned int j=0 ; j < NJ ; j++)
@@ -647,17 +667,17 @@ void GParts::dump(const char* msg)
               else if( j == INDEX_J && k == INDEX_K)
               {
                   assert( uif.u == id );
-                  printf(" %6u id   " , uif.u );
+                  printf(" %6u <-id   " , uif.u );
               }
               else if( j == BOUNDARY_J && k == BOUNDARY_K)
               {
                   assert( uif.u == bnd );
-                  printf(" %6u bnd  ", uif.u );
+                  printf(" %6u <-bnd  ", uif.u );
               }
               else if( j == FLAGS_J && k == FLAGS_K)
               {
                   assert( uif.u == flg );
-                  printf(" %6u flg  ", uif.u );
+                  printf(" %6u <-flg  %s ", uif.u, msk.c_str() );
               }
               else if( j == NODEINDEX_J && k == NODEINDEX_K)
                   printf(" %10d (nodeIndex) ", uif.i );

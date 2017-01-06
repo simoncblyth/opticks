@@ -406,6 +406,11 @@ bool Opticks::isLoad() const
    // --noload trumps --load
     return m_cfg->hasOpt("load") && !m_cfg->hasOpt("noload"); 
 }
+bool Opticks::isTracer() const
+{
+    return m_cfg->hasOpt("tracer") ;
+}
+
 
 
 

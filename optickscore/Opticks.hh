@@ -266,6 +266,7 @@ class OKCORE_API Opticks {
        bool isProduction();
        bool isSave();
        bool isLoad() const;
+       bool isTracer() const;
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);

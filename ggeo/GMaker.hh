@@ -34,17 +34,18 @@ class GGEO_API GMaker {
        static const char* ShapeName(char shapecode); 
        static char ShapeCode(const char* shapename); 
        static bool IsBooleanShape(char shapecode); 
+       static bool IsCompositeShape(char shapecode); 
        static unsigned BooleanFlag(char shapecode); 
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
-       std::vector<GSolid*> make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
+       GSolid* make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
    private:
        void init();    
        static GSolid* makePrism(glm::vec4& param, const char* spec);
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);
-       static void makeZSphereIntersect(std::vector<GSolid*>& solids, glm::vec4& param, const char* spec);
+       static GSolid* makeZSphereIntersect(glm::vec4& param, const char* spec);
        static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
    private:
        static GSolid* makeBox(gbbox& bbox);

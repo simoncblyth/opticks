@@ -160,6 +160,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("vizg4",   "when vizualizing loaded events, upload the G4Evt not the OKEvt one ") ; 
 
+   m_desc.add_options()
+       ("tracer",   "used to argforced signal from OTracerTest that progagator should not be setup avoiding issue tracer_crash.rst") ; 
 
 
    m_desc.add_options()

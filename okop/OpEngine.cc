@@ -60,6 +60,10 @@ void OpEngine::init()
    {
        LOG(warning) << "OpEngine::init skip initPropagation as just loading pre-cooked event " ;
    }
+   else if(m_ok->isTracer())
+   {
+       LOG(warning) << "OpEngine::init skip initPropagation as tracer mode is active  " ; 
+   }
    else
    {
        initPropagation(); 

@@ -9,6 +9,16 @@ despite loading an event not making sense when just tracing::
     // TODO: tidy this 
 
 
+Tidy Actions
+--------------
+
+* add argforced "--tracer" option to OTracerTest and isTracer to Opticks
+* use the isTracer to skip propagator setup in okop-/OpEngine
+
+
+
+
+
 
 Huh, why is genstep_buffer causing a tracing issue ?
 
