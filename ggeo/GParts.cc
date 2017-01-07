@@ -12,6 +12,7 @@
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NPart.hpp"
+#include "NQuad.hpp"
 #include "GLMFormat.hpp"
 
 #include "GVector.hh"
@@ -33,6 +34,8 @@ const char* GParts::INTERSECTION_  = "Intersection" ;
 const char* GParts::UNION_         = "Union" ;
 const char* GParts::DIFFERENCE_    = "Difference" ;
 
+
+/*
 const char* GParts::TypeName(unsigned int typecode)
 {
     LOG(debug) << "GParts::TypeName " << typecode ; 
@@ -52,7 +55,7 @@ const char* GParts::TypeName(unsigned int typecode)
     assert(s);
     return s ; 
 }
-
+*/
 
 GParts* GParts::combine(std::vector<GParts*> subs)
 {
@@ -91,7 +94,6 @@ GParts* GParts::make(const npart& pt, const char* spec)
 
     // hmm need to set flag identifying as constituent of a boolean composite
 
-
     return gpt ; 
 }
 
@@ -119,7 +121,7 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
 
     GParts* pt = new GParts(part, spec) ;
 
-    // part enum from npy/NPart.hpp
+    // part enum from npy/NPart.h
     // hmm the boolean info should be in constitutent flags not TypeCode 
 
     if( typecode == 'B' )     pt->setTypeCode(0u, BOX);
@@ -313,6 +315,7 @@ void GParts::close()
 {
     registerBoundaries();
     makePrimBuffer(); 
+    dumpPrimBuffer(); 
 }
 
 void GParts::registerBoundaries()
@@ -337,6 +340,7 @@ void GParts::registerBoundaries()
 
    } 
 }
+
 
 void GParts::makePrimBuffer()
 {
@@ -432,6 +436,88 @@ void GParts::makePrimBuffer()
 }
 
 
+
+void GParts::dumpPrim(unsigned primIdx)
+{
+    // following access pattern of oxrap/cu/hemi-pmt.cu::intersect
+
+    NPY<unsigned int>* primBuffer = getPrimBuffer();
+    NPY<float>*        partBuffer = getPartBuffer();
+
+    if(!primBuffer) return ; 
+    if(!partBuffer) return ; 
+
+    glm::uvec4 prim = primBuffer->getQuadU(primIdx) ;
+
+    unsigned partOffset = prim.x ; 
+    unsigned numParts   = prim.y ; 
+    unsigned primFlags  = prim.w ; 
+
+    LOG(info) << " primIdx "    << std::setw(3) << primIdx 
+              << " partOffset " << std::setw(3) << partOffset 
+              << " numParts "   << std::setw(3) << numParts
+              << " primFlags "  << std::setw(5) << primFlags 
+              << " shapeMask "  << ShapeMask(primFlags) 
+              << " prim "       << gformat(prim)
+              ;
+
+    for(unsigned int p=0 ; p < numParts ; p++)
+    {
+        unsigned int partIdx = partOffset + p ;
+
+        nquad q0, q1, q2, q3 ;
+
+        q0.f = partBuffer->getVQuad(partIdx,0);  
+        q1.f = partBuffer->getVQuad(partIdx,1);  
+        q2.f = partBuffer->getVQuad(partIdx,2);  
+        q3.f = partBuffer->getVQuad(partIdx,3);  
+
+        NPart_t partType = (NPart_t)q2.i.w ;
+
+        LOG(info) << " p " << std::setw(3) << p 
+                  << " partIdx " << std::setw(3) << partIdx
+                  << " partType " << partType
+                  << " partName " << PartName(partType)
+                  ;
+
+    }
+
+
+}
+
+
+void GParts::dumpPrimBuffer(const char* msg)
+{
+    NPY<unsigned int>* primBuffer = getPrimBuffer();
+    NPY<float>*        partBuffer = getPartBuffer();
+    LOG(info) << msg ; 
+    if(!primBuffer) return ; 
+    if(!partBuffer) return ; 
+
+    LOG(info) 
+        << " primBuffer " << primBuffer->getShapeString() 
+        << " partBuffer " << partBuffer->getShapeString() 
+        ; 
+
+    { 
+        unsigned ni = primBuffer->getShape(0) ; 
+        unsigned nj = primBuffer->getShape(1) ; 
+        unsigned nk = primBuffer->getShape(2) ; 
+        assert( ni > 0 && nj == 4 && nk == 0 );
+    }
+
+    { 
+        unsigned ni = partBuffer->getShape(0) ; 
+        unsigned nj = partBuffer->getShape(1) ; 
+        unsigned nk = partBuffer->getShape(2) ; 
+        assert( ni > 0 && nj == 4 && nk == 4 );
+    }
+
+
+    for(unsigned primIdx=0 ; primIdx < primBuffer->getShape(0) ; primIdx++) dumpPrim(primIdx);
+}
+
+
 void GParts::dumpPrimInfo(const char* msg)
 {
     unsigned int numPrim = getNumPrim() ;
@@ -479,7 +565,8 @@ unsigned int GParts::getNumPrim()
 const char* GParts::getTypeName(unsigned int part_index)
 {
     unsigned int code = getTypeCode(part_index);
-    return GParts::TypeName(code);
+    //return GParts::TypeName(code);
+    return PartName((NPart_t)code);
 }
      
 float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)

@@ -1,7 +1,13 @@
 // based on /usr/local/env/cuda/OptiX_380_sdk/julia/sphere.cu
 
+// enums
+#include "OpticksShape.h"
+#include "NPart.h"
+
 #include <optix_world.h>
 #include "quad.h"
+
+#include "boolean-solid.h"
 #include "hemi-pmt.h"
 #include "math_constants.h"
 
@@ -9,6 +15,10 @@ using namespace optix;
 
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
+
+
+rtDeclareVariable(float, t_parameter, rtIntersectionDistance, );
+
 
 rtDeclareVariable(unsigned int, instance_index,  ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
@@ -25,6 +35,12 @@ rtBuffer<float4> prismBuffer ;
 rtDeclareVariable(uint4, instanceIdentity,   attribute instance_identity,);
 rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, ); 
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
+
+
+#include "intersect_part.h"
+#include "intersect_boolean.h"
+
+
 
 
 #define DEBUG 1
@@ -501,6 +517,13 @@ issue.
 
 */
 
+
+
+
+
+
+
+
 template<bool use_robust_method>
 static __device__
 void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
@@ -546,6 +569,8 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
         }
         float3 P = ray.origin + (root1 + root11)*ray.direction ;  
         bool check_second = true;
+
+        // require intersection point to be within bbox z range from q2 bbmin and q3 bbmax
         if( P.z >= q2.f.z && P.z <= q3.f.z )
         {
             if( rtPotentialIntersection( root1 + root11 ) ) 
@@ -1157,7 +1182,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // but this is great place to dump things checking GPU side state
   // as only run once
 
-
   const uint4& prim    = primBuffer[primIdx]; 
   uint4 identity = identityBuffer[instance_index] ; 
   unsigned int numParts = prim.y ; 
@@ -1237,55 +1261,62 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
 
 
+
+
+
 RT_PROGRAM void intersect(int primIdx)
 {
   const uint4& prim    = primBuffer[primIdx]; 
-  unsigned int numParts = prim.y ; 
+  unsigned numParts = prim.y ; 
+  unsigned primFlags  = prim.w ;  
 
-  //const uint4& identity = identityBuffer[primIdx] ; 
-  //const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
-
-  // try with just one identity per-instance 
   uint4 identity = identityBuffer[instance_index] ; 
 
-
-  for(unsigned int p=0 ; p < numParts ; p++)
-  {  
-      unsigned int partIdx = prim.x + p ;  
-
-      quad q0, q1, q2, q3 ; 
-
-      q0.f = partBuffer[4*partIdx+0];  
-      q1.f = partBuffer[4*partIdx+1];  
-      q2.f = partBuffer[4*partIdx+2] ;
-      q3.f = partBuffer[4*partIdx+3]; 
-
-      identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
-
-      int partType = q2.i.w ; 
-
-      // TODO: use enum from npy/NPart.hpp
-      switch(partType)
-      {
-          case 0:
-                intersect_aabb(q2, q3, identity);
-                break ; 
-          case 1:
-                intersect_zsphere<false>(q0,q1,q2,q3,identity);
-                break ; 
-          case 2:
-                intersect_ztubs(q0,q1,q2,q3,identity);
-                break ; 
-          case 3:
-                intersect_box(q0,q1,q2,q3,identity);
-                break ; 
-          case 4:
-                intersect_prism(q0,q1,q2,q3,identity);
-                break ; 
-
-      }
+  if(primFlags & SHAPE_BOOLEAN)
+  { 
+      intersect_boolean( prim, identity );
   }
+  else
+  {
+      for(unsigned int p=0 ; p < numParts ; p++)
+      {  
+          unsigned int partIdx = prim.x + p ;  
 
+          quad q0, q1, q2, q3 ; 
+
+          q0.f = partBuffer[4*partIdx+0];  
+          q1.f = partBuffer[4*partIdx+1];  
+          q2.f = partBuffer[4*partIdx+2] ;
+          q3.f = partBuffer[4*partIdx+3]; 
+
+          identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+
+          NPart_t partType = (NPart_t)q2.i.w ; 
+
+          switch(partType)
+          {
+              case ZERO:
+                    intersect_aabb(q2, q3, identity);
+                    break ; 
+              case SPHERE:
+                    intersect_zsphere<false>(q0,q1,q2,q3,identity);
+                    break ; 
+              case TUBS:
+                    intersect_ztubs(q0,q1,q2,q3,identity);
+                    break ; 
+              case BOX:
+                    intersect_box(q0,q1,q2,q3,identity);
+                    break ; 
+              case PRISM:
+                    intersect_prism(q0,q1,q2,q3,identity);
+                    break ; 
+
+          }
+      }
+   } 
 }
 
+
+//const uint4& identity = identityBuffer[primIdx] ; 
+//const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
 

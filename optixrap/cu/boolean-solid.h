@@ -53,6 +53,8 @@ struct Intersection ;
 typedef enum { Enter, Exit, Miss } IntersectionState_t ;
 
 
+#ifndef __CUDACC__
+
 template <class T>
 struct boolean_action
 {
@@ -64,6 +66,9 @@ struct boolean_action
 #endif
 
 };
+
+#endif
+
 
 
 #ifdef BOOLEAN_SOLID_DEBUG
@@ -102,6 +107,7 @@ std::string description( int action )
 
     return ss.str();    
 }
+
 
 
 template<class T>
@@ -176,6 +182,8 @@ enum
 
 
 
+#ifndef __CUDACC__
+
 template<>
 int boolean_action<Union>::_table[9] = 
     { 
@@ -210,5 +218,72 @@ int boolean_action<T>::operator()( IntersectionState_t stateA, IntersectionState
     return _table[offset] ; 
 }
 
+#endif
+
+
+
+__host__
+__device__
+int union_action( IntersectionState_t stateA, IntersectionState_t stateB  )
+{
+    int offset = 3*(int)stateA + (int)stateB ;   
+    int action = Union_MissA_MissB ; 
+    switch(offset)
+    {
+       case 0: action=Union_EnterA_EnterB ; break ; 
+       case 1: action=Union_EnterA_ExitB  ; break ; 
+       case 2: action=Union_EnterA_MissB  ; break ; 
+       case 3: action=Union_ExitA_EnterB  ; break ; 
+       case 4: action=Union_ExitA_ExitB   ; break ; 
+       case 5: action=Union_ExitA_MissB   ; break ; 
+       case 6: action=Union_MissA_EnterB  ; break ; 
+       case 7: action=Union_MissA_ExitB   ; break ; 
+       case 8: action=Union_MissA_MissB   ; break ; 
+    }
+    return action ; 
+}
+
+__host__
+__device__
+int intersection_action( IntersectionState_t stateA, IntersectionState_t stateB  )
+{
+    int offset = 3*(int)stateA + (int)stateB ;   
+    int action = Intersection_MissA_MissB ; 
+    switch(offset)
+    {
+       case 0: action=Intersection_EnterA_EnterB ; break ; 
+       case 1: action=Intersection_EnterA_ExitB  ; break ; 
+       case 2: action=Intersection_EnterA_MissB  ; break ; 
+       case 3: action=Intersection_ExitA_EnterB  ; break ; 
+       case 4: action=Intersection_ExitA_ExitB   ; break ; 
+       case 5: action=Intersection_ExitA_MissB   ; break ; 
+       case 6: action=Intersection_MissA_EnterB  ; break ; 
+       case 7: action=Intersection_MissA_ExitB   ; break ; 
+       case 8: action=Intersection_MissA_MissB   ; break ; 
+    }
+    return action ; 
+}
+
+
+__host__
+__device__
+int difference_action( IntersectionState_t stateA, IntersectionState_t stateB  )
+{
+    int offset = 3*(int)stateA + (int)stateB ;   
+    int action = Difference_MissA_MissB ; 
+    switch(offset)
+    {
+       case 0: action=Difference_EnterA_EnterB ; break ; 
+       case 1: action=Difference_EnterA_ExitB  ; break ; 
+       case 2: action=Difference_EnterA_MissB  ; break ; 
+       case 3: action=Difference_ExitA_EnterB  ; break ; 
+       case 4: action=Difference_ExitA_ExitB   ; break ; 
+       case 5: action=Difference_ExitA_MissB   ; break ; 
+       case 6: action=Difference_MissA_EnterB  ; break ; 
+       case 7: action=Difference_MissA_ExitB   ; break ; 
+       case 8: action=Difference_MissA_MissB   ; break ; 
+    }
+    return action ; 
+}
 
 

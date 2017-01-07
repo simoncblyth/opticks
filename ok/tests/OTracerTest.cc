@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
     OK_LOG__ ;
  
-    OKMgr ok(argc, argv, "--trace" );
+    OKMgr ok(argc, argv, "--tracer" );
 
     ok.visualize();
 

@@ -107,7 +107,7 @@ trainbow--(){
                  polarization=$surfaceNormal
                  frame=-1
                  transform=$identity
-                 source=0,0,600
+                 source=0,0,599
                  target=0,0,0
                  radius=100
                  distance=25
@@ -147,9 +147,9 @@ trainbow-testconfig()
 
                  shape=box      parameters=0,0,0,1200           boundary=Rock//perfectAbsorbSurface/Vacuum
 
-                 shape=union    parameters=0,0,0,200            boundary=Vacuum///$material
-                 shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
-                 shape=sphere   parameters=0,0,50,100           boundary=Vacuum///$material
+                 shape=intersection parameters=0,0,0,400            boundary=Vacuum///$material
+                 shape=sphere       parameters=-40,0,0,100          boundary=Vacuum///$material
+                 shape=sphere       parameters=40,0,0,100           boundary=Vacuum///$material
 
                )
                  

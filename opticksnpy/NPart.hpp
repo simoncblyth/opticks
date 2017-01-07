@@ -1,18 +1,7 @@
 #pragma once
 
+#include "NPart.h"
 #include "NQuad.hpp"
-
-enum {
-      ZERO, 
-      SPHERE, 
-      TUBS, 
-      BOX,
-      PRISM,
-      INTERSECTION,
-      UNION,
-      DIFFERENCE
-      };  
-
 
 // these internals exposed, 
 // as still being used at higher level in ggeo-/GParts
@@ -41,11 +30,10 @@ struct NPY_API npart
 
     void zero();
     void dump(const char* msg);
-    void setTypeCode(unsigned int typecode);
+    void setTypeCode(NPart_t typecode);
     void setBBox(const nbbox& bb);
     void setParam(const nvec4& param);
 };
-
 
 
 

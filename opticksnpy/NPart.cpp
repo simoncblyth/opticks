@@ -27,10 +27,10 @@ void npart::setParam(const nvec4& param)
     q0.f = param;
 }
 
-void npart::setTypeCode(unsigned int typecode)
+void npart::setTypeCode(NPart_t typecode)
 {
     //assert( TYPECODE_J == 2 && TYPECODE_K == W );
-    q2.u.w = typecode ; 
+    q2.u.w = (unsigned)typecode ; 
 }
 
 void npart::setBBox(const nbbox& bb)

@@ -236,6 +236,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
 GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
+
+
     unsigned int n = m_config->getNumElements();
     for(unsigned int i=0 ; i < n ; i++)
     {
@@ -260,6 +262,8 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
         GSolid* solid = m_maker->make(i, shapecode, param, spec );   
         solids.push_back(solid);
+
+        // TODO: handle composite for the lens
     }
 
 
@@ -267,12 +271,20 @@ GMergedMesh* GGeoTest::createBoxInBox()
     int boolean_start = -1 ;  
     OpticksShape_t boolean_shapeflag = SHAPE_UNDEFINED ; 
 
+    int primIdx(-1) ; 
+
+    // Boolean geometry is implemented by allowing 
+    // a single "primitive" to be composed of multiple
+    // "parts", the association from part to prim being 
+    // controlled via the primIdx attribute of each part.
 
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
-
         GSolid* solid = solids[i];
+        GParts* pts = solid->getParts();
+        assert(pts);
         OpticksShape_t shapeflag = solid->getShapeFlag(); 
+
         if(shapeflag == SHAPE_INTERSECTION || shapeflag == SHAPE_UNION || shapeflag == SHAPE_DIFFERENCE)
         {
             boolean_start = i ;       
@@ -280,37 +292,30 @@ GMergedMesh* GGeoTest::createBoxInBox()
         }
         int boolean_index = boolean_start > -1 ? i - boolean_start : -1 ;  
 
+        int flags(0);
+        switch(boolean_index)
+        {
+            case  0: flags = boolean_shapeflag | SHAPE_BOOLEAN                           ; break ; 
+            case  1: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_A ; break ; 
+            case  2: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_B ; break ; 
+            default: flags = 0                                                           ; break ; 
+        }
 
-        unsigned node_index = i ;  
-        solid->setIndex(node_index);
+        if((flags & SHAPE_CONSTITUENT) == 0) primIdx++ ;   // constituents dont merit new primIdx
 
-        GParts* pts = solid->getParts();
+        pts->setIndex(0u, i);
+        pts->setNodeIndex(0u, primIdx ); 
+        pts->setFlags(0u, flags);
+        pts->setBndLib(m_bndlib);
 
         LOG(info) << "GGeoTest::createBoxInBox"
                   << " i " << std::setw(3) << i 
+                  << " primIdx " << std::setw(3) << primIdx
                   << " shapeflag " << std::setw(5) << shapeflag 
                   << std::setw(20) << ShapeName(shapeflag)
                   << " pts " << pts 
                   ;
 
-        if(pts)
-        {
-            // correspondence between parts and primitives
-            // is controlled via the nodeIndex
- 
-            pts->setIndex(0u, i);
-            pts->setNodeIndex(0u, solid->getIndex());
-
-            int flags(0);
-            switch(boolean_index)
-            {
-               case 0: flags = boolean_shapeflag | SHAPE_BOOLEAN                           ; break ; 
-               case 1: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_A ; break ; 
-               case 2: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_B ; break ; 
-            }
-            pts->setFlags(0u, flags);
-            pts->setBndLib(m_bndlib);
-        }
     }
 
     // collected pts are converted into primitives in GParts::makePrimBuffer

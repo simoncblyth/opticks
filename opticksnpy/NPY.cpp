@@ -1478,6 +1478,19 @@ template <typename T>
     return vec ; 
 }
 
+
+template <typename T> 
+nvec4 NPY<T>::getVQuad(unsigned int i, unsigned int j, unsigned int k)
+{
+    nvec4 vec ; 
+    vec.x = getValue(i,j,k,0);
+    vec.y = getValue(i,j,k,1);
+    vec.z = getValue(i,j,k,2);
+    vec.w = getValue(i,j,k,3);
+    return vec ; 
+}
+
+
 template <typename T> 
  glm::ivec4 NPY<T>::getQuadI(unsigned int i, unsigned int j, unsigned int k)
 {

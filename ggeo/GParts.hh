@@ -49,7 +49,7 @@ class GGEO_API GParts {
        static const char* INTERSECTION_; 
        static const char* UNION_ ; 
        static const char* DIFFERENCE_ ; 
-       static const char* TypeName(unsigned int typecode);
+       //static const char* TypeName(unsigned int typecode);
 
     public:
         // buffer layout, must match locations in pmt-/tree.py:convert 
@@ -114,7 +114,10 @@ class GGEO_API GParts {
     public:
         void dump(const char* msg="GPmt::dump");
         void dumpPrimInfo(const char* msg="GPmt::dumpPrimInfo");
+        void dumpPrimBuffer(const char* msg="GPmt::dumpPrimBuffer");
         void Summary(const char* msg="GPmt::Summary");
+    private:
+        void dumpPrim(unsigned primIdx);
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
