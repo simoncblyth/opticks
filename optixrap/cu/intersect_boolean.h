@@ -1,6 +1,38 @@
 #pragma once
 
 
+
+
+static __device__
+void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
+{
+    unsigned a_partIdx = prim.x + 1 ;  
+
+    float3 a_normal = make_float3(0.f,0.f,1.f);
+
+    float tA_min = propagate_epsilon ;  
+    float tA     = tA_min ;  
+
+    IntersectionState_t a_state = intersect_part( a_partIdx , tA_min, a_normal, tA ) ;
+
+
+    if(a_state != Miss)
+    {
+        if(rtPotentialIntersection(tA))
+        {
+            shading_normal = geometric_normal = a_normal;
+            instanceIdentity = identity ;
+
+#ifdef BOOLEAN_DEBUG
+            instanceIdentity.x = dot(a_normal, ray.direction) < 0.f ? 1 : 2 ;
+#endif
+
+            rtReportIntersection(0);
+        }
+    }
+}
+
+
 static __device__
 void intersect_boolean( const uint4& prim, const uint4& identity )
 {

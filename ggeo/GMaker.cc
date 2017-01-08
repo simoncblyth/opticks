@@ -177,12 +177,15 @@ void GMaker::init()
 GSolid* GMaker::makeBox(glm::vec4& param)
 {
     float size = param.w ; 
-    gbbox bb(gfloat3(-size), gfloat3(size));  
+
+    gfloat3 mn( param.x - size, param.y - size, param.z - size );
+    gfloat3 mx( param.x + size, param.y + size, param.z + size );
+
+    //gbbox bb(gfloat3(-size), gfloat3(size));  
+    gbbox bb(mn, mx);  
+
     return makeBox(bb);
 }
-
-
-
 
 
 GSolid* GMaker::makeBox(gbbox& bbox)

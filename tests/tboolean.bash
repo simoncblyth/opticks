@@ -59,7 +59,7 @@ tboolean-torchconfig()
                  source=0,0,599
                  target=0,0,0
                  time=0.1
-                 radius=100
+                 radius=110
                  distance=25
                  zenithazimuth=0,1,0,1
                  material=Vacuum
@@ -80,13 +80,21 @@ tboolean-testconfig()
 
                  shape=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
  
-                 shape=intersection parameters=0,0,0,400            boundary=Vacuum///$material
-                 shape=sphere       parameters=0,0,-600,641.2          boundary=Vacuum///$material
-                 shape=sphere       parameters=0,0,600,641.2           boundary=Vacuum///$material
+                 shape=union        parameters=0,0,0,100            boundary=Vacuum///$material
+                 shape=box          parameters=0,0,0,100            boundary=Vacuum///$material
+                 shape=box          parameters=0,0,0,100            boundary=Vacuum///$material
+
 
                )
 
-     ## shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
+    #             shape=intersection parameters=0,0,0,400            boundary=Vacuum///$material
+    #             shape=sphere       parameters=0,0,-600,641.2          boundary=Vacuum///$material
+    #             shape=sphere       parameters=0,0,600,641.2           boundary=Vacuum///$material
+
+
+
+
+
      echo "$(join _ ${test_config[@]})" 
 }
 

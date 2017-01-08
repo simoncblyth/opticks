@@ -7,6 +7,8 @@
 #include <optix_world.h>
 #include "quad.h"
 
+#include "switches.h"
+
 #include "boolean-solid.h"
 #include "hemi-pmt.h"
 #include "math_constants.h"
@@ -934,7 +936,7 @@ void intersect_box(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity
       {
           float3 p = ray.origin + tint*ray.direction - cen_ ; 
           float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
-          float pmax = fmaxf(pa);
+          //float pmax = fmaxf(pa);
 
           float3 n = make_float3(0.f) ;
           if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
@@ -954,7 +956,7 @@ void intersect_box(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity
           {
               float3 p = ray.origin + tmax*ray.direction - cen_ ; 
               float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
-              float pmax = fmaxf(pa);
+              //float pmax = fmaxf(pa);
 
               float3 n = make_float3(0.f);  
 
@@ -1179,80 +1181,59 @@ make_prism plane[4]     0.0000     0.0000    -1.0000  -100.0000
 }
 
 
-
-
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-  // could do offline
-  // but this is great place to dump things checking GPU side state
-  // as only run once
+  // could do this offline, but as run once only 
+  // its a handy place to dump things checking GPU side state
+  //rtPrintf("bounds %d \n", primIdx ); 
 
   const uint4& prim    = primBuffer[primIdx]; 
+  unsigned partOffset  = prim.x ;  
+  unsigned numParts    = prim.y ; 
+  unsigned primFlags   = prim.w ;  
+
   uint4 identity = identityBuffer[instance_index] ; 
-  unsigned int numParts = prim.y ; 
 
   optix::Aabb* aabb = (optix::Aabb*)result;
   *aabb = optix::Aabb();
+
   // expand aabb to include all the bbox of the parts 
 
-  for(unsigned int p=0 ; p < numParts ; p++)
-  { 
-      unsigned int partIdx = prim.x + p ;  
+  if(primFlags & SHAPE_BOOLEAN)
+  {
+      quad q2, q3 ; 
+      q2.f = partBuffer[4*(partOffset+0)+2];  
+      q3.f = partBuffer[4*(partOffset+0)+3];  
 
-      quad q0, q1, q2, q3 ; 
+      aabb->include( make_float3(q2.f), make_float3(q3.f) );
+  }
+  else
+  {
+      for(unsigned int p=0 ; p < numParts ; p++)
+      { 
+          quad q0, q1, q2, q3 ; 
 
-      q0.f = partBuffer[4*partIdx+0];  
-      q1.f = partBuffer[4*partIdx+1];  
-      q2.f = partBuffer[4*partIdx+2] ;
-      q3.f = partBuffer[4*partIdx+3]; 
-      
-      int partType = q2.i.w ; 
+          q0.f = partBuffer[4*(partOffset+p)+0];  
+          q1.f = partBuffer[4*(partOffset+p)+1];  
+          q2.f = partBuffer[4*(partOffset+p)+2] ;
+          q3.f = partBuffer[4*(partOffset+p)+3]; 
+          
+          int partType = q2.i.w ; 
 
-      identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
-/*
-      unsigned int boundary = q1.u.z ; 
-      rtPrintf("bounds primIdx %u p %u partIdx %u boundary %u identity (%u,%u,%u,%u) partType %d \n", primIdx, p, partIdx, boundary,  
-                  identity.x, 
-                  identity.y, 
-                  identity.z, 
-                  identity.w,
-                  partType 
-              );  
+          identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
 
-      rtPrintf("q0 %10.4f %10.4f %10.4f %10.4f q1 %10.4f %10.4f %10.4f %10.4f \n",
-                  q0.f.x, 
-                  q0.f.y, 
-                  q0.f.z, 
-                  q0.f.w,
-                  q1.f.x, 
-                  q1.f.y, 
-                  q1.f.z, 
-                  q1.f.w);
+          if(partType == 4) 
+          {
+              make_prism(q0.f, aabb) ;
+          }
+          else
+          {
+              aabb->include( make_float3(q2.f), make_float3(q3.f) );
+          }
+      } 
+  }
 
-      rtPrintf("q2 %10.4f %10.4f %10.4f %10.4f q3 %10.4f %10.4f %10.4f %10.4f \n",
-                  q2.f.x, 
-                  q2.f.y, 
-                  q2.f.z, 
-                  q2.f.w,
-                  q3.f.x, 
-                  q3.f.y, 
-                  q3.f.z, 
-                  q3.f.w);
-*/
-
-      if(partType == 4) 
-      {
-          make_prism(q0.f, aabb) ;
-      }
-      else
-      {
-          aabb->include( make_float3(q2.f), make_float3(q3.f) );
-      }
-  } 
-
-
-/*
-  rtPrintf("bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 
+  rtPrintf("hemi-pmt.cu:bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 
        result[0],
        result[1],
        result[2],
@@ -1260,11 +1241,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
        result[4],
        result[5]
      );
-*/
 
 }
-
-
 
 
 
@@ -1288,7 +1266,9 @@ RT_PROGRAM void intersect(int primIdx)
       q1.f = partBuffer[4*(partOffset+0)+1];  
       identity.z = q1.u.z ;        // replace placeholder zero ? with test analytic geometry boundary
 
-      intersect_boolean( prim, identity );
+      //intersect_boolean( prim, identity );
+      intersect_boolean_only_first( prim, identity );
+
   }
   else
   {
@@ -1336,6 +1316,4 @@ RT_PROGRAM void intersect(int primIdx)
 }
 
 
-//const uint4& identity = identityBuffer[primIdx] ; 
-//const uint4 identity = identityBuffer[instance_index*primitive_count+primIdx] ;  // just primIdx for non-instanced
 

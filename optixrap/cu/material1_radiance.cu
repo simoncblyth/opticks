@@ -1,3 +1,5 @@
+#include "switches.h"
+
 #include <optix.h>
 #include <optix_math.h>
 
@@ -19,11 +21,11 @@ rtDeclareVariable(float3,        front, , );
 rtDeclareVariable(unsigned int,  parallel, , );
 
 
-
 RT_PROGRAM void closest_hit_radiance()
 {
     const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
     const float cos_theta = dot(n,ray.direction);
+
     float intensity = 0.5f*(1.0f-cos_theta) ;  // lambertian 
 
     float zHit_eye = -t*dot(front, ray.direction) ;   // intersect z coordinate (eye frame), always -ve 
@@ -33,6 +35,16 @@ RT_PROGRAM void closest_hit_radiance()
     //rtPrintf("closest_hit_radiance t %10.4f zHit_eye %10.4f  ZProj.z %10.4f ZProj.w %10.4f zHit_ndc %10.4f zHit_clip %10.4f \n", t, zHit_eye, ZProj.z, ZProj.w , zHit_ndc, zHit_clip );
 
     prd.result = make_float4(intensity, intensity, intensity, zHit_clip ); // hijack alpha for the depth 
+
+#ifdef BOOLEAN_DEBUG
+     switch(instanceIdentity.x)
+     {
+        case 1: prd.result.x = 1.f ; break ;
+        case 2: prd.result.y = 1.f ; break ;
+        case 3: prd.result.z = 1.f ; break ;
+    }
+#endif    
+
     prd.flag   = instanceIdentity.y ;   //  hijacked to become the hemi-pmt intersection code
 }
 

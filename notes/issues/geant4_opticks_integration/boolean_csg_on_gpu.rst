@@ -7,6 +7,49 @@ TODO: boolean trees implementation
 TODO: numerical/chi2 history comparison with CFG4 booleans 
 ------------------------------------------------------------
 
+Issue : ray trace of box shows slab intersects extending behind the box
+--------------------------------------------------------------------------
+
+Presumably infinity or NaN handling.
+
+How to debug ?
+~~~~~~~~~~~~~~~
+
+Setup T_QUADRANT_26 torch type that shoots photons from 26 positions and directions
+using torchstep.h:get_direction_26 
+
+Check hitting when on target and missing when offset.
+
+
+CUDA fminf/fmaxf/max infinity/nan handling ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+::
+
+    simon:include blyth$ grep fminf *.*
+    device_functions.h:__DEVICE_FUNCTIONS_STATIC_DECL__ float fminf(float x, float y);
+    device_functions.hpp:__DEVICE_FUNCTIONS_STATIC_DECL__ float fminf(float x, float y)
+    device_functions.hpp:  return __nv_fminf(x, y);
+    device_functions_decls.h:__DEVICE_FUNCTIONS_DECLS__ float __nv_fminf(float x, float y);
+    math_functions.h:extern __host__ __device__ __device_builtin__ float                  fminf(float x, float y) __THROW;
+    math_functions.h:extern __host__ __device__ __device_builtin__ _CRTIMP float  __cdecl fminf(float x, float y);
+    math_functions.h:__func__(float fminf(float a, float b));
+    math_functions.hpp:  return fminf(a, b);
+    math_functions.hpp:  return fminf(a, b);
+    math_functions.hpp:__func__(float fminf(float a, float b))
+    nppi_color_conversion.h: *  This code uses the fmaxf() and fminf() 32 bit floating point math functions.
+    nppi_color_conversion.h: *  Npp32f nMin = fminf(nNormalizedR, nNormalizedG);
+    nppi_color_conversion.h: *         nMin = fminf(nMin, nNormalizedB);
+    nppi_color_conversion.h: *  This code uses the fmaxf() and fminf() 32 bit floating point math functions.
+    nppi_color_conversion.h: *  Npp32f nTemp = fminf(nNormalizedR, nNormalizedG);
+    nppi_color_conversion.h: *         nTemp = fminf(nTemp, nNormalizedB);
+    simon:include blyth$ 
+    simon:include blyth$ 
+    simon:include blyth$ pwd
+    /Developer/NVIDIA/CUDA-7.0/include
+
+
+
 
 
 FIXED Issue : boolean intersection "lens" : boundary disappears from inside
