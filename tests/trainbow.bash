@@ -90,7 +90,28 @@ trainbow--(){
     if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
+    echo $msg pol $pol tag $tag 
 
+    op.sh  \
+            $cmdline \
+            --animtimemax 10 \
+            --timemax 10 \
+            --geocenter \
+            --eye 0,0,1 \
+            --test --testconfig "$(trainbow-testconfig)" --dbganalytic \
+            --torch --torchconfig "$(trainbow-torchconfig $pol)" \
+            --tag $tag --cat $(trainbow-det) \
+            --save
+
+        #    --torchdbg \
+}
+
+
+
+
+trainbow-torchconfig()
+{
+    local pol=${1:-s}
     local wavelength=500
     local surfaceNormal=0,1,0
     #local azimuth=-0.25,0.25
@@ -109,31 +130,15 @@ trainbow--(){
                  transform=$identity
                  source=0,0,599
                  target=0,0,0
+                 time=0.1
                  radius=100
                  distance=25
                  zenithazimuth=0,1,$azimuth
                  material=Vacuum
                  wavelength=$wavelength 
                )
- 
-    echo $msg pol $pol wavelength $wavelength tag $tag tag_offset $tag_offset 
-
-    op.sh  \
-            $cmdline \
-            --animtimemax 10 \
-            --timemax 10 \
-            --geocenter \
-            --eye 0,0,1 \
-            --test --testconfig "$(trainbow-testconfig)" --dbganalytic \
-            --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --tag $tag --cat $(trainbow-det) \
-            --save
-
-        #    --torchdbg \
+    echo "$(join _ ${torch_config[@]})" 
 }
-
-
-
 
 
 trainbow-testconfig()
@@ -146,16 +151,8 @@ trainbow-testconfig()
                  analytic=1
 
                  shape=box      parameters=0,0,0,1200           boundary=Rock//perfectAbsorbSurface/Vacuum
-
-                 shape=intersection parameters=0,0,0,400            boundary=Vacuum///$material
-                 shape=sphere       parameters=-40,0,0,100          boundary=Vacuum///$material
-                 shape=sphere       parameters=40,0,0,100           boundary=Vacuum///$material
-
+                 shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
                )
-                 
-     # shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
-     # shape=boolean   parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
-     # shape=sphere parameters=0,0,0,100         boundary=Vacuum///$material
 
      echo "$(join _ ${test_config[@]})" 
 }

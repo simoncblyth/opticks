@@ -132,14 +132,12 @@ GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, c
          pts = GParts::make(shapecode, param, spec);
          solid->setParts(pts);
      }
+     assert(pts);
 
      unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
      solid->setBoundaryAll(boundary);   // All loops over immediate children, needed for composite
-
-     assert(pts);
-
-     pts->enlargeBBoxAll(0.01f );
      pts->setBoundaryAll(boundary);
+     pts->enlargeBBoxAll(0.01f );
 
      return solid ; 
 }

@@ -1,10 +1,17 @@
 #pragma once
 
+
 static __device__
 void intersect_boolean( const uint4& prim, const uint4& identity )
 {
+   // hmm to work with boolean CSG tree primitives this
+   // needs to have the same signature as intersect_part 
+   // ie with deferring the reporting to OptiX to the caller
+
     unsigned primFlags  = prim.w ;  
 
+
+    // TODO: pass "operation" enum from CPU side, instead of wishy-washy flags   
     enum { INTERSECT, UNION, DIFFERENCE  };
     int bop = primFlags & SHAPE_INTERSECTION ? 
                                                   INTERSECT 
@@ -18,8 +25,12 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
     float3 a_normal = make_float3(0.f,0.f,1.f);
     float3 b_normal = make_float3(0.f,0.f,1.f);
 
-    float tA_min = 0.f ;
-    float tB_min = 0.f ;
+    // _min 0.f rather than propagate_epsilon 
+    // leads to missed boundaries when start photons on a boundary, 
+    // see boolean_csg_on_gpu.rst
+
+    float tA_min = propagate_epsilon ;  
+    float tB_min = propagate_epsilon ;
     float tA     = 0.f ;
     float tB     = 0.f ;
 
@@ -52,7 +63,12 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
             case DIFFERENCE:   action = difference_action(a_state, b_state)   ; break ;
         }
 
-        if( 
+
+        if(action & ReturnMiss)
+        {
+            ctrl = 0 ; 
+        }
+        else if( 
                    (action & ReturnA) 
                 || 
                    ((action & ReturnAIfCloser) && tA <= tB )

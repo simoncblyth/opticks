@@ -18,16 +18,21 @@ rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 
 rtDeclareVariable(float, t_parameter, rtIntersectionDistance, );
+rtDeclareVariable(float, propagate_epsilon, , );
 
 
 rtDeclareVariable(unsigned int, instance_index,  ,);
+// optix::GeometryInstance instance_index into the identity buffer, 
+// set by oxrap/OGeo.cc, 0 for non-instanced 
+
 rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
 
 rtBuffer<float4> partBuffer; 
 rtBuffer<uint4>  primBuffer; 
-rtBuffer<uint4>  identityBuffer; 
+rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdentityBuffer()
 rtBuffer<float4> prismBuffer ;
+
 
 // attributes communicate to closest hit program,
 // they must be set inbetween rtPotentialIntersection and rtReportIntersection
@@ -1267,20 +1272,29 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 RT_PROGRAM void intersect(int primIdx)
 {
   const uint4& prim    = primBuffer[primIdx]; 
-  unsigned numParts = prim.y ; 
-  unsigned primFlags  = prim.w ;  
+
+  unsigned partOffset  = prim.x ;  
+  unsigned numParts    = prim.y ; 
+  unsigned primFlags   = prim.w ;  
 
   uint4 identity = identityBuffer[instance_index] ; 
 
+  // for analytic test geometry (PMT too?) the identityBuffer  
+  // is composed of placeholder zeros
+
   if(primFlags & SHAPE_BOOLEAN)
   { 
+      quad q1 ; 
+      q1.f = partBuffer[4*(partOffset+0)+1];  
+      identity.z = q1.u.z ;        // replace placeholder zero ? with test analytic geometry boundary
+
       intersect_boolean( prim, identity );
   }
   else
   {
       for(unsigned int p=0 ; p < numParts ; p++)
       {  
-          unsigned int partIdx = prim.x + p ;  
+          unsigned int partIdx = partOffset + p ;  
 
           quad q0, q1, q2, q3 ; 
 
@@ -1289,7 +1303,12 @@ RT_PROGRAM void intersect(int primIdx)
           q2.f = partBuffer[4*partIdx+2] ;
           q3.f = partBuffer[4*partIdx+3]; 
 
-          identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+          identity.z = q1.u.z ;    // replace placeholder zero ? with test analytic geometry boundary
+
+          // Above sets boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
+          // at intersections the uint4 identity is copied into the instanceIdentity attribute,
+          // hence making it available to material1_propagate.cu:closest_hit_propagate
+          // where crucially the instanceIdentity.z -> boundaryIndex
 
           NPart_t partType = (NPart_t)q2.i.w ; 
 

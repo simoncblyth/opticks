@@ -71,9 +71,16 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
 static __device__
 IntersectionState_t intersect_part(unsigned partIdx, const float& tt_min, float3& tt_normal, float& tt  )
 {
+
     quad q0, q2 ; 
     q0.f = partBuffer[4*partIdx+0];
     q2.f = partBuffer[4*partIdx+2];
+
+    // Above sets boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
+    // at intersections the uint4 identity is copied into the instanceIdentity attribute,
+    // hence making it available to material1_propagate.cu:closest_hit_propagate
+    // where crucially the instanceIdentity.z -> boundaryIndex
+
 
     NPart_t partType = (NPart_t)q2.i.w ; 
 

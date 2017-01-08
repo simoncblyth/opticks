@@ -211,9 +211,6 @@ GMergedMesh* GGeoTest::createPmtInBox()
     analytic->close();
 
 
-   
-
-
     // needed by OGeo::makeAnalyticGeometry
 
     NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
@@ -324,13 +321,13 @@ GMergedMesh* GGeoTest::createBoxInBox()
     GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
 
     GTransforms* txf = GTransforms::make(n); // identities
-    GIds*        aii = GIds::make(n);        // zeros
+    GIds*        aii = GIds::make(n);        // placeholder (n,4) of zeros
+
 
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
-
 
     if(m_opticks->hasOpt("dbganalytic"))
     {
