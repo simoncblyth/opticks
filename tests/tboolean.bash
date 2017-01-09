@@ -48,8 +48,9 @@ tboolean-torchconfig()
 
     #local photons=1000000
     local photons=100000
+    #local photons=1
 
-    local torch_config=(
+    local torch_config_disc=(
                  type=disc
                  photons=$photons
                  mode=fixpol
@@ -60,12 +61,30 @@ tboolean-torchconfig()
                  target=0,0,0
                  time=0.1
                  radius=110
-                 distance=25
+                 distance=200
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                  wavelength=$wavelength 
                )
-    echo "$(join _ ${torch_config[@]})" 
+
+
+    local discaxial_target=0,0,0
+    local torch_config_discaxial=(
+                 type=discaxial
+                 photons=$photons
+                 frame=-1
+                 transform=$identity
+                 source=$discaxial_target
+                 target=0,0,0
+                 time=0.1
+                 radius=110
+                 distance=200
+                 zenithazimuth=0,1,0,1
+                 material=Vacuum
+                 wavelength=$wavelength 
+               )
+
+    echo "$(join _ ${torch_config_discaxial[@]})" 
 }
 
 
@@ -74,34 +93,30 @@ tboolean-testconfig()
     local material=GlassSchottF2
     #local material=MainH2OHale
 
-    local test_config=(
+    local test_config_0=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=box      parameters=0,0,0,100                boundary=Vacuum///$material
+
+                    )
+
+    local test_config_1=(
                  mode=BoxInBox
                  analytic=1
 
                  shape=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
  
-                 shape=union        parameters=0,0,0,100            boundary=Vacuum///$material
+                 shape=difference   parameters=0,0,0,150            boundary=Vacuum///$material
                  shape=box          parameters=0,0,0,100            boundary=Vacuum///$material
-                 shape=box          parameters=0,0,0,100            boundary=Vacuum///$material
-
+                 shape=sphere       parameters=0,50,0,100            boundary=Vacuum///$material
 
                )
 
-    #             shape=intersection parameters=0,0,0,400            boundary=Vacuum///$material
-    #             shape=sphere       parameters=0,0,-600,641.2          boundary=Vacuum///$material
-    #             shape=sphere       parameters=0,0,600,641.2           boundary=Vacuum///$material
-
-
-
-
-
-     echo "$(join _ ${test_config[@]})" 
+     #echo "$(join _ ${test_config_0[@]})" 
+     echo "$(join _ ${test_config_1[@]})" 
 }
-
-
-
-tboolean-v-g4(){  tboolean-- $* --load --tcfg4 ; } 
-tboolean-v() {    tboolean-- $* --load ; } 
 
 
 

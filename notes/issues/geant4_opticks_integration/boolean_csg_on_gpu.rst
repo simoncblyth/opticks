@@ -15,10 +15,130 @@ Presumably infinity or NaN handling.
 How to debug ?
 ~~~~~~~~~~~~~~~
 
-Setup T_QUADRANT_26 torch type that shoots photons from 26 positions and directions
-using torchstep.h:get_direction_26 
+* checked the non-boolean box, thats working fine with no artifacts.
 
-Check hitting when on target and missing when offset.
+* Using discaxial torch type to shoot photons from 26 positions 
+  and directions, so can feel the geometry in a numerical manner.
+
+* when on target, things look correct, the same as the non-boolen box
+  when off target the invalid intersects manifest 
+
+
+::
+
+    local discaxial_hit=0,0,0
+    local discaxial_miss=0,0,300
+    local torch_config_discaxial=(
+                 type=discaxial
+                 photons=$photons
+                 frame=-1
+                 transform=$identity
+                 source=$discaxial_hit
+                 target=0,0,0
+                 time=0.1
+                 radius=110
+                 distance=200
+                 zenithazimuth=0,1,0,1
+                 material=Vacuum
+                 wavelength=$wavelength
+               )
+
+
+Axis aligned photon directions appear to be part of the problem at least::
+
+    421       else if( ts.type == T_DISCAXIAL )
+    422       {
+    423           unsigned long long photon_id = launch_index.x ;
+    424 
+    425           //float3 dir = get_direction_26( photon_id % 26 );
+    426           //float3 dir = get_direction_6( photon_id % 6 );
+    427           //float3 dir = get_direction_6( photon_id % 4, -0.00001f );  // 1st 4: +X,-X,+Y,-Y   SPURIOUS INTERSECTS GONE
+    428           //float3 dir = get_direction_6( photon_id % 4, -0.f );       // 1st 4: +X,-X,+Y,-Y   SPURIOUS INTERSECTS GONE
+    429           float3 dir = get_direction_6( photon_id % 4, 0.f );          // 1st 4: +X,-X,+Y,-Y   SPURIOUS INTERSECTS BACK AGAIN
+    430           
+    431           float r = radius*sqrtf(u1) ; // sqrt avoids pole bunchung  
+    432           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f );
+    433           rotateUz(discPosition, dir);
+    434           
+    435           // ts.x0 should be placed inside the target when hits are desired
+    436           // wih DISCAXIAL mode
+    437           p.position = ts.x0 + distance*dir + discPosition ;
+    438           p.direction = -dir ;
+    439           
+
+
+Curious the direction zeros are all negative 0 resulting in -inf for both -X and +X directions::
+
+  ray.origin 200.000000 -11.247929 307.520966 ray.direction -1.000000 -0.000000 -0.000000 idir -1.000000 -inf -inf 
+  ray.origin 200.000000 44.386002 262.619629 ray.direction -1.000000 -0.000000 -0.000000 idir -1.000000 -inf -inf 
+  ray.origin 200.000000 -88.033470 321.681213 ray.direction -1.000000 -0.000000 -0.000000 idir -1.000000 -inf -inf 
+  ray.origin 200.000000 -39.863480 244.735748 ray.direction -1.000000 -0.000000 -0.000000 idir -1.000000 -inf -inf 
+  ray.origin -200.000000 97.620598 274.010651 ray.direction 1.000000 -0.000000 -0.000000 idir 1.000000 -inf -inf 
+  ray.origin 200.000000 8.609403 199.297638 ray.direction -1.000000 -0.000000 -0.000000 idir -1.000000 -inf -inf 
+  ray.origin -200.000000 -67.498100 266.557739 ray.direction 1.000000 -0.000000 -0.000000 idir 1.000000 -inf -inf 
+  ray.origin -200.000000 78.251770 366.333496 ray.direction 1.000000 -0.000000 -0.000000 idir 1.000000 -inf -inf 
+  ray.origin -200.000000 47.188507 215.060699 ray.direction 1.000000 -0.000000 -0.000000 idir 1.000000 -inf -inf 
+
+Using a delta 0.00001f get -1/delta and spurious interects remain::
+
+  ray.origin 200.000778 9.482430 213.216736 ray.direction -1.000000 -0.000010 -0.000010 idir -1.000000 -100000.000000 -100000.000000 
+  ray.origin -199.999054 48.094410 346.568787 ray.direction 1.000000 -0.000010 -0.000010 idir 1.000000 -100000.000000 -100000.000000 
+
+Bizarrely switching to delta -0.00001f get 1/delta and the spurious intersects are gone::
+
+  ray.origin 199.999344 -88.035469 321.679199 ray.direction -1.000000 0.000010 0.000010 idir -1.000000 100000.000000 100000.000000 
+  ray.origin 199.999222 9.478431 213.212708 ray.direction -1.000000 0.000010 0.000010 idir -1.000000 100000.000000 100000.000000 
+  ray.origin 200.000000 49.761848 249.952194 ray.direction -1.000000 0.000010 0.000010 idir -1.000000 100000.000000 100000.000000 
+  ray.origin 200.000748 39.745564 334.747955 ray.direction -1.000000 0.000010 0.000010 idir -1.000000 100000.000000 100000.000000 
+  ray.origin -199.999298 -8.694067 238.793365 ray.direction 1.000000 0.000010 0.000010 idir 1.000000 100000.000000 100000.000000 
+  ray.origin 199.999878 -76.475029 363.946503 ray.direction -1.000000 0.000010 0.000010 idir -1.000000 100000.000000 100000.000000 
+  ray.origin 200.000290 44.076099 285.449768 ray.direction -1.000000 0.000010 0.000010 idir -1.000000 100000.000000 100000.000000 
+
+Same when using -0.f::
+
+    425           //float3 dir = get_direction_26( photon_id % 26 );
+    426           //float3 dir = get_direction_6( photon_id % 6 );
+    427           //float3 dir = get_direction_6( photon_id % 4, -0.00001f );     // 1st 4: +X,-X,+Y,-Y 
+    428           float3 dir = get_direction_6( photon_id % 4, -0.f );     // 1st 4: +X,-X,+Y,-Y 
+    429           
+    430           float r = radius*sqrtf(u1) ; // sqrt avoids pole bunchung  
+    431           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f );
+    432           rotateUz(discPosition, dir);
+    433           
+    434           // ts.x0 should be placed inside the target when hits are desired
+    435           // wih DISCAXIAL mode
+    436           p.position = ts.x0 + distance*dir + discPosition ;
+    437           p.direction = -dir ;
+
+::
+
+  ray.origin 200.000000 14.684715 244.904205 ray.direction -1.000000 0.000000 0.000000 idir -1.000000 inf inf 
+  ray.origin 200.000000 -68.328766 251.635269 ray.direction -1.000000 0.000000 0.000000 idir -1.000000 inf inf 
+  ray.origin -200.000000 102.468193 335.907471 ray.direction 1.000000 0.000000 0.000000 idir 1.000000 inf inf 
+  ray.origin 200.000000 -26.478765 307.570923 ray.direction -1.000000 0.000000 0.000000 idir -1.000000 inf inf 
+  ray.origin 200.000000 -15.085106 304.063721 ray.direction -1.000000 0.000000 0.000000 idir -1.000000 inf inf 
+
+
+::
+
+     42    float3 idir = make_float3(1.f)/ray.direction ;
+     43    float3 t0 = (bmin - ray.origin)*idir;
+     44    float3 t1 = (bmax - ray.origin)*idir;
+
+
+::
+
+     idir -1.000000 -inf -inf t0 300.000000 inf inf t1 100.000000 -inf inf 
+     idir -1.000000 -inf -inf t0 300.000000 inf inf t1 100.000000 -inf inf 
+     idir -1.000000 -inf -inf t0 300.000000 inf inf t1 100.000000 -inf inf 
+     idir -1.000000 -inf -inf t0 300.000000 inf inf t1 100.000000 -inf inf 
+     idir 1.000000  -inf -inf t0 100.000000 inf inf t1 300.000000 -inf inf 
+     idir 1.000000  -inf -inf t0 100.000000 inf inf t1 300.000000 -inf inf 
+     idir 1.000000  -inf -inf t0 100.000000 inf inf t1 300.000000 -inf inf 
+     idir 1.000000  -inf -inf t0 100.000000 inf inf t1 300.000000 -inf inf 
+
+
+
 
 
 CUDA fminf/fmaxf/max infinity/nan handling ?
