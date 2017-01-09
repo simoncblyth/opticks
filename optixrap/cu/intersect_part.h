@@ -22,14 +22,20 @@ void intersect_sphere(const quad& q0, const float& tt_min, float3& tt_normal, fl
     float root1 = -b - sdisc ;
     float root2 = -b + sdisc ;
 
-    tt =  root1 > tt_min && sdisc > 0.f ? 
-                                         ( root1 )
-                                      :
-                                         ( root2 > tt_min && sdisc > 0.f  ? root2 : tt_min )  
-                                      ; 
+    bool valid_intersect = sdisc > 0.f ;   // ray has a segment within the sphere
 
-    tt_normal = tt > tt_min ? (O + tt*D)/radius : tt_normal ; 
+    if(valid_intersect)   
+    {
+        tt =  root1 > tt_min ? root1 : root2 ; 
+        tt_normal = tt > tt_min ? (O + tt*D)/radius : tt_normal ; 
+    }
+
 }
+
+
+
+// https://tavianator.com/fast-branchless-raybounding-box-intersections/
+// https://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
 
 
 static __device__ void intersect_box_branching(const quad& q0, const float& tt_min, float3& tt_normal, float& tt  )
@@ -190,10 +196,10 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
    float3 t1 = (bmax - ray.origin)*idir;      //  3 t for bmax planes
 
    float3 near = fminf(t0, t1);               //  3 t nearest (out of bmin and bmax slabs)
-   float tmin = fmaxf( near );                
+   float t_near = fmaxf( near );                
 
    float3 far  = fmaxf(t0, t1);               //  3 t farthest (out of bmin and bmax slabs) 
-   float tmax = fminf( far );
+   float t_far = fminf( far );
 
 
   // rtPrintf(" bmin %f %f %f ", bmin.x, bmin.y, bmin.z );
@@ -205,18 +211,15 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
        );
    */
 
-   // https://tavianator.com/fast-branchless-raybounding-box-intersections/
-   // https://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
-
    rtPrintf(" idir %f %f %f t0 %f %f %f t1 %f %f %f \n",
          idir.x, idir.y, idir.z,  
          t0.x, t0.y, t0.z, 
          t1.x, t1.y, t1.z
       );
 /*
-   rtPrintf(" near %f %f %f -> tmin %f   far %f %f %f -> tmax %f   \n",
-         near.x, near.y, near.z, tmin,   
-         far.x,  far.y,  far.z, tmax
+   rtPrintf(" near %f %f %f -> t_near %f   far %f %f %f -> t_far %f   \n",
+         near.x, near.y, near.z, t_near,   
+         far.x,  far.y,  far.z, t_far 
     );
 
 */
@@ -233,21 +236,29 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
    if(     along_x) valid_intersect = in_y && in_z ;
    else if(along_y) valid_intersect = in_x && in_z ; 
    else if(along_z) valid_intersect = in_x && in_y ; 
-   else             valid_intersect = ( tmax > tmin && tmax > 0.f ) ;  // segment of ray intersects box, at least one is ahead
+   else             valid_intersect = ( t_far > t_near && t_far > 0.f ) ;  // segment of ray intersects box, at least one is ahead
 
    if( valid_intersect ) 
    {
-       float tint = tmin > 0.f ? tmin : tmax ;  // pick the intersect
-
-       // tmin > 0.f means both box intersects are ahead so pick closer: tmin
-       // tmin < 0.f means ray.origin is inside box, ie tmin intersect is behind so pick tmax
+       //  just because the ray intersects the box doesnt 
+       //  mean want to see it, there are 3 possibilities
        //
-       // So we have the box intersect tint,  but does that fit in with the 
-       // externally passed tt_min 
+       //                t_near       t_far   
+       //
+       //                  |           |
+       //        -----1----|----2------|------3---------->
+       //                  |           |
+       //
+       //
 
-       tt = tint > tt_min ? tint : tt_min ;    
+       tt =  tt_min < t_near ?  
+                              t_near 
+                           :
+                              ( tt_min < t_far ? t_far : tt_min )
+                           ; 
 
-       rtPrintf(" intersect_box : tmin %f tmax %f tt %f tt_min %f \n", tmin, tmax, tt, tt_min  );
+
+       rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
 
        float3 p = ray.origin + tt*ray.direction - bcen ; 
        float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;

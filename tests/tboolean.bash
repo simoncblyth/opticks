@@ -106,11 +106,11 @@ tboolean-testconfig()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
+                 shape=box          parameters=0,0,0,1000               boundary=Rock//perfectAbsorbSurface/Vacuum
  
-                 shape=difference   parameters=0,0,0,150            boundary=Vacuum///$material
+                 shape=difference   parameters=0,0,0,200            boundary=Vacuum///$material
                  shape=box          parameters=0,0,0,100            boundary=Vacuum///$material
-                 shape=sphere       parameters=0,50,0,100            boundary=Vacuum///$material
+                 shape=sphere       parameters=100,0,0,50           boundary=Vacuum///$material
 
                )
 

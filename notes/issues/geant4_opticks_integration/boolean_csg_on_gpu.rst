@@ -7,13 +7,57 @@ TODO: boolean trees implementation
 TODO: numerical/chi2 history comparison with CFG4 booleans 
 ------------------------------------------------------------
 
-Issue : ray trace of box shows slab intersects extending behind the box
---------------------------------------------------------------------------
 
-Presumably infinity or NaN handling.
+Issue : cannot see concave parts of booleans from outside
+-------------------------------------------------------------
 
-How to debug ?
-~~~~~~~~~~~~~~~
+When look at boolean difference concavity (eg box-sphere)  
+see through to containing volume rather than the expected 
+curved part of sphere.
+
+Shooting rays from all quadrants seems to show appropriate intersects
+
+* TODO: numerical check: intersect position, normal
+
+
+
+FIXED : Issue : cannot see booleans from inside 
+------------------------------------------------
+
+* formerly saw that when navigating inside the union, 
+  see only container box not the union shape insides
+
+Fixed by moving from::
+
+   if( valid_intersect ) 
+   {
+       float tint = tmin > 0.f ? tmin : tmax ;  // pick the intersect
+       tt = tint > tt_min ? tint : tt_min ;   
+       ...
+
+To::
+
+   if( valid_intersect ) 
+   {
+       //  just because the ray intersects the box doesnt 
+       //  mean want to see it, there are 3 possibilities
+       //
+       //                t_near       t_far   
+       //
+       //                  |           |
+       //        -----1----|----2------|------3---------->
+       //                  |           |
+       //
+       tt =  tt_min < t_near ?  
+                              t_near 
+                           :
+                              ( tt_min < t_far ? t_far : tt_min )
+
+
+FIXED : Issue : ray trace of box shows slab intersects extending behind the box
+--------------------------------------------------------------------------------
+
+**Was due to intersect validity not handling axis aligned photons**
 
 * checked the non-boolean box, thats working fine with no artifacts.
 
