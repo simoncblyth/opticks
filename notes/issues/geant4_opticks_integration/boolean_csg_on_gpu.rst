@@ -8,17 +8,58 @@ TODO: numerical/chi2 history comparison with CFG4 booleans
 ------------------------------------------------------------
 
 
+FIXED Issue : ray trace "near/tmin" clipping fails to see inside booleans
+---------------------------------------------------------------------------
 
-Issue : ray trace "near/tmin" clipping fails to see inside booleans
-----------------------------------------------------------------------
+* **FIXED BY STARTING boolean tA_min and tB_min at ray.tmin**
 
-The usual behavior of near clipping enabling to see inside things not working
-with booleans.
+The usual behavior of near clipping enabling to see inside things is not working
+with booleans when the viewpoint is outside the boolean.
+
+As approach a boolean solid the near point preceeds you... when it reaches 
+the solid a circular-ish black hole forms, this gets bigger as proceed 
+onwards the black filling most of the frame until the viewpoint 
+gets into the boolean primitive bbox(?) and suddenly the blackness changes into
+a view of the insides. Once inside changing the near point works 
+to clip how much of insides can see.
+
 
 Tempted to use scene_epsilon in the below, but its not correct (or currently possible) 
 for general intersection code to depend on a rendering only thing like scene_epsilon.
 
 Begs the question how does non-boolean geometry manage to get near clipped ? 
+
+* rays are shot with t_min set to scene_epsilon 
+
+
+Exploring optix_device.h find ray.tmin, this might provide a solution::
+    
+    simon:include blyth$ grep tmin *.h
+    optix_device.h:  optix::rt_trace(*(unsigned int*)&topNode, ray.origin, ray.direction, ray.ray_type, ray.tmin, ray.tmax, &prd, sizeof(T));
+    optix_device.h:  * @param[in] tmin  t value of the ray to be checked
+    optix_device.h:static inline __device__ bool rtPotentialIntersection( float tmin )
+    optix_device.h:  return optix::rt_potential_intersection( tmin );
+    optix_device.h:              "  ray tmin      : %f\n"
+    simon:include blyth$ 
+
+    1811 template<class T>
+    1812 static inline __device__ void rtTrace( rtObject topNode, optix::Ray ray, T& prd )
+    1813 {
+    1814   optix::rt_trace(*(unsigned int*)&topNode, ray.origin, ray.direction, ray.ray_type, ray.tmin, ray.tmax, &prd, sizeof(T));
+    1815 }
+
+YEP IT WORKS::
+
+     33 static __device__
+     34 void intersect_boolean( const uint4& prim, const uint4& identity )
+     ..
+     61     //float tA_min = propagate_epsilon ;  
+     62     //float tB_min = propagate_epsilon ;
+     63     float tA_min = ray.tmin ;
+     64     float tB_min = ray.tmin ;
+     65     float tA     = 0.f ;
+     66     float tB     = 0.f ;
+        
 
 
 ::

@@ -58,10 +58,11 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
     // leads to missed boundaries when start photons on a boundary, 
     // see boolean_csg_on_gpu.rst
 
-    float tA_min = propagate_epsilon ;  
-    float tB_min = propagate_epsilon ;
+    //float tA_min = propagate_epsilon ;  
+    //float tB_min = propagate_epsilon ;
 
-
+    float tA_min = ray.tmin ;
+    float tB_min = ray.tmin ;
     float tA     = 0.f ;
     float tB     = 0.f ;
 
