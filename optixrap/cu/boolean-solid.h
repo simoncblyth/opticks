@@ -1,6 +1,22 @@
 #pragma once
+/**
+boolean-solid.h
+=================
 
-// see csg-;csg-vi for notes
+Boolean solid (union, intersection and difference) 
+state tables obtained from the Andrew Kensler paper entitled 
+"Ray Tracing CSG Objects Using Single Hit Intersections"
+
+* http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
+
+With corrections and additions from the XRT Renderer webpage 
+
+* http://xrt.wikidot.com/doc:csg
+
+Notes can be found in env/csg-/csg-vi
+
+**/
+
 
 enum 
 {
@@ -17,129 +33,6 @@ enum
     AdvanceAAndLoopIfCloser = 0x1 << 10,    
     AdvanceBAndLoopIfCloser = 0x1 << 11
 };
-
-
-#ifdef BOOLEAN_SOLID_DEBUG
-#include <string>
-#include <sstream>
-#include <iomanip>
-
-static const char* ReturnMiss_ = "ReturnMiss" ;
-static const char* ReturnAIfCloser_ = "ReturnAIfCloser" ;
-static const char* ReturnAIfFarther_ = "ReturnAIfFarther" ;
-static const char* ReturnA_ = "ReturnA" ;
-
-static const char* ReturnBIfCloser_ = "ReturnBIfCloser" ;
-static const char* ReturnBIfFarther_ = "ReturnBIfFarther" ;
-static const char* ReturnB_ = "ReturnB" ;
-
-static const char* FlipB_ = "FlipB" ;
-static const char* AdvanceAAndLoop_ = "AdvanceAAndLoop" ;
-static const char* AdvanceBAndLoop_ = "AdvanceBAndLoop" ;
-static const char* AdvanceAAndLoopIfCloser_ = "AdvanceAAndLoopIfCloser" ;
-static const char* AdvanceBAndLoopIfCloser_ = "AdvanceBAndLoopIfCloser" ;
-
-static const char* Enter_ = "Enter" ; 
-static const char* Exit_ = "Exit" ; 
-static const char* Miss_ = "Miss" ; 
-
-#endif
-
-
-struct Union ;
-struct Difference ; 
-struct Intersection ; 
-
-typedef enum { Enter, Exit, Miss } IntersectionState_t ;
-
-
-#ifndef __CUDACC__
-
-template <class T>
-struct boolean_action
-{
-   static int _table[9] ; 
-   int operator()( IntersectionState_t a, IntersectionState_t b );
-
-#ifdef BOOLEAN_SOLID_DEBUG
-   std::string dumptable( const char* msg );
-#endif
-
-};
-
-#endif
-
-
-
-#ifdef BOOLEAN_SOLID_DEBUG
-
-const char* description( IntersectionState_t x )
-{
-   const char* s = NULL ; 
-   switch(x)
-   {
-      case Enter: s = Enter_ ; break ; 
-      case Exit:  s = Exit_ ; break ; 
-      case Miss:  s = Miss_ ; break ; 
-   }
-   return s ; 
-}
-
-std::string description( int action )
-{
-    std::stringstream ss ; 
-
-    if(action & ReturnMiss ) ss << ReturnMiss_ << " " ; 
-
-    if(action & ReturnAIfCloser ) ss << ReturnAIfCloser_ << " " ; 
-    if(action & ReturnAIfFarther ) ss << ReturnAIfFarther_ << " " ; 
-    if(action & ReturnA ) ss << ReturnA_ << " " ; 
-
-    if(action & ReturnBIfCloser ) ss << ReturnBIfCloser_ << " " ; 
-    if(action & ReturnBIfFarther ) ss << ReturnBIfFarther_ << " " ; 
-    if(action & ReturnB ) ss << ReturnB_ << " " ; 
-
-    if(action & FlipB ) ss << FlipB_ << " " ; 
-    if(action & AdvanceAAndLoop ) ss << AdvanceAAndLoop_ << " " ; 
-    if(action & AdvanceBAndLoop ) ss << AdvanceBAndLoop_ << " " ; 
-    if(action & AdvanceAAndLoopIfCloser ) ss << AdvanceAAndLoopIfCloser_ << " " ; 
-    if(action & AdvanceBAndLoopIfCloser ) ss << AdvanceBAndLoopIfCloser_ << " " ; 
-
-    return ss.str();    
-}
-
-
-
-template<class T>
-std::string boolean_action<T>::dumptable(const char* msg)
-{
-    std::stringstream ss ; 
-    ss << msg << std::endl ; 
-
-    for(int ia=0 ; ia < 3 ; ia++)
-    {
-        IntersectionState_t a = (IntersectionState_t)ia ; 
-        for(int ib=0 ; ib < 3 ; ib++)
-        {
-            IntersectionState_t b = (IntersectionState_t)ib ; 
-   
-            int action = (*this)(a, b) ; 
-
-            std::string action_desc = description(action); 
-
-            ss
-                << std::setw(5) << description(a) << "A "
-                << std::setw(5) << description(b) << "B "
-                << " -> " 
-                <<  action_desc.c_str()
-                << std::endl ; 
-        }
-    }
-    return ss.str(); 
-}
-
-#endif
-
 
 enum 
 {
@@ -180,50 +73,12 @@ enum
     Intersection_MissA_MissB   = ReturnMiss 
 };
 
+typedef enum { Enter, Exit, Miss } IntersectionState_t ;
 
-
-#ifndef __CUDACC__
-
-template<>
-int boolean_action<Union>::_table[9] = 
-    { 
-         Union_EnterA_EnterB, Union_EnterA_ExitB, Union_EnterA_MissB, 
-         Union_ExitA_EnterB, Union_ExitA_ExitB, Union_ExitA_MissB,
-         Union_MissA_EnterB, Union_MissA_ExitB, Union_MissA_MissB 
-    } ;
-
-template<>
-int boolean_action<Difference>::_table[9] = 
-     { 
-         Difference_EnterA_EnterB, Difference_EnterA_ExitB, Difference_EnterA_MissB, 
-         Difference_ExitA_EnterB, Difference_ExitA_ExitB, Difference_ExitA_MissB,
-         Difference_MissA_EnterB, Difference_MissA_ExitB, Difference_MissA_MissB 
-     } ;
-
-template<>
-int boolean_action<Intersection>::_table[9] = 
-      { 
-          Intersection_EnterA_EnterB, Intersection_EnterA_ExitB, Intersection_EnterA_MissB, 
-          Intersection_ExitA_EnterB, Intersection_ExitA_ExitB, Intersection_ExitA_MissB,
-          Intersection_MissA_EnterB, Intersection_MissA_ExitB, Intersection_MissA_MissB 
-      } ;
-
-
-template<class T>
-int boolean_action<T>::operator()( IntersectionState_t stateA, IntersectionState_t stateB )
-{
-    int a = (int)stateA ; 
-    int b = (int)stateB ; 
-    int offset = 3*a + b ;   
-    return _table[offset] ; 
-}
-
-#endif
-
-
-
+#ifdef __CUDACC__
 __host__
 __device__
+#endif
 int union_action( IntersectionState_t stateA, IntersectionState_t stateB  )
 {
     int offset = 3*(int)stateA + (int)stateB ;   
@@ -243,8 +98,10 @@ int union_action( IntersectionState_t stateA, IntersectionState_t stateB  )
     return action ; 
 }
 
+#ifdef __CUDACC__
 __host__
 __device__
+#endif
 int intersection_action( IntersectionState_t stateA, IntersectionState_t stateB  )
 {
     int offset = 3*(int)stateA + (int)stateB ;   
@@ -264,9 +121,10 @@ int intersection_action( IntersectionState_t stateA, IntersectionState_t stateB 
     return action ; 
 }
 
-
+#ifdef __CUDACC__
 __host__
 __device__
+#endif
 int difference_action( IntersectionState_t stateA, IntersectionState_t stateB  )
 {
     int offset = 3*(int)stateA + (int)stateB ;   
