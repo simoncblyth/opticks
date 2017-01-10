@@ -422,11 +422,12 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       {
           unsigned long long photon_id = launch_index.x ;  
 
-          //float3 dir = get_direction_26( photon_id % 26 );
+          float3 dir = get_direction_26( photon_id % 26 );
           //float3 dir = get_direction_6( photon_id % 6 );
           //float3 dir = get_direction_6( photon_id % 4, -0.00001f );     // 1st 4: +X,-X,+Y,-Y   SPURIOUS INTERSECTS GONE
-          float3 dir = get_direction_6( photon_id % 4, -0.f );     // 1st 4: +X,-X,+Y,-Y    SPURIOUS INTERSECTS GONE
-          //float3 dir = get_direction_6( photon_id % 4, 0.f );     // 1st 4: +X,-X,+Y,-Y   SPURIOUS INTERSECTS BACK AGAIN
+
+          //float3 dir = make_float3( 0.f , 0.f , 1.f );  
+          //float3 dir = get_direction_6( photon_id % 6, 0.f );  
 
           float r = radius*sqrtf(u1) ; // sqrt avoids pole bunchung 
           float3 discPosition = make_float3( r*cosPhi, r*sinPhi, 0.f ); 

@@ -262,7 +262,7 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
 
 GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)
 {
-    LOG(debug) << "GMaker::makeSphere" 
+    LOG(debug) << "GMaker::makeSubdivSphere" 
               << " nsubdiv " << nsubdiv
               << " type " << type
               << " param " << gformat(param) 
@@ -271,10 +271,9 @@ GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const c
     NTrianglesNPY* tris = makeSubdivSphere(nsubdiv, type);
 
     float radius = param.w ; 
-    float zpos   = param.z ;
 
     glm::vec3 scale(radius);
-    glm::vec3 translate(0,0,zpos);
+    glm::vec3 translate(param.x,param.y,param.z);  // formerly only z shifts were honoured
     tris->setTransform(scale, translate);   
 
     return makeSphere(tris);

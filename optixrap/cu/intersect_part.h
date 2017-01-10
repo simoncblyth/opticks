@@ -192,14 +192,18 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
    const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
 
    float3 idir = make_float3(1.f)/ray.direction ; 
-   float3 t0 = (bmin - ray.origin)*idir;      //  3 t for bmin planes 
-   float3 t1 = (bmax - ray.origin)*idir;      //  3 t for bmax planes
 
-   float3 near = fminf(t0, t1);               //  3 t nearest (out of bmin and bmax slabs)
-   float t_near = fmaxf( near );                
+   // the below t-parameter float3 are intersects with the x, y and z planes of
+   // the three axis slab planes through the box bmin and bmax  
 
-   float3 far  = fmaxf(t0, t1);               //  3 t farthest (out of bmin and bmax slabs) 
-   float t_far = fminf( far );
+   float3 t0 = (bmin - ray.origin)*idir;      //  intersects with bmin x,y,z slab planes
+   float3 t1 = (bmax - ray.origin)*idir;      //  intersects with bmax x,y,z slab planes 
+
+   float3 near = fminf(t0, t1);               //  bmin or bmax intersects closest to origin  
+   float3 far  = fmaxf(t0, t1);               //  bmin or bmax intersects farthest from origin 
+
+   float t_near = fmaxf( near );              //  furthest near intersect              
+   float t_far  = fminf( far );               //  closest far intersect 
 
 
   // rtPrintf(" bmin %f %f %f ", bmin.x, bmin.y, bmin.z );
@@ -209,14 +213,13 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
            ray.direction.x, ray.direction.y, ray.direction.z,
            idir.x, idir.y,  idir.z 
        );
-   */
 
    rtPrintf(" idir %f %f %f t0 %f %f %f t1 %f %f %f \n",
          idir.x, idir.y, idir.z,  
          t0.x, t0.y, t0.z, 
          t1.x, t1.y, t1.z
       );
-/*
+
    rtPrintf(" near %f %f %f -> t_near %f   far %f %f %f -> t_far %f   \n",
          near.x, near.y, near.z, t_near,   
          far.x,  far.y,  far.z, t_far 
@@ -232,16 +235,16 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
    bool in_y = ray.origin.y > bmin.y && ray.origin.y < bmax.y  ;
    bool in_z = ray.origin.z > bmin.z && ray.origin.z < bmax.z  ;
 
-   bool valid_intersect ;
-   if(     along_x) valid_intersect = in_y && in_z ;
-   else if(along_y) valid_intersect = in_x && in_z ; 
-   else if(along_z) valid_intersect = in_x && in_y ; 
-   else             valid_intersect = ( t_far > t_near && t_far > 0.f ) ;  // segment of ray intersects box, at least one is ahead
+   bool has_intersect ;
+   if(     along_x) has_intersect = in_y && in_z ;
+   else if(along_y) has_intersect = in_x && in_z ; 
+   else if(along_z) has_intersect = in_x && in_y ; 
+   else             has_intersect = ( t_far > t_near && t_far > 0.f ) ;  // segment of ray intersects box, at least one is ahead
 
-   if( valid_intersect ) 
+   if( has_intersect ) 
    {
        //  just because the ray intersects the box doesnt 
-       //  mean want to see it, there are 3 possibilities
+       //  mean its a usable intersect, there are 3 possibilities
        //
        //                t_near       t_far   
        //
@@ -258,7 +261,7 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
                            ; 
 
 
-       rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
+       //rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
 
        float3 p = ray.origin + tt*ray.direction - bcen ; 
        float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;

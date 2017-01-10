@@ -8,16 +8,132 @@ TODO: numerical/chi2 history comparison with CFG4 booleans
 ------------------------------------------------------------
 
 
-Issue : cannot see concave parts of booleans from outside
+
+Issue : ray trace "near/tmin" clipping fails to see inside booleans
+----------------------------------------------------------------------
+
+The usual behavior of near clipping enabling to see inside things not working
+with booleans.
+
+Tempted to use scene_epsilon in the below, but its not correct (or currently possible) 
+for general intersection code to depend on a rendering only thing like scene_epsilon.
+
+Begs the question how does non-boolean geometry manage to get near clipped ? 
+
+
+::
+
+     33 static __device__
+     34 void intersect_boolean( const uint4& prim, const uint4& identity )
+     35 {          
+     ..
+     57     // _min 0.f rather than propagate_epsilon 
+     58     // leads to missed boundaries when start photons on a boundary, 
+     59     // see boolean_csg_on_gpu.rst
+     60 
+     61     float tA_min = propagate_epsilon ;   
+     62     float tB_min = propagate_epsilon ;
+     63     float tA     = 0.f ;
+     64     float tB     = 0.f ;
+
+
+
+
+scene_epsilon
+~~~~~~~~~~~~~~~~
+
+scene_epsilon is how the near clipping feeds into the rays::
+
+     45 RT_PROGRAM void pinhole_camera()
+     46 {
+     47 
+     48   PerRayData_radiance prd;
+     49   prd.flag = 0u ;
+     50   prd.result = bad_color ;
+     51 
+     52   float2 d = make_float2(launch_index) / make_float2(launch_dim) * 2.f - 1.f ;
+     53 
+     54   optix::Ray ray = parallel == 0 ?
+     55                        optix::make_Ray( eye                 , normalize(d.x*U + d.y*V + W), radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
+     56                      :
+     57                        optix::make_Ray( eye + d.x*U + d.y*V , normalize(W)                , radiance_ray_type, scene_epsilon, RT_DEFAULT_MAX)
+     58                      ;
+     59 
+
+::
+
+    simon:geant4_opticks_integration blyth$ opticks-find scene_epsilon
+    ./optixrap/cu/pinhole_camera.cu:rtDeclareVariable(float,         scene_epsilon, , );
+    ...
+    ./optixrap/cu/pinhole_camera.cu:  // scene_epsilon is "t_min" but ray_direction is normalized, 
+    ./optixrap/cu/pinhole_camera.cu:  // scene_epsilon is the distance along the ray at which to start 
+    ./optixrap/OTracer.cc:    m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
+    ./optixrap/OTracer.cc:    float scene_epsilon = m_composition->getNear();
+    ./optixrap/OTracer.cc:    m_context[ "scene_epsilon"]->setFloat(scene_epsilon); 
+    ./ana/debug/genstep_sequence_material_mismatch.py:     328     m_context[ "scene_epsilon"]->setFloat(m_composition->getNear());
+
+
+
+FIXED Issue : boolean insides invisible from outside
 -------------------------------------------------------------
 
-When look at boolean difference concavity (eg box-sphere)  
-see through to containing volume rather than the expected 
-curved part of sphere.
+**Not sure why, but fixed by using "absolute loop ctrl" instead of relative in intersect_boolean**
 
-Shooting rays from all quadrants seems to show appropriate intersects
+::
 
-* TODO: numerical check: intersect position, normal
+    159         else if(
+    160                      (action & AdvanceAAndLoop)
+    161                   || 
+    162                      ((action & AdvanceAAndLoopIfCloser) && tA <= tB )
+    163                 )
+    164         {
+    165 
+    166 #ifdef BOOLEAN_DEBUG
+    167             if( (action & AdvanceAAndLoop) )                     debugA = 2 ;
+    168             if( (action & AdvanceAAndLoopIfCloser) && tA <= tB ) debugA = 3 ;
+    169 #endif
+    170 
+    171             //ctrl = ctrl & ~LIVE_B  ;   // CAUSES INVISIBLE INSIDES 
+    172             ctrl = LIVE_A  ;
+    173             tA_min = tA ;
+    174         }
+    175         else if(     
+    176                      (action & AdvanceBAndLoop)
+    177                   ||  
+    178                      ((action & AdvanceBAndLoopIfCloser) && tB <= tA )
+    179                 )
+    180         {   
+    181             //ctrl = ctrl & ~LIVE_A  ;   // CAUSES INVISIBLE INSIDES
+    182             ctrl = LIVE_B ;
+    183             tB_min = tB ;
+    184         }
+    185      
+    186      }     // while loop 
+    187 }
+
+
+
+tboolean-box-dented shows a hole where expect to see surface of concave 
+hemi-spherical dent.
+
+Using BOOLEAN_DEBUG to color the A and B intersects makes the 
+problem clearer.  Can only see innards when the viewpoint is inside.
+
+tboolean-box-minus-sphere shows no insides::
+
+    106     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    107     local test_config_1=(
+    108                  mode=BoxInBox
+    109                  analytic=1
+    110                  
+    111                  shape=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+    112                  
+    113                  shape=difference   parameters=0,0,0,300           boundary=Vacuum///$material
+    114                  shape=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
+    115                  shape=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
+    116                  
+    117                )
+
 
 
 

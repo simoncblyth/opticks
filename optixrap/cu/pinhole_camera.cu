@@ -77,6 +77,9 @@ RT_PROGRAM void pinhole_camera()
   // scene_epsilon is the distance along the ray at which to start 
   // accepting intersections ?
   //
+  // The result of this is that ray traced "near" clipping tends to 
+  // make circular-ish cuts into geometry.
+  //
 
 
 #if RAYTRACE_TIMEVIEW

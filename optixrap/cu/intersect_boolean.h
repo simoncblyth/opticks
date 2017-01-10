@@ -1,8 +1,6 @@
 #pragma once
 
 
-
-
 static __device__
 void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 {
@@ -26,7 +24,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 #ifdef BOOLEAN_DEBUG
             instanceIdentity.x = dot(a_normal, ray.direction) < 0.f ? 1 : 2 ;
 #endif
-
             rtReportIntersection(0);
         }
     }
@@ -63,6 +60,8 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
 
     float tA_min = propagate_epsilon ;  
     float tB_min = propagate_epsilon ;
+
+
     float tA     = 0.f ;
     float tB     = 0.f ;
 
@@ -79,6 +78,11 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
     int count(0) ;  
 
     //rtPrintf("boolean_intersect t_parameter %f ", t_parameter);
+
+#ifdef BOOLEAN_DEBUG
+    //int debugA = 1 ; 
+    //int debugB = 1 ; 
+#endif
 
     while(ctrl != 0 && count < 4 )
     {
@@ -100,7 +104,7 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
         {
             ctrl = 0 ; 
         }
-        else if( 
+       else if( 
                    (action & ReturnA) 
                 || 
                    ((action & ReturnAIfCloser) && tA <= tB )
@@ -113,6 +117,18 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
             {
                 shading_normal = geometric_normal = a_normal;
                 instanceIdentity = identity ;
+#ifdef BOOLEAN_DEBUG
+                //if((action & ReturnA))                      instanceIdentity.x = 1 ; 
+                //if((action & ReturnAIfCloser)  && tA <= tB) instanceIdentity.x = 2 ; 
+                //if((action & ReturnAIfFarther) && tA > tB)  instanceIdentity.x = 3 ; 
+                //
+                // difference(box-sphere)
+                //     * red   (ReturnA) box periphery where MissB the sphere
+                //     * green (ReturnAIfCloser..) box hits in shape of sphere
+                //     * no blue seen 
+                //
+                //instanceIdentity.x = debugA ; 
+#endif
                 rtReportIntersection(0);
             }
         }
@@ -129,6 +145,15 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
             {
                 shading_normal = geometric_normal = action & FlipB ? -b_normal : b_normal ;
                 instanceIdentity = identity ;
+#ifdef BOOLEAN_DEBUG
+                //if((action & ReturnB))                      instanceIdentity.x = 1 ; 
+                //if((action & ReturnBIfCloser)  && tB <= tA) instanceIdentity.x = 2 ; 
+                //if((action & ReturnBIfFarther) && tB > tA)  instanceIdentity.x = 3 ; 
+                // difference(box-sphere) 
+                //    no coloring apparent from outside (makes sense as sphere is "subtracted"),
+                //     hint of green(ReturnBIfCloser) the sphere from inside
+                //
+#endif
                 rtReportIntersection(0);
             }
         }
@@ -138,7 +163,14 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
                      ((action & AdvanceAAndLoopIfCloser) && tA <= tB )
                 )
         {
-            ctrl = ctrl & ~LIVE_B ; 
+
+#ifdef BOOLEAN_DEBUG
+            //if( (action & AdvanceAAndLoop) )                     debugA = 2 ; 
+            //if( (action & AdvanceAAndLoopIfCloser) && tA <= tB ) debugA = 3 ; 
+#endif
+
+            //ctrl = ctrl & ~LIVE_B  ;   // CAUSES INVISIBLE INSIDES 
+            ctrl = LIVE_A  ; 
             tA_min = tA ; 
         }
         else if(
@@ -147,7 +179,8 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
                      ((action & AdvanceBAndLoopIfCloser) && tB <= tA )
                 )
         {
-            ctrl = ctrl & ~LIVE_A ; 
+            //ctrl = ctrl & ~LIVE_A  ;   // CAUSES INVISIBLE INSIDES
+            ctrl = LIVE_B ; 
             tB_min = tB ; 
         }
 

@@ -77,8 +77,8 @@ tboolean-torchconfig()
                  source=$discaxial_target
                  target=0,0,0
                  time=0.1
-                 radius=110
-                 distance=200
+                 radius=300
+                 distance=300
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                  wavelength=$wavelength 
@@ -88,12 +88,49 @@ tboolean-torchconfig()
 }
 
 
-tboolean-testconfig()
-{
-    local material=GlassSchottF2
-    #local material=MainH2OHale
 
-    local test_config_0=(
+tboolean-material(){ echo GlassSchottF2 ; }
+#tboolean-material(){ echo MainH2OHale ; }
+
+tboolean-box-minus-sphere()
+{
+    local material=$(tboolean-material)
+    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+ 
+                 shape=difference   parameters=0,0,0,300           boundary=Vacuum///$material
+                 shape=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
+                 shape=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
+               )
+
+     echo "$(join _ ${test_config[@]})" 
+}
+
+tboolean-box-dented()
+{
+    local material=$(tboolean-material)
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+ 
+                 shape=difference   parameters=0,0,0,300           boundary=Vacuum///$material
+                 shape=box          parameters=0,0,0,200           boundary=Vacuum///$material
+                 shape=sphere       parameters=0,0,200,100           boundary=Vacuum///$material
+               )
+
+     echo "$(join _ ${test_config[@]})" 
+}
+
+tboolean-box()
+{
+    local material=$(tboolean-material)
+    local test_config=(
                  mode=BoxInBox
                  analytic=1
 
@@ -101,23 +138,15 @@ tboolean-testconfig()
                  shape=box      parameters=0,0,0,100                boundary=Vacuum///$material
 
                     )
-
-    local test_config_1=(
-                 mode=BoxInBox
-                 analytic=1
-
-                 shape=box          parameters=0,0,0,1000               boundary=Rock//perfectAbsorbSurface/Vacuum
- 
-                 shape=difference   parameters=0,0,0,200            boundary=Vacuum///$material
-                 shape=box          parameters=0,0,0,100            boundary=Vacuum///$material
-                 shape=sphere       parameters=100,0,0,50           boundary=Vacuum///$material
-
-               )
-
-     #echo "$(join _ ${test_config_0[@]})" 
-     echo "$(join _ ${test_config_1[@]})" 
+     echo "$(join _ ${test_config[@]})" 
 }
 
+tboolean-testconfig()
+{
+    #tboolean-box-minus-sphere
+    #tboolean-box
+    tboolean-box-dented
+}
 
 
 
