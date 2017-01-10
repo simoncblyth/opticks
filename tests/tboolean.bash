@@ -77,7 +77,7 @@ tboolean-torchconfig()
                  source=$discaxial_target
                  target=0,0,0
                  time=0.1
-                 radius=300
+                 radius=100
                  distance=300
                  zenithazimuth=0,1,0,1
                  material=Vacuum
@@ -92,40 +92,7 @@ tboolean-torchconfig()
 tboolean-material(){ echo GlassSchottF2 ; }
 #tboolean-material(){ echo MainH2OHale ; }
 
-tboolean-box-minus-sphere()
-{
-    local material=$(tboolean-material)
-    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
 
-                 shape=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
- 
-                 shape=difference   parameters=0,0,0,300           boundary=Vacuum///$material
-                 shape=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
-                 shape=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
-               )
-
-     echo "$(join _ ${test_config[@]})" 
-}
-
-tboolean-box-dented()
-{
-    local material=$(tboolean-material)
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
-
-                 shape=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
- 
-                 shape=difference   parameters=0,0,0,300           boundary=Vacuum///$material
-                 shape=box          parameters=0,0,0,200           boundary=Vacuum///$material
-                 shape=sphere       parameters=0,0,200,100           boundary=Vacuum///$material
-               )
-
-     echo "$(join _ ${test_config[@]})" 
-}
 
 tboolean-box()
 {
@@ -141,11 +108,54 @@ tboolean-box()
      echo "$(join _ ${test_config[@]})" 
 }
 
+
+
+tboolean-box-small-offset-sphere()
+{
+    local operation=${1:-difference}
+    local material=$(tboolean-material)
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+ 
+                 shape=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
+                 shape=box          parameters=0,0,0,200           boundary=Vacuum///$material
+                 shape=sphere       parameters=0,0,200,100           boundary=Vacuum///$material
+               )
+
+     echo "$(join _ ${test_config[@]})" 
+}
+
+tboolean-box-sphere()
+{
+    local operation=${1:-difference}
+    local material=$(tboolean-material)
+    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    local test_config=(
+                 mode=BoxInBox
+                 analytic=1
+
+                 shape=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+ 
+                 shape=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
+                 shape=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
+                 shape=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
+               )
+
+     echo "$(join _ ${test_config[@]})" 
+}
+
+
 tboolean-testconfig()
 {
-    #tboolean-box-minus-sphere
+    #tboolean-box-sphere intersection    ## looks like a dice, sphere chopped by cube
+    #tboolean-box-sphere union
+     tboolean-box-sphere difference
+
     #tboolean-box
-    tboolean-box-dented
+    #tboolean-box-small-offset-sphere difference
 }
 
 
