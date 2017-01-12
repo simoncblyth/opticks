@@ -174,6 +174,71 @@ YouKou
 * seems youku requires a chinese phone number to register
 
 
+To Investigate : video encoding direct from OpenGL buffers ?
+----------------------------------------------------------------
+
+openh264 (BSD)
+~~~~~~~~~~~~~~~~~
+
+* :google:`github H.264`
+
+* no mention of GPU .. so will be slow 
+
+* https://github.com/cisco/openh264
+* http://www.openh264.org/
+
+
+NVIDIA Video Codec SDK (only Windows/Linux, also GPU restrictions)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://developer.nvidia.com/nvidia-video-codec-sdk
+* https://developer.nvidia.com/video-encode-decode-gpu-support-matrix
+
+  Geforce GPUs not listed but https://en.wikipedia.org/wiki/Nvidia_NVENC
+  suggests they do have the semiconductor intellectual property (SIP) core hardware
+
+* https://developer.nvidia.com/ffmpeg
+
+
+If you are looking to make use of the dedicated decoding/encoding hardware on
+your GPU in an existing application you can leverage the integration already
+available in the FFmpeg/libav. FFmpeg/libav should be used for evaluation or
+quick integration, but it may not provide control over every encoder parameter.
+NVDECODE and NVENCODE APIs should be used for low-level granular control over
+various encode/decode parameters and if you want to directly tap into the
+hardware decoder/encoder. This access is available through the Video Codec SDK.
+
+
+* https://blog.medialooks.com/814EAo/
+
+NVENC is available with the latest generation of Nvidia's GPUs - those based on
+Kepler and Maxwell architectures. Previously, Nvidia's hardware encoding was
+based on CUDA, which used both the CPU and the GPU for video encoding (taking
+away the processing power of both units). NVENC uses a dedicated H.264 encoding
+chip, so most of the processing power of the GPU is available for other tasks
+
+* http://docs.medialooks.com/eUa0Z8/
+
+Performance comparisons of:: 
+
+    Nvidia NVENC H.264 encoder   << clear winner
+    Intel Quick Sync
+    x264 encoder (GPL)
+    Nvidia CUDA encoder
+
+
+* https://developer.nvidia.com/sites/default/files/akamai/designworks/docs/NVIDIA-Capture-SDK-SamplesDescription.pdf
+
+NVIDIA Capture SDK (formerly GRID)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://on-demand.gputechconf.com/gtc/2016/presentation/s6307-shounak-deshpande-get-to-know-the-nvidia-grid-sdk.pdf
+
+NVFBC : brute force full screen capture
+NVIFR 
+   supports OpenGL/D3D APIs
+   NVIFRToHWEnc internally invokes NVENC API
+
 
 EOU
 }
