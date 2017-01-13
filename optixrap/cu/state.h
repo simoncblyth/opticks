@@ -52,7 +52,7 @@ __device__ void fill_state( State& s, int boundary, uint4 identity, float wavele
     s.material1 = boundary_lookup( wavelength, m1_line, 0);  
     s.m1group2  = boundary_lookup( wavelength, m1_line, 1);  
 
-    s.material2 = boundary_lookup( wavelength, m2_line, 0);
+    s.material2 = boundary_lookup( wavelength, m2_line, 0); 
     s.surface   = boundary_lookup( wavelength, su_line, 0);                 
 
     s.optical = optical_buffer[su_line] ;   // index/type/finish/value
