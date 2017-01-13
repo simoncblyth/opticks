@@ -118,6 +118,8 @@ void AssimpGGeo::init()
 
 int AssimpGGeo::load(GGeo* ggeo)
 {
+    // THIS IS THE ENTRY POINT SET IN OpticksGeometry::loadGeometryBase
+
     Opticks* opticks = ggeo->getOpticks();
     OpticksResource* resource = opticks->getResource();
     OpticksQuery* query = opticks->getQuery() ;

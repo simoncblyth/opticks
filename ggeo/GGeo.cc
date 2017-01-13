@@ -572,7 +572,7 @@ void GGeo::loadFromG4DAE()
 {
     LOG(trace) << "GGeo::loadFromG4DAE START" ; 
 
-    int rc = (*m_loader_imp)(this);   //  imp set in main: m_ggeo->setLoaderImp(&AssimpGGeo::load); 
+    int rc = (*m_loader_imp)(this);   //  imp set in OpticksGeometry::loadGeometryBase, m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
     assert(rc == 0);
 

@@ -17,6 +17,19 @@ template<class T> class NPY ;
 
 // *createInstancedMergedMeshes* is canonically invoked by GGeo::loadFromG4DAE GGeo::prepareMeshes
 
+/**
+GTreeCheck
+=============
+
+TODO: rename, this does essential instancing prep, it is not a "check"
+
+Canonical instance *m_treecheck* is member of GGeo that 
+is used only precache.
+
+
+
+
+**/
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"

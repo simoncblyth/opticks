@@ -29,6 +29,16 @@ NB no OpenGL dependency, instead classes designed to be
 easily usable from oglrap- when doing things like 
 uploading OpenGL buffers etc..
 
+
+Alternative serializations to NPY that support compression ?
+---------------------------------------------------------------
+
+Bloscpack: a compressed lightweight serialization format for numerical data
+Valentin Haenel
+
+* https://arxiv.org/pdf/1404.6383.pdf
+
+
 Classes
 -------
 

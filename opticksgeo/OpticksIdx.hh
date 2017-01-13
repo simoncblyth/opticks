@@ -9,6 +9,17 @@ class OpticksEvent ;
 
 #include "OKGEO_API_EXPORT.hh"
 
+/**
+OpticksIdx
+===========
+
+Wrapper around indexing functionality
+
+
+
+*/
+
+
 class OKGEO_API OpticksIdx {
    public:
        OpticksIdx(OpticksHub* hub);

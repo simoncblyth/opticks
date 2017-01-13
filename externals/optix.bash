@@ -23,6 +23,39 @@ TODO: rearrange OptiX use to facilitate easier version switching
 
 
 
+NVIDIA Research
+-----------------
+
+* https://research.nvidia.com/nvpeople
+
+
+Understanding the efficiency of ray traversal on GPUs
+-------------------------------------------------------
+
+* :google:`Understanding the Efficiency of Ray Traversal on GPUs – Kepler and Fermi Addendum`
+
+* https://research.nvidia.com/users/timo-aila
+* https://research.nvidia.com/users/samuli-laine
+* https://research.nvidia.com/users/tero-karras
+
+* https://code.google.com/archive/p/understanding-the-efficiency-of-ray-traversal-on-gpus/
+* https://mediatech.aalto.fi/~samuli/publications/aila2012tr1_poster.pdf
+
+
+CG courses
+------------
+
+Indepth covering the "Understanding.." paper.
+
+* http://www.cs.uu.nl/docs/vakken/magr/2015-2016/
+
+
+* http://www.cs.uu.nl/docs/vakken/magr/2015-2016/slides/lecture%2002%20-%20acceleration%20structures.pdf
+
+* http://www.cs.uu.nl/docs/vakken/magr/2015-2016/slides/lecture%2011%20-%20GPU%20ray%20tracing%20%281%29.pdf
+* http://www.cs.uu.nl/docs/vakken/magr/2015-2016/slides/lecture%2012%20-%20GPU%20ray%20tracing%20(2).pdf
+
+
 Alternatives to OptiX
 -----------------------
 
@@ -32,10 +65,7 @@ Alternatives to OptiX
 Intel : Embree  (works on CPUs and many integrated core (MICs) coprocessors)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 * http://neams.rpi.edu/jiw2/papers/M&C2015%20Liu02.pdf
-
-
 
 AMD : RadeonRays, FireRays
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
