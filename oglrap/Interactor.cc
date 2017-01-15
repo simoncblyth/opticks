@@ -63,8 +63,8 @@ Interactor::Interactor(OpticksHub* hub)
    m_bookmark_mode(false),
    m_gui_mode(false),
    m_scrub_mode(false),
+   m_time_mode(false),
    m_label_mode(false),
-   //m_optix_mode(0),
    m_optix_resolution_scale(1),
    m_dragfactor(1.f),
    m_container(0),
@@ -320,13 +320,11 @@ void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int i
     {
         m_trackball->drag_to(df*x,df*y,df*dx,df*dy);
     }
-    /*
-    else if( m_scrub_mode )
+    else if( m_time_mode )
     {
         if(!m_animator) m_animator = m_composition->getAnimator();
         m_animator->scrub_to(df*x,df*y,df*dx,df*dy);
     }
-    */
     else
     {
         m_frame->touch(ix, iy );  
@@ -384,6 +382,20 @@ const char* Interactor::keys =
 "\n Holding CONTROL with A,V,T sets animation mode to OFF  "
 "\n "
 "\n ";
+
+
+void Interactor::pan_mode_key_pressed(unsigned int modifiers)
+{
+    if(modifiers & OpticksConst::e_shift)
+    {
+        m_time_mode = !m_time_mode ; 
+    }
+    else
+    {
+        m_pan_mode = !m_pan_mode ; 
+    }
+}
+
 
 void Interactor::key_pressed(unsigned int key)
 {
@@ -473,7 +485,7 @@ void Interactor::key_pressed(unsigned int key)
             nextOptiXResolutionScale(modifiers); 
             break;
         case _pan_mode_key:
-            m_pan_mode = !m_pan_mode ; 
+            pan_mode_key_pressed(modifiers);
             break;
         case GLFW_KEY_Y:
             m_yfov_mode = !m_yfov_mode ; 
@@ -606,11 +618,12 @@ void Interactor::number_key_released(unsigned int number)
 
 void Interactor::updateStatus()
 {
-    snprintf(m_status, STATUS_SIZE , "%s (%u) %s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
+    snprintf(m_status, STATUS_SIZE , "%s (%u) %s%s%s%s%s%s%s%s%s %10.3f %u col:%s geo:%s rec:%s ",
            m_bookmarks ? m_bookmarks->getTitle() : "-",
            m_bookmarks ? m_bookmarks->getCurrent() : 999,
            m_zoom_mode ? "z" : "-",
            m_pan_mode  ? "x" : "-",
+           m_time_mode ? "T" : "-",
            m_far_mode  ? "f" : "-",
            m_near_mode ? "n" : "-",
            m_yfov_mode ? "y" : "-",

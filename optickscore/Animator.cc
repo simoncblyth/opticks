@@ -176,6 +176,13 @@ void Animator::scrub_to(float , float , float , float dy) // Interactor:K scrub_
 
     float val = getValue();
     val += 30.f*dy ; 
+
+
+    LOG(info) << "Animator::scrub_to"
+              << " dy " << dy
+              << " val " << val 
+              ;
+
     setTargetValue(val);
 }
 

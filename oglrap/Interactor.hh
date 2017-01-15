@@ -73,6 +73,7 @@ class OGLRAP_API Interactor {
         void nextGUIStyle();
         void applyGUIStyle();
   public:
+       void pan_mode_key_pressed(unsigned int modifiers);
        void number_key_pressed(unsigned int number);
        void number_key_released(unsigned int number);
        void key_pressed(unsigned int key);
@@ -113,6 +114,7 @@ class OGLRAP_API Interactor {
        bool m_bookmark_mode ;
        bool m_gui_mode ;
        bool m_scrub_mode ;
+       bool m_time_mode ;
        bool m_label_mode ;
        bool m_keys_down[NUM_KEYS] ; 
 
