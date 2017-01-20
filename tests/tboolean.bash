@@ -78,7 +78,7 @@ tboolean-torchconfig()
                  target=0,0,0
                  time=0.1
                  radius=100
-                 distance=300
+                 distance=400
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                  wavelength=$wavelength 

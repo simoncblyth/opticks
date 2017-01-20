@@ -22,6 +22,32 @@ TODO: rearrange OptiX use to facilitate easier version switching
 * http://stackoverflow.com/questions/3597693/how-does-the-pimpl-idiom-reduce-dependencies
 
 
+Refs describing GPU architecture evolution
+--------------------------------------------
+
+* https://cryptojedi.org/papers/gpus-20130310.pdf
+
+
+Pre-CUDA survey of GPGPU from 2005
+
+* https://research.nvidia.com/sites/default/files/publications/ASurveyofGeneralPurposeComputationonGraphicsHardware.pdf
+
+
+* http://disi.unal.edu.co/~gjhernandezp/HeterParallComp/GPU/gpu-hist-paper.pdf
+
+
+A Review of CUDA, MapReduce, and Pthreads Parallel Computing Models
+
+* https://arxiv.org/pdf/1410.4453.pdf
+
+
+Kepler white paper
+
+* http://www.nvidia.com/content/PDF/product-specifications/GeForce_GTX_680_Whitepaper_FINAL.pdf
+
+
+* https://www.researchgate.net/publication/301363311_Architectural_evolution_of_NVIDIA_GPUs_for_High-Performance_Computing
+
 
 NVIDIA Research
 -----------------
