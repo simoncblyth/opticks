@@ -1256,7 +1256,6 @@ RT_PROGRAM void intersect(int primIdx)
   unsigned primFlags   = prim.w ;  
 
   uint4 identity = identityBuffer[instance_index] ; 
-
   // for analytic test geometry (PMT too?) the identityBuffer  
   // is composed of placeholder zeros
 
@@ -1264,14 +1263,14 @@ RT_PROGRAM void intersect(int primIdx)
   { 
       quad q1 ; 
       q1.f = partBuffer[4*(partOffset+0)+1];  
-      identity.z = q1.u.z ;        // replace placeholder zero ? with test analytic geometry boundary
+      identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
 
       intersect_boolean( prim, identity );
       //intersect_boolean_only_first( prim, identity );
-
   }
   else
   {
+      // partitioned intersect over single basis-shape parts for each "prim"
       for(unsigned int p=0 ; p < numParts ; p++)
       {  
           unsigned int partIdx = partOffset + p ;  

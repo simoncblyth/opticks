@@ -233,9 +233,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
 GMergedMesh* GGeoTest::createBoxInBox()
 {
     std::vector<GSolid*> solids ; 
-
-
     unsigned int n = m_config->getNumElements();
+
     for(unsigned int i=0 ; i < n ; i++)
     {
         std::string node = m_config->getNodeString(i);
@@ -262,9 +261,8 @@ GMergedMesh* GGeoTest::createBoxInBox()
         GSolid* solid = m_maker->make(i, nodecode, param, spec );   
         solids.push_back(solid);
 
-        // TODO: handle composite for the lens
+        // TODO: handle csg tree nodes, that break the 1-to-1 
     }
-
 
 
     int boolean_start = -1 ;  

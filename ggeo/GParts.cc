@@ -344,7 +344,11 @@ void GParts::registerBoundaries()
 
 void GParts::makePrimBuffer()
 {
-    // "prim" here was previously renamed "solid"
+    // Derives prim buffer from the parts buffer
+    //
+    // * flag from the first part of each nodeIndex is promoted into primitive buffer  
+    //
+    // "prim" here was previously named "solid"
     // but thats confusing due to other solids so renamed
     // to "prim" as this corresponds to OptiX primitives GPU side, 
     // see oxrap/cu/hemi-pmt.cu::intersect
@@ -353,8 +357,10 @@ void GParts::makePrimBuffer()
     // via the NodeIndex property  
     // so to prep a boolean composite need to:
     //
-    // * set intersect/union/difference flag in primBuffer .w?
     // * arrange for constituent parts to share the same NodeIndex 
+    // * set intersect/union/difference flag in parts buffer for first part
+    //
+    //   ^^^^^^^ TODO: generalize for CSG tree 
     //
 
     m_parts_per_prim.clear();

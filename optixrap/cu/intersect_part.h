@@ -5,8 +5,8 @@ void intersect_sphere(const quad& q0, const float& tt_min, float3& tt_normal, fl
 {
     // when an intersection is found between the ray and the sphere 
     // with parametric t greater than the tmin parameter
-    // the tt set to the parametric t found
-    // 
+    // tt is set to the parametric t of the intersection
+    // and corresponding tt_normal is set
 
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;

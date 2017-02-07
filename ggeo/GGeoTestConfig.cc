@@ -184,10 +184,8 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
 
 
 
-unsigned int GGeoTestConfig::getNumElements()
+unsigned GGeoTestConfig::getNumElements()
 {
-    // hmm: boolean shapes need to swallow entries, where to do that ?
-
     unsigned nbnd = getNumBoundaries();
     unsigned nnod = getNumNodes();
     unsigned npar = getNumParameters();
@@ -195,13 +193,14 @@ unsigned int GGeoTestConfig::getNumElements()
 
     bool equal = nbnd == npar && nbnd == nnod && ntra == npar ;
 
-    if(!equal) LOG(fatal) << "GGeoTestConfig::getNumElements"
-                          << " ELEMENT MISMATCH IN TEST GEOMETRY CONFIGURATION " 
-                          << " nbnd (boundaries) " << nbnd  
-                          << " nnod (nodes) " << nnod  
-                          << " npar (parameters) " << npar  
-                          << " ntra (transforms) " << ntra
-                          ; 
+    if(!equal) 
+    LOG(fatal) << "GGeoTestConfig::getNumElements"
+               << " ELEMENT MISMATCH IN TEST GEOMETRY CONFIGURATION " 
+               << " nbnd (boundaries) " << nbnd  
+               << " nnod (nodes) " << nnod  
+               << " npar (parameters) " << npar  
+               << " ntra (transforms) " << ntra
+               ; 
 
     assert( equal && "need equal number of boundaries, parameters, transforms and nodes");
     assert(nbnd > 0);
@@ -283,7 +282,7 @@ void GGeoTestConfig::addTransform(const char* s)
 {
     std::string ss(s == NULL ? "" : s);
 
-    // when adding non-default pop first to replace
+    // when adding non-default pop_back first to replace the identity default
     if(!ss.empty() && m_transforms.size() > 0)
     {
         m_transforms.pop_back();
