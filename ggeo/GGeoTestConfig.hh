@@ -26,17 +26,19 @@ The Geant4 usage is done via :doc:`../cfg4/CTestDetector`.
 
 class GGEO_API GGeoTestConfig {
     public:
+      // NODE is a generalization of the former SHAPE argument
        typedef enum { 
                       MODE, 
                       FRAME, 
                       BOUNDARY, 
                       PARAMETERS, 
-                      SHAPE, 
+                      NODE, 
                       SLICE, 
                       ANALYTIC, 
                       DEBUG,
                       CONTROL,
                       PMTPATH,
+                      TRANSFORM, 
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -46,12 +48,13 @@ class GGEO_API GGeoTestConfig {
        static const char* FRAME_ ; 
        static const char* BOUNDARY_ ; 
        static const char* PARAMETERS_ ; 
-       static const char* SHAPE_ ; 
+       static const char* NODE_ ; 
        static const char* SLICE_ ; 
        static const char* ANALYTIC_ ; 
        static const char* DEBUG_ ; 
        static const char* CONTROL_ ; 
        static const char* PMTPATH_ ; 
+       static const char* TRANSFORM_ ; 
     public:
        GGeoTestConfig(const char* config);
        int getVerbosity();
@@ -69,14 +72,16 @@ class GGEO_API GGeoTestConfig {
        void setControl(const char* s);
        void setPmtPath(const char* s);
     private:
-       void addShape(const char* s);
+       void addNode(const char* s);
        void addBoundary(const char* s);
        void addParameters(const char* s);
+       void addTransform(const char* s);
     public:
        const char* getBoundary(unsigned int i);
        glm::vec4 getParameters(unsigned int i);
-       char      getShape(unsigned int i);
-       std::string getShapeString(unsigned int i); 
+       glm::mat4 getTransform(unsigned int i);
+       char      getNode(unsigned int i);
+       std::string getNodeString(unsigned int i); 
 
        NSlice*   getSlice();
        bool      getAnalytic();
@@ -87,9 +92,10 @@ class GGEO_API GGeoTestConfig {
        std::vector<std::pair<std::string, std::string> >& getCfg();
        void dump(const char* msg="GGeoTestConfig::dump");
    private:
-       unsigned int getNumBoundaries();
-       unsigned int getNumParameters();
-       unsigned int getNumShapes();
+       unsigned getNumBoundaries();
+       unsigned getNumParameters();
+       unsigned getNumNodes();
+       unsigned getNumTransforms();
    private:
        const char*  m_config ; 
        const char*  m_mode ; 
@@ -99,9 +105,10 @@ class GGEO_API GGeoTestConfig {
        glm::ivec4   m_analytic ;
        glm::vec4    m_debug ;
        glm::ivec4   m_control ;
-       std::vector<std::string> m_shapes ; 
+       std::vector<std::string> m_nodes ; 
        std::vector<std::string> m_boundaries ; 
        std::vector<glm::vec4>   m_parameters ; 
+       std::vector<glm::mat4>   m_transforms ; 
        std::vector<KV> m_cfg ; 
 };
 

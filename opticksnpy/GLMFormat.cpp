@@ -208,26 +208,35 @@ glm::mat4 GLMFormat::mat4(const std::string& s, bool flip )
     std::vector<std::string> tp; 
 
     std::string c(s);
-    boost::trim(c); 
-    boost::split(tp, c, boost::is_any_of(m_delim), boost::token_compress_on);
+
+    if(!c.empty())
+    {
+        boost::trim(c); 
+        boost::split(tp, c, boost::is_any_of(m_delim), boost::token_compress_on);
+    }
 
     unsigned int size = tp.size();
     glm::mat4 m;
-    for(unsigned int j=0 ; j < 4 ; j++) 
-    for(unsigned int k=0 ; k < 4 ; k++) 
+
+    if(size > 0)
     {
-        unsigned int offset = j*4+k ;   
-        if(offset >= size) break ; 
-        float v = boost::lexical_cast<float>(tp[offset]) ;
-        if(flip)
+        for(unsigned int j=0 ; j < 4 ; j++) 
+        for(unsigned int k=0 ; k < 4 ; k++) 
         {
-            m[j][k] = v ; 
+            unsigned int offset = j*4+k ;   
+            if(offset >= size) break ; 
+            float v = boost::lexical_cast<float>(tp[offset]) ;
+            if(flip)
+            {
+                m[j][k] = v ; 
+            }
+            else
+            {
+                m[k][j] = v ; 
+            }   
         }
-        else
-        {
-            m[k][j] = v ; 
-        }   
     }
+
     return m ; 
 }
 

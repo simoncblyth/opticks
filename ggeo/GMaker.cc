@@ -40,9 +40,9 @@ const char* GMaker::UNION = "union" ;
 const char* GMaker::INTERSECTION = "intersection" ; 
 const char* GMaker::DIFFERENCE = "difference" ; 
  
-const char* GMaker::ShapeName(char shapecode)
+const char* GMaker::NodeName(char nodecode)
 {
-    switch(shapecode) 
+    switch(nodecode) 
     {
        case 'B':return BOX     ; break ; 
        case 'S':return SPHERE  ; break ; 
@@ -69,7 +69,7 @@ bool GMaker::IsBooleanShape(char shapecode)
 
 
 // enum from OpticksShape.h
-OpticksShape_t GMaker::ShapeFlag(char shapecode)
+OpticksShape_t GMaker::NodeFlag(char shapecode)
 {
     OpticksShape_t flag = SHAPE_UNDEFINED ; 
     switch(shapecode)
@@ -83,18 +83,18 @@ OpticksShape_t GMaker::ShapeFlag(char shapecode)
     return flag ;  
 }
 
-char GMaker::ShapeCode(const char* shapename)
+char GMaker::NodeCode(const char* nodename)
 {
     char sc = 'U' ;
-    if(     strcmp(shapename, BOX) == 0)     sc = 'B' ; 
-    else if(strcmp(shapename, SPHERE) == 0)  sc = 'S' ; 
-    else if(strcmp(shapename, ZSPHERE) == 0) sc = 'Z' ; 
-    else if(strcmp(shapename, ZLENS) == 0)   sc = 'L' ; 
-    else if(strcmp(shapename, PMT) == 0)     sc = 'P' ;  // not operational
-    else if(strcmp(shapename, PRISM) == 0)   sc = 'M' ; 
-    else if(strcmp(shapename, INTERSECTION) == 0)   sc = 'I' ; 
-    else if(strcmp(shapename, UNION) == 0)          sc = 'J' ; 
-    else if(strcmp(shapename, DIFFERENCE) == 0)     sc = 'K' ; 
+    if(     strcmp(nodename, BOX) == 0)     sc = 'B' ; 
+    else if(strcmp(nodename, SPHERE) == 0)  sc = 'S' ; 
+    else if(strcmp(nodename, ZSPHERE) == 0) sc = 'Z' ; 
+    else if(strcmp(nodename, ZLENS) == 0)   sc = 'L' ; 
+    else if(strcmp(nodename, PMT) == 0)     sc = 'P' ;  // not operational
+    else if(strcmp(nodename, PRISM) == 0)   sc = 'M' ; 
+    else if(strcmp(nodename, INTERSECTION) == 0)   sc = 'I' ; 
+    else if(strcmp(nodename, UNION) == 0)          sc = 'J' ; 
+    else if(strcmp(nodename, DIFFERENCE) == 0)     sc = 'K' ; 
     return sc ; 
 }
 
@@ -122,7 +122,7 @@ GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, c
      }
      assert(solid);
 
-     OpticksShape_t shapeflag = GMaker::ShapeFlag(shapecode) ; 
+     OpticksShape_t shapeflag = GMaker::NodeFlag(shapecode) ; 
      solid->setShapeFlag( shapeflag );
 
      // TODO: most parts alread hooked up above, do this uniformly

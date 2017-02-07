@@ -30,16 +30,16 @@ class GGEO_API GMaker {
        static const char* INTERSECTION ; 
        static const char* DIFFERENCE ; 
        static const char* UNDEFINED ; 
-       static OpticksShape_t ShapeFlag(char shapecode);
-       static const char* ShapeName(char shapecode); 
-       static char ShapeCode(const char* shapename); 
-       static bool IsBooleanShape(char shapecode); 
-       static bool IsCompositeShape(char shapecode); 
-       static unsigned BooleanFlag(char shapecode); 
+       static OpticksShape_t NodeFlag(char nodecode);
+       static const char* NodeName(char nodecode); 
+       static char NodeCode(const char* nodename); 
+       static bool IsBooleanShape(char nodecode); 
+       static bool IsCompositeShape(char nodecode); 
+       static unsigned BooleanFlag(char nodecode); 
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
-       GSolid* make(unsigned int index, char shapecode, glm::vec4& param, const char* spec);
+       GSolid* make(unsigned int index, char nodecode, glm::vec4& param, const char* spec);
    private:
        void init();    
        static GSolid* makePrism(glm::vec4& param, const char* spec);

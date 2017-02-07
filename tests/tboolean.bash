@@ -101,8 +101,8 @@ tboolean-box()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=box      parameters=0,0,0,100                boundary=Vacuum///$material
+                 node=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=box      parameters=0,0,0,100                boundary=Vacuum///$material
 
                     )
      echo "$(join _ ${test_config[@]})" 
@@ -118,11 +118,11 @@ tboolean-box-small-offset-sphere()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
  
-                 shape=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
-                 shape=box          parameters=0,0,0,200           boundary=Vacuum///$material
-                 shape=sphere       parameters=0,0,200,100           boundary=Vacuum///$material
+                 node=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
+                 node=box          parameters=0,0,0,200           boundary=Vacuum///$material
+                 node=sphere       parameters=0,0,200,100         boundary=Vacuum///$material
                )
 
      echo "$(join _ ${test_config[@]})" 
@@ -137,15 +137,32 @@ tboolean-box-sphere()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
  
-                 shape=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
-                 shape=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
-                 shape=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
+                 node=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
+                 node=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
+                 node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
                )
 
      echo "$(join _ ${test_config[@]})" 
 }
+
+
+tboolean-csg()
+{
+    local test_config=(
+                      mode=BoxInBox
+                      analytic=1
+
+
+                      )
+
+    
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
 
 
 tboolean-testconfig()

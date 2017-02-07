@@ -196,31 +196,30 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
         const G4Material* material = m_mlib->convertMaterial(imat);
 
         glm::vec4 param = m_config->getParameters(i);
-        char shapecode = m_config->getShape(i) ;
-        const char* shapename = GMaker::ShapeName(shapecode);
+        char nodecode = m_config->getNode(i) ;
+        const char* nodename = GMaker::NodeName(nodecode);
 
-        std::string lvn = CMaker::LVName(shapename);
-        std::string pvn = CMaker::PVName(shapename);
+        // hmm csg tree will break the 1-1 here ?
+
+        std::string lvn = CMaker::LVName(nodename);
+        std::string pvn = CMaker::PVName(nodename);
 
         if(m_verbosity > 0)
         LOG(info) << "CTestDetector::Construct" 
                   << std::setw(2) << i 
-                  << std::setw(2) << shapecode 
-                  << std::setw(15) << shapename
+                  << std::setw(2) << nodecode 
+                  << std::setw(15) << nodename
                   << std::setw(30) << spec
                   << std::setw(20) << gformat(param)
                   ;   
 
-        G4VSolid* solid = m_maker->makeSolid(shapecode, param);  
+        G4VSolid* solid = m_maker->makeSolid(nodecode, param);  
 
         G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
 
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
         
         m_pvm[pvn] = pv ;  
-
-
-
 
 
  

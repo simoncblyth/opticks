@@ -22,7 +22,7 @@ const char* GGeoTestConfig::DEFAULT_CONFIG =
     "pmtpath=$OPTICKSINSTALLPREFIX/opticksdata/export/dpib/GMergedMesh/0_"
     "control=1,0,0,0_"
     "analytic=1_"
-    "shape=box_"
+    "node=box_"
     "boundary=Rock/NONE/perfectAbsorbSurface/MineralOil_"
     "parameters=0,0,0,300_"
     ;
@@ -31,13 +31,13 @@ const char* GGeoTestConfig::MODE_ = "mode";
 const char* GGeoTestConfig::FRAME_ = "frame"; 
 const char* GGeoTestConfig::BOUNDARY_ = "boundary"; 
 const char* GGeoTestConfig::PARAMETERS_ = "parameters"; 
-const char* GGeoTestConfig::SHAPE_ = "shape"; 
+const char* GGeoTestConfig::NODE_ = "node"; 
 const char* GGeoTestConfig::SLICE_ = "slice"; 
 const char* GGeoTestConfig::ANALYTIC_ = "analytic"; 
 const char* GGeoTestConfig::DEBUG_ = "debug"; 
 const char* GGeoTestConfig::CONTROL_ = "control"; 
 const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
-
+const char* GGeoTestConfig::TRANSFORM_ = "transform"; 
 
 
 GGeoTestConfig::GGeoTestConfig(const char* config) 
@@ -62,18 +62,25 @@ NSlice* GGeoTestConfig::getSlice()
 {
     return m_slice ; 
 }
-unsigned int GGeoTestConfig::getNumBoundaries()
+
+
+unsigned GGeoTestConfig::getNumBoundaries()
 {
     return m_boundaries.size();
 }
-unsigned int GGeoTestConfig::getNumParameters()
+unsigned GGeoTestConfig::getNumParameters()
 {
     return m_parameters.size() ; 
 }
-unsigned int GGeoTestConfig::getNumShapes()
+unsigned GGeoTestConfig::getNumNodes()
 {
-    return m_shapes.size() ; 
+    return m_nodes.size() ; 
 }
+unsigned GGeoTestConfig::getNumTransforms()
+{
+    return m_transforms.size() ; 
+}
+
 
 
 
@@ -124,7 +131,13 @@ void GGeoTestConfig::configure(const char* config)
                   << it->second 
                   ;
 
-        set(getArg(it->first.c_str()), it->second.c_str());
+        Arg_t arg = getArg(it->first.c_str()) ;
+
+        set(arg, it->second.c_str());
+        if(arg == NODE)
+        {
+            set(TRANSFORM, NULL); // default transform for each "shape" is identity  ("shape" in becoming "node") 
+        }
     }
 }
 
@@ -135,12 +148,13 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,FRAME_)==0)      arg = FRAME ; 
     else if(strcmp(k,BOUNDARY_)==0)   arg = BOUNDARY ; 
     else if(strcmp(k,PARAMETERS_)==0) arg = PARAMETERS ; 
-    else if(strcmp(k,SHAPE_)==0)      arg = SHAPE ; 
+    else if(strcmp(k,NODE_)==0)       arg = NODE ; 
     else if(strcmp(k,SLICE_)==0)      arg = SLICE ; 
     else if(strcmp(k,ANALYTIC_)==0)   arg = ANALYTIC ; 
     else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
     else if(strcmp(k,CONTROL_)==0)    arg = CONTROL ; 
     else if(strcmp(k,PMTPATH_)==0)    arg = PMTPATH ; 
+    else if(strcmp(k,TRANSFORM_)==0)  arg = TRANSFORM ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -156,12 +170,13 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case FRAME          : setFrame(s)          ;break;
         case BOUNDARY       : addBoundary(s)       ;break;
         case PARAMETERS     : addParameters(s)     ;break;
-        case SHAPE          : addShape(s)          ;break;
+        case NODE           : addNode(s)           ;break;
         case SLICE          : setSlice(s)          ;break;
         case ANALYTIC       : setAnalytic(s)       ;break;
         case DEBUG          : setDebug(s)          ;break;
         case CONTROL        : setControl(s)        ;break;
         case PMTPATH        : setPmtPath(s)        ;break;
+        case TRANSFORM      : addTransform(s)      ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -173,11 +188,22 @@ unsigned int GGeoTestConfig::getNumElements()
 {
     // hmm: boolean shapes need to swallow entries, where to do that ?
 
-    unsigned int nbnd = getNumBoundaries();
-    unsigned int nshp = getNumShapes();
-    unsigned int npar = getNumParameters();
+    unsigned nbnd = getNumBoundaries();
+    unsigned nnod = getNumNodes();
+    unsigned npar = getNumParameters();
+    unsigned ntra = getNumTransforms();
 
-    assert( nbnd == npar && nbnd == nshp && "need equal number of boundaries, parameters and shapes");
+    bool equal = nbnd == npar && nbnd == nnod && ntra == npar ;
+
+    if(!equal) LOG(fatal) << "GGeoTestConfig::getNumElements"
+                          << " ELEMENT MISMATCH IN TEST GEOMETRY CONFIGURATION " 
+                          << " nbnd (boundaries) " << nbnd  
+                          << " nnod (nodes) " << nnod  
+                          << " npar (parameters) " << npar  
+                          << " ntra (transforms) " << ntra
+                          ; 
+
+    assert( equal && "need equal number of boundaries, parameters, transforms and nodes");
     assert(nbnd > 0);
     return nbnd ; 
 }
@@ -194,14 +220,14 @@ void GGeoTestConfig::dump(const char* msg)
 
     for(unsigned int i=0 ; i < n ; i++)
     {
-        char shapecode = getShape(i) ;
+        char nodecode = getNode(i) ;
         const char* spec = getBoundary(i);
         glm::vec4 param = getParameters(i);
 
         std::cout
                   << " i " << std::setw(2) << i 
-                  << " shapecode " << std::setw(2) << shapecode 
-                  << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
+                  << " nodecode " << std::setw(2) << nodecode 
+                  << " nodename " << std::setw(15) << GMaker::NodeName(nodecode)
                   << " param " << std::setw(50) << gformat(param)
                   << " spec " << std::setw(30) << spec
                   << std::endl 
@@ -253,14 +279,27 @@ void GGeoTestConfig::addParameters(const char* s)
     m_parameters.push_back(gvec4(ss));
 }
 
+void GGeoTestConfig::addTransform(const char* s)
+{
+    std::string ss(s == NULL ? "" : s);
+
+    // when adding non-default pop first to replace
+    if(!ss.empty() && m_transforms.size() > 0)
+    {
+        m_transforms.pop_back();
+    }
+
+    m_transforms.push_back(gmat4(ss));
+}
+
 void GGeoTestConfig::addBoundary(const char* s)
 {
     m_boundaries.push_back(s);
 }
 
-void GGeoTestConfig::addShape(const char* s)
+void GGeoTestConfig::addNode(const char* s)
 {
-    m_shapes.push_back(s);
+    m_nodes.push_back(s);
 }
 
 
@@ -272,17 +311,28 @@ glm::vec4 GGeoTestConfig::getParameters(unsigned int i)
     return param ;  
 }
 
-char GGeoTestConfig::getShape(unsigned int i)
+
+glm::mat4 GGeoTestConfig::getTransform(unsigned int i)
 {
-    assert( i < m_shapes.size() );
-    char shapecode = GMaker::ShapeCode(m_shapes[i].c_str());
-    return shapecode ; 
+    unsigned int ntra = m_transforms.size();
+    assert( i < ntra ) ; 
+    glm::mat4 trans = m_transforms[i] ;
+    return trans ;  
 }
 
-std::string GGeoTestConfig::getShapeString(unsigned int i)
+
+
+char GGeoTestConfig::getNode(unsigned int i)
 {
-    assert( i < m_shapes.size() );
-    return m_shapes[i] ;
+    assert( i < m_nodes.size() );
+    char nodecode = GMaker::NodeCode(m_nodes[i].c_str());
+    return nodecode ; 
+}
+
+std::string GGeoTestConfig::getNodeString(unsigned int i)
+{
+    assert( i < m_nodes.size() );
+    return m_nodes[i] ;
 }
 
 

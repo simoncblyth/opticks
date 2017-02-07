@@ -179,7 +179,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     //
     // assumes single container 
 
-    char shapecode = m_config->getShape(0) ;
+    char nodecode = m_config->getNode(0) ;
     const char* spec = m_config->getBoundary(0);
     glm::vec4 param = m_config->getParameters(0);
     const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
@@ -187,7 +187,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     int verbosity = m_config->getVerbosity();
 
     LOG(info) << "GGeoTest::createPmtInBox " 
-              << " shapecode " << shapecode 
+              << " nodecode " << nodecode 
               << " spec " << spec 
               << " container_inner_material " << container_inner_material
               << " param " << gformat(param) 
@@ -196,7 +196,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMergedMesh* mmpmt = loadPmt();
     unsigned int index = mmpmt->getNumSolids() ;
 
-    GSolid* solid = m_maker->make( index, shapecode, param, spec) ;
+    GSolid* solid = m_maker->make( index, nodecode, param, spec) ;
     solid->getMesh()->setIndex(1000);
 
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
@@ -238,26 +238,28 @@ GMergedMesh* GGeoTest::createBoxInBox()
     unsigned int n = m_config->getNumElements();
     for(unsigned int i=0 ; i < n ; i++)
     {
-        std::string shape = m_config->getShapeString(i);
-        char shapecode = m_config->getShape(i) ;
+        std::string node = m_config->getNodeString(i);
+        char nodecode = m_config->getNode(i) ;
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
+        glm::mat4 trans = m_config->getTransform(i);
         unsigned int boundary = m_bndlib->addBoundary(spec);
 
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
-                  << " shape " << std::setw(20) << shape
-                  << " shapecode " << std::setw(2) << shapecode 
-                  << " shapename " << std::setw(15) << GMaker::ShapeName(shapecode)
+                  << " node " << std::setw(20) << node
+                  << " nodecode " << std::setw(2) << nodecode 
+                  << " nodename " << std::setw(15) << GMaker::NodeName(nodecode)
                   << " spec " << spec
                   << " boundary " << boundary
                   << " param " << gformat(param)
+                  << " trans " << gformat(trans)
                   ;
 
-        if(shapecode == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured shape not implemented " << shape ;
-        assert(shapecode != 'U');
+        if(nodecode == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured node not implemented " << node ;
+        assert(nodecode != 'U');
 
-        GSolid* solid = m_maker->make(i, shapecode, param, spec );   
+        GSolid* solid = m_maker->make(i, nodecode, param, spec );   
         solids.push_back(solid);
 
         // TODO: handle composite for the lens
