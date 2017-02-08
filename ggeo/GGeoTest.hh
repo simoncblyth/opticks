@@ -38,6 +38,7 @@ class GGEO_API GGeoTest {
     private:
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
+       GMergedMesh* createCsgInBox();
        GMergedMesh* loadPmt();
     private:
        Opticks*         m_opticks ; 

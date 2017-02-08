@@ -39,6 +39,8 @@ class GGEO_API GGeoTestConfig {
                       CONTROL,
                       PMTPATH,
                       TRANSFORM, 
+                      CSGPATH,
+                      OFFSETS,
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -55,6 +57,8 @@ class GGEO_API GGeoTestConfig {
        static const char* CONTROL_ ; 
        static const char* PMTPATH_ ; 
        static const char* TRANSFORM_ ; 
+       static const char* CSGPATH_ ;   // not yet used
+       static const char* OFFSETS_ ; 
     public:
        GGeoTestConfig(const char* config);
        int getVerbosity();
@@ -71,6 +75,8 @@ class GGEO_API GGeoTestConfig {
        void setDebug(const char* s);
        void setControl(const char* s);
        void setPmtPath(const char* s);
+       void setCsgPath(const char* s);
+       void setOffsets(const char* s);
     private:
        void addNode(const char* s);
        void addBoundary(const char* s);
@@ -87,6 +93,7 @@ class GGEO_API GGeoTestConfig {
        bool      getAnalytic();
        const char* getMode();
        const char* getPmtPath();
+       const char* getCsgPath();
        unsigned int getNumElements();
 
        std::vector<std::pair<std::string, std::string> >& getCfg();
@@ -97,15 +104,22 @@ class GGEO_API GGeoTestConfig {
        unsigned getNumNodes();
        unsigned getNumTransforms();
    private:
+       unsigned getOffset(unsigned idx);
+   public: 
+       unsigned getNumOffsets();
+       bool isStartOfPrimitive(unsigned nodeIdx );
+   private:
        const char*  m_config ; 
        const char*  m_mode ; 
        const char*  m_pmtpath ; 
+       const char*  m_csgpath ; 
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
        glm::vec4    m_debug ;
        glm::ivec4   m_control ;
        std::vector<std::string> m_nodes ; 
+       std::vector<unsigned>    m_offsets ;  // identifies which nodes belong to which primitive via node offset indices 
        std::vector<std::string> m_boundaries ; 
        std::vector<glm::vec4>   m_parameters ; 
        std::vector<glm::mat4>   m_transforms ; 

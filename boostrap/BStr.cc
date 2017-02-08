@@ -192,6 +192,24 @@ void BStr::isplit( std::vector<int>& elem, const char* line, char delim )
     }
 }
 
+
+void BStr::usplit( std::vector<unsigned>& elem, const char* line, char delim )
+{
+    if(line == NULL) return ; 
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, delim))
+    {
+        int i = BStr::atoi(s.c_str(), -1);
+        unsigned u = i ; 
+        elem.push_back(u);
+    }
+}
+
+
+
+
+
 std::string BStr::ijoin( std::vector<int>& elem, char delim)
 {
     char delimiter[2] ;

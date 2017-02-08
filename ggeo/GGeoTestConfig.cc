@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <iomanip>
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -38,6 +39,8 @@ const char* GGeoTestConfig::DEBUG_ = "debug";
 const char* GGeoTestConfig::CONTROL_ = "control"; 
 const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
 const char* GGeoTestConfig::TRANSFORM_ = "transform"; 
+const char* GGeoTestConfig::CSGPATH_ = "csgpath"; 
+const char* GGeoTestConfig::OFFSETS_ = "offsets"; 
 
 
 GGeoTestConfig::GGeoTestConfig(const char* config) 
@@ -45,6 +48,7 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     m_config(NULL),
     m_mode(NULL),
     m_pmtpath(NULL),
+    m_csgpath(NULL),
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
@@ -99,6 +103,12 @@ const char* GGeoTestConfig::getPmtPath()
 {
     return m_pmtpath ; 
 }
+const char* GGeoTestConfig::getCsgPath()
+{
+    return m_csgpath ; 
+}
+
+
 
 int GGeoTestConfig::getVerbosity()
 {
@@ -155,6 +165,8 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,CONTROL_)==0)    arg = CONTROL ; 
     else if(strcmp(k,PMTPATH_)==0)    arg = PMTPATH ; 
     else if(strcmp(k,TRANSFORM_)==0)  arg = TRANSFORM ; 
+    else if(strcmp(k,CSGPATH_)==0)    arg = CSGPATH ; 
+    else if(strcmp(k,OFFSETS_)==0)    arg = OFFSETS ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -177,6 +189,8 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case CONTROL        : setControl(s)        ;break;
         case PMTPATH        : setPmtPath(s)        ;break;
         case TRANSFORM      : addTransform(s)      ;break;
+        case CSGPATH        : setCsgPath(s)        ;break;
+        case OFFSETS        : setOffsets(s)        ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -242,6 +256,32 @@ void GGeoTestConfig::setPmtPath(const char* s)
 {
     m_pmtpath = strdup(s);
 }
+void GGeoTestConfig::setCsgPath(const char* s)
+{
+    m_csgpath = strdup(s);
+}
+
+void GGeoTestConfig::setOffsets(const char* s)
+{
+    BStr::usplit(m_offsets, s, ',' );
+}
+unsigned GGeoTestConfig::getNumOffsets()
+{
+    return m_offsets.size();
+}
+unsigned GGeoTestConfig::getOffset(unsigned idx)
+{
+    assert(idx < m_offsets.size());
+    return m_offsets[idx] ; 
+}
+
+bool GGeoTestConfig::isStartOfPrimitive(unsigned nodeIdx )
+{
+    return std::find(m_offsets.begin(), m_offsets.end(), nodeIdx) != m_offsets.end() ; 
+}
+
+
+
 void GGeoTestConfig::setSlice(const char* s)
 {
     m_slice = s ? new NSlice(s) : NULL ;

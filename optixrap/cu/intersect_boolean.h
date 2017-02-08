@@ -33,6 +33,8 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 static __device__
 void intersect_boolean( const uint4& prim, const uint4& identity )
 {
+   // NB LIMITED TO SINGLE OPERATION APPLIED TO TWO BASIS SOLIDS
+   //
    // hmm to work with boolean CSG tree primitives this
    // needs to have the same signature as intersect_part 
    // ie with deferring the reporting to OptiX to the caller

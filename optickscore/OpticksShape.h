@@ -10,7 +10,8 @@ typedef enum {
     SHAPE_CONSTITUENT   = 0x1 << 6 ,
     SHAPE_CONSTITUENT_A = 0x1 << 7 ,
     SHAPE_CONSTITUENT_B = 0x1 << 8 ,
-    SHAPE_BOOLEAN       = 0x1 << 9 
+    SHAPE_BOOLEAN       = 0x1 << 9 ,
+    SHAPE_CSG_TREE      = 0x1 << 10
 } OpticksShape_t ; 
 
 
@@ -27,6 +28,7 @@ static const char* SHAPE_CONSTITUENT_   = "SHAPE_CONSTITUENT" ;
 static const char* SHAPE_CONSTITUENT_A_ = "SHAPE_CONSTITUENT_A" ; 
 static const char* SHAPE_CONSTITUENT_B_ = "SHAPE_CONSTITUENT_B" ; 
 static const char* SHAPE_BOOLEAN_       = "SHAPE_BOOLEAN" ; 
+static const char* SHAPE_CSG_TREE_      = "SHAPE_CSG_TREE" ; 
 
 
 static const char* ShapeName( OpticksShape_t flag )
@@ -44,6 +46,7 @@ static const char* ShapeName( OpticksShape_t flag )
         case SHAPE_CONSTITUENT_A: s = SHAPE_CONSTITUENT_A_ ; break ; 
         case SHAPE_CONSTITUENT_B: s = SHAPE_CONSTITUENT_B_ ; break ; 
         case SHAPE_BOOLEAN:       s = SHAPE_BOOLEAN_       ; break ; 
+        case SHAPE_CSG_TREE:      s = SHAPE_CSG_TREE_      ; break ; 
     }
     return s ; 
 }
@@ -64,6 +67,7 @@ static std::string ShapeMask( unsigned flag )
     if(flag & SHAPE_CONSTITUENT_A) ss << SHAPE_CONSTITUENT_A_ << " " ; 
     if(flag & SHAPE_CONSTITUENT_B) ss << SHAPE_CONSTITUENT_B_ << " " ; 
     if(flag & SHAPE_BOOLEAN)       ss << SHAPE_BOOLEAN_ << " " ; 
+    if(flag & SHAPE_CSG_TREE)      ss << SHAPE_CSG_TREE_ << " " ; 
     return ss.str();
 }
 

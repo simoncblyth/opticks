@@ -148,20 +148,45 @@ tboolean-box-sphere()
 }
 
 
-tboolean-csg()
-{
-    local test_config=(
-                      mode=BoxInBox
-                      analytic=1
 
+tboolean-csg-notes(){ cat << EON
 
-                      )
+* CSG tree is defined in breadth first order
 
-    
-    echo "$(join _ ${test_config[@]})" 
+* parameters of boolean operations currently define adhoc box 
+  intended to contain the geometry, TODO: calculate from bounds of the contained tree 
+
+* offsets arg identifies which nodes belong to which primitives by pointing 
+  at the nodes that start each primitive
+
+EON
 }
 
+tboolean-csg()
+{
+    local material=$(tboolean-material)
+    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    local radius=200
 
+    local test_config=(
+                      mode=CsgInBox
+                      analytic=1
+                      offsets=0,1
+
+                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+
+                      node=union        parameters=0,0,0,400           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
+                      node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
+                      node=box          parameters=0,0,100,$inscribe   boundary=Vacuum///$material
+                      node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
+                      node=box          parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
+                      node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
+  
+                      )
+
+    echo "$(join _ ${test_config[@]})" 
+}
 
 
 
@@ -169,7 +194,8 @@ tboolean-testconfig()
 {
     #tboolean-box-sphere intersection    ## looks like a dice, sphere chopped by cube
     #tboolean-box-sphere union
-     tboolean-box-sphere difference
+    #tboolean-box-sphere difference
+     tboolean-csg
 
     #tboolean-box
     #tboolean-box-small-offset-sphere difference

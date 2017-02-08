@@ -104,9 +104,6 @@ char GMaker::NodeCode(const char* nodename)
 GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
-    // hmm for generality a boolean shape needs to reference two others, the prior two? 
-    // hmm this is too soon to do booleans, need the basis solids first 
-    // unless handle booleans by setting constituent flag 
 
      GSolid* solid = NULL ; 
      switch(shapecode)

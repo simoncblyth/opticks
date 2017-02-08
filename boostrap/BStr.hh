@@ -29,6 +29,7 @@ class BRAP_API BStr {
      static std::string patternPickField(std::string str, std::string ptn, int num );
      static std::string ijoin( std::vector<int>& elem, char delim);
      static void isplit( std::vector<int>& elem, const char* line, char delim );
+     static void usplit( std::vector<unsigned>& elem, const char* line, char delim );
      static void split( std::vector<std::string>& elem, const char* line, char delim );
      static std::vector<std::pair<std::string, std::string> > ekv_split( const char* line, char edelim=' ', const char* kvdelim=":" );
 

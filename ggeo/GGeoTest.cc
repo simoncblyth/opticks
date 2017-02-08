@@ -102,6 +102,7 @@ GMergedMesh* GGeoTest::create()
  
     if(     strcmp(mode, "PmtInBox") == 0) tmm = createPmtInBox(); 
     else if(strcmp(mode, "BoxInBox") == 0) tmm = createBoxInBox(); 
+    else if(strcmp(mode, "CsgInBox") == 0) tmm = createCsgInBox(); 
     else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ; 
     assert(tmm);
 
@@ -167,6 +168,12 @@ GMergedMesh* GGeoTest::loadPmt()
 }
 
 
+
+
+
+
+
+
 GMergedMesh* GGeoTest::createPmtInBox()
 {
     // somewhat dirtily associates analytic geometry with triangulated for the PMT 
@@ -227,6 +234,87 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 
 
+GMergedMesh* GGeoTest::createCsgInBox()
+{
+    std::vector<GSolid*> solids ; 
+    unsigned int n = m_config->getNumElements();
+
+    unsigned numPrim = m_config->getNumOffsets();
+    LOG(info) << "GGeoTest::createCsgInBox" 
+              << " nodes " << n 
+              << " numPrim " << numPrim
+             ; 
+
+    int primIdx(-1) ; 
+
+    for(unsigned int i=0 ; i < n ; i++)
+    {
+        bool primStart = m_config->isStartOfPrimitive(i); // as identified by configured offsets
+        if(primStart)
+        {
+            primIdx++ ;
+        }
+
+        std::string node = m_config->getNodeString(i);
+        char nodecode = m_config->getNode(i) ;
+        const char* spec = m_config->getBoundary(i);
+        glm::vec4 param = m_config->getParameters(i);
+        glm::mat4 trans = m_config->getTransform(i);
+        unsigned int boundary = m_bndlib->addBoundary(spec);
+
+        LOG(info) << "GGeoTest::createCsgInBox" 
+                  << " i " << std::setw(2) << i 
+                  << " node " << std::setw(20) << node
+                  << " nodecode " << std::setw(2) << nodecode 
+                  << " nodename " << std::setw(15) << GMaker::NodeName(nodecode)
+                  << " spec " << spec
+                  << " boundary " << boundary
+                  << " param " << gformat(param)
+                //  << " trans " << gformat(trans)
+                  ;
+
+        if(nodecode == 'U') LOG(fatal) << "GGeoTest::createCsgInBox configured node not implemented " << node ;
+        assert(nodecode != 'U');
+
+        GSolid* solid = m_maker->make(i, nodecode, param, spec );   
+
+        OpticksShape_t shapeflag = solid->getShapeFlag(); 
+        unsigned flags = shapeflag ;    
+
+        GParts* pts = solid->getParts();
+
+        pts->setIndex(0u, i);
+        pts->setNodeIndex(0u, primIdx ); 
+        pts->setFlags(0u, flags);
+        pts->setBndLib(m_bndlib);
+
+        solids.push_back(solid);
+    }
+
+
+    // collected pts are converted into primitives in GParts::makePrimBuffer
+
+    GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
+
+    GTransforms* txf = GTransforms::make(n); // identities
+    GIds*        aii = GIds::make(n);        // placeholder (n,4) of zeros
+
+
+    tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
+    tri->setITransformsBuffer(txf->getBuffer());
+
+    //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
+
+    if(m_opticks->hasOpt("dbganalytic"))
+    {
+        GParts* pts = tri->getParts();
+        const char* msg = "GGeoTest::createCsgInBox --dbganalytic" ;
+        pts->Summary(msg);
+        pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
+    }
+
+    return tri ; 
+}
 
 
 
@@ -270,7 +358,8 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
     int primIdx(-1) ; 
 
-    // Boolean geometry is implemented by allowing 
+    // Boolean geometry (precursor to propert CSG Trees) 
+    // is implemented by allowing 
     // a single "primitive" to be composed of multiple
     // "parts", the association from part to prim being 
     // controlled via the primIdx attribute of each part.
@@ -338,6 +427,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
     }
 
     return tri ; 
+
 } 
 
 

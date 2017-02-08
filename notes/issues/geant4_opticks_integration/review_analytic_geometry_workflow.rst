@@ -323,4 +323,10 @@ then the i-th element has children at
 
 
 
+recursion to iteration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://blog.moertel.com/tags/recursion-to-iteration%20series.html
+
+ 
 
