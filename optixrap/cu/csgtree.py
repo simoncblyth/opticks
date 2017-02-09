@@ -2,31 +2,128 @@
 """
 
 * :google:`Spatially Efficient Tree Layout for GPU Ray-tracing of Constructive Solid Geometry Scenes`
+
+
+PCT 2016
+Parallel Computing Technologies
+Proceedings of the 10th Annual International Scientific Conference on Parallel Computing Technologies
+Arkhangelsk, Russia, March 29-31, 2016.
+
+* http://ceur-ws.org/Vol-1576/  
 * http://ceur-ws.org/Vol-1576/090.pdf
 
 """
 
-
-SPHERE = 1
-BOX = 2 
-is_shape = lambda c:c in [SPHERE, BOX]
-
-DIVIDER = 99  # between shapes and operations
-
-UNION = 100
-INTERSECTION = 101
-DIFFERENCE = 102
-is_operation = lambda c:c in [UNION,INTERSECTION,DIFFERENCE]
+import logging
+log = logging.getLogger(__name__)
+import numpy as np
+from intersect import intersect_node, Node, Ray, UNION, INTERSECTION, DIFFERENCE, BOX, SPHERE
 
 CODE_JK = 3,3   # item position of shape/operation code
 
-desc = { SPHERE:"SPHERE", BOX:"BOX", UNION:"UNION", INTERSECTION:"INTERSECTION", DIFFERENCE:"DIFFERENCE" }
+
+# intersect status
+Enter = 1
+Exit  = 2
+Miss  = 3
+
+desc_state = { Enter : "Enter", Exit : "Exit", Miss : "Miss" }
 
 
+# acts
+RetL          = 0x1 << 1 
+RetR          = 0x1 << 2 
+RetLIfCloser  = 0x1 << 3 
+RetRIfCloser  = 0x1 << 4
+LoopL         = 0x1 << 5 
+LoopLIfCloser = 0x1 << 6
+LoopR         = 0x1 << 7 
+LoopRIfCloser = 0x1 << 8
+FlipR         = 0x1 << 9
 
 
+def desc_acts(acts):
+    s = ""
+    if acts & RetL: s+= "RetL "
+    if acts & RetR: s+= "RetR "
+    if acts & RetLIfCloser: s+= "RetLIfCloser "
+    if acts & RetRIfCloser: s+= "RetRIfCloser "
+    if acts & LoopL: s+= "LoopL "
+    if acts & LoopLIfCloser: s+= "LoopLIfCloser "
+    if acts & LoopR: s+= "LoopR "
+    if acts & LoopRIfCloser: s+= "LoopRIfCloser "
+    if acts & FlipR: s+= "FlipR "
+    return s 
 
 
+table_ = {
+    DIFFERENCE : { 
+                  Enter : {
+                             Enter : RetLIfCloser | LoopR,
+                              Exit : LoopLIfCloser | LoopRIfCloser,
+                              Miss : RetL
+                          },
+
+                  Exit: {
+                             Enter : RetLIfCloser | RetRIfCloser | FlipR,
+                             Exit  : RetRIfCloser | FlipR | LoopL,
+                             Miss  : RetL
+                       },
+
+                  Miss: {
+                             Enter : Miss,
+                             Exit : Miss,
+                             Miss : Miss
+                        }
+               }, 
+
+    UNION : {
+                 Enter : {
+                            Enter : RetLIfCloser | RetRIfCloser, 
+                            Exit  : RetRIfCloser | LoopL,
+                            Miss  : RetL
+                         },
+
+                 Exit  : {
+                            Enter : RetLIfCloser | LoopR, 
+                            Exit  : LoopLIfCloser | LoopRIfCloser,
+                            Miss  : RetL
+                         },
+
+                  Miss: {
+                             Enter : RetR,
+                             Exit  : RetR,
+                             Miss  : Miss
+                        }
+               },
+ 
+   INTERSECTION : {
+                         Enter : {
+                                    Enter : LoopLIfCloser | LoopRIfCloser,
+                                    Exit  : RetLIfCloser | LoopR ,
+                                    Miss  : Miss
+                                 },
+
+                         Exit :  {
+                                    Enter : RetRIfCloser | LoopL,
+                                    Exit  : RetLIfCloser | RetRIfCloser,
+                                    Miss  : Miss 
+                                 },
+
+                         Miss :  {
+                                    Enter : Miss,  
+                                    Exit  : Miss,  
+                                    Miss  : Miss
+                                 }
+                      }
+}
+
+
+def table(operation, l, r):
+    return table_[operation][l][r]
+
+
+# actions
 GotoLft = 0x1 << 1 
 GotoRgh = 0x1 << 2
 LoadLft = 0x1 << 3 
@@ -45,37 +142,16 @@ def action_desc(action):
     return s 
 
 
-class Node(object):
-    def __init__(self, left, right=None, operation=None, param=None):
-
-        self.left = left
-        self.right = right
-        self.operation = operation
-        self.param = param
-
-        if not operation is None:
-            left.parent = self 
-            right.parent = self 
-        pass
-
-
-    is_primitive = property(lambda self:self.operation is None and self.right is None and not self.left is None)
-    is_operation = property(lambda self:not self.operation is None)
-
-    def __repr__(self):
-        if self.is_primitive:
-            return desc[self.left]
-        else:
-            return "%s(%s,%s)" % ( desc[self.operation], repr(self.left), repr(self.right) )
-
 
 
 
 actionStack = []
-def pushAction(action):
+def pushAction(action, label=None):
     global actionStack
+    if not label is None:
+        log.info("pushAction %s %s " % (label, action_desc(action) ))
     actionStack.append(action)
-def popAction(action):
+def popAction():
     global actionStack
     return actionStack.pop()
     
@@ -88,8 +164,10 @@ def popTmin():
     return tminStack.pop()
 
 primitiveStack = []
-def pushPrimitive(t_n):
+def pushPrimitive(t_n, label=None):
     global primitiveStack
+    if not label is None:
+        log.info("pushPrimitive %s %s " % (label, repr(t_n)))
     primitiveStack.append(t_n)
 def popPrimitive():
     global primitiveStack
@@ -97,21 +175,29 @@ def popPrimitive():
 
 
 def intersectBox(node):
-    return True     
+    return True        # skipping bbox optimization, just test against the primitive
 
-def intersect(node, tt):
-    return 0.5,(0,0,1)
 
 def classify(tt,nn):
-    return 1 
+    if tt > ray.tmin:
+        state = Enter if np.dot(nn, ray.direction) < 0 else Exit 
+    else:
+        state = Miss 
+    pass
+    return state
 
+def dump(label):
+    global action
+    global tl, nl, tr, nr
+    return "%s %s tl:%s nl:%s tr:%s nr%s " % (label, action_desc(action),repr(tl),repr(nl),repr(tr),repr(nr))
 
 
 def GoTo():
-    global tmin
+    global tl, nl, tr, nr
     global action
     global node
-    print "GoTo"
+
+    print dump("GoTo")
 
     if action == GotoLft:
         node = node.left
@@ -124,25 +210,27 @@ def GoTo():
         gotoR = intersectBox(node.right)
  
         if gotoL and node.left.is_primitive:
-            tl, nl = intersect(node.left, tmin)
+            tl, nl = intersect_node(node.left, ray)
             gotoL = False
 
         if gotoR and node.right.is_primitive:
-            tr, nr = intersect(node.right, tmin)
+            tr, nr = intersect_node(node.right, ray)
             gotoR = False
+
+        print "gotoL %s gotoR %s " % (gotoL, gotoR )
 
         if gotoL or gotoR:
             if gotoL:
-                pushPrimitive((tl, nl))
-                pushAction(LoadLft)
+                pushPrimitive((tl, nl), label="gotoL")
+                pushAction(LoadLft, label="gotoL")
             elif gotoR:
-                pushPrimitive((tr, nr))
-                pushAction(LoadRgh)
+                pushPrimitive((tr, nr), label="gotoR")
+                pushAction(LoadRgh, label="gotoR")
             pass
         else:
-            pushTmin(tmin)
-            pushAction(LoadLft)
-            pushAction(SaveLft)
+            pushTmin(ray.tmin)
+            pushAction(LoadLft, label="no-goto")
+            pushAction(SaveLft, label="no-goto")
         pass
 
         if gotoL: 
@@ -152,77 +240,114 @@ def GoTo():
         else:
             action = Compute 
         pass
+        print dump("node.is_operation conclusion %s " % action_desc(action))
 
     else:   # node is a Primitive
 
         if action ==  GotoLft:
-            tl, nl = intersect(node, tmin)
+            tl, nl = intersect_node(node, ray)
         else:
-            tr, nr = intersect(node, tmin)
+            tr, nr = intersect_node(node, ray)
 
         action = Compute
         node = node.parent
 
 
-
 def Compute_():
-    print "Compute_"
 
     global action
     global tl, nl
     global tr, nr
+    global node
 
-    if action & (LoadLft | LoadRgh):
-        tl, nl = popPrimitive()
-    else:
-        tr, nr = popPrimitive()
+    dump("Compute_")
+
+    if action == LoadLft or action == LoadRgh:
+        if action == LoadLft:
+            tl, nl = popPrimitive()
+        else:
+            tr, nr = popPrimitive()
+        pass
 
     stateL = classify(tl,nl)
     stateR = classify(tr,nr)
 
-    acts = table(stateL, stateR )
+    acts = table(node.operation, stateL, stateR )
+
+    log.info("Compute stateL %s stateR %s -> acts %s  tl %s tr %s " % ( desc_state[stateL], desc_state[stateR], desc_acts(acts), tl, tr ))
+
 
     if (RetL & acts) or ((RetLIfCloser & acts) and tl <= tr): 
         tr = tl
         nr = nl
         action = popAction()
         node = node.parent
+    pass
+
+    if (RetR & acts) or ((RetRIfCloser & acts) and tr < tl): 
+        if (FlipR & acts): nr = -nr
+        tl = tr
+        nl = nr
+        action = popAction()
+        node = node.parent
+    elif (LoopL & acts) or ((LoopLIfCloser & acts) and tl <= tr):
+        ray.tmin = tl
+        pushPrimitive((tr,nr))
+        pushAction(LoadRgh)
+        action = GotoLft
+    elif (LoopR & acts) or ((LoopRIfCloser & acts) and tr < tl):
+        ray.tmin = tr
+        pushPrimitive((tl,nl))
+        pushAction(LoadLft)
+        action = GotoRgh
+    else:
+        tr = None
+        action = popAction()
 
 
 
 
 if __name__ == '__main__':
-    action = GotoLft | GotoRgh | LoadLft | LoadRgh | Compute | SaveLft
-    print action_desc(action)
 
+    logging.basicConfig(level=logging.INFO)
 
-    bms = Node(Node(BOX, param=[0,0,-100,200]),  Node(SPHERE,param=[0,0,-100,200]), DIFFERENCE )
+    bms = Node(Node(BOX, param=[0,0,0,200]),  Node(SPHERE,param=[0,0,0,200]), DIFFERENCE )
     smb = Node(Node(SPHERE,param=[0,0,100,300]), Node(BOX,param=[0,0,100,300]), DIFFERENCE )
     ubo = Node(bms, smb, UNION )
 
-    root = ubo
+    root = bms
     V = Node(left=root)    
 
+    ray = Ray(origin=[0,0,0], direction=[1,1,0])
 
     ########
-
-    tmin = 0 
-    node = V  # vitual root whose left subtree is the real root
+if 1:
+    ray.tmin = 0 
+    node = V  # virtual root whose left subtree is the real root
     tl, nl = None, None
     tr, nr = None, None
 
     pushAction(Compute)
     action = GotoLft
 
-    while True:
+    count = 0 
+    limit = 10
+
+    while count < limit:
+        log.info("while (%d)" % count )
+        count += 1 
+
         if action == SaveLft:
-            tmin = popTmin()
+            ray.tmin = popTmin()
             pushPrimitive((tl,nl))
             action = GotoRgh
-        if action & ( GotoLft | GotoRgh ):
+        pass
+        if action == GotoLft or action == GotoRgh:
             GoTo()
-        if action & ( LoadLft | LoadRgh | Compute ):
+        pass
+        if action == LoadLft or action == LoadRgh or action == Compute:
             Compute_()
+        pass
         
 
 
