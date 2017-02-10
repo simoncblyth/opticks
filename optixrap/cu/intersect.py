@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 SPHERE = 1
 BOX = 2 
@@ -18,7 +20,7 @@ desc = { SPHERE:"SPHERE", BOX:"BOX", UNION:"UNION", INTERSECTION:"INTERSECTION",
 
 
 
-def intersect_node(node, ray):
+def intersect_primitive(node, ray):
     assert node.is_primitive
     shape = node.left
     if shape == BOX:
@@ -26,6 +28,7 @@ def intersect_node(node, ray):
     elif shape == SPHERE:
         tt, nn = intersect_sphere( node.param, ray )  
     else:
+        log.fatal("shape unhandled shape:%s desc_shape:%s node:%s " % (shape, desc[shape], repr(node)))
         assert 0
     pass
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
@@ -142,6 +145,33 @@ class Ray(object):
        self.direction = dir_/np.sqrt(np.dot(dir_,dir_))   # normalize
        self.tmin = tmin
 
+   def position(self, tt):
+       return self.origin + tt*self.direction
+
+   def __repr__(self):
+       return "Ray(origin=%r, direction=%r, tmin=%s)" % (self.origin, self.direction, self.tmin )
+
+   @classmethod
+   def ringlight(cls, num=24, radius=500):
+       angles = np.linspace(0,2*np.pi,num )
+
+       ori = np.zeros( [num,3] )
+       ori[:,0] = radius*np.cos(angles)
+       ori[:,1] = radius*np.sin(angles)
+
+       dir_ = np.zeros( [num,3] )
+       dir_[:,0] = -np.cos(angles)
+       dir_[:,1] = -np.sin(angles)
+
+       rays = []
+       for i in range(num):
+           ray = cls(origin=ori[i], direction=dir_[i])
+           rays.append(ray)
+       pass
+       return rays
+
+
+ 
 if __name__ == '__main__':
 
     box = Node(BOX, param=[0,0,0,100] )

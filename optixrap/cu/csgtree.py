@@ -15,9 +15,10 @@ Arkhangelsk, Russia, March 29-31, 2016.
 """
 
 import logging
-log = logging.getLogger(__name__)
 import numpy as np
-from intersect import intersect_node, Node, Ray, UNION, INTERSECTION, DIFFERENCE, BOX, SPHERE
+import matplotlib.pyplot as plt
+
+from intersect import intersect_primitive, Node, Ray, UNION, INTERSECTION, DIFFERENCE, BOX, SPHERE, desc
 
 CODE_JK = 3,3   # item position of shape/operation code
 
@@ -29,8 +30,8 @@ Miss  = 3
 
 desc_state = { Enter : "Enter", Exit : "Exit", Miss : "Miss" }
 
-
 # acts
+RetMiss       = 0x1 << 0 
 RetL          = 0x1 << 1 
 RetR          = 0x1 << 2 
 RetLIfCloser  = 0x1 << 3 
@@ -41,18 +42,18 @@ LoopR         = 0x1 << 7
 LoopRIfCloser = 0x1 << 8
 FlipR         = 0x1 << 9
 
-
 def desc_acts(acts):
     s = ""
-    if acts & RetL: s+= "RetL "
-    if acts & RetR: s+= "RetR "
+    if acts & RetMiss:      s+= "RetMiss "
+    if acts & RetL:         s+= "RetL "
+    if acts & RetR:         s+= "RetR "
     if acts & RetLIfCloser: s+= "RetLIfCloser "
     if acts & RetRIfCloser: s+= "RetRIfCloser "
-    if acts & LoopL: s+= "LoopL "
-    if acts & LoopLIfCloser: s+= "LoopLIfCloser "
-    if acts & LoopR: s+= "LoopR "
-    if acts & LoopRIfCloser: s+= "LoopRIfCloser "
-    if acts & FlipR: s+= "FlipR "
+    if acts & LoopL:        s+= "LoopL "
+    if acts & LoopLIfCloser:s+= "LoopLIfCloser "
+    if acts & LoopR:        s+= "LoopR "
+    if acts & LoopRIfCloser:s+= "LoopRIfCloser "
+    if acts & FlipR:        s+= "FlipR "
     return s 
 
 
@@ -71,9 +72,9 @@ table_ = {
                        },
 
                   Miss: {
-                             Enter : Miss,
-                             Exit : Miss,
-                             Miss : Miss
+                             Enter : RetMiss,
+                             Exit : RetMiss,
+                             Miss : RetMiss
                         }
                }, 
 
@@ -93,7 +94,7 @@ table_ = {
                   Miss: {
                              Enter : RetR,
                              Exit  : RetR,
-                             Miss  : Miss
+                             Miss  : RetMiss
                         }
                },
  
@@ -101,19 +102,19 @@ table_ = {
                          Enter : {
                                     Enter : LoopLIfCloser | LoopRIfCloser,
                                     Exit  : RetLIfCloser | LoopR ,
-                                    Miss  : Miss
+                                    Miss  : RetMiss
                                  },
 
                          Exit :  {
                                     Enter : RetRIfCloser | LoopL,
                                     Exit  : RetLIfCloser | RetRIfCloser,
-                                    Miss  : Miss 
+                                    Miss  : RetMiss 
                                  },
 
                          Miss :  {
-                                    Enter : Miss,  
-                                    Exit  : Miss,  
-                                    Miss  : Miss
+                                    Enter : RetMiss,  
+                                    Exit  : RetMiss,  
+                                    Miss  : RetMiss
                                  }
                       }
 }
@@ -149,7 +150,7 @@ actionStack = []
 def pushAction(action, label=None):
     global actionStack
     if not label is None:
-        log.info("pushAction %s %s " % (label, action_desc(action) ))
+        log.debug("pushAction %s %s " % (label, action_desc(action) ))
     actionStack.append(action)
 def popAction():
     global actionStack
@@ -187,9 +188,9 @@ def classify(tt,nn):
     return state
 
 def dump(label):
-    global action
-    global tl, nl, tr, nr
-    return "%s %s tl:%s nl:%s tr:%s nr%s " % (label, action_desc(action),repr(tl),repr(nl),repr(tr),repr(nr))
+    #global action
+    #global tl, nl, tr, nr
+    return "%s %s tl:%s nl:%s tr:%s nr:%s " % (label, action_desc(action),repr(tl),repr(nl),repr(tr),repr(nr))
 
 
 def GoTo():
@@ -197,7 +198,7 @@ def GoTo():
     global action
     global node
 
-    print dump("GoTo")
+    log.debug(dump("GoTo"))
 
     if action == GotoLft:
         node = node.left
@@ -210,14 +211,14 @@ def GoTo():
         gotoR = intersectBox(node.right)
  
         if gotoL and node.left.is_primitive:
-            tl, nl = intersect_node(node.left, ray)
+            tl, nl = intersect_primitive(node.left, ray)
             gotoL = False
 
         if gotoR and node.right.is_primitive:
-            tr, nr = intersect_node(node.right, ray)
+            tr, nr = intersect_primitive(node.right, ray)
             gotoR = False
 
-        print "gotoL %s gotoR %s " % (gotoL, gotoR )
+        log.debug("gotoL %s gotoR %s " % (gotoL, gotoR ))
 
         if gotoL or gotoR:
             if gotoL:
@@ -240,14 +241,14 @@ def GoTo():
         else:
             action = Compute 
         pass
-        print dump("node.is_operation conclusion %s " % action_desc(action))
+        log.debug(dump("node.is_operation conclusion %s " % action_desc(action)))
 
     else:   # node is a Primitive
 
         if action ==  GotoLft:
-            tl, nl = intersect_node(node, ray)
+            tl, nl = intersect_primitive(node, ray)
         else:
-            tr, nr = intersect_node(node, ray)
+            tr, nr = intersect_primitive(node, ray)
 
         action = Compute
         node = node.parent
@@ -274,7 +275,7 @@ def Compute_():
 
     acts = table(node.operation, stateL, stateR )
 
-    log.info("Compute stateL %s stateR %s -> acts %s  tl %s tr %s " % ( desc_state[stateL], desc_state[stateR], desc_acts(acts), tl, tr ))
+    log.info("Compute %s(%s,%s) -> %s   tl %s tr %s " % ( desc[node.operation],desc_state[stateL], desc_state[stateR], desc_acts(acts), tl, tr ))
 
 
     if (RetL & acts) or ((RetLIfCloser & acts) and tl <= tr): 
@@ -285,6 +286,7 @@ def Compute_():
     pass
 
     if (RetR & acts) or ((RetRIfCloser & acts) and tr < tl): 
+
         if (FlipR & acts): nr = -nr
         tl = tr
         nl = nr
@@ -306,27 +308,115 @@ def Compute_():
 
 
 
+def rintersect_node(node, ray):
+    """
+    Recursive CSG boolean intersection
+
+    * maybe need to split tmin for l and r ?
+
+    """
+    if node.is_primitive:
+        return intersect_primitive(node, ray)
+    else:
+        global tl, nl
+        global tr, nr
+        tl, nl = rintersect_node(node.left, ray)
+        tr, nr = rintersect_node(node.right, ray)
+
+        stateL = classify(tl, nl)
+        stateR = classify(tr, nr)
+
+        count = 0 
+        while count < 10:
+            count += 1 
+     
+            acts = table(node.operation, stateL, stateR )
+            
+            if RetMiss & acts:
+                return None, None
+              
+            elif (RetL & acts) or ((RetLIfCloser & acts) and tl <= tr): 
+                return tl, nl
+            elif (RetR & acts) or ((RetRIfCloser & acts) and tr < tl): 
+                if (FlipR & acts): nr = -nr
+                return tr, nr
+            elif (LoopL & acts) or ((LoopLIfCloser & acts) and tl <= tr):
+                ray.tmin = tl
+                tl, nl = rintersect_node(node.left, ray)
+                stateL = classify(tl,nl)
+            elif (LoopR & acts) or ((LoopRIfCloser & acts) and tr < tl):
+                ray.tmin = tr
+                tr, nr = rintersect_node(node.right, ray)
+                stateR = classify(tr,nr)
+            else:
+                return None, None
+
+
+
+
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.INFO)
+
+    logformat = "%(asctime)s %(name)s %(levelname)-8s %(message)s"
+
+    logging.basicConfig(level=logging.INFO,format=logformat)
+    log = logging.getLogger(__name__)
+
+    lbox = Node(BOX, param=[-50,0,0,10])
+    rbox = Node(BOX, param=[ 50,0,0,10])
+    lrbox = Node(lbox,  rbox, UNION )  # two separated boxes along x axis
 
     bms = Node(Node(BOX, param=[0,0,0,200]),  Node(SPHERE,param=[0,0,0,200]), DIFFERENCE )
     smb = Node(Node(SPHERE,param=[0,0,100,300]), Node(BOX,param=[0,0,100,300]), DIFFERENCE )
     ubo = Node(bms, smb, UNION )
 
-    root = bms
-    V = Node(left=root)    
+    lsph = Node(SPHERE, param=[-50,0,0,100])
+    rsph = Node(SPHERE, param=[50,0,0,100])
+    #lrsph = Node(lsph, rsph, UNION )
+    #lrsph = Node(lsph, rsph, INTERSECTION )
+    lrsph = Node(lsph, rsph, DIFFERENCE )
 
-    ray = Ray(origin=[0,0,0], direction=[1,1,0])
+    root = lrsph
+    virtual_root = Node(left=root)    
+
+    ray_px = Ray(origin=[0,0,0], direction=[1,0,0])
+    ray_nx = Ray(origin=[0,0,0], direction=[-1,0,0])
+    ray_py = Ray(origin=[0,0,0], direction=[0,1,0])   # miss 
+
+    #ray = ray_px
+    ray = ray_nx
 
     ########
 if 1:
     ray.tmin = 0 
-    node = V  # virtual root whose left subtree is the real root
+    node = virtual_root  # left subtree is the real root
     tl, nl = None, None
     tr, nr = None, None
 
+
+if 1:
+
+    num = 100
+    rays = Ray.ringlight(num=num, radius=1000)
+    ipos = np.zeros((num, 3), dtype=np.float32 ) 
+
+    for i, ray in enumerate(rays):
+        tt, nn = rintersect_node(node.left, ray)
+        log.info("rintersect_node %r tt %s nn %r " % (ray, tt, nn ))
+        if not tt is None:
+            ipos[i] = ray.position(tt)
+        pass
+    pass
+    print ipos
+
+    plt.scatter( ipos[:,0], ipos[:,1] )
+    plt.show()
+
+
+
+
+if 0:
     pushAction(Compute)
     action = GotoLft
 
@@ -334,7 +424,7 @@ if 1:
     limit = 10
 
     while count < limit:
-        log.info("while (%d)" % count )
+        log.debug("while (%d)" % count )
         count += 1 
 
         if action == SaveLft:
