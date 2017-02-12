@@ -27,7 +27,6 @@ CODE_JK = 3,3   # item position of shape/operation code
 Enter = 1
 Exit  = 2
 Miss  = 3
-
 desc_state = { Enter : "Enter", Exit : "Exit", Miss : "Miss" }
 
 # acts
@@ -119,10 +118,8 @@ table_ = {
                       }
 }
 
-
 def table(operation, l, r):
     return table_[operation][l][r]
-
 
 # actions
 GotoLft = 0x1 << 1 
@@ -133,6 +130,7 @@ Compute = 0x1 << 5
 SaveLft = 0x1 << 6 
 
 def action_desc(action):
+    if action is None:return "NONE"
     s = ""
     if action & GotoLft:s+="GotoLft " ; 
     if action & GotoRgh:s+="GotoRgh " ; 
@@ -143,8 +141,7 @@ def action_desc(action):
     return s 
 
 
-
-
+count = 0 
 
 actionStack = []
 def pushAction(action, label=None):
@@ -154,6 +151,10 @@ def pushAction(action, label=None):
     actionStack.append(action)
 def popAction():
     global actionStack
+    if len(actionStack) == 0:
+       log.warning("popAction empty stack ")
+       return None
+    pass
     return actionStack.pop()
     
 tminStack = []
@@ -165,147 +166,28 @@ def popTmin():
     return tminStack.pop()
 
 primitiveStack = []
-def pushPrimitive(t_n, label=None):
+def pushPrimitive(t_n_n, label=None):
     global primitiveStack
     if not label is None:
-        log.info("pushPrimitive %s %s " % (label, repr(t_n)))
-    primitiveStack.append(t_n)
+        log.debug("pushPrimitive %s %s " % (label, repr(t_n_n)))
+    primitiveStack.append(t_n_n)
 def popPrimitive():
     global primitiveStack
     return primitiveStack.pop()
 
-
 def intersectBox(node):
     return True        # skipping bbox optimization, just test against the primitive
 
-
 def classify(tt,nn):
-    if tt > ray.tmin:
-        state = Enter if np.dot(nn, ray.direction) < 0 else Exit 
+    if tt > tmin:
+        state = Enter if np.dot(nn, ray.direction) < 0. else Exit 
     else:
         state = Miss 
     pass
     return state
 
 def dump(label):
-    #global action
-    #global tl, nl, tr, nr
     return "%s %s tl:%s nl:%s tr:%s nr:%s " % (label, action_desc(action),repr(tl),repr(nl),repr(tr),repr(nr))
-
-
-def GoTo():
-    global tl, nl, tr, nr
-    global action
-    global node
-
-    log.debug(dump("GoTo"))
-
-    if action == GotoLft:
-        node = node.left
-    else:
-        node = node.right
-    pass
-
-    if node.is_operation:
-        gotoL = intersectBox(node.left)
-        gotoR = intersectBox(node.right)
- 
-        if gotoL and node.left.is_primitive:
-            tl, nl = intersect_primitive(node.left, ray)
-            gotoL = False
-
-        if gotoR and node.right.is_primitive:
-            tr, nr = intersect_primitive(node.right, ray)
-            gotoR = False
-
-        log.debug("gotoL %s gotoR %s " % (gotoL, gotoR ))
-
-        if gotoL or gotoR:
-            if gotoL:
-                pushPrimitive((tl, nl), label="gotoL")
-                pushAction(LoadLft, label="gotoL")
-            elif gotoR:
-                pushPrimitive((tr, nr), label="gotoR")
-                pushAction(LoadRgh, label="gotoR")
-            pass
-        else:
-            pushTmin(ray.tmin)
-            pushAction(LoadLft, label="no-goto")
-            pushAction(SaveLft, label="no-goto")
-        pass
-
-        if gotoL: 
-            action = GotoLft
-        elif gotoR:
-            action = GotoRgh
-        else:
-            action = Compute 
-        pass
-        log.debug(dump("node.is_operation conclusion %s " % action_desc(action)))
-
-    else:   # node is a Primitive
-
-        if action ==  GotoLft:
-            tl, nl = intersect_primitive(node, ray)
-        else:
-            tr, nr = intersect_primitive(node, ray)
-
-        action = Compute
-        node = node.parent
-
-
-def Compute_():
-
-    global action
-    global tl, nl
-    global tr, nr
-    global node
-
-    dump("Compute_")
-
-    if action == LoadLft or action == LoadRgh:
-        if action == LoadLft:
-            tl, nl = popPrimitive()
-        else:
-            tr, nr = popPrimitive()
-        pass
-
-    stateL = classify(tl,nl)
-    stateR = classify(tr,nr)
-
-    acts = table(node.operation, stateL, stateR )
-
-    log.info("Compute %s(%s,%s) -> %s   tl %s tr %s " % ( desc[node.operation],desc_state[stateL], desc_state[stateR], desc_acts(acts), tl, tr ))
-
-
-    if (RetL & acts) or ((RetLIfCloser & acts) and tl <= tr): 
-        tr = tl
-        nr = nl
-        action = popAction()
-        node = node.parent
-    pass
-
-    if (RetR & acts) or ((RetRIfCloser & acts) and tr < tl): 
-
-        if (FlipR & acts): nr = -nr
-        tl = tr
-        nl = nr
-        action = popAction()
-        node = node.parent
-    elif (LoopL & acts) or ((LoopLIfCloser & acts) and tl <= tr):
-        ray.tmin = tl
-        pushPrimitive((tr,nr))
-        pushAction(LoadRgh)
-        action = GotoLft
-    elif (LoopR & acts) or ((LoopRIfCloser & acts) and tr < tl):
-        ray.tmin = tr
-        pushPrimitive((tl,nl))
-        pushAction(LoadLft)
-        action = GotoRgh
-    else:
-        tr = None
-        action = popAction()
-
 
 
 def rintersect_node(node, ray):
@@ -315,131 +197,408 @@ def rintersect_node(node, ray):
     * maybe need to split tmin for l and r ?
 
     """
+    global count, limit, debug, tl, nl, tr, nr, tmin, lname, rname
     if node.is_primitive:
-        return intersect_primitive(node, ray)
+        return intersect_primitive(node, ray, tmin)
     else:
-        global tl, nl
-        global tr, nr
-        tl, nl = rintersect_node(node.left, ray)
-        tr, nr = rintersect_node(node.right, ray)
+        tl, nl, lname = rintersect_node(node.left, ray)
+        tr, nr, rname = rintersect_node(node.right, ray)
 
         stateL = classify(tl, nl)
         stateR = classify(tr, nr)
 
-        count = 0 
-        while count < 10:
+        while count < limit:
             count += 1 
-     
             acts = table(node.operation, stateL, stateR )
-            
+
+            if debug:
+                log.info("[%d] RECURSIVE %s(%s:%s,%s:%s) -> %s: %s " % ( count, desc[node.operation],lname,desc_state[stateL], rname,desc_state[stateR], desc_acts(acts), trep() ))
+
             if RetMiss & acts:
-                return None, None
-              
+                if debug:
+                    log.info("[%d] RECURSIVE RetMiss : %s " % (count,trep() ))
+                return None, None, None
             elif (RetL & acts) or ((RetLIfCloser & acts) and tl <= tr): 
-                return tl, nl
+                if debug:
+                    log.info("[%d] RECURSIVE RetL/RetLIfCloser : %s " % (count,trep()))
+                return tl, nl, lname 
             elif (RetR & acts) or ((RetRIfCloser & acts) and tr < tl): 
+                if debug:
+                    log.info("[%d] RECURSIVE RetR/RetRIfCloser : %s " % (count,trep() ))
                 if (FlipR & acts): nr = -nr
-                return tr, nr
+                return tr, nr, rname
             elif (LoopL & acts) or ((LoopLIfCloser & acts) and tl <= tr):
-                ray.tmin = tl
-                tl, nl = rintersect_node(node.left, ray)
+                if debug:
+                    log.info("[%d] RECURSIVE LoopL/LoopLIfCloser : %s  " % (count,trep() ))
+                tmin = tl
+                tl, nl, lname = rintersect_node(node.left, ray)
                 stateL = classify(tl,nl)
             elif (LoopR & acts) or ((LoopRIfCloser & acts) and tr < tl):
-                ray.tmin = tr
-                tr, nr = rintersect_node(node.right, ray)
+                if debug:
+                    log.info("[%d] RECURSIVE LoopR/LoopRIfCloser : %s " % (count,trep() ))
+                tmin = tr
+                tr, nr, rname = rintersect_node(node.right, ray)
                 stateR = classify(tr,nr)
             else:
-                return None, None
+                assert 0
+                return None, None, None
+        pass
+        return None, None, None
 
 
+def iintersect_node(ray):
+    """
+    Iterative CSG boolean intersection
+    """
+    global debug, count, limit, node, action, tl, nl, tr, nr, tmin, lname, rname
+
+    count = 0 
+
+    #if node.is_primitive:
+    #    return intersect_primitive(node, ray, tmin)
+    #else:
+    if True:
+        pushAction(Compute)
+        action = GotoLft
+
+        while count < limit:
+            count += 1 
+
+            #if debug:
+            #    log.info("[%d] ITERATIVE while node %r " % (count,node) )
+
+            if action == SaveLft:
+                tmp = popTmin()
+                if debug:
+                   log.info("(SaveLft) popTmin setting tmin %5.2f -> %5.2f " % (tmin, tmp))
+
+                tmin = tmp
+                pushPrimitive((tl,nl,lname))
+                action = GotoRgh
+            pass
+            if action == GotoLft or action == GotoRgh:
+                GoTo()
+            pass
+            if action == LoadLft or action == LoadRgh or action == Compute:
+                Compute_()
+            pass
+
+            #if debug:
+            #    log.info("[%d] ITERATIVE while tail node %r " % (count, node) )
+
+            if node is None or node.right is None:
+                return tl, nl, lname
+
+            #if node is None:
+            #    #log.info(" None at node %r tl/tr %s %s nl/nr %r/%r " % ( node, tl, tr, nl, nr ))
+            #    #assert tl == tr, (tl, tr) 
+            #    #assert np.allclose(nl, nr)
+            #    return tl, nl 
+            #pass
+        pass
+    pass
+    return None,None,None 
+
+
+def GoTo():
+    global debug, count, node, action, tl, nl, tr, nr, tmin, lname, rname
+    assert action in [GotoLft, GotoRgh] 
+    pnode = node
+    node = node.left if action == GotoLft else node.right 
+
+    #if debug:
+    #    log.info("[%d] ITERATIVE %s -> %s  " % ( count, action_desc(action), node ))
+
+    if node is None:
+       log.fatal("node None after action %s from parent %r " % (action_desc(action),pnode) )
+       return 
+
+    if node.is_operation:
+        gotoL = intersectBox(node.left)
+        gotoR = intersectBox(node.right)
+ 
+        if gotoL and node.left.is_primitive:
+            tl, nl, lname = intersect_primitive(node.left, ray, tmin)
+            gotoL = False
+
+        if gotoR and node.right.is_primitive:
+            tr, nr, rname = intersect_primitive(node.right, ray, tmin)
+            gotoR = False
+
+        log.debug("gotoL %s gotoR %s " % (gotoL, gotoR ))
+
+        if gotoL or gotoR:
+            if gotoL:
+                pushPrimitive((tl, nl, lname), label="gotoL")
+                pushAction(LoadLft, label="gotoL")
+                action = GotoLft
+            elif gotoR:
+                pushPrimitive((tr, nr, rname), label="gotoR")
+                pushAction(LoadRgh, label="gotoR")
+                action = GotoRgh
+            pass
+        else:
+            # both gotoL and gotoR False means miss OR both prim intersects done, so are ready for compute
+            pushTmin(tmin)
+            pushAction(LoadLft, label="no-goto")
+            pushAction(SaveLft, label="no-goto")
+            action = Compute 
+        pass
+        log.debug(dump("node.is_operation conclusion %s " % action_desc(action)))
+
+    else:   # node is a Primitive
+
+        if action ==  GotoLft:
+            tl, nl, lname = intersect_primitive(node, ray, tmin)
+            
+        else:
+            tr, nr, rname = intersect_primitive(node, ray, tmin)
+
+        action = Compute
+        node = node.parent
+
+
+
+def trep():
+    global tl, tr, tmin 
+    return "tmin/tl/tr %5.2f %5.2f %5.2f " % (tmin if tmin else -1, tl if tl else -1, tr if tr else -1 )
+
+
+def Compute_():
+    global debug, count, node, action, tl, nl, tr, nr, tmin, lname, rname
+    dump("Compute_")
+    assert node.is_operation
+
+    if action == LoadLft or action == LoadRgh:
+        if action == LoadLft:
+            lll = popPrimitive()
+            assert len(lll) == 3, lll
+            tl, nl, lname = lll
+        else:
+            tr, nr, rname = popPrimitive()
+        pass
+
+    stateL = classify(tl,nl)
+    stateR = classify(tr,nr)
+
+    #if debug:
+    #    log.info("[%d] ITERATIVE %r -> %s op %d " % ( count, node, desc[node.operation], node.operation ))
+
+    acts = table(node.operation, stateL, stateR )
+
+    if debug:
+        log.info("[%d] ITERATIVE %s(%s:%s,%s:%s) -> %s: %s" % ( count, desc[node.operation],lname,desc_state[stateL], rname,desc_state[stateR], desc_acts(acts), trep() ))
+
+    if (RetMiss & acts):
+        tr = None
+        action = Compute # popAction()  ################### ???????????
+        node = node.parent
+    elif (RetL & acts) or ((RetLIfCloser & acts) and tl <= tr): 
+        if debug:
+            log.info("[%d] ITERATIVE RetL/RetLIfCloser : %s" % (count, trep()))
+        tr = tl
+        nr = nl
+        action = popAction()
+        node = node.parent
+    elif (RetR & acts) or ((RetRIfCloser & acts) and tr < tl): 
+        if debug:
+            log.info("[%d] ITERATIVE RetR/RetRIfCloser : %s" % (count, trep()))
+        if (FlipR & acts): nr = -nr
+        tl = tr
+        nl = nr
+        action = popAction()
+        node = node.parent
+    elif (LoopL & acts) or ((LoopLIfCloser & acts) and tl <= tr):
+        if debug:
+            log.info("[%d] ITERATIVE LoopL/LoopLIfCloser : %s" % (count, trep()))
+        tmin = tl
+        pushPrimitive((tr,nr,rname))
+        pushAction(LoadRgh)
+        action = GotoLft
+    elif (LoopR & acts) or ((LoopRIfCloser & acts) and tr < tl):
+        if debug:
+            log.info("[%d] ITERATIVE LoopR/LoopRIfCloser : %s" % (count, trep()))
+        tmin = tr
+        pushPrimitive((tl,nl,lname))
+        pushAction(LoadLft)
+        action = GotoRgh
+    else:
+        assert 0
+
+
+
+def reset_globals(debug_list=[]):
+    global debug, count, limit, node, iray, action, tl, nl, tr, nr, tmin, lname, rname
+    debug = True if iray in debug_list else False
+    limit = 20
+    count = 0 
+    node = None
+    action = None
+    tl, nl = None, None
+    tr, nr = None, None
+    tmin = 0 
+    lname = "?"
+    rname = "?"
+
+
+
+def test_intersect(tst):
+    """
+    * top virtual node distinguishable as an "operation" but node.right is None 
+
+    * only 1st intersect is returned, so to see inside and outside of   
+      a shape need to send rays from inside and outside
+
+
+    Union of two offset spheres, OK from aringlight but not origlight
+
+
+    """
+    global debug, count, limit, node, ray, iray, action, tl, nl, tr, nr, tmin 
+
+    virtual_root = Node(left=tst.root,right=None,operation=UNION)   
+
+    rays = []
+
+    if "aringlight" in tst.source:
+        ary = Ray.aringlight(num=tst.num, radius=1000)
+        rays += Ray.make_rays(ary)
+    pass 
+
+    if "origlight" in tst.source:
+        rays += Ray.origlight(num=tst.num)
+    pass
+
+    if "lsquad" in tst.source:
+        rays += [Ray(origin=[-300,y,0], direction=[1,0,0]) for y in range(-50,50+1,10)]
+    pass
+
+    ipos = np.zeros((2,len(rays), 3), dtype=np.float32 ) 
+    ndir = np.zeros((2,len(rays), 3), dtype=np.float32 ) 
+    tval = np.zeros((2,len(rays)), dtype=np.float32 )
+
+    prob = []
+    for iray, ray in enumerate(rays):
+
+        for recursive in [0,1]:
+            reset_globals(tst.debug_list)
+
+            if debug:
+                log.info(" ray(%d) %r " % (iray,ray) ) 
+
+            if recursive:
+                node = virtual_root.left
+                tt, nn, nname = rintersect_node(node, ray)
+            else:
+                node = virtual_root  
+                tmp = iintersect_node(ray)   
+                assert len(tmp) == 3, tmp
+                tt, nn, nname = tmp
+            pass
+            typ = "RECURSIVE" if recursive else "ITERATIVE"
+            if debug:
+                log.info("[%d] %s intersect %r tt %s nn %r " % (count, typ, ray, tt, nn ))
+            if not tt is None:
+                ipos[recursive,iray] = ray.position(tt)
+                ndir[recursive,iray] = nn
+                tval[recursive,iray] = tt
+            pass
+        pass
+
+        ok_pos = np.allclose( ipos[0,iray], ipos[1,iray] )
+        ok_dir = np.allclose( ndir[0,iray], ndir[1,iray] )
+        ok_tva = np.allclose( tval[0,iray], tval[1,iray] )
+
+        if not (ok_pos and ok_dir and ok_tva):
+            prob.append(iray)
+        pass
+    pass
+
+    if len(prob) > 0:
+        log.warning("%10s %d/%d rays with mismatches : %s " % (tst.name, len(prob),len(rays),repr(prob)))
+    else:
+        log.info("%10s %d/%d rays with mismatches : %s " % (tst.name, len(prob),len(rays),repr(prob)))
+
+    sc = 10 
+    for recursive in [0, 1]:
+        xoff = 600 if recursive else 0
+        plt.scatter( xoff + ipos[recursive,:,0]                        , ipos[recursive,:,1] )
+        #plt.scatter( xoff + ipos[recursive,:,0]+ndir[recursive,:,0]*sc , ipos[recursive,:,1]+ndir[recursive,:,1]*sc )
+        #plt.scatter( xoff + ary[:,0,0], ary[:,0,1] )
+
+        if len(prob) > 0:
+            plt.scatter( xoff + ipos[recursive, prob,0], ipos[recursive, prob,1], c="r" )
+            plt.scatter( xoff + ipos[recursive, prob,0], ipos[recursive, prob,1], c="g" )
+
+
+    plt.show()
+
+    return prob, tval, ipos, ndir
+
+
+
+class T(object):
+    def __init__(self, root, name, debug_list=[], notes="", source="aringlight,origlight", num=200):
+        self.root = root
+        self.name = name
+        self.debug_list = debug_list
+        self.notes = notes
+        self.source = source
+        self.num = num
 
 
 
 if __name__ == '__main__':
 
+    plt.ion()
+    plt.close()
 
     logformat = "%(asctime)s %(name)s %(levelname)-8s %(message)s"
-
     logging.basicConfig(level=logging.INFO,format=logformat)
     log = logging.getLogger(__name__)
 
-    lbox = Node(BOX, param=[-50,0,0,10])
-    rbox = Node(BOX, param=[ 50,0,0,10])
-    lrbox = Node(lbox,  rbox, UNION )  # two separated boxes along x axis
+    ## need to clone to avoid inadvertent parent connections between different roots 
+    ## TODO: manage this inside Node and think what parent connections should be when cloning
 
-    bms = Node(Node(BOX, param=[0,0,0,200]),  Node(SPHERE,param=[0,0,0,200]), DIFFERENCE )
-    smb = Node(Node(SPHERE,param=[0,0,100,300]), Node(BOX,param=[0,0,100,300]), DIFFERENCE )
-    ubo = Node(bms, smb, UNION )
+    cbox = Node(BOX, param=[0,0,0,100], name="cbox")
+    lbox = Node(BOX, param=[-200,0,0,50], name="lbox")
+    rbox = Node(BOX, param=[ 200,0,0,50], name="rbox")
+    lrbox = Node(lbox.clone(),  rbox.clone(), UNION, name="lrbox") 
 
-    lsph = Node(SPHERE, param=[-50,0,0,100])
-    rsph = Node(SPHERE, param=[50,0,0,100])
-    #lrsph = Node(lsph, rsph, UNION )
-    #lrsph = Node(lsph, rsph, INTERSECTION )
-    lrsph = Node(lsph, rsph, DIFFERENCE )
+    bms = Node(Node(BOX, param=[0,0,0,200], name="bms_box"),  Node(SPHERE,param=[0,0,0,150],name="bms_sph"), DIFFERENCE, name="bms")
+    smb = Node(Node(SPHERE,param=[0,0,0,200]), Node(BOX,param=[0,0,0,150]), DIFFERENCE , name="smb")
+    ubo = Node(bms.clone(), lrbox.clone(), UNION , name="ubo")
+    bmslrbox = Node( Node(bms.clone(), rbox.clone(), UNION,name="bms_rbox_u"),lbox.clone(),UNION, name="bmslrbox" ) 
+    bmsrlbox = Node( Node(bms.clone(), lbox.clone(), UNION,name="bms_lbox_u"),rbox.clone(),UNION, name="bmsrlbox" ) 
 
-    root = lrsph
-    virtual_root = Node(left=root)    
+    csph = Node(SPHERE, param=[0,0,0,100], name="csph")
+    lsph = Node(SPHERE, param=[-50,0,0,100], name="lsph")
+    rsph = Node(SPHERE, param=[50,0,0,100], name="rsph")
 
-    ray_px = Ray(origin=[0,0,0], direction=[1,0,0])
-    ray_nx = Ray(origin=[0,0,0], direction=[-1,0,0])
-    ray_py = Ray(origin=[0,0,0], direction=[0,1,0])   # miss 
+    lrsph_u = Node(lsph.clone(), rsph.clone(), UNION, name="lrsph_u")
+    lrsph_i = Node(lsph.clone(), rsph.clone(), INTERSECTION, name="lrsph_i")
+    lrsph_d = Node(lsph.clone(), rsph.clone(), DIFFERENCE , name="lrsph_d")
 
-    #ray = ray_px
-    ray = ray_nx
+    ok = [ 
+             T(smb, "smb"),
+             T(bms, "bms"),
+             T(csph, "csph"),
+             T(cbox, "cbox"),
+             T(lbox, "lbox"),
+             T(rbox, "rbox"),
+             T(lrbox, "lrbox"),
+             T(lrsph_d, "lrsph_d"),
+             T(lrsph_u, "lrsph_u", notes="fixed all rightside mismatched with origlight by adopting clone to avoid inadventent parent relationship to other shape"),
+             T(lrsph_i, "lrsph_i"),
+         ]
 
-    ########
-if 1:
-    ray.tmin = 0 
-    node = virtual_root  # left subtree is the real root
-    tl, nl = None, None
-    tr, nr = None, None
+    nok = [
+             T(bmslrbox, "bmslrbox", notes="left box protrusion is missed for iterative", source="lsquad", debug_list=[1]),
+             #T(bmsrlbox, "bmsrlbox", notes="right box protrusion is missed for iterative"),
+             #T(ubo, "ubo", [], notes="looks to be missing most intersects???"),
+          ]
 
-
-if 1:
-
-    num = 100
-    rays = Ray.ringlight(num=num, radius=1000)
-    ipos = np.zeros((num, 3), dtype=np.float32 ) 
-
-    for i, ray in enumerate(rays):
-        tt, nn = rintersect_node(node.left, ray)
-        log.info("rintersect_node %r tt %s nn %r " % (ray, tt, nn ))
-        if not tt is None:
-            ipos[i] = ray.position(tt)
-        pass
-    pass
-    print ipos
-
-    plt.scatter( ipos[:,0], ipos[:,1] )
-    plt.show()
-
-
-
-
-if 0:
-    pushAction(Compute)
-    action = GotoLft
-
-    count = 0 
-    limit = 10
-
-    while count < limit:
-        log.debug("while (%d)" % count )
-        count += 1 
-
-        if action == SaveLft:
-            ray.tmin = popTmin()
-            pushPrimitive((tl,nl))
-            action = GotoRgh
-        pass
-        if action == GotoLft or action == GotoRgh:
-            GoTo()
-        pass
-        if action == LoadLft or action == LoadRgh or action == Compute:
-            Compute_()
-        pass
-        
-
-
+    for tst in nok:
+        prob, tval, ipos, ndir = test_intersect(tst)
 
 

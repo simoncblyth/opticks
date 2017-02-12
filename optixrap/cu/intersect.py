@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import matplotlib.pyplot as plt
 import logging
 log = logging.getLogger(__name__)
 
@@ -20,22 +21,22 @@ desc = { SPHERE:"SPHERE", BOX:"BOX", UNION:"UNION", INTERSECTION:"INTERSECTION",
 
 
 
-def intersect_primitive(node, ray):
+def intersect_primitive(node, ray, tmin):
     assert node.is_primitive
     shape = node.left
     if shape == BOX:
-        tt, nn = intersect_box( node.param, ray )  
+        tt, nn = intersect_box( node.param, ray, tmin )  
     elif shape == SPHERE:
-        tt, nn = intersect_sphere( node.param, ray )  
+        tt, nn = intersect_sphere( node.param, ray, tmin)  
     else:
         log.fatal("shape unhandled shape:%s desc_shape:%s node:%s " % (shape, desc[shape], repr(node)))
         assert 0
     pass
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
-    return tt, nn
+    return tt, nn, node.name
 
 
-def intersect_sphere( param, ray ):
+def intersect_sphere( param, ray, tmin ):
 
     center = param[:3]
     radius = param[3]
@@ -50,21 +51,32 @@ def intersect_sphere( param, ray ):
     sdisc = np.sqrt(disc) if disc > 0. else 0.
 
     root1 = -b - sdisc
-    root2 = -b + sdisc
+    root2 = -b + sdisc   ## root2 always > root1
+
+
+    tt = None
+    nn = None
 
     has_intersect = sdisc > 0.
-
     if has_intersect:
-        tt = root1 if root1 > ray.tmin else root2 
-        nn = (O + tt*D)/radius 
-    else:
-        tt = None
-        nn = None
+        #tt = root1 if root1 > tmin else root2 
+        if root1 > tmin or root2 > tmin:
+            if root1 > tmin:
+                tt = root1 
+            elif root2 > tmin:
+                tt = root2
+            else:
+                assert 0
+            pass 
+            nn = (O + tt*D)/radius 
+        pass
+    pass
 
     return tt, nn
 
 
-def intersect_box( param, ray ):
+def intersect_box( param, ray, tmin ):
+
     cen = param[:3]
     sid = param[3]
     bmin = cen - sid
@@ -78,6 +90,8 @@ def intersect_box( param, ray ):
 
     t_near = np.max(near)    # furthest near intersect
     t_far  = np.min(far)     # closest far intersect
+
+    #log.info("intersect_box tmin %5.2f t_near %5.2f t_far %5.2f " % (tmin,t_near,t_far))
    
     along_x = ray.direction[0] != 0. and ray.direction[1] == 0. and ray.direction[2] == 0. 
     along_y = ray.direction[0] == 0. and ray.direction[1] != 0. and ray.direction[2] == 0. 
@@ -95,100 +109,172 @@ def intersect_box( param, ray ):
         has_intersect = in_x and in_y
     else:
         has_intersect = t_far > t_near and t_far > 0.    # segment of ray intersects box, at least one intersect is ahead 
- 
+
+
+    tt = None
+    nn = None
     if has_intersect:
-        if ray.tmin < t_near:
-            tt = t_near 
-        else:
-            tt = t_far if ray.tmin < t_far else ray.tmin 
-
-        p = ray.origin + tt*ray.direction - cen
-        pa = np.abs(p)
-
-        nn = np.array([0,0,0], dtype=np.float32)
-        if   pa[0] >= pa[1] and pa[0] >= pa[2]: nn[0] = np.copysign( 1, p[0] )
-        elif pa[1] >= pa[0] and pa[1] >= pa[2]: nn[1] = np.copysign( 1, p[1] )
-        elif pa[2] >= pa[0] and pa[2] >= pa[1]: nn[2] = np.copysign( 1, p[2] )
-    else:
-        tt = None
-        nn = None
+        if tmin < t_near or tmin < t_far:
+            if tmin < t_near:
+                tt = t_near 
+            elif tmin < t_far:
+                tt = t_far 
+            else:
+                assert 0 
+            pass
+            p = ray.origin + tt*ray.direction - cen
+            pa = np.abs(p)
+            nn = np.array([0,0,0], dtype=np.float32)
+            if   pa[0] >= pa[1] and pa[0] >= pa[2]: nn[0] = np.copysign( 1, p[0] )
+            elif pa[1] >= pa[0] and pa[1] >= pa[2]: nn[1] = np.copysign( 1, p[1] )
+            elif pa[2] >= pa[0] and pa[2] >= pa[1]: nn[2] = np.copysign( 1, p[2] )
+        pass
     pass
     return tt, nn
 
 
 class Node(object):
-    def __init__(self, left, right=None, operation=None, param=None):
+    def __init__(self, left, right=None, operation=None, param=None, name="unnamed"):
 
         self.left = left
         self.right = right
         self.operation = operation
         self.param = np.asarray(param) if not param is None else None 
+        self.parent = None
+        self.name = name
 
         if not operation is None:
             left.parent = self 
-            right.parent = self 
+            if not right is None:
+                right.parent = self 
         pass
+
+    def clone(self):
+
+        if type(self.left) is int:
+            cleft = self.left
+        elif type(self.left) is Node: 
+            cleft = self.left.clone()
+        else:
+            assert 0
+
+        if type(self.right) is int:
+            cright = self.right
+        elif type(self.right) is Node: 
+            cright = self.right.clone()
+        elif self.right is None: 
+            cright = None
+        else:
+            assert 0
+
+        return Node(left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
 
     is_primitive = property(lambda self:self.operation is None and self.right is None and not self.left is None)
     is_operation = property(lambda self:not self.operation is None)
 
     def __repr__(self):
         if self.is_primitive:
-            return desc[self.left]
+            return "%s : %s " % (self.name, desc[self.left])
         else:
-            return "%s(%s,%s)" % ( desc[self.operation], repr(self.left), repr(self.right) )
+            return "%s : %s(%s,%s) op:%d" % ( self.name, desc[self.operation], repr(self.left), repr(self.right), self.operation )
+
+
+
+
 
 class Ray(object):
-   def __init__(self, origin=[0,0,0], direction=[1,0,0], tmin=0 ):
+   def __init__(self, origin=[0,0,0], direction=[1,0,0] ):
        self.origin = np.asarray(origin, dtype=np.float32)
        dir_ = np.asarray(direction, dtype=np.float32)
        self.direction = dir_/np.sqrt(np.dot(dir_,dir_))   # normalize
-       self.tmin = tmin
 
    def position(self, tt):
        return self.origin + tt*self.direction
 
    def __repr__(self):
-       return "Ray(origin=%r, direction=%r, tmin=%s)" % (self.origin, self.direction, self.tmin )
+       o = self.origin
+       d = self.direction
+       return "Ray(o=[%5.2f,%5.2f,%5.2f], d=[%5.2f,%5.2f,%5.2f] )" % (o[0],o[1],o[2],d[0],d[1],d[2] )
+
+
 
    @classmethod
-   def ringlight(cls, num=24, radius=500):
-       angles = np.linspace(0,2*np.pi,num )
+   def aringlight(cls, num=24, radius=500, inwards=True):
+       rys = np.zeros( [num,2,3], dtype=np.float32 )
 
-       ori = np.zeros( [num,3] )
-       ori[:,0] = radius*np.cos(angles)
-       ori[:,1] = radius*np.sin(angles)
+       a = np.linspace(0,2*np.pi,num )
+       ca = np.cos(a)
+       sa = np.sin(a)
 
-       dir_ = np.zeros( [num,3] )
-       dir_[:,0] = -np.cos(angles)
-       dir_[:,1] = -np.sin(angles)
+       rys[:,0,0] = radius*ca
+       rys[:,0,1] = radius*sa
 
+       sign = -1. if inwards else +1.
+       rys[:,1,0] = sign*ca
+       rys[:,1,1] = sign*sa
+
+       return rys
+
+   @classmethod
+   def make_rays(cls, rys):
        rays = []
-       for i in range(num):
-           ray = cls(origin=ori[i], direction=dir_[i])
+       for i in range(len(rys)):
+           ray = cls(origin=rys[i,0], direction=rys[i,1])
            rays.append(ray)
        pass
        return rays
+          
+   @classmethod
+   def ringlight(cls, num=24, radius=500, inwards=True):
+       rys = cls.aringlight(num=num, radius=radius, inwards=inwards)
+       return cls.make_rays(rys) 
+
+   @classmethod
+   def origlight(cls, num=24):
+      """
+      :param num: of rays to create
+      """
+      return cls.ringlight(num=num, radius=0, inwards=False)
+
+
 
 
  
 if __name__ == '__main__':
 
-    box = Node(BOX, param=[0,0,0,100] )
-    sph = Node(SPHERE, param=[0,0,0,100] )
+    cbox = Node(BOX, param=[0,0,0,100] )
+    csph = Node(SPHERE, param=[0,0,0,100] )
 
-    axes = [[1,0,0],[0,1,0],[0,0,1],[-1,0,0],[0,-1,0],[0,0,-1],[1,1,1]]
+    prim = cbox
+    #prim = csph
 
-    n = 100 
-    angles = np.linspace(0,2*np.pi,n )
-    dirs = np.zeros( [n,3] )
-    dirs[:,0] = np.cos(angles)
-    dirs[:,1] = np.sin(angles)
-    
-    for dir_ in dirs:
-        ray = Ray(origin=[0,0,0], direction=dir_)
-        #tt, nn = intersect_node( box, ray )
-        tt, nn = intersect_node( sph, ray )
+    num = 100
+
+    ary = Ray.aringlight(num=num, radius=1000)
+
+    rays = []
+    rays += Ray.make_rays(ary)
+
+
+    ipos = np.zeros((len(rays), 3), dtype=np.float32 ) 
+    ndir = np.zeros((len(rays), 3), dtype=np.float32 ) 
+
+    for i, ray in enumerate(rays):
+        tmin = 0 
+        tt, nn, nname = intersect_primitive( prim, ray, tmin )
+        if not tt is None:
+            ipos[i] = ray.position(tt)
+            ndir[i] = nn
+        pass
+    pass
+    print ipos
+    print ndir
+
+    sc = 10 
+    plt.scatter( ipos[:,0]              , ipos[:,1] )
+    plt.scatter( ipos[:,0]+ndir[:,0]*sc , ipos[:,1]+ndir[:,1]*sc )
+    plt.scatter( ary[:,0,0], ary[:,0,1] )
+    plt.show()
 
 
 
