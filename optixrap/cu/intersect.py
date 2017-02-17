@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import logging
 log = logging.getLogger(__name__)
 
+EMPTY = 0 
 SPHERE = 1
 BOX = 2 
-is_shape = lambda c:c in [SPHERE, BOX]
+is_shape = lambda c:c in [EMPTY,SPHERE, BOX]
 
 DIVIDER = 99  # between shapes and operations
 
@@ -17,19 +18,20 @@ DIFFERENCE = 102
 is_operation = lambda c:c in [UNION,INTERSECTION,DIFFERENCE]
 
 
-desc = { SPHERE:"SPHERE", BOX:"BOX", UNION:"UNION", INTERSECTION:"INTERSECTION", DIFFERENCE:"DIFFERENCE" }
+desc = { EMPTY:"EM", SPHERE:"SP", BOX:"BX", UNION:"U", INTERSECTION:"I", DIFFERENCE:"D" }
 
 
 
 def intersect_primitive(node, ray, tmin):
     assert node.is_primitive
-    shape = node.left
-    if shape == BOX:
+    if node.shape == BOX:
         tt, nn = intersect_box( node.param, ray, tmin )  
-    elif shape == SPHERE:
+    elif node.shape == SPHERE:
         tt, nn = intersect_sphere( node.param, ray, tmin)  
+    elif node.shape == EMPTY:
+        tt, nn = None, None
     else:
-        log.fatal("shape unhandled shape:%s desc_shape:%s node:%s " % (shape, desc[shape], repr(node)))
+        log.fatal("shape unhandled shape:%s desc_shape:%s node:%s " % (node.shape, desc[node.shape], repr(node)))
         assert 0
     pass
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
@@ -134,10 +136,12 @@ def intersect_box( param, ray, tmin ):
 
 
 class Node(object):
-    def __init__(self, left, right=None, operation=None, param=None, name="unnamed"):
+    def __init__(self, shape=None, left=None, right=None, operation=None, param=None, name="unnamed"):
 
+        self.shape = shape 
         self.left = left
         self.right = right
+
         self.operation = operation
         self.param = np.asarray(param) if not param is None else None 
         self.parent = None
@@ -150,33 +154,23 @@ class Node(object):
         pass
 
     def clone(self):
-
-        if type(self.left) is int:
-            cleft = self.left
-        elif type(self.left) is Node: 
-            cleft = self.left.clone()
+        if self.is_operation:
+            cleft = self.left.clone() 
+            cright = self.right.clone() 
         else:
-            assert 0
-
-        if type(self.right) is int:
-            cright = self.right
-        elif type(self.right) is Node: 
-            cright = self.right.clone()
-        elif self.right is None: 
+            cleft = None
             cright = None
-        else:
-            assert 0
+        pass
+        return Node(shape=self.shape, left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
 
-        return Node(left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
-
-    is_primitive = property(lambda self:self.operation is None and self.right is None and not self.left is None)
-    is_operation = property(lambda self:not self.operation is None)
+    is_primitive = property(lambda self:self.shape is not None)
+    is_operation = property(lambda self:self.operation is not None)
 
     def __repr__(self):
         if self.is_primitive:
-            return "%s : %s " % (self.name, desc[self.left])
+            return "%s.%s" % (self.name, desc[self.shape])
         else:
-            return "%s : %s(%s,%s) op:%d" % ( self.name, desc[self.operation], repr(self.left), repr(self.right), self.operation )
+            return "%s.%s(%s,%s)" % ( self.name, desc[self.operation], repr(self.left), repr(self.right))
 
 
 
