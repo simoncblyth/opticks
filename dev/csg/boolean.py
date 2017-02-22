@@ -39,6 +39,11 @@ def desc_acts(acts):
     return s 
 
 
+#
+# note that although two loopers do appear together "LoopLIfCloser | LoopRIfCloser" 
+# they are always conditionals on which is closer so only one of them will be enacted 
+#
+
 table_ = {
     DIFFERENCE : { 
                   Enter : {
