@@ -35,7 +35,7 @@ def intersect_primitive(node, ray, tmin):
         assert 0
     pass
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
-    return tt, nn, node.name
+    return tt, nn, node.name, 0
 
 
 def intersect_sphere( param, ray, tmin ):

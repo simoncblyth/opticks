@@ -149,11 +149,15 @@ class CSG(object):
         self.actionStack = Stack("actionStack", desc_action)
         self.tminStack = Stack("tminStack", lambda tmin:"%5.2f" % (tmin if tmin else -1))
         self.primStack = Stack("primStack", lambda _:"%5.2f:%s" % (_[0] if _[0] else -1, _[2]))
+        self.typ = None
+        self._traverse = {"RECURSIVE":[], "ITERATIVE":[] }
+        self._actions = {"RECURSIVE":[], "ITERATIVE":[] }
         self.reset()
 
     def _get_debug(self):
          return self.level if self.iray in self._debug else 0
     debug = property(_get_debug)
+
 
     def reset(self, ray=None, iray=0, debug=[]):
 
@@ -176,6 +180,10 @@ class CSG(object):
         self._stage = None
         self._act = None
 
+        if self.typ in self._traverse:
+            self._traverse[self.typ] = []
+            self._actions[self.typ] = []
+
         self.actionStack.reset()
         self.tminStack.reset()
         self.primStack.reset()
@@ -185,7 +193,6 @@ class CSG(object):
 
     prevname = property(lambda self:self.prev.name if self.prev else "-")
     nodename = property(lambda self:self.node.name if self.node else "-")
-
 
     def _get_act(self):
         return self._act
@@ -220,22 +227,61 @@ class CSG(object):
         #assert n 
         self._prev = self._node
         self._node = n
+        self.record_traversal(n)
+
         self._stage = self._get_stage()
 
         if self.debug > 2:
-            log.info("_set_node iray %d : %s -> %s : %s " % (self.iray, self.prevname, self.nodename, self.stage)) 
-
-
+            log.info("%s _set_node iray %d : %s -> %s : %s " % (self.typ, self.iray, self.prevname, self.nodename, self.stage)) 
+        #pass
 
     def _get_node(self):
         return self._node  
     node = property(_get_node, _set_node)
 
+
+    def record_traversal(self, n):
+        assert self.typ in self._traverse, "bad typ %s " % self.typ
+        self._traverse[self.typ].append(n)
+
+    def record_action(self, a):
+        assert self.typ in self._traverse, "bad typ %s " % self.typ
+        self._actions[self.typ].append(a)
+
+
     prev = property(lambda self:self._prev)
     stage = property(lambda self:self._stage)
 
+    def dump_traversal(self):
+        for typ in self._traverse:
+            log.info(" (%3d) %20s : %s " % (self.iray, typ, repr(self._traverse[typ]) ))  
+        pass
+
+    def dump_actions(self):
+        for typ in self._traverse:
+            log.info(" (%3d) %20s : %s " % (self.iray, typ, repr(map(desc_action,self._actions[typ])) ))  
+        pass
+
+    def compare_traversal(self):
+        """
+        Iterative requires some manual record_traversal for left/right primitives in Intersect
+
+        Note that missers are coming up with different traversal: the recursive traversal 
+        never returns to root, but the iterative does several times
+
+        """
+        if self.debug:
+            self.dump_traversal()  
+            self.dump_actions()  
+           
+        r = self._traverse["RECURSIVE"]
+        i = self._traverse["ITERATIVE"]
+
+        return i == r
+
     def _set_action(self, a):
         self._action = a
+        self.record_action(a)
         if self.debug > 2:
             log.info("_set_action %s " % desc_action(a)) 
     def _get_action(self):
@@ -288,9 +334,17 @@ class CSG(object):
         * instead use local vars, which will have different existance at the 
           different levels of the recursion
         * can think of member vars as effective globals wrt the recursion
+
+        * loopers result in recursive call repeating the same node, with tmin advanced 
+        * recursively never traverse the root again ? are always going down with root.left root.right
+          never going up ?
+
+        * although the traverse never goes up, completion of the recursive instance calls 
+          does go back up once hitting primitives in the leaves 
+
         """
         assert root
-        
+        assert self.typ == "RECURSIVE"
         if depth == 0:
             self.top = root
         pass
@@ -302,11 +356,10 @@ class CSG(object):
 
         elif root.is_operation:
 
-            tl, nl, lname  = self.recursive_intersect(root.left, depth=depth+1, tmin=tmin)  
-            tr, nr, rname  = self.recursive_intersect(root.right, depth=depth+1, tmin=tmin)
+            tl, nl, lname, lact  = self.recursive_intersect(root.left, depth=depth+1, tmin=tmin)  
+            tr, nr, rname, ract  = self.recursive_intersect(root.right, depth=depth+1, tmin=tmin)
 
-            root.rstack = (tl, nl, lname, tr, nr, rname) # for debug comparison with iterative
-
+            root.rstack = (tl, nl, lname, lact, tr, nr, rname, ract) # for debug comparison with iterative
 
             loopcount = 0 
             looplimit = 10 
@@ -334,24 +387,24 @@ class CSG(object):
                 ret = ()
                 if act_RetMiss:
                     act = RetMiss
-                    ret = None, None, None
+                    ret = None, None, None, act
 
                 elif act_RetL or act_RetLIfCloser: 
                     act = RetLIfCloser if act_RetLIfCloser else RetL
-                    ret = tl, nl, lname 
+                    ret = tl, nl, lname, act 
 
                 elif act_RetR or act_RetRIfCloser: 
                     act = RetRIfCloser if act_RetRIfCloser else RetR
                     if (FlipR & acts): nr = -nr
-                    ret = tr, nr, rname
+                    ret = tr, nr, rname, act
 
                 elif act_LoopL or act_LoopLIfCloser:
                     act = LoopLIfCloser if act_LoopLIfCloser else LoopL
-                    tl, nl, lname = self.recursive_intersect(root.left, depth=depth+1, tmin=tl)
+                    tl, nl, lname, _ = self.recursive_intersect(root.left, depth=depth+1, tmin=tl)
 
                 elif act_LoopR or act_LoopRIfCloser:
                     act = LoopRIfCloser if act_LoopRIfCloser else LoopR
-                    tr, nr, rname = self.recursive_intersect(root.right, depth=depth+1, tmin=tr)
+                    tr, nr, rname, _ = self.recursive_intersect(root.right, depth=depth+1, tmin=tr)
 
                 else:
                     log.fatal("[%d] RECURSIVE UNHANDLED acts " % (loopcount))
@@ -363,6 +416,7 @@ class CSG(object):
                     log.info("(%d)[%d] RECURSIVE %s : %s -> %s : %s " % (self.iray,loopcount,root.name,opr,desc_acts(self.act),trep ))
 
                 if len(ret) > 0:
+                     
                     return ret
                 else:
                     # only Loop-ers hang aroud here to intersect again with advanced tmin, the rest return up to caller
@@ -376,7 +430,7 @@ class CSG(object):
         pass
         log.fatal("[%d] RECURSIVE count EXCEEDS LIMIT %d " % (loopcount, looplimit))
         assert 0  
-        return None, None, None
+        return None, None, None, 0
 
 
     def iterative_intersect(self, root):
@@ -386,7 +440,7 @@ class CSG(object):
         * https://www.hackerearth.com/practice/notes/iterative-tree-traversals/
 
         """
-        self.typ = "ITERATIVE"
+        assert self.typ == "ITERATIVE"
         self.top = root
         self.node = root
 
@@ -397,14 +451,17 @@ class CSG(object):
         limit = 10 
 
         self.actionStack.push(Compute)
-        self.actionStack.push(GotoLft)
+        #self.actionStack.push(GotoLft)
+
+        self.action = GotoLft
+
         do_goto = False  
         # ignoring the first GotoLft avoids the virtual root and associated termination complications
 
         while self.actionStack.count() > 0:
             self.count += 1 
 
-            self.action = self.actionStack.pop(debug=self.debug > 2)
+            #self.action = self.actionStack.pop(debug=self.debug > 2)
 
             if self.action == SaveLft:
                 self.SaveLft_()
@@ -427,6 +484,9 @@ class CSG(object):
                 self.Compute_()
             pass 
 
+            if self.action == Return:
+                break 
+
             if self.count == limit: 
                 log.fatal("iray %d ray %s count %d reaches limit %d " % (self.iray, self.ray, self.count, limit))
                 assert 0
@@ -437,14 +497,13 @@ class CSG(object):
 
     def SaveLft_(self):
         self.tmin = self.tminStack.pop(debug=self.debug > 1)
-        self.primStack.push((self.tl,self.nl,self.lname), debug=self.debug > 1)
+        self.primStack.push((self.tl,self.nl,self.lname, self.lact), debug=self.debug > 1)
 
     def Load_(self):
-        # maybe need separate left and right stacks ?
         if self.action == LoadLft:
-            self.tl, self.nl, self.lname = self.primStack.pop(debug=self.debug > 1)
+            self.tl, self.nl, self.lname, self.lact = self.primStack.pop(debug=self.debug > 1)
         elif self.action == LoadRgh:
-            self.tr, self.nr, self.rname = self.primStack.pop(debug=self.debug > 1)
+            self.tr, self.nr, self.rname, self.ract = self.primStack.pop(debug=self.debug > 1)
         else:
             assert 0, action  
         pass
@@ -474,26 +533,27 @@ class CSG(object):
         # and start filling the primStack, as go back upwards
         """
         action = self.action
+        assert action in [GotoLft, GotoRgh]
 
-        if self.debug > 3:
-            log.info("Intersect %s %s  " % (self.node.name, desc_action(self.action)))
 
         if self.node.is_primitive:
 
-            tt, nn, name = intersect_primitive( self.node, self.ray, self.tmin )
+            tt, nn, name, act = intersect_primitive( self.node, self.ray, self.tmin )
             if action ==  GotoLft:
                 self.tl = tt
                 self.nl = nn
                 self.lname = name
+                self.lact = act
                 if self.debug > 3:
-                    log.info("Intersect.GotoLft %s tl %5.2f lname %s " % (self.node.name, self.tl, self.lname )) 
+                    log.info("pr.Intersect.GotoLft %s tl %5.2f lname %s " % (self.node.name, self.tl if self.tl else -1, self.lname )) 
                 pass
             elif action == GotoRgh:
                 self.tr = tt
                 self.nr = nn
                 self.rname = name
+                self.ract = act
                 if self.debug > 3:
-                    log.info("Intersect.GotoRgh %s tr %5.2f rname %s " % (self.node.name, self.tr, self.rname )) 
+                    log.info("pr.Intersect.GotoRgh %s tr %5.2f rname %s " % (self.node.name, self.tr if self.tr else -1, self.rname )) 
                 pass
             pass
             self.action = Compute
@@ -505,34 +565,38 @@ class CSG(object):
             gotoR = intersectBox(self.node.right)
             
             if gotoL and self.node.left.is_primitive:
-                tt, nn, name = intersect_primitive(self.node.left, self.ray, self.tmin)
+                self.record_traversal(self.node.left)
+                tt, nn, name, act = intersect_primitive(self.node.left, self.ray, self.tmin)
                 self.tl = tt
                 self.nl = nn
                 self.lname = name
+                self.lact = act
                 gotoL = False
 
                 if self.debug > 3:
-                    log.info("Intersect.gotoL %s tl %5.2f lname %s " % (self.node.left.name, self.tl, self.lname )) 
+                    log.info("op.Intersect.gotoL %s tl %5.2f lname %s " % (self.node.left.name, self.tl, self.lname )) 
 
             
             if gotoR and self.node.right.is_primitive:
-                tt, nn, name = intersect_primitive(self.node.right, self.ray, self.tmin)
+                self.record_traversal(self.node.right)
+                tt, nn, name, act = intersect_primitive(self.node.right, self.ray, self.tmin)
                 self.tr = tt
                 self.nr = nn
                 self.rname = name
+                self.ract = act
                 gotoR = False
 
                 if self.debug > 3:
-                    log.info("Intersect.gotoR %s tr %5.2f rname %s " % (self.node.right.name, self.tr, self.rname )) 
+                    log.info("op.Intersect.gotoR %s tr %5.2f rname %s " % (self.node.right.name, self.tr, self.rname )) 
              
             # immediate right/left primitives are not stacked, as are ready for compute 
             if gotoL or gotoR:
                 if gotoL:
                     # non-primitive subtree intersect
-                    self.primStack.push((self.tl, self.nl, self.lname), debug=self.debug > 1)
+                    self.primStack.push((self.tl, self.nl, self.lname, self.lact), debug=self.debug > 1)
                     self.actionStack.push(LoadLft, debug=self.debug > 1)
                 elif gotoR:
-                    self.primStack.push((self.tr, self.nr, self.rname), debug=self.debug > 1)
+                    self.primStack.push((self.tr, self.nr, self.rname, self.ract), debug=self.debug > 1)
                     self.actionStack.push(LoadRgh, debug=self.debug > 1)
                 pass
             else:
@@ -581,7 +645,7 @@ class CSG(object):
                 log.info("Up setting Return... primStack   %s " % self.primStack.desc()) 
                 log.info("Up setting Return... tminStack   %s " % self.tminStack.desc()) 
             pass
-            #self.action = Return
+            self.action = Return
             #self.actionStack.push(Return)
             #self.action = self.actionStack.pop(debug=self.debug > 1) 
         else:
@@ -591,6 +655,8 @@ class CSG(object):
 
     def Compute_(self):
         """
+        Hmm, surely the loopers can be more simply implemented (without stacks and action), 
+        they just correspond to repeating the lookup with tmin advanced for one side.
         """
         assert self.node.is_operation
 
@@ -627,40 +693,48 @@ class CSG(object):
             self.tr = None
             self.nr = None
             self.rname = None
+            self.ract = act
             self.tl = None
             self.nl = None
             self.lname = None
+            self.lact = act
             self.Up()
 
         elif act_RetL or act_RetLIfCloser: 
             act = RetLIfCloser if act_RetLIfCloser else RetL
+            self.lact = act
+
             self.tr = self.tl
             self.nr = self.nl
+            self.ract = self.lact
             self.Up()
 
         elif act_RetR or act_RetRIfCloser: 
             act = RetRIfCloser if act_RetRIfCloser else RetR
+            self.ract = act
             if (FlipR & acts): self.nr = -self.nr
             self.tl = self.tr
             self.nl = self.nr
+            self.lact = self.ract
             self.Up()
 
         elif act_LoopL or act_LoopLIfCloser:
             act = LoopLIfCloser if act_LoopLIfCloser else LoopL
             self.tmin = self.tl
-            self.primStack.push((self.tr,self.nr,self.rname), debug=self.debug > 1)
+            self.primStack.push((self.tr,self.nr,self.rname,act), debug=self.debug > 1)
             self.actionStack.push(LoadRgh, debug=self.debug > 1)
             self.action = GotoLft
 
         elif act_LoopR or act_LoopRIfCloser:
             act = LoopRIfCloser if act_LoopRIfCloser else LoopR
             self.tmin = self.tr
-            self.primStack.push((self.tl,self.nl,self.lname), debug=self.debug > 1)
+            self.primStack.push((self.tl,self.nl,self.lname,act), debug=self.debug > 1)
             self.actionStack.push(LoadLft, debug=self.debug > 1)
             self.action = GotoRgh
         else:
             assert 0
         pass
+
         self.act = act 
  
         if self.debug > 1:
@@ -671,16 +745,87 @@ class CSG(object):
         #assert self.action == Return
         
         if self.act in [RetMiss]:
-            return None, None, None
+            return None, None, None, self.act
         elif self.act in [RetL, RetLIfCloser]:
-            return self.tl, self.nl, self.lname
+            return self.tl, self.nl, self.lname, self.act
         elif self.act in [RetR, RetRIfCloser]:
-            return self.tr, self.nr, self.rname
+            return self.tr, self.nr, self.rname, self.act
         else:
             log.warning("%d iray %d iterative returned to top with unexpected act %s " % (self.count, self.iray,desc_action(self.act)))
+        pass
 
+    def compare_intersects(self, tst):
+ 
+        nray = len(tst.rays)
+        self.ipos = np.zeros((2,nray, 3), dtype=np.float32 ) 
+        self.ndir = np.zeros((2,nray, 3), dtype=np.float32 ) 
+        self.tval = np.zeros((2,nray), dtype=np.float32 )
+        self.aval = np.zeros((2,nray), dtype=np.int32 )
 
+        self.prob = []
+        self.trob = []
+        for iray, ray in enumerate(tst.rays):
+            for recursive in [1,0]:
+                self.typ = "RECURSIVE" if recursive else "ITERATIVE"
+                self.reset(ray=ray, iray=iray, debug=tst.debug) 
 
+                if iray in tst.skip:
+                    log.warning("skipping iray %d " % iray)
+                    continue 
+
+                if self.debug > 0:
+                    log.info(" ray(%d) %r " % (iray,ray) ) 
+                if self.debug > 1:
+                    log.info(" %r " % (tst.root)) 
+
+                if recursive:
+                    tt, nn, nname, act = self.recursive_intersect(tst.root, depth=0)
+                else:
+                    tt, nn, nname, act = self.iterative_intersect(tst.root)   
+                pass
+                if self.debug:
+                    log.info("[%d] %s intersect tt %s nn %r " % (-1, self.typ, tt, nn ))
+
+                if not tt is None:
+                    ix = 0 if self.typ == "ITERATIVE" else 1
+                    self.ipos[ix,iray] = ray.position(tt)
+                    self.ndir[ix,iray] = nn
+                    self.tval[ix,iray] = tt
+                    self.aval[ix,iray] = act 
+                pass
+            pass
+
+            ok_pos = np.allclose( self.ipos[0,iray], self.ipos[1,iray] )
+            ok_dir = np.allclose( self.ndir[0,iray], self.ndir[1,iray] )
+            ok_tva = np.allclose( self.tval[0,iray], self.tval[1,iray] )
+
+            if not (ok_pos and ok_dir and ok_tva):
+                self.prob.append(iray)
+
+            ok_tra = self.compare_traversal()
+            if not ok_tra:
+                self.trob.append(iray) 
+            pass
+        pass
+        log.info("%10s %d/%d rays with intersect mismatches : %s " % (tst.name, len(self.prob),nray,repr(self.prob)))
+        log.info("%10s %d/%d rays with traversal mismatches : %s " % (tst.name, len(self.trob),nray,repr(self.trob)))
+
+    def plot_intersects(self, plt, normal=False):
+        sc = 10 
+
+        prob = self.trob
+
+        for recursive in [1, 0]:
+            xoff = 600 if recursive else 0
+            plt.scatter( xoff + self.ipos[recursive,:,0]                        , self.ipos[recursive,:,1] )
+            if normal:
+                plt.scatter( xoff + self.ipos[recursive,:,0]+self.ndir[recursive,:,0]*sc , self.ipos[recursive,:,1]+self.ndir[recursive,:,1]*sc )
+    
+                if len(prob) > 0:
+                    plt.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="r" )
+                    plt.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="g" )
+
+ 
 
 
 def traverse(top):
@@ -705,109 +850,22 @@ def traverse(top):
             pass
             idx += 1 
 
-def test_intersect(tst):
-    """
-    * top virtual node distinguishable as an "operation" but node.right is None 
 
+
+def test_intersect(csg, tst):
+    """
     * only 1st intersect is returned, so to see inside and outside of   
       a shape need to send rays from inside and outside
 
-
-    Union of two offset spheres, OK from aringlight but not origlight
-
-
     """
-
-    csg = CSG(level=tst.level)
-
     traverse(tst.root)
 
-    #virtual_root = Node(left=tst.root,right=Node(shape=EMPTY),operation=UNION, name="vroot_%s" % tst.root.name)   
+    csg.compare_intersects( tst )
 
-    rays = []
-    if "xray" in tst.source:
-        rays += [Ray(origin=[0,0,0], direction=[1,0,0])]
-
-    if "aringlight" in tst.source:
-        ary = Ray.aringlight(num=tst.num, radius=1000)
-        rays += Ray.make_rays(ary)
-
-    if "origlight" in tst.source:
-        rays += Ray.origlight(num=tst.num)
-
-    if "lsquad" in tst.source:
-        rays += [Ray(origin=[-300,y,0], direction=[1,0,0]) for y in range(-50,50+1,10)]
-    pass
-
-    ipos = np.zeros((2,len(rays), 3), dtype=np.float32 ) 
-    ndir = np.zeros((2,len(rays), 3), dtype=np.float32 ) 
-    tval = np.zeros((2,len(rays)), dtype=np.float32 )
-
-    prob = []
-    for iray, ray in enumerate(rays):
-
-        for recursive in [1,0]:
-            csg.reset(ray=ray, iray=iray, debug=tst.debug) 
-
-            #log.info("iray %d csg.count %d " % (iray,csg.count) )
-
-            if iray in tst.skip:
-                log.warning("skipping iray %d " % iray)
-                continue 
-
-            if csg.debug > 0:
-                log.info(" ray(%d) %r " % (iray,ray) ) 
-            if csg.debug > 1:
-                log.info(" %r " % (tst.root)) 
-
-            if recursive:
-                #root = virtual_root.left
-                root = tst.root
-                tt, nn, nname = csg.recursive_intersect(root, depth=0)
-            else:
-                #root = virtual_root.left
-                root = tst.root
-                tt, nn, nname = csg.iterative_intersect(root)   
-            pass
-            typ = "RECURSIVE" if recursive else "ITERATIVE"
-            if csg.debug:
-                log.info("[%d] %s intersect tt %s nn %r " % (-1, typ, tt, nn ))
-            if not tt is None:
-                ipos[recursive,iray] = ray.position(tt)
-                ndir[recursive,iray] = nn
-                tval[recursive,iray] = tt
-            pass
-        pass
-
-        ok_pos = np.allclose( ipos[0,iray], ipos[1,iray] )
-        ok_dir = np.allclose( ndir[0,iray], ndir[1,iray] )
-        ok_tva = np.allclose( tval[0,iray], tval[1,iray] )
-
-        if not (ok_pos and ok_dir and ok_tva):
-            prob.append(iray)
-        pass
-    pass
-
-    if len(prob) > 0:
-        log.warning("%10s %d/%d rays with mismatches : %s " % (tst.name, len(prob),len(rays),repr(prob)))
-    else:
-        log.info("%10s %d/%d rays with mismatches : %s " % (tst.name, len(prob),len(rays),repr(prob)))
-
-    sc = 10 
-    for recursive in [1, 0]:
-        xoff = 600 if recursive else 0
-        plt.scatter( xoff + ipos[recursive,:,0]                        , ipos[recursive,:,1] )
-        #plt.scatter( xoff + ipos[recursive,:,0]+ndir[recursive,:,0]*sc , ipos[recursive,:,1]+ndir[recursive,:,1]*sc )
-        #plt.scatter( xoff + ary[:,0,0], ary[:,0,1] )
-
-        if len(prob) > 0:
-            plt.scatter( xoff + ipos[recursive, prob,0], ipos[recursive, prob,1], c="r" )
-            plt.scatter( xoff + ipos[recursive, prob,0], ipos[recursive, prob,1], c="g" )
-
+    csg.plot_intersects( plt )
 
     plt.show()
 
-    return prob, tval, ipos, ndir
 
 
 
@@ -826,6 +884,29 @@ class T(object):
         self.source = source
         self.num = num
         self.level = level
+
+    def _get_rays(self):
+        rays = []
+        if "xray" in self.source:
+            rays += [Ray(origin=[0,0,0], direction=[1,0,0])]
+
+        if "aringlight" in self.source:
+            ary = Ray.aringlight(num=self.num, radius=1000)
+            rays += Ray.make_rays(ary)
+
+        if "origlight" in self.source:
+            rays += Ray.origlight(num=self.num)
+
+        if "lsquad" in self.source:
+            rays += [Ray(origin=[-300,y,0], direction=[1,0,0]) for y in range(-50,50+1,10)]
+        pass
+        return rays
+
+    rays = property(_get_rays)
+
+
+
+
 
 
 
@@ -881,11 +962,11 @@ if __name__ == '__main__':
 
     ok0 = [ 
              #T(lrsph_i, source="origlight"), 
-             T(lrsph_i, source="aringlight", notes="all iterative aringlight miss in actionStack while mode", level=2, debug=[0]), 
+             #T(lrsph_i, source="aringlight", notes="all iterative aringlight miss in actionStack while mode", level=2, debug=[0]), 
              #T(lrbox), 
-             #T(bms),
+             #T(bms, level=4, debug=[0]),
              #T(csph, source="origlight", debug=[0], level=2),
-             #T(smb, source="aringlight,origlight", debug=[0], skip=[], level=4),
+             T(smb, source="aringlight,origlight", debug=[23], skip=[], level=4),
           ]
 
     ok = [ 
@@ -912,6 +993,8 @@ if __name__ == '__main__':
           ]
 
     for tst in ok0:
-        prob, tval, ipos, ndir = test_intersect(tst)
+        csg = CSG(level=tst.level)
+        test_intersect(csg,tst)
+    pass
 
 
