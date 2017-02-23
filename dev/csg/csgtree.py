@@ -89,7 +89,6 @@ SaveLft = 0x1 << 6
 Start   = 0x1 << 7
 Return  = 0x1 << 8
 
-
 def desc_action(action):
     if action is None:return "NONE"
     s = ""
@@ -109,7 +108,6 @@ def intersectBox(node):
 
 def dump(label):
     return "%s %s tl:%s nl:%s tr:%s nr:%s " % (label, desc_action(action),repr(tl),repr(nl),repr(tr),repr(nr))
-
 
 
 class Stack(object):

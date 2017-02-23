@@ -1,29 +1,185 @@
 #!/usr/bin/env python
+"""
+        # hmm: diddling with argument objects setting parent pointers caused difficult to find bugs 
+        # and forced use of cloning as workaround... instead try to live without
+        #
+        #if not operation is None:
+        #    left.parent = self 
+        #    if not right is None:
+        #        right.parent = self 
+        #pass
+
+    #def clone(self):
+    #    if self.is_operation:
+    #        cleft = self.left.clone() 
+    #        cright = self.right.clone() 
+    #    else:
+    #        cleft = None
+    #        cright = None
+    #    pass
+    #    return Node(shape=self.shape, left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
+
+"""
+import logging
+log = logging.getLogger(__name__)
+import numpy as np
+
+EMPTY = 0 
+SPHERE = 1
+BOX = 2 
+is_shape = lambda c:c in [EMPTY,SPHERE, BOX]
+
+DIVIDER = 99  # between shapes and operations
+
+UNION = 100
+INTERSECTION = 101
+DIFFERENCE = 102
+is_operation = lambda c:c in [UNION,INTERSECTION,DIFFERENCE]
+
+
+desc = { EMPTY:"EM", SPHERE:"SP", BOX:"BX", UNION:"U", INTERSECTION:"I", DIFFERENCE:"D" }
+
 
 class Node(object):
-    def __init__(self, d, l=None, r=None):
-        self.d = d
+    def __init__(self, idx=None, l=None, r=None, **kwa):
+        """
+        :param idx: 1-based levelorder (aka breadth first) tree index, root at 1
+        """
+        self.idx = idx
         self.l = l
         self.r = r
         self.next_ = None
 
-    def __repr__(self):
-        if self.l is not None and self.r is not None:
-            return "Node(%d,l=%r,r=%r)" % (self.d, self.l, self.r)
-        elif self.l is None and self.r is None:
-            return "Node(%d)" % (self.d)
-        else:
-            assert 0
+        # below needed for CSG 
+        self.shape = None 
+        self.operation = None
+        self._param = None
+        self.parent = None
+        self.name = "unnamed"
+        self.apply_(**kwa)
 
-    is_leaf = property(lambda self:self.l is None and self.r is None)
-    is_left = property(lambda self:self.d % 2 == 0)
+    def _get_param(self):
+        return self._param 
+    def _set_param(self, v):
+        self._param = np.asarray(v) if v is not None else None 
+    param = property(_get_param, _set_param)
+
+    def apply_(self, **kwa):
+        for k,v in kwa.items():
+            if k == "shape":
+                self.shape = v
+            elif k == "operation":
+                self.operation = v
+            elif k == "param":
+                self.param = v
+            elif k == "name":
+                self.name = v 
+            else:
+                log.warning("ignored Node param %s : %s " % (k,v))
+            pass 
+
+    def tree_labelling(self):
+        """
+        * call this only on the root node
+        """
+        # tree labelling
+        self.maxidx = Node.levelorder_i(self)
+        self.maxdepth = Node.depth_r(self)
+        Node.postorder_threading_r(self)
+
 
     @classmethod
-    def leftmost(cls, root):
-        n = root.l  
-        while n is not None:
-            n = n.l
-        return n
+    def dress(cls, root):
+        """
+        """
+        leftop = Node.leftmost(root)
+        node = leftop
+        while node is not None:
+
+            if node.is_leaf:
+                assert 0, "not expecting leaves" 
+            elif node.is_bileaf:
+                node.apply_(operation=DIFFERENCE)
+                pidx = node.idx
+                lidx = node.l.idx
+                ridx = node.r.idx 
+                node.l.apply_(shape=BOX, param=[pidx*10,lidx*10,0,100] )             
+                node.r.apply_(shape=SPHERE, param=[pidx*10,ridx*10,0,100] )             
+            else:
+                node.apply_(operation=UNION)
+            pass
+            log.info(" dress %r " % node )
+            node = node.next_ 
+
+
+    @classmethod
+    def traverse(cls, leftop, label="traverse"):
+        """
+        """
+        print "%s : following thread..." % label
+        node = leftop
+        while node is not None:
+            print node
+            node = node.next_ 
+
+    def __repr__(self):
+        if self.is_bare:
+            if self.l is not None and self.r is not None:
+                return "Node(%d,l=%r,r=%r)" % (self.idx, self.l, self.r)
+            elif self.l is None and self.r is None:
+                return "Node(%d)" % (self.idx)
+            else:
+                assert 0
+        else:
+            if self.is_primitive:
+                return "%s.%s(%d)" % (self.name, desc[self.shape], self.idx)
+            else:
+                return "%s.%s(%d,l=%r,r=%r)" % ( self.name, desc[self.operation],self.idx,self.l, self.r )
+
+    is_primitive = property(lambda self:self.shape is not None)
+    is_operation = property(lambda self:self.operation is not None)
+    is_bare = property(lambda self:self.operation is None and self.shape is None)
+
+    is_leaf = property(lambda self:self.l is None and self.r is None)
+
+    # bileaf is an operation applied to two leaf nodes, another name is a triple
+    is_bileaf = property(lambda self:not self.is_leaf and self.l.is_leaf and self.r.is_leaf)
+
+    is_left = property(lambda self:self.idx % 2 == 0)
+
+
+    @classmethod
+    def levelorder_i(cls,root):
+        """
+        Assign 1-based binary tree levelorder indices, eg for height 3 complete tree::
+
+             1
+ 
+             2            3
+
+             4      5     6       7
+ 
+             8   9  10 11 12  13  14   15
+
+        """
+        q = []
+        q.append(root)
+
+        idx = 1 
+        while len(q) > 0:
+           node = q.pop(0)   # bottom of q (ie fifo)
+
+           if node.idx is None:
+               node.idx = idx
+           else:
+               assert node.idx == idx
+           pass
+           idx += 1
+
+           if not node.l is None:q.append(node.l)
+           if not node.r is None:q.append(node.r)
+        pass
+        return idx - 1
 
 
     @classmethod
@@ -70,35 +226,27 @@ class Node(object):
         pass
         return nodes
 
-    @classmethod
-    def levelorder_i(cls,root):
-        q = []
-        q.append(root)
-
-        idx = 1 
-        while len(q) > 0:
-           node = q.pop(0)   # bottom of q (ie fifo)
-
-           assert node.d == idx
-           idx += 1
-
-           if not node.l is None:q.append(node.l)
-           if not node.r is None:q.append(node.r)
-        pass
-        return idx - 1
-
 
     @classmethod
     def label_r(cls, node, idx, label):
-        if node.d == idx:
+        if node.idx == idx:
             setattr(node, label, 1)
 
         if node.l is not None:cls.label_r(node.l, idx, label)
         if node.r is not None:cls.label_r(node.l, idx, label)
 
+    @classmethod
+    def leftmost_leaf(cls, root):
+        n = root.l  
+        while n is not None:
+            n = n.l
+        return n
  
     @classmethod
-    def leftmost_nonleaf(cls, root):
+    def leftmost(cls, root):
+        """
+        :return: leftmost internal or operation node 
+        """
         l = root 
         while l.l is not None:
             if l.l.is_leaf:
@@ -106,6 +254,8 @@ class Node(object):
             else:
                 l = l.l
             pass
+
+        #assert not l.is_leaf
         return l
 
     @classmethod
@@ -292,24 +442,26 @@ root4.name = "root4"
 
 if __name__ == '__main__':
 
+    logging.basicConfig(level=logging.INFO)
+
     for tree in [root0, root1, root2, root3, root4]:
         print "%20s : %s " % (tree.name, tree)
 
         nodes = Node.postorder_r(tree,nodes=[], leaf=False)
         print "Node.postorder_r(%s, leaf=False)\n" % tree.name + "\n".join(map(repr,nodes)) 
 
-        Node.postorder_threading_r(tree)
-        leftop = Node.leftmost_nonleaf(tree)
-        print "Node.leftmost_nonleaf(%s) : %s " % (tree.name, leftop )
+        tree.tree_labelling() 
 
-        print "following thread..."
-        node = leftop
-        while node is not None:
-            print node
-            node = node.next_ 
+        lpr = Node.leftmost_leaf(tree)
+        lop = Node.leftmost(tree)
 
+        print "Node.leftmost(%s) : %s " % (tree.name, lpr )
+        print "Node.leftmost_nonleaf(%s) : %s " % (tree.name, lop )
 
+        Node.traverse(lpr, "left prim")
+        Node.traverse(lop, "left operation")
 
+        Node.dress(tree)
 
 
 

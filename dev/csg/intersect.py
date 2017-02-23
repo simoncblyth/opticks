@@ -2,31 +2,20 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from node import Node, SPHERE, BOX, EMPTY, UNION, INTERSECTION, DIFFERENCE, desc, root0, root1, root2, root3, root4
+
 import logging
 log = logging.getLogger(__name__)
-
-EMPTY = 0 
-SPHERE = 1
-BOX = 2 
-is_shape = lambda c:c in [EMPTY,SPHERE, BOX]
-
-DIVIDER = 99  # between shapes and operations
-
-UNION = 100
-INTERSECTION = 101
-DIFFERENCE = 102
-is_operation = lambda c:c in [UNION,INTERSECTION,DIFFERENCE]
-
-
-desc = { EMPTY:"EM", SPHERE:"SP", BOX:"BX", UNION:"U", INTERSECTION:"I", DIFFERENCE:"D" }
 
 
 
 def intersect_primitive(node, ray, tmin):
     assert node.is_primitive
+    #log.info("intersect_primitive") 
     if node.shape == BOX:
         tt, nn = intersect_box( node.param, ray, tmin )  
     elif node.shape == SPHERE:
+        #log.info("intersect_primitive(SPHERE)") 
         tt, nn = intersect_sphere( node.param, ray, tmin)  
     elif node.shape == EMPTY:
         tt, nn = None, None
@@ -37,6 +26,14 @@ def intersect_primitive(node, ray, tmin):
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
     return tt, nn, node.name, 0
 
+
+
+def fmt_f(v):
+    return "%5.2f" % (v if v is not None else -1)
+
+def fmt_3f(a):
+    sv = ",".join(map(fmt_f,a[:3])) if a is not None else "-"   
+    return "(" + sv + ")" 
 
 def intersect_sphere( param, ray, tmin ):
 
@@ -73,6 +70,7 @@ def intersect_sphere( param, ray, tmin ):
             nn = (O + tt*D)/radius 
         pass
     pass
+    log.info("intersect_sphere center %s radius %s ray %r -> tt %s nn %s " % ( fmt_3f(center), fmt_f(radius), ray, fmt_f(tt), fmt_3f(nn)))
 
     return tt, nn
 
@@ -133,46 +131,6 @@ def intersect_box( param, ray, tmin ):
         pass
     pass
     return tt, nn
-
-
-class Node(object):
-    def __init__(self, shape=None, left=None, right=None, operation=None, param=None, name="unnamed"):
-
-        self.shape = shape 
-        self.left = left
-        self.right = right
-
-        self.operation = operation
-        self.param = np.asarray(param) if not param is None else None 
-        self.parent = None
-        self.name = name
-
-        if not operation is None:
-            left.parent = self 
-            if not right is None:
-                right.parent = self 
-        pass
-
-    def clone(self):
-        if self.is_operation:
-            cleft = self.left.clone() 
-            cright = self.right.clone() 
-        else:
-            cleft = None
-            cright = None
-        pass
-        return Node(shape=self.shape, left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
-
-    is_primitive = property(lambda self:self.shape is not None)
-    is_operation = property(lambda self:self.operation is not None)
-
-    def __repr__(self):
-        if self.is_primitive:
-            return "%s.%s" % (self.name, desc[self.shape])
-        else:
-            return "%s.%s(%s,%s)" % ( self.name, desc[self.operation], repr(self.left), repr(self.right))
-
-
 
 
 
@@ -236,11 +194,20 @@ class Ray(object):
  
 if __name__ == '__main__':
 
-    cbox = Node(BOX, param=[0,0,0,100] )
-    csph = Node(SPHERE, param=[0,0,0,100] )
+    plt.ion()
+    plt.close()
 
-    prim = cbox
-    #prim = csph
+    cbox = Node(shape=BOX, param=[0,0,0,100] )
+    csph = Node(shape=SPHERE, param=[0,0,0,100] )
+
+
+    root2.tree_labelling()
+    Node.dress(root2)
+
+
+    #prim = cbox
+    prim = csph
+
 
     num = 100
 
@@ -255,7 +222,7 @@ if __name__ == '__main__':
 
     for i, ray in enumerate(rays):
         tmin = 0 
-        tt, nn, nname = intersect_primitive( prim, ray, tmin )
+        tt, nn, nname, hmm = intersect_primitive( prim, ray, tmin )
         if not tt is None:
             ipos[i] = ray.position(tt)
             ndir[i] = nn
@@ -269,8 +236,6 @@ if __name__ == '__main__':
     plt.scatter( ipos[:,0]+ndir[:,0]*sc , ipos[:,1]+ndir[:,1]*sc )
     plt.scatter( ary[:,0,0], ary[:,0,1] )
     plt.show()
-
-
 
 
 
