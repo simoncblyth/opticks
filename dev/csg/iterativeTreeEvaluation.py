@@ -259,10 +259,11 @@ For CSG trees there is not much of a size constraint as using 4,4 node with
     }
 
 
-
 Simplification idea : avoid postorder node lists for loopers by using ranges 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Yep, this turned out to a necessity to control the reiteration begin/end 
+tranche ranges when using postorder next threading. See postordereval_i2t
 
 Simplification idea : fly above primitives, use postorder next threading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -271,6 +272,8 @@ height 4::
 
    8 -->  9 --> 4 --> 10 ---> 11 ---> 5 --> 2  --> 12 --> 13 --> 6 --> 14 --> 15 --> 7 --> 3 -->  1
 
+Yep, this gave considerable simplification. Compare postordereval_i2 and postordereval_i2t
+
 
 
 """
@@ -278,62 +281,6 @@ height 4::
 
 from node import Node, root0, root1, root2, root3, root4
  
-def postOrderIterative(root): 
-    """
-    # iterative postorder traversal using
-    # two stacks : nodes processed 
-
-    ::
-
-          1
-
-         [2]                 3
-
-         [4]     [5]         6     7
-
-         [8] [9] [10] [11]  12 13  14 15
-
-    ::
-
-        In [25]: postOrderIterative(root3.l)
-        Out[25]: 
-        [Node(8),
-         Node(9),
-         Node(4,l=Node(8),r=Node(9)),
-         Node(10),
-         Node(11),
-         Node(5,l=Node(10),r=Node(11)),
-         Node(2,l=Node(4,l=Node(8),r=Node(9)),r=Node(5,l=Node(10),r=Node(11)))]
-
-        In [26]: postOrderIterative(root3.l.l)
-        Out[26]: [Node(8), Node(9), Node(4,l=Node(8),r=Node(9))]
-
-    """ 
-    if root is None:
-        return         
-     
-    nodes = []
-    s = []
-     
-    nodes.append(root)
-     
-    while len(nodes) > 0:
-         
-        node = nodes.pop()
-        s.append(node)
-     
-        if node.l is not None:
-            nodes.append(node.l)
-        if node.r is not None :
-            nodes.append(node.r)
- 
-    #while len(s) > 0:
-    #    node = s.pop()
-    #    print node.d,
- 
-    return list(reversed(s))
-
-
 
 
 def binary_calc(node, left=None, right=None, istage=None):
@@ -341,6 +288,8 @@ def binary_calc(node, left=None, right=None, istage=None):
     assert hasattr(node,'depth')
 
     if istage in ["LoopL","LoopR"]:
+        pfx = istage[0]+istage[-1]
+    elif istage in ["ResumeFromLoopL","ResumeFromLoopR"]:
         pfx = istage[0]+istage[-1]
     else:
         pfx = ""
@@ -352,17 +301,30 @@ def binary_calc(node, left=None, right=None, istage=None):
         return "%s:%s;%s" % (pfx,node.d, node.depth )
 
 
-def postordereval_r(p, debug=0):
+def postordereval_r(p, debug=0, istage=None):
     """
     * :google:`tree calculation postorder traversal`
     * http://interactivepython.org/runestone/static/pythonds/Trees/TreeTraversals.html
     """
     if not p: return
 
-    l = postordereval_r(p.l, debug=debug)
-    r = postordereval_r(p.r, debug=debug)
+    el = postordereval_r(p.l, debug=debug, istage=istage)
+    er = postordereval_r(p.r, debug=debug, istage=istage)
 
-    return binary_calc(p, l, r )
+    ep = binary_calc(p, el, er, istage=istage )
+
+    if hasattr(p, "LoopL"):
+        delattr(p, "LoopL")
+        el = postordereval_r(p.l,istage="LoopL") 
+        ep = binary_calc(p,el,er,istage="ResumeFromLoopL")
+    pass
+
+    if hasattr(p, "LoopR"):
+        delattr(p, "LoopR")
+        er = postordereval_r(p.r,istage="LoopR") 
+        ep = binary_calc(p,el,er,istage="ResumeFromLoopR")
+    pass
+    return ep
 
 
 def postordereval_i1(node, debug=0):
@@ -404,10 +366,10 @@ def postordereval_i1(node, debug=0):
 
     ::
 
-        In [32]: postOrderIterative(root3.l.l)
+        In [32]: Node.postOrderIterative(root3.l.l)
         Out[32]: [Node(8), Node(9), Node(4,l=Node(8),r=Node(9))]
 
-        In [33]: postOrderIterative(root3.l.r)
+        In [33]: Node.postOrderIterative(root3.l.r)
         Out[33]: [Node(10), Node(11), Node(5,l=Node(10),r=Node(11))]
 
 
@@ -423,7 +385,7 @@ def postordereval_i1(node, debug=0):
 
     ::
 
-        In [31]: postOrderIterative(root3.l)
+        In [31]: Node.postOrderIterative(root3.l)
         Out[31]: 
         [Node(8),
          Node(9),
@@ -486,7 +448,7 @@ def postordereval_i1(node, debug=0):
 
     while len(roots) > 0:
         root,c,istage = roots.pop()
-        nodes = postOrderIterative(root)
+        nodes = Node.postOrderIterative(root)
         nn = len(nodes)
 
         if debug>1:
@@ -521,6 +483,10 @@ def postordereval_i1(node, debug=0):
 
             ep = binary_calc(p,el,er, istage=istage)
 
+            if istage in ["ResumeFromLoopR", "ResumeFromLoopL"]:
+                istage = "Continue" 
+
+
             # faking LoopL,LoopR 
             # record position in current postorder
             # before queing up the Looper postorder 
@@ -541,7 +507,7 @@ def postordereval_i1(node, debug=0):
                     if debug>2:
                         print "LoopL at prim level, just needs direct rerun with tmin advanced"
                     el = binary_calc(l,istage="LoopL") 
-                    ep = binary_calc(p,el,er,istage="LoopL")
+                    ep = binary_calc(p,el,er,istage="ResumeFromLoopL")
                 pass
 
             elif hasattr(p, "LoopR"):
@@ -560,7 +526,7 @@ def postordereval_i1(node, debug=0):
                     if debug>2:
                         print "LoopR at prim level, just needs a direct rerun with tmin advanced"
                     er = binary_calc(r, istage="LoopR") 
-                    ep = binary_calc(p,el,er, istage="LoopR")
+                    ep = binary_calc(p,el,er, istage="ResumeFromLoopR")
                 pass
             else:
                 pass    
@@ -586,7 +552,7 @@ def postordereval_i1(node, debug=0):
 def postordereval_i2t(root, debug=2): 
     """
     Iterative binary tree evaluation, using postorder threading to avoid 
-    the stack manipulations that repeatly "discover" the postorder.
+    the stack manipulations of _i2 that repeatly "discover" the postorder.
     However intermediate evaluation steps still require 
     lhs and rhs stacks, that grow to a maximum of one less than the tree height.
     ie the stacks are small
@@ -612,6 +578,9 @@ def postordereval_i2t(root, debug=2):
             er = binary_calc(p.r,istage=istage) if p.r.is_leaf else rhs.pop()
             ep = binary_calc(p,el,er,istage=istage)
 
+            if istage in ["ResumeFromLoopR", "ResumeFromLoopL"]:
+                istage = "Continue" 
+
             if hasattr(p, "LoopL"):
                 delattr(p, "LoopL")
                 if not p.l.is_leaf:
@@ -623,7 +592,7 @@ def postordereval_i2t(root, debug=2):
                 else:
                     # at lowest level just need to rerun
                     el = binary_calc(p.l,istage="LoopL") 
-                    ep = binary_calc(p,el,er,istage="LoopL")
+                    ep = binary_calc(p,el,er,istage="ResumeFromLoopL")
                 pass
             pass
 
@@ -638,7 +607,7 @@ def postordereval_i2t(root, debug=2):
                 else:
                     # at lowest level just need to rerun
                     er = binary_calc(p.r,istage="LoopR") 
-                    ep = binary_calc(p,el,er,istage="LoopR")
+                    ep = binary_calc(p,el,er,istage="ResumeFromLoopR")
                 pass
             pass
             lhs.append(ep) if p.is_left else rhs.append(ep)
@@ -656,6 +625,9 @@ def postordereval_i2t(root, debug=2):
 def postordereval_i2(root, debug=0): 
     """
     Iterative binary tree evaluation
+
+    * NB no looper support, so must skip this one in equality asserts
+
     """ 
     assert root
      
@@ -736,6 +708,8 @@ if __name__ == '__main__':
 
     debug = 0 
 
+    skip_equality_assert = ["postordereval_i2"]
+
     for root in roots:
 
         # tree labelling
@@ -746,7 +720,7 @@ if __name__ == '__main__':
 
 
         # just dumping
-        nodes = postOrderIterative(root)
+        nodes = Node.postOrderIterative(root)
         print root.name 
         print " maxdepth:%d maxidx:%d " % (root.maxdepth, root.maxidx ) 
         print " postorder:" + " ".join(map(lambda node:str(node.d), nodes))
@@ -754,7 +728,10 @@ if __name__ == '__main__':
 
         # compare the imps
         ret0 = None
-        for fn in [postordereval_r,postordereval_i1,postordereval_i2, postordereval_i2t]:
+        #fns = [postordereval_r,postordereval_i1,postordereval_i2, postordereval_i2t]
+        fns = [postordereval_r,postordereval_i1,postordereval_i2t]
+
+        for fn in fns:
 
             Node.label_r(root, 2, "LoopL")   # label may be popped, so have to relabel for each imp
 
@@ -765,7 +742,8 @@ if __name__ == '__main__':
                 ret0 = ret
             else:
                 pass
-                #assert ret == ret0, (ret, ret0)
+                if not fn.__name__ in skip_equality_assert: 
+                    assert ret == ret0, (ret, ret0)
             pass
         pass
     pass

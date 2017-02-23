@@ -139,6 +139,63 @@ class Node(object):
             node.next_ = next_
 
 
+    @classmethod
+    def postOrderIterative(cls,root): 
+        """
+        # iterative postorder traversal using
+        # two stacks : nodes processed 
+
+        ::
+
+              1
+
+             [2]                 3
+
+             [4]     [5]         6     7
+
+             [8] [9] [10] [11]  12 13  14 15
+
+        ::
+
+            In [25]: Node.postOrderIterative(root3.l)
+            Out[25]: 
+            [Node(8),
+             Node(9),
+             Node(4,l=Node(8),r=Node(9)),
+             Node(10),
+             Node(11),
+             Node(5,l=Node(10),r=Node(11)),
+             Node(2,l=Node(4,l=Node(8),r=Node(9)),r=Node(5,l=Node(10),r=Node(11)))]
+
+            In [26]: Node.postOrderIterative(root3.l.l)
+            Out[26]: [Node(8), Node(9), Node(4,l=Node(8),r=Node(9))]
+
+        """ 
+        if root is None:
+            return         
+         
+        nodes = []
+        s = []
+         
+        nodes.append(root)
+         
+        while len(nodes) > 0:
+             
+            node = nodes.pop()
+            s.append(node)
+         
+            if node.l is not None:
+                nodes.append(node.l)
+            if node.r is not None :
+                nodes.append(node.r)
+     
+        #while len(s) > 0:
+        #    node = s.pop()
+        #    print node.d,
+     
+        return list(reversed(s))
+
+
 
 
 
