@@ -1,15 +1,82 @@
-#!/usr/bin/env python
 """
 
-Hmm descoping to support complete binary trees up to maximum depth
-of three/four would certainly cover all reasonable single 
-solid boolean combinations.
-Assuming implement transforms in a way that doesnt enlarge the tree.
+Strategy
+---------
+
+* descoping to support only complete binary trees, 
+  makes iterative tree mechanics much more tractable
+
+* complete trees up to maximum depth of three/four 
+  would certainly cover all reasonable single boolean solid boolean combinations,
+  when transforms are housed within the operation nodes
+
+* aim is to use separate csg trees for each G4 solid, so can then still
+  benefit from OptiX instancing and acceleration
+
+* recursion should NOT be used for tree evaluation on GPU, to avoid blowing 
+  up the stack for each level of recursion
+
+* recursion SHOULD be used for CPU side tree preparation, when it is the simplest
+
+* general principal of doing as much as possible during 
+  preparation stage to minimize evaluation processing
+  would suggest using eg threaded trees
+  with relative or absolute postorder next node indices
+
+* am intending to use (n,4,4) array structure to hold n tree nodes (both
+  primitives and operations). Operations need to hold a transform, but 
+  the 4,4 transform item has 4 always (0,0,0,1) slots spare 
+  for metadata which is ample to hold
+
+  * opcode (union/subtraction/intersection)
+  * levelorder index
+  * next postorder index  
+
+
+
+Background
+-------------
+
+Iterative Tree traversal
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * http://www.geeksforgeeks.org/iterative-postorder-traversal/
+
+Tree related articles
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * http://www.techiedelight.com/Tags/lifo/
+* http://www.techiedelight.com/Category/trees/binary-tree/
+
+Characteristics of Complete Binary Trees
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Data Structures and Algorithms, Dr. Naveen Garg, Trees lecture
+
+* http://textofvideo.nptel.iitm.ac.in/106102064/lec6.pdf
+
+Complete binary trees
+
+* have approx half nodes in the leaves
+* level i has 2^i nodes
+* tree of height h
+
+  * root at level 0, leaves at level h
+  * number of roots 2^0=1, number of leaves 2^h
+  * number of internal nodes, 2^0+2^1+2^2+...+2^(h-1)=2^(h) - 1   (hint: x2 to derive)
+  * number of internal nodes = number of leaves - 1
+  * total number of nodes, 2^(h+1) - 1 = n
+
+* tree of n nodes
+
+  * number of leaves, (n+1)/2
+  * height = log2( number of leaves ) = log2( (n+1)/2 )
 
 
+Postorder index sequences for height 2 and 3 trees
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* levelorder node labels in postorder 
 
 ::
 
@@ -30,11 +97,12 @@ indices follow level order (aka breadth first order)
 * if not a triple then treat the index singly eg 2 corresponding to pseudo-triples ("4" "5" 2) ("6" "7" 3) ("2" "3" 1)
    
 
-
+height 3 iterative tree evaluation "on paper" 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 csg ray trace algo 
 
-* knowing tree depth can jumpt straight to primitives
+* knowing tree depth can jump straight to primitives
 * visit left/right/parent where left/right are primitives 
 
 intersect ordering 
@@ -47,9 +115,7 @@ intersect ordering
 ( 3 )
 ( 1 )
 
-
-
-
+push/pop iteration along postorder nodes labelled  
 
 * (8   9 4)   pushLeft -> "4"   
 * (10 11 5)   pushRight -> "5"
@@ -64,6 +130,8 @@ intersect ordering
 * ("2" "3" 1)     popLeft, popRight -> "1"
 
 
+height 4 iterative tree evaluation "on paper" 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -123,14 +191,10 @@ intersect ordering
 
 
 
-
-
 It looks like using L and R intersect stacks will allow to iteratively 
 evaluate the ray intersect with the binary tree just by following 
 the postorder traverse while pushing and popping from the L/R stacks
-which need to be able to hold a maximum of 3 entries.
-
-
+which need to be able to hold a maximum of 3 entries (tree height - 1 ?)
 
 
 With 1-based node index, excluding root at node 1 
@@ -138,10 +202,74 @@ With 1-based node index, excluding root at node 1
 * right always odd
 
 
- 
-*   (16 17 8)  lstack:[8]
-*   (18 19 9)  rstack:[9]
-*   ( 8  9 
+
+Threaded Binary Tree
+~~~~~~~~~~~~~~~~~~~~~~
+
+* http://quiz.geeksforgeeks.org/threaded-binary-tree/
+* http://cmpe.emu.edu.tr/bayram/courses/231/LectureNotesSlides/Slides%206/17-Threaded-Binary-trees.pdf
+
+A binary tree is threaded by making all right child pointers that would
+normally be null point to the inorder successor of the node, and all left child
+pointers that would normally be null point to the inorder predecessor of the
+node.
+
+Common threading imps assuming to minimize node size, 
+so they reuse left/right pointers.
+For CSG trees there is not much of a size constraint as using 4,4 node with 
+4*32 bits spare for tree metadata and boolean opcode.
+
+
+::
+
+
+    struct Node 
+    {
+        int data;
+        Node *left, *right;
+        bool rightThread;    // indicates right is thread pointer, not child pointer
+    }   
+
+    struct Node* leftMost(struct Node *n)
+    {
+        if (n == NULL)
+           return NULL;
+     
+        while (n->left != NULL)
+            n = n->left;
+     
+        return n;
+    }
+     
+    // C code to do inorder traversal in a threadded binary tree
+    void inOrder(struct Node *root)
+    {
+        struct Node *cur = leftmost(root);
+        while (cur != NULL)
+        {
+            printf("%d ", cur->data);
+     
+            // If this node is a thread node, then go to
+            // inorder successor
+            if (cur->rightThread)
+                cur = cur->right;
+            else // Else go to the leftmost child in right subtree
+                cur = leftmost(cur->right);
+        }
+    }
+
+
+
+Simplification idea : avoid postorder node lists for loopers by using ranges 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Simplification idea : fly above primitives, use postorder next threading
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+height 4::
+
+   8 -->  9 --> 4 --> 10 ---> 11 ---> 5 --> 2  --> 12 --> 13 --> 6 --> 14 --> 15 --> 7 --> 3 -->  1
 
 
 
@@ -208,30 +336,36 @@ def postOrderIterative(root):
 
 
 
-def binary_calc(node, left=None, right=None):
+def binary_calc(node, left=None, right=None, istage=None):
 
     assert hasattr(node,'depth')
 
-    if left and right:
-        return "[%s;%s](%s,%s)" % ( node.d, node.depth, left, right )
+    if istage in ["LoopL","LoopR"]:
+        pfx = istage[0]+istage[-1]
     else:
-        return "%s;%s" % (node.d, node.depth )
+        pfx = ""
+   
+
+    if left and right:
+        return "%s:[%s;%s](%s,%s)" % ( pfx,node.d, node.depth, left, right )
+    else:
+        return "%s:%s;%s" % (pfx,node.d, node.depth )
 
 
-def postordereval_r(p):
+def postordereval_r(p, debug=0):
     """
     * :google:`tree calculation postorder traversal`
     * http://interactivepython.org/runestone/static/pythonds/Trees/TreeTraversals.html
     """
     if not p: return
 
-    l = postordereval_r(p.l)
-    r = postordereval_r(p.r)
+    l = postordereval_r(p.l, debug=debug)
+    r = postordereval_r(p.r, debug=debug)
 
     return binary_calc(p, l, r )
 
 
-def postordereval_i1(node):
+def postordereval_i1(node, debug=0):
     """
     Duplicates postordereval_r recursive tree evaluation using iteration
 
@@ -348,7 +482,6 @@ def postordereval_i1(node):
     lhs = []
     rhs = []
 
-    debug = 1
 
     while len(roots) > 0:
         root,c,istage = roots.pop()
@@ -369,8 +502,8 @@ def postordereval_i1(node):
                 r = nodes[c+1]
                 p = nodes[c+2]
 
-                el = binary_calc(l)  
-                er = binary_calc(r) 
+                el = binary_calc(l, istage=istage)  
+                er = binary_calc(r, istage=istage) 
 
                 if debug>2:
                     print "lrp (%d %d %d) " % (l.d, r.d, p.d )
@@ -385,7 +518,7 @@ def postordereval_i1(node):
                     print "el,er,p (%s %s %d) " % (el, er, p.d )
             pass
 
-            ep = binary_calc(p,el,er)
+            ep = binary_calc(p,el,er, istage=istage)
 
             # faking LoopL,LoopR 
             # record position in current postorder
@@ -406,8 +539,8 @@ def postordereval_i1(node):
                 elif increment == 3:
                     if debug>2:
                         print "LoopL at prim level, just needs direct rerun with tmin advanced"
-                    el = binary_calc(l) 
-                    ep = binary_calc(p,el,er)
+                    el = binary_calc(l,istage="LoopL") 
+                    ep = binary_calc(p,el,er,istage="LoopL")
                 pass
 
             elif hasattr(p, "LoopR"):
@@ -425,8 +558,8 @@ def postordereval_i1(node):
                 elif increment == 3:
                     if debug>2:
                         print "LoopR at prim level, just needs a direct rerun with tmin advanced"
-                    er = binary_calc(r) 
-                    ep = binary_calc(p,el,er)
+                    er = binary_calc(r, istage="LoopR") 
+                    ep = binary_calc(p,el,er, istage="LoopR")
                 pass
             else:
                 pass    
@@ -448,74 +581,78 @@ def postordereval_i1(node):
 
     return rhs[0]
         
+
+def postordereval_i2t(root, debug=2): 
+    """
+    Iterative binary tree evaluation, using postorder threading to avoid 
+    the stack manipulations that repeatly "discover" the postorder.
+    However intermediate evaluation steps still require 
+    lhs and rhs stacks, that grow to a maximum of one less than the tree height.
+    ie the stacks are small
+    """
+    leftop = Node.leftmost_nonleaf(root)
+    assert leftop.next_ is not None, "threaded postorder requires Node.postorder_threading_r "
+
+    debug = 2
+    lhs = []
+    rhs = []
+
+    pp = []
+    pp.append([leftop,"Start"])
+
+    while len(pp) > 0:
+        p,istage = pp.pop()
+
+        if debug > 1:
+            print "istage:%s p:%s " % (istage, p)
+   
+        while p is not None:
+            el = binary_calc(p.l,istage=istage) if p.l.is_leaf else lhs.pop()
+            er = binary_calc(p.r,istage=istage) if p.r.is_leaf else rhs.pop()
+            ep = binary_calc(p,el,er,istage=istage)
+
+            if hasattr(p, "LoopL"):
+                delattr(p, "LoopL")
+                if not p.l.is_leaf:
+                    # just popped lhs and rhs, but LoopL means are reiterating lhs, so put back rhs
+                    rhs.append(er)
+                    pp.append([p,"ResumeFromLoopL"])  
+                    pp.append([p.l,"LoopL"])
+                    break 
+                else:
+                    # at lowest level just need to rerun
+                    el = binary_calc(p.l,istage="LoopL") 
+                    ep = binary_calc(p,el,er,istage="LoopL")
+                pass
+            pass
+
+            if hasattr(p, "LoopR"):
+                delattr(p, "LoopR")
+                if not p.r.is_leaf:
+                    # just popped lhs and rhs, but LoopR means are reiterating rhs, so put back lhs
+                    lhs.append(el)
+                    pp.append([p,"ResumeFromLoopR"])  
+                    pp.append([p.r,"LoopR"])
+                    break 
+                else:
+                    # at lowest level just need to rerun
+                    er = binary_calc(p.r,istage="LoopR") 
+                    ep = binary_calc(p,el,er,istage="LoopR")
+                pass
+            pass
+            lhs.append(ep) if p.is_left else rhs.append(ep)
+            pass
+            p = p.next_ 
+        pass
+    pass
+    assert len(lhs) == 0, lhs
+    assert len(rhs) == 1, rhs   # end with p.d = 1 for the root
+    return rhs[0]
  
 
-def depth_r(node, depth=0):
-    """
-    Marking up the tree with depth, can be done CPU side 
-    during conversion : so recursive is fine
-    """
-    if node is None:
-        return 
-
-    #print node
-    node.depth = depth
-
-    maxd = depth
-    if node.l is not None: maxd = depth_r(node.l, depth+1)
-    if node.r is not None: maxd = depth_r(node.r, depth+1)
-    
-    return maxd
 
 
-def levelorder_i(root):
-    q = []
-    q.append(root)
-
-    idx = 1 
-    while len(q) > 0:
-       node = q.pop(0)   # bottom of q (ie fifo)
-
-       assert node.d == idx
-       idx += 1
-
-       if not node.l is None:q.append(node.l)
-       if not node.r is None:q.append(node.r)
-    pass
-    return idx - 1
-
-
-def progeny_i(root):
-    """
-
-    1
-
-    2          3
-
-    4    5     6      7
-
-    8 9  10 11 12 13 14 
-
-    """
-
-    nodes = []
-    q = []
-    q.append(root)
-
-    idx = 1 
-    while len(q) > 0:
-       node = q.pop(0)   # bottom of q (ie fifo)
-       nodes.append(node)
-       if not node.l is None:q.append(node.l)
-       if not node.r is None:q.append(node.r)
-    pass
-    return nodes
-
-
-
-
-
-def postordereval_i2(root): 
+def postordereval_i2(root, debug=0): 
     """
     Iterative binary tree evaluation
     """ 
@@ -542,7 +679,6 @@ def postordereval_i2(root):
     rhs = []
     nn = len(s)
 
-    debug = False
 
     c = nn - 1
     while c >= 0: 
@@ -552,7 +688,7 @@ def postordereval_i2(root):
             r = s[c-1]
             p = s[c-2]
 
-            if debug:
+            if debug>0:
                 print "c %d lrp %s %s %s " % (c,l,r,p)
 
             c -= 3
@@ -561,7 +697,7 @@ def postordereval_i2(root):
             er = binary_calc(r) 
         else:
             p = s[c-0]
-            if debug:
+            if debug>0:
                 print "c %d el %s er %s p %s " % (c, el, er, p)
             c -= 1
 
@@ -589,14 +725,6 @@ def postordereval_i2(root):
  
 
 
-def fake_label_r(node, idx, label):
-    if node.d == idx:
-        setattr(node, label, 1)
-
-    if node.l is not None:fake_label_r(node.l, idx, label)
-    if node.r is not None:fake_label_r(node.l, idx, label)
-
-
 if __name__ == '__main__':
 
 
@@ -605,13 +733,16 @@ if __name__ == '__main__':
     #roots = [root3, root4]
     #roots = [root3]
 
+    debug = 0 
+
     for root in roots:
 
         # tree labelling
-        root.maxidx = levelorder_i(root)
-        root.maxdepth = depth_r(root)
+        root.maxidx = Node.levelorder_i(root)
+        root.maxdepth = Node.depth_r(root)
 
-        fake_label_r(root, 2, "LoopL") 
+        Node.postorder_threading_r(root)
+
 
         # just dumping
         nodes = postOrderIterative(root)
@@ -622,14 +753,18 @@ if __name__ == '__main__':
 
         # compare the imps
         ret0 = None
-        for fn in [postordereval_r,postordereval_i1,postordereval_i2]:
-            ret = fn(root) 
+        for fn in [postordereval_r,postordereval_i1,postordereval_i2, postordereval_i2t]:
+
+            Node.label_r(root, 2, "LoopL")   # label may be popped, so have to relabel for each imp
+
+            ret = fn(root, debug=debug) 
             print "%20s : %s " % ( fn.__name__, ret )
 
             if ret0 is None:
                 ret0 = ret
             else:
-                assert ret == ret0, (ret, ret0)
+                pass
+                #assert ret == ret0, (ret, ret0)
             pass
         pass
     pass
