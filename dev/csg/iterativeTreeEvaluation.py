@@ -482,14 +482,15 @@ def postordereval_i1(node, debug=0):
     lhs = []
     rhs = []
 
+    debug = 1
 
     while len(roots) > 0:
         root,c,istage = roots.pop()
         nodes = postOrderIterative(root)
         nn = len(nodes)
 
-        if debug>0:
-            print "istage: %s " % istage
+        if debug>1:
+            print "istage: %s lhs(%d):%r rhs(%d):%r " % (istage, len(lhs), lhs, len(rhs), rhs)
             print "c:%d nn:%d root:%r " % (c, nn, root) 
         if debug>2:
             print "nodes:%r " % nodes 
@@ -593,20 +594,20 @@ def postordereval_i2t(root, debug=2):
     leftop = Node.leftmost_nonleaf(root)
     assert leftop.next_ is not None, "threaded postorder requires Node.postorder_threading_r "
 
-    debug = 2
+    debug = 0
     lhs = []
     rhs = []
 
-    pp = []
-    pp.append([leftop,"Start"])
+    tranche = []
+    tranche.append([leftop,None,"Start"])
 
-    while len(pp) > 0:
-        p,istage = pp.pop()
-
+    while len(tranche) > 0:
+        begin,end,istage = tranche.pop()
+        p = begin
         if debug > 1:
-            print "istage:%s p:%s " % (istage, p)
+            print "istage:%s p:%s lhs(%d):%r rhs(%d):%r " % (istage, p, len(lhs), lhs, len(rhs), rhs)
    
-        while p is not None:
+        while p is not end:
             el = binary_calc(p.l,istage=istage) if p.l.is_leaf else lhs.pop()
             er = binary_calc(p.r,istage=istage) if p.r.is_leaf else rhs.pop()
             ep = binary_calc(p,el,er,istage=istage)
@@ -616,8 +617,8 @@ def postordereval_i2t(root, debug=2):
                 if not p.l.is_leaf:
                     # just popped lhs and rhs, but LoopL means are reiterating lhs, so put back rhs
                     rhs.append(er)
-                    pp.append([p,"ResumeFromLoopL"])  
-                    pp.append([p.l,"LoopL"])
+                    tranche.append([p,None,"ResumeFromLoopL"])  
+                    tranche.append([Node.leftmost_nonleaf(p.l),p.l.next_,"LoopL"])
                     break 
                 else:
                     # at lowest level just need to rerun
@@ -631,8 +632,8 @@ def postordereval_i2t(root, debug=2):
                 if not p.r.is_leaf:
                     # just popped lhs and rhs, but LoopR means are reiterating rhs, so put back lhs
                     lhs.append(el)
-                    pp.append([p,"ResumeFromLoopR"])  
-                    pp.append([p.r,"LoopR"])
+                    tranche.append([p,None,"ResumeFromLoopR"])  
+                    tranche.append([Node.leftmost_nonleaf(p.r),p.r.next_,"LoopR"])
                     break 
                 else:
                     # at lowest level just need to rerun
