@@ -95,7 +95,6 @@ class Node(object):
         leftop = Node.leftmost(root)
         node = leftop
         while node is not None:
-
             if node.is_leaf:
                 assert 0, "not expecting leaves" 
             elif node.is_bileaf:
@@ -103,7 +102,7 @@ class Node(object):
                 pidx = node.idx
                 lidx = node.l.idx
                 ridx = node.r.idx 
-                node.l.apply_(shape=BOX, param=[pidx*10,lidx*10,0,100] )             
+                node.l.apply_(shape=SPHERE, param=[pidx*10,lidx*10,0,100] )             
                 node.r.apply_(shape=SPHERE, param=[pidx*10,ridx*10,0,100] )             
             else:
                 node.apply_(operation=UNION)
@@ -132,9 +131,9 @@ class Node(object):
                 assert 0
         else:
             if self.is_primitive:
-                return "%s.%s(%d)" % (self.name, desc[self.shape], self.idx)
+                return "%s.%s" % (self.tag, desc[self.shape])
             else:
-                return "%s.%s(%d,l=%r,r=%r)" % ( self.name, desc[self.operation],self.idx,self.l, self.r )
+                return "%s.%s(%r,%r)" % ( self.tag, desc[self.operation],self.l, self.r )
 
     is_primitive = property(lambda self:self.shape is not None)
     is_operation = property(lambda self:self.operation is not None)
@@ -146,6 +145,7 @@ class Node(object):
     is_bileaf = property(lambda self:not self.is_leaf and self.l.is_leaf and self.r.is_leaf)
 
     is_left = property(lambda self:self.idx % 2 == 0)
+    tag = property(lambda self:"%s%d" % ("p" if self.is_primitive else "o", self.idx))
 
 
     @classmethod
@@ -174,12 +174,14 @@ class Node(object):
            else:
                assert node.idx == idx
            pass
+
            idx += 1
 
            if not node.l is None:q.append(node.l)
            if not node.r is None:q.append(node.r)
         pass
         return idx - 1
+
 
 
     @classmethod

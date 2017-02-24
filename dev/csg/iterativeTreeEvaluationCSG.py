@@ -4,16 +4,18 @@
 """
 
 import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 
 from node import Node, root0, root1, root2, root3, root4, UNION, INTERSECTION, DIFFERENCE, BOX, SPHERE, EMPTY, desc
-from intersect import intersect_primitive, Ray
+from intersect import intersect_primitive, I, Ray
 
 from boolean import boolean_table 
 from boolean import desc_state, Enter, Exit, Miss
-from boolean import desc_acts, RetMiss, RetL, RetR, RetLIfCloser, RetRIfCloser, LoopL, LoopLIfCloser, LoopR, LoopRIfCloser, FlipR
-
+from boolean import desc_acts, BooleanStart, BooleanError, RetMiss, RetL, RetR, RetLIfCloser, RetRIfCloser, LoopL, LoopLIfCloser, LoopR, LoopRIfCloser, FlipR
 
 
 
@@ -58,6 +60,50 @@ class CSG(object):
             print "traverse_r(other) %d %r " % (depth, root)
         pass
 
+
+    def binary_action(self, operation, left, right, tminL=0, tminR=0):
+
+        act = BooleanError
+
+        # changing tmin will cause Enter/Exits to become Miss
+        # when doin LoopL LoopR need to leave the other side state unchanged ?
+        stateL = self.classify(left.t, left.n, tminL)  
+        stateR = self.classify(right.t, right.n, tminR)
+
+        acts = boolean_table(operation, stateL, stateR )
+
+        #opr = "%s(%s:%s,%s:%s)" % ( desc[operation],left.name,desc_state[stateL], right.name,desc_state[stateR] )
+        #trep = self.trep_fmt(tmin, left.t, right.t )
+
+        act_RetMiss = (RetMiss & acts)
+        act_RetL = (RetL & acts)
+        act_RetR = (RetR & acts)
+        act_LoopL = (LoopL & acts)
+        act_LoopR = (LoopR & acts)
+        act_RetLIfCloser = ((RetLIfCloser & acts) and left.t <= right.t)
+        act_LoopLIfCloser = ((LoopLIfCloser & acts) and left.t <= right.t)
+        act_RetRIfCloser = ((RetRIfCloser & acts) and right.t < left.t)
+        act_LoopRIfCloser = ((LoopRIfCloser & acts) and right.t < left.t)
+
+
+        if act_RetMiss:
+            act = RetMiss
+        elif act_RetL or act_RetLIfCloser: 
+            act = RetLIfCloser if act_RetLIfCloser else RetL
+        elif act_RetR or act_RetRIfCloser: 
+            act = RetRIfCloser if act_RetRIfCloser else RetR
+            if (FlipR & acts): right.n = -right.n  ## hmm flip/flop danger ..move to point of use ?
+        elif act_LoopL or act_LoopLIfCloser:
+            act = LoopLIfCloser if act_LoopLIfCloser else LoopL
+        elif act_LoopR or act_LoopRIfCloser:
+            act = LoopRIfCloser if act_LoopRIfCloser else LoopR
+        else:
+            log.fatal("UNHANDLED acts %d " % (acts))
+            assert 0
+        pass
+        return act 
+
+
     def recursive_intersect(self, root, depth=0, tmin=0):
         """
         * minimizing use of member vars makes recursive algorithm easier to understand
@@ -79,94 +125,59 @@ class CSG(object):
             self.top = root
         pass
         self.node = root  
-        # above are just for debug comparison against iterative algo, not used below
 
 
         if root.is_primitive:
-            #print "recursive_intersect(primitive) %r " % root
             return intersect_primitive(root, self.ray, tmin)
 
         elif root.is_operation:
-            #print "recursive_intersect(operation) %r " % root
 
-            tl, nl, lname, lact  = self.recursive_intersect(root.l, depth=depth+1, tmin=tmin)  
-            tr, nr, rname, ract  = self.recursive_intersect(root.r, depth=depth+1, tmin=tmin)
-        
+            act = BooleanStart
+            left = None
+            right = None
+            miss =  I(None,None,None,RetMiss)
             loopcount = 0 
             looplimit = 10 
 
-            #print "recursive_intersect(pre-looping) %r " % root
-            while loopcount < looplimit:
+            while loopcount < looplimit and act in [BooleanStart, LoopLIfCloser, LoopL, LoopRIfCloser, LoopR]:
                 loopcount += 1 
 
-                #print "recursive_intersect(looping) %r " % root
-                stateL = self.classify(tl, nl, tmin)   # tmin_l tmin_r ? 
-                stateR = self.classify(tr, nr, tmin)
+                tminL = left.t if act in [LoopL,LoopLIfCloser] else tmin 
+                tminR = right.t if act in [LoopR,LoopRIfCloser] else tmin 
 
-
-                acts = boolean_table(root.operation, stateL, stateR )
-
-                opr = "%s(%s:%s,%s:%s)" % ( desc[root.operation],lname,desc_state[stateL], rname,desc_state[stateR] )
-
-                act_RetMiss = (RetMiss & acts)
-                act_RetL = (RetL & acts)
-                act_RetR = (RetR & acts)
-                act_LoopL = (LoopL & acts)
-                act_LoopR = (LoopR & acts)
-                act_RetLIfCloser = ((RetLIfCloser & acts) and tl <= tr)
-                act_LoopLIfCloser = ((LoopLIfCloser & acts) and tl <= tr)
-                act_RetRIfCloser = ((RetRIfCloser & acts) and tr < tl)
-                act_LoopRIfCloser = ((LoopRIfCloser & acts) and tr < tl)
-
-                trep = self.trep_fmt(tmin, tl, tr )
-                ret = ()
-                if act_RetMiss:
-                    act = RetMiss
-                    ret = None, None, None, act
-
-                elif act_RetL or act_RetLIfCloser: 
-                    act = RetLIfCloser if act_RetLIfCloser else RetL
-                    ret = tl, nl, lname, act 
-
-                elif act_RetR or act_RetRIfCloser: 
-                    act = RetRIfCloser if act_RetRIfCloser else RetR
-                    if (FlipR & acts): nr = -nr
-                    ret = tr, nr, rname, act
-
-                elif act_LoopL or act_LoopLIfCloser:
-                    act = LoopLIfCloser if act_LoopLIfCloser else LoopL
-                    tl, nl, lname, _ = self.recursive_intersect(root.l, depth=depth+1, tmin=tl)
-
-                elif act_LoopR or act_LoopRIfCloser:
-                    act = LoopRIfCloser if act_LoopRIfCloser else LoopR
-                    tr, nr, rname, _ = self.recursive_intersect(root.r, depth=depth+1, tmin=tr)
-
-                else:
-                    log.fatal("[%d] RECURSIVE UNHANDLED acts " % (loopcount))
-                    assert 0
-                   
-                self.act = act 
-
-                if self.debug > 1:
-                    log.info("(%d)[%d] RECURSIVE %s : %s -> %s : %s " % (self.iray,loopcount,root.name,opr,desc_acts(self.act),trep ))
-
-                if len(ret) > 0:
-                     
-                    return ret
-                else:
-                    # only Loop-ers hang aroud here to intersect again with advanced tmin, the rest return up to caller
-                    assert act in [LoopLIfCloser, LoopL, LoopRIfCloser, LoopR]
+                if act in [BooleanStart, LoopL, LoopLIfCloser]:
+                    left  = self.recursive_intersect(root.l, depth=depth+1, tmin=tminL) 
+                pass
+                if act in [BooleanStart, LoopR, LoopRIfCloser]:
+                    right  = self.recursive_intersect(root.r, depth=depth+1, tmin=tminR)
                 pass
 
+                act = self.binary_action(root.operation, left, right, tminL, tminR)    
 
+                # Miss classification rather then Enter/Exit 
+                # depends on the relevant tmin, so need to left/right split here ?
+                # not enough to just do recursively 
+            pass     
+   
+            self.act = act 
+
+            if self.debug > 1:
+                log.info("(%d)[%d] RECURSIVE %s : %s -> %s : %s " % (self.iray,loopcount,root.name,opr,desc_acts(self.act),trep ))
+
+            if act in [RetL, RetLIfCloser]:
+                return left
+            elif act in [RetR, RetRIfCloser]:
+                return right
+            elif act in [RetMiss]:
+                return miss
             else:
-                log.fatal(" depth %d root %s root.is_operation %d root.is_primitive %d " % (depth, root,root.is_operation, root.is_primitive) )
+                log.fatal("unexpected act %s " % act )
                 assert 0
             pass
-            log.fatal("[%d] RECURSIVE count EXCEEDS LIMIT %d " % (loopcount, looplimit))
-            assert 0  
         pass
-        return None, None, None, 0
+        log.fatal("unexpected fallthru ")
+        assert 0
+        return None
 
     @classmethod
     def trep_fmt(cls, tmin, tl, tr ):
@@ -196,20 +207,17 @@ class CSG(object):
                 if self.debug > 1:
                     log.info(" %r " % (tst.root)) 
 
-                if recursive:
-                    tt, nn, nname, act = self.recursive_intersect(tst.root, depth=0)
-                else:
-                    tt, nn, nname, act = self.iterative_intersect(tst.root)   
+                isect = self.recursive_intersect(tst.root, depth=0) if recursive else self.iterative_intersect(tst.root)
                 pass
                 if self.debug:
-                    log.info("[%d] %s intersect tt %s nn %r " % (-1, self.typ, tt, nn ))
+                    log.info("[%d] %s intersect tt %s nn %r " % (-1, self.typ, isect.t, isect.n ))
 
-                if not tt is None:
+                if not isect.t is None:
                     ix = 0 if self.typ == "ITERATIVE" else 1
-                    self.ipos[ix,iray] = ray.position(tt)
-                    self.ndir[ix,iray] = nn
-                    self.tval[ix,iray] = tt
-                    self.aval[ix,iray] = act 
+                    self.ipos[ix,iray] = ray.position(isect.t)
+                    self.ndir[ix,iray] = isect.n
+                    self.tval[ix,iray] = isect.t
+                    self.aval[ix,iray] = isect.code
                 pass
             pass
 
@@ -228,7 +236,7 @@ class CSG(object):
         log.info("%10s %d/%d rays with intersect mismatches : %s " % (tst.name, len(self.prob),nray,repr(self.prob)))
         #log.info("%10s %d/%d rays with traversal mismatches : %s " % (tst.name, len(self.trob),nray,repr(self.trob)))
 
-    def plot_intersects(self, plt, normal=False):
+    def plot_intersects(self, ax, normal=False):
         sc = 10 
 
         prob = self.prob
@@ -236,13 +244,13 @@ class CSG(object):
         for recursive in [1]:
             #xoff = 600 if recursive else 0
             xoff = 0 
-            plt.scatter( xoff + self.ipos[recursive,:,0]                        , self.ipos[recursive,:,1] )
+            ax.scatter( xoff + self.ipos[recursive,:,0]                        , self.ipos[recursive,:,1] )
             if normal:
-                plt.scatter( xoff + self.ipos[recursive,:,0]+self.ndir[recursive,:,0]*sc , self.ipos[recursive,:,1]+self.ndir[recursive,:,1]*sc )
+                ax.scatter( xoff + self.ipos[recursive,:,0]+self.ndir[recursive,:,0]*sc , self.ipos[recursive,:,1]+self.ndir[recursive,:,1]*sc )
     
                 if len(prob) > 0:
-                    plt.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="r" )
-                    plt.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="g" )
+                    ax.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="r" )
+                    ax.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="g" )
 
 
 
@@ -260,11 +268,12 @@ def binary_calc(node, left=None, right=None, istage=None):
     else:
         pfx = ""
    
-
     if left and right:
         return "%s:[%s;%s](%s,%s)" % ( pfx,node.idx, node.depth, left, right )
     else:
         return "%s:%s;%s" % (pfx,node.idx, node.depth )
+    pass
+
 
 
 def postordereval_r(p, debug=0, istage=None):
@@ -400,36 +409,65 @@ class T(object):
 
 
 
+class Renderer(object):
+    def __init__(self, ax, axes=[0,1]):
+        self.ax = ax
+        self.axes = axes
+
+    def limits(self, sx=200, sy=150):
+        self.ax.set_xlim(-sx,sx)
+        self.ax.set_ylim(-sy,sy)
+
+    colors = ['r','g','b','c','m','y','k']
+
+    def color(self, i, other=False):
+        n = len(self.colors)
+        ic = (n-i-1)%n if other else i%n 
+        return self.colors[ic]
 
 
-def traverse(top):
-    """
-    levelorder traverse ?
-    """
-    for act in ["label","dump"]:
-        node = top
-        check_idx = 1
-        q = []
-        q.append(node)
-        while len(q) > 0:
-            node = q.pop(0)   # bottom of q (ie fifo)
-
-            assert node.idx == check_idx 
-
-            if act == "label":
-                node.name = "%s_%s%d" % (node.name, "p" if node.is_primitive else "o", node.idx)
-            elif act == "dump":
-                pass
-                log.info("[%d] %r " % (node.idx, node))
-            else:
-                pass
-            if not node.is_primitive: 
-                if not node.l is None:q.append(node.l)
-                if not node.r is None:q.append(node.r)
+    def render(self, root):
+        log.info("render %r " % root )
+        p = Node.leftmost(root)
+        while p is not None:
+            print p
+            if p.is_bileaf:
+                self.render_primitive(p.l)
+                self.render_primitive(p.r)
             pass
-            check_idx += 1 
+            p = p.next_
+        pass
 
+    def render_primitive(self, node):
+        if node.shape == SPHERE:
+            self.render_sphere(node)
+        elif node.shape == BOX:
+            self.render_box(node)
+        elif node.shape == EMPTY:
+            pass
+        else:
+            assert 0, "no render_primitive imp for %r " % node 
 
+    def autocolor(self, patch, idx):
+        ec = self.color(idx)
+        #fc = self.color(idx, other=True)
+        fc = 'none'
+        patch.set_ec(ec)
+        patch.set_fc(fc)
+
+    def render_sphere(self,node):
+        center = node.param[:3]
+        radius = node.param[3] 
+
+        patch = mpatches.Circle(center[self.axes],radius) 
+        self.autocolor(patch, node.idx)
+        self.add_patch(patch)
+
+    def render_box(self,node):
+        pass
+
+    def add_patch(self, patch):
+        self.ax.add_artist(patch)
 
 
 
@@ -448,15 +486,18 @@ if __name__ == '__main__':
 
     debug = 0 
 
-    root = root3
+    root = root1
+
     root.tree_labelling()
     Node.dress(root)
-
-    traverse(root)
 
 
     plt.ion()
     plt.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1, aspect='equal')
+
 
 
     tst = T(root,level=3,debug=[], num=500)
@@ -466,9 +507,14 @@ if __name__ == '__main__':
     csg.traverse_r( tst.root )
 
     csg.compare_intersects( tst )
-    csg.plot_intersects( plt )
-    plt.show()
+    csg.plot_intersects( ax )
 
+
+    rdr = Renderer(ax)
+    rdr.limits(200,200)
+    rdr.render(root)
+
+    fig.show()
 
 
 

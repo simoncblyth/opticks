@@ -9,6 +9,16 @@ log = logging.getLogger(__name__)
 
 
 
+class I(object):
+   def __init__(self, t, n, name="", code=0):
+       self.t = t
+       self.n = n 
+       self.name = name
+       self.code = code
+   def __repr__(self):
+       return "I(%s [%s]) %s %d " % ( fmt_f(self.t), fmt_3f(self.n), self.name, self.code )
+
+
 def intersect_primitive(node, ray, tmin):
     assert node.is_primitive
     #log.info("intersect_primitive") 
@@ -24,7 +34,7 @@ def intersect_primitive(node, ray, tmin):
         assert 0
     pass
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
-    return tt, nn, node.name, 0
+    return I(tt, nn, node.name, 0)
 
 
 
@@ -70,7 +80,7 @@ def intersect_sphere( param, ray, tmin ):
             nn = (O + tt*D)/radius 
         pass
     pass
-    log.info("intersect_sphere center %s radius %s ray %r -> tt %s nn %s " % ( fmt_3f(center), fmt_f(radius), ray, fmt_f(tt), fmt_3f(nn)))
+    #log.info("intersect_sphere center %s radius %s ray %r -> tt %s nn %s " % ( fmt_3f(center), fmt_f(radius), ray, fmt_f(tt), fmt_3f(nn)))
 
     return tt, nn
 

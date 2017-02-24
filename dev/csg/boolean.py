@@ -20,6 +20,9 @@ LoopLIfCloser = 0x1 << 6
 LoopR         = 0x1 << 7 
 LoopRIfCloser = 0x1 << 8
 FlipR         = 0x1 << 9
+BooleanStart  = 0x1 << 10
+BooleanError  = 0x1 << 11
+
 
 # RetMiss, RetL, RetR, RetLIfCloser, RetRIfCloser, LoopL, LoopLIfCloser, LoopR, LoopRIfCloser, FlipR
 
