@@ -232,6 +232,7 @@ class Node(object):
     @classmethod
     def label_r(cls, node, idx, label):
         if node.idx == idx:
+            log.info("label_r setting label %s idx %d node %r  " % (label, idx, node))
             setattr(node, label, 1)
 
         if node.l is not None:cls.label_r(node.l, idx, label)

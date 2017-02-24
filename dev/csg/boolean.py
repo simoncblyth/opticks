@@ -23,6 +23,11 @@ FlipR         = 0x1 << 9
 BooleanStart  = 0x1 << 10
 BooleanError  = 0x1 << 11
 
+ResumeFromLoopL = 0x1 << 12
+ResumeFromLoopR = 0x1 << 13
+NewTranche      = 0x1 << 14
+
+
 
 # RetMiss, RetL, RetR, RetLIfCloser, RetRIfCloser, LoopL, LoopLIfCloser, LoopR, LoopRIfCloser, FlipR
 
@@ -39,6 +44,12 @@ def desc_acts(acts):
     if acts & LoopR:        s+= "LoopR "
     if acts & LoopRIfCloser:s+= "LoopRIfCloser "
     if acts & FlipR:        s+= "FlipR "
+    if acts & BooleanStart: s+= "BooleanStart"
+    if acts & BooleanError: s+= "BooleanError"
+    if acts & ResumeFromLoopL: s+= "ResumeFromLoopL "
+    if acts & ResumeFromLoopR: s+= "ResumeFromLoopR "
+    if acts & NewTranche: s+= "NewTranche "
+
     return s 
 
 
