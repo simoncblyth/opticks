@@ -20,7 +20,7 @@
     #    return Node(shape=self.shape, left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
 
 """
-import logging
+import logging, copy
 log = logging.getLogger(__name__)
 import numpy as np
 
@@ -41,7 +41,7 @@ desc = { EMPTY:"EM", SPHERE:"SP", BOX:"BX", UNION:"U", INTERSECTION:"I", DIFFERE
 
 
 class Node(object):
-    def __init__(self, idx=None, l=None, r=None, **kwa):
+    def __init__(self, idx=0, l=None, r=None, **kwa):
         """
         :param idx: 1-based levelorder (aka breadth first) tree index, root at 1
         """
@@ -81,6 +81,7 @@ class Node(object):
     def tree_labelling(self):
         """
         * call this only on the root node
+        * hmm should make tree complete first to get expected levelorder indices
         """
         # tree labelling
         self.maxidx = Node.levelorder_i(self)
@@ -96,7 +97,8 @@ class Node(object):
         node = leftop
         while node is not None:
             if node.is_leaf:
-                assert 0, "not expecting leaves" 
+                #assert 0, "not expecting leaves" 
+                node.apply_(shape=SPHERE, param=[0,0,0,100])
             elif node.is_bileaf:
                 node.apply_(operation=DIFFERENCE)
                 pidx = node.idx
@@ -144,8 +146,144 @@ class Node(object):
     # bileaf is an operation applied to two leaf nodes, another name is a triple
     is_bileaf = property(lambda self:not self.is_leaf and self.l.is_leaf and self.r.is_leaf)
 
-    is_left = property(lambda self:self.idx % 2 == 0)
-    tag = property(lambda self:"%s%d" % ("p" if self.is_primitive else "o", self.idx))
+    is_left = property(lambda self:self.idx % 2 == 0) # convention using 1-based levelorder index
+    tag = property(lambda self:"%s%d" % ("p" if self.is_leaf else "o", self.idx))
+
+    @classmethod
+    def nodecount_r(cls, root):
+        if root is None:
+            return 0
+        return 1 + cls.nodecount_r(root.l) + cls.nodecount_r(root.r)
+
+    @classmethod
+    def is_complete_r(cls, root, index=1, nodecount=None, debug=False):
+        if nodecount is None:
+            nodecount = cls.nodecount_r(root)
+
+        if index >= nodecount: 
+            if debug:
+               print "index %d >= nodecount %d -> not complete for node %r" % (index, nodecount, root)
+            return False
+
+        return cls.is_complete_r(root.l, index=2*index, nodecount=nodecount, debug=debug ) and cls.is_complete_r(root.r, index=2*index+1, nodecount=nodecount, debug=debug)
+
+
+    @classmethod
+    def lheight(cls, root):
+        level = 0
+        p = root
+        while p is not None:
+           p = p.l
+           level += 1
+        pass
+        return level
+
+
+    @classmethod
+    def is_perfect_i(cls, root):
+        """
+        My definition of a perfect binary tree:
+
+        * all leaves are at the same depth, same as maxdepth
+        * all non-leaves have non None left and right children
+
+        """
+        maxdepth = cls.depth_r(root)  # label nodes with depth, 0 at root
+        leafdepth = None
+        q = []
+        q.append(root)
+        while len(q) > 0:
+            node = q.pop(0)  # fifo
+            if node.is_leaf: 
+                if leafdepth is None:
+                    leafdepth = node.depth
+                    if leafdepth != maxdepth:
+                        return False
+                    pass
+                pass
+                if node.depth != leafdepth:
+                    return False
+                pass
+            else:
+                if node.l is None or node.r is None:
+                    return False
+                pass
+            pass
+            if node.l is not None:q.append(node.l)
+            if node.r is not None:q.append(node.r)
+        pass
+        return True
+ 
+    @classmethod
+    def make_perfect_i(cls, root):
+        while not cls.is_perfect_i(root): 
+            maxdepth = cls.depth_r(root)  # label nodes with depth, 0 at root
+            q = []
+            q.append(root)
+            while len(q) > 0:
+                node = q.pop(0)   # bottom of q (ie fifo)
+                assert node.depth <= maxdepth
+
+                if node.is_leaf and node.depth < maxdepth:
+                    l = Node()
+                    r = Node()
+                    l.depth = node.depth+1
+                    r.depth = node.depth+1
+                    node.l = l
+                    node.r = r
+                pass
+                if node.l is not None:q.append(node.l)
+                if node.r is not None:q.append(node.r)
+            pass
+        pass
+
+    @classmethod
+    def is_almost_complete_i(cls, root):
+        """
+        levelorder traverse of complete binary tree should see all the 
+        leaves together at the last level. 
+
+        Hmm consider pruing 6,7 in the below so 3 becomes a leaf...
+        then all leaves are together 3,4,5
+        but 3 is at higher level ?
+
+        ::
+
+             1
+ 
+             2            3
+
+             4      5     6       7
+
+        """
+
+        if root is None:return True
+        q = []
+        q.append(root)
+
+        leaves = False
+    
+        idx = 1 
+        while len(q) > 0:
+           node = q.pop(0)   # bottom of q (ie fifo)
+
+           if node.l is not None:
+               if leaves:return False
+               q.append(node.l)
+           else:
+               leaves = True
+           pass
+
+           if node.r is not None:
+               if leaves:return False
+               q.append(node.r)
+           else:
+               leaves = True
+           pass
+        pass
+        return True
+
+
 
 
     @classmethod
@@ -169,7 +307,7 @@ class Node(object):
         while len(q) > 0:
            node = q.pop(0)   # bottom of q (ie fifo)
 
-           if node.idx is None:
+           if node.idx is 0:
                node.idx = idx
            else:
                assert node.idx == idx
@@ -177,8 +315,8 @@ class Node(object):
 
            idx += 1
 
-           if not node.l is None:q.append(node.l)
-           if not node.r is None:q.append(node.r)
+           if node.l is not None:q.append(node.l)
+           if node.r is not None:q.append(node.r)
         pass
         return idx - 1
 
@@ -196,11 +334,14 @@ class Node(object):
         #print node
         node.depth = depth
 
-        maxd = depth
-        if node.l is not None: maxd = cls.depth_r(node.l, depth+1)
-        if node.r is not None: maxd = cls.depth_r(node.r, depth+1)
+        ldepth = depth
+        rdepth = depth
+
+        if node.l is not None: ldepth = cls.depth_r(node.l, depth+1)
+        if node.r is not None: rdepth = cls.depth_r(node.r, depth+1)
     
-        return maxd
+        return max(ldepth, rdepth)
+        
 
     @classmethod
     def progeny_i(cls,root):
@@ -290,6 +431,16 @@ class Node(object):
             node = nodes[i]
             next_ = nodes[i+1] if i < len(nodes)-1 else None
             node.next_ = next_
+
+    @classmethod
+    def parenting_r(cls, root, parent=None):
+        if root.l is not None:
+            cls.parenting_r(root.l, parent=root)
+        pass
+        if root.r is not None:
+            cls.parenting_r(root.r, parent=root)
+        pass
+        root.parent = parent 
 
 
     @classmethod
@@ -443,10 +594,119 @@ root4 = Node(1,
 root4.name = "root4"
 
 
+
+
+
+
+
+
+
+cbox = Node(shape=BOX, param=[0,0,0,100], name="cbox")
+lbox = Node(shape=BOX, param=[-200,0,0,50], name="lbox")
+rbox = Node(shape=BOX, param=[ 200,0,0,50], name="rbox")
+
+lrbox = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox") 
+
+bms = Node(name="bms",operation=DIFFERENCE, l=Node(shape=BOX, param=[0,0,0,200], name="box"),  r=Node(shape=SPHERE,param=[0,0,0,150],name="sph"))
+smb = Node(name="smb",operation=DIFFERENCE, l=Node(shape=SPHERE,param=[0,0,0,200], name="sph"), r=Node(shape=BOX,param=[0,0,0,150], name="box"))
+ubo = Node(name="ubo",operation=UNION, l=bms, r=lrbox )
+bmslrbox = Node(name="bmslrbox", operation=UNION, l=Node(name="bmsrbox", operation=UNION, l=bms, r=rbox),r=lbox ) 
+
+bmsrbox = Node(name="bmsrbox", operation=UNION, l=bms, r=rbox )
+bmslbox = Node(name="bmslbox", operation=UNION, l=bms, r=lbox )
+smblbox = Node(name="smblbox", operation=UNION, l=smb, r=lbox )
+
+
+# bmslrbox : 
+#         U( bms_rbox_u : 
+#                U( bms : 
+#                         D(bms_box : BX ,
+#                           bms_sph : SP ),
+#                      rbox : BX ),
+#                  lbox : BX ) 
+#
+
+
+
+
+bmsrlbox = Node( name="bmsrlbox", operation=UNION, l=bmslbox, r=rbox ) 
+
+csph = Node(shape=SPHERE, param=[0,0,0,100], name="csph")
+lsph = Node(shape=SPHERE, param=[-50,0,0,100], name="lsph")
+rsph = Node(shape=SPHERE, param=[50,0,0,100], name="rsph")
+
+lrsph_u = Node(operation=UNION, l=lsph, r=rsph, name="lrsph_u")
+lrsph_i = Node(operation=INTERSECTION, l=lsph, r=rsph, name="lrsph_i")
+lrsph_d = Node(operation=DIFFERENCE, l=lsph, r=rsph, name="lrsph_d")
+
+
+def test_is_complete():
+    """
+    ::
+
+         Node(1,l=Node(2,l=Node(4),r=Node(5)),r=Node(3,l=Node(6),r=Node(7)))
+         Node(1,l=Node(2,l=Node(4),r=Node(5)),r=Node(3))
+
+    """
+    root2c = copy.deepcopy(root2)    
+    assert Node.is_complete_i(root2c) 
+    assert root2c.r.is_bileaf and root2c.r.idx == 3
+    assert root2c.r.l.is_leaf and root2c.r.l.idx == 6
+    assert root2c.r.r.is_leaf and root2c.r.r.idx == 7
+
+    # prune two right most leaves 
+    root2c.r.l = None
+    root2c.r.r = None         
+    assert Node.is_complete_i(root2c) == True
+    assert Node.is_complete_r(root2c) == False   # different defn 
+
+
+def test_make_perfect():
+    """
+    """
+    root2c = copy.deepcopy(root2)    
+    assert Node.is_perfect_i(root2) == True
+    assert Node.is_perfect_i(root2c) == True
+
+    # prune two right most leaves 
+    root2c.r.l = None
+    root2c.r.r = None         
+
+    assert Node.is_perfect_i(root2c) == False
+
+    print "root2: %s " % root2
+    print "root2c: %s (pruned)" % root2c
+
+    Node.make_perfect_i(root2c)
+
+    print "root2c: %s (restored)" % root2c
+
+    assert Node.is_perfect_i(root2c) == True
+
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
 
+    #test_is_complete()
+    test_make_perfect()
+
+
+
+if 0:
+    trees = [bmsrlbox]
+
+    for tree in trees:
+        Node.levelorder_i(tree)
+        print "%20s : %s " % (tree.name, tree)
+        Node.complete_and_full_r(tree)
+        
+
+      
+
+
+if 0:
     for tree in [root0, root1, root2, root3, root4]:
         print "%20s : %s " % (tree.name, tree)
 

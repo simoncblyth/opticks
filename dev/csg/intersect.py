@@ -16,7 +16,8 @@ class I(object):
        self.name = name
        self.code = code
    def __repr__(self):
-       return "I(%s [%s]) %s %d " % ( fmt_f(self.t), fmt_3f(self.n), self.name, self.code )
+       return "[%s;%s]" % ( fmt_3f(self.n), fmt_f(self.t))
+       #return "I(%s [%s]) %s %d " % ( fmt_f(self.t), fmt_3f(self.n), self.name, self.code )
 
 
 def intersect_primitive(node, ray, tmin):
