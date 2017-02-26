@@ -7,26 +7,203 @@ from node import Node, SPHERE, BOX, EMPTY, UNION, INTERSECTION, DIFFERENCE, desc
 import logging
 log = logging.getLogger(__name__)
 
+f_ = lambda v:"%5.2f" % v if v is not None else -1
 
 
+
+class II(np.ndarray):
+    """
+    https://docs.scipy.org/doc/numpy/user/basics.subclassing.html
+
+    Enable a numpy float32 array to act like a muggle object 
+    with a mix of float and uint props that are actually 
+    stored in a simple float32 array, allowing collections
+    and operations on millions of intersects.
+
+    ::
+
+        0,0  normal.x
+        0,1  normal.y
+        0,2  normal.z
+        0,3  t 
+
+        1,0  tmin       (f32)
+        1,1  idx : node.idx   (u32)
+        1,2  node : shape or operation (u32)
+        1,3  seq
+
+        2,0  ray.origin.x
+        2,1  ray.origin.y
+        2,2  ray.origin.z
+        2,3  
+
+        3,0  ray.direction.x
+        3,1  ray.direction.y
+        3,2  ray.direction.z
+        3,3  
+
+    """
+    def __new__(cls, a=None, history=[]):
+        if a is None:
+           a = np.zeros((4,4), dtype=np.float32 )
+        pass
+        obj = np.asarray(a).view(cls)
+        obj.history = history
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None: return
+        self.history = getattr(obj, 'history', None)
+
+    def _get_t(self):
+        return self[0,3]
+    def _set_t(self, t):
+        self[0,3] = t 
+    t = property(_get_t, _set_t)
+
+    def _get_tmin(self):
+        return self[1,0]
+    def _set_tmin(self, t):
+        self[1,0] = t 
+    tmin = property(_get_tmin, _set_tmin)
+
+    def _get_n(self):
+        return self[0,:3]
+    def _set_n(self, n):
+        self[0,:3] = n 
+    n = property(_get_n, _set_n)
+
+
+    def _get_o(self):
+        return self[2,:3]
+    def _set_o(self, o):
+        self[2,:3] = o 
+    o = property(_get_o, _set_o)
+
+    def _get_d(self):
+        return self[3,:3]
+    def _set_d(self, d):
+        self[3,:3] = d 
+    d = property(_get_d, _set_d)
+
+    def _get_idx(self):
+        return self.view(np.uint32)[1,1]
+    def _set_idx(self, u):
+        self.view(np.uint32)[1,1] = u 
+    idx = property(_get_idx, _set_idx)
+
+    def _get_node(self):
+        return self.view(np.uint32)[1,2]
+    def _set_node(self, u):
+        self.view(np.uint32)[1,2] = u 
+    node = property(_get_node, _set_node)
+
+
+    def _get_seq(self):
+        return self.view(np.uint32)[1,3]
+    def _set_seq(self, u):
+        self.view(np.uint32)[1,3] = u 
+    seq = property(_get_seq, _set_seq)
+
+    xseq = property(lambda self:"%x" % self.seq)
+
+    def _get_seqslot(self):
+        """
+        Return next available 4bit slot in the sequence
+        """
+        q = self.seq
+        n = 0 
+        while (( q & (0xf << 4*n)) >> 4*n ): n += 1
+        return n 
+    seqslot = property(_get_seqslot)
+
+    def addseq(self, iact):
+        """
+        Adding 4 bits at a time to form a sequence of codes in range 0x1-0xf
+        """
+        assert iact <= 0xf
+        q = self.seq
+        n = self.seqslot
+        assert n*4 <= 32, "addseq overflow assuming 32 bit dtype %d " % n*4
+
+        q += ((0xf & iact) << 4*n) 
+        self.seq = q
+
+
+
+
+
+def test_ii_addseq():
+    a = np.zeros((4,4), dtype=np.float32)
+    i = II(a)
+    i.addseq(0xa)
+    i.addseq(0xb)
+    i.addseq(0xc)
+    assert i.seq == 0xcba 
+
+    i.seq = 0
+    i.addseq(0xa)
+    i.addseq(0xb)
+    assert i.seq == 0xba 
+ 
+    i.seq = 0
+    i.addseq(0xa)
+    i.addseq(0xb)
+    i.addseq(0xc)
+    i.addseq(0xf)
+    assert i.seq == 0xfcba 
+ 
+    i.seq = 0
+    i.addseq(0xa)
+    i.addseq(0xb)
+    i.addseq(0xc)
+    i.addseq(0xe)
+    i.addseq(0xf)
+    assert i.seq == 0xfecba 
+ 
+    return i 
+
+"""
 class I(object):
    def __init__(self, t, n, name="", code=0):
        self.t = t
        self.n = n 
        self.name = name
        self.code = code
+       self.history = []
+
    def __repr__(self):
        return "[%s;%s]" % ( fmt_3f(self.n), fmt_f(self.t))
        #return "I(%s [%s]) %s %d " % ( fmt_f(self.t), fmt_3f(self.n), self.name, self.code )
+"""
 
+
+def intersect_miss(node, ray, tmin):
+    a = np.zeros( (4,4), dtype=np.float32 )
+    isect = II(a)
+
+    isect.tmin = tmin
+    isect.idx = node.idx
+
+    if node.shape is not None:
+        isect.node = node.shape
+    elif node.operation is not None:
+        isect.node = node.operation
+    else:
+        log.warning("skipped shape for node %s " % node )
+        pass
+
+    isect.o = ray.origin
+    isect.d = ray.direction
+
+    return isect 
+ 
 
 def intersect_primitive(node, ray, tmin):
     assert node.is_primitive
-    #log.info("intersect_primitive") 
     if node.shape == BOX:
         tt, nn = intersect_box( node.param, ray, tmin )  
     elif node.shape == SPHERE:
-        #log.info("intersect_primitive(SPHERE)") 
         tt, nn = intersect_sphere( node.param, ray, tmin)  
     elif node.shape == EMPTY:
         tt, nn = None, None
@@ -35,7 +212,16 @@ def intersect_primitive(node, ray, tmin):
         assert 0
     pass
     #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
-    return I(tt, nn, node.name, 0)
+
+    isect = intersect_miss( node, ray, tmin)
+    if tt is not None and nn is not None:
+        isect.t = tt
+        isect.n = nn
+    pass
+
+    isect.history.append("intersect_primitive %s tmin %s tt %s " % (node.tag, f_(tmin), f_(tt) ))
+    return isect 
+
 
 
 
@@ -208,12 +394,14 @@ if __name__ == '__main__':
     plt.ion()
     plt.close()
 
+    ii = test_ii_addseq()
+
+
+if 0:
     cbox = Node(shape=BOX, param=[0,0,0,100] )
     csph = Node(shape=SPHERE, param=[0,0,0,100] )
 
-
-    root2.tree_labelling()
-    Node.dress(root2)
+    root2.annotate()
 
 
     #prim = cbox
@@ -227,18 +415,20 @@ if __name__ == '__main__':
     rays = []
     rays += Ray.make_rays(ary)
 
-
-    ipos = np.zeros((len(rays), 3), dtype=np.float32 ) 
-    ndir = np.zeros((len(rays), 3), dtype=np.float32 ) 
-
+    nray = len(rays)
+    
+    ii = np.zeros((nray, 4, 4 )) 
     for i, ray in enumerate(rays):
         tmin = 0 
-        tt, nn, nname, hmm = intersect_primitive( prim, ray, tmin )
-        if not tt is None:
-            ipos[i] = ray.position(tt)
-            ndir[i] = nn
+        isect = intersect_primitive( prim, ray, tmin )
+        ii[i] = isect[:]
         pass
     pass
+
+    # repeat t to match shape of ray direction and add start position
+    ipos = np.repeat( ii[:,0,3], 3).reshape(-1,3) * ii[:,3,:3] + ii[:,2,:3]
+    ndir = ii[:,0,:3]
+
     print ipos
     print ndir
 

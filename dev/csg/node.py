@@ -37,7 +37,51 @@ DIFFERENCE = 102
 is_operation = lambda c:c in [UNION,INTERSECTION,DIFFERENCE]
 
 
-desc = { EMPTY:"EM", SPHERE:"SP", BOX:"BX", UNION:"U", INTERSECTION:"I", DIFFERENCE:"D" }
+desc = { EMPTY:"e", SPHERE:"s", BOX:"b", UNION:"U", INTERSECTION:"I", DIFFERENCE:"D" }
+
+
+class T(np.ndarray):
+    """
+    An array with a text grid representation::
+
+        In [223]: a = np.empty((3,3),dtype=np.object)
+
+        In [224]: t = T.init(a)
+
+
+        In [230]: t[0,2] = "02"
+
+        In [231]: t[2,0] = "20"
+
+        In [232]: t
+        Out[232]: 
+           00    01    02
+        
+                 
+           20            
+
+        In [233]: t[1,0] = "10"
+
+        In [234]: t
+        Out[234]: 
+           00    01    02
+
+           10            
+
+           20            
+
+    """
+    @classmethod
+    def init(cls, a):  
+        assert len(a.shape) == 2, a
+        t = a.view(cls)
+        return t
+
+    def __repr__(self):
+        row_ = lambda r:" ".join(map(lambda _:"%2s" % (_ if _ is not None else "") ,r))
+        tab_ = lambda a:"\n\n".join(map(row_, a))
+        return tab_(self)
+
 
 
 class Node(object):
@@ -46,8 +90,8 @@ class Node(object):
         :param idx: 1-based levelorder (aka breadth first) tree index, root at 1
         """
         self.idx = idx
-        self.l = l
-        self.r = r
+        self.l = copy.deepcopy(l)   # for independence
+        self.r = copy.deepcopy(r)
         self.next_ = None
 
         # below needed for CSG 
@@ -78,15 +122,24 @@ class Node(object):
                 log.warning("ignored Node param %s : %s " % (k,v))
             pass 
 
-    def tree_labelling(self):
+    def annotate(self):
         """
         * call this only on the root node
         * hmm should make tree complete first to get expected levelorder indices
         """
         # tree labelling
-        self.maxidx = Node.levelorder_i(self)
+        self.maxidx = "WHERE IS THIS USED"
+        self.lheight = Node.lheight_(self)
+
+        Node.levelorder_label_i(self)
         self.maxdepth = Node.depth_r(self)
+
         Node.postorder_threading_r(self)
+
+        if self.name in ["root1","root2","root3"]:
+            Node.dress(self)
+        pass
+
 
 
     @classmethod
@@ -123,6 +176,44 @@ class Node(object):
             print node
             node = node.next_ 
 
+    def _get_textgrid(self):
+        if not hasattr(self, 'maxdepth'):
+            self.annotate()
+
+        maxdepth = self.maxdepth
+       
+        nodes = Node.levelorder_i(self)
+        sides = map(lambda _:_.side, nodes)
+        depths = map(lambda _:_.depth, nodes)
+        hw = max(map(abs,sides))
+
+        #print "sides %r hw %d " % (sides, hw)
+
+        a = np.empty((maxdepth+1+1,2*hw+1), dtype=np.object)
+
+        if self.name is not None:
+            a[0,0] = self.name
+        pass
+
+        for node in Node.levelorder_i(self):
+
+            i = node.depth + 1
+            j = hw + node.side 
+     
+            try:
+                a[i,j] = node.tag 
+            except IndexError:
+                print "IndexError depth:%2d side:%2d i:%2d j:%2d : %s " % (node.depth, node.side, i,j,node)
+
+        pass
+        return T.init(a) 
+    txt = property(_get_textgrid)
+
+    #def __str__(self):
+    #    tg = self.textgrid
+    #    return T.__str__(tg)
+
+
     def __repr__(self):
         if self.is_bare:
             if self.l is not None and self.r is not None:
@@ -146,8 +237,30 @@ class Node(object):
     # bileaf is an operation applied to two leaf nodes, another name is a triple
     is_bileaf = property(lambda self:not self.is_leaf and self.l.is_leaf and self.r.is_leaf)
 
-    is_left = property(lambda self:self.idx % 2 == 0) # convention using 1-based levelorder index
-    tag = property(lambda self:"%s%d" % ("p" if self.is_leaf else "o", self.idx))
+    is_left_requiring_levelorder = property(lambda self:self.idx % 2 == 0) # convention using 1-based levelorder index
+    is_left = property(lambda self:self.parent is not None and self.parent.left is self)
+    is_root = property(lambda self:self.parent is None)
+
+    def _get_tag(self):
+        if self.operation is not None:
+            if self.operation in [UNION,INTERSECTION,DIFFERENCE]:
+                ty = desc[self.operation]
+            else:
+                assert 0
+            pass
+        elif self.shape is not None:
+            if self.shape in [SPHERE, BOX, EMPTY]:
+                ty = desc[self.shape]
+            else:
+                assert 0
+            pass
+        elif self.is_leaf:
+            ty = "p"
+        else:
+            ty = "o"
+        pass
+        return "%s%d" % (ty, self.idx)
+    tag = property(_get_tag)
 
     @classmethod
     def nodecount_r(cls, root):
@@ -169,7 +282,7 @@ class Node(object):
 
 
     @classmethod
-    def lheight(cls, root):
+    def lheight_(cls, root):
         level = 0
         p = root
         while p is not None:
@@ -182,13 +295,41 @@ class Node(object):
     @classmethod
     def is_perfect_i(cls, root):
         """
-        My definition of a perfect binary tree:
+        Definition of a perfect binary tree:
 
-        * all leaves are at the same depth, same as maxdepth
-        * all non-leaves have non None left and right children
+        * all leaves at same depth, same as maxdepth
+        * all non-leaves have both left and right children
+
+        Perfect binary tree with 1-based levelorder index::
+
+             1
+
+             2                  3
+
+             4        5         6         7
+
+             8   9   10   11   12  13    14  15    
+
+        
+        For node i, where i in range 1 to n
+
+        * root, i=1
+        * left child, 2*i (if <= n)
+        * right child, 2*i + 1 (if <= n)
+        * parent, i/2 (if i != 1)
+        * contiguous leaves come last in levelorder
+
+        A perfect binary tree levelorder serialized into an array
+        is navigable without tree reconstruction direct from the  
+        array using the above index manipulations.
+
+        The downside is that normally will need to 
+        pad a tree with EMPTY primitives and UNION operations 
+        to make it perfect.
 
         """
         maxdepth = cls.depth_r(root)  # label nodes with depth, 0 at root
+
         leafdepth = None
         q = []
         q.append(root)
@@ -216,6 +357,8 @@ class Node(object):
  
     @classmethod
     def make_perfect_i(cls, root):
+        """
+        """
         while not cls.is_perfect_i(root): 
             maxdepth = cls.depth_r(root)  # label nodes with depth, 0 at root
             q = []
@@ -284,10 +427,8 @@ class Node(object):
         return True
 
 
-
-
     @classmethod
-    def levelorder_i(cls,root):
+    def levelorder_label_i(cls,root,idxbase=1):
         """
         Assign 1-based binary tree levelorder indices, eg for height 3 complete tree::
 
@@ -300,48 +441,40 @@ class Node(object):
              8   9  10 11 12  13  14   15
 
         """
-        q = []
-        q.append(root)
-
-        idx = 1 
-        while len(q) > 0:
-           node = q.pop(0)   # bottom of q (ie fifo)
-
-           if node.idx is 0:
-               node.idx = idx
-           else:
-               assert node.idx == idx
-           pass
-
-           idx += 1
-
-           if node.l is not None:q.append(node.l)
-           if node.r is not None:q.append(node.r)
+        idx = idxbase 
+        for node in Node.levelorder_i(root):
+            node.idx = idx
+            idx += 1
         pass
-        return idx - 1
-
 
 
     @classmethod
-    def depth_r(cls, node, depth=0):
+    def depth_r(cls, node, depth=0, side=0, height=None):
         """
-        Marking up the tree with depth, can be done CPU side 
-        during conversion : so recursive is fine
+        Marking up the tree with depth and side
         """
         if node is None:
             return 
 
-        #print node
+        if height is None:
+            height = Node.lheight_(node)
+
         node.depth = depth
+        node.side = side
+
+        delta = 1 << (height - depth - 1)  # smaller side shifts as go away from root towards the leaves
+
+        #print "depth_r depth %d side %d delta %d height %d height-depth-1 %s " % (depth, side, delta, height, height-depth-1)
 
         ldepth = depth
         rdepth = depth
 
-        if node.l is not None: ldepth = cls.depth_r(node.l, depth+1)
-        if node.r is not None: rdepth = cls.depth_r(node.r, depth+1)
+        if node.l is not None: ldepth = cls.depth_r(node.l, depth+1, side-delta, height=height)
+        if node.r is not None: rdepth = cls.depth_r(node.r, depth+1, side+delta, height=height)
     
         return max(ldepth, rdepth)
-        
+       
+ 
 
     @classmethod
     def progeny_i(cls,root):
@@ -412,9 +545,9 @@ class Node(object):
         Recursive postorder traversal
         """
         if root.l is not None:
-            cls.postorder_r(root.l,nodes, leaf=leaf) 
+            cls.postorder_r(root.l, nodes, leaf=leaf) 
         if root.r is not None:
-            cls.postorder_r(root.r,nodes, leaf=leaf)
+            cls.postorder_r(root.r, nodes, leaf=leaf)
  
         if not leaf and root.is_leaf:
             pass
@@ -423,6 +556,21 @@ class Node(object):
 
         return nodes
 
+    @classmethod
+    def levelorder_i(cls,root):
+        """
+        Why is levelorder easier iteratively than recursively ?
+        """
+        nodes = []
+        q = []
+        q.append(root)
+        while len(q) > 0:
+           node = q.pop(0) # bottom of q (ie fifo)
+           nodes.append(node) 
+           if node.l is not None:q.append(node.l)
+           if node.r is not None:q.append(node.r)
+        pass
+        return nodes
 
     @classmethod
     def postorder_threading_r(cls, root):
@@ -546,7 +694,7 @@ root3 = Node(1,
 root3.name = "root3"
 
 
-root4 = Node(1, 
+root4 = Node(1,   
                 l=Node(2, 
                           l=Node(4,
                                     l=Node(8, 
@@ -597,47 +745,46 @@ root4.name = "root4"
 
 
 
-
-
-
-
-cbox = Node(shape=BOX, param=[0,0,0,100], name="cbox")
+cbox = Node(shape=BOX, param=[0,0,0,200], name="cbox")
 lbox = Node(shape=BOX, param=[-200,0,0,50], name="lbox")
 rbox = Node(shape=BOX, param=[ 200,0,0,50], name="rbox")
 
-lrbox = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox") 
-
-bms = Node(name="bms",operation=DIFFERENCE, l=Node(shape=BOX, param=[0,0,0,200], name="box"),  r=Node(shape=SPHERE,param=[0,0,0,150],name="sph"))
-smb = Node(name="smb",operation=DIFFERENCE, l=Node(shape=SPHERE,param=[0,0,0,200], name="sph"), r=Node(shape=BOX,param=[0,0,0,150], name="box"))
-ubo = Node(name="ubo",operation=UNION, l=bms, r=lrbox )
-bmslrbox = Node(name="bmslrbox", operation=UNION, l=Node(name="bmsrbox", operation=UNION, l=bms, r=rbox),r=lbox ) 
-
-bmsrbox = Node(name="bmsrbox", operation=UNION, l=bms, r=rbox )
-bmslbox = Node(name="bmslbox", operation=UNION, l=bms, r=lbox )
-smblbox = Node(name="smblbox", operation=UNION, l=smb, r=lbox )
-
-
-# bmslrbox : 
-#         U( bms_rbox_u : 
-#                U( bms : 
-#                         D(bms_box : BX ,
-#                           bms_sph : SP ),
-#                      rbox : BX ),
-#                  lbox : BX ) 
-#
-
-
-
-
-bmsrlbox = Node( name="bmsrlbox", operation=UNION, l=bmslbox, r=rbox ) 
-
-csph = Node(shape=SPHERE, param=[0,0,0,100], name="csph")
+csph = Node(shape=SPHERE, param=[0,0,0,250], name="csph")
 lsph = Node(shape=SPHERE, param=[-50,0,0,100], name="lsph")
 rsph = Node(shape=SPHERE, param=[50,0,0,100], name="rsph")
 
-lrsph_u = Node(operation=UNION, l=lsph, r=rsph, name="lrsph_u")
+
+trees = []
+
+lrbox = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox") 
+
+bms = Node(name="bms",operation=DIFFERENCE, l=cbox,  r=csph )
+smb = Node(name="smb",operation=DIFFERENCE, l=csph,  r=cbox )
+ubo = Node(name="ubo",operation=UNION,      l=bms,   r=lrbox )
+
+trees += [lrbox, bms, smb, ubo]
+
+
+bms_rbox = Node(name="bms_rbox", operation=UNION, l=bms, r=rbox )
+bms_lbox = Node(name="bms_lbox", operation=UNION, l=bms, r=lbox )
+smb_lbox = Node(name="smb_lbox", operation=UNION, l=smb, r=lbox )
+
+bms_rbox_lbox = Node(name="bms_rbox_lbox", operation=UNION, l=bms_rbox,r=lbox ) 
+bms_lbox_rbox = Node( name="bms_lbox_rbox", operation=UNION, l=bms_lbox, r=rbox ) 
+
+trees += [bms_rbox,bms_lbox,smb_lbox,bms_rbox_lbox,bms_lbox_rbox] 
+
+
+lrsph_u = Node(operation=UNION,        l=lsph, r=rsph, name="lrsph_u")
 lrsph_i = Node(operation=INTERSECTION, l=lsph, r=rsph, name="lrsph_i")
-lrsph_d = Node(operation=DIFFERENCE, l=lsph, r=rsph, name="lrsph_d")
+lrsph_d1 = Node(operation=DIFFERENCE,   l=lsph, r=rsph, name="lrsph_d1")
+lrsph_d2 = Node(operation=DIFFERENCE,   l=rsph, r=lsph, name="lrsph_d2")
+
+trees += [lrsph_u, lrsph_i, lrsph_d1, lrsph_d2 ]
+
+
+#trees += [root1, root2, root3, root4 ]
+
 
 
 def test_is_complete():
@@ -690,15 +837,20 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     #test_is_complete()
-    test_make_perfect()
+    #test_make_perfect()
 
+
+    root2.annotate()
+    r2 = copy.deepcopy(root2)    
+
+    
 
 
 if 0:
     trees = [bmsrlbox]
 
     for tree in trees:
-        Node.levelorder_i(tree)
+        Node.levelorder_label_i(tree)
         print "%20s : %s " % (tree.name, tree)
         Node.complete_and_full_r(tree)
         
@@ -713,7 +865,7 @@ if 0:
         nodes = Node.postorder_r(tree,nodes=[], leaf=False)
         print "Node.postorder_r(%s, leaf=False)\n" % tree.name + "\n".join(map(repr,nodes)) 
 
-        tree.tree_labelling() 
+        tree.annotate() 
 
         lpr = Node.leftmost_leaf(tree)
         lop = Node.leftmost(tree)

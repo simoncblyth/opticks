@@ -20,17 +20,32 @@ LoopLIfCloser = 0x1 << 6
 LoopR         = 0x1 << 7 
 LoopRIfCloser = 0x1 << 8
 FlipR         = 0x1 << 9
-BooleanStart  = 0x1 << 10
-BooleanError  = 0x1 << 11
 
-ResumeFromLoopL = 0x1 << 12
-ResumeFromLoopR = 0x1 << 13
-NewTranche      = 0x1 << 14
+RetFlippedRIfCloser  = 0x1 << 10
+BooleanStart  = 0x1 << 11
+BooleanError  = 0x1 << 12
+IterativeError  = 0x1 << 13
 
+_act_index = {
+         RetMiss:0,
+            RetL:1,
+            RetR:2,
+    RetLIfCloser:3,
+    RetRIfCloser:4,
+           LoopL:5,
+   LoopLIfCloser:6,
+           LoopR:7,
+   LoopRIfCloser:8,
+           FlipR:9,
+   RetFlippedRIfCloser:10,
+    BooleanStart:11,
+    BooleanError:12,
+    IterativeError:13,
+}
 
-
-# RetMiss, RetL, RetR, RetLIfCloser, RetRIfCloser, LoopL, LoopLIfCloser, LoopR, LoopRIfCloser, FlipR
-
+def act_index(act):
+    return _act_index[act]
+       
 
 def desc_acts(acts):
     s = ""
@@ -39,6 +54,7 @@ def desc_acts(acts):
     if acts & RetR:         s+= "RetR "
     if acts & RetLIfCloser: s+= "RetLIfCloser "
     if acts & RetRIfCloser: s+= "RetRIfCloser "
+    if acts & RetFlippedRIfCloser: s+= "RetFlippedRIfCloser "
     if acts & LoopL:        s+= "LoopL "
     if acts & LoopLIfCloser:s+= "LoopLIfCloser "
     if acts & LoopR:        s+= "LoopR "
@@ -46,9 +62,11 @@ def desc_acts(acts):
     if acts & FlipR:        s+= "FlipR "
     if acts & BooleanStart: s+= "BooleanStart"
     if acts & BooleanError: s+= "BooleanError"
-    if acts & ResumeFromLoopL: s+= "ResumeFromLoopL "
-    if acts & ResumeFromLoopR: s+= "ResumeFromLoopR "
-    if acts & NewTranche: s+= "NewTranche "
+    if acts & IterativeError: s+= "IterativeError"
+
+    #if acts & ResumeFromLoopL: s+= "ResumeFromLoopL "
+    #if acts & ResumeFromLoopR: s+= "ResumeFromLoopR "
+    #if acts & NewTranche: s+= "NewTranche "
 
     return s 
 
@@ -57,6 +75,11 @@ def desc_acts(acts):
 # note that although two loopers do appear together "LoopLIfCloser | LoopRIfCloser" 
 # they are always conditionals on which is closer so only one of them will be enacted 
 #
+# note that FlipR only occurs for DIFFERENCE
+#
+#       
+#
+
 
 table_ = {
     DIFFERENCE : { 
@@ -67,8 +90,8 @@ table_ = {
                           },
 
                   Exit: {
-                             Enter : RetLIfCloser | RetRIfCloser | FlipR,
-                             Exit  : RetRIfCloser | FlipR | LoopL,
+                             Enter : RetLIfCloser | RetFlippedRIfCloser,
+                             Exit  : RetFlippedRIfCloser | LoopL,
                              Miss  : RetL
                        },
 
