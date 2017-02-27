@@ -1,24 +1,5 @@
 #!/usr/bin/env python
 """
-        # hmm: diddling with argument objects setting parent pointers caused difficult to find bugs 
-        # and forced use of cloning as workaround... instead try to live without
-        #
-        #if not operation is None:
-        #    left.parent = self 
-        #    if not right is None:
-        #        right.parent = self 
-        #pass
-
-    #def clone(self):
-    #    if self.is_operation:
-    #        cleft = self.left.clone() 
-    #        cright = self.right.clone() 
-    #    else:
-    #        cleft = None
-    #        cright = None
-    #    pass
-    #    return Node(shape=self.shape, left=cleft, right=cright, operation=self.operation, param=self.param, name=self.name)
-
 """
 import logging, copy
 log = logging.getLogger(__name__)
@@ -27,17 +8,14 @@ import numpy as np
 EMPTY = 0 
 SPHERE = 1
 BOX = 2 
-is_shape = lambda c:c in [EMPTY,SPHERE, BOX]
 
-DIVIDER = 99  # between shapes and operations
-
-UNION = 100
-INTERSECTION = 101
-DIFFERENCE = 102
-is_operation = lambda c:c in [UNION,INTERSECTION,DIFFERENCE]
+_desc_sh = { EMPTY:"e", SPHERE:"s", BOX:"b" }
+def desc_sh(sh):
+    return _desc_sh[sh]
 
 
-desc = { EMPTY:"e", SPHERE:"s", BOX:"b", UNION:"U", INTERSECTION:"I", DIFFERENCE:"D" }
+from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
+
 
 
 class T(np.ndarray):
@@ -224,9 +202,9 @@ class Node(object):
                 assert 0
         else:
             if self.is_primitive:
-                return "%s.%s" % (self.tag, desc[self.shape])
+                return "%s.%s" % (self.tag, desc_sh(self.shape))
             else:
-                return "%s.%s(%r,%r)" % ( self.tag, desc[self.operation],self.l, self.r )
+                return "%s.%s(%r,%r)" % ( self.tag, desc_op(self.operation),self.l, self.r )
 
     is_primitive = property(lambda self:self.shape is not None)
     is_operation = property(lambda self:self.operation is not None)
@@ -244,13 +222,13 @@ class Node(object):
     def _get_tag(self):
         if self.operation is not None:
             if self.operation in [UNION,INTERSECTION,DIFFERENCE]:
-                ty = desc[self.operation]
+                ty = desc_op(self.operation)
             else:
                 assert 0
             pass
         elif self.shape is not None:
             if self.shape in [SPHERE, BOX, EMPTY]:
-                ty = desc[self.shape]
+                ty = desc_sh(self.shape)
             else:
                 assert 0
             pass
@@ -746,23 +724,29 @@ root4.name = "root4"
 
 
 cbox = Node(shape=BOX, param=[0,0,0,200], name="cbox")
-lbox = Node(shape=BOX, param=[-200,0,0,50], name="lbox")
-rbox = Node(shape=BOX, param=[ 200,0,0,50], name="rbox")
+lbox = Node(shape=BOX, param=[-50,50,0,100], name="lbox")
+rbox = Node(shape=BOX, param=[ 50,-50,0,100], name="rbox")
 
 csph = Node(shape=SPHERE, param=[0,0,0,250], name="csph")
-lsph = Node(shape=SPHERE, param=[-50,0,0,100], name="lsph")
-rsph = Node(shape=SPHERE, param=[50,0,0,100], name="rsph")
+
+lsph = Node(shape=SPHERE, param=[-50,50,0,100], name="lsph")
+rsph = Node(shape=SPHERE, param=[50,-50,0,100], name="rsph")
 
 
 trees = []
 
-lrbox = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox") 
+lrbox_u = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox_u") 
+lrbox_i = Node(operation=INTERSECTION, l=lbox,  r=rbox, name="lrbox_i") 
+lrbox_d1 = Node(operation=DIFFERENCE, l=lbox,  r=rbox, name="lrbox_d1") 
+lrbox_d2 = Node(operation=DIFFERENCE, l=rbox,  r=lbox, name="lrbox_d2") 
+trees += [lrbox_u, lrbox_i, lrbox_d1, lrbox_d2]
+
 
 bms = Node(name="bms",operation=DIFFERENCE, l=cbox,  r=csph )
 smb = Node(name="smb",operation=DIFFERENCE, l=csph,  r=cbox )
-ubo = Node(name="ubo",operation=UNION,      l=bms,   r=lrbox )
+ubo = Node(name="ubo",operation=UNION,      l=bms,   r=lrbox_u )
 
-trees += [lrbox, bms, smb, ubo]
+trees += [bms, smb, ubo]
 
 
 bms_rbox = Node(name="bms_rbox", operation=UNION, l=bms, r=rbox )

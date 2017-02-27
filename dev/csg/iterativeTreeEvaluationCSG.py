@@ -11,29 +11,42 @@ import logging
 log = logging.getLogger(__name__)
 
 import numpy as np
+from opticks.ana.nbase import count_unique
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-from node import Node, UNION, INTERSECTION, DIFFERENCE, BOX, SPHERE, EMPTY, desc
-from node import trees, root0, root1, root2, root3, root4
+#from node import UNION, INTERSECTION, DIFFERENCE, desc
+from node import Node, BOX, SPHERE, EMPTY
+from node import trees
+from node import root0, root1, root2, root3, root4
 from node import ubo, lrsph_d1, lrsph_d2, lrsph_u, lrsph_i
+from node import lrbox_u, lrbox_i, lrbox_d1, lrbox_d2
 
-from intersect import intersect_primitive, intersect_miss, Ray
+from intersect import intersect_primitive, intersect_miss, Ray, IIS
 
-from boolean import boolean_table 
-from boolean import desc_state, Enter, Exit, Miss
-from boolean import desc_acts, BooleanStart, BooleanError, RetMiss, RetL, RetR, RetLIfCloser, RetRIfCloser, LoopL, LoopLIfCloser, LoopR, LoopRIfCloser
-from boolean import RetFlippedRIfCloser
-from boolean import IterativeError
-from boolean import act_index, _act_index
+from opticks.optixrap.cu.boolean_h import desc_state, Enter, Exit, Miss
+from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
+from opticks.optixrap.cu.boolean_h import boolean_table, boolean_decision
+from opticks.optixrap.cu.boolean_h import desc_acts, act_index
+from opticks.optixrap.cu.boolean_h import ReturnMiss, ReturnA, ReturnAIfCloser, ReturnAIfFarther
+from opticks.optixrap.cu.boolean_h import ReturnB, ReturnBIfCloser, ReturnBIfFarther, ReturnFlipBIfCloser
+from opticks.optixrap.cu.boolean_h import AdvanceAAndLoop, AdvanceAAndLoopIfCloser
+from opticks.optixrap.cu.boolean_h import AdvanceBAndLoop, AdvanceBAndLoopIfCloser
 
-from ctrl import CtrlLeft, CtrlRight, CtrlBreak, CtrlReturn, CtrlResumeFromLeft, CtrlResumeFromRight, desc_ctrl
+
+from ctrl import CtrlReturnMiss, CtrlReturnLeft, CtrlReturnRight, CtrlReturnFlipRight
+from ctrl import CtrlLoopLeft, CtrlLoopRight
+from ctrl import desc_ctrl, ctrl_index, desc_ctrl_cu, _ctrl_color
 
 
 class CSG(object):
-    def __init__(self, level=1):
+    def __init__(self, level=1, epsilon=None):
+         if epsilon is None:
+             epsilon = 1e-4 
+         pass
          self.level = level
+         self.epsilon = epsilon
          self.reset()
 
     def _get_debug(self):
@@ -48,17 +61,6 @@ class CSG(object):
         self.rname = None
         self._debug = debug
 
-    def traverse_r(self, root, depth=0):
-        if root.is_primitive:
-            print "traverse_r(primitive) %d %r " % (depth, root)
-        elif root.is_operation:
-            print "traverse_r(operation) %d %r " % (depth, root)
-            self.traverse_r(root.l, depth=depth+1)
-            self.traverse_r(root.r, depth=depth+1)
-        else:
-            print "traverse_r(other) %d %r " % (depth, root)
-        pass
-
     def classify(self, tt, nn, tmin):
         if tt > tmin:
             state = Enter if np.dot(nn, self.ray.direction) < 0. else Exit 
@@ -67,55 +69,55 @@ class CSG(object):
         pass
         return state
 
-    def binary_action(self, operation, left, right, tminL=0, tminR=0):
+    def binary_ctrl(self, operation, left, right, tminL=0, tminR=0):
         """
         * increasing tmin will cause some Enter/Exit intersect states to become Miss
         * when doin LoopL LoopR need to leave the other side state unchanged, hence
           using split tminL/tminR
 
         """
-        act = BooleanError
-
+        act = 0
         stateL = self.classify(left.t, left.n, tminL)  
         stateR = self.classify(right.t, right.n, tminR)
 
         acts = boolean_table(operation, stateL, stateR )
+        act = boolean_decision(acts, left.t, right.t )
 
-        #opr = "%s(%s:%s,%s:%s)" % ( desc[operation],left.name,desc_state[stateL], right.name,desc_state[stateR] )
-        #trep = self.trep_fmt(tmin, left.t, right.t )
-
-        act_RetMiss = (RetMiss & acts)
-        act_RetL = (RetL & acts)
-        act_RetR = (RetR & acts)
-        act_LoopL = (LoopL & acts)
-        act_LoopR = (LoopR & acts)
-        act_RetLIfCloser = ((RetLIfCloser & acts) and left.t <= right.t)
-        act_LoopLIfCloser = ((LoopLIfCloser & acts) and left.t <= right.t)
-        act_RetRIfCloser = ((RetRIfCloser & acts) and right.t < left.t)
-        act_RetFlippedRIfCloser = ((RetFlippedRIfCloser & acts) and right.t < left.t)
-        act_LoopRIfCloser = ((LoopRIfCloser & acts) and right.t < left.t)
-
-        if act_RetMiss:
-            act = RetMiss
-        elif act_RetL or act_RetLIfCloser: 
-            act = RetLIfCloser if act_RetLIfCloser else RetL
-        elif act_RetR or act_RetRIfCloser or act_RetFlippedRIfCloser: 
-            if act_RetFlippedRIfCloser:
-                act = RetFlippedRIfCloser 
-            elif act_RetRIfCloser:
-                act = RetRIfCloser
-            else:
-                act = RetR
-            pass
-        elif act_LoopL or act_LoopLIfCloser:
-            act = LoopLIfCloser if act_LoopLIfCloser else LoopL
-        elif act_LoopR or act_LoopRIfCloser:
-            act = LoopRIfCloser if act_LoopRIfCloser else LoopR
-        else:
-            log.fatal("UNHANDLED acts %d " % (acts))
-            assert 0
+        if act & (ReturnMiss):
+            ctrl = CtrlReturnMiss
+        elif act & (ReturnAIfCloser | ReturnAIfFarther | ReturnA):
+            ctrl = CtrlReturnLeft 
+        elif act & (ReturnBIfCloser | ReturnBIfFarther | ReturnB): 
+            ctrl = CtrlReturnRight 
+        elif act & (ReturnFlipBIfCloser): 
+            ctrl = CtrlReturnFlipRight 
+        elif act & (AdvanceAAndLoop | AdvanceAAndLoopIfCloser):
+            ctrl = CtrlLoopLeft
+        elif act & (AdvanceBAndLoop | AdvanceBAndLoopIfCloser):
+            ctrl = CtrlLoopRight
+        else: 
+            assert 0, desc_acts(act)
         pass
-        return act 
+        return ctrl
+
+    def binary_result(self, ctrl, miss, left, right):
+
+
+        if ctrl & CtrlReturnMiss:
+            result = miss[:]
+        elif ctrl & CtrlReturnLeft:
+            result = left[:]
+        elif ctrl & CtrlReturnRight: 
+            result = right[:]
+        elif ctrl & CtrlReturnFlipRight: 
+            result = right[:]
+            result.n = -result.n
+        else:
+            assert 0, desc_ctrl(ctrl)
+        pass
+        result.addseq(ctrl_index(ctrl))  ## record into ray?, as keep getting fresh II instances
+        assert len(result.shape) == 2 and result.shape[0] == 4 and result.shape[1] == 4
+        return result        
 
 
     def check_tree(self, root):
@@ -149,11 +151,11 @@ class CSG(object):
         rhs = []
 
         tranche = []
-        tranche.append([Node.leftmost(root),None,CtrlLeft|CtrlRight])
+        tranche.append([Node.leftmost(root),None])
 
         while len(tranche) > 0:
-            begin, end, ctrl = tranche.pop()
-            log.debug("start tranche %s begin %s end %s " % (desc_ctrl(ctrl), begin, end))
+            begin, end = tranche.pop()
+            log.debug("start tranche begin %s end %s " % (begin, end))
             
             p = begin
             while p is not end:
@@ -167,92 +169,74 @@ class CSG(object):
                 tminL = tmin
                 tminR = tmin
 
-                ctrl = (CtrlLeft | CtrlRight)
+                ctrl = (CtrlLoopLeft | CtrlLoopRight)
                 log.debug("p loop %s : %s " % (desc_ctrl(ctrl), p))
 
+                reiterate_ = False
+
                 loopcount = 0 
-                while ctrl & (CtrlLeft | CtrlRight ):
+                while ctrl & (CtrlLoopLeft | CtrlLoopRight ):
 
-                    loopcount += 1 
-                    assert loopcount < 10  
-
-                    if ctrl & CtrlLeft: 
+                    if ctrl & CtrlLoopLeft: 
                         if p.l.is_leaf:
                             left = intersect_primitive(p.l, self.ray, tminL)
                         else:
-                            left = lhs.pop()
+                            try:
+                                left = lhs.pop()
+                            except IndexError:
+                                left = miss
+                                log.error("lhs pop from empty")
                         pass
                     pass
-
-                    if ctrl & CtrlRight: 
+                    if ctrl & CtrlLoopRight: 
                         if p.r.is_leaf:
                             right = intersect_primitive(p.r, self.ray, tminR)
                         else:
-                            right = rhs.pop()
+                            try:
+                                right = rhs.pop()
+                            except IndexError:
+                                right = miss
+                                log.error("rhs pop from empty")
                         pass
                     pass
 
-                    act = self.binary_action(p.operation, left, right, tminL, tminR)    
+                    ctrl = self.binary_ctrl(p.operation, left, right, tminL, tminR)    
 
-                    if act & (LoopL | LoopLIfCloser): 
-                        ctrl = CtrlLeft
-                        tminL = left.t
-                    elif act & (LoopR | LoopRIfCloser): 
-                        ctrl = CtrlRight
-                        tminR = right.t 
-                    elif act & (RetR | RetRIfCloser | RetL | RetLIfCloser | RetMiss | RetFlippedRIfCloser): 
-                        ctrl = CtrlReturn 
-                    else: 
-                        assert 0, desc_acts(act)
-
-                    #log.debug("p %5s(%s,%s) %s -> %s " % (p.tag,left,right, desc_acts(act), desc_ctrl(ctrl)))
-
-                    ## hmm maybe need tmin stack ???
-                    pass
-                    if ctrl & CtrlLeft: 
+                    if ctrl & (CtrlReturnMiss | CtrlReturnLeft | CtrlReturnRight | CtrlReturnFlipRight):
+                        pass # will fall out of the ctrl while as no longer loopers
+                    elif ctrl == CtrlLoopLeft: 
+                        tminL = left.t + self.epsilon
                         if not p.l.is_leaf:
                             rhs.append(right)
-                            tranche.append([p,None,CtrlResumeFromLeft])  
-                            tranche.append([Node.leftmost(p.l),p.l.next_,CtrlLeft])
-                            ctrl |= CtrlBreak
+                            tranche.append([p,None])  
+                            tranche.append([Node.leftmost(p.l),p.l.next_])
+                            reiterate_ = True 
                         pass
-                    pass
-                    if ctrl & CtrlRight: 
+                    elif ctrl == CtrlLoopRight: 
+                        tminR = right.t + self.epsilon
                         if not p.r.is_leaf:
                             lhs.append(left)
-                            tranche.append([p,None,CtrlResumeFromRight])  
-                            tranche.append([Node.leftmost(p.r),p.r.next_,CtrlRight])
-                            ctrl |= CtrlBreak
+                            tranche.append([p,None])  
+                            tranche.append([Node.leftmost(p.r),p.r.next_])
+                            reiterate_ = True 
                         pass
+                    else:
+                         assert 0, desc_ctrl(ctrl) 
                     pass
-                    if ctrl & ( CtrlBreak | CtrlReturn):
-                        break # out of ctrl-while loop (ie when no need for immediate looping for bileaf nodes)
-                    pass # ctrl-while end
-                pass   
+                    if reiterate_:  # despite loopers non-leaves need to break to traverse subtree
+                        break 
+                    pass
+                    loopcount += 1 
+                    assert loopcount < 10  
+                    pass 
+                pass  # end while ctrl loop   
           
-                if ctrl & CtrlBreak:  
-                    ctrl = ctrl & ~CtrlBreak 
+                if reiterate_:  
                     log.info("break out of postorder traversal, for re-iteration of subtree ntranche %d " % len(tranche))
                     break 
 
-                assert ctrl & CtrlReturn, desc_ctrl(ctrl)
-
-                if act & (RetL | RetLIfCloser): 
-                    result = left[:]
-                elif act & (RetFlippedRIfCloser): 
-                    result = right[:]
-                    result.n = -result.n
-                elif act & (RetR | RetRIfCloser): 
-                    result = right[:]
-                elif act & RetMiss: 
-                    result = miss[:]
-                else:
-                    assert 0, desc_acts(act)
-                pass
-                result.addseq(act_index(act))
-                
-                assert len(result.shape) == 2 and result.shape[0] == 4 and result.shape[1] == 4
-                log.debug("return %s " % result )
+                assert ctrl & (CtrlReturnLeft | CtrlReturnRight | CtrlReturnMiss | CtrlReturnFlipRight )
+                result = self.binary_result(ctrl, miss, left, right)
 
                 if p.is_left:
                     lhs.append(result)
@@ -263,118 +247,107 @@ class CSG(object):
                 p = p.next_ 
             pass               # postorder tranche traversal while loop
         pass
-        assert len(lhs) == 0, lhs
-        assert len(rhs) == 1, rhs   # end with p.idx = 1 for the root
+        #assert len(lhs) == 0, lhs
+        #assert len(rhs) == 1, rhs   # end with p.idx = 1 for the root
+
+        if len(lhs) != 0:
+            log.error("lhs expected to end with zero isects, see %d " % len(lhs))
+
+        if len(rhs) != 1:
+            log.error("rhs expected to end with one isect, see %d " % len(rhs))
+
         return rhs[0]
      
 
-    def recursive_intersect(self, p, ctrl=CtrlLeft|CtrlRight, depth=0, tmin=0):
+    def recursive_intersect(self, p, tmin=0):
         assert p.is_operation
         miss =  intersect_miss(p, self.ray, tmin)
         tminL = tmin
         tminR = tmin
         loopcount = 0 
-        ctrl = (CtrlLeft | CtrlRight)
+        ctrl = (CtrlLoopLeft | CtrlLoopRight)
 
-        while ctrl & (CtrlLeft | CtrlRight ):
-            loopcount += 1 
-            assert loopcount < 10  
-
-            if ctrl & CtrlLeft: 
+        while ctrl & (CtrlLoopLeft | CtrlLoopRight ):
+            if ctrl & CtrlLoopLeft: 
                 if p.l.is_leaf:
                     left = intersect_primitive(p.l, self.ray, tminL)
                 else:
-                    left = self.recursive_intersect(p.l, depth=depth+1, tmin=tminL)
+                    left = self.recursive_intersect(p.l, tmin=tminL)
                 pass
             pass
-            if ctrl & CtrlRight: 
+            if ctrl & CtrlLoopRight: 
                 if p.r.is_leaf:
                     right = intersect_primitive(p.r, self.ray, tminR)
                 else:
-                    right = self.recursive_intersect(p.r, depth=depth+1, tmin=tminR)
+                    right = self.recursive_intersect(p.r, tmin=tminR)
                 pass
             pass
+            ctrl = self.binary_ctrl(p.operation, left, right, tminL, tminR)    
 
-            act = self.binary_action(p.operation, left, right, tminL, tminR)    
-
-            if act & (LoopL | LoopLIfCloser): 
-                ctrl = CtrlLeft
-                tminL = left.t
-            elif act & (LoopR | LoopRIfCloser): 
-                ctrl = CtrlRight
-                tminR = right.t 
-            elif act & (RetR | RetRIfCloser | RetL | RetLIfCloser | RetMiss | RetFlippedRIfCloser): 
-                ctrl = CtrlReturn 
-            else: 
-                assert 0, desc_acts(act)
-            pass
-            if ctrl & CtrlReturn:
-                break 
+            if ctrl == CtrlLoopLeft:
+                tminL = left.t + self.epsilon
+            elif ctrl == CtrlLoopRight:
+                tminR = right.t + self.epsilon
+            else:
+                pass
             pass 
-        pass
-        if act & (RetL | RetLIfCloser): 
-            result = left[:]
-        elif act & (RetFlippedRIfCloser): 
-            result = right[:]
-            result.n = -result.n
-        elif act & (RetR | RetRIfCloser): 
-            result = right[:]
-        elif act & RetMiss: 
-            result = miss[:]
-        else:
-            assert 0, desc_acts(act)
-        pass
-        result.addseq(act_index(act))
-        return result[:]
+            loopcount += 1 
+            assert loopcount < 10  
+        pass  #  end while ctrl loop
+
+        assert ctrl & (CtrlReturnLeft | CtrlReturnRight | CtrlReturnMiss | CtrlReturnFlipRight )
+        result = self.binary_result(ctrl, miss, left, right)
+        return result
  
 
     @classmethod
     def trep_fmt(cls, tmin, tl, tr ):
         return "tmin/tl/tr %5.2f %5.2f %5.2f " % (tmin if tmin else -1, tl if tl else -1, tr if tr else -1 )
 
-    def compare_intersects(self, tst):
+    def compare_intersects(self, tst, rr=[1,0]):
         nray = len(tst.rays)
+        a = np.zeros((2,nray,4,4), dtype=np.float32 )
+       
+        iis = IIS(a)
+        iis._ctrl_color = _ctrl_color
 
-        self.i = np.zeros((2,nray,4,4), dtype=np.float32 )
-
+        self.iis = iis
         self.prob = []
         nerr = 0 
 
         for iray, ray in enumerate(tst.rays):
-            for recursive in [1,0]:
-                self.typ = "RECURSIVE" if recursive else "ITERATIVE"
+            for r in rr:
+                self.typ = "RECURSIVE" if r else "ITERATIVE"
                 self.reset(ray=ray, iray=iray, debug=tst.debug) 
-                if recursive:
-                    isect = self.recursive_intersect(tst.root, depth=0) 
+
+                if r:
+                    isect = self.recursive_intersect(tst.root) 
                 else: 
                     isect = self.iterative_intersect(tst.root)
                 pass
-                self.i[recursive,iray] = isect 
+                self.iis[r,iray] = isect 
 
-                if self.debug and isect is not None:
+                if self.debug:
                     log.info("[%d] %s intersect tt %s nn %r " % (-1, self.typ, isect.t, isect.n ))
                 pass
             pass
 
-            t0 = self.i[0,iray,0,3]  # intersect t 
-            t1 = self.i[1,iray,0,3]
-            ok_t = np.allclose( t0, t1 )
+            t = self.iis.t[:,iray]  # intersect t 
+            ok_t = np.allclose( t[0], t[1] )
 
-            n0 = self.i[0,iray,0,:3]  # intersect normal
-            n1 = self.i[1,iray,0,:3]
-            ok_n = np.allclose( n0, n1 )
+            n = self.iis.n[:,iray]  # intersect normal
+            ok_n = np.allclose( n[0], n[1] )
 
-            o0 = self.i[0,iray,2,:3] # ray.origin
-            o1 = self.i[1,iray,2,:3]
-            ok_o = np.allclose( o0, o1 )
+            o = self.iis.o[:,iray] # ray.origin
+            ok_o = np.allclose( o[0], o[1] )
 
-            d0 = self.i[0,iray,3,:3] # ray.direction
-            d1 = self.i[1,iray,3,:3]
-            ok_d = np.allclose( d0, d1 )
+            d = self.iis.d[:,iray] # ray.direction
+            ok_d = np.allclose( d[0], d[1] )
 
-            p0 = np.repeat(t0, 3).reshape(-1,3)*d0 + o0
-            p1 = np.repeat(t1, 3).reshape(-1,3)*d1 + o1
-            ok_p = np.allclose( p0, p1 )
+            p = self.iis.ipos[:,iray]
+            ok_p = np.allclose( p[0], p[1] )
+
+            ## hmm could compre all at once both within intersect 
 
             if not (ok_p and ok_n and ok_t and ok_d and ok_o):
                 self.prob.append(iray)
@@ -383,69 +356,68 @@ class CSG(object):
         pass
         log.info("%10s %d/%d rays with intersect mismatches : %s  iterative nerr %d " % (tst.name, len(self.prob),nray,repr(self.prob), nerr))
 
+        q = self.iis.seq
+        iq = count_unique(q[0])
+        rq = count_unique(q[1])
+ 
+        try: 
+            log.info(" iterative\n %s"  % desc_ctrl_cu(iq) )
+            log.info(" recursive\n %s " % desc_ctrl_cu(rq) )
+        except KeyError:
+            print "q", q
+            print "iq", iq
+            print "rq", rq
 
     
 
-    def plot_intersects(self, ax, normal=False, xof=[0,300],yof=[0,0]):
+    def plot_intersects(self, axs, normal=False, origin=True, xof=[0,300],yof=[0,0], rr=[1,0]):
         """
-
-            csg.i[1,:,1,3].view(np.uint32)
-
         """
         sc = 30 
 
-        tt = {}
-        tt[0] = self.i[0,:,0,3]  # parametric t at intersection
-        tt[1] = self.i[1,:,0,3]
-
-        nn = {}
-        nn[0] = self.i[0,:,0,:3]  # normal at intersection
-        nn[1] = self.i[1,:,0,:3]
-
-        oo = {}
-        oo[0] = self.i[0,:,2,:3] # ray.origin
-        oo[1] = self.i[1,:,2,:3]
-
-        dd = {}
-        dd[0] = self.i[0,:,3,:3] # ray.direction
-        dd[1] = self.i[1,:,3,:3]
-
-        pp = {}
-        pp[0] = np.repeat(tt[0], 3).reshape(-1,3)*dd[0] + oo[0]   # intersect position
-        pp[1] = np.repeat(tt[1], 3).reshape(-1,3)*dd[1] + oo[1]
-
-
-        qq = {}
-        qq[0] = self.i[0,:,1,3].view(np.uint32)    # act sequence
-        qq[1] = self.i[1,:,1,3].view(np.uint32)
-
-        _color = {  0:'r', 3:'g', 4:'b' }
-
-        label_ = lambda _:desc_acts(0x1 << _)
-        color_ = lambda _:_color.get(_,'c')
-            
-        cqq = {}
-        cqq[0] = map(color_, qq[0])
-        cqq[1] = map(color_, qq[1])
-
+        i = self.iis
+        t = i.t
+        q = i.seq
+        n = i.n
+        o = i.o
+        d = i.d
+        p = i.ipos
+        c = i.cseq
 
         X,Y,Z = 0,1,2
 
-        sel = tt[0] > 0
+        pr = self.prob
 
-        prob = self.prob
+        for r in rr:
+            ax = axs[r]
 
+            if origin:
+                ax.scatter( xof[r] + o[r][:,X] , yof[r] + o[r][:,Y]  )
 
-
-        for r in [0,1]:
-            ax.scatter( xof[r] + pp[r][sel,X] , yof[r] + pp[r][sel,Y], c=cqq[r])
+            sel = t[r] > 0
+            ax.scatter( xof[r] + p[r][sel,X] , yof[r] + p[r][sel,Y], c=c[r] )
 
             if normal:
-                ax.scatter( xof[r] + pp[r][sel,X] + nn[r][sel,X]*sc, yof[r] + pp[r][sel,Y]+nn[r][sel,Y]*sc)
+                ax.scatter( xof[r] + p[r][sel,X] + n[r][sel,X]*sc, yof[r] + p[r][sel,Y] + n[r][sel,Y]*sc )
 
-            #if len(prob) > 0:
-            #    ax.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="r" )
-            #    ax.scatter( xoff + self.ipos[recursive, prob,0], self.ipos[recursive, prob,1], c="g" )
+            if len(pr) > 0:
+                sel = pr
+                ax.scatter( xof[r] + p[r][sel,X] , yof[r] + p[r][sel,Y], c=c[r][sel] )
+            pass
+        
+            #sel = slice(0,None)
+
+            for _ in np.where(sel)[0]:
+                x1 = o[r,_,X]
+                y1 = o[r,_,Y]
+                x2 = p[r,_,X]
+                y2 = p[r,_,Y]
+             
+                ax.plot( [x1,x2], [y1,y2], c[r][_]+'-' )
+
+        pass
+
+
 
 
 
@@ -471,6 +443,11 @@ class T(object):
         self.num = num
         self.level = level
 
+
+    def _get_suptitle(self):
+        return "%s" % self.name
+    suptitle = property(_get_suptitle)
+
     def _get_rays(self):
         rays = []
         if "xray" in self.source:
@@ -488,6 +465,22 @@ class T(object):
 
         if "rsquad" in self.source:
             rays += [Ray(origin=[300,y,0], direction=[-1,0,0]) for y in range(-50,50+1,10)]
+
+
+        if "qray" in self.source:
+            s = 300
+            r = range(-s,s+1,2)
+            rays += [Ray(origin=[s,y,0], direction=[-1,0,0])  for y in r]
+            rays += [Ray(origin=[-s,y,0], direction=[1,0,0])  for y in r]
+            rays += [Ray(origin=[x,-s,0], direction=[0,1,0])  for x in r]
+            rays += [Ray(origin=[x, s,0], direction=[0,-1,0]) for x in r]
+ 
+        if "seray" in self.source:
+            s = 300
+            r = range(-s,s+1,2)
+            rays += [Ray(origin=[v,v-s,0], direction=[-1,1,0]) for v in r]
+ 
+
         pass
 
         return rays
@@ -497,13 +490,14 @@ class T(object):
 
 
 class Renderer(object):
-    def __init__(self, ax, axes=[0,1]):
-        self.ax = ax
+    def __init__(self, axs, axes=[0,1]):
+        self.axs = axs
         self.axes = axes
 
     def limits(self, sx=200, sy=150):
-        self.ax.set_xlim(-sx,sx)
-        self.ax.set_ylim(-sy,sy)
+        for ax in self.axs:
+            ax.set_xlim(-sx,sx)
+            ax.set_ylim(-sy,sy)
 
     colors = ['r','g','b','c','m','y','k']
 
@@ -511,7 +505,6 @@ class Renderer(object):
         n = len(self.colors)
         ic = (n-i-1)%n if other else i%n 
         return self.colors[ic]
-
 
     def render(self, root):
         log.info("render %r " % root )
@@ -564,7 +557,9 @@ class Renderer(object):
         self.add_patch(patch)
 
     def add_patch(self, patch):
-        self.ax.add_artist(patch)
+        for ax in self.axs:
+            ax.add_artist(patch)
+        pass
     pass
 pass
 
@@ -581,18 +576,16 @@ if __name__ == '__main__':
     plt.ion()
     plt.close("all")
 
+    source = None
+    epsilon = None
+
     #root = trees[1]
     #root = trees[3]
     #root = trees[4]
     #root = trees[5]
 
-    #for root in trees:
-    if 1:
-        #root = ubo
-        #root = lrsph_d1
-
-        source = None
-  
+    for root in trees:
+    #if 1:
  
         ## this should be cresent moon shape 
 
@@ -602,34 +595,73 @@ if __name__ == '__main__':
         #source, root = "lsquad", lrsph_d2     # incorrect inner intersects, with 
         #source, root = "rsquad", lrsph_d1  
 
+        #source, root = "origlight", lrsph_i   # looks correct : half left/right
+        #source, root = "aringlight", lrsph_i   # looks funny, 52 missers 
+        #source, root = "aringlight", lrsph_u   # looks correct
+
+
+        #source, root = "origlight", lrsph_u    # looks correct : half left/right
+        #source, root = "aringlight", lrsph_u    # looks correct : half left/right
+
         #root = lrsph_u
         #source, root = "origlight", lrsph_i
 
+        # lrsph_d1 : left sphere - right sphere  
+        #source, root = "origlight", lrsph_d1    # get expected arc of the cresent moon to left, half CtrlReturnMiss, half CtrlReturnFlipRight
 
-        source, root = "origlight", lrsph_d1  
-        #source, root = "aringlight", lrsph_d1  
+        #source, root, epsilon  = "aringlight", lrsph_d1, 1e-5    # unexpected left intersects that should be right flips
+        #source, root, epsilon = "aringlight", lrsph_d1, 1e-4      # get expected with larger epsilon, cicle sqrt etc... require larger epsilon
 
+        #source, root, epsilon = "aringlight", lrsph_d2, 1e-4      # get expected with larger epsilon, cicle sqrt etc... require larger epsilon
+
+
+        #source, root = "qray", lrsph_d1         # still bad intersects, until applied epsilon to the advancers
+        #source, root = "qray", lrsph_d2         # still bad intersects, until applied epsilon to advancers
+
+        #source, root = "aringlight", lrbox_u    #  correct ~equal left/right
+        #source, root = "origlight", lrbox_u    #  correct ~equal left/right
+
+        #source, root = "aringlight", lrbox_i    #  unexpected misses
+        #source, root = "qray",      lrbox_i      # getting expected intersects
+        #source, root = "origlight", lrbox_i      #  correct ~equal l/r
+
+        #source, root = "origlight", lrbox_d1   # expected ~equal CtrlReturnMiss, CtrlReturnFlipRight
+        #source, root = "aringlight", lrbox_d1   # incorrect left intersects
+
+        #source, root = "qray", lrbox_d1   # correct, huh...
+        #source, root = "seray", lrbox_d1   # correct, huh... 
+ 
 
         root.annotate()
 
+
         fig = plt.figure()
-        #fig.set_size_inches(20,20)
 
-        ax = fig.add_subplot(1,1,1, aspect='equal')
+        ax1 = fig.add_subplot(1,2,1, aspect='equal')
+        ax2 = fig.add_subplot(1,2,2, aspect='equal')
+        axs = [ax1,ax2]
 
-        tst = T(root,level=3,debug=[], num=100, source=source)
-        csg = CSG(level=tst.level)
+        tst = T(root,level=3,debug=[0], num=100, source=source)
+        csg = CSG(level=tst.level, epsilon=epsilon)
 
-        csg.compare_intersects( tst )
-        csg.plot_intersects( ax, xof=[0,0], yof=[150,-150], normal=False)
+        rr = [0,1]   # recursive only [1], iterative only [0], or both [0,1] [1,0]
+        xof = [0,0]        # offsets for iterative and recursive plotting
+        #yof = [150, -150]   
+        yof = [0, 0]
 
-        rdr = Renderer(ax)
+
+        csg.compare_intersects( tst, rr=rr )
+        csg.plot_intersects( axs=axs, rr=rr, xof=xof, yof=yof, normal=False)
+
+        rdr = Renderer(axs)
         rdr.limits(300,300)
         rdr.render(root)
+
+        fig.suptitle(tst.suptitle) 
 
         fig.show()
 
 
         self = csg
-
+        i = csg.iis
 

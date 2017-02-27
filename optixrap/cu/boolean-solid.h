@@ -15,21 +15,26 @@ With corrections and additions from the XRT Renderer webpage
 
 Notes can be found in env/csg-/csg-vi
 
+Changes compare to XRT source
+
+* replaced "ReturnBIfCloser | FlipB" with merged ReturnFlipBIfCloser
+  for simpler recording of algorithm actions
+
 **/
 
 
 enum 
 {
-    ReturnMiss       = 0x1 << 0,
-    ReturnAIfCloser  = 0x1 << 1,
-    ReturnAIfFarther = 0x1 << 2,
-    ReturnA          = 0x1 << 3,
-    ReturnBIfCloser  = 0x1 << 4,
-    ReturnBIfFarther = 0x1 << 5,
-    ReturnB          = 0x1 << 6,
-    FlipB            = 0x1 << 7,
-    AdvanceAAndLoop  = 0x1 << 8,
-    AdvanceBAndLoop  = 0x1 << 9,
+    ReturnMiss              = 0x1 << 0,
+    ReturnAIfCloser         = 0x1 << 1,
+    ReturnAIfFarther        = 0x1 << 2,
+    ReturnA                 = 0x1 << 3,
+    ReturnBIfCloser         = 0x1 << 4,
+    ReturnBIfFarther        = 0x1 << 5,
+    ReturnB                 = 0x1 << 6,
+    ReturnFlipBIfCloser     = 0x1 << 7,
+    AdvanceAAndLoop         = 0x1 << 8,
+    AdvanceBAndLoop         = 0x1 << 9,
     AdvanceAAndLoopIfCloser = 0x1 << 10,    
     AdvanceBAndLoopIfCloser = 0x1 << 11
 };
@@ -52,8 +57,8 @@ enum
     Difference_EnterA_EnterB =  ReturnAIfCloser | AdvanceBAndLoop,
     Difference_EnterA_ExitB  =  AdvanceAAndLoopIfCloser | AdvanceBAndLoopIfCloser,
     Difference_EnterA_MissB  =  ReturnA,
-    Difference_ExitA_EnterB  =  ReturnAIfCloser | ReturnBIfCloser | FlipB,
-    Difference_ExitA_ExitB   =  ReturnBIfCloser | FlipB | AdvanceAAndLoop,
+    Difference_ExitA_EnterB  =  ReturnAIfCloser | ReturnFlipBIfCloser,
+    Difference_ExitA_ExitB   =  ReturnFlipBIfCloser | AdvanceAAndLoop,
     Difference_ExitA_MissB   =  ReturnA,
     Difference_MissA_EnterB  =  ReturnMiss,
     Difference_MissA_ExitB   =  ReturnMiss,

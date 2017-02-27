@@ -1,5 +1,11 @@
 #!/usr/bin/env python
+"""
 
+This is going the way of the dodo... due to state table bugs,
+moving to the XRT language generated from the C enums
+
+
+"""
 from intersect import DIFFERENCE, UNION, INTERSECTION, desc
 
 # intersect status

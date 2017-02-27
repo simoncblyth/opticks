@@ -2,7 +2,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from node import Node, SPHERE, BOX, EMPTY, UNION, INTERSECTION, DIFFERENCE, desc, root0, root1, root2, root3, root4
+
+from node import Node, SPHERE, BOX, EMPTY, desc_sh
+from node import root0, root1, root2, root3, root4
+from node import UNION, INTERSECTION, DIFFERENCE
+
 
 import logging
 log = logging.getLogger(__name__)
@@ -43,6 +47,19 @@ class II(np.ndarray):
         3,3  
 
     """
+
+    N_ = 0, slice(0,3)
+    T_ = 0, 3
+
+    TMIN_ = 1, 0
+    IDX_ = 1, 1 
+    NODE_ = 1, 2
+    SEQ_ = 1, 3
+
+    O_ = 2, slice(0,3)
+    D_ = 3, slice(0,3)
+
+
     def __new__(cls, a=None, history=[]):
         if a is None:
            a = np.zeros((4,4), dtype=np.float32 )
@@ -55,54 +72,54 @@ class II(np.ndarray):
         if obj is None: return
         self.history = getattr(obj, 'history', None)
 
+
     def _get_t(self):
-        return self[0,3]
+        return self[self.T_[0],self.T_[1]]
     def _set_t(self, t):
-        self[0,3] = t 
+        self[self.T_[0],self.T_[1]] = t 
     t = property(_get_t, _set_t)
 
     def _get_tmin(self):
-        return self[1,0]
+        return self[self.TMIN_[0],self.TMIN_[1]]
     def _set_tmin(self, t):
-        self[1,0] = t 
+        self[self.TMIN_[0],self.TMIN_[1]] = t 
     tmin = property(_get_tmin, _set_tmin)
 
     def _get_n(self):
-        return self[0,:3]
+        return self[self.N_[0],self.N_[1]]
     def _set_n(self, n):
-        self[0,:3] = n 
+        self[self.N_[0],self.N_[1]] = n 
     n = property(_get_n, _set_n)
 
-
     def _get_o(self):
-        return self[2,:3]
+        return self[self.O_[0],self.O_[1]]
     def _set_o(self, o):
-        self[2,:3] = o 
+        self[self.O_[0],self.O_[1]] = o 
     o = property(_get_o, _set_o)
 
     def _get_d(self):
-        return self[3,:3]
-    def _set_d(self, d):
-        self[3,:3] = d 
+        return self[self.D_[0],self.D_[1]]
+    def _set_d(self, o):
+        self[self.D_[0],self.D_[1]] = o 
     d = property(_get_d, _set_d)
 
     def _get_idx(self):
-        return self.view(np.uint32)[1,1]
+        return self.view(np.uint32)[self.IDX_[0],self.IDX_[1]]
     def _set_idx(self, u):
-        self.view(np.uint32)[1,1] = u 
+        self.view(np.uint32)[self.IDX_[0],self.IDX_[1]] = u 
     idx = property(_get_idx, _set_idx)
 
     def _get_node(self):
-        return self.view(np.uint32)[1,2]
+        return self.view(np.uint32)[self.NODE_[0],self.NODE_[1]]
     def _set_node(self, u):
-        self.view(np.uint32)[1,2] = u 
+        self.view(np.uint32)[self.NODE_[0],self.NODE_[1]] = u 
     node = property(_get_node, _set_node)
 
 
     def _get_seq(self):
-        return self.view(np.uint32)[1,3]
+        return self.view(np.uint32)[self.SEQ_[0],self.SEQ_[1]]
     def _set_seq(self, u):
-        self.view(np.uint32)[1,3] = u 
+        self.view(np.uint32)[self.SEQ_[0],self.SEQ_[1]] = u 
     seq = property(_get_seq, _set_seq)
 
     xseq = property(lambda self:"%x" % self.seq)
@@ -130,6 +147,47 @@ class II(np.ndarray):
         self.seq = q
 
 
+
+class IIS(np.ndarray):
+    """
+    Collection of intersects
+    """
+
+    def __new__(cls, a=None, history=[]):
+        if a is None:
+           a = np.zeros((2,100,4,4), dtype=np.float32 )
+        pass
+        obj = np.asarray(a).view(cls)
+        obj.history = history
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None: return
+        self.history = getattr(obj, 'history', None)
+
+    t = property(lambda self:self[:,:,II.T_[0],II.T_[1]])
+    n = property(lambda self:self[:,:,II.N_[0],II.N_[1]])
+    o = property(lambda self:self[:,:,II.O_[0],II.O_[1]])
+    d = property(lambda self:self[:,:,II.D_[0],II.D_[1]])
+    tmin = property(lambda self:self[:,:,II.TMIN_[0],II.TMIN_[1]])
+
+    idx = property(lambda self:self.view(np.uint32)[:,:,II.IDX_[0],II.IDX_[1]])
+    node = property(lambda self:self.view(np.uint32)[:,:,II.NODE_[0],II.NODE_[1]])
+    seq = property(lambda self:self.view(np.uint32)[:,:,II.SEQ_[0],II.SEQ_[1]])
+    # intersect position
+    ipos = property(lambda self:self.d * np.repeat(self.t,3).reshape(2,-1,3) + self.o)
+
+    def _get_cseq(self):
+        """
+        Apply index to color code mapping to the seq array
+        """
+        _cseq = np.zeros( self.seq.shape, dtype=np.string_)
+        _cseq[:] = 'k'
+        for k, v in self._ctrl_color.items(): 
+            _cseq[self.seq == k] = v
+        pass
+        return _cseq
+    cseq = property(_get_cseq)
 
 
 
@@ -344,7 +402,6 @@ class Ray(object):
        o = self.origin
        d = self.direction
        return "Ray(o=[%5.2f,%5.2f,%5.2f], d=[%5.2f,%5.2f,%5.2f] )" % (o[0],o[1],o[2],d[0],d[1],d[2] )
-
 
 
    @classmethod
