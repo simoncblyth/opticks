@@ -17,7 +17,6 @@ def desc_sh(sh):
 from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
 
 
-
 class T(np.ndarray):
     """
     An array with a text grid representation::
@@ -70,6 +69,7 @@ class Node(object):
         self.idx = idx
         self.l = copy.deepcopy(l)   # for independence
         self.r = copy.deepcopy(r)
+
         self.next_ = None
 
         # below needed for CSG 
@@ -78,6 +78,8 @@ class Node(object):
         self._param = None
         self.parent = None
         self.name = "unnamed"
+        self.ok = False
+ 
         self.apply_(**kwa)
 
     def _get_param(self):
@@ -96,6 +98,8 @@ class Node(object):
                 self.param = v
             elif k == "name":
                 self.name = v 
+            elif k == "ok":
+                self.ok = v 
             else:
                 log.warning("ignored Node param %s : %s " % (k,v))
             pass 
@@ -112,13 +116,12 @@ class Node(object):
         Node.levelorder_label_i(self)
         self.maxdepth = Node.depth_r(self)
 
+        Node.parenting_r(self)
         Node.postorder_threading_r(self)
 
-        if self.name in ["root1","root2","root3"]:
+        if self.name in ["root1","root2","root3","root4"]:
             Node.dress(self)
         pass
-
-
 
     @classmethod
     def dress(cls, root):
@@ -140,7 +143,7 @@ class Node(object):
             else:
                 node.apply_(operation=UNION)
             pass
-            log.info(" dress %r " % node )
+            #log.info(" dress %r " % node )
             node = node.next_ 
 
 
@@ -216,13 +219,13 @@ class Node(object):
     is_bileaf = property(lambda self:not self.is_leaf and self.l.is_leaf and self.r.is_leaf)
 
     is_left_requiring_levelorder = property(lambda self:self.idx % 2 == 0) # convention using 1-based levelorder index
-    is_left = property(lambda self:self.parent is not None and self.parent.left is self)
+    is_left = property(lambda self:self.parent is not None and self.parent.l is self)
     is_root = property(lambda self:self.parent is None)
 
     def _get_tag(self):
         if self.operation is not None:
             if self.operation in [UNION,INTERSECTION,DIFFERENCE]:
-                ty = desc_op(self.operation)
+                ty = desc_op(self.operation)[0]
             else:
                 assert 0
             pass
@@ -464,7 +467,7 @@ class Node(object):
 
         4    5     6      7
 
-        8 9  10 11 12 13 14 
+        8 9  10 11 12 13 14 15
 
         """
 
@@ -522,16 +525,14 @@ class Node(object):
 
         Recursive postorder traversal
         """
-        if root.l is not None:
-            cls.postorder_r(root.l, nodes, leaf=leaf) 
-        if root.r is not None:
-            cls.postorder_r(root.r, nodes, leaf=leaf)
+        if root.l is not None: cls.postorder_r(root.l, nodes, leaf=leaf) 
+        if root.r is not None: cls.postorder_r(root.r, nodes, leaf=leaf)
  
         if not leaf and root.is_leaf:
-            pass
+            pass  # skip leaves when leaf = False
         else: 
             nodes.append(root)
-
+        pass
         return nodes
 
     @classmethod
@@ -727,47 +728,60 @@ cbox = Node(shape=BOX, param=[0,0,0,200], name="cbox")
 lbox = Node(shape=BOX, param=[-50,50,0,100], name="lbox")
 rbox = Node(shape=BOX, param=[ 50,-50,0,100], name="rbox")
 
+
+
 csph = Node(shape=SPHERE, param=[0,0,0,250], name="csph")
 
 lsph = Node(shape=SPHERE, param=[-50,50,0,100], name="lsph")
 rsph = Node(shape=SPHERE, param=[50,-50,0,100], name="rsph")
 
+empty = Node(shape=EMPTY, param=[0,0,0,0], name="empty")
+
 
 trees = []
 
-lrbox_u = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox_u") 
-lrbox_i = Node(operation=INTERSECTION, l=lbox,  r=rbox, name="lrbox_i") 
-lrbox_d1 = Node(operation=DIFFERENCE, l=lbox,  r=rbox, name="lrbox_d1") 
-lrbox_d2 = Node(operation=DIFFERENCE, l=rbox,  r=lbox, name="lrbox_d2") 
+lbox_ue = Node(operation=UNION, l=lbox, r=empty, name="lbox_ue")
+trees += [lbox_ue]
+
+
+lrbox_u = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox_u", ok=True) 
+lrbox_i = Node(operation=INTERSECTION, l=lbox,  r=rbox, name="lrbox_i", ok=True) 
+lrbox_d1 = Node(operation=DIFFERENCE, l=lbox,  r=rbox, name="lrbox_d1", ok=True) 
+lrbox_d2 = Node(operation=DIFFERENCE, l=rbox,  r=lbox, name="lrbox_d2", ok=True) 
 trees += [lrbox_u, lrbox_i, lrbox_d1, lrbox_d2]
 
 
-bms = Node(name="bms",operation=DIFFERENCE, l=cbox,  r=csph )
-smb = Node(name="smb",operation=DIFFERENCE, l=csph,  r=cbox )
-ubo = Node(name="ubo",operation=UNION,      l=bms,   r=lrbox_u )
+bms = Node(name="bms",operation=DIFFERENCE, l=cbox,  r=csph, ok=True )
+smb = Node(name="smb",operation=DIFFERENCE, l=csph,  r=cbox, ok=True)
 
-trees += [bms, smb, ubo]
+ubo = Node(name="ubo",operation=UNION,      l=bms,   r=lrbox_u , ok=False)
 
+trees += [bms, smb, ubo ]
 
-bms_rbox = Node(name="bms_rbox", operation=UNION, l=bms, r=rbox )
-bms_lbox = Node(name="bms_lbox", operation=UNION, l=bms, r=lbox )
-smb_lbox = Node(name="smb_lbox", operation=UNION, l=smb, r=lbox )
-
-bms_rbox_lbox = Node(name="bms_rbox_lbox", operation=UNION, l=bms_rbox,r=lbox ) 
-bms_lbox_rbox = Node( name="bms_lbox_rbox", operation=UNION, l=bms_lbox, r=rbox ) 
-
-trees += [bms_rbox,bms_lbox,smb_lbox,bms_rbox_lbox,bms_lbox_rbox] 
+#u_lrbox_d1 = Node(name="u_lrbox_d1", operation=UNION, l=lrbox_d1, r=lrbox_d1 )
+#trees += [u_lrbox_d1]
 
 
-lrsph_u = Node(operation=UNION,        l=lsph, r=rsph, name="lrsph_u")
-lrsph_i = Node(operation=INTERSECTION, l=lsph, r=rsph, name="lrsph_i")
-lrsph_d1 = Node(operation=DIFFERENCE,   l=lsph, r=rsph, name="lrsph_d1")
-lrsph_d2 = Node(operation=DIFFERENCE,   l=rsph, r=lsph, name="lrsph_d2")
+bms_rbox = Node(name="bms_rbox", operation=UNION, l=bms, r=rbox, ok=False)
+bms_lbox = Node(name="bms_lbox", operation=UNION, l=bms, r=lbox, ok=False)
+smb_lbox = Node(name="smb_lbox", operation=UNION, l=smb, r=lbox, ok=False)
+smb_lbox_ue = Node(name="smb_lbox_ue", operation=UNION, l=smb, r=lbox_ue, ok=False)
+
+bms_rbox_lbox = Node(name="bms_rbox_lbox", operation=UNION, l=bms_rbox,r=lbox, ok=False) 
+bms_lbox_rbox = Node( name="bms_lbox_rbox", operation=UNION, l=bms_lbox, r=rbox, ok=False ) 
+
+trees += [bms_rbox,bms_lbox,smb_lbox,smb_lbox_ue, bms_rbox_lbox,bms_lbox_rbox] 
+
+
+lrsph_u = Node(operation=UNION,        l=lsph, r=rsph, name="lrsph_u", ok=True)
+lrsph_i = Node(operation=INTERSECTION, l=lsph, r=rsph, name="lrsph_i", ok=True)
+lrsph_d1 = Node(operation=DIFFERENCE,   l=lsph, r=rsph, name="lrsph_d1", ok=True)
+lrsph_d2 = Node(operation=DIFFERENCE,   l=rsph, r=lsph, name="lrsph_d2", ok=True)
 
 trees += [lrsph_u, lrsph_i, lrsph_d1, lrsph_d2 ]
 
 
-#trees += [root1, root2, root3, root4 ]
+trees += [root1, root2, root3, root4 ]
 
 
 

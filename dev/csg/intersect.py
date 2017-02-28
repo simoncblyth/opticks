@@ -134,16 +134,16 @@ class II(np.ndarray):
         return n 
     seqslot = property(_get_seqslot)
 
-    def addseq(self, iact):
+    def addseq(self, v):
         """
         Adding 4 bits at a time to form a sequence of codes in range 0x1-0xf
         """
-        assert iact <= 0xf
+        assert v <= 0xf
         q = self.seq
         n = self.seqslot
         assert n*4 <= 32, "addseq overflow assuming 32 bit dtype %d " % n*4
 
-        q += ((0xf & iact) << 4*n) 
+        q |= ((0xf & v) << 4*n) 
         self.seq = q
 
 
@@ -176,6 +176,9 @@ class IIS(np.ndarray):
     seq = property(lambda self:self.view(np.uint32)[:,:,II.SEQ_[0],II.SEQ_[1]])
     # intersect position
     ipos = property(lambda self:self.d * np.repeat(self.t,3).reshape(2,-1,3) + self.o)
+
+    def tpos(self, t):
+        return self.d * t + self.o
 
     def _get_cseq(self):
         """
@@ -249,6 +252,7 @@ def intersect_miss(node, ray, tmin):
         isect.node = node.operation
     else:
         log.warning("skipped shape for node %s " % node )
+        assert 0
         pass
 
     isect.o = ray.origin

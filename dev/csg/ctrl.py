@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+"""
+Hmm the CtrlReturn* does not need to 
+be a mask, but the CtrlLoop* does.
+Maybe split.
 
-
+"""
 CtrlReturnMiss      = 0x1 << 1
 CtrlReturnLeft      = 0x1 << 2
 CtrlReturnRight     = 0x1 << 3
@@ -45,8 +49,20 @@ def desc_ctrl(ctrl):
 
     return s
 
-def desc_ctrl_cu(seqcu):
-    return "\n".join([" %s : %2d %5d : %6d : %s " % (_ctrl_color[index], index, 0x1 << int(index), count, desc_ctrl(0x1 << int(index))) for index, count in seqcu])
+def desc_ctrl_cu(seqcu, label=""):
+    try:  
+        ret = "\n".join([label]+[" %s : %2d %5d : %6d : %s " % (_ctrl_color[index], index, 0x1 << int(index), count, desc_ctrl(0x1 << int(index))) for index, count in seqcu])
+    except KeyError:
+        ret = repr(seqcu)
+    pass
+    return ret 
                 
+
+
+
+
+
+
+
 
 
