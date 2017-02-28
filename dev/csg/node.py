@@ -55,8 +55,8 @@ class T(np.ndarray):
         return t
 
     def __repr__(self):
-        row_ = lambda r:" ".join(map(lambda _:"%2s" % (_ if _ is not None else "") ,r))
-        tab_ = lambda a:"\n\n".join(map(row_, a))
+        row_ = lambda r:" ".join(map(lambda _:"%3s" % (_ if _ is not None else "") ,r))
+        tab_ = lambda a:"\n".join(map(row_, a))
         return tab_(self)
 
 
@@ -126,20 +126,27 @@ class Node(object):
     @classmethod
     def dress(cls, root):
         """
+        Assumes perfect trees 
         """
+        nno = Node.nodecount_r(root)    
+        lmo = Node.leftmost_leaf(root) 
+        rmo = Node.rightmost_leaf(root) 
+        nle = rmo.idx - lmo.idx + 1
+
         leftop = Node.leftmost(root)
         node = leftop
         while node is not None:
             if node.is_leaf:
-                #assert 0, "not expecting leaves" 
+                assert 0, "not expecting leaves" 
                 node.apply_(shape=SPHERE, param=[0,0,0,100])
             elif node.is_bileaf:
-                node.apply_(operation=DIFFERENCE)
-                pidx = node.idx
-                lidx = node.l.idx
-                ridx = node.r.idx 
-                node.l.apply_(shape=SPHERE, param=[pidx*10,lidx*10,0,100] )             
-                node.r.apply_(shape=SPHERE, param=[pidx*10,ridx*10,0,100] )             
+                node.apply_(operation=DIFFERENCE) ## causes infinite tranche loop for iterative
+                #node.apply_(operation=INTERSECTION) ## causes infinite tranche loop for iterative
+                #node.apply_(operation=UNION)
+                node.l.apply_(shape=SPHERE, param=[0,node.l.side*10+1,0,100] )             
+                node.r.apply_(shape=SPHERE, param=[0,node.r.side*10+1,0,100] )             
+                #node.l.apply_(shape=SPHERE, param=[node.l.side*10,0,0,100] )             
+                #node.r.apply_(shape=SPHERE, param=[node.r.side*10,0,0,100] )             
             else:
                 node.apply_(operation=UNION)
             pass
@@ -163,28 +170,33 @@ class Node(object):
 
         maxdepth = self.maxdepth
        
-        nodes = Node.levelorder_i(self)
-        sides = map(lambda _:_.side, nodes)
+        nodes = Node.inorder_r(self, [])
+        #sides = map(lambda _:_.side, nodes)
         depths = map(lambda _:_.depth, nodes)
-        hw = max(map(abs,sides))
+        #hw = max(map(abs,sides))
 
         #print "sides %r hw %d " % (sides, hw)
 
-        a = np.empty((maxdepth+1+1,2*hw+1), dtype=np.object)
+
+        ni = 2*(maxdepth+1+1)
+        nj = len(nodes) + 1
+
+        a = np.empty((ni,nj), dtype=np.object)
 
         if self.name is not None:
             a[0,0] = self.name
         pass
 
-        for node in Node.levelorder_i(self):
+        for inorder_idx, node in enumerate(nodes):
 
-            i = node.depth + 1
-            j = hw + node.side 
+            i = 2*node.depth + 2
+            j = inorder_idx
      
             try:
-                a[i,j] = node.tag 
+                a[i-1,j] = node.tag 
+                a[i,j]   = "o" # node.tag 
             except IndexError:
-                print "IndexError depth:%2d side:%2d i:%2d j:%2d : %s " % (node.depth, node.side, i,j,node)
+                print "IndexError depth:%2d inorder_idx:%2d i:%2d j:%2d : %s " % (node.depth, inorder_idx, i,j,node)
 
         pass
         return T.init(a) 
@@ -495,9 +507,16 @@ class Node(object):
 
     @classmethod
     def leftmost_leaf(cls, root):
-        n = root.l  
-        while n is not None:
+        n = root  
+        while n.l is not None:
             n = n.l
+        return n
+
+    @classmethod
+    def rightmost_leaf(cls, root):
+        n = root  
+        while n.r is not None:
+            n = n.r
         return n
  
     @classmethod
@@ -505,16 +524,29 @@ class Node(object):
         """
         :return: leftmost internal or operation node 
         """
-        l = root 
-        while l.l is not None:
-            if l.l.is_leaf:
+        n = root 
+        while n.l is not None:
+            if n.l.is_leaf:
                 break
             else:
-                l = l.l
+                n = n.l
             pass
+        return n
 
-        #assert not l.is_leaf
-        return l
+    @classmethod
+    def rightmost(cls, root):
+        """
+        :return: rightmost internal or operation node 
+        """
+        n = root 
+        while n.r is not None:
+            if n.r.is_leaf:
+                break
+            else:
+                n = n.r
+            pass
+        return n
+
 
     @classmethod
     def postorder_r(cls, root, nodes=[],leaf=True):
@@ -534,6 +566,26 @@ class Node(object):
             nodes.append(root)
         pass
         return nodes
+
+
+    @classmethod
+    def inorder_r(cls, root, nodes=[],leaf=True):
+        """ 
+        :param root:
+        :param nodes: list 
+        :param leaf: bool control of inclusion of leaf nodes with internal nodes
+
+        Recursive inorder traversal
+        """
+        if root.l is not None: cls.inorder_r(root.l, nodes, leaf=leaf) 
+        if not leaf and root.is_leaf:
+            pass  # skip leaves when leaf = False
+        else: 
+            nodes.append(root)
+        pass
+        if root.r is not None: cls.inorder_r(root.r, nodes, leaf=leaf)
+        return nodes
+
 
     @classmethod
     def levelorder_i(cls,root):
@@ -558,6 +610,8 @@ class Node(object):
             node = nodes[i]
             next_ = nodes[i+1] if i < len(nodes)-1 else None
             node.next_ = next_
+        pass
+
 
     @classmethod
     def parenting_r(cls, root, parent=None):

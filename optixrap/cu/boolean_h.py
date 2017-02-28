@@ -149,36 +149,42 @@ def boolean_decision(acts, tA, tB):
     potentially multiple in the actions mask 
     based on which intersection is closer 
     """
+
+    ACloser = tA <= tB
+    BFarther = ACloser
+    BCloser = not ACloser
+    AFarther = not ACloser
+
     if (acts & ReturnMiss):
         act = ReturnMiss
 
     elif (acts & ReturnA):
         act = ReturnA
-    elif (acts & ReturnAIfCloser) and tA <= tB:
+    elif (acts & ReturnAIfCloser) and ACloser:
         act = ReturnAIfCloser
-    elif (acts & ReturnAIfFarther) and tA > tB:
+    elif (acts & ReturnAIfFarther) and AFarther:
         act = ReturnAIfFarther
 
     elif (acts & ReturnB):
         act = ReturnB
-    elif (acts & ReturnBIfCloser) and tB <= tA:
+    elif (acts & ReturnBIfCloser) and BCloser:
         act = ReturnBIfCloser
-    elif (acts & ReturnFlipBIfCloser) and tB <= tA:
+    elif (acts & ReturnFlipBIfCloser) and BCloser:
         act = ReturnFlipBIfCloser
-    elif (acts & ReturnBIfFarther) and tB > tA:
+    elif (acts & ReturnBIfFarther) and BFarther:
         act = ReturnBIfFarther
     
     elif (acts & AdvanceAAndLoop):
         act = AdvanceAAndLoop
-    elif (acts & AdvanceAAndLoopIfCloser) and tA <= tB:
+    elif (acts & AdvanceAAndLoopIfCloser) and ACloser:
         act = AdvanceAAndLoopIfCloser
 
     elif (acts & AdvanceBAndLoop):
         act = AdvanceBAndLoop
-    elif (acts & AdvanceBAndLoopIfCloser) and tB <= tA:
+    elif (acts & AdvanceBAndLoopIfCloser) and BCloser:
         act = AdvanceBAndLoopIfCloser
     else:
-        assert 0, acts
+        assert 0, (acts, desc_acts(acts), tA, tB, ACloser, BFarther, BCloser, AFarther)
     pass 
     return act 
 

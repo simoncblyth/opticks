@@ -189,12 +189,16 @@ class CSG(object):
         rhs = []
 
         tranche = []
-        tranche.append([Node.leftmost(root),None])
+        tranche.append([tmin,Node.leftmost(root),None])
+
+        tcount = 0 
 
         while len(tranche) > 0:
-            begin, end = tranche.pop()
-            log.debug("start tranche begin %s end %s " % (begin, end))
-            
+            tmin, begin, end = tranche.pop()
+            #log.info("%s : start tranche %d begin %s end %s " % (self.pfx, tcount, begin, end))
+            tcount += 1    
+            assert tcount < 10
+
             p = begin
             while p is not end:
 
@@ -219,25 +223,14 @@ class CSG(object):
                         if p.l.is_leaf:
                             left = intersect_primitive(p.l, self.ray, tminL)
                         else:
-                            try:
-                                left = lhs.pop()
-                            except IndexError:
-                                left = miss
-                                self.tst.ierr += 1
-                                log.error("%s : lhs pop from empty" % (self.pfx))
+                            left = lhs.pop()
                         pass
                     pass
                     if ctrl & CtrlLoopRight: 
                         if p.r.is_leaf:
                             right = intersect_primitive(p.r, self.ray, tminR)
                         else:
-                            try:
-                                right = rhs.pop()
-                            except IndexError:
-                                right = miss
-                                self.tst.ierr += 1
-                                log.error("%s : rhs pop from empty" % (self.pfx))
-                        pass
+                            right = rhs.pop()
                     pass
 
                     ctrl = self.binary_ctrl(p.operation, left, right, tminL, tminR)    
@@ -248,16 +241,16 @@ class CSG(object):
                         tminL = left.t + self.epsilon
                         if not p.l.is_leaf:
                             rhs.append(right)
-                            tranche.append([p,None])  
-                            tranche.append([Node.leftmost(p.l),p.l.next_])
+                            tranche.append([tmin,p,None])  # should this be tminL ? its for continuation
+                            tranche.append([tminL,Node.leftmost(p.l),p.l.next_])
                             reiterate_ = True 
                         pass
                     elif ctrl == CtrlLoopRight: 
                         tminR = right.t + self.epsilon
                         if not p.r.is_leaf:
                             lhs.append(left)
-                            tranche.append([p,None])  
-                            tranche.append([Node.leftmost(p.r),p.r.next_])
+                            tranche.append([tmin,p,None])  # should this be tminR ?
+                            tranche.append([tminR,Node.leftmost(p.r),p.r.next_])
                             reiterate_ = True 
                         pass
                     else:
@@ -272,15 +265,21 @@ class CSG(object):
                 pass  # end while ctrl loop   
           
                 if reiterate_:  
-                    log.info("break out of postorder traversal, for re-iteration of subtree ntranche %d " % len(tranche))
+                    #log.info("break out of postorder traversal, for re-iteration of subtree ntranche %d " % len(tranche))
                     break 
 
                 assert ctrl in [CtrlReturnMiss, CtrlReturnLeft,CtrlReturnRight,CtrlReturnFlipRight]
                 result = self.binary_result(ctrl, miss, left, right)
 
+                    
+
                 if p.is_left:
+                    if self.debug:
+                        log.info("%s : lhs append %d : %s " % (self.pfx, len(lhs), lhs ))
                     lhs.append(result)
                 else:
+                    if self.debug:
+                        log.info("%s : rhs append %d : %s " % (self.pfx, len(rhs), rhs ))
                     rhs.append(result)
                 pass
 
@@ -288,22 +287,28 @@ class CSG(object):
             pass               # postorder tranche traversal while loop
         pass
 
-
-        #assert len(lhs) == 0, lhs
-        #assert len(rhs) == 1, rhs   # end with p.idx = 1 for the root
-
-        if len(lhs) != 0:
-            self.tst.ierr += 1     
-            log.error("%s : lhs ends with %d, expect 0 " % (self.pfx, len(lhs)))
-
-        if len(rhs) != 1:
-            self.tst.ierr += 1     
-            log.error("%s : rhs ends with %d, expect 1 " % (self.pfx,len(rhs)))
-
+        assert len(lhs) == 0, lhs
+        assert len(rhs) == 1, rhs   # end with p.idx = 1 for the root
         return rhs[0]
      
 
     def recursive_intersect(self, p, tmin=0):
+        """
+        binary recursion stack starts unwinding when
+        reach bileaf node p
+
+        * p.l.is_leaf and p.r.is_leaf
+        
+        recursive argument changes:
+        
+        * p <- p.l  tmin <- tminL
+        * p <- p.r  tmin <- tminR
+
+
+        * http://stackoverflow.com/questions/12468251/convert-recursion-to-iteration
+        * http://stackoverflow.com/questions/7548026/convert-recursive-binary-tree-traversal-to-iterative
+
+        """ 
         assert p.is_operation
         miss =  intersect_miss(p, self.ray, tmin)
         tminL = tmin
@@ -471,6 +476,7 @@ class T(object):
         if source is None:
             source = "aringlight,origlight"
         pass
+        root.annotate()
 
         self.root = root
         self.name = root.name
@@ -662,40 +668,45 @@ if __name__ == '__main__':
     origin = None
     normal = None
 
-    #root = trees[1]
-    #root = trees[3]
-    #root = trees[4]
-    #root = trees[5]
 
-    roots = trees
+    #roots = trees
+    roots = [root4]
     #roots = [lrbox_d1, ubo]
     #roots = [lbox_ue, smb_lbox, smb_lbox_ue]
     #roots = [smb_lbox_ue]
 
     normal = True
 
-    for iroot, root in enumerate(roots):
-    #if 1:
-        #iroot, root, source = 0, smb_lbox_ue, "origlight"  # iterative doesnt see inner box, that recursive does
-        #iroot, root, source = 0, smb_lbox_ue, "aringlight"
-        #iroot, root, source = 0, smb_lbox, "aringlight"
+
+    rr = [0,1]   # recursive only [1], iterative only [0], or both [0,1] [1,0]
+    tsts = []
 
 
-        print "%2d : %15s : %s " % (iroot, root.name, root )
-        #if root.ok: continue 
+    if 0:
+        for root in roots:
+            #if root.ok: continue 
+            if root.name in ["root3","root4"]: continue
+            tsts.append(T(root,level=3,debug=[0], num=100, source=source))
+        pass
 
-        root.annotate()
+    t_root3a = T(root3, level=3, debug=[], num=100, source="aringlight" )
+    t_root3b = T(root3, level=3, debug=[], num=100, source="origlight" )
+    t_root4a = T(root4, level=3, debug=[], num=100, source="aringlight", notes="ok" )
+    t_root4b = T(root4, level=3, debug=[1], num=100, source="origlight", notes="pop from empty lhs" )
+
+    tsts.append(t_root4a)
+    
+
+    for itst,tst in enumerate(tsts):
+        print "%2d : %15s : %s " % (itst, tst.root.name, tst.root )
 
         fig = plt.figure()
-
         ax1 = fig.add_subplot(1,2,1, aspect='equal')
         ax2 = fig.add_subplot(1,2,2, aspect='equal')
         axs = [ax1,ax2]
 
-        tst = T(root,level=3,debug=[0], num=100, source=source)
         csg = CSG(level=tst.level, epsilon=epsilon)
 
-        rr = [0,1]   # recursive only [1], iterative only [0], or both [0,1] [1,0]
 
         csg.compare_intersects( tst, rr=rr )
         csg.plot_intersects( tst, axs=axs, rr=rr, normal=normal, origin=origin)
@@ -705,12 +716,10 @@ if __name__ == '__main__':
         for ax in axs:
             rdr = Renderer(ax)
             #rdr.limits(400,400)
-            rdr.render(root)
+            rdr.render(tst.root)
 
         fig.suptitle(tst.suptitle, horizontalalignment='left', family='monospace', fontsize=10, x=0.1, y=0.99) 
-
         fig.show()
-
 
         i = tst.i
 
