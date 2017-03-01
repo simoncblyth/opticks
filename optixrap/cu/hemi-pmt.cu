@@ -1183,10 +1183,6 @@ make_prism plane[4]     0.0000     0.0000    -1.0000  -100.0000
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-  // could do this offline, but as run once only 
-  // its a handy place to dump things checking GPU side state
-  //rtPrintf("bounds %d \n", primIdx ); 
-
   const uint4& prim    = primBuffer[primIdx]; 
   unsigned partOffset  = prim.x ;  
   unsigned numParts    = prim.y ; 
@@ -1199,7 +1195,9 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
   // expand aabb to include all the bbox of the parts 
 
-  if(primFlags & SHAPE_BOOLEAN)
+  bool csg = primFlags & (SHAPE_DIFFERENCE | SHAPE_INTERSECTION | SHAPE_UNION) ; 
+
+  if(csg)  // bbox based from 0th
   {
       quad q2, q3 ; 
       q2.f = partBuffer[4*(partOffset+0)+2];  
@@ -1231,9 +1229,9 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
               aabb->include( make_float3(q2.f), make_float3(q3.f) );
           }
       } 
-  }
+   }
 
-  rtPrintf("hemi-pmt.cu:bounds primIdx %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, 
+  rtPrintf("##hemi-pmt.cu:bounds primIdx %d csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, csg, 
        result[0],
        result[1],
        result[2],
@@ -1253,14 +1251,21 @@ RT_PROGRAM void intersect(int primIdx)
 
   unsigned partOffset  = prim.x ;  
   unsigned numParts    = prim.y ; 
+  //unsigned primIdx_    = prim.z ; 
   unsigned primFlags   = prim.w ;  
+
+  //rtPrintf("intersect primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
 
   uint4 identity = identityBuffer[instance_index] ; 
   // for analytic test geometry (PMT too?) the identityBuffer  
   // is composed of placeholder zeros
+  bool csg = primFlags & (SHAPE_DIFFERENCE | SHAPE_INTERSECTION | SHAPE_UNION) ; 
 
-  if(primFlags & SHAPE_BOOLEAN)
+  if(csg)
   { 
+      //if(primIdx>0)
+      //rtPrintf("intersect(csg) primIdx:%d partOffset(x):%u numParts(y):%u primIdx_(z):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primIdx_, primFlags ); 
+
       quad q1 ; 
       q1.f = partBuffer[4*(partOffset+0)+1];  
       identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
@@ -1270,10 +1275,14 @@ RT_PROGRAM void intersect(int primIdx)
   }
   else
   {
+      if(primIdx>0)
+      rtPrintf("intersect (not-csg) primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
       // partitioned intersect over single basis-shape parts for each "prim"
       for(unsigned int p=0 ; p < numParts ; p++)
       {  
           unsigned int partIdx = partOffset + p ;  
+
+          //rtPrintf("intersect partloop, numParts:%u p:%u partIdx:%u partOffset:%u \n", numParts, p, partIdx, partOffset );
 
           quad q0, q1, q2, q3 ; 
 

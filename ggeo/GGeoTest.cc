@@ -249,14 +249,20 @@ GMergedMesh* GGeoTest::createCsgInBox()
 
     for(unsigned int i=0 ; i < n ; i++)
     {
-        bool primStart = m_config->isStartOfPrimitive(i); // as identified by configured offsets
+        bool primStart = m_config->isStartOfOptiXPrimitive(i); 
+
+        // The splitting of configuration elements into OptiXPrimitives
+        // is configured by global "offsets" parameter 
+        // For example  "offsets=0,1" means elements 0 and 1  
+        // represent nodes that start OptiX primitives.
+        //
         if(primStart)
         {
             primIdx++ ;
         }
 
         std::string node = m_config->getNodeString(i);
-        char nodecode = m_config->getNode(i) ;
+        char nodecode = m_config->getNode(i) ;    //  B:BOX, S:SPHERE,..., I:INTERSECTION, J:UNION, K:DIFFERENCE
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
         glm::mat4 trans = m_config->getTransform(i);
@@ -358,7 +364,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
 
     int primIdx(-1) ; 
 
-    // Boolean geometry (precursor to propert CSG Trees) 
+    // Boolean geometry (precursor to proper CSG Trees) 
     // is implemented by allowing 
     // a single "primitive" to be composed of multiple
     // "parts", the association from part to prim being 

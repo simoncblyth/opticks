@@ -107,7 +107,7 @@ class GGEO_API GGeoTestConfig {
        unsigned getOffset(unsigned idx);
    public: 
        unsigned getNumOffsets();
-       bool isStartOfPrimitive(unsigned nodeIdx );
+       bool isStartOfOptiXPrimitive(unsigned nodeIdx );
    private:
        const char*  m_config ; 
        const char*  m_mode ; 

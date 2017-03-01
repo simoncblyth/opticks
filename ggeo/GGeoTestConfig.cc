@@ -275,7 +275,7 @@ unsigned GGeoTestConfig::getOffset(unsigned idx)
     return m_offsets[idx] ; 
 }
 
-bool GGeoTestConfig::isStartOfPrimitive(unsigned nodeIdx )
+bool GGeoTestConfig::isStartOfOptiXPrimitive(unsigned nodeIdx )
 {
     return std::find(m_offsets.begin(), m_offsets.end(), nodeIdx) != m_offsets.end() ; 
 }

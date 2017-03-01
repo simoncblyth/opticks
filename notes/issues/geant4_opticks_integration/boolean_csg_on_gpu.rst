@@ -1,11 +1,174 @@
 Boolean CSG on GPU
 ===================
 
-TODO: boolean trees implementation
-------------------------------------
+
 
 TODO: numerical/chi2 history comparison with CFG4 booleans 
 ------------------------------------------------------------
+
+
+WIP: boolean csg tree implementation
+--------------------------------------
+
+CsgInBox test geometry
+~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    152 tboolean-csg-notes(){ cat << EON
+    153 
+    154 * CSG tree is defined in breadth first order
+    155 
+    156 * parameters of boolean operations currently define adhoc box 
+    157   intended to contain the geometry, TODO: calculate from bounds of the contained tree 
+    158 
+    159 * offsets arg identifies which nodes belong to which primitives by pointing 
+    160   at the nodes that start each primitive
+    161 
+    162 EON
+    163 }
+    164 
+    165 tboolean-csg()
+    166 {
+    167     local material=$(tboolean-material)
+    168     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    169     local radius=200
+    170 
+    171     local test_config=(
+    172                       mode=CsgInBox
+    173                       analytic=1
+    174                       offsets=0,1     ## 
+    175 
+    176                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+    177 
+    178                       node=union        parameters=0,0,0,400           boundary=Vacuum///$material
+    179                       node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
+    180                       node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
+    181                       node=box          parameters=0,0,100,$inscribe   boundary=Vacuum///$material
+    182                       node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
+    183                       node=box          parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
+    184                       node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
+    185 
+    186                       )
+    187 
+    188     echo "$(join _ ${test_config[@]})" 
+    189 }
+
+
+
+Where is the tree ?
+~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    278 bool GGeoTestConfig::isStartOfPrimitive(unsigned nodeIdx )
+    279 {
+    280     return std::find(m_offsets.begin(), m_offsets.end(), nodeIdx) != m_offsets.end() ;
+    281 }
+
+
+    237 GMergedMesh* GGeoTest::createCsgInBox()
+    238 {
+    239     std::vector<GSolid*> solids ;
+    240     unsigned int n = m_config->getNumElements();
+    241 
+    242     unsigned numPrim = m_config->getNumOffsets();
+    243     LOG(info) << "GGeoTest::createCsgInBox"
+    244               << " nodes " << n
+    245               << " numPrim " << numPrim
+    246              ;
+    247 
+    248     int primIdx(-1) ;
+    249 
+    250     for(unsigned int i=0 ; i < n ; i++)
+    251     {
+    252         bool primStart = m_config->isStartOfPrimitive(i); // as identified by configured offsets
+    253         if(primStart)
+    254         {
+    255             primIdx++ ;
+    256         }
+    ...
+    284         GParts* pts = solid->getParts();
+    285 
+    286         pts->setIndex(0u, i);
+    287         pts->setNodeIndex(0u, primIdx );
+    288         pts->setFlags(0u, flags);
+    289         pts->setBndLib(m_bndlib);
+    290 
+    291         solids.push_back(solid);
+    292     }
+
+
+::
+
+     86 char GMaker::NodeCode(const char* nodename)
+     87 {
+     88     char sc = 'U' ;
+     89     if(     strcmp(nodename, BOX) == 0)     sc = 'B' ;
+     90     else if(strcmp(nodename, SPHERE) == 0)  sc = 'S' ;
+     91     else if(strcmp(nodename, ZSPHERE) == 0) sc = 'Z' ;
+     92     else if(strcmp(nodename, ZLENS) == 0)   sc = 'L' ;
+     93     else if(strcmp(nodename, PMT) == 0)     sc = 'P' ;  // not operational
+     94     else if(strcmp(nodename, PRISM) == 0)   sc = 'M' ;
+     95     else if(strcmp(nodename, INTERSECTION) == 0)   sc = 'I' ;
+     96     else if(strcmp(nodename, UNION) == 0)          sc = 'J' ;
+     97     else if(strcmp(nodename, DIFFERENCE) == 0)     sc = 'K' ;
+     98     return sc ;
+     99 }
+
+
+Tree serialization
+~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2017-03-01 15:31:06.796 INFO  [6205604] [GParts::dumpPrimInfo@530] OGeo::makeAnalyticGeometry pts (part_offset, parts_for_prim, prim_index, prim_flags) numPrim:2
+    2017-03-01 15:31:06.796 INFO  [6205604] [GParts::dumpPrimInfo@535]  (  0,  1,  0, 16) 
+    2017-03-01 15:31:06.796 INFO  [6205604] [GParts::dumpPrimInfo@535]  (  1,  7,  1,  4) 
+    2017-03-01 15:31:06.796 INFO  [6205604] [GParts::dump@731] GParts::dump ni 8
+         0.0000      0.0000      0.0000   1000.0000 
+         0.0000       0 <-id       123 <-bnd       16 <-flg  SHAPE_PRIMITIVE   bn Rock//perfectAbsorbSurface/Vacuum 
+     -1000.0100  -1000.0100  -1000.0100           3 (PART_BOX) 
+      1000.0100   1000.0100   1000.0100           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    400.0000 
+         0.0000       1 <-id       124 <-bnd        4 <-flg  SHAPE_UNION   bn Vacuum///GlassSchottF2 
+      -400.0100   -400.0100   -400.0100           3 (PART_BOX) 
+       400.0100    400.0100    400.0100           1 (nodeIndex) 
+
+         0.0000      0.0000    100.0000    300.0000 
+         0.0000       2 <-id       124 <-bnd        8 <-flg  SHAPE_DIFFERENCE   bn Vacuum///GlassSchottF2 
+      -300.0100   -300.0100   -300.0100           3 (PART_BOX) 
+       300.0100    300.0100    300.0100           1 (nodeIndex) 
+
+         0.0000      0.0000   -100.0000    300.0000 
+         0.0000       3 <-id       124 <-bnd        8 <-flg  SHAPE_DIFFERENCE   bn Vacuum///GlassSchottF2 
+      -300.0100   -300.0100   -300.0100           3 (PART_BOX) 
+       300.0100    300.0100    300.0100           1 (nodeIndex) 
+
+         0.0000      0.0000    100.0000    150.1111 
+         0.0000       4 <-id       124 <-bnd       16 <-flg  SHAPE_PRIMITIVE   bn Vacuum///GlassSchottF2 
+      -150.1211   -150.1211   -150.1211           3 (PART_BOX) 
+       150.1211    150.1211    150.1211           1 (nodeIndex) 
+
+         0.0000      0.0000    100.0000    200.0000 
+         0.0000       5 <-id       124 <-bnd       16 <-flg  SHAPE_PRIMITIVE   bn Vacuum///GlassSchottF2 
+      -200.0100   -200.0100   -200.0100           1 (PART_SPHERE) 
+       200.0100    200.0100    200.0100           1 (nodeIndex) 
+
+         0.0000      0.0000   -100.0000    150.1111 
+         0.0000       6 <-id       124 <-bnd       16 <-flg  SHAPE_PRIMITIVE   bn Vacuum///GlassSchottF2 
+      -150.1211   -150.1211   -150.1211           3 (PART_BOX) 
+       150.1211    150.1211    150.1211           1 (nodeIndex) 
+
+         0.0000      0.0000   -100.0000    200.0000 
+         0.0000       7 <-id       124 <-bnd       16 <-flg  SHAPE_PRIMITIVE   bn Vacuum///GlassSchottF2 
+      -200.0100   -200.0100   -200.0100           1 (PART_SPHERE) 
+       200.0100    200.0100    200.0100           1 (nodeIndex) 
+
+
+
 
 
 FIXED Issue : ray trace "near/tmin" clipping fails to see inside booleans

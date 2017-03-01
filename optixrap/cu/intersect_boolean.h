@@ -30,174 +30,96 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 }
 
 
+
+
+/*
+static __device__
+void intersect_csg( const uint4& prim, const uint4& identity )
+{
+
+   // hmm need to thread the tree before can start with this, and provide leftmost operation jumpoff point
+
+    unsigned partOffset = prim.x ; 
+    unsigned primIdx_   = prim.z ; 
+
+    unsigned nodeIdx = partOffset ;    
+    unsigned leftIdx = partOffset + 1 ;   // SIMPLIFYING ASSUMPTION
+    unsigned rightIdx = partOffset + 2 ;  
+
+    rtPrintf("intersect_csg primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
+}
+
+*/
+
+
+
 static __device__
 void intersect_boolean( const uint4& prim, const uint4& identity )
 {
-   // NB LIMITED TO SINGLE OPERATION APPLIED TO TWO BASIS SOLIDS
-   //
-   // hmm to work with boolean CSG tree primitives this
-   // needs to have the same signature as intersect_part 
-   // ie with deferring the reporting to OptiX to the caller
+    // NB LIMITED TO SINGLE BOOLEAN OPERATION APPLIED TO TWO BASIS SOLIDS, ie triplet trees
 
-    unsigned primFlags  = prim.w ;  
+    // primFlags only available for root of tree, need to 
+    // so things in a more anynode manner
 
+    unsigned partOffset = prim.x ; 
+    unsigned primIdx_   = prim.z ; 
 
-    // TODO: pass "operation" enum from CPU side, instead of wishy-washy flags   
-    enum { INTERSECT, UNION, DIFFERENCE  };
-    int bop = primFlags & SHAPE_INTERSECTION ? 
-                                                  INTERSECT 
-                                             :
-                                                  ( primFlags & SHAPE_DIFFERENCE ? DIFFERENCE : UNION ) 
-                                             ;
+    unsigned n_partIdx = partOffset ;    
+    unsigned a_partIdx = partOffset + 1 ;   // SIMPLIFYING ASSUMPTION
+    unsigned b_partIdx = partOffset + 2 ;  
 
-    unsigned a_partIdx = prim.x + 1 ;  
-    unsigned b_partIdx = prim.x + 2 ;  
+    quad q1 ; 
+    q1.f = partBuffer[4*n_partIdx+1];
+    OpticksShape_t operation = (OpticksShape_t)q1.u.w ;
+
+    rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 
     float3 a_normal = make_float3(0.f,0.f,1.f);
     float3 b_normal = make_float3(0.f,0.f,1.f);
 
-    // _min 0.f rather than propagate_epsilon 
-    // leads to missed boundaries when start photons on a boundary, 
-    // see boolean_csg_on_gpu.rst
-
-    //float tA_min = propagate_epsilon ;  
-    //float tB_min = propagate_epsilon ;
-
-    float tA_min = ray.tmin ;
+    float tA_min = ray.tmin ; // formerly propagate_epsilon and before that 0.f
     float tB_min = ray.tmin ;
     float tA     = 0.f ;
     float tB     = 0.f ;
 
-    enum { 
-             LIVE_A = 0x1 << 0,  
-             LIVE_B = 0x1 << 1
-           };  
-
-    int ctrl = LIVE_A | LIVE_B ; 
+    int ctrl = CTRL_LOOP_A | CTRL_LOOP_B ; 
 
     IntersectionState_t a_state = Miss ; 
     IntersectionState_t b_state = Miss ; 
 
     int count(0) ;  
-
-    //rtPrintf("boolean_intersect t_parameter %f ", t_parameter);
-
-#ifdef BOOLEAN_DEBUG
-    //int debugA = 1 ; 
-    //int debugB = 1 ; 
-#endif
-
-    while(ctrl != 0 && count < 4 )
+    while((ctrl & (CTRL_LOOP_A | CTRL_LOOP_B)) && count < 4 )
     {
         count++ ; 
 
-        a_state = (ctrl & LIVE_A) ? intersect_part( a_partIdx , tA_min, a_normal, tA ) : a_state ;
-        b_state = (ctrl & LIVE_B) ? intersect_part( b_partIdx , tB_min, b_normal, tB ) : b_state ;
+        a_state = (ctrl & CTRL_LOOP_A) ? intersect_part( a_partIdx , tA_min, a_normal, tA ) : a_state ;
+        b_state = (ctrl & CTRL_LOOP_B) ? intersect_part( b_partIdx , tB_min, b_normal, tB ) : b_state ;
 
-        int action = 0 ; 
-        switch(bop)
+        int actions = boolean_actions( operation , a_state, b_state );
+        int act = boolean_decision( actions, tA <= tB );
+
+        ctrl = boolean_ctrl( act );
+        if(     ctrl == CTRL_LOOP_A) tA_min = tA ; 
+        else if(ctrl == CTRL_LOOP_B) tB_min = tB ; 
+    } 
+
+
+    // hmm below passing to OptiX should probably be done in caller ?
+    if( ctrl & (CTRL_RETURN_A | CTRL_RETURN_B | CTRL_RETURN_FLIP_B  ))
+    {
+        if(rtPotentialIntersection( ctrl == CTRL_RETURN_A ? tA : tB))
         {
-            case INTERSECT:    action = intersection_action(a_state, b_state) ; break ;
-            case UNION:        action = union_action(a_state, b_state)        ; break ;
-            case DIFFERENCE:   action = difference_action(a_state, b_state)   ; break ;
+            shading_normal = geometric_normal = ctrl == CTRL_RETURN_A ? 
+                                                                           a_normal
+                                                                      :
+                                                                          ( ctrl == CTRL_RETURN_FLIP_B ? -b_normal : b_normal )
+                                                                      ;
+            instanceIdentity = identity ;
+            rtReportIntersection(0);
         }
+    } 
 
-
-        bool ACloser = tA <= tB ; 
-        bool AFarther = !ACloser ; 
-        bool BCloser = !ACloser ; 
-        bool BFarther = ACloser ; 
-
-
-        if(action & ReturnMiss)
-        {
-            ctrl = 0 ; 
-        }
-       else if( 
-                   (action & ReturnA) 
-                || 
-                   ((action & ReturnAIfCloser) && ACloser )
-                || 
-                   ((action & ReturnAIfFarther) && AFarther )
-                 )
-        {
-            ctrl = 0 ; 
-            if(rtPotentialIntersection(tA))
-            {
-                shading_normal = geometric_normal = a_normal;
-                instanceIdentity = identity ;
-#ifdef BOOLEAN_DEBUG
-                //if((action & ReturnA))                      instanceIdentity.x = 1 ; 
-                //if((action & ReturnAIfCloser)  && tA <= tB) instanceIdentity.x = 2 ; 
-                //if((action & ReturnAIfFarther) && tA > tB)  instanceIdentity.x = 3 ; 
-                //
-                // difference(box-sphere)
-                //     * red   (ReturnA) box periphery where MissB the sphere
-                //     * green (ReturnAIfCloser..) box hits in shape of sphere
-                //     * no blue seen 
-                //
-                //instanceIdentity.x = debugA ; 
-#endif
-                rtReportIntersection(0);
-            }
-        }
-        else if( 
-                   (action & ReturnB) 
-                || 
-                   ((action & ReturnBIfCloser) && BCloser )
-                || 
-                   ((action & ReturnFlipBIfCloser) && BCloser )
-                || 
-                   ((action & ReturnBIfFarther) && BFarther )
-                 )
-        {
-            ctrl = 0 ; 
-            if(rtPotentialIntersection(tB))
-            {
-                shading_normal = geometric_normal = action & ReturnFlipBIfCloser ? -b_normal : b_normal ;
-                instanceIdentity = identity ;
-#ifdef BOOLEAN_DEBUG
-                //if((action & ReturnB))                       instanceIdentity.x = 1 ; 
-                //if((action & ReturnBIfCloser)  && BCloser)   instanceIdentity.x = 2 ; 
-                //if((action & ReturnBIfFarther) && BFarther)  instanceIdentity.x = 3 ; 
-                // difference(box-sphere) 
-                //    no coloring apparent from outside (makes sense as sphere is "subtracted"),
-                //     hint of green(ReturnBIfCloser) the sphere from inside
-                //
-#endif
-                rtReportIntersection(0);
-            }
-        }
-        else if(
-                     (action & AdvanceAAndLoop)
-                  ||  
-                     ((action & AdvanceAAndLoopIfCloser) && tA <= tB )
-                )
-        {
-
-#ifdef BOOLEAN_DEBUG
-            //if( (action & AdvanceAAndLoop) )                     debugA = 2 ; 
-            //if( (action & AdvanceAAndLoopIfCloser) && ACloser ) debugA = 3 ; 
-#endif
-
-            //ctrl = ctrl & ~LIVE_B  ;   // CAUSES INVISIBLE INSIDES 
-            ctrl = LIVE_A  ; 
-            tA_min = tA ; 
-        }
-        else if(
-                     (action & AdvanceBAndLoop)
-                  ||  
-                     ((action & AdvanceBAndLoopIfCloser) && BCloser )
-                )
-        {
-            //ctrl = ctrl & ~LIVE_A  ;   // CAUSES INVISIBLE INSIDES
-            ctrl = LIVE_B ; 
-            tB_min = tB ; 
-        }
-
-     }     // while loop 
 }
-
 
 
 

@@ -39,6 +39,18 @@ enum
     AdvanceBAndLoopIfCloser = 0x1 << 11
 };
 
+
+enum { 
+     CTRL_LOOP_A        = 0x1 << 0,  
+     CTRL_LOOP_B        = 0x1 << 1,
+     CTRL_RETURN_MISS   = 0x1 << 2,
+     CTRL_RETURN_A      = 0x1 << 3,
+     CTRL_RETURN_B      = 0x1 << 4,
+     CTRL_RETURN_FLIP_B = 0x1 << 5,
+     CTRL_ERROR         = 0x1 << 6
+};  
+
+
 enum 
 {
     Union_EnterA_EnterB = ReturnAIfCloser | ReturnBIfCloser,
@@ -79,6 +91,8 @@ enum
 };
 
 typedef enum { Enter, Exit, Miss } IntersectionState_t ;
+
+
 
 #ifdef __CUDACC__
 __host__
@@ -148,5 +162,76 @@ int difference_action( IntersectionState_t stateA, IntersectionState_t stateB  )
     }
     return action ; 
 }
+
+
+
+#ifdef __CUDACC__
+__host__
+__device__
+#endif
+
+int boolean_actions( OpticksShape_t operation, IntersectionState_t stateA, IntersectionState_t stateB  )
+{
+    int action = ReturnMiss ; 
+    switch(operation)
+    {
+       case SHAPE_INTERSECTION: action = intersection_action( stateA, stateB ) ; break ;
+       case SHAPE_UNION:        action = union_action( stateA, stateB ) ; break ;
+       case SHAPE_DIFFERENCE:   action = difference_action( stateA, stateB ) ; break ;
+    }
+    return action ; 
+}
+
+#ifdef __CUDACC__
+__host__
+__device__
+#endif
+int boolean_decision(int acts, bool ACloser)
+{
+    int act = ReturnMiss ; 
+    // convert potentially multiple bits of acts into single bit act 
+    // NB the order of this if is critical
+
+    if      (acts & ReturnMiss)                            act = ReturnMiss ; 
+    else if (acts & ReturnA)                               act = ReturnA ; 
+    else if ((acts & ReturnAIfCloser) && ACloser)          act = ReturnAIfCloser ; 
+    else if ((acts & ReturnAIfFarther) && !ACloser)        act = ReturnAIfFarther ; 
+    else if (acts & ReturnB)                               act = ReturnB ;
+    else if ((acts & ReturnBIfCloser) && !ACloser)         act = ReturnBIfCloser ;
+    else if ((acts & ReturnFlipBIfCloser) && !ACloser)     act = ReturnFlipBIfCloser ;
+    else if ((acts & ReturnBIfFarther) && ACloser)         act = ReturnBIfFarther ;
+    else if (acts & AdvanceAAndLoop)                       act = AdvanceAAndLoop ;
+    else if ((acts & AdvanceAAndLoopIfCloser) && ACloser)  act = AdvanceAAndLoopIfCloser ;
+    else if (acts & AdvanceBAndLoop)                       act = AdvanceBAndLoop ;
+    else if ((acts & AdvanceBAndLoopIfCloser) && !ACloser) act = AdvanceBAndLoopIfCloser ;
+
+    return act  ;
+}
+
+
+#ifdef __CUDACC__
+__host__
+__device__
+#endif
+int boolean_ctrl(int act)
+{
+    // TODO: combine with boolean_decision when debugged
+    int ctrl = CTRL_ERROR ; 
+    if(act & ReturnMiss)                                           ctrl = CTRL_RETURN_MISS ; 
+    else if( act & (ReturnA | ReturnAIfCloser | ReturnAIfFarther)) ctrl = CTRL_RETURN_A ; 
+    else if( act & (ReturnB | ReturnBIfCloser | ReturnBIfFarther)) ctrl = CTRL_RETURN_B ; 
+    else if( act & ReturnFlipBIfCloser)                            ctrl = CTRL_RETURN_FLIP_B ; 
+    else if( act & (AdvanceAAndLoop | AdvanceAAndLoopIfCloser))    ctrl = CTRL_LOOP_A  ; 
+    else if( act & (AdvanceBAndLoop | AdvanceBAndLoopIfCloser))    ctrl = CTRL_LOOP_B  ; 
+    return ctrl ; 
+}
+
+
+
+
+
+
+
+
 
 
