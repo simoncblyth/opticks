@@ -39,7 +39,7 @@ class II(np.ndarray):
         2,0  ray.origin.x
         2,1  ray.origin.y
         2,2  ray.origin.z
-        2,3  
+        2,3  rtmin : resulting tmin 
 
         3,0  ray.direction.x
         3,1  ray.direction.y
@@ -57,6 +57,8 @@ class II(np.ndarray):
     SEQ_ = 1, 3
 
     O_ = 2, slice(0,3)
+    RTMIN_ = 2, 3
+
     D_ = 3, slice(0,3)
 
 
@@ -84,6 +86,12 @@ class II(np.ndarray):
     def _set_tmin(self, t):
         self[self.TMIN_[0],self.TMIN_[1]] = t 
     tmin = property(_get_tmin, _set_tmin)
+
+    def _get_rtmin(self):
+        return self[self.RTMIN_[0],self.RTMIN_[1]]
+    def _set_rtmin(self, t):
+        self[self.RTMIN_[0],self.RTMIN_[1]] = t 
+    rtmin = property(_get_rtmin, _set_rtmin)
 
     def _get_n(self):
         return self[self.N_[0],self.N_[1]]
@@ -152,7 +160,6 @@ class IIS(np.ndarray):
     """
     Collection of intersects
     """
-
     def __new__(cls, a=None, history=[]):
         if a is None:
            a = np.zeros((2,100,4,4), dtype=np.float32 )
@@ -170,6 +177,7 @@ class IIS(np.ndarray):
     o = property(lambda self:self[:,:,II.O_[0],II.O_[1]])
     d = property(lambda self:self[:,:,II.D_[0],II.D_[1]])
     tmin = property(lambda self:self[:,:,II.TMIN_[0],II.TMIN_[1]])
+    rtmin = property(lambda self:self[:,:,II.RTMIN_[0],II.RTMIN_[1]])
 
     idx = property(lambda self:self.view(np.uint32)[:,:,II.IDX_[0],II.IDX_[1]])
     node = property(lambda self:self.view(np.uint32)[:,:,II.NODE_[0],II.NODE_[1]])
@@ -409,20 +417,46 @@ class Ray(object):
 
 
    @classmethod
-   def aringlight(cls, num=24, radius=500, inwards=True):
+   def aringlight(cls, num=24, radius=500, center=[0,0,0], sign=-1., scale=1):
        rys = np.zeros( [num,2,3], dtype=np.float32 )
 
        a = np.linspace(0,2*np.pi,num )
        ca = np.cos(a)
        sa = np.sin(a)
 
-       rys[:,0,0] = radius*ca
-       rys[:,0,1] = radius*sa
+       rys[:,0,0] = scale*radius*ca
+       rys[:,0,1] = scale*radius*sa
 
-       sign = -1. if inwards else +1.
+       rys[:,0] += center
+
        rys[:,1,0] = sign*ca
        rys[:,1,1] = sign*sa
 
+       return rys
+
+   @classmethod
+   def aboxlight(cls, num=24, side=500, center=[0,0,0], sign=-1., scale=3):
+       a = np.linspace(-side,side,num )
+
+       qys = np.zeros( [num,4,2,3], dtype=np.float32 )
+       PX,MX,PY,MY = 0,1,2,3  
+       for Q in [PX,MX,PY,MY]:
+           if Q in [PX,MX]:
+               qys[:,Q,0,0] = side*scale if Q == PX else -side*scale
+               qys[:,Q,0,1] = a
+               qys[:,Q,1,0] = sign if Q == PX else -sign 
+               qys[:,Q,1,1] = 0
+           elif Q in [PY,MY]:
+               qys[:,Q,0,0] = a
+               qys[:,Q,0,1] = side*scale if Q == PY else -side*scale
+               qys[:,Q,1,0] = 0
+               qys[:,Q,1,1] = sign if Q == PY else -sign 
+           else:
+               assert 0
+           pass
+       pass
+       rys = qys.reshape(-1,2,3) 
+       rys[:,0] += center
        return rys
 
    @classmethod
@@ -435,8 +469,13 @@ class Ray(object):
        return rays
           
    @classmethod
-   def ringlight(cls, num=24, radius=500, inwards=True):
-       rys = cls.aringlight(num=num, radius=radius, inwards=inwards)
+   def ringlight(cls, num=24, radius=500, center=[0,0,0], sign=-1., scale=3):
+       rys = cls.aringlight(num=num, radius=radius, center=center, sign=sign, scale=scale)
+       return cls.make_rays(rys) 
+
+   @classmethod
+   def boxlight(cls, num=24, side=500, center=[0,0,0], sign=-1., scale=3):
+       rys = cls.aboxlight(num=num, side=side, center=center, sign=sign, scale=scale)
        return cls.make_rays(rys) 
 
    @classmethod
@@ -444,7 +483,30 @@ class Ray(object):
       """
       :param num: of rays to create
       """
-      return cls.ringlight(num=num, radius=0, inwards=False)
+      return cls.ringlight(num=num, radius=0, sign=+1.)
+
+   @classmethod
+   def leaflight(cls, leaf, num=24, sign=-1., scale=3):
+      """
+      :param leaf: node
+      :param num: number of rays, for boxlight get 4x rays
+      :param sign: -1 for inwards, +1 for outwards
+      :param scale: node radius or side to give ray origin position
+
+      Rays based on leaf geometry 
+
+      * inwards from outside the primitive: use scale ~ 3, and sign -1
+      * outwards from inside the primitive: use scale ~ 0.1, and sign +1
+
+      """
+      if leaf.shape == SPHERE:
+          return cls.ringlight(num=num, radius=leaf.param[3], center=leaf.param[:3], sign=sign, scale=scale)
+      elif leaf.shape == BOX:
+          return cls.boxlight(num=num, side=leaf.param[3], center=leaf.param[:3], sign=sign, scale=scale)
+      else:
+          pass
+      return []
+
 
 
 

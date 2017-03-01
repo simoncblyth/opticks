@@ -34,10 +34,10 @@ static const char* ReturnAIfFarther_ = "ReturnAIfFarther" ;
 static const char* ReturnA_ = "ReturnA" ;
 
 static const char* ReturnBIfCloser_ = "ReturnBIfCloser" ;
+static const char* ReturnFlipBIfCloser_ = "ReturnFlipBIfCloser" ;
 static const char* ReturnBIfFarther_ = "ReturnBIfFarther" ;
 static const char* ReturnB_ = "ReturnB" ;
 
-static const char* FlipB_ = "FlipB" ;
 static const char* AdvanceAAndLoop_ = "AdvanceAAndLoop" ;
 static const char* AdvanceBAndLoop_ = "AdvanceBAndLoop" ;
 static const char* AdvanceAAndLoopIfCloser_ = "AdvanceAAndLoopIfCloser" ;
@@ -80,10 +80,10 @@ std::string description( int action )
     if(action & ReturnA ) ss << ReturnA_ << " " ; 
 
     if(action & ReturnBIfCloser ) ss << ReturnBIfCloser_ << " " ; 
+    if(action & ReturnFlipBIfCloser ) ss << ReturnFlipBIfCloser_ << " " ; 
     if(action & ReturnBIfFarther ) ss << ReturnBIfFarther_ << " " ; 
     if(action & ReturnB ) ss << ReturnB_ << " " ; 
 
-    if(action & FlipB ) ss << FlipB_ << " " ; 
     if(action & AdvanceAAndLoop ) ss << AdvanceAAndLoop_ << " " ; 
     if(action & AdvanceBAndLoop ) ss << AdvanceBAndLoop_ << " " ; 
     if(action & AdvanceAAndLoopIfCloser ) ss << AdvanceAAndLoopIfCloser_ << " " ; 

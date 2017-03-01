@@ -103,6 +103,12 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
         }
 
 
+        bool ACloser = tA <= tB ; 
+        bool AFarther = !ACloser ; 
+        bool BCloser = !ACloser ; 
+        bool BFarther = ACloser ; 
+
+
         if(action & ReturnMiss)
         {
             ctrl = 0 ; 
@@ -110,9 +116,9 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
        else if( 
                    (action & ReturnA) 
                 || 
-                   ((action & ReturnAIfCloser) && tA <= tB )
+                   ((action & ReturnAIfCloser) && ACloser )
                 || 
-                   ((action & ReturnAIfFarther) && tA > tB )
+                   ((action & ReturnAIfFarther) && AFarther )
                  )
         {
             ctrl = 0 ; 
@@ -138,20 +144,22 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
         else if( 
                    (action & ReturnB) 
                 || 
-                   ((action & ReturnBIfCloser) && tB <= tA )
+                   ((action & ReturnBIfCloser) && BCloser )
                 || 
-                   ((action & ReturnBIfFarther) && tB > tA )
+                   ((action & ReturnFlipBIfCloser) && BCloser )
+                || 
+                   ((action & ReturnBIfFarther) && BFarther )
                  )
         {
             ctrl = 0 ; 
             if(rtPotentialIntersection(tB))
             {
-                shading_normal = geometric_normal = action & FlipB ? -b_normal : b_normal ;
+                shading_normal = geometric_normal = action & ReturnFlipBIfCloser ? -b_normal : b_normal ;
                 instanceIdentity = identity ;
 #ifdef BOOLEAN_DEBUG
-                //if((action & ReturnB))                      instanceIdentity.x = 1 ; 
-                //if((action & ReturnBIfCloser)  && tB <= tA) instanceIdentity.x = 2 ; 
-                //if((action & ReturnBIfFarther) && tB > tA)  instanceIdentity.x = 3 ; 
+                //if((action & ReturnB))                       instanceIdentity.x = 1 ; 
+                //if((action & ReturnBIfCloser)  && BCloser)   instanceIdentity.x = 2 ; 
+                //if((action & ReturnBIfFarther) && BFarther)  instanceIdentity.x = 3 ; 
                 // difference(box-sphere) 
                 //    no coloring apparent from outside (makes sense as sphere is "subtracted"),
                 //     hint of green(ReturnBIfCloser) the sphere from inside
@@ -169,7 +177,7 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
 
 #ifdef BOOLEAN_DEBUG
             //if( (action & AdvanceAAndLoop) )                     debugA = 2 ; 
-            //if( (action & AdvanceAAndLoopIfCloser) && tA <= tB ) debugA = 3 ; 
+            //if( (action & AdvanceAAndLoopIfCloser) && ACloser ) debugA = 3 ; 
 #endif
 
             //ctrl = ctrl & ~LIVE_B  ;   // CAUSES INVISIBLE INSIDES 
@@ -179,7 +187,7 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
         else if(
                      (action & AdvanceBAndLoop)
                   ||  
-                     ((action & AdvanceBAndLoopIfCloser) && tB <= tA )
+                     ((action & AdvanceBAndLoopIfCloser) && BCloser )
                 )
         {
             //ctrl = ctrl & ~LIVE_A  ;   // CAUSES INVISIBLE INSIDES

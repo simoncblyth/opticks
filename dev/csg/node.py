@@ -140,11 +140,11 @@ class Node(object):
                 assert 0, "not expecting leaves" 
                 node.apply_(shape=SPHERE, param=[0,0,0,100])
             elif node.is_bileaf:
-                node.apply_(operation=DIFFERENCE) ## causes infinite tranche loop for iterative
-                #node.apply_(operation=INTERSECTION) ## causes infinite tranche loop for iterative
+                #node.apply_(operation=DIFFERENCE)
+                node.apply_(operation=INTERSECTION) ## causes infinite tranche loop for iterative
                 #node.apply_(operation=UNION)
-                node.l.apply_(shape=SPHERE, param=[0,node.l.side*10+1,0,100] )             
-                node.r.apply_(shape=SPHERE, param=[0,node.r.side*10+1,0,100] )             
+                node.l.apply_(shape=SPHERE, param=[0,node.l.side*30+1,0,100] )             
+                node.r.apply_(shape=SPHERE, param=[0,node.r.side*30+1,0,100] )             
                 #node.l.apply_(shape=SPHERE, param=[node.l.side*10,0,0,100] )             
                 #node.r.apply_(shape=SPHERE, param=[node.r.side*10,0,0,100] )             
             else:
@@ -569,21 +569,31 @@ class Node(object):
 
 
     @classmethod
-    def inorder_r(cls, root, nodes=[],leaf=True):
+    def inorder_r(cls, root, nodes=[], leaf=True, internal=True):
         """ 
         :param root:
         :param nodes: list 
-        :param leaf: bool control of inclusion of leaf nodes with internal nodes
+        :param leaf: include leaf nodes
+        :param internal: include non-leaf nodes, including root node
 
         Recursive inorder traversal
         """
-        if root.l is not None: cls.inorder_r(root.l, nodes, leaf=leaf) 
-        if not leaf and root.is_leaf:
-            pass  # skip leaves when leaf = False
-        else: 
-            nodes.append(root)
+        if root.l is not None: cls.inorder_r(root.l, nodes, leaf=leaf, internal=internal) 
+
+        if root.is_leaf:
+            if leaf:
+                nodes.append(root)
+            else:
+                pass
+            pass
+        else:
+            if internal:
+                nodes.append(root)
+            else:
+                pass
+            pass
         pass
-        if root.r is not None: cls.inorder_r(root.r, nodes, leaf=leaf)
+        if root.r is not None: cls.inorder_r(root.r, nodes, leaf=leaf, internal=internal)
         return nodes
 
 

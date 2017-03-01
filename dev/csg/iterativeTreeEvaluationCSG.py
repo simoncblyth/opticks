@@ -131,7 +131,7 @@ class CSG(object):
         pass
         return ctrl
 
-    def binary_result(self, ctrl, miss, left, right):
+    def binary_result(self, ctrl, miss, left, right, tmin):
         """
         :param ctrl: bitfield with single bit set 
         :param miss: isect
@@ -153,6 +153,7 @@ class CSG(object):
         pass
         result.seq = 0 # debugging scrub any former
         result.addseq(ctrl_index(ctrl))  ## record into ray?, as keep getting fresh II instances
+        result.rtmin = tmin
         assert len(result.shape) == 2 and result.shape[0] == 4 and result.shape[1] == 4
         return result        
 
@@ -223,14 +224,27 @@ class CSG(object):
                         if p.l.is_leaf:
                             left = intersect_primitive(p.l, self.ray, tminL)
                         else:
-                            left = lhs.pop()
+                            try:
+                                left = lhs.pop()
+                            except IndexError:
+                                log.error("%s : lhs pop from empty" % self.pfx)
+                                self.tst.ierr += 1
+                                left = miss
+                            pass
                         pass
                     pass
                     if ctrl & CtrlLoopRight: 
                         if p.r.is_leaf:
                             right = intersect_primitive(p.r, self.ray, tminR)
                         else:
-                            right = rhs.pop()
+                            try:
+                                right = rhs.pop()
+                            except IndexError:
+                                log.error("%s : rhs pop from empty" % self.pfx)
+                                self.tst.ierr += 1
+                                right = miss
+                            pass
+                        pass
                     pass
 
                     ctrl = self.binary_ctrl(p.operation, left, right, tminL, tminR)    
@@ -269,9 +283,7 @@ class CSG(object):
                     break 
 
                 assert ctrl in [CtrlReturnMiss, CtrlReturnLeft,CtrlReturnRight,CtrlReturnFlipRight]
-                result = self.binary_result(ctrl, miss, left, right)
-
-                    
+                result = self.binary_result(ctrl, miss, left, right, tmin)
 
                 if p.is_left:
                     if self.debug:
@@ -282,13 +294,26 @@ class CSG(object):
                         log.info("%s : rhs append %d : %s " % (self.pfx, len(rhs), rhs ))
                     rhs.append(result)
                 pass
+                if self.debug:
+                    p.iterative = result
 
                 p = p.next_ 
             pass               # postorder tranche traversal while loop
         pass
 
-        assert len(lhs) == 0, lhs
-        assert len(rhs) == 1, rhs   # end with p.idx = 1 for the root
+        #assert len(lhs) == 0, lhs
+        #assert len(rhs) == 1, rhs   # end with p.idx = 1 for the root
+
+        if not len(lhs) == 0:
+            log.error("%s : lhs has %d, expect 0 " % (self.pfx, len(lhs)) )
+            self.tst.ierr += 1
+        pass
+
+        if not len(rhs) == 1:
+            log.error("%s : rhs has %d, expect 1 " % (self.pfx, len(rhs)) )
+            self.tst.ierr += 1
+        pass
+
         return rhs[0]
      
 
@@ -345,128 +370,53 @@ class CSG(object):
         pass  #  end while ctrl loop
 
         assert ctrl in [CtrlReturnMiss, CtrlReturnLeft, CtrlReturnRight, CtrlReturnFlipRight ]
-        result = self.binary_result(ctrl, miss, left, right)
+        result = self.binary_result(ctrl, miss, left, right, tmin)
+        if self.debug:
+            p.recursive = result
+
         return result
  
+    def recursive_intersect_2(self, p, tmin=0):
 
-    @classmethod
-    def trep_fmt(cls, tmin, tl, tr ):
-        return "tmin/tl/tr %5.2f %5.2f %5.2f " % (tmin if tmin else -1, tl if tl else -1, tr if tr else -1 )
-
-    def compare_intersects(self, tst, rr=[1,0]):
-
-        self.tst = tst
-        for iray, ray in enumerate(tst.rays):
-            for r in rr:
-                self.reset(ray=ray, iray=iray, debug=tst.debug) 
-                if r:
-                    self.alg = 'R'
-                    isect = self.recursive_intersect(tst.root) 
-                else: 
-                    self.alg = 'I'
-                    isect = self.iterative_intersect(tst.root)
-                pass
-                tst.i[r,iray] = isect 
-            pass
-
-            t = tst.i.t[:,iray]  # intersect t 
-            ok_t = np.allclose( t[0], t[1] )
-
-            n = tst.i.n[:,iray]  # intersect normal
-            ok_n = np.allclose( n[0], n[1] )
-
-            o = tst.i.o[:,iray] # ray.origin
-            ok_o = np.allclose( o[0], o[1] )
-
-            d = tst.i.d[:,iray] # ray.direction
-            ok_d = np.allclose( d[0], d[1] )
-
-            p = tst.i.ipos[:,iray]
-            ok_p = np.allclose( p[0], p[1] )
-
-            ## hmm could compre all at once both within intersect 
-
-            if not (ok_p and ok_n and ok_t and ok_d and ok_o):
-                tst.prob.append(iray)
-            pass
-
+        if p.is_leaf:
+            return intersect_primitive(p, self.ray, tmin)
         pass
+        miss =  intersect_miss(p, self.ray, tmin)
+        tminL = tmin
+        tminR = tmin
 
-    def plot_intersects(self, tst, axs, normal=None, origin=None, rayline=None, rr=[1,0]):
-        """
-        None args yielding defaults handy for debugging as 
-        can comment changes to None param values in caller without 
-        needing to know what defaults are 
-        """
-        if normal is None: normal = False
-        if origin is None: origin = False
-        if rayline is None: rayline = False
-
-        sc = 30 
-
-        i = tst.i
-        t = i.t
-        q = i.seq
-        n = i.n
-        o = i.o
-        d = i.d
-        p = i.ipos
-        c = i.cseq
-
-        m = o + 100*d  # miss endpoint 
-
-        pr = tst.prob
-
-        for r in rr:
-            ax = axs[r]
-
-            # markers for ray origins
-            if origin:
-                ax.scatter( o[r][:,X] , o[r][:,Y], c=c[r], marker='x')
-
-            mis = t[r] == 0
-            sel = t[r] > 0
-
-            if rayline:
-                # short dashed lines representing miss rays
-                for _ in np.where(mis)[0]:
-                    one_line( ax, o[r,_], m[r,_], c[r][_]+'--' )
-                pass
-
-                # lines from origin to intersect for hitters 
-                for _ in np.where(sel)[0]:
-                    one_line( ax, o[r,_], p[r,_], c[r][_]+'-' )
-                    if _ % 2 == 0:
-                        ax.text( o[r,_,X]*1.1, o[r,_,Y]*1.1, _, horizontalalignment='center', verticalalignment='center' )
-                    pass
-                pass
+        loopcount = 0 
+        ctrl = (CtrlLoopLeft | CtrlLoopRight)
+        while ctrl & (CtrlLoopLeft | CtrlLoopRight ):
+            if ctrl & CtrlLoopLeft: 
+                left = self.recursive_intersect_2(p.l, tmin=tminL)
             pass
-
-            # dots for intersects
-            ax.scatter( p[r][sel,X] , p[r][sel,Y], c=c[r], marker='D' )
-
-            # lines from intersect in normal direction scaled with sc 
-            if normal:
-                for _ in np.where(sel)[0]:
-                    one_line( ax, p[r,_], p[r,_] + n[r,_]*sc, c[r][_]+'-' )
-                pass
+            if ctrl & CtrlLoopRight: 
+                right = self.recursive_intersect_2(p.r, tmin=tminR)
             pass
-
-            if len(pr) > 0:
-                sel = pr
-                ax.scatter( p[r][sel,X] , p[r][sel,Y], c=c[r][sel] )
-            pass
-            #sel = slice(0,None)
-
-        pass
-
-
+            ctrl = self.binary_ctrl(p.operation, left, right, tminL, tminR)    
+            if ctrl == CtrlLoopLeft:
+                tminL = left.t + self.epsilon
+            elif ctrl == CtrlLoopRight:
+                tminR = right.t + self.epsilon
+            else:
+                pass # will fall out the ctrl loop
+            pass 
+            loopcount += 1 
+            assert loopcount < 10  
+        pass  #  end while ctrl loop
+        assert ctrl in [CtrlReturnMiss, CtrlReturnLeft, CtrlReturnRight, CtrlReturnFlipRight ]
+        result = self.binary_result(ctrl, miss, left, right, tmin)
+        if self.debug:
+            p.recursive = result
+        return result
+ 
 
 
 
 
 class T(object):
-    def __init__(self, root, debug=[], skip=[], notes="", source=None, num=200, level=1):
+    def __init__(self, root, debug=[], skip=[], notes="", source=None, scale=None, sign=None, num=200, level=1, **kwa):
         """
         :param root:
         :param name:
@@ -474,8 +424,12 @@ class T(object):
         """
 
         if source is None:
-            source = "aringlight,origlight"
-        pass
+            source = "leaflight"
+        if scale is None:
+            scale = 3.
+        if sign is None:
+            sign = -1.
+
         root.annotate()
 
         self.root = root
@@ -483,9 +437,15 @@ class T(object):
         self.debug = debug
         self.skip = skip
         self.notes = notes
+
         self.source = source
+        self.scale = scale
+        self.sign = sign
         self.num = num
+
+
         self.level = level
+        self.kwa = kwa
 
         self.prob = []
         self.ierr = 0 
@@ -506,10 +466,18 @@ class T(object):
     suptitle = property(_get_suptitle)
 
     def _make_rays(self):
+        """
+        Should collect rays in ndarray not a list 
+        """
         rays = []
         if "xray" in self.source:
             rays += [Ray(origin=[0,0,0], direction=[1,0,0])]
         pass
+
+        if "leaflight" in self.source:
+            for leaf in Node.inorder_r(self.root, nodes=[], leaf=True, internal=False):
+                rays += Ray.leaflight(leaf, num=self.num, sign=self.sign, scale=self.scale)
+            pass
 
         if "aringlight" in self.source:
             ary = Ray.aringlight(num=self.num, radius=1000)
@@ -521,13 +489,12 @@ class T(object):
         pass
 
         if "lsquad" in self.source:
-            rays += [Ray(origin=[-300,y,0], direction=[1,0,0]) for y in range(-50,50+1,10)]
+            rays += [Ray(origin=[-300,y,0], direction=[1,0,0]) for y in range(-1000,1000+1,10)]
         pass
 
         if "rsquad" in self.source:
-            rays += [Ray(origin=[300,y,0], direction=[-1,0,0]) for y in range(-50,50+1,10)]
+            rays += [Ray(origin=[300,y,0], direction=[-1,0,0]) for y in range(-1000,1000+1,10)]
         pass
-
 
         if "qray" in self.source:
             s = 300
@@ -568,7 +535,117 @@ class T(object):
     i = property(_get_i)
 
 
+    def compare_intersects(self, csg, rr=[1,0]):
+        csg.tst = self
+        tst = self
 
+        for iray, ray in enumerate(tst.rays):
+            for r in rr:
+                csg.reset(ray=ray, iray=iray, debug=tst.debug) 
+                if r:
+                    csg.alg = 'R'
+                    isect = csg.recursive_intersect_2(tst.root) 
+                else: 
+                    csg.alg = 'I'
+                    isect = csg.iterative_intersect(tst.root)
+                pass
+                tst.i[r,iray] = isect 
+            pass
+
+            t = tst.i.t[:,iray]  # intersect t 
+            ok_t = np.allclose( t[0], t[1] )
+
+            n = tst.i.n[:,iray]  # intersect normal
+            ok_n = np.allclose( n[0], n[1] )
+
+            o = tst.i.o[:,iray] # ray.origin
+            ok_o = np.allclose( o[0], o[1] )
+
+            d = tst.i.d[:,iray] # ray.direction
+            ok_d = np.allclose( d[0], d[1] )
+
+            p = tst.i.ipos[:,iray]
+            ok_p = np.allclose( p[0], p[1] )
+
+            ## hmm could compre all at once both within intersect 
+
+            if not (ok_p and ok_n and ok_t and ok_d and ok_o):
+                tst.prob.append(iray)
+            pass
+        pass
+
+    def plot_intersects(self, axs, normal=None, origin=None, rayline=None, raytext=False, rr=None):
+        """
+        None args yielding defaults handy for debugging as 
+        can comment changes to None param values in caller without 
+        needing to know what defaults are 
+        """
+        if normal is None: normal = self.kwa.get("normal",False)
+        if origin is None: origin = self.kwa.get("origin",False)
+        if rayline is None: rayline = self.kwa.get("rayline",False)
+        if raytext is None: raytext = self.kwa.get("raytext",False)
+        if rr is None: rr = self.kwa.get("rr",[1,0])
+
+        sc = 30 
+
+        i = self.i
+        t = i.t
+        q = i.seq
+        n = i.n
+        o = i.o
+        d = i.d
+        p = i.ipos
+        c = i.cseq
+
+        m = o + 100*d  # miss endpoint 
+
+        pr = tst.prob
+
+        for r in rr:
+            ax = axs[r]
+
+            # markers for ray origins
+            if origin:
+                ax.scatter( o[r][:,X] , o[r][:,Y], c=c[r], marker='x')
+
+            mis = t[r] == 0
+            sel = t[r] > 0
+
+            if rayline:
+                # short dashed lines representing miss rays
+                for _ in np.where(mis)[0]:
+                    one_line( ax, o[r,_], m[r,_], c[r][_]+'--' )
+                pass
+
+                # lines from origin to intersect for hitters 
+                for _ in np.where(sel)[0]:
+                    one_line( ax, o[r,_], p[r,_], c[r][_]+'-' )
+                    if raytext:
+                        if _ % 2 == 0:
+                            ax.text( o[r,_,X]*1.1, o[r,_,Y]*1.1, _, horizontalalignment='center', verticalalignment='center' )
+                            ax.text( p[r,_,X]*1.1, p[r,_,Y]*1.1, _, horizontalalignment='center', verticalalignment='center' )
+                        pass
+                    pass
+                pass
+            pass
+
+            # dots for intersects
+            ax.scatter( p[r][sel,X] , p[r][sel,Y], c=c[r], marker='D' )
+
+            # lines from intersect in normal direction scaled with sc 
+            if normal:
+                for _ in np.where(sel)[0]:
+                    one_line( ax, p[r,_], p[r,_] + n[r,_]*sc, c[r][_]+'-' )
+                pass
+            pass
+
+            if len(pr) > 0:
+                sel = pr
+                ax.scatter( p[r][sel,X] , p[r][sel,Y], c=c[r][sel] )
+            pass
+            #sel = slice(0,None)
+
+        pass
 
 
 class Renderer(object):
@@ -663,39 +740,40 @@ if __name__ == '__main__':
     plt.ion()
     plt.close("all")
 
-    source = None
-    epsilon = None
-    origin = None
-    normal = None
-
-
-    #roots = trees
-    roots = [root4]
+    roots = trees
+    #roots = [root3, root4]
+    #roots = [lrbox_u]
+    #roots = [root4]
     #roots = [lrbox_d1, ubo]
     #roots = [lbox_ue, smb_lbox, smb_lbox_ue]
     #roots = [smb_lbox_ue]
 
-    normal = True
-
-
     rr = [0,1]   # recursive only [1], iterative only [0], or both [0,1] [1,0]
+
     tsts = []
-
-
-    if 0:
+    if 1:
         for root in roots:
             #if root.ok: continue 
-            if root.name in ["root3","root4"]: continue
-            tsts.append(T(root,level=3,debug=[0], num=100, source=source))
+            #if root.name in ["root3","root4"]: continue
+            tsts.append(T(root,level=3,debug=[], num=25, source="leaflight",origin=True,rayline=True, scale=0.1, sign=1))
         pass
 
     t_root3a = T(root3, level=3, debug=[], num=100, source="aringlight" )
     t_root3b = T(root3, level=3, debug=[], num=100, source="origlight" )
-    t_root4a = T(root4, level=3, debug=[], num=100, source="aringlight", notes="ok" )
+
+    #t_root4a = T(root4, level=3, debug=[0], num=200, source="aringlight", notes="ok" )
+    t_root4a = T(root4, level=3, debug=[0], num=20, source="leaflight", notes="ok", rayline=True, raytext=False, origin=True)
     t_root4b = T(root4, level=3, debug=[1], num=100, source="origlight", notes="pop from empty lhs" )
 
-    tsts.append(t_root4a)
+    #tsts.append(t_root4a)
     
+    # None: means use value from T ctor, or the default if not defined there
+    source = None
+    epsilon = None
+    origin = None
+    normal = None
+    rayline = None
+
 
     for itst,tst in enumerate(tsts):
         print "%2d : %15s : %s " % (itst, tst.root.name, tst.root )
@@ -707,9 +785,8 @@ if __name__ == '__main__':
 
         csg = CSG(level=tst.level, epsilon=epsilon)
 
-
-        csg.compare_intersects( tst, rr=rr )
-        csg.plot_intersects( tst, axs=axs, rr=rr, normal=normal, origin=origin)
+        tst.compare_intersects( csg, rr=rr )
+        tst.plot_intersects( axs=axs, rr=rr, normal=normal, origin=origin, rayline=rayline)
 
         # seems patches cannot be shared between axes, so use separate Renderer
         # for each  
