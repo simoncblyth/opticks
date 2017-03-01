@@ -10,6 +10,191 @@ TODO: numerical/chi2 history comparison with CFG4 booleans
 WIP: boolean csg tree implementation
 --------------------------------------
 
+Whats missing for opticks csg tree ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* postorder tree threading, leftmost operator starting point 
+* stack of float4(quad) for tranches, holding tmin and begin/end tree indices
+* stack of float4 holding normal and t 
+
+
+
+Needs to be almost complete tree anyhow for easy serializing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* so postorder can be hardcoded for different tree depths
+
+
+depth 1, triplet::
+
+
+    In [21]: Node.postorder_r(root1, nodes=[])
+    Out[21]: [s2.s, s3.s, I1.Intersection(s2.s,s3.s)]
+
+    In [22]: root1.txt
+    Out[22]: 
+    root1            
+         I1        
+          o        
+     s2      s3    
+      o       o    
+
+
+
+depth 2, septuplet::
+
+    In [15]: Node.postorder_r(root2, nodes=[])
+    Out[15]: 
+    [s4.s,
+     s5.s,
+     I2.Intersection(s4.s,s5.s),
+     s6.s,
+     s7.s,
+     I3.Intersection(s6.s,s7.s),
+     U1.Union(I2.Intersection(s4.s,s5.s),I3.Intersection(s6.s,s7.s))]
+
+    In [16]: root2.txt
+    Out[16]: 
+    root2                            
+                 U1                
+                  o                
+         I2              I3        
+          o               o        
+     s4      s5      s6      s7    
+      o       o       o       o    
+                                   
+
+depth 3, 15-tuplet::
+
+    In [17]: Node.postorder_r(root3, nodes=[])
+    Out[17]: 
+    [s8.s,                            i  = 8
+     s9.s,                            i+1 = 9                  add 1 to get to right sibling 
+     I4.Intersection(s8.s,s9.s),      (i+1)/2 = 4              divide by 2, up to parent 
+     s10.s,                           ( (i+1)/2) + 1)*2 = 10   add 1, multip by 2 
+     s11.s,                           ((i/2) + 1)*2 + 1 = 11
+     I5.Intersection(s10.s,s11.s),     
+     U2.Union(I4.Intersection(s8.s,s9.s),I5.Intersection(s10.s,s11.s)),
+     s12.s,
+     s13.s,
+     I6.Intersection(s12.s,s13.s),
+     s14.s,
+     s15.s,
+     I7.Intersection(s14.s,s15.s),
+     U3.Union(I6.Intersection(s12.s,s13.s),I7.Intersection(s14.s,s15.s)),
+     U1.Union(U2.Union(I4.Intersection(s8.s,s9.s),I5.Intersection(s10.s,s11.s)),U3.Union(I6.Intersection(s12.s,s13.s),I7.Intersection(s14.s,s15.s)))]
+
+    In [18]: root3.txt
+    Out[18]: 
+    root3                                                            
+                                 U1                                
+                                  o                                
+                 U2                              U3                
+                  o                               o                
+         I4              I5              I6              I7        
+          o               o               o               o        
+     s8      s9     s10     s11     s12     s13     s14     s15    
+      o       o       o       o       o       o       o       o    
+                                                                   
+
+*  4, 5, 2, 6, 7, 3, 1
+
+Simpler to fly above the leaves::
+
+    In [26]: Node.postorder_r(root3, nodes=[], leaf=False)
+    Out[26]: 
+    [I4.Intersection(s8.s,s9.s),
+     I5.Intersection(s10.s,s11.s),
+     U2.Union(I4.Intersection(s8.s,s9.s),I5.Intersection(s10.s,s11.s)),
+     I6.Intersection(s12.s,s13.s),
+     I7.Intersection(s14.s,s15.s),
+     U3.Union(I6.Intersection(s12.s,s13.s),I7.Intersection(s14.s,s15.s)),
+     U1.Union(U2.Union(I4.Intersection(s8.s,s9.s),I5.Intersection(s10.s,s11.s)),U3.Union(I6.Intersection(s12.s,s13.s),I7.Intersection(s14.s,s15.s)))]
+
+
+
+
+
+
+* If T has a total of N nodes, the number of internal nodes is I = (N – 1)/2 
+* 
+*        1 + 2 + 4 + 8 + ... + 2^d = tot_d
+*  1 + ( 2 + 4 + 8 + 16 + ... + 2^d ) + 2^(d+1) = 1 + 2*tot_d 
+*  tot_d + 2^(d+1) = 1 + 2*tot_d
+*   tot_d = 2^(d+1) - 1
+
+
+* internal nodes,  [( 2^(d+1) - 1 ) - 1] / 2  ->  2^d - 1
+
+
+* better to base things from the depth, as might want to support gaps on the last row
+
+*  depth   number of nodes    number of leaves
+*  d = 0,  2^1 - 1 = 1              
+*  d = 1,  2^2 - 1 = 3        
+*  d = 2,  2^3 - 1 = 7
+*  d = 3,  2^4 - 1 = 15
+*  d = 4,  2^5 - 1 = 31
+
+
+
+
+
+Tree Threading ?
+~~~~~~~~~~~~~~~~~~
+
+* GCSG (which should probably be renamed GCSGPmt) does something similar
+  using a NPY buffer (created in python) as the input
+
+* most methods require an item index
+
+::
+
+     32 #include "GGEO_API_EXPORT.hh"
+     33 class GGEO_API GCSG {
+     34     public:
+     ..
+     62     public:
+     63         unsigned int getNumItems();
+     64     public:
+     65         float getX(unsigned int i);
+     66         float getY(unsigned int i);
+     67         float getZ(unsigned int i);
+     68         float getOuterRadius(unsigned int i);
+     69         float getInnerRadius(unsigned int i);
+     70         float getSizeZ(unsigned int i);
+     71         float getStartTheta(unsigned int i);
+     72         float getDeltaTheta(unsigned int i);
+     73     public:
+     74         unsigned int getTypeCode(unsigned int i);
+     75         bool isUnion(unsigned int i);
+     76         bool isIntersection(unsigned int i);
+     77         bool isSphere(unsigned int i);
+     78         bool isTubs(unsigned int i);
+     79 
+     80         unsigned int getNodeIndex(unsigned int i);  // 1-based index, 0:unset
+     81         unsigned int getParentIndex(unsigned int i);  // 1-based index, 0:unset
+     82         unsigned int getSpare(unsigned int i);
+     83 
+     84         const char* getTypeName(unsigned int i);
+     85     public:
+     86         unsigned int getIndex(unsigned int i);
+     87         unsigned int getNumChildren(unsigned int i);
+     88         unsigned int getFirstChildIndex(unsigned int i);
+     89         unsigned int getLastChildIndex(unsigned int i);
+     90     private:
+     91         float        getFloat(unsigned int i, unsigned int j, unsigned int k);
+     92         unsigned int getUInt(unsigned int i, unsigned int j, unsigned int k);
+     93 
+     94     private:
+     95         NPY<float>*        m_csg_buffer ;
+     96         GItemList*         m_materials ;
+     97         GItemList*         m_lvnames ;
+     98         GItemList*         m_pvnames ;
+
+
+
+
 CsgInBox test geometry
 ~~~~~~~~~~~~~~~~~~~~~~~
 

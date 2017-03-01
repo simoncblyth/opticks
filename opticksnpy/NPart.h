@@ -24,6 +24,8 @@ typedef enum {
 
 enum { PARAM_J  = 0, PARAM_K  = 0 };       // q0.f.xyzw
 
+
+// (1,0) used for sizeZ in ZTubs // q1.u.x
 enum { INDEX_J    = 1, INDEX_K    = 1 };   // q1.u.y
 enum { BOUNDARY_J = 1, BOUNDARY_K = 2 };   // q1.u.z
 enum { FLAGS_J    = 1, FLAGS_K    = 3 };   // q1.u.w

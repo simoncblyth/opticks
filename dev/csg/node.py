@@ -635,6 +635,39 @@ class Node(object):
 
 
     @classmethod
+    def postOrderSequence(cls,root): 
+        """
+        Pack the postorder sequence levelorder indices (1-based)
+        into a 64 bit integer. 
+
+        ::
+
+            In [48]: seq4 = Node.postOrderSequence(root4)
+
+            In [51]: seq3 = Node.postOrderSequence(root3)
+
+            In [54]: seq2 = Node.postOrderSequence(root2)
+
+            In [56]: for seq in [seq2,seq3,seq4]:
+                print "%20s %16x " % (seq,seq)
+               ....:     
+                             306              132 
+                        20406868          1376254 
+               87818465122690200  137fe6dc25ba498 
+
+        """
+        nodes = Node.postorder_r(root, nodes=[], leaf=False)
+        assert len(nodes) < 16  
+        seq = np.uint64(0)
+        for i, node in enumerate(nodes):
+            idx = np.uint64(node.idx)
+            assert idx <= 0xF
+            seq |= ((idx & np.uint64(0xF)) << np.uint64(i*4) )
+        pass
+        return seq
+
+
+    @classmethod
     def postOrderIterative(cls,root): 
         """
         # iterative postorder traversal using
@@ -916,10 +949,6 @@ if 0:
         print "%20s : %s " % (tree.name, tree)
         Node.complete_and_full_r(tree)
         
-
-      
-
-
 if 0:
     for tree in [root0, root1, root2, root3, root4]:
         print "%20s : %s " % (tree.name, tree)
@@ -939,6 +968,10 @@ if 0:
         Node.traverse(lop, "left operation")
 
         Node.dress(tree)
+
+
+
+
 
 
 

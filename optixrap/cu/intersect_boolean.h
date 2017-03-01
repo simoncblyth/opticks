@@ -1,5 +1,11 @@
 #pragma once
 
+// see opticks/dev/csg/node.py:Node.postOrderSequence
+rtDeclareVariable(unsigned long long, postorder_seq2, , ) =  0x132 ;
+rtDeclareVariable(unsigned long long, postorder_seq3, , ) =  0x1376254 ;
+rtDeclareVariable(unsigned long long, postorder_seq4, , ) =  0x137fe6dc25ba498 ;
+
+
 
 static __device__
 void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
@@ -36,19 +42,8 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
 {
-
    // hmm need to thread the tree before can start with this, and provide leftmost operation jumpoff point
-
-    unsigned partOffset = prim.x ; 
-    unsigned primIdx_   = prim.z ; 
-
-    unsigned nodeIdx = partOffset ;    
-    unsigned leftIdx = partOffset + 1 ;   // SIMPLIFYING ASSUMPTION
-    unsigned rightIdx = partOffset + 2 ;  
-
-    rtPrintf("intersect_csg primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 }
-
 */
 
 
@@ -58,14 +53,14 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
 {
     // NB LIMITED TO SINGLE BOOLEAN OPERATION APPLIED TO TWO BASIS SOLIDS, ie triplet trees
 
-    // primFlags only available for root of tree, need to 
-    // so things in a more anynode manner
+    // primFlags only available for root of tree,
+    // operate from partBuffer for other nodes
 
     unsigned partOffset = prim.x ; 
     unsigned primIdx_   = prim.z ; 
 
     unsigned n_partIdx = partOffset ;    
-    unsigned a_partIdx = partOffset + 1 ;   // SIMPLIFYING ASSUMPTION
+    unsigned a_partIdx = partOffset + 1 ;   // SIMPLIFYING TRIPLET ASSUMPTION
     unsigned b_partIdx = partOffset + 2 ;  
 
     quad q1 ; 
@@ -97,8 +92,8 @@ void intersect_boolean( const uint4& prim, const uint4& identity )
 
         int actions = boolean_actions( operation , a_state, b_state );
         int act = boolean_decision( actions, tA <= tB );
-
         ctrl = boolean_ctrl( act );
+
         if(     ctrl == CTRL_LOOP_A) tA_min = tA ; 
         else if(ctrl == CTRL_LOOP_B) tB_min = tB ; 
     } 

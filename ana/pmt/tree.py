@@ -253,7 +253,7 @@ class Tree(object):
 
         for cn in csg:
             assert type(cn) is CSG 
-            offset = CSG.serialize(data, offset, cn)
+            offset = CSG.serialize_r(data, offset, cn)
         pass
         log.info("csg_serialize tot flattened %s final offset %s " % (len(flat), offset))
         assert offset == len(flat)

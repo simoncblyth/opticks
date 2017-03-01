@@ -44,7 +44,7 @@ class CSG(object):
 
 
     @classmethod
-    def serialize(cls, data, offset, obj):
+    def serialize_r(cls, data, offset, obj):
         """
         :param data: npy buffer to fill
         :param offset: primary index of buffer at which to start writing 
@@ -94,7 +94,7 @@ class CSG(object):
             data[base].view(np.int32)[3,1] = nchild
             data[base].view(np.int32)[3,2] = base + 1
             for c in obj.children:
-                offset = cls.serialize(data, offset, c)
+                offset = cls.serialize_r(data, offset, c)
             pass
             data[base].view(np.int32)[3,3] = offset - 1    # after the recursion
         pass

@@ -7,6 +7,7 @@ class GItemList ;
 GCSG
 ======
 
+Provides convenient access to csg NPY buffer created with python.
 
 Users
 ------
@@ -18,15 +19,14 @@ ggeo/GPmt.cc
  
     * notes at the tail of ggeo/GPmt.cc
     * pmt-vi pmt-ecd
+    * opticks/ana/pmt/csg.py 
+    * opticks/ana/pmt/tree.py 
 
 cfg4/CMaker.cc
 
 cfg4/CPropLib.cc
 
 cfg4/CTestDetector.cc
-
-
-
 
 
 
