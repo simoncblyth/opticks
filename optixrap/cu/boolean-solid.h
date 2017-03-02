@@ -94,6 +94,49 @@ typedef enum { Enter, Exit, Miss } IntersectionState_t ;
 
 
 
+
+/*
+Perhaps could treat the LUT like a matrix and get into optix that way 
+
+rtDeclareVariable(optix::Matrix4x4, textureMatrix0, , );
+
+* https://devtalk.nvidia.com/default/topic/739954/optix/emulating-opengl-texture-matrix/
+* https://devtalk.nvidia.com/default/topic/767650/optix/matrix4x4-assignment-not-working/
+
+Or as tiny 3D buffer/texture 
+*/
+
+#ifdef __CUDACC__
+__host__
+__device__
+#endif
+int boolean_lookup( OpticksCSG_t op, IntersectionState_t stateA, IntersectionState_t stateB )
+{
+    // cannot use static here with CUDA, does that mean the lookup gets created every time ?
+    const unsigned _boolean_lookup[3][3][3] = 
+          { 
+             { 
+                 {Union_EnterA_EnterB, Union_EnterA_ExitB, Union_EnterA_MissB },
+                 {Union_ExitA_EnterB,  Union_ExitA_ExitB,  Union_ExitA_MissB },
+                 {Union_MissA_EnterB,  Union_MissA_ExitB,  Union_MissA_MissB }
+             },
+             { 
+                 {Intersection_EnterA_EnterB, Intersection_EnterA_ExitB, Intersection_EnterA_MissB },
+                 {Intersection_ExitA_EnterB,  Intersection_ExitA_ExitB,  Intersection_ExitA_MissB },
+                 {Intersection_MissA_EnterB,  Intersection_MissA_ExitB,  Intersection_MissA_MissB }
+             },
+             { 
+                 {Difference_EnterA_EnterB, Difference_EnterA_ExitB, Difference_EnterA_MissB },
+                 {Difference_ExitA_EnterB,  Difference_ExitA_ExitB,  Difference_ExitA_MissB },
+                 {Difference_MissA_EnterB,  Difference_MissA_ExitB,  Difference_MissA_MissB }
+             }
+         } ;
+    return _boolean_lookup[(int)op][(int)stateA][(int)stateB] ; 
+}
+
+
+
+
 #ifdef __CUDACC__
 __host__
 __device__
@@ -169,7 +212,6 @@ int difference_action( IntersectionState_t stateA, IntersectionState_t stateB  )
 __host__
 __device__
 #endif
-
 int boolean_actions( OpticksShape_t operation, IntersectionState_t stateA, IntersectionState_t stateB  )
 {
     int action = ReturnMiss ; 
@@ -189,8 +231,16 @@ __device__
 int boolean_decision(int acts, bool ACloser)
 {
     int act = ReturnMiss ; 
+
     // convert potentially multiple bits of acts into single bit act 
     // NB the order of this if is critical
+    //
+    // hmm : not so many possible values of acts and two possible values of ACloser
+    //       can this been done via lookup too ?
+    //
+    // hmm the ordering multiplies the possible "states" for the lookup ?
+    //      but not by that much, especially when split into two for ACloser or not
+    //
 
     if      (acts & ReturnMiss)                            act = ReturnMiss ; 
     else if (acts & ReturnA)                               act = ReturnA ; 

@@ -1,6 +1,14 @@
 #pragma once
 
 typedef enum {
+    CSG_UNION,
+    CSG_INTERSECTION,
+    CSG_DIFFERENCE,
+    CSG_PRIMITIVE
+} OpticksCSG_t ; 
+   
+
+typedef enum {
     SHAPE_UNDEFINED     = 0x1 << 0 , 
     SHAPE_INTERSECTION  = 0x1 << 1 , 
     SHAPE_UNION         = 0x1 << 2 , 
@@ -18,6 +26,26 @@ typedef enum {
 
 #ifndef __CUDACC__
 
+static const char* CSG_INTERSECTION_  = "CSG_INTERSECTION" ; 
+static const char* CSG_UNION_         = "CSG_UNION" ; 
+static const char* CSG_DIFFERENCE_    = "CSG_DIFFERENCE" ; 
+static const char* CSG_PRIMITIVE_     = "CSG_PRIMITIVE" ; 
+
+static const char* CSGName( OpticksCSG_t op )
+{
+    const char* s = NULL ; 
+    switch(op)
+    {
+        case CSG_INTERSECTION:  s = CSG_INTERSECTION_  ; break ; 
+        case CSG_UNION:         s = CSG_UNION_         ; break ; 
+        case CSG_DIFFERENCE:    s = CSG_DIFFERENCE_    ; break ; 
+        case CSG_PRIMITIVE:     s = CSG_PRIMITIVE_    ; break ; 
+    }
+    return s ; 
+}
+
+
+
 static const char* SHAPE_UNDEFINED_     = "SHAPE_UNDEFINED" ; 
 static const char* SHAPE_INTERSECTION_  = "SHAPE_INTERSECTION" ; 
 static const char* SHAPE_UNION_         = "SHAPE_UNION" ; 
@@ -29,7 +57,6 @@ static const char* SHAPE_CONSTITUENT_A_ = "SHAPE_CONSTITUENT_A" ;
 static const char* SHAPE_CONSTITUENT_B_ = "SHAPE_CONSTITUENT_B" ; 
 static const char* SHAPE_BOOLEAN_       = "SHAPE_BOOLEAN" ; 
 static const char* SHAPE_CSG_TREE_      = "SHAPE_CSG_TREE" ; 
-
 
 static const char* ShapeName( OpticksShape_t flag )
 {

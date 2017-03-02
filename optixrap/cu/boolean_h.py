@@ -41,7 +41,7 @@ def desc_state(st):
     return _st_label(st)
 
 
-ffs_ = lambda x:(x&-x).bit_length()-1
+ffs_ = lambda x:(x&-x).bit_length()
 
 def ffs(x):
     """  
@@ -55,8 +55,8 @@ def ffs(x):
         In [60]: [0x1 << n for n in range(16)]
         Out[60]: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768]
 
-        In [61]: map(ffs_,[0x1 << n for n in range(16)])
-        Out[61]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        In [80]: map(ffs_,[0x1 << n for n in range(16)])
+        Out[80]: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 
     """
     return ffs_(x)
@@ -78,7 +78,7 @@ def _init_acts(ekv):
         #print "%30s : %s " % (k, v )
         _act[k] = v 
         _act_label[v] = k 
-        _act_index[v] = ffs(v)
+        _act_index[v] = ffs(v)   # CAUTION THIS WAS OFF-BY-ONE
     pass
 _init_acts(enum_kv)
 

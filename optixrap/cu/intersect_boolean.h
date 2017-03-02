@@ -1,11 +1,5 @@
 #pragma once
 
-// see opticks/dev/csg/node.py:Node.postOrderSequence
-rtDeclareVariable(unsigned long long, postorder_seq2, , ) =  0x132 ;
-rtDeclareVariable(unsigned long long, postorder_seq3, , ) =  0x1376254 ;
-rtDeclareVariable(unsigned long long, postorder_seq4, , ) =  0x137fe6dc25ba498 ;
-
-
 
 static __device__
 void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
@@ -37,15 +31,58 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 
 
 
-
-/*
 static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
 {
-   // hmm need to thread the tree before can start with this, and provide leftmost operation jumpoff point
-}
-*/
+    // see opticks/dev/csg/node.py:Node.postOrderSequence
 
+    const unsigned long long postorder_sequence[4] = 
+         { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
+
+    unsigned partOffset = prim.x ; 
+    unsigned numParts   = prim.y ;
+    unsigned primIdx_   = prim.z ; 
+
+   // complete binary trees have node counts (numParts)
+   //       1, 3, 7, 15, 31
+   // (+1)  2, 4, 8, 16, 32   adding one gets a power of 2, so its a single bit 
+   // ffs_  2, 3, 4,  5,  6 
+   //       1, 2, 3,  4,  5
+   //
+   //  leftmost for subtree reiteration : multiply by 2 until exceed nodecount 
+   //  (which could exclude leaves)
+
+    unsigned height = __ffs( numParts + 1 ) - 2 ; 
+
+    // the below use height-1 in order to fly above the leaves
+    unsigned long long postorder = postorder_sequence[height-1] ; 
+    unsigned numNodes = (0x1 << (1+height-1)) - 1 ;
+
+    unsigned leftmost = 1 ; // start at root using 1-based levelorder indexing
+    while(leftmost <= numNodes) leftmost = leftmost*2 ; 
+
+
+    rtPrintf("intersect_csg partOffset %u numParts %u primIdx_ %u height %u postorder %llx leftmost %u  \n", partOffset, numParts, primIdx_, height, postorder, leftmost );
+
+    unsigned beginIdx = postorder & 0xF ; 
+    unsigned endIdx = 1 ; 
+
+
+    unsigned i = 0 ; 
+    unsigned nodeIdx = beginIdx ;
+    while(nodeIdx >= endIdx)
+    {
+         unsigned leftIdx = partOffset + nodeIdx*2 ; 
+         unsigned rightIdx = partOffset + nodeIdx*2 + 1; 
+
+         // TODO:is_leaf, adopt OpticksCSG_t enum instead of OpticksShape_t mask, so can select off that 
+
+         //rtPrintf("intersect_csg i:%d nodeIdx %d leftIdx %d rightIdx %d partOffset %d \n", i, nodeIdx, leftIdx, rightIdx, partOffset );
+
+         i += 1 ;
+         nodeIdx = (postorder & (0xFull << i*4 )) >> i*4 ; 
+    }
+}
 
 
 static __device__

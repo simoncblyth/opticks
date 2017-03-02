@@ -399,6 +399,54 @@ def intersect_box( param, ray, tmin ):
     pass
     return tt, nn
 
+"""
+
+/Developer/OptiX/SDK/optixTutorial/box.cu
+
+ 43 static __device__ float3 boxnormal(float t)
+ 44 {
+ 45   float3 t0 = (boxmin - ray.origin)/ray.direction;
+ 46   float3 t1 = (boxmax - ray.origin)/ray.direction;
+ 47   float3 neg = make_float3(t==t0.x?1:0, t==t0.y?1:0, t==t0.z?1:0);
+ 48   float3 pos = make_float3(t==t1.x?1:0, t==t1.y?1:0, t==t1.z?1:0);
+ 49   return pos-neg;
+ 50 }
+
+ 52 RT_PROGRAM void box_intersect(int)
+ 53 {
+ 54   float3 t0 = (boxmin - ray.origin)/ray.direction;
+ 55   float3 t1 = (boxmax - ray.origin)/ray.direction;
+ 56   float3 near = fminf(t0, t1);
+ 57   float3 far = fmaxf(t0, t1);
+ 58   float tmin = fmaxf( near );
+ 59   float tmax = fminf( far );
+ 60 
+ 61   if(tmin <= tmax) {
+ 62     bool check_second = true;
+ 63     if( rtPotentialIntersection( tmin ) ) {
+ 64        texcoord = make_float3( 0.0f );
+ 65        shading_normal = geometric_normal = boxnormal( tmin );
+ 66        if(rtReportIntersection(0))
+ 67          check_second = false;
+ 68     }
+ 69     if(check_second) {
+ 70       if( rtPotentialIntersection( tmax ) ) {
+ 71         texcoord = make_float3( 0.0f );
+ 72         shading_normal = geometric_normal = boxnormal( tmax );
+ 73         rtReportIntersection(0);
+ 74       }
+ 75     }
+ 76   }
+ 77 }
+
+
+
+"""
+
+
+
+
+
 
 
 class Ray(object):

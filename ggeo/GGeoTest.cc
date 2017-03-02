@@ -375,6 +375,11 @@ GMergedMesh* GGeoTest::createBoxInBox()
         GSolid* solid = solids[i];
         GParts* pts = solid->getParts();
         assert(pts);
+
+
+       // TODO: move to OpticksCSG_t 
+       // the shape mask is a hack prior to biting bullet and implenting CSG tree
+
         OpticksShape_t shapeflag = solid->getShapeFlag(); 
 
         if(shapeflag == SHAPE_INTERSECTION || shapeflag == SHAPE_UNION || shapeflag == SHAPE_DIFFERENCE)

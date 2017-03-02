@@ -11,9 +11,14 @@
 // boolean-solid.cc is not integrated with anything, 
 // build and run with::
 //
-//    clang boolean-solid.cc -lstdc++ && ./a.out && rm a.out
+
+/*
+clang boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore && ./a.out && rm a.out
+*/
 
 
+#include <cstddef>
+#include "OpticksShape.h"
 #include "boolean-solid.h"
 
 #include <iostream>
@@ -123,6 +128,35 @@ std::string boolean_action<T>::dumptable(const char* msg)
 }
 
 
+std::string dump_lookup(const char* msg)
+{
+    std::stringstream ss ; 
+    ss << msg << std::endl ; 
+    for(int io=0 ; io < 3 ; io++)
+    {
+       OpticksCSG_t o = (OpticksCSG_t)io ; 
+       ss << CSGName(o) << std::endl ; 
+       for(int ia=0 ; ia < 3 ; ia++)
+       {
+           for(int ib=0 ; ib < 3 ; ib++)
+           {
+               IntersectionState_t a = (IntersectionState_t)ia ; 
+               IntersectionState_t b = (IntersectionState_t)ib ;
+               int action = boolean_lookup(o, a, b );
+               std::string action_desc = description(action); 
+               ss
+                   << std::setw(5) << description(a) << "A "
+                   << std::setw(5) << description(b) << "B "
+                   << " -> " 
+                   <<  action_desc.c_str()
+                   << std::endl ; 
+            }
+       }
+    }
+    return ss.str(); 
+}
+
+
 template<>
 int boolean_action<Union>::_table[9] = 
     { 
@@ -159,6 +193,10 @@ int boolean_action<T>::operator()( IntersectionState_t stateA, IntersectionState
 
 
 
+
+
+
+
 int main(int argc, char** argv)
 {
     boolean_action<Union>        uat ; 
@@ -168,6 +206,8 @@ int main(int argc, char** argv)
     std::cout << uat.dumptable("Union") << std::endl ;
     std::cout << iat.dumptable("Intersection") << std::endl ;
     std::cout << dat.dumptable("Difference") << std::endl ;
+
+    std::cout << dump_lookup("dump_lookup") << std::endl ; 
 
     return 0 ; 
 }

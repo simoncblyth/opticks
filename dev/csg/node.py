@@ -666,6 +666,16 @@ class Node(object):
         pass
         return seq
 
+    @classmethod
+    def dumpSequence(cls, seq):
+        n = 0 
+        idx = seq & np.uint64(0xF) ;
+        while idx > 0:
+            print n, idx
+            n += 1 ; 
+            idx = (seq & np.uint64(0xF << n*4)) >> np.uint64(n*4) 
+        pass
+
 
     @classmethod
     def postOrderIterative(cls,root): 
@@ -927,6 +937,10 @@ def test_make_perfect():
 
 
 
+
+
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
@@ -937,7 +951,10 @@ if __name__ == '__main__':
 
     root2.annotate()
     r2 = copy.deepcopy(root2)    
-
+  
+    seq = Node.postOrderSequence(root4)
+    Node.dumpSequence(seq)
+    
     
 
 
@@ -968,8 +985,6 @@ if 0:
         Node.traverse(lop, "left operation")
 
         Node.dress(tree)
-
-
 
 
 

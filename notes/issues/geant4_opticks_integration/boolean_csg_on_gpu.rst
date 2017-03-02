@@ -10,6 +10,185 @@ TODO: numerical/chi2 history comparison with CFG4 booleans
 WIP: boolean csg tree implementation
 --------------------------------------
 
+
+
+OptiX array
+~~~~~~~~~~~~~
+
+
+Hmm seems everything other than very simple things need to go into buffers.
+
+* https://devtalk.nvidia.com/default/topic/966684/optix/array-program-variables/
+
+
+C : Two meanings of static
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* static global variables and functions, scope limited to definining file
+* static local variables, typically use compile time reserved data segment of memory 
+  rather than transient call stack
+
+
+CUDA guide : static local variables within function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html
+* http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#static-variables-function
+
+Within the body of a __device__ or __global__ function, only __shared__
+variables or variables without any device memory qualifiers may be declared
+with static storage class. 
+
+Within the body of a __device__ __host__ function, only unannotated 
+static variables (i.e., without device memory qualifiers) may
+be declared with static storage class. Unannotated function-scope static
+variables have the same restrictions as __device__ variables defined in
+namespace scope. They cannot have a non-empty constructor or a non-empty
+destructor, if they are of class type (see Device Memory Qualifiers).
+
+* hmm, this explains why I had to remove ctors/dtors in my simple structs
+
+::
+
+    struct S1_t { int x; }; 
+    struct S2_t { int x; __device__ S2_t(void) { x = 10; } }; 
+    struct S3_t { int x; __device__ S3_t(int p) : x(p) { } }; 
+    __device__ void f1() { 
+             static int i1; // OK 
+             static int i2 = 11; // OK 
+             static S1_t i3; // OK 
+             static S1_t i4 = {22}; // OK 
+             static __shared__ int i5; // OK 
+             int x = 33; 
+             static int i6 = x; // error: dynamic initialization is not allowed 
+             static S1_t i7 = {x}; // error: dynamic initialization is not allowed 
+             static S2_t i8; // error: dynamic initialization is not allowed 
+             static S3_t i9(44); // error: dynamic initialization is not allowed
+    }
+
+* restriction to non-dynamic static local variables in device kernels
+  makes sense, otherwise each of the millions of threads would need it own data segment
+
+* With compile time defined restriction can just have one used for all threads
+
+
+OptiX/CUDA static variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :google:`cuda static variable`
+
+NB the below is an example of dynamic use of local static variables, so can only work host side.
+
+/Developer/OptiX/SDK/optixTutorial/random.h:: 
+
+     69 // Multiply with carry
+     70 static __host__ __inline__ unsigned int mwc()
+     71 {
+     72   static unsigned long long r[4];
+     73   static unsigned long long carry;
+     74   static bool init = false;
+     75   if( !init ) {
+     76     init = true;
+     77     unsigned int seed = 7654321u, seed0, seed1, seed2, seed3;
+     78     r[0] = seed0 = lcg2(seed);
+     79     r[1] = seed1 = lcg2(seed0);
+     80     r[2] = seed2 = lcg2(seed1);
+     81     r[3] = seed3 = lcg2(seed2);
+     82     carry = lcg2(seed3);
+     83   }
+     84 
+     85   unsigned long long sum = 2111111111ull * r[3] +
+     86                            1492ull       * r[2] +
+     87                            1776ull       * r[1] +
+     88                            5115ull       * r[0] +
+     89                            1ull          * carry;
+     90   r[3]   = r[2];
+     91   r[2]   = r[1];
+     92   r[1]   = r[0];
+     93   r[0]   = static_cast<unsigned int>(sum);        // lower half
+     94   carry  = static_cast<unsigned int>(sum >> 32);  // upper half
+     95   return static_cast<unsigned int>(r[0]);
+     96 }
+
+
+
+
+
+Adding node transforms
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Matrix manip, optixu_matrix_namespace.h
+
+
+OptiX : const float3
+~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2112 OPTIXU_INLINE RT_HOSTDEVICE float luminanceCIE(const float3& rgb)
+    2113 {
+    2114   const float3 cie_luminance = { 0.2126f, 0.7152f, 0.0722f };
+    2115   return  dot( rgb, cie_luminance );
+    2116 }
+
+
+
+OptiX float4 as a very short stack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:optixu blyth$ grep ByIndex optixu_math_namespace.h
+    OPTIXU_INLINE RT_HOSTDEVICE float getByIndex(const float1& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(float1& v, int i, float x)
+    OPTIXU_INLINE RT_HOSTDEVICE float getByIndex(const float2& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(float2& v, int i, float x)
+    OPTIXU_INLINE RT_HOSTDEVICE float getByIndex(const float3& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(float3& v, int i, float x)
+    OPTIXU_INLINE RT_HOSTDEVICE float getByIndex(const float4& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(float4& v, int i, float x)
+    OPTIXU_INLINE RT_HOSTDEVICE int getByIndex(const int1& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(int1& v, int i, int x)
+    OPTIXU_INLINE RT_HOSTDEVICE int getByIndex(const int2& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(int2& v, int i, int x)
+    OPTIXU_INLINE RT_HOSTDEVICE int getByIndex(const int3& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(int3& v, int i, int x)
+    OPTIXU_INLINE RT_HOSTDEVICE int getByIndex(const int4& v, int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(int4& v, int i, int x)
+    OPTIXU_INLINE RT_HOSTDEVICE unsigned int getByIndex(const uint1& v, unsigned int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(uint1& v, int i, unsigned int x)
+    OPTIXU_INLINE RT_HOSTDEVICE unsigned int getByIndex(const uint2& v, unsigned int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(uint2& v, int i, unsigned int x)
+    OPTIXU_INLINE RT_HOSTDEVICE unsigned int getByIndex(const uint3& v, unsigned int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(uint3& v, int i, unsigned int x)
+    OPTIXU_INLINE RT_HOSTDEVICE unsigned int getByIndex(const uint4& v, unsigned int i)
+    OPTIXU_INLINE RT_HOSTDEVICE void setByIndex(uint4& v, int i, unsigned int x)
+
+
+
+Lookup tables in C
+~~~~~~~~~~~~~~~~~~~~
+
+* :google:`C lookup table`
+
+Perfect tree traversal has lots of constants, also boolean_act and boolean_table 
+decision logic has lots of if statements with a small 
+range of input values. 
+
+This kinda thing seems suited to small static lookup tables, to avoid computation
+every time. Of course with CUDA its not at all sure there will be any benefit, as GPUs
+favor computation over memory access.
+
+* http://embeddedgurus.com/stack-overflow/2010/01/a-tutorial-on-lookup-tables-in-c/
+
+* http://stackoverflow.com/questions/17088484/cuda-memory-for-lookup-tables
+
+  This is talking about 4KB lookup tables, the ones I have in mind are miniscule
+
+* http://www.marekfiser.com/Projects/Conways-Game-of-Life-on-GPU-using-CUDA/4-Advanced-lookup-table-implementation
+
+
+
 Whats missing for opticks csg tree ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -98,6 +277,9 @@ depth 3, 15-tuplet::
                                                                    
 
 *  4, 5, 2, 6, 7, 3, 1
+
+* unsigned long long postorder_depth3 = 0x1376254    (64 bits) 
+
 
 Simpler to fly above the leaves::
 
