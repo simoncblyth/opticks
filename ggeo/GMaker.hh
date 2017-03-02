@@ -30,7 +30,7 @@ class GGEO_API GMaker {
        static const char* INTERSECTION ; 
        static const char* DIFFERENCE ; 
        static const char* UNDEFINED ; 
-       static OpticksShape_t NodeFlag(char nodecode);
+       static OpticksCSG_t NodeFlag(char nodecode);
        static const char* NodeName(char nodecode); 
        static char NodeCode(const char* nodename); 
        static bool IsBooleanShape(char nodecode); 

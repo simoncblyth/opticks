@@ -192,9 +192,13 @@ class CSG(object):
         tranche = []
         tranche.append([tmin,Node.leftmost(root),None])
 
+
         tcount = 0 
 
         while len(tranche) > 0:
+
+            assert len(tranche) <= 4
+
             tmin, begin, end = tranche.pop()
             #log.info("%s : start tranche %d begin %s end %s " % (self.pfx, tcount, begin, end))
             tcount += 1    

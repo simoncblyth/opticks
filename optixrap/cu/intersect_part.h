@@ -1,7 +1,7 @@
 
 
 static __device__
-void intersect_sphere(const quad& q0, const float& tt_min, float3& tt_normal, float& tt  )
+void intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
 {
     // when an intersection is found between the ray and the sphere 
     // with parametric t greater than the tmin parameter
@@ -26,10 +26,15 @@ void intersect_sphere(const quad& q0, const float& tt_min, float3& tt_normal, fl
 
     if(valid_intersect)   
     {
-        tt =  root1 > tt_min ? root1 : root2 ; 
-        tt_normal = tt > tt_min ? (O + tt*D)/radius : tt_normal ; 
-    }
+        tt.w =  root1 > tt_min ? root1 : root2 ; 
 
+        if(tt.w > tt_min)
+        {        
+            tt.x = (O.x + tt.w*D.x)/radius ; 
+            tt.y = (O.y + tt.w*D.y)/radius ; 
+            tt.z = (O.z + tt.w*D.z)/radius ; 
+        }
+    }
 }
 
 
@@ -185,7 +190,7 @@ static __device__ void intersect_box_tavianator(const quad& q0, const float& tt_
 
 
 static __device__
-void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float& tt  )
+void intersect_box(const quad& q0, const float& tt_min, float4& tt )
 {
    const float3 bmin = make_float3(q0.f.x - q0.f.w, q0.f.y - q0.f.w, q0.f.z - q0.f.w ); 
    const float3 bmax = make_float3(q0.f.x + q0.f.w, q0.f.y + q0.f.w, q0.f.z + q0.f.w ); 
@@ -254,7 +259,7 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
        //
        //
 
-       tt =  tt_min < t_near ?  
+       tt.w =  tt_min < t_near ?  
                               t_near 
                            :
                               ( tt_min < t_far ? t_far : tt_min )
@@ -263,7 +268,7 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
 
        //rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
 
-       float3 p = ray.origin + tt*ray.direction - bcen ; 
+       float3 p = ray.origin + tt.w*ray.direction - bcen ; 
        float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
 
        float3 n = make_float3(0.f) ;
@@ -271,12 +276,17 @@ void intersect_box(const quad& q0, const float& tt_min, float3& tt_normal, float
        else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
        else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
 
-       tt_normal = tt > tt_min ? n : tt_normal ;
+       if(tt.w > tt_min)
+       {
+           tt.x = n.x ;
+           tt.y = n.y ;
+           tt.z = n.z ;
+       }
    }
 }
 
 static __device__
-IntersectionState_t intersect_part(unsigned partIdx, const float& tt_min, float3& tt_normal, float& tt  )
+IntersectionState_t intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
     quad q0, q2 ; 
     q0.f = partBuffer[4*partIdx+0];
@@ -290,23 +300,20 @@ IntersectionState_t intersect_part(unsigned partIdx, const float& tt_min, float3
 
     NPart_t partType = (NPart_t)q2.i.w ; 
 
-    tt = tt_min ; 
+    tt.w = tt_min ; 
 
     switch(partType)
     {
-        case SPHERE: intersect_sphere(q0,tt_min, tt_normal, tt)  ; break ; 
-        case BOX:    intersect_box(   q0,tt_min, tt_normal, tt)  ; break ; 
-        //case BOX:    intersect_box_tavianator(   q0,tt_min, tt_normal, tt)  ; break ; 
-        //case BOX:    intersect_box_branching(   q0,tt_min, tt_normal, tt)  ; break ; 
+        case SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ; 
+        case BOX:    intersect_box(   q0,tt_min, tt )  ; break ; 
     }
 
-    IntersectionState_t state = tt > tt_min ? 
-                                              ( dot(tt_normal, ray.direction) < 0.f ? Enter : Exit ) 
-                                           :
-                                              Miss
-                                           ; 
+    IntersectionState_t state = tt.w > tt_min ? 
+                        ( (tt.x * ray.direction.x + tt.y * ray.direction.y + tt.z * ray.direction.z) < 0.f ? Enter : Exit ) 
+                                  :
+                              Miss
+                              ; 
     return state  ; 
 }
-
 
 

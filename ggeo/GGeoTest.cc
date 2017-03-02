@@ -255,6 +255,9 @@ GMergedMesh* GGeoTest::createCsgInBox()
         // is configured by global "offsets" parameter 
         // For example  "offsets=0,1" means elements 0 and 1  
         // represent nodes that start OptiX primitives.
+        // 
+        //  CSG trees (which must be perfect binary trees in levelorder) 
+        //  need to be contained entirely within single primitive node blocks
         //
         if(primStart)
         {
@@ -284,8 +287,8 @@ GMergedMesh* GGeoTest::createCsgInBox()
 
         GSolid* solid = m_maker->make(i, nodecode, param, spec );   
 
-        OpticksShape_t shapeflag = solid->getShapeFlag(); 
-        unsigned flags = shapeflag ;    
+        OpticksCSG_t csgflag = solid->getCSGFlag(); 
+        unsigned flags = csgflag ;    
 
         GParts* pts = solid->getParts();
 
@@ -297,14 +300,12 @@ GMergedMesh* GGeoTest::createCsgInBox()
         solids.push_back(solid);
     }
 
-
     // collected pts are converted into primitives in GParts::makePrimBuffer
 
     GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
 
     GTransforms* txf = GTransforms::make(n); // identities
     GIds*        aii = GIds::make(n);        // placeholder (n,4) of zeros
-
 
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
@@ -318,11 +319,8 @@ GMergedMesh* GGeoTest::createCsgInBox()
         pts->Summary(msg);
         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
     }
-
     return tri ; 
 }
-
-
 
 GMergedMesh* GGeoTest::createBoxInBox()
 {
@@ -359,9 +357,6 @@ GMergedMesh* GGeoTest::createBoxInBox()
     }
 
 
-    int boolean_start = -1 ;  
-    OpticksShape_t boolean_shapeflag = SHAPE_UNDEFINED ; 
-
     int primIdx(-1) ; 
 
     // Boolean geometry (precursor to proper CSG Trees) 
@@ -369,6 +364,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
     // a single "primitive" to be composed of multiple
     // "parts", the association from part to prim being 
     // controlled via the primIdx attribute of each part.
+    //int boolean_start = -1 ;  
 
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
@@ -376,12 +372,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
         GParts* pts = solid->getParts();
         assert(pts);
 
-
-       // TODO: move to OpticksCSG_t 
-       // the shape mask is a hack prior to biting bullet and implenting CSG tree
-
-        OpticksShape_t shapeflag = solid->getShapeFlag(); 
-
+       /*
         if(shapeflag == SHAPE_INTERSECTION || shapeflag == SHAPE_UNION || shapeflag == SHAPE_DIFFERENCE)
         {
             boolean_start = i ;       
@@ -399,6 +390,15 @@ GMergedMesh* GGeoTest::createBoxInBox()
         }
 
         if((flags & SHAPE_CONSTITUENT) == 0) primIdx++ ;   // constituents dont merit new primIdx
+        */
+
+        // prior to supporting CSG the right thing to 
+        // do is treat the CSG tree as distinct parts ???
+        // ACTUALLY ONCE CSG WORKING CAN DUMP BoxInBox in favor of CSGInBox
+
+        OpticksCSG_t csgflag = solid->getCSGFlag(); 
+        int flags = csgflag ;
+        if((flags & CSG_PRIMITIVE) == 0) primIdx++ ;   // constituents dont merit new primIdx
 
         pts->setIndex(0u, i);
         pts->setNodeIndex(0u, primIdx ); 
@@ -408,21 +408,17 @@ GMergedMesh* GGeoTest::createBoxInBox()
         LOG(info) << "GGeoTest::createBoxInBox"
                   << " i " << std::setw(3) << i 
                   << " primIdx " << std::setw(3) << primIdx
-                  << " shapeflag " << std::setw(5) << shapeflag 
-                  << std::setw(20) << ShapeName(shapeflag)
+                  << " csgflag " << std::setw(5) << csgflag 
+                  << std::setw(20) << CSGName(csgflag)
                   << " pts " << pts 
                   ;
-
     }
-
     // collected pts are converted into primitives in GParts::makePrimBuffer
-
 
     GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
 
     GTransforms* txf = GTransforms::make(n); // identities
     GIds*        aii = GIds::make(n);        // placeholder (n,4) of zeros
-
 
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
@@ -436,12 +432,5 @@ GMergedMesh* GGeoTest::createBoxInBox()
         pts->Summary(msg);
         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
     }
-
     return tri ; 
-
 } 
-
-
-
-
-

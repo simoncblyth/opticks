@@ -1195,9 +1195,10 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
   // expand aabb to include all the bbox of the parts 
 
-  bool csg = primFlags & (SHAPE_DIFFERENCE | SHAPE_INTERSECTION | SHAPE_UNION) ; 
 
-  if(csg)  // bbox based from 0th
+  bool not_csg = primFlags == CSG_PRIMITIVE ; 
+
+  if(!not_csg)  // bbox based from first csg node, the root of tree
   {
       quad q2, q3 ; 
       q2.f = partBuffer[4*(partOffset+0)+2];  
@@ -1231,7 +1232,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       } 
    }
 
-  rtPrintf("##hemi-pmt.cu:bounds primIdx %d csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, csg, 
+  rtPrintf("##hemi-pmt.cu:bounds primIdx %d csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, not_csg, 
        result[0],
        result[1],
        result[2],
@@ -1259,9 +1260,10 @@ RT_PROGRAM void intersect(int primIdx)
   uint4 identity = identityBuffer[instance_index] ; 
   // for analytic test geometry (PMT too?) the identityBuffer  
   // is composed of placeholder zeros
-  bool csg = primFlags & (SHAPE_DIFFERENCE | SHAPE_INTERSECTION | SHAPE_UNION) ; 
 
-  if(csg)
+  bool not_csg = primFlags == CSG_PRIMITIVE ; 
+
+  if(!not_csg)
   { 
       //if(primIdx>0)
       //rtPrintf("intersect(csg) primIdx:%d partOffset(x):%u numParts(y):%u primIdx_(z):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primIdx_, primFlags ); 
@@ -1270,8 +1272,8 @@ RT_PROGRAM void intersect(int primIdx)
       q1.f = partBuffer[4*(partOffset+0)+1];  
       identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
 
-      //intersect_boolean( prim, identity );
-      intersect_csg( prim, identity );
+      intersect_boolean_triplet( prim, identity );
+      //intersect_csg( prim, identity );
       //intersect_boolean_only_first( prim, identity );
   }
   else

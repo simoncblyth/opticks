@@ -69,16 +69,15 @@ bool GMaker::IsBooleanShape(char shapecode)
 
 
 // enum from OpticksShape.h
-OpticksShape_t GMaker::NodeFlag(char shapecode)
+OpticksCSG_t GMaker::NodeFlag(char shapecode)
 {
-    OpticksShape_t flag = SHAPE_UNDEFINED ; 
+    OpticksCSG_t flag = CSG_PRIMITIVE ; 
     switch(shapecode)
     {
-       case 'I': flag = SHAPE_INTERSECTION ; break ;
-       case 'J': flag = SHAPE_UNION        ; break ;
-       case 'K': flag = SHAPE_DIFFERENCE   ; break ;
-       case 'L': flag = SHAPE_COMPOSITE    ; break ;
-       default:  flag = SHAPE_PRIMITIVE    ; break ; 
+       case 'I': flag = CSG_INTERSECTION ; break ;
+       case 'J': flag = CSG_UNION        ; break ;
+       case 'K': flag = CSG_DIFFERENCE   ; break ;
+       default:  flag = CSG_PRIMITIVE    ; break ; 
     }
     return flag ;  
 }
@@ -119,8 +118,8 @@ GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, c
      }
      assert(solid);
 
-     OpticksShape_t shapeflag = GMaker::NodeFlag(shapecode) ; 
-     solid->setShapeFlag( shapeflag );
+     OpticksCSG_t csgflag = GMaker::NodeFlag(shapecode) ; 
+     solid->setCSGFlag( csgflag );
 
      // TODO: most parts alread hooked up above, do this uniformly
      GParts* pts = solid->getParts();  

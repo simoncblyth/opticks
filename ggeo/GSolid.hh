@@ -29,7 +29,7 @@ class GGEO_API GSolid : public GNode {
       void setSelected(bool selected);
       bool isSelected();
   public:
-      void setShapeFlag(OpticksShape_t flag);
+      void setCSGFlag(OpticksCSG_t flag);
       void setBoundary(unsigned boundary);
       void setBoundaryAll(unsigned boundary);
       void setSensor(NSensor* sensor);
@@ -42,7 +42,7 @@ class GGEO_API GSolid : public GNode {
       const char* getPVName();
       const char* getLVName();
   public:
-      OpticksShape_t getShapeFlag();
+      OpticksCSG_t getCSGFlag();
       unsigned int getBoundary();
       guint4       getIdentity();
       NSensor*     getSensor();
@@ -54,7 +54,7 @@ class GGEO_API GSolid : public GNode {
       std::string description();
   private:
       unsigned int      m_boundary ; 
-      OpticksShape_t    m_shapeflag ; 
+      OpticksCSG_t      m_csgflag ; 
       NSensor*          m_sensor ; 
       bool              m_selected ;
       const char*       m_pvname ; 

@@ -205,10 +205,7 @@ Perfect tree with n=7 nodes is depth 2, dev/csg/node.py (root2)::
                       node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
   
 
-                      node=difference   parameters=0,0,0,400           boundary=Vacuum///$material
-                      node=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
- 
+
 EON
 }
 
@@ -224,13 +221,9 @@ tboolean-csg()
                       offsets=0,1
                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
 
-                      node=union        parameters=0,0,0,400           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
-                      node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,$inscribe   boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,400           boundary=Vacuum///$material
+                      node=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
  
                       )
 

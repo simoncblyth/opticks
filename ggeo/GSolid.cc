@@ -21,7 +21,7 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),
-         m_shapeflag(SHAPE_UNDEFINED),
+         m_csgflag(CSG_PRIMITIVE),
          m_sensor(sensor),
          m_selected(true),
          m_pvname(NULL),
@@ -31,9 +31,9 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
 }
 
 
-OpticksShape_t GSolid::getShapeFlag()
+OpticksCSG_t GSolid::getCSGFlag()
 {
-    return m_shapeflag ; 
+    return m_csgflag ; 
 }
 
 unsigned int GSolid::getBoundary()
@@ -114,9 +114,9 @@ void GSolid::setParts(GParts* pts)
 
 
 
-void GSolid::setShapeFlag(OpticksShape_t shapeflag)
+void GSolid::setCSGFlag(OpticksCSG_t csgflag)
 {
-    m_shapeflag = shapeflag ; 
+    m_csgflag = csgflag ; 
 }
 
 void GSolid::setBoundary(unsigned int boundary)

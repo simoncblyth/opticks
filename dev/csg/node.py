@@ -659,15 +659,17 @@ class Node(object):
         nodes = Node.postorder_r(root, nodes=[], leaf=False)
         assert len(nodes) < 16  
         seq = np.uint64(0)
+        iseq = np.uint64(0)
         for i, node in enumerate(nodes):
-            idx = np.uint64(node.idx)
-            assert idx <= 0xF
-            seq |= ((idx & np.uint64(0xF)) << np.uint64(i*4) )
+            j = np.uint64(node.idx)
+            assert j <= 0xF
+            seq | = ((j & np.uint64(0xF)) << np.uint64(i*4) )
+            iseq |= ((i & np.uint64(0xF)) << np.uint64(j*4) )
         pass
-        return seq
+        return seq, iseq
 
     @classmethod
-    def dumpSequence(cls, seq):
+    def dumpSequence(cls, seq, iseq):
         n = 0 
         idx = seq & np.uint64(0xF) ;
         while idx > 0:

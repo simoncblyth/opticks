@@ -744,7 +744,8 @@ void GParts::dump(const char* msg)
        unsigned int bnd = getBoundary(i);
        std::string  bn = getBoundaryName(i);
        unsigned int flg = getFlags(i);
-       std::string msk = ShapeMask(flg);
+       //std::string msk = ShapeMask(flg);
+       std::string csg = CSGName((OpticksCSG_t)flg);
        const char*  tn = getTypeName(i);
 
        for(unsigned int j=0 ; j < NJ ; j++)
@@ -755,7 +756,7 @@ void GParts::dump(const char* msg)
               if( j == TYPECODE_J && k == TYPECODE_K )
               {
                   assert( uif.u == tc );
-                  printf(" %10u (%s) ", uif.u, tn );
+                  printf(" %10u (%s) TYPECODE ", uif.u, tn );
               } 
               else if( j == INDEX_J && k == INDEX_K)
               {
@@ -770,7 +771,7 @@ void GParts::dump(const char* msg)
               else if( j == FLAGS_J && k == FLAGS_K)
               {
                   assert( uif.u == flg );
-                  printf(" %6u <-flg  %s ", uif.u, msk.c_str() );
+                  printf(" %6u <-flg CSG %s ", uif.u, csg.c_str() );
               }
               else if( j == NODEINDEX_J && k == NODEINDEX_K)
                   printf(" %10d (nodeIndex) ", uif.i );

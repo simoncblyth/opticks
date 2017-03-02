@@ -112,7 +112,12 @@ __device__
 #endif
 int boolean_lookup( OpticksCSG_t op, IntersectionState_t stateA, IntersectionState_t stateB )
 {
+    //
+    // assumes OpticksCSG_t enum values 0,1,2 for CSG_UNION, CSG_INTERSECTION, CSG_DIFFERENCE
+    // and IntersectionState_t enum values 0,1,2 for Enter, Exit, Miss
+    //
     // cannot use static here with CUDA, does that mean the lookup gets created every time ?
+    //
     const unsigned _boolean_lookup[3][3][3] = 
           { 
              { 
@@ -212,14 +217,15 @@ int difference_action( IntersectionState_t stateA, IntersectionState_t stateB  )
 __host__
 __device__
 #endif
-int boolean_actions( OpticksShape_t operation, IntersectionState_t stateA, IntersectionState_t stateB  )
+int boolean_actions( OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB  )
 {
     int action = ReturnMiss ; 
     switch(operation)
     {
-       case SHAPE_INTERSECTION: action = intersection_action( stateA, stateB ) ; break ;
-       case SHAPE_UNION:        action = union_action( stateA, stateB ) ; break ;
-       case SHAPE_DIFFERENCE:   action = difference_action( stateA, stateB ) ; break ;
+       case CSG_INTERSECTION: action = intersection_action( stateA, stateB ) ; break ;
+       case CSG_UNION:        action = union_action( stateA, stateB ) ; break ;
+       case CSG_DIFFERENCE:   action = difference_action( stateA, stateB ) ; break ;
+       case CSG_PRIMITIVE:    action = ReturnMiss                          ; break ;   // perhaps return error flag ?
     }
     return action ; 
 }
