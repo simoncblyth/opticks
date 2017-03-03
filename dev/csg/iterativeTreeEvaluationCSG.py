@@ -179,18 +179,78 @@ class CSG(object):
 
     pfx = property(lambda self:"%s%0.3d" % (self.alg, self.iray))
 
-    def iterative_intersect(self, root, depth=0, tmin=0, debug=1):
+    def iterative_intersect(self, root, depth=0, tmin=0, debug=1, icheck=True):
         """
         :param root:
         :return isect: I instance
+
+        0-based postorder p-indices from p0 at leftmost to p14 at root, for height 4 tree, 
+        excluding leaf nodes to make height 3 internal nodes::
+
+            In [78]: root4.txt
+            Out[78]: 
+            root4                                                                                                                            
+                                                                         14                                                                
+                                                                          o                                                                
+                                          6                                                              13                                
+                                          o                                                               o                                
+                          2                               5                               9                              12                
+                          o                               o                               o                               o                
+                  0               1               3               4               7               8              10              11        
+                  o               o               o               o               o               o               o               o        
+                                                                                                                                           
+              o       o       o       o       o       o       o       o       o       o       o       o       o       o       o       o    
+
+
+
+        Consider evaluating p13 subtree, of sub-height 2 (from full-height - depth = 3 - 1 = 2 )  
+
+        * reiterate p13.left   (p9) ->  repeat p7,  p8, p9  [with live tree Node.leftmost(p13.l)->p7 ]
+        * reiterate p13.right (p12) ->  repeat p10,p11,p12  [with live tree Node.leftmost(p13.r)->p10 ]
+
+        Need to derive the p-indices that need to repeat based on the depth of p13 and
+        the height of the tree.
+
+        * sub-nodes 7,   l-nodes = r-nodes = (sub-nodes - 1)/2 = (7 - 1)/2 = 3 
+
+        *   13-3   +0, +1, +2 =  10, 11, 12 
+        *   13-3*2 +0, +1, +2 =  7, 8, 9  
+
+        *  beneath p13 are two sub-subtrees 
+
+
+        Operation height is 3,    2^(h+1) = 2^(3+1) - 1               = 15  nodes in total
+        Subtree starting p13 is at depth 1,   2^(h-d+1) = 2^(2+1) - 1 =  7  nodes 
+        Subtree starting p9 is at depth 2,    2^(h-d+1) = 2^(1+1) - 1 =  3  nodes
+
         """
         self.check_tree(root)
 
         lhs = []
         rhs = []
 
+
         tranche = []
         tranche.append([tmin,Node.leftmost(root),None])
+
+        if icheck:
+            # check using 0-based postorder indices
+            i_height = root.maxdepth - 1   # excluding leaves
+            numInternalNodes = Node.NumNodes(i_height)
+
+            itranche = []
+            itranche.append([tmin, 0, numInternalNodes])
+
+            i_postorder = Node.postorder_r(root, nodes=[], leaf=False)
+            assert len(i_postorder) == numInternalNodes
+
+            lmo = Node.leftmost(root) 
+            assert lmo.pidx == 0 and lmo is i_postorder[0] 
+            assert i_postorder[numInternalNodes-1].next_ == None
+
+        else:
+            itranche = None
+        pass
 
 
         tcount = 0 
@@ -200,12 +260,36 @@ class CSG(object):
             assert len(tranche) <= 4
 
             tmin, begin, end = tranche.pop()
+            
+            if icheck:
+                i_tmin, i_begin, i_end = itranche.pop()
+
+                #print "icheck (%d,%d) [%s,%s] " % (i_begin, i_end, begin, end ) 
+
+                assert len(itranche) == len(tranche)
+                assert i_tmin == tmin
+                assert i_postorder[i_begin] is begin 
+                assert i_postorder[i_end-1].next_ == end 
+            pass
+
+
             #log.info("%s : start tranche %d begin %s end %s " % (self.pfx, tcount, begin, end))
             tcount += 1    
             assert tcount < 10
 
             p = begin
+
+            if icheck:
+               i_pindex = i_begin
+
             while p is not end:
+
+                if icheck:
+                    assert i_postorder[i_pindex] is p 
+                    i_depth = p.cdepth
+                    i_subNodes = Node.NumNodes( i_height, i_depth )
+                    i_halfNodes = (i_subNodes - 1)/2
+                pass
 
                 act = 0 
                 left = None
@@ -256,19 +340,39 @@ class CSG(object):
                     if ctrl in [CtrlReturnMiss, CtrlReturnLeft, CtrlReturnRight, CtrlReturnFlipRight]:
                         pass # will fall out of the ctrl while as no longer loopers
                     elif ctrl == CtrlLoopLeft: 
+                        if self.debug:
+                            print "CtrlLoopLeft %s " % p.l
+                        pass
                         tminL = left.t + self.epsilon
                         if not p.l.is_leaf:
                             rhs.append(right)
+
                             tranche.append([tmin,p,None])  # should this be tminL ? its for continuation
                             tranche.append([tminL,Node.leftmost(p.l),p.l.next_])
+
+                            if icheck:
+                                itranche.append([tmin,  i_index, numInternalNodes ])
+                                itranche.append([tminL, i_index - i_halfNodes*2, i_index - i_halfNodes ])  
+                                print "icheck lhs %r " % itranche
+                            pass
                             reiterate_ = True 
                         pass
                     elif ctrl == CtrlLoopRight: 
+
                         tminR = right.t + self.epsilon
+                        if self.debug:
+                            print "CtrlLoopRight %s " % p.r
+                        pass
                         if not p.r.is_leaf:
                             lhs.append(left)
                             tranche.append([tmin,p,None])  # should this be tminR ?
-                            tranche.append([tminR,Node.leftmost(p.r),p.r.next_])
+                            tranche.append([tminR,Node.leftmost(p.r),p.r.next_])   
+                            if icheck:
+                                assert p.r.next_ is p  # next on right is always self
+                                itranche.append([tmin,  i_index, numInternalNodes ])
+                                itranche.append([tminR, i_index - i_halfNodes, i_index ])  
+                                print "icheck rhs %r " % itranche
+                            pass
                             reiterate_ = True 
                         pass
                     else:
@@ -300,6 +404,11 @@ class CSG(object):
                 pass
                 if self.debug:
                     p.iterative = result
+
+
+                if icheck:
+                    i_pindex += 1
+                pass
 
                 p = p.next_ 
             pass               # postorder tranche traversal while loop
@@ -758,8 +867,11 @@ if __name__ == '__main__':
     if 1:
         for root in roots:
             #if root.ok: continue 
-            #if root.name in ["root3","root4"]: continue
-            tsts.append(T(root,level=3,debug=[], num=25, source="leaflight",origin=True,rayline=True, scale=0.1, sign=1))
+            if not Node.is_perfect_i(root):
+                log.warning("skip imperfect tree %s " % root )
+                continue  
+            pass
+            tsts.append(T(root,level=3,debug=[0], num=25, source="leaflight",origin=True,rayline=True, scale=0.1, sign=1))
         pass
 
     t_root3a = T(root3, level=3, debug=[], num=100, source="aringlight" )

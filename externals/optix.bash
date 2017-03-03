@@ -82,6 +82,17 @@ Indepth covering the "Understanding.." paper.
 * http://www.cs.uu.nl/docs/vakken/magr/2015-2016/slides/lecture%2012%20-%20GPU%20ray%20tracing%20(2).pdf
 
 
+CUDAraster
+----------
+
+* https://code.google.com/archive/p/cudaraster/
+
+High-Performance Software Rasterization on GPUs
+Samuli Laine and Tero Karras,
+Proc. High-Performance Graphics 2011
+http://research.nvidia.com/sites/default/files/publications/laine2011hpg_paper.pdf
+
+
 Alternatives to OptiX
 -----------------------
 

@@ -5,6 +5,9 @@ import logging, copy
 log = logging.getLogger(__name__)
 import numpy as np
 
+from opticks.bin.ffs import clz_
+
+
 EMPTY = 0 
 SPHERE = 1
 BOX = 2 
@@ -22,19 +25,16 @@ class T(np.ndarray):
     An array with a text grid representation::
 
         In [223]: a = np.empty((3,3),dtype=np.object)
-
         In [224]: t = T.init(a)
 
 
         In [230]: t[0,2] = "02"
-
         In [231]: t[2,0] = "20"
 
         In [232]: t
         Out[232]: 
            00    01    02
         
-                 
            20            
 
         In [233]: t[1,0] = "10"
@@ -71,6 +71,7 @@ class Node(object):
         self.r = copy.deepcopy(r)
 
         self.next_ = None
+        self.pidx = None
 
         # below needed for CSG 
         self.shape = None 
@@ -153,6 +154,24 @@ class Node(object):
             #log.info(" dress %r " % node )
             node = node.next_ 
 
+    @classmethod
+    def NumNodes(cls, h, d=0):
+        """
+        Number of nodes for perfect binary tree of height h,  2^(h+1) - 1::
+
+            In [55]: map(Node.NumNodes, range(10))
+            Out[55]: [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023]
+
+        For a subtree starting at depth d, the number of nodes is  2^([h-d]+1) - 1, 
+        which is the full tree NumNodes expression with h -> h-d.
+        For example::
+
+                h-d = 0   2^(0+1) - 1 = 1    at the leaf
+                h-d = 1   2^(1+1) - 1 = 3    triplet bileaf
+                h-d = 2   2^(2+1) - 1 = 7    2 bileafs and an op
+
+        """
+        return (0x1 << (h-d+1)) - 1 
 
     @classmethod
     def traverse(cls, leftop, label="traverse"):
@@ -165,6 +184,48 @@ class Node(object):
             node = node.next_ 
 
     def _get_textgrid(self):
+        """
+
+        :: 
+
+            In [25]: Node.anno = property(lambda self:self.idx)   # levelorder index (1-based)
+
+            In [26]: root4.txt
+            Out[26]: 
+            root4                                                                                                                            
+                                                                          1                                                                
+                                                                          o                                                                
+                                          2                                                               3                                
+                                          o                                                               o                                
+                          4                               5                               6                               7                
+                          o                               o                               o                               o                
+                  8               9              10              11              12              13              14              15        
+                  o               o               o               o               o               o               o               o        
+             16      17      18      19      20      21      22      23      24      25      26      27      28      29      30      31    
+              o       o       o       o       o       o       o       o       o       o       o       o       o       o       o       o    
+                                                                                                                                           
+            In [27]: Node.anno = property(lambda self:self.tag)       ## return to default
+
+
+            In [42]: Node.anno = property(lambda self:self.pidx)    # postorder index (0-based)
+
+            In [43]: root4.txt
+            Out[43]: 
+            root4                                                                                                                            
+                                                                         14                                                                
+                                                                          o                                                                
+                                          6                                                              13                                
+                                          o                                                               o                                
+                          2                               5                               9                              12                
+                          o                               o                               o                               o                
+                  0               1               3               4               7               8              10              11        
+                  o               o               o               o               o               o               o               o        
+                                                                                                                                           
+              o       o       o       o       o       o       o       o       o       o       o       o       o       o       o       o    
+
+
+
+        """
         if not hasattr(self, 'maxdepth'):
             self.annotate()
 
@@ -193,7 +254,7 @@ class Node(object):
             j = inorder_idx
      
             try:
-                a[i-1,j] = node.tag 
+                a[i-1,j] = node.anno    
                 a[i,j]   = "o" # node.tag 
             except IndexError:
                 print "IndexError depth:%2d inorder_idx:%2d i:%2d j:%2d : %s " % (node.depth, inorder_idx, i,j,node)
@@ -201,6 +262,10 @@ class Node(object):
         pass
         return T.init(a) 
     txt = property(_get_textgrid)
+
+    def _get_anno(self):
+        return self.tag 
+    anno = property(_get_anno)
 
     #def __str__(self):
     #    tg = self.textgrid
@@ -440,6 +505,7 @@ class Node(object):
             idx += 1
         pass
 
+    cdepth = property(lambda self:32-clz_(self.idx)-1)   # this assumes 1-based levelorder idx
 
     @classmethod
     def depth_r(cls, node, depth=0, side=0, height=None):
@@ -620,6 +686,7 @@ class Node(object):
             node = nodes[i]
             next_ = nodes[i+1] if i < len(nodes)-1 else None
             node.next_ = next_
+            node.pidx = i    # postorder index
         pass
 
 
@@ -635,7 +702,7 @@ class Node(object):
 
 
     @classmethod
-    def postOrderSequence(cls,root): 
+    def postOrderSequence(cls,root, dump=False): 
         """
         Pack the postorder sequence levelorder indices (1-based)
         into a 64 bit integer. 
@@ -656,17 +723,47 @@ class Node(object):
                87818465122690200  137fe6dc25ba498 
 
         """
-        nodes = Node.postorder_r(root, nodes=[], leaf=False)
-        assert len(nodes) < 16  
-        seq = np.uint64(0)
-        iseq = np.uint64(0)
-        for i, node in enumerate(nodes):
-            j = np.uint64(node.idx)
-            assert j <= 0xF
-            seq | = ((j & np.uint64(0xF)) << np.uint64(i*4) )
-            iseq |= ((i & np.uint64(0xF)) << np.uint64(j*4) )
+        postorder = Node.postorder_r(root, nodes=[], leaf=False)
+        assert len(postorder) < 16  
+
+        post2levl = {}
+        levl2post = {}
+
+        if dump:
+            print " %10s %10s " % ("postIdx", "levlIdx") 
         pass
-        return seq, iseq
+        for postIdx in range(0, len(postorder)):
+            node = postorder[postIdx]
+            levlIdx = node.idx
+            assert levlIdx <= 0xf and postIdx <= 0xf
+            post2levl[postIdx] = levlIdx
+            levl2post[levlIdx] = postIdx
+            if dump:
+                print " %10d %10d " % (postIdx, levlIdx)
+            pass
+        pass
+
+        def convert64(d):
+            seq = np.uint64(0)
+            for k, v in d.items():
+                assert k <= 0xf and v <= 0xf
+                seq |= ((np.uint64(v) & np.uint64(0xF)) << np.uint64(k*4) )
+            pass
+            return seq
+        pass
+
+        post2levlSeq = convert64(post2levl)
+        levl2postSeq = convert64(levl2post)
+
+
+        repd_ = lambda d:"".join([" %x -> %x " % (k,d[k]) for k in sorted(d)])
+
+        if dump:
+            print " post2levl %16x  %s  " % ( post2levlSeq, repd_(post2levl) )
+            print " levl2post %16x  %s  " % ( levl2postSeq, repd_(levl2post) )
+        pass
+        pass
+        return post2levlSeq, levl2postSeq
 
     @classmethod
     def dumpSequence(cls, seq, iseq):
@@ -950,13 +1047,14 @@ if __name__ == '__main__':
     #test_is_complete()
     #test_make_perfect()
 
-
-    root2.annotate()
-    r2 = copy.deepcopy(root2)    
   
-    seq = Node.postOrderSequence(root4)
-    Node.dumpSequence(seq)
     
+
+    for tree in trees:
+        tree.annotate()
+    pass
+
+    Node.postOrderSequence(root4, dump=True)
     
 
 
