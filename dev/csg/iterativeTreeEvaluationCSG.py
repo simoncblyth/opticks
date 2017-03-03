@@ -853,8 +853,8 @@ if __name__ == '__main__':
     plt.ion()
     plt.close("all")
 
-    roots = trees
-    #roots = [root3, root4]
+    #roots = trees
+    roots = [root3, root4]
     #roots = [lrbox_u]
     #roots = [root4]
     #roots = [lrbox_d1, ubo]
@@ -874,15 +874,17 @@ if __name__ == '__main__':
             tsts.append(T(root,level=3,debug=[0], num=25, source="leaflight",origin=True,rayline=True, scale=0.1, sign=1))
         pass
 
-    t_root3a = T(root3, level=3, debug=[], num=100, source="aringlight" )
-    t_root3b = T(root3, level=3, debug=[], num=100, source="origlight" )
 
-    #t_root4a = T(root4, level=3, debug=[0], num=200, source="aringlight", notes="ok" )
-    t_root4a = T(root4, level=3, debug=[0], num=20, source="leaflight", notes="ok", rayline=True, raytext=False, origin=True)
-    t_root4b = T(root4, level=3, debug=[1], num=100, source="origlight", notes="pop from empty lhs" )
+    if 0: 
+        t_root3a = T(root3, level=3, debug=[], num=100, source="aringlight" )
+        t_root3b = T(root3, level=3, debug=[], num=100, source="origlight" )
 
-    #tsts.append(t_root4a)
-    
+        #t_root4a = T(root4, level=3, debug=[0], num=200, source="aringlight", notes="ok" )
+        t_root4a = T(root4, level=3, debug=[0], num=20, source="leaflight", notes="ok", rayline=True, raytext=False, origin=True)
+        t_root4b = T(root4, level=3, debug=[1], num=100, source="origlight", notes="pop from empty lhs" )
+        tsts.append(t_root4a)
+    pass
+        
     # None: means use value from T ctor, or the default if not defined there
     source = None
     epsilon = None

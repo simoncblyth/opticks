@@ -1272,8 +1272,8 @@ RT_PROGRAM void intersect(int primIdx)
       q1.f = partBuffer[4*(partOffset+0)+1];  
       identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
 
-      intersect_boolean_triplet( prim, identity );
-      //intersect_csg( prim, identity );
+      //intersect_boolean_triplet( prim, identity );
+      intersect_csg( prim, identity );
       //intersect_boolean_only_first( prim, identity );
   }
   else

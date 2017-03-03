@@ -286,7 +286,7 @@ void intersect_box(const quad& q0, const float& tt_min, float4& tt )
 }
 
 static __device__
-IntersectionState_t intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
+void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
     quad q0, q2 ; 
     q0.f = partBuffer[4*partIdx+0];
@@ -308,12 +308,6 @@ IntersectionState_t intersect_part(unsigned partIdx, const float& tt_min, float4
         case BOX:    intersect_box(   q0,tt_min, tt )  ; break ; 
     }
 
-    IntersectionState_t state = tt.w > tt_min ? 
-                        ( (tt.x * ray.direction.x + tt.y * ray.direction.y + tt.z * ray.direction.z) < 0.f ? Enter : Exit ) 
-                                  :
-                              Miss
-                              ; 
-    return state  ; 
 }
 
 

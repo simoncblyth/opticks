@@ -48,6 +48,17 @@ static const char* AdvanceBAndLoop_ = "AdvanceBAndLoop" ;
 static const char* AdvanceAAndLoopIfCloser_ = "AdvanceAAndLoopIfCloser" ;
 static const char* AdvanceBAndLoopIfCloser_ = "AdvanceBAndLoopIfCloser" ;
 
+
+static const char* CTRL_LOOP_A_        = "CTRL_LOOP_A" ;
+static const char* CTRL_LOOP_B_        = "CTRL_LOOP_B" ;
+static const char* CTRL_RETURN_MISS_   = "CTRL_RETURN_MISS" ; 
+static const char* CTRL_RETURN_A_      = "CTRL_RETURN_A" ;
+static const char* CTRL_RETURN_B_      = "CTRL_RETURN_B" ;
+static const char* CTRL_RETURN_FLIP_B_ = "CTRL_RETURN_FLIP_B" ;
+static const char* CTRL_ERROR_         = "CTRL_ERROR" ; 
+
+
+
 static const char* Enter_ = "Enter" ; 
 static const char* Exit_ = "Exit" ; 
 static const char* Miss_ = "Miss" ; 
@@ -74,6 +85,27 @@ const char* description( IntersectionState_t x )
    return s ; 
 }
 
+
+std::string desc_ctrl( int ctrl )
+{
+    std::stringstream ss ; 
+    if(ctrl & CTRL_LOOP_A ) ss << CTRL_LOOP_A_ << " " ; 
+    if(ctrl & CTRL_LOOP_B ) ss << CTRL_LOOP_B_ << " " ; 
+    if(ctrl & CTRL_RETURN_MISS ) ss << CTRL_RETURN_MISS_ << " " ; 
+    if(ctrl & CTRL_RETURN_A ) ss << CTRL_RETURN_A_ << " " ; 
+    if(ctrl & CTRL_RETURN_B ) ss << CTRL_RETURN_B_ << " " ; 
+    if(ctrl & CTRL_RETURN_FLIP_B ) ss << CTRL_RETURN_FLIP_B_ << " " ; 
+    if(ctrl & CTRL_ERROR ) ss << CTRL_ERROR_ << " " ; 
+    return ss.str();    
+}
+
+
+
+
+
+
+
+
 std::string description( int action )
 {
     std::stringstream ss ; 
@@ -96,6 +128,48 @@ std::string description( int action )
 
     return ss.str();    
 }
+
+
+
+
+std::string dump_ctrl_enum(const char* msg="dump_ctrl_enum")
+{
+    std::stringstream ss ; 
+    ss << msg << std::endl ; 
+
+    for(unsigned i=0 ; i < 16 ; i++)
+    {   
+        unsigned ctrl = 0x1 << i ; 
+        ss 
+           << std::setw(5) << i
+           << std::setw(5) << std::hex << ctrl << std::dec
+           << std::setw(30) <<  desc_ctrl(ctrl)
+           << std::endl ;  
+    }
+    return ss.str(); 
+}
+
+
+
+std::string dump_action_enum(const char* msg="dump_action_enum")
+{
+    std::stringstream ss ; 
+    ss << msg << std::endl ; 
+
+    for(unsigned i=0 ; i < 16 ; i++)
+    {   
+        unsigned action = 0x1 << i ; 
+        ss 
+           << std::setw(5) << i
+           << std::setw(5) << std::hex << action << std::dec
+           << std::setw(30) <<  description(action)
+           << std::endl ;  
+    }
+    return ss.str(); 
+}
+
+
+
 
 
 
@@ -148,6 +222,8 @@ std::string dump_lookup(const char* msg)
                    << std::setw(5) << description(a) << "A "
                    << std::setw(5) << description(b) << "B "
                    << " -> " 
+                   << " 0x" << std::hex << std::setw(5) << action << std::dec 
+                   << " "
                    <<  action_desc.c_str()
                    << std::endl ; 
             }
@@ -155,6 +231,9 @@ std::string dump_lookup(const char* msg)
     }
     return ss.str(); 
 }
+
+
+
 
 
 template<>
@@ -194,14 +273,14 @@ int boolean_action<T>::operator()( IntersectionState_t stateA, IntersectionState
 
 
 
-
-
-
 int main(int argc, char** argv)
 {
     boolean_action<Union>        uat ; 
     boolean_action<Intersection> iat ; 
     boolean_action<Difference>   dat ; 
+
+    std::cout << dump_action_enum() << std::endl ; 
+    std::cout << dump_ctrl_enum() << std::endl ; 
 
     std::cout << uat.dumptable("Union") << std::endl ;
     std::cout << iat.dumptable("Intersection") << std::endl ;

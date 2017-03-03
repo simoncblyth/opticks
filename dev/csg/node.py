@@ -144,10 +144,10 @@ class Node(object):
                 #node.apply_(operation=DIFFERENCE)
                 node.apply_(operation=INTERSECTION) ## causes infinite tranche loop for iterative
                 #node.apply_(operation=UNION)
-                node.l.apply_(shape=SPHERE, param=[0,node.l.side*30+1,0,100] )             
+                node.l.apply_(shape=BOX, param=[0,node.l.side*30+1,0,100] )             
                 node.r.apply_(shape=SPHERE, param=[0,node.r.side*30+1,0,100] )             
-                #node.l.apply_(shape=SPHERE, param=[node.l.side*10,0,0,100] )             
-                #node.r.apply_(shape=SPHERE, param=[node.r.side*10,0,0,100] )             
+            #elif node.r.is_bileaf and node.l.is_bileaf:
+            #    node.apply_(operation=DIFFERENCE)
             else:
                 node.apply_(operation=UNION)
             pass
