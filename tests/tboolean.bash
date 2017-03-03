@@ -224,6 +224,35 @@ Perfect tree with n=7 nodes is depth 2, dev/csg/node.py (root2)::
 EON
 }
 
+
+
+tboolean-csg-two-box-minus-sphere-interlocked()
+{
+    local material=$(tboolean-material)
+    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    local radius=200
+
+    local test_config=(
+                      mode=CsgInBox
+                      analytic=1
+                      offsets=0,1
+                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+
+                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=box          parameters=100,100,-100,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=100,100,-100,200           boundary=Vacuum///$material
+                      node=box          parameters=0,0,100,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=0,0,100,200           boundary=Vacuum///$material
+ 
+                      )
+
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
 tboolean-csg()
 {
     local material=$(tboolean-material)
@@ -236,14 +265,60 @@ tboolean-csg()
                       offsets=0,1
                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
 
+                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+
+                      node=intersection  parameters=0,0,0,500             boundary=Vacuum///$material
+                      node=difference    parameters=0,0,0,500             boundary=Vacuum///$material
+                      node=sphere       parameters=100,100,-50,200       boundary=Vacuum///$material
+                      node=sphere       parameters=100,100,-100,200      boundary=Vacuum///$material
+                      node=box          parameters=0,100,100,200         boundary=Vacuum///$material
+                      node=box          parameters=0,0,0,200             boundary=Vacuum///$material
+ 
+                      )
+
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
+
+
+
+
+
+tboolean-csg-causes-hardcrash-timeout()
+{
+    local material=$(tboolean-material)
+    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    local radius=200
+
+    local test_config=(
+                      mode=CsgInBox
+                      analytic=1
+                      offsets=0,1
+                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
 
                       node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+
+                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+
                       node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
                       node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=box          parameters=100,100,-200,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=100,100,-200,200           boundary=Vacuum///$material
-                      node=box          parameters=0,0,200,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,200,200           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+
+                      node=box          parameters=100,100,-100,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=100,100,-100,200           boundary=Vacuum///$material
+
+                      node=box          parameters=0,0,100,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=0,0,100,200           boundary=Vacuum///$material
+
+                      node=box          parameters=-100,-100,-100,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=-100,-100,-100,200           boundary=Vacuum///$material
+
+                      node=box          parameters=-100,100,100,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=-100,100,100,200           boundary=Vacuum///$material
  
                       )
 
@@ -257,6 +332,8 @@ tboolean-testconfig()
     #tboolean-box-sphere intersection    ## looks like a dice, sphere chopped by cube
     #tboolean-box-sphere union
     #tboolean-box-sphere difference
+
+    #tboolean-csg-two-box-minus-sphere-interlocked
     tboolean-csg
 
     #tboolean-box

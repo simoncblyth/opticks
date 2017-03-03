@@ -41,6 +41,16 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 
 #define POSTORDER(i) ((postorder & (0xFull << (i)*4 )) >> (i)*4 ) 
 
+/**
+
+ideas
+
+* copy boolean lookup from host side, to avoid all the case statements
+* lookup incorporating ACloser boolean, so cut out a lot of branches
+* merge acts/act/ctrl logic
+
+**/
+
 
 static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
@@ -64,7 +74,6 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
     // the tranche indices pick ranges of the postorder sequence
     // 0-based indices into postorder sequence
-
 
     float tmin = 0.f ;  
 
@@ -124,6 +133,9 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              int ctrl = CTRL_LOOP_A | CTRL_LOOP_B ; 
              bool reiterate = false ; 
 
+             // TODO: try reording to reduce branchiness, as bileaf is constant for the loop
+             // also could unroll, so the happy case of no looping goes more smoothly 
+
 
              int loop(-1) ;  
              while((ctrl & (CTRL_LOOP_A | CTRL_LOOP_B)) && loop < 10 )
@@ -138,18 +150,15 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                     }
                     else                             // operation node
                     {
-                         if(lhs >= 0)
-                         {
-                             left = _lhs[lhs] ;  
-                             lhs-- ;          // pop
-                         }
-                         else
+                         if(lhs < 0)
                          {
                              ierr |= ERROR_LHS_POP_EMPTY ; 
                              left = miss ; 
                          } 
+                         left = _lhs[lhs] ;  
+                         lhs-- ;          // pop
                     }
-                }   // CTRL_LOOP_A
+                }       // CTRL_LOOP_A
 
                 if(ctrl & CTRL_LOOP_B)
                 {
@@ -159,18 +168,16 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                     }
                     else        // operation node
                     {
-                         if(rhs >= 0)
-                         {
-                             right = _rhs[rhs] ;  
-                             rhs-- ;          // pop
-                         }
-                         else
+                         if(rhs < 0)
                          {
                              ierr |= ERROR_RHS_POP_EMPTY ; 
-                             right = miss ; 
+                             abort_ = true ;
+                             break ; 
                          } 
+                         right = _rhs[rhs] ;  
+                         rhs-- ;          // pop
                     }
-                }  // CTRL_LOOP_B
+                }       // CTRL_LOOP_B
  
 
 
@@ -190,19 +197,6 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                 int act = boolean_decision( actions, left.w <= right.w );
                 ctrl = boolean_ctrl( act );
 
-                //if(nodeIdx == 1 && ctrl != 4)
-                //rtPrintf("intersect_csg: nodeIdx %u operation %u a_state %u b_state %u actions %8x  %10.2f %10.3f  act %8x ctrl %u \n", nodeIdx, operation,a_state,b_state,actions, left.w, right.w, act, ctrl ); 
-
-/*
-dump_ctrl_enum
-    0    1                  CTRL_LOOP_A 
-    1    2                  CTRL_LOOP_B 
-    2    4             CTRL_RETURN_MISS 
-    3    8                CTRL_RETURN_A 
-    4   10                CTRL_RETURN_B 
-    5   20           CTRL_RETURN_FLIP_B 
-    6   40                   CTRL_ERROR 
-*/
 
                 if(ctrl == CTRL_LOOP_A) 
                 {
