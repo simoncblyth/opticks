@@ -109,27 +109,10 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
              bool bileaf = leftIdx > numInternalNodes ; 
 
-             //if(i>1)
-             //rtPrintf("intersect_csg: i %u nodeIdx %u leftIdx %u rightIdx %u numInternalNodes %u bileaf %d  \n", i, nodeIdx, leftIdx, rightIdx, numInternalNodes, bileaf );  
-             // intersect_csg: i 0 nodeIdx 2 leftIdx 4 rightIdx 5 numInternalNodes 3 bileaf 1  
-             // intersect_csg: i 1 nodeIdx 3 leftIdx 6 rightIdx 7 numInternalNodes 3 bileaf 1 
-             // intersect_csg: i 2 nodeIdx 1 leftIdx 2 rightIdx 3 numInternalNodes 3 bileaf 0 
 
-             //if(i > 1)
-             //rtPrintf("intersect_csg: i %u nodeIdx %u depth %u height %u subNodes %u halfNodes %u \n", i, nodeIdx, depth, height, subNodes, numInternalNodes, halfNodes ); 
-             // i 0 nodeIdx 2 depth 1 height 1 subNodes 1 halfNodes 0 
-             // i 1 nodeIdx 3 depth 1 height 1 subNodes 1 halfNodes 0 
-             // i 2 nodeIdx 1 depth 0 height 1 subNodes 3 halfNodes 1
- 
              quad q1 ; 
              q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];
              OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
-
-             //if(i>1)
-             //rtPrintf("intersect_csg: i %u nodeIdx %u operation %u \n", i, nodeIdx, (int)operation );
-             //  intersect_csg: i 0 nodeIdx 2 operation 2              UNION:0/INTERSECTION:1/DIFFERENCE:2/PRIMITIVE:3
-             //  intersect_csg: i 1 nodeIdx 3 operation 2         
-             //  intersect_csg: i 2 nodeIdx 1 operation 0 
 
 
              float4 left  = make_float4(0.f,0.f,1.f,0.f);
@@ -143,7 +126,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
 
              int loop(-1) ;  
-             while((ctrl & (CTRL_LOOP_A | CTRL_LOOP_B)) && loop < 4 )
+             while((ctrl & (CTRL_LOOP_A | CTRL_LOOP_B)) && loop < 10 )
              {
                 loop++ ; 
 
@@ -152,24 +135,12 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                     if(bileaf) // left leaf node 
                     {
                          intersect_part( partOffset+leftIdx-1 , tA_min, left  ) ;
-                         //if(loop > 0)
-                         //rtPrintf("intersect_csg(bileaf) loop %u leftIdx %u tA_min %10.3f   (%10.2f, %10.2f,%10.2f,%10.2f) a_state %d \n",loop, leftIdx,tA_min, left.x, left.y, left.z, left.w, a_state );  
-                         //intersect_csg(bileaf) leftIdx 4 tA_min      0.100   (      0.15,      -0.30,     -0.94,    387.15) a_state 0         Enter/Exit/Miss  0/1/2
-                         //intersect_csg(bileaf) leftIdx 4 tA_min      0.100   (      0.00,       0.00,      1.00,      0.10) a_state 2 
-                         //intersect_csg(bileaf) leftIdx 4 tA_min      0.100   (      0.00,       0.00,      1.00,      0.10) a_state 2 
-                         //intersect_csg(bileaf) leftIdx 4 tA_min      0.100   (      0.14,       0.48,     -0.87,    334.24) a_state 0 
                     }
                     else                             // operation node
                     {
                          if(lhs >= 0)
                          {
                              left = _lhs[lhs] ;  
-                             //rtPrintf("intersect_csg(non-bileaf-op) nodeIdx %u pop lhs %d (%10.2f, %10.2f,%10.2f,%10.2f) \n", nodeIdx,lhs,left.x,left.y,left.z,left.w);
-                             //intersect_csg(non-bileaf-op) nodeIdx 1 pop lhs 0 (      0.00,       0.00,      1.00,      0.00) 
-                             //intersect_csg(non-bileaf-op) nodeIdx 1 pop lhs 0 (      0.22,       0.51,      0.83,    296.03) 
-                             //intersect_csg(non-bileaf-op) nodeIdx 1 pop lhs 0 (      1.00,       0.00,      0.00,    184.11) 
-                             //intersect_csg(non-bileaf-op) nodeIdx 1 pop lhs 0 (      0.00,       1.00,      0.00,    249.89) 
-
                              lhs-- ;          // pop
                          }
                          else
@@ -178,34 +149,19 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                              left = miss ; 
                          } 
                     }
-                } // CTRL_LOOP_A
+                }   // CTRL_LOOP_A
 
                 if(ctrl & CTRL_LOOP_B)
                 {
                     if(bileaf)  // right leaf node
                     {
                          intersect_part( partOffset+rightIdx-1 , tB_min, right  ) ;
-                         //if(loop > 0)
-                         //rtPrintf("intersect_csg(bileaf) loop %u rightIdx %u tB_min %10.3f   (%10.2f, %10.2f,%10.2f,%10.2f) b_state %d \n",loop, rightIdx,tB_min, right.x, right.y, right.z, right.w, b_state );  
-                         //intersect_csg(bileaf) rightIdx 5 tB_min      0.100   (     -0.65,      -0.51,     -0.56,    235.63) b_state 0 
-                         //intersect_csg(bileaf) rightIdx 5 tB_min      0.100   (     -0.85,      -0.51,     -0.14,    208.01) b_state 0 
-                         //intersect_csg(bileaf) rightIdx 5 tB_min      0.100   (     -0.60,      -0.05,     -0.80,    273.04) b_state 0 
                     }
                     else        // operation node
                     {
                          if(rhs >= 0)
                          {
                              right = _rhs[rhs] ;  
-
-                            //rtPrintf("intersect_csg(non-bileaf-op) nodeIdx %u pop rhs %d (%10.2f, %10.2f,%10.2f,%10.2f) \n", nodeIdx,rhs,right.x,right.y,right.z,right.w);
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (     -0.34,       0.08,      0.94,     12.93) 
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (     -0.26,      -0.05,     -0.96,    368.14) 
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (     -0.29,      -0.35,      0.89,     21.71) 
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (      0.00,       0.00,      1.00,      0.00) 
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (      0.00,       0.00,      1.00,      0.00) 
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (      0.78,       0.40,     -0.49,    205.49) 
-                            //intersect_csg(non-bileaf-op) nodeIdx 1 pop rhs 0 (      0.28,       0.37,     -0.88,    455.91) 
-
                              rhs-- ;          // pop
                          }
                          else
@@ -214,7 +170,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                              right = miss ; 
                          } 
                     }
-                } // CTRL_LOOP_B
+                }  // CTRL_LOOP_B
  
 
 
@@ -230,32 +186,13 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                                   Miss
                                   ; 
 
-
                 int actions = boolean_actions( operation , a_state, b_state );
                 int act = boolean_decision( actions, left.w <= right.w );
                 ctrl = boolean_ctrl( act );
 
                 //if(nodeIdx == 1 && ctrl != 4)
-                rtPrintf("intersect_csg: nodeIdx %u operation %u a_state %u b_state %u actions %8x  %10.2f %10.3f  act %8x ctrl %u \n", nodeIdx, operation,a_state,b_state,actions, left.w, right.w, act, ctrl ); 
+                //rtPrintf("intersect_csg: nodeIdx %u operation %u a_state %u b_state %u actions %8x  %10.2f %10.3f  act %8x ctrl %u \n", nodeIdx, operation,a_state,b_state,actions, left.w, right.w, act, ctrl ); 
 
-                //  always getting Miss, Miss -> CTRL_RETURN_MISS
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1      115.36    455.906  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1        0.00    359.694  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1      330.20      0.000  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1      276.04      0.000  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1      300.83      0.000  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1      353.44      0.000  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1        0.00    243.569  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1      417.77     17.773  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 1 operation 0 a_state 2 b_state 2 actions        1        0.00    236.591  act        1 ctrl 4 
-
-
-                //intersect_csg: nodeIdx 2 operation 2 a_state 0 b_state 0 actions      202      254.85    203.699  act      200 ctrl 2 
-                //intersect_csg: nodeIdx 2 operation 2 a_state 0 b_state 0 actions      202      255.32    204.043  act      200 ctrl 2 
-                //intersect_csg: nodeIdx 2 operation 2 a_state 0 b_state 0 actions      202      241.18    170.451  act      200 ctrl 2 
-                //intersect_csg: nodeIdx 2 operation 2 a_state 0 b_state 0 actions      202      212.28    152.776  act      200 ctrl 2 
-                //intersect_csg: nodeIdx 2 operation 2 a_state 2 b_state 0 actions        1        0.10    245.410  act        1 ctrl 4 
-                //intersect_csg: nodeIdx 2 operation 2 a_state 0 b_state 0 actions      202      324.69    270.207  act      200 ctrl 2 
 /*
 dump_ctrl_enum
     0    1                  CTRL_LOOP_A 
@@ -373,27 +310,11 @@ dump_ctrl_enum
              {
                  lhs++ ;   // push
                  _lhs[lhs] = result ;    
-                 //rtPrintf("intersect_csg : nodeIdx %d ctrl %4x push lhs %d  (%10.3f %10.3f %10.3f %10.3f)\n" , nodeIdx, ctrl, lhs, result.x, result.y, result.z, result.w );
-                 //intersect_csg : nodeIdx 2 ctrl   10 push lhs 0  (    -0.924      0.372     -0.089    115.358)
-                 //intersect_csg : nodeIdx 2 ctrl   10 push lhs 0  (     0.212      0.475      0.854    353.440)
-                 //intersect_csg : nodeIdx 2 ctrl    8 push lhs 0  (     0.000      0.000      1.000    543.476)
-                 //intersect_csg : nodeIdx 2 ctrl    4 push lhs 0  (     0.000      0.000      1.000      0.000)
-                 //intersect_csg : nodeIdx 2 ctrl   10 push lhs 0  (    -0.291     -0.348      0.891    421.710)
-                 //intersect_csg : nodeIdx 2 ctrl   10 push lhs 0  (     0.130     -0.115      0.985    383.785)
              }
              else
              {
                  rhs++ ;   // push
                  _rhs[rhs] = result ;    
-                 //rtPrintf("intersect_csg : nodeIdx %d ctrl %4x push rhs %d (%10.3f %10.3f %10.3f %10.3f)\n" , nodeIdx, ctrl, rhs, result.x, result.y, result.z, result.w );
-                 //intersect_csg : nodeIdx 3 ctrl    4 push rhs 0 (     0.000      0.000      1.000      0.000)
-                 //intersect_csg : nodeIdx 3 ctrl    4 push rhs 0 (     0.000      0.000      1.000      0.000)
-                 //intersect_csg : nodeIdx 3 ctrl   10 push rhs 0 (     0.782      0.162     -0.602    243.569)
-                 //intersect_csg : nodeIdx 3 ctrl    4 push rhs 0 (     0.000      0.000      1.000      0.000)
-                 //intersect_csg : nodeIdx 3 ctrl   10 push rhs 0 (     0.092      0.841     -0.533    231.761)
-                 //intersect_csg : nodeIdx 3 ctrl    4 push rhs 0 (     0.000      0.000      1.000      0.000)
-                 //intersect_csg : nodeIdx 3 ctrl   10 push rhs 0 (    -0.083     -0.537     -0.840    312.305)
-                 //intersect_csg : nodeIdx 3 ctrl   10 push rhs 0 (     0.980     -0.115     -0.165    143.428)
              }
 
          }  // end for : node traversal within tranche
@@ -417,6 +338,7 @@ dump_ctrl_enum
     } 
 
     //rtPrintf("intersect_csg partOffset %u numParts %u numInternalNodes %u primIdx_ %u height %u postorder %llx ierr %x \n", partOffset, numParts, numInternalNodes, primIdx_, height, postorder, ierr );
+    if(ierr != 0)
     rtPrintf("intersect_csg primIdx_ %u ierr %4x  (%10.3f %10.3f %10.3f %10.3f)   \n", primIdx_, ierr,  result.x, result.y, result.z, result.w  );
 
 }   // intersect_csg

@@ -238,10 +238,10 @@ tboolean-csg()
 
 
                       node=union        parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=box          parameters=0,0,-200,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-200,200           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=box          parameters=100,100,-200,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=100,100,-200,200           boundary=Vacuum///$material
                       node=box          parameters=0,0,200,$inscribe     boundary=Vacuum///$material
                       node=sphere       parameters=0,0,200,200           boundary=Vacuum///$material
  
