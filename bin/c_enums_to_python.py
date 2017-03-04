@@ -18,13 +18,19 @@ if __name__ == '__main__':
    hdr = sys.argv[1]
 
    txt = file(hdr).read()
-   eraws = txt.split("enum")[1:5]
+   enums = txt.split("enum")[1:]
 
    now = datetime.datetime.now().strftime("%c")
    print "# generated %s " % (now)
    print "# from %s " % os.getcwd()
    print "# with command :  %s %s " % (sys.argv[0], hdr)
-   print "\n\n".join(map(c_enums_to_python, eraws))
+
+   for i,enum in enumerate(enums):
+       print "\n# %d " % i
+       try:
+           print c_enums_to_python(enum)
+       except ValueError:
+           print "ERROR CONVERTING %s " % enum
 
    
 

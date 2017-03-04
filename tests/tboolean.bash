@@ -284,9 +284,39 @@ tboolean-csg()
 
 
 
+tboolean-enum(){
+   local tmp=$TMP/$FUNCNAME.exe
+   clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp 
+}
 
 
-tboolean-csg-causes-hardcrash-timeout()
+tboolean-csg-four-box-minus-sphere-notes(){ cat << EON
+
+intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000     62.834)   
+intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     33.091)   
+intersect_csg primIdx_ 1 ierr    1  (     0.000      0.000      1.000     32.596)   
+intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000    113.281)   
+intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     58.601)   
+intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     59.703)   
+intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     48.918)   
+intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     50.134)   
+intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000     28.737)   
+
+dump_error_enum
+    0 
+    1 ERROR_LHS_POP_EMPTY 
+    2 ERROR_RHS_POP_EMPTY 
+    3 ERROR_LHS_POP_EMPTY ERROR_RHS_POP_EMPTY 
+    4 ERROR_LHS_END_NONEMPTY 
+    5 ERROR_LHS_POP_EMPTY ERROR_LHS_END_NONEMPTY 
+    6 ERROR_RHS_POP_EMPTY ERROR_LHS_END_NONEMPTY 
+    7 ERROR_LHS_POP_EMPTY ERROR_RHS_POP_EMPTY ERROR_LHS_END_NONEMPTY 
+    8 ERROR_RHS_END_EMPTY 
+
+EON
+}
+
+tboolean-csg-four-box-minus-sphere()
 {
     local material=$(tboolean-material)
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
@@ -323,6 +353,8 @@ tboolean-csg-causes-hardcrash-timeout()
                       )
 
     echo "$(join _ ${test_config[@]})" 
+
+
 }
 
 
@@ -334,7 +366,7 @@ tboolean-testconfig()
     #tboolean-box-sphere difference
 
     tboolean-csg-two-box-minus-sphere-interlocked
-    #tboolean-csg-causes-hardcrash-timeout
+    #tboolean-csg-four-box-minus-sphere
     #tboolean-csg
 
     #tboolean-box

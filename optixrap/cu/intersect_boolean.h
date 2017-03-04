@@ -1,6 +1,8 @@
 #pragma once
 
 
+
+
 static __device__
 void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 {
@@ -109,7 +111,6 @@ void intersect_csg( const uint4& prim, const uint4& identity )
          unsigned end   = tmp >> 16 ;
          tranche-- ;                // pop, -1 means empty stack
 
-         //rtPrintf("intersect_csg: begin %u end %u \n", begin, end );  // 0, 3
 
          for(unsigned i=begin ; i < end ; i++)
          {
@@ -123,11 +124,9 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
              bool bileaf = leftIdx > numInternalNodes ; 
 
-
              quad q1 ; 
              q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];
              OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
-
 
              float4 left  = make_float4(0.f,0.f,1.f,0.f);
              float4 right = make_float4(0.f,0.f,1.f,0.f);
@@ -135,19 +134,18 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              float tA_min = tmin ; 
              float tB_min = tmin ;
 
-             int ctrl = CTRL_LOOP_A | CTRL_LOOP_B ; 
              bool reiterate = false ; 
 
-             // TODO: try reording to reduce branchiness, as bileaf is constant for the loop
-             // also could unroll, so the happy case of no looping goes more smoothly 
-
+             enum { LIVE_A = 0x1 << 0, LIVE_B = 0x1 << 1 } ;
+             int live = LIVE_A | LIVE_B ; 
+             int ctrl = CTRL_UNDEFINED ; 
 
              int loop(-1) ;  
-             while((ctrl & (CTRL_LOOP_A | CTRL_LOOP_B)) && loop < 10 )
+             while( live && loop < 10 )
              {
                 loop++ ; 
 
-                if(ctrl & CTRL_LOOP_A)
+                if(live & LIVE_A)
                 {
                     if(bileaf) // left leaf node 
                     {
@@ -158,14 +156,15 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                          if(lhs < 0)
                          {
                              ierr |= ERROR_LHS_POP_EMPTY ; 
-                             left = miss ; 
+                             abort_ = true ;
+                             break ; 
                          } 
                          left = _lhs[lhs] ;  
                          lhs-- ;          // pop
                     }
-                }       // CTRL_LOOP_A
+                }       
 
-                if(ctrl & CTRL_LOOP_B)
+                if(live & LIVE_B)
                 {
                     if(bileaf)  // right leaf node
                     {
@@ -182,8 +181,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                          right = _rhs[rhs] ;  
                          rhs-- ;          // pop
                     }
-                }       // CTRL_LOOP_B
- 
+                }    
 
 
                 IntersectionState_t a_state = left.w > tA_min ? 
@@ -198,14 +196,17 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                                   Miss
                                   ; 
 
-                int actions = boolean_actions( operation , a_state, b_state );
-                int act = boolean_decision( actions, left.w <= right.w );
-                ctrl = boolean_ctrl( act );
+                //int actions = boolean_actions( operation , a_state, b_state );
+                //int act = boolean_decision( actions, left.w <= right.w );
+                //ctrl = boolean_ctrl( act );
+
+                ctrl = boolean_ctrl_packed_lookup( operation, a_state, b_state, left.w <= right.w );
 
 
                 if(ctrl == CTRL_LOOP_A) 
                 {
-                    tA_min = left.w  ;  // epsilon ? 
+                    tA_min = left.w + propagate_epsilon  ;  
+                    live = LIVE_A ; 
 
                     if(!bileaf)   // left is not leaf
                     {
@@ -239,7 +240,8 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                 } 
                 else if(ctrl == CTRL_LOOP_B) 
                 {
-                    tB_min = right.w ;   // epsilon ?
+                    tB_min = right.w + propagate_epsilon ;   
+                    live = LIVE_B ; 
 
                     if(!bileaf)   // left is not leaf
                     {
@@ -272,8 +274,12 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                          reiterate = true ; 
                     } 
                 }
+                else
+                {
+                    live = 0 ; 
+                }
                 if(reiterate) break ;
-             }  // end while : ctrl loop
+             }  // end while : live loop
 
 
              if(reiterate || abort_) break ;  

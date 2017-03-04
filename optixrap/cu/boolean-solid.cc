@@ -49,13 +49,28 @@ static const char* AdvanceAAndLoopIfCloser_ = "AdvanceAAndLoopIfCloser" ;
 static const char* AdvanceBAndLoopIfCloser_ = "AdvanceBAndLoopIfCloser" ;
 
 
-static const char* CTRL_LOOP_A_        = "CTRL_LOOP_A" ;
-static const char* CTRL_LOOP_B_        = "CTRL_LOOP_B" ;
 static const char* CTRL_RETURN_MISS_   = "CTRL_RETURN_MISS" ; 
 static const char* CTRL_RETURN_A_      = "CTRL_RETURN_A" ;
 static const char* CTRL_RETURN_B_      = "CTRL_RETURN_B" ;
 static const char* CTRL_RETURN_FLIP_B_ = "CTRL_RETURN_FLIP_B" ;
-static const char* CTRL_ERROR_         = "CTRL_ERROR" ; 
+static const char* CTRL_LOOP_A_        = "CTRL_LOOP_A" ;
+static const char* CTRL_LOOP_B_        = "CTRL_LOOP_B" ;
+static const char* CTRL_UNDEFINED_     = "CTRL_UNDEFINED" ;
+
+
+static const char* ERROR_LHS_POP_EMPTY_ = "ERROR_LHS_POP_EMPTY" ;
+static const char* ERROR_RHS_POP_EMPTY_ = "ERROR_RHS_POP_EMPTY" ;
+static const char* ERROR_LHS_END_NONEMPTY_ = "ERROR_LHS_END_NONEMPTY" ;
+static const char* ERROR_RHS_END_EMPTY_ = "ERROR_RHS_END_EMPTY" ;
+static const char* ERROR_BAD_CTRL_ = "ERROR_BAD_CTRL" ;
+static const char* ERROR_LHS_OVERFLOW_ = "ERROR_LHS_OVERFLOW" ;
+static const char* ERROR_RHS_OVERFLOW_ = "ERROR_RHS_OVERFLOW" ;
+static const char* ERROR_LHS_TRANCHE_OVERFLOW_ = "ERROR_LHS_TRANCHE_OVERFLOW" ;
+static const char* ERROR_RHS_TRANCHE_OVERFLOW_ = "ERROR_RHS_TRANCHE_OVERFLOW" ;
+
+
+
+
 
 
 
@@ -89,20 +104,31 @@ const char* description( IntersectionState_t x )
 std::string desc_ctrl( int ctrl )
 {
     std::stringstream ss ; 
-    if(ctrl & CTRL_LOOP_A ) ss << CTRL_LOOP_A_ << " " ; 
-    if(ctrl & CTRL_LOOP_B ) ss << CTRL_LOOP_B_ << " " ; 
     if(ctrl & CTRL_RETURN_MISS ) ss << CTRL_RETURN_MISS_ << " " ; 
     if(ctrl & CTRL_RETURN_A ) ss << CTRL_RETURN_A_ << " " ; 
     if(ctrl & CTRL_RETURN_B ) ss << CTRL_RETURN_B_ << " " ; 
     if(ctrl & CTRL_RETURN_FLIP_B ) ss << CTRL_RETURN_FLIP_B_ << " " ; 
-    if(ctrl & CTRL_ERROR ) ss << CTRL_ERROR_ << " " ; 
+
+    if(ctrl & CTRL_LOOP_A ) ss << CTRL_LOOP_A_ << " " ; 
+    if(ctrl & CTRL_LOOP_B ) ss << CTRL_LOOP_B_ << " " ; 
+    if(ctrl & CTRL_UNDEFINED ) ss << CTRL_UNDEFINED_ << " " ; 
     return ss.str();    
 }
 
-
-
-
-
+std::string desc_err( int err )
+{
+    std::stringstream ss ; 
+    if(err & ERROR_LHS_POP_EMPTY ) ss << ERROR_LHS_POP_EMPTY_ << " " ;
+    if(err & ERROR_RHS_POP_EMPTY ) ss << ERROR_RHS_POP_EMPTY_ << " " ;
+    if(err & ERROR_LHS_END_NONEMPTY ) ss << ERROR_LHS_END_NONEMPTY_ << " " ;
+    if(err & ERROR_RHS_END_EMPTY ) ss << ERROR_RHS_END_EMPTY_ << " " ;
+    if(err & ERROR_BAD_CTRL ) ss << ERROR_BAD_CTRL_ << " " ;
+    if(err & ERROR_LHS_OVERFLOW ) ss << ERROR_LHS_OVERFLOW_ << " " ;
+    if(err & ERROR_RHS_OVERFLOW ) ss << ERROR_RHS_OVERFLOW_ << " " ;
+    if(err & ERROR_LHS_TRANCHE_OVERFLOW ) ss << ERROR_LHS_TRANCHE_OVERFLOW_ << " " ;
+    if(err & ERROR_RHS_TRANCHE_OVERFLOW ) ss << ERROR_RHS_TRANCHE_OVERFLOW_ << " " ;
+    return ss.str();    
+}
 
 
 
@@ -168,7 +194,16 @@ std::string dump_action_enum(const char* msg="dump_action_enum")
     return ss.str(); 
 }
 
-
+std::string dump_error_enum(const char* msg="dump_error_enum")
+{
+    std::stringstream ss ; 
+    ss << msg << std::endl ; 
+    for(unsigned i=0 ; i < 10 ; i++)
+    {
+        ss << std::setw(5) << i << " " <<  desc_err(i) << std::endl ; 
+    }
+    return ss.str(); 
+}
 
 
 
@@ -281,6 +316,7 @@ int main(int argc, char** argv)
 
     std::cout << dump_action_enum() << std::endl ; 
     std::cout << dump_ctrl_enum() << std::endl ; 
+    std::cout << dump_error_enum() << std::endl ; 
 
     std::cout << uat.dumptable("Union") << std::endl ;
     std::cout << iat.dumptable("Intersection") << std::endl ;

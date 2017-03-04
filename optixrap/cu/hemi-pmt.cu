@@ -16,6 +16,21 @@
 using namespace optix;
 
 
+// generated from /Users/blyth/opticks/optixrap/cu by boolean_h.py on Sat Mar  4 20:37:03 2017 
+rtDeclareVariable(uint4, packed_boolean_lut_ACloser, , ) = { 0x22121141, 0x00014014, 0x00141141, 0x00000000 } ; 
+rtDeclareVariable(uint4, packed_boolean_lut_BCloser, , ) = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 } ; 
+
+static __device__
+int boolean_ctrl_packed_lookup( OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB, bool ACloser )
+{
+    const uint4& lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser ;
+    unsigned offset = 3*(unsigned)stateA + (unsigned)stateB ;   
+    return offset < 8 ? (( getByIndex(lut, (unsigned)operation) >> (offset*4)) & 0xf) : CTRL_RETURN_MISS ;
+}
+
+
+
+
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
 
