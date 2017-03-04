@@ -46,7 +46,18 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 ideas
 
 * copy boolean lookup from host side, to avoid all the case statements
+
+* pack the three boolean lookup tables into 32bit uints and hold them in rtDeclareVariable(uint4,, ) = { 0xashvda, 0xasdgahsdb,  }
+
+  * the tables are 3x3 (Enter,Exit,Miss)x(Enter,Exit,Miss) but can special case Miss, Miss to bring down to 8 elements
+    that at 4 bits each can fit into 32-bits 
+  * split the tables into ACloser and BCloser ones 
+  
+* use a Matrix<4,4> to holding rows with (miss,left,right,flip_right) so can refer to which by index
+  rather than passing around float4
+
 * lookup incorporating ACloser boolean, so cut out a lot of branches
+
 * merge acts/act/ctrl logic
 
 **/
@@ -56,7 +67,7 @@ static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
 {
     // see opticks/dev/csg/node.py:Node.postOrderSequence
-    // sequence of levelorder indices in postorder, which has tree meaning 
+    // sequence of 1-based levelorder indices in postorder, which has tree meaning 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
 
     int ierr = 0 ;  
@@ -72,13 +83,6 @@ void intersect_csg( const uint4& prim, const uint4& identity )
     unsigned long long postorder = postorder_sequence[height] ; 
     unsigned numInternalNodes = (0x1 << (1+height)) - 1 ;
 
-    // the tranche indices pick ranges of the postorder sequence
-    // 0-based indices into postorder sequence
-
-    float tmin = 0.f ;  
-
-    // allocate stacks
-
     float4 _lhs[CSG_STACK_SIZE] ; 
     int lhs = -1 ; 
 
@@ -89,12 +93,13 @@ void intersect_csg( const uint4& prim, const uint4& identity )
     uint4  _tranche ; 
     int tranche = -1 ;
 
+
     float4 miss   = make_float4(0.f,0.f,1.f,0.f);
     float4 result = make_float4(0.f,0.f,1.f,0.f) ; 
 
-    tranche++ ;  // push 0-based postorder indices
+    tranche++ ;  // push 0-based postorder indices, initially selecting entire postorder sequence
     setByIndex(_tranche, tranche, ((numInternalNodes & 0xffff) << 16) | (0 & 0xffff) )  ; // postorder end, begin
-    setByIndex(_tmin,    tranche,  tmin ); 
+    setByIndex(_tmin,    tranche,  ray.tmin );    // current tmin, (propagate_epsilon or 0.f not appropriate, eg when near-clipping)
 
     while (tranche >= 0)
     {
@@ -127,8 +132,8 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              float4 left  = make_float4(0.f,0.f,1.f,0.f);
              float4 right = make_float4(0.f,0.f,1.f,0.f);
 
-             float tA_min = ray.tmin ; // formerly propagate_epsilon and before that 0.f
-             float tB_min = ray.tmin ;
+             float tA_min = tmin ; 
+             float tB_min = tmin ;
 
              int ctrl = CTRL_LOOP_A | CTRL_LOOP_B ; 
              bool reiterate = false ; 

@@ -265,6 +265,14 @@ def test_catdir():
     catd = Catdir(cat)
     a = catd.times(tag)
 
+def test_catdir_find():
+    cat = Catdir(os.path.expandvars("/tmp/$USER/opticks/evt/PmtInBox/torch"))
+    tags = cat.tags()
+    for tag in tags:
+        a = cat.times(tag)
+        print "a", a
+
+
 
 def test_metadata():
     from opticks.ana.nload import tagdir_
@@ -280,11 +288,12 @@ if __name__ == '__main__':
     #test_catdir()
     #test_metadata()
 
-    cat = Catdir(os.path.expandvars("/tmp/$USER/opticks/evt/PmtInBox/torch"))
-    tags = cat.tags()
-    for tag in tags:
-        a = cat.times(tag)
-        #print a
+
+    from opticks.ana.nload import tagdir_
+    td = os.path.expandvars("/tmp/$USER/opticks/evt/boolean/torch/1")
+    md = Metadata(td)
+
+    print md
 
 
   

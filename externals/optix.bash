@@ -82,6 +82,57 @@ Indepth covering the "Understanding.." paper.
 * http://www.cs.uu.nl/docs/vakken/magr/2015-2016/slides/lecture%2012%20-%20GPU%20ray%20tracing%20(2).pdf
 
 
+OptiX Thread Timing
+----------------------
+
+* https://devtalk.nvidia.com/default/topic/980319/optix/timing-and-profiling-with-optix/
+
+::
+
+    clock_t start_time = clock();
+
+    // some small amount of code
+
+    clock_t stop_time = clock();
+        
+    int time = (int)(stop_time - start_time);
+    rtPrintf("time in func %fms\n", time / clockRate);
+
+::
+
+    simon:SDK blyth$ optix-find clock
+    /Developer/OptiX/SDK/optixBuffersOfBuffers/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixBuffersOfBuffers/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixCallablePrograms/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixCallablePrograms/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixConsole/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixConsole/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixDynamicGeometry/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixDynamicGeometry/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixInstancing/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixInstancing/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixMeshViewer/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixMeshViewer/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixPrimitiveIndexOffsets/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixPrimitiveIndexOffsets/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixProgressiveVCA/camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixProgressiveVCA/camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixSelector/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixSelector/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixSphere/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixSphere/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixSpherePP/pinhole_camera.cu:  clock_t t0 = clock(); 
+    /Developer/OptiX/SDK/optixSpherePP/pinhole_camera.cu:  clock_t t1 = clock(); 
+    /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp:            int clock_rate;
+    /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp:            RT_CHECK_ERROR(rtDeviceGetAttribute(i, RT_DEVICE_ATTRIBUTE_CLOCK_RATE, sizeof(clock_rate), &clock_rate));
+    /Developer/OptiX/SDK/optixDeviceQuery/optixDeviceQuery.cpp:            printf("  Clock Rate: %u kilohertz\n", clock_rate);
+    /Developer/OptiX/SDK/support/freeglut/include/GL/freeglut_ext.h: * NB: front facing polygons have clockwise winding, not counter clockwise
+    /Developer/OptiX/SDK/support/freeglut/include/GL/freeglut_std.h: * NB: front facing polygons have clockwise winding, not counter clockwise
+    simon:SDK blyth$ 
+
+
+
+
 CUDAraster
 ----------
 

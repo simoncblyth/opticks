@@ -78,6 +78,11 @@ enum
     Union_MissA_MissB   = ReturnMiss 
 };
 
+
+
+
+
+
 enum 
 {
     Difference_EnterA_EnterB =  ReturnAIfCloser | AdvanceBAndLoop,

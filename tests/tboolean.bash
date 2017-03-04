@@ -333,8 +333,9 @@ tboolean-testconfig()
     #tboolean-box-sphere union
     #tboolean-box-sphere difference
 
-    #tboolean-csg-two-box-minus-sphere-interlocked
-    tboolean-csg
+    tboolean-csg-two-box-minus-sphere-interlocked
+    #tboolean-csg-causes-hardcrash-timeout
+    #tboolean-csg
 
     #tboolean-box
     #tboolean-box-small-offset-sphere difference
