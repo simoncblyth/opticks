@@ -55,7 +55,6 @@ static const char* CTRL_RETURN_B_      = "CTRL_RETURN_B" ;
 static const char* CTRL_RETURN_FLIP_B_ = "CTRL_RETURN_FLIP_B" ;
 static const char* CTRL_LOOP_A_        = "CTRL_LOOP_A" ;
 static const char* CTRL_LOOP_B_        = "CTRL_LOOP_B" ;
-static const char* CTRL_UNDEFINED_     = "CTRL_UNDEFINED" ;
 
 
 static const char* ERROR_LHS_POP_EMPTY_ = "ERROR_LHS_POP_EMPTY" ;
@@ -111,7 +110,6 @@ std::string desc_ctrl( int ctrl )
 
     if(ctrl & CTRL_LOOP_A ) ss << CTRL_LOOP_A_ << " " ; 
     if(ctrl & CTRL_LOOP_B ) ss << CTRL_LOOP_B_ << " " ; 
-    if(ctrl & CTRL_UNDEFINED ) ss << CTRL_UNDEFINED_ << " " ; 
     return ss.str();    
 }
 

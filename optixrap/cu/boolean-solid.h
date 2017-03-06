@@ -47,8 +47,7 @@ enum {
      CTRL_RETURN_B       = 2,
      CTRL_RETURN_FLIP_B  = 3,
      CTRL_LOOP_A         = 4,   
-     CTRL_LOOP_B         = 5,
-     CTRL_UNDEFINED      = 6
+     CTRL_LOOP_B         = 5
 };  
 
 
@@ -64,7 +63,8 @@ enum {
      ERROR_RHS_TRANCHE_OVERFLOW  = 0x1 << 8,
      ERROR_RESULT_OVERFLOW       = 0x1 << 9,
      ERROR_OVERFLOW              = 0x1 << 10,
-     ERROR_TRANCHE_OVERFLOW      = 0x1 << 11
+     ERROR_TRANCHE_OVERFLOW      = 0x1 << 11,
+     ERROR_POP_EMPTY             = 0x1 << 12
 };
 
 

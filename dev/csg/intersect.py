@@ -232,20 +232,6 @@ def test_ii_addseq():
  
     return i 
 
-"""
-class I(object):
-   def __init__(self, t, n, name="", code=0):
-       self.t = t
-       self.n = n 
-       self.name = name
-       self.code = code
-       self.history = []
-
-   def __repr__(self):
-       return "[%s;%s]" % ( fmt_3f(self.n), fmt_f(self.t))
-       #return "I(%s [%s]) %s %d " % ( fmt_f(self.t), fmt_3f(self.n), self.name, self.code )
-"""
-
 
 def intersect_miss(node, ray, tmin):
     a = np.zeros( (4,4), dtype=np.float32 )
@@ -268,6 +254,8 @@ def intersect_miss(node, ray, tmin):
 
     return isect 
  
+
+
 
 def intersect_primitive(node, ray, tmin):
     assert node.is_primitive

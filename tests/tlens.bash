@@ -13,6 +13,15 @@ tlens- : Disc shaped beam of white light incident on convex lens
     create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
 
 
+Theory
+---------
+
+Spherical lens formula
+
+* http://www.physicsinsights.org/simple_optics_spherical_lenses-1.html
+
+
+
 EXERCISE
 -----------
 

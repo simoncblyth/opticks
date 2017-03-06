@@ -8,16 +8,21 @@ import numpy as np
 from opticks.bin.ffs import clz_
 
 
-EMPTY = 0 
-SPHERE = 1
-BOX = 2 
+Q0,Q1,Q2,Q3 = 0,1,2,3
+X,Y,Z,W = 0,1,2,3
 
-_desc_sh = { EMPTY:"e", SPHERE:"s", BOX:"b" }
+
+from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
+from opticks.opticksnpy.NPart_h import EMPTY, ZERO, SPHERE, BOX
+
+
+_desc_sh = { EMPTY:"e", ZERO:"z", SPHERE:"s", BOX:"b" }
 def desc_sh(sh):
     return _desc_sh[sh]
 
 
-from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
+
+
 
 
 class T(np.ndarray):
@@ -88,6 +93,9 @@ class Node(object):
     def _set_param(self, v):
         self._param = np.asarray(v) if v is not None else None 
     param = property(_get_param, _set_param)
+
+
+
 
     def apply_(self, **kwa):
         for k,v in kwa.items():
@@ -348,6 +356,64 @@ class Node(object):
            level += 1
         pass
         return level
+
+
+
+
+
+
+    @classmethod
+    def serialize(cls, root):
+        """
+        Non-existing nodes left at zero, hmm operation UNION currently zero ?
+        """
+        height = root.maxdepth
+        totNodes = Node.NumNodes(height)
+        print "height %d totNodes %d " % (height, totNodes)
+        partBuf = np.zeros( (totNodes, 4, 4), dtype=np.float32 )
+        cls.serialize_r( root, partBuf, 0)      
+        return partBuf 
+
+
+    @classmethod 
+    def fillPart(cls, part, node):
+        assert part.shape == (4,4)
+
+        if node.param is not None:
+            part[Q0] = node.param 
+
+        if node.operation is not None:
+            part.view(np.uint32)[Q1,W] = node.operation    
+       
+        if node.shape is not None:
+            part.view(np.uint32)[Q2,W] = node.shape   
+
+
+    @classmethod 
+    def fromPart(cls, part):
+        assert part.shape == (4,4)
+        node = Node()
+        node.param = part[Q0]
+        node.operation = part.view(np.uint32)[Q1, W]
+        node.shape    = part.view(np.uint32)[Q2, W]
+        return node
+
+
+    @classmethod
+    def serialize_r(cls, node, partBuf, i):
+        """
+        :param node:
+        :param partBuf:
+        :param i: index into partBuf
+        """
+        assert i < len(partBuf)
+        cls.fillPart( partBuf[i], node )
+
+        if node.l:
+            cls.serialize_r( node.l, partBuf, 2*i+1 )
+ 
+        if node.r:
+            cls.serialize_r( node.r, partBuf, 2*i+2 )
 
 
     @classmethod
@@ -1047,7 +1113,6 @@ if __name__ == '__main__':
     #test_is_complete()
     #test_make_perfect()
 
-  
     
 
     for tree in trees:
@@ -1056,6 +1121,9 @@ if __name__ == '__main__':
 
     Node.postOrderSequence(root4, dump=True)
     
+
+if 0:
+    partBuf = Node.serialize_i(root4)
 
 
 if 0:

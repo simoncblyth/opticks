@@ -41,8 +41,8 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 #define CSG_STACK_SIZE 4
 #define TRANCHE_STACK_SIZE 4
 
-#define POSTORDER(i) ((postorder & (0xFull << (i)*4 )) >> (i)*4 ) 
 
+#define POSTORDER_NODE(postorder, i) (((postorder) & (0xFull << (i)*4 )) >> (i)*4 )
 #define POSTORDER_SLICE(begin, end) (  (((end) & 0xffff) << 16) | ((begin) & 0xffff)  )
 #define POSTORDER_BEGIN( tmp )  ( (tmp) & 0xffff )
 #define POSTORDER_END( tmp )  ( (tmp) >> 16 )
@@ -183,91 +183,87 @@ void intersect_csg( const uint4& prim, const uint4& identity )
          for(unsigned i=begin ; i < end ; i++)
          {
              // XXidx are 1-based levelorder perfect tree indices
-             unsigned nodeIdx = (postorder & (0xFull << i*4 )) >> i*4 ;   
+             //unsigned nodeIdx = (postorder & (0xFull << i*4 )) >> i*4 ;   
+             unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;   
              unsigned leftIdx = nodeIdx*2 ; 
              unsigned rightIdx = nodeIdx*2 + 1; 
              int depth = 32 - __clz(nodeIdx)-1 ;  
              unsigned subNodes = (0x1 << (1+height-depth)) - 1 ; // subtree nodes  
              unsigned halfNodes = (subNodes - 1)/2 ;             // nodes to left or right of subtree
-
              bool bileaf = leftIdx > numInternalNodes ; 
 
              quad q1 ; 
-             q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];
+             q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
              OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
 
              float tX_min[2] ; 
-             float& tA_min = tX_min[LHS] ;
-             float& tB_min = tX_min[RHS] ;
+             float& tL_min = tX_min[LHS] ;
+             float& tR_min = tX_min[RHS] ;
+             tL_min = tmin ; 
+             tR_min = tmin ;
 
-             tA_min = tmin ; 
-             tB_min = tmin ;
+             IntersectionState_t x_state[2] ; 
+
+             // postorder traversal means that have always 
+             // visited left and right subtrees before visiting a node
+
+             if(bileaf) // op-left-right leaves
+             {
+                 left.w = 0.f ;   // reusing the same storage so clear ahead
+                 right.w = 0.f ; 
+                 intersect_part( partOffset+leftIdx-1 , tL_min, left  ) ;
+                 intersect_part( partOffset+rightIdx-1 , tR_min, right  ) ;
+             }
+             else       //  op-op-op
+             {
+                 CSG_POP( lhs.data, lhs.curr, ERROR_LHS_POP_EMPTY, left );
+                 CSG_POP( rhs.data, rhs.curr, ERROR_RHS_POP_EMPTY, right );
+             }
+ 
+             x_state[LHS] = CSG_CLASSIFY( left , ray.direction, tL_min ) ;
+             x_state[RHS] = CSG_CLASSIFY( right, ray.direction, tR_min ) ;
+
+             int ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );
+             int side = ctrl - CTRL_LOOP_A ;   // CTRL_LOOP_A,CTRL_LOOP_B -> LHS, RHS   looper side
 
              bool reiterate = false ; 
-             int ctrl = CTRL_UNDEFINED ; 
-
-             enum { LIVE_A = 0x1 << LHS, LIVE_B = 0x1 << RHS } ;
-             int live = LIVE_A | LIVE_B ; 
-
              int loop(-1) ;  
-             while( live && loop < 10 )
+             while( side > -1 && loop < 10 )
              {
                  loop++ ; 
+                 float4& _side = isect[side+LEFT] ; 
 
-                 if(live & LIVE_A)
+                 tX_min[side] = _side.w + propagate_epsilon ;   
+            
+                 if(bileaf)
                  {
-                     if(bileaf) // op-left-right leaves
-                     {
-                         left.w = 0.f ; 
-                         intersect_part( partOffset+leftIdx-1 , tA_min, left  ) ;
-                     }
-                     else       //  op-op-op
-                     {
-                         CSG_POP( lhs.data, lhs.curr, ERROR_LHS_POP_EMPTY, left );
-                     }
-                 }       
-
-                 if(live & LIVE_B)
-                 {
-                     if(bileaf)  // op-left-right leaves
-                     {
-                         right.w = 0.f ; 
-                         intersect_part( partOffset+rightIdx-1 , tB_min, right  ) ;
-                     }
-                     else        // op-op-op
-                     {
-                         CSG_POP( rhs.data, rhs.curr, ERROR_RHS_POP_EMPTY, right );
-                     }
-                 }    
- 
-                 IntersectionState_t a_state = CSG_CLASSIFY( left , ray.direction, tA_min ) ;
-                 IntersectionState_t b_state = CSG_CLASSIFY( right, ray.direction, tB_min ) ;
-
-                 ctrl = boolean_ctrl_packed_lookup( operation, a_state, b_state, left.w <= right.w );
-
-                 if( ctrl == CTRL_LOOP_A || ctrl == CTRL_LOOP_B )
-                 {
-                     int side = ctrl - CTRL_LOOP_A ; 
-                     int other = 1 - side ; 
-
-                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
-                     live = 0x1 << side ; 
-
-                     if(!bileaf)   // op-op-op node requiring "reiteration", bileaf just needs the live loop
-                     {
-                         CSG_PUSH( csg[other].data, csg[other].curr, ERROR_OVERFLOW, isect[other+LEFT] );
-                         unsigned subtree = side == LHS ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
-                         TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes)        , tmin );
-                         TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, subtree , tX_min[side] );
-                         reiterate = true ; 
-                         break ; 
-                     } 
+                     // intersect lhs/rhs primitive again with tmin advanced
+                      intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ;
                  }
                  else
                  {
-                     break ; 
+                      // pop prior stacked result
+                      CSG_POP( csg[side].data, csg[side].curr, ERROR_POP_EMPTY, _side );
                  }
-             }      // end while : only bileaf loopers go for a spin
+
+                 // reclassification and boolean decision following advancement of one side 
+                 x_state[side] = CSG_CLASSIFY( _side, ray.direction, tX_min[side] );
+                 ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );
+                 side = ctrl - CTRL_LOOP_A ; 
+
+                 if(side > -1 && !bileaf)
+                 {
+                     int other = 1 - side ; 
+                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
+                     CSG_PUSH( csg[other].data, csg[other].curr, ERROR_OVERFLOW, isect[other+LEFT] );
+                     unsigned subtree = side == LHS ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
+                     TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes)        , tmin );
+                     TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, subtree , tX_min[side] );
+                     reiterate = true ; 
+                     break ; 
+                 } 
+             }  // side loop
+
 
              if(reiterate || abort_) break ;  
              // reiteration needs to get back to tranche loop for subtree traversal 
@@ -278,12 +274,10 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              rflip.z = -right.z ; 
              rflip.w =  right.w ;
 
-             const float4& result = ctrl < 4 ? isect[ctrl] : miss ; 
+             const float4& result = ctrl < CTRL_LOOP_A ? isect[ctrl] : miss ;   // CTRL_RETURN_*
 
-             int side = nodeIdx % 2 == 0 ? LHS : RHS ; 
-
-             CSG_PUSH( csg[side].data, csg[side].curr, ERROR_RESULT_OVERFLOW, result );
-
+             int nside = nodeIdx % 2 == 0 ? LHS : RHS ; 
+             CSG_PUSH( csg[nside].data, csg[nside].curr, ERROR_RESULT_OVERFLOW, result );
 
          }  // end for : node traversal within tranche
     }       // end while : tranche

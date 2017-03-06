@@ -52,7 +52,10 @@ from ctrl import CtrlReturnMiss, CtrlReturnLeft, CtrlReturnRight, CtrlReturnFlip
 from ctrl import CtrlLoopLeft, CtrlLoopRight
 from ctrl import desc_ctrl, ctrl_index, desc_ctrl_cu, _ctrl_color
 
-X,Y,Z = 0,1,2
+
+
+
+X,Y,Z,W = 0,1,2,3
 
 def one_line(ax, a, b, c ):
     x1 = a[X]
@@ -60,6 +63,7 @@ def one_line(ax, a, b, c ):
     x2 = b[X]
     y2 = b[Y]
     ax.plot( [x1,x2], [y1,y2], c ) 
+
 
 
 
@@ -178,6 +182,9 @@ class CSG(object):
         pass
 
     pfx = property(lambda self:"%s%0.3d" % (self.alg, self.iray))
+
+
+
 
     def iterative_intersect(self, root, depth=0, tmin=0, debug=1, icheck=True):
         """
@@ -892,30 +899,38 @@ if __name__ == '__main__':
     normal = None
     rayline = None
 
-
     for itst,tst in enumerate(tsts):
-        print "%2d : %15s : %s " % (itst, tst.root.name, tst.root )
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(1,2,1, aspect='equal')
-        ax2 = fig.add_subplot(1,2,2, aspect='equal')
-        axs = [ax1,ax2]
-
         csg = CSG(level=tst.level, epsilon=epsilon)
+        partBuf = Node.serialize( tst.root )
+        csg.ray = Ray()
+        csg.iterative_intersect_slavish( partBuf )
+ 
 
-        tst.compare_intersects( csg, rr=rr )
-        tst.plot_intersects( axs=axs, rr=rr, normal=normal, origin=origin, rayline=rayline)
 
-        # seems patches cannot be shared between axes, so use separate Renderer
-        # for each  
-        for ax in axs:
-            rdr = Renderer(ax)
-            #rdr.limits(400,400)
-            rdr.render(tst.root)
+    if 0:
+        for itst,tst in enumerate(tsts):
+            print "%2d : %15s : %s " % (itst, tst.root.name, tst.root )
 
-        fig.suptitle(tst.suptitle, horizontalalignment='left', family='monospace', fontsize=10, x=0.1, y=0.99) 
-        fig.show()
+            fig = plt.figure()
+            ax1 = fig.add_subplot(1,2,1, aspect='equal')
+            ax2 = fig.add_subplot(1,2,2, aspect='equal')
+            axs = [ax1,ax2]
 
-        i = tst.i
+            csg = CSG(level=tst.level, epsilon=epsilon)
+
+            tst.compare_intersects( csg, rr=rr )
+            tst.plot_intersects( axs=axs, rr=rr, normal=normal, origin=origin, rayline=rayline)
+
+            # seems patches cannot be shared between axes, so use separate Renderer
+            # for each  
+            for ax in axs:
+                rdr = Renderer(ax)
+                #rdr.limits(400,400)
+                rdr.render(tst.root)
+
+            fig.suptitle(tst.suptitle, horizontalalignment='left', family='monospace', fontsize=10, x=0.1, y=0.99) 
+            fig.show()
+
+            i = tst.i
 
 
