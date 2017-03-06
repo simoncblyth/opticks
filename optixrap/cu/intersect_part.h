@@ -1,5 +1,3 @@
-
-
 static __device__
 void intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
 {
@@ -18,175 +16,21 @@ void intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
     float c = dot(O, O)-radius*radius;
     float disc = b*b-c;
 
-    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;
+    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
     float root1 = -b - sdisc ;
-    float root2 = -b + sdisc ;
+    float root2 = -b + sdisc ;  // root2 > root2 always
 
-    bool valid_intersect = sdisc > 0.f ;   // ray has a segment within the sphere
+    float tt_cand = sdisc > 0.f ? ( root1 > tt_min ? root1 : root2 ) : tt_min ; 
 
-    if(valid_intersect)   
-    {
-        tt.w =  root1 > tt_min ? root1 : root2 ; 
-
-        if(tt.w > tt_min)
-        {        
-            tt.x = (O.x + tt.w*D.x)/radius ; 
-            tt.y = (O.y + tt.w*D.y)/radius ; 
-            tt.z = (O.z + tt.w*D.z)/radius ; 
-        }
+    if(tt_cand > tt_min)
+    {        
+        tt.x = (O.x + tt_cand*D.x)/radius ; 
+        tt.y = (O.y + tt_cand*D.y)/radius ; 
+        tt.z = (O.z + tt_cand*D.z)/radius ; 
+        tt.w = tt_cand ; 
     }
 }
 
-
-
-// https://tavianator.com/fast-branchless-raybounding-box-intersections/
-// https://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
-
-
-static __device__ void intersect_box_branching(const quad& q0, const float& tt_min, float3& tt_normal, float& tt  )
-{
-   const float3 bmin = make_float3(q0.f.x - q0.f.w, q0.f.y - q0.f.w, q0.f.z - q0.f.w ); 
-   const float3 bmax = make_float3(q0.f.x + q0.f.w, q0.f.y + q0.f.w, q0.f.z + q0.f.w ); 
-   const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
-
-   float t1, t2 ;
-   float tmin = -CUDART_INF_F ; 
-   float tmax =  CUDART_INF_F ; 
-
-   //rtPrintf(" ray.origin %f %f %f ray.direction %f %f %f \n ", ray.origin.x,    ray.origin.y, ray.origin.z, ray.direction.x, ray.direction.y, ray.direction.z );
-   //rtPrintf(" bmin %f %f %f bmax %f %f %f \n", bmin.x, bmin.y, bmin.z, bmax.x, bmax.y, bmax.z );
-
-   if(ray.direction.x != 0.f)
-   {
-       t1 = (bmin.x - ray.origin.x)/ray.direction.x ;
-       t2 = (bmax.x - ray.origin.x)/ray.direction.x ;
- 
-       tmin = max( tmin, min(t1, t2) );
-       tmax = min( tmax, max(t1, t2) );
-
-       //rtPrintf(" dir.x %f t1 %f t2 %f tmin %f tmax %f \n", ray.direction.x, t1, t2, tmin, tmax );
-   }
-
-   if(ray.direction.y != 0.f)
-   {
-       t1 = (bmin.y - ray.origin.y)/ray.direction.y ;
-       t2 = (bmax.y - ray.origin.y)/ray.direction.y ;
- 
-       tmin = max( tmin, min(t1, t2) );
-       tmax = min( tmax, max(t1, t2) );
-
-       //rtPrintf(" dir.y %f t1 %f t2 %f tmin %f tmax %f \n", ray.direction.y, t1, t2, tmin, tmax );
-   }
-
-   if(ray.direction.z != 0.f)
-   {
-       t1 = (bmin.z - ray.origin.z)/ray.direction.z ;
-       t2 = (bmax.z - ray.origin.z)/ray.direction.z ;
- 
-       tmin = max( tmin, min(t1, t2) );
-       tmax = min( tmax, max(t1, t2) );
-
-       //rtPrintf(" dir.z %f t1 %f t2 %f tmin %f tmax %f \n", ray.direction.z, t1, t2, tmin, tmax );
-   }
-
-
-   bool along_x = ray.direction.x != 0.f && ray.direction.y == 0.f && ray.direction.z == 0.f ;
-   bool along_y = ray.direction.x == 0.f && ray.direction.y != 0.f && ray.direction.z == 0.f ;
-   bool along_z = ray.direction.x == 0.f && ray.direction.y == 0.f && ray.direction.z != 0.f ;
-
-   bool in_x = ray.origin.x > bmin.x && ray.origin.x < bmax.x  ;
-   bool in_y = ray.origin.y > bmin.y && ray.origin.y < bmax.y  ;
-   bool in_z = ray.origin.z > bmin.z && ray.origin.z < bmax.z  ;
-
-   bool valid_intersect ;
-   if(     along_x) valid_intersect = in_y && in_z ;
-   else if(along_y) valid_intersect = in_x && in_z ; 
-   else if(along_z) valid_intersect = in_x && in_y ; 
-   else             valid_intersect = ( tmax > tmin && tmax > 0.f ) ;  // segment of ray intersects box, at least one is ahead
-
-   rtPrintf(" along_x %d along_y %d along_z %d in_x %d in_y %d in_z %d valid_intersect %d \n", along_x, along_y, along_z, in_x, in_y, in_z, valid_intersect  );
-
-   if( valid_intersect ) 
-   {
-       float tint = tmin > 0.f ? tmin : tmax ;
- 
-       tt = tint > tt_min ? tint : tt_min ;  
-
-       rtPrintf(" intersect_box_branching : tmin %f tmax %f tt %f tt_min %f \n", tmin, tmax, tt, tt_min  );
-
-       float3 p = ray.origin + tt*ray.direction - bcen ; 
-       float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
-
-       float3 n = make_float3(0.f) ;
-       if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
-       else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
-       else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
-
-       tt_normal = tt > tt_min ? n : tt_normal ;
-
-   }
-}
-
-
-static __device__ void intersect_box_tavianator(const quad& q0, const float& tt_min, float3& tt_normal, float& tt  )
-{
-   const float3 bmin = make_float3(q0.f.x - q0.f.w, q0.f.y - q0.f.w, q0.f.z - q0.f.w ); 
-   const float3 bmax = make_float3(q0.f.x + q0.f.w, q0.f.y + q0.f.w, q0.f.z + q0.f.w ); 
-   const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
-
-   // unrolled version of 
-   //  https://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
-
-   float tmin, tmax, t1, t2 ; 
-
-
-   t1 = (bmin.x - ray.origin.x)/ray.direction.x ;
-   t2 = (bmax.x - ray.origin.x)/ray.direction.x ;
- 
-   tmin = min(t1, t2);
-   tmax = max(t1, t2);
-
-   t1 = (bmin.y - ray.origin.y)/ray.direction.y ;
-   t2 = (bmax.y - ray.origin.y)/ray.direction.y ;
- 
-   //tmin = max(tmin, min(min(t1, t2), tmax));
-   //tmax = min(tmax, max(max(t1, t2), tmin));
-   tmin = max(tmin, min(t1, t2));
-   tmax = min(tmax, max(t1, t2));
-
-
-   t1 = (bmin.z - ray.origin.z)/ray.direction.z ;
-   t2 = (bmax.z - ray.origin.z)/ray.direction.z ;
- 
-   //tmin = max(tmin, min(min(t1, t2), tmax));
-   //tmax = min(tmax, max(max(t1, t2), tmin));
-   tmin = max(tmin, min(t1, t2));
-   tmax = min(tmax, max(t1, t2));
-
-
-   bool valid = tmax > max(tmin, 0.f);
-
-   float _tt =  valid 
-             ? 
-                ( tmin > 0.f ? tmin : tmax )
-             : 
-                ( tmax ) 
-             ;
-
-   tt = _tt > tt_min ? _tt : tt_min ;  
-
-   rtPrintf(" intersect_box_tavianator : tmin %f tmax %f tt %f tt_min %f \n", tmin, tmax, tt, tt_min  );
-
-   float3 p = ray.origin + tt*ray.direction - bcen ; 
-   float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
-
-   float3 n = make_float3(0.f) ;
-   if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
-   else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
-   else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
-
-   tt_normal = tt > tt_min ? n : tt_normal ;
-}
 
 
 static __device__
@@ -259,16 +103,11 @@ void intersect_box(const quad& q0, const float& tt_min, float4& tt )
        //
        //
 
-       tt.w =  tt_min < t_near ?  
-                              t_near 
-                           :
-                              ( tt_min < t_far ? t_far : tt_min )
-                           ; 
-
+       float tt_cand = tt_min < t_near ?  t_near : ( tt_min < t_far ? t_far : tt_min ) ; 
 
        //rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
 
-       float3 p = ray.origin + tt.w*ray.direction - bcen ; 
+       float3 p = ray.origin + tt_cand*ray.direction - bcen ; 
        float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
 
        float3 n = make_float3(0.f) ;
@@ -276,11 +115,12 @@ void intersect_box(const quad& q0, const float& tt_min, float4& tt )
        else if( pa.y >= pa.x && pa.y >= pa.z ) n.y = copysignf( 1.f , p.y ) ;              
        else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
 
-       if(tt.w > tt_min)
+       if(tt_cand > tt_min)
        {
            tt.x = n.x ;
            tt.y = n.y ;
            tt.z = n.z ;
+           tt.w = tt_cand ; 
        }
    }
 }
@@ -292,22 +132,19 @@ void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     q0.f = partBuffer[4*partIdx+0];
     q2.f = partBuffer[4*partIdx+2];
 
-    // Above sets boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
-    // at intersections the uint4 identity is copied into the instanceIdentity attribute,
-    // hence making it available to material1_propagate.cu:closest_hit_propagate
-    // where crucially the instanceIdentity.z -> boundaryIndex
-
-
     NPart_t partType = (NPart_t)q2.i.w ; 
 
-    tt.w = tt_min ; 
+    //tt.w = tt_min ;  
+    // <-- removing the pre-setting of tt.w :  causes sphere underhang wierdness with the highly overlapped ??
+    //  which is bizarre as tt should be purely an output ??? with missers not touching tt ??
+    // THE REASON WAS THAT THE CALLER WAS REUSING left AND RIGHT float4 SO FOR LOOPERS
+    // AND MISSERS A STALE VALUE OF tt.w CAME INTO USE
 
     switch(partType)
     {
         case SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ; 
         case BOX:    intersect_box(   q0,tt_min, tt )  ; break ; 
     }
-
 }
 
 

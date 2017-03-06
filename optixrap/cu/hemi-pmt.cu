@@ -1309,9 +1309,9 @@ RT_PROGRAM void intersect(int primIdx)
           q2.f = partBuffer[4*partIdx+2] ;
           q3.f = partBuffer[4*partIdx+3]; 
 
-          identity.z = q1.u.z ;    // replace placeholder zero ? with test analytic geometry boundary
+          identity.z = q1.u.z ;   
 
-          // Above sets boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
+          // identity.z adopts boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
           // at intersections the uint4 identity is copied into the instanceIdentity attribute,
           // hence making it available to material1_propagate.cu:closest_hit_propagate
           // where crucially the instanceIdentity.z -> boundaryIndex

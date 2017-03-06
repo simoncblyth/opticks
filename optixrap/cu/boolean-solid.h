@@ -61,7 +61,10 @@ enum {
      ERROR_LHS_OVERFLOW          = 0x1 << 5,
      ERROR_RHS_OVERFLOW          = 0x1 << 6,
      ERROR_LHS_TRANCHE_OVERFLOW  = 0x1 << 7,
-     ERROR_RHS_TRANCHE_OVERFLOW  = 0x1 << 8
+     ERROR_RHS_TRANCHE_OVERFLOW  = 0x1 << 8,
+     ERROR_RESULT_OVERFLOW       = 0x1 << 9,
+     ERROR_OVERFLOW              = 0x1 << 10,
+     ERROR_TRANCHE_OVERFLOW      = 0x1 << 11
 };
 
 

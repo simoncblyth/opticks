@@ -253,11 +253,9 @@ tboolean-csg-two-box-minus-sphere-interlocked()
 
 
 
-tboolean-csg()
+tboolean-csg-triplet()
 {
     local material=$(tboolean-material)
-    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
-    local radius=200
 
     local test_config=(
                       mode=CsgInBox
@@ -265,14 +263,9 @@ tboolean-csg()
                       offsets=0,1
                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
 
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
-
-                      node=intersection  parameters=0,0,0,500             boundary=Vacuum///$material
-                      node=difference    parameters=0,0,0,500             boundary=Vacuum///$material
-                      node=sphere       parameters=100,100,-50,200       boundary=Vacuum///$material
-                      node=sphere       parameters=100,100,-100,200      boundary=Vacuum///$material
-                      node=box          parameters=0,100,100,200         boundary=Vacuum///$material
-                      node=box          parameters=0,0,0,200             boundary=Vacuum///$material
+                      node=intersection   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=box          parameters=0,0,0,150           boundary=Vacuum///$material
+                      node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
  
                       )
 
@@ -367,6 +360,7 @@ tboolean-testconfig()
 
     tboolean-csg-two-box-minus-sphere-interlocked
     #tboolean-csg-four-box-minus-sphere
+    #tboolean-csg-triplet
     #tboolean-csg
 
     #tboolean-box

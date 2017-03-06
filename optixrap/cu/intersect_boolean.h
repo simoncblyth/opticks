@@ -43,26 +43,88 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 
 #define POSTORDER(i) ((postorder & (0xFull << (i)*4 )) >> (i)*4 ) 
 
+#define POSTORDER_SLICE(begin, end) (  (((end) & 0xffff) << 16) | ((begin) & 0xffff)  )
+#define POSTORDER_BEGIN( tmp )  ( (tmp) & 0xffff )
+#define POSTORDER_END( tmp )  ( (tmp) >> 16 )
+
+
+
+#define CSG_PUSH(_stack, stack, ERR, val ) \
+             { \
+                 if((stack)+1 >= CSG_STACK_SIZE) \
+                 {  \
+                     ierr |= (ERR) ; \
+                     abort_ = true ; \
+                     break ;  \
+                 }  \
+                 (stack)++ ;   \
+                 (_stack)[(stack)] = val ; \
+             } \
+
+
+#define CSG_POP(_stack, stack, ERR, ret ) \
+             { \
+                if((stack) < 0) \
+                {  \
+                    ierr |= (ERR)  ;\
+                    abort_ = true ;  \
+                    break ; \
+                }  \
+                (ret) = (_stack)[(stack)] ;  \
+                (stack)-- ;    \
+             } \
+ 
+
+#define CSG_CLASSIFY( ise, dir, tmin )   ((ise).w > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? Enter : Exit ) : Miss )
+
+
+
+#define TRANCHE_PUSH0( _stacku, _stackf, stack, valu, valf ) \
+           { \
+                (stack)++ ; \
+                setByIndex( (_stacku), (stack), (valu) ) ; \
+                setByIndex( (_stackf), (stack), (valf) ) ; \
+           }  
+
+
+
+#define TRANCHE_POP0( _stacku, _stackf, stack, valu, valf ) \
+         (valf) = getByIndex((_stackf), (stack));  \
+         (valu) = getByIndex((_stacku), (stack) ); \
+         (stack)-- ; 
+     
+
+#define TRANCHE_PUSH( _stacku, _stackf, stack, ERR, valu, valf ) \
+            { \
+                if((stack)+1 >= TRANCHE_STACK_SIZE) \
+                {   \
+                     ierr |= (ERR) ; \
+                     abort_ = true ; \
+                     break ; \
+                } \
+                (stack)++ ; \
+                setByIndex( (_stacku), (stack), (valu) ) ; \
+                setByIndex( (_stackf), (stack), (valf) ) ; \
+           }  
+
+
+
 /**
 
-ideas
+TODO:
 
-* copy boolean lookup from host side, to avoid all the case statements
+* find visual way to demonstrate where tranche mechanics actually working
 
-* pack the three boolean lookup tables into 32bit uints and hold them in rtDeclareVariable(uint4,, ) = { 0xashvda, 0xasdgahsdb,  }
 
-  * the tables are 3x3 (Enter,Exit,Miss)x(Enter,Exit,Miss) but can special case Miss, Miss to bring down to 8 elements
-    that at 4 bits each can fit into 32-bits 
-  * split the tables into ACloser and BCloser ones 
-  
-* use a Matrix<4,4> to holding rows with (miss,left,right,flip_right) so can refer to which by index
-  rather than passing around float4
-
-* lookup incorporating ACloser boolean, so cut out a lot of branches
-
-* merge acts/act/ctrl logic
 
 **/
+
+
+struct CSG 
+{
+   float4 data[CSG_STACK_SIZE] ; 
+   int curr ;
+};
 
 
 static __device__
@@ -85,32 +147,38 @@ void intersect_csg( const uint4& prim, const uint4& identity )
     unsigned long long postorder = postorder_sequence[height] ; 
     unsigned numInternalNodes = (0x1 << (1+height)) - 1 ;
 
-    float4 _lhs[CSG_STACK_SIZE] ; 
-    int lhs = -1 ; 
-
-    float4 _rhs[CSG_STACK_SIZE] ; 
-    int rhs = -1 ; 
-
     float4 _tmin ;  // TRANCHE_STACK_SIZE is 4 
     uint4  _tranche ; 
     int tranche = -1 ;
 
+    enum { LHS, RHS };
+    CSG csg[2] ; 
+    CSG& lhs = csg[LHS] ; 
+    CSG& rhs = csg[RHS] ; 
+    lhs.curr = -1 ;  
+    rhs.curr = -1 ; 
 
-    float4 miss   = make_float4(0.f,0.f,1.f,0.f);
-    float4 result = make_float4(0.f,0.f,1.f,0.f) ; 
+    enum { MISS, LEFT, RIGHT, RFLIP  } ;  // this order is tied to CTRL_ enum, needs rejig of lookup to change 
+    float4 isect[4] ;
+    isect[MISS]       =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[LEFT]       =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[RIGHT]      =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[RFLIP]      =  make_float4(0.f, 0.f, 1.f, 0.f);
 
-    tranche++ ;  // push 0-based postorder indices, initially selecting entire postorder sequence
-    setByIndex(_tranche, tranche, ((numInternalNodes & 0xffff) << 16) | (0 & 0xffff) )  ; // postorder end, begin
-    setByIndex(_tmin,    tranche,  ray.tmin );    // current tmin, (propagate_epsilon or 0.f not appropriate, eg when near-clipping)
+    const float4& miss  = isect[MISS];
+    float4& left  = isect[LEFT];
+    float4& right = isect[RIGHT];
+    float4& rflip = isect[RFLIP];
+
+    TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numInternalNodes), ray.tmin );
 
     while (tranche >= 0)
     {
-         float   tmin = getByIndex(_tmin, tranche);
-         unsigned tmp = getByIndex(_tranche, tranche );
-         unsigned begin = tmp & 0xffff ;
-         unsigned end   = tmp >> 16 ;
-         tranche-- ;                // pop, -1 means empty stack
-
+         float   tmin ;
+         unsigned tmp ;
+         TRANCHE_POP0( _tranche, _tmin, tranche,  tmp, tmin );
+         unsigned begin = POSTORDER_BEGIN( tmp );
+         unsigned end   = POSTORDER_END( tmp );
 
          for(unsigned i=begin ; i < end ; i++)
          {
@@ -128,215 +196,108 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];
              OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
 
-             float4 left  = make_float4(0.f,0.f,1.f,0.f);
-             float4 right = make_float4(0.f,0.f,1.f,0.f);
+             float tX_min[2] ; 
+             float& tA_min = tX_min[LHS] ;
+             float& tB_min = tX_min[RHS] ;
 
-             float tA_min = tmin ; 
-             float tB_min = tmin ;
+             tA_min = tmin ; 
+             tB_min = tmin ;
 
              bool reiterate = false ; 
-
-             enum { LIVE_A = 0x1 << 0, LIVE_B = 0x1 << 1 } ;
-             int live = LIVE_A | LIVE_B ; 
              int ctrl = CTRL_UNDEFINED ; 
+
+             enum { LIVE_A = 0x1 << LHS, LIVE_B = 0x1 << RHS } ;
+             int live = LIVE_A | LIVE_B ; 
 
              int loop(-1) ;  
              while( live && loop < 10 )
              {
-                loop++ ; 
+                 loop++ ; 
 
-                if(live & LIVE_A)
-                {
-                    if(bileaf) // left leaf node 
-                    {
+                 if(live & LIVE_A)
+                 {
+                     if(bileaf) // op-left-right leaves
+                     {
+                         left.w = 0.f ; 
                          intersect_part( partOffset+leftIdx-1 , tA_min, left  ) ;
-                    }
-                    else                             // operation node
-                    {
-                         if(lhs < 0)
-                         {
-                             ierr |= ERROR_LHS_POP_EMPTY ; 
-                             abort_ = true ;
-                             break ; 
-                         } 
-                         left = _lhs[lhs] ;  
-                         lhs-- ;          // pop
-                    }
-                }       
+                     }
+                     else       //  op-op-op
+                     {
+                         CSG_POP( lhs.data, lhs.curr, ERROR_LHS_POP_EMPTY, left );
+                     }
+                 }       
 
-                if(live & LIVE_B)
-                {
-                    if(bileaf)  // right leaf node
-                    {
+                 if(live & LIVE_B)
+                 {
+                     if(bileaf)  // op-left-right leaves
+                     {
+                         right.w = 0.f ; 
                          intersect_part( partOffset+rightIdx-1 , tB_min, right  ) ;
-                    }
-                    else        // operation node
-                    {
-                         if(rhs < 0)
-                         {
-                             ierr |= ERROR_RHS_POP_EMPTY ; 
-                             abort_ = true ;
-                             break ; 
-                         } 
-                         right = _rhs[rhs] ;  
-                         rhs-- ;          // pop
-                    }
-                }    
+                     }
+                     else        // op-op-op
+                     {
+                         CSG_POP( rhs.data, rhs.curr, ERROR_RHS_POP_EMPTY, right );
+                     }
+                 }    
+ 
+                 IntersectionState_t a_state = CSG_CLASSIFY( left , ray.direction, tA_min ) ;
+                 IntersectionState_t b_state = CSG_CLASSIFY( right, ray.direction, tB_min ) ;
 
+                 ctrl = boolean_ctrl_packed_lookup( operation, a_state, b_state, left.w <= right.w );
 
-                IntersectionState_t a_state = left.w > tA_min ? 
-                        ( (left.x * ray.direction.x + left.y * ray.direction.y + left.z * ray.direction.z) < 0.f ? Enter : Exit ) 
-                                  :
-                                  Miss
-                                  ; 
+                 if( ctrl == CTRL_LOOP_A || ctrl == CTRL_LOOP_B )
+                 {
+                     int side = ctrl - CTRL_LOOP_A ; 
+                     int other = 1 - side ; 
 
-                IntersectionState_t b_state = right.w > tB_min ? 
-                        ( (right.x * ray.direction.x + right.y * ray.direction.y + right.z * ray.direction.z) < 0.f ? Enter : Exit ) 
-                                  :
-                                  Miss
-                                  ; 
+                     tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
+                     live = 0x1 << side ; 
 
-                //int actions = boolean_actions( operation , a_state, b_state );
-                //int act = boolean_decision( actions, left.w <= right.w );
-                //ctrl = boolean_ctrl( act );
-
-                ctrl = boolean_ctrl_packed_lookup( operation, a_state, b_state, left.w <= right.w );
-
-
-                if(ctrl == CTRL_LOOP_A) 
-                {
-                    tA_min = left.w + propagate_epsilon  ;  
-                    live = LIVE_A ; 
-
-                    if(!bileaf)   // left is not leaf
-                    {
-                         if(rhs+1 >= CSG_STACK_SIZE)
-                         {
-                             ierr |= ERROR_RHS_OVERFLOW ; 
-                             abort_ = true ;
-                             break ; 
-                         }
-
-                         rhs++ ;   // push other side, as just popped it while reiterating this side
-                         _rhs[rhs] = right ;    
-
-                         if(tranche+2 >= TRANCHE_STACK_SIZE)
-                         { 
-                             ierr |= ERROR_LHS_TRANCHE_OVERFLOW ; 
-                             abort_ = true ;
-                             break ; 
-                         }
-
-                         tranche++ ;  // push, from here on up : i -> numInternalNodes
-                         setByIndex(_tranche, tranche, ((numInternalNodes & 0xffff) << 16) | (i & 0xffff) )  ;  
-                         setByIndex(_tmin,    tranche,  tmin );
-
-                         tranche++ ;  // push, left subtree  :  i - 2*halfNodes -> i - halfNodes
-                         setByIndex(_tranche, tranche, ((i-halfNodes & 0xffff) << 16) | ((i-2*halfNodes) & 0xffff) )  ;
-                         setByIndex(_tmin,    tranche,  tA_min );
-
+                     if(!bileaf)   // op-op-op node requiring "reiteration", bileaf just needs the live loop
+                     {
+                         CSG_PUSH( csg[other].data, csg[other].curr, ERROR_OVERFLOW, isect[other+LEFT] );
+                         unsigned subtree = side == LHS ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
+                         TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes)        , tmin );
+                         TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, subtree , tX_min[side] );
                          reiterate = true ; 
-                    } 
-                } 
-                else if(ctrl == CTRL_LOOP_B) 
-                {
-                    tB_min = right.w + propagate_epsilon ;   
-                    live = LIVE_B ; 
-
-                    if(!bileaf)   // left is not leaf
-                    {
-                         if(lhs+1 >= CSG_STACK_SIZE)
-                         {
-                             ierr |= ERROR_LHS_OVERFLOW ; 
-                             abort_ = true ;
-                             break ; 
-                         }
-
-                         lhs++ ;   // push other side
-                         _lhs[lhs] = left ;    
-
-
-                         if(tranche+2 >= TRANCHE_STACK_SIZE)
-                         { 
-                             ierr |= ERROR_RHS_TRANCHE_OVERFLOW ; 
-                             abort_ = true ;
-                             break ; 
-                         }
-
-                         tranche++ ;  // push, from here on up : i -> numInternalNodes
-                         setByIndex(_tranche, tranche, ((numInternalNodes & 0xffff) << 16) | (i & 0xffff) )  ;  
-                         setByIndex(_tmin,    tranche,  tmin );
-
-                         tranche++ ;  // push, right subtree :  i - halfNodes -> i
-                         setByIndex(_tranche, tranche, ((i & 0xffff) << 16) | ((i-halfNodes) & 0xffff) )  ;
-                         setByIndex(_tmin,    tranche,  tB_min );
-
-                         reiterate = true ; 
-                    } 
-                }
-                else
-                {
-                    live = 0 ; 
-                }
-                if(reiterate) break ;
-             }  // end while : live loop
-
+                         break ; 
+                     } 
+                 }
+                 else
+                 {
+                     break ; 
+                 }
+             }      // end while : only bileaf loopers go for a spin
 
              if(reiterate || abort_) break ;  
              // reiteration needs to get back to tranche loop for subtree traversal 
              // without "return"ing anything
 
+             rflip.x = -right.x ;
+             rflip.y = -right.y ;
+             rflip.z = -right.z ; 
+             rflip.w =  right.w ;
 
-             if( ctrl == CTRL_RETURN_MISS )
-             {
-                 result = miss ; 
-             }
-             else if(ctrl == CTRL_RETURN_A) 
-             {
-                 result = left ; 
-             } 
-             else if( ctrl == CTRL_RETURN_B )
-             {
-                 result = right ; 
-             }
-             else if( ctrl == CTRL_RETURN_FLIP_B )
-             {
-                 result.x = -right.x ; 
-                 result.y = -right.y ; 
-                 result.z = -right.z ; 
-                 result.w =  right.w ; 
-             }
-             else
-             {
-                  ierr |= ERROR_BAD_CTRL ; 
-             }   
-         
-             if(nodeIdx % 2 == 0) // even 1-based nodeIdx is left
-             {
-                 lhs++ ;   // push
-                 _lhs[lhs] = result ;    
-             }
-             else
-             {
-                 rhs++ ;   // push
-                 _rhs[rhs] = result ;    
-             }
+             const float4& result = ctrl < 4 ? isect[ctrl] : miss ; 
+
+             int side = nodeIdx % 2 == 0 ? LHS : RHS ; 
+
+             CSG_PUSH( csg[side].data, csg[side].curr, ERROR_RESULT_OVERFLOW, result );
+
 
          }  // end for : node traversal within tranche
     }       // end while : tranche
 
-    
 
-    if(lhs != -1) ierr |= ERROR_LHS_END_NONEMPTY ;  
-    if(rhs != 0)  ierr |= ERROR_RHS_END_EMPTY  ; 
+    ierr |= (( lhs.curr != -1 ) ? ERROR_LHS_END_NONEMPTY : 0 ) ;  
+    ierr |= (( rhs.curr !=  0)  ? ERROR_RHS_END_EMPTY : 0)  ; 
 
-    if(rhs == 0 && ierr == 0)
+    if(rhs.curr == 0 && ierr == 0)
     {
-         result = _rhs[rhs] ;  
-         rhs-- ;  // pop
-         if(rtPotentialIntersection( result.w ))
+         const float4& ret = rhs.data[0] ;  
+         if(rtPotentialIntersection( ret.w ))
          {
-              shading_normal = geometric_normal = make_float3(result.x, result.y, result.z) ;
+              shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
               instanceIdentity = identity ;
               rtReportIntersection(0);
          }
@@ -344,7 +305,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
     //rtPrintf("intersect_csg partOffset %u numParts %u numInternalNodes %u primIdx_ %u height %u postorder %llx ierr %x \n", partOffset, numParts, numInternalNodes, primIdx_, height, postorder, ierr );
     if(ierr != 0)
-    rtPrintf("intersect_csg primIdx_ %u ierr %4x  (%10.3f %10.3f %10.3f %10.3f)   \n", primIdx_, ierr,  result.x, result.y, result.z, result.w  );
+    rtPrintf("intersect_csg primIdx_ %u ierr %4x   \n", primIdx_, ierr );
 
 }   // intersect_csg
 
@@ -370,22 +331,33 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
 
     //rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 
-    float4 left  = make_float4(0.f,0.f,1.f,0.f);
-    float4 right = make_float4(0.f,0.f,1.f,0.f);
+
+    enum { MISS, LEFT, RIGHT, RFLIP } ;
+    float4 isect[4] ;
+    isect[MISS]       =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[LEFT]       =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[RIGHT]      =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[RFLIP]      =  make_float4(0.f, 0.f, 1.f, 0.f);
+
+    float4& left  = isect[LEFT];
+    float4& right = isect[RIGHT];
+    float4& rflip = isect[RFLIP];
 
     float tA_min = ray.tmin ; // formerly propagate_epsilon and before that 0.f
     float tB_min = ray.tmin ;
 
-    int ctrl = CTRL_LOOP_A | CTRL_LOOP_B ; 
+    int ctrl = CTRL_UNDEFINED ; 
+    enum { LIVE_DONE = 0, LIVE_A = 0x1 << 0, LIVE_B = 0x1 << 1 } ;
+    int live = LIVE_A | LIVE_B ; 
+ 
 
-
-    int count(0) ;  
-    while((ctrl & (CTRL_LOOP_A | CTRL_LOOP_B)) && count < 4 )
+    int loop(-1) ;  
+    while( live && loop < 10 )
     {
-        count++ ; 
+        loop++ ; 
 
-        if(ctrl & CTRL_LOOP_A) intersect_part( a_partIdx , tA_min, left  ) ;
-        if(ctrl & CTRL_LOOP_B) intersect_part( b_partIdx , tB_min, right ) ;
+        if(live & LIVE_A) intersect_part( a_partIdx , tA_min, left  ) ;
+        if(live & LIVE_B) intersect_part( b_partIdx , tB_min, right ) ;
 
         IntersectionState_t a_state = left.w > tA_min ? 
                         ( (left.x * ray.direction.x + left.y * ray.direction.y + left.z * ray.direction.z) < 0.f ? Enter : Exit ) 
@@ -399,31 +371,38 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
                                   Miss
                                   ; 
 
-        int actions = boolean_actions( operation , a_state, b_state );
-        int act = boolean_decision( actions, left.w <= right.w );
-        ctrl = boolean_ctrl( act );
+        ctrl = boolean_ctrl_packed_lookup( operation, a_state, b_state, left.w <= right.w );
 
-        if(     ctrl == CTRL_LOOP_A) tA_min = left.w  ;  // no epsilon ? 
-        else if(ctrl == CTRL_LOOP_B) tB_min = right.w ; 
-    } 
-
-
-    // hmm below passing to OptiX should probably be done in caller ?
-    if( ctrl & (CTRL_RETURN_A | CTRL_RETURN_B | CTRL_RETURN_FLIP_B  ))
-    {
-        if(rtPotentialIntersection( ctrl == CTRL_RETURN_A ? left.w : right.w ))
+        switch(ctrl)
         {
-            shading_normal = geometric_normal = ctrl == CTRL_RETURN_A ? 
-                                                                           make_float3(left.x, left.y, left.z)
-                                                                      :
-                                                                          ( ctrl == CTRL_RETURN_FLIP_B ? -make_float3(right.x, right.y, right.z) : make_float3(right.x, right.y, right.z) )
-                                                                      ;
-            instanceIdentity = identity ;
-            rtReportIntersection(0);
+            case CTRL_LOOP_A: tA_min = left.w + propagate_epsilon ; live = LIVE_A     ; break ;
+            case CTRL_LOOP_B: tB_min = right.w + propagate_epsilon ; live = LIVE_B    ; break ;
+            default:                                                 live = LIVE_DONE ; break ;  
         }
     } 
 
-}
 
+    rflip.x = -right.x ;
+    rflip.y = -right.y ;
+    rflip.z = -right.z ; 
+    rflip.w =  right.w ;
+
+
+    if(ctrl < 4)
+    {
+       const float4& ret = isect[ctrl] ; 
+
+        if(rtPotentialIntersection(ret.w))
+        {
+            shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
+            instanceIdentity = identity ;
+
+#ifdef BOOLEAN_DEBUG
+            instanceIdentity.x = loop  ; 
+#endif
+            rtReportIntersection(0);
+        }
+    }
+}
 
 
