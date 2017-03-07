@@ -41,6 +41,7 @@ class GGEO_API GGeoTestConfig {
                       TRANSFORM, 
                       CSGPATH,
                       OFFSETS,
+                      NAME,
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -59,6 +60,7 @@ class GGEO_API GGeoTestConfig {
        static const char* TRANSFORM_ ; 
        static const char* CSGPATH_ ;   // not yet used
        static const char* OFFSETS_ ; 
+       static const char* NAME_ ; 
     public:
        GGeoTestConfig(const char* config);
        int getVerbosity();
@@ -77,6 +79,7 @@ class GGEO_API GGeoTestConfig {
        void setPmtPath(const char* s);
        void setCsgPath(const char* s);
        void setOffsets(const char* s);
+       void setName(const char* s);
     private:
        void addNode(const char* s);
        void addBoundary(const char* s);
@@ -94,6 +97,7 @@ class GGEO_API GGeoTestConfig {
        const char* getMode();
        const char* getPmtPath();
        const char* getCsgPath();
+       const char* getName();
        unsigned int getNumElements();
 
        std::vector<std::pair<std::string, std::string> >& getCfg();
@@ -113,6 +117,7 @@ class GGEO_API GGeoTestConfig {
        const char*  m_mode ; 
        const char*  m_pmtpath ; 
        const char*  m_csgpath ; 
+       const char*  m_name ; 
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;

@@ -201,6 +201,15 @@ target_link_libraries( ${name} ${LIBRARIES} )
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 
+# with command :  c_enums_to_python.py NPart.h  > NPart_h.py 
+#add_custom_command(
+#    COMMAND ${PYTHON_EXECUTABLE} c_enums_to_python.py NPart.h
+#    DEPENDS NPart.h
+#    OUTPUTS NPart_h.py
+#    COMMENT "Generating python enum header ."
+#)
+
+
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
 

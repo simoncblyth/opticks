@@ -99,6 +99,7 @@ tboolean-box()
     local material=$(tboolean-material)
     local test_config=(
                  mode=BoxInBox
+                 name=$FUNCNAME
                  analytic=1
 
                  node=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
@@ -116,6 +117,7 @@ tboolean-box-small-offset-sphere()
     local material=$(tboolean-material)
     local test_config=(
                  mode=BoxInBox
+                 name=$FUNCNAME
                  analytic=1
 
                  node=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
@@ -135,6 +137,7 @@ tboolean-box-sphere()
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
     local test_config=(
                  mode=BoxInBox
+                 name=$FUNCNAME
                  analytic=1
 
                  node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
@@ -234,6 +237,7 @@ tboolean-csg-two-box-minus-sphere-interlocked()
 
     local test_config=(
                       mode=CsgInBox
+                      name=$FUNCNAME
                       analytic=1
                       offsets=0,1
                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
@@ -259,6 +263,7 @@ tboolean-csg-triplet()
 
     local test_config=(
                       mode=CsgInBox
+                      name=$FUNCNAME
                       analytic=1
                       offsets=0,1
                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
@@ -295,6 +300,41 @@ intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     48.918
 intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     50.134)   
 intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000     28.737)   
 
+2017-03-07 20:27:53.773 INFO  [428336] [OPropagator::prelaunch@149] 1 : (0;100000,1) prelaunch_times vali,comp,prel,lnch  0.0000 0.2528 0.0836 0.0000
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 100c   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 100c   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 100c   
+intersect_csg primIdx_ 1 ierr 100c   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 100c   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr    1   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr 100c   
+intersect_csg primIdx_ 1 ierr 1008   
+intersect_csg primIdx_ 1 ierr    1   
+intersect_csg primIdx_ 1 ierr 1008   
+
+     0x1008 -> 1008 -> ERROR_RHS_END_EMPTY 
+     0x100c -> 100c -> ERROR_LHS_END_NONEMPTY ERROR_RHS_END_EMPTY 
+           0x1 -> 1 -> ERROR_LHS_POP_EMPTY 
+
+
 dump_error_enum
     0 
     1 ERROR_LHS_POP_EMPTY 
@@ -317,6 +357,7 @@ tboolean-csg-four-box-minus-sphere()
 
     local test_config=(
                       mode=CsgInBox
+                      name=$FUNCNAME
                       analytic=1
                       offsets=0,1
                       node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
@@ -358,8 +399,8 @@ tboolean-testconfig()
     #tboolean-box-sphere union
     #tboolean-box-sphere difference
 
-    tboolean-csg-two-box-minus-sphere-interlocked
-    #tboolean-csg-four-box-minus-sphere
+    #tboolean-csg-two-box-minus-sphere-interlocked
+    tboolean-csg-four-box-minus-sphere
     #tboolean-csg-triplet
     #tboolean-csg
 

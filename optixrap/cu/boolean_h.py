@@ -15,6 +15,7 @@ are effectively generated from the C enum.
 import os, sys, datetime
 import numpy as np
 import boolean_solid_h as h 
+
 enum_kv = filter(lambda kv:kv[0][0] != "_",h.__dict__.items())
 
 from boolean_solid_h import ReturnMiss, ReturnA, ReturnAIfCloser, ReturnAIfFarther

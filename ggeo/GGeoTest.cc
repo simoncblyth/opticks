@@ -315,6 +315,8 @@ GMergedMesh* GGeoTest::createCsgInBox()
     if(m_opticks->hasOpt("dbganalytic"))
     {
         GParts* pts = tri->getParts();
+        pts->setName(m_config->getName());
+
         const char* msg = "GGeoTest::createCsgInBox --dbganalytic" ;
         pts->Summary(msg);
         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created

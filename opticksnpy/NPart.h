@@ -69,6 +69,7 @@ enum {
 
 #ifndef __CUDACC__
 
+static const char* PART_EMPTY_  = "PART_EMPTY" ; 
 static const char* PART_ZERO_   = "PART_ZERO" ; 
 static const char* PART_SPHERE_ = "PART_SPHERE" ; 
 static const char* PART_TUBS_   = "PART_TUBS" ; 
@@ -80,6 +81,7 @@ static const char* PartName( NPart_t partType )
     const char* s = 0 ; 
     switch(partType)
     {   
+        case EMPTY:   s = PART_EMPTY_  ; break ; 
         case ZERO:    s = PART_ZERO_   ; break ; 
         case SPHERE:  s = PART_SPHERE_ ; break ; 
         case TUBS:    s = PART_TUBS_   ; break ; 

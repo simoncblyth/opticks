@@ -41,6 +41,7 @@ const char* GGeoTestConfig::PMTPATH_ = "pmtpath";
 const char* GGeoTestConfig::TRANSFORM_ = "transform"; 
 const char* GGeoTestConfig::CSGPATH_ = "csgpath"; 
 const char* GGeoTestConfig::OFFSETS_ = "offsets"; 
+const char* GGeoTestConfig::NAME_ = "name"; 
 
 
 GGeoTestConfig::GGeoTestConfig(const char* config) 
@@ -49,6 +50,7 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     m_mode(NULL),
     m_pmtpath(NULL),
     m_csgpath(NULL),
+    m_name(NULL),
     m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
@@ -107,6 +109,11 @@ const char* GGeoTestConfig::getCsgPath()
 {
     return m_csgpath ; 
 }
+const char* GGeoTestConfig::getName()
+{
+    return m_name ; 
+}
+
 
 
 
@@ -167,6 +174,7 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,TRANSFORM_)==0)  arg = TRANSFORM ; 
     else if(strcmp(k,CSGPATH_)==0)    arg = CSGPATH ; 
     else if(strcmp(k,OFFSETS_)==0)    arg = OFFSETS ; 
+    else if(strcmp(k,NAME_)==0)       arg = NAME ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -191,6 +199,7 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case TRANSFORM      : addTransform(s)      ;break;
         case CSGPATH        : setCsgPath(s)        ;break;
         case OFFSETS        : setOffsets(s)        ;break;
+        case NAME           : setName(s)           ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -260,6 +269,12 @@ void GGeoTestConfig::setCsgPath(const char* s)
 {
     m_csgpath = strdup(s);
 }
+void GGeoTestConfig::setName(const char* s)
+{
+    m_name = strdup(s);
+}
+
+
 
 void GGeoTestConfig::setOffsets(const char* s)
 {

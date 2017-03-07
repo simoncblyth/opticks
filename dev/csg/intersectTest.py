@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import numpy as np
+import logging, os
+log = logging.getLogger(__name__)
 from opticks.ana.nbase import count_unique
 from node import Node
-from intersect import Ray, IIS
+from intersect import IIS
+from ray import Ray, RRS
 
 _ctrl_color = {
        0:'c', 
@@ -26,6 +29,7 @@ def one_line(ax, a, b, c ):
     ax.plot( [x1,x2], [y1,y2], c ) 
 
 
+
 class T(object):
     def __init__(self, root, debug=[], skip=[], notes="", source=None, scale=None, sign=None, num=200, level=1, **kwa):
         """
@@ -41,10 +45,13 @@ class T(object):
         if sign is None:
             sign = -1.
 
-        root.annotate()
-
+        if type(root) is Node:
+            root.annotate()
+            self.name = root.name
+        elif type(root) is str:
+            self.name = root
+        pass
         self.root = root
-        self.name = root.name
         self.debug = debug
         self.skip = skip
         self.notes = notes
@@ -78,61 +85,69 @@ class T(object):
         return "\n".join([repr(self.root),smry,icu_, rcu_])
     suptitle = property(_get_suptitle)
 
-    def _make_rays(self):
+    def make_rays(self):
         """
         Should collect rays in ndarray not a list 
         """
         rays = []
-        if "xray" in self.source:
-            rays += [Ray(origin=[0,0,0], direction=[1,0,0])]
-        pass
-
         if "leaflight" in self.source:
             for leaf in Node.inorder_r(self.root, nodes=[], leaf=True, internal=False):
-                rays += Ray.leaflight(leaf, num=self.num, sign=self.sign, scale=self.scale)
+                ll = Ray.leaflight(leaf, num=self.num, sign=self.sign, scale=self.scale)
+                if len(ll) == 0:
+                    log.warning("leaflight returned empty")
+                else:
+                    rays.append(ll)
+                pass
             pass
-
-        if "aringlight" in self.source:
-            ary = Ray.aringlight(num=self.num, radius=1000)
-            rays += Ray.make_rays(ary)
+            #log.info("make_rays leaflight %d " % len(rays))
         pass
-
+        if "ringlight" in self.source:
+            rl = Ray.ringlight(num=self.num, radius=1000)
+            assert len(rl)
+            rays.append(rl)
+            #log.info("make_rays ringlight %d " % len(rays))
+        pass
         if "origlight" in self.source:
-            rays += Ray.origlight(num=self.num)
+            ol = Ray.origlight(num=self.num)
+            assert len(ol)
+            rays.append(ol)
+            #log.info("make_rays origlight %d " % len(rays))
         pass
-
+        if "xray" in self.source:
+            xr = Ray.plane()
+            assert len(xr)
+            rays.append(xl)
+        pass
         if "lsquad" in self.source:
-            rays += [Ray(origin=[-300,y,0], direction=[1,0,0]) for y in range(-1000,1000+1,10)]
+            ls = Ray.plane(offset=[-300,0,0], yside=1000, direction=[1,0,0])
+            assert len(ls)
+            rays.append(ls)
         pass
-
         if "rsquad" in self.source:
-            rays += [Ray(origin=[300,y,0], direction=[-1,0,0]) for y in range(-1000,1000+1,10)]
+            rs = Ray.plane(offset=[300,0,0], yside=1000, direction=[-1,0,0])
+            assert len(rs)
+            rays.append(rs)
         pass
-
         if "qray" in self.source:
-            s = 300
-            r = range(-s,s+1,2)
-            rays += [Ray(origin=[s,y,0], direction=[-1,0,0])  for y in r]
-            rays += [Ray(origin=[-s,y,0], direction=[1,0,0])  for y in r]
-            rays += [Ray(origin=[x,-s,0], direction=[0,1,0])  for x in r]
-            rays += [Ray(origin=[x, s,0], direction=[0,-1,0]) for x in r]
+            qr = Ray.qray() 
+            assert len(qr)
+            rays.append(qr)
         pass
- 
         if "seray" in self.source:
-            s = 300
-            r = range(-s,s+1,2)
-            rays += [Ray(origin=[v,v-s,0], direction=[-1,1,0]) for v in r]
+            se = Ray.seray() 
+            assert len(se)
+            rays.append(se)
         pass
-        return rays
+        #print rays  
+        return RRS(np.vstack(rays))
 
-    def _get_rays(self):
-        if self._rays is None:
-            self._rays = self._make_rays()
-        pass
-        return self._rays
-    rays = property(_get_rays)
-
-    nray = property(lambda self:len(self.rays))
+    #def _get_rays(self):
+    #    if self._rays is None:
+    #        self._rays = self._make_rays()
+    #    pass
+    #    return self._rays
+    #rays = property(_get_rays)
+    #nray = property(lambda self:len(self.rays))
 
     def _make_i(self):
         a = np.zeros((2,self.nray,4,4), dtype=np.float32 )
@@ -152,17 +167,67 @@ class T(object):
         """
         :param isectors_: array of callables that take ray arguments and returns an intersect
         """
-        for iray, ray in enumerate(self.rays):
+        self.rays = {}
+        self.nray = None
+
+        # duplicate rays for each imp
+        for r in rr:
+            rays = self.make_rays()
+            self.rays[r] = rays
+            if self.nray is None:
+                self.nray = len(rays)  
+            else:
+                assert self.nray == len(rays) 
+            pass
+        pass
+
+        for iray in range(self.nray):
             for r in rr:
                 intersect_ = isectors_[r]      
                 if intersect_ is not None:
-                    self.i[r, iray] = intersect_(ray) 
+                    self.i[r, iray] = intersect_(self.rays[r].rr(iray)) 
                 pass
             pass
         pass
 
 
+    def compare(self):
+        r_att = 'seq o d tmin'
+        r_discrep = []
+        for att in r_att.split():
+            q0 = getattr(self.rays[0], att)
+            q1 = getattr(self.rays[1], att)
+
+            if att in ['seq']:
+                q_ok = np.all( q0 == q1 )
+            else:
+                q_ok = np.allclose( q0, q1)
+            pass 
+            if not q_ok:
+                r_discrep.append(att)
+            pass
+        pass
+
+        i_att = 't n o d ipos'
+        i_discrep = []
+        for att in i_att.split():
+            q = getattr(self.i, att)
+            q_ok = np.allclose( q[0], q[1] )
+            if not q_ok:
+                i_discrep.append(att)
+            pass
+        pass
+
+        if len(i_discrep) > 0 or len(r_discrep) > 0:
+            log.warning("%s : compare : i_discrep %s r_discrep: %s  " % (self.name, repr(i_discrep), repr(r_discrep) )) 
+        else:
+            log.info("%s : compare allclose   " % (self.name)) 
+        pass
+
     def compare_intersects(self, csg, rr=[1,0]):
+        """
+        TODO: move this to follow the more flixible run approach
+        """
         csg.tst = self
         tst = self
 
@@ -279,6 +344,8 @@ if __name__ == '__main__':
     from node import lrsph_u
     root = lrsph_u
 
-    t = T(lrsph_u)
-
+    t = T(lrsph_u, source="ringlight")
+    r = t.rays[0]
+    i = t.rays[1]
+    
  

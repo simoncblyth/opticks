@@ -113,7 +113,7 @@ std::string desc_ctrl( int ctrl )
     return ss.str();    
 }
 
-std::string desc_err( int err )
+std::string desc_err( long err )
 {
     std::stringstream ss ; 
     if(err & ERROR_LHS_POP_EMPTY ) ss << ERROR_LHS_POP_EMPTY_ << " " ;
@@ -235,6 +235,7 @@ std::string boolean_action<T>::dumptable(const char* msg)
 }
 
 
+/*
 std::string dump_lookup(const char* msg)
 {
     std::stringstream ss ; 
@@ -264,7 +265,7 @@ std::string dump_lookup(const char* msg)
     }
     return ss.str(); 
 }
-
+*/
 
 
 
@@ -320,7 +321,14 @@ int main(int argc, char** argv)
     std::cout << iat.dumptable("Intersection") << std::endl ;
     std::cout << dat.dumptable("Difference") << std::endl ;
 
-    std::cout << dump_lookup("dump_lookup") << std::endl ; 
+    //std::cout << dump_lookup("dump_lookup") << std::endl ; 
+
+    for(int i=1 ; i < argc ; i++)
+    {
+        long code = strtol( argv[i], NULL, 0);
+        std::cout << std::setw(10) << argv[i] << " -> " << std::hex << code << std::dec << " -> " << desc_err(code) << std::endl ;           
+    }
+
 
     return 0 ; 
 }

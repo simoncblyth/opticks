@@ -1,4 +1,4 @@
-# generated Mon Mar  6 19:09:42 2017 
+# generated Tue Mar  7 20:04:30 2017 
 # from /Users/blyth/opticks/opticksnpy 
 # with command :  /Users/blyth/opticks/bin/c_enums_to_python.py NPart.h 
 

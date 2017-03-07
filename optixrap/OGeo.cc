@@ -482,6 +482,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
         {
             partBuf->save("$TMP/OGeo_partBuf.npy");
             primBuf->save("$TMP/OGeo_primBuf.npy");
+            pts->save("$TMP");
         }
     }
 

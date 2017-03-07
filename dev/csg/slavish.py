@@ -8,8 +8,9 @@ Objectives:
 
 * instrument code paths and make visual rep of them, especially 
   the non-bileaf looping ones that do the reiteration backtracking 
-
-* investigate pop empty errors seen with the OptiX imp
+  
+  * did not viz, but find for the standard perfect trees 
+    that the recursive and iterative code paths are matching perfectly  
 
 * extend code to handle partBuffer with empty nodes ie 
   levelorder serializations of non-perfect trees 
@@ -18,19 +19,32 @@ Objectives:
 
 * check csg tree serialization/persisting and use to 
   bring python trees to GPU and vice versa
+
+  * DONE: have brought tboolean source trees to use here with using GParts.py 
+  * TODO: go from py to GPU too, more involved : needs container box and boundary hookups,
+    the analytic PMT did this already, see how that worked 
+
+* investigate pop empty errors seen with the OptiX imp
+
+  * bringing the geometry to py did not reproduce the error, but in python are 
+    just using rays in 2D, 
+    perhaps persist the torch configuration too ? so can repeat the same py side
   
 """
 
 import numpy as np
 import logging
+from opticks.ana.base import opticks_main
+
 log = logging.getLogger(__name__)
 
 from intersectTest import T
 
 from opticks.bin.ffs import ffs_, clz_
-from intersect import Ray, intersect_primitive
-from node import Node, root4, lrsph_u
+from intersect import intersect_primitive
+from node import Node, root4, lrsph_u, trees, lrsph_d1, lrsph_d2
 from node import Q0, Q1, Q2, Q3, X, Y, Z, W
+from GParts import GParts
 
 from opticks.optixrap.cu.boolean_solid_h import CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B, CTRL_LOOP_A, CTRL_LOOP_B
 from opticks.optixrap.cu.boolean_solid_h import ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
@@ -123,6 +137,7 @@ propagate_epsilon = 1e-3
 def slavish_intersect_recursive(partBuffer, ray):
     """
     """
+    instrument = True
     numParts = len(partBuffer)  
     partOffset = 0 
     fullHeight = ffs_(numParts + 1) - 2
@@ -135,6 +150,11 @@ def slavish_intersect_recursive(partBuffer, ray):
     def slavish_intersect_r(nodeIdx, tmin):
         """  
         :param nodeIdx: 1-based levelorder tree index
+
+        For supporting partial trees, 
+
+        * bileaf, must be based on partBuffer contents not leftIdx value
+
         """
         leftIdx = nodeIdx*2 
         rightIdx = nodeIdx*2 + 1
@@ -160,6 +180,9 @@ def slavish_intersect_recursive(partBuffer, ray):
 
         operation = partBuffer[nodeIdx-1,Q1,W].view(np.uint32)
         ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
+        if instrument:
+            ray.addseq(ctrl)
+
         side = ctrl - CTRL_LOOP_A 
  
         loop = -1
@@ -178,6 +201,9 @@ def slavish_intersect_recursive(partBuffer, ray):
  
             x_state[side] = CSG_CLASSIFY( isect[THIS][0], ray.direction, tX_min[side] )
             ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
+            if instrument:
+                ray.addseq(ctrl)
+            pass
             side = ctrl - CTRL_LOOP_A    ## NB possibly changed side            
         pass   # side loop
 
@@ -194,12 +220,15 @@ def slavish_intersect_recursive(partBuffer, ray):
 
 
 
-
-
 def slavish_intersect(partBuffer, ray):
+    """  
+    For following code paths its simpler to instrument rays, not intersects
+    as isects keep getting created, pushed, popped, etc..
+    """
     postorder_sequence = [ 0x1, 0x132, 0x1376254, 0x137fe6dc25ba498 ] 
     ierr = 0
     abort_ = False
+    instrument = True 
 
     partOffset = 0 
     numParts = len(partBuffer)
@@ -275,8 +304,11 @@ def slavish_intersect(partBuffer, ray):
 
             x_state[LHS] = CSG_CLASSIFY( isect[LEFT][0], ray.direction, tX_min[LHS] )
             x_state[RHS] = CSG_CLASSIFY( isect[RIGHT][0], ray.direction, tX_min[RHS] )
-
             ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
+            if instrument:
+                ray.addseq(ctrl)
+            pass
+
             side = ctrl - CTRL_LOOP_A 
             reiterate = False
             loop = -1
@@ -301,14 +333,16 @@ def slavish_intersect(partBuffer, ray):
                 pass
                 x_state[side] = CSG_CLASSIFY( isect[THIS][0], ray.direction, tX_min[side] )
                 ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
-                side = ctrl - CTRL_LOOP_A    ## NB changed side            
+                if instrument:
+                    ray.addseq(ctrl)
+                pass
+                side = ctrl - CTRL_LOOP_A    ## NB possibly changed side
 
                 if side > -1 and not bileaf:
                     other = 1 - side
                     tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
                     csg_[other].push( isect[other+LEFT] ) 
                     subtree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) if side == LHS else POSTORDER_SLICE(i-halfNodes, i) 
-     
                     tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numInternalNodes), tmin )
                     tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, subtree, tX_min[side] )
                     reiterate = True
@@ -319,11 +353,11 @@ def slavish_intersect(partBuffer, ray):
             if reiterate or abort_:
                 break
             pass
-       
-            isect[RFLIP,0,X] = -isect[RIGHT,0,X]
-            isect[RFLIP,0,Y] = -isect[RIGHT,0,Y]
-            isect[RFLIP,0,Z] = -isect[RIGHT,0,Z]
-            isect[RFLIP,0,W] = isect[RIGHT,0,W]
+
+            isect[RFLIP] = isect[RIGHT]
+            isect[RFLIP,0,X] = -isect[RFLIP,0,X]
+            isect[RFLIP,0,Y] = -isect[RFLIP,0,Y]
+            isect[RFLIP,0,Z] = -isect[RFLIP,0,Z]
  
             assert ctrl < CTRL_LOOP_A 
             result = isect[ctrl] 
@@ -357,7 +391,8 @@ def slavish_intersect(partBuffer, ray):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    args = opticks_main(doc=__doc__) 
+
     from nodeRenderer import Renderer
     import matplotlib.pyplot as plt
 
@@ -365,42 +400,74 @@ if __name__ == '__main__':
     plt.ion()
     plt.close("all")
 
-    root = root4
-    #root = lrsph_u
+    #roots = [lrsph_d1, lrsph_u]
+    roots = trees
+    #roots = ["$TMP/tboolean-csg-two-box-minus-sphere-interlocked"]
+    #roots = ["$TMP/tboolean-csg-four-box-minus-sphere"]
 
-    tst = T(root, source="aringlight")
-
-    ray = Ray()
-    ray.tmin = 0 
-
-    partBuffer = Node.serialize( root )
-    iterative_ = lambda ray:slavish_intersect(partBuffer, ray) 
-    recursive_ = lambda ray:slavish_intersect_recursive(partBuffer, ray) 
-
-    rr = [0,1]
-
-    tst.run( [iterative_, recursive_], rr )
-
-    fig = plt.figure()
-    ax1 = fig.add_subplot(1,2,1, aspect='equal')
-    ax2 = fig.add_subplot(1,2,2, aspect='equal')
-    axs = [ax1,ax2]
-
-    tst.plot_intersects( axs=axs, rr=rr, normal=False, origin=False, rayline=False)
-
-    for ax in axs:
-        rdr = Renderer(ax)
-        rdr.render(tst.root)
-        #rdr.limits(400,400)
-        ax.axis('auto')
+    skips = []
+    tsts = []
+    for root in roots:
+        if type(root) is str:
+            source = "ringlight,origlight"  # TODO: support partBuf extraction of prim nodes in leaflight
+        else:
+            #if not Node.is_perfect_i(root):
+            #    log.warning("skip imperfect tree %s " % root )
+            #    continue  
+            if root.name in skips:
+                log.warning("skipping tree %s " % root )
+                continue  
+            pass
+            source = "leaflight"
+        pass
+        tsts.append(T(root,level=3,debug=[0], num=100, source=source,origin=True,rayline=True, scale=0.1, sign=1))
     pass
 
-    fig.suptitle(tst.suptitle, horizontalalignment='left', family='monospace', fontsize=10, x=0.1, y=0.99) 
-    fig.show()
+
+    for tst in tsts:
+        root = tst.root
+        #log.info("tst %s " % tst.name )
+
+        if type(root) is Node:        
+            partBuffer = Node.serialize( root )
+        elif type(root) is str:
+            gp = GParts(root)
+            partBuffer = gp[1]
+        else:
+            assert 0, (root, type(root)) 
+        pass
+
+        iterative_ = lambda ray:slavish_intersect(partBuffer, ray) 
+        recursive_ = lambda ray:slavish_intersect_recursive(partBuffer, ray) 
+        rr = [0,1]
+        tst.run( [iterative_, recursive_], rr )
+        tst.compare()
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(1,2,1, aspect='equal')
+        ax2 = fig.add_subplot(1,2,2, aspect='equal')
+        axs = [ax1,ax2]
+
+        tst.plot_intersects( axs=axs, rr=rr, normal=False, origin=False, rayline=False)
+
+        if type(root) is Node:
+            for ax in axs:
+                rdr = Renderer(ax)
+                rdr.render(tst.root)
+                #rdr.limits(400,400)
+                ax.axis('auto')
+            pass
+        else:
+            pass  # TODO: support rendering basis shapes from partBuffer
+
+        fig.suptitle(tst.suptitle, horizontalalignment='left', family='monospace', fontsize=10, x=0.1, y=0.99) 
+        fig.show()
+    pass
 
 
-
-
+    i = tst.i
+    r0 = tst.rays[0]
+    r1 = tst.rays[1]
 
 
  

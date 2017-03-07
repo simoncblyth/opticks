@@ -15,10 +15,9 @@ X,Y,Z,W = 0,1,2,3
 from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
 from opticks.opticksnpy.NPart_h import EMPTY, ZERO, SPHERE, BOX
 
-
 _desc_sh = { EMPTY:"e", ZERO:"z", SPHERE:"s", BOX:"b" }
 def desc_sh(sh):
-    return _desc_sh[sh]
+    return _desc_sh.get(sh, "bad shape key %d %x " % (sh,sh)) 
 
 
 
@@ -366,7 +365,7 @@ class Node(object):
         """
         height = root.maxdepth
         totNodes = Node.NumNodes(height)
-        log.info("height %d totNodes %d " % (height, totNodes))
+        #log.info("serialize : height %d totNodes %d " % (height, totNodes))
         partBuf = np.zeros( (totNodes, 4, 4), dtype=np.float32 )
         cls.serialize_r( root, partBuf, 0)      
         return partBuf 
@@ -392,7 +391,7 @@ class Node(object):
         node = Node()
         node.param = part[Q0]
         node.operation = part.view(np.uint32)[Q1, W]
-        node.shape    = part.view(np.uint32)[Q2, W]
+        node.shape    = part.view(np.int32)[Q2, W]
         return node
 
 

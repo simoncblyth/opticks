@@ -70,6 +70,7 @@ class GGEO_API GParts {
         GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib=NULL);
         GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib=NULL);
     public:
+        void setName(const char* name);
         void setBndLib(GBndLib* blib);
         void setVerbose(bool verbose); 
         void add(GParts* other);
@@ -81,6 +82,7 @@ class GGEO_API GParts {
         void init(const char* spec);        
         void init();        
     public: 
+        const char*  getName();
         unsigned int getIndex(unsigned int part);
         unsigned int getFlags(unsigned int part);
         unsigned int getTypeCode(unsigned int part);
@@ -121,6 +123,7 @@ class GGEO_API GParts {
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
+        void save(const char* dir);
     private:
         void registerBoundaries();
         void makePrimBuffer();
@@ -136,6 +139,7 @@ class GGEO_API GParts {
         NPY<float>*        m_part_buffer ; 
         GItemList*         m_bndspec ;  
         GBndLib*           m_bndlib ; 
+        const char*        m_name ;         
     private:
         NPY<unsigned int>* m_prim_buffer ; 
         bool               m_closed ; 

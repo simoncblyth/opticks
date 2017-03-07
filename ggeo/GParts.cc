@@ -146,6 +146,7 @@ GParts::GParts(GBndLib* bndlib)
       m_part_buffer(NULL),
       m_bndspec(NULL),
       m_bndlib(bndlib),
+      m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
       m_verbose(false)
@@ -174,6 +175,43 @@ GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib)
 {
       init() ; 
 }
+
+
+void GParts::save(const char* dir)
+{
+    if(!dir) return ; 
+
+    const char* name = getName();    
+    if(!name)
+    {
+        LOG(warning) << "GParts::save SET NAME BEFORE save" ;
+        return ;  
+    }
+
+    LOG(info) << "GParts::save " << name << " to " << dir ; 
+
+    if(m_part_buffer)
+    {
+        m_part_buffer->save(dir, name, "partBuffer.npy");    
+    }
+    if(m_prim_buffer)
+    {
+        m_prim_buffer->save(dir, name, "primBuffer.npy");    
+    }
+}
+
+
+void GParts::setName(const char* name)
+{
+    m_name = name ? strdup(name) : NULL  ; 
+}
+const char* GParts::getName()
+{
+    return m_name ; 
+}
+
+
+
 
 void GParts::setVerbose(bool verbose)
 {
