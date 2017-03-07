@@ -130,6 +130,7 @@ struct CSG
 static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
 {
+    // a slavish python translation of this is in dev/csg/slavish.py 
     // see opticks/dev/csg/node.py:Node.postOrderSequence
     // sequence of 1-based levelorder indices in postorder, which has tree meaning 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
@@ -237,13 +238,11 @@ void intersect_csg( const uint4& prim, const uint4& identity )
             
                  if(bileaf)
                  {
-                     // intersect lhs/rhs primitive again with tmin advanced
-                      intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ;
+                      intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advance
                  }
                  else
                  {
-                      // pop prior stacked result
-                      CSG_POP( csg[side].data, csg[side].curr, ERROR_POP_EMPTY, _side );
+                      CSG_POP( csg[side].data, csg[side].curr, ERROR_POP_EMPTY, _side ); // faux recursive call
                  }
 
                  // reclassification and boolean decision following advancement of one side 
@@ -257,7 +256,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                      tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
                      CSG_PUSH( csg[other].data, csg[other].curr, ERROR_OVERFLOW, isect[other+LEFT] );
                      unsigned subtree = side == LHS ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
-                     TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes)        , tmin );
+                     TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes), tmin );
                      TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, subtree , tX_min[side] );
                      reiterate = true ; 
                      break ; 
@@ -307,25 +306,20 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 static __device__
 void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
 {
-    // NB LIMITED TO SINGLE BOOLEAN OPERATION APPLIED TO TWO BASIS SOLIDS, ie triplet trees
-
-    // primFlags only available for root of tree,
-    // operate from partBuffer for other nodes
-
     unsigned partOffset = prim.x ; 
     //unsigned primIdx_   = prim.z ; 
 
-    unsigned n_partIdx = partOffset ;    
-    unsigned a_partIdx = partOffset + 1 ;   // SIMPLIFYING TRIPLET ASSUMPTION
-    unsigned b_partIdx = partOffset + 2 ;  
+    unsigned nodeIdx = 1 ;    
+    unsigned leftIdx = nodeIdx*2 ;      
+    unsigned rightIdx = nodeIdx*2 + 1 ;  
 
     quad q1 ; 
-    q1.f = partBuffer[4*n_partIdx+1];
+    q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];
     OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
 
     //rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 
-
+    enum { LHS, RHS };
     enum { MISS, LEFT, RIGHT, RFLIP } ;
     float4 isect[4] ;
     isect[MISS]       =  make_float4(0.f, 0.f, 1.f, 0.f);
@@ -337,50 +331,44 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     float4& right = isect[RIGHT];
     float4& rflip = isect[RFLIP];
 
-    float tA_min = ray.tmin ; // formerly propagate_epsilon and before that 0.f
-    float tB_min = ray.tmin ;
+    float tX_min[2] ; 
 
-    int ctrl = CTRL_UNDEFINED ; 
-    enum { LIVE_DONE = 0, LIVE_A = 0x1 << 0, LIVE_B = 0x1 << 1 } ;
-    int live = LIVE_A | LIVE_B ; 
- 
+    float& tL_min = tX_min[LHS] ; // formerly propagate_epsilon and before that 0.f
+    float& tR_min = tX_min[RHS] ;
 
-    int loop(-1) ;  
-    while( live && loop < 10 )
+    tL_min = ray.tmin ; 
+    tR_min = ray.tmin ; 
+
+    left.w = 0.f ;   // reusing the same storage so clear ahead
+    right.w = 0.f ; 
+    intersect_part( partOffset+leftIdx-1 , tL_min, left  ) ;
+    intersect_part( partOffset+rightIdx-1 , tR_min, right  ) ;
+
+    IntersectionState_t x_state[2] ;
+
+    x_state[LHS] = CSG_CLASSIFY( left, ray.direction, tL_min );
+    x_state[RHS] = CSG_CLASSIFY( right, ray.direction, tL_min );
+
+    int ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );
+    int side = ctrl - CTRL_LOOP_A ; 
+
+    int loop(-1);
+    while( side > -1 && loop < 10)
     {
-        loop++ ; 
+        loop++ ;
+        float4& _side = isect[side+LEFT] ;
+        tX_min[side] = _side.w + propagate_epsilon ;
+        intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advanced intersect
 
-        if(live & LIVE_A) intersect_part( a_partIdx , tA_min, left  ) ;
-        if(live & LIVE_B) intersect_part( b_partIdx , tB_min, right ) ;
-
-        IntersectionState_t a_state = left.w > tA_min ? 
-                        ( (left.x * ray.direction.x + left.y * ray.direction.y + left.z * ray.direction.z) < 0.f ? Enter : Exit ) 
-                                  :
-                                  Miss
-                                  ; 
-
-        IntersectionState_t b_state = right.w > tB_min ? 
-                        ( (right.x * ray.direction.x + right.y * ray.direction.y + right.z * ray.direction.z) < 0.f ? Enter : Exit ) 
-                                  :
-                                  Miss
-                                  ; 
-
-        ctrl = boolean_ctrl_packed_lookup( operation, a_state, b_state, left.w <= right.w );
-
-        switch(ctrl)
-        {
-            case CTRL_LOOP_A: tA_min = left.w + propagate_epsilon ; live = LIVE_A     ; break ;
-            case CTRL_LOOP_B: tB_min = right.w + propagate_epsilon ; live = LIVE_B    ; break ;
-            default:                                                 live = LIVE_DONE ; break ;  
-        }
-    } 
-
+        x_state[side] = CSG_CLASSIFY( _side, ray.direction, tX_min[side] );
+        ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );
+        side = ctrl - CTRL_LOOP_A ;
+    }
 
     rflip.x = -right.x ;
     rflip.y = -right.y ;
     rflip.z = -right.z ; 
     rflip.w =  right.w ;
-
 
     if(ctrl < 4)
     {

@@ -22,9 +22,6 @@ def desc_sh(sh):
 
 
 
-
-
-
 class T(np.ndarray):
     """
     An array with a text grid representation::
@@ -369,7 +366,7 @@ class Node(object):
         """
         height = root.maxdepth
         totNodes = Node.NumNodes(height)
-        print "height %d totNodes %d " % (height, totNodes)
+        log.info("height %d totNodes %d " % (height, totNodes))
         partBuf = np.zeros( (totNodes, 4, 4), dtype=np.float32 )
         cls.serialize_r( root, partBuf, 0)      
         return partBuf 
@@ -1000,10 +997,7 @@ cbox = Node(shape=BOX, param=[0,0,0,200], name="cbox")
 lbox = Node(shape=BOX, param=[-50,50,0,100], name="lbox")
 rbox = Node(shape=BOX, param=[ 50,-50,0,100], name="rbox")
 
-
-
 csph = Node(shape=SPHERE, param=[0,0,0,250], name="csph")
-
 lsph = Node(shape=SPHERE, param=[-50,50,0,100], name="lsph")
 rsph = Node(shape=SPHERE, param=[50,-50,0,100], name="rsph")
 

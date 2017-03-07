@@ -269,7 +269,7 @@ def intersect_primitive(node, ray, tmin):
         log.fatal("shape unhandled shape:%s desc_shape:%s node:%s " % (node.shape, desc[node.shape], repr(node)))
         assert 0
     pass
-    #print " intersect_node %s ray.direction %s tt %s nn %s " % ( desc[shape], repr(ray.direction), tt, repr(nn))
+    #print " intersect_primitive %s ray.direction %s tt %s nn %s " % ( node.tag, repr(ray.direction), tt, repr(nn))
 
     isect = intersect_miss( node, ray, tmin)
     if tt is not None and nn is not None:
@@ -438,10 +438,11 @@ def intersect_box( param, ray, tmin ):
 
 
 class Ray(object):
-   def __init__(self, origin=[0,0,0], direction=[1,0,0] ):
+   def __init__(self, origin=[0,0,0], direction=[1,0,0], tmin=0):
        self.origin = np.asarray(origin, dtype=np.float32)
        dir_ = np.asarray(direction, dtype=np.float32)
        self.direction = dir_/np.sqrt(np.dot(dir_,dir_))   # normalize
+       self.tmin = tmin 
 
    def position(self, tt):
        return self.origin + tt*self.direction
