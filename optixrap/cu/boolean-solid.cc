@@ -196,9 +196,9 @@ std::string dump_error_enum(const char* msg="dump_error_enum")
 {
     std::stringstream ss ; 
     ss << msg << std::endl ; 
-    for(unsigned i=0 ; i < 10 ; i++)
+    for(unsigned i=0 ; i < 0x10 ; i++)
     {
-        ss << std::setw(5) << i << " " <<  desc_err(i) << std::endl ; 
+        ss << std::setw(5) << "0x " << std::hex << i << std::dec << " " <<  desc_err(i) << std::endl ; 
     }
     return ss.str(); 
 }

@@ -48,7 +48,7 @@ from GParts import GParts
 
 from opticks.optixrap.cu.boolean_solid_h import CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B, CTRL_LOOP_A, CTRL_LOOP_B
 from opticks.optixrap.cu.boolean_solid_h import ERROR_POP_EMPTY, ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
-from opticks.optixrap.cu.boolean_h import desc_state, Enter, Exit, Miss
+from opticks.optixrap.cu.boolean_h import desc_state, desc_ctrl, Enter, Exit, Miss
 
 
 def CSG_CLASSIFY(ise, dir_, tmin):
@@ -60,7 +60,7 @@ def CSG_CLASSIFY(ise, dir_, tmin):
 
 
 TRANCHE_STACK_SIZE = 4
-CSG_STACK_SIZE = 4
+CSG_STACK_SIZE = 8
 
 class Error(Exception):
     def __init__(self, msg):
@@ -178,13 +178,28 @@ def slavish_intersect_recursive(partBuffer, ray, tst):
             isect[RIGHT] = intersect_primitive( Node.fromPart(partBuffer[partOffset+rightIdx-1]), ray, tX_min[RHS])
         else:
             isect[LEFT]  = slavish_intersect_r( leftIdx, tX_min[LHS] )
+            if debug and nodeIdx == 1:
+                log_info("%s : initial left subtree recursion completed" % pfx("R0",tst.iray,nodeIdx,bileaf))
+
             isect[RIGHT] = slavish_intersect_r( rightIdx, tX_min[RHS] )
+            if debug and nodeIdx == 1:
+                log_info("%s : initial right subtree recursion completed" % pfx("R0",tst.iray,nodeIdx,bileaf))
         pass
+        # NB left and right subtree recursions complete before classification can happen at this level
+        # ie the above block of code is repeated in every stack instance until terminations are 
+        # reached and the unwind gets back to here 
+       
+        #if debug:
+        #    log_info("%s : middle  reached " % pfx("R0",tst.iray,nodeIdx,bileaf))
+
+
         x_state[LHS] = CSG_CLASSIFY( isect[LEFT][0], ray.direction, tX_min[LHS] )
         x_state[RHS] = CSG_CLASSIFY( isect[RIGHT][0], ray.direction, tX_min[RHS] )
 
         operation = partBuffer[nodeIdx-1,Q1,W].view(np.uint32)
         ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
+        if debug:log_info("%s :   %s   " % (pfx("R0",tst.iray,nodeIdx,bileaf), fmt(isect[LEFT],isect[RIGHT],x_state[LHS],x_state[RHS],ctrl)))
+
         if instrument:
             ray.addseq(ctrl)
 
@@ -214,10 +229,26 @@ def slavish_intersect_recursive(partBuffer, ray, tst):
         isect[RFLIP,0,Z] = -isect[RFLIP,0,Z]
  
         assert ctrl < CTRL_LOOP_A 
-        if debug:log_info("%6d R : nodeIdx %2d " % (tst.iray,nodeIdx))
+
+        # recursive return is equivalent to what gets popped ?
+        #if debug:log_info("%s :   %s   " % (pfx("R1",tst.iray,nodeIdx,bileaf), fmt(isect[LEFT],isect[RIGHT],x_state[LHS],x_state[RHS],ctrl)))
         return isect[ctrl]
     pass
     return slavish_intersect_r( 1, ray.tmin )
+
+
+
+def f4(a,j=0,nfmt="%5.2f",tfmt="%7.3f"):
+    return " ".join( map(lambda _:nfmt %  _, a[j][:3]) + [tfmt % a[j][3]]  )
+
+def fmt(left,right,lst, rst, ctrl):
+    return "L %s R %s   (%5s,%5s) -> %-20s " % ( f4(left), f4(right), desc_state(lst),desc_state(rst), desc_ctrl(ctrl))
+
+def pfx(alg,iray,nodeIdx,bileaf):
+    return "%s %6d [%2d] %2s " % (alg,iray,nodeIdx,"BI" if bileaf else "  ")
+
+def stk(lhs, rhs):
+    return "lhs %2d rhs %d " % (lhs.curr, rhs.curr) 
 
 
 
@@ -270,7 +301,6 @@ def slavish_intersect(partBuffer, ray, tst):
         while i < end:
 
             nodeIdx = POSTORDER_NODE(postorder, i)
-            if debug:log_info("%6d I : nodeIdx %2d " % (tst.iray,nodeIdx))
             leftIdx = nodeIdx*2 
             rightIdx = nodeIdx*2 + 1
             depth = 32 - clz_(nodeIdx)-1
@@ -295,6 +325,7 @@ def slavish_intersect(partBuffer, ray, tst):
                 try:
                     isect[LEFT] = lhs.pop()
                 except Error:
+                    log_info("%s : ERROR_LHS_POP_EMPTY : ABORT  " % (pfx("I0",tst.iray,nodeIdx,bileaf)))
                     ierr |= ERROR_LHS_POP_EMPTY
                     abort_ = True
                     break
@@ -302,59 +333,71 @@ def slavish_intersect(partBuffer, ray, tst):
                 try:
                     isect[RIGHT] = rhs.pop()
                 except Error:
+                    log_info("%s : ERROR_RHS_POP_EMPTY : ABORT  " % (pfx("I0",tst.iray,nodeIdx,bileaf)))
                     ierr |= ERROR_RHS_POP_EMPTY
                     abort_ = True
                     break
                 pass
             pass
 
+
             x_state[LHS] = CSG_CLASSIFY( isect[LEFT][0], ray.direction, tX_min[LHS] )
             x_state[RHS] = CSG_CLASSIFY( isect[RIGHT][0], ray.direction, tX_min[RHS] )
             ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
+
+            if debug:log_info("%s :   %s   " % (pfx("I0",tst.iray,nodeIdx,bileaf), fmt(isect[LEFT],isect[RIGHT],x_state[LHS],x_state[RHS],ctrl)))
             if instrument:
                 ray.addseq(ctrl)
             pass
 
-            side = ctrl - CTRL_LOOP_A 
             reiterate = False
-            loop = -1
+            if ctrl < CTRL_LOOP_A:
+                ## recursive return after first classify, needs an avenue to push 
+                pass
+            else:
+                side = ctrl - CTRL_LOOP_A 
+                loop = -1
 
-            while side > -1 and loop < 10:
-                loop += 1
-                assert side in [LHS, RHS], "ctrl:%d side:%d not in LHS:%d RHS:%d CTRL_LOOP_A:%d " % (ctrl, side, LHS, RHS, CTRL_LOOP_A)
-                THIS = side + LEFT 
-                assert THIS in [LEFT, RIGHT]
-                tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
+                while side > -1 and loop < 10:
+                    if debug:log_info("%s :  side %s loop %d " % (pfx("I",tst.iray,nodeIdx,bileaf), side, loop )) 
+                    loop += 1
+                    THIS = side + LEFT 
+                    tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
 
-                if bileaf:               
-                    isect[THIS] = intersect_primitive( Node.fromPart(partBuffer[partOffset+leftIdx+side-1]) , ray, tX_min[side])
-                else:
-                    try:
-                        isect[THIS] = csg_[side].pop()
-                    except Error:
-                        ierr |= ERROR_POP_EMPTY
-                        abort_ = True
+                    if bileaf:               
+                        isect[THIS] = intersect_primitive( Node.fromPart(partBuffer[partOffset+leftIdx+side-1]) , ray, tX_min[side])
+                    else:
+                        try:
+                            isect[THIS] = csg_[side].pop()
+                        except Error:
+                            log_info("%s : ERROR_POP_EMPTY : ABORT : %s " % (pfx("I0",tst.iray,nodeIdx,bileaf),stk(csg_[LHS],csg_[RHS])))
+                            ierr |= ERROR_POP_EMPTY
+                            abort_ = True
+                            break
+                        pass
+                    pass
+
+                    x_state[side] = CSG_CLASSIFY( isect[THIS][0], ray.direction, tX_min[side] )
+                    ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
+                    if debug:log_info("%s :   %s   " % (pfx("I1",tst.iray,nodeIdx,bileaf), fmt(isect[LEFT],isect[RIGHT],x_state[LHS],x_state[RHS],ctrl)))
+
+                    if instrument:
+                        ray.addseq(ctrl)
+                    pass
+                    side = ctrl - CTRL_LOOP_A    ## NB possibly changed side
+
+                    if side > -1 and not bileaf:
+                        other = 1 - side
+                        tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
+                        csg_[other].push( isect[other+LEFT] ) 
+                        subtree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) if side == LHS else POSTORDER_SLICE(i-halfNodes, i) 
+                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numInternalNodes), tmin )
+                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, subtree, tX_min[side] )
+                        reiterate = True
                         break
                     pass
-                pass
-                x_state[side] = CSG_CLASSIFY( isect[THIS][0], ray.direction, tX_min[side] )
-                ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
-                if instrument:
-                    ray.addseq(ctrl)
-                pass
-                side = ctrl - CTRL_LOOP_A    ## NB possibly changed side
-
-                if side > -1 and not bileaf:
-                    other = 1 - side
-                    tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
-                    csg_[other].push( isect[other+LEFT] ) 
-                    subtree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) if side == LHS else POSTORDER_SLICE(i-halfNodes, i) 
-                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numInternalNodes), tmin )
-                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, subtree, tX_min[side] )
-                    reiterate = True
-                    break
-                pass
-            pass   # side loop
+                pass   # side loop
+            pass
 
             if reiterate or abort_:
                 break
@@ -370,6 +413,8 @@ def slavish_intersect(partBuffer, ray, tst):
             nside = LHS if nodeIdx % 2 == 0 else RHS  # even on left
 
             csg_[nside].push(result)
+
+
 
             i += 1   # next postorder node in the tranche
         pass         # end traversal loop
@@ -434,7 +479,10 @@ if __name__ == '__main__':
         pass
     pass
 
-    tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=[785,1972,3546,7119,7325,8894],origin=True, rayline=True,scale=0.1, sign=1))
+    #irays = [785,1972,3546,7119,7325,8894]
+    irays = [785]
+
+    tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=irays,origin=True, rayline=True,scale=0.1, sign=1))
 
 
     for tst in tsts:

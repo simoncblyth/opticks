@@ -41,7 +41,7 @@ _st = dict(zip(_st_label.values(), _st_label.keys()))
 
 
 def desc_state(st):
-    return _st_label(st)
+    return _st_label[st]
 
 _ctrl = dict(filter(lambda _:_[0].startswith("CTRL"), enum_kv))
 _ctrl_label = dict(zip(_ctrl.values(), _ctrl.keys()))
