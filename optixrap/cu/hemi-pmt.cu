@@ -33,7 +33,7 @@ int boolean_ctrl_packed_lookup( OpticksCSG_t operation, IntersectionState_t stat
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 
-
+rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(float, t_parameter, rtIntersectionDistance, );
 rtDeclareVariable(float, propagate_epsilon, , );
 

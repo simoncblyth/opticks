@@ -290,45 +290,6 @@ tboolean-enum(){
 
 tboolean-csg-four-box-minus-sphere-notes(){ cat << EON
 
-intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000     62.834)   
-intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     33.091)   
-intersect_csg primIdx_ 1 ierr    1  (     0.000      0.000      1.000     32.596)   
-intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000    113.281)   
-intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     58.601)   
-intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     59.703)   
-intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     48.918)   
-intersect_csg primIdx_ 1 ierr    1  (     1.000      0.000      0.000     50.134)   
-intersect_csg primIdx_ 1 ierr    1  (     0.000     -1.000      0.000     28.737)   
-
-2017-03-07 20:27:53.773 INFO  [428336] [OPropagator::prelaunch@149] 1 : (0;100000,1) prelaunch_times vali,comp,prel,lnch  0.0000 0.2528 0.0836 0.0000
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 100c   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 100c   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 100c   
-intersect_csg primIdx_ 1 ierr 100c   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 100c   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr    1   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr 100c   
-intersect_csg primIdx_ 1 ierr 1008   
-intersect_csg primIdx_ 1 ierr    1   
-intersect_csg primIdx_ 1 ierr 1008   
 
      0x1008 -> 1008 -> ERROR_RHS_END_EMPTY 
      0x100c -> 100c -> ERROR_LHS_END_NONEMPTY ERROR_RHS_END_EMPTY 
@@ -354,6 +315,7 @@ tboolean-csg-four-box-minus-sphere()
     local material=$(tboolean-material)
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
     local radius=200
+    local s=100
 
     local test_config=(
                       mode=CsgInBox
@@ -372,17 +334,17 @@ tboolean-csg-four-box-minus-sphere()
                       node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
                       node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
 
-                      node=box          parameters=100,100,-100,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=100,100,-100,200           boundary=Vacuum///$material
+                      node=box          parameters=$s,$s,-$s,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=$s,$s,-$s,200           boundary=Vacuum///$material
 
-                      node=box          parameters=0,0,100,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,200           boundary=Vacuum///$material
+                      node=box          parameters=-$s,-$s,-$s,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=-$s,-$s,-$s,200           boundary=Vacuum///$material
 
-                      node=box          parameters=-100,-100,-100,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=-100,-100,-100,200           boundary=Vacuum///$material
+                      node=box          parameters=$s,-$s,$s,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=$s,-$s,$s,200           boundary=Vacuum///$material
 
-                      node=box          parameters=-100,100,100,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=-100,100,100,200           boundary=Vacuum///$material
+                      node=box          parameters=-$s,$s,$s,$inscribe     boundary=Vacuum///$material
+                      node=sphere       parameters=-$s,$s,$s,200           boundary=Vacuum///$material
  
                       )
 

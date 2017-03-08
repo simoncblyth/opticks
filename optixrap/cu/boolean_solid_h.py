@@ -1,4 +1,4 @@
-# generated Sat Mar  4 19:38:01 2017 
+# generated Wed Mar  8 13:22:44 2017 
 # from /Users/blyth/opticks/optixrap/cu 
 # with command :  /Users/blyth/opticks/bin/c_enums_to_python.py boolean-solid.h 
 
@@ -26,7 +26,6 @@ CTRL_RETURN_B       = 2
 CTRL_RETURN_FLIP_B  = 3
 CTRL_LOOP_A         = 4
 CTRL_LOOP_B         = 5
-CTRL_UNDEFINED      = 6
 
 
 # 2 
@@ -40,6 +39,10 @@ ERROR_LHS_OVERFLOW          = 0x1 << 5
 ERROR_RHS_OVERFLOW          = 0x1 << 6
 ERROR_LHS_TRANCHE_OVERFLOW  = 0x1 << 7
 ERROR_RHS_TRANCHE_OVERFLOW  = 0x1 << 8
+ERROR_RESULT_OVERFLOW       = 0x1 << 9
+ERROR_OVERFLOW              = 0x1 << 10
+ERROR_TRANCHE_OVERFLOW      = 0x1 << 11
+ERROR_POP_EMPTY             = 0x1 << 12
 
 
 # 3 
@@ -105,7 +108,6 @@ ACloser_Difference_ExitA_MissB   = CTRL_RETURN_A
 ACloser_Difference_MissA_EnterB  = CTRL_RETURN_MISS
 ACloser_Difference_MissA_ExitB   = CTRL_RETURN_MISS
 ACloser_Difference_MissA_MissB   = CTRL_RETURN_MISS
-
 
 
 # 8 

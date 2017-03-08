@@ -47,7 +47,7 @@ from node import Q0, Q1, Q2, Q3, X, Y, Z, W
 from GParts import GParts
 
 from opticks.optixrap.cu.boolean_solid_h import CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B, CTRL_LOOP_A, CTRL_LOOP_B
-from opticks.optixrap.cu.boolean_solid_h import ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
+from opticks.optixrap.cu.boolean_solid_h import ERROR_POP_EMPTY, ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
 from opticks.optixrap.cu.boolean_h import desc_state, Enter, Exit, Miss
 
 
@@ -134,9 +134,14 @@ def boolean_ctrl_packed_lookup(operation, stateA, stateB, ACloser ):
 propagate_epsilon = 1e-3
 
 
-def slavish_intersect_recursive(partBuffer, ray):
+def log_info(msg):
+    print msg 
+
+
+def slavish_intersect_recursive(partBuffer, ray, tst):
     """
     """
+    debug = tst.debug
     instrument = True
     numParts = len(partBuffer)  
     partOffset = 0 
@@ -188,24 +193,20 @@ def slavish_intersect_recursive(partBuffer, ray):
         loop = -1
         while side > -1 and loop < 10:
             loop += 1
-            assert side in [LHS, RHS], "ctrl:%d side:%d not in LHS:%d RHS:%d CTRL_LOOP_A:%d " % (ctrl, side, LHS, RHS, CTRL_LOOP_A)
             THIS = side + LEFT 
-            assert THIS in [LEFT, RIGHT]
             tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
-
             if bileaf:               
                 isect[THIS] = intersect_primitive( Node.fromPart(partBuffer[partOffset+leftIdx+side-1]) , ray, tX_min[side])
             else:
                 isect[THIS] = slavish_intersect_r( leftIdx+side, tX_min[side] )
             pass
- 
             x_state[side] = CSG_CLASSIFY( isect[THIS][0], ray.direction, tX_min[side] )
             ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], isect[LEFT][0][W] <= isect[RIGHT][0][W] )
             if instrument:
                 ray.addseq(ctrl)
             pass
-            side = ctrl - CTRL_LOOP_A    ## NB possibly changed side            
-        pass   # side loop
+            side = ctrl - CTRL_LOOP_A ## NB possibly changed side            
+        pass  
 
         isect[RFLIP] = isect[RIGHT]
         isect[RFLIP,0,X] = -isect[RFLIP,0,X]
@@ -213,6 +214,7 @@ def slavish_intersect_recursive(partBuffer, ray):
         isect[RFLIP,0,Z] = -isect[RFLIP,0,Z]
  
         assert ctrl < CTRL_LOOP_A 
+        if debug:log_info("%6d R : nodeIdx %2d " % (tst.iray,nodeIdx))
         return isect[ctrl]
     pass
     return slavish_intersect_r( 1, ray.tmin )
@@ -220,11 +222,12 @@ def slavish_intersect_recursive(partBuffer, ray):
 
 
 
-def slavish_intersect(partBuffer, ray):
+def slavish_intersect(partBuffer, ray, tst):
     """  
     For following code paths its simpler to instrument rays, not intersects
     as isects keep getting created, pushed, popped, etc..
     """
+    debug = tst.debug
     postorder_sequence = [ 0x1, 0x132, 0x1376254, 0x137fe6dc25ba498 ] 
     ierr = 0
     abort_ = False
@@ -256,15 +259,18 @@ def slavish_intersect(partBuffer, ray):
 
     tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numInternalNodes), ray.tmin )
 
+
     while tranche >= 0:
         tranche, tmp, tmin = TRANCHE_POP0( _tranche, _tmin,  tranche )
         begin = POSTORDER_BEGIN(tmp)
         end = POSTORDER_END(tmp)
+        if debug:log.info("%6d I : tranche begin %d end %d " % (tst.iray, begin, end))
 
         i = begin
         while i < end:
 
             nodeIdx = POSTORDER_NODE(postorder, i)
+            if debug:log_info("%6d I : nodeIdx %2d " % (tst.iray,nodeIdx))
             leftIdx = nodeIdx*2 
             rightIdx = nodeIdx*2 + 1
             depth = 32 - clz_(nodeIdx)-1
@@ -361,13 +367,13 @@ def slavish_intersect(partBuffer, ray):
  
             assert ctrl < CTRL_LOOP_A 
             result = isect[ctrl] 
-            nside = LHS if nodeIdx % 2 == 0 else RHS  # even in left
+            nside = LHS if nodeIdx % 2 == 0 else RHS  # even on left
 
             csg_[nside].push(result)
 
             i += 1   # next postorder node in the tranche
         pass         # end traversal loop
-        # if abort_:break  ## ???
+        if abort_:break  
     pass             # end tranch loop
 
 
@@ -384,7 +390,7 @@ def slavish_intersect(partBuffer, ray):
         ret = None ## hmm need some kind error holding ret
     pass
     if ierr is not 0:
-        print "ierr: %x " % ierr
+        print "ierr: 0x%.8x tst.iray:%6d " % (ierr, tst.iray)
     pass
     return ret 
 
@@ -401,27 +407,34 @@ if __name__ == '__main__':
     plt.close("all")
 
     #roots = [lrsph_d1, lrsph_u]
-    roots = trees
+    #roots = trees
     #roots = ["$TMP/tboolean-csg-two-box-minus-sphere-interlocked"]
-    #roots = ["$TMP/tboolean-csg-four-box-minus-sphere"]
+    roots = ["$TMP/tboolean-csg-four-box-minus-sphere"]
 
     skips = []
     tsts = []
-    for root in roots:
-        if type(root) is str:
-            source = "ringlight,origlight"  # TODO: support partBuf extraction of prim nodes in leaflight
-        else:
-            #if not Node.is_perfect_i(root):
-            #    log.warning("skip imperfect tree %s " % root )
-            #    continue  
-            if root.name in skips:
-                log.warning("skipping tree %s " % root )
-                continue  
+
+    if 0:
+        for root in roots:
+            if type(root) is str:
+                source = "ringlight,origlight"  # TODO: support partBuf extraction of prim nodes in leaflight
+            else:
+                if not Node.is_perfect_i(root):
+                    log.warning("skip imperfect tree %s " % root )
+                    continue  
+                pass
+                if root.name in skips:
+                    log.warning("skipping tree %s " % root )
+                    continue  
+                pass
+                source = "leaflight"
             pass
-            source = "leaflight"
+            source = "randbox"
+            tsts.append(T(root,level=3,debug=[0], num=500, source=source,origin=True,rayline=True, scale=0.1, sign=1))
         pass
-        tsts.append(T(root,level=3,debug=[0], num=100, source=source,origin=True,rayline=True, scale=0.1, sign=1))
     pass
+
+    tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=[785,1972,3546,7119,7325,8894],origin=True, rayline=True,scale=0.1, sign=1))
 
 
     for tst in tsts:
@@ -437,10 +450,10 @@ if __name__ == '__main__':
             assert 0, (root, type(root)) 
         pass
 
-        iterative_ = lambda ray:slavish_intersect(partBuffer, ray) 
-        recursive_ = lambda ray:slavish_intersect_recursive(partBuffer, ray) 
+        iterative_ = lambda ray,tst:slavish_intersect(partBuffer, ray, tst) 
+        recursive_ = lambda ray,tst:slavish_intersect_recursive(partBuffer, ray, tst) 
         rr = [0,1]
-        tst.run( [iterative_, recursive_], rr )
+        tst.run( [iterative_, recursive_], rr)
         tst.compare()
 
         fig = plt.figure()
@@ -448,7 +461,8 @@ if __name__ == '__main__':
         ax2 = fig.add_subplot(1,2,2, aspect='equal')
         axs = [ax1,ax2]
 
-        tst.plot_intersects( axs=axs, rr=rr, normal=False, origin=False, rayline=False)
+        #tst.plot_intersects( axs=axs, rr=rr, normal=False, origin=False, rayline=False)
+        tst.plot_intersects( axs=axs, rr=rr)
 
         if type(root) is Node:
             for ax in axs:

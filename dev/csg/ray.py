@@ -117,6 +117,7 @@ class RRS(np.ndarray):
     d = property(lambda self:self[:,RR.D_[0],RR.D_[1]])
     tmin = property(lambda self:self[:,RR.TMIN_[0],RR.TMIN_[1]])
     seq = property(lambda self:self.view(np.uint32)[:,RR.SEQ_[0],RR.SEQ_[1]])
+    fseq = property(lambda self:self[:,RR.SEQ_[0],RR.SEQ_[1]])
 
     def tpos(self, t):
         return self.d * t + self.o
@@ -177,6 +178,24 @@ class Ray(RR):
         rys[:,1,1] = sign*sa
 
         return rys
+
+    @classmethod
+    def randbox(cls, num=100, side=500, center=[0,0,0]):
+        u = np.random.rand(num,2,4)
+        rys = RRS(u)
+
+        norm_ = lambda a:a/np.repeat(vnorm_(a),3).reshape(-1,3)
+        vnorm_ = lambda _:np.sqrt(np.sum(_*_,1))
+        rys.d[:] = norm_(rys.d)
+
+        rys.o[:] = rys.o*2*side - side
+        rys.o[:] += center 
+
+        rys.tmin[:] = 0.
+        rys.fseq[:] = 0.
+ 
+        return rys
+
 
     @classmethod
     def boxlight(cls, num=24, side=500, center=[0,0,0], sign=-1., scale=3):
@@ -274,4 +293,21 @@ if __name__ == '__main__':
     bl = Ray.boxlight()
     ol = Ray.origlight()
 
+    np.random.seed(0)
+    u = np.random.rand(10,2,4)
 
+    rys = RRS(u)
+
+    norm_ = lambda a:a/np.repeat(vnorm_(a),3).reshape(-1,3)
+    vnorm_ = lambda _:np.sqrt(np.sum(_*_,1))
+    rys.d[:] = norm_(rys.d)
+
+    side = 100
+    rys.o[:] = rys.o*2*side - side
+    rys.tmin[:] = 0.
+    rys.fseq[:] = 0.
+
+ 
+
+    
+ 

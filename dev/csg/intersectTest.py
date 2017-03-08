@@ -31,7 +31,7 @@ def one_line(ax, a, b, c ):
 
 
 class T(object):
-    def __init__(self, root, debug=[], skip=[], notes="", source=None, scale=None, sign=None, num=200, level=1, **kwa):
+    def __init__(self, root, seed=0, irays=[], skip=[], notes="", source=None, scale=None, sign=None, num=200, level=1, **kwa):
         """
         :param root:
         :param name:
@@ -52,7 +52,9 @@ class T(object):
             self.name = root
         pass
         self.root = root
-        self.debug = debug
+        self.seed = seed
+        self.irays = irays
+        self.iray = None
         self.skip = skip
         self.notes = notes
 
@@ -72,7 +74,10 @@ class T(object):
         self._rays = None
         self._i = None
 
-    
+   
+
+    debug = property(lambda self:self.iray in self.irays)
+ 
     icu = property(lambda self:count_unique(self.i.seq[0]))
     rcu = property(lambda self:count_unique(self.i.seq[1]))
    
@@ -138,6 +143,12 @@ class T(object):
             assert len(se)
             rays.append(se)
         pass
+        if "randbox" in self.source:
+            rb = Ray.randbox(num=self.num) 
+            assert len(rb)
+            rays.append(rb)
+        pass
+
         #print rays  
         return RRS(np.vstack(rays))
 
@@ -170,22 +181,26 @@ class T(object):
         self.rays = {}
         self.nray = None
 
+        if self.seed is not None:
+            log.info("np.random.seed %u " % self.seed)
+            np.random.seed(self.seed)
+        pass
+ 
         # duplicate rays for each imp
+        rays = self.make_rays()
+        self.nray = len(rays)
         for r in rr:
-            rays = self.make_rays()
-            self.rays[r] = rays
-            if self.nray is None:
-                self.nray = len(rays)  
-            else:
-                assert self.nray == len(rays) 
-            pass
+            self.rays[r] = rays.copy()
         pass
 
-        for iray in range(self.nray):
+        irays = range(self.nray) if len(self.irays) == 0 else self.irays 
+        for iray in irays:
             for r in rr:
                 intersect_ = isectors_[r]      
                 if intersect_ is not None:
-                    self.i[r, iray] = intersect_(self.rays[r].rr(iray)) 
+                    self.iray = iray
+                    self.i[r, iray] = intersect_(self.rays[r].rr(iray), self) 
+                    pass
                 pass
             pass
         pass
@@ -193,7 +208,7 @@ class T(object):
 
     def compare(self):
         r_att = 'seq o d tmin'
-        r_discrep = []
+        r_discrep = {}
         for att in r_att.split():
             q0 = getattr(self.rays[0], att)
             q1 = getattr(self.rays[1], att)
@@ -204,17 +219,17 @@ class T(object):
                 q_ok = np.allclose( q0, q1)
             pass 
             if not q_ok:
-                r_discrep.append(att)
+                r_discrep[att] = np.where(q0 != q1)[0]
             pass
         pass
 
         i_att = 't n o d ipos'
-        i_discrep = []
+        i_discrep = {}
         for att in i_att.split():
             q = getattr(self.i, att)
             q_ok = np.allclose( q[0], q[1] )
             if not q_ok:
-                i_discrep.append(att)
+                i_discrep[att] = np.where(q[0] != q[1])[0]   # how to do notclose ?
             pass
         pass
 
@@ -281,13 +296,27 @@ class T(object):
         sc = 30 
 
         i = self.i
-        t = i.t
-        q = i.seq
-        n = i.n
-        o = i.o
-        d = i.d
-        p = i.ipos
-        c = i.cseq
+
+
+        if len(self.irays) == 0:
+            t = i.t
+            q = i.seq
+            n = i.n
+            o = i.o
+            d = i.d
+            p = i.ipos
+            c = i.cseq
+        else:
+            sub = self.irays
+            t = i.t[:, sub]
+            q = i.seq[:, sub]
+            n = i.n[:, sub]
+            o = i.o[:, sub]
+            d = i.d[:, sub]
+            p = i.ipos[:, sub]
+            c = i.cseq[:, sub]
+        pass
+
 
         m = o + 100*d  # miss endpoint 
 

@@ -130,12 +130,30 @@ struct CSG
 static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
 {
-    // a slavish python translation of this is in dev/csg/slavish.py 
-    // see opticks/dev/csg/node.py:Node.postOrderSequence
-    // sequence of 1-based levelorder indices in postorder, which has tree meaning 
+/**
+
+  * postorder traversal means that have always 
+    visited left and right subtrees before visiting a node
+
+  * a slavish python translation of this is in dev/csg/slavish.py 
+
+  * postorder_sequence for four tree heights were prepared by  
+    opticks/dev/csg/node.py:Node.postOrderSequence
+  
+  * the sequence contains 1-based levelorder indices(nodeIdx) in right to left postorder
+
+  * left,right child of nodeIdx are at (nodeIdx*2, nodeIdx*2+1)
+
+  * for non-perfect trees, the height means the maximum 
+
+**/
+
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
 
+
+
     int ierr = 0 ;  
+    int loop = -1 ; 
     bool abort_ = false ; 
 
     unsigned partOffset = prim.x ; 
@@ -151,6 +169,10 @@ void intersect_csg( const uint4& prim, const uint4& identity )
     float4 _tmin ;  // TRANCHE_STACK_SIZE is 4 
     uint4  _tranche ; 
     int tranche = -1 ;
+
+#ifdef BOOLEAN_DEBUG
+    int tloop = -1 ; 
+#endif
 
     enum { LHS, RHS };
     CSG csg[2] ; 
@@ -175,6 +197,9 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
     while (tranche >= 0)
     {
+#ifdef BOOLEAN_DEBUG
+         tloop += 1 ;
+#endif 
          float   tmin ;
          unsigned tmp ;
          TRANCHE_POP0( _tranche, _tmin, tranche,  tmp, tmin );
@@ -184,7 +209,6 @@ void intersect_csg( const uint4& prim, const uint4& identity )
          for(unsigned i=begin ; i < end ; i++)
          {
              // XXidx are 1-based levelorder perfect tree indices
-             //unsigned nodeIdx = (postorder & (0xFull << i*4 )) >> i*4 ;   
              unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;   
              unsigned leftIdx = nodeIdx*2 ; 
              unsigned rightIdx = nodeIdx*2 + 1; 
@@ -198,22 +222,17 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
 
              float tX_min[2] ; 
-             float& tL_min = tX_min[LHS] ;
-             float& tR_min = tX_min[RHS] ;
-             tL_min = tmin ; 
-             tR_min = tmin ;
+             tX_min[LHS] = tmin ;
+             tX_min[RHS] = tmin ;
 
              IntersectionState_t x_state[2] ; 
-
-             // postorder traversal means that have always 
-             // visited left and right subtrees before visiting a node
 
              if(bileaf) // op-left-right leaves
              {
                  left.w = 0.f ;   // reusing the same storage so clear ahead
                  right.w = 0.f ; 
-                 intersect_part( partOffset+leftIdx-1 , tL_min, left  ) ;
-                 intersect_part( partOffset+rightIdx-1 , tR_min, right  ) ;
+                 intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
+                 intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
              }
              else       //  op-op-op
              {
@@ -221,20 +240,20 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                  CSG_POP( rhs.data, rhs.curr, ERROR_RHS_POP_EMPTY, right );
              }
  
-             x_state[LHS] = CSG_CLASSIFY( left , ray.direction, tL_min ) ;
-             x_state[RHS] = CSG_CLASSIFY( right, ray.direction, tR_min ) ;
+             x_state[LHS] = CSG_CLASSIFY( left , ray.direction, tX_min[LHS] ) ;
+             x_state[RHS] = CSG_CLASSIFY( right, ray.direction, tX_min[RHS] ) ;
 
              int ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );
              int side = ctrl - CTRL_LOOP_A ;   // CTRL_LOOP_A,CTRL_LOOP_B -> LHS, RHS   looper side
 
              bool reiterate = false ; 
-             int loop(-1) ;  
+             loop = -1  ;  
              while( side > -1 && loop < 10 )
              {
                  loop++ ; 
                  float4& _side = isect[side+LEFT] ; 
 
-                 tX_min[side] = _side.w + propagate_epsilon ;   
+                 tX_min[side] = _side.w + propagate_epsilon ;  // classification as well as intersect needs the advance
             
                  if(bileaf)
                  {
@@ -255,6 +274,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                      int other = 1 - side ; 
                      tX_min[side] = isect[side+LEFT].w + propagate_epsilon ; 
                      CSG_PUSH( csg[other].data, csg[other].curr, ERROR_OVERFLOW, isect[other+LEFT] );
+
                      unsigned subtree = side == LHS ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
                      TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes), tmin );
                      TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, subtree , tX_min[side] );
@@ -279,26 +299,36 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              CSG_PUSH( csg[nside].data, csg[nside].curr, ERROR_RESULT_OVERFLOW, result );
 
          }  // end for : node traversal within tranche
+         if(abort_) break ;
     }       // end while : tranche
 
 
     ierr |= (( lhs.curr != -1 ) ? ERROR_LHS_END_NONEMPTY : 0 ) ;  
     ierr |= (( rhs.curr !=  0)  ? ERROR_RHS_END_EMPTY : 0)  ; 
 
-    if(rhs.curr == 0 && ierr == 0)
+    if(rhs.curr == 0 || lhs.curr == 0)
     {
-         const float4& ret = rhs.data[0] ;  
+         const float4& ret = rhs.curr == 0 ? rhs.data[0] : lhs.data[0] ;   // <-- should always be rhs, accept lhs for debug
          if(rtPotentialIntersection( ret.w ))
          {
               shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
               instanceIdentity = identity ;
+#ifdef BOOLEAN_DEBUG
+              instanceIdentity.x = ierr != 0  ? 1 : instanceIdentity.x ; 
+              instanceIdentity.y = tloop == 1 ? 1 : instanceIdentity.y ; 
+              instanceIdentity.z = tloop > 1  ? 1 : instanceIdentity.z ; 
+#endif
               rtReportIntersection(0);
          }
     } 
 
     //rtPrintf("intersect_csg partOffset %u numParts %u numInternalNodes %u primIdx_ %u height %u postorder %llx ierr %x \n", partOffset, numParts, numInternalNodes, primIdx_, height, postorder, ierr );
     if(ierr != 0)
-    rtPrintf("intersect_csg primIdx_ %u ierr %4x   \n", primIdx_, ierr );
+    rtPrintf("intersect_csg primIdx_ %u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
+          primIdx_, ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26,
+          ray.direction.x, ray.direction.y, ray.direction.z,
+          ray.origin.x, ray.origin.y, ray.origin.z
+      );
 
 }   // intersect_csg
 
@@ -332,22 +362,18 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     float4& rflip = isect[RFLIP];
 
     float tX_min[2] ; 
-
-    float& tL_min = tX_min[LHS] ; // formerly propagate_epsilon and before that 0.f
-    float& tR_min = tX_min[RHS] ;
-
-    tL_min = ray.tmin ; 
-    tR_min = ray.tmin ; 
+    tX_min[LHS] = ray.tmin ; 
+    tX_min[RHS] = ray.tmin ; 
 
     left.w = 0.f ;   // reusing the same storage so clear ahead
     right.w = 0.f ; 
-    intersect_part( partOffset+leftIdx-1 , tL_min, left  ) ;
-    intersect_part( partOffset+rightIdx-1 , tR_min, right  ) ;
+    intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
+    intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
 
     IntersectionState_t x_state[2] ;
 
-    x_state[LHS] = CSG_CLASSIFY( left, ray.direction, tL_min );
-    x_state[RHS] = CSG_CLASSIFY( right, ray.direction, tL_min );
+    x_state[LHS] = CSG_CLASSIFY( left, ray.direction, tX_min[LHS] );
+    x_state[RHS] = CSG_CLASSIFY( right, ray.direction, tX_min[RHS] );
 
     int ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );
     int side = ctrl - CTRL_LOOP_A ; 

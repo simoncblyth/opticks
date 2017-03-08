@@ -20,7 +20,7 @@ RT_PROGRAM void closest_hit_propagate()
 
      prd.cos_theta = cos_theta ;
 
-     prd.distance_to_boundary = t ; 
+     prd.distance_to_boundary = t ;   // huh: there is an standard attrib for this
 
      unsigned int boundaryIndex = instanceIdentity.z ; 
 

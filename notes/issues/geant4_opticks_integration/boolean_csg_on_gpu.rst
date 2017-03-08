@@ -7,9 +7,193 @@ TODO: numerical/chi2 history comparison with CFG4 booleans
 ------------------------------------------------------------
 
 
-WIP: boolean csg tree implementation
---------------------------------------
 
+Boolean Debugging
+-------------------
+
+
+
+
+Ideas
+~~~~~~~
+
+* overlap of subtrees causes the error
+
+* test with more reasonable geometries, to see if this is just a
+  bad geometry issue
+
+* rather than aborting on error, return some
+  intersect instrumented with the error code and get that 
+  propagated thru the identity into the hijacked photon sequence code
+
+* this will then allow selection of the photons that encountered csg errors
+
+* in the ray trace view similarly return an intersect instrumented with errors 
+  in order to see which part of the geometry causes the problems
+
+
+slavish.py
+~~~~~~~~~~~
+
+Using 10k rays generated in a random box, succeed to get a few errors python side, made reproducible by setting np.random.seed.
+
+::
+
+    slavish.py
+    [2017-03-08 13:45:35,836] p62090 {/Users/blyth/opticks/dev/csg/intersectTest.py:180} INFO - np.random.seed 0 
+    ierr: 0x00001008 iray:   785 
+    ierr: 0x00001008 iray:  1972 
+    ierr: 0x00001008 iray:  3546 
+    ierr: 0x00001008 iray:  7119 
+    ierr: 0x00001008 iray:  7325 
+    ierr: 0x00001008 iray:  8894 
+    [2017-03-08 13:45:53,221] p62090 {/Users/blyth/opticks/dev/csg/intersectTest.py:229} WARNING - $TMP/tboolean-csg-four-box-minus-sphere : compare : i_discrep {'d': IIS([ 785,  785,  785, 1972, 1972, 1972, 3546, 3546, 3546, 7119, 7119, 7119, 7325, 7325, 7325, 8894, 8894, 8894]), 'ipos': IIS([ 785,  785,  785, 1972, 1972, 1972, 3546, 3546, 3546, 7119, 7119, 7119, 7325, 7325, 7325, 8894, 8894, 8894]), 't': array([ 785, 1972, 3546, 7119, 7325, 8894]), 'o': IIS([ 785,  785,  785, 1972, 1972, 1972, 3546, 3546, 3546, 7119, 7119, 7119, 7325, 7325, 7325, 8894, 8894, 8894]), 'n': IIS([ 785,  785,  785, 1972, 1972, 1972, 3546, 3546, 3546, 7119, 7119, 7119, 7325, 7325, 7325, 8894, 8894, 8894])} r_discrep: {}  
+
+
+Cause is same for all, iterative misses loopers that recursive does::
+
+    [2017-03-08 14:34:06,284] p62256 {/Users/blyth/opticks/dev/csg/intersectTest.py:185} INFO - np.random.seed 0 
+    [2017-03-08 14:34:06,286] p62256 {/Users/blyth/opticks/dev/csg/slavish.py:267} INFO -    785 I : tranche begin 0 end 7 
+       785 I : nodeIdx  4 
+       785 I : nodeIdx  5 
+       785 I : nodeIdx  2 
+       785 I : nodeIdx  6 
+       785 I : nodeIdx  7 
+       785 I : nodeIdx  3 
+       785 I : nodeIdx  1 
+    ierr: 0x00001008 tst.iray:   785 
+
+       785 R : nodeIdx  4 
+       785 R : nodeIdx  5 
+       785 R : nodeIdx  2 
+       785 R : nodeIdx  6 
+       785 R : nodeIdx  7 
+       785 R : nodeIdx  3 
+       785 R : nodeIdx  6*   REPEAT RIGHT SUBTREE 
+       785 R : nodeIdx  7* 
+       785 R : nodeIdx  3* 
+       785 R : nodeIdx  1 
+
+    [2017-03-08 14:34:06,289] p62256 {/Users/blyth/opticks/dev/csg/slavish.py:267} INFO -   1972 I : tranche begin 0 end 7 
+      1972 I : nodeIdx  4 
+      1972 I : nodeIdx  5 
+      1972 I : nodeIdx  2 
+      1972 I : nodeIdx  6 
+      1972 I : nodeIdx  7 
+      1972 I : nodeIdx  3 
+      1972 I : nodeIdx  1 
+    ierr: 0x00001008 tst.iray:  1972 
+      1972 R : nodeIdx  4 
+      1972 R : nodeIdx  5 
+      1972 R : nodeIdx  2 
+      1972 R : nodeIdx  6 
+      1972 R : nodeIdx  7 
+      1972 R : nodeIdx  3 
+      1972 R : nodeIdx  4*  REPEAT LEFT SUBTREE
+      1972 R : nodeIdx  5* 
+      1972 R : nodeIdx  2* 
+      1972 R : nodeIdx  1 
+    [2017-03-08 14:34:06,292] p62256 {/Users/blyth/opticks/dev/csg/slavish.py:267} INFO -   3546 I : tranche begin 0 end 7 
+      3546 I : nodeIdx  4 
+      3546 I : nodeIdx  5 
+      3546 I : nodeIdx  2 
+    ierr: 0x00001008 tst.iray:  3546 
+      3546 R : nodeIdx  4 
+      3546 R : nodeIdx  5 
+      3546 R : nodeIdx  5*   REPEAT A BILEAF 
+      3546 R : nodeIdx  2 
+      3546 R : nodeIdx  6 
+      3546 R : nodeIdx  7 
+      3546 R : nodeIdx  3 
+      3546 R : nodeIdx  1 
+    [2017-03-08 14:34:06,295] p62256 {/Users/blyth/opticks/dev/csg/slavish.py:267} INFO -   7119 I : tranche begin 0 end 7 
+      7119 I : nodeIdx  4 
+      7119 I : nodeIdx  5    
+      7119 I : nodeIdx  2 
+      7119 I : nodeIdx  6 
+      7119 I : nodeIdx  7 
+      7119 I : nodeIdx  3 
+      7119 I : nodeIdx  1 
+    ierr: 0x00001008 tst.iray:  7119 
+      7119 R : nodeIdx  4 
+      7119 R : nodeIdx  5 
+      7119 R : nodeIdx  2 
+      7119 R : nodeIdx  6 
+      7119 R : nodeIdx  7 
+      7119 R : nodeIdx  3 
+      7119 R : nodeIdx  4*
+      7119 R : nodeIdx  5* 
+      7119 R : nodeIdx  2* 
+      7119 R : nodeIdx  1 
+
+
+
+
+
+CSG Errors
+~~~~~~~~~~~~~
+
+Very overlapped geometry like : tboolean-csg-four-box-minus-sphere
+gives errors, shown below. 
+Dumping the launch_index and comparing between runs suggests the issue is reproducible.
+
+Returning the improper 
+
+::
+
+
+     0x1008 -> 1008 -> ERROR_RHS_END_EMPTY 
+     0x100c -> 100c -> ERROR_LHS_END_NONEMPTY ERROR_RHS_END_EMPTY 
+           0x1 -> 1 -> ERROR_LHS_POP_EMPTY 
+
+
+Origin shows not primary rays causing errors::
+
+    2017-03-08 11:02:28.525 INFO  [457301] [OPropagator::prelaunch@149] 1 : (0;100000,1) prelaunch_times vali,comp,prel,lnch  0.0000 1.0982 0.1492 0.0000
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  175,    0) li.x(26) 19 ray.direction (     0.865,    -0.354,    -0.354) ray.origin (   -50.111,   -37.211,    -4.933)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index (  249,    0) li.x(26) 15 ray.direction (    -0.000,     0.434,    -0.901) ray.origin (    35.866,   -53.215,    50.111)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  615,    0) li.x(26) 17 ray.direction (    -0.000,    -0.901,     0.434) ray.origin (    28.152,    50.111,     9.413)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index (   11,    0) li.x(26) 11 ray.direction (     0.434,    -0.000,    -0.901) ray.origin (    -6.774,    44.818,    50.111)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index (  323,    0) li.x(26) 11 ray.direction (     0.434,    -0.000,    -0.901) ray.origin (    -1.145,    31.434,    50.111)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index (  387,    0) li.x(26) 23 ray.direction (     0.354,    -0.865,     0.354) ray.origin (    42.450,    50.111,   -55.690)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  406,    0) li.x(26) 16 ray.direction (    -0.000,     0.901,     0.434) ray.origin (   -37.924,   -50.111,     0.866)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  397,    0) li.x(26)  7 ray.direction (     0.901,    -0.434,    -0.000) ray.origin (   -50.111,   -14.494,    17.463)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index ( 1286,    0) li.x(26) 12 ray.direction (     0.434,    -0.000,     0.901) ray.origin (  -158.749,   -45.161,   -50.111)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  207,    0) li.x(26) 25 ray.direction (     0.354,     0.354,     0.865) ray.origin (  -146.598,   -51.685,   -50.111)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  584,    0) li.x(26) 12 ray.direction (     0.901,    -0.000,     0.434) ray.origin (   -50.111,   -16.444,    17.319)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  662,    0) li.x(26) 12 ray.direction (     0.901,    -0.000,     0.434) ray.origin (   -50.111,   -17.234,    15.378)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  666,    0) li.x(26) 16 ray.direction (    -0.000,     0.901,     0.434) ray.origin (   -25.323,   -50.111,     1.325)   
+    intersect_csg primIdx_ 1 ierr    1 launch_index ( 1325,    0) li.x(26) 25 ray.direction (     0.354,     0.865,     0.354) ray.origin (    31.793,   -50.111,   -10.657)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index ( 1519,    0) li.x(26) 11 ray.direction (     0.434,    -0.000,    -0.901) ray.origin (    10.308,    21.809,    50.111)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (   99,    0) li.x(26) 21 ray.direction (    -0.354,    -0.865,     0.354) ray.origin (    52.533,   150.111,   -37.067)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index ( 1968,    0) li.x(26) 18 ray.direction (    -0.865,    -0.354,    -0.354) ray.origin (    50.111,   -41.536,    21.572)   
+    intersect_csg primIdx_ 1 ierr 1008 launch_index (  967,    0) li.x(26)  5 ray.direction (    -0.000,    -0.000,     1.000) ray.origin (   -47.721,   -40.248,  -250.111)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index (  141,    0) li.x(26) 11 ray.direction (     0.434,    -0.000,    -0.901) ray.origin (    26.544,     3.120,    50.111)   
+    intersect_csg primIdx_ 1 ierr 100c launch_index (  985,    0) li.x(26) 23 ray.direction (     0.779,    -0.007,     0.627) ray.origin (    38.651,    13.330,   -10.936)   
+
+::
+
+    intersect_csg primIdx_ 1 ierr 1008 tloop   0 launch_index ( 1005,  365) li.x(26) 17 ray.direction (    -0.990,    -0.111,     0.089) ray.origin (    80.850,   -27.053,   -58.984)   
+    intersect_csg primIdx_ 1 ierr 1008 tloop   0 launch_index ( 1006,  365) li.x(26) 18 ray.direction (    -0.990,    -0.110,     0.089) ray.origin (    80.850,   -27.053,   -58.984)   
+    intersect_csg primIdx_ 1 ierr 1008 tloop   0 launch_index ( 1007,  365) li.x(26) 19 ray.direction (    -0.990,    -0.109,     0.089) ray.origin (    80.850,   -27.053,   -58.984)   
+    intersect_csg primIdx_ 1 ierr 1008 tloop   0 launch_index ( 1004,  367) li.x(26) 16 ray.direction (    -0.990,    -0.112,     0.091) ray.origin (    80.850,   -27.053,   -58.984)   
+    intersect_csg primIdx_ 1 ierr 1008 tloop   0 launch_index ( 1005,  367) li.x(26) 17 ray.direction (    -0.990,    -0.111,     0.091) ray.origin (    80.850,   -27.053,   -58.984)   
+    intersect_csg primIdx_ 1 ierr 1008 tloop   0 launch_index ( 1006,  367) li.x(26) 18 ray.direction (    -0.990,    -0.110,     0.091) ray.origin (    80.850,   -27.053,   -58.984)   
+
+    PRINT BUFFER -1 OVERFLOW
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  920,  383) li.x(26) 10 ray.direction (    -0.978,    -0.184,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  921,  383) li.x(26) 11 ray.direction (    -0.978,    -0.183,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  922,  383) li.x(26) 12 ray.direction (    -0.978,    -0.182,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  923,  383) li.x(26) 13 ray.direction (    -0.978,    -0.182,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  924,  383) li.x(26) 14 ray.direction (    -0.978,    -0.181,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  925,  383) li.x(26) 15 ray.direction (    -0.978,    -0.180,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+    intersect_csg primIdx_ 1 ierr    1 tloop   2 launch_index (  926,  383) li.x(26) 16 ray.direction (    -0.978,    -0.179,     0.102) ray.origin (    82.681,   -27.666,   -60.320)   
+
+
+
+
+DONE: boolean csg tree implementation
+--------------------------------------
 
 
 OptiX array
