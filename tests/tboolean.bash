@@ -284,7 +284,7 @@ tboolean-csg-triplet()
 
 tboolean-enum(){
    local tmp=$TMP/$FUNCNAME.exe
-   clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp 
+   clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp $*
 }
 
 

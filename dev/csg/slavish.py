@@ -71,13 +71,43 @@ class Error(Exception):
     def __init__(self, msg):
         super(Error, self).__init__(msg)
 
+"""
 
+::
+
+    In [351]: a = np.zeros(10,dtype=np.float32)
+
+    In [353]: np.signbit(a)
+    Out[353]: array([False, False, False, False, False, False, False, False, False, False], dtype=bool)
+
+    In [354]: a[5] = -0
+
+    In [355]: np.signbit(a)
+    Out[355]: array([False, False, False, False, False, False, False, False, False, False], dtype=bool)
+
+    In [356]: a[5] = -0.
+
+    In [357]: np.signbit(a)
+    Out[357]: array([False, False, False, False, False,  True, False, False, False, False], dtype=bool)
+
+    In [360]: a.view(np.uint32)[5]
+    Out[360]: 2147483648
+
+    In [362]: "%x" % a.view(np.uint32)[5]
+    Out[362]: '80000000'
+
+    In [364]: 0x1 << 31
+    Out[364]: 2147483648
+
+
+"""
 
 class CSGD(object):
     def __init__(self):
         self.data = np.zeros( (CSG_STACK_SIZE, 4,4), dtype=np.float32 )
         self.idx = np.zeros( (CSG_STACK_SIZE,), dtype=np.uint32 )
         self.curr = -1
+        pass
 
     def __repr__(self):
         return "csg  %2d:{%s} " % (self.curr, ",".join(map(lambda _:"%d" % _, self.nodes)))
@@ -177,6 +207,23 @@ def test_POSTORDER():
 
 POSTORDER_NODE = lambda postorder, i: (((postorder) & (0xF << (i)*4 )) >> (i)*4 )
 
+TREE_HEIGHT = lambda numNodes:( ffs_((numNodes) + 1) - 2)
+TREE_NODES = lambda height:( (0x1 << (1+(height))) - 1 )
+TREE_DEPTH = lambda nodeIdx:( 32 - clz_((nodeIdx)) - 1 )
+
+def test_tree():
+    """
+    ::
+
+        In [421]: numNodes = [TREE_NODES(_) for _ in range(5)]
+        In [422]: numNodes
+        Out[422]: [1, 3, 7, 15, 31]
+        In [423]: map(TREE_HEIGHT, numNodes)
+        Out[423]: [0, 1, 2, 3, 4]
+    """
+    numNodes = [TREE_NODES(_) for _ in range(5)]
+    print map(TREE_HEIGHT, numNodes)
+
 
 
 # generated from /Users/blyth/opticks/optixrap/cu by boolean_h.py on Sat Mar  4 20:37:03 2017 
@@ -202,9 +249,9 @@ def slavish_intersect_recursive(partBuffer, ray, tst):
     instrument = True
     numParts = len(partBuffer)  
     partOffset = 0 
-    fullHeight = ffs_(numParts + 1) - 2
+    fullHeight = TREE_HEIGHT(numParts)
     height = fullHeight - 1
-    numInternalNodes = (0x1 << (1+height)) - 1
+    numInternalNodes = TREE_NODES(height)
 
     def slavish_intersect_r(nodeIdx, tmin):
         """  
@@ -327,10 +374,10 @@ def evaluative_intersect(partBuffer, ray, tst):
     numParts = len(partBuffer)
     primIdx = -1
 
-    fullHeight = ffs_(numParts + 1) - 2 
+    fullHeight = TREE_HEIGHT(numParts)
     height = fullHeight - 1 
-    numInternalNodes = (0x1 << (1+height)) - 1       
-    numNodes = (0x1 << (1+fullHeight)) - 1       
+    numInternalNodes = TREE_NODES(height)       
+    numNodes = TREE_NODES(fullHeight)      
 
     postorder = postorder_sequence[fullHeight] 
 
@@ -359,7 +406,7 @@ def evaluative_intersect(partBuffer, ray, tst):
         i = begin
         while i < end:
             nodeIdx = POSTORDER_NODE(postorder, i)
-            depth = 32 - clz_(nodeIdx)-1
+            depth = TREE_DEPTH(nodeIdx)
             subNodes = (0x1 << (1+fullHeight-depth)) - 1
             halfNodes = (subNodes - 1)/2 
             primitive = nodeIdx > numInternalNodes 
@@ -493,7 +540,7 @@ def slavish_intersect(partBuffer, ray, tst):
             nodeIdx = POSTORDER_NODE(postorder, i)
             leftIdx = nodeIdx*2 
             rightIdx = nodeIdx*2 + 1
-            depth = 32 - clz_(nodeIdx)-1
+            depth = TREE_DEPTH(nodeIdx)
             subNodes = (0x1 << (1+height-depth)) - 1
             halfNodes = (subNodes - 1)/2 
             bileaf = leftIdx > numInternalNodes

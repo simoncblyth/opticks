@@ -46,7 +46,7 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 }
 
 
-#define CSG_STACK_SIZE 4
+#define CSG_STACK_SIZE 15
 #define TRANCHE_STACK_SIZE 4
 
 
@@ -66,7 +66,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
                  if((stack)+1 >= CSG_STACK_SIZE) \
                  {  \
                      ierr |= (ERR) ; \
-                     abort_ = true ; \
                      break ;  \
                  }  \
                  (stack)++ ;   \
@@ -74,12 +73,13 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
              } \
 
 
+// TODO: distinguish between returning data and just decrementing the stack counter
+//       sometimes you dont need to copy values elsewhere
 #define CSG_POP(_stack, stack, ERR, ret ) \
              { \
                 if((stack) < 0) \
                 {  \
                     ierr |= (ERR)  ;\
-                    abort_ = true ;  \
                     break ; \
                 }  \
                 (ret) = (_stack)[(stack)] ;  \
@@ -87,7 +87,7 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
              } \
  
 
-#define CSG_CLASSIFY( ise, dir, tmin )   ((ise).w > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? Enter : Exit ) : Miss )
+#define CSG_CLASSIFY( ise, dir, tmin )   (fabsf((ise).w) > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? Enter : Exit ) : Miss )
 
 
 
@@ -111,7 +111,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
                 if((stack)+1 >= TRANCHE_STACK_SIZE) \
                 {   \
                      ierr |= (ERR) ; \
-                     abort_ = true ; \
                      break ; \
                 } \
                 (stack)++ ; \
@@ -120,23 +119,203 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
            }  
 
 
-
-/**
-
-TODO:
-
-* find visual way to demonstrate where tranche mechanics actually working
-
-
-
-**/
-
-
 struct CSG 
 {
    float4 data[CSG_STACK_SIZE] ; 
    int curr ;
 };
+
+
+// perfect binary tree assumptions,   2^(h+1) - 1 
+#define TREE_HEIGHT(numNodes) ( __ffs((numNodes) + 1) - 2)
+#define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
+#define TREE_DEPTH(nodeIdx) ( 32 - __clz((nodeIdx)) - 1 )
+
+
+static __device__
+void evaluative_csg( const uint4& prim, const uint4& identity )
+{
+    unsigned partOffset = prim.x ; 
+    unsigned numParts   = prim.y ;
+    unsigned primIdx_   = prim.z ; 
+    unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+
+#ifdef BOOLEAN_DEBUG
+    //rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u  \n",primIdx_, numParts, fullHeight ) ; 
+    if(fullHeight > 3)
+    {
+        rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u exceeds currently limit\n", primIdx_, numParts, fullHeight ) ;
+        return ; 
+    } 
+#endif
+    unsigned height = fullHeight - 1 ;
+    unsigned numInternalNodes = TREE_NODES(height) ;
+    unsigned numNodes         = TREE_NODES(fullHeight) ;      
+
+    const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
+    unsigned long long postorder = postorder_sequence[fullHeight] ; 
+    //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numInternalNodes %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numInternalNodes, numNodes, postorder );
+
+    int ierr = 0 ;  
+
+    float4 _tmin ;     // TRANCHE_STACK_SIZE is 4 
+    uint4  _tranche ; 
+    int tranche = -1 ;
+
+    CSG csg ;  
+    csg.curr = -1 ;
+
+    TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numNodes), ray.tmin );
+
+#ifdef BOOLEAN_DEBUG
+    int tloop = -1 ; 
+#endif
+
+    while (tranche >= 0)
+    {
+#ifdef BOOLEAN_DEBUG
+        tloop++ ; 
+#endif
+        float tmin ; 
+        unsigned tmp ; 
+        TRANCHE_POP0( _tranche, _tmin,  tranche, tmp, tmin );
+        unsigned begin = POSTORDER_BEGIN(tmp);
+        unsigned end   = POSTORDER_END(tmp);
+
+        if(tranche > 1)
+        rtPrintf("evaluative_csg tloop %d tranche %d begin %u end %u tmin %7.3f  \n", tloop, tranche, begin, end, tmin );
+
+        for(unsigned i=begin ; i < end ; i++)
+        {
+            unsigned nodeIdx = POSTORDER_NODE_BFE(postorder, i) ;
+            int depth = TREE_DEPTH(nodeIdx) ;
+
+            unsigned subNodes = TREE_NODES(fullHeight-depth) ;
+            unsigned halfNodes = (subNodes - 1)/2 ; 
+            bool primitive = nodeIdx > numInternalNodes  ;  // TODO: use partBuffer content for empty handling
+
+            //rtPrintf("evaluative_csg nodeIdx %u depth %d subNodes %u halfNodes %u primitive %d \n", nodeIdx, depth, subNodes, halfNodes, primitive );
+
+            quad q1 ; 
+            q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
+            OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+
+            if(primitive)
+            {
+                float4 isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
+                intersect_part( partOffset+nodeIdx-1, tmin, isect );
+                isect.w = copysignf( isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack the sign of t, LHS -ve
+
+                CSG_PUSH( csg.data, csg.curr, ERROR_OVERFLOW, isect ); 
+
+                //if(nodeIdx > 8)
+                //rtPrintf("evaluative_csg nodeIdx %4d (prim) (%5.2f,%5.2f,%5.2f,%7.3f) csg.curr %d  \n", nodeIdx, isect.x, isect.y, isect.z, isect.w, csg.curr );
+            }
+            else
+            {
+                if(csg.curr < 1) 
+                {
+                    rtPrintf("evaluative_csg ERROR_POP_EMPTY nodeIdx %4d operation %d csg.curr %d \n", nodeIdx, operation, csg.curr );
+                    ierr |= ERROR_POP_EMPTY ; 
+                    break ; 
+                }
+                bool firstLeft = signbit(csg.data[csg.curr].w) ;
+                bool secondLeft = signbit(csg.data[csg.curr-1].w) ;
+
+                if(!(firstLeft ^ secondLeft))
+                {
+                    rtPrintf("evaluative_csg ERROR_XOR_SIDE nodeIdx %4d operation %d tl %10.3f tr %10.3f sl %d sr %d \n", nodeIdx, operation, csg.data[csg.curr].w, csg.data[csg.curr-1].w, firstLeft, secondLeft );
+                    ierr |= ERROR_XOR_SIDE ; 
+                    break ; 
+                }
+                int left  = firstLeft ? csg.curr   : csg.curr-1 ;
+                int right = firstLeft ? csg.curr-1 : csg.curr   ; 
+
+                IntersectionState_t l_state = CSG_CLASSIFY( csg.data[left], ray.direction, tmin );
+                IntersectionState_t r_state = CSG_CLASSIFY( csg.data[right], ray.direction, tmin );
+
+                float t_left  = fabsf( csg.data[left].w );
+                float t_right = fabsf( csg.data[right].w );
+
+                int ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right ) ;
+
+                //if(ctrl > 0)
+                //rtPrintf("evaluative_csg nodeIdx %4d operation %d t_left %10.3f t_right %10.3f l_state %d r_state %d -> ctrl %d \n", nodeIdx, operation, t_left, t_right, l_state, r_state, ctrl  );
+
+                if(ctrl < CTRL_LOOP_A)  // CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B
+                {
+                    float4 result = ctrl == CTRL_RETURN_MISS ?  make_float4(0.f, 0.f, 0.f, 0.f ) : ( ctrl == CTRL_RETURN_A ? csg.data[left] : csg.data[right] ) ;
+                    if(ctrl == CTRL_RETURN_FLIP_B)
+                    {
+                        result.x = -result.x ;     
+                        result.y = -result.y ;     
+                        result.z = -result.z ;     
+                    }
+                    result.w = copysignf( result.w , nodeIdx % 2 == 0 ? -1.f : 1.f );
+
+                    csg.curr -= 2 ;   // pop twice, push once
+                    CSG_PUSH( csg.data, csg.curr, ERROR_OVERFLOW, result );  
+                }
+                else
+                {                   // CTRL_LOOP_A, CTRL_LOOP_B
+                    int loopside  = ctrl == CTRL_LOOP_A ? left : right ;    
+                    int otherside = ctrl == CTRL_LOOP_A ? right : left ;  
+                   
+                    float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
+                    float4 other = csg.data[otherside] ;   
+
+                    // NB (left,right,loopside,otherside) only valid prior to popping 
+                    //
+                    // in some cases could pop once and skip the push as otherside 
+                    // already in correct place, but simpler to use temporary
+
+                    csg.curr -= 2 ;   // pop twice
+                    CSG_PUSH( csg.data, csg.curr, ERROR_OVERFLOW, other );  // push once
+
+                    unsigned sideTree = ctrl == CTRL_LOOP_A ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
+                    unsigned onwards  = POSTORDER_SLICE(i, numNodes);
+
+                    TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, onwards, tmin );
+                    TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, sideTree, tminAdvanced );
+                    break ;  // back to tranche loop
+                } 
+            }       // endif non-primitive
+        }           // endfor node traversal 
+        if(ierr) break ; 
+     }              // endwhile tranche 
+
+
+
+    ierr |= (( csg.curr !=  0)  ? ERROR_END_EMPTY : 0)  ; 
+
+    //if(csg.curr == 0 && ierr == 0)
+    if(csg.curr == 0)
+    {
+         const float4& ret = csg.data[0] ;   
+         if(rtPotentialIntersection( fabsf(ret.w) ))
+         {
+              shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
+              instanceIdentity = identity ;
+#ifdef BOOLEAN_DEBUG
+              instanceIdentity.x = ierr != 0  ? 1 : instanceIdentity.x ; 
+              instanceIdentity.y = tloop == 1 ? 1 : instanceIdentity.y ; 
+              instanceIdentity.z = tloop > 1  ? 1 : instanceIdentity.z ; 
+#endif
+              rtReportIntersection(0);
+         }
+    } 
+
+#ifdef BOOLEAN_DEBUG
+    if(ierr != 0)
+    rtPrintf("evaluative_csg primIdx_ %u ierr %4x tloop %3d launch_index (%5d,%5d)  ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
+          primIdx_, ierr, tloop, launch_index.x, launch_index.y,
+          ray.direction.x, ray.direction.y, ray.direction.z,
+          ray.origin.x, ray.origin.y, ray.origin.z
+      );
+#endif
+
+}
+
 
 
 static __device__
@@ -166,7 +345,6 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
     int ierr = 0 ;  
     int loop = -1 ; 
-    bool abort_ = false ; 
 
     unsigned partOffset = prim.x ; 
     unsigned numParts   = prim.y ;
@@ -176,6 +354,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
     unsigned height = fullHeight - 1;                 // exclude leaves, triplet has height 0
 
     unsigned long long postorder = postorder_sequence[height] ; 
+
     unsigned numInternalNodes = (0x1 << (1+height)) - 1 ;
 
     float4 _tmin ;  // TRANCHE_STACK_SIZE is 4 
@@ -296,7 +475,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              }  // side loop
 
 
-             if(reiterate || abort_) break ;  
+             if(reiterate || ierr ) break ;  
              // reiteration needs to get back to tranche loop for subtree traversal 
              // without "return"ing anything
 
@@ -311,7 +490,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              CSG_PUSH( csg[nside].data, csg[nside].curr, ERROR_RESULT_OVERFLOW, result );
 
          }  // end for : node traversal within tranche
-         if(abort_) break ;
+         if(ierr) break ;
     }       // end while : tranche
 
 
@@ -343,6 +522,12 @@ void intersect_csg( const uint4& prim, const uint4& identity )
       );
 
 }   // intersect_csg
+
+
+
+
+
+
 
 
 static __device__

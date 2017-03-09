@@ -66,9 +66,12 @@ static const char* ERROR_LHS_OVERFLOW_ = "ERROR_LHS_OVERFLOW" ;
 static const char* ERROR_RHS_OVERFLOW_ = "ERROR_RHS_OVERFLOW" ;
 static const char* ERROR_LHS_TRANCHE_OVERFLOW_ = "ERROR_LHS_TRANCHE_OVERFLOW" ;
 static const char* ERROR_RHS_TRANCHE_OVERFLOW_ = "ERROR_RHS_TRANCHE_OVERFLOW" ;
-
-
-
+static const char* ERROR_RESULT_OVERFLOW_ = "ERROR_RESULT_OVERFLOW" ;
+static const char* ERROR_OVERFLOW_ = "ERROR_OVERFLOW" ;
+static const char* ERROR_TRANCHE_OVERFLOW_ = "ERROR_TRANCHE_OVERFLOW" ;
+static const char* ERROR_POP_EMPTY_ = "ERROR_POP_EMPTY" ;
+static const char* ERROR_XOR_SIDE_ = "ERROR_XOR_SIDE" ;
+static const char* ERROR_END_EMPTY_ = "ERROR_END_EMPTY" ;
 
 
 
@@ -125,6 +128,13 @@ std::string desc_err( long err )
     if(err & ERROR_RHS_OVERFLOW ) ss << ERROR_RHS_OVERFLOW_ << " " ;
     if(err & ERROR_LHS_TRANCHE_OVERFLOW ) ss << ERROR_LHS_TRANCHE_OVERFLOW_ << " " ;
     if(err & ERROR_RHS_TRANCHE_OVERFLOW ) ss << ERROR_RHS_TRANCHE_OVERFLOW_ << " " ;
+    if(err & ERROR_RESULT_OVERFLOW ) ss << ERROR_RESULT_OVERFLOW_ << " " ;
+    if(err & ERROR_OVERFLOW ) ss << ERROR_OVERFLOW_ << " " ;
+    if(err & ERROR_TRANCHE_OVERFLOW ) ss << ERROR_TRANCHE_OVERFLOW_ << " " ;
+    if(err & ERROR_POP_EMPTY ) ss << ERROR_POP_EMPTY_ << " " ;
+    if(err & ERROR_XOR_SIDE ) ss << ERROR_XOR_SIDE_ << " " ;
+    if(err & ERROR_END_EMPTY ) ss << ERROR_END_EMPTY_ << " " ;
+
     return ss.str();    
 }
 

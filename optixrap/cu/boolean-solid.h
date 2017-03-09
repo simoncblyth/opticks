@@ -64,7 +64,9 @@ enum {
      ERROR_RESULT_OVERFLOW       = 0x1 << 9,
      ERROR_OVERFLOW              = 0x1 << 10,
      ERROR_TRANCHE_OVERFLOW      = 0x1 << 11,
-     ERROR_POP_EMPTY             = 0x1 << 12
+     ERROR_POP_EMPTY             = 0x1 << 12,
+     ERROR_XOR_SIDE              = 0x1 << 13,
+     ERROR_END_EMPTY             = 0x1 << 14
 };
 
 
