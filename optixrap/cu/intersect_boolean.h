@@ -2,6 +2,14 @@
 
 
 
+__device__ __forceinline__
+unsigned long getBitField(unsigned long val, int pos, int len) {
+  unsigned long ret;
+  asm("bfe.u64 %0, %1, %2, %3;" : "=l"(ret) : "l"(val), "r"(pos), "r"(len));
+  return ret;
+}
+
+
 
 static __device__
 void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
@@ -43,6 +51,10 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 
 
 #define POSTORDER_NODE(postorder, i) (((postorder) & (0xFull << (i)*4 )) >> (i)*4 )
+#define POSTORDER_NODE_BFE(postorder, i) (getBitField((postorder), (i)*4, 4))
+
+
+
 #define POSTORDER_SLICE(begin, end) (  (((end) & 0xffff) << 16) | ((begin) & 0xffff)  )
 #define POSTORDER_BEGIN( tmp )  ( (tmp) & 0xffff )
 #define POSTORDER_END( tmp )  ( (tmp) >> 16 )
@@ -149,7 +161,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 **/
 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
-
+    //const unsigned long long pseq4[4] = { 0x103070f1f1e0eull,0x1d1c060d1b1a0c19ull,0x1802050b17160a15ull,0x1404091312081110ull } ;
 
 
     int ierr = 0 ;  
@@ -209,7 +221,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
          for(unsigned i=begin ; i < end ; i++)
          {
              // XXidx are 1-based levelorder perfect tree indices
-             unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;   
+             unsigned nodeIdx = POSTORDER_NODE_BFE(postorder, i) ;   
              unsigned leftIdx = nodeIdx*2 ; 
              unsigned rightIdx = nodeIdx*2 + 1; 
              int depth = 32 - __clz(nodeIdx)-1 ;  

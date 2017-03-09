@@ -55,6 +55,26 @@ NVIDIA Research
 * https://research.nvidia.com/nvpeople
 
 
+Inline PTX ASM
+---------------
+
+* https://devtalk.nvidia.com/default/topic/452960/asm-inlining-in-cuda-code-/
+
+::
+
+    simon:include blyth$ optix-find asm
+    simon:include blyth$ optix-ifind asm
+    /Developer/OptiX/include/internal/optix_internal.h:    asm volatile("call (%0, %1, %2), _rt_texture_get_size_id, (%3);" :
+    /Developer/OptiX/include/internal/optix_internal.h:    asm volatile("call (%0, %1, %2, %3), _rt_texture_get_gather_id, (%4, %5, %6, %7, %8);" :
+    /Developer/OptiX/include/internal/optix_internal.h:    asm volatile("call (%0, %1, %2, %3), _rt_texture_get_base_id, (%4, %5, %6, %7, %8, %9);" :
+
+
+* https://github.com/facebook/fbcuda/blob/master/CudaUtils.cuh
+
+
+
+
+
 Understanding the efficiency of ray traversal on GPUs
 -------------------------------------------------------
 

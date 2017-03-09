@@ -677,7 +677,7 @@ class Node(object):
 
 
     @classmethod
-    def postorder_r(cls, root, nodes=[],leaf=True):
+    def postorder_r(cls, root,leaf=True):
         """ 
         :param root:
         :param nodes: list 
@@ -685,14 +685,15 @@ class Node(object):
 
         Recursive postorder traversal
         """
-        if root.l is not None: cls.postorder_r(root.l, nodes, leaf=leaf) 
-        if root.r is not None: cls.postorder_r(root.r, nodes, leaf=leaf)
- 
-        if not leaf and root.is_leaf:
-            pass  # skip leaves when leaf = False
-        else: 
-            nodes.append(root)
-        pass
+        def _postorder_r(n):
+            if n.l is not None: _postorder_r(n.l) 
+            if n.r is not None: _postorder_r(n.r)
+            if leaf or not n.is_leaf:
+                nodes.append(n)
+            pass
+        pass        
+        nodes = []
+        _postorder_r(root)
         return nodes
 
 
@@ -743,7 +744,7 @@ class Node(object):
 
     @classmethod
     def postorder_threading_r(cls, root):
-        nodes = cls.postorder_r(root, nodes=[], leaf=False)
+        nodes = cls.postorder_r(root, leaf=False)
         for i in range(len(nodes)):
             node = nodes[i]
             next_ = nodes[i+1] if i < len(nodes)-1 else None
@@ -771,21 +772,30 @@ class Node(object):
 
         ::
 
-            In [48]: seq4 = Node.postOrderSequence(root4)
+            In [179]: seq3 = np.array( map(lambda n:n.idx, Node.postorder_r(root3)), dtype=np.int32 )
 
-            In [51]: seq3 = Node.postOrderSequence(root3)
+            In [180]: seq3   # indices up to 0xf  (4 bits)   4 * 0xf  = 60 (so fits into ull 64 bit)
+            Out[180]: array([ 8,  9,  4, 10, 11,  5,  2, 12, 13,  6, 14, 15,  7,  3,  1], dtype=int32)   
 
-            In [54]: seq2 = Node.postOrderSequence(root2)
+            In [181]: seq4 =  np.array( map(lambda n:n.idx, Node.postorder_r(root4)), dtype=np.int32 ) 
 
-            In [56]: for seq in [seq2,seq3,seq4]:
-                print "%20s %16x " % (seq,seq)
-               ....:     
-                             306              132 
-                        20406868          1376254 
-               87818465122690200  137fe6dc25ba498 
+            In [182]: seq4    # indices up to 0x1f  (5 bits)  5 * 0x1f = 155  (need 3*64 bit nasty 3 -> instead 8*0x1f = 248, need 4*64 )  
+            Out[182]: array([16, 17,  8, 18, 19,  9,  4, 20, 21, 10, 22, 23, 11,  5,  2, 24, 25, 12, 26, 27, 13,  6, 28, 29, 14, 30, 31, 15,  7,  3,  1], dtype=int32)
+                     ## avoid the problem, limit trees to height 3, rather than 4 ??
+                     ## but i like supporting height4 in order to really test algorithm in general case
+
+            In [183]: len(seq3)
+            Out[183]: 15
+
+            In [184]: len(seq3)*4    # up to height 3 tree, there are less than 16 nodes so index fits in 4 bits, thus can fit the postorder into 64 bits
+            Out[184]: 60
+
+            In [185]: len(seq4)*8    # for height 4 tree, need to 
+            Out[185]: 248
+                         
 
         """
-        postorder = Node.postorder_r(root, nodes=[], leaf=False)
+        postorder = Node.postorder_r(root, leaf=False)
         assert len(postorder) < 16  
 
         post2levl = {}
@@ -1095,7 +1105,94 @@ def test_make_perfect():
 
 
 
+def test_annotate():
+    for tree in trees:
+        tree.annotate()
+    pass
 
+
+def test_postOrderSequence():
+    Node.postOrderSequence(root4, dump=True)
+
+
+def pak64(seq, debug=False):
+    """
+    :param seq: smallish sequence of smallish integers
+    :return seq64: smaller sequence of 64bit integers  
+
+    Pack a sequence of smallish integers into an array of 64 bit ints,
+    using bit pitch and number of big ints appropriate to the length 
+    of the sequence and the range of the smallish integers. 
+
+    Unfortuately 4-bit dtypes are not possible so cannot use re-view shape changing tricks
+    and have to twiddle bits.
+
+    Approach:
+
+    * work out number of 64 bit ints needed and the 
+      number of sequnce items that can be stored in each 
+
+    """
+    len_ = len(seq)
+    max_ = seq.max() 
+    if max_ < 0x10:
+        itembits = 4
+    elif max_ < 0x100:
+        itembits = 8
+    else:
+        assert 0, "max value in seq %d is too big " % max_ 
+    pass
+
+    totbits = len_*itembits  
+    n64 = 1 + totbits // 64   
+    nitem64 = 64 // itembits 
+
+    if debug:
+        print "seq", seq
+        print "len_:%d max_:%d itembits:%d totbits:%d nitem64:%d n64:%d" % (len_, max_, itembits, totbits, nitem64, n64)
+    pass
+
+    aseq = np.zeros( (n64*nitem64), dtype=np.uint64 )
+    aseq[0:len(seq)] = seq
+    bseq = aseq.reshape((n64,nitem64))
+
+    for i in range(n64):
+        for j in range(nitem64):
+            bseq[i,j] <<= np.uint64(itembits*j)
+        pass
+    pass
+
+    seq64 = np.zeros( (n64,), dtype=np.uint64 )
+    for i in range(n64):
+        seq64[n64-i-1] = np.bitwise_or.reduce(bseq[i])
+    pass
+    
+    if debug: 
+        print "bseq", bseq
+        print "seq64", seq64
+    pass
+    return seq64
+
+
+def unpak64(seq64, i, itembits=8):
+    """
+    :param seq64:
+    :return seq:
+    """
+    ni = 64//itembits                        # items within 64bit int
+    ff = np.uint64((0x1 << itembits) - 1)    # mask to pluck item
+
+    nb = i//ni                               # which 64bit int holds desired bits
+    ii = np.uint64(i*itembits - 64*nb)       # bit offset within target 64bit  
+
+    bf = seq64[len(seq64)-nb-1]              # seqence bit field
+
+    return (bf & (ff << ii)) >> ii  
+
+
+def asC(pseq64, name="seq"):
+    vals = ",".join(map(lambda _:"0x%xull" % _, pseq64))
+    return "const unsigned long long %s[%d] = { %s } ;" % (name, len(pseq64), vals )
 
 
 
@@ -1106,49 +1203,25 @@ if __name__ == '__main__':
     #test_is_complete()
     #test_make_perfect()
 
-    
+    seq4 =  np.array( map(lambda n:n.idx, Node.postorder_r(root4)), dtype=np.int32 )    
+    seq3 =  np.array( map(lambda n:n.idx, Node.postorder_r(root3)), dtype=np.int32 )    
 
-    for tree in trees:
-        tree.annotate()
-    pass
+    np.set_printoptions(formatter={'int':hex}) 
 
-    Node.postOrderSequence(root4, dump=True)
-    
+    pseq3 = pak64(seq3)
+    pseq4 = pak64(seq4)
 
-if 0:
-    partBuf = Node.serialize_i(root4)
+    print "pseq4: %s " % pseq4
+    print asC(pseq4, name="pseq4")
+    for i in range(32):
+        q = unpak64(pseq4, i)
+        print "%3d  %.2x  %3d " % ( i, q, q)
 
-
-if 0:
-    trees = [bmsrlbox]
-
-    for tree in trees:
-        Node.levelorder_label_i(tree)
-        print "%20s : %s " % (tree.name, tree)
-        Node.complete_and_full_r(tree)
-        
-if 0:
-    for tree in [root0, root1, root2, root3, root4]:
-        print "%20s : %s " % (tree.name, tree)
-
-        nodes = Node.postorder_r(tree,nodes=[], leaf=False)
-        print "Node.postorder_r(%s, leaf=False)\n" % tree.name + "\n".join(map(repr,nodes)) 
-
-        tree.annotate() 
-
-        lpr = Node.leftmost_leaf(tree)
-        lop = Node.leftmost(tree)
-
-        print "Node.leftmost(%s) : %s " % (tree.name, lpr )
-        print "Node.leftmost_nonleaf(%s) : %s " % (tree.name, lop )
-
-        Node.traverse(lpr, "left prim")
-        Node.traverse(lop, "left operation")
-
-        Node.dress(tree)
-
-
-
+    print "pseq3: %s " % pseq3
+    print asC(pseq3, name="pseq3")
+    for i in range(16):
+        q = unpak64(pseq3, i, itembits=4)
+        print "%3d  %.2x  %3d " % ( i, q, q)
 
 
 

@@ -78,6 +78,10 @@ class CSGD(object):
         self.data = np.zeros( (CSG_STACK_SIZE, 4,4), dtype=np.float32 )
         self.idx = np.zeros( (CSG_STACK_SIZE,), dtype=np.uint32 )
         self.curr = -1
+
+    def __repr__(self):
+        return "csg  %2d:{%s} " % (self.curr, ",".join(map(lambda _:"%d" % _, self.nodes)))
+
     def pop(self):
         if self.curr < 0:
             raise Error("CSG_ pop from empty")
@@ -88,8 +92,7 @@ class CSGD(object):
         pass
         return data,idx
 
-    def nodes(self):
-        return self.idx[0:self.curr+1]
+    nodes = property(lambda self:self.idx[0:self.curr+1])
 
     def push(self, ise, nodeIdx):
         if self.curr+1 >= CSG_STACK_SIZE:
@@ -149,10 +152,29 @@ def TRANCHE_POP0( _stacku, _stackf, stack):
     return stack, valu, valf
 
 
-POSTORDER_SLICE = lambda begin, end:((((end) & 0xffff) << 16) | ((begin) & 0xffff)  )
+POSTORDER_SLICE = lambda begin, end, swap:( (((swap) & 0xff) << 16) | (((end) & 0xff) << 8) | ((begin) & 0xff)  )
+POSTORDER_BEGIN = lambda tmp:( ((tmp) & (0xff << 0)) >> 0 )
+POSTORDER_END   = lambda tmp:( ((tmp) & (0xff << 8)) >> 8 )
+POSTORDER_SWAP  = lambda tmp:( ((tmp) & (0xff << 16)) >> 16 )
 
-POSTORDER_BEGIN = lambda tmp:( (tmp) & 0xffff )
-POSTORDER_END = lambda tmp:( (tmp) >> 16 )
+def test_POSTORDER():
+    for swap in range(0x2):
+        for begin in range(0x100):
+            for end in range(0x100):
+
+                tmp = POSTORDER_SLICE(begin, end, swap)
+                swap2 = POSTORDER_SWAP(tmp)
+                begin2 = POSTORDER_BEGIN(tmp)
+                end2 = POSTORDER_END(tmp)
+
+                print "%d %2x %2x -> %6x -> %d %2x %2x " % (swap,begin,end,tmp, swap2, begin2, end2)
+
+                assert begin2 == begin
+                assert end2 == end
+                assert swap2 == swap
+
+
+
 POSTORDER_NODE = lambda postorder, i: (((postorder) & (0xF << (i)*4 )) >> (i)*4 )
 
 
@@ -317,13 +339,12 @@ def evaluative_intersect(partBuffer, ray, tst):
     _tmin = np.zeros( (TRANCHE_STACK_SIZE), dtype=np.float32 )
     _tranche = np.zeros( (TRANCHE_STACK_SIZE), dtype=np.uint32 )
     tranche = -1
+    isect = np.zeros( [4, 4, 4], dtype=np.float32 )
 
     csg = CSGD()
     csg.curr = -1
 
-    isect = np.zeros( [4, 4, 4], dtype=np.float32 )
-
-    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numNodes), ray.tmin )
+    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numNodes,0), ray.tmin )
     tloop = -1 
     while tranche >= 0:
         tloop += 1 
@@ -331,7 +352,9 @@ def evaluative_intersect(partBuffer, ray, tst):
         tranche, tmp, tmin = TRANCHE_POP0( _tranche, _tmin,  tranche )
         begin = POSTORDER_BEGIN(tmp)
         end = POSTORDER_END(tmp)
-        if debug:log.info("%6d E : tranche begin %d end %d (nodeIdx %d:%d)tmin %5.2f tloop %d " % (tst.iray, begin, end, POSTORDER_NODE(postorder,begin), POSTORDER_NODE(postorder,end),  tmin, tloop))
+        swap = POSTORDER_SWAP(tmp)
+
+        if debug:log.info("%6d E : tranche begin %d end %d swap %d (nodeIdx %d:%d)tmin %5.2f tloop %d  %r " % (tst.iray, begin, end, swap, POSTORDER_NODE(postorder,begin), POSTORDER_NODE(postorder,end),  tmin, tloop, csg))
 
         i = begin
         while i < end:
@@ -347,40 +370,67 @@ def evaluative_intersect(partBuffer, ray, tst):
             if primitive:
                 ise = intersect_primitive( Node.fromPart(partBuffer[partOffset+nodeIdx-1]), ray, tmin)
                 csg.push(ise,nodeIdx)
-                #print "(%2d) prim push %d  %r " % (nodeIdx, csg.curr, csg.nodes())
+                #print "(%2d) prim-push  %r " % (nodeIdx, csg)
             else:
-                #print "(%2d) eval before pop %d : %r " % (nodeIdx, csg.curr, csg.nodes())
+                print "(%2d) bef-op-pop %r " % (nodeIdx, csg)
+
                 a,a_idx = csg.pop()
                 b,b_idx = csg.pop()
 
-                a_left = a_idx % 2 == 0          
-                b_left = b_idx % 2 == 0          
+                #a_left = a_idx % 2 == 0          
+                #b_left = b_idx % 2 == 0          
+                #assert a_left ^ b_left, (a_left, b_left, a_idx, b_idx)
+                #isect[LEFT][:]  = b if b_left else a 
+                #isect[RIGHT][:] = a if b_left else b 
+                
+                if a_idx < b_idx:
+                    isect[LEFT][:]  = a
+                    isect[RIGHT][:]  = b
+                else:
+                    isect[LEFT][:]  = b
+                    isect[RIGHT][:]  = a
+                pass
 
-                assert a_left ^ b_left, (a_left, b_left, a_idx, b_idx)
-                isect[LEFT]  = b if b_left else a 
-                isect[RIGHT] = a if b_left else b 
+                # can tranche swap bit avoid keeping nodeIdx in stack for all isects ?
+                # it doesnt look like it 
+                #if swap == 0:
+                #    # normally postorder means that left subtree gets pushed before right
+                #    # so pop order normally right then left, but loop-left means that 
+                #    # the unchanged right gets pushed before the left subtree completes so order gets reversed
+                #    assert np.all(isect[RIGHT] == a) 
+                #    assert np.all(isect[LEFT] == b) 
+                #else:  
+                #    assert np.all(isect[RIGHT] == b), (isect[RIGHT], b )
+                #    assert np.all(isect[LEFT] == a) 
+                #pass
+                #print "(%2d) eval after pop %r " % (nodeIdx, csg )
 
-                #isect[RIGHT] = a 
-                #isect[LEFT] = b 
-
-                #print "(%2d) eval after pop %d : %r " % (nodeIdx, csg.curr, csg.nodes())
+                
+                # hmm keeping nodeIdx with the isects means evaluate could directly look at the csg stack
+                # and determine the ctrl prior to moving any data
+                #  
+                # 
                 ctrl,l_state,r_state = evaluate(operation, isect, ray, tmin )
 
-                if debug:log_info("%s :   %s   " % (pfx("E0",tst.iray,nodeIdx,primitive), fmt(isect[LEFT],isect[RIGHT],l_state,r_state,ctrl)))
+                #if debug:log_info("%s :   %s   " % (pfx("E0",tst.iray,nodeIdx,primitive), fmt(isect[LEFT],isect[RIGHT],l_state,r_state,ctrl)))
                 ray.addseq(ctrl)
  
                 if ctrl < CTRL_LOOP_A:
                     csg.push(isect[ctrl], nodeIdx)
-                    #print "(%2d) after return push %d : %r " % (nodeIdx, csg.curr, csg.nodes())
+                    print "(%2d) after return push  %r " % (nodeIdx, csg)
                 else:
                     loopside = ctrl - CTRL_LOOP_A   
                     otherside = 1 - loopside
+
                     csg.push(isect[LEFT+otherside], 2*nodeIdx+otherside )
 
                     tminAdvanced = isect[LEFT+loopside][0][W] + propagate_epsilon 
-                    subtree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) if loopside == LHS else POSTORDER_SLICE(i-halfNodes, i) 
-                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numNodes), tmin )
-                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, subtree, tminAdvanced )
+
+                    onwards  = POSTORDER_SLICE(i, numNodes,1 if loopside == LHS else 0)
+                    sideTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes, 0) if loopside == LHS else POSTORDER_SLICE(i-halfNodes, i, 0) 
+
+                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, onwards, tmin )
+                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, sideTree, tminAdvanced )
                     break
                 pass
             pass
@@ -428,7 +478,7 @@ def slavish_intersect(partBuffer, ray, tst):
 
     isect = np.zeros( [4, 4, 4], dtype=np.float32 )
 
-    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numInternalNodes), ray.tmin )
+    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numInternalNodes,0), ray.tmin )
 
 
     while tranche >= 0:
@@ -530,9 +580,9 @@ def slavish_intersect(partBuffer, ray, tst):
                         other = 1 - side
                         tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
                         csg_[other].push( isect[other+LEFT] ) 
-                        subtree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) if side == LHS else POSTORDER_SLICE(i-halfNodes, i) 
-                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numInternalNodes), tmin )
-                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, subtree, tX_min[side] )
+                        sideTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes,1) if side == LHS else POSTORDER_SLICE(i-halfNodes, i,0) 
+                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numInternalNodes,0), tmin )
+                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, sideTree, tX_min[side] )
                         reiterate = True
                         break
                     pass
@@ -581,7 +631,13 @@ def slavish_intersect(partBuffer, ray, tst):
 
 
 
+
+    
+
+
+
 if __name__ == '__main__':
+#if 0:
     args = opticks_main(doc=__doc__) 
 
     from nodeRenderer import Renderer
@@ -600,7 +656,7 @@ if __name__ == '__main__':
     skips = []
     tsts = []
 
-    if 1:
+    if 0:
         for root in roots:
             if type(root) is str:
                 source = "ringlight,origlight"  # TODO: support partBuf extraction of prim nodes in leaflight
@@ -623,7 +679,7 @@ if __name__ == '__main__':
     #irays_ok = [785,7119,7325]
     #irays_nok = [1972,3546,8894]
     #irays = irays_nok
-    #tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=irays,origin=True, rayline=True,scale=0.1, sign=1))
+    tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=irays,origin=True, rayline=True,scale=0.1, sign=1))
 
 
     for tst in tsts:
