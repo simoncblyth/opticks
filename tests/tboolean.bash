@@ -315,7 +315,9 @@ tboolean-csg-four-box-minus-sphere()
     local material=$(tboolean-material)
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
     local radius=200
+
     local s=100
+    #local s=200  # no error when avoid overlap between subtrees 
 
     local test_config=(
                       mode=CsgInBox

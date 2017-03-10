@@ -50,6 +50,13 @@ enum {
      CTRL_LOOP_B         = 5
 };  
 
+typedef enum { 
+    Enter = 0, 
+    Exit  = 1, 
+    Miss  = 2 
+} IntersectionState_t ;
+
+
 
 enum {
      ERROR_LHS_POP_EMPTY         = 0x1 << 0, 
@@ -66,7 +73,8 @@ enum {
      ERROR_TRANCHE_OVERFLOW      = 0x1 << 11,
      ERROR_POP_EMPTY             = 0x1 << 12,
      ERROR_XOR_SIDE              = 0x1 << 13,
-     ERROR_END_EMPTY             = 0x1 << 14
+     ERROR_END_EMPTY             = 0x1 << 14,
+     ERROR_ROOT_STATE            = 0x1 << 15
 };
 
 
@@ -192,13 +200,6 @@ enum
     BCloser_Intersection_MissA_ExitB   = CTRL_RETURN_MISS,
     BCloser_Intersection_MissA_MissB   = CTRL_RETURN_MISS
 };
-
-
-typedef enum { 
-    Enter = 0, 
-    Exit  = 1, 
-    Miss  = 2 
-} IntersectionState_t ;
 
 
 

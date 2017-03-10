@@ -72,6 +72,7 @@ static const char* ERROR_TRANCHE_OVERFLOW_ = "ERROR_TRANCHE_OVERFLOW" ;
 static const char* ERROR_POP_EMPTY_ = "ERROR_POP_EMPTY" ;
 static const char* ERROR_XOR_SIDE_ = "ERROR_XOR_SIDE" ;
 static const char* ERROR_END_EMPTY_ = "ERROR_END_EMPTY" ;
+static const char* ERROR_ROOT_STATE_ = "ERROR_ROOT_STATE" ;
 
 
 
@@ -134,6 +135,7 @@ std::string desc_err( long err )
     if(err & ERROR_POP_EMPTY ) ss << ERROR_POP_EMPTY_ << " " ;
     if(err & ERROR_XOR_SIDE ) ss << ERROR_XOR_SIDE_ << " " ;
     if(err & ERROR_END_EMPTY ) ss << ERROR_END_EMPTY_ << " " ;
+    if(err & ERROR_ROOT_STATE) ss << ERROR_ROOT_STATE_ << " " ;
 
     return ss.str();    
 }
@@ -315,6 +317,50 @@ int boolean_action<T>::operator()( IntersectionState_t stateA, IntersectionState
 }
 
 
+void csg_idx()
+{
+    enum{ SIZE = 5 } ; 
+    unsigned idx[SIZE] = {1,2,3,4,5} ; 
+
+    int c = SIZE - 1 ; 
+
+    unsigned long long val = 0 ; 
+    do { 
+        val |= ( (idx[c] & 0xf) << ((16-c-1)*4) ); 
+    } 
+    while(c--) ; 
+
+    std::cout << std::hex << std::setw(16) << val << std::endl ; 
+    //      54321
+
+} 
+
+
+
+
+void tranche_repr()
+{
+
+    unsigned slice[4] = { 0xff0f, 0xee0e, 0xdd0d, 0xcc00 } ;
+
+    unsigned long long val = 0 ; 
+    unsigned long long c = 3 ; 
+    val |= ((c+1ull)&0xf)   ;     // count at lsb, contents from msb 
+ 
+    do { 
+        unsigned long long x = slice[c] & 0xffff ;
+        val |=  x << ((4ull-c-1ull)*16ull) ; 
+    } 
+    while(c--) ; 
+
+    // ff0fee0edd0dcc04
+
+    std::cout << std::hex << std::setw(16) << val << std::endl ; 
+} 
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -339,6 +385,8 @@ int main(int argc, char** argv)
         std::cout << std::setw(10) << argv[i] << " -> " << std::hex << code << std::dec << " -> " << desc_err(code) << std::endl ;           
     }
 
+    csg_idx();
+    tranche_repr();
 
     return 0 ; 
 }
