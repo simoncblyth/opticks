@@ -245,6 +245,38 @@ __device__ unsigned long long tranche_repr(Tranche& tr)
 
 
 
+struct History
+{
+    enum {
+           NUM = 2,     
+           SIZE = 64,    // of each carrier     
+           NITEM = 16,   // items within each 64bit
+           NBITS = 4,     // bits per item    
+           MASK  = 0xf 
+         } ;  // 
+    unsigned long long idx[NUM] ; 
+    unsigned long long ctrl[NUM] ; 
+    int curr ; 
+};
+
+
+__device__ int history_append( History& h, unsigned idx, unsigned ctrl)
+{
+    if((h.curr+1) > h.NUM*h.NITEM ) return ERROR_OVERFLOW ; 
+    h.curr++ ; 
+
+    int nb = h.curr/h.NITEM  ;                    // target carrier int 
+    unsigned long long  ii = h.curr*h.NBITS - h.SIZE*nb ; // bit offset within target 64bit 
+    unsigned long long hidx = h.MASK & idx ;
+    unsigned long long hctrl = h.MASK & ctrl ;
+
+    h.idx[nb]  |=  hidx << ii   ; 
+    h.ctrl[nb] |=  hctrl << ii  ; 
+
+    return 0 ; 
+}
+
+
 
 struct CSG 
 {
@@ -320,6 +352,122 @@ float unsigned_as_float(unsigned u)
 
 
 
+
+//  Below indices are postorder slice flavor, not levelorder
+//
+//  Height 3 tree, numNodes = 15, halfNodes = 7, root at i = 14 
+//
+//    upTree       i      : numNodes    14        : 15      =  14:15    
+//    leftTree     i - 2h : i - h       14 - 2*7  : 14 - 7  =   0:7       
+//    rightTree    i -  h : i           14 -  7   : 14      =   7:14
+//
+//  NB all nodes including root needs an upTree tranche to evaluate left and right 
+
+
+/*
+Hmm seems cannot do recursive within an intersect program anyhow ??
+
+libc++abi.dylib: terminating with uncaught exception of type optix::Exception: 
+Parse error (Details: Function "RTresult _rtProgramCreateFromPTXFile(RTcontext, const char *, const char *, RTprogram *)" 
+caught exception: /usr/local/opticks/installcache/PTX/OptiXRap_generated_hemi-pmt.cu.ptx: 
+error: Recursion detected in function 
+_Z15recursive_csg_rjjjf( file /usr/local/opticks/installcache/PTX/OptiXRap_generated_hemi-pmt.cu.ptx ), 
+cannot inline. [5308892], [5308892])
+
+*/
+
+__device__
+float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
+{
+    unsigned leftIdx = nodeIdx*2 ; 
+    unsigned rightIdx = leftIdx + 1 ; 
+    bool bileaf = leftIdx > numInternalNodes ; 
+    enum { LEFT=0, RIGHT=1 };
+
+    float4 isect[2] ;  
+    isect[LEFT] = make_float4(0.f, 0.f, 0.f, 0.f) ;  
+    isect[RIGHT] = make_float4(0.f, 0.f, 0.f, 0.f) ;  
+    if(bileaf)
+    {
+        intersect_part( partOffset+leftIdx-1, tmin, isect[LEFT] );
+        intersect_part( partOffset+rightIdx-1, tmin, isect[RIGHT] );
+    }  
+    else
+    {
+        isect[LEFT]  = recursive_csg_r( partOffset, numInternalNodes, leftIdx, tmin);
+        isect[RIGHT] = recursive_csg_r( partOffset, numInternalNodes, rightIdx, tmin);
+    } 
+    quad q1 ; 
+    q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
+    OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+
+    IntersectionState_t x_state[2] ; 
+    x_state[LEFT]  = CSG_CLASSIFY( isect[LEFT], ray.direction, tmin );
+    x_state[RIGHT] = CSG_CLASSIFY( isect[RIGHT], ray.direction, tmin );
+
+    float x_tmin[2] ;
+    x_tmin[LEFT] = tmin ; 
+    x_tmin[RIGHT] = tmin ; 
+
+    int ctrl = boolean_ctrl_packed_lookup( operation, x_state[LEFT], x_state[RIGHT], isect[LEFT].w <= isect[RIGHT].w ) ;
+
+    if(ctrl >= CTRL_LOOP_A)  // not ready to return yet 
+    {
+        int side = ctrl - CTRL_LOOP_A ;
+        int loop = -1 ; 
+        while(side > -1 && loop < 10)
+        {
+            loop += 1 ; 
+            x_tmin[side] = isect[side].w + propagate_epsilon ; 
+            if(bileaf)
+            {
+                intersect_part( partOffset+leftIdx+side-1, x_tmin[side], isect[LEFT+side] );
+            }
+            else
+            {
+                isect[LEFT+side] = recursive_csg_r( partOffset, numInternalNodes, leftIdx+side, x_tmin[side]);
+            }
+            x_state[LEFT+side] = CSG_CLASSIFY( isect[LEFT+side], ray.direction, x_tmin[side] );
+            ctrl = boolean_ctrl_packed_lookup( operation, x_state[LEFT], x_state[RIGHT], isect[LEFT].w <= isect[RIGHT].w ) ;
+            side = ctrl - CTRL_LOOP_A  ; 
+        }
+    }
+    float4 result = ctrl == CTRL_RETURN_MISS ?  make_float4(0.f, 0.f, 0.f, 0.f ) : ( ctrl == CTRL_RETURN_A ? isect[LEFT] : isect[RIGHT] ) ;
+    if(ctrl == CTRL_RETURN_FLIP_B)
+    {
+        result.x = -result.x ;     
+        result.y = -result.y ;     
+        result.z = -result.z ;     
+    }
+    return result ;
+}
+ 
+
+
+static __device__
+void recursive_csg( const uint4& prim, const uint4& identity )
+{
+    unsigned partOffset = prim.x ; 
+    unsigned numParts   = prim.y ;
+    unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+    unsigned numInternalNodes = TREE_NODES(fullHeight-1) ;
+    unsigned rootIdx = 1 ; 
+
+    float4 ret = recursive_csg_r( partOffset, numInternalNodes, rootIdx, ray.tmin ); 
+    if(rtPotentialIntersection( fabsf(ret.w) ))
+    {
+        shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
+        instanceIdentity = identity ;
+        rtReportIntersection(0);
+    } 
+}
+
+
+
+
+ 
+
+
 static __device__
 void evaluative_csg( const uint4& prim, const uint4& identity )
 {
@@ -343,6 +491,14 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numInternalNodes %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numInternalNodes, numNodes, postorder );
 
     int ierr = 0 ;  
+    bool verbose = false ; 
+
+    History hist ; 
+    hist.curr = -1 ; 
+    hist.ctrl[0] = 0 ;
+    hist.ctrl[1] = 0 ;
+    hist.idx[0] = 0 ;
+    hist.idx[1] = 0 ;
 
     Tranche tr ; 
     tr.curr = -1 ;
@@ -373,20 +529,22 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         unsigned beginIdx = POSTORDER_NODE(postorder, begin);   
         unsigned endIdx = POSTORDER_NODE(postorder, end - 1);   
 
-/*
-        rtPrintf("[%5d]evaluative_csg tr.curr %2d tloop %2d slice [%2d:%2u]     prevIdx %2d nodeIdx %2d sub(%2u->%2u) tmin %7.3f csg.curr %d \n", 
-              launch_index.x, 
-              tr.curr, 
-              tloop, 
-              begin, 
-              end, 
-              prevIdx, 
-              nodeIdx,
-              POSTORDER_NODE(postorder, begin),
-              POSTORDER_NODE(postorder, end-1),
-              tmin, 
-              csg.curr );
-*/
+        if(verbose)
+        rtPrintf("[%5d](trav) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d prevIdx %d [%x:%x] (%2u->%2u) %7.3f \n", 
+                           launch_index.x, 
+                           nodeIdx,
+                           csg.curr,
+                           csg_repr(csg), 
+                           tranche_repr(tr),
+                           tloop,  
+                           prevIdx,
+                           begin,
+                           end,
+                           POSTORDER_NODE(postorder, begin),
+                           POSTORDER_NODE(postorder, end-1),
+                           tmin 
+                              );
+
 
         for(unsigned i=begin ; i < end ; i++)
         {
@@ -402,22 +560,41 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
             OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
 
-            if(prevIdx == nodeIdx)
-            {
-                rtPrintf("[%5d]evaluative_csg i %3u REPEATING NODE prevIdx %2u nodeIdx %2u prevCtrl %2d ctrl %2d    depth %d subNodes %u halfNodes %u primitive %d operation %d csg.curr %d \n", 
-                    launch_index.x, i, prevIdx, nodeIdx, prevCtrl, ctrl, depth, subNodes, halfNodes, primitive, operation, csg.curr );
-            }
+            //if(prevIdx == nodeIdx)
 
+            if(verbose)
+            rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %d prevIdx %d \n", 
+                           launch_index.x, 
+                           nodeIdx,
+                           csg.curr,
+                           csg_repr(csg), 
+                           tranche_repr(tr),
+                           tloop,  
+                           operation,
+                           primitive,
+                           halfNodes,
+                           depth,
+                           prevIdx
+                              );
 
             if(primitive)
             {
                 float4 isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
                 intersect_part( partOffset+nodeIdx-1, tmin, isect );
-                isect.w = copysignf( isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack the sign of t, LHS -ve
+                isect.w = copysignf( isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
                 ierr = csg_push(csg, isect, nodeIdx ); 
                 if(ierr) break ; 
-                //rtPrintf("[%5d]evaluative_csg nodeIdx %4d (prim) (%5.2f,%5.2f,%5.2f,%7.3f) csg.curr %d  \n", launch_index.x, nodeIdx, isect.x, isect.y, isect.z, isect.w, csg.curr );
+            /*
+                rtPrintf("[%5d](prim) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx  (%5.2f,%5.2f,%5.2f,%7.3f)  \n",
+                     launch_index.x, 
+                     nodeIdx, 
+                     csg.curr,
+                     csg_repr(csg),
+                     tranche_repr(tr),
+                     isect.x, isect.y, isect.z, isect.w 
+                     );
+             */
             }
             else
             {
@@ -447,20 +624,11 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
                 prevCtrl = ctrl ; 
                 ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right ) ;
+                history_append( hist, nodeIdx, ctrl ); 
 
-                rtPrintf("[%5d]evaluative_csg decision tloop %2d tr_repr %16llx csg_repr %16llx nodeIdx %2d (%2d->%2d) ctrl %d  operation %d tlr (%10.3f,%10.3f) \n", 
-                           launch_index.x, 
-                           tloop,  
-                           tranche_repr(tr),
-                           csg_repr(csg), 
-                           nodeIdx,
-                           beginIdx,
-                           endIdx,  
-                           ctrl,
-                           operation, 
-                           t_left, 
-                           t_right
-                              );
+                enum { UNDEFINED=0, CONTINUE=1, BREAK=2 } ;
+
+                int act = UNDEFINED ; 
 
                 if(ctrl < CTRL_LOOP_A) // "returning" with a push 
                 {
@@ -473,33 +641,11 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     }
                     result.w = copysignf( result.w , nodeIdx % 2 == 0 ? -1.f : 1.f );
 
-                    ierr = csg_pop0(csg); 
-                    if(ierr) break ;
-                    ierr = csg_pop0(csg); 
-                    if(ierr) break ;
-                    ierr = csg_push(csg, result, nodeIdx );  
-                    if(ierr) break ;
+                    ierr = csg_pop0(csg); if(ierr) break ;
+                    ierr = csg_pop0(csg); if(ierr) break ;
+                    ierr = csg_push(csg, result, nodeIdx );  if(ierr) break ;
 
-                    //rtPrintf("[%5d]evaluative_csg aft-return-push csg.curr %2d csg_repr %16llx nodeIdx %2d \n", launch_index.x,csg_repr(csg),nodeIdx );
-                    // RETURN on root node ?? should not be any pending tranches ?
-                    
-                    if(nodeIdx == 1)
-                    {
-                        if(csg.curr == 0 && tr.curr == -1  )
-                        {
-                            //rtPrintf("[%5d]evaluative_csg DONE prevIdx %d nodeIdx %d prevCtrl %d ctrl %d csg.curr %d tr.curr  %d \n",
-                            //    launch_index.x, prevIdx, nodeIdx, prevCtrl, ctrl, csg.curr, tr.curr );
-                
-                            break ;  
-                        }
-                        else
-                        { 
-                            ierr |= ERROR_ROOT_STATE  ;
-                            //rtPrintf("[%5d]evaluative_csg ERROR_ROOT_STATE prevIdx %d nodeIdx %d prevCtrl %d ctrl %d csg %16llx tr.curr %d \n",
-                            //      launch_index.x, prevIdx, nodeIdx, prevCtrl, ctrl, csg_repr(csg), tr.curr);
-                            break ;  
-                        }
-                    }
+                    act = CONTINUE ;  
                 }
                 else
                 {                 
@@ -509,7 +655,6 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     unsigned leftIdx = 2*nodeIdx ; 
                     unsigned rightIdx = leftIdx + 1; 
                     unsigned otherIdx = ctrl == CTRL_LOOP_A ? rightIdx : leftIdx ; 
-
 
                     float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
                     float4 other = csg.data[otherside] ;   
@@ -528,18 +673,29 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     ierr = tranche_push( tr, upTree, tmin );           if(ierr) break ;
                     ierr = tranche_push( tr, loopTree, tminAdvanced ); if(ierr) break ; 
 
-                    //  Below indices are postorder slice flavor, not levelorder
-                    //
-                    //  Height 3 tree, numNodes = 15, halfNodes = 7, root at i = 14 
-                    //
-                    //    upTree       i      : numNodes    14        : 15      =  14:15    
-                    //    leftTree     i - 2h : i - h       14 - 2*7  : 14 - 7  =   0:7       
-                    //    rightTree    i -  h : i           14 -  7   : 14      =   7:14
-                    //
-                    //  NB all nodes including root needs an upTree tranche to evaluate left and right 
-
-                    break ;   // back to tranche loop
+                    act = BREAK  ;  
                 }             // "return" or "recursive call" 
+
+                if(verbose)
+                rtPrintf("[%5d](ctrl) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx ctrl %d     tloop %2d (%2d->%2d) operation %d tlr (%10.3f,%10.3f) \n", 
+                           launch_index.x, 
+                           nodeIdx,
+                           csg.curr,
+                           csg_repr(csg), 
+                           tranche_repr(tr),
+                           ctrl,
+                           tloop,  
+                           beginIdx,
+                           endIdx,  
+                           operation, 
+                           t_left, 
+                           t_right
+                              );
+
+
+
+
+                if(act == BREAK) break ; 
             }                 // "primitive" or "operation"
         }                     // node traversal 
         if(ierr) break ; 
@@ -566,17 +722,16 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
               shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
               instanceIdentity = identity ;
 #ifdef BOOLEAN_DEBUG
-              instanceIdentity.x = ierr != 0  ? 1 : instanceIdentity.x ; 
-              instanceIdentity.y = tloop == 1 ? 1 : instanceIdentity.y ; 
-              instanceIdentity.z = tloop > 1  ? 1 : instanceIdentity.z ; 
+              instanceIdentity.x = ierr > 0 ? 1 : 0 ;   // used for visualization coloring  
+              instanceIdentity.y = ierr ; 
+              // instanceIdentity.z is used for boundary passing, hijacking prevents photon visualization
+              instanceIdentity.w = tloop ; 
 #endif
               rtReportIntersection(0);
          }
     } 
 
 #ifdef BOOLEAN_DEBUG
-    if(ierr != 0)
-    { 
         /*
         rtPrintf("[%5d]evaluative_csg ERROR ierr %4x prevNode %2d nodeIdx %2d csg.curr %d tranche %d  ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
               launch_index.x, ierr, prevNode, nodeIdx, csg.curr, tranche,
@@ -585,18 +740,29 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
               );
         */
 
-        rtPrintf("[%5d]evaluative_csg ERROR ierr %4x prevIdx %2d nodeIdx %2d csg %16llx tr %16llx  prevCtrl %d ctrl %d \n",
-                  launch_index.x, 
-                  ierr, 
-                  prevIdx, 
-                  nodeIdx, 
-                  csg_repr(csg), 
-                  tranche_repr(tr),
-                  prevCtrl,
-                  ctrl
-              );
+     //if(ierr != 0)
+     //if(ierr == 0x1000 && csg.curr != 0)
+     //if(ierr == 0x6000 && csg.curr != 1)
 
-   } 
+        if(verbose || ierr !=0)
+        rtPrintf("[%5d](DONE) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx IERR %6x hcur %2d hi %16llx:%16llx hc %16llx:%16llx \n",
+                           launch_index.x, 
+                           nodeIdx,
+                           csg.curr,
+                           csg_repr(csg), 
+                           tranche_repr(tr),
+                           ierr, 
+                           hist.curr,
+                           hist.idx[1], 
+                           hist.idx[0], 
+                           hist.ctrl[1],
+                           hist.ctrl[0]
+                             );
+
+
+
+
+
 #endif
 }
 

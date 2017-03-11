@@ -816,13 +816,18 @@ bool Opticks::isLiveGensteps()
 
 char Opticks::getEntryCode()
 {
+   /*
     char code ;
     if(     m_cfg->hasOpt("trivial"))   code = 'T' ; 
     else if(m_cfg->hasOpt("nothing"))   code = 'N' ; 
     else if(m_cfg->hasOpt("dumpseed"))  code = 'D' ; 
     else if(m_cfg->hasOpt("seedtest"))  code = 'S' ; 
+    else if(m_cfg->hasOpt("tracetest")) code = 'R' ; 
     else                                code = 'G' ; 
     return code  ;   
+   */
+
+   return OpticksEntry::CodeFromConfig(m_cfg);
 }
 
 const char* Opticks::getEntryName()

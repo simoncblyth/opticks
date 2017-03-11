@@ -32,6 +32,83 @@ Ideas
   in order to see which part of the geometry causes the problems
 
 
+
+POP_EMPTY
+~~~~~~~~~~~
+
+::
+
+    0x1000 -> 1000 -> ERROR_POP_EMPTY 
+    0x6000 -> 6000 -> ERROR_XOR_SIDE ERROR_END_EMPTY 
+
+    2017-03-11 00:03:05.519 INFO  [35041] [OPropagator::prelaunch@149] 1 : (0;100000,1) prelaunch_times vali,comp,prel,lnch  0.0000 0.2479 0.1492 0.0000
+
+    # all the ERROR_POP_EMPTY are ending with 1 in stack, when having 2 is assumed for an operator
+    # checking with   if(ierr == 0x1000 && csg.curr != 0)   shows no output, so this is true for the 100k+ (x3-5 as multiple traces per photon)
+
+    [  746]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 12 hi                0:   1377613776254 hc                0:   2104151043131 
+    [  148]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13766137662544 hc                0:  22104523042304 
+    [  356]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13766137662544 hc                0:  22104523042304 
+    [  573]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur 14 hi                0: 137761377624254 hc                0: 110435104123411 
+    [  175]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13766137662554 hc                0:  22104523041041 
+    [ 1658]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13776137762554 hc                0:  21041510431041 
+    [ 1008]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 12 hi                0:   1377613776254 hc                0:   2104151043131 
+    [ 2022]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13776137762544 hc                0:  21041510432104 
+    [ 1866]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13776137762554 hc                0:  21041510431041 
+    [  357]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13766137662554 hc                0:  22104523041041 
+    [ 1710]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13776137762554 hc                0:  21041510431041 
+    [  895]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13766137662554 hc                0:  22104523041043 
+    [ 1476]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 13 hi                0:  13776137762544 hc                0:  21041510432304 
+    [ 1495]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 14 hi                0: 137661376625254 hc                0: 223045210421511 
+    [ 1498]evaluative_csg ERROR ierr 1000 prevIdx  1 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 14 hi                0: 137661376624254 hc                0: 223045210421411 
+
+    # all the misnamed ERROR_END_EMPTY end with 2 in stack
+    # checking with    if(ierr == 0x6000 && csg.curr != 1)   shows no output, so this is true for the 100k+ (x3-5 as multiple traces per photon)
+
+    [  338]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7625441373762544 hc               21:3123044135112104 
+    [  288]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7625441363762544 hc               22:1323044234112104 
+    [   77]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7762544137762544 hc               21: 412104410412304 
+    [ 1165]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7662554137662554 hc               22:1041041421041043 
+    [ 1633]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7662554137662554 hc               22:1041041421041043 
+    [  834]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7625441363762544 hc               22:1323044234112104 
+    [ 1922]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 1 hcur 17 hi               13:7662544137662544 hc               12:3042104423042304 
+    [ 1819]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7762544137762544 hc               21: 412104410412304 
+    [ 1688]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 1 hcur 15 hi                0:1376242541376254 hc                0:1233214134233233 
+    [  699]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 1 hcur 17 hi               13:7762544137762544 hc               11: 432104410432304 
+    [ 1765]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 1 hcur 15 hi                0:1376252541376254 hc                0:1133215314133133 
+    [ 1581]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7762554137762554 hc               21: 411041410411043 
+    [  388]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 16 hi                1:3776254413762544 hc                2:1041210441312304 
+    [  411]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7762554137762554 hc               21: 411041410411043 
+    [  493]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7762544137762544 hc               21: 412104410412304 
+    [ 1619]evaluative_csg ERROR ierr 6000 prevIdx  1 nodeIdx  1 csg 3100000000000002 tr                0  ctrl 2 hcur 17 hi               13:7625541363762554 hc               21:1310414134111041 
+
+    ## without error for comparison
+
+    [  480]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur 12 hi                0:   1376666255554 hc                0:   1210445104451 
+    [  481]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur  6 hi                0:         1376254 hc                0:         1210101 
+    [  482]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 15 hi                0:1377776255554444 hc                0:2104451004450445 
+    [  483]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur 12 hi                0:   1377776255554 hc                0:      4450004450 
+    [  496]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur  9 hi                0:      1377776254 hc                0:      1104451111 
+    [  497]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur 12 hi                0:   1376666254444 hc                0:       445000445 
+    [  498]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur  6 hi                0:         1376254 hc                0:         2111111 
+    [  499]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur  9 hi                0:      1376255554 hc                0:      1111104451 
+    [  484]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur 12 hi                0:   1377776255554 hc                0:   2104451104451 
+    [  485]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur  9 hi                0:      1376255554 hc                0:      1111104451 
+    [  486]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur 15 hi                0:1377776255554444 hc                0:   4450004450445 
+    [  487]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur  8 hi                0:       137776254 hc                0:       213451111 
+    [  500]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur  9 hi                0:      1377776254 hc                0:      1104451111 
+    [  501]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 2 hcur  9 hi                0:      1376255554 hc                0:      2211104451 
+    [  502]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur  9 hi                0:      1376666254 hc                0:          445000 
+    [  503]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur 12 hi                0:   1377776666254 hc                0:   1004450445101 
+    [  488]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur 15 hi                0:1376666255554444 hc                0:    445004450445 
+    [  489]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 1 hcur 12 hi                0:   1377776255554 hc                0:   1104451104451 
+    [  490]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur 15 hi                0:1376666255554444 hc                0:    445004450445 
+    [  491]evaluative_csg ERROR ierr    0 prevIdx  3 nodeIdx  1 csg 1000000000000001 tr                0  ctrl 0 hcur 15 hi                0:1376666255554444 hc                0:    445004450445 
+
+
+
+
+
 Improving debug output for the stacks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -261,6 +261,8 @@ if __name__ == '__main__':
     slib = PropLib("GSurfaceLib") 
     blib = PropLib("GBndLib") 
 
+
+if 0:
     idx = mlib.index("Water")
 
     m1 = "Water"

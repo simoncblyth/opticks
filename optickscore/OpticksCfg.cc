@@ -213,6 +213,10 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("seedtest",  "interop buffer overwrite debugging") ;
 
+   m_desc.add_options()
+       ("tracetest",  "swap OptiX generate program with tracetest standin for debugging") ;
+
+
 
 
    m_desc.add_options()

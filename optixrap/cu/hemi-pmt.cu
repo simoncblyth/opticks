@@ -1289,7 +1289,8 @@ RT_PROGRAM void intersect(int primIdx)
 
       //intersect_boolean_triplet( prim, identity );
       //intersect_csg( prim, identity );
-      evaluative_csg( prim, identity );
+      //evaluative_csg( prim, identity );
+      recursive_csg( prim, identity );
       //intersect_boolean_only_first( prim, identity );
   }
   else

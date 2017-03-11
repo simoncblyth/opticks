@@ -73,6 +73,9 @@ rtBuffer<uint4>                optical_buffer;
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
+//rtDeclareVariable(float, t_parameter, rtIntersectionDistance, );
+// not giving prd.distance_to_boundary
+
 #include "cerenkovstep.h"
 #include "scintillationstep.h"
 #include "torchstep.h"
@@ -238,6 +241,77 @@ RT_PROGRAM void trivial()
     //     (trivial) photon_id 1057 photon_offset 4228 genstep_id 0 GNUMQUAD 6 genstep_offset 0 
     //
 }
+
+RT_PROGRAM void tracetest()
+{
+    unsigned long long photon_id = launch_index.x ;  
+    unsigned int photon_offset = photon_id*PNUMQUAD ; 
+    unsigned int genstep_id = seed_buffer[photon_id] ;      
+    unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
+
+    union quad ghead ; 
+    ghead.f = genstep_buffer[genstep_offset+0]; 
+    int gencode = ghead.i.x ; 
+
+    curandState rng = rng_states[photon_id];
+
+    State s ;   
+    Photon p ;  
+
+    TorchStep ts ;
+    tsload(ts, genstep_buffer, genstep_offset, genstep_id);
+    //tsdebug(ts);
+    generate_torch_photon(p, ts, rng );         
+
+    s.flag = TORCH ;  
+ 
+    PerRayData_propagate prd ;
+
+    // trace sets these, see material1_propagate.cu:closest_hit_propagate
+    prd.distance_to_boundary = -1.f ;
+
+    prd.identity.x = 0 ; // nodeIndex
+    prd.identity.y = 0 ; // meshIndex
+    prd.identity.z = 0 ; // boundaryIndex, 0-based 
+    prd.identity.w = 0 ; // sensorIndex
+
+    prd.boundary = 0 ;   // signed, 1-based
+
+    rtTrace(top_object, optix::make_Ray(p.position, p.direction, propagate_ray_type, propagate_epsilon, RT_DEFAULT_MAX), prd );
+
+    p.flags.u.x = prd.identity.x ; 
+    p.flags.u.y = prd.identity.y ; 
+    p.flags.u.z = prd.identity.z ; 
+    p.flags.u.w = prd.identity.w ; 
+
+/*
+    rtPrintf("[%6d]tracetest distance_to_boundary %7.2f  id %4d %4d %4d %4d  boundary %4d  tpos %7.2f %7.2f %7.2f   cos_theta %7.2f \n", 
+         launch_index.x, 
+         prd.distance_to_boundary, 
+         prd.identity.x, 
+         prd.identity.y, 
+         prd.identity.z, 
+         prd.identity.w,
+         prd.boundary,
+         p.direction.x,
+         p.direction.y,
+         p.direction.z,
+         prd.cos_theta
+       );
+*/
+
+    union quad q ;
+    q.i.w = prd.boundary ; 
+
+
+    photon_buffer[photon_offset+0] = make_float4( p.position.x,     p.position.y,    p.position.z,     214.f  ); 
+    photon_buffer[photon_offset+1] = make_float4( p.direction.x,    p.direction.y,   p.direction.z,     prd.distance_to_boundary ); 
+    photon_buffer[photon_offset+2] = make_float4( prd.surface_normal.x, prd.surface_normal.y, prd.surface_normal.z , q.f.w  );
+    photon_buffer[photon_offset+3] = make_float4( p.flags.f.x,     p.flags.f.y,     p.flags.f.z,      p.flags.f.w); 
+
+}
+
+
 
 
 RT_PROGRAM void generate()

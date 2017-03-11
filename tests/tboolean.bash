@@ -4,6 +4,22 @@ tboolean-usage(){ cat << \EOU
 
 tboolean- 
 ======================================================
+
+tracetest option
+~~~~~~~~~~~~~~~~~~~
+
+When using tracetest option only a single intersect is
+done using oxrap/cu/generate.cu:tracetest and a special 
+format of the photon buffer is used, for analysis by 
+ana/tboolean.py 
+
+However in tracetest mode the record buffer filling 
+is not implemented so the visualization 
+of photon paths is not operational.
+
+
+
+
 EOU
 }
 
@@ -35,7 +51,12 @@ tboolean--(){
             --test --testconfig "$(tboolean-testconfig)" \
             --torch --torchconfig "$(tboolean-torchconfig)" \
             --tag $(tboolean-tag) --cat $(tboolean-det) \
-            --save
+            --save 
+}
+
+tboolean-tracetest()
+{
+    tboolean-- --tracetest $*
 }
 
 
@@ -245,8 +266,10 @@ tboolean-csg-two-box-minus-sphere-interlocked()
                       node=union        parameters=0,0,0,500           boundary=Vacuum///$material
                       node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
                       node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+
                       node=box          parameters=100,100,-100,$inscribe     boundary=Vacuum///$material
                       node=sphere       parameters=100,100,-100,200           boundary=Vacuum///$material
+
                       node=box          parameters=0,0,100,$inscribe     boundary=Vacuum///$material
                       node=sphere       parameters=0,0,100,200           boundary=Vacuum///$material
  
@@ -254,6 +277,195 @@ tboolean-csg-two-box-minus-sphere-interlocked()
 
     echo "$(join _ ${test_config[@]})" 
 }
+
+
+
+
+
+tboolean-csg-shells2-notes(){ cat << EON
+
+* difference of spheres makes a shell
+* intersection of shells makes a ring that has a twisty surface
+* difference of overlapping shells makes a shell with a ringlike cut 
+* union makes a compound shell with crossed surfaces 
+* difference of unions of offset spheres makes a kidney bean shell 
+
+* so far have not seen errors from height 2 trees like these
+
+
+           D
+       U       U
+     s   s   s   s
+    
+
+EON
+}
+
+
+tboolean-csg-boundary(){ echo Vacuum///$(tboolean-material) ; }
+tboolean-box-boundary(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
+
+tboolean-csg-shells2()
+{
+    local boundary=$(tboolean-csg-boundary)
+
+    local o=200
+    local i=190
+    local s=50
+
+    local test_config=(
+                      mode=CsgInBox
+                      name=$FUNCNAME
+                      analytic=1
+                      offsets=0,1
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-box-boundary)
+
+                      node=difference   parameters=0,0,0,500           boundary=$boundary
+
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+
+                      node=sphere       parameters=-$s,-$s,-$s,$o      boundary=$boundary
+                      node=sphere       parameters=$s,$s,$s,$o         boundary=$boundary
+
+                      node=sphere       parameters=-$s,-$s,-$s,$i      boundary=$boundary
+                      node=sphere       parameters=$s,$s,$s,$i         boundary=$boundary
+ 
+                      )
+
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
+tboolean-csg-shells3-notes(){ cat << EON
+
+
+* https://en.wikipedia.org/wiki/Tetrahedron#Formulas_for_a_regular_tetrahedron
+
+Tetrahedron: (1,1,1), (1,−1,−1), (−1,1,−1), (−1,−1,1)
+
+* four difference of sphere bubbles centered on tetrahedron vertices
+
+Causes errors at 3-way intersections
+
+
+                  U
+
+        U                    U
+
+   D         D          D         D
+ s   s     s   s      s   s     s   s
+
+
+Hmm quite difficult to construct height 3 trees using levelorder 
+
+
+EON
+}
+
+
+tboolean-csg-shells3()
+{
+    local boundary=$(tboolean-csg-boundary)
+
+    local o=200
+    local i=190
+    local s=100   # tetrahedron vertex distance, at 150 the shells dont overlap 
+    local t=200
+
+    local shape=sphere
+
+    local test_config=(
+                      mode=CsgInBox
+                      name=$FUNCNAME
+                      analytic=1
+                      offsets=0,1
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-box-boundary)
+
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+
+                      node=difference   parameters=0,0,0,500           boundary=$boundary
+                      node=difference   parameters=0,0,0,500           boundary=$boundary
+
+                      node=difference   parameters=0,0,0,500           boundary=$boundary
+                      node=difference   parameters=0,0,0,500           boundary=$boundary
+
+                      node=$shape       parameters=$s,$s,$s,$o         boundary=$boundary
+                      node=$shape       parameters=$s,$s,$s,$i         boundary=$boundary
+
+                      node=$shape       parameters=$s,-$s,-$s,$o       boundary=$boundary
+                      node=$shape       parameters=$s,-$s,-$s,$i       boundary=$boundary
+
+                      node=$shape       parameters=-$t,$t,-$t,$o       boundary=$boundary
+                      node=$shape       parameters=-$t,$t,-$t,$i       boundary=$boundary
+
+                      node=$shape       parameters=-$t,-$t,$t,$o       boundary=$boundary
+                      node=$shape       parameters=-$t,-$t,$t,$i       boundary=$boundary
+ 
+                      )
+
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
+
+tboolean-csg-shells3-alt()
+{
+    local boundary=$(tboolean-csg-boundary)
+
+    local o=200
+    local i=190
+    local s=100 
+
+    local shape=sphere
+
+    local test_config=(
+                      mode=CsgInBox
+                      name=$FUNCNAME
+                      analytic=1
+                      offsets=0,1
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-box-boundary)
+
+                      node=difference   parameters=0,0,0,500           boundary=$boundary
+
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+
+
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+                      node=union        parameters=0,0,0,500           boundary=$boundary
+
+
+                      node=$shape       parameters=$s,$s,$s,$o         boundary=$boundary
+                      node=$shape       parameters=$s,-$s,-$s,$o       boundary=$boundary
+
+                      node=$shape       parameters=-$s,$s,-$s,$o       boundary=$boundary
+                      node=$shape       parameters=-$s,-$s,$s,$o       boundary=$boundary
+                     
+ 
+                      node=$shape       parameters=$s,-$s,-$s,$i       boundary=$boundary
+                      node=$shape       parameters=$s,$s,$s,$i         boundary=$boundary
+
+                      node=$shape       parameters=-$s,$s,-$s,$i       boundary=$boundary
+                      node=$shape       parameters=-$s,-$s,$s,$i       boundary=$boundary
+ 
+                      )
+
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
+
+
+
 
 
 
@@ -364,7 +576,10 @@ tboolean-testconfig()
     #tboolean-box-sphere difference
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    tboolean-csg-four-box-minus-sphere
+    #tboolean-csg-four-box-minus-sphere
+    #tboolean-csg-shells2
+    tboolean-csg-shells3
+    #tboolean-csg-shells3-alt
     #tboolean-csg-triplet
     #tboolean-csg
 
