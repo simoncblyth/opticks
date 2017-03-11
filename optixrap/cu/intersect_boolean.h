@@ -217,7 +217,7 @@ __device__ int tranche_push(Tranche& tr, const unsigned slice, const float tmin)
 
 __device__ int tranche_pop(Tranche& tr, unsigned& slice, float& tmin)
 {
-    if(tr.curr >= TRANCHE_STACK_SIZE - 1) return ERROR_POP_EMPTY  ; 
+    if(tr.curr < 0) return ERROR_POP_EMPTY  ; 
     slice = tr.slice[tr.curr] ;
     tmin = tr.tmin[tr.curr] ;  
     tr.curr-- ; 
@@ -632,7 +632,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
                 if(ctrl < CTRL_LOOP_A) // "returning" with a push 
                 {
-                    float4 result = ctrl == CTRL_RETURN_MISS ?  make_float4(0.f, 0.f, 0.f, 0.f ) : ( ctrl == CTRL_RETURN_A ? csg.data[left] : csg.data[right] ) ;
+                    float4 result = ctrl == CTRL_RETURN_MISS ?  make_float4(0.f, 0.f, 0.f, 0.f ) : csg.data[ctrl == CTRL_RETURN_A ? left : right] ;
                     if(ctrl == CTRL_RETURN_FLIP_B)
                     {
                         result.x = -result.x ;     
@@ -657,7 +657,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     unsigned otherIdx = ctrl == CTRL_LOOP_A ? rightIdx : leftIdx ; 
 
                     float tminAdvanced = fabsf(csg.data[loopside].w) + propagate_epsilon ;
-                    float4 other = csg.data[otherside] ;   
+                    float4 other = csg.data[otherside] ;  // need tmp as pop about to invalidate indices
 
                     ierr = csg_pop0(csg);                   if(ierr) break ;
                     ierr = csg_pop0(csg);                   if(ierr) break ;
@@ -691,8 +691,6 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            t_left, 
                            t_right
                               );
-
-
 
 
                 if(act == BREAK) break ; 

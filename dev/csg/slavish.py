@@ -102,6 +102,33 @@ class Error(Exception):
 
 """
 
+class Tranche(object):
+    def __init__(self):
+        self.tmin = np.zeros( (TRANCHE_STACK_SIZE), dtype=np.float32 )
+        self.slice_  = np.zeros( (TRANCHE_STACK_SIZE), dtype=np.uint32 )
+        self.curr = -1
+        pass
+
+    def push(self, slice_, tmin):
+        if self.curr >= TRANCHE_STACK_SIZE - 1:
+            raise Error("Tranche push overflow")
+        else:
+            self.curr += 1 
+            self.tmin[self.curr] = tmin      
+            self.slice_[self.curr] = slice_ 
+        pass
+
+    def pop(self):
+        if self.curr < 0:
+            raise Error("ERROR_POP_EMPTY")  
+        pass
+        slice_ = self.slice_[self.curr] 
+        tmin = self.tmin[self.curr] ;  
+        self.curr -= 1  
+        return slice_, tmin  
+ 
+
+
 class CSGD(object):
     def __init__(self):
         self.data = np.zeros( (CSG_STACK_SIZE, 4,4), dtype=np.float32 )
@@ -182,10 +209,12 @@ def TRANCHE_POP0( _stacku, _stackf, stack):
     return stack, valu, valf
 
 
-POSTORDER_SLICE = lambda begin, end, swap:( (((swap) & 0xff) << 16) | (((end) & 0xff) << 8) | ((begin) & 0xff)  )
+#POSTORDER_SLICE_SWAP = lambda begin, end, swap:( (((swap) & 0xff) << 16) | (((end) & 0xff) << 8) | ((begin) & 0xff)  )
+#POSTORDER_SWAP  = lambda tmp:( ((tmp) & (0xff << 16)) >> 16 )
+
+POSTORDER_SLICE = lambda begin, end:( (((end) & 0xff) << 8) | ((begin) & 0xff)  )
 POSTORDER_BEGIN = lambda tmp:( ((tmp) & (0xff << 0)) >> 0 )
 POSTORDER_END   = lambda tmp:( ((tmp) & (0xff << 8)) >> 8 )
-POSTORDER_SWAP  = lambda tmp:( ((tmp) & (0xff << 16)) >> 16 )
 
 def test_POSTORDER():
     for swap in range(0x2):
@@ -353,22 +382,19 @@ def stk(lhs, rhs):
 
 
 
-def evaluate(operation, isect, ray, tmin):
-    l_state = CSG_CLASSIFY( isect[LEFT][0], ray.direction, tmin )
-    r_state = CSG_CLASSIFY( isect[RIGHT][0], ray.direction, tmin )
-    ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, isect[LEFT][0][W] <= isect[RIGHT][0][W] )
-    if ctrl < CTRL_LOOP_A:
-        isect[RFLIP] = isect[RIGHT]
-        isect[RFLIP,0,X] = -isect[RFLIP,0,X]
-        isect[RFLIP,0,Y] = -isect[RFLIP,0,Y]
-        isect[RFLIP,0,Z] = -isect[RFLIP,0,Z]
-    pass
-    return ctrl, l_state, r_state
+import math
+signbit_ = lambda f:math.copysign(1., f) < 0
+
+def signbit(f):
+    """
+    In [9]: map(signbit_, [-3, -2.,-1.,-0.,0.,1.,2.,3])
+    Out[9]: [True, True, True, True, False, False, False, False]
+    """
+    return signbit_(f)
 
 
 def evaluative_intersect(partBuffer, ray, tst):
     debug = tst.debug
-    postorder_sequence = [ 0x1, 0x132, 0x1376254, 0x137fe6dc25ba498 ] 
 
     partOffset = 0 
     numParts = len(partBuffer)
@@ -379,106 +405,129 @@ def evaluative_intersect(partBuffer, ray, tst):
     numInternalNodes = TREE_NODES(height)       
     numNodes = TREE_NODES(fullHeight)      
 
+    postorder_sequence = [ 0x1, 0x132, 0x1376254, 0x137fe6dc25ba498 ] 
     postorder = postorder_sequence[fullHeight] 
 
     if debug:log_info("%s %d ray.tmin %5.2f postorder %8x " % ("EO",tst.iray, ray.tmin, postorder))
 
-    _tmin = np.zeros( (TRANCHE_STACK_SIZE), dtype=np.float32 )
-    _tranche = np.zeros( (TRANCHE_STACK_SIZE), dtype=np.uint32 )
-    tranche = -1
-    isect = np.zeros( [4, 4, 4], dtype=np.float32 )
+    tr = Tranche()
+    tr.push( POSTORDER_SLICE(0, numNodes ), ray.tmin )
+
 
     csg = CSGD()
     csg.curr = -1
 
-    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numNodes,0), ray.tmin )
+    # "global" for debug 
+    nodeIdx = 0 
+    prevIdx = 0
+    ctrl = -1
+    prevCtrl = -1
     tloop = -1 
-    while tranche >= 0:
+
+    while tr.curr > -1:
         tloop += 1 
         assert tloop < 20   # wow root3 needs lots of loops
-        tranche, tmp, tmin = TRANCHE_POP0( _tranche, _tmin,  tranche )
-        begin = POSTORDER_BEGIN(tmp)
-        end = POSTORDER_END(tmp)
-        swap = POSTORDER_SWAP(tmp)
 
-        if debug:log.info("%6d E : tranche begin %d end %d swap %d (nodeIdx %d:%d)tmin %5.2f tloop %d  %r " % (tst.iray, begin, end, swap, POSTORDER_NODE(postorder,begin), POSTORDER_NODE(postorder,end),  tmin, tloop, csg))
+        slice_, tmin = tr.pop()
+        begin = POSTORDER_BEGIN(slice_)
+        end = POSTORDER_END(slice_)
+        beginIdx = POSTORDER_NODE(postorder, begin)
+        endIdx = POSTORDER_NODE(postorder, end-1)
+
+        if debug:log.info("%6d E : tranche begin %d end %d  (nodeIdx %d:%d)tmin %5.2f tloop %d  %r " % (tst.iray, begin, end, beginIdx, endIdx,  tmin, tloop, csg))
 
         i = begin
         while i < end:
+            prevIdx = nodeIdx
             nodeIdx = POSTORDER_NODE(postorder, i)
+
             depth = TREE_DEPTH(nodeIdx)
-            subNodes = (0x1 << (1+fullHeight-depth)) - 1
+            subNodes = TREE_NODES(fullHeight-depth) 
             halfNodes = (subNodes - 1)/2 
             primitive = nodeIdx > numInternalNodes 
+
             operation = partBuffer[nodeIdx-1,Q1,W].view(np.uint32)
 
             #print "(%d) depth %d subNodes %d halfNodes %d " % (nodeIdx, depth, subNodes, halfNodes )
 
             if primitive:
-                ise = intersect_primitive( Node.fromPart(partBuffer[partOffset+nodeIdx-1]), ray, tmin)
-                csg.push(ise,nodeIdx)
-                #print "(%2d) prim-push  %r " % (nodeIdx, csg)
+                isect = intersect_primitive( Node.fromPart(partBuffer[partOffset+nodeIdx-1]), ray, tmin)
+                assert isect.shape == (4,4)
+                isect[0,W] = math.copysign(isect[0,W], -1. if nodeIdx % 2 == 0 else 1. )
+                csg.push(isect,nodeIdx)
             else:
                 print "(%2d) bef-op-pop %r " % (nodeIdx, csg)
 
-                a,a_idx = csg.pop()
-                b,b_idx = csg.pop()
+                if csg.curr < 1:
+                   raise Error("ERROR_POP_EMPTY : csg.curr < 1 when need two items to combine")
 
-                #a_left = a_idx % 2 == 0          
-                #b_left = b_idx % 2 == 0          
-                #assert a_left ^ b_left, (a_left, b_left, a_idx, b_idx)
-                #isect[LEFT][:]  = b if b_left else a 
-                #isect[RIGHT][:] = a if b_left else b 
-                
-                if a_idx < b_idx:
-                    isect[LEFT][:]  = a
-                    isect[RIGHT][:]  = b
-                else:
-                    isect[LEFT][:]  = b
-                    isect[RIGHT][:]  = a
-                pass
+                firstLeft = signbit(csg.data[csg.curr,0,W])
+                secondLeft = signbit(csg.data[csg.curr-1,0,W])
 
-                # can tranche swap bit avoid keeping nodeIdx in stack for all isects ?
-                # it doesnt look like it 
-                #if swap == 0:
-                #    # normally postorder means that left subtree gets pushed before right
-                #    # so pop order normally right then left, but loop-left means that 
-                #    # the unchanged right gets pushed before the left subtree completes so order gets reversed
-                #    assert np.all(isect[RIGHT] == a) 
-                #    assert np.all(isect[LEFT] == b) 
-                #else:  
-                #    assert np.all(isect[RIGHT] == b), (isect[RIGHT], b )
-                #    assert np.all(isect[LEFT] == a) 
-                #pass
-                #print "(%2d) eval after pop %r " % (nodeIdx, csg )
+                if not firstLeft ^ secondLeft:
+                    raise Error("ERROR_XOR_SIDE")
 
-                
-                # hmm keeping nodeIdx with the isects means evaluate could directly look at the csg stack
-                # and determine the ctrl prior to moving any data
-                #  
-                # 
-                ctrl,l_state,r_state = evaluate(operation, isect, ray, tmin )
+                left  = csg.curr if firstLeft else csg.curr - 1
+                right = csg.curr-1 if firstLeft else csg.curr 
 
-                #if debug:log_info("%s :   %s   " % (pfx("E0",tst.iray,nodeIdx,primitive), fmt(isect[LEFT],isect[RIGHT],l_state,r_state,ctrl)))
+                l_state = CSG_CLASSIFY( csg.data[left,0], ray.direction, tmin )
+                r_state = CSG_CLASSIFY( csg.data[right,0], ray.direction, tmin )
+
+                t_left = abs(csg.data[left,0,W])
+                t_right = abs(csg.data[right,0,W])
+
+                prevCtrl = ctrl
+                ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right  )
                 ray.addseq(ctrl)
- 
+
+                UNDEFINED = 0
+                CONTINUE = 1
+                BREAK = 2
+
                 if ctrl < CTRL_LOOP_A:
-                    csg.push(isect[ctrl], nodeIdx)
-                    print "(%2d) after return push  %r " % (nodeIdx, csg)
+                    result = np.zeros((4,4), dtype=np.float32)
+                    result[:] = csg.data[left if ctrl == CTRL_RETURN_A else right]
+                    if ctrl == CTRL_RETURN_FLIP_B:
+                        result[0,X] = -result[0,X]
+                        result[0,Y] = -result[0,Y]
+                        result[0,Z] = -result[0,Z]
+                    pass
+                    result[0,W] = math.copysign( result[0,W], -1. if nodeIdx %2 == 0 else 1.)
+
+                    csg.pop()
+                    csg.pop()
+                    csg.push(result, nodeIdx)
+
+                    act = CONTINUE
                 else:
-                    loopside = ctrl - CTRL_LOOP_A   
-                    otherside = 1 - loopside
+                    loopside = left if ctrl == CTRL_LOOP_A else right 
+                    otherside = right if ctrl == CTRL_LOOP_A else left 
+ 
+                    leftIdx = 2*nodeIdx
+                    rightIdx = leftIdx + 1
+                    otherIdx = rightIdx if ctrl == CTRL_LOOP_A else leftIdx
 
-                    csg.push(isect[LEFT+otherside], 2*nodeIdx+otherside )
+                    tminAdvanced = abs(csg.data[loopside,0,W]) + propagate_epsilon 
 
-                    tminAdvanced = isect[LEFT+loopside][0][W] + propagate_epsilon 
+                    other = np.zeros((4,4), dtype=np.float32)  #  need tmp as pop about to invalidate indices
+                    other[:] = csg.data[otherside]
 
-                    onwards  = POSTORDER_SLICE(i, numNodes,1 if loopside == LHS else 0)
-                    sideTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes, 0) if loopside == LHS else POSTORDER_SLICE(i-halfNodes, i, 0) 
+                    csg.pop()
+                    csg.pop()
+                    csg.push( other, otherIdx ) 
+ 
+                    upTree   = POSTORDER_SLICE(i, numNodes)
+                    leftTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes)
+                    rightTree = POSTORDER_SLICE(i-halfNodes, i) 
+                    loopTree = leftTree if ctrl == CTRL_LOOP_A else rightTree
 
-                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, onwards, tmin )
-                    tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, sideTree, tminAdvanced )
-                    break
+                    tr.push(upTree, tmin) 
+                    tr.push(loopTree, tminAdvanced) 
+                    
+                    act = BREAK 
+                pass     # return or "recursive" call
+                if act == BREAK:
+                    break 
                 pass
             pass
             i += 1   # next postorder node in the tranche

@@ -102,6 +102,15 @@ Indepth covering the "Understanding.." paper.
 * http://www.cs.uu.nl/docs/vakken/magr/2015-2016/slides/lecture%2012%20-%20GPU%20ray%20tracing%20(2).pdf
 
 
+CUDA Raytrace Thesis
+----------------------
+
+* http://docs.lib.purdue.edu/cgi/viewcontent.cgi?article=1024&context=techmasters
+
+* ~/opticks_refs/andrew_britton_cuda_raytrace_thesis_purdue.pdf
+
+
+
 OptiX Thread Timing
 ----------------------
 
