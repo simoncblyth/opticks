@@ -576,9 +576,9 @@ tboolean-testconfig()
     #tboolean-box-sphere difference
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    #tboolean-csg-four-box-minus-sphere
+    tboolean-csg-four-box-minus-sphere
     #tboolean-csg-shells2
-    tboolean-csg-shells3
+    #tboolean-csg-shells3
     #tboolean-csg-shells3-alt
     #tboolean-csg-triplet
     #tboolean-csg

@@ -665,12 +665,12 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
                     // looping is effectively backtracking, pop both and put otherside back
 
-                    unsigned upTree    = POSTORDER_SLICE(i, numNodes);
+                    unsigned endTree   = POSTORDER_SLICE(i, end); // BUG FIXED 2017/3/12 numNodes->end
                     unsigned leftTree  = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) ;
                     unsigned rightTree = POSTORDER_SLICE(i-halfNodes, i) ;
                     unsigned loopTree  = ctrl == CTRL_LOOP_A ? leftTree : rightTree  ;
 
-                    ierr = tranche_push( tr, upTree, tmin );           if(ierr) break ;
+                    ierr = tranche_push( tr, endTree, tmin );          if(ierr) break ;
                     ierr = tranche_push( tr, loopTree, tminAdvanced ); if(ierr) break ; 
 
                     act = BREAK  ;  
