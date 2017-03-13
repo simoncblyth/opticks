@@ -185,7 +185,7 @@ class IIS(np.ndarray):
     node = property(lambda self:self.view(np.uint32)[:,:,II.NODE_[0],II.NODE_[1]])
     seq = property(lambda self:self.view(np.uint32)[:,:,II.SEQ_[0],II.SEQ_[1]])
     # intersect position
-    ipos = property(lambda self:self.d * np.repeat(self.t,3).reshape(2,-1,3) + self.o)
+    ipos = property(lambda self:self.d * np.repeat(self.t,3).reshape(len(self),-1,3) + self.o)
 
     def tpos(self, t):
         return self.d * t + self.o

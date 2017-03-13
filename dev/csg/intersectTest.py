@@ -71,6 +71,9 @@ class T(object):
         self.ierr = 0 
         self.rerr = 0 
 
+        self.discrepant = []
+
+
         self._rays = None
         self._i = None
 
@@ -86,7 +89,7 @@ class T(object):
         #rcu_ = desc_ctrl_cu(self.rcu, label="RECURSIVE")
         icu_ = repr(self.icu)
         rcu_ = repr(self.rcu)
-        smry = "%10s IR-mismatch-rays %d/%d  ierr:%d rerr:%d " % (self.name, len(self.prob),self.nray, self.ierr, self.rerr)
+        smry = "%10s imps %s  mismatch-rays %d/%d  ierr:%d rerr:%d " % (self.name, ",".join(self.keys), len(self.prob),self.nray, self.ierr, self.rerr)
         return "\n".join([repr(self.root),smry,icu_, rcu_])
     suptitle = property(_get_suptitle)
 
@@ -161,7 +164,7 @@ class T(object):
     #nray = property(lambda self:len(self.rays))
 
     def _make_i(self):
-        a = np.zeros((2,self.nray,4,4), dtype=np.float32 )
+        a = np.zeros((3,self.nray,4,4), dtype=np.float32 )
         i = IIS(a)
         i._ctrl_color = _ctrl_color
         return i 
@@ -174,37 +177,44 @@ class T(object):
     i = property(_get_i)
 
 
-    def run(self, isectors_=[None,None], rr=[1,0]):
+    def run(self, imps, keys=["evaluative","recursive"]):
         """
-        :param isectors_: array of callables that take ray arguments and returns an intersect
+        :param imps_: dict of callables that take ray arguments and returns an intersect
+        :param keys: list of keys into the imps dict specifying the order to run the implementations
         """
         self.rays = {}
         self.nray = None
+        self.imps = imps
+        self.keys = keys
 
         if self.seed is not None:
-            log.info("np.random.seed %u " % self.seed)
+            log.debug("np.random.seed %u " % self.seed)
             np.random.seed(self.seed)
         pass
- 
-        # duplicate rays for each imp
-        rays = self.make_rays()
-        self.nray = len(rays)
-        for r in rr:
-            self.rays[r] = rays.copy()
-        pass
 
-        irays = range(self.nray) if len(self.irays) == 0 else self.irays 
+        rays = self.make_rays()
+
+        for k in range(len(self.keys)): # duplicate rays for each imp
+            self.rays[k] = rays.copy()
+        pass
+        self.nray = len(rays)
+
+        debugging = len(self.irays) > 0 
+        irays = self.irays if debugging else range(self.nray)
         for iray in irays:
-            for r in rr:
-                intersect_ = isectors_[r]      
+            if debugging:
+                print "%5d run " % iray  
+            for k,key in enumerate(self.keys):
+                intersect_ = imps[key]      
                 if intersect_ is not None:
                     self.iray = iray
-                    self.i[r, iray] = intersect_(self.rays[r].rr(iray), self) 
+                    self.i[k, iray] = intersect_(self.rays[k].rr(iray), self) 
                     pass
                 pass
             pass
         pass
 
+    
 
     def compare(self):
         r_att = 'seq o d tmin'
@@ -222,6 +232,8 @@ class T(object):
                 r_discrep[att] = np.where(q0 != q1)[0]
             pass
         pass
+        self.r_discrep = r_discrep
+
 
         i_att = 't n o d ipos'
         i_discrep = {}
@@ -232,12 +244,23 @@ class T(object):
                 i_discrep[att] = np.where(q[0] != q[1])[0]   # how to do notclose ?
             pass
         pass
+        self.i_discrep = i_discrep
 
-        if len(i_discrep) > 0 or len(r_discrep) > 0:
-            log.warning("%s : compare : i_discrep %s r_discrep: %s  " % (self.name, repr(i_discrep), repr(r_discrep) )) 
-        else:
-            log.info("%s : compare allclose   " % (self.name)) 
+        discrep = r_discrep.values() + i_discrep.values()
+        self.discrepant = np.unique(np.hstack(discrep)) if len(discrep) > 0 else []
+        if len(self.discrepant) > 0:
+            log.warning("compare finds discrepancies %s " %  self.suptitle)
         pass
+
+
+    is_discrepant = property(lambda self:len(self.discrepant) > 0 ) 
+
+    def _get_suptitle(self):
+        smry = "%10s IR-mismatch-rays %d/%d  discrepant:%r " % (self.name, len(self.discrepant),self.nray, self.discrepant)
+        return "\n".join(filter(None,[repr(self.root),smry]))
+    suptitle = property(_get_suptitle)
+
+
 
     def compare_intersects(self, csg, rr=[1,0]):
         """
@@ -281,7 +304,7 @@ class T(object):
             pass
         pass
 
-    def plot_intersects(self, axs, normal=None, origin=None, rayline=None, raytext=False, rr=None):
+    def plot_intersects(self, axs, normal=None, origin=None, rayline=None, raytext=False, keys=None):
         """
         None args yielding defaults handy for debugging as 
         can comment changes to None param values in caller without 
@@ -291,7 +314,7 @@ class T(object):
         if origin is None: origin = self.kwa.get("origin",False)
         if rayline is None: rayline = self.kwa.get("rayline",False)
         if raytext is None: raytext = self.kwa.get("raytext",False)
-        if rr is None: rr = self.kwa.get("rr",[1,0])
+        if keys is None: keys = self.kwa.get("keys","evaluative recursive".split())
 
         sc = 30 
 
@@ -322,8 +345,8 @@ class T(object):
 
         pr = self.prob
 
-        for r in rr:
-            ax = axs[r]
+        for r,key in enumerate(keys):
+            ax = axs[key]
 
             # markers for ray origins
             if origin:

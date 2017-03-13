@@ -38,6 +38,19 @@ from opticks.ana.base import opticks_main
 
 log = logging.getLogger(__name__)
 
+
+import math
+signbit_ = lambda f:math.copysign(1., f) < 0
+
+def signbit(f):
+    """
+    In [9]: map(signbit_, [-3, -2.,-1.,-0.,0.,1.,2.,3])
+    Out[9]: [True, True, True, True, False, False, False, False]
+    """
+    return signbit_(f)
+
+
+
 from intersectTest import T
 
 from opticks.bin.ffs import ffs_, clz_
@@ -58,7 +71,8 @@ MISS, LEFT, RIGHT, RFLIP = 0,1,2,3
 
 def CSG_CLASSIFY(ise, dir_, tmin):
      assert ise.shape == (4,)
-     if ise[W] > tmin:
+     #if ise[W] > tmin:
+     if abs(ise[W]) > tmin:
          return Enter if np.dot( ise[:3], dir_ ) < 0 else Exit 
      else:
          return Miss
@@ -71,36 +85,6 @@ class Error(Exception):
     def __init__(self, msg):
         super(Error, self).__init__(msg)
 
-"""
-
-::
-
-    In [351]: a = np.zeros(10,dtype=np.float32)
-
-    In [353]: np.signbit(a)
-    Out[353]: array([False, False, False, False, False, False, False, False, False, False], dtype=bool)
-
-    In [354]: a[5] = -0
-
-    In [355]: np.signbit(a)
-    Out[355]: array([False, False, False, False, False, False, False, False, False, False], dtype=bool)
-
-    In [356]: a[5] = -0.
-
-    In [357]: np.signbit(a)
-    Out[357]: array([False, False, False, False, False,  True, False, False, False, False], dtype=bool)
-
-    In [360]: a.view(np.uint32)[5]
-    Out[360]: 2147483648
-
-    In [362]: "%x" % a.view(np.uint32)[5]
-    Out[362]: '80000000'
-
-    In [364]: 0x1 << 31
-    Out[364]: 2147483648
-
-
-"""
 
 class Tranche(object):
     def __init__(self):
@@ -209,28 +193,22 @@ def TRANCHE_POP0( _stacku, _stackf, stack):
     return stack, valu, valf
 
 
-#POSTORDER_SLICE_SWAP = lambda begin, end, swap:( (((swap) & 0xff) << 16) | (((end) & 0xff) << 8) | ((begin) & 0xff)  )
-#POSTORDER_SWAP  = lambda tmp:( ((tmp) & (0xff << 16)) >> 16 )
-
 POSTORDER_SLICE = lambda begin, end:( (((end) & 0xff) << 8) | ((begin) & 0xff)  )
 POSTORDER_BEGIN = lambda tmp:( ((tmp) & (0xff << 0)) >> 0 )
 POSTORDER_END   = lambda tmp:( ((tmp) & (0xff << 8)) >> 8 )
 
 def test_POSTORDER():
-    for swap in range(0x2):
-        for begin in range(0x100):
-            for end in range(0x100):
+    for begin in range(0x100):
+        for end in range(0x100):
 
-                tmp = POSTORDER_SLICE(begin, end, swap)
-                swap2 = POSTORDER_SWAP(tmp)
-                begin2 = POSTORDER_BEGIN(tmp)
-                end2 = POSTORDER_END(tmp)
+            tmp = POSTORDER_SLICE(begin, end, swap)
+            begin2 = POSTORDER_BEGIN(tmp)
+            end2 = POSTORDER_END(tmp)
 
-                print "%d %2x %2x -> %6x -> %d %2x %2x " % (swap,begin,end,tmp, swap2, begin2, end2)
+            print "  %2x %2x -> %6x ->  %2x %2x " % (begin,end,tmp,begin2, end2)
 
-                assert begin2 == begin
-                assert end2 == end
-                assert swap2 == swap
+            assert begin2 == begin
+            assert end2 == end
 
 
 
@@ -267,11 +245,13 @@ def boolean_ctrl_packed_lookup(operation, stateA, stateB, ACloser ):
 propagate_epsilon = 1e-3
 
 
+
+
+
 def log_info(msg):
     print msg 
 
-
-def slavish_intersect_recursive(partBuffer, ray, tst):
+def recursive_intersect(partBuffer, ray, tst):
     """
     """
     debug = tst.debug
@@ -282,14 +262,9 @@ def slavish_intersect_recursive(partBuffer, ray, tst):
     height = fullHeight - 1
     numInternalNodes = TREE_NODES(height)
 
-    def slavish_intersect_r(nodeIdx, tmin):
+    def recursive_intersect_r(nodeIdx, tmin):
         """  
         :param nodeIdx: 1-based levelorder tree index
-
-        For supporting partial trees, 
-
-        * bileaf, must be based on partBuffer contents not leftIdx value
-
         """
         leftIdx = nodeIdx*2 
         rightIdx = nodeIdx*2 + 1
@@ -307,21 +282,9 @@ def slavish_intersect_recursive(partBuffer, ray, tst):
             isect[LEFT] = intersect_primitive( Node.fromPart(partBuffer[partOffset+leftIdx-1]), ray, tX_min[LHS])
             isect[RIGHT] = intersect_primitive( Node.fromPart(partBuffer[partOffset+rightIdx-1]), ray, tX_min[RHS])
         else:
-            isect[LEFT]  = slavish_intersect_r( leftIdx, tX_min[LHS] )
-            #if debug and nodeIdx == 1:
-            #    log_info("%s : initial left subtree recursion completed" % pfx("R0",tst.iray,nodeIdx,bileaf))
-
-            isect[RIGHT] = slavish_intersect_r( rightIdx, tX_min[RHS] )
-            #if debug and nodeIdx == 1:
-            #    log_info("%s : initial right subtree recursion completed" % pfx("R0",tst.iray,nodeIdx,bileaf))
+            isect[LEFT]  = recursive_intersect_r( leftIdx, tX_min[LHS] )
+            isect[RIGHT] = recursive_intersect_r( rightIdx, tX_min[RHS] )
         pass
-        # NB left and right subtree recursions complete before classification can happen at this level
-        # ie the above block of code is repeated in every stack instance until terminations are 
-        # reached and the unwind gets back to here 
-       
-        #if debug:
-        #    log_info("%s : middle  reached " % pfx("R0",tst.iray,nodeIdx,bileaf))
-
 
         x_state[LHS] = CSG_CLASSIFY( isect[LEFT][0], ray.direction, tX_min[LHS] )
         x_state[RHS] = CSG_CLASSIFY( isect[RIGHT][0], ray.direction, tX_min[RHS] )
@@ -364,14 +327,18 @@ def slavish_intersect_recursive(partBuffer, ray, tst):
         if debug:log_info("%s :   %s   " % (pfx("R1",tst.iray,nodeIdx,bileaf), fmt(isect[LEFT],isect[RIGHT],x_state[LHS],x_state[RHS],ctrl)))
         return isect[ctrl]
     pass
-    return slavish_intersect_r( 1, ray.tmin )
+    return recursive_intersect_r( 1, ray.tmin )
+
 
 
 
 def f4(a,j=0,nfmt="%5.2f",tfmt="%7.3f"):
+    assert a.shape == (4,4), a.shape
     return " ".join( map(lambda _:nfmt %  _, a[j][:3]) + [tfmt % a[j][3]]  )
 
 def fmt(left,right,lst, rst, ctrl):
+    assert left.shape == (4,4), left.shape
+    assert right.shape == (4,4), right.shape
     return "L %s R %s   (%5s,%5s) -> %-20s " % ( f4(left), f4(right), desc_state(lst),desc_state(rst), desc_ctrl(ctrl))
 
 def pfx(alg,iray,nodeIdx,bileaf):
@@ -380,17 +347,6 @@ def pfx(alg,iray,nodeIdx,bileaf):
 def stk(lhs, rhs):
     return "lhs %2d rhs %d " % (lhs.curr, rhs.curr) 
 
-
-
-import math
-signbit_ = lambda f:math.copysign(1., f) < 0
-
-def signbit(f):
-    """
-    In [9]: map(signbit_, [-3, -2.,-1.,-0.,0.,1.,2.,3])
-    Out[9]: [True, True, True, True, False, False, False, False]
-    """
-    return signbit_(f)
 
 
 def evaluative_intersect(partBuffer, ray, tst):
@@ -408,20 +364,13 @@ def evaluative_intersect(partBuffer, ray, tst):
     postorder_sequence = [ 0x1, 0x132, 0x1376254, 0x137fe6dc25ba498 ] 
     postorder = postorder_sequence[fullHeight] 
 
-    if debug:log_info("%s %d ray.tmin %5.2f postorder %8x " % ("EO",tst.iray, ray.tmin, postorder))
 
     tr = Tranche()
     tr.push( POSTORDER_SLICE(0, numNodes ), ray.tmin )
 
-
     csg = CSGD()
     csg.curr = -1
 
-    # "global" for debug 
-    nodeIdx = 0 
-    prevIdx = 0
-    ctrl = -1
-    prevCtrl = -1
     tloop = -1 
 
     while tr.curr > -1:
@@ -434,11 +383,10 @@ def evaluative_intersect(partBuffer, ray, tst):
         beginIdx = POSTORDER_NODE(postorder, begin)
         endIdx = POSTORDER_NODE(postorder, end-1)
 
-        if debug:log.info("%6d E : tranche begin %d end %d  (nodeIdx %d:%d)tmin %5.2f tloop %d  %r " % (tst.iray, begin, end, beginIdx, endIdx,  tmin, tloop, csg))
+        #if debug:log.info("%6d E : tranche begin %d end %d  (nodeIdx %d:%d)tmin %5.2f tloop %d  %r " % (tst.iray, begin, end, beginIdx, endIdx,  tmin, tloop, csg))
 
         i = begin
         while i < end:
-            prevIdx = nodeIdx
             nodeIdx = POSTORDER_NODE(postorder, i)
 
             depth = TREE_DEPTH(nodeIdx)
@@ -452,12 +400,9 @@ def evaluative_intersect(partBuffer, ray, tst):
 
             if primitive:
                 isect = intersect_primitive( Node.fromPart(partBuffer[partOffset+nodeIdx-1]), ray, tmin)
-                assert isect.shape == (4,4)
                 isect[0,W] = math.copysign(isect[0,W], -1. if nodeIdx % 2 == 0 else 1. )
                 csg.push(isect,nodeIdx)
             else:
-                print "(%2d) bef-op-pop %r " % (nodeIdx, csg)
-
                 if csg.curr < 1:
                    raise Error("ERROR_POP_EMPTY : csg.curr < 1 when need two items to combine")
 
@@ -476,9 +421,10 @@ def evaluative_intersect(partBuffer, ray, tst):
                 t_left = abs(csg.data[left,0,W])
                 t_right = abs(csg.data[right,0,W])
 
-                prevCtrl = ctrl
                 ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right  )
                 ray.addseq(ctrl)
+
+                if debug:log_info("%s :   %s   " % (pfx("E1",tst.iray,nodeIdx,None), fmt(csg.data[left],csg.data[right],l_state,r_state,ctrl)))
 
                 UNDEFINED = 0
                 CONTINUE = 1
@@ -486,13 +432,18 @@ def evaluative_intersect(partBuffer, ray, tst):
 
                 if ctrl < CTRL_LOOP_A:
                     result = np.zeros((4,4), dtype=np.float32)
-                    result[:] = csg.data[left if ctrl == CTRL_RETURN_A else right]
+                    if not ctrl == CTRL_RETURN_MISS:
+                        result[:] = csg.data[left if ctrl == CTRL_RETURN_A else right]
+                    pass
                     if ctrl == CTRL_RETURN_FLIP_B:
                         result[0,X] = -result[0,X]
                         result[0,Y] = -result[0,Y]
                         result[0,Z] = -result[0,Z]
                     pass
                     result[0,W] = math.copysign( result[0,W], -1. if nodeIdx %2 == 0 else 1.)
+
+                    if debug:log_info("%s :   %s " % (pfx("E2",tst.iray,nodeIdx, None), f4(result) ))
+
 
                     csg.pop()
                     csg.pop()
@@ -516,12 +467,12 @@ def evaluative_intersect(partBuffer, ray, tst):
                     csg.pop()
                     csg.push( other, otherIdx ) 
  
-                    upTree   = POSTORDER_SLICE(i, numNodes)
-                    leftTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes)
+                    endTree   = POSTORDER_SLICE(i, end )   # fix numNodes -> end
+                    leftTree  = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes)
                     rightTree = POSTORDER_SLICE(i-halfNodes, i) 
-                    loopTree = leftTree if ctrl == CTRL_LOOP_A else rightTree
+                    loopTree  = leftTree if ctrl == CTRL_LOOP_A else rightTree
 
-                    tr.push(upTree, tmin) 
+                    tr.push(endTree, tmin) 
                     tr.push(loopTree, tminAdvanced) 
                     
                     act = BREAK 
@@ -533,15 +484,16 @@ def evaluative_intersect(partBuffer, ray, tst):
             i += 1   # next postorder node in the tranche
         pass         # end traversal loop
     pass             # end tranch loop
-    if csg.curr != 0:
-        print "ERROR over csg %d " % csg.curr
-    return csg.data[0]
+    assert csg.curr == 0, csg.curr
+    ret = csg.data[0]
+    assert ret.shape == (4,4)
+    ret[0,W] = abs(ret[0,W])
+    return ret
 
 
 
 
-
-def slavish_intersect(partBuffer, ray, tst):
+def iterative_intersect(partBuffer, ray, tst):
     """  
     For following code paths its simpler to instrument rays, not intersects
     as isects keep getting created, pushed, popped, etc..
@@ -574,14 +526,13 @@ def slavish_intersect(partBuffer, ray, tst):
 
     isect = np.zeros( [4, 4, 4], dtype=np.float32 )
 
-    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numInternalNodes,0), ray.tmin )
+    tranche = TRANCHE_PUSH0( _tranche, _tmin, tranche, POSTORDER_SLICE(0, numInternalNodes), ray.tmin )
 
 
     while tranche >= 0:
         tranche, tmp, tmin = TRANCHE_POP0( _tranche, _tmin,  tranche )
         begin = POSTORDER_BEGIN(tmp)
         end = POSTORDER_END(tmp)
-        if debug:log.info("%6d I : tranche begin %d end %d " % (tst.iray, begin, end))
 
         i = begin
         while i < end:
@@ -676,8 +627,13 @@ def slavish_intersect(partBuffer, ray, tst):
                         other = 1 - side
                         tX_min[side] = isect[THIS][0][W] + propagate_epsilon 
                         csg_[other].push( isect[other+LEFT] ) 
-                        sideTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes,1) if side == LHS else POSTORDER_SLICE(i-halfNodes, i,0) 
-                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, POSTORDER_SLICE(i, numInternalNodes,0), tmin )
+
+                        leftTree = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) 
+                        rightTree = POSTORDER_SLICE(i-halfNodes, i) 
+                        endTree = POSTORDER_SLICE(i, end)  # FIX numInternalNodes -> end
+                        sideTree = leftTree if side == LHS else rightTree
+            
+                        tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, endTree, tmin )
                         tranche = TRANCHE_PUSH( _tranche, _tmin, tranche, sideTree, tX_min[side] )
                         reiterate = True
                         break
@@ -714,21 +670,15 @@ def slavish_intersect(partBuffer, ray, tst):
     ierr |=  ERROR_LHS_END_NONEMPTY if LHS_curr != -1 else 0
     ierr |=  ERROR_RHS_END_EMPTY    if RHS_curr != 0 else 0
 
+    assert RHS_curr == 0 and ierr == 0
+    assert RHS_curr == 0, RHS_curr
 
-    if RHS_curr == 0 and ierr == 0:
-        ret = csg_[RHS].data[RHS_curr]
-    else:
-        ret = None ## hmm need some kind error holding ret
-    pass
-    if ierr is not 0:
-        print "ierr: 0x%.8x tst.iray:%6d " % (ierr, tst.iray)
-    pass
-    return ret 
+    ret = csg_[RHS].data[0]
+    assert ret.shape == (4,4)
+    ret[0,W] = abs(ret[0,W])
+    return ret
 
 
-
-
-    
 
 
 
@@ -744,15 +694,19 @@ if __name__ == '__main__':
     plt.close("all")
 
     #roots = [lrsph_d1, lrsph_u]
-    #roots = trees
-    roots = [root3]
+    #roots = [lrsph_u]
+    #roots = [lrsph_d1]
+    roots = trees
+    #roots = [root3]
     #roots = ["$TMP/tboolean-csg-two-box-minus-sphere-interlocked"]
     #roots = ["$TMP/tboolean-csg-four-box-minus-sphere"]
 
+ 
     skips = []
     tsts = []
+    disc = []
 
-    if 0:
+    if 1:
         for root in roots:
             if type(root) is str:
                 source = "ringlight,origlight"  # TODO: support partBuf extraction of prim nodes in leaflight
@@ -767,15 +721,15 @@ if __name__ == '__main__':
                 pass
                 source = "leaflight"
             pass
-            tsts.append(T(root,level=3,debug=[0], num=100, source=source,origin=True,rayline=True, scale=0.1, sign=1))
+            tsts.append(T(root,level=3,irays=disc, num=100, source=source,origin=True,rayline=True, scale=0.1, sign=1))
         pass
     pass
 
-    irays = [785,1972,3546,7119,7325,8894]
+    #irays = [785,1972,3546,7119,7325,8894]
     #irays_ok = [785,7119,7325]
     #irays_nok = [1972,3546,8894]
     #irays = irays_nok
-    tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=irays,origin=True, rayline=True,scale=0.1, sign=1))
+    #tsts.append(T("$TMP/tboolean-csg-four-box-minus-sphere", seed=0, num=10000, source="randbox",irays=irays,origin=True, rayline=True,scale=0.1, sign=1))
 
 
     for tst in tsts:
@@ -791,28 +745,35 @@ if __name__ == '__main__':
             assert 0, (root, type(root)) 
         pass
 
-        evaluative_ = lambda ray,tst:evaluative_intersect(partBuffer, ray, tst) 
-        iterative_ = lambda ray,tst:slavish_intersect(partBuffer, ray, tst) 
-        recursive_ = lambda ray,tst:slavish_intersect_recursive(partBuffer, ray, tst) 
-        rr = [1,0]
-        #tst.run( [iterative_, recursive_], rr)
-        tst.run( [evaluative_, recursive_], rr)
+        imps = {
+           "evaluative":lambda ray,tst:evaluative_intersect(partBuffer, ray,tst),
+           "iterative":lambda ray,tst:iterative_intersect(partBuffer, ray,tst),
+           "recursive":lambda ray,tst:recursive_intersect(partBuffer, ray,tst)
+        }
+
+        keys = "evaluative recursive iterative".split()
+
+        tst.run( imps, keys=keys)
         tst.compare()
 
+        nx = len(keys)
         fig = plt.figure()
-        ax1 = fig.add_subplot(1,2,1, aspect='equal')
-        ax2 = fig.add_subplot(1,2,2, aspect='equal')
-        axs = [ax1,ax2]
 
-        #tst.plot_intersects( axs=axs, rr=rr, normal=False, origin=False, rayline=False)
-        tst.plot_intersects( axs=axs, rr=rr)
+        axs = {}
+        for k,key in enumerate(keys):
+            axs[key] = fig.add_subplot(1,nx,k+1, aspect='equal')
+        pass
+
+        tst.plot_intersects( axs=axs, keys=keys)
 
         if type(root) is Node:
-            for ax in axs:
+            for key in keys:
+                ax = axs[key]
                 rdr = Renderer(ax)
                 rdr.render(tst.root)
                 #rdr.limits(400,400)
                 ax.axis('auto')
+                ax.set_xlabel(key)
             pass
         else:
             pass  # TODO: support rendering basis shapes from partBuffer

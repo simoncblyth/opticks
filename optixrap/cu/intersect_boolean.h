@@ -242,9 +242,6 @@ __device__ unsigned long long tranche_repr(Tranche& tr)
 } 
 
 
-
-
-
 struct History
 {
     enum {
@@ -848,7 +845,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
          for(unsigned i=begin ; i < end ; i++)
          {
              // XXidx are 1-based levelorder perfect tree indices
-             unsigned nodeIdx = POSTORDER_NODE_BFE(postorder, i) ;   
+             unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;   
              unsigned leftIdx = nodeIdx*2 ; 
              unsigned rightIdx = nodeIdx*2 + 1; 
              int depth = 32 - __clz(nodeIdx)-1 ;  
@@ -915,7 +912,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
                      CSG_PUSH( csg[other].data, csg[other].curr, ERROR_OVERFLOW, isect[other+LEFT] );
 
                      unsigned subtree = side == LHS ? POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) : POSTORDER_SLICE(i-halfNodes, i) ;
-                     TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, numInternalNodes), tmin );
+                     TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, POSTORDER_SLICE(i, end), tmin );  // FIX: numInternalNodes->end
                      TRANCHE_PUSH( _tranche, _tmin, tranche, ERROR_TRANCHE_OVERFLOW, subtree , tX_min[side] );
                      reiterate = true ; 
                      break ; 

@@ -337,9 +337,7 @@ tboolean-csg-shells2()
 }
 
 
-
 tboolean-csg-shells3-notes(){ cat << EON
-
 
 * https://en.wikipedia.org/wiki/Tetrahedron#Formulas_for_a_regular_tetrahedron
 
@@ -372,7 +370,7 @@ tboolean-csg-shells3()
     local o=200
     local i=190
     local s=100   # tetrahedron vertex distance, at 150 the shells dont overlap 
-    local t=200
+    local t=100
 
     local shape=sphere
 
@@ -460,13 +458,6 @@ tboolean-csg-shells3-alt()
 
     echo "$(join _ ${test_config[@]})" 
 }
-
-
-
-
-
-
-
 
 
 tboolean-csg-triplet()
@@ -576,9 +567,9 @@ tboolean-testconfig()
     #tboolean-box-sphere difference
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    tboolean-csg-four-box-minus-sphere
+    #tboolean-csg-four-box-minus-sphere
     #tboolean-csg-shells2
-    #tboolean-csg-shells3
+    tboolean-csg-shells3
     #tboolean-csg-shells3-alt
     #tboolean-csg-triplet
     #tboolean-csg
