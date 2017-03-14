@@ -551,7 +551,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             //if(prevIdx == nodeIdx)
 
             if(verbose)
-            rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %d prevIdx %d \n", 
+            rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %d \n", 
                            launch_index.x, 
                            nodeIdx,
                            csg.curr,
@@ -561,8 +561,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            operation,
                            primitive,
                            halfNodes,
-                           depth,
-                           prevIdx
+                           depth
                               );
 
             if(primitive)
@@ -730,9 +729,8 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
      //if(ierr == 0x6000 && csg.curr != 1)
 
         if(verbose || ierr !=0)
-        rtPrintf("[%5d](DONE) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx IERR %6x hcur %2d hi %16llx:%16llx hc %16llx:%16llx \n",
+        rtPrintf("[%5d](DONE) csg.curr %2d csg_repr %16llx tr_repr %16llx IERR %6x hcur %2d hi %16llx:%16llx hc %16llx:%16llx \n",
                            launch_index.x, 
-                           nodeIdx,
                            csg.curr,
                            csg_repr(csg), 
                            tranche_repr(tr),

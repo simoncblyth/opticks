@@ -1,10 +1,15 @@
+
+// sysrap-
+
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
 
 #include <cmath>
 #include <cassert>
+#include <cstring>
 
+#include "OpticksCSG.h"
 
 float nsphere::radius(){ return param.w ; }
 float nsphere::x(){      return param.x ; }
@@ -67,7 +72,7 @@ npart nsphere::part()
     npart p ; 
     p.zero();            
     p.setParam(param) ; 
-    p.setTypeCode(SPHERE); 
+    p.setTypeCode(CSG_SPHERE); 
     p.setBBox(bb);
 
     return p ; 

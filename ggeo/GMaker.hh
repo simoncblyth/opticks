@@ -20,26 +20,6 @@ class GSolid ;
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GMaker {
    public:
-/*
-       static const char* ZSPHERE ; 
-       static const char* ZLENS ; 
-       static const char* SPHERE ; 
-       static const char* BOX ; 
-       static const char* PMT ; 
-       static const char* PRISM ; 
-       static const char* UNION ; 
-       static const char* INTERSECTION ; 
-       static const char* DIFFERENCE ; 
-       static const char* UNDEFINED ; 
-       static OpticksCSG_t NodeFlag(char nodecode);
-       static const char* NodeName(char nodecode); 
-       static char NodeCode(const char* nodename); 
-
-       static bool IsBooleanShape(char nodecode); 
-       static bool IsCompositeShape(char nodecode); 
-       static unsigned BooleanFlag(char nodecode); 
-*/
-   public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
        GSolid* make(unsigned int index, char nodecode, glm::vec4& param, const char* spec);

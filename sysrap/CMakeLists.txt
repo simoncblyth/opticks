@@ -59,6 +59,7 @@ set(HEADERS
     SRenderer.hh
     STimes.hh
     SLog.hh
+    OpticksCSG.h
 )
 
 add_library( ${name}  SHARED ${SOURCES})

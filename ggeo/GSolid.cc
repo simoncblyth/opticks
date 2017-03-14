@@ -1,5 +1,7 @@
 #include <cstdio>
 #include <climits>
+#include <cstring>
+
 
 // npy-
 #include "NGLM.hpp"
@@ -21,7 +23,7 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),
-         m_csgflag(CSG_PRIMITIVE),
+         m_csgflag(CSG_PARTLIST),
          m_sensor(sensor),
          m_selected(true),
          m_pvname(NULL),

@@ -132,18 +132,11 @@ void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     q0.f = partBuffer[4*partIdx+0];
     q2.f = partBuffer[4*partIdx+2];
 
-    NPart_t partType = (NPart_t)q2.i.w ; 
-
-    //tt.w = tt_min ;  
-    // <-- removing the pre-setting of tt.w :  causes sphere underhang wierdness with the highly overlapped ??
-    //  which is bizarre as tt should be purely an output ??? with missers not touching tt ??
-    // THE REASON WAS THAT THE CALLER WAS REUSING left AND RIGHT float4 SO FOR LOOPERS
-    // AND MISSERS A STALE VALUE OF tt.w CAME INTO USE
-
-    switch(partType)
+    OpticksCSG_t csgFlag = (OpticksCSG_t)q2.u.w ; 
+    switch(csgFlag)
     {
-        case SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ; 
-        case BOX:    intersect_box(   q0,tt_min, tt )  ; break ; 
+        case CSG_SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ; 
+        case CSG_BOX:    intersect_box(   q0,tt_min, tt )  ; break ; 
     }
 }
 

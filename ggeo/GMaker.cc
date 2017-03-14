@@ -27,73 +27,7 @@
 
 #include "PLOG.hh"
 
-/* 
-
-const char* GMaker::BOX = "box" ; 
-const char* GMaker::SPHERE = "sphere" ; 
-const char* GMaker::ZSPHERE = "zsphere" ; 
-const char* GMaker::ZLENS = "lens" ; 
-const char* GMaker::PMT = "pmt" ; 
-const char* GMaker::PRISM = "prism" ; 
-const char* GMaker::UNDEFINED = "undefined" ; 
-
-const char* GMaker::UNION = "union" ; 
-const char* GMaker::INTERSECTION = "intersection" ; 
-const char* GMaker::DIFFERENCE = "difference" ; 
-
-
-const char* GMaker::NodeName(char nodecode)
-{
-    switch(nodecode) 
-    {
-       case 'B':return CSG_BOX     ; break ; 
-       case 'S':return CSG_SPHERE  ; break ; 
-       case 'Z':return CSG_ZSPHERE ; break ; 
-       case 'L':return CSG_ZLENS   ; break ; 
-       case 'P':return CSG_PMT     ; break ; 
-       case 'M':return CSG_PRISM     ; break ; 
-       case 'I':return CSG_INTERSECTION ; break ; 
-       case 'J':return CSG_UNION        ; break ; 
-       case 'K':return CSG_DIFFERENCE   ; break ; 
-       case 'U':return CSG_UNDEFINED ; break ;
-    }
-    return NULL ;
-} 
-
-OpticksCSG_t GMaker::NodeFlag(char shapecode)
-{
-    OpticksCSG_t flag = CSG_PRIMITIVE ; 
-    switch(shapecode)
-    {
-       case 'I': flag = CSG_INTERSECTION ; break ;
-       case 'J': flag = CSG_UNION        ; break ;
-       case 'K': flag = CSG_DIFFERENCE   ; break ;
-       default:  flag = CSG_PRIMITIVE    ; break ; 
-    }
-    return flag ;  
-}
-
-
-
-char GMaker::NodeCode(const char* nodename)
-{
-    char sc = 'U' ;
-    if(     strcmp(nodename, BOX) == 0)     sc = 'B' ; 
-    else if(strcmp(nodename, SPHERE) == 0)  sc = 'S' ; 
-    else if(strcmp(nodename, ZSPHERE) == 0) sc = 'Z' ; 
-    else if(strcmp(nodename, ZLENS) == 0)   sc = 'L' ; 
-    else if(strcmp(nodename, PMT) == 0)     sc = 'P' ;  // not operational
-    else if(strcmp(nodename, PRISM) == 0)   sc = 'M' ; 
-    else if(strcmp(nodename, INTERSECTION) == 0)   sc = 'I' ; 
-    else if(strcmp(nodename, UNION) == 0)          sc = 'J' ; 
-    else if(strcmp(nodename, DIFFERENCE) == 0)     sc = 'K' ; 
-    return sc ; 
-}
-
-
-*/
-
-
+/*
 bool GMaker::IsCompositeShape(char shapecode)
 {
     return shapecode == 'L' ; 
@@ -102,36 +36,42 @@ bool GMaker::IsBooleanShape(char shapecode)
 {
     return shapecode == 'I' || shapecode == 'J' || shapecode == 'K'  ;
 }
+*/
 
 
-
-
-GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
+GSolid* GMaker::make(unsigned int /*index*/, char csgChar, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
 
      GSolid* solid = NULL ; 
 
-     OpticksCSG_t csgflag = CSGFlag(shapecode); 
-     switch(csgflag)
+     OpticksCSG_t csgFlag = CSGFlag(csgChar); 
+     switch(csgFlag)
      {
          case CSG_BOX:          solid = makeBox(param); break;
          case CSG_PRISM:        solid = makePrism(param, spec); break;
          case CSG_SPHERE:       solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
          case CSG_ZSPHERE:      solid = makeZSphere(param) ; break;
-         case CSG_LENS:         solid = makeZSphereIntersect(param, spec) ; break;   // composite handled by adding child node
+         case CSG_ZLENS:        solid = makeZSphereIntersect(param, spec) ; break;   // composite handled by adding child node
          case CSG_INTERSECTION: solid = makeBox(param); break ;    // boolean intersect
          case CSG_UNION:        solid = makeBox(param); break ;    // boolean union
          case CSG_DIFFERENCE:   solid = makeBox(param); break ;    // boolean difference
+
+         case CSG_ZERO:         
+         case CSG_PARTLIST:
+         case CSG_PMT:
+         case CSG_TUBS:
+         case CSG_UNDEFINED:
+                                solid = NULL ; break ;
      }
      assert(solid);
-     solid->setCSGFlag( csgflag );
+     solid->setCSGFlag( csgFlag );
 
      // TODO: most parts alread hooked up above, do this uniformly
      GParts* pts = solid->getParts();  
      if(pts == NULL)
      {
-         pts = GParts::make(csgflag, param, spec);
+         pts = GParts::make(csgFlag, param, spec);
          solid->setParts(pts);
      }
      assert(pts);

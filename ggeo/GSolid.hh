@@ -16,7 +16,7 @@ class GParts ;
 class NSensor ; 
 template <typename T> class GMatrix ; 
 
-#include "OpticksShape.h"
+#include "OpticksCSG.h"
 #include "GVector.hh"
 
 #include "GNode.hh"

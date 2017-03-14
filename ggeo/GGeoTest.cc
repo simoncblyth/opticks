@@ -186,7 +186,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     //
     // assumes single container 
 
-    char nodecode = m_config->getNode(0) ;
+    char csgChar = m_config->getNode(0) ;
     const char* spec = m_config->getBoundary(0);
     glm::vec4 param = m_config->getParameters(0);
     const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
@@ -194,7 +194,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     int verbosity = m_config->getVerbosity();
 
     LOG(info) << "GGeoTest::createPmtInBox " 
-              << " nodecode " << nodecode 
+              << " csgChar " << csgChar
               << " spec " << spec 
               << " container_inner_material " << container_inner_material
               << " param " << gformat(param) 
@@ -203,7 +203,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMergedMesh* mmpmt = loadPmt();
     unsigned int index = mmpmt->getNumSolids() ;
 
-    GSolid* solid = m_maker->make( index, nodecode, param, spec) ;
+    GSolid* solid = m_maker->make( index, csgChar, param, spec) ;
     solid->getMesh()->setIndex(1000);
 
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
@@ -265,7 +265,7 @@ GMergedMesh* GGeoTest::createCsgInBox()
         }
 
         std::string node = m_config->getNodeString(i);
-        char nodecode = m_config->getNode(i) ;    //  B:BOX, S:SPHERE,..., I:INTERSECTION, J:UNION, K:DIFFERENCE
+        char csgChar = m_config->getNode(i) ;    //  B:BOX, S:SPHERE,..., I:INTERSECTION, J:UNION, K:DIFFERENCE
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
         glm::mat4 trans = m_config->getTransform(i);
@@ -274,27 +274,30 @@ GMergedMesh* GGeoTest::createCsgInBox()
         LOG(info) << "GGeoTest::createCsgInBox" 
                   << " i " << std::setw(2) << i 
                   << " node " << std::setw(20) << node
-                  << " nodecode " << std::setw(2) << nodecode 
-                  << " nodename " << std::setw(15) << GMaker::NodeName(nodecode)
+                  << " csgChar " << std::setw(2) << csgChar
+                  << " csgChar2Name " << std::setw(15) << CSGChar2Name(csgChar)
                   << " spec " << spec
                   << " boundary " << boundary
                   << " param " << gformat(param)
                 //  << " trans " << gformat(trans)
                   ;
 
-        if(nodecode == 'U') LOG(fatal) << "GGeoTest::createCsgInBox configured node not implemented " << node ;
-        assert(nodecode != 'U');
+        if(csgChar == 'U') LOG(fatal) << "GGeoTest::createCsgInBox configured node not implemented " << node ;
+        assert(csgChar != 'U');
 
-        GSolid* solid = m_maker->make(i, nodecode, param, spec );   
+        GSolid* solid = m_maker->make(i, csgChar, param, spec );   
 
-        OpticksCSG_t csgflag = solid->getCSGFlag(); 
-        unsigned flags = csgflag ;    
+        OpticksCSG_t csgFlag = solid->getCSGFlag(); 
+        unsigned flags = csgFlag ;    
 
         GParts* pts = solid->getParts();
 
         pts->setIndex(0u, i);
         pts->setNodeIndex(0u, primIdx ); 
-        pts->setFlags(0u, flags);
+        //pts->setFlags(0u, flags);
+        pts->setTypeCode(0u, flags);
+
+
         pts->setBndLib(m_bndlib);
 
         solids.push_back(solid);
@@ -332,7 +335,7 @@ GMergedMesh* GGeoTest::createBoxInBox()
     for(unsigned int i=0 ; i < n ; i++)
     {
         std::string node = m_config->getNodeString(i);
-        char nodecode = m_config->getNode(i) ;
+        char csgChar = m_config->getNode(i) ;
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
         glm::mat4 trans = m_config->getTransform(i);
@@ -341,21 +344,19 @@ GMergedMesh* GGeoTest::createBoxInBox()
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
                   << " node " << std::setw(20) << node
-                  << " nodecode " << std::setw(2) << nodecode 
-                  << " nodename " << std::setw(15) << GMaker::NodeName(nodecode)
+                  << " csgChar " << std::setw(2) << csgChar 
+                  << " csgChar2Name " << std::setw(15) << CSGChar2Name(csgChar)
                   << " spec " << spec
                   << " boundary " << boundary
                   << " param " << gformat(param)
                   << " trans " << gformat(trans)
                   ;
 
-        if(nodecode == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured node not implemented " << node ;
-        assert(nodecode != 'U');
+        if(csgChar == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured node not implemented " << node ;
+        assert(csgChar != 'U');
 
-        GSolid* solid = m_maker->make(i, nodecode, param, spec );   
+        GSolid* solid = m_maker->make(i, csgChar, param, spec );   
         solids.push_back(solid);
-
-        // TODO: handle csg tree nodes, that break the 1-to-1 
     }
 
 
@@ -374,37 +375,17 @@ GMergedMesh* GGeoTest::createBoxInBox()
         GParts* pts = solid->getParts();
         assert(pts);
 
-       /*
-        if(shapeflag == SHAPE_INTERSECTION || shapeflag == SHAPE_UNION || shapeflag == SHAPE_DIFFERENCE)
-        {
-            boolean_start = i ;       
-            boolean_shapeflag = shapeflag ; 
-        }
-        int boolean_index = boolean_start > -1 ? i - boolean_start : -1 ;  
-
-        int flags(0);
-        switch(boolean_index)
-        {
-            case  0: flags = boolean_shapeflag | SHAPE_BOOLEAN                           ; break ; 
-            case  1: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_A ; break ; 
-            case  2: flags = boolean_shapeflag | SHAPE_CONSTITUENT | SHAPE_CONSTITUENT_B ; break ; 
-            default: flags = 0                                                           ; break ; 
-        }
-
-        if((flags & SHAPE_CONSTITUENT) == 0) primIdx++ ;   // constituents dont merit new primIdx
-        */
-
-        // prior to supporting CSG the right thing to 
-        // do is treat the CSG tree as distinct parts ???
-        // ACTUALLY ONCE CSG WORKING CAN DUMP BoxInBox in favor of CSGInBox
-
         OpticksCSG_t csgflag = solid->getCSGFlag(); 
         int flags = csgflag ;
-        if((flags & CSG_PRIMITIVE) == 0) primIdx++ ;   // constituents dont merit new primIdx
+        if(flags == CSG_PARTLIST) primIdx++ ;   // constituents dont merit new primIdx
 
         pts->setIndex(0u, i);
         pts->setNodeIndex(0u, primIdx ); 
-        pts->setFlags(0u, flags);
+
+        //pts->setFlags(0u, flags);
+        pts->setTypeCode(0u, flags);
+
+
         pts->setBndLib(m_bndlib);
 
         LOG(info) << "GGeoTest::createBoxInBox"

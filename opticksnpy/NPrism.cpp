@@ -1,8 +1,11 @@
 #include <cmath>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 
 #include <boost/math/constants/constants.hpp>
+
+#include "OpticksCSG.h"
 
 #include "NPrism.hpp"
 #include "NPlane.hpp"
@@ -60,7 +63,7 @@ npart nprism::part()
     p.zero();            
 
     p.setParam(param) ; 
-    p.setTypeCode(PRISM); 
+    p.setTypeCode(CSG_PRISM); 
     p.setBBox(bb);
 
     return p ; 

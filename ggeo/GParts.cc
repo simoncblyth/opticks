@@ -475,12 +475,13 @@ void GParts::dumpPrim(unsigned primIdx)
         q2.f = partBuffer->getVQuad(partIdx,2);  
         q3.f = partBuffer->getVQuad(partIdx,3);  
 
-        NPart_t partType = (NPart_t)q2.i.w ;
+        unsigned typecode = q2.u.w ;
+        assert(TYPECODE_J == 2 && TYPECODE_K == 3);
 
         LOG(info) << " p " << std::setw(3) << p 
                   << " partIdx " << std::setw(3) << partIdx
-                  << " partType " << partType
-                  << " partName " << PartName(partType)
+                  << " typecode " << typecode
+                  << " CSGName " << CSGName((OpticksCSG_t)typecode)
                   ;
 
     }
@@ -568,10 +569,7 @@ unsigned int GParts::getNumPrim()
 const char* GParts::getTypeName(unsigned int part_index)
 {
     unsigned int code = getTypeCode(part_index);
-    //return GParts::TypeName(code);
-    return PartName((NPart_t)code);
-
-
+    return CSGName((OpticksCSG_t)code);
 }
      
 float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)
@@ -781,11 +779,11 @@ void GParts::dump(const char* msg)
                   assert( uif.u == bnd );
                   printf(" %6u <-bnd  ", uif.u );
               }
-              else if( j == FLAGS_J && k == FLAGS_K)
-              {
-                  assert( uif.u == flg );
-                  printf(" %6u <-flg CSG %s ", uif.u, csg.c_str() );
-              }
+              //else if( j == FLAGS_J && k == FLAGS_K)
+              //{
+              //    assert( uif.u == flg );
+              //    printf(" %6u <-flg CSG %s ", uif.u, csg.c_str() );
+              //}
               else if( j == NODEINDEX_J && k == NODEINDEX_K)
                   printf(" %10d (nodeIndex) ", uif.i );
               else

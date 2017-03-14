@@ -15,7 +15,6 @@ struct NPY_API npart
 
     void zero();
     void dump(const char* msg);
-    //void setTypeCode(NPart_t typecode);
     void setTypeCode(unsigned typecode);
     void setBBox(const nbbox& bb);
     void setParam(const nvec4& param);

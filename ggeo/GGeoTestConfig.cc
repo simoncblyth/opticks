@@ -242,14 +242,14 @@ void GGeoTestConfig::dump(const char* msg)
 
     for(unsigned int i=0 ; i < n ; i++)
     {
-        char nodecode = getNode(i) ;
+        char csgChar = getNode(i) ;
         const char* spec = getBoundary(i);
         glm::vec4 param = getParameters(i);
 
         std::cout
                   << " i " << std::setw(2) << i 
-                  << " nodecode " << std::setw(2) << nodecode 
-                  << " nodename " << std::setw(15) << GMaker::NodeName(nodecode)
+                  << " csgChar " << std::setw(2) << csgChar
+                  << " csgChar2Name " << std::setw(15) << CSGChar2Name(csgChar)
                   << " param " << std::setw(50) << gformat(param)
                   << " spec " << std::setw(30) << spec
                   << std::endl 
@@ -379,7 +379,7 @@ glm::mat4 GGeoTestConfig::getTransform(unsigned int i)
 char GGeoTestConfig::getNode(unsigned int i)
 {
     assert( i < m_nodes.size() );
-    char nodecode = GMaker::NodeCode(m_nodes[i].c_str());
+    char nodecode = CSGChar(m_nodes[i].c_str());
     return nodecode ; 
 }
 

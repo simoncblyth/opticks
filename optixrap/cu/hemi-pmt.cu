@@ -1211,9 +1211,9 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // expand aabb to include all the bbox of the parts 
 
 
-  bool not_csg = primFlags == CSG_PRIMITIVE ; 
+  bool is_partlist = primFlags == CSG_PARTLIST ; 
 
-  if(!not_csg)  // bbox based from first csg node, the root of tree
+  if(!is_partlist)  // bbox based from first csg node, the root of tree
   {
       quad q2, q3 ; 
       q2.f = partBuffer[4*(partOffset+0)+2];  
@@ -1232,11 +1232,11 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
           q2.f = partBuffer[4*(partOffset+p)+2] ;
           q3.f = partBuffer[4*(partOffset+p)+3]; 
           
-          int partType = q2.i.w ; 
+          unsigned partType = q2.u.w ; 
 
           identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
 
-          if(partType == 4) 
+          if(partType == CSG_PRISM) 
           {
               make_prism(q0.f, aabb) ;
           }
@@ -1247,7 +1247,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       } 
    }
 
-  rtPrintf("##hemi-pmt.cu:bounds primIdx %d csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, not_csg, 
+  rtPrintf("##hemi-pmt.cu:bounds primIdx %d is_partlist:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, is_partlist, 
        result[0],
        result[1],
        result[2],
@@ -1318,23 +1318,23 @@ RT_PROGRAM void intersect(int primIdx)
           // hence making it available to material1_propagate.cu:closest_hit_propagate
           // where crucially the instanceIdentity.z -> boundaryIndex
 
-          NPart_t partType = (NPart_t)q2.i.w ; 
+          unsigned partType = q2.u.w ; 
 
           switch(partType)
           {
-              case ZERO:
+              case CSG_ZERO:
                     intersect_aabb(q2, q3, identity);
                     break ; 
-              case SPHERE:
+              case CSG_SPHERE:
                     intersect_zsphere<false>(q0,q1,q2,q3,identity);
                     break ; 
-              case TUBS:
+              case CSG_TUBS:
                     intersect_ztubs(q0,q1,q2,q3,identity);
                     break ; 
-              case BOX:
+              case CSG_BOX:
                     intersect_box(q0,q1,q2,q3,identity);
                     break ; 
-              case PRISM:
+              case CSG_PRISM:
                     intersect_prism(q0,q1,q2,q3,identity);
                     break ; 
 

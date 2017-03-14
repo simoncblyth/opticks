@@ -197,9 +197,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
         glm::vec4 param = m_config->getParameters(i);
         char nodecode = m_config->getNode(i) ;
-        const char* nodename = GMaker::NodeName(nodecode);
-
-        // hmm csg tree will break the 1-1 here ?
+        const char* nodename = CSGChar2Name(nodecode);
 
         std::string lvn = CMaker::LVName(nodename);
         std::string pvn = CMaker::PVName(nodename);
@@ -207,7 +205,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
         if(m_verbosity > 0)
         LOG(info) << "CTestDetector::Construct" 
                   << std::setw(2) << i 
-                  << std::setw(2) << nodecode 
+                  << std::setw(2) << nodecode
                   << std::setw(15) << nodename
                   << std::setw(30) << spec
                   << std::setw(20) << gformat(param)
