@@ -3,25 +3,12 @@
 import logging
 log = logging.getLogger(__name__)
 
+# bring in enum values from sysrap/OpticksCSG.h
+from opticks.sysrap.OpticksCSG import OpticksCSG 
+
 TREE_NODES = lambda height:( (0x1 << (1+(height))) - 1 )
 
-class CSG(object):
-
-    SPHERE = 1
-    BOX = 2
-
-    UNION = 100
-    INTERSECTION = 101
-    DIFFERENCE = 102
-
-    @classmethod
-    def enum(cls):
-        return filter(lambda kv:type(kv[1]) is int,cls.__dict__.items())
-
-    @classmethod
-    def desc(cls, typ):
-        kvs = filter(lambda kv:kv[1] is typ, cls.enum())
-        return kvs[0][0] if len(kvs) == 1 else "UNKNOWN"
+class CSG(OpticksCSG):
 
     @classmethod
     def depth_r(cls, node, depth=0):
@@ -53,16 +40,16 @@ class CSG(object):
         self.parent = parent
 
     def __repr__(self):
-        return "%s(%s)" % (self.desc(self.typ), ",".join(map(repr,filter(None,[self.left,self.right]))))
+        return "%s(%s)" % (OpticksCSG.desc(self.typ), ",".join(map(repr,filter(None,[self.left,self.right]))))
 
     def union(self, other):
-        return CSG(typ=CSG.UNION, left=self, right=other)
+        return CSG(typ=self.UNION, left=self, right=other)
 
     def subtract(self, other):
-        return CSG(typ=CSG.DIFFERENCE, left=self, right=other)
+        return CSG(typ=self.DIFFERENCE, left=self, right=other)
 
     def intersect(self, other):
-        return CSG(typ=CSG.INTERSECTION, left=self, right=other)
+        return CSG(typ=self.INTERSECTION, left=self, right=other)
 
     def __add__(self, other):
         return self.union(other)

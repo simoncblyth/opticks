@@ -26,7 +26,7 @@ from boolean_solid_h import AdvanceBAndLoop, AdvanceBAndLoopIfCloser
 from boolean_solid_h import Enter, Exit, Miss
 from boolean_solid_h import CTRL_RETURN_MISS
 
-## boolean operation, hmm these need to match okc- OpticksShape.h CSG_UNION, CSG_INTERSECTION, CSG_DIFFERENCE
+## boolean operation, hmm the order of operation enum values must match sysrap- OpticksCSG.h CSG_UNION, CSG_INTERSECTION, CSG_DIFFERENCE
 UNION  = 0
 INTERSECTION = 1
 DIFFERENCE = 2
@@ -183,8 +183,6 @@ _table = _init_table(enum_kv)
 
 _acloser = _init_table(enum_kv, "ACloser_")
 _bcloser = _init_table(enum_kv, "BCloser_")
-
-
 
 
 def boolean_table(op, a, b):

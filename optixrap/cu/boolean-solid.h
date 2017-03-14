@@ -25,18 +25,18 @@ Changes compare to XRT source
 
 enum 
 {
-    ReturnMiss              = 0x1 << 0,
-    ReturnAIfCloser         = 0x1 << 1,
-    ReturnAIfFarther        = 0x1 << 2,
-    ReturnA                 = 0x1 << 3,
-    ReturnBIfCloser         = 0x1 << 4,
-    ReturnBIfFarther        = 0x1 << 5,
-    ReturnB                 = 0x1 << 6,
-    ReturnFlipBIfCloser     = 0x1 << 7,
-    AdvanceAAndLoop         = 0x1 << 8,
-    AdvanceBAndLoop         = 0x1 << 9,
-    AdvanceAAndLoopIfCloser = 0x1 << 10,    
-    AdvanceBAndLoopIfCloser = 0x1 << 11
+    Act_ReturnMiss              = 0x1 << 0,
+    Act_ReturnAIfCloser         = 0x1 << 1,
+    Act_ReturnAIfFarther        = 0x1 << 2,
+    Act_ReturnA                 = 0x1 << 3,
+    Act_ReturnBIfCloser         = 0x1 << 4,
+    Act_ReturnBIfFarther        = 0x1 << 5,
+    Act_ReturnB                 = 0x1 << 6,
+    Act_ReturnFlipBIfCloser     = 0x1 << 7,
+    Act_AdvanceAAndLoop         = 0x1 << 8,
+    Act_AdvanceBAndLoop         = 0x1 << 9,
+    Act_AdvanceAAndLoopIfCloser = 0x1 << 10,    
+    Act_AdvanceBAndLoopIfCloser = 0x1 << 11
 };
 
 
@@ -51,9 +51,9 @@ enum {
 };  
 
 typedef enum { 
-    Enter = 0, 
-    Exit  = 1, 
-    Miss  = 2 
+    State_Enter = 0, 
+    State_Exit  = 1, 
+    State_Miss  = 2 
 } IntersectionState_t ;
 
 
@@ -80,15 +80,15 @@ enum {
 
 enum 
 {
-    Union_EnterA_EnterB = ReturnAIfCloser | ReturnBIfCloser,
-    Union_EnterA_ExitB  = ReturnBIfCloser | AdvanceAAndLoop,
-    Union_EnterA_MissB  = ReturnA, 
-    Union_ExitA_EnterB  = ReturnAIfCloser | AdvanceBAndLoop,
-    Union_ExitA_ExitB   = ReturnAIfFarther | ReturnBIfFarther,
-    Union_ExitA_MissB   = ReturnA ,
-    Union_MissA_EnterB  = ReturnB ,
-    Union_MissA_ExitB   = ReturnB ,
-    Union_MissA_MissB   = ReturnMiss 
+    Union_EnterA_EnterB = Act_ReturnAIfCloser | Act_ReturnBIfCloser,
+    Union_EnterA_ExitB  = Act_ReturnBIfCloser | Act_AdvanceAAndLoop,
+    Union_EnterA_MissB  = Act_ReturnA, 
+    Union_ExitA_EnterB  = Act_ReturnAIfCloser | Act_AdvanceBAndLoop,
+    Union_ExitA_ExitB   = Act_ReturnAIfFarther | Act_ReturnBIfFarther,
+    Union_ExitA_MissB   = Act_ReturnA ,
+    Union_MissA_EnterB  = Act_ReturnB ,
+    Union_MissA_ExitB   = Act_ReturnB ,
+    Union_MissA_MissB   = Act_ReturnMiss 
 };
 
 // below ACloser_ and BCloser_ manually obtained from above source table
@@ -122,15 +122,15 @@ enum
 
 enum 
 {
-    Difference_EnterA_EnterB =  ReturnAIfCloser | AdvanceBAndLoop,
-    Difference_EnterA_ExitB  =  AdvanceAAndLoopIfCloser | AdvanceBAndLoopIfCloser,
-    Difference_EnterA_MissB  =  ReturnA,
-    Difference_ExitA_EnterB  =  ReturnAIfCloser | ReturnFlipBIfCloser,
-    Difference_ExitA_ExitB   =  ReturnFlipBIfCloser | AdvanceAAndLoop,
-    Difference_ExitA_MissB   =  ReturnA,
-    Difference_MissA_EnterB  =  ReturnMiss,
-    Difference_MissA_ExitB   =  ReturnMiss,
-    Difference_MissA_MissB   =  ReturnMiss
+    Difference_EnterA_EnterB =  Act_ReturnAIfCloser | Act_AdvanceBAndLoop,
+    Difference_EnterA_ExitB  =  Act_AdvanceAAndLoopIfCloser | Act_AdvanceBAndLoopIfCloser,
+    Difference_EnterA_MissB  =  Act_ReturnA,
+    Difference_ExitA_EnterB  =  Act_ReturnAIfCloser | Act_ReturnFlipBIfCloser,
+    Difference_ExitA_ExitB   =  Act_ReturnFlipBIfCloser | Act_AdvanceAAndLoop,
+    Difference_ExitA_MissB   =  Act_ReturnA,
+    Difference_MissA_EnterB  =  Act_ReturnMiss,
+    Difference_MissA_ExitB   =  Act_ReturnMiss,
+    Difference_MissA_MissB   =  Act_ReturnMiss
 };
 // below ACloser_ and BCloser_ manually obtained from above source table
 enum
@@ -165,15 +165,15 @@ enum
 
 enum 
 {
-    Intersection_EnterA_EnterB = AdvanceAAndLoopIfCloser | AdvanceBAndLoopIfCloser,
-    Intersection_EnterA_ExitB  = ReturnAIfCloser | AdvanceBAndLoop,
-    Intersection_EnterA_MissB  = ReturnMiss,
-    Intersection_ExitA_EnterB  = ReturnBIfCloser | AdvanceAAndLoop,
-    Intersection_ExitA_ExitB   = ReturnAIfCloser | ReturnBIfCloser,
-    Intersection_ExitA_MissB   = ReturnMiss,
-    Intersection_MissA_EnterB  = ReturnMiss, 
-    Intersection_MissA_ExitB   = ReturnMiss,
-    Intersection_MissA_MissB   = ReturnMiss 
+    Intersection_EnterA_EnterB = Act_AdvanceAAndLoopIfCloser | Act_AdvanceBAndLoopIfCloser,
+    Intersection_EnterA_ExitB  = Act_ReturnAIfCloser | Act_AdvanceBAndLoop,
+    Intersection_EnterA_MissB  = Act_ReturnMiss,
+    Intersection_ExitA_EnterB  = Act_ReturnBIfCloser | Act_AdvanceAAndLoop,
+    Intersection_ExitA_ExitB   = Act_ReturnAIfCloser | Act_ReturnBIfCloser,
+    Intersection_ExitA_MissB   = Act_ReturnMiss,
+    Intersection_MissA_EnterB  = Act_ReturnMiss, 
+    Intersection_MissA_ExitB   = Act_ReturnMiss,
+    Intersection_MissA_MissB   = Act_ReturnMiss 
 };
 // below ACloser_ and BCloser_ manually obtained from above source table
 enum
@@ -200,13 +200,6 @@ enum
     BCloser_Intersection_MissA_ExitB   = CTRL_RETURN_MISS,
     BCloser_Intersection_MissA_MissB   = CTRL_RETURN_MISS
 };
-
-
-
-
-
-
-
 
 
 

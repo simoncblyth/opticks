@@ -24,12 +24,12 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
     intersect_part( a_partIdx , tA_min, tt ) ;
 
     IntersectionState_t a_state = tt.w > tA_min ? 
-                        ( (tt.x * ray.direction.x + tt.y * ray.direction.y + tt.z * ray.direction.z) < 0.f ? Enter : Exit ) 
+                        ( (tt.x * ray.direction.x + tt.y * ray.direction.y + tt.z * ray.direction.z) < 0.f ? State_Enter : State_Exit ) 
                                   :
-                              Miss
+                              State_Miss
                               ; 
 
-    if(a_state != Miss)
+    if(a_state != State_Miss)
     {
         if(rtPotentialIntersection(tt.w))
         {
@@ -154,7 +154,7 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 
  
 
-#define CSG_CLASSIFY( ise, dir, tmin )   (fabsf((ise).w) > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? Enter : Exit ) : Miss )
+#define CSG_CLASSIFY( ise, dir, tmin )   (fabsf((ise).w) > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? State_Enter : State_Exit ) : State_Miss )
 
 
 #define TRANCHE_PUSH0( _stacku, _stackf, stack, ERR, valu, valf ) \

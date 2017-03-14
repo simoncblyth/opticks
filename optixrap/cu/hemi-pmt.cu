@@ -25,7 +25,8 @@ int boolean_ctrl_packed_lookup( OpticksCSG_t operation, IntersectionState_t stat
 {
     const uint4& lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser ;
     unsigned offset = 3*(unsigned)stateA + (unsigned)stateB ;   
-    return offset < 8 ? (( getByIndex(lut, (unsigned)operation) >> (offset*4)) & 0xf) : CTRL_RETURN_MISS ;
+    unsigned index = (unsigned)operation - (unsigned)CSG_UNION ; 
+    return offset < 8 ? (( getByIndex(lut, index) >> (offset*4)) & 0xf) : CTRL_RETURN_MISS ;
 }
 
 

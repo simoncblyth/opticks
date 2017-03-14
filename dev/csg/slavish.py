@@ -59,9 +59,14 @@ from node import Node, root3, root4, lrsph_u, trees, lrsph_d1, lrsph_d2
 from node import Q0, Q1, Q2, Q3, X, Y, Z, W
 from GParts import GParts
 
-from opticks.optixrap.cu.boolean_solid_h import CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B, CTRL_LOOP_A, CTRL_LOOP_B
-from opticks.optixrap.cu.boolean_solid_h import ERROR_POP_EMPTY, ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
-from opticks.optixrap.cu.boolean_h import desc_state, desc_ctrl, Enter, Exit, Miss
+
+from opticks.optixrap.cu.boolean_solid import CTRL_, ERROR_, State_
+from opticks.optixrap.cu.intersect_boolean import pak_lookup
+
+
+#from opticks.optixrap.cu.boolean_solid_h import CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B, CTRL_LOOP_A, CTRL_LOOP_B
+#from opticks.optixrap.cu.boolean_solid_h import ERROR_POP_EMPTY, ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
+#from opticks.optixrap.cu.boolean_h import desc_state, desc_ctrl, Enter, Exit, Miss
 
 
 LHS, RHS = 0, 1
@@ -73,9 +78,9 @@ def CSG_CLASSIFY(ise, dir_, tmin):
      assert ise.shape == (4,)
      #if ise[W] > tmin:
      if abs(ise[W]) > tmin:
-         return Enter if np.dot( ise[:3], dir_ ) < 0 else Exit 
+         return State_.Enter if np.dot( ise[:3], dir_ ) < 0 else State_.Exit 
      else:
-         return Miss
+         return State_.Miss
 
 
 TRANCHE_STACK_SIZE = 4
@@ -233,6 +238,8 @@ def test_tree():
 
 
 
+
+
 # generated from /Users/blyth/opticks/optixrap/cu by boolean_h.py on Sat Mar  4 20:37:03 2017 
 packed_boolean_lut_ACloser = [ 0x22121141, 0x00014014, 0x00141141, 0x00000000 ]
 packed_boolean_lut_BCloser = [ 0x22115122, 0x00022055, 0x00133155, 0x00000000 ]
@@ -240,7 +247,7 @@ packed_boolean_lut_BCloser = [ 0x22115122, 0x00022055, 0x00133155, 0x00000000 ]
 def boolean_ctrl_packed_lookup(operation, stateA, stateB, ACloser ):
     lut = packed_boolean_lut_ACloser if ACloser else  packed_boolean_lut_BCloser 
     offset = 3*stateA + stateB ;
-    return (lut[operation] >> (offset*4)) & 0xf if offset < 8 else CTRL_RETURN_MISS 
+    return (lut[operation] >> (offset*4)) & 0xf if offset < 8 else CTRL_.RETURN_MISS 
 
 propagate_epsilon = 1e-3
 
@@ -296,7 +303,7 @@ def recursive_intersect(partBuffer, ray, tst):
         if instrument:
             ray.addseq(ctrl)
 
-        side = ctrl - CTRL_LOOP_A 
+        side = ctrl - CTRL_.LOOP_A 
  
         loop = -1
         while side > -1 and loop < 10:
@@ -313,7 +320,7 @@ def recursive_intersect(partBuffer, ray, tst):
             if instrument:
                 ray.addseq(ctrl)
             pass
-            side = ctrl - CTRL_LOOP_A ## NB possibly changed side            
+            side = ctrl - CTRL_.LOOP_A ## NB possibly changed side            
         pass  
 
         isect[RFLIP] = isect[RIGHT]
@@ -321,7 +328,7 @@ def recursive_intersect(partBuffer, ray, tst):
         isect[RFLIP,0,Y] = -isect[RFLIP,0,Y]
         isect[RFLIP,0,Z] = -isect[RFLIP,0,Z]
  
-        assert ctrl < CTRL_LOOP_A 
+        assert ctrl < CTRL_.LOOP_A 
 
         # recursive return is equivalent to what gets popped ?
         if debug:log_info("%s :   %s   " % (pfx("R1",tst.iray,nodeIdx,bileaf), fmt(isect[LEFT],isect[RIGHT],x_state[LHS],x_state[RHS],ctrl)))
@@ -339,7 +346,7 @@ def f4(a,j=0,nfmt="%5.2f",tfmt="%7.3f"):
 def fmt(left,right,lst, rst, ctrl):
     assert left.shape == (4,4), left.shape
     assert right.shape == (4,4), right.shape
-    return "L %s R %s   (%5s,%5s) -> %-20s " % ( f4(left), f4(right), desc_state(lst),desc_state(rst), desc_ctrl(ctrl))
+    return "L %s R %s   (%5s,%5s) -> %-20s " % ( f4(left), f4(right), State_.desc(lst),State_.desc(rst), CTRL_.desc(ctrl))
 
 def pfx(alg,iray,nodeIdx,bileaf):
     return "%s %6d [%2d] %2s " % (alg,iray,nodeIdx,"BI" if bileaf else "  ")
@@ -362,8 +369,12 @@ def evaluative_intersect(partBuffer, ray, tst):
     numNodes = TREE_NODES(fullHeight)      
 
     postorder_sequence = [ 0x1, 0x132, 0x1376254, 0x137fe6dc25ba498 ] 
-    postorder = postorder_sequence[fullHeight] 
 
+    try:
+        postorder = postorder_sequence[fullHeight] 
+    except IndexError:
+        postorder = getattr(tst.root, '_postorder_leaf', None)
+        
 
     tr = Tranche()
     tr.push( POSTORDER_SLICE(0, numNodes ), ray.tmin )
@@ -430,12 +441,12 @@ def evaluative_intersect(partBuffer, ray, tst):
                 CONTINUE = 1
                 BREAK = 2
 
-                if ctrl < CTRL_LOOP_A:
+                if ctrl < CTRL_.LOOP_A:
                     result = np.zeros((4,4), dtype=np.float32)
-                    if not ctrl == CTRL_RETURN_MISS:
-                        result[:] = csg.data[left if ctrl == CTRL_RETURN_A else right]
+                    if not ctrl == CTRL_.RETURN_MISS:
+                        result[:] = csg.data[left if ctrl == CTRL_.RETURN_A else right]
                     pass
-                    if ctrl == CTRL_RETURN_FLIP_B:
+                    if ctrl == CTRL_.RETURN_FLIP_B:
                         result[0,X] = -result[0,X]
                         result[0,Y] = -result[0,Y]
                         result[0,Z] = -result[0,Z]
@@ -451,12 +462,12 @@ def evaluative_intersect(partBuffer, ray, tst):
 
                     act = CONTINUE
                 else:
-                    loopside = left if ctrl == CTRL_LOOP_A else right 
-                    otherside = right if ctrl == CTRL_LOOP_A else left 
+                    loopside = left if ctrl == CTRL_.LOOP_A else right 
+                    otherside = right if ctrl == CTRL_.LOOP_A else left 
  
                     leftIdx = 2*nodeIdx
                     rightIdx = leftIdx + 1
-                    otherIdx = rightIdx if ctrl == CTRL_LOOP_A else leftIdx
+                    otherIdx = rightIdx if ctrl == CTRL_.LOOP_A else leftIdx
 
                     tminAdvanced = abs(csg.data[loopside,0,W]) + propagate_epsilon 
 
@@ -470,7 +481,7 @@ def evaluative_intersect(partBuffer, ray, tst):
                     endTree   = POSTORDER_SLICE(i, end )   # fix numNodes -> end
                     leftTree  = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes)
                     rightTree = POSTORDER_SLICE(i-halfNodes, i) 
-                    loopTree  = leftTree if ctrl == CTRL_LOOP_A else rightTree
+                    loopTree  = leftTree if ctrl == CTRL_.LOOP_A else rightTree
 
                     tr.push(endTree, tmin) 
                     tr.push(loopTree, tminAdvanced) 
@@ -588,11 +599,11 @@ def iterative_intersect(partBuffer, ray, tst):
             pass
 
             reiterate = False
-            if ctrl < CTRL_LOOP_A:
+            if ctrl < CTRL_.LOOP_A:
                 ## recursive return after first classify, needs an avenue to push 
                 pass
             else:
-                side = ctrl - CTRL_LOOP_A 
+                side = ctrl - CTRL_.LOOP_A 
                 loop = -1
 
                 while side > -1 and loop < 10:
@@ -621,7 +632,7 @@ def iterative_intersect(partBuffer, ray, tst):
                     if instrument:
                         ray.addseq(ctrl)
                     pass
-                    side = ctrl - CTRL_LOOP_A    ## NB possibly changed side
+                    side = ctrl - CTRL_.LOOP_A    ## NB possibly changed side
 
                     if side > -1 and not bileaf:
                         other = 1 - side
@@ -650,7 +661,7 @@ def iterative_intersect(partBuffer, ray, tst):
             isect[RFLIP,0,Y] = -isect[RFLIP,0,Y]
             isect[RFLIP,0,Z] = -isect[RFLIP,0,Z]
  
-            assert ctrl < CTRL_LOOP_A 
+            assert ctrl < CTRL_.LOOP_A 
             result = isect[ctrl] 
             nside = LHS if nodeIdx % 2 == 0 else RHS  # even on left
 
@@ -734,10 +745,15 @@ if __name__ == '__main__':
 
     for tst in tsts:
         root = tst.root
-        #log.info("tst %s " % tst.name )
+        log.info("tst %s " % tst.name )
 
         if type(root) is Node:        
             partBuffer = Node.serialize( root )
+            fullHeight = TREE_HEIGHT(len(partBuffer))
+            if fullHeight > 3:
+                log.warning("skipping big tree fullHeight %d " % fullHeight ) 
+                continue
+
         elif type(root) is str:
             gp = GParts(root)
             partBuffer = gp[1]
