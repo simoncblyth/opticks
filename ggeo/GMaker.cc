@@ -11,7 +11,7 @@
 #include "NPart.hpp"
 
 
-#include "OpticksShape.h"
+#include "OpticksCSG.h"
 
 // ggeo-
 #include "GGeo.hh"
@@ -27,6 +27,7 @@
 
 #include "PLOG.hh"
 
+/* 
 
 const char* GMaker::BOX = "box" ; 
 const char* GMaker::SPHERE = "sphere" ; 
@@ -39,36 +40,26 @@ const char* GMaker::UNDEFINED = "undefined" ;
 const char* GMaker::UNION = "union" ; 
 const char* GMaker::INTERSECTION = "intersection" ; 
 const char* GMaker::DIFFERENCE = "difference" ; 
- 
+
+
 const char* GMaker::NodeName(char nodecode)
 {
     switch(nodecode) 
     {
-       case 'B':return BOX     ; break ; 
-       case 'S':return SPHERE  ; break ; 
-       case 'Z':return ZSPHERE ; break ; 
-       case 'L':return ZLENS   ; break ; 
-       case 'P':return PMT     ; break ; 
-       case 'M':return PRISM     ; break ; 
-       case 'I':return INTERSECTION ; break ; 
-       case 'J':return UNION        ; break ; 
-       case 'K':return DIFFERENCE   ; break ; 
-       case 'U':return UNDEFINED ; break ;
+       case 'B':return CSG_BOX     ; break ; 
+       case 'S':return CSG_SPHERE  ; break ; 
+       case 'Z':return CSG_ZSPHERE ; break ; 
+       case 'L':return CSG_ZLENS   ; break ; 
+       case 'P':return CSG_PMT     ; break ; 
+       case 'M':return CSG_PRISM     ; break ; 
+       case 'I':return CSG_INTERSECTION ; break ; 
+       case 'J':return CSG_UNION        ; break ; 
+       case 'K':return CSG_DIFFERENCE   ; break ; 
+       case 'U':return CSG_UNDEFINED ; break ;
     }
     return NULL ;
 } 
 
-bool GMaker::IsCompositeShape(char shapecode)
-{
-    return shapecode == 'L' ; 
-}
-bool GMaker::IsBooleanShape(char shapecode)
-{
-    return shapecode == 'I' || shapecode == 'J' || shapecode == 'K'  ;
-}
-
-
-// enum from OpticksShape.h
 OpticksCSG_t GMaker::NodeFlag(char shapecode)
 {
     OpticksCSG_t flag = CSG_PRIMITIVE ; 
@@ -81,6 +72,8 @@ OpticksCSG_t GMaker::NodeFlag(char shapecode)
     }
     return flag ;  
 }
+
+
 
 char GMaker::NodeCode(const char* nodename)
 {
@@ -98,6 +91,19 @@ char GMaker::NodeCode(const char* nodename)
 }
 
 
+*/
+
+
+bool GMaker::IsCompositeShape(char shapecode)
+{
+    return shapecode == 'L' ; 
+}
+bool GMaker::IsBooleanShape(char shapecode)
+{
+    return shapecode == 'I' || shapecode == 'J' || shapecode == 'K'  ;
+}
+
+
 
 
 GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, const char* spec )
@@ -105,27 +111,27 @@ GSolid* GMaker::make(unsigned int /*index*/, char shapecode, glm::vec4& param, c
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
 
      GSolid* solid = NULL ; 
-     switch(shapecode)
+
+     OpticksCSG_t csgflag = CSGFlag(shapecode); 
+     switch(csgflag)
      {
-         case 'B': solid = makeBox(param); break;
-         case 'M': solid = makePrism(param, spec); break;
-         case 'S': solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
-         case 'Z': solid = makeZSphere(param) ; break;
-         case 'L': solid = makeZSphereIntersect(param, spec) ; break;   // composite handled by adding child node
-         case 'I': solid = makeBox(param); break ;    // boolean intersect
-         case 'J': solid = makeBox(param); break ;    // boolean union
-         case 'K': solid = makeBox(param); break ;    // boolean difference
+         case CSG_BOX:          solid = makeBox(param); break;
+         case CSG_PRISM:        solid = makePrism(param, spec); break;
+         case CSG_SPHERE:       solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
+         case CSG_ZSPHERE:      solid = makeZSphere(param) ; break;
+         case CSG_LENS:         solid = makeZSphereIntersect(param, spec) ; break;   // composite handled by adding child node
+         case CSG_INTERSECTION: solid = makeBox(param); break ;    // boolean intersect
+         case CSG_UNION:        solid = makeBox(param); break ;    // boolean union
+         case CSG_DIFFERENCE:   solid = makeBox(param); break ;    // boolean difference
      }
      assert(solid);
-
-     OpticksCSG_t csgflag = GMaker::NodeFlag(shapecode) ; 
      solid->setCSGFlag( csgflag );
 
      // TODO: most parts alread hooked up above, do this uniformly
      GParts* pts = solid->getParts();  
      if(pts == NULL)
      {
-         pts = GParts::make(shapecode, param, spec);
+         pts = GParts::make(csgflag, param, spec);
          solid->setParts(pts);
      }
      assert(pts);

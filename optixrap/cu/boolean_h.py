@@ -30,6 +30,7 @@ from boolean_solid_h import CTRL_RETURN_MISS
 UNION  = 0
 INTERSECTION = 1
 DIFFERENCE = 2
+
 _op_label = { UNION:"Union", INTERSECTION:"Intersection", DIFFERENCE:"Difference" }
 def desc_op(op):
     return _op_label[op]

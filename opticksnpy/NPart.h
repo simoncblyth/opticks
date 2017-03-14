@@ -1,5 +1,7 @@
 #pragma once
 
+
+/*
 typedef enum {
       EMPTY=-1, 
       ZERO=0, 
@@ -8,6 +10,9 @@ typedef enum {
       BOX=3,
       PRISM=4
       } NPart_t ;  
+
+*/
+
 
 /*
   Boolean ops now handled in OpticksShape.h 
@@ -69,6 +74,8 @@ enum {
 
 #ifndef __CUDACC__
 
+
+/*
 static const char* PART_EMPTY_  = "PART_EMPTY" ; 
 static const char* PART_ZERO_   = "PART_ZERO" ; 
 static const char* PART_SPHERE_ = "PART_SPHERE" ; 
@@ -90,5 +97,7 @@ static const char* PartName( NPart_t partType )
     }   
     return s ; 
 }
+*/
+
 
 #endif

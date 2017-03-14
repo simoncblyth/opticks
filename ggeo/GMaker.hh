@@ -8,7 +8,7 @@ class NTrianglesNPY ;
 #include <glm/fwd.hpp>
 
 class Opticks ; 
-#include "OpticksShape.h"
+#include "OpticksCSG.h"
 
 struct gbbox ; 
 
@@ -20,6 +20,7 @@ class GSolid ;
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GMaker {
    public:
+/*
        static const char* ZSPHERE ; 
        static const char* ZLENS ; 
        static const char* SPHERE ; 
@@ -33,9 +34,11 @@ class GGEO_API GMaker {
        static OpticksCSG_t NodeFlag(char nodecode);
        static const char* NodeName(char nodecode); 
        static char NodeCode(const char* nodename); 
+
        static bool IsBooleanShape(char nodecode); 
        static bool IsCompositeShape(char nodecode); 
        static unsigned BooleanFlag(char nodecode); 
+*/
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:

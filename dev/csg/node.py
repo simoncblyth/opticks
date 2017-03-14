@@ -353,11 +353,6 @@ class Node(object):
         pass
         return level
 
-
-
-
-
-
     @classmethod
     def serialize(cls, root):
         """

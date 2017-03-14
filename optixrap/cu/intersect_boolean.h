@@ -504,13 +504,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     CSG csg ;  
     csg.curr = -1 ;
 
-    // make global and add prevs for debug
-    unsigned nodeIdx = 0 ; 
-    unsigned prevIdx = 0 ; 
-    int ctrl = -1 ; 
-    int prevCtrl = -1 ; 
     int tloop = -1 ; 
-
 
     while (tr.curr > -1)
     {
@@ -527,14 +521,12 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         unsigned endIdx = POSTORDER_NODE(postorder, end - 1);   
 
         if(verbose)
-        rtPrintf("[%5d](trav) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d prevIdx %d [%x:%x] (%2u->%2u) %7.3f \n", 
+        rtPrintf("[%5d](trav) csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d [%x:%x] (%2u->%2u) %7.3f \n", 
                            launch_index.x, 
-                           nodeIdx,
                            csg.curr,
                            csg_repr(csg), 
                            tranche_repr(tr),
                            tloop,  
-                           prevIdx,
                            begin,
                            end,
                            POSTORDER_NODE(postorder, begin),
@@ -545,8 +537,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
         for(unsigned i=begin ; i < end ; i++)
         {
-            prevIdx = nodeIdx ; 
-            nodeIdx = POSTORDER_NODE(postorder, i) ;
+            unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;
 
             int depth = TREE_DEPTH(nodeIdx) ;
             unsigned subNodes = TREE_NODES(fullHeight-depth) ;
@@ -619,8 +610,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                 float t_left  = fabsf( csg.data[left].w );
                 float t_right = fabsf( csg.data[right].w );
 
-                prevCtrl = ctrl ; 
-                ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right ) ;
+                int ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right ) ;
                 history_append( hist, nodeIdx, ctrl ); 
 
                 enum { UNDEFINED=0, CONTINUE=1, BREAK=2 } ;

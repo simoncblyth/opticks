@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <glm/fwd.hpp>
+#include "OpticksCSG.h"
 
 struct npart ; 
 struct NSlice ; 
@@ -41,17 +42,6 @@ class GGEO_API GParts {
        static const char* CONTAINING_MATERIAL ; 
        static const char* SENSOR_SURFACE ; 
     public:
-       // shapes with analytic intersection implementations 
-       static const char* SPHERE_ ;
-       static const char* TUBS_ ; 
-       static const char* BOX_ ; 
-       static const char* PRISM_ ; 
-       static const char* INTERSECTION_; 
-       static const char* UNION_ ; 
-       static const char* DIFFERENCE_ ; 
-       //static const char* TypeName(unsigned int typecode);
-
-    public:
         // buffer layout, must match locations in pmt-/tree.py:convert 
         enum { 
               QUADS_PER_ITEM = 4, 
@@ -59,10 +49,9 @@ class GGEO_API GParts {
               NK = 4,
               SK = 4  
             } ;
-
     public:
         static GParts* make(const npart& pt, const char* spec);
-        static GParts* make(char typecode, glm::vec4& param, const char* spec);
+        static GParts* make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
     public:
         static GParts* combine(std::vector<GParts*> subs);
     public:
@@ -84,10 +73,15 @@ class GGEO_API GParts {
     public: 
         const char*  getName();
         unsigned int getIndex(unsigned int part);
-        unsigned int getFlags(unsigned int part);
         unsigned int getTypeCode(unsigned int part);
         unsigned int getNodeIndex(unsigned int part);
         unsigned int getBoundary(unsigned int part);
+    public: 
+        /*
+        unsigned int getFlags(unsigned int part);
+        void setFlags(unsigned int part, unsigned int flags);
+        void setFlagsAll(unsigned int flags);
+        */
     public: 
         std::string  getBoundaryName(unsigned int part);
         const char*  getTypeName(unsigned int part);
@@ -99,12 +93,10 @@ class GGEO_API GParts {
         guint4       getPrimInfo(unsigned int iprim);
    public:
         void setIndex(unsigned int part, unsigned int index);
-        void setFlags(unsigned int part, unsigned int flags);
         void setTypeCode(unsigned int part, unsigned int typecode);
         void setNodeIndex(unsigned int part, unsigned int nodeindex);
         void setBoundary(unsigned int part, unsigned int boundary);
         void setBoundaryAll(unsigned int boundary);
-        void setFlagsAll(unsigned int flags);
     public:
         GBndLib*           getBndLib();
         GItemList*         getBndSpec();

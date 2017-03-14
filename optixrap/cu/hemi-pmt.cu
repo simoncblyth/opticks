@@ -1,7 +1,7 @@
 // based on /usr/local/env/cuda/OptiX_380_sdk/julia/sphere.cu
 
 // enums
-#include "OpticksShape.h"
+#include "OpticksCSG.h"
 #include "NPart.h"
 
 #include <optix_world.h>
@@ -1276,9 +1276,9 @@ RT_PROGRAM void intersect(int primIdx)
   // for analytic test geometry (PMT too?) the identityBuffer  
   // is composed of placeholder zeros
 
-  bool not_csg = primFlags == CSG_PRIMITIVE ; 
+  bool is_partlist = primFlags == CSG_PARTLIST ;   // partlist is simpler but a lot less flexible that csg 
 
-  if(!not_csg)
+  if(!is_partlist)
   { 
       //if(primIdx>0)
       //rtPrintf("intersect(csg) primIdx:%d partOffset(x):%u numParts(y):%u primIdx_(z):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primIdx_, primFlags ); 
@@ -1296,7 +1296,7 @@ RT_PROGRAM void intersect(int primIdx)
   else
   {
       if(primIdx>0)
-      rtPrintf("intersect (not-csg) primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
+      rtPrintf("intersect (partlist) primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
       // partitioned intersect over single basis-shape parts for each "prim"
       for(unsigned int p=0 ; p < numParts ; p++)
       {  

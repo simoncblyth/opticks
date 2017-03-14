@@ -5,7 +5,7 @@
 #include <climits>
 
 
-#include "OpticksShape.h"
+#include "OpticksCSG.h"
 
 // npy-
 #include "NGLM.hpp"
@@ -26,36 +26,6 @@
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 
-const char* GParts::SPHERE_ = "Sphere" ;
-const char* GParts::TUBS_   = "Tubs" ;
-const char* GParts::BOX_    = "Box" ;
-const char* GParts::PRISM_  = "Prism" ;
-const char* GParts::INTERSECTION_  = "Intersection" ;
-const char* GParts::UNION_         = "Union" ;
-const char* GParts::DIFFERENCE_    = "Difference" ;
-
-
-/*
-const char* GParts::TypeName(unsigned int typecode)
-{
-    LOG(debug) << "GParts::TypeName " << typecode ; 
-
-    const char* s = NULL ; 
-
-    switch(typecode)
-    {
-        case SPHERE:        s=SPHERE_        ; break ;
-        case   TUBS:        s=TUBS_          ; break ;
-        case    BOX:        s=BOX_           ; break ;
-        case  PRISM:        s=PRISM_         ; break ;
-        case  INTERSECTION: s=INTERSECTION_  ; break ;
-        case  UNION:        s=UNION_         ; break ;
-        case  DIFFERENCE:   s=DIFFERENCE_    ; break ;
-    }
-    assert(s);
-    return s ; 
-}
-*/
 
 GParts* GParts::combine(std::vector<GParts*> subs)
 {
@@ -89,20 +59,19 @@ GParts* GParts::make(const npart& pt, const char* spec)
     part->setQuad( pt.q3.f, 0u, 3u );
 
     GParts* gpt = new GParts(part, spec) ;
-    char typecode = gpt->getTypeCode(0u);
-    assert(typecode == BOX || typecode == SPHERE || typecode == PRISM);
 
-    // hmm need to set flag identifying as constituent of a boolean composite
+    unsigned typecode = gpt->getTypeCode(0u);
+    assert(typecode == CSG_BOX || typecode == CSG_SPHERE || typecode == CSG_PRISM);
 
     return gpt ; 
 }
 
-GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
+GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 {
     float size = param.w ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
 
-    if(typecode == 'Z')
+    if(csgflag == CSG_ZSPHERE)
     {
         bb.min.z = param.x*param.w ; 
         bb.max.z = param.y*param.w ; 
@@ -121,21 +90,9 @@ GParts* GParts::make(char typecode, glm::vec4& param, const char* spec)
 
     GParts* pt = new GParts(part, spec) ;
 
-    // part enum from npy/NPart.h
-    // hmm the boolean info should be in constitutent flags not TypeCode 
+    pt->setTypeCode(0u, csgflag);
+    //pt->setFlags(0u, csgflag);
 
-    if( typecode == 'B' )     pt->setTypeCode(0u, BOX);
-    else if(typecode == 'S')  pt->setTypeCode(0u, SPHERE);
-    else if(typecode == 'Z')  pt->setTypeCode(0u, SPHERE);
-    else if(typecode == 'M')  pt->setTypeCode(0u, PRISM);
-    else if(typecode == 'I')  pt->setTypeCode(0u, BOX );
-    else if(typecode == 'J')  pt->setTypeCode(0u, BOX );
-    else if(typecode == 'K')  pt->setTypeCode(0u, BOX );
-    else
-    {
-        LOG(fatal) << "GParts::make bad typecode [" << typecode << "]" ; 
-        assert(0) ; 
-    }
     return pt ; 
 } 
 
@@ -418,19 +375,21 @@ void GParts::makePrimBuffer()
     for(unsigned int i=0; i < numParts ; i++)
     {
         unsigned int nodeIndex = getNodeIndex(i);
-        unsigned int flg = getFlags(i);
-        std::string msk = ShapeMask(flg);
+        //unsigned int flg = getFlags(i);
+        //std::string msk = ShapeMask(flg);
+        unsigned typ = getTypeCode(i);
+        std::string  typName = CSGName((OpticksCSG_t)typ);
  
         LOG(info) << "GParts::makePrimBuffer"
                    << " i " << std::setw(3) << i  
                    << " nodeIndex " << std::setw(3) << nodeIndex
-                   << " msk " << msk 
+                   << " typName " << typName 
                    ;  
                      
         m_parts_per_prim[nodeIndex] += 1 ; 
 
         // flag from the first part of each nodeIndex is promoted into primitive buffer 
-        if(m_flag_prim.count(nodeIndex) == 0) m_flag_prim[nodeIndex] = flg ; 
+        if(m_flag_prim.count(nodeIndex) == 0) m_flag_prim[nodeIndex] = typ ; 
 
         if(nodeIndex < nmin) nmin = nodeIndex ; 
         if(nodeIndex > nmax) nmax = nodeIndex ; 
@@ -501,7 +460,7 @@ void GParts::dumpPrim(unsigned primIdx)
               << " partOffset " << std::setw(3) << partOffset 
               << " numParts "   << std::setw(3) << numParts
               << " primFlags "  << std::setw(5) << primFlags 
-              << " shapeMask "  << ShapeMask(primFlags) 
+              << " CSGName "  << CSGName((OpticksCSG_t)primFlags) 
               << " prim "       << gformat(prim)
               ;
 
@@ -611,6 +570,8 @@ const char* GParts::getTypeName(unsigned int part_index)
     unsigned int code = getTypeCode(part_index);
     //return GParts::TypeName(code);
     return PartName((NPart_t)code);
+
+
 }
      
 float* GParts::getValues(unsigned int i, unsigned int j, unsigned int k)
@@ -689,10 +650,14 @@ unsigned int GParts::getNodeIndex(unsigned int part)
 {
     return getUInt(part, NODEINDEX_J, NODEINDEX_K);
 }
+
 unsigned int GParts::getTypeCode(unsigned int part)
 {
     return getUInt(part, TYPECODE_J, TYPECODE_K);
 }
+
+
+
 unsigned int GParts::getIndex(unsigned int part)
 {
     return getUInt(part, INDEX_J, INDEX_K);
@@ -701,21 +666,19 @@ unsigned int GParts::getBoundary(unsigned int part)
 {
     return getUInt(part, BOUNDARY_J, BOUNDARY_K);
 }
-unsigned int GParts::getFlags(unsigned int part)
-{
-    return getUInt(part, FLAGS_J, FLAGS_K);
-}
-
 
 
 void GParts::setNodeIndex(unsigned int part, unsigned int nodeindex)
 {
     setUInt(part, NODEINDEX_J, NODEINDEX_K, nodeindex);
 }
+
 void GParts::setTypeCode(unsigned int part, unsigned int typecode)
 {
     setUInt(part, TYPECODE_J, TYPECODE_K, typecode);
 }
+
+
 void GParts::setIndex(unsigned int part, unsigned int index)
 {
     setUInt(part, INDEX_J, INDEX_K, index);
@@ -724,20 +687,29 @@ void GParts::setBoundary(unsigned int part, unsigned int boundary)
 {
     setUInt(part, BOUNDARY_J, BOUNDARY_K, boundary);
 }
+
+
+/*
+unsigned int GParts::getFlags(unsigned int part)
+{
+    return getUInt(part, FLAGS_J, FLAGS_K);
+}
 void GParts::setFlags(unsigned int part, unsigned int flags)
 {
     setUInt(part, FLAGS_J, FLAGS_K, flags);
 }
+void GParts::setFlagsAll(unsigned int flags)
+{
+    for(unsigned int i=0 ; i < getNumParts() ; i++) setFlags(i, flags);
+}
+*/
 
 
 void GParts::setBoundaryAll(unsigned int boundary)
 {
     for(unsigned int i=0 ; i < getNumParts() ; i++) setBoundary(i, boundary);
 }
-void GParts::setFlagsAll(unsigned int flags)
-{
-    for(unsigned int i=0 ; i < getNumParts() ; i++) setFlags(i, flags);
-}
+
 
 
 
@@ -781,9 +753,12 @@ void GParts::dump(const char* msg)
        unsigned int id = getIndex(i);
        unsigned int bnd = getBoundary(i);
        std::string  bn = getBoundaryName(i);
-       unsigned int flg = getFlags(i);
+
+       //unsigned int flg = getFlags(i);
        //std::string msk = ShapeMask(flg);
-       std::string csg = CSGName((OpticksCSG_t)flg);
+
+       std::string csg = CSGName((OpticksCSG_t)tc);
+
        const char*  tn = getTypeName(i);
 
        for(unsigned int j=0 ; j < NJ ; j++)
