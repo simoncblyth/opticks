@@ -1,18 +1,35 @@
 #!/usr/bin/env python
 """
-Seeking to replace the messy boolean_h.py with this
-using the more evolved python generated from enum header
+intersect_boolean.py
+=======================
 
-::
+This script prepares the boolean lookup tables 
+packed into uint4 integers used by: 
 
-    c_enums_to_python.py boolean-solid.h > boolean_solid.py 
+* CUDA/OptiX header oxrap/cu/intersect_boolean.h 
+* python mimmick of that dev/csg/slavish.py 
+
+It also dumps the boolean lookup tables allowing 
+checking of the original acts table and the acloser, 
+bcloser variants and the packed lookup 
+equivalents.
+
+
+It imports python classes generated from C enum headers::
+
+    cd ~/opticks/sysrap
+    c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
+
+    cd ~/opticks/optixrap/cu
+    c_enums_to_python.py boolean_solid.h > boolean_solid.py 
+
 
 """
 import sys, os, datetime, collections, numpy as np
 ndict = lambda:collections.defaultdict(ndict) 
 
+# generated enum classes
 from opticks.sysrap.OpticksCSG import CSG_
-
 from opticks.optixrap.cu.boolean_solid import Act_, State_, CTRL_
 from opticks.optixrap.cu.boolean_solid import Union_, Difference_, Intersection_
 from opticks.optixrap.cu.boolean_solid import ACloser_Union_, ACloser_Difference_, ACloser_Intersection_

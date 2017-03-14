@@ -49,8 +49,6 @@ def signbit(f):
     """
     return signbit_(f)
 
-
-
 from intersectTest import T
 
 from opticks.bin.ffs import ffs_, clz_
@@ -63,15 +61,8 @@ from GParts import GParts
 from opticks.optixrap.cu.boolean_solid import CTRL_, ERROR_, State_
 from opticks.optixrap.cu.intersect_boolean import pak_lookup
 
-
-#from opticks.optixrap.cu.boolean_solid_h import CTRL_RETURN_MISS, CTRL_RETURN_A, CTRL_RETURN_B, CTRL_RETURN_FLIP_B, CTRL_LOOP_A, CTRL_LOOP_B
-#from opticks.optixrap.cu.boolean_solid_h import ERROR_POP_EMPTY, ERROR_LHS_POP_EMPTY, ERROR_RHS_POP_EMPTY, ERROR_LHS_END_NONEMPTY, ERROR_RHS_END_EMPTY, ERROR_BAD_CTRL, ERROR_LHS_OVERFLOW, ERROR_RHS_OVERFLOW, ERROR_LHS_TRANCHE_OVERFLOW
-#from opticks.optixrap.cu.boolean_h import desc_state, desc_ctrl, Enter, Exit, Miss
-
-
 LHS, RHS = 0, 1
 MISS, LEFT, RIGHT, RFLIP = 0,1,2,3
-
 
 
 def CSG_CLASSIFY(ise, dir_, tmin):

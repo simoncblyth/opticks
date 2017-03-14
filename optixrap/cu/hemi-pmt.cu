@@ -1,5 +1,4 @@
 // based on /usr/local/env/cuda/OptiX_380_sdk/julia/sphere.cu
-
 // enums
 #include "OpticksCSG.h"
 #include "NPart.h"
@@ -9,7 +8,7 @@
 
 #include "switches.h"
 
-#include "boolean-solid.h"
+#include "boolean_solid.h"
 #include "hemi-pmt.h"
 #include "math_constants.h"
 
