@@ -26,13 +26,6 @@
 const char* GPmt::FILENAME = "GPmt.npy" ;  
 const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
 
-/*
-Analytic PMT description obtained from parsing DetDesc
-see python scripts in ~/env/nuwa/detdesc/pmt/
-and env bash functions pmt- 
-
-*/
-
 
 GPmt* GPmt::load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* slice)
 {
@@ -273,9 +266,6 @@ Part Sphere     Bialkali      pmt-hemi-cathode-belly_part    [0, 0, 43.0] r: 98.
 Part Sphere OpaqueVacuum                pmt-hemi-bot_part    [0, 0, 69.0] r:  98.0 sz:  0.0 BB         [-97.15 -97.15 -29.  ]         [ 97.15  97.15  56.13] z  13.57 OpaqueVacuum///Vacuum
 Part   Tubs OpaqueVacuum             pmt-hemi-dynode_part   [0, 0, -81.5] r:  27.5 sz:166.0 BB         [ -27.5  -27.5 -164.5]            [ 27.5  27.5   1.5] z -81.50 Vacuum///OpaqueVacuum
 
-
-
-   
     
 */
 

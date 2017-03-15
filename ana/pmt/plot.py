@@ -126,6 +126,8 @@ class Pmt(object):
         """
         :param p: part index
         :return shape instance: Sphere or ZTubs 
+
+        TODO: use OpticksCSG 
         """
         code = self.partcode[p]
         if code == 1:

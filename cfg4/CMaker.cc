@@ -81,6 +81,7 @@ G4VSolid* CMaker::makeSolid(char shapecode, const glm::vec4& param)
 G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 {
    // hmm this is somewhat specialized to known structure of DYB PMT
+   //  eg intersections are limited to 3 ?
 
     unsigned int nc = csg->getNumChildren(index); 
     unsigned int fc = csg->getFirstChildIndex(index); 

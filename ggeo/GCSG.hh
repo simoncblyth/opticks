@@ -12,6 +12,14 @@ Provides convenient access to csg NPY buffer created with python.
 Users
 ------
 
+cfg4/CMaker.cc
+    pieces together the Geant4 boolean solids using the info carried by GCSG
+
+cfg4/CPropLib.cc
+
+cfg4/CTestDetector.cc
+    builds Geant4 test geometry using info carried by GCSG 
+
 ggeo/GPmt.cc
     GCSG is a member of GPmt that is loaded from the python prepared GPmt_csg.npy  
 
@@ -21,13 +29,6 @@ ggeo/GPmt.cc
     * pmt-vi pmt-ecd
     * opticks/ana/pmt/csg.py 
     * opticks/ana/pmt/tree.py 
-
-cfg4/CMaker.cc
-
-cfg4/CPropLib.cc
-
-cfg4/CTestDetector.cc
-
 
 
 **/
@@ -44,6 +45,7 @@ class GGEO_API GCSG {
 
     public:
         // buffer layout, must match locations in pmt-/csg.py
+        // TODO: adopt OpticksCSG enum 
         enum { 
               NJ = 4,
               NK = 4,

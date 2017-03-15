@@ -1,4 +1,18 @@
 #!/usr/bin/env python
+"""
+dd.py
+=======
+
+Approach:
+
+* kicking off from Dddb.logvol_ wraps results of 
+  lxml find into do-everything Elem subclass appropriate to the tags of the elements
+
+* primary purpose is the Elem.parts method, trace back from there to understand
+
+
+
+"""
 import os, re, logging, math
 import numpy as np
 import lxml.etree as ET

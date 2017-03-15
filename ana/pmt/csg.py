@@ -3,13 +3,90 @@
 CSG
 ====
 
-* used by tree.py:Node.csg_serialize 
+* used by tree.py:Node.csg_serialize , now moved into CSG.serialize_list 
+
+* hmm for GPU CSG need a binary tree, the below serialization of the tree
+  is not usable on GPU 
+
+::
+
+    In [12]: p.csgbuf.view(np.int32)[:,2:]
+    Out[12]: 
+
+                                      typecode, nodeindex, parentindex, base        
+                                      csgindex, nchild,  , firstchild,  lastchild_inc_recursive
+
+
+    array([[[10,  1,  0,  0],        10:Union  
+            [ 0,  2,  1,  5]],       0:idx   2:nc  1:fc 5:lcir         lcir - fc + 1 = 4 != 2 nc
+
+               [[20,  0,  0,  0],        20:Intersection
+                [ 1,  3,  2,  4]],       1:idx   3:nc  2:fc  4:lcir         lcir - fc + 1 = 3 = nc  (means no recursion, ie immediate primitives)           
+             
+                   [[ 3,  0,  0,  0],        3:sph
+                    [ 2,  0,  0,  0]],       2:idx
+
+                   [[ 3,  0,  0,  0],        3:sph
+                    [ 3,  0,  0,  0]],       3:idx
+
+                   [[ 3,  0,  0,  0],        3:sph
+                    [ 4,  0,  0,  0]],       4:idx
+
+           [[ 4,  0,  0,  0],        4:tubs
+            [ 5,  0,  0,  0]],       5:idx   (lc of 0:idx)              
+
+
+                                      typecode, nodeindex, parentindex, base        
+                                      csgindex, nchild,  , firstchild,  lastchild_inc_recursive
+
+           [[10,  2,  1,  0],        10:Union
+            [ 6,  2,  7, 11]],        6:idx  2:nc 7:fc 11:lcir 
+
+               [[20,  0,  0,  0],        20:Intersection
+                [ 7,  3,  8, 10]],       7:idx fc of 6:idx
+
+                   [[ 3,  0,  0,  0],        3:sph
+                    [ 8,  0,  0,  0]],       8: fc of 7:idx
+
+                   [[ 3,  0,  0,  0],        3:sph
+                    [ 9,  0,  0,  0]],
+         
+                   [[ 3,  0,  0,  0],        3:sph
+                    [10,  0,  0,  0]],       10: lc of 7:idx
+
+           [[ 4,  0,  0,  0],        4:tubs
+            [11,  0,  0,  0]],       11: lc of 6:idx
+
+
+
+               [[10,  3,  2,  0],      10:Union         2:pidx
+                [12,  2, 13, 14]],
+
+                   [[ 3,  0,  0,  0],      3:sph
+                    [13,  0,  0,  0]],
+
+                   [[ 3,  0,  0,  0],      3:sph
+                    [14,  0,  0,  0]],
+
+
+               [[ 3,  4,  2,  0],      3:sph           2:pidx
+                [15,  0,  0,  0]],
+
+               [[ 4,  5,  2,  0],      4:tubs          2:pidx
+                [16,  0,  0,  0]]], 
+
+            dtype=int32)
+
+
+
+
 
 
 """
 import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
+from opticks.ana.base import Buf 
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +102,7 @@ class CSG(object):
     lvnodes = []
     def __init__(self, ele, children=[]):
         """
-        :param ele: 
+        :param ele: dd.py Elem instance wrapping an lxml one 
         :param children: comprised of either base elements or other CSG nodes 
 
         Hmm need to retain original node association for material assignment
@@ -52,15 +129,18 @@ class CSG(object):
 
 
     @classmethod
-    def serialize_r(cls, data, offset, obj):
+    def serialize_list(cls, csg):
         """
-        :param data: npy buffer to fill
-        :param offset: primary index of buffer at which to start writing 
-        :param obj: to serialize
-        :return: offset updated to next place to write
+        :param csg: list of CSG nodes
+        :return csgbuf:
 
+        Hmm this was an early attempt to serialize a CSG tree 
+        prior to having the ability to render on GPU.
 
-        (2,0) typecode
+        Is it actually used from C++ side ?  
+        YES, used for Geant4 test geometry construction in cfg4/CMaker etc..
+
+        (2,0) typecode 
         (2,1) nodeindex 
 
         (3,0) current offset, ie index of the serialized record  
@@ -68,11 +148,47 @@ class CSG(object):
         (3,2) index corresponding to first child
         (3,3) index corresponding to last child (including recursion)   
 
+        Formerly Tree.csg_serialize
+
+        * array csg nodes and their progeny into flat array, with n elements
+        * allocate numpy buffer (n,4,4)
+        * huh, looks like flat is just to find the length
+
+        """
+        flat = []
+        for cn in csg:
+            flat.extend([cn])
+            pr = cn.progeny()
+            flat.extend(pr)
+        pass
+        for k,p in enumerate(flat):
+            log.debug(" %s:%s " % (k, repr(p))) 
+
+        data = np.zeros([len(flat),4,4],dtype=np.float32)
+        offset = 0 
+        for cn in csg:
+            assert type(cn) is CSG 
+            offset = cls.serialize_r(data, offset, cn)
+        pass
+        log.info("CSG.serialize tot flattened %s final offset %s " % (len(flat), offset))
+        assert offset == len(flat)
+        buf = data.view(Buf) 
+        return buf
+
+
+    @classmethod
+    def serialize_r(cls, data, offset, obj):
+        """
+        :param data: npy buffer to fill
+        :param offset: primary index of buffer at which to start writing 
+        :param obj: to serialize
+        :return: offset updated to next place to write
         """
         pass
         nchild = 0 
         nodeindex = 0
         parentindex = 0 
+
         if type(obj) is CSG:
             log.debug("**serialize offset %s typ %s [%s] (%s)" % (offset,obj.typ,repr(obj),repr(obj.node)))
             nchild = len(obj.children)
@@ -92,7 +208,7 @@ class CSG(object):
         base = offset
 
         data[base] = payload.as_csg()
-        data[base].view(np.int32)[2,0] = TYPCODE.get(payload.typ, -1 )
+        data[base].view(np.int32)[2,0] = TYPCODE.get(payload.typ, -1 )   # name -> code using above dict
         data[base].view(np.int32)[2,1] = nodeindex
         data[base].view(np.int32)[2,2] = parentindex
         data[base].view(np.int32)[3,0] = base

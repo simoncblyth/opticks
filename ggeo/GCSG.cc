@@ -7,10 +7,13 @@
 
 #include "PLOG.hh"
 
+
+// TODO: adopt OpticksCSG enum and names
 const char* GCSG::SPHERE_ = "Sphere" ;
 const char* GCSG::TUBS_   = "Tubs" ;
 const char* GCSG::UNION_    = "Union" ;
 const char* GCSG::INTERSECTION_  = "Intersection" ;
+
 
 const char* GCSG::TypeName(unsigned int typecode)
 {
@@ -25,7 +28,6 @@ const char* GCSG::TypeName(unsigned int typecode)
     }
     return NULL ; 
 }
-
 
 
 GCSG::GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames) 

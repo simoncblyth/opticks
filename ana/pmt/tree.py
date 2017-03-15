@@ -1,13 +1,16 @@
 #!/usr/bin/env python
+"""
+
+"""
 import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
 
+
+from opticks.ana.base import Buf
 from dd import Dddb, Parts, Union, Intersection 
 from csg import CSG
 from geom import Part
-
-class Buf(np.ndarray): pass
 
 
 log = logging.getLogger(__name__)
@@ -186,7 +189,6 @@ class Tree(object):
         pts.csg = csg 
         return pts 
 
-
     @classmethod
     def convert(cls, parts, explode=0.):
         """
@@ -201,32 +203,60 @@ class Tree(object):
            allocate all at once and fill in the content, also conversion
            of relationships to indices demands an all at once conversion
 
+        Five solids of DYB PMT represented in part buffer
+
+        * part.typecode 1:sphere, 2:tubs
+        * part.flags, only 1 for tubs
+        * part.node.index 0,1,2,3,4  (0:4pt,1:4pt,2:2pt,3:1pt,4:1pt) 
+
+        ::
+
+            In [19]: p.buf.view(np.int32)[:,(1,2,3),3]
+            Out[19]: 
+              Buf([[0, 1, 0],       part.flags, part.typecode, nodeindex    
+                   [0, 1, 0],
+                   [0, 1, 0],
+                   [1, 2, 0],
+
+                   [0, 1, 1],
+                   [0, 1, 1],
+                   [0, 1, 1],
+                   [1, 2, 1],
+
+                   [0, 1, 2],
+                   [0, 1, 2],
+
+                   [0, 1, 3],
+
+                   [0, 2, 4]], dtype=int32)
+
+
+            In [22]: p.buf.view(np.int32)[:,1,1]     # 1-based part index
+            Out[22]: Buf([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12], dtype=int32)
+
+
+        * where are the typecodes hailing from, not using OpticksCSG.h enum ?
+          nope hardcoded into geom.py Part.__init__  Sphere:1, Tubs:2 Box:3
+
+      
+
         """
         data = np.zeros([len(parts),4,4],dtype=np.float32)
         for i,part in enumerate(parts):
-            nodeindex = part.node.index
-            index = i + 1   # 1-based index, where parent 0 means None
-
-            #if part.parent is not None:
-            #    parent = parts.index(part.parent) + 1   # lookup index of parent in parts list  
-            #else:
-            #    parent = 0 
-            #pass
-
             data[i] = part.as_quads()
+
+            data[i].view(np.int32)[1,1] = i + 1           # 1-based part index, where parent 0 means None
+            data[i].view(np.int32)[1,2] = 0               # set to boundary index in C++ ggeo-/GPmt
+            data[i].view(np.int32)[1,3] = part.flags      # used in intersect_ztubs
+            data[i].view(np.int32)[2,3] = part.typecode   # bbmin.w : typecode 
+            data[i].view(np.int32)[3,3] = part.node.index # bbmax.w : solid index  
 
             if explode>0:
                 dx = i*explode
                 data[i][0,0] += dx
                 data[i][2,0] += dx
                 data[i][3,0] += dx
-
-            data[i].view(np.int32)[1,1] = index  
-            data[i].view(np.int32)[1,2] = 0      # set to boundary index in C++ ggeo-/GPmt
-            data[i].view(np.int32)[1,3] = part.flags    # used in intersect_ztubs
-            # use the w slot of bb min, max for typecode and solid index
-            data[i].view(np.int32)[2,3] = part.typecode 
-            data[i].view(np.int32)[3,3] = nodeindex   
+            pass
         pass
         buf = data.view(Buf) 
         buf.boundaries = map(lambda _:_.boundary, parts) 
@@ -241,106 +271,16 @@ class Tree(object):
 
 
     @classmethod
-    def csg_serialize(cls, csg):
-        flat = []
-        for cn in csg:
-            flat.extend([cn])
-            pr = cn.progeny()
-            flat.extend(pr)
-        pass
-        for k,p in enumerate(flat):
-            log.debug(" %s:%s " % (k, repr(p))) 
-
-        data = np.zeros([len(flat),4,4],dtype=np.float32)
-        offset = 0 
-
-        for cn in csg:
-            assert type(cn) is CSG 
-            offset = CSG.serialize_r(data, offset, cn)
-        pass
-        log.info("csg_serialize tot flattened %s final offset %s " % (len(flat), offset))
-        assert offset == len(flat)
-        buf = data.view(Buf) 
-        return buf
- 
-
-    @classmethod
     def save(cls, path_, buf):
-        """
-        ::
-
-            delta:~ blyth$ l /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/
-            total 80
-            -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
-            -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt
-            -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt_check.npy
-            -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_check.txt
-            -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt
-
-            -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
-            -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_materials.txt
-            -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_lvnames.txt
-            -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_pvnames.txt
-            -rw-r--r--  1 blyth  staff  1168 Jul  5  2016 GPmt_csg.npy
-            delta:~ blyth$ 
-
-        """
-        path = os.path.expandvars(path_)
-        pdir = os.path.dirname(path)
-        if not os.path.exists(pdir):
-            os.makedirs(pdir)
-        pass
-        log.info("saving to %s shape %s " % (path_, repr(buf.shape)))
-        if hasattr(buf,"boundaries"):
-            names = path.replace(".npy","_boundaries.txt")
-            log.info("saving boundaries to %s " % names)
-            with open(names,"w") as fp:
-                fp.write("\n".join(buf.boundaries)) 
-            pass
-        pass
-
-        if hasattr(buf,"materials"):
-            matpath = path.replace(".npy","_materials.txt")
-            log.info("saving materials to %s " % matpath)
-            with open(matpath,"w") as fp:
-                fp.write("\n".join(buf.materials)) 
-            pass
-        pass
-
-        if hasattr(buf,"lvnames"):
-            lvnpath = path.replace(".npy","_lvnames.txt")
-            log.info("saving lvnames to %s " % lvnpath)
-            with open(lvnpath,"w") as fp:
-                fp.write("\n".join(buf.lvnames)) 
-            pass
-        pass
-        if hasattr(buf,"pvnames"):
-            pvnpath = path.replace(".npy","_pvnames.txt")
-            log.info("saving pvnames to %s " % pvnpath)
-            with open(pvnpath,"w") as fp:
-                fp.write("\n".join(buf.pvnames)) 
-            pass
-        pass
-
-        if hasattr(buf,"csg"):
-            csgpath = path.replace(".npy","_csg.npy")
-            csgbuf = cls.csg_serialize(buf.csg)
-            if csgbuf is not None:
-                log.info("saving csg to %s " % csgpath)
-                #log.info(csgbuf.view(np.int32))
-                #log.info(csgbuf)
-                np.save(csgpath, csgbuf) 
-            else:
-                log.warning("csgbuf is None skip saving to %s " % csgpath)
-            pass
-        pass
-        np.save(path, buf) 
-
+        assert 0, "moved to GPmt.save" 
 
     def traverse(self):
         self.wrap.traverse()
 
     def __init__(self, base):
+        """
+        :param base: top dd.Elem instance of lv of interest, eg lvPmtHemi
+        """
         self.base = base
         ancestors = [self]   # dummy top "PV", to regularize striping: TOP-LV-PV-LV 
         self.wrap = self.traverseWrap_(self.base, ancestors)

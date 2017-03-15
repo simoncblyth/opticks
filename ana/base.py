@@ -20,6 +20,11 @@ IDPATH = os.path.expandvars("$IDPATH")
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
 
 
+class Buf(np.ndarray): pass
+
+splitlines_ = lambda txtpath:file(txtpath).read().splitlines()
+
+
 def stamp_(path, fmt="%Y%m%d-%H%M"): 
    if path is None:
        return None
@@ -250,6 +255,7 @@ def opticks_args(**kwa):
     statcut = kwa.get("statcut", 1000)
     nointerpol = kwa.get("nointerpol", False)
     figsize = kwa.get("figsize", "18,10.2" )
+    apmtpath = kwa.get("apmtpath", None )
 
 
     parser = argparse.ArgumentParser(doc)
@@ -295,6 +301,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--nointerpol", dest="interpol", default=not nointerpol, action="store_false", help="See cfg4/tests/CInterpolationTest.py. Default %(default)s ")
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
+    parser.add_argument(     "--apmtpath", default=apmtpath, help="Path to analytic PMT serialization, see pmt- and ana/pmt/analytic.py. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 

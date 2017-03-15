@@ -36,6 +36,7 @@ static const char* CSG_TUBS_          = "tubs" ;
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
 
+
 static char CSGChar(const char* nodename)
 {
     char sc = 'U' ;
@@ -52,6 +53,7 @@ static char CSGChar(const char* nodename)
     else if(strcmp(nodename, CSG_PARTLIST_) == 0)       sc = 'C' ;
     return sc ;
 }
+
 
 static OpticksCSG_t CSGFlag(char code)
 {

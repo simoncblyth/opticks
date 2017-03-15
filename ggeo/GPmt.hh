@@ -8,6 +8,20 @@ class GParts ;
 class GCSG ; 
 class GBndLib ; 
 
+
+/**
+
+GPmt
+======
+
+Analytic PMT description obtained from parsing DetDesc
+see python scripts in ~/opticks/ana/pmt (formerly ~/env/nuwa/detdesc/pmt/)
+and pmt- bash functions 
+
+
+**/
+
+
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GPmt {
   public:

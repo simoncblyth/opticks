@@ -101,6 +101,7 @@ class Part(object):
         self.flags = 0
         # Tubs endcap control
 
+        ## TODO: adopt OpticksCSG.{h,py} CSG_ enum 
         if typ == 'Sphere':
             self.typecode = 1
         elif typ == 'Tubs':

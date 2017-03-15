@@ -2,13 +2,29 @@
 """
 Usage example::
 
+    oxrap-;oxrap-cd cu
+    c_enums_to_python.py boolean-solid.h # check 
     c_enums_to_python.py boolean-solid.h > boolean_solid.py 
+
+    sysrap-;sysrap-cd 
+    c_enums_to_python.py OpticksCSG.h  # check 
+    c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
+
+
+
 
 """
 import sys, datetime, os
 
 indent_ = lambda lines, indent:"\n".join(["%s%s" % (indent, line) for line in lines])
 
+
+
+class StaticConstChar(object):
+    def __init__(self, lines):
+        self.lines = lines
+    def __repr__(self):
+        return "\n".join(self.lines)
 
 
 class Enum(object):
@@ -113,6 +129,10 @@ class Hdr(object):
             self.add(eraw, i)
         pass
 
+        lines = filter(lambda line:line.find("=")>-1,filter(lambda line:line.startswith("static const char*"), txt.splitlines()))
+        self.scc = StaticConstChar(lines)
+
+
     def add(self, eraw, i):
         e = Enum(eraw, i, self)
         self.kmap.update(e.kmap)
@@ -144,8 +164,7 @@ if __name__ == '__main__':
    assert len(sys.argv) > 1
    hdr = Hdr(sys.argv[1], sys.argv[0])
    print hdr
-   
-
+   #print hdr.scc
 
 
  

@@ -1,12 +1,22 @@
 pmt-src(){      echo ana/pmt/pmt.bash ; }
 pmt-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(pmt-src)} ; }
 pmt-vi(){       vi $(pmt-source) ; }
+
+pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
+#pmt-edir(){ echo $(env-home)/nuwa/detdesc/pmt ; }
+pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
+
+pmt-export(){  
+    export PMT_DIR=$(pmt-dir) 
+}
+
+
+
 pmt-env(){      olocal- ; }
 pmt-usage(){ cat << EOU
 
 Analytic PMT Geometry Description
 ======================================
-
 
 FUNCTIONS
 -----------
@@ -28,16 +38,36 @@ FUNCTIONS
      does nothing other than testing csg.py is valid python  
 
 
+See Also
+---------
+
+* opticks/notes/issues/tpmt_broken_by_OpticksCSG_enum_move.rst
+
+
 Sources
 --------
 
 analytic.py
-     top level steering for pmt-analytic
+     top level steering for pmt-analytic, using tree.py and dd.py 
 
 tree.py 
+     Assembles tree from Nodes using volume path digest trick
+
      Buf(np.ndarray)
      Node
      Tree
+
+csg.py
+     serialization of CSG tree, so far not used GPU side, 
+     (the part buffer representation is used GPU side)
+
+     CSG serializarion is however used via ggeo/GCSG for 
+     the creation the Geant4 test geometry, including the PMT
+     
+     cfg4/CMaker
+     cfg4/CPropLib
+     cfg4/CTestDetector
+
 
 dd.py 
      detdesc XML parsing using lxml, and Dayabay PMT centric boolean partitioning 
@@ -59,27 +89,46 @@ dd.py
      Context
      Dddb(Elem)
 
+plot.py 
+     PMT basis shape and also mesh 2d plots,  
+
+
 
 Serialization
 ----------------
 
 ::
 
+    simon:PMT blyth$ l /tmp/blyth/opticks/GPmt/0/
+    total 48
+    -rw-r--r--  1 blyth  wheel   848 Mar 15 16:35 GPmt.npy
+    -rw-r--r--  1 blyth  wheel   289 Mar 15 16:35 GPmt_boundaries.txt
+    -rw-r--r--  1 blyth  wheel  1168 Mar 15 16:35 GPmt_csg.npy
+    -rw-r--r--  1 blyth  wheel    74 Mar 15 16:35 GPmt_lvnames.txt
+    -rw-r--r--  1 blyth  wheel    47 Mar 15 16:35 GPmt_materials.txt
+    -rw-r--r--  1 blyth  wheel    74 Mar 15 16:35 GPmt_pvnames.txt
+
+::
+
     delta:~ blyth$ cd /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/
     delta:0 blyth$ l
     total 80
-    -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
-    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt
-    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
+
     -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt_check.npy
     -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_check.txt
+
+
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt             # renamed to _boundaries ?
+    -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt         # renamed to _materials ? 
+
+    -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
     -rw-r--r--  1 blyth  staff  1168 Jul  5  2016 GPmt_csg.npy
-    -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt
     -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_lvnames.txt
     -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_materials.txt
     -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_pvnames.txt
 
-    delta:0 blyth$ cat GPmt_csg.txt  # where is this one written ?
+    delta:0 blyth$ cat GPmt_csg.txt  # where is this one written ?  appears to be former name for GPmt_materials.txt
     Pyrex
     Vacuum
     Bialkali
@@ -106,6 +155,57 @@ Serialization
     ==> GPmt_csg.npy <==
     ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (17, 4, 4), }      
     delta:0 blyth$ 
+
+
+
+Comparing existing serializations
+--------------------------------------
+
+All look effectively the same::
+
+    simon:pmt blyth$ l /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GPmt/0/
+    total 48
+    -rw-r--r--  1 blyth  staff   848 Mar 15 16:27 GPmt.npy
+    -rw-r--r--  1 blyth  staff   289 Mar 15 16:27 GPmt_boundaries.txt
+    -rw-r--r--  1 blyth  staff  1168 Mar 15 16:27 GPmt_csg.npy
+    -rw-r--r--  1 blyth  staff    74 Mar 15 16:27 GPmt_lvnames.txt
+    -rw-r--r--  1 blyth  staff    47 Mar 15 16:27 GPmt_materials.txt
+    -rw-r--r--  1 blyth  staff    74 Mar 15 16:27 GPmt_pvnames.txt
+    simon:pmt blyth$ 
+    simon:pmt blyth$ 
+    simon:pmt blyth$ l $TMP/GPmt/0/
+    total 48
+    -rw-r--r--  1 blyth  wheel   848 Mar 15 17:31 GPmt.npy
+    -rw-r--r--  1 blyth  wheel   289 Mar 15 17:31 GPmt_boundaries.txt
+    -rw-r--r--  1 blyth  wheel  1168 Mar 15 17:31 GPmt_csg.npy
+    -rw-r--r--  1 blyth  wheel    74 Mar 15 17:31 GPmt_lvnames.txt
+    -rw-r--r--  1 blyth  wheel    47 Mar 15 17:31 GPmt_materials.txt
+    -rw-r--r--  1 blyth  wheel    74 Mar 15 17:31 GPmt_pvnames.txt
+    simon:pmt blyth$ diff -r --brief $IDPATH/GPmt/0 $TMP/GPmt/0
+    simon:pmt blyth$ 
+    simon:pmt blyth$ 
+    simon:pmt blyth$ l /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/
+    total 80
+    -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
+    -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt_check.npy
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_check.txt
+    -rw-r--r--  1 blyth  staff  1168 Jul  5  2016 GPmt_csg.npy
+    -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt
+    -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_lvnames.txt
+    -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_materials.txt
+    -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_pvnames.txt
+
+    simon:pmt blyth$ echo $OPTICKS_DATA
+    /usr/local/opticks/opticksdata
+    simon:pmt blyth$ 
+    simon:pmt blyth$ diff -r --brief $OPTICKS_DATA/export/DayaBay/GPmt/0/ $TMP/GPmt/0/
+    Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt.txt
+    Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt_check.npy
+    Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt_check.txt
+    Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt_csg.txt
+
 
 
 
@@ -317,12 +417,6 @@ With coincident surface removal and boundary name rejig and persisting as bndspe
 
 EOU
 }
-pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
-pmt-edir(){ echo $(env-home)/nuwa/detdesc/pmt ; }
-
-pmt-export(){  
-    export PMT_DIR=$(pmt-dir) 
-}
 
 pmt-cd(){  cd $(pmt-dir); }
 pmt-ecd(){ cd $(pmt-edir) ; }
@@ -349,6 +443,12 @@ pmt-analytic(){
    pmt-export
    python $(pmt-edir)/analytic.py $*  
 }
+
+pmt-analytic-tmp()
+{
+   pmt-analytic --apmtpath='$TMP/GPmt/0/GPmt.npy'
+}
+
 pmt-csg(){ 
    pmt-export
    python $(pmt-edir)/csg.py $*  
