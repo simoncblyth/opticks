@@ -1,5 +1,81 @@
 #pragma once
 
+/**
+intersect_boolean.h
+======================
+
+* postorder traversal means that have always 
+  visited left and right subtrees before visiting a node
+
+* slavish python translations of the csg intersect implementationa
+  are in dev/csg/slavish.py 
+
+* postorder_sequence for four tree heights were prepared by  
+  opticks/dev/csg/node.py:Node.postOrderSequence
+  
+* the sequence contains 1-based levelorder indices(nodeIdx) in right to left postorder
+
+* left,right child of nodeIdx are at (nodeIdx*2, nodeIdx*2+1)
+
+* for non-perfect trees, the height means the maximum 
+
+
+Below indices are postorder slice flavor, not levelorder
+
+   Height 3 tree, numNodes = 15, halfNodes = 7, root at i = 14 
+
+      upTree       i      : numNodes    14        : 15      =  14:15    
+      leftTree     i - 2h : i - h       14 - 2*7  : 14 - 7  =   0:7       
+      rightTree    i -  h : i           14 -  7   : 14      =   7:14
+
+  NB all nodes including root needs an upTree tranche to evaluate left and right 
+
+
+Recursive within intersect, nope
+-----------------------------------
+
+Hmm seems cannot do recursive within an intersect program anyhow ??
+
+::
+
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: 
+    Parse error (Details: Function "RTresult _rtProgramCreateFromPTXFile(RTcontext, const char *, const char *, RTprogram *)" 
+    caught exception: /usr/local/opticks/installcache/PTX/OptiXRap_generated_hemi-pmt.cu.ptx: 
+    error: Recursion detected in function 
+    _Z15recursive_csg_rjjjf( file /usr/local/opticks/installcache/PTX/OptiXRap_generated_hemi-pmt.cu.ptx ), 
+    cannot inline. [5308892], [5308892])
+
+
+
+Stacks
+--------
+
+Stack curr:
+
+* -1 : empty
+* 0 : one item
+* 1 : two items
+* SIZE - 1 : SIZE items, full stack
+
+
+
+
+**/
+
+
+static __device__
+float unsigned_as_float(unsigned u)
+{
+  union {
+    float f;
+    unsigned u;
+  } v1;
+
+  v1.u = u; 
+  return v1.f;
+}
+
+
 
 
 __device__ __forceinline__
@@ -54,18 +130,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 
 
 
-
-/**
-   stack indices
-                       -1 : empty
-                        0 : one item
-                        1 : two items
-                       ..
-                 SIZE - 1 : SIZE items, full stack
-
-**/
-
-
 #define CSG_PUSH(_stack, stack, ERR, val) \
              { \
                  if((stack) >= CSG_STACK_SIZE - 1 ) \
@@ -116,17 +180,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
              } \
 
 
-
-
-
-
-
-
-
-
-
-
-
 // pop without returning data
 #define CSG_POP0(_stack, stack, ERR ) \
              { \
@@ -148,10 +201,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
                 }  \
                 csg.curr-- ;    \
              } \
- 
- 
-
-
  
 
 #define CSG_CLASSIFY( ise, dir, tmin )   (fabsf((ise).w) > (tmin) ?  ( (ise).x*(dir).x + (ise).y*(dir).y + (ise).z*(dir).z < 0.f ? State_Enter : State_Exit ) : State_Miss )
@@ -335,43 +384,8 @@ __device__ unsigned long long csg_repr(CSG& csg)
 #define TREE_DEPTH(nodeIdx) ( 32 - __clz((nodeIdx)) - 1 )
 
 
-static __device__
-float unsigned_as_float(unsigned u)
-{
-  union {
-    float f;
-    unsigned u;
-  } v1;
-
-  v1.u = u; 
-  return v1.f;
-}
 
 
-
-
-//  Below indices are postorder slice flavor, not levelorder
-//
-//  Height 3 tree, numNodes = 15, halfNodes = 7, root at i = 14 
-//
-//    upTree       i      : numNodes    14        : 15      =  14:15    
-//    leftTree     i - 2h : i - h       14 - 2*7  : 14 - 7  =   0:7       
-//    rightTree    i -  h : i           14 -  7   : 14      =   7:14
-//
-//  NB all nodes including root needs an upTree tranche to evaluate left and right 
-
-
-/*
-Hmm seems cannot do recursive within an intersect program anyhow ??
-
-libc++abi.dylib: terminating with uncaught exception of type optix::Exception: 
-Parse error (Details: Function "RTresult _rtProgramCreateFromPTXFile(RTcontext, const char *, const char *, RTprogram *)" 
-caught exception: /usr/local/opticks/installcache/PTX/OptiXRap_generated_hemi-pmt.cu.ptx: 
-error: Recursion detected in function 
-_Z15recursive_csg_rjjjf( file /usr/local/opticks/installcache/PTX/OptiXRap_generated_hemi-pmt.cu.ptx ), 
-cannot inline. [5308892], [5308892])
-
-*/
 
 __device__
 float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
@@ -394,9 +408,16 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
         isect[LEFT]  = recursive_csg_r( partOffset, numInternalNodes, leftIdx, tmin);
         isect[RIGHT] = recursive_csg_r( partOffset, numInternalNodes, rightIdx, tmin);
     } 
-    quad q1 ; 
-    q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
-    OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+
+
+    //quad q2 ; 
+    //q2.f = partBuffer[4*(partOffset+nodeIdx-1)+2];      // (nodeIdx-1) as 1-based
+    //OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
+
+    uif tc ; 
+    tc.f = *NPART_TYPECODE( NPART_OFFSET( (float*)&partBuffer, partOffset + nodeIdx - 1) );
+    OpticksCSG_t operation = (OpticksCSG_t)(tc.u) ;
+
 
     IntersectionState_t x_state[2] ; 
     x_state[LEFT]  = CSG_CLASSIFY( isect[LEFT], ray.direction, tmin );
@@ -459,9 +480,6 @@ void recursive_csg( const uint4& prim, const uint4& identity )
     } 
 }
 
-
-
-
  
 
 
@@ -474,6 +492,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
     //rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u  \n",primIdx_, numParts, fullHeight ) ; 
+
     if(fullHeight > 3)
     {
         rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u exceeds current limit\n", primIdx_, numParts, fullHeight ) ;
@@ -504,6 +523,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     CSG csg ;  
     csg.curr = -1 ;
 
+
     int tloop = -1 ; 
 
     while (tr.curr > -1)
@@ -520,6 +540,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         unsigned beginIdx = POSTORDER_NODE(postorder, begin);   
         unsigned endIdx = POSTORDER_NODE(postorder, end - 1);   
 
+/*
         if(verbose)
         rtPrintf("[%5d](trav) csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d [%x:%x] (%2u->%2u) %7.3f \n", 
                            launch_index.x, 
@@ -533,6 +554,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            POSTORDER_NODE(postorder, end-1),
                            tmin 
                               );
+*/
 
 
         for(unsigned i=begin ; i < end ; i++)
@@ -544,12 +566,11 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             unsigned halfNodes = (subNodes - 1)/2 ; 
             bool primitive = nodeIdx > numInternalNodes  ;  // TODO: use partBuffer content for empty handling
 
-            quad q1 ; 
-            q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
-            OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+            quad q2 ; 
+            q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+            OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
 
-            //if(prevIdx == nodeIdx)
-
+/*
             if(verbose)
             rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %d \n", 
                            launch_index.x, 
@@ -563,6 +584,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            halfNodes,
                            depth
                               );
+*/
 
             if(primitive)
             {
@@ -662,7 +684,9 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     act = BREAK  ;  
                 }             // "return" or "recursive call" 
 
-                if(verbose)
+ 
+/* 
+               if(verbose)
                 rtPrintf("[%5d](ctrl) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx ctrl %d     tloop %2d (%2d->%2d) operation %d tlr (%10.3f,%10.3f) \n", 
                            launch_index.x, 
                            nodeIdx,
@@ -677,7 +701,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            t_left, 
                            t_right
                               );
-
+*/
 
                 if(act == BREAK) break ; 
             }                 // "primitive" or "operation"
@@ -754,23 +778,6 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 static __device__
 void intersect_csg( const uint4& prim, const uint4& identity )
 {
-/**
-
-  * postorder traversal means that have always 
-    visited left and right subtrees before visiting a node
-
-  * a slavish python translation of this is in dev/csg/slavish.py 
-
-  * postorder_sequence for four tree heights were prepared by  
-    opticks/dev/csg/node.py:Node.postOrderSequence
-  
-  * the sequence contains 1-based levelorder indices(nodeIdx) in right to left postorder
-
-  * left,right child of nodeIdx are at (nodeIdx*2, nodeIdx*2+1)
-
-  * for non-perfect trees, the height means the maximum 
-
-**/
 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
     //const unsigned long long pseq4[4] = { 0x103070f1f1e0eull,0x1d1c060d1b1a0c19ull,0x1802050b17160a15ull,0x1404091312081110ull } ;
@@ -841,9 +848,9 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              unsigned halfNodes = (subNodes - 1)/2 ;             // nodes to left or right of subtree
              bool bileaf = leftIdx > numInternalNodes ; 
 
-             quad q1 ; 
-             q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
-             OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+             quad q2 ; 
+             q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+             OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
 
              float tX_min[2] ; 
              tX_min[LHS] = tmin ;
@@ -973,9 +980,9 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     unsigned leftIdx = nodeIdx*2 ;      
     unsigned rightIdx = nodeIdx*2 + 1 ;  
 
-    quad q1 ; 
-    q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];
-    OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+    quad q2 ; 
+    q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+    OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
 
     //rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 

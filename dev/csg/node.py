@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 """
+
+OpticksCSG.h enum and CSG_ python translation
+have merged shape and operation into a single typecode.
+
+TODO: this needs to adopt that 
+
 """
 import logging, copy
 log = logging.getLogger(__name__)
@@ -12,13 +18,13 @@ Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
 
 
-from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
-from opticks.opticksnpy.NPart_h import EMPTY, ZERO, SPHERE, BOX
+#from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
+#from opticks.opticksnpy.NPart_h import EMPTY, ZERO, SPHERE, BOX
+#_desc_sh = { EMPTY:"e", ZERO:"z", SPHERE:"s", BOX:"b" }
+#def desc_sh(sh):
+#    return _desc_sh.get(sh, "bad shape key %d %x " % (sh,sh)) 
 
-_desc_sh = { EMPTY:"e", ZERO:"z", SPHERE:"s", BOX:"b" }
-def desc_sh(sh):
-    return _desc_sh.get(sh, "bad shape key %d %x " % (sh,sh)) 
-
+from opticks.sysrap.OpticksCSG import CSG_
 
 
 class T(np.ndarray):
@@ -286,9 +292,9 @@ class Node(object):
                 assert 0
         else:
             if self.is_primitive:
-                return "%s.%s" % (self.tag, desc_sh(self.shape))
+                return "%s.%s" % (self.tag, CSG_.desc(self.shape))
             else:
-                return "%s.%s(%r,%r)" % ( self.tag, desc_op(self.operation),self.l, self.r )
+                return "%s.%s(%r,%r)" % ( self.tag, CSG_.desc(self.operation),self.l, self.r )
 
     is_primitive = property(lambda self:self.shape is not None)
     is_operation = property(lambda self:self.operation is not None)

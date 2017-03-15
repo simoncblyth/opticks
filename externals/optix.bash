@@ -72,6 +72,16 @@ Inline PTX ASM
 * https://github.com/facebook/fbcuda/blob/master/CudaUtils.cuh
 
 
+Pointer Arithmetic Not Allowed on OptiX buffers
+-------------------------------------------------
+
+* https://devtalk.nvidia.com/default/topic/872983/optix/directx-gt-optix-single-geometry-buffer-or-multiple-/
+
+Detlef Roettger:
+
+    The only way to access a single buffer element, whatever that is, including a
+    user defined struct, is the operator[]! Pointer arithmetic is not allowed on
+    buffers!!!
 
 
 

@@ -1267,18 +1267,23 @@ RT_PROGRAM void intersect(int primIdx)
 
   unsigned partOffset  = prim.x ;  
   unsigned numParts    = prim.y ; 
-  //unsigned primIdx_    = prim.z ; 
+  unsigned primIdx_    = prim.z ; 
   unsigned primFlags   = prim.w ;  
 
+  //if(primIdx > 0)
   //rtPrintf("intersect primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
 
   uint4 identity = identityBuffer[instance_index] ; 
   // for analytic test geometry (PMT too?) the identityBuffer  
   // is composed of placeholder zeros
 
-  bool is_partlist = primFlags == CSG_PARTLIST ;   // partlist is simpler but a lot less flexible that csg 
+  bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-  if(!is_partlist)
+  // TODO: currently primFlags is just the part-typecode of the root node, so 
+  //       for a partlist that would be one of the primitives, CSG_SPHERE, CSG_BOX etc..
+  //       whereas is really refers to the composite, so could use a CSG_BOOLEAN_PRIMITIVE flag  
+
+  if(is_csg)
   { 
       //if(primIdx>0)
       //rtPrintf("intersect(csg) primIdx:%d partOffset(x):%u numParts(y):%u primIdx_(z):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primIdx_, primFlags ); 

@@ -49,6 +49,7 @@ static char CSGChar(const char* nodename)
     else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   sc = 'I' ;
     else if(strcmp(nodename, CSG_UNION_) == 0)          sc = 'J' ;
     else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     sc = 'K' ;
+    else if(strcmp(nodename, CSG_PARTLIST_) == 0)       sc = 'C' ;
     return sc ;
 }
 
@@ -66,6 +67,7 @@ static OpticksCSG_t CSGFlag(char code)
        case 'I':return CSG_INTERSECTION ; break ;
        case 'J':return CSG_UNION        ; break ;
        case 'K':return CSG_DIFFERENCE   ; break ;
+       case 'C':return CSG_PARTLIST   ; break ;
        case 'U':return CSG_UNDEFINED ; break ;
     }   
     return CSG_ZERO ;

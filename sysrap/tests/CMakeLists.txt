@@ -15,6 +15,8 @@ set(TEST_SOURCES
    PLOG_Test.cc 
    SYSRAP_LOG_Test.cc 
    SYSRAP_LOG_FileAppenderTest.cc
+
+   OpticksCSGTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

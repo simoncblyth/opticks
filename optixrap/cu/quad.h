@@ -35,6 +35,12 @@ union uifchar4
    uchar4       uchar_  ;
 };
 
+union uif
+{
+   unsigned int u ; 
+   int          i ; 
+   float        f ; 
+};
 
 
 

@@ -1,5 +1,37 @@
 #pragma once
 
+
+/*
+
+          quad q1 ; 
+            q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
+            OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
+
+OPTIXU_INLINE RT_HOSTDEVICE float getByIndex(const float4& v, int i)
+{
+  return ((float*)(&v))[i];
+}
+
+#define PART_TYPECODE( partBufferFloatPtr, partOffsetUInt, nodeIdx1UInt ) ( (partBuffer)[4*((partOffset)+(nodeIdx)-1) + TYPECODE_J] 
+
+static __device__
+float unsigned_as_float(unsigned u)
+{
+  union {
+    float f;
+    unsigned u;
+  } v1;
+
+  v1.u = u;
+  return v1.f;
+}
+
+
+
+*/
+
+
+
 enum { 
   PARAM_J  = 0, 
   PARAM_K  = 0 
@@ -39,5 +71,21 @@ enum {
     NODEINDEX_J = 3, 
     NODEINDEX_K = 3 
 };  // q3.u.w 
+
+
+
+// pointer arithmetic does not work on OptiX buffers
+#define NPART_OFFSET(partFloatPtr, partOffset)  ( (partFloatPtr) + 16*(partOffset) )
+
+#define NPART_Q0(partOffset)  ( 4*(partOffset) + 0 )
+#define NPART_Q1(partOffset)  ( 4*(partOffset) + 1 )
+#define NPART_Q2(partOffset)  ( 4*(partOffset) + 2 )
+#define NPART_Q3(partOffset)  ( 4*(partOffset) + 3 )
+
+
+#define NPART_TYPECODE(partFloatPtr) (  (partFloatPtr)+4*TYPECODE_J+TYPECODE_K )
+#define NPART_NODEINDEX(partFloatPtr) ( (partFloatPtr)+4*NODEINDEX_J+NODEINDEX_K )
+
+
 
 

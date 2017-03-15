@@ -133,6 +133,10 @@ void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     q2.f = partBuffer[4*partIdx+2];
 
     OpticksCSG_t csgFlag = (OpticksCSG_t)q2.u.w ; 
+
+    //if(partIdx > 1)
+    //rtPrintf("[%5d] intersect_part partIdx %u  csgFlag %u \n", launch_index.x, partIdx, csgFlag );
+
     switch(csgFlag)
     {
         case CSG_SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ; 

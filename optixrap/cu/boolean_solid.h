@@ -1,6 +1,6 @@
 #pragma once
 /**
-boolean-solid.h
+boolean_solid.h
 =================
 
 Boolean solid (union, intersection and difference) 
@@ -19,6 +19,16 @@ Changes compare to XRT source
 
 * replaced "ReturnBIfCloser | FlipB" with merged ReturnFlipBIfCloser
   for simpler recording of algorithm actions
+
+NB this enum header is converted into a python equivalent with::
+
+    cd ~/opticks/optixrap/cu
+    c_enums_to_python.py boolean_solid.h > boolean_solid.py 
+
+Use from python with for example::
+
+    from opticks.optixrap.cu.boolean_solid import Act_, CTRL_, State_, Intersection_ 
+    # classnames correspond to common prefixes on enum keys  
 
 **/
 

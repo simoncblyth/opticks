@@ -2,6 +2,31 @@
 #include "PLOG.hh"
 
 
+float unsigned_as_float(unsigned u)
+{
+  union {
+    float f;
+    unsigned u;
+  } v1;
+
+  v1.u = u;
+  return v1.f;
+}
+
+unsigned float_as_unsigned(float f)
+{
+  union {
+    float f;
+    unsigned u;
+  } v1;
+
+  v1.f = f;
+  return v1.u;
+}
+
+
+
+
 void test_p0()
 {
     npart p ; 
@@ -20,6 +45,49 @@ void test_p1()
 }
 
 
+
+
+
+void test_NPART_TYPECODE()
+{
+    nvec4 buf[8] ; 
+
+    buf[0] = {  0.f,  1.f,  2.f,  3.f } ;
+    buf[1] = { 10.f, 11.f, 12.f, 13.f } ;
+    buf[2] = { 20.f, 21.f, 22.f, 23.f } ;
+    buf[3] = { 30.f, 31.f, 32.f, 33.f } ;
+
+    buf[4] = {  0.f,  1.f,  2.f,  3.f } ;
+    buf[5] = { 10.f, 11.f, 12.f, 13.f } ;
+    buf[6] = { 20.f, 21.f, 22.f, 23.f } ;
+    buf[7] = { 30.f, 31.f, 32.f, 33.f } ;
+ 
+
+    float* bufPtr = (float*)&buf ; 
+
+    unsigned tc0u = 100u ; 
+    unsigned tc1u = 101u ; 
+ 
+    float* tc0f = NPART_TYPECODE(NPART_OFFSET(bufPtr,0)) ;
+    *tc0f = unsigned_as_float(tc0u) ;
+
+    float* tc1f = NPART_TYPECODE(NPART_OFFSET(bufPtr,1)) ;
+    *tc1f = unsigned_as_float(tc1u) ;
+
+    unsigned tc0u_check = float_as_unsigned( *tc0f );
+    unsigned tc1u_check = float_as_unsigned( *tc1f );
+
+    std::cout << " tc0u_check : " << tc0u_check << std::endl ; 
+    std::cout << " tc1u_check : " << tc1u_check << std::endl ; 
+
+    assert(tc0u == tc0u_check);
+    assert(tc1u == tc1u_check);
+
+
+}
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -27,7 +95,8 @@ int main(int argc, char** argv)
     test_p0();
     test_p1();
 
-
+    test_NPART_TYPECODE();
+  
     return 0 ; 
 }
 
