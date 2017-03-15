@@ -91,15 +91,33 @@ tpmt-tag(){ echo 10 ; }
 tpmt-det(){ echo PmtInBox ; }
 tpmt-src(){ echo torch ; }
 
-tpmt--(){
-   type $FUNCNAME
 
-    local msg="=== $FUNCNAME :"
+tpmt-pmtpath(){ echo $OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0 ; }
 
-    local cmdline=$*
-    local tag=$(tpmt-tag)
-    local det=$(tpmt-det)
+tpmt-testconfig()
+{
+    local material=MineralOil
+    #local material=GdDopedLS
 
+    local testverbosity=1
+    local groupvelkludge=0
+   # groupvel=$groupvelkludge   no longer supported/needed 
+
+    local test_config=(
+                 mode=PmtInBox
+                 pmtpath=$(tpmt-pmtpath)
+                 control=$testverbosity,0,0,0
+                 analytic=1
+                 node=box    parameters=0,0,0,300   boundary=Rock/NONE/perfectAbsorbSurface/$material
+                   ) 
+
+    echo "$(join _ ${test_config[@]})" 
+}
+
+
+
+tpmt-torchconfig()
+{
     #local photons=10000
     local photons=500000
     #local photons=100000
@@ -129,31 +147,26 @@ tpmt--(){
                  polarization=$polarization
                )
 
+    echo "$(join _ ${torch_config[@]})" 
+}
 
-    local groupvelkludge=0
-    local testverbosity=1
+
+
+tpmt--(){
+   type $FUNCNAME
+
+    local msg="=== $FUNCNAME :"
+
+    local cmdline=$*
+    local tag=$(tpmt-tag)
+    local det=$(tpmt-det)
 
     [ -z "$OPTICKS_INSTALL_PREFIX" ] && echo missing envvar OPTICKS_INSTALL_PREFIX && return 
-
-
-    local material=MineralOil
-    #local material=GdDopedLS
-
-    local test_config=(
-                 mode=PmtInBox
-                 pmtpath=$OPTICKS_INSTALL_PREFIX/opticksdata/export/dpib/GMergedMesh/0
-                 control=$testverbosity,0,0,0
-                 analytic=1
-                 groupvel=$groupvelkludge
-                 shape=box
-                 boundary=Rock/NONE/perfectAbsorbSurface/$material
-                 parameters=0,0,0,300
-                   ) 
 
     if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
         tag=-$tag  
     fi 
-
+    ## hmm suspect tag negation no longer needed, as doing both at once ???
 
     local anakey
     if [ "${cmdline/--okg4}" != "${cmdline}" ]; then
@@ -166,10 +179,8 @@ tpmt--(){
    op.sh \
        --anakey $anakey \
        --save \
-       --testconfig "$(join _ ${test_config[@]})" \
-       --test \
-       --torchconfig "$(join _ ${torch_config[@]})" \
-       --torch \
+       --test --testconfig "$(tpmt-testconfig)" \
+       --torch --torchconfig "$(tpmt-torchconfig)" \
        --cat $det \
        --tag $tag \
        --timemax 10 \

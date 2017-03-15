@@ -2,6 +2,7 @@
 import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
+
 from dd import Dddb, Parts, Union, Intersection 
 from csg import CSG
 from geom import Part
@@ -192,6 +193,8 @@ class Tree(object):
         :param parts: array of parts
         :return: np.array buffer of parts
 
+        Tree.convert
+
         #. collect Part instances from each of the nodes into list
         #. serialize parts into array, converting relationships into indices
         #. this cannot live at lower level as serialization demands to 
@@ -263,6 +266,25 @@ class Tree(object):
 
     @classmethod
     def save(cls, path_, buf):
+        """
+        ::
+
+            delta:~ blyth$ l /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/
+            total 80
+            -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
+            -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt
+            -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt_check.npy
+            -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_check.txt
+            -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt
+
+            -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
+            -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_materials.txt
+            -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_lvnames.txt
+            -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_pvnames.txt
+            -rw-r--r--  1 blyth  staff  1168 Jul  5  2016 GPmt_csg.npy
+            delta:~ blyth$ 
+
+        """
         path = os.path.expandvars(path_)
         pdir = os.path.dirname(path)
         if not os.path.exists(pdir):

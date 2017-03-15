@@ -84,6 +84,11 @@ Detlef Roettger:
     buffers!!!
 
 
+PyOptiX
+--------
+
+* https://github.com/ozen/PyOptiX
+
 
 Understanding the efficiency of ray traversal on GPUs
 -------------------------------------------------------

@@ -385,8 +385,6 @@ __device__ unsigned long long csg_repr(CSG& csg)
 
 
 
-
-
 __device__
 float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
 {
@@ -409,14 +407,9 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
         isect[RIGHT] = recursive_csg_r( partOffset, numInternalNodes, rightIdx, tmin);
     } 
 
-
-    //quad q2 ; 
-    //q2.f = partBuffer[4*(partOffset+nodeIdx-1)+2];      // (nodeIdx-1) as 1-based
-    //OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
-
-    uif tc ; 
-    tc.f = *NPART_TYPECODE( NPART_OFFSET( (float*)&partBuffer, partOffset + nodeIdx - 1) );
-    OpticksCSG_t operation = (OpticksCSG_t)(tc.u) ;
+    quad q2 ; 
+    q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+    OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
 
 
     IntersectionState_t x_state[2] ; 
@@ -463,7 +456,7 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
 
 
 static __device__
-void recursive_csg( const uint4& prim, const uint4& identity )
+void UNSUPPORTED_recursive_csg( const uint4& prim, const uint4& identity )
 {
     unsigned partOffset = prim.x ; 
     unsigned numParts   = prim.y ;

@@ -53,6 +53,23 @@ GPmt* GPmt::load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* sl
     return pmt ; 
 }
 
+/**
+
+simon:ggeo blyth$ l /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/
+total 80
+-rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
+-rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt
+-rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
+-rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt_check.npy
+-rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_check.txt
+-rw-r--r--  1 blyth  staff  1168 Jul  5  2016 GPmt_csg.npy
+-rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt
+-rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_lvnames.txt
+-rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_materials.txt
+-rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_pvnames.txt
+
+**/
+
 void GPmt::loadFromCache(NSlice* slice)
 {
     OpticksResource* resource = m_cache->getResource();

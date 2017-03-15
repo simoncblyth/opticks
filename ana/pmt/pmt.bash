@@ -1,5 +1,5 @@
 pmt-src(){      echo ana/pmt/pmt.bash ; }
-pmt-source(){   echo ${BASH_SOURCE:-$(env-home)/$(pmt-src)} ; }
+pmt-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(pmt-src)} ; }
 pmt-vi(){       vi $(pmt-source) ; }
 pmt-env(){      olocal- ; }
 pmt-usage(){ cat << EOU
@@ -7,14 +7,107 @@ pmt-usage(){ cat << EOU
 Analytic PMT Geometry Description
 ======================================
 
+
+FUNCTIONS
+-----------
+
+*pmt-analytic*
+     runs analytic.py converting detdesc hemi-pmt.xml into parts buffer $IDPATH/GPmt/0/GPmt.npy 
+     using more nuanced translation better suited to surface geometry lingo 
+
+*pmt-parts*
+     runs tree.py converting detdesc hemi-pmt.xml into parts buffer $IDPATH/GPmt/0/GPmt.npy 
+     using a direct translation approach 
+
+     Actually analytic.py and tree.py mains now look to do the same thing 
+
+*pmt-dd*
+     test detdesc parsing 
+
+*pmt-csg*
+     does nothing other than testing csg.py is valid python  
+
+
 Sources
 --------
 
 analytic.py
      top level steering for pmt-analytic
 
+tree.py 
+     Buf(np.ndarray)
+     Node
+     Tree
+
 dd.py 
-     detdesc XML parsing 
+     detdesc XML parsing using lxml, and Dayabay PMT centric boolean partitioning 
+     into single basis shape parts
+
+     Parts(list)
+     Uncoincide
+     Att
+     Elem
+     Logvol(Elem)
+     Physvol(Elem)
+     Union(Elem)
+     Intersection(Elem)
+     Parameter(Elem)
+     Primitive(Elem)  
+     Sphere(Primitive)
+     Tubs(Primitive)
+     PosXYZ(Elem)
+     Context
+     Dddb(Elem)
+
+
+Serialization
+----------------
+
+::
+
+    delta:~ blyth$ cd /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/
+    delta:0 blyth$ l
+    total 80
+    -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt.npy
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt.txt
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_boundaries.txt
+    -rw-r--r--  1 blyth  staff   848 Jul  5  2016 GPmt_check.npy
+    -rw-r--r--  1 blyth  staff   289 Jul  5  2016 GPmt_check.txt
+    -rw-r--r--  1 blyth  staff  1168 Jul  5  2016 GPmt_csg.npy
+    -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_csg.txt
+    -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_lvnames.txt
+    -rw-r--r--  1 blyth  staff    47 Jul  5  2016 GPmt_materials.txt
+    -rw-r--r--  1 blyth  staff    74 Jul  5  2016 GPmt_pvnames.txt
+
+    delta:0 blyth$ cat GPmt_csg.txt  # where is this one written ?
+    Pyrex
+    Vacuum
+    Bialkali
+    OpaqueVacuum
+    OpaqueVacuum
+
+    delta:0 blyth$ wc -l *.txt    # hmm seems wc actually counts newlines, so add one to all the below
+          11 GPmt.txt
+          11 GPmt_boundaries.txt
+          11 GPmt_check.txt
+           4 GPmt_csg.txt
+           4 GPmt_lvnames.txt
+           4 GPmt_materials.txt
+           4 GPmt_pvnames.txt
+          49 total
+
+    delta:0 blyth$ head -1 *.npy
+    ==> GPmt.npy <==
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (12, 4, 4), }      
+
+    ==> GPmt_check.npy <==
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (12, 4, 4), }      
+
+    ==> GPmt_csg.npy <==
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (17, 4, 4), }      
+    delta:0 blyth$ 
+
+
 
 
 History
@@ -222,28 +315,11 @@ With coincident surface removal and boundary name rejig and persisting as bndspe
     [tree.py +217                 save ] saving boundaries to /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GPmt/0/GPmt.txt 
 
 
-
-
-
-FUNCTIONS
------------
-
-
-*pmt-dd*
-     test detdesc parsing 
-
-*pmt-parts*
-     convert detdesc hemi-pmt.xml into parts buffer $IDPATH/GPmt/0/GPmt.npy 
-     using a direct translation approach 
-
-*pmt-analytic*
-     convert detdesc hemi-pmt.xml into parts buffer $IDPATH/GPmt/0/GPmt.npy 
-     using more nuanced translation better suited to surface geometry lingo 
-
 EOU
 }
 pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
 pmt-edir(){ echo $(env-home)/nuwa/detdesc/pmt ; }
+
 pmt-export(){  
     export PMT_DIR=$(pmt-dir) 
 }
@@ -252,7 +328,6 @@ pmt-cd(){  cd $(pmt-dir); }
 pmt-ecd(){ cd $(pmt-edir) ; }
 
 pmt-xml(){ vi $(pmt-dir)/hemi-pmt.xml ; }
-
 
 pmt-i(){
    pmt-ecd
@@ -270,17 +345,13 @@ pmt-parts(){
    pmt-export
    python $(pmt-edir)/tree.py $*  
 }
-
 pmt-analytic(){ 
    pmt-export
    python $(pmt-edir)/analytic.py $*  
 }
-
 pmt-csg(){ 
    pmt-export
    python $(pmt-edir)/csg.py $*  
 }
-
-
 
 

@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+CSG
+====
+
+* used by tree.py:Node.csg_serialize 
+
+
+"""
 import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
@@ -127,4 +135,6 @@ class CSG(object):
 
 
 
- 
+if __name__ == '__main__':
+    pass 
+
