@@ -1307,8 +1307,8 @@ RT_PROGRAM void intersect(int primIdx)
   }
   else
   {
-      if(primIdx>0)
-      rtPrintf("intersect (partlist) primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
+      //if(primIdx>0)
+      //rtPrintf("intersect (partlist) primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
       // partitioned intersect over single basis-shape parts for each "prim"
       for(unsigned int p=0 ; p < numParts ; p++)
       {  

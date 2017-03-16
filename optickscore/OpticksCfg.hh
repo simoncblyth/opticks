@@ -51,6 +51,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getFxReConfig();
      const std::string& getFxScConfig();
      const std::string& getFxAbConfig();
+     const std::string& getAnalyticPMTSlice();
 
      float        getEpsilon(); 
      int          getRngMax(); 
@@ -73,6 +74,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getNumPhotonsPerG4Event(); 
      int          getLoaderVerbosity(); 
      int          getMeshVerbosity(); 
+     int          getAnalyticPMTIndex(); 
 private:
      void init();
 private:
@@ -115,6 +117,7 @@ private:
      std::string m_fxreconfig ; 
      std::string m_fxabconfig ; 
      std::string m_fxscconfig ; 
+     std::string m_apmtslice ; 
 
 
      float       m_epsilon ; 
@@ -138,6 +141,7 @@ private:
      int         m_num_photons_per_g4event;
      int         m_loaderverbosity ; 
      int         m_meshverbosity ; 
+     int         m_apmtidx ; 
 };
 
 

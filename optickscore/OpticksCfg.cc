@@ -50,6 +50,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_fxreconfig("0"),
        m_fxabconfig("0"),
        m_fxscconfig("0"),
+       m_apmtslice(""),
        m_epsilon(0.1f),     
        m_rngmax(3000000),     
        m_bouncemax(9),     
@@ -70,7 +71,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_stack(2180),
        m_num_photons_per_g4event(10000),
        m_loaderverbosity(0),
-       m_meshverbosity(0)
+       m_meshverbosity(0),
+       m_apmtidx(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -147,6 +149,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("fxscconfig",   boost::program_options::value<std::string>(&m_fxscconfig), "configure post cache artificial modification of scattering lengths of materials, see GMaterialLib::postLoadFromCache" );
 
+   m_desc.add_options()
+       ("apmtslice",   boost::program_options::value<std::string>(&m_apmtslice), "Analytic PMT slice specification string." );
 
 
    m_desc.add_options()
@@ -373,6 +377,12 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("zexplodeconfig",   boost::program_options::value<std::string>(&m_zexplodeconfig), "zexplode configuration" );
+
+
+   char apmtidx[128];
+   snprintf(apmtidx,128, "Analytic PMT index. Default %d", m_apmtidx);
+   m_desc.add_options()
+       ("apmtidx",  boost::program_options::value<int>(&m_apmtidx), apmtidx );
 
 
 
@@ -821,8 +831,11 @@ const std::string& OpticksCfg<Listener>::getFxScConfig()
 {
     return m_fxscconfig  ;
 }
-
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getAnalyticPMTSlice()
+{
+    return m_apmtslice  ;
+}
 
 
 
@@ -952,6 +965,13 @@ template <class Listener>
 int OpticksCfg<Listener>::getMeshVerbosity()
 {
     return m_meshverbosity ; 
+}
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getAnalyticPMTIndex()
+{
+    return m_apmtidx ; 
 }
 
 

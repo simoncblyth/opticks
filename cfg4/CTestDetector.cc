@@ -18,6 +18,7 @@
 
 // ggeo-
 #include "GMaker.hh"
+#include "GPmt.hh"
 #include "GCSG.hh"
 #include "GMaterial.hh"
 #include "GGeoTestConfig.hh"
@@ -109,7 +110,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
    // hooking up mother volume to prior 
    //
     GMergedMesh* mm = m_ggeo->getMergedMesh(0);
-    unsigned numSolids = mm->getNumSolids();
+    unsigned numSolidsMesh = mm->getNumSolids();
     unsigned int numSolidsConfig = m_config->getNumElements();
 
     bool is_pib = isPmtInBox() ;
@@ -118,13 +119,21 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
     LOG(info)  << "CTestDetector::makeDetector"
                << " PmtInBox " << is_pib
                << " BoxInBox " << is_bib
-               << " numSolids (from mesh0) " << numSolids
-               << " numSolids (from config) " << numSolidsConfig 
+               << " numSolidsMesh " << numSolidsMesh
+               << " numSolidsConfig " << numSolidsConfig 
               ;
 
     assert( ( is_pib || is_bib ) && "CTestDetector::Construct mode not recognized");
 
-    assert( numSolids == numSolidsConfig );
+
+    if( numSolidsMesh != numSolidsConfig )
+    {
+         mm->dumpSolids("CTestDetector::makeDetector (solid count inconsistent)");
+    }
+
+    assert( numSolidsMesh == numSolidsConfig );
+    // Huh for PmtInBox this os bound to fail, as NumElements will just return 1 for the box
+    //     hmm looks like the primordial CSG buffer stuff was done after this ...
 
     if(m_verbosity > 0)
     m_config->dump("CTestDetector::Construct");
@@ -133,6 +142,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
     G4VPhysicalVolume* ppv = NULL ;    // parent pv
     G4VPhysicalVolume* top = NULL ;  
     G4LogicalVolume* mother = NULL ; 
+
 
 
     for(unsigned int i=0 ; i < numSolidsConfig ; i++)
@@ -244,9 +254,8 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
     LOG(trace) << "CTestDetector::makePMT" ; 
 
-    NSlice* slice = m_config->getSlice();
-
-    GCSG* csg = m_mlib->getPmtCSG(slice);
+    GPmt* pmt = m_ggeo->getPmt();  
+    GCSG* csg = pmt ? pmt->getCSG() : NULL ;
 
     if(csg == NULL)
     {

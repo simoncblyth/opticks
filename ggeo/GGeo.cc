@@ -21,6 +21,7 @@ namespace fs = boost::filesystem;
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 #include "NLookup.hpp"
+#include "NSlice.hpp"
 #include "Typ.hpp"
 
 
@@ -723,11 +724,17 @@ void GGeo::save(const char* idpath)
 
 void GGeo::loadAnalyticPmt()
 {
-    NSlice* slice = NULL ;
+    NSlice* slice = m_opticks->getAnalyticPMTSlice();
 
-    unsigned apmtidx = 0 ;  
+    unsigned apmtidx = m_opticks->getAnalyticPMTIndex();
 
     m_pmt = GPmt::load( m_opticks, m_bndlib, apmtidx, slice ); 
+
+    LOG(fatal) << "GGeo::loadAnalyticPmt"
+              << " AnalyticPMTIndex " << apmtidx
+              << " AnalyticPMTSlice " << ( slice ? slice->description() : "ALL" )
+              << " Path " << m_pmt->getPath()
+              ;  
 
     if(m_pmt)
     {
@@ -1868,10 +1875,6 @@ std::vector<std::string> GGeo::getTags()
     //tags.push_back(PICKFACE);
     return tags ;
 }
-
-
-
-
 
 
 

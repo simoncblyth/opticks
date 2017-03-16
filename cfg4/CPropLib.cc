@@ -18,8 +18,6 @@
 #include "GScintillatorLib.hh"
 
 #include "GMaterial.hh"
-#include "GPmt.hh"
-#include "GCSG.hh"
 
 // g4-
 #include "G4MaterialTable.hh"
@@ -158,32 +156,6 @@ const GMaterial* CPropLib::getMaterial(const char* shortname)
    return m_mlib->getMaterial(shortname); 
 }
 
-
-
-GCSG* CPropLib::getPmtCSG(NSlice* slice)
-{
-   // hmm this is probably already loaded ???
-
-    GPmt* pmt = GPmt::load( m_ok, m_bndlib, 0, slice );    // pmtIndex:0
-
-    if(pmt == NULL)
-    {
-        LOG(error) << "CPropLib::getPmtCSG failed to load PMT" ;
-        return NULL ;
-    }
-
-
-    GCSG* csg = pmt->getCSG();
-
-    if(csg == NULL)
-    {
-        LOG(error) << "CPropLib::getPmtCSG failed to getCSG from GPmt" ;
-        return NULL ;
-    }
-
-
-    return csg ;
-}
 
 
 G4OpticalSurface* CPropLib::makeOpticalSurface(const char* name)

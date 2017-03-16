@@ -101,15 +101,13 @@ tpmt-testconfig()
 
     local testverbosity=1
     local groupvelkludge=0
-   # groupvel=$groupvelkludge   no longer supported/needed 
+   # groupvel=$groupvelkludge   no longer supported/needed ? 
 
-    local apmtidx=1  # non-default analytic pmt idx, using updated enum values
     local test_config=(
                  mode=PmtInBox
                  pmtpath=$(tpmt-pmtpath)
                  control=$testverbosity,0,0,0
                  analytic=1
-                 apmtidx=$apmtidx
                  node=box    parameters=0,0,0,300   boundary=Rock/NONE/perfectAbsorbSurface/$material
                    ) 
 
@@ -161,7 +159,6 @@ tpmt--(){
 
     local cmdline=$*
     local tag=$(tpmt-tag)
-    local det=$(tpmt-det)
 
     [ -z "$OPTICKS_INSTALL_PREFIX" ] && echo missing envvar OPTICKS_INSTALL_PREFIX && return 
 
@@ -177,18 +174,22 @@ tpmt--(){
         anakey=tevt    ## just dump OK history table
     fi 
 
+    local apmtidx=1 
+    # non-default AnalyticPMTIndex currently required for updated enums
+
 
    op.sh \
        --anakey $anakey \
        --save \
        --test --testconfig "$(tpmt-testconfig)" \
        --torch --torchconfig "$(tpmt-torchconfig)" \
-       --cat $det \
+       --cat $(tpmt-det) \
        --tag $tag \
        --timemax 10 \
        --animtimemax 10 \
        --eye 0.0,-0.5,0.0 \
        --geocenter \
+       --apmtidx $apmtidx
        $* 
 
 }

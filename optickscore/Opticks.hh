@@ -15,6 +15,7 @@ template <typename> class OpticksCfg ;
 class BDynamicDefine ; 
 class TorchStepNPY ; 
 class NState ;
+struct NSlice ;
 class Parameters ; 
 class NPropNames ; 
 class Timer ; 
@@ -161,6 +162,9 @@ class OKCORE_API Opticks {
        float getFxAb();
        float getFxSc();
    public:
+       NSlice*  getAnalyticPMTSlice();
+       unsigned getAnalyticPMTIndex();
+   public:
        OpticksCfg<Opticks>* getCfg();
        std::string          getG4GunConfig();
        std::string          getAnaKey();
@@ -290,6 +294,7 @@ class OKCORE_API Opticks {
        OpticksEventSpec*    m_nspec ; 
        OpticksResource*     m_resource ; 
        NState*              m_state ; 
+       NSlice*              m_apmtslice ; 
    private:
        bool             m_exit ; 
        bool             m_compute ; 

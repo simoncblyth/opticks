@@ -13,6 +13,18 @@ class GGeo ;
 class GMesh ;
 class GMergedMesh ;
 
+/**
+OpticksGeometry
+================
+
+Canonical m_geometry instance resides in okg/OpticksHub 
+and is instanciated by OpticksHub::init which 
+happens within the ok/OKMgr or okg4/OKG4Mgr ctors.
+
+
+**/
+
+
 #include "OKGEO_API_EXPORT.hh"
 class OKGEO_API OpticksGeometry {
    public:

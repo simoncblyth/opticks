@@ -5,7 +5,6 @@
 #include <map>
 
 #include <glm/fwd.hpp>
-struct NSlice ; 
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -33,12 +32,10 @@ class GGEO_API GGeoTestConfig {
                       BOUNDARY, 
                       PARAMETERS, 
                       NODE, 
-                      SLICE, 
                       ANALYTIC, 
                       DEBUG,
                       CONTROL,
                       PMTPATH,
-                      APMTIDX,
                       TRANSFORM, 
                       CSGPATH,
                       OFFSETS,
@@ -53,12 +50,10 @@ class GGEO_API GGeoTestConfig {
        static const char* BOUNDARY_ ; 
        static const char* PARAMETERS_ ; 
        static const char* NODE_ ; 
-       static const char* SLICE_ ; 
        static const char* ANALYTIC_ ; 
        static const char* DEBUG_ ; 
        static const char* CONTROL_ ; 
        static const char* PMTPATH_ ; 
-       static const char* APMTIDX_ ; 
        static const char* TRANSFORM_ ; 
        static const char* CSGPATH_ ;   // not yet used
        static const char* OFFSETS_ ; 
@@ -74,12 +69,10 @@ class GGEO_API GGeoTestConfig {
     private:
        void setMode(const char* s);
        void setFrame(const char* s);
-       void setSlice(const char* s);
        void setAnalytic(const char* s);
        void setDebug(const char* s);
        void setControl(const char* s);
        void setPmtPath(const char* s);
-       void setAPmtIdx(const char* s);
        void setCsgPath(const char* s);
        void setOffsets(const char* s);
        void setName(const char* s);
@@ -95,9 +88,7 @@ class GGEO_API GGeoTestConfig {
        char      getNode(unsigned int i);
        std::string getNodeString(unsigned int i); 
 
-       NSlice*   getSlice();
        bool      getAnalytic();
-       unsigned    getAPmtIdx();
        const char* getMode();
        const char* getPmtPath();
        const char* getCsgPath();
@@ -122,10 +113,8 @@ class GGEO_API GGeoTestConfig {
        const char*  m_pmtpath ; 
        const char*  m_csgpath ; 
        const char*  m_name ; 
-       NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
-       glm::ivec4   m_apmtidx ;
        glm::vec4    m_debug ;
        glm::ivec4   m_control ;
        std::vector<std::string> m_nodes ; 

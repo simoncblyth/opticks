@@ -152,29 +152,17 @@ GMergedMesh* GGeoTest::loadPmt()
     }
 
 
-    NSlice* slice = m_config->getSlice();
-    unsigned apmtidx = m_config->getAPmtIdx(); 
+    // Formerly loaded the analytic PMT here, using test geometry config  
+    // but that makes no sense as the analytic PMT is needed for standard 
+    // unmodified geometry also, and its confusing to have multiple GPmt instances
+    // with potentially different idx and slicing. So moved analytic PMT 
+    // config to OpticksCfg/Opticks which is used by the standard GGeo::loadAnalyticPMT.
 
-    // unmodified geometry needs the analytic PMT too, so 
-    // if not slicing or using the non-default apmtidx(=0) 
-    // can use the already loaded
-
-    GPmt* pmt = slice == NULL && apmtidx == 0 ? 
-                                 m_ggeo->getPmt() 
-                              : 
-                                 GPmt::load( m_opticks, m_bndlib, apmtidx, slice )  
-                              ;  
-
-
-    // associating the analytic GPmt with the triangulated GMergedMesh 
-    mmpmt->setParts(pmt->getParts());               
+    GPmt* pmt = m_ggeo->getPmt();
+    mmpmt->setParts(pmt->getParts()); // associating the analytic GPmt with the triangulated GMergedMesh 
 
     return mmpmt ; 
 }
-
-
-
-
 
 
 
@@ -241,6 +229,13 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 GMergedMesh* GGeoTest::createCsgInBox()
 {
+    // NB this is the second look at CSG with a view 
+    //    to creating binary trees for evaluation on GPU
+    //
+    //    The first look (in class GCSG) used 
+    //    for G4/CPU cfg4 CMaker is unrelated, currently.
+    //
+
     std::vector<GSolid*> solids ; 
     unsigned int n = m_config->getNumElements();
 

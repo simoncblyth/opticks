@@ -254,6 +254,13 @@ void OpticksHub::loadGeometry()
 }
 
 
+
+
+
+
+
+
+
 std::string OpticksHub::getG4GunConfig()
 {
     return m_gun->getConfig();

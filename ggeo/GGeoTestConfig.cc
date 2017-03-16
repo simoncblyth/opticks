@@ -7,7 +7,6 @@
 #include "BStr.hh"
 
 #include "NGLM.hpp"
-#include "NSlice.hpp"
 #include "GLMFormat.hpp"
 
 #include "GMaker.hh"
@@ -33,16 +32,16 @@ const char* GGeoTestConfig::FRAME_ = "frame";
 const char* GGeoTestConfig::BOUNDARY_ = "boundary"; 
 const char* GGeoTestConfig::PARAMETERS_ = "parameters"; 
 const char* GGeoTestConfig::NODE_ = "node"; 
-const char* GGeoTestConfig::SLICE_ = "slice"; 
 const char* GGeoTestConfig::ANALYTIC_ = "analytic"; 
 const char* GGeoTestConfig::DEBUG_ = "debug"; 
 const char* GGeoTestConfig::CONTROL_ = "control"; 
 const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
-const char* GGeoTestConfig::APMTIDX_ = "apmtidx"; 
 const char* GGeoTestConfig::TRANSFORM_ = "transform"; 
 const char* GGeoTestConfig::CSGPATH_ = "csgpath"; 
 const char* GGeoTestConfig::OFFSETS_ = "offsets"; 
 const char* GGeoTestConfig::NAME_ = "name"; 
+
+
 
 
 GGeoTestConfig::GGeoTestConfig(const char* config) 
@@ -52,10 +51,8 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     m_pmtpath(NULL),
     m_csgpath(NULL),
     m_name(NULL),
-    m_slice(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
-    m_apmtidx(0,0,0,0),
     m_debug(1.f,0.f,0.f,0.f),
     m_control(0,0,0,0)
 {
@@ -65,10 +62,6 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
 std::vector<std::pair<std::string, std::string> >& GGeoTestConfig::getCfg()
 {
     return m_cfg ; 
-}
-NSlice* GGeoTestConfig::getSlice()
-{
-    return m_slice ; 
 }
 
 
@@ -114,11 +107,6 @@ const char* GGeoTestConfig::getCsgPath()
 const char* GGeoTestConfig::getName()
 {
     return m_name ; 
-}
-
-unsigned GGeoTestConfig::getAPmtIdx()
-{
-    return m_apmtidx.x  ; 
 }
 
 int GGeoTestConfig::getVerbosity()
@@ -170,12 +158,10 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,BOUNDARY_)==0)   arg = BOUNDARY ; 
     else if(strcmp(k,PARAMETERS_)==0) arg = PARAMETERS ; 
     else if(strcmp(k,NODE_)==0)       arg = NODE ; 
-    else if(strcmp(k,SLICE_)==0)      arg = SLICE ; 
     else if(strcmp(k,ANALYTIC_)==0)   arg = ANALYTIC ; 
     else if(strcmp(k,DEBUG_)==0)      arg = DEBUG ; 
     else if(strcmp(k,CONTROL_)==0)    arg = CONTROL ; 
     else if(strcmp(k,PMTPATH_)==0)    arg = PMTPATH ; 
-    else if(strcmp(k,APMTIDX_)==0)    arg = APMTIDX ; 
     else if(strcmp(k,TRANSFORM_)==0)  arg = TRANSFORM ; 
     else if(strcmp(k,CSGPATH_)==0)    arg = CSGPATH ; 
     else if(strcmp(k,OFFSETS_)==0)    arg = OFFSETS ; 
@@ -196,12 +182,10 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case BOUNDARY       : addBoundary(s)       ;break;
         case PARAMETERS     : addParameters(s)     ;break;
         case NODE           : addNode(s)           ;break;
-        case SLICE          : setSlice(s)          ;break;
         case ANALYTIC       : setAnalytic(s)       ;break;
         case DEBUG          : setDebug(s)          ;break;
         case CONTROL        : setControl(s)        ;break;
         case PMTPATH        : setPmtPath(s)        ;break;
-        case APMTIDX        : setAPmtIdx(s)        ;break;
         case TRANSFORM      : addTransform(s)      ;break;
         case CSGPATH        : setCsgPath(s)        ;break;
         case OFFSETS        : setOffsets(s)        ;break;
@@ -303,10 +287,7 @@ bool GGeoTestConfig::isStartOfOptiXPrimitive(unsigned nodeIdx )
 
 
 
-void GGeoTestConfig::setSlice(const char* s)
-{
-    m_slice = s ? new NSlice(s) : NULL ;
-}
+
 void GGeoTestConfig::setFrame(const char* s)
 {
     std::string ss(s);
@@ -330,13 +311,6 @@ void GGeoTestConfig::setControl(const char* s)
     std::string ss(s);
     m_control = givec4(ss);
 }
-
-void GGeoTestConfig::setAPmtIdx(const char* s)
-{
-    std::string ss(s);
-    m_apmtidx = givec4(ss);
-}
-
 
 
 

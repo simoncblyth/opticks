@@ -27,6 +27,7 @@
 #include "NState.hpp"
 #include "NPropNames.hpp"
 #include "NLoad.hpp"
+#include "NSlice.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -179,6 +180,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_nspec(NULL),
        m_resource(NULL),
        m_state(NULL),
+       m_apmtslice(NULL),
 
        m_exit(false),
        m_compute(false),
@@ -549,9 +551,20 @@ float Opticks::getFxSc()
     return BStr::atof(fxsc.c_str(), 0);
 }
 
+unsigned Opticks::getAnalyticPMTIndex()
+{
+    return m_cfg->getAnalyticPMTIndex();
+}
 
-
-
+NSlice* Opticks::getAnalyticPMTSlice()
+{
+    if(m_apmtslice == 0)
+    {
+        std::string sli = m_cfg->getAnalyticPMTSlice() ; 
+        if(!sli.empty()) m_apmtslice = new NSlice(sli.c_str());
+    }
+    return m_apmtslice ; 
+}
 
 
 void Opticks::defineEventSpec()

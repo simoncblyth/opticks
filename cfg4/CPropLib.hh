@@ -12,15 +12,12 @@ class GBndLib ;
 class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
-class GCSG ; 
 class GMaterial ;
 
 template <typename T> class GProperty ; 
 template <typename T> class GPropertyMap ; 
 template <typename T> class GDomain ; 
 
-// npy-
-struct NSlice ; 
 
 // g4-
 class G4Material ; 
@@ -67,8 +64,6 @@ class CFG4_API CPropLib {
        bool hasMaterial(const char* shortname); 
    public:
        std::string getMaterialKeys(const G4Material* mat);
-   public:
-       GCSG*       getPmtCSG(NSlice* slice);
    public:
        G4LogicalBorderSurface* makeConstantSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2, float effi=0.f, float refl=0.f);
        G4LogicalBorderSurface* makeCathodeSurface(const char* name, G4VPhysicalVolume* pv1, G4VPhysicalVolume* pv2);
