@@ -1211,9 +1211,16 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   // expand aabb to include all the bbox of the parts 
 
 
-  bool is_partlist = primFlags == CSG_PARTLIST ; 
+  //bool is_partlist = primFlags == CSG_PARTLIST ; 
+  bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-  if(!is_partlist)  // bbox based from first csg node, the root of tree
+
+  // TODO: could traverse the csg tree and include primitive bbox
+  //       accounting for transforms ? OR more simply just rely 
+  //       on the root bbox being big enough for the tree ?
+  //
+
+  if(is_csg)  // bbox based from first csg node, the root of tree
   {
       quad q2, q3 ; 
       q2.f = partBuffer[4*(partOffset+0)+2];  
@@ -1247,7 +1254,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
       } 
    }
 
-  rtPrintf("##hemi-pmt.cu:bounds primIdx %d is_partlist:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, is_partlist, 
+  rtPrintf("##hemi-pmt.cu:bounds primIdx %d is_csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, is_csg, 
        result[0],
        result[1],
        result[2],
@@ -1267,7 +1274,7 @@ RT_PROGRAM void intersect(int primIdx)
 
   unsigned partOffset  = prim.x ;  
   unsigned numParts    = prim.y ; 
-  unsigned primIdx_    = prim.z ; 
+  //unsigned primIdx_    = prim.z ; 
   unsigned primFlags   = prim.w ;  
 
   //if(primIdx > 0)

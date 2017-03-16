@@ -530,9 +530,6 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         unsigned begin = POSTORDER_BEGIN(slice);
         unsigned end   = POSTORDER_END(slice);
 
-        unsigned beginIdx = POSTORDER_NODE(postorder, begin);   
-        unsigned endIdx = POSTORDER_NODE(postorder, end - 1);   
-
 /*
         if(verbose)
         rtPrintf("[%5d](trav) csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d [%x:%x] (%2u->%2u) %7.3f \n", 
@@ -688,8 +685,8 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            tranche_repr(tr),
                            ctrl,
                            tloop,  
-                           beginIdx,
-                           endIdx,  
+                           POSTORDER_NODE(postorder, begin),
+                           POSTORDER_NODE(postorder, end-1),
                            operation, 
                            t_left, 
                            t_right

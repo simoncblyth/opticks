@@ -103,12 +103,13 @@ tpmt-testconfig()
     local groupvelkludge=0
    # groupvel=$groupvelkludge   no longer supported/needed 
 
+    local apmtidx=1  # non-default analytic pmt idx, using updated enum values
     local test_config=(
                  mode=PmtInBox
                  pmtpath=$(tpmt-pmtpath)
                  control=$testverbosity,0,0,0
                  analytic=1
-                 apmtidx=1
+                 apmtidx=$apmtidx
                  node=box    parameters=0,0,0,300   boundary=Rock/NONE/perfectAbsorbSurface/$material
                    ) 
 
