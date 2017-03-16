@@ -91,7 +91,7 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 
     if(m_verbosity>0)
     LOG(info) 
-           << "CMaker::makeSolid "
+           << "CMaker::makeSolid (GCSG)  "
            << "  i " << std::setw(2) << index  
            << " nc " << std::setw(2) << nc 
            << " fc " << std::setw(2) << fc 

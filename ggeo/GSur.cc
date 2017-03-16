@@ -112,6 +112,19 @@ const std::set<unsigned>& GSur::getOBnd()
 
 
 
+void GSur::setBorder()
+{
+    setType('B');
+}
+void GSur::setSkin()
+{
+    setType('S'); 
+}
+void GSur::setUnused()
+{
+    setType('U') ; 
+}
+
 
 bool GSur::isBorder()
 {

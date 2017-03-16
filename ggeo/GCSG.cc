@@ -5,6 +5,10 @@
 #include "GItemList.hh"
 #include "GCSG.hh"
 
+#include "GMaker.hh"
+#include "GMergedMesh.hh"
+
+
 #include "PLOG.hh"
 
 
@@ -189,6 +193,41 @@ void GCSG::dump(const char* msg)
        printf("\n");
     }   
 }
+
+
+GMergedMesh* GCSG::makeMergedMesh()
+{
+    GCSG* csg = this ; 
+
+    GMergedMesh* mm = NULL ; 
+    // follow general approach of CTestDetector::makePMT but using placeholder bbox 
+    // to act as standin until have real CSG to triangles imp
+
+    unsigned ni = csg->getNumItems(); 
+
+    LOG(info) << "GCSG::makeMergedMesh"
+              << " ni " << ni 
+              ;
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned int nix = csg->getNodeIndex(i); 
+        if(nix == 0) continue ;
+        // skip non-lv with nix:0, as those are constituents of the lv that get recursed over
+
+
+        LOG(info) << "GCSG::makeMergedMesh"
+                  << std::setw(4) << i 
+                  << " nix " << std::setw(5) << nix 
+                  ; 
+
+    
+    }
+
+    return mm ; 
+}
+
+
 
 
 

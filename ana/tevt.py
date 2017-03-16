@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     for utag in args.utags:
         try:
-            evt = Evt(tag=utag, src=args.src, det=args.det, seqs=[], terse=args.terse)
+            evt = Evt(tag=utag, src=args.src, det=args.det, seqs=[], args=args)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)

@@ -2,6 +2,7 @@
 
 template <typename T> class NPY ;
 class GItemList ; 
+class GMergedMesh ; 
 
 /**
 GCSG
@@ -92,6 +93,8 @@ class GGEO_API GCSG {
         unsigned int getNumChildren(unsigned int i);
         unsigned int getFirstChildIndex(unsigned int i);
         unsigned int getLastChildIndex(unsigned int i);
+    public:
+        GMergedMesh* makeMergedMesh();
     private:
         float        getFloat(unsigned int i, unsigned int j, unsigned int k);
         unsigned int getUInt(unsigned int i, unsigned int j, unsigned int k);

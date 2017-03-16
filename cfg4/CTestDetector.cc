@@ -115,6 +115,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
     bool is_pib = isPmtInBox() ;
     bool is_bib = isBoxInBox() ;
+    // CsgInBox not yet handled
 
     LOG(info)  << "CTestDetector::makeDetector"
                << " PmtInBox " << is_pib
@@ -123,20 +124,25 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
                << " numSolidsConfig " << numSolidsConfig 
               ;
 
-    assert( ( is_pib || is_bib ) && "CTestDetector::Construct mode not recognized");
+    assert( ( is_pib || is_bib ) && "CTestDetector::makeDetector mode not recognized");
 
 
-    if( numSolidsMesh != numSolidsConfig )
+    if(is_bib)
     {
-         mm->dumpSolids("CTestDetector::makeDetector (solid count inconsistent)");
+        if( numSolidsMesh != numSolidsConfig )
+        {
+             mm->dumpSolids("CTestDetector::makeDetector (solid count inconsistent)");
+        }
+        assert( numSolidsMesh == numSolidsConfig );
+        // bound to fail for PmtInBox
+    }
+    else if(is_pib)
+    {
     }
 
-    assert( numSolidsMesh == numSolidsConfig );
-    // Huh for PmtInBox this os bound to fail, as NumElements will just return 1 for the box
-    //     hmm looks like the primordial CSG buffer stuff was done after this ...
 
     if(m_verbosity > 0)
-    m_config->dump("CTestDetector::Construct");
+    m_config->dump("CTestDetector::makeDetector");
 
 
     G4VPhysicalVolume* ppv = NULL ;    // parent pv
@@ -168,26 +174,40 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
                   ;
 
         
-        unsigned boundary = id->z ; 
-        unsigned boundary2 = m_blib->addBoundary(spec);
-        assert(boundary == boundary2);  
+        unsigned boundary0 = id->z ; 
+        unsigned boundary = m_blib->addBoundary(spec);
 
+        // nasty mm fixups for GSurLib consumption
+
+        unsigned node0 = ni->z ; 
+        if(node0 != i) ni->z = i ; 
+
+        unsigned node2 = id->x ; 
+        if(node2 != i) id->x = i ; 
+
+        if(boundary != boundary0)
+        {
+           LOG(fatal) << "CTestDetector::makeDetector changing boundary "
+                      << std::setw(3) << i 
+                      << " spec " << spec 
+                      << " from boundary0 (from mesh->getNodeInfo()->z ) " << boundary0 
+                      << " to boundary (from blib) " << boundary
+                      ;
+ 
+           id->z = boundary ;  
+        }
+        //assert(boundary == boundary0);  
 
         GMaterial* imat = m_blib->getInnerMaterial(boundary); 
         GSur* isur      = m_blib->getInnerSurface(boundary); 
         GSur* osur      = m_blib->getOuterSurface(boundary); 
 
+        if(isur) isur->setBorder();
+        if(osur) osur->setBorder();
 
-        if(isur) isur->setType('B');
-        if(osur) osur->setType('B');
+        if(isur) isur->dump("isur");
+        if(osur) osur->dump("osur");
 
-
-       if(isur) isur->dump("isur");
-       if(osur) osur->dump("osur");
-
-
-
-/*
         LOG(info) 
                   << " spec " << std::setw(50) << spec
                   << " bnd " << std::setw(3) << boundary 
@@ -195,8 +215,6 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
                   << " isur " << std::setw(10) << isur
                   << " osur " << std::setw(10) << osur
                   ;
-*/
-
 
        // TODO:
        //    access corresponding GSur and add lvnames and pv1 pv2 indices 
@@ -228,7 +246,6 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
         
         m_pvm[pvn] = pv ;  
-
 
  
         if(top == NULL) top = pv ; 
@@ -263,14 +280,13 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
         setValid(false);
         return ; 
     }   
-
-
-    if(m_verbosity > 1)
-    csg->dump();
+    
+    //if(m_verbosity > 1)
+    csg->dump("CTestDetector::makePMT");
 
     unsigned int ni = csg->getNumItems();
 
-    if(m_verbosity > 0)
+    //if(m_verbosity > 0)
     LOG(info) << "CTestDetector::makePMT" 
               << " csg items " << ni 
               ; 

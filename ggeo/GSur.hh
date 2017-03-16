@@ -37,14 +37,17 @@ class GGEO_API GSur
          std::string check();
          void dump(const char* msg="GSur::dump");
 
-
-         void setType(char type);
          char getType();
          bool isBorder();
          bool isSkin();
          bool isUnused();
+         void setBorder();
+         void setSkin();
+         void setUnused();
 
          void assignType();  // sets Unused 
+    private:
+         void setType(char type);
     public:
          // BorderSurfaces
          unsigned getNumVolumePair();

@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 
+from opticks.ana.base import opticks_main
 from opticks.sysrap.OpticksCSG import CSG_
 
 #TYPECODE = {'Sphere':1, 'Tubs':2, 'Box':3 }  ## equivalent to pre-unified hardcoded and duplicitous approach 
@@ -102,8 +103,9 @@ class Bbox(object):
 
 
 class Pmt(object):
-    def __init__(self, path="$OPTICKS_DETECTOR_DIR/GPmt/0/GPmt.npy"):
+    def __init__(self, path):
         path = os.path.expandvars(path)
+        log.info("loading Pmt from %s " % path)
         self.data = np.load(path).reshape(-1,4,4)
         self.num_parts = len(self.data)
         self.all_parts = range(self.num_parts)
@@ -139,6 +141,7 @@ class Pmt(object):
         elif code == TYPECODE['Tubs']:
             return self.ztubs(p)
         else:
+            log.warning("Pmt.shape typecode %d not recognized, perhaps an old pre-enum-unification .npy ?" % code )
             return None 
 
     def sphere(self, p):
@@ -194,8 +197,8 @@ class PmtPlot(object):
             self.add_patch(_sh, self.color(i))
 
     def plot_shape(self, parts=[], clip=True):
+        log.info("plot_shape parts %r " % parts)
         for i,p in enumerate(parts):
-
             is_inner = self.pmt.parent[p] > 0
             bb = self.pmt.bbox(p)
             _bb = bb.as_patch(self.axes)
@@ -272,6 +275,10 @@ def one_plot(fig, pmt, pts, clip=True, axes=ZX, highlight={}):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
+    args = opticks_main(apmtpath="$OPTICKS_DETECTOR_DIR/GPmt/0/GPmt.npy")
+
+    #apmtpath = args.apmtpath
+    apmtpath = "$TMP/GPmt/1/GPmt.npy"
 
 
     # 0:4  PYREX
@@ -290,7 +297,7 @@ if __name__ == '__main__':
 
     mesh = Mesh()
 
-    pmt = Pmt()
+    pmt = Pmt(apmtpath)
 
     fig = plt.figure()
 
@@ -302,6 +309,8 @@ if __name__ == '__main__':
     solid = ALL
 
     pts = pmt.parts(solid)
+
+
     #pts = np.arange(8)
 
     #mug_plot(fig, pmt, pts)
@@ -320,5 +329,5 @@ if __name__ == '__main__':
 
 
     fig.show()
-    fig.savefig("$TMP/pmtplot.png")
+    fig.savefig(os.path.expandvars("$TMP/pmtplot.png"))
 

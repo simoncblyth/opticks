@@ -18,20 +18,25 @@
 #include "GGEO_LOG.hh"
 #include "GGEO_BODY.hh"
 
+
+
 int main(int argc, char** argv)
 {
 
     PLOG_(argc, argv);
     GGEO_LOG_ ;
 
-    Opticks* opticks = new Opticks(argc, argv);
+    Opticks* ok = new Opticks(argc, argv);
 
     for(int i=0 ; i < argc ; i++) LOG(info) << i << ":" << argv[i] ; 
-    NSlice* slice = argc > 1 ? new NSlice(argv[1]) : NULL ;
 
-    GBndLib* blib = GBndLib::load(opticks, true);
+    NSlice* slice = ok->getAnalyticPMTSlice();
+    unsigned apmtidx = ok->getAnalyticPMTIndex();
 
-    GPmt* pmt = GPmt::load(opticks, blib, 0, slice);
+
+    GBndLib* blib = GBndLib::load(ok, true);
+
+    GPmt* pmt = GPmt::load(ok, blib, apmtidx, slice);
     if(!pmt)
     {
         LOG(fatal) << argv[0] << " FAILED TO LOAD PMT " ; 
@@ -56,6 +61,13 @@ int main(int argc, char** argv)
     LOG(info) << "CSG Buffer shape: " << cb->getShapeString() ;
 
     csg->dump();
+
+
+
+
+     
+    GMergedMesh* mm = csg->makeMergedMesh();
+
 
 
 

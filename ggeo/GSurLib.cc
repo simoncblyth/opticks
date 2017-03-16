@@ -118,19 +118,39 @@ void GSurLib::examineSolidBndSurfaces()
 
     for(unsigned i=0 ; i < numSolids ; i++)
     {
-        guint4 nodeinfo = mm->getNodeInfo(i);
-        unsigned node = nodeinfo.z ;
-        unsigned parent = nodeinfo.w ;
+        guint4 id = mm->getIdentity(i);
+        guint4 ni = mm->getNodeInfo(i);
+        const char* lv = gg->getLVName(i) ;
+
+        // hmm for test geometry the lv returned are the global ones, not the test geometry ones
+        // and the boundary names look wrong too
+
+        unsigned node = ni.z ;
+        unsigned parent = ni.w ;
+
+        unsigned node2 = id.x ;
+        unsigned boundary = id.z ;
+
+        std::string bname = m_blib->shortname(boundary);
+
+        if(node != i)
+           LOG(fatal) << "GSurLib::examineSolidBndSurfaces"
+                      << " i(mm-idx) " << std::setw(6) << i
+                      << " node(ni.z) " << std::setw(6) << node
+                      << " node2(id.x) " << std::setw(6) << node2
+                      << " boundary(id.z) " << std::setw(6) << boundary
+                      << " parent(ni.w) " << std::setw(6) << parent 
+                      << " bname " << bname
+                      << " lv " << ( lv ? lv : "NULL" )
+                      ;
+
         assert( node == i );
 
-        guint4 id = mm->getIdentity(i);
-        unsigned node2 = id.x ;
+
         //unsigned mesh = id.y ;
-        unsigned boundary = id.z ;
         //unsigned sensor = id.w ;
         assert( node2 == i );
         
-        std::string bname = m_blib->shortname(boundary);
         guint4 bnd = m_blib->getBnd(boundary);
 
         //unsigned omat_ = bnd.x ; 
@@ -138,14 +158,13 @@ void GSurLib::examineSolidBndSurfaces()
         unsigned isur_ = bnd.z ; 
         //unsigned imat_ = bnd.w ; 
 
-        const char* lv = gg->getLVName(i) ;
 
         GSur* isur = isur_ == UNSET ? NULL : getSur(isur_);
         GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
 
 
         LOG(debug) << std::setw(3) << i 
-                  << " nodeinfo " << std::setw(50) << nodeinfo.description() 
+                  << " nodeinfo " << std::setw(50) << ni.description() 
                   << " bnd " << std::setw(50) << bnd.description() 
                   << ( isur ? " isur" : "" )
                   << ( osur ? " osur" : "" )

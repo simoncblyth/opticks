@@ -189,7 +189,7 @@ tpmt--(){
        --animtimemax 10 \
        --eye 0.0,-0.5,0.0 \
        --geocenter \
-       --apmtidx $apmtidx
+       --apmtidx $apmtidx \
        $* 
 
 }

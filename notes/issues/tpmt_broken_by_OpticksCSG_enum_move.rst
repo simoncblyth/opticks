@@ -7,8 +7,77 @@ tpmt broken by OpticksCSG enum move
 overview
 ----------
 
-* old PMT serialization needs to be rebuilt with new unified enum   
+* DONE: old PMT serialization needs to be rebuilt with new unified enum   
 * rebuilt analytic PMT and stored into opticksdata with non-default apmtidx slot 1 (not committed)
+
+
+root cause of difficulty
+--------------------------
+
+* kludgy association of an old triangulated PMT with the analytic CSG one, 
+  actually it looks like there is one extra node in the triangulated ?
+
+* best solution would be to find a way to triangulate the CSG, so there 
+  would then be no solid/node matching problem 
+
+* developing CSG to triangulation will take a while, so meanwhile just 
+  construct meshes using CSG bboxen ?  See ggeo/test/GPmtTest.cc for start of this
+
+
+symptom3 : surface attachement failure
+------------------------------------------
+
+* see :doc:`geant4_opticks_integration/surlib_with_test_geometry` 
+
+::
+
+    2017-03-16 17:49:08.898 INFO  [980504] [CTraverser::Traverse@128] CTraverser::Traverse DONE
+    2017-03-16 17:49:08.898 INFO  [980504] [CTraverser::Summary@104] CDetector::traverse numMaterials 5 numMaterialsWithoutMPT 0
+    2017-03-16 17:49:08.898 INFO  [980504] [CDetector::attachSurfaces@240] CDetector::attachSurfaces
+    2017-03-16 17:49:08.898 INFO  [980504] [GSurLib::examineSolidBndSurfaces@115] GSurLib::examineSolidBndSurfaces numSolids 7
+    Assertion failed: (node == i), function examineSolidBndSurfaces, file /Users/blyth/opticks/ggeo/GSurLib.cc, line 124.
+    Process 79145 stopped
+    * thread #1: tid = 0xef618, 0x00007fff96f1a866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff96f1a866 libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill + 10:
+    -> 0x7fff96f1a866:  jae    0x7fff96f1a870            ; __pthread_kill + 20
+       0x7fff96f1a868:  movq   %rax, %rdi
+       0x7fff96f1a86b:  jmp    0x7fff96f17175            ; cerror_nocancel
+       0x7fff96f1a870:  retq   
+    (lldb) bt
+    * thread #1: tid = 0xef618, 0x00007fff96f1a866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff96f1a866 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff8e5b735c libsystem_pthread.dylib`pthread_kill + 92
+        frame #2: 0x00007fff95307b1a libsystem_c.dylib`abort + 125
+        frame #3: 0x00007fff952d19bf libsystem_c.dylib`__assert_rtn + 321
+        frame #4: 0x0000000101ce0ac9 libGGeo.dylib`GSurLib::examineSolidBndSurfaces(this=0x000000010e21e4a0) + 521 at GSurLib.cc:124
+        frame #5: 0x0000000101ce08ad libGGeo.dylib`GSurLib::close(this=0x000000010e21e4a0) + 29 at GSurLib.cc:93
+        frame #6: 0x0000000103ee0497 libcfg4.dylib`CDetector::attachSurfaces(this=0x000000010e21e1c0) + 247 at CDetector.cc:244
+        frame #7: 0x0000000103e5ad26 libcfg4.dylib`CGeometry::init(this=0x000000010e21dc30) + 1446 at CGeometry.cc:73
+        frame #8: 0x0000000103e5a770 libcfg4.dylib`CGeometry::CGeometry(this=0x000000010e21dc30, hub=0x000000010980c7a0) + 112 at CGeometry.cc:39
+        frame #9: 0x0000000103e5ad8d libcfg4.dylib`CGeometry::CGeometry(this=0x000000010e21dc30, hub=0x000000010980c7a0) + 29 at CGeometry.cc:40
+        frame #10: 0x0000000103f01286 libcfg4.dylib`CG4::CG4(this=0x000000010cadeab0, hub=0x000000010980c7a0) + 214 at CG4.cc:122
+        frame #11: 0x0000000103f017bd libcfg4.dylib`CG4::CG4(this=0x000000010cadeab0, hub=0x000000010980c7a0) + 29 at CG4.cc:144
+        frame #12: 0x0000000103ff1da3 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe6b0, argc=23, argv=0x00007fff5fbfe790) + 547 at OKG4Mgr.cc:35
+        frame #13: 0x0000000103ff1ff3 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe6b0, argc=23, argv=0x00007fff5fbfe790) + 35 at OKG4Mgr.cc:41
+        frame #14: 0x00000001000139be OKG4Test`main(argc=23, argv=0x00007fff5fbfe790) + 1486 at OKG4Test.cc:56
+        frame #15: 0x00007fff9238d5fd libdyld.dylib`start + 1
+    (lldb) 
+
+::
+
+    (lldb) f 7
+    frame #7: 0x0000000103e5ad26 libcfg4.dylib`CGeometry::init(this=0x000000010e21dc30) + 1446 at CGeometry.cc:73
+       70           detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query)) ; 
+       71       }
+       72   
+    -> 73       detector->attachSurfaces();
+       74       //m_csurlib->convert(detector);
+       75   
+       76       m_detector = detector ; 
+    (lldb) 
+
+
 
 
 symptom 2 : CPU/G4 cfg4/CTestDetector misunderstanding primordial CSG buffer ?
@@ -186,8 +255,6 @@ All three look effectively the same, with no influence from new enum so far::
     Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt_check.npy
     Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt_check.txt
     Only in /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/: GPmt_csg.txt
-
-
 
 
 
