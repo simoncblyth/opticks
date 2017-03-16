@@ -38,6 +38,7 @@ class GGEO_API GGeoTestConfig {
                       DEBUG,
                       CONTROL,
                       PMTPATH,
+                      APMTIDX,
                       TRANSFORM, 
                       CSGPATH,
                       OFFSETS,
@@ -57,6 +58,7 @@ class GGEO_API GGeoTestConfig {
        static const char* DEBUG_ ; 
        static const char* CONTROL_ ; 
        static const char* PMTPATH_ ; 
+       static const char* APMTIDX_ ; 
        static const char* TRANSFORM_ ; 
        static const char* CSGPATH_ ;   // not yet used
        static const char* OFFSETS_ ; 
@@ -77,6 +79,7 @@ class GGEO_API GGeoTestConfig {
        void setDebug(const char* s);
        void setControl(const char* s);
        void setPmtPath(const char* s);
+       void setAPmtIdx(const char* s);
        void setCsgPath(const char* s);
        void setOffsets(const char* s);
        void setName(const char* s);
@@ -94,6 +97,7 @@ class GGEO_API GGeoTestConfig {
 
        NSlice*   getSlice();
        bool      getAnalytic();
+       unsigned    getAPmtIdx();
        const char* getMode();
        const char* getPmtPath();
        const char* getCsgPath();
@@ -121,6 +125,7 @@ class GGEO_API GGeoTestConfig {
        NSlice*      m_slice ; 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
+       glm::ivec4   m_apmtidx ;
        glm::vec4    m_debug ;
        glm::ivec4   m_control ;
        std::vector<std::string> m_nodes ; 

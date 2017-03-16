@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 import os, logging, math
 import numpy as np
+
+from opticks.sysrap.OpticksCSG import CSG_
+
+#TYPECODE = {'Sphere':1, 'Tubs':2, 'Box':3 }  ## equivalent to pre-unified hardcoded and duplicitous approach 
+TYPECODE = {'Sphere':CSG_.SPHERE, 'Tubs':CSG_.TUBS, 'Box':CSG_.BOX }
+
+
+
 X,Y,Z = 0,1,2
 
 log = logging.getLogger(__name__)
@@ -85,6 +93,12 @@ class Part(object):
 
     def __init__(self, typ, name, xyz, radius, sizeZ=0.):
         """
+        :param typ: typ string eg Sphere, Tubs, Box 
+
+        Canonical instanciations of Part arise in the as_part 
+        methods of dd.py:Primitive subclasses, 
+        currently only Sphere and Tubs.
+
         see cu/hemi-pmt.cu for where these are used 
         """
         self.typ = typ
@@ -101,15 +115,9 @@ class Part(object):
         self.flags = 0
         # Tubs endcap control
 
-        ## TODO: adopt OpticksCSG.{h,py} CSG_ enum 
-        if typ == 'Sphere':
-            self.typecode = 1
-        elif typ == 'Tubs':
-            self.typecode = 2
-        elif typ == 'Box':
-            self.typecode = 3
-        else:
-            assert 0
+        typecode = TYPECODE.get(typ, -1)
+        assert typecode > -1, ("unhandled typ ", typ)
+        self.typecode = typecode 
 
 
     @classmethod

@@ -108,6 +108,7 @@ tpmt-testconfig()
                  pmtpath=$(tpmt-pmtpath)
                  control=$testverbosity,0,0,0
                  analytic=1
+                 apmtidx=1
                  node=box    parameters=0,0,0,300   boundary=Rock/NONE/perfectAbsorbSurface/$material
                    ) 
 

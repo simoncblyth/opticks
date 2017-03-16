@@ -23,6 +23,12 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 
+from opticks.sysrap.OpticksCSG import CSG_
+
+#TYPECODE = {'Sphere':1, 'Tubs':2, 'Box':3 }  ## equivalent to pre-unified hardcoded and duplicitous approach 
+TYPECODE = {'Sphere':CSG_.SPHERE, 'Tubs':CSG_.TUBS, 'Box':CSG_.BOX }
+
+
 path_ = lambda _:os.path.expandvars("$IDPATH/GMergedMesh/1/%s.npy" % _)
 
 
@@ -126,13 +132,11 @@ class Pmt(object):
         """
         :param p: part index
         :return shape instance: Sphere or ZTubs 
-
-        TODO: use OpticksCSG 
         """
         code = self.partcode[p]
-        if code == 1:
+        if code == TYPECODE['Sphere']:
             return self.sphere(p)
-        elif code == 2:
+        elif code == TYPECODE['Tubs']:
             return self.ztubs(p)
         else:
             return None 

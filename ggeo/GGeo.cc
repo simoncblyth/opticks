@@ -725,9 +725,9 @@ void GGeo::loadAnalyticPmt()
 {
     NSlice* slice = NULL ;
 
-    unsigned int pmtIndex = 0 ;  
+    unsigned apmtidx = 0 ;  
 
-    m_pmt = GPmt::load( m_opticks, m_bndlib, pmtIndex, slice ); 
+    m_pmt = GPmt::load( m_opticks, m_bndlib, apmtidx, slice ); 
 
     if(m_pmt)
     {

@@ -153,11 +153,16 @@ GMergedMesh* GGeoTest::loadPmt()
 
 
     NSlice* slice = m_config->getSlice();
+    unsigned apmtidx = m_config->getAPmtIdx(); 
 
-    GPmt* pmt = slice == NULL ? 
+    // unmodified geometry needs the analytic PMT too, so 
+    // if not slicing or using the non-default apmtidx(=0) 
+    // can use the already loaded
+
+    GPmt* pmt = slice == NULL && apmtidx == 0 ? 
                                  m_ggeo->getPmt() 
                               : 
-                                 GPmt::load( m_opticks, m_bndlib, 0, slice )  // pmtIndex:0
+                                 GPmt::load( m_opticks, m_bndlib, apmtidx, slice )  
                               ;  
 
 

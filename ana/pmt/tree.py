@@ -243,6 +243,7 @@ class Tree(object):
         """
         data = np.zeros([len(parts),4,4],dtype=np.float32)
         for i,part in enumerate(parts):
+            #print "part (%d) tc %d  %r " % (i, part.typecode, part)
             data[i] = part.as_quads()
 
             data[i].view(np.int32)[1,1] = i + 1           # 1-based part index, where parent 0 means None

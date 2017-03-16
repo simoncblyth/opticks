@@ -444,10 +444,17 @@ pmt-analytic(){
    python $(pmt-edir)/analytic.py $*  
 }
 
+
 pmt-analytic-tmp()
 {
-   pmt-analytic --apmtpath='$TMP/GPmt/0/GPmt.npy'
+   pmt-analytic --apmtpath='$TMP/GPmt/1/GPmt.npy'    # NB non-default dir and apmtidx
 }
+
+pmt-tmp2opticksdata-1()
+{
+   cp -r $TMP/GPmt/1 $OPTICKS_DATA/export/DayaBay/GPmt/
+}
+
 
 pmt-csg(){ 
    pmt-export

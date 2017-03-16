@@ -27,15 +27,15 @@ const char* GPmt::FILENAME = "GPmt.npy" ;
 const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
 
 
-GPmt* GPmt::load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* slice)
+GPmt* GPmt::load(Opticks* ok, GBndLib* bndlib, unsigned int index, NSlice* slice)
 {
     GPmt* pmt = NULL ; 
-    OpticksResource* resource = cache->getResource();
+    OpticksResource* resource = ok->getResource();
     std::string path = resource->getPmtPath(index); 
 
     if(OpticksResource::existsFile(path.c_str(), FILENAME))
     {
-        pmt = new GPmt(cache, bndlib, index);
+        pmt = new GPmt(ok, bndlib, index);
         pmt->loadFromCache(slice);
         pmt->setPath(path.c_str());
     }
