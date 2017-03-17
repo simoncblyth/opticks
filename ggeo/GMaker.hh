@@ -16,6 +16,7 @@ class GGeo ;
 class GGeoLib ; 
 class GBndLib ; 
 class GSolid ; 
+class GMesh ; 
 
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GMaker {
@@ -30,6 +31,8 @@ class GGEO_API GMaker {
        static GSolid* makeZSphere(glm::vec4& param);
        static GSolid* makeZSphereIntersect(glm::vec4& param, const char* spec);
        static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
+   public:
+       static GMesh* makeMarchingCubesTest();
    private:
        static GSolid* makeBox(gbbox& bbox);
    private:

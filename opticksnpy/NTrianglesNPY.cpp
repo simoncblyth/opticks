@@ -512,3 +512,6 @@ NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
 
     return tris ; 
 }
+
+
+

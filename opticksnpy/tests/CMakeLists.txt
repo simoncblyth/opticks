@@ -61,6 +61,8 @@ NLoadTest.cc
 NLoadCheck.cc
 DummyPhotonsNPYTest.cc
 
+NMarchingCubesNPYTest.cc
+
 )
 
 set(_TEST_SOURCES

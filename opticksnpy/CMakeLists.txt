@@ -120,6 +120,9 @@ set(SOURCES
     BoundariesNPY.cpp
     MaterialLibNPY.cpp
     DummyPhotonsNPY.cpp
+
+    PyMCubes/marchingcubes.cpp
+    NMarchingCubesNPY.cpp
 )
 
 set(REST_SOURCES
@@ -192,6 +195,11 @@ NSpectral.hpp
 NState.hpp
 NConfigurable.hpp
 Parameters.hpp
+
+PyMCubes/marchingcubes.hpp
+NMarchingCubesNPY.hpp
+
+NSphereSDF.hpp
 )
 
 

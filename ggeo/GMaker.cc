@@ -11,6 +11,10 @@
 #include "NPart.hpp"
 
 
+#include "NMarchingCubesNPY.hpp"
+#include "NSphereSDF.hpp"
+
+
 #include "OpticksCSG.h"
 
 // ggeo-
@@ -202,6 +206,10 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
 
 
 
+
+
+
+
 GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)
 {
     LOG(debug) << "GMaker::makeSubdivSphere" 
@@ -368,5 +376,29 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
     return solid ; 
 }
+
+
+
+
+GMesh* GMaker::makeMarchingCubesTest()
+{
+    NSphereSDF s(0.,0.,0.,100.) ;
+
+    const glm::uvec3 param(10,10,10);
+    const glm::vec3 low( -100.,-100.,-100.); 
+    const glm::vec3 high( 100., 100., 100.); 
+
+    NMarchingCubesNPY<NSphereSDF> mcs;
+
+    NTrianglesNPY* tris = mcs.march(s, param, low, high);
+
+    unsigned meshindex = 0 ; 
+
+    GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), meshindex);
+    mesh->save("$TMP", "GMaker_makeMarchingCubesTest" );
+
+    return mesh ; 
+}
+
 
 

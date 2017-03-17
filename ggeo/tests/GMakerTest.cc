@@ -13,15 +13,9 @@
 #include "GGEO_BODY.hh"
 
 
-int main(int argc, char** argv)
+void test_make(Opticks* ok)
 {
-    PLOG_(argc, argv);
-    GGEO_LOG_ ;
-
-
-    Opticks ok(argc, argv);
-
-    GMaker mk(&ok);
+    GMaker mk(ok);
 
     glm::vec4 param(0.f,0.f,0.f,100.f) ; 
 
@@ -34,7 +28,18 @@ int main(int argc, char** argv)
     GMesh* mesh = solid->getMesh();
 
     mesh->dump();
+}
 
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    GGEO_LOG_ ;
+
+    //Opticks ok(argc, argv);
+
+    GMesh* mesh = GMaker::makeMarchingCubesTest();
+    mesh->dump();
 
 }
 
