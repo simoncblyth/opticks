@@ -179,7 +179,9 @@ GMergedMesh* GGeoTest::createPmtInBox()
     //
     // assumes single container 
 
-    char csgChar = m_config->getNode(0) ;
+    //char csgChar = m_config->getNode(0) ;
+    OpticksCSG_t type = m_config->getTypeCode(0);
+
     const char* spec = m_config->getBoundary(0);
     glm::vec4 param = m_config->getParameters(0);
     const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
@@ -187,7 +189,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
     int verbosity = m_config->getVerbosity();
 
     LOG(info) << "GGeoTest::createPmtInBox " 
-              << " csgChar " << csgChar
+              << " type " << type
+              << " csgName " << CSGName(type)
               << " spec " << spec 
               << " container_inner_material " << container_inner_material
               << " param " << gformat(param) 
@@ -196,7 +199,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMergedMesh* mmpmt = loadPmt();
     unsigned int index = mmpmt->getNumSolids() ;
 
-    GSolid* solid = m_maker->make( index, csgChar, param, spec) ;
+    //GSolid* solid = m_maker->make( index, csgChar, param, spec) ;
+    GSolid* solid = m_maker->make( index, type, param, spec) ;
     solid->getMesh()->setIndex(1000);
 
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
@@ -265,7 +269,9 @@ GMergedMesh* GGeoTest::createCsgInBox()
         }
 
         std::string node = m_config->getNodeString(i);
-        char csgChar = m_config->getNode(i) ;    //  B:BOX, S:SPHERE,..., I:INTERSECTION, J:UNION, K:DIFFERENCE
+
+        OpticksCSG_t type = m_config->getTypeCode(i);
+
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
         glm::mat4 trans = m_config->getTransform(i);
@@ -274,30 +280,24 @@ GMergedMesh* GGeoTest::createCsgInBox()
         LOG(info) << "GGeoTest::createCsgInBox" 
                   << " i " << std::setw(2) << i 
                   << " node " << std::setw(20) << node
-                  << " csgChar " << std::setw(2) << csgChar
-                  << " csgChar2Name " << std::setw(15) << CSGChar2Name(csgChar)
+                  << " type " << std::setw(2) << type
+                  << " csgName " << std::setw(15) << CSGName(type)
                   << " spec " << spec
                   << " boundary " << boundary
                   << " param " << gformat(param)
                 //  << " trans " << gformat(trans)
                   ;
 
-        if(csgChar == 'U') LOG(fatal) << "GGeoTest::createCsgInBox configured node not implemented " << node ;
-        assert(csgChar != 'U');
+        if(type == CSG_UNDEFINED)
+        LOG(fatal) << "GGeoTest::createCsgInBox configured node not implemented " << node ;
+        assert(type != CSG_UNDEFINED);
 
-        GSolid* solid = m_maker->make(i, csgChar, param, spec );   
-
-        OpticksCSG_t csgFlag = solid->getCSGFlag(); 
-        unsigned flags = csgFlag ;    
+        GSolid* solid = m_maker->make(i, type, param, spec );   
 
         GParts* pts = solid->getParts();
-
         pts->setIndex(0u, i);
         pts->setNodeIndex(0u, primIdx ); 
-        //pts->setFlags(0u, flags);
-        pts->setTypeCode(0u, flags);
-
-
+        pts->setTypeCode(0u, type);
         pts->setBndLib(m_bndlib);
 
         solids.push_back(solid);
@@ -335,7 +335,9 @@ GMergedMesh* GGeoTest::createBoxInBox()
     for(unsigned int i=0 ; i < n ; i++)
     {
         std::string node = m_config->getNodeString(i);
-        char csgChar = m_config->getNode(i) ;
+        //char csgChar = m_config->getNode(i) ;
+        OpticksCSG_t type = m_config->getTypeCode(i);
+
         const char* spec = m_config->getBoundary(i);
         glm::vec4 param = m_config->getParameters(i);
         glm::mat4 trans = m_config->getTransform(i);
@@ -344,18 +346,19 @@ GMergedMesh* GGeoTest::createBoxInBox()
         LOG(info) << "GGeoTest::createBoxInBox" 
                   << " i " << std::setw(2) << i 
                   << " node " << std::setw(20) << node
-                  << " csgChar " << std::setw(2) << csgChar 
-                  << " csgChar2Name " << std::setw(15) << CSGChar2Name(csgChar)
+                  << " type " << std::setw(2) << type 
+                  << " csgName " << std::setw(15) << CSGName(type)
                   << " spec " << spec
                   << " boundary " << boundary
                   << " param " << gformat(param)
                   << " trans " << gformat(trans)
                   ;
 
-        if(csgChar == 'U') LOG(fatal) << "GGeoTest::createBoxInBox configured node not implemented " << node ;
-        assert(csgChar != 'U');
+        if(type == CSG_UNDEFINED)
+        LOG(fatal) << "GGeoTest::createBoxInBox configured node not implemented " << node ;
+        assert(type != CSG_UNDEFINED);
 
-        GSolid* solid = m_maker->make(i, csgChar, param, spec );   
+        GSolid* solid = m_maker->make(i, type, param, spec );   
         solids.push_back(solid);
     }
 

@@ -6,6 +6,8 @@
 
 #include <glm/fwd.hpp>
 
+#include "OpticksCSG.h"
+
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
@@ -85,7 +87,8 @@ class GGEO_API GGeoTestConfig {
        const char* getBoundary(unsigned int i);
        glm::vec4 getParameters(unsigned int i);
        glm::mat4 getTransform(unsigned int i);
-       char      getNode(unsigned int i);
+       //char      getNode(unsigned int i);  use of char codes, a workaround for dependency issue pre enum-unification ?
+       OpticksCSG_t getTypeCode(unsigned int i);
        std::string getNodeString(unsigned int i); 
 
        bool      getAnalytic();

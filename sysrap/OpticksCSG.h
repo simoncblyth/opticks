@@ -21,6 +21,8 @@ typedef enum {
 
 #ifndef __CUDACC__
 
+#include <cstring>
+
 static const char* CSG_ZERO_          = "zero" ; 
 static const char* CSG_INTERSECTION_  = "intersection" ; 
 static const char* CSG_UNION_         = "union" ; 
@@ -36,6 +38,10 @@ static const char* CSG_TUBS_          = "tubs" ;
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
 
+static bool CSGIsPrimitive(OpticksCSG_t type)
+{
+    return !(type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
+}
 
 static char CSGChar(const char* nodename)
 {
@@ -53,6 +59,25 @@ static char CSGChar(const char* nodename)
     else if(strcmp(nodename, CSG_PARTLIST_) == 0)       sc = 'C' ;
     return sc ;
 }
+
+
+static OpticksCSG_t CSGTypeCode(const char* nodename)
+{
+    OpticksCSG_t tc = CSG_UNDEFINED ;
+    if(     strcmp(nodename, CSG_BOX_) == 0)            tc = CSG_BOX ;
+    else if(strcmp(nodename, CSG_SPHERE_) == 0)         tc = CSG_SPHERE ;
+    else if(strcmp(nodename, CSG_ZSPHERE_) == 0)        tc = CSG_ZSPHERE ;
+    else if(strcmp(nodename, CSG_ZLENS_) == 0)          tc = CSG_ZLENS ;
+    else if(strcmp(nodename, CSG_PMT_) == 0)            tc = CSG_PMT ;  // not operational
+    else if(strcmp(nodename, CSG_PRISM_) == 0)          tc = CSG_PRISM ;
+    else if(strcmp(nodename, CSG_TUBS_) == 0)           tc = CSG_TUBS ;
+    else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
+    else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
+    else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     tc = CSG_DIFFERENCE ;
+    else if(strcmp(nodename, CSG_PARTLIST_) == 0)       tc = CSG_PARTLIST ;
+    return tc ;
+}
+
 
 
 static OpticksCSG_t CSGFlag(char code)

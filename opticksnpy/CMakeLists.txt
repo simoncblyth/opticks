@@ -199,7 +199,6 @@ Parameters.hpp
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
 
-NSphereSDF.hpp
 )
 
 

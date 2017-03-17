@@ -8,7 +8,31 @@ struct npart ;
 
 #include "NPY_API_EXPORT.hh"
 
-struct NPY_API nsphere {
+
+struct NPY_API nsdf {
+   virtual double operator()(double px, double py, double pz) ;
+};
+
+struct NPY_API nunion : nsdf {
+    double operator()(double px, double py, double pz) ;
+    nsdf* left ; 
+    nsdf* right ; 
+};
+struct NPY_API nintersection : nsdf {
+    double operator()(double px, double py, double pz);
+    nsdf* left ; 
+    nsdf* right ; 
+};
+struct NPY_API ndifference : nsdf {
+    double operator()(double px, double py, double pz);
+    nsdf* left ; 
+    nsdf* right ; 
+};
+
+
+
+
+struct NPY_API nsphere : nsdf {
 
     // NO CTOR
 
@@ -18,6 +42,10 @@ struct NPY_API nsphere {
     float radius();
     float costheta(float z);
 
+    double operator()(double px, double py, double pz) ;
+
+
+ 
     npart part();
     static ndisc intersect(nsphere& a, nsphere& b);
 

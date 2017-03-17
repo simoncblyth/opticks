@@ -63,12 +63,10 @@ int main(int argc, char** argv)
     csg->dump();
 
 
-
-
      
     GMergedMesh* mm = csg->makeMergedMesh();
-
-
+    //assert(mm);
+    //mm->dump();
 
 
     return 0 ;

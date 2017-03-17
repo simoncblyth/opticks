@@ -1,41 +1,18 @@
 #pragma once
 
-
-/*
-
-          quad q1 ; 
-            q1.f = partBuffer[4*(partOffset+nodeIdx-1)+1];      // (nodeIdx-1) as 1-based
-            OpticksCSG_t operation = (OpticksCSG_t)q1.u.w ;
-
-OPTIXU_INLINE RT_HOSTDEVICE float getByIndex(const float4& v, int i)
-{
-  return ((float*)(&v))[i];
-}
-
-#define PART_TYPECODE( partBufferFloatPtr, partOffsetUInt, nodeIdx1UInt ) ( (partBuffer)[4*((partOffset)+(nodeIdx)-1) + TYPECODE_J] 
-
-static __device__
-float unsigned_as_float(unsigned u)
-{
-  union {
-    float f;
-    unsigned u;
-  } v1;
-
-  v1.u = u;
-  return v1.f;
-}
-
-
-
-*/
-
-
-
 enum { 
   PARAM_J  = 0, 
   PARAM_K  = 0 
 };       // q0.f.xyzw
+
+// only used for CSG operator nodes
+enum {
+    LEFT_J = 0,
+    LEFT_K = 3 
+};   // q0.u.w
+
+
+
 
 // (1,0) used for sizeZ in ZTubs // q1.u.x
 enum { 
@@ -48,10 +25,23 @@ enum {
    BOUNDARY_K = 2 
 };   // q1.u.z
 
+
+// only used for CSG operator nodes
+enum {
+    RIGHT_J = 1,
+    RIGHT_K = 3 
+};   // q1.u.w
+
+
+
+
+/*
 enum { 
    FLAGS_J    = 1, 
    FLAGS_K    = 3 
 };   // q1.u.w
+*/
+
 
 enum { 
     BBMIN_J     = 2, 
@@ -71,6 +61,9 @@ enum {
     NODEINDEX_J = 3, 
     NODEINDEX_K = 3 
 };  // q3.u.w 
+
+
+
 
 
 

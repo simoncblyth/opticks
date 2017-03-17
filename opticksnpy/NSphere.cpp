@@ -21,6 +21,54 @@ float nsphere::costheta(float z_)
    return (z_ - param.z)/param.w ;  
 }
 
+// signed distance function
+
+
+double nsdf::operator()(double,double,double) 
+{
+    return 0.f ; 
+} 
+
+/*
+float nsphere::operator()(float px, float py, float pz) 
+{
+    return sqrt((px-param.x)*(px-param.x) + (py-param.y)*(py-param.y) + (pz-param.z)*(pz-param.z)) - param.w  ;
+} 
+*/
+
+double nsphere::operator()(double px, double py, double pz) 
+{
+    return sqrt((px-param.x)*(px-param.x) + (py-param.y)*(py-param.y) + (pz-param.z)*(pz-param.z)) - param.w  ;
+} 
+
+double nunion::operator()(double px, double py, double pz) 
+{
+    assert( left && right );
+    double l = (*left)(px, py, pz) ;
+    double r = (*right)(px, py, pz) ;
+    return fmin(l, r);
+}
+
+double nintersection::operator()(double px, double py, double pz) 
+{
+    assert( left && right );
+    double l = (*left)(px, py, pz) ;
+    double r = (*right)(px, py, pz) ;
+    return fmax( l, r);
+}
+
+double ndifference::operator()(double px, double py, double pz) 
+{
+    assert( left && right );
+    double l = (*left)(px, py, pz) ;
+    double r = (*right)(px, py, pz) ;
+    return fmax( l, -r);    // difference is intersection with complement, complement negates signed distance function
+}
+
+
+
+
+
 
 ndisc nsphere::intersect(nsphere& a, nsphere& b)
 {

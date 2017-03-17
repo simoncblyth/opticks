@@ -66,13 +66,27 @@ G4VSolid* CMaker::makeBox(const glm::vec4& param)
     return solid ; 
 }
 
-G4VSolid* CMaker::makeSolid(char shapecode, const glm::vec4& param)
+//G4VSolid* CMaker::makeSolid(char shapecode, const glm::vec4& param)
+G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
 {
     G4VSolid* solid = NULL ; 
-    switch(shapecode)
+    switch(type)
     {
-        case 'B':solid = makeBox(param);break;
-        case 'S':solid = makeSphere(param);break;
+        case CSG_BOX:   solid = makeBox(param);break;
+        case CSG_SPHERE:solid = makeSphere(param);break;
+        case CSG_UNION:
+        case CSG_INTERSECTION:
+        case CSG_DIFFERENCE:
+        case CSG_ZSPHERE:
+        case CSG_ZLENS:
+        case CSG_PMT:
+        case CSG_PRISM:
+        case CSG_TUBS:
+        case CSG_PARTLIST:
+        case CSG_ZERO:
+        case CSG_UNDEFINED:
+                         solid = NULL ; break ; 
+
     }
     return solid ; 
 } 

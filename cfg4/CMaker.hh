@@ -3,6 +3,7 @@
 #include <glm/fwd.hpp>
 #include <string>
 
+#include "OpticksCSG.h"
 class GCSG ; 
 class G4VSolid;
 class Opticks ; 
@@ -35,7 +36,8 @@ class CFG4_API CMaker
     public:
         CMaker(Opticks* ok, int verbosity=0);
     public:
-        G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
+        //G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
+        G4VSolid* makeSolid(OpticksCSG_t type, const glm::vec4& param);
         G4VSolid* makeBox(const glm::vec4& param);
         G4VSolid* makeSphere(const glm::vec4& param);
     public:

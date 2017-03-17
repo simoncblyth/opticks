@@ -1,7 +1,6 @@
 #include "NPart.hpp"
 #include "PLOG.hh"
 
-
 float unsigned_as_float(unsigned u)
 {
   union {
@@ -25,8 +24,6 @@ unsigned float_as_unsigned(float f)
 }
 
 
-
-
 void test_p0()
 {
     npart p ; 
@@ -43,10 +40,6 @@ void test_p1()
     p.q2.i.w = -101 ; 
     p.dump("p1"); 
 }
-
-
-
-
 
 void test_NPART_TYPECODE()
 {
@@ -82,9 +75,40 @@ void test_NPART_TYPECODE()
 
     assert(tc0u == tc0u_check);
     assert(tc1u == tc1u_check);
+}
 
+
+void test_csgtree()
+{
+    npart* tree = new npart[3] ; 
+
+    npart* root = tree + 0  ;
+    npart* left = tree + 1 ;
+    npart* right = tree + 2 ;
+
+    left->zero();
+    left->setTypeCode(CSG_SPHERE);
+    left->setParam(0.f,0.f,50.f, 100.f) ;
+    left->dump("left");
+
+
+    right->zero();
+    right->setTypeCode(CSG_SPHERE);
+    right->setParam(0.f,0.f,-50.f, 100.f) ;
+    right->dump("right");
+
+
+    root->zero();
+    root->setTypeCode(CSG_UNION);
+    root->setLeft(1);     // 0-based array indices
+    root->setRight(2);
+    root->dump("right");
+
+
+    npart::traverse( tree, 3, 0 ); 
 
 }
+
 
 
 
@@ -94,8 +118,10 @@ int main(int argc, char** argv)
 
     test_p0();
     test_p1();
-
     test_NPART_TYPECODE();
+
+    test_csgtree();
+
   
     return 0 ; 
 }

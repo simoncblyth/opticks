@@ -43,14 +43,22 @@ bool GMaker::IsBooleanShape(char shapecode)
 */
 
 
-GSolid* GMaker::make(unsigned int /*index*/, char csgChar, glm::vec4& param, const char* spec )
+GSolid* GMaker::make(unsigned int index, char csgChar, glm::vec4& param, const char* spec )
+{
+    LOG(warning) << "GMaker::make OLD FORM IN USE csgChar " << csgChar ;  
+    OpticksCSG_t type = CSGFlag(csgChar); 
+    return GMaker::make( index, type, param, spec );
+}
+
+
+GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
 
-     GSolid* solid = NULL ; 
+    // for CSG triangulation need to be given the tree.. 
 
-     OpticksCSG_t csgFlag = CSGFlag(csgChar); 
-     switch(csgFlag)
+     GSolid* solid = NULL ; 
+     switch(type)
      {
          case CSG_BOX:          solid = makeBox(param); break;
          case CSG_PRISM:        solid = makePrism(param, spec); break;
@@ -69,13 +77,13 @@ GSolid* GMaker::make(unsigned int /*index*/, char csgChar, glm::vec4& param, con
                                 solid = NULL ; break ;
      }
      assert(solid);
-     solid->setCSGFlag( csgFlag );
+     solid->setCSGFlag( type );
 
      // TODO: most parts alread hooked up above, do this uniformly
      GParts* pts = solid->getParts();  
      if(pts == NULL)
      {
-         pts = GParts::make(csgFlag, param, spec);
+         pts = GParts::make(type, param, spec);
          solid->setParts(pts);
      }
      assert(pts);

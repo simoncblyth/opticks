@@ -7,31 +7,21 @@
 #include "NMarchingCubesNPY.hpp"
 #include "NTrianglesNPY.hpp"
 
-#include "NSphereSDF.hpp"
+#include "NSphere.hpp"
 
 
-template <typename T>
-NMarchingCubesNPY<T>::NMarchingCubesNPY()
+//template <typename T>
+//NMarchingCubesNPY<T>::NMarchingCubesNPY()
+NMarchingCubesNPY::NMarchingCubesNPY()
 {
 }
 
 
-/*
-
-template <typename T>
-NTrianglesNPY* NMarchingCubesNPY<T>::march(T sdf)
-{
-    double lower_[3] = {-100.,-100.,-100.} ;
-    double upper_[3] = { 100., 100., 100.} ;
-    int numx = 10 ; 
-    int numy = 10 ; 
-    int numz = 10 ; 
-
-*/
 
 
-template<typename T>
-NTrianglesNPY* NMarchingCubesNPY<T>::march(T sdf, const glm::uvec3& param, const glm::vec3& low, const glm::vec3& high )
+//template<typename T>
+//NTrianglesNPY* NMarchingCubesNPY<T>::march(T sdf, const glm::uvec3& param, const glm::vec3& low, const glm::vec3& high )
+NTrianglesNPY* NMarchingCubesNPY::march(SDFPtr sdf, const glm::uvec3& param, const glm::vec3& low, const glm::vec3& high )
 {
     double lower_[3] ;
     double upper_[3] ;
@@ -99,5 +89,14 @@ NTrianglesNPY* NMarchingCubesNPY<T>::march(T sdf, const glm::uvec3& param, const
 }
 
 
-template class NMarchingCubesNPY<NSphereSDF>;
+/*
+template class NMarchingCubesNPY<nsdf>;
+
+template class NMarchingCubesNPY<nsphere>;
+template class NMarchingCubesNPY<nunion>;
+template class NMarchingCubesNPY<nintersection>;
+template class NMarchingCubesNPY<ndifference>;
+*/
+
+
 

@@ -29,12 +29,80 @@ void test_intersect()
 }
 
 
+
+void test_sdf()
+{
+    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+
+    float x = 0.f ; 
+    float y = 0.f ; 
+    float z = 0.f ; 
+
+    for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
+        std::cout 
+             << " z " << std::setw(10) << z 
+             << " a " << std::setw(10) << std::fixed << std::setprecision(2) << a(x,y,z)
+             << std::endl 
+             ; 
+}
+
+
+void test_csgsdf()
+{
+    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+
+    nunion u ; 
+    u.left = &a  ;
+    u.right = &b ;
+
+    nintersection i ; 
+    i.left = &a  ;
+    i.right = &b ;
+
+    ndifference d1 ; 
+    d1.left = &a  ;
+    d1.right = &b ;
+
+    ndifference d2 ; 
+    d2.left = &b  ;
+    d2.right = &a ;
+
+    nunion u2 ; 
+    u2.left = &d1 ;
+    u2.right = &d2 ;
+
+
+    float x = 0.f ; 
+    float y = 0.f ; 
+    float z = 0.f ; 
+
+    for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
+        std::cout 
+             << " z  " << std::setw(10) << z 
+             << " a  " << std::setw(10) << std::fixed << std::setprecision(2) << a(x,y,z) 
+             << " b  " << std::setw(10) << std::fixed << std::setprecision(2) << b(x,y,z) 
+             << " u  " << std::setw(10) << std::fixed << std::setprecision(2) << u(x,y,z) 
+             << " i  " << std::setw(10) << std::fixed << std::setprecision(2) << i(x,y,z) 
+             << " d1 " << std::setw(10) << std::fixed << std::setprecision(2) << d1(x,y,z) 
+             << " d2 " << std::setw(10) << std::fixed << std::setprecision(2) << d2(x,y,z) 
+             << " u2 " << std::setw(10) << std::fixed << std::setprecision(2) << u2(x,y,z) 
+             << std::endl 
+             ; 
+
+}
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
     test_part();
     test_intersect();
+
+    test_sdf();
+    test_csgsdf();
 
     return 0 ; 
 }

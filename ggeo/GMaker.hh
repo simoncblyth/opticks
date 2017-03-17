@@ -23,7 +23,8 @@ class GGEO_API GMaker {
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
-       GSolid* make(unsigned int index, char nodecode, glm::vec4& param, const char* spec);
+       GSolid* make(unsigned int index, char nodecode, glm::vec4& param, const char* spec); // DONT USE THIS ONE IN NEW CODE
+       GSolid* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
    private:
        void init();    
        static GSolid* makePrism(glm::vec4& param, const char* spec);
