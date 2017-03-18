@@ -12,7 +12,6 @@
 
 
 #include "NMarchingCubesNPY.hpp"
-#include "NSphereSDF.hpp"
 
 
 #include "OpticksCSG.h"
@@ -390,15 +389,15 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
 GMesh* GMaker::makeMarchingCubesTest()
 {
-    NSphereSDF s(0.,0.,0.,100.) ;
+    nsphere s = make_nsphere(0.,0.,0.,100.) ;
 
     const glm::uvec3 param(10,10,10);
     const glm::vec3 low( -100.,-100.,-100.); 
     const glm::vec3 high( 100., 100., 100.); 
 
-    NMarchingCubesNPY<NSphereSDF> mcs;
+    NMarchingCubesNPY mc;
 
-    NTrianglesNPY* tris = mcs.march(s, param, low, high);
+    NTrianglesNPY* tris = mc.march(s, param, low, high);
 
     unsigned meshindex = 0 ; 
 

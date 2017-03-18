@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
      
     GMergedMesh* mm = csg->makeMergedMesh();
-    //assert(mm);
+    assert(mm);
     //mm->dump();
 
 

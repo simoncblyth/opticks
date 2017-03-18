@@ -480,13 +480,20 @@ tboolean-csg-triplet()
 }
 
 
+
+
+
 tboolean-csg-triplet-new()
 { 
+    local csgpath=$($FUNCNAME- | python)
     local test_config=( 
                        mode=CsgInBox
-                       csgpath=$($FUNCNAME- | python)
+                       csgpath=$csgpath
                      ) 
     echo "$(join _ ${test_config[@]})" 
+    #np.py $csgpath/0.npy
+    #np.py $csgpath/1.npy
+    #NCSGTest $csgpath
 }
 
 tboolean-csg-triplet-new-()
@@ -591,12 +598,13 @@ tboolean-testconfig()
     #tboolean-box-sphere union
     #tboolean-box-sphere difference
 
-    tboolean-csg-two-box-minus-sphere-interlocked
+    #tboolean-csg-two-box-minus-sphere-interlocked
     #tboolean-csg-four-box-minus-sphere
     #tboolean-csg-shells2
     #tboolean-csg-shells3
     #tboolean-csg-shells3-alt
     #tboolean-csg-triplet
+     tboolean-csg-triplet-new
     #tboolean-csg
 
     #tboolean-box

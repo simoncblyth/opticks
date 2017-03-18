@@ -8,6 +8,7 @@
 #include "OpticksCSG.h"
 #include "NPart.h"
 #include "NSphere.hpp"
+#include "NBox.hpp"
 #include "NNode.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -30,14 +31,11 @@ NCSG::NCSG(const char* path)
 {
 }
 
-
-
-
-
 void NCSG::setBoundary(const char* boundary)
 {
     m_boundary = boundary ? strdup(boundary) : NULL ; 
 }
+
 void NCSG::load()
 {
     m_data = NPY<float>::load(m_path);
@@ -47,19 +45,6 @@ void NCSG::load()
     int h = MAX_HEIGHT ; 
     while(h--) if(TREE_NODES(h) == m_num_nodes) m_height = h ; 
     assert(m_height >= 0);
-}
-
-
-
-void NCSG::import()
-{
-    assert(m_data);
-    LOG(info) << "NCSG::import"
-              << " num_nodes " << m_num_nodes
-              << " height " << m_height 
-              ;
-
-    m_root = import_r(0) ; 
 }
 
 unsigned NCSG::getTypeCode(unsigned idx)
@@ -73,45 +58,86 @@ nvec4 NCSG::getQuad(unsigned idx, unsigned j)
     return qj ;
 }
 
+void NCSG::import()
+{
+    assert(m_data);
+    LOG(info) << "NCSG::import"
+              << " num_nodes " << m_num_nodes
+              << " height " << m_height 
+              ;
+
+    m_root = import_r(0) ; 
+}
+
 nnode* NCSG::import_r(unsigned idx)
 {
-    nnode* node = NULL ;    
-    if(idx >= m_num_nodes) return node ; 
+    if(idx >= m_num_nodes) return NULL ; 
         
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     LOG(info) << "NCSG::import_r " << idx << " " << CSGName( typecode ) ; 
 
-    unsigned left = idx*2+1 ; 
-    unsigned right = idx*2+2 ; 
+    unsigned leftIdx = idx*2+1 ; 
+    unsigned rightIdx = idx*2+2 ; 
 
     nvec4 param = getQuad(idx, 0);
 
+    LOG(info) << "NCSG::import_r " 
+              << " idx " << idx 
+              << " param.x " << param.x
+              << " param.y " << param.y
+              << " param.z " << param.z
+              << " param.w " << param.w
+              ;
+
+    nnode* node = NULL ;   
+ 
     if(typecode == CSG_UNION)
     {
         node = new nunion ; 
-        ((nunion*)node)->left  = import_r(left);
-        ((nunion*)node)->right = import_r(right);
+        node->type = typecode ; 
+        node->left  = import_r(leftIdx);
+        node->right = import_r(rightIdx);
     }
     else if(typecode == CSG_INTERSECTION)
     {
         node = new nintersection ; 
-        ((nintersection*)node)->left  = import_r(left);
-        ((nintersection*)node)->right = import_r(right);
+        node->type = typecode ; 
+        node->left  = import_r(leftIdx);
+        node->right = import_r(rightIdx);
     }
     else if(typecode == CSG_DIFFERENCE)
     {
         node = new ndifference ; 
-        ((ndifference*)node)->left  = import_r(left);
-        ((ndifference*)node)->right = import_r(right);
+        node->type = typecode ; 
+        node->left  = import_r(leftIdx);
+        node->right = import_r(rightIdx);
     }
     else if(typecode == CSG_SPHERE)
     {
         node = new nsphere ; 
+        node->type = typecode ; 
+        node->left = NULL ; 
+        node->right = NULL ; 
         ((nsphere*)node)->param = param ;   
+    }
+    else if(typecode == CSG_BOX)
+    {
+        node = new nbox ; 
+        node->type = typecode ; 
+        node->left = NULL ; 
+        node->right = NULL ; 
+        ((nbox*)node)->param = param ;   
     }
     return node ; 
 } 
 
+
+void NCSG::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+    if(!m_root) return ;
+    m_root->dump("NCSG::dump (root)");
+}
 
 std::string NCSG::desc()
 {
@@ -124,7 +150,6 @@ std::string NCSG::desc()
        ;
     return ss.str();  
 }
-
 
 int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 {
@@ -153,7 +178,7 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 
         trees.push_back(tree);  
     }
-
     return 0 ; 
 }
+
 

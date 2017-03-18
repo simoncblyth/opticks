@@ -11,6 +11,13 @@
 
 #include "OpticksCSG.h"
 
+
+void nsphere::dump(const char* )
+{
+    param.dump("nsphere");
+}
+
+
 float nsphere::radius(){ return param.w ; }
 float nsphere::x(){      return param.x ; }
 float nsphere::y(){      return param.y ; }
@@ -23,40 +30,10 @@ float nsphere::costheta(float z_)
 
 // signed distance function
 
-double nnode::operator()(double,double,double) 
-{
-    return 0.f ; 
-} 
-
 double nsphere::operator()(double px, double py, double pz) 
 {
     return sqrt((px-param.x)*(px-param.x) + (py-param.y)*(py-param.y) + (pz-param.z)*(pz-param.z)) - param.w  ;
 } 
-
-double nunion::operator()(double px, double py, double pz) 
-{
-    assert( left && right );
-    double l = (*left)(px, py, pz) ;
-    double r = (*right)(px, py, pz) ;
-    return fmin(l, r);
-}
-
-double nintersection::operator()(double px, double py, double pz) 
-{
-    assert( left && right );
-    double l = (*left)(px, py, pz) ;
-    double r = (*right)(px, py, pz) ;
-    return fmax( l, r);
-}
-
-double ndifference::operator()(double px, double py, double pz) 
-{
-    assert( left && right );
-    double l = (*left)(px, py, pz) ;
-    double r = (*right)(px, py, pz) ;
-    return fmax( l, -r);    // difference is intersection with complement, complement negates signed distance function
-}
-
 
 
 
@@ -93,12 +70,6 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     ndisc  disc = make_ndisc(plane, y) ;
 
     return disc ;      // return to original frame
-}
-
-
-void nsphere::dump(const char* msg)
-{
-    param.dump(msg);
 }
 
 

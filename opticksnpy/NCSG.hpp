@@ -14,6 +14,7 @@ cf dev/csg/csg.py
 
 **/
 
+struct nvec4 ; 
 struct nnode ; 
 
 class NPY_API NCSG {
@@ -23,6 +24,7 @@ class NPY_API NCSG {
         static int Deserialize(const char* base,  std::vector<NCSG*>& trees);
     public:
         NCSG(const char* path);
+        void dump(const char* msg="NCSG::dump");
         void setBoundary(const char* boundary);
 
         void load();

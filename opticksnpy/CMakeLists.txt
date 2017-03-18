@@ -91,6 +91,8 @@ set(SOURCES
 
     NGunConfig.cpp
 
+    NNode.cpp
+    NBox.cpp
     NQuad.cpp
     NSphere.cpp
     NPlane.cpp
@@ -181,8 +183,9 @@ NSensorList.hpp
 NSlice.hpp
 NSequence.hpp
 NSphere.hpp
-NNode.hpp
 NPlane.hpp
+NNode.hpp
+NBox.hpp
 NQuad.hpp
 NPart.hpp
 NPrism.hpp

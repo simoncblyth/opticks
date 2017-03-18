@@ -36,6 +36,7 @@ class GGEO_API GGeoTest {
     private:
        GMergedMesh* create();
     private:
+       GMergedMesh* load(const char* csgpath);
        GMergedMesh* createPmtInBox();
        GMergedMesh* createBoxInBox();
        GMergedMesh* createCsgInBox();

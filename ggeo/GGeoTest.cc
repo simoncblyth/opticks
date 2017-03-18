@@ -8,6 +8,7 @@
 
 // npy-
 #include "NSlice.hpp"
+#include "NCSG.hpp"
 #include "GLMFormat.hpp"
 
 // opticks-
@@ -75,10 +76,8 @@ void GGeoTest::dump(const char* msg)
 
 void GGeoTest::modifyGeometry()
 {
-    unsigned int nelem = m_config->getNumElements();
-    assert(nelem > 0);
-
-    bool analytic = m_config->getAnalytic();
+    const char* csgpath = m_config->getCsgPath();
+    bool analytic = csgpath == NULL ? m_config->getAnalytic() : true  ; 
 
     GMergedMesh* tmm = create();
     char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
@@ -103,12 +102,14 @@ GMergedMesh* GGeoTest::create()
     const char* csgpath = m_config->getCsgPath();
     GMergedMesh* tmm(NULL);
 
-    if(strlen(csgpath) > 0)
+    if(csgpath != NULL)
     {
         tmm = load(csgpath);
     }
     else
     {
+        unsigned int nelem = m_config->getNumElements();
+        assert(nelem > 0);
         const char* mode = m_config->getMode();
         if(     strcmp(mode, "PmtInBox") == 0) tmm = createPmtInBox(); 
         else if(strcmp(mode, "BoxInBox") == 0) tmm = createBoxInBox(); 
@@ -246,6 +247,16 @@ GMergedMesh* GGeoTest::load(const char* csgpath)
 {
     LOG(info) << "GGeoTest::load " << csgpath ; 
 
+    std::vector<NCSG*> trees ;
+    int rc = NCSG::Deserialize( csgpath, trees );
+    assert(rc == 0);
+
+    LOG(info) << "GGeoTest::load " << csgpath << " got " << trees.size() << " trees " ; 
+
+    // TODO:create the GSolids and meshes from the NCSG using marching cubes 
+    //      perhaps within npy-
+    //
+
     GMergedMesh* triangulated = NULL ; 
     return triangulated ; 
 }
@@ -260,8 +271,6 @@ GMergedMesh* GGeoTest::createCsgInBox()
     //    The first look (in class GCSG) used 
     //    for G4/CPU cfg4 CMaker is unrelated, currently.
     //
-
-
 
     std::vector<GSolid*> solids ; 
     unsigned int n = m_config->getNumElements();
@@ -315,6 +324,7 @@ GMergedMesh* GGeoTest::createCsgInBox()
         assert(type != CSG_UNDEFINED);
 
         GSolid* solid = m_maker->make(i, type, param, spec );   
+       // this is a placeholder box solid for booleans
 
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);

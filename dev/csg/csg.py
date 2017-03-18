@@ -146,7 +146,11 @@ class CSG(CSG_):
 
     def asarray(self):
         arr = np.zeros( (self.NJ, self.NK), dtype=np.float32 )
+        if self.param is not None:   # avoid gibberish in buffer
+            arr[Q0] = self.param
+        pass
         arr.view(np.uint32)[Q2,W] = self.typ
+
         return arr
 
     @classmethod
