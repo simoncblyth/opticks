@@ -463,7 +463,6 @@ tboolean-csg-shells3-alt()
 tboolean-csg-triplet()
 {
     local material=$(tboolean-material)
-
     local test_config=(
                       mode=CsgInBox
                       name=$FUNCNAME
@@ -481,6 +480,32 @@ tboolean-csg-triplet()
 }
 
 
+tboolean-csg-triplet-new()
+{ 
+    local test_config=( 
+                       mode=CsgInBox
+                       csgpath=$($FUNCNAME- | python)
+                     ) 
+    echo "$(join _ ${test_config[@]})" 
+}
+
+tboolean-csg-triplet-new-()
+{
+    local material=$(tboolean-material)
+    local base=$TMP/$FUNCNAME 
+    cat << EOP 
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
+   
+s = CSG("sphere", param=[0,0,0,200])
+b = CSG("box", param=[0,0,0,150])
+sib = CSG("intersection", left=s, right=b, boundary="Vacuum///$material")
+
+CSG.Serialize([container, sib], "$base" )
+
+EOP
+}
 
 
 

@@ -62,6 +62,7 @@ NLoadCheck.cc
 DummyPhotonsNPYTest.cc
 
 NMarchingCubesNPYTest.cc
+NCSGTest.cc
 
 )
 

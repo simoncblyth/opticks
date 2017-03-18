@@ -2,16 +2,18 @@
 #include <limits>
 #include <algorithm>
 
-#include "BRAP_LOG.hh"
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "GLMFormat.hpp"
 
 #include "NMarchingCubesNPY.hpp"
 #include "NTrianglesNPY.hpp"
-#include "PLOG.hh"
-
 #include "NSphere.hpp"
+
+#include "PLOG.hh"
+#include "BRAP_LOG.hh"
+#include "NPY_LOG.hh"
+
 
 
 
@@ -70,13 +72,9 @@ void test_sphere()
     const glm::vec3 low( -100.,-100.,-100.); 
     const glm::vec3 high( 100., 100., 100.); 
 
-    //NMarchingCubesNPY<nsdf> mc;
-    //NMarchingCubesNPY<nsphere> mc;
     NMarchingCubesNPY mc;
-
     
-
-    NTrianglesNPY* tris = mc.march( nsphere::operator() , param, low, high);
+    NTrianglesNPY* tris = mc.march( a, param, low, high);
     assert(tris);
 
     tris->getBuffer()->dump("test_sphere");
@@ -96,25 +94,74 @@ void test_union()
     const glm::vec3 low( -150.,-150.,-150.); 
     const glm::vec3 high( 150., 150., 150.); 
 
-    //NMarchingCubesNPY<nsdf> mc;
-    NMarchingCubesNPY<nunion> mc;
+    NMarchingCubesNPY mc;
+
     NTrianglesNPY* tris = mc.march(u, param, low, high);
     assert(tris);
 
     tris->getBuffer()->dump("test_union");
 }
 
+void test_intersection()
+{
+    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+
+    nintersection i ; 
+    i.left = &a  ;
+    i.right = &b ;
+
+    const glm::uvec3 param(10,10,10);
+    const glm::vec3 low( -150.,-150.,-150.); 
+    const glm::vec3 high( 150., 150., 150.); 
+
+    NMarchingCubesNPY mc;
+
+    NTrianglesNPY* tris = mc.march(i, param, low, high);
+    assert(tris);
+
+    tris->getBuffer()->dump("test_intersection");
+}
 
 
+void test_difference()
+{
+    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+
+    ndifference d1 ; 
+    d1.left = &a  ;
+    d1.right = &b ;
+
+    ndifference d2 ; 
+    d2.left = &b  ;
+    d2.right = &a ;
+
+    const glm::uvec3 param(10,10,10);
+    const glm::vec3 low( -150.,-150.,-150.); 
+    const glm::vec3 high( 150., 150., 150.); 
+
+    NMarchingCubesNPY mc;
+
+    NTrianglesNPY* tris1 = mc.march(d1, param, low, high);
+    assert(tris1);
+    tris1->getBuffer()->dump("test_difference d1");
+
+    NTrianglesNPY* tris2 = mc.march(d2, param, low, high);
+    assert(tris2);
+    tris2->getBuffer()->dump("test_difference d2");
+}
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+    NPY_LOG__ ; 
 
     test_csgsdf();
     test_sphere();
     test_union();
-
+    test_intersection();
+    test_difference();
 
     return 0 ; 
 }

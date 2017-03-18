@@ -97,15 +97,25 @@ void GGeoTest::modifyGeometry()
 
 GMergedMesh* GGeoTest::create()
 {
-    const char* mode = m_config->getMode();
-    GMergedMesh* tmm(NULL);
- 
-    if(     strcmp(mode, "PmtInBox") == 0) tmm = createPmtInBox(); 
-    else if(strcmp(mode, "BoxInBox") == 0) tmm = createBoxInBox(); 
-    else if(strcmp(mode, "CsgInBox") == 0) tmm = createCsgInBox(); 
-    else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ; 
-    assert(tmm);
+    //TODO: unify all these modes into CSG 
+    //      whilst still supporting the old partlist approach 
 
+    const char* csgpath = m_config->getCsgPath();
+    GMergedMesh* tmm(NULL);
+
+    if(strlen(csgpath) > 0)
+    {
+        tmm = load(csgpath);
+    }
+    else
+    {
+        const char* mode = m_config->getMode();
+        if(     strcmp(mode, "PmtInBox") == 0) tmm = createPmtInBox(); 
+        else if(strcmp(mode, "BoxInBox") == 0) tmm = createBoxInBox(); 
+        else if(strcmp(mode, "CsgInBox") == 0) tmm = createCsgInBox(); 
+        else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ; 
+    }
+    assert(tmm);
     return tmm ; 
 }
 
@@ -231,6 +241,17 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 
 
+
+GMergedMesh* GGeoTest::load(const char* csgpath)
+{
+    LOG(info) << "GGeoTest::load " << csgpath ; 
+
+    GMergedMesh* triangulated = NULL ; 
+    return triangulated ; 
+}
+
+
+
 GMergedMesh* GGeoTest::createCsgInBox()
 {
     // NB this is the second look at CSG with a view 
@@ -240,9 +261,10 @@ GMergedMesh* GGeoTest::createCsgInBox()
     //    for G4/CPU cfg4 CMaker is unrelated, currently.
     //
 
+
+
     std::vector<GSolid*> solids ; 
     unsigned int n = m_config->getNumElements();
-
     unsigned numPrim = m_config->getNumOffsets();
     LOG(info) << "GGeoTest::createCsgInBox" 
               << " nodes " << n 

@@ -12,6 +12,7 @@ class NPY_API NTxt {
        typedef std::vector<std::string> VS_t ; 
    public:
        NTxt(const char* path); 
+       void dump(const char* msg="NTxt::dump");
        void read();
        const char* getLine(unsigned int num);
        unsigned int getIndex(const char* line); // index of line or UINT_MAX if not found

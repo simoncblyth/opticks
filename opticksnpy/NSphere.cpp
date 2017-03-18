@@ -23,18 +23,10 @@ float nsphere::costheta(float z_)
 
 // signed distance function
 
-
-double nsdf::operator()(double,double,double) 
+double nnode::operator()(double,double,double) 
 {
     return 0.f ; 
 } 
-
-/*
-float nsphere::operator()(float px, float py, float pz) 
-{
-    return sqrt((px-param.x)*(px-param.x) + (py-param.y)*(py-param.y) + (pz-param.z)*(pz-param.z)) - param.w  ;
-} 
-*/
 
 double nsphere::operator()(double px, double py, double pz) 
 {

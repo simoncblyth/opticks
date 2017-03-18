@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NQuad.hpp"
+#include "NNode.hpp"
 
 struct nplane ; 
 struct ndisc ; 
@@ -8,31 +9,7 @@ struct npart ;
 
 #include "NPY_API_EXPORT.hh"
 
-
-struct NPY_API nsdf {
-   virtual double operator()(double px, double py, double pz) ;
-};
-
-struct NPY_API nunion : nsdf {
-    double operator()(double px, double py, double pz) ;
-    nsdf* left ; 
-    nsdf* right ; 
-};
-struct NPY_API nintersection : nsdf {
-    double operator()(double px, double py, double pz);
-    nsdf* left ; 
-    nsdf* right ; 
-};
-struct NPY_API ndifference : nsdf {
-    double operator()(double px, double py, double pz);
-    nsdf* left ; 
-    nsdf* right ; 
-};
-
-
-
-
-struct NPY_API nsphere : nsdf {
+struct NPY_API nsphere : nnode {
 
     // NO CTOR
 
@@ -43,8 +20,6 @@ struct NPY_API nsphere : nsdf {
     float costheta(float z);
 
     double operator()(double px, double py, double pz) ;
-
-
  
     npart part();
     static ndisc intersect(nsphere& a, nsphere& b);

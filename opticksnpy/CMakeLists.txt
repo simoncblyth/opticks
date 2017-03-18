@@ -123,6 +123,8 @@ set(SOURCES
 
     PyMCubes/marchingcubes.cpp
     NMarchingCubesNPY.cpp
+
+    NCSG.cpp
 )
 
 set(REST_SOURCES
@@ -179,6 +181,7 @@ NSensorList.hpp
 NSlice.hpp
 NSequence.hpp
 NSphere.hpp
+NNode.hpp
 NPlane.hpp
 NQuad.hpp
 NPart.hpp
@@ -198,6 +201,7 @@ Parameters.hpp
 
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
+NCSG.hpp
 
 )
 

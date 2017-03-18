@@ -28,6 +28,14 @@ unsigned int  NTxt::getNumLines()
    return m_lines.size() ; 
 }
 
+void NTxt::dump(const char* msg)
+{
+    unsigned n = getNumLines() ;
+    LOG(info) << msg << " NumLines " << n ; 
+    for(unsigned i=0 ; i < n ; i++) std::cout << getLine(i) << std::endl ; 
+}
+
+
 unsigned int NTxt::getIndex(const char* line)
 {
    std::string s(line);
