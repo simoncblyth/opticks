@@ -11,6 +11,7 @@ class Opticks ;
 #include "OpticksCSG.h"
 
 struct gbbox ; 
+struct nnode ; 
 
 class GGeo ; 
 class GGeoLib ; 
@@ -33,7 +34,7 @@ class GGEO_API GMaker {
        static GSolid* makeZSphereIntersect(glm::vec4& param, const char* spec);
        static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
    public:
-       static GMesh* makeMarchingCubesTest();
+       static GMesh* makeMarchingCubesMesh(nnode* node, unsigned meshindex=0u);
    private:
        static GSolid* makeBox(gbbox& bbox);
    private:

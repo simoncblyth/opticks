@@ -385,24 +385,17 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 }
 
 
-
-
-GMesh* GMaker::makeMarchingCubesTest()
+GMesh* GMaker::makeMarchingCubesMesh(nnode* node, unsigned meshindex)
 {
-    nsphere s = make_nsphere(0.,0.,0.,100.) ;
+    nuvec3 param = {10u, 10u, 10u } ;
 
-    const glm::uvec3 param(10,10,10);
-    const glm::vec3 low( -100.,-100.,-100.); 
-    const glm::vec3 high( 100., 100., 100.); 
+    NMarchingCubesNPY mcu(param) ;
 
-    NMarchingCubesNPY mc;
-
-    NTrianglesNPY* tris = mc.march(s, param, low, high);
-
-    unsigned meshindex = 0 ; 
+    NTrianglesNPY* tris = mc(node);
 
     GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), meshindex);
-    mesh->save("$TMP", "GMaker_makeMarchingCubesTest" );
+
+    mesh->save("$TMP", "GMaker_makeMarchingCubesMesh" );
 
     return mesh ; 
 }

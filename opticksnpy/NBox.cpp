@@ -1,4 +1,5 @@
 
+#include "NBBox.hpp"
 #include "NBox.hpp"
 #include "NPart.hpp"
 #include "NPlane.hpp"
@@ -22,13 +23,18 @@ void nbox::dump(const char*)
     param.dump("nbox");
 }
 
+nbbox nbox::bbox()
+{
+    nbbox bb ;
+    float s  = param.w ; 
+    bb.min = make_nvec3( param.x - s, param.y - s, param.z - s );
+    bb.max = make_nvec3( param.x + s, param.y + s, param.z + s );
+    return bb ; 
+}
+
 npart nbox::part()
 {
-    float s  = param.w ; 
-
-    nbbox bb ;
-    bb.min = make_nvec4( param.x - s, param.y - s, param.z - s, 0.f );
-    bb.max = make_nvec4( param.x + s, param.y + s, param.z + s, 0.f );
+    nbbox bb = bbox();
 
     npart p ; 
     p.zero();            

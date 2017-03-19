@@ -2,6 +2,7 @@
 // sysrap-
 
 #include "NSphere.hpp"
+#include "NBBox.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
 
@@ -36,7 +37,13 @@ double nsphere::operator()(double px, double py, double pz)
 } 
 
 
-
+nbbox nsphere::bbox()
+{
+    nbbox bb = make_nbbox();
+    bb.min = make_nvec3(param.x - param.w, param.y - param.w, param.z - param.w);
+    bb.max = make_nvec3(param.x + param.w, param.y + param.w, param.z + param.w);
+    return bb ; 
+}
 
 
 ndisc nsphere::intersect(nsphere& a, nsphere& b)

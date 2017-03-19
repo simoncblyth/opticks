@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "NNode.hpp"
+#include "NBBox.hpp"
 
 
 double nnode::operator()(double,double,double) 
@@ -24,6 +25,21 @@ const char* nnode::csgname()
 {
    return CSGName(type);
 }
+
+
+nbbox nnode::bbox()
+{
+   // needs to be overridden for primitives
+    nbbox bb = make_nbbox() ; 
+    if(left && right)
+    {
+        bb.include( left->bbox() );
+        bb.include( right->bbox() );
+    }
+    return bb ; 
+}
+
+
 
 double nunion::operator()(double px, double py, double pz) 
 {

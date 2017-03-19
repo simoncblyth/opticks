@@ -3,31 +3,6 @@
 #include "NQuad.hpp"
 #include "NPY_API_EXPORT.hh"
 
-struct NPY_API nbbox {
-
-    // NO CTOR
-
-    void dump(const char* msg);
-
-    nvec4 min ; 
-    nvec4 max ; 
-};
-
-
-// "ctor" assuming rotational symmetry around z axis
-inline NPY_API nbbox make_nbbox(float zmin, float zmax, float ymin, float ymax)
-{
-    nbbox bb ; 
-    bb.min = make_nvec4( ymin, ymin, zmin, 0) ;
-    bb.max = make_nvec4( ymax, ymax, zmax, 0) ;
-    return bb ;
-}
-
-inline NPY_API nbbox make_nbbox()
-{
-    return make_nbbox(0,0,0,0) ;
-}
-
 
 
 struct NPY_API nplane {

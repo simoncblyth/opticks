@@ -26,11 +26,25 @@ struct NPY_API nuvec4 {
   // NO CTOR
   void dump(const char* msg);
 
-  unsigned int x ; 
-  unsigned int y ; 
-  unsigned int z ; 
-  unsigned int w ; 
+  unsigned x ; 
+  unsigned y ; 
+  unsigned z ; 
+  unsigned w ; 
 };
+
+
+struct NPY_API nuvec3 {
+
+  // NO CTOR
+  void dump(const char* msg);
+
+  unsigned x ; 
+  unsigned y ; 
+  unsigned z ; 
+};
+
+
+
 
 
 struct NPY_API nivec4 {
@@ -81,26 +95,58 @@ struct NPY_API nvec3 {
 
 
 
-inline NPY_API nuvec4 make_nuvec4(unsigned int x, unsigned int y, unsigned int z, unsigned int w ) 
+inline NPY_API nuvec4 make_nuvec4(unsigned x, unsigned y, unsigned z, unsigned w ) 
 {
    nuvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
 }
-
-
+inline NPY_API nuvec3 make_nuvec3(unsigned x, unsigned y, unsigned z) 
+{
+   nuvec3 t; t.x = x; t.y = y; t.z = z; return t;
+}
 inline NPY_API nivec4 make_nivec4(int x, int y, int z, int w )
 {
    nivec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
 }
 
-inline NPY_API nvec4 make_nvec4(float x, float y, float z, float w )
+
+
+
+inline NPY_API float nminf(const float a, const float b)
 {
-   nvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+    return a < b ? a : b ; 
 }
+inline NPY_API float nmaxf(const float a, const float b)
+{
+    return a > b ? a : b ; 
+}
+
 
 
 inline NPY_API nvec3 make_nvec3(float x, float y, float z )
 {
    nvec3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+inline NPY_API nvec3 nminf( const nvec3& a, const nvec3& b )
+{
+    return make_nvec3( nminf(a.x, b.x), nminf(a.y, b.y), nminf(a.z, b.z) );
+}
+inline NPY_API nvec3 nmaxf( const nvec3& a, const nvec3& b )
+{
+    return make_nvec3( nmaxf(a.x, b.x), nmaxf(a.y, b.y), nmaxf(a.z, b.z) );
+}
+
+
+inline NPY_API nvec4 make_nvec4(float x, float y, float z, float w )
+{
+   nvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+inline NPY_API nvec4 nminf( const nvec4& a, const nvec4& b )
+{
+    return make_nvec4( nminf(a.x, b.x), nminf(a.y, b.y), nminf(a.z, b.z), nminf(a.w, b.w) );
+}
+inline NPY_API nvec4 nmaxf( const nvec4& a, const nvec4& b )
+{
+    return make_nvec4( nmaxf(a.x, b.x), nmaxf(a.y, b.y), nmaxf(a.z, b.z), nmaxf(a.w, b.w) );
 }
 
 

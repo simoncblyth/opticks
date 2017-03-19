@@ -96,6 +96,7 @@ set(SOURCES
     NQuad.cpp
     NSphere.cpp
     NPlane.cpp
+    NBBox.cpp
     NPart.cpp
     NPrism.cpp
     NTriangle.cpp
@@ -184,6 +185,7 @@ NSlice.hpp
 NSequence.hpp
 NSphere.hpp
 NPlane.hpp
+NBBox.hpp
 NNode.hpp
 NBox.hpp
 NQuad.hpp

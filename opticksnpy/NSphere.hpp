@@ -6,6 +6,7 @@
 struct nplane ; 
 struct ndisc ; 
 struct npart ;
+struct nbbox ; 
 
 #include "NPY_API_EXPORT.hh"
 
@@ -20,7 +21,8 @@ struct NPY_API nsphere : nnode {
     float costheta(float z);
 
     double operator()(double px, double py, double pz) ;
- 
+    nbbox bbox();
+
     npart part();
     static ndisc intersect(nsphere& a, nsphere& b);
 
@@ -36,12 +38,12 @@ struct NPY_API nsphere : nnode {
 
 inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
 {
-    nsphere s ; s.param.x = x ; s.param.y = y ; s.param.z = z ; s.param.w = w ; return s ;
+    nsphere s ; s.type = CSG_SPHERE ; s.param.x = x ; s.param.y = y ; s.param.z = z ; s.param.w = w ; return s ;
 }
 
 inline NPY_API nsphere make_nsphere(const nvec4& p)
 {
-    nsphere s ; s.param.x = p.x ; s.param.y = p.y ; s.param.z = p.z ; s.param.w = p.w ; return s ;
+    nsphere s ; s.type = CSG_SPHERE ; s.param.x = p.x ; s.param.y = p.y ; s.param.z = p.z ; s.param.w = p.w ; return s ;
 }
 
 

@@ -1,4 +1,5 @@
 #include "NPart.hpp"
+#include "NBBox.hpp"
 #include "NPlane.hpp"
 
 #include <cstdio>

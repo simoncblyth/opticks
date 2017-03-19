@@ -31,6 +31,36 @@ NCSG::NCSG(const char* path)
 {
 }
 
+
+nnode* NCSG::getRoot()
+{
+    return m_root ; 
+}
+unsigned NCSG::getHeight()
+{
+    return m_height ; 
+}
+unsigned NCSG::getNumNodes()
+{
+    return m_num_nodes ; 
+}
+NPY<float>* NCSG::getData()
+{
+    return m_data ; 
+}
+const char* NCSG::getBoundary()
+{
+    return m_boundary ; 
+}
+const char* NCSG::getPath()
+{
+    return m_path ; 
+}
+
+
+
+
+
 void NCSG::setBoundary(const char* boundary)
 {
     m_boundary = boundary ? strdup(boundary) : NULL ; 

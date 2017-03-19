@@ -19,13 +19,6 @@ void ndisc::dump(const char* msg)
     plane.dump(dmsg);
 }
 
-void nbbox::dump(const char* msg)
-{
-    printf("%s\n", msg);
-    min.dump("bb min");
-    max.dump("bb max");
-}
-
 
 
 

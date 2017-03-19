@@ -1,6 +1,7 @@
 //  ggv --gmaker
 
 #include "NGLM.hpp"
+#include "NSphere.hpp"
 
 #include "Opticks.hh"
 
@@ -38,7 +39,9 @@ int main(int argc, char** argv)
 
     //Opticks ok(argc, argv);
 
-    GMesh* mesh = GMaker::makeMarchingCubesTest();
+    nsphere s = make_nsphere(0,0,0,100);
+
+    GMesh* mesh = GMaker::makeMarchingCubesMesh(s);
     mesh->dump();
 
 }

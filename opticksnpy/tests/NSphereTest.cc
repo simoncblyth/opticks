@@ -1,6 +1,7 @@
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
+#include "NBBox.hpp"
 
 #include "PLOG.hh"
 
@@ -47,39 +48,50 @@ void test_sdf()
 }
 
 
+
 void test_csgsdf()
 {
     nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
     nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
 
-    nunion u ; 
-    u.left = &a  ;
-    u.right = &b ;
+    nunion u = make_nunion( &a, &b );
+    nintersection i = make_nintersection( &a, &b ); 
+    ndifference d1 = make_ndifference( &a, &b ); 
+    ndifference d2 = make_ndifference( &b, &a ); 
+    nunion u2 = make_nunion( &d1, &d2 );
 
-    nintersection i ; 
-    i.left = &a  ;
-    i.right = &b ;
+    typedef std::vector<nnode*> VN ;
 
-    ndifference d1 ; 
-    d1.left = &a  ;
-    d1.right = &b ;
+    VN nodes ; 
+    nodes.push_back( (nnode*)&a );
+    nodes.push_back( (nnode*)&b );
+    nodes.push_back( (nnode*)&u );
+    nodes.push_back( (nnode*)&i );
+    nodes.push_back( (nnode*)&d1 );
+    nodes.push_back( (nnode*)&d2 );
+    nodes.push_back( (nnode*)&u2 );
 
-    ndifference d2 ; 
-    d2.left = &b  ;
-    d2.right = &a ;
+    for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
+    {
+        nnode* n = *it ; 
+        OpticksCSG_t type = n->type ; 
+        const char* name = n->csgname();
+        std::cout 
+                  << " type: " << std::setw(3) << type 
+                  << " name: " << ( name ? name : "-" ) 
+                  << " sdf(0,0,0): " << std::setw(10) << std::fixed << std::setprecision(2) << (*n)(0,0,0)
+                  << std::endl 
+                  ; 
 
-    nunion u2 ; 
-    u2.left = &d1 ;
-    u2.right = &d2 ;
-
+    }
 
     float x = 0.f ; 
     float y = 0.f ; 
     float z = 0.f ; 
 
     for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
-        std::cout 
-             << " z  " << std::setw(10) << z 
+    {
+        std::cout << " z  " << std::setw(10) << z 
              << " a  " << std::setw(10) << std::fixed << std::setprecision(2) << a(x,y,z) 
              << " b  " << std::setw(10) << std::fixed << std::setprecision(2) << b(x,y,z) 
              << " u  " << std::setw(10) << std::fixed << std::setprecision(2) << u(x,y,z) 
@@ -90,7 +102,47 @@ void test_csgsdf()
              << std::endl 
              ; 
 
+        std::cout << " z  " << std::setw(10) << z  ;
+        for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
+        {
+             nnode* n = *it ; 
+             const char* name = n->csgname();
+             printf(" %.3s %10.2f", ( name ? name : "-" ), (*n)(x,y,z) ); 
+        }
+        std::cout << std::endl ; 
+    }
 }
+
+
+void test_bbox()
+{
+    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    a.dump("sph");
+
+    nbbox bb = a.bbox();
+    bb.dump("bb");
+}
+
+void test_bbox_u()
+{
+    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+    nunion  u = make_nunion( &a, &b );
+
+    a.dump("(a) sph");
+    b.dump("(b) sph");
+    u.dump("(u) union(a,b)");
+
+    nbbox a_bb = a.bbox();
+    a_bb.dump("(a) bb");
+
+    nbbox b_bb = b.bbox();
+    b_bb.dump("(b) bb");
+
+    nbbox u_bb = u.bbox();
+    u_bb.dump("(u) bb");
+}
+
 
 
 
@@ -98,11 +150,16 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
+/*
     test_part();
     test_intersect();
 
     test_sdf();
     test_csgsdf();
+*/
+
+    test_bbox();
+    test_bbox_u();
 
     return 0 ; 
 }
