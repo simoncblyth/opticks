@@ -2,23 +2,61 @@
 
 #include "NPY.hpp"
 #include "NCSG.hpp"
+#include "NNode.hpp"
+#include "NSphere.hpp"
+
 
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
+
+
+
+void test_Deserialize(const char* base)
+{
+    std::vector<NCSG*> trees ;
+    NCSG::Deserialize( base, trees );
+    LOG(info) << "test_Deserialize " << base << " found trees : " << trees.size() ;
+    for(unsigned i=0 ; i < trees.size() ; i++) trees[i]->dump("NCSGTest dump");
+}
+
+
+void test_FromNode()
+{
+    typedef std::vector<nnode*> VN ;
+    VN nodes ; 
+    nsphere::Tests(nodes);
+
+    const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
+
+    for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
+    {
+        nnode* n = *it ; 
+        OpticksCSG_t type = n->type ; 
+        assert( type < CSG_UNDEFINED ) ;
+
+        const char* name = n->csgname();
+        assert( type > 0 && name != NULL );
+
+
+        NCSG* csg = NCSG::FromNode( n , spec );
+        LOG(info) 
+                << " node.name " << std::setw(20) << name 
+                << " csg.desc " << csg->desc()
+                ;
+
+    } 
+}
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ;  
 
-    const char* base = argc > 0 ? argv[1] : "$TMP/csg_py" ; 
-    LOG(info) << argv[0] << " NCSG::Deserialize directory " << base ;  
+    LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
 
-    std::vector<NCSG*> trees ;
-    NCSG::Deserialize( base, trees );
-
-    LOG(info) << "NCSG::Deserialize found trees : " << trees.size() ;
-    for(unsigned i=0 ; i < trees.size() ; i++) trees[i]->dump("NCSGTest dump");
+    //test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py") ; 
+    test_FromNode();
 
     return 0 ; 
 }

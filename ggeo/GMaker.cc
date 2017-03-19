@@ -9,10 +9,8 @@
 #include "NPlane.hpp"
 #include "NPrism.hpp"
 #include "NPart.hpp"
-
-
+#include "NCSG.hpp"
 #include "NMarchingCubesNPY.hpp"
-
 
 #include "OpticksCSG.h"
 
@@ -50,6 +48,7 @@ GSolid* GMaker::make(unsigned int index, char csgChar, glm::vec4& param, const c
 }
 
 
+
 GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
@@ -82,7 +81,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
      GParts* pts = solid->getParts();  
      if(pts == NULL)
      {
-         pts = GParts::make(type, param, spec);
+         pts = GParts::make(type, param, spec);  // (1,4,4) with typecode and bbox set 
          solid->setParts(pts);
      }
      assert(pts);
@@ -94,6 +93,49 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
 
      return solid ; 
 }
+
+GSolid* GMaker::makeFromCSG(NCSG* csg)
+{
+    nnode* root = csg->getRoot() ;
+    assert(root);
+
+    unsigned index = csg->getIndex();
+
+    nuvec3 param = {10u, 10u, 10u } ;
+
+    NMarchingCubesNPY mcu(param) ;
+
+    NTrianglesNPY* tris = mcu(root);
+
+    GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), index);
+
+    //mesh->save("$TMP", "GMaker_makeMarchingCubesMesh" );
+
+    glm::mat4 txf = tris->getTransform(); 
+    GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
+
+    GSolid* solid = new GSolid(index, transform, mesh, UINT_MAX, NULL );     
+
+
+    const char* spec = csg->getBoundary();
+
+    unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
+
+    solid->setBoundary(boundary);     // unlike ctor these create arrays
+
+    solid->setSensor( NULL );      
+
+    solid->setCSGFlag( root->type );
+  
+    GParts* pts = GParts::make( csg );
+
+    solid->setParts( pts );
+
+    // TODO: fix vagueness regards GMaker and GGeoTest responsibilities
+
+    return solid ; 
+}
+
 
 
 
@@ -385,20 +427,10 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 }
 
 
-GMesh* GMaker::makeMarchingCubesMesh(nnode* node, unsigned meshindex)
-{
-    nuvec3 param = {10u, 10u, 10u } ;
 
-    NMarchingCubesNPY mcu(param) ;
 
-    NTrianglesNPY* tris = mc(node);
 
-    GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), meshindex);
 
-    mesh->save("$TMP", "GMaker_makeMarchingCubesMesh" );
-
-    return mesh ; 
-}
 
 
 

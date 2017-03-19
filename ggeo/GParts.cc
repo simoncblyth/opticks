@@ -12,7 +12,9 @@
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NPart.hpp"
+#include "NCSG.hpp"
 #include "NQuad.hpp"
+#include "NNode.hpp"
 #include "GLMFormat.hpp"
 
 #include "GVector.hh"
@@ -77,26 +79,48 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
         bb.max.z = param.y*param.w ; 
     } 
 
-    NPY<float>* part = NPY<float>::make(1, NJ, NK );
-    part->zero();
+    NPY<float>* buf = NPY<float>::make(1, NJ, NK );
+    buf->zero();
 
     assert(BBMIN_K == 0 );
     assert(BBMAX_K == 0 );
 
     unsigned int i = 0u ; 
-    part->setQuad( i, PARAM_J, param.x, param.y, param.z, param.w );
-    part->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
-    part->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
+    buf->setQuad( i, PARAM_J, param.x, param.y, param.z, param.w );
+    buf->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
+    buf->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
 
-    GParts* pt = new GParts(part, spec) ;
-
+    GParts* pt = new GParts(buf, spec) ;
     pt->setTypeCode(0u, csgflag);
-    //pt->setFlags(0u, csgflag);
 
     return pt ; 
 } 
 
+GParts* GParts::make( NCSG* tree)
+{
+    const char* spec = tree->getBoundary();
+    NPY<float>* buf = tree->getBuffer();
+    nnode* root = tree->getRoot(); 
 
+    unsigned ni = buf->getShape(0);
+    unsigned nj = buf->getShape(1);
+    unsigned nk = buf->getShape(2);
+    assert( nj == NJ && nk == NK && ni > 0);
+
+    assert(root && root->type < CSG_UNDEFINED );
+
+    LOG(info) << "GParts::make NCSG "
+              << " path " << tree->getPath()
+              << " sh " << buf->getShapeString()
+              << " spec " << spec 
+              << " type " << root->csgname()
+              ; 
+
+    GParts* pts = new GParts(buf, spec) ;
+
+    //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
+    return pts ; 
+}
 
 GParts::GParts(GBndLib* bndlib) 
       :
@@ -375,8 +399,6 @@ void GParts::makePrimBuffer()
     for(unsigned int i=0; i < numParts ; i++)
     {
         unsigned int nodeIndex = getNodeIndex(i);
-        //unsigned int flg = getFlags(i);
-        //std::string msk = ShapeMask(flg);
         unsigned typ = getTypeCode(i);
         std::string  typName = CSGName((OpticksCSG_t)typ);
  
@@ -686,31 +708,10 @@ void GParts::setBoundary(unsigned int part, unsigned int boundary)
     setUInt(part, BOUNDARY_J, BOUNDARY_K, boundary);
 }
 
-
-/*
-unsigned int GParts::getFlags(unsigned int part)
-{
-    return getUInt(part, FLAGS_J, FLAGS_K);
-}
-void GParts::setFlags(unsigned int part, unsigned int flags)
-{
-    setUInt(part, FLAGS_J, FLAGS_K, flags);
-}
-void GParts::setFlagsAll(unsigned int flags)
-{
-    for(unsigned int i=0 ; i < getNumParts() ; i++) setFlags(i, flags);
-}
-*/
-
-
 void GParts::setBoundaryAll(unsigned int boundary)
 {
     for(unsigned int i=0 ; i < getNumParts() ; i++) setBoundary(i, boundary);
 }
-
-
-
-
 
 std::string GParts::getBoundaryName(unsigned int part)
 {
@@ -795,7 +796,6 @@ void GParts::dump(const char* msg)
        }   
        printf("\n");
     }   
-
 }
 
 

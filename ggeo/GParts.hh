@@ -10,10 +10,13 @@
 struct npart ; 
 struct NSlice ; 
 template <typename T> class NPY ;
+class NCSG ; 
 
 struct guint4 ; 
 struct gbbox ; 
 struct gfloat3 ; 
+
+
 
 class GItemList ; 
 class GBndLib ; 
@@ -52,6 +55,7 @@ class GGEO_API GParts {
     public:
         static GParts* make(const npart& pt, const char* spec);
         static GParts* make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
+        static GParts* make(NCSG* tree);
     public:
         static GParts* combine(std::vector<GParts*> subs);
     public:

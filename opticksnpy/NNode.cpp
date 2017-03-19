@@ -4,6 +4,8 @@
 #include <cmath>
 
 #include "NNode.hpp"
+#include "NQuad.hpp"
+#include "NSphere.hpp"
 #include "NBBox.hpp"
 
 
@@ -21,10 +23,28 @@ void nnode::dump(const char* msg)
     }
 }
 
+void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
+{
+    n.type = type ; 
+    n.left = left ; 
+    n.right = right ; 
+}
+
 const char* nnode::csgname()
 {
    return CSGName(type);
 }
+unsigned nnode::maxdepth()
+{
+    return _maxdepth(0);
+}
+unsigned nnode::_maxdepth(unsigned depth)  // recursive 
+{
+    return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;  
+}
+
+
+
 
 
 nbbox nnode::bbox()

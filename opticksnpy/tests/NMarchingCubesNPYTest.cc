@@ -172,11 +172,15 @@ void test_generic(NMarchingCubesNPY& mcu)
         NTrianglesNPY* tris = mcu(n);
         unsigned ntris = tris ? tris->getNumTriangles() : 0 ; 
 
+        unsigned mxd = n->maxdepth();
+
+
         std::cout 
                   << " type: " << std::setw(3) << type 
                   << " name: " << std::setw(15) << ( name ? name : "-" ) 
                   << " sdf(0,0,0): " << std::setw(10) << std::fixed << std::setprecision(2) << (*n)(0,0,0)
                   << " ntris " << ntris 
+                  << " maxdepth " << mxd 
                   << std::endl 
                   ; 
     }

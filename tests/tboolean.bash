@@ -488,6 +488,7 @@ tboolean-csg-triplet-new()
     local csgpath=$($FUNCNAME- | python)
     local test_config=( 
                        mode=CsgInBox
+                       analytic=1
                        csgpath=$csgpath
                      ) 
     echo "$(join _ ${test_config[@]})" 
@@ -603,8 +604,8 @@ tboolean-testconfig()
     #tboolean-csg-shells2
     #tboolean-csg-shells3
     #tboolean-csg-shells3-alt
-    #tboolean-csg-triplet
-     tboolean-csg-triplet-new
+     tboolean-csg-triplet
+    #tboolean-csg-triplet-new
     #tboolean-csg
 
     #tboolean-box

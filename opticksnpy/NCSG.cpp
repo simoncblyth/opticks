@@ -20,15 +20,22 @@
 
 const char* NCSG::FILENAME = "csg.txt" ; 
 
-NCSG::NCSG(const char* path) 
+NCSG::NCSG(const char* path, unsigned index) 
    :
    m_path(path ? strdup(path) : NULL),
+   m_index(index),
    m_boundary(NULL),
    m_data(NULL),
    m_num_nodes(0),
    m_height(-1),
    m_root(NULL)
 {
+}
+
+
+unsigned NCSG::NumNodes(unsigned height)
+{
+   return TREE_NODES(height);
 }
 
 
@@ -44,7 +51,7 @@ unsigned NCSG::getNumNodes()
 {
     return m_num_nodes ; 
 }
-NPY<float>* NCSG::getData()
+NPY<float>* NCSG::getBuffer()
 {
     return m_data ; 
 }
@@ -56,9 +63,10 @@ const char* NCSG::getPath()
 {
     return m_path ; 
 }
-
-
-
+unsigned NCSG::getIndex()
+{
+    return m_index ; 
+}
 
 
 void NCSG::setBoundary(const char* boundary)
@@ -70,6 +78,11 @@ void NCSG::load()
 {
     m_data = NPY<float>::load(m_path);
     m_num_nodes  = m_data->getShape(0) ;  
+
+    unsigned nj = m_data->getShape(1);
+    unsigned nk = m_data->getShape(2);
+    assert( nj == NJ );
+    assert( nk == NK );
 
     m_height = -1 ; 
     int h = MAX_HEIGHT ; 
@@ -174,7 +187,8 @@ std::string NCSG::desc()
     std::string sh = m_data ? m_data->getShapeString() : "" ;    
     std::stringstream ss ; 
     ss << "NCSG " 
-       << " path " << m_path 
+       << " index " << m_index
+       << " path " << ( m_path ? m_path : "NULL" ) 
        << " shape " << sh  
        << " boundary " << m_boundary 
        ;
@@ -189,7 +203,15 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 
     std::string txtpath = BFile::FormPath(base, FILENAME) ;
 
-    assert( BFile::ExistsFile(txtpath.c_str() )); 
+
+    bool exists = BFile::ExistsFile(txtpath.c_str() ); 
+
+    if(!exists) LOG(fatal) << "NCSG::Deserialize"
+                           << " file does not exist " 
+                           << txtpath 
+                           ;
+    assert(exists); 
+
 
     NTxt bnd(txtpath.c_str());
     bnd.read();
@@ -200,7 +222,7 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
     for(unsigned i=0 ; i < nbnd ; i++)
     {
         std::string path = BFile::FormPath(base, BStr::concat(NULL, i, ".npy"));  
-        NCSG* tree = new NCSG(path.c_str());
+        NCSG* tree = new NCSG(path.c_str(), i);
         tree->setBoundary( bnd.getLine(i) );
         tree->load();
         tree->import();
@@ -211,4 +233,24 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
     return 0 ; 
 }
 
+
+NCSG* NCSG::FromNode(nnode* root, const char* boundary)
+{
+    NCSG* tree = new NCSG(NULL, 0);
+    tree->setBoundary( boundary );
+    tree->importRoot(root);
+    return tree ; 
+}
+
+
+void NCSG::importRoot(nnode* root)
+{
+    m_root = root ; 
+    m_height = root->maxdepth();
+    m_num_nodes = NumNodes(m_height);
+    m_data = NPY<float>::make( m_num_nodes, NJ, NK);
+    m_data->zero();
+
+    // TODO: complete this, serializing the csg tree nodes into the buffer
+}
 

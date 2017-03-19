@@ -111,6 +111,22 @@ inline NPY_API nivec4 make_nivec4(int x, int y, int z, int w )
 
 
 
+inline NPY_API unsigned nminu(const unsigned a, const unsigned b)
+{
+    return a < b ? a : b ; 
+}
+inline NPY_API unsigned nmaxu(const unsigned a, const unsigned b)
+{
+    return a > b ? a : b ; 
+}
+inline NPY_API int nmini(const int a, const int b)
+{
+    return a < b ? a : b ; 
+}
+inline NPY_API int nmaxi(const int a, const int b)
+{
+    return a > b ? a : b ; 
+}
 inline NPY_API float nminf(const float a, const float b)
 {
     return a < b ? a : b ; 

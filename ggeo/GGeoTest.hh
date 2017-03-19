@@ -9,7 +9,7 @@ class GGeoLib ;
 class GBndLib ; 
 class GMaker ; 
 class GMergedMesh ; 
-
+class GSolid ; 
 
 /**
 
@@ -36,10 +36,13 @@ class GGEO_API GGeoTest {
     private:
        GMergedMesh* create();
     private:
-       GMergedMesh* load(const char* csgpath);
+       GMergedMesh* combineSolids( std::vector<GSolid*>& solids);
+
+       void loadCSG(const char* csgpath, std::vector<GSolid*>& solids );
        GMergedMesh* createPmtInBox();
-       GMergedMesh* createBoxInBox();
-       GMergedMesh* createCsgInBox();
+       void createBoxInBox(std::vector<GSolid*>& solids);
+       void createCsgInBox(std::vector<GSolid*>& solids);
+
        GMergedMesh* loadPmt();
     private:
        Opticks*         m_opticks ; 

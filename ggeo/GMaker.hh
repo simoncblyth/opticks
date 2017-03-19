@@ -10,6 +10,7 @@ class NTrianglesNPY ;
 class Opticks ; 
 #include "OpticksCSG.h"
 
+class NCSG ; 
 struct gbbox ; 
 struct nnode ; 
 
@@ -19,13 +20,27 @@ class GBndLib ;
 class GSolid ; 
 class GMesh ; 
 
+/**
+
+GMaker
+=======
+
+Principal instances
+
+* m_maker member of GGeoTest 
+
+
+**/
+
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GMaker {
+       friend class GMakerTest ; 
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
        GSolid* make(unsigned int index, char nodecode, glm::vec4& param, const char* spec); // DONT USE THIS ONE IN NEW CODE
        GSolid* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
+       GSolid* makeFromCSG(NCSG* csg);
    private:
        void init();    
        static GSolid* makePrism(glm::vec4& param, const char* spec);
@@ -33,9 +48,6 @@ class GGEO_API GMaker {
        static GSolid* makeZSphere(glm::vec4& param);
        static GSolid* makeZSphereIntersect(glm::vec4& param, const char* spec);
        static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
-   public:
-       static GMesh* makeMarchingCubesMesh(nnode* node, unsigned meshindex=0u);
-   private:
        static GSolid* makeBox(gbbox& bbox);
    private:
        static GSolid* makeSubdivSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");

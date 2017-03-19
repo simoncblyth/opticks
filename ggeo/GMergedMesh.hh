@@ -15,6 +15,7 @@ class GGeo ;
 class GNode ;
 class GSolid ; 
 class GParts ; 
+class GMergedMesh ; 
 
 #include "GMesh.hh"
 #include "GVector.hh"
@@ -28,8 +29,11 @@ public:
     static GMergedMesh* create(unsigned int index, GGeo* ggeo, GNode* base=NULL);
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids) ;
+    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids) ;
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid ) ;
+private:
+    static void collectParts( std::vector<GParts*>& analytic, const std::vector<GSolid*>& solids );
+    static void collectParts( std::vector<GParts*>& analytic, GMergedMesh* mm);
 public:
     //GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;

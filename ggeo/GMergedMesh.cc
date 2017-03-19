@@ -73,14 +73,6 @@ bool GMergedMesh::isInstanced()
 
 
 
-
-
-
-
-
-
-
-
 GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* solid)
 {
     std::vector<GSolid*> solids ; 
@@ -88,62 +80,32 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* s
     return combine(index, mm, solids );
 }
 
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vector<GSolid*>& solids)
+// count-allocate-merge
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids)
 {
-    unsigned int verbosity = mm ? mm->getVerbosity() : 0 ;     
+    unsigned numSolids = solids.size(); 
     LOG(info) << "GMergedMesh::combine"
               << " making new mesh "
               << " index " << index 
-              << " solids " << solids.size()
-              << " verbosity " << verbosity 
-               ; 
+              << " solids " << numSolids
+              ; 
 
     std::vector<GParts*> analytic ; 
+    collectParts( analytic, mm );
+    collectParts( analytic, solids );
+
     GMergedMesh* com = new GMergedMesh( index ); 
-    com->setVerbosity(verbosity);
+    com->setVerbosity(mm ? mm->getVerbosity() : 0 );
 
-    if(mm)
-    {
-        com->countMergedMesh(mm, true);
-        GParts* pts = mm->getParts();
-
-        if(!pts) LOG(warning) << "GMergedMesh::combine mm has no analytic GParts attached " ;
-        //assert(pts);
-
-        if(pts) analytic.push_back(pts);
-    }
-
-
-    unsigned numSolids = solids.size(); 
-
-    for(unsigned i=0 ; i < numSolids ; i++)
-    {
-        GSolid* solid = solids[i];
-        com->countSolid(solid, true);
-
-        GParts* pts = solid->getParts();
-        if(!pts) LOG(fatal) << "GMergedMesh::combine solid " << i << "/" << numSolids << " has no analytic GParts attached " ;
-        assert(pts);
-
-        if(pts) analytic.push_back(pts);
-    } 
+    if(mm) com->countMergedMesh(mm, true);
+    for(unsigned i=0 ; i < numSolids ; i++) com->countSolid(solids[i], true) ;
 
     com->allocate(); 
  
-    if(mm)
-    {
-        com->mergeMergedMesh(mm, true);
-    } 
-
-    for(unsigned i=0 ; i < numSolids ; i++)
-    {
-        GSolid* solid = solids[i];
-        com->mergeSolid(solid, true);
-    } 
+    if(mm) com->mergeMergedMesh(mm, true);
+    for(unsigned i=0 ; i < numSolids ; i++) com->mergeSolid(solids[i], true) ;
 
     com->updateBounds();
-
-
 
     unsigned int ncomp = numSolids + ( mm ? 1 : 0 ) ;
 
@@ -159,10 +121,32 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, std::vect
                      << " nanalytic " << analytic.size()
                      ;
     }
-
     return com ; 
 }
 
+
+
+void GMergedMesh::collectParts( std::vector<GParts*>& analytic, GMergedMesh* mm)
+{
+    if(!mm) return ;
+
+    GParts* pts = mm->getParts();
+    if(!pts) LOG(fatal) << "GMergedMesh::collectParts mm has no analytic GParts attached " ;
+    if(pts) analytic.push_back(pts);
+}
+
+void GMergedMesh::collectParts( std::vector<GParts*>& analytic, const std::vector<GSolid*>& solids )
+{
+    unsigned numSolids = solids.size(); 
+    for(unsigned i=0 ; i < numSolids ; i++)
+    {
+        GSolid* solid = solids[i];
+        GParts* pts = solid->getParts();
+        if(!pts) LOG(fatal) << "GMergedMesh::collectParts solid " << i << "/" << numSolids << " has no analytic GParts attached " ;
+        assert(pts);
+        if(pts) analytic.push_back(pts);
+    } 
+}
 
 
 GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
