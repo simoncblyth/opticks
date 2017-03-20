@@ -160,6 +160,7 @@ class GGEO_API GMesh : public GDrawable {
       friend class GMeshFixer  ;
       friend class GBBoxMesh ;
       friend class Texture ;
+      friend class Demo;
      // TODO: too many friends, suggests need to improve isolation
   public:
       static int g_instance_count ; 
@@ -429,7 +430,7 @@ class GGEO_API GMesh : public GDrawable {
        gfloat3* getTransformedNormals(GMatrixF& transform );
 
   public:
-      static gbbox   findBBox(gfloat3* vertices, unsigned int num_vertices);
+      static gbbox*  findBBox(gfloat3* vertices, unsigned int num_vertices);
       static gfloat4 findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices);
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);

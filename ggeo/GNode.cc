@@ -175,10 +175,10 @@ void GNode::Summary(const char* msg)
     printf("%s idx %u nchild %u \n", msg, m_index, getNumChildren());
 }
 
-void GNode::dump(const char* msg)
+void GNode::dump(const char* )
 {
-    LOG(info) << msg ; 
-    printf("%s idx %u nchild %u \n", msg, m_index, getNumChildren());
+    //LOG(info) << msg ; 
+    //printf("%s idx %u nchild %u \n", msg, m_index, getNumChildren());
 
     if(m_mesh)
     {

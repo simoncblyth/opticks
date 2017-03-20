@@ -131,9 +131,6 @@ void test_difference(NMarchingCubesNPY& mcu, bool dump)
 }
 
 
-
-
-
 void test_generic(NMarchingCubesNPY& mcu)
 {
     typedef std::vector<nnode*> VN ;
@@ -155,6 +152,7 @@ void test_generic(NMarchingCubesNPY& mcu)
 
         NPY<float>* buf = tris->getBuffer();
 
+        nbbox* bb = tris->findBBox(); 
 
         std::cout 
                   << " type: " << std::setw(3) << type 
@@ -163,6 +161,7 @@ void test_generic(NMarchingCubesNPY& mcu)
                   << " ntris " << ntris 
                   << " maxdepth " << mxd 
                   << " sh " << buf->getShapeString()
+                  << " " << ( bb ? bb->desc() : "bb:NULL" )
                   << std::endl 
                   ; 
     }
@@ -174,19 +173,19 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    test_csgsdf();
+    NMarchingCubesNPY mcu(15);
 
-    nuvec3 param = {10,10,10};
-    NMarchingCubesNPY mcu(param);
-
+    /*
     bool dump = false ; 
-
+    test_csgsdf();
     test_union(mcu, dump);
     test_intersection(mcu, dump);
     test_difference(mcu, dump);
     test_sphere(mcu, dump);
+    test_box(mcu,dump);
+    */
+
     test_generic(mcu);
-    test_box(mcu, true);
 
     return 0 ; 
 }

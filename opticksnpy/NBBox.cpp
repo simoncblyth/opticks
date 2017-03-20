@@ -1,5 +1,14 @@
+//#include <sstream>
 #include <cstring>
 #include "NBBox.hpp"
+
+const char* nbbox::desc()
+{
+    char _desc[128];
+    snprintf(_desc, 128, " mi %.32s mx %.32s ", min.desc(), max.desc() );
+    return strdup(_desc);
+}
+
 
 void nbbox::dump(const char* msg)
 {

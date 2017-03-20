@@ -394,7 +394,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
 
     // needs to be outside the selection branch for the all solid center extent
-    gbbox bb = GMesh::findBBox(vertices, nvert) ;
+    gbbox* bb = GMesh::findBBox(vertices, nvert) ;
 
    if(m_verbosity > 1)
    {
@@ -408,10 +408,13 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
                   << " id " << _identity.description()
                   << " pv " << ( pvn ? pvn : "-" )
                   << " lv " << ( lvn ? lvn : "-" )
-                  << " bb " << bb.description()
+                  << " bb " << ( bb ? bb->description() : "bb:NULL"  )
                   ;
         transform->Summary("GMergedMesh::mergeSolid transform");
    }   
+
+   if(bb == NULL) LOG(fatal) << "GMergedMesh::mergeSolid NULL bb " ; 
+   assert(bb); 
 
 
     unsigned int boundary = solid->getBoundary();
@@ -437,8 +440,8 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
 
 
-    m_bbox[m_cur_solid] = bb ;  
-    m_center_extent[m_cur_solid] = bb.center_extent() ;
+    m_bbox[m_cur_solid] = *bb ;  
+    m_center_extent[m_cur_solid] = bb->center_extent() ;
 
     float* dest = getTransform(m_cur_solid);
     assert(dest);

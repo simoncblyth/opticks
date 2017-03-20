@@ -4,12 +4,17 @@
 #include "NPY_API_EXPORT.hh"
 
 
+
+
+
+
 struct NPY_API nbbox {
 
     // NO CTOR
 
     void dump(const char* msg);
     void include(const nbbox& other );
+    const char* desc();
 
     nvec3 min ; 
     nvec3 max ; 

@@ -172,10 +172,49 @@ tboolean-box-sphere()
 }
 
 
+tboolean-box-sphere-py()
+{ 
+    local csgpath=$($FUNCNAME- $1 | python)
+    local test_config=( 
+                       name=$FUNCNAME
+                       analytic=1
+                       csgpath=$csgpath
+                     ) 
+    echo "$(join _ ${test_config[@]})" 
+}
+tboolean-box-sphere-py-()
+{
+    local operation=${1:-difference}
+    local material=$(tboolean-material)
+    local base=$TMP/$FUNCNAME 
+    cat << EOP 
+import math
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
+  
+radius = 200 
+inscribe = 1.3*radius/math.sqrt(3)
+
+b = CSG("box", param=[0,0,0,inscribe])
+s = CSG("sphere", param=[0,0,0,radius])
+
+obs = CSG("$operation", left=b, right=s, boundary="Vacuum///$material")
+
+CSG.Serialize([container, obs], "$base" )
+
+EOP
+}
+
+
+
+
+
+
 
 tboolean-csg-notes(){ cat << EON
 
-* CSG tree is defined in breadth first order
+* CSG tree is defined in breadth first or level order
 
 * parameters of boolean operations currently define adhoc box 
   intended to contain the geometry, TODO: calculate from bounds of the contained tree 
@@ -483,7 +522,6 @@ tboolean-csg-triplet-new()
 { 
     local csgpath=$($FUNCNAME- | python)
     local test_config=( 
-                       mode=CsgInBox
                        name=$FUNCNAME
                        analytic=1
                        csgpath=$csgpath
@@ -493,7 +531,6 @@ tboolean-csg-triplet-new()
     #np.py $csgpath/1.npy
     #NCSGTest $csgpath
 }
-
 tboolean-csg-triplet-new-()
 {
     local material=$(tboolean-material)
@@ -595,7 +632,8 @@ tboolean-testconfig()
 {
     #tboolean-box-sphere intersection    ## looks like a dice, sphere chopped by cube
     #tboolean-box-sphere union
-    #tboolean-box-sphere difference
+    tboolean-box-sphere-py difference
+    #tboolean-box-sphere-py union
 
     #tboolean-csg-two-box-minus-sphere-interlocked
     #tboolean-csg-four-box-minus-sphere
@@ -609,6 +647,6 @@ tboolean-testconfig()
     #tboolean-box-small-offset-sphere difference
 
     #tboolean-csg-triplet
-    tboolean-csg-triplet-new
+    #tboolean-csg-triplet-new
 }
 

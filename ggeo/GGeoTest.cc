@@ -103,7 +103,7 @@ GMergedMesh* GGeoTest::create()
 
     GMergedMesh* tmm = NULL ; 
 
-    if( strcmp(mode, "PmtInBox") == 0)
+    if( mode != NULL && strcmp(mode, "PmtInBox") == 0)
     {
         tmm = createPmtInBox(); 
     }

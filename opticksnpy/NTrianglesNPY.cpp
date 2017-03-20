@@ -4,6 +4,8 @@
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 
+#include "NQuad.hpp"
+#include "NBBox.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NTesselate.hpp"
 #include "NTriangle.hpp"
@@ -115,13 +117,26 @@ void NTrianglesNPY::add(NTrianglesNPY* other )
     m_tris->add(other->getBuffer());
 }
 
-
-
-
-
-
-
-
+nbbox* NTrianglesNPY::findBBox()
+{
+    NPY<float>* buf = getBuffer();
+    assert(buf && buf->hasItemShape(3,3));
+    unsigned nitem = buf->getShape(0);
+    nbbox* bb = NULL ; 
+    if(nitem > 0)
+    {
+        ntrange3<float> r = buf->minmax3(); 
+        bb = new nbbox ;  
+        bb->min.x = r.min.x ; 
+        bb->min.y = r.min.y ; 
+        bb->min.z = r.min.z ;
+     
+        bb->max.x = r.max.x ; 
+        bb->max.y = r.max.y ; 
+        bb->max.z = r.max.z ;
+    }
+    return bb ; 
+}
 
 
 /* for icosahedron */

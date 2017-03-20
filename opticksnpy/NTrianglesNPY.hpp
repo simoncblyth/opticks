@@ -3,6 +3,8 @@
 #include "NGLM.hpp"
 
 template <typename T> class NPY ;
+
+struct nbbox ; 
 struct ntriangle ; 
 
 #include "NPY_API_EXPORT.hh"
@@ -64,6 +66,7 @@ class NPY_API NTrianglesNPY {
     public:
         NPY<float>* getBuffer();
         unsigned int getNumTriangles();
+        nbbox* findBBox();
         void setTransform(const glm::mat4& transform);
         void setTransform(const glm::vec3& scale, const glm::vec3& translate);
         glm::mat4 getTransform();

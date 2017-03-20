@@ -7,23 +7,22 @@
 
 class NTrianglesNPY ; 
 
+
+// TODO: split this up in method, 
+//       keep some state so can see what went wrong 
+//       perhaps use adaptive approach when first attempt fails to yield tris
+
+
 class NPY_API NMarchingCubesNPY {
     public:
-        NMarchingCubesNPY(const nuvec3& param);
-
+        NMarchingCubesNPY(int nx, int ny=0, int nz=0);
         template<typename T> NTrianglesNPY* operator()(T* node); 
     private:
-        nuvec3 m_param ; 
+        int m_nx ; 
+        int m_ny ; 
+        int m_nz ; 
+        ntrange3<double> m_range ; 
 
 };
-
-
-
-// its tedious having to template every thing to march against...
-// perhaps can adjust to use function pointer, but that gets complicated
-// as then need pointers to member functions
-//
-//typedef double (*SDF)(double, double, double) ;
-
 
 

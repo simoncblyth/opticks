@@ -14,19 +14,25 @@
 
 #include "PLOG.hh"
 
-
-NMarchingCubesNPY::NMarchingCubesNPY(const nuvec3& param) : m_param(param) {}
-
+NMarchingCubesNPY::NMarchingCubesNPY(int nx, int ny, int nz)
+    :
+    m_nx(nx),
+    m_ny(ny > 0 ? ny : nx),
+    m_nz(nz > 0 ? nz : nx) 
+{
+}
 
 template<typename T>
 NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
 {
-    double lower_[3] ;
-    double upper_[3] ;
-
     nbbox bb = node->bbox();  // correctly gets the overloaded method
 
+    LOG(info) << "NMarchingCubesNPY " << bb.desc() ;
+
     double scale = 1.01 ;     // without some space marching against a box gives zero triangles
+
+    double lower_[3] ;
+    double upper_[3] ;
 
     lower_[0] = bb.min.x*scale ; 
     lower_[1] = bb.min.y*scale ; 
@@ -36,11 +42,8 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
     upper_[1] = bb.max.y*scale ; 
     upper_[2] = bb.max.z*scale ; 
 
-    int numx = m_param.x ; 
-    int numy = m_param.y ; 
-    int numz = m_param.z ; 
-
     double isovalue = 0. ; 
+
     std::vector<double> vertices ; 
     std::vector<size_t> polygons ; 
 
@@ -51,31 +54,31 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
         case CSG_UNION:
             {
                 nunion* n = (nunion*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, numx, numy, numz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
             }
             break ;
         case CSG_INTERSECTION:
             {
                 nintersection* n = (nintersection*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, numx, numy, numz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
             }
             break ;
         case CSG_DIFFERENCE:
             {
                 ndifference* n = (ndifference*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, numx, numy, numz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
             }
             break ;
         case CSG_SPHERE:
             {
                 nsphere* n = (nsphere*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, numx, numy, numz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
             }
             break ;
         case CSG_BOX:
             {
                 nbox* n = (nbox*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, numx, numy, numz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
             }
             break ;
         default:
@@ -83,10 +86,11 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
             assert(0);
     }
 
-    
-
     LOG(trace) << " vertices " << vertices.size() ; 
     LOG(trace) << " polygons " << polygons.size() ; 
+
+
+
 
 
     unsigned npol = polygons.size() ; 
@@ -102,6 +106,7 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
 
     LOG(debug) << "min element at: " << imin << " " << polygons[imin] ; 
     LOG(debug) << "max element at: " << imax << " " << polygons[imax] ;
+
 
     NTrianglesNPY* tris = new NTrianglesNPY();
 

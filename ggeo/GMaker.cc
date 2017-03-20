@@ -101,11 +101,21 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
 
     unsigned index = csg->getIndex();
 
-    nuvec3 param = {10u, 10u, 10u } ;
+    int nx = 15 ;  // gets cubed, so not too large
 
-    NMarchingCubesNPY mcu(param) ;
+    NMarchingCubesNPY mcu(nx) ;
 
     NTrianglesNPY* tris = mcu(root);
+
+    unsigned numTris = tris->getNumTriangles();
+
+    nbbox* bb = tris->findBBox();
+
+    LOG(info) << "GMaker::makeFromCSG"
+              << " numTris " << numTris
+              << " " << ( bb ? bb->desc() : "bb:NULL" )
+              ;
+
 
     GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), index);
 

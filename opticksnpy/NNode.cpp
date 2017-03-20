@@ -133,6 +133,24 @@ void nnode::Tests(std::vector<nnode*>& nodes )
     nodes.push_back( (nnode*)u2 );
 
     nodes.push_back( (nnode*)c );
+
+
+    float radius = 200.f ; 
+    float inscribe = 1.3f*radius/sqrt(3.f) ; 
+
+    nsphere* sp = make_nsphere_ptr(0.f,0.f,0.f,radius);
+    nbox*    bx = make_nbox_ptr(0.f,0.f,0.f, inscribe );
+    nunion*  u_sp_bx = make_nunion_ptr( sp, bx );
+    nintersection*  i_sp_bx = make_nintersection_ptr( sp, bx );
+    ndifference*    d_sp_bx = make_ndifference_ptr( sp, bx );
+    ndifference*    d_bx_sp = make_ndifference_ptr( bx, sp );
+
+    nodes.push_back( (nnode*)u_sp_bx );
+    nodes.push_back( (nnode*)i_sp_bx );
+    nodes.push_back( (nnode*)d_sp_bx );
+    nodes.push_back( (nnode*)d_bx_sp );
+
+
 }
 
 

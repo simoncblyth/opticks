@@ -1215,21 +1215,23 @@ void GMesh::Summary(const char* msg)
 
 
 
-gbbox GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
+gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
 {
-    gbbox bb(gfloat3(FLT_MAX), gfloat3(-FLT_MAX)) ; 
+    if(num_vertices == 0) return NULL ;
+
+    gbbox* bb = new gbbox (gfloat3(FLT_MAX), gfloat3(-FLT_MAX)) ; 
 
     for( unsigned int i = 0; i < num_vertices ;++i )
     {
         gfloat3& v = vertices[i];
 
-        bb.min.x = std::min( bb.min.x, v.x);
-        bb.min.y = std::min( bb.min.y, v.y);
-        bb.min.z = std::min( bb.min.z, v.z);
+        bb->min.x = std::min( bb->min.x, v.x);
+        bb->min.y = std::min( bb->min.y, v.y);
+        bb->min.z = std::min( bb->min.z, v.z);
 
-        bb.max.x = std::max( bb.max.x, v.x);
-        bb.max.y = std::max( bb.max.y, v.y);
-        bb.max.z = std::max( bb.max.z, v.z);
+        bb->max.x = std::max( bb->max.x, v.x);
+        bb->max.y = std::max( bb->max.y, v.y);
+        bb->max.z = std::max( bb->max.z, v.z);
     }
     return bb ; 
 } 
@@ -1269,8 +1271,21 @@ gfloat4 GMesh::findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_ve
 
 void GMesh::updateBounds()
 {
-    gbbox   bb = findBBox(m_vertices, m_num_vertices);
-    gfloat4 ce = bb.center_extent() ;
+    gbbox*  bb = findBBox(m_vertices, m_num_vertices);
+
+    //assert(bb);
+    if(bb == NULL)
+    {
+        LOG(warning) << "GMesh::updateBounds mesh with no verts, g_instance_count " << g_instance_count ; 
+    }
+    else
+    {
+        LOG(info) << "GMesh::updateBounds mesh with verts,  g_instance_count " << g_instance_count ;   
+    }
+
+
+    gfloat4 ce(0,0,0,1.f) ;
+    if(bb) ce = bb->center_extent() ;
 
     m_model_to_world = new GMatrix<float>( ce.x, ce.y, ce.z, ce.w );
 
@@ -1291,15 +1306,19 @@ void GMesh::updateBounds()
     //
 
 
-    if(m_bbox == NULL)
+    if(bb)
     {
-        m_bbox = new gbbox(bb) ;
+        if(m_bbox == NULL)
+        {
+            m_bbox = new gbbox(*bb) ;
+        }
+        else
+        {
+            m_bbox[0].min = bb->min ;
+            m_bbox[0].max = bb->max ;
+        }
     }
-    else
-    {
-        m_bbox[0].min = bb.min ;
-        m_bbox[0].max = bb.max ;
-    }
+
 
 
     if(m_center_extent == NULL)

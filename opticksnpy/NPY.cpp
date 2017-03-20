@@ -227,6 +227,68 @@ void NPY<T>::minmax(T& mi_, T& mx_)
     mx_ = mx ; 
 }
 
+template <typename T>
+void NPY<T>::minmax_strided(T& mi_, T& mx_, unsigned stride, unsigned offset)
+{
+    unsigned int nv = getNumValues(0);
+    assert( nv % stride == 0);
+    assert( offset < stride);
+
+    T* vv = getValues();
+
+    T mx(std::numeric_limits<T>::min()); 
+    T mi(std::numeric_limits<T>::max()); 
+
+    unsigned ns = nv/stride ; 
+
+    for(unsigned s=0 ; s < ns ; s++)
+    {
+        unsigned i = s*stride + offset ; 
+
+        T v = *(vv+i) ; 
+        if(v > mx) mx = v ; 
+        if(v < mi) mi = v ; 
+    }
+    mi_ = mi ; 
+    mx_ = mx ; 
+}
+
+
+template <typename T>
+void NPY<T>::minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_)
+{
+    minmax_strided( mi_.x , mx_.x,  3, 0 );
+    minmax_strided( mi_.y , mx_.y,  3, 1 );
+    minmax_strided( mi_.z , mx_.z,  3, 2 );
+}
+
+template <typename T>
+void NPY<T>::minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_)
+{
+    minmax_strided( mi_.x , mx_.x,  4, 0 );
+    minmax_strided( mi_.y , mx_.y,  4, 1 );
+    minmax_strided( mi_.z , mx_.z,  4, 2 );
+    minmax_strided( mi_.w , mx_.w,  4, 3 );
+}
+
+template <typename T>
+ntrange3<T> NPY<T>::minmax3()
+{
+    ntrange3<T> r ; 
+    minmax3( r.min , r.max );
+    return r ; 
+}
+
+template <typename T>
+ntrange4<T> NPY<T>::minmax4()
+{
+    ntrange4<T> r ; 
+    minmax4( r.min , r.max );
+    return r ; 
+}
+
+
+
 
 template <typename T>
 bool NPY<T>::isConstant(T val)

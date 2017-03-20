@@ -183,6 +183,13 @@ class NPY_API NPY : public NPYBase {
        void dump(const char* msg="NPY::dump", unsigned int limit=15);
        void minmax(T& mi, T& mx);
        bool isConstant(T val);
+    public:
+       void minmax_strided(T& mi, T& mx, unsigned stride, unsigned offset);
+       void minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_);
+       void minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_);
+       ntrange3<T> minmax3();
+       ntrange4<T> minmax4();
+    public:
        void qdump(const char* msg="NPY::qdump");
     public:
        // methods assuming 3D shape

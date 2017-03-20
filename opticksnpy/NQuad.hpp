@@ -21,6 +21,36 @@ enum { X, Y, Z, W };
 #include "NPY_API_EXPORT.hh"
 
 
+template<typename T>
+struct NPY_API ntvec4 {
+   T x ;
+   T y ;
+   T z ;
+   T w ;
+};
+
+template<typename T>
+struct NPY_API ntvec3 {
+   T x ;
+   T y ;
+   T z ;
+};
+
+template<typename T>
+struct NPY_API ntrange4 {
+   ntvec4<T> min ; 
+   ntvec4<T> max ; 
+};
+
+template<typename T>
+struct NPY_API ntrange3 {
+   ntvec3<T> min ; 
+   ntvec3<T> max ; 
+};
+
+
+
+
 struct NPY_API nuvec4 {
 
   // NO CTOR
@@ -62,11 +92,14 @@ struct NPY_API nvec4 {
 
   // NO CTOR
   void dump(const char* msg);
+  const char* desc();
 
   float x ; 
   float y ; 
   float z ; 
   float w ; 
+
+
 
 };
 
@@ -86,10 +119,13 @@ struct NPY_API nvec3 {
 
   // NO CTOR
   void dump(const char* msg);
+  const char* desc();
 
   float x ; 
   float y ; 
   float z ; 
+
+
 };
 
 

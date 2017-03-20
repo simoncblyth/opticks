@@ -133,7 +133,7 @@ nnode* NCSG::import_r(unsigned idx)
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     nvec4 param = getQuad(idx, 0);
 
-    LOG(info) << "NCSG::import_r " 
+    LOG(trace) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 
               << " csgname " << CSGName(typecode) 
@@ -192,7 +192,7 @@ NCSG* NCSG::FromNode(nnode* root, const char* boundary)
 void NCSG::export_()
 {
     assert(m_data);
-    LOG(info) << "NCSG::export_ "
+    LOG(debug) << "NCSG::export_ "
               << " exporting CSG node tree into buffer "
               << " num_nodes " << m_num_nodes
               << " height " << m_height 
@@ -203,7 +203,7 @@ void NCSG::export_()
 void NCSG::export_r(nnode* node, unsigned idx)
 {
     assert(idx < m_num_nodes); 
-    LOG(info) << "NCSG::export_r"
+    LOG(trace) << "NCSG::export_r"
               << " idx " << idx 
               << node->desc()
               ;
@@ -258,7 +258,7 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 
     NTxt bnd(txtpath.c_str());
     bnd.read();
-    bnd.dump("NCSG::Deserialize");    
+    //bnd.dump("NCSG::Deserialize");    
 
     unsigned nbnd = bnd.getNumLines();
 

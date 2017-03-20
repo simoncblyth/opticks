@@ -1,3 +1,4 @@
+#include <cstring>
 #include "NQuad.hpp"
 
 
@@ -17,6 +18,21 @@ void nvec3::dump(const char* msg)
 {
     printf("%20s : %10.4f %10.4f %10.4f  \n",msg, x,y,z ); 
 }
+
+const char* nvec3::desc()
+{
+    char _desc[64];
+    snprintf(_desc, 64, " (%7.2f %7.2f %7.2f) ", x,y,z );
+    return strdup(_desc);
+}
+
+const char* nvec4::desc()
+{
+    char _desc[64];
+    snprintf(_desc, 64, " (%7.2f %7.2f %7.2f %7.2f) ", x,y,z,w );
+    return strdup(_desc);
+}
+
 
 void nvec4::dump(const char* msg)
 {
