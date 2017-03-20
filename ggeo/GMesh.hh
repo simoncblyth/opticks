@@ -155,7 +155,12 @@ Indices relation to nodeinfo
 #include "GGEO_HEAD.hh"
 
 class GGEO_API GMesh : public GDrawable {
+      friend class GMaker ;
       friend class GMergedMesh  ;
+      friend class GMeshFixer  ;
+      friend class GBBoxMesh ;
+      friend class Texture ;
+     // TODO: too many friends, suggests need to improve isolation
   public:
       static int g_instance_count ; 
 
@@ -393,25 +398,28 @@ class GGEO_API GMesh : public GDrawable {
 
   //////////////////////////////////////////////////////////////// 
 
-  public:
+  private:
       void setLow(gfloat3* low);
       void setHigh(gfloat3* high);
 
-  public:
+  private:
       void setVertices(gfloat3* vertices);
       void setNormals(gfloat3* normals);
       void setColors(gfloat3* colors);
       void setTexcoords(gfloat2* texcoords);
-  public:
+  private:
       void setFaces(guint3* faces);
-  public:
-      void setCenterExtent(gfloat4* center_extent);
+  private:
       void setBBox(gbbox* bb);
       void setTransforms(float* transforms);
       void setMeshes(unsigned int* meshes);
       void setNodeInfo(guint4* nodeinfo);
       void setIdentity(guint4* identity);
       //void setIIdentity(guint4* iidentity);   size numInstances*numSolids, try operating via the buffer setting only
+
+  private:
+      void setCenterExtent(gfloat4* center_extent);  // canonically invoked by GMesh::allocate
+
 
   public:
       void setColor(float r, float g, float b);

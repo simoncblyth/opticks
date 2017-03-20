@@ -9,6 +9,7 @@
 #include "NPart.hpp"
 #include "NQuad.hpp"
 #include "NSphere.hpp"
+#include "NBox.hpp"
 #include "NBBox.hpp"
 
 
@@ -115,6 +116,8 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 {
     nsphere* a = make_nsphere_ptr(0.f,0.f,-50.f,100.f);
     nsphere* b = make_nsphere_ptr(0.f,0.f, 50.f,100.f);
+    nbox*    c = make_nbox_ptr(0.f,0.f,0.f,200.f);
+
     nunion* u = make_nunion_ptr( a, b );
     nintersection* i = make_nintersection_ptr( a, b ); 
     ndifference* d1 = make_ndifference_ptr( a, b ); 
@@ -128,6 +131,8 @@ void nnode::Tests(std::vector<nnode*>& nodes )
     nodes.push_back( (nnode*)d1 );
     nodes.push_back( (nnode*)d2 );
     nodes.push_back( (nnode*)u2 );
+
+    nodes.push_back( (nnode*)c );
 }
 
 

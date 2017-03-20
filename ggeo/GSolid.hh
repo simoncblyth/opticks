@@ -9,6 +9,7 @@
 //
 
 
+#include <vector>
 #include <string>
 
 class GMesh ;
@@ -22,7 +23,10 @@ template <typename T> class GMatrix ;
 #include "GNode.hh"
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
+
 class GGEO_API GSolid : public GNode {
+  public:
+      static void Dump( const std::vector<GSolid*>& solids, const char* msg="GSolid::Dump" );
   public:
       GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh,  unsigned int boundary, NSensor* sensor);
   public:

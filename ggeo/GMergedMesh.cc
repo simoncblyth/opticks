@@ -90,6 +90,8 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
               << " solids " << numSolids
               ; 
 
+    GSolid::Dump(solids, "GMergedMesh::combine (source solids)");
+
     std::vector<GParts*> analytic ; 
     collectParts( analytic, mm );
     collectParts( analytic, solids );
@@ -106,6 +108,8 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
     for(unsigned i=0 ; i < numSolids ; i++) com->mergeSolid(solids[i], true) ;
 
     com->updateBounds();
+    com->dumpSolids("GMergedMesh::combine (combined result) ");
+   
 
     unsigned int ncomp = numSolids + ( mm ? 1 : 0 ) ;
 
@@ -598,33 +602,35 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
 
 void GMergedMesh::dumpSolids(const char* msg)
 {
-    LOG(info) << msg ; 
+    gfloat4 ce0 = getCenterExtent(0) ;
+    LOG(info) << msg << " ce0 " << ce0.description() ; 
+
     for(unsigned int index=0 ; index < getNumSolids() ; ++index)
     {
-        //if(index % 1000 != 0) continue ; 
         gfloat4 ce = getCenterExtent(index) ;
         gbbox bb = getBBox(index) ; 
-        guint4* ni = getNodeInfo() + index ; 
-        guint4* id = getIdentity() + index ; 
-
         std::cout 
              << std::setw(5)  << index         
              << " ce " << std::setw(64) << ce.description()       
              << " bb " << std::setw(64) << bb.description()       
-             << " ni[nf/nv/nidx/pidx](" 
-             << std::setw(10) << ni->x << "," 
-             << std::setw(10) << ni->y << "," 
-             << std::setw(10) << ni->z << "," 
-             << std::setw(10) << ni->w << ")" 
-             << " id[nidx,midx,bidx,sidx](" 
-             << std::setw(10) << id->x << "," 
-             << std::setw(10) << id->y << "," 
-             << std::setw(10) << id->z << "," 
-             << std::setw(10) << id->w << ")" 
+             << std::endl 
+             ;
+    }
+
+    for(unsigned int index=0 ; index < getNumSolids() ; ++index)
+    {
+        guint4* ni = getNodeInfo() + index ; 
+        guint4* id = getIdentity() + index ; 
+        std::cout 
+             << std::setw(5)  << index         
+             << " ni[nf/nv/nidx/pidx]"  << ni->description()
+             << " id[nidx,midx,bidx,sidx] " << id->description() 
              << std::endl 
              ;
     }
 }
+
+
 
 float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 {

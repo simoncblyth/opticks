@@ -9,6 +9,7 @@
 #include "NMarchingCubesNPY.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NSphere.hpp"
+#include "NBox.hpp"
 
 #include "PLOG.hh"
 #include "BRAP_LOG.hh"
@@ -17,25 +18,9 @@
 
 void test_csgsdf()
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
-
-    nunion u = make_nunion( &a, &b );
-    nintersection i = make_nintersection( &a, &b ); 
-    ndifference d1 = make_ndifference( &a, &b ); 
-    ndifference d2 = make_ndifference( &b, &a ); 
-    nunion u2 = make_nunion( &d1, &d2 );
-
     typedef std::vector<nnode*> VN ;
-
     VN nodes ; 
-    nodes.push_back( (nnode*)&a );
-    nodes.push_back( (nnode*)&b );
-    nodes.push_back( (nnode*)&u );
-    nodes.push_back( (nnode*)&i );
-    nodes.push_back( (nnode*)&d1 );
-    nodes.push_back( (nnode*)&d2 );
-    nodes.push_back( (nnode*)&u2 );
+    nnode::Tests(nodes);
 
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
@@ -57,17 +42,6 @@ void test_csgsdf()
 
     for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
     {
-        std::cout << " z  " << std::setw(10) << z 
-             << " a  " << std::setw(10) << std::fixed << std::setprecision(2) << a(x,y,z) 
-             << " b  " << std::setw(10) << std::fixed << std::setprecision(2) << b(x,y,z) 
-             << " u  " << std::setw(10) << std::fixed << std::setprecision(2) << u(x,y,z) 
-             << " i  " << std::setw(10) << std::fixed << std::setprecision(2) << i(x,y,z) 
-             << " d1 " << std::setw(10) << std::fixed << std::setprecision(2) << d1(x,y,z) 
-             << " d2 " << std::setw(10) << std::fixed << std::setprecision(2) << d2(x,y,z) 
-             << " u2 " << std::setw(10) << std::fixed << std::setprecision(2) << u2(x,y,z) 
-             << std::endl 
-             ; 
-
         std::cout << " z  " << std::setw(10) << z  ;
         for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
         {
@@ -92,6 +66,26 @@ void test_sphere(NMarchingCubesNPY& mcu, bool dump)
     assert(tris1);
     if(dump) tris1->getBuffer()->dump("test_sphere (nnode*)");
 }
+
+
+void test_box(NMarchingCubesNPY& mcu, bool dump)
+{
+    nbox a = make_nbox(0.f,0.f,0.f,1000.f);
+
+    NTrianglesNPY* tris0 = mcu(&a);
+    assert(tris0);
+    if(dump) tris0->getBuffer()->dump("test_box");
+
+    NTrianglesNPY* tris1 = mcu((nnode*)&a);
+    assert(tris1);
+    if(dump) tris1->getBuffer()->dump("test_box (nnode*)");
+}
+
+
+
+
+
+
 
 void test_union(NMarchingCubesNPY& mcu, bool dump)
 {
@@ -142,24 +136,9 @@ void test_difference(NMarchingCubesNPY& mcu, bool dump)
 
 void test_generic(NMarchingCubesNPY& mcu)
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
-    nunion u = make_nunion( &a, &b );
-    nintersection i = make_nintersection( &a, &b ); 
-    ndifference d1 = make_ndifference( &a, &b ); 
-    ndifference d2 = make_ndifference( &b, &a ); 
-    nunion u2 = make_nunion( &d1, &d2 );
-
     typedef std::vector<nnode*> VN ;
-
     VN nodes ; 
-    nodes.push_back( (nnode*)&a );
-    nodes.push_back( (nnode*)&b );
-    nodes.push_back( (nnode*)&u );
-    nodes.push_back( (nnode*)&i );
-    nodes.push_back( (nnode*)&d1 );
-    nodes.push_back( (nnode*)&d2 );
-    nodes.push_back( (nnode*)&u2 );
+    nnode::Tests(nodes);
 
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
@@ -170,9 +149,11 @@ void test_generic(NMarchingCubesNPY& mcu)
         assert( type > 0 && name != NULL );
 
         NTrianglesNPY* tris = mcu(n);
-        unsigned ntris = tris ? tris->getNumTriangles() : 0 ; 
 
+        unsigned ntris = tris ? tris->getNumTriangles() : 0 ; 
         unsigned mxd = n->maxdepth();
+
+        NPY<float>* buf = tris->getBuffer();
 
 
         std::cout 
@@ -181,6 +162,7 @@ void test_generic(NMarchingCubesNPY& mcu)
                   << " sdf(0,0,0): " << std::setw(10) << std::fixed << std::setprecision(2) << (*n)(0,0,0)
                   << " ntris " << ntris 
                   << " maxdepth " << mxd 
+                  << " sh " << buf->getShapeString()
                   << std::endl 
                   ; 
     }
@@ -204,6 +186,7 @@ int main(int argc, char** argv)
     test_difference(mcu, dump);
     test_sphere(mcu, dump);
     test_generic(mcu);
+    test_box(mcu, true);
 
     return 0 ; 
 }

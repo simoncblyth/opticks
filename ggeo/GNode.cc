@@ -174,6 +174,28 @@ void GNode::Summary(const char* msg)
 {
     printf("%s idx %u nchild %u \n", msg, m_index, getNumChildren());
 }
+
+void GNode::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+    printf("%s idx %u nchild %u \n", msg, m_index, getNumChildren());
+
+    if(m_mesh)
+    {
+         unsigned msol = m_mesh->getNumSolids() ;
+         gfloat4 mce0 = m_mesh->getCenterExtent(0);
+         LOG(info) << "mesh.numSolids " << msol << " mesh.ce.0 " << mce0.description() ; 
+
+         for(unsigned i=0 ; i < msol ; i++)
+         {
+             gfloat4 mce = m_mesh->getCenterExtent(i);
+             std::cout << std::setw(4) << i 
+                       << " mesh.ce " << mce.description()
+                       << std::endl ; 
+         }
+    }   
+}
+ 
  
 
 void GNode::updateBounds(gfloat3& low, gfloat3& high )

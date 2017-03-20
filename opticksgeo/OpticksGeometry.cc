@@ -127,6 +127,7 @@ void  OpticksGeometry::setTarget(unsigned target, bool aim)
     glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ); 
 
     LOG(info)<<"OpticksGeometry::setTarget " 
+             << " based on CenterExtent from m_mesh0 "
              << " target " << target 
              << " aim " << aim
              << " ce " 

@@ -16,6 +16,7 @@
 
 #include "GSolid.hh"
 
+#include "PLOG.hh"
 #include "GGEO_BODY.hh"
 
 
@@ -164,5 +165,12 @@ guint4 GSolid::getIdentity()
 }
  
 
+
+void GSolid::Dump( const std::vector<GSolid*>& solids, const char* msg )
+{
+    unsigned numSolid = solids.size() ;
+    LOG(info) << msg << " numSolid " << numSolid ; 
+    for(unsigned i=0 ; i < numSolid ; i++) solids[i]->dump(); 
+}
 
 

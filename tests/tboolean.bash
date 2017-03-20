@@ -484,6 +484,7 @@ tboolean-csg-triplet-new()
     local csgpath=$($FUNCNAME- | python)
     local test_config=( 
                        mode=CsgInBox
+                       name=$FUNCNAME
                        analytic=1
                        csgpath=$csgpath
                      ) 

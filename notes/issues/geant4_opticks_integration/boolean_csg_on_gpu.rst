@@ -8,55 +8,61 @@ TODO: numerical/chi2 history comparison with CFG4 booleans
 TODO : python trees into opticks
 ----------------------------------
 
+new way without container::
 
-* part buffer looks correct, prim buffer splits at wrong place
+    2017-03-20 17:52:45.163 INFO  [525230] [GSolid::Dump@172] GMergedMesh::combine (source solids) numSolid 2
+    2017-03-20 17:52:45.163 INFO  [525230] [GNode::dump@180] GNode::dump
+    GNode::dump idx 0 nchild 0 
+    2017-03-20 17:52:45.163 INFO  [525230] [GNode::dump@187] mesh.numSolids 0 mesh.ce.0 gfloat4      0.000      0.000      0.000      0.000 
+    2017-03-20 17:52:45.163 INFO  [525230] [GNode::dump@180] GNode::dump
+    GNode::dump idx 1 nchild 0 
+    2017-03-20 17:52:45.163 INFO  [525230] [GNode::dump@187] mesh.numSolids 0 mesh.ce.0 gfloat4      0.000      0.000      0.000    186.383 
+    2017-03-20 17:52:45.163 INFO  [525230] [GMesh::allocate@604] GMesh::allocate numVertices 2520 numFaces 840 numSolids 2
+    2017-03-20 17:52:45.163 INFO  [525230] [GMesh::allocate@635] GMesh::allocate DONE 
+    2017-03-20 17:52:45.163 INFO  [525230] [GMergedMesh::dumpSolids@606] GMergedMesh::combine (combined result)  ce0 gfloat4      0.000      0.000      0.000    186.383 
+        0 ce             gfloat4      0.000      0.000      0.000    186.383  bb bb min   -186.383   -186.383   -186.383  max    186.383    186.383    186.383 
+        1 ce             gfloat4      0.000      0.000      0.000    186.383  bb bb min   -186.383   -186.383   -186.383  max    186.383    186.383    186.383 
+        0 ni[nf/nv/nidx/pidx] (  0,  0,  0,4294967295)  id[nidx,midx,bidx,sidx]  (  0,  0,123,  0) 
+        1 ni[nf/nv/nidx/pidx] (840,2520,  1,4294967295)  id[nidx,midx,bidx,sidx]  (  1,  1,124,  0) 
+    2017-03-20 17:52:45.163 INFO  [525230] [GParts::Summary@580] GGeoTest::combineSolids --dbganalytic num_parts 4 num_prim 0
 
-::
 
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@398] GParts::makePrimBuffer numParts 4
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@410] GParts::makePrimBuffer i   0 nodeIndex   0 typName box
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@410] GParts::makePrimBuffer i   1 nodeIndex   1 typName intersection
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@410] GParts::makePrimBuffer i   2 nodeIndex   0 typName sphere
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@410] GParts::makePrimBuffer i   3 nodeIndex   0 typName box
+old way with container::
 
-    // problem: the nodeindex is only set on the root for the CSG tree nodes
 
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@455] GParts::makePrimBuffer priminfo  (  0,  3,  0,  6) 
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::makePrimBuffer@455] GParts::makePrimBuffer priminfo  (  3,  1,  1,  2) 
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrimBuffer@524] GPmt::dumpPrimBuffer
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrimBuffer@528]  primBuffer 2,4 partBuffer 4,4,4
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrim@486]  primIdx   0 partOffset   0 numParts   3 primFlags     6 CSGName box prim 0,3,0,6
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrim@508]  p   0 partIdx   0 typecode 6 CSGName box
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrim@508]  p   1 partIdx   1 typecode 2 CSGName intersection
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrim@508]  p   2 partIdx   2 typecode 5 CSGName sphere
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrim@486]  primIdx   1 partOffset   3 numParts   1 primFlags     2 CSGName intersection prim 3,1,1,2
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrim@508]  p   0 partIdx   3 typecode 6 CSGName box
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dump@733] GParts::dump OGeo::makeAnalyticGeometry pts
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrimInfo@555] OGeo::makeAnalyticGeometry pts (part_offset, parts_for_prim, prim_index, prim_flags) numPrim:2
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrimInfo@560]  (  0,  3,  0,  6) 
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dumpPrimInfo@560]  (  3,  1,  1,  2) 
-    2017-03-20 11:00:07.181 INFO  [383663] [GParts::dump@745] GParts::dump ni 4
-         0.0000      0.0000      0.0000   1000.0000 
-         0.0000       0 <-id       123 <-bnd       0.0000  bn Rock//perfectAbsorbSurface/Vacuum 
-         0.0000      0.0000      0.0000           6 (box) TYPECODE 
-         0.0000      0.0000      0.0000           0 (nodeIndex) 
+    2017-03-20 17:50:05.320 INFO  [524398] [GSolid::Dump@172] GMergedMesh::combine (source solids) numSolid 4
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@180] GNode::dump
+    GNode::dump idx 0 nchild 0 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@187] mesh.numSolids 0 mesh.ce.0 gfloat4      0.000      0.000      0.000   1000.000 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@180] GNode::dump
+    GNode::dump idx 0 nchild 0 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@187] mesh.numSolids 0 mesh.ce.0 gfloat4      0.000      0.000      0.000    500.000 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@180] GNode::dump
+    GNode::dump idx 0 nchild 0 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@187] mesh.numSolids 0 mesh.ce.0 gfloat4      0.000      0.000      0.000    150.000 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@180] GNode::dump
+    GNode::dump idx 0 nchild 0 
+    2017-03-20 17:50:05.320 INFO  [524398] [GNode::dump@187] mesh.numSolids 0 mesh.ce.0 gfloat4      0.000      0.000      0.000      1.000 
+    2017-03-20 17:50:05.320 INFO  [524398] [GMesh::allocate@604] GMesh::allocate numVertices 3912 numFaces 1316 numSolids 4
+    2017-03-20 17:50:05.320 INFO  [524398] [GMesh::allocate@635] GMesh::allocate DONE 
+    2017-03-20 17:50:05.320 FATAL [524398] [GMergedMesh::mergeSolid@460] GMergedMesh::mergeSolid mismatch  nodeIndex 0 m_cur_solid 1
+    2017-03-20 17:50:05.320 FATAL [524398] [GMergedMesh::mergeSolid@460] GMergedMesh::mergeSolid mismatch  nodeIndex 0 m_cur_solid 2
+    2017-03-20 17:50:05.320 FATAL [524398] [GMergedMesh::mergeSolid@460] GMergedMesh::mergeSolid mismatch  nodeIndex 0 m_cur_solid 3
+    2017-03-20 17:50:05.321 INFO  [524398] [GMergedMesh::dumpSolids@606] GMergedMesh::combine (combined result)  ce0 gfloat4      0.000      0.000      0.000   1000.000 
+        0 ce             gfloat4      0.000      0.000      0.000   1000.000  bb bb min  -1000.000  -1000.000  -1000.000  max   1000.000   1000.000   1000.000 
+        1 ce             gfloat4      0.000      0.000      0.000    500.000  bb bb min   -500.000   -500.000   -500.000  max    500.000    500.000    500.000 
+        2 ce             gfloat4      0.000      0.000      0.000    150.000  bb bb min   -150.000   -150.000   -150.000  max    150.000    150.000    150.000 
+        3 ce             gfloat4      0.000      0.000      0.000    200.000  bb bb min   -200.000   -200.000   -200.000  max    200.000    200.000    200.000 
+        0 ni[nf/nv/nidx/pidx] ( 12, 24,  0,4294967295)  id[nidx,midx,bidx,sidx]  (  0,  0,  0,  0) 
+        1 ni[nf/nv/nidx/pidx] ( 12, 24,  0,4294967295)  id[nidx,midx,bidx,sidx]  (  0,  0,  0,  0) 
+        2 ni[nf/nv/nidx/pidx] ( 12, 24,  0,4294967295)  id[nidx,midx,bidx,sidx]  (  0,  0,  0,  0) 
+        3 ni[nf/nv/nidx/pidx] (1280,3840,  0,4294967295)  id[nidx,midx,bidx,sidx]  (  0,  0,  0,  0) 
+    2017-03-20 17:50:05.321 INFO  [524398] [GParts::Summary@580] GGeoTest::combineSolids --dbganalytic num_parts 4 num_prim 0
+     part  0 : node  0 type  6 boundary [123] Rock//perfectAbsorbSurface/Vacuum  
+     part  1 : node  1 type  2 boundary [124] Vacuum///GlassSchottF2  
+     part  2 : node  1 type  6 boundary [124] Vacuum///GlassSchottF2  
+     part  3 : node  1 type  5 boundary [124] Vacuum///GlassSchottF2  
 
-    // problem part bbox not set 
-
-         0.0000      0.0000      0.0000      0.0000 
-         0.0000       1 <-id       124 <-bnd       0.0000  bn Vacuum///GlassSchottF2 
-         0.0000      0.0000      0.0000           2 (intersection) TYPECODE 
-         0.0000      0.0000      0.0000           1 (nodeIndex) 
-
-         0.0000      0.0000      0.0000    200.0000 
-         0.0000       2 <-id       124 <-bnd       0.0000  bn Vacuum///GlassSchottF2 
-         0.0000      0.0000      0.0000           5 (sphere) TYPECODE 
-         0.0000      0.0000      0.0000           0 (nodeIndex) 
-
-         0.0000      0.0000      0.0000    150.0000 
-         0.0000       3 <-id       124 <-bnd       0.0000  bn Vacuum///GlassSchottF2 
-         0.0000      0.0000      0.0000           6 (box) TYPECODE 
-         0.0000      0.0000      0.0000           0 (nodeIndex) 
 
 
 

@@ -22,7 +22,7 @@ class GGEO_API GNode {
 
   public: 
       void Summary(const char* msg="GNode::Summary");
-
+      void dump(const char* msg="GNode::dump");
   public:
       void setParent(GNode* parent);
       void addChild(GNode* child);

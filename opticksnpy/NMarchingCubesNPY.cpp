@@ -26,13 +26,15 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
 
     nbbox bb = node->bbox();  // correctly gets the overloaded method
 
-    lower_[0] = bb.min.x ; 
-    lower_[1] = bb.min.y ; 
-    lower_[2] = bb.min.z ; 
+    double scale = 1.01 ;     // without some space marching against a box gives zero triangles
 
-    upper_[0] = bb.max.x ; 
-    upper_[1] = bb.max.y ; 
-    upper_[2] = bb.max.z ; 
+    lower_[0] = bb.min.x*scale ; 
+    lower_[1] = bb.min.y*scale ; 
+    lower_[2] = bb.min.z*scale ; 
+
+    upper_[0] = bb.max.x*scale ; 
+    upper_[1] = bb.max.y*scale ; 
+    upper_[2] = bb.max.z*scale ; 
 
     int numx = m_param.x ; 
     int numy = m_param.y ; 
@@ -130,11 +132,12 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
 }
 
 
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nnode>(nnode* n);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nsphere>(nsphere* sdf);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nunion>(nunion* sdf);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nintersection>(nintersection* sdf);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<ndifference>(ndifference* sdf);
+template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nnode>(nnode*);
+template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nsphere>(nsphere*);
+template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nbox>(nbox*);
+template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nunion>(nunion*);
+template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nintersection>(nintersection*);
+template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<ndifference>(ndifference*);
 
 
 

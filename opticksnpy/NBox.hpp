@@ -26,10 +26,14 @@ inline NPY_API nbox make_nbox(const nvec4& p)
 {
     nbox n ; nnode::Init(n,CSG_BOX) ; n.param = p ; return n ;
 }
-
 inline NPY_API nbox* make_nbox_ptr(const nvec4& p)
 {
     nbox* n = new nbox ; nnode::Init(*n,CSG_BOX) ; n->param = p ; return n ; 
 }
+inline NPY_API nbox* make_nbox_ptr(float x, float y, float z, float w)
+{
+    nbox* n = new nbox ; nnode::Init(*n,CSG_BOX) ; n->param.x = x ; n->param.y = y ; n->param.z = z ; n->param.w = w ; return n ; 
+}
+
 
 
