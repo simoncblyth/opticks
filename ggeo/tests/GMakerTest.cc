@@ -2,7 +2,7 @@
 
 #include "NGLM.hpp"
 #include "NCSG.hpp"
-#include "NSphere.hpp"
+#include "NNode.hpp"
 
 #include "Opticks.hh"
 
@@ -50,7 +50,7 @@ void GMakerTest::makeFromCSG()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nsphere::Tests(nodes);
+    nnode::Tests(nodes);
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
 

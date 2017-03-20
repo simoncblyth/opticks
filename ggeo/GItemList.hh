@@ -17,6 +17,7 @@ class GGEO_API GItemList : public NSequence {
        static unsigned int UNSET ; 
        static const char* GITEMLIST ; 
        static GItemList* load(const char* idpath, const char* itemtype, const char* reldir=NULL);
+       static GItemList* Repeat( const char* itemtype, const char* name, unsigned numRepeats, const char* reldir=NULL );
    public:
        GItemList(const char* itemtype, const char* reldir=NULL);
        void add(const char* name);

@@ -1,13 +1,11 @@
 #pragma once
 
-#include "NQuad.hpp"
 #include "NNode.hpp"
 
 struct nplane ; 
 struct ndisc ; 
 struct npart ;
 struct nbbox ; 
-#include <vector>
 
 
 #include "NPY_API_EXPORT.hh"
@@ -22,8 +20,6 @@ struct NPY_API nsphere : nnode {
     float radius();
     float costheta(float z);
 
-    static void Tests(std::vector<nnode*>& nodes );
-
     double operator()(double px, double py, double pz) ;
     nbbox bbox();
 
@@ -34,9 +30,7 @@ struct NPY_API nsphere : nnode {
     npart zrhs(const ndisc& dsc); // +z to the right  
     npart zlhs(const ndisc& dsc);  
 
-    void dump(const char* msg);
 
-    nvec4 param ; 
 };
 
 
@@ -48,6 +42,10 @@ inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
 inline NPY_API nsphere* make_nsphere_ptr(float x, float y, float z, float w)
 {
     nsphere* n = new nsphere ; nnode::Init(*n,CSG_SPHERE) ; n->param.x = x ; n->param.y = y ; n->param.z = z ; n->param.w = w ; return n ;
+}
+inline NPY_API nsphere* make_nsphere_ptr(const nvec4& param)
+{
+    nsphere* n = new nsphere ; nnode::Init(*n,CSG_SPHERE) ; n->param.x = param.x ; n->param.y = param.y ; n->param.z = param.z ; n->param.w = param.w ; return n ;
 }
 
 

@@ -479,10 +479,6 @@ tboolean-csg-triplet()
     echo "$(join _ ${test_config[@]})" 
 }
 
-
-
-
-
 tboolean-csg-triplet-new()
 { 
     local csgpath=$($FUNCNAME- | python)
@@ -509,8 +505,9 @@ container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/
 s = CSG("sphere", param=[0,0,0,200])
 b = CSG("box", param=[0,0,0,150])
 sib = CSG("intersection", left=s, right=b, boundary="Vacuum///$material")
+smb = CSG("difference",   left=s, right=b, boundary="Vacuum///$material")
 
-CSG.Serialize([container, sib], "$base" )
+CSG.Serialize([container, smb], "$base" )
 
 EOP
 }
@@ -604,13 +601,13 @@ tboolean-testconfig()
     #tboolean-csg-shells2
     #tboolean-csg-shells3
     #tboolean-csg-shells3-alt
-     tboolean-csg-triplet
-    #tboolean-csg-triplet-new
+
     #tboolean-csg
 
     #tboolean-box
     #tboolean-box-small-offset-sphere difference
+
+    #tboolean-csg-triplet
+    tboolean-csg-triplet-new
 }
-
-
 

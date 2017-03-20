@@ -52,15 +52,18 @@ GParts* GParts::make(const npart& pt, const char* spec)
     // Then instanciate a GParts instance to hold the parts buffer 
     // together with the boundary spec.
 
-    NPY<float>* part = NPY<float>::make(1, NJ, NK );
-    part->zero();
+    NPY<float>* buf = NPY<float>::make(1, NJ, NK );
+    buf->zero();
 
-    part->setQuad( pt.q0.f, 0u, 0u );
-    part->setQuad( pt.q1.f, 0u, 1u );
-    part->setQuad( pt.q2.f, 0u, 2u );
-    part->setQuad( pt.q3.f, 0u, 3u );
+    /*
+    buf->setQuad( pt.q0.f, 0u, 0u );
+    buf->setQuad( pt.q1.f, 0u, 1u );
+    buf->setQuad( pt.q2.f, 0u, 2u );
+    buf->setQuad( pt.q3.f, 0u, 3u );
+    */
+    buf->setPart( pt, 0u );
 
-    GParts* gpt = new GParts(part, spec) ;
+    GParts* gpt = new GParts(buf, spec) ;
 
     unsigned typecode = gpt->getTypeCode(0u);
     assert(typecode == CSG_BOX || typecode == CSG_SPHERE || typecode == CSG_PRISM);
@@ -73,6 +76,7 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     float size = param.w ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
 
+    // TODO: geometry specifics should live in nzsphere etc.. not here 
     if(csgflag == CSG_ZSPHERE)
     {
         bb.min.z = param.x*param.w ; 
@@ -90,6 +94,8 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     buf->setQuad( i, BBMIN_J, bb.min.x, bb.min.y, bb.min.z , 0.f );
     buf->setQuad( i, BBMAX_J, bb.max.x, bb.max.y, bb.max.z , 0.f );
 
+    // TODO: go via an npart instance
+
     GParts* pt = new GParts(buf, spec) ;
     pt->setTypeCode(0u, csgflag);
 
@@ -101,6 +107,10 @@ GParts* GParts::make( NCSG* tree)
     const char* spec = tree->getBoundary();
     NPY<float>* buf = tree->getBuffer();
     nnode* root = tree->getRoot(); 
+
+    // hmm maybe should not use the nnode ? 
+
+    assert(buf && root) ; 
 
     unsigned ni = buf->getShape(0);
     unsigned nj = buf->getShape(1);
@@ -116,7 +126,15 @@ GParts* GParts::make( NCSG* tree)
               << " type " << root->csgname()
               ; 
 
-    GParts* pts = new GParts(buf, spec) ;
+    // GParts originally intended to handle lists of parts each of which 
+    // must have an associated boundary spec. When holding CSG trees there 
+    // is really only a need for a single common boundary, but for
+    // now enable reuse of the old GParts by duplicating the spec 
+    // for every node of the tree
+
+    GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
+
+    GParts* pts = new GParts(buf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
     return pts ; 
@@ -134,7 +152,6 @@ GParts::GParts(GBndLib* bndlib)
 {
       init() ; 
 }
-
 GParts::GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib) 
       :
       m_part_buffer(buffer),
@@ -145,7 +162,6 @@ GParts::GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib)
 {
       init(spec) ; 
 }
-      
 GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib) 
       :
       m_part_buffer(buffer),
@@ -156,6 +172,8 @@ GParts::GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib)
 {
       init() ; 
 }
+
+
 
 
 void GParts::save(const char* dir)
@@ -191,9 +209,6 @@ const char* GParts::getName()
     return m_name ; 
 }
 
-
-
-
 void GParts::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
@@ -203,8 +218,6 @@ bool GParts::isClosed()
 {
     return m_closed ; 
 }
-
-
 
 unsigned int GParts::getPrimNumParts(unsigned int prim_index)
 {
@@ -220,7 +233,6 @@ GItemList* GParts::getBndSpec()
 {
     return m_bndspec ; 
 }
-
 void GParts::setBndLib(GBndLib* bndlib)
 {
     m_bndlib = bndlib ; 
@@ -229,8 +241,6 @@ GBndLib* GParts::getBndLib()
 {
     return m_bndlib ; 
 }
-
-
 void GParts::setPrimBuffer(NPY<unsigned int>* prim_buffer)
 {
     m_prim_buffer = prim_buffer ; 
@@ -239,7 +249,6 @@ NPY<unsigned int>* GParts::getPrimBuffer()
 {
     return m_prim_buffer ; 
 }
-
 void GParts::setPartBuffer(NPY<float>* part_buffer)
 {
     m_part_buffer = part_buffer ; 
@@ -250,14 +259,13 @@ NPY<float>* GParts::getPartBuffer()
 }
 
 
-
-
 void GParts::init(const char* spec)
 {
     m_bndspec = new GItemList("GParts");
     m_bndspec->add(spec);
     init();
 }
+
 void GParts::init()
 {
     if(m_part_buffer == NULL && m_bndspec == NULL)
@@ -271,12 +279,19 @@ void GParts::init()
         m_bndspec = new GItemList("GParts");
     } 
 
-    LOG(debug) << "GParts::init" 
-              << " part_buffer items " << m_part_buffer->getNumItems() 
-              << " bndspec items " <<  m_bndspec->getNumItems() 
-              ;
+    unsigned npart = m_part_buffer->getNumItems() ;
+    unsigned nspec = m_bndspec->getNumItems() ;
 
-    assert(m_part_buffer->getNumItems() == m_bndspec->getNumItems() );
+    bool match = npart == nspec ; 
+    if(!match) 
+    LOG(fatal) << "GParts::init"
+               << " parts/spec MISMATCH "  
+               << " npart " << npart 
+               << " nspec " << nspec
+               ;
+
+    assert(match);
+
 }
 
 unsigned int GParts::getNumParts()
@@ -405,6 +420,7 @@ void GParts::makePrimBuffer()
         LOG(info) << "GParts::makePrimBuffer"
                    << " i " << std::setw(3) << i  
                    << " nodeIndex " << std::setw(3) << nodeIndex
+                   << " typ " << std::setw(3) << typ 
                    << " typName " << typName 
                    ;  
                      
@@ -416,6 +432,8 @@ void GParts::makePrimBuffer()
         if(nodeIndex < nmin) nmin = nodeIndex ; 
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
+
+
 
     unsigned int num_prim = m_parts_per_prim.size() ;
     //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
@@ -712,6 +730,11 @@ void GParts::setBoundaryAll(unsigned int boundary)
 {
     for(unsigned int i=0 ; i < getNumParts() ; i++) setBoundary(i, boundary);
 }
+void GParts::setNodeIndexAll(unsigned int nodeindex)
+{
+    for(unsigned int i=0 ; i < getNumParts() ; i++) setNodeIndex(i, nodeindex);
+}
+
 
 std::string GParts::getBoundaryName(unsigned int part)
 {

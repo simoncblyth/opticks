@@ -100,7 +100,9 @@ class GGEO_API GParts {
         void setTypeCode(unsigned int part, unsigned int typecode);
         void setNodeIndex(unsigned int part, unsigned int nodeindex);
         void setBoundary(unsigned int part, unsigned int boundary);
+   public:
         void setBoundaryAll(unsigned int boundary);
+        void setNodeIndexAll(unsigned int nodeindex);
     public:
         GBndLib*           getBndLib();
         GItemList*         getBndSpec();

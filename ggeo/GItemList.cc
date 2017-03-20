@@ -97,9 +97,18 @@ void GItemList::save_(const char* txtpath)
 }
 
 
+GItemList* GItemList::Repeat( const char* itemtype, const char* name, unsigned numRepeats, const char* reldir )
+{
+   // HMM this is fine for small numbers of repeats, will need to rethink for large scale...
+    GItemList* ls = new GItemList(itemtype, reldir );
+    for(unsigned i=0 ; i < numRepeats ; i++ ) ls->add(name) ;
+    return ls ; 
+}
+
+
 GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()
 {
-    m_itemtype = itemtype ; 
+    m_itemtype = itemtype ? strdup(itemtype) : NULL ; 
     m_reldir   = reldir ? reldir : GITEMLIST ; 
 }
 

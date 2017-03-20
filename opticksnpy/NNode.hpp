@@ -1,23 +1,33 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "OpticksCSG.h"
+#include "NQuad.hpp"
 #include "NPY_API_EXPORT.hh"
 
 struct nbbox ; 
+struct npart ; 
 
 struct NPY_API nnode {
     virtual double operator()(double px, double py, double pz) ;
     virtual void dump(const char* msg="nnode::dump");
     virtual const char* csgname(); 
     virtual nbbox bbox();
+    virtual npart part();
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);
+    virtual std::string desc();
 
+    static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
     OpticksCSG_t type ;  
     nnode* left ; 
     nnode* right ; 
+
+    nvec4 param ; 
 };
 
 // hmm perhaps easier to switch on these ?? instead

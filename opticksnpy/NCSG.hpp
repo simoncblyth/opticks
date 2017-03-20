@@ -14,6 +14,9 @@ cf dev/csg/csg.py
 
 * this can currently only Deserialize from a python written directory 
 
+* hmm the raw loaded buffer lacks bounding boxes when derived from user input, 
+  to get those need to vivify the CSG tree and the export it back to the buffer
+
 **/
 
 struct nvec4 ; 
@@ -47,16 +50,18 @@ class NPY_API NCSG {
         void import();
         nnode* import_r(unsigned idx);
     private:
-         // FromNode
-        void importRoot(nnode* root);
+         // Serialize
+        NCSG(nnode* root, unsigned index=0u);
+        void export_r(nnode* node, unsigned idx);
+        void export_();
     private:
-        const char* m_path ; 
         unsigned    m_index ; 
-        const char* m_boundary ; 
+        nnode*      m_root ;  
+        const char* m_path ; 
         NPY<float>* m_data ; 
         unsigned    m_num_nodes ; 
         unsigned    m_height ; 
-        nnode*      m_root ;  
+        const char* m_boundary ; 
 
 };
 

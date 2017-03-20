@@ -45,4 +45,5 @@ sysrap-genproj(){ sysrap-scd ; opticks-genproj $(sysrap-name) $(sysrap-tag) ; }
 sysrap-gentest(){ sysrap-tcd ; opticks-gentest ${1:-SCheck} $(sysrap-tag) ; } 
 sysrap-txt(){     vi $(sysrap-sdir)/CMakeLists.txt $(sysrap-tdir)/CMakeLists.txt ; } 
 
+sysrap-csg(){ head -20 $(sysrap-dir)/OpticksCSG.h ; }
 

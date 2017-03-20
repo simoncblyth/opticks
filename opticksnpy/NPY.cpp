@@ -1398,22 +1398,35 @@ template <typename T>
 #endif
 
 
-
+// hmm assumes float 
+template <typename T> 
+void NPY<T>::setPart(const npart& p, unsigned int i)
+{
+    setQuad( p.q0.f , i, 0, 0 );
+    setQuad( p.q1.f , i, 1, 0 );
+    setQuad( p.q2.f , i, 2, 0 );
+    setQuad( p.q3.f , i, 3, 0 );
+}
 
 // same type quad setters
 template <typename T> 
- void NPY<T>::setQuad(const nvec4& f, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuad(const nvec4& f, unsigned int i, unsigned int j, unsigned int k )
 {
     glm::vec4 vec(f.x,f.y,f.z,f.w); 
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
 }
+
+
+
+
+
 template <typename T> 
- void NPY<T>::setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuad(const glm::vec4& vec, unsigned int i, unsigned int j, unsigned int k )
 {
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l, vec[l]); 
 }
 template <typename T> 
- void NPY<T>::setQuad(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
+void NPY<T>::setQuad(const glm::ivec4& vec, unsigned int i, unsigned int j, unsigned int k )
 {
     for(unsigned int l=0 ; l < 4 ; l++) setValue(i,j,k,l,vec[l]); 
 }

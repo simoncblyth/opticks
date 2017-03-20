@@ -3,8 +3,6 @@
 #include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
-#include "NSphere.hpp"
-
 
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
@@ -24,7 +22,7 @@ void test_FromNode()
 {
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
-    nsphere::Tests(nodes);
+    nnode::Tests(nodes);
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
 
@@ -38,10 +36,10 @@ void test_FromNode()
         assert( type > 0 && name != NULL );
 
 
-        NCSG* csg = NCSG::FromNode( n , spec );
+        NCSG* tree = NCSG::FromNode( n , spec );
         LOG(info) 
                 << " node.name " << std::setw(20) << name 
-                << " csg.desc " << csg->desc()
+                << " tree.desc " << tree->desc()
                 ;
 
     } 

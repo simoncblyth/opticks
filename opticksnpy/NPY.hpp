@@ -20,6 +20,7 @@
 
 
 #include "NPYBase.hpp"
+#include "NPart.hpp"
 #include "NQuad.hpp"
 
 struct BBufSpec ; 
@@ -228,6 +229,9 @@ class NPY_API NPY : public NPYBase {
        void         setQuadI(const glm::ivec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const     nuvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
+
+       ///  parts are comprised of four quads
+       void         setPart(      const npart& part, unsigned int i );
 
 
        // 

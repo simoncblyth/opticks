@@ -13,12 +13,6 @@
 #include "OpticksCSG.h"
 
 
-void nsphere::dump(const char* )
-{
-    param.dump("nsphere");
-}
-
-
 float nsphere::radius(){ return param.w ; }
 float nsphere::x(){      return param.x ; }
 float nsphere::y(){      return param.y ; }
@@ -85,6 +79,7 @@ npart nsphere::part()
     float _z = z() ;  
     float r  = radius() ; 
 
+   // hmm this belongs in zsphere not here ???
     nbbox bb = make_nbbox(_z - r, _z + r, -r, r);
 
     npart p ; 
@@ -121,27 +116,5 @@ npart nsphere::zrhs(const ndisc& dsk)
 
     return p ; 
 }
-
-
-void nsphere::Tests(std::vector<nnode*>& nodes )
-{
-    nsphere* a = make_nsphere_ptr(0.f,0.f,-50.f,100.f);
-    nsphere* b = make_nsphere_ptr(0.f,0.f, 50.f,100.f);
-    nunion* u = make_nunion_ptr( a, b );
-    nintersection* i = make_nintersection_ptr( a, b ); 
-    ndifference* d1 = make_ndifference_ptr( a, b ); 
-    ndifference* d2 = make_ndifference_ptr( b, a ); 
-    nunion* u2 = make_nunion_ptr( d1, d2 );
-
-    nodes.push_back( (nnode*)a );
-    nodes.push_back( (nnode*)b );
-    nodes.push_back( (nnode*)u );
-    nodes.push_back( (nnode*)i );
-    nodes.push_back( (nnode*)d1 );
-    nodes.push_back( (nnode*)d2 );
-    nodes.push_back( (nnode*)u2 );
-}
-
-
 
 

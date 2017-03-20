@@ -209,7 +209,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);
-        pts->setNodeIndex(0u, primIdx ); 
+        pts->setNodeIndexAll(primIdx ); 
 
         //nnode* root = tree->getRoot();  
         //pts->setTypeCode(0u, root->type);

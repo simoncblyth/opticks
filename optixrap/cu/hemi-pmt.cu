@@ -1214,7 +1214,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
   //bool is_partlist = primFlags == CSG_PARTLIST ; 
   bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-
   // TODO: could traverse the csg tree and include primitive bbox
   //       accounting for transforms ? OR more simply just rely 
   //       on the root bbox being big enough for the tree ?
@@ -1286,9 +1285,13 @@ RT_PROGRAM void intersect(int primIdx)
 
   bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-  // TODO: currently primFlags is just the part-typecode of the root node, so 
-  //       for a partlist that would be one of the primitives, CSG_SPHERE, CSG_BOX etc..
-  //       whereas is really refers to the composite, so could use a CSG_BOOLEAN_PRIMITIVE flag  
+  // TODO: currently primFlags from prim buffer is just copied from part-typecode of the root node in part buffer, 
+  //       so for a partlist that would be one of the primitives, CSG_SPHERE, CSG_BOX etc..
+  //       whereas it really refers to the composite, so could use different set of enums perhaps one of:
+  //
+  //             CSG_PRIMFLAG_TREE 
+  //             CSG_PRIMFLAG_PARTLIST   
+  //
 
   if(is_csg)
   { 
