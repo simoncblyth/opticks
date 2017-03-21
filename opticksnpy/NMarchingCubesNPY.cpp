@@ -18,35 +18,71 @@ NMarchingCubesNPY::NMarchingCubesNPY(int nx, int ny, int nz)
     :
     m_nx(nx),
     m_ny(ny > 0 ? ny : nx),
-    m_nz(nz > 0 ? nz : nx) 
+    m_nz(nz > 0 ? nz : nx),
+    m_isovalue(0.),
+    m_scale(1.01)      // without some space marching against a box gives zero triangles
 {
 }
 
-template<typename T>
-NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
+//template<typename T>
+//NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
+
+
+NTrianglesNPY* NMarchingCubesNPY::operator()(nnode* node)
 {
-    nbbox bb = node->bbox();  // correctly gets the overloaded method
+    m_node_bb = node->bbox();  // correctly gets the overloaded method
 
-    LOG(info) << "NMarchingCubesNPY " << bb.desc() ;
 
-    double scale = 1.01 ;     // without some space marching against a box gives zero triangles
+    m_lower[0] = m_node_bb.min.x*m_scale ; 
+    m_lower[1] = m_node_bb.min.y*m_scale ; 
+    m_lower[2] = m_node_bb.min.z*m_scale ; 
 
-    double lower_[3] ;
-    double upper_[3] ;
+    m_upper[0] = m_node_bb.max.x*m_scale ; 
+    m_upper[1] = m_node_bb.max.y*m_scale ; 
+    m_upper[2] = m_node_bb.max.z*m_scale ; 
 
-    lower_[0] = bb.min.x*scale ; 
-    lower_[1] = bb.min.y*scale ; 
-    lower_[2] = bb.min.z*scale ; 
+    m_vertices.clear();
+    m_polygons.clear();
 
-    upper_[0] = bb.max.x*scale ; 
-    upper_[1] = bb.max.y*scale ; 
-    upper_[2] = bb.max.z*scale ; 
+    march(node);
 
-    double isovalue = 0. ; 
+    unsigned nvert = m_vertices.size() ;
+    unsigned npoly = m_polygons.size() ;
 
-    std::vector<double> vertices ; 
-    std::vector<size_t> polygons ; 
+    NTrianglesNPY* tris = NULL ; 
 
+    if(nvert == 0 || npoly == 0)
+    {
+        LOG(warning) << "NMarchingCubesNPY gave zero verts/poly  "
+                     << " nvert " << nvert
+                     << " npoly " << npoly
+                     << " MAKING PLACEHOLDER BBOX TRIS "  
+                     ;
+        tris = NTrianglesNPY::box(m_node_bb);
+    } 
+    else
+    {
+         tris = makeTriangles();
+    }
+
+    unsigned ntri = tris->getNumTriangles();
+    nbbox* tris_bb = tris->findBBox(); 
+    assert(tris_bb);
+
+    LOG(info) << "NMarchingCubesNPY " 
+              << " ntri " << std::setw(6) << ntri
+              << " nvert " << std::setw(6) << nvert
+              << " npoly " << std::setw(6) << npoly
+              << " source node bb " << m_node_bb.desc() 
+              << " output tris bb " << tris_bb->desc()
+              ; 
+
+    assert(ntri > 0);
+    return tris ;
+}
+
+void NMarchingCubesNPY::march(nnode* node)
+{
     // attempting to do the below without the upcasting gives segv 
     // suspect due to passing the functor by value into marching cubes ?
     switch(node->type)
@@ -54,71 +90,68 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
         case CSG_UNION:
             {
                 nunion* n = (nunion*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
             }
             break ;
         case CSG_INTERSECTION:
             {
                 nintersection* n = (nintersection*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
             }
             break ;
         case CSG_DIFFERENCE:
             {
                 ndifference* n = (ndifference*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
             }
             break ;
         case CSG_SPHERE:
             {
                 nsphere* n = (nsphere*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
             }
             break ;
         case CSG_BOX:
             {
                 nbox* n = (nbox*)node ; 
-                mc::marching_cubes<double>(lower_, upper_, m_nx, m_ny, m_nz, *n, isovalue, vertices, polygons);
+                mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
             }
             break ;
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
     }
-
-    LOG(trace) << " vertices " << vertices.size() ; 
-    LOG(trace) << " polygons " << polygons.size() ; 
+}
 
 
 
-
-
-    unsigned npol = polygons.size() ; 
+NTrianglesNPY* NMarchingCubesNPY::makeTriangles()
+{
+    unsigned npol = m_polygons.size() ; 
 
     assert( npol % 3 == 0) ;
     unsigned ntri = npol / 3 ; 
 
-    std::vector<size_t>::iterator  pmin = std::min_element(std::begin(polygons), std::end(polygons));
-    std::vector<size_t>::iterator  pmax = std::max_element(std::begin(polygons), std::end(polygons));
+    std::vector<size_t>::iterator  pmin = std::min_element(std::begin(m_polygons), std::end(m_polygons));
+    std::vector<size_t>::iterator  pmax = std::max_element(std::begin(m_polygons), std::end(m_polygons));
 
-    size_t imin = std::distance(std::begin(polygons), pmin) ;
-    size_t imax = std::distance(std::begin(polygons), pmax) ;
+    size_t imin = std::distance(std::begin(m_polygons), pmin) ;
+    size_t imax = std::distance(std::begin(m_polygons), pmax) ;
 
-    LOG(debug) << "min element at: " << imin << " " << polygons[imin] ; 
-    LOG(debug) << "max element at: " << imax << " " << polygons[imax] ;
-
+    LOG(debug) << "min element at: " << imin << " " << m_polygons[imin] ; 
+    LOG(debug) << "max element at: " << imax << " " << m_polygons[imax] ;
 
     NTrianglesNPY* tris = new NTrianglesNPY();
 
-    std::vector<double>& v = vertices ; 
+    std::vector<double>& v = m_vertices ; 
 
     for(unsigned t=0 ; t < ntri ; t++)
     {
          assert( t*3+2 < npol );
 
-         unsigned i0 = polygons[t*3 + 0];
-         unsigned i1 = polygons[t*3 + 1];
-         unsigned i2 = polygons[t*3 + 2];
+         unsigned i0 = m_polygons[t*3 + 0];
+         unsigned i1 = m_polygons[t*3 + 1];
+         unsigned i2 = m_polygons[t*3 + 2];
 
          glm::vec3 v0( v[i0*3+0],  v[i0*3+1],  v[i0*3+2] );
          glm::vec3 v1( v[i1*3+0],  v[i1*3+1],  v[i1*3+2] );
@@ -137,12 +170,13 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
 }
 
 
+/*
 template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nnode>(nnode*);
 template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nsphere>(nsphere*);
 template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nbox>(nbox*);
 template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nunion>(nunion*);
 template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nintersection>(nintersection*);
 template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<ndifference>(ndifference*);
-
+*/
 
 

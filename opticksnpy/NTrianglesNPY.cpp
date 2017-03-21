@@ -475,6 +475,42 @@ NTrianglesNPY* NTrianglesNPY::cube()
 }
 
 
+
+
+NTrianglesNPY* NTrianglesNPY::box(const nbbox& bb)
+{
+    NTrianglesNPY* tris = new NTrianglesNPY();
+   
+    glm::vec3 P(bb.max.x, bb.max.y, bb.max.z );
+    glm::vec3 M(bb.min.x, bb.min.y, bb.min.z );
+
+    glm::vec3 _PXPYPZ( P.x, P.y, P.z ); 
+    glm::vec3 _PXPYMZ( P.x, P.y, M.z ); 
+    glm::vec3 _PXMYPZ( P.x, M.y, P.z );
+    glm::vec3 _PXMYMZ( P.x, M.y, M.z );
+
+    glm::vec3 _MXPYPZ( M.x, P.y, P.z );
+    glm::vec3 _MXPYMZ( M.x, P.y, M.z );
+    glm::vec3 _MXMYPZ( M.x, M.y, P.z );
+    glm::vec3 _MXMYMZ( M.x, M.y, M.z ) ;
+
+    tris->add(_PXPYPZ, _MXPYPZ, _MXMYPZ, _PXMYPZ);    // PZ face
+    tris->add(_PXPYPZ, _PXMYPZ, _PXMYMZ, _PXPYMZ);    // PX face
+    tris->add(_PXPYPZ, _PXPYMZ, _MXPYMZ, _MXPYPZ);    // PY face   
+
+    tris->add(_MXMYMZ, _PXMYMZ, _PXPYMZ, _MXPYMZ);    // MZ face  
+    tris->add(_MXMYMZ, _MXPYMZ, _MXPYPZ, _MXMYPZ);    // MX face
+    tris->add(_MXMYMZ, _MXMYPZ, _PXMYPZ, _PXMYMZ);    // MY face
+
+    return tris ; 
+}
+
+
+
+
+
+
+
 NTrianglesNPY* NTrianglesNPY::prism(const glm::vec4& param)
 {
 /*

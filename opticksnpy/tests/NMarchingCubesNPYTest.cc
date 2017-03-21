@@ -145,7 +145,7 @@ void test_generic(NMarchingCubesNPY& mcu)
 
         assert( type > 0 && name != NULL );
 
-        NTrianglesNPY* tris = mcu(n);
+        NTrianglesNPY* tris = mcu(n);   // <--- run marching cubes 
 
         unsigned ntris = tris ? tris->getNumTriangles() : 0 ; 
         unsigned mxd = n->maxdepth();
@@ -186,6 +186,9 @@ int main(int argc, char** argv)
     */
 
     test_generic(mcu);
+
+    NMarchingCubesNPY mcu_10(10);
+    test_generic(mcu_10);
 
     return 0 ; 
 }

@@ -12,8 +12,6 @@ struct ntriangle ;
 
 class NPY_API NTrianglesNPY {
     public:
-        static NTrianglesNPY* hemi_octahedron();
-        static NTrianglesNPY* octahedron();
         static const glm::vec3 PX ; 
         static const glm::vec3 PY ; 
         static const glm::vec3 PZ ; 
@@ -21,7 +19,6 @@ class NPY_API NTrianglesNPY {
         static const glm::vec3 MY ; 
         static const glm::vec3 MZ ; 
     public:
-        static NTrianglesNPY* icosahedron();
         static const glm::vec3 Ip0 ; 
         static const glm::vec3 Ip1 ; 
         static const glm::vec3 Ip2 ; 
@@ -36,7 +33,6 @@ class NPY_API NTrianglesNPY {
         static const glm::vec3 Im4 ; 
         static const glm::vec3 Im5 ;
     public:
-        static NTrianglesNPY* cube();
         static const glm::vec3 PXPYPZ ; 
         static const glm::vec3 PXPYMZ ; 
         static const glm::vec3 PXMYPZ ; 
@@ -46,6 +42,11 @@ class NPY_API NTrianglesNPY {
         static const glm::vec3 MXMYPZ ; 
         static const glm::vec3 MXMYMZ ; 
     public:
+        static NTrianglesNPY* icosahedron();
+        static NTrianglesNPY* hemi_octahedron();
+        static NTrianglesNPY* octahedron();
+        static NTrianglesNPY* cube();
+        static NTrianglesNPY* box(const nbbox& bb);
         static NTrianglesNPY* sphere(unsigned int n_polar=24, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(glm::vec4& param, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(float ctmin, float ctmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
