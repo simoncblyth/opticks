@@ -18,6 +18,86 @@ is not implemented so the visualization
 of photon paths is not operational.
 
 
+bash test geometry configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* CSG tree is defined in breadth first or level order
+
+* parameters of boolean operations currently define adhoc box 
+  intended to contain the geometry, TODO: calculate from bounds of the contained tree 
+
+* offsets arg identifies which nodes belong to which primitives by pointing 
+  at the nodes that start each primitive
+
+::
+
+     1  node=union        parameters=0,0,0,400           boundary=Vacuum///$material 
+     2  node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
+     3  node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
+     4  node=box          parameters=0,0,100,$inscribe   boundary=Vacuum///$material
+     5  node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
+     6  node=box          parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
+     7  node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
+
+Perfect tree with n=7 nodes is depth 2, dev/csg/node.py (root2)::
+ 
+                 U1                
+                  o                
+         D2              D3        
+          o               o        
+     b4      s5      b6      s7    
+      o       o       o       o         
+
+
+* nodes identified with 1-based levelorder index, i
+* left/right child of node i at l=2i, r=2i+1, so long as l,r < n + 1
+
+
+python test geometry configuration 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* python config is much more flexible than bash, allowing 
+  more natural tree construction and node reuse
+
+Running functions such as tboolean-box-sphere-py- 
+construct CSG node trees for each "solid" of the geometry.
+Typically the containing volume is a single node tree 
+and the contained volume is a multiple node CSG tree.
+
+These trees are serialized into numpy arrays and written to 
+files within directories named after the bash function eg 
+"/tmp/blyth/opticks/tboolean-box-sphere-py-". 
+
+The bash function emits to stdout only the name of 
+this directory which is captured and used in the 
+commandline testconfig csgpath slot.
+
+
+testconfig modes
+~~~~~~~~~~~~~~~~~~
+
+PmtInBox
+
+     * see tpmt- for this one
+
+BoxInBox
+
+     * CSG combinations not supported, union/intersection/difference nodes
+       appear as placeholder boxes
+
+     * raytrace superficially looks like a union, but on navigating inside 
+       its apparent that its just overlapped individual primitives
+
+CsgInBox
+
+     * requires "offsets" identifying node splits into primitives eg offsets=0,1 
+     * nodes are specified in tree levelorder, trees must be perfect 
+       with 1,3,7 or 15 nodes corresponding to trees of height 0,1,2,3
+
+PyCsgInBox
+
+     * requires csgpath identifying directory containing serialized CSG trees
+       and csg.txt file with corresponding boundary spec strings
 
 
 EOU
@@ -59,6 +139,25 @@ tboolean-tracetest()
     tboolean-- --tracetest $*
 }
 
+tboolean-enum(){
+   local tmp=$TMP/$FUNCNAME.exe
+   clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp $*
+}
+
+tboolean-testconfig-py-()
+{
+    # prepare the testconfig using python 
+    local fn=$1
+    shift 
+    local csgpath=$($fn- $* | python)
+    local test_config=( 
+                       mode=PyCsgInBox
+                       name=$fn
+                       analytic=1
+                       csgpath=$csgpath
+                     ) 
+    echo "$(join _ ${test_config[@]})" 
+}
 
 
 tboolean-torchconfig()
@@ -110,99 +209,68 @@ tboolean-torchconfig()
 
 
 
-tboolean-material(){ echo GlassSchottF2 ; }
 #tboolean-material(){ echo MainH2OHale ; }
-
+tboolean-material(){ echo GlassSchottF2 ; }
+tboolean-container(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
+tboolean-object(){ echo Vacuum///GlassSchottF2 ; }
 
 
 tboolean-box()
 {
-    local material=$(tboolean-material)
     local test_config=(
                  mode=BoxInBox
                  name=$FUNCNAME
                  analytic=1
 
-                 node=box      parameters=0,0,0,1200               boundary=Rock//perfectAbsorbSurface/Vacuum
-                 node=box      parameters=0,0,0,100                boundary=Vacuum///$material
+                 node=box      parameters=0,0,0,1000               boundary=$(tboolean-container)
+                 node=box      parameters=0,0,0,100                boundary=$(tboolean-object)
 
                     )
      echo "$(join _ ${test_config[@]})" 
 }
 
+tboolean-box-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-box-py-(){ cat << EOP 
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+box = CSG("box", param=[0,0,0,100], boundary="$(tboolean-object)")
+
+CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
+EOP
+}
+
+
 
 
 tboolean-box-small-offset-sphere()
 {
-    local operation=${1:-difference}
-    local material=$(tboolean-material)
     local test_config=(
                  mode=BoxInBox
                  name=$FUNCNAME
                  analytic=1
 
-                 node=sphere      parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=sphere           parameters=0,0,0,1000          boundary=$(tboolean-container)
  
-                 node=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
-                 node=box          parameters=0,0,0,200           boundary=Vacuum///$material
-                 node=sphere       parameters=0,0,200,100         boundary=Vacuum///$material
+                 node=${1:-difference} parameters=0,0,0,300           boundary=$(tboolean-object)
+                 node=box              parameters=0,0,0,200           boundary=$(tboolean-object)
+                 node=sphere           parameters=0,0,200,100         boundary=$(tboolean-object)
                )
-
      echo "$(join _ ${test_config[@]})" 
 }
 
-tboolean-box-sphere()
-{
-    local operation=${1:-difference}
-    local material=$(tboolean-material)
-    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
-    local test_config=(
-                 mode=BoxInBox
-                 name=$FUNCNAME
-                 analytic=1
-
-                 node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
- 
-                 node=$operation   parameters=0,0,0,300           boundary=Vacuum///$material
-                 node=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
-                 node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
-               )
-
-     echo "$(join _ ${test_config[@]})" 
-}
-
-
-tboolean-box-sphere-py()
-{ 
-    local csgpath=$($FUNCNAME- $1 | python)
-    local test_config=( 
-                       name=$FUNCNAME
-                       analytic=1
-                       csgpath=$csgpath
-                     ) 
-    echo "$(join _ ${test_config[@]})" 
-}
-tboolean-box-sphere-py-()
-{
-    local operation=${1:-difference}
-    local material=$(tboolean-material)
-    local base=$TMP/$FUNCNAME 
-    cat << EOP 
-import math
+tboolean-box-small-offset-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-box-small-offset-sphere-py-(){ cat << EOP
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
-  
-radius = 200 
-inscribe = 1.3*radius/math.sqrt(3)
+container = CSG("sphere",           param=[0,0,0,1000], boundary="$(tboolean-container)" )
 
-b = CSG("box", param=[0,0,0,inscribe])
-s = CSG("sphere", param=[0,0,0,radius])
+box = CSG("box",    param=[0,0,0,200], boundary="$(tboolean-object)")
+sph = CSG("sphere", param=[0,0,200,100], boundary="$(tboolean-object)")
 
-obs = CSG("$operation", left=b, right=s, boundary="Vacuum///$material")
+object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)")
 
-CSG.Serialize([container, obs], "$base" )
-
+CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
 }
 
@@ -210,112 +278,134 @@ EOP
 
 
 
+tboolean-box-sphere()
+{
+    local operation=${1:-difference}
+    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
+    local test_config=(
+                 mode=BoxInBox
+                 name=$FUNCNAME
+                 analytic=1
 
-
-tboolean-csg-notes(){ cat << EON
-
-* CSG tree is defined in breadth first or level order
-
-* parameters of boolean operations currently define adhoc box 
-  intended to contain the geometry, TODO: calculate from bounds of the contained tree 
-
-* offsets arg identifies which nodes belong to which primitives by pointing 
-  at the nodes that start each primitive
-
-::
-
-     1  node=union        parameters=0,0,0,400           boundary=Vacuum///$material 
-     2  node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
-     3  node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
-     4  node=box          parameters=0,0,100,$inscribe   boundary=Vacuum///$material
-     5  node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
-     6  node=box          parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
-     7  node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
-
-Perfect tree with n=7 nodes is depth 2, dev/csg/node.py (root2)::
+                 node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
  
-                 U1                
-                  o                
-         D2              D3        
-          o               o        
-     b4      s5      b6      s7    
-      o       o       o       o         
+                 node=$operation   parameters=0,0,0,300           boundary=$(tboolean-object)
+                 node=box          parameters=0,0,0,$inscribe     boundary=$(tboolean-object)
+                 node=sphere       parameters=0,0,0,200           boundary=$(tboolean-object)
+               )
 
-
-* nodes identified with 1-based levelorder index, i
-* left/right child of node i at l=2i, r=2i+1, so long as l,r < n + 1
-* works with imperfect trees where the empties are contiguous at end of levelorder
-
-::
-
-                 U1                
-                  o                
-         D2              s3
-          o               o        
-     b4      s5          
-      o       o               
-
-
-                      offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
-
-                      node=union        parameters=0,0,0,400           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
-                      node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,$inscribe   boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
-  
-
-                      node=union        parameters=0,0,0,400           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
-                      node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,$inscribe   boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
-
-                      node=difference   parameters=0,0,0,400           boundary=Vacuum///$material
-                      node=box          parameters=0,0,0,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
-
-
-
-
-
-EON
+     echo "$(join _ ${test_config[@]})" 
 }
 
+tboolean-box-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-box-sphere-py-(){ cat << EOP 
+import math
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+  
+radius = 200 
+inscribe = 1.3*radius/math.sqrt(3)
+
+box = CSG("box", param=[0,0,0,inscribe])
+sph = CSG("sphere", param=[0,0,0,radius])
+
+object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)")
+
+CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+EOP
+}
 
 
 tboolean-csg-two-box-minus-sphere-interlocked()
 {
-    local material=$(tboolean-material)
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
-    local radius=200
-
     local test_config=(
                       mode=CsgInBox
                       name=$FUNCNAME
                       analytic=1
                       offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
 
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=union        parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=difference   parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=difference   parameters=0,0,0,500           boundary=$(tboolean-object)
 
-                      node=box          parameters=100,100,-100,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=100,100,-100,200           boundary=Vacuum///$material
+                      node=box          parameters=100,100,-100,$inscribe     boundary=$(tboolean-object)
+                      node=sphere       parameters=100,100,-100,200           boundary=$(tboolean-object)
 
-                      node=box          parameters=0,0,100,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,100,200           boundary=Vacuum///$material
+                      node=box          parameters=0,0,100,$inscribe     boundary=$(tboolean-object)
+                      node=sphere       parameters=0,0,100,200           boundary=$(tboolean-object)
  
                       )
-
     echo "$(join _ ${test_config[@]})" 
 }
+
+
+tboolean-csg-two-box-minus-sphere-interlocked-py(){ tboolean-testconfig-py- $FUNCNAME ; }
+tboolean-csg-two-box-minus-sphere-interlocked-py-()
+{
+    local material=$(tboolean-material)
+    local base=$TMP/$FUNCNAME 
+    cat << EOP 
+import math
+from opticks.dev.csg.csg import CSG  
+  
+radius = 200 
+inscribe = 1.3*radius/math.sqrt(3)
+
+lbox = CSG("box",    param=[100,100,-100,inscribe])
+lsph = CSG("sphere", param=[100,100,-100,radius])
+left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-object)" )
+
+rbox = CSG("box",    param=[0,0,100,inscribe])
+rsph = CSG("sphere", param=[0,0,100,radius])
+right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
+
+object = CSG("union", left=left, right=right, boundary="$(tboolean-object)")
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+
+CSG.Serialize([container, object], "$base" )
+# marching cubes with nx=15 makes a mess with this 
+
+EOP
+}
+
+
+
+tboolean-csg-unbalanced-py(){ tboolean-testconfig-py- $FUNCNAME ; }
+tboolean-csg-unbalanced-py-()
+{
+    local material=$(tboolean-material)
+    local base=$TMP/$FUNCNAME 
+    cat << EOP 
+import math
+from opticks.dev.csg.csg import CSG  
+  
+radius = 200 
+inscribe = 1.3*radius/math.sqrt(3)
+
+lbox = CSG("box",    param=[100,100,-100,inscribe])
+lsph = CSG("sphere", param=[100,100,-100,radius])
+left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-object)" )
+
+right = CSG("sphere", param=[0,0,100,radius])
+
+object = CSG("union", left=left, right=right, boundary="$(tboolean-object)")
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+
+CSG.Serialize([container, object], "$base" )
+
+# marching cubes with nx=15 again makes a mess 
+# the ray trace skips the sphere 
+
+EOP
+}
+
+
+
 
 
 
@@ -341,12 +431,10 @@ EON
 }
 
 
-tboolean-csg-boundary(){ echo Vacuum///$(tboolean-material) ; }
-tboolean-box-boundary(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
 
 tboolean-csg-shells2()
 {
-    local boundary=$(tboolean-csg-boundary)
+    local boundary=$(tboolean-object)
 
     local o=200
     local i=190
@@ -357,7 +445,7 @@ tboolean-csg-shells2()
                       name=$FUNCNAME
                       analytic=1
                       offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-box-boundary)
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
 
                       node=difference   parameters=0,0,0,500           boundary=$boundary
 
@@ -404,7 +492,7 @@ EON
 
 tboolean-csg-shells3()
 {
-    local boundary=$(tboolean-csg-boundary)
+    local boundary=$(tboolean-object)
 
     local o=200
     local i=190
@@ -418,7 +506,7 @@ tboolean-csg-shells3()
                       name=$FUNCNAME
                       analytic=1
                       offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-box-boundary)
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
 
                       node=union        parameters=0,0,0,500           boundary=$boundary
 
@@ -453,7 +541,7 @@ tboolean-csg-shells3()
 
 tboolean-csg-shells3-alt()
 {
-    local boundary=$(tboolean-csg-boundary)
+    local boundary=$(tboolean-object)
 
     local o=200
     local i=190
@@ -466,7 +554,7 @@ tboolean-csg-shells3-alt()
                       name=$FUNCNAME
                       analytic=1
                       offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-box-boundary)
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
 
                       node=difference   parameters=0,0,0,500           boundary=$boundary
 
@@ -507,11 +595,11 @@ tboolean-csg-triplet()
                       name=$FUNCNAME
                       analytic=1
                       offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
 
-                      node=intersection   parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=box          parameters=0,0,0,150           boundary=Vacuum///$material
-                      node=sphere       parameters=0,0,0,200           boundary=Vacuum///$material
+                      node=intersection   parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=box          parameters=0,0,0,150           boundary=$(tboolean-object)
+                      node=sphere       parameters=0,0,0,200           boundary=$(tboolean-object)
  
                       )
 
@@ -538,12 +626,12 @@ tboolean-csg-triplet-new-()
     cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
    
 s = CSG("sphere", param=[0,0,0,200])
 b = CSG("box", param=[0,0,0,150])
-sib = CSG("intersection", left=s, right=b, boundary="Vacuum///$material")
-smb = CSG("difference",   left=s, right=b, boundary="Vacuum///$material")
+sib = CSG("intersection", left=s, right=b, boundary="$(tboolean-object)")
+smb = CSG("difference",   left=s, right=b, boundary="$(tboolean-object)")
 
 CSG.Serialize([container, smb], "$base" )
 
@@ -553,40 +641,11 @@ EOP
 
 
 
-tboolean-enum(){
-   local tmp=$TMP/$FUNCNAME.exe
-   clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp $*
-}
-
-
-tboolean-csg-four-box-minus-sphere-notes(){ cat << EON
-
-
-     0x1008 -> 1008 -> ERROR_RHS_END_EMPTY 
-     0x100c -> 100c -> ERROR_LHS_END_NONEMPTY ERROR_RHS_END_EMPTY 
-           0x1 -> 1 -> ERROR_LHS_POP_EMPTY 
-
-
-dump_error_enum
-    0 
-    1 ERROR_LHS_POP_EMPTY 
-    2 ERROR_RHS_POP_EMPTY 
-    3 ERROR_LHS_POP_EMPTY ERROR_RHS_POP_EMPTY 
-    4 ERROR_LHS_END_NONEMPTY 
-    5 ERROR_LHS_POP_EMPTY ERROR_LHS_END_NONEMPTY 
-    6 ERROR_RHS_POP_EMPTY ERROR_LHS_END_NONEMPTY 
-    7 ERROR_LHS_POP_EMPTY ERROR_RHS_POP_EMPTY ERROR_LHS_END_NONEMPTY 
-    8 ERROR_RHS_END_EMPTY 
-
-EON
-}
 
 tboolean-csg-four-box-minus-sphere()
 {
-    local material=$(tboolean-material)
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
     local radius=200
-
     local s=100
     #local s=200  # no error when avoid overlap between subtrees 
 
@@ -595,29 +654,29 @@ tboolean-csg-four-box-minus-sphere()
                       name=$FUNCNAME
                       analytic=1
                       offsets=0,1
-                      node=box          parameters=0,0,0,1000          boundary=Rock//perfectAbsorbSurface/Vacuum
+                      node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
 
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=union        parameters=0,0,0,500           boundary=$(tboolean-object)
 
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=union        parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=union        parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=union        parameters=0,0,0,500           boundary=$(tboolean-object)
 
-                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
-                      node=difference   parameters=0,0,0,500           boundary=Vacuum///$material
+                      node=difference   parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=difference   parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=difference   parameters=0,0,0,500           boundary=$(tboolean-object)
+                      node=difference   parameters=0,0,0,500           boundary=$(tboolean-object)
 
-                      node=box          parameters=$s,$s,-$s,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=$s,$s,-$s,200           boundary=Vacuum///$material
+                      node=box          parameters=$s,$s,-$s,$inscribe     boundary=$(tboolean-object)
+                      node=sphere       parameters=$s,$s,-$s,200           boundary=$(tboolean-object)
 
-                      node=box          parameters=-$s,-$s,-$s,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=-$s,-$s,-$s,200           boundary=Vacuum///$material
+                      node=box          parameters=-$s,-$s,-$s,$inscribe     boundary=$(tboolean-object)
+                      node=sphere       parameters=-$s,-$s,-$s,200           boundary=$(tboolean-object)
 
-                      node=box          parameters=$s,-$s,$s,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=$s,-$s,$s,200           boundary=Vacuum///$material
+                      node=box          parameters=$s,-$s,$s,$inscribe     boundary=$(tboolean-object)
+                      node=sphere       parameters=$s,-$s,$s,200           boundary=$(tboolean-object)
 
-                      node=box          parameters=-$s,$s,$s,$inscribe     boundary=Vacuum///$material
-                      node=sphere       parameters=-$s,$s,$s,200           boundary=Vacuum///$material
+                      node=box          parameters=-$s,$s,$s,$inscribe     boundary=$(tboolean-object)
+                      node=sphere       parameters=-$s,$s,$s,200           boundary=$(tboolean-object)
  
                       )
 
@@ -630,12 +689,31 @@ tboolean-csg-four-box-minus-sphere()
 
 tboolean-testconfig()
 {
-    #tboolean-box-sphere intersection    ## looks like a dice, sphere chopped by cube
+    #tboolean-box
+    #tboolean-box-py
+
+    #tboolean-box-small-offset-sphere difference
+
+    #tboolean-box-small-offset-sphere-py difference
+    #tboolean-box-small-offset-sphere-py intersection
+    #tboolean-box-small-offset-sphere-py union
+
+    #tboolean-box-sphere intersection 
     #tboolean-box-sphere union
-    tboolean-box-sphere-py difference
+    #tboolean-box-sphere difference
+
+    #tboolean-box-sphere-py intersection 
+    #tboolean-box-sphere-py difference
     #tboolean-box-sphere-py union
 
+
     #tboolean-csg-two-box-minus-sphere-interlocked
+    #tboolean-csg-two-box-minus-sphere-interlocked-py
+
+    tboolean-csg-unbalanced-py
+
+
+
     #tboolean-csg-four-box-minus-sphere
     #tboolean-csg-shells2
     #tboolean-csg-shells3
@@ -643,8 +721,6 @@ tboolean-testconfig()
 
     #tboolean-csg
 
-    #tboolean-box
-    #tboolean-box-small-offset-sphere difference
 
     #tboolean-csg-triplet
     #tboolean-csg-triplet-new

@@ -491,13 +491,12 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u exceeds current limit\n", primIdx_, numParts, fullHeight ) ;
         return ; 
     } 
-    unsigned height = fullHeight - 1 ;
-    unsigned numInternalNodes = TREE_NODES(height) ;
-    unsigned numNodes         = TREE_NODES(fullHeight) ;      
+    unsigned numNodes = TREE_NODES(fullHeight) ;      
 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
     unsigned long long postorder = postorder_sequence[fullHeight] ; 
-    //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numInternalNodes %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numInternalNodes, numNodes, postorder );
+
+    //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numNodes, postorder );
 
     int ierr = 0 ;  
     bool verbose = false ; 
@@ -554,11 +553,15 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             int depth = TREE_DEPTH(nodeIdx) ;
             unsigned subNodes = TREE_NODES(fullHeight-depth) ;
             unsigned halfNodes = (subNodes - 1)/2 ; 
-            bool primitive = nodeIdx > numInternalNodes  ;  // TODO: use partBuffer content for empty handling
 
             quad q2 ; 
             q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
-            OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
+            OpticksCSG_t typecode = (OpticksCSG_t)q2.u.w ;
+
+            // typecode can indicate: CSG_ZERO empty node, operation node, primitive
+            if(typecode == CSG_ZERO) continue ; 
+
+            bool primitive = typecode >= CSG_SPHERE ; 
 
 /*
             if(verbose)
@@ -569,7 +572,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            csg_repr(csg), 
                            tranche_repr(tr),
                            tloop,  
-                           operation,
+                           typecode,
                            primitive,
                            halfNodes,
                            depth
@@ -599,7 +602,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             {
                 if(csg.curr < 1)  // curr 1 : 2 items 
                 {
-                    rtPrintf("[%5d]evaluative_csg ERROR_POP_EMPTY nodeIdx %4d operation %d csg.curr %d \n", launch_index.x, nodeIdx, operation, csg.curr );
+                    rtPrintf("[%5d]evaluative_csg ERROR_POP_EMPTY nodeIdx %4d typecode %d csg.curr %d \n", launch_index.x, nodeIdx, typecode, csg.curr );
                     ierr |= ERROR_POP_EMPTY ; 
                     break ; 
                 }
@@ -608,7 +611,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
                 if(!(firstLeft ^ secondLeft))
                 {
-                    rtPrintf("[%5d]evaluative_csg ERROR_XOR_SIDE nodeIdx %4d operation %d tl %10.3f tr %10.3f sl %d sr %d \n", launch_index.x, nodeIdx, operation, csg.data[csg.curr].w, csg.data[csg.curr-1].w, firstLeft, secondLeft );
+                    rtPrintf("[%5d]evaluative_csg ERROR_XOR_SIDE nodeIdx %4d typecode %d tl %10.3f tr %10.3f sl %d sr %d \n", launch_index.x, nodeIdx, typecode, csg.data[csg.curr].w, csg.data[csg.curr-1].w, firstLeft, secondLeft );
                     ierr |= ERROR_XOR_SIDE ; 
                     break ; 
                 }
@@ -621,7 +624,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                 float t_left  = fabsf( csg.data[left].w );
                 float t_right = fabsf( csg.data[right].w );
 
-                int ctrl = boolean_ctrl_packed_lookup( operation, l_state, r_state, t_left <= t_right ) ;
+                int ctrl = boolean_ctrl_packed_lookup( typecode , l_state, r_state, t_left <= t_right ) ;
                 history_append( hist, nodeIdx, ctrl ); 
 
                 enum { UNDEFINED=0, CONTINUE=1, BREAK=2 } ;
@@ -677,7 +680,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
  
 /* 
                if(verbose)
-                rtPrintf("[%5d](ctrl) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx ctrl %d     tloop %2d (%2d->%2d) operation %d tlr (%10.3f,%10.3f) \n", 
+                rtPrintf("[%5d](ctrl) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx ctrl %d     tloop %2d (%2d->%2d) typecode %d tlr (%10.3f,%10.3f) \n", 
                            launch_index.x, 
                            nodeIdx,
                            csg.curr,
@@ -687,7 +690,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                            tloop,  
                            POSTORDER_NODE(postorder, begin),
                            POSTORDER_NODE(postorder, end-1),
-                           operation, 
+                           typecode, 
                            t_left, 
                            t_right
                               );
