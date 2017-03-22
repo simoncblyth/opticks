@@ -10,7 +10,9 @@
 #include "NPrism.hpp"
 #include "NPart.hpp"
 #include "NCSG.hpp"
+
 #include "NMarchingCubesNPY.hpp"
+#include "NDualContouringSample.hpp"
 
 #include "OpticksCSG.h"
 
@@ -101,11 +103,17 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
 
     unsigned index = csg->getIndex();
 
-    int nx = 15 ;  // gets cubed, so not too large
 
-    NMarchingCubesNPY mcu(nx) ;
 
-    NTrianglesNPY* tris = mcu(root);
+    //int nx = 15 ;  // side of cube, so not too large
+    //NMarchingCubesNPY tessa(nx) ;
+
+    int log2size = 5 ; // 1 << 5 = 32
+    float threshold = 0.1f ; 
+    NDualContouringSample tessa(log2size, threshold) ;
+
+
+    NTrianglesNPY* tris = tessa(root);
 
     unsigned numTris = tris->getNumTriangles();
 
@@ -117,7 +125,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
               ;
 
 
-    GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), index);
+    GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 
     //mesh->save("$TMP", "GMaker_makeMarchingCubesMesh" );
 

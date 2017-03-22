@@ -55,7 +55,7 @@ class NPY_API NTrianglesNPY {
         static NTrianglesNPY* prism(const glm::vec4& param); 
     public:
         NTrianglesNPY();
-        NTrianglesNPY(NPY<float>* tris);
+        NTrianglesNPY(NPY<float>* tris, NPY<float>* normals=NULL);
     public:
         NTrianglesNPY* transform(glm::mat4& m);
         NTrianglesNPY* subdivide(unsigned int nsubdiv);
@@ -64,8 +64,12 @@ class NPY_API NTrianglesNPY {
         void add(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
         void add(const ntriangle& t );
         void add(NTrianglesNPY* other);
+        void addNormal(const glm::vec3& n ); // in triplicate
+        void addNormal(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c );
     public:
         NPY<float>* getBuffer();
+        NPY<float>* getTris();
+        NPY<float>* getNormals();
         unsigned int getNumTriangles();
         nbbox* findBBox();
         void setTransform(const glm::mat4& transform);
@@ -73,6 +77,7 @@ class NPY_API NTrianglesNPY {
         glm::mat4 getTransform();
     private:
         NPY<float>*  m_tris ; 
+        NPY<float>*  m_normals ; 
         glm::mat4    m_transform ; 
 };
 

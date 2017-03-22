@@ -128,6 +128,14 @@ set(SOURCES
     NMarchingCubesNPY.cpp
 
     NCSG.cpp
+    NOctNode.cpp
+
+    NDualContouringSample.cpp
+    DualContouringSample/octree.cpp
+    DualContouringSample/qef.cpp
+    DualContouringSample/svd.cpp
+    DualContouringSample/density.cpp
+
 )
 
 set(REST_SOURCES
@@ -207,6 +215,8 @@ Parameters.hpp
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
 NCSG.hpp
+NOctNode.hpp
+NDualContouringSample.hpp
 
 )
 

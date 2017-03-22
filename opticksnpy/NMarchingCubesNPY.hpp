@@ -10,11 +10,6 @@ struct nnode ;
 class NTrianglesNPY ; 
 
 
-// TODO: split this up in method, 
-//       keep some state so can see what went wrong 
-//       perhaps use adaptive approach when first attempt fails to yield tris
-
-
 class NPY_API NMarchingCubesNPY {
     public:
         NMarchingCubesNPY(int nx, int ny=0, int nz=0);

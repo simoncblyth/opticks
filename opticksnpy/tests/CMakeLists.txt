@@ -63,6 +63,9 @@ DummyPhotonsNPYTest.cc
 
 NMarchingCubesNPYTest.cc
 NCSGTest.cc
+NOctNodeTest.cc
+
+NDualContouringSampleTest.cc
 
 )
 

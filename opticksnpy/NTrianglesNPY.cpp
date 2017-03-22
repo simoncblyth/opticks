@@ -24,8 +24,22 @@
 
 NPY<float>* NTrianglesNPY::getBuffer()
 {
+    assert(0) ; // move to getTris
     return m_tris ; 
 }
+
+NPY<float>* NTrianglesNPY::getTris()
+{
+    return m_tris ; 
+}
+NPY<float>* NTrianglesNPY::getNormals()
+{
+    return m_normals ; 
+}
+
+
+
+
 
 void NTrianglesNPY::setTransform(const glm::mat4& transform_)
 {
@@ -41,12 +55,15 @@ glm::mat4 NTrianglesNPY::getTransform()
 
 NTrianglesNPY::NTrianglesNPY()
 {
-    m_tris = NPY<float>::make(0,3,3);
+    m_tris    = NPY<float>::make(0,3,3);
+    m_normals = NPY<float>::make(0,3,3);
 }
 
-NTrianglesNPY::NTrianglesNPY(NPY<float>* tris)
+NTrianglesNPY::NTrianglesNPY(NPY<float>* tris, NPY<float>* normals)
+   :
+   m_tris(tris),
+   m_normals(normals)
 {
-    m_tris = tris ;
 }
 
 NTrianglesNPY* NTrianglesNPY::transform(glm::mat4& m)
@@ -102,6 +119,43 @@ void NTrianglesNPY::add(const glm::vec3& a, const glm::vec3& b, const glm::vec3&
 }
 
 
+void NTrianglesNPY::addNormal(const glm::vec3& nrm )  // in triplicate
+{
+    int n = 3*3 ; 
+    float* vals = new float[n] ;
+    for(int i=0 ; i < 3 ; i++)  
+    {
+       vals[i*3+0] = nrm.x ;
+       vals[i*3+1] = nrm.y ;
+       vals[i*3+2] = nrm.z ;
+    }
+    m_normals->add(vals, n);
+    delete [] vals ; 
+}
+
+
+void NTrianglesNPY::addNormal(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c ) 
+{
+    float vals[9] ;
+
+    vals[0*3 + 0 ] = a.x ; 
+    vals[0*3 + 1 ] = a.y ; 
+    vals[0*3 + 2 ] = a.z ;
+
+    vals[1*3 + 0 ] = b.x ; 
+    vals[1*3 + 1 ] = b.y ; 
+    vals[1*3 + 2 ] = b.z ;
+  
+    vals[2*3 + 0 ] = c.x ; 
+    vals[2*3 + 1 ] = c.y ; 
+    vals[2*3 + 2 ] = c.z ;
+ 
+    m_normals->add(vals, 9);
+}
+
+
+
+
 void NTrianglesNPY::add(const ntriangle& t )
 {
     unsigned int n = 3*3 ; 
@@ -114,12 +168,12 @@ void NTrianglesNPY::add(const ntriangle& t )
 
 void NTrianglesNPY::add(NTrianglesNPY* other )
 {
-    m_tris->add(other->getBuffer());
+    m_tris->add(other->getTris());
 }
 
 nbbox* NTrianglesNPY::findBBox()
 {
-    NPY<float>* buf = getBuffer();
+    NPY<float>* buf = getTris();
     assert(buf && buf->hasItemShape(3,3));
     unsigned nitem = buf->getShape(0);
     nbbox* bb = NULL ; 
