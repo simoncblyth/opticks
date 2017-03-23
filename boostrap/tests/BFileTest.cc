@@ -139,6 +139,27 @@ void test_Name_ParentDir()
 }
 
 
+void test_ChangeExt()
+{
+    const char* path = "$TMP/somedir/somefile.txt" ; 
+    std::string name = BFile::Name(path) ;
+    std::string stem = BFile::Stem(path);
+    std::string dir = BFile::ParentDir(path) ;
+
+    std::string chg = BFile::ChangeExt(path, ".json");
+
+
+    LOG(info) << " path " << path
+              << " name " << name
+              << " stem " << stem
+              << " dir " << dir
+              << " chg " << chg
+              ;
+ 
+
+    
+}
+
 
 
 int main(int argc, char** argv)
@@ -155,7 +176,8 @@ int main(int argc, char** argv)
    //test_CreateDir();
    //test_ParentDir();
    //test_FormPath();
-   test_Name_ParentDir();
+   //test_Name_ParentDir();
+   test_ChangeExt();
 
 
 

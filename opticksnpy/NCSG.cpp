@@ -6,6 +6,8 @@
 #include "BFile.hh"
 
 #include "OpticksCSG.h"
+
+#include "Parameters.hpp"
 #include "NPart.h"
 #include "NSphere.hpp"
 #include "NBox.hpp"
@@ -26,6 +28,7 @@ NCSG::NCSG(const char* path, unsigned index)
    m_root(NULL),
    m_path(path ? strdup(path) : NULL),
    m_data(NULL),
+   m_meta(NULL),
 
    m_num_nodes(0),
    m_height(-1),
@@ -35,6 +38,11 @@ NCSG::NCSG(const char* path, unsigned index)
 
 void NCSG::load()
 {
+    std::string metapath = BFile::ChangeExt(m_path, ".json") ;
+
+    m_meta = new Parameters ; 
+    m_meta->load_( metapath.c_str() );
+
     m_data = NPY<float>::load(m_path);
     m_num_nodes  = m_data->getShape(0) ;  
     unsigned nj = m_data->getShape(1);
@@ -224,9 +232,12 @@ void NCSG::export_r(nnode* node, unsigned idx)
 
 void NCSG::dump(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg << " " << desc() ; 
     if(!m_root) return ;
     m_root->dump("NCSG::dump (root)");
+
+    if(m_meta)
+    m_meta->dump(); 
 }
 
 std::string NCSG::desc()
@@ -238,6 +249,7 @@ std::string NCSG::desc()
        << " path " << ( m_path ? m_path : "NULL" ) 
        << " shape " << sh  
        << " boundary " << m_boundary 
+       << " meta " << m_meta->desc()
        ;
     return ss.str();  
 }

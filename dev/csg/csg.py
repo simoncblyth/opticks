@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 """
-::
 
-    
+CSG_
+=====
 
+Used by tboolean- for CSG solid construction and serialization
+for reading by npy-/NCSG 
+
+TODO:
+
+* collect metadata kv for any node, for root nodes only 
+  persist the metadata with Serialize (presumably as json or ini) 
+  For example to control type of triangulation and 
+  parameters such as thresholds and octree sizes per csg tree.
 
 """
-import os, sys, logging, numpy as np
+import os, sys, logging, json, numpy as np
 log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
@@ -92,6 +101,9 @@ class CSG(CSG_):
         return buf
 
     def save(self, path):
+        metapath = path.replace(".npy",".json") 
+        log.info("save to %s meta %r metapath %s " % (path, self.meta, metapath))
+        json.dump(self.meta,file(metapath,"w"))
         np.save(path, self.serialize())
 
     stream = property(lambda self:self.save(sys.stdout))
@@ -126,7 +138,7 @@ class CSG(CSG_):
         root.height = height 
         return root
 
-    def __init__(self, typ, left=None, right=None, param=None, boundary=""):
+    def __init__(self, typ, left=None, right=None, param=None, boundary="", **kwa):
         if type(typ) is str:
             typ = self.fromdesc(typ)  
         pass
@@ -137,6 +149,7 @@ class CSG(CSG_):
         self.right = right
         self.param = param
         self.boundary = boundary
+        self.meta = kwa
 
     def _get_param(self):
         return self._param
@@ -193,7 +206,7 @@ if __name__ == '__main__':
    
     s = CSG("sphere")
     b = CSG("box")
-    sub = CSG("union", left=s, right=b, boundary="Vacuum///GlassShottF2")
+    sub = CSG("union", left=s, right=b, boundary="Vacuum///GlassShottF2", hello="world")
 
     trees0 = [container, sub]
 

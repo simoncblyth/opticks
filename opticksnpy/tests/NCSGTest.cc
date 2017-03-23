@@ -53,8 +53,8 @@ int main(int argc, char** argv)
 
     LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
 
-    //test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py") ; 
-    test_FromNode();
+    test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py") ; 
+    //test_FromNode();
 
     return 0 ; 
 }

@@ -420,3 +420,13 @@ std::string BFile::prefixShorten( const char* path, const char* prefix_)
 
 
 
+std::string BFile::ChangeExt( const char* path, const char* ext)
+{
+    std::string dir = BFile::ParentDir(path);
+    std::string name = BFile::Stem(path);
+    name += ext ;   
+    return FormPath(dir.c_str(), name.c_str());
+}
+
+
+

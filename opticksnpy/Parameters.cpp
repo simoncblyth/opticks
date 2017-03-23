@@ -76,6 +76,14 @@ void Parameters::dump()
     dump("Parameters::dump");  // handy for debugging::   (lldb) expr m_parameters->dump()
 }
 
+std::string Parameters::desc()
+{
+    std::stringstream ss ; 
+    ss << "Parameters numItems " << getNumItems() ; 
+    return ss.str();
+}
+
+
 void Parameters::dump(const char* msg)
 {
    prepLines();
@@ -104,6 +112,11 @@ void Parameters::prepLines()
 }
 
 
+
+unsigned Parameters::getNumItems()
+{
+   return m_parameters.size(); 
+}
 
 
 template <typename T>

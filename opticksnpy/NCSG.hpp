@@ -21,6 +21,7 @@ cf dev/csg/csg.py
 
 struct nvec4 ; 
 struct nnode ; 
+class Parameters ; 
 
 class NPY_API NCSG {
     public:
@@ -59,6 +60,7 @@ class NPY_API NCSG {
         nnode*      m_root ;  
         const char* m_path ; 
         NPY<float>* m_data ; 
+        Parameters* m_meta ; 
         unsigned    m_num_nodes ; 
         unsigned    m_height ; 
         const char* m_boundary ; 
