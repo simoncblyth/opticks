@@ -2,7 +2,7 @@
 #include "NPY.hpp"
 #include "FabStepNPY.hpp"
 #include "TorchStepNPY.hpp"
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 #include "GLMFormat.hpp"
 
 #include "GGeo.hh"
@@ -205,7 +205,7 @@ NPY<float>* OpticksGen::loadGenstepFile(const char* label)
 
     int modulo = m_cfg->getModulo();
 
-    Parameters* parameters = gs->getParameters();
+    NParameters* parameters = gs->getParameters();
     parameters->add<int>("Modulo", modulo );
     if(modulo > 0) 
     {    

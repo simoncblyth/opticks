@@ -7,21 +7,21 @@
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
-class NPY_API Parameters {
+class NPY_API NParameters {
    public:
-       static Parameters* load(const char* path);
-       static Parameters* load(const char* dir, const char* name);
+       static NParameters* load(const char* path);
+       static NParameters* load(const char* dir, const char* name);
    public:
        typedef std::pair<std::string, std::string>   SS ; 
        typedef std::vector<SS>                      VSS ; 
        typedef std::vector<std::string>              VS ; 
    public:
-       Parameters();
+       NParameters();
        const std::vector<std::pair<std::string,std::string> >& getVec() ;
 
        std::string getStringValue(const char* name);
    public:
-       void append(Parameters* other);
+       void append(NParameters* other);
    public:
        template <typename T> 
        void add(const char* name, T value);

@@ -21,7 +21,7 @@
 
 // npy-
 #include "Timer.hpp"
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 #include "NState.hpp"
@@ -295,7 +295,7 @@ void Opticks::init()
 
     m_timer->start();
 
-    m_parameters = new Parameters ;  
+    m_parameters = new NParameters ;  
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
@@ -351,7 +351,7 @@ Timer* Opticks::getTimer()
 {
     return m_timer ; 
 }
-Parameters* Opticks::getParameters()
+NParameters* Opticks::getParameters()
 {
     return m_parameters ; 
 }
@@ -1030,7 +1030,7 @@ OpticksEvent* Opticks::makeEvent(bool ok, unsigned tagoffset)
     // other params are best keep in m_parameters where they get saved/loaded  
     // with the evt 
 
-    Parameters* parameters = evt->getParameters();
+    NParameters* parameters = evt->getParameters();
     parameters->add<unsigned int>("RngMax",    rng_max );
     parameters->add<unsigned int>("BounceMax", bounce_max );
     parameters->add<unsigned int>("RecordMax", record_max );

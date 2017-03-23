@@ -5,6 +5,7 @@
 #include "NPY.hpp"
 #include "NTrianglesNPY.hpp"
 
+#include "NParameters.hpp"
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPrism.hpp"
@@ -100,32 +101,34 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
 {
     nnode* root = csg->getRoot() ;
     assert(root);
+    NParameters* meta = csg->getMeta();
+    assert(meta);
 
+    std::string tessa = meta->get<std::string>("tessa", "DCS") ; 
     unsigned index = csg->getIndex();
 
+    NTrianglesNPY* tris = NULL ; 
 
-/*
-    int nx = 15 ;  // side of cube, so not too large
-    NMarchingCubesNPY tessa(nx) ;
-*/
-
-
-    //int log2size = 5 ; // 1 << 5 = 32
-    //int log2size = 6 ; // 1 << 6 = 64
-    int log2size = 7 ;   // 1 << 7 = 128
-    float threshold = 0.1f ; 
-    NDualContouringSample tessa(log2size, threshold) ;
-
-
-
-
-    NTrianglesNPY* tris = tessa(root);
+    if( strcmp(tessa.c_str(), "MC") == 0)
+    {
+        int nx = meta->get<int>("nx", "15" );
+        NMarchingCubesNPY tessa(nx) ;
+        tris = tessa(root);
+    } 
+    else if(strcmp(tessa.c_str(), "DCS") == 0)
+    {
+        float threshold = meta->get<float>("threshold", "0.1" );
+        int   log2size = meta->get<int>("log2size", "7" );  // 1 << 5 = 32, 1 << 6 = 64, 1 << 7 = 128  
+        NDualContouringSample tessa(log2size, threshold) ;
+        tris = tessa(root);
+    }
 
     unsigned numTris = tris->getNumTriangles();
 
     nbbox* bb = tris->findBBox();
 
     LOG(info) << "GMaker::makeFromCSG"
+              << " tessa " << tessa
               << " numTris " << numTris
               << " " << ( bb ? bb->desc() : "bb:NULL" )
               ;

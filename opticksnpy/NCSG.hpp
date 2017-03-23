@@ -21,7 +21,7 @@ cf dev/csg/csg.py
 
 struct nvec4 ; 
 struct nnode ; 
-class Parameters ; 
+class NParameters ; 
 
 class NPY_API NCSG {
     public:
@@ -38,6 +38,7 @@ class NPY_API NCSG {
         unsigned getIndex();
         const char* getBoundary();
         NPY<float>* getBuffer();
+        NParameters* getMeta();
         unsigned getNumNodes();
         unsigned getHeight();
         nnode* getRoot();
@@ -60,7 +61,7 @@ class NPY_API NCSG {
         nnode*      m_root ;  
         const char* m_path ; 
         NPY<float>* m_data ; 
-        Parameters* m_meta ; 
+        NParameters* m_meta ; 
         unsigned    m_num_nodes ; 
         unsigned    m_height ; 
         const char* m_boundary ; 

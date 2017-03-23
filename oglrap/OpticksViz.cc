@@ -7,7 +7,7 @@
 
 // npy-
 #include "Types.hpp"
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 #include "Timer.hpp"
 #include "TimesTable.hpp"
 #include "NGLM.hpp"
@@ -344,7 +344,7 @@ void OpticksViz::prepareGUI()
         LOG(warning) << "App::prepareGUI NULL TimesTable " ; 
     }  
 
-    Parameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
+    NParameters* parameters = evt ? evt->getParameters() : m_ok->getParameters() ; 
 
     m_gui->setupParams(parameters->getLines());
 

@@ -1,11 +1,11 @@
 #include <cassert>
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 
 
 
 void test_basic()
 {
-    Parameters p ;
+    NParameters p ;
     p.add<int>("hello", 1);
     p.add<int>("world", 2);
     p.dump();
@@ -14,7 +14,7 @@ void test_basic()
 
 void test_save_load()
 {
-    Parameters p ;
+    NParameters p ;
     p.add<int>("hello", 1);
     p.add<int>("world", 2);
     p.dump();
@@ -23,14 +23,14 @@ void test_save_load()
     const char* path = "$TMP/parameters.json" ;
     p.save(path);
 
-    Parameters* q = Parameters::load(path);
+    NParameters* q = NParameters::load(path);
     q->dump("q");
 }
 
 
 void test_set()
 {
-    Parameters p ;
+    NParameters p ;
     p.add<std::string>("red", "g");
     p.add<std::string>("green", "g");
     p.add<std::string>("blue", "b");
@@ -43,7 +43,7 @@ void test_set()
 
 void test_bool_nonexisting()
 {
-    Parameters p ;
+    NParameters p ;
 
     bool non = p.get<bool>("NonExisting","0");
     assert(non == false); 
@@ -52,12 +52,12 @@ void test_bool_nonexisting()
 }
 void test_bool()
 {
-    Parameters a ;
+    NParameters a ;
     a.add<bool>("Existing",true);
     bool yes = a.get<bool>("Existing","0");
     assert(yes == true); 
 
-    Parameters b ;
+    NParameters b ;
     b.add<bool>("Existing",false);
     bool no1 = b.get<bool>("Existing","0");
     assert(no1 == false); 

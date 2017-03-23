@@ -11,7 +11,7 @@
 #include "NGLM.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-#include "Parameters.hpp"
+//#include "NParameters.hpp"
 
 // npy-
 #include "Timer.hpp"

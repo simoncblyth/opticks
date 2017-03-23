@@ -11,7 +11,7 @@
 #include <glm/fwd.hpp>
 
 
-class Parameters ; 
+class NParameters ; 
 class NLookup ; 
 class NPYSpec ; 
 #include "NPY_API_EXPORT.hh"
@@ -71,7 +71,7 @@ class NPY_API NPYBase {
        unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0);
        unsigned int getNumValues(unsigned int from_dim=0);
 
-       Parameters*  getParameters();
+       NParameters*  getParameters();
    public:
        // depending on sizeoftype
        Type_t        getType();
@@ -184,7 +184,7 @@ class NPY_API NPYBase {
        bool               m_has_data ;
        bool               m_dynamic ;
        NLookup*           m_lookup ;   // only needed for legacy gensteps 
-       Parameters*        m_parameters ;  // for keeping notes, especially for gensteps
+       NParameters*        m_parameters ;  // for keeping notes, especially for gensteps
 
 };
 

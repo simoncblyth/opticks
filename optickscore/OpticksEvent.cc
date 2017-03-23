@@ -38,7 +38,7 @@
 #include "ViewNPY.hpp"
 #include "MultiViewNPY.hpp"
 #include "TrivialCheckNPY.hpp"
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 #include "GLMFormat.hpp"
 #include "Index.hpp"
 
@@ -508,7 +508,7 @@ Index* OpticksEvent::getBoundaryIndex()
 
 
 
-Parameters* OpticksEvent::getParameters()
+NParameters* OpticksEvent::getParameters()
 {
     return m_parameters ;
 }
@@ -542,7 +542,7 @@ void OpticksEvent::init()
     m_timer->setVerbose(false);
     m_timer->start();
 
-    m_parameters = new Parameters ;
+    m_parameters = new NParameters ;
     m_report = new Report ; 
     m_domain = new OpticksDomain ; 
 
@@ -765,7 +765,7 @@ void OpticksEvent::setBufferControl(NPYBase* data)
                      << " AS NO spec "
                      ;
 
-        Parameters* param = data->getParameters();
+        NParameters* param = data->getParameters();
         if(param)
             param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC"); 
         assert(0);
@@ -1051,7 +1051,7 @@ void OpticksEvent::importGenstepDataLoaded(NPY<float>* gs)
 
 void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
-    Parameters* gsp = gs->getParameters();
+    NParameters* gsp = gs->getParameters();
     m_parameters->append(gsp);
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(isCompute()));

@@ -64,7 +64,7 @@ set(SOURCES
     NState.cpp
     NConfigurable.cpp
 
-    Parameters.cpp
+    NParameters.cpp
     Report.cpp
 
     NLookup.cpp
@@ -136,6 +136,8 @@ set(SOURCES
     DualContouringSample/svd.cpp
     DualContouringSample/density.cpp
 
+    NFieldCache.cpp
+    NGenerator.cpp
 )
 
 set(REST_SOURCES
@@ -210,13 +212,16 @@ NPropNames.hpp
 NSpectral.hpp
 NState.hpp
 NConfigurable.hpp
-Parameters.hpp
+NParameters.hpp
 
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
 NCSG.hpp
 NOctNode.hpp
 NDualContouringSample.hpp
+
+NFieldCache.hpp
+NGenerator.hpp
 
 )
 

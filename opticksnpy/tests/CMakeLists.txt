@@ -21,7 +21,7 @@ GLMFormatTest.cc
 ViewNPYTest.cc
 MultiViewNPYTest.cc
 NStateTest.cc
-ParametersTest.cc
+NParametersTest.cc
 ReportTest.cc
 IndexTest.cc
 NPropNamesTest.cc
@@ -66,6 +66,8 @@ NCSGTest.cc
 NOctNodeTest.cc
 
 NDualContouringSampleTest.cc
+NFieldCacheTest.cc
+NGeneratorTest.cc
 
 )
 

@@ -378,9 +378,18 @@ rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
-object = CSG("union", left=left, right=right, boundary="$(tboolean-object)")
+object = CSG("union", left=left, right=right, boundary="$(tboolean-object)", tessa="DCS", log2size="8" , threshold="10" )
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+# log2size 7 -> size 128, ie -64:64
+# log2size,theshold 7,100 ... broken, great big voids
+# log2size,theshold 7,10  ... a bit crooked 
+# log2size,theshold 7,1   ... a bit crooked, little different to 10
+#
+# log2size 8 -> size 256 ie -128:128
+# log2size,theshold 8,1   ... pretty mesh, but perhaps x10 times slower than log2size 8
+# log2size,theshold 8,10  ... still pretty, but still slow 
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
 
 CSG.Serialize([container, object], "$base" )
 # marching cubes with nx=15 makes a mess with this 

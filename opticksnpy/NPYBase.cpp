@@ -17,7 +17,7 @@
 #include "BOpticksEvent.hh"
 
 
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 #include "NPYSpec.hpp"
 #include "PLOG.hh"
 
@@ -93,7 +93,7 @@ NLookup* NPYBase::getLookup()
 {
     return m_lookup ; 
 }
-Parameters* NPYBase::getParameters()
+NParameters* NPYBase::getParameters()
 {
     return m_parameters ;
 }
@@ -142,7 +142,7 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
          m_has_data(has_data),
          m_dynamic(false),
          m_lookup(NULL),
-         m_parameters(new Parameters)
+         m_parameters(new NParameters)
 {
    init();
 } 

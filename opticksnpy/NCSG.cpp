@@ -7,7 +7,7 @@
 
 #include "OpticksCSG.h"
 
-#include "Parameters.hpp"
+#include "NParameters.hpp"
 #include "NPart.h"
 #include "NSphere.hpp"
 #include "NBox.hpp"
@@ -40,7 +40,7 @@ void NCSG::load()
 {
     std::string metapath = BFile::ChangeExt(m_path, ".json") ;
 
-    m_meta = new Parameters ; 
+    m_meta = new NParameters ; 
     m_meta->load_( metapath.c_str() );
 
     m_data = NPY<float>::load(m_path);
@@ -94,6 +94,11 @@ NPY<float>* NCSG::getBuffer()
 {
     return m_data ; 
 }
+NParameters* NCSG::getMeta()
+{
+    return m_meta ; 
+}
+
 const char* NCSG::getBoundary()
 {
     return m_boundary ; 

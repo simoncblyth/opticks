@@ -16,7 +16,7 @@ class BDynamicDefine ;
 class TorchStepNPY ; 
 class NState ;
 struct NSlice ;
-class Parameters ; 
+class NParameters ; 
 class NPropNames ; 
 class Timer ; 
 class Types ;
@@ -190,7 +190,7 @@ class OKCORE_API Opticks {
        Typ*                 getTyp();
    public:
        Timer*               getTimer();
-       Parameters*          getParameters();
+       NParameters*          getParameters();
        NState*              getState();
    public:
        int                  getMultiEvent();
@@ -306,7 +306,7 @@ class OKCORE_API Opticks {
    private:
        OpticksCfg<Opticks>* m_cfg ; 
        Timer*               m_timer ; 
-       Parameters*          m_parameters ; 
+       NParameters*          m_parameters ; 
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 

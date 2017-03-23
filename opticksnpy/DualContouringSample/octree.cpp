@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //#include	"density.h"
 
 
+
+
 float Density_Func(std::function<float(float,float,float)> f, const vec4& ce, const vec3& ijk)
 {
     vec3 xyz = vec3(ce) + ijk*ce.w ; 
@@ -525,7 +527,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::functi
 
 vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float)> f, const vec4& ce)
 {
-	const float H = 0.001f;
+	const float H = 0.001f; // hmm delta in ijk-space converted to floats 
 	const float dx = Density_Func(f,ce,p + vec3(H, 0.f, 0.f)) - Density_Func(f,ce,p - vec3(H, 0.f, 0.f));
 	const float dy = Density_Func(f,ce,p + vec3(0.f, H, 0.f)) - Density_Func(f,ce,p - vec3(0.f, H, 0.f));
 	const float dz = Density_Func(f,ce,p + vec3(0.f, 0.f, H)) - Density_Func(f,ce,p - vec3(0.f, 0.f, H));
