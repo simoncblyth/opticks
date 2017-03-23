@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "OpticksCSG.h"
 #include "NQuad.hpp"
@@ -22,6 +23,7 @@ struct NPY_API nnode {
 
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
+    std::function<float(float,float,float)> sdf();
 
     OpticksCSG_t type ;  
     nnode* left ; 

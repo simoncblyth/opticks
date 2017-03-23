@@ -14,9 +14,22 @@
 
 double nbox::operator()(double px, double py, double pz) 
 {
-    double s = param.w ; 
-    return fmax(fmax(fabs(px)-s,fabs(py)-s),fabs(pz)-s) ; 
+    nvec3 p = make_nvec3( px - param.x, py - param.y, pz - param.z ); // in the frame of the box
+    nvec3 a = nabsf(p) ; 
+    nvec3 s = make_nvec3( param.w, param.w, param.w );          
+    nvec3 d = a - s ; 
+    return nmaxf(d) ;
 } 
+
+/**
+    ~/opticks_refs/Procedural_Modelling_with_Signed_Distance_Functions_Thesis.pdf
+
+    SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the origin 
+
+    max( abs(px) - sx/2, abs(py) - sy/2, abs(pz) - sz/2 )
+
+
+**/
 
 nbbox nbox::bbox()
 {

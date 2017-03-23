@@ -234,11 +234,27 @@ tboolean-box-py-(){ cat << EOP
 from opticks.dev.csg.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
-box = CSG("box", param=[0,0,0,100], boundary="$(tboolean-object)")
+box = CSG("box", param=[0,0,100,100], boundary="$(tboolean-object)")
 
 CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
 EOP
 }
+
+
+
+tboolean-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-sphere-py-(){ cat << EOP 
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+sphere = CSG("sphere", param=[0,0,20,10], boundary="$(tboolean-object)")
+
+CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
+EOP
+}
+
+
+
 
 
 
@@ -692,6 +708,8 @@ tboolean-testconfig()
     #tboolean-box
     #tboolean-box-py
 
+    #tboolean-sphere-py
+
     #tboolean-box-small-offset-sphere difference
 
     #tboolean-box-small-offset-sphere-py difference
@@ -708,9 +726,9 @@ tboolean-testconfig()
 
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    #tboolean-csg-two-box-minus-sphere-interlocked-py
+    tboolean-csg-two-box-minus-sphere-interlocked-py
 
-    tboolean-csg-unbalanced-py
+    #tboolean-csg-unbalanced-py
 
 
 

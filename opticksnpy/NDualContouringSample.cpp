@@ -12,71 +12,69 @@
 
 #include "PLOG.hh"
 
-NDualContouringSample::NDualContouringSample(unsigned log2size, float threshold)
+NDualContouringSample::NDualContouringSample(unsigned log2size, float threshold, float scale_bb)
   :
    m_octreeSize(1 << log2size),
-   m_threshold(threshold)
+   m_threshold(threshold),
+   m_scale_bb(scale_bb)
 {
 }
 
 
+
+
+
+
+
 NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 {
+    m_node_bb = node->bbox();  // overloaded method 
+
+    nvec4     bbce = m_node_bb.center_extent();
+    float xyzExtent = bbce.w*m_scale_bb ;   // slightly enlarge, for cubes
+
+
+    glm::ivec3 ilow(-m_octreeSize / 2);
+
+    float ijkExtent = fabs(ilow.x) ;
+    float ijk2xyz = xyzExtent/ijkExtent ;   // octree -> real world coordinates
+
+    glm::vec4 ce(bbce.x, bbce.y, bbce.z, ijk2xyz );
+
+
+    LOG(info) << "NDualContouringSample "
+              << " xyzExtent " << xyzExtent
+              << " ijkExtent " << ijkExtent
+              << " bbce " << bbce.desc()
+              << " ce " << gformat(ce)
+              << " ilow " << gformat(ilow)
+              ;
+              
+
     VertexBuffer vertices;
     IndexBuffer indices;
 
     vertices.clear();
     indices.clear();
 
+    std::function<float(float,float,float)> f = node->sdf();
 
-    OctreeNode* root = NULL ; 
+    OctreeNode* octree = BuildOctree(ilow, m_octreeSize, m_threshold, f, ce ) ;
 
-    switch(node->type)
-    {
-        case CSG_UNION:
-            {
-                nunion* n = (nunion*)node ; 
-                std::function<float(float,float,float)> f = *n ; 
-                root = BuildOctree(glm::ivec3(-m_octreeSize / 2), m_octreeSize, m_threshold, f ) ;
-            }
-            break ;
-        case CSG_INTERSECTION:
-            {
-                nintersection* n = (nintersection*)node ; 
-                std::function<float(float,float,float)> f = *n ; 
-                root = BuildOctree(glm::ivec3(-m_octreeSize / 2), m_octreeSize, m_threshold, f ) ;
-            }
-            break ;
-        case CSG_DIFFERENCE:
-            {
-                ndifference* n = (ndifference*)node ; 
-                std::function<float(float,float,float)> f = *n ; 
-                root = BuildOctree(glm::ivec3(-m_octreeSize / 2), m_octreeSize, m_threshold, f ) ;
-            }
-            break ;
-        case CSG_SPHERE:
-            {
-                nsphere* n = (nsphere*)node ; 
-                std::function<float(float,float,float)> f = *n ; 
-                root = BuildOctree(glm::ivec3(-m_octreeSize / 2), m_octreeSize, m_threshold, f ) ;
-            }
-            break ;
-        case CSG_BOX:
-            {
-                nbox* n = (nbox*)node ;  
-                std::function<float(float,float,float)> f = *n ; 
-                root = BuildOctree(glm::ivec3(-m_octreeSize / 2), m_octreeSize, m_threshold, f ) ;
-            }
-            break ;
-        default:
-            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
-            assert(0);
+
+    NTrianglesNPY* tris = NULL ; 
+
+    if(octree == NULL)
+    {   
+        LOG(warning) << "NDualContouringSample : NULL octree  "
+                     << " for node " << CSGName(node->type)
+                     << " MAKING PLACEHOLDER BBOX TRIS "  
+                     ;
+        tris = NTrianglesNPY::box(m_node_bb);
+        return tris ; 
     }
 
-    assert(root);
-
-
-    GenerateMeshFromOctree(root, vertices, indices);
+    GenerateMeshFromOctree(octree, vertices, indices, ce);
 
 
     LOG(info) << " vertices " << vertices.size() ;
@@ -98,7 +96,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     LOG(debug) << "max element at: " << imax << " " << indices[imax] ;
 
 
-    NTrianglesNPY* tris = new NTrianglesNPY();
+    tris = new NTrianglesNPY();
 
     for(unsigned t=0 ; t < ntri ; t++)
     {
@@ -112,12 +110,14 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
          MeshVertex& v1 = vertices[i1] ;
          MeshVertex& v2 = vertices[i2] ;
 
+        /*
          LOG(info)
              << " t " << std::setw(5) << t 
              << " i0 " << std::setw(5) << i0  << " " << gformat(v0.xyz)  << " " << gformat(v0.normal) 
              << " i1 " << std::setw(5) << i1  << " " << gformat(v1.xyz)  << " " << gformat(v1.normal) 
              << " i2 " << std::setw(5) << i2  << " " << gformat(v2.xyz)  << " " << gformat(v2.normal) 
              ;
+         */
 
          tris->add( v0.xyz, v1.xyz, v2.xyz );
          tris->addNormal( v0.normal, v1.normal, v2.normal );

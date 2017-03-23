@@ -1,4 +1,5 @@
 #pragma once 
+#include <cmath>
 #include <cstdio>
 
 // initially attempted to use glm vec constituents 
@@ -243,6 +244,12 @@ inline NPY_API float nmaxf(const float a, const float b)
     return a > b ? a : b ; 
 }
 
+inline NPY_API float nmaxf(const nvec3& a)
+{
+   return nmaxf(nmaxf(a.x, a.y), a.z);
+}
+
+
 
 
 inline NPY_API nvec3 make_nvec3(float x, float y, float z )
@@ -257,6 +264,19 @@ inline NPY_API nvec3 nmaxf( const nvec3& a, const nvec3& b )
 {
     return make_nvec3( nmaxf(a.x, b.x), nmaxf(a.y, b.y), nmaxf(a.z, b.z) );
 }
+
+inline NPY_API nvec3 nabsf(const nvec3& a)
+{
+   return make_nvec3( fabs(a.x), fabs(a.y), fabs(a.z));
+}
+
+
+
+
+
+
+
+
 
 
 inline NPY_API nvec4 make_nvec4(float x, float y, float z, float w )

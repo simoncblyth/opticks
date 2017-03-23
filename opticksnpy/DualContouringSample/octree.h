@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include <glm/glm.hpp>
 using glm::vec3;
+using glm::vec4;
 using glm::ivec3;
 
 // ----------------------------------------------------------------------------
@@ -99,9 +100,10 @@ public:
 // ----------------------------------------------------------------------------
 
 //OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold );
-OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)> func);
+OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)> func, const vec4& ce);
 void DestroyOctree(OctreeNode* node);
-void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer);
+void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const vec4& ce);
+
 
 // ----------------------------------------------------------------------------
 

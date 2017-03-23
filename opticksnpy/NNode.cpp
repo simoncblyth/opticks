@@ -12,6 +12,8 @@
 #include "NBox.hpp"
 #include "NBBox.hpp"
 
+#include "PLOG.hh"
+
 
 double nnode::operator()(double,double,double) 
 {
@@ -151,6 +153,52 @@ void nnode::Tests(std::vector<nnode*>& nodes )
     nodes.push_back( (nnode*)d_bx_sp );
 
 
+}
+
+
+
+
+std::function<float(float,float,float)> nnode::sdf()
+{
+    nnode* node = this ; 
+    std::function<float(float,float,float)> f ; 
+    switch(node->type)
+    {
+        case CSG_UNION:
+            {
+                nunion* n = (nunion*)node ; 
+                f = *n ;
+            }
+            break ;
+        case CSG_INTERSECTION:
+            {
+                nintersection* n = (nintersection*)node ; 
+                f = *n ;
+            }
+            break ;
+        case CSG_DIFFERENCE:
+            {
+                ndifference* n = (ndifference*)node ; 
+                f = *n ;
+            }
+            break ;
+        case CSG_SPHERE:
+            {
+                nsphere* n = (nsphere*)node ; 
+                f = *n ;
+            }
+            break ;
+        case CSG_BOX:
+            {
+                nbox* n = (nbox*)node ;  
+                f = *n ;
+            }
+            break ;
+        default:
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            assert(0);
+    }
+    return f ;
 }
 
 

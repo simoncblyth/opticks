@@ -20,17 +20,27 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #include	"octree.h"
+#include <iostream>
+#include <iomanip>
+
 
 //#include	"density.h"
 
 
-float Density_Func(std::function<float(float,float,float)> f, const glm::vec3& v)
+float Density_Func(std::function<float(float,float,float)> f, const vec4& ce, const vec3& ijk)
 {
-    float fv = f(v.x, v.y, v.z );
+    vec3 xyz = vec3(ce) + ijk*ce.w ; 
 
-    printf(" fv: %10.3f %10.3f %10.3f -> %10.3f \n", v.x,v.y,v.z, fv );
+    float fxyz = f(xyz.x, xyz.y, xyz.z);
 
-    return fv ; 
+  /*
+   printf(" ce:(%10.3f %10.3f %10.3f %10.3f) ijk: (%10.3f %10.3f %10.3f) xyz:(%10.3f %10.3f %10.3f)  -> %10.3f \n", 
+         ce.x,ce.y,ce.z, ce.w,
+         ijk.x,ijk.y,ijk.z, 
+         xyz.x,xyz.y,xyz.z,  fxyz );
+   */
+
+    return fxyz ; 
 }
 
 
@@ -228,7 +238,7 @@ OctreeNode* SimplifyOctree(OctreeNode* node, float threshold)
 
 // ----------------------------------------------------------------------------
 
-void GenerateVertexIndices(OctreeNode* node, VertexBuffer& vertexBuffer)
+void GenerateVertexIndices(OctreeNode* node, VertexBuffer& vertexBuffer, const vec4& ce)
 {
 	if (!node)
 	{
@@ -239,7 +249,7 @@ void GenerateVertexIndices(OctreeNode* node, VertexBuffer& vertexBuffer)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			GenerateVertexIndices(node->children[i], vertexBuffer);
+			GenerateVertexIndices(node->children[i], vertexBuffer, ce);
 		}
 	}
 
@@ -253,7 +263,12 @@ void GenerateVertexIndices(OctreeNode* node, VertexBuffer& vertexBuffer)
 		}
 
 		d->index = vertexBuffer.size();
-		vertexBuffer.push_back(MeshVertex(d->position, d->averageNormal));
+
+
+        vec3 ijk = d->position ; 
+        vec3 xyz = vec3(ce) + ijk*ce.w ; 
+
+		vertexBuffer.push_back(MeshVertex(xyz, d->averageNormal));
 	}
 }
 
@@ -482,7 +497,7 @@ void ContourCellProc(OctreeNode* node, IndexBuffer& indexBuffer)
 
 // ----------------------------------------------------------------------------
 
-vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::function<float(float,float,float)> f)
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::function<float(float,float,float)> f, const vec4& ce)
 {
 	// approximate the zero crossing by finding the min value along the edge
 	float minValue = 100000.f;
@@ -493,7 +508,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::functi
 	while (currentT <= 1.f)
 	{
 		const vec3 p = p0 + ((p1 - p0) * currentT);
-		const float density = glm::abs(Density_Func(f,p));
+		const float density = glm::abs(Density_Func(f,ce,p));
 		if (density < minValue)
 		{
 			minValue = density;
@@ -508,19 +523,19 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::functi
 
 // ----------------------------------------------------------------------------
 
-vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float)> f)
+vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float)> f, const vec4& ce)
 {
 	const float H = 0.001f;
-	const float dx = Density_Func(f,p + vec3(H, 0.f, 0.f)) - Density_Func(f,p - vec3(H, 0.f, 0.f));
-	const float dy = Density_Func(f,p + vec3(0.f, H, 0.f)) - Density_Func(f,p - vec3(0.f, H, 0.f));
-	const float dz = Density_Func(f,p + vec3(0.f, 0.f, H)) - Density_Func(f,p - vec3(0.f, 0.f, H));
+	const float dx = Density_Func(f,ce,p + vec3(H, 0.f, 0.f)) - Density_Func(f,ce,p - vec3(H, 0.f, 0.f));
+	const float dy = Density_Func(f,ce,p + vec3(0.f, H, 0.f)) - Density_Func(f,ce,p - vec3(0.f, H, 0.f));
+	const float dz = Density_Func(f,ce,p + vec3(0.f, 0.f, H)) - Density_Func(f,ce,p - vec3(0.f, 0.f, H));
 
 	return glm::normalize(vec3(dx, dy, dz));
 }
 
 // ----------------------------------------------------------------------------
 
-OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,float)> f)
+OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,float)> f, const vec4& ce)
 {
 	if (!leaf || leaf->size != 1)
 	{
@@ -531,7 +546,7 @@ OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,floa
 	for (int i = 0; i < 8; i++)
 	{
 		const ivec3 cornerPos = leaf->min + CHILD_MIN_OFFSETS[i];
-		const float density = Density_Func(f, vec3(cornerPos));
+		const float density = Density_Func(f, ce, vec3(cornerPos));
 		const int material = density < 0.f ? MATERIAL_SOLID : MATERIAL_AIR;
 		corners |= (material << i);
 	}
@@ -566,8 +581,8 @@ OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,floa
 
 		const vec3 p1 = vec3(leaf->min + CHILD_MIN_OFFSETS[c1]);
 		const vec3 p2 = vec3(leaf->min + CHILD_MIN_OFFSETS[c2]);
-		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, f);
-		const vec3 n = CalculateSurfaceNormal(p, f);
+		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, f, ce);
+		const vec3 n = CalculateSurfaceNormal(p, f, ce);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;
@@ -603,7 +618,7 @@ OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,floa
 
 // -------------------------------------------------------------------------------
 
-OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,float,float)> f)
+OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,float,float)> f, const vec4& ce)
 {
 	if (!node)
 	{
@@ -612,7 +627,7 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
 
 	if (node->size == 1)
 	{
-		return ConstructLeaf(node, f);
+		return ConstructLeaf(node, f, ce);
 	}
 	
 	const int childSize = node->size / 2;
@@ -625,7 +640,7 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
 		child->min = node->min + (CHILD_MIN_OFFSETS[i] * childSize);
 		child->type = Node_Internal;
 
-		node->children[i] = ConstructOctreeNodes(child, f);
+		node->children[i] = ConstructOctreeNodes(child, f, ce);
 		hasChildren |= (node->children[i] != nullptr);
 	}
 
@@ -640,23 +655,57 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
 
 // -------------------------------------------------------------------------------
 
-//OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold)
-OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)> f)
+void CheckDomain( const ivec3& min, const int size, std::function<float(float,float,float)> f, const vec4& ce )
 {
+    std::cout << "CheckDomain "
+              << " size " << size
+              << " min (" << min.x << "," << min.y << "," << min.z << ")"
+              << " ce  (" << ce.x << "," << ce.y << "," << ce.z << "," << ce.w << ")"             
+              << std::endl ; 
+        
+	for (int i = 0; i < 8; i++)
+    {
+        const ivec3 ijk = min + CHILD_MIN_OFFSETS[i] * size ; 
+        const vec3 xyz = vec3(ce) + vec3(ijk)*ce.w ; 
+
+        float fxyz = Density_Func( f, ce, ijk );
+
+        std::cout << "corner " << std::setw(2) << i 
+                  << " ijk (" 
+                       << std::setw(3) << ijk.x 
+                       << "," << std::setw(3) << ijk.y 
+                       << "," << std::setw(3) << ijk.z 
+                  << ")"     
+                  << " xyz (" 
+                       << std::setw(10) << xyz.x 
+                       << "," << std::setw(10) << xyz.y 
+                       << "," << std::setw(10) << xyz.z 
+                  << ")"     
+                  << " --> "
+                  << std::setw(10) << fxyz 
+                  << std::endl ; 
+	}
+}
+
+
+OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)> f, const vec4& ce)
+{
+    CheckDomain( min, size, f, ce ); 
+
 	OctreeNode* root = new OctreeNode;
 	root->min = min;
 	root->size = size;
 	root->type = Node_Internal;
 
-	ConstructOctreeNodes(root, f);
-	root = SimplifyOctree(root, threshold);
+	OctreeNode* root2 = ConstructOctreeNodes(root, f, ce);
+	OctreeNode* root3 = SimplifyOctree(root2, threshold);
 
-	return root;
+	return root3 ;
 }
 
 // ----------------------------------------------------------------------------
 
-void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer)
+void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const vec4& ce)
 {
 	if (!node)
 	{
@@ -666,7 +715,7 @@ void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexB
 	vertexBuffer.clear();
 	indexBuffer.clear();
 
-	GenerateVertexIndices(node, vertexBuffer);
+	GenerateVertexIndices(node, vertexBuffer, ce);
 	ContourCellProc(node, indexBuffer);
 }
 

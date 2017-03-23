@@ -104,13 +104,19 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
     unsigned index = csg->getIndex();
 
 
+/*
+    int nx = 15 ;  // side of cube, so not too large
+    NMarchingCubesNPY tessa(nx) ;
+*/
 
-    //int nx = 15 ;  // side of cube, so not too large
-    //NMarchingCubesNPY tessa(nx) ;
 
-    int log2size = 5 ; // 1 << 5 = 32
+    //int log2size = 5 ; // 1 << 5 = 32
+    //int log2size = 6 ; // 1 << 6 = 64
+    int log2size = 7 ;   // 1 << 7 = 128
     float threshold = 0.1f ; 
     NDualContouringSample tessa(log2size, threshold) ;
+
+
 
 
     NTrianglesNPY* tris = tessa(root);
