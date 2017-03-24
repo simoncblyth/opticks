@@ -17,6 +17,9 @@ int main(int argc, char** argv)
 
     NFieldCache fc(obj, wbb) ; 
 
+    std::function<float(float,float,float)> fn = fc.func();
+
+
     nvec3 p ; 
     for(int i=0 ; i < 1000 ; i++ )
     {
@@ -25,7 +28,7 @@ int main(int argc, char** argv)
         for(int j=0 ; j < 10 ; j++)
         {
             float v0 = obj(p.x, p.y, p.z) ;
-            float v1 = fc(p.x, p.y, p.z) ;
+            float v1 = fn(p.x, p.y, p.z) ;
 
             if(i % 100 == 0)
               LOG(info) 

@@ -26,23 +26,24 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 //#include	"density.h"
 
+#include "Timer.hpp"
 
 
 
-float Density_Func(std::function<float(float,float,float)> f, const vec4& ce, const vec3& ijk)
+float Density_Func(std::function<float(float,float,float)>* f, const vec4& ce, const vec3& ijk)
 {
-    vec3 xyz = vec3(ce) + ijk*ce.w ; 
+    vec3 p = vec3(ce) + ijk*ce.w ; 
 
-    float fxyz = f(xyz.x, xyz.y, xyz.z);
+    float fp = (*f)(p.x, p.y, p.z);
 
   /*
-   printf(" ce:(%10.3f %10.3f %10.3f %10.3f) ijk: (%10.3f %10.3f %10.3f) xyz:(%10.3f %10.3f %10.3f)  -> %10.3f \n", 
+   printf(" ce:(%10.3f %10.3f %10.3f %10.3f) ijk: (%10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f)  -> %10.3f \n", 
          ce.x,ce.y,ce.z, ce.w,
          ijk.x,ijk.y,ijk.z, 
-         xyz.x,xyz.y,xyz.z,  fxyz );
+         p.x,p.y,p.z,  fp );
    */
 
-    return fxyz ; 
+    return fp ; 
 }
 
 
@@ -499,7 +500,7 @@ void ContourCellProc(OctreeNode* node, IndexBuffer& indexBuffer)
 
 // ----------------------------------------------------------------------------
 
-vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::function<float(float,float,float)> f, const vec4& ce)
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::function<float(float,float,float)>* f, const vec4& ce)
 {
 	// approximate the zero crossing by finding the min value along the edge
 	float minValue = 100000.f;
@@ -525,7 +526,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::functi
 
 // ----------------------------------------------------------------------------
 
-vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float)> f, const vec4& ce)
+vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float)>* f, const vec4& ce)
 {
 	const float H = 0.001f; // hmm delta in ijk-space converted to floats 
 	const float dx = Density_Func(f,ce,p + vec3(H, 0.f, 0.f)) - Density_Func(f,ce,p - vec3(H, 0.f, 0.f));
@@ -537,29 +538,23 @@ vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float
 
 // ----------------------------------------------------------------------------
 
-OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,float)> f, const vec4& ce)
-{
-	if (!leaf || leaf->size != 1)
-	{
-		return nullptr;
-	}
 
+int Corners( const ivec3& leaf_min, std::function<float(float,float,float)>* f, const vec4& ce )
+{
 	int corners = 0;
 	for (int i = 0; i < 8; i++)
 	{
-		const ivec3 cornerPos = leaf->min + CHILD_MIN_OFFSETS[i];
+		const ivec3 cornerPos = leaf_min + CHILD_MIN_OFFSETS[i];
 		const float density = Density_Func(f, ce, vec3(cornerPos));
 		const int material = density < 0.f ? MATERIAL_SOLID : MATERIAL_AIR;
 		corners |= (material << i);
 	}
+    return corners ; 
+}
 
-	if (corners == 0 || corners == 255)
-	{
-		// voxel is full inside or outside the volume
-		delete leaf;
-		return nullptr;
-	}
 
+void PopulateLeaf(int corners, OctreeNode* leaf, std::function<float(float,float,float)>* f, const vec4& ce )
+{
 	// otherwise the voxel contains the surface, so find the edge intersections
 	const int MAX_CROSSINGS = 6;
 	int edgeCount = 0;
@@ -615,12 +610,32 @@ OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,floa
 	leaf->type = Node_Leaf;
 	leaf->drawInfo = drawInfo;
 
-	return leaf;
 }
+
+
+OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,float)>* f, const vec4& ce )
+{
+    assert(leaf && leaf->size == 1);
+
+	int corners = Corners( leaf->min, f, ce);
+
+	if (corners == 0 || corners == 255)
+	{
+		// voxel is full inside or outside the volume
+		delete leaf;
+		return nullptr;
+	}
+
+   PopulateLeaf( corners, leaf, f, ce ) ;
+
+   return leaf ;
+}
+
+
 
 // -------------------------------------------------------------------------------
 
-OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,float,float)> f, const vec4& ce)
+OctreeNode* ConstructOctreeNodes_0(OctreeNode* node, std::function<float(float,float,float)>* f, const vec4& ce)
 {
 	if (!node)
 	{
@@ -642,7 +657,7 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
 		child->min = node->min + (CHILD_MIN_OFFSETS[i] * childSize);
 		child->type = Node_Internal;
 
-		node->children[i] = ConstructOctreeNodes(child, f, ce);
+		node->children[i] = ConstructOctreeNodes_0(child, f, ce);
 		hasChildren |= (node->children[i] != nullptr);
 	}
 
@@ -655,9 +670,150 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
 	return node;
 }
 
+
+
+bool HasLeaves( const ivec3& min, const int leafSize, std::function<float(float,float,float)>* f, const vec4& ce )
+{
+    assert(leafSize == 1);
+    for (int i = 0; i < 8; i++)
+    {
+        ivec3 leaf_min = min + (CHILD_MIN_OFFSETS[i] * leafSize); 
+        int corners = Corners(leaf_min, f, ce );  
+        if(corners == 0 || corners == 255) continue ;  // not leaf, keep looking
+        return true ;    // found one, so early exit 
+    }
+    return false ; 
+}
+
+
+int PopulateLeaves( OctreeNode* node, const int childSize,  std::function<float(float,float,float)>* f, const vec4& ce)
+{
+    int nleaf = 0 ; 
+    for (int i = 0; i < 8; i++)
+    {
+        ivec3 leaf_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize); 
+        int corners = Corners(leaf_min, f, ce );  
+        if(corners == 0 || corners == 255) continue ; 
+
+        nleaf++ ; 
+        OctreeNode* leaf = new OctreeNode;
+        leaf->size = childSize;
+        leaf->min = leaf_min ; 
+
+        PopulateLeaf( corners, leaf, f, ce ) ; 
+
+        node->children[i] = leaf ;
+    } 
+    return nleaf ; 
+}
+
+
+
+bool HasChildren( const ivec3& min , const int nodeSize, std::function<float(float,float,float)>* f, const vec4& ce)
+{
+	const int childSize = nodeSize / 2;
+    if(childSize == 1) return HasLeaves( min, childSize, f, ce );
+    for (int i = 0; i < 8; i++)
+    {
+         ivec3 child_min = min + (CHILD_MIN_OFFSETS[i] * childSize) ;
+         bool has = HasChildren(child_min, childSize, f, ce ); 
+         if(!has) continue ; 
+         return true ; 
+    }
+    return false ; 
+}
+
+
 // -------------------------------------------------------------------------------
 
-void CheckDomain( const ivec3& min, const int size, std::function<float(float,float,float)> f, const vec4& ce )
+OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,float,float)>* f, const vec4& ce, int& count)
+{
+    assert(node && node->size > 1);
+	bool hasChildren = false;
+
+    count++; 
+
+	const int childSize = node->size / 2;
+    if(childSize == 1)
+    {
+        int nleaf = PopulateLeaves(node, childSize, f, ce);
+        hasChildren = nleaf > 0 ; 
+    } 
+    else
+    {
+        int nchild = 0 ;  
+        for (int i = 0; i < 8; i++)
+        {
+            ivec3 child_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize) ;
+
+            OctreeNode* child = new OctreeNode;
+            child->size = childSize;
+            child->min = child_min ; 
+            child->type = Node_Internal;
+
+            OctreeNode* confirmed = ConstructOctreeNodes(child, f, ce, count);
+            if(confirmed) nchild++ ; 
+
+            node->children[i] = confirmed ; 
+        }
+        hasChildren = nchild > 0 ; 
+    }
+
+	if (!hasChildren)
+	{
+		delete node;
+		return nullptr;
+	}
+	return node;
+}
+
+
+
+
+/*
+OctreeNode* ConstructOctreeNodesIteratively( OctreeNode* root, std::function<float(float,float,float)>* f, const vec4& ce)
+{
+    std::stack<OctreeNode*> s ;
+    s.push(root);
+
+    while(!s.empty())
+    {
+        OctreeNode* node = s.top();
+        s.pop(); 
+        if(node == NULL) continue ;  
+
+        bool hasChildren = false ; 
+	    const int childSize = node->size / 2;
+        
+        if(childSize == 1)
+        {
+            int nleaf = PopulateLeaves(node, childSize, f, ce);
+            hasChildren = nleaf > 0 ; 
+        }
+        else
+        {
+            int nchild = 0 ;  
+            for (int i = 0; i < 8; i++)
+            {
+                ivec3 child_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize) ;
+
+                OctreeNode* child = new OctreeNode;
+                child->size = childSize;
+                child->min = child_min ; 
+                child->type = Node_Internal;
+
+                s.push(child);
+        }
+
+    }
+}
+*/
+
+
+
+// -------------------------------------------------------------------------------
+
+void CheckDomain( const ivec3& min, const int size, std::function<float(float,float,float)>* f, const vec4& ce )
 {
     std::cout << "CheckDomain "
               << " size " << size
@@ -690,7 +846,7 @@ void CheckDomain( const ivec3& min, const int size, std::function<float(float,fl
 }
 
 
-OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)> f, const vec4& ce)
+OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)>* f, const vec4& ce, Timer* timer)
 {
     CheckDomain( min, size, f, ce ); 
 
@@ -699,8 +855,17 @@ OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold,
 	root->size = size;
 	root->type = Node_Internal;
 
-	OctreeNode* root2 = ConstructOctreeNodes(root, f, ce);
+
+    timer->stamp("_ConstructOctreeNodes");
+    int count = 0 ; 
+	OctreeNode* root2 = ConstructOctreeNodes(root, f, ce, count);
+    timer->stamp("ConstructOctreeNodes");
+    std::cout << "ConstructOctreeNodes count " << count << std::endl ; 
+
+    timer->stamp("_SimplifyOctree");
 	OctreeNode* root3 = SimplifyOctree(root2, threshold);
+    timer->stamp("SimplifyOctree");
+
 
 	return root3 ;
 }

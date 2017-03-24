@@ -15,8 +15,14 @@ int main(int argc, char** argv)
 
     NGenerator gen(bb);
 
-    nvec3 xyz ; 
-    for(int i=0 ; i < 100 ; i++, gen(xyz)) LOG(info) << std::setw(5) << i <<  " " << xyz.desc() ; 
+    nvec3 p ;
+    int n = 100 ;  
+
+    while(n--)
+    {
+        gen(p);
+        LOG(info) << std::setw(5) << n <<  " " << p.desc() ; 
+    }
 
     return 0 ; 
 }

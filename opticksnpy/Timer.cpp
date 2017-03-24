@@ -31,11 +31,16 @@ const char* Timer::getName()
     return m_name ; 
 }
 
-
-void Timer::operator()(const char* mark)
+void Timer::stamp(const char* mark)
 {
     m_marks.push_back(SD(mark, BTimer::RealTime() ));
     if(m_verbose) LOG(debug) << m_name << " " << mark ; 
+}
+
+
+void Timer::operator()(const char* mark)
+{
+    stamp(mark);
 }
 
 void Timer::start()

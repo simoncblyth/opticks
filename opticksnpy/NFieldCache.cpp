@@ -1,6 +1,6 @@
 #include "NFieldCache.hpp"
 
-NFieldCache::NFieldCache( std::function<float(float,float,float)> field, const nbbox& bb) 
+NFieldCache::NFieldCache( std::function<float(float,float,float)> field, const nbbox& bb ) 
     : 
      m_field(field), 
      m_bbox(bb),
@@ -61,6 +61,11 @@ float NFieldCache::operator()(float x, float y, float z)
         m_lookup += 1 ; 
     }
     return result ;
+}
+
+std::function<float(float,float,float)> NFieldCache::func()
+{
+    return *this ; 
 }
 
 

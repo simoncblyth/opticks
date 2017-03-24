@@ -1,8 +1,12 @@
 #pragma once
 
+#include <string>
 #include "NBBox.hpp"
+#include "NGLM.hpp"
+
 #include "NPY_API_EXPORT.hh"
 
+class Timer ; 
 class NTrianglesNPY ; 
 struct nnode ; 
 
@@ -10,13 +14,19 @@ struct nnode ;
 class NPY_API NDualContouringSample 
 {
     public:
-        NDualContouringSample(unsigned log2size=5, float threshold=0.1f, float scale_bb=1.01f );
+        NDualContouringSample(int log2size=5, float threshold=0.1f, float scale_bb=1.01f );
         NTrianglesNPY* operator()(nnode* node); 
+        std::string desc();
+        void profile(const char* s);
+        void report(const char* msg="NDualContouringSample::report");
     private:
-        int   m_octreeSize ; 
-        float m_threshold ; 
-        float m_scale_bb ; 
-        nbbox m_node_bb ; 
+        Timer* m_timer ; 
+        int    m_log2size ; 
+        int    m_octreeSize ; 
+        float  m_threshold ; 
+        float  m_scale_bb ; 
+        glm::ivec3  m_ilow ; 
+        nbbox  m_node_bb ; 
 
 
 };

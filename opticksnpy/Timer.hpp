@@ -27,6 +27,7 @@ class NPY_API Timer {
     public:
         void start();
         void operator()(const char* mark);
+        void stamp(const char* mark);
         void stop();
     public:
         void setVerbose(bool verbose);

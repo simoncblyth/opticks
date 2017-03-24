@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "NDualContouringSample.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NGLM.hpp"
@@ -6,18 +8,54 @@
 #include "DualContouringSample/mesh.h"
 #include "DualContouringSample/octree.h"
 
+#include "Timer.hpp"
+#include "TimesTable.hpp"
+
 #include "NSphere.hpp"
 #include "NNode.hpp"
 #include "NBox.hpp"
+#include "NFieldCache.hpp"
 
 #include "PLOG.hh"
 
-NDualContouringSample::NDualContouringSample(unsigned log2size, float threshold, float scale_bb)
+NDualContouringSample::NDualContouringSample(int log2size, float threshold, float scale_bb)
   :
+   m_timer(new Timer),
+   m_log2size(log2size),
    m_octreeSize(1 << log2size),
    m_threshold(threshold),
-   m_scale_bb(scale_bb)
+   m_scale_bb(scale_bb),
+   m_ilow(-m_octreeSize / 2)
 {
+   m_timer->start();
+}
+
+std::string NDualContouringSample::desc()
+{
+   std::stringstream ss ; 
+   ss << "NDualContouringSample"
+      << " log2size " << m_log2size
+      << " octreeSize " << m_octreeSize
+      << " threshold " << m_threshold
+      << " scale_bb " << m_scale_bb
+      << " ilow " << gformat(m_ilow)
+      ;
+   return ss.str(); 
+}
+
+
+void NDualContouringSample::profile(const char* s)
+{
+   (*m_timer)(s);
+}
+
+void NDualContouringSample::report(const char* msg)
+{
+    LOG(info) << msg ; 
+    LOG(info) << desc() ; 
+    TimesTable* tt = m_timer->makeTable();
+    tt->dump();
+    //tt->save("$TMP");
 }
 
 
@@ -34,9 +72,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     float xyzExtent = bbce.w*m_scale_bb ;   // slightly enlarge, for cubes
 
 
-    glm::ivec3 ilow(-m_octreeSize / 2);
-
-    float ijkExtent = fabs(ilow.x) ;
+    float ijkExtent = fabs(m_ilow.x) ;
     float ijk2xyz = xyzExtent/ijkExtent ;   // octree -> real world coordinates
 
     glm::vec4 ce(bbce.x, bbce.y, bbce.z, ijk2xyz );
@@ -47,7 +83,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
               << " ijkExtent " << ijkExtent
               << " bbce " << bbce.desc()
               << " ce " << gformat(ce)
-              << " ilow " << gformat(ilow)
+              << " ilow " << gformat(m_ilow)
               ;
               
 
@@ -59,7 +95,13 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 
     std::function<float(float,float,float)> f = node->sdf();
 
-    OctreeNode* octree = BuildOctree(ilow, m_octreeSize, m_threshold, f, ce ) ;
+    //NFieldCache  fc(f, m_node_bb);
+    //std::function<float(float,float,float)> f_cached = fc.func();
+
+    profile("_BuildOctree");
+    OctreeNode* octree = BuildOctree(m_ilow, m_octreeSize, m_threshold, &f, ce, m_timer ) ;
+    profile("BuildOctree");
+
 
 
     NTrianglesNPY* tris = NULL ; 
@@ -74,7 +116,9 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
         return tris ; 
     }
 
+    profile("_GenerateMeshFromOctree");
     GenerateMeshFromOctree(octree, vertices, indices, ce);
+    profile("GenerateMeshFromOctree");
 
 
     LOG(info) << " vertices " << vertices.size() ;
@@ -95,9 +139,8 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     LOG(debug) << "min element at: " << imin << " " << indices[imin] ; 
     LOG(debug) << "max element at: " << imax << " " << indices[imax] ;
 
-
+    profile("_CollectTriangles");
     tris = new NTrianglesNPY();
-
     for(unsigned t=0 ; t < ntri ; t++)
     {
          assert( t*3+2 < npol );
@@ -122,6 +165,10 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
          tris->add( v0.xyz, v1.xyz, v2.xyz );
          tris->addNormal( v0.normal, v1.normal, v2.normal );
     }
+    profile("CollectTriangles");
+
+    report("NDualContouringSample::");
+
     return tris ; 
 }
 

@@ -15,8 +15,10 @@ class NPY_API NFieldCache {
          unsigned getMortonCode(float x, float y, float z);
          std::string desc();
          void reset();
+         std::function<float(float,float,float)> func();
     private:
          std::function<float(float,float,float)>   m_field ;
+
          nbbox m_bbox ; 
          nvec3 m_side ; 
          UMAP m_cache;

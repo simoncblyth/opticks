@@ -33,6 +33,8 @@ using glm::vec3;
 using glm::vec4;
 using glm::ivec3;
 
+class Timer ; 
+
 // ----------------------------------------------------------------------------
 
 enum OctreeNodeType
@@ -100,7 +102,7 @@ public:
 // ----------------------------------------------------------------------------
 
 //OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold );
-OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)> func, const vec4& ce);
+OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)>* func, const vec4& ce, Timer* timer);
 void DestroyOctree(OctreeNode* node);
 void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const vec4& ce);
 
