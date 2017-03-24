@@ -176,6 +176,19 @@ class CSG(CSG_):
         rrep = "height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
         return "%s(%s) %s " % (self.desc(self.typ), ",".join(map(repr,filter(None,[self.left,self.right]))),rrep)
 
+    def __call__(self, p):
+        """
+        SDF : signed distance field
+        """
+        if self.typ == self.SPHERE:
+            center = self.param[:3]
+            radius = self.param[3]
+            pc = np.asarray(p) - center
+            return np.sqrt(np.sum(pc*pc)) - radius 
+        else:
+            assert 0 
+
+    is_primitive = property(lambda self:self.typ >= self.SPHERE )
 
     def union(self, other):
         return CSG(typ=self.UNION, left=self, right=other)

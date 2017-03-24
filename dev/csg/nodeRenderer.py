@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 plt.rcParams["figure.max_open_warning"] = 200
 import matplotlib.patches as mpatches
 
-from node import Node, BOX, EMPTY, SPHERE
+
+from opticks.dev.csg.csg import CSG
+
 
 
 class Renderer(object):
@@ -25,6 +27,17 @@ class Renderer(object):
         return self.colors[ic]
 
     def render(self, root):
+        if root.is_primitive:
+            self.render_primitive(root)
+        elif root.left is not None and root.right is not None:
+            self.render(root.left)
+            self.render(root.right)
+        else:
+            assert 0  
+        pass
+
+
+    def old_render(self, root):
         #log.info("render %r " % root )
         p = Node.leftmost(root)
         while p is not None:
@@ -39,11 +52,11 @@ class Renderer(object):
         pass
 
     def render_primitive(self, node):
-        if node.shape == SPHERE:
+        if node.typ == node.SPHERE:
             self.render_sphere(node)
-        elif node.shape == BOX:
+        elif node.typ == node.BOX:
             self.render_box(node)
-        elif node.shape == EMPTY:
+        elif node.typ == node.EMPTY:
             pass
         else:
             assert 0, "no render_primitive imp for %r " % node 
@@ -64,7 +77,7 @@ class Renderer(object):
         #log.info("%s : render_sphere center %s radius %s " % (node.tag, repr(center), radius) )
 
         art = mpatches.Circle(center[self.axes],radius) 
-        self.autocolor(art, node.idx)
+        #self.autocolor(art, node.idx)
         self.add_patch(art)
 
     def render_box(self,node):
@@ -79,7 +92,7 @@ class Renderer(object):
 
         #log.info("%s : render_box cen %s sid %s " % (node.tag, repr(cen), sid) )
         art = mpatches.Rectangle( botleft, width, height)
-        self.autocolor(art, node.idx)
+        #self.autocolor(art, node.idx)
         self.add_patch(art)
 
     def add_patch(self, art):
@@ -89,8 +102,8 @@ pass
 
 
 if __name__ == '__main__':
-    from node import lrsph_u
-    root = lrsph_u
+
+    root = CSG("sphere", param=[0,0,0,10])
 
     fig = plt.figure()
     ax1 = fig.add_subplot(1,2,1, aspect='equal')
