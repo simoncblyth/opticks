@@ -104,12 +104,15 @@ class Loc(object):
     the level into the key for absolute cross level addressing.
 
     """
-    def __init__(self, loc, dim=2):
+    def __init__(self, loc, dim=2, width=16):
         self.loc = loc  
         self.dim = dim
+        self.width = width  # presentation field width
 
-    parent = property(lambda      self:self.loc >> self.dim)
+    parent      = property(lambda self:self.loc >> self.dim)
     grandparent = property(lambda self:self.loc >> (2*self.dim))
+
+    pchild      = property(lambda self:self.loc & ((1 << self.dim) - 1))
 
     nchild     = property(lambda self:1 << self.dim)  # 2d:4 3d:8
     firstchild = property(lambda self:(self.loc << self.dim) ) 
@@ -123,15 +126,17 @@ class Loc(object):
         loc = self.loc
         dim = self.dim
 
-        b8_ = lambda _:"{0:08b}".format(_)
+        bfmt = "{0:0%db}" % self.width
+        b_ = lambda _:bfmt.format(_)
 
-        _loc = b8_(loc)
-        _parent = b8_( self.parent )
-        _grandparent = b8_( self.grandparent )
-        _firstchild = b8_( self.firstchild )
-        _lastchild  = b8_( self.lastchild )
+        _loc = b_(loc)
+        _parent = b_(self.parent )
+        _grandparent = b_( self.grandparent )
+        _firstchild = b_( self.firstchild )
+        _lastchild  = b_( self.lastchild )
+        _pchild = "%d" % self.pchild
 
-        return "%5d : loc %s  par: %s  fc: %s lc: %s " % (loc, _loc, _parent, _firstchild, _lastchild  )
+        return "%7d : loc %s pch:%s par: %s  fc: %s lc: %s " % (loc, _loc,_pchild,  _parent, _firstchild, _lastchild  )
 
 class Ijk(object):
     def __init__(self, ijk, dim=2):
@@ -167,7 +172,7 @@ class Xyz(object):
         return self.desc(self.xyz, self.dim) 
     @classmethod
     def desc(cls, xyz, dim=2):
-        _xyz = "(%7.2f,%7.2f,%7.2f)" % tuple(xyz)
+        _xyz = "(%5.2f,%5.2f,%5.2f)" % tuple(xyz)
         return " %s " % _xyz 
 
 
@@ -198,39 +203,18 @@ class Point(object):
 
 
 
-
-
-
-
-
-class Domain(object):
-    def __init__(self, bb, level=0, dim=2, maxlevel=16):
-        assert level > -1 and level < maxlevel
-        hh = range(maxlevel)
-        hijk = np.zeros( (len(hh), 3), dtype=np.uint32)
-        for h in hh:
-            ni = 1 << h 
-            nj = 1 << h 
-            nk = 1
-            hijk[h] = [ni,nj,nk]
-        pass
-        self.hijk = hijk
-        self.level = level
-        self.dim = dim
-        self.sdim = slice(0,dim)
-
+class BBox(object):
+    def __init__(self, bb):
         bb = np.asarray(bb, dtype=np.float32)
-
         self.bb = bb
         self.origin = bb[0]
         self.side  = bb[1] - bb[0]
 
-    def spawn_domain(self, level):
-        return Domain(self.bb, level=level )
+    min = property(lambda self:self.bb[0])
+    max = property(lambda self:self.bb[1])
 
-    def __repr__(self):
-        return " h %2d nloc %8d nijk %r bb %r %r sxyz %r " % (self.level, self.nloc, tuple(self.nijk), tuple(self.bb[0]), tuple(self.bb[1]), tuple(self.sxyz) )  
-
+    def pos(self, fr):
+        return self.origin + self.side*fr 
 
     def scaled(self, p):
         """
@@ -241,29 +225,61 @@ class Domain(object):
         """ 
         return (np.asarray(p) - self.origin)/self.side
 
+    def set_lim(self, ax, margin=1):
+        ax.set_xlim(self.min[X] - margin, self.max[X] + margin)
+        ax.set_ylim(self.min[Y] - margin, self.max[Y] + margin)
+
+
+
+class Domain(object):
+    """
+    Most of this doesnt depend on the level, so split ?
+    """
+    def __init__(self, bb, level=0, dim=2, maxlevel=16):
+        assert level > -1 and level < maxlevel
+        hijk = np.zeros( (maxlevel, 3), dtype=np.uint32)
+        for h in range(maxlevel):
+            hijk[h] = [1 << h,1 << h,1 << h if dim == 3 else 1]
+        pass
+        self.hijk = hijk
+        self.level = level
+        self.dim = dim
+
+        self.bb = bb
+
+    def spawn_domain(self, level):
+        return Domain(self.bb, level=level )
+
+    def __repr__(self):
+        return " h %2d nloc %8d nijk %15r bb %r %r sxyz %r " % (self.level, self.nloc, tuple(self.nijk), tuple(self.bb.min), tuple(self.bb.max), tuple(self.sxyz) )  
+
     def frac(self, ijk):
+        # depends on level from nijk
         assert ijk is not None
         ijk = ijk.ijk if type(ijk) is Ijk else ijk
         fijk = np.asarray(ijk, dtype=np.float32)
         return fijk/self.nijk
 
     def ijk2xyz(self, ijk):
+        # depends on level from frac 
         fr = self.frac(ijk)
-        pos = self.origin + self.side*fr 
+        pos = self.bb.pos(fr) 
         return Xyz(pos, dim=self.dim)
 
     nchild = property(lambda self:1 << self.dim )
     nijk = property(lambda self:self.hijk[self.level])
     nloc = property(lambda self:1 << (self.dim*self.level))
-    sxyz = property(lambda self:self.side/self.nijk)
+    sxyz = property(lambda self:self.bb.side/self.nijk)
     hxyz = property(lambda self:self.sxyz/2.)
 
     def xyz2ijk(self, p):
         """
+        depends on level from nijk
+
         :param p:
         :return ijk: integer coordinates
         """
-        sc = self.scaled(p)
+        sc = self.bb.scaled(p)
         ijk = np.array( self.nijk*sc, dtype=np.uint32 )
         return Ijk(ijk, dim=self.dim)
 
@@ -312,7 +328,7 @@ class Domain(object):
         return cnrs
 
     def __call__(self, loc, node):
-        cnrs = self.corners(loc.loc) 
+        cnrs = self.corners(loc) 
         corners = 0 
         for ic,cnr in enumerate(cnrs):
             sdf = node(cnr)
@@ -320,10 +336,6 @@ class Domain(object):
             corners |= (inside << ic) 
         pass
         return corners
-
-    def set_lim(self, ax, margin=1):
-        ax.set_xlim(self.bb[0][X] - margin, self.bb[1][X] + margin)
-        ax.set_ylim(self.bb[0][Y] - margin, self.bb[1][Y] + margin)
 
     def zorder_dump(self, levels, limit=16):
         keep_level = self.level
@@ -343,7 +355,7 @@ class Domain(object):
             cc = range(nloc)
         pass
         for c in cc:
-            loc = Loc(c)
+            loc = Loc(c, width=(self.level+1)*self.dim)  # +1 as includes child loc
             xyz,ijk = self.loc2xyz_ijk(c)
             print " %r %r %r " % ( loc, ijk, xyz )
         pass
@@ -383,15 +395,40 @@ class Corners(object):
 
 
 class Node(object):
-    def __init__(self, key, corners):
+    def __init__(self, key, corners=None, dim=2):
          self.key = key 
          self.corners = corners
+         self.children = [None for _ in range(1 << dim)]
 
     level = property(lambda self:self.key[0])
     loc = property(lambda self:self.key[1])
 
     def __repr__(self):
-         return " %2d %4x %x " % (self.level, self.loc, self.corners) 
+         _corners = "cnrs: %x" % self.corners if self.corners is not None else ""
+         _loc = Loc(self.loc)
+         return "[%2d] %r %s " % (self.level, _loc, _corners) 
+
+    def postorder(self):
+         nodes = []
+         def traverse_r(node, depth=0):
+             assert node.level == depth 
+             for child in filter(None, node.children):
+                 traverse_r(child, depth=depth+1) 
+             pass 
+             nodes.append(node)
+         pass
+         traverse_r(self)
+         return nodes
+
+    def corners_plot(self, ax, doms):
+        postorder = self.postorder()
+        cols = 'rgbcmykkkkkkk'
+        for node in postorder:
+            level, loc = node.key
+            cnrs = Corners(ax,doms[level].corners(loc))
+            cnrs.plot(col=cols[level])
+        pass
+
 
 
 if __name__ == '__main__':
@@ -403,63 +440,88 @@ if __name__ == '__main__':
 
     ax = fig.add_subplot(1,1,1, aspect='equal')
 
-    bb = [[0.,0.,0.],[80.,80.,80.]]
+    bb = BBox([[0.,0.,0.],[80.,80.,80.]])
+    bb.set_lim(ax)
+
     root = CSG("sphere", param=[40.,40.,0,20.])
 
     rdr = Renderer(ax)
     rdr.render(root)
     
-    domain = Domain(bb, level=7)   # 7 (128x128) 
-    domain.set_lim(ax)
-    domain.zorder_dump(range(10))
-    print domain
+    level = 7
+    dim = 2
+    maxcorner = (1 << (1 << dim)) - 1 # 2d:0xf  3d:0xff  one bit for each child
+    msk = (1 << dim) - 1              # 2d:0b11 3d:0b111 one bit for each dimension
 
-    doms = {}
-    for lev in range(domain.level):
-        doms[lev] = domain.spawn_domain(lev)
+    doms = []
+    for lev in range(level+1):
+        dom = Domain(bb, level=lev)
+        doms.append(dom)
     pass
+    print "\n".join(map(repr,doms))
 
-    for dom in doms.values():
-        print dom
-    pass
-    #domain.zorder_plot(ax)
-    cols = 'rrrrggggbbbbkkkk'
+    domain = doms[level]           # leaf level is special
+    #domain.zorder_dump(range(10))
+    domain.zorder_plot(ax)
+
+
+    ## morton zorder traverse at level
+    ## collecting the leaves 
 
     lquad = {}
-
     for c in range(domain.nloc):
-        loc = Loc(c)
-        xyz, ijk = domain.loc2xyz_ijk(c)
-        xy = xyz.xy
-        sdf = root(xy)
-        #print " %r %r %r %s " % (loc, ijk, xyz, sdf )
-        corners = domain(loc, root)
-        if corners > 0 and corners < 0xf:
-            cnrs = Corners(ax,domain.corners(c))
-            cnrs.plot(col=cols[corners])
+        corners = domain(c, root)
+        if corners > 0 and corners < maxcorner:
             key = (domain.level, c)
-            lquad[key] = Node(key, corners) 
+            lquad[key] = Node(key, corners)
         pass
     pass 
+    nleaf = len(lquad)
 
-    for key in lquad.keys():
+    ## iterative bottom up quadtree construction, 
+    ## pulling up from the leaves
+
+    for key,leaf in lquad.items():
         level, loc = key
-        print level, loc  
+
+        node = leaf 
+
         uloc = loc
-        for ulev in range(level-1, -1, -1):
-            uloc >>= domain.dim    # upper loc get smaller
-            udom = doms[ulev]
-            cnrs = Corners(ax, udom.corners(uloc))
-            cnrs.plot(col='k')
+        uchild = loc & msk 
+
+        for elevation in range(1, level+1):
+            ulev = level - elevation   
+
+            uloc >>= domain.dim         #  level by level relative
+            uloc2 = loc >> (domain.dim*elevation)  # absolute 
+            assert uloc2 == uloc
+
+            ukey = (ulev,uloc)
+         
+            if ukey not in lquad:
+                unode = Node(ukey) 
+                lquad[ukey] = unode
+            else:
+                unode = lquad[ukey]
+            pass
+            unode.children[uchild] = node 
+            pass
+            node = unode           # hold on to prior node
+            uchild = uloc & msk   # uchild index is from the lower level, so update in tail
         pass
-    pass
+    pass        
+
+    top = node
+    nodes = top.postorder()
+    nnode = len(nodes)
+
+    print "nleaf %d nnode %d " % (nleaf, nnode) 
+
+    top.corners_plot(ax, doms)
+
 
     #ax.axis('auto') 
     fig.show()
-
-     
-
-
 
 
 
