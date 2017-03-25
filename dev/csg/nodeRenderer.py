@@ -77,7 +77,7 @@ class Renderer(object):
         #log.info("%s : render_sphere center %s radius %s " % (node.tag, repr(center), radius) )
 
         art = mpatches.Circle(center[self.axes],radius) 
-        #self.autocolor(art, node.idx)
+        self.autocolor(art, 0)
         self.add_patch(art)
 
     def render_box(self,node):
