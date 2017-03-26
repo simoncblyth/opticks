@@ -359,34 +359,55 @@ if __name__ == '__main__':
     ## iterative bottom up quadtree construction, 
     ## pulling up from the leaves
 
+    first = True
+
     for key,leaf in lquad.items():
         level, loc = key
 
         node = leaf 
+        dchild = loc & msk 
+        dloc = loc
+        depth = level - 1
 
-        uloc = loc
-        uchild = loc & msk 
+        while depth >= 0:
+            dloc >>= grid.dim
+            dkey = (depth, dloc) 
 
-        for elevation in range(1, level+1):
-            ulev = level - elevation   
-
-            uloc >>= grid.dim         #  level by level relative
-            uloc2 = loc >> (grid.dim*elevation)  # absolute 
-            assert uloc2 == uloc
-
-            ukey = (ulev,uloc)
-         
-            if ukey not in lquad:
-                unode = Node(ukey) 
-                lquad[ukey] = unode
+            if dkey not in lquad:
+                dnode = Node(dkey)
+                lquad[dkey] = dnode
             else:
-                unode = lquad[ukey]
-            pass
-            unode.children[uchild] = node 
-            pass
-            node = unode           # hold on to prior node
-            uchild = uloc & msk   # uchild index is from the lower level, so update in tail
+                dnode = lquad[dkey]
+            pass 
+            dnode.children[dchild] = node 
+            node = dnode
+
+            dchild = dloc & msk   # dchild updated in tail
+            depth -= 1 
         pass
+
+        #uloc = loc
+        #uchild = loc & msk 
+        #for elevation in range(1, level+1):
+        #    ulev = level - elevation   
+        #
+        #    uloc >>= grid.dim         #  level by level relative
+        #    uloc2 = loc >> (grid.dim*elevation)  # absolute 
+        #    assert uloc2 == uloc
+        #
+        #    ukey = (ulev,uloc)
+        # 
+        #    if ukey not in lquad:
+        #        unode = Node(ukey) 
+        #        lquad[ukey] = unode
+        #    else:
+        #        unode = lquad[ukey]
+        #    pass
+        #    unode.children[uchild] = node 
+        #    pass
+        #    node = unode           # hold on to prior node
+        #    uchild = uloc & msk   # uchild index is from the lower level, so update in tail
+        #pass
     pass        
 
     top = node

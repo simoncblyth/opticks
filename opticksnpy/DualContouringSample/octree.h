@@ -101,8 +101,7 @@ public:
 
 // ----------------------------------------------------------------------------
 
-//OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold );
-OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)>* func, const vec4& ce, Timer* timer);
+OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* func, const vec4& ce, Timer* timer);
 void DestroyOctree(OctreeNode* node);
 void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const vec4& ce);
 

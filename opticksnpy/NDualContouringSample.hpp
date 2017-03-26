@@ -14,14 +14,14 @@ struct nnode ;
 class NPY_API NDualContouringSample 
 {
     public:
-        NDualContouringSample(int log2size=5, float threshold=0.1f, float scale_bb=1.01f );
+        NDualContouringSample(int level=5, float threshold=0.1f, float scale_bb=1.01f );
         NTrianglesNPY* operator()(nnode* node); 
         std::string desc();
         void profile(const char* s);
         void report(const char* msg="NDualContouringSample::report");
     private:
         Timer* m_timer ; 
-        int    m_log2size ; 
+        int    m_level; 
         int    m_octreeSize ; 
         float  m_threshold ; 
         float  m_scale_bb ; 

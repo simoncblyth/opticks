@@ -797,8 +797,9 @@ void DumpIjk( const int idx, const ivec3& ijk, std::function<float(float,float,f
 }  
 
 
-void CheckDomain( const ivec3& min, const int size, std::function<float(float,float,float)>* f, const vec4& ce )
+void CheckDomain( const ivec3& min, const int level, std::function<float(float,float,float)>* f, const vec4& ce )
 {
+    int size = 1 << level ; 
     std::cout << "CheckDomain "
               << " size " << size
               << " min (" << min.x << "," << min.y << "," << min.z << ")"
@@ -813,34 +814,18 @@ void CheckDomain( const ivec3& min, const int size, std::function<float(float,fl
 }
 
 
-OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_size, std::function<float(float,float,float)>* f, const vec4& ce )
+OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_level, std::function<float(float,float,float)>* f, const vec4& ce )
 {
     // log2size:7 size: 1 << 7 = 128 nloc:128*128*128 = 2,097,152 
-
     //  ConstructOctreeNodes count   299,593  (recursive invokations)
     //  ConstructOctreeNodes count 2,097,152  (leaf slots tested)
 
-
     static const int maxlevel = 10 ; 
-    static const int maxsize = 1 << maxlevel ; 
-    assert( n_size < maxsize );
+    assert( n_level >= 0 && n_level < maxlevel ); // size must be power of 2
 
-
-    // TODO: make level the argument, rather than size
-    unsigned n_level = -1 ; 
-    for(unsigned lev=0 ; lev < maxlevel ; lev++)
-    {
-        if( 1 << lev == n_size )
-        {
-            n_level = lev ; 
-            break ; 
-        }
-    }
-    assert(n_level >= 0); // size must be power of 2
-
+    const int n_size = 1 << n_level ; 
     const unsigned n_loc = n_size*n_size*n_size ; 
     const unsigned n_voxel = 1 ; 
-
 
     // coarse resolution, 2-levels up from nominal level 
     const unsigned coarse = 2 ;
@@ -852,14 +837,14 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_size, std::fu
 
     std::cout << "ConstructOctreeBottomUp"
               << " -- " 
-              << " n_size " << n_size
               << " n_level " << n_level
+              << " n_size " << n_size
               << " n_loc " << n_loc
               << " n_voxel " << n_voxel
               << " -- " 
+              << " c_level " << c_level
               << " c_size " << c_size
               << " c_loc " << c_loc
-              << " c_level " << c_level
               << " c_voxel " << c_voxel
               << " c_num_voxel " << c_num_voxel
               << " -- " 
@@ -867,11 +852,7 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_size, std::fu
               << std::endl
               ;
 
-    ivec3 leaf_min ; 
 
-
-
-    //
     // optimization idea: 
     //     avoid operating fine grained across entire volume
     //     do a coarse scan to find the morton codes where there is activity at 
@@ -883,13 +864,15 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_size, std::fu
     // coarse resolution z-order traverse, 
     // finding "tiles" to look into further
 
+    ivec3 leaf_min ; 
     ivec3 coarse_min ; 
+    ivec3 d_min ; 
+    unsigned long long i, j, k ;  
 
     VU tiles ; 
     for(unsigned c=0 ; c < c_loc ; c++) 
     {
         morton3 loc(c);  
-        unsigned long long i, j, k ;  
         loc.decode(i, j, k); 
 
         coarse_min = min ;
@@ -899,88 +882,192 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_size, std::fu
 		
         unsigned corners = Corners( coarse_min, f, ce, 8 ); 
         if(corners == 0 || corners == 255) continue ;    // all in/out not interesting
-
         //DumpIjk( c, coarse_min, f, ce );
-
         tiles.push_back(c);   // on-the-edge 
     }
 
     std::cout << " edge tiles " << tiles.size() << std::endl ; 
 
-
-    //typedef boost::unordered_map<unsigned, OctreeNode*> UMAP ;
-    //UMAP cache[maxlevel] ; 
-
+    typedef boost::unordered_map<unsigned, OctreeNode*> UMAP ;
+    UMAP cache[10] ; 
 
     unsigned num_leaf(0); 
+    unsigned num_from_cache(0); 
+    unsigned num_into_cache(0); 
+    
 
     for(VU::const_iterator it=tiles.begin() ; it != tiles.end() ; it++)
     {
         unsigned c = *it ; 
-
         morton3 c_loc(c);  
-
-        unsigned long long i, j, k ;  
         c_loc.decode(i, j, k); 
 
         coarse_min = min ;
         coarse_min.x += c_voxel*i ; 
         coarse_min.y += c_voxel*j ; 
         coarse_min.z += c_voxel*k ; 
-
-        //DumpIjk( c, coarse_min, f, ce );
-
-        unsigned beg = c << (3*coarse) ;  // first grandchild (assuming coarse=2)
-        unsigned end = beg+c_num_voxel  ; 
 	
-        for(unsigned c=beg ; c < end ; c++)
+        for(unsigned c=0 ; c < c_num_voxel ; c++)  // over nominal(at level) voxels in coarse tile
         {
-            morton3 loc(c);
-            unsigned long long i, j, k ;  
-            loc.decode(i, j, k); 
+            morton3 n_loc(c);
+            n_loc.decode(i, j, k); 
 
             leaf_min = coarse_min ;
             leaf_min.x += n_voxel*i ; 
             leaf_min.y += n_voxel*j ; 
             leaf_min.z += n_voxel*k ; 
 
-            if(c == beg || c == end-1)
-            DumpIjk( c, leaf_min, f, ce );
-
             int corners = Corners( leaf_min, f, ce, 8 );  // <-- this dominates time to construct nodes
-        
             if(corners == 0 || corners == 255) continue ;    // all in/out not interesting
+
+            num_leaf++ ; 
 
             OctreeNode* leaf = new OctreeNode;
             leaf->size = n_voxel ;
             leaf->min = leaf_min ; 
 
             PopulateLeaf( corners, leaf, f, ce ) ; 
-            num_leaf++ ; 
-        }
-    }
+
+
+            morton3 d_loc(leaf_min.x, leaf_min.y, leaf_min.z);  // <-- need absolute morton, not the tile relative c
+            unsigned dloc = d_loc.key ; 
+            unsigned dchild = dloc & 7 ;  // lowest 3 bits, gives child index in immediate parent
+            unsigned dsize = 1 ; 
+            int depth = n_level - 1 ; 
+
+            OctreeNode* node = leaf ; 
+            OctreeNode* dnode = NULL ; 
+
+            while(depth > -1)  // hookup the parents of the leaf 
+            {
+                dloc >>= 3 ;      // to parent 
+                dsize <<= 1 ;     
+
+                UMAP::const_iterator it = cache[depth].find(dloc);
+
+                if(it == cache[depth].end())
+                {
+                    num_into_cache++ ; 
+
+                    morton3 d_loc(dloc);
+                    d_loc.decode(i, j, k); 
+
+                    d_min = min ; 
+                    d_min.x += dsize*i ; 
+                    d_min.y += dsize*j ; 
+                    d_min.z += dsize*k ; 
+
+                    if(num_into_cache < 100)
+                    std::cout << "into_cache " 
+                              << " num_into_cache " << num_into_cache
+                              << " dloc " << dloc
+                              << " i " << i 
+                              << " j " << j 
+                              << " k " << k 
+                              << " dsize " << dsize
+                              << " d_min " << gformat(d_min)
+                              << std::endl ; 
+                    
+
+                    dnode = new OctreeNode ; 
+                    dnode->size = dsize ; 
+                    dnode->min = d_min ; 
+
+                    cache[depth].emplace(dloc, dnode)  ;
+                }
+                else
+                {
+                    num_from_cache++ ; 
+                    dnode = it->second ;     
+                }
+ 
+                dnode->children[dchild] = node ;  
+                node = dnode ; 
+                dchild = dloc & 7 ;  // child index for next round
+ 
+                depth-- ; 
+            }              // up the heirarchy from each leaf to root
+        }                  // over nominal voxels within coarse tile
+    }                      // over coarse tiles
     
 
+    UMAP::const_iterator it0 = cache[0].find(0);
+    OctreeNode* root = it0 == cache[0].end() ? NULL : it0->second ; 
 
     std::cout << "ConstructOctreeBottomUp"
-              << " num_leaf  " << num_leaf 
+              << " num_leaf " << num_leaf 
+              << " num_into_cache " << num_into_cache 
+              << " num_from_cache " << num_from_cache 
               << " n_loc " << n_loc 
               << " num_leaf/n_loc " << float(num_leaf)/float(n_loc) 
               << std::endl ;
 
-    return NULL ; 
+    assert(root);
+    return root ; 
 }
 
 
-OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold, std::function<float(float,float,float)>* f, const vec4& ce, Timer* timer)
-{
-    CheckDomain( min, size, f, ce ); 
 
+
+
+class Traverser {
+   public:
+       Traverser(OctreeNode* root, const char* msg="Traverser", int verbosity=0, int nodelimit=30) 
+           : 
+           m_root(root), 
+           m_nodecount(0),
+           m_nodelimit(nodelimit),
+           m_verbosity(verbosity)  
+       {
+           traverse_r(m_root, 0);
+           std::cout 
+                << msg 
+                << " nodecount " << m_nodecount 
+                << std::endl ; 
+       }
+   private:
+       void traverse_r(OctreeNode* node, int depth)
+       {
+           m_nodecount++ ; 
+
+           if(m_verbosity > 0 && m_nodecount < m_nodelimit)
+           {
+               std::cout << "traverse_r" 
+                         << " depth " << depth 
+                         << " nodecount " << m_nodecount
+                         << " nodelimit " << m_nodelimit 
+                         << " size " << node->size
+                         << " min " << gformat(node->min) 
+                         << std::endl ; 
+           } 
+
+           for(int i=0 ; i < 8 ; i++)
+           {
+               OctreeNode* child = node->children[i] ;
+               if(child) traverse_r(child, depth+1 );
+           }
+       }
+   private:
+       OctreeNode* m_root ; 
+       int         m_nodecount ; 
+       int         m_nodelimit ; 
+       int         m_verbosity ; 
+};
+
+
+
+
+
+OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* f, const vec4& ce, Timer* timer)
+{
+    int size = 1 << level ; 
+    CheckDomain( min, level, f, ce ); 
 
     timer->stamp("_ConstructOctreeBottomUp");
-    ConstructOctreeBottomUp( min, size, f, ce );
+    OctreeNode* bottomUp = ConstructOctreeBottomUp( min, level, f, ce );
+    assert(bottomUp);
     timer->stamp("ConstructOctreeBottomUp");
-
+    Traverser(bottomUp, "bottomUp", 1, 30 );
 
 
 	OctreeNode* root = new OctreeNode;
@@ -993,6 +1080,8 @@ OctreeNode* BuildOctree(const ivec3& min, const int size, const float threshold,
 	OctreeNode* root2 = ConstructOctreeNodes(root, f, ce, count);
     timer->stamp("ConstructOctreeNodes");
     std::cout << "ConstructOctreeNodes count " << count << std::endl ; 
+    Traverser(root2, "root2", 1, 30);
+
 
     timer->stamp("_SimplifyOctree");
 	OctreeNode* root3 = SimplifyOctree(root2, threshold);

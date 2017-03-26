@@ -18,11 +18,11 @@
 
 #include "PLOG.hh"
 
-NDualContouringSample::NDualContouringSample(int log2size, float threshold, float scale_bb)
+NDualContouringSample::NDualContouringSample(int level, float threshold, float scale_bb)
   :
    m_timer(new Timer),
-   m_log2size(log2size),
-   m_octreeSize(1 << log2size),
+   m_level(level),
+   m_octreeSize(1 << level),
    m_threshold(threshold),
    m_scale_bb(scale_bb),
    m_ilow(-m_octreeSize / 2)
@@ -34,7 +34,7 @@ std::string NDualContouringSample::desc()
 {
    std::stringstream ss ; 
    ss << "NDualContouringSample"
-      << " log2size " << m_log2size
+      << " level " << m_level
       << " octreeSize " << m_octreeSize
       << " threshold " << m_threshold
       << " scale_bb " << m_scale_bb
@@ -99,7 +99,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     //std::function<float(float,float,float)> f_cached = fc.func();
 
     profile("_BuildOctree");
-    OctreeNode* octree = BuildOctree(m_ilow, m_octreeSize, m_threshold, &f, ce, m_timer ) ;
+    OctreeNode* octree = BuildOctree(m_ilow, m_level, m_threshold, &f, ce, m_timer ) ;
     profile("BuildOctree");
 
 
