@@ -53,10 +53,12 @@ NPY_API std::string gformat(int i);
 NPY_API std::string gformat(unsigned int i);
 
 NPY_API std::string gformat(const glm::vec3& v );
+NPY_API std::string gformat(const glm::ivec3& v );
+
 NPY_API std::string gformat(const glm::vec4& v );
 NPY_API std::string gformat(const glm::ivec4& v );
 NPY_API std::string gformat(const glm::uvec4& v );
-NPY_API std::string gformat(const glm::ivec3& v );
+
 NPY_API std::string gformat(const glm::quat& q );
 NPY_API std::string gformat(const glm::mat4& m );
 NPY_API std::string gformat(const glm::mat3& m );

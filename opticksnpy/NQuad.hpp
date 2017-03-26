@@ -35,6 +35,7 @@ struct NPY_API ntvec3 {
    T x ;
    T y ;
    T z ;
+  const char* desc() const ;
 };
 
 template<typename T>
@@ -68,6 +69,7 @@ struct NPY_API nuvec3 {
 
   // NO CTOR
   void dump(const char* msg);
+  const char* desc() const ;
 
   unsigned x ; 
   unsigned y ; 

@@ -1,7 +1,6 @@
 #include <cstring>
+#include <sstream>
 #include "NQuad.hpp"
-
-
 
 
 
@@ -33,6 +32,22 @@ const char* nivec3::desc() const
     return strdup(_desc);
 }
 
+const char* nuvec3::desc() const 
+{
+    char _desc[64];
+    snprintf(_desc, 64, " (%5u %5u %5u) ", x,y,z );
+    return strdup(_desc);
+}
+
+
+template <typename T>
+const char* ntvec3<T>::desc() const
+{
+    std::stringstream ss ; 
+    ss << " (" << x << " " << y << " " << z << ") " ;    
+    std::string desc = ss.str();
+    return strdup(desc.c_str());
+}
 
 
 
@@ -55,5 +70,14 @@ void nquad::dump(const char* msg)
     u.dump("u");
     i.dump("i");
 }
+
+
+
+template struct ntvec3<float>;
+template struct ntvec3<double>;
+template struct ntvec3<short>;
+template struct ntvec3<int>;
+template struct ntvec3<unsigned int>;
+template struct ntvec3<unsigned long long>;
 
 

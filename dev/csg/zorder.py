@@ -4,19 +4,30 @@
 * https://en.wikipedia.org/wiki/Z-order_curve
 
 
-Ericson RTCD p314
--------------------
+Even 2d Grids get real big real soon
+---------------------------------------
 
-Given the locational code for the parent node, a new locational code for one of
-its child nodes is easily constructed by left-shifting the parent key by 3 and
+::
 
-    childKey = (parentKey << 3) + childIndex
+    In [4]: run zorder.py
+     h  0 nloc            1 nijk            (1, 1, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (80.0, 80.0, 80.0) 
+     h  1 nloc            4 nijk            (2, 2, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (40.0, 40.0, 80.0) 
+     h  2 nloc           16 nijk            (4, 4, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (20.0, 20.0, 80.0) 
+     h  3 nloc           64 nijk            (8, 8, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (10.0, 10.0, 80.0) 
+     h  4 nloc          256 nijk          (16, 16, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (5.0, 5.0, 80.0) 
+     h  5 nloc         1024 nijk          (32, 32, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (2.5, 2.5, 80.0) 
+     h  6 nloc         4096 nijk          (64, 64, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (1.25, 1.25, 80.0) 
+     h  7 nloc        16384 nijk        (128, 128, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.625, 0.625, 80.0) 
+     h  8 nloc        65536 nijk        (256, 256, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.3125, 0.3125, 80.0) 
+     h  9 nloc       262144 nijk        (512, 512, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.15625, 0.15625, 80.0) 
+     h 10 nloc      1048576 nijk      (1024, 1024, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.078125, 0.078125, 80.0) 
+     h 11 nloc      4194304 nijk      (2048, 2048, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.0390625, 0.0390625, 80.0) 
+     h 12 nloc     16777216 nijk      (4096, 4096, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.01953125, 0.01953125, 80.0) 
+     h 13 nloc     67108864 nijk      (8192, 8192, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.009765625, 0.009765625, 80.0) 
+     h 14 nloc    268435456 nijk    (16384, 16384, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.0048828125, 0.0048828125, 80.0) 
+     h 15 nloc   1073741824 nijk    (32768, 32768, 1) bb (0.0, 0.0, 0.0) (80.0, 80.0, 80.0) sxyz (0.00244140625, 0.00244140625, 80.0) 
+    nleaf 252 nnode 485 
 
-
-Morton Codes
---------------
-
-* http://asgerhoedt.dk/?p=276
 
 Quadtrees
 ----------
@@ -37,126 +48,10 @@ plt.rcParams['figure.figsize'] = 18,10.2
 
 from csg import CSG 
 from nodeRenderer import Renderer
+from morton import Loc, Ijk
 
 
 X,Y,Z,W = 0,1,2,3
-
-
-def SeparateBy1(x):
-    """
-    http://asgerhoedt.dk/?p=276
-    """
-    x &= 0x0000ffff;                  # x = ---- ---- ---- ---- fedc ba98 7654 3210
-    x = (x ^ (x <<  8)) & 0x00ff00ff; # x = ---- ---- fedc ba98 ---- ---- 7654 3210
-    x = (x ^ (x <<  4)) & 0x0f0f0f0f; # x = ---- fedc ---- ba98 ---- 7654 ---- 3210
-    x = (x ^ (x <<  2)) & 0x33333333; # x = --fe --dc --ba --98 --76 --54 --32 --10
-    x = (x ^ (x <<  1)) & 0x55555555; # x = -f-e -d-c -b-a -9-8 -7-6 -5-4 -3-2 -1-0
-    return x
-
-def MortonCode2D(x, y):
-    return SeparateBy1(x) | (SeparateBy1(y) << 1);
-
-
-def CompactBy1(x):
-    x &= 0x55555555;                  #// x = -f-e -d-c -b-a -9-8 -7-6 -5-4 -3-2 -1-0
-    x = (x ^ (x >>  1)) & 0x33333333; #// x = --fe --dc --ba --98 --76 --54 --32 --10
-    x = (x ^ (x >>  2)) & 0x0f0f0f0f; #// x = ---- fedc ---- ba98 ---- 7654 ---- 3210
-    x = (x ^ (x >>  4)) & 0x00ff00ff; #// x = ---- ---- fedc ba98 ---- ---- 7654 3210
-    x = (x ^ (x >>  8)) & 0x0000ffff; #// x = ---- ---- ---- ---- fedc ba98 7654 3210
-    return x;
-
-def MortonDecode2D(c):
-    x = CompactBy1(c);
-    y = CompactBy1(c >> 1);
-    return x, y
-  
-
-def expandBits(v):
-    """
-    https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-iii-tree-construction-gpu/
-    """
-    v = (v * 0x00010001) & 0xFF0000FF
-    v = (v * 0x00000101) & 0x0F00F00F
-    v = (v * 0x00000011) & 0xC30C30C3
-    v = (v * 0x00000005) & 0x49249249
-    return v;
-
-def MortonCode3D(ix, iy, iz):
-    # 30-bit Morton code,  (ix,iy,iz) must be in 0 to 1023, 1 << 10 = 2^10 = 1024
-    xx = expandBits(ix)
-    yy = expandBits(iy)
-    zz = expandBits(iz)
-    return (xx << 2) + (yy << 1) + zz
-
-
-
-
-
-
-class Loc(object):
-    """
-    NB parent, grandparent, firstchild, lastchild are morton codes
-       within different resolution sets 
-
-    Do Morton code works across all resolutions ? 
-  
-    Nope they are recycled at every level, so need to incorporate
-    the level into the key for absolute cross level addressing.
-
-    """
-    def __init__(self, loc, dim=2, width=16):
-        self.loc = loc  
-        self.dim = dim
-        self.width = width  # presentation field width
-
-    parent      = property(lambda self:self.loc >> self.dim)
-    grandparent = property(lambda self:self.loc >> (2*self.dim))
-
-    pchild      = property(lambda self:self.loc & ((1 << self.dim) - 1))
-
-    nchild     = property(lambda self:1 << self.dim)  # 2d:4 3d:8
-    firstchild = property(lambda self:(self.loc << self.dim) ) 
-    lastchild  = property(lambda self:(self.loc << self.dim) | (self.nchild - 1) ) 
-
-
-    def child(self, c_loc):
-        return (self.loc << self.dim) | c_loc
-
-    def __repr__(self):
-        loc = self.loc
-        dim = self.dim
-
-        bfmt = "{0:0%db}" % self.width
-        b_ = lambda _:bfmt.format(_)
-
-        _loc = b_(loc)
-        _parent = b_(self.parent )
-        _grandparent = b_( self.grandparent )
-        _firstchild = b_( self.firstchild )
-        _lastchild  = b_( self.lastchild )
-        _pchild = "%d" % self.pchild
-
-        return "%7d : loc %s pch:%s par: %s  fc: %s lc: %s " % (loc, _loc,_pchild,  _parent, _firstchild, _lastchild  )
-
-class Ijk(object):
-    def __init__(self, ijk, dim=2):
-       self.ijk = np.asarray(ijk, dtype=np.uint32)
-       self.dim = dim
-
-    i = property(lambda self:self.ijk[0]) 
-    j = property(lambda self:self.ijk[1]) 
-    k = property(lambda self:self.ijk[2]) 
-
-    def __repr__(self):
-        return self.desc(self.ijk, self.dim) 
-    @classmethod
-    def desc(cls, ijk, dim=2):
-        b4_ = lambda _:"{0:04b}".format(_)
-        x_ = lambda _:"{0:01x}".format(_)
-        _ijk = "(%2d,%2d,%2d) " % tuple(ijk)
-        _ijk_b = "(%4s,%4s,%4s) " % tuple(map(b4_, ijk))
-        _ijk_x = "(%s,%s,%s) " % tuple(map(x_, ijk))
-        return " %s %s %s " % ( _ijk, _ijk_b, _ijk_x )
 
 class Xyz(object):
     def __init__(self, xyz, dim=2):
@@ -231,27 +126,26 @@ class BBox(object):
 
 
 
-class Domain(object):
+class Grid(object):
     """
     Most of this doesnt depend on the level, so split ?
     """
-    def __init__(self, bb, level=0, dim=2, maxlevel=16):
-        assert level > -1 and level < maxlevel
-        hijk = np.zeros( (maxlevel, 3), dtype=np.uint32)
-        for h in range(maxlevel):
+    maxlevel = 16 
+
+    def __init__(self, bb, level=0, dim=2):
+        assert level > -1 and level < self.maxlevel
+        hijk = np.zeros( (self.maxlevel, 3), dtype=np.uint32)
+        for h in range(self.maxlevel):
             hijk[h] = [1 << h,1 << h,1 << h if dim == 3 else 1]
         pass
         self.hijk = hijk
         self.level = level
         self.dim = dim
-
+        pass
         self.bb = bb
 
-    def spawn_domain(self, level):
-        return Domain(self.bb, level=level )
-
     def __repr__(self):
-        return " h %2d nloc %8d nijk %15r bb %r %r sxyz %r " % (self.level, self.nloc, tuple(self.nijk), tuple(self.bb.min), tuple(self.bb.max), tuple(self.sxyz) )  
+        return " h %2d nloc %12d nijk %20r bb %r %r sxyz %r " % (self.level, self.nloc, tuple(self.nijk), tuple(self.bb.min), tuple(self.bb.max), tuple(self.sxyz) )  
 
     def frac(self, ijk):
         # depends on level from nijk
@@ -283,45 +177,26 @@ class Domain(object):
         ijk = np.array( self.nijk*sc, dtype=np.uint32 )
         return Ijk(ijk, dim=self.dim)
 
-    def loc2ijk(self, c):
-        #NB doesnt depend on level
-        if self.dim == 2:
-            i,j = MortonDecode2D(c)
-        else:
-            assert 0
-        pass
-        k = 0 
-        return Ijk((i,j,k))
 
-    def ijk2loc(self, ijk):
-        #NB doesnt depend on level
-        i,j,k = ijk.ijk if type(ijk) is Ijk else ijk
-        if self.dim == 2:
-            c = MortonCode2D(i,j)
-            ijk2 = self.loc2ijk(c)
-            assert ijk2.i == i
-            assert ijk2.j == j
-        elif self.dim == 3:
-            c = MortonCode3D(i,j,k)
-        else:
-            assert 0
-        pass
-        return Loc(c, dim=self.dim)
-
-    def loc2xyz_ijk(self, loc):
-        ijk = self.loc2ijk(loc)
+    def loc2xyz_ijk(self, c):
+        loc = Loc(c) 
+        ijk = loc.ijk 
         xyz = self.ijk2xyz(ijk)
         return xyz,ijk 
 
-    def corners(self, loc):
+    def corners(self, c):
         """
         Should this be halfing ? using hxyz or not sxyz
         """
-        xyz, ijk = self.loc2xyz_ijk(loc)
+        loc = Loc(c)
+        ijk = loc.ijk
+        xyz = self.ijk2xyz(ijk)
+
         nc = 1 << self.dim
         cnrs = np.zeros( (nc, 3), dtype=np.float32 )
         for ic in range(nc):
-            off = self.loc2ijk(ic)  # (0,0) (1,0) (0,1) (1,1)
+            loc = Loc(ic)
+            off = loc.ijk  # (0,0) (1,0) (0,1) (1,1)
             cnr = xyz.xyz + off.ijk*self.sxyz
             cnrs[ic] = cnr
         pass
@@ -420,12 +295,12 @@ class Node(object):
          traverse_r(self)
          return nodes
 
-    def corners_plot(self, ax, doms):
+    def corners_plot(self, ax, grids):
         postorder = self.postorder()
         cols = 'rgbcmykkkkkkk'
         for node in postorder:
             level, loc = node.key
-            cnrs = Corners(ax,doms[level].corners(loc))
+            cnrs = Corners(ax,grids[level].corners(loc))
             cnrs.plot(col=cols[level])
         pass
 
@@ -453,26 +328,29 @@ if __name__ == '__main__':
     maxcorner = (1 << (1 << dim)) - 1 # 2d:0xf  3d:0xff  one bit for each child
     msk = (1 << dim) - 1              # 2d:0b11 3d:0b111 one bit for each dimension
 
-    doms = []
-    for lev in range(level+1):
-        dom = Domain(bb, level=lev)
-        doms.append(dom)
-    pass
-    print "\n".join(map(repr,doms))
 
-    domain = doms[level]           # leaf level is special
-    #domain.zorder_dump(range(10))
-    domain.zorder_plot(ax)
+    grids = []
+    for lev in range(Grid.maxlevel):
+        g = Grid(bb, level=lev)
+        grids.append(g)
+    pass
+    print "\n".join(map(repr,grids))
+
+
+
+    grid = grids[level]           # leaf level is special
+    #grid.zorder_dump(range(10))
+    grid.zorder_plot(ax)
 
 
     ## morton zorder traverse at level
     ## collecting the leaves 
 
     lquad = {}
-    for c in range(domain.nloc):
-        corners = domain(c, root)
+    for c in range(grid.nloc):
+        corners = grid(c, root)
         if corners > 0 and corners < maxcorner:
-            key = (domain.level, c)
+            key = (grid.level, c)
             lquad[key] = Node(key, corners)
         pass
     pass 
@@ -492,8 +370,8 @@ if __name__ == '__main__':
         for elevation in range(1, level+1):
             ulev = level - elevation   
 
-            uloc >>= domain.dim         #  level by level relative
-            uloc2 = loc >> (domain.dim*elevation)  # absolute 
+            uloc >>= grid.dim         #  level by level relative
+            uloc2 = loc >> (grid.dim*elevation)  # absolute 
             assert uloc2 == uloc
 
             ukey = (ulev,uloc)
@@ -517,7 +395,7 @@ if __name__ == '__main__':
 
     print "nleaf %d nnode %d " % (nleaf, nnode) 
 
-    top.corners_plot(ax, doms)
+    top.corners_plot(ax, grids)
 
 
     #ax.axis('auto') 

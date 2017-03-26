@@ -68,6 +68,7 @@ NOctNodeTest.cc
 NDualContouringSampleTest.cc
 NFieldCacheTest.cc
 NGeneratorTest.cc
+mortonlibTest.cc
 
 )
 
