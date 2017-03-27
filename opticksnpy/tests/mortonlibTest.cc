@@ -9,6 +9,9 @@
 #include "PLOG.hh"
 
 
+
+
+
 void test_morton3d()
 {
     uint32_t offsets[8][3] = {
@@ -37,7 +40,7 @@ void test_morton3d()
         p.y = offsets[i][1] ;
         p.z = offsets[i][2] ;
 
-        morton3 m = morton3d<uint64_t>(p.x, p.y, p.z); 
+        morton3 m(p.x, p.y, p.z); 
         morton3 m2 = morton3d<uint64_t>::morton3d_256(p.x, p.y, p.z); 
         LOG(info) << p.desc() << " " << m.key << " " << m2.key  ; 
     }
@@ -59,10 +62,6 @@ void test_morton3d()
          m.decode(ijk.x, ijk.y, ijk.z ); 
          LOG(info) << " loc " << loc << " --> " << ijk.x << " " << ijk.y << " " << ijk.z   ;
     }
-
-
-
-
 
 }
 
@@ -87,6 +86,31 @@ void test_morton2d()
 
 
 
+void test_existance()
+{
+    int* a = NULL ; 
+    int* b = new int(10) ; 
+
+    int ia = !!a ; 
+    int ib = !!b ; 
+
+    int df = !!a ^ !!b ; 
+
+    LOG(info) 
+           << " a " << a 
+           << " !a " << !a 
+           << " !!a " << !!a 
+           << " ia " << ia
+           << " b " << b 
+           << " !b " << !b 
+           << " !!b " << !!b 
+           << " ib " << ib
+           << " df " << df
+           ;
+
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -96,6 +120,8 @@ int main(int argc, char** argv)
 
     test_morton3d();
     test_morton2d();
+
+
 
     return 0 ; 
 }

@@ -138,6 +138,8 @@ set(SOURCES
 
     NFieldCache.cpp
     NGenerator.cpp
+    NGrid3.cpp
+    NField3.cpp
 )
 
 set(REST_SOURCES
@@ -222,6 +224,8 @@ NDualContouringSample.hpp
 
 NFieldCache.hpp
 NGenerator.hpp
+NGrid3.hpp
+NField3.hpp
 
 
 )

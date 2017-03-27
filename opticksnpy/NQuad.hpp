@@ -195,8 +195,10 @@ struct NPY_API nvec3 {
 };
 
 
-
-
+inline NPY_API bool operator == (const nvec3& a , const nvec3& b )
+{
+   return a.x == b.x && a.y == b.y && a.z == b.z ;  
+}
 
 
 

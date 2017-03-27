@@ -28,8 +28,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "Timer.hpp"
 #include "GLMFormat.hpp"
+#include "PLOG.hh"
 #include "mortonlib/morton3d.h"
 #include  <boost/unordered_map.hpp>
+
+#include "NGrid3.hpp"
 
 
 
@@ -814,26 +817,54 @@ void CheckDomain( const ivec3& min, const int level, std::function<float(float,f
 }
 
 
+/*
+class Constructor {
+
+    typedef boost::unordered_map<unsigned, OctreeNode*> UMAP ;
+    UMAP cache[10] ; 
+
+
+    public:
+        Constructor(int level, F* f, const vec4& ce) 
+          :
+           m_root(NULL)
+        {
+        } 
+
+    private:
+        OctreeNode* m_root ; 
+
+};
+*/
+
+
 OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_level, std::function<float(float,float,float)>* f, const vec4& ce )
 {
-    // log2size:7 size: 1 << 7 = 128 nloc:128*128*128 = 2,097,152 
-    //  ConstructOctreeNodes count   299,593  (recursive invokations)
-    //  ConstructOctreeNodes count 2,097,152  (leaf slots tested)
-
     static const int maxlevel = 10 ; 
-    assert( n_level >= 0 && n_level < maxlevel ); // size must be power of 2
+    assert( n_level >= 0 && n_level < maxlevel ); 
 
-    const int n_size = 1 << n_level ; 
-    const unsigned n_loc = n_size*n_size*n_size ; 
-    const unsigned n_voxel = 1 ; 
+    NGrid3 n_grid(n_level) ;  
+
+    const int n_size = 1 << n_level ;         assert( n_grid.size == n_size );
+    const int n_loc = n_size*n_size*n_size ;  assert( n_grid.nloc == n_loc );
+    const int n_voxel = 1 ;                   assert( n_grid.voxel_size(0) == n_voxel );
 
     // coarse resolution, 2-levels up from nominal level 
-    const unsigned coarse = 2 ;
-    const unsigned c_level = n_level - coarse  ; 
-    const unsigned c_size = n_size >> coarse ;  
-    const unsigned c_loc =  n_loc >> (3*coarse) ;   
-    const unsigned c_voxel = 1 << coarse ; 
-    const unsigned c_num_voxel = 1 << (3*coarse) ;  // number of nominal within a coarse tile
+    const unsigned coarse = 0 ;
+
+    NGrid3 c_grid(n_level - coarse) ;  
+
+    const int c_level = n_level - coarse  ;    assert( c_grid.level == c_level );
+    const int c_size = n_size >> coarse ;      assert( c_grid.size  == c_size );
+    const int c_loc =  n_loc >> (3*coarse) ;   assert( c_grid.nloc == c_loc );  
+    const int c_voxel = 1 << coarse ;          assert( c_grid.voxel_size( coarse ) == c_voxel ); 
+    const int c_num_voxel = 1 << (3*coarse) ;  assert( c_grid.voxel_num(coarse) == c_num_voxel );
+    // number of nominal within a coarse tile
+
+    std::cout << "ConstructOctreeBottomUp"
+              << " n_grid " << n_grid.desc()
+              << " c_grid " << c_grid.desc()
+              << std::endl ; 
 
     std::cout << "ConstructOctreeBottomUp"
               << " -- " 
@@ -852,25 +883,14 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_level, std::f
               << std::endl
               ;
 
-
-    // optimization idea: 
-    //     avoid operating fine grained across entire volume
-    //     do a coarse scan to find the morton codes where there is activity at 
-    //     one or two levels of resolution up, then revisit just those at full resolution 
-
-    typedef std::vector<unsigned> VU ;
-
-
-    // coarse resolution z-order traverse, 
-    // finding "tiles" to look into further
-
     ivec3 leaf_min ; 
     ivec3 coarse_min ; 
     ivec3 d_min ; 
     unsigned long long i, j, k ;  
 
+    typedef std::vector<unsigned> VU ;
     VU tiles ; 
-    for(unsigned c=0 ; c < c_loc ; c++) 
+    for(int c=0 ; c < c_loc ; c++) 
     {
         morton3 loc(c);  
         loc.decode(i, j, k); 
@@ -929,18 +949,24 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_level, std::f
             PopulateLeaf( corners, leaf, f, ce ) ; 
 
 
-            morton3 d_loc(leaf_min.x, leaf_min.y, leaf_min.z);  // <-- need absolute morton, not the tile relative c
+            morton3 d_loc(leaf_min.x - min.x , leaf_min.y - min.y, leaf_min.z - min.z); 
+           // need absolute morton, not the tile relative c, and need to get rid of the min (-64,-64,-64...)
+
+            // start from nominal level, with the leaves 
+            int depth = n_level ; 
             unsigned dloc = d_loc.key ; 
-            unsigned dchild = dloc & 7 ;  // lowest 3 bits, gives child index in immediate parent
             unsigned dsize = 1 ; 
-            int depth = n_level - 1 ; 
+
+            unsigned dchild = dloc & 7 ;  // lowest 3 bits, gives child index in immediate parent
 
             OctreeNode* node = leaf ; 
             OctreeNode* dnode = NULL ; 
 
-            while(depth > -1)  // hookup the parents of the leaf 
+            while(depth >= 1)
             {
-                dloc >>= 3 ;      // to parent 
+                // decrement depth, right-shift morton code to that of parent, left shift size doubling it 
+                depth-- ; 
+                dloc >>= 3 ;     
                 dsize <<= 1 ;     
 
                 UMAP::const_iterator it = cache[depth].find(dloc);
@@ -972,6 +998,7 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_level, std::f
                     dnode = new OctreeNode ; 
                     dnode->size = dsize ; 
                     dnode->min = d_min ; 
+	                dnode->type = Node_Internal;
 
                     cache[depth].emplace(dloc, dnode)  ;
                 }
@@ -985,7 +1012,6 @@ OctreeNode* ConstructOctreeBottomUp( const ivec3& min, const int n_level, std::f
                 node = dnode ; 
                 dchild = dloc & 7 ;  // child index for next round
  
-                depth-- ; 
             }              // up the heirarchy from each leaf to root
         }                  // over nominal voxels within coarse tile
     }                      // over coarse tiles
@@ -1056,6 +1082,86 @@ class Traverser {
 
 
 
+class Comparer {
+       enum {
+          NSTATE=4 
+       };
+   public:
+      Comparer(OctreeNode* a, OctreeNode* b)
+          :
+          m_a(a),
+          m_b(b),
+          m_same(false),
+          m_equals_count(0),
+          m_content_count(0)
+       {
+           for(int i=0 ; i < NSTATE ; i++) m_state[i] = 0 ; 
+           m_same = equals(m_a, m_b);
+       }
+
+      void dump(const char* msg)
+      {
+          LOG(info) << msg << " " << ( m_same ? "ARE-SAME" : "NOT-SAME" ) ; 
+          int state_tot = 0 ; 
+          for(int i=0 ; i < NSTATE ; i++)  
+          {
+             std::cout << " state " <<  i << " : " << m_state[i] << std::endl ; 
+             state_tot += m_state[i] ; 
+          }
+          std::cout 
+                  << " equals_count " << m_equals_count 
+                  << " content_count " << m_content_count 
+                  << " state_tot " << state_tot 
+                  << std::endl ;   
+      }  
+
+       bool equal_content( OctreeNode* a, OctreeNode* b)
+       { 
+            m_content_count++ ;  
+            return 
+                   a->type == b->type && 
+                   a->size == b->size &&
+                   a->min == b->min 
+                   ;
+       }
+
+       bool equals( OctreeNode* a, OctreeNode* b)
+       {
+           int ab = ((!!a) << 1 ) | (!!b) ;   //  !!(NULL) -> 0, !!(non-NULL) -> 1
+           m_state[ab]++ ;   
+           m_equals_count++ ; 
+
+           if( ab < 3)
+           {
+               return ab == 0 ;  // 0:both NULL, 1/2 one NULL other non-NULL
+           } 
+           else
+           {
+               int num_equal = 0 ; 
+               for(int i=0 ; i < 8 ; i++) num_equal += equals( a->children[i], b->children[i] ) ;
+               return num_equal == 8 && equal_content(a, b) ; 
+           }
+       }
+
+   private:
+       OctreeNode* m_a ; 
+       OctreeNode* m_b ;
+       bool        m_same ; 
+       int         m_state[NSTATE] ; 
+       int         m_equals_count ; 
+       int         m_content_count ; 
+
+}; 
+
+
+
+
+
+ 
+
+
+
+
 
 
 OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* f, const vec4& ce, Timer* timer)
@@ -1063,32 +1169,39 @@ OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold
     int size = 1 << level ; 
     CheckDomain( min, level, f, ce ); 
 
+
+
     timer->stamp("_ConstructOctreeBottomUp");
-    OctreeNode* bottomUp = ConstructOctreeBottomUp( min, level, f, ce );
-    assert(bottomUp);
+    OctreeNode* uproot = ConstructOctreeBottomUp( min, level, f, ce );
+    assert(uproot);
     timer->stamp("ConstructOctreeBottomUp");
-    Traverser(bottomUp, "bottomUp", 1, 30 );
+    Traverser(uproot, "uproot", 1, 30 );
 
 
-	OctreeNode* root = new OctreeNode;
-	root->min = min;
-	root->size = size;
-	root->type = Node_Internal;
+
+	OctreeNode* root0 = new OctreeNode;
+  	root0->min = min;
+	root0->size = size;
+	root0->type = Node_Internal;
 
     timer->stamp("_ConstructOctreeNodes");
     int count = 0 ; 
-	OctreeNode* root2 = ConstructOctreeNodes(root, f, ce, count);
+	OctreeNode* root = ConstructOctreeNodes(root0, f, ce, count);
     timer->stamp("ConstructOctreeNodes");
     std::cout << "ConstructOctreeNodes count " << count << std::endl ; 
-    Traverser(root2, "root2", 1, 30);
+    Traverser(root, "root", 1, 30);
+
+    timer->stamp("_Comparer");
+    Comparer cmpr(uproot, root);
+    cmpr.dump("Comparer result");
+    timer->stamp("Comparer");
 
 
     timer->stamp("_SimplifyOctree");
-	OctreeNode* root3 = SimplifyOctree(root2, threshold);
+	OctreeNode* root_simp = SimplifyOctree(root, threshold);
     timer->stamp("SimplifyOctree");
 
-
-	return root3 ;
+	return root_simp  ;
 }
 
 // ----------------------------------------------------------------------------
