@@ -60,32 +60,11 @@ void NDualContouringSample::report(const char* msg)
 
 
 
-
-
-
-
 NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 {
     m_node_bb = node->bbox();  // overloaded method 
-
-    nvec4     bbce = m_node_bb.center_extent();
-    float xyzExtent = bbce.w*m_scale_bb ;   // slightly enlarge, for cubes
-
-
-    float ijkExtent = fabs(m_ilow.x) ;
-    float ijk2xyz = xyzExtent/ijkExtent ;   // octree -> real world coordinates
-
-    glm::vec4 ce(bbce.x, bbce.y, bbce.z, ijk2xyz );
-
-
-    LOG(info) << "NDualContouringSample "
-              << " xyzExtent " << xyzExtent
-              << " ijkExtent " << ijkExtent
-              << " bbce " << bbce.desc()
-              << " ce " << gformat(ce)
-              << " ilow " << gformat(m_ilow)
-              ;
-              
+    m_node_bb.scale(m_scale_bb);  // kinda assumes centered at origin, slightly enlarge
+    
 
     VertexBuffer vertices;
     IndexBuffer indices;
@@ -95,11 +74,9 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 
     std::function<float(float,float,float)> f = node->sdf();
 
-    //NFieldCache  fc(f, m_node_bb);
-    //std::function<float(float,float,float)> f_cached = fc.func();
 
     profile("_BuildOctree");
-    OctreeNode* octree = BuildOctree(m_ilow, m_level, m_threshold, &f, ce, m_timer ) ;
+    OctreeNode* octree = BuildOctree(m_ilow, m_level, m_threshold, &f, m_node_bb, m_timer ) ;
     profile("BuildOctree");
 
 
@@ -117,7 +94,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     }
 
     profile("_GenerateMeshFromOctree");
-    GenerateMeshFromOctree(octree, vertices, indices, ce);
+    GenerateMeshFromOctree(octree, vertices, indices, m_node_bb);
     profile("GenerateMeshFromOctree");
 
 

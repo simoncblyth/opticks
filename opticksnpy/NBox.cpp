@@ -37,6 +37,8 @@ nbbox nbox::bbox()
     float s  = param.w ; 
     bb.min = make_nvec3( param.x - s, param.y - s, param.z - s );
     bb.max = make_nvec3( param.x + s, param.y + s, param.z + s );
+    bb.side = bb.max - bb.min ; 
+
     return bb ; 
 }
 

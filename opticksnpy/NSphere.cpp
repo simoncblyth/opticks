@@ -36,6 +36,8 @@ nbbox nsphere::bbox()
     nbbox bb = make_nbbox();
     bb.min = make_nvec3(param.x - param.w, param.y - param.w, param.z - param.w);
     bb.max = make_nvec3(param.x + param.w, param.y + param.w, param.z + param.w);
+    bb.side = bb.max - bb.min ; 
+
     return bb ; 
 }
 

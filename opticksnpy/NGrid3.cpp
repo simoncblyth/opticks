@@ -5,6 +5,31 @@
 #include "PLOG.hh"
 
 
+NMultiGrid3::NMultiGrid3()
+{
+   for(int i=0 ; i < NGRID ; i++ ) grid[i] = new NGrid3(i) ; 
+}
+
+void NMultiGrid3::dump(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    for(int level=0 ; level < NGRID ; level++)
+         std::cout << grid[level]->desc() 
+                   << std::endl ; 
+}
+
+void NMultiGrid3::dump(const char* msg, const nvec3& fpos) const 
+{
+    LOG(info) << msg ; 
+    for(int level=0 ; level < NGRID ; level++)
+         std::cout << grid[level]->desc() 
+                   << grid[level]->desc( fpos, " fpos " ) 
+                   << std::endl ; 
+}
+
+
+
+
 
 
 std::string NGrid3::desc(const nivec3& ijk, const char* msg)
@@ -26,7 +51,8 @@ NGrid3::NGrid3( int level )
     level(level),
     size( 1 << level ),
     nloc( 1 << (3*level) ),
-    nijk( size, size, size)
+    nijk( size, size, size),
+    elem( 1./size )
 {
     assert(level >= 0 && level < MAXLEVEL);
 } 
@@ -38,11 +64,12 @@ std::string NGrid3::desc() const
        << " level " << std::setw(2) << level
        << " size "  << std::setw(5) << size
        << " nloc "  << std::setw(12) << nloc
+       << " elem "  << std::setw(12) << elem
        ;
     return ss.str();
 }
 
-std::string NGrid3::desc(nvec3& fpos, const char* msg)  const 
+std::string NGrid3::desc(const nvec3& fpos, const char* msg)  const 
 {
     nivec3 ijk_ = ijk(fpos);
     std::stringstream ss ;  
@@ -57,12 +84,42 @@ std::string NGrid3::desc(nvec3& fpos, const char* msg)  const
 
 nivec3 NGrid3::ijk(const int c) const
 { 
-    assert(c < nloc && c > -1);
+    bool valid = c < nloc && c > -1 ;
+    if(!valid)
+        LOG(fatal) << "NGrid3::ijk invalid loc " << c << " for grid " << desc() ; 
+        
+    assert(valid);
+
     morton3 loc(c);  
     unsigned long long i, j, k ;  
     loc.decode(i, j, k); 
     return nivec3(i, j, k);
 }
+
+
+
+int NGrid3::loc(const nivec3& ijk ) const 
+{
+    morton3 mloc(ijk.x, ijk.y, ijk.z);
+    return mloc.key ;   
+}
+
+int NGrid3::loc(const int i, const int j, const int k) const 
+{
+    morton3 mloc(i, j, k);
+    return mloc.key ;   
+}
+
+
+
+int NGrid3::loc(const nvec3& fpos ) const 
+{
+    nivec3 ijk_ = ijk(fpos); 
+    return loc(ijk_);
+}
+
+
+
 
 nivec3 NGrid3::ijk(const nvec3& fpos) const 
 {
@@ -82,20 +139,5 @@ nvec3 NGrid3::fpos(const int c) const
 
 
 
-
-
-
-void NGrid3::dump_levels()
-{
-    nvec3 fpos = make_nvec3(0.1f, 0.2f, 0.3f ); 
-    for(unsigned level=0 ; level < 11 ; level++)
-    {
-         NGrid3 g(level);
-         std::cout << g.desc() 
-                   << g.desc( fpos, " fpos " ) 
-                   << std::endl ; 
-         
-    }
-}
 
 

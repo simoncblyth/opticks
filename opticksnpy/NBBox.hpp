@@ -16,8 +16,21 @@ struct NPY_API nbbox {
     nvec4 dimension_extent();
     static float extent(const nvec4& dim);
 
+    void expand(float delta)
+    {
+        min -= delta ; 
+        max += delta ; 
+    } 
+
+    void scale(float factor)
+    {
+        min *= factor ; 
+        max *= factor ; 
+    } 
+
     nvec3 min ; 
     nvec3 max ; 
+    nvec3 side ; 
 };
 
 
@@ -27,6 +40,7 @@ inline NPY_API nbbox make_nbbox(float zmin, float zmax, float ymin, float ymax)
     nbbox bb ; 
     bb.min = make_nvec3( ymin, ymin, zmin ) ;
     bb.max = make_nvec3( ymax, ymax, zmax ) ;
+
     return bb ;
 }
 

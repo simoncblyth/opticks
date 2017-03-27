@@ -13,12 +13,12 @@ void nivec4::dump(const char* msg)
     printf("%20s : %10d %10d %10d %10d \n",msg, x,y,z,w ); 
 }
 
-void nvec3::dump(const char* msg)
+void nvec3::dump(const char* msg) const 
 {
     printf("%20s : %10.4f %10.4f %10.4f  \n",msg, x,y,z ); 
 }
 
-const char* nvec3::desc()
+const char* nvec3::desc() const
 {
     char _desc[64];
     snprintf(_desc, 64, " (%7.2f %7.2f %7.2f) ", x,y,z );

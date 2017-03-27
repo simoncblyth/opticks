@@ -33,6 +33,9 @@ using glm::vec3;
 using glm::vec4;
 using glm::ivec3;
 
+struct nbbox ; 
+
+
 class Timer ; 
 
 // ----------------------------------------------------------------------------
@@ -101,9 +104,9 @@ public:
 
 // ----------------------------------------------------------------------------
 
-OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* func, const vec4& ce, Timer* timer);
+OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* func, const nbbox& bb, Timer* timer);
 void DestroyOctree(OctreeNode* node);
-void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const vec4& ce);
+void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const nbbox& bb);
 
 
 // ----------------------------------------------------------------------------

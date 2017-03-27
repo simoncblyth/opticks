@@ -13,26 +13,31 @@ struct NPY_API NGrid3
 {
     static const int MAXLEVEL = 11 ;   // 32 bits not enough for level 11 
     static std::string desc(const nivec3& ijk, const char* msg="ijk");
-    static void dump_levels(); 
 
     NGrid3(int level);
 
     std::string desc() const ;
-    std::string desc(nvec3& fpos, const char* msg="fpos" ) const ; 
+    std::string desc(const nvec3& fpos, const char* msg="fpos" ) const ; 
 
-    nvec3  fpos(const nivec3& ijk ) const ; // grid int coordinates to fractional coordinates in 0:1
-    nivec3 ijk(const nvec3& fpos) const ;   // fractional coordinates in 0:1 to grid int coordinates 
-    nivec3 ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates 
+    nvec3  fpos(const nivec3& ijk ) const ; // grid int coordinates in 0:nsize-1 to fractional coordinates in 0:1.
+    nivec3 ijk(const nvec3& fpos) const ;   // fractional coordinates in 0:1. to grid int coordinates in 0:nsize-1
+    nivec3 ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates in 0:nsize-1
     nvec3  fpos(int c ) const ;             // z-order morton code in 0:nloc-1 to fractional grid coordinates in 0:1
+
+    int    loc(const nivec3& ijk ) const ;  // grid int coordinates in 0:nsize-1 to z-order morton code in 0:nloc-1  
+    int    loc(const nvec3& fpos ) const ;  // fractional coordinates in 0:1 to z-order morton code in 0:nloc-1  
+    int    loc(const int i, const int j, const int k) const ;  // grid int coordinates in 0:nsize-1 to z-order morton code in 0:nloc-1  
+
+
    
-    int voxel_size(int elevation){ return 1 << elevation ; }   
+    int voxel_size(int elevation) const { return 1 << elevation ; }   
                                         // size of voxel at different depth, ie  level - elevation, 
                                         // relative to the nominal voxels for this grid level,
                                         // 
                                         //       elevation 0 -> 1 by construction
                                         //       elevation 1 -> 2       ( 1 << elevation )
 
-    int voxel_num(int elevation){ return 1 << (3*elevation) ; } 
+    int voxel_num(int elevation) const { return 1 << (3*elevation) ; } 
                                         // number of nominal voxels of this grid within a subgrid 
                                         // of another grid at different elevation 
                                         // eg for handling coarse tiles
@@ -41,8 +46,23 @@ struct NPY_API NGrid3
     const int    size ;       
     const int    nloc ;      
     const nivec3 nijk ; 
+    const float  elem ; 
 
 };
+
+
+struct NPY_API NMultiGrid3 
+{
+    enum { NGRID = 10 };
+    NMultiGrid3();
+    NGrid3* grid[NGRID] ; 
+
+    void dump(const char* msg) const ; 
+    void dump(const char* msg, const nvec3& fpos) const ; 
+};
+
+
+
 
 /**
 

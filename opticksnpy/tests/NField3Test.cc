@@ -1,3 +1,4 @@
+#include <bitset>
 #include <boost/math/special_functions/sign.hpp>
 
 #include "NField3.hpp"
@@ -80,6 +81,44 @@ void test_cross_isosurface_1(const NField3& field, const NGrid3& grid)
 }
 
 
+void test_zcorners( const NField3& field, const NGrid3& grid)
+{
+    nvec3 fpos[3] = {{0.f, 0.f, 0.f}, {0.5f, 0.5f, 0.5f}, {1.f, 1.f, 1.f}} ;
+    for(int i=0 ; i < 3 ; i++) field.zcorners( fpos[i] , grid.elem ); 
+}
+
+void test_cross_isosurface_2(const NField3& field, const NGrid3& grid)
+{
+    int ncross = 0 ; 
+    float sdf_prior = 0 ; 
+    for(int loc=0 ; loc < grid.nloc ; loc++)
+    {
+        nvec3 fpos = grid.fpos(loc);
+        float sdf = field(fpos);
+
+        bool cross_isosurface = loc > 0 && boost::math::sign(sdf) != boost::math::sign(sdf_prior) ;
+        if(cross_isosurface) 
+        {
+            ncross++ ; 
+            int zc = field.zcorners( fpos, grid.elem ); 
+            LOG(info)
+                << " zcorners " << std::setw(3) << zc
+                << " 0x" << std::setfill('0') << std::setw(2) << std::hex << zc
+                << " 0b" << std::bitset<8>(zc) 
+                 << std::dec 
+            ;
+        }
+        sdf_prior = sdf ;
+    }
+    LOG(info) << "(test_cross_isosurface_1) ncross " << ncross ; 
+}
+
+
+
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -99,8 +138,11 @@ int main(int argc, char** argv)
     NGrid3 grid(3);
     LOG(info) << grid.desc() ; 
 
-    test_cross_isosurface_0(field, grid);
-    test_cross_isosurface_1(field, grid);
+    //test_cross_isosurface_0(field, grid);
+    //test_cross_isosurface_1(field, grid);
+
+    //test_zcorners(field, grid);
+    test_cross_isosurface_2(field, grid);
 
     return 0 ; 
 }

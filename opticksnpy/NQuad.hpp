@@ -181,24 +181,63 @@ union NPY_API nquad
 
 struct NPY_API nvec3 {
 
-  //nvec3(float x, float y, float z) : x(x), y(y), z(z) {} ; 
-  //~nvec3(){} ;
 
-  void dump(const char* msg);
-  const char* desc();
+  void dump(const char* msg) const;
+  const char* desc() const;
 
   float x ; 
   float y ; 
   float z ; 
 
+  nvec3& operator += (const float delta)
+  {
+      x += delta ; 
+      y += delta ; 
+      z += delta ; 
+      return *this ; 
+  }
+
+  nvec3& operator -= (const float delta)
+  {
+      x -= delta ; 
+      y -= delta ; 
+      z -= delta ; 
+      return *this ; 
+  }
+
+  nvec3& operator *= (const float factor)
+  {
+      x *= factor ; 
+      y *= factor ; 
+      z *= factor ; 
+      return *this ; 
+  }
+
+
+
 
 };
+
+
+
 
 
 inline NPY_API bool operator == (const nvec3& a , const nvec3& b )
 {
    return a.x == b.x && a.y == b.y && a.z == b.z ;  
 }
+
+
+inline NPY_API bool operator == (const nivec3& a , const nivec3& b )
+{
+   return a.x == b.x && a.y == b.y && a.z == b.z ;  
+}
+inline NPY_API bool operator == (const nuvec3& a , const nuvec3& b )
+{
+   return a.x == b.x && a.y == b.y && a.z == b.z ;  
+}
+
+
 
 
 
