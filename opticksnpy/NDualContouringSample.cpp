@@ -24,8 +24,7 @@ NDualContouringSample::NDualContouringSample(int level, float threshold, float s
    m_level(level),
    m_octreeSize(1 << level),
    m_threshold(threshold),
-   m_scale_bb(scale_bb),
-   m_ilow(-m_octreeSize / 2)
+   m_scale_bb(scale_bb)
 {
    m_timer->start();
 }
@@ -38,7 +37,6 @@ std::string NDualContouringSample::desc()
       << " octreeSize " << m_octreeSize
       << " threshold " << m_threshold
       << " scale_bb " << m_scale_bb
-      << " ilow " << gformat(m_ilow)
       ;
    return ss.str(); 
 }
@@ -65,6 +63,10 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     nbbox bb = node->bbox();  // overloaded method 
     bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
 
+
+    bb.side = bb.max - bb.min ; // TODO: see why this not set previously 
+
+
     nvec4     bbce = bb.center_extent();
 
     float xyzExtent = bbce.w  ;
@@ -78,7 +80,6 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
               << " ijkExtent " << ijkExtent
               << " bbce " << bbce.desc()
               << " ce " << ce.desc()
-              << " m_ilow " << gformat(m_ilow)
               ;
 
 
@@ -93,7 +94,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 
 
     profile("_BuildOctree");
-    OctreeNode* octree = BuildOctree(m_ilow, m_level, m_threshold, &f, bb, ce, m_timer ) ;
+    OctreeNode* octree = BuildOctree(m_level, m_threshold, &f, bb, ce, m_timer ) ;
     profile("BuildOctree");
 
 

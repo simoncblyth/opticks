@@ -155,8 +155,8 @@ inline NPY_API nivec3 operator*(const int s , const nivec3 &a)
 struct NPY_API nvec4 {
 
   // NO CTOR
-  void dump(const char* msg);
-  const char* desc();
+  void dump(const char* msg) const ;
+  const char* desc() const ;
 
   float x ; 
   float y ; 

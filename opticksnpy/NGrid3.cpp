@@ -3,6 +3,7 @@
 
 #include "NGrid3.hpp"
 #include "PLOG.hh"
+#include "NGLM.hpp"
 
 
 NMultiGrid3::NMultiGrid3()
@@ -52,7 +53,9 @@ NGrid3::NGrid3( int level )
     size( 1 << level ),
     nloc( 1 << (3*level) ),
     nijk( size, size, size),
-    elem( 1./size )
+    elem( 1./size ),
+    half_min( -size/2, -size/2, -size/2 ),
+    half_max(  size/2,  size/2,  size/2 )
 {
     assert(level >= 0 && level < MAXLEVEL);
 } 
@@ -126,7 +129,9 @@ nivec3 NGrid3::ijk(const nvec3& fpos) const
     return nivec3( nijk.x*fpos.x, nijk.y*fpos.y , nijk.z*fpos.z ) ; 
 }
 
-nvec3 NGrid3::fpos(const nivec3& ijk ) const 
+
+template<typename T>
+nvec3 NGrid3::fpos(const T& ijk ) const 
 {
     return make_nvec3( float(ijk.x)/float(nijk.x), float(ijk.y)/float(nijk.y), float(ijk.z)/float(nijk.z) ); 
 }
@@ -138,6 +143,8 @@ nvec3 NGrid3::fpos(const int c) const
 }
 
 
+template nvec3 NGrid3::fpos(const glm::ivec3& ) const ;
+template nvec3 NGrid3::fpos(const nivec3& ) const ;
 
 
 

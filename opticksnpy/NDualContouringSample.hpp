@@ -25,6 +25,4 @@ class NPY_API NDualContouringSample
         float  m_threshold ; 
         float  m_scale_bb ; 
 
-        glm::ivec3  m_ilow ; 
-
 };

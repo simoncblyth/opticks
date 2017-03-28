@@ -116,7 +116,7 @@ inline bool operator == ( const OctreeNode& a, const OctreeNode& b)
 
 // ----------------------------------------------------------------------------
 
-OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* func, const nbbox& bb, const nvec4& ce, Timer* timer);
+OctreeNode* BuildOctree(const int level, const float threshold, std::function<float(float,float,float)>* func, const nbbox& bb, const nvec4& ce, Timer* timer);
 void DestroyOctree(OctreeNode* node);
 void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const nbbox& bb, const nvec4& ce);
 

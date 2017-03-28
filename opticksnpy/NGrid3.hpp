@@ -20,12 +20,13 @@ struct NPY_API NGrid3
     std::string desc() const ;
     std::string desc(const nvec3& fpos, const char* msg="fpos" ) const ; 
 
-    nvec3  fpos(const nivec3& ijk ) const ; // grid int coordinates in 0:nsize-1 to fractional coordinates in 0:1.
-    nivec3 ijk(const nvec3& fpos) const ;   // fractional coordinates in 0:1. to grid int coordinates in 0:nsize-1
-    nivec3 ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates in 0:nsize-1
+    template<typename T>
+    nvec3  fpos(const T& ijk ) const ; // grid int coordinates in 0:size-1 to fractional coordinates in 0:1.
+    nivec3 ijk(const nvec3& fpos) const ;   // fractional coordinates in 0:1. to grid int coordinates in 0:size-1
+    nivec3 ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates in 0:size-1
     nvec3  fpos(int c ) const ;             // z-order morton code in 0:nloc-1 to fractional grid coordinates in 0:1
 
-    int    loc(const nivec3& ijk ) const ;  // grid int coordinates in 0:nsize-1 to z-order morton code in 0:nloc-1  
+    int    loc(const nivec3& ijk ) const ;  // grid int coordinates in 0:size-1 to z-order morton code in 0:nloc-1  
     int    loc(const nvec3& fpos ) const ;  // fractional coordinates in 0:1 to z-order morton code in 0:nloc-1  
     int    loc(const int i, const int j, const int k) const ;  // grid int coordinates in 0:nsize-1 to z-order morton code in 0:nloc-1  
 
@@ -48,10 +49,12 @@ struct NPY_API NGrid3
                                         // eg for handling coarse tiles
 
     const int    level ;  
-    const int    size ;       
+    const int    size ;       // 1<<level
     const int    nloc ;      
     const nivec3 nijk ; 
     const float  elem ; 
+    const nivec3 half_min ; // horrible half_min
+    const nivec3 half_max ; // horrible half_max 
 
 };
 
