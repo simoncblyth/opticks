@@ -4,6 +4,15 @@
 
 // ----------------------------------------------------------------------------
 
+/*
+struct MVertex
+{   
+   MVertex(const nvec3& _xyz, const 
+
+}
+*/
+
+
 struct MeshVertex
 {
 	MeshVertex(const glm::vec3& _xyz, const glm::vec3& _normal)

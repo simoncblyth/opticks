@@ -14,7 +14,6 @@ class NPY_API NMarchingCubesNPY {
     public:
         NMarchingCubesNPY(int nx, int ny=0, int nz=0);
 
-        //template<typename T> NTrianglesNPY* operator()(T* node); 
         NTrianglesNPY* operator()(nnode* node); 
     private:
          void march(nnode* node);
@@ -24,8 +23,6 @@ class NPY_API NMarchingCubesNPY {
         int m_ny ; 
         int m_nz ; 
 
-        nbbox  m_node_bb ; 
-
         double m_isovalue ; 
         double m_scale ; 
         double m_lower[3] ;
@@ -34,8 +31,7 @@ class NPY_API NMarchingCubesNPY {
         std::vector<double> m_vertices ; 
         std::vector<size_t> m_polygons ; 
 
-        ntrange3<double> m_range ; 
-
+    //    ntrange3<double>    m_range ; 
 
 
 };

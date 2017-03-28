@@ -24,22 +24,25 @@ NMarchingCubesNPY::NMarchingCubesNPY(int nx, int ny, int nz)
 {
 }
 
-//template<typename T>
-//NTrianglesNPY* NMarchingCubesNPY::operator()(T* node)
-
 
 NTrianglesNPY* NMarchingCubesNPY::operator()(nnode* node)
 {
-    m_node_bb = node->bbox();  // correctly gets the overloaded method
+    nbbox bb = node->bbox();  // correctly gets the overloaded method
 
+    m_lower[0] = bb.min.x*m_scale ; 
+    m_lower[1] = bb.min.y*m_scale ; 
+    m_lower[2] = bb.min.z*m_scale ; 
 
-    m_lower[0] = m_node_bb.min.x*m_scale ; 
-    m_lower[1] = m_node_bb.min.y*m_scale ; 
-    m_lower[2] = m_node_bb.min.z*m_scale ; 
+    m_upper[0] = bb.max.x*m_scale ; 
+    m_upper[1] = bb.max.y*m_scale ; 
+    m_upper[2] = bb.max.z*m_scale ; 
 
-    m_upper[0] = m_node_bb.max.x*m_scale ; 
-    m_upper[1] = m_node_bb.max.y*m_scale ; 
-    m_upper[2] = m_node_bb.max.z*m_scale ; 
+    LOG(info) << "NMarchingCubesNPY "
+              << " bb " << bb.desc()
+              << " scale " << m_scale 
+              << " lower (" << m_lower[0] << "," << m_lower[1] << "," << m_lower[2] << ")"
+              << " upper (" << m_upper[0] << "," << m_upper[1] << "," << m_upper[2] << ")"
+              ;
 
     m_vertices.clear();
     m_polygons.clear();
@@ -58,7 +61,7 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(nnode* node)
                      << " npoly " << npoly
                      << " MAKING PLACEHOLDER BBOX TRIS "  
                      ;
-        tris = NTrianglesNPY::box(m_node_bb);
+        tris = NTrianglesNPY::box(bb);
     } 
     else
     {
@@ -73,7 +76,7 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(nnode* node)
               << " ntri " << std::setw(6) << ntri
               << " nvert " << std::setw(6) << nvert
               << " npoly " << std::setw(6) << npoly
-              << " source node bb " << m_node_bb.desc() 
+              << " source node bb " << bb.desc() 
               << " output tris bb " << tris_bb->desc()
               ; 
 
@@ -168,15 +171,5 @@ NTrianglesNPY* NMarchingCubesNPY::makeTriangles()
     }
     return tris ; 
 }
-
-
-/*
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nnode>(nnode*);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nsphere>(nsphere*);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nbox>(nbox*);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nunion>(nunion*);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<nintersection>(nintersection*);
-template NPY_API NTrianglesNPY* NMarchingCubesNPY::operator()<ndifference>(ndifference*);
-*/
 
 

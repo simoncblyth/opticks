@@ -2,7 +2,7 @@
 #include <cstring>
 #include "NBBox.hpp"
 
-const char* nbbox::desc()
+const char* nbbox::desc() const
 {
     char _desc[128];
     snprintf(_desc, 128, " mi %.32s mx %.32s ", min.desc(), max.desc() );

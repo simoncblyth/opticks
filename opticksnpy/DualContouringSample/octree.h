@@ -34,6 +34,7 @@ using glm::vec4;
 using glm::ivec3;
 
 struct nbbox ; 
+struct nvec4 ; 
 
 
 class Timer ; 
@@ -95,6 +96,8 @@ public:
 		}
 	}
 
+
+
 	OctreeNodeType	type;
 	ivec3			min;
 	int				size;
@@ -102,11 +105,20 @@ public:
 	OctreeDrawInfo*	drawInfo;
 };
 
+
+inline bool operator == ( const OctreeNode& a, const OctreeNode& b)
+{
+    return a.type == b.type && 
+           a.size == b.size &&
+           a.min == b.min  ;
+}
+
+
 // ----------------------------------------------------------------------------
 
-OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* func, const nbbox& bb, Timer* timer);
+OctreeNode* BuildOctree(const ivec3& min, const int level, const float threshold, std::function<float(float,float,float)>* func, const nbbox& bb, const nvec4& ce, Timer* timer);
 void DestroyOctree(OctreeNode* node);
-void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const nbbox& bb);
+void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const nbbox& bb, const nvec4& ce);
 
 
 // ----------------------------------------------------------------------------

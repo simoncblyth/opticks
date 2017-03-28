@@ -100,7 +100,9 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
 GSolid* GMaker::makeFromCSG(NCSG* csg)
 {
     nnode* root = csg->getRoot() ;
+
     assert(root);
+    nbbox node_bb = root->bbox();
     NParameters* meta = csg->getMeta();
     assert(meta);
 
@@ -125,13 +127,23 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
 
     unsigned numTris = tris->getNumTriangles();
 
-    nbbox* bb = tris->findBBox();
+    nbbox* tris_bb = tris && numTris > 0 ? tris->findBBox() : NULL ;
+
+    bool tessa_valid = tris_bb ? node_bb.contains(*tris_bb) : false  ;
 
     LOG(info) << "GMaker::makeFromCSG"
               << " tessa " << tessa
               << " numTris " << numTris
-              << " " << ( bb ? bb->desc() : "bb:NULL" )
+              << " tris_bb " << ( tris_bb ? tris_bb->desc() : "bb:NULL" )
+              << " tessa_valid " << ( tessa_valid ? "YES" : "NO" )
               ;
+
+     if(!tessa_valid)
+     {
+         LOG(warning) << "INVALID Tesselation triangles outside node bbox REPLACE WITH PLACEHOLDER " ;   
+         delete tris ; 
+         tris = NTrianglesNPY::box(node_bb);
+     }
 
 
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);

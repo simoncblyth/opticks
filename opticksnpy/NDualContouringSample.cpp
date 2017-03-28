@@ -62,9 +62,26 @@ void NDualContouringSample::report(const char* msg)
 
 NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 {
-    m_node_bb = node->bbox();  // overloaded method 
-    m_node_bb.scale(m_scale_bb);  // kinda assumes centered at origin, slightly enlarge
-    
+    nbbox bb = node->bbox();  // overloaded method 
+    bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
+
+    nvec4     bbce = bb.center_extent();
+
+    float xyzExtent = bbce.w  ;
+    float ijkExtent = m_octreeSize/2 ;      // eg 64.f
+    float ijk2xyz = xyzExtent/ijkExtent ;   // octree -> real world coordinates
+
+    nvec4 ce = make_nvec4(bbce.x, bbce.y, bbce.z, ijk2xyz );
+
+    LOG(info) << "NDualContouringSample"
+              << " xyzExtent " << xyzExtent
+              << " ijkExtent " << ijkExtent
+              << " bbce " << bbce.desc()
+              << " ce " << ce.desc()
+              << " m_ilow " << gformat(m_ilow)
+              ;
+
+
 
     VertexBuffer vertices;
     IndexBuffer indices;
@@ -76,7 +93,7 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 
 
     profile("_BuildOctree");
-    OctreeNode* octree = BuildOctree(m_ilow, m_level, m_threshold, &f, m_node_bb, m_timer ) ;
+    OctreeNode* octree = BuildOctree(m_ilow, m_level, m_threshold, &f, bb, ce, m_timer ) ;
     profile("BuildOctree");
 
 
@@ -89,12 +106,12 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
                      << " for node " << CSGName(node->type)
                      << " MAKING PLACEHOLDER BBOX TRIS "  
                      ;
-        tris = NTrianglesNPY::box(m_node_bb);
+        tris = NTrianglesNPY::box(bb);
         return tris ; 
     }
 
     profile("_GenerateMeshFromOctree");
-    GenerateMeshFromOctree(octree, vertices, indices, m_node_bb);
+    GenerateMeshFromOctree(octree, vertices, indices, bb, ce);
     profile("GenerateMeshFromOctree");
 
 
@@ -148,5 +165,4 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 
     return tris ; 
 }
-
 

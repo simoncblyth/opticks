@@ -150,7 +150,7 @@ void test_generic(NMarchingCubesNPY& mcu)
         unsigned ntris = tris ? tris->getNumTriangles() : 0 ; 
         unsigned mxd = n->maxdepth();
 
-        NPY<float>* buf = tris->getBuffer();
+        NPY<float>* buf = tris->getTris();
 
         nbbox* bb = tris->findBBox(); 
 

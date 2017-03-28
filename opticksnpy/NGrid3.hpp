@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <cassert>
 
 #include "NQuad.hpp"
 
@@ -28,8 +29,12 @@ struct NPY_API NGrid3
     int    loc(const nvec3& fpos ) const ;  // fractional coordinates in 0:1 to z-order morton code in 0:nloc-1  
     int    loc(const int i, const int j, const int k) const ;  // grid int coordinates in 0:nsize-1 to z-order morton code in 0:nloc-1  
 
+    int upscale_factor( const NGrid3& coarser ) const 
+    { 
+        assert((level - coarser.level) >= 0 ); 
+        return 1 << (level - coarser.level) ; 
+    }  
 
-   
     int voxel_size(int elevation) const { return 1 << elevation ; }   
                                         // size of voxel at different depth, ie  level - elevation, 
                                         // relative to the nominal voxels for this grid level,

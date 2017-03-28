@@ -10,7 +10,6 @@ class Timer ;
 class NTrianglesNPY ; 
 struct nnode ; 
 
-
 class NPY_API NDualContouringSample 
 {
     public:
@@ -25,8 +24,7 @@ class NPY_API NDualContouringSample
         int    m_octreeSize ; 
         float  m_threshold ; 
         float  m_scale_bb ; 
-        glm::ivec3  m_ilow ; 
-        nbbox  m_node_bb ; 
 
+        glm::ivec3  m_ilow ; 
 
 };

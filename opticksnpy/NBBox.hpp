@@ -10,11 +10,15 @@ struct NPY_API nbbox {
 
     void dump(const char* msg);
     void include(const nbbox& other );
-    const char* desc();
+    const char* desc() const;
 
-    nvec4 center_extent();
-    nvec4 dimension_extent();
+    nvec4 center_extent() const ;
+    nvec4 dimension_extent() const ;
     static float extent(const nvec4& dim);
+
+    bool contains( const nvec3& p) const ; 
+    bool contains( const nbbox& other) const ; 
+
 
     void expand(float delta)
     {
@@ -50,7 +54,26 @@ inline NPY_API nbbox make_nbbox()
     return make_nbbox(0,0,0,0) ;
 }
 
-inline NPY_API float nbbox::extent(const nvec4& dim)
+
+inline NPY_API bool nbbox::contains(const nvec3& p) const 
+{
+    return p.x >= min.x && p.x <= max.x &&
+           p.y >= min.y && p.y <= max.y &&
+           p.z >= min.z && p.z <= max.z ;
+} 
+
+inline NPY_API bool nbbox::contains(const nbbox& other) const
+{
+    return contains( other.min ) && contains(other.max ) ;
+} 
+
+
+
+
+
+
+
+inline NPY_API float nbbox::extent(const nvec4& dim) 
 {
     float _extent(0.f) ;
     _extent = nmaxf( dim.x , _extent );
@@ -60,7 +83,7 @@ inline NPY_API float nbbox::extent(const nvec4& dim)
     return _extent ; 
 }
 
-inline NPY_API nvec4 nbbox::dimension_extent()
+inline NPY_API nvec4 nbbox::dimension_extent() const
 {
     nvec4 de ; 
     de.x = max.x - min.x ; 
@@ -70,7 +93,7 @@ inline NPY_API nvec4 nbbox::dimension_extent()
     return de ; 
 }
 
-inline NPY_API nvec4 nbbox::center_extent()
+inline NPY_API nvec4 nbbox::center_extent() const 
 {
     nvec4 ce ; 
     ce.x = (min.x + max.x)/2.f ;
