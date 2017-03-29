@@ -42,18 +42,6 @@ template class NComparer<OctreeNode,8> ;
 #include "NField3.hpp"
 
 
-float Density_Func(std::function<float(float,float,float)>* f, const nvec4& ce, const vec3& ijk)
-{
-    nvec3 p ; 
-    p.x = ce.x + ijk.x*ce.w ; 
-    p.y = ce.y + ijk.y*ce.w ; 
-    p.z = ce.z + ijk.z*ce.w ; 
-
-    float fp = (*f)(p.x, p.y, p.z);
-    return fp ; 
-}
-
-
 // ----------------------------------------------------------------------------
 
 const int MATERIAL_AIR = 0;
@@ -76,6 +64,24 @@ const ivec3 CHILD_MIN_OFFSETS[] =
 	ivec3( 1, 1, 0 ),
 	ivec3( 1, 1, 1 ),
 };
+
+const nivec3 _CHILD_MIN_OFFSETS[] =
+{
+	{0,  0, 0 },
+	{ 0, 0, 1 },
+	{ 0, 1, 0 },
+	{ 0, 1, 1 },
+	{ 1, 0, 0 },
+	{ 1, 0, 1 },
+	{ 1, 1, 0 },
+	{ 1, 1, 1 },
+};
+
+
+
+
+
+
 
 
 // ----------------------------------------------------------------------------
@@ -260,10 +266,8 @@ void GenerateVertexIndices(OctreeNode* node, VertexBuffer& vertexBuffer, const n
         vec3 ijk = d->position ; 
 
       /*
-        vec3 xyz ; 
-        xyz.x = bb.min.x + ijk.x*bb.side.x ; 
-        xyz.y = bb.min.y + ijk.y*bb.side.y ; 
-        xyz.z = bb.min.z + ijk.z*bb.side.z ; 
+         nvec3 fpos = m_nominal->fpos( ijk ); // hmm need to support offsets in the NGrid3 ?
+         nvec3 world = m_field->pos( fpos );
       */
 
         vec3 xyz ;
@@ -500,6 +504,39 @@ void ContourCellProc(OctreeNode* node, IndexBuffer& indexBuffer)
 }
 
 
+
+
+
+/*
+float Density_Func(NField3* field, const vec3& ijk)
+{
+    // the offsetting is everywhere, cannot easily eradicate it 
+    // ... so pragmatically 
+
+    nvec3 p ; 
+    p.x = ce.x + ijk.x*ce.w ; 
+    p.y = ce.y + ijk.y*ce.w ; 
+    p.z = ce.z + ijk.z*ce.w ; 
+
+    float fp = (*field)(p.x, p.y, p.z);
+    return fp ; 
+}
+*/
+
+
+float Density_Func(std::function<float(float,float,float)>* f, const nvec4& ce, const vec3& ijk)
+{
+    // NB this requires zero centered(aka offset) ijk , and jiggery-poked extent
+    nvec3 p ; 
+    p.x = ce.x + ijk.x*ce.w ; 
+    p.y = ce.y + ijk.y*ce.w ; 
+    p.z = ce.z + ijk.z*ce.w ; 
+
+    float fp = (*f)(p.x, p.y, p.z);
+    return fp ; 
+}
+
+
 vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, std::function<float(float,float,float)>* f, const nvec4& ce)
 {
 	// approximate the zero crossing by finding the min value along the edge
@@ -535,7 +572,6 @@ vec3 CalculateSurfaceNormal(const vec3& p, std::function<float(float,float,float
 
 	return glm::normalize(vec3(dx, dy, dz));
 }
-
 
 
 template <typename T>
@@ -581,8 +617,8 @@ void PopulateLeaf(int corners, OctreeNode* leaf, std::function<float(float,float
 			continue;
 		}
 
-		const vec3 p1 = vec3(leaf->min + CHILD_MIN_OFFSETS[c1]);
-		const vec3 p2 = vec3(leaf->min + CHILD_MIN_OFFSETS[c2]);
+		const vec3 p1 = vec3(leaf->min + CHILD_MIN_OFFSETS[c1]);   // just passing it along 
+		const vec3 p2 = vec3(leaf->min + CHILD_MIN_OFFSETS[c2]);  
 		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, f, ce);
 		const vec3 n = CalculateSurfaceNormal(p, f, ce);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
@@ -599,8 +635,8 @@ void PopulateLeaf(int corners, OctreeNode* leaf, std::function<float(float,float
 	drawInfo->position = vec3(qefPosition.x, qefPosition.y, qefPosition.z);
 	drawInfo->qef = qef.getData();
 
-	const vec3 min = vec3(leaf->min);
-	const vec3 max = vec3(leaf->min + ivec3(leaf->size));
+	const vec3 min = vec3(leaf->min);   
+	const vec3 max = vec3(leaf->min + ivec3(leaf->size)); 
 	if (drawInfo->position.x < min.x || drawInfo->position.x > max.x ||
 		drawInfo->position.y < min.y || drawInfo->position.y > max.y ||
 		drawInfo->position.z < min.z || drawInfo->position.z > max.z)
@@ -618,31 +654,12 @@ void PopulateLeaf(int corners, OctreeNode* leaf, std::function<float(float,float
 }
 
 
-OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,float)>* f, const nvec4& ce )
-{
-    assert(leaf && leaf->size == 1);
-
-	int corners = Corners( leaf->min, f, ce);
-
-	if (corners == 0 || corners == 255)
-	{
-		// voxel is full inside or outside the volume
-		delete leaf;
-		return nullptr;
-	}
-
-   PopulateLeaf( corners, leaf, f, ce ) ;
-
-   return leaf ;
-}
-
-
 int PopulateLeaves( OctreeNode* node, const int childSize,  std::function<float(float,float,float)>* f, const nvec4& ce)
 {
     int nleaf = 0 ; 
     for (int i = 0; i < 8; i++)
     {
-        ivec3 leaf_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize); 
+        ivec3 leaf_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize);    //passalong 
         int corners = Corners(leaf_min, f, ce );  
         if(corners == 0 || corners == 255) continue ; 
 
@@ -664,8 +681,6 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
     assert(node && node->size > 1);
 	bool hasChildren = false;
 
-    // count++ ;  // ConstructOctreeNodes recursive invokations
-
 	const int childSize = node->size / 2;
     if(childSize == 1)
     {
@@ -678,7 +693,7 @@ OctreeNode* ConstructOctreeNodes(OctreeNode* node, std::function<float(float,flo
         int nchild = 0 ;  
         for (int i = 0; i < 8; i++)
         {
-            ivec3 child_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize) ;
+            ivec3 child_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize) ;  //passalong
 
             OctreeNode* child = new OctreeNode;
             child->size = childSize;
@@ -718,13 +733,15 @@ class Constructor
         OctreeNode* create();
         void dump();
         void scan(const char* msg="scan", int depth=2, int limit=30 ) const ; 
+        void corner_scan(const char* msg="corner_scan", int depth=2, int limit=30) const ; 
 
         void dump_domain(const char* msg="dump_domain") const ;
-        nvec3 position(const ivec3& offset_ijk) const ;
-        nvec3 position_bb(const ivec3& offset_ijk, int depth) const ;
-        float density(const ivec3& offset_ijk) const ;
-        float density_bb(const ivec3& offset_ijk, int depth) const ;
 
+        nvec3 position_ce(const nivec3& offset_ijk, int depth) const ;
+        float density_ce(const nivec3& offset_ijk, int depth) const ;
+
+        nvec3 position_bb(const nivec3& natural_ijk, int depth) const ;
+        float density_bb(const nivec3& natural_ijk, int depth) const ;
 
     private:
         OctreeNode* create_coarse_nominal();
@@ -734,6 +751,7 @@ class Constructor
         NMultiGrid3 m_mgrid ; 
 
         F*          m_func ; 
+        NField3*    m_field ; 
         nvec4       m_ce ;  
         nbbox       m_bb ; 
 
@@ -753,18 +771,28 @@ class Constructor
 };
 
 
-nvec3 Constructor::position(const ivec3& offset_ijk) const 
+nvec3 Constructor::position_ce(const nivec3& offset_ijk, int depth) const 
 {
-    // hmm the jiggery poked extent contains the ijk extent, so this only valid at nominal
+    assert( depth >= 0 && depth <= m_nominal->level  ); 
+    NGrid3* dgrid = m_mgrid.grid[depth] ; 
+    float scale = m_ce.w*m_nominal->size/dgrid->size ;   // unjiggery poke
+
     nvec3 xyz ; 
-    xyz.x = m_ce.x + offset_ijk.x*m_ce.w ; 
-    xyz.y = m_ce.y + offset_ijk.y*m_ce.w ; 
-    xyz.z = m_ce.z + offset_ijk.z*m_ce.w ; 
+    xyz.x = m_ce.x + offset_ijk.x*scale ; 
+    xyz.y = m_ce.y + offset_ijk.y*scale ; 
+    xyz.z = m_ce.z + offset_ijk.z*scale ; 
     return xyz ; 
 }
 
+float Constructor::density_ce(const nivec3& offset_ijk, int depth) const 
+{
+    nvec3 world_pos = position_ce(offset_ijk, depth);
+    return (*m_func)(world_pos.x, world_pos.y, world_pos.z);
+}
 
-nvec3 Constructor::position_bb(const ivec3& natural_ijk, int depth) const 
+
+
+nvec3 Constructor::position_bb(const nivec3& natural_ijk, int depth) const 
 {
     assert( depth >= 0 && depth <= m_nominal->level  ); 
     NGrid3* dgrid = m_mgrid.grid[depth] ; 
@@ -773,39 +801,18 @@ nvec3 Constructor::position_bb(const ivec3& natural_ijk, int depth) const
     assert( natural_ijk.y >= 0 && natural_ijk.y <= dgrid->size );
     assert( natural_ijk.z >= 0 && natural_ijk.z <= dgrid->size );
 
-    /*
-    const nivec3& half_min = dgrid->half_min ; 
-    nivec3 ijk = {0,0,0} ;
-    ijk.x = offset_ijk.x - half_min.x ; 
-    ijk.y = offset_ijk.y - half_min.y ; 
-    ijk.z = offset_ijk.z - half_min.z ; 
-    */
-
-
-    nivec3 _natural_ijk( natural_ijk.x, natural_ijk.y, natural_ijk.z );
-    nvec3 frac_pos = dgrid->fpos<nivec3>(_natural_ijk);
+    nvec3 frac_pos = dgrid->fpos<nivec3>(natural_ijk);
 
     nvec3 world_pos ; 
     world_pos.x = m_bb.min.x + frac_pos.x*m_bb.side.x ; 
     world_pos.y = m_bb.min.y + frac_pos.y*m_bb.side.y ; 
     world_pos.z = m_bb.min.z + frac_pos.z*m_bb.side.z ; 
 
-/*
-    std::cout
-           << " _natural_ijk " << _natural_ijk.desc()
-           << " frac_pos " << frac_pos.desc() 
-           << " bb.side " << m_bb.side.desc()
-           << " world_pos " << world_pos.desc()
-           << std::endl ;
-*/
-
-
     return world_pos ; 
 }
 
 
-
-float Constructor::density_bb(const ivec3& natural_ijk, int depth) const 
+float Constructor::density_bb(const nivec3& natural_ijk, int depth) const 
 {
     nvec3 world_pos = position_bb(natural_ijk, depth);
     return (*m_func)(world_pos.x, world_pos.y, world_pos.z);
@@ -813,14 +820,13 @@ float Constructor::density_bb(const ivec3& natural_ijk, int depth) const
 
 
 
-float Constructor::density(const ivec3& offset_ijk) const 
-{
-    return Density_Func( m_func, m_ce, offset_ijk );
-}
+
+
 
 Constructor::Constructor(F* f, const nvec4& ce, const nbbox& bb, int nominal, int coarse )
    :
    m_func(f),  
+   m_field(new NField3(f, bb.min, bb.max)),
    m_ce(ce),
    m_bb(bb),
    m_nominal(m_mgrid.grid[nominal]),  
@@ -837,6 +843,7 @@ Constructor::Constructor(F* f, const nvec4& ce, const nbbox& bb, int nominal, in
    assert( coarse <= nominal && nominal < maxlevel ); 
    m_subtile = m_mgrid.grid[nominal-coarse] ;  
    m_upscale_factor = m_nominal->upscale_factor( *m_coarse );
+   assert( m_upscale_factor == m_subtile->size );
 
    std::cout << "Constructor"
               << " upscale_factor " << m_upscale_factor
@@ -849,8 +856,14 @@ Constructor::Constructor(F* f, const nvec4& ce, const nbbox& bb, int nominal, in
               << std::endl ; 
 
    dump_domain(); 
-   for(int d=0 ; d <= nominal ; d++) scan("scan", d, 16); 
+   for(int d=1 ; d <= nominal ; d++) scan("scan", d, 16); 
+   for(int d=1 ; d <= nominal ; d++) corner_scan("corner_scan", d, 16); 
+
 }
+
+
+
+
 
 void Constructor::dump()
 {
@@ -886,11 +899,12 @@ void Constructor::buildBottomUpFromLeaf(int leaf_loc, OctreeNode* leaf)
             m_num_into_cache++ ; 
             nivec3 d_ijk = m_dgrid->ijk(dloc); 
             d_ijk *= dsize ;      // scale coordinates to nominal 
-            d_ijk += m_nominal_min ;      // add offset 
+
+            d_ijk += m_nominal_min ;      //OFF
 
             dnode = new OctreeNode ; 
             dnode->size = dsize ; 
-            dnode->min = ivec3(d_ijk.x, d_ijk.y, d_ijk.z) ; 
+            dnode->min = ivec3(d_ijk.x, d_ijk.y, d_ijk.z) ;  
             dnode->type = Node_Internal;
 
             cache[depth].emplace(dloc, dnode)  ;
@@ -924,8 +938,11 @@ void Constructor::dump_domain(const char* msg) const
               << " ce  " << m_ce.desc()
               << " bb "  << m_bb.desc()
               ;
+
+    LOG(info) << "dump_domain : positions and SDF values at domain corners at all resolutions, they should all match " ; 
         
-    for(int depth = 0 ; depth <= m_nominal->level ; depth++ )
+    // skip depth 0 singularity, as 8-corners not meaningful there
+    for(int depth = 1 ; depth <= m_nominal->level ; depth++ )
     {
         int size = 1 << depth ; 
         NGrid3* dgrid = m_mgrid.grid[depth] ; 
@@ -936,33 +953,40 @@ void Constructor::dump_domain(const char* msg) const
                   << " grid " << dgrid->desc()
                   << std::endl ; 
 
-        ivec3 dmin(-size/2);   
+        nivec3 dmin(-size/2);               //OFF
+        assert( dgrid->half_min == dmin );
 
         for (int i = 0; i < 8; i++)
         {
-             const ivec3 ijk = CHILD_MIN_OFFSETS[i] * dgrid->size ; 
-             nvec3 xyz_bb = position_bb(ijk, depth);  
-             float sdf_bb = density_bb(ijk, depth) ;
+             const nivec3 ijk = _CHILD_MIN_OFFSETS[i] * dgrid->size ;   // <-- not scaling to different rez, this is within dgrid rez
 
-             const ivec3 offset_ijk = dmin + ijk ; 
-             nvec3 xyz = position(offset_ijk);
-             float sdf = density(offset_ijk) ;
+             const nivec3 offset_ijk = dmin + ijk ;    //OFF
+             nvec3 pce = position_ce(offset_ijk, depth);
+             float vce = density_ce(offset_ijk, depth) ;
+
+             nvec3 fpos = dgrid->fpos(ijk); 
+             float vfi = (*m_field)(fpos);
+             nvec3 pfi = m_field->pos(fpos);
 
              std::cout << " i " << std::setw(3) << i 
-                       << " offset_ijk " << std::setw(20) << gformat(offset_ijk)
-                       << " position " << std::setw(20) << xyz.desc()
-                       << " position_bb " << std::setw(20) << xyz_bb.desc()
-                       << " sdf " << sdf
-                       << " sdf_bb " << sdf_bb
+                       << " ijk " << std::setw(15) << ijk.desc()
+                       << " offset_ijk " << std::setw(15) << offset_ijk.desc()
+                       << " pce" << std::setw(20) << pce.desc()
+                       << " pfi " << std::setw(20) << pfi.desc()
+                       << " vce " << vce
+                       << " vfi " << vfi
                        << std::endl ; 
         }
     }
 }
 
 
+
+
 void Constructor::scan(const char* msg, int depth, int limit ) const 
 {
     NGrid3* dgrid = m_mgrid.grid[depth] ; 
+
     std::cout << " dgrid   " << dgrid->desc()  << std::endl ; 
     std::cout << " nominal " << m_nominal->desc() << std::endl ; 
 
@@ -978,29 +1002,126 @@ void Constructor::scan(const char* msg, int depth, int limit ) const
               ;
 
     assert( scale_to_nominal == upscale_factor );
-    for(int c=0 ; c < dgrid->nloc ; c++) 
+    LOG(info) << "first and last z-order locations, at higher rez positions should be close to min and max " ; 
+
+    int nloc = dgrid->nloc ;  
+
+    typedef std::vector<int> VI ;
+    VI locs ; 
+    for(int c=0                   ; c < nmini(limit,nloc)     ; c++) locs.push_back(c) ; 
+    for(int c=nmaxi(nloc-limit,0) ; c < nloc                  ; c++) locs.push_back(c) ; 
+
+    for(VI::const_iterator it=locs.begin() ; it != locs.end() ; it++)
     {
+        int c = *it ; 
         nivec3 raw = dgrid->ijk( c );
-        nivec3 scaled = raw ; 
-        scaled *= scale_to_nominal ;
-        nivec3 offset = scaled ;
-        offset += m_nominal_min ;  
 
-        ivec3 off( offset.x, offset.y, offset.z );
-        nvec3 xyz = position(off);
-        float sdf = density(off); 
+        nvec3 fpos = dgrid->fpos(raw);   // can also get direct from c, also no fiddly scaling or offsetting 
+        nvec3 pfi = m_field->pos(fpos);
+        float vfi = (*m_field)(fpos);
 
-        if( c < limit)
-        std::cout << " c " << std::setw(6) << c 
-                  << " raw " << std::setw(20) << raw.desc() 
-                  << " scaled " << std::setw(20) << scaled.desc() 
-                  << " offset " << std::setw(20) << offset.desc() 
-                  << " xyz "  << std::setw(20) << xyz.desc()
-                  << " sdf " << std::setw(20) <<  sdf
+        nivec3 ijk = raw * scale_to_nominal ; 
+        nivec3 offset_ijk = ijk + m_nominal->half_min ; // <-- after scaling to nominal, must use nominal offset 
+
+
+        nvec3 pbb = position_bb(ijk, m_nominal->level);
+        float vbb = density_bb(ijk, m_nominal->level); 
+        assert( pbb == pfi );
+        assert( vbb == vfi );
+
+        nvec3 pce = position_ce(offset_ijk, m_nominal->level);
+        float vce = density_ce(offset_ijk, m_nominal->level); 
+
+
+        std::cout << " c " << std::setw(10) << c 
+                  << " raw " << std::setw(15) << raw.desc() 
+                  << " ijk " << std::setw(15) << ijk.desc() 
+                  << " offset_ijk " << std::setw(15) << offset_ijk.desc() 
+                  << " pce "  << std::setw(20) << pce.desc()
+                  << " pfi "  << std::setw(20) << pfi.desc()
+                  << " vce " << std::setw(10) <<  vce
+                  << " vfi " << std::setw(10) <<  vfi
                   << std::endl 
                   ; 
     }
 }
+
+
+void Constructor::corner_scan(const char* msg, int depth, int limit) const 
+{
+    NGrid3* dgrid = m_mgrid.grid[depth] ; 
+    int upscale = m_nominal->upscale_factor( *dgrid ); 
+    LOG(info) << msg 
+              << " depth " << depth
+              << " limit " << limit 
+              << " upscale " << upscale
+              << " dgrid.elem " << dgrid->elem 
+              ;
+
+    // elem is 1/size, which is correct fdelta as fpos range is 0:1
+
+    std::cout << " dgrid   " << dgrid->desc()  << std::endl ; 
+    std::cout << " nominal " << m_nominal->desc() << std::endl ; 
+
+    int count0 = 0 ; 
+    for(int c=0 ; c < dgrid->nloc ; c++) 
+    {
+        nvec3 fpos = dgrid->fpos(c); 
+        int corners = m_field->zcorners(fpos, dgrid->elem ) ;  
+
+        if(corners == 0 || corners == 255) continue ; 
+
+        count0++ ; 
+        if( count0 > limit ) break ; 
+        
+        nvec3 pfi = m_field->pos(fpos);
+        float vfi = (*m_field)(fpos);
+
+        std::cout 
+              << " count0 " << std::setw(5) << count0
+              << " c " << std::setw(10) << c
+              << " fpos " << fpos.desc()
+              << " cnrs " << std::bitset<8>(corners) 
+              << " pfi " << std::setw(20) << pfi.desc()
+              << " vfi " << std::setw(10) << vfi 
+              << std::endl ; 
+    }
+
+    // even though the fpos (fractional position on the grid) 
+    // are the same the real world positions are different between
+    // the ce and bb grids : as those are in different places
+    // ... they should however be in same ballpark as the geometry sdf
+    // is in the same place
+
+    int count1 = 0 ; 
+    for(int c=0 ; c < dgrid->nloc ; c++) 
+    {
+        nvec3 fpos = dgrid->fpos(c); 
+        nivec3 dijk = dgrid->ijk( c );
+        dijk *= upscale ;
+        dijk += m_nominal_min ;  //OFF
+
+        int corners = Corners( dijk , m_func, m_ce, 8, upscale ); 
+        if(corners == 0 || corners == 255) continue ; 
+
+        count1++ ; 
+        if( count1 > limit ) break ; 
+        
+        nvec3 pce = position_ce(dijk, m_nominal->level);
+        float vce = density_ce(dijk, m_nominal->level); 
+
+        std::cout 
+              << " count1 " << std::setw(5) << count1
+              << " c " << std::setw(10) << c
+              << " fpos " << fpos.desc()
+              << " cnrs " << std::bitset<8>(corners) 
+              << " pce " << std::setw(20) << pce.desc()
+              << " vce " << std::setw(10) << vce
+              << std::endl ; 
+    }
+} 
+
+
 
 OctreeNode* Constructor::create()
 {
@@ -1020,11 +1141,13 @@ OctreeNode* Constructor::create()
 OctreeNode* Constructor::create_coarse_nominal()
 {
     int leaf_size = 1 ; 
+
+
     for(int c=0 ; c < m_coarse->nloc ; c++) 
     {
         nivec3 c_ijk = m_coarse->ijk( c );
         c_ijk *= m_subtile->size ;    // scale coarse coordinates up to nominal 
-        c_ijk += m_nominal_min ; 
+        c_ijk += m_nominal_min ;     //OFF
 
         int corners = Corners( c_ijk , m_func, m_ce, 8, m_upscale_factor ); 
         if(corners == 0 || corners == 255) continue ;   
@@ -1066,7 +1189,7 @@ OctreeNode* Constructor::create_nominal()
     for(int c=0 ; c < m_nominal->nloc ; c++) 
     {
         nivec3 ijk = m_nominal->ijk( c );
-        nivec3 offset_ijk = ijk + m_nominal_min ; 
+        nivec3 offset_ijk = ijk + m_nominal_min ;  //OFF
 
         int corners = Corners( offset_ijk , m_func, m_ce, 8, leaf_size ); 
         if(corners == 0 || corners == 255) continue ;   
@@ -1117,6 +1240,8 @@ Manager::Manager( const unsigned ctrl,  const int nominal, const int coarse, con
 
     m_ctor = new Constructor(func, m_ce, m_bb, nominal, coarse );
 
+    assert(0); // hari kari
+
     LOG(info) << "Manager::Maneger"
               << " xyzExtent " << xyzExtent
               << " ijkExtent " << ijkExtent
@@ -1127,7 +1252,6 @@ Manager::Manager( const unsigned ctrl,  const int nominal, const int coarse, con
 
 void Manager::buildOctree()
 {
-
     if( m_ctrl & BUILD_BOTTOM_UP )
     {
         m_timer->stamp("_ConstructOctreeBottomUp");

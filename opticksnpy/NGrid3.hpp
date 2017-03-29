@@ -21,7 +21,7 @@ struct NPY_API NGrid3
     std::string desc(const nvec3& fpos, const char* msg="fpos" ) const ; 
 
     template<typename T>
-    nvec3  fpos(const T& ijk ) const ; // grid int coordinates in 0:size-1 to fractional coordinates in 0:1.
+    nvec3  fpos(const T& ijk ) const ;      // grid int coordinates in 0:size-1 to fractional coordinates in 0:1.
     nivec3 ijk(const nvec3& fpos) const ;   // fractional coordinates in 0:1. to grid int coordinates in 0:size-1
     nivec3 ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates in 0:size-1
     nvec3  fpos(int c ) const ;             // z-order morton code in 0:nloc-1 to fractional grid coordinates in 0:1
@@ -29,6 +29,8 @@ struct NPY_API NGrid3
     int    loc(const nivec3& ijk ) const ;  // grid int coordinates in 0:size-1 to z-order morton code in 0:nloc-1  
     int    loc(const nvec3& fpos ) const ;  // fractional coordinates in 0:1 to z-order morton code in 0:nloc-1  
     int    loc(const int i, const int j, const int k) const ;  // grid int coordinates in 0:nsize-1 to z-order morton code in 0:nloc-1  
+
+    //nivec3 upscale_ijk(const nivec& ijk, const NGrid3& other, bool offset=false);  // this grids coordinate upscaled to another grid
 
     int upscale_factor( const NGrid3& coarser ) const 
     { 

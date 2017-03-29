@@ -51,8 +51,6 @@ struct NPY_API ntrange3 {
 };
 
 
-
-
 struct NPY_API nuvec4 {
 
   // NO CTOR
@@ -63,21 +61,6 @@ struct NPY_API nuvec4 {
   unsigned z ; 
   unsigned w ; 
 };
-
-
-struct NPY_API nuvec3 {
-
-  // NO CTOR
-  void dump(const char* msg);
-  const char* desc() const ;
-
-  unsigned x ; 
-  unsigned y ; 
-  unsigned z ; 
-};
-
-
-
 
 
 struct NPY_API nivec4 {
@@ -91,67 +74,6 @@ struct NPY_API nivec4 {
   int w ; 
 };
 
-
-
-struct NPY_API nivec3 {
-  
-  // non-quad so give it a CTOR
-  nivec3( int x, int y, int z ) : x(x), y(y), z(z) {} ; 
-  const char* desc() const ;
-  void dump(const char* msg);
-
-  int x ; 
-  int y ; 
-  int z ; 
-
-  nivec3& operator += (const nivec3& other)
-  {
-      x += other.x ; 
-      y += other.y ; 
-      z += other.z ; 
-      return *this ; 
-  }
-
-  nivec3& operator *= (const int s)
-  {
-      x *= s ; 
-      y *= s ; 
-      z *= s ; 
-      return *this ; 
-  }
-
-};
-
-
-inline NPY_API nivec3 operator+(const nivec3 &a, const nivec3& b)
-{
-     return nivec3(a.x + b.x, a.y + b.y, a.z + b.z );
-}
-inline NPY_API nivec3 operator-(const nivec3 &a, const nivec3& b)
-{
-     return nivec3(a.x - b.x, a.y - b.y, a.z - b.z );
-}
-
-inline NPY_API nivec3 operator*(const nivec3 &a, const int s)
-{
-     return nivec3(a.x*s, a.y*s, a.z*s );
-}
-inline NPY_API int operator*(const nivec3 &a, const nivec3& b)
-{
-     return a.x*b.x + a.y*b.y + a.z*b.z ;
-}
-
-inline NPY_API nivec3 operator*(const int s , const nivec3 &a)
-{
-     return nivec3(s*a.x, s*a.y, s*a.z );
-}
-
-
-
-
-
-
-
 struct NPY_API nvec4 {
 
   // NO CTOR
@@ -162,15 +84,11 @@ struct NPY_API nvec4 {
   float y ; 
   float z ; 
   float w ; 
-
-
-
 };
 
 
 union NPY_API nquad 
 {
-
    nuvec4 u ; 
    nivec4 i ; 
    nvec4  f ; 
@@ -178,89 +96,58 @@ union NPY_API nquad
    void dump(const char* msg);
 };
 
+struct NPY_API nuvec3 {
+
+  void dump(const char* msg);
+  const char* desc() const ;
+
+  unsigned x ; 
+  unsigned y ; 
+  unsigned z ; 
+};
+
 
 struct NPY_API nvec3 {
 
+   // no CTOR, due to implicit use from bbox
 
   void dump(const char* msg) const;
   const char* desc() const;
+
+  nvec3& operator += (const float delta);
+  nvec3& operator -= (const float delta);
+  nvec3& operator *= (const float factor);
 
   float x ; 
   float y ; 
   float z ; 
 
-  nvec3& operator += (const float delta)
-  {
-      x += delta ; 
-      y += delta ; 
-      z += delta ; 
-      return *this ; 
-  }
-
-  nvec3& operator -= (const float delta)
-  {
-      x -= delta ; 
-      y -= delta ; 
-      z -= delta ; 
-      return *this ; 
-  }
-
-  nvec3& operator *= (const float factor)
-  {
-      x *= factor ; 
-      y *= factor ; 
-      z *= factor ; 
-      return *this ; 
-  }
+};
 
 
+struct NPY_API nivec3 
+{
+  // non-quad -> not used in unions -> give it a CTOR
 
+  nivec3( int x, int y, int z ) : x(x), y(y), z(z) {} ; 
+  nivec3( int x ) : x(x), y(x), z(x) {} ; 
+
+  const char* desc() const ;
+  void dump(const char* msg);
+
+  nivec3& operator += (const nivec3& other);
+  nivec3& operator *= (const int s);
+
+  int x ; 
+  int y ; 
+  int z ; 
 
 };
 
 
 
 
-
-inline NPY_API bool operator == (const nvec3& a , const nvec3& b )
-{
-   return a.x == b.x && a.y == b.y && a.z == b.z ;  
-}
-
-
-inline NPY_API bool operator == (const nivec3& a , const nivec3& b )
-{
-   return a.x == b.x && a.y == b.y && a.z == b.z ;  
-}
-inline NPY_API bool operator == (const nuvec3& a , const nuvec3& b )
-{
-   return a.x == b.x && a.y == b.y && a.z == b.z ;  
-}
-
-
-
-
-
-inline NPY_API nuvec4 make_nuvec4(unsigned x, unsigned y, unsigned z, unsigned w ) 
-{
-   nuvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-}
-inline NPY_API nuvec3 make_nuvec3(unsigned x, unsigned y, unsigned z) 
-{
-   nuvec3 t; t.x = x; t.y = y; t.z = z; return t;
-}
-inline NPY_API nivec4 make_nivec4(int x, int y, int z, int w )
-{
-   nivec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-}
-inline NPY_API nivec3 make_nivec3(int x, int y, int z )
-{
-   nivec3 t(x,y,z); return t;
-}
-
-
-
-
+//  primary 
 
 inline NPY_API unsigned nminu(const unsigned a, const unsigned b)
 {
@@ -287,13 +174,139 @@ inline NPY_API float nmaxf(const float a, const float b)
     return a > b ? a : b ; 
 }
 
+
+
+// nivec3
+
+
+inline  nivec3& nivec3::operator += (const nivec3& other)
+{
+    x += other.x ; 
+    y += other.y ; 
+    z += other.z ; 
+    return *this ; 
+}
+inline nivec3& nivec3::operator *= (const int s)
+{
+    x *= s ; 
+    y *= s ; 
+    z *= s ; 
+    return *this ; 
+}
+
+
+inline NPY_API nivec3 make_nivec3(int x, int y, int z )
+{
+   nivec3 t(x,y,z); return t;
+}
+
+inline NPY_API bool operator == (const nivec3& a , const nivec3& b )
+{
+   return a.x == b.x && a.y == b.y && a.z == b.z ;  
+}
+
+inline NPY_API nivec3 operator+(const nivec3 &a, const nivec3& b)
+{
+     return nivec3(a.x + b.x, a.y + b.y, a.z + b.z );
+}
+inline NPY_API nivec3 operator-(const nivec3 &a, const nivec3& b)
+{
+     return nivec3(a.x - b.x, a.y - b.y, a.z - b.z );
+}
+inline NPY_API nivec3 operator*(const nivec3 &a, const int s)
+{
+     return nivec3(a.x*s, a.y*s, a.z*s );
+}
+inline NPY_API nivec3 operator*(const int s , const nivec3 &a)
+{
+     return nivec3(s*a.x, s*a.y, s*a.z );
+}
+inline NPY_API int operator*(const nivec3 &a, const nivec3& b)
+{
+     return a.x*b.x + a.y*b.y + a.z*b.z ;
+}
+
+
+//  nvec4 ----------
+
+inline NPY_API nvec4 make_nvec4(float x, float y, float z, float w )
+{
+   nvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+inline NPY_API nvec4 nminf( const nvec4& a, const nvec4& b )
+{
+    return make_nvec4( nminf(a.x, b.x), nminf(a.y, b.y), nminf(a.z, b.z), nminf(a.w, b.w) );
+}
+inline NPY_API nvec4 nmaxf( const nvec4& a, const nvec4& b )
+{
+    return make_nvec4( nmaxf(a.x, b.x), nmaxf(a.y, b.y), nmaxf(a.z, b.z), nmaxf(a.w, b.w) );
+}
+
+//  nuvec4 ----------
+
+inline NPY_API nuvec4 make_nuvec4(unsigned x, unsigned y, unsigned z, unsigned w ) 
+{
+   nuvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+// nivec4
+
+
+inline NPY_API nivec4 make_nivec4(int x, int y, int z, int w )
+{
+   nivec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
+}
+
+
+//  nuvec3 ----------
+
+inline NPY_API nuvec3 make_nuvec3(unsigned x, unsigned y, unsigned z) 
+{
+   nuvec3 t; t.x = x; t.y = y; t.z = z; return t;
+}
+inline NPY_API bool operator == (const nuvec3& a , const nuvec3& b )
+{
+   return a.x == b.x && a.y == b.y && a.z == b.z ;  
+}
+
+
+// nvec3
+
+inline nvec3& nvec3::operator += (const float delta)
+{
+    x += delta ; 
+    y += delta ; 
+    z += delta ; 
+    return *this ; 
+}
+
+inline nvec3& nvec3::operator -= (const float delta)
+{
+    x -= delta ; 
+    y -= delta ; 
+    z -= delta ; 
+    return *this ; 
+}
+
+inline nvec3& nvec3::operator *= (const float factor)
+{
+    x *= factor ; 
+    y *= factor ; 
+    z *= factor ; 
+    return *this ; 
+}
+
+
+inline NPY_API bool operator == (const nvec3& a , const nvec3& b )
+{
+   return a.x == b.x && a.y == b.y && a.z == b.z ;  
+}
+
+
 inline NPY_API float nmaxf(const nvec3& a)
 {
    return nmaxf(nmaxf(a.x, a.y), a.z);
 }
-
-
-
 
 inline NPY_API nvec3 make_nvec3(float x, float y, float z )
 {
@@ -314,29 +327,6 @@ inline NPY_API nvec3 nabsf(const nvec3& a)
 }
 
 
-
-
-
-
-
-
-
-
-inline NPY_API nvec4 make_nvec4(float x, float y, float z, float w )
-{
-   nvec4 t; t.x = x; t.y = y; t.z = z; t.w = w; return t;
-}
-inline NPY_API nvec4 nminf( const nvec4& a, const nvec4& b )
-{
-    return make_nvec4( nminf(a.x, b.x), nminf(a.y, b.y), nminf(a.z, b.z), nminf(a.w, b.w) );
-}
-inline NPY_API nvec4 nmaxf( const nvec4& a, const nvec4& b )
-{
-    return make_nvec4( nmaxf(a.x, b.x), nmaxf(a.y, b.y), nmaxf(a.z, b.z), nmaxf(a.w, b.w) );
-}
-
-
-
 inline NPY_API nvec3 operator+(const nvec3 &a, const nvec3& b)
 {
      return make_nvec3(a.x + b.x, a.y + b.y, a.z + b.z );
@@ -346,7 +336,6 @@ inline NPY_API nvec3 operator-(const nvec3 &a, const nvec3& b)
      return make_nvec3(a.x - b.x, a.y - b.y, a.z - b.z );
 }
 
-
 inline NPY_API nvec3 operator*(const nvec3 &a, const float s)
 {
      return make_nvec3(a.x*s, a.y*s, a.z*s );
@@ -355,12 +344,10 @@ inline NPY_API nvec3 operator*(const float s, const nvec3 &a)
 {
      return make_nvec3(a.x*s, a.y*s, a.z*s );
 }
-
 inline NPY_API float operator*(const nvec3 &a, const nvec3& b)
 {
      return a.x*b.x + a.y*b.y + a.z*b.z ;
 }
-
 
 
 

@@ -28,7 +28,7 @@ const char* nvec3::desc() const
 const char* nivec3::desc() const 
 {
     char _desc[64];
-    snprintf(_desc, 64, " (%5d %5d %5d) ", x,y,z );
+    snprintf(_desc, 64, " (%3d %3d %3d) ", x,y,z );
     return strdup(_desc);
 }
 

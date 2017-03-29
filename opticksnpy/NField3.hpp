@@ -16,8 +16,11 @@ struct NPY_API NField3
     NField3( F* f, const nvec3& min, const nvec3& max);
     std::string desc();
 
-    nvec3 pos( const nvec3& fpos ) const;         // fractional position to world position, using the center extent
+    //nvec3 hpos( const nvec3& fpos ) const;        // fractional position in -0.5:0.5 to world position in min:max
+    nvec3 pos( const nvec3& fpos ) const;         // fractional position in 0:1 to world position in min:max
+
     float operator()( const nvec3& fpos ) const;  // fractional position in 0:1 to field value
+
     int zcorners( const nvec3& fpos, float fdelta ) const ;
 
     F*          f ; 

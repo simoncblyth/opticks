@@ -1,19 +1,24 @@
 
 
-      /* 
-        nvec3 cpos = coarse.fpos(c); 
-        int corners2 = field.zcorners(cpos, nominal.elem*subtile.size ) ; 
-        if(corners != corners2)
-            std::cout 
-                 << " corners 0b" << std::bitset<8>(corners) 
-                 << " corners2 0b" << std::bitset<8>(corners2)
-                 << " cpos " << cpos.desc()
-                 << " nominal.elem " << nominal.elem
-                 << " subtile.size " << subtile.size
-                 << std::endl ;  
-        */
-        //assert(corners == corners2);
 
+
+OctreeNode* ConstructLeaf(OctreeNode* leaf, std::function<float(float,float,float)>* f, const nvec4& ce )
+{
+    assert(leaf && leaf->size == 1);
+
+	int corners = Corners( leaf->min, f, ce);
+
+	if (corners == 0 || corners == 255)
+	{
+		// voxel is full inside or outside the volume
+		delete leaf;
+		return nullptr;
+	}
+
+   PopulateLeaf( corners, leaf, f, ce ) ;
+
+   return leaf ;
+}
 
 
 

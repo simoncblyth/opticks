@@ -77,6 +77,8 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 
     Manager mgr(ctrl, nominal, coarse, m_threshold, &func, bb, m_timer);
 
+
+
     VertexBuffer vertices;
     IndexBuffer indices;
 
@@ -101,8 +103,6 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     LOG(debug) << "max element at: " << imax << " " << indices[imax] ;
 
 
-
-
     profile("_CollectTriangles");
     NTrianglesNPY* tris = new NTrianglesNPY();
     for(unsigned t=0 ; t < ntri ; t++)
@@ -116,15 +116,6 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
          MeshVertex& v0 = vertices[i0] ;
          MeshVertex& v1 = vertices[i1] ;
          MeshVertex& v2 = vertices[i2] ;
-
-        /*
-         LOG(info)
-             << " t " << std::setw(5) << t 
-             << " i0 " << std::setw(5) << i0  << " " << gformat(v0.xyz)  << " " << gformat(v0.normal) 
-             << " i1 " << std::setw(5) << i1  << " " << gformat(v1.xyz)  << " " << gformat(v1.normal) 
-             << " i2 " << std::setw(5) << i2  << " " << gformat(v2.xyz)  << " " << gformat(v2.normal) 
-             ;
-         */
 
          tris->add( v0.xyz, v1.xyz, v2.xyz );
          tris->addNormal( v0.normal, v1.normal, v2.normal );
