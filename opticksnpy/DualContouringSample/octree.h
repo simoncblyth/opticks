@@ -38,6 +38,7 @@ using glm::ivec3;
 
 class Timer ; 
 class Constructor ; 
+struct NFieldGrid3 ; 
 
 // ----------------------------------------------------------------------------
 
@@ -129,7 +130,6 @@ inline bool operator == ( const OctreeNode& a, const OctreeNode& b)
 
 class Manager 
 {
-        typedef std::function<float(float,float,float)> F ;
     public:
         enum { 
                BUILD_BOTTOM_UP = 0x1 << 0, 
@@ -139,7 +139,7 @@ class Manager
                BUILD_BOTH      = BUILD_BOTTOM_UP | BUILD_TOP_DOWN
              };
     public:
-        Manager(const unsigned ctrl, const int nominal, const int coarse, const float threshold, F* func, const nbbox& bb, Timer* timer);
+        Manager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, NFieldGrid3* fieldgrid, const nbbox& bb, Timer* timer);
 
         void buildOctree();
         void generateMeshFromOctree(VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer);
@@ -147,8 +147,9 @@ class Manager
     private:
         unsigned m_ctrl ; 
         int      m_nominal_size ; 
+        int      m_verbosity ; 
         float    m_threshold ;
-        F*       m_func ; 
+        NFieldGrid3* m_fieldgrid ; 
         nbbox    m_bb ; 
         Timer*   m_timer ;    
 

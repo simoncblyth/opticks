@@ -116,6 +116,9 @@ struct NPY_API nvec3 {
 
   nvec3& operator += (const float delta);
   nvec3& operator -= (const float delta);
+  nvec3& operator += (const nvec3& other);
+  nvec3& operator -= (const nvec3& other);
+
   nvec3& operator *= (const float factor);
 
   float x ; 
@@ -136,6 +139,7 @@ struct NPY_API nivec3
   void dump(const char* msg);
 
   nivec3& operator += (const nivec3& other);
+  nivec3& operator -= (const nivec3& other);
   nivec3& operator *= (const int s);
 
   int x ; 
@@ -186,6 +190,15 @@ inline  nivec3& nivec3::operator += (const nivec3& other)
     z += other.z ; 
     return *this ; 
 }
+
+inline  nivec3& nivec3::operator -= (const nivec3& other)
+{
+    x -= other.x ; 
+    y -= other.y ; 
+    z -= other.z ; 
+    return *this ; 
+}
+
 inline nivec3& nivec3::operator *= (const int s)
 {
     x *= s ; 
@@ -288,6 +301,24 @@ inline nvec3& nvec3::operator -= (const float delta)
     return *this ; 
 }
 
+inline nvec3& nvec3::operator -= (const nvec3& other)
+{
+    x -= other.x ; 
+    y -= other.y ; 
+    z -= other.z ; 
+    return *this ; 
+}
+inline nvec3& nvec3::operator += (const nvec3& other)
+{
+    x += other.x ; 
+    y += other.y ; 
+    z += other.z ; 
+    return *this ; 
+}
+
+
+
+
 inline nvec3& nvec3::operator *= (const float factor)
 {
     x *= factor ; 
@@ -308,10 +339,16 @@ inline NPY_API float nmaxf(const nvec3& a)
    return nmaxf(nmaxf(a.x, a.y), a.z);
 }
 
+inline NPY_API nvec3 make_nvec3(const nivec3& ijk )  // floating the ints
+{
+   nvec3 t ; t.x = ijk.x ; t.y = ijk.y ; t.z = ijk.z  ; return t;
+}
+
 inline NPY_API nvec3 make_nvec3(float x, float y, float z )
 {
    nvec3 t ; t.x = x ; t.y = y ; t.z = z  ; return t;
 }
+
 inline NPY_API nvec3 nminf( const nvec3& a, const nvec3& b )
 {
     return make_nvec3( nminf(a.x, b.x), nminf(a.y, b.y), nminf(a.z, b.z) );

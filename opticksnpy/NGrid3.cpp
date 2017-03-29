@@ -47,7 +47,7 @@ std::string NGrid3::desc(const nivec3& ijk, const char* msg)
 }
 
 
-NGrid3::NGrid3( int level )
+NGrid3::NGrid3( int level )  // NB everything from the level 
     :
     level(level),
     size( 1 << level ),
@@ -59,6 +59,9 @@ NGrid3::NGrid3( int level )
 {
     assert(level >= 0 && level < MAXLEVEL);
 } 
+
+
+
 
 std::string NGrid3::desc() const 
 {
@@ -136,6 +139,8 @@ nvec3 NGrid3::fpos(const T& ijk ) const
     return make_nvec3( float(ijk.x)/float(nijk.x), float(ijk.y)/float(nijk.y), float(ijk.z)/float(nijk.z) ); 
 }
 
+
+
 nvec3 NGrid3::fpos(const int c) const
 {
     nivec3 ijk_ = ijk(c) ; 
@@ -145,6 +150,10 @@ nvec3 NGrid3::fpos(const int c) const
 
 template nvec3 NGrid3::fpos(const glm::ivec3& ) const ;
 template nvec3 NGrid3::fpos(const nivec3& ) const ;
+
+// floated coordinates OK too
+template nvec3 NGrid3::fpos(const glm::vec3& ) const ;
+template nvec3 NGrid3::fpos(const nvec3& ) const ;
 
 
 

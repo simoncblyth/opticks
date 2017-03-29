@@ -20,8 +20,9 @@ struct NPY_API NGrid3
     std::string desc() const ;
     std::string desc(const nvec3& fpos, const char* msg="fpos" ) const ; 
 
-    template<typename T>
-    nvec3  fpos(const T& ijk ) const ;      // grid int coordinates in 0:size-1 to fractional coordinates in 0:1.
+    template <typename T>
+    nvec3  fpos(const T& ijk ) const ;      // grid int coordinates in 0:size-1 to fractional coordinates in 0:1. NB accepts floated coordinates too
+
     nivec3 ijk(const nvec3& fpos) const ;   // fractional coordinates in 0:1. to grid int coordinates in 0:size-1
     nivec3 ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates in 0:size-1
     nvec3  fpos(int c ) const ;             // z-order morton code in 0:nloc-1 to fractional grid coordinates in 0:1
@@ -59,6 +60,14 @@ struct NPY_API NGrid3
     const nivec3 half_max ; // horrible half_max 
 
 };
+
+inline NPY_API bool operator == (const NGrid3& a, const NGrid3& b )
+{
+   return a.level == b.level  ;  
+}
+
+
+
 
 
 struct NPY_API NMultiGrid3 

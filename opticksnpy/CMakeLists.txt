@@ -140,6 +140,7 @@ set(SOURCES
     NGenerator.cpp
     NGrid3.cpp
     NField3.cpp
+    NFieldGrid3.cpp
 
     NTreeTools.cpp
 )
@@ -228,6 +229,7 @@ NFieldCache.hpp
 NGenerator.hpp
 NGrid3.hpp
 NField3.hpp
+NFieldGrid3.hpp
 
 NTreeTools.hpp
 

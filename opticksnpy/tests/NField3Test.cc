@@ -38,8 +38,8 @@ void test_cross_isosurface_0(const NField3& field, const NGrid3& grid)
         sdf[0] = loc > 0 ? sdf[1] : field(fpos[0]);
         sdf[1] = field(fpos[1]);
  
-        pos[0] = loc > 0 ? pos[1] : field.pos(fpos[0]);
-        pos[1] = field.pos(fpos[1]);
+        pos[0] = loc > 0 ? pos[1] : field.position(fpos[0]);
+        pos[1] = field.position(fpos[1]);
 
         bool cross_isosurface = boost::math::sign(sdf[0]) != boost::math::sign(sdf[1]) ;
 

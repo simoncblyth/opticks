@@ -378,7 +378,7 @@ rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
-object = CSG("union", left=left, right=right, boundary="$(tboolean-object)", tessa="DCS", log2size="7" , threshold="1" )
+object = CSG("union", left=left, right=right, boundary="$(tboolean-object)", tessa="DCS", nominal="8", coarse="6", threshold="1", verbosity="1" )
 
 # log2size 7 -> size 128, ie -64:64
 # log2size,theshold 7,100 ... broken, great big voids

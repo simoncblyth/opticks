@@ -71,6 +71,7 @@ NGeneratorTest.cc
 mortonlibTest.cc
 NGrid3Test.cc
 NField3Test.cc
+NFieldGrid3Test.cc
 NTreeToolsTest.cc
 
 )

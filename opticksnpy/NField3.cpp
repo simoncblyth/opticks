@@ -17,7 +17,7 @@ const nvec3 NField3::ZOFFSETS[] =
 };
 
 
-NField3::NField3( F* f, const nvec3& min, const nvec3& max )
+NField3::NField3( FN* f, const nvec3& min, const nvec3& max )
     :
     f(f),
     min(min),
@@ -39,7 +39,7 @@ std::string NField3::desc()
 
 
 
-nvec3 NField3::pos( const nvec3& fpos ) const
+nvec3 NField3::position( const nvec3& fpos ) const
 {
     return make_nvec3( min.x + fpos.x*side.x , min.y + fpos.y*side.y , min.z + fpos.z*side.z ) ;
 }

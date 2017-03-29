@@ -107,6 +107,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
     assert(meta);
 
     std::string tessa = meta->get<std::string>("tessa", "DCS") ; 
+    int   verbosity = meta->get<int>("verbosity", "1" ); 
     unsigned index = csg->getIndex();
 
     NTrianglesNPY* tris = NULL ; 
@@ -120,8 +121,9 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
     else if(strcmp(tessa.c_str(), "DCS") == 0)
     {
         float threshold = meta->get<float>("threshold", "0.1" );
-        int   log2size = meta->get<int>("log2size", "7" );  // 1 << 5 = 32, 1 << 6 = 64, 1 << 7 = 128  
-        NDualContouringSample tessa(log2size, threshold) ;
+        int   nominal = meta->get<int>("nominal", "7" );  // 1 << 5 = 32, 1 << 6 = 64, 1 << 7 = 128  
+        int   coarse  = meta->get<int>("coarse", "6" ); 
+        NDualContouringSample tessa(nominal, coarse, verbosity, threshold ) ;
         tris = tessa(root);
     }
 

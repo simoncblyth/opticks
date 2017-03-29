@@ -2,16 +2,6 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-// ----------------------------------------------------------------------------
-
-/*
-struct MVertex
-{   
-   MVertex(const nvec3& _xyz, const 
-
-}
-*/
-
 
 struct MeshVertex
 {

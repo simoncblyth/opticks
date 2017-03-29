@@ -14,15 +14,20 @@
 #include "NSphere.hpp"
 #include "NNode.hpp"
 #include "NBox.hpp"
-#include "NFieldCache.hpp"
+
+#include "NGrid3.hpp"
+#include "NField3.hpp"
+#include "NFieldGrid3.hpp"
+//#include "NFieldCache.hpp"
 
 #include "PLOG.hh"
 
-NDualContouringSample::NDualContouringSample(int level, float threshold, float scale_bb)
+NDualContouringSample::NDualContouringSample(int nominal, int coarse, int verbosity, float threshold, float scale_bb)
   :
    m_timer(new Timer),
-   m_level(level),
-   m_octreeSize(1 << level),
+   m_nominal(nominal),
+   m_coarse(coarse),
+   m_verbosity(verbosity),
    m_threshold(threshold),
    m_scale_bb(scale_bb)
 {
@@ -33,8 +38,9 @@ std::string NDualContouringSample::desc()
 {
    std::stringstream ss ; 
    ss << "NDualContouringSample"
-      << " level " << m_level
-      << " octreeSize " << m_octreeSize
+      << " nominal " << m_nominal
+      << " coarse " << m_coarse
+      << " verbosity " << m_verbosity
       << " threshold " << m_threshold
       << " scale_bb " << m_scale_bb
       ;
@@ -66,17 +72,19 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
     bb.side = bb.max - bb.min ; // TODO: see why this not set previously 
 
-
-    unsigned ctrl = Manager::BUILD_BOTH | Manager::USE_BOTTOM_UP ; 
+    //unsigned ctrl = Manager::BUILD_BOTH | Manager::USE_BOTTOM_UP ; 
     //unsigned ctrl = Manager::BUILD_BOTH | Manager::USE_TOP_DOWN ; 
-    //unsigned ctrl = Manager::BUILD_BOTTOM_UP | Manager::USE_BOTTOM_UP ; 
+    unsigned ctrl = Manager::BUILD_BOTTOM_UP | Manager::USE_BOTTOM_UP ; 
     //unsigned ctrl = Manager::BUILD_TOP_DOWN | Manager::USE_TOP_DOWN ; 
 
-    int nominal = m_level ; 
-    int coarse  = m_level ; 
 
-    Manager mgr(ctrl, nominal, coarse, m_threshold, &func, bb, m_timer);
+    NField3 field(&func, bb.min, bb.max );
+    NGrid3  grid(m_nominal);
 
+    bool offset = true ; // <-- TODO: do the dev to switch this off
+    NFieldGrid3 fieldgrid(&field, &grid, offset);
+
+    Manager mgr(ctrl, m_nominal, m_coarse, m_verbosity, m_threshold, &fieldgrid, bb, m_timer);
 
 
     VertexBuffer vertices;
