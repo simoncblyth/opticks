@@ -61,64 +61,30 @@ void NDualContouringSample::report(const char* msg)
 NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
 {
     nbbox bb = node->bbox();  // overloaded method 
+    std::function<float(float,float,float)> func = node->sdf();
+
     bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
-
-
     bb.side = bb.max - bb.min ; // TODO: see why this not set previously 
 
 
-    nvec4     bbce = bb.center_extent();
+    unsigned ctrl = Manager::BUILD_BOTH | Manager::USE_BOTTOM_UP ; 
+    //unsigned ctrl = Manager::BUILD_BOTH | Manager::USE_TOP_DOWN ; 
+    //unsigned ctrl = Manager::BUILD_BOTTOM_UP | Manager::USE_BOTTOM_UP ; 
+    //unsigned ctrl = Manager::BUILD_TOP_DOWN | Manager::USE_TOP_DOWN ; 
 
-    float xyzExtent = bbce.w  ;
-    float ijkExtent = m_octreeSize/2 ;      // eg 64.f
-    float ijk2xyz = xyzExtent/ijkExtent ;   // octree -> real world coordinates
+    int nominal = m_level ; 
+    int coarse  = m_level ; 
 
-    nvec4 ce = make_nvec4(bbce.x, bbce.y, bbce.z, ijk2xyz );
-
-    LOG(info) << "NDualContouringSample"
-              << " xyzExtent " << xyzExtent
-              << " ijkExtent " << ijkExtent
-              << " bbce " << bbce.desc()
-              << " ce " << ce.desc()
-              ;
-
-
+    Manager mgr(ctrl, nominal, coarse, m_threshold, &func, bb, m_timer);
 
     VertexBuffer vertices;
     IndexBuffer indices;
 
-    vertices.clear();
-    indices.clear();
-
-    std::function<float(float,float,float)> f = node->sdf();
-
-
-    profile("_BuildOctree");
-    OctreeNode* octree = BuildOctree(m_level, m_threshold, &f, bb, ce, m_timer ) ;
-    profile("BuildOctree");
-
-
-
-    NTrianglesNPY* tris = NULL ; 
-
-    if(octree == NULL)
-    {   
-        LOG(warning) << "NDualContouringSample : NULL octree  "
-                     << " for node " << CSGName(node->type)
-                     << " MAKING PLACEHOLDER BBOX TRIS "  
-                     ;
-        tris = NTrianglesNPY::box(bb);
-        return tris ; 
-    }
-
-    profile("_GenerateMeshFromOctree");
-    GenerateMeshFromOctree(octree, vertices, indices, bb, ce);
-    profile("GenerateMeshFromOctree");
-
+    mgr.buildOctree();
+    mgr.generateMeshFromOctree(vertices, indices);
 
     LOG(info) << " vertices " << vertices.size() ;
     LOG(info) << " indices  " << indices.size() ;
-
 
     unsigned npol = indices.size() ; 
 
@@ -134,8 +100,11 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     LOG(debug) << "min element at: " << imin << " " << indices[imin] ; 
     LOG(debug) << "max element at: " << imax << " " << indices[imax] ;
 
+
+
+
     profile("_CollectTriangles");
-    tris = new NTrianglesNPY();
+    NTrianglesNPY* tris = new NTrianglesNPY();
     for(unsigned t=0 ; t < ntri ; t++)
     {
          assert( t*3+2 < npol );

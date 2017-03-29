@@ -1055,9 +1055,9 @@ OctreeNode* Constructor::create_coarse_nominal()
     }       // over coarse tiles
 
     UMAP::const_iterator it0 = cache[0].find(0);
-    m_root = it0 == cache[0].end() ? NULL : it0->second ; 
-    assert(m_root);
-    return m_root ; 
+    OctreeNode* root = it0 == cache[0].end() ? NULL : it0->second ; 
+    assert(root);
+    return root ; 
 }
 
 OctreeNode* Constructor::create_nominal()
@@ -1082,121 +1082,105 @@ OctreeNode* Constructor::create_nominal()
         buildBottomUpFromLeaf( c, leaf);
     }   
     UMAP::const_iterator it0 = cache[0].find(0);
-    m_root = it0 == cache[0].end() ? NULL : it0->second ; 
-    assert(m_root);
-    return m_root ; 
+    OctreeNode* root = it0 == cache[0].end() ? NULL : it0->second ; 
+    assert(root);
+    return root ; 
 }
 
 
 
-OctreeNode* BuildOctree(const int level, const float threshold, std::function<float(float,float,float)>* f, const nbbox& bb, const nvec4& ce, Timer* timer)
+
+
+
+
+Manager::Manager( const unsigned ctrl,  const int nominal, const int coarse, const float threshold, F* func, const nbbox& bb, Timer* timer )
+    :
+    m_ctrl(ctrl),
+    m_nominal_size( 1 << nominal ),
+    m_threshold(threshold), 
+    m_func(func),
+    m_bb(bb), 
+    m_timer(timer),
+    m_ctor(NULL),
+    m_bottom_up(NULL),
+    m_top_down(NULL),
+    m_raw(NULL),
+    m_simplified(NULL)
 {
-    enum { 
-           BUILD_BOTTOM_UP = 0x1 << 0, 
-           BUILD_TOP_DOWN  = 0x1 << 1,
-           USE_BOTTOM_UP   = 0x1 << 2, 
-           USE_TOP_DOWN    = 0x1 << 3, 
-           BUILD_BOTH      = BUILD_BOTTOM_UP | BUILD_TOP_DOWN
-         };
+    nvec4     bbce = m_bb.center_extent();
 
+    float ijkExtent = m_nominal_size/2 ;      // eg 64.f
+    float xyzExtent = bbce.w  ;
+    float ijk2xyz = xyzExtent/ijkExtent ;   // octree -> real world coordinates
 
-    unsigned ctrl = BUILD_BOTH | USE_BOTTOM_UP ; 
-    //unsigned ctrl = BUILD_BOTH | USE_TOP_DOWN ; 
-    //unsigned ctrl = BUILD_BOTTOM_UP | USE_BOTTOM_UP ; 
-    //unsigned ctrl = BUILD_TOP_DOWN | USE_TOP_DOWN ; 
+    m_ce = make_nvec4(bbce.x, bbce.y, bbce.z, ijk2xyz );
 
-    OctreeNode* bottom_up = NULL ; 
-    OctreeNode* top_down = NULL ; 
+    m_ctor = new Constructor(func, m_ce, m_bb, nominal, coarse );
 
-    if( ctrl & BUILD_BOTTOM_UP )
+    LOG(info) << "Manager::Maneger"
+              << " xyzExtent " << xyzExtent
+              << " ijkExtent " << ijkExtent
+              << " bbce " << bbce.desc()
+              << " ce " << m_ce.desc()
+              ;
+}
+
+void Manager::buildOctree()
+{
+
+    if( m_ctrl & BUILD_BOTTOM_UP )
     {
-        timer->stamp("_ConstructOctreeBottomUp");
+        m_timer->stamp("_ConstructOctreeBottomUp");
 
-        int nominal = level ; 
-        //int coarse  = level-1 ; 
-        int coarse  = level ; 
+        m_bottom_up = m_ctor->create();
+        m_ctor->dump();
 
-        Constructor ctor(f, ce, bb, nominal, coarse );
-
-        bottom_up = ctor.create();
-        ctor.dump();
-
-        assert(bottom_up);
-        timer->stamp("ConstructOctreeBottomUp");
-        NTraverser<OctreeNode,8>(bottom_up, "bottom_up", 1, 30 );
+        assert(m_bottom_up);
+        m_timer->stamp("ConstructOctreeBottomUp");
+        NTraverser<OctreeNode,8>(m_bottom_up, "bottom_up", 1, 30 );
     }
 
-    if( ctrl & BUILD_TOP_DOWN )
+    if( m_ctrl & BUILD_TOP_DOWN )
     {
-        int size = 1 << level ; 
   	    OctreeNode* root0 = new OctreeNode;
-  	    root0->min = ivec3(-size/2);   // <--- cause of great pain
-	    root0->size = size;
+  	    root0->min = ivec3(-m_nominal_size/2);   // <--- cause of great pain
+	    root0->size = m_nominal_size;
 	    root0->type = Node_Internal;
 
-        timer->stamp("_ConstructOctreeNodes");
+        m_timer->stamp("_ConstructOctreeNodes");
         int count = 0 ; 
-	    top_down = ConstructOctreeNodes(root0, f, ce, count);
-        timer->stamp("ConstructOctreeNodes");
+	    m_top_down = ConstructOctreeNodes(root0, m_func, m_ce, count);
+        m_timer->stamp("ConstructOctreeNodes");
         std::cout << "ConstructOctreeNodes count " << count << std::endl ; 
-        NTraverser<OctreeNode,8>(top_down, "top_down", 1, 30);
+        NTraverser<OctreeNode,8>(m_top_down, "top_down", 1, 30);
     }
 
-    if( ctrl & BUILD_BOTH )
+    if( m_ctrl & BUILD_BOTH )
     {
-        timer->stamp("_Comparer");
-        NComparer<OctreeNode,8> cmpr(bottom_up, top_down);
+        m_timer->stamp("_Comparer");
+        NComparer<OctreeNode,8> cmpr(m_bottom_up, m_top_down);
         cmpr.dump("Comparer result");
-        timer->stamp("Comparer");
+        m_timer->stamp("Comparer");
     }
-
     
-    OctreeNode* root = ctrl & USE_BOTTOM_UP ? bottom_up : top_down ; 
-    assert(root);
+    m_raw  = m_ctrl & USE_BOTTOM_UP ? m_bottom_up : m_top_down ; 
+    assert(m_raw);
 
-    timer->stamp("_SimplifyOctree");
-	OctreeNode* result = SimplifyOctree(root, threshold);
-    timer->stamp("SimplifyOctree");
-
-	return result  ;
+    m_timer->stamp("_SimplifyOctree");
+	m_simplified = SimplifyOctree(m_raw, m_threshold);
+    m_timer->stamp("SimplifyOctree");
 }
 
-// ----------------------------------------------------------------------------
-
-void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const nbbox& bb, const nvec4& ce)
+void Manager::generateMeshFromOctree(VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer)
 {
-	if (!node)
-	{
-		return;
-	}
+    assert(m_simplified);
 
 	vertexBuffer.clear();
 	indexBuffer.clear();
 
-	GenerateVertexIndices(node, vertexBuffer, bb, ce);
-	ContourCellProc(node, indexBuffer);
+	GenerateVertexIndices(m_simplified, vertexBuffer, m_bb, m_ce);
+	ContourCellProc(m_simplified, indexBuffer);
 }
 
-// -------------------------------------------------------------------------------
 
-void DestroyOctree(OctreeNode* node)
-{
-	if (!node)
-	{
-		return;
-	}
 
-	for (int i = 0; i < 8; i++)
-	{
-		DestroyOctree(node->children[i]);
-	}
-
-	if (node->drawInfo)
-	{
-		delete node->drawInfo;
-	}
-
-	delete node;
-}
-
-// -------------------------------------------------------------------------------

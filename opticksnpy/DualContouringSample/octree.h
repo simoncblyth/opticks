@@ -19,9 +19,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-
-#ifndef		HAS_OCTREE_H_BEEN_INCLUDED
-#define		HAS_OCTREE_H_BEEN_INCLUDED
+#pragma once
 
 #include <functional>
 
@@ -33,11 +31,13 @@ using glm::vec3;
 using glm::vec4;
 using glm::ivec3;
 
-struct nbbox ; 
-struct nvec4 ; 
+#include "NQuad.hpp"
+#include "NBBox.hpp"
+
 
 
 class Timer ; 
+class Constructor ; 
 
 // ----------------------------------------------------------------------------
 
@@ -106,6 +106,18 @@ public:
 };
 
 
+
+inline void DestroyOctree(OctreeNode* node)
+{
+	if (!node) return ;
+	for (int i = 0; i < 8; i++) DestroyOctree(node->children[i]);
+	delete node->drawInfo;
+	delete node;
+}
+
+
+
+
 inline bool operator == ( const OctreeNode& a, const OctreeNode& b)
 {
     return a.type == b.type && 
@@ -114,14 +126,40 @@ inline bool operator == ( const OctreeNode& a, const OctreeNode& b)
 }
 
 
-// ----------------------------------------------------------------------------
 
-OctreeNode* BuildOctree(const int level, const float threshold, std::function<float(float,float,float)>* func, const nbbox& bb, const nvec4& ce, Timer* timer);
-void DestroyOctree(OctreeNode* node);
-void GenerateMeshFromOctree(OctreeNode* node, VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer, const nbbox& bb, const nvec4& ce);
+class Manager 
+{
+        typedef std::function<float(float,float,float)> F ;
+    public:
+        enum { 
+               BUILD_BOTTOM_UP = 0x1 << 0, 
+               BUILD_TOP_DOWN  = 0x1 << 1,
+               USE_BOTTOM_UP   = 0x1 << 2, 
+               USE_TOP_DOWN    = 0x1 << 3, 
+               BUILD_BOTH      = BUILD_BOTTOM_UP | BUILD_TOP_DOWN
+             };
+    public:
+        Manager(const unsigned ctrl, const int nominal, const int coarse, const float threshold, F* func, const nbbox& bb, Timer* timer);
 
+        void buildOctree();
+        void generateMeshFromOctree(VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer);
 
-// ----------------------------------------------------------------------------
+    private:
+        unsigned m_ctrl ; 
+        int      m_nominal_size ; 
+        float    m_threshold ;
+        F*       m_func ; 
+        nbbox    m_bb ; 
+        Timer*   m_timer ;    
 
-#endif	// HAS_OCTREE_H_BEEN_INCLUDED
+        nvec4        m_ce ; 
+        Constructor* m_ctor ; 
+
+        OctreeNode*  m_bottom_up ;         
+        OctreeNode*  m_top_down ;         
+        OctreeNode*  m_raw ;         
+        OctreeNode*  m_simplified ;         
+
+};
+
 
