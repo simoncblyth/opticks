@@ -73,6 +73,7 @@ NGrid3Test.cc
 NField3Test.cc
 NFieldGrid3Test.cc
 NTreeToolsTest.cc
+NConstructorTest.cc
 
 )
 

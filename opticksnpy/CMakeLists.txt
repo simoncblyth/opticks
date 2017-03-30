@@ -143,6 +143,8 @@ set(SOURCES
     NFieldGrid3.cpp
 
     NTreeTools.cpp
+    NOctools.cpp
+    NOct.cpp
 )
 
 set(REST_SOURCES
@@ -232,6 +234,8 @@ NField3.hpp
 NFieldGrid3.hpp
 
 NTreeTools.hpp
+NOctools.hpp
+NOct.hpp
 
 )
 

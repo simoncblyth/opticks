@@ -1,77 +1,43 @@
-/*
-
-Implementations of Octree member functions.
-
-Copyright (C) 2011  Tao Ju
-
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public License
-(LGPL) as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
-
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
 #pragma once
 
 #include <functional>
-
-#include "qef.h"
-#include "mesh.h"
+#include <vector>
 
 #include <glm/glm.hpp>
-using glm::vec3;
-using glm::vec4;
-using glm::ivec3;
 
 #include "NQuad.hpp"
 #include "NBBox.hpp"
 
-
-
 class Timer ; 
-class Constructor ; 
 struct NFieldGrid3 ; 
-
-// ----------------------------------------------------------------------------
-
-enum OctreeNodeType
-{
-	Node_None,
-	Node_Internal,
-	Node_Psuedo,
-	Node_Leaf,
-};
-
-// ----------------------------------------------------------------------------
-
-struct OctreeDrawInfo 
-{
-	OctreeDrawInfo()
-		: index(-1)
-		, corners(0)
-	{
-	}
-
-	int				index;
-	int				corners;
-	vec3			position;
-	vec3			averageNormal;
-	svd::QefData	qef;
-};
-
-// ----------------------------------------------------------------------------
+struct OctreeDrawInfo ;
 
 class OctreeNode
 {
 public:
+
+    enum OctreeNodeType
+    {
+        Node_None,
+        Node_Internal,
+        Node_Psuedo,
+        Node_Leaf,
+    };
+
+    template <typename T>
+    static int Corners( const T& arg_min, NFieldGrid3* f, const nvec4& ce, const int ncorner=8, const int size=1 );
+
+    static void PopulateLeaf(int corners, OctreeNode* leaf, NFieldGrid3* f, const nvec4& ce );
+    static void DestroyOctree(OctreeNode* node) ;
+
+    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, const nbbox& bb, const nvec4& ce, NFieldGrid3* fg);
+
+    static void ContourCellProc(OctreeNode* node, std::vector<int>& indexBuffer);
+
+    static OctreeNode* ConstructOctreeNodes(OctreeNode* node, NFieldGrid3* fg, const nvec4& ce, int& count);
+
+    static OctreeNode* SimplifyOctree(OctreeNode* node, float threshold);
+
 
 	OctreeNode()
 		: type(Node_None)
@@ -85,36 +51,13 @@ public:
 		}
 	}
 
-	OctreeNode(const OctreeNodeType _type)
-		: type(_type)
-		, min(0, 0, 0)
-		, size(0)
-		, drawInfo(nullptr)
-	{
-		for (int i = 0; i < 8; i++)
-		{
-			children[i] = nullptr;
-		}
-	}
-
-
 
 	OctreeNodeType	type;
-	ivec3			min;
+	glm::ivec3		min;
 	int				size;
 	OctreeNode*		children[8];
 	OctreeDrawInfo*	drawInfo;
 };
-
-
-
-inline void DestroyOctree(OctreeNode* node)
-{
-	if (!node) return ;
-	for (int i = 0; i < 8; i++) DestroyOctree(node->children[i]);
-	delete node->drawInfo;
-	delete node;
-}
 
 
 
@@ -126,41 +69,5 @@ inline bool operator == ( const OctreeNode& a, const OctreeNode& b)
            a.min == b.min  ;
 }
 
-
-
-class Manager 
-{
-    public:
-        enum { 
-               BUILD_BOTTOM_UP = 0x1 << 0, 
-               BUILD_TOP_DOWN  = 0x1 << 1,
-               USE_BOTTOM_UP   = 0x1 << 2, 
-               USE_TOP_DOWN    = 0x1 << 3, 
-               BUILD_BOTH      = BUILD_BOTTOM_UP | BUILD_TOP_DOWN
-             };
-    public:
-        Manager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, NFieldGrid3* fieldgrid, const nbbox& bb, Timer* timer);
-
-        void buildOctree();
-        void generateMeshFromOctree(VertexBuffer& vertexBuffer, IndexBuffer& indexBuffer);
-
-    private:
-        unsigned m_ctrl ; 
-        int      m_nominal_size ; 
-        int      m_verbosity ; 
-        float    m_threshold ;
-        NFieldGrid3* m_fieldgrid ; 
-        nbbox    m_bb ; 
-        Timer*   m_timer ;    
-
-        nvec4        m_ce ; 
-        Constructor* m_ctor ; 
-
-        OctreeNode*  m_bottom_up ;         
-        OctreeNode*  m_top_down ;         
-        OctreeNode*  m_raw ;         
-        OctreeNode*  m_simplified ;         
-
-};
 
 

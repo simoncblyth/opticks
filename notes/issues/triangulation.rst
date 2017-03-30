@@ -2,6 +2,63 @@ Triangulation of CSG defined geometry using SDF
 ==================================================
 
 
+
+Bottom Up Much Faster with Coarse then Nominal approach
+---------------------------------------------------------
+
+::
+
+    Comparer result NOT-SAME state 0 : 1704473
+     state 1 : 420
+     state 2 : 0
+     state 3 : 243556
+     equals_count 1948449 content_count 242890 state_tot 1948449
+    2017-03-30 12:46:49.116 INFO  [2880095] [*NDualContouringSample::operator@96]  vertices 5042
+    2017-03-30 12:46:49.117 INFO  [2880095] [*NDualContouringSample::operator@97]  indices  36912
+    2017-03-30 12:46:49.123 INFO  [2880095] [NDualContouringSample::report@58] NDualContouringSample::
+    2017-03-30 12:46:49.123 INFO  [2880095] [NDualContouringSample::report@59] NDualContouringSample nominal 8 coarse 6 verbosity 1 threshold 1 scale_bb 1.01
+    2017-03-30 12:46:49.123 INFO  [2880095] [TimesTable::dump@103] TimesTable::dump filter: NONE
+              0.000      t_absolute        t_delta
+              0.000           0.000          0.000 : _ConstructOctreeBottomUp
+              4.842           4.842          4.842 : ConstructOctreeBottomUp
+              0.007           4.850          0.007 : _ConstructOctreeNodes
+             33.947          38.796         33.947 : ConstructOctreeNodes
+              0.006          38.802          0.006 : _Comparer
+              0.020          38.823          0.020 : Comparer
+              0.000          38.823          0.000 : _SimplifyOctree
+              0.096          38.919          0.096 : SimplifyOctree
+              0.006          38.924          0.006 : _CollectTriangles
+              0.006          38.930          0.006 : CollectTriangles
+
+
+Skipping parent hookup, makes no time difference (4.6 down from 4.8) time dominated by leaves::
+
+    Comparer result NOT-SAME state 0 : 0
+     state 1 : 1
+     state 2 : 0
+     state 3 : 0
+     equals_count 1 content_count 0 state_tot 1
+    2017-03-30 12:53:26.957 INFO  [2886078] [*NDualContouringSample::operator@96]  vertices 5042
+    2017-03-30 12:53:26.957 INFO  [2886078] [*NDualContouringSample::operator@97]  indices  36912
+    2017-03-30 12:53:26.964 INFO  [2886078] [NDualContouringSample::report@58] NDualContouringSample::
+    2017-03-30 12:53:26.964 INFO  [2886078] [NDualContouringSample::report@59] NDualContouringSample nominal 8 coarse 6 verbosity 1 threshold 1 scale_bb 1.01
+    2017-03-30 12:53:26.964 INFO  [2886078] [TimesTable::dump@103] TimesTable::dump filter: NONE
+              0.000      t_absolute        t_delta
+              0.000           0.000          0.000 : _ConstructOctreeBottomUp
+              4.629           4.629          4.629 : ConstructOctreeBottomUp
+              0.000           4.629          0.000 : _ConstructOctreeNodes
+             33.807          38.436         33.807 : ConstructOctreeNodes
+              0.007          38.443          0.007 : _Comparer
+              0.000          38.443          0.000 : Comparer
+              0.000          38.443          0.000 : _SimplifyOctree
+              0.095          38.538          0.095 : SimplifyOctree
+              0.005          38.543          0.005 : _CollectTriangles
+              0.006          38.549          0.006 : CollectTriangles
+    2017-03-30 12:53:26.964 INFO  [2886078] [*GMaker::makeFromCSG@136] GMaker::makeFromCSG tessa DCS numTris 12304 tris_bb  mi  (-150.22 -150.22 -250.03)  mx  ( 250.23  250.23  250.03)   tessa_valid YES
+
+
+
+
 Dual Contouring Sample
 -------------------------
 
