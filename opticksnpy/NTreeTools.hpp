@@ -12,19 +12,22 @@ class NPY_API NTraverser {
            m_root(root), 
            m_nodecount(0),
            m_nodelimit(nodelimit),
-           m_verbosity(verbosity)  
+           m_verbosity(verbosity),
+           m_maxdepth(0)
        {
            traverse_r(m_root, 0);
            std::cout 
                 << "Traverser "
                 << msg 
                 << " nodecount " << m_nodecount 
+                << " maxdepth " << m_maxdepth
                 << std::endl ; 
        }
    private:
        void traverse_r(T* node, int depth)
        {
            m_nodecount++ ; 
+           if(depth > m_maxdepth) m_maxdepth = depth ; 
 
            if(m_verbosity > 0 && m_nodecount < m_nodelimit)
            {
@@ -46,6 +49,7 @@ class NPY_API NTraverser {
        int         m_nodecount ; 
        int         m_nodelimit ; 
        int         m_verbosity ; 
+       int         m_maxdepth ; 
 };
 
 

@@ -144,10 +144,11 @@ set(SOURCES
 
     NTreeTools.cpp
     NOctools.cpp
-    NOct.cpp
+    NGLMStream.cpp
 )
 
 set(REST_SOURCES
+    NOct.cpp
 )
 
 SET(HEADERS
@@ -235,10 +236,16 @@ NFieldGrid3.hpp
 
 NTreeTools.hpp
 NOctools.hpp
-NOct.hpp
+NGLMStream.hpp
 
 )
 
+
+set(_HEADERS
+
+NOct.hpp
+
+)
 
 
 

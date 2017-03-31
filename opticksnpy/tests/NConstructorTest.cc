@@ -13,7 +13,7 @@
 #include "PLOG.hh"
 
 
-template class NConstructor<NOct> ;
+//template class NConstructor<NOct> ;
 
 
 int main(int argc, char** argv)
@@ -33,15 +33,16 @@ int main(int argc, char** argv)
     std::function<float(float,float,float)> fn = obj.sdf();
 
 
+    glm::vec3 obb_min(obb.min.x, obb.min.y, obb.min.z);
+    glm::vec3 obb_max(obb.max.x, obb.max.y, obb.max.z);
 
-    NField3 field( &fn , obb.min, obb.max );
+    NField<glm::vec3,glm::ivec3,3> field( &fn , obb_min, obb_max );
     LOG(info) << field.desc() ; 
 
-    NGrid3 grid(nominal);
+    NGrid<glm::vec3,glm::ivec3,3> grid(nominal);
     LOG(info) << grid.desc() ; 
 
-    NFieldGrid3 fg(&field, &grid);
-
+    NFieldGrid3<glm::vec3,glm::ivec3> fg(&field, &grid);
 
 
 

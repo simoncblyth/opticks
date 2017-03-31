@@ -4,25 +4,26 @@
 #include "NPY_API_EXPORT.hh"
 #include "NGLM.hpp"
 
-struct NField3 ; 
-struct NGrid3 ; 
-struct nivec3 ; 
-struct nvec3 ; 
+template <typename FVec, typename IVec, int DIM> struct NField ; 
+template <typename FVec, typename IVec, int DIM> struct NGrid ; 
 
 
+template<typename FVec, typename IVec>
 struct NPY_API NFieldGrid3  
 {
-    NFieldGrid3( NField3* field, NGrid3* grid, bool offset=false ) ;
+    NFieldGrid3( NField<FVec,IVec,3>* field, NGrid<FVec,IVec,3>* grid, bool offset=false ) ;
+    
+    // grid coordinate to field value
+    float value( const IVec& ijk ) const ;
+    float value_f( const FVec& ijkf ) const ;
 
-    float value( const nivec3& ijk ) const ;
-    nvec3 position( const nivec3& ijk ) const ; 
+    // grid coordinate to world position
+    FVec position( const IVec& ijk ) const ; 
+    FVec position_f( const FVec& ijkf ) const ;  
 
-    float value_f( const glm::vec3& ijkf ) const ;
-    float value_f( const nvec3& ijkf ) const ;
-    nvec3 position_f( const nvec3& ijkf ) const ;  // floated coordinates 
+    NField<FVec,IVec,3>* field ; 
+    NGrid<FVec,IVec,3>*  grid ; 
 
-    NField3* field ; 
-    NGrid3*  grid ; 
     bool     offset ; 
 
 };

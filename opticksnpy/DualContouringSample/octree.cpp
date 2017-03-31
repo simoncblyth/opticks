@@ -22,9 +22,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "octreedata.h"
 #include "octree.h"
 
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 
+#include "NGLMStream.hpp"
 #include "NBBox.hpp"
 #include "NGrid3.hpp"
 #include "NField3.hpp"
@@ -32,8 +34,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
 typedef std::function<float(float,float,float)> FN ; 
-typedef NField3 FI ; 
-typedef NFieldGrid3 FG ; 
+typedef NField<glm::vec3,glm::ivec3,3> FI ; 
+typedef NFieldGrid3<glm::vec3,glm::ivec3> FG3 ; 
 
 using glm::ivec3 ; 
 using glm::vec3 ; 
@@ -115,19 +117,40 @@ void OctreeNode::DestroyOctree(OctreeNode* node)
 
 
 
-
-OctreeNode* OctreeNode::SimplifyOctree(OctreeNode* node, float threshold)
+OctreeNode* OctreeNode::SimplifyOctree(OctreeNode* root, float threshold)
 {
-	if (!node)
-	{
-		return NULL;
-	}
+    OctreeMgr mgr(root, threshold) ;
+    return mgr.simplify();
+}
+
+
+OctreeNode* OctreeMgr::simplify()
+{
+    OctreeNode* root = simplify_r( m_root, 0 );
+
+    std::cout << "OctreeMgr::simplify"
+              << " node_count " << m_node_count
+              << " qef_nan " << m_qef_nan
+              << " qef_oob " << m_qef_oob
+              << std::endl ;
+
+    return root ; 
+}
+
+
+OctreeNode* OctreeMgr::simplify_r(OctreeNode* node, int depth)
+{
+    m_node_count++ ; 
+
+	if (!node) return NULL;
 
 	if (node->type != OctreeNode::Node_Internal)
 	{
 		// can't simplify!
 		return node;
 	}
+
+
 
 	svd::QefSolver qef;
 	int signs[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
@@ -137,7 +160,7 @@ OctreeNode* OctreeNode::SimplifyOctree(OctreeNode* node, float threshold)
 
 	for (int i = 0; i < 8; i++)
 	{
-		node->children[i] = SimplifyOctree(node->children[i], threshold);
+		node->children[i] = simplify_r(node->children[i], depth+1);
 		if (node->children[i])
 		{
 			OctreeNode* child = node->children[i];
@@ -163,27 +186,50 @@ OctreeNode* OctreeNode::SimplifyOctree(OctreeNode* node, float threshold)
 		return node;
 	}
 
+
+
 	svd::Vec3 qefPosition;
 	qef.solve(qefPosition, QEF_ERROR, QEF_SWEEPS, QEF_ERROR);
 	float error = qef.getError();
 
-	// convert to glm vec3 for ease of use
-	vec3 position(qefPosition.x, qefPosition.y, qefPosition.z);
-
 	// at this point the masspoint will actually be a sum, so divide to make it the average
-	if (error > threshold)
+	if (error > m_threshold)
 	{
 		// this collapse breaches the threshold
 		return node;
 	}
 
-	if (position.x < node->min.x || position.x > (node->min.x + node->size) ||
-		position.y < node->min.y || position.y > (node->min.y + node->size) ||
-		position.z < node->min.z || position.z > (node->min.z + node->size))
+
+	// convert to glm vec3 for ease of use
+	vec3 position(qefPosition.x, qefPosition.y, qefPosition.z);
+
+    
+    //assert(!std::isnan(position.x));
+    //assert(!std::isnan(position.y));
+    //assert(!std::isnan(position.z));
+
+
+    bool use_masspoint = false ; 
+    if( std::isnan(position.x) || std::isnan(position.y) || std::isnan(position.z) )
+    {
+        m_qef_nan++ ; 
+        use_masspoint = true ; 
+    }
+	else if (position.x < node->min.x || position.x > (node->min.x + node->size) ||
+	   	     position.y < node->min.y || position.y > (node->min.y + node->size) ||
+		     position.z < node->min.z || position.z > (node->min.z + node->size) 
+            )
 	{
-		const auto& mp = qef.getMassPoint();
-		position = vec3(mp.x, mp.y, mp.z);
+        m_qef_oob++ ; 
+        use_masspoint = true ; 
 	}
+
+    if(use_masspoint)
+    {
+	 	const auto& mp = qef.getMassPoint();
+		position = vec3(mp.x, mp.y, mp.z);
+    }
+
 
 	// change the node from an internal node to a 'psuedo leaf' node
 	OctreeDrawInfo* drawInfo = new OctreeDrawInfo;
@@ -222,7 +268,7 @@ OctreeNode* OctreeNode::SimplifyOctree(OctreeNode* node, float threshold)
 	for (int i = 0; i < 8; i++)
 	{
 		OctreeNode::DestroyOctree(node->children[i]);
-		node->children[i] = nullptr;
+		node->children[i] = NULL ;
 	}
 
 	node->type = OctreeNode::Node_Psuedo;
@@ -235,7 +281,7 @@ OctreeNode* OctreeNode::SimplifyOctree(OctreeNode* node, float threshold)
 
 
 
-void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, const nbbox& bb, const nvec4& ce, NFieldGrid3* fg)
+void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg)
 {
 	if (!node)
 	{
@@ -246,7 +292,7 @@ void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>&
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			GenerateVertexIndices(node->children[i], vertices, normals, bb, ce, fg);
+			GenerateVertexIndices(node->children[i], vertices, normals, fg);
 		}
 	}
 
@@ -261,24 +307,73 @@ void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>&
 
 		d->index = vertices.size();
 
-        vec3 ijk = d->position ; 
+        vec3 pos = d->position ; 
 
 
-#ifdef OLD_WAY
-        vec3 xyz ;
-        xyz.x = ce.x + ijk.x*ce.w ; 
-        xyz.y = ce.y + ijk.y*ce.w ; 
-        xyz.z = ce.z + ijk.z*ce.w ; 
-#else
-        nvec3 ijkf = make_nvec3(ijk.x, ijk.y, ijk.z ); 
-        nvec3 wp = fg->position_f(ijkf );
-        vec3 xyz(wp.x, wp.y, wp.z);
-#endif
+        /*
+        std::cout << " OctreeNode::GenerateVertexIndices"
+                  << " pos " << pos 
+                  << std::endl ; 
+        */ 
 
-		vertices.push_back(xyz);
+        assert( !std::isnan(pos.x) );
+        assert( !std::isnan(pos.y) );
+        assert( !std::isnan(pos.z) );
+
+        vec3 world = fg->position_f(pos);
+
+
+		vertices.push_back(world);
         normals.push_back(d->averageNormal);
 	}
 }
+
+
+
+
+void OctCheck::report(const char* msg)
+{
+    std::cout << "OctCheck " << msg 
+              << " node_count " << node_count 
+              << " bad_node " << bad_node
+              << " maxdepth " << maxdepth
+              << std::endl 
+              ;
+} 
+
+void OctCheck::Check( OctreeNode* node, int depth )
+{
+    node_count++ ; 
+    if( depth > maxdepth) maxdepth = depth ; 
+
+	if (node->type != OctreeNode::Node_Internal)
+    {
+        OctreeDrawInfo* d = node->drawInfo;
+        vec3 pos = d->position ; 
+   
+        bool bad = std::isnan(pos.x) || std::isnan(pos.y) || std::isnan(pos.z) ;
+        if(bad)
+        {
+             std::cout << "OctCheck::Check " 
+                       << " node_count " << node_count
+                       << " bad_node " << bad_node
+                       << " depth " << depth 
+                       << " node.min " << node->min 
+                       << " node.size " << node->size 
+                       << std::endl ; 
+
+             bad_node++ ;   
+        }
+    }
+
+    for(int i=0 ; i < 8 ; i++)
+    {
+        OctreeNode* child = node->children[i] ;  
+        if(child) Check(child, depth+1)  ;
+    }
+}
+
+
 
 // ----------------------------------------------------------------------------
 
@@ -479,6 +574,7 @@ void OctreeNode::ContourCellProc(OctreeNode* node, std::vector<int>& indexBuffer
 			faceNodes[0] = node->children[c[0]];
 			faceNodes[1] = node->children[c[1]];
 
+
 			ContourFaceProc(faceNodes, cellProcFaceMask[i][2], indexBuffer);
 		}
 
@@ -505,29 +601,13 @@ void OctreeNode::ContourCellProc(OctreeNode* node, std::vector<int>& indexBuffer
 
 
 
-
-#ifdef OLD_WAY 
-float Density_Func(FG* fg, const nvec4& ce, const vec3& offset_ijk)
-{
-    // NB this requires zero centered(aka offset) ijk , and jiggery-poked extent
-    FN* f = fg->field->f ; 
-    nvec3 p ; 
-    p.x = ce.x + offset_ijk.x*ce.w ; 
-    p.y = ce.y + offset_ijk.y*ce.w ; 
-    p.z = ce.z + offset_ijk.z*ce.w ; 
-
-    float fp = (*f)(p.x, p.y, p.z);
-    return fp ; 
-}
-#else
-float Density_Func(FG* fg, const nvec4& , const vec3& offset_ijk)
+float Density_Func(FG3* fg, const vec3& offset_ijk)
 {
      float fp = fg->value_f(offset_ijk );
      return fp ; 
 }
-#endif
 
-vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, FG* f, const nvec4& ce)
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, FG3* fg)
 {
 	// approximate the zero crossing by finding the min value along the edge
 	float minValue = 100000.f;
@@ -538,7 +618,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, FG* f, cons
 	while (currentT <= 1.f)
 	{
 		const vec3 p = p0 + ((p1 - p0) * currentT);
-		const float density = glm::abs(Density_Func(f,ce,p));
+		const float density = glm::abs(Density_Func(fg,p));
 		if (density < minValue)
 		{
 			minValue = density;
@@ -553,30 +633,24 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, FG* f, cons
 
 // ----------------------------------------------------------------------------
 
-vec3 CalculateSurfaceNormal(const vec3& p, FG* f, const nvec4& ce)
+vec3 CalculateSurfaceNormal(const vec3& p, FG3* fg)
 {
 	const float H = 0.001f; // hmm delta in ijk-space converted to floats 
-	const float dx = Density_Func(f,ce,p + vec3(H, 0.f, 0.f)) - Density_Func(f,ce,p - vec3(H, 0.f, 0.f));
-	const float dy = Density_Func(f,ce,p + vec3(0.f, H, 0.f)) - Density_Func(f,ce,p - vec3(0.f, H, 0.f));
-	const float dz = Density_Func(f,ce,p + vec3(0.f, 0.f, H)) - Density_Func(f,ce,p - vec3(0.f, 0.f, H));
+	const float dx = Density_Func(fg,p + vec3(H, 0.f, 0.f)) - Density_Func(fg,p - vec3(H, 0.f, 0.f));
+	const float dy = Density_Func(fg,p + vec3(0.f, H, 0.f)) - Density_Func(fg,p - vec3(0.f, H, 0.f));
+	const float dz = Density_Func(fg,p + vec3(0.f, 0.f, H)) - Density_Func(fg,p - vec3(0.f, 0.f, H));
 
 	return glm::normalize(vec3(dx, dy, dz));
 }
 
 
-template <typename T>
-int OctreeNode::Corners( const T& arg_min, FG* f, const nvec4& ce, const int ncorner, const int size )
+int OctreeNode::Corners( const glm::ivec3& leaf_min, FG3* fg, const int ncorner, const int size )
 {
-    const ivec3 leaf_min ; 
-    leaf_min.x = arg_min.x ; 
-    leaf_min.y = arg_min.y ; 
-    leaf_min.z = arg_min.z ; 
-
 	int corners = 0;
 	for (int i = 0; i < ncorner; i++)
 	{
 		const ivec3 cornerPos = leaf_min + size*CHILD_MIN_OFFSETS[i];
-		const float density = Density_Func(f, ce, vec3(cornerPos));
+		const float density = Density_Func(fg, vec3(cornerPos));
 		const int material = density < 0.f ? MATERIAL_SOLID : MATERIAL_AIR;
 		corners |= (material << i);
 	}
@@ -584,14 +658,15 @@ int OctreeNode::Corners( const T& arg_min, FG* f, const nvec4& ce, const int nco
 }
 
 
-template int OctreeNode::Corners<nivec3>( const nivec3&, FG*, const nvec4&, const int, const int) ;
-template int OctreeNode::Corners<glm::ivec3>( const glm::ivec3&, FG*, const nvec4&, const int, const int) ;
 
 
 
 
 
-void OctreeNode::PopulateLeaf(int corners, OctreeNode* leaf, FG* f, const nvec4& ce )
+
+
+
+void OctreeNode::PopulateLeaf(int corners, OctreeNode* leaf, FG3* fg)
 {
 	// otherwise the voxel contains the surface, so find the edge intersections
 	const int MAX_CROSSINGS = 6;
@@ -616,8 +691,8 @@ void OctreeNode::PopulateLeaf(int corners, OctreeNode* leaf, FG* f, const nvec4&
 
 		const vec3 p1 = vec3(leaf->min + CHILD_MIN_OFFSETS[c1]);   // just passing it along 
 		const vec3 p2 = vec3(leaf->min + CHILD_MIN_OFFSETS[c2]);  
-		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, f, ce);
-		const vec3 n = CalculateSurfaceNormal(p, f, ce);
+		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, fg);
+		const vec3 n = CalculateSurfaceNormal(p, fg);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;
@@ -634,9 +709,22 @@ void OctreeNode::PopulateLeaf(int corners, OctreeNode* leaf, FG* f, const nvec4&
 
 	const vec3 min = vec3(leaf->min);   
 	const vec3 max = vec3(leaf->min + ivec3(leaf->size)); 
-	if (drawInfo->position.x < min.x || drawInfo->position.x > max.x ||
-		drawInfo->position.y < min.y || drawInfo->position.y > max.y ||
-		drawInfo->position.z < min.z || drawInfo->position.z > max.z)
+
+    const vec3 pos = drawInfo->position ;
+
+    //assert( !std::isnan(pos.x) );
+
+	if (
+        pos.x < min.x || 
+        pos.x > max.x ||
+		pos.y < min.y || 
+        pos.y > max.y ||
+		pos.z < min.z || 
+        pos.z > max.z ||
+        std::isnan( pos.x ) || 
+        std::isnan( pos.y ) || 
+        std::isnan( pos.z )  
+       )
 	{
 		const auto& mp = qef.getMassPoint();
 		drawInfo->position = vec3(mp.x, mp.y, mp.z);
@@ -651,21 +739,34 @@ void OctreeNode::PopulateLeaf(int corners, OctreeNode* leaf, FG* f, const nvec4&
 }
 
 
-int PopulateLeaves( OctreeNode* node, const int childSize,  FG* f, const nvec4& ce)
+OctreeNode* OctreeNode::MakeLeaf(const glm::ivec3& min,  int corners, FG3* fg, int size )
+{
+    OctreeNode* leaf = new OctreeNode;
+    leaf->size = size ;
+    leaf->min = min ; 
+
+    PopulateLeaf( corners, leaf, fg ) ; 
+
+    glm::vec3 pos = leaf->drawInfo->position ;
+    assert( !std::isnan(pos.x) ); 
+    assert( !std::isnan(pos.y) ); 
+    assert( !std::isnan(pos.z) ); 
+
+    return leaf ; 
+}
+
+
+int PopulateLeaves( OctreeNode* node, const int childSize,  FG3* fg)
 {
     int nleaf = 0 ; 
     for (int i = 0; i < 8; i++)
     {
         ivec3 leaf_min = node->min + (CHILD_MIN_OFFSETS[i] * childSize);    //passalong 
-        int corners = OctreeNode::Corners(leaf_min, f, ce );  
+        int corners = OctreeNode::Corners(leaf_min, fg );  
         if(corners == 0 || corners == 255) continue ; 
 
         nleaf++ ; 
-        OctreeNode* leaf = new OctreeNode;
-        leaf->size = childSize;
-        leaf->min = leaf_min ; 
-
-        OctreeNode::PopulateLeaf( corners, leaf, f, ce ) ; 
+        OctreeNode* leaf = OctreeNode::MakeLeaf( leaf_min, corners, fg, childSize );
 
         node->children[i] = leaf ;
     } 
@@ -673,7 +774,7 @@ int PopulateLeaves( OctreeNode* node, const int childSize,  FG* f, const nvec4& 
 }
 
 
-OctreeNode* OctreeNode::ConstructOctreeNodes(OctreeNode* node, FG* f, const nvec4& ce, int& count)
+OctreeNode* OctreeNode::ConstructOctreeNodes(OctreeNode* node, FG3* fg, int& count)
 {
     assert(node && node->size > 1);
 	bool hasChildren = false;
@@ -681,7 +782,7 @@ OctreeNode* OctreeNode::ConstructOctreeNodes(OctreeNode* node, FG* f, const nvec
 	const int childSize = node->size / 2;
     if(childSize == 1)
     {
-        int nleaf = PopulateLeaves(node, childSize, f, ce);
+        int nleaf = PopulateLeaves(node, childSize, fg);
         hasChildren = nleaf > 0 ; 
         count += 8 ; // candidate leaves tested   
     } 
@@ -697,7 +798,7 @@ OctreeNode* OctreeNode::ConstructOctreeNodes(OctreeNode* node, FG* f, const nvec
             child->min = child_min ; 
             child->type = OctreeNode::Node_Internal;
 
-            OctreeNode* confirmed = ConstructOctreeNodes(child, f, ce, count);
+            OctreeNode* confirmed = ConstructOctreeNodes(child, fg, count);
             if(confirmed) nchild++ ; 
 
             node->children[i] = confirmed ; 

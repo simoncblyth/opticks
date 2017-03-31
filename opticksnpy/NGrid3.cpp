@@ -1,27 +1,32 @@
 #include <sstream>
+#include <iostream>
+#include <iomanip>
+
 #include "mortonlib/morton3d.h"
 
 #include "NGrid3.hpp"
-#include "PLOG.hh"
-#include "NGLM.hpp"
 
 
-NMultiGrid3::NMultiGrid3()
+
+template <typename FVec, typename IVec>
+NMultiGrid3<FVec,IVec>::NMultiGrid3()
 {
-   for(int i=0 ; i < NGRID ; i++ ) grid[i] = new NGrid3(i) ; 
+   for(int i=0 ; i < NGRID ; i++ ) grid[i] = new NGrid<FVec,IVec,3>(i) ; 
 }
 
-void NMultiGrid3::dump(const char* msg) const 
+template <typename FVec, typename IVec>
+void NMultiGrid3<FVec,IVec>::dump(const char* msg) const 
 {
-    LOG(info) << msg ; 
+    std::cout << msg << std::endl ; 
     for(int level=0 ; level < NGRID ; level++)
          std::cout << grid[level]->desc() 
                    << std::endl ; 
 }
 
-void NMultiGrid3::dump(const char* msg, const nvec3& fpos) const 
+template <typename FVec, typename IVec>
+void NMultiGrid3<FVec,IVec>::dump(const char* msg, const FVec& fpos) const 
 {
-    LOG(info) << msg ; 
+    std::cout << msg << std::endl ; 
     for(int level=0 ; level < NGRID ; level++)
          std::cout << grid[level]->desc() 
                    << grid[level]->desc( fpos, " fpos " ) 
@@ -33,25 +38,37 @@ void NMultiGrid3::dump(const char* msg, const nvec3& fpos) const
 
 
 
-std::string NGrid3::desc(const nivec3& ijk, const char* msg)
+
+
+
+template <typename FVec, typename IVec, int DIM>
+std::string NGrid<FVec,IVec,DIM>::desc(const IVec& ijk, const char* msg)
 {
     morton3 m(ijk.x, ijk.y, ijk.z);
     std::stringstream ss ;  
-    ss << msg  << std::setw(12) << ijk.desc()
+
+    ss << msg  
+       << " ijk (" 
+       << std::setw(4) << ijk.x << "," 
+       << std::setw(4) << ijk.y << "," 
+       << std::setw(4) << ijk.z 
+       << ")" 
        << " m "  << std::setw(12) << m.key 
        << " m>>3 "  << std::setw(12) << (m.key >> 3)
        << " m>>6 "  << std::setw(12) << (m.key >> 6)
        << " m>>9 "  << std::setw(12) << (m.key >> 9)
        ;
+
     return ss.str();
 }
 
 
-NGrid3::NGrid3( int level )  // NB everything from the level 
+template<typename FVec,typename IVec,int DIM>
+NGrid<FVec,IVec,DIM>::NGrid( int level )  // NB everything from the level 
     :
     level(level),
     size( 1 << level ),
-    nloc( 1 << (3*level) ),
+    nloc( 1 << (DIM*level) ),
     nijk( size, size, size),
     elem( 1./size ),
     half_min( -size/2, -size/2, -size/2 ),
@@ -63,10 +80,12 @@ NGrid3::NGrid3( int level )  // NB everything from the level
 
 
 
-std::string NGrid3::desc() const 
+template<typename FVec,typename IVec,int DIM>
+std::string NGrid<FVec,IVec,DIM>::desc() const 
 {
     std::stringstream ss ;  
-    ss << "NGrid3"
+    ss << "NGrid"
+       << " dim " << DIM
        << " level " << std::setw(2) << level
        << " size "  << std::setw(5) << size
        << " nloc "  << std::setw(12) << nloc
@@ -75,85 +94,92 @@ std::string NGrid3::desc() const
     return ss.str();
 }
 
-std::string NGrid3::desc(const nvec3& fpos, const char* msg)  const 
+template<typename FVec,typename IVec,int DIM>
+std::string NGrid<FVec,IVec,DIM>::desc(const FVec& fpos, const char* msg)  const 
 {
-    nivec3 ijk_ = ijk(fpos);
+    IVec ijk_ = ijk(fpos);
     std::stringstream ss ;  
     ss << msg 
-       << " " << fpos.desc()
-       << NGrid3::desc(ijk_, " ijk ")
+       << " fpos (" 
+       << std::setw(5) << fpos.x << ","
+       << std::setw(5) << fpos.y << ","
+       << std::setw(5) << fpos.z << ")"
+       << NGrid<FVec,IVec,DIM>::desc(ijk_, " ijk ")
        ; 
 
     return ss.str();
 } 
 
 
-nivec3 NGrid3::ijk(const int c) const
+template<typename FVec,typename IVec,int DIM>
+IVec NGrid<FVec,IVec,DIM>::ijk(const int c) const  
 { 
+   // morton code to integer grid coordinate
     bool valid = c < nloc && c > -1 ;
     if(!valid)
-        LOG(fatal) << "NGrid3::ijk invalid loc " << c << " for grid " << desc() ; 
+        std::cerr << "NGrid::ijk invalid loc " << c << " for grid " << desc() ; 
         
     assert(valid);
 
     morton3 loc(c);  
     unsigned long long i, j, k ;  
     loc.decode(i, j, k); 
-    return nivec3(i, j, k);
+    return IVec(i, j, k);
+}
+
+template<typename FVec,typename IVec,int DIM>
+IVec NGrid<FVec,IVec,DIM>::ijk(const FVec& fpos) const 
+{
+   // fractional to integer coordinates
+    return IVec( nijk.x*fpos.x, nijk.y*fpos.y , nijk.z*fpos.z ) ; 
 }
 
 
-
-int NGrid3::loc(const nivec3& ijk ) const 
+template<typename FVec,typename IVec,int DIM>
+int NGrid<FVec,IVec,DIM>::loc(const IVec& ijk ) const 
 {
+   // integer coordinate to morton code
     morton3 mloc(ijk.x, ijk.y, ijk.z);
     return mloc.key ;   
 }
 
-int NGrid3::loc(const int i, const int j, const int k) const 
+
+template<typename FVec,typename IVec,int DIM>
+int NGrid<FVec,IVec,DIM>::loc(const FVec& fpos ) const 
 {
-    morton3 mloc(i, j, k);
-    return mloc.key ;   
-}
-
-
-
-int NGrid3::loc(const nvec3& fpos ) const 
-{
-    nivec3 ijk_ = ijk(fpos); 
+   // fractional coordinate to morton code
+    IVec ijk_ = ijk(fpos); 
     return loc(ijk_);
 }
 
 
 
-
-nivec3 NGrid3::ijk(const nvec3& fpos) const 
+template<typename FVec,typename IVec,int DIM>
+FVec NGrid<FVec,IVec,DIM>::fpos(const IVec& ijk ) const 
 {
-    return nivec3( nijk.x*fpos.x, nijk.y*fpos.y , nijk.z*fpos.z ) ; 
+   // integer (or floated integer) coordinate to fractional coordinate 
+    return FVec( float(ijk.x)/float(nijk.x), float(ijk.y)/float(nijk.y), float(ijk.z)/float(nijk.z) ); 
 }
 
 
-template<typename T>
-nvec3 NGrid3::fpos(const T& ijk ) const 
+template<typename FVec,typename IVec,int DIM>
+FVec NGrid<FVec,IVec,DIM>::fpos(const int c) const
 {
-    return make_nvec3( float(ijk.x)/float(nijk.x), float(ijk.y)/float(nijk.y), float(ijk.z)/float(nijk.z) ); 
-}
-
-
-
-nvec3 NGrid3::fpos(const int c) const
-{
-    nivec3 ijk_ = ijk(c) ; 
+   // morton code to fractional coordinate 
+    IVec ijk_ = ijk(c) ; 
     return fpos(ijk_);
 }
 
 
-template nvec3 NGrid3::fpos(const glm::ivec3& ) const ;
-template nvec3 NGrid3::fpos(const nivec3& ) const ;
 
-// floated coordinates OK too
-template nvec3 NGrid3::fpos(const glm::vec3& ) const ;
-template nvec3 NGrid3::fpos(const nvec3& ) const ;
+#include "NGLM.hpp"
+#include "NQuad.hpp"
 
+
+template struct NPY_API NGrid<glm::vec3, glm::ivec3, 3> ; 
+template struct NPY_API NMultiGrid3<glm::vec3, glm::ivec3> ; 
+
+template struct NPY_API NGrid<nvec3, nivec3, 3> ; 
+template struct NPY_API NMultiGrid3<nvec3, nivec3> ; 
 
 

@@ -9,31 +9,22 @@
 #include "NBBox.hpp"
 #include "NGrid3.hpp"
 
-struct NGrid3 ; 
-struct NField3 ; 
-struct NFieldGrid3 ; 
+
+
+template <typename FVec, typename IVec, int DIM> struct NGrid ; 
+template <typename FVec, typename IVec, int DIM> struct NField ; 
+template <typename FVec, typename IVec> struct NFieldGrid3 ; 
+
+typedef NFieldGrid3<glm::vec3,glm::ivec3> FG3 ; 
+typedef NField<glm::vec3,glm::ivec3,3>    F3 ; 
+typedef NGrid<glm::vec3,glm::ivec3,3 >    G3 ; 
+
 
 class Timer ; 
 class NTrianglesNPY ; 
 
 #include "NPY_API_EXPORT.hh"
 
-
-struct NPY_API NMeshVertex
-{
-	NMeshVertex(const glm::vec3& _xyz, const glm::vec3& _normal)
-		: xyz(_xyz)
-		, normal(_normal)
-	{
-	}
-
-	glm::vec3		xyz, normal;
-};
-
-
-
-typedef std::vector<NMeshVertex> NVertexBuffer;
-typedef std::vector<int> NIndexBuffer;
 
 
 enum { 
@@ -49,14 +40,14 @@ template<typename T>
 class NPY_API NConstructor 
 {
     static const int maxlevel = 10 ; 
-    static const nivec3 _CHILD_MIN_OFFSETS[8] ;
+    static const glm::ivec3 _CHILD_MIN_OFFSETS[8] ;
 
     typedef std::function<float(float,float,float)> FN ; 
     typedef boost::unordered_map<unsigned, T*> UMAP ;
     UMAP cache[maxlevel] ; 
 
     public:
-        NConstructor(NFieldGrid3* fieldgrid, const nvec4& ce, const nbbox& bb, int nominal, int coarse, int verbosity );
+        NConstructor(FG3* fieldgrid, const nvec4& ce, const nbbox& bb, int nominal, int coarse, int verbosity );
         T* create();
         void dump();
         void report(const char* msg="NConstructor::report");
@@ -67,32 +58,32 @@ class NPY_API NConstructor
 
         void dump_domain(const char* msg="dump_domain") const ;
 
-        nvec3 position_ce(const nivec3& offset_ijk, int depth) const ;
-        float density_ce(const nivec3& offset_ijk, int depth) const ;
+        glm::vec3 position_ce(const glm::ivec3& offset_ijk, int depth) const ;
+        float      density_ce(const glm::ivec3& offset_ijk, int depth) const ;
 
-        nvec3 position_bb(const nivec3& natural_ijk, int depth) const ;
-        float density_bb(const nivec3& natural_ijk, int depth) const ;
+        glm::vec3 position_bb(const glm::ivec3& natural_ijk, int depth) const ;
+        float      density_bb(const glm::ivec3& natural_ijk, int depth) const ;
     private:
-        T* make_leaf(const nivec3& min, int leaf_size, int corners );
+        //T* make_leaf(const glm::ivec3& min, int leaf_size, int corners );
         T* create_coarse_nominal();
         T* create_nominal();
         void buildBottomUpFromLeaf(int leaf_loc, T* leaf );
     private:
-        NMultiGrid3 m_mgrid ; 
+        NMultiGrid3<glm::vec3,glm::ivec3> m_mgrid ; 
 
-        NFieldGrid3* m_fieldgrid ; 
-        NField3*    m_field ; 
+        FG3*        m_fieldgrid ; 
+        F3*         m_field ; 
         FN*         m_func ; 
         nvec4       m_ce ;  
         nbbox       m_bb ; 
 
-        NGrid3*     m_nominal ; 
-        NGrid3*     m_coarse ; 
+        G3*         m_nominal ; 
+        G3*         m_coarse ; 
         int         m_verbosity ; 
-        NGrid3*     m_subtile ; 
-        NGrid3*     m_dgrid ; 
+        G3*         m_subtile ; 
+        G3*         m_dgrid ; 
 
-        nivec3      m_nominal_min ; 
+        glm::ivec3      m_nominal_min ; 
         int         m_upscale_factor ; 
 
         T* m_root ; 
@@ -113,19 +104,23 @@ class NPY_API NManager
 {
     public:
    public:
-        NManager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, NFieldGrid3* fieldgrid, const nbbox& bb, Timer* timer);
+        NManager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, const nbbox& bb, Timer* timer);
 
         void buildOctree();
+        void simplifyOctree();
         void generateMeshFromOctree();
         NTrianglesNPY* collectTriangles();
         void meshReport(const char* msg="NManager::meshReport");
+
+        T* getRaw();
+        T* getSimplified();
 
     private:
         unsigned m_ctrl ; 
         int      m_nominal_size ; 
         int      m_verbosity ; 
         float    m_threshold ;
-        NFieldGrid3* m_fieldgrid ; 
+        FG3* m_fieldgrid ; 
         nbbox    m_bb ; 
         Timer*   m_timer ;    
 
@@ -136,8 +131,6 @@ class NPY_API NManager
         T*  m_top_down ;         
         T*  m_raw ;         
         T*  m_simplified ;         
-
-
         std::vector<glm::vec3> m_vertices;
         std::vector<glm::vec3> m_normals;
         std::vector<int>       m_indices;

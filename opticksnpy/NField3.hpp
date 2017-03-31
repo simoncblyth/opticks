@@ -7,26 +7,26 @@
 
 
 
-struct NPY_API NField3
+template<typename FVec, typename IVec, int DIM>
+struct NPY_API NField
 {
     static const int ZCORNER = 8 ; 
-    static const nvec3 ZOFFSETS[ZCORNER] ;
+    static const FVec ZOFFSETS[ZCORNER] ;
 
     typedef std::function<float(float,float,float)> FN ;  
-    NField3( FN* f, const nvec3& min, const nvec3& max);
+    NField( FN* f, const FVec& min, const FVec& max);
     std::string desc();
 
-    nvec3 position( const nvec3& fpos ) const;         // fractional position in 0:1 to world position in min:max
+    FVec position( const FVec& fpos ) const;         // fractional position in 0:1 to world position in min:max
 
-    float operator()( const nvec3& fpos ) const;  // fractional position in 0:1 to field value
+    float operator()( const FVec& fpos ) const;  // fractional position in 0:1 to field value
 
-    int zcorners( const nvec3& fpos, float fdelta ) const ;
+    int zcorners( const FVec& fpos, float fdelta ) const ;
 
-    FN*          f ; 
-
-    nvec3       min  ;
-    nvec3       max  ;
-    nvec3       side ; 
+    FN*  f ; 
+    FVec min  ;
+    FVec max  ;
+    FVec side ; 
 
 
 };

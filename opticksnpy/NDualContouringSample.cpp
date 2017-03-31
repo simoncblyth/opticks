@@ -71,20 +71,40 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
     bb.side = bb.max - bb.min ; // TODO: see why this not set previously 
 
+
+    glm::vec3 bb_min(bb.min.x, bb.min.y, bb.min.z );
+    glm::vec3 bb_max(bb.max.x, bb.max.y, bb.max.z );
+
+
     //unsigned ctrl = BUILD_BOTH | USE_BOTTOM_UP ; 
     //unsigned ctrl = BUILD_BOTH | USE_TOP_DOWN ; 
     unsigned ctrl = BUILD_BOTTOM_UP | USE_BOTTOM_UP ; 
     //unsigned ctrl = BUILD_TOP_DOWN | USE_TOP_DOWN ; 
 
-    NField3 field(&func, bb.min, bb.max );
-    NGrid3  grid(m_nominal);
-
     bool offset = true ; // <-- TODO: do the dev to switch this off
-    NFieldGrid3 fieldgrid(&field, &grid, offset);
+
+    NField<glm::vec3,glm::ivec3,3> field(&func, bb_min, bb_max );
+
+    NGrid<glm::vec3,glm::ivec3,3>  grid(m_nominal);
+
+    NFieldGrid3<glm::vec3,glm::ivec3> fieldgrid(&field, &grid, offset);
 
     NManager<OctreeNode> mgr(ctrl, m_nominal, m_coarse, m_verbosity, m_threshold, &fieldgrid, bb, m_timer);
 
     mgr.buildOctree();
+
+    OctCheck raw(mgr.getRaw()) ; 
+    raw.report("raw") ;
+    assert(raw.ok());
+
+
+    mgr.simplifyOctree();
+
+
+    OctCheck simp(mgr.getSimplified());
+    if(!simp.ok()) simp.report("simplified") ;
+    assert(simp.ok());
+
 
     mgr.generateMeshFromOctree();
 

@@ -12,18 +12,23 @@
 #include "NBBox.hpp"
 
 
+typedef NField<glm::vec3, glm::ivec3, 3> F3 ; 
+typedef NGrid<glm::vec3, glm::ivec3, 3> G3 ; 
+typedef NFieldGrid3<glm::vec3, glm::ivec3> FG3 ; 
 
-void test_fieldgrid(const NField3& field, const NGrid3& grid, NFieldGrid3* fg)
+
+
+void test_fieldgrid(const F3& field, const G3& grid, FG3* fg)
 {
 
     int ncross = 0 ; 
     float sdf_prior = 0 ; 
     for(int loc=0 ; loc < grid.nloc ; loc++)
     {
-        nvec3 fpos = grid.fpos(loc);
+        glm::vec3 fpos = grid.fpos(loc);
         float sdf = field(fpos);
 
-        nivec3 ijk = grid.ijk(loc);
+        glm::ivec3 ijk = grid.ijk(loc);
         float sdf2 = fg->value(ijk);
         assert( sdf == sdf2 );
 
@@ -64,13 +69,17 @@ int main(int argc, char** argv)
 
     std::function<float(float,float,float)> fn = obj.sdf();
 
-    NField3 field( &fn , wbb.min, wbb.max );
+
+    glm::vec3 wbb_min(wbb.min.x, wbb.min.y, wbb.min.z);
+    glm::vec3 wbb_max(wbb.max.x, wbb.max.y, wbb.max.z);
+
+    F3 field( &fn , wbb_min, wbb_max );
     LOG(info) << field.desc() ; 
 
-    NGrid3 grid(3);
+    G3 grid(3);
     LOG(info) << grid.desc() ; 
 
-    NFieldGrid3 fg(&field, &grid);
+    FG3 fg(&field, &grid);
 
     test_fieldgrid(field, grid, &fg);
 

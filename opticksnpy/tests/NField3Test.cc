@@ -7,15 +7,23 @@
 #include "NPY_LOG.hh"
 #include "PLOG.hh"
 
+#include "NGLM.hpp"
 #include "NBox.hpp"
 #include "NBBox.hpp"
 
-void test_cross_isosurface_0(const NField3& field, const NGrid3& grid)
+
+typedef NField<glm::vec3,glm::ivec3,3> F3 ; 
+typedef NGrid<glm::vec3,glm::ivec3,3> G3 ; 
+
+template struct NGrid<glm::vec3, glm::ivec3, 3> ; 
+
+
+void test_cross_isosurface_0(const F3& field, const G3& grid)
 {
-    nivec3 ijk[2] = {{0,0,0},{0,0,0}} ; 
-    nvec3  fpos[2];
-    nvec3  fpos2[2];
-    nvec3  pos[2];
+    glm::ivec3 ijk[2] = {{0,0,0},{0,0,0}} ; 
+    glm::vec3  fpos[2];
+    glm::vec3  fpos2[2];
+    glm::vec3  pos[2];
     float sdf[2]; 
 
     int ncross = 0 ; 
@@ -47,12 +55,10 @@ void test_cross_isosurface_0(const NField3& field, const NGrid3& grid)
         {
             ncross++ ; 
             std::cout << " loc " << std::setw(5) << loc 
-                      << " ijk[0] " << ijk[0].desc() 
-                      << " ijk[1] " << ijk[0].desc() 
-                     // << " fpos[0] " << fpos[0].desc()
-                     // << " fpos[1] " << fpos[1].desc()
-                      << " pos[0] " << pos[0].desc()
-                      << " pos[1] " << pos[1].desc()
+                      << " ijk[0] " << glm::to_string(ijk[0]) 
+                      << " ijk[1] " << glm::to_string(ijk[0]) 
+                      << " pos[0] " << glm::to_string(pos[0])
+                      << " pos[1] " << glm::to_string(pos[1])
                       << " sdf[0] " << sdf[0] 
                       << " sdf[1] " << sdf[1] 
                       << std::endl 
@@ -63,13 +69,13 @@ void test_cross_isosurface_0(const NField3& field, const NGrid3& grid)
     LOG(info) << "(test_cross_isosurface_0) ncross " << ncross ; 
 }
 
-void test_cross_isosurface_1(const NField3& field, const NGrid3& grid)
+void test_cross_isosurface_1(const F3& field, const G3& grid)
 {
     int ncross = 0 ; 
     float sdf_prior = 0 ; 
     for(int loc=0 ; loc < grid.nloc ; loc++)
     {
-        nvec3 fpos = grid.fpos(loc);
+        glm::vec3 fpos = grid.fpos(loc);
         float sdf = field(fpos);
 
         bool cross_isosurface = loc > 0 && boost::math::sign(sdf) != boost::math::sign(sdf_prior) ;
@@ -81,19 +87,19 @@ void test_cross_isosurface_1(const NField3& field, const NGrid3& grid)
 }
 
 
-void test_zcorners( const NField3& field, const NGrid3& grid)
+void test_zcorners( const F3& field, const G3& grid)
 {
-    nvec3 fpos[3] = {{0.f, 0.f, 0.f}, {0.5f, 0.5f, 0.5f}, {1.f, 1.f, 1.f}} ;
+    glm::vec3 fpos[3] = {{0.f, 0.f, 0.f}, {0.5f, 0.5f, 0.5f}, {1.f, 1.f, 1.f}} ;
     for(int i=0 ; i < 3 ; i++) field.zcorners( fpos[i] , grid.elem ); 
 }
 
-void test_cross_isosurface_2(const NField3& field, const NGrid3& grid)
+void test_cross_isosurface_2(const F3& field, const G3& grid)
 {
     int ncross = 0 ; 
     float sdf_prior = 0 ; 
     for(int loc=0 ; loc < grid.nloc ; loc++)
     {
-        nvec3 fpos = grid.fpos(loc);
+        glm::vec3 fpos = grid.fpos(loc);
         float sdf = field(fpos);
 
         bool cross_isosurface = loc > 0 && boost::math::sign(sdf) != boost::math::sign(sdf_prior) ;
@@ -132,16 +138,16 @@ int main(int argc, char** argv)
 
     std::function<float(float,float,float)> fn = obj.sdf();
 
-    NField3 field( &fn , wbb.min, wbb.max );
+    glm::vec3 wbb_min(wbb.min.x, wbb.min.y, wbb.min.z );
+    glm::vec3 wbb_max(wbb.max.x, wbb.max.y, wbb.max.z );
+
+
+    F3 field( &fn , wbb_min, wbb_max );
     LOG(info) << field.desc() ; 
 
-    NGrid3 grid(3);
+    G3 grid(3);
     LOG(info) << grid.desc() ; 
 
-    //test_cross_isosurface_0(field, grid);
-    //test_cross_isosurface_1(field, grid);
-
-    //test_zcorners(field, grid);
     test_cross_isosurface_2(field, grid);
 
     return 0 ; 

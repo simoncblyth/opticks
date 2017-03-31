@@ -9,8 +9,42 @@
 #include "NBBox.hpp"
 
 class Timer ; 
-struct NFieldGrid3 ; 
+template <typename FVec, typename IVec> struct NFieldGrid3 ; 
+
+typedef NFieldGrid3<glm::vec3,glm::ivec3> FG3 ; 
+
+
 struct OctreeDrawInfo ;
+
+
+class OctreeNode ; 
+
+
+class OctreeMgr
+{
+    public:
+        OctreeMgr(OctreeNode* root, float threshold) 
+           : 
+            m_root(root), 
+            m_threshold(threshold),
+            m_node_count(0), 
+            m_qef_nan(0), 
+            m_qef_oob(0) 
+          {};
+
+        OctreeNode* simplify();
+
+    private:
+        OctreeNode* simplify_r(OctreeNode* node, int depth);
+    private:
+        OctreeNode* m_root ; 
+        float       m_threshold ; 
+        int         m_node_count ; 
+        int         m_qef_nan ; 
+        int         m_qef_oob ; 
+};
+
+
 
 class OctreeNode
 {
@@ -24,17 +58,18 @@ public:
         Node_Leaf,
     };
 
-    template <typename T>
-    static int Corners( const T& arg_min, NFieldGrid3* f, const nvec4& ce, const int ncorner=8, const int size=1 );
+    static int Corners( const glm::ivec3& min, FG3* fg, const int ncorner=8, const int size=1 );
 
-    static void PopulateLeaf(int corners, OctreeNode* leaf, NFieldGrid3* f, const nvec4& ce );
+    static OctreeNode* MakeLeaf(const glm::ivec3& min,  int corners, FG3* fg, int size );
+
+    static void PopulateLeaf(int corners, OctreeNode* leaf, FG3* f);
     static void DestroyOctree(OctreeNode* node) ;
 
-    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, const nbbox& bb, const nvec4& ce, NFieldGrid3* fg);
+    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg);
 
     static void ContourCellProc(OctreeNode* node, std::vector<int>& indexBuffer);
 
-    static OctreeNode* ConstructOctreeNodes(OctreeNode* node, NFieldGrid3* fg, const nvec4& ce, int& count);
+    static OctreeNode* ConstructOctreeNodes(OctreeNode* node, FG3* fg, int& count);
 
     static OctreeNode* SimplifyOctree(OctreeNode* node, float threshold);
 
@@ -43,12 +78,9 @@ public:
 		: type(Node_None)
 		, min(0, 0, 0)
 		, size(0)
-		, drawInfo(nullptr)
+		, drawInfo(NULL)
 	{
-		for (int i = 0; i < 8; i++)
-		{
-			children[i] = nullptr;
-		}
+		for (int i = 0; i < 8; i++) children[i] = NULL ; 
 	}
 
 
@@ -57,6 +89,30 @@ public:
 	int				size;
 	OctreeNode*		children[8];
 	OctreeDrawInfo*	drawInfo;
+};
+
+
+struct OctCheck 
+{
+    OctCheck(OctreeNode* root) 
+       : 
+       node_count(0),
+       bad_node(0),
+       maxdepth(0)
+       {
+           Check(root, 0);
+       } ; 
+
+    void Check(OctreeNode* node, int depth=0 );
+
+    bool ok(){ return bad_node == 0 ; }
+
+    void report(const char* msg);
+
+
+    int node_count ; 
+    int bad_node   ; 
+    int maxdepth   ; 
 };
 
 

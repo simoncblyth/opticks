@@ -111,6 +111,11 @@ struct NPY_API nvec3 {
 
    // no CTOR, due to implicit use from bbox
 
+  nvec3() : x(0), y(0), z(0) {} ; 
+  nvec3( float x ) : x(x), y(x), z(x) {} ; 
+  nvec3( float x, float y, float z ) : x(x), y(y), z(z) {} ; 
+
+
   void dump(const char* msg) const;
   const char* desc() const;
 

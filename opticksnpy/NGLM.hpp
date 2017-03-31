@@ -30,7 +30,6 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-
 #ifdef __clang__
 
 #pragma clang diagnostic pop
