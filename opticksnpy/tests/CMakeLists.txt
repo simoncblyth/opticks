@@ -78,6 +78,18 @@ NGLMStreamTest.cc
 
 )
 
+
+
+if(NonExisting_FOUND)
+   list(APPEND TEST_SOURCES  NNonExistingTest.cc)
+endif()
+
+if(ImplicitMesher_FOUND)
+   list(APPEND TEST_SOURCES  NImplicitMesherTest.cc)
+endif()
+
+
+
 set(_TEST_SOURCES
 
 SequenceNPYTest.cc

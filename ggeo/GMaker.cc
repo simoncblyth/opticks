@@ -4,16 +4,16 @@
 #include "GLMFormat.hpp"
 #include "NPY.hpp"
 #include "NTrianglesNPY.hpp"
+#include "NCSG.hpp"
 
 #include "NParameters.hpp"
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPrism.hpp"
 #include "NPart.hpp"
-#include "NCSG.hpp"
 
-#include "NMarchingCubesNPY.hpp"
-#include "NDualContouringSample.hpp"
+#include "NPolygonizer.hpp"
+
 
 #include "OpticksCSG.h"
 
@@ -99,58 +99,17 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
 
 GSolid* GMaker::makeFromCSG(NCSG* csg)
 {
-    nnode* root = csg->getRoot() ;
+    NPolygonizer pg(csg);
 
-    assert(root);
-    nbbox node_bb = root->bbox();
-    NParameters* meta = csg->getMeta();
-    assert(meta);
+    NTrianglesNPY* tris = pg.polygonize();
 
-    std::string tessa = meta->get<std::string>("tessa", "DCS") ; 
-    int   verbosity = meta->get<int>("verbosity", "1" ); 
     unsigned index = csg->getIndex();
 
-    NTrianglesNPY* tris = NULL ; 
-
-    if( strcmp(tessa.c_str(), "MC") == 0)
-    {
-        int nx = meta->get<int>("nx", "15" );
-        NMarchingCubesNPY tessa(nx) ;
-        tris = tessa(root);
-    } 
-    else if(strcmp(tessa.c_str(), "DCS") == 0)
-    {
-        float threshold = meta->get<float>("threshold", "0.1" );
-        int   nominal = meta->get<int>("nominal", "7" );  // 1 << 5 = 32, 1 << 6 = 64, 1 << 7 = 128  
-        int   coarse  = meta->get<int>("coarse", "6" ); 
-        NDualContouringSample tessa(nominal, coarse, verbosity, threshold ) ;
-        tris = tessa(root);
-    }
-
-    unsigned numTris = tris->getNumTriangles();
-
-    nbbox* tris_bb = tris && numTris > 0 ? tris->findBBox() : NULL ;
-
-    bool tessa_valid = tris_bb ? node_bb.contains(*tris_bb) : false  ;
-
-    LOG(info) << "GMaker::makeFromCSG"
-              << " tessa " << tessa
-              << " numTris " << numTris
-              << " tris_bb " << ( tris_bb ? tris_bb->desc() : "bb:NULL" )
-              << " tessa_valid " << ( tessa_valid ? "YES" : "NO" )
-              ;
-
-     if(!tessa_valid)
-     {
-         LOG(warning) << "INVALID Tesselation triangles outside node bbox REPLACE WITH PLACEHOLDER " ;   
-         delete tris ; 
-         tris = NTrianglesNPY::box(node_bb);
-     }
+    nnode* root = csg->getRoot() ;
 
 
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 
-    //mesh->save("$TMP", "GMaker_makeMarchingCubesMesh" );
 
     glm::mat4 txf = tris->getTransform(); 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));

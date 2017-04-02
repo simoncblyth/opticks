@@ -10,7 +10,16 @@ find_package(GLM    REQUIRED)
 find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(PLog REQUIRED)
-#message("NPY.BoostRap_INCLUDE_DIRS:${BoostRap_INCLUDE_DIRS} ")
+
+find_package(NonExisting) 
+message("NPY.NonExisting_FOUND       :${NonExisting_FOUND} ")
+message("NPY.NonExisting_INCLUDE_DIRS:${NonExisting_INCLUDE_DIRS} ")
+message("NPY.NonExisting_LIBRARIES   :${NonExisting_LIBRARIES} ")
+
+find_package(ImplicitMesher) 
+message("NPY.ImplicitMesher_FOUND       :${ImplicitMesher_FOUND} ")
+message("NPY.ImplicitMesher_INCLUDE_DIRS:${ImplicitMesher_INCLUDE_DIRS} ")
+message("NPY.ImplicitMesher_LIBRARIES   :${ImplicitMesher_LIBRARIES} ")
 
 
 include_directories(
@@ -21,6 +30,8 @@ include_directories(
    ${PLog_INCLUDE_DIRS} 
    ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
+
+   ${ImplicitMesher_INCLUDE_DIRS}
 )
 
 add_definitions( 
@@ -29,7 +40,12 @@ add_definitions(
    ${PLog_DEFINITIONS} 
    ${SysRap_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
+
+   ${ImplicitMesher_DEFINITIONS}
 )
+
+
+
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
@@ -37,6 +53,8 @@ set(LIBRARIES
    ${PLog_LIBRARIES} 
    ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
+
+   ${ImplicitMesher_LIBRARIES}
 )
 
 if(UNIX)
@@ -145,7 +163,25 @@ set(SOURCES
     NTreeTools.cpp
     NOctools.cpp
     NGLMStream.cpp
+    NPolygonizer.cpp
 )
+
+
+
+if(NonExisting_FOUND)
+   add_definitions(-DWITH_NonExisting)
+   list(APPEND SOURCES  NNonExisting.cpp)
+endif()
+
+if(ImplicitMesher_FOUND)
+   add_definitions(-DWITH_ImplicitMesher)
+   list(APPEND SOURCES  NImplicitMesher.cpp)
+endif()
+
+
+
+
+
 
 set(REST_SOURCES
     NOct.cpp
@@ -237,6 +273,7 @@ NFieldGrid3.hpp
 NTreeTools.hpp
 NOctools.hpp
 NGLMStream.hpp
+NPolygonizer.hpp
 
 )
 

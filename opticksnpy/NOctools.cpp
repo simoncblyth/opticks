@@ -184,10 +184,6 @@ void NConstructor<T>::report(const char* msg)
 
 
 
-
-
-
-
 template <typename T>
 void NConstructor<T>::buildBottomUpFromLeaf(int leaf_loc, T* leaf)
 {
@@ -226,6 +222,7 @@ void NConstructor<T>::buildBottomUpFromLeaf(int leaf_loc, T* leaf)
             d_ijk *= dsize ;      // scale coordinates to nominal 
 
             d_ijk += m_nominal_min ;      //OFF
+
 
             dnode = new T ; 
             dnode->size = dsize ; 

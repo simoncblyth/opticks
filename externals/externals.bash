@@ -15,6 +15,7 @@ g4-(){               . $(opticks-home)/externals/g4.bash                && g4-en
 zmq-(){              . $(opticks-home)/externals/zmq.bash               && zmq-env $* ; }
 asiozmq-(){          . $(opticks-home)/externals/asiozmq.bash           && asiozmq-env $* ; }
 opticksdata-(){      . $(opticks-home)/externals/opticksdata.bash       && opticksdata-env $* ; }
+oimplicitmesher-(){  . $(opticks-home)/externals/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
 
 g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
 
