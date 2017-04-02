@@ -60,7 +60,8 @@ NTrianglesNPY* NPolygonizer::polygonize()
     {
 #ifdef WITH_ImplicitMesher
         int   resolution = meta->get<int>("resolution", "100" );
-        NImplicitMesher tessa(resolution, verbosity, 1.01 ) ; 
+        int   ctrl = meta->get<int>("ctrl", "0" );
+        NImplicitMesher tessa(resolution, verbosity, 1.01, ctrl ) ; 
         tris = tessa(root);
 #else
        assert(0 && "installation does not have ImplicitMesher support" );

@@ -99,14 +99,17 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
 
 GSolid* GMaker::makeFromCSG(NCSG* csg)
 {
+    unsigned index = csg->getIndex();
+
+    LOG(info) << "GMaker::makeFromCSG" 
+              << " index " << index 
+              ; 
+
     NPolygonizer pg(csg);
 
     NTrianglesNPY* tris = pg.polygonize();
 
-    unsigned index = csg->getIndex();
-
     nnode* root = csg->getRoot() ;
-
 
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 

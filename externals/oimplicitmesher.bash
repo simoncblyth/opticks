@@ -19,8 +19,13 @@ oimplicitmesher-prefix(){ echo $(opticks-prefix)/externals ; }
 oimplicitmesher-cd(){  cd $(oimplicitmesher-dir); }
 oimplicitmesher-bcd(){ cd $(oimplicitmesher-bdir) ; }
 
-
-
+oimplicitmesher-fullwipe()
+{
+    rm -rf $(opticks-prefix)/externals/implicitmesher 
+    rm -f  $(opticks-prefix)/externals/lib/libImplicitMesher.dylib 
+    rm -rf $(opticks-prefix)/externals/include/ImplicitMesher
+    ## test executables not removed
+}
 
 oimplicitmesher-get(){
    local iwd=$PWD
@@ -63,4 +68,8 @@ oimplicitmesher--()
    oimplicitmesher-make install
 }
 
+oimplicitmesher-t()
+{
+   oimplicitmesher-make test
+}
 

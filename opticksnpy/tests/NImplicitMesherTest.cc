@@ -1,3 +1,6 @@
+#include <iostream>
+#include <glm/glm.hpp>
+
 #include "NImplicitMesher.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NSphere.hpp"
@@ -7,7 +10,6 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
-#include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -17,12 +19,7 @@ int main(int argc, char** argv)
     nsphere* sph = make_nsphere_ptr(0,0,0, 10) ;
     nbbox bb = sph->bbox();
 
-
-    LOG(info) << argv[0]
-              << " : "
-              << bb.desc()
-              ;
-
+    LOG(info) << argv[0] << " : " << bb.desc() ;
 
     int resolution = 100 ; 
     int verbosity = 1 ; 
@@ -30,8 +27,10 @@ int main(int argc, char** argv)
 
     NImplicitMesher im(resolution, verbosity, bb_scale);
 
-    NTrianglesNPY* tris = im(sph);
+    NTrianglesNPY* s_tris = im.sphere_test();
+    assert(s_tris);
 
+    NTrianglesNPY* tris = im(sph);
     assert(tris);
 
 

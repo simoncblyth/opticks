@@ -233,8 +233,10 @@ tboolean-box-py(){ tboolean-testconfig-py- $FUNCNAME $* ; }
 tboolean-box-py-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
-box = CSG("box", param=[0,0,100,100], boundary="$(tboolean-object)")
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
+
+im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="0" )
+box = CSG("box", param=[0,0,100,100], boundary="$(tboolean-object)", **im )
 
 CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
 EOP
@@ -246,8 +248,10 @@ tboolean-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; }
 tboolean-sphere-py-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
-sphere = CSG("sphere", param=[0,0,20,10], boundary="$(tboolean-object)")
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
+
+im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="0" )
+sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **im )
 
 CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
 EOP
@@ -379,7 +383,7 @@ rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
 dcs = dict(tessa="DCS", nominal="8", coarse="6", threshold="1", verbosity="1")
-im = dict(tessa="IM", resolution="100", verbosity="1")
+im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="10" )
 
 object = CSG("union", left=left, right=right, boundary="$(tboolean-object)", **im )
 
@@ -720,7 +724,7 @@ tboolean-testconfig()
     #tboolean-box
     #tboolean-box-py
 
-    #tboolean-sphere-py
+    tboolean-sphere-py
 
     #tboolean-box-small-offset-sphere difference
 
@@ -738,7 +742,7 @@ tboolean-testconfig()
 
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    tboolean-csg-two-box-minus-sphere-interlocked-py
+    #tboolean-csg-two-box-minus-sphere-interlocked-py
 
     #tboolean-csg-unbalanced-py
 
