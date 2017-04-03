@@ -383,7 +383,7 @@ rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
 dcs = dict(tessa="DCS", nominal="8", coarse="6", threshold="1", verbosity="1")
-im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="10" )
+im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="0", seeds="100,100,-100,0,0,100" )
 
 object = CSG("union", left=left, right=right, boundary="$(tboolean-object)", **im )
 
@@ -724,7 +724,7 @@ tboolean-testconfig()
     #tboolean-box
     #tboolean-box-py
 
-    tboolean-sphere-py
+    #tboolean-sphere-py
 
     #tboolean-box-small-offset-sphere difference
 
@@ -742,7 +742,7 @@ tboolean-testconfig()
 
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    #tboolean-csg-two-box-minus-sphere-interlocked-py
+    tboolean-csg-two-box-minus-sphere-interlocked-py
 
     #tboolean-csg-unbalanced-py
 

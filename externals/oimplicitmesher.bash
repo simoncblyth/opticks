@@ -4,9 +4,14 @@ oimplicitmesher-vi(){       vi $(oimplicitmesher-source) ; }
 oimplicitmesher-env(){      olocal- ; opticks- ; }
 oimplicitmesher-usage(){ cat << EOU
 
+ImplicitMesher as Opticks External 
+====================================
+
+See also env-;implicitmesher-
+
+
 EOU
 }
-
 
 oimplicitmesher-edit(){ vi $(opticks-home)/cmake/Modules/FindImplicitMesher.cmake ; }
 oimplicitmesher-url(){ echo https://bitbucket.com/simoncblyth/implicitmesher ; }
@@ -36,6 +41,7 @@ oimplicitmesher-get(){
 
 oimplicitmesher-cmake()
 {
+    local iwd=$PWD
     local bdir=$(oimplicitmesher-bdir)
 
     mkdir -p $bdir
@@ -51,13 +57,17 @@ oimplicitmesher-cmake()
        -DCMAKE_INSTALL_PREFIX=$(oimplicitmesher-prefix) \
        $* \
        $(oimplicitmesher-dir)
+
+
+    cd $iwd
 }
 
-oimplicitmesher-make(){
-  local iwd=$PWD
-  oimplicitmesher-bcd
-  cmake --build . --config Release --target ${1:-install}
-  cd $iwd
+oimplicitmesher-make()
+{
+    local iwd=$PWD
+    oimplicitmesher-bcd
+    cmake --build . --config Release --target ${1:-install}
+    cd $iwd
 }
 
 

@@ -18,6 +18,27 @@ void test_ijoin()
 }
 
 
+
+void test_fsplit()
+{
+    const char* line = "1.12,10.0,-100.1,-200,+20.5" ;
+
+    std::vector<float> elem ; 
+    BStr::fsplit(elem, line, ',');
+
+    LOG(info) << " fsplit [" << line << "] into elem count " << elem.size() ; 
+    for(unsigned i=0 ; i < elem.size() ; i++) std::cout << elem[i] << std::endl ; 
+
+    assert( elem.size() == 5 );
+    assert( elem[0] == 1.12f );
+    assert( elem[1] == 10.f );
+    assert( elem[2] == -100.1f );
+    assert( elem[3] == -200.f );
+    assert( elem[4] == 20.5f );
+
+}
+
+
 void test_isplit()
 {
     const char* line = "1,10,100,-200" ;
@@ -102,11 +123,15 @@ void test_patternPickField()
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+
+/*
     test_patternPickField();
     test_afterLastOrAll();
     test_DAEIdToG4();
     test_isplit();
     test_ijoin();
+*/
+    test_fsplit();
 
     return 0 ; 
 }

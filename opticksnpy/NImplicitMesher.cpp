@@ -2,6 +2,8 @@
 
 #include "ImplicitMesher/ImplicitMesherF.h"
 
+#include "BStr.hh"
+
 #include "NImplicitMesher.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NGLM.hpp"
@@ -54,13 +56,14 @@ struct sphere_functor
 
 
 
-NImplicitMesher::NImplicitMesher(int resolution, int verbosity, float scale_bb, int ctrl)
+NImplicitMesher::NImplicitMesher(int resolution, int verbosity, float scale_bb, int ctrl, std::string seedstr)
   :
    m_timer(new Timer),
    m_resolution(resolution),
    m_verbosity(verbosity),
    m_scale_bb(scale_bb),  
-   m_ctrl(ctrl)
+   m_ctrl(ctrl),
+   m_seedstr(seedstr)
 {
    m_timer->start();
 }
@@ -73,6 +76,7 @@ std::string NImplicitMesher::desc()
       << " verbosity " << m_verbosity
       << " scale_bb " << m_scale_bb
       << " ctrl " << m_ctrl
+      << " seedstr " << m_seedstr
       ;
    return ss.str(); 
 }
@@ -108,9 +112,32 @@ NTrianglesNPY* NImplicitMesher::operator()(nnode* node)
     glm::vec3 min(bb.min.x, bb.min.y, bb.min.z );
     glm::vec3 max(bb.max.x, bb.max.y, bb.max.z );
 
-    float tval = 0.5f ; 
-    float absolute = true ; 
-    ImplicitMesherF im(sdf, tval, absolute ); 
+    std::vector<float> seed ; 
+    if(!m_seedstr.empty()) BStr::fsplit(seed, m_seedstr.c_str(), ',');
+
+    float tval = 0.f ; 
+    float negate = false ; 
+    ImplicitMesherF im(sdf, m_verbosity, tval, negate ); 
+
+    unsigned nseed = seed.size();
+    if(nseed > 0)
+    {
+        if(nseed % 3 == 0)
+        {
+            for(unsigned i=0 ; i < nseed/3 ; i++ )
+            {
+               float sx = seed[i*3+0]; 
+               float sy = seed[i*3+1]; 
+               float sz = seed[i*3+2];
+               LOG(info) << "NImplicitMesher::operator nseed " << nseed << " addSeed (" << sx << " " << sy << " " << sz << ") " ; 
+               im.addSeed(sx, sy, sz); 
+            }
+        }
+        else
+        {
+            LOG(warning) << "NImplicitMesher::operator ignoring seeds as not a multiple of 3 for x,y,z coordinates : " << nseed ; 
+        }
+    } 
 
     im.setParam(m_resolution, min, max);
     im.polygonize();
@@ -132,14 +159,14 @@ NTrianglesNPY* NImplicitMesher::sphere_test()
 {
     glm::vec3 min(-10,-10,-10);
     glm::vec3 max( 10, 10, 10);
-    float tval = 0.5f ; 
-    float absolute = true ; 
+    float tval = 0.f ; 
+    float negate = false ; 
 
     sphere_functor ssf(0,0,0,10, false);   // false:signed SDF, absolution done in ImplicitFunction
 
     std::function<float(float,float,float)> sfn = ssf ; 
 
-    ImplicitMesherF im(sfn, tval, absolute); 
+    ImplicitMesherF im(sfn, m_verbosity, tval, negate ); 
     im.setParam(m_resolution, min, max);
     im.polygonize();
     im.dump();

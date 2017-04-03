@@ -206,6 +206,18 @@ void BStr::usplit( std::vector<unsigned>& elem, const char* line, char delim )
     }
 }
 
+void BStr::fsplit( std::vector<float>& elem, const char* line, char delim )
+{
+    if(line == NULL) return ; 
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, delim))
+    {
+        float i = BStr::atof(s.c_str(), 0);
+        elem.push_back(i);
+    }
+}
+
 
 
 
