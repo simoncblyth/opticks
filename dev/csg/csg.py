@@ -29,6 +29,9 @@ TREE_EXPECTED = map(TREE_NODES, range(10))   # [1, 3, 7, 15, 31, 63, 127, 255, 5
 
 
 class CSG(CSG_):
+    """
+    Serialization layout here must echo that in NCSG 
+    """
     NJ, NK = 4, 4
     FILENAME = "csg.txt"
 
@@ -52,8 +55,8 @@ class CSG(CSG_):
     is_root = property(lambda self:hasattr(self,'height') and hasattr(self,'totnodes'))
 
     @classmethod
-    def npypath(cls, base, idx):
-        return os.path.join(base, "%d.npy" % idx )
+    def treedir(cls, base, idx):
+        return os.path.join(base, "%d" % idx )
 
     @classmethod
     def txtpath(cls, base):
@@ -69,7 +72,11 @@ class CSG(CSG_):
             os.makedirs(base)
         pass
         for it, tree in enumerate(trees):
-            tree.save(cls.npypath(base,it))
+            treedir = cls.treedir(base,it)
+            if not os.path.exists(treedir):
+                os.makedirs(treedir)
+            pass
+            tree.save(treedir)
         pass
         boundaries = map(lambda tree:tree.boundary, trees)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
@@ -82,11 +89,23 @@ class CSG(CSG_):
         boundaries = file(cls.txtpath(base)).read().splitlines()
         trees = []
         for idx, boundary in enumerate(boundaries): 
-            tree = cls.load(cls.npypath(base, idx))      
+            tree = cls.load(cls.treedir(base, idx))      
             tree.boundary = boundary 
             trees.append(tree)
         pass
         return trees
+
+    @classmethod
+    def make_rtransform(cls, rtranslate, rrotate):
+        if rtranslate is None and rrotate is None: return None
+        rtla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
+        rrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.eye(3, dtype=np.float32)
+        rtran = np.eye(4, dtype=np.float32)
+        rtran[:3, :3] = rrot_(rrotate)
+        rtran[3,:3] = rtla_(rtranslate)
+        return rtran
+ 
+
 
     def serialize(self):
         """
@@ -110,53 +129,69 @@ class CSG(CSG_):
                 itra = len(transforms)   # 1-based index pointing to the transform
             pass
 
-            buf[idx] = node.asarray()
+            buf[idx] = node.asarray(itra)
+
             if node.left is not None and node.right is not None:
                 serialize_r( node.left,  2*idx+1)
                 serialize_r( node.right, 2*idx+2)
             pass
         serialize_r(self, 0)
 
-        tbuf = np.vstack(transforms).reshape(-1,4,4) 
+        tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None 
         return buf, tbuf
 
-    def _get_rtransform(self):
-        if self.rtranslate is None and self.rrotate is None:return None
-        rtla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
-        rrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.eye(3, dtype=np.float32)
-        rtran = np.eye(4, dtype=np.float32)
-        rtran[:3, :3] = rrot_(node.rrotate)
-        rtran[3,:3] = rtla_(node.rtranslate)
-        return rtran
- 
-    rtransform = property(_get_rtransform) 
 
+    def save(self, treedir):
+        """
+        """
+        nodepath = self.nodepath(treedir)
+        metapath = self.metapath(treedir)
+        tranpath = self.tranpath(treedir)
 
-    def save(self, path):
-        """
-        TODO: move to numbered subdirectory layout   
-        """
-        metapath = path.replace(".npy",".json") 
-        tranpath = path.replace(".npy","_transforms.npy") 
-        log.info("save to %s meta %r metapath %s tranpath %s " % (path, self.meta, metapath, tranpath))
+        log.info("save to %s meta %r metapath %s tpath %s " % (nodepath, self.meta, metapath, tranpath))
         json.dump(self.meta,file(metapath,"w"))
-        buf, tran = self.serialize() 
-        np.save(path, buf)
-        np.save(tranpath, tran)
+
+        nodebuf, tranbuf = self.serialize() 
+
+        np.save(nodepath, nodebuf)
+
+        if tranbuf is not None:
+            np.save(tranpath, tranbuf)
+        pass
 
     stream = property(lambda self:self.save(sys.stdout))
 
     @classmethod
-    def load(cls, path):
-        assert os.path.exists(path)
-        log.info("load %s " % path )
-        tree = cls.deserialize(np.load(path)) 
-        log.info("load %s DONE -> %r " % (path, tree) )
+    def tranpath(cls, treedir):
+        return os.path.join(treedir,"transforms.npy") 
+    @classmethod
+    def metapath(cls, treedir):
+        return os.path.join(treedir,"meta.json") 
+    @classmethod
+    def nodepath(cls, treedir):
+        return os.path.join(treedir,"nodes.npy") 
+
+
+    @classmethod
+    def load(cls, treedir):
+        tree = cls.deserialize(treedir) 
+        log.info("load %s DONE -> %r " % (treedir, tree) )
         return tree
 
     @classmethod
-    def deserialize(cls, buf):
-        totnodes = len(buf)
+    def deserialize(cls, treedir):
+        assert os.path.exists(treedir)
+         
+        nodepath = cls.nodepath(treedir)
+        metapath = cls.metapath(treedir)
+        tranpath = cls.tranpath(treedir)
+
+        log.info("load nodepath %s tranpath %s " % (nodepath,tranpath) )
+
+        nodebuf = np.load(nodepath) 
+        tranbuf = np.load(tranpath) if os.path.exists(tranpath) else None
+
+        totnodes = len(nodebuf)
         try:
             height = TREE_EXPECTED.index(totnodes)
         except ValueError:
@@ -165,13 +200,17 @@ class CSG(CSG_):
 
         def deserialize_r(buf, idx):
             node = cls.fromarray(buf[idx]) if idx < len(buf) else None
+            if node is not None and node.itra is not None and node.itra > 0:
+                assert tranbuf is not None and node.itra - 1 < len(tranbuf)  
+                node.rtransform = tranbuf[node.itra - 1]
+                
             if node is not None:
                 node.left  = deserialize_r(buf, 2*idx+1)
                 node.right = deserialize_r(buf, 2*idx+2)
             pass
             return node  
         pass
-        root = deserialize_r(buf, 0)
+        root = deserialize_r(nodebuf, 0)
         root.totnodes = totnodes
         root.height = height 
         return root
@@ -191,8 +230,7 @@ class CSG(CSG_):
         self.right = right
         self.param = param
         self.boundary = boundary
-        self.rtranslate = rtranslate
-        self.rrotate = rrotate
+        self.rtransform = self.make_rtransform(rtranslate,rrotate)
         self.meta = kwa
 
     def _get_param(self):
@@ -201,10 +239,17 @@ class CSG(CSG_):
         self._param = np.asarray(v) if v is not None else None
     param = property(_get_param, _set_param)
 
-    def asarray(self):
+    def asarray(self, itra=0):
         arr = np.zeros( (self.NJ, self.NK), dtype=np.float32 )
+        
         if self.param is not None:   # avoid gibberish in buffer
             arr[Q0] = self.param
+            assert self.rtransform == None
+        elif self.rtransform is not None:
+            assert itra > 0, itra  # 1-based transform index
+            arr.view(np.uint32)[Q3,W] = itra 
+        else:
+            pass
         pass
         arr.view(np.uint32)[Q2,W] = self.typ
 
@@ -213,8 +258,15 @@ class CSG(CSG_):
     @classmethod
     def fromarray(cls, arr):
         typ = int(arr.view(np.uint32)[Q2,W])
-        log.info("CSG.fromarray typ %d %s  " % (typ, cls.desc(typ)) )
-        return cls(typ) if typ > 0 else None
+        itra = int(arr.view(np.uint32)[Q3,W]) if typ < cls.SPHERE else 0 
+
+        log.info("CSG.fromarray typ %d %s itra %d  " % (typ, cls.desc(typ), itra) )
+        n = cls(typ) if typ > 0 else None
+        if n is not None:
+            n.itra = itra if itra > 0 else None
+        pass
+        return n 
+
 
     def __repr__(self):
         rrep = "height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
@@ -263,7 +315,7 @@ if __name__ == '__main__':
    
     s = CSG("sphere")
     b = CSG("box")
-    sub = CSG("union", left=s, right=b, boundary="Vacuum///GlassShottF2", hello="world")
+    sub = CSG("union", left=s, right=b, rtranslate="0,0,20", boundary="Vacuum///GlassShottF2", hello="world")
 
     trees0 = [container, sub]
 
@@ -272,7 +324,10 @@ if __name__ == '__main__':
     CSG.Serialize(trees0, base )
     trees1 = CSG.Deserialize(base)
 
+    assert len(trees1) == len(trees0)
 
+    for i in range(len(trees1)):
+        assert np.all( trees0[i].rtransform == trees1[i].rtransform )
 
 
 

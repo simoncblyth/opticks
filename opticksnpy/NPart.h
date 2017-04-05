@@ -5,11 +5,23 @@ enum {
   PARAM_K  = 0 
 };       // q0.f.xyzw
 
+
 // only used for CSG operator nodes
 enum {
-    LEFT_J = 0,
-    LEFT_K = 3 
-};   // q0.u.w
+    RTRANSFORM_J = 3,
+    RTRANSFORM_K = 3 
+};   // q3.u.w
+
+
+enum {
+    LEFT_J = 0, 
+    LEFT_K = 3
+};
+
+enum {
+    RIGHT_J = 1, 
+    RIGHT_K = 3
+};
 
 
 
@@ -27,20 +39,6 @@ enum {
 
 
 // only used for CSG operator nodes
-enum {
-    RIGHT_J = 1,
-    RIGHT_K = 3 
-};   // q1.u.w
-
-
-
-
-/*
-enum { 
-   FLAGS_J    = 1, 
-   FLAGS_K    = 3 
-};   // q1.u.w
-*/
 
 
 enum { 
@@ -53,7 +51,7 @@ enum {
 };  // q2.u.w
 
 enum { 
-    BBMAX_J     = 3,     
+    BBMAX_J = 3,     
     BBMAX_K = 0 
 };  // q3.f.xyz 
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <glm/fwd.hpp>
 
 #include "OpticksCSG.h"
 #include "NQuad.hpp"
@@ -28,6 +29,7 @@ struct NPY_API nnode {
     OpticksCSG_t type ;  
     nnode* left ; 
     nnode* right ; 
+    glm::mat4* rtransform ; 
 
     nvec4 param ; 
 };

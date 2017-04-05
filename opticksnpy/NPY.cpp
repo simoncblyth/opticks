@@ -1538,11 +1538,25 @@ template <typename T>
 
 
 template <typename T> 
- glm::mat4 NPY<T>::getMat4(unsigned int i)
+glm::mat4 NPY<T>::getMat4(unsigned int i)
 {
     T* vals = getValues(i);
     return glm::make_mat4(vals);
 }
+
+
+
+template <typename T> 
+glm::mat4* NPY<T>::getMat4Ptr(unsigned int i)
+{
+    T* vals = getValues(i);
+    glm::mat4 m = glm::make_mat4(vals);
+    return new glm::mat4(m) ; 
+}
+
+
+
+
 
 
 template <typename T> 

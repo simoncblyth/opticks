@@ -250,6 +250,7 @@ class NPY_API NPY : public NPYBase {
        glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 );
 
        glm::mat4    getMat4(unsigned int i);
+       glm::mat4*   getMat4Ptr(unsigned int i);
 
    //private:
    public:

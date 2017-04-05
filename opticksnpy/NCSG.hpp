@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include <glm/fwd.hpp>
+
 template <typename T> class NPY ; 
 #include "NPY_API_EXPORT.hh"
 
@@ -34,23 +36,25 @@ class NPY_API NCSG {
         void dump(const char* msg="NCSG::dump");
         std::string desc();
     public:
-        const char* getPath();
+        const char* getTreeDir();
         unsigned getIndex();
         const char* getBoundary();
-        NPY<float>* getBuffer();
+        NPY<float>* getNodeBuffer();
         NParameters* getMeta();
         unsigned getNumNodes();
         unsigned getHeight();
         nnode* getRoot();
     private:
         // Deserialize
-        NCSG(const char* path, unsigned index=0u);
+        NCSG(const char* treedir, unsigned index=0u);
         void setBoundary(const char* boundary);
         unsigned getTypeCode(unsigned idx);
+        unsigned getTransformIndex(unsigned idx);
         nvec4 getQuad(unsigned idx, unsigned j);
         void load();
         void import();
         nnode* import_r(unsigned idx);
+        glm::mat4* import_transform(unsigned itra);
     private:
          // Serialize
         NCSG(nnode* root, unsigned index=0u);
@@ -59,10 +63,12 @@ class NPY_API NCSG {
     private:
         unsigned    m_index ; 
         nnode*      m_root ;  
-        const char* m_path ; 
-        NPY<float>* m_data ; 
+        const char* m_treedir ; 
+        NPY<float>* m_nodes ; 
+        NPY<float>* m_transforms ; 
         NParameters* m_meta ; 
         unsigned    m_num_nodes ; 
+        unsigned    m_num_transforms ; 
         unsigned    m_height ; 
         const char* m_boundary ; 
 

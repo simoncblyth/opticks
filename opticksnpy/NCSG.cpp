@@ -22,15 +22,17 @@
 
 const char* NCSG::FILENAME = "csg.txt" ; 
 
-NCSG::NCSG(const char* path, unsigned index) 
+NCSG::NCSG(const char* treedir, unsigned index) 
    :
    m_index(index),
    m_root(NULL),
-   m_path(path ? strdup(path) : NULL),
-   m_data(NULL),
+   m_treedir(treedir ? strdup(treedir) : NULL),
+   m_nodes(NULL),
+   m_transforms(NULL),
    m_meta(NULL),
 
    m_num_nodes(0),
+   m_num_transforms(0),
    m_height(-1),
    m_boundary(NULL)
 {
@@ -38,17 +40,32 @@ NCSG::NCSG(const char* path, unsigned index)
 
 void NCSG::load()
 {
-    std::string metapath = BFile::ChangeExt(m_path, ".json") ;
+    //std::string metapath = BFile::ChangeExt(m_path, ".json") ;
+    std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
+    std::string nodepath = BFile::FormPath(m_treedir, "nodes.npy") ;
+    std::string tranpath = BFile::FormPath(m_treedir, "transforms.npy") ;
 
     m_meta = new NParameters ; 
     m_meta->load_( metapath.c_str() );
 
-    m_data = NPY<float>::load(m_path);
-    m_num_nodes  = m_data->getShape(0) ;  
-    unsigned nj = m_data->getShape(1);
-    unsigned nk = m_data->getShape(2);
+    m_nodes = NPY<float>::load(nodepath.c_str());
+
+    m_num_nodes  = m_nodes->getShape(0) ;  
+    unsigned nj = m_nodes->getShape(1);
+    unsigned nk = m_nodes->getShape(2);
     assert( nj == NJ );
     assert( nk == NK );
+
+    if(BFile::ExistsFile(tranpath.c_str()))
+    {
+        m_transforms = NPY<float>::load(tranpath.c_str());
+        m_num_transforms  = m_transforms->getShape(0) ;  
+        unsigned nj = m_transforms->getShape(1);
+        unsigned nk = m_transforms->getShape(2);
+        assert( nj == NJ );
+        assert( nk == NK );
+    }
+
 
     m_height = -1 ; 
     int h = MAX_HEIGHT ; 
@@ -61,15 +78,15 @@ NCSG::NCSG(nnode* root, unsigned index)
    :
    m_index(index),
    m_root(root),
-   m_path(NULL),
-   m_data(NULL),
+   m_treedir(NULL),
+   m_nodes(NULL),
    m_num_nodes(0),
    m_height(root->maxdepth()),
    m_boundary(NULL)
 {
    m_num_nodes = NumNodes(m_height);
-   m_data = NPY<float>::make( m_num_nodes, NJ, NK);
-   m_data->zero();
+   m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
+   m_nodes->zero();
 }
 
 
@@ -90,9 +107,9 @@ unsigned NCSG::getNumNodes()
 {
     return m_num_nodes ; 
 }
-NPY<float>* NCSG::getBuffer()
+NPY<float>* NCSG::getNodeBuffer()
 {
-    return m_data ; 
+    return m_nodes ; 
 }
 NParameters* NCSG::getMeta()
 {
@@ -103,9 +120,9 @@ const char* NCSG::getBoundary()
 {
     return m_boundary ; 
 }
-const char* NCSG::getPath()
+const char* NCSG::getTreeDir()
 {
-    return m_path ; 
+    return m_treedir ; 
 }
 unsigned NCSG::getIndex()
 {
@@ -119,17 +136,26 @@ void NCSG::setBoundary(const char* boundary)
 
 unsigned NCSG::getTypeCode(unsigned idx)
 {
-    return m_data->getUInt(idx,TYPECODE_J,TYPECODE_K,0u);
+    return m_nodes->getUInt(idx,TYPECODE_J,TYPECODE_K,0u);
 }
+unsigned NCSG::getTransformIndex(unsigned idx)
+{
+    return m_nodes->getUInt(idx,RTRANSFORM_J,RTRANSFORM_K,0u);
+}
+
+
+
+
+
 nvec4 NCSG::getQuad(unsigned idx, unsigned j)
 {
-    nvec4 qj = m_data->getVQuad(idx, j) ;
+    nvec4 qj = m_nodes->getVQuad(idx, j) ;
     return qj ;
 }
 
 void NCSG::import()
 {
-    assert(m_data);
+    assert(m_nodes);
     LOG(info) << "NCSG::import"
               << " importing buffer into CSG node tree "
               << " num_nodes " << m_num_nodes
@@ -139,6 +165,14 @@ void NCSG::import()
     m_root = import_r(0) ; 
 }
 
+
+glm::mat4* NCSG::import_transform(unsigned itra)
+{
+    if(itra == 0 || m_transforms == NULL) return NULL ; 
+    assert( itra - 1 < m_num_transforms );
+    return m_transforms->getMat4Ptr(itra - 1); 
+}
+
 nnode* NCSG::import_r(unsigned idx)
 {
     if(idx >= m_num_nodes) return NULL ; 
@@ -146,9 +180,12 @@ nnode* NCSG::import_r(unsigned idx)
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     nvec4 param = getQuad(idx, 0);
 
-    LOG(trace) << "NCSG::import_r " 
+    int itra = typecode < CSG_SPHERE ? getTransformIndex(idx) : 0  ; 
+
+    LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 
+              << " itra " << itra 
               << " csgname " << CSGName(typecode) 
               << " param.x " << param.x
               << " param.y " << param.y
@@ -170,6 +207,8 @@ nnode* NCSG::import_r(unsigned idx)
            case CSG_DIFFERENCE:   node = make_ndifference_ptr(left, right )   ; break ; 
            default:               node = NULL                                 ; break ; 
         }
+        assert(node);
+        node->rtransform = import_transform( itra );
     }
     else 
     {
@@ -204,7 +243,7 @@ NCSG* NCSG::FromNode(nnode* root, const char* boundary)
 
 void NCSG::export_()
 {
-    assert(m_data);
+    assert(m_nodes);
     LOG(debug) << "NCSG::export_ "
               << " exporting CSG node tree into buffer "
               << " num_nodes " << m_num_nodes
@@ -223,7 +262,7 @@ void NCSG::export_r(nnode* node, unsigned idx)
 
     npart pt = node->part();
 
-    m_data->setPart( pt, idx);  // writes 4 quads to buffer
+    m_nodes->setPart( pt, idx);  // writes 4 quads to buffer
 
     if(node->left && node->right)
     {
@@ -247,12 +286,14 @@ void NCSG::dump(const char* msg)
 
 std::string NCSG::desc()
 {
-    std::string sh = m_data ? m_data->getShapeString() : "" ;    
+    std::string node_sh = m_nodes ? m_nodes->getShapeString() : "" ;    
+    std::string tran_sh = m_transforms ? m_transforms->getShapeString() : "" ;    
     std::stringstream ss ; 
     ss << "NCSG " 
        << " index " << m_index
-       << " path " << ( m_path ? m_path : "NULL" ) 
-       << " shape " << sh  
+       << " treedir " << ( m_treedir ? m_treedir : "NULL" ) 
+       << " node_sh " << node_sh  
+       << " tran_sh " << tran_sh  
        << " boundary " << m_boundary 
        << " meta " << m_meta->desc()
        ;
@@ -281,8 +322,10 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 
     for(unsigned i=0 ; i < nbnd ; i++)
     {
-        std::string path = BFile::FormPath(base, BStr::concat(NULL, i, ".npy"));  
-        NCSG* tree = new NCSG(path.c_str(), i);
+        //std::string path = BFile::FormPath(base, BStr::concat(NULL, i, ".npy"));  
+        std::string treedir = BFile::FormPath(base, BStr::itoa(i));  
+
+        NCSG* tree = new NCSG(treedir.c_str(), i);
         tree->setBoundary( bnd.getLine(i) );
 
         tree->load();    // the buffer (no bbox from user input python)

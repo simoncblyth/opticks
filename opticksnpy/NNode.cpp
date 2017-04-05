@@ -5,6 +5,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include "NGLM.hpp"
+
 #include "NNode.hpp"
 #include "NPart.hpp"
 #include "NQuad.hpp"
@@ -39,6 +41,12 @@ void nnode::dump(const char* msg)
         left->dump("left");
         right->dump("right");
     }
+
+    if(rtransform)
+    {
+        std::cout << "rtransform: " << glm::to_string( *rtransform ) << std::endl ; 
+    } 
+
 }
 
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
@@ -46,6 +54,8 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.type = type ; 
     n.left = left ; 
     n.right = right ; 
+    n.rtransform = NULL ; 
+
     n.param = {0.f, 0.f, 0.f, 0.f };
 }
 

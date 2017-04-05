@@ -11,6 +11,10 @@ void npart::setTypeCode(OpticksCSG_t typecode)
     q2.u.w = typecode ; 
 }
 
+
+// thought not used, but they are for in memory npart 
+// the implicit left/rigth from the index is for the serialization
+
 void npart::setLeft(unsigned left)
 {
     assert( LEFT_J == 0 && LEFT_K == 3 );
@@ -29,6 +33,8 @@ unsigned npart::getRight()
 {
     return q1.u.w ; 
 }
+
+
 OpticksCSG_t npart::getTypeCode()
 {
     return (OpticksCSG_t)q2.u.w ; 
