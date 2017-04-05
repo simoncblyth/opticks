@@ -89,22 +89,60 @@ class CSG(CSG_):
         return trees
 
     def serialize(self):
+        """
+        Array is sized for a complete tree, empty slots stay all zero
+
+        For transforms, need to 
+
+        """
         if not self.is_root: self.analyse()
         buf = np.zeros((self.totnodes,self.NJ,self.NK), dtype=np.float32 )
+
+        transforms = []
+
         def serialize_r(node, idx): 
+
+            tran = node.rtransform  
+            if tran is None:
+                itra = 0 
+            else:
+                transforms.append(tran)
+                itra = len(transforms)   # 1-based index pointing to the transform
+            pass
+
             buf[idx] = node.asarray()
             if node.left is not None and node.right is not None:
                 serialize_r( node.left,  2*idx+1)
                 serialize_r( node.right, 2*idx+2)
             pass
         serialize_r(self, 0)
-        return buf
+
+        tbuf = np.vstack(transforms).reshape(-1,4,4) 
+        return buf, tbuf
+
+    def _get_rtransform(self):
+        if self.rtranslate is None and self.rrotate is None:return None
+        rtla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
+        rrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.eye(3, dtype=np.float32)
+        rtran = np.eye(4, dtype=np.float32)
+        rtran[:3, :3] = rrot_(node.rrotate)
+        rtran[3,:3] = rtla_(node.rtranslate)
+        return rtran
+ 
+    rtransform = property(_get_rtransform) 
+
 
     def save(self, path):
+        """
+        TODO: move to numbered subdirectory layout   
+        """
         metapath = path.replace(".npy",".json") 
-        log.info("save to %s meta %r metapath %s " % (path, self.meta, metapath))
+        tranpath = path.replace(".npy","_transforms.npy") 
+        log.info("save to %s meta %r metapath %s tranpath %s " % (path, self.meta, metapath, tranpath))
         json.dump(self.meta,file(metapath,"w"))
-        np.save(path, self.serialize())
+        buf, tran = self.serialize() 
+        np.save(path, buf)
+        np.save(tranpath, tran)
 
     stream = property(lambda self:self.save(sys.stdout))
 
@@ -138,17 +176,23 @@ class CSG(CSG_):
         root.height = height 
         return root
 
-    def __init__(self, typ, left=None, right=None, param=None, boundary="", **kwa):
+
+    
+
+    def __init__(self, typ, left=None, right=None, param=None, boundary="", rtranslate=None, rrotate=None,  **kwa):
         if type(typ) is str:
             typ = self.fromdesc(typ)  
         pass
         assert type(typ) is int and typ > -1, (typ, type(typ))
+
 
         self.typ = typ
         self.left = left
         self.right = right
         self.param = param
         self.boundary = boundary
+        self.rtranslate = rtranslate
+        self.rrotate = rrotate
         self.meta = kwa
 
     def _get_param(self):

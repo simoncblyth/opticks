@@ -91,6 +91,13 @@ nbbox nnode::bbox()
 
 
 
+/**
+To translate or rotate a surface modeled as an SDF, you can apply the inverse
+transformation to the point before evaluating the SDF.
+
+**/
+
+
 double nunion::operator()(double px, double py, double pz) 
 {
     assert( left && right );

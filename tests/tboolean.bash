@@ -322,7 +322,7 @@ tboolean-box-sphere-py-(){ cat << EOP
 import math
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
   
 radius = 200 
 inscribe = 1.3*radius/math.sqrt(3)
@@ -330,7 +330,7 @@ inscribe = 1.3*radius/math.sqrt(3)
 box = CSG("box", param=[0,0,0,inscribe])
 sph = CSG("sphere", param=[0,0,0,radius])
 
-object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)")
+object = CSG("${1:-difference}", left=box, right=sph, rtranslate="100,0,0", boundary="$(tboolean-object)", tessa="IM", resolution="50", seeds="0,0,0" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
@@ -736,13 +736,13 @@ tboolean-testconfig()
     #tboolean-box-sphere union
     #tboolean-box-sphere difference
 
-    #tboolean-box-sphere-py intersection 
+    tboolean-box-sphere-py intersection 
     #tboolean-box-sphere-py difference
     #tboolean-box-sphere-py union
 
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    tboolean-csg-two-box-minus-sphere-interlocked-py
+    #tboolean-csg-two-box-minus-sphere-interlocked-py
 
     #tboolean-csg-unbalanced-py
 
