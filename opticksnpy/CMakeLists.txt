@@ -11,15 +11,24 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(PLog REQUIRED)
 
-find_package(NonExisting) 
-message("NPY.NonExisting_FOUND       :${NonExisting_FOUND} ")
-message("NPY.NonExisting_INCLUDE_DIRS:${NonExisting_INCLUDE_DIRS} ")
-message("NPY.NonExisting_LIBRARIES   :${NonExisting_LIBRARIES} ")
+#find_package(NonExisting) 
+#message("NPY.NonExisting_FOUND       :${NonExisting_FOUND} ")
+#message("NPY.NonExisting_INCLUDE_DIRS:${NonExisting_INCLUDE_DIRS} ")
+#message("NPY.NonExisting_LIBRARIES   :${NonExisting_LIBRARIES} ")
 
 find_package(ImplicitMesher) 
 message("NPY.ImplicitMesher_FOUND       :${ImplicitMesher_FOUND} ")
 message("NPY.ImplicitMesher_INCLUDE_DIRS:${ImplicitMesher_INCLUDE_DIRS} ")
 message("NPY.ImplicitMesher_LIBRARIES   :${ImplicitMesher_LIBRARIES} ")
+
+find_package(DualContouringSample) 
+message("NPY.DualContouringSample_FOUND       :${DualContouringSample_FOUND} ")
+message("NPY.DualContouringSample_INCLUDE_DIRS:${DualContouringSample_INCLUDE_DIRS} ")
+message("NPY.DualContouringSample_LIBRARIES   :${DualContouringSample_LIBRARIES} ")
+
+
+
+
 
 
 include_directories(
@@ -32,6 +41,7 @@ include_directories(
    ${BoostRap_INCLUDE_DIRS} 
 
    ${ImplicitMesher_INCLUDE_DIRS}
+   ${DualContouringSample_INCLUDE_DIRS}
 )
 
 add_definitions( 
@@ -42,6 +52,7 @@ add_definitions(
    ${BoostRap_DEFINITIONS} 
 
    ${ImplicitMesher_DEFINITIONS}
+   ${DualContouringSample_DEFINITIONS}
 )
 
 
@@ -55,6 +66,7 @@ set(LIBRARIES
    ${BoostRap_LIBRARIES}
 
    ${ImplicitMesher_LIBRARIES}
+   ${DualContouringSample_LIBRARIES}
 )
 
 if(UNIX)
@@ -148,11 +160,6 @@ set(SOURCES
     NCSG.cpp
     NOctNode.cpp
 
-    NDualContouringSample.cpp
-    DualContouringSample/octree.cpp
-    DualContouringSample/qef.cpp
-    DualContouringSample/svd.cpp
-
     NFieldCache.cpp
     NGenerator.cpp
     NGrid3.cpp
@@ -165,7 +172,9 @@ set(SOURCES
     NPolygonizer.cpp
 )
 
-
+set(_SOURCES
+    NOct.cpp
+)
 
 if(NonExisting_FOUND)
    add_definitions(-DWITH_NonExisting)
@@ -177,14 +186,12 @@ if(ImplicitMesher_FOUND)
    list(APPEND SOURCES  NImplicitMesher.cpp)
 endif()
 
+if(DualContouringSample_FOUND)
+   add_definitions(-DWITH_DualContouringSample)
+   list(APPEND SOURCES  NDualContouringSample.cpp)
+endif()
 
 
-
-
-
-set(REST_SOURCES
-    NOct.cpp
-)
 
 SET(HEADERS
 
@@ -261,7 +268,6 @@ PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
 NCSG.hpp
 NOctNode.hpp
-NDualContouringSample.hpp
 
 NFieldCache.hpp
 NGenerator.hpp
@@ -280,6 +286,7 @@ NPolygonizer.hpp
 set(_HEADERS
 
 NOct.hpp
+NDualContouringSample.hpp
 
 )
 
