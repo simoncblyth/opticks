@@ -290,7 +290,7 @@ T* NConstructor<T>::create_coarse_nominal()
         c_ijk *= m_subtile->size ;    // scale coarse coordinates up to nominal 
         c_ijk += m_nominal_min ;     //OFF
 
-        int corners = T::Corners( c_ijk , m_fieldgrid, 8, m_upscale_factor ); 
+        int corners = T::Corners( c_ijk , m_fglite, 8, m_upscale_factor ); 
         if(corners == 0 || corners == 255) continue ;   
         m_coarse_corners++ ; 
  
@@ -299,13 +299,13 @@ T* NConstructor<T>::create_coarse_nominal()
             glm::ivec3 s_ijk = m_subtile->ijk( s );
             s_ijk += c_ijk ; 
  
-            int corners = T::Corners( s_ijk, m_fieldgrid, 8, leaf_size ); 
+            int corners = T::Corners( s_ijk, m_fglite, 8, leaf_size ); 
             if(corners == 0 || corners == 255) continue ;  
             m_nominal_corners++ ; 
 
             glm::ivec3 a_ijk = s_ijk - m_nominal_min ;   // take out the offset, need 0:128 range
 
-            T* leaf = T::MakeLeaf( s_ijk, corners, m_fieldgrid, leaf_size ); 
+            T* leaf = T::MakeLeaf( s_ijk, corners, m_fglite, leaf_size ); 
 
             int leaf_loc = m_nominal->loc( a_ijk );
 
@@ -333,11 +333,11 @@ T* NConstructor<T>::create_nominal()
         glm::ivec3 ijk = m_nominal->ijk( c );
         glm::ivec3 offset_ijk = ijk + m_nominal_min ;  //OFF
 
-        int corners = T::Corners( offset_ijk , m_fieldgrid, 8, leaf_size ); 
+        int corners = T::Corners( offset_ijk , m_fglite, 8, leaf_size ); 
         if(corners == 0 || corners == 255) continue ;   
         m_nominal_corners++ ; 
  
-        T* leaf = T::MakeLeaf( offset_ijk, corners, m_fieldgrid, leaf_size ); 
+        T* leaf = T::MakeLeaf( offset_ijk, corners, m_fglite, leaf_size ); 
 
         buildBottomUpFromLeaf( c, leaf);
     }   
@@ -584,7 +584,7 @@ void NConstructor<T>::corner_scan(const char* msg, int depth, int limit) const
         dijk *= upscale ;
         dijk += m_nominal_min ;  //OFF
 
-        int corners = T::Corners( dijk , m_fieldgrid, 8, upscale ); 
+        int corners = T::Corners( dijk , m_fglite, 8, upscale ); 
         if(corners == 0 || corners == 255) continue ; 
 
         count1++ ; 
@@ -702,7 +702,7 @@ void NManager<T>::buildOctree()
 
         m_timer->stamp("_ConstructOctreeNodes");
         int count = 0 ; 
-	    m_top_down = T::ConstructOctreeNodes(root0, m_fieldgrid, count);
+	    m_top_down = T::ConstructOctreeNodes(root0, m_fglite, count);
         m_timer->stamp("ConstructOctreeNodes");
         std::cout << "ConstructOctreeNodes count " << count << std::endl ; 
         NTraverser<T,8>(m_top_down, "top_down", verbosity, 30);
@@ -745,7 +745,7 @@ void NManager<T>::generateMeshFromOctree()
 	m_normals.clear();
 	m_indices.clear();
 
-	T::GenerateVertexIndices(m_simplified, m_vertices,m_normals, m_fieldgrid, m_fglite );
+	T::GenerateVertexIndices(m_simplified, m_vertices,m_normals, m_fglite );
 	T::ContourCellProc(m_simplified, m_indices);
 }
 

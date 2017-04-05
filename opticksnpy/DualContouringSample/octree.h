@@ -5,18 +5,9 @@
 
 #include <glm/glm.hpp>
 
-#include "NQuad.hpp"
-#include "NBBox.hpp"
-
-class Timer ; 
-template <typename FVec, typename IVec> struct NFieldGrid3 ; 
-
-typedef NFieldGrid3<glm::vec3,glm::ivec3> FG3 ; 
-
 
 struct OctreeDrawInfo ;
 struct FGLite ; 
-
 
 class OctreeNode ; 
 
@@ -59,18 +50,18 @@ public:
         Node_Leaf,
     };
 
-    static int Corners( const glm::ivec3& min, FG3* fg, const int ncorner=8, const int size=1 );
+    static int Corners( const glm::ivec3& min, FGLite* fg, const int ncorner=8, const int size=1 );
 
-    static OctreeNode* MakeLeaf(const glm::ivec3& min,  int corners, FG3* fg, int size );
+    static OctreeNode* MakeLeaf(const glm::ivec3& min,  int corners, FGLite* fg, int size );
 
-    static void PopulateLeaf(int corners, OctreeNode* leaf, FG3* f);
+    static void PopulateLeaf(int corners, OctreeNode* leaf, FGLite* f);
     static void DestroyOctree(OctreeNode* node) ;
 
-    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg, FGLite* fgl);
+    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FGLite* fg);
 
     static void ContourCellProc(OctreeNode* node, std::vector<int>& indexBuffer);
 
-    static OctreeNode* ConstructOctreeNodes(OctreeNode* node, FG3* fg, int& count);
+    static OctreeNode* ConstructOctreeNodes(OctreeNode* node, FGLite* fg, int& count);
 
     static OctreeNode* SimplifyOctree(OctreeNode* node, float threshold);
 

@@ -7,7 +7,6 @@
 
 
 #include "DualContouringSample/FGLite.h"
-#include "DualContouringSample/mesh.h"
 #include "DualContouringSample/octree.h"
 
 #include "Timer.hpp"

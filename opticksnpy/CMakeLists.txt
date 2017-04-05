@@ -152,7 +152,6 @@ set(SOURCES
     DualContouringSample/octree.cpp
     DualContouringSample/qef.cpp
     DualContouringSample/svd.cpp
-    DualContouringSample/density.cpp
 
     NFieldCache.cpp
     NGenerator.cpp
