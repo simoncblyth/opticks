@@ -30,6 +30,109 @@ easily usable from oglrap- when doing things like
 uploading OpenGL buffers etc..
 
 
+Disentangling DualContouringSample (DCS)
+-------------------------------------------
+
+ImplicitMesher (IM) avoids the user having to 
+be concerned with grid coordinates... can the 
+same thing be done with DCS
+
+ImplicitMesher
+~~~~~~~~~~~~~~~~~~~
+
+Grid cubesize p->size obtained from bounds and resolution::
+
+     492 polygonizer * MakePolygonizer( ImplicitPolygonizer * wrapper,
+     493                aabb * boundingbox,
+     494                int grid_resolution,
+     495                unsigned int convergence,
+     496                int verbosity)
+     497 {
+     498     polygonizer * p;
+     ...
+     508     float center[3] = {0,0,0};
+     509     aabb_centroid(boundingbox, center);
+     510     float cubesize = aabb_avgcubesize(boundingbox, grid_resolution);
+     511 
+     512     iaabb bounds;
+     513     aabb_to_iaabb(boundingbox, cubesize, &bounds);
+     514 
+     515     p->center.x = center[0]; p->center.y = center[1], p->center.z = center[2];
+     ...
+     518     iaabb_copy(&bounds, &(p->bounds));
+     519 
+     520     p->size = cubesize;
+     521     p->convergence = convergence;
+     522     p->verbosity = verbosity ;
+
+
+World positions obtained from ijk with the p->size used for the Value calls::
+
+     774     c = ALLOC_CORNER(p);
+     ...
+     776     c->i = i;
+     777     c->x = p->center.x+((float)i-.5f)*p->size;
+     778     c->j = j;
+     779     c->y = p->center.y+((float)j-.5f)*p->size;
+     780     c->k = k;
+     781     c->z = p->center.z+((float)k-.5f)*p->size;
+     ...
+     786     l->value = c->value = p->wrapper->Function()->ValueT(c->x, c->y, c->z);
+     787     l->corner = c;
+
+     ###   i = -1 : p->center.x + (-1.-0.5)*p.size  = cen + -1.5*sz  
+     ###   i = 0 :  p->center.x +  (0.-0.5)*p.size  = cen + -0.5*sz  
+     ###   i = 1 :  p->center.x +  (1.-0.5)*p.size  = cen +  0.5*sz 
+     ###   i = 2 :  p->center.x +  (2.-0.5)*p.size  = cen +  1.5*sz 
+
+     ### -.5 offset discretization:
+     ###
+     ###         -2.0     -1.0       0.0       1.0       2.0
+     ###              -1.5  |   -.5   |    .5   |   1.5   |
+     ###       ----|----|---|----|----|----|----|----|--------
+     ###                ^        ^         ^         ^
+     ###               -1        0         1         2
+
+ijk from position::
+
+    1471 void find_cube(polygonizer * p, MC_POINT * point,
+    1472            int * ijk)
+    1473 {
+    1474   float d, n;
+    1475 
+    1476   d = point->x - p->center.x;
+    1477   n = fabs(d) / (0.5f*p->size);
+    1478   n = ceil( floor(n) / 2.0f );
+    1479   ijk[0] = (d > 0.0) ? (int)n : -(int)n;
+
+    # ceil(x) : smallest integral value not less than x
+    #    
+
+
+
+
+NFieldGrid3 -> std::function ? Usage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OctreeNode::GenerateVertexIndices from floated ijk grid coordinates to world coordinates::
+
+    301         OctreeDrawInfo* d = node->drawInfo;
+    308         d->index = vertices.size();
+    310         vec3 pos = d->position ;
+    323         vec3 world = fg->position_f(pos);
+    326         vertices.push_back(world);
+       
+Function evaluation from floated ijk::
+
+    604 float Density_Func(FG3* fg, const vec3& offset_ijk)
+    605 {
+    606      float fp = fg->value_f(offset_ijk );
+    607      return fp ;
+    608 }
+
+
+
+
 Alternative serializations to NPY that support compression ?
 ---------------------------------------------------------------
 

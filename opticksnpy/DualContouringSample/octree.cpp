@@ -27,15 +27,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <iomanip>
 
 #include "NGLMStream.hpp"
+
+#include "FGLite.h"
+
+
 #include "NBBox.hpp"
 #include "NGrid3.hpp"
 #include "NField3.hpp"
 #include "NFieldGrid3.hpp"
-
-
 typedef std::function<float(float,float,float)> FN ; 
 typedef NField<glm::vec3,glm::ivec3,3> FI ; 
 typedef NFieldGrid3<glm::vec3,glm::ivec3> FG3 ; 
+
+
 
 using glm::ivec3 ; 
 using glm::vec3 ; 
@@ -281,7 +285,7 @@ OctreeNode* OctreeMgr::simplify_r(OctreeNode* node, int depth)
 
 
 
-void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg)
+void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg, FGLite* fgl)
 {
 	if (!node)
 	{
@@ -292,7 +296,7 @@ void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>&
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			GenerateVertexIndices(node->children[i], vertices, normals, fg);
+			GenerateVertexIndices(node->children[i], vertices, normals, fg, fgl);
 		}
 	}
 
@@ -321,9 +325,23 @@ void OctreeNode::GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>&
         assert( !std::isnan(pos.z) );
 
         vec3 world = fg->position_f(pos);
+        vec3 world2 = fgl->position_f(pos);
+
+        static int mismatch = 0 ; 
+
+        if(world != world2 && mismatch++ < 100) 
+            std::cout << "OctreeNode::GenerateVertexIndices"
+                      << " mismatch " << mismatch
+                      << " pos " << pos
+                      << " world " << world
+                      << " world2 " << world2
+                      << " world2 - world " << (world2 - world)
+                      << std::endl ; 
+
+        //assert( world == world2 );
 
 
-		vertices.push_back(world);
+		vertices.push_back(world2);
         normals.push_back(d->averageNormal);
 	}
 }

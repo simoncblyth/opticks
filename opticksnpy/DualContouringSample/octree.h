@@ -15,6 +15,7 @@ typedef NFieldGrid3<glm::vec3,glm::ivec3> FG3 ;
 
 
 struct OctreeDrawInfo ;
+struct FGLite ; 
 
 
 class OctreeNode ; 
@@ -65,7 +66,7 @@ public:
     static void PopulateLeaf(int corners, OctreeNode* leaf, FG3* f);
     static void DestroyOctree(OctreeNode* node) ;
 
-    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg);
+    static void GenerateVertexIndices(OctreeNode* node, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, FG3* fg, FGLite* fgl);
 
     static void ContourCellProc(OctreeNode* node, std::vector<int>& indexBuffer);
 

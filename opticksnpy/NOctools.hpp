@@ -9,7 +9,7 @@
 #include "NBBox.hpp"
 #include "NGrid3.hpp"
 
-
+struct FGLite ; 
 
 template <typename FVec, typename IVec, int DIM> struct NGrid ; 
 template <typename FVec, typename IVec, int DIM> struct NField ; 
@@ -36,6 +36,12 @@ enum {
       };
  
 
+
+
+
+
+
+
 template<typename T>
 class NPY_API NConstructor 
 {
@@ -47,7 +53,7 @@ class NPY_API NConstructor
     UMAP cache[maxlevel] ; 
 
     public:
-        NConstructor(FG3* fieldgrid, const nvec4& ce, const nbbox& bb, int nominal, int coarse, int verbosity );
+        NConstructor(FG3* fieldgrid, FGLite* fglite, const nvec4& ce, const nbbox& bb, int nominal, int coarse, int verbosity );
         T* create();
         void dump();
         void report(const char* msg="NConstructor::report");
@@ -64,7 +70,6 @@ class NPY_API NConstructor
         glm::vec3 position_bb(const glm::ivec3& natural_ijk, int depth) const ;
         float      density_bb(const glm::ivec3& natural_ijk, int depth) const ;
     private:
-        //T* make_leaf(const glm::ivec3& min, int leaf_size, int corners );
         T* create_coarse_nominal();
         T* create_nominal();
         void buildBottomUpFromLeaf(int leaf_loc, T* leaf );
@@ -74,6 +79,7 @@ class NPY_API NConstructor
         FG3*        m_fieldgrid ; 
         F3*         m_field ; 
         FN*         m_func ; 
+        FGLite*     m_fglite ; 
         nvec4       m_ce ;  
         nbbox       m_bb ; 
 
@@ -104,7 +110,7 @@ class NPY_API NManager
 {
     public:
    public:
-        NManager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, const nbbox& bb, Timer* timer);
+        NManager(const unsigned ctrl, const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, FGLite* fglite, const nbbox& bb, Timer* timer);
 
         void buildOctree();
         void simplifyOctree();
@@ -120,7 +126,9 @@ class NPY_API NManager
         int      m_nominal_size ; 
         int      m_verbosity ; 
         float    m_threshold ;
-        FG3* m_fieldgrid ; 
+        FG3*     m_fieldgrid ; 
+        FGLite*  m_fglite ; 
+
         nbbox    m_bb ; 
         Timer*   m_timer ;    
 

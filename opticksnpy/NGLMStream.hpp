@@ -23,9 +23,9 @@ inline std::ostream& operator<< (std::ostream& out, const glm::ivec3& v)
 inline std::ostream& operator<< (std::ostream& out, const glm::vec3& v) 
 {
     out << "{" 
-        << " " << std::fixed << std::setprecision(2) << std::setw(7) << v.x 
-        << " " << std::fixed << std::setprecision(2) << std::setw(7) << v.y
-        << " " << std::fixed << std::setprecision(2) << std::setw(7) << v.z 
+        << " " << std::fixed << std::setprecision(4) << std::setw(9) << v.x 
+        << " " << std::fixed << std::setprecision(4) << std::setw(9) << v.y
+        << " " << std::fixed << std::setprecision(4) << std::setw(9) << v.z 
         << "}";
 
     return out;

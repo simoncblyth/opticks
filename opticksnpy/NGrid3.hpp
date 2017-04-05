@@ -21,7 +21,8 @@ struct NPY_API NGrid
     std::string desc() const ;
     std::string desc(const FVec& fpos, const char* msg="fpos" ) const ; 
 
-    FVec fpos(const IVec& ijk ) const ;  // grid int coordinates in 0:size-1 to fractional coordinates in 0:1. NB accepts floated coordinates too
+    FVec fpos(const FVec& ijkf, bool debug=false ) const ;  // grid int coordinates in 0:size-1 to fractional coordinates in 0:1. 
+    FVec fpos(const IVec& ijk, bool debug=false ) const ;   // grid int coordinates in 0:size-1 to fractional coordinates in 0:1.
 
     IVec ijk(const FVec& fpos) const ;   // fractional coordinates in 0:1. to grid int coordinates in 0:size-1
     IVec ijk(int c) const ;               // z-order morton code in 0:nloc-1 to grid int coordinates in 0:size-1

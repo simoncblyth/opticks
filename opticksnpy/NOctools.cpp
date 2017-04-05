@@ -2,6 +2,9 @@
 #include "NTreeTools.hpp"
 #include "NOctools.hpp"
 
+
+#include "DualContouringSample/FGLite.h"
+
 #include "NBBox.hpp"
 #include "NGrid3.hpp"
 #include "NField3.hpp"
@@ -35,11 +38,12 @@ const glm::ivec3 NConstructor<T>::_CHILD_MIN_OFFSETS[] =
 
 
 template <typename T>
-NConstructor<T>::NConstructor(FG3* fieldgrid, const nvec4& ce, const nbbox& bb, int nominal, int coarse, int verbosity )
+NConstructor<T>::NConstructor(FG3* fieldgrid, FGLite* fglite,  const nvec4& ce, const nbbox& bb, int nominal, int coarse, int verbosity )
    :
    m_fieldgrid(fieldgrid),  
    m_field(fieldgrid->field),  
    m_func(m_field->f),
+   m_fglite(fglite),
    m_ce(ce),
    m_bb(bb),
    m_nominal(fieldgrid->grid),  
@@ -187,15 +191,19 @@ void NConstructor<T>::report(const char* msg)
 template <typename T>
 void NConstructor<T>::buildBottomUpFromLeaf(int leaf_loc, T* leaf)
 {
-    /*
-        TODO: measure time spent doing this, because if significant 
-              can profit from the z-order : there are  only ever be up to 8 
-              nodes waiting around at each level 
-              to be parented : so can use static arrays and avoid finding from 
-              big caches,
+/*
+Due to the z-order : 
+
+* there are only ever up to 8 nodes waiting around at each level 
+  to be parented : so could use static arrays and avoid finding from 
+  big caches
               
-              also perhaps can do parent hookup in batches, on passing last child slot 
-    */
+* also perhaps could do parent hookup in batches, on passing last child slot 
+
+BUT, minimal time is spent doing this compared to leaf scanning and creation
+so no point optimizing here.
+
+*/
 
     T* node = leaf ; 
     T* dnode = NULL ; 
@@ -404,14 +412,37 @@ void NConstructor<T>::dump_domain(const char* msg) const
              assert( vfi == vfg );
 
 
-             std::cout << " i " << std::setw(3) << i 
-                       << " ijk " << ijk
-                       << " offset_ijk " << offset_ijk
-                       << " pce " << pce
-                       << " pfg " << pfg
-                       << " vce " << vce
-                       << " vfg " << vfg
-                       << std::endl ; 
+             if(depth < m_nominal->level )
+             {
+                 std::cout << " i " << std::setw(3) << i 
+                           << " ijk " << ijk
+                           << " offset_ijk " << offset_ijk
+                           << " pce " << pce
+                           << " pfg " << pfg
+                           << " vce " << vce
+                           << " vfg " << vfg
+                           << std::endl ; 
+
+             }
+             else
+             {
+                 glm::vec3 pfgl = m_fglite->position_f( offset_ijk ) ; 
+                 float     vfgl = m_fglite->value_f( offset_ijk ) ; 
+                 std::cout << " i " << std::setw(3) << i 
+                           << " ijk " << ijk
+                           << " offset_ijk " << offset_ijk
+                           << " pce " << pce
+                           << " pfg " << pfg
+                           << " vce " << vce
+                           << " vfg " << vfg
+                           << " pfgl " << pfgl 
+                           << " vfgl " << vfgl
+                           << std::endl ; 
+
+             }
+             
+
+
 
         }
     } // over depth
@@ -583,13 +614,14 @@ void NConstructor<T>::corner_scan(const char* msg, int depth, int limit) const
 
 
 template<typename T>
-NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, const nbbox& bb, Timer* timer )
+NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse, const int verbosity, const float threshold, FG3* fieldgrid, FGLite* fglite, const nbbox& bb, Timer* timer )
     :
     m_ctrl(ctrl),
     m_nominal_size( 1 << nominal ),
     m_verbosity(verbosity),
     m_threshold(threshold), 
     m_fieldgrid(fieldgrid),
+    m_fglite(fglite),
     m_bb(bb), 
     m_timer(timer),
     m_ctor(NULL),
@@ -606,7 +638,7 @@ NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse
 
     m_ce = make_nvec4(bbce.x, bbce.y, bbce.z, ijk2xyz );
 
-    m_ctor = new NConstructor<T>(m_fieldgrid, m_ce, m_bb, nominal, coarse, m_verbosity );
+    m_ctor = new NConstructor<T>(m_fieldgrid, m_fglite, m_ce, m_bb, nominal, coarse, m_verbosity );
 
     if(m_verbosity > 10 ) assert(0 && "hari kari for verbosity > 10");
 
@@ -615,6 +647,9 @@ NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse
               << " ijkExtent " << ijkExtent
               << " bbce " << bbce.desc()
               << " ce " << m_ce.desc()
+              << " bb.min " << bb.min.desc() 
+              << " bb.max " << bb.max.desc() 
+              << " bb.side " << bb.side.desc() 
               ;
 }
 
@@ -710,7 +745,7 @@ void NManager<T>::generateMeshFromOctree()
 	m_normals.clear();
 	m_indices.clear();
 
-	T::GenerateVertexIndices(m_simplified, m_vertices,m_normals, m_fieldgrid);
+	T::GenerateVertexIndices(m_simplified, m_vertices,m_normals, m_fieldgrid, m_fglite );
 	T::ContourCellProc(m_simplified, m_indices);
 }
 

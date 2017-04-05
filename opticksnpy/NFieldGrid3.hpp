@@ -19,7 +19,8 @@ struct NPY_API NFieldGrid3
 
     // grid coordinate to world position
     FVec position( const IVec& ijk ) const ; 
-    FVec position_f( const FVec& ijkf ) const ;  
+    FVec position_f( const FVec& ijkf, bool debug=false ) const ;  
+    //FVec position_f( float i, float j, float k, bool debug=false ) const ;  
 
     NField<FVec,IVec,3>* field ; 
     NGrid<FVec,IVec,3>*  grid ; 

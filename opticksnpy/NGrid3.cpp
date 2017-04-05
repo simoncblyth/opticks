@@ -4,6 +4,7 @@
 
 #include "mortonlib/morton3d.h"
 
+#include "NGLMStream.hpp"
 #include "NGrid3.hpp"
 
 
@@ -155,11 +156,39 @@ int NGrid<FVec,IVec,DIM>::loc(const FVec& fpos ) const
 
 
 template<typename FVec,typename IVec,int DIM>
-FVec NGrid<FVec,IVec,DIM>::fpos(const IVec& ijk ) const 
+FVec NGrid<FVec,IVec,DIM>::fpos(const IVec& ijk, bool debug ) const 
 {
-   // integer (or floated integer) coordinate to fractional coordinate 
-    return FVec( float(ijk.x)/float(nijk.x), float(ijk.y)/float(nijk.y), float(ijk.z)/float(nijk.z) ); 
+   // integer coordinate to fractional coordinate 
+    FVec fp( float(ijk.x)/float(nijk.x), float(ijk.y)/float(nijk.y), float(ijk.z)/float(nijk.z) ); 
+
+    if(debug) std::cout << "NGrid::fpos(int)"
+                        << " ijk (" << ijk.x << " " << ijk.y << " " << ijk.z << ")"  
+                        << " fpos (" << fp.x << " " << fp.y << " " << fp.z << ")"  
+                        << std::endl ; 
+
+
+    return fp ; 
 }
+
+template<typename FVec,typename IVec,int DIM>
+FVec NGrid<FVec,IVec,DIM>::fpos(const FVec& ijkf, bool debug ) const 
+{
+   // floated integer coordinate to fractional coordinate 
+    FVec fp( ijkf.x/float(nijk.x), ijkf.y/float(nijk.y), ijkf.z/float(nijk.z) ); 
+
+
+    if(debug) std::cout << "NGrid::fpos(floated)"
+                        << " ijkf (" << ijkf.x << " " << ijkf.y << " " << ijkf.z << ")"  
+                        << " fpos (" << fp.x << " " << fp.y << " " << fp.z << ")"  
+                        << std::endl ; 
+
+    return fp ; 
+}
+
+
+
+
+
 
 
 template<typename FVec,typename IVec,int DIM>
