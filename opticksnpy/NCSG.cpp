@@ -7,6 +7,7 @@
 
 #include "OpticksCSG.h"
 
+#include "NGLMStream.hpp"
 #include "NParameters.hpp"
 #include "NPart.h"
 #include "NSphere.hpp"
@@ -162,7 +163,7 @@ void NCSG::import()
               << " height " << m_height 
               ;
 
-    m_root = import_r(0) ; 
+    m_root = import_r(0, NULL, 0) ; 
 }
 
 
@@ -170,7 +171,12 @@ glm::mat4* NCSG::import_transform(unsigned itra)
 {
     if(itra == 0 || m_transforms == NULL) return NULL ; 
     assert( itra - 1 < m_num_transforms );
-    return m_transforms->getMat4Ptr(itra - 1);  // itra is a 1-based index, with 0 meaning None
+    glm::mat4* m =  m_transforms->getMat4Ptr(itra - 1);  // itra is a 1-based index, with 0 meaning None
+
+    
+
+
+    return m ; 
 }
 
 nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
@@ -208,9 +214,24 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
         assert(node);
 
         node->parent = parent ; 
+        node->transform = import_transform( itransform ) ;
+
+        std::cout << "NCSG::import_r(oper)" 
+                  << " idx " << idx
+                  << " csgname " << CSGName(typecode) 
+                  << " rtransform_idx " << rtransform_idx
+                  << " itransform " << itransform
+                  << std::endl
+                  ;
+
+        if(node->transform) std::cout << " transform " << *node->transform ;
+        else                std::cout << " no-transform " ; 
+        std::cout << std::endl ; 
+
+
+        // NB recursive call after the "visit" 
         node->left = import_r(idx*2+1, node, ltransform_idx );     
         node->right = import_r(idx*2+2, node, rtransform_idx );
-        node->transform = import_transform( itransform ) ;
 
         // internal node can carry its own transform as well as have a child rtransform
     }
@@ -233,6 +254,15 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
         node->parent = parent ; 
         node->transform = import_transform( itransform ) ;
         node->gtransform = node->global_transform(); 
+
+        if(node->transform) std::cout << " transform " << *node->transform ;
+        else                std::cout << " no-transform " ;
+        std::cout << std::endl ; 
+ 
+        if(node->gtransform) std::cout << " gtransform " << *node->gtransform ;
+        else                std::cout << " no-gtransform " ;
+        std::cout << std::endl ; 
+
 
     }
     if(node == NULL) LOG(fatal) << "NCSG::import_r"
@@ -310,7 +340,7 @@ std::string NCSG::desc()
        << " treedir " << ( m_treedir ? m_treedir : "NULL" ) 
        << " node_sh " << node_sh  
        << " tran_sh " << tran_sh  
-       << " boundary " << m_boundary 
+       << " boundary " << ( m_boundary ? m_boundary : "NULL" ) 
        << " meta " << m_meta->desc()
        ;
     return ss.str();  

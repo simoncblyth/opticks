@@ -310,6 +310,8 @@ if __name__ == '__main__':
     pass
     logging.basicConfig(level=logging.INFO)
 
+
+
     container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
    
     s = CSG("sphere")

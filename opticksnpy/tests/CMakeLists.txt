@@ -46,6 +46,7 @@ NSpectralTest.cc
 NSphereTest.cc
 NBoxTest.cc
 NBBoxTest.cc
+NNodeTest.cc
 
 NTesselateTest.cc
 G4StepNPYTest.cc
@@ -67,6 +68,7 @@ DummyPhotonsNPYTest.cc
 
 NMarchingCubesNPYTest.cc
 NCSGTest.cc
+NCSGLoadTest.cc
 NOctNodeTest.cc
 
 NDualContouringSampleTest.cc

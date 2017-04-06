@@ -79,7 +79,7 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 
 glm::mat4* nnode::global_transform()
 {
-    glm::mat4 gt ; 
+    glm::mat4 gt(1.f) ; 
 
     nnode* n = this ; 
     int ntra = 0 ; 

@@ -66,6 +66,11 @@ means can collect ancestor transforms into the primitives : this is
 what will need to do on GPU, so actually its better to take same approach on CPU 
 
 
+* adopted globaltransform held in primitive, which is obtained at deserialization (in NCSG)
+  from product of ancestor node transforms
+
+
+
 Transforming BBox ?
 ---------------------
 

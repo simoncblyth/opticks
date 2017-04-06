@@ -34,9 +34,14 @@ NTrianglesNPY* NPolygonizer::polygonize()
     NCSG* csg = m_csg ; 
 
     nnode* root = csg->getRoot() ;
-
     assert(root);
-    nbbox node_bb = root->bbox();
+
+    nbbox root_bb = root->bbox();
+    LOG(info) << "NPolygonizer::polygonize"
+              << " root_bb " << root_bb.desc()
+              ;
+
+
     NParameters* meta = csg->getMeta();
     assert(meta);
 
@@ -82,7 +87,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
     nbbox* tris_bb = tris && numTris > 0 ? tris->findBBox() : NULL ;
 
-    bool tessa_valid = tris_bb ? node_bb.contains(*tris_bb) : false  ;
+    bool tessa_valid = tris_bb ? root_bb.contains(*tris_bb) : false  ;
 
     LOG(info) << "NPolygonizer::polygonize"
               << " tessa " << tessa
@@ -94,9 +99,9 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
      if(!tessa_valid)
      {   
-         LOG(warning) << "INVALID Tesselation triangles outside node bbox REPLACE WITH PLACEHOLDER " ;   
+         LOG(warning) << "INVALID Tesselation triangles outside root bbox REPLACE WITH PLACEHOLDER " ;   
          delete tris ; 
-         tris = NTrianglesNPY::box(node_bb);
+         tris = NTrianglesNPY::box(root_bb);
      }   
 
      return tris ;

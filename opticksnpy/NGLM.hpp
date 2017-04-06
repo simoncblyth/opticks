@@ -28,7 +28,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <glm/gtx/transform.hpp>
+
+#ifndef __CUDACC__
 #include <glm/gtx/string_cast.hpp>
+#endif
 
 
 inline float gmaxf(const float a, const float b)

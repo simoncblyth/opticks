@@ -109,6 +109,8 @@ NTrianglesNPY* NImplicitMesher::operator()(nnode* node)
     bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
     bb.side = bb.max - bb.min ;
 
+    LOG(info) << "NImplicitMesher::operator() bb " << bb.desc() ; 
+
     glm::vec3 min(bb.min.x, bb.min.y, bb.min.z );
     glm::vec3 max(bb.max.x, bb.max.y, bb.max.z );
 

@@ -26,6 +26,7 @@ struct nnode ;
 class NParameters ; 
 
 class NPY_API NCSG {
+        friend struct NCSGLoadTest ; 
     public:
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
         static const char* FILENAME ; 

@@ -56,6 +56,17 @@ inline std::ostream& operator<< (std::ostream& out, const glm::mat4& v)
 }
 
 
+inline std::ostream& operator<< (std::ostream& out, const glm::mat3& v) 
+{
+    out << "( "
+        << " " << v[0]
+        << " " << v[1]
+        << " " << v[2]
+        << " )"
+        ; 
+
+    return out;
+}
 
 
 
