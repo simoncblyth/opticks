@@ -42,9 +42,9 @@ void nnode::dump(const char* msg)
         right->dump("right");
     }
 
-    if(rtransform)
+    if(transform)
     {
-        std::cout << "rtransform: " << glm::to_string( *rtransform ) << std::endl ; 
+        std::cout << "transform: " << glm::to_string( *transform ) << std::endl ; 
     } 
 
 }
@@ -52,9 +52,13 @@ void nnode::dump(const char* msg)
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 {
     n.type = type ; 
+
     n.left = left ; 
     n.right = right ; 
-    n.rtransform = NULL ; 
+    n.parent = NULL ; 
+
+    n.transform = NULL ; 
+    n.gtransform = NULL ; 
 
     n.param = {0.f, 0.f, 0.f, 0.f };
 }
@@ -71,6 +75,26 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 {
     return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;  
 }
+
+
+glm::mat4* nnode::global_transform()
+{
+    glm::mat4 gt ; 
+
+    nnode* n = this ; 
+    int ntra = 0 ; 
+    while(n)
+    {
+        if(n->transform)
+        {
+           ntra++ ; 
+           gt *= *n->transform ;   // is this the correct order of matrix multiplication ?
+        }
+        n = n->parent ; 
+    }
+    return ntra == 0 ? NULL : new glm::mat4(gt) ; 
+}
+
 
 
 npart nnode::part()

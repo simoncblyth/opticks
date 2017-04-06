@@ -96,14 +96,14 @@ class CSG(CSG_):
         return trees
 
     @classmethod
-    def make_rtransform(cls, rtranslate, rrotate):
-        if rtranslate is None and rrotate is None: return None
-        rtla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
-        rrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.eye(3, dtype=np.float32)
-        rtran = np.eye(4, dtype=np.float32)
-        rtran[:3, :3] = rrot_(rrotate)
-        rtran[3,:3] = rtla_(rtranslate)
-        return rtran
+    def make_transform(cls, translate, rotate):
+        if translate is None and rotate is None: return None
+        tla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
+        rot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.eye(3, dtype=np.float32)
+        tran = np.eye(4, dtype=np.float32)
+        tran[:3, :3] = rot_(rotate)
+        tran[3,:3] = tla_(translate)
+        return tran
  
 
 
@@ -224,13 +224,12 @@ class CSG(CSG_):
         pass
         assert type(typ) is int and typ > -1, (typ, type(typ))
 
-
         self.typ = typ
         self.left = left
         self.right = right
         self.param = param
         self.boundary = boundary
-        self.rtransform = self.make_rtransform(rtranslate,rrotate)
+        self.rtransform = self.make_transform(rtranslate,rrotate)
         self.meta = kwa
 
     def _get_param(self):

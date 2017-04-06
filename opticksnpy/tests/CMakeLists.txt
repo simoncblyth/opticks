@@ -42,7 +42,10 @@ NQuadTest.cc
 NBoundingBoxTest.cc
 NPartTest.cc
 NSpectralTest.cc
+
 NSphereTest.cc
+NBoxTest.cc
+
 NTesselateTest.cc
 G4StepNPYTest.cc
 _TorchStepNPYTest.cc

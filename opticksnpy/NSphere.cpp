@@ -1,16 +1,20 @@
 
-// sysrap-
-
-#include "NSphere.hpp"
-#include "NBBox.hpp"
-#include "NPlane.hpp"
-#include "NPart.hpp"
-
+#include <iostream>
 #include <cmath>
 #include <cassert>
 #include <cstring>
 
+
+#include "NGLMStream.hpp"
+
+// sysrap-
 #include "OpticksCSG.h"
+
+// npy-
+#include "NSphere.hpp"
+#include "NBBox.hpp"
+#include "NPlane.hpp"
+#include "NPart.hpp"
 
 
 float nsphere::radius(){ return param.w ; }
@@ -27,7 +31,21 @@ float nsphere::costheta(float z_)
 
 double nsphere::operator()(double px, double py, double pz) 
 {
-    return sqrt((px-param.x)*(px-param.x) + (py-param.y)*(py-param.y) + (pz-param.z)*(pz-param.z)) - param.w  ;
+    glm::vec4 p0(px,py,pz,1.0); 
+    glm::vec4 p = gtransform ? *gtransform * p0 : p0 ; 
+
+    /*
+    if(gtransform)
+        std::cout << "nsphere::operator"
+                  << " p0 " << p0 
+                  << " -> p " << p
+                  << " gtransform "  << *gtransform 
+                  << std::endl ;  
+    */
+
+    float d = glm::distance( glm::vec3(p), center );
+    return d - radius_ ;  
+
 } 
 
 

@@ -24,12 +24,17 @@ struct NPY_API nnode {
 
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
+
+    glm::mat4* global_transform(); 
+
     std::function<float(float,float,float)> sdf();
 
     OpticksCSG_t type ;  
     nnode* left ; 
     nnode* right ; 
-    glm::mat4* rtransform ; 
+    nnode* parent ; 
+    glm::mat4* transform ; 
+    glm::mat4* gtransform ; 
 
     nvec4 param ; 
 };

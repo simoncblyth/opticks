@@ -1665,7 +1665,6 @@ RESOLVED : scatter discrep
 Using tconcentric-vg4 when viewing from +X into the beam note 
 distinct butterfly distrib with CFG4 that seems less distinct with Opticks.
 
-.. image:: tconcentric_cfg4_butterfly_8cc6ccd_view_x_pol_y_half.png
 
 But tis difficult in separate viewing sessions to get same conditions, so
 need to make some plots.

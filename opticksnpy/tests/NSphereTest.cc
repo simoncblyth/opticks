@@ -1,3 +1,6 @@
+#include "NGLMStream.hpp"
+
+#include "NGenerator.hpp"
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
@@ -144,6 +147,61 @@ void test_bbox_u()
 }
 
 
+void test_gtransform()
+{
+    nbbox bb ; 
+    bb.min = {-200.f, -200.f, -200.f };
+    bb.max = { 200.f,  200.f,  200.f };
+
+    NGenerator gen(bb);
+
+    bool verbose = false ; 
+    glm::vec3 tlate ;
+
+    for(int i=0 ; i < 100 ; i++)
+    {
+        gen(tlate); 
+
+        glm::mat4 m = glm::translate(glm::mat4(1.0f), tlate );
+        std::cout << " gtransform " << m << std::endl ; 
+
+        nsphere a = make_nsphere(0.f,0.f,0.f,100.f);      
+        // untouched sphere at origin
+
+        nsphere b = make_nsphere(0.f,0.f,0.f,100.f);      
+        b.gtransform = &m ; 
+        // translated sphere via gtransform
+
+        nsphere c = make_nsphere(-tlate.x,-tlate.y,-tlate.z,100.f);  
+        // manually positioned sphere at negated tlate position 
+
+
+        float x = 0 ; 
+        float y = 0 ; 
+        float z = 0 ; 
+
+        for(int iz=-200 ; iz <= 200 ; iz+= 10 ) 
+        {
+           z = iz ;  
+           float a_ = a(x,y,z) ;
+           float b_ = b(x,y,z) ;
+           float c_ = c(x,y,z) ;
+      
+           if(verbose) 
+           std::cout 
+                 << " z " << std::setw(10) << z 
+                 << " a_ " << std::setw(10) << std::fixed << std::setprecision(2) << a_
+                 << " b_ " << std::setw(10) << std::fixed << std::setprecision(2) << b_
+                 << " c_ " << std::setw(10) << std::fixed << std::setprecision(2) << c_
+                 << std::endl 
+                 ; 
+
+           assert( b_ == c_ );
+
+        }
+    }
+}
+
 
 
 int main(int argc, char** argv)
@@ -156,10 +214,12 @@ int main(int argc, char** argv)
 
     test_sdf();
     test_csgsdf();
-*/
 
     test_bbox();
     test_bbox_u();
+*/
+
+    test_gtransform();
 
     return 0 ; 
 }

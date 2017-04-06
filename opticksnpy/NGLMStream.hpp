@@ -42,4 +42,21 @@ inline std::ostream& operator<< (std::ostream& out, const glm::vec4& v)
     return out;
 }
 
+inline std::ostream& operator<< (std::ostream& out, const glm::mat4& v) 
+{
+    out << "( "
+        << " " << v[0]
+        << " " << v[1]
+        << " " << v[2]
+        << " " << v[3]
+        << " )"
+        ; 
+
+    return out;
+}
+
+
+
+
+
 

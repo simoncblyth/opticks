@@ -1,3 +1,4 @@
+#pragma once
 
 #ifdef __clang__
 
@@ -28,6 +29,16 @@
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
+
+
+inline float gmaxf(const float a, const float b)
+{
+   return a > b ? a : b ; 
+}
+inline float gmaxf( const glm::vec3& v )
+{
+    return gmaxf( gmaxf(v.x, v.y), v.z );
+}
 
 
 #ifdef __clang__

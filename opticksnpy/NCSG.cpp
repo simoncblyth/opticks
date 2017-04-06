@@ -207,8 +207,12 @@ nnode* NCSG::import_r(unsigned idx)
            case CSG_DIFFERENCE:   node = make_ndifference_ptr(left, right )   ; break ; 
            default:               node = NULL                                 ; break ; 
         }
-        assert(node);
-        node->rtransform = import_transform( itra );
+        assert(node && left && right);
+
+        right->transform = import_transform( itra ) ;
+        left->parent = node ; 
+        right->parent = node ; 
+
     }
     else 
     {
@@ -218,6 +222,10 @@ nnode* NCSG::import_r(unsigned idx)
            case CSG_BOX:    node = make_nbox_ptr(param)      ; break ; 
            default:         node = NULL ; break ; 
         }       
+
+        assert(node); 
+        node->gtransform = node->global_transform(); // multiplies transforms from ancestor nodes
+
     }
     if(node == NULL) LOG(fatal) << "NCSG::import_r"
                                 << " TYPECODE NOT IMPLEMENTED " 

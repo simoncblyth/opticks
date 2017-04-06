@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NNode.hpp"
+#include "NGLM.hpp"
 
 struct nplane ; 
 struct ndisc ; 
@@ -30,29 +31,48 @@ struct NPY_API nsphere : nnode {
     npart zrhs(const ndisc& dsc); // +z to the right  
     npart zlhs(const ndisc& dsc);  
 
+    glm::vec3 center ; 
+    float     radius_ ; 
 
 };
 
 
-inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
+inline NPY_API void init_nsphere(nsphere& s, const nvec4& param)
 {
-    nsphere n ; nnode::Init(n,CSG_SPHERE) ; n.param.x = x ; n.param.y = y ; n.param.z = z ; n.param.w = w ; return n ;
+    s.param.x = param.x ; 
+    s.param.y = param.y ; 
+    s.param.z = param.z ; 
+    s.param.w = param.w ; 
+
+    s.center.x = param.x ; 
+    s.center.y = param.y ; 
+    s.center.z = param.z ;
+    s.radius_  = param.w ;  
 }
 
-inline NPY_API nsphere* make_nsphere_ptr(float x, float y, float z, float w)
+inline NPY_API nsphere make_nsphere(const nvec4& param)
 {
-    nsphere* n = new nsphere ; nnode::Init(*n,CSG_SPHERE) ; n->param.x = x ; n->param.y = y ; n->param.z = z ; n->param.w = w ; return n ;
+    nsphere n ; 
+    nnode::Init(n,CSG_SPHERE) ; 
+    init_nsphere(n, param);
+    return n ; 
+}
+inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
+{
+    nvec4 param = {x,y,z,w} ;
+    return make_nsphere(param);
 }
 inline NPY_API nsphere* make_nsphere_ptr(const nvec4& param)
 {
-    nsphere* n = new nsphere ; nnode::Init(*n,CSG_SPHERE) ; n->param.x = param.x ; n->param.y = param.y ; n->param.z = param.z ; n->param.w = param.w ; return n ;
+    nsphere* n = new nsphere ; 
+    nnode::Init(*n,CSG_SPHERE) ;
+    init_nsphere(*n, param);
+    return n ;
 }
-
-
-
-inline NPY_API nsphere make_nsphere(const nvec4& p)
+inline NPY_API nsphere* make_nsphere_ptr(float x, float y, float z, float w)
 {
-    nsphere n ; nnode::Init(n,CSG_SPHERE) ; n.param.x = p.x ; n.param.y = p.y ; n.param.z = p.z ; n.param.w = p.w ; return n ;
+    nvec4 param = {x,y,z,w} ;
+    return make_nsphere_ptr(param);
 }
 
 

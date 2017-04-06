@@ -1,3 +1,4 @@
+#include <glm/glm.hpp>
 #include "NGenerator.hpp"
 
 
@@ -11,6 +12,13 @@ NGenerator::NGenerator(const nbbox& bb)
 }
 
 void NGenerator::operator()(nvec3& p)
+{
+    p.x = m_bb.min.x + m_gen()*m_side.x ; 
+    p.y = m_bb.min.y + m_gen()*m_side.y ; 
+    p.z = m_bb.min.z + m_gen()*m_side.z ;
+}
+
+void NGenerator::operator()(glm::vec3& p)
 {
     p.x = m_bb.min.x + m_gen()*m_side.x ; 
     p.y = m_bb.min.y + m_gen()*m_side.y ; 
