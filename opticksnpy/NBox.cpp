@@ -30,7 +30,7 @@ double nbox::operator()(double px, double py, double pz)
     if(gtransform)
         std::cout << "nbox::operator"
                   << " p0 " << p0 
-                  << " -> p1 " << p1
+                  << " p1 " << p1
                   << " gtransform "  << *gtransform 
                   << std::endl ;  
     */
@@ -56,12 +56,13 @@ double nbox::operator()(double px, double py, double pz)
 nbbox nbox::bbox()
 {
     nbbox bb ;
+
     float s  = param.w ; 
-    bb.min = make_nvec3( param.x - s, param.y - s, param.z - s );
-    bb.max = make_nvec3( param.x + s, param.y + s, param.z + s );
+    bb.min = make_nvec3( min );
+    bb.max = make_nvec3( max );
     bb.side = bb.max - bb.min ; 
 
-    return bb ; 
+    return gtransform ? bb.transform(*gtransform) : bb ; 
 }
 
 

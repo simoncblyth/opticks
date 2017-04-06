@@ -66,6 +66,17 @@ means can collect ancestor transforms into the primitives : this is
 what will need to do on GPU, so actually its better to take same approach on CPU 
 
 
+Transforming BBox ?
+---------------------
+
+* http://dev.theomader.com/transform-bounding-boxes/
+* http://www.cs.unc.edu/~zhangh/technotes/bbox.pdf
+
+* https://www.geometrictools.com/Documentation/AABBForTransformedAABB.pdf
+* https://github.com/erich666/GraphicsGems/blob/master/gems/TransBox.c
+* http://www.akshayloke.com/2012/10/22/optimized-transformations-for-aabbs/
+
+
 
 Models
 -------

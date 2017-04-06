@@ -53,7 +53,7 @@ class NPY_API NCSG {
         nvec4 getQuad(unsigned idx, unsigned j);
         void load();
         void import();
-        nnode* import_r(unsigned idx);
+        nnode* import_r(unsigned idx, nnode* parent=NULL, int itransform=0 );
         glm::mat4* import_transform(unsigned itra);
     private:
          // Serialize

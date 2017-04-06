@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/fwd.hpp>
 #include "NQuad.hpp"
 #include "NPY_API_EXPORT.hh"
 
@@ -11,6 +12,13 @@ struct NPY_API nbbox {
     void dump(const char* msg);
     void include(const nbbox& other );
     const char* desc() const;
+
+
+    static void transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
+    static void transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
+
+    nbbox transform( const glm::mat4& t );
+
 
     nvec4 center_extent() const ;
     nvec4 dimension_extent() const ;
@@ -36,6 +44,14 @@ struct NPY_API nbbox {
     nvec3 max ; 
     nvec3 side ; 
 };
+
+
+inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
+{
+   return a.min == b.min && a.max == b.max && a.side == b.side ;  
+}
+
+
 
 
 // "ctor" assuming rotational symmetry around z axis

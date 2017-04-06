@@ -35,10 +35,48 @@ inline float gmaxf(const float a, const float b)
 {
    return a > b ? a : b ; 
 }
+inline float gminf(const float a, const float b)
+{
+   return a > b ? b : a ; 
+}
+
 inline float gmaxf( const glm::vec3& v )
 {
     return gmaxf( gmaxf(v.x, v.y), v.z );
 }
+
+
+inline void gmaxf(glm::vec4& r, const glm::vec4& a, const glm::vec4& b )
+{
+    r.x = gmaxf( a.x, b.x );
+    r.y = gmaxf( a.y, b.y );
+    r.z = gmaxf( a.z, b.z );
+    r.w = gmaxf( a.w, b.w );
+}
+inline void gminf(glm::vec4& r, const glm::vec4& a, const glm::vec4& b )
+{
+    r.x = gminf( a.x, b.x );
+    r.y = gminf( a.y, b.y );
+    r.z = gminf( a.z, b.z );
+    r.w = gminf( a.w, b.w );
+}
+
+
+inline glm::vec4 gminf(const glm::vec4& a, const glm::vec4& b )
+{
+    glm::vec4 r ; 
+    gminf(r, a, b );
+    return r ;
+}
+inline glm::vec4 gmaxf(const glm::vec4& a, const glm::vec4& b )
+{
+    glm::vec4 r ; 
+    gmaxf(r, a, b );
+    return r ;
+}
+
+
+
 
 
 #ifdef __clang__

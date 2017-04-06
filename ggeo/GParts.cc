@@ -105,23 +105,23 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 GParts* GParts::make( NCSG* tree)
 {
     const char* spec = tree->getBoundary();
-    NPY<float>* buf = tree->getBuffer();
+    NPY<float>* nodebuf = tree->getNodeBuffer();
     nnode* root = tree->getRoot(); 
 
     // hmm maybe should not use the nnode ? 
 
-    assert(buf && root) ; 
+    assert(nodebuf && root) ; 
 
-    unsigned ni = buf->getShape(0);
-    unsigned nj = buf->getShape(1);
-    unsigned nk = buf->getShape(2);
+    unsigned ni = nodebuf->getShape(0);
+    unsigned nj = nodebuf->getShape(1);
+    unsigned nk = nodebuf->getShape(2);
     assert( nj == NJ && nk == NK && ni > 0);
 
     assert(root && root->type < CSG_UNDEFINED );
 
     LOG(info) << "GParts::make NCSG "
-              << " path " << tree->getPath()
-              << " sh " << buf->getShapeString()
+              << " treedir " << tree->getTreeDir()
+              << " sh " << nodebuf->getShapeString()
               << " spec " << spec 
               << " type " << root->csgname()
               ; 
@@ -134,7 +134,7 @@ GParts* GParts::make( NCSG* tree)
 
     GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
 
-    GParts* pts = new GParts(buf, lspec) ;
+    GParts* pts = new GParts(nodebuf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
     return pts ; 

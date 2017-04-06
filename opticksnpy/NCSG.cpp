@@ -170,22 +170,20 @@ glm::mat4* NCSG::import_transform(unsigned itra)
 {
     if(itra == 0 || m_transforms == NULL) return NULL ; 
     assert( itra - 1 < m_num_transforms );
-    return m_transforms->getMat4Ptr(itra - 1); 
+    return m_transforms->getMat4Ptr(itra - 1);  // itra is a 1-based index, with 0 meaning None
 }
 
-nnode* NCSG::import_r(unsigned idx)
+nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
 {
     if(idx >= m_num_nodes) return NULL ; 
         
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     nvec4 param = getQuad(idx, 0);
 
-    int itra = typecode < CSG_SPHERE ? getTransformIndex(idx) : 0  ; 
-
     LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 
-              << " itra " << itra 
+              << " itransform " << itransform 
               << " csgname " << CSGName(typecode) 
               << " param.x " << param.x
               << " param.y " << param.y
@@ -197,22 +195,24 @@ nnode* NCSG::import_r(unsigned idx)
  
     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
     {
-        nnode* left = import_r(idx*2+1); // 0-based binary tree indexing 
-        nnode* right = import_r(idx*2+2);
+        int ltransform_idx = 0 ; // transforms are only applied to the right, currently 
+        int rtransform_idx = getTransformIndex(idx) ; 
 
         switch(typecode)
         {
-           case CSG_UNION:        node = make_nunion_ptr(left, right )        ; break ; 
-           case CSG_INTERSECTION: node = make_nintersection_ptr(left, right ) ; break ; 
-           case CSG_DIFFERENCE:   node = make_ndifference_ptr(left, right )   ; break ; 
+           case CSG_UNION:        node = make_nunion_ptr(NULL, NULL )        ; break ; 
+           case CSG_INTERSECTION: node = make_nintersection_ptr(NULL, NULL ) ; break ; 
+           case CSG_DIFFERENCE:   node = make_ndifference_ptr(NULL, NULL )   ; break ; 
            default:               node = NULL                                 ; break ; 
         }
-        assert(node && left && right);
+        assert(node);
 
-        right->transform = import_transform( itra ) ;
-        left->parent = node ; 
-        right->parent = node ; 
+        node->parent = parent ; 
+        node->left = import_r(idx*2+1, node, ltransform_idx );     
+        node->right = import_r(idx*2+2, node, rtransform_idx );
+        node->transform = import_transform( itransform ) ;
 
+        // internal node can carry its own transform as well as have a child rtransform
     }
     else 
     {
@@ -224,7 +224,15 @@ nnode* NCSG::import_r(unsigned idx)
         }       
 
         assert(node); 
-        node->gtransform = node->global_transform(); // multiplies transforms from ancestor nodes
+
+        // structure of recursive call dictated by need for 
+        // the primitive to know parent and its transform here...
+        // so the ancestor transforms can be multiplied straightaway 
+        // without some 2nd pass
+
+        node->parent = parent ; 
+        node->transform = import_transform( itransform ) ;
+        node->gtransform = node->global_transform(); 
 
     }
     if(node == NULL) LOG(fatal) << "NCSG::import_r"

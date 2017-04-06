@@ -1,4 +1,7 @@
+#include <cfloat>
 #include "NGLMStream.hpp"
+
+//#include <glm/gtx/component_wise.hpp> 
 
 #include "NGenerator.hpp"
 #include "NBox.hpp"

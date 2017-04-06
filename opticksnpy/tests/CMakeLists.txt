@@ -45,6 +45,7 @@ NSpectralTest.cc
 
 NSphereTest.cc
 NBoxTest.cc
+NBBoxTest.cc
 
 NTesselateTest.cc
 G4StepNPYTest.cc

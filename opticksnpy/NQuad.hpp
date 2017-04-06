@@ -19,6 +19,7 @@
 enum { X, Y, Z, W };
 
 
+#include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
 
 
@@ -348,6 +349,19 @@ inline NPY_API nvec3 make_nvec3(const nivec3& ijk )  // floating the ints
 {
    nvec3 t ; t.x = ijk.x ; t.y = ijk.y ; t.z = ijk.z  ; return t;
 }
+
+inline NPY_API nvec3 make_nvec3(const glm::vec3& v )  
+{
+   nvec3 t ; t.x = v.x ; t.y = v.y ; t.z = v.z  ; return t;
+}
+
+inline NPY_API nvec3 make_nvec3(const glm::vec4& v )  // w: skipped
+{
+   nvec3 t ; t.x = v.x ; t.y = v.y ; t.z = v.z  ; return t;
+}
+
+
+
 
 inline NPY_API nvec3 make_nvec3(float x, float y, float z )
 {
