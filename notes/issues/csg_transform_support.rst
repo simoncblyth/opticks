@@ -70,6 +70,84 @@ what will need to do on GPU, so actually its better to take same approach on CPU
   from product of ancestor node transforms
 
 
+Transforms GPU side 
+--------------------
+
+* does GPU need *tr* OR perhaps only *irit* will do, as primary action 
+  is transforming impinging rays not directly geometry 
+
+
+* optix Matrix4x4 uses row-major, Opticks standard follows OpenGL : column-major
+
+::
+
+    9.005 Are OpenGL matrices column-major or row-major?
+
+    For programming purposes, OpenGL matrices are 16-value arrays with base vectors
+    laid out contiguously in memory. The translation components occupy the 13th,
+    14th, and 15th elements of the 16-element matrix, where indices are numbered
+    from 1 to 16 as described in section 2.11.2 of the OpenGL 2.1 Specification.
+
+    Column-major versus row-major is purely a notational convention. Note that
+    post-multiplying with column-major matrices produces the same result as
+    pre-multiplying with row-major matrices. The OpenGL Specification and the
+    OpenGL Reference Manual both use column-major notation. You can use any
+    notation, as long as it's clearly stated.
+
+
+::
+
+    /Developer/OptiX/include/optixu/optixu_matrix_namespace.h
+
+    100   template <unsigned int M, unsigned int N>
+    101   class Matrix
+    102   {
+    103   public:
+    ...
+    169   private:
+    170       /** The data array is stored in row-major order */
+    171       float m_data[M*N];
+    172   };
+    173 
+       
+    421   // Multiply matrix4x4 by float4
+    422   OPTIXU_INLINE RT_HOSTDEVICE float4 operator*(const Matrix<4,4>& m, const float4& vec )
+    423   {
+    424     float4 temp;
+    425     temp.x  = m[ 0] * vec.x +
+    426               m[ 1] * vec.y +
+    427               m[ 2] * vec.z +
+    428               m[ 3] * vec.w;
+    429     temp.y  = m[ 4] * vec.x +
+    430               m[ 5] * vec.y +
+    431               m[ 6] * vec.z +
+    432               m[ 7] * vec.w;
+    433     temp.z  = m[ 8] * vec.x +
+    434               m[ 9] * vec.y +
+    435               m[10] * vec.z +
+    436               m[11] * vec.w;
+    437     temp.w  = m[12] * vec.x +
+    438               m[13] * vec.y +
+    439               m[14] * vec.z +
+    440               m[15] * vec.w;
+    441 
+    442     return temp;
+    443   }
+
+
+    709   typedef Matrix<2, 2> Matrix2x2;
+    710   typedef Matrix<2, 3> Matrix2x3;
+    711   typedef Matrix<2, 4> Matrix2x4;
+    712   typedef Matrix<3, 2> Matrix3x2;
+    713   typedef Matrix<3, 3> Matrix3x3;
+    714   typedef Matrix<3, 4> Matrix3x4;
+    715   typedef Matrix<4, 2> Matrix4x2;
+    716   typedef Matrix<4, 3> Matrix4x3;
+    717   typedef Matrix<4, 4> Matrix4x4;
+    718 
+
+
+
 
 Transforming BBox ?
 ---------------------

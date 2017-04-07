@@ -112,6 +112,12 @@ NPY<float>* NCSG::getNodeBuffer()
 {
     return m_nodes ; 
 }
+NPY<float>* NCSG::getTransformBuffer()
+{
+    return m_transforms ; 
+}
+
+
 NParameters* NCSG::getMeta()
 {
     return m_meta ; 

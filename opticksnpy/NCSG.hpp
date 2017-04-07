@@ -43,6 +43,7 @@ class NPY_API NCSG {
         unsigned getIndex();
         const char* getBoundary();
         NPY<float>* getNodeBuffer();
+        NPY<float>* getTransformBuffer();
         NParameters* getMeta();
         unsigned getNumNodes();
         unsigned getHeight();

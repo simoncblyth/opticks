@@ -106,6 +106,10 @@ GParts* GParts::make( NCSG* tree)
 {
     const char* spec = tree->getBoundary();
     NPY<float>* nodebuf = tree->getNodeBuffer();
+    NPY<float>* tranbuf = tree->getTransformBuffer();
+    // perhaps need to transmogrify the tranbuf for GPU usage ? 
+    // eg collect the "irit" rather than the source "tr" 
+
     nnode* root = tree->getRoot(); 
 
     // hmm maybe should not use the nnode ? 
@@ -117,11 +121,17 @@ GParts* GParts::make( NCSG* tree)
     unsigned nk = nodebuf->getShape(2);
     assert( nj == NJ && nk == NK && ni > 0);
 
+    if(tranbuf)
+    {
+        assert( tranbuf->hasItemShape(NJ, NK) );
+    }
+
     assert(root && root->type < CSG_UNDEFINED );
 
     LOG(info) << "GParts::make NCSG "
               << " treedir " << tree->getTreeDir()
-              << " sh " << nodebuf->getShapeString()
+              << " node_sh " << nodebuf->getShapeString()
+              << " tran_sh " << ( tranbuf ? tranbuf->getShapeString() : "" )
               << " spec " << spec 
               << " type " << root->csgname()
               ; 
