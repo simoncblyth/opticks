@@ -233,9 +233,9 @@ tboolean-box-py(){ tboolean-testconfig-py- $FUNCNAME $* ; }
 tboolean-box-py-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
-im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="0" )
+im = dict(poly="IM", resolution="100", verbosity="1", ctrl="0" )
 box = CSG("box", param=[0,0,100,100], boundary="$(tboolean-object)", **im )
 
 CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
@@ -248,9 +248,9 @@ tboolean-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; }
 tboolean-sphere-py-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
-im = dict(tessa="IM", resolution="100", verbosity="1", ctrl="0" )
+im = dict(poly="IM", resolution="100", verbosity="1", ctrl="0" )
 sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **im )
 
 CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
@@ -322,7 +322,7 @@ tboolean-box-sphere-py-(){ cat << EOP
 import math
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
   
 radius = 200 
 inscribe = 1.3*radius/math.sqrt(3)
@@ -330,7 +330,7 @@ inscribe = 1.3*radius/math.sqrt(3)
 box = CSG("box", param=[0,0,0,inscribe])
 sph = CSG("sphere", param=[0,0,0,radius])
 
-object = CSG("${1:-difference}", left=box, right=sph, rtranslate="100,0,0", boundary="$(tboolean-object)", tessa="IM", resolution="50", seeds="0,0,0" )
+object = CSG("${1:-difference}", left=box, right=sph, rtranslate="100,0,0", boundary="$(tboolean-object)", poly="IM", resolution="50", seeds="0,0,0" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
@@ -382,10 +382,10 @@ rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
-dcs = dict(tessa="DCS", nominal="7", coarse="6", threshold="1", verbosity="3")
+dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="3")
 
 seeds = "100,100,-100,0,0,300"
-im = dict(tessa="IM", resolution="64", verbosity="1", ctrl="0" )
+im = dict(poly="IM", resolution="64", verbosity="1", ctrl="0" )
 
 # hmm need to transform the seeds too ? 
 # to avoid having to do that manually to find geometry 
@@ -408,7 +408,9 @@ object = CSG("union", left=left, right=right, rtranslate="0,0,200", boundary="$(
 # log2size,theshold 8,1   ... pretty mesh, but perhaps x10 times slower than log2size 8
 # log2size,theshold 8,10  ... still pretty, but still slow 
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", tessa="MC", nx="20" )
+mc = dict(poly="MC", nx="20")
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20" )
 
 CSG.Serialize([container, object], "$base" )
 # marching cubes with nx=15 makes a mess with this 
