@@ -167,16 +167,29 @@ void NCSG::import()
 }
 
 
+//gmat4pair* NCSG::import_transform(unsigned itra)
 glm::mat4* NCSG::import_transform(unsigned itra)
 {
     if(itra == 0 || m_transforms == NULL) return NULL ; 
     assert( itra - 1 < m_num_transforms );
+
     glm::mat4* m =  m_transforms->getMat4Ptr(itra - 1);  // itra is a 1-based index, with 0 meaning None
 
+    // input transforms are rotation first then translation :  T*R*v
+    //
+    // dis-member tr into r and t by inspection and separately  
+    // transpose the rotation and negate the translation
+    // (see tests/NGLMTest.cc:test_decompose_invert)
+
     
+    glm::mat4& tr = *m ; 
+    glm::mat4 ir = glm::transpose(glm::mat4(glm::mat3(tr)));
+    glm::mat4 it = glm::translate(glm::mat4(1.f), -glm::vec3(tr[3])) ; 
+    glm::mat4 irit = ir*it ;    // <--- inverse of tr 
 
+    //return new gmat4pair(tr,irit) ; 
 
-    return m ; 
+    return m ;
 }
 
 nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )

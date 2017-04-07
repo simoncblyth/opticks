@@ -411,6 +411,56 @@ std::string gformat(const glm::mat3& m )
 
 
 
+std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 4 ; i++)
+    {
+        ss << std::setw(lwid) << ( i == 0 ? label : " " ) ; 
+        for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[i][j] : m[j][i] ) << " " ; 
+        ss << std::endl ; 
+    }
+    return ss.str();
+}
+
+
+std::string gpresent(const char* label, const glm::mat3& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < 3 ; i++)
+    {
+        ss << std::setw(lwid) << ( i == 0 ? label : " " ) ; 
+        for(int j=0 ; j < 3 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[i][j] : m[j][i] )  << " " ; 
+        ss << std::endl ; 
+    }
+    return ss.str();
+}
+
+
+std::string gpresent(const char* label, const glm::vec3& m, unsigned prec, unsigned wid, unsigned lwid )
+{
+    std::stringstream ss ; 
+    ss << std::setw(lwid) << label ; 
+    for(int i=0 ; i < 3 ; i++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << m[i]  << " " ; 
+    ss << std::endl ; 
+    return ss.str();
+}
+
+std::string gpresent(const char* label, const glm::vec4& m, unsigned prec, unsigned wid, unsigned lwid )
+{
+    std::stringstream ss ; 
+    ss << std::setw(lwid) << label ; 
+    for(int i=0 ; i < 4 ; i++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << m[i]  << " " ; 
+    ss << std::endl ; 
+    return ss.str();
+}
+
+
+
+
+
+
+
 
 
 std::string gpresent(const glm::vec4& v, unsigned int prec, unsigned int wid)

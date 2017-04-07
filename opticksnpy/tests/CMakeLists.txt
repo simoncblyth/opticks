@@ -80,6 +80,7 @@ NField3Test.cc
 NFieldGrid3Test.cc
 NTreeToolsTest.cc
 
+NGLMTest.cc
 NGLMStreamTest.cc
 
 )

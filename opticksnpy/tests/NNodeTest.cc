@@ -1,5 +1,6 @@
 
 #include "NGLMStream.hpp"
+#include "GLMFormat.hpp"
 
 #include "NNode.hpp"
 #include "NSphere.hpp"
@@ -10,80 +11,9 @@
 #include "PLOG.hh"
 
 
-void test_decompose()
-{
-    glm::vec3 axis(1,1,1);
-    glm::vec3 tlat(0,0,100) ; 
-    float angle = 45.f ; 
-
-    glm::mat4 mtr ;
-    mtr = glm::translate(mtr, tlat );
-    mtr = glm::rotate(mtr, angle, axis );
- 
-    glm::mat4 mrt ;
-    mrt = glm::translate(mrt, tlat );
-    mrt = glm::rotate(mrt, angle, axis );
-
-    // hmm : the above way of constructing matrix does 
-    //       yields the same matrix no matter the order
-
-    assert( mtr == mrt );
- 
-    glm::mat3 mtr_r(mtr) ; 
-    glm::vec3 mtr_t(mtr[3]);
-
-    std::cout << "mtr " << mtr << std::endl ; 
-    std::cout << "mtr_r " << mtr_r << std::endl ; 
-    std::cout << "mtr_t " << mtr_t << std::endl ; 
-
-    glm::mat3 mrt_r(mrt) ; 
-    glm::vec3 mrt_t(mrt[3]);
-
-    std::cout << "mrt " << mrt << std::endl ; 
-    std::cout << "mrt_r " << mrt_r << std::endl ; 
-    std::cout << "mrt_t " << mrt_t << std::endl ; 
-}
-
-
-void test_decompose_invert()
-{
-    glm::vec3 axis(1,1,1);
-    glm::vec3 tlat(0,0,100) ; 
-    float angle = 45.f ; 
-
-    glm::mat4 mtr ;
-    mtr = glm::translate(mtr, tlat );
-    mtr = glm::rotate(mtr, angle, axis );
- 
-    glm::mat3 r(mtr) ; 
-    glm::vec3 t(mtr[3]);
-
-    glm::mat3 ir = glm::transpose(r);
-    glm::vec3 it = -t ; 
-
-
-    glm::mat4 imtr(1.f);
-    imtr[0] = glm::vec4( ir[0], 0.f );
-    imtr[1] = glm::vec4( ir[1], 0.f );
-    imtr[2] = glm::vec4( ir[2], 0.f );
-    imtr[3] = glm::vec4( it ,  1.f );
-
-    glm::mat4 id = imtr * mtr ; 
-    glm::mat4 id2 = mtr * imtr ; 
-
-    std::cout << "  mtr " << mtr << std::endl ; 
-    std::cout << " imtr " << imtr << std::endl ; 
-    std::cout << " id " << id << std::endl ; 
-    std::cout << " id2 " << id2 << std::endl ; 
-
-
-
-}
-
-
-
 void test_node_transforms()
 {
+    LOG(info) << "test_node_transforms" ; 
 
     glm::mat4 m0 ;
     m0 = glm::translate( m0, glm::vec3( 300,0,0 ) );
@@ -126,9 +56,7 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    //test_node_transforms();
-    test_decompose();
-    test_decompose_invert();
+    test_node_transforms();
 
     return 0 ; 
 }
