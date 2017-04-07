@@ -1,5 +1,5 @@
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
 #include "NNode.hpp"
@@ -11,41 +11,60 @@
 #include "PLOG.hh"
 
 
+nmat4pair make_tlate_pair( const glm::vec3& tlate )
+{
+    glm::mat4 tr(1.f) ;
+    tr = glm::translate( tr, tlate );
+
+    glm::mat4 irit = invert_tr( tr );
+
+    return nmat4pair(tr, irit);
+}
+
+
+
+
 void test_node_transforms()
 {
     LOG(info) << "test_node_transforms" ; 
 
-    glm::mat4 m0 ;
-    m0 = glm::translate( m0, glm::vec3( 300,0,0 ) );
+    nmat4pair mpx = make_tlate_pair( glm::vec3(300,0,0) );
+    nmat4pair mpy = make_tlate_pair( glm::vec3(0,300,0) );
+    nmat4pair mpz = make_tlate_pair( glm::vec3(0,0,300) );
 
-    glm::mat4 m1 ;
-    m1 = glm::translate( m1, glm::vec3(  0,-300,0 ) );
-
-    glm::mat4 m01 = m0 * m1 ;     
-    glm::mat4 m10 = m0 * m1 ;     
-
-    std::cout << " m0  " << m0 << std::endl ; 
-    std::cout << " m1  " << m1 << std::endl ; 
-    std::cout << " m01 " << m01 << std::endl ; 
-    std::cout << " m10 " << m10 << std::endl ; 
+    std::cout << " mpx  " << mpx << std::endl ; 
+    std::cout << " mpy  " << mpy << std::endl ; 
+    std::cout << " mpz  " << mpz << std::endl ; 
 
 
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+    nsphere la = make_nsphere(-500.f,0.f,-50.f,100.f);
+    nsphere lb = make_nsphere(-500.f,0.f, 50.f,100.f);
+    nunion  lu = make_nunion( &la, &lb );
+    la.parent = &lu ; 
+    lb.parent = &lu ; 
 
-    nunion u = make_nunion( &a, &b );
+    nsphere ra = make_nsphere( 500.f,0.f,-50.f,100.f);
+    nsphere rb = make_nsphere( 500.f,0.f, 50.f,100.f);
+    nunion  ru = make_nunion( &ra, &rb );
+    ra.parent = &ru ; 
+    rb.parent = &ru ; 
 
-    a.parent = &u ; 
-    b.parent = &u ; 
-
-    u.transform = &m0 ; 
-    //b.transform = &m1 ;     
+    nunion u = make_nunion( &lu, &ru );
+    lu.parent = &u ; 
+    ru.parent = &u ; 
+ 
+    u.transform = &mpx ; 
+    ru.transform = &mpy ; 
+    rb.transform = &mpz ;     
      
-    b.gtransform = b.global_transform() ;
+    rb.gtransform = rb.global_transform() ;
 
-    assert(b.gtransform);
+    assert(rb.gtransform);
 
-    std::cout << " b.gt " << *b.gtransform << std::endl ; 
+    std::cout << " rb.gt " << *rb.gtransform << std::endl ; 
+
+
+    // hmm need to do this with rotations, as with translation order doesnt matter 
 
 }
 

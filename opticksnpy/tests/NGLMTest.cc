@@ -1,6 +1,6 @@
 #include "NGLM.hpp"
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
 #include "PLOG.hh"
@@ -41,8 +41,6 @@ void test_decompose()
     std::cout << gpresent(" mrt_t ", mrt_t)  << std::endl ; 
 
 }
-
-
 
 
 

@@ -12,6 +12,9 @@
 struct nbbox ; 
 struct npart ; 
 
+// NGLMExt
+struct nmat4pair ; 
+
 struct NPY_API nnode {
     virtual double operator()(double px, double py, double pz) ;
     virtual void dump(const char* msg="nnode::dump");
@@ -25,7 +28,7 @@ struct NPY_API nnode {
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
-    glm::mat4* global_transform(); 
+    nmat4pair* global_transform(); 
 
     std::function<float(float,float,float)> sdf();
 
@@ -33,8 +36,9 @@ struct NPY_API nnode {
     nnode* left ; 
     nnode* right ; 
     nnode* parent ; 
-    glm::mat4* transform ; 
-    glm::mat4* gtransform ; 
+
+    nmat4pair* transform ; 
+    nmat4pair* gtransform ; 
 
     nvec4 param ; 
 };

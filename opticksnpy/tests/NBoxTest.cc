@@ -1,7 +1,7 @@
+#include <cstdlib>
 #include <cfloat>
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 
-//#include <glm/gtx/component_wise.hpp> 
 
 #include "NGenerator.hpp"
 #include "NBox.hpp"
@@ -18,25 +18,30 @@ void test_gtransform()
 
     NGenerator gen(bb);
 
-    bool verbose = false ; 
+    bool verbose = !!getenv("VERBOSE")  ; 
     glm::vec3 tlate ;
 
     for(int i=0 ; i < 100 ; i++)
     {
         gen(tlate); 
 
-        glm::mat4 m = glm::translate(glm::mat4(1.0f), tlate );
-        std::cout << " gtransform " << m << std::endl ; 
+        glm::mat4 tr = glm::translate(glm::mat4(1.0f), tlate );
+        glm::mat4 irit = invert_tr(tr);
+
+        nmat4pair mp(tr, irit);
+
+        if(verbose)
+        std::cout << " gtransform " << mp << std::endl ; 
 
         nbox a = make_nbox(0.f,0.f,0.f,100.f);      
         // untouched box at origin
 
         nbox b = make_nbox(0.f,0.f,0.f,100.f);      
-        b.gtransform = &m ; 
+        b.gtransform = &mp ;  
         // translated box via gtransform
 
-        nbox c = make_nbox(-tlate.x,-tlate.y,-tlate.z,100.f);  
-        // manually positioned box at negated tlate position 
+        nbox c = make_nbox( tlate.x, tlate.y, tlate.z,100.f);  
+        // manually positioned box at tlated position 
 
 
         float x = 0 ; 

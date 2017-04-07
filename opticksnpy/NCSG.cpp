@@ -7,7 +7,7 @@
 
 #include "OpticksCSG.h"
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 #include "NParameters.hpp"
 #include "NPart.h"
 #include "NSphere.hpp"
@@ -167,32 +167,22 @@ void NCSG::import()
 }
 
 
-//gmat4pair* NCSG::import_transform(unsigned itra)
-glm::mat4* NCSG::import_transform(unsigned itra)
+nmat4pair* NCSG::import_transform(unsigned itra)
 {
     if(itra == 0 || m_transforms == NULL) return NULL ; 
     assert( itra - 1 < m_num_transforms );
 
     glm::mat4* m =  m_transforms->getMat4Ptr(itra - 1);  // itra is a 1-based index, with 0 meaning None
 
-    // input transforms are rotation first then translation :  T*R*v
-    //
-    // dis-member tr into r and t by inspection and separately  
-    // transpose the rotation and negate the translation
-    // (see tests/NGLMTest.cc:test_decompose_invert)
+    assert(m);    
 
-    
-    glm::mat4& tr = *m ; 
-    glm::mat4 ir = glm::transpose(glm::mat4(glm::mat3(tr)));
-    glm::mat4 it = glm::translate(glm::mat4(1.f), -glm::vec3(tr[3])) ; 
-    glm::mat4 irit = ir*it ;    // <--- inverse of tr 
+    const glm::mat4& tr = *m ; 
+    glm::mat4 irit = invert_tr( tr );
 
-    //return new gmat4pair(tr,irit) ; 
-
-    return m ;
+    return new nmat4pair(tr, irit) ; 
 }
 
-nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
+nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
 {
     if(idx >= m_num_nodes) return NULL ; 
         
@@ -202,7 +192,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
     LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 
-              << " itransform " << itransform 
+              << " transform_idx " << transform_idx 
               << " csgname " << CSGName(typecode) 
               << " param.x " << param.x
               << " param.y " << param.y
@@ -227,13 +217,14 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
         assert(node);
 
         node->parent = parent ; 
-        node->transform = import_transform( itransform ) ;
+
+        node->transform = import_transform( transform_idx ) ;
 
         std::cout << "NCSG::import_r(oper)" 
                   << " idx " << idx
                   << " csgname " << CSGName(typecode) 
                   << " rtransform_idx " << rtransform_idx
-                  << " itransform " << itransform
+                  << " transform_idx " << transform_idx
                   << std::endl
                   ;
 
@@ -265,7 +256,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int itransform )
         // without some 2nd pass
 
         node->parent = parent ; 
-        node->transform = import_transform( itransform ) ;
+        node->transform = import_transform( transform_idx ) ;
         node->gtransform = node->global_transform(); 
 
         if(node->transform) std::cout << " transform " << *node->transform ;

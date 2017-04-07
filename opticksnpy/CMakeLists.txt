@@ -168,7 +168,7 @@ set(SOURCES
 
     NTreeTools.cpp
     NOctools.cpp
-    NGLMStream.cpp
+    NGLMExt.cpp
     NPolygonizer.cpp
 )
 
@@ -277,7 +277,7 @@ NFieldGrid3.hpp
 
 NTreeTools.hpp
 NOctools.hpp
-NGLMStream.hpp
+NGLMExt.hpp
 NPolygonizer.hpp
 
 )

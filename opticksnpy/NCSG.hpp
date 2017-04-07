@@ -23,6 +23,8 @@ cf dev/csg/csg.py
 
 struct nvec4 ; 
 struct nnode ; 
+struct nmat4pair ; 
+
 class NParameters ; 
 
 class NPY_API NCSG {
@@ -55,7 +57,7 @@ class NPY_API NCSG {
         void load();
         void import();
         nnode* import_r(unsigned idx, nnode* parent=NULL, int itransform=0 );
-        glm::mat4* import_transform(unsigned itra);
+        nmat4pair* import_transform(unsigned itra);
     private:
          // Serialize
         NCSG(nnode* root, unsigned index=0u);

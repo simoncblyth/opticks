@@ -1,4 +1,4 @@
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 #include "NTreeTools.hpp"
 #include "NOctools.hpp"
 

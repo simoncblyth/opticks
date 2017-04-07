@@ -1,7 +1,7 @@
 #include <bitset>
 #include <boost/math/special_functions/sign.hpp>
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 
 #include "NField3.hpp"
 #include "NGrid3.hpp"

@@ -1,5 +1,5 @@
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 
 #include "NBBox.hpp"
 #include "NBox.hpp"
@@ -24,7 +24,7 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 double nbox::operator()(double px, double py, double pz) 
 {
     glm::vec4 p0(px,py,pz,1.0); 
-    glm::vec4 p1 = gtransform ? *gtransform * p0 : p0 ; 
+    glm::vec4 p1 = gtransform ? gtransform->irit * p0 : p0 ; 
 
     /*
     if(gtransform)
@@ -62,7 +62,10 @@ nbbox nbox::bbox()
     bb.max = make_nvec3( param.x + s, param.y + s, param.z + s );
     bb.side = bb.max - bb.min ; 
 
-    return gtransform ? bb.transform(*gtransform) : bb ; 
+    return gtransform ? bb.transform(gtransform->tr) : bb ; 
+
+    // bbox transforms need TR not IR*IT as they apply directly to geometry 
+    // unlike transforming the SDF point or ray tracing ray which needs the inverse irit 
 }
 
 

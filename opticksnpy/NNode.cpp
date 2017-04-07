@@ -6,6 +6,7 @@
 #include <iomanip>
 
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 
 #include "NNode.hpp"
 #include "NPart.hpp"
@@ -44,7 +45,8 @@ void nnode::dump(const char* msg)
 
     if(transform)
     {
-        std::cout << "transform: " << glm::to_string( *transform ) << std::endl ; 
+        //std::cout << "transform: " << glm::to_string( *transform ) << std::endl ; 
+        std::cout << "transform: " << *transform  << std::endl ; 
     } 
 
 }
@@ -77,22 +79,16 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 }
 
 
-glm::mat4* nnode::global_transform()
+nmat4pair* nnode::global_transform()
 {
-    glm::mat4 gt(1.f) ; 
-
+    std::vector<nmat4pair*> tt ; 
     nnode* n = this ; 
-    int ntra = 0 ; 
     while(n)
     {
-        if(n->transform)
-        {
-           ntra++ ; 
-           gt *= *n->transform ;   // is this the correct order of matrix multiplication ?
-        }
+        if(n->transform) tt.push_back(n->transform);
         n = n->parent ; 
     }
-    return ntra == 0 ? NULL : new glm::mat4(gt) ; 
+    return tt.size() == 0 ? NULL : nmat4pair::product(tt) ; 
 }
 
 

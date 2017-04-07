@@ -1,4 +1,4 @@
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 
 #include "NGenerator.hpp"
 #include "NBox.hpp"

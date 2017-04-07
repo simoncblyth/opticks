@@ -1,4 +1,5 @@
-#include "NGLMStream.hpp"
+#include <cstdlib>
+#include "NGLMExt.hpp"
 
 #include "NGenerator.hpp"
 #include "NSphere.hpp"
@@ -155,25 +156,29 @@ void test_gtransform()
 
     NGenerator gen(bb);
 
-    bool verbose = false ; 
+    bool verbose = !!getenv("VERBOSE") ; 
     glm::vec3 tlate ;
 
     for(int i=0 ; i < 100 ; i++)
     {
         gen(tlate); 
 
-        glm::mat4 m = glm::translate(glm::mat4(1.0f), tlate );
-        std::cout << " gtransform " << m << std::endl ; 
+        glm::mat4 tr = glm::translate(glm::mat4(1.0f), tlate );
+        glm::mat4 irit = invert_tr(tr);
+        nmat4pair mp(tr, irit);
+
+        if(verbose)
+        std::cout << " gtransform " << mp << std::endl ; 
 
         nsphere a = make_nsphere(0.f,0.f,0.f,100.f);      
         // untouched sphere at origin
 
         nsphere b = make_nsphere(0.f,0.f,0.f,100.f);      
-        b.gtransform = &m ; 
+        b.gtransform = &mp ; 
         // translated sphere via gtransform
 
-        nsphere c = make_nsphere(-tlate.x,-tlate.y,-tlate.z,100.f);  
-        // manually positioned sphere at negated tlate position 
+        nsphere c = make_nsphere( tlate.x, tlate.y, tlate.z,100.f);  
+        // manually positioned sphere at tlate-d position 
 
 
         float x = 0 ; 

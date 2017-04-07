@@ -1,4 +1,4 @@
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 
 #include "NQuad.hpp"
 #include "NFieldGrid3.hpp"

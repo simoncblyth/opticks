@@ -78,13 +78,9 @@ inline glm::vec4 gmaxf(const glm::vec4& a, const glm::vec4& b )
     return r ;
 }
 
-struct gmat4pair 
-{
-    gmat4pair( const glm::mat4& tr, const glm::mat4& irit ) : tr(tr), irit(irit) {} ;
-
-    glm::mat4 tr   ; 
-    glm::mat4 irit ; 
-};
+//  development here is not healthy, as causes recompilation 
+//  of all NGLM users, which is most everything downstream
+//  ... so put new developments in NGLMExt.hpp/NGLMExt.cpp 
 
 
 

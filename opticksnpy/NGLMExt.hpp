@@ -1,14 +1,29 @@
-#include "NGLM.hpp"
+#pragma once
+
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
-/*
-inline std::ostream& operator<< (std::ostream& out, const float& x) 
+#include "NGLM.hpp"
+#include "NPY_API_EXPORT.hh"
+
+struct NPY_API nmat4pair 
 {
-    out << " " << std::fixed << std::setprecision(2) << std::setw(7) << x  ;
-    return out;
-}
-*/
+    static nmat4pair* product(const std::vector<nmat4pair*>& tt);
+
+    nmat4pair( const glm::mat4& tr, const glm::mat4& irit ) : tr(tr), irit(irit) {} ;
+
+    glm::mat4 tr   ; 
+    glm::mat4 irit ; 
+};
+
+
+
+NPY_API glm::mat4 invert_tr( const glm::mat4& tr ); 
+
+NPY_API std::ostream& operator<< (std::ostream& out, const nmat4pair& mp); 
+
+
 
 inline std::ostream& operator<< (std::ostream& out, const glm::ivec3& v) 
 {

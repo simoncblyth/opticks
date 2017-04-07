@@ -81,7 +81,7 @@ NFieldGrid3Test.cc
 NTreeToolsTest.cc
 
 NGLMTest.cc
-NGLMStreamTest.cc
+NGLMExtTest.cc
 
 )
 

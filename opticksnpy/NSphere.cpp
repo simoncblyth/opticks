@@ -5,7 +5,7 @@
 #include <cstring>
 
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 
 // sysrap-
 #include "OpticksCSG.h"
@@ -32,16 +32,7 @@ float nsphere::costheta(float z_)
 double nsphere::operator()(double px, double py, double pz) 
 {
     glm::vec4 p0(px,py,pz,1.0); 
-    glm::vec4 p = gtransform ? *gtransform * p0 : p0 ; 
-
-    /*
-    if(gtransform)
-        std::cout << "nsphere::operator"
-                  << " p0 " << p0 
-                  << " -> p " << p
-                  << " gtransform "  << *gtransform 
-                  << std::endl ;  
-    */
+    glm::vec4 p = gtransform ? gtransform->irit * p0 : p0 ; 
 
     float d = glm::distance( glm::vec3(p), center );
     return d - radius_ ;  
@@ -57,7 +48,7 @@ nbbox nsphere::bbox()
     bb.max = make_nvec3(param.x + param.w, param.y + param.w, param.z + param.w);
     bb.side = bb.max - bb.min ; 
 
-    return gtransform ? bb.transform(*gtransform) : bb ; 
+    return gtransform ? bb.transform(gtransform->tr) : bb ; 
 }
 
 

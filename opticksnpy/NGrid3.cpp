@@ -4,7 +4,7 @@
 
 #include "mortonlib/morton3d.h"
 
-#include "NGLMStream.hpp"
+#include "NGLMExt.hpp"
 #include "NGrid3.hpp"
 
 
