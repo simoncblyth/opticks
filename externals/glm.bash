@@ -179,3 +179,10 @@ glm-lookat(){
 }
 
 
+
+glm-find(){ find $(glm-idir) -type f -exec grep -H ${1:-rotate} {} \; ; }
+glm-lfind(){ find $(glm-idir) -type f -exec grep -l ${1:-rotate} {} \; ; }
+
+
+
+

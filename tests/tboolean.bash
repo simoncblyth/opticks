@@ -384,29 +384,9 @@ right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
 dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="3")
 
-seeds = "100,100,-100,0,0,300"
+#seeds = "100,100,-100,0,0,300"
 im = dict(poly="IM", resolution="64", verbosity="1", ctrl="0" )
-
-# hmm need to transform the seeds too ? 
-# to avoid having to do that manually to find geometry 
-# ... seeds are a pain can they be automated entirely ?
-# 
-# * only root node metadata currently persisted
-# * perhaps just harvest the center positions of all the primitives
-#   then can easily apply any global transforms
-#
-#
-
-object = CSG("union", left=left, right=right, rtranslate="0,0,200", boundary="$(tboolean-object)", **im )
-
-# log2size 7 -> size 128, ie -64:64
-# log2size,theshold 7,100 ... broken, great big voids
-# log2size,theshold 7,10  ... a bit crooked 
-# log2size,theshold 7,1   ... a bit crooked, little different to 10
-#
-# log2size 8 -> size 256 ie -128:128
-# log2size,theshold 8,1   ... pretty mesh, but perhaps x10 times slower than log2size 8
-# log2size,theshold 8,10  ... still pretty, but still slow 
+object = CSG("union", left=left, right=right, rtranslate="0,0,200", rrotate="1,1,1,45",  boundary="$(tboolean-object)", **im )
 
 mc = dict(poly="MC", nx="20")
 

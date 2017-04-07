@@ -20,6 +20,7 @@ log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
+from opticks.dev.csg.glm import rotate
 
 Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
@@ -96,16 +97,21 @@ class CSG(CSG_):
         return trees
 
     @classmethod
-    def make_transform(cls, translate, rotate):
-        if translate is None and rotate is None: return None
-        tla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
-        rot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.eye(3, dtype=np.float32)
-        tran = np.eye(4, dtype=np.float32)
-        tran[:3, :3] = rot_(rotate)
-        tran[3,:3] = tla_(translate)
-        return tran
- 
+    def make_transform(cls, s_translate, s_rotate):
+        if s_translate is None and s_rotate is None: return None
 
+        tla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
+        qrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.array([0,0,1,45], dtype=np.float32)
+
+        rot = rotate(qrot_(s_rotate))  
+        tla = tla_(s_translate)
+
+        transform = np.eye(4, dtype=np.float32)
+        transform[:3, :3] = rot[:3,:3]
+        transform[3,:3] = tla
+
+        return transform
+ 
 
     def serialize(self):
         """
@@ -316,7 +322,7 @@ if __name__ == '__main__':
    
     s = CSG("sphere")
     b = CSG("box")
-    sub = CSG("union", left=s, right=b, rtranslate="0,0,20", boundary="Vacuum///GlassShottF2", hello="world")
+    sub = CSG("union", left=s, right=b, rtranslate="0,0,20", rrotate="0,0,1,45", boundary="Vacuum///GlassShottF2", hello="world")
 
     trees0 = [container, sub]
 

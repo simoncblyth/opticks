@@ -273,7 +273,7 @@ std::function<float(float,float,float)> nnode::sdf()
 
 
 
-void nnode::collect_prim_centers(std::vector<glm::vec3>& centers)
+void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs )
 {
     std::vector<nnode*> prim ; 
     collect_prim(prim); 
@@ -284,8 +284,26 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers)
         nnode* p = prim[i] ; 
         switch(p->type)
         {
-            case CSG_SPHERE: centers.push_back( ((nsphere*)p)->gcenter()); break ; 
-            case CSG_BOX   : centers.push_back( ((nbox*)p)->gcenter())   ; break ; 
+            case CSG_SPHERE: 
+               {  
+                   nsphere* n = (nsphere*)p ;
+                   centers.push_back(n->gcenter()); 
+                   glm::vec4 dir(1,1,1,0); 
+                   if(n->gtransform) dir = n->gtransform->tr * dir ; 
+                   dirs.push_back( glm::vec3(dir));
+               }
+               break ;  
+          
+            case CSG_BOX: 
+               {  
+                   nbox* n = (nbox*)p ;
+                   centers.push_back(n->gcenter()); 
+                   
+                   glm::vec4 dir(1,1,1,0); 
+                   if(n->gtransform) dir = n->gtransform->tr * dir ; 
+                   dirs.push_back( glm::vec3(dir));
+               }
+               break ;  
             default:
                {
                    LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSGName(p->type) ;

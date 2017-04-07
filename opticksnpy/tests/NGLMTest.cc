@@ -82,6 +82,35 @@ void test_decompose_invert()
 }
 
 
+void test_rotate()
+{
+    LOG(info) << "test_rotate" ; 
+
+    char* rot = getenv("ROTATE") ;
+    std::string srot = rot ? rot : "0,0,1,45" ;  
+
+    glm::vec4 vrot = gvec4(srot) ;
+    std::cout << vrot << std::endl ; 
+
+    glm::vec3 axis(vrot);
+    float angle_d = vrot.w ; 
+
+
+    glm::mat4 tr(1.f) ; 
+    tr = glm::rotate(tr, glm::pi<float>()*angle_d/180.f , axis );
+    glm::mat4 irit = invert_tr( tr );
+
+    nmat4pair mp(tr, irit);
+
+
+    std::cout << mp << std::endl ; 
+    
+
+
+
+
+}
+
 
 
 int main(int argc, char** argv)
@@ -90,6 +119,8 @@ int main(int argc, char** argv)
 
     test_decompose();
     test_decompose_invert();
+
+    test_rotate();
 
     return 0 ; 
 }

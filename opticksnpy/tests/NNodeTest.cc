@@ -85,10 +85,14 @@ void test_node_transforms()
     std::cout << " rb.gt " << *rb.gtransform << std::endl ; 
 
     std::vector<glm::vec3> centers ; 
-    u.collect_prim_centers(centers);
+    std::vector<glm::vec3> dirs ; 
+    u.collect_prim_centers(centers, dirs);
 
     unsigned ncen = centers.size();
-    for(unsigned i=0 ; i < ncen ; i++) std::cout << i << " " << centers[i] << std::endl ; 
+    unsigned ndir = dirs.size();
+    assert( ncen == ndir );
+
+    for(unsigned i=0 ; i < ncen ; i++) std::cout << i << " center:" << centers[i] << " dir:" << dirs[i] << std::endl ; 
 
 
     u.dump_prim("prim", 1); 

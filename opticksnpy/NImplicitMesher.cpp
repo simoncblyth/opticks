@@ -7,6 +7,7 @@
 #include "NImplicitMesher.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
 #include "Timer.hpp"
@@ -80,20 +81,28 @@ void NImplicitMesher::addManualSeeds()
     unsigned nseed = seed.size();
     if(nseed > 0)
     {
-        if(nseed % 3 == 0)
+        if(nseed % 6 == 0)
         {
-            for(unsigned i=0 ; i < nseed/3 ; i++ )
+            for(unsigned i=0 ; i < nseed/6 ; i++ )
             {
-               float sx = seed[i*3+0]; 
-               float sy = seed[i*3+1]; 
-               float sz = seed[i*3+2];
-               LOG(info) << "NImplicitMesher::addManualSeeds nseed " << nseed << " addSeed (" << sx << " " << sy << " " << sz << ") " ; 
-               m_mesher->addSeed(sx, sy, sz); 
+               float sx = seed[i*6+0]; 
+               float sy = seed[i*6+1]; 
+               float sz = seed[i*6+2];
+               float dx = seed[i*6+3]; 
+               float dy = seed[i*6+4]; 
+               float dz = seed[i*6+5];
+
+               LOG(info) << "NImplicitMesher::addManualSeeds nseed " << nseed 
+                         << " sxyz(" << sx << " " << sy << " " << sz << ") " 
+                         << " dxyz(" << dx << " " << dy << " " << dz << ") " 
+                         ; 
+
+               m_mesher->addSeed(sx, sy, sz, dx, dy, dx); 
             }
         }
         else
         {
-            LOG(warning) << "NImplicitMesher::addManualSeeds ignoring seeds as not a multiple of 3 for x,y,z coordinates : " << nseed ; 
+            LOG(warning) << "NImplicitMesher::addManualSeeds ignoring seeds as not a multiple of 6 for x,y,z,dx,dy,dz coordinates : " << nseed ; 
         }
     } 
 }
@@ -101,14 +110,26 @@ void NImplicitMesher::addManualSeeds()
 void NImplicitMesher::addCenterSeeds()
 {
     std::vector<glm::vec3> centers ; 
-    m_node->collect_prim_centers(centers);
-
+    std::vector<glm::vec3> dirs; 
+    m_node->collect_prim_centers(centers, dirs);
+   
     unsigned ncenters = centers.size();
+    unsigned ndirs = dirs.size();
+
+    LOG(info) << "NImplicitMesher::addCenterSeeds"
+              << " ncenters " << ncenters
+              << " ndirs " << ndirs
+              ;
+ 
+    assert( ncenters == ndirs );
+
     for(unsigned i=0 ; i < ncenters ; i++)
     {
         const glm::vec3& c = centers[i] ; 
-        LOG(info) << "NImplicitMesher::addCenterSeeds " << i << "/" << ncenters << " addSeed (" << c.x << "," << c.y << "," << c.z << ")" ; 
-        m_mesher->addSeed(c.x, c.y, c.z );
+        const glm::vec3& d = dirs[i] ;
+ 
+        std::cout << std::setw(3) << i << " position " << c << " direction " << d << std::endl ; 
+        m_mesher->addSeed(c.x, c.y, c.z, d.x, d.y, d.z);
     }
 }
 
