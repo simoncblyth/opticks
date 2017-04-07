@@ -26,15 +26,6 @@ double nbox::operator()(double px, double py, double pz)
     glm::vec4 p0(px,py,pz,1.0); 
     glm::vec4 p1 = gtransform ? gtransform->irit * p0 : p0 ; 
 
-    /*
-    if(gtransform)
-        std::cout << "nbox::operator"
-                  << " p0 " << p0 
-                  << " p1 " << p1
-                  << " gtransform "  << *gtransform 
-                  << std::endl ;  
-    */
-
     glm::vec3 pc = glm::vec3(p1) - center ;  // coordinates in frame with origin at box center 
     glm::vec3 a = glm::abs(pc) ;
     glm::vec3 s( param.w );
@@ -42,15 +33,6 @@ double nbox::operator()(double px, double py, double pz)
 
     return gmaxf(d) ;
 } 
-
-/*
-    nvec3 p = make_nvec3( px - param.x, py - param.y, pz - param.z ); // in the frame of the box
-    nvec3 a = nabsf(p) ; 
-    nvec3 s = make_nvec3( param.w, param.w, param.w );          
-    nvec3 d = a - s ; 
-    return nmaxf(d) ;
-*/
-
 
 
 nbbox nbox::bbox()
@@ -67,5 +49,26 @@ nbbox nbox::bbox()
     // bbox transforms need TR not IR*IT as they apply directly to geometry 
     // unlike transforming the SDF point or ray tracing ray which needs the inverse irit 
 }
+
+glm::vec3 nbox::gcenter()
+{
+    return gtransform == NULL ? center : glm::vec3( gtransform->tr * glm::vec4(center, 1.f ) ) ;
+}
+
+void nbox::pdump(const char* msg, int verbosity )
+{
+    std::cout 
+              << std::setw(10) << msg 
+              << " label " << ( label ? label : "no-label" )
+              << " center " << center 
+              << " side " << param.w 
+              << " gcenter " << gcenter()
+              << " gtransform? " << !!gtransform
+              << std::endl ; 
+
+    if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
+}
+
+
 
 

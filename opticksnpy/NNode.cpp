@@ -58,6 +58,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.left = left ; 
     n.right = right ; 
     n.parent = NULL ; 
+    n.label = NULL ; 
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 
@@ -79,10 +80,15 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 }
 
 
+
 nmat4pair* nnode::global_transform()
 {
+    return global_transform(this);
+}
+
+nmat4pair* nnode::global_transform(nnode* n)
+{
     std::vector<nmat4pair*> tt ; 
-    nnode* n = this ; 
     while(n)
     {
         if(n->transform) tt.push_back(n->transform);
@@ -90,6 +96,33 @@ nmat4pair* nnode::global_transform()
     }
     return tt.size() == 0 ? NULL : nmat4pair::product(tt) ; 
 }
+
+
+
+void nnode::update_gtransforms()
+{
+    update_gtransforms_r(this);
+}
+void nnode::update_gtransforms_r(nnode* node)
+{
+    // NB this traversal doesnt need parent links, but global_transforms does...
+    node->gtransform = node->global_transform();
+
+    if(node->left && node->right)
+    {
+        update_gtransforms_r(node->left);
+        update_gtransforms_r(node->right);
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -237,5 +270,73 @@ std::function<float(float,float,float)> nnode::sdf()
     }
     return f ;
 }
+
+
+
+void nnode::collect_prim_centers(std::vector<glm::vec3>& centers)
+{
+    std::vector<nnode*> prim ; 
+    collect_prim(prim); 
+
+    unsigned npr = prim.size();
+    for(unsigned i=0 ; i < npr ; i++)
+    {
+        nnode* p = prim[i] ; 
+        switch(p->type)
+        {
+            case CSG_SPHERE: centers.push_back( ((nsphere*)p)->gcenter()); break ; 
+            case CSG_BOX   : centers.push_back( ((nbox*)p)->gcenter())   ; break ; 
+            default:
+               {
+                   LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSGName(p->type) ;
+                   assert(0) ;
+               }
+        }
+    }
+}
+
+
+void nnode::collect_prim(std::vector<nnode*>& prim)
+{
+    collect_prim_r(prim, this);   
+}
+
+void nnode::collect_prim_r(std::vector<nnode*>& prim, nnode* node)
+{
+    bool internal = node->left && node->right ; 
+    if(!internal)
+    {
+        prim.push_back(node);
+    }
+    else
+    {
+        collect_prim_r(prim, node->left);
+        collect_prim_r(prim, node->right);
+    }
+}
+
+
+void nnode::dump_prim( const char* msg, int verbosity )
+{
+    std::vector<nnode*> prim ;
+    collect_prim(prim);   
+    unsigned nprim = prim.size();
+    LOG(info) << msg << " nprim " << nprim ; 
+    for(unsigned i=0 ; i < nprim ; i++)
+    {
+        nnode* p = prim[i] ; 
+        switch(p->type)
+        {
+            case CSG_SPHERE: ((nsphere*)p)->pdump("sp",verbosity) ; break ; 
+            case CSG_BOX   :    ((nbox*)p)->pdump("bx",verbosity) ; break ; 
+            default:
+            {
+                   LOG(fatal) << "nnode::dump_prim unhanded shape type " << p->type << " name " << CSGName(p->type) ;
+                   assert(0) ;
+            }
+        }
+    }
+}
+
 
 

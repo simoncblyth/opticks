@@ -15,7 +15,8 @@ struct npart ;
 // NGLMExt
 struct nmat4pair ; 
 
-struct NPY_API nnode {
+struct NPY_API nnode 
+{
     virtual double operator()(double px, double py, double pz) ;
     virtual void dump(const char* msg="nnode::dump");
     virtual const char* csgname(); 
@@ -28,14 +29,27 @@ struct NPY_API nnode {
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
-    nmat4pair* global_transform(); 
-
     std::function<float(float,float,float)> sdf();
+
+
+    void update_gtransforms();
+    static void update_gtransforms_r(nnode* node);
+
+    nmat4pair* global_transform(); 
+    static nmat4pair* global_transform(nnode* n); 
+
+    void collect_prim_centers(std::vector<glm::vec3>& centers);
+
+    void dump_prim(const char* msg="dump_prim", int verbosity=1 ) ;
+    void collect_prim(std::vector<nnode*>& prim) ;
+    static void collect_prim_r(std::vector<nnode*>& prim, nnode* node) ;
+
 
     OpticksCSG_t type ;  
     nnode* left ; 
     nnode* right ; 
     nnode* parent ; 
+    const char* label ; 
 
     nmat4pair* transform ; 
     nmat4pair* gtransform ; 

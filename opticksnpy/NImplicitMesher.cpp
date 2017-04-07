@@ -21,52 +21,22 @@
 
 
 
-
-
-struct sphere_functor 
+NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, float scale_bb, int ctrl, std::string seedstr)
+    :
+    m_timer(new Timer),
+    m_node(node),
+    m_bbox( new nbbox(node->bbox()) ), 
+    m_sdf( node->sdf() ),
+    m_mesher(NULL),
+    m_resolution(resolution),
+    m_verbosity(verbosity),
+    m_scale_bb(scale_bb),  
+    m_ctrl(ctrl),
+    m_seedstr(seedstr)
 {
-   sphere_functor( float x, float y, float z, float r, bool absolute)
-       :   
-       center(x,y,z),
-       radius(r),
-       absolute(absolute)
-   {   
-   }   
-
-   float operator()( float x, float y, float z) const
-   {   
-       glm::vec3 p(x,y,z) ;
-       float d = glm::distance( p, center );
-       float v = d - radius ; 
-       return absolute ? fabs(v) : v  ;
-   }   
-
-   std::string desc();
-
-
-   glm::vec3 center ; 
-   float     radius ; 
-   bool      absolute ; 
-
-};
-
-
-
-
-
-
-
-NImplicitMesher::NImplicitMesher(int resolution, int verbosity, float scale_bb, int ctrl, std::string seedstr)
-  :
-   m_timer(new Timer),
-   m_resolution(resolution),
-   m_verbosity(verbosity),
-   m_scale_bb(scale_bb),  
-   m_ctrl(ctrl),
-   m_seedstr(seedstr)
-{
-   m_timer->start();
+    init();
 }
+
 
 std::string NImplicitMesher::desc()
 {
@@ -80,6 +50,93 @@ std::string NImplicitMesher::desc()
       ;
    return ss.str(); 
 }
+
+void NImplicitMesher::init()
+{
+    m_timer->start();
+
+    m_bbox->scale(m_scale_bb);  // kinda assumes centered at origin, slightly enlarge
+    m_bbox->side = m_bbox->max - m_bbox->min ;
+
+    float tval = 0.f ; 
+    float negate = false ; 
+    m_mesher = new ImplicitMesherF(m_sdf, m_verbosity, tval, negate ); 
+
+    glm::vec3 min(m_bbox->min.x, m_bbox->min.y, m_bbox->min.z );
+    glm::vec3 max(m_bbox->max.x, m_bbox->max.y, m_bbox->max.z );
+
+    m_mesher->setParam(m_resolution, min, max);
+
+    addManualSeeds();
+    addCenterSeeds();
+
+}
+
+void NImplicitMesher::addManualSeeds()
+{
+    std::vector<float> seed ; 
+    if(!m_seedstr.empty()) BStr::fsplit(seed, m_seedstr.c_str(), ',');
+
+    unsigned nseed = seed.size();
+    if(nseed > 0)
+    {
+        if(nseed % 3 == 0)
+        {
+            for(unsigned i=0 ; i < nseed/3 ; i++ )
+            {
+               float sx = seed[i*3+0]; 
+               float sy = seed[i*3+1]; 
+               float sz = seed[i*3+2];
+               LOG(info) << "NImplicitMesher::addManualSeeds nseed " << nseed << " addSeed (" << sx << " " << sy << " " << sz << ") " ; 
+               m_mesher->addSeed(sx, sy, sz); 
+            }
+        }
+        else
+        {
+            LOG(warning) << "NImplicitMesher::addManualSeeds ignoring seeds as not a multiple of 3 for x,y,z coordinates : " << nseed ; 
+        }
+    } 
+}
+
+void NImplicitMesher::addCenterSeeds()
+{
+    std::vector<glm::vec3> centers ; 
+    m_node->collect_prim_centers(centers);
+
+    unsigned ncenters = centers.size();
+    for(unsigned i=0 ; i < ncenters ; i++)
+    {
+        const glm::vec3& c = centers[i] ; 
+        LOG(info) << "NImplicitMesher::addCenterSeeds " << i << "/" << ncenters << " addSeed (" << c.x << "," << c.y << "," << c.z << ")" ; 
+        m_mesher->addSeed(c.x, c.y, c.z );
+    }
+}
+
+
+NTrianglesNPY* NImplicitMesher::operator()()
+{
+    LOG(info) << "NImplicitMesher::operator() bb " << m_bbox->desc() ; 
+
+    m_mesher->polygonize();
+    m_mesher->dump();
+    
+    const std::vector<glm::vec3>& verts = m_mesher->vertices();
+    const std::vector<glm::vec3>& norms = m_mesher->normals();
+    const std::vector<glm::ivec3>& tris = m_mesher->triangles();
+
+    NTrianglesNPY* tt = collectTriangles( verts, norms, tris );
+
+    report("NImplicitMesher::");
+
+    return tt ; 
+}
+
+
+
+
+
+
+
 
 void NImplicitMesher::profile(const char* s)
 {
@@ -95,92 +152,7 @@ void NImplicitMesher::report(const char* msg)
     //tt->save("$TMP");
 }
 
-NTrianglesNPY* NImplicitMesher::operator()(nnode* node)
-{
-    if(m_ctrl == 10)
-    {
-        LOG(warning) << "NImplicitMesher::operator() ctrl override return sphere " ; 
-        return sphere_test(); 
-    }
 
-    nbbox bb = node->bbox(); 
-    std::function<float(float,float,float)> sdf = node->sdf();
-
-    bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
-    bb.side = bb.max - bb.min ;
-
-    LOG(info) << "NImplicitMesher::operator() bb " << bb.desc() ; 
-
-    glm::vec3 min(bb.min.x, bb.min.y, bb.min.z );
-    glm::vec3 max(bb.max.x, bb.max.y, bb.max.z );
-
-    std::vector<float> seed ; 
-    if(!m_seedstr.empty()) BStr::fsplit(seed, m_seedstr.c_str(), ',');
-
-    float tval = 0.f ; 
-    float negate = false ; 
-    ImplicitMesherF im(sdf, m_verbosity, tval, negate ); 
-
-    unsigned nseed = seed.size();
-    if(nseed > 0)
-    {
-        if(nseed % 3 == 0)
-        {
-            for(unsigned i=0 ; i < nseed/3 ; i++ )
-            {
-               float sx = seed[i*3+0]; 
-               float sy = seed[i*3+1]; 
-               float sz = seed[i*3+2];
-               LOG(info) << "NImplicitMesher::operator nseed " << nseed << " addSeed (" << sx << " " << sy << " " << sz << ") " ; 
-               im.addSeed(sx, sy, sz); 
-            }
-        }
-        else
-        {
-            LOG(warning) << "NImplicitMesher::operator ignoring seeds as not a multiple of 3 for x,y,z coordinates : " << nseed ; 
-        }
-    } 
-
-    im.setParam(m_resolution, min, max);
-    im.polygonize();
-    im.dump();
-    
-    const std::vector<glm::vec3>& verts = im.vertices();
-    const std::vector<glm::vec3>& norms = im.normals();
-    const std::vector<glm::ivec3>& tris = im.triangles();
-
-    NTrianglesNPY* tt = collectTriangles( verts, norms, tris );
-
-    report("NImplicitMesher::");
-
-    return tt ; 
-}
-
-
-NTrianglesNPY* NImplicitMesher::sphere_test()
-{
-    glm::vec3 min(-10,-10,-10);
-    glm::vec3 max( 10, 10, 10);
-    float tval = 0.f ; 
-    float negate = false ; 
-
-    sphere_functor ssf(0,0,0,10, false);   // false:signed SDF, absolution done in ImplicitFunction
-
-    std::function<float(float,float,float)> sfn = ssf ; 
-
-    ImplicitMesherF im(sfn, m_verbosity, tval, negate ); 
-    im.setParam(m_resolution, min, max);
-    im.polygonize();
-    im.dump();
-
-    const std::vector<glm::vec3>& verts = im.vertices();
-    const std::vector<glm::vec3>& norms = im.normals();
-    const std::vector<glm::ivec3>& tris = im.triangles();
-
-    NTrianglesNPY* tt = collectTriangles( verts, norms, tris );
- 
-    return tt ; 
-}
 
 
 NTrianglesNPY* NImplicitMesher::collectTriangles(const std::vector<glm::vec3>& verts, const std::vector<glm::vec3>& norms, const std::vector<glm::ivec3>& tris )
@@ -215,7 +187,6 @@ NTrianglesNPY* NImplicitMesher::collectTriangles(const std::vector<glm::vec3>& v
     m_timer->stamp("CollectTriangles");
     return tt ; 
 }
-
 
 
 

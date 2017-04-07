@@ -36,8 +36,28 @@ double nsphere::operator()(double px, double py, double pz)
 
     float d = glm::distance( glm::vec3(p), center );
     return d - radius_ ;  
-
 } 
+
+glm::vec3 nsphere::gcenter()
+{
+    return gtransform == NULL ? center : glm::vec3( gtransform->tr * glm::vec4(center, 1.f ) ) ;
+}
+
+
+void nsphere::pdump(const char* msg, int verbosity)
+{
+    std::cout 
+              << std::setw(10) << msg 
+              << " label " << ( label ? label : "no-label" )
+              << " center " << center 
+              << " radius_ " << radius_ 
+              << " gcenter " << gcenter()
+              << " gtransform " << !!gtransform 
+              << std::endl ; 
+
+    if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
+}
+
 
 
 nbbox nsphere::bbox()

@@ -383,9 +383,19 @@ rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
 dcs = dict(tessa="DCS", nominal="7", coarse="6", threshold="1", verbosity="3")
-im = dict(tessa="IM", resolution="64", verbosity="1", ctrl="0", seeds="100,100,-100,0,0,-100" )
 
-# hmm rtranslate goes opposite way
+seeds = "100,100,-100,0,0,300"
+im = dict(tessa="IM", resolution="64", verbosity="1", ctrl="0" )
+
+# hmm need to transform the seeds too ? 
+# to avoid having to do that manually to find geometry 
+# ... seeds are a pain can they be automated entirely ?
+# 
+# * only root node metadata currently persisted
+# * perhaps just harvest the center positions of all the primitives
+#   then can easily apply any global transforms
+#
+#
 
 object = CSG("union", left=left, right=right, rtranslate="0,0,200", boundary="$(tboolean-object)", **im )
 

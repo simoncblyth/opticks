@@ -36,38 +36,68 @@ void test_node_transforms()
     std::cout << " mpy  " << mpy << std::endl ; 
     std::cout << " mpz  " << mpz << std::endl ; 
 
+    /*
 
-    nsphere la = make_nsphere(-500.f,0.f,-50.f,100.f);
-    nsphere lb = make_nsphere(-500.f,0.f, 50.f,100.f);
+
+                   u
+                   
+
+            lu            ru
+
+        la     lb     ra      rb
+
+
+    */
+  
+    // lu
+    nsphere la = make_nsphere(-500.f,0.f,-50.f,100.f); la.label = "la" ; 
+    nsphere lb = make_nsphere(-500.f,0.f, 50.f,100.f); lb.label = "lb" ; 
     nunion  lu = make_nunion( &la, &lb );
     la.parent = &lu ; 
     lb.parent = &lu ; 
 
-    nsphere ra = make_nsphere( 500.f,0.f,-50.f,100.f);
-    nsphere rb = make_nsphere( 500.f,0.f, 50.f,100.f);
+    // ru
+    nsphere ra = make_nsphere( 500.f,0.f,-50.f,100.f); ra.label = "ra" ; 
+    nsphere rb = make_nsphere( 500.f,0.f, 50.f,100.f); rb.label = "rb" ; 
     nunion  ru = make_nunion( &ra, &rb );
     ra.parent = &ru ; 
     rb.parent = &ru ; 
 
+    // u 
     nunion u = make_nunion( &lu, &ru );
     lu.parent = &u ; 
     ru.parent = &u ; 
  
+
     u.transform = &mpx ; 
     ru.transform = &mpy ; 
     rb.transform = &mpz ;     
      
-    rb.gtransform = rb.global_transform() ;
 
+    // setting gtransform on internal nodes does nothing ... need to do that to the leaves
+    u.update_gtransforms();
+
+    assert(ra.gtransform);
     assert(rb.gtransform);
+    assert(la.gtransform);
+    assert(lb.gtransform);
 
     std::cout << " rb.gt " << *rb.gtransform << std::endl ; 
 
+    std::vector<glm::vec3> centers ; 
+    u.collect_prim_centers(centers);
+
+    unsigned ncen = centers.size();
+    for(unsigned i=0 ; i < ncen ; i++) std::cout << i << " " << centers[i] << std::endl ; 
+
+
+    u.dump_prim("prim", 1); 
+
+    std::cout << std::endl ; 
+    u.dump_prim("prim", 2); 
 
     // hmm need to do this with rotations, as with translation order doesnt matter 
-
 }
-
 
 
 

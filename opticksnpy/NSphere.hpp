@@ -31,6 +31,9 @@ struct NPY_API nsphere : nnode {
     npart zrhs(const ndisc& dsc); // +z to the right  
     npart zlhs(const ndisc& dsc);  
 
+    glm::vec3 gcenter() ;
+    void pdump(const char* msg="nsphere::pdump", int verbosity=1);
+ 
     glm::vec3 center ; 
     float     radius_ ; 
 
