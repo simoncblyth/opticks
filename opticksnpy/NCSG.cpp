@@ -30,6 +30,7 @@ NCSG::NCSG(const char* treedir, unsigned index)
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
    m_transforms(NULL),
+   m_itransforms(NULL),
    m_meta(NULL),
 
    m_num_nodes(0),
@@ -60,11 +61,9 @@ void NCSG::load()
     if(BFile::ExistsFile(tranpath.c_str()))
     {
         m_transforms = NPY<float>::load(tranpath.c_str());
+        assert(m_transforms && m_transforms->hasItemShape(NJ, NK));
         m_num_transforms  = m_transforms->getShape(0) ;  
-        unsigned nj = m_transforms->getShape(1);
-        unsigned nk = m_transforms->getShape(2);
-        assert( nj == NJ );
-        assert( nk == NK );
+        m_itransforms = NPY<float>::make_inverted_transforms(m_transforms);
     }
 
 
@@ -116,6 +115,12 @@ NPY<float>* NCSG::getTransformBuffer()
 {
     return m_transforms ; 
 }
+NPY<float>* NCSG::getInverseTransformBuffer()
+{
+    return m_itransforms ; 
+}
+
+
 
 
 NParameters* NCSG::getMeta()
@@ -172,18 +177,17 @@ void NCSG::import()
     m_root = import_r(0, NULL, 0) ; 
 }
 
-
 nmat4pair* NCSG::import_transform(unsigned itra)
 {
-    if(itra == 0 || m_transforms == NULL) return NULL ; 
-    assert( itra - 1 < m_num_transforms );
+    // itra is a 1-based index, with 0 meaning None
 
-    glm::mat4* m =  m_transforms->getMat4Ptr(itra - 1);  // itra is a 1-based index, with 0 meaning None
+    if(itra == 0 || m_transforms == NULL || m_itransforms == NULL ) return NULL ; 
 
-    assert(m);    
+    unsigned idx = itra - 1 ; 
 
-    const glm::mat4& tr = *m ; 
-    glm::mat4 irit = invert_tr( tr );
+    assert( idx < m_num_transforms );
+    glm::mat4 tr =  m_transforms->getMat4(idx);   
+    glm::mat4 irit = m_itransforms->getMat4(idx);
 
     return new nmat4pair(tr, irit) ; 
 }

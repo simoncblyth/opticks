@@ -102,7 +102,8 @@ class NPY_API NPY : public NPYBase {
 
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
        static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);
-
+       static NPY<T>* make_inverted_transforms(NPY<T>* src, bool transpose=false);
+       static NPY<T>* make_identity_transforms(unsigned n=1);
 
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
@@ -237,8 +238,8 @@ class NPY_API NPY : public NPYBase {
        void         setQuadU(const glm::uvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
        void         setQuadU(const     nuvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
 
-       ///  parts are comprised of four quads
-       void         setPart(      const npart& part, unsigned int i );
+       void         setPart( const npart& part, unsigned int i ); ///  parts are comprised of four quads
+       void         setMat4( const glm::mat4& mat, unsigned i, bool transpose=false );
 
 
        // 

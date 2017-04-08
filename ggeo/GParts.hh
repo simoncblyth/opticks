@@ -60,8 +60,8 @@ class GGEO_API GParts {
         static GParts* combine(std::vector<GParts*> subs);
     public:
         GParts(GBndLib* bndlib=NULL);
-        GParts(NPY<float>* buffer, const char* spec, GBndLib* bndlib=NULL);
-        GParts(NPY<float>* buffer, GItemList* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<float>* partBuf, NPY<float>* iritBuf, const char* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<float>* partBuf, NPY<float>* iritBuf, GItemList* spec, GBndLib* bndlib=NULL);
     public:
         void setName(const char* name);
         void setBndLib(GBndLib* blib);
@@ -106,16 +106,19 @@ class GGEO_API GParts {
     public:
         GBndLib*           getBndLib();
         GItemList*         getBndSpec();
-        NPY<unsigned int>* getPrimBuffer();
-        NPY<float>*        getPartBuffer();
         unsigned int       getNumPrim();
         unsigned int       getNumParts();
         unsigned int       getPrimNumParts(unsigned int prim_index);
     public:
-        void dump(const char* msg="GPmt::dump");
-        void dumpPrimInfo(const char* msg="GPmt::dumpPrimInfo");
-        void dumpPrimBuffer(const char* msg="GPmt::dumpPrimBuffer");
-        void Summary(const char* msg="GPmt::Summary");
+        NPY<unsigned int>* getPrimBuffer();
+        NPY<float>*        getPartBuffer();
+        NPY<float>*        getIritBuffer(); // inverse transforms IR*IT ie inverse of T*R 
+    public:
+        void fulldump(const char* msg="GParts::fulldump");
+        void dump(const char* msg="GParts::dump");
+        void dumpPrimInfo(const char* msg="GParts::dumpPrimInfo");
+        void dumpPrimBuffer(const char* msg="GParts::dumpPrimBuffer");
+        void Summary(const char* msg="GParts::Summary");
     private:
         void dumpPrim(unsigned primIdx);
     public:
@@ -126,15 +129,18 @@ class GGEO_API GParts {
         void registerBoundaries();
         void makePrimBuffer();
     private:
-       void         setBndSpec(GItemList* bndspec);
-       void         setPartBuffer(NPY<float>* part_buffer);
-       void         setPrimBuffer(NPY<unsigned int>* prim_buffer);
+        void setBndSpec(GItemList* bndspec);
+        void setPartBuffer(NPY<float>* part_buffer);
+        void setPrimBuffer(NPY<unsigned int>* prim_buffer);
+        void setIritBuffer(NPY<float>* irit_buffer);
+    private:
        unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
        void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
     private:
         // almost no state other than buffers, just icing on top of them
         // allowing this to copied/used on GPU in cu/hemi-pmt.cu
         NPY<float>*        m_part_buffer ; 
+        NPY<float>*        m_irit_buffer ; 
         GItemList*         m_bndspec ;  
         GBndLib*           m_bndlib ; 
         const char*        m_name ;         

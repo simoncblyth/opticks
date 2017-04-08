@@ -10,6 +10,7 @@ namespace fs = boost::filesystem;
 
 #include "NSlice.hpp"
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "NPYSpec.hpp"
 #include "NPY.hpp"
 
@@ -788,6 +789,34 @@ NPY<T>* NPY<T>::make_like(NPY<T>* src)
      return dst ; 
 }
 
+template <typename T>
+NPY<T>* NPY<T>::make_inverted_transforms(NPY<T>* src, bool transpose)
+{
+     NPY<T>* dst = make_like(src);
+     unsigned ni = src->getShape(0); 
+     for(unsigned i=0 ; i < ni ; i++)
+     {
+         glm::mat4 tr =  src->getMat4(i);  
+         glm::mat4 irit = invert_tr( tr );
+         dst->setMat4(irit, i, transpose );
+     }
+     return dst ; 
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make_identity_transforms(unsigned n)
+{
+     NPY<T>* dst = NPY<T>::make(n,4,4);
+     dst->zero();
+     glm::mat4 identity(1.0f);
+     for(unsigned i=0 ; i < n ; i++) dst->setMat4(identity, i);
+     return dst ; 
+}
+
+
+
+
+
 
 template <typename T>
 NPY<T>* NPY<T>::clone()
@@ -1469,6 +1498,19 @@ void NPY<T>::setPart(const npart& p, unsigned int i)
     setQuad( p.q2.f , i, 2, 0 );
     setQuad( p.q3.f , i, 3, 0 );
 }
+
+template <typename T> 
+void NPY<T>::setMat4(const glm::mat4& mat, unsigned i, bool transpose)
+{
+    assert(hasItemShape(4,4));
+    T* dat = getValues();
+    for(unsigned j=0 ; j < 4 ; j++)
+    {
+        for(unsigned k=0 ; k < 4 ; k++) 
+           *(dat + getValueIndex(i,j,k,0)) = transpose ? mat[k][j] : mat[j][k] ;
+    }
+}
+
 
 // same type quad setters
 template <typename T> 

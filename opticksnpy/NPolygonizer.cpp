@@ -29,7 +29,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     m_root(csg->getRoot()),
     m_bbox(new nbbox(m_root->bbox())),
     m_meta(csg->getMeta()),
-    m_verbosity(m_meta->get<int>("verbosity", "1" )),
+    m_verbosity(m_meta->get<int>("verbosity", "0" )),
     m_index(m_csg->getIndex()),
     m_poly(NULL)
 {
@@ -38,6 +38,9 @@ NPolygonizer::NPolygonizer(NCSG* csg)
 
     std::string poly = m_meta->get<std::string>("poly", "DCS");
     m_poly = strdup(poly.c_str());
+
+    m_meta->dump("NPolygonizer::NPolygonizer(meta)");
+
 }
 
 
@@ -46,6 +49,8 @@ NTrianglesNPY* NPolygonizer::polygonize()
 {
     LOG(info) << "NPolygonizer::polygonize"
               << " poly " << m_poly 
+              << " verbosity " << m_verbosity 
+              << " index " << m_index
               ;
 
 

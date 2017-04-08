@@ -70,12 +70,86 @@ what will need to do on GPU, so actually its better to take same approach on CPU
   from product of ancestor node transforms
 
 
+Transform references
+----------------------
+
+::
+
+     09 // only used for CSG operator nodes
+     10 enum {
+     11     RTRANSFORM_J = 3,
+     12     RTRANSFORM_K = 3
+     13 };   // q3.u.w
+     14 
+
+     58 enum {
+     59     NODEINDEX_J = 3,
+     60     NODEINDEX_K = 3
+     61 };  // q3.u.w 
+
+
+* input serialization has rtransform references in CSG operator nodes
+* these are set on the appropriate primitive nnode in the in memory model ...
+* BUT what about on GPU, want to avoid tree chasing BUT 
+
+
+Need to make space in part/node buffer for transform referencing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* for CSG with transforms the old fixed bb.min, bb.max 
+  no longer cuts it ... actually it could do, just means the 
+  transforming the bbox is done CPU side 
+
+* the critical thing is that the bbox occupies 6*32bits 
+  out of the total 16*32 bits ... i think the reasoning behind this
+  was for z-range selection in the partlist approach 
+
+* can adopt different layout in CSG mode
+
+* bbox calc only done once in bounds code, so it has no performance cost 
+
+
+Transforming Rays
+-------------------
+
+The below needs to pass a reference to the ray to the intersects
+and the transform can happen here.
+
+::
+
+    float3:  ray.direction, ray.origin 
+
+::
+
+    128 static __device__
+    129 void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
+    130 {
+    131     quad q0, q2 ;
+    132     q0.f = partBuffer[4*partIdx+0];
+    133     q2.f = partBuffer[4*partIdx+2];
+    134 
+    135     OpticksCSG_t csgFlag = (OpticksCSG_t)q2.u.w ;
+    136 
+    137     //if(partIdx > 1)
+    138     //rtPrintf("[%5d] intersect_part partIdx %u  csgFlag %u \n", launch_index.x, partIdx, csgFlag );
+    139 
+    140     switch(csgFlag)
+    141     {
+    142         case CSG_SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ;
+    143         case CSG_BOX:    intersect_box(   q0,tt_min, tt )  ; break ;
+    144     }
+    145 }
+
+
+
+
 Transforms GPU side 
 --------------------
 
 * does GPU need *tr* OR perhaps only *irit* will do, as primary action 
   is transforming impinging rays not directly geometry 
 
+* transforming bbox with need the *tr*, transforming rays will need the *irit*
 
 * optix Matrix4x4 uses row-major, Opticks standard follows OpenGL : column-major
 

@@ -20,11 +20,13 @@ Morton Codes
 
 * http://asgerhoedt.dk/?p=276
 
+
 """
 
 import numpy as np
 
 bin_ = lambda _:"{0:08b}".format(_)
+
 
 def SeparateBy1(x):
     """
@@ -195,12 +197,11 @@ def test_3d():
 
 if __name__ == '__main__':
 
-    test_2d(1)
-    test_2d(2)
-    test_2d(4)
-    test_2d(8)
-
+    #test_2d(1)
+    #test_2d(2)
+    #test_2d(4)
+    #test_2d(8)
     #test_3d()
 
-
+    test_postorder()
 

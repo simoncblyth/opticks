@@ -11,6 +11,7 @@
 #include "boolean_solid.h"
 #include "hemi-pmt.h"
 #include "math_constants.h"
+#include "bbox.h"
 
 using namespace optix;
 
@@ -46,6 +47,7 @@ rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
 
 rtBuffer<float4> partBuffer; 
+rtBuffer<float4> iritBuffer; 
 rtBuffer<uint4>  primBuffer; 
 rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdentityBuffer()
 rtBuffer<float4> prismBuffer ;
@@ -1198,6 +1200,11 @@ make_prism plane[4]     0.0000     0.0000    -1.0000  -100.0000
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
+
+  if(primIdx == 0) 
+  test_transform_bbox();
+
+
   const uint4& prim    = primBuffer[primIdx]; 
   unsigned partOffset  = prim.x ;  
   unsigned numParts    = prim.y ; 

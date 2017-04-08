@@ -12,7 +12,6 @@ glm::mat4 invert_tr( const glm::mat4& tr )
        multiply in reverse order
 
                IR*IT 
-
     **/
 
     glm::mat4 ir = glm::transpose(glm::mat4(glm::mat3(tr)));
@@ -20,6 +19,15 @@ glm::mat4 invert_tr( const glm::mat4& tr )
     glm::mat4 irit = ir*it ;    // <--- inverse of tr 
     return irit ; 
 }
+
+glm::mat4* invert_tr( const glm::mat4* tr )
+{
+    if(tr == NULL) return NULL ; 
+    return new glm::mat4( invert_tr(*tr) );
+}
+
+
+
 
 
 nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& tt)

@@ -446,63 +446,43 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
     return geometry ; 
 }
 
+
+
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
+    LOG(warning) << "OGeo::makeAnalyticGeometry" ; // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
-    GParts* pts = mm->getParts();
-    assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
+    GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
     if(pts->getPrimBuffer() == NULL)
     {
-        LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry" ; 
         pts->close();
-        LOG(debug) << "OGeo::makeAnalyticGeometry closing GParts analytic geometry DONE" ; 
+        LOG(warning) << "OGeo::makeAnalyticGeometry GParts closed" ; 
     }
 
-    if(m_verbose)
-    pts->Summary("OGeo::makeAnalyticGeometry pmt Summary");
+    if(m_verbose) pts->fulldump("OGeo::makeAnalyticGeometry") ;
 
-    NPY<float>*        partBuf = pts->getPartBuffer();
-    NPY<unsigned int>* primBuf = pts->getPrimBuffer(); 
+    NPY<float>*        partBuf = pts->getPartBuffer(); assert(partBuf);  // node buffer
+    NPY<float>*        iritBuf = pts->getIritBuffer(); assert(iritBuf);  // inverse transforms
+    NPY<unsigned int>* primBuf = pts->getPrimBuffer(); assert(primBuf);  // prim
 
-    assert(partBuf);
-    assert(primBuf);
+    NPY<unsigned int>*   idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf); // identityBuffer
+    NPY<float>*    itransforms = mm->getITransformsBuffer();                // not used for analytic ?
 
-    bool dbganalytic = m_ok->hasOpt("dbganalytic");
+    unsigned numPrim = primBuf->getNumItems();
+    unsigned numPart = partBuf->getNumItems();
+    unsigned numIrit = iritBuf->getNumItems();
 
-    if(m_verbose || dbganalytic )
-    {
-        pts->dump("OGeo::makeAnalyticGeometry pts");
+    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;   
 
-        partBuf->dump("OGeo::makeAnalyticGeometry partBuf");
-        primBuf->dump("OGeo::makeAnalyticGeometry primBuf partOffset/numParts/primIndex/0");
-
-        if(dbganalytic)
-        {
-            partBuf->save("$TMP/OGeo_partBuf.npy");
-            primBuf->save("$TMP/OGeo_primBuf.npy");
-            pts->save("$TMP");
-        }
-    }
-
-    NPY<unsigned int>* idBuf = mm->getAnalyticInstancedIdentityBuffer();
-    assert(idBuf);
-
-    NPY<float>* itransforms = mm->getITransformsBuffer();
-    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;    
     assert(idBuf->getNumItems() == numITransforms );
-
-    unsigned int numPrim = primBuf->getNumItems();
-    unsigned int numParts = partBuf->getNumItems();
-
     assert( numPrim < 10 );  // expecting small number
 
-
-    LOG(debug)   << "OGeo::makeAnalyticGeometry " 
+    LOG(info)   << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
                  << " numPrim " << numPrim 
-                 << " numParts " << numParts
+                 << " numPart " << numPart
+                 << " numIrit " << numIrit
                  << " numITransforms " << numITransforms 
                  ;
 
@@ -511,14 +491,19 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry->setPrimitiveCount( numPrim );
     geometry["primitive_count"]->setUint( numPrim );  // needed GPU side, for instanced offsets 
 
+
     geometry->setIntersectionProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "bounds"));
+
 
     optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 
     geometry["primBuffer"]->setBuffer(primBuffer);
 
     optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
+
+    optix::Buffer iritBuffer = createInputBuffer<optix::float4, float>( iritBuf, RT_FORMAT_FLOAT4, 1 , "iritBuffer"); 
+    geometry["iritBuffer"]->setBuffer(iritBuffer);
 
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);
@@ -530,6 +515,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     prismBuffer->setSize(5);
     geometry["prismBuffer"]->setBuffer(prismBuffer);
 
+    LOG(warning) << "OGeo::makeAnalyticGeometry DONE" ; 
 
     return geometry ; 
 }

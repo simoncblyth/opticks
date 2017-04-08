@@ -111,7 +111,12 @@ void GPmt::loadFromCache(NSlice* slice)
         bndSpec = bndSpec_orig ; 
     }
 
-    GParts* parts = new GParts(partBuf, bndSpec, m_bndlib);
+
+
+    NPY<float>* iritBuf = NPY<float>::make(0,4,4);
+    iritBuf->zero();
+
+    GParts* parts = new GParts(partBuf, iritBuf, bndSpec, m_bndlib);
     setParts(parts);
 
     GCSG* csg = new GCSG(csgBuf, materials, lvnames, pvnames ) ;

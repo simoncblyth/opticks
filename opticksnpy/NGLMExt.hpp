@@ -19,7 +19,8 @@ struct NPY_API nmat4pair
 
 
 
-NPY_API glm::mat4 invert_tr( const glm::mat4& tr ); 
+NPY_API glm::mat4  invert_tr( const glm::mat4& tr ); 
+NPY_API glm::mat4* invert_tr( const glm::mat4* tr ); 
 
 NPY_API std::ostream& operator<< (std::ostream& out, const nmat4pair& mp); 
 

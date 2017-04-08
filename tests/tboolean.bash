@@ -382,10 +382,10 @@ rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
 
-dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="3")
+dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 
 #seeds = "100,100,-100,0,0,300"
-im = dict(poly="IM", resolution="64", verbosity="1", ctrl="0" )
+im = dict(poly="IM", resolution="64", verbosity="0", ctrl="0" )
 object = CSG("union", left=left, right=right, rtranslate="0,0,200", rrotate="1,1,1,45",  boundary="$(tboolean-object)", **im )
 
 mc = dict(poly="MC", nx="20")

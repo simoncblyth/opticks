@@ -139,7 +139,7 @@ NTrianglesNPY* NImplicitMesher::operator()()
     LOG(info) << "NImplicitMesher::operator() bb " << m_bbox->desc() ; 
 
     m_mesher->polygonize();
-    m_mesher->dump();
+    if(m_verbosity > 0) m_mesher->dump();
     
     const std::vector<glm::vec3>& verts = m_mesher->vertices();
     const std::vector<glm::vec3>& norms = m_mesher->normals();

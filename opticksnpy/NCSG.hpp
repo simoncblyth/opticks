@@ -44,6 +44,7 @@ class NPY_API NCSG {
         const char* getBoundary();
         NPY<float>* getNodeBuffer();
         NPY<float>* getTransformBuffer();
+        NPY<float>* getInverseTransformBuffer();
         NParameters* getMeta();
         unsigned getNumNodes();
         unsigned getHeight();
@@ -70,6 +71,7 @@ class NPY_API NCSG {
         const char* m_treedir ; 
         NPY<float>* m_nodes ; 
         NPY<float>* m_transforms ; 
+        NPY<float>* m_itransforms ; 
         NParameters* m_meta ; 
         unsigned    m_num_nodes ; 
         unsigned    m_num_transforms ; 
