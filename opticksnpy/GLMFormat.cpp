@@ -417,7 +417,7 @@ std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsig
     for(int i=0 ; i < 4 ; i++)
     {
         ss << std::setw(lwid) << ( i == 0 ? label : " " ) ; 
-        for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[i][j] : m[j][i] ) << " " ; 
+        for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
         ss << std::endl ; 
     }
     return ss.str();
@@ -430,7 +430,7 @@ std::string gpresent(const char* label, const glm::mat3& m, unsigned prec, unsig
     for(int i=0 ; i < 3 ; i++)
     {
         ss << std::setw(lwid) << ( i == 0 ? label : " " ) ; 
-        for(int j=0 ; j < 3 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[i][j] : m[j][i] )  << " " ; 
+        for(int j=0 ; j < 3 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] )  << " " ; 
         ss << std::endl ; 
     }
     return ss.str();
