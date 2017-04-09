@@ -463,14 +463,23 @@ bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim)
     return true ; 
 }
 
-bool NPYBase::hasShape(unsigned int ni, unsigned int nj, unsigned int nk, unsigned int nl, unsigned nm)
+bool NPYBase::hasShape(int ni, int nj, int nk, int nl, int nm)
 {
-    return m_ni == ni && m_nj == nj && m_nk == nk && m_nl == nl && m_nm == nm ;
+    return 
+           ( ni == -1 || int(m_ni) == ni) && 
+           ( nj == -1 || int(m_nj) == nj) && 
+           ( nk == -1 || int(m_nk) == nk) && 
+           ( nl == -1 || int(m_nl) == nl) && 
+           ( nm == -1 || int(m_nm) == nm) ;
 }
 
-bool NPYBase::hasItemShape(unsigned int nj, unsigned int nk, unsigned int nl, unsigned nm)
+bool NPYBase::hasItemShape(int nj, int nk, int nl, int nm)
 {
-    return m_nj == nj && m_nk == nk && m_nl == nl && m_nm == nm ;
+    return 
+           ( nj == -1 || int(m_nj) == nj) && 
+           ( nk == -1 || int(m_nk) == nk) && 
+           ( nl == -1 || int(m_nl) == nl) && 
+           ( nm == -1 || int(m_nm) == nm) ;
 }
 
 bool NPYBase::hasItemSpec(NPYSpec* item_spec)

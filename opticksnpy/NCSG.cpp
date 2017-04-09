@@ -30,7 +30,6 @@ NCSG::NCSG(const char* treedir, unsigned index)
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
    m_transforms(NULL),
-   m_itransforms(NULL),
    m_meta(NULL),
 
    m_num_nodes(0),
@@ -42,7 +41,6 @@ NCSG::NCSG(const char* treedir, unsigned index)
 
 void NCSG::load()
 {
-    //std::string metapath = BFile::ChangeExt(m_path, ".json") ;
     std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
     std::string nodepath = BFile::FormPath(m_treedir, "nodes.npy") ;
     std::string tranpath = BFile::FormPath(m_treedir, "transforms.npy") ;
@@ -60,10 +58,15 @@ void NCSG::load()
 
     if(BFile::ExistsFile(tranpath.c_str()))
     {
-        m_transforms = NPY<float>::load(tranpath.c_str());
-        assert(m_transforms && m_transforms->hasItemShape(NJ, NK));
-        m_num_transforms  = m_transforms->getShape(0) ;  
-        m_itransforms = NPY<float>::make_inverted_transforms(m_transforms);
+        NPY<float>* src = NPY<float>::load(tranpath.c_str());
+        assert(src && src->hasShape(-1,4,4));
+        unsigned ni = src->getShape(0) ;
+
+        NPY<float>* pairs = NPY<float>::make_paired_transforms(src);
+        assert(pairs->hasShape(ni,2,4,4));
+
+        m_transforms = pairs ; 
+        m_num_transforms  = ni  ;  
     }
 
 
@@ -115,11 +118,6 @@ NPY<float>* NCSG::getTransformBuffer()
 {
     return m_transforms ; 
 }
-NPY<float>* NCSG::getInverseTransformBuffer()
-{
-    return m_itransforms ; 
-}
-
 
 
 
@@ -181,15 +179,16 @@ nmat4pair* NCSG::import_transform(unsigned itra)
 {
     // itra is a 1-based index, with 0 meaning None
 
-    if(itra == 0 || m_transforms == NULL || m_itransforms == NULL ) return NULL ; 
+    if(itra == 0 || m_transforms == NULL ) return NULL ; 
 
     unsigned idx = itra - 1 ; 
 
     assert( idx < m_num_transforms );
-    glm::mat4 tr =  m_transforms->getMat4(idx);   
-    glm::mat4 irit = m_itransforms->getMat4(idx);
+    assert(m_transforms->hasShape(-1,2,4,4));
 
-    return new nmat4pair(tr, irit) ; 
+    nmat4pair* m4p = m_transforms->getMat4PairPtr(idx);
+
+    return m4p ; 
 }
 
 nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
@@ -320,8 +319,8 @@ void NCSG::export_r(nnode* node, unsigned idx)
               << node->desc()
               ;
 
+    // crucial 2-step here, where m_nodes gets totally rewritten
     npart pt = node->part();
-
     m_nodes->setPart( pt, idx);  // writes 4 quads to buffer
 
     if(node->left && node->right)
@@ -382,15 +381,14 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 
     for(unsigned i=0 ; i < nbnd ; i++)
     {
-        //std::string path = BFile::FormPath(base, BStr::concat(NULL, i, ".npy"));  
         std::string treedir = BFile::FormPath(base, BStr::itoa(i));  
 
         NCSG* tree = new NCSG(treedir.c_str(), i);
         tree->setBoundary( bnd.getLine(i) );
 
-        tree->load();    // the buffer (no bbox from user input python)
-        tree->import();  // from buffer into CSG node tree 
-        tree->export_(); // from CSG node tree back into buffer, with bbox added   
+        tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
+        tree->import();  // input m_nodes buffer into CSG nnode tree 
+        tree->export_(); // from CSG nnode tree back into *same* buffer, with bbox added   
 
         LOG(info) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
 

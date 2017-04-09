@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, sys, logging, datetime
 log = logging.getLogger(__name__)
+from StringIO import StringIO
 import numpy as np
 from opticks.ana.base import opticks_main, ini_
 
@@ -27,6 +28,9 @@ def x_(_):
     st = stamp_(p)
     log.info( " %s -> %s (%s) " % (_, p, st))
     return p  
+
+
+txt_ = lambda _:np.loadtxt(StringIO(_))
 
 
 #def adir_(typ, tag, det="dayabay", name=None):

@@ -56,12 +56,12 @@ GParts* GParts::make(const npart& pt, const char* spec)
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
-    NPY<float>* iritBuf = NPY<float>::make(0, NJ, NK );
-    iritBuf->zero();
+    NPY<float>* tranBuf = NPY<float>::make(0, 2, 4, 4 );
+    tranBuf->zero();
 
     partBuf->setPart( pt, 0u );
 
-    GParts* gpt = new GParts(partBuf,iritBuf, spec) ;
+    GParts* gpt = new GParts(partBuf,tranBuf, spec) ;
 
     unsigned typecode = gpt->getTypeCode(0u);
     assert(typecode == CSG_BOX || typecode == CSG_SPHERE || typecode == CSG_PRISM);
@@ -84,8 +84,8 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
-    NPY<float>* iritBuf = NPY<float>::make(0, NJ, NK );
-    iritBuf->zero();
+    NPY<float>* tranBuf = NPY<float>::make(0, 2, 4, 4 );
+    tranBuf->zero();
 
     assert(BBMIN_K == 0 );
     assert(BBMAX_K == 0 );
@@ -97,7 +97,7 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 
     // TODO: go via an npart instance
 
-    GParts* pt = new GParts(partBuf, iritBuf,  spec) ;
+    GParts* pt = new GParts(partBuf, tranBuf,  spec) ;
     pt->setTypeCode(0u, csgflag);
 
     return pt ; 
@@ -106,18 +106,16 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 GParts* GParts::make( NCSG* tree)
 {
     const char* spec = tree->getBoundary();
-    NPY<float>* nodebuf = tree->getNodeBuffer();  // the serialized binary tree
-
-    NPY<float>* iritbuf = tree->getInverseTransformBuffer();
-    if(!iritbuf) 
+    NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
+    NPY<float>* tranbuf = tree->getTransformBuffer();  // (tr,irit) pairs   
+    if(!tranbuf) 
     {
-       //iritbuf = NPY<float>::make_identity_transforms(1) ;  
-       // actually dont want to mess with transform counts as GParts get combined
+       // NB dont want to mess with transform counts as GParts get combined
        // also this means that cannot support transforms on the container box 
-       iritbuf = NPY<float>::make(0,4,4) ;
-       iritbuf->zero();
+       tranbuf = NPY<float>::make(0,2,4,4) ;
+       tranbuf->zero();
     } 
-    assert( iritbuf && iritbuf->hasItemShape(NJ, NK) );
+    assert( tranbuf && tranbuf->hasShape(-1,2,4,4));
 
 
     nnode* root = tree->getRoot(); 
@@ -134,7 +132,7 @@ GParts* GParts::make( NCSG* tree)
     LOG(fatal) << "GParts::make NCSG "
               << " treedir " << tree->getTreeDir()
               << " node_sh " << nodebuf->getShapeString()
-              << " irit_sh " << iritbuf->getShapeString() 
+              << " tran_sh " << tranbuf->getShapeString() 
               << " spec " << spec 
               << " type " << root->csgname()
               ; 
@@ -147,7 +145,7 @@ GParts* GParts::make( NCSG* tree)
 
     GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
 
-    GParts* pts = new GParts(nodebuf, iritbuf, lspec) ;
+    GParts* pts = new GParts(nodebuf, tranbuf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
     return pts ; 
@@ -156,7 +154,7 @@ GParts* GParts::make( NCSG* tree)
 GParts::GParts(GBndLib* bndlib) 
       :
       m_part_buffer(NULL),
-      m_irit_buffer(NULL),
+      m_tran_buffer(NULL),
       m_bndspec(NULL),
       m_bndlib(bndlib),
       m_name(NULL),
@@ -166,10 +164,10 @@ GParts::GParts(GBndLib* bndlib)
 {
       init() ; 
 }
-GParts::GParts(NPY<float>* partBuf,  NPY<float>* iritBuf, const char* spec, GBndLib* bndlib) 
+GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, const char* spec, GBndLib* bndlib) 
       :
       m_part_buffer(partBuf),
-      m_irit_buffer(iritBuf),
+      m_tran_buffer(tranBuf),
       m_bndspec(NULL),
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
@@ -177,10 +175,10 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* iritBuf, const char* spec, GBnd
 {
       init(spec) ; 
 }
-GParts::GParts(NPY<float>* partBuf,  NPY<float>* iritBuf, GItemList* spec, GBndLib* bndlib) 
+GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, GItemList* spec, GBndLib* bndlib) 
       :
       m_part_buffer(partBuf),
-      m_irit_buffer(iritBuf),
+      m_tran_buffer(tranBuf),
       m_bndspec(spec),
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
@@ -208,14 +206,17 @@ void GParts::save(const char* dir)
     {
         m_part_buffer->save(dir, name, "partBuffer.npy");     
        // this name becoming historical, nodeBuffer probably more appropriate 
+       // ... actually want to continue supporting the old manual partlist layout as
+       // well as the new csg binary node trees, as partlist is probably faster but 
+       // of course without the generality and automatation of node trees
     }
     if(m_prim_buffer)
     {
         m_prim_buffer->save(dir, name, "primBuffer.npy");    
     }
-    if(m_irit_buffer)
+    if(m_tran_buffer)
     {
-        m_irit_buffer->save(dir, name, "iritBuffer.npy");    
+        m_tran_buffer->save(dir, name, "tranBuffer.npy");    
     }
 }
 
@@ -272,9 +273,9 @@ void GParts::setPartBuffer(NPY<float>* buf )
 {
     m_part_buffer = buf ; 
 }
-void GParts::setIritBuffer(NPY<float>* buf)
+void GParts::setTranBuffer(NPY<float>* buf)
 {
-    m_irit_buffer = buf ; 
+    m_tran_buffer = buf ; 
 }
 
 
@@ -286,9 +287,9 @@ NPY<float>* GParts::getPartBuffer()
 {
     return m_part_buffer ; 
 }
-NPY<float>* GParts::getIritBuffer()
+NPY<float>* GParts::getTranBuffer()
 {
-    return m_irit_buffer ; 
+    return m_tran_buffer ; 
 }
 
 
@@ -302,15 +303,15 @@ void GParts::init(const char* spec)
 
 void GParts::init()
 {
-    if(m_part_buffer == NULL && m_irit_buffer == NULL && m_bndspec == NULL)
+    if(m_part_buffer == NULL && m_tran_buffer == NULL && m_bndspec == NULL)
     {
-        LOG(trace) << "GParts::init creating empty part_buffer, irit_buffer and bndspec " ; 
+        LOG(trace) << "GParts::init creating empty part_buffer, tran_buffer and bndspec " ; 
 
         m_part_buffer = NPY<float>::make(0, NJ, NK );
         m_part_buffer->zero();
 
-        m_irit_buffer = NPY<float>::make(0, NJ, NK );
-        m_irit_buffer->zero();
+        m_tran_buffer = NPY<float>::make(0, 2, 4, 4 );
+        m_tran_buffer->zero();
 
         m_bndspec = new GItemList("GParts");
     } 
@@ -347,7 +348,7 @@ void GParts::add(GParts* other)
     unsigned int n0 = getNumParts(); // before adding
 
     // part buffers contain indices that reference 
-    // the transforms in their irit buffers, 
+    // the transforms in their tran buffers, 
     // so to support combination
     // would need to rebase these "pointers"
     // or maintain a "transform" offset to combine with the relative pointers 
@@ -356,7 +357,7 @@ void GParts::add(GParts* other)
 
     m_bndspec->add(other->getBndSpec());
     m_part_buffer->add(other->getPartBuffer());
-    m_irit_buffer->add(other->getIritBuffer());
+    m_tran_buffer->add(other->getTranBuffer());
 
     unsigned int n1 = getNumParts(); // after adding
 
@@ -586,23 +587,6 @@ void GParts::dumpPrimBuffer(const char* msg)
 
     assert( primBuffer->hasItemShape(4,0) && primBuffer->getNumItems() > 0  );
     assert( partBuffer->hasItemShape(4,4) && partBuffer->getNumItems() > 0 );
-
-   /*
-    { 
-        unsigned ni = primBuffer->getShape(0) ; 
-        unsigned nj = primBuffer->getShape(1) ; 
-        unsigned nk = primBuffer->getShape(2) ; 
-        assert( ni > 0 && nj == 4 && nk == 0 );
-    }
-
-    { 
-        unsigned ni = partBuffer->getShape(0) ; 
-        unsigned nj = partBuffer->getShape(1) ; 
-        unsigned nk = partBuffer->getShape(2) ; 
-        assert( ni > 0 && nj == 4 && nk == 4 );
-    }
-   */
-
 
     for(unsigned primIdx=0 ; primIdx < primBuffer->getNumItems() ; primIdx++) dumpPrim(primIdx);
 }

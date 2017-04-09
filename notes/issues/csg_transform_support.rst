@@ -19,6 +19,22 @@ raytracing before doing the SDF distance calc or ray tracing intersection
 calc.
 
 
+
+Use higher level optix geometry transforms ?
+-----------------------------------------------
+
+Nope, I dont think this is possible as with boolean CSG need 
+to apply different transforms to basis shapes underneath a single optix primitive.
+
+
+Making a buffer of Matrix4x4 ?
+-------------------------------
+
+There is no RTformat for Matrix4x4 so would need 
+use USER format buffer...
+
+
+
 SDF
 ------
 

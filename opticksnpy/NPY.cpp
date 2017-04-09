@@ -545,7 +545,10 @@ void NPY<T>::save(const char* raw)
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
 
     T* values = getValues();
-    if(values == NULL)
+
+    bool allow_save_empty = false ; // <-- causes flakey segfaults inside aoba when true 
+
+    if(values == NULL && !allow_save_empty )
     {
          LOG(fatal) << "NPY values NULL, buffer not allocated, SKIP attempt to save to  " << native ; 
     }
@@ -789,19 +792,42 @@ NPY<T>* NPY<T>::make_like(NPY<T>* src)
      return dst ; 
 }
 
+
 template <typename T>
 NPY<T>* NPY<T>::make_inverted_transforms(NPY<T>* src, bool transpose)
 {
+     assert(src->hasItemShape(4,4));
      NPY<T>* dst = make_like(src);
      unsigned ni = src->getShape(0); 
      for(unsigned i=0 ; i < ni ; i++)
      {
          glm::mat4 tr =  src->getMat4(i);  
          glm::mat4 irit = invert_tr( tr );
-         dst->setMat4(irit, i, transpose );
+         dst->setMat4(irit, i, -1, transpose );
      }
      return dst ; 
 }
+
+template <typename T>
+NPY<T>* NPY<T>::make_paired_transforms(NPY<T>* src, bool transpose)
+{
+     assert(src->hasItemShape(4,4));
+     unsigned ni = src->getShape(0); 
+
+     NPY<T>* dst = NPY<T>::make(ni, 2, 4, 4);
+     dst->zero();
+
+     for(unsigned i=0 ; i < ni ; i++)
+     {
+         glm::mat4 tr =  src->getMat4(i);  
+         glm::mat4 irit = invert_tr( tr );
+
+         dst->setMat4(tr  , i, 0, transpose );
+         dst->setMat4(irit, i, 1, transpose );
+     }
+     return dst ; 
+}
+
 
 template <typename T>
 NPY<T>* NPY<T>::make_identity_transforms(unsigned n)
@@ -809,7 +835,7 @@ NPY<T>* NPY<T>::make_identity_transforms(unsigned n)
      NPY<T>* dst = NPY<T>::make(n,4,4);
      dst->zero();
      glm::mat4 identity(1.0f);
-     for(unsigned i=0 ; i < n ; i++) dst->setMat4(identity, i);
+     for(unsigned i=0 ; i < n ; i++) dst->setMat4(identity, i, -1, false);
      return dst ; 
 }
 
@@ -1500,16 +1526,79 @@ void NPY<T>::setPart(const npart& p, unsigned int i)
 }
 
 template <typename T> 
-void NPY<T>::setMat4(const glm::mat4& mat, unsigned i, bool transpose)
+void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
 {
-    assert(hasItemShape(4,4));
     T* dat = getValues();
-    for(unsigned j=0 ; j < 4 ; j++)
-    {
-        for(unsigned k=0 ; k < 4 ; k++) 
-           *(dat + getValueIndex(i,j,k,0)) = transpose ? mat[k][j] : mat[j][k] ;
-    }
+
+    // have to use j_ == -1, to indicate no such index
+    // as the usual approach of using default 0 wont work here  
+    // as depend on the 4,4 shape of the rest of the indices 
+
+    if( j_ == -1)
+    { 
+        assert(hasItemShape(4,4));
+        for(unsigned j=0 ; j < 4 ; j++)
+        {
+            for(unsigned k=0 ; k < 4 ; k++) 
+               *(dat + getValueIndex(i,j,k,0)) = transpose ? mat[k][j] : mat[j][k] ;
+        }
+   }
+   else
+   {
+        assert(hasItemShape(-1,4,4));
+        unsigned j = j_ ; 
+        for(unsigned k=0 ; k < 4 ; k++)
+        {
+            for(unsigned l=0 ; l < 4 ; l++) 
+               *(dat + getValueIndex(i,j,k,l)) = transpose ? mat[l][k] : mat[k][l] ;
+        }
+   }
 }
+
+
+
+template <typename T> 
+glm::mat4 NPY<T>::getMat4(int i, int j_)
+{
+    if(j_ == -1) assert(hasItemShape(4,4));
+    else         assert(hasItemShape(-1,4,4));
+
+    int j = j_ == -1 ? 0 : j_ ; 
+
+    T* vals = getValues(i, j);
+    return glm::make_mat4(vals);
+}
+
+
+
+template <typename T> 
+glm::mat4* NPY<T>::getMat4Ptr(int i, int j_)
+{
+    glm::mat4 m = getMat4(i, j_) ; 
+    return new glm::mat4(m) ; 
+}
+
+
+template <typename T> 
+nmat4pair* NPY<T>::getMat4PairPtr(int i)
+{
+    // return Ptr as including NGLMExt into NPY header
+    // causes thrustrap- issues
+
+    assert(hasShape(-1,2,4,4));
+
+    glm::mat4 tr = getMat4(i, 0);   
+    glm::mat4 irit = getMat4(i, 1);
+
+    return new nmat4pair(tr, irit) ; 
+}
+
+
+
+
+
+
+
 
 
 // same type quad setters
@@ -1576,25 +1665,6 @@ template <typename T>
     setUInt(i,j,k,3,vec.w); 
 }
 
-
-
-
-template <typename T> 
-glm::mat4 NPY<T>::getMat4(unsigned int i)
-{
-    T* vals = getValues(i);
-    return glm::make_mat4(vals);
-}
-
-
-
-template <typename T> 
-glm::mat4* NPY<T>::getMat4Ptr(unsigned int i)
-{
-    T* vals = getValues(i);
-    glm::mat4 m = glm::make_mat4(vals);
-    return new glm::mat4(m) ; 
-}
 
 
 

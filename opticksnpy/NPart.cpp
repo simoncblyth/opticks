@@ -17,7 +17,7 @@ void npart::setTypeCode(OpticksCSG_t typecode)
 
 void npart::setLeft(unsigned left)
 {
-    assert( LEFT_J == 0 && LEFT_K == 3 );
+    assert( LEFT_J == 0 && LEFT_K == 3 );  // note same location as primitive param.w
     q0.u.w = left ; 
 }
 void npart::setRight(unsigned right)

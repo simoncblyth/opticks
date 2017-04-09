@@ -462,28 +462,30 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     if(m_verbose) pts->fulldump("OGeo::makeAnalyticGeometry") ;
 
-    NPY<float>*        partBuf = pts->getPartBuffer(); assert(partBuf);  // node buffer
-    NPY<float>*        iritBuf = pts->getIritBuffer(); assert(iritBuf);  // inverse transforms
-    NPY<unsigned int>* primBuf = pts->getPrimBuffer(); assert(primBuf);  // prim
-
-    NPY<unsigned int>*   idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf); // identityBuffer
-    NPY<float>*    itransforms = mm->getITransformsBuffer();                // not used for analytic ?
+    NPY<float>*        partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
+    NPY<float>*        tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,2,4,4));  // transform pairs (tr, irit) 
+    NPY<unsigned int>* primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));     // prim
+    NPY<unsigned int>*   idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && idBuf->hasShape(-1,4)); // identityBuffer
 
     unsigned numPrim = primBuf->getNumItems();
     unsigned numPart = partBuf->getNumItems();
-    unsigned numIrit = iritBuf->getNumItems();
+    unsigned numTran = tranBuf->getNumItems();
 
+    // mm transforms not used for analytic
+    NPY<float>*    itransforms = mm->getITransformsBuffer();              
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;   
-
     assert(idBuf->getNumItems() == numITransforms );
+
     assert( numPrim < 10 );  // expecting small number
+    assert( numTran <= numPart ) ; 
+
 
     LOG(info)   << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
                  << " numPrim " << numPrim 
                  << " numPart " << numPart
-                 << " numIrit " << numIrit
-                 << " numITransforms " << numITransforms 
+                 << " numTran(pairs) " << numTran
+                 << " numITransforms(unused) " << numITransforms 
                  ;
 
     optix::Geometry geometry = m_context->createGeometry();
@@ -502,8 +504,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
 
-    optix::Buffer iritBuffer = createInputBuffer<optix::float4, float>( iritBuf, RT_FORMAT_FLOAT4, 1 , "iritBuffer"); 
-    geometry["iritBuffer"]->setBuffer(iritBuffer);
+    //optix::Buffer tranBuffer = createInputBuffer<optix::float4, float>( tranBuf, RT_FORMAT_FLOAT4, 1 , "tranBuffer"); 
+    optix::Buffer tranBuffer = createInputUserBuffer<optix::Matrix4x4>( tranBuf, "tranBuffer"); 
+    geometry["tranBuffer"]->setBuffer(tranBuffer);
 
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);
@@ -673,7 +676,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 {
    unsigned int bytes = buf->getNumBytes() ;
    unsigned int nel = buf->getNumElements();    // size of the last dimension
-   unsigned int bit = buf->getNumItems(0,-1) ;  // size of all but the last dimension
+   unsigned int bit = buf->getNumItems(0,-1) ;  // (ifr,ito) -> size of all but the last dimension
    unsigned int nit = bit/fold ; 
    unsigned int mul = OConfig::getMultiplicity(format) ; // eg multiplicity of FLOAT4 is 4
 
@@ -681,8 +684,9 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    bool from_gl = buffer_id > -1 && reuse ;
 
-   if(m_verbose)
+   if(m_verbose || strcmp(name,"tranBuffer") == 0)
    LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
+            << " sh " << buf->getShapeString()
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
             << " bytes " << std::setw(8) << bytes
@@ -696,6 +700,26 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
             << " id " << std::setw(3) << buffer_id 
             << " from_gl " << from_gl 
             ;
+
+/*
+
+
+2017-04-09 14:19:05.984 INFO  [4707966] [OGeo::createInputBuffer@687] OGeo::createInputBuffer [NPY<T>]  
+     sh 1,2,4,4 
+    fmt            FLOAT4 
+    name       tranBuffer 
+    bytes             128     1*2*4*4 = 32 floats, 32*4 = 128 bytes
+      bit               8     1*2*4   
+      nit               8     bit/fold(=1) <== CRUCIAL NUM-OF-float4 IN THE BUFFER 
+      nel               4               <-- last dimension 
+      mul               4 
+     fold               1 
+   sizeof(T)           16 
+   sizeof(T)*nit      128 
+         id            -1 
+     from_gl            0
+
+*/
 
 
    // typical T is optix::float4, typically NPY buffers should arrange last dimension 4 
@@ -731,5 +755,38 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    return buffer ; 
 }
+
+
+
+
+template<typename U>
+optix::Buffer OGeo::createInputUserBuffer(NPY<float>* src, const char* name)
+{
+    unsigned numBytes = src->getNumBytes() ;
+    unsigned elementSize = sizeof(U);
+    assert( numBytes % elementSize == 0 );
+    unsigned size = numBytes/elementSize ; 
+
+    LOG(info) << "OGeo::createUserBuffer"
+              << " name " << name
+              << " src shape " << src->getShapeString()
+              << " numBytes " << numBytes
+              << " elementSize " << elementSize
+              << " size " << size 
+              ;
+
+    optix::Buffer buffer = m_context->createBuffer( RT_BUFFER_INPUT );
+
+    buffer->setFormat( RT_FORMAT_USER );
+    buffer->setElementSize(elementSize);
+    buffer->setSize(size);
+
+    memcpy( buffer->map(), src->getPointer(), numBytes );
+    buffer->unmap();
+
+    return buffer ; 
+}
+
+
 
 

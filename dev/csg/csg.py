@@ -245,11 +245,25 @@ class CSG(CSG_):
     param = property(_get_param, _set_param)
 
     def asarray(self, itra=0):
+        """
+        Both primitive and internal nodes:
+
+        * q2.u.w : CSG type code eg CSG_UNION, CSG_DIFFERENCE, CSG_INTERSECTION, CSG_SPHERE, CSG_BOX, ... 
+
+        Primitive nodes only:
+
+        * q0 : 4*float parameters eg center and radius for sphere
+
+        Operation nodes only:
+
+        * q3.u.w : 1-based rtransform index, 0 for None
+
+        """
         arr = np.zeros( (self.NJ, self.NK), dtype=np.float32 )
         
-        if self.param is not None:   # avoid gibberish in buffer
+        if self.param is not None:  # avoid gibberish in buffer
             arr[Q0] = self.param
-            assert self.rtransform == None
+            assert self.rtransform == None, "rtransforms on primitives invalid, even transforms on primitives not yet supported(for space reasons)"
         elif self.rtransform is not None:
             assert itra > 0, itra  # 1-based transform index
             arr.view(np.uint32)[Q3,W] = itra 

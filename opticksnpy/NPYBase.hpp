@@ -50,8 +50,8 @@ class NPY_API NPYBase {
        std::vector<int>& getShapeVector();
 
        bool hasSameShape(NPYBase* other, unsigned fromdim=0);
-       bool hasShape(unsigned ni, unsigned nj=0, unsigned nk=0, unsigned nl=0, unsigned nm=0);
-       bool hasItemShape(unsigned nj, unsigned nk=0, unsigned nl=0, unsigned nm=0);
+       bool hasShape(int ni, int nj=0, int nk=0, int nl=0, int nm=0); // -1 for anything 
+       bool hasItemShape(int nj, int nk=0, int nl=0, int nm=0);
 
        bool hasShapeSpec(NPYSpec* spec); 
        bool hasItemSpec(NPYSpec* spec); 

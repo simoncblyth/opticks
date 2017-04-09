@@ -25,6 +25,8 @@
 
 struct BBufSpec ; 
 struct NSlice ; 
+struct nmat4pair ; 
+
 class NPYSpec ; 
 class G4StepNPY ; 
 
@@ -103,6 +105,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_modulo(NPY<T>* src, unsigned int scaledown);
        static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);
        static NPY<T>* make_inverted_transforms(NPY<T>* src, bool transpose=false);
+       static NPY<T>* make_paired_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_identity_transforms(unsigned n=1);
 
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
@@ -239,7 +242,6 @@ class NPY_API NPY : public NPYBase {
        void         setQuadU(const     nuvec4& vec, unsigned int i, unsigned int j=0, unsigned int k=0 );
 
        void         setPart( const npart& part, unsigned int i ); ///  parts are comprised of four quads
-       void         setMat4( const glm::mat4& mat, unsigned i, bool transpose=false );
 
 
        // 
@@ -250,8 +252,14 @@ class NPY_API NPY : public NPYBase {
        glm::ivec4   getQuadI(unsigned int i, unsigned int j=0, unsigned int k=0 );
        glm::uvec4   getQuadU(unsigned int i, unsigned int j=0, unsigned int k=0 );
 
-       glm::mat4    getMat4(unsigned int i);
-       glm::mat4*   getMat4Ptr(unsigned int i);
+
+       // Mat4 
+       void         setMat4( const glm::mat4& mat, int i, int j_=-1 , bool transpose=false );
+       glm::mat4    getMat4(int i, int j=-1);
+       glm::mat4*   getMat4Ptr(int i, int j=-1);
+
+       nmat4pair*   getMat4PairPtr(int i);
+
 
    //private:
    public:

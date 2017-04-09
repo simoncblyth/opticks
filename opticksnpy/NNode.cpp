@@ -120,14 +120,10 @@ void nnode::update_gtransforms_r(nnode* node)
 
 
 
-
-
-
-
-
-
 npart nnode::part()
 {
+    // this is invoked by NCSG::export_r to totally re-write the nodes buffer 
+
     nbbox bb = bbox();
 
     npart pt ; 

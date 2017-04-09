@@ -48,6 +48,12 @@ def count_unique(vals):
     return np.vstack((uniq, cnts.astype(np.uint64))).T 
 
 
+
+
+
+
+
+
 def count_unique_sorted(vals):
     vals = vals.astype(np.uint64)
     cu = count_unique(vals)
@@ -68,6 +74,8 @@ def vnorm(a):
 vnorm_ = lambda _:np.sqrt(np.sum(_*_,1))
 
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b))
+
+
 
 
 def chi2_pvalue( c2obs, ndf ):

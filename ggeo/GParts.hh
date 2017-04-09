@@ -60,8 +60,8 @@ class GGEO_API GParts {
         static GParts* combine(std::vector<GParts*> subs);
     public:
         GParts(GBndLib* bndlib=NULL);
-        GParts(NPY<float>* partBuf, NPY<float>* iritBuf, const char* spec, GBndLib* bndlib=NULL);
-        GParts(NPY<float>* partBuf, NPY<float>* iritBuf, GItemList* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, const char* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, GItemList* spec, GBndLib* bndlib=NULL);
     public:
         void setName(const char* name);
         void setBndLib(GBndLib* blib);
@@ -112,7 +112,7 @@ class GGEO_API GParts {
     public:
         NPY<unsigned int>* getPrimBuffer();
         NPY<float>*        getPartBuffer();
-        NPY<float>*        getIritBuffer(); // inverse transforms IR*IT ie inverse of T*R 
+        NPY<float>*        getTranBuffer(); // inverse transforms IR*IT ie inverse of T*R 
     public:
         void fulldump(const char* msg="GParts::fulldump");
         void dump(const char* msg="GParts::dump");
@@ -132,7 +132,7 @@ class GGEO_API GParts {
         void setBndSpec(GItemList* bndspec);
         void setPartBuffer(NPY<float>* part_buffer);
         void setPrimBuffer(NPY<unsigned int>* prim_buffer);
-        void setIritBuffer(NPY<float>* irit_buffer);
+        void setTranBuffer(NPY<float>* tran_buffer);
     private:
        unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
        void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
@@ -140,7 +140,7 @@ class GGEO_API GParts {
         // almost no state other than buffers, just icing on top of them
         // allowing this to copied/used on GPU in cu/hemi-pmt.cu
         NPY<float>*        m_part_buffer ; 
-        NPY<float>*        m_irit_buffer ; 
+        NPY<float>*        m_tran_buffer ; 
         GItemList*         m_bndspec ;  
         GBndLib*           m_bndlib ; 
         const char*        m_name ;         
