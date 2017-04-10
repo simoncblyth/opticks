@@ -1,3 +1,18 @@
+
+static __device__
+void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    float radius = q0.f.w;
+    float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, q0.f.z - radius );
+    float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, q0.f.z + radius );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+ 
+
 static __device__
 void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
 {
@@ -32,12 +47,26 @@ void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
 }
 
 
+static __device__
+void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    const float hside = q0.f.w ; 
+    const float3 bmin = make_float3(q0.f.x - hside, q0.f.y - hside, q0.f.z - hside ); 
+    const float3 bmax = make_float3(q0.f.x + hside, q0.f.y + hside, q0.f.z + hside ); 
+
+    Aabb tbb(bmin, bmax);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
 
 static __device__
 void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 {
-   const float3 bmin = make_float3(q0.f.x - q0.f.w, q0.f.y - q0.f.w, q0.f.z - q0.f.w ); 
-   const float3 bmax = make_float3(q0.f.x + q0.f.w, q0.f.y + q0.f.w, q0.f.z + q0.f.w ); 
+   const float hside = q0.f.w ; 
+   const float3 bmin = make_float3(q0.f.x - hside, q0.f.y - hside, q0.f.z - hside ); 
+   const float3 bmax = make_float3(q0.f.x + hside, q0.f.y + hside, q0.f.z + hside ); 
+
    const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
 
    float3 idir = make_float3(1.f)/ray.direction ; 
@@ -128,19 +157,23 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 static __device__
 void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
-    quad q0, q2 ; 
-    q0.f = partBuffer[4*partIdx+0];
-    q2.f = partBuffer[4*partIdx+2];
 
-    OpticksCSG_t csgFlag = (OpticksCSG_t)q2.u.w ; 
+    //quad q0, q2 ; 
+    //q0.f = partBuffer[4*partIdx+0];
+    //q2.f = partBuffer[4*partIdx+2];
+
+    Part pt = partBuffer[partIdx] ; 
+
+
+    OpticksCSG_t csgFlag = (OpticksCSG_t)pt.q2.u.w ; 
 
     //if(partIdx > 1)
     //rtPrintf("[%5d] intersect_part partIdx %u  csgFlag %u \n", launch_index.x, partIdx, csgFlag );
 
     switch(csgFlag)
     {
-        case CSG_SPHERE: csg_intersect_sphere(q0,tt_min, tt )  ; break ; 
-        case CSG_BOX:    csg_intersect_box(   q0,tt_min, tt )  ; break ; 
+        case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt )  ; break ; 
+        case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt )  ; break ; 
     }
 }
 

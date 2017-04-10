@@ -407,9 +407,10 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
         isect[RIGHT] = recursive_csg_r( partOffset, numInternalNodes, rightIdx, tmin);
     } 
 
-    quad q2 ; 
-    q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
-    OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
+    //quad q2 ; 
+    //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+    Part pt = partBuffer[partOffset+nodeIdx-1] ; 
+    OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
 
 
     IntersectionState_t x_state[2] ; 
@@ -492,8 +493,9 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         return ; 
     } 
     unsigned numNodes = TREE_NODES(fullHeight) ;      
-
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
+    // TODO: workout a random access bit-twiddle approach to get postorder sequence
+
     unsigned long long postorder = postorder_sequence[fullHeight] ; 
 
     //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numNodes, postorder );
@@ -554,9 +556,11 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             unsigned subNodes = TREE_NODES(fullHeight-depth) ;
             unsigned halfNodes = (subNodes - 1)/2 ; 
 
-            quad q2 ; 
-            q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
-            OpticksCSG_t typecode = (OpticksCSG_t)q2.u.w ;
+            //quad q2 ; 
+            //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+            Part pt = partBuffer[partOffset+nodeIdx-1]; 
+
+            OpticksCSG_t typecode = (OpticksCSG_t)pt.q2.u.w ;
 
             // typecode can indicate: CSG_ZERO empty node, operation node, primitive
             if(typecode == CSG_ZERO) continue ; 
@@ -841,9 +845,11 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              unsigned halfNodes = (subNodes - 1)/2 ;             // nodes to left or right of subtree
              bool bileaf = leftIdx > numInternalNodes ; 
 
-             quad q2 ; 
-             q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
-             OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
+             //quad q2 ; 
+             //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+
+             Part pt = partBuffer[partOffset+nodeIdx-1];
+             OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
 
              float tX_min[2] ; 
              tX_min[LHS] = tmin ;
@@ -973,9 +979,11 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     unsigned leftIdx = nodeIdx*2 ;      
     unsigned rightIdx = nodeIdx*2 + 1 ;  
 
-    quad q2 ; 
-    q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
-    OpticksCSG_t operation = (OpticksCSG_t)q2.u.w ;
+    //quad q2 ; 
+    //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
+
+    Part pt = partBuffer[partOffset+nodeIdx-1] ;
+    OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
 
     //rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 

@@ -19,6 +19,32 @@ cf dev/csg/csg.py
 * hmm the raw loaded buffer lacks bounding boxes when derived from user input, 
   to get those need to vivify the CSG tree and the export it back to the buffer
 
+
+Where NCSG is used
+-------------------
+
+void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
+
+    NCSG::Deserialize creates csg trees, which are collected
+    into GSolids by GMaker::makeFromCSG  
+
+    This is the newer python CSG definition route that is usurping the 
+    old bash config GGeoTest::createCsgInBox approach  
+
+GSolid* GMaker::makeFromCSG(NCSG* csg)
+
+    Coordinates:
+
+    * NPolygonizer -> GMesh 
+    * GParts::make, create analytic description
+    * GSolid, container for GMesh and GParts
+
+GParts* GParts::make( NCSG* tree)
+
+    Little to do, just bndlib hookup
+
+
+
 **/
 
 struct nvec4 ; 

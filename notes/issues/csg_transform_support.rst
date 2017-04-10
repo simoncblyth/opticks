@@ -34,6 +34,119 @@ There is no RTformat for Matrix4x4 so would need
 use USER format buffer...
 
 
+input csg very spartan
+-----------------------
+
+* but gets imported by NCSG into nnode treem and then exported 
+
+
+::
+
+    In [4]: n = np.load("/tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1/nodes.npy")
+
+    In [5]: n
+    Out[5]: 
+    array([[[   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+           [[   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+           [[   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+           [[ 100.    ,  100.    , -100.    ,  150.1111],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+           [[ 100.    ,  100.    , -100.    ,  200.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+           [[   0.    ,    0.    ,  100.    ,  150.1111],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+           [[   0.    ,    0.    ,  100.    ,  200.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ],
+            [   0.    ,    0.    ,    0.    ,    0.    ]]], dtype=float32)
+
+
+    In [6]: n.view(np.int32)
+    Out[6]: 
+    array([[[          0,           0,           0,           0],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           1],      CSG_UNION 
+            [          0,           0,           0,           1]],    <----- whats this 1 ?
+
+           [[          0,           0,           0,           0],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           3],      CSG_DIFFERENCE
+            [          0,           0,           0,           0]],
+
+           [[          0,           0,           0,           0],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           3],       CSG_DIFFERENCE
+            [          0,           0,           0,           0]],
+
+           [[ 1120403456,  1120403456, -1027080192,  1125522543],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           6],      CSG_BOX
+            [          0,           0,           0,           0]],
+
+           [[ 1120403456,  1120403456, -1027080192,  1128792064],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           5],      CSG_SPHERE
+            [          0,           0,           0,           0]],
+
+           [[          0,           0,  1120403456,  1125522543],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           6],       CSG_BOX
+            [          0,           0,           0,           0]],
+
+           [[          0,           0,  1120403456,  1128792064],
+            [          0,           0,           0,           0],
+            [          0,           0,           0,           5],       CSG_SPHERE
+            [          0,           0,           0,           0]]], dtype=int32)
+
+
+
+    simon:opticks blyth$ sysrap-csg
+
+    typedef enum {
+        CSG_ZERO=0,
+        CSG_UNION=1,
+        CSG_INTERSECTION=2,
+        CSG_DIFFERENCE=3,
+        CSG_PARTLIST=4,   
+
+        CSG_SPHERE=5,
+           CSG_BOX=6,
+       CSG_ZSPHERE=7,
+         CSG_ZLENS=8,
+           CSG_PMT=9,
+         CSG_PRISM=10,
+          CSG_TUBS=11,
+     CSG_UNDEFINED=12
+
+    } OpticksCSG_t ; 
+       
+
+
+
+
+
+
 can partlist work with derived bbox ? does not look like it
 ---------------------------------------------------------------
 

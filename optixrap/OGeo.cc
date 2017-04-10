@@ -504,11 +504,13 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 
     geometry["primBuffer"]->setBuffer(primBuffer);
 
-    optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
+    //optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
+    assert(sizeof(float) == 4);
+    optix::Buffer partBuffer = createInputUserBuffer( partBuf,  4*4*4, "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
 
-    //optix::Buffer tranBuffer = createInputBuffer<optix::float4, float>( tranBuf, RT_FORMAT_FLOAT4, 1 , "tranBuffer"); 
-    optix::Buffer tranBuffer = createInputUserBuffer<optix::Matrix4x4>( tranBuf, "tranBuffer"); 
+    assert(sizeof(optix::Matrix4x4) == 4*4*4);
+    optix::Buffer tranBuffer = createInputUserBuffer( tranBuf,  sizeof(optix::Matrix4x4), "tranBuffer"); 
     geometry["tranBuffer"]->setBuffer(tranBuffer);
 
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
@@ -762,11 +764,9 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
 
 
-template<typename U>
-optix::Buffer OGeo::createInputUserBuffer(NPY<float>* src, const char* name)
+optix::Buffer OGeo::createInputUserBuffer(NPY<float>* src, unsigned elementSize, const char* name)
 {
     unsigned numBytes = src->getNumBytes() ;
-    unsigned elementSize = sizeof(U);
     assert( numBytes % elementSize == 0 );
     unsigned size = numBytes/elementSize ; 
 

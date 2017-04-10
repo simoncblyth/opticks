@@ -4,6 +4,8 @@
 #include <optix_world.h>
 
 #include "quad.h"
+#include "Part.h"
+
 #include "switches.h"
 #define DEBUG 1
 
@@ -18,6 +20,8 @@ using namespace optix;
 // generated from /Users/blyth/opticks/optixrap/cu by boolean_h.py on Sat Mar  4 20:37:03 2017 
 rtDeclareVariable(uint4, packed_boolean_lut_ACloser, , ) = { 0x22121141, 0x00014014, 0x00141141, 0x00000000 } ; 
 rtDeclareVariable(uint4, packed_boolean_lut_BCloser, , ) = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 } ; 
+
+
 
 static __device__
 int boolean_ctrl_packed_lookup( OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB, bool ACloser )
@@ -44,7 +48,8 @@ rtDeclareVariable(unsigned int, analytic_version, ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
 
-rtBuffer<float4> partBuffer; 
+//rtBuffer<float4> partBuffer; 
+rtBuffer<Part> partBuffer; 
 
 rtBuffer<Matrix4x4> tranBuffer; 
 
@@ -95,7 +100,6 @@ TODO
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-
     if(primIdx == 0) 
     { 
         rtPrintf("##bounds analytic_version %u \n", analytic_version);
@@ -109,6 +113,10 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     unsigned numParts    = prim.y ; 
     unsigned primFlags   = prim.w ;  
 
+    unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+    unsigned numNodes = TREE_NODES(height) ;      
+    rtPrintf("##bounds primIdx %2d partOffset %2d numParts %2d height %2d numNodes %2d \n", primIdx, partOffset, numParts, height, numNodes );
+
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
     optix::Aabb* aabb = (optix::Aabb*)result;
@@ -116,36 +124,51 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
+    Part pt = partBuffer[partOffset] ; 
+
     if(is_csg)  
     {
-        quad q2, q3 ; 
-        q2.f = partBuffer[4*(partOffset+0)+2];  
-        q3.f = partBuffer[4*(partOffset+0)+3];  
+        unsigned nodeIdx = 1 << height ; 
+        while(nodeIdx)
+        {
+            int depth = TREE_DEPTH(nodeIdx) ;
+            int elev = height - depth ; 
 
-        aabb->include( make_float3(q2.f), make_float3(q3.f) );
+            Part pt = partBuffer[partOffset+nodeIdx-1];  // nodeIdx is 1-based
+            unsigned partType = pt.q2.u.w ; 
+    
+            rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d partType %2u \n", nodeIdx, depth, elev, partType );
+
+            optix::Matrix4x4* tr = NULL ; 
+
+            if(partType == CSG_SPHERE)
+            {
+                csg_bounds_sphere(pt.q0, aabb, tr  );
+            } 
+            else if(partType == CSG_BOX)
+            {
+                csg_bounds_box(pt.q0, aabb, tr  );
+            }
+
+            nodeIdx = nodeIdx & 1 ? nodeIdx >> 1 : (nodeIdx << elev) + (1 << elev) ;
+            // see opticks/dev/csg/postorder.py for explanation of bit-twiddling postorder  
+        }
     }
     else
     {
         for(unsigned int p=0 ; p < numParts ; p++)
         { 
-            quad q0, q1, q2, q3 ; 
+            unsigned partType = pt.q2.u.w ; 
 
-            q0.f = partBuffer[4*(partOffset+p)+0];  
-            q1.f = partBuffer[4*(partOffset+p)+1];  
-            q2.f = partBuffer[4*(partOffset+p)+2] ;
-            q3.f = partBuffer[4*(partOffset+p)+3]; 
-          
-            unsigned partType = q2.u.w ; 
-
-            identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+            identity.z = pt.q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
 
             if(partType == CSG_PRISM) 
             {
-                make_prism(q0.f, aabb) ;
+                make_prism(pt.q0.f, aabb) ;
             }
             else
             {
-                aabb->include( make_float3(q2.f), make_float3(q3.f) );
+                aabb->include( make_float3(pt.q2.f), make_float3(pt.q3.f) );
             }
         } 
     }
@@ -188,12 +211,12 @@ RT_PROGRAM void intersect(int primIdx)
 
     bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
+
     if(is_csg)
     { 
-        quad q1 ; 
-        q1.f = partBuffer[4*(partOffset+0)+1];  
+        Part pt = partBuffer[partOffset] ; 
 
-        identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
+        identity.z = pt.q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
 
         evaluative_csg( prim, identity );
         //intersect_csg( prim, identity );
@@ -203,30 +226,26 @@ RT_PROGRAM void intersect(int primIdx)
         for(unsigned int p=0 ; p < numParts ; p++)
         {  
             unsigned int partIdx = partOffset + p ;  
-            quad q0, q1, q2, q3 ; 
 
-            q0.f = partBuffer[4*partIdx+0];  
-            q1.f = partBuffer[4*partIdx+1];  
-            q2.f = partBuffer[4*partIdx+2] ;
-            q3.f = partBuffer[4*partIdx+3]; 
+            Part pt = partBuffer[partIdx] ; 
 
-            identity.z = q1.u.z ;   
+            identity.z = pt.q1.u.z ;   
 
-            unsigned partType = q2.u.w ; 
+            unsigned partType = pt.q2.u.w ; 
 
             switch(partType)
             {
                 case CSG_ZERO:
-                    intersect_aabb(q2, q3, identity);
+                    intersect_aabb(pt.q2, pt.q3, identity);
                     break ; 
                 case CSG_SPHERE:
-                    intersect_zsphere<false>(q0,q1,q2,q3,identity);
+                    intersect_zsphere<false>(pt.q0,pt.q1,pt.q2,pt.q3,identity);
                     break ; 
                 case CSG_TUBS:
-                    intersect_ztubs(q0,q1,q2,q3,identity);
+                    intersect_ztubs(pt.q0,pt.q1,pt.q2,pt.q3,identity);
                     break ; 
                 case CSG_BOX:
-                    intersect_box(q0,identity);
+                    intersect_box(pt.q0,identity);
                     break ; 
                 case CSG_PRISM:
                     // q0.f param used in *bounds* to construct prismBuffer, which is used within intersect_prism

@@ -290,8 +290,6 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
 
 
 
-
-
 NCSG* NCSG::FromNode(nnode* root, const char* boundary)
 {
     NCSG* tree = new NCSG(root);
