@@ -149,24 +149,12 @@ class Part(object):
     def __repr__(self):
         return "Part %6s %12s %32s %15s r:%6s sz:%5s %40s %s" % (self.typ, self.material, self.name, repr(self.xyz), self.radius, self.sizeZ, repr(self.bbox), self.boundary) 
 
-    def as_quads(self, analytic_version=0):
+    def as_quads(self):
         quads = []
         quads.append( [self.xyz[0], self.xyz[1], self.xyz[2], self.radius] )
-
-        if analytic_version > 1:
-            quads.append( [self.sizeZ, self.bbox.zmin, self.bbox.zmax, 0] )
-            bbox = False
-        else:
-            quads.append( [self.sizeZ, 0, 0, 0] )
-            bbox = True
-        pass
-        if bbox:
-            for q in self.bbox.as_quads():
-                quads.append(q)
-            pass
-        else:
-            quads.append([0,0,0,0])
-            quads.append([0,0,0,0])
+        quads.append( [self.sizeZ, 0, 0, 0] )
+        for q in self.bbox.as_quads():
+            quads.append(q)
         pass
         return quads
            

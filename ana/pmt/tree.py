@@ -190,7 +190,7 @@ class Tree(object):
         return pts 
 
     @classmethod
-    def convert(cls, parts, explode=0., analytic_version=0):
+    def convert(cls, parts, explode=0.):
         """
         :param parts: array of parts
         :return: np.array buffer of parts
@@ -244,7 +244,7 @@ class Tree(object):
         data = np.zeros([len(parts),4,4],dtype=np.float32)
         for i,part in enumerate(parts):
             #print "part (%d) tc %d  %r " % (i, part.typecode, part)
-            data[i] = part.as_quads(analytic_version=analytic_version)
+            data[i] = part.as_quads()
 
             data[i].view(np.int32)[1,1] = i + 1           # 1-based part index, where parent 0 means None
             data[i].view(np.int32)[1,2] = 0               # set to boundary index in C++ ggeo-/GPmt
