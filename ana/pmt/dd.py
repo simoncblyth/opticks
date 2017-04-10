@@ -400,9 +400,15 @@ class Elem(object):
             log.info("tp(0) %s " % repr(tpart))
         pass
 
-        sparts[0].bbox.zmin = ts.z   
+        # CRUCIAL setting of same zmax for ztubs and zmin for zsphere
+        # done via the bbox...
+        # TODO: store z-range in parameters (2*float), not the costly bbox (6*float)
+
         tpart.bbox.zmax = ts.z
+        sparts[0].bbox.zmin = ts.z   
+
         tpart.enable_endcap("P")  # smaller Z endcap 
+
 
         if UNCOINCIDE: 
             if self.name == "pmt-hemi" or self.name == "pmt-hemi-vac":

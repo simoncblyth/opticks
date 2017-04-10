@@ -241,7 +241,6 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
     float tmin = fmaxf( near );
     float tmax = fminf( far );
 
-
     if(tmin <= tmax && tmax > 0.f) 
     {
         bool check_second = true;
@@ -281,8 +280,8 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
                 else if( pa.z >= pa.x && pa.z >= pa.y ) n.z = copysignf( 1.f , p.z ) ;              
                 */
 
+                // huh, no signing ?
                 float3 n = make_float3(1.f,0.f,0.f);  
-
 
                 shading_normal = geometric_normal = n ;
                 instanceIdentity = identity ;
@@ -292,13 +291,6 @@ void intersect_aabb(quad& q2, quad& q3, const uint4& identity)
     }
 }
 
-
-
-
-
-
-
-//void intersect_box(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 
 static __device__
 void intersect_box(quad& q0, const uint4& identity)
@@ -361,7 +353,6 @@ void intersect_box(quad& q0, const uint4& identity)
         }
     }
 }
-
 
 
 

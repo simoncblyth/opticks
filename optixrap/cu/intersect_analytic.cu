@@ -73,171 +73,165 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 #include "intersect_prism.h"
 
 
+/*
+TODO
+~~~~~~
+
+* move z-ranging up into q1, to free-up the bbox 6*float
+  needs to make python changes to enable this, add 
+  tpmt-make-partlist func
+
+* use prim.z for numTran, instead of duplicating primIdx 
+
+* add enum to specialize primFlags, as it refers to the composite
+  eg CSG_PRIMFLAG_TREE, CSG_PRIMFLAG_PARTLIST   
+
+* csg bbox currently based on first root node, need to 
+  traverse tree and include bbox accounting for tranforms 
+  to free up bbox 6*float 
+
+*/
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-  if(primIdx == 0) 
-  { 
-      test_tranBuffer();
-      test_transform_bbox();
-  }
+    if(primIdx == 0) 
+    { 
+        test_tranBuffer();
+        test_transform_bbox();
+    }
 
-  const uint4& prim    = primBuffer[primIdx]; 
-  unsigned partOffset  = prim.x ;  
-  unsigned numParts    = prim.y ; 
-  // can prim.z be used for numTransforms ? 
-  unsigned primFlags   = prim.w ;  
+    const uint4& prim    = primBuffer[primIdx]; 
 
-  uint4 identity = identityBuffer[instance_index] ;  // 0 for non-instanced, from OGeo
+    unsigned partOffset  = prim.x ;  
+    unsigned numParts    = prim.y ; 
+    unsigned primFlags   = prim.w ;  
 
-  optix::Aabb* aabb = (optix::Aabb*)result;
-  *aabb = optix::Aabb();
+    uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
-  // expand aabb to include all the bbox of the parts 
+    optix::Aabb* aabb = (optix::Aabb*)result;
+    *aabb = optix::Aabb();
 
-  bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
+    bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-  if(is_csg)  
-  {
-      // +0 : csg bbox based on first csg node, the root of tree
-      // TODO: need to traverse the tree and include bboxen accounting for node transforms
+    if(is_csg)  
+    {
+        quad q2, q3 ; 
+        q2.f = partBuffer[4*(partOffset+0)+2];  
+        q3.f = partBuffer[4*(partOffset+0)+3];  
 
-      quad q2, q3 ; 
-      q2.f = partBuffer[4*(partOffset+0)+2];  
-      q3.f = partBuffer[4*(partOffset+0)+3];  
+        aabb->include( make_float3(q2.f), make_float3(q3.f) );
+    }
+    else
+    {
+        for(unsigned int p=0 ; p < numParts ; p++)
+        { 
+            quad q0, q1, q2, q3 ; 
 
-      aabb->include( make_float3(q2.f), make_float3(q3.f) );
-  }
-  else
-  {
-      for(unsigned int p=0 ; p < numParts ; p++)
-      { 
-          quad q0, q1, q2, q3 ; 
-
-          q0.f = partBuffer[4*(partOffset+p)+0];  
-          q1.f = partBuffer[4*(partOffset+p)+1];  
-          q2.f = partBuffer[4*(partOffset+p)+2] ;
-          q3.f = partBuffer[4*(partOffset+p)+3]; 
+            q0.f = partBuffer[4*(partOffset+p)+0];  
+            q1.f = partBuffer[4*(partOffset+p)+1];  
+            q2.f = partBuffer[4*(partOffset+p)+2] ;
+            q3.f = partBuffer[4*(partOffset+p)+3]; 
           
-          unsigned partType = q2.u.w ; 
+            unsigned partType = q2.u.w ; 
 
-          identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+            identity.z = q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
 
-          if(partType == CSG_PRISM) 
-          {
-              make_prism(q0.f, aabb) ;
-          }
-          else
-          {
-              aabb->include( make_float3(q2.f), make_float3(q3.f) );
-          }
-      } 
-   }
-
-  rtPrintf("##hemi-pmt.cu:bounds primIdx %d is_csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, is_csg, 
-       result[0],
-       result[1],
-       result[2],
-       result[3],
-       result[4],
-       result[5]
-     );
+            if(partType == CSG_PRISM) 
+            {
+                make_prism(q0.f, aabb) ;
+            }
+            else
+            {
+                aabb->include( make_float3(q2.f), make_float3(q3.f) );
+            }
+        } 
+    }
+    rtPrintf("##hemi-pmt.cu:bounds primIdx %d is_csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, is_csg, 
+        result[0],
+        result[1],
+        result[2],
+        result[3],
+        result[4],
+        result[5]
+        );
 
 }
 
 
+/**
+
+identityBuffer
+~~~~~~~~~~~~~~~~
+
+* just placeholder zeros for analytic test geometry 
+
+* setting identity.z adopts boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
+  at intersections the uint4 identity is copied into the instanceIdentity attribute,
+  hence making it available to material1_propagate.cu:closest_hit_propagate
+  where crucially the instanceIdentity.z -> boundaryIndex
+
+
+**/
 
 
 RT_PROGRAM void intersect(int primIdx)
 {
-  const uint4& prim    = primBuffer[primIdx]; 
+    const uint4& prim    = primBuffer[primIdx]; 
+    unsigned partOffset  = prim.x ;  
+    unsigned numParts    = prim.y ; 
+    unsigned primFlags   = prim.w ;  
 
-  unsigned partOffset  = prim.x ;  
-  unsigned numParts    = prim.y ; 
-  //unsigned primIdx_    = prim.z ;    // <--- looks like its spare, can be used for numTran ?
-  unsigned primFlags   = prim.w ;  
+    uint4 identity = identityBuffer[instance_index] ; 
 
-  //if(primIdx > 0)
-  //rtPrintf("intersect primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
+    bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-  uint4 identity = identityBuffer[instance_index] ; 
-  // for analytic test geometry (PMT too?) the identityBuffer  
-  // is composed of placeholder zeros
+    if(is_csg)
+    { 
+        quad q1 ; 
+        q1.f = partBuffer[4*(partOffset+0)+1];  
 
-  bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
+        identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
 
-  // TODO: currently primFlags from prim buffer is just copied from part-typecode of the root node in part buffer, 
-  //       so for a partlist that would be one of the primitives, CSG_SPHERE, CSG_BOX etc..
-  //       whereas it really refers to the composite, so could use different set of enums perhaps one of:
-  //
-  //             CSG_PRIMFLAG_TREE 
-  //             CSG_PRIMFLAG_PARTLIST   
-  //
+        evaluative_csg( prim, identity );
+        //intersect_csg( prim, identity );
+    }
+    else
+    {
+        for(unsigned int p=0 ; p < numParts ; p++)
+        {  
+            unsigned int partIdx = partOffset + p ;  
+            quad q0, q1, q2, q3 ; 
 
-  if(is_csg)
-  { 
-      //if(primIdx>0)
-      //rtPrintf("intersect(csg) primIdx:%d partOffset(x):%u numParts(y):%u primIdx_(z):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primIdx_, primFlags ); 
+            q0.f = partBuffer[4*partIdx+0];  
+            q1.f = partBuffer[4*partIdx+1];  
+            q2.f = partBuffer[4*partIdx+2] ;
+            q3.f = partBuffer[4*partIdx+3]; 
 
-      quad q1 ; 
-      q1.f = partBuffer[4*(partOffset+0)+1];  
-      identity.z = q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
+            identity.z = q1.u.z ;   
 
-      //intersect_boolean_triplet( prim, identity );
-      //intersect_csg( prim, identity );
-      evaluative_csg( prim, identity );
-      //recursive_csg( prim, identity );
-      //intersect_boolean_only_first( prim, identity );
-  }
-  else
-  {
-      //if(primIdx>0)
-      //rtPrintf("intersect (partlist) primIdx:%d partOffset(x):%u numParts(y):%u primFlags(w):%u \n", primIdx, partOffset, numParts, primFlags ); 
-      // partitioned intersect over single basis-shape parts for each "prim"
-      for(unsigned int p=0 ; p < numParts ; p++)
-      {  
-          unsigned int partIdx = partOffset + p ;  
+            unsigned partType = q2.u.w ; 
 
-          //rtPrintf("intersect partloop, numParts:%u p:%u partIdx:%u partOffset:%u \n", numParts, p, partIdx, partOffset );
-
-          quad q0, q1, q2, q3 ; 
-
-          q0.f = partBuffer[4*partIdx+0];  
-          q1.f = partBuffer[4*partIdx+1];  
-          q2.f = partBuffer[4*partIdx+2] ;
-          q3.f = partBuffer[4*partIdx+3]; 
-
-          identity.z = q1.u.z ;   
-
-          // identity.z adopts boundary index from partBuffer, see npy/NPart.hpp for layout (also GPmt)
-          // at intersections the uint4 identity is copied into the instanceIdentity attribute,
-          // hence making it available to material1_propagate.cu:closest_hit_propagate
-          // where crucially the instanceIdentity.z -> boundaryIndex
-
-          unsigned partType = q2.u.w ; 
-
-          switch(partType)
-          {
-              case CSG_ZERO:
+            switch(partType)
+            {
+                case CSG_ZERO:
                     intersect_aabb(q2, q3, identity);
                     break ; 
-              case CSG_SPHERE:
+                case CSG_SPHERE:
                     intersect_zsphere<false>(q0,q1,q2,q3,identity);
                     break ; 
-              case CSG_TUBS:
+                case CSG_TUBS:
                     intersect_ztubs(q0,q1,q2,q3,identity);
                     break ; 
-              case CSG_BOX:
+                case CSG_BOX:
                     intersect_box(q0,identity);
                     break ; 
-              case CSG_PRISM:
-                    intersect_prism(q0,q1,q2,q3,identity);
+                case CSG_PRISM:
+                    // q0.f param used in *bounds* to construct prismBuffer, which is used within intersect_prism
+                    intersect_prism(identity);
                     break ; 
-
-          }
-      }
-   } 
+            }
+        }
+    } 
 }
-
 
 

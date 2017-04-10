@@ -1,64 +1,71 @@
 
 // from tutorial9 intersect_chull
 static __device__
-void intersect_prism(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
+void intersect_prism(const uint4& identity)
 {
-  int nplane = 5 ;
+    int nplane = 5 ;
 
-  float t0 = -CUDART_INF_F ; 
-  float t1 =  CUDART_INF_F ; 
+    float t0 = -CUDART_INF_F ; 
+    float t1 =  CUDART_INF_F ; 
 
-  float3 t0_normal = make_float3(0.f);
-  float3 t1_normal = make_float3(0.f);
+    float3 t0_normal = make_float3(0.f);
+    float3 t1_normal = make_float3(0.f);
 
-  for(int i = 0; i < nplane && t0 < t1 ; ++i ) 
-  {
-    float4 plane = prismBuffer[i];
-    float3 n = make_float3(plane);
-    float  d = plane.w;
+    for(int i = 0; i < nplane && t0 < t1 ; ++i ) 
+    {
+        float4 plane = prismBuffer[i];
+        float3 n = make_float3(plane);
+        float  d = plane.w;
 
-    float denom = dot(n, ray.direction);
-    if(denom == 0.f) continue ;   
-    float t = -(d + dot(n, ray.origin))/denom;
+        float denom = dot(n, ray.direction);
+        if(denom == 0.f) continue ;   
+        float t = -(d + dot(n, ray.origin))/denom;
     
-    // Avoiding infinities.
-    // Somehow infinities arising from perpendicular other planes
-    // prevent normal incidence plane intersection.
-    // This caused a black hairline crack around the prism middle. 
-    //
-    // In aabb slab method infinities were well behaved and
-    // did not change the result, but not here.
-    //
-    // BUT: still getting extended edge artifact when view from precisely +X+Y
-    // http://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
-    //
+        // Avoiding infinities.
+        // Somehow infinities arising from perpendicular other planes
+        // prevent normal incidence plane intersection.
+        // This caused a black hairline crack around the prism middle. 
+        //
+        // In aabb slab method infinities were well behaved and
+        // did not change the result, but not here.
+        //
+        // BUT: still getting extended edge artifact when view from precisely +X+Y
+        // http://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
+        //
     
-    if( denom < 0.f){  // ray opposite to normal, ie ray from outside entering
-      if(t > t0){
-        t0 = t;
-        t0_normal = n;
-      }
-    } else {          // ray same hemi as normal, ie ray from inside exiting 
-      if(t < t1){
-        t1 = t;
-        t1_normal = n;
-      }
+        if( denom < 0.f)  // ray opposite to normal, ie ray from outside entering
+        {
+            if(t > t0)
+            {
+                t0 = t;
+                t0_normal = n;
+            }
+        } 
+        else 
+        {          // ray same hemi as normal, ie ray from inside exiting 
+            if(t < t1)
+            {
+                t1 = t;
+                t1_normal = n;
+            }
+        }
     }
 
-  }
+    if(t0 > t1)
+        return;
 
-  if(t0 > t1)
-    return;
-
-  if(rtPotentialIntersection( t0 )){
-    shading_normal = geometric_normal = t0_normal;
-    instanceIdentity = identity ;
-    rtReportIntersection(0);
-  } else if(rtPotentialIntersection( t1 )){
-    shading_normal = geometric_normal = t1_normal;
-    instanceIdentity = identity ;
-    rtReportIntersection(0);
-  }
+    if(rtPotentialIntersection( t0 ))
+    {
+        shading_normal = geometric_normal = t0_normal;
+        instanceIdentity = identity ;
+        rtReportIntersection(0);
+    } 
+    else if(rtPotentialIntersection( t1 ))
+    {
+        shading_normal = geometric_normal = t1_normal;
+        instanceIdentity = identity ;
+        rtReportIntersection(0);
+    }
 }
 
 
@@ -97,9 +104,9 @@ Ray-plane intersection
 static __device__
 float4 make_plane( float3 n, float3 p ) 
 {
-  n = normalize(n);
-  float d = -dot(n, p); 
-  return make_float4( n, d );
+    n = normalize(n);
+    float d = -dot(n, p); 
+    return make_float4( n, d );
 }
 
 /*

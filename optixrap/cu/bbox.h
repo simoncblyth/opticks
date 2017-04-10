@@ -40,6 +40,8 @@ __device__ void transform_bbox(Aabb* bb, const Matrix4x4* tr )
 __device__ void test_tranBuffer()
 {
     int tranIdx = 0 ; 
+    if(2*tranIdx+1 >= tranBuffer.size()) return ;  
+
     Matrix4x4 tr = tranBuffer[2*tranIdx+0] ; 
     Matrix4x4 irit = tranBuffer[2*tranIdx+1] ; 
 
@@ -88,15 +90,16 @@ __device__ Matrix4x4 make_test_matrix()
 
 __device__ void test_transform_bbox()
 {
+    int tranIdx = 0 ; 
+    Matrix4x4 tr = 2*tranIdx < tranBuffer.size() ? tranBuffer[2*tranIdx+0] : make_test_matrix() ; 
+
+    unsigned size = tranBuffer.size() ;  // smth funny cannot directly rtPrintf a size
+    rtPrintf("##test_transform_bbox tranBuffer size %u \n", size  );
+
     float3 mn = make_float3(-100.f,-100.f,-100.f);
     float3 mx = make_float3( 100.f, 100.f, 100.f);
 
     Aabb bb(mn, mx);
-
-    //Matrix4x4 tr = make_test_matrix();
-
-    int tranIdx = 0 ; 
-    Matrix4x4 tr = tranBuffer[2*tranIdx+0] ; 
 
     transform_bbox( &bb, &tr ) ; 
 

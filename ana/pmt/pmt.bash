@@ -63,6 +63,10 @@ csg.py
 
      CSG serializarion is however used via ggeo/GCSG for 
      the creation the Geant4 test geometry, including the PMT
+
+     NB GCSG was my initial take on CSG that never worked on GPU, 
+     the new way npy/NCSG was designed for GPU using a binary tree
+     serialization to get over to GPU side 
      
      cfg4/CMaker
      cfg4/CPropLib

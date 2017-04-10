@@ -53,6 +53,7 @@ class Part(object):
         :param tubs: tubs Part instance  
         :param sphere: sphere Part instance  
         :param sign: 1 or -1 sign of the sqrt  
+        :return zplane: ZPlane instance representing disc intersection with z-position and radius 
 
         Sphere at zp on Z axis
 
@@ -76,7 +77,9 @@ class Part(object):
         iz = math.sqrt(RR_m_rr)  
         assert iz < tubs.sizeZ 
 
-        return ZPlane(name, sphere.xyz[Z] + sign*iz, r) 
+        zp = sphere.xyz[Z]
+
+        return ZPlane(name, zp + sign*iz, r) 
 
         
     def enable_endcap(self, tag):
@@ -99,7 +102,11 @@ class Part(object):
         methods of dd.py:Primitive subclasses, 
         currently only Sphere and Tubs.
 
-        see cu/hemi-pmt.cu for where these are used 
+        Geometry defined here is used in::
+
+            oxrap/cu/intersect_analytic.cu
+            oxrap/cu/intersect_ztubs.h etc..
+         
         """
         self.typ = typ
         self.name = name

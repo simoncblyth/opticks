@@ -82,25 +82,27 @@ template<bool use_robust_method>
 static __device__
 void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity)
 {
+    // intersect z required to be within q2.f.z and q3.f.z (ie the bbox z-range)
+    // TODO: move z-range up into (q1.y,q1.z) treating as a zsphere parameters   
 
-  float3 center = make_float3(q0.f);
-  float radius = q0.f.w;
+    float3 center = make_float3(q0.f);
+    float radius = q0.f.w;
 
-  float3 O = ray.origin - center;
-  float3 D = ray.direction;
+    float3 O = ray.origin - center;
+    float3 D = ray.direction;
 
-  float b = dot(O, D);
-  float c = dot(O, O)-radius*radius;
-  float disc = b*b-c;
+    float b = dot(O, D);
+    float c = dot(O, O)-radius*radius;
+    float disc = b*b-c;
 
- /*
-  rtPrintf("intersect_sphere %10.4f %10.4f %10.4f : %10.4f disc %10.4f \n", 
-       center.x,  
-       center.y,  
-       center.z,  
-       radius,
-       disc);  
-  */
+    /*
+    rtPrintf("intersect_zsphere %10.4f %10.4f %10.4f : %10.4f disc %10.4f \n", 
+         center.x,  
+         center.y,  
+         center.z,  
+         radius,
+         disc);  
+    */
 
     if(disc > 0.0f)
     {

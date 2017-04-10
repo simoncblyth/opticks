@@ -166,13 +166,15 @@ enum
 static __device__
 void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identity )
 {
-/* 
-Position shift below is to match between different cylinder Z origin conventions
+    /* 
+    Position shift below is to match between different cylinder Z origin conventions
 
-* Ericson calc implemented below has cylinder origin at endcap P  
-* detdesc/G4 Tubs has cylinder origin in the center 
+    * Ericson calc implemented below has cylinder origin at endcap P  
+    * detdesc/G4 Tubs has cylinder origin in the center 
 
-*/
+    */
+
+    // see opticks/ana/pmt/geom.py:Part.as_quads
     float sizeZ = q1.f.x ; 
     float z0 = q0.f.z - sizeZ/2.f ;     
     float3 position = make_float3( q0.f.x, q0.f.y, z0 );  // 0,0,-169.
@@ -392,9 +394,6 @@ Position shift below is to match between different cylinder Z origin conventions
                 }
             } 
         }
-
-
-
     }
 }
 
