@@ -1,5 +1,5 @@
 static __device__
-void intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
+void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
 {
     // when an intersection is found between the ray and the sphere 
     // with parametric t greater than the tmin parameter
@@ -34,7 +34,7 @@ void intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
 
 
 static __device__
-void intersect_box(const quad& q0, const float& tt_min, float4& tt )
+void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 {
    const float3 bmin = make_float3(q0.f.x - q0.f.w, q0.f.y - q0.f.w, q0.f.z - q0.f.w ); 
    const float3 bmax = make_float3(q0.f.x + q0.f.w, q0.f.y + q0.f.w, q0.f.z + q0.f.w ); 
@@ -126,7 +126,7 @@ void intersect_box(const quad& q0, const float& tt_min, float4& tt )
 }
 
 static __device__
-void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
+void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
     quad q0, q2 ; 
     q0.f = partBuffer[4*partIdx+0];
@@ -139,8 +139,8 @@ void intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 
     switch(csgFlag)
     {
-        case CSG_SPHERE: intersect_sphere(q0,tt_min, tt )  ; break ; 
-        case CSG_BOX:    intersect_box(   q0,tt_min, tt )  ; break ; 
+        case CSG_SPHERE: csg_intersect_sphere(q0,tt_min, tt )  ; break ; 
+        case CSG_BOX:    csg_intersect_box(   q0,tt_min, tt )  ; break ; 
     }
 }
 

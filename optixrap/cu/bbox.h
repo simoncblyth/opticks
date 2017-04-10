@@ -2,7 +2,6 @@
 
 using namespace optix ; 
 
-
 __device__ void transform_bbox(Aabb* bb, const Matrix4x4* tr )
 {
    // http://dev.theomader.com/transform-bounding-boxes/

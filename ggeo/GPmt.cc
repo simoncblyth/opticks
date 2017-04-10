@@ -113,10 +113,10 @@ void GPmt::loadFromCache(NSlice* slice)
 
 
 
-    NPY<float>* iritBuf = NPY<float>::make(0,4,4);
-    iritBuf->zero();
+    NPY<float>* tranBuf = NPY<float>::make(0,2,4,4);
+    tranBuf->zero();
 
-    GParts* parts = new GParts(partBuf, iritBuf, bndSpec, m_bndlib);
+    GParts* parts = new GParts(partBuf, tranBuf, bndSpec, m_bndlib);
     setParts(parts);
 
     GCSG* csg = new GCSG(csgBuf, materials, lvnames, pvnames ) ;

@@ -97,7 +97,7 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
     float4 tt = make_float4(0.f,0.f,1.f, tA_min);
 
     //IntersectionState_t a_state = intersect_part( a_partIdx , tA_min, tt ) ;
-    intersect_part( a_partIdx , tA_min, tt ) ;
+    csg_intersect_part( a_partIdx , tA_min, tt ) ;
 
     IntersectionState_t a_state = tt.w > tA_min ? 
                         ( (tt.x * ray.direction.x + tt.y * ray.direction.y + tt.z * ray.direction.z) < 0.f ? State_Enter : State_Exit ) 
@@ -398,8 +398,8 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
     isect[RIGHT] = make_float4(0.f, 0.f, 0.f, 0.f) ;  
     if(bileaf)
     {
-        intersect_part( partOffset+leftIdx-1, tmin, isect[LEFT] );
-        intersect_part( partOffset+rightIdx-1, tmin, isect[RIGHT] );
+        csg_intersect_part( partOffset+leftIdx-1, tmin, isect[LEFT] );
+        csg_intersect_part( partOffset+rightIdx-1, tmin, isect[RIGHT] );
     }  
     else
     {
@@ -432,7 +432,7 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
             x_tmin[side] = isect[side].w + propagate_epsilon ; 
             if(bileaf)
             {
-                intersect_part( partOffset+leftIdx+side-1, x_tmin[side], isect[LEFT+side] );
+                csg_intersect_part( partOffset+leftIdx+side-1, x_tmin[side], isect[LEFT+side] );
             }
             else
             {
@@ -582,7 +582,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             if(primitive)
             {
                 float4 isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
-                intersect_part( partOffset+nodeIdx-1, tmin, isect );
+                csg_intersect_part( partOffset+nodeIdx-1, tmin, isect );
                 isect.w = copysignf( isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
                 ierr = csg_push(csg, isect, nodeIdx ); 
@@ -855,8 +855,8 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              {
                  left.w = 0.f ;   // reusing the same storage so clear ahead
                  right.w = 0.f ; 
-                 intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
-                 intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
+                 csg_intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
+                 csg_intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
              }
              else       //  op-op-op
              {
@@ -881,7 +881,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
             
                  if(bileaf)
                  {
-                      intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advance
+                      csg_intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advance
                  }
                  else
                  {
@@ -997,8 +997,8 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
 
     left.w = 0.f ;   // reusing the same storage so clear ahead
     right.w = 0.f ; 
-    intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
-    intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
+    csg_intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
+    csg_intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
 
     IntersectionState_t x_state[2] ;
 
@@ -1014,7 +1014,7 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
         loop++ ;
         float4& _side = isect[side+LEFT] ;
         tX_min[side] = _side.w + propagate_epsilon ;
-        intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advanced intersect
+        csg_intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advanced intersect
 
         x_state[side] = CSG_CLASSIFY( _side, ray.direction, tX_min[side] );
         ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );

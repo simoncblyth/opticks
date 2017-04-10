@@ -465,7 +465,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     NPY<float>*        partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*        tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,2,4,4));  // transform pairs (tr, irit) 
     NPY<unsigned int>* primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));     // prim
-    NPY<unsigned int>*   idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && idBuf->hasShape(-1,4)); // identityBuffer
+    NPY<unsigned int>*   idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
+     // PmtInBox yielding -1,1,4 ?
 
     unsigned numPrim = primBuf->getNumItems();
     unsigned numPart = partBuf->getNumItems();
@@ -494,8 +495,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry["primitive_count"]->setUint( numPrim );  // needed GPU side, for instanced offsets 
 
 
-    geometry->setIntersectionProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "intersect"));
-    geometry->setBoundingBoxProgram(m_ocontext->createProgram("hemi-pmt.cu.ptx", "bounds"));
+    geometry->setIntersectionProgram(m_ocontext->createProgram("intersect_analytic.cu.ptx", "intersect"));
+    geometry->setBoundingBoxProgram(m_ocontext->createProgram("intersect_analytic.cu.ptx", "bounds"));
 
 
     optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 

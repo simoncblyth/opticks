@@ -170,7 +170,7 @@ set(SOURCES
     cu/material1_propagate.cu 
     cu/TriangleMesh.cu 
     cu/sphere.cu 
-    cu/hemi-pmt.cu 
+    cu/intersect_analytic.cu 
     cu/generate.cu
     cu/textureTest.cu
     cu/bufferTest.cu
@@ -197,7 +197,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_propagate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
-    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_hemi-pmt.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_intersect_analytic.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_textureTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_minimalTest.cu.ptx
