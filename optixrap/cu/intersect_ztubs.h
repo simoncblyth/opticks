@@ -178,13 +178,28 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
     float sizeZ = q1.f.x ; 
     float z0 = q0.f.z - sizeZ/2.f ;     
     float3 position = make_float3( q0.f.x, q0.f.y, z0 );  // 0,0,-169.
-    float clipped_sizeZ = q3.f.z - q2.f.z ;  
+
+    float zmin, zmax ;  
+
+    if(analytic_version > 1)
+    {
+        zmin = q1.f.y ; 
+        zmax = q1.f.z ; 
+    }
+    else
+    {
+        zmin = q2.f.z ;
+        zmax = q3.f.z ;
+    }
+
  
     float radius = q0.f.w ;
     int flags = q1.i.w ; 
 
     bool PCAP = flags & ENDCAP_P ; 
     bool QCAP = flags & ENDCAP_Q ;
+
+    float clipped_sizeZ = zmax - zmin ;  
 
     //rtPrintf("intersect_ztubs position %10.4f %10.4f %10.4f \n", position.x, position.y, position.z );
     //rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);

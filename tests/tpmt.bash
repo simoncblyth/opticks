@@ -174,8 +174,12 @@ tpmt--(){
         anakey=tevt    ## just dump OK history table
     fi 
 
-    local apmtidx=1 
-    # non-default AnalyticPMTIndex currently required for updated enums
+    local apmtidx=1
+    
+    # AnalyticPMTIndex, apmtindex -> analytic_version
+    #
+    #    >1 : living without bbox
+    # 
 
 
    op.sh \

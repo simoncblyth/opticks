@@ -40,6 +40,7 @@ rtDeclareVariable(unsigned int, instance_index,  ,);
 // optix::GeometryInstance instance_index into the identity buffer, 
 // set by oxrap/OGeo.cc, 0 for non-instanced 
 
+rtDeclareVariable(unsigned int, analytic_version, ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
 
@@ -94,8 +95,10 @@ TODO
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
+
     if(primIdx == 0) 
     { 
+        rtPrintf("##bounds analytic_version %u \n", analytic_version);
         test_tranBuffer();
         test_transform_bbox();
     }

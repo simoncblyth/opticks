@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     assert hasattr(parts, 'csg') and len(parts.csg) > 0
 
-    buf = tr.convert(parts)
+    buf = tr.convert(parts, analytic_version=args.apmtidx)
   
     tr.dump()
 

@@ -499,7 +499,7 @@ class Elem(object):
         return pts 
 
 
-    def parts(self):
+    def parts(self, analytic_version=0):
         """
         :return: list of Part instances
 
@@ -918,16 +918,17 @@ class Dddb(Elem):
     }
 
     @classmethod
-    def parse(cls, path):
+    def parse(cls, path, analytic_version=0):
         g = Dddb(parse_(path))
-        g.init()
+        g.init(analytic_version=analytic_version)
         return g
 
     def __call__(self, expr):
         return self.ctx.evaluate(expr)
 
-    def init(self):
+    def init(self, analytic_version):
         self.g = self
+        self.analytic_version = analytic_version
 
         pctx = {}
         pctx["mm"] = 1.0 

@@ -10,6 +10,39 @@ overview
 * DONE: old PMT serialization needs to be rebuilt with new unified enum   
 * rebuilt analytic PMT and stored into opticksdata with non-default apmtidx slot 1 (not committed)
 
+revisit tpmt--
+----------------
+
+The --apmtidx 1 option results in loading::
+
+    2017-04-10 15:02:46.231 FATAL [50057] [GGeo::loadAnalyticPmt@733] GGeo::loadAnalyticPmt AnalyticPMTIndex 1 AnalyticPMTSlice ALL Path /usr/local/opticks/opticksdata/export/DayaBay/GPmt/1
+
+::
+
+    155 tpmt--(){
+    ...
+    176 
+    177     local apmtidx=1
+    178     # non-default AnalyticPMTIndex currently required for updated enums
+    ...
+    181    op.sh \
+    182        --anakey $anakey \
+    183        --save \
+    184        --test --testconfig "$(tpmt-testconfig)" \
+    185        --torch --torchconfig "$(tpmt-torchconfig)" \
+    186        --cat $(tpmt-det) \
+    187        --tag $tag \
+    188        --timemax 10 \
+    189        --animtimemax 10 \
+    190        --eye 0.0,-0.5,0.0 \
+    191        --geocenter \
+    192        --apmtidx $apmtidx \
+    193        $*
+    194 
+    195 }
+
+
+
 
 root cause of difficulty
 --------------------------

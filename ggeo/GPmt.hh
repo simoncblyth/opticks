@@ -45,6 +45,7 @@ class GGEO_API GPmt {
        GParts* getParts();
        GCSG*   getCSG();
        const char* getPath();
+       unsigned    getIndex(); 
    private:
        Opticks*           m_cache ; 
        GBndLib*           m_bndlib ; 

@@ -37,6 +37,23 @@ This .ini file is read by OpticksResource allowing opticks to access the .dae pa
 at a higher level of just needing the tag.
 
 
+opticks env
+-------------
+
+Most of the opticks environment comes from opticksdata-export::
+
+    simon:boostrap blyth$ env | grep OPTICKS
+    OPTICKS_HOME=/Users/blyth/opticks
+    OPTICKS_INSTALL_PREFIX=/usr/local/opticks
+    OPTICKS_ANA_DEFAULTS=det=concentric,src=torch,tag=1
+    OPTICKS_DATA=/usr/local/opticks/opticksdata
+
+    OPTICKSDATA_DAEPATH_DYB=/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    OPTICKSDATA_DAEPATH_DLIN=/usr/local/opticks/opticksdata/export/Lingao_VGDX_20140414-1247/g4_00.dae
+    OPTICKSDATA_DAEPATH_DFAR=/usr/local/opticks/opticksdata/export/Far_VGDX_20140414-1256/g4_00.dae
+    OPTICKSDATA_DAEPATH_JPMT=/usr/local/opticks/opticksdata/export/juno/test3.dae
+    OPTICKSDATA_DAEPATH_LXE=/usr/local/opticks/opticksdata/export/LXe/g4_00.dae
+    OPTICKSDATA_DAEPATH_DPIB=/usr/local/opticks/opticksdata/export/dpib/cfg4.dae
 
 
 See Also

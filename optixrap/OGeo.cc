@@ -480,6 +480,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     assert( numPrim < 10 );  // expecting small number
     assert( numTran <= numPart ) ; 
 
+    unsigned analytic_version = pts->getAnalyticVersion();
 
     LOG(info)   << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
@@ -487,13 +488,14 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
                  << " numPart " << numPart
                  << " numTran(pairs) " << numTran
                  << " numITransforms(unused) " << numITransforms 
+                 << " analytic_version " << analytic_version
                  ;
 
     optix::Geometry geometry = m_context->createGeometry();
 
     geometry->setPrimitiveCount( numPrim );
     geometry["primitive_count"]->setUint( numPrim );  // needed GPU side, for instanced offsets 
-
+    geometry["analytic_version"]->setUint(analytic_version);
 
     geometry->setIntersectionProgram(m_ocontext->createProgram("intersect_analytic.cu.ptx", "intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("intersect_analytic.cu.ptx", "bounds"));

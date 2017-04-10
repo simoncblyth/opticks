@@ -117,6 +117,8 @@ void GPmt::loadFromCache(NSlice* slice)
     tranBuf->zero();
 
     GParts* parts = new GParts(partBuf, tranBuf, bndSpec, m_bndlib);
+    parts->setAnalyticVersion(getIndex());
+
     setParts(parts);
 
     GCSG* csg = new GCSG(csgBuf, materials, lvnames, pvnames ) ;
@@ -167,6 +169,11 @@ const char* GPmt::getPath()
 {
     return m_path ; 
 }
+unsigned GPmt::getIndex()
+{
+    return m_index ; 
+}
+
 
 
 

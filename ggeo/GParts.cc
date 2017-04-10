@@ -36,13 +36,22 @@ GParts* GParts::combine(std::vector<GParts*> subs)
 
     GParts* parts = new GParts(); 
     GBndLib* bndlib = NULL ; 
+
+    unsigned analytic_version = 0 ;  
+
     for(unsigned int i=0 ; i < subs.size() ; i++)
     {
         GParts* sp = subs[i];
+
+        unsigned av = sp->getAnalyticVersion();
+        if(av > analytic_version ) analytic_version = av ; 
+
         parts->add(sp);
         if(!bndlib) bndlib = sp->getBndLib(); 
     } 
     if(bndlib) parts->setBndLib(bndlib);
+    parts->setAnalyticVersion(analytic_version);
+
     return parts ; 
 }
 
@@ -160,7 +169,8 @@ GParts::GParts(GBndLib* bndlib)
       m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
-      m_verbose(false)
+      m_verbose(false),
+      m_analytic_version(0)
 {
       init() ; 
 }
@@ -171,7 +181,8 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, const char* spec, GBnd
       m_bndspec(NULL),
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
-      m_closed(false)
+      m_closed(false),
+      m_analytic_version(0)
 {
       init(spec) ; 
 }
@@ -182,7 +193,8 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, GItemList* spec, GBndL
       m_bndspec(spec),
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
-      m_closed(false)
+      m_closed(false),
+      m_analytic_version(0)
 {
       init() ; 
 }
@@ -234,6 +246,19 @@ void GParts::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 
 }
+
+
+unsigned GParts::getAnalyticVersion()
+{
+    return m_analytic_version ; 
+}
+void GParts::setAnalyticVersion(unsigned version)
+{
+    m_analytic_version = version ; 
+}
+ 
+
+
 
 bool GParts::isClosed()
 {

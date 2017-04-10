@@ -88,6 +88,19 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
 
+    float zmin, zmax ; 
+
+    if(analytic_version > 1)
+    {
+        zmin = q1.f.y ; 
+        zmax = q1.f.z ; 
+    }
+    else
+    {
+        zmin = q2.f.z ;
+        zmax = q3.f.z ;
+    }
+
     float3 O = ray.origin - center;
     float3 D = ray.direction;
 
@@ -127,7 +140,7 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
         bool check_second = true;
 
         // require intersection point to be within bbox z range from q2 bbmin and q3 bbmax
-        if( P.z >= q2.f.z && P.z <= q3.f.z )
+        if( P.z >= zmin && P.z <= zmax )
         {
             if( rtPotentialIntersection( root1 + root11 ) ) 
             {
@@ -141,7 +154,7 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
         {
             float root2 = (-b + sdisc) + (do_refine ? root11 : 0.f);   // unconfirmed change root1 -> root11
             P = ray.origin + root2*ray.direction ;  
-            if( P.z >= q2.f.z && P.z <= q3.f.z )
+            if( P.z >= zmin && P.z <= zmax )
             { 
                 if( rtPotentialIntersection( root2 ) ) 
                 {

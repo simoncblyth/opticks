@@ -80,6 +80,9 @@ class GGEO_API GParts {
         unsigned int getTypeCode(unsigned int part);
         unsigned int getNodeIndex(unsigned int part);
         unsigned int getBoundary(unsigned int part);
+
+        unsigned getAnalyticVersion();
+        void setAnalyticVersion(unsigned vers);
     public: 
         /*
         unsigned int getFlags(unsigned int part);
@@ -150,6 +153,8 @@ class GGEO_API GParts {
         std::map<unsigned int, unsigned int> m_parts_per_prim ;
         std::map<unsigned int, unsigned int> m_flag_prim ;
         bool               m_verbose ; 
+        unsigned           m_analytic_version ; 
+
 };
 
 #include "GGEO_TAIL.hh"
