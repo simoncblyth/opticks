@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <string>
 
 #include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
@@ -12,6 +13,7 @@ struct NPY_API nmat4pair
     static nmat4pair* product(const std::vector<nmat4pair*>& tt);
 
     nmat4pair( const glm::mat4& tr, const glm::mat4& irit ) : tr(tr), irit(irit) {} ;
+    std::string digest();
 
     glm::mat4 tr   ; 
     glm::mat4 irit ; 

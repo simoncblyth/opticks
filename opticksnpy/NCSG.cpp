@@ -173,7 +173,11 @@ void NCSG::import()
               ;
 
     m_root = import_r(0, NULL, 0) ; 
+
+    analyse();
+
 }
+
 
 nmat4pair* NCSG::import_transform(unsigned itra)
 {
@@ -285,8 +289,53 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
                                 << " csgname " << CSGName(typecode)
                                 ;
     assert(node); 
+
+    node->idx = idx ; 
+
     return node ; 
 } 
+
+
+
+
+void NCSG::analyse()
+{
+    m_gtransform_map.clear();
+
+    analyse_r( m_root );
+
+    unsigned num_distinct_gtransforms = m_gtransform_map.size();
+
+    LOG(info) << "NCSG::analyse"
+              << " num_distinct_gtransforms " << num_distinct_gtransforms
+              ;
+
+    for(MSN::const_iterator it=m_gtransform_map.begin() ; it != m_gtransform_map.end() ; it++)
+    {
+        std::cout << " dig " << it->first << " " << it->second->desc() << std::endl ; 
+    }
+
+}
+
+void NCSG::analyse_r(nnode* node)
+{
+    if(node->gtransform)
+    {
+        std::string digest = node->gtransform->digest();
+        m_gtransform_map[digest] = node ; 
+
+        // nope... need to collect all nodes with the transform, so can 
+        // go back and make references into the gtransform buffer to be created 
+    }
+
+
+    if(node->left && node->right)
+    {
+        analyse_r(node->left);
+        analyse_r(node->right);
+    }
+}
+
 
 
 
@@ -386,6 +435,7 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
 
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
         tree->import();  // input m_nodes buffer into CSG nnode tree 
+
         tree->export_(); // from CSG nnode tree back into *same* buffer, with bbox added   
 
         LOG(info) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 

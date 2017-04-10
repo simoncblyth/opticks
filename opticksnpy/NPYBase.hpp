@@ -58,6 +58,8 @@ class NPY_API NPYBase {
 
        std::string  getItemShape(unsigned int ifr=1);
        std::string  getDigestString();
+       std::string  getItemDigestString(unsigned i);
+
        static std::string  getDigestString(void* bytes, unsigned int nbytes);
        bool isEqualTo(void* bytes, unsigned int nbytes);
        bool isEqualTo(NPYBase* other);

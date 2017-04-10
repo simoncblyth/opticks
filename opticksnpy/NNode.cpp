@@ -53,6 +53,7 @@ void nnode::dump(const char* msg)
 
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 {
+    n.idx = 0 ; 
     n.type = type ; 
 
     n.left = left ; 
@@ -130,6 +131,10 @@ npart nnode::part()
     pt.zero();
     pt.setParam( param );
     pt.setTypeCode( type );
+
+    // hmm need to setGTransform() using 
+    // an index into a buffer of distinct compound transforms for the tree
+
     pt.setBBox( bb );
 
     return pt ; 
@@ -351,6 +356,7 @@ void nnode::dump_prim( const char* msg, int verbosity )
         }
     }
 }
+
 
 
 

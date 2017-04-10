@@ -45,6 +45,7 @@ struct NPY_API nnode
     static void collect_prim_r(std::vector<nnode*>& prim, nnode* node) ;
 
 
+    unsigned idx ; 
     OpticksCSG_t type ;  
     nnode* left ; 
     nnode* right ; 

@@ -1,3 +1,4 @@
+#include "SDigest.hh"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
@@ -26,9 +27,10 @@ glm::mat4* invert_tr( const glm::mat4* tr )
     return new glm::mat4( invert_tr(*tr) );
 }
 
-
-
-
+std::string nmat4pair::digest()
+{
+    return SDigest::digest( (void*)this, sizeof(nmat4pair) );
+}
 
 nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& tt)
 {

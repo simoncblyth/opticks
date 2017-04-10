@@ -34,10 +34,31 @@ There is no RTformat for Matrix4x4 so would need
 use USER format buffer...
 
 
+bringing over the gtransforms (ie compound transforms)
+--------------------------------------------------------
+
+* clearly want to do the matrix multiplication once
+  CPU side
+
+* hmm now that have moved bbox calc to GPU side, does it make sense
+  to use rtransform at input ... or could go direct to transform ?
+  Little point changing this, as will not help much 
+  the issue is not so simple... 
+
+* need to bring over the gtransforms (not the input transforms)
+  (ie all distinct products of parent transforms in the tree) 
+  ... hmm this will mean will need to collect all distinct 
+  gtransforms off the node tree (TODO: digest for glm::mat4)
+
+
+
+
+
 input csg very spartan
 -----------------------
 
 * but gets imported by NCSG into nnode treem and then exported 
+
 
 
 ::
@@ -87,7 +108,7 @@ input csg very spartan
     array([[[          0,           0,           0,           0],
             [          0,           0,           0,           0],
             [          0,           0,           0,           1],      CSG_UNION 
-            [          0,           0,           0,           1]],    <----- whats this 1 ?
+            [          0,           0,           0,           1]],    <----- whats this 1 ? IT IS THE RTRANSFORM REFERENCE
 
            [[          0,           0,           0,           0],
             [          0,           0,           0,           0],

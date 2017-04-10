@@ -59,7 +59,7 @@ void test_invert_tr()
     //std::cout << gpresent(" irit ", irit ) << std::endl ; 
 
     nmat4pair mp(tr, irit);
-    std::cout << " mp " << mp << std::endl ; 
+    std::cout << " mp " << mp << " dig " << mp.digest() << std::endl ; 
 
 }
 

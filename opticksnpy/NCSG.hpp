@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <glm/fwd.hpp>
 
@@ -55,6 +56,7 @@ class NParameters ;
 
 class NPY_API NCSG {
         friend struct NCSGLoadTest ; 
+        typedef std::map<std::string, nnode*> MSN ; 
     public:
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
         static const char* FILENAME ; 
@@ -74,6 +76,9 @@ class NPY_API NCSG {
         unsigned getNumNodes();
         unsigned getHeight();
         nnode* getRoot();
+    public:
+        void analyse();
+        void analyse_r(nnode* node); 
     private:
         // Deserialize
         NCSG(const char* treedir, unsigned index=0u);
@@ -101,6 +106,9 @@ class NPY_API NCSG {
         unsigned    m_num_transforms ; 
         unsigned    m_height ; 
         const char* m_boundary ; 
+
+        MSN         m_gtransform_map ; 
+
 
 };
 

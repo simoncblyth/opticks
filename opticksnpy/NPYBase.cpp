@@ -560,10 +560,31 @@ std::string NPYBase::getDigestString()
     return getDigestString(getBytes(), getNumBytes(0));
 }
 
+
 std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
 {
     return SDigest::digest(bytes, nbytes);
 }
+
+
+std::string NPYBase::getItemDigestString(unsigned i)
+{
+    assert( i < getNumItems() );
+
+    unsigned bufSize =  getNumBytes(0);  // buffer size   
+    unsigned itemSize = getNumBytes(1);  // item size in bytes (from dimension d)  
+
+    assert( i*itemSize < bufSize );
+
+    char* bytes = (char*)getBytes();
+    assert(sizeof(char) == 1);
+
+    return getDigestString( bytes + i*itemSize, itemSize );
+}
+
+
+
+
 
 bool NPYBase::isEqualTo(NPYBase* other)
 {

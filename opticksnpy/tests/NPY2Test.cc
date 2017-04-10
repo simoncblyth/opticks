@@ -79,22 +79,26 @@ void test_make_inverted_transforms()
 
 
 
-NPY<float>* make_src_transforms()
+NPY<float>* make_src_transforms(unsigned rep)
 {
-    NPY<float>* src = NPY<float>::make(3,4,4) ; 
+    NPY<float>* src = NPY<float>::make(3*rep,4,4) ; 
     src->zero();
 
     float angle = 45.f ; 
-    for(unsigned i=0 ; i < 3 ; i++)
-    {
-        glm::vec3 axis( i == 0 ? 1 : 0 , i == 1 ? 1 : 0, i == 2 ? 1 : 0 );
-        glm::vec3 tlat = axis*100.f ; 
 
-        glm::mat4 tr(1.f);
-        tr = glm::rotate(tr, angle*glm::pi<float>()/180.f, axis ) ;
-        tr = glm::translate(tr, tlat );
- 
-        src->setMat4( tr, i); 
+    for(unsigned r=0 ; r < rep ; r++)
+    {
+        for(unsigned i=0 ; i < 3 ; i++)
+        {
+            glm::vec3 axis( i == 0 ? 1 : 0 , i == 1 ? 1 : 0, i == 2 ? 1 : 0 );
+            glm::vec3 tlat = axis*100.f ; 
+
+            glm::mat4 tr(1.f);
+            tr = glm::rotate(tr, angle*glm::pi<float>()/180.f, axis ) ;
+            tr = glm::translate(tr, tlat );
+     
+            src->setMat4( tr, r*3+i ); 
+        }
     }
     return src ; 
 }
@@ -102,7 +106,7 @@ NPY<float>* make_src_transforms()
 
 void test_Mat4Pairs()
 {
-    NPY<float>* src = make_src_transforms();
+    NPY<float>* src = make_src_transforms(1);
     assert(src->hasShape(3,4,4));
 
     NPY<float>* transforms = NPY<float>::make(3,2,4,4) ; 
@@ -147,7 +151,7 @@ void test_Mat4Pairs()
 
 void test_make_paired_transforms()
 {
-    NPY<float>* src = make_src_transforms();
+    NPY<float>* src = make_src_transforms(1);
     assert(src->hasShape(3,4,4));
 
     NPY<float>* paired = NPY<float>::make_paired_transforms(src);
@@ -187,6 +191,23 @@ void test_make_identity_transforms()
 }
 
 
+void test_getItemDigestString()
+{
+    NPY<float>* src = make_src_transforms(2);
+    assert(src->hasShape(6,4,4));
+
+    for(unsigned i=0 ; i < 6 ; i++)
+         std::cout << " src " << i << " " << src->getItemDigestString(i) << std::endl ; 
+ 
+    NPY<float>* paired = NPY<float>::make_paired_transforms(src);
+    assert(paired->hasShape(6,2,4,4));
+ 
+    for(unsigned i=0 ; i < 6 ; i++)
+         std::cout << " pai " << i << " " << paired->getItemDigestString(i) << std::endl ; 
+ 
+}
+
+
 
 
 int main(int argc, char** argv )
@@ -205,6 +226,8 @@ int main(int argc, char** argv )
 
     test_Mat4Pairs();
     test_make_paired_transforms();
+
+    test_getItemDigestString();
 
     return 0 ; 
 }
