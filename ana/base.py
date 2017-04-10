@@ -255,7 +255,8 @@ def opticks_args(**kwa):
     statcut = kwa.get("statcut", 1000)
     nointerpol = kwa.get("nointerpol", False)
     figsize = kwa.get("figsize", "18,10.2" )
-    apmtpath = kwa.get("apmtpath", None )
+    apmtpathtmpl = kwa.get("apmtpathtmpl", "$OPTICKS_INSTALL_PREFIX/opticksdata/export/DayaBay/GPmt/%(apmtidx)s/GPmt.npy" )
+    apmtidx = kwa.get("apmtidx", 2 )
 
 
     parser = argparse.ArgumentParser(doc)
@@ -301,7 +302,8 @@ def opticks_args(**kwa):
     parser.add_argument(     "--nointerpol", dest="interpol", default=not nointerpol, action="store_false", help="See cfg4/tests/CInterpolationTest.py. Default %(default)s ")
     parser.add_argument(     "--lmx",  default=lmx, type=int, help="Maximum number of lines to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
-    parser.add_argument(     "--apmtpath", default=apmtpath, help="Path to analytic PMT serialization, see pmt- and ana/pmt/analytic.py. %(default)s ")
+    parser.add_argument(     "--apmtpathtmpl", default=apmtpathtmpl, help="Template Path to analytic PMT serialization, see pmt- and ana/pmt/analytic.py. %(default)s ")
+    parser.add_argument(     "--apmtidx",      default=apmtidx, type=int, help="PmtPath index used to fill in the template, see pmt- and ana/pmt/analytic.py. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 
@@ -335,6 +337,11 @@ def opticks_args(**kwa):
 
     args.sli = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sli.split(":")))
     args.sel = slice(*map(lambda _:int(_) if len(_) > 0 else None,args.sel.split(":")))
+
+
+
+    args.apmtpath = args.apmtpathtmpl % dict(apmtidx=str(args.apmtidx))
+    log.debug("args.apmtpathtmpl %s args.apmtidx %d -> args.apmtpath %s " % ( args.apmtpathtmpl, args.apmtidx, args.apmtpath ) ) 
 
 
     log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 

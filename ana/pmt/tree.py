@@ -335,6 +335,6 @@ if __name__ == '__main__':
 
     partsbuf = tr.convert(parts) 
 
-    tr.save("$IDPATH/GPmt/0/GPmt.npy", partsbuf)
+    log.warning("use analytic so save the PMT, this is just for testing tree conversion")
 
 

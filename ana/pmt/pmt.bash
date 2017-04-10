@@ -3,13 +3,10 @@ pmt-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(pmt-src)} ; }
 pmt-vi(){       vi $(pmt-source) ; }
 
 pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
-#pmt-edir(){ echo $(env-home)/nuwa/detdesc/pmt ; }
 pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
-
 pmt-export(){  
     export PMT_DIR=$(pmt-dir) 
 }
-
 
 
 pmt-env(){      olocal- ; }
@@ -18,6 +15,12 @@ pmt-usage(){ cat << EOU
 Analytic PMT Geometry Description
 ======================================
 
+TODO
+-----
+
+* place xml PMT sources into opticksdata where can be generally accessible
+
+
 FUNCTIONS
 -----------
 
@@ -25,11 +28,26 @@ FUNCTIONS
      runs analytic.py converting detdesc hemi-pmt.xml into parts buffer $IDPATH/GPmt/0/GPmt.npy 
      using more nuanced translation better suited to surface geometry lingo 
 
-*pmt-parts*
-     runs tree.py converting detdesc hemi-pmt.xml into parts buffer $IDPATH/GPmt/0/GPmt.npy 
-     using a direct translation approach 
+Usage example::
 
-     Actually analytic.py and tree.py mains now look to do the same thing 
+    simon:ana blyth$ pmt-analytic --apmtidx=3
+    /Users/blyth/opticks/ana/pmt/analytic.py --apmtidx=3
+
+    Aiming to write serialized analytic PMT to below apmtpath
+    $OPTICKS_INSTALL_PREFIX/opticksdata/export/DayaBay/GPmt/3/GPmt.npy
+
+    Enter YES to proceed... 
+
+
+
+
+TESTS
+------
+
+*pmt-parts*
+     runs tree.py converting detdesc hemi-pmt.xml into parts buffer 
+     using a direct translation approach, does not save the PMT, used
+     just for testing conversion 
 
 *pmt-dd*
      test detdesc parsing 
@@ -95,6 +113,35 @@ dd.py
 
 plot.py 
      PMT basis shape and also mesh 2d plots,  
+
+
+
+
+
+Checking the opticksdata/export/DayaBay/GPmt serializations
+-------------------------------------------------------------
+
+Used::
+
+   pmt-analytic 
+
+
+::
+
+    simon:issues blyth$ cd /usr/local/opticks/opticksdata/export/DayaBay/GPmt
+    simon:GPmt blyth$ l
+    total 0
+    drwxr-xr-x   8 blyth  staff  272 Apr 10 15:56 2
+    drwxr-xr-x   8 blyth  staff  272 Mar 16 13:15 1
+    drwxr-xr-x  12 blyth  staff  408 Jul  5  2016 0
+    simon:GPmt blyth$ diff -r 1 2 
+    simon:GPmt blyth$ diff -r 0 1
+    Binary files 0/GPmt.npy and 1/GPmt.npy differ
+    Only in 0: GPmt.txt
+    Only in 0: GPmt_check.npy
+    Only in 0: GPmt_check.txt
+    Only in 0: GPmt_csg.txt
+    simon:GPmt blyth$ 
 
 
 
@@ -432,13 +479,17 @@ pmt-i(){
    i
 }
 
+
+## TODO: consolidate, too many entry points 
+
 pmt-run(){ 
    pmt-export
    python $(pmt-edir)/${1:-pmt}.py  
 }
-
-pmt-dd(){    pmt-run dd ;}
-
+pmt-dd(){    
+   pmt-export
+   python $(pmt-edir)/dd.py  
+}
 pmt-parts(){ 
    pmt-export
    python $(pmt-edir)/tree.py $*  
@@ -447,22 +498,10 @@ pmt-analytic(){
    pmt-export
    python $(pmt-edir)/analytic.py $*  
 }
-
-
-pmt-analytic-tmp()
-{
-   pmt-analytic --apmtpath='$TMP/GPmt/1/GPmt.npy'    # NB non-default dir and apmtidx
-}
-
-pmt-tmp2opticksdata-1()
-{
-   cp -r $TMP/GPmt/1 $OPTICKS_DATA/export/DayaBay/GPmt/
-}
-
-
 pmt-csg(){ 
    pmt-export
    python $(pmt-edir)/csg.py $*  
 }
+
 
 
