@@ -6,10 +6,14 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
     float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, q0.f.z - radius );
     float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, q0.f.z + radius );
 
+    //float3 mn = make_float3( -800.f, -800.f , -800.f );
+    //float3 mx = make_float3(  800.f,  800.f ,  800.f );
+
     Aabb tbb(mn, mx);
     if(tr) transform_bbox( &tbb, tr );  
 
     aabb->include(tbb);
+
 }
  
 
@@ -160,7 +164,6 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     Part pt = partBuffer[partIdx] ; 
     unsigned partType = pt.partType() ; 
     unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
-    //unsigned gtransformIdx = 0 ; 
 
     if(gtransformIdx == 0)
     {
@@ -172,20 +175,23 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     }
     else
     {
-        unsigned trIdx = 2*(gtransformIdx-1) + 1  ;  // +1 for *irit* transform (inverse of *tr*)
-        if(trIdx >= tranBuffer.size())
+        unsigned trIdx   = 2*(gtransformIdx-1) ; 
+        unsigned iritIdx = trIdx + 1  ;       
+
+        if(iritIdx >= tranBuffer.size())
         { 
-            rtPrintf("##csg_intersect_part ABORT trIdx %3u overflows tranBuffer.size \n", trIdx );
+            rtPrintf("##csg_intersect_part ABORT iritIdx %3u overflows tranBuffer.size \n", iritIdx );
             return ;  
         }
 
         optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
+        optix::Matrix4x4 irit = tranBuffer[iritIdx] ; 
 
         float4 origin    = make_float4( ray.origin.x, ray.origin.y, ray.origin.z, 1.f );           // w=1 for position  
         float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for vector
 
-        origin    = origin * tr ; 
-        direction = direction * tr ; 
+        origin    = origin * irit ; 
+        direction = direction * irit ; 
 
         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
         float3 ray_direction = make_float3( direction.x, direction.y, direction.z );
@@ -195,6 +201,15 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
             case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
             case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
         }
+
+        // TODO: avoid normal calc when no intersect ?
+
+        float4 tt_normal = make_float4( tt.x, tt.y, tt.z , 0.f );
+        tt_normal = tt_normal * tr ; 
+
+        tt.x = tt_normal.x ; 
+        tt.y = tt_normal.y ; 
+        tt.z = tt_normal.z ; 
     }
 }
 

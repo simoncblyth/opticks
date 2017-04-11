@@ -88,7 +88,7 @@ class NPY_API NCSG {
         nvec4 getQuad(unsigned idx, unsigned j);
         void load();
         void import();
-        nnode* import_r(unsigned idx, nnode* parent=NULL, int itransform=0 );
+        nnode* import_r(unsigned idx, nnode* parent=NULL);
         nmat4pair* import_transform(unsigned itra);
     private:
          // Serialize

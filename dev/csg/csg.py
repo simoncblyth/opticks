@@ -100,15 +100,20 @@ class CSG(CSG_):
     def make_transform(cls, s_translate, s_rotate):
         if s_translate is None and s_rotate is None: return None
 
-        tla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.zeros(3, dtype=np.float32)
-        qrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") if s is not None else np.array([0,0,1,45], dtype=np.float32)
-
-        rot = rotate(qrot_(s_rotate))  
-        tla = tla_(s_translate)
+        tla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
+        qrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
 
         transform = np.eye(4, dtype=np.float32)
-        transform[:3, :3] = rot[:3,:3]
-        transform[3,:3] = tla
+
+        if s_rotate is not None:
+            rot = rotate(qrot_(s_rotate)) 
+            transform[:3, :3] = rot[:3,:3] 
+        pass
+
+        if s_translate is not None:
+            tla = tla_(s_translate)
+            transform[3,:3] = tla
+        pass
 
         return transform
  
@@ -126,15 +131,13 @@ class CSG(CSG_):
         transforms = []
 
         def serialize_r(node, idx): 
-
-            tran = node.rtransform  
+            tran = node.transform  
             if tran is None:
                 itra = 0 
             else:
                 transforms.append(tran)
                 itra = len(transforms)   # 1-based index pointing to the transform
             pass
-
             buf[idx] = node.asarray(itra)
 
             if node.left is not None and node.right is not None:
@@ -208,7 +211,7 @@ class CSG(CSG_):
             node = cls.fromarray(buf[idx]) if idx < len(buf) else None
             if node is not None and node.itra is not None and node.itra > 0:
                 assert tranbuf is not None and node.itra - 1 < len(tranbuf)  
-                node.rtransform = tranbuf[node.itra - 1]
+                node.transform = tranbuf[node.itra - 1]
                 
             if node is not None:
                 node.left  = deserialize_r(buf, 2*idx+1)
@@ -224,7 +227,7 @@ class CSG(CSG_):
 
     
 
-    def __init__(self, typ, left=None, right=None, param=None, boundary="", rtranslate=None, rrotate=None,  **kwa):
+    def __init__(self, typ, left=None, right=None, param=None, boundary="", translate=None, rotate=None,  **kwa):
         if type(typ) is str:
             typ = self.fromdesc(typ)  
         pass
@@ -235,7 +238,7 @@ class CSG(CSG_):
         self.right = right
         self.param = param
         self.boundary = boundary
-        self.rtransform = self.make_transform(rtranslate,rrotate)
+        self.transform = self.make_transform(translate,rotate)
         self.meta = kwa
 
     def _get_param(self):
@@ -249,26 +252,21 @@ class CSG(CSG_):
         Both primitive and internal nodes:
 
         * q2.u.w : CSG type code eg CSG_UNION, CSG_DIFFERENCE, CSG_INTERSECTION, CSG_SPHERE, CSG_BOX, ... 
+        * q3.u.w : 1-based transform index, 0 for None
 
         Primitive nodes only:
 
         * q0 : 4*float parameters eg center and radius for sphere
 
-        Operation nodes only:
-
-        * q3.u.w : 1-based rtransform index, 0 for None
-
         """
         arr = np.zeros( (self.NJ, self.NK), dtype=np.float32 )
-        
+       
         if self.param is not None:  # avoid gibberish in buffer
             arr[Q0] = self.param
-            assert self.rtransform == None, "rtransforms on primitives invalid, even transforms on primitives not yet supported(for space reasons)"
-        elif self.rtransform is not None:
+        pass
+        if self.transform is not None:
             assert itra > 0, itra  # 1-based transform index
             arr.view(np.uint32)[Q3,W] = itra 
-        else:
-            pass
         pass
         arr.view(np.uint32)[Q2,W] = self.typ
 
@@ -335,8 +333,8 @@ if __name__ == '__main__':
     container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
    
     s = CSG("sphere")
-    b = CSG("box")
-    sub = CSG("union", left=s, right=b, rtranslate="0,0,20", rrotate="0,0,1,45", boundary="Vacuum///GlassShottF2", hello="world")
+    b = CSG("box", translate="0,0,20", rotate="0,0,1,45")
+    sub = CSG("union", left=s, right=b, boundary="Vacuum///GlassShottF2", hello="world")
 
     trees0 = [container, sub]
 
@@ -348,7 +346,7 @@ if __name__ == '__main__':
     assert len(trees1) == len(trees0)
 
     for i in range(len(trees1)):
-        assert np.all( trees0[i].rtransform == trees1[i].rtransform )
+        assert np.all( trees0[i].transform == trees1[i].transform )
 
 
 

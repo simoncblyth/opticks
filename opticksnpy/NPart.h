@@ -8,8 +8,8 @@ enum {
 
 // only used for CSG operator nodes in input serialization buffer
 enum {
-    RTRANSFORM_J = 3,
-    RTRANSFORM_K = 3 
+    TRANSFORM_J = 3,
+    TRANSFORM_K = 3 
 };   // q3.u.w
 
 

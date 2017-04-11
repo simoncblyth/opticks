@@ -52,8 +52,48 @@ bringing over the gtransforms (ie compound transforms)
 
 
 
+FIXED : Rotated geometry shows invalid boolean surfaces
+----------------------------------------------------------
 
-Huh : All nodes in CSG tree with gtransformIdx  1  ?
+* without transform the boolean difference geometry 
+  is rock solid, looking like real object from all angles
+
+* with translation alone this ray trace still looks ok 
+
+* with rotation get some crazy surfaces, looking like 
+  bits of sphere which should have been boolean subtracted 
+  from certain angles
+
+* boolean machinery works by comparison of t values ... 
+  so if different basis solids have different transforms
+  ... but the issue doesnt look to be of interference between 
+  shapes of different transforms
+
+* propagation photons are seeing the invalid bits of sphere too
+
+* tried increasing derived bbox to definitely contain the 
+  geometry to see if an issue with bbox... but seems no difference
+
+* rotating by 360 deg about z axis shows no issue, 
+  so likely is caused by invalid axis-aligned assumption for box normals, 
+  not a problem with transformation or bbox machinery  
+
+
+MAYBE:
+
+* box normal calc is assuming axis aligned, which is no longer true when 
+  rotated in general ... try rotate by 90 degrees : this 
+  makes the issue worse, rotating by 360 : no issue 
+
+FIX
+
+* transforming the normals from both box and sphere with the tr 
+  looks to have fixed the issue
+
+
+
+
+FIXED : All nodes in CSG tree with gtransformIdx  1  ?
 --------------------------------------------------------
 
 ::

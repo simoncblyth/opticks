@@ -157,7 +157,8 @@ unsigned NCSG::getTypeCode(unsigned idx)
 }
 unsigned NCSG::getTransformIndex(unsigned idx)
 {
-    return m_nodes->getUInt(idx,RTRANSFORM_J,RTRANSFORM_K,0u);
+    return m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
+    //return m_nodes->getUInt(idx,RTRANSFORM_J,RTRANSFORM_K,0u);
 }
 
 
@@ -179,7 +180,7 @@ void NCSG::import()
               << " height " << m_height 
               ;
 
-    m_root = import_r(0, NULL, 0) ; 
+    m_root = import_r(0, NULL) ; 
 
     check();
 
@@ -202,11 +203,13 @@ nmat4pair* NCSG::import_transform(unsigned itra)
     return m4p ; 
 }
 
-nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
+nnode* NCSG::import_r(unsigned idx, nnode* parent)
 {
     if(idx >= m_num_nodes) return NULL ; 
         
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
+    int transform_idx = getTransformIndex(idx) ; 
+
     nvec4 param = getQuad(idx, 0);
 
     LOG(info) << "NCSG::import_r " 
@@ -224,9 +227,6 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
  
     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
     {
-        int ltransform_idx = 0 ; // transforms are only applied to the right, currently 
-        int rtransform_idx = getTransformIndex(idx) ; 
-
         switch(typecode)
         {
            case CSG_UNION:        node = make_nunion_ptr(NULL, NULL )        ; break ; 
@@ -243,7 +243,6 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
         std::cout << "NCSG::import_r(oper)" 
                   << " idx " << idx
                   << " csgname " << CSGName(typecode) 
-                  << " rtransform_idx " << rtransform_idx
                   << " transform_idx " << transform_idx
                   << std::endl
                   ;
@@ -254,10 +253,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
 
 
         // NB recursive call after the "visit" 
-        node->left = import_r(idx*2+1, node, ltransform_idx );     
-        node->right = import_r(idx*2+2, node, rtransform_idx );
-
-        // internal node can carry its own transform as well as have a child rtransform
+        node->left = import_r(idx*2+1, node );     
+        node->right = import_r(idx*2+2, node );
     }
     else 
     {

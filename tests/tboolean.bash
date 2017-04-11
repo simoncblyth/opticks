@@ -235,8 +235,8 @@ from opticks.dev.csg.csg import CSG
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
-im = dict(poly="IM", resolution="100", verbosity="1", ctrl="0" )
-box = CSG("box", param=[0,0,100,100], boundary="$(tboolean-object)", **im )
+im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-object)", **im )
 
 CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
 EOP
@@ -328,9 +328,12 @@ radius = 200
 inscribe = 1.3*radius/math.sqrt(3)
 
 box = CSG("box", param=[0,0,0,inscribe])
-sph = CSG("sphere", param=[0,0,0,radius])
 
-object = CSG("${1:-difference}", left=box, right=sph, rtranslate="100,0,0", boundary="$(tboolean-object)", poly="IM", resolution="50", seeds="0,0,0" )
+
+rtran = dict(translate="100,0,0)
+sph = CSG("sphere", param=[0,0,0,radius], **rtran)
+
+object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)", poly="IM", resolution="50", seeds="0,0,0" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
@@ -380,13 +383,16 @@ left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-object)" )
 
 rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
-right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)" )
+
+rtran = dict(translate="0,0,200", rotate="1,1,1,45")
+#rtran = dict(translate="0,0,200")
+right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)", **rtran)
 
 dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 
 #seeds = "100,100,-100,0,0,300"
 im = dict(poly="IM", resolution="64", verbosity="0", ctrl="0" )
-object = CSG("union", left=left, right=right, rtranslate="0,0,200", rrotate="1,1,1,45",  boundary="$(tboolean-object)", **im )
+object = CSG("union", left=left, right=right,  boundary="$(tboolean-object)", **im )
 
 mc = dict(poly="MC", nx="20")
 
