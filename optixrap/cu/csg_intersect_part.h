@@ -14,7 +14,7 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
  
 
 static __device__
-void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
+void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {
     // when an intersection is found between the ray and the sphere 
     // with parametric t greater than the tmin parameter
@@ -24,8 +24,8 @@ void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt   )
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
 
-    float3 O = ray.origin - center;
-    float3 D = ray.direction;
+    float3 O = ray_origin - center;
+    float3 D = ray_direction;
 
     float b = dot(O, D);
     float c = dot(O, O)-radius*radius;
@@ -61,7 +61,7 @@ void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 static __device__
-void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
+void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {
    const float hside = q0.f.w ; 
    const float3 bmin = make_float3(q0.f.x - hside, q0.f.y - hside, q0.f.z - hside ); 
@@ -69,13 +69,13 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 
    const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
 
-   float3 idir = make_float3(1.f)/ray.direction ; 
+   float3 idir = make_float3(1.f)/ray_direction ; 
 
    // the below t-parameter float3 are intersects with the x, y and z planes of
    // the three axis slab planes through the box bmin and bmax  
 
-   float3 t0 = (bmin - ray.origin)*idir;      //  intersects with bmin x,y,z slab planes
-   float3 t1 = (bmax - ray.origin)*idir;      //  intersects with bmax x,y,z slab planes 
+   float3 t0 = (bmin - ray_origin)*idir;      //  intersects with bmin x,y,z slab planes
+   float3 t1 = (bmax - ray_origin)*idir;      //  intersects with bmax x,y,z slab planes 
 
    float3 near = fminf(t0, t1);               //  bmin or bmax intersects closest to origin  
    float3 far  = fmaxf(t0, t1);               //  bmin or bmax intersects farthest from origin 
@@ -86,9 +86,9 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 
   // rtPrintf(" bmin %f %f %f ", bmin.x, bmin.y, bmin.z );
   /*
-     rtPrintf(" ray.origin %f %f %f ray.direction %f %f %f idir %f %f %f \n ", 
-           ray.origin.x,    ray.origin.y, ray.origin.z, 
-           ray.direction.x, ray.direction.y, ray.direction.z,
+     rtPrintf(" ray_origin %f %f %f ray_direction %f %f %f idir %f %f %f \n ", 
+           ray_origin.x,    ray_origin.y, ray_origin.z, 
+           ray_direction.x, ray_direction.y, ray_direction.z,
            idir.x, idir.y,  idir.z 
        );
 
@@ -105,13 +105,13 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 
 */
 
-   bool along_x = ray.direction.x != 0.f && ray.direction.y == 0.f && ray.direction.z == 0.f ;
-   bool along_y = ray.direction.x == 0.f && ray.direction.y != 0.f && ray.direction.z == 0.f ;
-   bool along_z = ray.direction.x == 0.f && ray.direction.y == 0.f && ray.direction.z != 0.f ;
+   bool along_x = ray_direction.x != 0.f && ray_direction.y == 0.f && ray_direction.z == 0.f ;
+   bool along_y = ray_direction.x == 0.f && ray_direction.y != 0.f && ray_direction.z == 0.f ;
+   bool along_z = ray_direction.x == 0.f && ray_direction.y == 0.f && ray_direction.z != 0.f ;
 
-   bool in_x = ray.origin.x > bmin.x && ray.origin.x < bmax.x  ;
-   bool in_y = ray.origin.y > bmin.y && ray.origin.y < bmax.y  ;
-   bool in_z = ray.origin.z > bmin.z && ray.origin.z < bmax.z  ;
+   bool in_x = ray_origin.x > bmin.x && ray_origin.x < bmax.x  ;
+   bool in_y = ray_origin.y > bmin.y && ray_origin.y < bmax.y  ;
+   bool in_z = ray_origin.z > bmin.z && ray_origin.z < bmax.z  ;
 
    bool has_intersect ;
    if(     along_x) has_intersect = in_y && in_z ;
@@ -136,7 +136,7 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 
        //rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
 
-       float3 p = ray.origin + tt_cand*ray.direction - bcen ; 
+       float3 p = ray_origin + tt_cand*ray_direction - bcen ; 
        float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
 
        float3 n = make_float3(0.f) ;
@@ -157,23 +157,44 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt )
 static __device__
 void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
-
-    //quad q0, q2 ; 
-    //q0.f = partBuffer[4*partIdx+0];
-    //q2.f = partBuffer[4*partIdx+2];
-
     Part pt = partBuffer[partIdx] ; 
+    unsigned partType = pt.partType() ; 
+    unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
+    //unsigned gtransformIdx = 0 ; 
 
-
-    OpticksCSG_t csgFlag = (OpticksCSG_t)pt.q2.u.w ; 
-
-    //if(partIdx > 1)
-    //rtPrintf("[%5d] intersect_part partIdx %u  csgFlag %u \n", launch_index.x, partIdx, csgFlag );
-
-    switch(csgFlag)
+    if(gtransformIdx == 0)
     {
-        case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt )  ; break ; 
-        case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt )  ; break ; 
+        switch(partType)
+        {
+            case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray.origin, ray.direction )  ; break ; 
+            case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt, ray.origin, ray.direction )  ; break ; 
+        }
+    }
+    else
+    {
+        unsigned trIdx = 2*(gtransformIdx-1) + 1  ;  // +1 for *irit* transform (inverse of *tr*)
+        if(trIdx >= tranBuffer.size())
+        { 
+            rtPrintf("##csg_intersect_part ABORT trIdx %3u overflows tranBuffer.size \n", trIdx );
+            return ;  
+        }
+
+        optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
+
+        float4 origin    = make_float4( ray.origin.x, ray.origin.y, ray.origin.z, 1.f );           // w=1 for position  
+        float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for vector
+
+        origin    = origin * tr ; 
+        direction = direction * tr ; 
+
+        float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
+        float3 ray_direction = make_float3( direction.x, direction.y, direction.z );
+
+        switch(partType)
+        {
+            case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
+            case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
+        }
     }
 }
 

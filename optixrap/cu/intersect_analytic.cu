@@ -82,16 +82,7 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 TODO
 ~~~~~~
 
-* move z-ranging up into q1, to free-up the bbox 6*float
-  needs to make python changes to enable this, add 
-  tpmt-make-partlist func
-
 * use prim.z for numTran, instead of duplicating primIdx 
-
-
-* csg bbox currently based on first root node, need to 
-  traverse tree and include bbox accounting for tranforms 
-  to free up bbox 6*float 
 
 */
 
@@ -132,8 +123,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
             Part pt = partBuffer[partOffset+nodeIdx-1];  // nodeIdx is 1-based
 
-            unsigned partType = pt.q2.u.w ; 
-            unsigned gtransformIdx = pt.q3.u.x ;  //  gtransformIdx is 1-based, 0 meaning None
+            unsigned partType = pt.partType() ; 
+            unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
     
             rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d partType %2u gtransformIdx %2u \n", nodeIdx, depth, elev, partType, gtransformIdx );
 
