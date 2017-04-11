@@ -39,7 +39,8 @@ OR for test geometries it is created part-by-part using methods of the npy primi
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
-class GGEO_API GParts {
+class GGEO_API GParts { 
+       friend class GPmt ; // for setPrimFlag  
     public:
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
@@ -83,12 +84,6 @@ class GGEO_API GParts {
 
         unsigned getAnalyticVersion();
         void setAnalyticVersion(unsigned vers);
-    public: 
-        /*
-        unsigned int getFlags(unsigned int part);
-        void setFlags(unsigned int part, unsigned int flags);
-        void setFlagsAll(unsigned int flags);
-        */
     public: 
         std::string  getBoundaryName(unsigned int part);
         const char*  getTypeName(unsigned int part);
@@ -136,6 +131,8 @@ class GGEO_API GParts {
         void setPartBuffer(NPY<float>* part_buffer);
         void setPrimBuffer(NPY<unsigned int>* prim_buffer);
         void setTranBuffer(NPY<float>* tran_buffer);
+        void setPrimFlag(OpticksCSG_t primflag);
+        OpticksCSG_t getPrimFlag(); 
     private:
        unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
        void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
@@ -148,12 +145,17 @@ class GGEO_API GParts {
         GBndLib*           m_bndlib ; 
         const char*        m_name ;         
     private:
-        NPY<unsigned int>* m_prim_buffer ; 
+        typedef std::map<unsigned, unsigned> MUU ; 
+        typedef std::vector<unsigned> VU ; 
+    private:
+        NPY<unsigned>*     m_prim_buffer ; 
         bool               m_closed ; 
-        std::map<unsigned int, unsigned int> m_parts_per_prim ;
-        std::map<unsigned int, unsigned int> m_flag_prim ;
+        MUU                m_parts_per_prim ;
+        VU                 m_tran_per_add ; 
+        VU                 m_part_per_add ; 
         bool               m_verbose ; 
         unsigned           m_analytic_version ; 
+        OpticksCSG_t       m_primflag ; 
 
 };
 

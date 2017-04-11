@@ -89,8 +89,6 @@ TODO
 
 * use prim.z for numTran, instead of duplicating primIdx 
 
-* add enum to specialize primFlags, as it refers to the composite
-  eg CSG_PRIMFLAG_TREE, CSG_PRIMFLAG_PARTLIST   
 
 * csg bbox currently based on first root node, need to 
   traverse tree and include bbox accounting for tranforms 
@@ -114,7 +112,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     unsigned partOffset  = prim.x ;  
     unsigned numParts    = prim.y ; 
-    unsigned primFlags   = prim.w ;  
+    unsigned primFlag    = prim.w ;  
 
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     unsigned numNodes = TREE_NODES(height) ;      
@@ -126,12 +124,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     optix::Aabb* aabb = (optix::Aabb*)result;
     *aabb = optix::Aabb();
 
-    bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
-
-    // TODO: fix csg detection based on CSG_PRIMFLAGS_TREE, so the 1-node container tree
-    //       will use appropriate branch  
-
-    if(is_csg)  
+    if(primFlag == CSG_FLAGNODETREE)  
     {
         unsigned nodeIdx = 1 << height ; 
         while(nodeIdx)
@@ -176,7 +169,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
             // see opticks/dev/csg/postorder.py for explanation of bit-twiddling postorder  
         }
     }
-    else
+    else if(primFlag == CSG_FLAGPARTLIST)  
     {
         for(unsigned int p=0 ; p < numParts ; p++)
         { 
@@ -195,7 +188,12 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
             }
         } 
     }
-    rtPrintf("##hemi-pmt.cu:bounds primIdx %d is_csg:%d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, is_csg, 
+    else
+    {
+        rtPrintf("## intersect_analytic.cu:bounds ABORT BAD primflag %d \n", primFlag );
+        return ; 
+    }
+    rtPrintf("##intersect_analytic.cu:bounds primIdx %d primFlag %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, primFlag, 
         result[0],
         result[1],
         result[2],
@@ -226,31 +224,29 @@ identityBuffer
 RT_PROGRAM void intersect(int primIdx)
 {
     const uint4& prim    = primBuffer[primIdx]; 
+
     unsigned partOffset  = prim.x ;  
     unsigned numParts    = prim.y ; 
-    unsigned primFlags   = prim.w ;  
+    unsigned primFlag    = prim.w ;  
 
     uint4 identity = identityBuffer[instance_index] ; 
 
-    bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-
-    if(is_csg)
+    if(primFlag == CSG_FLAGNODETREE)  
     { 
         Part pt = partBuffer[partOffset] ; 
 
-        identity.z = pt.q1.u.z ;        // replace placeholder zero with test analytic geometry boundary
+        identity.z = pt.q1.u.z ;        // replace placeholder zero with test analytic geometry root node boundary
 
         evaluative_csg( prim, identity );
         //intersect_csg( prim, identity );
+
     }
-    else
+    else if(primFlag == CSG_FLAGPARTLIST)  
     {
         for(unsigned int p=0 ; p < numParts ; p++)
         {  
-            unsigned int partIdx = partOffset + p ;  
-
-            Part pt = partBuffer[partIdx] ; 
+            Part pt = partBuffer[partOffset + p] ; 
 
             identity.z = pt.q1.u.z ;   
 

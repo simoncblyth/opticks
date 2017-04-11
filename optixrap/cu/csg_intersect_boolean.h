@@ -483,6 +483,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     unsigned partOffset = prim.x ; 
     unsigned numParts   = prim.y ;
     unsigned primIdx_   = prim.z ; 
+
     unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
     //rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u  \n",primIdx_, numParts, fullHeight ) ; 

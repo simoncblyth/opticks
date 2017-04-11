@@ -35,22 +35,37 @@ GParts* GParts::combine(std::vector<GParts*> subs)
     LOG(fatal) << "GParts::combine " << subs.size() ; 
 
     GParts* parts = new GParts(); 
-    GBndLib* bndlib = NULL ; 
 
+    GBndLib* bndlib = NULL ; 
     unsigned analytic_version = 0 ;  
+    OpticksCSG_t primflag = CSG_ZERO ; 
+
 
     for(unsigned int i=0 ; i < subs.size() ; i++)
     {
         GParts* sp = subs[i];
 
+        OpticksCSG_t pf = sp->getPrimFlag();
+        if(primflag == CSG_ZERO) 
+            primflag = pf ; 
+        else
+            assert(pf == primflag && "GParts::combine requires all GParts instances to have the same primFlag " );
+
         unsigned av = sp->getAnalyticVersion();
-        if(av > analytic_version ) analytic_version = av ; 
+        if(analytic_version == 0)
+            analytic_version = av ;
+        else
+            assert(av == analytic_version && "GParts::combine requires all GParts instances to have the same analytic_version " );   
+
 
         parts->add(sp);
+
         if(!bndlib) bndlib = sp->getBndLib(); 
     } 
+
     if(bndlib) parts->setBndLib(bndlib);
     parts->setAnalyticVersion(analytic_version);
+    parts->setPrimFlag(primflag);
 
     return parts ; 
 }
@@ -83,9 +98,9 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     float size = param.w ;  
     gbbox bb(gfloat3(-size), gfloat3(size));  
 
-    // TODO: geometry specifics should live in nzsphere etc.. not here 
     if(csgflag == CSG_ZSPHERE)
     {
+        assert( 0 && "TODO: geometry specifics should live in nzsphere etc.. not here " );
         bb.min.z = param.x*param.w ; 
         bb.max.z = param.y*param.w ; 
     } 
@@ -119,7 +134,7 @@ GParts* GParts::make( NCSG* tree)
     NPY<float>* tranbuf = tree->getTransformBuffer();  // (tr,irit) pairs   
     if(!tranbuf) 
     {
-       // NB dont want to mess with transform counts as GParts get combined
+       // NB dont want to change transform counts as GParts get combined
        // also this means that cannot support transforms on the container box 
        tranbuf = NPY<float>::make(0,2,4,4) ;
        tranbuf->zero();
@@ -170,7 +185,8 @@ GParts::GParts(GBndLib* bndlib)
       m_prim_buffer(NULL),
       m_closed(false),
       m_verbose(false),
-      m_analytic_version(0)
+      m_analytic_version(0),
+      m_primflag(CSG_FLAGNODETREE)
 {
       init() ; 
 }
@@ -182,7 +198,8 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, const char* spec, GBnd
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
       m_closed(false),
-      m_analytic_version(0)
+      m_analytic_version(0),
+      m_primflag(CSG_FLAGNODETREE)
 {
       init(spec) ; 
 }
@@ -194,11 +211,22 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, GItemList* spec, GBndL
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
       m_closed(false),
-      m_analytic_version(0)
+      m_analytic_version(0),
+      m_primflag(CSG_FLAGNODETREE)
 {
       init() ; 
 }
 
+void GParts::setPrimFlag(OpticksCSG_t primflag)
+{
+    assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST );
+    m_primflag = primflag ; 
+}
+
+OpticksCSG_t GParts::getPrimFlag()
+{
+    return m_primflag ;
+}
 
 
 void GParts::save(const char* dir)
@@ -206,32 +234,14 @@ void GParts::save(const char* dir)
     if(!dir) return ; 
 
     const char* name = getName();    
-    if(!name)
-    {
-        LOG(warning) << "GParts::save SET NAME BEFORE save" ;
-        return ;  
-    }
+    if(!name) name = "GParts" ; 
 
     LOG(info) << "GParts::save " << name << " to " << dir ; 
 
-    if(m_part_buffer)
-    {
-        m_part_buffer->save(dir, name, "partBuffer.npy");     
-       // this name becoming historical, nodeBuffer probably more appropriate 
-       // ... actually want to continue supporting the old manual partlist layout as
-       // well as the new csg binary node trees, as partlist is probably faster but 
-       // of course without the generality and automatation of node trees
-    }
-    if(m_prim_buffer)
-    {
-        m_prim_buffer->save(dir, name, "primBuffer.npy");    
-    }
-    if(m_tran_buffer)
-    {
-        m_tran_buffer->save(dir, name, "tranBuffer.npy");    
-    }
+    if(m_part_buffer) m_part_buffer->save(dir, name, "partBuffer.npy");     
+    if(m_prim_buffer) m_prim_buffer->save(dir, name, "primBuffer.npy");    
+    if(m_tran_buffer) m_tran_buffer->save(dir, name, "tranBuffer.npy");    
 }
-
 
 void GParts::setName(const char* name)
 {
@@ -372,17 +382,15 @@ void GParts::add(GParts* other)
 {
     unsigned int n0 = getNumParts(); // before adding
 
-    // part buffers contain indices that reference 
-    // the transforms in their tran buffers, 
-    // so to support combination
-    // would need to rebase these "pointers"
-    // or maintain a "transform" offset to combine with the relative pointers 
-    //
-    // Is there room in prim buffer for transorm offsets ?
-
     m_bndspec->add(other->getBndSpec());
     m_part_buffer->add(other->getPartBuffer());
     m_tran_buffer->add(other->getTranBuffer());
+
+    unsigned num_part_add = other->getPartBuffer()->getNumItems() ;
+    unsigned num_tran_add = other->getTranBuffer()->getNumItems() ;
+
+    m_part_per_add.push_back(num_part_add); 
+    m_tran_per_add.push_back(num_tran_add);
 
     unsigned int n1 = getNumParts(); // after adding
 
@@ -391,9 +399,11 @@ void GParts::add(GParts* other)
         setIndex(p, p);
     }
 
-    LOG(debug) << "GParts::add"
+    LOG(info) << "GParts::add"
               << " n0 " << n0  
               << " n1 " << n1
+              << " num_part_add " << num_part_add
+              << " num_tran_add " << num_tran_add
               ;  
 }
 
@@ -447,8 +457,6 @@ void GParts::makePrimBuffer()
 {
     // Derives prim buffer from the parts buffer
     //
-    // * flag from the first part of each nodeIndex is promoted into primitive buffer  
-    //
     // "prim" here was previously named "solid"
     // but thats confusing due to other solids so renamed
     // to "prim" as this corresponds to OptiX primitives GPU side, 
@@ -461,11 +469,8 @@ void GParts::makePrimBuffer()
     // * arrange for constituent parts to share the same NodeIndex 
     // * set intersect/union/difference flag in parts buffer for first part
     //
-    //   ^^^^^^^ TODO: generalize for CSG tree 
-    //
 
     m_parts_per_prim.clear();
-    m_flag_prim.clear();
 
     unsigned int nmin(INT_MAX) ; 
     unsigned int nmax(0) ; 
@@ -493,16 +498,30 @@ void GParts::makePrimBuffer()
                      
         m_parts_per_prim[nodeIndex] += 1 ; 
 
-        // flag from the first part of each nodeIndex is promoted into primitive buffer 
-        if(m_flag_prim.count(nodeIndex) == 0) m_flag_prim[nodeIndex] = typ ; 
-
         if(nodeIndex < nmin) nmin = nodeIndex ; 
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
 
+    // NB the number of prim does not match the number of additions ...
+    //
+    //    perhaps this should be arranged to simplify this ?
+    //
+    //    without this difficult to define a primitive transformOffset to 
+    //    handle transforms from more than one pot 
+    //
 
+    LOG(info) << "GParts::makePrimBuffer"
+              << " nodeIndex.min " << nmin 
+              << " nodeIndex.max " << nmax
+              << " parts_per_prim.size " << m_parts_per_prim.size()
+              << " part_per_add.size " << m_part_per_add.size()
+              << " tran_per_add.size " << m_tran_per_add.size()
+              ; 
+ 
     unsigned int num_prim = m_parts_per_prim.size() ;
+
+
     //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
     if(nmax - nmin != num_prim - 1)
     {
@@ -510,6 +529,8 @@ void GParts::makePrimBuffer()
                      << " nmin " << nmin 
                      << " nmax " << nmax
                      << " num_prim " << num_prim
+                     << " part_per_add.size " << m_part_per_add.size()
+                     << " tran_per_add.size " << m_tran_per_add.size()
                      ; 
     }
 
@@ -523,14 +544,13 @@ void GParts::makePrimBuffer()
     {
         unsigned int node_index = it->first ; 
         unsigned int parts_for_prim = it->second ; 
-        unsigned int flg_for_prim = m_flag_prim[node_index] ; 
 
         guint4& pri = *(priminfo+n) ;
 
         pri.x = part_offset ; 
         pri.y = parts_for_prim ;
         pri.z = node_index ; 
-        pri.w = flg_for_prim ;            // <--- prim/boolean-opcode ?  
+        pri.w = m_primflag ; 
 
         LOG(info) << "GParts::makePrimBuffer priminfo " << pri.description() ;       
 
@@ -561,13 +581,13 @@ void GParts::dumpPrim(unsigned primIdx)
 
     unsigned partOffset = prim.x ; 
     unsigned numParts   = prim.y ; 
-    unsigned primFlags  = prim.w ; 
+    unsigned primFlag   = prim.w ; 
 
     LOG(info) << " primIdx "    << std::setw(3) << primIdx 
               << " partOffset " << std::setw(3) << partOffset 
               << " numParts "   << std::setw(3) << numParts
-              << " primFlags "  << std::setw(5) << primFlags 
-              << " CSGName "  << CSGName((OpticksCSG_t)primFlags) 
+              << " primFlag "   << std::setw(5) << primFlag 
+              << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
               << " prim "       << gformat(prim)
               ;
 
@@ -812,14 +832,6 @@ void GParts::fulldump(const char* msg)
 
     partBuf->dump("partBuf");
     primBuf->dump("primBuf:partOffset/numParts/primIndex/0");
-
-    bool dbganalytic = false ;
-    if(dbganalytic)
-    {
-        partBuf->save("$TMP/OGeo_partBuf.npy");
-        primBuf->save("$TMP/OGeo_primBuf.npy");
-        save("$TMP");
-    }
 }
 
 void GParts::dump(const char* msg)

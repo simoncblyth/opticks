@@ -118,6 +118,7 @@ void GPmt::loadFromCache(NSlice* slice)
 
     GParts* parts = new GParts(partBuf, tranBuf, bndSpec, m_bndlib);
     parts->setAnalyticVersion(getIndex());
+    parts->setPrimFlag(CSG_FLAGPARTLIST);
 
     setParts(parts);
 

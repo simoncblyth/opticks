@@ -14,7 +14,9 @@ typedef enum {
        CSG_PMT=9,
      CSG_PRISM=10,
       CSG_TUBS=11,
- CSG_UNDEFINED=12
+ CSG_UNDEFINED=12,
+ CSG_FLAGPARTLIST=100,
+ CSG_FLAGNODETREE=101
 
 } OpticksCSG_t ; 
    
@@ -36,6 +38,9 @@ static const char* CSG_PMT_           = "pmt" ;
 static const char* CSG_PRISM_         = "prism" ; 
 static const char* CSG_TUBS_          = "tubs" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
+
+static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
+static const char* CSG_FLAGNODETREE_ = "flagnodetree" ; 
 
 
 static bool CSGIsPrimitive(OpticksCSG_t type)
@@ -75,6 +80,8 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
     else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     tc = CSG_DIFFERENCE ;
     else if(strcmp(nodename, CSG_PARTLIST_) == 0)       tc = CSG_PARTLIST ;
+    else if(strcmp(nodename, CSG_FLAGPARTLIST_) == 0)   tc = CSG_FLAGPARTLIST ;
+    else if(strcmp(nodename, CSG_FLAGNODETREE_) == 0)   tc = CSG_FLAGNODETREE ;
     return tc ;
 }
 
@@ -120,6 +127,8 @@ static const char* CSGName( OpticksCSG_t csg )
         case CSG_PRISM:         s = CSG_PRISM_         ; break ; 
         case CSG_TUBS:          s = CSG_TUBS_          ; break ; 
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
+        case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
+        case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ; 
     }
     return s ; 
 }
