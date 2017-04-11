@@ -137,8 +137,24 @@ void NPY<T>::updateDigests()
     unsigned ni = getNumItems() ;
     if(m_digests.size() == ni) return ; 
 
+    typedef std::vector<std::string> VS ; 
     for(unsigned i=0 ; i < ni ; i++) 
-        m_digests.push_back(getItemDigestString(i)) ;
+    {
+        std::string item_digest = getItemDigestString(i) ;
+        VS::const_iterator begin = m_digests.begin();
+        VS::const_iterator end   = m_digests.end();
+        VS::const_iterator prior = std::find(begin, end, item_digest) ;
+
+        if( prior == end )
+        { 
+            m_digests.push_back(item_digest) ;
+        }
+        else
+        {
+            LOG(fatal) << "NPY<T>::updateDigests finds duplicated items in buffer, MUST start addItemUnique from a unique buffer eg start from empty" ;
+            assert(0); 
+        }
+    }
 }
 
 
