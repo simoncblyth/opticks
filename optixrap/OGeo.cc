@@ -462,6 +462,11 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     if(m_verbose) pts->fulldump("OGeo::makeAnalyticGeometry") ;
 
+    pts->setName("analytic");
+    pts->fulldump("OGeo::makeAnalyticGeometry") ;
+    pts->save("$TMP/OGeo_makeAnalyticGeometry");
+
+
     NPY<float>*        partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*        tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,2,4,4));  // transform pairs (tr, irit) 
     NPY<unsigned int>* primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));     // prim
@@ -770,7 +775,7 @@ optix::Buffer OGeo::createInputUserBuffer(NPY<float>* src, unsigned elementSize,
     assert( numBytes % elementSize == 0 );
     unsigned size = numBytes/elementSize ; 
 
-    LOG(info) << "OGeo::createUserBuffer"
+    LOG(info) << "OGeo::createInputUserBuffer"
               << " name " << name
               << " src shape " << src->getShapeString()
               << " numBytes " << numBytes

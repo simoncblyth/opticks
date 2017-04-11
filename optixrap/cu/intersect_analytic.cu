@@ -100,13 +100,16 @@ TODO
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
+    /*
     if(primIdx == 0) 
     { 
         rtPrintf("##bounds analytic_version %u \n", analytic_version);
         test_tranBuffer();
         test_transform_bbox();
     }
+    */
 
+    unsigned tranBuffer_size = tranBuffer.size() ;
     const uint4& prim    = primBuffer[primIdx]; 
 
     unsigned partOffset  = prim.x ;  
@@ -115,7 +118,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     unsigned numNodes = TREE_NODES(height) ;      
-    rtPrintf("##bounds primIdx %2d partOffset %2d numParts %2d height %2d numNodes %2d \n", primIdx, partOffset, numParts, height, numNodes );
+
+    rtPrintf("##bounds primIdx %2d partOffset %2d numParts %2d height %2d numNodes %2d tranBuffer_size %3u \n", primIdx, partOffset, numParts, height, numNodes, tranBuffer_size );
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
@@ -124,7 +128,8 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     bool is_csg = primFlags == CSG_UNION || primFlags == CSG_INTERSECTION || primFlags == CSG_DIFFERENCE ;  
 
-    Part pt = partBuffer[partOffset] ; 
+    // TODO: fix csg detection based on CSG_PRIMFLAGS_TREE, so the 1-node container tree
+    //       will use appropriate branch  
 
     if(is_csg)  
     {
@@ -135,19 +140,36 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
             int elev = height - depth ; 
 
             Part pt = partBuffer[partOffset+nodeIdx-1];  // nodeIdx is 1-based
+
             unsigned partType = pt.q2.u.w ; 
+            unsigned gtransformIdx = pt.q3.u.x ;  //  gtransformIdx is 1-based, 0 meaning None
     
-            rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d partType %2u \n", nodeIdx, depth, elev, partType );
+            rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d partType %2u gtransformIdx %2u \n", nodeIdx, depth, elev, partType, gtransformIdx );
 
-            optix::Matrix4x4* tr = NULL ; 
-
-            if(partType == CSG_SPHERE)
+            if(gtransformIdx == 0)
             {
-                csg_bounds_sphere(pt.q0, aabb, tr  );
-            } 
-            else if(partType == CSG_BOX)
+                switch(partType)
+                {
+                    case CSG_SPHERE: csg_bounds_sphere(pt.q0, aabb, NULL  );  break ;
+                    case CSG_BOX:    csg_bounds_box(pt.q0, aabb, NULL  );     break ;
+                    default:                                                  break ; 
+                }
+            }
+            else
             {
-                csg_bounds_box(pt.q0, aabb, tr  );
+                unsigned trIdx = 2*(gtransformIdx-1)  ; 
+                if(trIdx >= tranBuffer_size)
+                { 
+                    rtPrintf("## bounds ABORT trIdx %3u overflows tranBuffer_size %3u \n", trIdx, tranBuffer_size );
+                    return ;  
+                }
+                optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
+                switch(partType)
+                {
+                    case CSG_SPHERE: csg_bounds_sphere(pt.q0, aabb, &tr  );  break ;
+                    case CSG_BOX:    csg_bounds_box(   pt.q0, aabb, &tr  );  break ;
+                    default:                                                 break ; 
+                }
             }
 
             nodeIdx = nodeIdx & 1 ? nodeIdx >> 1 : (nodeIdx << elev) + (1 << elev) ;
@@ -158,6 +180,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     {
         for(unsigned int p=0 ; p < numParts ; p++)
         { 
+            Part pt = partBuffer[partOffset + p] ; 
             unsigned partType = pt.q2.u.w ; 
 
             identity.z = pt.q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)

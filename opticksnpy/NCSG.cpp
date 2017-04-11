@@ -1,3 +1,7 @@
+
+
+
+
 #include <cstring>
 #include <algorithm>
 #include <sstream>
@@ -30,6 +34,7 @@ NCSG::NCSG(const char* treedir, unsigned index)
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
    m_transforms(NULL),
+   m_gtransforms(NULL),
    m_meta(NULL),
 
    m_num_nodes(0),
@@ -66,6 +71,8 @@ void NCSG::load()
         assert(pairs->hasShape(ni,2,4,4));
 
         m_transforms = pairs ; 
+        m_gtransforms = NPY<float>::make(0,2,4,4) ;  // for collecting unique gtransforms
+
         m_num_transforms  = ni  ;  
     }
 
@@ -174,7 +181,7 @@ void NCSG::import()
 
     m_root = import_r(0, NULL, 0) ; 
 
-    analyse();
+    check();
 
 }
 
@@ -270,15 +277,21 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
 
         node->parent = parent ; 
         node->transform = import_transform( transform_idx ) ;
-        node->gtransform = node->global_transform(); 
 
-        if(node->transform) std::cout << " transform " << *node->transform ;
-        else                std::cout << " no-transform " ;
-        std::cout << std::endl ; 
- 
-        if(node->gtransform) std::cout << " gtransform " << *node->gtransform ;
-        else                std::cout << " no-gtransform " ;
-        std::cout << std::endl ; 
+
+        nmat4pair* gtransform = node->global_transform();
+        unsigned gtransform_idx = 0 ; 
+        if(gtransform)
+        {
+            NPY<float>* gtmp = NPY<float>::make(1,2,4,4);
+            gtmp->zero();
+            gtmp->setMat4Pair(gtransform, 0);
+            gtransform_idx = 1 + m_gtransforms->addItemUnique( gtmp, 0 ) ; 
+            delete gtmp ; 
+        }
+        node->gtransform = gtransform ; 
+        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+
 
 
     }
@@ -298,41 +311,49 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent, int transform_idx )
 
 
 
-void NCSG::analyse()
+void NCSG::check()
 {
-    m_gtransform_map.clear();
+    check_r( m_root );
 
-    analyse_r( m_root );
 
-    unsigned num_distinct_gtransforms = m_gtransform_map.size();
+    unsigned ni =  m_gtransforms ? m_gtransforms->getNumItems() : 0  ;
 
-    LOG(info) << "NCSG::analyse"
-              << " num_distinct_gtransforms " << num_distinct_gtransforms
+    LOG(info) << "NCSG::check"
+              << " unique gtransforms " << ni
               ;
 
-    for(MSN::const_iterator it=m_gtransform_map.begin() ; it != m_gtransform_map.end() ; it++)
+    for(unsigned i=0 ; i < ni ; i++)
     {
-        std::cout << " dig " << it->first << " " << it->second->desc() << std::endl ; 
+        const nmat4pair* u_gtran = m_gtransforms->getMat4PairPtr(i);
+        std::cout 
+                  << "[" << std::setw(2) << i << "] " 
+                  << *u_gtran 
+                  << std::endl ; 
     }
-
 }
 
-void NCSG::analyse_r(nnode* node)
+void NCSG::check_r(nnode* node)
 {
     if(node->gtransform)
     {
-        std::string digest = node->gtransform->digest();
-        m_gtransform_map[digest] = node ; 
-
-        // nope... need to collect all nodes with the transform, so can 
-        // go back and make references into the gtransform buffer to be created 
+        std::cout << "NCSG::check_r"
+                  << " gtransform_idx " << node->gtransform_idx
+                  << std::endl 
+                  ;
+    }
+    if(node->transform)
+    {
+        std::cout << "NCSG::check_r"
+                  << " transform " << *node->transform
+                  << std::endl 
+                  ;
     }
 
 
     if(node->left && node->right)
     {
-        analyse_r(node->left);
-        analyse_r(node->right);
+        check_r(node->left);
+        check_r(node->right);
     }
 }
 

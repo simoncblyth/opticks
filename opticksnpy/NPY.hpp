@@ -274,6 +274,7 @@ class NPY_API NPY : public NPYBase {
        glm::mat4*   getMat4Ptr(int i, int j=-1);
 
        nmat4pair*   getMat4PairPtr(int i);
+       void         setMat4Pair(const nmat4pair* mpair, unsigned i );
 
 
    //private:

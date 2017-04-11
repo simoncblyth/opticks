@@ -77,8 +77,8 @@ class NPY_API NCSG {
         unsigned getHeight();
         nnode* getRoot();
     public:
-        void analyse();
-        void analyse_r(nnode* node); 
+        void check();
+        void check_r(nnode* node); 
     private:
         // Deserialize
         NCSG(const char* treedir, unsigned index=0u);
@@ -101,13 +101,13 @@ class NPY_API NCSG {
         const char* m_treedir ; 
         NPY<float>* m_nodes ; 
         NPY<float>* m_transforms ; 
+        NPY<float>* m_gtransforms ; 
         NParameters* m_meta ; 
         unsigned    m_num_nodes ; 
         unsigned    m_num_transforms ; 
         unsigned    m_height ; 
         const char* m_boundary ; 
 
-        MSN         m_gtransform_map ; 
 
 
 };

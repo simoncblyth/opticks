@@ -54,6 +54,7 @@ struct NPY_API nnode
 
     nmat4pair* transform ; 
     nmat4pair* gtransform ; 
+    unsigned   gtransform_idx ; 
 
     nvec4 param ; 
 };

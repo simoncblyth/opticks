@@ -5,11 +5,21 @@
 #include <cstdio>
 #include <cassert>
 
+unsigned npart::VERSION = 1 ;   // could become an enumerated LAYOUT bitfield if need more granularity 
+
 void npart::setTypeCode(OpticksCSG_t typecode)
 {
     assert( TYPECODE_J == 2 && TYPECODE_K == 3 );
     q2.u.w = typecode ; 
 }
+
+void npart::setGTransform(unsigned gtransform_idx)
+{
+    assert(VERSION == 1u);
+    assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 0 );
+    q3.u.x = gtransform_idx ; 
+}
+
 
 
 // thought not used, but they are for in memory npart 
@@ -108,6 +118,8 @@ void npart::setParam(float x, float y, float z, float w)
 
 void npart::setBBox(const nbbox& bb)
 {
+    assert(VERSION == 0u);  
+
     assert( BBMIN_J == 2 && BBMIN_K == 0 );
     q2.f.x = bb.min.x ; 
     q2.f.y = bb.min.y ; 

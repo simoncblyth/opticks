@@ -6,11 +6,19 @@ enum {
 };       // q0.f.xyzw
 
 
-// only used for CSG operator nodes
+// only used for CSG operator nodes in input serialization buffer
 enum {
     RTRANSFORM_J = 3,
     RTRANSFORM_K = 3 
 };   // q3.u.w
+
+
+// only used for CSG primitives in part buffer
+enum {
+    GTRANSFORM_J = 3,
+    GTRANSFORM_K = 0 
+};   // q3.u.x
+
 
 
 enum {

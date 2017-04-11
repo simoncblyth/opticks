@@ -911,6 +911,10 @@ NPY<T>* NPY<T>::make_inverted_transforms(NPY<T>* src, bool transpose)
      return dst ; 
 }
 
+
+
+
+
 template <typename T>
 NPY<T>* NPY<T>::make_paired_transforms(NPY<T>* src, bool transpose)
 {
@@ -1628,6 +1632,9 @@ void NPY<T>::setPart(const npart& p, unsigned int i)
     setQuad( p.q3.f , i, 3, 0 );
 }
 
+
+ 
+
 template <typename T> 
 void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
 {
@@ -1696,6 +1703,17 @@ nmat4pair* NPY<T>::getMat4PairPtr(int i)
     return new nmat4pair(tr, irit) ; 
 }
 
+
+
+template <typename T> 
+void NPY<T>::setMat4Pair(const nmat4pair* mpair, unsigned i )
+{
+    assert(hasShape(-1,2,4,4));
+    assert(mpair);
+
+    setMat4(mpair->tr  , i, 0 );
+    setMat4(mpair->irit, i, 1 );
+}
 
 
 

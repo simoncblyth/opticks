@@ -63,6 +63,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 
+    n.gtransform_idx = 0 ; 
 
     n.param = {0.f, 0.f, 0.f, 0.f };
 }
@@ -124,18 +125,21 @@ void nnode::update_gtransforms_r(nnode* node)
 npart nnode::part()
 {
     // this is invoked by NCSG::export_r to totally re-write the nodes buffer 
+    // BUT: is it being used by partlist approach, am assuming not by not setting bbox
 
-    nbbox bb = bbox();
 
     npart pt ; 
     pt.zero();
     pt.setParam( param );
     pt.setTypeCode( type );
+    pt.setGTransform( gtransform_idx );
+    // gtransform_idx is index into a buffer of the distinct compound transforms for the tree
 
-    // hmm need to setGTransform() using 
-    // an index into a buffer of distinct compound transforms for the tree
-
-    pt.setBBox( bb );
+    if(npart::VERSION == 0u)
+    {
+        nbbox bb = bbox();
+        pt.setBBox( bb );  
+    }
 
     return pt ; 
 }

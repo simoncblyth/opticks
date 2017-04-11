@@ -53,6 +53,185 @@ bringing over the gtransforms (ie compound transforms)
 
 
 
+Huh : All nodes in CSG tree with gtransformIdx  1  ?
+--------------------------------------------------------
+
+::
+
+    ##bounds primIdx  0 partOffset  0 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ##bounds primIdx  1 partOffset  1 numParts  7 height  2 numNodes  7 tranBuffer_size   2 
+    ##hemi-pmt.cu:bounds primIdx 0 is_csg:0 min -1000.0000 -1000.0000 -1000.0000 max  1000.0000  1000.0000  1000.0000 
+    ## bounds nodeIdx  4 depth  2 elev  0 partType  6 gtransformIdx  1 
+    ## bounds nodeIdx  5 depth  2 elev  0 partType  5 gtransformIdx  1 
+    ## bounds nodeIdx  2 depth  1 elev  1 partType  3 gtransformIdx  1 
+    ## bounds nodeIdx  6 depth  2 elev  0 partType  6 gtransformIdx  1 
+    ## bounds nodeIdx  7 depth  2 elev  0 partType  5 gtransformIdx  1 
+    ## bounds nodeIdx  3 depth  1 elev  1 partType  3 gtransformIdx  1 
+    ## bounds nodeIdx  1 depth  0 elev  2 partType  1 gtransformIdx  1 
+    ##hemi-pmt.cu:bounds primIdx 1 is_csg:1 min  -325.4228  -355.3086  -185.1945 max   374.8348   486.3704   604.7207 
+
+
+Fixed by not writing the bbox and getting nsphere::part to use nnode::part and then specialize,
+but now get bad bbox for container which has disappeared in raytrace::
+
+    ##bounds primIdx  0 partOffset  0 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ##bounds primIdx  1 partOffset  1 numParts  7 height  2 numNodes  7 tranBuffer_size   2 
+    ##hemi-pmt.cu:bounds primIdx 0 is_csg:0 min     0.0000     0.0000     0.0000 max     0.0000     0.0000     0.0000 
+    ## bounds nodeIdx  4 depth  2 elev  0 partType  6 gtransformIdx  0 
+    ## bounds nodeIdx  5 depth  2 elev  0 partType  5 gtransformIdx  0 
+    ## bounds nodeIdx  2 depth  1 elev  1 partType  3 gtransformIdx  0 
+    ## bounds nodeIdx  6 depth  2 elev  0 partType  6 gtransformIdx  1 
+    ## bounds nodeIdx  7 depth  2 elev  0 partType  5 gtransformIdx  1 
+    ## bounds nodeIdx  3 depth  1 elev  1 partType  3 gtransformIdx  0 
+    ## bounds nodeIdx  1 depth  0 elev  2 partType  1 gtransformIdx  0 
+    ##hemi-pmt.cu:bounds primIdx 1 is_csg:1 min  -273.6589  -355.3086  -300.0000 max   374.8348   300.0000   604.7207 
+
+
+
+Dumping the GParts from OGeo shows that still have the bboxen and 
+my gtransformIdx is being overwritten with a nodeIdx.
+
+::
+
+
+    In [11]: pt = np.load("/tmp/blyth/opticks/OGeo_makeAnalyticGeometry/analytic/partBuffer.npy")
+
+    In [12]: pt
+    Out[12]: 
+    array([[[    0.    ,     0.    ,     0.    ,  1000.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [-1000.    , -1000.    , -1000.    ,     0.    ],
+            [ 1000.    ,  1000.    ,  1000.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -273.6589,  -355.3086,  -300.    ,     0.    ],
+            [  374.8348,   300.    ,   604.7207,     0.    ]],
+
+           [[    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -100.    ,  -100.    ,  -300.    ,     0.    ],
+            [  300.    ,   300.    ,   100.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -273.6589,  -355.3086,   -43.7731,     0.    ],
+            [  374.8348,   293.1852,   604.7207,     0.    ]],
+
+           [[  100.    ,   100.    ,  -100.    ,   150.1111],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [  -50.1111,   -50.1111,  -250.1111,     0.    ],
+            [  250.1111,   250.1111,    50.1111,     0.    ]],
+
+           [[  100.    ,   100.    ,  -100.    ,   200.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -200.    ,  -200.    ,  -300.    ,     0.    ],
+            [  200.    ,   200.    ,   100.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,   100.    ,   150.1111],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -192.7773,  -274.427 ,    37.1086,     0.    ],
+            [  293.9532,   212.3035,   523.839 ,     0.    ]],
+
+           [[    0.    ,     0.    ,   100.    ,   200.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -200.    ,  -200.    ,  -100.    ,     0.    ],
+            [  200.    ,   200.    ,   300.    ,     0.    ]]], dtype=float32)
+
+::
+
+    In [14]: pt = np.load("/tmp/blyth/opticks/OGeo_makeAnalyticGeometry/analytic/partBuffer.npy")
+
+    In [15]: pt
+    Out[15]: 
+    array([[[    0.    ,     0.    ,     0.    ,  1000.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+           [[  100.    ,   100.    ,  -100.    ,   150.1111],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+           [[  100.    ,   100.    ,  -100.    ,   200.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -200.    ,  -200.    ,  -300.    ,     0.    ],
+            [  200.    ,   200.    ,   100.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,   100.    ,   150.1111],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ]],
+
+           [[    0.    ,     0.    ,   100.    ,   200.    ],
+            [    0.    ,     0.    ,     0.    ,     0.    ],
+            [ -200.    ,  -200.    ,  -100.    ,     0.    ],
+            [  200.    ,   200.    ,   300.    ,     0.    ]]], dtype=float32)
+
+
+
+
+
+    In [13]: pt.view(np.uint32)
+    Out[13]: 
+    array([[[         0,          0,          0, 1148846080],
+            [         0,          0,        123,          0],
+            [3296329728, 3296329728, 3296329728,          6],
+            [1148846080, 1148846080, 1148846080,          0]],
+
+           [[         0,          0,          0,          0],
+            [         0,          1,        124,          0],
+            [3280524376, 3283199872, 3281387520,          1],
+            [1136356060, 1133903872, 1142369824,          1]],
+
+           [[         0,          0,          0,          0],
+            [         0,          2,        124,          0],
+            [3267887104, 3267887104, 3281387520,          3],
+            [1133903872, 1133903872, 1120403456,          1]],
+
+           [[         0,          0,          0,          0],
+            [         0,          3,        124,          0],
+            [3280524376, 3283199872, 3257866152,          3],
+            [1136356060, 1133680564, 1142369824,          1]],
+
+           [[1120403456, 1120403456, 3267887104, 1125522543],
+            [         0,          4,        124,          0],
+            [3259527612, 3259527612, 3279559791,          6],
+            [1132076143, 1132076143, 1112043964,          1]],
+
+           [[1120403456, 1120403456, 3267887104, 1128792064],
+            [         0,          5,        124,          0],
+            [3276275712, 3276275712, 3281387520,          5],
+            [1128792064, 1128792064, 1120403456,          1]],
+
+           [[         0,          0, 1120403456, 1125522543],
+            [         0,          6,        124,          0],
+            [3275802366, 3280549543, 1108635432,          6],
+            [1133705730, 1129598387, 1141044658,          1]],
+
+           [[         0,          0, 1120403456, 1128792064],
+            [         0,          7,        124,          0],
+            [3276275712, 3276275712, 3267887104,          5],
+            [1128792064, 1128792064, 1133903872,          1]]], dtype=uint32)
+
+
+
 
 input csg very spartan
 -----------------------

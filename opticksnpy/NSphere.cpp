@@ -16,6 +16,8 @@
 #include "NPlane.hpp"
 #include "NPart.hpp"
 
+#include "PLOG.hh"
+
 
 float nsphere::radius(){ return param.w ; }
 float nsphere::x(){      return param.x ; }
@@ -108,18 +110,20 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
 
 npart nsphere::part()
 {
-    float _z = z() ;  
-    float r  = radius() ; 
+    npart p = nnode::part();
 
-   // hmm this belongs in zsphere not here ???
-    nbbox bb = make_nbbox(_z - r, _z + r, -r, r);
+    assert( p.getTypeCode() == CSG_SPHERE );
 
-    npart p ; 
-    p.zero();            
-    p.setParam(param) ; 
-    p.setTypeCode(CSG_SPHERE); 
-    p.setBBox(bb);
+    if(npart::VERSION == 0u)
+    {
+        // TODO: move this belongs into a zsphere not here ???
+        LOG(warning) << "nsphere::part override bbox " ;  
+        float _z = z() ;  
+        float r  = radius() ; 
+        nbbox bb = make_nbbox(_z - r, _z + r, -r, r);
 
+        p.setBBox(bb);
+    }
     return p ; 
 }
 
