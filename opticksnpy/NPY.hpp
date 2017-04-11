@@ -110,6 +110,9 @@ class NPY_API NPY : public NPYBase {
 
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
+
+   public:
+       static bool hasSameItemSize(NPY<T>* a, NPY<T>* b) ;
    public:
        static NPY<T>* make_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
        static unsigned count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
@@ -166,12 +169,24 @@ class NPY_API NPY : public NPYBase {
     private:
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:
-       void add(NPY<T>* other);      // add another buffer, it must have same itemsize (ie size after 1st dimension)
+       void add(NPY<T>* other);   // add another buffer, it must have same itemsize (ie size after 1st dimension)
        void add(const T* values, unsigned int nvals);   // add values, nvals must be integral multiple of the itemsize  
        void add(void* bytes, unsigned int nbytes); // add bytes,  nbytes must be integral multiple of itemsize in bytes
        void add(T x, T y, T z, T w) ;   // add values of a quad, itemsize must be 4 
        void add(const glm::vec4& v ) ;  // add quad, itemsize must be 4 
        void reset();   //  clears data, setHasData to false and setNumItems to zero
+    public:
+       void updateDigests();
+       void addItem(NPY<T>* other, unsigned item);   // add single item from another buffer, it must have same itemsize (ie size after 1st dimension)
+       unsigned addItemUnique(NPY<T>* other, unsigned item ); 
+       // Add single item from other buffer only if the item is not already present in this buffer, 
+       // 
+       // * the other buffer must have the same itemsize as this buffer
+       // * the other buffer may of course only have a single item, in which case item will be 0 
+       //
+       // returns the 0-based index of the newly added item if unique or the preexisting 
+       // item if not unique
+       //
     public:
        std::vector<T>& data();
        void setData(T* data);
@@ -266,6 +281,9 @@ class NPY_API NPY : public NPYBase {
        std::vector<T>     m_data ; 
        T*                 m_unset_item ; 
        BBufSpec*          m_bufspec ; 
+
+       std::vector<std::string> m_digests ;  // usually empty, only used by addItemUnique 
+
  
 };
 

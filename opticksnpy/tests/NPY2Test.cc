@@ -193,6 +193,8 @@ void test_make_identity_transforms()
 
 void test_getItemDigestString()
 {
+    LOG(info) << "test_getItemDigestString" ; 
+
     NPY<float>* src = make_src_transforms(2);
     assert(src->hasShape(6,4,4));
 
@@ -205,6 +207,42 @@ void test_getItemDigestString()
     for(unsigned i=0 ; i < 6 ; i++)
          std::cout << " pai " << i << " " << paired->getItemDigestString(i) << std::endl ; 
  
+}
+
+
+void test_addItemUnique()
+{
+    LOG(info) << "test_addItemUnique" ; 
+
+    NPY<float>* src = make_src_transforms(2);
+    assert(src->hasShape(6,4,4));
+
+    for(unsigned i=0 ; i < 6 ; i++)
+         std::cout << " src " << i << " " << src->getItemDigestString(i) << std::endl ; 
+ 
+    NPY<float>* paired = NPY<float>::make_paired_transforms(src);
+    assert(paired->hasShape(6,2,4,4));
+     
+    unsigned ni = paired->getNumItems();
+    assert(ni == 6);
+
+
+    NPY<float>* uniq = NPY<float>::make(0,2,4,4);
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        unsigned uniq_i = uniq->addItemUnique( paired, i );
+
+        std::cout 
+              << " i " << std::setw(2) << i 
+              << " uniq_i " << std::setw(2) << uniq_i
+              << std::endl  ;
+
+    }
+    assert( uniq->getNumItems() == 3 );
+    uniq->save("$TMP/test_addItemUnique/uniq.npy");
+
+
 }
 
 
@@ -228,6 +266,7 @@ int main(int argc, char** argv )
     test_make_paired_transforms();
 
     test_getItemDigestString();
+    test_addItemUnique();
 
     return 0 ; 
 }

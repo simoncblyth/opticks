@@ -129,26 +129,113 @@ T* NPY<T>::grow(unsigned int nitems)
     return m_data.data() + origvals ;
 }
 
+
+
+template <typename T>
+void NPY<T>::updateDigests()
+{
+    unsigned ni = getNumItems() ;
+    if(m_digests.size() == ni) return ; 
+
+    for(unsigned i=0 ; i < ni ; i++) 
+        m_digests.push_back(getItemDigestString(i)) ;
+}
+
+
+template <typename T>
+unsigned NPY<T>::addItemUnique(NPY<T>* other, unsigned item)
+{
+    // Add single item from other buffer only if the item is not already present in this buffer, 
+    // 
+    // * the other buffer must have the same itemsize as this buffer
+    // * the other buffer may of course only contain a single item, in which case item will be 0 
+    //
+    // returns the 0-based index of the newly added item if unique or the preexisting 
+    // item if not unique
+    //
+ 
+    assert(item < other->getNumItems() );
+
+    updateDigests();
+
+    std::string item_digest = other->getItemDigestString(item);
+
+    typedef std::vector<std::string> VS ; 
+    VS::const_iterator begin = m_digests.begin();
+    VS::const_iterator end   = m_digests.end();
+    VS::const_iterator prior = std::find(begin, end, item_digest) ;
+
+    int index = prior == end ? -1 : std::distance( begin, prior ) ;
+
+    if( index  == -1 )
+    {
+        unsigned ni0 = getNumItems();
+
+        addItem(other, item);
+
+        unsigned ni1 = getNumItems();
+        assert( ni1 == ni0 + 1 );
+
+        index = ni1 - 1 ; 
+
+        std::string digest = getItemDigestString( index  );
+        assert( strcmp( item_digest.c_str(), digest.c_str() ) == 0 );
+
+        m_digests.push_back(digest); 
+    }
+    return index ; 
+
+}
+
+template <typename T>
+bool NPY<T>::hasSameItemSize(NPY<T>* a, NPY<T>* b)
+{
+    unsigned aItemValues = a->getNumValues(1) ;
+    unsigned bItemValues = b->getNumValues(1) ;
+
+    bool same = aItemValues == bItemValues ;  
+    if(!same)
+    LOG(fatal) << "NPY<T>::hasSameItemSize MISMATCH "
+              << " aShape " << a->getShapeString()
+              << " bShape " << b->getShapeString()
+              << " aItemValues " << aItemValues 
+              << " bItemValues " << bItemValues 
+              ;
+ 
+    return same ; 
+}
+
+
+
+template <typename T>
+void NPY<T>::addItem(NPY<T>* other, unsigned item)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
+{
+    assert( item < other->getNumItems() );
+    unsigned orig = getNumItems();
+    unsigned extra = 1 ; 
+
+    bool same= hasSameItemSize(this, other);
+    assert(same);
+
+    unsigned itemNumBytes = getNumBytes(1) ; 
+    char* itemBytes = (char*)other->getBytes() + itemNumBytes*item; 
+
+    memcpy( grow(extra), itemBytes, itemNumBytes );
+
+    setNumItems( orig + extra );
+}
+ 
+
+
 template <typename T>
 void NPY<T>::add(NPY<T>* other)      // add another buffer to this one, they must have same itemsize (ie size after 1st dimension)
 {
-    unsigned int orig = getNumItems();
-    unsigned int extra = other->getNumItems();
-    bool same_itemsize = other->getNumValues(1) == getNumValues(1) ;
+    unsigned orig = getNumItems();
+    unsigned extra = other->getNumItems() ;
 
-    if(!same_itemsize)
-    {
-         LOG(fatal) << "NPY<T>::add itemsize mismatch "
-              << " NumItems " << orig 
-              << " otherNumItems " << extra 
-              << " shape " << getShapeString()
-              << " NumValues(1) " << getNumValues(1)
-              << " otherShape " << other->getShapeString()
-              << " otherNumValues(1) " << other->getNumValues(1)
-              ;
-    }
+    bool same= hasSameItemSize(this, other);
+    assert(same);
 
-    assert(same_itemsize);
     memcpy( grow(extra), other->getBytes(), other->getNumBytes(0) );
 
     setNumItems( orig + extra );
