@@ -88,19 +88,6 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
 
-/*
-    float zmin, zmax ; 
-    if(analytic_version > 1)
-    {
-        zmin = q1.f.y ; 
-        zmax = q1.f.z ; 
-    }
-    else
-    {
-        zmin = q2.f.z ;
-        zmax = q3.f.z ;
-    }
-*/
     float zmin = q2.f.z ;
     float zmax = q3.f.z ;
 

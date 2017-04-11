@@ -46,12 +46,16 @@ GParts* GParts::combine(std::vector<GParts*> subs)
         GParts* sp = subs[i];
 
         OpticksCSG_t pf = sp->getPrimFlag();
+
+
         if(primflag == CSG_ZERO) 
             primflag = pf ; 
         else
             assert(pf == primflag && "GParts::combine requires all GParts instances to have the same primFlag " );
 
         unsigned av = sp->getAnalyticVersion();
+        LOG(info) << std::setw(3) << i << " " << "av " << av ; 
+
         if(analytic_version == 0)
             analytic_version = av ;
         else

@@ -159,10 +159,13 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMergedMesh* mmpmt = loadPmt();
     unsigned int index = mmpmt->getNumSolids() ;
 
-    GSolid* solid = m_maker->make( index, type, param, spec) ;
-    solid->getMesh()->setIndex(1000);
 
-    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, solid );   
+    GSolid* container = m_maker->make( index, type, param, spec) ;  // container box
+    container->getMesh()->setIndex(1000);
+    container->getParts()->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
+    container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
+
+    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container );   
 
     if(verbosity > 1)
         triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");

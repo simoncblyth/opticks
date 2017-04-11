@@ -40,7 +40,9 @@ OR for test geometries it is created part-by-part using methods of the npy primi
 #include "GGEO_HEAD.hh"
 
 class GGEO_API GParts { 
-       friend class GPmt ; // for setPrimFlag  
+       // users of setPrimFlag
+       friend class GGeoTest ;
+       friend class GPmt ; 
     public:
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
