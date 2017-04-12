@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
-from opticks.dev.csg.glm import rotate
+from opticks.dev.csg.glm import make_trs
 
 Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
@@ -96,27 +96,7 @@ class CSG(CSG_):
         pass
         return trees
 
-    @classmethod
-    def make_transform(cls, s_translate, s_rotate):
-        if s_translate is None and s_rotate is None: return None
 
-        tla_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
-        qrot_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
-
-        transform = np.eye(4, dtype=np.float32)
-
-        if s_rotate is not None:
-            rot = rotate(qrot_(s_rotate)) 
-            transform[:3, :3] = rot[:3,:3] 
-        pass
-
-        if s_translate is not None:
-            tla = tla_(s_translate)
-            transform[3,:3] = tla
-        pass
-
-        return transform
- 
 
     def serialize(self):
         """
@@ -227,7 +207,7 @@ class CSG(CSG_):
 
     
 
-    def __init__(self, typ, left=None, right=None, param=None, boundary="", translate=None, rotate=None,  **kwa):
+    def __init__(self, typ, left=None, right=None, param=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
         if type(typ) is str:
             typ = self.fromdesc(typ)  
         pass
@@ -238,7 +218,7 @@ class CSG(CSG_):
         self.right = right
         self.param = param
         self.boundary = boundary
-        self.transform = self.make_transform(translate,rotate)
+        self.transform = make_trs(translate,rotate,scale)
         self.meta = kwa
 
     def _get_param(self):
@@ -333,7 +313,7 @@ if __name__ == '__main__':
     container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
    
     s = CSG("sphere")
-    b = CSG("box", translate="0,0,20", rotate="0,0,1,45")
+    b = CSG("box", translate="0,0,20", rotate="0,0,1,45", scale="1,2,3" )
     sub = CSG("union", left=s, right=b, boundary="Vacuum///GlassShottF2", hello="world")
 
     trees0 = [container, sub]

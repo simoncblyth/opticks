@@ -905,7 +905,7 @@ NPY<T>* NPY<T>::make_inverted_transforms(NPY<T>* src, bool transpose)
      for(unsigned i=0 ; i < ni ; i++)
      {
          glm::mat4 tr =  src->getMat4(i);  
-         glm::mat4 irit = invert_tr( tr );
+         glm::mat4 irit = nglmext::invert_tr( tr );
          dst->setMat4(irit, i, -1, transpose );
      }
      return dst ; 
@@ -926,11 +926,11 @@ NPY<T>* NPY<T>::make_paired_transforms(NPY<T>* src, bool transpose)
 
      for(unsigned i=0 ; i < ni ; i++)
      {
-         glm::mat4 tr =  src->getMat4(i);  
-         glm::mat4 irit = invert_tr( tr );
+         glm::mat4 trs =  src->getMat4(i);  
+         glm::mat4 isirit = nglmext::invert_trs( trs );
 
-         dst->setMat4(tr  , i, 0, transpose );
-         dst->setMat4(irit, i, 1, transpose );
+         dst->setMat4(trs   , i, 0, transpose );
+         dst->setMat4(isirit, i, 1, transpose );
      }
      return dst ; 
 }

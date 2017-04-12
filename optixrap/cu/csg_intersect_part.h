@@ -187,25 +187,33 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
         optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
         optix::Matrix4x4 irit = tranBuffer[iritIdx] ; 
 
+
         float4 origin    = make_float4( ray.origin.x, ray.origin.y, ray.origin.z, 1.f );           // w=1 for position  
         float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for vector
 
+        // bring ray into local frame of the geometry, using inverse transform
         origin    = origin * irit ; 
         direction = direction * irit ; 
 
         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
         float3 ray_direction = make_float3( direction.x, direction.y, direction.z );
 
+        // intersect using local frame assuming code
         switch(partType)
         {
             case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
             case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
         }
 
-        // TODO: avoid normal calc when no intersect ?
+        //   transforming local frame results back to original frame  
+        //
+        //       what about the parametric tt.w the parametric t distance ?
+        //       what about intersection point, not used ? 
+        //
+        //  :google:`ray tracer transform rays`
 
         float4 tt_normal = make_float4( tt.x, tt.y, tt.z , 0.f );
-        tt_normal = tt_normal * tr ; 
+        tt_normal = tt_normal * tr ;   // should be inverse tranpose of T ? but i dont scale, so inverse transpose T = T  
 
         tt.x = tt_normal.x ; 
         tt.y = tt_normal.y ; 

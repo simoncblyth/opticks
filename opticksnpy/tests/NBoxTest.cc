@@ -26,7 +26,7 @@ void test_gtransform()
         gen(tlate); 
 
         glm::mat4 tr = glm::translate(glm::mat4(1.0f), tlate );
-        glm::mat4 irit = invert_tr(tr);
+        glm::mat4 irit = nglmext::invert_tr(tr);
 
         nmat4pair mp(tr, irit);
 

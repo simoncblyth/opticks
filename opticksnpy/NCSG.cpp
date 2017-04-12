@@ -158,7 +158,6 @@ unsigned NCSG::getTypeCode(unsigned idx)
 unsigned NCSG::getTransformIndex(unsigned idx)
 {
     return m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
-    //return m_nodes->getUInt(idx,RTRANSFORM_J,RTRANSFORM_K,0u);
 }
 
 

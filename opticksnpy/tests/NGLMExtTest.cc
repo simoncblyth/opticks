@@ -53,7 +53,7 @@ void test_invert_tr()
     tr = glm::translate(tr, tlat );
     tr = glm::rotate(tr, angle, axis );
 
-    glm::mat4 irit = invert_tr( tr );
+    glm::mat4 irit = nglmext::invert_tr( tr );
 
     //std::cout << gpresent(" tr ", tr) << std::endl ; 
     //std::cout << gpresent(" irit ", irit ) << std::endl ; 

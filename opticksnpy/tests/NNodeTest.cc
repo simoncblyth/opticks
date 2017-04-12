@@ -16,7 +16,7 @@ nmat4pair make_tlate_pair( const glm::vec3& tlate )
     glm::mat4 tr(1.f) ;
     tr = glm::translate( tr, tlate );
 
-    glm::mat4 irit = invert_tr( tr );
+    glm::mat4 irit = nglmext::invert_tr( tr );
 
     return nmat4pair(tr, irit);
 }

@@ -118,7 +118,7 @@ void test_Mat4Pairs()
     for(unsigned i=0 ; i < 3 ; i++)
     {
         glm::mat4 tr = src->getMat4(i);
-        glm::mat4 irit = invert_tr(tr);
+        glm::mat4 irit = nglmext::invert_tr(tr);
 
         transforms->setMat4( tr  , i, 0 ); 
         transforms->setMat4( irit, i, 1 ); 
