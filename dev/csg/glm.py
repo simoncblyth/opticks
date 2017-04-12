@@ -5,12 +5,12 @@ import numpy as np
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
 
 
-def scale(arg=[1,2,3], m=None):
+def scale(arg=[1,2,3], m=None, dtype=np.float32):
     """  
     Translation of glm::scale into numpy 
     /usr/local/opticks/externals/glm/glm-0.9.6.3/glm/gtc/matrix_transform.inl
     """
-    if m is None:m = np.eye(4)
+    if m is None:m = np.eye(4, dtype=dtype)
 
     if type(arg) is str:
         arg = fromstring_(arg)
@@ -20,16 +20,16 @@ def scale(arg=[1,2,3], m=None):
     else:
         pass
     pass
-    v = np.asarray(arg, dtype=np.float32)
+    v = np.asarray(arg, dtype=dtype)
 
-    Result = np.eye(4)
+    Result = np.eye(4, dtype=dtype)
     Result[0] = m[0] * v[0];
     Result[1] = m[1] * v[1];
     Result[2] = m[2] * v[2];
     Result[3] = m[3];
     return Result
 
-def translate(arg=[1,2,3], m=None):
+def translate(arg=[1,2,3], m=None, dtype=np.float32):
     """  
     Translation of glm::translate into numpy 
     /usr/local/opticks/externals/glm/glm-0.9.6.3/glm/gtc/matrix_transform.inl
@@ -42,15 +42,15 @@ def translate(arg=[1,2,3], m=None):
     else:
         pass
     pass
-    v = np.asarray(arg, dtype=np.float32)
+    v = np.asarray(arg, dtype=dtype)
 
-    if m is None:m = np.eye(4)
-    Result = np.eye(4)
+    if m is None:m = np.eye(4, dtype=dtype)
+    Result = np.eye(4, dtype=dtype)
     Result[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3]
     return Result
 
 
-def rotate(arg=[0,0,1,45], m=None ):
+def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
     """
     :param arg: 4-component array, 1st three for axis, 4th for rotation angle in degrees
     :param m: optional matrix to combine with  
@@ -58,7 +58,7 @@ def rotate(arg=[0,0,1,45], m=None ):
     Translation of glm::rotate into numpy 
     /usr/local/opticks/externals/glm/glm-0.9.6.3/glm/gtc/matrix_transform.inl::
     """
-    if m is None:m = np.eye(4)
+    if m is None:m = np.eye(4, dtype=dtype)
 
     if type(arg) is str:
         arg = fromstring_(arg)
@@ -68,12 +68,12 @@ def rotate(arg=[0,0,1,45], m=None ):
     else:
         pass
     pass
-    v = np.asarray(arg, dtype=np.float32)
+    v = np.asarray(arg, dtype=dtype)
 
     axis_ = v[:3] 
     angle_d = v[3]
 
-    axis = np.array( axis_, dtype=np.float32)
+    axis = np.array( axis_, dtype=dtype)
     axis /= np.sqrt(np.dot(axis,axis))
 
     angle = np.pi*float(angle_d)/180.
@@ -82,7 +82,7 @@ def rotate(arg=[0,0,1,45], m=None ):
 
     temp = (1. - c)*axis
 
-    Rotate  = np.eye(3)
+    Rotate  = np.eye(3, dtype=dtype)
     Rotate[0][0] = c + temp[0] * axis[0]
     Rotate[0][1] = 0 + temp[0] * axis[1] + s * axis[2]
     Rotate[0][2] = 0 + temp[0] * axis[2] - s * axis[1]
@@ -95,7 +95,7 @@ def rotate(arg=[0,0,1,45], m=None ):
     Rotate[2][1] = 0 + temp[2] * axis[1] - s * axis[0]
     Rotate[2][2] = c + temp[2] * axis[2]
  
-    Result = np.eye(4)
+    Result = np.eye(4, dtype=dtype)
     Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
     Result[1] = m[0] * Rotate[1][0] + m[1] * Rotate[1][1] + m[2] * Rotate[1][2];
     Result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
@@ -106,7 +106,7 @@ def rotate(arg=[0,0,1,45], m=None ):
 
 
 
-def make_transform( order, tla, rot, sca ):
+def make_transform( order, tla, rot, sca, dtype=np.float32 ):
     """
     :param order: string containing "s" "r" and "t", standard order is "trs" meaning t*r*s  ie scale first, then rotate, then translate 
     :param tla: tx,ty,tz tranlation dists eg 0,0,0 for no translation 
@@ -118,7 +118,11 @@ def make_transform( order, tla, rot, sca ):
 
     Translation of npy/tests/NGLMTest.cc:make_mat
     """
-    m = np.eye(4, dtype=np.float32) 
+
+    if tla is None and rot is None and sca is None:
+        return None
+
+    m = np.eye(4, dtype=dtype) 
     for c in order:
         if c == 's':
             m = scale(sca, m)
@@ -133,14 +137,8 @@ def make_transform( order, tla, rot, sca ):
     return m 
 
 
-def make_trs( tla, rot, sca ):
-    if tla is None and rot is None and sca is None:
-        return None
-    else:
-        return make_transform("trs", tla, rot, sca ) 
-    pass
-
-
+def make_trs( tla, rot, sca, dtype=np.float32):
+    return make_transform("trs", tla, rot, sca, dtype=dtype ) 
 
 
 def test_make_transform():
@@ -158,16 +156,28 @@ def test_make_transform():
         sca = [1,2,3]
     pass
 
-    t = make_transform("t", tla, rot, sca )
-    r = make_transform("r", tla, rot, sca )
-    s = make_transform("s", tla, rot, sca )
-    trs = make_transform("trs", tla, rot, sca )
+    dtype = np.float32
+    t = make_transform("t", tla, rot, sca, dtype=dtype )
+    assert(t.dtype == dtype)
+
+    r = make_transform("r", tla, rot, sca, dtype=dtype)
+    assert(t.dtype == dtype)
+
+    s = make_transform("s", tla, rot, sca, dtype=dtype)
+    assert(s.dtype == dtype)
+
+    trs = make_transform("trs", tla, rot, sca, dtype=dtype)
+    assert(trs.dtype == dtype)
+
+    trs2 = make_trs(tla, rot, sca, dtype=dtype)
+    assert(trs2.dtype == dtype )
+
 
     print "t\n", t
     print "r\n", r
     print "s\n", s
     print "trs\n", trs
-    
+   
 
 
 

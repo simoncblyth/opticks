@@ -1,13 +1,11 @@
 CSG Transform Support
 =========================
 
-
 CSG Tree Objective
 ----------------------
 
 * recall the CSG trees are intended to be small per-solid trees
   corresponding to shape definitions (ie not definitions of full scene geometry)
-
 
 
 Transforms with Ray-trace and SDF
@@ -17,7 +15,6 @@ To translate or rotate a surface modeled as an CSG tree,
 apply the inverse transformation to the point for SDFs or the ray for 
 raytracing before doing the SDF distance calc or ray tracing intersection
 calc.
-
 
 
 Use higher level optix geometry transforms ?
@@ -49,6 +46,200 @@ bringing over the gtransforms (ie compound transforms)
   (ie all distinct products of parent transforms in the tree) 
   ... hmm this will mean will need to collect all distinct 
   gtransforms off the node tree (TODO: digest for glm::mat4)
+
+
+ISSUE : Extra intersects with ellipsoid 
+--------------------------------------------
+
+
+* Sphere at origin, scaled by 2 in z to make ellipsoid
+
+* ray trace in same position as composited polygonization 
+
+* BUT peculiar shading, looking dark where would expect bright and vv,
+  suggestive of problem with normals 
+
+* photons are seeing extra intersects outside the ellipsoid, 
+  looking like shells at a higher isosurface value than 0 
+
+
+
+At boolean level the isect normal coming from csg_intersect_part is compared with ray.direction
+to classify the intersect::
+
+   
+
+    158 static __device__
+    159 void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
+    160 {
+
+
+
+
+    481 void evaluative_csg( const uint4& prim, const uint4& identity )
+    ...
+    623                 IntersectionState_t l_state = CSG_CLASSIFY( csg.data[left], ray.direction, tmin );
+    624                 IntersectionState_t r_state = CSG_CLASSIFY( csg.data[right], ray.direction, tmin );
+    625 
+    626                 float t_left  = fabsf( csg.data[left].w );
+    627                 float t_right = fabsf( csg.data[right].w );
+    628 
+    629                 int ctrl = boolean_ctrl_packed_lookup( typecode , l_state, r_state, t_left <= t_right ) ;
+    630                 history_append( hist, nodeIdx, ctrl );
+
+
+
+
+
+
+::
+
+    248 tboolean-sphere-py-(){ cat << EOP 
+    249 from opticks.dev.csg.csg import CSG  
+    250 
+    251 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+    252 
+    253 
+    254 kwa = {}
+    255 im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+    256 tr = dict(translate="0,0,0", scale="1,1,2")
+    257 kwa.update(im)
+    258 kwa.update(tr)
+    259 
+    260 sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **kwa )
+    261 
+    262 CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
+    263 EOP
+    264 }
+
+
+* CPU side SDF polygonization produces expected ellipsoid
+
+GPU side
+
+* initially see sphere which moves and changes size as rotate view, 
+  but always staying inside the composited ellipsoid 
+  
+* bizarrely the photons are seeing a ghost of the ellipsoid ... does that 
+  mean problem is just with the normals ?
+
+::
+
+    ##test_tranBuffer tr
+       1.000    0.000    0.000    0.000
+       0.000    1.000    0.000    0.000
+       0.000    0.000    2.000    0.000
+       0.000    0.000  200.000    1.000
+    ##test_tranBuffer irit
+       1.000    0.000    0.000    0.000
+       0.000    1.000    0.000    0.000
+       0.000    0.000    0.500    0.000
+       0.000    0.000 -100.000    1.000
+    ##bounds primIdx  0 partOffset  0 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ##bounds primIdx  1 partOffset  1 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ## bounds nodeIdx  1 depth  0 elev  0 partType  6 gtransformIdx  0 
+    ## bounds nodeIdx  1 depth  0 elev  0 partType  5 gtransformIdx  1 
+    ##intersect_analytic.cu:bounds primIdx 0 primFlag 101 min -1000.0000 -1000.0000 -1000.0000 max  1000.0000  1000.0000  1000.0000 
+    ##intersect_analytic.cu:bounds primIdx 1 primFlag 101 min  -100.0000  -100.0000     0.0000 max   100.0000   100.0000   400.0000 
+
+
+Simplify, even with an non-one uniform scaling, the sphere is disappearing::
+
+    ##test_tranBuffer tr
+       1.100    0.000    0.000    0.000
+       0.000    1.100    0.000    0.000
+       0.000    0.000    1.100    0.000
+       0.000    0.000    0.000    1.000
+    ##test_tranBuffer irit
+       0.909    0.000    0.000    0.000
+       0.000    0.909    0.000    0.000
+       0.000    0.000    0.909    0.000
+       0.000    0.000    0.000    1.000
+    ##bounds primIdx  0 partOffset  0 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ##bounds primIdx  1 partOffset  1 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ## bounds nodeIdx  1 depth  0 elev  0 partType  6 gtransformIdx  0 
+    ## bounds nodeIdx  1 depth  0 elev  0 partType  5 gtransformIdx  1 
+    ##intersect_analytic.cu:bounds primIdx 0 primFlag 101 min -1000.0000 -1000.0000 -1000.0000 max  1000.0000  1000.0000  1000.0000 
+    ##intersect_analytic.cu:bounds primIdx 1 primFlag 101 min  -110.0000  -110.0000  -110.0000 max   110.0000   110.0000   110.0000 
+
+::
+
+    tboolean-sphere-py-(){ cat << EOP 
+    from opticks.dev.csg.csg import CSG  
+
+    container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+
+
+    kwa = {}
+    im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+    tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+    kwa.update(im)
+    kwa.update(tr)
+
+    sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **kwa )
+
+    CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
+    EOP
+    }
+
+
+    Note that 
+         X*V = Q*X
+         Y*V = Q*Y
+         Z*V = Q*Z
+
+    ##test_tranBuffer T(transform)
+      0.805    0.506   -0.311    0.000
+     -0.311    0.805    0.506    0.000
+      1.012   -0.621    1.609    0.000
+      0.000    0.000  100.000    1.000
+
+    ##test_tranBuffer V(inverse)
+      0.805   -0.311    0.253    0.000
+      0.506    0.805   -0.155    0.000
+     -0.311    0.506    0.402    0.000
+     31.062  -50.588  -40.237    1.000
+
+    ##test_tranBuffer Q(inverse.T)
+      0.805    0.506   -0.311   31.062
+     -0.311    0.805    0.506  -50.588
+      0.253   -0.155    0.402  -40.237
+      0.000    0.000    0.000    1.000
+
+    ##test_tranBuffer TV(~identity)
+      1.000    0.000   -0.000    0.000
+      0.000    1.000    0.000    0.000
+     -0.000    0.000    1.000    0.000
+      0.000    0.000    0.000    1.000
+
+    ##test_tranBuffer VT(~identity)
+      1.000    0.000    0.000    0.000
+      0.000    1.000   -0.000    0.000
+      0.000   -0.000    1.000    0.000
+      0.000    0.000    0.000    1.000
+
+    O    0.000    0.000    0.000    1.000  O*T    0.000    0.000  100.000    1.000    T*O    0.000    0.000    0.000    1.000  
+    P    1.000    1.000    1.000    1.000  P*T    1.506    0.689  101.805    1.000    T*P    1.000    1.000    2.000  101.000  
+    N   -1.000   -1.000   -1.000    1.000  N*T   -1.506   -0.689   98.195    1.000    T*N   -1.000   -1.000   -2.000  -99.000  
+    X    1.000    0.000    0.000    0.000  X*T    0.805    0.506   -0.311    0.000    T*X    0.805   -0.311    1.012    0.000  
+    Y    0.000    1.000    0.000    0.000  Y*T   -0.311    0.805    0.506    0.000    T*Y    0.506    0.805   -0.621    0.000  
+    Z    0.000    0.000    1.000    0.000  Z*T    1.012   -0.621    1.609    0.000    T*Z   -0.311    0.506    1.609  100.000  
+
+    O    0.000    0.000    0.000    1.000  O*V   31.062  -50.588  -40.237    1.000    V*O    0.000    0.000    0.000    1.000  
+    P    1.000    1.000    1.000    1.000  P*V   32.062  -49.588  -39.737    1.000    V*P    0.747    1.155    0.598  -58.763  
+    N   -1.000   -1.000   -1.000    1.000  N*V   30.062  -51.588  -40.737    1.000    V*N   -0.747   -1.155   -0.598   60.763  
+    X    1.000    0.000    0.000    0.000  X*V    0.805   -0.311    0.253    0.000    V*X    0.805    0.506   -0.311   31.062  
+    Y    0.000    1.000    0.000    0.000  Y*V    0.506    0.805   -0.155    0.000    V*Y   -0.311    0.805    0.506  -50.588  
+    Z    0.000    0.000    1.000    0.000  Z*V   -0.311    0.506    0.402    0.000    V*Z    0.253   -0.155    0.402  -40.237  
+
+    X    1.000    0.000    0.000    0.000  X*Q    0.805    0.506   -0.311   31.062    Q*X    0.805   -0.311    0.253    0.000  
+    Y    0.000    1.000    0.000    0.000  Y*Q   -0.311    0.805    0.506  -50.588    Q*Y    0.506    0.805   -0.155    0.000  
+    Z    0.000    0.000    1.000    0.000  Z*Q    0.253   -0.155    0.402  -40.237    Q*Z   -0.311    0.506    0.402    0.000  
+
+    # W-leakage suggestive of unintended transformations ?
+        
+
+
 
 
 

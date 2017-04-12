@@ -68,6 +68,7 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 
 #include "bbox.h"
+#include "transform_test.h"
 
 #include "csg_intersect_part.h"
 #include "csg_intersect_boolean.h"
@@ -88,13 +89,10 @@ TODO
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-    /*
     if(primIdx == 0) 
     { 
-        test_tranBuffer();
-        test_transform_bbox();
+        transform_test();
     }
-    */
 
     unsigned tranBuffer_size = tranBuffer.size() ;
     const uint4& prim    = primBuffer[primIdx]; 

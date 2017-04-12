@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-intersect_boolean.h
-======================
+csg_intersect_boolean.h
+==========================
 
 * postorder traversal means that have always 
   visited left and right subtrees before visiting a node
@@ -557,13 +557,10 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             unsigned subNodes = TREE_NODES(fullHeight-depth) ;
             unsigned halfNodes = (subNodes - 1)/2 ; 
 
-            //quad q2 ; 
-            //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
             Part pt = partBuffer[partOffset+nodeIdx-1]; 
 
             OpticksCSG_t typecode = (OpticksCSG_t)pt.q2.u.w ;
 
-            // typecode can indicate: CSG_ZERO empty node, operation node, primitive
             if(typecode == CSG_ZERO) continue ; 
 
             bool primitive = typecode >= CSG_SPHERE ; 

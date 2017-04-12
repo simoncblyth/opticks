@@ -64,7 +64,16 @@ void NCSG::load()
     if(BFile::ExistsFile(tranpath.c_str()))
     {
         NPY<float>* src = NPY<float>::load(tranpath.c_str());
-        assert(src && src->hasShape(-1,4,4));
+        assert(src); 
+        bool valid_src = src->hasShape(-1,4,4) ;
+        if(!valid_src) 
+            LOG(fatal) << "NCSG::load"
+                       << " invalid src transforms "
+                       << " tranpath " << tranpath
+                       << " src_sh " << src->getShapeString()
+                       ;
+
+        assert(valid_src);
         unsigned ni = src->getShape(0) ;
 
         NPY<float>* pairs = NPY<float>::make_paired_transforms(src);
@@ -251,9 +260,10 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         std::cout << std::endl ; 
 
 
-        // NB recursive call after the "visit" 
-        node->left = import_r(idx*2+1, node );     
+        node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
+        // recursive calls after "visit" as full ancestry needed for transform collection
+        // once reach the primitives
     }
     else 
     {

@@ -236,7 +236,13 @@ from opticks.dev.csg.csg import CSG
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
 im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-object)", **im )
+tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+
+kwa = {}
+kwa.update(im)
+kwa.update(tr)
+
+box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-object)", **kwa )
 
 CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
 EOP
@@ -250,8 +256,15 @@ from opticks.dev.csg.csg import CSG
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
-im = dict(poly="IM", resolution="100", verbosity="1", ctrl="0" )
-sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **im )
+
+im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+
+kwa = {}
+kwa.update(im)
+kwa.update(tr)
+
+sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **kwa )
 
 CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
 EOP
@@ -722,7 +735,7 @@ tboolean-csg-four-box-minus-sphere()
 tboolean-testconfig()
 {
     #tboolean-box
-    #tboolean-box-py
+    tboolean-box-py
 
     #tboolean-sphere-py
 
@@ -742,7 +755,7 @@ tboolean-testconfig()
 
 
     #tboolean-csg-two-box-minus-sphere-interlocked
-    tboolean-csg-two-box-minus-sphere-interlocked-py
+    #tboolean-csg-two-box-minus-sphere-interlocked-py
 
     #tboolean-csg-unbalanced-py
 

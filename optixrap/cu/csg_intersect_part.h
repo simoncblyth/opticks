@@ -6,9 +6,6 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
     float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, q0.f.z - radius );
     float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, q0.f.z + radius );
 
-    //float3 mn = make_float3( -800.f, -800.f , -800.f );
-    //float3 mx = make_float3(  800.f,  800.f ,  800.f );
-
     Aabb tbb(mn, mx);
     if(tr) transform_bbox( &tbb, tr );  
 
@@ -18,7 +15,7 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
  
 
 static __device__
-void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {
     // when an intersection is found between the ray and the sphere 
     // with parametric t greater than the tmin parameter
@@ -41,13 +38,15 @@ void csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const
 
     float tt_cand = sdisc > 0.f ? ( root1 > tt_min ? root1 : root2 ) : tt_min ; 
 
-    if(tt_cand > tt_min)
+    bool isect = tt_cand > tt_min ;
+    if(isect)
     {        
         tt.x = (O.x + tt_cand*D.x)/radius ; 
         tt.y = (O.y + tt_cand*D.y)/radius ; 
         tt.z = (O.z + tt_cand*D.z)/radius ; 
         tt.w = tt_cand ; 
     }
+    return isect ; 
 }
 
 
@@ -65,7 +64,7 @@ void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 static __device__
-void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {
    const float hside = q0.f.w ; 
    const float3 bmin = make_float3(q0.f.x - hside, q0.f.y - hside, q0.f.z - hside ); 
@@ -123,6 +122,7 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
    else if(along_z) has_intersect = in_x && in_y ; 
    else             has_intersect = ( t_far > t_near && t_far > 0.f ) ;  // segment of ray intersects box, at least one is ahead
 
+   bool has_valid_intersect = false ; 
    if( has_intersect ) 
    {
        //  just because the ray intersects the box doesnt 
@@ -150,12 +150,15 @@ void csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
 
        if(tt_cand > tt_min)
        {
+           has_valid_intersect = true ; 
            tt.x = n.x ;
            tt.y = n.y ;
            tt.z = n.z ;
            tt.w = tt_cand ; 
        }
    }
+
+   return has_valid_intersect ; 
 }
 
 static __device__
@@ -175,49 +178,50 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     }
     else
     {
-        unsigned trIdx   = 2*(gtransformIdx-1) ; 
-        unsigned iritIdx = trIdx + 1  ;       
+        unsigned tIdx   = 2*(gtransformIdx-1) ; 
+        unsigned vIdx = tIdx + 1  ;       
 
-        if(iritIdx >= tranBuffer.size())
+        if(vIdx >= tranBuffer.size())
         { 
-            rtPrintf("##csg_intersect_part ABORT iritIdx %3u overflows tranBuffer.size \n", iritIdx );
+            rtPrintf("##csg_intersect_part ABORT vIdx %3u overflows tranBuffer.size \n", vIdx );
             return ;  
         }
 
-        optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
-        optix::Matrix4x4 irit = tranBuffer[iritIdx] ; 
+        optix::Matrix4x4 T = tranBuffer[tIdx] ;  // transform
+        optix::Matrix4x4 V = tranBuffer[vIdx] ;  // inverse transform 
 
+        // bring ray into local frame of the geometry, using inverse transform
+        // pre-multiply float4*Matrix4x4 due to row-major column-major mismatch ? see bbox.h
 
         float4 origin    = make_float4( ray.origin.x, ray.origin.y, ray.origin.z, 1.f );           // w=1 for position  
         float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for vector
-
-        // bring ray into local frame of the geometry, using inverse transform
-        origin    = origin * irit ; 
-        direction = direction * irit ; 
+        origin    = origin * V ; 
+        direction = direction * V ; 
 
         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
-        float3 ray_direction = make_float3( direction.x, direction.y, direction.z );
+        float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); // with scaling normalization will be off ?
+        ray_direction = normalize(ray_direction);     
+
+        // books say you shouldnt do this ? but seems needed
 
         // intersect using local frame assuming code
+        bool valid_intersect = false ; 
+
         switch(partType)
         {
-            case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
-            case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
+            case CSG_SPHERE: valid_intersect = csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
+            case CSG_BOX:    valid_intersect = csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
         }
 
-        //   transforming local frame results back to original frame  
-        //
-        //       what about the parametric tt.w the parametric t distance ?
-        //       what about intersection point, not used ? 
-        //
-        //  :google:`ray tracer transform rays`
-
-        float4 tt_normal = make_float4( tt.x, tt.y, tt.z , 0.f );
-        tt_normal = tt_normal * tr ;   // should be inverse tranpose of T ? but i dont scale, so inverse transpose T = T  
-
-        tt.x = tt_normal.x ; 
-        tt.y = tt_normal.y ; 
-        tt.z = tt_normal.z ; 
+        if(valid_intersect)
+        {
+            //float3 nrm = normalize(make_float3( tt.x, tt.y, tt.z ));
+            float4 ttn = make_float4( tt.x, tt.y, tt.z , 0.f );
+            ttn = ttn * V   ;  // <-- normal transforming : to get the normal out of the local frame  
+            tt.x = ttn.x ; 
+            tt.y = ttn.y ; 
+            tt.z = ttn.z ; 
+        }
     }
 }
 

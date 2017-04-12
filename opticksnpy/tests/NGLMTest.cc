@@ -155,6 +155,10 @@ successively averaging M to its inverse transpose
 will leave it unchanged, since its inverse is equal to its transpose.
 
 */
+
+
+
+
 void test_polar_decomposition_trs()
 {
     LOG(info) << "test_polar_decomposition_trs" ; 
@@ -268,6 +272,72 @@ void test_make_transform()
 
 
 
+
+glm::vec3 transform_normal(const glm::vec3& nrm_, const glm::mat4& trs, const glm::mat4& isirit, bool verbose=false)
+{
+    glm::vec4 nrm(glm::normalize(nrm_), 0.f );
+
+    glm::mat4 i_trs_T = glm::transpose(glm::inverse(trs)) ; //  transpose of inverse
+    glm::mat4 isirit_T = glm::transpose( isirit ) ;
+
+    if(verbose)
+    {
+        std::cout << gpresent( "trs", trs) << std::endl ; 
+        std::cout << gpresent( "i_trs_T", i_trs_T) << std::endl ; 
+        std::cout << gpresent( "isirit_T", isirit_T) << std::endl ; 
+    }
+
+    glm::vec4 t_nrm_0 = isirit_T * nrm ; 
+    glm::vec4 t_nrm_1 = nrm * isirit  ;   // dont bother with transpose just pre-multiply rather than post-multiply 
+    assert( t_nrm_0 == t_nrm_1 );
+
+
+    glm::vec4 t_nrm_2 = i_trs_T * nrm ; 
+
+    std::cout << gpresent( "nrm", nrm) ; 
+    std::cout << gpresent( "t_nrm_0", t_nrm_0) ; 
+    std::cout << gpresent( "t_nrm_0n", glm::normalize(t_nrm_0)) ; 
+    std::cout << gpresent( "t_nrm_1", t_nrm_1) ; 
+    std::cout << gpresent( "t_nrm_2", t_nrm_2) ;
+    std::cout << std::endl ; 
+
+
+    return glm::vec3(t_nrm_1) ; 
+}
+
+
+void test_transform_normal()
+{
+    LOG(info) << "test_transform_normal" ;
+ 
+    glm::vec3 tla(0,0,0);
+    glm::vec4 rot(0,0,1,0);
+    glm::vec3 sca(1,1,2);
+
+    glm::mat4 trs = nglmext::make_transform("trs", tla, rot, sca);
+
+    ndeco d = nglmext::polar_decomposition( trs );
+
+
+    transform_normal( glm::vec3(1,0,0) , trs, d.isirit, true );
+    transform_normal( glm::vec3(0,1,0) , trs, d.isirit );
+    transform_normal( glm::vec3(0,0,1) , trs, d.isirit );
+
+    transform_normal( glm::vec3(0,1,1) , trs, d.isirit );
+    transform_normal( glm::vec3(1,0,1) , trs, d.isirit );
+    transform_normal( glm::vec3(1,1,0) , trs, d.isirit );
+
+
+    // when the normal has some component in the scaled direction the 
+    // and there is some translation getting stiff in the w ?
+   
+
+}
+
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -283,6 +353,8 @@ int main(int argc, char** argv)
     test_order();
 
     test_make_transform();
+
+    test_transform_normal();
 
     return 0 ; 
 }
