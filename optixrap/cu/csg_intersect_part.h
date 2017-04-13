@@ -1,4 +1,3 @@
-
 static __device__
 void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
@@ -10,9 +9,7 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
     if(tr) transform_bbox( &tbb, tr );  
 
     aabb->include(tbb);
-
 }
- 
 
 static __device__
 bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
@@ -52,7 +49,6 @@ bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const
     return isect ; 
 }
 
-
 static __device__
 void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
@@ -89,27 +85,6 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
    float t_near = fmaxf( near );              //  furthest near intersect              
    float t_far  = fminf( far );               //  closest far intersect 
 
-
-  // rtPrintf(" bmin %f %f %f ", bmin.x, bmin.y, bmin.z );
-  /*
-     rtPrintf(" ray_origin %f %f %f ray_direction %f %f %f idir %f %f %f \n ", 
-           ray_origin.x,    ray_origin.y, ray_origin.z, 
-           ray_direction.x, ray_direction.y, ray_direction.z,
-           idir.x, idir.y,  idir.z 
-       );
-
-   rtPrintf(" idir %f %f %f t0 %f %f %f t1 %f %f %f \n",
-         idir.x, idir.y, idir.z,  
-         t0.x, t0.y, t0.z, 
-         t1.x, t1.y, t1.z
-      );
-
-   rtPrintf(" near %f %f %f -> t_near %f   far %f %f %f -> t_far %f   \n",
-         near.x, near.y, near.z, t_near,   
-         far.x,  far.y,  far.z, t_far 
-    );
-
-*/
 
    bool along_x = ray_direction.x != 0.f && ray_direction.y == 0.f && ray_direction.z == 0.f ;
    bool along_y = ray_direction.x == 0.f && ray_direction.y != 0.f && ray_direction.z == 0.f ;
@@ -199,7 +174,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
         direction = direction * V ;  // <-- will loose normalization with scaling, intersects MUST NOT assume normalized ray direction
 
         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
-        float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); // with scaling normalization will be off ?
+        float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); 
 
         bool valid_intersect = false ; 
 
@@ -221,5 +196,3 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
         }
     }
 }
-
-

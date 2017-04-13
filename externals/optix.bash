@@ -22,6 +22,17 @@ TODO: rearrange OptiX use to facilitate easier version switching
 * http://stackoverflow.com/questions/3597693/how-does-the-pimpl-idiom-reduce-dependencies
 
 
+OptiX Advanced Samples 
+------------------------
+
+
+* https://github.com/nvpro-samples/optix_advanced_samples
+* https://github.com/nvpro-samples/optix_advanced_samples/tree/master/src/optixGlass
+* https://github.com/nvpro-samples/optix_advanced_samples/tree/master/src/optixProgressivePhotonMap
+* https://github.com/nvpro-samples/optix_advanced_samples/tree/master/src/optixVox
+
+
+
 Refs describing GPU architecture evolution
 --------------------------------------------
 
