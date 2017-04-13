@@ -149,8 +149,10 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                 }
             }
 
-            nodeIdx = nodeIdx & 1 ? nodeIdx >> 1 : (nodeIdx << elev) + (1 << elev) ;
+            nodeIdx = POSTORDER_NEXT( nodeIdx, elev ) ;
             // see opticks/dev/csg/postorder.py for explanation of bit-twiddling postorder  
+            //unsigned nodeIdx2 = nodeIdx & 1 ? nodeIdx >> 1 : (nodeIdx << elev) + (1 << elev) ;
+            //if(nodeIdx2 != nodeIdx) rtPrintf("nodeIdx MISMATCH \n");
         }
     }
     else if(primFlag == CSG_FLAGPARTLIST)  

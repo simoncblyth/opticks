@@ -31,6 +31,64 @@ Below indices are postorder slice flavor, not levelorder
   NB all nodes including root needs an upTree tranche to evaluate left and right 
 
 
+1-based binary tree indices in binary
+--------------------------------------
+
+Repeat above enumeration in nodeIdx lingo
+
+::
+
+      nodeIdx{dec}
+       [postorderIdx]
+
+
+                                   1{1}   
+                                   [14]       
+
+                10{2}                                  11{3}
+                 [6]                                   [13]
+  
+          100{4}           101{5}                110{6}              111{7}
+           [2]              [5]                  [9]                 [12]
+ 
+      1000{8} 1001{9}   1010{a}  1011{b}      1100{c} 1101{d}      1110{e}  1111{f}
+      [0]     [1]       [3]      [4]          [7]     [8]          [10]     [11]
+      
+
+
+      upTree         1    :    0    
+                    root     1 >> 1 ("parent" of root)  
+
+      leftTree     
+                     10{2} << 2      11{3} << 2   (leftmost of the rhs is one-past the leftTree)
+                   1000{8}         1100{c}      
+    
+      rightTree     
+                     11{3} << 2        1      <-- one-past the end of the rightTree is root   
+                   1100{c}                  
+             
+                         
+      Algorithm to find leftTree of nodeIdx, is find leftIdx
+         
+          leftIdx  = (nodeIdx << 1) 
+          rightIdx = (nodeIdx << 1) + 1 
+   
+    leftTree      (leftIdx << (elevation-1))    :  (rightIdx << (elevation-1))   
+    rightTree      (rightIdx << (elevation-1))  :   nodeIdx      
+
+
+
+
+POSTORDER_RANGE debug ideas
+-------------------------------
+
+* parallelR variables
+* use quad-decker begin,end,beginR,endR inside the tranche slice so can 
+  see exactly where things diverge
+
+
+
+
 Recursive within intersect, nope
 -----------------------------------
 
@@ -245,6 +303,14 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 #define POSTORDER_SLICE(begin, end) (  (((end) & 0xff) << 8) | ((begin) & 0xff)  )
 #define POSTORDER_BEGIN( slice )  ( (slice) & 0xff )
 #define POSTORDER_END( slice )  ( (slice) >> 8 )
+
+
+#define POSTORDER_RANGE(beginIdx, endIdx) (  (((endIdx) & 0xff) << 8) | ((beginIdx) & 0xff)  )
+#define POSTORDER_RANGE_BEGIN( range )    (  (range) & 0xff )
+#define POSTORDER_RANGE_END(   range )    (  (range) >> 8 )
+
+#define POSTORDER_NEXT(currIdx, elevation )( ((currIdx) & 1) ? (currIdx) >> 1 :  ((currIdx) << (elevation)) + (1 << (elevation)) )
+
 
 
 struct Tranche
@@ -475,29 +541,33 @@ void UNSUPPORTED_recursive_csg( const uint4& prim, const uint4& identity )
 }
 
  
-
+//#define USE_POSTORDER_RANGE 1
 
 static __device__
 void evaluative_csg( const uint4& prim, const uint4& identity )
 {
     unsigned partOffset = prim.x ; 
     unsigned numParts   = prim.y ;
-    unsigned primIdx_   = prim.z ; 
 
     unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
     //rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u  \n",primIdx_, numParts, fullHeight ) ; 
 
+#ifdef USE_POSTORDER_RANGE
+    // bit-twiddle POSTORDER_RANGE approach does not have height limitations
+    // as doesnt use pre-baked postorder_sequence
+#else
+    unsigned primIdx_   = prim.z ; 
     if(fullHeight > 3)
     {
         rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u exceeds current limit\n", primIdx_, numParts, fullHeight ) ;
         return ; 
     } 
-    unsigned numNodes = TREE_NODES(fullHeight) ;      
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
-    // TODO: workout a random access bit-twiddle approach to get postorder sequence
-
     unsigned long long postorder = postorder_sequence[fullHeight] ; 
+#endif
+
+
 
     //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numNodes, postorder );
 
@@ -513,7 +583,13 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
     Tranche tr ; 
     tr.curr = -1 ;
+
+#ifdef USE_POSTORDER_RANGE
+    tranche_push( tr, POSTORDER_RANGE( 1 << fullHeight, 0), ray.tmin );
+#else
+    unsigned numNodes = TREE_NODES(fullHeight) ;      
     tranche_push( tr, POSTORDER_SLICE(0, numNodes), ray.tmin );
+#endif
 
     CSG csg ;  
     csg.curr = -1 ;
@@ -529,8 +605,21 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         ierr = tranche_pop(tr, slice, tmin );
         if(ierr) break ; 
 
+#ifdef USE_POSTORDER_RANGE
+        // begin, end are 1-based postorder nodeIdx,  
+        //
+        //       leftmost(begin): 1 << fullHeight  
+        //                  root: 1  
+        //    one-past-root(end): 0 
+        //
+        unsigned begin = POSTORDER_RANGE_BEGIN(slice);
+        unsigned end   = POSTORDER_RANGE_END(slice);
+#else
+        // begin, end are 0-based indices into the postorder
+        // slice combines begin, end with bitshifts assuming values are < 255
         unsigned begin = POSTORDER_BEGIN(slice);
         unsigned end   = POSTORDER_END(slice);
+#endif
 
 /*
         if(verbose)
@@ -549,16 +638,20 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 */
 
 
+#ifdef USE_POSTORDER_RANGE
+        unsigned nodeIdx = begin ; 
+        while( nodeIdx != end )
+        {
+#else
         for(unsigned i=begin ; i < end ; i++)
         {
+            // lookup the 1-based nodeIdx using the 0-based postorder index i
             unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;
-
-            int depth = TREE_DEPTH(nodeIdx) ;
-            unsigned subNodes = TREE_NODES(fullHeight-depth) ;
-            unsigned halfNodes = (subNodes - 1)/2 ; 
+#endif
+            unsigned depth = TREE_DEPTH(nodeIdx) ;
+            unsigned elevation = fullHeight - depth ; 
 
             Part pt = partBuffer[partOffset+nodeIdx-1]; 
-
             OpticksCSG_t typecode = (OpticksCSG_t)pt.q2.u.w ;
 
             if(typecode == CSG_ZERO) continue ; 
@@ -567,7 +660,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
 /*
             if(verbose)
-            rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %d \n", 
+            rtPrintf("[%5d](visi) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d  operation %d primitive %d halfNodes %2d depth %u \n", 
                            launch_index.x, 
                            nodeIdx,
                            csg.curr,
@@ -667,11 +760,39 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     ierr = csg_push(csg, other, otherIdx ); if(ierr) break ;
 
                     // looping is effectively backtracking, pop both and put otherside back
-
+//#ifdef USE_POSTORDER_RANGE
+                    // see explanation at head 
+                    unsigned beginIdxR = POSTORDER_NODE(postorder, begin) ;
+                    unsigned endIdxR = POSTORDER_NODE(postorder, end) ;
+                    unsigned endTreeR   = POSTORDER_RANGE(nodeIdx, endIdxR); 
+                    unsigned leftTreeR  = POSTORDER_RANGE(leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+                    unsigned rightTreeR = POSTORDER_RANGE(rightIdx << (elevation-1), nodeIdx) ;
+//#else
+                    unsigned subNodes = TREE_NODES(elevation) ;
+                    unsigned halfNodes = (subNodes - 1)/2 ; 
                     unsigned endTree   = POSTORDER_SLICE(i, end); // BUG FIXED 2017/3/12 numNodes->end
                     unsigned leftTree  = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) ;
                     unsigned rightTree = POSTORDER_SLICE(i-halfNodes, i) ;
+//#endif
                     unsigned loopTree  = ctrl == CTRL_LOOP_A ? leftTree : rightTree  ;
+
+
+                    if(nodeIdx > 2)
+                    rtPrintf("nodeIdx %2d fullHeight %2d depth %2d elevation %2d  beginIdxR %2d endIdxR %2d endTreeR %4x endTree %4x leftTreeR %4x leftTree %4x rightTreeR %4x rightTree %4x \n",
+                              nodeIdx,
+                              fullHeight,
+                              depth,
+                              elevation,
+                              beginIdxR,
+                              endIdxR,
+                              endTreeR,
+                              endTree, 
+                              leftTreeR,
+                              leftTree,
+                              rightTreeR,
+                              rightTree);
+                  
+
 
                     ierr = tranche_push( tr, endTree, tmin );          if(ierr) break ;
                     ierr = tranche_push( tr, loopTree, tminAdvanced ); if(ierr) break ; 
@@ -700,6 +821,9 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
                 if(act == BREAK) break ; 
             }                 // "primitive" or "operation"
+#ifdef USE_POSTORDER_RANGE
+            nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
+#endif
         }                     // node traversal 
         if(ierr) break ; 
      }                       // subtree tranches
