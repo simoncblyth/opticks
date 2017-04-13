@@ -47,11 +47,8 @@ rtDeclareVariable(unsigned int, instance_index,  ,);
 rtDeclareVariable(unsigned int, primitive_count, ,);
 // TODO: instanced analytic identity, using the above and below solid level identity buffer
 
-//rtBuffer<float4> partBuffer; 
 rtBuffer<Part> partBuffer; 
-
 rtBuffer<Matrix4x4> tranBuffer; 
-
 
 rtBuffer<uint4>  primBuffer; 
 rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdentityBuffer()

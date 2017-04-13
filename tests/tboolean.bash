@@ -236,7 +236,8 @@ from opticks.dev.csg.csg import CSG
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
 im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
-tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+#tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+tr = dict(scale="2,2,2", rotate="1,1,1,45")
 
 kwa = {}
 kwa.update(im)
@@ -258,6 +259,7 @@ container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", pol
 
 
 im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+#tr = dict(scale="1,1,2")
 tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
 
 kwa = {}
@@ -397,9 +399,9 @@ left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-object)" )
 rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 
-rtran = dict(translate="0,0,200", rotate="1,1,1,45")
-#rtran = dict(translate="0,0,200")
-right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)", **rtran)
+
+tran = dict(translate="0,0,200", rotate="1,1,1,45", scale="1,1,2" )
+right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)", **tran)
 
 dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 
@@ -735,9 +737,9 @@ tboolean-csg-four-box-minus-sphere()
 tboolean-testconfig()
 {
     #tboolean-box
-    tboolean-box-py
+    #tboolean-box-py
 
-    #tboolean-sphere-py
+    tboolean-sphere-py
 
     #tboolean-box-small-offset-sphere difference
 

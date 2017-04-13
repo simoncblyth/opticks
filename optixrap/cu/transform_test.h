@@ -174,6 +174,16 @@ __device__ void transform_test()
     // using the transpose of the inverse transform
 
 
+
+    float4 OQ = O * Q ;  // <-ok
+    float4 QO = Q * O ; 
+
+    float4 PQ = P * Q ;   // <-ok 
+    float4 QP = Q * P ; 
+
+    float4 NQ = N * Q ;   // <-ok
+    float4 QN = Q * N ; 
+
     float4 XQ = X * Q ; 
     float4 QX = Q * X ; 
 
@@ -182,6 +192,22 @@ __device__ void transform_test()
 
     float4 ZQ = Z * Q ; 
     float4 QZ = Q * Z ; 
+
+
+    rtPrintf(" O %8.3f %8.3f %8.3f %8.3f  O*Q %8.3f %8.3f %8.3f %8.3f    Q*O %8.3f %8.3f %8.3f %8.3f  \n",
+          O.x,   O.y,  O.z,  O.w,  
+          OQ.x, OQ.y, OQ.z, OQ.w,
+          QO.x, QO.y, QO.z, QO.w);
+
+    rtPrintf(" P %8.3f %8.3f %8.3f %8.3f  P*Q %8.3f %8.3f %8.3f %8.3f    Q*P %8.3f %8.3f %8.3f %8.3f  \n",
+          P.x,   P.y,  P.z,  P.w,  
+          PQ.x, PQ.y, PQ.z, PQ.w,
+          QP.x, QP.y, QP.z, QP.w);
+
+    rtPrintf(" N %8.3f %8.3f %8.3f %8.3f  N*Q %8.3f %8.3f %8.3f %8.3f    Q*N %8.3f %8.3f %8.3f %8.3f  \n",
+          N.x,   N.y,  N.z,  N.w,  
+          NQ.x, NQ.y, NQ.z, NQ.w,
+          QN.x, QN.y, QN.z, QN.w);
 
     rtPrintf(" X %8.3f %8.3f %8.3f %8.3f  X*Q %8.3f %8.3f %8.3f %8.3f    Q*X %8.3f %8.3f %8.3f %8.3f  \n",
           X.x,   X.y,  X.z,  X.w,  

@@ -977,9 +977,6 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     unsigned leftIdx = nodeIdx*2 ;      
     unsigned rightIdx = nodeIdx*2 + 1 ;  
 
-    //quad q2 ; 
-    //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
-
     Part pt = partBuffer[partOffset+nodeIdx-1] ;
     OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
 

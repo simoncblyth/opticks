@@ -40,7 +40,6 @@ ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
 {
     ndeco d ; 
 
-    d.trs = trs ; 
     d.t = glm::translate(glm::mat4(1.f), glm::vec3(trs[3])) ; 
     d.it = glm::translate(glm::mat4(1.f), -glm::vec3(trs[3])) ; 
 
@@ -72,7 +71,9 @@ ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
     for(unsigned i=0 ; i < 3 ; i++) isca[i] = 1.f/d.s[i][i] ; 
     
     d.is = glm::diagonal4x4(isca);
+
     d.isirit = d.is * d.ir * d.it ; 
+    d.trs = d.t * d.r * d.s  ; 
 
     return d ; 
 } 

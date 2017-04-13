@@ -1,12 +1,6 @@
 CSG Transform Support
 =========================
 
-CSG Tree Objective
-----------------------
-
-* recall the CSG trees are intended to be small per-solid trees
-  corresponding to shape definitions (ie not definitions of full scene geometry)
-
 
 Transforms with Ray-trace and SDF
 ------------------------------------
@@ -16,7 +10,6 @@ apply the inverse transformation to the point for SDFs or the ray for
 raytracing before doing the SDF distance calc or ray tracing intersection
 calc.
 
-
 Use higher level optix geometry transforms ?
 -----------------------------------------------
 
@@ -24,32 +17,90 @@ Nope, I dont think this is possible as with boolean CSG need
 to apply different transforms to basis shapes underneath a single optix primitive.
 
 
-Making a buffer of Matrix4x4 ?
--------------------------------
 
-There is no RTformat for Matrix4x4 so would need 
-use USER format buffer...
+FIXED : SPHERE SCALE TRANSFORM ISSUE
+----------------------------------------
 
+* FIX: sphere intersect was assuming normalized ray_direction, 
+  which is no longer the case when transform has some scaling 
 
-bringing over the gtransforms (ie compound transforms)
---------------------------------------------------------
+::
 
-* clearly want to do the matrix multiplication once
-  CPU side
+    tboolean-sphere-py-(){ cat << EOP 
+    from opticks.dev.csg.csg import CSG  
 
-* hmm now that have moved bbox calc to GPU side, does it make sense
-  to use rtransform at input ... or could go direct to transform ?
-  Little point changing this, as will not help much 
-  the issue is not so simple... 
-
-* need to bring over the gtransforms (not the input transforms)
-  (ie all distinct products of parent transforms in the tree) 
-  ... hmm this will mean will need to collect all distinct 
-  gtransforms off the node tree (TODO: digest for glm::mat4)
+    container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
 
-ISSUE : Extra intersects with ellipsoid 
---------------------------------------------
+    im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+    tr = dict(scale="1,1,1")
+
+    kwa = {}
+    kwa.update(im)
+    kwa.update(tr)
+
+    sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **kwa )
+
+    CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
+    EOP
+    }
+
+
+Investigation 
+~~~~~~~~~~~~~~~~
+
+* sphere with unit scaling
+ 
+  * ray trace ok 
+  * shows photon behaviour that looks correct
+  * predominantly 82% : TO BT BT SA 
+  * only rarely get more than 2 BT (via SC)
+  
+* uniform scaling 1.01
+ 
+  * ray trace disappeared
+  * photons see three concentric spheres, lots of multi BT 
+
+* uniform scaling 0.99
+ 
+  * polgonization looks slightly smaller
+  * ray trace appears, looking significantly bigger! with polgonization inside
+  * photons seeing 3~4 concentric spheres of slightly different radii 
+
+* uniform scaling 0.5
+
+  * polgonization looks half sized as expected 
+  * ray trace appears with ginormous sphere 
+  * photons seeing 3~4 concentric spheres of widely different radii
+
+* box with unit scaling 
+
+  * as expected
+
+* box with 1.01, 0.99, 0.5 and 2.0
+ 
+  * ray trace still there 
+  * photons behaving, with 2.0 the photons start inside the box but otherwise act as expected
+
+
+What is sphere intersect assuming that box intersect isnt ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* in box frame, the normals are axis aligned ... 
+
+* rotating the box still gives expected behaviour, but 
+  this doesnt change the above statement : the normals 
+  are still particularly simple no matter what transforms
+  are applied
+
+* reviewing sphere intersect code, find implicit assumption 
+  of normalized ray_direction vector, hence this issue FIXED
+
+
+
+
+FIXED ISSUE : Extra intersects with ellipsoid 
+---------------------------------------------------
 
 
 * Sphere at origin, scaled by 2 in z to make ellipsoid
@@ -67,12 +118,10 @@ ISSUE : Extra intersects with ellipsoid
 At boolean level the isect normal coming from csg_intersect_part is compared with ray.direction
 to classify the intersect::
 
-   
 
     158 static __device__
     159 void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     160 {
-
 
 
 
@@ -188,13 +237,13 @@ Simplify, even with an non-one uniform scaling, the sphere is disappearing::
          Y*V = Q*Y
          Z*V = Q*Z
 
-    ##test_tranBuffer T(transform)
+    ##test_tranBuffer T(transform)          primitive frame -> world frame 
       0.805    0.506   -0.311    0.000
      -0.311    0.805    0.506    0.000
       1.012   -0.621    1.609    0.000
       0.000    0.000  100.000    1.000
 
-    ##test_tranBuffer V(inverse)
+    ##test_tranBuffer V(inverse)            world frame -> primitive frame 
       0.805   -0.311    0.253    0.000
       0.506    0.805   -0.155    0.000
      -0.311    0.506    0.402    0.000
@@ -218,6 +267,8 @@ Simplify, even with an non-one uniform scaling, the sphere is disappearing::
       0.000   -0.000    1.000    0.000
       0.000    0.000    0.000    1.000
 
+    # transform primitive frame points and vectors into world frame 
+    #                                      _________________________________________
     O    0.000    0.000    0.000    1.000  O*T    0.000    0.000  100.000    1.000    T*O    0.000    0.000    0.000    1.000  
     P    1.000    1.000    1.000    1.000  P*T    1.506    0.689  101.805    1.000    T*P    1.000    1.000    2.000  101.000  
     N   -1.000   -1.000   -1.000    1.000  N*T   -1.506   -0.689   98.195    1.000    T*N   -1.000   -1.000   -2.000  -99.000  
@@ -225,6 +276,9 @@ Simplify, even with an non-one uniform scaling, the sphere is disappearing::
     Y    0.000    1.000    0.000    0.000  Y*T   -0.311    0.805    0.506    0.000    T*Y    0.506    0.805   -0.621    0.000  
     Z    0.000    0.000    1.000    0.000  Z*T    1.012   -0.621    1.609    0.000    T*Z   -0.311    0.506    1.609  100.000  
 
+
+    # transform world frame points and vectors into primitive frame
+    #                                      ________________________________________
     O    0.000    0.000    0.000    1.000  O*V   31.062  -50.588  -40.237    1.000    V*O    0.000    0.000    0.000    1.000  
     P    1.000    1.000    1.000    1.000  P*V   32.062  -49.588  -39.737    1.000    V*P    0.747    1.155    0.598  -58.763  
     N   -1.000   -1.000   -1.000    1.000  N*V   30.062  -51.588  -40.737    1.000    V*N   -0.747   -1.155   -0.598   60.763  
@@ -232,13 +286,26 @@ Simplify, even with an non-one uniform scaling, the sphere is disappearing::
     Y    0.000    1.000    0.000    0.000  Y*V    0.506    0.805   -0.155    0.000    V*Y   -0.311    0.805    0.506  -50.588  
     Z    0.000    0.000    1.000    0.000  Z*V   -0.311    0.506    0.402    0.000    V*Z    0.253   -0.155    0.402  -40.237  
 
+    # bring primitive frame normal vectors out to world frame, but by inspection  Q * [X/Y/Z] = [X/Y/Z] * V     
+    # which is handy as I dont have Q available on GPU  
+    #                                                 
+    O    0.000    0.000    0.000    1.000  O*Q    0.000    0.000    0.000    1.000    Q*O   31.062  -50.588  -40.237    1.000  
+    P    1.000    1.000    1.000    1.000  P*Q    0.747    1.155    0.598  -58.763    Q*P   32.062  -49.588  -39.737    1.000  
+    N   -1.000   -1.000   -1.000    1.000  N*Q   -0.747   -1.155   -0.598   60.763    Q*N   30.062  -51.588  -40.737    1.000  
+    #                                                                                 ________________________________________
     X    1.000    0.000    0.000    0.000  X*Q    0.805    0.506   -0.311   31.062    Q*X    0.805   -0.311    0.253    0.000  
     Y    0.000    1.000    0.000    0.000  Y*Q   -0.311    0.805    0.506  -50.588    Q*Y    0.506    0.805   -0.155    0.000  
     Z    0.000    0.000    1.000    0.000  Z*Q    0.253   -0.155    0.402  -40.237    Q*Z   -0.311    0.506    0.402    0.000  
 
     # W-leakage suggestive of unintended transformations ?
         
-
+    ##bounds primIdx  0 partOffset  0 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ##bounds primIdx  1 partOffset  1 numParts  1 height  0 numNodes  1 tranBuffer_size   2 
+    ## bounds nodeIdx  1 depth  0 elev  0 partType  6 gtransformIdx  0 
+    ## bounds nodeIdx  1 depth  0 elev  0 partType  6 gtransformIdx  1 
+    ##intersect_analytic.cu:bounds primIdx 0 primFlag 101 min -1000.0000 -1000.0000 -1000.0000 max  1000.0000  1000.0000  1000.0000 
+    ##intersect_analytic.cu:bounds primIdx 1 primFlag 101 min  -425.4227  -386.3703  -385.1945 max   425.4227   386.3703   585.1945 
+    
 
 
 

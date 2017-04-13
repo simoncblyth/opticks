@@ -15,21 +15,14 @@ rtDeclareVariable(float,                  t, rtIntersectionDistance, );
 RT_PROGRAM void closest_hit_propagate()
 {
      const float3 n = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometricNormal)) ; 
-
      float cos_theta = dot(n,ray.direction); 
 
      prd.cos_theta = cos_theta ;
-
      prd.distance_to_boundary = t ;   // huh: there is an standard attrib for this
-
      unsigned int boundaryIndex = instanceIdentity.z ; 
-
      prd.boundary = cos_theta < 0.f ? -(boundaryIndex + 1) : boundaryIndex + 1 ;   
-
      prd.identity = instanceIdentity ; 
-
      prd.surface_normal = cos_theta > 0.f ? -n : n ;   
- 
 }
 
 // prd.boundary 

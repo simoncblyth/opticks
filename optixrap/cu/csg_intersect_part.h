@@ -17,11 +17,6 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
 static __device__
 bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {
-    // when an intersection is found between the ray and the sphere 
-    // with parametric t greater than the tmin parameter
-    // tt is set to the parametric t of the intersection
-    // and corresponding tt_normal is set
-
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
 
@@ -30,11 +25,15 @@ bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const
 
     float b = dot(O, D);
     float c = dot(O, O)-radius*radius;
-    float disc = b*b-c;
+    float d = dot(D, D);
+
+    float disc = b*b-d*c;
 
     float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
-    float root1 = -b - sdisc ;
-    float root2 = -b + sdisc ;  // root2 > root2 always
+    float root1 = (-b - sdisc)/d ;
+    float root2 = (-b + sdisc)/d ;  // root2 > root1 always
+
+    // FORMER SCALING ISSUE DUE TO ASSUMPTION IN ABOVE OF NORMALIZED RAY_DIRECTION 
 
     float tt_cand = sdisc > 0.f ? ( root1 > tt_min ? root1 : root2 ) : tt_min ; 
 
@@ -44,6 +43,10 @@ bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const
         tt.x = (O.x + tt_cand*D.x)/radius ; 
         tt.y = (O.y + tt_cand*D.y)/radius ; 
         tt.z = (O.z + tt_cand*D.z)/radius ; 
+
+        // x,y,z in frame with unit sphere at origin 
+        // normalized by construction,  (x/r)^2 + (y/r)^2 + (z/r)^2 = 1
+
         tt.w = tt_cand ; 
     }
     return isect ; 
@@ -178,8 +181,8 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     }
     else
     {
-        unsigned tIdx   = 2*(gtransformIdx-1) ; 
-        unsigned vIdx = tIdx + 1  ;       
+        unsigned tIdx   = 2*(gtransformIdx-1) ;  // transform
+        unsigned vIdx = tIdx + 1  ;              // inverse transform
 
         if(vIdx >= tranBuffer.size())
         { 
@@ -190,19 +193,17 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
         optix::Matrix4x4 T = tranBuffer[tIdx] ;  // transform
         optix::Matrix4x4 V = tranBuffer[vIdx] ;  // inverse transform 
 
-        // bring ray into local frame of the geometry, using inverse transform
+        // bring world frame ray into this primitive frame, using inverse transform
         // pre-multiply float4*Matrix4x4 due to row-major column-major mismatch ? see bbox.h
 
         float4 origin    = make_float4( ray.origin.x, ray.origin.y, ray.origin.z, 1.f );           // w=1 for position  
         float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for vector
+
         origin    = origin * V ; 
         direction = direction * V ; 
 
         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
         float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); // with scaling normalization will be off ?
-        ray_direction = normalize(ray_direction);     
-
-        // books say you shouldnt do this ? but seems needed
 
         // intersect using local frame assuming code
         bool valid_intersect = false ; 
@@ -215,9 +216,10 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 
         if(valid_intersect)
         {
-            //float3 nrm = normalize(make_float3( tt.x, tt.y, tt.z ));
             float4 ttn = make_float4( tt.x, tt.y, tt.z , 0.f );
-            ttn = ttn * V   ;  // <-- normal transforming : to get the normal out of the local frame  
+
+            ttn = ttn * V   ;  // <--transforming normal from primitive to world frame  
+            
             tt.x = ttn.x ; 
             tt.y = ttn.y ; 
             tt.z = ttn.z ; 

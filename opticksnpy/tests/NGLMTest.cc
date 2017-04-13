@@ -175,6 +175,7 @@ void test_polar_decomposition_trs()
     ndeco d = nglmext::polar_decomposition( trs );
 
     std::cout << gpresent( "trs", trs ) << std::endl ;
+    std::cout << gpresent( "d.trs", d.trs ) << std::endl ;
     std::cout << std::endl; 
 
     std::cout << gpresent( "s", s ) << std::endl ;

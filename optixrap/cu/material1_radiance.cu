@@ -2,7 +2,6 @@
 
 #include <optix.h>
 #include <optix_math.h>
-
 #include "PerRayData_radiance.h"
 
 //geometric_normal is set by the closest hit intersection program 
