@@ -12,12 +12,33 @@ struct NPY_API nmat4pair
 {
     static nmat4pair* product(const std::vector<nmat4pair*>& tt);
 
-    nmat4pair( const glm::mat4& tr, const glm::mat4& irit ) : tr(tr), irit(irit) {} ;
+    nmat4pair( const glm::mat4& tr, const glm::mat4& irit ) : t(tr), v(irit) {} ;
     std::string digest();
 
-    glm::mat4 tr   ; 
-    glm::mat4 irit ; 
+    glm::mat4 t ; 
+    glm::mat4 v ; 
 };
+
+
+struct NPY_API nmat4triple
+{
+    static nmat4triple* product(const std::vector<nmat4triple*>& tt);
+
+    nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
+         : 
+            t(transform), 
+            v(inverse), 
+            q(inverse_T) 
+         {} ;
+
+    std::string digest();
+
+    glm::mat4 t ; 
+    glm::mat4 v ; 
+    glm::mat4 q ; 
+};
+
+
 
 struct NPY_API ndeco
 {  
@@ -53,7 +74,9 @@ struct NPY_API nglmext
 };
 
 
-NPY_API std::ostream& operator<< (std::ostream& out, const nmat4pair& mp); 
+NPY_API std::ostream& operator<< (std::ostream& out, const nmat4triple& triple); 
+NPY_API std::ostream& operator<< (std::ostream& out, const nmat4pair& pair); 
+
 NPY_API std::ostream& operator<< (std::ostream& out, const glm::mat3& v);
 NPY_API std::ostream& operator<< (std::ostream& out, const glm::mat4& v); 
 NPY_API std::ostream& operator<< (std::ostream& out, const glm::vec4& v); 

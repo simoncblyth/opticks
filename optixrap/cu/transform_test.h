@@ -10,14 +10,18 @@ when only scaling with no translation or rotation pre or post makes no differenc
 __device__ void transform_test()
 {
     int tranIdx = 0 ; 
-    if(2*tranIdx+1 >= tranBuffer.size()) return ;  
+    if(3*tranIdx+2 >= tranBuffer.size()) return ;  
 
-    Matrix4x4 tr = tranBuffer[2*tranIdx+0] ; 
-    Matrix4x4 irit = tranBuffer[2*tranIdx+1] ; 
+    Matrix4x4 t = tranBuffer[3*tranIdx+0] ; 
+    Matrix4x4 v = tranBuffer[3*tranIdx+1] ; 
+    Matrix4x4 q = tranBuffer[3*tranIdx+2] ; 
 
-    const Matrix4x4& T = tr ;      // transform
-    const Matrix4x4& V = irit ;    // inverse
-    Matrix4x4 Q = V.transpose() ;  // transpose of the inverse
+    const Matrix4x4& T = t ;    // transform
+    const Matrix4x4& V = v ;    // inverse
+    const Matrix4x4& Q = q ;    // transpose of the inverse
+
+    Matrix4x4 Q2 = V.transpose() ; 
+
 
     Matrix4x4 TV = T*V ; 
     Matrix4x4 VT = V*T ; 
@@ -42,6 +46,18 @@ __device__ void transform_test()
           Q[8], Q[9], Q[10], Q[11]
          );  
     rtPrintf("%8.3f %8.3f %8.3f %8.3f\n", Q[12], Q[13], Q[14], Q[15] );
+
+    rtPrintf("##test_tranBuffer Q2(inverse.T)\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n", 
+          Q2[0], Q2[1], Q2[2], Q2[3],  
+          Q2[4], Q2[5], Q2[6], Q2[7],  
+          Q2[8], Q2[9], Q2[10], Q2[11]
+         );  
+    rtPrintf("%8.3f %8.3f %8.3f %8.3f\n", Q2[12], Q2[13], Q2[14], Q2[15] );
+
+
+
+
+
 
     rtPrintf("##test_tranBuffer TV(~identity)\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n", 
           TV[0], TV[1], TV[2], TV[3],  

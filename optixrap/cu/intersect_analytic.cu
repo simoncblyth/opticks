@@ -134,7 +134,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
             }
             else
             {
-                unsigned trIdx = 2*(gtransformIdx-1)  ; 
+                unsigned trIdx = 3*(gtransformIdx-1)+0 ;
                 if(trIdx >= tranBuffer_size)
                 { 
                     rtPrintf("## bounds ABORT trIdx %3u overflows tranBuffer_size %3u \n", trIdx, tranBuffer_size );

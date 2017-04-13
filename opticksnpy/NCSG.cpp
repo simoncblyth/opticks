@@ -26,6 +26,8 @@
 #include "PLOG.hh"
 
 const char* NCSG::FILENAME = "csg.txt" ; 
+const unsigned NCSG::NTRAN = 3 ; 
+
 
 NCSG::NCSG(const char* treedir, unsigned index) 
    :
@@ -76,11 +78,13 @@ void NCSG::load()
         assert(valid_src);
         unsigned ni = src->getShape(0) ;
 
-        NPY<float>* pairs = NPY<float>::make_paired_transforms(src);
-        assert(pairs->hasShape(ni,2,4,4));
+                  
+        assert(NTRAN == 2 || NTRAN == 3);
+        NPY<float>* transforms = NTRAN == 2 ? NPY<float>::make_paired_transforms(src) : NPY<float>::make_triple_transforms(src) ;
+        assert(transforms->hasShape(ni,NTRAN,4,4));
 
-        m_transforms = pairs ; 
-        m_gtransforms = NPY<float>::make(0,2,4,4) ;  // for collecting unique gtransforms
+        m_transforms = transforms ; 
+        m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ;  // for collecting unique gtransforms
 
         m_num_transforms  = ni  ;  
     }
@@ -195,21 +199,42 @@ void NCSG::import()
 }
 
 
-nmat4pair* NCSG::import_transform(unsigned itra)
+nmat4pair* NCSG::import_transform_pair(unsigned itra)
 {
     // itra is a 1-based index, with 0 meaning None
 
+    assert(NTRAN == 2);
     if(itra == 0 || m_transforms == NULL ) return NULL ; 
 
     unsigned idx = itra - 1 ; 
 
     assert( idx < m_num_transforms );
-    assert(m_transforms->hasShape(-1,2,4,4));
+    assert(m_transforms->hasShape(-1,NTRAN,4,4));
 
-    nmat4pair* m4p = m_transforms->getMat4PairPtr(idx);
+    nmat4pair* pair = m_transforms->getMat4PairPtr(idx);
 
-    return m4p ; 
+    return pair ; 
 }
+
+
+nmat4triple* NCSG::import_transform_triple(unsigned itra)
+{
+    // itra is a 1-based index, with 0 meaning None
+
+    assert(NTRAN == 3);
+    if(itra == 0 || m_transforms == NULL ) return NULL ; 
+
+    unsigned idx = itra - 1 ; 
+
+    assert( idx < m_num_transforms );
+    assert(m_transforms->hasShape(-1,NTRAN,4,4));
+
+    nmat4triple* triple = m_transforms->getMat4TriplePtr(idx);
+
+    return triple ; 
+}
+
+
 
 nnode* NCSG::import_r(unsigned idx, nnode* parent)
 {
@@ -246,7 +271,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->parent = parent ; 
 
-        node->transform = import_transform( transform_idx ) ;
+        node->transform = import_transform_triple( transform_idx ) ;
 
         std::cout << "NCSG::import_r(oper)" 
                   << " idx " << idx
@@ -282,16 +307,16 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         // without some 2nd pass
 
         node->parent = parent ; 
-        node->transform = import_transform( transform_idx ) ;
+        node->transform = import_transform_triple( transform_idx ) ;
 
 
-        nmat4pair* gtransform = node->global_transform();
+        nmat4triple* gtransform = node->global_transform();
         unsigned gtransform_idx = 0 ; 
         if(gtransform)
         {
-            NPY<float>* gtmp = NPY<float>::make(1,2,4,4);
+            NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
             gtmp->zero();
-            gtmp->setMat4Pair(gtransform, 0);
+            gtmp->setMat4Triple(gtransform, 0);
             gtransform_idx = 1 + m_gtransforms->addItemUnique( gtmp, 0 ) ; 
             delete gtmp ; 
         }
@@ -330,7 +355,8 @@ void NCSG::check()
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-        const nmat4pair* u_gtran = m_gtransforms->getMat4PairPtr(i);
+        //const nmat4pair* u_gtran = m_gtransforms->getMat4PairPtr(i);
+        const nmat4triple* u_gtran = m_gtransforms->getMat4TriplePtr(i);
         std::cout 
                   << "[" << std::setw(2) << i << "] " 
                   << *u_gtran 

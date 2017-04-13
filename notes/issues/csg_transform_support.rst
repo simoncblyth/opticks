@@ -17,6 +17,70 @@ Nope, I dont think this is possible as with boolean CSG need
 to apply different transforms to basis shapes underneath a single optix primitive.
 
 
+FIXED : funny normals back again following scale fix
+------------------------------------------------------
+
+Same symptoms as before with interlocked box minus sphere, 
+the translated/rotated and scaled volume shows 
+bits of sphere that should not be there from some angles.
+The peculiarites go away when rotate by 360.
+
+The fix before was to apply the transform to the normals.
+but that aint correct, it probably worked by accident 
+due to pre/post multiply and row-major/column-major 
+confusion. 
+
+There was some confusion over normalizing 
+ray direction at that juncture also.
+
+Anyhow the correct way to handle normals
+is to transfrom by the transpose of the inverse.
+
+In order to make that available without getting confused by 
+using inconsistent pre/post multiply and row-major/column-major  
+have passed transforms in triplicate, so the transform of the 
+inverse (Q) is available from tranBuffer.
+
+::
+
+    184         unsigned tIdx = 3*(gtransformIdx-1) ;  // transform
+    ...
+    191         optix::Matrix4x4 T = tranBuffer[tIdx+0] ;  // transform
+    192         optix::Matrix4x4 V = tranBuffer[tIdx+1] ;  // inverse transform 
+    193         optix::Matrix4x4 Q = tranBuffer[tIdx+2] ;  // inverse transform transposed
+    194         
+    195         float4 origin    = make_float4( ray.origin.x, ray.origin.y, ray.origin.z, 1.f );           // w=1 for position  
+    196         float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for vector
+    197         
+    198         origin    = origin * V ;    // world frame into primitive frame with inverse transform
+    199         direction = direction * V ;  // <-- will loose normalization with scaling, intersects MUST NOT assume normalized ray direction 
+    200         
+    201         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
+    202         float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); // with scaling normalization will be off ?
+    203         
+    204         bool valid_intersect = false ; 
+    205         
+    206         switch(partType)
+    207         {
+    208             case CSG_SPHERE: valid_intersect = csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ;
+    209             case CSG_BOX:    valid_intersect = csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ;
+    210         }   
+    211         
+    212         if(valid_intersect)
+    213         {
+    214             float4 ttn = make_float4( tt.x, tt.y, tt.z , 0.f );
+    215             
+    216             ttn = ttn * Q   ;  // primitive frame normal into world frame, using inverse transform transposed
+    217             
+    218             tt.x = ttn.x ;
+    219             tt.y = ttn.y ;
+    220             tt.z = ttn.z ;
+    221         }   
+
+
+
+
+
 
 FIXED : SPHERE SCALE TRANSFORM ISSUE
 ----------------------------------------

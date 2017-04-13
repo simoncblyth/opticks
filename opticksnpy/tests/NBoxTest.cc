@@ -25,19 +25,21 @@ void test_gtransform()
     {
         gen(tlate); 
 
-        glm::mat4 tr = glm::translate(glm::mat4(1.0f), tlate );
-        glm::mat4 irit = nglmext::invert_tr(tr);
+        glm::mat4 t = glm::translate(glm::mat4(1.0f), tlate );
+        glm::mat4 v = nglmext::invert_tr(t);
+        glm::mat4 q = glm::transpose(v); 
 
-        nmat4pair mp(tr, irit);
+        //nmat4pair pair(tr, irit);
+        nmat4triple triple(t, v, q);
 
         if(verbose)
-        std::cout << " gtransform " << mp << std::endl ; 
+        std::cout << " gtransform " << triple << std::endl ; 
 
         nbox a = make_nbox(0.f,0.f,0.f,100.f);      
         // untouched box at origin
 
         nbox b = make_nbox(0.f,0.f,0.f,100.f);      
-        b.gtransform = &mp ;  
+        b.gtransform = &triple ;  
         // translated box via gtransform
 
         nbox c = make_nbox( tlate.x, tlate.y, tlate.z,100.f);  

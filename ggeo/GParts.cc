@@ -131,6 +131,9 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     return pt ; 
 } 
 
+const int GParts::NTRAN = 3 ; 
+
+
 GParts* GParts::make( NCSG* tree)
 {
     const char* spec = tree->getBoundary();
@@ -140,10 +143,10 @@ GParts* GParts::make( NCSG* tree)
     {
        // NB dont want to change transform counts as GParts get combined
        // also this means that cannot support transforms on the container box 
-       tranbuf = NPY<float>::make(0,2,4,4) ;
+       tranbuf = NPY<float>::make(0,NTRAN,4,4) ;
        tranbuf->zero();
     } 
-    assert( tranbuf && tranbuf->hasShape(-1,2,4,4));
+    assert( tranbuf && tranbuf->hasShape(-1,NTRAN,4,4));
 
 
     nnode* root = tree->getRoot(); 
@@ -349,7 +352,7 @@ void GParts::init()
         m_part_buffer = NPY<float>::make(0, NJ, NK );
         m_part_buffer->zero();
 
-        m_tran_buffer = NPY<float>::make(0, 2, 4, 4 );
+        m_tran_buffer = NPY<float>::make(0, NTRAN, 4, 4 );
         m_tran_buffer->zero();
 
         m_bndspec = new GItemList("GParts");

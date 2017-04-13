@@ -51,6 +51,7 @@ GParts* GParts::make( NCSG* tree)
 struct nvec4 ; 
 struct nnode ; 
 struct nmat4pair ; 
+struct nmat4triple ; 
 
 class NParameters ; 
 
@@ -60,6 +61,7 @@ class NPY_API NCSG {
     public:
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
         static const char* FILENAME ; 
+        static const unsigned NTRAN ; 
         static unsigned NumNodes(unsigned height);
         static int Deserialize(const char* base, std::vector<NCSG*>& trees);
         static NCSG* FromNode(nnode* root, const char* boundary);
@@ -89,7 +91,8 @@ class NPY_API NCSG {
         void load();
         void import();
         nnode* import_r(unsigned idx, nnode* parent=NULL);
-        nmat4pair* import_transform(unsigned itra);
+        nmat4pair*   import_transform_pair(unsigned itra);
+        nmat4triple* import_transform_triple(unsigned itra);
     private:
          // Serialize
         NCSG(nnode* root, unsigned index=0u);

@@ -172,47 +172,107 @@ std::string nmat4pair::digest()
     return SDigest::digest( (void*)this, sizeof(nmat4pair) );
 }
 
-nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& tt)
+
+std::string nmat4triple::digest()
 {
-    unsigned ntt = tt.size();
-    if(ntt==0) return NULL ; 
-    if(ntt==1) return tt[0] ; 
+    return SDigest::digest( (void*)this, sizeof(nmat4triple) );
+}
 
-    glm::mat4 tr(1.0) ; 
-    glm::mat4 irit(1.0) ; 
 
-    for(unsigned i=0,j=ntt-1 ; i < ntt ; i++,j-- )
+
+nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& pairs)
+{
+    unsigned npairs = pairs.size();
+    if(npairs==0) return NULL ; 
+    if(npairs==1) return pairs[0] ; 
+
+    glm::mat4 t(1.0) ; 
+    glm::mat4 v(1.0) ; 
+
+    for(unsigned i=0,j=npairs-1 ; i < npairs ; i++,j-- )
     {
         std::cout << " i " << i << " j " << j << std::endl ; 
  
-        const nmat4pair* ti = tt[i] ; 
-        const nmat4pair* tj = tt[j] ; 
+        const nmat4pair* ii = pairs[i] ; 
+        const nmat4pair* jj = pairs[j] ; 
 
-        tr *= ti->tr ; 
-        irit *= tj->irit ;   // guess multiplication ordering 
+        t *= ii->t ; 
+        v *= jj->v ; 
+    }
+
+    // guessed multiplication ordering 
+    // is this the appropriate transform and inverse transform multiplication order ?
+    // ... pairs order is from the leaf back to the root   
+
+    return new nmat4pair(t, v) ; 
+}
+
+
+nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples)
+{
+    unsigned ntriples = triples.size();
+    if(ntriples==0) return NULL ; 
+    if(ntriples==1) return triples[0] ; 
+
+    glm::mat4 t(1.0) ; 
+    glm::mat4 v(1.0) ; 
+
+    for(unsigned i=0,j=ntriples-1 ; i < ntriples ; i++,j-- )
+    {
+        std::cout << " i " << i << " j " << j << std::endl ; 
+ 
+        const nmat4triple* ii = triples[i] ; 
+        const nmat4triple* jj = triples[j] ; 
+
+        t *= ii->t ; 
+        v *= jj->v ;
     }
 
     // is this the appropriate transform and inverse transform multiplication order ?
     // ... tt order is from the leaf back to the root   
 
-    return new nmat4pair(tr, irit) ; 
+    glm::mat4 q = glm::transpose(v);
+    return new nmat4triple(t, v, q) ; 
 }
 
 
 
 
-std::ostream& operator<< (std::ostream& out, const nmat4pair& mp)
+
+
+
+
+std::ostream& operator<< (std::ostream& out, const nmat4pair& pair)
 {
     out 
        << std::endl 
-       << gpresent( "nm4p:tr",   mp.tr ) 
+       << gpresent( "pair.t",   pair.t ) 
        << std::endl 
-       << gpresent( "nm4p:irit", mp.irit )
+       << gpresent( "pair.v", pair.v )
        << std::endl 
        ; 
 
     return out;
 }
+
+
+std::ostream& operator<< (std::ostream& out, const nmat4triple& triple)
+{
+    out 
+       << std::endl 
+       << gpresent( "triple.t",  triple.t ) 
+       << std::endl 
+       << gpresent( "triple.v",  triple.v ) 
+       << std::endl 
+       << gpresent( "triple.q",  triple.q ) 
+       << std::endl 
+       ; 
+
+    return out;
+}
+
+
+
 
 
 

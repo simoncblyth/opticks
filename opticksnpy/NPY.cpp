@@ -904,9 +904,9 @@ NPY<T>* NPY<T>::make_inverted_transforms(NPY<T>* src, bool transpose)
      unsigned ni = src->getShape(0); 
      for(unsigned i=0 ; i < ni ; i++)
      {
-         glm::mat4 tr =  src->getMat4(i);  
-         glm::mat4 irit = nglmext::invert_tr( tr );
-         dst->setMat4(irit, i, -1, transpose );
+         glm::mat4 t =  src->getMat4(i);  
+         glm::mat4 v = nglmext::invert_tr( t );
+         dst->setMat4(v, i, -1, transpose );
      }
      return dst ; 
 }
@@ -926,14 +926,39 @@ NPY<T>* NPY<T>::make_paired_transforms(NPY<T>* src, bool transpose)
 
      for(unsigned i=0 ; i < ni ; i++)
      {
-         glm::mat4 trs =  src->getMat4(i);  
-         glm::mat4 isirit = nglmext::invert_trs( trs );
+         glm::mat4 t = src->getMat4(i);  
+         glm::mat4 v = nglmext::invert_trs( t );
 
-         dst->setMat4(trs   , i, 0, transpose );
-         dst->setMat4(isirit, i, 1, transpose );
+         dst->setMat4(t, i, 0, transpose );
+         dst->setMat4(v, i, 1, transpose );
      }
      return dst ; 
 }
+
+
+
+template <typename T>
+NPY<T>* NPY<T>::make_triple_transforms(NPY<T>* src)
+{
+     assert(src->hasItemShape(4,4));
+     unsigned ni = src->getShape(0); 
+
+     NPY<T>* dst = NPY<T>::make(ni, 3, 4, 4);
+     dst->zero();
+
+     for(unsigned i=0 ; i < ni ; i++)
+     {
+         glm::mat4 t = src->getMat4(i);  
+         glm::mat4 v = nglmext::invert_trs( t );
+         glm::mat4 q = glm::transpose( v ) ;
+
+         dst->setMat4(t, i, 0 );
+         dst->setMat4(v, i, 1 );
+         dst->setMat4(q, i, 2 );
+     }
+     return dst ; 
+}
+
 
 
 template <typename T>
@@ -1697,22 +1722,46 @@ nmat4pair* NPY<T>::getMat4PairPtr(int i)
 
     assert(hasShape(-1,2,4,4));
 
-    glm::mat4 tr = getMat4(i, 0);   
-    glm::mat4 irit = getMat4(i, 1);
+    glm::mat4 t = getMat4(i, 0);   
+    glm::mat4 v = getMat4(i, 1);
 
-    return new nmat4pair(tr, irit) ; 
+    return new nmat4pair(t, v) ; 
+}
+
+template <typename T> 
+nmat4triple* NPY<T>::getMat4TriplePtr(int i)
+{
+    assert(hasShape(-1,3,4,4));
+
+    glm::mat4 t = getMat4(i, 0);   
+    glm::mat4 v = getMat4(i, 1);
+    glm::mat4 q = getMat4(i, 2);
+
+    return new nmat4triple(t, v, q) ; 
 }
 
 
 
 template <typename T> 
-void NPY<T>::setMat4Pair(const nmat4pair* mpair, unsigned i )
+void NPY<T>::setMat4Pair(const nmat4pair* pair, unsigned i )
 {
     assert(hasShape(-1,2,4,4));
-    assert(mpair);
+    assert(pair);
 
-    setMat4(mpair->tr  , i, 0 );
-    setMat4(mpair->irit, i, 1 );
+    setMat4(pair->t, i, 0 );
+    setMat4(pair->v, i, 1 );
+}
+
+
+template <typename T> 
+void NPY<T>::setMat4Triple(const nmat4triple* triple, unsigned i )
+{
+    assert(hasShape(-1,3,4,4));
+    assert(triple);
+
+    setMat4(triple->t, i, 0 );
+    setMat4(triple->v, i, 1 );
+    setMat4(triple->q, i, 2 );
 }
 
 

@@ -165,16 +165,19 @@ void test_gtransform()
 
         glm::mat4 tr = glm::translate(glm::mat4(1.0f), tlate );
         glm::mat4 irit = nglmext::invert_tr(tr);
-        nmat4pair mp(tr, irit);
+        glm::mat4 irit_T = glm::transpose(irit) ;
+
+        //nmat4pair mp(tr, irit);
+        nmat4triple triple(tr, irit, irit_T);
 
         if(verbose)
-        std::cout << " gtransform " << mp << std::endl ; 
+        std::cout << " gtransform " << triple << std::endl ; 
 
         nsphere a = make_nsphere(0.f,0.f,0.f,100.f);      
         // untouched sphere at origin
 
         nsphere b = make_nsphere(0.f,0.f,0.f,100.f);      
-        b.gtransform = &mp ; 
+        b.gtransform = &triple ; 
         // translated sphere via gtransform
 
         nsphere c = make_nsphere( tlate.x, tlate.y, tlate.z,100.f);  

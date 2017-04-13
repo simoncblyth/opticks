@@ -468,7 +468,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
 
     NPY<float>*        partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
-    NPY<float>*        tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,2,4,4));  // transform pairs (tr, irit) 
+    NPY<float>*        tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
     NPY<unsigned int>* primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));     // prim
     NPY<unsigned int>*   idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
      // PmtInBox yielding -1,1,4 ?

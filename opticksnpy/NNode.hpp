@@ -14,6 +14,7 @@ struct npart ;
 
 // NGLMExt
 struct nmat4pair ; 
+struct nmat4triple ; 
 
 struct NPY_API nnode 
 {
@@ -35,8 +36,8 @@ struct NPY_API nnode
     void update_gtransforms();
     static void update_gtransforms_r(nnode* node);
 
-    nmat4pair* global_transform(); 
-    static nmat4pair* global_transform(nnode* n); 
+    nmat4triple* global_transform(); 
+    static nmat4triple* global_transform(nnode* n); 
 
     void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs);
 
@@ -52,8 +53,8 @@ struct NPY_API nnode
     nnode* parent ; 
     const char* label ; 
 
-    nmat4pair* transform ; 
-    nmat4pair* gtransform ; 
+    nmat4triple* transform ; 
+    nmat4triple* gtransform ; 
     unsigned   gtransform_idx ; 
 
     nvec4 param ; 

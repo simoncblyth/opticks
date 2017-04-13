@@ -26,6 +26,7 @@
 struct BBufSpec ; 
 struct NSlice ; 
 struct nmat4pair ; 
+struct nmat4triple ; 
 
 class NPYSpec ; 
 class G4StepNPY ; 
@@ -106,6 +107,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_repeat(NPY<T>* src, unsigned int n);
        static NPY<T>* make_inverted_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_paired_transforms(NPY<T>* src, bool transpose=false);
+       static NPY<T>* make_triple_transforms(NPY<T>* src);
        static NPY<T>* make_identity_transforms(unsigned n=1);
 
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
@@ -275,6 +277,9 @@ class NPY_API NPY : public NPYBase {
 
        nmat4pair*   getMat4PairPtr(int i);
        void         setMat4Pair(const nmat4pair* mpair, unsigned i );
+       nmat4triple* getMat4TriplePtr(int i);
+       void         setMat4Triple(const nmat4triple* mpair, unsigned i );
+
 
 
    //private:

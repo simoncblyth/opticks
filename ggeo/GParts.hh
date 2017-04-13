@@ -47,6 +47,7 @@ class GGEO_API GParts {
        // conventional names for interfacing
        static const char* CONTAINING_MATERIAL ; 
        static const char* SENSOR_SURFACE ; 
+       static const int NTRAN ; 
     public:
         // buffer layout, must match locations in pmt-/tree.py:convert 
         enum { 

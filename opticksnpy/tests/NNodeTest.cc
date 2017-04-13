@@ -22,15 +22,28 @@ nmat4pair make_tlate_pair( const glm::vec3& tlate )
 }
 
 
+nmat4triple make_tlate_triple( const glm::vec3& tlate )
+{
+    glm::mat4 tr(1.f) ;
+    tr = glm::translate( tr, tlate );
+
+    glm::mat4 irit = nglmext::invert_tr( tr );
+    glm::mat4 irit_T = glm::transpose(irit);
+
+    return nmat4triple(tr, irit, irit_T);
+}
+
+
+
 
 
 void test_node_transforms()
 {
     LOG(info) << "test_node_transforms" ; 
 
-    nmat4pair mpx = make_tlate_pair( glm::vec3(300,0,0) );
-    nmat4pair mpy = make_tlate_pair( glm::vec3(0,300,0) );
-    nmat4pair mpz = make_tlate_pair( glm::vec3(0,0,300) );
+    nmat4triple mpx = make_tlate_triple( glm::vec3(300,0,0) );
+    nmat4triple mpy = make_tlate_triple( glm::vec3(0,300,0) );
+    nmat4triple mpz = make_tlate_triple( glm::vec3(0,0,300) );
 
     std::cout << " mpx  " << mpx << std::endl ; 
     std::cout << " mpy  " << mpy << std::endl ; 

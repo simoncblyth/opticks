@@ -34,7 +34,7 @@ float nsphere::costheta(float z_)
 double nsphere::operator()(double px, double py, double pz) 
 {
     glm::vec4 p0(px,py,pz,1.0); 
-    glm::vec4 p = gtransform ? gtransform->irit * p0 : p0 ; 
+    glm::vec4 p = gtransform ? gtransform->v * p0 : p0 ; 
 
     float d = glm::distance( glm::vec3(p), center );
     return d - radius_ ;  
@@ -42,7 +42,7 @@ double nsphere::operator()(double px, double py, double pz)
 
 glm::vec3 nsphere::gcenter()
 {
-    return gtransform == NULL ? center : glm::vec3( gtransform->tr * glm::vec4(center, 1.f ) ) ;
+    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
 
 
@@ -70,7 +70,7 @@ nbbox nsphere::bbox()
     bb.max = make_nvec3(param.x + param.w, param.y + param.w, param.z + param.w);
     bb.side = bb.max - bb.min ; 
 
-    return gtransform ? bb.transform(gtransform->tr) : bb ; 
+    return gtransform ? bb.transform(gtransform->t) : bb ; 
 }
 
 

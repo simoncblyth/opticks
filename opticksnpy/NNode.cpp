@@ -83,20 +83,20 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 
 
 
-nmat4pair* nnode::global_transform()
+nmat4triple* nnode::global_transform()
 {
     return global_transform(this);
 }
 
-nmat4pair* nnode::global_transform(nnode* n)
+nmat4triple* nnode::global_transform(nnode* n)
 {
-    std::vector<nmat4pair*> tt ; 
+    std::vector<nmat4triple*> tvq ; 
     while(n)
     {
-        if(n->transform) tt.push_back(n->transform);
+        if(n->transform) tvq.push_back(n->transform);
         n = n->parent ; 
     }
-    return tt.size() == 0 ? NULL : nmat4pair::product(tt) ; 
+    return tvq.size() == 0 ? NULL : nmat4triple::product(tvq) ; 
 }
 
 
@@ -294,7 +294,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                    nsphere* n = (nsphere*)p ;
                    centers.push_back(n->gcenter()); 
                    glm::vec4 dir(1,1,1,0); 
-                   if(n->gtransform) dir = n->gtransform->tr * dir ; 
+                   if(n->gtransform) dir = n->gtransform->t * dir ; 
                    dirs.push_back( glm::vec3(dir));
                }
                break ;  
@@ -305,7 +305,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                    centers.push_back(n->gcenter()); 
                    
                    glm::vec4 dir(1,1,1,0); 
-                   if(n->gtransform) dir = n->gtransform->tr * dir ; 
+                   if(n->gtransform) dir = n->gtransform->t * dir ; 
                    dirs.push_back( glm::vec3(dir));
                }
                break ;  
