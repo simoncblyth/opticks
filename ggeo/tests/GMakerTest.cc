@@ -1,5 +1,8 @@
 //  ggv --gmaker
 
+// sysrap-
+#include "OpticksCSG.h"
+
 #include "NGLM.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
@@ -37,7 +40,7 @@ void GMakerTest::make()
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
 
-    GSolid* solid = m_maker->make(0u, 'S', param, spec );
+    GSolid* solid = m_maker->make(0u, CSG_SPHERE, param, spec );
 
     solid->Summary();
 

@@ -31,31 +31,10 @@
 
 #include "PLOG.hh"
 
-/*
-bool GMaker::IsCompositeShape(char shapecode)
-{
-    return shapecode == 'L' ; 
-}
-bool GMaker::IsBooleanShape(char shapecode)
-{
-    return shapecode == 'I' || shapecode == 'J' || shapecode == 'K'  ;
-}
-*/
-
-
-GSolid* GMaker::make(unsigned int index, char csgChar, glm::vec4& param, const char* spec )
-{
-    LOG(warning) << "GMaker::make OLD FORM IN USE csgChar " << csgChar ;  
-    OpticksCSG_t type = CSGFlag(csgChar); 
-    return GMaker::make( index, type, param, spec );
-}
-
-
 
 GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
-
     // for CSG triangulation need to be given the tree.. 
 
      GSolid* solid = NULL ; 
@@ -74,6 +53,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_PARTLIST:
          case CSG_PMT:
          case CSG_TUBS:
+         case CSG_CYLINDER:
          case CSG_UNDEFINED:
          case CSG_FLAGPARTLIST:
          case CSG_FLAGNODETREE:

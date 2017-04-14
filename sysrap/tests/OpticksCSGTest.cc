@@ -13,12 +13,20 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     SYSRAP_LOG__ ; 
 
-    for(unsigned i=1 ; i < CSG_UNDEFINED ; i++)
+    for(unsigned i=0 ; i < 100 ; i++)
     {
+        OpticksCSG_t type = (OpticksCSG_t)i ; 
+        if(!CSGExists(type)) continue ; 
 
-        OpticksCSG_t csgFlag = (OpticksCSG_t)i ; 
+        const char*  name = CSGName( type );
 
-        const char* csgName = CSGName( csgFlag );
+        std::cout 
+                   << " type " << std::setw(3) << type
+                   << " name " << std::setw(20) << name
+                   << std::endl ; 
+
+
+       /*
         char csgChar = CSGChar( csgName );
 
         OpticksCSG_t csgFlag2 = CSGFlag(csgChar);
@@ -36,7 +44,11 @@ int main(int argc, char** argv)
                    << " csgFlag2 " << std::setw(3) << csgFlag2
                    << " csgName2 " << std::setw(20) << csgName2
                    << std::endl ; 
+
+        */
+
     }
+
 
     //int rc = SSys::run("tpmt.py");
 

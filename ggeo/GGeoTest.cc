@@ -164,6 +164,16 @@ GMergedMesh* GGeoTest::createPmtInBox()
     container->getParts()->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
     container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
 
+
+    // THIS IS THE DIRTY ASPECT
+    //
+    //    COMBINING A LOADED PMT MESH THAT JUST HAPPENS TO CORRESPOND 
+    //    WITH THE ANALYTIC PARTLIST GEOMETRY
+    //
+    //    TODO: Use NPolygonizer to generate the mesh from the partlist ??
+    //
+    //
+
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container );   
 
     if(verbosity > 1)
