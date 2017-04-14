@@ -41,17 +41,18 @@ Repeat above enumeration in nodeIdx lingo
       nodeIdx{dec}
        [postorderIdx]
 
+              height 3 tree
 
-                                   1{1}   
+                                   1{1}                                                 elev:3    depth:0
                                    [14]       
 
-                10{2}                                  11{3}
+                10{2}                                  11{3}                            elev:2    depth:1
                  [6]                                   [13]
   
-          100{4}           101{5}                110{6}              111{7}
+          100{4}           101{5}                110{6}              111{7}             elev:1    depth:2
            [2]              [5]                  [9]                 [12]
  
-      1000{8} 1001{9}   1010{a}  1011{b}      1100{c} 1101{d}      1110{e}  1111{f}
+      1000{8} 1001{9}   1010{a}  1011{b}      1100{c} 1101{d}      1110{e}  1111{f}     elev:0    depth:3 
       [0]     [1]       [3]      [4]          [7]     [8]          [10]     [11]
       
 
@@ -86,6 +87,8 @@ POSTORDER_RANGE debug ideas
 * use quad-decker begin,end,beginR,endR inside the tranche slice so can 
   see exactly where things diverge
 
+
+* maybe running into elev 0 and doing << -1 
 
 
 
@@ -309,7 +312,9 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 #define POSTORDER_RANGE_BEGIN( range )    (  (range) & 0xff )
 #define POSTORDER_RANGE_END(   range )    (  (range) >> 8 )
 
-#define POSTORDER_NEXT(currIdx, elevation )( ((currIdx) & 1) ? (currIdx) >> 1 :  ((currIdx) << (elevation)) + (1 << (elevation)) )
+
+#include "postorder.h"
+#include "pack.h"
 
 
 
@@ -541,35 +546,37 @@ void UNSUPPORTED_recursive_csg( const uint4& prim, const uint4& identity )
 }
 
  
-//#define USE_POSTORDER_RANGE 1
+#define USE_TWIDDLE_POSTORDER 1
 
 static __device__
 void evaluative_csg( const uint4& prim, const uint4& identity )
 {
     unsigned partOffset = prim.x ; 
     unsigned numParts   = prim.y ;
-
-    unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
-
-    //rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u  \n",primIdx_, numParts, fullHeight ) ; 
-
-#ifdef USE_POSTORDER_RANGE
-    // bit-twiddle POSTORDER_RANGE approach does not have height limitations
-    // as doesnt use pre-baked postorder_sequence
-#else
     unsigned primIdx_   = prim.z ; 
-    if(fullHeight > 3)
+    unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
+
+#ifdef USE_TWIDDLE_POSTORDER
+    // bit-twiddle postorder limited to height 7, ie maximum of 0xff nodes
+    // (using 2-bytes with PACK2 would bump that to 0xffff nodes)
+    // In any case 0xff nodes are far more than this is expected to be used with
+    //
+    if(height > 7)
     {
-        rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree fullHeight %u exceeds current limit\n", primIdx_, numParts, fullHeight ) ;
+        rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree height %u exceeds current limit\n", primIdx_, numParts, height ) ;
+        return ; 
+    } 
+#else
+    // pre-baked postorder limited to height 3 tree,  ie maximum of 0xf nodes
+    // by needing to stuff the postorder sequence 0x137fe6dc25ba498ull into 64 bits 
+    if(height > 3)
+    {
+        rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree height %u exceeds current limit\n", primIdx_, numParts, height ) ;
         return ; 
     } 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
-    unsigned long long postorder = postorder_sequence[fullHeight] ; 
+    unsigned long long postorder = postorder_sequence[height] ; 
 #endif
-
-
-
-    //rtPrintf("evaluative_csg primIdx_ %u fullHeight %u numNodes  %u postorder %16llx  \n", primIdx_, fullHeight, numNodes, postorder );
 
     int ierr = 0 ;  
     bool verbose = false ; 
@@ -584,12 +591,15 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     Tranche tr ; 
     tr.curr = -1 ;
 
-#ifdef USE_POSTORDER_RANGE
-    tranche_push( tr, POSTORDER_RANGE( 1 << fullHeight, 0), ray.tmin );
+
+#ifdef USE_TWIDDLE_POSTORDER
+    unsigned fullTree = PACK4(0,0, 1 << height, 0 ) ;  // leftmost: 1<<height,  root:1>>1 = 0 ("parent" of root)  
 #else
-    unsigned numNodes = TREE_NODES(fullHeight) ;      
-    tranche_push( tr, POSTORDER_SLICE(0, numNodes), ray.tmin );
+    unsigned numNodes = TREE_NODES(height) ;      
+    unsigned fullTree = PACK4(0, numNodes, 1 << height, 0 ) ; 
 #endif
+
+    tranche_push( tr, fullTree, ray.tmin );
 
     CSG csg ;  
     csg.curr = -1 ;
@@ -605,56 +615,42 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
         ierr = tranche_pop(tr, slice, tmin );
         if(ierr) break ; 
 
-#ifdef USE_POSTORDER_RANGE
-        // begin, end are 1-based postorder nodeIdx,  
-        //
-        //       leftmost(begin): 1 << fullHeight  
-        //                  root: 1  
-        //    one-past-root(end): 0 
-        //
-        unsigned begin = POSTORDER_RANGE_BEGIN(slice);
-        unsigned end   = POSTORDER_RANGE_END(slice);
+
+
+#ifdef USE_TWIDDLE_POSTORDER
+        // beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height 
+        unsigned beginIdx = UNPACK4_2(slice);
+        unsigned endIdx   = UNPACK4_3(slice);
 #else
         // begin, end are 0-based indices into the postorder
-        // slice combines begin, end with bitshifts assuming values are < 255
-        unsigned begin = POSTORDER_BEGIN(slice);
-        unsigned end   = POSTORDER_END(slice);
+        unsigned begin     = UNPACK4_0(slice);
+        unsigned end       = UNPACK4_1(slice);
 #endif
 
-/*
-        if(verbose)
-        rtPrintf("[%5d](trav) csg.curr %2d csg_repr %16llx tr_repr %16llx tloop %2d [%x:%x] (%2u->%2u) %7.3f \n", 
-                           launch_index.x, 
-                           csg.curr,
-                           csg_repr(csg), 
-                           tranche_repr(tr),
-                           tloop,  
-                           begin,
-                           end,
-                           POSTORDER_NODE(postorder, begin),
-                           POSTORDER_NODE(postorder, end-1),
-                           tmin 
-                              );
-*/
 
-
-#ifdef USE_POSTORDER_RANGE
-        unsigned nodeIdx = begin ; 
-        while( nodeIdx != end )
+#ifdef USE_TWIDDLE_POSTORDER
+        unsigned nodeIdx = beginIdx ; 
+        while( nodeIdx != endIdx )
         {
 #else
         for(unsigned i=begin ; i < end ; i++)
         {
-            // lookup the 1-based nodeIdx using the 0-based postorder index i
-            unsigned nodeIdx = POSTORDER_NODE(postorder, i) ;
+            unsigned nodeIdx = POSTORDER_NODE(postorder, i) ; // lookup 1-based nodeIdx using 0-based postorder index i
 #endif
             unsigned depth = TREE_DEPTH(nodeIdx) ;
-            unsigned elevation = fullHeight - depth ; 
+            unsigned elevation = height - depth ; 
 
             Part pt = partBuffer[partOffset+nodeIdx-1]; 
             OpticksCSG_t typecode = (OpticksCSG_t)pt.q2.u.w ;
 
-            if(typecode == CSG_ZERO) continue ; 
+            if(typecode == CSG_ZERO) 
+            {
+#ifdef USE_TWIDDLE_POSTORDER
+                // bit-twiddling postorder needs action in tail, even when skipping empties
+                nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
+#endif
+                continue ; 
+            }
 
             bool primitive = typecode >= CSG_SPHERE ; 
 
@@ -760,38 +756,33 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                     ierr = csg_push(csg, other, otherIdx ); if(ierr) break ;
 
                     // looping is effectively backtracking, pop both and put otherside back
-//#ifdef USE_POSTORDER_RANGE
-                    // see explanation at head 
-                    unsigned beginIdxR = POSTORDER_NODE(postorder, begin) ;
-                    unsigned endIdxR = POSTORDER_NODE(postorder, end) ;
-                    unsigned endTreeR   = POSTORDER_RANGE(nodeIdx, endIdxR); 
-                    unsigned leftTreeR  = POSTORDER_RANGE(leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
-                    unsigned rightTreeR = POSTORDER_RANGE(rightIdx << (elevation-1), nodeIdx) ;
-//#else
+
+#ifdef USE_TWIDDLE_POSTORDER
+                    unsigned endTree   = PACK4(  0,  0,  nodeIdx,  endIdx  );
+                    unsigned leftTree  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+                    unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
+#else
                     unsigned subNodes = TREE_NODES(elevation) ;
                     unsigned halfNodes = (subNodes - 1)/2 ; 
-                    unsigned endTree   = POSTORDER_SLICE(i, end); // BUG FIXED 2017/3/12 numNodes->end
-                    unsigned leftTree  = POSTORDER_SLICE(i-2*halfNodes, i-halfNodes) ;
-                    unsigned rightTree = POSTORDER_SLICE(i-halfNodes, i) ;
-//#endif
+                    unsigned endTree = PACK4( i, end,   nodeIdx, endIdx  );   // BUG FIXED 2017/3/12 changing numNodes->end
+                    unsigned leftTree = PACK4( i-2*halfNodes, i-halfNodes,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+                    unsigned rightTree = PACK4( i-halfNodes, i ,  rightIdx << (elevation-1), nodeIdx );
+#endif
                     unsigned loopTree  = ctrl == CTRL_LOOP_A ? leftTree : rightTree  ;
 
-
-                    if(nodeIdx > 2)
-                    rtPrintf("nodeIdx %2d fullHeight %2d depth %2d elevation %2d  beginIdxR %2d endIdxR %2d endTreeR %4x endTree %4x leftTreeR %4x leftTree %4x rightTreeR %4x rightTree %4x \n",
+                    //if(nodeIdx > 2)
+                   /*
+                    rtPrintf("nodeIdx %2d height %2d depth %2d elevation %2d subNodes %2d halfNodes %2d endTree %8x leftTree %8x rightTree %8x \n",
                               nodeIdx,
-                              fullHeight,
+                              height,
                               depth,
                               elevation,
-                              beginIdxR,
-                              endIdxR,
-                              endTreeR,
+                              subNodes,
+                              halfNodes,
                               endTree, 
-                              leftTreeR,
                               leftTree,
-                              rightTreeR,
                               rightTree);
-                  
+                    */
 
 
                     ierr = tranche_push( tr, endTree, tmin );          if(ierr) break ;
@@ -799,8 +790,6 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
                     act = BREAK  ;  
                 }             // "return" or "recursive call" 
-
- 
 /* 
                if(verbose)
                 rtPrintf("[%5d](ctrl) nodeIdx %2d csg.curr %2d csg_repr %16llx tr_repr %16llx ctrl %d     tloop %2d (%2d->%2d) typecode %d tlr (%10.3f,%10.3f) \n", 
@@ -819,9 +808,10 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
                               );
 */
 
+
                 if(act == BREAK) break ; 
             }                 // "primitive" or "operation"
-#ifdef USE_POSTORDER_RANGE
+#ifdef USE_TWIDDLE_POSTORDER
             nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
 #endif
         }                     // node traversal 
