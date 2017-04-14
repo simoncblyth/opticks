@@ -1,15 +1,131 @@
 #!/usr/bin/env python
 """
 
+
+
+tree.py uses self-assemblage by digest approach, but as 
+applied to at start logical volume containing as list of PV there 
+is no root ?
+
+Not your typical tree, this holds onto a dict of nodes::
+
+    In [1]: run tree.py
+    ...
+    In [5]: tr.byindex
+    Out[5]: 
+    {0: Node  0 : dig f34b pig d41d : LV lvPmtHemi                           Pyrex None : None  : None ,
+     1: Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None ,
+     2: Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None ,
+     3: Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0    ,
+     4: Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5    }
+
+    In [6]: tr.registry
+    Out[6]: 
+    {'324d9022d803eae989b540bbb2375f38': Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None ,
+     '5e291f5b9bbedf27f720e5dceb65ad56': Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5    ,
+     '9e612c43301f13a23a5fd41e7ea59404': Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0    ,
+     'f34ba27750136ebdc5bd9f3119f2c559': Node  0 : dig f34b pig d41d : LV lvPmtHemi                           Pyrex None : None  : None ,
+     'fafaa4fcd3682ac3f89da9afb9680e9a': Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None }
+
+    In [7]: 
+
+
+Recursive dumper::
+
+    In [20]: tr.get(0).traverse()
+    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  0 : dig f34b pig d41d : LV lvPmtHemi                           Pyrex None : None  : None  
+    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None  
+    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 2 Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None  
+    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 2 Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     
+    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 2 Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     
+
+    In [21]: tr.get(1).traverse()
+    [2017-04-14 19:52:01,124] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None  
+    [2017-04-14 19:52:01,124] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None  
+    [2017-04-14 19:52:01,125] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     
+    [2017-04-14 19:52:01,125] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     
+
+    In [22]: tr.get(2).traverse()
+    [2017-04-14 19:52:17,660] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None  
+
+    In [23]: tr.get(3).traverse()
+    [2017-04-14 19:52:29,365] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     
+
+    In [24]: tr.get(4).traverse()
+    [2017-04-14 19:52:42,476] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     
+
+
+::
+
+     37   <!-- The PMT glass -->
+     38   <logvol name="lvPmtHemi" material="Pyrex">
+     39     <union name="pmt-hemi">
+     40       <intersection name="pmt-hemi-glass-bulb">
+     41     <sphere name="pmt-hemi-face-glass"
+     42         outerRadius="PmtHemiFaceROC"/>
+     43 
+     44     <sphere name="pmt-hemi-top-glass"
+     45         outerRadius="PmtHemiBellyROC"/>
+     46     <posXYZ z="PmtHemiFaceOff-PmtHemiBellyOff"/>
+     47 
+     48     <sphere name="pmt-hemi-bot-glass"
+     49         outerRadius="PmtHemiBellyROC"/>
+     50     <posXYZ z="PmtHemiFaceOff+PmtHemiBellyOff"/>
+     51 
+     52       </intersection>
+     53       <tubs name="pmt-hemi-base"
+     54         sizeZ="PmtHemiGlassBaseLength"
+     55         outerRadius="PmtHemiGlassBaseRadius"/>
+     56       <posXYZ z="-0.5*PmtHemiGlassBaseLength"/>
+     57     </union>
+     58 
+     59     <physvol name="pvPmtHemiVacuum"
+     60          logvol="/dd/Geometry/PMT/lvPmtHemiVacuum"/>
+     61 
+     62   </logvol>
+
+::
+
+    In [48]: py = tr.get(0)
+
+    In [54]: py.lv.name
+    Out[54]: 'lvPmtHemi'
+
+    In [55]: py.lv.material
+    Out[55]: 'Pyrex'
+
+    In [57]: py.lv.findall_("./*")
+    Out[57]: 
+    [Union             pmt-hemi  ,
+     PV pvPmtHemiVacuum      /dd/Geometry/PMT/lvPmtHemiVacuum ]
+
+    In [58]: un = py.lv.findall_("./*")[0]
+
+    In [59]: un
+    Out[59]: Union             pmt-hemi  
+
+    In [60]: un.findall_("./*")
+    Out[60]: 
+    [Intersection  pmt-hemi-glass-bulb  ,
+     Tubs        pmt-hemi-base : outerRadius PmtHemiGlassBaseRadius : 42.25   sizeZ PmtHemiGlassBaseLength : 169.0   :  None ,
+     PosXYZ  -0.5*PmtHemiGlassBaseLength : -84.5   ]
+
+
+Need to findall_ recurse on the lv, constructing NCSG node tree.
+Unclear what level to do this at, probably simpler to operate at dd level
+
+
+
+
+
 """
 import logging, hashlib, sys, os
 import numpy as np
 np.set_printoptions(precision=2) 
 
 
-from opticks.ana.base import Buf
+from opticks.ana.base import opticks_main, Buf
 from dd import Dddb, Parts, Union, Intersection 
-from csg import CSG
 from geom import Part
 
 
@@ -168,25 +284,27 @@ class Tree(object):
         log.info("tnodes %s tparts %s " % (tnodes, tparts))
 
         pts = Parts()
-        csg = []
+        gcsg = []
 
         for i in range(tnodes):
             node = cls.get(i)
+
             log.debug("tree.parts node %s parent %s" % (repr(node),repr(node.parent)))
             log.info("tree.parts node.lv %s " % (repr(node.lv)))
             log.info("tree.parts node.pv %s " % (repr(node.pv)))
+
             npts = node.parts()
-            #print npts
             pts.extend(npts)    
 
-            if hasattr(npts, 'csg') and len(npts.csg) > 0:
-                for c in npts.csg:
+            if hasattr(npts, 'gcsg') and len(npts.gcsg) > 0:
+                for c in npts.gcsg:
                     c.node = node
-                csg.extend(npts.csg)  
-
+                pass
+                gcsg.extend(npts.gcsg)  
+            pass
         pass
         assert len(pts) == tparts          
-        pts.csg = csg 
+        pts.gcsg = gcsg 
         return pts 
 
     @classmethod
@@ -262,10 +380,10 @@ class Tree(object):
         buf = data.view(Buf) 
         buf.boundaries = map(lambda _:_.boundary, parts) 
 
-        if hasattr(parts, "csg"):
-            buf.csg = parts.csg 
-            buf.materials = map(lambda cn:cn.lv.material,filter(lambda cn:cn.lv is not None, buf.csg))
-            buf.lvnames = map(lambda cn:cn.lv.name,filter(lambda cn:cn.lv is not None, buf.csg))
+        if hasattr(parts, "gcsg"):
+            buf.gcsg = parts.gcsg 
+            buf.materials = map(lambda cn:cn.lv.material,filter(lambda cn:cn.lv is not None, buf.gcsg))
+            buf.lvnames = map(lambda cn:cn.lv.name,filter(lambda cn:cn.lv is not None, buf.gcsg))
             buf.pvnames = map(lambda lvn:lvn.replace('lv','pv'), buf.lvnames)
         pass
         return buf
@@ -322,10 +440,10 @@ class Tree(object):
 
 
 if __name__ == '__main__':
-    format_ = "[%(filename)s +%(lineno)3s %(funcName)20s ] %(message)s" 
-    logging.basicConfig(level=logging.INFO, format=format_)
 
-    g = Dddb.parse("$PMT_DIR/hemi-pmt.xml")
+    args = opticks_main()
+
+    g = Dddb.parse(args.apmtddpath)
 
     lv = g.logvol_("lvPmtHemi")
 

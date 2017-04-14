@@ -255,8 +255,11 @@ def opticks_args(**kwa):
     statcut = kwa.get("statcut", 1000)
     nointerpol = kwa.get("nointerpol", False)
     figsize = kwa.get("figsize", "18,10.2" )
+
+    apmtddpath = kwa.get("apmtddpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/hemi-pmt.xml" )
     apmtpathtmpl = kwa.get("apmtpathtmpl", "$OPTICKS_INSTALL_PREFIX/opticksdata/export/DayaBay/GPmt/%(apmtidx)s/GPmt.npy" )
     apmtidx = kwa.get("apmtidx", 2 )
+    yes = kwa.get("yes", False )
 
 
     parser = argparse.ArgumentParser(doc)
@@ -304,6 +307,9 @@ def opticks_args(**kwa):
     parser.add_argument(     "--cmx",  default=cmx, type=float, help="When greater than zero used as minimum line chi2 to present in sequence frequency tables. Default %(default)s "  )
     parser.add_argument(     "--apmtpathtmpl", default=apmtpathtmpl, help="Template Path to analytic PMT serialization, see pmt- and ana/pmt/analytic.py. %(default)s ")
     parser.add_argument(     "--apmtidx",      default=apmtidx, type=int, help="PmtPath index used to fill in the template, see pmt- and ana/pmt/analytic.py. %(default)s ")
+    parser.add_argument(     "--apmtddpath",   default=apmtddpath, help="Path to detdesc xml file with description of DayaBay PMT, which references other files. %(default)s ")
+    parser.add_argument(     "--yes", action="store_true", help="Confirm any YES dialogs. %(default)s ")
+
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 

@@ -2,12 +2,6 @@ pmt-src(){      echo ana/pmt/pmt.bash ; }
 pmt-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(pmt-src)} ; }
 pmt-vi(){       vi $(pmt-source) ; }
 
-pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
-pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
-pmt-export(){  
-    export PMT_DIR=$(pmt-dir) 
-}
-
 
 pmt-env(){      olocal- ; }
 pmt-usage(){ cat << EOU
@@ -52,8 +46,8 @@ TESTS
 *pmt-dd*
      test detdesc parsing 
 
-*pmt-csg*
-     does nothing other than testing csg.py is valid python  
+*pmt-gcsg*
+     does nothing other than testing gcsg.py is valid python  
 
 
 See Also
@@ -75,7 +69,7 @@ tree.py
      Node
      Tree
 
-csg.py
+gcsg.py
      serialization of CSG tree, so far not used GPU side, 
      (the part buffer representation is used GPU side)
 
@@ -473,35 +467,25 @@ pmt-cd(){  cd $(pmt-dir); }
 pmt-ecd(){ cd $(pmt-edir) ; }
 
 pmt-xml(){ vi $(pmt-dir)/hemi-pmt.xml ; }
+pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
+
+pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
+pmt-export(){  
+    echo -n 
+    # PMT_DIR env setup moved into opticks_main in ana.base
+}
 
 pmt-i(){
    pmt-ecd
    i
 }
 
-
 ## TODO: consolidate, too many entry points 
-
-pmt-run(){ 
-   pmt-export
-   python $(pmt-edir)/${1:-pmt}.py  
-}
-pmt-dd(){    
-   pmt-export
-   python $(pmt-edir)/dd.py  
-}
-pmt-parts(){ 
-   pmt-export
-   python $(pmt-edir)/tree.py $*  
-}
-pmt-analytic(){ 
-   pmt-export
-   python $(pmt-edir)/analytic.py $*  
-}
-pmt-csg(){ 
-   pmt-export
-   python $(pmt-edir)/csg.py $*  
-}
+pmt-run(){      python $(pmt-edir)/${1:-pmt}.py  ; }
+pmt-dd(){       python $(pmt-edir)/dd.py  ; }
+pmt-parts(){    python $(pmt-edir)/tree.py $*  ; }
+pmt-analytic(){ python $(pmt-edir)/analytic.py $*  ; }
+pmt-gcsg(){     python $(pmt-edir)/gcsg.py $*  ; }
 
 
 

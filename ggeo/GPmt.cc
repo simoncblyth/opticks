@@ -24,7 +24,7 @@
 #include "PLOG.hh"
 
 const char* GPmt::FILENAME = "GPmt.npy" ;  
-const char* GPmt::FILENAME_CSG = "GPmt_csg.npy" ;  
+const char* GPmt::FILENAME_CSG = "GPmt_gcsg.npy" ;  
 
 
 GPmt* GPmt::load(Opticks* ok, GBndLib* bndlib, unsigned int index, NSlice* slice)

@@ -155,7 +155,29 @@ can do a more complete job.
   * review OptiX geometry handling and OpenGL instancing, as currently 
     used to see how best to structure this to be 
     easily uploaded to GPU 
-      
+
+
+Whats needed in OpticksSceneGraph ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Simple buffer layout, for GPU consumption, be guided by customers:
+
+* OptiX geometry instancing
+* OpenGL geometry instancing
+
+For each instance (perhaps uint4 buffer)
+
+* unsigned index reference to CSG tree,  
+* unsigned index reference to transform 
+* identity code or reference to identity  
+
+What to do different from current GGeo ?
+
+* GGeo is mesh-centric, aim for instance-centric 
+* design with simple serialization directory layout in mind 
+* defer concatenation into big buffers as late as possible,
+  retaining structure in directories for easy debug 
+
 
 GDML->GGeo vs G4DAE->GGeo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

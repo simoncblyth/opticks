@@ -21,11 +21,16 @@ if __name__ == '__main__':
     apmtpath = args.apmtpath
 
     print "\nAiming to write serialized analytic PMT to below apmtpath\n%s\n" % apmtpath 
-    proceed = raw_input("Enter YES to proceed... ") 
-    if proceed != "YES": sys.exit(1)
- 
 
-    xmlpath = "$PMT_DIR/hemi-pmt.xml"
+    if args.yes:
+        print "proceeding without asking"
+    else:
+        proceed = raw_input("Enter YES to proceed...  (use eg \"--apmtidx 3\" to write to different index whilst testing) ... ") 
+        if proceed != "YES": sys.exit(1)
+    pass 
+     
+    xmlpath = args.apmtddpath 
+    
     log.info("parsing %s -> %s " % (xmlpath, os.path.expandvars(xmlpath)))
 
     g = Dddb.parse(xmlpath)
@@ -39,15 +44,15 @@ if __name__ == '__main__':
     for pt in parts:
         print pt
 
-    assert hasattr(parts, 'csg') and len(parts.csg) > 0
-
+    assert hasattr(parts, 'gcsg') and len(parts.gcsg) > 0
     buf = tr.convert(parts)
-  
+
     tr.dump()
 
+    assert type(buf) is Buf 
 
-    gp = GPmt(apmtpath, buf )
-    gp.save()
+    gp = GPmt(apmtpath, buf ) 
+    gp.save()   # to apmtpath and sidecars
 
 
 

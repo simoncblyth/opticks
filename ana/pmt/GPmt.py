@@ -14,7 +14,7 @@ import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.base import opticks_main, Buf, splitlines_
-from csg import CSG
+from gcsg import GCSG
 
 class GPmt(object):
     atts = "boundaries materials lvnames pvnames".split() 
@@ -32,12 +32,12 @@ class GPmt(object):
     def txtpath(self, att):
         return self.xpath.replace(".npy","_%s.txt" % att)
 
-    def csgpath(self):
-        return self.xpath.replace(".npy","_csg.npy")
+    def gcsgpath(self):
+        return self.xpath.replace(".npy","_gcsg.npy")
 
 
     def save(self):
-        log.info("GPmt.save buf %s to:%s attribs and csg in sidecars " % (repr(self.buf.shape), self.path) )
+        log.info("GPmt.save buf %s to:%s attribs and gcsg in sidecars " % (repr(self.buf.shape), self.path) )
         if not os.path.exists(self.pdir):
             os.makedirs(self.pdir)
         pass
@@ -50,16 +50,16 @@ class GPmt(object):
                 pass
             pass
         pass
-        if hasattr(self.buf,"csg"):
-            path = self.csgpath()
-            csgbuf = CSG.serialize_list(self.buf.csg)
-            if csgbuf is not None:
-                log.info("saving csg to %s " % path)
-                #log.info(csgbuf.view(np.int32))
-                #log.info(csgbuf)
-                np.save(path, csgbuf) 
+        if hasattr(self.buf,"gcsg"):
+            path = self.gcsgpath()
+            gcsgbuf = GCSG.serialize_list(self.buf.gcsg)
+            if gcsgbuf is not None:
+                log.info("saving gcsg to %s " % path)
+                #log.info(gcsgbuf.view(np.int32))
+                #log.info(gcsgbuf)
+                np.save(path, gcsgbuf) 
             else:
-                log.warning("csgbuf is None skip saving to %s " % path)
+                log.warning("gcsgbuf is None skip saving to %s " % path)
             pass
         pass
         np.save(self.xpath, self.buf) 
@@ -79,16 +79,16 @@ class GPmt(object):
             else:
                 log.warning("no such path %s " % path)
               
-        path = self.csgpath()
+        path = self.gcsgpath()
         if os.path.exists(path):
-            self.csgbuf = np.load(path)
+            self.gcsgbuf = np.load(path)
         else:
             log.warning("no such path %s " % path)
             
  
     def dump(self):
         print "buf %s " % repr(self.buf.shape)
-        print "csgbuf %s " % repr(self.csgbuf.shape)
+        print "gcsgbuf %s " % repr(self.gcsgbuf.shape)
         for att in self.atts:
             tls = getattr(self.buf, att)
             print att, len(tls), " ".join(tls)
