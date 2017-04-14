@@ -119,7 +119,6 @@ GMergedMesh* GGeoTest::create()
             unsigned int nelem = m_config->getNumElements();
             assert(nelem > 0);
             if(     strcmp(mode, "BoxInBox") == 0) createBoxInBox(solids); 
-            else if(strcmp(mode, "CsgInBox") == 0) createCsgInBox(solids); 
             else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ; 
         }
         tmm = combineSolids(solids);
@@ -197,11 +196,9 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     int rc = NCSG::Deserialize( csgpath, trees );
     assert(rc == 0);
     unsigned ntree = trees.size() ;
- 
     LOG(info) << "GGeoTest::loadCSG " << csgpath << " got " << ntree << " trees " ; 
 
     int primIdx(-1) ; 
-
     for(unsigned i=0 ; i < ntree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
@@ -213,85 +210,12 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);
         pts->setNodeIndexAll(primIdx ); 
-
-        //nnode* root = tree->getRoot();  
-        //pts->setTypeCode(0u, root->type);
-
         pts->setBndLib(m_bndlib);
 
         solids.push_back(solid);
     }
 }
 
-
-void GGeoTest::createCsgInBox(std::vector<GSolid*>& solids)
-{
-    // NB this is the second look at CSG with a view 
-    //    to creating binary trees for evaluation on GPU
-    //
-    //    The first look (in class GCSG) used 
-    //    for G4/CPU cfg4 CMaker is unrelated, currently.
-    //
-
-    unsigned int nelem = m_config->getNumElements();
-    unsigned numPrim = m_config->getNumOffsets();
-    LOG(info) << "GGeoTest::createCsgInBox" 
-              << " nodes " << nelem 
-              << " numPrim " << numPrim
-             ; 
-
-    int primIdx(-1) ; 
-
-    for(unsigned int i=0 ; i < nelem ; i++)
-    {
-        bool primStart = m_config->isStartOfOptiXPrimitive(i); 
-
-        // The splitting of configuration elements into OptiXPrimitives
-        // is configured by global "offsets" parameter 
-        // For example  "offsets=0,1" means elements 0 and 1  
-        // represent nodes that start OptiX primitives.
-        // 
-        //  CSG trees (which must be perfect binary trees in levelorder) 
-        //  need to be contained entirely within single primitive node blocks
-        //
-        if(primStart)
-        {
-            primIdx++ ;
-        }
-
-        std::string node = m_config->getNodeString(i);
-        OpticksCSG_t type = m_config->getTypeCode(i);
-        const char* spec = m_config->getBoundary(i);
-        glm::vec4 param = m_config->getParameters(i);
-        glm::mat4 trans = m_config->getTransform(i);
-        unsigned int boundary = m_bndlib->addBoundary(spec);
-
-        LOG(info) << "GGeoTest::createCsgInBox" 
-                  << " i " << std::setw(2) << i 
-                  << " node " << std::setw(20) << node
-                  << " type " << std::setw(2) << type
-                  << " csgName " << std::setw(15) << CSGName(type)
-                  << " spec " << spec
-                  << " boundary " << boundary
-                  << " param " << gformat(param)
-                //  << " trans " << gformat(trans)
-                  ;
-
-        bool oktype = type < CSG_UNDEFINED ;  
-        if(!oktype) LOG(fatal) << "GGeoTest::createCsgInBox configured node not implemented " << node ;
-        assert(oktype);
-
-        GSolid* solid = m_maker->make(i, type, param, spec ); // placeholder box for booleans
-
-        GParts* pts = solid->getParts();
-        pts->setIndex(0u, i);
-        pts->setNodeIndex(0u, primIdx ); 
-        pts->setTypeCode(0u, type);
-        pts->setBndLib(m_bndlib);
-
-        solids.push_back(solid);
-    }
-}
 
 void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
 {

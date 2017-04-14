@@ -8,6 +8,7 @@
 #endif
 
 
+// see dev/csg/postorder.py 
 #define POSTORDER_NEXT(currIdx, elevation )( ((currIdx) & 1) ? (currIdx) >> 1 :  ((currIdx) << (elevation)) + (1 << (elevation)) )
 
 

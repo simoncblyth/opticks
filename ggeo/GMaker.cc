@@ -434,8 +434,3 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
 
 
-
-
-
-
-

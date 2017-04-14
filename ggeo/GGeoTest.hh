@@ -41,7 +41,6 @@ class GGEO_API GGeoTest {
        void loadCSG(const char* csgpath, std::vector<GSolid*>& solids );
        GMergedMesh* createPmtInBox();
        void createBoxInBox(std::vector<GSolid*>& solids);
-       void createCsgInBox(std::vector<GSolid*>& solids);
 
        GMergedMesh* loadPmt();
     private:

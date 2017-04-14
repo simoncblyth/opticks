@@ -63,6 +63,9 @@ total 80
 
 **/
 
+
+const unsigned GPmt::NTRAN = 3 ; 
+
 void GPmt::loadFromCache(NSlice* slice)
 {
     OpticksResource* resource = m_cache->getResource();
@@ -113,7 +116,7 @@ void GPmt::loadFromCache(NSlice* slice)
 
 
 
-    NPY<float>* tranBuf = NPY<float>::make(0,2,4,4);
+    NPY<float>* tranBuf = NPY<float>::make(0,NTRAN,4,4);
     tranBuf->zero();
 
     GParts* parts = new GParts(partBuf, tranBuf, bndSpec, m_bndlib);

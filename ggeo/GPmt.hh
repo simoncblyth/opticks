@@ -28,6 +28,7 @@ class GGEO_API GPmt {
        static const char* FILENAME ;  
        static const char* FILENAME_CSG ;  
        static const char* GPMT ;  
+       static const unsigned NTRAN ;  
    public:
        // loads persisted GParts buffer and associates with the GPmt
        static GPmt* load(Opticks* cache, GBndLib* bndlib, unsigned int index, NSlice* slice=NULL);

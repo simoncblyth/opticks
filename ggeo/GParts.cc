@@ -84,7 +84,7 @@ GParts* GParts::make(const npart& pt, const char* spec)
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
-    NPY<float>* tranBuf = NPY<float>::make(0, 2, 4, 4 );
+    NPY<float>* tranBuf = NPY<float>::make(0, NTRAN, 4, 4 );
     tranBuf->zero();
 
     partBuf->setPart( pt, 0u );
@@ -112,7 +112,7 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
-    NPY<float>* tranBuf = NPY<float>::make(0, 2, 4, 4 );
+    NPY<float>* tranBuf = NPY<float>::make(0, NTRAN, 4, 4 );
     tranBuf->zero();
 
     assert(BBMIN_K == 0 );
