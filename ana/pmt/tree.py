@@ -125,7 +125,10 @@ np.set_printoptions(precision=2)
 
 
 from opticks.ana.base import opticks_main, Buf
-from dd import Dddb, Parts, Union, Intersection 
+
+from ddbase import Dddb
+from ddpart import Parts, partitioner_manual_mixin
+
 from geom import Part
 
 
@@ -442,6 +445,8 @@ class Tree(object):
 if __name__ == '__main__':
 
     args = opticks_main()
+
+    partitioner_manual_mixin()  # add methods to Tubs, Sphere, Elem and Primitive
 
     g = Dddb.parse(args.apmtddpath)
 

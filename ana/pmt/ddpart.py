@@ -11,8 +11,6 @@ Approach:
 * primary purpose is the Elem.parts method, trace back from there to understand
 
 
-
-
 Need to play some mixin tricks 
 
 * http://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
@@ -23,10 +21,14 @@ import os, re, logging, math
 from opticks.ana.base import opticks_main
 
 
-from ddbase import Dddb, Elem, Sphere, Tubs
+from ddbase import Dddb
+from ddbase import Elem, Sphere, Tubs, Primitive, Physvol, Logvol, PosXYZ
 
 from geom import Part, BBox, ZPlane, Rev
 from gcsg import GCSG
+
+X,Y,Z = 0,1,2
+
 
 log = logging.getLogger(__name__)
 
@@ -103,7 +105,7 @@ UNCOINCIDE = Uncoincide()
 
 
 # intended to be a mixin to Elem
-class ElemPartioner(object):
+class ElemPartitioner(object):
     def partition_intersection_3spheres(self, spheres, material=None):
         """
         :param spheres:  list of three *Sphere* in ascending center z order, which are assumed to intersect
@@ -220,7 +222,7 @@ class ElemPartioner(object):
                 other.append(c)
             pass
 
-        assert len(other) == 0, "only 2/3-sphere intersections handled"    
+        assert len(other) == 0, ("only 2 or 3-sphere intersections handled", other )    
 
         for i,s in enumerate(spheres):
             log.debug("s%d: %s %s " % (i, s.desc, s.outerRadius.value))
@@ -446,7 +448,7 @@ class ElemPartioner(object):
 
   
 
-class SpherePartitioner(Sphere):
+class SpherePartitioner(object):
 
     @classmethod
     def intersect(cls, name, a_, b_, inner=False):
@@ -595,8 +597,7 @@ class SpherePartitioner(Sphere):
 
 
 
-class TubsPartitioner(Tubs):
-
+class TubsPartitioner(object):
     def as_part(self):
         sizeZ = self.sizeZ.value
         radius = self.outerRadius.value 
@@ -623,20 +624,49 @@ class TubsPartitioner(Tubs):
         return [Rev('Tubs', self.name,xyz, r, sz )]
 
 
+class PrimitivePartitioner(object):
+    def bbox(self, zl, zr, yn, yp ):
+        assert yn < 0 and yp > 0 and zr > zl
+        return BBox([yn,yn,zl], [yp,yp,zr])
+ 
 
+
+def manual_mixin( dst, src ):
+    """
+    Add all methods from the src class to the destination class
+
+    :param dst: destination class
+    :param src: source class
+    """
+    for k,fn in src.__dict__.items():
+        if k.startswith("_"): continue
+        setattr(dst, k, fn ) 
+    pass
+
+
+def partitioner_manual_mixin():
+    """
+    Using manual mixin approach to avoid changing 
+    the class hierarchy whilst still splitting base
+    functionality from partitioner methods.  
+    """
+    # override the element tag to wrapper class mapping  
+    #Dddb.kls["sphere"] = SpherePartitioner  
+    #Dddb.kls["tubs"] = TubsPartitioner  
+
+    manual_mixin(Tubs, TubsPartitioner)
+    manual_mixin(Sphere, SpherePartitioner)
+    manual_mixin(Elem, ElemPartitioner)
+    manual_mixin(Primitive, PrimitivePartitioner)
 
 
 
 if __name__ == '__main__':
     args = opticks_main(apmtidx=2)
 
+    partitioner_manual_mixin()  # add methods to Tubs, Sphere, Elem and Primitive
+
     g = Dddb.parse(args.apmtddpath)
-
-
-    # override the element tag to wrapper class mapping  
-    Dddb.kls["sphere"] = SpherePartitioner  
-    Dddb.kls["tubs"] = TubsPartitioner  
-
 
     g.dump_context('PmtHemi')
 

@@ -5,7 +5,9 @@ log = logging.getLogger(__name__)
 import numpy as np
 from opticks.ana.base import opticks_main, Buf
 
-from dd import Dddb
+from ddbase import Dddb
+from ddpart import partitioner_manual_mixin
+
 from tree import Tree
 from GPmt import GPmt
 
@@ -17,6 +19,9 @@ if __name__ == '__main__':
     #args = opticks_main(apmtpathtmpl=apmtpathtmpl_default, apmtidx=2)
 
     args = opticks_main(apmtidx=2)
+
+    partitioner_manual_mixin()  # add partitioner methods to Tubs, Sphere, Elem and Primitive
+
 
     apmtpath = args.apmtpath
 
