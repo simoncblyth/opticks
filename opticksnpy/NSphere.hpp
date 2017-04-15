@@ -15,13 +15,10 @@ struct NPY_API nsphere : nnode {
 
     // NO CTOR
 
-    float x();
-    float y();
-    float z();
-    float radius();
     float costheta(float z);
 
-    double operator()(double px, double py, double pz) ;
+    float operator()(float x, float y, float z) ;
+
     nbbox bbox();
 
     npart part();
@@ -35,9 +32,10 @@ struct NPY_API nsphere : nnode {
     void pdump(const char* msg="nsphere::pdump", int verbosity=1);
  
     glm::vec3 center ; 
-    float     radius_ ; 
+    float     radius ; 
 
 };
+
 
 
 inline NPY_API void init_nsphere(nsphere& s, const nvec4& param)
@@ -50,7 +48,7 @@ inline NPY_API void init_nsphere(nsphere& s, const nvec4& param)
     s.center.x = param.x ; 
     s.center.y = param.y ; 
     s.center.z = param.z ;
-    s.radius_  = param.w ;  
+    s.radius  = param.w ;  
 }
 
 inline NPY_API nsphere make_nsphere(const nvec4& param)

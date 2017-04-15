@@ -112,6 +112,7 @@ GMergedMesh* GGeoTest::create()
         std::vector<GSolid*> solids ; 
         if(csgpath != NULL)
         {
+            assert( strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
             loadCSG(csgpath, solids);
         }
         else

@@ -49,6 +49,10 @@ bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const
     return isect ; 
 }
 
+
+
+
+
 static __device__
 void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {

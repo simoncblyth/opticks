@@ -123,6 +123,13 @@ tboolean--(){
     local msg="=== $FUNCNAME :"
     local cmdline=$*
 
+    local testconfig
+    if [ -n "$TESTCONFIG" ]; then
+        testconfig=${TESTCONFIG}
+    else
+        testconfig=$(tboolean-testconfig)
+    fi 
+
     op.sh  \
             $cmdline \
             --animtimemax 10 \
@@ -130,7 +137,7 @@ tboolean--(){
             --geocenter \
             --eye 1,0,0 \
             --dbganalytic \
-            --test --testconfig "$(tboolean-testconfig)" \
+            --test --testconfig "$testconfig" \
             --torch --torchconfig "$(tboolean-torchconfig)" \
             --tag $(tboolean-tag) --cat $(tboolean-det) \
             --save 
@@ -342,10 +349,10 @@ inscribe = 1.3*radius/math.sqrt(3)
 box = CSG("box", param=[0,0,0,inscribe])
 
 
-rtran = dict(translate="100,0,0)
+rtran = dict(translate="100,0,0")
 sph = CSG("sphere", param=[0,0,0,radius], **rtran)
 
-object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)", poly="IM", resolution="50", seeds="0,0,0" )
+object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)", poly="IM", resolution="50" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
@@ -382,6 +389,56 @@ CSG.Serialize([container, object], "$base" )
 EOP
 }
 
+
+
+tboolean-csg-pmt-py-check(){ tboolean-csg-pmt-py 2> /dev/null ; }
+tboolean-csg-pmt-py(){ tboolean-testconfig-py- $FUNCNAME ; }
+tboolean-csg-pmt-py-()
+{
+    local material=$(tboolean-material)
+    local base=$TMP/$FUNCNAME 
+    cat << EOP 
+from opticks.ana.base import opticks_main
+
+from opticks.ana.pmt.ddbase import Dddb
+from opticks.ana.pmt.treebase import Tree
+from opticks.ana.pmt.ncsgtranslator import NCSGTranslator
+
+from opticks.dev.csg.csg import CSG  
+
+args = opticks_main()
+
+g = Dddb.parse(args.apmtddpath)
+
+lv = g.logvol_("lvPmtHemi")
+tr = Tree(lv)
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20")
+
+objs = []
+objs.append(container)
+
+nn = tr.num_nodes()
+assert nn == 5
+
+# 0:Pyrex
+# 1:Vacuum
+# 2:Cathode needs zsphere z-slicing and innerRadius CSG differencing
+
+
+for i in [0]:
+    node = tr.get(i)
+    obj = NCSGTranslator.TranslateLV( node.lv )
+    obj.boundary = "$(tboolean-object)"
+    obj.meta.update(poly="IM", resolution="30")
+    objs.append(obj)
+pass
+
+
+CSG.Serialize(objs, "$base" )
+
+EOP
+}
 
 
 
@@ -444,10 +501,24 @@ tboolean-testconfig()
 
     #tboolean-box-sphere-py intersection 
     #tboolean-box-sphere-py difference
-    #tboolean-box-sphere-py union
+    tboolean-box-sphere-py union
 
-    tboolean-csg-unbalanced-py
+    #tboolean-csg-unbalanced-py
+    #tboolean-csg-pmt-py 2>/dev/null
 
     #tboolean-csg-two-box-minus-sphere-interlocked-py
 }
+
+
+tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }
+tboolean-unbalanced(){   TESTCONFIG=$(tboolean-csg-unbalanced-py)          tboolean-- ; }
+tboolean-bsu(){          TESTCONFIG=$(tboolean-box-sphere-py union)        tboolean-- ; }
+tboolean-bsd(){          TESTCONFIG=$(tboolean-box-sphere-py difference)   tboolean-- ; }
+tboolean-bsi(){          TESTCONFIG=$(tboolean-box-sphere-py intersection) tboolean-- ; }
+tboolean-pmt(){          TESTCONFIG=$(tboolean-csg-pmt-py 2>/dev/null)     tboolean-- ; }
+
+
+
+
+
 

@@ -367,7 +367,7 @@ def opticks_args(**kwa):
     log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 
 
     if args.show:
-         print " ".join(sys.argv)
+         sys.stderr.write("args: " + " ".join(sys.argv) + "\n")
 
     #return args 
     return ok 

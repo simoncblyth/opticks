@@ -38,6 +38,8 @@ class Elem(object):
     is_primitive = property(lambda self:type(self) in self.g.primitive)
     is_composite = property(lambda self:type(self) in self.g.composite)
     is_intersection = property(lambda self:type(self) in self.g.intersection)
+    is_difference = property(lambda self:type(self) in self.g.difference)
+    is_operator = property(lambda self:type(self) in self.g.operator)
     is_tubs = property(lambda self:type(self) in self.g.tubs)
     is_sphere = property(lambda self:type(self) in self.g.sphere)
     is_union = property(lambda self:type(self) in self.g.union)
@@ -161,6 +163,21 @@ class Elem(object):
             return pvs
         else:
             return []  
+        pass
+
+    def comps(self):
+        """
+        :return comps: immediate constituents of an Elem, not recursive
+        """
+        comps = self.findall_("./*")
+        self.link_prior_posXYZ(comps)
+        return comps
+
+    def geometry(self):
+        return filter(lambda c:c.is_geometry, self.comps())
+
+
+
 
 
 class Logvol(Elem):
@@ -181,6 +198,12 @@ class Union(Elem):
 class Intersection(Elem):
     def __repr__(self):
         return "Intersection %20s  " % (self.name)
+
+class Difference(Elem):
+    def __repr__(self):
+        return "Difference%20s  " % (self.name)
+
+
 
 class Parameter(Elem):
     expr = property(lambda self:self.elem.attrib['value'])
@@ -238,15 +261,22 @@ class Dddb(Elem):
         "posXYZ":PosXYZ,
         "intersection":Intersection,
         "union":Union,
+        "difference":Difference,    # not seen in wild
     }
 
     primitive = [Sphere, Tubs]
-    intersection = [Intersection]
-    union = [Union]
     tubs = [Tubs]
     sphere = [Sphere]
-    composite = [Union, Intersection, Physvol]
-    geometry = [Sphere, Tubs, Union, Intersection]
+
+    intersection = [Intersection]
+    union = [Union]
+    difference = [Difference]
+    operator = [Union, Intersection, Difference]
+
+    composite = [Union, Intersection, Difference, Physvol]  # who uses this ? funny combo
+
+    geometry = [Sphere, Tubs, Union, Intersection, Difference]
+
     posXYZ= [PosXYZ]
     logvol = [Logvol]
 

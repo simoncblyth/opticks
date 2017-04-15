@@ -21,7 +21,7 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 
 **/
 
-double nbox::operator()(double px, double py, double pz) 
+float nbox::operator()(float px, float py, float pz) 
 {
     glm::vec4 p0(px,py,pz,1.0); 
     glm::vec4 p1 = gtransform ? gtransform->v * p0 : p0 ; 

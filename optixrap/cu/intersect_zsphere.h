@@ -98,6 +98,8 @@ void intersect_zsphere(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& iden
     float c = dot(O, O)-radius*radius;
     float disc = b*b-c;
 
+    // CAUTION : THIS CODE ASSUMING NORMALIZED RAY DIRECTION : WHICH IS NOT VALID WITH SCALING 
+
     /*
     rtPrintf("intersect_zsphere %10.4f %10.4f %10.4f : %10.4f disc %10.4f \n", 
          center.x,  

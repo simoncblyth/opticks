@@ -207,16 +207,20 @@ class CSG(CSG_):
 
     
 
-    def __init__(self, typ, left=None, right=None, param=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
+    def __init__(self, typ, name="", left=None, right=None, param=None, param1=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
         if type(typ) is str:
             typ = self.fromdesc(typ)  
         pass
         assert type(typ) is int and typ > -1, (typ, type(typ))
 
         self.typ = typ
+        self.name = name
         self.left = left
         self.right = right
+
         self.param = param
+        self.param1 = param1
+
         self.boundary = boundary
         self.transform = make_trs(translate,rotate,scale)
         self.meta = kwa
@@ -224,8 +228,17 @@ class CSG(CSG_):
     def _get_param(self):
         return self._param
     def _set_param(self, v):
+        if self.is_primitive and v is None: v = [0,0,0,0]
         self._param = np.asarray(v) if v is not None else None
     param = property(_get_param, _set_param)
+
+    def _get_param1(self):
+        return self._param1
+    def _set_param1(self, v):
+        if self.is_primitive and v is None: v = [0,0,0,0]
+        self._param1 = np.asarray(v) if v is not None else None
+    param1 = property(_get_param1, _set_param1)
+
 
     def asarray(self, itra=0):
         """
@@ -243,6 +256,9 @@ class CSG(CSG_):
        
         if self.param is not None:  # avoid gibberish in buffer
             arr[Q0] = self.param
+        pass
+        if self.param1 is not None:  
+            arr[Q1] = self.param1
         pass
         if self.transform is not None:
             assert itra > 0, itra  # 1-based transform index
@@ -263,6 +279,26 @@ class CSG(CSG_):
             n.itra = itra if itra > 0 else None
         pass
         return n 
+
+    @classmethod 
+    def Dump(cls, node, depth=0):
+        indent = "   " * depth    
+
+        label = node.label(indent)
+        content = node.content()
+
+        sys.stderr.write( "%-50s : %s " % (label, content))
+
+        if node.left and node.right:
+            cls.Dump(node.left, depth+1)
+            cls.Dump(node.right, depth+1)
+        pass
+
+    def label(self, indent=""):
+        return "%s %s;%s " % (indent, self.desc(self.typ),self.name )
+
+    def content(self):
+        return "%r %r " % (self.param, self.param1)
 
 
     def __repr__(self):

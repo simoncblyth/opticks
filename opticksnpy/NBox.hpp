@@ -9,7 +9,7 @@
 struct NPY_API nbox : nnode {
 
     // NO CTOR
-    double operator()(double px, double py, double pz) ;
+    float operator()(float px, float py, float pz) ;
     nbbox bbox();
     glm::vec3 gcenter() ;
     void pdump(const char* msg="nbox::pdump", int verbosity=1);

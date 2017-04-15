@@ -275,10 +275,8 @@ def one_plot(fig, pmt, pts, clip=True, axes=ZX, highlight={}):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    args = opticks_main(apmtpath="$OPTICKS_DETECTOR_DIR/GPmt/0/GPmt.npy")
-
-    #apmtpath = args.apmtpath
-    apmtpath = "$TMP/GPmt/1/GPmt.npy"
+    args = opticks_main(apmtidx=2)
+    apmtpath = args.apmtpath
 
 
     # 0:4  PYREX

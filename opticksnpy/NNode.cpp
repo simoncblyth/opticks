@@ -18,7 +18,8 @@
 #include "PLOG.hh"
 
 
-double nnode::operator()(double,double,double) 
+//double nnode::operator()(double,double,double) 
+float nnode::operator()(float,float,float) 
 {
     return 0.f ; 
 } 
@@ -166,25 +167,25 @@ transformation to the point before evaluating the SDF.
 **/
 
 
-double nunion::operator()(double px, double py, double pz) 
+float nunion::operator()(float px, float py, float pz) 
 {
     assert( left && right );
-    double l = (*left)(px, py, pz) ;
-    double r = (*right)(px, py, pz) ;
+    float l = (*left)(px, py, pz) ;
+    float r = (*right)(px, py, pz) ;
     return fmin(l, r);
 }
-double nintersection::operator()(double px, double py, double pz) 
+float nintersection::operator()(float px, float py, float pz) 
 {
     assert( left && right );
-    double l = (*left)(px, py, pz) ;
-    double r = (*right)(px, py, pz) ;
+    float l = (*left)(px, py, pz) ;
+    float r = (*right)(px, py, pz) ;
     return fmax( l, r);
 }
-double ndifference::operator()(double px, double py, double pz) 
+float ndifference::operator()(float px, float py, float pz) 
 {
     assert( left && right );
-    double l = (*left)(px, py, pz) ;
-    double r = (*right)(px, py, pz) ;
+    float l = (*left)(px, py, pz) ;
+    float r = (*right)(px, py, pz) ;
     return fmax( l, -r);    // difference is intersection with complement, complement negates signed distance function
 }
 

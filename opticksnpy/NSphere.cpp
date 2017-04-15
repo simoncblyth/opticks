@@ -19,30 +19,24 @@
 #include "PLOG.hh"
 
 
-float nsphere::radius(){ return param.w ; }
-float nsphere::x(){      return param.x ; }
-float nsphere::y(){      return param.y ; }
-float nsphere::z(){      return param.z ; }
 
-float nsphere::costheta(float z_)
+float nsphere::costheta(float z)
 {
-   return (z_ - param.z)/param.w ;  
+   return (z - center.z)/radius ;  
 }
 
 // signed distance function
 
-double nsphere::operator()(double px, double py, double pz) 
+float nsphere::operator()(float x, float y, float z) 
 {
-    glm::vec4 p0(px,py,pz,1.0); 
-    glm::vec4 p = gtransform ? gtransform->v * p0 : p0 ; 
-
-    float d = glm::distance( glm::vec3(p), center );
-    return d - radius_ ;  
+    glm::vec4 p(x,y,z,1.f); 
+    if(gtransform) p = gtransform->v * p ;  // v:inverse-transform
+    return glm::distance( glm::vec3(p), center ) - radius ;
 } 
 
 glm::vec3 nsphere::gcenter()
 {
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
+    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ; // t:transform
 }
 
 
@@ -52,7 +46,7 @@ void nsphere::pdump(const char* msg, int verbosity)
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
-              << " radius_ " << radius_ 
+              << " radius " << radius 
               << " gcenter " << gcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 
@@ -66,8 +60,8 @@ nbbox nsphere::bbox()
 {
     nbbox bb = make_nbbox();
 
-    bb.min = make_nvec3(param.x - param.w, param.y - param.w, param.z - param.w);
-    bb.max = make_nvec3(param.x + param.w, param.y + param.w, param.z + param.w);
+    bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - radius);
+    bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + radius);
     bb.side = bb.max - bb.min ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
@@ -81,16 +75,16 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     //
     // http://mathworld.wolfram.com/Circle-CircleIntersection.html
     //
-    // cf pmt-/dd.py 
+    // cf pmt-/ddpart.py 
 
-    float R = a.radius() ; 
-    float r = b.radius() ; 
+    float R = a.radius ;
+    float r = b.radius ; 
 
     // operate in frame of Sphere a 
 
-    float dx = b.x() - a.x() ; 
-    float dy = b.y() - a.y() ; 
-    float dz = b.z() - a.z() ; 
+    float dx = b.center.x - a.center.x ; 
+    float dy = b.center.y - a.center.y ; 
+    float dz = b.center.z - a.center.z ; 
 
     assert(dx == 0 && dy == 0 && dz != 0);
 
@@ -101,7 +95,7 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     float y = yy > 0 ? sqrt(yy) : 0 ;   
 
 
-    nplane plane = make_nplane(0,0,1,z + a.param.z) ;
+    nplane plane = make_nplane(0,0,1,z + a.center.z) ;
     ndisc  disc = make_ndisc(plane, y) ;
 
     return disc ;      // return to original frame
@@ -118,9 +112,9 @@ npart nsphere::part()
     {
         // TODO: move this belongs into a zsphere not here ???
         LOG(warning) << "nsphere::part override bbox " ;  
-        float _z = z() ;  
-        float r  = radius() ; 
-        nbbox bb = make_nbbox(_z - r, _z + r, -r, r);
+        float z = center.z ;  
+        float r  = radius ; 
+        nbbox bb = make_nbbox(z - r, z + r, r, r);
 
         p.setBBox(bb);
     }
@@ -133,9 +127,9 @@ npart nsphere::zlhs(const ndisc& dsk)
 {
     npart p = part();
 
-    float _z = z() ;  
-    float r  = radius() ; 
-    nbbox bb = make_nbbox(_z - r, dsk.z(), -dsk.radius, dsk.radius);
+    float z = center.z ;  
+    float r  = radius ; 
+    nbbox bb = make_nbbox(z - r, dsk.z(), -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 
@@ -145,9 +139,9 @@ npart nsphere::zrhs(const ndisc& dsk)
 {
     npart p = part();
 
-    float _z = z() ;  
-    float r  = radius() ; 
-    nbbox bb = make_nbbox(dsk.z(), _z + r, -dsk.radius, dsk.radius);
+    float z = center.z ;  
+    float r  = radius ; 
+    nbbox bb = make_nbbox(dsk.z(), z + r, -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 

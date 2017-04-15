@@ -363,8 +363,8 @@ GSolid* GMaker::makeZSphereIntersect(glm::vec4& param, const char* spec)
     npart ar = a.zrhs(d);
     npart bl = b.zlhs(d);
 
-    glm::vec4 arhs_param( a.costheta(zd), 1.f, a.z(), a.radius()) ;
-    glm::vec4 blhs_param( -1, b.costheta(zd),  b.z(), b.radius()) ;
+    glm::vec4 arhs_param( a.costheta(zd), 1.f, a.center.z, a.radius) ;
+    glm::vec4 blhs_param( -1, b.costheta(zd),  b.center.z, b.radius) ;
 
     NTrianglesNPY* a_tris = NTrianglesNPY::sphere(arhs_param);
     NTrianglesNPY* b_tris = NTrianglesNPY::sphere(blhs_param);

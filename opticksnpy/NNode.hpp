@@ -18,7 +18,10 @@ struct nmat4triple ;
 
 struct NPY_API nnode 
 {
-    virtual double operator()(double px, double py, double pz) ;
+
+    //virtual double operator()(double px, double py, double pz) ;
+    virtual float operator()(float px, float py, float pz) ;
+
     virtual void dump(const char* msg="nnode::dump");
     virtual const char* csgname(); 
     virtual nbbox bbox();
@@ -64,13 +67,13 @@ struct NPY_API nnode
 // of having separate types ? 
 
 struct NPY_API nunion : nnode {
-    double operator()(double px, double py, double pz) ;
+    float operator()(float px, float py, float pz) ;
 };
 struct NPY_API nintersection : nnode {
-    double operator()(double px, double py, double pz);
+    float operator()(float px, float py, float pz);
 };
 struct NPY_API ndifference : nnode {
-    double operator()(double px, double py, double pz);
+    float operator()(float px, float py, float pz);
 };
 
 

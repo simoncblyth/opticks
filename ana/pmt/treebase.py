@@ -303,7 +303,6 @@ class Tree(object):
 
 if __name__ == '__main__':
 
-
     args = opticks_main()
 
     g = Dddb.parse(args.apmtddpath)

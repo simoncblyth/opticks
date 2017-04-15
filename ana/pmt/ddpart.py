@@ -393,7 +393,7 @@ class ElemPartitioner(object):
         for c in comps:
             xret = []
             if c.is_sphere and c.has_inner():
-                log.info("-> sphere with inner  %s " % c.name)
+                log.info("-> sphere with non-zero inner radius  %s " % c.name)
                 xret = self.parts_sphere_with_inner(c)  
             elif c.is_primitive:
                 log.info("-> primitive %s " % c.name)
@@ -522,6 +522,10 @@ class SpherePartitioner(object):
         return gcsg
 
     def as_part(self, inner=False):
+        """
+        Spheres sliced via startThetaAngle and deltaThetaAngle
+        are handled by setting of the bbox 
+        """
         if inner:
             radius = self.innerRadius.value 
         else:
@@ -582,6 +586,7 @@ class SpherePartitioner(object):
         ymax = max(zpl.y,zpr.y)
         p.bbox = self.bbox(zpl.z,zpr.z,-ymax,ymax )
         return p 
+
     def asrev(self):
         xyz = self.xyz 
         ro = self.outerRadius.value
