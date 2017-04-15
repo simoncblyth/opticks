@@ -123,6 +123,8 @@ set(SOURCES
 
     NNode.cpp
     NBox.cpp
+    NSlab.cpp
+
     NQuad.cpp
     NSphere.cpp
     NPlane.cpp

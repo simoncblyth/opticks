@@ -66,6 +66,37 @@ void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
     aabb->include(tbb);
 }
 
+
+/*
+static __device__
+bool csg_intersect_slab(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+{
+   // slab about origin with offset d 
+
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const float  d = q0.f.w ; 
+
+   const float3 b0 = -d*n ; 
+   const float3 b1 =  d*n ; 
+ 
+
+
+   float denom = dot(n, ray_direction);
+   float tt_cand = -(d + dot(n, ray_origin))/denom;
+
+   bool has_valid_intersect = denom != 0.f && tt_cand > tt_min  ; 
+   if(has_valid_intersect)
+   {
+       tt.x = n.x ;
+       tt.y = n.y ;
+       tt.z = n.z ;
+       tt.w = tt_cand ; 
+   }
+   return has_valid_intersect ; 
+}
+*/
+
+
 static __device__
 bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
 {

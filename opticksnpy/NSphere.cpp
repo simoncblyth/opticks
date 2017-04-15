@@ -19,7 +19,6 @@
 #include "PLOG.hh"
 
 
-
 float nsphere::costheta(float z)
 {
    return (z - center.z)/radius ;  

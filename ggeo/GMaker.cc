@@ -36,6 +36,9 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
     // for CSG triangulation need to be given the tree.. 
+    //
+    // NB note the the move to SDF means that forming a polygonization
+    // no longer requires this, instead must implement the SDF : signed distance function
 
      GSolid* solid = NULL ; 
      switch(type)
@@ -54,6 +57,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_PMT:
          case CSG_TUBS:
          case CSG_CYLINDER:
+         case CSG_SLAB:
          case CSG_UNDEFINED:
          case CSG_FLAGPARTLIST:
          case CSG_FLAGNODETREE:

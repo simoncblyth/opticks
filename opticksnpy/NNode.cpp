@@ -11,8 +11,11 @@
 #include "NNode.hpp"
 #include "NPart.hpp"
 #include "NQuad.hpp"
+
 #include "NSphere.hpp"
 #include "NBox.hpp"
+#include "NSlab.hpp"
+
 #include "NBBox.hpp"
 
 #include "PLOG.hh"
@@ -270,6 +273,12 @@ std::function<float(float,float,float)> nnode::sdf()
                 f = *n ;
             }
             break ;
+        case CSG_SLAB:
+            {
+                nslab* n = (nslab*)node ;  
+                f = *n ;
+            }
+            break ;
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
@@ -310,6 +319,18 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                    dirs.push_back( glm::vec3(dir));
                }
                break ;  
+
+            case CSG_SLAB: 
+               {  
+                   nslab* n = (nslab*)p ;
+                   centers.push_back(n->gcenter()); 
+                   glm::vec4 dir(n->normal,0); 
+                   if(n->gtransform) dir = n->gtransform->t * dir ; 
+
+                   dirs.push_back( glm::vec3(dir));
+               }
+               break ;  
+ 
             default:
                {
                    LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSGName(p->type) ;
@@ -353,6 +374,7 @@ void nnode::dump_prim( const char* msg, int verbosity )
         {
             case CSG_SPHERE: ((nsphere*)p)->pdump("sp",verbosity) ; break ; 
             case CSG_BOX   :    ((nbox*)p)->pdump("bx",verbosity) ; break ; 
+            case CSG_SLAB   :  ((nslab*)p)->pdump("sl",verbosity) ; break ; 
             default:
             {
                    LOG(fatal) << "nnode::dump_prim unhanded shape type " << p->type << " name " << CSGName(p->type) ;

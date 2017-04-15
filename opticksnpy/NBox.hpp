@@ -58,4 +58,3 @@ inline NPY_API nbox* make_nbox_ptr(float x, float y, float z, float w)
 }
 
 
-
