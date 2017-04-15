@@ -480,12 +480,14 @@ pmt-i(){
    i
 }
 
-## TODO: consolidate, too many entry points 
-pmt-run(){      python $(pmt-edir)/${1:-pmt}.py  ; }
-pmt-dd(){       python $(pmt-edir)/dd.py  ; }
-pmt-parts(){    python $(pmt-edir)/tree.py $*  ; }
-pmt-analytic(){ python $(pmt-edir)/analytic.py $*  ; }
-pmt-gcsg(){     python $(pmt-edir)/gcsg.py $*  ; }
 
+# after moving env setup into python means no need to bash runners, just directly run the python
+#
+#pmt-run(){      python $(pmt-edir)/${1:-pmt}.py  ; }
+#pmt-ddpart(){   python $(pmt-edir)/ddpart.py  ; }
+#pmt-treepart(){ python $(pmt-edir)/treepart.py $*  ; }
+#pmt-analytic(){ python $(pmt-edir)/analytic.py $*  ; }
+#pmt-gcsg(){     python $(pmt-edir)/gcsg.py $*  ; }
+#
 
 

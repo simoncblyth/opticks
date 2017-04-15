@@ -16,7 +16,7 @@ GCSG
 Where/how GCSG is used
 -------------------------
 
-dd.py
+ddpart.py
     Parts lists retain association to the basis shapes
     they came from via gcsg attributes created
     within the Elem.partition methods 

@@ -18,7 +18,7 @@ Need to play some mixin tricks
 
 """
 import os, re, logging, math
-from opticks.ana.base import opticks_main
+from opticks.ana.base import opticks_main, manual_mixin
 
 
 from ddbase import Dddb
@@ -631,29 +631,12 @@ class PrimitivePartitioner(object):
  
 
 
-def manual_mixin( dst, src ):
-    """
-    Add all methods from the src class to the destination class
-
-    :param dst: destination class
-    :param src: source class
-    """
-    for k,fn in src.__dict__.items():
-        if k.startswith("_"): continue
-        setattr(dst, k, fn ) 
-    pass
-
-
-def partitioner_manual_mixin():
+def ddpart_manual_mixin():
     """
     Using manual mixin approach to avoid changing 
     the class hierarchy whilst still splitting base
     functionality from partitioner methods.  
     """
-    # override the element tag to wrapper class mapping  
-    #Dddb.kls["sphere"] = SpherePartitioner  
-    #Dddb.kls["tubs"] = TubsPartitioner  
-
     manual_mixin(Tubs, TubsPartitioner)
     manual_mixin(Sphere, SpherePartitioner)
     manual_mixin(Elem, ElemPartitioner)
@@ -664,7 +647,7 @@ def partitioner_manual_mixin():
 if __name__ == '__main__':
     args = opticks_main(apmtidx=2)
 
-    partitioner_manual_mixin()  # add methods to Tubs, Sphere, Elem and Primitive
+    ddpart_manual_mixin()  # add methods to Tubs, Sphere, Elem and Primitive
 
     g = Dddb.parse(args.apmtddpath)
 

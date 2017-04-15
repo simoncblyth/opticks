@@ -6,9 +6,12 @@ import numpy as np
 from opticks.ana.base import opticks_main, Buf
 
 from ddbase import Dddb
-from ddpart import partitioner_manual_mixin
+from ddpart import ddpart_manual_mixin
 
-from tree import Tree
+from treebase import Tree
+from treepart import treepart_manual_mixin
+
+
 from GPmt import GPmt
 
 if __name__ == '__main__':
@@ -20,7 +23,8 @@ if __name__ == '__main__':
 
     args = opticks_main(apmtidx=2)
 
-    partitioner_manual_mixin()  # add partitioner methods to Tubs, Sphere, Elem and Primitive
+    ddpart_manual_mixin()  # add partitioner methods to Tubs, Sphere, Elem and Primitive
+    treepart_manual_mixin() # add partitioner methods to Node and Tree
 
 
     apmtpath = args.apmtpath

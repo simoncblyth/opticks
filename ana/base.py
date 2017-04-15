@@ -35,6 +35,20 @@ def stamp_(path, fmt="%Y%m%d-%H%M"):
    pass
 
 
+
+def manual_mixin( dst, src ):
+    """ 
+    Add all methods from the src class to the destination class
+
+    :param dst: destination class
+    :param src: source class
+    """
+    for k,fn in src.__dict__.items():
+        if k.startswith("_"): continue
+        setattr(dst, k, fn ) 
+    pass
+
+
 def _dirname(path, n):
     for _ in range(n):
         path = os.path.dirname(path)
